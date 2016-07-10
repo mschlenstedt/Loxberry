@@ -1,0 +1,49 @@
+  <!-- content -->
+
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+      <h2>5. Schritt: Installation</h2>
+      <p>
+      Sie haben nun alle grundlegenden Angaben gemacht. Die Installation kann jetzt durchgef&uuml;hrt werden.
+      </p>
+
+      <p>
+      Wenn alle Angaben korrekt waren, k&ouml;nnen Sie die Installation 
+      abschlie&szlig;en. Dabei werden Ihre Angaben in die Konfiguration geschrieben und gespeichert. Hinweis:
+      Nat&uuml;rlich k&ouml;nnen Sie alle Einstellungen sp&auml;ter noch angepassen und ver&auml;ndern.
+      </p>
+
+      <form method="post" data-ajax="false" name="main_form5" id="main_form5" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
+      <input type="hidden" name="saveformdata" value="1">
+      </form>
+
+      <p>
+      &nbsp;
+      </p>
+
+      <p>
+      <center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Abbrechen</a>
+      <a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Zur&uuml;ck</a>
+      <button type="submit" form="main_form5" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Installation starten</button>
+      </center>
+      </p>
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+
+  <script>
+  var $messages = $('#form-error-message');
+  $.validate({
+    modules : 'security',
+    errorMessagePosition : $messages,
+  });
+  </script>
+
+  <!-- /content -->

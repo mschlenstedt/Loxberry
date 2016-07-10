@@ -1,0 +1,135 @@
+<html>
+<head>
+  <title>SmartTech Techbox</title>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-15"> 
+  <link rel="stylesheet" href="/loxoneweather/jquery/themes/LoxoneWeather.min.css">
+  <link rel="stylesheet" href="/loxoneweather/jquery/themes/jquery.mobile.icons.min.css">
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile.structure-1.4.0.min.css"> 
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+  <script src="/scripts/setup.js"></script>
+</head>
+<body>
+
+<!-- page -->
+<div data-role="page" id="cur">
+
+  <!-- header -->
+  <div data-role="header">
+    <a id="btncancel" href="#" class="ui-btn-left ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete">Abbrechen</a>
+    <h1>SmartTech TechBox - Ersteinrichtung</h1>
+    <button id="btnnext" class="ui-btn-right ui-btn ui-btn-b ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-check">
+      Weiter
+    </button>
+  </div>
+  <!-- /header -->
+
+  <!-- content -->
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+      <h2>1. Schritt: Einrichten des Miniservers</h2>
+      <p>
+      In diesem Schritt geben Sie die Daten Ihres Miniservers ein. Wir ben&ouml;tigen die IP-Adresse, unter der Ihr Miniserver in Ihrem Netzwerk
+      erreichbar ist sowie auch Benutzername und Passwort des Administrator-Passworts. Diese Daten sind notwenidig, damit wir auf Daten des
+      Miniservers zugreifen k&ouml;nnen.
+      </p>
+
+      <p>
+      Sollten Sie sich nicht sicher sein, unter welcher IP-Adresse der Miniserver im Netzwerk erreichbar ist, k&ouml;nnen Sie den Scan-Button neben
+      dem Eingangsfeld verwenden. Wir durchsuchen Ihr Netzwerk dann nach einem erreichbaren Miniserver und tragen die entsprechende IP-Adresse im
+      Eingabefeld ein. Oder Sie schauen in der LoxoneConfig-Software nach, unter welcher Adresse Sie sich dort mit dem Miniserver verbinden.
+      </p>
+
+      <form method="post" id="main_form" action="/cgi-bin/admin/setup.cgi?step=<!--$step-->&lang=<!--$lang-->">
+        <table class="formtable" border="0" width="90%">
+        <tr>
+          <td width="25%">
+          <label>IP-Adresse des Miniservers:</label>
+          </td>
+          <td width="25%">
+          <input id="miniserverip" name="miniserverip" type="text" class="textfield">
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="45%">
+          <table border=0>
+          <tr>
+            <td>
+            <button id="btnnetscan" class="ui-btn ui-btn-b ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-check">
+            Suchen
+            </button>
+            </td>
+            <td>
+            <div id="testurl"></div>
+            </td>
+          </tr>
+          </table>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Port-Nummer:</label>
+          </td>
+          <td>
+          <input id="miniserverport" name="miniserverport" type="text" class="textfield" value="80">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1">Die Portnummer, unter der das Webinterface erreichbar ist. Normalerweise ist das Port 80.</font>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Administrator:</label>
+          </td>
+          <td>
+          <input id="admin" name="admin" type="text" class="textfield">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1">Bitte verwenden Sie die Administrator-Zugangsdaten, die Sie auch in LoxoneConfig zur Verbindung mit dem
+          Miniserver verwenden.</font>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Passwort:</label>
+          </td>
+          <td>
+          <input id="pass" name="pass" type="password" class="textfield">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1">Achten Sie auf Gro&szlig;- und Kleinschreibung!</font>
+          </td>
+        </tr>
+        </table>
+      </form>
+
+    </div>
+    <!-- /text -->
+
+
+  </div>
+  <!-- /content -->
+
+</div>
+<!-- /page -->
+
+<div id="lang" style="display: none"><!--$lang--></div>
+<div id='overlay' style="display: none"><img src='/scripts/jquery/themes/images/ajax-loader.gif' /></div>
+
+</body>
+</html>
+

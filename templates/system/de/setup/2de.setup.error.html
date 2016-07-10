@@ -1,0 +1,67 @@
+<html>
+<head>
+  <title>SmartTech Techbox</title>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-15"> 
+  <link rel="stylesheet" href="/loxoneweather/jquery/themes/LoxoneWeather.min.css">
+  <link rel="stylesheet" href="/loxoneweather/jquery/themes/jquery.mobile.icons.min.css">
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile.structure-1.4.0.min.css"> 
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+  <script src="/scripts/setup.js"></script>
+</head>
+<body>
+
+<!-- page -->
+<div data-role="page" id="cur">
+
+  <!-- header -->
+  <div data-role="header">
+    <a id="btncancel" href="#" class="ui-btn-left ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete">Abbrechen</a>
+    <h1>SmartTech TechBox - Ersteinrichtung</h1>
+    <button id="btnnext" class="ui-btn-right ui-btn ui-btn-b ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-check">
+      Weiter
+    </button>
+  </div>
+  <!-- /header -->
+
+  <!-- content -->
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 10%; text-align: center">
+      <center>
+      <table border=0>
+      <tr>
+        <td align="center">
+        <h2>Leider ist ein Fehler aufgetreten!</h2>
+        <p>
+        <!--$error-->
+        <br><br>
+        </p>
+        </td>
+      </tr>
+      <tr>
+        <td align="center">
+          <br><br>
+          <a id="btnback" href="javascript:history.back()" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete">Zur&uuml;ck</a>
+        </td>
+    </tr>
+    </table>
+    </center>
+    </div>
+    <!-- /text -->
+
+
+  </div>
+  <!-- /content -->
+
+</div>
+<!-- /page -->
+
+<div id="lang" style="display: none"><!--$lang--></div>
+<div id='overlay' style="display: none"><img src='/scripts/jquery/themes/images/ajax-loader.gif' /></div>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+#!/usr/bin/perl -w
+use IO::Socket;
+use strict;
+ 
+# your fritz box (ip or hostname)
+my $FRITZBOX="fritz.box";
+ 
+my $sock = new IO::Socket::INET (
+        PeerAddr => $FRITZBOX,
+        PeerPort => '1012',
+        Proto => 'tcp'
+        );
+        die "Could not create socket: $!\n" unless $sock;
+ 
+while(<$sock>) {
+        if ($_ =~ /RING/){
+          print "Eingehender Anruf: $_\n";
+        }
+        if ($_ =~ /CONNECT/){
+          print "Anruf angenommen: $_\n";
+        }
+        if ($_ =~ /DISCONNECT/){
+          print "Aufgelegt: $_\n";
+        }
+}

@@ -1,0 +1,44 @@
+#
+# Language phrases
+#
+TXT0000=LoxBerry Toolbox
+TXT0001=Ja
+TXT0002=Nein
+TXT0003=Der Miniserver scheint unter der angegebenen IP-Adresse nicht erreichbar zu sein oder Benutzername und Passwort sind nicht korrekt.
+TXT0004=Fehler in der Abfrage.
+TXT0005=Lokalisierung über IP-Adresse
+TXT0006=Interface:
+TXT0007=Schnittstelle:
+TXT0008=MAC Adresse:
+TXT0009=Netzwerk-Hardware
+TXT0010=Kerneltreiber:
+TXT0011=Netzwerk
+TXT0012=Verschlüsselt
+TXT0013=Geschwindigkeit
+TXT0014=Signalqualität
+TXT0015=Signalstärke
+TXT0016=Keine Wireless-LAN Hardware an Schnittstelle wlan0 gefunden. Bitte entferne noch einmal alle WLAN-Hardware und verbinde sie anschließend neu.
+TXT0017=Ersteinrichtung
+TXT0018=Administrator
+TXT0019=Miniserver
+TXT0020=Netzwerk
+TXT0021=Zeitserver
+TXT0022=Installation
+TXT0023=Benutzer:
+TXT0024=Passwort:
+TXT0025=SSH-/Konsolen-Login:
+TXT0026=Root-Account:
+TXT0027=Power-Optionen
+TXT0028=FEHLER
+TXT0029=Bestätigung
+TXT0030=Die neuen Zugangsdaten wurden erfolgreich übernommen. Folgende Passwörter wurden neu gesetzt:
+TXT0031=Web-Administrationsbereich:
+TXT0032=Das angegebene alte Passwort scheint nicht korrekt zu sein.
+TXT0033=Das System wird nun heruntergefahren und kann ausgeschaltet werden.
+TXT0034=Das System wird nun neu gestartet. Das kann einige Sekunden dauern.
+TXT0035=Die Daten Deines Miniservers wurden erfolgreich gespeichert.
+TXT0036=Die Einstellungen zum Zeitserver wurden erfolgreich gespeichert.
+TXT0037=Die Netzwerk-Einstellungen wurden erfolgreich gespeichert. Sie werden erst nach einem Neustart aktiviert.
+TXT0038=An
+TXT0039=Aus
+TXT0040=Miniserver-Backup

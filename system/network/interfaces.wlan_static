@@ -1,0 +1,12 @@
+auto lo
+iface lo inet loopback
+
+allow-hotplug wlan0
+iface wlan0 inet static
+  wpa-ssid <!--$netzwerkssid-->
+  wpa-psk <!--$netzwerkschluessel-->
+  address <!--$netzwerkipadresse-->
+  netmask <!--$netzwerkipmaske-->
+  gateway <!--$netzwerkgateway-->
+  dns-domain loxberry.local
+  dns-nameservers <!--$netzwerknameserver-->

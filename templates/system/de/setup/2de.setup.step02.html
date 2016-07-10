@@ -1,0 +1,131 @@
+<html>
+<head>
+  <title>SmartTech Techbox</title>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-15"> 
+  <link rel="stylesheet" href="/loxoneweather/jquery/themes/LoxoneWeather.min.css">
+  <link rel="stylesheet" href="/loxoneweather/jquery/themes/jquery.mobile.icons.min.css">
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile.structure-1.4.0.min.css"> 
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+  <script src="/scripts/setup.js"></script>
+</head>
+<body>
+
+<!-- page -->
+<div data-role="page" id="cur">
+
+  <!-- header -->
+  <div data-role="header">
+    <a id="btncancel" href="#" class="ui-btn-left ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete">Abbrechen</a>
+    <h1>SmartTech TechBox - Ersteinrichtung</h1>
+    <button id="btnnext" class="ui-btn-right ui-btn ui-btn-b ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-check">
+      Weiter
+    </button>
+  </div>
+  <!-- /header -->
+
+  <!-- content -->
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+      <h2>2. Schritt: Einrichten des Wetterservers</h2>
+      <p>
+      In diesem Schritt erledigen wir die Grundkonfiguration des Wetterservers. Der Wetterserver greift auf die Wetterdaten des Unternehmens
+      Wunderground (<a href="http://www.wunderground.com" target="_blank">Wunderground.com</a>) zu. Wunderground bietet Wetterdaten weltweit
+      an, wobei neben den offiziellen Wetterstationen, z. B. von Flugh&auml;fen, auch Daten aus privaten Wetterstationen eingebunden werden.
+      Damit ist das Netz an Wetterstationen sehr engmaschig. Sie haben sp&auml;ter auch noch die M&ouml;glichkeit, die Daten aus 2 Wetterstationen
+      zu kombinieren, z. B. wenn Ihre Station einen bestimmten Wert nicht erfasst. Dann haben Sie die M&ouml;glichkeit diesen Wert aus einer
+      alternativen Station, die eventuell aber etwas weiter von Ihnen entfernt liegt, trotzdem mit einzubinden.
+      </p>
+
+      <p>
+      Um auf die Daten von Wunderground zugreifen zu k&ouml;nnen, ben&ouml;tigen Sie zun&auml;chst einen kostenlosen Zugang. Diesen Zugang m&uuml;ssen Sie
+      auf der Internetseite von Wunderground einrichten (bitte schauen Sie dazu in die Anleitung). An dieser Stelle ben&ouml;tigen Sie Ihren Wunderground
+      API-Key, einen eindeutigen Schl&uuml;ssel, mit dem Sie sich bei Wetteranfragen bei Wunderground authentifizieren.
+      </p>
+
+      <p>
+      Am einfachsten ist es zun&auml;chst, Wunderground die Auswahl der Wetterstation anhand Ihrer Geokoordinaten zu &uuml;berlassen. Es wird dann automatisch
+      die Ihnen am n&auml;chsten gelegende Station ausgew&auml;hlt. Sie k&ouml;nnen diese Einstellung sp&auml;ter ver&auml;ndern oder verfeinern. Zur Ermittlung
+      Ihrer Geokoordinaten wird ein Dienst von Google Maps verwendet. Der gleiche Dienst wird auch in LoxoneConfig zur Ermittlung Ihrer Geokoordinaten verwendet.
+      Nachdem Sie unten Ihre Adresse eingegeben haben, ermittelt Google automatisch die dazugeh&ouml;rigen Koordinaten (L&auml;ngen-/Breitengrad). Sollten Sie
+      das nicht w&uuml;nschen, k&ouml;nnen Sie das Feld unten auch einfach leer lassen. Dann wird Ihre aktuelle IP-Adresse zur Ermittlung Ihrer Geokoordinaten
+      verwendet. Dieses ist jedoch im Allgemeinen ungenauer als die Adress-Suche zu verwenden.
+      </p>
+
+      <form method="post" id="main_form" action="/cgi-bin/admin/setup.cgi?step=<!--$step-->&lang=<!--$lang-->">
+        <input type="hidden" name="miniserverip" value="<!--$miniserverip-->">
+        <input type="hidden" name="admin" value="<!--$admin-->">
+        <input type="hidden" name="pass" value="<!--$pass-->">
+        <table class="formtable" border="0" width="90%">
+        <tr>
+          <td width="25%">
+          <label>Wunderground API Key ID:</label>
+          </td>
+          <td width="25%">
+          <input id="wundergroundkey" name="wundergroundkey" type="text" class="textfield">
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="45%">
+          Den API-Key finden Sie in Ihrem Wunderground-Benutzerkonto.
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Adress-Suche:</label>
+          </td>
+          <td>
+          <input id="address" name="address" type="text" class="textfield">
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="45%">
+          <table border=0>
+          <tr>
+            <td>
+            <button id="btnaddressscan" class="ui-btn ui-btn-b ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-check">
+            Suchen
+            </button>
+            </td>
+          </tr>
+          </table>
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td>
+          &nbsp;
+          </td>
+          <td colspan=3>
+          <div id="addressresults"></div>
+          </td>
+        </tr>
+        </table>
+      </form>
+
+    </div>
+    <!-- /text -->
+
+
+  </div>
+  <!-- /content -->
+
+</div>
+<!-- /page -->
+
+<div id="lang" style="display: none"><!--$lang--></div>
+<div id='overlay' style="display: none"><img src='/scripts/jquery/themes/images/ajax-loader.gif' /></div>
+
+</body>
+</html>
+

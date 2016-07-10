@@ -1,0 +1,25 @@
+/* Form Error Message */
+
+.form-error-message {
+  color: red;
+  line-height: 1.5em;
+  font-size: 0.75em;
+}
+
+/* Main Menu Table */
+
+table.menutable td {
+  padding: 0.5em;
+  width: 100px;
+  text-align: center;
+  font-size: 0.75em;
+  vertical-align: middle;
+}
+
+table.menutable td.caption {
+  width: 100px;
+  font-size: 2em;
+  letter-spacing: 0.25em;
+  text-align: left;
+  vertical-align: middle;
+}
