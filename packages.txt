@@ -133,6 +133,7 @@ ii  libalgorithm-diff-xs-perl        0.04-3+b1                         armhf    
 ii  libalgorithm-merge-perl          0.08-2                            all          Perl module for three-way merge of textual data
 ii  libalsaplayer-dev                0.99.81-1+b1                      armhf        alsaplayer plugin library (development files)
 ii  libalsaplayer0                   0.99.81-1+b1                      armhf        alsaplayer plugin library
+ii  libapache2-mod-php5              5.6.22+dfsg-0+deb8u1              armhf        server-side, HTML-embedded scripting language (Apache 2 module)
 ii  libapr1:armhf                    1.5.1-3                           armhf        Apache Portable Runtime Library
 ii  libaprutil1:armhf                1.5.4-1                           armhf        Apache Portable Runtime Utility Library
 ii  libaprutil1-dbd-sqlite3:armhf    1.5.4-1                           armhf        Apache Portable Runtime Utility Library - SQLite3 Driver
@@ -390,6 +391,7 @@ ii  libnl-genl-3-200:armhf           3.2.24-2                          armhf    
 ii  libnss-mdns:armhf                0.10-6                            armhf        NSS module for Multicast DNS name resolution
 ii  libntdb1:armhf                   1.0-5                             armhf        New Trivial Database - shared library
 ii  libogg0:armhf                    1.3.2-1                           armhf        Ogg bitstream library
+ii  libonig2:armhf                   5.9.5-3.2                         armhf        Oniguruma regular expressions library
 ii  libopenal-data                   1:1.15.1-5                        all          Software implementation of the OpenAL audio API (data files)
 ii  libopenal1:armhf                 1:1.15.1-5                        armhf        Software implementation of the OpenAL audio API (shared library)
 ii  libopenjpeg5:armhf               1:1.5.2-3                         armhf        JPEG 2000 image compression/decompression library - runtime
@@ -415,6 +417,7 @@ ii  libpcap0.8:armhf                 1.6.2-2                           armhf    
 ii  libpci3:armhf                    1:3.2.1-3                         armhf        Linux PCI Utilities (shared library)
 ii  libpcre3:armhf                   2:8.35-3.3                        armhf        Perl 5 Compatible Regular Expression Library - runtime files
 ii  libpcsclite1:armhf               1.8.13-1                          armhf        Middleware to access a smart card using PC/SC (library)
+ii  libperl4-corelibs-perl           0.003-1                           all          libraries historically supplied with Perl 4
 ii  libpipeline1:armhf               1.4.0-1                           armhf        pipeline manipulation library
 ii  libpixman-1-0:armhf              0.33.3+git20151011-7de61d8-rpi1   armhf        pixel-manipulation library for X and cairo
 ii  libpng12-0:armhf                 1.2.50-2+deb8u1                   armhf        PNG library - runtime
@@ -430,6 +433,7 @@ ii  libpython-stdlib:armhf           2.7.9-1                           armhf    
 ii  libpython2.7:armhf               2.7.9-2                           armhf        Shared Python runtime library (version 2.7)
 ii  libpython2.7-minimal:armhf       2.7.9-2                           armhf        Minimal subset of the Python language (version 2.7)
 ii  libpython2.7-stdlib:armhf        2.7.9-2                           armhf        Interactive high-level object-oriented language (standard library, version 2.7)
+ii  libqdbm14                        1.8.78-5+b1                       armhf        QDBM Database Libraries without GDBM wrapper[runtime]
 ii  libquvi-scripts                  0.4.21-2                          all          library for parsing video download links (Lua scripts)
 ii  libquvi7:armhf                   0.4.1-3                           armhf        library for parsing video download links (runtime libraries)
 ii  libraspberrypi-bin               1.20151118-1                      armhf        Miscellaneous Raspberry Pi utilities
@@ -579,6 +583,7 @@ ii  login                            1:4.2-3                           armhf    
 ii  logrotate                        3.8.7-1                           armhf        Log rotation utility
 ii  lsb-base                         4.1+Debian13+rpi1+nmu1            all          Linux Standard Base 4.1 init script functionality
 ii  lshw                             02.17-1.1                         armhf        information about hardware configuration
+ii  lsof                             4.86+dfsg-1                       armhf        Utility to list open files
 ii  lua5.1                           5.1.5-7.1                         armhf        Simple, extensible, embeddable programming language
 ii  luajit                           2.0.3+dfsg-3                      armhf        Just in time compiler for Lua programming language version 5.1
 ii  make                             4.0-8.1                           armhf        utility for directing compilation
@@ -622,6 +627,11 @@ ii  pciutils                         1:3.2.1-3                         armhf    
 ii  perl                             5.20.2-3+deb8u1                   armhf        Larry Wall's Practical Extraction and Report Language
 ii  perl-base                        5.20.2-3+deb8u1                   armhf        minimal Perl system
 ii  perl-modules                     5.20.2-3+deb8u1                   all          Core Perl modules
+ii  php5                             5.6.22+dfsg-0+deb8u1              all          server-side, HTML-embedded scripting language (metapackage)
+ii  php5-cli                         5.6.22+dfsg-0+deb8u1              armhf        command-line interpreter for the php5 scripting language
+ii  php5-common                      5.6.22+dfsg-0+deb8u1              armhf        Common files for packages built from the php5 source
+ii  php5-json                        1.3.6-1                           armhf        JSON module for php5
+ii  php5-readline                    5.6.22+dfsg-0+deb8u1              armhf        Readline module for php5
 ii  pkg-config                       0.28-1                            armhf        manage compile and link flags for libraries
 ii  plymouth                         0.9.0-9                           armhf        boot animation, logger and I/O multiplexer
 ii  procps                           2:3.3.9-9                         armhf        /proc file system utilities

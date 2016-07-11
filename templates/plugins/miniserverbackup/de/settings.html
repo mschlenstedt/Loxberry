@@ -69,59 +69,11 @@
         </tr>
         <tr>
           <td width="25%">
-          <label id="labelbkpcount">Anzahl Backups im Archiv:</label>
+          <label id="labelbkpcounts">Anzahl Backups im Archiv speichern:</label>
           </td>
           <td width="50%">
-	    <select id="bkpcount" name="bkpcounts" data-mini="true">
-              <option value="1" <!--$selectedcounts1-->>1 Archiv</option>
-              <option value="2" <!--$selectedcounts2-->>2 Archive</option>
-              <option value="3" <!--$selectedcounts3-->>3 Archive</option>
-              <option value="4" <!--$selectedcounts4-->>4 Archive</option>
-              <option value="5" <!--$selectedcounts5-->>5 Archive</option>
-              <option value="6" <!--$selectedcounts6-->>6 Archive</option>
-              <option value="7" <!--$selectedcounts7-->>7 Archive</option>
-              <option value="8" <!--$selectedcounts8-->>8 Archive</option>
-              <option value="9" <!--$selectedcounts9-->>9 Archive</option>
-              <option value="10" <!--$selectedcounts10-->>10 Archive</option>
-              <option value="11" <!--$selectedcounts11-->>11 Archive</option>
-              <option value="12" <!--$selectedcounts12-->>12 Archive</option>
-              <option value="13" <!--$selectedcounts13-->>13 Archive</option>
-              <option value="14" <!--$selectedcounts14-->>14 Archive</option>
-              <option value="15" <!--$selectedcounts15-->>15 Archive</option>
-              <option value="16" <!--$selectedcounts16-->>16 Archive</option>
-              <option value="17" <!--$selectedcounts17-->>17 Archive</option>
-              <option value="18" <!--$selectedcounts18-->>18 Archive</option>
-              <option value="19" <!--$selectedcounts19-->>19 Archive</option>
-              <option value="20" <!--$selectedcounts20-->>20 Archive</option>
-              <option value="21" <!--$selectedcounts21-->>21 Archive</option>
-              <option value="22" <!--$selectedcounts22-->>22 Archive</option>
-              <option value="23" <!--$selectedcounts23-->>23 Archive</option>
-              <option value="24" <!--$selectedcounts24-->>24 Archive</option>
-              <option value="25" <!--$selectedcounts25-->>25 Archive</option>
-              <option value="26" <!--$selectedcounts26-->>26 Archive</option>
-              <option value="27" <!--$selectedcounts27-->>27 Archive</option>
-              <option value="28" <!--$selectedcounts28-->>28 Archive</option>
-              <option value="29" <!--$selectedcounts29-->>29 Archive</option>
-              <option value="30" <!--$selectedcounts30-->>30 Archive</option>
-              <option value="31" <!--$selectedcounts31-->>31 Archive</option>
-              <option value="32" <!--$selectedcounts32-->>32 Archive</option>
-              <option value="33" <!--$selectedcounts33-->>33 Archive</option>
-              <option value="34" <!--$selectedcounts34-->>34 Archive</option>
-              <option value="35" <!--$selectedcounts35-->>35 Archive</option>
-              <option value="36" <!--$selectedcounts36-->>36 Archive</option>
-              <option value="37" <!--$selectedcounts37-->>37 Archive</option>
-              <option value="38" <!--$selectedcounts38-->>38 Archive</option>
-              <option value="39" <!--$selectedcounts39-->>39 Archive</option>
-              <option value="40" <!--$selectedcounts40-->>40 Archive</option>
-              <option value="41" <!--$selectedcounts41-->>41 Archive</option>
-              <option value="42" <!--$selectedcounts42-->>42 Archive</option>
-              <option value="43" <!--$selectedcounts43-->>43 Archive</option>
-              <option value="44" <!--$selectedcounts44-->>44 Archive</option>
-              <option value="45" <!--$selectedcounts45-->>45 Archive</option>
-              <option value="46" <!--$selectedcounts46-->>46 Archive</option>
-              <option value="47" <!--$selectedcounts47-->>47 Archive</option>
-              <option value="48" <!--$selectedcounts48-->>48 Archive</option>
-            </select>
+          <input id="bkpcounts" name="bkpcounts" type="text" data-validation="number" data-validation-allowing="range[1;200]" class="textfield"
+          value="<!--$bkpcounts-->" data-validation-error-msg="* BItte eine Zahl zwischen 1 und 200 eingeben.i Diese Anzahl an (alten) Backup-Dateien wird zum Download bereitgestellt. Ältere Archive werden gelöscht.">
           </td>
           <td width="5%" valign="middle">
           &nbsp;

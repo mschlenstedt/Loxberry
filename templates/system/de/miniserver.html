@@ -6,7 +6,7 @@
     <!-- text -->
     <div style="margin: 5%;">
 
-      <form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
+      <form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniservers.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
@@ -20,7 +20,7 @@
           Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
           </td>
           <td width="5%">
-          <button id="btnnetscan" class="ui-btn ui-btn-b ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-check"><font size="-1">Scan</font></button>
+          <a id="btnnetscan" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#"><font size="-1">Scan</font>
           </td>
           <td width="20%">
           <font size="-1"><div id="testurl"></div></font>
@@ -96,7 +96,6 @@
       <button type="submit" form="main_form2" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Speichern</button>
       </center>
       </p>
-
 
     </div>
     <!-- /text -->
