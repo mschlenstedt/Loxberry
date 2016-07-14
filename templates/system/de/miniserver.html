@@ -6,17 +6,17 @@
     <!-- text -->
     <div style="margin: 5%;">
 
-      <form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniservers.cgi">
+      <form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
         <tr>
           <td width="25%">
-          <label class="control-label" for="miniserverip">IP-Adresse:</label>
+          <label class="control-label" for="miniserverip">IP-Adresse oder Hostname:</label>
           </td>
           <td width="50%">
           <input id="miniserverip" name="miniserverip" type="text" class="textfield" data-validation="custom" value="<!--$miniserverip-->"
-          data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
+          data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse oder gültigen Hostnamen eingegeben zu haben.
           Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
           </td>
           <td width="5%">
