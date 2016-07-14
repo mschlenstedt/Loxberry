@@ -74,7 +74,7 @@ our $phraseplugin;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.3";
+$version = "0.0.4";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -330,6 +330,12 @@ exit;
 #####################################################
 
 sub log {
+
+if (!-e "$installfolder/log/plugins/miniserverbackup/backuplog.log") {
+  $error = $phraseplugin->param("TXT0004");
+  &error;
+  exit;
+}
 
 print "Content-Type: text/plain\n\n";
 open(F,"$installfolder/log/plugins/miniserverbackup/backuplog.log") || die "Missing file /log/plugins/miniserverbackup/backuplog.log";

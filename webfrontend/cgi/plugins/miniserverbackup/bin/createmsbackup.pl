@@ -72,13 +72,14 @@ my $subfolder;
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.1";
+my $version = "0.0.2";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $miniserverip    = $cfg->param("MINISERVER.IPADDRESS");
 $miniserveradmin = $cfg->param("MINISERVER.ADMIN");
 $miniserverpass  = $cfg->param("MINISERVER.PASS");
+$miniserverpport = $cfg->param("MINISERVER.PORT");
 $wgetbin         = $cfg->param("BINARIES.WGET");
 $zipbin          = $cfg->param("BINARIES.ZIP");
 
@@ -106,7 +107,7 @@ eval {
   alarm(1);
   $response = $ua->get($url);
   if (!$response->is_success) {
-    $error = "Unable to fetch Firmware Version from Miniserver. Giving up.";
+    $errormessage = "Unable to fetch Firmware Version from Miniserver. Giving up.";
     &error;
     exit;
   } else {
@@ -116,7 +117,7 @@ eval {
 alarm(0);
 
 if (!$success) {
-    $error = "Unable to fetch Firmware Version from Miniserver. Giving up.";
+    $errormessage = "Unable to fetch Firmware Version from Miniserver. Giving up.";
     &error;
     exit;
 }
@@ -139,7 +140,7 @@ eval {
   alarm(1);
   $response = $ua->get($url);
   if (!$response->is_success) {
-    $error = "Unable to fetch FTP Port from Miniserver. Giving up.";
+    $errormessage = "Unable to fetch FTP Port from Miniserver. Giving up.";
     &error;
     exit;
   } else {
@@ -149,7 +150,7 @@ eval {
 alarm(0);
 
 if (!$success) {
-    $error = "Unable to fetch FTP Port from Miniserver. Giving up.";
+    $errormessage = "Unable to fetch FTP Port from Miniserver. Giving up.";
     &error;
     exit;
 }
@@ -233,7 +234,7 @@ if ($verbose) {
   $logmessage = "Cleaning up temporary and old stuff.";
   &log;
 }
-$output = qx(rm -r /tmp/Backup_*);
+$output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
 
 # Zuerst alle alten Dateien aus dem temporären Ordner löschen
 $i = 0;
@@ -297,7 +298,7 @@ sub error {
   $logmessage = "ERROR: $errormessage\n";
   &log;
   # Clean up /tmp folder
-  $output = qx(rm -r /tmp/Backup_*);
+  $output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
   exit;
 }
 

@@ -1,8 +1,3 @@
-Desired=Unknown/Install/Remove/Purge/Hold
-| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
-|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
-||/ Name                             Version                           Architecture Description
-+++-================================-=================================-============-===============================================================================
 ii  acl                              2.2.52-2                          armhf        Access control list utilities
 ii  adduser                          3.113+nmu3                        all          add and remove users and groups
 ii  alsa-utils                       1.0.28-1                          armhf        Utilities for configuring and using ALSA
@@ -395,7 +390,6 @@ ii  libonig2:armhf                   5.9.5-3.2                         armhf    
 ii  libopenal-data                   1:1.15.1-5                        all          Software implementation of the OpenAL audio API (data files)
 ii  libopenal1:armhf                 1:1.15.1-5                        armhf        Software implementation of the OpenAL audio API (shared library)
 ii  libopenjpeg5:armhf               1:1.5.2-3                         armhf        JPEG 2000 image compression/decompression library - runtime
-rc  libopts25:armhf                  1:5.18.4-3                        armhf        automated option processing library based on autogen
 ii  libopus0:armhf                   1.1-2                             armhf        Opus codec runtime library
 ii  liborc-0.4-0:armhf               1:0.4.22-1rpi1rpi1g               armhf        Library of Optimized Inner Loops Runtime Compiler
 ii  libp11-kit0:armhf                0.20.7-1                          armhf        Library for loading and coordinating access to PKCS#11 modules - runtime
@@ -611,7 +605,6 @@ ii  netcat-openbsd                   1.105-7                           armhf    
 ii  netcat-traditional               1.10-41                           armhf        TCP/IP swiss army knife
 ii  nfs-common                       1:1.2.8-9                         armhf        NFS support files common to client and server
 ii  nmap                             6.47-3                            armhf        The Network Mapper
-rc  ntp                              1:4.2.6.p5+dfsg-7+deb8u1          armhf        Network Time Protocol daemon and utility programs
 ii  ntpdate                          1:4.2.6.p5+dfsg-7+deb8u1          armhf        client for setting system time from NTP servers
 ii  openresolv                       3.5.2-1                           all          management framework for resolv.conf
 ii  openssh-client                   1:6.7p1-5                         armhf        secure shell (SSH) client, for secure access to remote machines
