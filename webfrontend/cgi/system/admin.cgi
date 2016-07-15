@@ -56,13 +56,14 @@ our $message;
 our $adminuserold = $ENV{REMOTE_USER};
 our $do;
 our $nexturl;
+our $salt;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple('../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -191,17 +192,18 @@ if ($? eq 0) {
 }
 
 # Debugging
-open(F,">/tmp/loxberry1");
- flock(F,2);
- print F "$output\n\n$adminpass1";
- flock(F,8);
-close(F);
+#open(F,">/tmp/loxberry1");
+# flock(F,2);
+# print F "$output\n\n$adminpass1";
+# flock(F,8);
+#close(F);
 
 # Save Username/Password for Webarea
-$adminpasscrypted = crypt($adminpass1,$adminpass1);
+$salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64];
+$adminpasscrypted = crypt($adminpass1,$salt);
 open(F,">$installfolder/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
  flock(F,2);
- print F "$adminuser:$adminpasscrypted";
+ print F "$adminuser\:$adminpasscrypted";
  flock(F,8);
 close(F);
 

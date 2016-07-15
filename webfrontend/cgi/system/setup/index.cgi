@@ -84,6 +84,7 @@ our $zeitzone;
 our $rootnewpassword;
 our $output;
 our $adminpasscrypted;
+our $salt;
 our $e;
 our $loxberrypasswdhtml;
 our $rootpasswdhtml;
@@ -95,7 +96,7 @@ our $http_host = $ENV{HTTP_HOST};
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+$version = "0.0.4";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -635,10 +636,11 @@ $step++;
 # Write configuration file(s)
 $cfg->param("BASE.STARTSETUP", "0");
 $cfg->param("BASE.LANG", "$lang");
-$cfg->param("MINISERVER.PORT", "$miniserverport");
-$cfg->param("MINISERVER.PASS", "$miniserverkennwort");
-$cfg->param("MINISERVER.ADMIN", "$miniserveruser");
-$cfg->param("MINISERVER.IPADDRESS", "$miniserverip");
+$cfg->param("BASE.MINISERVERS", "1");
+$cfg->param("MINISERVER1.PORT", "$miniserverport");
+$cfg->param("MINISERVER1.PASS", "$miniserverkennwort");
+$cfg->param("MINISERVER1.ADMIN", "$miniserveruser");
+$cfg->param("MINISERVER1.IPADDRESS", "$miniserverip");
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
 $cfg->param("TIMESERVER.METHOD", "$zeitserver");
 $cfg->param("TIMESERVER.ZONE", "$zeitzone");
@@ -652,7 +654,8 @@ $cfg->param("NETWORK.DNS", "$netzwerknameserver");
 $cfg->save();
 
 # Save Username/Password for Webarea
-$adminpasscrypted = crypt($adminpass1,$adminpass1);
+$salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64];
+$adminpasscrypted = crypt("$adminpass1","$salt");
 open(F,">$installfolder/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
  flock(F,2);
  print F "$adminuser:$adminpasscrypted";
@@ -668,22 +671,22 @@ if ($? eq 0) {
   $rootpasswdhtml = "<tr><td><b>" . $phrase->param("TXT0026") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>root</b></td><td>" . $phrase->param("TXT0024") . " <b>$rootnewpassword</b></td></tr>";
 }
 # Debugging
-open(F,">/tmp/root");
- flock(F,2);
- print F "$output\n\n$rootnewpassword";
- flock(F,8);
-close(F);
+#open(F,">/tmp/root");
+# flock(F,2);
+# print F "$output\n\n$rootnewpassword";
+# flock(F,8);
+#close(F);
 
 $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp loxberry $adminpass1);
 if ($? eq 0) {
   $loxberrypasswdhtml = "<tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
 }
 # Debugging
-open(F,">/tmp/loxberry");
- flock(F,2);
- print F "$output\n\n$adminpass1";
- flock(F,8);
-close(F);
+#open(F,">/tmp/loxberry");
+# flock(F,2);
+# print F "$output\n\n$adminpass1";
+# flock(F,8);
+#close(F);
 
 # Set Timezone and sync for the very first time
 $output = qx(sudo $installfolder/sbin/setdatetime.pl);
