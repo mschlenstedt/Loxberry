@@ -1,0 +1,76 @@
+<html>
+<head>
+  <title>
+
+  <!--$template_title-->
+
+  </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"> 
+  <link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.min.css">
+  <link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css">
+  <link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css"> 
+  <link rel="stylesheet" href="/system/css/main.css">
+  <script src="/system/scripts/jquery/jquery-1.8.2.min.js"></script>
+  <script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
+  <script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
+  <script src="/system/scripts/setup.js"></script>
+</head>
+<body>
+
+<!-- page -->
+<div data-role="page" id="main" data-dom-cache="false">
+
+  <!-- main menu panel -->
+  <div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true">
+  <ul data-role="listview" data-ajax="false" data-inset="true">
+    <li data-role="list-divider">System Settings</li>
+    <li><a href="/admin/system/admin.cgi?do=form">Admin-Account</a></li>
+    <li><a href="/admin/system/miniserver.cgi?do=form">Miniserver</a></li>
+    <li><a href="/admin/system/timeserver.cgi?do=form">System Time</a></li>
+    <li><a href="/admin/system/network.cgi?do=form">Network</a></li>
+    <li><a href="">UMTS-Access</a></li>
+    <li><a href="">Display</a></li>
+    <li><a href="">Update</a></li>
+    <li><a href="">Installation</a></li>
+    <li><a href="/admin/system/power.cgi">Reboot</a></li>
+    <li><a href="/admin/system/setup/index.cgi">Setup-Wizard</a></li>
+    <li data-role="list-divider">Plugins</li>
+    <li><a href="/admin/plugins/miniserverbackup/index.cgi?do=form">Miniserver Backup</a></li>
+  </ul>
+  </div>
+  <!-- /main menu panel -->
+
+  <!-- info panel -->
+  <div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true">
+    <h2>Help</h2>
+    <p><a href="
+
+    <!--$helplink-->
+
+    " target="blank">Detailed Help</a></p>
+    
+    <p>
+    <font size="-1">
+
+    <!--$helptext-->
+
+    </font>
+    </p>
+
+  </div>
+  <!-- /info panel -->
+
+  <!-- header -->
+  <div data-role="header" data-position="fixed" data-tap-toggle="false">
+    <h1>
+
+    <!--$template_title-->
+
+    </h1>
+    <a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext">Menu</a>
+    <a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext">Info</a>
+  </div>
+  <!-- /header -->
+
+  <!-- ************************************************************************************** -->
+

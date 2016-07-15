@@ -63,6 +63,9 @@ our $zeitzone;
 our $checked1;
 our $checked2;
 our $nexturl;
+our $datebin;
+our $systemdatetime;
+our $systemtimezone;
 
 ##########################################################################
 # Read Settings
@@ -77,6 +80,7 @@ $lang               = $cfg->param("BASE.LANG");
 $zeitserver         = $cfg->param("TIMESERVER.METHOD");
 $ntpserverurl       = $cfg->param("TIMESERVER.SERVER");
 $zeitzone           = $cfg->param("TIMESERVER.ZONE");
+$datebin            = $cfg->param("BINARIES.DATE");
 
 #########################################################################
 # Parameter
@@ -181,6 +185,11 @@ foreach (@lines){
   }
 }
 
+# Prepare current system date and time
+$systemdatetime = time()*1000;
+$systemtimezone = qx($datebin +"%Z");
+chomp($systemtimezone);
+
 print "Content-Type: text/html\n\n";
 
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
@@ -222,11 +231,15 @@ $cfg->param("TIMESERVER.METHOD", "$zeitserver");
 $cfg->param("TIMESERVER.ZONE", "$zeitzone");
 $cfg->save();
 
+# Trigger timesync
+$output = qx(sudo $installfolder/sbin/setdatetime.pl);
+$output = qx($datebin);
+
 print "Content-Type: text/html\n\n";
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
 $help = "timeserver";
 
-$message = $phrase->param("TXT0036");
+$message = $phrase->param("TXT0036") . $output;
 $nexturl = "/admin/index.cgi";
 
 # Print Template

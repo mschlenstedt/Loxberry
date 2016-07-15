@@ -95,7 +95,7 @@ our $http_host = $ENV{HTTP_HOST};
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -445,10 +445,10 @@ quotemeta($netzwerkgateway);
 quotemeta($netzwerknameserver);
 
 # Defaults for template
-if ($netzwerkanschluss eq "eth0") {
-  $checked1 = "checked\=\"checked\"";
-} else {
+if ($netzwerkanschluss eq "wlan0") {
   $checked2 = "checked\=\"checked\"";
+} else {
+  $checked1 = "checked\=\"checked\"";
 }
 
 if ($netzwerkadressen eq "manual") {
@@ -767,36 +767,6 @@ close(F);
 exit;
 
 }
-
-#####################################################
-# Step 7
-# Reboot
-#####################################################
-
-sub step7 {
-
-print "Content-Type: text/html\n\n";
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") . ": " . $phrase->param("TXT0022");
-$help = "setup07";
-
-# Print Template
-&header;
-open(F,"$installfolder/templates/system/$lang/setup/setup.step07.html") || die "Missing template system/$lang/setup/setup.step07.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-# Reboot
-$output = qx($rebootbin);
-
-
-exit;
-
-}
-
 
 exit;
 

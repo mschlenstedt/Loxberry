@@ -1,0 +1,45 @@
+#
+# Language phrases
+# EN 2016-07-15 09:09:22
+#
+TXT0000=LoxBerry Toolbox
+TXT0001=Yes
+TXT0002=No
+TXT0003=The Miniserver seems to be unreachable with the entered IP-Address or the Username and Password are invalid.
+TXT0004=Error in the Query.
+TXT0005=Localization via IP-Address
+TXT0006=Interface:
+TXT0007=Port:
+TXT0008=MAC Address:
+TXT0009=Network-Device
+TXT0010=Kerneldriver:
+TXT0011=Network
+TXT0012=Encrypted
+TXT0013=Speed
+TXT0014=Signal-Quality
+TXT0015=Signal-Strength
+TXT0016=No Wireless-LAN Hardware on Port wlan0 found. Please unplug all WLAN-Devices and reconnect them again.
+TXT0017=Initial Setup
+TXT0018=Administrator
+TXT0019=Miniserver
+TXT0020=Network
+TXT0021=Timeserver
+TXT0022=Installation
+TXT0023=User:
+TXT0024=Password:
+TXT0025=SSH-/Console-Login:
+TXT0026=Root-Account:
+TXT0027=Power-Options
+TXT0028=ERROR
+TXT0029=Confirmation
+TXT0030=The new account information have been successfully taken into account. These passwords were set:
+TXT0031=Web-Administration-Area:
+TXT0032=The entered old password seems to be incorrect.
+TXT0033=The System is shutting down and can be switched off.
+TXT0034=The System is rebooting. This can take a few seconds.
+TXT0035=Your Miniserver-Data have been stored without problems.
+TXT0036=Timeserver-Settings stored. The current systemtime is:<br><br>
+TXT0037=Network-Setting successfully saved. They will be taken into account after a System reboot.
+TXT0038=On
+TXT0039=Off
+TXT0040=Miniserver-Backup

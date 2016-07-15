@@ -69,6 +69,25 @@
           </td>
         </tr>
         <tr>
+          <td width="25%">
+          <label id="labelzeitzone">Aktuelle Systemzeit:</label>
+          </td>
+          <td width="50%" align="center">
+          <div id="time"></div>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
           <td></td>
           <td colspan=3>
           <div id="form-error-message" class="form-error-message"></div>
@@ -105,6 +124,9 @@
   // Disable some options on Load depending on selected value
   disable();
 
+  // Prepare System Time/Date on Load
+  uhrzeitanzeige('<!--$systemdatetime-->');
+
   // Disable some options on click depending on selected value
   function disable() {
     // Miniserver or NTP
@@ -118,6 +140,32 @@
       $('#ntpserverurl').removeClass('ui-disabled');
       $('#linkntpurls').removeClass('ui-disabled');
     }
+  }
+
+  function uhrzeitanzeige(szeit) {
+    var czeit = new Date();
+    var offset = czeit.getTime()-szeit;
+    var gib_zeit = function(dateobj) {
+      var d = dateobj.getDate();
+      if (d < 10) { d = '0'+d; }
+      var mo = dateobj.getMonth();
+      if (mo < 10) { mo = '0'+mo; }
+      var y = dateobj.getFullYear();
+      var h = dateobj.getHours();
+      if (h < 10) { h = '0'+h; }
+      var m = dateobj.getMinutes();
+      if (m < 10) { m = '0'+m; }
+      var s = dateobj.getSeconds();
+      if (s < 10) { s = '0'+s; }
+      return d+'.'+mo+'.'+y+' um '+h+':'+m+':'+s+' <!--$systemtimezone-->';
+    };
+    var zeit_aktualisieren = function(offset) {
+      czeit = new Date();
+      czeit.setTime(czeit.getTime()+offset);
+      document.getElementById('time').innerHTML = gib_zeit(czeit);
+      window.setTimeout(function () {zeit_aktualisieren(offset);},1000);
+    };
+    zeit_aktualisieren(offset);
   }
 
   </script>
