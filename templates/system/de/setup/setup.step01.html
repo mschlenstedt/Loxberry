@@ -23,14 +23,15 @@
           <label class="control-label" for="adminuser">Benutzername:</label>
           </td>
           <td width="50%">
-          <input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20"
+          <input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length letternumeric" data-validation-length="3-20"
+          data-validation-allowing="-_" 
           data-validation-error-msg="* Der Benutzername muss 3-20 Zeichen lang sein und aus alphanumerischen Zeichen bestehen<br>" value="<!--$adminuser-->">
           </td>
           <td width="3%">
           &nbsp;
           </td>
           <td width="22%">
-          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9</font>
+          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_</font>
           </td>
         </tr>
         <tr>
@@ -38,7 +39,7 @@
           <label>Passwort:</label>
           </td>
           <td>
-          <input name="adminpass1" type="password" data-validation="strength alphanumeric" data-validation-allowing="-_,.;:!?&()?+§%="
+          <input name="adminpass1" type="password" data-validation="strength letternumeric" data-validation-allowing="-_,.;:!?&()?+§%="
            data-validation-strength="2" class="textfield" value="<!--$adminpass1-->"
           data-validation-error-msg="* Das Passwort muss aus Gross- und Kleinbuchstaben sowie aus Buchstaben und Zahlen und min. 5 Zeichen bestehen. Es
           d&uuml;rfen nur folgende Sonderzeichen verwendet werden: -_,.;:!?&()?+§%=">

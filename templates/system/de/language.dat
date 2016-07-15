@@ -4,7 +4,7 @@
 TXT0000=LoxBerry Toolbox
 TXT0001=Ja
 TXT0002=Nein
-TXT0003=Der Miniserver scheint unter der angegebenen IP-Adresse nicht erreichbar zu sein oder Benutzername und Passwort sind nicht korrekt.
+TXT0003=Der Miniserver scheint unter der angegebenen IP-Adresse/Hostnamen nicht erreichbar zu sein oder Benutzername und Passwort sind nicht korrekt.
 TXT0004=Fehler in der Abfrage.
 TXT0005=Lokalisierung über IP-Adresse
 TXT0006=Interface:
@@ -37,7 +37,7 @@ TXT0032=Das angegebene alte Passwort scheint nicht korrekt zu sein.
 TXT0033=Das System wird nun heruntergefahren und kann ausgeschaltet werden.
 TXT0034=Das System wird nun neu gestartet. Das kann einige Sekunden dauern.
 TXT0035=Die Daten Deines Miniservers wurden erfolgreich gespeichert.
-TXT0036=Die Einstellungen zum Zeitserver wurden erfolgreich gespeichert.
+TXT0036=Die Einstellungen zum Zeitserver wurden erfolgreich gespeichert. Die Systemzeit ist nun:<br><br>
 TXT0037=Die Netzwerk-Einstellungen wurden erfolgreich gespeichert. Sie werden erst nach einem Neustart aktiviert.
 TXT0038=An
 TXT0039=Aus
