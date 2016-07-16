@@ -1,0 +1,55 @@
+  <!-- content -->
+
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+      <h2>6th Step: Installation completed - Reboot required</h2>
+      <p>
+      Congratulations! Your Loxberry is installed!
+      </p>
+
+      <p>
+      To activate all settings a Reboot is required. Please click on the button below. <b>WARNING!</b> Please memorize
+      the new passwords or print them! The passwords are not readable anymore after the reboot. A reset of the root 
+      password is not possible if you forget the password.
+      </p>
+
+      <div class="ui-corner-all custom-corners">
+        <div class="ui-bar ui-bar-a">
+          <h3>Important!</h3>
+        </div>
+        <div class="ui-body ui-body-a">
+          <p>
+          The following new passwords will be used:<br><br>
+          <table border=0 cellpadding=10>
+            <tr><td><b>Web-Admin-Area:</b></td><td>User: <b><!--$adminuser--></b></td><td> Password: <b><!--$adminpass1--></b></td></tr>
+            <!--$loxberrypasswdhtml-->
+            <!--$rootpasswdhtml-->
+          </table>
+          </p>
+        </div>
+      </div>
+
+      <p>
+      <center>
+      <a id="btnreboot" data-role="button" data-inline="true" data-icon="recycle" href="http://<!--$adminuser-->:<!--$adminpass1-->@<!--$http_host-->/admin/system/power.cgi?do=reboot">Reboot</a>
+      </center>
+      </p>
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+
+  <script>
+  var $messages = $('#form-error-message');
+  $.validate({
+    modules : 'security',
+    errorMessagePosition : $messages,
+  });
+  </script>
+
+  <!-- /content -->

@@ -1,0 +1,69 @@
+  <!-- content -->
+
+
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+
+      <form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data">
+      <div class="form-group">
+        <table class="formtable" border="0" width="100%">
+        <tr>
+          <td width="25%">
+          <label id="labeluploadfile">Plugin-Setupfile:</label>
+          </td>
+          <td width="50%">
+          <input type="file" name="uploadfile">
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td colspan=3>
+          <div id="form-error-message" class="form-error-message"></div>
+          </td>
+        </tr>
+        </table>
+      </div>
+      </form>
+
+      <p>
+      &nbsp;
+      </p>
+
+      <p>
+      <center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
+      <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Install</button>
+      </center>
+      </p>
+
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+
+  <script>
+  var $messages = $('#form-error-message');
+  $.validate({
+    modules : 'security',
+    errorMessagePosition : $messages,
+  });
+
+  </script>
+
+  <!-- /content -->
