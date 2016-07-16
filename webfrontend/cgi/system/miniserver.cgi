@@ -61,6 +61,23 @@ my  $urlstatus;
 my  $urlstatuscode;
 our $nexturl;
 
+  $next = 1;
+  $i = 1;
+  while ($next) {
+    ${option1name_.$i} = param(option1name_.$i);
+    if (!${option1name_.$i}) {
+      $next = 0;
+      last;
+    } else {
+      ${option1price_.$i} = param(option1price_.$i);
+      ${option1mymapsno_.$i} = param(option1mymapsno_.$i);
+      ${option1sendlicence_.$i} = param(option1sendlicence_.$i);
+      ${option1emailtemplate_.$i} = param(option1emailtemplate_.$i);
+    }
+    $i++;
+  }
+  $option1count = $i - 1;
+
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -283,7 +300,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
   open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

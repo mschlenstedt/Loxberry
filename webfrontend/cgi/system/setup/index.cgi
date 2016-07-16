@@ -64,10 +64,10 @@ my $urlstatuscode;
 our $adminuser;
 our $adminpass1;
 our $adminpass2;
-our $miniserverip;
-our $miniserverport;
-our $miniserveruser;
-our $miniserverkennwort;
+our $miniserverip1;
+our $miniserverport1;
+our $miniserveruser1;
+our $miniserverkennwort1;
 our $netzwerkanschluss;
 our $netzwerkssid;
 our $netzwerkschluessel;
@@ -126,10 +126,10 @@ $saveformdata         = param('saveformdata');
 $adminuser            = param('adminuser');
 $adminpass1           = param('adminpass1');
 $adminpass2           = param('adminpass2');
-$miniserverip         = param('miniserverip');
-$miniserverport       = param('miniserverport');
-$miniserveruser       = param('miniserveruser');
-$miniserverkennwort   = param('miniserverkennwort');
+$miniserverip1        = param('miniserverip1');
+$miniserverport1      = param('miniserverport1');
+$miniserveruser1      = param('miniserveruser1');
+$miniserverkennwort1  = param('miniserverkennwort1');
 $netzwerkanschluss    = param('netzwerkanschluss');
 $netzwerkssid         = param('netzwerkssid');
 $netzwerkschluessel   = param('netzwerkschluessel');
@@ -347,26 +347,26 @@ sub step2 {
 if ($saveformdata) {
   $session->param("adminuser", $adminuser);
   $session->param("adminpass1", $adminpass1);
-  $session->param("miniserverip", $miniserverip);
-  $session->param("miniserverport", $miniserverport);
-  $session->param("miniserveruser", $miniserveruser);
-  $session->param("miniserverkennwort", $miniserverkennwort);
+  $session->param("miniserverip1", $miniserverip1);
+  $session->param("miniserverport1", $miniserverport1);
+  $session->param("miniserveruser1", $miniserveruser1);
+  $session->param("miniserverkennwort1", $miniserverkennwort1);
 }
 
 # Read data from Session file
-$miniserverip       = $session->param("miniserverip");
-$miniserverport     = $session->param("miniserverport");
-$miniserveruser     = $session->param("miniserveruser");
-$miniserverkennwort = $session->param("miniserverkennwort");
+$miniserverip1       = $session->param("miniserverip1");
+$miniserverport1     = $session->param("miniserverport1");
+$miniserveruser1     = $session->param("miniserveruser1");
+$miniserverkennwort1 = $session->param("miniserverkennwort1");
 
 # Filter
-quotemeta($miniserverip);
-quotemeta($miniserverport);
-quotemeta($miniserveruser);
-quotemeta($miniserverkennwort);
+quotemeta($miniserverip1);
+quotemeta($miniserverport1);
+quotemeta($miniserveruser1);
+quotemeta($miniserverkennwort1);
 
 # Default values
-if (!$miniserverport) {$miniserverport = "80";}
+if (!$miniserverport1) {$miniserverport1 = "80";}
 
 $step++;
 
@@ -398,13 +398,13 @@ sub step3 {
 
 # Store submitted data in session file
 if ($saveformdata) {
-  $session->param("miniserverip", $miniserverip);
-  $session->param("miniserverport", $miniserverport);
-  $session->param("miniserveruser", $miniserveruser);
-  $session->param("miniserverkennwort", $miniserverkennwort);
+  $session->param("miniserverip1", $miniserverip1);
+  $session->param("miniserverport1", $miniserverport1);
+  $session->param("miniserveruser1", $miniserveruser1);
+  $session->param("miniserverkennwort1", $miniserverkennwort1);
 
   # Test if Miniserver is reachable
-  $url = "http://$miniserveruser:$miniserverkennwort\@$miniserverip\:$miniserverport/dev/cfg/version";
+  $url = "http://$miniserveruser1:$miniserverkennwort1\@$miniserverip1\:$miniserverport1/dev/cfg/version";
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
   local $SIG{ALRM} = sub { die };
@@ -592,33 +592,33 @@ exit;
 sub step6 {
 
 # Read data from Session file
-$adminuser          = $session->param("adminuser");
-$adminpass1         = $session->param("adminpass1");
-$adminpass2         = $session->param("adminpass1");
-$miniserverip       = $session->param("miniserverip");
-$miniserverport     = $session->param("miniserverport");
-$miniserveruser     = $session->param("miniserveruser");
-$miniserverkennwort = $session->param("miniserverkennwort");
-$netzwerkanschluss  = $session->param("netzwerkanschluss");
-$netzwerkssid       = $session->param("netzwerkssid");
-$netzwerkschluessel = $session->param("netzwerkschluessel");
-$netzwerkadressen   = $session->param("netzwerkadressen");
-$netzwerkipadresse  = $session->param("netzwerkipadresse");
-$netzwerkipmaske    = $session->param("netzwerkipmaske");
-$netzwerkgateway    = $session->param("netzwerkgateway");
-$netzwerknameserver = $session->param("netzwerknameserver");
-$zeitserver         = $session->param("zeitserver");
-$ntpserverurl       = $session->param("ntpserverurl");
-$zeitzone           = $session->param("zeitzone");
+$adminuser           = $session->param("adminuser");
+$adminpass1          = $session->param("adminpass1");
+$adminpass2          = $session->param("adminpass1");
+$miniserverip1       = $session->param("miniserverip1");
+$miniserverport1     = $session->param("miniserverport1");
+$miniserveruser1     = $session->param("miniserveruser1");
+$miniserverkennwort1 = $session->param("miniserverkennwort1");
+$netzwerkanschluss   = $session->param("netzwerkanschluss1");
+$netzwerkssid        = $session->param("netzwerkssid");
+$netzwerkschluessel  = $session->param("netzwerkschluessel");
+$netzwerkadressen    = $session->param("netzwerkadressen");
+$netzwerkipadresse   = $session->param("netzwerkipadresse");
+$netzwerkipmaske     = $session->param("netzwerkipmaske");
+$netzwerkgateway     = $session->param("netzwerkgateway");
+$netzwerknameserver  = $session->param("netzwerknameserver");
+$zeitserver          = $session->param("zeitserver");
+$ntpserverurl        = $session->param("ntpserverurl");
+$zeitzone            = $session->param("zeitzone");
 
 # Filter
 quotemeta($adminuser);
 quotemeta($adminpass1);
 quotemeta($adminpass2);
-quotemeta($miniserverip);
-quotemeta($miniserverport);
-quotemeta($miniserveruser);
-quotemeta($miniserverkennwort);
+quotemeta($miniserverip1);
+quotemeta($miniserverport1);
+quotemeta($miniserveruser1);
+quotemeta($miniserverkennwort1);
 quotemeta($netzwerkanschluss);
 quotemeta($netzwerkssid);
 quotemeta($netzwerkschluessel);
@@ -637,10 +637,10 @@ $step++;
 $cfg->param("BASE.STARTSETUP", "0");
 $cfg->param("BASE.LANG", "$lang");
 $cfg->param("BASE.MINISERVERS", "1");
-$cfg->param("MINISERVER1.PORT", "$miniserverport");
-$cfg->param("MINISERVER1.PASS", "$miniserverkennwort");
-$cfg->param("MINISERVER1.ADMIN", "$miniserveruser");
-$cfg->param("MINISERVER1.IPADDRESS", "$miniserverip");
+$cfg->param("MINISERVER1.PORT", "$miniserverport1");
+$cfg->param("MINISERVER1.PASS", "$miniserverkennwort1");
+$cfg->param("MINISERVER1.ADMIN", "$miniserveruser1");
+$cfg->param("MINISERVER1.IPADDRESS", "$miniserverip1");
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
 $cfg->param("TIMESERVER.METHOD", "$zeitserver");
 $cfg->param("TIMESERVER.ZONE", "$zeitzone");
@@ -811,7 +811,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
   open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

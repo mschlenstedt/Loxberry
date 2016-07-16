@@ -200,7 +200,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helplink = "http://www.loxwiki.eu/display/LOX/Loxone+Community+Wiki";
   open(F,"$installdir/templates/system/$lang/help/$help.html") || die "Missing template admin/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

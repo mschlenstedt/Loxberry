@@ -429,7 +429,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "/help/";
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
   open(F,"$installfolder/templates/plugins/miniserverbackup/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
     @help = <F>;
     foreach (@help){
