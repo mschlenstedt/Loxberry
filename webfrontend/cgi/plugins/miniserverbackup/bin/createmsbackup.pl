@@ -32,61 +32,63 @@ use File::HomeDir;
 # Variables
 ##########################################################################
 
-my $cfg;
-my $miniserverip;
-my $miniserverport;
-my $miniserveradmin;
-my $miniserverpass;
-my $url;
-my $ua;
-my $response;
-my $error;
-my $rawxml;
-my $xml;
-my @fields;
-my $mainver;
-my $subver;
-my $monver;
-my $dayver;
-my $miniserverftpport;
-my $wgetbin;
-my $zipbin;
-my $diryear;
-my $dirmday;
-my $dirhour;
-my $dirmin;
-my $dirsec;
-my $dirwday;
-my $diryday;
-my $dirisdst;
-my $bkpdir;
-my $verbose;
-my $maxfiles;
-my $installfolder;
-my $home = File::HomeDir->my_home;
-my @Eintraege;
-my $subfolder;
+our $cfg;
+our $pcfg;
+our $miniserverip;
+our $miniserverport;
+our $miniserveradmin;
+our $miniserverpass;
+our $miniservers;
+our $url;
+our $ua;
+our $response;
+our $error;
+our $rawxml;
+our $xml;
+our @fields;
+our $mainver;
+our $subver;
+our $monver;
+our $dayver;
+our $miniserverftpport;
+our $wgetbin;
+our $zipbin;
+our $diryear;
+our $dirmday;
+our $dirhour;
+our $dirmin;
+our $dirsec;
+our $dirwday;
+our $diryday;
+our $dirisdst;
+our $bkpdir;
+our $verbose;
+our $maxfiles;
+our $installfolder;
+our $home = File::HomeDir->my_home;
+our @Eintraege;
+our @files;
+our $subfolder;
+our $i;
+our $msno;
 
 ##########################################################################
 # Read Configuration
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.2";
+my $version = "0.0.3";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-$miniserverip    = $cfg->param("MINISERVER.IPADDRESS");
-$miniserveradmin = $cfg->param("MINISERVER.ADMIN");
-$miniserverpass  = $cfg->param("MINISERVER.PASS");
-$miniserverpport = $cfg->param("MINISERVER.PORT");
+$miniservers     = $cfg->param("BASE.MINISERVERS");
 $wgetbin         = $cfg->param("BINARIES.WGET");
 $zipbin          = $cfg->param("BINARIES.ZIP");
 
-$cfg             = new Config::Simple("$installfolder/config/plugins/miniserverbackup/miniserverbackup.cfg");
-$verbose         = $cfg->param("MSBACKUP.VERBOSE");
-$maxfiles        = $cfg->param("MSBACKUP.MAXFILES");
-$subfolder       = $cfg->param("MSBACKUP.SUBFOLDER");
+$pcfg            = new Config::Simple("$installfolder/config/plugins/miniserverbackup/miniserverbackup.cfg");
+$verbose         = $pcfg->param("MSBACKUP.VERBOSE");
+$maxfiles        = $pcfg->param("MSBACKUP.MAXFILES");
+$subfolder       = $pcfg->param("MSBACKUP.SUBFOLDER");
 
 ##########################################################################
 # Main program
@@ -98,170 +100,190 @@ if ($verbose) {
   &log;
 }
 
-# Get Firmware Version from Miniserver
-$url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
-$ua = LWP::UserAgent->new;
-$ua->timeout(1);
-local $SIG{ALRM} = sub { die };
-eval {
-  alarm(1);
-  $response = $ua->get($url);
-  if (!$response->is_success) {
-    $errormessage = "Unable to fetch Firmware Version from Miniserver. Giving up.";
-    &error;
-    exit;
-  } else {
-    $success = 1;
-  }
-};
-alarm(0);
+# Start Backup of all Miniservers
+for($msno = 1; $msno <= $miniservers; $msno++) {
 
-if (!$success) {
-    $errormessage = "Unable to fetch Firmware Version from Miniserver. Giving up.";
-    &error;
-    exit;
-}
-$success = 0;
- 
-$rawxml = $response->decoded_content();
-$xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
-@fields = split(/\./,$xml->{value});
-$mainver = sprintf("%02d", $fields[0]);
-$subver  = sprintf("%02d", $fields[1]);
-$monver  = sprintf("%02d", $fields[2]);
-$dayver  = sprintf("%02d", $fields[3]);
-
-# Get FTP Port from Miniserver
-$url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ftp";
-$ua = LWP::UserAgent->new;
-$ua->timeout(1);
-local $SIG{ALRM} = sub { die };
-eval {
-  alarm(1);
-  $response = $ua->get($url);
-  if (!$response->is_success) {
-    $errormessage = "Unable to fetch FTP Port from Miniserver. Giving up.";
-    &error;
-    exit;
-  } else {
-    $success = 1;
-  }
-};
-alarm(0);
-
-if (!$success) {
-    $errormessage = "Unable to fetch FTP Port from Miniserver. Giving up.";
-    &error;
-    exit;
-}
-$success = 0;
- 
-$rawxml = $response->decoded_content();
-$xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
-$miniserverftpport = $xml->{value};
-
-# Backing up to temorary directory
-($dirsec,$dirmin,$dirhour,$dirmday,$dirmon,$diryear,$dirwday,$diryday,$dirisdst) = localtime();
-$diryear = $diryear+1900;
-$dirmon = $dirmon+1;
-$dirmon = sprintf("%02d", $dirmon);
-$dirmday = sprintf("%02d", $dirmday);
-$dirhour = sprintf("%02d", $dirhour);
-$dirmin = sprintf("%02d", $dirmin);
-$dirsec = sprintf("%02d", $dirsec);
-
-# Create temporary dir
-$bkpdir = "Backup_$miniserverip\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
-$response = mkdir("/tmp/$bkpdir",0777);
-if ($response == 0) {
-  $errormessage = "Could not create temporary folder /tmp/$bkpdir. Giving up.";
-  &error;
-  exit;
-}
-if ($verbose) {
-  $logmessage = "Temporary folder created: /tmp/$bkpdir.";
+  $logmessage = "Starting Backup for Miniserver $i";
   &log;
-}
 
-# Download files from Miniserver
-# /log
-$url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/log";
-&download;
-# /prog
-$url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/prog";
-&download;
-# /stats
-$url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/stats";
-&download;
-# /temp
-$url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/temp";
-&download;
-# /update
-$url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/update";
-&download;
-# /web
-$url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/web";
-&download;
+  $miniserverip    = $cfg->param("MINISERVER$msno.IPADDRESS");
+  $miniserveradmin = $cfg->param("MINISERVER$msno.ADMIN");
+  $miniserverpass  = $cfg->param("MINISERVER$msno.PASS");
+  $miniserverpport = $cfg->param("MINISERVER$msno.PORT");
 
-# Zipping
-$output = qx(cd /tmp && $zipbin -q -p -r $bkpdir.zip $bkpdir);
-if ($? ne 0) {
-  $errormessage = "Error while zipping the Backup. Errorcode: $?. Giving up.";
-  &error;
-  exit;
-} else {
+  # Get Firmware Version from Miniserver
+  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
+  $ua = LWP::UserAgent->new;
+  $ua->timeout(1);
+  local $SIG{ALRM} = sub { die };
+  eval {
+    alarm(1);
+    $response = $ua->get($url);
+    if (!$response->is_success) {
+      $errormessage = "Unable to fetch Firmware Version from Miniserver $i. Giving up.";
+      &error;
+      next;
+    } else {
+      $success = 1;
+    }
+  };
+  alarm(0);
+
+  if (!$success) {
+    $errormessage = "Unable to fetch Firmware Version from Miniserver $i. Giving up.";
+    &error;
+    next;
+  }
+  $success = 0;
+ 
+  $rawxml = $response->decoded_content();
+  $xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
+  @fields = split(/\./,$xml->{value});
+  $mainver = sprintf("%02d", $fields[0]);
+  $subver  = sprintf("%02d", $fields[1]);
+  $monver  = sprintf("%02d", $fields[2]);
+  $dayver  = sprintf("%02d", $fields[3]);
+
+  # Get FTP Port from Miniserver
+  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ftp";
+  $ua = LWP::UserAgent->new;
+  $ua->timeout(1);
+  local $SIG{ALRM} = sub { die };
+  eval {
+    alarm(1);
+    $response = $ua->get($url);
+    if (!$response->is_success) {
+      $errormessage = "Unable to fetch FTP Port from Miniserver $i. Giving up.";
+      &error;
+      next;
+    } else {
+      $success = 1;
+    }
+  };
+  alarm(0);
+
+  if (!$success) {
+    $errormessage = "Unable to fetch FTP Port from Miniserver $i. Giving up.";
+    &error;
+    next;
+  }
+  $success = 0;
+ 
+  $rawxml = $response->decoded_content();
+  $xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
+  $miniserverftpport = $xml->{value};
+
+  # Backing up to temorary directory
+  ($dirsec,$dirmin,$dirhour,$dirmday,$dirmon,$diryear,$dirwday,$diryday,$dirisdst) = localtime();
+  $diryear = $diryear+1900;
+  $dirmon = $dirmon+1;
+  $dirmon = sprintf("%02d", $dirmon);
+  $dirmday = sprintf("%02d", $dirmday);
+  $dirhour = sprintf("%02d", $dirhour);
+  $dirmin = sprintf("%02d", $dirmin);
+  $dirsec = sprintf("%02d", $dirsec);
+
+  # Create temporary dir
+  $bkpdir = "Backup_$miniserverip\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
+  $response = mkdir("/tmp/$bkpdir",0777);
+  if ($response == 0) {
+    $errormessage = "Could not create temporary folder /tmp/$bkpdir. Giving up.";
+    &error;
+    next;
+  }
   if ($verbose) {
-    $logmessage = "ZIP-Archive /tmp/$bkpdir/$bkpdir.zip created successfully.";
+    $logmessage = "Temporary folder created: /tmp/$bkpdir.";
     &log;
   }
-}
 
-# Moving ZIP to files section
-move("/tmp/$bkpdir.zip","$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip");
-if (!-e "$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip") {
-  $errormessage = "Error while moving ZIP-Archive to Files-Section. Giving up.";
-  &error;
-  exit;
-} else {
+  # Download files from Miniserver
+  # /log
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/log";
+  &download;
+  # /prog
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/prog";
+  &download;
+  # /stats
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/stats";
+  &download;
+  # /temp
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/temp";
+  &download;
+  # /update
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/update";
+  &download;
+  # /web
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/web";
+  &download;
+
+  # Zipping
+  $output = qx(cd /tmp && $zipbin -q -p -r $bkpdir.zip $bkpdir);
+  if ($? ne 0) {
+    $errormessage = "Error while zipping the Backup $bkpdir. Errorcode: $?. Giving up.";
+    &error;
+    next;
+  } else {
+    if ($verbose) {
+      $logmessage = "ZIP-Archive /tmp/$bkpdir/$bkpdir.zip created successfully.";
+      &log;
+    }
+  }
+
+  # Moving ZIP to files section
+  move("/tmp/$bkpdir.zip","$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip");
+  if (!-e "$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip") {
+    $errormessage = "Error while moving ZIP-Archive $bkpdir.zip to Files-Section. Giving up.";
+    &error;
+    next;
+  } else {
+    if ($verbose) {
+      $logmessage = "Moving ZIP-Archive $bkpdir.zip to Files-Section successfully.";
+      &log;
+    }
+  }
+
+  # Clean up /tmp folder
   if ($verbose) {
-    $logmessage = "Moving ZIP-Archive to Files-Section successfully.";
+    $logmessage = "Cleaning up temporary and old stuff.";
     &log;
   }
-}
+  $output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
 
-# Clean up /tmp folder
-if ($verbose) {
-  $logmessage = "Cleaning up temporary and old stuff.";
-  &log;
-}
-$output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
+  # Delete old backup archives
+  $i = 0;
+  @files = "";
+  @Eintraege = "";
 
-# Zuerst alle alten Dateien aus dem temporären Ordner löschen
-$i = 0;
+  opendir(DIR, "$installfolder/webfrontend/html/plugins/$subfolder/files");
+    @Eintraege = readdir(DIR);
+  closedir(DIR);
 
-opendir(DIR, "$installfolder/webfrontend/html/plugins/$subfolder/files");
-  my @Eintraege = readdir(DIR);
-closedir(DIR);
+  foreach(@Eintraege) {
+    if ($_ =~ m/$Backup_$miniserverip/) {
+      push(@files,$_);
+    }
+  }
 
-@Eintraege = sort {$b cmp $a}(@Eintraege);
+  @files = sort {$b cmp $a}(@files);
 
-foreach(@Eintraege) {
-  s/[\n\r]//g;
-  if($_ ne "." && $_ ne ".." && $_ ne ".htaccess") {
+  foreach(@files) {
+    s/[\n\r]//g;
     $i++;
-    if ($i > $maxfiles) {
-      $logmessage = "Deleteing old Backup $_";
+    if ($i > $maxfiles && $_ ne "") {
+      $logmessage = "Deleting old Backup $_";
       &log;
       unlink("$installfolder/webfrontend/html/plugins/$subfolder/files/$_");
     } 
   }
+
+  # End
+  $logmessage = "New Backup $bkpdir.zip created successfully.";
+  &log;
+
 }
 
-# End
-$logmessage = "New Backup $bkpdir.zip created successfully.";
-&log;
-
 exit;
+
 
 ##########################################################################
 # Subroutinen
@@ -299,7 +321,7 @@ sub error {
   &log;
   # Clean up /tmp folder
   $output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
-  exit;
+  return ();
 }
 
 # Download
