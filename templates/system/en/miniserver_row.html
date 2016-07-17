@@ -1,0 +1,68 @@
+        <tr>
+          <td width="100%" colspan=4>
+          <h2><!--$msno-->. Miniserver:</h2>
+          </td>
+        </tr>
+        <tr>
+          <td width="25%">
+          <label class="control-label" for="miniserverip<!--$msno-->">IP-Address or Hostname:</label>
+          </td>
+          <td width="50%">
+          <input id="miniserverip<!--$msno-->" name="miniserverip<!--$msno-->" type="text" class="textfield" data-validation="custom" value="<!--$miniserverip-->"
+          data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* The entered IP-Address or Hostname is not valid. An IP-Address has the format xxx.xxx.xxx.xxx, e. g. 192.168.1.100">
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Portnumber:</label>
+          </td>
+          <td>
+          <input id="miniserverport<!--$msno-->" name="miniserverport<!--$msno-->" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="<!--$miniserverport-->" data-validation-error-msg="* The Portnumber must be in the range of 1 and 65535. The default Miniserver-Port is 80.">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1">The default port is <b>80</b></font>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Miniserver Username:</label>
+          </td>
+          <td>
+          <input id="miniserveruser<!--$msno-->" name="miniserveruser<!--$msno-->" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="<!--$miniserveruser-->" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1"></font>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Miniserver Password:</label>
+          </td>
+          <td>
+          <input id="miniserverkennwort<!--$msno-->" name="miniserverkennwort<!--$msno-->" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="<!--$miniserverkennwort-->" data-validation-error-msg="* Please enter the password for the above Miniserver Administrator account.">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1"></font>
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+

@@ -10,7 +10,8 @@
       <p>
       In diesem Schritt musst Du die Daten Deines Miniservers eingeben. Wir ben&ouml;tigen die IP-Adresse und Portnummer, unter der Dein Miniserver in Deinem Netzwerk
       erreichbar ist sowie auch Benutzername und Passwort des Administrator-Zugangs. Diese Daten sind notwendig, damit wir auf Daten des
-      Miniservers zugreifen k&ouml;nnen und diesen auch steuern k&ouml;nnen.
+      Miniservers zugreifen k&ouml;nnen und diesen auch steuern k&ouml;nnen. <b>Hinweis:</b> Solltest Du mehrere Miniserver in Deiner Installation verwenden, so kannst
+      Du weitere Miniserver nach der Ersteinrichtung unter dem Menüpunkt "Miniserver" hinzufügen.
       </p>
 
       <p>
@@ -29,9 +30,8 @@
           <label class="control-label" for="miniserverip">IP-Adresse oder Hostname:</label>
           </td>
           <td width="50%">
-          <input id="miniserverip" name="miniserverip" type="text" class="textfield" data-validation="custom" value="<!--$miniserverip-->"
-          data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse oder gültigen Hostnamen eingegeben zu haben.
-          Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.1.100<br>">
+          <input id="miniserverip1" name="miniserverip1" type="text" class="textfield" data-validation="custom" value="<!--$miniserverip1-->"
+          data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse oder g&uuml;ltigen Hostnamen eingegeben zu haben. Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.1.100<br>">
           </td>
           <td width="5%">
           <a id="btnnetscan" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#"><font size="-1">Scan</font>
@@ -45,8 +45,8 @@
           <label>Portnummer:</label>
           </td>
           <td>
-          <input id="miniserverport" name="miniserverport" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" 
-          value="<!--$miniserverport-->" data-validation-error-msg="* Die Portnummer muss zwischen 1 und 65535 liegen. Der Standartport des Miniserver ist 80.">
+          <input id="miniserverport1" name="miniserverport1" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" 
+          value="<!--$miniserverport1-->" data-validation-error-msg="* Die Portnummer muss zwischen 1 und 65535 liegen. Der Standardport des Miniserver ist 80.">
           </td>
           <td>
           &nbsp;
@@ -60,8 +60,8 @@
           <label>Miniserver Benutzername:</label>
           </td>
           <td>
-          <input id="miniserveruser" name="miniserveruser" type="text" data-validation="length" data-validation-length="Min1" class="textfield"
-          value="<!--$miniserveruser-->" data-validation-error-msg="* Bitte gebe den Administratorzugang Deines Miniservers an.">
+          <input id="miniserveruser1" name="miniserveruser1" type="text" data-validation="length" data-validation-length="Min1" class="textfield"
+          value="<!--$miniserveruser1-->" data-validation-error-msg="* Bitte gebe den Administratorzugang Deines Miniservers an.">
           </td>
           <td>
           &nbsp;
@@ -75,8 +75,8 @@
           <label>Miniserver Kennwort:</label>
           </td>
           <td>
-          <input id="miniserverkennwort" name="miniserverkennwort" type="password" data-validation="length" data-validation-length="Min1" class="textfield"
-          value="<!--$miniserverkennwort-->" data-validation-error-msg="* Bitte gebe das Kennwort des Miniserver Administratorzugangs ein.">
+          <input id="miniserverkennwort1" name="miniserverkennwort1" type="password" data-validation="length" data-validation-length="Min1" class="textfield"
+          value="<!--$miniserverkennwort1-->" data-validation-error-msg="* Bitte gebe das Kennwort des Miniserver Administratorzugangs ein.">
           </td>
           <td>
           &nbsp;

@@ -2,7 +2,7 @@
 # Language phrases
 # EN 2016-07-15 09:09:22
 #
-TXT0000=LoxBerry Toolbox
+TXT0000=Loxberry Toolbox
 TXT0001=Yes
 TXT0002=No
 TXT0003=The Miniserver seems to be unreachable with the entered IP-Address or the Username and Password are invalid.
@@ -43,3 +43,4 @@ TXT0037=Network-Setting successfully saved. They will be taken into account afte
 TXT0038=On
 TXT0039=Off
 TXT0040=Miniserver-Backup
+TXT0041=There's a problem with Miniserver No.
