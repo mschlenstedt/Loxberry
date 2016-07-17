@@ -22,6 +22,7 @@
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
+use DBI;
 use warnings;
 use strict;
 no strict "refs"; # we need it for template system
@@ -57,6 +58,10 @@ our $adminuserold = $ENV{REMOTE_USER};
 our $do;
 our $nexturl;
 our $salt;
+our $dsn;
+our $dbh;
+our $sth;
+our $sqlerr;
 
 ##########################################################################
 # Read Settings
@@ -184,19 +189,12 @@ quotemeta($adminpassold);
 # Try to set new passwords for user "loxberry"
 $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
 if ($? eq 0) {
-  $message = $phrase->param("TXT0030") . "<br><br><table border=0 cellpadding=10><tr><td><b>" . $phrase->param("TXT0031") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>$adminuser</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr><tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr></table>";
+  $message = $phrase->param("TXT0030") . "<br><br><table border=0 cellpadding=10><tr><td><b>" . $phrase->param("TXT0031") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>$adminuser</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr><tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
 } else {
   $error = $phrase->param("TXT0032");
   &error;
   exit;
 }
-
-# Debugging
-#open(F,">/tmp/loxberry1");
-# flock(F,2);
-# print F "$output\n\n$adminpass1";
-# flock(F,8);
-#close(F);
 
 # Save Username/Password for Webarea
 $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64];
@@ -206,6 +204,35 @@ open(F,">$installfolder/config/system/htusers.dat") || die "Missing file: config
  print F "$adminuser\:$adminpasscrypted";
  flock(F,8);
 close(F);
+
+# Set MYSQL Password
+# This only works if the initial password is still valid
+# (password: "loxberry")
+# Use eval {} here in case somthing went wrong
+$sqlerr = 0;
+$dsn = "DBI:mysql:database=mysql";
+eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
+$sqlerr = 1 if $@;
+eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
+$sqlerr = 1 if $@;
+eval {$sth->execute()};
+$sqlerr = 1 if $@;
+eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
+$sqlerr = 1 if $@;
+eval {$sth->execute()};
+$sqlerr = 1 if $@;
+eval {$sth->finish()};
+$sqlerr = 1 if $@;
+eval {$dbh->{AutoCommit} = 0};
+$sqlerr = 1 if $@;
+eval {$dbh->commit};
+$sqlerr = 1 if $@;
+if ($sqlerr eq 0) {
+  $message = $message . "<tr><td><b>" . $phrase->param("TXT0042") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>root</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
+}
+
+# Finalize message for Template
+$message = $message . "</table>";
 
 print "Content-Type: text/html\n\n";
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0029");

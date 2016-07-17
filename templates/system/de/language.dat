@@ -1,6 +1,6 @@
 #
 # Language phrases
-# DE 2016-07-15 09:09:22
+# DE 2016-07-17 14:56:00
 #
 TXT0000=Loxberry Toolbox
 TXT0001=Ja
@@ -44,3 +44,4 @@ TXT0038=An
 TXT0039=Aus
 TXT0040=Miniserver-Backup
 TXT0041=Problem mit Miniserver Nr.
+TXT0042=MySQL-Admin-Account:

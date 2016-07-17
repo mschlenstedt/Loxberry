@@ -25,6 +25,7 @@ use LWP::UserAgent;
 use Config::Simple;
 use CGI::Session;
 use File::Copy;
+use DBI;
 use warnings;
 use strict;
 no strict "refs"; # we need it for template system
@@ -88,15 +89,20 @@ our $salt;
 our $e;
 our $loxberrypasswdhtml;
 our $rootpasswdhtml;
+our $mysqlpasswdhtml;
 our $rebootbin;
 our $http_host = $ENV{HTTP_HOST};
+our $dsn;
+our $dbh;
+our $sth;
+our $sqlerr;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.4";
+$version = "0.0.5";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -662,7 +668,7 @@ open(F,">$installfolder/config/system/htusers.dat") || die "Missing file: config
  flock(F,8);
 close(F);
 
-# Try to set new passwords fpr user "root" and "loxberry"
+# Try to set new passwords for user "root" and "loxberry"
 # This only works if the initial password is still valid
 # (password: "loxberry")
 $rootnewpassword = generate();
@@ -670,23 +676,38 @@ $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setrootpasswd.exp loxberry $
 if ($? eq 0) {
   $rootpasswdhtml = "<tr><td><b>" . $phrase->param("TXT0026") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>root</b></td><td>" . $phrase->param("TXT0024") . " <b>$rootnewpassword</b></td></tr>";
 }
-# Debugging
-#open(F,">/tmp/root");
-# flock(F,2);
-# print F "$output\n\n$rootnewpassword";
-# flock(F,8);
-#close(F);
 
 $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp loxberry $adminpass1);
 if ($? eq 0) {
   $loxberrypasswdhtml = "<tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
 }
-# Debugging
-#open(F,">/tmp/loxberry");
-# flock(F,2);
-# print F "$output\n\n$adminpass1";
-# flock(F,8);
-#close(F);
+
+# Set MYSQL Password
+# This only works if the initial password is still valid
+# (password: "loxberry")
+# Use eval {} here in case somthing went wrong
+$sqlerr = 0;
+$dsn = "DBI:mysql:database=mysql";
+eval {$dbh = DBI->connect($dsn, 'root', 'loxberry' )};
+$sqlerr = 1 if $@;
+eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
+$sqlerr = 1 if $@;
+eval {$sth->execute()};
+$sqlerr = 1 if $@;
+eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
+$sqlerr = 1 if $@;
+eval {$sth->execute()};
+$sqlerr = 1 if $@;
+eval {$sth->finish()};
+$sqlerr = 1 if $@;
+eval {$dbh->{AutoCommit} = 0};
+$sqlerr = 1 if $@;
+eval {$dbh->commit};
+$sqlerr = 1 if $@;
+if ($sqlerr eq 0) {
+  $mysqlpasswdhtml = "<tr><td><b>" . $phrase->param("TXT0042") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>root</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
+}
+
 
 # Set Timezone and sync for the very first time
 $output = qx(sudo $installfolder/sbin/setdatetime.pl);
