@@ -77,7 +77,7 @@ our $msno;
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.3";
+my $version = "0.0.4";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -203,6 +203,9 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   # /prog
   $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/prog";
   &download;
+  # /sys
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/sys";
+  &download;
   # /stats
   $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/stats";
   &download;
@@ -214,6 +217,9 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   &download;
   # /web
   $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/web";
+  &download;
+  # /user
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/user";
   &download;
 
   # Zipping
