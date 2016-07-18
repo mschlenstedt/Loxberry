@@ -61,14 +61,12 @@ our $phraseplugin;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.4";
+$version = "0.0.1";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 
-$saveformdata          =~ tr/0-1//cd;
-$saveformdata          = substr($saveformdata,0,1);
 $query{'lang'}         =~ tr/a-z//cd;
 $query{'lang'}         =  substr($query{'lang'},0,2);
 
@@ -95,7 +93,7 @@ if (!-e "$installfolder/templates/system/$lang/language.dat") {
 $languagefile = "$installfolder/templates/system/$lang/language.dat";
 $phrase = new Config::Simple($languagefile);
 
-$languagefileplugin = "$installfolder/templates/plugins/miniserverbackup/$lang/language.dat";
+$languagefileplugin = "$installfolder/templates/plugins/cam-connect/$lang/language.dat";
 $phraseplugin = new Config::Simple($languagefileplugin);
 
 ##########################################################################
@@ -178,7 +176,7 @@ sub header {
 
   # create help page
   $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
-  open(F,"$installfolder/templates/plugins/miniserverbackup/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
+  open(F,"$installfolder/templates/plugins/cam-connect/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
     @help = <F>;
     foreach (@help){
       s/[\n\r]/ /g;
