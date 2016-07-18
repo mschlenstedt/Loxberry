@@ -45,27 +45,35 @@ our $helplink;
 our $installfolder;
 our $languagefile;
 our $version;
-our $error;
-our $saveformdata;
-our $output;
-our $message;
-our $nexturl;
-our $do;
 my $home = File::HomeDir->my_home;
 my $subfolder;
+my $cgi = new CGI;
 our $languagefileplugin;
 our $phraseplugin;
+our $self_host;
+our $self_script;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
+
+
+# Everything from URL
+foreach (split(/&/,$ENV{'QUERY_STRING'})){
+  ($namef,$value) = split(/=/,$_,2);
+  $namef =~ tr/+/ /;
+  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+  $value =~ tr/+/ /;
+  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+  $query{$namef} = $value;
+}
 
 $query{'lang'}         =~ tr/a-z//cd;
 $query{'lang'}         =  substr($query{'lang'},0,2);
@@ -96,17 +104,15 @@ $phrase = new Config::Simple($languagefile);
 $languagefileplugin = "$installfolder/templates/plugins/cam-connect/$lang/language.dat";
 $phraseplugin = new Config::Simple($languagefileplugin);
 
+$template_title = $phrase->param("TXT0000") . ": " . $phraseplugin->param("TXT0000");
+$self_host =$cgi->server_name();
+$self_script =$cgi->script_name();
+
 ##########################################################################
 # Main program
 ##########################################################################
 
-#########################################################################
-# What should we do
-#########################################################################
-
-
-&form;
-
+&defaultpage;
 
 exit;
 
@@ -114,13 +120,9 @@ exit;
 # Form
 #####################################################
 
-sub form {
-
-
+sub defaultpage {
 
 print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0040");
 
 # Print Template
 &header;
@@ -129,6 +131,8 @@ open(F,"$installfolder/templates/plugins/cam-connect/$lang/settings.html") || di
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
     print $_;
   }
+
+  
 close(F);
 &footer;
 
@@ -151,7 +155,7 @@ exit;
 
 sub error {
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
+$template_title = $phrase->param("TXT0000") . ": " . $phraseplugin->param("TXT0000") . " - " . $phrase->param("TXT0028");
 
 print "Content-Type: text/html\n\n";
 
