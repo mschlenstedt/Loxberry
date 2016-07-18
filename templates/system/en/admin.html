@@ -29,14 +29,14 @@
           <label class="control-label" for="adminuser">Username:</label>
           </td>
           <td width="50%">
-          <input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20"
+          <input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20" data-validation-allowing="-_\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF"
           data-validation-error-msg="* The Username must be 3-20 characters long and consist of alphanumeric characters<br>" value="<!--$adminuserold-->">
           </td>
           <td width="3%">
           &nbsp;
           </td>
           <td width="22%">
-          <font size="-1">Allowed characters: A-Z a-z 0-9</font>
+          <font size="-1">Allowed characters: A-Z a-z 0-9 -_ &Auml;&Ouml;&Uuml; &auml;&ouml;&uuml; &szlig;</font>
           </td>
         </tr>
         <tr>
