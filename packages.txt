@@ -1,8 +1,3 @@
-Desired=Unknown/Install/Remove/Purge/Hold
-| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
-|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
-||/ Name                             Version                           Architecture Description
-+++-================================-=================================-============-===============================================================================
 ii  acl                              2.2.52-2                          armhf        Access control list utilities
 ii  adduser                          3.113+nmu3                        all          add and remove users and groups
 ii  alsa-utils                       1.0.28-1                          armhf        Utilities for configuring and using ALSA
@@ -48,6 +43,7 @@ ii  crda                             3.13-1                            armhf    
 ii  cron                             3.0pl1-127+deb8u1                 armhf        process scheduling daemon
 ii  curl                             7.38.0-4+deb8u2                   armhf        command line tool for transferring data with URL syntax
 ii  dash                             0.5.7-4                           armhf        POSIX-compliant shell
+ii  dbconfig-common                  1.8.47+nmu3+deb8u1                all          common framework for packaging database applications
 ii  dbus                             1.8.20-0+deb8u1                   armhf        simple interprocess messaging system (daemon and utilities)
 ii  dc                               1.06.95-9                         armhf        GNU dc arbitrary precision reverse-polish calculator
 ii  debconf                          1.5.56                            all          Debian configuration management system
@@ -117,6 +113,7 @@ ii  iputils-ping                     3:20121221-5                      armhf    
 ii  isc-dhcp-client                  4.3.1-6                           armhf        DHCP client for automatically obtaining an IP address
 ii  isc-dhcp-common                  4.3.1-6                           armhf        common files used by all of the isc-dhcp packages
 ii  iw                               3.17-1                            armhf        tool for configuring Linux wireless devices
+ii  javascript-common                11                                all          Base support for JavaScript library packages
 ii  kbd                              1.15.5-2                          armhf        Linux console font and keytable utilities
 ii  keyboard-configuration           1.123                             all          system-wide keyboard preferences
 ii  klibc-utils                      2.0.4-2+rpi1                      armhf        small utilities built with klibc for early boot
@@ -133,6 +130,7 @@ ii  libalgorithm-diff-xs-perl        0.04-3+b1                         armhf    
 ii  libalgorithm-merge-perl          0.08-2                            all          Perl module for three-way merge of textual data
 ii  libalsaplayer-dev                0.99.81-1+b1                      armhf        alsaplayer plugin library (development files)
 ii  libalsaplayer0                   0.99.81-1+b1                      armhf        alsaplayer plugin library
+ii  libapache2-mod-php5              5.6.23+dfsg-0+deb8u1              armhf        server-side, HTML-embedded scripting language (Apache 2 module)
 ii  libapr1:armhf                    1.5.1-3                           armhf        Apache Portable Runtime Library
 ii  libaprutil1:armhf                1.5.4-1                           armhf        Apache Portable Runtime Utility Library
 ii  libaprutil1-dbd-sqlite3:armhf    1.5.4-1                           armhf        Apache Portable Runtime Utility Library - SQLite3 Driver
@@ -217,6 +215,7 @@ ii  libdatetime-perl                 2:1.12-1                          armhf    
 ii  libdatetime-timezone-perl        1:1.75-2+2015f                    all          framework exposing the Olson time zone database to Perl
 ii  libdatrie1:armhf                 0.2.8-1                           armhf        Double-array trie library
 ii  libdb5.3:armhf                   5.3.28-9                          armhf        Berkeley v5.3 Database Libraries [runtime]
+ii  libdbd-mysql-perl                4.028-2+b1                        armhf        Perl5 database interface to the MySQL database
 ii  libdbi-perl                      1.631-3+b1                        armhf        Perl Database Interface (DBI)
 ii  libdbus-1-3:armhf                1.8.20-0+deb8u1                   armhf        simple interprocess messaging system (library)
 ii  libdca0:armhf                    0.0.5-7                           armhf        decoding library for DTS Coherent Acoustics streams
@@ -263,6 +262,7 @@ ii  libfribidi0:armhf                0.19.6-3                          armhf    
 ii  libgcc-4.9-dev:armhf             4.9.2-10                          armhf        GCC support library (development files)
 ii  libgcc1:armhf                    1:4.9.2-10                        armhf        GCC support library
 ii  libgcrypt20:armhf                1.6.3-2                           armhf        LGPL Crypto library - runtime library
+ii  libgd3:armhf                     2.1.0-5+deb8u4                    armhf        GD Graphics Library
 ii  libgdbm3:armhf                   1.8.3-13.1                        armhf        GNU dbm database routines (runtime version)
 ii  libgdk-pixbuf2.0-0:armhf         2.31.1-2+deb8u5                   armhf        GDK Pixbuf library
 ii  libgdk-pixbuf2.0-common          2.31.1-2+deb8u5                   all          GDK Pixbuf library - data files
@@ -295,6 +295,7 @@ ii  libhtml-form-perl                6.03-1                            all      
 ii  libhtml-format-perl              2.11-1                            all          module for transforming HTML into various formats
 ii  libhtml-parser-perl              3.71-1+b4                         armhf        collection of modules that parse HTML text documents
 ii  libhtml-tagset-perl              3.20-2                            all          Data tables pertaining to HTML
+ii  libhtml-template-perl            2.95-1                            all          module for using HTML templates with Perl
 ii  libhtml-tree-perl                5.03-1                            all          Perl module to represent and create HTML syntax trees
 ii  libhttp-cookies-perl             6.01-1                            all          HTTP cookie jars
 ii  libhttp-daemon-perl              6.01-1                            all          simple http server class
@@ -324,6 +325,9 @@ ii  libjasper1:armhf                 1.900.1-debian1-2.4+deb8u1        armhf    
 ii  libjbig0:armhf                   2.1-3.1                           armhf        JBIGkit libraries
 ii  libjim0.75:armhf                 0.75-1                            armhf        small-footprint implementation of Tcl - shared library
 ii  libjpeg62-turbo:armhf            1:1.3.1-12                        armhf        libjpeg-turbo JPEG runtime library
+ii  libjs-jquery                     1.7.2+dfsg-3.2                    all          JavaScript library for dynamic web applications
+ii  libjs-sphinxdoc                  1.2.3+dfsg-1                      all          JavaScript support for Sphinx documentation
+ii  libjs-underscore                 1.7.0~dfsg-1                      all          JavaScript's functional programming helper library
 ii  libjson-c2:armhf                 0.11-4                            armhf        JSON manipulation library - shared library
 ii  libjson-perl                     2.61-1                            all          module for manipulating JSON-formatted data
 ii  libjson-xs-perl                  2.340-1+b2                        armhf        module for manipulating JSON-formatted data (C/XS-accelerated)
@@ -360,6 +364,7 @@ ii  liblzma5:armhf                   5.1.1alpha+20120614-2             armhf    
 ii  libmad0:armhf                    0.15.1b-8                         armhf        MPEG audio decoder library
 ii  libmagic1:armhf                  1:5.22+15-2                       armhf        File type determination library using "magic" numbers
 ii  libmailtools-perl                2.13-1                            all          Manipulate email in perl programs
+ii  libmcrypt4                       2.5.8-3.3                         armhf        De-/Encryption Library
 ii  libmikmod3:armhf                 3.3.7-1                           armhf        Portable sound library
 ii  libmodule-build-perl             0.421000-2                        all          framework for building and installing Perl modules
 ii  libmodule-implementation-perl    0.09-1                            all          module for loading one of several alternate implementations of a module
@@ -372,6 +377,7 @@ ii  libmpc3:armhf                    1.0.2-1                           armhf    
 ii  libmpfr4:armhf                   3.1.2-2                           armhf        multiple precision floating-point computation
 ii  libmpg123-0:armhf                1.20.1-2                          armhf        MPEG layer 1/2/3 audio decoder (shared library)
 ii  libmro-compat-perl               0.12-1                            all          mro::* interface compatibility for Perls < 5.9.5
+ii  libmysqlclient18:armhf           5.5.44-0+deb8u1                   armhf        MySQL database client library
 ii  libnamespace-clean-perl          0.25-1                            all          module for keeping imports and functions out of the current namespace
 ii  libncurses5:armhf                5.9+20140913-1                    armhf        shared libraries for terminal handling
 ii  libncursesw5:armhf               5.9+20140913-1                    armhf        shared libraries for terminal handling (wide character support)
@@ -390,10 +396,10 @@ ii  libnl-genl-3-200:armhf           3.2.24-2                          armhf    
 ii  libnss-mdns:armhf                0.10-6                            armhf        NSS module for Multicast DNS name resolution
 ii  libntdb1:armhf                   1.0-5                             armhf        New Trivial Database - shared library
 ii  libogg0:armhf                    1.3.2-1                           armhf        Ogg bitstream library
+ii  libonig2:armhf                   5.9.5-3.2                         armhf        Oniguruma regular expressions library
 ii  libopenal-data                   1:1.15.1-5                        all          Software implementation of the OpenAL audio API (data files)
 ii  libopenal1:armhf                 1:1.15.1-5                        armhf        Software implementation of the OpenAL audio API (shared library)
 ii  libopenjpeg5:armhf               1:1.5.2-3                         armhf        JPEG 2000 image compression/decompression library - runtime
-rc  libopts25:armhf                  1:5.18.4-3                        armhf        automated option processing library based on autogen
 ii  libopus0:armhf                   1.1-2                             armhf        Opus codec runtime library
 ii  liborc-0.4-0:armhf               1:0.4.22-1rpi1rpi1g               armhf        Library of Optimized Inner Loops Runtime Compiler
 ii  libp11-kit0:armhf                0.20.7-1                          armhf        Library for loading and coordinating access to PKCS#11 modules - runtime
@@ -415,6 +421,7 @@ ii  libpcap0.8:armhf                 1.6.2-2                           armhf    
 ii  libpci3:armhf                    1:3.2.1-3                         armhf        Linux PCI Utilities (shared library)
 ii  libpcre3:armhf                   2:8.35-3.3                        armhf        Perl 5 Compatible Regular Expression Library - runtime files
 ii  libpcsclite1:armhf               1.8.13-1                          armhf        Middleware to access a smart card using PC/SC (library)
+ii  libperl4-corelibs-perl           0.003-1                           all          libraries historically supplied with Perl 4
 ii  libpipeline1:armhf               1.4.0-1                           armhf        pipeline manipulation library
 ii  libpixman-1-0:armhf              0.33.3+git20151011-7de61d8-rpi1   armhf        pixel-manipulation library for X and cairo
 ii  libpng12-0:armhf                 1.2.50-2+deb8u1                   armhf        PNG library - runtime
@@ -430,6 +437,7 @@ ii  libpython-stdlib:armhf           2.7.9-1                           armhf    
 ii  libpython2.7:armhf               2.7.9-2                           armhf        Shared Python runtime library (version 2.7)
 ii  libpython2.7-minimal:armhf       2.7.9-2                           armhf        Minimal subset of the Python language (version 2.7)
 ii  libpython2.7-stdlib:armhf        2.7.9-2                           armhf        Interactive high-level object-oriented language (standard library, version 2.7)
+ii  libqdbm14                        1.8.78-5+b1                       armhf        QDBM Database Libraries without GDBM wrapper[runtime]
 ii  libquvi-scripts                  0.4.21-2                          all          library for parsing video download links (Lua scripts)
 ii  libquvi7:armhf                   0.4.1-3                           armhf        library for parsing video download links (runtime libraries)
 ii  libraspberrypi-bin               1.20151118-1                      armhf        Miscellaneous Raspberry Pi utilities
@@ -480,6 +488,7 @@ ii  libtalloc2:armhf                 2.1.1-2                           armhf    
 ii  libtasn1-6:armhf                 4.2-3+deb8u1                      armhf        Manage ASN.1 structures (runtime)
 ii  libtcl8.6:armhf                  8.6.2+dfsg-2                      armhf        Tcl (the Tool Command Language) v8.6 - run-time library files
 ii  libtdb1:armhf                    1.3.6-0+deb8u1                    armhf        Trivial Database - shared library
+ii  libterm-readkey-perl             2.32-1+b2                         armhf        perl module for simple terminal control
 ii  libterm-ui-perl                  0.42-1                            all          Term::ReadLine UI made easy
 ii  libtevent0:armhf                 0.9.25-0+deb8u1                   armhf        talloc-based event loop library - shared library
 ii  libtext-charwidth-perl           0.04-7+b4                         armhf        get display widths of characters on the terminal
@@ -579,6 +588,7 @@ ii  login                            1:4.2-3                           armhf    
 ii  logrotate                        3.8.7-1                           armhf        Log rotation utility
 ii  lsb-base                         4.1+Debian13+rpi1+nmu1            all          Linux Standard Base 4.1 init script functionality
 ii  lshw                             02.17-1.1                         armhf        information about hardware configuration
+ii  lsof                             4.86+dfsg-1                       armhf        Utility to list open files
 ii  lua5.1                           5.1.5-7.1                         armhf        Simple, extensible, embeddable programming language
 ii  luajit                           2.0.3+dfsg-3                      armhf        Just in time compiler for Lua programming language version 5.1
 ii  make                             4.0-8.1                           armhf        utility for directing compilation
@@ -594,6 +604,13 @@ ii  mountall                         2.54                              armhf    
 ii  mpg123                           1.20.1-2                          armhf        MPEG layer 1/2/3 audio player
 ii  mplayer2                         2.0-728-g2c378c7-4+b1             armhf        next generation movie player for Unix-like systems
 ii  multiarch-support                2.19-18+deb8u1                    armhf        Transitional package to ensure multiarch compatibility
+ii  mysql-client                     5.5.44-0+deb8u1                   all          MySQL database client (metapackage depending on the latest version)
+ii  mysql-client-5.5                 5.5.44-0+deb8u1                   armhf        MySQL database client binaries
+ii  mysql-common                     5.5.44-0+deb8u1                   all          MySQL database common files, e.g. /etc/mysql/my.cnf
+ii  mysql-server                     5.5.44-0+deb8u1                   all          MySQL database server (metapackage depending on the latest version)
+ii  mysql-server-5.5                 5.5.44-0+deb8u1                   armhf        MySQL database server binaries and system database setup
+ii  mysql-server-core-5.5            5.5.44-0+deb8u1                   armhf        MySQL database server binaries
+ii  mysql-utilities                  1.3.5-2                           all          collection of scripts for managing MySQL servers
 ii  nano                             2.2.6-3                           armhf        small, friendly text editor inspired by Pico
 ii  ncdu                             1.10-1                            armhf        ncurses disk usage viewer
 ii  ncurses-base                     5.9+20140913-1                    all          basic terminal type definitions
@@ -606,7 +623,6 @@ ii  netcat-openbsd                   1.105-7                           armhf    
 ii  netcat-traditional               1.10-41                           armhf        TCP/IP swiss army knife
 ii  nfs-common                       1:1.2.8-9                         armhf        NFS support files common to client and server
 ii  nmap                             6.47-3                            armhf        The Network Mapper
-rc  ntp                              1:4.2.6.p5+dfsg-7+deb8u1          armhf        Network Time Protocol daemon and utility programs
 ii  ntpdate                          1:4.2.6.p5+dfsg-7+deb8u1          armhf        client for setting system time from NTP servers
 ii  openresolv                       3.5.2-1                           all          management framework for resolv.conf
 ii  openssh-client                   1:6.7p1-5                         armhf        secure shell (SSH) client, for secure access to remote machines
@@ -622,6 +638,17 @@ ii  pciutils                         1:3.2.1-3                         armhf    
 ii  perl                             5.20.2-3+deb8u1                   armhf        Larry Wall's Practical Extraction and Report Language
 ii  perl-base                        5.20.2-3+deb8u1                   armhf        minimal Perl system
 ii  perl-modules                     5.20.2-3+deb8u1                   all          Core Perl modules
+ii  php-gettext                      1.0.11-1                          all          read gettext MO files directly, without requiring anything other than PHP
+ii  php-tcpdf                        6.0.093+dfsg-1                    all          PHP class for generating PDF files on-the-fly
+ii  php5                             5.6.22+dfsg-0+deb8u1              all          server-side, HTML-embedded scripting language (metapackage)
+ii  php5-cli                         5.6.23+dfsg-0+deb8u1              armhf        command-line interpreter for the php5 scripting language
+ii  php5-common                      5.6.23+dfsg-0+deb8u1              armhf        Common files for packages built from the php5 source
+ii  php5-gd                          5.6.23+dfsg-0+deb8u1              armhf        GD module for php5
+ii  php5-json                        1.3.6-1                           armhf        JSON module for php5
+ii  php5-mcrypt                      5.6.23+dfsg-0+deb8u1              armhf        MCrypt module for php5
+ii  php5-mysql                       5.6.23+dfsg-0+deb8u1              armhf        MySQL module for php5
+ii  php5-readline                    5.6.23+dfsg-0+deb8u1              armhf        Readline module for php5
+ii  php5-sqlite                      5.6.23+dfsg-0+deb8u1              armhf        SQLite module for php5
 ii  pkg-config                       0.28-1                            armhf        manage compile and link flags for libraries
 ii  plymouth                         0.9.0-9                           armhf        boot animation, logger and I/O multiplexer
 ii  procps                           2:3.3.9-9                         armhf        /proc file system utilities
@@ -632,6 +659,7 @@ ii  python-dnspython                 1.12.0-1                          all      
 ii  python-ldb                       2:1.1.20-0+deb8u1                 armhf        Python bindings for LDB
 ii  python-lxml                      3.4.0-1                           armhf        pythonic binding for the libxml2 and libxslt libraries
 ii  python-minimal                   2.7.9-1                           armhf        minimal subset of the Python language (default version)
+ii  python-mysql.connector           1.2.3-2                           all          pure Python implementation of MySQL Client/Server protocol
 ii  python-ntdb                      1.0-5                             armhf        Python bindings for NTDB
 ii  python-rpi.gpio                  0.6.0a3-1                         armhf        Python GPIO module for Raspberry Pi
 ii  python-samba                     2:4.2.10+dfsg-0+deb8u3            armhf        Python bindings for Samba

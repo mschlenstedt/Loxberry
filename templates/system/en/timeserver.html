@@ -1,0 +1,173 @@
+  <!-- content -->
+
+
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+
+      <form method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
+      <input type="hidden" name="saveformdata" value="1">
+      <div class="form-group">
+        <table class="formtable" border="0" width="100%">
+        <tr>
+          <td width="25%">
+          <label id="labeluhrzeit">Time Synchronization:</label>
+          </td>
+          <td width="50%">
+          <fieldset data-role="controlgroup">
+          <input onclick="disable()" <!--$checked1--> id="zeitserver_miniserver" name="zeitserver" type="radio" value="miniserver">
+          <label for="zeitserver_miniserver">Using the Miniserver</label>
+          <input onclick="disable()" <!--$checked2--> id="zeitserver_ntp" name="zeitserver" type="radio" value="ntp">
+          <label for="zeitserver_ntp">Using a NTP-Server (Internet)</label>
+          </fieldset>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label id="labelntpserverurl">NTP-Server:</label>
+          </td>
+          <td>
+          <input id="ntpserverurl" name="ntpserverurl" type="text" class="textfield" 
+          value="<!--$ntpserverurl-->">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td valign="middle">
+          <a id="linkntpurls" href="http://www.pool.ntp.org/en/use.html" target="_blank">Suitable Time Server</a>
+          </td>
+        </tr>
+        <tr>
+          <td width="25%">
+          <label id="labelzeitzone">Timezone:</label>
+          </td>
+          <td width="50%">
+	      <select onclick="disable()" id="zeitzone" name="zeitzone" data-mini="true">
+
+            <!--$timezonelist-->
+
+            </select>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td width="25%">
+          <label id="labelzeitzone">Current System Time:</label>
+          </td>
+          <td width="50%" align="center">
+          <div id="time"></div>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td colspan=3>
+          <div id="form-error-message" class="form-error-message"></div>
+          </td>
+        </tr>
+        </table>
+      </div>
+      </form>
+
+      <p>
+      &nbsp;
+      </p>
+
+      <p>
+      <center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
+      <button type="submit" form="main_form4" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
+      </center>
+      </p>
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+
+  <script>
+  var $messages = $('#form-error-message');
+  $.validate({
+    modules : 'security',
+    errorMessagePosition : $messages,
+  });
+
+  // Disable some options on Load depending on selected value
+  disable();
+
+  // Prepare System Time/Date on Load
+  uhrzeitanzeige('<!--$systemdatetime-->');
+
+  // Disable some options on click depending on selected value
+  function disable() {
+    // Miniserver or NTP
+    if ( document.main_form4.zeitserver_miniserver.checked == true ) {
+      $('#labelntpserverurl').addClass('ui-disabled');
+      $('#ntpserverurl').addClass('ui-disabled');
+      $('#linkntpurls').addClass('ui-disabled');
+    }
+    else {
+      $('#labelntpserverurl').removeClass('ui-disabled');
+      $('#ntpserverurl').removeClass('ui-disabled');
+      $('#linkntpurls').removeClass('ui-disabled');
+    }
+  }
+
+  function uhrzeitanzeige(szeit) {
+    var czeit = new Date();
+    var offset = czeit.getTime()-szeit;
+    var gib_zeit = function(dateobj) {
+      var d = dateobj.getDate();
+      if (d < 10) { d = '0'+d; }
+      var mo = dateobj.getMonth();
+      if (mo < 10) { mo = '0'+mo; }
+      var y = dateobj.getFullYear();
+      var h = dateobj.getHours();
+      if (h < 10) { h = '0'+h; }
+      var m = dateobj.getMinutes();
+      if (m < 10) { m = '0'+m; }
+      var s = dateobj.getSeconds();
+      if (s < 10) { s = '0'+s; }
+      return mo+'-'+d+'-'+y+', '+h+':'+m+':'+s+' <!--$systemtimezone-->';
+    };
+    var zeit_aktualisieren = function(offset) {
+      czeit = new Date();
+      czeit.setTime(czeit.getTime()+offset);
+      document.getElementById('time').innerHTML = gib_zeit(czeit);
+      window.setTimeout(function () {zeit_aktualisieren(offset);},1000);
+    };
+    zeit_aktualisieren(offset);
+  }
+
+  </script>
+
+  <!-- /content -->

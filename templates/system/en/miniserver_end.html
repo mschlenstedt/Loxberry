@@ -1,0 +1,181 @@
+        </table>
+      </div>
+      </form>
+
+      <p>
+      &nbsp;
+      </p>
+
+      <table class="formtable" border="0" width="100%">
+        <tr>
+          <td></td>
+          <td colspan=3>
+          <div id="form-error-message" class="form-error-message"></div>
+          </td>
+        </tr>
+      </table>
+
+      <p>
+      &nbsp;
+      </p>
+
+      <a href="#" id="addmsbtn" onClick="AddMiniserver();return false;"data-role="button" data-icon="plus" data-mini="true" data-inline="true">Add Miniserver</a>
+      <a href="#" id="delmsbtn" onClick="DelMiniserver();return false;"data-role="button" data-icon="minus" data-mini="true" data-inline="true">Delete Miniserver</a>
+
+      <p>
+      <center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
+      <button type="submit" form="main_form2" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
+      </center>
+      </p>
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+
+  <script>
+  var $messages = $('#form-error-message');
+  $.validate({
+    modules : 'security',
+    errorMessagePosition : $messages,
+  });
+
+  // Diable Del-Button if needed at onLoad
+  DisableDelButton();
+
+  // Add one more miniserver
+  function AddMiniserver() {
+    // Total number of miniservers
+    var iteration = document.getElementById('miniservers').value;   
+    iteration = parseInt(iteration)
+    iteration += 1;
+    document.getElementById("miniservers").value = iteration;
+
+    // Add 1. row 
+    var tbl = document.getElementById('miniservertbl');
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<h2>' + iteration + '. Miniserver:</h2>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Add 2. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label class="control-label" for="miniserverip' + iteration + '">IP-Address or Hostname:</label> </td>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<input id="miniserverip' + iteration + '" name="miniserverip' + iteration + '" type="text" class="textfield" data-validation="custom" value="" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* The entered IP-Address or Hostname is not valid. An IP-Address has the format xxx.xxx.xxx.xxx, e. g. 192.168.1.100">'
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+    
+    // Add 3. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>Portnumber:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<input id="miniserverport' + iteration + '" name="miniserverport' + iteration + '" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="" data-validation-error-msg="* The Portnumber must be in the range of 1 and 65535. The default Miniserver-Port is 80.">'
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+    
+    // Add 4. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>Miniserver Username:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Add 5. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>Miniserver Password:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<input id="miniserverkennwort' + iteration + '" name="miniserverkennwort' + iteration + '" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the password for the above Miniserver Administrator account.">'
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Add 6. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '&nbsp;'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Disable Delete-Button if needed
+    DisableDelButton();
+
+    // Recreate JQUERY styles
+    $("#main_form2").trigger('create');
+
+  }
+
+  function DelMiniserver() {
+    // Total number of miniservers
+    var iteration = document.getElementById('miniservers').value;   
+    iteration = iteration-1;
+    document.getElementById("miniservers").value = iteration;
+
+    // Del 1. row 
+    var tbl = document.getElementById('miniservertbl');
+    var lastRow = tbl.rows.length;
+    var row = tbl.deleteRow(-1);
+    var row = tbl.deleteRow(-1);
+    var row = tbl.deleteRow(-1);
+    var row = tbl.deleteRow(-1);
+    var row = tbl.deleteRow(-1);
+    var row = tbl.deleteRow(-1);
+
+    // Disable Delete-Button if needed
+    DisableDelButton();
+
+    // Recreate JQUERY styles
+    $("#main").trigger('create')
+
+  }
+  function DisableDelButton() {
+    var iteration = document.getElementById('miniservers').value;   
+    if (iteration < 2) {
+      $('#delmsbtn').addClass('ui-disabled');
+    } else {
+      $('#delmsbtn').removeClass('ui-disabled');
+    }
+  }
+</script>
+  <!-- /content -->

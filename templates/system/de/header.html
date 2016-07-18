@@ -22,12 +22,21 @@
 
   <!-- main menu panel -->
   <div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true">
-    <h2>Hauptmen&uuml;</h2>
-    <p>
-
-    Some text..
-
-    </p>
+  <ul data-role="listview" data-ajax="false" data-inset="true">
+    <li data-role="list-divider">Systemeinstellungen</li>
+    <li><a href="/admin/system/admin.cgi?do=form">Admin-Zugang</a></li>
+    <li><a href="/admin/system/miniserver.cgi?do=form">Miniserver</a></li>
+    <li><a href="/admin/system/timeserver.cgi?do=form">Systemzeit</a></li>
+    <li><a href="/admin/system/network.cgi?do=form">Netzwerk</a></li>
+    <li><a href="">UMTS-Zugang</a></li>
+    <li><a href="">Display</a></li>
+    <li><a href="">Update</a></li>
+    <li><a href="">Installation</a></li>
+    <li><a href="/admin/system/power.cgi">Neustart</a></li>
+    <li><a href="/admin/system/setup/index.cgi">Setup-Assistent</a></li>
+    <li data-role="list-divider">Plugins</li>
+    <li><a href="/admin/plugins/miniserverbackup/index.cgi?do=form">Miniserver Backup</a></li>
+  </ul>
   </div>
   <!-- /main menu panel -->
 

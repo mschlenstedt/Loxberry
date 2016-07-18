@@ -1,0 +1,162 @@
+  <!-- content -->
+
+
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+      <h2>4th Step: Time Server </h2>
+
+      <p>
+      The Loxberry has no Real Time Clock onboard. The current time is not known after a Power loss or reboot. That's why we need to update the system time
+      after a reboot. For some functions it's very important that the Loxberry and Miniserver Time is synchronized (e. g. for Statistics or Troubleshooting).
+      </p>
+
+      <p>
+      Luckily the time must not be set by hand every time :-) The Loxberry provides two possibilities to obtain the exact Time:
+      Either using a direct adjustment with your Miniserver (recommended!) or using an Internet-Time Server (NTP Server).
+      </p>
+
+      <p>
+      We recommend the direct adjustment with your Miniserver because this ensures the identical time on both devices.
+      Furthermore no Internet connection is needed. As the Miniserver itself synchronizes the time using an Internet-Time Server we
+      can assume that the time on the Miniservers (and therefore the Loxberry Time, too) are exact.
+      </p>
+
+      <form method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
+      <input type="hidden" name="saveformdata" value="1">
+      <div class="form-group">
+        <table class="formtable" border="0" width="100%">
+        <tr>
+         <td width="25%">
+          <label id="labeluhrzeit">Time Synchronization:</label>
+          </td>
+          <td width="50%">
+          <fieldset data-role="controlgroup">
+          <input onclick="disable()" <!--$checked1--> id="zeitserver_miniserver" name="zeitserver" type="radio" value="miniserver">
+          <label for="zeitserver_miniserver">Using the Miniserver</label>
+          <input onclick="disable()" <!--$checked2--> id="zeitserver_ntp" name="zeitserver" type="radio" value="ntp">
+          <label for="zeitserver_ntp">Using a NTP-Server (Internet)</label>
+          </fieldset>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label id="labelntpserverurl">NTP-Server:</label>
+          </td>
+          <td>
+          <input id="ntpserverurl" name="ntpserverurl" type="text" class="textfield" 
+          value="<!--$ntpserverurl-->">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td valign="middle">
+          <a id="linkntpurls" href="http://www.pool.ntp.org/en/use.html" target="_blank">Suitable Time Server</a>
+          </td>
+        </tr>
+        <tr>
+          <td width="25%">
+          <label id="labelzeitzone">Timezone:</label>
+          </td>
+          <td width="50%">
+	      <select onclick="disable()" id="zeitzone" name="zeitzone" data-mini="true">
+
+            <!--$timezonelist-->
+
+            </select>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td width="25%">
+          <label id="labelzeitzone">Current System Time:</label>
+          </td>
+          <td width="50%" align="center">
+          <div id="time"></div>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td colspan=3>
+          <div id="form-error-message" class="form-error-message"></div>
+          </td>
+        </tr>
+        </table>
+      </div>
+      </form>
+      
+      <p>
+      &nbsp;
+      </p>
+
+      <p>
+      <center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Cancel</a>
+      <a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Back</a>
+      <button type="submit" form="main_form4" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Proceed to Step 5</button>
+      </center>
+      </p>
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+
+  <script>
+  var $messages = $('#form-error-message');
+  $.validate({
+    modules : 'security',
+    errorMessagePosition : $messages,
+  });
+
+  // Disable some options on Load depending on selected value
+  disable();
+
+  // Disable some options on click depending on selected value
+  function disable() {
+    // Miniserver or NTP
+    if ( document.main_form4.zeitserver_miniserver.checked == true ) {
+      $('#labelntpserverurl').addClass('ui-disabled');
+      $('#ntpserverurl').addClass('ui-disabled');
+      $('#linkntpurls').addClass('ui-disabled');
+    }
+    else {
+      $('#labelntpserverurl').removeClass('ui-disabled');
+      $('#ntpserverurl').removeClass('ui-disabled');
+      $('#linkntpurls').removeClass('ui-disabled');
+    }
+  }
+
+  </script>
+
+  <!-- /content -->

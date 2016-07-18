@@ -1,0 +1,80 @@
+  <!-- content -->
+
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+
+      <form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
+      <input type="hidden" name="saveformdata" value="1">
+      <input id="miniservers" type="hidden" name="miniservers" value="<!--$miniservers-->">
+      <div class="form-group">
+        <table id="miniservertbl" class="formtable" border="0" width="100%">
+        <tr>
+          <td width="100%" colspan=4>
+          <h2>1. Miniserver:</h2>
+          </td>
+        </tr>
+        <tr>
+          <td width="25%">
+          <label class="control-label" for="miniserverip1">IP-Address or Hostname:</label>
+          </td>
+          <td width="50%">
+          <input id="miniserverip1" name="miniserverip1" type="text" class="textfield" data-validation="custom" value="<!--$miniserverip-->"
+          data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* The entered IP-Address or Hostname is not valid. An IP-Address has the format xxx.xxx.xxx.xxx, e. g. 192.168.1.100">
+          </td>
+          <td width="5%">
+          <a id="btnnetscan" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#"><font size="-1">Scan</font>
+          </td>
+          <td width="20%">
+          <font size="-1"><div id="testurl"></div></font>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Portnumber:</label>
+          </td>
+          <td>
+          <input id="miniserverport1" name="miniserverport1" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="<!--$miniserverport-->" data-validation-error-msg="* The Portnumber must be in the range of 1 and 65535. The default Miniserver-Port is 80.">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1">The default port is <b>80</b></font>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Miniserver Username:</label>
+          </td>
+          <td>
+          <input id="miniserveruser1" name="miniserveruser1" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="<!--$miniserveruser-->" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1"></font>
+          </td>
+        </tr>
+        <tr>
+          <td>
+          <label>Miniserver Password:</label>
+          </td>
+          <td>
+          <input id="miniserverkennwort1" name="miniserverkennwort1" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="<!--$miniserverkennwort-->" data-validation-error-msg="* Please enter the password for the above Miniserver Administrator account.">
+          </td>
+          <td>
+          &nbsp;
+          </td>
+          <td>
+          <font size="-1"></font>
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>

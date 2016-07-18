@@ -42,8 +42,8 @@ $(document).ready(function () {
       data: "data",
       success: function(data){
         data.replace(/\r|\n/g, "");
-        $('#miniserverip').empty();
-        document.getElementById("miniserverip").value = data;
+        $('#miniserverip1').empty();
+        document.getElementById("miniserverip1").value = data;
         if (data == "") {
           if (lang == "de"){
             var url = 'Keinen Miniserver gefunden';

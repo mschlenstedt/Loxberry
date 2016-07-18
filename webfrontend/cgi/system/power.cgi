@@ -56,7 +56,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple('../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -226,8 +226,19 @@ open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing tem
 close(F);
 &footer;
 
-# Reboot
-$output = qx(sudo $poweroffbin);
+# Poweroff
+# Without the following workaround
+# the script cannot be executed as
+# background process via CGI
+my $pid = fork();
+die "Fork failed: $!" if !defined $pid;
+if ($pid == 0) {
+# do this in the child
+ open STDIN, "</dev/null";
+ open STDOUT, ">/dev/null";
+ open STDERR, ">/dev/null";
+ system("sleep 5 && sudo $poweroffbin &");
+}
 
 exit;
 
@@ -240,7 +251,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
   open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){
