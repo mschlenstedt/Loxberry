@@ -63,8 +63,9 @@
           <hr>
           Please paste the following URL in the Loxone Config into the Loxone Intercom-Object in the field "Picture when ringing (internal)":<br/>
           <br/>
-         <font face="courier"><b>http://<!--$self_host--><!--$self_script-->?kamera=<span style="color:#4040FF" id="cam_host_or_ip_url">Camera-Hostname:80</span>/Streaming/channels/1/picture&user=<span style="color:#FF40C0" id="cam_user_url">Username</span>&pass=<span style="color:#c080FF" id="cam_pass_url">Password</span></b></font>
-        </td>
+         <font face="courier"><b>http://<!--$self_host--><!--$plugin_script-->?kamera=<span style="color:#4040FF" id="cam_host_or_ip_url">Camera-Hostname:80</span>/Streaming/channels/1/picture&user=<span style="color:#FF40C0" id="cam_user_url">Username</span>&pass=<span style="color:#c080FF" id="cam_pass_url">Password</span></b></font>
+        	<a id="btntest" data-role="button" data-inline="true" data-mini="true" data-icon="refresh" href="#">Testen</a>
+     </td>
       </tr>
       </table>
       </center>
@@ -83,6 +84,7 @@
 
   </div>
 
+
   <script>
   var $messages = $('#form-error-message');
   $.validate({
@@ -90,12 +92,15 @@
     errorMessagePosition : $messages,
   });
   
- 
-$( "#cam_host_or_ip" ).keyup(function( event ) { $( "#cam_host_or_ip_url" ).html($( "#cam_host_or_ip").val());});
-$( "#cam_user" ).keyup(function( event ) { $( "#cam_user_url" ).html($( "#cam_user").val());});
-$( "#cam_pass" ).keyup(function( event ) { $( "#cam_pass_url" ).html($( "#cam_pass").val());});
- 
-
+$( "#btntest" ).css('visibility', 'hidden');
+$( "#cam_host_or_ip" ).keyup(function( event ) { $( "#cam_host_or_ip_url" ).html($( "#cam_host_or_ip").val()); $( "#btntest" ).css('visibility', 'visible')});
+$( "#cam_user" ).keyup(function( event ) { $( "#cam_user_url" ).html($( "#cam_user").val()); $( "#btntest" ).css('visibility', 'visible')});
+$( "#cam_pass" ).keyup(function( event ) { $( "#cam_pass_url" ).html($( "#cam_pass").val()); $( "#btntest" ).css('visibility', 'visible')});
+$( "#btntest" ).click( function () 
+{
+	url2open = "http://<!--$self_host--><!--$plugin_script-->?kamera=" + $( "#cam_host_or_ip").val() + 	 "/Streaming/channels/1/picture&user=" + 	 $( "#cam_user").val() + "&pass=" + $( "#cam_pass").val();
+	window.open(url2open, 'Cam-Connect','status=no,scrollbars=no,titlebar=no,toolbar=no,menubar=no,location=no');
+});
 
   </script>
 
