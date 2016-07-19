@@ -1,0 +1,52 @@
+  <!-- content -->
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%">
+
+      <h2>Howdy!</h2>
+
+      <p>
+      The Loxberry extends your Loxone Smarthome by many interesting and useful features, which can not provided by the Loxone-System itself. These features
+      are realized using Plugins, which can be installed later on. So you can install only the Plugins you want.
+      </p>
+
+      <p>
+      The Basic System of the Loxberry is free of charge and is maintained by volunteers in their leisure time. The Source Code is free and is distributed
+      under the Apache 2.0-License. The Loxberry arose from an idea in the Loxone-Forum (<a href="https://www.loxforum.com/" target="_blank">https://www.loxforum.com/</a>).
+      If you are looking for help or like to improve your Loxberry skills take a look into the Loxone Forum. It's a good port of call. All Loxberry Developers are 
+      active there and can probably help you.
+      </p>
+
+      <p>
+      In the following Setup-Wizard the basic System Setting like Networking or Time Server are done.
+      The Loxberry will not work without these mandatory settings. All further Plugins (Features) can be installed and configured later from the Main Menu.
+      </p>
+
+      <p>
+      An additionally hint: At any time the Info-Button in the upper right corner of your screen gives you a short help about the current configuration page.
+      There is also a Link to a more detailed Help Page where the features are described step by step. Don't hesitate to use the help!
+      </p>
+ 
+      <p>
+      &nbsp;
+      </p>
+
+      <form method="post" data-ajax="false" name="main_form0" id="main_form0" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
+      </form>
+
+      <p>
+      <center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Cancel</a>
+      <button type="submit" form="main_form0" id="btnsubmit0" data-role="button" data-inline="true" data-mini="true" data-icon="check">Proceed to Step 1</button>
+      </center>
+      </p>
+
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+  <!-- /content -->

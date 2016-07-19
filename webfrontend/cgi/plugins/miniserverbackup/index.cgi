@@ -66,54 +66,6 @@ our $selectedcron3;
 our $selectedcron4;
 our $selectedcron5;
 our $selectedcron6;
-our $selectedcounts1;
-our $selectedcounts2;
-our $selectedcounts3;
-our $selectedcounts4;
-our $selectedcounts5;
-our $selectedcounts6;
-our $selectedcounts7;
-our $selectedcounts8;
-our $selectedcounts9;
-our $selectedcounts10;
-our $selectedcounts11;
-our $selectedcounts12;
-our $selectedcounts13;
-our $selectedcounts14;
-our $selectedcounts15;
-our $selectedcounts16;
-our $selectedcounts17;
-our $selectedcounts18;
-our $selectedcounts19;
-our $selectedcounts20;
-our $selectedcounts21;
-our $selectedcounts22;
-our $selectedcounts23;
-our $selectedcounts24;
-our $selectedcounts25;
-our $selectedcounts26;
-our $selectedcounts27;
-our $selectedcounts28;
-our $selectedcounts29;
-our $selectedcounts30;
-our $selectedcounts31;
-our $selectedcounts32;
-our $selectedcounts33;
-our $selectedcounts34;
-our $selectedcounts35;
-our $selectedcounts36;
-our $selectedcounts37;
-our $selectedcounts38;
-our $selectedcounts39;
-our $selectedcounts40;
-our $selectedcounts41;
-our $selectedcounts42;
-our $selectedcounts43;
-our $selectedcounts44;
-our $selectedcounts45;
-our $selectedcounts46;
-our $selectedcounts47;
-our $selectedcounts48;
 our $languagefileplugin;
 our $phraseplugin;
 
@@ -122,7 +74,7 @@ our $phraseplugin;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.4";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -233,8 +185,6 @@ quotemeta($bkpcron);
 quotemeta($bkpcounts);
 
 # Prepare form defaults
-# Todo: Ugly - could this be done mopre elegantly?!?
-
 if ($autobkp eq "on") {
   $selectedauto2 = "selected=selected";
 } else {
@@ -253,104 +203,6 @@ if ($bkpcron eq "15min") {
   $selectedcron5 = "selected=selected";
 } elsif ($bkpcron eq "1m") {
   $selectedcron6 = "selected=selected";
-}
-
-if ($bkpcounts eq "1") {
-  $selectedcounts1 = "selected=selected";
-} elsif ($bkpcounts eq "2") {
-  $selectedcounts2 = "selected=selected";
-} elsif ($bkpcounts eq "3") {
-  $selectedcounts3 = "selected=selected";
-} elsif ($bkpcounts eq "4") {
-  $selectedcounts4 = "selected=selected";
-} elsif ($bkpcounts eq "5") {
-  $selectedcounts5 = "selected=selected";
-} elsif ($bkpcounts eq "6") {
-  $selectedcounts6 = "selected=selected";
-} elsif ($bkpcounts eq "7") {
-  $selectedcounts7 = "selected=selected";
-} elsif ($bkpcounts eq "8") {
-  $selectedcounts8 = "selected=selected";
-} elsif ($bkpcounts eq "9") {
-  $selectedcounts9 = "selected=selected";
-} elsif ($bkpcounts eq "10") {
-  $selectedcounts10 = "selected=selected";
-} elsif ($bkpcounts eq "11") {
-  $selectedcounts11 = "selected=selected";
-} elsif ($bkpcounts eq "12") {
-  $selectedcounts12 = "selected=selected";
-} elsif ($bkpcounts eq "13") {
-  $selectedcounts13 = "selected=selected";
-} elsif ($bkpcounts eq "14") {
-  $selectedcounts14 = "selected=selected";
-} elsif ($bkpcounts eq "15") {
-  $selectedcounts15 = "selected=selected";
-} elsif ($bkpcounts eq "16") {
-  $selectedcounts16 = "selected=selected";
-} elsif ($bkpcounts eq "17") {
-  $selectedcounts17 = "selected=selected";
-} elsif ($bkpcounts eq "18") {
-  $selectedcounts10 = "selected=selected";
-} elsif ($bkpcounts eq "19") {
-  $selectedcounts19 = "selected=selected";
-} elsif ($bkpcounts eq "20") {
-  $selectedcounts20 = "selected=selected";
-} elsif ($bkpcounts eq "21") {
-  $selectedcounts21 = "selected=selected";
-} elsif ($bkpcounts eq "22") {
-  $selectedcounts22 = "selected=selected";
-} elsif ($bkpcounts eq "23") {
-  $selectedcounts23 = "selected=selected";
-} elsif ($bkpcounts eq "24") {
-  $selectedcounts24 = "selected=selected";
-} elsif ($bkpcounts eq "25") {
-  $selectedcounts25 = "selected=selected";
-} elsif ($bkpcounts eq "26") {
-  $selectedcounts26 = "selected=selected";
-} elsif ($bkpcounts eq "27") {
-  $selectedcounts27 = "selected=selected";
-} elsif ($bkpcounts eq "28") {
-  $selectedcounts28 = "selected=selected";
-} elsif ($bkpcounts eq "29") {
-  $selectedcounts29 = "selected=selected";
-} elsif ($bkpcounts eq "30") {
-  $selectedcounts30 = "selected=selected";
-} elsif ($bkpcounts eq "31") {
-  $selectedcounts31 = "selected=selected";
-} elsif ($bkpcounts eq "32") {
-  $selectedcounts32 = "selected=selected";
-} elsif ($bkpcounts eq "33") {
-  $selectedcounts33 = "selected=selected";
-} elsif ($bkpcounts eq "34") {
-  $selectedcounts34 = "selected=selected";
-} elsif ($bkpcounts eq "35") {
-  $selectedcounts35 = "selected=selected";
-} elsif ($bkpcounts eq "36") {
-  $selectedcounts36 = "selected=selected";
-} elsif ($bkpcounts eq "37") {
-  $selectedcounts37 = "selected=selected";
-} elsif ($bkpcounts eq "38") {
-  $selectedcounts38 = "selected=selected";
-} elsif ($bkpcounts eq "39") {
-  $selectedcounts39 = "selected=selected";
-} elsif ($bkpcounts eq "40") {
-  $selectedcounts40 = "selected=selected";
-} elsif ($bkpcounts eq "41") {
-  $selectedcounts41 = "selected=selected";
-} elsif ($bkpcounts eq "42") {
-  $selectedcounts42 = "selected=selected";
-} elsif ($bkpcounts eq "43") {
-  $selectedcounts43 = "selected=selected";
-} elsif ($bkpcounts eq "44") {
-  $selectedcounts44 = "selected=selected";
-} elsif ($bkpcounts eq "45") {
-  $selectedcounts45 = "selected=selected";
-} elsif ($bkpcounts eq "46") {
-  $selectedcounts46 = "selected=selected";
-} elsif ($bkpcounts eq "47") {
-  $selectedcounts47 = "selected=selected";
-} elsif ($bkpcounts eq "48") {
-  $selectedcounts48 = "selected=selected";
 }
 
 print "Content-Type: text/html\n\n";
@@ -479,7 +331,13 @@ exit;
 
 sub log {
 
-print "Content-Type: text/ascii\n\n";
+if (!-e "$installfolder/log/plugins/miniserverbackup/backuplog.log") {
+  $error = $phraseplugin->param("TXT0004");
+  &error;
+  exit;
+}
+
+print "Content-Type: text/plain\n\n";
 open(F,"$installfolder/log/plugins/miniserverbackup/backuplog.log") || die "Missing file /log/plugins/miniserverbackup/backuplog.log";
   while (<F>) {
     print $_;
@@ -571,7 +429,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "/help/";
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
   open(F,"$installfolder/templates/plugins/miniserverbackup/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
     @help = <F>;
     foreach (@help){

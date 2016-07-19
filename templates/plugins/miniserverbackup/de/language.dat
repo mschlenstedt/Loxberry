@@ -5,3 +5,4 @@ TXT0000=An
 TXT0001=Aus
 TXT0002=Einstellungen wurden erfolgreich gespeichert.
 TXT0003=Manuelles Backup wird gestartet und sollte in Kürze im Downloadverzeichnis zur Verfügung stehen.
+TXT0004=Es konnte kein Logfile gefunden werden. Eventuell wurde noch kein Backup durchgeführt?

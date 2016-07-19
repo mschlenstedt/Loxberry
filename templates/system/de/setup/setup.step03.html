@@ -15,7 +15,7 @@
       </p>
 
       <p>
-      Wenn Du einen Internetrouter verwendest werden die Netzwerkeinstellungen
+      Wenn Du einen Internetrouter verwendest, werden die Netzwerkeinstellungen
       normalerweise per DHCP-Protokoll automatisch vom Router an den Client übertragen. Das ist sehr praktisch, allerdings wird jedem Client, der sich per DHCP
       neu am Router anmeldet, die jeweils nächste freie IP-Adresse zugewiesen. Somit kann sich die IP-Adresse ständig ändern. Es ist jedoch äußerst wichtig,
       dass sowohl der Loxone Miniserver als auch Dein Loxberry <b>immer über die gleiche IP-Adresse</b> im Netzwerk erreichbar sind. Ansonsten können beide nicht
@@ -74,7 +74,7 @@
         </tr>
         <tr>
           <td>
-          <label id="labelnetzwerkschluessel">Netzwerkschlüssel:</label>
+          <label id="labelnetzwerkschluessel">Netzwerkschl&uuml;ssel:</label>
           </td>
           <td>
           <input id="netzwerkschluessel" name="netzwerkschluessel" type="text" class="textfield"
@@ -96,7 +96,7 @@
           <input onclick="disable()" <!--$checked3--> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
           <label for="netzwerkadressen_dhcp">Automatisch beziehen (DHCP)</label>
           <input onclick="disable()" <!--$checked4--> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
-          <label for="netzwerkadressen_manual">Manuell festlegen</label>
+          <label for="netzwerkadressen_manual">Manuell festlegen (Statisch)</label>
           </fieldset>
           </td>
           <td width="5%" valign="middle">
@@ -156,7 +156,7 @@
         </tr>
         <tr>
           <td>
-          <label id="labelnetzwerknameserver">IP-Adresse des Nameserver:</label>
+          <label id="labelnetzwerknameserver">IP-Adresse des Nameservers:</label>
           </td>
           <td>
           <input id="netzwerknameserver" name="netzwerknameserver" type="text" class="textfield" value="<!--$netzwerknameserver-->" data-validation-optional="true"

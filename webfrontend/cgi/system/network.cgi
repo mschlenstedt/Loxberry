@@ -357,7 +357,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
   open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

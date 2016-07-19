@@ -1,0 +1,125 @@
+  <!-- content -->
+
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+
+      <center>
+      <table border=0 cellpadding=10>
+        <tr>
+        <td width="150px">
+        <a id="btnbackup" data-role="button" data-mini="true" href="./index.cgi?do=backup">Backup now!</a>
+        </td>
+        <td width="150px" cellpadding=10>
+        <a id="btnlogs" data-role="button" data-mini="true" href="./index.cgi?do=log" target="_blank">Logfile</a>
+        </td>
+        <td width="150px" cellpadding=10>
+        <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" target="_blank">Downloads</a>
+        </td>
+      </table>
+      </center>
+      
+      <br><hr><br>
+
+      <form method="post" data-ajax="false" name="main_form" id="main_form" action="./index.cgi">
+      <input type="hidden" name="saveformdata" value="1">
+      <div class="form-group">
+        <table class="formtable" border="0" width="100%">
+        <tr>
+          <td width="25%">
+          <label id="labelautobkp">Scheduled Backups:</label>
+          </td>
+          <td width="50%">
+          <fieldset>
+            <select id="autobkp" name="autobkp" data-role="flipswitch">
+              <option <!--$selectedauto1--> value="off">Off</option>
+              <option <!--$selectedauto2--> value="on">On</option>
+            </select>
+          </fieldset>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td width="25%">
+          <label id="labelbkpcron">Interval:</label>
+          </td>
+          <td width="50%">
+	    <select id="bkpcron" name="bkpcron" data-mini="true">
+              <option value="15min" <!--$selectedcron1-->>15 min</option>
+              <option value="30min" <!--$selectedcron2-->>30 min</option>
+              <option value="60min" <!--$selectedcron3-->>Every hour</option>
+              <option value="1d" <!--$selectedcron4-->>Daily</option>
+              <option value="1w" <!--$selectedcron5-->>Weekly</option>
+              <option value="1m" <!--$selectedcron6-->>Monthly</option>
+            </select>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td width="25%">
+          <label id="labelbkpcounts">Number of backups to be stored in the archive:</label>
+          </td>
+          <td width="50%">
+          <input id="bkpcounts" name="bkpcounts" type="text" data-validation="number" data-validation-allowing="range[1;200]" class="textfield"
+          value="<!--$bkpcounts-->" data-validation-error-msg="* Please enter a number between 1 and 500. This number of (old) Backup-Files will be kept for download. Older archives are deleted.">
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td colspan=4>
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td colspan=3>
+          <div id="form-error-message" class="form-error-message"></div>
+          </td>
+        </tr>
+        </table>
+      </div>
+      </form>
+
+      <p>
+      &nbsp;
+      </p>
+
+      <p>
+      <center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
+      <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
+      </center>
+      </p>
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+
+  <script>
+  var $messages = $('#form-error-message');
+  $.validate({
+    modules : 'security',
+    errorMessagePosition : $messages,
+  });
+  </script>
+
+  <!-- /content -->
