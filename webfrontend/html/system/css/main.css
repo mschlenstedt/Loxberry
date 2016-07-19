@@ -23,3 +23,11 @@ table.menutable td.caption {
   text-align: left;
   vertical-align: middle;
 }
+
+.loxberry-logo {
+	background-color: #FFFFFF;
+	background-image: url("../images/icons/loxberry.svg");
+	background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+}
