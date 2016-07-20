@@ -51,7 +51,14 @@ my $cgi = new CGI;
 our $languagefileplugin;
 our $phraseplugin;
 our $self_host;
-our $self_script;
+our $plugin_script;
+our $plugin_cfg;
+our $plugin_watermark;
+our $saveformdata;
+our $plugin_watermark_label;
+our $plugin_name;
+our $message;
+our $nexturl;
 
 ##########################################################################
 # Read Settings
@@ -60,10 +67,12 @@ our $self_script;
 # Version of this script
 $version = "0.0.2";
 
-$cfg             = new Config::Simple("$home/config/system/general.cfg");
-$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
+$cfg              = new Config::Simple("$home/config/system/general.cfg");
+$installfolder    = $cfg->param("BASE.INSTALLFOLDER");
+$lang             = $cfg->param("BASE.LANG");
 
+$plugin_cfg       = new Config::Simple("$home/config/plugins/cam-connect/cam-connect.cfg");
+$plugin_watermark = $plugin_cfg->param("WATERMARK");
 
 # Everything from URL
 foreach (split(/&/,$ENV{'QUERY_STRING'})){
@@ -75,8 +84,18 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
   $query{$namef} = $value;
 }
 
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
+if ( param('plugin_watermark') )
+{
+	$plugin_watermark = param('plugin_watermark');
+	if ($plugin_watermark eq "on" || $plugin_watermark eq "1" || $plugin_watermark eq "true") 
+	{
+		$plugin_watermark = 1;
+	}
+	else
+	{
+		$plugin_watermark = 0;
+  }
+}
 
 ##########################################################################
 # Language Settings
@@ -106,11 +125,91 @@ $phraseplugin = new Config::Simple($languagefileplugin);
 
 $template_title = $phrase->param("TXT0000") . ": " . $phraseplugin->param("TXT0000");
 $self_host =$cgi->server_name();
-$self_script =$cgi->script_name();
+$plugin_script = "/plugins/cam-connect/";
 
 ##########################################################################
+# Plugin Settings
+##########################################################################
+
+if ($plugin_watermark eq 1 || $plugin_watermark eq "on" || $plugin_watermark eq "true") 
+{
+    $plugin_watermark      	 = '$("#plugin_watermark").prop("checked", 1);';
+    $plugin_watermark_label    = $phraseplugin->param("TXT0003");    
+}
+else
+{
+    $plugin_watermark      	 = '$("#plugin_watermark").prop("checked", 0);';
+    $plugin_watermark_label    = $phraseplugin->param("TXT0003");    
+}
+
+$plugin_name = $phraseplugin->param("TXT0000");
+
+###############################
+###########################################
 # Main program
 ##########################################################################
+
+
+		# Form Save?
+		
+		if ( param('saveformdata') )
+		{
+		$saveformdata = param('saveformdata');
+		if ($saveformdata eq "") 
+		{
+			$saveformdata = 0;
+		}
+		else
+		{
+		 quotemeta($saveformdata);
+		 $saveformdata      =~ tr/0-1//cd;
+		 $saveformdata      = substr($saveformdata,0,1);
+		}
+		}
+		else
+		{
+		$saveformdata = 0;
+		}
+		
+		if ($saveformdata == 1)
+		{
+		# Write configuration file
+		if ( param('plugin_watermark') )
+		{
+		$plugin_watermark = param('plugin_watermark');
+		if ($plugin_watermark eq "on" || $plugin_watermark eq "1" || $plugin_watermark eq "true") 
+		{
+			$plugin_watermark = 1;
+		}
+		else
+		{
+			$plugin_watermark = 0;
+		}
+		}
+		else
+		{
+		$plugin_watermark = 0;
+		}
+		
+		$plugin_cfg->param("WATERMARK", "$plugin_watermark");
+		$plugin_cfg->save();
+		
+		print "Content-Type: text/html\n\n";
+		$template_title = $phrase->param("TXT0000") . ": " . $phraseplugin->param("TXT0000");;
+		$message = $phraseplugin->param("TXT0004");
+		$nexturl = "javascript:history.back();";
+		
+		# Print Template
+		&header;
+		open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
+		while (<F>) {
+		  $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+		  print $_;
+		}
+		close(F);
+		&footer;
+		exit;
+		}
 
 &defaultpage;
 
@@ -126,6 +225,7 @@ print "Content-Type: text/html\n\n";
 
 # Print Template
 &header;
+
 open(F,"$installfolder/templates/plugins/cam-connect/$lang/settings.html") || die "Missing template plugins/cam-connect/$lang/settings.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;

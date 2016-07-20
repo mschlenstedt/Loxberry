@@ -10,7 +10,10 @@
       <table border=0 cellpadding=10>
        <tr>
         <td colspan="3" width="100%">
-           <center><b>This Plugin has no configuration options.</b></center>
+           <center><b>Configuration Settings for the <!--$plugin_name--> Plugin</b><br/><br/></center>
+            <form method="post" data-ajax="false" name="main_form" id="main_form" action="./index.cgi">
+          <label><input type="checkbox" id="plugin_watermark" name="plugin_watermark"><!--$plugin_watermark_label--></label>
+          <script><!--$plugin_watermark--></script>
           <br/><hr>
           But this page can help you to find the correct URL for your Loxone Config Parameter of the Loxone Intercom Object.
           <br/><br/><i>This example works for a <b>Trendnet TV-IP310PI</b> camera.</i> 
@@ -64,7 +67,7 @@
           Please paste the following URL in the Loxone Config into the Loxone Intercom-Object in the field "Picture when ringing (internal)":<br/>
           <br/>
          <font face="courier"><b>http://<!--$self_host--><!--$plugin_script-->?kamera=<span style="color:#4040FF" id="cam_host_or_ip_url">Camera-Hostname:80</span>/Streaming/channels/1/picture&user=<span style="color:#FF40C0" id="cam_user_url">Username</span>&pass=<span style="color:#c080FF" id="cam_pass_url">Password</span></b></font>
-        	<a id="btntest" data-role="button" data-inline="true" data-mini="true" data-icon="refresh" href="#">Testen</a>
+        	<a id="btntest" data-role="button" data-inline="true" data-mini="true" data-icon="refresh" href="#">Test</a>
      </td>
       </tr>
       </table>
@@ -74,8 +77,12 @@
       </p>
       <p>
       <center>
-      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/index.cgi">OK</a>
-      </center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
+      <input type="hidden" name="saveformdata" value="1">
+      <input type="hidden" name="lang" value="<!--$lang-->">
+      <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
+     </form>
+           </center>
       </p>
 
     </div>
