@@ -16,11 +16,13 @@ $cfg         = parse_ini_file($config_file, TRUE);
 $lang        = $cfg["BASE"]["LANG"];
 // $lang="en";  // To override the Loxberry Base-Language uncomment this line.
 
+$plugin_config_file = "../../../../config/plugins/cam-connect/cam-connect.cfg";
+$plugin_cfg         = parse_ini_file($plugin_config_file, FALSE);
+$watermark          = $plugin_cfg["WATERMARK"];
+
 // Read Plugin configuration file to get the strings for the right language
 $phrase_file = "../../../../templates/plugins/cam-connect/$lang/language.dat";
 $phrases     = parse_ini_file($phrase_file);
-$error_msg   = $phrases["TXT0001"];
-(strlen($error_msg) > 0)?$error_msg=$error_msg:$error_msg="Plugin-Error: Errortext N/A";   
 
 // Read IP-CAM connection details from URL 
 $url  = 'http://'.addslashes($_GET['kamera']); 
@@ -39,27 +41,66 @@ curl_setopt($curl, CURLOPT_USERPWD, $_GET['user'].":".$_GET['pass']);
 curl_setopt($curl, CURLOPT_URL, $url);
 
 // Read picture from IP-Cam and close connection to Cam
-$picture = curl_exec($curl);
-curl_close($curl);
+$picture = curl_exec($curl);curl_close($curl);
 
 // If the result has less than 500 byte, it's no picture.
 if(mb_strlen($picture) < 500) 
 {
-  // Display an Error-Picture instead.
-  header ("Content-type: image/png");
-  $image = @ImageCreate (320, 240) or die ($error_msg);
-  $background_color = ImageColorAllocate ($image, 255, 240, 240);
-  $text_color = ImageColorAllocate ($image, 255, 64, 64);
-  ImageString ($image, 20, 50, 110, $error_msg, $text_color);
-  ImagePNG ($image);
-  ImageDestroy($image);
+	// Image too small, raise error 0001
+  error_image($phrases,"TXT0001");
 }
 else 
 {
-  // Seems to be ok - Display the received picture.
-  list($width, $height, $type, $attr) = getimagesizefromstring($picture);
-  header('Content-Type: '.$type);
-  header('Content-length: '.strlen($picture));
-  header('Content-Disposition: inline; filename="snapshot.jpg"');
-  echo $picture;
+  // Seems to be ok - Display the picture
+  header('Content-type: image/jpeg');
+  header('Content-Disposition: inline; filename="snapshot.jpeg"');
+  if ($watermark == 1) 
+  {
+  	// Create Cam Image Object
+		$watermarked_picture = imagecreatefromstring($picture);
+		list($ix, $iy, $type, $attr) = getimagesizefromstring($picture);
+		if ($type <> 2) error_image($phrases,"TXT0002");
+		
+		// Create Watermark Image
+		$stamp = imagecreatefrompng("../../../../webfrontend/html/plugins/cam-connect/watermark.png");
+		$sx    = imagesx($stamp);
+		$sy    = imagesy($stamp);
+		
+		// Wanted Logo Size
+		$logo_width  = 120;
+		$logo_height = 86;
+		
+		// Borders for Watermark
+		$margin_right  = $ix - $logo_width - 20;
+		$margin_bottom = 20;
+		
+		// Mix the images together
+		ImageCopyResized($watermarked_picture, $stamp, $ix - $logo_width - $margin_right, $iy - $logo_height - $margin_bottom, 0, 0, $logo_width, $logo_height, $sx, $sy);
+    ImageJPEG   ($watermarked_picture);
+		ImageDestroy($stamp);
+		ImageDestroy($watermarked_picture);
+  }
+  else
+  {
+    echo $picture;
+  }
+  exit;
 }
+
+function error_image ($phrases,$error_code) 
+{
+  // Read error string
+  $error_msg   = $phrases[$error_code];
+  (strlen($error_msg) > 0)?$error_msg=$error_msg:$error_msg="Plugin-Error: [$error_code]";   
+
+  // Display an Error-Picture
+  header ("Content-type: image/jpeg");
+  $error_image = @ImageCreate (320, 240) or die ($error_msg);
+  $background_color = ImageColorAllocate ($error_image, 255, 240, 240);
+  $text_color = ImageColorAllocate ($error_image, 255, 64, 64);
+  ImageString ($error_image, 20, 50, 110, $error_msg, $text_color);
+  ImageJPEG ($error_image);
+  ImageDestroy($error_image);
+  exit;
+}
+

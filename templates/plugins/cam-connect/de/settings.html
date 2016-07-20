@@ -10,9 +10,12 @@
       <table border=0 cellpadding=10>
        <tr>
         <td colspan="3" width="100%">
-           <center><b>Dieses Plugin hat keine Konfigurationseinstellungen.</b></center>
-          <br/><hr>
-          Diese Seite kann dir aber helfen, den richtigen URL f&uuml;r die Loxone Config Parameter der Loxone Intercom zu finden.
+           <center><b>Konfigurationseinstellungen f&uuml;r das <!--$plugin_name--> Plugin</b><br/><br/></center>
+          <form method="post" data-ajax="false" name="main_form" id="main_form" action="./index.cgi">
+             <label><input type="checkbox" id="plugin_watermark" name="plugin_watermark"><!--$plugin_watermark_label--></label>
+          <script><!--$plugin_watermark--></script>
+	        <br/><hr>
+          Dieser Abschnitt kann dir helfen, den richtigen URL f&uuml;r die Loxone Config Parameter der Loxone Intercom zu finden.
           <br/><br/><i>Dieses Beispiel ist f&uuml;r eine <b>Trendnet TV-IP310PI</b> g&uuml;ltig.</i> 
         </td>
        </tr>
@@ -74,7 +77,11 @@
       </p>
       <p>
       <center>
-      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/index.cgi">OK</a>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Abbrechen</a>
+      <input type="hidden" name="saveformdata" value="1">
+      <input type="hidden" name="lang" value="<!--$lang-->">
+      <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Speichern</button>
+          </form>
       </center>
       </p>
 
