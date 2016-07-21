@@ -61,6 +61,8 @@ our $message;
 our $nexturl;
 our $pluginconfigdir  = "$home/config/plugins/cam-connect";
 our $pluginconfigfile = "$pluginconfigdir/cam-connect.cfg";
+our $cam_model_list;
+our @lines;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -227,6 +229,23 @@ exit;
 #####################################################
 
 sub defaultpage {
+
+
+# Prepare Cams
+$cam_model_list="";
+open(F,"$installfolder/config/plugins/cam-connect/camera_models.dat") || die "Missing camera list.";
+ flock(F,2);
+ @lines = <F>;
+ flock(F,8);
+close(F);
+foreach (@lines){
+  s/[\n\r]//g;
+  our @cams = split /\|/, $_;
+    $cam_model_list = "$cam_model_list\n<option value=\"$cams[2]\">$cams[0] - $cams[1]</option>\n";
+   # $cam_model_list = "$cam_model_list\n\"$cams[0] - $cams[1]\"\n";
+
+}
+
 
 print "Content-Type: text/html\n\n";
 
