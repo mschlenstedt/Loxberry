@@ -293,7 +293,7 @@ sub header {
     @help = <F>;
     foreach (@help){
       s/[\n\r]/ /g;
-      my $helptext = $helptext . $_;
+      $helptext = $helptext . $_;
     }
   close(F);
 
