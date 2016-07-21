@@ -286,7 +286,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Cam-Connect";
   $helptext = "";
    open(F,"$installfolder/templates/plugins/cam-connect/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
     @help = <F>;
