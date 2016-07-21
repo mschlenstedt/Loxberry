@@ -111,6 +111,9 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $miniserverpass  = $cfg->param("MINISERVER$msno.PASS");
   $miniserverpport = $cfg->param("MINISERVER$msno.PORT");
 
+  $logmessage = "$miniserverip $miniserverpport $miniserveradmin $miniserverpass  $i";
+  &log;
+
   # Get Firmware Version from Miniserver
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
   $ua = LWP::UserAgent->new;

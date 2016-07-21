@@ -124,7 +124,65 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 6. row 
+  // Add 6. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+    
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '&nbsp;'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<label><input type="checkbox" id="miniserverdns' + iteration + '" name="miniserverdns' + iteration + '">Use Cloud-DNS</label>';
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Add 7. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+    row.setAttribute('id','miniservercloudurlrow' + iteration);
+    row.setAttribute('dnsurl','');
+    
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>dns.loxonecloud.com-Address:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '  <input id="miniservercloudurl' + iteration + '" name="miniservercloudurl' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="miniserverdns' + iteration + '" data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Please enter a valid dns.loxonecloud.com Address. Example: http://dns.loxonecloud.com/504F12345678" value="">';
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+
+  	$("#miniserverdns" + iteration).change(function() 
+    { 
+      if($(this).is(":checked")) 
+      {
+        $("#miniservercloudurl" + iteration).val($("#miniservercloudurlrow<!--$msno-->").attr( "dnsurl" ));
+				$("#miniservercloudurl" + iteration).attr("data-validation-optional","false");
+				$("#miniservercloudurlrow" + iteration).css('visibility', 'visible');
+      }
+      else
+      {
+				$("#miniservercloudurl" + iteration).attr("data-validation-optional","true");
+  			$("#miniservercloudurlrow" + iteration).css('visibility', 'hidden');
+        $("#miniservercloudurl" + iteration).val("");
+	  		$("#miniservercloudurl" + iteration).trigger( "focus" );
+  		}
+    });
+
+    $('#miniservercloudurl' + iteration).change(function() 
+    { 
+    	if ($("#miniservercloudurlrow" + iteration).is(':visible') && $('#miniserverdns' + iteration).is(":checked"))
+    	{
+  			$("#miniservercloudurlrow" + iteration).attr( "dnsurl",$("#miniservercloudurl" + iteration).val());
+      }
+    });
+
+   		$("#miniserverdns" + iteration).trigger( "change" );
+
+    // Add 8. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 
@@ -141,6 +199,13 @@
     // Disable Delete-Button if needed
     DisableDelButton();
 
+    // Reinit Validator
+		 var $messages = $('#form-error-message');
+		  $.validate({
+		    modules : 'security',
+		    errorMessagePosition : $messages,
+		  });
+
     // Recreate JQUERY styles
     $("#main_form2").trigger('create');
 
@@ -155,6 +220,8 @@
     // Del 1. row 
     var tbl = document.getElementById('miniservertbl');
     var lastRow = tbl.rows.length;
+    var row = tbl.deleteRow(-1);
+    var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);

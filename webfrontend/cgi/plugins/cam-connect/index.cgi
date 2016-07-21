@@ -59,7 +59,8 @@ our $plugin_watermark_label;
 our $plugin_name;
 our $message;
 our $nexturl;
-
+our $pluginconfigdir  = "$home/config/plugins/cam-connect";
+our $pluginconfigfile = "$pluginconfigdir/cam-connect.cfg";
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -71,8 +72,16 @@ $cfg              = new Config::Simple("$home/config/system/general.cfg");
 $installfolder    = $cfg->param("BASE.INSTALLFOLDER");
 $lang             = $cfg->param("BASE.LANG");
 
-$plugin_cfg       = new Config::Simple("$home/config/plugins/cam-connect/cam-connect.cfg");
-$plugin_watermark = $plugin_cfg->param("WATERMARK");
+# If there's no plugin config file create default
+if (!-r $pluginconfigfile) 
+{
+	mkdir $pluginconfigdir unless -d $pluginconfigdir; # Check if dir exists. If not create it.
+	open my $configfileHandle, ">>", "$pluginconfigfile" or die "Can't open '$pluginconfigfile'\n";
+	print $configfileHandle "WATERMARK=1\n";
+	close $configfileHandle;
+}
+  $plugin_cfg       = new Config::Simple($pluginconfigfile);
+	$plugin_watermark = $plugin_cfg->param("WATERMARK");
 
 # Everything from URL
 foreach (split(/&/,$ENV{'QUERY_STRING'})){
@@ -161,9 +170,7 @@ $plugin_name = $phraseplugin->param("TXT0000");
 		}
 		else
 		{
-		 quotemeta($saveformdata);
-		 $saveformdata      =~ tr/0-1//cd;
-		 $saveformdata      = substr($saveformdata,0,1);
+		 $saveformdata      = 1;
 		}
 		}
 		else
@@ -279,8 +286,9 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
-  open(F,"$installfolder/templates/plugins/cam-connect/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Cam-Connect";
+  $helptext = "";
+   open(F,"$installfolder/templates/plugins/cam-connect/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
     @help = <F>;
     foreach (@help){
       s/[\n\r]/ /g;
