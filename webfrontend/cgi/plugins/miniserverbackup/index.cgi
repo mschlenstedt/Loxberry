@@ -74,7 +74,7 @@ our $phraseplugin;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.4";
+$version = "0.0.5";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
