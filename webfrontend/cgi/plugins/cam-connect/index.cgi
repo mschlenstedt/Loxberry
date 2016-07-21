@@ -59,7 +59,8 @@ our $plugin_watermark_label;
 our $plugin_name;
 our $message;
 our $nexturl;
-
+our $pluginconfigdir  = "$home/config/plugins/cam-connect";
+our $pluginconfigfile = "$pluginconfigdir/cam-connect.cfg";
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -71,8 +72,16 @@ $cfg              = new Config::Simple("$home/config/system/general.cfg");
 $installfolder    = $cfg->param("BASE.INSTALLFOLDER");
 $lang             = $cfg->param("BASE.LANG");
 
-$plugin_cfg       = new Config::Simple("$home/config/plugins/cam-connect/cam-connect.cfg");
-$plugin_watermark = $plugin_cfg->param("WATERMARK");
+# If there's no plugin config file create default
+if (!-r $pluginconfigfile) 
+{
+	mkdir $pluginconfigdir unless -d $pluginconfigdir; # Check if dir exists. If not create it.
+	open my $configfileHandle, ">>", "$pluginconfigfile" or die "Can't open '$pluginconfigfile'\n";
+	print $configfileHandle "WATERMARK=1\n";
+	close $configfileHandle;
+}
+  $plugin_cfg       = new Config::Simple($pluginconfigfile);
+	$plugin_watermark = $plugin_cfg->param("WATERMARK");
 
 # Everything from URL
 foreach (split(/&/,$ENV{'QUERY_STRING'})){
@@ -284,7 +293,7 @@ sub header {
     @help = <F>;
     foreach (@help){
       s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
+      my $helptext = $helptext . $_;
     }
   close(F);
 
