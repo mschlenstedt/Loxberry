@@ -96,6 +96,11 @@ our $dsn;
 our $dbh;
 our $sth;
 our $sqlerr;
+our $miniserverdns;
+our $miniservercloudurl;
+our $curlbin;
+our $grepbin;
+our $awkbin;
 
 ##########################################################################
 # Read Settings
@@ -108,6 +113,9 @@ $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 $rebootbin       = $cfg->param("BINARIES.REBOOT");
+$curlbin         = $cfg->param("BINARIES.CURL");
+$grepbin         = $cfg->param("BINARIES.GREP");
+$awkbin          = $cfg->param("BINARIES.AWK");
 
 #########################################################################
 # Parameter
@@ -136,6 +144,8 @@ $miniserverip1        = param('miniserverip1');
 $miniserverport1      = param('miniserverport1');
 $miniserveruser1      = param('miniserveruser1');
 $miniserverkennwort1  = param('miniserverkennwort1');
+$miniserverdns1       = param('miniserverdns1');
+$miniservercloudurl1  = param('miniservercloudurl1');
 $netzwerkanschluss    = param('netzwerkanschluss');
 $netzwerkssid         = param('netzwerkssid');
 $netzwerkschluessel   = param('netzwerkschluessel');
@@ -357,6 +367,8 @@ if ($saveformdata) {
   $session->param("miniserverport1", $miniserverport1);
   $session->param("miniserveruser1", $miniserveruser1);
   $session->param("miniserverkennwort1", $miniserverkennwort1);
+  $session->param("miniserverdns1", $miniserverdns1);
+  $session->param("miniservercloudurl1", $miniservercloudurl1);
 }
 
 # Read data from Session file
@@ -364,12 +376,16 @@ $miniserverip1       = $session->param("miniserverip1");
 $miniserverport1     = $session->param("miniserverport1");
 $miniserveruser1     = $session->param("miniserveruser1");
 $miniserverkennwort1 = $session->param("miniserverkennwort1");
+$miniserverdns1      = $session->param("miniserverdns1");
+$miniservercloudurl1 = $session->param("miniservercloudurl1");
 
 # Filter
 quotemeta($miniserverip1);
 quotemeta($miniserverport1);
 quotemeta($miniserveruser1);
 quotemeta($miniserverkennwort1);
+quotemeta($miniserverdns1);
+quotemeta($miniservercloudurl1);
 
 # Default values
 if (!$miniserverport1) {$miniserverport1 = "80";}
@@ -408,9 +424,37 @@ if ($saveformdata) {
   $session->param("miniserverport1", $miniserverport1);
   $session->param("miniserveruser1", $miniserveruser1);
   $session->param("miniserverkennwort1", $miniserverkennwort1);
+  $session->param("miniserverdns1", $miniserverdns1);
+  $session->param("miniservercloudurl1", $miniservercloudurl1);
 
   # Test if Miniserver is reachable
+  if ( $miniserverdns1 eq "on" || $miniserverdns1 eq "checked" || $miniserverdns1 eq "true" || $miniserverdns1 eq "1" )
+  {
+   $miniserverdns1 = "checked";
+   our $dns_info = `$curlbin -I $miniservercloudurl1 --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+   my @dns_info_pieces = split /:/, $dns_info;
+   if ($dns_info_pieces[1])
+   {
+    $dns_info_pieces[1] =~ s/^\s+|\s+$//g;
+   }
+   else
+   {
+    $dns_info_pieces[1] = 80;
+   }
+   if ($dns_info_pieces[0])
+   {
+    $dns_info_pieces[0] =~ s/^\s+|\s+$//g;
+   }
+   else
+   {
+    $dns_info_pieces[0] = "[DNS-Error]"; 
+   }
+  $url = "http://$miniserveruser1:$miniserverkennwort1\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
+  }
+  else
+  {
   $url = "http://$miniserveruser1:$miniserverkennwort1\@$miniserverip1\:$miniserverport1/dev/cfg/version";
+  }
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
   local $SIG{ALRM} = sub { die };

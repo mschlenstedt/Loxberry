@@ -25,10 +25,7 @@
           <td>
           <input id="miniserverport<!--$msno-->" name="miniserverport<!--$msno-->" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="<!--$miniserverport-->" data-validation-error-msg="* The Portnumber must be in the range of 1 and 65535. The default Miniserver-Port is 80.">
           </td>
-          <td>
-          &nbsp;
-          </td>
-          <td>
+          <td colspan="2">
           <font size="-1">The default port is <b>80</b></font>
           </td>
         </tr>
@@ -60,9 +57,64 @@
           <font size="-1"></font>
           </td>
         </tr>
+			  <tr>
+          <td width="25%">
+          &nbsp;
+          </td>
+          <td width="50%">
+          <label><input <!--$miniserverdns--> type="checkbox" id="miniserverdns<!--$msno-->" name="miniserverdns<!--$msno-->">Use Cloud-DNS</label>
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr id="miniservercloudurlrow<!--$msno-->" dnsurl="<!--$miniservercloudurl-->">
+          <td width="25%">
+          <label class="control-label" for="miniservercloudurl<!--$msno-->">dns.loxonecloud.com-Address:</label>
+          </td>
+          <td width="50%">
+          <input id="miniservercloudurl<!--$msno-->" name="miniservercloudurl<!--$msno-->" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="miniserverdns<!--$msno-->"  data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Please enter a valid dns.loxonecloud.com Address. Example: http://dns.loxonecloud.com/504F12345678" value="<!--$miniservercloudurl-->">
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
         <tr>
           <td colspan=4>
           &nbsp;
           </td>
         </tr>
+<SCRIPT>
+  	$('#miniserverdns<!--$msno-->').change(function() 
+    { 
+      if($(this).is(":checked")) 
+      {
+        $("#miniservercloudurl<!--$msno-->").val($("#miniservercloudurlrow<!--$msno-->").attr( "dnsurl" ));
+				$("#miniservercloudurl<!--$msno-->").attr("data-validation-optional","false");
+				$("#miniservercloudurlrow<!--$msno-->").css('visibility', 'visible');
+      }
+      else
+      {
+				$("#miniservercloudurl<!--$msno-->").attr("data-validation-optional","true");
+  			$("#miniservercloudurlrow<!--$msno-->").css('visibility', 'hidden');
+        $("#miniservercloudurl<!--$msno-->").val("");
+	  		$("#miniservercloudurl<!--$msno-->").trigger( "focus" );
+  		}
+    });
 
+    $('#miniservercloudurl<!--$msno-->').change(function() 
+    { 
+    	if ($("#miniservercloudurlrow<!--$msno-->").is(':visible') && $('#miniserverdns<!--$msno-->').is(":checked"))
+    	{
+  			$("#miniservercloudurlrow<!--$msno-->").attr( "dnsurl",$("#miniservercloudurl<!--$msno-->").val());
+      }
+    });
+
+   //		$("#miniserverdns<!--$msno-->").trigger( "change" );
+</SCRIPT>

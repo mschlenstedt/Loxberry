@@ -86,6 +86,34 @@
           </td>
         </tr>
         <tr>
+          <td width="25%">
+          &nbsp;
+          </td>
+          <td width="50%">
+          <label><input <!--$miniserverdns--> type="checkbox" id="miniserverdns1" name="miniserverdns1">Cloud-DNS verwenden</label>
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr id="miniservercloudurlrow1" dnsurl="<!--$miniservercloudurl-->">
+          <td width="25%">
+          <label class="control-label" for="miniservercloudurl1">dns.loxonecloud.com-Adresse:</label>
+          </td>
+          <td width="50%">
+          <input id="miniservercloudurl1" name="miniservercloudurl1" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="miniserverdns1"  data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Bitte eine g&uuml;ltige dns.loxonecloud.com Adresse eingeben. Beispiel: http://dns.loxonecloud.com/504F12345678" value="<!--$miniservercloudurl-->">
+          </td>
+          <td width="5%">
+           &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
           <td colspan=4>
           &nbsp;
           </td>
@@ -126,5 +154,33 @@
     errorMessagePosition : $messages,
   });
   </script>
+
+<SCRIPT>
+    $('#miniserverdns1').change(function() 
+    { 
+      if($(this).is(":checked")) 
+      {
+        $("#miniservercloudurl1").val($("#miniservercloudurlrow1").attr( "dnsurl" ));
+				$("#miniservercloudurl1").attr("data-validation-optional","false");
+	  		$("#miniservercloudurlrow1").css('visibility', 'visible');
+      }
+      else
+      {
+				$("#miniservercloudurl1").attr("data-validation-optional","true");
+  		  $("#miniservercloudurlrow1").css('visibility', 'hidden');
+        $("#miniservercloudurl1").val("");
+	  		$("#miniservercloudurl1").trigger( "focus" );
+  		}
+    });
+
+    $('#miniservercloudurl1').change(function() 
+    { 
+    	if ($("#miniservercloudurlrow1").is(':visible') && $('#miniserverdns1').is(":checked"))
+    	{
+  			$("#miniservercloudurlrow1").attr( "dnsurl",$("#miniservercloudurl1").val());
+      }
+    });
+		$("#miniserverdns1").trigger( "change" );
+</SCRIPT>
 
   <!-- /content -->
