@@ -181,7 +181,7 @@ $table = "$table</tbody>\n";
 
 print "Content-Type: text/html\n\n";
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0003");
+$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0009");
 
 # Print Template
 open(F,"$installdir/templates/system/$lang/listnetworks.html") || die "Missing template system/$lang/listnetworks.html";
