@@ -68,6 +68,7 @@ our $miniservercloudurl;
 our $curlbin;
 our $grepbin;
 our $awkbin;
+our $miniservernote;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -176,11 +177,14 @@ $miniserveruser     = $cfg->param("MINISERVER1.ADMIN");
 $miniserverkennwort = $cfg->param("MINISERVER1.PASS");
 $miniserverdns      = $cfg->param("MINISERVER1.DNS");
 $miniservercloudurl = $cfg->param("MINISERVER1.CLOUDURL");
+$miniservernote     = $cfg->param("MINISERVER1.NOTE");
+
 
 quotemeta($miniserverip);
 quotemeta($miniserverport);
 quotemeta($miniserveruser);
 quotemeta($miniserverkennwort);
+quotemeta($miniservernote);
 quotemeta($miniserverdns);
 quotemeta($miniservercloudurl);
 open(F,"$installfolder/templates/system/$lang/miniserver_start.html") || die "Missing template system/$lang/miniserver_start.html";
@@ -198,12 +202,14 @@ while ($msno <= $miniservers) {
   $miniserverport     = $cfg->param("MINISERVER$msno.PORT");
   $miniserveruser     = $cfg->param("MINISERVER$msno.ADMIN");
   $miniserverkennwort = $cfg->param("MINISERVER$msno.PASS");
+  $miniservernote     = $cfg->param("MINISERVER$msno.NOTE");
   $miniserverdns      = $cfg->param("MINISERVER$msno.DNS");
   $miniservercloudurl = $cfg->param("MINISERVER$msno.CLOUDURL");
   quotemeta($miniserverip);
   quotemeta($miniserverport);
   quotemeta($miniserveruser);
   quotemeta($miniserverkennwort);
+  quotemeta($miniservernote);
   quotemeta($miniserverdns);
   quotemeta($miniservercloudurl);
   open(F,"$installfolder/templates/system/$lang/miniserver_row.html") || die "Missing template system/$lang/miniserver_row.html";
@@ -247,6 +253,7 @@ while ($msno <= $miniservers) {
    ${miniserverport.$msno}     = param("miniserverport$msno");
    ${miniserveruser.$msno}     = param("miniserveruser$msno");
    ${miniserverkennwort.$msno} = param("miniserverkennwort$msno");
+   ${miniservernote.$msno}     = param("miniservernote$msno");
    ${miniserverdns.$msno}      = param("miniserverdns$msno");
    ${miniservercloudurl.$msno} = param("miniservercloudurl$msno");
   # Filter
@@ -256,6 +263,7 @@ while ($msno <= $miniservers) {
   quotemeta(${miniserverkennwort.$msno});
   quotemeta(${miniserverdns.$msno});
   quotemeta(${miniservercloudurl.$msno});
+  quotemeta(${miniservernote.$msno});
 
   # Test if Miniserver is reachable
   
@@ -313,7 +321,8 @@ while ($msno <= $miniservers) {
   $cfg->param("MINISERVER$msno.IPADDRESS", "${miniserverip.$msno}");
   $cfg->param("MINISERVER$msno.DNS", "${miniserverdns.$msno}");
   $cfg->param("MINISERVER$msno.CLOUDURL", "${miniservercloudurl.$msno}");
-  
+  $cfg->param("MINISERVER$msno.NOTE", "${miniservernote.$msno}");
+
   # Next
   $msno++;
 }

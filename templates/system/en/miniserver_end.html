@@ -124,7 +124,43 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-  // Add 6. row 
+    // Add 6. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>Note:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<textarea id="miniservernote' + iteration + '" name="miniservernote' + iteration + '" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="* Following characters are allowed: a-z A-Z 0-9 {(@:/?=#_+!-&)} (Maximum text length 512)" data-validation-length="Max512"></textarea>';
+  	$("#miniservernote" + iteration).focusout(function() 
+  	{
+  		note_link($(this).attr("id"));
+    })
+  	.blur(function() 
+  	{
+  		note_link($(this).attr("id"));
+		});
+		function note_link (note_object)
+		{
+			if (isUrlValid($("#"+note_object).val()))
+  		{
+  			$("#"+note_object+"_url").attr("href",$("#"+note_object).val());
+  			$("#"+note_object+"_url").css('visibility', 'visible');
+  		}
+  		else
+  		{
+  			$("#"+note_object+"_url").attr("href","#");
+  			$("#"+note_object+"_url").css('visibility', 'hidden');
+  		}	
+		};
+		note_link ("miniservernote" + iteration);
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = '<a id="miniservernote" + iteration + "_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note">Open</a>'
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Add 7. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
     
@@ -138,7 +174,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 7. row 
+    // Add 8. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
     row.setAttribute('id','miniservercloudurlrow' + iteration);
@@ -220,6 +256,7 @@
     // Del 1. row 
     var tbl = document.getElementById('miniservertbl');
     var lastRow = tbl.rows.length;
+    var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);
