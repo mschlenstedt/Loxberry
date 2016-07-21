@@ -170,9 +170,7 @@ $plugin_name = $phraseplugin->param("TXT0000");
 		}
 		else
 		{
-		 quotemeta($saveformdata);
-		 $saveformdata      =~ tr/0-1//cd;
-		 $saveformdata      = substr($saveformdata,0,1);
+		 $saveformdata      = 1;
 		}
 		}
 		else
@@ -289,7 +287,8 @@ sub header {
 
   # create help page
   $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
-  open(F,"$installfolder/templates/plugins/cam-connect/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
+  $helptext = "";
+   open(F,"$installfolder/templates/plugins/cam-connect/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
     @help = <F>;
     foreach (@help){
       s/[\n\r]/ /g;
