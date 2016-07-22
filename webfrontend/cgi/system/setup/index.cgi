@@ -96,7 +96,7 @@ our $dsn;
 our $dbh;
 our $sth;
 our $sqlerr;
-our $miniserverdns;
+our $useclouddns;
 our $miniservercloudurl;
 our $curlbin;
 our $grepbin;
@@ -144,7 +144,7 @@ $miniserverip1        = param('miniserverip1');
 $miniserverport1      = param('miniserverport1');
 $miniserveruser1      = param('miniserveruser1');
 $miniserverkennwort1  = param('miniserverkennwort1');
-$miniserverdns1       = param('miniserverdns1');
+$useclouddns1         = param('useclouddns1');
 $miniservercloudurl1  = param('miniservercloudurl1');
 $miniservernote1      = param('miniservernote1');
 $netzwerkanschluss    = param('netzwerkanschluss');
@@ -368,7 +368,7 @@ if ($saveformdata) {
   $session->param("miniserverport1", $miniserverport1);
   $session->param("miniserveruser1", $miniserveruser1);
   $session->param("miniserverkennwort1", $miniserverkennwort1);
-  $session->param("miniserverdns1", $miniserverdns1);
+  $session->param("useclouddns1", $useclouddns1);
   $session->param("miniservercloudurl1", $miniservercloudurl1);
   $session->param("miniservernote1", $miniservernote1);
 }
@@ -378,7 +378,7 @@ $miniserverip1       = $session->param("miniserverip1");
 $miniserverport1     = $session->param("miniserverport1");
 $miniserveruser1     = $session->param("miniserveruser1");
 $miniserverkennwort1 = $session->param("miniserverkennwort1");
-$miniserverdns1      = $session->param("miniserverdns1");
+$useclouddns1        = $session->param("useclouddns1");
 $miniservercloudurl1 = $session->param("miniservercloudurl1");
 $miniservernote1     = $session->param("miniservernote1");
 
@@ -387,7 +387,7 @@ quotemeta($miniserverip1);
 quotemeta($miniserverport1);
 quotemeta($miniserveruser1);
 quotemeta($miniserverkennwort1);
-quotemeta($miniserverdns1);
+quotemeta($useclouddns1);
 quotemeta($miniservercloudurl1);
 quotemeta($miniservernote1);
 
@@ -428,14 +428,14 @@ if ($saveformdata) {
   $session->param("miniserverport1", $miniserverport1);
   $session->param("miniserveruser1", $miniserveruser1);
   $session->param("miniserverkennwort1", $miniserverkennwort1);
-  $session->param("miniserverdns1", $miniserverdns1);
+  $session->param("useclouddns1", $useclouddns1);
   $session->param("miniservercloudurl1", $miniservercloudurl1);
   $session->param("miniservernote1", $miniservernote1);
 
   # Test if Miniserver is reachable
-  if ( $miniserverdns1 eq "on" || $miniserverdns1 eq "checked" || $miniserverdns1 eq "true" || $miniserverdns1 eq "1" )
+  if ( $useclouddns1 eq "on" || $useclouddns1 eq "checked" || $useclouddns1 eq "true" || $useclouddns1 eq "1" )
   {
-   $miniserverdns1 = "checked";
+   $useclouddns1 = "1";
    our $dns_info = `$curlbin -I $miniservercloudurl1 --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
    my @dns_info_pieces = split /:/, $dns_info;
    if ($dns_info_pieces[1])

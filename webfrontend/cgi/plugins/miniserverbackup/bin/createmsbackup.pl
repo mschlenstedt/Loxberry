@@ -71,7 +71,7 @@ our @files;
 our $subfolder;
 our $i;
 our $msno;
-our $miniserverdns;
+our $useclouddns;
 our $miniservercloudurl;
 our $curlbin;
 our $grepbin;
@@ -118,12 +118,12 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $miniserveradmin    = $cfg->param("MINISERVER$msno.ADMIN");
   $miniserverpass     = $cfg->param("MINISERVER$msno.PASS");
   $miniserverpport    = $cfg->param("MINISERVER$msno.PORT");
-  $miniserverdns      = $cfg->param("MINISERVER$msno.DNS");
+  $useclouddns        = $cfg->param("MINISERVER$msno.USECLOUDDNS");
   $miniservercloudurl = $cfg->param("MINISERVER$msno.CLOUDURL");
 
   # Get Firmware Version from Miniserver
 
-  if ( ${miniserverdns} eq "checked" )
+  if ( ${useclouddns} eq "1" )
   {
    $logmessage = "Using Cloud-DNS ${miniservercloudurl} for Backup";
    &log;

@@ -3,7 +3,7 @@
           <h2><!--$msno-->. Miniserver:</h2>
           </td>
         </tr>
-        <tr>
+         <tr width="25%" id="miniserveriprow<!--$msno-->" ipaddr="<!--$miniserverip-->">
           <td width="25%">
           <label class="control-label" for="miniserverip<!--$msno-->">IP-Adresse oder Hostname:</label>
           </td>
@@ -71,7 +71,7 @@
 				  	{
           		note_link($(this).attr("id"));
        			});
-       			note_link ('miniservernote<!--$msno-->');
+       			note_link ("miniservernote<!--$msno-->");
           </SCRIPT>
           </td>
           <td>
@@ -86,7 +86,7 @@
           &nbsp;
           </td>
           <td width="50%">
-          <label><input <!--$miniserverdns--> type="checkbox" id="miniserverdns<!--$msno-->" name="miniserverdns<!--$msno-->">Cloud-DNS verwenden</label>
+          <label><input type="checkbox" id="useclouddns<!--$msno-->" name="useclouddns<!--$msno-->">Cloud-DNS verwenden</label>
           </td>
           <td width="5%">
           &nbsp;
@@ -100,7 +100,7 @@
           <label class="control-label" for="miniservercloudurl<!--$msno-->">dns.loxonecloud.com-Adresse:</label>
           </td>
           <td width="50%">
-          <input id="miniservercloudurl<!--$msno-->" name="miniservercloudurl<!--$msno-->" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="miniserverdns<!--$msno-->"  data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Bitte eine g&uuml;ltige dns.loxonecloud.com Adresse eingeben. Beispiel: http://dns.loxonecloud.com/504F12345678" value="<!--$miniservercloudurl-->">
+          <input id="miniservercloudurl<!--$msno-->" name="miniservercloudurl<!--$msno-->" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns<!--$msno-->"  data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Bitte eine g&uuml;ltige dns.loxonecloud.com Adresse eingeben. Beispiel: http://dns.loxonecloud.com/504F12345678" value="<!--$miniservercloudurl-->">
           </td>
           <td width="5%">
            &nbsp;
@@ -115,30 +115,49 @@
           </td>
         </tr>
 <SCRIPT>
-  	$('#miniserverdns<!--$msno-->').change(function() 
+  	$("#useclouddns<!--$msno-->").change(function() 
     { 
       if($(this).is(":checked")) 
       {
         $("#miniservercloudurl<!--$msno-->").val($("#miniservercloudurlrow<!--$msno-->").attr( "dnsurl" ));
 				$("#miniservercloudurl<!--$msno-->").attr("data-validation-optional","false");
-				$("#miniservercloudurlrow<!--$msno-->").css('visibility', 'visible');
+  		  $("#miniservercloudurlrow<!--$msno-->").fadeTo( "slow", 1 );
+  		  $("#miniservercloudurl<!--$msno-->").prop("readOnly", false);
+				$("#miniserverip<!--$msno-->").attr("data-validation-optional","true");
+        $("#miniserverip<!--$msno-->").val("");
+	  		$("#miniserverip<!--$msno-->").trigger( "focus" );
+  		  $("#miniserveriprow<!--$msno-->").fadeTo( "slow", 0.1 );
+  		  $("#miniserverip<!--$msno-->").prop("readOnly", true);
       }
       else
       {
 				$("#miniservercloudurl<!--$msno-->").attr("data-validation-optional","true");
-  			$("#miniservercloudurlrow<!--$msno-->").css('visibility', 'hidden');
+  		  $("#miniservercloudurlrow<!--$msno-->").fadeTo( "slow", 0.1 );
+  		  $("#miniservercloudurl<!--$msno-->").prop("readOnly", true);
         $("#miniservercloudurl<!--$msno-->").val("");
 	  		$("#miniservercloudurl<!--$msno-->").trigger( "focus" );
+        $("#miniserverip<!--$msno-->").val($("#miniserveriprow<!--$msno-->").attr( "ipaddr" ));
+				$("#miniserverip<!--$msno-->").attr("data-validation-optional","false");
+  		  $("#miniserveriprow<!--$msno-->" ).fadeTo( "slow", 1 );
+  		  $("#miniserverip<!--$msno-->").prop("readOnly", false);
   		}
     });
 
-    $('#miniservercloudurl<!--$msno-->').change(function() 
+		$("#miniservercloudurl<!--$msno-->").change(function() 
     { 
-    	if ($("#miniservercloudurlrow<!--$msno-->").is(':visible') && $('#miniserverdns<!--$msno-->').is(":checked"))
+    	if ($("#useclouddns<!--$msno-->").is(":checked"))
     	{
   			$("#miniservercloudurlrow<!--$msno-->").attr( "dnsurl",$("#miniservercloudurl<!--$msno-->").val());
       }
     });
+    $("#miniserverip<!--$msno-->").change(function() 
+    { 
+    	if ($("#useclouddns<!--$msno-->").is(":unchecked"))
+    	{
+  			$("#miniserveriprow<!--$msno-->").attr( "ipaddr",$("#miniserverip<!--$msno-->").val());
+      }
+    });
 
-   	$("#miniserverdns<!--$msno-->").trigger( "change" );
+	 $("#useclouddns<!--$msno-->").prop("checked", "<!--$useclouddns-->");
+   $("#useclouddns<!--$msno-->").trigger( "change" );
 </SCRIPT>

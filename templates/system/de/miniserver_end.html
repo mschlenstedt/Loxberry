@@ -71,6 +71,8 @@
     // Add 2. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
+    row.setAttribute('id','miniserveriprow' + iteration);
+    row.setAttribute('ipaddr','');
 
     // Add cells
     var cellRight = row.insertCell(0);
@@ -168,7 +170,7 @@
     var cellRight = row.insertCell(0);
     cellRight.innerHTML = '&nbsp;'
     var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '<label><input type="checkbox" id="miniserverdns' + iteration + '" name="miniserverdns' + iteration + '">Cloud-DNS verwenden</label>';
+    cellRight.innerHTML = '<label><input type="checkbox" id="useclouddns' + iteration + '" name="useclouddns' + iteration + '">Cloud-DNS verwenden</label>';
     var cellRight = row.insertCell(2);
     cellRight.innerHTML = ''
     var cellRight = row.insertCell(3);
@@ -184,39 +186,58 @@
     var cellRight = row.insertCell(0);
     cellRight.innerHTML = '<label>dns.loxonecloud.com-Adresse:</label>'
     var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '  <input id="miniservercloudurl' + iteration + '" name="miniservercloudurl' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="miniserverdns' + iteration + '" data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Bitte eine g&uuml;ltige dns.loxonecloud.com Adresse eingeben. Beispiel: http://dns.loxonecloud.com/504F12345678" value="">';
+    cellRight.innerHTML = '  <input id="miniservercloudurl' + iteration + '" name="miniservercloudurl' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Bitte eine g&uuml;ltige dns.loxonecloud.com Adresse eingeben. Beispiel: http://dns.loxonecloud.com/504F12345678" value="">';
     var cellRight = row.insertCell(2);
     cellRight.innerHTML = ''
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-  	$("#miniserverdns" + iteration).change(function() 
+  	$("#useclouddns" + iteration).change(function() 
     { 
       if($(this).is(":checked")) 
       {
-        $("#miniservercloudurl" + iteration).val($("#miniservercloudurlrow<!--$msno-->").attr( "dnsurl" ));
+        $("#miniservercloudurl" + iteration).val($("#miniservercloudurlrow" + iteration).attr( "dnsurl" ));
 				$("#miniservercloudurl" + iteration).attr("data-validation-optional","false");
-				$("#miniservercloudurlrow" + iteration).css('visibility', 'visible');
+  		  $("#miniservercloudurlrow" + iteration).fadeTo( "slow", 1 );
+  		  $("#miniservercloudurl" + iteration).prop("readOnly", false);
+				$("#miniserverip" + iteration).attr("data-validation-optional","true");
+        $("#miniserverip" + iteration).val("");
+	  		$("#miniserverip" + iteration).trigger( "focus" );
+  		  $("#miniserveriprow" + iteration).fadeTo( "slow", 0.1 );
+  		  $("#miniserverip" + iteration).prop("readOnly", true);
       }
       else
       {
 				$("#miniservercloudurl" + iteration).attr("data-validation-optional","true");
-  			$("#miniservercloudurlrow" + iteration).css('visibility', 'hidden');
+  		  $("#miniservercloudurlrow" + iteration).fadeTo( "slow", 0.1 );
+  		  $("#miniservercloudurl" + iteration).prop("readOnly", true);
         $("#miniservercloudurl" + iteration).val("");
 	  		$("#miniservercloudurl" + iteration).trigger( "focus" );
+        $("#miniserverip" + iteration).val($("#miniserveriprow" + iteration).attr( "ipaddr" ));
+				$("#miniserverip" + iteration).attr("data-validation-optional","false");
+  		  $("#miniserveriprow" + iteration ).fadeTo( "slow", 1 );
+  		  $("#miniserverip" + iteration).prop("readOnly", false);
   		}
     });
 
-    $('#miniservercloudurl' + iteration).change(function() 
+		$("#miniservercloudurl"+ iteration).change(function() 
     { 
-    	if ($("#miniservercloudurlrow" + iteration).is(':visible') && $('#miniserverdns' + iteration).is(":checked"))
+    	if ($("#useclouddns"+ iteration).is(":checked"))
     	{
-  			$("#miniservercloudurlrow" + iteration).attr( "dnsurl",$("#miniservercloudurl" + iteration).val());
+  			$("#miniservercloudurlrow"+ iteration).attr( "dnsurl",$("#miniservercloudurl"+ iteration).val());
+      }
+    });
+    $("#miniserverip"+ iteration).change(function() 
+    { 
+    	if ($("#useclouddns"+ iteration).is(":unchecked"))
+    	{
+  			$("#miniserveriprow"+ iteration).attr( "ipaddr",$("#miniserverip"+ iteration).val());
       }
     });
 
-   		$("#miniserverdns" + iteration).trigger( "change" );
-
+	 $("#useclouddns"+ iteration).prop("checked", "");
+   $("#useclouddns"+ iteration).trigger( "change" );
+   
     // Add 8. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
