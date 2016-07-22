@@ -244,14 +244,14 @@
     });
     $("#miniserverip"+ iteration).change(function() 
     { 
-    	if ($("#useclouddns"+ iteration).is(":unchecked"))
+    	if (!$("#useclouddns"+ iteration).is(":checked"))
     	{
   			$("#miniserveriprow"+ iteration).attr( "ipaddr",$("#miniserverip"+ iteration).val());
       }
     });
     $("#miniserverport"+ iteration).change(function() 
     { 
-    	if ($("#useclouddns"+ iteration).is(":unchecked"))
+    	if (!$("#useclouddns"+ iteration).is(":checked"))
     	{
   			$("#miniserverportrow"+ iteration).attr( "portaddr",$("#miniserverport"+ iteration).val());
       }

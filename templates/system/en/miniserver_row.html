@@ -131,7 +131,7 @@
 	  		$("#miniserverip<!--$msno-->").trigger( "focus" );
   		  $("#miniserveriprow<!--$msno-->").fadeTo( "slow", 0.1 );
   		  $("#miniserverip<!--$msno-->").prop("readOnly", true);
-
+        
 				$("#miniserverport<!--$msno-->").attr("data-validation-optional","true");
         $("#miniserverport<!--$msno-->").val("");
 	  		$("#miniserverport<!--$msno-->").trigger( "focus" );
@@ -167,14 +167,14 @@
     });
     $("#miniserverip<!--$msno-->").change(function() 
     { 
-    	if ($("#useclouddns<!--$msno-->").is(":unchecked"))
+    	if (!$("#useclouddns<!--$msno-->").is(":checked"))
     	{
   			$("#miniserveriprow<!--$msno-->").attr( "ipaddr",$("#miniserverip<!--$msno-->").val());
       }
     });
     $("#miniserverport<!--$msno-->").change(function() 
     { 
-    	if ($("#useclouddns<!--$msno-->").is(":unchecked"))
+    	if (!$("#useclouddns<!--$msno-->").is(":checked"))
     	{
   			$("#miniserverportrow<!--$msno-->").attr( "portaddr",$("#miniserverport<!--$msno-->").val());
       }

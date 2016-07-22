@@ -166,14 +166,14 @@
     });
     $("#miniserverip<!--$msno-->").change(function() 
     { 
-    	if ($("#useclouddns<!--$msno-->").is(":unchecked"))
+    	if (!$("#useclouddns<!--$msno-->").is(":checked"))
     	{
   			$("#miniserveriprow<!--$msno-->").attr( "ipaddr",$("#miniserverip<!--$msno-->").val());
       }
     });
     $("#miniserverport<!--$msno-->").change(function() 
     { 
-    	if ($("#useclouddns<!--$msno-->").is(":unchecked"))
+    	if (!$("#useclouddns<!--$msno-->").is(":checked"))
     	{
   			$("#miniserverportrow<!--$msno-->").attr( "portaddr",$("#miniserverport<!--$msno-->").val());
       }

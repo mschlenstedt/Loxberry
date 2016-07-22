@@ -149,7 +149,7 @@
         </tr>
         
 <SCRIPT>
-      $("#useclouddns1").change(function() 
+	   $("#useclouddns1").change(function() 
     { 
       if($(this).is(":checked")) 
       {
@@ -207,14 +207,14 @@
     });
     $("#miniserverip1").change(function() 
     { 
-    	if ($("#useclouddns1").is(":unchecked"))
+    	if (!$("#useclouddns1").is(":checked"))
     	{
   			$("#miniserveriprow1").attr( "ipaddr",$("#miniserverip1").val());
       }
     });
     $("#miniserverport1").change(function() 
     { 
-    	if ($("#useclouddns1").is(":unchecked"))
+    	if (!$("#useclouddns1").is(":checked"))
     	{
   			$("#miniserverportrow1").attr( "portaddr",$("#miniserverport1").val());
       }
