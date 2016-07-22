@@ -167,7 +167,7 @@ $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0019");
 $help = "miniserver";
 
 # Print Template
-&header;
+&lbheader;
 
 # Start
 # 1. Miniserver
@@ -351,7 +351,7 @@ $message = $phrase->param("TXT0035");
 $nexturl = "/admin/index.cgi";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -384,7 +384,7 @@ $help = "admin";
 
 print "Content-Type: text/html\n\n";
 
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -401,7 +401,7 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
   $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
