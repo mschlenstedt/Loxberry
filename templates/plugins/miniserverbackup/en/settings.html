@@ -8,8 +8,7 @@
       <table border=0 cellpadding=10>
         <tr>
         <td width="150px">
-        <a id="btnbackup" data-role="button" data-mini="true" href="./index.cgi?do=backup">Backup now!</a>
-        </td>
+        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').val(''); $.get('./index.cgi?do=backup');">Backup now!</a></td>
         <td width="150px" cellpadding=10>
         <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" target="_blank">Downloads</a>
         </td>
