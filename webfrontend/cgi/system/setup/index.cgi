@@ -96,12 +96,12 @@ our $dsn;
 our $dbh;
 our $sth;
 our $sqlerr;
-our $useclouddns;
-our $miniservercloudurl;
+our $useclouddns1;
+our $miniservercloudurl1;
 our $curlbin;
 our $grepbin;
 our $awkbin;
-our $miniservernote;
+our $miniservernote1;
 ##########################################################################
 # Read Settings
 ##########################################################################
