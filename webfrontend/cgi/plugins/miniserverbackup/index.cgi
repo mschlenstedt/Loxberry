@@ -54,6 +54,7 @@ our $do;
 my $home = File::HomeDir->my_home;
 my $subfolder;
 our $verbose;
+our $debug;
 our $maxfiles;
 our $autobkp;
 our $bkpcron;
@@ -68,7 +69,8 @@ our $selectedcron5;
 our $selectedcron6;
 our $languagefileplugin;
 our $phraseplugin;
-
+our $selectedverbose;
+our $selecteddebug;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -81,7 +83,7 @@ $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 
 $cfg             = new Config::Simple("$installfolder/config/plugins/miniserverbackup/miniserverbackup.cfg");
-$verbose         = $cfg->param("MSBACKUP.VERBOSE");
+$debug           = $cfg->param("MSBACKUP.DEBUG");
 $maxfiles        = $cfg->param("MSBACKUP.MAXFILES");
 $subfolder       = $cfg->param("MSBACKUP.SUBFOLDER");
 $autobkp         = $cfg->param("MSBACKUP.AUTOBKP");
@@ -178,11 +180,18 @@ exit;
 sub form {
 
 # Filter
-quotemeta($verbose);
+quotemeta($debug);
 quotemeta($maxfiles);
 quotemeta($autobkp);
 quotemeta($bkpcron);
 quotemeta($bkpcounts);
+
+if ($debug eq 1) {
+  $selectedverbose = "selected=selected";
+} elsif ($debug eq 2) {
+  $selecteddebug = "selected=selected";
+}
+
 
 # Prepare form defaults
 if ($autobkp eq "on") {
@@ -233,16 +242,19 @@ sub save {
 $autobkp    = param('autobkp');
 $bkpcron    = param('bkpcron');
 $bkpcounts  = param('bkpcounts');
+$debug      = param('debug');
 
 # Filter
 quotemeta($autobkp);
 quotemeta($bkpcron);
 quotemeta($bkpcounts);
+quotemeta($debug);
 
 # Write configuration file(s)
 $cfg->param("MSBACKUP.AUTOBKP", "$autobkp");
 $cfg->param("MSBACKUP.CRON", "$bkpcron");
 $cfg->param("MSBACKUP.MAXFILES", "$bkpcounts");
+$cfg->param("MSBACKUP.DEBUG", "$debug");
 $cfg->save();
 
 # Create Cronjob

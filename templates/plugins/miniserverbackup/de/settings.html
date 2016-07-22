@@ -51,7 +51,7 @@
           <label id="labelbkpcron">Zyklus:</label>
           </td>
           <td width="50%">
-	    <select id="bkpcron" name="bkpcron" data-mini="true">
+       	    <select id="bkpcron" name="bkpcron" data-mini="true">
               <option value="15min" <!--$selectedcron1-->>15 Minütlich</option>
               <option value="30min" <!--$selectedcron2-->>30 Minütlich</option>
               <option value="60min" <!--$selectedcron3-->>Stündlich</option>
@@ -82,8 +82,21 @@
           &nbsp;
           </td>
         </tr>
-        <tr>
-          <td colspan=4>
+        <tr id="loglevelrow">
+          <td width="25%">
+          <label id="labeldebug">Logfile-Stufe:</label>
+          </td>
+          <td width="50%">
+			     <select style="align:left;" id="debug" name="debug" data-mini="true">
+			      <option value="0">Normal</option>
+			      <option <!--$selectedverbose--> value="1">Info</option>
+			      <option <!--$selecteddebug--> value="2">Debug</option>
+			     </select>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
           &nbsp;
           </td>
         </tr>
@@ -120,6 +133,7 @@
     modules : 'security',
     errorMessagePosition : $messages,
   });
+  $("#loglevelrow" ).fadeTo( "slow", .4 );
   </script>
 
   <!-- /content -->
