@@ -101,7 +101,7 @@ our $miniservercloudurl;
 our $curlbin;
 our $grepbin;
 our $awkbin;
-
+our $miniservernote;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -146,6 +146,7 @@ $miniserveruser1      = param('miniserveruser1');
 $miniserverkennwort1  = param('miniserverkennwort1');
 $miniserverdns1       = param('miniserverdns1');
 $miniservercloudurl1  = param('miniservercloudurl1');
+$miniservernote1      = param('miniservernote1');
 $netzwerkanschluss    = param('netzwerkanschluss');
 $netzwerkssid         = param('netzwerkssid');
 $netzwerkschluessel   = param('netzwerkschluessel');
@@ -369,6 +370,7 @@ if ($saveformdata) {
   $session->param("miniserverkennwort1", $miniserverkennwort1);
   $session->param("miniserverdns1", $miniserverdns1);
   $session->param("miniservercloudurl1", $miniservercloudurl1);
+  $session->param("miniservernote1", $miniservernote1);
 }
 
 # Read data from Session file
@@ -378,6 +380,7 @@ $miniserveruser1     = $session->param("miniserveruser1");
 $miniserverkennwort1 = $session->param("miniserverkennwort1");
 $miniserverdns1      = $session->param("miniserverdns1");
 $miniservercloudurl1 = $session->param("miniservercloudurl1");
+$miniservernote1     = $session->param("miniservernote1");
 
 # Filter
 quotemeta($miniserverip1);
@@ -386,6 +389,7 @@ quotemeta($miniserveruser1);
 quotemeta($miniserverkennwort1);
 quotemeta($miniserverdns1);
 quotemeta($miniservercloudurl1);
+quotemeta($miniservernote1);
 
 # Default values
 if (!$miniserverport1) {$miniserverport1 = "80";}
@@ -426,6 +430,7 @@ if ($saveformdata) {
   $session->param("miniserverkennwort1", $miniserverkennwort1);
   $session->param("miniserverdns1", $miniserverdns1);
   $session->param("miniservercloudurl1", $miniservercloudurl1);
+  $session->param("miniservernote1", $miniservernote1);
 
   # Test if Miniserver is reachable
   if ( $miniserverdns1 eq "on" || $miniserverdns1 eq "checked" || $miniserverdns1 eq "true" || $miniserverdns1 eq "1" )

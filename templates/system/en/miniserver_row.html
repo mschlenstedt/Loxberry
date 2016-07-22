@@ -57,7 +57,32 @@
           <font size="-1"></font>
           </td>
         </tr>
-			  <tr>
+     	  <tr>
+          <td>
+          <label>Note:</label>
+          </td>
+          <td>
+          <textarea id="miniservernote<!--$msno-->" name="miniservernote<!--$msno-->" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="* Following characters are allowed: a-z A-Z 0-9 {(@:/?=#_+!-&)} (Maximum text length 512)" data-validation-length="Max512"><!--$miniservernote--></textarea>
+          <SCRIPT>
+          	$("#miniservernote<!--$msno-->").focusout(function() 
+          	{
+          		note_link($(this).attr("id"));
+    	      })
+				  	.blur(function() 
+				  	{
+          		note_link($(this).attr("id"));
+       			});
+       			note_link ('miniservernote<!--$msno-->');
+          </SCRIPT>
+          </td>
+          <td>
+          <a id="miniservernote<!--$msno-->_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note">Open</a>
+          </td>
+          <td>
+          <font size="-1"></font>
+          </td>
+        </tr>
+        <tr>
           <td width="25%">
           &nbsp;
           </td>

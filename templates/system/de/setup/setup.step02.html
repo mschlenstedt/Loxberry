@@ -85,6 +85,49 @@
           <font size="-1"></font>
           </td>
         </tr>
+       	  <tr>
+          <td>
+          <label>Notiz:</label>
+          </td>
+          <td>
+					<SCRIPT>
+						function isUrlValid(url) {
+					    return /^(https?|s?ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(url);
+					}
+					</SCRIPT>
+          <textarea id="miniservernote1" name="miniservernote1" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="* Es sind nur folgende Zeichen erlaubt: a-z A-Z 0-9 {(@:/?=#_+!-&)} (Maximale L&auml;nge 512 Zeichen)" data-validation-length="Max512"><!--$miniservernote--></textarea>
+          <SCRIPT>
+          	$("#miniservernote1").focusout(function() 
+          	{
+          		note_link($(this).attr("id"));
+    	      })
+				  	.blur(function() 
+				  	{
+          		note_link($(this).attr("id"));
+       			});
+       			function note_link (note_object)
+       			{
+       				if (isUrlValid($("#"+note_object).val()))
+          		{
+          			$("#"+note_object+"_url").attr("href",$("#"+note_object).val());
+          			$("#"+note_object+"_url").css('visibility', 'visible');
+          		}
+          		else
+          		{
+          			$("#"+note_object+"_url").attr("href","#");
+          			$("#"+note_object+"_url").css('visibility', 'hidden');
+          		}	
+       			};
+       			note_link ('miniservernote1');
+          </SCRIPT>
+          </td>
+          <td>
+          <a id="miniservernote1_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note">&Ouml;ffnen</a>
+          </td>
+          <td>
+          <font size="-1"></font>
+          </td>
+        </tr>
         <tr>
           <td width="25%">
           &nbsp;

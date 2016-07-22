@@ -71,19 +71,27 @@ our @files;
 our $subfolder;
 our $i;
 our $msno;
+our $miniserverdns;
+our $miniservercloudurl;
+our $curlbin;
+our $grepbin;
+our $awkbin;
 
 ##########################################################################
 # Read Configuration
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.4";
+my $version = "0.0.5";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $miniservers     = $cfg->param("BASE.MINISERVERS");
 $wgetbin         = $cfg->param("BINARIES.WGET");
 $zipbin          = $cfg->param("BINARIES.ZIP");
+$curlbin         = $cfg->param("BINARIES.CURL");
+$grepbin         = $cfg->param("BINARIES.GREP");
+$awkbin          = $cfg->param("BINARIES.AWK");
 
 $pcfg            = new Config::Simple("$installfolder/config/plugins/miniserverbackup/miniserverbackup.cfg");
 $verbose         = $pcfg->param("MSBACKUP.VERBOSE");
@@ -96,26 +104,63 @@ $subfolder       = $pcfg->param("MSBACKUP.SUBFOLDER");
 
 # Start
 if ($verbose) {
-  $logmessage = "Starting Backup with Script $0 Version $version";
+  $logmessage = "### $miniservers Miniserver at all - Starting Backup with Script $0 Version $version";
   &log;
 }
 
 # Start Backup of all Miniservers
 for($msno = 1; $msno <= $miniservers; $msno++) {
 
-  $logmessage = "Starting Backup for Miniserver $i";
+  $logmessage = "Starting Backup";
   &log;
 
-  $miniserverip    = $cfg->param("MINISERVER$msno.IPADDRESS");
-  $miniserveradmin = $cfg->param("MINISERVER$msno.ADMIN");
-  $miniserverpass  = $cfg->param("MINISERVER$msno.PASS");
-  $miniserverpport = $cfg->param("MINISERVER$msno.PORT");
-
-  $logmessage = "$miniserverip $miniserverpport $miniserveradmin $miniserverpass  $i";
-  &log;
+  $miniserverip       = $cfg->param("MINISERVER$msno.IPADDRESS");
+  $miniserveradmin    = $cfg->param("MINISERVER$msno.ADMIN");
+  $miniserverpass     = $cfg->param("MINISERVER$msno.PASS");
+  $miniserverpport    = $cfg->param("MINISERVER$msno.PORT");
+  $miniserverdns      = $cfg->param("MINISERVER$msno.DNS");
+  $miniservercloudurl = $cfg->param("MINISERVER$msno.CLOUDURL");
 
   # Get Firmware Version from Miniserver
-  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
+
+  if ( ${miniserverdns} eq "checked" )
+  {
+   $logmessage = "Using Cloud-DNS ${miniservercloudurl} for Backup";
+   &log;
+   our $dns_info = `$curlbin -I ${miniservercloudurl} --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+   my @dns_info_pieces = split /:/, $dns_info;
+   $logmessage = "Resolving DNS: $dns_info";
+   &log;
+   if ($dns_info_pieces[1])
+   {
+    $dns_info_pieces[1] =~ s/^\s+|\s+$//g;
+    $miniserverport = $dns_info_pieces[1];
+   }
+   else
+   {
+    $miniserverport  = 80;
+   }
+   if ($dns_info_pieces[0])
+   {
+    $dns_info_pieces[0] =~ s/^\s+|\s+$//g;
+    $miniserverip = $dns_info_pieces[0]; 
+   }
+   else
+   {
+    $miniserverip = "127.0.0.1"; 
+   }
+   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
+  }
+  else
+  {
+   if ( $miniserverport eq "" )
+   {
+   	$miniserverport = 80;
+   } 
+   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
+  }
+  $logmessage = "Try to read Firmware Version ($url)";
+  &log;
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
   local $SIG{ALRM} = sub { die };
@@ -123,7 +168,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
     alarm(1);
     $response = $ua->get($url);
     if (!$response->is_success) {
-      $errormessage = "Unable to fetch Firmware Version from Miniserver $i. Giving up.";
+      $errormessage = "Unable to fetch Firmware Version. Giving up.";
       &error;
       next;
     } else {
@@ -133,7 +178,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   alarm(0);
 
   if (!$success) {
-    $errormessage = "Unable to fetch Firmware Version from Miniserver $i. Giving up.";
+    $errormessage = "Unable to fetch Firmware Version. Giving up.";
     &error;
     next;
   }
@@ -156,7 +201,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
     alarm(1);
     $response = $ua->get($url);
     if (!$response->is_success) {
-      $errormessage = "Unable to fetch FTP Port from Miniserver $i. Giving up.";
+      $errormessage = "Unable to fetch FTP Port. Giving up.";
       &error;
       next;
     } else {
@@ -166,7 +211,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   alarm(0);
 
   if (!$success) {
-    $errormessage = "Unable to fetch FTP Port from Miniserver $i. Giving up.";
+    $errormessage = "Unable to fetch FTP Port. Giving up.";
     &error;
     next;
   }
@@ -176,6 +221,8 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
   $miniserverftpport = $xml->{value};
 
+  $logmessage = "Using FTP-Port $miniserverftpport for Backup";
+  &log;
   # Backing up to temorary directory
   ($dirsec,$dirmin,$dirhour,$dirmday,$dirmon,$diryear,$dirwday,$diryday,$dirisdst) = localtime();
   $diryear = $diryear+1900;
@@ -187,7 +234,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $dirsec = sprintf("%02d", $dirsec);
 
   # Create temporary dir
-  $bkpdir = "Backup_$miniserverip\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
+  $bkpdir = "Backup_$miniserverip_Miniserve$msno\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
   $response = mkdir("/tmp/$bkpdir",0777);
   if ($response == 0) {
     $errormessage = "Could not create temporary folder /tmp/$bkpdir. Giving up.";
@@ -226,7 +273,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   &download;
 
   # Zipping
-  $output = qx(cd /tmp && $zipbin -q -p -r $bkpdir.zip $bkpdir);
+  our @output = qx(cd /tmp && $zipbin -q -p -r $bkpdir.zip $bkpdir);
   if ($? ne 0) {
     $errormessage = "Error while zipping the Backup $bkpdir. Errorcode: $?. Giving up.";
     &error;
@@ -256,7 +303,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
     $logmessage = "Cleaning up temporary and old stuff.";
     &log;
   }
-  $output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
+  @output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
 
   # Delete old backup archives
   $i = 0;
@@ -313,11 +360,11 @@ sub log {
   if ($verbose || $error) {print "$logmessage\n";}
 
   # Clean Username/Password for Logfile
-  $logmessage =~ s/\/\/(.*)\:(.*)\@/\/\/xxx\:xxx\@/g;
+  $logmessage =~ s/\/\/(.*)\:(.*)\@/\/\/xuserx\:xpassx\@/g;
 
   # Logfile
   open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
-    print F "$year-$mon-$mday $hour:$min:$sec $logmessage\n";
+  print F "$year-$mon-$mday $hour:$min:$sec Miniserver #$msno - $logmessage\n";
   close (F);
 
   return ();
@@ -329,13 +376,22 @@ sub error {
   $logmessage = "ERROR: $errormessage\n";
   &log;
   # Clean up /tmp folder
-  $output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
+  @output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
   return ();
 }
 
 # Download
 sub download {
-  $output = qx($wgetbin -q -nH -r $url -P /tmp/$bkpdir);
+
+if ($verbose) 
+{
+	my $quiet=" -q ";
+}
+else
+{
+	my $quiet=" ";
+}
+	@output = qx($wgetbin $quiet -nH -r $url -P /tmp/$bkpdir 2>> $installfolder/log/plugins/miniserverbackup/backuplog.log);
   if ($? ne 0) {
     $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
     &log;
