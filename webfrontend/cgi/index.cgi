@@ -78,33 +78,31 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 }
 
 # And this one we really want to use
+
 $nostartsetup   = $query{'nostartsetup'};
 $step           = $query{'step'};
 $sid            = $query{'sid'};
 
 # Filter 
-quotemeta($query{'lang'});
-quotemeta($query{'nostartsetup'});
-
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
-$query{'nostartsetup'} =~ tr/0-1//cd;
-$query{'nostartsetup'} =  substr($query{'nostartsetup'},0,1);
-
+if (defined $query{'nostartsetup'})
+{
+  $query{'nostartsetup'} =~ tr/0-1//cd;
+  $query{'nostartsetup'} =  substr($query{'nostartsetup'},0,1);
+}
 ##########################################################################
 # Language Settings
 ##########################################################################
 
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
+if (defined $query{'lang'} ) 
+{
+ $query{'lang'}         =~ tr/a-z//cd;
+ $query{'lang'}         =  substr($query{'lang'},0,2);
+ $lang = $query{'lang'};
 }
-
-# Standard is german
-if ($lang eq "") {
+else
+{
   $lang = "de";
 }
-
 # If there's no template, use german
 if (!-e "$installdir/templates/system/$lang/language.dat") {
   $lang = "de";
@@ -138,7 +136,7 @@ if ($startsetup) {
   $help = "setup00";
 
   # Print Template
-  &header;
+  &lbheader;
   open(F,"$installdir/templates/system/$lang/firststart.html") || die "Missing template admin/$lang/firststart.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -177,7 +175,7 @@ $template_title = $phrase->param('TXT0000');
 $help = "setup00";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installdir/templates/system/$lang/mainmenu.html") || die "Missing template admin/$lang/mainmenu.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -197,9 +195,10 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
+  $helptext = "";
   $helplink = "http://www.loxwiki.eu/display/LOX/Loxone+Community+Wiki";
   open(F,"$installdir/templates/system/$lang/help/$help.html") || die "Missing template admin/$lang/help/$help.html";
     @help = <F>;

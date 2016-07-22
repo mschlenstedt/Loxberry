@@ -43,7 +43,6 @@ $(document).ready(function () {
       success: function(data){
         data.replace(/\r|\n/g, "");
         $('#miniserverip1').empty();
-        document.getElementById("miniserverip1").value = data;
         if (data == "") {
           if (lang == "de"){
             var url = 'Keinen Miniserver gefunden';
@@ -51,6 +50,13 @@ $(document).ready(function () {
             var url = 'No Miniserver found';
           }
         } else {
+        
+        $("#miniserveriprow1").attr( "ipaddr" , data );
+        $("#miniserverportrow1").attr( "portaddr" , "80");
+        $("#useclouddns1").prop("checked", false);
+        $("#useclouddns1").trigger( "change" );
+        //$("#miniserverport1").value = "80";
+
           if (lang == "de"){
             var url = '<a href="http://' + data + '" target="_blank">Gefundene IP-Adresse testen</a>';
           } else {

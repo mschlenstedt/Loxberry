@@ -147,7 +147,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0027");
 $help = "power";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/power.html") || die "Missing template system/$lang/power.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -175,7 +175,7 @@ $message = $phrase->param("TXT0034");
 $nexturl = "/admin/index.cgi";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/success.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -217,7 +217,7 @@ $message = $phrase->param("TXT0033");
 $nexturl = "/admin/index.cgi";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/success.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -248,7 +248,7 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
   $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";

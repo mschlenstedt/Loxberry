@@ -54,6 +54,7 @@ our $do;
 my $home = File::HomeDir->my_home;
 my $subfolder;
 our $verbose;
+our $debug;
 our $maxfiles;
 our $autobkp;
 our $bkpcron;
@@ -68,7 +69,8 @@ our $selectedcron5;
 our $selectedcron6;
 our $languagefileplugin;
 our $phraseplugin;
-
+our $selectedverbose;
+our $selecteddebug;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -81,7 +83,7 @@ $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 
 $cfg             = new Config::Simple("$installfolder/config/plugins/miniserverbackup/miniserverbackup.cfg");
-$verbose         = $cfg->param("MSBACKUP.VERBOSE");
+$debug           = $cfg->param("MSBACKUP.DEBUG");
 $maxfiles        = $cfg->param("MSBACKUP.MAXFILES");
 $subfolder       = $cfg->param("MSBACKUP.SUBFOLDER");
 $autobkp         = $cfg->param("MSBACKUP.AUTOBKP");
@@ -178,11 +180,18 @@ exit;
 sub form {
 
 # Filter
-quotemeta($verbose);
+quotemeta($debug);
 quotemeta($maxfiles);
 quotemeta($autobkp);
 quotemeta($bkpcron);
 quotemeta($bkpcounts);
+
+if ($debug eq 1) {
+  $selectedverbose = "selected=selected";
+} elsif ($debug eq 2) {
+  $selecteddebug = "selected=selected";
+}
+
 
 # Prepare form defaults
 if ($autobkp eq "on") {
@@ -210,7 +219,7 @@ print "Content-Type: text/html\n\n";
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0040");
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/plugins/miniserverbackup/$lang/settings.html") || die "Missing template plugins/miniserverbackup/$lang/settings.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -233,16 +242,19 @@ sub save {
 $autobkp    = param('autobkp');
 $bkpcron    = param('bkpcron');
 $bkpcounts  = param('bkpcounts');
+$debug      = param('debug');
 
 # Filter
 quotemeta($autobkp);
 quotemeta($bkpcron);
 quotemeta($bkpcounts);
+quotemeta($debug);
 
 # Write configuration file(s)
 $cfg->param("MSBACKUP.AUTOBKP", "$autobkp");
 $cfg->param("MSBACKUP.CRON", "$bkpcron");
 $cfg->param("MSBACKUP.MAXFILES", "$bkpcounts");
+$cfg->param("MSBACKUP.DEBUG", "$debug");
 $cfg->save();
 
 # Create Cronjob
@@ -312,7 +324,7 @@ $message = $phraseplugin->param("TXT0002");
 $nexturl = "./index.cgi?do=form";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -363,7 +375,7 @@ $message = $phraseplugin->param("TXT0003");
 $nexturl = "./index.cgi?do=form";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -409,7 +421,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
 
 print "Content-Type: text/html\n\n";
 
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -426,7 +438,7 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
   $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";

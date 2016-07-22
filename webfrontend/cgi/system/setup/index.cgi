@@ -96,12 +96,12 @@ our $dsn;
 our $dbh;
 our $sth;
 our $sqlerr;
-our $miniserverdns;
-our $miniservercloudurl;
+our $useclouddns1;
+our $miniservercloudurl1;
 our $curlbin;
 our $grepbin;
 our $awkbin;
-our $miniservernote;
+our $miniservernote1;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -144,7 +144,7 @@ $miniserverip1        = param('miniserverip1');
 $miniserverport1      = param('miniserverport1');
 $miniserveruser1      = param('miniserveruser1');
 $miniserverkennwort1  = param('miniserverkennwort1');
-$miniserverdns1       = param('miniserverdns1');
+$useclouddns1         = param('useclouddns1');
 $miniservercloudurl1  = param('miniservercloudurl1');
 $miniservernote1      = param('miniservernote1');
 $netzwerkanschluss    = param('netzwerkanschluss');
@@ -270,7 +270,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017");
 $help = "setup00";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step00.html") || die "Missing template system/$lang/setup/setup.step00.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -311,7 +311,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup01";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step01.html") || die "Missing template system/$lang/asistant/setup.step01.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -368,7 +368,7 @@ if ($saveformdata) {
   $session->param("miniserverport1", $miniserverport1);
   $session->param("miniserveruser1", $miniserveruser1);
   $session->param("miniserverkennwort1", $miniserverkennwort1);
-  $session->param("miniserverdns1", $miniserverdns1);
+  $session->param("useclouddns1", $useclouddns1);
   $session->param("miniservercloudurl1", $miniservercloudurl1);
   $session->param("miniservernote1", $miniservernote1);
 }
@@ -378,7 +378,7 @@ $miniserverip1       = $session->param("miniserverip1");
 $miniserverport1     = $session->param("miniserverport1");
 $miniserveruser1     = $session->param("miniserveruser1");
 $miniserverkennwort1 = $session->param("miniserverkennwort1");
-$miniserverdns1      = $session->param("miniserverdns1");
+$useclouddns1        = $session->param("useclouddns1");
 $miniservercloudurl1 = $session->param("miniservercloudurl1");
 $miniservernote1     = $session->param("miniservernote1");
 
@@ -387,7 +387,7 @@ quotemeta($miniserverip1);
 quotemeta($miniserverport1);
 quotemeta($miniserveruser1);
 quotemeta($miniserverkennwort1);
-quotemeta($miniserverdns1);
+quotemeta($useclouddns1);
 quotemeta($miniservercloudurl1);
 quotemeta($miniservernote1);
 
@@ -402,7 +402,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup02";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step02.html") || die "Missing template system/$lang/setup/setup.step02.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -428,14 +428,14 @@ if ($saveformdata) {
   $session->param("miniserverport1", $miniserverport1);
   $session->param("miniserveruser1", $miniserveruser1);
   $session->param("miniserverkennwort1", $miniserverkennwort1);
-  $session->param("miniserverdns1", $miniserverdns1);
+  $session->param("useclouddns1", $useclouddns1);
   $session->param("miniservercloudurl1", $miniservercloudurl1);
   $session->param("miniservernote1", $miniservernote1);
 
   # Test if Miniserver is reachable
-  if ( $miniserverdns1 eq "on" || $miniserverdns1 eq "checked" || $miniserverdns1 eq "true" || $miniserverdns1 eq "1" )
+  if ( $useclouddns1 eq "on" || $useclouddns1 eq "checked" || $useclouddns1 eq "true" || $useclouddns1 eq "1" )
   {
-   $miniserverdns1 = "checked";
+   $useclouddns1 = "1";
    our $dns_info = `$curlbin -I $miniservercloudurl1 --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
    my @dns_info_pieces = split /:/, $dns_info;
    if ($dns_info_pieces[1])
@@ -521,7 +521,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup03";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step03.html") || die "Missing template system/$lang/setup/setup.step03.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -592,7 +592,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup04";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step04.html") || die "Missing template system/$lang/setup/setup.step04.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -626,7 +626,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup05";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step05.html") || die "Missing template system/$lang/setup/setup.step05.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -828,7 +828,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup06";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step06.html") || die "Missing template system/$lang/setup/setup.step06.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -861,7 +861,7 @@ $help = "setup00";
 
 print "Content-Type: text/html\n\n";
 
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -878,7 +878,7 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
   $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
