@@ -30,7 +30,7 @@
           <font size="-1"><div id="testurl"></div></font>
           </td>
         </tr>
-        <tr>
+        <tr id="miniserverportrow1" portaddr="<!--$miniserverport-->">
           <td>
           <label>Portnummer:</label>
           </td>
@@ -156,11 +156,19 @@
 				$("#miniservercloudurl1").attr("data-validation-optional","false");
   		  $("#miniservercloudurlrow1").fadeTo( "slow", 1 );
   		  $("#miniservercloudurl1").prop("readOnly", false);
+
 				$("#miniserverip1").attr("data-validation-optional","true");
         $("#miniserverip1").val("");
 	  		$("#miniserverip1").trigger( "focus" );
   		  $("#miniserveriprow1").fadeTo( "slow", 0.1 );
   		  $("#miniserverip1").prop("readOnly", true);
+
+				$("#miniserverport1").attr("data-validation-optional","true");
+        $("#miniserverport1").val("");
+	  		$("#miniserverport1").trigger( "focus" );
+  		  $("#miniserverportrow1").fadeTo( "slow", 0.1 );
+  		  $("#miniserverport1").prop("readOnly", true);
+
   		  $("#btnnetscan" ).fadeTo( "slow", 0 );
   		  $("#btnnetscan").css( "cursor", "default" );
   		  $("#testurl" ).fadeTo( "slow", 0 );
@@ -172,10 +180,17 @@
   		  $("#miniservercloudurl1").prop("readOnly", true);
         $("#miniservercloudurl1").val("");
 	  		$("#miniservercloudurl1").trigger( "focus" );
+
         $("#miniserverip1").val($("#miniserveriprow1").attr( "ipaddr" ));
 				$("#miniserverip1").attr("data-validation-optional","false");
   		  $("#miniserveriprow1" ).fadeTo( "slow", 1 );
   		  $("#miniserverip1").prop("readOnly", false);
+
+        $("#miniserverport1").val($("#miniserverportrow1").attr( "portaddr" ));
+				$("#miniserverport1").attr("data-validation-optional","false");
+  		  $("#miniserverportrow1" ).fadeTo( "slow", 1 );
+  		  $("#miniserverport1").prop("readOnly", false);
+
   		  $("#btnnetscan" ).fadeTo( "slow", 1 );
   		  $("#btnnetscan").css( "cursor", "pointer" );
   		  $("#testurl" ).fadeTo( "slow", 1 );
@@ -194,6 +209,13 @@
     	if ($("#useclouddns1").is(":unchecked"))
     	{
   			$("#miniserveriprow1").attr( "ipaddr",$("#miniserverip1").val());
+      }
+    });
+    $("#miniserverport1").change(function() 
+    { 
+    	if ($("#useclouddns1").is(":unchecked"))
+    	{
+  			$("#miniserverportrow1").attr( "portaddr",$("#miniserverport1").val());
       }
     });
 

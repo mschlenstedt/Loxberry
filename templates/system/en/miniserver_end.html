@@ -87,6 +87,8 @@
     // Add 3. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
+    row.setAttribute('id','miniserverportrow' + iteration);
+    row.setAttribute('portaddr','');
 
     // Add cells
     var cellRight = row.insertCell(0);
@@ -200,11 +202,18 @@
 				$("#miniservercloudurl" + iteration).attr("data-validation-optional","false");
   		  $("#miniservercloudurlrow" + iteration).fadeTo( "slow", 1 );
   		  $("#miniservercloudurl" + iteration).prop("readOnly", false);
+
 				$("#miniserverip" + iteration).attr("data-validation-optional","true");
         $("#miniserverip" + iteration).val("");
 	  		$("#miniserverip" + iteration).trigger( "focus" );
   		  $("#miniserveriprow" + iteration).fadeTo( "slow", 0.1 );
   		  $("#miniserverip" + iteration).prop("readOnly", true);
+
+				$("#miniserverport" + iteration).attr("data-validation-optional","true");
+        $("#miniserverport" + iteration).val("");
+	  		$("#miniserverport" + iteration).trigger( "focus" );
+  		  $("#miniserverportrow" + iteration).fadeTo( "slow", 0.1 );
+  		  $("#miniserverport" + iteration).prop("readOnly", true);
       }
       else
       {
@@ -213,10 +222,16 @@
   		  $("#miniservercloudurl" + iteration).prop("readOnly", true);
         $("#miniservercloudurl" + iteration).val("");
 	  		$("#miniservercloudurl" + iteration).trigger( "focus" );
+
         $("#miniserverip" + iteration).val($("#miniserveriprow" + iteration).attr( "ipaddr" ));
 				$("#miniserverip" + iteration).attr("data-validation-optional","false");
   		  $("#miniserveriprow" + iteration ).fadeTo( "slow", 1 );
   		  $("#miniserverip" + iteration).prop("readOnly", false);
+
+        $("#miniserverport" + iteration).val($("#miniserverportrow" + iteration).attr( "portaddr" ));
+				$("#miniserverport" + iteration).attr("data-validation-optional","false");
+  		  $("#miniserverportrow" + iteration ).fadeTo( "slow", 1 );
+  		  $("#miniserverport" + iteration).prop("readOnly", false);
   		}
     });
 
@@ -232,6 +247,13 @@
     	if ($("#useclouddns"+ iteration).is(":unchecked"))
     	{
   			$("#miniserveriprow"+ iteration).attr( "ipaddr",$("#miniserverip"+ iteration).val());
+      }
+    });
+    $("#miniserverport"+ iteration).change(function() 
+    { 
+    	if ($("#useclouddns"+ iteration).is(":unchecked"))
+    	{
+  			$("#miniserverportrow"+ iteration).attr( "portaddr",$("#miniserverport"+ iteration).val());
       }
     });
 

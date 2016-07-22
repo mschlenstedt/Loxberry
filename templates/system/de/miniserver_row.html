@@ -17,7 +17,7 @@
           &nbsp;
           </td>
         </tr>
-        <tr>
+        <tr id="miniserverportrow<!--$msno-->" portaddr="<!--$miniserverport-->">
           <td>
           <label>Portnummer:</label>
           </td>
@@ -115,6 +115,7 @@
           </td>
         </tr>
 <SCRIPT>
+  
   	$("#useclouddns<!--$msno-->").change(function() 
     { 
       if($(this).is(":checked")) 
@@ -123,11 +124,18 @@
 				$("#miniservercloudurl<!--$msno-->").attr("data-validation-optional","false");
   		  $("#miniservercloudurlrow<!--$msno-->").fadeTo( "slow", 1 );
   		  $("#miniservercloudurl<!--$msno-->").prop("readOnly", false);
+
 				$("#miniserverip<!--$msno-->").attr("data-validation-optional","true");
         $("#miniserverip<!--$msno-->").val("");
 	  		$("#miniserverip<!--$msno-->").trigger( "focus" );
   		  $("#miniserveriprow<!--$msno-->").fadeTo( "slow", 0.1 );
   		  $("#miniserverip<!--$msno-->").prop("readOnly", true);
+
+				$("#miniserverport<!--$msno-->").attr("data-validation-optional","true");
+        $("#miniserverport<!--$msno-->").val("");
+	  		$("#miniserverport<!--$msno-->").trigger( "focus" );
+  		  $("#miniserverportrow<!--$msno-->").fadeTo( "slow", 0.1 );
+  		  $("#miniserverport<!--$msno-->").prop("readOnly", true);
       }
       else
       {
@@ -136,10 +144,16 @@
   		  $("#miniservercloudurl<!--$msno-->").prop("readOnly", true);
         $("#miniservercloudurl<!--$msno-->").val("");
 	  		$("#miniservercloudurl<!--$msno-->").trigger( "focus" );
+
         $("#miniserverip<!--$msno-->").val($("#miniserveriprow<!--$msno-->").attr( "ipaddr" ));
 				$("#miniserverip<!--$msno-->").attr("data-validation-optional","false");
   		  $("#miniserveriprow<!--$msno-->" ).fadeTo( "slow", 1 );
   		  $("#miniserverip<!--$msno-->").prop("readOnly", false);
+
+        $("#miniserverport<!--$msno-->").val($("#miniserverportrow<!--$msno-->").attr( "portaddr" ));
+				$("#miniserverport<!--$msno-->").attr("data-validation-optional","false");
+  		  $("#miniserverportrow<!--$msno-->" ).fadeTo( "slow", 1 );
+  		  $("#miniserverport<!--$msno-->").prop("readOnly", false);
   		}
     });
 
@@ -157,7 +171,15 @@
   			$("#miniserveriprow<!--$msno-->").attr( "ipaddr",$("#miniserverip<!--$msno-->").val());
       }
     });
+    $("#miniserverport<!--$msno-->").change(function() 
+    { 
+    	if ($("#useclouddns<!--$msno-->").is(":unchecked"))
+    	{
+  			$("#miniserverportrow<!--$msno-->").attr( "portaddr",$("#miniserverport<!--$msno-->").val());
+      }
+    });
 
 	 $("#useclouddns<!--$msno-->").prop("checked", "<!--$useclouddns-->");
    $("#useclouddns<!--$msno-->").trigger( "change" );
+   
 </SCRIPT>
