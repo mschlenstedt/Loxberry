@@ -24,7 +24,7 @@
           <input id="miniserverip1" name="miniserverip1" type="text" class="textfield" data-validation="custom" value="<!--$miniserverip-->" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse oder g&uuml;ltigen Hostnamen eingegeben zu haben. Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.1.100">
           </td>
           <td width="5%">
-          <a id="btnnetscan" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#"><font size="-1">Scan</font>
+           &nbsp;
           </td>
           <td width="20%">
           <font size="-1"><div id="testurl"></div></font>
@@ -168,10 +168,6 @@
 	  		$("#miniserverport1").trigger( "focus" );
   		  $("#miniserverportrow1").fadeTo( "slow", 0.1 );
   		  $("#miniserverport1").prop("readOnly", true);
-
-  		  $("#btnnetscan" ).fadeTo( "slow", 0 );
-  		  $("#btnnetscan").css( "cursor", "default" );
-  		  $("#testurl" ).fadeTo( "slow", 0 );
       }
       else
       {
@@ -190,10 +186,6 @@
 				$("#miniserverport1").attr("data-validation-optional","false");
   		  $("#miniserverportrow1" ).fadeTo( "slow", 1 );
   		  $("#miniserverport1").prop("readOnly", false);
-
-  		  $("#btnnetscan" ).fadeTo( "slow", 1 );
-  		  $("#btnnetscan").css( "cursor", "pointer" );
-  		  $("#testurl" ).fadeTo( "slow", 1 );
   		}
     });
 
@@ -221,4 +213,5 @@
 
 	 $("#useclouddns1").prop("checked", "<!--$useclouddns-->");
    $("#useclouddns1").trigger( "change" );
+
 </SCRIPT>
