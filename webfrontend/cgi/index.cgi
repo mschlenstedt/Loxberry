@@ -58,7 +58,7 @@ our $version;
 # Version of this script
 $version = "0.0.1";
 
-$cfg             = new Config::Simple('../../config/system/general.cfg');
+$cfg             = new Config::Simple('/opt/loxberry/config/system/general.cfg');
 $installdir      = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 $startsetup      = $cfg->param("BASE.STARTSETUP");

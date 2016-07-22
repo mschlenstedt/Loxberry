@@ -8,6 +8,7 @@
     <div style="margin: 5%;">
 
       <form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data">
+      <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
         <tr>
@@ -15,7 +16,10 @@
           <label id="labeluploadfile">Plugin-Installationsdatei:</label>
           </td>
           <td width="50%">
-          <input type="file" name="uploadfile">
+          <input type="file" name="uploadfile" class="textfield" 
+          data-validation="mime size" data-validation-allowing="zip" data-validation-max-size="50M"
+          data-validation-error-msg-mime="Es können nur Installationsdateien im ZIP-Format hochgeladen werden."
+          data-validation-error-msg-size="Es können keine Dateien größer als 50 MB hochgeladen werden.">
           </td>
           <td width="5%" valign="middle">
           &nbsp;
@@ -60,7 +64,7 @@
   <script>
   var $messages = $('#form-error-message');
   $.validate({
-    modules : 'security',
+    modules : 'file',
     errorMessagePosition : $messages,
   });
 
