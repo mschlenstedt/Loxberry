@@ -1,7 +1,7 @@
   <!-- content -->
 
   <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all">
+    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
 
     <!-- text -->
     <div style="margin: 5%;">
@@ -16,7 +16,7 @@
           <h2>1. Miniserver:</h2>
           </td>
         </tr>
-        <tr>
+        <tr id="miniserveriprow1" ipaddr="<!--$miniserverip-->">
           <td width="25%">
           <label class="control-label" for="miniserverip1">IP-Address or Hostname:</label>
           </td>
@@ -25,13 +25,13 @@
           data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* The entered IP-Address or Hostname is not valid. An IP-Address has the format xxx.xxx.xxx.xxx, e. g. 192.168.1.100">
           </td>
           <td width="5%">
-          <a id="btnnetscan" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#"><font size="-1">Scan</font>
-          </td>
+					&nbsp;
+					</td>
           <td width="20%">
           <font size="-1"><div id="testurl"></div></font>
           </td>
         </tr>
-        <tr>
+        <tr id="miniserverportrow1" portaddr="<!--$miniserverport-->">
           <td>
           <label>Portnumber:</label>
           </td>
@@ -85,12 +85,12 @@
        				if (isUrlValid($("#"+note_object).val()))
           		{
           			$("#"+note_object+"_url").attr("href",$("#"+note_object).val());
-          			$("#"+note_object+"_url").css('visibility', 'visible');
+          			$("#"+note_object+"_url").css("visibility", "visible");
           		}
           		else
           		{
           			$("#"+note_object+"_url").attr("href","#");
-          			$("#"+note_object+"_url").css('visibility', 'hidden');
+          			$("#"+note_object+"_url").css("visibility", "hidden");
           		}	
        			};
 					</SCRIPT>
@@ -104,7 +104,7 @@
 				  	{
           		note_link($(this).attr("id"));
        			});
-       			note_link ('miniservernote1');
+       			note_link ("miniservernote1");
           </SCRIPT>
           </td>
           <td>
@@ -119,7 +119,7 @@
           &nbsp;
           </td>
           <td width="50%">
-          <label><input <!--$miniserverdns--> type="checkbox" id="miniserverdns1" name="miniserverdns1">Cloud-DNS verwenden</label>
+          <label><input type="checkbox" id="useclouddns1" name="useclouddns1">Use Cloud-DNS</label>
           </td>
           <td width="5%">
           &nbsp;
@@ -133,7 +133,7 @@
           <label class="control-label" for="miniservercloudurl1">dns.loxonecloud.com-Address:</label>
           </td>
           <td width="50%">
-          <input id="miniservercloudurl1" name="miniservercloudurl1" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="miniserverdns1"  data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Please enter a valid dns.loxonecloud.com Address. Example: http://dns.loxonecloud.com/504F12345678" value="<!--$miniservercloudurl-->">
+          <input id="miniservercloudurl1" name="miniservercloudurl1" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns1"  data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Please enter a valid dns.loxonecloud.com Address. Example: http://dns.loxonecloud.com/504F12345678" value="<!--$miniservercloudurl-->">
           </td>
           <td width="5%">
           &nbsp;
@@ -149,29 +149,70 @@
         </tr>
         
 <SCRIPT>
-    $('#miniserverdns1').change(function() 
+	   $("#useclouddns1").change(function() 
     { 
       if($(this).is(":checked")) 
       {
         $("#miniservercloudurl1").val($("#miniservercloudurlrow1").attr( "dnsurl" ));
 				$("#miniservercloudurl1").attr("data-validation-optional","false");
-	  		$("#miniservercloudurlrow1").css('visibility', 'visible');
+  		  $("#miniservercloudurlrow1").fadeTo( "slow", 1 );
+  		  $("#miniservercloudurl1").prop("readOnly", false);
+
+				$("#miniserverip1").attr("data-validation-optional","true");
+        $("#miniserverip1").val("");
+	  		$("#miniserverip1").trigger( "focus" );
+  		  $("#miniserveriprow1").fadeTo( "slow", 0.1 );
+  		  $("#miniserverip1").prop("readOnly", true);
+
+				$("#miniserverport1").attr("data-validation-optional","true");
+        $("#miniserverport1").val("");
+	  		$("#miniserverport1").trigger( "focus" );
+  		  $("#miniserverportrow1").fadeTo( "slow", 0.1 );
+  		  $("#miniserverport1").prop("readOnly", true);
       }
       else
       {
 				$("#miniservercloudurl1").attr("data-validation-optional","true");
-  		  $("#miniservercloudurlrow1").css('visibility', 'hidden');
+  		  $("#miniservercloudurlrow1").fadeTo( "slow", 0.1 );
+  		  $("#miniservercloudurl1").prop("readOnly", true);
         $("#miniservercloudurl1").val("");
 	  		$("#miniservercloudurl1").trigger( "focus" );
+
+        $("#miniserverip1").val($("#miniserveriprow1").attr( "ipaddr" ));
+				$("#miniserverip1").attr("data-validation-optional","false");
+  		  $("#miniserveriprow1" ).fadeTo( "slow", 1 );
+  		  $("#miniserverip1").prop("readOnly", false);
+
+        $("#miniserverport1").val($("#miniserverportrow1").attr( "portaddr" ));
+				$("#miniserverport1").attr("data-validation-optional","false");
+  		  $("#miniserverportrow1" ).fadeTo( "slow", 1 );
+  		  $("#miniserverport1").prop("readOnly", false);
   		}
     });
 
-    $('#miniservercloudurl1').change(function() 
+    $("#miniservercloudurl1").change(function() 
     { 
-    	if ($("#miniservercloudurlrow1").is(':visible') && $('#miniserverdns1').is(":checked"))
+    	if ($("#useclouddns1").is(":checked"))
     	{
   			$("#miniservercloudurlrow1").attr( "dnsurl",$("#miniservercloudurl1").val());
       }
     });
-		$("#miniserverdns1").trigger( "change" );
+    $("#miniserverip1").change(function() 
+    { 
+    	if (!$("#useclouddns1").is(":checked"))
+    	{
+  			$("#miniserveriprow1").attr( "ipaddr",$("#miniserverip1").val());
+      }
+    });
+    $("#miniserverport1").change(function() 
+    { 
+    	if (!$("#useclouddns1").is(":checked"))
+    	{
+  			$("#miniserverportrow1").attr( "portaddr",$("#miniserverport1").val());
+      }
+    });
+
+	 $("#useclouddns1").prop("checked", "<!--$useclouddns-->");
+   $("#useclouddns1").trigger( "change" );
+   
 </SCRIPT>

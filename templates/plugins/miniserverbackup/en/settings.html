@@ -1,20 +1,14 @@
   <!-- content -->
 
   <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all">
-
+    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
     <!-- text -->
-    <div style="margin: 5%;">
-
+    <div style="margin: 10px;">
       <center>
       <table border=0 cellpadding=10>
         <tr>
         <td width="150px">
-        <a id="btnbackup" data-role="button" data-mini="true" href="./index.cgi?do=backup">Backup now!</a>
-        </td>
-        <td width="150px" cellpadding=10>
-        <a id="btnlogs" data-role="button" data-mini="true" href="./index.cgi?do=log" target="_blank">Logfile</a>
-        </td>
+        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').val(''); $.get('./index.cgi?do=backup');">Backup now!</a></td>
         <td width="150px" cellpadding=10>
         <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" target="_blank">Downloads</a>
         </td>
@@ -82,8 +76,21 @@
           &nbsp;
           </td>
         </tr>
-        <tr>
-          <td colspan=4>
+        <tr id="loglevelrow">
+          <td width="25%">
+          <label id="labeldebug">Logfile-Level:</label>
+          </td>
+          <td width="50%">
+			     <select style="align:left;" id="debug" name="debug" data-mini="true">
+			      <option value="0">Normal</option>
+			      <option <!--$selectedverbose--> value="1">Info</option>
+			      <option <!--$selecteddebug--> value="2">Debug</option>
+			     </select>
+          </td>
+          <td width="5%" valign="middle">
+          &nbsp;
+          </td>
+          <td width="20%">
           &nbsp;
           </td>
         </tr>
@@ -108,18 +115,59 @@
       </center>
       </p>
 
-    </div>
+      <div>
+  <table>
+ 	 <tr>
+	 <td id="LogSave"><a id="btnlogs" data-role="button" href="./index.cgi?do=log" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d" href="/log/plugins/miniserverbackup/backuplog.log" target="miniserver_note">Save Logfile</a></td>
+ 	 <td><label id="LogLiveLabel"><input data-mini="true" type="checkbox" id="LogLive">Logfile Liveview</label></td>
+	 <td id="LogScrolltd"><label><input data-mini="true" type="checkbox" checked id="LogScroll">Autoscroll</label></td>
+  </tr>
+	</table>
+<textarea rows="40" id="Logfile" style="border: 1px solid #888;  background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll; resize: yes;"></textarea>
+</div>
+</div>
     <!-- /text -->
     </div>
-
   </div>
 
   <script>
+  var liveviewtimer ="";
   var $messages = $('#form-error-message');
   $.validate({
     modules : 'security',
     errorMessagePosition : $messages,
   });
+  $("#loglevelrow" ).fadeTo( "slow", .4 );
+
+    $("#LogLive").change(function() 
+    { 
+      if($(this).is(":checked")) 
+      {
+      $("#LogLiveLabel").text("Refresh Logfile");
+      $("#LogScrolltd").fadeTo( "slow", 1 );
+			$("#Logfile").fadeTo( "slow", 1 );
+			liveviewtimer = setInterval(function() {
+      $.get('/plugins/miniserverbackup/logfile.php?ajax', function(data) {
+        $('#Logfile').append(data);
+
+       $('#Logfile').height("300");
+
+			if($("#LogScroll").is(":checked")) 
+			  { 
+        $('#Logfile').scrollTop($('#Logfile')[0].scrollHeight);
+				}
+       });
+				}, 250);
+      }
+      else
+      {
+        $("#LogLiveLabel").text("Refresh Logfile");
+        clearInterval(liveviewtimer);
+   	    $("#LogScrolltd").fadeTo( "slow", 0 );
+		}
+    });
+    $("#LogScrolltd").fadeTo( "fast", 0 );
+    $("#Logfile").fadeTo( 0 );
   </script>
 
   <!-- /content -->

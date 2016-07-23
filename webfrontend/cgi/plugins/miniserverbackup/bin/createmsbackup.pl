@@ -63,6 +63,7 @@ our $diryday;
 our $dirisdst;
 our $bkpdir;
 our $verbose;
+our $debug;
 our $maxfiles;
 our $installfolder;
 our $home = File::HomeDir->my_home;
@@ -71,7 +72,7 @@ our @files;
 our $subfolder;
 our $i;
 our $msno;
-our $miniserverdns;
+our $useclouddns;
 our $miniservercloudurl;
 our $curlbin;
 our $grepbin;
@@ -94,13 +95,29 @@ $grepbin         = $cfg->param("BINARIES.GREP");
 $awkbin          = $cfg->param("BINARIES.AWK");
 
 $pcfg            = new Config::Simple("$installfolder/config/plugins/miniserverbackup/miniserverbackup.cfg");
-$verbose         = $pcfg->param("MSBACKUP.VERBOSE");
+$debug           = $pcfg->param("MSBACKUP.DEBUG");
 $maxfiles        = $pcfg->param("MSBACKUP.MAXFILES");
 $subfolder       = $pcfg->param("MSBACKUP.SUBFOLDER");
 
 ##########################################################################
 # Main program
 ##########################################################################
+
+if ($debug == 1)
+{
+	$debug = 0;
+	$verbose = 1;
+}
+elsif ($debug == 2)
+{
+	$debug = 1;
+	$verbose = 1;
+}
+else
+{
+	$debug = 0;
+	$verbose = 0;
+}
 
 # Start
 if ($verbose) {
@@ -118,12 +135,12 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $miniserveradmin    = $cfg->param("MINISERVER$msno.ADMIN");
   $miniserverpass     = $cfg->param("MINISERVER$msno.PASS");
   $miniserverpport    = $cfg->param("MINISERVER$msno.PORT");
-  $miniserverdns      = $cfg->param("MINISERVER$msno.DNS");
+  $useclouddns        = $cfg->param("MINISERVER$msno.USECLOUDDNS");
   $miniservercloudurl = $cfg->param("MINISERVER$msno.CLOUDURL");
 
   # Get Firmware Version from Miniserver
 
-  if ( ${miniserverdns} eq "checked" )
+  if ( ${useclouddns} eq "1" )
   {
    $logmessage = "Using Cloud-DNS ${miniservercloudurl} for Backup";
    &log;
@@ -383,15 +400,15 @@ sub error {
 # Download
 sub download {
 
-if ($verbose) 
+if ($debug) 
 {
-	my $quiet=" -q ";
+	my $quiet="  ";
 }
 else
 {
-	my $quiet=" ";
+	my $quiet=" -q ";
 }
-	@output = qx($wgetbin $quiet -nH -r $url -P /tmp/$bkpdir 2>> $installfolder/log/plugins/miniserverbackup/backuplog.log);
+	@output = qx($wgetbin $quiet --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir 2>> $installfolder/log/plugins/miniserverbackup/backuplog.log);
   if ($? ne 0) {
     $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
     &log;

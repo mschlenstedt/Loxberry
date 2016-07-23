@@ -63,7 +63,7 @@ our $miniserverip;
 our $miniserverport;
 our $miniserveruser;
 our $miniserverkennwort;
-our $miniserverdns;
+our $useclouddns;
 our $miniservercloudurl;
 our $curlbin;
 our $grepbin;
@@ -167,7 +167,7 @@ $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0019");
 $help = "miniserver";
 
 # Print Template
-&header;
+&lbheader;
 
 # Start
 # 1. Miniserver
@@ -175,7 +175,7 @@ $miniserverip       = $cfg->param("MINISERVER1.IPADDRESS");
 $miniserverport     = $cfg->param("MINISERVER1.PORT");
 $miniserveruser     = $cfg->param("MINISERVER1.ADMIN");
 $miniserverkennwort = $cfg->param("MINISERVER1.PASS");
-$miniserverdns      = $cfg->param("MINISERVER1.DNS");
+$useclouddns        = $cfg->param("MINISERVER1.USECLOUDDNS");
 $miniservercloudurl = $cfg->param("MINISERVER1.CLOUDURL");
 $miniservernote     = $cfg->param("MINISERVER1.NOTE");
 
@@ -185,7 +185,7 @@ quotemeta($miniserverport);
 quotemeta($miniserveruser);
 quotemeta($miniserverkennwort);
 quotemeta($miniservernote);
-quotemeta($miniserverdns);
+quotemeta($useclouddns);
 quotemeta($miniservercloudurl);
 open(F,"$installfolder/templates/system/$lang/miniserver_start.html") || die "Missing template system/$lang/miniserver_start.html";
   while (<F>) {
@@ -203,14 +203,14 @@ while ($msno <= $miniservers) {
   $miniserveruser     = $cfg->param("MINISERVER$msno.ADMIN");
   $miniserverkennwort = $cfg->param("MINISERVER$msno.PASS");
   $miniservernote     = $cfg->param("MINISERVER$msno.NOTE");
-  $miniserverdns      = $cfg->param("MINISERVER$msno.DNS");
+  $useclouddns        = $cfg->param("MINISERVER$msno.USECLOUDDNS");
   $miniservercloudurl = $cfg->param("MINISERVER$msno.CLOUDURL");
   quotemeta($miniserverip);
   quotemeta($miniserverport);
   quotemeta($miniserveruser);
   quotemeta($miniserverkennwort);
   quotemeta($miniservernote);
-  quotemeta($miniserverdns);
+  quotemeta($useclouddns);
   quotemeta($miniservercloudurl);
   open(F,"$installfolder/templates/system/$lang/miniserver_row.html") || die "Missing template system/$lang/miniserver_row.html";
   while (<F>) {
@@ -254,22 +254,22 @@ while ($msno <= $miniservers) {
    ${miniserveruser.$msno}     = param("miniserveruser$msno");
    ${miniserverkennwort.$msno} = param("miniserverkennwort$msno");
    ${miniservernote.$msno}     = param("miniservernote$msno");
-   ${miniserverdns.$msno}      = param("miniserverdns$msno");
+   ${useclouddns.$msno}        = param("useclouddns$msno");
    ${miniservercloudurl.$msno} = param("miniservercloudurl$msno");
   # Filter
   quotemeta(${miniserverip.$msno});
   quotemeta(${miniserverport.$msno});
   quotemeta(${miniserveruser.$msno});
   quotemeta(${miniserverkennwort.$msno});
-  quotemeta(${miniserverdns.$msno});
+  quotemeta(${useclouddns.$msno});
   quotemeta(${miniservercloudurl.$msno});
   quotemeta(${miniservernote.$msno});
 
   # Test if Miniserver is reachable
   
-  if ( ${miniserverdns.$msno} eq "on" || ${miniserverdns.$msno} eq "checked" || ${miniserverdns.$msno} eq "true" || ${miniserverdns.$msno} eq "1" )
+  if ( ${useclouddns.$msno} eq "on" || ${useclouddns.$msno} eq "checked" || ${useclouddns.$msno} eq "true" || ${useclouddns.$msno} eq "1" )
   {
-   ${miniserverdns.$msno} = "checked";
+   ${useclouddns.$msno} = "1";
    our $dns_info = `$curlbin -I ${miniservercloudurl.$msno} --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
    my @dns_info_pieces = split /:/, $dns_info;
    if ($dns_info_pieces[1])
@@ -319,7 +319,7 @@ while ($msno <= $miniservers) {
   $cfg->param("MINISERVER$msno.PASS", "${miniserverkennwort.$msno}");
   $cfg->param("MINISERVER$msno.ADMIN", "${miniserveruser.$msno}");
   $cfg->param("MINISERVER$msno.IPADDRESS", "${miniserverip.$msno}");
-  $cfg->param("MINISERVER$msno.DNS", "${miniserverdns.$msno}");
+  $cfg->param("MINISERVER$msno.USECLOUDDNS", "${useclouddns.$msno}");
   $cfg->param("MINISERVER$msno.CLOUDURL", "${miniservercloudurl.$msno}");
   $cfg->param("MINISERVER$msno.NOTE", "${miniservernote.$msno}");
 
@@ -333,7 +333,7 @@ while ($miniserversprev > $miniservers) {
   $cfg->delete("MINISERVER$miniserversprev.PASS");
   $cfg->delete("MINISERVER$miniserversprev.ADMIN");
   $cfg->delete("MINISERVER$miniserversprev.IPADDRESS");
-  $cfg->delete("MINISERVER$miniserversprev.DNS");
+  $cfg->delete("MINISERVER$miniserversprev.USECLOUDDNS");
   $cfg->delete("MINISERVER$miniserversprev.CLOUDURL");
 
   # Does not work: $cfg->delete(-block=>'MINISERVER2');
@@ -351,7 +351,7 @@ $message = $phrase->param("TXT0035");
 $nexturl = "/admin/index.cgi";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -384,7 +384,7 @@ $help = "admin";
 
 print "Content-Type: text/html\n\n";
 
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -401,7 +401,7 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
   $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";

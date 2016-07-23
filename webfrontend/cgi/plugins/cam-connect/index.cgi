@@ -209,7 +209,7 @@ $plugin_name = $phraseplugin->param("TXT0000");
 		$nexturl = "javascript:history.back();";
 		
 		# Print Template
-		&header;
+		&lbheader;
 		open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
 		while (<F>) {
 		  $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -250,7 +250,7 @@ foreach (@lines){
 print "Content-Type: text/html\n\n";
 
 # Print Template
-&header;
+&lbheader;
 
 open(F,"$installfolder/templates/plugins/cam-connect/$lang/settings.html") || die "Missing template plugins/cam-connect/$lang/settings.html";
   while (<F>) {
@@ -285,7 +285,7 @@ $template_title = $phrase->param("TXT0000") . ": " . $phraseplugin->param("TXT00
 
 print "Content-Type: text/html\n\n";
 
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -302,7 +302,7 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
   $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Cam-Connect";
