@@ -69,17 +69,20 @@ our $curlbin;
 our $grepbin;
 our $awkbin;
 our $miniservernote;
+our $clouddnsaddress;
+
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+$version = "0.0.3";
 
 $cfg                = new Config::Simple('../../../config/system/general.cfg');
 $installfolder      = $cfg->param("BASE.INSTALLFOLDER");
 $lang               = $cfg->param("BASE.LANG");
 $miniservers        = $cfg->param("BASE.MINISERVERS");
+$clouddnsaddress    = $cfg->param("BASE.CLOUDDNS");
 $miniserversprev    = $miniservers;
 $curlbin            = $cfg->param("BINARIES.CURL");
 $grepbin            = $cfg->param("BINARIES.GREP");
@@ -178,8 +181,6 @@ $miniserverkennwort = $cfg->param("MINISERVER1.PASS");
 $useclouddns        = $cfg->param("MINISERVER1.USECLOUDDNS");
 $miniservercloudurl = $cfg->param("MINISERVER1.CLOUDURL");
 $miniservernote     = $cfg->param("MINISERVER1.NOTE");
-
-
 quotemeta($miniserverip);
 quotemeta($miniserverport);
 quotemeta($miniserveruser);
@@ -187,6 +188,11 @@ quotemeta($miniserverkennwort);
 quotemeta($miniservernote);
 quotemeta($useclouddns);
 quotemeta($miniservercloudurl);
+
+# Workaround for Javascript in Template - Maybe better fix this in the Javascript Code...
+# (If this option is 0 we need it really empty for Javascript)
+if (!$useclouddns) {$useclouddns = ""};
+
 open(F,"$installfolder/templates/system/$lang/miniserver_start.html") || die "Missing template system/$lang/miniserver_start.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -212,6 +218,11 @@ while ($msno <= $miniservers) {
   quotemeta($miniservernote);
   quotemeta($useclouddns);
   quotemeta($miniservercloudurl);
+
+  # Workaround for Javascript in Template - Maybe better fix this in the Javascript Code...
+  # (If this option is 0 we need it really empty for Javascript)
+  if (!$useclouddns) {$useclouddns = ""};
+
   open(F,"$installfolder/templates/system/$lang/miniserver_row.html") || die "Missing template system/$lang/miniserver_row.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -249,13 +260,14 @@ $cfg->param("BASE.MINISERVERS", "$miniservers");
 $msno = 1;
 while ($msno <= $miniservers) {
   # Data from form
-   ${miniserverip.$msno}       = param("miniserverip$msno");
-   ${miniserverport.$msno}     = param("miniserverport$msno");
-   ${miniserveruser.$msno}     = param("miniserveruser$msno");
-   ${miniserverkennwort.$msno} = param("miniserverkennwort$msno");
-   ${miniservernote.$msno}     = param("miniservernote$msno");
-   ${useclouddns.$msno}        = param("useclouddns$msno");
-   ${miniservercloudurl.$msno} = param("miniservercloudurl$msno");
+  ${miniserverip.$msno}       = param("miniserverip$msno");
+  ${miniserverport.$msno}     = param("miniserverport$msno");
+  ${miniserveruser.$msno}     = param("miniserveruser$msno");
+  ${miniserverkennwort.$msno} = param("miniserverkennwort$msno");
+  ${miniservernote.$msno}     = param("miniservernote$msno");
+  ${useclouddns.$msno}        = param("useclouddns$msno");
+  ${miniservercloudurl.$msno} = param("miniservercloudurl$msno");
+
   # Filter
   quotemeta(${miniserverip.$msno});
   quotemeta(${miniserverport.$msno});
@@ -266,33 +278,33 @@ while ($msno <= $miniservers) {
   quotemeta(${miniservernote.$msno});
 
   # Test if Miniserver is reachable
-  
   if ( ${useclouddns.$msno} eq "on" || ${useclouddns.$msno} eq "checked" || ${useclouddns.$msno} eq "true" || ${useclouddns.$msno} eq "1" )
   {
    ${useclouddns.$msno} = "1";
-   our $dns_info = `$curlbin -I ${miniservercloudurl.$msno} --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+   our $dns_info = `$curlbin -I http://$clouddnsaddress/${miniservercloudurl.$msno} --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
    my @dns_info_pieces = split /:/, $dns_info;
    if ($dns_info_pieces[1])
    {
-    $dns_info_pieces[1] =~ s/^\s+|\s+$//g;
+     $dns_info_pieces[1] =~ s/^\s+|\s+$//g;
    }
    else
    {
-    $dns_info_pieces[1] = 80;
+     $dns_info_pieces[1] = 80;
    }
    if ($dns_info_pieces[0])
    {
-    $dns_info_pieces[0] =~ s/^\s+|\s+$//g;
+     $dns_info_pieces[0] =~ s/^\s+|\s+$//g;
    }
    else
    {
-    $dns_info_pieces[0] = "[DNS-Error]"; 
+     $dns_info_pieces[0] = "[DNS-Error]"; 
    }
   $url = "http://${miniserveruser.$msno}:${miniserverkennwort.$msno}\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
   }
   else
   {
   $url = "http://${miniserveruser.$msno}:${miniserverkennwort.$msno}\@${miniserverip.$msno}\:${miniserverport.$msno}/dev/cfg/version";
+  ${useclouddns.$msno} = "0";
   }
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);

@@ -16,6 +16,20 @@
           <h2>1. Miniserver:</h2>
           </td>
         </tr>
+        <tr>
+          <td width="25%">
+          &nbsp;
+          </td>
+          <td width="50%">
+          <label><input type="checkbox" id="useclouddns1" name="useclouddns1">Cloud DNS verwenden</label>
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
         <tr id="miniserveriprow1" ipaddr="<!--$miniserverip-->">
           <td width="25%">
           <label class="control-label" for="miniserverip1">IP-Adresse oder Hostname:</label>
@@ -39,6 +53,24 @@
           </td>
           <td colspan="2">
           <font size="-1">Der Standardport ist <b>80</b></font>
+          </td>
+        </tr>
+        <tr id="miniservercloudurlrow1" dnsurl="<!--$miniservercloudurl-->">
+          <td width="25%">
+          <label class="control-label" for="miniservercloudurl1">MAC-Adresse:</label>
+          </td>
+          <td width="50%">
+          <input id="miniservercloudurl1" name="miniservercloudurl1" type="text" class="textfield"
+          data-validation-optional="false" data-validation-depends-on="useclouddns1"  data-validation-depends-on-value="1" data-validation="custom" 
+          data-validation-regexp="(^EEE000([a-zA-Z0-9]{6})$)|(^504F([a-zA-Z0-9]{8})$)" data-suggestions="EEE000xxxxxx"
+          data-validation-error-msg="* Bitte eine g&uuml;ltige MAC-Adresse eingeben. Beispiel: EEE000xxxxxx oder 504Fxxxxxxxx"
+          value="<!--$miniservercloudurl-->">
+          </td>
+          <td width="5%">
+           &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
           </td>
         </tr>
         <tr>
@@ -71,7 +103,7 @@
         </tr>
      	  <tr>
           <td>
-          <label>Notiz:</label>
+          <label>Notiz / Link:</label>
           </td>
           <td>
 					<SCRIPT>
@@ -114,34 +146,6 @@
           </td>
         </tr>
         <tr>
-          <td width="25%">
-          &nbsp;
-          </td>
-          <td width="50%">
-          <label><input type="checkbox" id="useclouddns1" name="useclouddns1">Cloud-DNS verwenden</label>
-          </td>
-          <td width="5%">
-          &nbsp;
-          </td>
-          <td width="20%">
-          &nbsp;
-          </td>
-        </tr>
-        <tr id="miniservercloudurlrow1" dnsurl="<!--$miniservercloudurl-->">
-          <td width="25%">
-          <label class="control-label" for="miniservercloudurl1">dns.loxonecloud.com-Adresse:</label>
-          </td>
-          <td width="50%">
-          <input id="miniservercloudurl1" dnsurl="<!--$miniservercloudurl-->" name="miniservercloudurl1" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns1"  data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Bitte eine g&uuml;ltige dns.loxonecloud.com Adresse eingeben. Beispiel: http://dns.loxonecloud.com/504F12345678" value="<!--$miniservercloudurl-->">
-          </td>
-          <td width="5%">
-           &nbsp;
-          </td>
-          <td width="20%">
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
           <td colspan=4>
           &nbsp;
           </td>
@@ -154,37 +158,37 @@
       {
         $("#miniservercloudurl1").val($("#miniservercloudurlrow1").attr( "dnsurl" ));
 				$("#miniservercloudurl1").attr("data-validation-optional","false");
-  		  $("#miniservercloudurlrow1").fadeTo( "slow", 1 );
+  		  $("#miniservercloudurlrow1").fadeTo( "fast", 1 );
   		  $("#miniservercloudurl1").prop("readOnly", false);
 
 				$("#miniserverip1").attr("data-validation-optional","true");
         $("#miniserverip1").val("");
 	  		$("#miniserverip1").trigger( "focus" );
-  		  $("#miniserveriprow1").fadeTo( "slow", 0.1 );
+  		  $("#miniserveriprow1").fadeTo( "fast", 0.3 );
   		  $("#miniserverip1").prop("readOnly", true);
 
 				$("#miniserverport1").attr("data-validation-optional","true");
         $("#miniserverport1").val("");
 	  		$("#miniserverport1").trigger( "focus" );
-  		  $("#miniserverportrow1").fadeTo( "slow", 0.1 );
+  		  $("#miniserverportrow1").fadeTo( "fast", 0.3 );
   		  $("#miniserverport1").prop("readOnly", true);
       }
       else
       {
 				$("#miniservercloudurl1").attr("data-validation-optional","true");
-  		  $("#miniservercloudurlrow1").fadeTo( "slow", 0.1 );
+  		  $("#miniservercloudurlrow1").fadeTo( "fast", 0.3 );
   		  $("#miniservercloudurl1").prop("readOnly", true);
         $("#miniservercloudurl1").val("");
 	  		$("#miniservercloudurl1").trigger( "focus" );
 
         $("#miniserverip1").val($("#miniserveriprow1").attr( "ipaddr" ));
 				$("#miniserverip1").attr("data-validation-optional","false");
-  		  $("#miniserveriprow1" ).fadeTo( "slow", 1 );
+  		  $("#miniserveriprow1" ).fadeTo( "fast", 1 );
   		  $("#miniserverip1").prop("readOnly", false);
 
         $("#miniserverport1").val($("#miniserverportrow1").attr( "portaddr" ));
 				$("#miniserverport1").attr("data-validation-optional","false");
-  		  $("#miniserverportrow1" ).fadeTo( "slow", 1 );
+  		  $("#miniserverportrow1" ).fadeTo( "fast", 1 );
   		  $("#miniserverport1").prop("readOnly", false);
   		}
     });
