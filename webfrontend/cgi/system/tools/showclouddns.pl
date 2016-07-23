@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 # Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016 Christian Wörstenfeld
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
