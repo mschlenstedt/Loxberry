@@ -102,6 +102,8 @@ our $curlbin;
 our $grepbin;
 our $awkbin;
 our $miniservernote1;
+our $clouddnsaddress;
+
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -112,6 +114,7 @@ $version = "0.0.5";
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
+$clouddnsaddress = $cfg->param("BASE.CLOUDDNS");
 $rebootbin       = $cfg->param("BINARIES.REBOOT");
 $curlbin         = $cfg->param("BINARIES.CURL");
 $grepbin         = $cfg->param("BINARIES.GREP");
@@ -331,46 +334,10 @@ exit;
 
 sub step2 {
 
-#if ($saveformdata) {
-#  # Check input from Step 1
-#  if ($adminuser =~ /\W+/ || length($adminuser) < 3 || length($adminuser) > 20){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#  if (!$adminpass1 || !$adminuser){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#  if ($adminpass1 !~ /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])\S{5,}$/){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#  if ($adminpass1 =~ /\W+/){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#  if ($adminpass1 ne $adminpass2){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#}
-
 # Store submitted data in session file
 if ($saveformdata) {
   $session->param("adminuser", $adminuser);
   $session->param("adminpass1", $adminpass1);
-  $session->param("miniserverip1", $miniserverip1);
-  $session->param("miniserverport1", $miniserverport1);
-  $session->param("miniserveruser1", $miniserveruser1);
-  $session->param("miniserverkennwort1", $miniserverkennwort1);
-  $session->param("useclouddns1", $useclouddns1);
-  $session->param("miniservercloudurl1", $miniservercloudurl1);
-  $session->param("miniservernote1", $miniservernote1);
 }
 
 # Read data from Session file
@@ -436,7 +403,7 @@ if ($saveformdata) {
   if ( $useclouddns1 eq "on" || $useclouddns1 eq "checked" || $useclouddns1 eq "true" || $useclouddns1 eq "1" )
   {
    $useclouddns1 = "1";
-   our $dns_info = `$curlbin -I $miniservercloudurl1 --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+   our $dns_info = `$curlbin -I http://$clouddnsaddress/$miniservercloudurl1 --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
    my @dns_info_pieces = split /:/, $dns_info;
    if ($dns_info_pieces[1])
    {
@@ -654,7 +621,10 @@ $miniserverip1       = $session->param("miniserverip1");
 $miniserverport1     = $session->param("miniserverport1");
 $miniserveruser1     = $session->param("miniserveruser1");
 $miniserverkennwort1 = $session->param("miniserverkennwort1");
-$netzwerkanschluss   = $session->param("netzwerkanschluss1");
+$miniservernote1     = $session->param("miniservernote1");
+$miniservercloudurl1 = $session->param("miniservercloudurl1");
+$useclouddns1        = $session->param("useclouddns1");
+$netzwerkanschluss   = $session->param("netzwerkanschluss");
 $netzwerkssid        = $session->param("netzwerkssid");
 $netzwerkschluessel  = $session->param("netzwerkschluessel");
 $netzwerkadressen    = $session->param("netzwerkadressen");
@@ -674,6 +644,9 @@ quotemeta($miniserverip1);
 quotemeta($miniserverport1);
 quotemeta($miniserveruser1);
 quotemeta($miniserverkennwort1);
+quotemeta($miniservernote1);
+quotemeta($miniservercloudurl1);
+quotemeta($useclouddns1);
 quotemeta($netzwerkanschluss);
 quotemeta($netzwerkssid);
 quotemeta($netzwerkschluessel);
@@ -686,6 +659,13 @@ quotemeta($zeitserver);
 quotemeta($ntpserverurl);
 quotemeta($zeitzone);
 
+# Clean Vars
+if (!$useclouddns1) {
+  $useclouddns1 = "0";
+} else {
+  $useclouddns1 = "1";
+}
+
 $step++;
 
 # Write configuration file(s)
@@ -696,6 +676,9 @@ $cfg->param("MINISERVER1.PORT", "$miniserverport1");
 $cfg->param("MINISERVER1.PASS", "$miniserverkennwort1");
 $cfg->param("MINISERVER1.ADMIN", "$miniserveruser1");
 $cfg->param("MINISERVER1.IPADDRESS", "$miniserverip1");
+$cfg->param("MINISERVER1.USECLOUDDNS", "$useclouddns1");
+$cfg->param("MINISERVER1.NOTE", "$miniservernote1");
+$cfg->param("MINISERVER1.CLOUDURL", "$miniservercloudurl1");
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
 $cfg->param("TIMESERVER.METHOD", "$zeitserver");
 $cfg->param("TIMESERVER.ZONE", "$zeitzone");
