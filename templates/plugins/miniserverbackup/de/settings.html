@@ -8,7 +8,7 @@
       <table border=0 cellpadding=10>
         <tr>
         <td width="550px">
-        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').val('');  $('#response').html( 'Starte Backup - Bitte warten...' ); $('#response').fadeTo( 'fast', 1 ); $.get('./index.cgi?do=backup&lang=de', function(response) { setTimeout( function(){ $('#response').fadeTo( 'slow', 0 ); }, 5000); setTimeout( function(){ $('#response').html( '' ); }, 6500); $('#response').html(response);});">Backup jetzt starten!</a>
+        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#response').html( 'Starte Backup - Bitte warten...' ); $('#response').fadeTo( 'fast', 1 ); $.get('./index.cgi?do=backup&lang=de', function(response) { setTimeout( function(){ $('#response').fadeTo( 'slow', 0 ); }, 5000); setTimeout( function(){ $('#response').html( '' ); }, 6500); $('#response').html(response);});">Backup jetzt starten!</a>
         </td>
         <td width="150px" cellpadding=10>
         <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" data-icon="grid" target="_blank">Downloads</a>
