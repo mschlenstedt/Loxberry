@@ -83,7 +83,7 @@
         </tr>
         <tr id="loglevelrow">
           <td width="25%">
-          <label id="labeldebug">Logfile-Level:</label>
+          <label id="labeldebug">Logging-Level:</label>
           </td>
           <td width="50%">
 			     <select style="align:left;" id="debug" name="debug" data-mini="true">
@@ -125,6 +125,7 @@
  	 <tr>
  	 <td width="200px%"><label id="LogLiveLabel"><input data-mini="true" type="checkbox" id="LogLive">Logfile Liveview</label></td>
 	 <td width="200px" id="LogScrolltd"><label><input data-mini="true" type="checkbox" checked id="LogScroll">Autoscroll Logfile</label></td>
+	 <td width="200px" id="LogSessionReset"><a onclick="$.get('/plugins/miniserverbackup/logfile.php?ajax&new_session');" id="reset_session" data-role="button" data-mini="true" href="" data-icon="star" target="_blank">Restart Debug-Session</a></td>
   </tr>
 	</table>
 <textarea rows="20" id="Logfile" style="border: 1px solid #888;  background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll; resize: yes;"></textarea>
