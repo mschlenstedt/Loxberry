@@ -4,16 +4,24 @@
     <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
     <!-- text -->
     <div style="margin: 10px;">
-      <center>
+     <center>
       <table border=0 cellpadding=10>
         <tr>
-        <td width="150px">
-        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').val(''); $.get('./index.cgi?do=backup');">Backup now!</a></td>
+        <td width="550px">
+        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').val('');  $('#response').html( 'Starting Backup - Please wait...' ); $('#response').fadeTo( 'fast', 1 ); $.get('./index.cgi?do=backup&lang=<!--$lang-->', function(response) { setTimeout( function(){ $('#response').fadeTo( 'slow', 0 ); }, 5000); setTimeout( function(){ $('#response').html( '' ); }, 6500); $('#response').html(response);});">Backup now!</a>
+        </td>
         <td width="150px" cellpadding=10>
         <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" target="_blank">Downloads</a>
         </td>
+       </tr>
+        <tr>
+        <td colspan="2">
+        	<span id="response">&nbsp;</span>
+        </td>
+       </tr>
       </table>
       </center>
+
       
       <br><hr><br>
 
@@ -137,8 +145,6 @@
     modules : 'security',
     errorMessagePosition : $messages,
   });
-  $("#loglevelrow" ).fadeTo( "slow", .4 );
-
     $("#LogLive").change(function() 
     { 
       if($(this).is(":checked")) 
