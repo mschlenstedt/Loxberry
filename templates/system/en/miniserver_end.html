@@ -71,6 +71,20 @@
     // Add 2. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
+    
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '&nbsp;'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<label><input type="checkbox" id="useclouddns' + iteration + '" name="useclouddns' + iteration + '">Use Cloud-DNS</label>';
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Add 3. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
     row.setAttribute('id','miniserveriprow' + iteration);
     row.setAttribute('ipaddr','');
 
@@ -84,7 +98,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
     
-    // Add 3. row 
+    // Add 4. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
     row.setAttribute('id','miniserverportrow' + iteration);
@@ -100,85 +114,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
     
-    // Add 4. row 
-    var lastRow = tbl.rows.length;
-    var row = tbl.insertRow(lastRow);
-
-    // Add cells
-    var cellRight = row.insertCell(0);
-    cellRight.innerHTML = '<label>Miniserver Username:</label>'
-    var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
-    var cellRight = row.insertCell(2);
-    cellRight.innerHTML = ''
-    var cellRight = row.insertCell(3);
-    cellRight.innerHTML = ''
-
     // Add 5. row 
-    var lastRow = tbl.rows.length;
-    var row = tbl.insertRow(lastRow);
-
-    // Add cells
-    var cellRight = row.insertCell(0);
-    cellRight.innerHTML = '<label>Miniserver Password:</label>'
-    var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '<input id="miniserverkennwort' + iteration + '" name="miniserverkennwort' + iteration + '" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the password for the above Miniserver Administrator account.">'
-    var cellRight = row.insertCell(2);
-    cellRight.innerHTML = ''
-    var cellRight = row.insertCell(3);
-    cellRight.innerHTML = ''
-
-    // Add 6. row 
-    var lastRow = tbl.rows.length;
-    var row = tbl.insertRow(lastRow);
-
-    // Add cells
-    var cellRight = row.insertCell(0);
-    cellRight.innerHTML = '<label>Note:</label>'
-    var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '<textarea id="miniservernote' + iteration + '" name="miniservernote' + iteration + '" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="* Following characters are allowed: a-z A-Z 0-9 {(@:/?=#_+!-&)} (Maximum text length 512)" data-validation-length="Max512"></textarea>';
-  	$("#miniservernote" + iteration).focusout(function() 
-  	{
-  		note_link($(this).attr("id"));
-    })
-  	.blur(function() 
-  	{
-  		note_link($(this).attr("id"));
-		});
-		function note_link (note_object)
-		{
-			if (isUrlValid($("#"+note_object).val()))
-  		{
-  			$("#"+note_object+"_url").attr("href",$("#"+note_object).val());
-  			$("#"+note_object+"_url").css('visibility', 'visible');
-  		}
-  		else
-  		{
-  			$("#"+note_object+"_url").attr("href","#");
-  			$("#"+note_object+"_url").css('visibility', 'hidden');
-  		}	
-		};
-		note_link ("miniservernote" + iteration);
-    var cellRight = row.insertCell(2);
-    cellRight.innerHTML = '<a id="miniservernote" + iteration + "_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note">Open</a>'
-    var cellRight = row.insertCell(3);
-    cellRight.innerHTML = ''
-
-    // Add 7. row 
-    var lastRow = tbl.rows.length;
-    var row = tbl.insertRow(lastRow);
-    
-    // Add cells
-    var cellRight = row.insertCell(0);
-    cellRight.innerHTML = '&nbsp;'
-    var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '<label><input type="checkbox" id="useclouddns' + iteration + '" name="useclouddns' + iteration + '">Use Cloud-DNS</label>';
-    var cellRight = row.insertCell(2);
-    cellRight.innerHTML = ''
-    var cellRight = row.insertCell(3);
-    cellRight.innerHTML = ''
-
-    // Add 8. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
     row.setAttribute('id','miniservercloudurlrow' + iteration);
@@ -186,9 +122,9 @@
     
     // Add cells
     var cellRight = row.insertCell(0);
-    cellRight.innerHTML = '<label>dns.loxonecloud.com-Address:</label>'
+    cellRight.innerHTML = '<label>MAC-Address:</label>'
     var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '  <input id="miniservercloudurl' + iteration + '" name="miniservercloudurl' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Please enter a valid dns.loxonecloud.com Address. Example: http://dns.loxonecloud.com/504F12345678" value="">';
+    cellRight.innerHTML = '  <input id="miniservercloudurl' + iteration + '" name="miniservercloudurl' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="custom" data-suggestions="EEE000xxxxxx" data-validation-regexp="(^EEE000([a-zA-Z0-9]{6})$)|(^504F([a-zA-Z0-9]{8})$)" data-validation-error-msg="* Please enter a valid MAC-Address. Example: EEE000xxxxxx oder 504Fxxxxxxxx" value="">';
     var cellRight = row.insertCell(2);
     cellRight.innerHTML = ''
     var cellRight = row.insertCell(3);
@@ -260,7 +196,72 @@
 	 $("#useclouddns"+ iteration).prop("checked", "");
    $("#useclouddns"+ iteration).trigger( "change" );
    
+
+    // Add 6. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>Miniserver Username:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Add 7. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>Miniserver Password:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<input id="miniserverkennwort' + iteration + '" name="miniserverkennwort' + iteration + '" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the password for the above Miniserver Administrator account.">'
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
     // Add 8. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>Note / Link:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '<textarea id="miniservernote' + iteration + '" name="miniservernote' + iteration + '" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="* Following characters are allowed: a-z A-Z 0-9 {(@:/?=#_+!-&)} (Maximum text length 512)" data-validation-length="Max512"></textarea>';
+  	$("#miniservernote" + iteration).focusout(function() 
+  	{
+  		note_link($(this).attr("id"));
+    })
+  	.blur(function() 
+  	{
+  		note_link($(this).attr("id"));
+		});
+		function note_link (note_object)
+		{
+			if (isUrlValid($("#"+note_object).val()))
+  		{
+  			$("#"+note_object+"_url").attr("href",$("#"+note_object).val());
+  			$("#"+note_object+"_url").css('visibility', 'visible');
+  		}
+  		else
+  		{
+  			$("#"+note_object+"_url").attr("href","#");
+  			$("#"+note_object+"_url").css('visibility', 'hidden');
+  		}	
+		};
+		note_link ("miniservernote" + iteration);
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = '<a id="miniservernote" + iteration + "_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note">Open</a>'
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
+    // Add 9. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 

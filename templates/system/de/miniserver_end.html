@@ -68,7 +68,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 7. row 
+    // Add 2. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
     
@@ -82,7 +82,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 2. row 
+    // Add 3. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
     row.setAttribute('id','miniserveriprow' + iteration);
@@ -98,7 +98,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
     
-    // Add 3. row 
+    // Add 4. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
     row.setAttribute('id','miniserverportrow' + iteration);
@@ -114,7 +114,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 8. row 
+    // Add 5. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
     row.setAttribute('id','miniservercloudurlrow' + iteration);
@@ -197,7 +197,7 @@
    $("#useclouddns"+ iteration).trigger( "change" );
    
     
-    // Add 4. row 
+    // Add 6. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 
@@ -211,7 +211,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 5. row 
+    // Add 7. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 
@@ -225,13 +225,13 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 6. row 
+    // Add 8. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 
     // Add cells
     var cellRight = row.insertCell(0);
-    cellRight.innerHTML = '<label>Notiz:</label>'
+    cellRight.innerHTML = '<label>Notiz / Link:</label>'
     var cellRight = row.insertCell(1);
     cellRight.innerHTML = '<textarea id="miniservernote' + iteration + '" name="miniservernote' + iteration + '" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="* Es sind nur folgende Zeichen erlaubt: a-z A-Z 0-9 {(@:/?=#_+!-&)} (Maximale L&auml;nge 512 Zeichen)" data-validation-length="Max512"></textarea>';
   	$("#miniservernote" + iteration).focusout(function() 
@@ -261,7 +261,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 8. row 
+    // Add 9. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 
