@@ -158,6 +158,7 @@ if ($startsetup) {
 #  &step0;
 #}
 
+
 # Nothing todo? Goto Main menu
 &mainmenu;
 
@@ -173,6 +174,13 @@ print "Content-Type: text/html\n\n";
 
 $template_title = $phrase->param('TXT0000');
 $help = "setup00";
+
+
+
+our $systemdatetime = time()*1000;
+ (my $sec, my $min, my $hour, my $mday, my $mon, my $year, my $wday, my $yday, my $isdst) = localtime();
+our $systemdate         = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
+
 
 # Print Template
 &lbheader;
