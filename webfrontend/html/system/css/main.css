@@ -24,10 +24,27 @@ table.menutable td.caption {
   vertical-align: middle;
 }
 
-.loxberry-logo {
-	background-color: #FFFFFF;
+.loxberry-logo /* Loxberry Logo on white workspace */
+{ 
 	background-image: url("../images/icons/loxberry.svg");
 	background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
+}
+
+.ui-panel-wrapper /* Loxberry Logo on gray background to prevent cut logo */
+{
+	background-image: url("../images/icons/loxberry_ui-panel-wrapper.svg");
+	background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+	
+}
+.ui-input-text input
+{
+  background: transparent none;
+}
+html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
+{
+	background-color: rgba(255, 255, 255, 0.8);
 }

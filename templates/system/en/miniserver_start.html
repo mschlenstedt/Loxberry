@@ -16,6 +16,20 @@
           <h2>1. Miniserver:</h2>
           </td>
         </tr>
+       <tr>
+          <td width="25%">
+          &nbsp;
+          </td>
+          <td width="50%">
+          <label><input type="checkbox" id="useclouddns1" name="useclouddns1">Use Cloud DNS</label>
+          </td>
+          <td width="5%">
+          &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
         <tr id="miniserveriprow1" ipaddr="<!--$miniserverip-->">
           <td width="25%">
           <label class="control-label" for="miniserverip1">IP-Address or Hostname:</label>
@@ -40,6 +54,24 @@
           </td>
           <td colspan="2">
             <font size="-1">The default port is <b>80</b></font>
+          </td>
+        </tr>
+     <tr id="miniservercloudurlrow1" dnsurl="<!--$miniservercloudurl-->">
+          <td width="25%">
+          <label class="control-label" for="miniservercloudurl1">MAC-Address:</label>
+          </td>
+          <td width="50%">
+          <input id="miniservercloudurl1" name="miniservercloudurl1" type="text" class="textfield"
+          data-validation-optional="false" data-validation-depends-on="useclouddns1"  data-validation-depends-on-value="1" data-validation="custom" 
+          data-validation-regexp="(^EEE000([a-zA-Z0-9]{6})$)|(^504F([a-zA-Z0-9]{8})$)" data-suggestions="EEE000xxxxxx"
+          data-validation-error-msg="* Please enter a valid MAC-Address. Example: EEE000xxxxxx oder 504Fxxxxxxxx"
+          value="<!--$miniservercloudurl-->">
+          </td>
+          <td width="5%">
+           &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
           </td>
         </tr>
         <tr>
@@ -72,7 +104,7 @@
         </tr>
      	  <tr>
           <td>
-          <label>Note:</label>
+          <label>Note / Link:</label>
           </td>
           <td>
 					<SCRIPT>
@@ -115,41 +147,13 @@
           </td>
         </tr>
         <tr>
-          <td width="25%">
-          &nbsp;
-          </td>
-          <td width="50%">
-          <label><input type="checkbox" id="useclouddns1" name="useclouddns1">Use Cloud-DNS</label>
-          </td>
-          <td width="5%">
-          &nbsp;
-          </td>
-          <td width="20%">
-          &nbsp;
-          </td>
-        </tr>
-        <tr id="miniservercloudurlrow1" dnsurl="<!--$miniservercloudurl-->">
-          <td width="25%">
-          <label class="control-label" for="miniservercloudurl1">dns.loxonecloud.com-Address:</label>
-          </td>
-          <td width="50%">
-          <input id="miniservercloudurl1" name="miniservercloudurl1" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns1"  data-validation-depends-on-value="1" data-validation="url length" data-validation-length="39" data-suggestions="http://dns.loxonecloud.com/504F" data-validation-error-msg="* Please enter a valid dns.loxonecloud.com Address. Example: http://dns.loxonecloud.com/504F12345678" value="<!--$miniservercloudurl-->">
-          </td>
-          <td width="5%">
-          &nbsp;
-          </td>
-          <td width="20%">
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
           <td colspan=4>
           &nbsp;
           </td>
         </tr>
         
 <SCRIPT>
-	   $("#useclouddns1").change(function() 
+	  $("#useclouddns1").change(function() 
     { 
       if($(this).is(":checked")) 
       {
