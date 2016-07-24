@@ -25,9 +25,17 @@ table.menutable td.caption {
 }
 
 .loxberry-logo {
-	background-color: #FFFFFF;
 	background-image: url("../images/icons/loxberry.svg");
 	background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
+}
+
+.ui-panel-wrapper
+{
+	background-image: url("../images/icons/loxberry_ui-panel-wrapper.svg");
+	background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+	
 }
