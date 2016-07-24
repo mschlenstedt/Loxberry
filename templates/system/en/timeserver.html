@@ -63,17 +63,145 @@
           &nbsp;
           </td>
         </tr>
-        <tr>
-          <td colspan=4>
-          &nbsp;
+      <tr>
+          <td></td>
+          <td colspan=3>
+          <div id="form-error-message" class="form-error-message"></div>
           </td>
         </tr>
-        <tr>
-          <td width="25%">
-          <label id="labelzeitzone">Current System Time:</label>
+            <tr>
+          <td valign="top" width="25%">
+          <label id="labelzeitzone">Current LoxBerry System Time (<!--$systemtimezone-->):</label>
           </td>
           <td width="50%" align="center">
-          <div id="time"></div>
+          <?xml version="1.0"?>
+						<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 400" width="200" height="200" version="1.0">
+						<defs>
+						<linearGradient id="a" x1="0%" y1="100%" x2="0%" y2="0%">
+						  <stop offset="0%" style="stop-color:#777799"/>
+						  <stop offset="100%" style="stop-color:#ffffff"/>
+						</linearGradient>
+						<linearGradient id="b" x1="0%" y1="100%" x2="0%" y2="0%">
+						  <stop offset="0%" style="stop-color:#ffffff"/>
+						  <stop offset="25%" style="stop-color:#b6b6cc"/>
+						  <stop offset="40%" style="stop-color:#515177"/>
+						  <stop offset="48%" style="stop-color:#ffffff"/>
+						  <stop offset="56%" style="stop-color:#ffffff"/>
+						  <stop offset="75%" style="stop-color:#8b8baa"/>
+						  <stop offset="98%" style="stop-color:#efeff4"/>
+						  <stop offset="100%" style="stop-color:#fbfbfc"/>
+						</linearGradient>
+						<linearGradient id="c" x1="0%" y1="100%" x2="0%" y2="0%">
+						  <stop offset="0%" style="stop-color:#ffffff"/>
+						  <stop offset="100%" style="stop-color:#777799"/>
+						</linearGradient>
+						<radialGradient id="d" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+						  <stop offset="0%" style="stop-color:#ffffff"/>
+						  <stop offset="40%" style="stop-color:#ffffff"/>
+						  <stop offset="70%" style="stop-color:#e6e6ee"/>
+						  <stop offset="92%" style="stop-color:#b6b6cc"/>
+						  <stop offset="100%" style="stop-color:#636388"/>
+						</radialGradient>
+						<radialGradient id="e" cx="50%" cy="150%" r="200%" fx="50%" fy="150%">
+						  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0"/>
+						  <stop offset="59%" style="stop-color:#ffffff;stop-opacity:0"/>
+						  <stop offset="60%" style="stop-color:#ffffff;stop-opacity:0.6"/>
+						  <stop offset="70%" style="stop-color:#ffffff;stop-opacity:0.3"/>
+						  <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.0"/>
+						</radialGradient>
+						</defs>
+						<g transform="translate(200 200)">
+						<circle cx="0" cy="0" r="200" fill="#cecedd"/>
+						<circle cx="0" cy="0" r="196" stroke="url(#a)" stroke-width="5" fill="url(#b)"/>
+						<circle cx="0" cy="0" r="170" stroke="url(#c)" stroke-width="4" fill="url(#d)"/>
+						<circle cx="0" cy="0" r="172" stroke="#ffffff" stroke-width="0.5" fill="none"/>
+						<circle cx="0" cy="0" r="193.5" stroke="#ffffff" stroke-width="0.5" fill="none"/>
+						<g id="O">
+						  <polygon points="4,155 4,130 -4,130 -4,155" style="fill:#777799;stroke:#313155;stroke-width:1"/>
+						  <polygon points="4,-155 4,-130 -4,-130 -4,-155" style="fill:#777799;stroke:#313155;stroke-width:1"/>
+						</g>
+						<g transform="rotate(30)"><use xlink:href="#O"/></g>
+						<g transform="rotate(60)"><use xlink:href="#O"/></g>
+						<g transform="rotate(90)"><use xlink:href="#O"/></g>
+						<g transform="rotate(120)"><use xlink:href="#O"/></g>
+						<g transform="rotate(150)"><use xlink:href="#O"/></g>
+						<polygon id="h" points="6,-80 6,18 -6,18 -6,-80" style="fill:#232344">
+						  <animateTransform id="ht" attributeType="xml" attributeName="transform" type="rotate" from="000" to="000" begin="0" dur="86400s" repeatCount="indefinite"/>
+						</polygon>
+						<polygon id="m" points="3.5,-140 3.5,23 -3.5,23 -3.5,-140" style="fill:#232344">
+						  <animateTransform id="mt" attributeType="xml" attributeName="transform" type="rotate" from="000" to="000" begin="0" dur="3600s" repeatCount="indefinite"/>
+						</polygon>
+						<polygon id="s" points="2,-143 2,25 -2,25 -2,-143" style="fill:#232344">
+						  <animateTransform id="st" attributeType="xml" attributeName="transform" type="rotate" from="000" to="000" begin="0" dur="60s" repeatCount="indefinite"/>
+						</polygon>
+						<circle cx="0" cy="0" r="163" fill="url(#e)"/>
+						</g>
+						<script type="text/javascript"><![CDATA[
+						var d = new Date(<!--$systemdatetime-->);
+						var s = d.getSeconds();
+						var m = d.getMinutes() + s/60;
+						var h = (d.getHours() % 12) + m/60 + s/3600;
+						document.getElementById('st').setAttribute('from',s*6);
+						document.getElementById('mt').setAttribute('from',m*6);
+						document.getElementById('ht').setAttribute('from',h*30);
+						document.getElementById('st').setAttribute('to',360+s*6);
+						document.getElementById('mt').setAttribute('to',360+m*6);
+						document.getElementById('ht').setAttribute('to',360+h*30);
+						]]></script>
+						</svg>
+						<br/><br/>
+           <time datetime="<!--$systemdate-->" class="icon">
+  				 <em><!--$systemdate_weekday--></em>
+  				 <strong><!--$systemdate_month--></strong>
+  				 <span><!--$systemdate_day--></span>
+					 </time>
+           <!-- <span id="time"></span> -->
+					<style>
+						time.icon
+					{
+					  font-size: 1em; /* change icon size */
+					  display: block;
+					  position: relative;
+					  width: 7em;
+					  height: 7em;
+					  background-color: #fff;
+					  border-radius: 0.6em;
+					  box-shadow: 0 1px 0 #bdbdbd, 0 2px 0 #fff, 0 3px 0 #bdbdbd, 0 4px 0 #fff, 0 5px 0 #bdbdbd, 0 0 0 1px #bdbdbd;
+					  overflow: hidden;
+					}
+					time.icon *
+					{
+					  display: block;
+					  width: 100%;
+					  font-size: 1em;
+					  font-weight: bold;
+					  font-style: normal;
+					  text-align: center;
+					}
+					time.icon strong
+					{
+					  position: absolute;
+					  top: 0;
+					  padding: 0.4em 0;
+					  color: #fff;
+					  background-color: #6DAC20;
+					  border-bottom: 1px dashed #59980C;
+					  box-shadow: 0 2px 0 #6DAC20;
+					}
+					time.icon em
+					{
+					  position: absolute;
+					  bottom: 0.3em;
+					  color: #6DAC20;
+					}
+					time.icon span
+					{
+					  font-size: 2.8em;
+					  letter-spacing: -0.05em;
+					  padding-top: 0.8em;
+					  color: #2f2f2f;
+					}
+					  </style>
           </td>
           <td width="5%" valign="middle">
           &nbsp;
@@ -82,25 +210,9 @@
           &nbsp;
           </td>
         </tr>
-        <tr>
-          <td colspan=4>
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td></td>
-          <td colspan=3>
-          <div id="form-error-message" class="form-error-message"></div>
-          </td>
-        </tr>
         </table>
       </div>
       </form>
-
-      <p>
-      &nbsp;
-      </p>
-
       <p>
       <center>
       <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>

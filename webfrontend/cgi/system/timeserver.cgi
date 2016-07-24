@@ -184,10 +184,32 @@ foreach (@lines){
     $timezonelist = "$timezonelist<option value=\"$_\">$_</option>\n";
   }
 }
-
+my @months;
+my @days;
 # Prepare current system date and time
 $systemdatetime = time()*1000;
-$systemtimezone = qx($datebin +"%Z");
+ 
+if ($lang eq "" || $lang eq "de")
+{
+@months = qw( Januar Februar M&auml;rz April Mai Juni Juli August September Oktober November Dezember );
+@days = qw( Sonntag Montag Dienstag Mittwoch Donnerstag Freitag Sonnabend Sonntag );
+}
+elsif ($lang eq "en")
+{
+@months = qw( January February March April May June July August September October November December );
+@days = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday);
+}
+else
+{
+@months = qw( January February March April May June July August September October November December );
+@days = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday);
+}
+(my $sec, my $min, my $hour, my $mday, my $mon, my $year, my $wday, my $yday, my $isdst) = localtime();
+our $systemdate         = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
+our $systemdate_day     = $mday;
+our $systemdate_month   = $months[$mon];
+our $systemdate_weekday = $days[$wday];
+$systemtimezone         = qx($datebin +"%Z");
 chomp($systemtimezone);
 
 print "Content-Type: text/html\n\n";
