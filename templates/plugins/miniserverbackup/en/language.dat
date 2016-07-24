@@ -4,5 +4,5 @@
 TXT0000=On
 TXT0001=Off
 TXT0002=Settings successfully saved.
-TXT0003=Manual Backup started and should be available in the Download Directory soon.
+TXT0003=Manual Backup started. Files should be available in the Download Directory soon.
 TXT0004=No Logfile found. Was a backup started before?

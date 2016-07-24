@@ -7,17 +7,21 @@
       <center>
       <table border=0 cellpadding=10>
         <tr>
-        <td width="150px">
-        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').val(''); $.get('./index.cgi?do=backup');">Backup jetzt!</a>
+        <td width="550px">
+        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').append( '\n#############################################################\n################## Starte manuelles Backup ##################\n#############################################################\n' ); $('#response').html( 'Starte Backup - Bitte warten...' ); $('#response').fadeTo( 'fast', 1 ); $.get('./index.cgi?do=backup&lang=de', function(response) { setTimeout( function(){ $('#response').fadeTo( 'slow', 0 ); }, 5000); setTimeout( function(){ $('#response').html( '' ); }, 6500); $('#response').html(response);});">Backup jetzt starten!</a>
         </td>
         <td width="150px" cellpadding=10>
-        <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" target="_blank">Downloads</a>
+        <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" data-icon="grid" target="_blank">Downloads</a>
         </td>
+	 <td width="150px%" id="LogSave"><a id="btnlogs" data-role="button" href="./index.cgi?do=log" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d" href="/log/plugins/miniserverbackup/backuplog.log" target="miniserver_note">Logdatei speichern</a></td>
+       </tr>
+        <tr>
+        <td colspan="2">
+        	<span id="response">&nbsp;</span>
+        </td>
+       </tr>
       </table>
       </center>
-      
-      <br><hr><br>
-
       <form method="post" data-ajax="false" name="main_form" id="main_form" action="./index.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
@@ -79,7 +83,7 @@
         </tr>
         <tr id="loglevelrow">
           <td width="25%">
-          <label id="labeldebug">Logfile-Level:</label>
+          <label id="labeldebug">Protokollierungs-Stufe:</label>
           </td>
           <td width="50%">
 			     <select style="align:left;" id="debug" name="debug" data-mini="true">
@@ -117,14 +121,14 @@
       </p>
 
       <div>
-  <table>
+  <table width="100%" border="0">
  	 <tr>
-	 <td id="LogSave"><a id="btnlogs" data-role="button" href="./index.cgi?do=log" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d" href="/log/plugins/miniserverbackup/backuplog.log" target="miniserver_note">Logdatei speichern</a></td>
- 	 <td><label id="LogLiveLabel"><input data-mini="true" type="checkbox" id="LogLive">Logdatei live anzeigen</label></td>
-	 <td id="LogScrolltd"><label><input data-mini="true" type="checkbox" checked id="LogScroll">Automatisch zum Ende springen</label></td>
+ 	 <td width="200px%"><label id="LogLiveLabel"><input data-mini="true" type="checkbox" id="LogLive">Logdatei live anzeigen</label></td>
+	 <td width="200px" id="LogScrolltd"><label><input data-mini="true" type="checkbox" checked id="LogScroll">Automatisch zum Ende springen</label></td>
+	 <td width="200px" id="LogSessionReset"><a onclick="$.get('/plugins/miniserverbackup/logfile.php?ajax&new_session=1');" id="reset_session" data-role="button" data-mini="true" href="" data-icon="star" target="_blank">Debug-Sitzung neu starten</a></td>
   </tr>
 	</table>
-<textarea rows="40" id="Logfile" style="border: 1px solid #888;  background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll; resize: yes;"></textarea>
+<textarea rows="20" id="Logfile" style="border: 1px solid #888;  background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll; resize: yes;"></textarea>
 </div>
 </div>
     <!-- /text -->
@@ -132,22 +136,61 @@
   </div>
 
   <script>
+  $("#LogScrolltd").fadeTo( "fast", 0 );
+  $("#Logfile").fadeTo( "fast", 0 );
   var liveviewtimer ="";
   var $messages = $('#form-error-message');
   $.validate({
     modules : 'security',
     errorMessagePosition : $messages,
   });
-  $("#loglevelrow" ).fadeTo( "slow", .4 );
-
-    $("#LogLive").change(function() 
+     $("#LogLive").change(function() 
     { 
       if($(this).is(":checked")) 
       {
+      var timeleft = 900000;
       $("#LogLiveLabel").text("Logdatei aktualisieren");
       $("#LogScrolltd").fadeTo( "slow", 1 );
 			$("#Logfile").fadeTo( "slow", 1 );
+			setTimeout( function()
+			{ 
+				$('#response').fadeTo( 'slow', 1 ); 
+        $('#response').html( "Stoppe Logdatei-Anzeige. Bitte bei Bedarf fortsetzen." ); 
+        clearInterval(liveviewtimer);       
+  
+        if ($("#LogLive").prop("checked"))
+        { 
+        //$("#LogLive").trigger("click"); 
+        $("#LogLiveLabel").trigger("click"); 
+
+      }
+      setTimeout( function()
+				{ 
+					$('#response').fadeTo( 'slow', 0 ); 
+		        setTimeout( function()
+						{ 
+		        $('#response').html( "" ); 
+						}, 1000);
+				}, 5000);
+			}, timeleft);
 			liveviewtimer = setInterval(function() {
+      timeleft = timeleft - 500;
+			var displaytimeleft = timeleft;
+      if (timeleft >= 60000)
+        {
+          var min = Math.floor(displaytimeleft / (1000*60));
+          displaytimeleft = displaytimeleft % (1000*60);
+          var sec = Math.floor(displaytimeleft / 1000);
+          var mSec = displaytimeleft % 1000;
+          var displaytime = "(" + min + " min " + sec + " s)";
+       }
+      else
+      	{
+          var sec = Math.floor(displaytimeleft / 1000);
+          var mSec = displaytimeleft % 1000;
+          var displaytime = "(" + sec + " s)";
+      	}
+      $("#LogLiveLabel").text("Logdatei aktualisieren " + displaytime);
       $.get('/plugins/miniserverbackup/logfile.php?ajax', function(data) {
         $('#Logfile').append(data);
 
@@ -158,7 +201,7 @@
         $('#Logfile').scrollTop($('#Logfile')[0].scrollHeight);
 				}
        });
-				}, 250);
+				}, 500);
       }
       else
       {
@@ -167,8 +210,6 @@
    	    $("#LogScrolltd").fadeTo( "slow", 0 );
 		}
     });
-    $("#LogScrolltd").fadeTo( "fast", 0 );
-    $("#Logfile").fadeTo( 0 );
   </script>
 
   <!-- /content -->

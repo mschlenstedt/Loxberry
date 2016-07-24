@@ -28,6 +28,6 @@ table.menutable td.caption {
 	background-color: #FFFFFF;
 	background-image: url("../images/icons/loxberry.svg");
 	background-repeat: no-repeat;
-  background-position: 50px 80px;
+  background-position: center center;
   background-attachment: fixed;
 }
