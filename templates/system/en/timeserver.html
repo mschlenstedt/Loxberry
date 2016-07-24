@@ -1,26 +1,22 @@
   <!-- content -->
-
-
   <div role="main" class="ui-content">
     <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
     <!-- text -->
     <div style="margin: 5%;">
-
-      <form method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
+      <form onsubmit="$('#form-error-message').html('<font color=blue><b>Frage Zeit ab</b> - Bitte warten, das dauert bis zu 30 Sekunden ...</font>');" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
         <tr>
           <td width="25%">
-          <label id="labeluhrzeit">Time Synchronization:</label>
+          <label id="labeluhrzeit">Synchronisierung der Uhrzeit:</label>
           </td>
           <td width="50%">
           <fieldset data-role="controlgroup">
           <input onclick="disable()" <!--$checked1--> id="zeitserver_miniserver" name="zeitserver" type="radio" value="miniserver">
-          <label for="zeitserver_miniserver">Using the Miniserver</label>
+          <label for="zeitserver_miniserver">&Uuml;ber Miniserver</label>
           <input onclick="disable()" <!--$checked2--> id="zeitserver_ntp" name="zeitserver" type="radio" value="ntp">
-          <label for="zeitserver_ntp">Using a NTP-Server (Internet)</label>
+          <label for="zeitserver_ntp">&Uuml;ber NTP-Server (Internet)</label>
           </fieldset>
           </td>
           <td width="5%" valign="middle">
@@ -35,19 +31,18 @@
           <label id="labelntpserverurl">NTP-Server:</label>
           </td>
           <td>
-          <input id="ntpserverurl" name="ntpserverurl" type="text" class="textfield" 
-          value="<!--$ntpserverurl-->">
+          <input id="ntpserverurl" name="ntpserverurl" type="text" class="textfield" data-validation="custom" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse oder g&uuml;ltigen Hostnamen eingegeben zu haben. Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.1.100" value="<!--$ntpserverurl-->">
           </td>
           <td>
           &nbsp;
           </td>
           <td valign="middle">
-          <a id="linkntpurls" href="http://www.pool.ntp.org/en/use.html" target="_blank">Suitable Time Server</a>
+          <a id="linkntpurls" href="http://www.pool.ntp.org/de/use.html" target="_blank">Geeignete Zeitserver</a>
           </td>
         </tr>
         <tr>
           <td width="25%">
-          <label id="labelzeitzone">Timezone:</label>
+          <label id="labelzeitzone">Zeitzone:</label>
           </td>
           <td width="50%">
 	      <select onclick="disable()" id="zeitzone" name="zeitzone" data-mini="true">
@@ -63,101 +58,169 @@
           &nbsp;
           </td>
         </tr>
-      <tr>
+        <tr>
           <td></td>
           <td colspan=3>
-          <div id="form-error-message" class="form-error-message"></div>
+          <div id="form-error-message" class="form-error-message">&nbsp;</div>
           </td>
         </tr>
-            <tr>
-          <td valign="top" width="25%">
-          <label id="labelzeitzone">Current LoxBerry System Time (<!--$systemtimezone-->):</label>
-          </td>
-          <td width="50%" align="center">
-          <?xml version="1.0"?>
-						<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 400" width="200" height="200" version="1.0">
-						<defs>
-						<linearGradient id="a" x1="0%" y1="100%" x2="0%" y2="0%">
-						  <stop offset="0%" style="stop-color:#777799"/>
-						  <stop offset="100%" style="stop-color:#ffffff"/>
-						</linearGradient>
-						<linearGradient id="b" x1="0%" y1="100%" x2="0%" y2="0%">
-						  <stop offset="0%" style="stop-color:#ffffff"/>
-						  <stop offset="25%" style="stop-color:#b6b6cc"/>
-						  <stop offset="40%" style="stop-color:#515177"/>
-						  <stop offset="48%" style="stop-color:#ffffff"/>
-						  <stop offset="56%" style="stop-color:#ffffff"/>
-						  <stop offset="75%" style="stop-color:#8b8baa"/>
-						  <stop offset="98%" style="stop-color:#efeff4"/>
-						  <stop offset="100%" style="stop-color:#fbfbfc"/>
-						</linearGradient>
-						<linearGradient id="c" x1="0%" y1="100%" x2="0%" y2="0%">
-						  <stop offset="0%" style="stop-color:#ffffff"/>
-						  <stop offset="100%" style="stop-color:#777799"/>
-						</linearGradient>
-						<radialGradient id="d" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-						  <stop offset="0%" style="stop-color:#ffffff"/>
-						  <stop offset="40%" style="stop-color:#ffffff"/>
-						  <stop offset="70%" style="stop-color:#e6e6ee"/>
-						  <stop offset="92%" style="stop-color:#b6b6cc"/>
-						  <stop offset="100%" style="stop-color:#636388"/>
-						</radialGradient>
-						<radialGradient id="e" cx="50%" cy="150%" r="200%" fx="50%" fy="150%">
-						  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0"/>
-						  <stop offset="59%" style="stop-color:#ffffff;stop-opacity:0"/>
-						  <stop offset="60%" style="stop-color:#ffffff;stop-opacity:0.6"/>
-						  <stop offset="70%" style="stop-color:#ffffff;stop-opacity:0.3"/>
-						  <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.0"/>
-						</radialGradient>
-						</defs>
-						<g transform="translate(200 200)">
-						<circle cx="0" cy="0" r="200" fill="#cecedd"/>
-						<circle cx="0" cy="0" r="196" stroke="url(#a)" stroke-width="5" fill="url(#b)"/>
-						<circle cx="0" cy="0" r="170" stroke="url(#c)" stroke-width="4" fill="url(#d)"/>
-						<circle cx="0" cy="0" r="172" stroke="#ffffff" stroke-width="0.5" fill="none"/>
-						<circle cx="0" cy="0" r="193.5" stroke="#ffffff" stroke-width="0.5" fill="none"/>
-						<g id="O">
-						  <polygon points="4,155 4,130 -4,130 -4,155" style="fill:#777799;stroke:#313155;stroke-width:1"/>
-						  <polygon points="4,-155 4,-130 -4,-130 -4,-155" style="fill:#777799;stroke:#313155;stroke-width:1"/>
-						</g>
-						<g transform="rotate(30)"><use xlink:href="#O"/></g>
-						<g transform="rotate(60)"><use xlink:href="#O"/></g>
-						<g transform="rotate(90)"><use xlink:href="#O"/></g>
-						<g transform="rotate(120)"><use xlink:href="#O"/></g>
-						<g transform="rotate(150)"><use xlink:href="#O"/></g>
-						<polygon id="h" points="6,-80 6,18 -6,18 -6,-80" style="fill:#232344">
-						  <animateTransform id="ht" attributeType="xml" attributeName="transform" type="rotate" from="000" to="000" begin="0" dur="86400s" repeatCount="indefinite"/>
-						</polygon>
-						<polygon id="m" points="3.5,-140 3.5,23 -3.5,23 -3.5,-140" style="fill:#232344">
-						  <animateTransform id="mt" attributeType="xml" attributeName="transform" type="rotate" from="000" to="000" begin="0" dur="3600s" repeatCount="indefinite"/>
-						</polygon>
-						<polygon id="s" points="2,-143 2,25 -2,25 -2,-143" style="fill:#232344">
-						  <animateTransform id="st" attributeType="xml" attributeName="transform" type="rotate" from="000" to="000" begin="0" dur="60s" repeatCount="indefinite"/>
-						</polygon>
-						<circle cx="0" cy="0" r="163" fill="url(#e)"/>
-						</g>
-						<script type="text/javascript"><![CDATA[
-						var d = new Date(<!--$systemdatetime-->);
-						var s = d.getSeconds();
-						var m = d.getMinutes() + s/60;
-						var h = (d.getHours() % 12) + m/60 + s/3600;
-						document.getElementById('st').setAttribute('from',s*6);
-						document.getElementById('mt').setAttribute('from',m*6);
-						document.getElementById('ht').setAttribute('from',h*30);
-						document.getElementById('st').setAttribute('to',360+s*6);
-						document.getElementById('mt').setAttribute('to',360+m*6);
-						document.getElementById('ht').setAttribute('to',360+h*30);
-						]]></script>
-						</svg>
-						<br/><br/>
-           <time datetime="<!--$systemdate-->" class="icon">
-  				 <em><!--$systemdate_weekday--></em>
-  				 <strong><!--$systemdate_month--></strong>
-  				 <span><!--$systemdate_day--></span>
-					 </time>
-           <span style="visibility:hidden;" id="time"></span>
-					<style>
-						time.icon
+        <tr>
+         <td colspan="4"><center>
+      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Abbrechen</a>
+      <button type="submit" form="main_form4" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Speichern</button>
+      </center>
+        </td>
+        </tr>
+        <tr>
+         <td valign="top" width="25%">
+        	<label id="labelzeitzone">Aktuelle LoxBerry Systemzeit (<!--$systemtimezone-->):</label>
+         </td>
+         <td width="50%" align="center">
+					<div class="clock">
+ 				  	<div class="digital-wrap">
+					    <ul class="digit-hours">
+					     <!--$hour_li-->
+					     </ul>
+					    <ul class="digit-minutes">
+					     <!--$min_li-->    
+					     </ul>
+					    <ul class="digit-seconds">
+					      <!--$sec_li-->
+					    </ul>
+					    </div>
+						  <div class="hours-container">
+						    <div class="hours"></div>
+						  </div>
+						  <div class="minutes-container">
+						    <div class="minutes"></div>
+						  </div>
+						  <div class="seconds-container">
+						    <div class="seconds"></div>
+						  </div>
+						</div>
+						<STYLE>
+						ul { list-style:none; margin:0; padding:0 }
+						.clock 
+						{
+						  position:relative;
+						  width:10em;
+						  height:10em;
+						  margin:2em auto;
+						  border-radius:50%;
+						  box-shadow:rgba(0,0,0,.8) .5em .5em 4em;
+						  background: url('/system/images/icons/ios_clock.svg') no-repeat center;
+						  background-size: 88%;
+						}
+						.clock  .digital-wrap 
+						{
+						  width:4.5em;
+						  height:.75em;
+						  border:.05em solid #222;
+						  border-radius:.1em;
+						  position:absolute;
+						  top:55%; left:50%;
+						  margin:.75em 0 0 -2.25em;
+						  overflow:hidden;
+						  background:#4c4c4c;
+						  background:-webkit-linear-gradient(top, #4c4c4c 0%,#0f0f0f 100%);
+						  background:-moz-linear-gradient(top, #4c4c4c 0%, #0f0f0f 100%);
+						  background:-ms-linear-gradient(top, #4c4c4c 0%,#0f0f0f 100%);
+						  background:-o-linear-gradient(top, #4c4c4c 0%,#0f0f0f 100%);
+						  background:linear-gradient(to bottom, #4c4c4c 0%,#0f0f0f 100%);
+					}
+					.clock .digital-wrap ul 
+					{
+							float:left;
+							width:1.425em;
+							height:.75em;
+							border-right:.05em solid #000;
+							color:#ddd;
+							font-family:Consolas, monaco, monospace;
+					}
+					.clock  .digital-wrap ul:last-child 
+					{
+							border:none 
+					}
+					.clock  .digital-wrap li 
+					{
+							font-size:.75em;
+							line-height:1;
+							letter-spacing:1px;
+							text-align:center;
+							position:relative;
+							left:1px;
+					}
+					.clock .digit-minutes li 
+					{
+					  animation:dsm 3600s steps(60, end) 0s infinite;
+					}
+					.clock  .digit-seconds li 
+					{
+					  animation:dsm 60s steps(60, end) 0s infinite;
+					}
+					@keyframes dsm 
+					{
+					  to { transform:translateY(-60em) }
+					}
+					.minutes-container, .hours-container, .seconds-container 
+					{
+					  position: absolute;
+					  top: 0;
+					  right: 0;
+					  bottom: 0;
+					  left: 0;
+					}
+					.hours 
+					{
+					  background: #000;
+					  height: 20%;
+					  left: 48.75%;
+					  position: absolute;
+					  top: 30%;
+					  transform-origin: 50% 100%;
+					  width: 2.5%;
+					}
+					.minutes 
+					{
+					  background: #000;
+					  height: 40%;
+					  left: 49%;
+					  position: absolute;
+					  top: 10%;
+					  transform-origin: 50% 100%;
+					  width: 2%;
+					}
+					.seconds 
+					{
+					  background: #000;
+					  height: 45%;
+					  left: 49.5%;
+					  position: absolute;
+					  top: 14%;
+					  transform-origin: 50% 80%;
+					  width: 1%;
+					  z-index: 8;
+					}
+					@keyframes rotate 
+					{
+				  	100% 
+				  	{
+				    	transform: rotateZ(360deg);
+				  	}
+					}
+					.hours-container 
+					{
+				  	animation: rotate 43200s infinite linear;
+					}
+					.minutes-container 
+					{
+				  	animation: rotate 3600s infinite steps(60);
+					}
+					.seconds-container 
+					{
+				  	animation: rotate 60s infinite steps(60);
+					}
+					time.icon
 					{
 					  font-size: 1em; /* change icon size */
 					  display: block;
@@ -170,7 +233,7 @@
 					  overflow: hidden;
 					}
 					time.icon *
-					{
+					{	
 					  display: block;
 					  width: 100%;
 					  font-size: 1em;
@@ -201,8 +264,106 @@
 					  padding-top: 0.8em;
 					  color: #2f2f2f;
 					}
-					  </style>
-          </td>
+		  		</STYLE>
+				<SCRIPT>
+				/*
+				 * Starts any clocks using the user's local time
+				 * From: cssanimation.rocks/clocks
+				 */
+				  // Get the local time using JS
+				  var seconds = <!--$sec-->;
+				  var minutes = <!--$min-->;
+				  var hours = <!--$hour-->;
+				
+				  // Create an object with each hand and it's angle in degrees
+				  var hands = [
+				    {
+				      hand: 'hours',
+				      angle: (hours * 30) + (minutes / 2)
+				    },
+				    {
+				      hand: 'minutes',
+				      angle: (minutes * 6)
+				    },
+				    {
+				      hand: 'seconds',
+				      angle: (seconds * 6)
+				    }
+				  ];
+				  // Loop through each of these hands to set their angle
+				  for (var j = 0; j < hands.length; j++) {
+				    var elements = document.querySelectorAll('.' + hands[j].hand);
+				    for (var k = 0; k < elements.length; k++) {
+				        elements[k].style.webkitTransform = 'rotateZ('+ hands[j].angle +'deg)';
+				        elements[k].style.transform = 'rotateZ('+ hands[j].angle +'deg)';
+				        // If this is a minute hand, note the seconds position (to calculate minute position later)
+				        if (hands[j].hand === 'minutes') {
+				          elements[k].parentNode.setAttribute('data-second-angle', hands[j + 1].angle);
+				        }
+				    }
+				  }
+				/*
+				 * Set a timeout for the first minute hand movement (less than 1 minute), then rotate it every minute after that
+				 */
+				function setUpMinuteHands() {
+				  // Find out how far into the minute we are
+				  var containers = document.querySelectorAll('.minutes-container');
+				  var secondAngle = containers[0].getAttribute("data-second-angle");
+				  if (secondAngle > 0) {
+				    // Set a timeout until the end of the current minute, to move the hand
+				    var delay = (((360 - secondAngle) / 6) + 0.1) * 1000;
+				    setTimeout(function() {
+				      moveMinuteHands(containers);
+				    }, delay);
+				  }
+				}
+				
+				/*
+				 * Do the first minute's rotation
+				 */
+				function moveMinuteHands(containers) {
+				  for (var i = 0; i < containers.length; i++) {
+				    containers[i].style.webkitTransform = 'rotateZ(6deg)';
+				    containers[i].style.transform = 'rotateZ(6deg)';
+				  }
+				  // Then continue with a 60 second interval
+				  setInterval(function() {
+				    for (var i = 0; i < containers.length; i++) {
+				      if (containers[i].angle === undefined) {
+				        containers[i].angle = 12;
+				      } else {
+				        containers[i].angle += 6;
+				      }
+				      containers[i].style.webkitTransform = 'rotateZ('+ containers[i].angle +'deg)';
+				      containers[i].style.transform = 'rotateZ('+ containers[i].angle +'deg)';
+				    }
+				  }, 60000);
+				}
+				/*
+				 * Move the second containers
+				 */
+				function moveSecondHands() {
+				  var containers = document.querySelectorAll('.seconds-container');
+				  setInterval(function() {
+				    for (var i = 0; i < containers.length; i++) {
+				      if (containers[i].angle === undefined) {
+				        containers[i].angle = 6;
+				      } else {
+				        containers[i].angle += 6;
+				      }
+				      containers[i].style.webkitTransform = 'rotateZ('+ containers[i].angle +'deg)';
+				      containers[i].style.transform = 'rotateZ('+ containers[i].angle +'deg)';
+				    }
+				  }, 1000);
+				}
+				</SCRIPT>
+               <time datetime="<!--$systemdate-->" class="icon">
+				  				 <em><!--$systemdate_weekday--></em>
+				  				 <strong><!--$systemdate_month--></strong>
+				  				 <span><!--$systemdate_day--></span>
+									 </time>
+			     <span style="visibility:hidden;" id="time"></span>
+			    </td>
           <td width="5%" valign="middle">
           &nbsp;
           </td>
@@ -213,17 +374,9 @@
         </table>
       </div>
       </form>
-      <p>
-      <center>
-      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
-      <button type="submit" form="main_form4" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
-      </center>
-      </p>
-
     </div>
     <!-- /text -->
     </div>
-
   </div>
 
   <script>
@@ -269,7 +422,7 @@
       if (m < 10) { m = '0'+m; }
       var s = dateobj.getSeconds();
       if (s < 10) { s = '0'+s; }
-      return mo+'-'+d+'-'+y+', '+h+':'+m+':'+s+' <!--$systemtimezone-->';
+      return d+'.'+mo+'.'+y+' um '+h+':'+m+':'+s+' <!--$systemtimezone-->';
     };
     var zeit_aktualisieren = function(offset) {
       czeit = new Date();
