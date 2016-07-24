@@ -1,4 +1,8 @@
 <?php
+if (isset($_GET['new_session'])) 
+{
+unset ($_SESSION['offset']);
+}
 if (isset($_GET['ajax'])) 
 {
   session_start();
