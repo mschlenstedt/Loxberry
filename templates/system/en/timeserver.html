@@ -75,7 +75,7 @@
           <td valign="top" width="25%">
           <label id="labelzeitzone">Current LoxBerry System Time (<!--$systemtimezone-->):</label>
           </td>
-         <td width="50%" align="center">
+           <td width="50%" align="center">
 					<div class="clock">
  				  	<div class="digital-wrap">
 					    <ul class="digit-hours">
@@ -98,7 +98,7 @@
 						    <div class="seconds"></div>
 						  </div>
 						</div>
-											<STYLE>
+						<STYLE>
 						ul { list-style:none; margin:0; padding:0 }
 						.clock 
 						{
@@ -136,6 +136,7 @@
 							border-right:.05em solid #000;
 							color:#ddd;
 							font-family:Consolas, monaco, monospace;
+							margin-top: -1;
 					}
 					.clock  .digital-wrap ul:last-child 
 					{
@@ -149,6 +150,8 @@
 							text-align:center;
 							position:relative;
 							left:1px;
+  						color:rgba(1,1,1,0.01);
+
 					}
 					.clock .digit-minutes li 
 					{
