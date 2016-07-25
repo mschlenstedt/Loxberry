@@ -66,7 +66,7 @@ our $nexturl;
 our $datebin;
 our $systemdatetime;
 our $systemtimezone;
-
+our $ntpdate;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -81,7 +81,9 @@ $zeitserver         = $cfg->param("TIMESERVER.METHOD");
 $ntpserverurl       = $cfg->param("TIMESERVER.SERVER");
 $zeitzone           = $cfg->param("TIMESERVER.ZONE");
 $datebin            = $cfg->param("BINARIES.DATE");
-
+$ntpdate            = $cfg->param("BINARIES.NTPDATE");
+$do                 = "";
+$helptext           = "";
 #########################################################################
 # Parameter
 #########################################################################
@@ -130,6 +132,25 @@ if ($lang eq "") {
 if (!-e "$installfolder/templates/system/$lang/language.dat") {
   $lang = "de";
 }
+
+our @months;
+our @days;
+if ($lang eq "" || $lang eq "de")
+{
+@months = qw( Januar Februar M&auml;rz April Mai Juni Juli August September Oktober November Dezember );
+@days = qw( Sonntag Montag Dienstag Mittwoch Donnerstag Freitag Sonnabend Sonntag );
+}
+elsif ($lang eq "en")
+{
+@months = qw( January February March April May June July August September October November December );
+@days = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday);
+}
+else
+{
+@months = qw( January February March April May June July August September October November December );
+@days = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday);
+}
+
 
 # Read translations / phrases
 $languagefile = "$installfolder/templates/system/$lang/language.dat";
@@ -184,31 +205,35 @@ foreach (@lines){
     $timezonelist = "$timezonelist<option value=\"$_\">$_</option>\n";
   }
 }
-my @months;
-my @days;
 # Prepare current system date and time
 $systemdatetime = time()*1000;
- 
-if ($lang eq "" || $lang eq "de")
-{
-@months = qw( Januar Februar M&auml;rz April Mai Juni Juli August September Oktober November Dezember );
-@days = qw( Sonntag Montag Dienstag Mittwoch Donnerstag Freitag Sonnabend Sonntag );
-}
-elsif ($lang eq "en")
-{
-@months = qw( January February March April May June July August September October November December );
-@days = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday);
-}
-else
-{
-@months = qw( January February March April May June July August September October November December );
-@days = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday);
-}
-(my $sec, my $min, my $hour, my $mday, my $mon, my $year, my $wday, my $yday, my $isdst) = localtime();
+(our $sec, our $min, our $hour, my $mday, my $mon, my $year, my $wday, my $yday, my $isdst) = localtime();
 our $systemdate         = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
 our $systemdate_day     = $mday;
 our $systemdate_month   = $months[$mon];
 our $systemdate_weekday = $days[$wday];
+
+# Calculate hours block for digital clock
+our @hour_array;
+our $hour_li = "";
+for (my $i=0; $i<24; $i++) { @hour_array[$i]=$i};
+for (my $i=0; $i<$hour; $i++) { push (@hour_array, shift(@hour_array) ) };
+foreach (@hour_array) {our $hour_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
+
+# Calculate minutes block for digital clock
+our @min_array;
+our $min_li = "";
+for (my $i=0; $i<60; $i++) { @min_array[$i]=$i};
+for (my $i=0; $i<$min; $i++) { push (@min_array, shift(@min_array) ) };
+foreach (@min_array) {our $min_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
+
+# Calculate seconds block for digital clock
+our @sec_array;
+our $sec_li = "";
+for (my $i=0; $i<60; $i++) { @sec_array[$i]=$i};
+for (my $i=0; $i<$sec; $i++) { push (@sec_array, shift(@sec_array) ) };
+foreach (@sec_array) {our $sec_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
+
 $systemtimezone         = qx($datebin +"%Z");
 chomp($systemtimezone);
 
@@ -247,6 +272,22 @@ quotemeta($zeitserver);
 quotemeta($ntpserverurl);
 quotemeta($zeitzone);
 
+
+
+  # Test if NTP-Server is reachable
+  our $ntp_check="0"; 
+  if ( ${zeitserver} eq "ntp" )
+  {
+   $ntp_check = system("$ntpdate -q $ntpserverurl >/dev/null 2>&1");
+  }
+  # Error if we can't get time
+  if ($ntp_check) {
+    $error = $phrase->param("TXT0050");
+    &error;
+    exit;
+  }
+
+
 # Write configuration file(s)
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
 $cfg->param("TIMESERVER.METHOD", "$zeitserver");
@@ -261,7 +302,7 @@ print "Content-Type: text/html\n\n";
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
 $help = "timeserver";
 
-$message = $phrase->param("TXT0036") . $output;
+$message = $phrase->param("TXT0036");
 $nexturl = "/admin/index.cgi";
 
 # Print Template
