@@ -471,7 +471,7 @@ else
   open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
   print F "<DWL>";
   close (F);
-	system("$wgetbin $quiet --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir 2>> $home/log/plugins/miniserverbackup/backuplog.log");
+	system("$wgetbin $quiet --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir 2>&1 |sed -r 's/$miniserveradmin/xxx/g'|sed -r 's/$miniserverpass/xxx/g' >> $home/log/plugins/miniserverbackup/backuplog.log");
   if ($? ne 0) {
     $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
     $error = 1;
