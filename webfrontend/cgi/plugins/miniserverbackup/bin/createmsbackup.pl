@@ -146,6 +146,10 @@ if ($verbose) {
 
 # Start Backup of all Miniservers
 for($msno = 1; $msno <= $miniservers; $msno++) {
+	
+	open(F,">$installfolder/webfrontend/html/plugins/miniserverbackup/backupstate.txt");
+  print F "$msno";
+  close (F);
 
   $logmessage = "Starting Backup";
   &log($green_css);
@@ -409,7 +413,9 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
 		  $logmessage = "All Backups created successfully. -END-";
 		  &log($green_css);
 		}
-
+open(F,">$installfolder/webfrontend/html/plugins/miniserverbackup/backupstate.txt");
+print F "";
+close (F);
 exit;
 
 

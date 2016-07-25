@@ -211,6 +211,26 @@
    	    $("#LogScrolltd").fadeTo( "slow", 0 );
 		}
     });
+    
+	function checkState() 
+	{ 
+    $.get('/plugins/miniserverbackup/backupstate.txt', function(data) 
+    {
+        if (parseInt(data) > 0)
+        {
+	    	  $("#btnbackup").prop('innerHTML',"<font color='#FF0000'>Backup von Miniserver "+data+" l&auml;uft momentan!");
+  	    	$("#btnbackup").fadeTo( "slow", .8 );
+				}
+				else
+	      {
+	    	  $("#btnbackup").text("Backup jetzt starten!");
+  	    	$("#btnbackup").fadeTo( "slow", 1 );
+				}
+		}); 
+	}
+	watchDog = setInterval(function() { checkState(); },5000);   
+  checkState(); 
+
   </script>
 
   <!-- /content -->
