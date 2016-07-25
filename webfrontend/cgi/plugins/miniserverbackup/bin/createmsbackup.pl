@@ -116,6 +116,10 @@ our $green_css     = "OK";
 #"<div style=\'text-align:left; width:100%; color:#000000; background-color:\'#F8F4D6\';\'>";
 our $yellow_css     = "DWL";
 
+#Download Style
+#"<div style=\'text-align:left; width:100%; color:#000000; background-color:\'#DDEFFF\';\'>";
+our $ms_css     = "MS#";
+
 ##########################################################################
 # Main program
 ##########################################################################
@@ -139,13 +143,15 @@ else
 # Start
 if ($verbose) {
   
-
   $logmessage = "### $miniservers Miniserver at all - Starting Backup with Script $0 Version $version";
   &log($green_css);
 }
 
 # Start Backup of all Miniservers
 for($msno = 1; $msno <= $miniservers; $msno++) {
+	
+  $logmessage = "Starting Backup for Miniserver $msno";
+  &log($ms_css);
 	
 	open(F,">$installfolder/webfrontend/html/plugins/miniserverbackup/backupstate.txt");
   print F "$msno";
@@ -327,6 +333,9 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   # Zipping
   our @output = qx(cd /tmp && $zipbin -q -p -r $bkpdir.zip $bkpdir);
   if ($? ne 0) {
+    $error=1;
+  	$logmessage = "Compressing Error!";
+  	&log($red_css);
     $errormessage = "Error while zipping the Backup $bkpdir. Errorcode: $?. Giving up.";
     &error;
     next;
@@ -343,6 +352,9 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   # Moving ZIP to files section
   move("/tmp/$bkpdir.zip","$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip");
   if (!-e "$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip") {
+    $error=1;
+  	$logmessage = "Moving Error!";
+  	&log($red_css);
     $errormessage = "Error while moving ZIP-Archive $bkpdir.zip to Files-Section. Giving up.";
     &error;
     next;
@@ -477,7 +489,7 @@ else
   open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
   print F "<DWL>";
   close (F);
-	system("$wgetbin $quiet --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir 2>&1 |sed -r 's/$miniserveradmin/xxx/g'|sed -r 's/$miniserverpass/xxx/g' >> $home/log/plugins/miniserverbackup/backuplog.log");
+	system("$wgetbin $quiet --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir 2>&1 |sed -r 's/$miniserveradmin/xxx/g'|sed -r 's/$miniserverpass/xxx/g' >> $home/log/plugins/miniserverbackup/backuplog.log; test \${PIPESTATUS[0]}-eq 0");
   if ($? ne 0) {
     $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
     $error = 1;
