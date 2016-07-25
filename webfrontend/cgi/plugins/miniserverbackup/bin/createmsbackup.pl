@@ -481,22 +481,25 @@ sub error {
 # Download
 sub download {
 
-if ($debug eq 1 || $debug eq 2) 
+if ($debug eq 1) 
 {
+	#Debug
 	$quiet='  ';
 }
-else
+elsif  ($verbose eq 1) 
 {
+	#Verbose
+	$quiet=' --no-verbose ';
+}
+else   
+{
+	#None
 	$quiet=' -q  ';
-
 }
     if ($verbose) {
       $logmessage = "Downloading $url ...";
       &log($green_css);
     }
-  open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
-  print F "<DWL>";
-  close (F);
 	system("$wgetbin $quiet -a $home/log/plugins/miniserverbackup/backuplog.log --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir ");
   if ($? ne 0) {
     $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
@@ -507,10 +510,6 @@ else
       $logmessage = "Saved $url successfully.";
       &log($green_css);
     }
-  open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
-  print F "</DWL>";
-  close (F);
-    
   }
   return ();
 }
