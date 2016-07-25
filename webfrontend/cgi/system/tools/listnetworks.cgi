@@ -56,7 +56,7 @@ our $version;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installdir      = $cfg->param("BASE.INSTALLFOLDER");
@@ -128,9 +128,9 @@ if (!$error) {
   @result = qx(sudo /sbin/iwlist wlan0 scan 2>/dev/null);
 
   # For testing new hardware
-  open(F,"/tmp/scan.txt");
-    @result = <F>;
-  close (F);
+  #open(F,"/tmp/scan.txt");
+  #  @result = <F>;
+  #close (F);
 
   $table = "";
   $i = 1;
