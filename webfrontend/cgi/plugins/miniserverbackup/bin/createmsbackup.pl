@@ -216,6 +216,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
     alarm(1);
     $response = $ua->get($url);
     if (!$response->is_success) {
+      $error=1;
       $errormessage = "Unable to fetch Firmware Version. Giving up.";
       &error;
       next;
@@ -226,7 +227,8 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   alarm(0);
 
   if (!$success) {
-    $errormessage = "Unable to fetch Firmware Version. Giving up.";
+    $error=1;
+		$errormessage = "Unable to fetch Firmware Version. Giving up.";
     &error;
     next;
   }
@@ -252,6 +254,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
     alarm(1);
     $response = $ua->get($url);
     if (!$response->is_success) {
+      $error=1;
       $errormessage = "Unable to fetch FTP Port. Giving up.";
       &error;
       next;
@@ -262,6 +265,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   alarm(0);
 
   if (!$success) {
+    $error=1;
     $errormessage = "Unable to fetch FTP Port. Giving up.";
     &error;
     next;
@@ -288,6 +292,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $bkpdir = "Backup_$miniserverip_Miniserver$msno\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
   $response = mkdir("/tmp/$bkpdir",0777);
   if ($response == 0) {
+    $error=1;
     $errormessage = "Could not create temporary folder /tmp/$bkpdir. Giving up.";
     &error;
     next;
@@ -303,7 +308,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
 
   # Download files from Miniserver
   # /log
-  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/log";
+  $url = " ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/log ";
   &download;
   # /prog
   $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/prog";
@@ -451,8 +456,10 @@ sub log {
   $sec = sprintf("%02d", $sec);
 
   # Clean Username/Password for Logfile
-  $logmessage =~ s/\/\/(.*)\:(.*)\@/\/\/xxx\:xxx\@/g;
-
+  if ( $debug ne 1 )
+  { 
+  	$logmessage =~ s/\/\/(.*)\:(.*)\@/\/\/xxx\:xxx\@/g;
+	}
   # Logfile
   open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
   print F "<$css> $year-$mon-$mday $hour:$min:$sec Miniserver #$msno: $logmessage</$css>\n";
@@ -474,13 +481,14 @@ sub error {
 # Download
 sub download {
 
-if ($debug eq 1) 
+if ($debug eq 1 || $debug eq 2) 
 {
-	$quiet="  ";
+	$quiet='  ';
 }
 else
 {
- $quiet=" -q ";
+	$quiet=' -q  ';
+
 }
     if ($verbose) {
       $logmessage = "Downloading $url ...";
@@ -489,9 +497,9 @@ else
   open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
   print F "<DWL>";
   close (F);
-	system("$wgetbin $quiet --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir 2>&1 |sed -r 's/$miniserveradmin/xxx/g'|sed -r 's/$miniserverpass/xxx/g' >> $home/log/plugins/miniserverbackup/backuplog.log; test \${PIPESTATUS[0]}-eq 0");
+	system("$wgetbin $quiet -a $home/log/plugins/miniserverbackup/backuplog.log --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir ");
   if ($? ne 0) {
-    $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
+    $logmessage = "Error d $debug q $quiet while fetching $url. Backup may be incomplete. Errorcode: $?";
     $error = 1;
     &log($red_css);
   } else {
