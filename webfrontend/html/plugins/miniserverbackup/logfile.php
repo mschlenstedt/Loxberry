@@ -17,9 +17,16 @@ if (isset($_GET['ajax']))
   session_start();
   $handle = fopen('../../../../log/plugins/miniserverbackup/backuplog.log', 'r');
   if (isset($_SESSION['offset'])) {
+    $data = nl2br($data);
     $data = stream_get_contents($handle, -1, $_SESSION['offset']);
-		echo nl2br($data);
-  $_SESSION['offset'] = ftell($handle);
+		$data = str_replace ("<ERROR>","<div id='logrt'>",$data);
+		$data = str_replace ("<OK>","<div id='loggn'>",$data);
+		$data = str_replace ("<DWL>","<div id='logge'>",$data);
+		$data = str_replace ("</ERROR>","</DIV>",$data);
+		$data = str_replace ("</OK>","</DIV>",$data);
+		$data = str_replace ("</DWL>","</DIV>",$data);
+    echo $data;
+		 $_SESSION['offset'] = ftell($handle);
   } else {
     fseek($handle, 0, SEEK_END);
     $_SESSION['offset'] = ftell($handle);

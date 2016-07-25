@@ -8,7 +8,7 @@
            <table border=0 cellpadding=10>
         <tr>
         <td width="550px">
-        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').append( '\n############################################################\n################## Starting manual Backup ##################\n############################################################\n' ); $('#response').html( 'Starting Backup - Please wait...' ); $('#response').fadeTo( 'fast', 1 ); $.get('./index.cgi?do=backup&lang=en', function(response) { setTimeout( function(){ $('#response').fadeTo( 'slow', 0 ); }, 5000); setTimeout( function(){ $('#response').html( '' ); }, 6500); $('#response').html(response);});">Start Backup now!</a>
+        <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').append( '\n############################################################\n################## Starting manual Backup ##################\n############################################################\n' ); $('#Logfile').append('<hr\><div style=\'text-align:center; width:100%; color:#000000; background-color:lightgreen;\'>##### Starting manual backup #####</div><hr\>'); $('#response').html( 'Starting Backup - Please wait...' ); $('#response').fadeTo( 'fast', 1 ); $.get('./index.cgi?do=backup&lang=en', function(response) { setTimeout( function(){ $('#response').fadeTo( 'slow', 0 ); }, 5000); setTimeout( function(){ $('#response').html( '&nbsp;' ); }, 6500); $('#response').html(response);});">Start Backup now!</a>
         </td>
         <td width="150px" cellpadding=10>
         <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" data-icon="grid" target="_blank">Downloads</a>
@@ -125,11 +125,11 @@
  	 <tr>
  	 <td width="200px%"><label id="LogLiveLabel"><input data-mini="true" type="checkbox" id="LogLive">Logfile Liveview</label></td>
 	 <td width="200px" id="LogScrolltd"><label><input data-mini="true" type="checkbox" checked id="LogScroll">Autoscroll Logfile</label></td>
-	 <td width="200px" id="LogSessionReset"><a onclick="$.get('/plugins/miniserverbackup/logfile.php?ajax&new_session');" id="reset_session" data-role="button" data-mini="true" href="" data-icon="star" target="_blank">Restart Debug-Session</a></td>
+	 <td width="200px" id="LogSessionReset"><a onclick="$('#Logfile').prop('innerHTML','<hr\><div style=\'text-align:center; width:100%; color:#000000; background-color:lightgreen;\'>##### New session started #####</div><hr\>'); $.get('/plugins/miniserverbackup/logfile.php?ajax&new_session=1');" id="reset_session" data-role="button" data-mini="true" href="" data-icon="star" target="_blank">Debug-Sitzung neu starten</a></td>
   </tr>
 	</table>
-<textarea rows="20" id="Logfile" style="border: 1px solid #888;  background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll; resize: yes;"></textarea>
-</div>
+	<div style="resize:vertical; overflow:auto; border: 1px solid #888;  background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll;" id="Logfile" contenteditable="true"></div>
+ </div>
 </div>
     <!-- /text -->
     </div>
@@ -161,16 +161,14 @@
   
         if ($("#LogLive").prop("checked"))
         { 
-        //$("#LogLive").trigger("click"); 
         $("#LogLiveLabel").trigger("click"); 
-
       }
       setTimeout( function()
 				{ 
 					$('#response').fadeTo( 'slow', 0 ); 
 		        setTimeout( function()
 						{ 
-		        $('#response').html( "" ); 
+		        $('#response').html( "&nbsp;" ); 
 						}, 1000);
 				}, 5000);
 			}, timeleft);

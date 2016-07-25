@@ -42,7 +42,7 @@ our $miniservers;
 our $url;
 our $ua;
 our $response;
-our $error;
+our $error = 0;
 our $rawxml;
 our $xml;
 our @fields;
@@ -77,17 +77,21 @@ our $miniservercloudurl;
 our $curlbin;
 our $grepbin;
 our $awkbin;
-
+our $logmessage;
+our $clouddns;
+our $quiet;
+our $something_wrong;
 ##########################################################################
 # Read Configuration
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.5";
+my $version = "0.0.6";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $miniservers     = $cfg->param("BASE.MINISERVERS");
+$clouddns        = $cfg->param("BASE.CLOUDDNS");
 $wgetbin         = $cfg->param("BINARIES.WGET");
 $zipbin          = $cfg->param("BINARIES.ZIP");
 $curlbin         = $cfg->param("BINARIES.CURL");
@@ -98,6 +102,19 @@ $pcfg            = new Config::Simple("$installfolder/config/plugins/miniserverb
 $debug           = $pcfg->param("MSBACKUP.DEBUG");
 $maxfiles        = $pcfg->param("MSBACKUP.MAXFILES");
 $subfolder       = $pcfg->param("MSBACKUP.SUBFOLDER");
+
+our $css = "";
+#Error Style
+#"<div style=\'text-align:left; width:100%; color:#000000; background-color:\'#FFE0E0\';\'>";
+our $red_css     = "ERROR";
+
+#Good Style
+#"<div style=\'text-align:left; width:100%; color:#000000; background-color:\'#D8FADC\';\'>";
+our $green_css     = "OK";
+
+#Download Style
+#"<div style=\'text-align:left; width:100%; color:#000000; background-color:\'#F8F4D6\';\'>";
+our $yellow_css     = "DWL";
 
 ##########################################################################
 # Main program
@@ -121,15 +138,17 @@ else
 
 # Start
 if ($verbose) {
+  
+
   $logmessage = "### $miniservers Miniserver at all - Starting Backup with Script $0 Version $version";
-  &log;
+  &log($green_css);
 }
 
 # Start Backup of all Miniservers
 for($msno = 1; $msno <= $miniservers; $msno++) {
 
   $logmessage = "Starting Backup";
-  &log;
+  &log($green_css);
 
   $miniserverip       = $cfg->param("MINISERVER$msno.IPADDRESS");
   $miniserveradmin    = $cfg->param("MINISERVER$msno.ADMIN");
@@ -142,12 +161,14 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
 
   if ( ${useclouddns} eq "1" )
   {
-   $logmessage = "Using Cloud-DNS ${miniservercloudurl} for Backup";
-   &log;
-   our $dns_info = `$curlbin -I ${miniservercloudurl} --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+   $logmessage = "Using Cloud-DNS http://$clouddns/$miniservercloudurl for Backup";
+   &log($green_css);
+   
+   $dns_info = `$home/webfrontend/cgi/system/tools/showclouddns.pl $miniservercloudurl`;
+   $logmessage = "Resolving DNS: $dns_info ($home/webfrontend/cgi/system/tools/showclouddns.pl $miniservercloudurl)";
+   &log($green_css);
+   
    my @dns_info_pieces = split /:/, $dns_info;
-   $logmessage = "Resolving DNS: $dns_info";
-   &log;
    if ($dns_info_pieces[1])
    {
     $dns_info_pieces[1] =~ s/^\s+|\s+$//g;
@@ -177,7 +198,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
    $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
   }
   $logmessage = "Try to read Firmware Version ($url)";
-  &log;
+  &log($green_css);
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
   local $SIG{ALRM} = sub { die };
@@ -209,6 +230,9 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $monver  = sprintf("%02d", $fields[2]);
   $dayver  = sprintf("%02d", $fields[3]);
 
+  $logmessage = "Miniserver-Version: ".$xml->{value};
+  &log($green_css);
+
   # Get FTP Port from Miniserver
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ftp";
   $ua = LWP::UserAgent->new;
@@ -239,7 +263,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $miniserverftpport = $xml->{value};
 
   $logmessage = "Using FTP-Port $miniserverftpport for Backup";
-  &log;
+  &log($green_css);
   # Backing up to temorary directory
   ($dirsec,$dirmin,$dirhour,$dirmday,$dirmon,$diryear,$dirwday,$diryday,$dirisdst) = localtime();
   $diryear = $diryear+1900;
@@ -251,7 +275,7 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $dirsec = sprintf("%02d", $dirsec);
 
   # Create temporary dir
-  $bkpdir = "Backup_$miniserverip_Miniserve$msno\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
+  $bkpdir = "Backup_$miniserverip_Miniserver$msno\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
   $response = mkdir("/tmp/$bkpdir",0777);
   if ($response == 0) {
     $errormessage = "Could not create temporary folder /tmp/$bkpdir. Giving up.";
@@ -260,8 +284,12 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   }
   if ($verbose) {
     $logmessage = "Temporary folder created: /tmp/$bkpdir.";
-    &log;
+    &log($green_css);
   }
+
+
+  $logmessage = "Starting Download";
+  &log($green_css);
 
   # Download files from Miniserver
   # /log
@@ -289,6 +317,9 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/user";
   &download;
 
+  $logmessage = "Compressing Backup ...";
+  &log($green_css);
+  
   # Zipping
   our @output = qx(cd /tmp && $zipbin -q -p -r $bkpdir.zip $bkpdir);
   if ($? ne 0) {
@@ -298,10 +329,13 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   } else {
     if ($verbose) {
       $logmessage = "ZIP-Archive /tmp/$bkpdir/$bkpdir.zip created successfully.";
-      &log;
+      &log($green_css);
     }
   }
-
+  
+  $logmessage = "Moving Backup to Download folder...";
+  &log($green_css);
+  
   # Moving ZIP to files section
   move("/tmp/$bkpdir.zip","$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip");
   if (!-e "$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip") {
@@ -311,14 +345,14 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   } else {
     if ($verbose) {
       $logmessage = "Moving ZIP-Archive $bkpdir.zip to Files-Section successfully.";
-      &log;
+      &log($green_css);
     }
   }
 
   # Clean up /tmp folder
   if ($verbose) {
     $logmessage = "Cleaning up temporary and old stuff.";
-    &log;
+    &log($green_css);
   }
   @output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
 
@@ -344,16 +378,37 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
     $i++;
     if ($i > $maxfiles && $_ ne "") {
       $logmessage = "Deleting old Backup $_";
-      &log;
+      &log($green_css);
       unlink("$installfolder/webfrontend/html/plugins/$subfolder/files/$_");
     } 
   }
 
   # End
-  $logmessage = "New Backup $bkpdir.zip created successfully.";
-  &log;
+
+		if ($error eq 1)
+		{
+		  $logmessage = "New Backup $bkpdir.zip created with errors - see log. -END-";
+			$something_wrong = 1;
+		  &log($red_css);
+		}
+		else
+		{
+		  $logmessage = "New Backup $bkpdir.zip created successfully. -END-";
+		  &log($green_css);
+		  $error = 0;
+		}
 
 }
+		if ($something_wrong  eq 1)
+		{
+		  $logmessage = "All Backups created but with errors - see log. -END-";
+		  &log($red_css);
+		}
+		else
+		{
+		  $logmessage = "All Backups created successfully. -END-";
+		  &log($green_css);
+		}
 
 exit;
 
@@ -364,6 +419,9 @@ exit;
 
 # Logfile
 sub log {
+
+  $css = shift;
+
 # Today's date for logfile
   (my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst) = localtime();
   $year = $year+1900;
@@ -374,14 +432,12 @@ sub log {
   $min = sprintf("%02d", $min);
   $sec = sprintf("%02d", $sec);
 
-  if ($verbose || $error) {print "$logmessage\n";}
-
   # Clean Username/Password for Logfile
-  $logmessage =~ s/\/\/(.*)\:(.*)\@/\/\/xuserx\:xpassx\@/g;
+  $logmessage =~ s/\/\/(.*)\:(.*)\@/\/\/xxx\:xxx\@/g;
 
   # Logfile
   open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
-  print F "$year-$mon-$mday $hour:$min:$sec Miniserver #$msno - $logmessage\n";
+  print F "<$css> $year-$mon-$mday $hour:$min:$sec Miniserver #$msno: $logmessage</$css>\n";
   close (F);
 
   return ();
@@ -390,8 +446,8 @@ sub log {
 # Error Message
 sub error {
   our $error = "1";
-  $logmessage = "ERROR: $errormessage\n";
-  &log;
+  $logmessage = "ERROR: $errormessage";
+  &log($red_css);
   # Clean up /tmp folder
   @output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
   return ();
@@ -400,23 +456,35 @@ sub error {
 # Download
 sub download {
 
-if ($debug) 
+if ($debug eq 1) 
 {
-	my $quiet="  ";
+	$quiet="  ";
 }
 else
 {
-	my $quiet=" -q ";
+ $quiet=" -q ";
 }
-	@output = qx($wgetbin $quiet --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir 2>> $installfolder/log/plugins/miniserverbackup/backuplog.log);
+    if ($verbose) {
+      $logmessage = "Downloading $url ...";
+      &log($green_css);
+    }
+  open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
+  print F "<DWL>";
+  close (F);
+	system("$wgetbin $quiet --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir 2>> $home/log/plugins/miniserverbackup/backuplog.log");
   if ($? ne 0) {
     $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
-    &log;
+    $error = 1;
+    &log($red_css);
   } else {
     if ($verbose) {
       $logmessage = "Saved $url successfully.";
-      &log;
+      &log($green_css);
     }
+  open(F,">>$installfolder/log/plugins/miniserverbackup/backuplog.log");
+  print F "</DWL>";
+  close (F);
+    
   }
   return ();
 }
