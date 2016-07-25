@@ -216,7 +216,8 @@
 	{ 
     $.get('/plugins/miniserverbackup/backupstate.txt', function(data) 
     {
-        if (parseInt(data) > 0)
+    	  data = parseInt(data);
+        if (data > 0)
         {
 	    	  $("#btnbackup").prop('innerHTML',"<font color='#FF0000'>Backup von Miniserver "+data+" l&auml;uft momentan!");
   	    	$("#btnbackup").fadeTo( "slow", .8 );
