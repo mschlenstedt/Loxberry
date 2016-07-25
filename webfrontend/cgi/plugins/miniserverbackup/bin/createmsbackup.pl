@@ -499,7 +499,7 @@ else
   close (F);
 	system("$wgetbin $quiet -a $home/log/plugins/miniserverbackup/backuplog.log --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir ");
   if ($? ne 0) {
-    $logmessage = "Error d $debug q $quiet while fetching $url. Backup may be incomplete. Errorcode: $?";
+    $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
     $error = 1;
     &log($red_css);
   } else {
