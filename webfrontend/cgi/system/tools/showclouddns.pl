@@ -21,6 +21,7 @@
 ##########################################################################
 
 use Config::Simple;
+use File::HomeDir;
 #use warnings;
 #use strict;
 
@@ -34,6 +35,7 @@ our $curlbin;
 our $awkbin;
 our $grepbin;
 our $version;
+our $home = File::HomeDir->my_home;
 
 ##########################################################################
 # Read Settings
@@ -42,7 +44,7 @@ our $version;
 # Version of this script
 $version = "0.0.1";
 
-$cfg                = new Config::Simple('../../../../config/system/general.cfg');
+$cfg                = new Config::Simple($home.'/config/system/general.cfg');
 $clouddnsaddress    = $cfg->param("BASE.CLOUDDNS");
 $curlbin            = $cfg->param("BINARIES.CURL");
 $grepbin            = $cfg->param("BINARIES.GREP");
