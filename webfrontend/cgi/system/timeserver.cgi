@@ -218,21 +218,21 @@ our @hour_array;
 our $hour_li = "";
 for (my $i=0; $i<24; $i++) { @hour_array[$i]=$i};
 for (my $i=0; $i<$hour; $i++) { push (@hour_array, shift(@hour_array) ) };
-foreach (@hour_array) {our $hour_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
+foreach (@hour_array) {$hour_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
 
 # Calculate minutes block for digital clock
 our @min_array;
 our $min_li = "";
 for (my $i=0; $i<60; $i++) { @min_array[$i]=$i};
 for (my $i=0; $i<$min; $i++) { push (@min_array, shift(@min_array) ) };
-foreach (@min_array) {our $min_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
+foreach (@min_array) {$min_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
 
 # Calculate seconds block for digital clock
 our @sec_array;
 our $sec_li = "";
 for (my $i=0; $i<60; $i++) { @sec_array[$i]=$i};
 for (my $i=0; $i<$sec; $i++) { push (@sec_array, shift(@sec_array) ) };
-foreach (@sec_array) {our $sec_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
+foreach (@sec_array) {$sec_li .= "<li>".sprintf ('%02d' ,$_)."</li>";}    
 
 $systemtimezone         = qx($datebin +"%Z");
 chomp($systemtimezone);
