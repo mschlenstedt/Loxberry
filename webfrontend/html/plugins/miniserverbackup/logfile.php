@@ -1,7 +1,16 @@
 <?php
 if (isset($_GET['new_session'])) 
 {
-unset ($_SESSION['offset']);
+	if (isset($_SESSION['offset']))
+	{ 
+		unset ($_SESSION['offset']);
+		echo("OK");
+	  exit;
+	}
+	else
+	{
+		die("Failed");
+	}
 }
 if (isset($_GET['ajax'])) 
 {

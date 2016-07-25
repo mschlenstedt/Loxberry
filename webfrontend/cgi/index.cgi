@@ -178,9 +178,8 @@ $help = "setup00";
 
 
 our $systemdatetime = time()*1000;
- (my $sec, my $min, my $hour, my $mday, my $mon, my $year, my $wday, my $yday, my $isdst) = localtime();
+ (our $sec, our $min, our $hour, our $mday, our $mon, our $year, our $wday, our $yday, our $isdst) = localtime();
 our $systemdate         = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
-
 
 # Print Template
 &lbheader;
