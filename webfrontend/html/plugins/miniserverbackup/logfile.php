@@ -20,12 +20,12 @@ if (isset($_GET['ajax']))
     $data = stream_get_contents($handle, -1, $_SESSION['offset']);
 		$data = str_replace ("<ERROR>","<div id='logrt'>",$data);
 		$data = str_replace ("<OK>","<div id='loggn'>",$data);
-		$data = str_replace ("<DWL>","<div id='logge'>",$data);
 		$data = str_replace ("<MS#>","<div id='logms'>",$data);
 		$data = str_replace ("</ERROR>\n","</DIV>",$data);
 		$data = str_replace ("</OK>\n","</DIV>",$data);
-		$data = str_replace ("</DWL>\n","</DIV>",$data);
 		$data = str_replace ("</MS#>\n","</DIV>",$data);
+		$data = str_ireplace ("ERROR","<FONT color=red>ERROR</FONT>",$data);
+    $data = str_ireplace ("FAIL","<FONT color=red>FAIL</FONT>",$data);
     $data = nl2br($data);
     echo $data;
 		 $_SESSION['offset'] = ftell($handle);
