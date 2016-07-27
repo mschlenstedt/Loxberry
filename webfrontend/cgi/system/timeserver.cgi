@@ -67,6 +67,8 @@ our $datebin;
 our $systemdatetime;
 our $systemtimezone;
 our $ntpdate;
+our $awkbin;
+our $grepbin;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -82,8 +84,11 @@ $ntpserverurl       = $cfg->param("TIMESERVER.SERVER");
 $zeitzone           = $cfg->param("TIMESERVER.ZONE");
 $datebin            = $cfg->param("BINARIES.DATE");
 $ntpdate            = $cfg->param("BINARIES.NTPDATE");
+$awkbin             = $cfg->param("BINARIES.AWK");
+$grepbin            = $cfg->param("BINARIES.GREP");
 $do                 = "";
 $helptext           = "";
+
 #########################################################################
 # Parameter
 #########################################################################
@@ -100,6 +105,21 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 
 # And this one we really want to use
 $do           = $query{'do'};
+
+# Just for testing via: http://loxberry/admin/system/timeserver.cgi?do=query
+if ( $do eq "query" ) 
+{
+	print "Content-Type: text/plain\n\n";
+  if ( $zeitserver eq "ntp" )
+  {
+  	print `$ntpdate -q $ntpserverurl 2>&1| $grepbin ntp | $awkbin '{for (I=1;I<=NF;I++) if (\$I == "offset") {print \$(I+1)};}'`;
+	}
+	else
+	{
+		print "Miniserver configured. No NTP-Query done.";
+	}
+  exit;
+}
 
 # Everything we got from forms
 $saveformdata         = param('saveformdata');
@@ -165,7 +185,8 @@ $phrase = new Config::Simple($languagefile);
 #########################################################################
 
 # Step 1 or beginning
-if (!$saveformdata || $do eq "form") {
+if (!$saveformdata || $do eq "form") 
+{
   &form;
 } else {
   &save;
