@@ -63,3 +63,13 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
  text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }
 /* END Miniserver-Backup-Logfarben --> */
+
+.empty_icon
+{
+	width:64px; 
+	height:64px; 
+	margin: auto auto; 
+	Background-image: url('/system/images/icons/empty_64.png');	
+	background-position: center center; 
+	background-repeat: no-repeat;"
+}

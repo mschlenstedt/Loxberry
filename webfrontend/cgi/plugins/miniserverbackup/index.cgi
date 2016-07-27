@@ -46,11 +46,11 @@ our $installfolder;
 our $languagefile;
 our $version;
 our $error;
-our $saveformdata;
+our $saveformdata=0;
 our $output;
 our $message;
 our $nexturl;
-our $do;
+our $do="form";
 my $home = File::HomeDir->my_home;
 my $subfolder;
 our $verbose;
@@ -71,6 +71,7 @@ our $languagefileplugin;
 our $phraseplugin;
 our $selectedverbose;
 our $selecteddebug;
+our $header_already_sent=0;
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -94,8 +95,24 @@ $bkpcounts       = $cfg->param("MSBACKUP.MAXFILES");
 # Parameter
 #########################################################################
 
+# For Debugging with level 3 
+sub apache()
+{
+  if ($debug eq 3)
+  {
+		if ($header_already_sent eq 0) {$header_already_sent=1; print header();}
+		my $debug_message = shift;
+		# Print to Browser 
+		print $debug_message."<br>\n";
+		# Write in Apache Error-Log 
+		print STDERR $debug_message."\n";
+	}
+	return();
+}
+
 # Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
+foreach (split(/&/,$ENV{'QUERY_STRING'}))
+{
   ($namef,$value) = split(/=/,$_,2);
   $namef =~ tr/+/ /;
   $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
@@ -104,310 +121,49 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
   $query{$namef} = $value;
 }
 
-# And this one we really want to use
-$do           = $query{'do'};
+# Set parameters coming in - get over post
+	if ( !$query{'saveformdata'} ) { if ( param('saveformdata') ) { $saveformdata = quotemeta(param('saveformdata')); } else { $saveformdata = 0;      } } else { $saveformdata = quotemeta($query{'saveformdata'}); }
+	if ( !$query{'lang'} )         { if ( param('lang')         ) { $lang         = quotemeta(param('lang'));         } else { $lang         = "de";   } } else { $lang         = quotemeta($query{'lang'});         }
+	if ( !$query{'do'} )           { if ( param('do')           ) { $do           = quotemeta(param('do'));           } else { $do           = "form"; } } else { $do           = quotemeta($query{'do'});           }
 
-# Everything from Forms
-$saveformdata         = param('saveformdata');
+# Clean up saveformdata variable
+	$saveformdata =~ tr/0-1//cd; $saveformdata = substr($saveformdata,0,1);
 
-# Filter
-quotemeta($query{'lang'});
-quotemeta($saveformdata);
-quotemeta($do);
-
-$saveformdata          =~ tr/0-1//cd;
-$saveformdata          = substr($saveformdata,0,1);
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
-
-##########################################################################
-# Language Settings
-##########################################################################
-
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
-
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
-
-# If there's no language phrases file for choosed language, use german as default
-if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations / phrases
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
-
-$languagefileplugin = "$installfolder/templates/plugins/miniserverbackup/$lang/language.dat";
-$phraseplugin = new Config::Simple($languagefileplugin);
+# Init Language
+	# Clean up lang variable
+	$lang         =~ tr/a-z//cd; $lang         = substr($lang,0,2);
+  # If there's no language phrases file for choosed language, use german as default
+		if (!-e "$installfolder/templates/system/$lang/language.dat") 
+		{
+  		$lang = "de";
+	}
+	# Read translations / phrases
+		$languagefile 			= "$installfolder/templates/system/$lang/language.dat";
+		$phrase 						= new Config::Simple($languagefile);
+		$languagefileplugin = "$installfolder/templates/plugins/miniserverbackup/$lang/language.dat";
+		$phraseplugin 			= new Config::Simple($languagefileplugin);
 
 ##########################################################################
 # Main program
 ##########################################################################
 
-#########################################################################
-# What should we do
-#########################################################################
-
-# Step 1 or beginning
-if ($saveformdata) {
-  &save;
-}
-
-elsif ($do eq "log") {
-  &log;
-}
-
-elsif ($do eq "backup") {
-  &backup;
-}
-
-else {
-  &form;
-}
-
-exit;
-
-#####################################################
-# Form
-#####################################################
-
-sub form {
-
-# Filter
-quotemeta($debug);
-quotemeta($maxfiles);
-quotemeta($autobkp);
-quotemeta($bkpcron);
-quotemeta($bkpcounts);
-
-if ($debug eq 1) {
-  $selectedverbose = "selected=selected";
-} elsif ($debug eq 2) {
-  $selecteddebug = "selected=selected";
-}
-
-
-# Prepare form defaults
-if ($autobkp eq "on") {
-  $selectedauto2 = "selected=selected";
-} else {
-  $selectedauto1 = "selected=selected";
-}
-
-if ($bkpcron eq "15min") {
-  $selectedcron1 = "selected=selected";
-} elsif ($bkpcron eq "30min") {
-  $selectedcron2 = "selected=selected";
-} elsif ($bkpcron eq "60min") {
-  $selectedcron3 = "selected=selected";
-} elsif ($bkpcron eq "1d") {
-  $selectedcron4 = "selected=selected";
-} elsif ($bkpcron eq "1w") {
-  $selectedcron5 = "selected=selected";
-} elsif ($bkpcron eq "1m") {
-  $selectedcron6 = "selected=selected";
-}
-
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0040");
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/plugins/miniserverbackup/$lang/settings.html") || die "Missing template plugins/miniserverbackup/$lang/settings.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-exit;
-
-}
-
-#####################################################
-# Save
-#####################################################
-
-sub save {
-
-# Everything from Forms
-$autobkp    = param('autobkp');
-$bkpcron    = param('bkpcron');
-$bkpcounts  = param('bkpcounts');
-$debug      = param('debug');
-
-# Filter
-quotemeta($autobkp);
-quotemeta($bkpcron);
-quotemeta($bkpcounts);
-quotemeta($debug);
-
-# Write configuration file(s)
-$cfg->param("MSBACKUP.AUTOBKP", "$autobkp");
-$cfg->param("MSBACKUP.CRON", "$bkpcron");
-$cfg->param("MSBACKUP.MAXFILES", "$bkpcounts");
-$cfg->param("MSBACKUP.DEBUG", "$debug");
-$cfg->save();
-
-# Create Cronjob
-if ($autobkp eq "on") {
-  if ($bkpcron eq "15min") {
-    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.15min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
-    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
-  }
-  if ($bkpcron eq "30min") {
-    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.30min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
-    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
-  }
-  if ($bkpcron eq "60min") {
-    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.hourly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
-    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
-  }
-  if ($bkpcron eq "1d") {
-    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.daily/$subfolder");
-    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
-  }
-  if ($bkpcron eq "1w") {
-    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.weekly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
-    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
-  }
-  if ($bkpcron eq "1m") {
-    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.monthly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
-    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
-    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
-    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
-  }
-} else {
-  unlink ("$installfolder/system/cron/cron.15min/$subfolder");
-  unlink ("$installfolder/system/cron/cron.30min/$subfolder");
-  unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
-  unlink ("$installfolder/system/cron/cron.daily/$subfolder");
-  unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
-  unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
-}
-
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0040");
-
-$message = $phraseplugin->param("TXT0002");
-$nexturl = "./index.cgi?do=form";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-exit;
-
-}
-
-#####################################################
-# Logfile
-#####################################################
-
-sub log {
-
-if (!-e "$installfolder/log/plugins/miniserverbackup/backuplog.log") {
-  $error = $phraseplugin->param("TXT0004");
-  &error;
-  exit;
-}
-
-print "Content-Type: text/plain\n\n";
-open(F,"$installfolder/log/plugins/miniserverbackup/backuplog.log") || die "Missing file /log/plugins/miniserverbackup/backuplog.log";
-  while (<F>) {
-    print $_;
-  }
-close(F);
-
-exit;
-
-}
-
-#####################################################
-# Manual backup
-#####################################################
-
-sub backup {
-
-
-print "Content-Type: text/html\n\n";
-
-#$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0040");
-
-$message = $phraseplugin->param("TXT0003");
-
-#$nexturl = "./index.cgi?do=form";
-
-print $message;
-
-
-## Print Template
-#&lbheader;
-#open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
-#  while (<F>) {
-#    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-#    print $_;
-#  }
-#close(F);
-#&footer;
-
-# Create Backup
-# Without the following workaround
-# the script cannot be executed as
-# background process via CGI
-my $pid = fork();
-die "Fork failed: $!" if !defined $pid;
-if ($pid == 0) {
-# do this in the child
- open STDIN, "</dev/null";
- open STDOUT, ">/dev/null";
- open STDERR, ">/dev/null";
- system("./bin/createmsbackup.pl &");
-}
-
-exit;
-
-}
-
-exit;
-
+	if ($saveformdata) 
+	{
+	  &save;
+	}
+	elsif ($do eq "log") 
+	{
+	  &log;
+	}
+	elsif ($do eq "backup") 
+	{
+	  &backup;
+	}
+	else 
+	{
+	  &form;
+	}
+	exit;
 
 #####################################################
 # 
@@ -416,65 +172,282 @@ exit;
 #####################################################
 
 #####################################################
-# Error
+# Form-Sub
 #####################################################
 
-sub error {
+	sub form 
+	{
+		# Filter
+		$debug 		 = quotemeta($debug);
+		$maxfiles  = quotemeta($maxfiles);
+		$autobkp   = quotemeta($autobkp);
+		$bkpcron   = quotemeta($bkpcron);
+		$bkpcounts = quotemeta($bkpcounts);
+		
+		# Webinterface - Select Loglevel
+		if ($debug eq 1) 
+		{
+		  $selectedverbose = "selected=selected";
+		} 
+		elsif ($debug eq 2) 
+		{
+		  $selecteddebug = "selected=selected";
+		}
+		elsif ($debug eq 3) # Level 3 manual configurable in config file only
+		{
+		  $selecteddebug = "selected=selected";
+		}
+		
+		# Prepare form defaults
+		if ($autobkp eq "on") 
+		{
+		  $selectedauto2 = "selected=selected";
+		} 
+		else 
+		{
+		  $selectedauto1 = "selected=selected";
+		}
+		
+		if 		($bkpcron eq "15min") { $selectedcron1 = "selected=selected"; }
+		elsif ($bkpcron eq "30min") { $selectedcron2 = "selected=selected"; }
+		elsif ($bkpcron eq "60min") { $selectedcron3 = "selected=selected"; } 
+		elsif ($bkpcron eq "1d") 		{ $selectedcron4 = "selected=selected"; }
+		elsif ($bkpcron eq "1w") 		{ $selectedcron5 = "selected=selected"; }
+		elsif ($bkpcron eq "1m")  	{ $selectedcron6 = "selected=selected"; }
+		
+		if ( !$header_already_sent ) { print "Content-Type: text/html\n\n"; }
+		
+		$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0040");
+		
+		# Print Template
+		&lbheader;
+		open(F,"$installfolder/templates/plugins/miniserverbackup/$lang/settings.html") || die "Missing template plugins/miniserverbackup/$lang/settings.html";
+		  while (<F>) 
+		  {
+		    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+		    print $_;
+		  }
+		close(F);
+		&footer;
+		exit;
+	}
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
+#####################################################
+# Save-Sub
+#####################################################
 
-print "Content-Type: text/html\n\n";
+	sub save 
+	{
+		# Everything from Forms
+		$autobkp    = param('autobkp');
+		$bkpcron    = param('bkpcron');
+		$bkpcounts  = param('bkpcounts');
+		$debug      = param('debug');
+		
+		# Filter
+		$autobkp   = quotemeta($autobkp);
+		$bkpcron   = quotemeta($bkpcron);
+		$bkpcounts = quotemeta($bkpcounts);
+		$debug     = quotemeta($debug);
+		
+		# Write configuration file(s)
+		$cfg->param("MSBACKUP.AUTOBKP", "$autobkp");
+		$cfg->param("MSBACKUP.CRON", 		"$bkpcron");
+		$cfg->param("MSBACKUP.MAXFILES","$bkpcounts");
+		$cfg->param("MSBACKUP.DEBUG", 	"$debug");
+		$cfg->save();
+		
+		# Create Cronjob
+		if ($autobkp eq "on") 
+		{
+		  if ($bkpcron eq "15min") 
+		  {
+		    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.15min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
+		  }
+		  if ($bkpcron eq "30min") 
+		  {
+		    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.30min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
+		  }
+		  if ($bkpcron eq "60min") 
+		  {
+		    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.hourly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
+		  }
+		  if ($bkpcron eq "1d") 
+		  {
+		    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.daily/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
+		  }
+		  if ($bkpcron eq "1w") 
+		  {
+		    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.weekly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
+		  }
+		  if ($bkpcron eq "1m") 
+		  {
+		    system ("ln -s $installfolder/webfrontend/cgi/plugins/$subfolder/bin/createmsbackup.pl $installfolder/system/cron/cron.monthly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.15min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.30min/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.daily/$subfolder");
+		    unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
+		  }
+		} 
+		else
+		{
+		  unlink ("$installfolder/system/cron/cron.15min/$subfolder");
+		  unlink ("$installfolder/system/cron/cron.30min/$subfolder");
+		  unlink ("$installfolder/system/cron/cron.hourly/$subfolder");
+		  unlink ("$installfolder/system/cron/cron.daily/$subfolder");
+		  unlink ("$installfolder/system/cron/cron.weekly/$subfolder");
+		  unlink ("$installfolder/system/cron/cron.monthly/$subfolder");
+		}
+		
+		if ( !$header_already_sent ) { print "Content-Type: text/html\n\n"; }
+		
+		$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0040");
+		$message 				= $phraseplugin->param("TXT0002");
+		$nexturl 				= "./index.cgi?do=form";
+		
+		# Print Template
+		&lbheader;
+		open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
+		  while (<F>) 
+		  {
+		    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+		    print $_;
+		  }
+		close(F);
+		&footer;
+		exit;
+	}
 
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
-    while (<F>) {
+#####################################################
+# Logfile-Sub
+#####################################################
+
+	sub log 
+	{
+		if (!-e "$installfolder/log/plugins/miniserverbackup/backuplog.log") 
+		{
+		  $error = $phraseplugin->param("TXT0004");
+		  &error;
+		  exit;
+		}
+		if ( !$header_already_sent ) { print "Content-Type: text/plain\n\n"; }
+		open(F,"$installfolder/log/plugins/miniserverbackup/backuplog.log") || die "Missing file /log/plugins/miniserverbackup/backuplog.log";
+		  while (<F>) 
+		  {
+		    print $_;
+		  }
+		close(F);
+		exit;
+	}
+
+#####################################################
+# Manual backup-Sub
+#####################################################
+
+	sub backup 
+	{
+		if ( !$header_already_sent ) { print "Content-Type: text/html\n\n"; }
+		$message = $phraseplugin->param("TXT0003");
+		print $message;
+		# Create Backup
+		# Without the following workaround
+		# the script cannot be executed as
+		# background process via CGI
+		my $pid = fork();
+		die "Fork failed: $!" if !defined $pid;
+		if ($pid == 0) 
+		{
+			 # do this in the child
+			 open STDIN, "</dev/null";
+			 open STDOUT, ">/dev/null";
+			 open STDERR, ">/dev/null";
+			 system("$installfolder/webfrontend/cgi/plugins/miniserverbackup/bin/createmsbackup.pl &");
+		}
+		exit;
+	}
+
+#####################################################
+# Error-Sub
+#####################################################
+
+	sub error 
+	{
+		$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
+		if ( !$header_already_sent ) { print "Content-Type: text/html\n\n"; }
+		&lbheader;
+		open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
+    while (<F>) 
+    {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
       print $_;
     }
-close(F);
-&footer;
-
-exit;
-
-}
+		close(F);
+		&footer;
+		exit;
+	}
 
 #####################################################
-# Header
+# Page-Header-Sub
 #####################################################
 
-sub lbheader {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
-  open(F,"$installfolder/templates/plugins/miniserverbackup/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
-    @help = <F>;
-    foreach (@help){
-      s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
-    }
-  close(F);
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
+	sub lbheader 
+	{
+		 # Create Help page
+	  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
+	  open(F,"$installfolder/templates/plugins/miniserverbackup/$lang/help.html") || die "Missing template plugins/miniserverbackup/$lang/help.html";
+	    @help = <F>;
+	    foreach (@help)
+	    {
+	      s/[\n\r]/ /g;
+	      $helptext = $helptext . $_;
+	    }
+	  close(F);
+	  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
+	    while (<F>) 
+	    {
+	      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+	      print $_;
+	    }
+	  close(F);
+	}
 
 #####################################################
 # Footer
 #####################################################
 
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
+	sub footer 
+	{
+	  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
+	    while (<F>) 
+	    {
+	      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+	      print $_;
+	    }
+	  close(F);
+	}

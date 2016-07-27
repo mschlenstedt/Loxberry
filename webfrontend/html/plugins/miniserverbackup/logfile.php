@@ -24,8 +24,9 @@ if (isset($_GET['ajax']))
 		$data = str_replace ("</ERROR>\n","</DIV>",$data);
 		$data = str_replace ("</OK>\n","</DIV>",$data);
 		$data = str_replace ("</MS#>\n","</DIV>",$data);
-		$data = str_ireplace ("ERROR","<FONT color=red>ERROR</FONT>",$data);
-    $data = str_ireplace ("FAIL","<FONT color=red>FAIL</FONT>",$data);
+    $search  = array('ERRORCODE', 'ERRORS', 'ERROR', 'FAILED', 'REFUSED');
+    $replace = array('<FONT color=red><b>ERRORCODE</b></FONT>', '<FONT color=red><b>ERRORS</b></FONT>', '<FONT color=red><b>ERROR</b></FONT>', '<FONT color=red><b>FAILED</b></FONT>','<FONT color=red><b>REFUSED</b></FONT>');
+    $data = str_ireplace($search, $replace, $data);
     $data = nl2br($data);
     echo $data;
 		 $_SESSION['offset'] = ftell($handle);
