@@ -26,50 +26,59 @@ table.menutable td.caption {
 
 .loxberry-logo /* Loxberry Logo on white workspace */
 { 
-	background-image: url("../images/icons/loxberry.svg");
-	background-repeat: no-repeat;
+  background-image: url("../images/icons/loxberry.svg");
+  background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
 }
 
 .ui-panel-wrapper /* Loxberry Logo on gray background to prevent cut logo */
 {
-	background-image: url("../images/icons/loxberry_ui-panel-wrapper.svg");
-	background-repeat: no-repeat;
+  background-image: url("../images/icons/loxberry_ui-panel-wrapper.svg");
+  background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
 	
 }
+
 .ui-input-text input
 {
   background: transparent none;
 }
+
 html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 {
-	background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.8);
 }
-
-/* START Miniserver-Backup-Logfarben --> */
-#logrt
-{
-	text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
-}
-#loggn
-{
- text-align:left; width:100%; color:#000000; background-color:#D8FADC;
-}
-#logms
-{
- text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
-}
-/* END Miniserver-Backup-Logfarben --> */
 
 .empty_icon
 {
-	width:64px; 
-	height:64px; 
-	margin: auto auto; 
-	Background-image: url('/system/images/icons/empty_64.png');	
-	background-position: center center; 
-	background-repeat: no-repeat;"
+  width:64px; 
+  height:64px; 
+  margin: auto auto; 
+  Background-image: url('/system/images/icons/empty_64.png');	
+  background-position: center center; 
+  background-repeat: no-repeat;"
+}
+
+/* Logfiles */
+#logerr
+{
+  text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
+}
+#logfail
+{
+  text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
+}
+#logwarn
+{
+  text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
+}
+#logok
+{
+ text-align:left; width:100%; color:#000000; background-color:#D8FADC;
+}
+#loginfo
+{
+ text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }
