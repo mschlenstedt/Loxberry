@@ -31,6 +31,8 @@ TXT1022=Versuch
 TXT1023=von
 TXT1024=Mit Versuch 
 TXT1025=konnte die folgende Datei erfolgreich heruntergeladen werden:
+TXT1026=Versuche lokale Miniserver-IP auszulesen
+TXT1027=Miniserver-IP (lokal): 
 ;FEHLERMELDUNGEN
 TXT2001=ERR#2001: Kann Miniserver-Firmware-Version nicht auslesen. Gebe auf!
 TXT2002=ERR#2002: Kann Miniserver-FTP-Port nicht auslesen. Gebe auf!
@@ -39,3 +41,5 @@ TXT2004=ERR#2004: Gebe auf! Kann Datensicherung nicht komprimieren:
 TXT2005=ERR#2005: Gebe auf! Kann Datensicherungs-Archiv nicht in den Downloadbereich verschieben. 
 TXT2006=ERR#2006: Fehler beim Speichern von: 
 TXT2007=ERR#2007: Gebe auf! Wiederholter Fehler beim Speichern von: 
+TXT2008=ERR#2008: Kann lokale Miniserver-IP nicht auslesen. Gebe auf!
+

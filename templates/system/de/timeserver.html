@@ -2,8 +2,8 @@
   <div role="main" class="ui-content">
     <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
     <!-- text -->
-    <div style="margin: 5%;">
-      <form onsubmit="$('#form-error-message').html('<font color=blue><b>Frage Zeit ab</b> - Bitte warten, das dauert bis zu 30 Sekunden ...</font>');" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
+    <div style="margin: 3%;">
+      <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('.form-group').hasClass( 'has-error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<font color=blue><b>Frage Zeit ab</b> - Bitte warten, das dauert bis zu 30 Sekunden ...</font>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
@@ -61,7 +61,7 @@
         <tr>
           <td></td>
           <td colspan=3>
-          <div id="form-error-message" class="form-error-message">&nbsp;</div>
+          <div style="height:30px;" id="form-error-message" class="form-error-message">&nbsp;</div>
           </td>
         </tr>
         <tr>
@@ -73,7 +73,7 @@
         </tr>
         <tr>
          <td valign="top" width="25%">
-        	<label id="labelzeitzone">Aktuelle LoxBerry Systemzeit (<!--$systemtimezone-->):</label>
+        	<label id="labelSysTime">Aktuelle LoxBerry Systemzeit (<!--$systemtimezone-->):</label>
          </td>
          <td width="50%" align="center">
 					<div class="clock">
@@ -381,24 +381,21 @@
     <!-- /text -->
     </div>
   </div>
-
   <script>
   var $messages = $('#form-error-message');
   $.validate({
     modules : 'security',
-    errorMessagePosition : $messages,
+    errorMessagePosition : $messages
   });
-
-  // Disable some options on Load depending on selected value
-  disable();
-
-  // Prepare System Time/Date on Load
-  uhrzeitanzeige('<!--$systemdatetime-->');
 
   // Disable some options on click depending on selected value
   function disable() {
+  	
     // Miniserver or NTP
-    if ( document.main_form4.zeitserver_miniserver.checked == true ) {
+    if ( $('#zeitserver_miniserver').is(':checked') ) {
+			$("#ntpserverurl").attr("data-validation-optional","true");
+	    $('#form-error-message').fadeTo("slow",0);
+	    $('#ntpserverurl').val('');
       $('#labelntpserverurl').addClass('ui-disabled');
       $('#ntpserverurl').addClass('ui-disabled');
       $('#linkntpurls').addClass('ui-disabled');
@@ -407,35 +404,12 @@
       $('#labelntpserverurl').removeClass('ui-disabled');
       $('#ntpserverurl').removeClass('ui-disabled');
       $('#linkntpurls').removeClass('ui-disabled');
-    }
+			$("#ntpserverurl").attr("data-validation-optional","false");
+	    $('#form-error-message').fadeTo("slow",1);
+	    }
   }
 
-  function uhrzeitanzeige(szeit) {
-    var czeit = new Date();
-    var offset = czeit.getTime()-szeit;
-    var gib_zeit = function(dateobj) {
-      var d = dateobj.getDate();
-      if (d < 10) { d = '0'+d; }
-      var mo = dateobj.getMonth();
-      if (mo < 10) { mo = '0'+mo; }
-      var y = dateobj.getFullYear();
-      var h = dateobj.getHours();
-      if (h < 10) { h = '0'+h; }
-      var m = dateobj.getMinutes();
-      if (m < 10) { m = '0'+m; }
-      var s = dateobj.getSeconds();
-      if (s < 10) { s = '0'+s; }
-      return d+'.'+mo+'.'+y+' um '+h+':'+m+':'+s+' <!--$systemtimezone-->';
-    };
-    var zeit_aktualisieren = function(offset) {
-      czeit = new Date();
-      czeit.setTime(czeit.getTime()+offset);
-      document.getElementById('time').innerHTML = gib_zeit(czeit);
-      window.setTimeout(function () {zeit_aktualisieren(offset);},1000);
-    };
-    zeit_aktualisieren(offset);
-  }
-
-  </script>
-
+  // Disable some options on Load depending on selected value
+  disable();
+</script>
   <!-- /content -->

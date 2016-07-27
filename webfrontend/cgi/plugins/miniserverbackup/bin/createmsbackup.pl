@@ -83,12 +83,13 @@ our $quiet;
 our $something_wrong;
 our $retry_error;
 our $maxdwltries;
+our $local_miniserver_ip;
 ##########################################################################
 # Read Configuration
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.8";
+my $version = "0.0.9";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -195,7 +196,6 @@ for($msno = 1; $msno <= $miniservers; $msno++)
 	   {
 	    	$miniserverip = "127.0.0.1"; 
 	   }
-	   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
   }
   else
   {
@@ -203,8 +203,8 @@ for($msno = 1; $msno <= $miniservers; $msno++)
 	   {
 	 	  	$miniserverport = 80;
 	   } 
-	   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
   }
+  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
   $logmessage = $phraseplugin->param("TXT1006")." ($url)"; &log($green_css); # Try to read MS Firmware Version
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
@@ -239,6 +239,46 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   $monver  = sprintf("%02d", $fields[2]);
   $dayver  = sprintf("%02d", $fields[3]);
   $logmessage = $phraseplugin->param("TXT1007").$xml->{value}; &log($green_css); # Miniserver Version
+
+
+  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ip";
+  $logmessage = $phraseplugin->param("TXT1026")." ($url)"; &log($green_css); # Try to read MS Local IP
+  $ua = LWP::UserAgent->new;
+  $ua->timeout(1);
+  local $SIG{ALRM} = sub { die };
+  eval {
+    alarm(1);
+    $response = $ua->get($url);
+    if (!$response->is_success) 
+    {
+      $error        = 1;
+      $logmessage = $phraseplugin->param("TXT2008"); &error; # Unable to fetch local IP. Giving up.
+      next;
+    }
+    else 
+    {
+      $success = 1;
+    }
+  };
+  alarm(0);
+  if (!$success) 
+  {
+    $error=1;
+		$logmessage = $phraseplugin->param("TXT2008"); &error; # Unable to fetch local IP. Giving up.
+    next;
+  }
+  $success = 0;
+  $rawxml  = $response->decoded_content();
+  $xml     = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
+  @fields  = split(/\./,$xml->{value});
+  $mainver = sprintf("%02d", $fields[0]);
+  $subver  = sprintf("%02d", $fields[1]);
+  $monver  = sprintf("%02d", $fields[2]);
+  $dayver  = sprintf("%02d", $fields[3]);
+  $logmessage = $phraseplugin->param("TXT1027").$xml->{value}; &log($green_css); # Miniserver IP local
+  $local_miniserver_ip = $xml->{value};
+################################
+
   # Get FTP Port from Miniserver
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ftp";
   $ua = LWP::UserAgent->new;
@@ -250,7 +290,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
     if (!$response->is_success) 
     {
       $error=1;
-      $logmessage = $phraseplugin->param("TXT2002"); &error; # Unable to fetch Firmware Version. Giving up. 
+      $logmessage = $phraseplugin->param("TXT2002"); &error; # Unable to fetch FTP Port. Giving up. 
       next;
     }
     else
@@ -263,7 +303,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   if (!$success) 
   {
     $error=1;
-    $logmessage = $phraseplugin->param("TXT2002"); &error; # Unable to fetch Firmware Version. Giving up. 
+    $logmessage = $phraseplugin->param("TXT2002"); &error; # Unable to fetch FTP Port. Giving up. 
     next;
   }
   $success = 0;
@@ -281,7 +321,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   $dirmin = sprintf("%02d", $dirmin);
   $dirsec = sprintf("%02d", $dirsec);
   # Create temporary dir
-  $bkpdir = "Backup_MS".$msno."_".$miniserverip."\_".$diryear."-".$dirmon."-".$dirmday."_".$dirhour."h".$dirmin."m".$dirsec."s\_v".$mainver.".".$subver.".".$monver.".".$dayver;
+  $bkpdir = "Backup_$local_miniserver_ip\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
   $response = mkdir("/tmp/$bkpdir",0777);
   if ($response == 0) 
   {
@@ -345,7 +385,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   {
     $logmessage = $phraseplugin->param("TXT1015"); &log($green_css);  # Cleaning up temporary and old stuff.
   }
-  @output = qx(rm -r /tmp/Backup_MS* > /dev/null 2>&1);
+  @output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
   # Delete old backup archives
   $i 					= 0;
   @files 			= "";
@@ -358,7 +398,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   
   foreach(@Eintraege) 
   {
-    if ($_ =~ m/Backup_MS*$msno*_/) 
+    if ($_ =~ m/$Backup_$local_miniserver_ip/) 
     {
      push(@files,$_);
     }
@@ -429,7 +469,7 @@ sub error {
   our $error = "1";
   &log($red_css);
   # Clean up /tmp folder
-  @output = qx(rm -r /tmp/Backup_MS* > /dev/null 2>&1);
+  @output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
   if ( $retry_error eq $maxdwltries ) { $something_wrong = "1"; } 
   return ();
 }
