@@ -81,12 +81,14 @@ our $logmessage;
 our $clouddns;
 our $quiet;
 our $something_wrong;
+our $retry_error;
+our $maxdwltries;
 ##########################################################################
 # Read Configuration
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.6";
+my $version = "0.0.8";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -97,11 +99,16 @@ $zipbin          = $cfg->param("BINARIES.ZIP");
 $curlbin         = $cfg->param("BINARIES.CURL");
 $grepbin         = $cfg->param("BINARIES.GREP");
 $awkbin          = $cfg->param("BINARIES.AWK");
-
+$lang            = $cfg->param("BASE.LANG");
+$maxdwltries     = 15; # Maximale wget Wiederholungen
 $pcfg            = new Config::Simple("$installfolder/config/plugins/miniserverbackup/miniserverbackup.cfg");
 $debug           = $pcfg->param("MSBACKUP.DEBUG");
 $maxfiles        = $pcfg->param("MSBACKUP.MAXFILES");
 $subfolder       = $pcfg->param("MSBACKUP.SUBFOLDER");
+
+$languagefileplugin = "$installfolder/templates/plugins/miniserverbackup/$lang/language.dat";
+our $phraseplugin 	= new Config::Simple($languagefileplugin);
+
 
 our $css = "";
 #Error Style
@@ -114,11 +121,12 @@ our $green_css     = "OK";
 
 #Download Style
 #"<div style=\'text-align:left; width:100%; color:#000000; background-color:\'#F8F4D6\';\'>";
-our $yellow_css     = "DWL";
+our $dwl_css     = "DWL";
 
-#Download Style
+#MS Style
 #"<div style=\'text-align:left; width:100%; color:#000000; background-color:\'#DDEFFF\';\'>";
 our $ms_css     = "MS#";
+
 
 ##########################################################################
 # Main program
@@ -141,29 +149,21 @@ else
 }
 
 # Start
-if ($verbose) {
-  
-  $logmessage = "### $miniservers Miniserver at all - Starting Backup with Script $0 Version $version";
-  &log($green_css);
-}
-
+if ($verbose) { $logmessage = $miniservers." ".$phraseplugin->param("TXT1001")." $0($version)"; &log($green_css); } # ### Miniserver insgesamt - Starte Backup mit Script / Version 
 # Start Backup of all Miniservers
-for($msno = 1; $msno <= $miniservers; $msno++) {
-	
-  $logmessage = "Starting Backup for Miniserver $msno";
-  &log($ms_css);
-	
+for($msno = 1; $msno <= $miniservers; $msno++) 
+{
+  # Set Backup Flag
 	open(F,">$installfolder/webfrontend/html/plugins/miniserverbackup/backupstate.txt");
   print F "$msno";
   close (F);
 
-  $logmessage = "Starting Backup";
-  &log($green_css);
+  $logmessage = $phraseplugin->param("TXT1002").$msno; &log($green_css); #Starte Backup for Miniserver 
 
   $miniserverip       = $cfg->param("MINISERVER$msno.IPADDRESS");
   $miniserveradmin    = $cfg->param("MINISERVER$msno.ADMIN");
   $miniserverpass     = $cfg->param("MINISERVER$msno.PASS");
-  $miniserverpport    = $cfg->param("MINISERVER$msno.PORT");
+  $miniserverport     = $cfg->param("MINISERVER$msno.PORT");
   $useclouddns        = $cfg->param("MINISERVER$msno.USECLOUDDNS");
   $miniservercloudurl = $cfg->param("MINISERVER$msno.CLOUDURL");
 
@@ -171,80 +171,74 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
 
   if ( ${useclouddns} eq "1" )
   {
-   $logmessage = "Using Cloud-DNS http://$clouddns/$miniservercloudurl for Backup";
-   &log($green_css);
-   
-   $dns_info = `$home/webfrontend/cgi/system/tools/showclouddns.pl $miniservercloudurl`;
-   $logmessage = "Resolving DNS: $dns_info ($home/webfrontend/cgi/system/tools/showclouddns.pl $miniservercloudurl)";
-   &log($green_css);
-   
-   my @dns_info_pieces = split /:/, $dns_info;
-   if ($dns_info_pieces[1])
-   {
-    $dns_info_pieces[1] =~ s/^\s+|\s+$//g;
-    $miniserverport = $dns_info_pieces[1];
-   }
-   else
-   {
-    $miniserverport  = 80;
-   }
-   if ($dns_info_pieces[0])
-   {
-    $dns_info_pieces[0] =~ s/^\s+|\s+$//g;
-    $miniserverip = $dns_info_pieces[0]; 
-   }
-   else
-   {
-    $miniserverip = "127.0.0.1"; 
-   }
-   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
+	   $logmessage = $phraseplugin->param("TXT1003")." http://$clouddns/$miniservercloudurl ".$phraseplugin->param("TXT1004"); &log($green_css); # Using Cloud-DNS xxx for Backup 
+	   
+	   $dns_info = `$home/webfrontend/cgi/system/tools/showclouddns.pl $miniservercloudurl`;
+	   $logmessage = $phraseplugin->param("TXT1005")." $dns_info ($home/webfrontend/cgi/system/tools/showclouddns.pl $miniservercloudurl)"; &log($green_css); # DNS Data
+	   
+	   my @dns_info_pieces = split /:/, $dns_info;
+	   if ($dns_info_pieces[1])
+	   {
+	    	$dns_info_pieces[1] =~ s/^\s+|\s+$//g;
+	    	$miniserverport = $dns_info_pieces[1];
+	   }
+	   else
+	   {
+	    	$miniserverport  = 80;
+	   }
+	   if ($dns_info_pieces[0])
+	   {
+	    	$dns_info_pieces[0] =~ s/^\s+|\s+$//g;
+	    $miniserverip = $dns_info_pieces[0]; 
+	   }
+	   else
+	   {
+	    	$miniserverip = "127.0.0.1"; 
+	   }
+	   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
   }
   else
   {
-   if ( $miniserverport eq "" )
-   {
-   	$miniserverport = 80;
-   } 
-   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
+	   if ( $miniserverport eq "" )
+	   {
+	 	  	$miniserverport = 80;
+	   } 
+	   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
   }
-  $logmessage = "Try to read Firmware Version ($url)";
-  &log($green_css);
+  $logmessage = $phraseplugin->param("TXT1006")." ($url)"; &log($green_css); # Try to read MS Firmware Version
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
   local $SIG{ALRM} = sub { die };
   eval {
     alarm(1);
     $response = $ua->get($url);
-    if (!$response->is_success) {
-      $error=1;
-      $errormessage = "Unable to fetch Firmware Version. Giving up.";
-      &error;
+    if (!$response->is_success) 
+    {
+      $error        = 1;
+      $logmessage = $phraseplugin->param("TXT2001"); &error; # Unable to fetch Firmware Version. Giving up.
       next;
-    } else {
+    }
+    else 
+    {
       $success = 1;
     }
   };
   alarm(0);
-
-  if (!$success) {
+  if (!$success) 
+  {
     $error=1;
-		$errormessage = "Unable to fetch Firmware Version. Giving up.";
-    &error;
+		$logmessage = $phraseplugin->param("TXT2001"); &error; # Unable to fetch Firmware Version. Giving up.
     next;
   }
   $success = 0;
- 
-  $rawxml = $response->decoded_content();
-  $xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
-  @fields = split(/\./,$xml->{value});
+  $rawxml  = $response->decoded_content();
+  $xml     = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
+  @fields  = split(/\./,$xml->{value});
   $mainver = sprintf("%02d", $fields[0]);
   $subver  = sprintf("%02d", $fields[1]);
   $monver  = sprintf("%02d", $fields[2]);
   $dayver  = sprintf("%02d", $fields[3]);
-
-  $logmessage = "Miniserver-Version: ".$xml->{value};
-  &log($green_css);
-
+  $logmessage = $phraseplugin->param("TXT1007").$xml->{value}; &log($green_css); # Miniserver Version
   # Get FTP Port from Miniserver
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ftp";
   $ua = LWP::UserAgent->new;
@@ -253,31 +247,30 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   eval {
     alarm(1);
     $response = $ua->get($url);
-    if (!$response->is_success) {
+    if (!$response->is_success) 
+    {
       $error=1;
-      $errormessage = "Unable to fetch FTP Port. Giving up.";
-      &error;
+      $logmessage = $phraseplugin->param("TXT2002"); &error; # Unable to fetch Firmware Version. Giving up. 
       next;
-    } else {
+    }
+    else
+    {
       $success = 1;
     }
   };
   alarm(0);
 
-  if (!$success) {
+  if (!$success) 
+  {
     $error=1;
-    $errormessage = "Unable to fetch FTP Port. Giving up.";
-    &error;
+    $logmessage = $phraseplugin->param("TXT2002"); &error; # Unable to fetch Firmware Version. Giving up. 
     next;
   }
   $success = 0;
- 
   $rawxml = $response->decoded_content();
   $xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
   $miniserverftpport = $xml->{value};
-
-  $logmessage = "Using FTP-Port $miniserverftpport for Backup";
-  &log($green_css);
+  $logmessage = $phraseplugin->param("TXT1008").$miniserverftpport; &log($green_css); #Using this FTP-Port for Backup: xxx
   # Backing up to temorary directory
   ($dirsec,$dirmin,$dirhour,$dirmday,$dirmon,$diryear,$dirwday,$diryday,$dirisdst) = localtime();
   $diryear = $diryear+1900;
@@ -287,154 +280,117 @@ for($msno = 1; $msno <= $miniservers; $msno++) {
   $dirhour = sprintf("%02d", $dirhour);
   $dirmin = sprintf("%02d", $dirmin);
   $dirsec = sprintf("%02d", $dirsec);
-
   # Create temporary dir
-  $bkpdir = "Backup_$miniserverip_Miniserver$msno\_$diryear$dirmon$dirmday$dirhour$dirmin$dirsec\_$mainver$subver$monver$dayver";
+  $bkpdir = "Backup_MS".$msno."_".$miniserverip."\_".$diryear."-".$dirmon."-".$dirmday."_".$dirhour."h".$dirmin."m".$dirsec."s\_v".$mainver.".".$subver.".".$monver.".".$dayver;
   $response = mkdir("/tmp/$bkpdir",0777);
-  if ($response == 0) {
+  if ($response == 0) 
+  {
     $error=1;
-    $errormessage = "Could not create temporary folder /tmp/$bkpdir. Giving up.";
-    &error;
+    $logmessage = $phraseplugin->param("TXT2003")." /tmp/$bkpdir"; &error; # Could not create temporary folder /tmp/$bkpdir. Giving up.
     next;
   }
-  if ($verbose) {
-    $logmessage = "Temporary folder created: /tmp/$bkpdir.";
-    &log($green_css);
-  }
-
-
-  $logmessage = "Starting Download";
-  &log($green_css);
-
+  if ($verbose) { $logmessage = $phraseplugin->param("TXT1009")." /tmp/$bkpdir"; &log($green_css); } # "Temporary folder created: /tmp/$bkpdir."
+  $logmessage = $phraseplugin->param("TXT1010"); &log($green_css); # Starting Download
   # Download files from Miniserver
   # /log
-  $url = " ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/log ";
-  &download;
-  # /prog
-  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/prog";
-  &download;
+  $url = " ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/log "; &download; 
+	# /prog
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/prog";	&download;
   # /sys
-  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/sys";
-  &download;
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/sys"; &download;
   # /stats
-  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/stats";
-  &download;
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/stats"; &download;
   # /temp
-  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/temp";
-  &download;
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/temp"; &download;
   # /update
-  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/update";
-  &download;
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/update"; &download;
   # /web
-  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/web";
-  &download;
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/web"; &download;
   # /user
-  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/user";
-  &download;
+  $url = "ftp://$miniserveradmin:$miniserverpass\@$miniserverip:$miniserverftpport/user"; &download;
 
-  $logmessage = "Compressing Backup ...";
-  &log($green_css);
+  $logmessage = $phraseplugin->param("TXT1011")." $bkpdir.zip"; &log($green_css); # Compressing Backup xxx ...
   
   # Zipping
   our @output = qx(cd /tmp && $zipbin -q -p -r $bkpdir.zip $bkpdir);
-  if ($? ne 0) {
+  if ($? ne 0) 
+  {
     $error=1;
-  	$logmessage = "Compressing Error!";
-  	&log($red_css);
-    $errormessage = "Error while zipping the Backup $bkpdir. Errorcode: $?. Giving up.";
-    &error;
+  	$logmessage = $phraseplugin->param("TXT2004")." $bkpdir (Errorcode: $?)"; &error; # Compressing error
     next;
-  } else {
-    if ($verbose) {
-      $logmessage = "ZIP-Archive /tmp/$bkpdir/$bkpdir.zip created successfully.";
-      &log($green_css);
-    }
+  } 
+  else
+  {
+    if ($verbose) { $logmessage = $phraseplugin->param("TXT1012"); &log($green_css); } # ZIP-Archive /tmp/$bkpdir/$bkpdir.zip created successfully.
   }
-  
-  $logmessage = "Moving Backup to Download folder...";
-  &log($green_css);
+  $logmessage = $phraseplugin->param("TXT1013"); &log($green_css); #Moving Backup to Download folder..."
   
   # Moving ZIP to files section
   move("/tmp/$bkpdir.zip","$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip");
-  if (!-e "$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip") {
+  if (!-e "$installfolder/webfrontend/html/plugins/$subfolder/files/$bkpdir.zip") 
+  {
     $error=1;
-  	$logmessage = "Moving Error!";
-  	&log($red_css);
-    $errormessage = "Error while moving ZIP-Archive $bkpdir.zip to Files-Section. Giving up.";
-    &error;
+  	$logmessage = $phraseplugin->param("TXT2005")." ($bkpdir.zip)" ; &error; # "Moving Error!"
     next;
-  } else {
-    if ($verbose) {
-      $logmessage = "Moving ZIP-Archive $bkpdir.zip to Files-Section successfully.";
-      &log($green_css);
-    }
+  } 
+  else 
+  {
+    if ($verbose) { $logmessage = $phraseplugin->param("TXT1014")." ($bkpdir.zip)"; &log($green_css); }  # Moved ZIP-Archive to Files-Section successfully.
   }
+
+  ABBRUCH:
 
   # Clean up /tmp folder
-  if ($verbose) {
-    $logmessage = "Cleaning up temporary and old stuff.";
-    &log($green_css);
+  if ($verbose) 
+  {
+    $logmessage = $phraseplugin->param("TXT1015"); &log($green_css);  # Cleaning up temporary and old stuff.
   }
-  @output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
-
+  @output = qx(rm -r /tmp/Backup_MS* > /dev/null 2>&1);
   # Delete old backup archives
-  $i = 0;
-  @files = "";
-  @Eintraege = "";
-
+  $i 					= 0;
+  @files 			= "";
+  @Eintraege	= "";
   opendir(DIR, "$installfolder/webfrontend/html/plugins/$subfolder/files");
     @Eintraege = readdir(DIR);
   closedir(DIR);
-
-  foreach(@Eintraege) {
-    if ($_ =~ m/$Backup_$miniserverip/) {
-      push(@files,$_);
+  if ($verbose) { $logmessage = scalar(@Eintraege)." ".$phraseplugin->param("TXT1016")." $installfolder/webfrontend/html/plugins/$subfolder/files "; &log($green_css); } # x files found in dir y
+  if ($debug)   { $logmessage = "Files: $installfolder/webfrontend/html/plugins/$subfolder/files :".join(" + ", @Eintraege); &log($green_css); }
+  
+  foreach(@Eintraege) 
+  {
+    if ($_ =~ m/Backup_MS*$msno*_/) 
+    {
+     push(@files,$_);
     }
   }
-
   @files = sort {$b cmp $a}(@files);
-
-  foreach(@files) {
+  foreach(@files) 
+  {
     s/[\n\r]//g;
     $i++;
-    if ($i > $maxfiles && $_ ne "") {
-      $logmessage = "Deleting old Backup $_";
-      &log($green_css);
+    if ($i > $maxfiles && $_ ne "") 
+    {
+      $logmessage = $phraseplugin->param("TXT1017")." $_"; &log($green_css); # Deleting old Backup $_
       unlink("$installfolder/webfrontend/html/plugins/$subfolder/files/$_");
-    } 
+  	} 
   }
-
-  # End
-
-		if ($error eq 1)
-		{
-		  $logmessage = "New Backup $bkpdir.zip created with errors - see log. -END-";
-			$something_wrong = 1;
-		  &log($red_css);
-		}
-		else
-		{
-		  $logmessage = "New Backup $bkpdir.zip created successfully. -END-";
-		  &log($green_css);
-		  $error = 0;
-		}
-
+	if ($error eq 0) { $logmessage = $phraseplugin->param("TXT1018")." $bkpdir.zip "; &log($green_css); } # New Backup $bkpdir.zip created successfully.
+  $error = 0;
 }
-		if ($something_wrong  eq 1)
-		{
-		  $logmessage = "All Backups created but with errors - see log. -END-";
-		  &log($red_css);
-		}
-		else
-		{
-		  $logmessage = "All Backups created successfully. -END-";
-		  &log($green_css);
-		}
+$msno = "1 => #".($msno - 1); # Minisever x ... y saved
+if ($something_wrong  eq 1)
+{
+  $logmessage = $phraseplugin->param("TXT1019"); &log($red_css); # Not all Backups created without errors - see log. 
+}
+else
+{
+  $logmessage = $phraseplugin->param("TXT1020"); &log($green_css); # All Backups created successfully. 
+}
+# Remove Backup Flag
 open(F,">$installfolder/webfrontend/html/plugins/miniserverbackup/backupstate.txt");
 print F "";
 close (F);
 exit;
-
 
 ##########################################################################
 # Subroutinen
@@ -471,45 +427,53 @@ sub log {
 # Error Message
 sub error {
   our $error = "1";
-  $logmessage = "ERROR: $errormessage";
   &log($red_css);
   # Clean up /tmp folder
-  @output = qx(rm -r /tmp/Backup_* > /dev/null 2>&1);
+  @output = qx(rm -r /tmp/Backup_MS* > /dev/null 2>&1);
+  if ( $retry_error eq $maxdwltries ) { $something_wrong = "1"; } 
   return ();
 }
 
 # Download
-sub download {
+sub download 
+{
+	if ($debug eq 1) 
+	{
+		#Debug
+		$quiet='  ';
+	}
+	elsif  ($verbose eq 1) 
+	{
+		#Verbose
+		$quiet=' --no-verbose ';
+	}
+	else   
+	{
+		#None
+		$quiet=' -q  ';
+	}
 
-if ($debug eq 1) 
-{
-	#Debug
-	$quiet='  ';
-}
-elsif  ($verbose eq 1) 
-{
-	#Verbose
-	$quiet=' --no-verbose ';
-}
-else   
-{
-	#None
-	$quiet=' -q  ';
-}
-    if ($verbose) {
-      $logmessage = "Downloading $url ...";
-      &log($green_css);
-    }
-	system("$wgetbin $quiet -a $home/log/plugins/miniserverbackup/backuplog.log --retry-connrefused --tries=15 --waitretry=5 --timeout=30 -nH -r $url -P /tmp/$bkpdir ");
-  if ($? ne 0) {
-    $logmessage = "Error while fetching $url. Backup may be incomplete. Errorcode: $?";
-    $error = 1;
-    &log($red_css);
-  } else {
-    if ($verbose) {
-      $logmessage = "Saved $url successfully.";
-      &log($green_css);
-    }
-  }
+  if ($verbose) { $logmessage = $phraseplugin->param("TXT1021")." $url ..."; &log($green_css); } # Downloading xxx ....
+  for(my $versuche = 1; $versuche < 16; $versuche++) 
+	{
+				system("$wgetbin $quiet -a $home/log/plugins/miniserverbackup/backuplog.log --retry-connrefused --tries=$maxdwltries --waitretry=5 --timeout=10 --passive-ftp -nH -r $url -P /tmp/$bkpdir ");
+			  if ($? ne 0) 
+			  {
+			    $logmessage = $phraseplugin->param("TXT2006")." $url ".$phraseplugin->param("TXT1022")." $versuche ".$phraseplugin->param("TXT1023")." $maxdwltries (Errorcode: $?)"; &log($red_css); # Try x of y failed 
+			    $retry_error = $versuche;
+			  } 
+			  else 
+			  {
+		      $logmessage = $phraseplugin->param("TXT1024")." $versuche ".$phraseplugin->param("TXT1023")." $maxdwltries ".$phraseplugin->param("TXT1025")." $url"; &log($dwl_css); # Download ok
+			    $retry_error = 0;
+			  }
+				if ($retry_error eq 0) { last; }
+	}
+	if ($retry_error eq $maxdwltries)
+	{ 
+      $error = 1;
+ 	    $logmessage = $phraseplugin->param("TXT2007")." $url (Errorcode: $?)"; &error; # "Wiederholter Fehler $? beim Speichern von $url. GEBE AUF!!"
+    	if ( $retry_error eq $maxdwltries ) { goto ABBRUCH; }
+	}
   return ();
 }
