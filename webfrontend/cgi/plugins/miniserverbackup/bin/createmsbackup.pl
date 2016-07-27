@@ -153,8 +153,6 @@ if ($verbose) { $logmessage = $miniservers." ".$phraseplugin->param("TXT1001")."
 # Start Backup of all Miniservers
 for($msno = 1; $msno <= $miniservers; $msno++) 
 {
-  $logmessage = " $msno";  &log($ms_css);
-	
   # Set Backup Flag
 	open(F,">$installfolder/webfrontend/html/plugins/miniserverbackup/backupstate.txt");
   print F "$msno";
@@ -356,7 +354,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
     @Eintraege = readdir(DIR);
   closedir(DIR);
   if ($verbose) { $logmessage = scalar(@Eintraege)." ".$phraseplugin->param("TXT1016")." $installfolder/webfrontend/html/plugins/$subfolder/files "; &log($green_css); } # x files found in dir y
-  if ($debug)   { $logmessage = "Files: $installfolder/webfrontend/html/plugins/$subfolder/files :".join("\n", @Eintraege); &log($green_css); }
+  if ($debug)   { $logmessage = "Files: $installfolder/webfrontend/html/plugins/$subfolder/files :".join(" + ", @Eintraege); &log($green_css); }
   
   foreach(@Eintraege) 
   {
@@ -376,10 +374,10 @@ for($msno = 1; $msno <= $miniservers; $msno++)
       unlink("$installfolder/webfrontend/html/plugins/$subfolder/files/$_");
   	} 
   }
-	$logmessage = $phraseplugin->param("TXT1018"); &log($green_css); # New Backup $bkpdir.zip created successfully.
+	if ($error eq 0) { $logmessage = $phraseplugin->param("TXT1018")." $bkpdir.zip "; &log($green_css); } # New Backup $bkpdir.zip created successfully.
   $error = 0;
 }
-
+$msno = "1 => #".($msno - 1); # Minisever x ... y saved
 if ($something_wrong  eq 1)
 {
   $logmessage = $phraseplugin->param("TXT1019"); &log($red_css); # Not all Backups created without errors - see log. 
@@ -466,7 +464,7 @@ sub download
 			  } 
 			  else 
 			  {
-		      $logmessage = $phraseplugin->param("TXT1024")." $versuche ".$phraseplugin->param("TXT1023")." $maxdwltries ".$phraseplugin->param("TXT1023"); &log($dwl_css); # Download ok
+		      $logmessage = $phraseplugin->param("TXT1024")." $versuche ".$phraseplugin->param("TXT1023")." $maxdwltries ".$phraseplugin->param("TXT1025")." $url"; &log($dwl_css); # Download ok
 			    $retry_error = 0;
 			  }
 				if ($retry_error eq 0) { last; }
@@ -475,7 +473,7 @@ sub download
 	{ 
       $error = 1;
  	    $logmessage = $phraseplugin->param("TXT2007")." $url (Errorcode: $?)"; &error; # "Wiederholter Fehler $? beim Speichern von $url. GEBE AUF!!"
-    	if ( $retry_error eq $maxdwltries ) {  goto ABBRUCH; }
+    	if ( $retry_error eq $maxdwltries ) { goto ABBRUCH; }
 	}
   return ();
 }
