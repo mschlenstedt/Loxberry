@@ -180,16 +180,19 @@ open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
     }
     # HTML Output
     if ($format eq "html") {
-      $_ =~ s/^(.*?)\s*<OK>\s*(.*?)$/<div id='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<OK>\s*(.*?)$/<div id='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/OK>//g;
-      $_ =~ s/^(.*?)\s*<ERROR>\s*(.*?)$/<div id='logerr'>$1 <FONT color=red><B>ERROR:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<ERROR>\s*(.*?)$/<div id='logerr'>$1 <FONT color=red><B>ERROR:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/ERROR>//g;
-      $_ =~ s/^(.*?)\s*<FAIL>\s*(.*?)$/<div id='logfail'>$1 <FONT color=red><B>FAIL:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<FAIL>\s*(.*?)$/<div id='logfail'>$1 <FONT color=red><B>FAIL:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/FAIL>//g;
-      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div id='loginfo'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div id='loginfo'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/INFO>//g;
-      $_ =~ s/^(.*?)\s*<WARNING>\s*(.*?)$/<div id='logwarn'>$1 <FONT color=red><B>WARNING:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<WARNING>\s*(.*?)$/<div id='logwarn'>$1 <FONT color=red><B>WARNING:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/WARNING>//g;
+      if ($_ !~ /<\/div>\n$/) {
+        $_ =~ s/\n/<br>/g;
+      }
     }
     # Terminal Output Colorized
     # http://misc.flogisoft.com/bash/tip_colors_and_formatting
@@ -211,7 +214,7 @@ open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
     } 
 
     # Print line
-    print $_;
+    print "$_";
   }
 close(F);
 
