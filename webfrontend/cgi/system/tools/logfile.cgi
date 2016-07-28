@@ -180,25 +180,25 @@ open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
     }
     # HTML Output
     if ($format eq "html") {
-      $_ =~ s/^(.*?) <OK> (.*?)$/<div id='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<OK>\s*(.*?)$/<div id='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2/g;
       $_ =~ s/<\/OK>//g;
-      $_ =~ s/^(.*?) <ERROR> (.*?)$/<div id='logerr'>$1 <FONT color=red><B>ERROR:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<ERROR>\s*(.*?)$/<div id='logerr'>$1 <FONT color=red><B>ERROR:<\/B><\/FONT> $2/g;
       $_ =~ s/<\/ERROR>//g;
-      $_ =~ s/^(.*?) <FAIL> (.*?)$/<div id='logfail'>$1 <FONT color=red><B>FAIL:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<FAIL>\s*(.*?)$/<div id='logfail'>$1 <FONT color=red><B>FAIL:<\/B><\/FONT> $2/g;
       $_ =~ s/<\/FAIL>//g;
-      $_ =~ s/^(.*?) <INFO> (.*?)$/<div id='loginfo'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div id='loginfo'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2/g;
       $_ =~ s/<\/INFO>//g;
-      $_ =~ s/^(.*?) <WARNING> (.*?)$/<div id='logwarn'>$1 <FONT color=red><B>WARNING:<\/B><\/FONT> $2/g;
+      $_ =~ s/^(.*?)\s*<WARNING>\s*(.*?)$/<div id='logwarn'>$1 <FONT color=red><B>WARNING:<\/B><\/FONT> $2/g;
       $_ =~ s/<\/WARNING>//g;
     }
     # Terminal Output Colorized
     # http://misc.flogisoft.com/bash/tip_colors_and_formatting
     if ($format eq "terminal") { 
-      $_ =~ s/^(.*?) <OK> (.*?)$/$1 \\e[1m\\e[32mOK:\\e[0m $2/g;
-      $_ =~ s/^(.*?) <ERROR> (.*?)$/$1 \\e[1m\\e[31mERROR:\\e[0m $2/g;
-      $_ =~ s/^(.*?) <FAIL> (.*?)$/$1 \\e[1m\\e[31mFAIL:\\e[0m $2/g;
-      $_ =~ s/^(.*?) <INFO> (.*?)$/$1 \\e[1mINFO:\\e[0m $2/g;
-      $_ =~ s/^(.*?) <WARNING> (.*?)$/$1 \\e[1m\\e[31mWARNING:\\e[0m $2/g;
+      $_ =~ s/^(.*?)(\s*)<OK>\s*(.*?)$/$1$2\\e[1m\\e[32mOK:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<ERROR>\s*(.*?)$/$1$2\\e[1m\\e[31mERROR:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<FAIL>\s*(.*?)$/$1$2 \\e[1m\\e[31mFAIL:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<INFO>\s*(.*?)$/$1$2\\e[1mINFO:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<WARNING>\s*(.*?)$/$1$2\\e[1m\\e[31mWARNING:\\e[0m $3/g;
     }
 
     if ($format ne "plain") { 
