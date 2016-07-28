@@ -190,7 +190,7 @@ open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
       $_ =~ s/<\/INFO>//g;
       $_ =~ s/^(.*?)\s*<WARNING>\s*(.*?)$/<div id='logwarn'>$1 <FONT color=red><B>WARNING:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/WARNING>//g;
-      if ($_ !~ /<\/div>\n$/) {
+      if ($_ !~ /<\/div>\n$/) { # New Line
         $_ =~ s/\n/<br>/g;
       }
     }
