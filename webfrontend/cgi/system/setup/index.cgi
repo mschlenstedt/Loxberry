@@ -98,6 +98,7 @@ our $sth;
 our $sqlerr;
 our $useclouddns1;
 our $miniservercloudurl1;
+our $miniservercloudurlftpport1;
 our $curlbin;
 our $grepbin;
 our $awkbin;
@@ -139,28 +140,29 @@ $step           = $query{'step'};
 $sid            = $query{'sid'};
 
 # Everything from Forms
-$saveformdata         = param('saveformdata');
-$adminuser            = param('adminuser');
-$adminpass1           = param('adminpass1');
-$adminpass2           = param('adminpass2');
-$miniserverip1        = param('miniserverip1');
-$miniserverport1      = param('miniserverport1');
-$miniserveruser1      = param('miniserveruser1');
-$miniserverkennwort1  = param('miniserverkennwort1');
-$useclouddns1         = param('useclouddns1');
-$miniservercloudurl1  = param('miniservercloudurl1');
-$miniservernote1      = param('miniservernote1');
-$netzwerkanschluss    = param('netzwerkanschluss');
-$netzwerkssid         = param('netzwerkssid');
-$netzwerkschluessel   = param('netzwerkschluessel');
-$netzwerkadressen     = param('netzwerkadressen');
-$netzwerkipadresse    = param('netzwerkipadresse');
-$netzwerkipmaske      = param('netzwerkipmaske');
-$netzwerkgateway      = param('netzwerkgateway');
-$netzwerknameserver   = param('netzwerknameserver');
-$zeitserver           = param('zeitserver');
-$ntpserverurl         = param('ntpserverurl');
-$zeitzone             = param('zeitzone');
+$saveformdata         				= param('saveformdata');
+$adminuser            				= param('adminuser');
+$adminpass1           				= param('adminpass1');
+$adminpass2           				= param('adminpass2');
+$miniserverip1        				= param('miniserverip1');
+$miniserverport1      				= param('miniserverport1');
+$miniserveruser1      				= param('miniserveruser1');
+$miniserverkennwort1  				= param('miniserverkennwort1');
+$useclouddns1         				= param('useclouddns1');
+$miniservercloudurl1  				= param('miniservercloudurl1');
+$miniservercloudurlftpport1  	= param('miniservercloudurlftpport1');
+$miniservernote1      				= param('miniservernote1');
+$netzwerkanschluss    				= param('netzwerkanschluss');
+$netzwerkssid         				= param('netzwerkssid');
+$netzwerkschluessel   				= param('netzwerkschluessel');
+$netzwerkadressen     				= param('netzwerkadressen');
+$netzwerkipadresse    				= param('netzwerkipadresse');
+$netzwerkipmaske      				= param('netzwerkipmaske');
+$netzwerkgateway      				= param('netzwerkgateway');
+$netzwerknameserver   				= param('netzwerknameserver');
+$zeitserver           				= param('zeitserver');
+$ntpserverurl         				= param('ntpserverurl');
+$zeitzone             				= param('zeitzone');
 
 # Filter
 quotemeta($query{'lang'});
@@ -341,13 +343,14 @@ if ($saveformdata) {
 }
 
 # Read data from Session file
-$miniserverip1       = $session->param("miniserverip1");
-$miniserverport1     = $session->param("miniserverport1");
-$miniserveruser1     = $session->param("miniserveruser1");
-$miniserverkennwort1 = $session->param("miniserverkennwort1");
-$useclouddns1        = $session->param("useclouddns1");
-$miniservercloudurl1 = $session->param("miniservercloudurl1");
-$miniservernote1     = $session->param("miniservernote1");
+$miniserverip1       				= $session->param("miniserverip1");
+$miniserverport1     				= $session->param("miniserverport1");
+$miniserveruser1     				= $session->param("miniserveruser1");
+$miniserverkennwort1 				= $session->param("miniserverkennwort1");
+$useclouddns1        				= $session->param("useclouddns1");
+$miniservercloudurl1 				= $session->param("miniservercloudurl1");
+$miniservercloudurlftpport1 = $session->param("miniservercloudurlftpport1");
+$miniservernote1     				= $session->param("miniservernote1");
 
 # Filter
 quotemeta($miniserverip1);
@@ -356,6 +359,7 @@ quotemeta($miniserveruser1);
 quotemeta($miniserverkennwort1);
 quotemeta($useclouddns1);
 quotemeta($miniservercloudurl1);
+quotemeta($miniservercloudurlftpport1);
 quotemeta($miniservernote1);
 
 # Default values
@@ -397,6 +401,7 @@ if ($saveformdata) {
   $session->param("miniserverkennwort1", $miniserverkennwort1);
   $session->param("useclouddns1", $useclouddns1);
   $session->param("miniservercloudurl1", $miniservercloudurl1);
+  $session->param("miniservercloudurlftpport1", $miniservercloudurlftpport1);
   $session->param("miniservernote1", $miniservernote1);
 
   # Test if Miniserver is reachable
@@ -614,27 +619,28 @@ exit;
 sub step6 {
 
 # Read data from Session file
-$adminuser           = $session->param("adminuser");
-$adminpass1          = $session->param("adminpass1");
-$adminpass2          = $session->param("adminpass1");
-$miniserverip1       = $session->param("miniserverip1");
-$miniserverport1     = $session->param("miniserverport1");
-$miniserveruser1     = $session->param("miniserveruser1");
-$miniserverkennwort1 = $session->param("miniserverkennwort1");
-$miniservernote1     = $session->param("miniservernote1");
-$miniservercloudurl1 = $session->param("miniservercloudurl1");
-$useclouddns1        = $session->param("useclouddns1");
-$netzwerkanschluss   = $session->param("netzwerkanschluss");
-$netzwerkssid        = $session->param("netzwerkssid");
-$netzwerkschluessel  = $session->param("netzwerkschluessel");
-$netzwerkadressen    = $session->param("netzwerkadressen");
-$netzwerkipadresse   = $session->param("netzwerkipadresse");
-$netzwerkipmaske     = $session->param("netzwerkipmaske");
-$netzwerkgateway     = $session->param("netzwerkgateway");
-$netzwerknameserver  = $session->param("netzwerknameserver");
-$zeitserver          = $session->param("zeitserver");
-$ntpserverurl        = $session->param("ntpserverurl");
-$zeitzone            = $session->param("zeitzone");
+$adminuser           				= $session->param("adminuser");
+$adminpass1          				= $session->param("adminpass1");
+$adminpass2          				= $session->param("adminpass1");
+$miniserverip1       				= $session->param("miniserverip1");
+$miniserverport1     				= $session->param("miniserverport1");
+$miniserveruser1     				= $session->param("miniserveruser1");
+$miniserverkennwort1 				= $session->param("miniserverkennwort1");
+$miniservernote1     				= $session->param("miniservernote1");
+$miniservercloudurl1 				= $session->param("miniservercloudurl1");
+$miniservercloudurlftpport1 = $session->param("miniservercloudurlftpport1");
+$useclouddns1        				= $session->param("useclouddns1");
+$netzwerkanschluss   				= $session->param("netzwerkanschluss");
+$netzwerkssid        				= $session->param("netzwerkssid");
+$netzwerkschluessel  				= $session->param("netzwerkschluessel");
+$netzwerkadressen    				= $session->param("netzwerkadressen");
+$netzwerkipadresse   				= $session->param("netzwerkipadresse");
+$netzwerkipmaske     				= $session->param("netzwerkipmaske");
+$netzwerkgateway     				= $session->param("netzwerkgateway");
+$netzwerknameserver  				= $session->param("netzwerknameserver");
+$zeitserver          				= $session->param("zeitserver");
+$ntpserverurl        				= $session->param("ntpserverurl");
+$zeitzone            				= $session->param("zeitzone");
 
 # Filter
 quotemeta($adminuser);
@@ -646,6 +652,7 @@ quotemeta($miniserveruser1);
 quotemeta($miniserverkennwort1);
 quotemeta($miniservernote1);
 quotemeta($miniservercloudurl1);
+quotemeta($miniservercloudurlftpport1);
 quotemeta($useclouddns1);
 quotemeta($netzwerkanschluss);
 quotemeta($netzwerkssid);
@@ -679,6 +686,7 @@ $cfg->param("MINISERVER1.IPADDRESS", "$miniserverip1");
 $cfg->param("MINISERVER1.USECLOUDDNS", "$useclouddns1");
 $cfg->param("MINISERVER1.NOTE", "$miniservernote1");
 $cfg->param("MINISERVER1.CLOUDURL", "$miniservercloudurl1");
+$cfg->param("MINISERVER1.CLOUDURLFTPPORT", "$miniservercloudurlftpport1");
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
 $cfg->param("TIMESERVER.METHOD", "$zeitserver");
 $cfg->param("TIMESERVER.ZONE", "$zeitzone");
