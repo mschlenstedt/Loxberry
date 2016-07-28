@@ -74,6 +74,7 @@ our $i;
 our $msno;
 our $useclouddns;
 our $miniservercloudurl;
+our $miniservercloudurlftpport;
 our $curlbin;
 our $grepbin;
 our $awkbin;
@@ -161,12 +162,13 @@ for($msno = 1; $msno <= $miniservers; $msno++)
 
   $logmessage = $phraseplugin->param("TXT1002").$msno; &log($green_css); #Starte Backup for Miniserver 
 
-  $miniserverip       = $cfg->param("MINISERVER$msno.IPADDRESS");
-  $miniserveradmin    = $cfg->param("MINISERVER$msno.ADMIN");
-  $miniserverpass     = $cfg->param("MINISERVER$msno.PASS");
-  $miniserverport     = $cfg->param("MINISERVER$msno.PORT");
-  $useclouddns        = $cfg->param("MINISERVER$msno.USECLOUDDNS");
-  $miniservercloudurl = $cfg->param("MINISERVER$msno.CLOUDURL");
+  $miniserverip       				= $cfg->param("MINISERVER$msno.IPADDRESS");
+  $miniserveradmin    				= $cfg->param("MINISERVER$msno.ADMIN");
+  $miniserverpass     				= $cfg->param("MINISERVER$msno.PASS");
+  $miniserverport     				= $cfg->param("MINISERVER$msno.PORT");
+  $useclouddns        				= $cfg->param("MINISERVER$msno.USECLOUDDNS");
+  $miniservercloudurl 				= $cfg->param("MINISERVER$msno.CLOUDURL");
+  $miniservercloudurlftpport 	= $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
 
   # Get Firmware Version from Miniserver
 
@@ -205,7 +207,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
 	   } 
   }
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
-  $logmessage = $phraseplugin->param("TXT1006")." ($url)"; &log($green_css); # Try to read MS Firmware Version
+  $logmessage = $phraseplugin->param("TXT1006"); &log($green_css); # Try to read MS Firmware Version
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
   local $SIG{ALRM} = sub { die };
@@ -240,9 +242,45 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   $dayver  = sprintf("%02d", $fields[3]);
   $logmessage = $phraseplugin->param("TXT1007").$xml->{value}; &log($green_css); # Miniserver Version
 
+  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ftllocalonly";
+  $logmessage = $phraseplugin->param("TXT1029"); &log($green_css); # Try to read Local Only Flag
+  $ua = LWP::UserAgent->new;
+  $ua->timeout(1);
+  local $SIG{ALRM} = sub { die };
+  eval {
+    alarm(1);
+    $response = $ua->get($url);
+    if (!$response->is_success) 
+    {
+      $error        = 1;
+      $logmessage = $phraseplugin->param("TXT2009"); &error; # Unable to fetch local only setting. Giving up.
+      next;
+    }
+    else 
+    {
+      $success = 1;
+    }
+  };
+  alarm(0);
+  if (!$success) 
+  {
+    $error=1;
+      $logmessage = $phraseplugin->param("TXT2009"); &error; # Unable to fetch local only setting. Giving up.
+    next;
+  }
+  $success = 0;
+  $rawxml  = $response->decoded_content();
+  $xml     = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
+  @fields  = split(/\./,$xml->{value});
+  $mainver = sprintf("%02d", $fields[0]);
+  $subver  = sprintf("%02d", $fields[1]);
+  $monver  = sprintf("%02d", $fields[2]);
+  $dayver  = sprintf("%02d", $fields[3]);
+	if ($xml->{value} ne "No") { $logmessage = $phraseplugin->param("TXT1030"); &log($red_css); } # Miniserver local access active
+  if ( ${useclouddns} eq "1" ) { if ($xml->{value} ne "No") { $logmessage = $phraseplugin->param("TXT2010"); &error; } } # Miniserver local access active
 
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ip";
-  $logmessage = $phraseplugin->param("TXT1026")." ($url)"; &log($green_css); # Try to read MS Local IP
+  $logmessage = $phraseplugin->param("TXT1026"); &log($green_css); # Try to read MS Local IP
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
   local $SIG{ALRM} = sub { die };
@@ -277,7 +315,6 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   $dayver  = sprintf("%02d", $fields[3]);
   $logmessage = $phraseplugin->param("TXT1027").$xml->{value}; &log($green_css); # Miniserver IP local
   $local_miniserver_ip = $xml->{value};
-################################
 
   # Get FTP Port from Miniserver
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ftp";
@@ -310,6 +347,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   $rawxml = $response->decoded_content();
   $xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
   $miniserverftpport = $xml->{value};
+  if ($miniserverftpport ne "21" ) { $logmessage = $phraseplugin->param("TXT1028"); &log($red_css); } #Warning if local FTP-Port is not 21 
   $logmessage = $phraseplugin->param("TXT1008").$miniserverftpport; &log($green_css); #Using this FTP-Port for Backup: xxx
   # Backing up to temorary directory
   ($dirsec,$dirmin,$dirhour,$dirmday,$dirmon,$diryear,$dirwday,$diryday,$dirisdst) = localtime();
