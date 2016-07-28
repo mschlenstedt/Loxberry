@@ -1,4 +1,4 @@
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="/plugins/miniserverbackup/style.css">
 
   <!-- content -->
 
@@ -7,7 +7,11 @@
     <!-- text -->
     <div style="margin: 10px;">
      <center>
-           <table border=0 cellpadding=10>
+        <table border=0 cellpadding=10>
+        <tr>
+        <td colspan=3 align=center><font size=1><b>Note!</b> In Miniserver Admin-Interface you must set option <i>FTP, TELNET AND CONFIGURATIONSOFWARE</i>
+        to "Online"! Otherwise backups are <b>not</b> possible.</font></td>
+        </tr>
         <tr>
         <td width="550px">
         <a id="btnbackup" data-role="button" data-mini="true" onclick="$('#Logfile').append( '\n############################################################\n################## Starting manual Backup ##################\n############################################################\n' ); $('#Logfile').append('<hr\><div style=\'text-align:center; width:100%; color:#000000; background-color:lightgreen;\'>##### Starting manual backup #####</div><hr\>'); $('#response').html( 'Starting Backup - Please wait...' ); $('#response').fadeTo( 'fast', 1 ); $.get('./index.cgi?do=backup&lang=en', function(response) { setTimeout( function(){ $('#response').fadeTo( 'slow', 0 ); }, 5000); setTimeout( function(){ $('#response').html( '&nbsp;' ); }, 6500); $('#response').html(response);});">Start Backup now!</a>
@@ -15,7 +19,7 @@
         <td width="150px" cellpadding=10>
         <a id="btndownloads" data-role="button" data-mini="true" href="/plugins/miniserverbackup/files" data-icon="grid" target="_blank">Downloads</a>
         </td>
-	     <td width="150px%" id="LogSave"><a id="btnlogs" data-role="button" href="./index.cgi?do=log" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d" href="/log/plugins/miniserverbackup/backuplog.log" target="miniserver_note">Save Logfile</a></td>
+	     <td width="150px%" id="LogSave"><a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=plugins/miniserverbackup/backuplog.log&header=txt&format=plain" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d" href="/log/plugins/miniserverbackup/backuplog.log" target="miniserver_note">Save Logfile</a></td>
        </tr>
         <tr>
         <td colspan="2">
@@ -39,12 +43,6 @@
               <option <!--$selectedauto2--> value="on">On</option>
             </select>
           </fieldset>
-          </td>
-          <td width="5%" valign="middle">
-          &nbsp;
-          </td>
-          <td width="20%">
-          &nbsp;
           </td>
         </tr>
         <tr>
@@ -220,12 +218,14 @@
         if (data > 0)
         {
 	    	  $("#btnbackup").prop('innerHTML',"<font color='#FF0000'>Backup of Miniserver "+data+" in progress!");
-  	    	$("#btnbackup").fadeTo( "slow", .8 );
+  	    	//$("#btnbackup").fadeTo( "slow", .8 );
+                  $('#btnbackup').addClass('ui-disabled');
 				}
 				else
 	      {
 	    	  $("#btnbackup").text("Start Backup now!");
-  	    	$("#btnbackup").fadeTo( "slow", 1 );
+  	    	  //$("#btnbackup").fadeTo( "slow", 1 );
+                  $('#btnbackup').removeClass('ui-disabled');
 				}
 		}); 
 	}

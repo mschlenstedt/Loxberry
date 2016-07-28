@@ -72,12 +72,13 @@ our $phraseplugin;
 our $selectedverbose;
 our $selecteddebug;
 our $header_already_sent=0;
+
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.5";
+$version = "0.0.6";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -150,10 +151,6 @@ foreach (split(/&/,$ENV{'QUERY_STRING'}))
 	if ($saveformdata) 
 	{
 	  &save;
-	}
-	elsif ($do eq "log") 
-	{
-	  &log;
 	}
 	elsif ($do eq "backup") 
 	{
@@ -341,28 +338,6 @@ foreach (split(/&/,$ENV{'QUERY_STRING'}))
 		  }
 		close(F);
 		&footer;
-		exit;
-	}
-
-#####################################################
-# Logfile-Sub
-#####################################################
-
-	sub log 
-	{
-		if (!-e "$installfolder/log/plugins/miniserverbackup/backuplog.log") 
-		{
-		  $error = $phraseplugin->param("TXT0004");
-		  &error;
-		  exit;
-		}
-		if ( !$header_already_sent ) { print "Content-Type: text/plain\n\n"; }
-		open(F,"$installfolder/log/plugins/miniserverbackup/backuplog.log") || die "Missing file /log/plugins/miniserverbackup/backuplog.log";
-		  while (<F>) 
-		  {
-		    print $_;
-		  }
-		close(F);
 		exit;
 	}
 
