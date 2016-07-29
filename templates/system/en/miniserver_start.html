@@ -74,6 +74,24 @@
           &nbsp;
           </td>
         </tr>
+        <tr id="miniservercloudurlftpportrow1" dnsurlftpport="<!--$miniservercloudurlftpport-->">
+          <td width="25%">
+          <label class="control-label" for="miniservercloudurlftpport1">Public FTP-Port:</label>
+          </td>
+          <td width="50%">
+          <input id="miniservercloudurlftpport1" name="miniservercloudurlftpport1" type="text" class="textfield"
+          data-validation-optional="false" data-validation-depends-on="useclouddns1"  data-validation-depends-on-value="1" data-validation="custom length" data-validation-length="1-5" 
+          data-validation-regexp="([0-9]$)" data-suggestions="21"
+          data-validation-error-msg="* Please enter a valid public FTP-Port of the Miniservers. (See Router Port Forwarding) The local Miniserver FTP-Port should be 21."
+          value="<!--$miniservercloudurlftpport-->">
+          </td>
+          <td width="5%">
+           &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
         <tr>
           <td>
           <label>Miniserver Username:</label>
@@ -152,44 +170,55 @@
           </td>
         </tr>
         
-<SCRIPT>
-	  $("#useclouddns1").change(function() 
+        <SCRIPT>
+    $("#useclouddns1").change(function() 
     { 
       if($(this).is(":checked")) 
       {
         $("#miniservercloudurl1").val($("#miniservercloudurlrow1").attr( "dnsurl" ));
 				$("#miniservercloudurl1").attr("data-validation-optional","false");
-  		  $("#miniservercloudurlrow1").fadeTo( "slow", 1 );
+  		  $("#miniservercloudurlrow1").fadeTo( "fast", 1 );
   		  $("#miniservercloudurl1").prop("readOnly", false);
+
+        $("#miniservercloudurlftpport1").val($("#miniservercloudurlftpportrow1").attr( "dnsurlftpport" ));
+				$("#miniservercloudurlftpport1").attr("data-validation-optional","false");
+  		  $("#miniservercloudurlftpportrow1").fadeTo( "fast", 1 );
+  		  $("#miniservercloudurlftpport1").prop("readOnly", false);
 
 				$("#miniserverip1").attr("data-validation-optional","true");
         $("#miniserverip1").val("");
 	  		$("#miniserverip1").trigger( "focus" );
-  		  $("#miniserveriprow1").fadeTo( "slow", 0.1 );
+  		  $("#miniserveriprow1").fadeTo( "fast", 0.3 );
   		  $("#miniserverip1").prop("readOnly", true);
 
 				$("#miniserverport1").attr("data-validation-optional","true");
         $("#miniserverport1").val("");
 	  		$("#miniserverport1").trigger( "focus" );
-  		  $("#miniserverportrow1").fadeTo( "slow", 0.1 );
+  		  $("#miniserverportrow1").fadeTo( "fast", 0.3 );
   		  $("#miniserverport1").prop("readOnly", true);
       }
       else
       {
 				$("#miniservercloudurl1").attr("data-validation-optional","true");
-  		  $("#miniservercloudurlrow1").fadeTo( "slow", 0.1 );
+  		  $("#miniservercloudurlrow1").fadeTo( "fast", 0.3 );
   		  $("#miniservercloudurl1").prop("readOnly", true);
         $("#miniservercloudurl1").val("");
 	  		$("#miniservercloudurl1").trigger( "focus" );
 
+				$("#miniservercloudurlftpport1").attr("data-validation-optional","true");
+  		  $("#miniservercloudurlftpportrow1").fadeTo( "fast", 0.3 );
+  		  $("#miniservercloudurlftpport1").prop("readOnly", true);
+        $("#miniservercloudurlftpport1").val("");
+	  		$("#miniservercloudurlftpport1").trigger( "focus" );
+
         $("#miniserverip1").val($("#miniserveriprow1").attr( "ipaddr" ));
 				$("#miniserverip1").attr("data-validation-optional","false");
-  		  $("#miniserveriprow1" ).fadeTo( "slow", 1 );
+  		  $("#miniserveriprow1" ).fadeTo( "fast", 1 );
   		  $("#miniserverip1").prop("readOnly", false);
 
         $("#miniserverport1").val($("#miniserverportrow1").attr( "portaddr" ));
 				$("#miniserverport1").attr("data-validation-optional","false");
-  		  $("#miniserverportrow1" ).fadeTo( "slow", 1 );
+  		  $("#miniserverportrow1" ).fadeTo( "fast", 1 );
   		  $("#miniserverport1").prop("readOnly", false);
   		}
     });
@@ -199,6 +228,13 @@
     	if ($("#useclouddns1").is(":checked"))
     	{
   			$("#miniservercloudurlrow1").attr( "dnsurl",$("#miniservercloudurl1").val());
+      }
+    });
+    $("#miniservercloudurlftpport1").change(function() 
+    { 
+    	if ($("#useclouddns1").is(":checked"))
+    	{
+  			$("#miniservercloudurlftpportrow1").attr( "dnsurlftpport",$("#miniservercloudurlftpport1").val());
       }
     });
     $("#miniserverip1").change(function() 
@@ -218,5 +254,5 @@
 
 	 $("#useclouddns1").prop("checked", "<!--$useclouddns-->");
    $("#useclouddns1").trigger( "change" );
-   
+
 </SCRIPT>

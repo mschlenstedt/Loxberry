@@ -65,6 +65,7 @@ our $miniserveruser;
 our $miniserverkennwort;
 our $useclouddns;
 our $miniservercloudurl;
+our $miniservercloudurlftpport;
 our $curlbin;
 our $grepbin;
 our $awkbin;
@@ -174,13 +175,14 @@ $help = "miniserver";
 
 # Start
 # 1. Miniserver
-$miniserverip       = $cfg->param("MINISERVER1.IPADDRESS");
-$miniserverport     = $cfg->param("MINISERVER1.PORT");
-$miniserveruser     = $cfg->param("MINISERVER1.ADMIN");
-$miniserverkennwort = $cfg->param("MINISERVER1.PASS");
-$useclouddns        = $cfg->param("MINISERVER1.USECLOUDDNS");
-$miniservercloudurl = $cfg->param("MINISERVER1.CLOUDURL");
-$miniservernote     = $cfg->param("MINISERVER1.NOTE");
+$miniserverip          			= $cfg->param("MINISERVER1.IPADDRESS");
+$miniserverport        			= $cfg->param("MINISERVER1.PORT");
+$miniserveruser        			= $cfg->param("MINISERVER1.ADMIN");
+$miniserverkennwort    			= $cfg->param("MINISERVER1.PASS");
+$useclouddns           			= $cfg->param("MINISERVER1.USECLOUDDNS");
+$miniservercloudurl    			= $cfg->param("MINISERVER1.CLOUDURL");
+$miniservercloudurlftpport 	= $cfg->param("MINISERVER1.CLOUDURLFTPPORT");
+$miniservernote     				= $cfg->param("MINISERVER1.NOTE");
 quotemeta($miniserverip);
 quotemeta($miniserverport);
 quotemeta($miniserveruser);
@@ -188,6 +190,7 @@ quotemeta($miniserverkennwort);
 quotemeta($miniservernote);
 quotemeta($useclouddns);
 quotemeta($miniservercloudurl);
+quotemeta($miniservercloudurlftpport);
 
 # Workaround for Javascript in Template - Maybe better fix this in the Javascript Code...
 # (If this option is 0 we need it really empty for Javascript)
@@ -204,13 +207,14 @@ close(F);
 $msno = 2;
 while ($msno <= $miniservers) {
   # Table rows
-  $miniserverip       = $cfg->param("MINISERVER$msno.IPADDRESS");
-  $miniserverport     = $cfg->param("MINISERVER$msno.PORT");
-  $miniserveruser     = $cfg->param("MINISERVER$msno.ADMIN");
-  $miniserverkennwort = $cfg->param("MINISERVER$msno.PASS");
-  $miniservernote     = $cfg->param("MINISERVER$msno.NOTE");
-  $useclouddns        = $cfg->param("MINISERVER$msno.USECLOUDDNS");
-  $miniservercloudurl = $cfg->param("MINISERVER$msno.CLOUDURL");
+  $miniserverip       				= $cfg->param("MINISERVER$msno.IPADDRESS");
+  $miniserverport     				= $cfg->param("MINISERVER$msno.PORT");
+  $miniserveruser     				= $cfg->param("MINISERVER$msno.ADMIN");
+  $miniserverkennwort 				= $cfg->param("MINISERVER$msno.PASS");
+  $miniservernote     				= $cfg->param("MINISERVER$msno.NOTE");
+  $useclouddns        				= $cfg->param("MINISERVER$msno.USECLOUDDNS");
+  $miniservercloudurl 				= $cfg->param("MINISERVER$msno.CLOUDURL");
+  $miniservercloudurlftpport 	= $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
   quotemeta($miniserverip);
   quotemeta($miniserverport);
   quotemeta($miniserveruser);
@@ -218,6 +222,7 @@ while ($msno <= $miniservers) {
   quotemeta($miniservernote);
   quotemeta($useclouddns);
   quotemeta($miniservercloudurl);
+  quotemeta($miniservercloudurlftpport);
 
   # Workaround for Javascript in Template - Maybe better fix this in the Javascript Code...
   # (If this option is 0 we need it really empty for Javascript)
@@ -260,13 +265,14 @@ $cfg->param("BASE.MINISERVERS", "$miniservers");
 $msno = 1;
 while ($msno <= $miniservers) {
   # Data from form
-  ${miniserverip.$msno}       = param("miniserverip$msno");
-  ${miniserverport.$msno}     = param("miniserverport$msno");
-  ${miniserveruser.$msno}     = param("miniserveruser$msno");
-  ${miniserverkennwort.$msno} = param("miniserverkennwort$msno");
-  ${miniservernote.$msno}     = param("miniservernote$msno");
-  ${useclouddns.$msno}        = param("useclouddns$msno");
-  ${miniservercloudurl.$msno} = param("miniservercloudurl$msno");
+  ${miniserverip.$msno}       				= param("miniserverip$msno");
+  ${miniserverport.$msno}     				= param("miniserverport$msno");
+  ${miniserveruser.$msno}     				= param("miniserveruser$msno");
+  ${miniserverkennwort.$msno} 				= param("miniserverkennwort$msno");
+  ${miniservernote.$msno}     				= param("miniservernote$msno");
+  ${useclouddns.$msno}        				= param("useclouddns$msno");
+  ${miniservercloudurl.$msno} 				= param("miniservercloudurl$msno");
+  ${miniservercloudurlftpport.$msno} 	= param("miniservercloudurlftpport$msno");
 
   # Filter
   quotemeta(${miniserverip.$msno});
@@ -275,6 +281,7 @@ while ($msno <= $miniservers) {
   quotemeta(${miniserverkennwort.$msno});
   quotemeta(${useclouddns.$msno});
   quotemeta(${miniservercloudurl.$msno});
+  quotemeta(${miniservercloudurlftpport.$msno});
   quotemeta(${miniservernote.$msno});
 
   # Test if Miniserver is reachable
@@ -333,6 +340,7 @@ while ($msno <= $miniservers) {
   $cfg->param("MINISERVER$msno.IPADDRESS", "${miniserverip.$msno}");
   $cfg->param("MINISERVER$msno.USECLOUDDNS", "${useclouddns.$msno}");
   $cfg->param("MINISERVER$msno.CLOUDURL", "${miniservercloudurl.$msno}");
+  $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", "${miniservercloudurlftpport.$msno}");
   $cfg->param("MINISERVER$msno.NOTE", "${miniservernote.$msno}");
 
   # Next

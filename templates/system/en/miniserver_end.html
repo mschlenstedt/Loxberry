@@ -130,6 +130,22 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
   
+    // Add 6. row 
+    var lastRow = tbl.rows.length;
+    var row = tbl.insertRow(lastRow);
+    row.setAttribute('id','miniservercloudurlftpportrow' + iteration);
+    row.setAttribute('dnsurlftpport','');
+
+    // Add cells
+    var cellRight = row.insertCell(0);
+    cellRight.innerHTML = '<label>Public FTP-Port:</label>'
+    var cellRight = row.insertCell(1);
+    cellRight.innerHTML = '  <input id="miniservercloudurlftpport' + iteration + '" name="miniservercloudurlftpport' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="custom length" data-validation-length="1-5" data-validation-regexp="([0-9]$)" data-suggestions="21" data-validation-error-msg="* Please enter a valid public FTP-Port of the Miniservers. (See Router Port Forwarding) The local Miniserver FTP-Port should be 21." value="">';
+    var cellRight = row.insertCell(2);
+    cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = ''
+
   	$("#useclouddns" + iteration).change(function() 
     { 
       if($(this).is(":checked")) 
@@ -138,6 +154,11 @@
 				$("#miniservercloudurl" + iteration).attr("data-validation-optional","false");
   		  $("#miniservercloudurlrow" + iteration).fadeTo( "slow", 1 );
   		  $("#miniservercloudurl" + iteration).prop("readOnly", false);
+
+        $("#miniservercloudurlftpport" + iteration).val($("#miniservercloudurlftpportrow" + iteration).attr( "dnsurlftpport" ));
+				$("#miniservercloudurlftpport" + iteration).attr("data-validation-optional","false");
+  		  $("#miniservercloudurlftpportrow" + iteration).fadeTo( "fast", 1 );
+  		  $("#miniservercloudurlftpport" + iteration).prop("readOnly", false);
 
 				$("#miniserverip" + iteration).attr("data-validation-optional","true");
         $("#miniserverip" + iteration).val("");
@@ -150,6 +171,7 @@
 	  		$("#miniserverport" + iteration).trigger( "focus" );
   		  $("#miniserverportrow" + iteration).fadeTo( "slow", 0.1 );
   		  $("#miniserverport" + iteration).prop("readOnly", true);
+  		  
       }
       else
       {
@@ -158,6 +180,12 @@
   		  $("#miniservercloudurl" + iteration).prop("readOnly", true);
         $("#miniservercloudurl" + iteration).val("");
 	  		$("#miniservercloudurl" + iteration).trigger( "focus" );
+
+ 		  	$("#miniservercloudurlftpport" + iteration).attr("data-validation-optional","true");
+  		  $("#miniservercloudurlftpportrow" + iteration).fadeTo( "fast", 0.3 );
+  		  $("#miniservercloudurlftpport" + iteration).prop("readOnly", true);
+        $("#miniservercloudurlftpport" + iteration).val("");
+	  		$("#miniservercloudurlftpport" + iteration).trigger( "focus" );
 
         $("#miniserverip" + iteration).val($("#miniserveriprow" + iteration).attr( "ipaddr" ));
 				$("#miniserverip" + iteration).attr("data-validation-optional","false");
@@ -168,7 +196,7 @@
 				$("#miniserverport" + iteration).attr("data-validation-optional","false");
   		  $("#miniserverportrow" + iteration ).fadeTo( "slow", 1 );
   		  $("#miniserverport" + iteration).prop("readOnly", false);
-  		}
+  		    		    		}
     });
 
 		$("#miniservercloudurl"+ iteration).change(function() 
@@ -176,6 +204,13 @@
     	if ($("#useclouddns"+ iteration).is(":checked"))
     	{
   			$("#miniservercloudurlrow"+ iteration).attr( "dnsurl",$("#miniservercloudurl"+ iteration).val());
+      }
+    });
+    $("#miniservercloudurlftpport" + iteration).change(function() 
+    { 
+    	if ($("#useclouddns" + iteration).is(":checked"))
+    	{
+  			$("#miniservercloudurlftpportrow" + iteration).attr( "dnsurlftpport",$("#miniservercloudurlftpport" + iteration).val());
       }
     });
     $("#miniserverip"+ iteration).change(function() 
@@ -197,7 +232,7 @@
    $("#useclouddns"+ iteration).trigger( "change" );
    
 
-    // Add 6. row 
+    // Add 7. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 
@@ -211,7 +246,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 7. row 
+    // Add 8. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 
@@ -225,7 +260,7 @@
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 
-    // Add 8. row 
+    // Add 9. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 
@@ -250,7 +285,7 @@
 		});
 		$("#miniservernote" + iteration).trigger('focusout');
 		
-    // Add 9. row 
+    // Add 10. row 
     var lastRow = tbl.rows.length;
     var row = tbl.insertRow(lastRow);
 

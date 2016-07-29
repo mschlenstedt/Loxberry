@@ -83,6 +83,24 @@
           &nbsp;
           </td>
         </tr>
+        <tr id="miniservercloudurlftpportrow1" dnsurlftpport="<!--$miniservercloudurlftpport-->">
+          <td width="25%">
+          <label class="control-label" for="miniservercloudurlftpport1">&Ouml;ffentlicher FTP-Port:</label>
+          </td>
+          <td width="50%">
+          <input id="miniservercloudurlftpport1" name="miniservercloudurlftpport1" type="text" class="textfield"
+          data-validation-optional="false" data-validation-depends-on="useclouddns1"  data-validation-depends-on-value="1" data-validation="custom length" data-validation-length="1-5" 
+          data-validation-regexp="([0-9]$)" data-suggestions="21"
+          data-validation-error-msg="* Bitte eine g&uuml;ltigen &ouml;ffentlichen FTP-Port des Miniservers eingeben. (Siehe Router Freigabe) Intern sollte der Miniserver FTP-Port 21 sein."
+          value="<!--$miniservercloudurlftpport-->">
+          </td>
+          <td width="5%">
+           &nbsp;
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
         <tr>
           <td>
           <label>Miniserver Benutzername:</label>
@@ -208,6 +226,11 @@
   		  $("#miniservercloudurlrow1").fadeTo( "fast", 1 );
   		  $("#miniservercloudurl1").prop("readOnly", false);
 
+        $("#miniservercloudurlftpport1").val($("#miniservercloudurlftpportrow1").attr( "dnsurlftpport" ));
+				$("#miniservercloudurlftpport1").attr("data-validation-optional","false");
+  		  $("#miniservercloudurlftpportrow1").fadeTo( "fast", 1 );
+  		  $("#miniservercloudurlftpport1").prop("readOnly", false);
+
 				$("#miniserverip1").attr("data-validation-optional","true");
         $("#miniserverip1").val("");
 	  		$("#miniserverip1").trigger( "focus" );
@@ -232,6 +255,12 @@
         $("#miniservercloudurl1").val("");
 	  		$("#miniservercloudurl1").trigger( "focus" );
 
+				$("#miniservercloudurlftpport1").attr("data-validation-optional","true");
+  		  $("#miniservercloudurlftpportrow1").fadeTo( "fast", 0.3 );
+  		  $("#miniservercloudurlftpport1").prop("readOnly", true);
+        $("#miniservercloudurlftpport1").val("");
+	  		$("#miniservercloudurlftpport1").trigger( "focus" );
+
         $("#miniserverip1").val($("#miniserveriprow1").attr( "ipaddr" ));
 				$("#miniserverip1").attr("data-validation-optional","false");
   		  $("#miniserveriprow1" ).fadeTo( "fast", 1 );
@@ -255,7 +284,14 @@
   			$("#miniservercloudurlrow1").attr( "dnsurl",$("#miniservercloudurl1").val());
       }
     });
-    $("#miniserverip1").change(function() 
+    $("#miniservercloudurlftpport1").change(function() 
+    { 
+    	if ($("#useclouddns1").is(":checked"))
+    	{
+  			$("#miniservercloudurlftpportrow1").attr( "dnsurlftpport",$("#miniservercloudurlftpport1").val());
+      }
+    });
+		$("#miniserverip1").change(function() 
     { 
     	if (!$("#useclouddns1").is(":checked"))
     	{

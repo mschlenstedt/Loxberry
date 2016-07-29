@@ -33,6 +33,8 @@ TXT1024=With try
 TXT1025=was the download of the following file successful:
 TXT1026=Try to read local Miniserver-IP
 TXT1027=Miniserver-IP (local): 
+TXT1028=The local Miniserver-FTP-Port should be 21. Maybe the Router can not identify the traffic as FTP-Traffic and change it if the port is different! Please manage the Port Forwarding in the Router from extern xxxx to intern 21. 
+TXT1029=Please take caro on the Setting -Local access only- on the Miniserver Admin-Website!
 ;ERRORS
 TXT2001=ERR#2001: Can not read Miniserver-Firmware-Version. Giving up!
 TXT2002=ERR#2002: Can not read Miniserver-FTP-Port. Giving up!
