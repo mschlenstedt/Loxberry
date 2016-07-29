@@ -34,8 +34,7 @@ TXT1025=was the download of the following file successful:
 TXT1026=Try to read local Miniserver-IP
 TXT1027=Miniserver-IP (local): 
 TXT1028=The local Miniserver-FTP-Port should be 21. Maybe the Router can not identify the traffic as FTP-Traffic and change it if the port is different! Please manage the Port Forwarding in the Router from extern xxxx to intern 21. 
-TXT1029=Try to read setting 'Local access only'
-TXT1030=The 'Local access only' setting in the Miniserver seems to be enabled!
+TXT1029=Please take caro on the Setting -Local access only- on the Miniserver Admin-Website!
 ;ERRORS
 TXT2001=ERR#2001: Can not read Miniserver-Firmware-Version. Giving up!
 TXT2002=ERR#2002: Can not read Miniserver-FTP-Port. Giving up!
@@ -45,5 +44,3 @@ TXT2005=ERR#2005: Giving up! Can not move Backup to Download Area:
 TXT2006=ERR#2006: Can not download  
 TXT2007=ERR#2007: Giving up! Continous errors when downloading: 
 TXT2008=ERR#2008: Can not read local Miniserver-IP. Giving up!
-TXT2009=ERR#2009: Can not read setting 'Local access only'. Giving up!
-TXT2010=ERR#2010: 'Local access only' is enabled. Giving up!

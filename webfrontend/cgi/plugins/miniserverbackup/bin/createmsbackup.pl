@@ -170,8 +170,6 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   $miniservercloudurl 				= $cfg->param("MINISERVER$msno.CLOUDURL");
   $miniservercloudurlftpport 	= $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
 
-  # Get Firmware Version from Miniserver
-
   if ( ${useclouddns} eq "1" )
   {
 	   $logmessage = $phraseplugin->param("TXT1003")." http://$clouddns/$miniservercloudurl ".$phraseplugin->param("TXT1004"); &log($green_css); # Using Cloud-DNS xxx for Backup 
@@ -207,6 +205,7 @@ for($msno = 1; $msno <= $miniservers; $msno++)
 	   } 
   }
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/version";
+	if ( $useclouddns eq "1" ) { $logmessage = $phraseplugin->param("TXT1029");	&log($red_css);	} # Local Access Only Setting Info
   $logmessage = $phraseplugin->param("TXT1006"); &log($green_css); # Try to read MS Firmware Version
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
@@ -217,8 +216,8 @@ for($msno = 1; $msno <= $miniservers; $msno++)
     if (!$response->is_success) 
     {
       $error        = 1;
-      $logmessage = $phraseplugin->param("TXT2001"); &error; # Unable to fetch Firmware Version. Giving up.
-      next;
+  		$logmessage = $phraseplugin->param("TXT2001"); &error;	# Unable to fetch Firmware Version. Giving up.
+	    next;
     }
     else 
     {
@@ -229,7 +228,8 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   if (!$success) 
   {
     $error=1;
-		$logmessage = $phraseplugin->param("TXT2001"); &error; # Unable to fetch Firmware Version. Giving up.
+ 		$logmessage = $phraseplugin->param("TXT2001"); &error; # Unable to fetch Firmware Version. Giving up.
+  	&error;  
     next;
   }
   $success = 0;
@@ -241,43 +241,6 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   $monver  = sprintf("%02d", $fields[2]);
   $dayver  = sprintf("%02d", $fields[3]);
   $logmessage = $phraseplugin->param("TXT1007").$xml->{value}; &log($green_css); # Miniserver Version
-
-  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ftllocalonly";
-  $logmessage = $phraseplugin->param("TXT1029"); &log($green_css); # Try to read Local Only Flag
-  $ua = LWP::UserAgent->new;
-  $ua->timeout(1);
-  local $SIG{ALRM} = sub { die };
-  eval {
-    alarm(1);
-    $response = $ua->get($url);
-    if (!$response->is_success) 
-    {
-      $error        = 1;
-      $logmessage = $phraseplugin->param("TXT2009"); &error; # Unable to fetch local only setting. Giving up.
-      next;
-    }
-    else 
-    {
-      $success = 1;
-    }
-  };
-  alarm(0);
-  if (!$success) 
-  {
-    $error=1;
-      $logmessage = $phraseplugin->param("TXT2009"); &error; # Unable to fetch local only setting. Giving up.
-    next;
-  }
-  $success = 0;
-  $rawxml  = $response->decoded_content();
-  $xml     = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
-  @fields  = split(/\./,$xml->{value});
-  $mainver = sprintf("%02d", $fields[0]);
-  $subver  = sprintf("%02d", $fields[1]);
-  $monver  = sprintf("%02d", $fields[2]);
-  $dayver  = sprintf("%02d", $fields[3]);
-	if ($xml->{value} ne "No") { $logmessage = $phraseplugin->param("TXT1030"); &log($red_css); } # Miniserver local access active
-  if ( ${useclouddns} eq "1" ) { if ($xml->{value} ne "No") { $logmessage = $phraseplugin->param("TXT2010"); &error; } } # Miniserver local access active
 
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/cfg/ip";
   $logmessage = $phraseplugin->param("TXT1026"); &log($green_css); # Try to read MS Local IP
