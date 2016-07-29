@@ -1,8 +1,8 @@
 #
 # Language phrases
-# DE 2016-07-17 14:56:00
+# DE 2016-07-29 10:20:00
 #
-TXT0000=Loxberry Toolbox
+TXT0000=LoxBerry Toolbox
 TXT0001=Ja
 TXT0002=Nein
 TXT0003=Der Miniserver scheint unter der angegebenen IP-Adresse/Hostnamen nicht erreichbar zu sein oder Benutzername und Passwort sind nicht korrekt.
@@ -55,3 +55,27 @@ TXT0049=Im Pluginarchiv fehlen wichtige Konfigurationsparameter. Bitte kontaktie
 TXT0050=Der NTP-Zeitserver scheint unter der angegebenen IP-Adresse/Hostnamen nicht erreichbar zu sein - bitte pr&uuml;fen.
 TXT0051=Starte Plugin-Installation
 TXT0052=Extrahiere Plugin-Archiv
+TXT0053=Plugin-Archiv erfolgreich hochgeladen
+TXT0054=Plugin-Archiv erfolgreich entpackt
+TXT0055=Alle Konfigurationsparameter vorhanden
+TXT0056=Kann Plugin-Datenbank nicht öffnen oder die Datenbank exisitert nicht
+TXT0057=Plugin ist bereits installiert -> Upgrade wird durchgeführt
+TXT0058=Freien Datenbank-Eintrag gefunden
+TXT0059=Kein freier Datenbankeintrag mehr vorhanden
+TXT0060=Verwende Plugin-Name:
+TXT0061=Verwende Installationsverzeichnis:
+TXT0062=Starte Skript PREUPGRADE
+TXT0063=Skript ohne Fehler ausgeführt
+TXT0064=Skript mit Fehlern beendet
+TXT0065=Starte Skript POSTUPGRADE
+TXT0066=Starte Skript PREINSTALL
+TXT0067=Starte Skript POSTINSTALL
+TXT0068=Installiere Konfigurationsdateien
+TXT0069=Alle Dateien erfolgreich installiert
+TXT0070=Es konnten nicht alle Dateien installiert werden
+TXT0071=Installiere DAEMON
+TXT0072=Installiere Daten-Dateien
+TXT0073=Installiere Log-Dateien
+TXT0074=Installiere CGI-Dateien
+TXT0075=Installiere HTML-Dateien
+TXT0076=Logile Anzeige

@@ -24,37 +24,47 @@ use File::HomeDir;
 use Config::Simple;
 use Getopt::Long;
 #use warnings;
-use strict;
+#use strict;
 
 ##########################################################################
 # Variables
 ##########################################################################
 
-my $cfg;
-my $namef;
-my $value;
-my %query;
-my $home = File::HomeDir->my_home;
-my $logfile;
-my $logfilepath;
-my $header;
-my $format;
-my $version;
-my $installfolder;
-my $cgi;
-my $length;
-my $offset;
-my $i;
+our $cfg;
+our $namef;
+our $value;
+our %query;
+our $home = File::HomeDir->my_home;
+our $logfile;
+our $logfilepath;
+our $header;
+our $format;
+our $version;
+our $installfolder;
+our $cgi;
+our $length;
+our $offset;
+our $i;
+our $lang;
+our $template_title;
+our $help;
+our $languagefile;
+our $phrase;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
+$lang            = $cfg->param("BASE.LANG");
+
+# Read translations
+$languagefile = "$installfolder/templates/system/$lang/language.dat";
+$phrase = new Config::Simple($languagefile);
 
 #########################################################################
 # Parameter
@@ -145,12 +155,12 @@ if (-e "/tmp/$logfile") {
 } else {
   if ($cgi) {
     print "Logfile does not exist. Use file in ~/log, ~/webfrontend/html/tmp or /tmp und give relative path started from these folders.<br><br>";
-    print "Usage: $ENV{'SCRIPT_NAME'}?logfile=FILE[&length] [&offset] [&header= txt|html|none] [&format=html|terminal|plain]";
+    print "Usage: $ENV{'SCRIPT_NAME'}?logfile=FILE[&length] [&offset] [&header= txt|html|none] [&format=html|terminal|plain|template]";
   } else {
     print "Logfile does not exist. Use file in ~/log, ~/webfrontend/html/tmp or\n";
     print "/tmp und give relative path started from these folders.\n\n";
     print "Usage: $0 --logfile FILE [--length] [--offset]\n";
-    print "       [--header txt|html|none] [--format html|terminal|plain]\n\n";
+    print "       [--header txt|html|none] [--format html|terminal|plain|template]\n\n";
   }
   exit;
 }
@@ -165,6 +175,26 @@ if ($length) {
   close(F);
   print $i;
   exit;
+}
+
+# Template Output
+if ($format eq "template") {
+
+  $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0076");
+  $help = "admin";
+
+  # Print Template
+  &header;
+  open(F,"$installfolder/templates/system/$lang/logfile.html") || die "Missing template system/$lang/logfile.html";
+    while (<F>) {
+      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+      print $_;
+    }
+  close(F);
+  &footer;
+
+  exit;
+
 }
 
 # Print Logfile
@@ -219,3 +249,45 @@ open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
 close(F);
 
 exit;
+
+
+#####################################################
+# Header
+#####################################################
+
+sub header {
+
+  # create help page
+  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
+  open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
+    @help = <F>;
+    foreach (@help){
+      s/[\n\r]/ /g;
+      $helptext = $helptext . $_;
+    }
+  close(F);
+
+  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
+    while (<F>) {
+      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+      print $_;
+    }
+  close(F);
+
+}
+
+#####################################################
+# Footer
+#####################################################
+
+sub footer {
+
+  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
+    while (<F>) {
+      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+      print $_;
+    }
+  close(F);
+
+}
+

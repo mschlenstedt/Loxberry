@@ -1,8 +1,8 @@
 #
 # Language phrases
-# EN 2016-07-17 14:56:00
+# EN 2016-07-29 10:20:00
 #
-TXT0000=Loxberry Toolbox
+TXT0000=LoxBerry Toolbox
 TXT0001=Yes
 TXT0002=No
 TXT0003=The Miniserver seems to be unreachable with the entered IP-Address or the Username and Password are invalid.
@@ -55,3 +55,27 @@ TXT0049=Mandatory Configuration parameters missing in the Pluginarchive. Please 
 TXT0050=The NTP-Time Server seems to be unreachable under the entered IP-Address/Hostname - please check.
 TXT0051=Starting Plugin Installation
 TXT0052=Extracting Plugin Archive
+TXT0053=Plugin-Archive uploaded successfully
+TXT0054=Plugin-Archive extracted successfully
+TXT0055=All configuration parameters available
+TXT0056=Could not open Plugin database or database does not exist
+TXT0057=Plugin is already installed -> proceeding with upgrade
+TXT0058=Found free database entry
+TXT0059=No free database entry available
+TXT0060=Using Plugin-Name:
+TXT0061=Using installation folder:
+TXT0062=Starting script PREUPGRADE
+TXT0063=Script finished without errors
+TXT0064=Script finished with errors
+TXT0065=Starting script POSTUPGRADE
+TXT0066=Starting script PREINSTALL
+TXT0067=Starting script POSTINSTALL
+TXT0068=Installing configuration files
+TXT0069=All files were installed successfully
+TXT0070=Not all files could be installed successfully
+TXT0071=Installing DAEMON
+TXT0072=Installing data files
+TXT0073=Installing log files
+TXT0074=Installing CGI files
+TXT0075=Installing HTML files
+TXT0076=Logile View
