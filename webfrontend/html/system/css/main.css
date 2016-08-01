@@ -8,16 +8,20 @@
 
 /* Main Menu Table */
 
+.menutable {
+  padding: 6px 0px 0px 6px;
+}
+
 table.menutable td {
-  padding: 0.5em;
-  width: 100px;
+  padding: 10px 10px 10px 10px;
+  width: 120px;
   text-align: center;
-  font-size: 0.75em;
+  font-size: 0.6em;
   vertical-align: middle;
 }
 
 table.menutable td.caption {
-  width: 100px;
+  width: 120px;
   font-size: 2em;
   letter-spacing: 0.25em;
   text-align: left;
@@ -26,7 +30,7 @@ table.menutable td.caption {
 
 .loxberry-logo /* Loxberry Logo on white workspace */
 { 
-  background-image: url("../images/icons/loxberry.svg");
+  background-image: url("../images/loxberry.svg");
   background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
@@ -34,7 +38,7 @@ table.menutable td.caption {
 
 .ui-panel-wrapper /* Loxberry Logo on gray background to prevent cut logo */
 {
-  background-image: url("../images/icons/loxberry_ui-panel-wrapper.svg");
+  background-image: url("../images/loxberry_ui-panel-wrapper.svg");
   background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
@@ -56,7 +60,7 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
   width:64px; 
   height:64px; 
   margin: auto auto; 
-  Background-image: url('/system/images/icons/empty_64.png');	
+  Background-image: url('/system/images/icons/blank_64.png');	
   background-position: center center; 
   background-repeat: no-repeat;"
 }
