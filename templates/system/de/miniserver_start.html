@@ -51,7 +51,10 @@
           <td>
           <input id="miniserverport1" name="miniserverport1" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="<!--$miniserverport-->" data-validation-error-msg="* Die Portnummer muss zwischen 1 und 65535 liegen. Der Standardport des Miniserver ist 80.">
           </td>
-          <td colspan="2">
+          <td>
+          &nbsp;
+          </td>
+          <td>
           <font size="-1">Der Standardport ist <b>80</b></font>
           </td>
         </tr>
@@ -96,13 +99,14 @@
           <label>Miniserver Benutzername:</label>
           </td>
           <td>
-          <input id="miniserveruser1" name="miniserveruser1" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="<!--$miniserveruser-->" data-validation-error-msg="* Bitte gebe den Administratorzugang Deines Miniservers an.">
+          <input id="miniserveruser1" name="miniserveruser1" type="text" data-validation="length alphanumeric" data-validation-length="Min1" 
+          data-validation-allowing="-_" class="textfield" value="<!--$miniserveruser-->" data-validation-error-msg="* Bitte gebe den Administratorzugang Deines Miniservers an.">
           </td>
           <td>
           &nbsp;
           </td>
           <td>
-          <font size="-1"></font>
+          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_</font>
           </td>
         </tr>
         <tr>

@@ -239,11 +239,11 @@
     var cellRight = row.insertCell(0);
     cellRight.innerHTML = '<label>Miniserver Benutzername:</label>'
     var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Bitte gebe den Administratorzugang Deines Miniservers an.">'
+    cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length alphanumeric" data-validation-allowing="-_" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Bitte gebe den Administratorzugang Deines Miniservers an.">'
     var cellRight = row.insertCell(2);
     cellRight.innerHTML = ''
     var cellRight = row.insertCell(3);
-    cellRight.innerHTML = ''
+    cellRight.innerHTML = '<font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_</font>'
 
     // Add 8. row 
     var lastRow = tbl.rows.length;

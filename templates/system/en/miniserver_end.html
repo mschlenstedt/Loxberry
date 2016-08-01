@@ -240,9 +240,9 @@
     var cellRight = row.insertCell(0);
     cellRight.innerHTML = '<label>Miniserver Username:</label>'
     var cellRight = row.insertCell(1);
-    cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
+    cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length alphanumeric" data-validation-allowing="-_" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
     var cellRight = row.insertCell(2);
-    cellRight.innerHTML = ''
+    cellRight.innerHTML = '<font size="-1">Allowed: A-Z a-z 0-9 -_</font>'
     var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
 

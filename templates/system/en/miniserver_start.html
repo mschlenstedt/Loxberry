@@ -97,13 +97,14 @@
           <label>Miniserver Username:</label>
           </td>
           <td>
-          <input id="miniserveruser1" name="miniserveruser1" type="text" data-validation="length" data-validation-length="Min1" class="textfield" value="<!--$miniserveruser-->" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">
+          <input id="miniserveruser1" name="miniserveruser1" type="text" data-validation="length alphanumeric" data-validation-length="Min1"
+          data-validation-allowing="-_" class="textfield" value="<!--$miniserveruser-->" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">
+          </td>
+          <td>
+          <font size="-1">Allowed: A-Z a-z 0-9 -_</font>
           </td>
           <td>
           &nbsp;
-          </td>
-          <td>
-          <font size="-1"></font>
           </td>
         </tr>
         <tr>
