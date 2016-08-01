@@ -85,12 +85,14 @@ our $something_wrong;
 our $retry_error;
 our $maxdwltries;
 our $local_miniserver_ip;
+our $foundfiles;
+
 ##########################################################################
 # Read Configuration
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.9";
+my $version = "0.0.10";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -394,8 +396,6 @@ for($msno = 1; $msno <= $miniservers; $msno++)
   opendir(DIR, "$installfolder/webfrontend/html/plugins/$subfolder/files");
     @Eintraege = readdir(DIR);
   closedir(DIR);
-  if ($verbose) { $logmessage = scalar(@Eintraege)." ".$phraseplugin->param("TXT1016")." $installfolder/webfrontend/html/plugins/$subfolder/files "; &log($green_css); } # x files found in dir y
-  if ($debug)   { $logmessage = "Files: $installfolder/webfrontend/html/plugins/$subfolder/files :".join(" + ", @Eintraege); &log($green_css); }
   
   foreach(@Eintraege) 
   {
@@ -405,6 +405,12 @@ for($msno = 1; $msno <= $miniservers; $msno++)
     }
   }
   @files = sort {$b cmp $a}(@files);
+
+  $foundfiles = scalar(@files) - 1; # There seems to be one blank entry in @files? This is not a real file...
+
+  if ($verbose) { $logmessage = $foundfiles." ".$phraseplugin->param("TXT1016")." $installfolder/webfrontend/html/plugins/$subfolder/files "; &log($green_css); } # x files found in dir y
+  if ($debug)   { $logmessage = "Files: $installfolder/webfrontend/html/plugins/$subfolder/files :".join(" + ", @files); &log($green_css); }
+
   foreach(@files) 
   {
     s/[\n\r]//g;
