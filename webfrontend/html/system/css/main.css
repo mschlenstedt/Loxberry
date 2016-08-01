@@ -12,6 +12,16 @@
   padding: 6px 0px 0px 6px;
 }
 
+.menutableicon {
+  padding: 6px 0px 0px 6px;
+  height: 64px;
+}
+
+.menutabletext {
+  padding: 6px 0px 0px 6px;
+  height: 25px;
+}
+
 table.menutable td {
   padding: 10px 10px 10px 10px;
   width: 120px;
