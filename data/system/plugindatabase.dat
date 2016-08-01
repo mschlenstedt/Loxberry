@@ -1,0 +1,16 @@
+#
+# Databse for installed Plugins
+#
+#  0: MD5 Checksum of AUTHORNAME,AUTHOREMAIL,NAME,FOLDER (without commas!) from plugin.cfg
+#  1: AUTHOR NAME
+#  2: AUTHOR EMAIL
+#  3: VERSION
+#  4: NAME
+#  5: FOLDER
+#  6: TITLE
+#  7: INTERFACE
+#
+# Delimiter: | (Pipe)
+#
+5e8e58cccg88ae15c655ccf600e5a816|Michael Schlenstedt|michael@loxberry.de|0.5|miniserverbackup|miniserverbackup|Miniserver Backup|1.0
+5e8e58cccg88ae15c655ccf60065at16|Wörsty|git@loxberry.woerstenfeld.de|0.1|cam-connect|cam-connect|Cam Connect|1.0

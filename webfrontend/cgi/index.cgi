@@ -50,6 +50,12 @@ our $languagefile;
 our $step;
 our $sid;
 our $version;
+our @data;
+our $pfolder;
+our $ptitle;
+our $i;
+our $cols;
+our @fields;
 
 ##########################################################################
 # Read Configuration
@@ -175,14 +181,15 @@ print "Content-Type: text/html\n\n";
 $template_title = $phrase->param('TXT0000');
 $help = "setup00";
 
-
-
+# Prepare System Date Time for Love Clock
 our $systemdatetime = time()*1000;
  (our $sec, our $min, our $hour, our $mday, our $mon, our $year, our $wday, our $yday, our $isdst) = localtime();
 our $systemdate         = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
 
 # Print Template
-&lbheader;
+&header;
+
+# Print Start of Template
 open(F,"$installdir/templates/system/$lang/mainmenu_start.html") || die "Missing template admin/$lang/mainmenu_start.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -190,11 +197,44 @@ open(F,"$installdir/templates/system/$lang/mainmenu_start.html") || die "Missing
   }
 close(F);
 
+# Load Plugin Database and prepare table
+$cols = 8;
+$i = 0;
+open(F,"<$installdir/data/system/plugindatabase.dat");
+  @data = <F>;
+  foreach (@data){
+    s/[\n\r]//g;
+    # Comments
+    if ($_ =~ /^\s*#.*/) {
+      print F "$_\n";
+      next;
+    }
+    @fields = split(/\|/);
+    $ptitle = @fields[6];
+    $pfolder = @fields[5];
+    if ($i == 0) {
+      print "<tr>\n";
+    }
+    print"<td>\n";
+    print "<a href=\"/admin/plugins/$pfolder/index.cgi\"><img class=\"menutable\" src=\"/system/images/icons/$pfolder/icon_64.png\"><div
+class=\"menutable\">$ptitle</div></a>\n";
+    print"</td>\n";
+    $i++;
+    if ($i > $cols) {
+      print "</tr>\n";
+      $i = 0;
+    }
+  }
+close (F);
 
+# Complete Row
+until ($i == $cols) {
+  print "<td>&nbsp;</td>\n";
+  $i++;
+}
+print "</tr>\n";
 
-
-
-
+# Print End of Template
 open(F,"$installdir/templates/system/$lang/mainmenu_end.html") || die "Missing template admin/$lang/mainmenu_end.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -214,7 +254,7 @@ exit;
 # Header
 #####################################################
 
-sub lbheader {
+sub header {
 
   # create help page
   $helptext = "";
