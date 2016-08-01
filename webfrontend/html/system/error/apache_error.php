@@ -11,137 +11,47 @@
   <font face="Verdana, Arial, sans-serif" font-size="14px" color="#FF5A00">
   <br>
   <img src="/system/images/apache_error.png">
-   <br>
-	  <b><big>Fehler <?php echo $_SERVER["REDIRECT_STATUS"] ?>
-	  <br><br></big></b>
-     <?php
-			switch($_SERVER["REDIRECT_STATUS"])
-        {
-     			case ("400"):
-           {
-							echo "Bad Request";
-              break;
-           }
-    			case ("401"):
-           {
-							echo "Anmeldung erforderlich.";
-              break;
-           }
-    			case ("402"):
-           {
-							echo "Payment Required";
-              break;
-           }
-    			case ("403"):
-           {
-							echo "Zugriff verweigert.";
-              break;
-           }
-    			case ("404"):
-           {
-							echo "Die Adresse ".$_SERVER["REDIRECT_URL"]." gibt es hier leider nicht.";
-              break;
-           }
-    			case ("405"):
-           {
-							echo "Method Not Allowed";
-              break;
-           }
-    			case ("406"):
-           {
-							echo "Not Acceptable";
-              break;
-           }
-    			case ("407"):
-           {
-							echo "Proxy Authentication Required";
-              break;
-           }
-    			case ("408"):
-           {
-							echo "Request Timeout";
-              break;
-           }
-    			case ("409"):
-           {
-							echo "Conflict";
-              break;
-           }
-    			case ("410"):
-           {
-							echo "Gone";
-              break;
-           }
-    			case ("411"):
-           {
-							echo "Length Required";
-              break;
-           }
-    			case ("412"):
-           {
-							echo "Precondition Failed";
-              break;
-           }
-    			case ("413"):
-           {
-							echo "Request Entity Too Large";
-              break;
-           }
-    			case ("414"):
-           {
-							echo "Request-URI Too Long";
-              break;
-           }
-    			case ("415"):
-           {
-							echo "Unsupported Media Type";
-              break;
-           }
-    			case ("416"):
-           {
-							echo "Requested Range Not Satisfiable";
-              break;
-           }
-    			case ("417"):
-           {
-							echo "Expectation Failed";
-              break;
-           }
-  				case ("500"):
-           {
-							echo "Internal Server Error";
-              break;
-           }
-  				case ("501"):
-           {
-							echo "Not Implemented";
-              break;
-           }
-  				case ("502"):
-           {
-							echo "Bad Gateway";
-              break;
-           }
-  				case ("503"):
-           {
-							echo "Service Unavailable";
-              break;
-           }
-  				case ("504"):
-           {
-							echo "Gateway Timeout";
-              break;
-           }
-  				case ("505"):
-           {
-							echo "HTTP Version Not Supported";
-              break;
-           }
-			  }
-		 ?>
-         <br><br><br>
-         <a href="javascript:window.history.back();">Zurück</a>
-	 </font>
-	</center>
+  <br>
+
+
+  <?php
+  $langs = array();
+
+  if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+    // break up string into pieces (languages and q factors)
+    preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang_parse);
+
+    if (count($lang_parse[1])) {
+        // create a list like "en" => 0.8
+        $langs = array_combine($lang_parse[1], $lang_parse[4]);
+    	
+        // set default to 1 for any without q factor
+        foreach ($langs as $lang => $val) {
+            if ($val === '') $langs[$lang] = 1;
+        }
+
+        // sort list based on value	
+        arsort($langs, SORT_NUMERIC);
+    }
+  }
+
+  // look through sorted list and use first one that matches our languages
+  foreach ($langs as $lang => $val) {
+ 	if (strpos($lang, 'de') === 0) {
+		// show German site
+                include ("de.php"); 
+                break;
+	//} else if (strpos($lang, 'en') === 0) {
+	//	// show English site
+	//} 
+	} else {
+		// show English site
+                include ("en.php"); 
+                break;
+	} 
+  }
+  ?>
+
+
  </BODY>
 </HTML>
