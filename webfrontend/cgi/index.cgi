@@ -183,7 +183,19 @@ our $systemdate         = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sp
 
 # Print Template
 &lbheader;
-open(F,"$installdir/templates/system/$lang/mainmenu.html") || die "Missing template admin/$lang/mainmenu.html";
+open(F,"$installdir/templates/system/$lang/mainmenu_start.html") || die "Missing template admin/$lang/mainmenu_start.html";
+  while (<F>) {
+    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+    print $_;
+  }
+close(F);
+
+
+
+
+
+
+open(F,"$installdir/templates/system/$lang/mainmenu_end.html") || die "Missing template admin/$lang/mainmenu_end.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
     print $_;
