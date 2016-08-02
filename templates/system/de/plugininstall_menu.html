@@ -7,13 +7,13 @@
     <!-- text -->
     <div style="margin: 5%;">
 
-      <form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data">
+      <form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
         <tr>
           <td width="25%">
-          <label id="labeluploadfile">Plugin-Installationsdatei:</label>
+          <label id="labeluploadfile">Neues Plugin installieren:</label>
           </td>
           <td width="50%">
           <input type="file" name="uploadfile" class="textfield" 
@@ -22,14 +22,9 @@
           data-validation-error-msg-size="Es können keine Dateien größer als 50 MB hochgeladen werden.">
           </td>
           <td width="5%" valign="middle">
-          &nbsp;
+          <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Installieren</button>
           </td>
           <td width="20%">
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td colspan=4>
           &nbsp;
           </td>
         </tr>
@@ -43,17 +38,38 @@
       </div>
       </form>
 
-      <p>
-      &nbsp;
-      </p>
+      <br>
 
-      <p>
-      <center>
-      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Abbrechen</a>
-      <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Installieren</button>
-      </center>
-      </p>
+      <table width="100%" border=0>
+      <tr>
+        <td width="100px">
+        <img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
+        </td>
+        <td>
+        <div style="font-size: 1.5em; letter-spacing: 0.25em; text-align: left; vertical-align: middle;">Installierte Plugins</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan=2>
+        <hr>
+        </td>
+      </tr>
+      </table>
 
+      <table data-role="table" data-mode="columntoggle" class="ui-responsive table-stroke" data-column-btn-text="Zeige Spalten">
+      <thead>
+        <tr>
+          <th data-priority="2">Nr.</th>
+          <th data-priority="1">Plugin</th>
+          <th data-priority="3">Version</th>
+          <th data-priority="3">Autor</th>
+          <th data-priority="1">Optionen</th>
+        </tr>
+      </thead>
+      <tbody>
+      <!--$ptablerows-->
+      </tbody>
+      </table>
 
     </div>
     <!-- /text -->
