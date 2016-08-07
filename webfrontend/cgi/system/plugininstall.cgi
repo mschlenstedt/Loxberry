@@ -104,7 +104,7 @@ our $btn2;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+$version = "0.0.3";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -370,7 +370,7 @@ open(F,"+<$installfolder/data/system/plugindatabase.dat");
     if (@fields[0] eq $pid) {
       next;
     } else {
-      print "$_\n";
+      print F "$_\n";
     }
   }
 close (F);
