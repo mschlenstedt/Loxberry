@@ -1,0 +1,7 @@
+- Edit configure.ac
+- New Icon: minidlna_icon_patch.sh LoxBerry.png
+          https://www.debinux.de/2014/03/minidlnareadymedia-mit-eigenem-symbol-kompilieren/
+- ./configure --prefix=/opt/loxberry --sbindir=/opt/loxberry/sbin --datarootdir=/opt/loxberry/system/minidlna/share
+- make
+- make install
+- cp minidlna.conf /opt/loxberry/config/system

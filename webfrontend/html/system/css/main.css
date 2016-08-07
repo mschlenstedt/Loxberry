@@ -30,9 +30,9 @@ table.menutable td {
   vertical-align: middle;
 }
 
-table.menutable td.caption {
-  width: 120px;
-  font-size: 2em;
+.caption {
+  width: 320px;
+  font-size: 3em;
   letter-spacing: 0.25em;
   text-align: left;
   vertical-align: middle;

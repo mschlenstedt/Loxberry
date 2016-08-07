@@ -1,7 +1,14 @@
+  <!-- content -->
+  <div role="main" class="ui-content">
     <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
 
     <!-- text -->
     <div style="margin: 5%">
+
+      <p>
+      <div style="font-size: 0.6em; text-align: right; vertical-align: middle;">Version: <!--$sversion--></div>
+      </p>
+
       <p>
       <center>
       <table class="menutable" border="0" width="90%">
@@ -9,8 +16,8 @@
           <td>
           <img height="64" width="64" src="/system/images/icons/main_system_title.svg">
           </td>
-          <td class="caption" colspan=7>
-          System Settings
+          <td colspan=7>
+          <div class="caption">System Settings</div>
           </td>
         </tr>
         <tr>
@@ -205,18 +212,19 @@
           </td>
           <td>
               <a href="/admin/system/network.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_network.png"><div class="menutabletext">Network</div></a>
+          </td>
           <td>
               <a href="/admin/system/plugininstall.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_plugininstall.png"><div class="menutabletext">Plugin
-Installation</div></a>
+Administration</div></a>
+          </td>
+          <td>
+              <a href="/admin/system/upgrade.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_upgrade.png"><div class="menutabletext">Upgrade</div></a>
+          </td>
           <td>
               <a href="/admin/system/setup/index.cgi"><img class="menutableicon" src="/system/images/icons/main_setupassistent.png"><div class="menutabletext">Setup Wizard</div></a>
           </td>
-          </td>
           <td>
               <a href="/admin/system/power.cgi"><img class="menutableicon" src="/system/images/icons/main_power.png"><div class="menutabletext">Power</div></a>
-          </td>
-          <td>
-          &nbsp;
           </td>
         </tr>
         <tr>
@@ -228,8 +236,11 @@ Installation</div></a>
           <td>
           <img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
           </td>
-          <td class="caption" colspan=7>
-          Plugins
+          <td colspan=4>
+          <div class="caption">Plugins</div>
+          </td>
+          <td colspan=3>
+          <a href="http://plugins.loxberry.de/" target="_blank" data-role="button" data-inline="true" data-mini="true">Plugin Archive</a>
           </td>
         </tr>
         <tr>

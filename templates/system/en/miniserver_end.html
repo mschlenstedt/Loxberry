@@ -242,9 +242,9 @@
     var cellRight = row.insertCell(1);
     cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length alphanumeric" data-validation-allowing="-_" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
     var cellRight = row.insertCell(2);
-    cellRight.innerHTML = '<font size="-1">Allowed: A-Z a-z 0-9 -_</font>'
-    var cellRight = row.insertCell(3);
     cellRight.innerHTML = ''
+    var cellRight = row.insertCell(3);
+    cellRight.innerHTML = '<font size="-1">Allowed: A-Z a-z 0-9 -_</font>'
 
     // Add 8. row 
     var lastRow = tbl.rows.length;
@@ -323,6 +323,7 @@
     // Del 1. row 
     var tbl = document.getElementById('miniservertbl');
     var lastRow = tbl.rows.length;
+    var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);
     var row = tbl.deleteRow(-1);

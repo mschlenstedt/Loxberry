@@ -1,6 +1,5 @@
 #
-# Language phrases
-# DE 2016-07-29 10:20:00
+# Language phrases DE
 #
 TXT0000=LoxBerry Toolbox
 TXT0001=Ja
@@ -83,7 +82,7 @@ TXT0077=Kann APT-Datei nicht öffnen
 TXT0078=Installiere zusätzliche Software-Pakete
 TXT0079=Paket konnte nicht installiert werden
 TXT0080=Paket konnte erfolgreich installiert werden
-TXT0081=APT-Paketdatenbank wird aktualisiert
+TXT0081=Aktualisiere APT-Paketdatenbank
 TXT0082=APT-Paketdatenbank konnte nicht aktualisiert werden
 TXT0083=APT-Paketdatenbank wurde erfolgreich aktualisiert
 TXT0084=Installiere Icons
@@ -94,9 +93,20 @@ TXT0088=Installiere Cron-Job-Dateien
 TXT0089=Einige (oder alle) Cronjob-Dateien konnten nicht krorekt installieret werden
 TXT0090=Alle Cronjob-Dateien erfolgreich installiert
 TXT0091=Setze Berechtigungen:
-TXT0092=Berechtigungen gesetzt
+TXT0092=Berechtigungen erfolgreich gesetzt
 TXT0093=Berechtigungen konnten nicht gesetzt werden
 TXT0094=Installation erfolgreich abgeschlossen!
 TXT0095=Räume auf und lösche temporäre Dateien
 TXT0096=Das Plugin konnte nicht gefunden werden.
 TXT0097=Das Plugin wurde erfolgreich deinstalliert.
+TXT0098=Installiere Templatedateien
+TXT0099=Aktualisiere Systemmenüs
+TXT0100=Systemmenüs aktualisert
+TXT0101=Zeige Logfile
+TXT0102=Deinstallieren
+TXT0103=System-Upgrade
+TXT0104=Es können maximal Dateien bis zu einer Dateigröße von 100 MB hochgeladen werden.
+TXT0105=Fehler beim Entpacken des Upgrade-Archivs.
+TXT0106=Im Upgrade-Archiv scheinen notwendige Dateien zu fehlen.
+TXT0107=Das System scheint bereits auf einer höheren oder gleichen Versionsnummer als das Upgrade zu laufen. Ein Downgrade ist leider nicht möglich.
+TXT0108=Dein LoxBerry wird nun neu gestartet und das Upgrade durchgeführt.

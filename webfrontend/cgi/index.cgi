@@ -56,6 +56,7 @@ our $ptitle;
 our $i;
 our $cols;
 our @fields;
+our $sversion;
 
 ##########################################################################
 # Read Configuration
@@ -68,6 +69,7 @@ $cfg             = new Config::Simple('/opt/loxberry/config/system/general.cfg')
 $installdir      = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 $startsetup      = $cfg->param("BASE.STARTSETUP");
+$sversion        = $cfg->param("BASE.VERSION");
 
 #########################################################################
 # Parameter
@@ -142,7 +144,7 @@ if ($startsetup) {
   $help = "setup00";
 
   # Print Template
-  &lbheader;
+  &header;
   open(F,"$installdir/templates/system/$lang/firststart.html") || die "Missing template admin/$lang/firststart.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -158,12 +160,6 @@ if ($startsetup) {
 #########################################################################
 # What should we do
 #########################################################################
-
-# Step 1 or beginning
-#if ($step eq "0" || !$step) {
-#  &step0;
-#}
-
 
 # Nothing todo? Goto Main menu
 &mainmenu;
@@ -216,8 +212,8 @@ open(F,"<$installdir/data/system/plugindatabase.dat");
       print "<tr>\n";
     }
     print"<td>\n";
-    print "<a href=\"/admin/plugins/$pfolder/index.cgi\"><img class=\"menutable\" src=\"/system/images/icons/$pfolder/icon_64.png\"><div
-class=\"menutable\">$ptitle</div></a>\n";
+    print "<a href=\"/admin/plugins/$pfolder/index.cgi\"><img class=\"menutableicon\" src=\"/system/images/icons/$pfolder/icon_64.png\"><div
+class=\"menutabletext\">$ptitle</div></a>\n";
     print"</td>\n";
     $i++;
     if ($i > $cols) {
@@ -258,7 +254,7 @@ sub header {
 
   # create help page
   $helptext = "";
-  $helplink = "http://www.loxwiki.eu/display/LOX/Loxone+Community+Wiki";
+  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
   open(F,"$installdir/templates/system/$lang/help/$help.html") || die "Missing template admin/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

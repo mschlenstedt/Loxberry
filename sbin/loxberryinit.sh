@@ -49,9 +49,29 @@ case "$1" in
 		/etc/init.d/networking restart > /dev/null 2>&1
         fi
 
+        # Do a system upgrade
+        if [ -f /opt/loxberry/data/system/upgrade/upgrade.sh ]
+        then
+		log_action_begin_msg "Found system upgrade. Installing..."
+		/opt/loxberry/data/system/upgrade/upgrade.sh > /opt/loxberry/data/system/upgrade/upgrade.log 2>&1
+        fi
+
+        # Cleaning Temporary folders
+	log_action_begin_msg "Cleaning temporary files and folders..."
+        rm -rf /opt/loxberry/webfrontend/html/tmp/* > /dev/null 2>&1
+
         # Set Date and Time
-	log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
-        /opt/loxberry/sbin/setdatetime.pl > /dev/null 2>&1
+        if [ -f /opt/loxberry/sbin/setdatetime.pl ]
+	  log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
+          /opt/loxberry/sbin/setdatetime.pl > /dev/null 2>&1
+        fi
+
+        # Run Daemons from Plugins and from System
+	log_action_begin_msg "Running System Daemons"
+        run-parts /opt/loxberry/system/daemons/system > /dev/null 2>&1
+
+	log_action_begin_msg "Running Plugin Daemons"
+        run-parts /opt/loxberry/system/daemons/plugins > /dev/null 2>&1
 
         ;;
 

@@ -66,7 +66,7 @@
     $.get('/admin/system/tools/logfile.cgi?logfile=<!--$statusfileurl-->&head=none&format=plain', function (response) {
       var pstatus = parseInt(response);
       if (pstatus > 1) {
-        document.getElementById("pstatus").innerHTML = "Ein Fehler ist aufgetreten. Das Plugin wure <b>nicht</b> installiert.";
+        document.getElementById("pstatus").innerHTML = "Ein Fehler ist aufgetreten. Das Plugin wurde <b>nicht</b> installiert.";
         $('#btnnext').removeClass('ui-disabled');
       } else if (pstatus > 0) {
         document.getElementById("pstatus").innerHTML = "Installation wird durchgef&uuml;hrt...";

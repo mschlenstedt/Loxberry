@@ -1,6 +1,5 @@
 #
-# Language phrases
-# EN 2016-07-29 10:20:00
+# Language phrases EN
 #
 TXT0000=LoxBerry Toolbox
 TXT0001=Yes
@@ -79,3 +78,35 @@ TXT0073=Installing log files
 TXT0074=Installing CGI files
 TXT0075=Installing HTML files
 TXT0076=Logfile View
+TXT0077=Cannot open APT file
+TXT0078=Installing additional software packages
+TXT0079=Package could not be installed
+TXT0080=Package installed successfully
+TXT0081=Refreshing APT database
+TXT0082=APT database could not be refreshed
+TXT0083=APT database refreshed successfully
+TXT0084=Installing icons
+TXT0085=Icons could not be (completely) installed. Using default icons.
+TXT0086=Icons installed successfully
+TXT0087=Removing old installation
+TXT0088=Installing cronjob files
+TXT0089=Some (or all) cronjob files could not be installed
+TXT0090=All cronjob files could be installed successfully
+TXT0091=Setting file permissions:
+TXT0092=File permissions set ßuccessfully
+TXT0093=File permissions could not be set
+TXT0094=Installation finished successfully!
+TXT0095=Cleaning and removing temporary files
+TXT0096=I could not find the Plugin.
+TXT0097=The Plugin was removed successfully.
+TXT0098=Installiing template files
+TXT0099=Refreshing system menus
+TXT0100=System menüs refreshed successfully
+TXT0101=Show Logfile
+TXT0102=Uninstall
+TXT0103=System-Upgrade
+TXT0104=You can upload files with a max. size of 100 MB.
+TXT0105=Error while extracting the Upgrade archive.
+TXT0106=It seems that some important files are missing in the upgrade archive.
+TXT0107=Your system seems to be at a higher or equal version. A downgrade isn't possible.
+TXT0108=Your LoxBerry will be rebooted now and the upgrade will be installed.

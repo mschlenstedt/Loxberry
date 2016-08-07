@@ -77,6 +77,7 @@ our $statusfile;
 our $statusfileurl;
 our $openerr;
 our @data;
+our @data1;
 our @fields;
 our $pmd5checksum;
 our $isupgrade;
@@ -93,6 +94,10 @@ our $chmodbin;
 our $ptablerows;
 our $answer;
 our $pid;
+our @tsets;
+our $startpsection;
+our $btn1;
+our $btn2;
 
 ##########################################################################
 # Read Settings
@@ -206,7 +211,7 @@ sub form {
 print "Content-Type: text/html\n\n";
 
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-$help = "admin";
+$help = "plugin";
 
 # Create table rows for each Plugin entry
 $ptablerows = "";
@@ -223,9 +228,11 @@ open(F,"<$installfolder/data/system/plugindatabase.dat");
     @fields = split(/\|/);
     $pmd5checksum = @fields[0];
     $pname = @fields[4];
+    $btn1 = $phrase->param("TXT0101");
+    $btn2 = $phrase->param("TXT0102");
     $ptablerows = $ptablerows . "<tr><th>$i</th><td>@fields[6]</td><td>@fields[3]</td><td>@fields[1]</td>";
-    $ptablerows = $ptablerows . "<td><a data-role=\"button\" data-inline=\"true\" data-icon=\"info\" data-mini=\"true\" href=\"/admin/system/tools/logfile.cgi?logfile=system/plugininstall/$pname.log&header=html&format=template\" target=\"_blank\">Zeige Logfile</a>&nbsp;";
-    $ptablerows = $ptablerows . "<a data-role=\"button\" data-inline=\"true\" data-icon=\"delete\" data-mini=\"true\" href=\"/admin/system/plugininstall.cgi?do=uninstall&pid=$pmd5checksum\">Deinstallieren</a></td></tr>\n";
+    $ptablerows = $ptablerows . "<td><a data-role=\"button\" data-inline=\"true\" data-icon=\"info\" data-mini=\"true\" href=\"/admin/system/tools/logfile.cgi?logfile=system/plugininstall/$pname.log&header=html&format=template\" target=\"_blank\">$btn1</a>&nbsp;";
+    $ptablerows = $ptablerows . "<a data-role=\"button\" data-inline=\"true\" data-icon=\"delete\" data-mini=\"true\" href=\"/admin/system/plugininstall.cgi?do=uninstall&pid=$pmd5checksum\">$btn2</a></td></tr>\n";
     $i++;
   }
 close (F);
@@ -280,7 +287,7 @@ if ($answer ne "yes") {
   print "Content-Type: text/html\n\n";
 
   $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-  $help = "admin";
+  $help = "plugin";
 
   # Print Template
   &header;
@@ -329,10 +336,11 @@ system("rm -r -f $home/data/plugins/$pfolder/");
 system("rm -r -f $home/log/plugins/$pfolder/");
 system("rm -r -f $home/webfrontend/cgi/plugins/$pfolder/");
 system("rm -r -f $home/webfrontend/html/plugins/$pfolder/");
+system("rm -r -f $home/templates/plugins/$pfolder/");
 # Icons for Main Menu
 system("rm -r -f $home/webfrontend/html/system/images/icons/$pfolder/");
 # Daemon file
-system("rm -f $home/system/daemons/$pname");
+system("rm -f $home/system/daemons/plugins/$pname");
 # Cron jobs
 system("rm -f $home/system/cron/cron.01min/$pname");
 system("rm -f $home/system/cron/cron.03min/$pname");
@@ -367,11 +375,54 @@ open(F,"+<$installfolder/data/system/plugindatabase.dat");
   }
 close (F);
 
+# Updating header files for side menu
+opendir(DIR, "$installfolder/templates/system");
+  @data = readdir(DIR);
+closedir(DIR);
+foreach(@data) {
+  if (-d "$installfolder/templates/system/$_" && $_ ne "." && $_ ne "..") {
+    push (@tsets,$_);
+  }
+}
+foreach (@tsets) {
+  $startpsection = 0;
+  open(F,"+<$installfolder/templates/system/$_/header.html");
+    @data = <F>;
+    seek(F,0,0);
+    truncate(F,0);
+    foreach (@data){
+      s/[\n\r]//g;
+      if ($_ =~ /ENDPLUGINSHERE/) {
+        $startpsection = 0;
+      }
+      if ($_ =~ /STARTPLUGINSHERE/) {
+        $startpsection = 1;
+        print F "$_\n";
+        open(F1,"<$installfolder/data/system/plugindatabase.dat");
+          @data1 = <F1>;
+          foreach (@data1){
+            s/[\n\r]//g;
+            # Comments
+            if ($_ =~ /^\s*#.*/) {
+              next;
+            }
+            @fields = split(/\|/);
+            print F "<li><a href=\"/admin/plugins/@fields[5]/index.cgi\">@fields[6]</a></li>\n";
+          }
+        close (F1);
+      }
+      if (!$startpsection) {
+        print F "$_\n";
+      }
+    } 
+  close (F);
+}
+
 # Print Template
 print "Content-Type: text/html\n\n";
 
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-$help = "admin";
+$help = "plugin";
 
 $nexturl = "/admin/system/plugininstall.cgi?do=form";
 $message = $phrase->param("TXT0097");
@@ -456,7 +507,7 @@ $logfileurl = "uploads/$tempfile.log";
 print "Content-Type: text/html\n\n";
 
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-$help = "admin";
+$help = "plugin";
 
 $nexturl = "/admin/index.cgi";
 
@@ -480,7 +531,8 @@ if ($pid == 0) {
   # do this in the child
   open STDIN, "</dev/null";
   open STDOUT, ">$logfile";
-  open STDERR, ">$logfile";
+  #open STDERR, ">$logfile";
+  open STDERR, ">/dev/null";
 
   # Starting
   $message = $phrase->param("TXT0051");
@@ -515,7 +567,7 @@ if ($pid == 0) {
   $message = "Command: $unzipbin -d /tmp/uploads/$tempfolder /tmp/uploads/$tempfolder/$tempfile.zip";
   &loginfo;
 
-  system("$unzipbin -d /tmp/uploads/$tempfolder /tmp/uploads/$tempfolder/$tempfile.zip");
+  system("$unzipbin -d /tmp/uploads/$tempfolder /tmp/uploads/$tempfolder/$tempfile.zip 2>&1");
   if ($? ne 0) {
     $message = $phrase->param("TXT0044");
     &logfail; 
@@ -670,10 +722,10 @@ if ($pid == 0) {
     $message = $phrase->param("TXT0062");
     &loginfo;
 
-    $message = "Command: $bashbin /tmp/uploads/$tempfolder/preupgrade.sh $tempfolder $pname $pfolder $pversion";
+    $message = "Command: $bashbin /tmp/uploads/$tempfolder/preupgrade.sh $tempfolder $pname $pfolder $pversion $installfolder";
     &loginfo;
 
-    system("$bashbin /tmp/uploads/$tempfolder/preupgrade.sh $tempfolder $pname $pfolder $pversion");
+    system("$bashbin /tmp/uploads/$tempfolder/preupgrade.sh $tempfolder $pname $pfolder $pversion $installfolder 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0064");
       &logerr; 
@@ -685,37 +737,38 @@ if ($pid == 0) {
     $message = $phrase->param("TXT0087");
     &loginfo;
     # Plugin Folders
-    system("rm -r -f $home/config/plugins/$pfolder/");
-    system("rm -r -f $home/data/plugins/$pfolder/");
+    system("rm -r -f $home/config/plugins/$pfolder/ 2>&1");
+    system("rm -r -f $home/data/plugins/$pfolder/ 2>&1");
+    system("rm -r -f $home/templates/$pfolder/ 2>&1");
     # system("rm -r -f $home/log/plugins/$pfolder/"); 		# Don't ourge Logfolder in case of an upgrade
-    system("rm -r -f $home/webfrontend/cgi/plugins/$pfolder/");
-    system("rm -r -f $home/webfrontend/html/plugins/$pfolder/");
+    system("rm -r -f $home/webfrontend/cgi/plugins/$pfolder/ 2>&1");
+    system("rm -r -f $home/webfrontend/html/plugins/$pfolder/ 2>&1");
     # Icons for Main Menu
-    system("rm -r -f $home/webfrontend/html/system/images/icons/$pfolder/");
+    system("rm -r -f $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
     # Daemon file
-    system("rm -f $home/system/daemons/$pname");
+    system("rm -f $home/system/daemons/plugins/$pname 2>&1");
     # Cron jobs
-    system("rm -f $home/system/cron/cron.01min/$pname");
-    system("rm -f $home/system/cron/cron.03min/$pname");
-    system("rm -f $home/system/cron/cron.05min/$pname");
-    system("rm -f $home/system/cron/cron.10min/$pname");
-    system("rm -f $home/system/cron/cron.15min/$pname");
-    system("rm -f $home/system/cron/cron.30min/$pname");
-    system("rm -f $home/system/cron/cron.hourly/$pname");
-    system("rm -f $home/system/cron/cron.daily/$pname");
-    system("rm -f $home/system/cron/cron.weekly/$pname");
-    system("rm -f $home/system/cron/cron.monthly/$pname");
-    system("rm -f $home/system/cron/cron.yearly/$pname");
+    system("rm -f $home/system/cron/cron.01min/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.03min/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.05min/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.10min/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.15min/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.30min/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.hourly/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.daily/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.weekly/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.monthly/$pname 2>&1");
+    system("rm -f $home/system/cron/cron.yearly/$pname 2>&1");
   }
 
   # Executing preinstall script
   $message = $phrase->param("TXT0066");
   &loginfo;
 
-  $message = "Command: $bashbin /tmp/uploads/$tempfolder/preinstall.sh $tempfolder $pname $pfolder $pversion";
+  $message = "Command: $bashbin /tmp/uploads/$tempfolder/preinstall.sh $tempfolder $pname $pfolder $pversion $installfolder";
   &loginfo;
 
-  system("$bashbin /tmp/uploads/$tempfolder/preinstall.sh $tempfolder $pname $pfolder $pversion");
+  system("$bashbin /tmp/uploads/$tempfolder/preinstall.sh $tempfolder $pname $pfolder $pversion $installfolder 2>&1");
   if ($? ne 0) {
     $message = $phrase->param("TXT0064");
     &logerr; 
@@ -729,7 +782,22 @@ if ($pid == 0) {
   if (!&is_folder_empty("/tmp/uploads/$tempfolder/config")) {
     $message = $phrase->param("TXT0068");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/config/* $home/config/plugins/$pfolder/");
+    system("cp -r -v /tmp/uploads/$tempfolder/config/* $home/config/plugins/$pfolder/ 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0070");
+      &logerr; 
+    } else {
+      $message = $phrase->param("TXT0069");
+      &logok;
+    }
+  }
+
+  # Copy Template files
+  make_path("$home/templates/plugins/$pfolder" , {chmod => 0777});
+  if (!&is_folder_empty("/tmp/uploads/$tempfolder/templates")) {
+    $message = $phrase->param("TXT0098");
+    &loginfo;
+    system("cp -r -v /tmp/uploads/$tempfolder/templates/* $home/templates/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -743,7 +811,7 @@ if ($pid == 0) {
   if (-e "/tmp/uploads/$tempfolder/daemon/daemon") {
     $message = $phrase->param("TXT0071");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/daemon/daemon $home/system/daemons/$pname");
+    system("cp -r -v /tmp/uploads/$tempfolder/daemon/daemon $home/system/daemons/plugins/$pname 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -751,9 +819,9 @@ if ($pid == 0) {
       $message = $phrase->param("TXT0069");
       &logok;
     }
-    $message = $phrase->param("TXT0091") . " $chmodbin 755 $home/system/daemons/$pname";
+    $message = $phrase->param("TXT0091") . " $chmodbin 755 $home/system/daemons/plugins/$pname";
     &loginfo;
-    system("$chmodbin 755 $home/system/daemons/$pname");
+    system("$chmodbin 755 $home/system/daemons/plugins/$pname 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0093");
       &logerr; 
@@ -769,67 +837,67 @@ if ($pid == 0) {
     &loginfo;
     $openerr = 0;
     if (-e "/tmp/uploads/$tempfolder/cron/cron.01min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.01min $home/system/cron/cron.01min/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.01min $home/system/cron/cron.01min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.03min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.03min $home/system/cron/cron.03min/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.03min $home/system/cron/cron.03min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.05min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.05min $home/system/cron/cron.05min/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.05min $home/system/cron/cron.05min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.10min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.10min $home/system/cron/cron.10min/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.10min $home/system/cron/cron.10min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.15min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.15min $home/system/cron/cron.15min/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.15min $home/system/cron/cron.15min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.30min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.30min $home/system/cron/cron.30min/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.30min $home/system/cron/cron.30min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.hourly") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.hourly $home/system/cron/cron.hourly/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.hourly $home/system/cron/cron.hourly/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.daily") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.daily $home/system/cron/cron.daily/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.daily $home/system/cron/cron.daily/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.weekly") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.weekly01 $home/system/cron/cron.weekly/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.weekly01 $home/system/cron/cron.weekly/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.monthly") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.monthly $home/system/cron/cron.monthly/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.monthly $home/system/cron/cron.monthly/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
     if (-e "/tmp/uploads/$tempfolder/cron/cron.yearly") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.yearly $home/system/cron/cron.yearly/$pname");
+      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.yearly $home/system/cron/cron.yearly/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
@@ -843,7 +911,7 @@ if ($pid == 0) {
     }
     $message = $phrase->param("TXT0091") . " $chmodbin -R 755 $home/system/cron/";
     &loginfo;
-    system("$chmodbin -R 755 $home/system/cron/");
+    system("$chmodbin -R 755 $home/system/cron/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0093");
       &logerr; 
@@ -858,7 +926,7 @@ if ($pid == 0) {
   if (!&is_folder_empty("/tmp/uploads/$tempfolder/data")) {
     $message = $phrase->param("TXT0072");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/data/* $home/data/plugins/$pfolder/");
+    system("cp -r -v /tmp/uploads/$tempfolder/data/* $home/data/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -873,7 +941,7 @@ if ($pid == 0) {
   if (!&is_folder_empty("/tmp/uploads/$tempfolder/log")) {
     $message = $phrase->param("TXT0073");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/log/* $home/log/plugins/$pfolder/");
+    system("cp -r -v /tmp/uploads/$tempfolder/log/* $home/log/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -888,7 +956,7 @@ if ($pid == 0) {
   if (!&is_folder_empty("/tmp/uploads/$tempfolder/webfrontend/cgi")) {
     $message = $phrase->param("TXT0074");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/webfrontend/cgi/* $home/webfrontend/cgi/plugins/$pfolder/");
+    system("cp -r -v /tmp/uploads/$tempfolder/webfrontend/cgi/* $home/webfrontend/cgi/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -898,7 +966,7 @@ if ($pid == 0) {
     }
     $message = $phrase->param("TXT0091") . " $chmodbin -R 755 $home/webfrontend/cgi/plugins/$pfolder/";
     &loginfo;
-    system("$chmodbin -R 755 $home/webfrontend/cgi/plugins/$pfolder/");
+    system("$chmodbin -R 755 $home/webfrontend/cgi/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0093");
       &logerr; 
@@ -913,7 +981,7 @@ if ($pid == 0) {
   if (!&is_folder_empty("/tmp/uploads/$tempfolder/webfrontend/html")) {
     $message = $phrase->param("TXT0075");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/webfrontend/html/* $home/webfrontend/html/plugins/$pfolder/");
+    system("cp -r -v /tmp/uploads/$tempfolder/webfrontend/html/* $home/webfrontend/html/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -927,28 +995,28 @@ if ($pid == 0) {
   make_path("$home/webfrontend/html/system/images/icons/$pfolder" , {chmod => 0777});
   $message = $phrase->param("TXT0084");
   &loginfo;
-  system("cp -r -v /tmp/uploads/$tempfolder/icons/* $home/webfrontend/html/system/images/icons/$pfolder/");
+  system("cp -r -v /tmp/uploads/$tempfolder/icons/* $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
   if ($? ne 0) {
-    system("cp -r -v $home/webfrontend/html/system/images/icons/default/* $home/webfrontend/html/system/images/icons/$pfolder/");
+    system("cp -r -v $home/webfrontend/html/system/images/icons/default/* $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
     $message = $phrase->param("TXT0085");
     &logerr; 
   } else {
     $openerr = 0;
     if (!-e "$home/webfrontend/html/system/images/icons/$pfolder/icon_64.png") {
       $openerr = 1;
-      system("cp -r -v $home/webfrontend/html/system/images/icons/default/icon_64.png $home/webfrontend/html/system/images/icons/$pfolder/");
+      system("cp -r -v $home/webfrontend/html/system/images/icons/default/icon_64.png $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
     } 
     if (!-e "$home/webfrontend/html/system/images/icons/$pfolder/icon_128.png") {
       $openerr = 1;
-      system("cp -r -v $home/webfrontend/html/system/images/icons/default/icon_128.png $home/webfrontend/html/system/images/icons/$pfolder/");
+      system("cp -r -v $home/webfrontend/html/system/images/icons/default/icon_128.png $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
     } 
     if (!-e "$home/webfrontend/html/system/images/icons/$pfolder/icon_256.png") {
       $openerr = 1;
-      system("cp -r -v $home/webfrontend/html/system/images/icons/default/icon_256.png $home/webfrontend/html/system/images/icons/$pfolder/");
+      system("cp -r -v $home/webfrontend/html/system/images/icons/default/icon_256.png $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
     } 
     if (!-e "$home/webfrontend/html/system/images/icons/$pfolder/icon_512.png") {
       $openerr = 1;
-      system("cp -r -v $home/webfrontend/html/system/images/icons/default/icon_512.png $home/webfrontend/html/system/images/icons/$pfolder/");
+      system("cp -r -v $home/webfrontend/html/system/images/icons/default/icon_512.png $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
     } 
     if ($openerr) {
       $message = $phrase->param("TXT0085");
@@ -965,7 +1033,7 @@ if ($pid == 0) {
     &loginfo;
     $message = "Command: $sudobin $aptbin -q -y update";
     &loginfo;
-    system("$sudobin $aptbin -q -y update");
+    system("$sudobin $aptbin -q -y update 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0082");
       &logerr; 
@@ -990,7 +1058,7 @@ if ($pid == 0) {
       }
       $message = "Command: $sudobin $aptbin -q -y install $_";
       &loginfo;
-      system("$sudobin $aptbin -q -y install $_");
+      system("$sudobin $aptbin -q -y install $_ 2>&1");
       if ($? ne 0) {
         $message = $phrase->param("TXT0079");
         &logerr; 
@@ -1006,10 +1074,10 @@ if ($pid == 0) {
   $message = $phrase->param("TXT0067");
   &loginfo;
 
-  $message = "Command: $bashbin /tmp/uploads/$tempfolder/postinstall.sh $tempfolder $pname $pfolder $pversion";
+  $message = "Command: $bashbin /tmp/uploads/$tempfolder/postinstall.sh $tempfolder $pname $pfolder $pversion $installfolder";
   &loginfo;
 
-  system("$bashbin /tmp/uploads/$tempfolder/postinstall.sh $tempfolder $pname $pfolder $pversion");
+  system("$bashbin /tmp/uploads/$tempfolder/postinstall.sh $tempfolder $pname $pfolder $pversion $installfolder 2>&1");
   if ($? ne 0) {
     $message = $phrase->param("TXT0064");
     &logerr; 
@@ -1023,10 +1091,10 @@ if ($pid == 0) {
     $message = $phrase->param("TXT0065");
     &loginfo;
 
-    $message = "Command: $bashbin /tmp/uploads/$tempfolder/postupgrade.sh $tempfolder $pname $pfolder $pversion";
+    $message = "Command: $bashbin /tmp/uploads/$tempfolder/postupgrade.sh $tempfolder $pname $pfolder $pversion $installfolder";
     &loginfo;
 
-    system("$bashbin /tmp/uploads/$tempfolder/postupgrade.sh $tempfolder $pname $pfolder $pversion");
+    system("$bashbin /tmp/uploads/$tempfolder/postupgrade.sh $tempfolder $pname $pfolder $pversion $installfolder 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0064");
       &logerr; 
@@ -1036,11 +1104,58 @@ if ($pid == 0) {
     }
   }
 
+  # Updating header files for side menu
+  $message = $phrase->param("TXT0099");
+  &loginfo;
+  opendir(DIR, "$installfolder/templates/system");
+    @data = readdir(DIR);
+  closedir(DIR);
+  foreach(@data) {
+    if (-d "$installfolder/templates/system/$_" && $_ ne "." && $_ ne "..") {
+      push (@tsets,$_);
+    }
+  }
+  foreach (@tsets) {
+    $startpsection = 0;
+    open(F,"+<$installfolder/templates/system/$_/header.html");
+      @data = <F>;
+      seek(F,0,0);
+      truncate(F,0);
+      foreach (@data){
+        s/[\n\r]//g;
+        if ($_ =~ /ENDPLUGINSHERE/) {
+          $startpsection = 0;
+        }
+        if ($_ =~ /STARTPLUGINSHERE/) {
+          $startpsection = 1;
+          print F "$_\n";
+          open(F1,"<$installfolder/data/system/plugindatabase.dat");
+            @data1 = <F1>;
+            foreach (@data1){
+              s/[\n\r]//g;
+              # Comments
+              if ($_ =~ /^\s*#.*/) {
+                next;
+              }
+              @fields = split(/\|/);
+              print F "<li><a href=\"/admin/plugins/@fields[5]/index.cgi\">@fields[6]</a></li>\n";
+            }
+          close (F1);
+        }
+        if (!$startpsection) {
+          print F "$_\n";
+        }
+      } 
+    close (F);
+  }
+  $message = $phrase->param("TXT0100");
+  &logok;
+
   # Cleaning
   $message = $phrase->param("TXT0095");
   &loginfo;
-  system("rm -r -f /tmp/uploads/$pfolder");
-  system("cp /tmp/uploads/$tempfile.log $installfolder/log/system/plugininstall/$pname.log");
+  system("rm -r -f /tmp/uploads/$pfolder 2>&1");
+  system("cp /tmp/uploads/$tempfile.log $installfolder/log/system/plugininstall/$pname.log 2>&1");
 
   # Finished
   $message = $phrase->param("TXT0094");
@@ -1073,7 +1188,7 @@ exit;
 sub error {
 
 $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0043");
-$help = "admin";
+$help = "plugin";
 
 print "Content-Type: text/html\n\n";
 
@@ -1106,7 +1221,7 @@ sub logfail {
   print "<FAIL> $message\n";
 
   # Status file: Error
-  open F, ">/tmp/$tempfile.status";
+  open F, ">/tmp/uploads/$tempfile.status";
     print F "2";
   close F;
 

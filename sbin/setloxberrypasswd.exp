@@ -35,4 +35,15 @@ send "$passwordnew\r"
 expect "password:"
 send "$passwordnew\r";
 
+sleep 1
+
+# smbpasswd
+spawn "smbpasswd"
+expect "password:"
+send "$passwordold\r"
+expect "password:"
+send "$passwordnew\r"
+expect "password:"
+send "$passwordnew\r";
+
 interact

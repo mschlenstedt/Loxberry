@@ -1,0 +1,58 @@
+  <!-- content -->
+
+
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
+
+    <!-- text -->
+    <div style="margin: 5%;">
+
+      <form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/upgrade.cgi?do=install" enctype="multipart/form-data">
+      <input type="hidden" name="saveformdata" value="1">
+      <div class="form-group">
+        <table class="formtable" border="0" width="100%">
+        <tr>
+          <td width="25%">
+          <label id="labeluploadfile">Upgrade-Datei:</label>
+          </td>
+          <td width="50%">
+          <input type="file" name="uploadfile" class="textfield" 
+          data-validation="mime size" data-validation-allowing="zip" data-validation-max-size="100M"
+          data-validation-error-msg-mime="Es können nur Installationsdateien im ZIP-Format hochgeladen werden."
+          data-validation-error-msg-size="Es können keine Dateien größer als 100 MB hochgeladen werden.">
+          </td>
+          <td width="5%" valign="middle">
+          <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Installieren</button>
+          </td>
+          <td width="20%">
+          &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td colspan=3>
+          <div id="form-error-message" class="form-error-message"></div>
+          </td>
+        </tr>
+        </table>
+      </div>
+      </form>
+
+      <br>
+
+    </div>
+    <!-- /text -->
+    </div>
+
+  </div>
+
+  <script>
+  var $messages = $('#form-error-message');
+  $.validate({
+    modules : 'file',
+    errorMessagePosition : $messages,
+  });
+
+  </script>
+
+  <!-- /content -->

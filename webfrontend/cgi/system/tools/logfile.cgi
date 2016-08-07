@@ -181,7 +181,7 @@ if ($length) {
 if ($format eq "template") {
 
   $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0076");
-  $help = "admin";
+  $help = "setup00";
 
   # Print Template
   &header;
@@ -258,7 +258,7 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "http://www.loxwiki.eu/display/LOXBERRY/Loxberry+Dokumentation";
+  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
   open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

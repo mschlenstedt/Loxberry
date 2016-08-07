@@ -7,25 +7,24 @@
     <!-- text -->
     <div style="margin: 5%;">
 
-      <form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data">
+      <form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
+      <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
         <tr>
           <td width="25%">
-          <label id="labeluploadfile">Plugin-Setupfile:</label>
+          <label id="labeluploadfile">Install new Plugin:</label>
           </td>
           <td width="50%">
-          <input type="file" name="uploadfile">
+          <input type="file" name="uploadfile" class="textfield" 
+          data-validation="mime size" data-validation-allowing="zip" data-validation-max-size="50M"
+          data-validation-error-msg-mime="It is only possible to upload ZIP files."
+          data-validation-error-msg-size="It is not possible to uぽload files larger than 50 MB.">
           </td>
           <td width="5%" valign="middle">
-          &nbsp;
+          <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Install</button>
           </td>
           <td width="20%">
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td colspan=4>
           &nbsp;
           </td>
         </tr>
@@ -39,17 +38,38 @@
       </div>
       </form>
 
-      <p>
-      &nbsp;
-      </p>
+      <br>
 
-      <p>
-      <center>
-      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
-      <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Install</button>
-      </center>
-      </p>
+      <table width="100%" border=0>
+      <tr>
+        <td width="100px">
+        <img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
+        </td>
+        <td>
+        <div style="font-size: 1.5em; letter-spacing: 0.25em; text-align: left; vertical-align: middle;">Installed Plugins</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan=2>
+        <hr>
+        </td>
+      </tr>
+      </table>
 
+      <table data-role="table" data-mode="columntoggle" class="ui-responsive table-stroke" data-column-btn-text="Columns">
+      <thead>
+        <tr>
+          <th data-priority="2">Nr.</th>
+          <th data-priority="1">Plugin</th>
+          <th data-priority="3">Version</th>
+          <th data-priority="3">Author</th>
+          <th data-priority="1">Options</th>
+        </tr>
+      </thead>
+      <tbody>
+      <!--$ptablerows-->
+      </tbody>
+      </table>
 
     </div>
     <!-- /text -->
@@ -60,7 +80,7 @@
   <script>
   var $messages = $('#form-error-message');
   $.validate({
-    modules : 'security',
+    modules : 'file',
     errorMessagePosition : $messages,
   });
 
