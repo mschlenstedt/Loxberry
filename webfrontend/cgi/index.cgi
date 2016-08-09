@@ -107,10 +107,7 @@ if (defined $query{'lang'} )
  $query{'lang'}         =  substr($query{'lang'},0,2);
  $lang = $query{'lang'};
 }
-else
-{
-  $lang = "de";
-}
+
 # If there's no template, use german
 if (!-e "$installdir/templates/system/$lang/language.dat") {
   $lang = "de";
