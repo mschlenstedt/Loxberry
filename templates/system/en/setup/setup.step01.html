@@ -22,7 +22,8 @@
           <label class="control-label" for="adminuser">Username:</label>
           </td>
           <td width="50%">
-          <input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20" data-validation-allowing="-_"
+          <input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20"
+          Âdata-validation-allowing="-_"
           data-validation-error-msg="* The Username must be 3-20 characters long and consist of alphanumeric characters<br>" value="<!--$adminuser-->">
           </td>
           <td width="3%">
@@ -37,15 +38,15 @@
           <label>Password:</label>
           </td>
           <td>
-          <input name="adminpass1" type="password" data-validation="strength alphanumeric" data-validation-allowing="-_,.;:!?&()?+§%=äöüßÄÖÜ"
-           data-validation-strength="2" class="textfield" value="<!--$adminpass1-->"
+          <input name="adminpass1" type="password" data-validation="length strength alphanumeric" data-validation-allowing="-_,.;:!?&()?+§%="
+          data-validation-length="Min1" data-validation-strength="2" class="textfield" value="<!--$adminpass1-->"
           data-validation-error-msg="* The Password must consist of Upper- and Lowercase characters and digits. Minumum length is 5. Only some special characters are allowed: -_,.;:!?&()?+§%=">
           </td>
           <td>
           &nbsp;
           </td>
           <td>
-          <font size="-1">Allowed characters: A-Z a-z 0-9 -_,.;:!?&()?+§%=</font>
+          <font size="-1">Allowed characters: A-Z a-z 0-9 -_,.;:!?&amp;()?+§%=</font>
           </td>
         </tr>
         <tr>

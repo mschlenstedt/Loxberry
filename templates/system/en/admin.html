@@ -15,7 +15,9 @@
           <label>Old Password:</label>
           </td>
           <td>
-          <input name="adminpassold" type="password" class="textfield" value="">
+          <input name="adminpassold" type="password" class="textfield" data-validation="length alphanumeric" data-validation-allowing="-_,.;:!?&()?+§%="
+          data-validation-length="Min1" class="textfield" value=""
+          data-validation-error-msg="* The Password must have 5 characters minimum and consist of upper- and lowercase characters plus digits. Following special characters are allowed only: -_,.;:!?&()?+§%=">
           </td>
           <td>
           &nbsp;
