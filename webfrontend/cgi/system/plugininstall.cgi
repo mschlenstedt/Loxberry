@@ -104,7 +104,7 @@ our $btn2;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.3";
+$version = "0.0.4";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -1107,6 +1107,10 @@ if ($pid == 0) {
   # Updating header files for side menu
   $message = $phrase->param("TXT0099");
   &loginfo;
+
+  # Sorting Plugin Database
+  &sort_plugins;
+
   opendir(DIR, "$installfolder/templates/system");
     @data = readdir(DIR);
   closedir(DIR);
@@ -1314,4 +1318,35 @@ sub is_folder_empty {
   my $dirname = shift;
   opendir(my $dh, $dirname); 
   return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
+}
+
+#####################################################
+# Sorting Plugin Database
+#####################################################
+
+sub sort_plugins {
+  # Einlesen
+  my @zeilen=();
+  my $input_file="$installfolder/data/system/plugindatabase.dat";
+  open (F, '<', $input_file) or die "Fehler bei open($input_file) : $!";
+  while(<F>)
+  {
+     chomp($_ );
+     push @zeilen, [ split /\|/, $_, 9 ];
+  }
+  close (F);
+
+  # Sortieren
+  my $first_line=shift(@zeilen);
+  @zeilen=sort{$a->[6] cmp $b->[6]}@zeilen; 
+  unshift(@zeilen, $first_line);
+
+  # Ausgeben    
+  open(F,"+<$installfolder/data/system/plugindatabase.dat");
+  @data = <F>;
+  seek(F,0,0);
+  truncate(F,0);
+  print F join('|', @{$_}), "\n" for @zeilen;   #sortiert wieder ausgeben
+  close (F);
+  return();
 }
