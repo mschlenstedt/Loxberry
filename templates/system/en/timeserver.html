@@ -1,4 +1,4 @@
-      <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('.form-group').hasClass( 'has-error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<font color=blue><b>Query Time</b> - Please wait, it will take up to 30 seconds...</font>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
+      <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<font color=blue><b>Query Time</b> - Please wait, it will take up to 30 seconds...</font>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
