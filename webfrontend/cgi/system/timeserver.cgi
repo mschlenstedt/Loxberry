@@ -278,7 +278,7 @@ print "Content-Type: text/html\n\n";
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
 $help = "timeserver";
 
-$message = $phrase->param("TXT0036") . $output;
+$message = $phrase->param("TXT0036") . "<br>" . $output;
 $nexturl = "/admin/index.cgi";
 
 # Print Template
