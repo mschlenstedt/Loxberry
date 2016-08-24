@@ -3,5 +3,5 @@
 # Update Date/Time every hour
 if [ -x /opt/loxberry/sbin/setdatetime.pl ]
 then
-	sudo /opt/loxberry/sbin/setdatetime.pl
+  /opt/loxberry/sbin/setdatetime.pl
 fi
