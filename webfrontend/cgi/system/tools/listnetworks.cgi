@@ -120,8 +120,8 @@ if ($? > 0) {
   $error = 1;
 }
 
-# For testing new hardware
-$error = 0;
+# Only for testing new hardware
+#$error = 0;
 
 # Scan for WLAN Hardware
 if (!$error) {
@@ -200,16 +200,16 @@ if (!$error) {
     
   }
 
-}
+  # Create last Table row
+  $table = "$table<tr><th style=\"vertical-align: middle; text-align: left\"><b>$ssid</b></th>";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\">$encryption</td>";
+  $table = "$table<td  style=\"vertical-align: middle; text-align: center\">$bitrates</td>";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\">$quality</td>";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\">$force</td>";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">Übernehmen</font></button></td></tr>\n";
+  $table = "$table</tbody>\n";
 
-# Create last Table row
-$table = "$table<tr><th style=\"vertical-align: middle; text-align: left\"><b>$ssid</b></th>";
-$table = "$table<td style=\"vertical-align: middle; text-align: center\">$encryption</td>";
-$table = "$table<td  style=\"vertical-align: middle; text-align: center\">$bitrates</td>";
-$table = "$table<td style=\"vertical-align: middle; text-align: center\">$quality</td>";
-$table = "$table<td style=\"vertical-align: middle; text-align: center\">$force</td>";
-$table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">Übernehmen</font></button></td></tr>\n";
-$table = "$table</tbody>\n";
+}
 
 print "Content-Type: text/html\n\n";
 

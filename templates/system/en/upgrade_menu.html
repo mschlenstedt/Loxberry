@@ -1,12 +1,3 @@
-  <!-- content -->
-
-
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%;">
-
       <form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/upgrade.cgi?do=install" enctype="multipart/form-data">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
@@ -22,7 +13,7 @@
           data-validation-error-msg-size="You can only upload files with a maximum size of 100 MB.">
           </td>
           <td width="5%" valign="middle">
-          <button type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Install</button>
+          <button name="btnsubmit" type="submit" form="main_form" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Install</button>
           </td>
           <td width="20%">
           &nbsp;
@@ -40,12 +31,6 @@
 
       <br>
 
-    </div>
-    <!-- /text -->
-    </div>
-
-  </div>
-
   <script>
   var $messages = $('#form-error-message');
   $.validate({
@@ -55,4 +40,3 @@
 
   </script>
 
-  <!-- /content -->

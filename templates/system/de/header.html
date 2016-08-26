@@ -24,7 +24,13 @@
   <script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
   <script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
   <script src="/system/scripts/setup.js"></script>
-  <script>$.mobile.page.prototype.options.domCache = false;</script>
+  <script>
+    $.mobile.page.prototype.options.domCache = false;
+    $(document).on('pageshow', function (event, ui) {
+    // Remove the previous page
+    $(ui.prevPage).remove();
+});
+  </script>
 </head>
 <body>
 
@@ -53,6 +59,8 @@ $.ajaxSetup ({
     <li><a href="/admin/system/power.cgi">Neustart</a></li>
     <li data-role="list-divider">Plugins</li>
     <!-- STARTPLUGINSHERE --> <!-- Never remove this tag! -->
+<li><a href="/admin/plugins/miniserverbackup/index.cgi">Miniserver Backup</a></li>
+<li><a href="/admin/plugins/sampleplugin_folder/index.cgi">Sample Plugin</a></li>
     <!-- ENDPLUGINSHERE --> <!-- Never remove this tag! -->
   </ul>
   </div>
@@ -84,5 +92,12 @@ $.ajaxSetup ({
   </div>
   <!-- /header -->
 
-  <!-- ************************************************************************************** -->
+  <!-- content -->
+  <div role="main" class="ui-content">
+    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
+
+    <!-- text -->
+    <div style="margin: 5%">
+
+    <!-- ************************************************************************************** -->
 

@@ -1,10 +1,3 @@
-  <!-- content -->
-
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%;">
       <h2>6. Schritt: Installation ist abgeschlossen - Neustart erforderlich</h2>
       <p>
       Herzlichen Glückwunsch! Dein Loxberry ist nun eingerichtet!
@@ -35,15 +28,9 @@
 
       <p>
       <center>
-      <a id="btnreboot" data-role="button" data-inline="true" data-icon="recycle" href="http://<!--$adminuser-->:<!--$adminpass1-->@<!--$http_host-->/admin/system/power.cgi?do=reboot">Neustart</a>
+      <a id="btnreboot" data-role="button" data-inline="true" data-icon="recycle" href="/admin/system/power.cgi?do=reboot">Neustart</a>
       </center>
       </p>
-
-    </div>
-    <!-- /text -->
-    </div>
-
-  </div>
 
   <script>
   var $messages = $('#form-error-message');
@@ -52,5 +39,3 @@
     errorMessagePosition : $messages,
   });
   </script>
-
-  <!-- /content -->

@@ -43,7 +43,7 @@ $(document).ready(function () {
       success: function(data){
         data.replace(/\r|\n/g, "");
         $('#miniserverip1').empty();
-        if (data == "") {
+        if (data.length < 3) {
           if (lang == "de"){
             var url = 'Keinen Miniserver gefunden';
           } else {

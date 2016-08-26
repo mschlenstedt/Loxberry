@@ -104,7 +104,7 @@ our $btn2;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+$version = "0.0.5";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -370,7 +370,7 @@ open(F,"+<$installfolder/data/system/plugindatabase.dat");
     if (@fields[0] eq $pid) {
       next;
     } else {
-      print "$_\n";
+      print F "$_\n";
     }
   }
 close (F);
@@ -578,8 +578,22 @@ if ($pid == 0) {
 
   # Check for plugin.cfg
   if (!-f "/tmp/uploads/$tempfolder/plugin.cfg") {
-    $message = $phrase->param("TXT0048");
-    &logfail;
+    $exists = 0;
+    opendir(DIR, "/tmp/uploads/$tempfolder");
+      @data = readdir(DIR);
+    closedir(DIR);
+    foreach(@data) {
+      if (-f "/tmp/uploads/$tempfolder/$_/plugin.cfg" && $_ ne "." && $_ ne "..") {
+        $tempfolder = $tempfolder . "/$_";
+        $exists = 1;
+        last;
+      }
+    }
+    if (!$exists) {
+      $message = $phrase->param("TXT0048");
+      &logfail;
+      exit;
+    }
   }
 
   # Read Plugin-Config
@@ -722,10 +736,10 @@ if ($pid == 0) {
     $message = $phrase->param("TXT0062");
     &loginfo;
 
-    $message = "Command: $bashbin /tmp/uploads/$tempfolder/preupgrade.sh $tempfolder $pname $pfolder $pversion $installfolder";
+    $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
     &loginfo;
 
-    system("$bashbin /tmp/uploads/$tempfolder/preupgrade.sh $tempfolder $pname $pfolder $pversion $installfolder 2>&1");
+    system("$bashbin \"/tmp/uploads/$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0064");
       &logerr; 
@@ -765,10 +779,10 @@ if ($pid == 0) {
   $message = $phrase->param("TXT0066");
   &loginfo;
 
-  $message = "Command: $bashbin /tmp/uploads/$tempfolder/preinstall.sh $tempfolder $pname $pfolder $pversion $installfolder";
+  $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
   &loginfo;
 
-  system("$bashbin /tmp/uploads/$tempfolder/preinstall.sh $tempfolder $pname $pfolder $pversion $installfolder 2>&1");
+  system("$bashbin \"/tmp/uploads/$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
   if ($? ne 0) {
     $message = $phrase->param("TXT0064");
     &logerr; 
@@ -1074,10 +1088,10 @@ if ($pid == 0) {
   $message = $phrase->param("TXT0067");
   &loginfo;
 
-  $message = "Command: $bashbin /tmp/uploads/$tempfolder/postinstall.sh $tempfolder $pname $pfolder $pversion $installfolder";
+  $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
   &loginfo;
 
-  system("$bashbin /tmp/uploads/$tempfolder/postinstall.sh $tempfolder $pname $pfolder $pversion $installfolder 2>&1");
+  system("$bashbin \"/tmp/uploads/$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
   if ($? ne 0) {
     $message = $phrase->param("TXT0064");
     &logerr; 
@@ -1091,10 +1105,10 @@ if ($pid == 0) {
     $message = $phrase->param("TXT0065");
     &loginfo;
 
-    $message = "Command: $bashbin /tmp/uploads/$tempfolder/postupgrade.sh $tempfolder $pname $pfolder $pversion $installfolder";
+    $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
     &loginfo;
 
-    system("$bashbin /tmp/uploads/$tempfolder/postupgrade.sh $tempfolder $pname $pfolder $pversion $installfolder 2>&1");
+    system("$bashbin \"/tmp/uploads/$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0064");
       &logerr; 
@@ -1107,6 +1121,10 @@ if ($pid == 0) {
   # Updating header files for side menu
   $message = $phrase->param("TXT0099");
   &loginfo;
+
+  # Sorting Plugin Database
+  &sort_plugins;
+
   opendir(DIR, "$installfolder/templates/system");
     @data = readdir(DIR);
   closedir(DIR);
@@ -1314,4 +1332,35 @@ sub is_folder_empty {
   my $dirname = shift;
   opendir(my $dh, $dirname); 
   return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
+}
+
+#####################################################
+# Sorting Plugin Database
+#####################################################
+
+sub sort_plugins {
+  # Einlesen
+  my @zeilen=();
+  my $input_file="$installfolder/data/system/plugindatabase.dat";
+  open (F, '<', $input_file) or die "Fehler bei open($input_file) : $!";
+  while(<F>)
+  {
+     chomp($_ );
+     push @zeilen, [ split /\|/, $_, 9 ];
+  }
+  close (F);
+
+  # Sortieren
+  my $first_line=shift(@zeilen);
+  @zeilen=sort{$a->[6] cmp $b->[6]}@zeilen; 
+  unshift(@zeilen, $first_line);
+
+  # Ausgeben    
+  open(F,"+<$installfolder/data/system/plugindatabase.dat");
+  @data = <F>;
+  seek(F,0,0);
+  truncate(F,0);
+  print F join('|', @{$_}), "\n" for @zeilen;   #sortiert wieder ausgeben
+  close (F);
+  return();
 }

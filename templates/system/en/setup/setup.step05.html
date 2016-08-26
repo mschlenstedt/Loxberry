@@ -1,10 +1,3 @@
-  <!-- content -->
-
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%;">
       <h2>5th Step: Installation</h2>
       <p>
       You have completed the basic settings now. The Installation can be started now.
@@ -18,7 +11,6 @@
 
       <form method="post" data-ajax="false" name="main_form5" id="main_form5" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
       <input type="hidden" name="saveformdata" value="1">
-      </form>
 
       <p>
       &nbsp;
@@ -28,15 +20,10 @@
       <center>
       <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Cancel</a>
       <a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Back</a>
-      <button type="submit" form="main_form5" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Start Installation</button>
+      <button type="submit" form="main_form5" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Start Installation</button>
       </center>
       </p>
-
-    </div>
-    <!-- /text -->
-    </div>
-
-  </div>
+      </form>
 
   <script>
   var $messages = $('#form-error-message');
@@ -45,5 +32,3 @@
     errorMessagePosition : $messages,
   });
   </script>
-
-  <!-- /content -->
