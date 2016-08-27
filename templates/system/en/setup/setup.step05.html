@@ -1,34 +1,32 @@
-      <h2>5th Step: Installation</h2>
-      <p>
-      You have completed the basic settings now. The Installation can be started now.
-      </p>
-
-      <p>
-      If all settings were correct, the Installation can be completed now.
-      That means your entered values are written into the Configuration files and saved.
-      Hint: Of course all settings can be modified later.
-      </p>
-
-      <form method="post" data-ajax="false" name="main_form5" id="main_form5" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
-      <input type="hidden" name="saveformdata" value="1">
-
-      <p>
-      &nbsp;
-      </p>
-
-      <p>
-      <center>
-      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Cancel</a>
-      <a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Back</a>
-      <button type="submit" form="main_form5" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Start Installation</button>
-      </center>
-      </p>
-      </form>
-
-  <script>
-  var $messages = $('#form-error-message');
-  $.validate({
-    modules : 'security',
-    errorMessagePosition : $messages,
-  });
-  </script>
+									<!-- ** START template/system/en/setup/setup.step05.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<h2>5th Step: Installatio</h2>
+									<p>
+										You have completed the basic settings now. The Installation can be started now.
+									</p>
+									<p>
+										If all settings were correct, the Installation can be completed now.
+										That means your entered values are written into the Configuration files and saved.
+										Hint: Of course all settings can be modified later.
+									</p>
+									<form method="post" data-ajax="false" name="main_form5" id="main_form5" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
+										<input type="hidden" name="saveformdata" value="1">
+										<p>
+											&nbsp;
+										</p>
+										<p>
+											<center>
+												<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Cancel</a>
+												<a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Back</a>
+												<button type="submit" form="main_form5" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Start Installation</button>
+											</center>
+										</p>
+									</form>
+									<script>
+										var $messages = $('#form-error-message');
+										$.validate(
+										{
+											modules : 'security',
+											errorMessagePosition : $messages,
+										});
+									</script>
+									<!-- ** END template/system/en/setup/setup.step05.html ************************************************************************************ -->

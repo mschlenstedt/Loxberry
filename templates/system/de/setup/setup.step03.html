@@ -1,243 +1,237 @@
-      <h2>3. Schritt: Netzwerkeinstellung</h2>
-
-      <p>
-      In diesem Schritt kannst Du die Netzwerkeinstellungen Deines Loxberrys festlegen. Der Loxberry kann per Kabel (LAN) oder aber per WLAN über einen
-      unterstützten USB-WLAN-Adapter mit Deinem Netzwerk verbunden werden. Falls Du einen WLAN-Adapter verwenden möchtest, muss dieser nun mit dem USB-Port
-      Deines Loxberrys verbunden werden.
-      </p>
-
-      <p>
-      Wenn Du einen Internetrouter verwendest, werden die Netzwerkeinstellungen
-      normalerweise per DHCP-Protokoll automatisch vom Router an den Client übertragen. Das ist sehr praktisch, allerdings wird jedem Client, der sich per DHCP
-      neu am Router anmeldet, die jeweils nächste freie IP-Adresse zugewiesen. Somit kann sich die IP-Adresse ständig ändern. Es ist jedoch äußerst wichtig,
-      dass sowohl der Loxone Miniserver als auch Dein Loxberry <b>immer über die gleiche IP-Adresse</b> im Netzwerk erreichbar sind. Ansonsten können beide nicht
-      miteinander kommunizieren! Wir empfehlen daher die Netzwerkeinstellungen durch den Router per DHCP zu vereteilen, hierbei aber den Router so zu konfigurieren,
-      das dem Miniserver und dem Loxberry stets die selbe IP-Adresse zugewiesen wird. Bei einer Fritzbox z. B. lautet die entsprechende Option "Diesem Netzwerkgerät
-      immer die gleiche IPv4-Adresse zuweisen.".
-      </p>
-
-      <p>
-      Sollte diese Funktion in Deinem Router nicht zur Verfügung stehen muss dem Loxberrxy (und auch dem Loxone Miniserver) eine feste, statische IP-Adresse manuell
-      zugewiesen werden. Hier musst Du sicherstellen, dass in Deinem Netzwerk kein anderer Client diese IP-Adresse verwendet.
-      </p>
-
-      <form method="post" data-ajax="false" name="main_form3" id="main_form3" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
-      <input type="hidden" name="saveformdata" value="1">
-      <div class="form-group">
-        <table class="formtable" border="0" width="100%">
-        <tr>
-          <td width="25%">
-          <label id="labelnetzwerkanschluss">Netzwerkanschluss:</label>
-          </td>
-          <td width="50%">
-          <fieldset data-role="controlgroup">
-          <input onclick="disable()" <!--$checked1--> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
-          <label for="netzwerkanschluss_eth">Kabelgebundenes Netzwerk (eth0)</label>
-          <input onclick="disable()" <!--$checked2--> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
-          <label for="netzwerkanschluss_wlan">Funknetzwerk (wlan0)</label>
-          </fieldset>
-          </td>
-          <td width="5%" valign="middle">
-          <a href="#" data-role="button" id="btnlshwnetwork" data-inline="true" data-mini="true"
-          onClick="window.open('/admin/system/tools/lshwnetwork.cgi?lang=<!--$lang-->',
-          'NewWindow1','toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
-          <font size="-1">Netzwerkadapter</font></a>
-          </td>
-          <td width="20%">
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td>
-          <label id="labelnetzwerkssid">Funknetzwerk (SSID):</label>
-          </td>
-          <td>
-          <input id="netzwerkssid" name="netzwerkssid" type="text" class="textfield" value="<!--$netzwerkssid-->">
-          </td>
-          <td valign="middle">
-          <a href="#" data-role="button" id="btnlistnetworks" data-inline="true" data-mini="true"
-          onClick="window.open('/admin/system/tools/listnetworks.cgi?lang=<!--$lang-->',
-          'NewWindow2','toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=900,height=600')">
-          <font size="-1">Suche Netzwerke</font></a>
-          </td>
-          <td>
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td>
-          <label id="labelnetzwerkschluessel">Netzwerkschl&uuml;ssel:</label>
-          </td>
-          <td>
-          <input id="netzwerkschluessel" name="netzwerkschluessel" type="text" class="textfield"
-          value="<!--$netzwerkschluessel-->">
-          </td>
-          <td>
-          &nbsp;
-          </td>
-          <td>
-          <font size="-1"></font>
-          </td>
-        </tr>
-        <tr>
-          <td width="25%">
-          <label id="labelnetzwerkadressen">Netzwerkadressen:</label>
-          </td>
-          <td width="50%">
-          <fieldset data-role="controlgroup">
-          <input onclick="disable()" <!--$checked3--> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
-          <label for="netzwerkadressen_dhcp">Automatisch beziehen (DHCP)</label>
-          <input onclick="disable()" <!--$checked4--> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
-          <label for="netzwerkadressen_manual">Manuell festlegen (Statisch)</label>
-          </fieldset>
-          </td>
-          <td width="5%" valign="middle">
-          &nbsp;
-          </td>
-          <td width="20%">
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td>
-          <label id="labelnetzwerkipadresse">IP-Adresse:</label>
-          </td>
-          <td>
-          <input id="netzwerkipadresse" name="netzwerkipadresse" type="text" class="textfield" value="<!--$netzwerkipadresse-->" data-validation-optional="true"
-            data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
-          Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
-          </td>
-          <td valign="middle">
-          &nbsp;
-          </td>
-          <td>
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td>
-          <label id="labelnetzwerkipmaske">IP-Maske:</label>
-          </td>
-          <td>
-          <input id="netzwerkipmaske" name="netzwerkipmaske" type="text" class="textfield" value="<!--$netzwerkipmaske-->" data-validation-optional="true"
-            data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
-          Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
-          </td>
-          <td valign="middle">
-          &nbsp;
-          </td>
-          <td>
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td>
-          <label id="labelnetzwerkgateway">IP-Adresse des Gateways:</label>
-          </td>
-          <td>
-          <input id="netzwerkgateway" name="netzwerkgateway" typk="text" class="textfield" value="<!--$netzwerkgateway-->" data-validation-optional="true"
-            data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
-          Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
-          </td>
-          <td valign="middle">
-          &nbsp;
-          </td>
-          <td>
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td>
-          <label id="labelnetzwerknameserver">IP-Adresse des Nameservers:</label>
-          </td>
-          <td>
-          <input id="netzwerknameserver" name="netzwerknameserver" type="text" class="textfield" value="<!--$netzwerknameserver-->" data-validation-optional="true"
-            data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
-          Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
-          </td>
-          <td valign="middle">
-          &nbsp;
-          </td>
-          <td>
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td colspan=4>
-          &nbsp;
-          </td>
-        </tr>
-        <tr>
-          <td></td>
-          <td colspan=3>
-          <div id="form-error-message" class="form-error-message"></div>
-          </td>
-        </tr>
-        </table>
-      </div>
-
-      <p>
-      &nbsp;
-      </p>
-
-      <p>
-      <center>
-      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Abbrechen</a>
-      <a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" 
-         href="/admin/system/setup/index.cgi?step=2&lang=<!--$lang-->&sid=<!--$sid-->" >Zur&uuml;ck</a>
-      <button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Weiter zu Schritt 4</button>
-      </center>
-      </p>
-      </form>
-
-  <script>
-  var $messages = $('#form-error-message');
-  $.validate({
-    modules : 'security',
-    errorMessagePosition : $messages,
-  });
-
-  // Disable some options on Load depending on selected value
-  disable();
-
-  // Disable some options on click depending on selected value
-  function disable() {
-    // Ethernet or WLAN
-    if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
-      $('#btnlistnetworks').addClass('ui-disabled');
-      $('#netzwerkssid').addClass('ui-disabled');
-      $('#labelnetzwerkssid').addClass('ui-disabled');
-      $('#netzwerkschluessel').addClass('ui-disabled');
-      $('#labelnetzwerkschluessel').addClass('ui-disabled');
-    }
-    else {
-      $('#btnlistnetworks').removeClass('ui-disabled');
-      $('#netzwerkssid').removeClass('ui-disabled');
-      $('#labelnetzwerkssid').removeClass('ui-disabled');
-      $('#netzwerkschluessel').removeClass('ui-disabled');
-      $('#labelnetzwerkschluessel').removeClass('ui-disabled');
-    }
-    // DHCP or Manual
-    if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
-      $('#labelnetzwerkipadresse').addClass('ui-disabled');
-      $('#netzwerkipadresse').addClass('ui-disabled');
-      $('#labelnetzwerkipmaske').addClass('ui-disabled');
-      $('#netzwerkipmaske').addClass('ui-disabled');
-      $('#labelnetzwerkgateway').addClass('ui-disabled');
-      $('#netzwerkgateway').addClass('ui-disabled');
-      $('#labelnetzwerknameserver').addClass('ui-disabled');
-      $('#netzwerknameserver').addClass('ui-disabled');
-    }
-    else {
-      $('#labelnetzwerkipadresse').removeClass('ui-disabled');
-      $('#netzwerkipadresse').removeClass('ui-disabled');
-      $('#labelnetzwerkipmaske').removeClass('ui-disabled');
-      $('#netzwerkipmaske').removeClass('ui-disabled');
-      $('#labelnetzwerkgateway').removeClass('ui-disabled');
-      $('#netzwerkgateway').removeClass('ui-disabled');
-      $('#labelnetzwerknameserver').removeClass('ui-disabled');
-      $('#netzwerknameserver').removeClass('ui-disabled');
-    }
-  }
-
-  </script>
+									<!-- ** START template/system/de/setup/setup.step03.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<h2>3. Schritt: Netzwerkeinstellung</h2>
+									<p>
+										In diesem Schritt kannst Du die Netzwerkeinstellungen Deines Loxberrys festlegen. Der Loxberry kann per Kabel (LAN) oder aber per WLAN &uuml;ber einen
+										unterst&uuml;tzten USB-WLAN-Adapter mit Deinem Netzwerk verbunden werden. Falls Du einen WLAN-Adapter verwenden m&ouml;chtest, muss dieser nun mit dem USB-Port
+										Deines Loxberrys verbunden werden.
+									</p>
+									<p>
+										Wenn Du einen Internetrouter verwendest, werden die Netzwerkeinstellungen
+										normalerweise per DHCP-Protokoll automatisch vom Router an den Client &uuml;bertragen. Das ist sehr praktisch, allerdings wird jedem Client, der sich per DHCP
+										neu am Router anmeldet, die jeweils n&auml;chste freie IP-Adresse zugewiesen. Somit kann sich die IP-Adresse st&auml;ndig &auml;ndern. Es ist jedoch &auml;u�erst wichtig,
+										dass sowohl der Loxone Miniserver als auch Dein Loxberry <b>immer &uuml;ber die gleiche IP-Adresse</b> im Netzwerk erreichbar sind. Ansonsten k&ouml;nnen beide nicht
+										miteinander kommunizieren! Wir empfehlen daher die Netzwerkeinstellungen durch den Router per DHCP zu vereteilen, hierbei aber den Router so zu konfigurieren,
+										das dem Miniserver und dem Loxberry stets die selbe IP-Adresse zugewiesen wird. Bei einer Fritzbox z. B. lautet die entsprechende Option "Diesem Netzwerkger&auml;t
+										immer die gleiche IPv4-Adresse zuweisen.".
+									</p>
+									<p>
+										Sollte diese Funktion in Deinem Router nicht zur Verf&uuml;gung stehen muss dem Loxberrxy (und auch dem Loxone Miniserver) eine feste, statische IP-Adresse manuell
+										zugewiesen werden. Hier musst Du sicherstellen, dass in Deinem Netzwerk kein anderer Client diese IP-Adresse verwendet.
+									</p>
+									<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
+										<input type="hidden" name="saveformdata" value="1">
+										<div class="form-group">
+											<table class="formtable" border="0" width="100%">
+												<tr>
+													<td width="25%">
+													 <label id="labelnetzwerkanschluss">Netzwerkanschluss:</label>
+													</td>
+													<td width="50%">
+														<fieldset data-role="controlgroup">
+															<input onclick="disable()" <!--$checked1--> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
+																<label for="netzwerkanschluss_eth">Kabelgebundenes Netzwerk (eth0)</label>
+															<input onclick="disable()" <!--$checked2--> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
+																<label for="netzwerkanschluss_wlan">Funknetzwerk (wlan0)</label>
+														</fieldset>
+													</td>
+													<td width="5%" valign="middle">
+														<a href="#" data-role="button" id="btnlshwnetwork" data-inline="true" data-mini="true"
+															onClick="window.open('/admin/system/tools/lshwnetwork.cgi?lang=<!--$lang-->',
+															'NewWindow1','toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
+															<font size="-1">Netzwerkadapter</font>
+														</a>
+													</td>
+													<td width="20%">
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label id="labelnetzwerkssid">Funknetzwerk (SSID):</label>
+													</td>
+													<td>
+														<input id="netzwerkssid" name="netzwerkssid" type="text" class="textfield" value="<!--$netzwerkssid-->">
+													</td>
+													<td valign="middle">
+														<a href="#" data-role="button" id="btnlistnetworks" data-inline="true" data-mini="true"
+															onClick="window.open('/admin/system/tools/listnetworks.cgi?lang=<!--$lang-->',
+															'NewWindow2','toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=900,height=600')">
+															<font size="-1">Suche Netzwerke</font>
+														</a>
+													</td>
+													<td>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label id="labelnetzwerkschluessel">Netzwerkschl&uuml;ssel:</label>
+													</td>
+													<td>
+														<input id="netzwerkschluessel" name="netzwerkschluessel" type="text" class="textfield" value="<!--$netzwerkschluessel-->">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+														<font size="-1"></font>
+													</td>
+												</tr>
+												<tr>
+													<td width="25%">
+														<label id="labelnetzwerkadressen">Netzwerkadressen:</label>
+													</td>
+													<td width="50%">
+														<fieldset data-role="controlgroup">
+															<input onclick="disable()" <!--$checked3--> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
+																<label for="netzwerkadressen_dhcp">Automatisch beziehen (DHCP)</label>
+															<input onclick="disable()" <!--$checked4--> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
+																<label for="netzwerkadressen_manual">Manuell festlegen (Statisch)</label>
+														</fieldset>
+													</td>
+													<td width="5%" valign="middle">
+														&nbsp;
+													</td>
+													<td width="20%">
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label id="labelnetzwerkipadresse">IP-Adresse:</label>
+													</td>
+													<td>
+														<input id="netzwerkipadresse" name="netzwerkipadresse" type="text" class="textfield" value="<!--$netzwerkipadresse-->" data-validation-optional="true"
+															data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
+															Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
+													</td>
+													<td valign="middle">
+														&nbsp;
+													</td>
+													<td>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label id="labelnetzwerkipmaske">IP-Maske:</label>
+													</td>
+													<td>
+														<input id="netzwerkipmaske" name="netzwerkipmaske" type="text" class="textfield" value="<!--$netzwerkipmaske-->" data-validation-optional="true"
+															data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
+															Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
+													</td>
+													<td valign="middle">
+														&nbsp;
+													</td>
+													<td>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label id="labelnetzwerkgateway">IP-Adresse des Gateways:</label>
+													</td>
+													<td>
+														<input id="netzwerkgateway" name="netzwerkgateway" typk="text" class="textfield" value="<!--$netzwerkgateway-->" data-validation-optional="true"
+															data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
+															Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
+													</td>
+													<td valign="middle">
+														&nbsp;
+													</td>
+													<td>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label id="labelnetzwerknameserver">IP-Adresse des Nameservers:</label>
+													</td>
+													<td>
+														<input id="netzwerknameserver" name="netzwerknameserver" type="text" class="textfield" value="<!--$netzwerknameserver-->" data-validation-optional="true"
+															data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse eingegeben zu haben.
+															Eine IP-Adresse hat die Form xxx.xxx.xxx.xxx, z. B. 192.168.001.100<br>">
+													</td>
+													<td valign="middle">
+														&nbsp;
+													</td>
+													<td>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td colspan=4>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td></td>
+													<td colspan=3>
+														<div id="form-error-message" class="form-error-message"></div>
+													</td>
+												</tr>
+											</table>
+										</div>
+										<p>
+										&nbsp;
+										</p>
+										<p>
+											<center>
+												<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Abbrechen</a>
+												<a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="/admin/system/setup/index.cgi?step=2&lang=<!--$lang-->&sid=<!--$sid-->" >Zur&uuml;ck</a>
+												<button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Weiter zu Schritt 4</button>
+											</center>
+										</p>
+									</form>
+									<script>
+										var $messages = $('#form-error-message');
+										$.validate({
+											modules : 'security',
+											errorMessagePosition : $messages,
+										});
+	
+										// Disable some options on Load depending on selected value
+										disable();
+	
+										// Disable some options on click depending on selected value
+										function disable() {
+											// Ethernet or WLAN
+											if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
+												$('#btnlistnetworks').addClass('ui-disabled');
+												$('#netzwerkssid').addClass('ui-disabled');
+												$('#labelnetzwerkssid').addClass('ui-disabled');
+												$('#netzwerkschluessel').addClass('ui-disabled');
+												$('#labelnetzwerkschluessel').addClass('ui-disabled');
+											}
+											else {
+												$('#btnlistnetworks').removeClass('ui-disabled');
+												$('#netzwerkssid').removeClass('ui-disabled');
+												$('#labelnetzwerkssid').removeClass('ui-disabled');
+												$('#netzwerkschluessel').removeClass('ui-disabled');
+												$('#labelnetzwerkschluessel').removeClass('ui-disabled');
+											}
+											// DHCP or Manual
+											if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
+												$('#labelnetzwerkipadresse').addClass('ui-disabled');
+												$('#netzwerkipadresse').addClass('ui-disabled');
+												$('#labelnetzwerkipmaske').addClass('ui-disabled');
+												$('#netzwerkipmaske').addClass('ui-disabled');
+												$('#labelnetzwerkgateway').addClass('ui-disabled');
+												$('#netzwerkgateway').addClass('ui-disabled');
+												$('#labelnetzwerknameserver').addClass('ui-disabled');
+												$('#netzwerknameserver').addClass('ui-disabled');
+											}
+											else {
+												$('#labelnetzwerkipadresse').removeClass('ui-disabled');
+												$('#netzwerkipadresse').removeClass('ui-disabled');
+												$('#labelnetzwerkipmaske').removeClass('ui-disabled');
+												$('#netzwerkipmaske').removeClass('ui-disabled');
+												$('#labelnetzwerkgateway').removeClass('ui-disabled');
+												$('#netzwerkgateway').removeClass('ui-disabled');
+												$('#labelnetzwerknameserver').removeClass('ui-disabled');
+												$('#netzwerknameserver').removeClass('ui-disabled');
+											}
+										}
+									</script>
+									<!-- ** END template/system/de/setup/setup.step03.html ************************************************************************************ -->
