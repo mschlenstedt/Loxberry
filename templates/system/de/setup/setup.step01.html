@@ -1,10 +1,3 @@
-  <!-- content -->
-
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%;">
       <h2>1. Schritt: Administrator festlegen</h2>
       <p>
       Als aller erstes muss der Administrator-Zugang festgelegt werden. Mit diesem Account kannst Du sp&auml;ter
@@ -23,15 +16,15 @@
           <label class="control-label" for="adminuser">Benutzername:</label>
           </td>
           <td width="50%">
-          <input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length letternumeric" data-validation-length="3-20"
-          data-validation-allowing="-_\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF"
+          <input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20"
+          data-validation-allowing="-_"
           data-validation-error-msg="* Der Benutzername muss 3-20 Zeichen lang sein und aus alphanumerischen Zeichen bestehen<br>" value="<!--$adminuser-->">
           </td>
           <td width="3%">
           &nbsp;
           </td>
           <td width="22%">
-          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_ &Auml;&Ouml;&Uuml; &auml;&ouml;&uuml; &szlig;</font>
+          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_</font>
           </td>
         </tr>
         <tr>
@@ -39,16 +32,15 @@
           <label>Passwort:</label>
           </td>
           <td>
-          <input name="adminpass1" type="password" data-validation="strength letternumeric" data-validation-allowing="-_,.;:!?&()?+§%="
-           data-validation-strength="2" class="textfield" value="<!--$adminpass1-->"
-          data-validation-error-msg="* Das Passwort muss aus Gross- und Kleinbuchstaben sowie aus Buchstaben und Zahlen und min. 5 Zeichen bestehen. Es
-          d&uuml;rfen nur folgende Sonderzeichen verwendet werden: -_,.;:!?&()?+§%=">
+          <input name="adminpass1" type="password" data-validation="strength letternumeric" data-validation-allowing="-_,.;:!?+§%="
+          data-validation-length="Min1" data-validation-strength="2" class="textfield" value="<!--$adminpass1-->"
+          data-validation-error-msg="* Das Passwort muss aus Gross- und Kleinbuchstaben sowie aus Buchstaben und Zahlen und min. 5 Zeichen bestehen. Es d&uuml;rfen nur folgende Sonderzeichen verwendet werden: -_,.;:!?+§%=">
           </td>
           <td>
           &nbsp;
           </td>
           <td>
-          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_,.;:!?&()?+§%=</font>
+          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_,.;:!?+§%=</font>
           </td>
         </tr>
         <tr>
@@ -79,7 +71,6 @@
         </tr>
         </table>
       </div>
-      </form>
 
       <p>
       &nbsp;
@@ -89,15 +80,10 @@
       <center>
       <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Abbrechen</a>
       <a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Zur&uuml;ck</a>
-      <button type="submit" form="main_form1" id="btnsubmit1" data-role="button" data-inline="true" data-mini="true" data-icon="check">Weiter zu Schritt 2</button>
+      <button type="submit" form="main_form1" name="btnsubmit1" id="btnsubmit1" data-role="button" data-inline="true" data-mini="true" data-icon="check">Weiter zu Schritt 2</button>
       </center>
       </p>
-
-    </div>
-    <!-- /text -->
-    </div>
-
-  </div>
+      </form>
 
   <script>
   var $messages = $('#form-error-message');
@@ -106,5 +92,3 @@
     errorMessagePosition : $messages
   });
   </script>
-
-  <!-- /content -->

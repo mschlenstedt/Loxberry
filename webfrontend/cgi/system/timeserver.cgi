@@ -109,7 +109,7 @@ $do           = $query{'do'};
 # Just for testing via: http://loxberry/admin/system/timeserver.cgi?do=query
 if ( $do eq "query" ) 
 {
-	print "Content-Type: text/plain\n\n";
+  print "Content-Type: text/plain\n\n";
   if ( $zeitserver eq "ntp" )
   {
   	print `$ntpdate -q $ntpserverurl 2>&1| $grepbin ntp | $awkbin '{for (I=1;I<=NF;I++) if (\$I == "offset") {print \$(I+1)};}'`;
@@ -251,21 +251,18 @@ quotemeta($zeitserver);
 quotemeta($ntpserverurl);
 quotemeta($zeitzone);
 
-
-
-  # Test if NTP-Server is reachable
-  our $ntp_check="0"; 
-  if ( ${zeitserver} eq "ntp" )
-  {
-   $ntp_check = system("$ntpdate -q $ntpserverurl >/dev/null 2>&1");
-  }
-  # Error if we can't get time
-  if ($ntp_check) {
-    $error = $phrase->param("TXT0050");
-    &error;
-    exit;
-  }
-
+# Test if NTP-Server is reachable
+our $ntp_check="0"; 
+if ( ${zeitserver} eq "ntp" )
+{
+ $ntp_check = system("$ntpdate -q $ntpserverurl >/dev/null 2>&1");
+}
+# Error if we can't get time
+if ($ntp_check) {
+  $error = $phrase->param("TXT0050");
+  &error;
+  exit;
+}
 
 # Write configuration file(s)
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
@@ -274,14 +271,14 @@ $cfg->param("TIMESERVER.ZONE", "$zeitzone");
 $cfg->save();
 
 # Trigger timesync
-$output = qx(sudo $installfolder/sbin/setdatetime.pl);
+$output = qx($installfolder/sbin/setdatetime.pl);
 $output = qx($datebin);
 
 print "Content-Type: text/html\n\n";
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
 $help = "timeserver";
 
-$message = $phrase->param("TXT0036");
+$message = $phrase->param("TXT0036") . "<br>" . $output;
 $nexturl = "/admin/index.cgi";
 
 # Print Template

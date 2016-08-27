@@ -1,11 +1,3 @@
-  <!-- content -->
-
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%;">
-
       <form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
@@ -15,7 +7,9 @@
           <label>Old Password:</label>
           </td>
           <td>
-          <input name="adminpassold" type="password" class="textfield" value="">
+          <input name="adminpassold" type="password" class="textfield" data-validation="length alphanumeric" data-validation-allowing="-_,.;:!?+§%="
+          data-validation-length="Min1" class="textfield" value=""
+          data-validation-error-msg="* The Password must have 5 characters minimum and consist of upper- and lowercase characters plus digits. Following special characters are allowed only: -_,.;:!?+§%=">
           </td>
           <td>
           &nbsp;
@@ -44,15 +38,15 @@
           <label>Password:</label>
           </td>
           <td>
-          <input name="adminpass1" type="password" data-validation="strength alphanumeric" data-validation-allowing="-_,.;:!?&()?+§%="
+          <input name="adminpass1" type="password" data-validation="strength alphanumeric" data-validation-allowing="-_,.;:!?+§%="
            data-validation-strength="2" class="textfield" value=""
-          data-validation-error-msg="* The Password must have 5 characters minimum and consist of upper- and lowercase characters plus digits. Following special characters are allowed only: -_,.;:!?&()?+§%=">
+          data-validation-error-msg="* The Password must have 5 characters minimum and consist of upper- and lowercase characters plus digits. Following special characters are allowed only: -_,.;:!?+§%=">
           </td>
           <td>
           &nbsp;
           </td>
           <td>
-          <font size="-1">Allowed characters: A-Z a-z 0-9 -_,.;:!?&amp;()?+§%=</font>
+          <font size="-1">Allowed characters: A-Z a-z 0-9 -_,.;:!?+§%=</font>
           </td>
         </tr>
         <tr>
@@ -83,7 +77,6 @@
         </tr>
         </table>
       </div>
-      </form>
 
       <p>
       &nbsp;
@@ -92,15 +85,10 @@
       <p>
       <center>
       <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
-      <button type="submit" form="main_form1" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
+      <button type="submit" form="main_form1" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
       </center>
       </p>
-
-    </div>
-    <!-- /text -->
-    </div>
-
-  </div>
+      </form>
 
   <script>
   var $messages = $('#form-error-message');
@@ -110,4 +98,3 @@
   });
   </script>
 
-  <!-- /content -->

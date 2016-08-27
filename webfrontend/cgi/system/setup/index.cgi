@@ -90,8 +90,6 @@ our $e;
 our $loxberrypasswdhtml;
 our $rootpasswdhtml;
 our $mysqlpasswdhtml;
-our $rebootbin;
-our $http_host = $ENV{HTTP_HOST};
 our $dsn;
 our $dbh;
 our $sth;
@@ -110,13 +108,12 @@ our $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.5";
+$version = "0.0.6";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 $clouddnsaddress = $cfg->param("BASE.CLOUDDNS");
-$rebootbin       = $cfg->param("BINARIES.REBOOT");
 $curlbin         = $cfg->param("BINARIES.CURL");
 $grepbin         = $cfg->param("BINARIES.GREP");
 $awkbin          = $cfg->param("BINARIES.AWK");
@@ -150,7 +147,7 @@ $miniserveruser1      				= param('miniserveruser1');
 $miniserverkennwort1  				= param('miniserverkennwort1');
 $useclouddns1         				= param('useclouddns1');
 $miniservercloudurl1  				= param('miniservercloudurl1');
-$miniservercloudurlftpport1  	= param('miniservercloudurlftpport1');
+$miniservercloudurlftpport1  			= param('miniservercloudurlftpport1');
 $miniservernote1      				= param('miniservernote1');
 $netzwerkanschluss    				= param('netzwerkanschluss');
 $netzwerkssid         				= param('netzwerkssid');
@@ -628,7 +625,7 @@ $miniserveruser1     				= $session->param("miniserveruser1");
 $miniserverkennwort1 				= $session->param("miniserverkennwort1");
 $miniservernote1     				= $session->param("miniservernote1");
 $miniservercloudurl1 				= $session->param("miniservercloudurl1");
-$miniservercloudurlftpport1 = $session->param("miniservercloudurlftpport1");
+$miniservercloudurlftpport1 			= $session->param("miniservercloudurlftpport1");
 $useclouddns1        				= $session->param("useclouddns1");
 $netzwerkanschluss   				= $session->param("netzwerkanschluss");
 $netzwerkssid        				= $session->param("netzwerkssid");
@@ -702,7 +699,7 @@ $cfg->save();
 # Save Username/Password for Webarea
 $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64];
 $adminpasscrypted = crypt("$adminpass1","$salt");
-open(F,">$installfolder/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
+open(F,">$installfolder/config/system/htusers.dat.new") || die "Missing file: config/system/htusers.dat.new";
  flock(F,2);
  print F "$adminuser:$adminpasscrypted";
  flock(F,8);

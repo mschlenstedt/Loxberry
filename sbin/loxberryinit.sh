@@ -49,6 +49,13 @@ case "$1" in
 		/etc/init.d/networking restart > /dev/null 2>&1
         fi
 
+        # Copy new HTACCESS User/Password Database
+        if [ -f /opt/loxberry/config/system/htusers.dat.new ]
+        then
+		log_action_begin_msg "Found new htaccess password database. Activating..."
+                mv /opt/loxberry/config/system/htusers.dat.new /opt/loxberry/config/system/htusers.dat > /dev/null 2>&1
+        fi
+
         # Do a system upgrade
         if [ -f /opt/loxberry/data/system/upgrade/upgrade.sh ]
         then
@@ -62,6 +69,7 @@ case "$1" in
 
         # Set Date and Time
         if [ -f /opt/loxberry/sbin/setdatetime.pl ]
+        then
 	  log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
           /opt/loxberry/sbin/setdatetime.pl > /dev/null 2>&1
         fi

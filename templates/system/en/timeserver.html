@@ -1,9 +1,4 @@
-  <!-- content -->
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-    <!-- text -->
-    <div style="margin: 5%;">
-      <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('.form-group').hasClass( 'has-error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<font color=blue><b>Query Time</b> - Please wait, it will take up to 30 seconds...</font>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
+      <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<font color=blue><b>Query Time</b> - Please wait, it will take up to 30 seconds...</font>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
@@ -14,6 +9,9 @@
           <td>
           <!--$systemdatetime-->
           <a href="javascript:location.reload()" data-mini="true" data-inline="true" data-role="button" data-icon="refresh" data-iconpos="notext">Reload</a>
+          &nbsp;
+          <a data-role="button" data-inline="true" data-icon="info" data-mini="true" 
+          href="/admin/system/tools/logfile.cgi?logfile=system/datetime.log&header=html&format=template" target="_blank">Logfile</a>
           </td>
           <td>
           </td>
@@ -81,17 +79,13 @@
         <tr>
          <td colspan="4"><center>
       <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancel</a>
-      <button type="submit" form="main_form4" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
+      <button name="btnsubmit" type="submit" form="main_form4" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Save</button>
       </center>
         </td>
         </tr>
         </table>
       </div>
       </form>
-    </div>
-    <!-- /text -->
-    </div>
-  </div>
 
   <script>
   var $messages = $('#form-error-message');
@@ -124,5 +118,4 @@
   // Disable some options on Load depending on selected value
   disable();
 </script>
-  <!-- /content -->
   

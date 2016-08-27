@@ -1,11 +1,3 @@
-  <!-- content -->
-
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%;">
-
       <form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
@@ -15,7 +7,10 @@
           <label>Altes Passwort:</label>
           </td>
           <td>
-          <input name="adminpassold" type="password" class="textfield" value="">
+          <input name="adminpassold" type="password" class="textfield" data-validation="length alphanumeric" data-validation-length="Min1"
+          data-validation-allowing="-_,.;:!?+§%="
+          data-validation-error-msg="* Das Passwort muss aus alphanummerischen Gross- und Kleinbuchstaben sowie aus Buchstaben und Zahlen und min. 5 Zeichen bestehen.  Es d&uuml;rfen nur folgende Sonderzeichen verwendet werden: -_,.;:!?+§%=" 
+          value="">
           </td>
           <td>
           &nbsp;
@@ -45,16 +40,16 @@
           <label>Passwort:</label>
           </td>
           <td>
-          <input name="adminpass1" type="password" data-validation="strength alphanumeric" data-validation-allowing="-_,.;:!?&()?+§%="
-           data-validation-strength="2" class="textfield" value=""
-          data-validation-error-msg="* Das Passwort muss aus alphanummerischen Gross- und Kleinbuchstaben sowie aus Buchstaben und Zahlen und min. 5 Zeichen bestehen. Es
-          d&uuml;rfen nur folgende Sonderzeichen verwendet werden: -_,.;:!?&()?+§%=">
+          <input name="adminpass1" type="password" data-validation="length strength alphanumeric" data-validation-allowing="-_,.;:!?+§%="
+           data-validation-strength="2" class="textfield" value="" data-validation-length="Min1"
+          data-validation-error-msg="* Das Passwort muss aus alphanummerischen Gross- und Kleinbuchstaben sowie aus Buchstaben und Zahlen und min. 5 Zeichen bestehen.
+Es d&uuml;rfen nur folgende Sonderzeichen verwendet werden: -_,.;:!?+§%=">
           </td>
           <td>
           &nbsp;
           </td>
           <td>
-          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_,.;:!?&amp;()?+§%=</font>
+          <font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_,.;:!?+§%=</font>
           </td>
         </tr>
         <tr>
@@ -85,7 +80,6 @@
         </tr>
         </table>
       </div>
-      </form>
 
       <p>
       &nbsp;
@@ -94,15 +88,10 @@
       <p>
       <center>
       <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Abbrechen</a>
-      <button type="submit" form="main_form1" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Speichern</button>
+      <button type="submit" form="main_form1" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Speichern</button>
       </center>
       </p>
-
-    </div>
-    <!-- /text -->
-    </div>
-
-  </div>
+      </form>
 
   <script>
   var $messages = $('#form-error-message');
@@ -111,5 +100,3 @@
     errorMessagePosition : $messages
   });
   </script>
-
-  <!-- /content -->

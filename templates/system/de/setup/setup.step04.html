@@ -1,11 +1,3 @@
-  <!-- content -->
-
-
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%;">
       <h2>4. Schritt: Zeitserver</h2>
 
       <p>
@@ -25,7 +17,7 @@
       sichergestellt, dass die Uhrzeit des Miniservers (und damit die des Loxberrys) exakt eingestellt werden.
       </p>
 
-      <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('.form-group').hasClass( 'has-error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<font color=blue><b>Frage Zeit ab</b> - Bitte warten, das dauert bis zu 30 Sekunden ...</font>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
+      <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<font color=blue><b>Frage Zeit ab</b> - Bitte warten, das dauert bis zu 30 Sekunden ...</font>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
       <input type="hidden" name="saveformdata" value="1">
       <div class="form-group">
         <table class="formtable" border="0" width="100%">
@@ -88,7 +80,6 @@
         </tr>
         </table>
       </div>
-      </form>
 
       <p>
       &nbsp;
@@ -98,15 +89,10 @@
       <center>
       <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Abbrechen</a>
       <a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Zur&uuml;ck</a>
-      <button type="submit" form="main_form4" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Weiter zu Schritt 5</button>
+      <button type="submit" form="main_form4" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Weiter zu Schritt 5</button>
       </center>
       </p>
-
-    </div>
-    <!-- /text -->
-    </div>
-
-  </div>
+      </form>
 
   <script>
   var $messages = $('#form-error-message');
@@ -142,5 +128,3 @@
   // Disable some options on Load depending on selected value
   disable();
 </script>
-
-  <!-- /content -->

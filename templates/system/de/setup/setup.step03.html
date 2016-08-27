@@ -1,11 +1,3 @@
-  <!-- content -->
-
-
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%;">
       <h2>3. Schritt: Netzwerkeinstellung</h2>
 
       <p>
@@ -183,7 +175,6 @@
         </tr>
         </table>
       </div>
-      </form>
 
       <p>
       &nbsp;
@@ -194,15 +185,10 @@
       <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Abbrechen</a>
       <a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" 
          href="/admin/system/setup/index.cgi?step=2&lang=<!--$lang-->&sid=<!--$sid-->" >Zur&uuml;ck</a>
-      <button type="submit" form="main_form3" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Weiter zu Schritt 4</button>
+      <button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Weiter zu Schritt 4</button>
       </center>
       </p>
-
-    </div>
-    <!-- /text -->
-    </div>
-
-  </div>
+      </form>
 
   <script>
   var $messages = $('#form-error-message');
@@ -255,5 +241,3 @@
   }
 
   </script>
-
-  <!-- /content -->
