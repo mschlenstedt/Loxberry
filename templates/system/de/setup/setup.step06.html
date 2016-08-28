@@ -1,41 +1,52 @@
-      <h2>6. Schritt: Installation ist abgeschlossen - Neustart erforderlich</h2>
-      <p>
-      Herzlichen Glückwunsch! Dein Loxberry ist nun eingerichtet!
-      </p>
-
-      <p>
-      Damit alle Einstellungen aktiv werden ist nun noch ein Reboot notwendig. Bitte klicke dazu auf den Button weiter unten. <b>Achtung!</b> Schreibe Dir vorher
-      noch die neuen Passwörter auf oder drucke Dir diese Seite aus! Du kommst später nicht mehr an die Passwörter heran und ein Löschen/Zurücksetzen ist
-      (beim Root-Passwort) ebenfalls nicht mehr möglich!
-      </p>
-
-      <div class="ui-corner-all custom-corners">
-        <div class="ui-bar ui-bar-a">
-          <h3>Wichtig!</h3>
-        </div>
-        <div class="ui-body ui-body-a">
-          <p>
-          Es wurden folgende neue Passwörter vergeben:<br><br>
-          <table border=0 cellpadding=10>
-            <tr><td><b>Web-Administrationsbereich:</b></td><td>Benutzer: <b><!--$adminuser--></b></td><td> Passwort: <b><!--$adminpass1--></b></td></tr>
-            <!--$loxberrypasswdhtml-->
-            <!--$rootpasswdhtml-->
-            <!--$mysqlpasswdhtml-->
-          </table>
-          </p>
-        </div>
-      </div>
-
-      <p>
-      <center>
-      <a id="btnreboot" data-role="button" data-inline="true" data-icon="recycle" href="/admin/system/power.cgi?do=reboot">Neustart</a>
-      </center>
-      </p>
-
-  <script>
-  var $messages = $('#form-error-message');
-  $.validate({
-    modules : 'security',
-    errorMessagePosition : $messages,
-  });
-  </script>
+									<!-- ** START template/system/de/setup/setup.step06.html 27.08.2016 10:22:04 ************************************************************************************ -->
+						      <h2>6. Schritt: Installation ist abgeschlossen - Neustart erforderlich</h2>
+						      <p>
+						      	Herzlichen Gl&uuml;ckwunsch! Dein Loxberry ist nun eingerichtet!
+						      </p>
+						      <p>
+						      	Damit alle Einstellungen aktiv werden ist nun noch ein Reboot notwendig. Bitte klicke dazu auf den Button weiter unten. <b>Achtung!</b> Schreibe Dir vorher
+						      	noch die neuen Passw&ouml;rter auf oder drucke Dir diese Seite aus! Du kommst sp&auml;ter nicht mehr an die Passw&ouml;rter heran und ein L&ouml;schen/Zur&uuml;cksetzen ist
+						      	(beim Root-Passwort) ebenfalls nicht mehr m&ouml;glich!
+						      </p>
+						      <div class="ui-corner-all custom-corners">
+						        <div class="ui-bar ui-bar-a">
+						          <h3>Wichtig!</h3>
+						        </div>
+						        <div class="ui-body ui-body-a">
+						          <p>
+						        	  Es wurden folgende neue Passw&ouml;rter vergeben:<br><br>
+							          <table border=0 cellpadding=10>
+							            <tr>
+							            	<td>
+							            		<b>Web-Administrationsbereich:</b>
+							            	</td>
+							            	<td>
+							            		Benutzer: 
+							            		<b><!--$adminuser--></b>
+							            	</td>
+							            	<td>
+							            		Passwort: 
+							            		<b><!--$adminpass1--></b>
+							            	</td>
+							            </tr>
+							            <!--$loxberrypasswdhtml-->
+							            <!--$rootpasswdhtml-->
+							            <!--$mysqlpasswdhtml-->
+							          </table>
+						          </p>
+						        </div>
+						      </div>
+						      <p>
+							      <center>
+						  	    	<a id="btnreboot" data-role="button" data-inline="true" data-icon="recycle" href="/admin/system/power.cgi?do=reboot">Neustart</a>
+						    	  </center>
+						      </p>
+								  <script>
+									  var $messages = $('#form-error-message');
+									  $.validate(
+									  {
+									    modules : 'security',
+									    errorMessagePosition : $messages,
+									  });
+								  </script>
+									<!-- ** END template/system/de/setup/setup.step06.html ************************************************************************************ -->

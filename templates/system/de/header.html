@@ -1,91 +1,71 @@
 <html>
-<head>
-  <title>
-
-  <!--$template_title-->
-
-  </title>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8"> 
-  <link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.min.css">
-  <link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css">
-  <link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css"> 
-  <link rel="stylesheet" href="/system/css/main.css">
-  <link rel="shortcut icon" href="/system/images/icons/favicon.ico" /> 
-  <link rel="icon" type="image/png" href="/system/images/favicon-32x32.png" sizes="32x32" />
-  <link rel="icon" type="image/png" href="/system/images/favicon-16x16.png" sizes="16x16" />
-  <script src="/system/scripts/jquery/jquery-1.8.2.min.js"></script>
-  <script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
-  <script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
-  <script src="/system/scripts/setup.js"></script>
-</head>
-<body>
-
-<script>
-// Disable caching of AJAX responses
-$.ajaxSetup ({
-  cache: false
-});
-// No caching at all!
-$(document).on("pagehide", "div[data-role=page]", function(event){
-  $(event.target).remove();
-});
-</script>
-
-<!-- page -->
-<div data-role="page" id="main" data-dom-cache="false">
-
-  <!-- main menu panel -->
-  <div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true">
-  <ul data-role="listview" data-ajax="false" data-inset="true">
-    <li data-role="list-divider">Systemeinstellungen</li>
-    <li><a href="/admin/index.cgi">Home</a></li>
-    <li><a href="/admin/system/admin.cgi?do=form">Admin-Zugang</a></li>
-    <li><a href="/admin/system/miniserver.cgi?do=form">Miniserver</a></li>
-    <li><a href="/admin/system/timeserver.cgi?do=form">Systemzeit</a></li>
-    <li><a href="/admin/system/network.cgi?do=form">Netzwerk</a></li>
-    <li><a href="/admin/system/plugininstall.cgi?do=form">Plugin-Verwaltung</a></li>
-    <li><a href="/admin/system/upgrade.cgi?do=form">Upgrade</a></li>
-    <li><a href="/admin/system/setup/index.cgi">Setup-Assistent</a></li>
-    <li><a href="/admin/system/power.cgi">Neustart</a></li>
-    <li data-role="list-divider">Plugins</li>
-    <!-- STARTPLUGINSHERE --> <!-- Never remove this tag! -->
-    <!-- ENDPLUGINSHERE --> <!-- Never remove this tag! -->
-  </ul>
-  </div>
-  <!-- /main menu panel -->
-
-  <!-- info panel -->
-  <div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true">
-    <h2>Hilfe</h2>
-    <p><a href="<!--$helplink-->" target="blank">Ausf&uuml;hrliche Hilfe</a></p>
-    
-    <p>
-    <font size="-1">
-
-    <!--$helptext-->
-
-    </font>
-    </p>
-
-  </div>
-  <!-- /info panel -->
-
-  <!-- header -->
-  <div align="center" data-role="header" data-position="fixed" data-tap-toggle="false">
-   <h1>
-    	<!--$template_title-->
-    </h1>
-    <a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext">Menu</a>
-    <a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext">Info</a>
-  </div>
-  <!-- /header -->
-
-  <!-- content -->
-  <div role="main" class="ui-content">
-    <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-    <!-- text -->
-    <div style="margin: 5%">
-
-    <!-- ************************************************************************************** -->
-
+	<head>
+		<title><!--$template_title--></title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.min.css">
+		<link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css">
+		<link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css">
+		<link rel="stylesheet" href="/system/css/main.css">
+		<link rel="shortcut icon" href="/system/images/icons/favicon.ico" />
+		<link rel="icon" type="image/png" href="/system/images/favicon-32x32.png" sizes="32x32" />
+		<link rel="icon" type="image/png" href="/system/images/favicon-16x16.png" sizes="16x16" />
+		<script src="/system/scripts/jquery/jquery-1.8.2.min.js"></script>
+		<script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
+		<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
+		<script src="/system/scripts/setup.js"></script>
+		<script>
+			$.mobile.page.prototype.options.domCache = false;
+			$(document).on("pagehide", "div[data-role=page]", function(event)
+			{
+				$(event.target).remove();
+			});
+		</script>
+	</head>
+	<body>
+		<script>
+			// Disable caching of AJAX responses
+			$.ajaxSetup ({ cache: false });
+		</script>
+		<!-- page -->
+			<div data-role="page" id="main" data-dom-cache="false">
+				<!-- main menu panel -->
+					<div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true">
+						<ul data-role="listview" data-ajax="false" data-inset="true">
+							<li data-role="list-divider">Systemeinstellungen</li>
+							<li><a href="/admin/index.cgi">Home</a></li>
+							<li><a href="/admin/system/admin.cgi?do=form">Admin-Zugang</a></li>
+							<li><a href="/admin/system/miniserver.cgi?do=form">Miniserver</a></li>
+							<li><a href="/admin/system/timeserver.cgi?do=form">Systemzeit</a></li>
+							<li><a href="/admin/system/network.cgi?do=form">Netzwerk</a></li>
+							<li><a href="/admin/system/plugininstall.cgi?do=form">Plugin-Verwaltung</a></li>
+							<li><a href="/admin/system/upgrade.cgi?do=form">Upgrade</a></li>
+							<li><a href="/admin/system/setup/index.cgi">Setup-Assistent</a></li>
+							<li><a href="/admin/system/power.cgi">Neustart</a></li>
+							<li data-role="list-divider">Plugins</li>
+							<!-- STARTPLUGINSHERE --> <!-- Never remove this tag! -->
+							<!-- ENDPLUGINSHERE --> <!-- Never remove this tag! -->
+						</ul>
+					</div>
+				<!-- /main menu panel -->
+				<!-- info panel -->
+					<div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true">
+						<h2>Hilfe</h2>
+						<p><a href="<!--$helplink-->" target="blank">Ausf&uuml;hrliche Hilfe</a></p>
+						<p>
+							<font size="-1"><!--$helptext--></font>
+						</p>
+					</div>
+				<!-- /info panel -->
+				<!-- header -->
+					<div align="center" data-role="header" data-position="fixed" data-tap-toggle="false">
+						<h1><!--$template_title--></h1>
+						<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext">Menu</a>
+						<a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext">Info</a>
+					</div>
+				<!-- /header -->
+				<!-- content -->
+					<div role="main" class="ui-content">
+						<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
+							<!-- text -->
+								<div style="margin: 1%">
+									<!-- ************************************************************************************** -->
