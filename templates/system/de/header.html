@@ -14,18 +14,17 @@
 		<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
 		<script src="/system/scripts/setup.js"></script>
 		<script>
+			// Disable JQUERY ♢OM Caching
 			$.mobile.page.prototype.options.domCache = false;
 			$(document).on("pagehide", "div[data-role=page]", function(event)
 			{
 				$(event.target).remove();
 			});
-		</script>
-	</head>
-	<body>
-		<script>
 			// Disable caching of AJAX responses
 			$.ajaxSetup ({ cache: false });
 		</script>
+	</head>
+	<body>
 		<!-- page -->
 			<div data-role="page" id="main" data-dom-cache="false">
 				<!-- main menu panel -->
@@ -41,6 +40,7 @@
 							<li><a href="/admin/system/upgrade.cgi?do=form">Upgrade</a></li>
 							<li><a href="/admin/system/setup/index.cgi">Setup-Assistent</a></li>
 							<li><a href="/admin/system/power.cgi">Neustart</a></li>
+							<li><a href="/admin/system/donate.cgi">Spenden? :-)</a></li>
 							<li data-role="list-divider">Plugins</li>
 							<!-- STARTPLUGINSHERE --> <!-- Never remove this tag! -->
 							<!-- ENDPLUGINSHERE --> <!-- Never remove this tag! -->
@@ -67,5 +67,5 @@
 					<div role="main" class="ui-content">
 						<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
 							<!-- text -->
-								<div style="margin: 1%">
+								<div style="margin: 5%">
 									<!-- ************************************************************************************** -->
