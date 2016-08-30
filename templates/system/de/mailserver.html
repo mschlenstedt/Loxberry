@@ -1,0 +1,177 @@
+									<!-- ** START template/system/de/mailserver.html 29.08.2016 21:01:00 ************************************************************************************ -->
+									<form method="post" id="main_form" action="/admin/system/mailserver.cgi">
+									<input type="hidden" name="saveformdata" value="1">
+									<div class="form-group">
+									<table class="formtable" border="0" width="100%">
+										<tr>
+											<td width="25%">
+													<label>Standard Emailadresse:</label>
+											</td>
+											<td width="50%">
+												<input id="email" name="email" type="text" class="textfield" data-validation="email" value="<!--$email-->"
+												data-validation-error-msg="* Du scheinst keine gültige Emailadresse angegeben zu haben.">
+											</td>
+											<td width="5%">
+											&nbsp;
+											</td>
+											<td width="20%">
+											&nbsp;
+											</td>
+										</tr>
+										<tr>
+											<td>
+											<label>SMTP Server:</label>
+											</td>
+											<td>
+											<input id="smtpserver" name="smtpserver" type="text" class="textfield" value="<!--$smtpserver-->" data-validation="custom"
+											data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)"
+											data-validation-error-msg="* Du scheinst keine g&uuml;ltige IP-Adresse oder g&uuml;ltigen Hostnamen eingegeben zu haben.">
+											</td>
+											<td>
+											&nbsp;
+											</td>
+											<td>
+											&nbsp;
+											</td>
+										</tr>
+										<tr>
+											<td>
+											<label>Portnummer:</label>
+											</td>
+											<td>
+											<input id="smtpport" name="smtpport" type="text" class="textfield" value="<!--$smtpport-->" 
+											data-validation="number" data-validation-allowing="range[1;65535]"
+											data-validation-error-msg="* Die Portnummer muss zwischen 1 und 65535 liegen. Die meisten SMTP-Server verwenden 25 oder 587.">
+											</td>
+											<td>
+											&nbsp;
+											</td>
+											<td>
+											<font size="-1">Normalerweise 25 oder 587</font>
+											</td>
+										</tr>
+										<tr>
+											<td>
+											&nbsp;
+											</td>
+											<td>
+											<label><input onclick="disable()" <!--$checked1--> type="checkbox" id="smtpcrypt" name="smtpcrypt" value="1">Verschlüsselte Verbindung</label>
+											</td>
+											<td>
+											&nbsp;
+											</td>
+											<td>
+											<font size="-1">Wird meistens verwendet</font>
+											</td>
+										</tr>
+										<tr>
+											<td>
+											&nbsp;
+											</td>
+											<td>
+											<label><input onclick="disable()" <!--$checked2--> type="checkbox" id="smtpauth" name="smtpauth" value="1">Authentifizierung (SMTP Auth)</label>
+											</td>
+											<td>
+											&nbsp;
+											</td>
+											<td>
+											<font size="-1">Wird meistens verwendet</font>
+											</td>
+										</tr>
+										<tr>
+											<td>
+											<label id="labelsmtpuser">SMTP Benutzername:</label>
+											</td>
+											<td>
+											<input id="smtpuser" name="smtpuser" type="text" class="textfield" value="<!--$smtpuser-->">
+											</td>
+											<td>
+											&nbsp;
+											</td>
+											<td>
+											&nbsp;
+											</td>
+										</tr>
+										<tr>
+											<td>
+											<label id="labelsmtppass">SMTP Passwort:</label>
+											</td>
+											<td>
+											<input id="smtppass" name="smtppass" type="password" class="textfield" value="<!--$smtppass-->">
+											</td>
+											<td>
+											&nbsp;
+											</td>
+											<td>
+											&nbsp;
+											</td>
+										</tr>
+										<tr>
+											<td colspan=4>
+											&nbsp;
+											</td>
+										</tr>
+										<tr>
+											<td>&nbsp;</td>
+											<td colspan=3>
+											<div id="form-error-message" class="form-error-message"></div>
+											</td>
+										</tr>
+									</table>
+									</div>
+									<p>
+									&nbsp;
+									</p>
+									<p>
+									<center>
+									<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Abbrechen</a>
+									<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Speichern</button>
+									<a href="#" id="btntestsmtp" name="btntestsmtp" data-role="button" data-inline="true" data-mini="true" data-icon="mail">Sende Testmail</a>
+									</center>
+									</p>
+									</form>
+									<br><br>
+									<center>
+									<table width="70%" border="0">
+										<tr>
+											<td>
+											<div id="smtpresults"></div>
+											</td>
+										</tr>
+									</table>
+									</center>
+
+									<script>
+									var $messages = $('#form-error-message');
+									$.validate(
+									{
+										modules : 'security',
+										errorMessagePosition : $messages
+									});
+									// Disable some options on click depending on selected value
+									function disable()
+									{
+										if ( $('#smtpauth').is(':checked') )
+										{
+											$('#smtpuser').removeClass('ui-disabled');
+											$('#smtppass').removeClass('ui-disabled');
+											$('#labelsmtpuser').removeClass('ui-disabled');
+											$('#labelsmtppass').removeClass('ui-disabled');
+										}
+										else
+										{
+											$('#smtpuser').addClass('ui-disabled');
+											$('#smtppass').addClass('ui-disabled');
+											$('#labelsmtpuser').addClass('ui-disabled');
+											$('#labelsmtppass').addClass('ui-disabled');
+										}
+									}
+									// Disable some options on Load depending on selected value
+									disable();
+									</script>
+									<!-- ** END template/system/de/mailserver.html ************************************************************************************ -->
+
+
+
+
+
