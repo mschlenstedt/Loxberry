@@ -22,6 +22,7 @@ use LWP::UserAgent;
 use XML::Simple qw(:strict);
 use Config::Simple;
 use File::Copy;
+use File::HomeDir;
 #use strict;
 #use warnings;
 
@@ -36,6 +37,8 @@ my $miniserverip;
 my $miniserverport;
 my $miniserveradmin;
 my $miniserverpass;
+my $miniserverclouddns;
+my $miniservermac;
 my $timemethod;
 my $url;
 my $ua;
@@ -58,26 +61,31 @@ our $logmessage;
 our $errormessage;
 my $ntpbin;
 my $datebin;
+my $sudobin;
 my $installdir;
+our $home = File::HomeDir->my_home;
 
 ##########################################################################
 # Read Configuration
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.1";
+my $version = "0.0.2";
 
-$cfg             = new Config::Simple('/opt/loxberry/config/system/general.cfg');
-$miniserverip    = $cfg->param("MINISERVER.IPADDRESS");
-$miniserverport  = $cfg->param("MINISERVER.PORT");
-$miniserveradmin = $cfg->param("MINISERVER.ADMIN");
-$miniserverpass  = $cfg->param("MINISERVER.PASS");
-$timemethod      = $cfg->param("TIMESERVER.METHOD");
-$timeserver      = $cfg->param("TIMESERVER.SERVER");
-$timezone        = $cfg->param("TIMESERVER.ZONE");
-$ntpbin          = $cfg->param("BINARIES.NTPDATE");
-$datebin         = $cfg->param("BINARIES.DATE");
-$installdir      = $cfg->param("BASE.INSTALLFOLDER");
+$cfg                 = new Config::Simple("$home/config/system/general.cfg");
+$miniserverip        = $cfg->param("MINISERVER1.IPADDRESS");
+$miniserverport      = $cfg->param("MINISERVER1.PORT");
+$miniserveradmin     = $cfg->param("MINISERVER1.ADMIN");
+$miniserverpass      = $cfg->param("MINISERVER1.PASS");
+$miniserverclouddns  = $cfg->param("MINISERVER1.USECLOUDDNS");
+$miniservermac       = $cfg->param("MINISERVER1.CLOUDURL");
+$timemethod          = $cfg->param("TIMESERVER.METHOD");
+$timeserver          = $cfg->param("TIMESERVER.SERVER");
+$timezone            = $cfg->param("TIMESERVER.ZONE");
+$ntpbin              = $cfg->param("BINARIES.NTPDATE");
+$datebin             = $cfg->param("BINARIES.DATE");
+$sudobin             = $cfg->param("BINARIES.SUDO");
+$installdir          = $cfg->param("BASE.INSTALLFOLDER");
 
 ##########################################################################
 # Main program
@@ -93,6 +101,14 @@ close(F);
 
 # If Method is Miniserver
 if ($timemethod eq "miniserver") {
+
+  # Use Cloud DNS?
+  if ($miniserverclouddns) {
+    $output = qx($home/bin/showclouddns.pl $miniservermac);
+    @fields = split(/:/,$output);
+    $miniserverip   =  @fields[0];
+    $miniserverport = @fields[1];
+  }
 
   # Get Time from Miniserver
   $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/sys/time";
@@ -163,7 +179,7 @@ if ($timemethod eq "miniserver") {
   $day  = $fields[2];
 
   # Set system date and time
-  $output = qx($datebin -s '$year-$mon-$day $hour:$min:$sec');
+  $output = qx($sudobin $datebin -s '$year-$mon-$day $hour:$min:$sec');
   $logmessage = "Sync Date/Time with Miniserver: $output";
   &log;
   exit;
@@ -174,14 +190,14 @@ if ($timemethod eq "miniserver") {
 if ($timemethod eq "ntp" && $timeserver) {
 
   # Set system date and time via NTP
-  $output = qx($ntpbin -u $timeserver);
+  $output = qx($sudobin $ntpbin -u $timeserver);
   $logmessage = "Sync Date/Time with NTP Server: $output";
   &log;
   exit;
 
 }
 
-# Neither Miniserver nnor NTP Server? Error!
+# Neither Miniserver nor NTP Server? Error!
 $errormessage = "You haven't choose neither Miniserver nor NTP Server or no NTP-Server given. Giving up.";
 &error;
 exit;

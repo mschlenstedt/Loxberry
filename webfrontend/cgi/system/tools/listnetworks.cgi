@@ -45,6 +45,10 @@ my  $result;
 my  @result;
 my  $i;
 our $ssid;
+our $quality;
+our $force;
+our $bitrates;
+our $encryption;
 our $version;
 
 ##########################################################################
@@ -52,7 +56,7 @@ our $version;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installdir      = $cfg->param("BASE.INSTALLFOLDER");
@@ -116,9 +120,17 @@ if ($? > 0) {
   $error = 1;
 }
 
+# Only for testing new hardware
+#$error = 0;
+
 # Scan for WLAN Hardware
 if (!$error) {
   @result = qx(sudo /sbin/iwlist wlan0 scan 2>/dev/null);
+
+  # For testing new hardware
+  #open(F,"/tmp/scan.txt");
+  #  @result = <F>;
+  #close (F);
 
   $table = "";
   $i = 1;
@@ -132,56 +144,76 @@ if (!$error) {
       $table = "<thead><tr><th>" . $phrase->param("TXT0011") . "</th><th>" . $phrase->param("TXT0012") . "</th><th>" . $phrase->param("TXT0013") . "</th><th>" . $phrase->param("TXT0014") . "</th><th>" . $phrase->param("TXT0015") . "</th><th>&nbsp;</th></tr></thead>\n<tbody>\n";
     }
     if ($fields[0] =~ /Cell \d+ - Address/) {
+      if ($i ne 1) {
+        # Create Table row from previous entry
+        $table = "$table<tr><th style=\"vertical-align: middle; text-align: left\"><b>$ssid</b></th>";
+        $table = "$table<td style=\"vertical-align: middle; text-align: center\">$encryption</td>";
+        $table = "$table<td  style=\"vertical-align: middle; text-align: center\">$bitrates</td>";
+        $table = "$table<td style=\"vertical-align: middle; text-align: center\">$quality</td>";
+        $table = "$table<td style=\"vertical-align: middle; text-align: center\">$force</td>";
+        $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">Übernehmen</font></button></td></tr>\n";
+      }
       $i++;
+      $ssid = "";
+      $encryption = "";
+      $bitrates = "";
+      $quality = "";
+      $force = "";
     }
     if ($fields[0] eq "ESSID") {
       $fields[1] =~ s/"//g;
-      $table = "$table<tr><th style=\"vertical-align: middle; text-align: left\"><b>$fields[1]</b></th>";
       $ssid = $fields[1];
     }
     if ($fields[0] eq "Encryption key") {
       if ($fields[1] eq "on") {
-        $table = "$table<td style=\"vertical-align: middle; text-align: center\">" . $phrase->param("TXT0001") . "</td>";
+      $encryption = $phrase->param("TXT0001");
       } else {
-        $table = "$table<td style=\"vertical-align: middle; text-align: center\">" . $phrase->param("TXT0002") . "</td>";
+      $encryption = $phrase->param("TXT0002");
       } 
     }
-    if ($fields[0] eq "Bit Rates") {
-      $table = "$table<td  style=\"vertical-align: middle; text-align: center\">$fields[1]</td>";
+    # Bit Rates are a little more tricky
+    if ($fields[0] eq "Bit Rates" && $bitrates) {
+      $bitrates = "$bitrates\; $fields[1]";
+    }
+    if ($fields[0] eq "Bit Rates" && !$bitrates) {
+      $bitrates = "$fields[1]";
+    }
+    if ($fields[0] =~ /^\d+ Mb\/s/) {
+      $bitrates = "$bitrates\; $fields[0]";
     }
     # We found some different listings for different WLAN adapters here...
-    if ($fields[0] =~ /Quality/) {
+    if ($fields[0] =~ /^Quality/) {
       @fields1 = split(/=/,$fields[0]);
       $fields1[1] =~ s/  Signal level$//g;
       $fields1[2] =~ s/\s+$//g;
-      $table = "$table<td style=\"vertical-align: middle; text-align: center\">$fields1[1]</td>";
-      $table = "$table<td style=\"vertical-align: middle; text-align: center\">$fields1[2]</td>";
-      $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\"
-        onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\">
-        <font size=\"-1\">Übernehmen</font></button></td></tr>\n";
-
+      $quality = $fields1[1];
+      $force = $fields1[2];
     } 
-    if ($fields[0] =~ /Signal level/) {
+    if ($fields[0] =~ /^Signal level/) {
       $fields[0] =~ s/Signal level=//g;
       @fields1 = split(/\//,$fields[0]);
       $fields1[2] =~ s/\s+$//g;
-      $table = "$table<td style=\"vertical-align: middle; text-align: center\">$fields1[1]</td>";
-      $table = "$table<td style=\"vertical-align: middle; text-align: center\">$fields1[0]</td>";
-      $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\"
-        onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\">
-        <font size=\"-1\">Übernehmen</font></button></td></tr>\n";
+      $quality = $fields1[1];
+      $force = $fields1[0];
 
     } 
     
   }
-  
-}
 
-$table = "$table</tbody>\n";
+  # Create last Table row
+  $table = "$table<tr><th style=\"vertical-align: middle; text-align: left\"><b>$ssid</b></th>";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\">$encryption</td>";
+  $table = "$table<td  style=\"vertical-align: middle; text-align: center\">$bitrates</td>";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\">$quality</td>";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\">$force</td>";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">Übernehmen</font></button></td></tr>\n";
+  $table = "$table</tbody>\n";
+
+}
 
 print "Content-Type: text/html\n\n";
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0003");
+$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0009");
 
 # Print Template
 open(F,"$installdir/templates/system/$lang/listnetworks.html") || die "Missing template system/$lang/listnetworks.html";

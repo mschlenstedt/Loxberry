@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 ##########################################################################
 # Modules
 ##########################################################################
@@ -63,13 +62,19 @@ our $zeitzone;
 our $checked1;
 our $checked2;
 our $nexturl;
+our $datebin;
+our $systemdatetime;
+our $systemtimezone;
+our $ntpdate;
+our $awkbin;
+our $grepbin;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.3";
 
 $cfg                = new Config::Simple('../../../config/system/general.cfg');
 $installfolder      = $cfg->param("BASE.INSTALLFOLDER");
@@ -77,6 +82,12 @@ $lang               = $cfg->param("BASE.LANG");
 $zeitserver         = $cfg->param("TIMESERVER.METHOD");
 $ntpserverurl       = $cfg->param("TIMESERVER.SERVER");
 $zeitzone           = $cfg->param("TIMESERVER.ZONE");
+$datebin            = $cfg->param("BINARIES.DATE");
+$ntpdate            = $cfg->param("BINARIES.NTPDATE");
+$awkbin             = $cfg->param("BINARIES.AWK");
+$grepbin            = $cfg->param("BINARIES.GREP");
+$do                 = "";
+$helptext           = "";
 
 #########################################################################
 # Parameter
@@ -94,6 +105,21 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 
 # And this one we really want to use
 $do           = $query{'do'};
+
+# Just for testing via: http://loxberry/admin/system/timeserver.cgi?do=query
+if ( $do eq "query" ) 
+{
+  print "Content-Type: text/plain\n\n";
+  if ( $zeitserver eq "ntp" )
+  {
+  	print `$ntpdate -q $ntpserverurl 2>&1| $grepbin ntp | $awkbin '{for (I=1;I<=NF;I++) if (\$I == "offset") {print \$(I+1)};}'`;
+	}
+	else
+	{
+		print "Miniserver configured. No NTP-Query done.";
+	}
+  exit;
+}
 
 # Everything we got from forms
 $saveformdata         = param('saveformdata');
@@ -140,7 +166,8 @@ $phrase = new Config::Simple($languagefile);
 #########################################################################
 
 # Step 1 or beginning
-if (!$saveformdata || $do eq "form") {
+if (!$saveformdata || $do eq "form") 
+{
   &form;
 } else {
   &save;
@@ -181,13 +208,21 @@ foreach (@lines){
   }
 }
 
+# Create Date/Time for template
+if ($lang eq "de") {
+  $systemdatetime         = qx(LANG="de_DE" $datebin);
+} else {
+  $systemdatetime         = qx($datebin);
+}
+chomp($systemdatetime);
+
 print "Content-Type: text/html\n\n";
 
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
 $help = "timeserver";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/timeserver.html") || die "Missing template system/$lang/timeserver.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -216,21 +251,38 @@ quotemeta($zeitserver);
 quotemeta($ntpserverurl);
 quotemeta($zeitzone);
 
+# Test if NTP-Server is reachable
+our $ntp_check="0"; 
+if ( ${zeitserver} eq "ntp" )
+{
+ $ntp_check = system("$ntpdate -q $ntpserverurl >/dev/null 2>&1");
+}
+# Error if we can't get time
+if ($ntp_check) {
+  $error = $phrase->param("TXT0050");
+  &error;
+  exit;
+}
+
 # Write configuration file(s)
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
 $cfg->param("TIMESERVER.METHOD", "$zeitserver");
 $cfg->param("TIMESERVER.ZONE", "$zeitzone");
 $cfg->save();
 
+# Trigger timesync
+$output = qx($installfolder/sbin/setdatetime.pl);
+$output = qx($datebin);
+
 print "Content-Type: text/html\n\n";
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
 $help = "timeserver";
 
-$message = $phrase->param("TXT0036");
+$message = $phrase->param("TXT0036") . "<br>" . $output;
 $nexturl = "/admin/index.cgi";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -263,7 +315,7 @@ $help = "admin";
 
 print "Content-Type: text/html\n\n";
 
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -280,10 +332,10 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
   open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

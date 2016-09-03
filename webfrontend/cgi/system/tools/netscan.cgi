@@ -16,7 +16,7 @@
 
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 ##########################################################################
 #
@@ -107,6 +107,6 @@ foreach ("wlan0","eth0") {
 
 # Print last found ip address
 print "Content-type: text/html; charset=iso-8859-15\n\n";
-print "$miniserverip\n";
+print "$miniserverip";
 
 exit;

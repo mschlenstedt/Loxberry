@@ -33,6 +33,6 @@ send "$passwordold\r"
 expect "password:"
 send "$passwordnew\r"
 expect "password:"
-send "$passwordnew\r";
+send "$passwordnew\r"
 
 interact

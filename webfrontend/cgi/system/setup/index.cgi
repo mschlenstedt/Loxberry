@@ -25,6 +25,7 @@ use LWP::UserAgent;
 use Config::Simple;
 use CGI::Session;
 use File::Copy;
+use DBI;
 use warnings;
 use strict;
 no strict "refs"; # we need it for template system
@@ -64,10 +65,10 @@ my $urlstatuscode;
 our $adminuser;
 our $adminpass1;
 our $adminpass2;
-our $miniserverip;
-our $miniserverport;
-our $miniserveruser;
-our $miniserverkennwort;
+our $miniserverip1;
+our $miniserverport1;
+our $miniserveruser1;
+our $miniserverkennwort1;
 our $netzwerkanschluss;
 our $netzwerkssid;
 our $netzwerkschluessel;
@@ -84,23 +85,38 @@ our $zeitzone;
 our $rootnewpassword;
 our $output;
 our $adminpasscrypted;
+our $salt;
 our $e;
 our $loxberrypasswdhtml;
 our $rootpasswdhtml;
-our $rebootbin;
-our $http_host = $ENV{HTTP_HOST};
+our $mysqlpasswdhtml;
+our $dsn;
+our $dbh;
+our $sth;
+our $sqlerr;
+our $useclouddns1;
+our $miniservercloudurl1;
+our $miniservercloudurlftpport1;
+our $curlbin;
+our $grepbin;
+our $awkbin;
+our $miniservernote1;
+our $clouddnsaddress;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.6";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
-$rebootbin       = $cfg->param("BINARIES.REBOOT");
+$clouddnsaddress = $cfg->param("BASE.CLOUDDNS");
+$curlbin         = $cfg->param("BINARIES.CURL");
+$grepbin         = $cfg->param("BINARIES.GREP");
+$awkbin          = $cfg->param("BINARIES.AWK");
 
 #########################################################################
 # Parameter
@@ -121,25 +137,29 @@ $step           = $query{'step'};
 $sid            = $query{'sid'};
 
 # Everything from Forms
-$saveformdata         = param('saveformdata');
-$adminuser            = param('adminuser');
-$adminpass1           = param('adminpass1');
-$adminpass2           = param('adminpass2');
-$miniserverip         = param('miniserverip');
-$miniserverport       = param('miniserverport');
-$miniserveruser       = param('miniserveruser');
-$miniserverkennwort   = param('miniserverkennwort');
-$netzwerkanschluss    = param('netzwerkanschluss');
-$netzwerkssid         = param('netzwerkssid');
-$netzwerkschluessel   = param('netzwerkschluessel');
-$netzwerkadressen     = param('netzwerkadressen');
-$netzwerkipadresse    = param('netzwerkipadresse');
-$netzwerkipmaske      = param('netzwerkipmaske');
-$netzwerkgateway      = param('netzwerkgateway');
-$netzwerknameserver   = param('netzwerknameserver');
-$zeitserver           = param('zeitserver');
-$ntpserverurl         = param('ntpserverurl');
-$zeitzone             = param('zeitzone');
+$saveformdata         				= param('saveformdata');
+$adminuser            				= param('adminuser');
+$adminpass1           				= param('adminpass1');
+$adminpass2           				= param('adminpass2');
+$miniserverip1        				= param('miniserverip1');
+$miniserverport1      				= param('miniserverport1');
+$miniserveruser1      				= param('miniserveruser1');
+$miniserverkennwort1  				= param('miniserverkennwort1');
+$useclouddns1         				= param('useclouddns1');
+$miniservercloudurl1  				= param('miniservercloudurl1');
+$miniservercloudurlftpport1  			= param('miniservercloudurlftpport1');
+$miniservernote1      				= param('miniservernote1');
+$netzwerkanschluss    				= param('netzwerkanschluss');
+$netzwerkssid         				= param('netzwerkssid');
+$netzwerkschluessel   				= param('netzwerkschluessel');
+$netzwerkadressen     				= param('netzwerkadressen');
+$netzwerkipadresse    				= param('netzwerkipadresse');
+$netzwerkipmaske      				= param('netzwerkipmaske');
+$netzwerkgateway      				= param('netzwerkgateway');
+$netzwerknameserver   				= param('netzwerknameserver');
+$zeitserver           				= param('zeitserver');
+$ntpserverurl         				= param('ntpserverurl');
+$zeitzone             				= param('zeitzone');
 
 # Filter
 quotemeta($query{'lang'});
@@ -252,7 +272,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017");
 $help = "setup00";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step00.html") || die "Missing template system/$lang/setup/setup.step00.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -293,7 +313,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup01";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step01.html") || die "Missing template system/$lang/asistant/setup.step01.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -313,59 +333,34 @@ exit;
 
 sub step2 {
 
-#if ($saveformdata) {
-#  # Check input from Step 1
-#  if ($adminuser =~ /\W+/ || length($adminuser) < 3 || length($adminuser) > 20){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#  if (!$adminpass1 || !$adminuser){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#  if ($adminpass1 !~ /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])\S{5,}$/){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#  if ($adminpass1 =~ /\W+/){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#  if ($adminpass1 ne $adminpass2){
-#    $error = "$txt9";
-#    &error;
-#    exit;
-#  }
-#}
-
 # Store submitted data in session file
 if ($saveformdata) {
   $session->param("adminuser", $adminuser);
   $session->param("adminpass1", $adminpass1);
-  $session->param("miniserverip", $miniserverip);
-  $session->param("miniserverport", $miniserverport);
-  $session->param("miniserveruser", $miniserveruser);
-  $session->param("miniserverkennwort", $miniserverkennwort);
 }
 
 # Read data from Session file
-$miniserverip       = $session->param("miniserverip");
-$miniserverport     = $session->param("miniserverport");
-$miniserveruser     = $session->param("miniserveruser");
-$miniserverkennwort = $session->param("miniserverkennwort");
+$miniserverip1       				= $session->param("miniserverip1");
+$miniserverport1     				= $session->param("miniserverport1");
+$miniserveruser1     				= $session->param("miniserveruser1");
+$miniserverkennwort1 				= $session->param("miniserverkennwort1");
+$useclouddns1        				= $session->param("useclouddns1");
+$miniservercloudurl1 				= $session->param("miniservercloudurl1");
+$miniservercloudurlftpport1 = $session->param("miniservercloudurlftpport1");
+$miniservernote1     				= $session->param("miniservernote1");
 
 # Filter
-quotemeta($miniserverip);
-quotemeta($miniserverport);
-quotemeta($miniserveruser);
-quotemeta($miniserverkennwort);
+quotemeta($miniserverip1);
+quotemeta($miniserverport1);
+quotemeta($miniserveruser1);
+quotemeta($miniserverkennwort1);
+quotemeta($useclouddns1);
+quotemeta($miniservercloudurl1);
+quotemeta($miniservercloudurlftpport1);
+quotemeta($miniservernote1);
 
 # Default values
-if (!$miniserverport) {$miniserverport = "80";}
+if (!$miniserverport1) {$miniserverport1 = "80";}
 
 $step++;
 
@@ -375,7 +370,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup02";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step02.html") || die "Missing template system/$lang/setup/setup.step02.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -397,13 +392,43 @@ sub step3 {
 
 # Store submitted data in session file
 if ($saveformdata) {
-  $session->param("miniserverip", $miniserverip);
-  $session->param("miniserverport", $miniserverport);
-  $session->param("miniserveruser", $miniserveruser);
-  $session->param("miniserverkennwort", $miniserverkennwort);
+  $session->param("miniserverip1", $miniserverip1);
+  $session->param("miniserverport1", $miniserverport1);
+  $session->param("miniserveruser1", $miniserveruser1);
+  $session->param("miniserverkennwort1", $miniserverkennwort1);
+  $session->param("useclouddns1", $useclouddns1);
+  $session->param("miniservercloudurl1", $miniservercloudurl1);
+  $session->param("miniservercloudurlftpport1", $miniservercloudurlftpport1);
+  $session->param("miniservernote1", $miniservernote1);
 
   # Test if Miniserver is reachable
-  $url = "http://$miniserveruser:$miniserverkennwort\@$miniserverip\:$miniserverport/dev/cfg/version";
+  if ( $useclouddns1 eq "on" || $useclouddns1 eq "checked" || $useclouddns1 eq "true" || $useclouddns1 eq "1" )
+  {
+   $useclouddns1 = "1";
+   our $dns_info = `$curlbin -I http://$clouddnsaddress/$miniservercloudurl1 --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+   my @dns_info_pieces = split /:/, $dns_info;
+   if ($dns_info_pieces[1])
+   {
+    $dns_info_pieces[1] =~ s/^\s+|\s+$//g;
+   }
+   else
+   {
+    $dns_info_pieces[1] = 80;
+   }
+   if ($dns_info_pieces[0])
+   {
+    $dns_info_pieces[0] =~ s/^\s+|\s+$//g;
+   }
+   else
+   {
+    $dns_info_pieces[0] = "[DNS-Error]"; 
+   }
+  $url = "http://$miniserveruser1:$miniserverkennwort1\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
+  }
+  else
+  {
+  $url = "http://$miniserveruser1:$miniserverkennwort1\@$miniserverip1\:$miniserverport1/dev/cfg/version";
+  }
   $ua = LWP::UserAgent->new;
   $ua->timeout(1);
   local $SIG{ALRM} = sub { die };
@@ -445,10 +470,10 @@ quotemeta($netzwerkgateway);
 quotemeta($netzwerknameserver);
 
 # Defaults for template
-if ($netzwerkanschluss eq "eth0") {
-  $checked1 = "checked\=\"checked\"";
-} else {
+if ($netzwerkanschluss eq "wlan0") {
   $checked2 = "checked\=\"checked\"";
+} else {
+  $checked1 = "checked\=\"checked\"";
 }
 
 if ($netzwerkadressen eq "manual") {
@@ -465,7 +490,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup03";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step03.html") || die "Missing template system/$lang/setup/setup.step03.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -536,7 +561,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup04";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step04.html") || die "Missing template system/$lang/setup/setup.step04.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -570,7 +595,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup05";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step05.html") || die "Missing template system/$lang/setup/setup.step05.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -591,33 +616,41 @@ exit;
 sub step6 {
 
 # Read data from Session file
-$adminuser          = $session->param("adminuser");
-$adminpass1         = $session->param("adminpass1");
-$adminpass2         = $session->param("adminpass1");
-$miniserverip       = $session->param("miniserverip");
-$miniserverport     = $session->param("miniserverport");
-$miniserveruser     = $session->param("miniserveruser");
-$miniserverkennwort = $session->param("miniserverkennwort");
-$netzwerkanschluss  = $session->param("netzwerkanschluss");
-$netzwerkssid       = $session->param("netzwerkssid");
-$netzwerkschluessel = $session->param("netzwerkschluessel");
-$netzwerkadressen   = $session->param("netzwerkadressen");
-$netzwerkipadresse  = $session->param("netzwerkipadresse");
-$netzwerkipmaske    = $session->param("netzwerkipmaske");
-$netzwerkgateway    = $session->param("netzwerkgateway");
-$netzwerknameserver = $session->param("netzwerknameserver");
-$zeitserver         = $session->param("zeitserver");
-$ntpserverurl       = $session->param("ntpserverurl");
-$zeitzone           = $session->param("zeitzone");
+$adminuser           				= $session->param("adminuser");
+$adminpass1          				= $session->param("adminpass1");
+$adminpass2          				= $session->param("adminpass1");
+$miniserverip1       				= $session->param("miniserverip1");
+$miniserverport1     				= $session->param("miniserverport1");
+$miniserveruser1     				= $session->param("miniserveruser1");
+$miniserverkennwort1 				= $session->param("miniserverkennwort1");
+$miniservernote1     				= $session->param("miniservernote1");
+$miniservercloudurl1 				= $session->param("miniservercloudurl1");
+$miniservercloudurlftpport1 			= $session->param("miniservercloudurlftpport1");
+$useclouddns1        				= $session->param("useclouddns1");
+$netzwerkanschluss   				= $session->param("netzwerkanschluss");
+$netzwerkssid        				= $session->param("netzwerkssid");
+$netzwerkschluessel  				= $session->param("netzwerkschluessel");
+$netzwerkadressen    				= $session->param("netzwerkadressen");
+$netzwerkipadresse   				= $session->param("netzwerkipadresse");
+$netzwerkipmaske     				= $session->param("netzwerkipmaske");
+$netzwerkgateway     				= $session->param("netzwerkgateway");
+$netzwerknameserver  				= $session->param("netzwerknameserver");
+$zeitserver          				= $session->param("zeitserver");
+$ntpserverurl        				= $session->param("ntpserverurl");
+$zeitzone            				= $session->param("zeitzone");
 
 # Filter
 quotemeta($adminuser);
 quotemeta($adminpass1);
 quotemeta($adminpass2);
-quotemeta($miniserverip);
-quotemeta($miniserverport);
-quotemeta($miniserveruser);
-quotemeta($miniserverkennwort);
+quotemeta($miniserverip1);
+quotemeta($miniserverport1);
+quotemeta($miniserveruser1);
+quotemeta($miniserverkennwort1);
+quotemeta($miniservernote1);
+quotemeta($miniservercloudurl1);
+quotemeta($miniservercloudurlftpport1);
+quotemeta($useclouddns1);
 quotemeta($netzwerkanschluss);
 quotemeta($netzwerkssid);
 quotemeta($netzwerkschluessel);
@@ -630,15 +663,27 @@ quotemeta($zeitserver);
 quotemeta($ntpserverurl);
 quotemeta($zeitzone);
 
+# Clean Vars
+if (!$useclouddns1) {
+  $useclouddns1 = "0";
+} else {
+  $useclouddns1 = "1";
+}
+
 $step++;
 
 # Write configuration file(s)
 $cfg->param("BASE.STARTSETUP", "0");
 $cfg->param("BASE.LANG", "$lang");
-$cfg->param("MINISERVER.PORT", "$miniserverport");
-$cfg->param("MINISERVER.PASS", "$miniserverkennwort");
-$cfg->param("MINISERVER.ADMIN", "$miniserveruser");
-$cfg->param("MINISERVER.IPADDRESS", "$miniserverip");
+$cfg->param("BASE.MINISERVERS", "1");
+$cfg->param("MINISERVER1.PORT", "$miniserverport1");
+$cfg->param("MINISERVER1.PASS", "$miniserverkennwort1");
+$cfg->param("MINISERVER1.ADMIN", "$miniserveruser1");
+$cfg->param("MINISERVER1.IPADDRESS", "$miniserverip1");
+$cfg->param("MINISERVER1.USECLOUDDNS", "$useclouddns1");
+$cfg->param("MINISERVER1.NOTE", "$miniservernote1");
+$cfg->param("MINISERVER1.CLOUDURL", "$miniservercloudurl1");
+$cfg->param("MINISERVER1.CLOUDURLFTPPORT", "$miniservercloudurlftpport1");
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
 $cfg->param("TIMESERVER.METHOD", "$zeitserver");
 $cfg->param("TIMESERVER.ZONE", "$zeitzone");
@@ -652,14 +697,15 @@ $cfg->param("NETWORK.DNS", "$netzwerknameserver");
 $cfg->save();
 
 # Save Username/Password for Webarea
-$adminpasscrypted = crypt($adminpass1,$adminpass1);
-open(F,">$installfolder/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
+$salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64];
+$adminpasscrypted = crypt("$adminpass1","$salt");
+open(F,">$installfolder/config/system/htusers.dat.new") || die "Missing file: config/system/htusers.dat.new";
  flock(F,2);
  print F "$adminuser:$adminpasscrypted";
  flock(F,8);
 close(F);
 
-# Try to set new passwords fpr user "root" and "loxberry"
+# Try to set new passwords for user "root" and "loxberry"
 # This only works if the initial password is still valid
 # (password: "loxberry")
 $rootnewpassword = generate();
@@ -667,23 +713,38 @@ $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setrootpasswd.exp loxberry $
 if ($? eq 0) {
   $rootpasswdhtml = "<tr><td><b>" . $phrase->param("TXT0026") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>root</b></td><td>" . $phrase->param("TXT0024") . " <b>$rootnewpassword</b></td></tr>";
 }
-# Debugging
-open(F,">/tmp/root");
- flock(F,2);
- print F "$output\n\n$rootnewpassword";
- flock(F,8);
-close(F);
 
 $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp loxberry $adminpass1);
 if ($? eq 0) {
   $loxberrypasswdhtml = "<tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
 }
-# Debugging
-open(F,">/tmp/loxberry");
- flock(F,2);
- print F "$output\n\n$adminpass1";
- flock(F,8);
-close(F);
+
+# Set MYSQL Password
+# This only works if the initial password is still valid
+# (password: "loxberry")
+# Use eval {} here in case somthing went wrong
+$sqlerr = 0;
+$dsn = "DBI:mysql:database=mysql";
+eval {$dbh = DBI->connect($dsn, 'root', 'loxberry' )};
+$sqlerr = 1 if $@;
+eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
+$sqlerr = 1 if $@;
+eval {$sth->execute()};
+$sqlerr = 1 if $@;
+eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
+$sqlerr = 1 if $@;
+eval {$sth->execute()};
+$sqlerr = 1 if $@;
+eval {$sth->finish()};
+$sqlerr = 1 if $@;
+eval {$dbh->{AutoCommit} = 0};
+$sqlerr = 1 if $@;
+eval {$dbh->commit};
+$sqlerr = 1 if $@;
+if ($sqlerr eq 0) {
+  $mysqlpasswdhtml = "<tr><td><b>" . $phrase->param("TXT0042") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>root</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
+}
+
 
 # Set Timezone and sync for the very first time
 $output = qx(sudo $installfolder/sbin/setdatetime.pl);
@@ -755,7 +816,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") 
 $help = "setup06";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/setup/setup.step06.html") || die "Missing template system/$lang/setup/setup.step06.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -767,36 +828,6 @@ close(F);
 exit;
 
 }
-
-#####################################################
-# Step 7
-# Reboot
-#####################################################
-
-sub step7 {
-
-print "Content-Type: text/html\n\n";
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017") . ": " . $phrase->param("TXT0022");
-$help = "setup07";
-
-# Print Template
-&header;
-open(F,"$installfolder/templates/system/$lang/setup/setup.step07.html") || die "Missing template system/$lang/setup/setup.step07.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-# Reboot
-$output = qx($rebootbin);
-
-
-exit;
-
-}
-
 
 exit;
 
@@ -818,7 +849,7 @@ $help = "setup00";
 
 print "Content-Type: text/html\n\n";
 
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -835,10 +866,10 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
   open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

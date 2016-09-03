@@ -1,0 +1,14 @@
+#
+# Databse for installed Plugins
+#
+#  0: MD5 Checksum of AUTHORNAME,AUTHOREMAIL,NAME,FOLDER (without commas!) from plugin.cfg
+#  1: AUTHOR NAME
+#  2: AUTHOR EMAIL
+#  3: VERSION
+#  4: NAME
+#  5: FOLDER
+#  6: TITLE
+#  7: INTERFACE
+#
+# Delimiter: | (Pipe)
+#

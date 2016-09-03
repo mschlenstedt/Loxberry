@@ -1,0 +1,68 @@
+									<!-- ** START template/system/en/plugininstall_install.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<div id="pstatus">Starting installation...</div>
+									<br/>
+									<div style="height: 200px; resize:vertical; overflow:auto; border: 1px solid #888;  background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll" id="Logfile" contenteditable="true"></div>
+									<table width="100%" border=0>
+										<tr>
+											<td width="80%">
+												&nbsp;
+											</td>
+											<td>
+												<label style="display:block; text-align:center; width:60px; height: 15px; font-size:11;"><input data-mini="true" type="checkbox" checked id="LogScroll">Autoscroll</label>
+											</td>
+											<td>
+												<a style="display:block; text-align:center; width:50px; height: 14px; font-size:11;" id="btndown" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="/admin/system/tools/logfile.cgi?logfile=<!--$logfileurl-->&header=txt&format=plain" target="_blank">Logfile</a>
+											</td>
+										</tr>
+									</table>
+									<p>
+										<center>
+											<a id="btnnext" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/plugininstall.cgi?do=form">Next</a>
+										</center>
+									</p>
+									<script>
+										$('#btnnext').addClass('ui-disabled');
+										var $messages = $('#form-error-message');
+										$.validate(
+										{
+											modules : 'file',
+											errorMessagePosition : $messages,
+										});
+										setInterval(function()
+										{
+											// Disable caching of AJAX responses
+											$.ajaxSetup (
+											{
+												cache: false
+											});
+
+											// Load Logfile
+											$('#Logfile').load('/admin/system/tools/logfile.cgi?logfile=<!--$logfileurl-->&head=none&format=html');
+											if ($("#LogScroll").is(":checked"))
+											{
+												$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+											}
+
+											// Load Install Status
+											$.get('/admin/system/tools/logfile.cgi?logfile=<!--$statusfileurl-->&head=none&format=plain', function (response)
+											{
+												var pstatus = parseInt(response);
+												if (pstatus > 1)
+												{
+													document.getElementById("pstatus").innerHTML = "An Error occurred. The Plugin could <b>not</b> be installed.";
+													$('#btnnext').removeClass('ui-disabled');
+												}
+												else if (pstatus > 0)
+												{
+													document.getElementById("pstatus").innerHTML = "Executing installation...";
+													$('#btnnext').addClass('ui-disabled');
+												}
+												else
+												{
+													document.getElementById("pstatus").innerHTML = "Installation finished successfully.";
+													$('#btnnext').removeClass('ui-disabled');
+												}
+											});
+										}, 2000);
+									</script>
+									<!-- ** END template/system/en/plugininstall_install.html ************************************************************************************ -->

@@ -56,7 +56,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple('../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -147,7 +147,7 @@ $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0027");
 $help = "power";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/power.html") || die "Missing template system/$lang/power.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -175,7 +175,7 @@ $message = $phrase->param("TXT0034");
 $nexturl = "/admin/index.cgi";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/success.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -217,7 +217,7 @@ $message = $phrase->param("TXT0033");
 $nexturl = "/admin/index.cgi";
 
 # Print Template
-&header;
+&lbheader;
 open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/success.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -226,8 +226,19 @@ open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing tem
 close(F);
 &footer;
 
-# Reboot
-$output = qx(sudo $poweroffbin);
+# Poweroff
+# Without the following workaround
+# the script cannot be executed as
+# background process via CGI
+my $pid = fork();
+die "Fork failed: $!" if !defined $pid;
+if ($pid == 0) {
+# do this in the child
+ open STDIN, "</dev/null";
+ open STDOUT, ">/dev/null";
+ open STDERR, ">/dev/null";
+ system("sleep 5 && sudo $poweroffbin &");
+}
 
 exit;
 
@@ -237,10 +248,10 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub lbheader {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
   open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

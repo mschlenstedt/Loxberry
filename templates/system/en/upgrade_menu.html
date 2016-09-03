@@ -1,0 +1,41 @@
+									<!-- ** START template/system/en/upgrade_menu.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/upgrade.cgi?do=install" enctype="multipart/form-data">
+										<input type="hidden" name="saveformdata" value="1">
+											<div class="form-group">
+												<table class="formtable" border="0" width="100%">
+													<tr>
+														<td width="25%">
+															<label id="labeluploadfile">Upgrade-File:</label>
+														</td>
+														<td width="50%">
+															<input type="file" name="uploadfile" class="textfield"
+																data-validation="mime size" data-validation-allowing="zip" data-validation-max-size="100M"
+																data-validation-error-msg-mime="You can only upload files in ZIP format."
+																data-validation-error-msg-size="You can only upload files with a maximum size of 100 MB.">
+														</td>
+														<td width="5%" valign="middle">
+															<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Install</button>
+														</td>
+														<td width="20%">
+															&nbsp;
+														</td>
+													</tr>
+													<tr>
+													<td></td>
+													<td colspan=3>
+														<div id="form-error-message" class="form-error-message"></div>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</form>
+									<br>
+								<script>
+									var $messages = $('#form-error-message');
+									$.validate(
+									{
+										modules : 'file',
+										errorMessagePosition : $messages,
+									});
+								</script>
+								<!-- ** END template/system/en/upgrade_menu.html ************************************************************************************ -->

@@ -1,0 +1,122 @@
+									<!-- ** START template/system/en/setup/setup.step04.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<h2>4th Step: Time Server</h2>
+									<p>
+										The Loxberry has no Real Time Clock onboard. The current time is not known after a Power loss or reboot. That's why we need to update the system time
+										after a reboot. For some functions it's very important that the Loxberry and Miniserver Time is synchronized (e. g. for Statistics or Troubleshooting).
+								</p>
+									<p>
+										Luckily the time must not be set by hand every time :-) The Loxberry provides two possibilities to obtain the exact Time:
+										Either using a direct adjustment with your Miniserver (recommended!) or using an Internet-Time Server (NTP Server).
+									</p>
+									<p>
+										We recommend the direct adjustment with your Miniserver because this ensures the identical time on both devices.
+										Furthermore no Internet connection is needed. As the Miniserver itself synchronizes the time using an Internet-Time Server we
+										can assume that the time on the Miniservers (and therefore the Loxberry Time, too) are exact.
+									</p>
+									<form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<font color=blue><b>Query Time</b> - Please wait, it will take up to 30 seconds...</font>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
+										<input type="hidden" name="saveformdata" value="1">
+										<div class="form-group">
+											<table class="formtable" border="0" width="100%">
+												<tr>
+												 <td width="25%">
+														<label id="labeluhrzeit">Time Synchronization:</label>
+													</td>
+													<td width="50%">
+														<fieldset data-role="controlgroup">
+															<input onclick="disable()" <!--$checked1--> id="zeitserver_miniserver" name="zeitserver" type="radio" value="miniserver">
+																<label for="zeitserver_miniserver">Using the Miniserver</label>
+															<input onclick="disable()" <!--$checked2--> id="zeitserver_ntp" name="zeitserver" type="radio" value="ntp">
+																<label for="zeitserver_ntp">Using a NTP-Server (Internet)</label>
+														</fieldset>
+													</td>
+													<td width="5%" valign="middle">
+														&nbsp;
+													</td>
+													<td width="20%">
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label id="labelntpserverurl">NTP-Server:</label>
+													</td>
+													<td>
+														<input id="ntpserverurl" name="ntpserverurl" type="text" class="textfield" data-validation="custom" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* The entered IP-Address or Hostname is not valid. An IP-Address has the format xxx.xxx.xxx.xxx, e. g. 192.168.1.100" value="<!--$ntpserverurl-->">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td valign="middle">
+														<a id="linkntpurls" href="http://www.pool.ntp.org/en/use.html" target="_blank">Suitable Time Server</a>
+													</td>
+												</tr>
+												<tr>
+													<td width="25%">
+														<label id="labelzeitzone">Timezone:</label>
+													</td>
+													<td width="50%">
+														<select onclick="disable()" id="zeitzone" name="zeitzone" data-mini="true">
+															<!--$timezonelist-->
+														</select>
+													</td>
+													<td width="5%" valign="middle">
+														&nbsp;
+													</td>
+													<td width="20%">
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td></td>
+													<td colspan=3>
+														<div style="height:30px;" id="form-error-message" class="form-error-message">&nbsp;</div>
+													</td>
+												</tr>
+											</table>
+										</div>
+										<p>
+											&nbsp;
+										</p>
+										<p>
+											<center>
+												<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Cancel</a>
+												<a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Back</a>
+												<button type="submit" form="main_form4" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Proceed to step 5</button>
+											</center>
+										</p>
+									</form>
+									<script>
+										var $messages = $('#form-error-message');
+										$.validate({
+											modules : 'security',
+											errorMessagePosition : $messages,
+										});
+
+										// Disable some options on Load depending on selected value
+										disable();
+
+										// Disable some options on click depending on selected value
+										function disable() {
+
+											// Miniserver or NTP
+											if ( $('#zeitserver_miniserver').is(':checked') ) {
+												$("#ntpserverurl").attr("data-validation-optional","true");
+												$('#form-error-message').fadeTo("slow",0);
+												$('#ntpserverurl').val('');
+												$('#labelntpserverurl').addClass('ui-disabled');
+												$('#ntpserverurl').addClass('ui-disabled');
+												$('#linkntpurls').addClass('ui-disabled');
+											}
+											else {
+												$('#labelntpserverurl').removeClass('ui-disabled');
+												$('#ntpserverurl').removeClass('ui-disabled');
+												$('#linkntpurls').removeClass('ui-disabled');
+												$("#ntpserverurl").attr("data-validation-optional","false");
+												$('#form-error-message').fadeTo("slow",1);
+												}
+										}
+
+										// Disable some options on Load depending on selected value
+										disable();
+									</script>
+									<!-- ** END template/system/en/setup/setup.step04.html ************************************************************************************ -->

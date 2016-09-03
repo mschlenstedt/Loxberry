@@ -50,6 +50,13 @@ our $languagefile;
 our $step;
 our $sid;
 our $version;
+our @data;
+our $pfolder;
+our $ptitle;
+our $i;
+our $cols;
+our @fields;
+our $sversion;
 
 ##########################################################################
 # Read Configuration
@@ -58,10 +65,11 @@ our $version;
 # Version of this script
 $version = "0.0.1";
 
-$cfg             = new Config::Simple('../../config/system/general.cfg');
+$cfg             = new Config::Simple('/opt/loxberry/config/system/general.cfg');
 $installdir      = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 $startsetup      = $cfg->param("BASE.STARTSETUP");
+$sversion        = $cfg->param("BASE.VERSION");
 
 #########################################################################
 # Parameter
@@ -78,31 +86,26 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 }
 
 # And this one we really want to use
+
 $nostartsetup   = $query{'nostartsetup'};
 $step           = $query{'step'};
 $sid            = $query{'sid'};
 
 # Filter 
-quotemeta($query{'lang'});
-quotemeta($query{'nostartsetup'});
-
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
-$query{'nostartsetup'} =~ tr/0-1//cd;
-$query{'nostartsetup'} =  substr($query{'nostartsetup'},0,1);
-
+if (defined $query{'nostartsetup'})
+{
+  $query{'nostartsetup'} =~ tr/0-1//cd;
+  $query{'nostartsetup'} =  substr($query{'nostartsetup'},0,1);
+}
 ##########################################################################
 # Language Settings
 ##########################################################################
 
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
-
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
+if (defined $query{'lang'} ) 
+{
+ $query{'lang'}         =~ tr/a-z//cd;
+ $query{'lang'}         =  substr($query{'lang'},0,2);
+ $lang = $query{'lang'};
 }
 
 # If there's no template, use german
@@ -155,11 +158,6 @@ if ($startsetup) {
 # What should we do
 #########################################################################
 
-# Step 1 or beginning
-#if ($step eq "0" || !$step) {
-#  &step0;
-#}
-
 # Nothing todo? Goto Main menu
 &mainmenu;
 
@@ -176,9 +174,61 @@ print "Content-Type: text/html\n\n";
 $template_title = $phrase->param('TXT0000');
 $help = "setup00";
 
+# Prepare System Date Time for Love Clock
+our $systemdatetime = time()*1000;
+ (our $sec, our $min, our $hour, our $mday, our $mon, our $year, our $wday, our $yday, our $isdst) = localtime();
+our $systemdate         = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
+
 # Print Template
 &header;
-open(F,"$installdir/templates/system/$lang/mainmenu.html") || die "Missing template admin/$lang/mainmenu.html";
+
+# Print Start of Template
+open(F,"$installdir/templates/system/$lang/mainmenu_start.html") || die "Missing template admin/$lang/mainmenu_start.html";
+  while (<F>) {
+    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+    print $_;
+  }
+close(F);
+
+# Load Plugin Database and prepare table
+$cols = 8;
+$i = 0;
+open(F,"<$installdir/data/system/plugindatabase.dat");
+  @data = <F>;
+  foreach (@data){
+    s/[\n\r]//g;
+    # Comments
+    if ($_ =~ /^\s*#.*/) {
+      print F "$_\n";
+      next;
+    }
+    @fields = split(/\|/);
+    $ptitle = @fields[6];
+    $pfolder = @fields[5];
+    if ($i == 0) {
+      print "<tr>\n";
+    }
+    print"<td>\n";
+    print "<a href=\"/admin/plugins/$pfolder/index.cgi\"><img class=\"menutableicon\" src=\"/system/images/icons/$pfolder/icon_64.png\"><div
+class=\"menutabletext\">$ptitle</div></a>\n";
+    print"</td>\n";
+    $i++;
+    if ($i > $cols) {
+      print "</tr>\n";
+      $i = 0;
+    }
+  }
+close (F);
+
+# Complete Row
+until ($i == $cols) {
+  print "<td>&nbsp;</td>\n";
+  $i++;
+}
+print "</tr>\n";
+
+# Print End of Template
+open(F,"$installdir/templates/system/$lang/mainmenu_end.html") || die "Missing template admin/$lang/mainmenu_end.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
     print $_;
@@ -200,7 +250,8 @@ exit;
 sub header {
 
   # create help page
-  $helplink = "/help/$lang/$help.html";
+  $helptext = "";
+  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
   open(F,"$installdir/templates/system/$lang/help/$help.html") || die "Missing template admin/$lang/help/$help.html";
     @help = <F>;
     foreach (@help){

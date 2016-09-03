@@ -31,7 +31,7 @@ spawn su -
 expect "Password:"
 send "$passwordold\r"
 
-sleep 1
+sleep 2
 
 # passwd
 send "passwd\r"
@@ -40,7 +40,7 @@ send "$passwordnew\r"
 expect "password:"
 send "$passwordnew\r";
 
-sleep 1
+sleep 2
 send "exit\r"
 
 interact
