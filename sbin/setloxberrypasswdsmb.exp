@@ -26,8 +26,8 @@ set timeout 10
 set passwordold [lindex $argv 0]
 set passwordnew [lindex $argv 1]
 
-# passwd
-spawn "passwd"
+# smbpasswd
+spawn "smbpasswd"
 expect "password:"
 send "$passwordold\r"
 expect "password:"

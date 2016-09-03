@@ -168,10 +168,30 @@
 									}
 									// Disable some options on Load depending on selected value
 									disable();
+
+									// Set language
+									var lang = $('#lang').html();
+
+									// Test Mailserver
+									$('#btntestsmtp').click( function(e) {
+										if (lang == "de"){
+											$('#smtpresults').html('<font color=blue><b>Sende Email</b> - Bitte warten, das dauert bis zu 30 Sekunden ...</font>');
+										} else {
+											$('#smtpresults').html('<font color=blue><b>Sending email</b> - Please wait, this takes up to 30 seconds...</font>');
+										}
+										e.preventDefault();
+										var data = 'email='+$("#email").val()+'&smtpserver='+$("#smtpserver").val()+'&smtpauth='+$("#smtpauth").val()+'&smtpcrypt='+$("#smtpcrypt").val()+'&smtpuser='+$("#smtpuser").val()+'&smtppass='+$("#smtppass").val()+'&smtpport='+$("#smtpport").val()+'&lang='+lang;
+										$.ajax({
+											contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
+											type: "POST",
+											url: "/admin/system/tools/smtptest.cgi",
+											data: data,
+											success: function(data){
+												$('#smtpresults').empty();
+												$('#smtpresults').html(data);
+											}
+										});
+									});
+
 									</script>
 									<!-- ** END template/system/de/mailserver.html ************************************************************************************ -->
-
-
-
-
-
