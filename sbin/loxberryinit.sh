@@ -71,7 +71,7 @@ case "$1" in
         if [ -f /opt/loxberry/sbin/setdatetime.pl ]
         then
 	  log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
-          /opt/loxberry/sbin/setdatetime.pl > /dev/null 2>&1
+          su loxberry -c "/opt/loxberry/sbin/setdatetime.pl > /dev/null 2>&1"
         fi
 
         # Run Daemons from Plugins and from System
