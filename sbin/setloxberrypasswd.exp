@@ -14,25 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# Changes user's password for the very first time
-# (standard password right after installation
-# must be "loxberry").
-#
-# Doesn't work after first change of password!
-#
-
 set timeout 10
 set passwordold [lindex $argv 0]
 set passwordnew [lindex $argv 1]
 
 # passwd
 spawn "passwd"
-expect "password:"
+expect "(current) UNIX password"
 send "$passwordold\r"
-expect "password:"
+expect "Enter new UNIX password"
 send "$passwordnew\r"
-expect "password:"
+expect "Retype new UNIX password"
 send "$passwordnew\r"
-
+sleep 1
 interact
+exit
