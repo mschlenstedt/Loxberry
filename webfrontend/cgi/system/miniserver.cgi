@@ -70,6 +70,7 @@ our $curlbin;
 our $grepbin;
 our $awkbin;
 our $miniservernote;
+our $miniserverfoldername;
 our $clouddnsaddress;
 
 ##########################################################################
@@ -77,7 +78,7 @@ our $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.3";
+$version = "0.0.4";
 
 $cfg                = new Config::Simple('../../../config/system/general.cfg');
 $installfolder      = $cfg->param("BASE.INSTALLFOLDER");
@@ -183,11 +184,14 @@ $useclouddns           			= $cfg->param("MINISERVER1.USECLOUDDNS");
 $miniservercloudurl    			= $cfg->param("MINISERVER1.CLOUDURL");
 $miniservercloudurlftpport 	= $cfg->param("MINISERVER1.CLOUDURLFTPPORT");
 $miniservernote     				= $cfg->param("MINISERVER1.NOTE");
+$miniserverfoldername       = $cfg->param("MINISERVER1.FOLDERNAME");
+
 quotemeta($miniserverip);
 quotemeta($miniserverport);
 quotemeta($miniserveruser);
 quotemeta($miniserverkennwort);
 quotemeta($miniservernote);
+quotemeta($miniserverfoldername);
 quotemeta($useclouddns);
 quotemeta($miniservercloudurl);
 quotemeta($miniservercloudurlftpport);
@@ -212,6 +216,7 @@ while ($msno <= $miniservers) {
   $miniserveruser     				= $cfg->param("MINISERVER$msno.ADMIN");
   $miniserverkennwort 				= $cfg->param("MINISERVER$msno.PASS");
   $miniservernote     				= $cfg->param("MINISERVER$msno.NOTE");
+  $miniserverfoldername     	= $cfg->param("MINISERVER$msno.FOLDERNAME");
   $useclouddns        				= $cfg->param("MINISERVER$msno.USECLOUDDNS");
   $miniservercloudurl 				= $cfg->param("MINISERVER$msno.CLOUDURL");
   $miniservercloudurlftpport 	= $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
@@ -220,6 +225,7 @@ while ($msno <= $miniservers) {
   quotemeta($miniserveruser);
   quotemeta($miniserverkennwort);
   quotemeta($miniservernote);
+  quotemeta($miniserverfoldername);
   quotemeta($useclouddns);
   quotemeta($miniservercloudurl);
   quotemeta($miniservercloudurlftpport);
@@ -270,6 +276,7 @@ while ($msno <= $miniservers) {
   ${miniserveruser.$msno}     				= param("miniserveruser$msno");
   ${miniserverkennwort.$msno} 				= param("miniserverkennwort$msno");
   ${miniservernote.$msno}     				= param("miniservernote$msno");
+  ${miniserverfoldername.$msno}     	= param("miniserverfoldername$msno");
   ${useclouddns.$msno}        				= param("useclouddns$msno");
   ${miniservercloudurl.$msno} 				= param("miniservercloudurl$msno");
   ${miniservercloudurlftpport.$msno} 	= param("miniservercloudurlftpport$msno");
@@ -283,6 +290,7 @@ while ($msno <= $miniservers) {
   quotemeta(${miniservercloudurl.$msno});
   quotemeta(${miniservercloudurlftpport.$msno});
   quotemeta(${miniservernote.$msno});
+  quotemeta(${miniserverfoldername.$msno});
 
   # Test if Miniserver is reachable
   if ( ${useclouddns.$msno} eq "on" || ${useclouddns.$msno} eq "checked" || ${useclouddns.$msno} eq "true" || ${useclouddns.$msno} eq "1" )
@@ -342,6 +350,7 @@ while ($msno <= $miniservers) {
   $cfg->param("MINISERVER$msno.CLOUDURL", "${miniservercloudurl.$msno}");
   $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", "${miniservercloudurlftpport.$msno}");
   $cfg->param("MINISERVER$msno.NOTE", "${miniservernote.$msno}");
+  $cfg->param("MINISERVER$msno.FOLDERNAME", "${miniserverfoldername.$msno}");
 
   # Next
   $msno++;
