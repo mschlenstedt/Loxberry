@@ -23,8 +23,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Version 1.1
-# 09.09.2016 21:28:58
+# Version 1.2
+# 11.09.2016 21:09:04
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
@@ -85,7 +85,17 @@ case "$1" in
         run-parts -v /opt/loxberry/system/daemons/plugins > /dev/null 
         ;;
 
-  restart|reload|force-reload|status)
+	# Prepare System Monitoring Tools
+	if [ -e /etc/apt/sources.list.d/rpimonitor.list ]
+	then
+		log_action_begin_msg "/etc/apt/sources.list.d/rpimonitor.list seems available, skipping download"
+	else
+		log_action_begin_msg "/etc/apt/sources.list.d/rpimonitor.list not found, try to download"
+		wget -T 2 http://goo.gl/vewCLL -O /etc/apt/sources.list.d/rpimonitor.list
+		apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 2C0D3C0F 
+	fi
+	
+	 restart|reload|force-reload|status)
         echo "Error: argument '$1' not supported" >&2
         exit 3
         ;;
