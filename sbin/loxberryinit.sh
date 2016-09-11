@@ -23,6 +23,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Version 1.1
+# 09.09.2016 21:28:58
+
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
 . /lib/lsb/init-functions
@@ -76,23 +79,20 @@ case "$1" in
 
         # Run Daemons from Plugins and from System
 	log_action_begin_msg "Running System Daemons"
-        run-parts /opt/loxberry/system/daemons/system > /dev/null 2>&1
+        run-parts -v /opt/loxberry/system/daemons/system > /dev/null 
 
 	log_action_begin_msg "Running Plugin Daemons"
-        run-parts /opt/loxberry/system/daemons/plugins > /dev/null 2>&1
-
+        run-parts -v /opt/loxberry/system/daemons/plugins > /dev/null 
         ;;
 
   restart|reload|force-reload|status)
         echo "Error: argument '$1' not supported" >&2
         exit 3
-
         ;;
 
   stop)
 
         # No-op
-
         ;;
 
   *)
