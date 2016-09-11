@@ -23,8 +23,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Version 1.2
-# 11.09.2016 21:09:04
+# Version 1.3
+# 11.09.2016 22:32:02
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
@@ -32,84 +32,83 @@ PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
 case "$1" in
   start|"")
-
         # Resize rootfs to maximum if not yet done
         if [ ! -f /boot/rootfsresized ]
         then
-		log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
-                /opt/loxberry/sbin/resize_rootfs > /dev/null 2>&1
-                touch /boot/rootfsresized
+					log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
+          /opt/loxberry/sbin/resize_rootfs > /dev/null 2>&1
+          touch /boot/rootfsresized
         fi
 
         # Copy manual network configuration if any exists
         if [ -f /boot/network.txt ]
         then
-		log_action_begin_msg "Found manual network configuration in /boot. Activating..."
-                mv /opt/loxberry/system/network/interfaces  /opt/loxberry/system/network/interfaces.bkp > /dev/null 2>&1
-                cp /boot/network.txt  /opt/loxberry/system/network/interfaces > /dev/null 2>&1
-                dos2unix /etc/network/interfaces > /dev/null 2>&1
-                mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
-		/etc/init.d/networking restart > /dev/null 2>&1
+					log_action_begin_msg "Found manual network configuration in /boot. Activating..."
+          mv /opt/loxberry/system/network/interfaces  /opt/loxberry/system/network/interfaces.bkp > /dev/null 2>&1
+          cp /boot/network.txt  /opt/loxberry/system/network/interfaces > /dev/null 2>&1
+          dos2unix /etc/network/interfaces > /dev/null 2>&1
+          mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
+					/etc/init.d/networking restart > /dev/null 2>&1
         fi
 
         # Copy new HTACCESS User/Password Database
         if [ -f /opt/loxberry/config/system/htusers.dat.new ]
         then
-		log_action_begin_msg "Found new htaccess password database. Activating..."
-                mv /opt/loxberry/config/system/htusers.dat.new /opt/loxberry/config/system/htusers.dat > /dev/null 2>&1
+					log_action_begin_msg "Found new htaccess password database. Activating..."
+          mv /opt/loxberry/config/system/htusers.dat.new /opt/loxberry/config/system/htusers.dat > /dev/null 2>&1
         fi
 
         # Do a system upgrade
         if [ -f /opt/loxberry/data/system/upgrade/upgrade.sh ]
         then
-		log_action_begin_msg "Found system upgrade. Installing..."
-		/opt/loxberry/data/system/upgrade/upgrade.sh > /opt/loxberry/data/system/upgrade/upgrade.log 2>&1
+					log_action_begin_msg "Found system upgrade. Installing..."
+					/opt/loxberry/data/system/upgrade/upgrade.sh > /opt/loxberry/data/system/upgrade/upgrade.log 2>&1
         fi
 
         # Cleaning Temporary folders
-	log_action_begin_msg "Cleaning temporary files and folders..."
+				log_action_begin_msg "Cleaning temporary files and folders..."
         rm -rf /opt/loxberry/webfrontend/html/tmp/* > /dev/null 2>&1
 
         # Set Date and Time
         if [ -f /opt/loxberry/sbin/setdatetime.pl ]
         then
-	  log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
+	 	 			log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
           su loxberry -c "/opt/loxberry/sbin/setdatetime.pl > /dev/null 2>&1"
         fi
 
         # Run Daemons from Plugins and from System
-	log_action_begin_msg "Running System Daemons"
+				log_action_begin_msg "Running System Daemons"
         run-parts -v /opt/loxberry/system/daemons/system > /dev/null 
 
-	log_action_begin_msg "Running Plugin Daemons"
+				log_action_begin_msg "Running Plugin Daemons"
         run-parts -v /opt/loxberry/system/daemons/plugins > /dev/null 
         ;;
 
-	# Prepare System Monitoring Tools
-	if [ -e /etc/apt/sources.list.d/rpimonitor.list ]
-	then
-		log_action_begin_msg "/etc/apt/sources.list.d/rpimonitor.list seems available, skipping download"
-	else
-		log_action_begin_msg "/etc/apt/sources.list.d/rpimonitor.list not found, try to download"
-		wget -T 2 http://goo.gl/vewCLL -O /etc/apt/sources.list.d/rpimonitor.list
-		apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 2C0D3C0F 
-	fi
-	
-	 restart|reload|force-reload|status)
+				# Prepare System Monitoring Tools
+				if [ -e /etc/apt/sources.list.d/rpimonitor.list ]
+				then
+					log_action_begin_msg "/etc/apt/sources.list.d/rpimonitor.list seems available, skipping download"
+				else
+					log_action_begin_msg "/etc/apt/sources.list.d/rpimonitor.list not found, try to download"
+					wget -T 2 http://goo.gl/vewCLL -O /etc/apt/sources.list.d/rpimonitor.list
+					apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 2C0D3C0F 
+				fi
+			
+				# If System Monitoring Tools installed, enable autoupdate when reboot
+				if [ -e /etc/init.d/rpimonitor  ]
+				then
+					/etc/init.d/rpimonitor install_auto_package_status_update 
+				fi
+	;;
+	restart|reload|force-reload|status)
         echo "Error: argument '$1' not supported" >&2
         exit 3
-        ;;
-
+  ;;
   stop)
-
         # No-op
         ;;
-
   *)
-
         echo "Usage: loxberry [start|stop]" >&2
         exit 3
-
-        ;;
-
+  ;;
 esac
