@@ -82,7 +82,6 @@ case "$1" in
 
 				log_action_begin_msg "Running Plugin Daemons"
         run-parts -v /opt/loxberry/system/daemons/plugins > /dev/null 
-        ;;
 
 				# Prepare System Monitoring Tools
 				if [ -e /etc/apt/sources.list.d/rpimonitor.list ]
