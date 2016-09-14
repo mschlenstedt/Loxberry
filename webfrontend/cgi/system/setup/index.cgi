@@ -150,6 +150,7 @@ $useclouddns1         				= param('useclouddns1');
 $miniservercloudurl1  				= param('miniservercloudurl1');
 $miniservercloudurlftpport1  			= param('miniservercloudurlftpport1');
 $miniservernote1      				= param('miniservernote1');
+$miniserverfoldername1      			= param('miniserverfoldername1');
 $netzwerkanschluss    				= param('netzwerkanschluss');
 $netzwerkssid         				= param('netzwerkssid');
 $netzwerkschluessel   				= param('netzwerkschluessel');
