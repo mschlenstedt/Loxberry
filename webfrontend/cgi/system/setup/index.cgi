@@ -101,6 +101,7 @@ our $curlbin;
 our $grepbin;
 our $awkbin;
 our $miniservernote1;
+our $miniserverfoldername1;
 our $clouddnsaddress;
 
 ##########################################################################
