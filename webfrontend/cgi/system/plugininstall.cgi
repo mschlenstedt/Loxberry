@@ -354,7 +354,7 @@ system("rm -f $home/system/cron/cron.weekly/$pname");
 system("rm -f $home/system/cron/cron.monthly/$pname");
 system("rm -f $home/system/cron/cron.yearly/$pname");
 # Uninstall Script
-if (-f $home/data/system/uninstall/$pname) {
+if (-f "$home/data/system/uninstall/$pname") {
   system("mv $home/data/system/uninstall/$pname $home/system/daemons/uninstall");
 }
 
