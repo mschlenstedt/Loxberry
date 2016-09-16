@@ -98,6 +98,7 @@ our @tsets;
 our $startpsection;
 our $btn1;
 our $btn2;
+our $uninstallscript;
 
 ##########################################################################
 # Read Settings
@@ -356,6 +357,7 @@ system("rm -f $home/system/cron/cron.yearly/$pname");
 # Uninstall Script
 if (-f "$home/data/system/uninstall/$pname") {
   system("mv $home/data/system/uninstall/$pname $home/system/daemons/uninstall");
+  $uninstallscript = 1;
 }
 
 # Clean Database
@@ -430,6 +432,9 @@ $help = "plugin";
 
 $nexturl = "/admin/system/plugininstall.cgi?do=form";
 $message = $phrase->param("TXT0097");
+if ($uninstallscript) {
+  $message = $message . " " . $phrase->param("TXT0113"); 
+}
 
 # Print Template
 &header;
