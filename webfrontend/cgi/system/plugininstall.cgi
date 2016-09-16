@@ -353,6 +353,10 @@ system("rm -f $home/system/cron/cron.daily/$pname");
 system("rm -f $home/system/cron/cron.weekly/$pname");
 system("rm -f $home/system/cron/cron.monthly/$pname");
 system("rm -f $home/system/cron/cron.yearly/$pname");
+# Uninstall Script
+if (-f $home/data/system/uninstall/$pname) {
+  system("mv $home/data/system/uninstall/$pname $home/system/daemons/uninstall");
+}
 
 # Clean Database
 open(F,"+<$installfolder/data/system/plugindatabase.dat");
@@ -781,6 +785,8 @@ if ($pid == 0) {
     system("rm -f $home/system/cron/cron.weekly/$pname 2>&1");
     system("rm -f $home/system/cron/cron.monthly/$pname 2>&1");
     system("rm -f $home/system/cron/cron.yearly/$pname 2>&1");
+    # Uninstall Script
+    system("rm -f $home/data/system/uninstall/$pname 2>&1");
   }
 
   # Executing preinstall script
@@ -849,6 +855,30 @@ if ($pid == 0) {
     if ($? ne 0) {
       $message = $phrase->param("TXT0093");
       &logerr; 
+    } else {
+      $message = $phrase->param("TXT0092");
+      &logok;
+    }
+  }
+
+  # Copy Uninstall file
+  if (-f "$tempfolder/uninstall/uninstall") {
+    $message = $phrase->param("TXT0112");
+    &loginfo;
+    system("cp -r -v $tempfolder/uninstall/uninstall $home/data/system/uninstall/$pname 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0070");
+      &logerr;
+    } else {
+      $message = $phrase->param("TXT0069");
+      &logok;
+    }
+    $message = $phrase->param("TXT0091") . " $chmodbin 755 $home/data/system/uninstall/$pname";
+    &loginfo;
+    system("$chmodbin 755 $home/data/system/uninstall/$pname 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0093");
+      &logerr;
     } else {
       $message = $phrase->param("TXT0092");
       &logok;

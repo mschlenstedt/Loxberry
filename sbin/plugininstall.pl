@@ -425,6 +425,30 @@ $logfile = "$tempfolder/$tempfile.log";
     }
   }
 
+  # Copy Uninstall file
+  if (-f "$tempfolder/uninstall/uninstall") {
+    $message = $phrase->param("TXT0112");
+    &loginfo;
+    system("cp -r -v $tempfolder/uninstall/uninstall $home/data/system/uninstall/$pname 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0070");
+      &logerr; 
+    } else {
+      $message = $phrase->param("TXT0069");
+      &logok;
+    }
+    $message = $phrase->param("TXT0091") . " $chmodbin 755 $home/data/system/uninstall/$pname";
+    &loginfo;
+    system("$chmodbin 755 $home/data/system/uninstall/$pname 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0093");
+      &logerr; 
+    } else {
+      $message = $phrase->param("TXT0092");
+      &logok;
+    }
+  }
+
   # Copy Cron files
   if (!&is_folder_empty("$tempfolder/cron")) {
     $message = $phrase->param("TXT0088");

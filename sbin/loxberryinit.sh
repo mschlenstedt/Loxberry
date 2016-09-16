@@ -23,8 +23,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Version 1.4
-# 14.09.2016 20:04:00
+# Version 1.5
+# 16.09.2016 14:26:00
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
@@ -83,6 +83,11 @@ case "$1" in
         log_action_begin_msg "Running Plugin Daemons"
         run-parts -v /opt/loxberry/system/daemons/plugins > /dev/null 
 
+        # Run Uninstall scripts
+        log_action_begin_msg "Running Uninstall Scripts"
+        run-parts -v /opt/loxberry/system/daemons/uninstall > /dev/null 
+        rm -rf /opt/loxberry/system/daemons/uninstall/* > /dev/null 2>&1
+
 	;;
 	restart|reload|force-reload|status)
         echo "Error: argument '$1' not supported" >&2
@@ -92,7 +97,7 @@ case "$1" in
         # No-op
         ;;
   *)
-        echo "Usage: loxberry [start|stop]" >&2
+        echo "Usage: $0 [start|stop]" >&2
         exit 3
   ;;
 esac
