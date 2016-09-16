@@ -123,8 +123,9 @@ if (!$ARGV[0]) {
   exit;
 }
 $tempfolder = $ARGV[0];
+$tempfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
 if (!-d $tempfolder) {
-  $error = "Plugin folder does not exist";
+  $error = "Plugin folder does not exist. Usage: $0 FOLDER_WITH_PLUGIN_FILES\n";
   &error;
 }
 
@@ -183,6 +184,12 @@ $logfile = "$tempfolder/$tempfile.log";
   quotemeta($ptitle);
   quotemeta($pfolder);
   quotemeta($pinterface);
+  $pname =~ tr/A-Za-z0-9_-//cd;
+  $pfolder =~ tr/A-Za-z0-9_-//cd;
+  if (length($ptitle) > 25) {
+    $ptitle = substr($ptitle,0,22);
+    $ptitle = $ptitle . "...";
+  }
 
   $message = "Author:    $pauthorname";
   &loginfo;
@@ -772,6 +779,7 @@ exit;
 sub error {
 
 print "$error\n\n";
+system("rm -f $tempfolder/$tempfile.log");
 
 exit;
 

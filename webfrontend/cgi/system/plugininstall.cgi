@@ -614,6 +614,12 @@ if ($pid == 0) {
   quotemeta($ptitle);
   quotemeta($pfolder);
   quotemeta($pinterface);
+  $pname =~ tr/A-Za-z0-9_-//cd;
+  $pfolder =~ tr/A-Za-z0-9_-//cd;
+  if (length($ptitle) > 25) {
+    $ptitle = substr($ptitle,0,22);
+    $ptitle = $ptitle . "...";
+  }
 
   $message = "Author:    $pauthorname";
   &loginfo;
