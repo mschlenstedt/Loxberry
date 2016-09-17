@@ -98,13 +98,14 @@ our @tsets;
 our $startpsection;
 our $btn1;
 our $btn2;
+our $uninstallscript;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.5";
+$version = "0.0.6";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -353,6 +354,11 @@ system("rm -f $home/system/cron/cron.daily/$pname");
 system("rm -f $home/system/cron/cron.weekly/$pname");
 system("rm -f $home/system/cron/cron.monthly/$pname");
 system("rm -f $home/system/cron/cron.yearly/$pname");
+# Uninstall Script
+if (-f "$home/data/system/uninstall/$pname") {
+  system("mv $home/data/system/uninstall/$pname $home/system/daemons/uninstall");
+  $uninstallscript = 1;
+}
 
 # Clean Database
 open(F,"+<$installfolder/data/system/plugindatabase.dat");
@@ -426,6 +432,9 @@ $help = "plugin";
 
 $nexturl = "/admin/system/plugininstall.cgi?do=form";
 $message = $phrase->param("TXT0097");
+if ($uninstallscript) {
+  $message = $message . " " . $phrase->param("TXT0113"); 
+}
 
 # Print Template
 &header;
@@ -614,6 +623,12 @@ if ($pid == 0) {
   quotemeta($ptitle);
   quotemeta($pfolder);
   quotemeta($pinterface);
+  $pname =~ tr/A-Za-z0-9_-//cd;
+  $pfolder =~ tr/A-Za-z0-9_-//cd;
+  if (length($ptitle) > 25) {
+    $ptitle = substr($ptitle,0,22);
+    $ptitle = $ptitle . "...";
+  }
 
   $message = "Author:    $pauthorname";
   &loginfo;
@@ -733,19 +748,21 @@ if ($pid == 0) {
 
   # Executing preupgrade script
   if ($isupgrade) {
-    $message = $phrase->param("TXT0062");
-    &loginfo;
+    if (-f "/tmp/uploads/$tempfolder/preupgrade.sh") {
+      $message = $phrase->param("TXT0062");
+      &loginfo;
 
-    $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
-    &loginfo;
+      $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
+      &loginfo;
 
-    system("$bashbin \"/tmp/uploads/$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
-    if ($? ne 0) {
-      $message = $phrase->param("TXT0064");
-      &logerr; 
-    } else {
-      $message = $phrase->param("TXT0063");
-      &logok;
+      system("$bashbin \"/tmp/uploads/$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
+      if ($? ne 0) {
+        $message = $phrase->param("TXT0064");
+        &logerr; 
+      } else {
+        $message = $phrase->param("TXT0063");
+        &logok;
+      }
     }
     # Purge old installation
     $message = $phrase->param("TXT0087");
@@ -773,24 +790,28 @@ if ($pid == 0) {
     system("rm -f $home/system/cron/cron.weekly/$pname 2>&1");
     system("rm -f $home/system/cron/cron.monthly/$pname 2>&1");
     system("rm -f $home/system/cron/cron.yearly/$pname 2>&1");
+    # Uninstall Script
+    system("rm -f $home/data/system/uninstall/$pname 2>&1");
   }
 
   # Executing preinstall script
-  $message = $phrase->param("TXT0066");
-  &loginfo;
+  if (-f "/tmp/uploads/$tempfolder/preinstall.sh") {
+    $message = $phrase->param("TXT0066");
+    &loginfo;
 
-  $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
-  &loginfo;
+    $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
+    &loginfo;
 
-  system("$bashbin \"/tmp/uploads/$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
-  if ($? ne 0) {
-    $message = $phrase->param("TXT0064");
-    &logerr; 
-  } else {
-    $message = $phrase->param("TXT0063");
-    &logok;
-  }
-  
+    system("$bashbin \"/tmp/uploads/$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0064");
+      &logerr; 
+    } else {
+      $message = $phrase->param("TXT0063");
+      &logok;
+    }
+  }  
+
   # Copy Config files
   make_path("$home/config/plugins/$pfolder" , {chmod => 0777});
   if (!&is_folder_empty("/tmp/uploads/$tempfolder/config")) {
@@ -822,7 +843,7 @@ if ($pid == 0) {
   }
 
   # Copy Daemon file
-  if (-e "/tmp/uploads/$tempfolder/daemon/daemon") {
+  if (-f "/tmp/uploads/$tempfolder/daemon/daemon") {
     $message = $phrase->param("TXT0071");
     &loginfo;
     system("cp -r -v /tmp/uploads/$tempfolder/daemon/daemon $home/system/daemons/plugins/$pname 2>&1");
@@ -839,6 +860,30 @@ if ($pid == 0) {
     if ($? ne 0) {
       $message = $phrase->param("TXT0093");
       &logerr; 
+    } else {
+      $message = $phrase->param("TXT0092");
+      &logok;
+    }
+  }
+
+  # Copy Uninstall file
+  if (-f "$tempfolder/uninstall/uninstall") {
+    $message = $phrase->param("TXT0112");
+    &loginfo;
+    system("cp -r -v $tempfolder/uninstall/uninstall $home/data/system/uninstall/$pname 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0070");
+      &logerr;
+    } else {
+      $message = $phrase->param("TXT0069");
+      &logok;
+    }
+    $message = $phrase->param("TXT0091") . " $chmodbin 755 $home/data/system/uninstall/$pname";
+    &loginfo;
+    system("$chmodbin 755 $home/data/system/uninstall/$pname 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0093");
+      &logerr;
     } else {
       $message = $phrase->param("TXT0092");
       &logok;
@@ -1085,36 +1130,40 @@ if ($pid == 0) {
   }
 
   # Executing postinstall script
-  $message = $phrase->param("TXT0067");
-  &loginfo;
-
-  $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
-  &loginfo;
-
-  system("$bashbin \"/tmp/uploads/$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
-  if ($? ne 0) {
-    $message = $phrase->param("TXT0064");
-    &logerr; 
-  } else {
-    $message = $phrase->param("TXT0063");
-    &logok;
-  }
-
-  # Executing postupgrade script
-  if ($isupgrade) {
-    $message = $phrase->param("TXT0065");
+  if (-f "/tmp/uploads/$tempfolder/postinstall.sh") {
+    $message = $phrase->param("TXT0067");
     &loginfo;
 
-    $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
+    $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
     &loginfo;
 
-    system("$bashbin \"/tmp/uploads/$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
+    system("$bashbin \"/tmp/uploads/$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0064");
       &logerr; 
     } else {
       $message = $phrase->param("TXT0063");
       &logok;
+    }
+  }
+
+  # Executing postupgrade script
+  if ($isupgrade) {
+    if (-f "/tmp/uploads/$tempfolder/postupgrade.sh") {
+      $message = $phrase->param("TXT0065");
+      &loginfo;
+
+      $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
+      &loginfo;
+
+      system("$bashbin \"/tmp/uploads/$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
+      if ($? ne 0) {
+        $message = $phrase->param("TXT0064");
+        &logerr; 
+      } else {
+        $message = $phrase->param("TXT0063");
+        &logok;
+      }
     }
   }
 

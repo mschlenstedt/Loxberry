@@ -62,13 +62,14 @@ our $dsn;
 our $dbh;
 our $sth;
 our $sqlerr;
+our $nodefaultpwd;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+$version = "0.0.3";
 
 $cfg             = new Config::Simple('../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -186,15 +187,35 @@ quotemeta($adminpass1);
 quotemeta($adminpass2);
 quotemeta($adminpassold);
 
-# Try to set new passwords for user "loxberry"
-$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
+# Try to set new UNIX passwords for user "loxberry"
+
+# First try if default password is still valid:
+$nodefaultpwd = 0;
+$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp loxberry $adminpass1);
 if ($? eq 0) {
   $message = $phrase->param("TXT0030") . "<br><br><table border=0 cellpadding=10><tr><td><b>" . $phrase->param("TXT0031") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>$adminuser</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr><tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
 } else {
-  $error = $phrase->param("TXT0032");
-  &error;
-  exit;
+  $nodefaultpwd = 1;
 }
+
+# If default password isn't valid anymore:
+if ($nodefaultpwd) {
+  $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
+  if ($? eq 0) {
+    $message = $phrase->param("TXT0030") . "<br><br><table border=0 cellpadding=10><tr><td><b>" . $phrase->param("TXT0031") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>$adminuser</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr><tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
+  } else {
+    $error = $phrase->param("TXT0032");
+    &error;
+    exit;
+  }
+}
+
+# Try to set new SAMBA passwords for user "loxberry"
+
+# First try if default password is still valid:
+$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
+# If default password isn't valid anymore:
+$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
 
 # Save Username/Password for Webarea
 $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64];

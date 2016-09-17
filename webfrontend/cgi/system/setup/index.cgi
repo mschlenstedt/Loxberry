@@ -101,6 +101,7 @@ our $curlbin;
 our $grepbin;
 our $awkbin;
 our $miniservernote1;
+our $miniserverfoldername1;
 our $clouddnsaddress;
 
 ##########################################################################
@@ -108,7 +109,7 @@ our $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.6";
+$version = "0.0.7";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -149,6 +150,7 @@ $useclouddns1         				= param('useclouddns1');
 $miniservercloudurl1  				= param('miniservercloudurl1');
 $miniservercloudurlftpport1  			= param('miniservercloudurlftpport1');
 $miniservernote1      				= param('miniservernote1');
+$miniserverfoldername1      			= param('miniserverfoldername1');
 $netzwerkanschluss    				= param('netzwerkanschluss');
 $netzwerkssid         				= param('netzwerkssid');
 $netzwerkschluessel   				= param('netzwerkschluessel');
@@ -346,8 +348,9 @@ $miniserveruser1     				= $session->param("miniserveruser1");
 $miniserverkennwort1 				= $session->param("miniserverkennwort1");
 $useclouddns1        				= $session->param("useclouddns1");
 $miniservercloudurl1 				= $session->param("miniservercloudurl1");
-$miniservercloudurlftpport1 = $session->param("miniservercloudurlftpport1");
+$miniservercloudurlftpport1 			= $session->param("miniservercloudurlftpport1");
 $miniservernote1     				= $session->param("miniservernote1");
+$miniserverfoldername1  			= $session->param("miniserverfoldername1");
 
 # Filter
 quotemeta($miniserverip1);
@@ -358,6 +361,7 @@ quotemeta($useclouddns1);
 quotemeta($miniservercloudurl1);
 quotemeta($miniservercloudurlftpport1);
 quotemeta($miniservernote1);
+quotemeta($miniserverfoldername1);
 
 # Default values
 if (!$miniserverport1) {$miniserverport1 = "80";}
@@ -400,6 +404,7 @@ if ($saveformdata) {
   $session->param("miniservercloudurl1", $miniservercloudurl1);
   $session->param("miniservercloudurlftpport1", $miniservercloudurlftpport1);
   $session->param("miniservernote1", $miniservernote1);
+  $session->param("miniserverfoldername1", $miniserverfoldername1);
 
   # Test if Miniserver is reachable
   if ( $useclouddns1 eq "on" || $useclouddns1 eq "checked" || $useclouddns1 eq "true" || $useclouddns1 eq "1" )
@@ -624,6 +629,7 @@ $miniserverport1     				= $session->param("miniserverport1");
 $miniserveruser1     				= $session->param("miniserveruser1");
 $miniserverkennwort1 				= $session->param("miniserverkennwort1");
 $miniservernote1     				= $session->param("miniservernote1");
+$miniserverfoldername1   			= $session->param("miniserverfoldername1");
 $miniservercloudurl1 				= $session->param("miniservercloudurl1");
 $miniservercloudurlftpport1 			= $session->param("miniservercloudurlftpport1");
 $useclouddns1        				= $session->param("useclouddns1");
@@ -648,6 +654,7 @@ quotemeta($miniserverport1);
 quotemeta($miniserveruser1);
 quotemeta($miniserverkennwort1);
 quotemeta($miniservernote1);
+quotemeta($miniserverfoldername1);
 quotemeta($miniservercloudurl1);
 quotemeta($miniservercloudurlftpport1);
 quotemeta($useclouddns1);
@@ -682,6 +689,7 @@ $cfg->param("MINISERVER1.ADMIN", "$miniserveruser1");
 $cfg->param("MINISERVER1.IPADDRESS", "$miniserverip1");
 $cfg->param("MINISERVER1.USECLOUDDNS", "$useclouddns1");
 $cfg->param("MINISERVER1.NOTE", "$miniservernote1");
+$cfg->param("MINISERVER1.NAME", "$miniserverfoldername1");
 $cfg->param("MINISERVER1.CLOUDURL", "$miniservercloudurl1");
 $cfg->param("MINISERVER1.CLOUDURLFTPPORT", "$miniservercloudurlftpport1");
 $cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
@@ -708,16 +716,22 @@ close(F);
 # Try to set new passwords for user "root" and "loxberry"
 # This only works if the initial password is still valid
 # (password: "loxberry")
+
+# Root
 $rootnewpassword = generate();
 $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setrootpasswd.exp loxberry $rootnewpassword);
 if ($? eq 0) {
   $rootpasswdhtml = "<tr><td><b>" . $phrase->param("TXT0026") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>root</b></td><td>" . $phrase->param("TXT0024") . " <b>$rootnewpassword</b></td></tr>";
 }
 
+# Loxberry UNIX
 $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp loxberry $adminpass1);
 if ($? eq 0) {
   $loxberrypasswdhtml = "<tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
 }
+
+# Loxberry SAMBA
+$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
 
 # Set MYSQL Password
 # This only works if the initial password is still valid

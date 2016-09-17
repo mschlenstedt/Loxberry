@@ -279,6 +279,21 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.innerHTML = '<label>Name:</label>'
+											var cellRight = row.insertCell(1);
+											cellRight.innerHTML = '<input value="" id="miniserverfoldername' + iteration + '" name="miniserverfoldername' + iteration + '" type="text" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing="-_" data-validation-error-msg="* Es sind nur folgende Zeichen erlaubt: a-z A-Z 0-9 _- (Maximale L&auml;nge 64 Zeichen)" data-validation-length="Max64">';
+
+											var cellRight = row.insertCell(2);
+											cellRight.innerHTML = ''
+											var cellRight = row.insertCell(3);
+											cellRight.innerHTML = ''
+
+											// Add 11. row
+											var lastRow = tbl.rows.length;
+											var row = tbl.insertRow(lastRow);
+
+											// Add cells
+											var cellRight = row.insertCell(0);
 											cellRight.innerHTML = '&nbsp;'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = ''
@@ -312,6 +327,7 @@
 											// Del 1. row
 											var tbl = document.getElementById('miniservertbl');
 											var lastRow = tbl.rows.length;
+											var row = tbl.deleteRow(-1);
 											var row = tbl.deleteRow(-1);
 											var row = tbl.deleteRow(-1);
 											var row = tbl.deleteRow(-1);
