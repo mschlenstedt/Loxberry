@@ -62,7 +62,7 @@ case "$1" in
         if [ -f /opt/loxberry/data/system/upgrade/upgrade.sh ]
         then
           log_action_begin_msg "Found system upgrade. Installing..."
-          /opt/loxberry/data/system/upgrade/upgrade.sh > /opt/loxberry/data/system/upgrade/upgrade.log 2>&1
+          /opt/loxberry/data/system/upgrade/upgrade.sh > /opt/loxberry/log/system/upgrade.log 2>&1
         fi
 
         # Cleaning Temporary folders
