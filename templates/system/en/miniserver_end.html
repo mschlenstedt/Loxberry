@@ -42,7 +42,7 @@
 											iteration += 1;
 											document.getElementById("miniservers").value = iteration;
 
-											// Add 1. row
+											// Add row
 											var tbl = document.getElementById('miniservertbl');
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
@@ -57,7 +57,22 @@
 											var cellRight = row.insertCell(3);
 											cellRight.innerHTML = ''
 
-											// Add 2. row
+											// Add row
+											var lastRow = tbl.rows.length;
+											var row = tbl.insertRow(lastRow);
+
+											// Add cells
+											var cellRight = row.insertCell(0);
+											cellRight.innerHTML = '<label>Name of this Miniserver:</label>'
+											var cellRight = row.insertCell(1);
+											cellRight.innerHTML = '<input value="" id="miniserverfoldername' + iteration + '" name="miniserverfoldername' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation="length letternumeric" data-validation-allowing="-_" data-validation-error-msg="* The name is used e.g. as folder name for backups by the Miniserverbackup-Plugin or as Miniserver-Name by the BLE-Scanner-Plugin. Free to choose but only the following characters are allowed: a-z A-Z 0-9 _- (Maximum length is 64, no spaces)" data-validation-length="Max64">';
+
+											var cellRight = row.insertCell(2);
+											cellRight.innerHTML = ''
+											var cellRight = row.insertCell(3);
+											cellRight.innerHTML = ''
+											
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 
@@ -71,7 +86,7 @@
 											var cellRight = row.insertCell(3);
 											cellRight.innerHTML = ''
 
-											// Add 3. row
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 											row.setAttribute('id','miniserveriprow' + iteration);
@@ -87,7 +102,7 @@
 											var cellRight = row.insertCell(3);
 											cellRight.innerHTML = ''
 
-											// Add 4. row
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 											row.setAttribute('id','miniserverportrow' + iteration);
@@ -103,7 +118,7 @@
 											var cellRight = row.insertCell(3);
 											cellRight.innerHTML = ''
 
-											// Add 5. row
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 											row.setAttribute('id','miniservercloudurlrow' + iteration);
@@ -119,7 +134,7 @@
 											var cellRight = row.insertCell(3);
 											cellRight.innerHTML = ''
 
-											// Add 6. row
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 											row.setAttribute('id','miniservercloudurlftpportrow' + iteration);
@@ -220,7 +235,7 @@
 										 $("#useclouddns"+ iteration).trigger( "change" );
 
 
-											// Add 7. row
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 
@@ -234,7 +249,7 @@
 											var cellRight = row.insertCell(3);
 											cellRight.innerHTML = '<font size="-1">Allowed characters: A-Z a-z 0-9 -_</font>'
 
-											// Add 8. row
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 
@@ -248,7 +263,7 @@
 											var cellRight = row.insertCell(3);
 											cellRight.innerHTML = ''
 
-											// Add 9. row
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 
@@ -273,22 +288,7 @@
 											});
 											$("#miniservernote" + iteration).trigger('focusout');
 
-											// Add 10. row
-											var lastRow = tbl.rows.length;
-											var row = tbl.insertRow(lastRow);
-
-											// Add cells
-											var cellRight = row.insertCell(0);
-											cellRight.innerHTML = '<label>Name:</label>'
-											var cellRight = row.insertCell(1);
-											cellRight.innerHTML = '<input value="" id="miniserverfoldername' + iteration + '" name="miniserverfoldername' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation="length letternumeric" data-validation-allowing="-_" data-validation-error-msg="* Only the following characters are allowed: a-z A-Z 0-9 _- (Maximum length is 64)" data-validation-length="Max64">';
-
-											var cellRight = row.insertCell(2);
-											cellRight.innerHTML = ''
-											var cellRight = row.insertCell(3);
-											cellRight.innerHTML = ''
-
-											// Add 11. row
+											// Add row
 											var lastRow = tbl.rows.length;
 											var row = tbl.insertRow(lastRow);
 
@@ -327,7 +327,6 @@
 											// Del 1. row
 											var tbl = document.getElementById('miniservertbl');
 											var lastRow = tbl.rows.length;
-											var row = tbl.deleteRow(-1);
 											var row = tbl.deleteRow(-1);
 											var row = tbl.deleteRow(-1);
 											var row = tbl.deleteRow(-1);
