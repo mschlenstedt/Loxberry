@@ -113,3 +113,5 @@ TXT0108=Dein LoxBerry wird nun neu gestartet und das Upgrade durchgeführt.
 TXT0109=Es wurde versucht eine Test-Email zu versenden. Eine ausf&uuml;hrliche Mitschrift findest Du unten. Bitte schaue in Deiner Mailbox nach ob die Email angekommen ist.
 TXT0110=Mailserver
 TXT0111=Einstellungen zum SMTP-Server übernommen und aktiviert.
+TXT0112=Installiere Uninstall-Skript
+TXT0113=Bitte starten Sie den LoxBerry neu um die Deinstallation abzuschließen.

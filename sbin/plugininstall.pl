@@ -19,8 +19,6 @@
 # Modules
 ##########################################################################
 
-use CGI::Carp qw(fatalsToBrowser);
-use CGI qw/:standard/;
 use Config::Simple;
 use File::HomeDir;
 use File::Path qw(make_path remove_tree);
@@ -37,33 +35,15 @@ use Encode qw(encode_utf8);
 our $cfg;
 our $pcfg;
 our $phrase;
-our $namef;
-our $value;
-our %query;
 our $lang;
-our $template_title;
-our $help;
-our @help;
-our $helptext;
-our $helplink;
-our $saveformdata;
 our $installfolder;
 our $languagefile;
 our $version;
 our $error;
-our $saveformdata;
-our $uploadfile;
 our $output;
 our $message;
 our $e;
-our $do;
-our $nexturl;
-our $filesize;
-our $max_filesize;
-our $allowed_filetypes;
-our $tempfile;
 our $tempfolder;
-our $unzipbin;
 our $pauthorname;
 our $pauthoremail;
 our $pversion;
@@ -72,9 +52,6 @@ our $ptitle;
 our $pfolder;
 our $pinterface;
 our $logfile;
-our $logfileurl;
-our $statusfile;
-our $statusfileurl;
 our $openerr;
 our @data;
 our @data1;
@@ -98,64 +75,25 @@ our @tsets;
 our $startpsection;
 our $btn1;
 our $btn2;
-our $uninstallscript;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.6";
+$version = "0.0.1";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
-$unzipbin        = $cfg->param("BINARIES.UNZIP");
 $bashbin         = $cfg->param("BINARIES.BASH");
 $aptbin          = $cfg->param("BINARIES.APT");
 $sudobin         = $cfg->param("BINARIES.SUDO");
 $chmodbin        = $cfg->param("BINARIES.CHMOD");
 
-#########################################################################
-# Parameter
-#########################################################################
-
-# Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
-
-# And this one we really want to use
-$do           = $query{'do'};
-$answer       = $query{'answer'};
-$pid          = $query{'pid'};
-
-# Everything from Forms
-$saveformdata = param('saveformdata');
-
-# Filter
-quotemeta($query{'lang'});
-quotemeta($saveformdata);
-quotemeta($do);
-
-$saveformdata          =~ tr/0-1//cd;
-$saveformdata          = substr($saveformdata,0,1);
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
-
 ##########################################################################
 # Language Settings
 ##########################################################################
-
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
 
 # Standard is german
 if ($lang eq "") {
@@ -175,424 +113,47 @@ $phrase = new Config::Simple($languagefile);
 # Main program
 ##########################################################################
 
-# Clean up old files
-system("rm -r -f /tmp/uploads/");
-
-#########################################################################
-# What should we do
-#########################################################################
-
-# Menu
-if (!$do || $do eq "form") {
-  &form;
-}
-
-# Installation
-elsif ($do eq "install") {
-  &install;
-}
-
-# Installation
-elsif ($do eq "uninstall") {
-  &uninstall;
-}
-
-else {
-  &form;
-}
-
-exit;
-
-#####################################################
-# Form / Menu
-#####################################################
-
-sub form {
-
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-$help = "plugin";
-
-# Create table rows for each Plugin entry
-$ptablerows = "";
-$i = 1;
-open(F,"<$installfolder/data/system/plugindatabase.dat");
-  @data = <F>;
-  foreach (@data){
-    s/[\n\r]//g;
-    # Comments
-    if ($_ =~ /^\s*#.*/) {
-      print F "$_\n";
-      next;
-    }
-    @fields = split(/\|/);
-    $pmd5checksum = @fields[0];
-    $pname = @fields[4];
-    $btn1 = $phrase->param("TXT0101");
-    $btn2 = $phrase->param("TXT0102");
-    $ptablerows = $ptablerows . "<tr><th>$i</th><td>@fields[6]</td><td>@fields[3]</td><td>@fields[1]</td>";
-    $ptablerows = $ptablerows . "<td><a data-role=\"button\" data-inline=\"true\" data-icon=\"info\" data-mini=\"true\" href=\"/admin/system/tools/logfile.cgi?logfile=system/plugininstall/$pname.log&header=html&format=template\" target=\"_blank\">$btn1</a>&nbsp;";
-    $ptablerows = $ptablerows . "<a data-role=\"button\" data-inline=\"true\" data-icon=\"delete\" data-mini=\"true\" href=\"/admin/system/plugininstall.cgi?do=uninstall&pid=$pmd5checksum\">$btn2</a></td></tr>\n";
-    $i++;
-  }
-close (F);
-
-# Print Template
-&header;
-open(F,"$installfolder/templates/system/$lang/plugininstall_menu.html") || die "Missing template system/$lang/plugininstall_menu.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-exit;
-
-}
-
-#####################################################
-# Uninstall
-#####################################################
-
-sub uninstall {
-
-# Question: Are you sure?
-if ($answer ne "yes") {
-
-  # Search for Plugin
-  open(F,"<$installfolder/data/system/plugindatabase.dat");
-    @data = <F>;
-    foreach (@data){
-      s/[\n\r]//g;
-      # Comments
-      if ($_ =~ /^\s*#.*/) {
-        print F "$_\n";
-        next;
-      }
-      @fields = split(/\|/);
-      if ($pid eq @fields[0]) {
-        $ptitle = @fields[6];
-      }
-    }
-  close (F);
-
-  if (!$ptitle) {
-    $error = $phrase->param("TXT0096");
-    &error;
-    exit;
-  }
-
-  # Print Template
-  print "Content-Type: text/html\n\n";
-
-  $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-  $help = "plugin";
-
-  # Print Template
-  &header;
-  open(F,"$installfolder/templates/system/$lang/plugininstall_uninstall.html") || die "Missing template system/$lang/plugininstall_uninstall.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-  &footer;
-
-  exit;
-
-}
-
-# Do Uninstallation
-# Search for Plugin
-open(F,"<$installfolder/data/system/plugindatabase.dat");
-  @data = <F>;
-  foreach (@data){
-    s/[\n\r]//g;
-    # Comments
-    if ($_ =~ /^\s*#.*/) {
-      print F "$_\n";
-      next;
-    }
-    @fields = split(/\|/);
-    if ($pid eq @fields[0]) {
-      $pname   = @fields[4];
-      $pfolder = @fields[5];
-      $ptitle  = @fields[6];
-    }
-  }
-close (F);
-
-if (!$ptitle) {
-  $error = $phrase->param("TXT0096");
-  &error;
-  exit;
-}
-
-# Purge old installation
-# Plugin Folders
-system("rm -r -f $home/config/plugins/$pfolder/");
-system("rm -r -f $home/data/plugins/$pfolder/");
-system("rm -r -f $home/log/plugins/$pfolder/");
-system("rm -r -f $home/webfrontend/cgi/plugins/$pfolder/");
-system("rm -r -f $home/webfrontend/html/plugins/$pfolder/");
-system("rm -r -f $home/templates/plugins/$pfolder/");
-# Icons for Main Menu
-system("rm -r -f $home/webfrontend/html/system/images/icons/$pfolder/");
-# Daemon file
-system("rm -f $home/system/daemons/plugins/$pname");
-# Cron jobs
-system("rm -f $home/system/cron/cron.01min/$pname");
-system("rm -f $home/system/cron/cron.03min/$pname");
-system("rm -f $home/system/cron/cron.05min/$pname");
-system("rm -f $home/system/cron/cron.10min/$pname");
-system("rm -f $home/system/cron/cron.15min/$pname");
-system("rm -f $home/system/cron/cron.30min/$pname");
-system("rm -f $home/system/cron/cron.hourly/$pname");
-system("rm -f $home/system/cron/cron.daily/$pname");
-system("rm -f $home/system/cron/cron.weekly/$pname");
-system("rm -f $home/system/cron/cron.monthly/$pname");
-system("rm -f $home/system/cron/cron.yearly/$pname");
-# Uninstall Script
-if (-f "$home/data/system/uninstall/$pname") {
-  system("mv $home/data/system/uninstall/$pname $home/system/daemons/uninstall");
-  $uninstallscript = 1;
-}
-
-# Clean Database
-open(F,"+<$installfolder/data/system/plugindatabase.dat");
-  @data = <F>;
-  seek(F,0,0);
-  truncate(F,0);
-  foreach (@data){
-    s/[\n\r]//g;
-    # Comments
-    if ($_ =~ /^\s*#.*/) {
-      print F "$_\n";
-      next;
-    }
-    @fields = split(/\|/);
-    if (@fields[0] eq $pid) {
-      next;
-    } else {
-      print F "$_\n";
-    }
-  }
-close (F);
-
-# Updating header files for side menu
-opendir(DIR, "$installfolder/templates/system");
-  @data = readdir(DIR);
-closedir(DIR);
-foreach(@data) {
-  if (-d "$installfolder/templates/system/$_" && $_ ne "." && $_ ne "..") {
-    push (@tsets,$_);
-  }
-}
-foreach (@tsets) {
-  $startpsection = 0;
-  open(F,"+<$installfolder/templates/system/$_/header.html");
-    @data = <F>;
-    seek(F,0,0);
-    truncate(F,0);
-    foreach (@data){
-      s/[\n\r]//g;
-      if ($_ =~ /ENDPLUGINSHERE/) {
-        $startpsection = 0;
-      }
-      if ($_ =~ /STARTPLUGINSHERE/) {
-        $startpsection = 1;
-        print F "$_\n";
-        open(F1,"<$installfolder/data/system/plugindatabase.dat");
-          @data1 = <F1>;
-          foreach (@data1){
-            s/[\n\r]//g;
-            # Comments
-            if ($_ =~ /^\s*#.*/) {
-              next;
-            }
-            @fields = split(/\|/);
-            print F "<li><a href=\"/admin/plugins/@fields[5]/index.cgi\">@fields[6]</a></li>\n";
-          }
-        close (F1);
-      }
-      if (!$startpsection) {
-        print F "$_\n";
-      }
-    } 
-  close (F);
-}
-
-# Print Template
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-$help = "plugin";
-
-$nexturl = "/admin/system/plugininstall.cgi?do=form";
-$message = $phrase->param("TXT0097");
-if ($uninstallscript) {
-  $message = $message . " " . $phrase->param("TXT0113"); 
-}
-
-# Print Template
-&header;
-open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/success.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-exit;
-
-}
-
 #####################################################
 # Install
 #####################################################
 
-sub install {
+# Check for argument: plugin folder
+if (!$ARGV[0]) {
+  print "Missing Folder. Usage: $0 FOLDER_WITH_PLUGIN_FILES\n";
+  exit;
+}
+$tempfolder = $ARGV[0];
+$tempfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
+if (!-d $tempfolder) {
+  $error = "Plugin folder does not exist. Usage: $0 FOLDER_WITH_PLUGIN_FILES\n";
+  &error;
+}
 
-$uploadfile = param('uploadfile');
-my $origname = $uploadfile;
-
-# Choose time() as new temp. filename (to avoid overwriting)
+# Choose random temp filename
 $tempfile = &generate(10);
-$tempfolder = $tempfile;
-
-# Filter
-#quotemeta($uploadfile);
-
-# allowed file endings (use | to seperate more than one)
-$allowed_filetypes = "zip";
-
-# Max filesize (KB)
-$max_filesize = 50000;
-
-# Filter Backslashes
-$uploadfile =~ s/.*[\/\\](.*)/$1/;
-
-# Filesize
-$filesize = -s $uploadfile;
-$filesize /= 1000;
-
-# If it's larger than allowed...
-if ($filesize > $max_filesize) {
-  $error = $phrase->param("TXT0045");
-  &error;
-  exit;
-}
-
-# Test if filetype is allowed
-if($uploadfile !~ /^.+\.($allowed_filetypes)/) {
-  $error = $phrase->param("TXT0046");
-  &error;
-  exit;
-}
-
-# Create upload folder
-make_path("/tmp/uploads/$tempfolder" , {chmod => 0777});
 
 # Create status and logfile
-if (-e "/tmp/uploads/$tempfile.status" || -e "/tmp/uploads/$tempfile.status") {
+if (-e "$tempfolder/$tempfile.log") {
   $error = $phrase->param("TXT0047");
   &error;
 }
-open F, ">/tmp/uploads/$tempfile.status";
-  print F "1";
-close F;
-open F, ">/tmp/uploads/$tempfile.log";
+open (F, ">$tempfolder/$tempfile.log");
   print F "";
-close F;
-$statusfile = "/tmp/uploads/$tempfile.status";
-$statusfileurl = "uploads/$tempfile.status";
-$logfile = "/tmp/uploads/$tempfile.log";
-$logfileurl = "uploads/$tempfile.log";
-
-# Header
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-$help = "plugin";
-
-$nexturl = "/admin/index.cgi";
-
-# Print Template
-&header;
-open(F,"$installfolder/templates/system/$lang/plugininstall_install.html") || die "Missing template system/$lang/plugininstall_install.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-# Without the following workaround
-# the script cannot be executed as
-# background process via CGI
-my $pid = fork();
-die "Fork failed: $!" if !defined $pid;
-
-if ($pid == 0) {
-  # do this in the child
-  open STDIN, "</dev/null";
-  open STDOUT, ">$logfile";
-  #open STDERR, ">$logfile";
-  open STDERR, ">/dev/null";
+close (F);
+$logfile = "$tempfolder/$tempfile.log";
 
   # Starting
   $message = $phrase->param("TXT0051");
   &loginfo;
 
-  # We are careful, so test if file and/or dir already exists
-  if (-e "/tmp/uploads/$tempfolder/$tempfile.zip") {
-    $message = $phrase->param("TXT0047");
-    &logfail;
-  } else {
-    # Write Uploadfile
-    $openerr = 0;
-    open UPLOADFILE, ">/tmp/uploads/$tempfolder/$tempfile.zip" or ($openerr = 1);
-    binmode $uploadfile;
-    while ( <$uploadfile> ) {
-      print UPLOADFILE;
-    }
-    close UPLOADFILE;
-    if ($openerr) {
-      $message = $phrase->param("TXT0047");
-      &logfail;
-    } else {
-      $message = $phrase->param("TXT0053");
-      &logok;
-    }
-  }
-
-  # UnZipping
-  $message = $phrase->param("TXT0052");
-  &loginfo;
-
-  $message = "Command: $unzipbin -d /tmp/uploads/$tempfolder /tmp/uploads/$tempfolder/$tempfile.zip";
-  &loginfo;
-
-  system("$unzipbin -d /tmp/uploads/$tempfolder /tmp/uploads/$tempfolder/$tempfile.zip 2>&1");
-  if ($? ne 0) {
-    $message = $phrase->param("TXT0044");
-    &logfail; 
-  } else {
-    $message = $phrase->param("TXT0054");
-    &logok;
-  }
-
   # Check for plugin.cfg
-  if (!-f "/tmp/uploads/$tempfolder/plugin.cfg") {
+  if (!-f "$tempfolder/plugin.cfg") {
     $exists = 0;
-    opendir(DIR, "/tmp/uploads/$tempfolder");
+    opendir(DIR, "$tempfolder");
       @data = readdir(DIR);
     closedir(DIR);
     foreach(@data) {
-      if (-f "/tmp/uploads/$tempfolder/$_/plugin.cfg" && $_ ne "." && $_ ne "..") {
+      if (-f "$tempfolder/$_/plugin.cfg" && $_ ne "." && $_ ne "..") {
         $tempfolder = $tempfolder . "/$_";
         $exists = 1;
         last;
@@ -606,7 +167,7 @@ if ($pid == 0) {
   }
 
   # Read Plugin-Config
-  $pcfg             = new Config::Simple("/tmp/uploads/$tempfolder/plugin.cfg");
+  $pcfg             = new Config::Simple("$tempfolder/plugin.cfg");
   $pauthorname      = $pcfg->param("AUTHOR.NAME");
   $pauthoremail     = $pcfg->param("AUTHOR.EMAIL");
   $pversion         = $pcfg->param("PLUGIN.VERSION");
@@ -748,14 +309,14 @@ if ($pid == 0) {
 
   # Executing preupgrade script
   if ($isupgrade) {
-    if (-f "/tmp/uploads/$tempfolder/preupgrade.sh") {
+    if (-f "$tempfolder/preupgrade.sh") {
       $message = $phrase->param("TXT0062");
       &loginfo;
 
-      $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
+      $message = "Command: $bashbin \"$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
       &loginfo;
 
-      system("$bashbin \"/tmp/uploads/$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
+      system("$bashbin \"$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
       if ($? ne 0) {
         $message = $phrase->param("TXT0064");
         &logerr; 
@@ -790,19 +351,17 @@ if ($pid == 0) {
     system("rm -f $home/system/cron/cron.weekly/$pname 2>&1");
     system("rm -f $home/system/cron/cron.monthly/$pname 2>&1");
     system("rm -f $home/system/cron/cron.yearly/$pname 2>&1");
-    # Uninstall Script
-    system("rm -f $home/data/system/uninstall/$pname 2>&1");
   }
 
   # Executing preinstall script
-  if (-f "/tmp/uploads/$tempfolder/preinstall.sh") {
+  if (-f "$tempfolder/preinstall.sh") {
     $message = $phrase->param("TXT0066");
     &loginfo;
 
-    $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
+    $message = "Command: $bashbin \"$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
     &loginfo;
 
-    system("$bashbin \"/tmp/uploads/$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
+    system("$bashbin \"$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0064");
       &logerr; 
@@ -814,10 +373,10 @@ if ($pid == 0) {
 
   # Copy Config files
   make_path("$home/config/plugins/$pfolder" , {chmod => 0777});
-  if (!&is_folder_empty("/tmp/uploads/$tempfolder/config")) {
+  if (!&is_folder_empty("$tempfolder/config")) {
     $message = $phrase->param("TXT0068");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/config/* $home/config/plugins/$pfolder/ 2>&1");
+    system("cp -r -v $tempfolder/config/* $home/config/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -829,10 +388,10 @@ if ($pid == 0) {
 
   # Copy Template files
   make_path("$home/templates/plugins/$pfolder" , {chmod => 0777});
-  if (!&is_folder_empty("/tmp/uploads/$tempfolder/templates")) {
+  if (!&is_folder_empty("$tempfolder/templates")) {
     $message = $phrase->param("TXT0098");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/templates/* $home/templates/plugins/$pfolder/ 2>&1");
+    system("cp -r -v $tempfolder/templates/* $home/templates/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -843,10 +402,10 @@ if ($pid == 0) {
   }
 
   # Copy Daemon file
-  if (-f "/tmp/uploads/$tempfolder/daemon/daemon") {
+  if (-f "$tempfolder/daemon/daemon") {
     $message = $phrase->param("TXT0071");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/daemon/daemon $home/system/daemons/plugins/$pname 2>&1");
+    system("cp -r -v $tempfolder/daemon/daemon $home/system/daemons/plugins/$pname 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -873,7 +432,7 @@ if ($pid == 0) {
     system("cp -r -v $tempfolder/uninstall/uninstall $home/data/system/uninstall/$pname 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
-      &logerr;
+      &logerr; 
     } else {
       $message = $phrase->param("TXT0069");
       &logok;
@@ -883,7 +442,7 @@ if ($pid == 0) {
     system("$chmodbin 755 $home/data/system/uninstall/$pname 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0093");
-      &logerr;
+      &logerr; 
     } else {
       $message = $phrase->param("TXT0092");
       &logok;
@@ -891,72 +450,72 @@ if ($pid == 0) {
   }
 
   # Copy Cron files
-  if (!&is_folder_empty("/tmp/uploads/$tempfolder/cron")) {
+  if (!&is_folder_empty("$tempfolder/cron")) {
     $message = $phrase->param("TXT0088");
     &loginfo;
     $openerr = 0;
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.01min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.01min $home/system/cron/cron.01min/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.01min") {
+      system("cp -r -v $tempfolder/cron/cron.01min $home/system/cron/cron.01min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.03min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.03min $home/system/cron/cron.03min/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.03min") {
+      system("cp -r -v $tempfolder/cron/cron.03min $home/system/cron/cron.03min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.05min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.05min $home/system/cron/cron.05min/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.05min") {
+      system("cp -r -v $tempfolder/cron/cron.05min $home/system/cron/cron.05min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.10min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.10min $home/system/cron/cron.10min/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.10min") {
+      system("cp -r -v $tempfolder/cron/cron.10min $home/system/cron/cron.10min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.15min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.15min $home/system/cron/cron.15min/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.15min") {
+      system("cp -r -v $tempfolder/cron/cron.15min $home/system/cron/cron.15min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.30min") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.30min $home/system/cron/cron.30min/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.30min") {
+      system("cp -r -v $tempfolder/cron/cron.30min $home/system/cron/cron.30min/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.hourly") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.hourly $home/system/cron/cron.hourly/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.hourly") {
+      system("cp -r -v $tempfolder/cron/cron.hourly $home/system/cron/cron.hourly/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.daily") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.daily $home/system/cron/cron.daily/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.daily") {
+      system("cp -r -v $tempfolder/cron/cron.daily $home/system/cron/cron.daily/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.weekly") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.weekly01 $home/system/cron/cron.weekly/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.weekly") {
+      system("cp -r -v $tempfolder/cron/cron.weekly01 $home/system/cron/cron.weekly/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.monthly") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.monthly $home/system/cron/cron.monthly/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.monthly") {
+      system("cp -r -v $tempfolder/cron/cron.monthly $home/system/cron/cron.monthly/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
     } 
-    if (-e "/tmp/uploads/$tempfolder/cron/cron.yearly") {
-      system("cp -r -v /tmp/uploads/$tempfolder/cron/cron.yearly $home/system/cron/cron.yearly/$pname 2>&1");
+    if (-e "$tempfolder/cron/cron.yearly") {
+      system("cp -r -v $tempfolder/cron/cron.yearly $home/system/cron/cron.yearly/$pname 2>&1");
       if ($? ne 0) {
         $openerr = 1;
       }
@@ -982,10 +541,10 @@ if ($pid == 0) {
 
   # Copy Data files
   make_path("$home/data/plugins/$pfolder" , {chmod => 0777});
-  if (!&is_folder_empty("/tmp/uploads/$tempfolder/data")) {
+  if (!&is_folder_empty("$tempfolder/data")) {
     $message = $phrase->param("TXT0072");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/data/* $home/data/plugins/$pfolder/ 2>&1");
+    system("cp -r -v $tempfolder/data/* $home/data/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -997,10 +556,10 @@ if ($pid == 0) {
 
   # Copy Log files
   make_path("$home/log/plugins/$pfolder" , {chmod => 0777});
-  if (!&is_folder_empty("/tmp/uploads/$tempfolder/log")) {
+  if (!&is_folder_empty("$tempfolder/log")) {
     $message = $phrase->param("TXT0073");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/log/* $home/log/plugins/$pfolder/ 2>&1");
+    system("cp -r -v $tempfolder/log/* $home/log/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -1012,10 +571,10 @@ if ($pid == 0) {
 
   # Copy CGI files
   make_path("$home/webfrontend/cgi/plugins/$pfolder" , {chmod => 0777});
-  if (!&is_folder_empty("/tmp/uploads/$tempfolder/webfrontend/cgi")) {
+  if (!&is_folder_empty("$tempfolder/webfrontend/cgi")) {
     $message = $phrase->param("TXT0074");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/webfrontend/cgi/* $home/webfrontend/cgi/plugins/$pfolder/ 2>&1");
+    system("cp -r -v $tempfolder/webfrontend/cgi/* $home/webfrontend/cgi/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -1037,10 +596,10 @@ if ($pid == 0) {
 
   # Copy HTML files
   make_path("$home/webfrontend/html/plugins/$pfolder" , {chmod => 0777});
-  if (!&is_folder_empty("/tmp/uploads/$tempfolder/webfrontend/html")) {
+  if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
     $message = $phrase->param("TXT0075");
     &loginfo;
-    system("cp -r -v /tmp/uploads/$tempfolder/webfrontend/html/* $home/webfrontend/html/plugins/$pfolder/ 2>&1");
+    system("cp -r -v $tempfolder/webfrontend/html/* $home/webfrontend/html/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0070");
       &logerr; 
@@ -1054,7 +613,7 @@ if ($pid == 0) {
   make_path("$home/webfrontend/html/system/images/icons/$pfolder" , {chmod => 0777});
   $message = $phrase->param("TXT0084");
   &loginfo;
-  system("cp -r -v /tmp/uploads/$tempfolder/icons/* $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
+  system("cp -r -v $tempfolder/icons/* $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
   if ($? ne 0) {
     system("cp -r -v $home/webfrontend/html/system/images/icons/default/* $home/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
     $message = $phrase->param("TXT0085");
@@ -1087,7 +646,7 @@ if ($pid == 0) {
   }
 
   # Installing additional packages
-  if (-e "/tmp/uploads/$tempfolder/apt") {
+  if (-e "$tempfolder/apt") {
     $message = $phrase->param("TXT0081");
     &loginfo;
     $message = "Command: $sudobin $aptbin -q -y update";
@@ -1103,7 +662,7 @@ if ($pid == 0) {
     $message = $phrase->param("TXT0078");
     &loginfo;
     $openerr = 0;
-    open(F,"</tmp/uploads/$tempfolder/apt") or ($openerr = 1);
+    open(F,"<$tempfolder/apt") or ($openerr = 1);
       if ($openerr) {
         $message = $phrase->param("TXT0077");
         &logerr;
@@ -1130,14 +689,14 @@ if ($pid == 0) {
   }
 
   # Executing postinstall script
-  if (-f "/tmp/uploads/$tempfolder/postinstall.sh") {
+  if (-f "$tempfolder/postinstall.sh") {
     $message = $phrase->param("TXT0067");
     &loginfo;
 
-    $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
+    $message = "Command: $bashbin \"$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
     &loginfo;
 
-    system("$bashbin \"/tmp/uploads/$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
+    system("$bashbin \"$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
     if ($? ne 0) {
       $message = $phrase->param("TXT0064");
       &logerr; 
@@ -1149,14 +708,14 @@ if ($pid == 0) {
 
   # Executing postupgrade script
   if ($isupgrade) {
-    if (-f "/tmp/uploads/$tempfolder/postupgrade.sh") {
+    if (-f "$tempfolder/postupgrade.sh") {
       $message = $phrase->param("TXT0065");
       &loginfo;
 
-      $message = "Command: $bashbin \"/tmp/uploads/$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
+      $message = "Command: $bashbin \"$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\"";
       &loginfo;
 
-      system("$bashbin \"/tmp/uploads/$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
+      system("$bashbin \"$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$installfolder\" 2>&1");
       if ($? ne 0) {
         $message = $phrase->param("TXT0064");
         &logerr; 
@@ -1184,7 +743,7 @@ if ($pid == 0) {
   }
   foreach (@tsets) {
     $startpsection = 0;
-    open(F,"+<$installfolder/templates/system/$_/header.html");
+    open(F,"+<$installfolder/templates/system/$_/header.html") or die "Fehler: $!";
       @data = <F>;
       seek(F,0,0);
       truncate(F,0);
@@ -1196,7 +755,7 @@ if ($pid == 0) {
         if ($_ =~ /STARTPLUGINSHERE/) {
           $startpsection = 1;
           print F "$_\n";
-          open(F1,"<$installfolder/data/system/plugindatabase.dat");
+          open(F1,"<$installfolder/data/system/plugindatabase.dat") or die "Fehler: $!";
             @data1 = <F1>;
             foreach (@data1){
               s/[\n\r]//g;
@@ -1221,23 +780,12 @@ if ($pid == 0) {
   # Cleaning
   $message = $phrase->param("TXT0095");
   &loginfo;
-  system("rm -r -f /tmp/uploads/$pfolder 2>&1");
-  system("cp /tmp/uploads/$tempfile.log $installfolder/log/system/plugininstall/$pname.log 2>&1");
+  system("cp $tempfolder/$tempfile.log $installfolder/log/system/plugininstall/$pname.log 2>&1");
 
   # Finished
   $message = $phrase->param("TXT0094");
   &logok;
-  open F, ">/tmp/uploads/$tempfile.status";
-    print F "0";
-  close F;
-
-# End Child process
-}
-
-exit;
-
-# End sub
-}
+  system("rm -f $tempfolder/$tempfile.log");
 
 exit;
 
@@ -1254,19 +802,8 @@ exit;
 
 sub error {
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0043");
-$help = "plugin";
-
-print "Content-Type: text/html\n\n";
-
-&header;
-open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-close(F);
-&footer;
+print "$error\n\n";
+system("rm -f $tempfolder/$tempfile.log");
 
 exit;
 
@@ -1278,19 +815,21 @@ exit;
 
 sub logerr {
 
-  print "<ERROR> $message\n";
+  open (LOG, ">>$logfile");
+    print LOG "<ERROR> $message\n";
+    print "\e[1m\e[31mERROR:\e[0m $message\n";
+  close (LOG);
+
   return();
 
 }
 
 sub logfail {
 
-  print "<FAIL> $message\n";
-
-  # Status file: Error
-  open F, ">/tmp/uploads/$tempfile.status";
-    print F "2";
-  close F;
+  open (LOG, ">>$logfile");
+    print LOG "<FAIL> $message\n";
+    print "\e[1m\e[31mFAIL:\e[0m $message\n";
+  close (LOG);
 
   exit;
 
@@ -1298,55 +837,23 @@ sub logfail {
 
 sub loginfo {
 
-  print "<INFO> $message\n";
+  open (LOG, ">>$logfile");
+    print LOG "<INFO> $message\n";
+    print "\e[1mINFO:\e[0m $message\n";
+  close (LOG);
+
   return();
 
 }
 
 sub logok {
 
-  print "<OK> $message\n";
+  open (LOG, ">>$logfile");
+    print LOG "<OK> $message\n";
+    print "\e[1m\e[32mOK:\e[0m $message\n";
+  close (LOG);
+
   return();
-
-}
-
-#####################################################
-# Header
-#####################################################
-
-sub header {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
-  open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
-    @help = <F>;
-    foreach (@help){
-      s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
-    }
-  close(F);
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
-#####################################################
-# Footer
-#####################################################
-
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
 
 }
 
