@@ -1,4 +1,4 @@
-									<!-- ** START template/system/de/setup/setup.step02.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<!-- ** START template/system/de/setup/setup.step02.html 26.09.2016 20:48:36 ************************************************************************************ -->
 									<h2>2. Schritt: Miniserver einrichten</h2>
 									<p>
 										In diesem Schritt musst Du die Daten Deines Miniservers eingeben. Wir ben&ouml;tigen die IP-Adresse und Portnummer, unter der Dein Miniserver in Deinem Netzwerk
@@ -16,6 +16,19 @@
 										<input type="hidden" name="saveformdata" value="1">
 										<div class="form-group">
 											<table class="formtable" border="0" width="100%">
+												<tr>
+													<td>
+														<label>Name f&uuml;r den Miniserver:</label>
+													</td>
+													<td>
+														<input value="<!--$miniserverfoldername1-->" id="miniserverfoldername1" name="miniserverfoldername1" type="text" class="textfield" data-validation-optional="false" data-validation="length letternumeric" data-validation-allowing="_-" data-validation-error-msg="* Der Name wird z.B. als Ordnername f&uuml;r Backups vom Miniserverbackup-Plugin oder als Miniserver-Name vom BLE-Scanner-Plugin benutzt. Frei w&auml;hlbar aber es sind nur folgende Zeichen erlaubt: a-z A-Z 0-9 -_ (Maximale L&auml;nge 64 Zeichen, keine Leerzeichen)" data-validation-length="Max64">
+													</td>
+													<td>
+													</td>
+													<td>
+														<font size="-1"></font>
+													</td>
+												</tr>
 												<tr>
 													<td width="25%">
 													 &nbsp;
@@ -161,19 +174,6 @@
 													</td>
 													<td>
 														<a id="miniservernote1_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note">&Ouml;ffnen</a>
-													</td>
-													<td>
-														<font size="-1"></font>
-													</td>
-												</tr>
-												<tr>
-													<td>
-														<label>Name:</label>
-													</td>
-													<td>
-														<input value="<!--$miniserverfoldername1-->" id="miniserverfoldername1" name="miniserverfoldername1" type="text" class="textfield" data-validation-optional="false" data-validation="length letternumeric" data-validation-allowing="_-" data-validation-error-msg="* Es sind nur folgende Zeichen erlaubt: a-z A-Z 0-9 -_ (Maximale L&auml;nge 64 Zeichen)" data-validation-length="Max64">
-													</td>
-													<td>
 													</td>
 													<td>
 														<font size="-1"></font>
