@@ -1,4 +1,4 @@
-											<!-- ** START template/system/en/miniserver_end.html 26.09.2016 20:48:54 ************************************************************************************ -->
+											<!-- ** START template/system/en/miniserver_end.html 27.09.2016 05:19:40 ************************************************************************************ -->
 											</table>
 										</div>
 										<p>
@@ -63,14 +63,14 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.setAttribute("class","formtable-caption");
 											cellRight.innerHTML = '<label>Name of this Miniserver:</label>'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = '<input value="" id="miniserverfoldername' + iteration + '" name="miniserverfoldername' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation="length letternumeric" data-validation-allowing="-_" data-validation-error-msg="* The name is used e.g. as folder name for backups by the Miniserverbackup-Plugin or as Miniserver-Name by the BLE-Scanner-Plugin. Free to choose but only the following characters are allowed: a-z A-Z 0-9 _- (Maximum length is 64, no spaces)" data-validation-length="Max64">';
 
 											var cellRight = row.insertCell(2);
-											cellRight.innerHTML = ''
-											var cellRight = row.insertCell(3);
-											cellRight.innerHTML = ''
+											cellRight.setAttribute("colspan",2);
+											cellRight.innerHTML = '&nbsp;<a title="Zum Webinterface" onclick="open_webinterface(\''+iteration+'\');" id="miniserverwebinterface'+iteration+'"><img border="0" width="63" height="37" src="/system/images/icons/webinterface.png"></a>';
 											
 											// Add row
 											var lastRow = tbl.rows.length;
@@ -94,6 +94,7 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.setAttribute("class","formtable-caption");
 											cellRight.innerHTML = '<label class="control-label" for="miniserverip' + iteration + '">IP-Address or Hostname:</label> </td>'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = '<input id="miniserverip' + iteration + '" name="miniserverip' + iteration + '" type="text" class="textfield" data-validation="custom" value="" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* The entered IP-Address or Hostname is not valid. An IP-Address has the format xxx.xxx.xxx.xxx, e. g. 192.168.1.100">'
@@ -110,6 +111,7 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.setAttribute("class","formtable-caption");
 											cellRight.innerHTML = '<label>Portnumber:</label>'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = '<input id="miniserverport' + iteration + '" name="miniserverport' + iteration + '" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="" data-validation-error-msg="* The Portnumber must be in the range of 1 and 65535. The default Miniserver-Port is 80.">'
@@ -126,6 +128,7 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.setAttribute("class","formtable-caption");
 											cellRight.innerHTML = '<label>MAC-Address:</label>'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = '  <input id="miniservercloudurl' + iteration + '" name="miniservercloudurl' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="custom" data-suggestions="EEE000xxxxxx" data-validation-regexp="(^EEE000([a-zA-Z0-9]{6})$)|(^504F([a-zA-Z0-9]{8})$)" data-validation-error-msg="* Please enter a valid MAC-Address. Example: EEE000xxxxxx oder 504Fxxxxxxxx" value="">';
@@ -142,6 +145,7 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.setAttribute("class","formtable-caption");
 											cellRight.innerHTML = '<label>Public FTP-Port:</label>'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = '  <input id="miniservercloudurlftpport' + iteration + '" name="miniservercloudurlftpport' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="custom length" data-validation-length="1-5" data-validation-regexp="([0-9]$)" data-suggestions="21" data-validation-error-msg="* Please enter a valid public FTP-Port of the Miniservers. (See Router Port Forwarding) The local Miniserver FTP-Port should be 21." value="">';
@@ -241,13 +245,14 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.setAttribute("class","formtable-caption");
 											cellRight.innerHTML = '<label>Miniserver Username:</label>'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length alphanumeric" data-validation-allowing="-_" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
 											var cellRight = row.insertCell(2);
 											cellRight.innerHTML = ''
 											var cellRight = row.insertCell(3);
-											cellRight.innerHTML = '<font size="-1">Allowed characters: A-Z a-z 0-9 -_</font>'
+											cellRight.innerHTML = ''
 
 											// Add row
 											var lastRow = tbl.rows.length;
@@ -255,6 +260,7 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.setAttribute("class","formtable-caption");
 											cellRight.innerHTML = '<label>Miniserver Password:</label>'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = '<input id="miniserverkennwort' + iteration + '" name="miniserverkennwort' + iteration + '" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the password for the above Miniserver Administrator account.">'
@@ -269,6 +275,7 @@
 
 											// Add cells
 											var cellRight = row.insertCell(0);
+											cellRight.setAttribute("class","formtable-caption");
 											cellRight.innerHTML = '<label>Note / Link:</label>'
 											var cellRight = row.insertCell(1);
 											cellRight.innerHTML = '<textarea id="miniservernote' + iteration + '" name="miniservernote' + iteration + '" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="* Allowed characters: a-z A-Z 0-9 &#x7B;&#x28;&#x40;&#x3A;&#x2F;&#x3F;&#x3D;&#x23;&#x5F;&#x2B;&#x21;&#x2D;&#x26;&#x29;&#x7D; (Maximum length 512 characters)" data-validation-length="Max512"></textarea>';

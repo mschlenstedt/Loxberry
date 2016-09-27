@@ -102,3 +102,10 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 {
  text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }
+/* Table - Fieldnames */
+.formtable-caption
+{
+	text-align: right;
+  vertical-align: middle;
+  padding-right: 10px;
+}
