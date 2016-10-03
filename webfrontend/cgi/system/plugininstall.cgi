@@ -99,13 +99,16 @@ our $startpsection;
 our $btn1;
 our $btn2;
 our $uninstallscript;
+our $aptpackages;
+our $lastaptupdate;
+our $now;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.6";
+$version = "0.0.7";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -497,20 +500,20 @@ if($uploadfile !~ /^.+\.($allowed_filetypes)/) {
 make_path("/tmp/uploads/$tempfolder" , {chmod => 0777});
 
 # Create status and logfile
-if (-e "/tmp/uploads/$tempfile.status" || -e "/tmp/uploads/$tempfile.status") {
+if (-e "$home/webfrontend/html/tmp/$tempfile.status" || -e "$home/webfrontend/html/tmp/$tempfile.status") {
   $error = $phrase->param("TXT0047");
   &error;
 }
-open F, ">/tmp/uploads/$tempfile.status";
+open F, ">$home/webfrontend/html/tmp/$tempfile.status";
   print F "1";
 close F;
-open F, ">/tmp/uploads/$tempfile.log";
+open F, ">$home/webfrontend/html/tmp/$tempfile.log";
   print F "";
 close F;
-$statusfile = "/tmp/uploads/$tempfile.status";
-$statusfileurl = "uploads/$tempfile.status";
-$logfile = "/tmp/uploads/$tempfile.log";
-$logfileurl = "uploads/$tempfile.log";
+$statusfile = "$home/webfrontend/html/tmp/$tempfile.status";
+$statusfileurl = "/tmp/$tempfile.status";
+$logfile = "$home/webfrontend/html/tmp/$tempfile.log";
+$logfileurl = "/tmp/$tempfile.log";
 
 # Header
 print "Content-Type: text/html\n\n";
@@ -645,8 +648,7 @@ if ($pid == 0) {
   $message = "Interface: $pinterface";
   &loginfo;
 
-  if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle ||
-  !$pfolder || !$pinterface) {
+  if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pfolder || !$pinterface) {
     $message = $phrase->param("TXT0049");
     &logfail;
   }  else {
@@ -771,7 +773,7 @@ if ($pid == 0) {
     system("rm -r -f $home/config/plugins/$pfolder/ 2>&1");
     system("rm -r -f $home/data/plugins/$pfolder/ 2>&1");
     system("rm -r -f $home/templates/$pfolder/ 2>&1");
-    # system("rm -r -f $home/log/plugins/$pfolder/"); 		# Don't ourge Logfolder in case of an upgrade
+    # system("rm -r -f $home/log/plugins/$pfolder/"); 		# Don't purge Logfolder in case of an upgrade
     system("rm -r -f $home/webfrontend/cgi/plugins/$pfolder/ 2>&1");
     system("rm -r -f $home/webfrontend/html/plugins/$pfolder/ 2>&1");
     # Icons for Main Menu
@@ -1088,17 +1090,32 @@ if ($pid == 0) {
 
   # Installing additional packages
   if (-e "/tmp/uploads/$tempfolder/apt") {
-    $message = $phrase->param("TXT0081");
-    &loginfo;
-    $message = "Command: $sudobin $aptbin -q -y update";
-    &loginfo;
-    system("$sudobin $aptbin -q -y update 2>&1");
-    if ($? ne 0) {
-      $message = $phrase->param("TXT0082");
-      &logerr; 
+
+    if (-e "$home/data/system/lastaptupdate.dat") {
+      open(F,"<$home/data/system/lastaptupdate.dat");
+        $lastaptupdate = <F>;
+      close(F);
     } else {
-      $message = $phrase->param("TXT0083");
-      &logok;
+      $lastaptupdate = 0;
+    }
+    $now = time;
+    # If last run of apt-get update is longer than 24h ago, do a refresh.
+    if ($now > $lastaptupdate+86400) {
+      $message = $phrase->param("TXT0081");
+      &loginfo;
+      $message = "Command: $sudobin $aptbin -q -y update";
+      &loginfo;
+      system("$sudobin $aptbin -q -y update 2>&1");
+      if ($? ne 0) {
+        $message = $phrase->param("TXT0082");
+        &logerr; 
+      } else {
+        $message = $phrase->param("TXT0083");
+        &logok;
+        open(F,">$home/data/system/lastaptupdate.dat");
+          print F $now;
+        close(F);
+      }
     }
     $message = $phrase->param("TXT0078");
     &loginfo;
@@ -1115,9 +1132,37 @@ if ($pid == 0) {
       if ($_ =~ /^\s*#.*/) {
         next;
       }
-      $message = "Command: $sudobin $aptbin -q -y install $_";
+      $aptpackages = $aptpackages . " " . $_;
+    }
+    close (F);
+
+    $message = "Command: $sudobin $aptbin -q -y install $aptpackages";
+    &loginfo;
+    system("$sudobin $aptbin -q -y install $aptpackages 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0079");
+      &logerr; 
+      # If it failed, maybe due to an outdateß apt-database... So
+      # do a apt-get update once more
+      $message = $phrase->param("TXT0081");
       &loginfo;
-      system("$sudobin $aptbin -q -y install $_ 2>&1");
+      $message = "Command: $sudobin $aptbin -q -y update";
+      &loginfo;
+      system("$sudobin $aptbin -q -y update 2>&1");
+      if ($? ne 0) {
+        $message = $phrase->param("TXT0082");
+        &logerr; 
+      } else {
+        $message = $phrase->param("TXT0083");
+        &logok;
+        open(F,">$home/data/system/lastaptupdate.dat");
+          print F $now;
+        close(F);
+      }
+      # And try to install packages again...
+      $message = "Command: $sudobin $aptbin -q -y install $aptpackages";
+      &loginfo;
+      system("$sudobin $aptbin -q -y install $aptpackages 2>&1");
       if ($? ne 0) {
         $message = $phrase->param("TXT0079");
         &logerr; 
@@ -1125,8 +1170,11 @@ if ($pid == 0) {
         $message = $phrase->param("TXT0080");
         &logok;
       }
+    } else {
+      $message = $phrase->param("TXT0080");
+      &logok;
     }
-    close (F)
+
   }
 
   # Executing postinstall script
@@ -1222,12 +1270,12 @@ if ($pid == 0) {
   $message = $phrase->param("TXT0095");
   &loginfo;
   system("rm -r -f /tmp/uploads/$pfolder 2>&1");
-  system("cp /tmp/uploads/$tempfile.log $installfolder/log/system/plugininstall/$pname.log 2>&1");
+  system("cp $home/webfrontend/html/tmp/$tempfile.log $installfolder/log/system/plugininstall/$pname.log 2>&1");
 
   # Finished
   $message = $phrase->param("TXT0094");
   &logok;
-  open F, ">/tmp/uploads/$tempfile.status";
+  open F, ">$home/webfrontend/html/tmp/$tempfile.status";
     print F "0";
   close F;
 
@@ -1287,8 +1335,8 @@ sub logfail {
 
   print "<FAIL> $message\n";
 
-  # Status file: Error
-  open F, ">/tmp/uploads/$tempfile.status";
+  # Status file: FAIL
+  open F, ">$home/webfrontend/html/tmp/$tempfile.status";
     print F "2";
   close F;
 
