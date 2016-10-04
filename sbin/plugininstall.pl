@@ -81,7 +81,7 @@ our $btn2;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -647,17 +647,32 @@ $logfile = "$tempfolder/$tempfile.log";
 
   # Installing additional packages
   if (-e "$tempfolder/apt") {
-    $message = $phrase->param("TXT0081");
-    &loginfo;
-    $message = "Command: $sudobin $aptbin -q -y update";
-    &loginfo;
-    system("$sudobin $aptbin -q -y update 2>&1");
-    if ($? ne 0) {
-      $message = $phrase->param("TXT0082");
-      &logerr; 
+
+    if (-e "$home/data/system/lastaptupdate.dat") {
+      open(F,"<$home/data/system/lastaptupdate.dat");
+        $lastaptupdate = <F>;
+      close(F);
     } else {
-      $message = $phrase->param("TXT0083");
-      &logok;
+      $lastaptupdate = 0;
+    }
+    $now = time;
+    # If last run of apt-get update is longer than 24h ago, do a refresh.
+    if ($now > $lastaptupdate+86400) {
+      $message = $phrase->param("TXT0081");
+      &loginfo;
+      $message = "Command: $sudobin $aptbin -q -y update";
+      &loginfo;
+      system("$sudobin $aptbin -q -y update 2>&1");
+      if ($? ne 0) {
+        $message = $phrase->param("TXT0082");
+        &logerr; 
+      } else {
+        $message = $phrase->param("TXT0083");
+        &logok;
+        open(F,">$home/data/system/lastaptupdate.dat");
+          print F $now;
+        close(F);
+      }
     }
     $message = $phrase->param("TXT0078");
     &loginfo;
@@ -674,9 +689,37 @@ $logfile = "$tempfolder/$tempfile.log";
       if ($_ =~ /^\s*#.*/) {
         next;
       }
-      $message = "Command: $sudobin $aptbin -q -y install $_";
+      $aptpackages = $aptpackages . " " . $_;
+    }
+    close (F);
+
+    $message = "Command: $sudobin $aptbin -q -y install $aptpackages";
+    &loginfo;
+    system("$sudobin $aptbin -q -y install $aptpackages 2>&1");
+    if ($? ne 0) {
+      $message = $phrase->param("TXT0079");
+      &logerr; 
+      # If it failed, maybe due to an outdateß apt-database... So
+      # do a apt-get update once more
+      $message = $phrase->param("TXT0081");
       &loginfo;
-      system("$sudobin $aptbin -q -y install $_ 2>&1");
+      $message = "Command: $sudobin $aptbin -q -y update";
+      &loginfo;
+      system("$sudobin $aptbin -q -y update 2>&1");
+      if ($? ne 0) {
+        $message = $phrase->param("TXT0082");
+        &logerr; 
+      } else {
+        $message = $phrase->param("TXT0083");
+        &logok;
+        open(F,">$home/data/system/lastaptupdate.dat");
+          print F $now;
+        close(F);
+      }
+      # And try to install packages again...
+      $message = "Command: $sudobin $aptbin -q -y install $aptpackages";
+      &loginfo;
+      system("$sudobin $aptbin -q -y install $aptpackages 2>&1");
       if ($? ne 0) {
         $message = $phrase->param("TXT0079");
         &logerr; 
@@ -684,8 +727,11 @@ $logfile = "$tempfolder/$tempfile.log";
         $message = $phrase->param("TXT0080");
         &logok;
       }
+    } else {
+      $message = $phrase->param("TXT0080");
+      &logok;
     }
-    close (F)
+
   }
 
   # Executing postinstall script
