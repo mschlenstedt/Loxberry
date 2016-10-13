@@ -69,7 +69,7 @@ our $nodefaultpwd;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.3";
+$version = "0.0.4";
 
 $cfg             = new Config::Simple('../../../config/system/general.cfg');
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -218,11 +218,10 @@ $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswdsmb.exp lox
 $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
 
 # Save Username/Password for Webarea
-$salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64];
-$adminpasscrypted = crypt($adminpass1,$salt);
+$adminpasscrypted = qx(/usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1);
 open(F,">$installfolder/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
  flock(F,2);
- print F "$adminuser\:$adminpasscrypted";
+ print F "$adminpasscrypted";
  flock(F,8);
 close(F);
 
