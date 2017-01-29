@@ -48,37 +48,78 @@ sub lblanguage
 #####################################################
 # Page-Header-Sub
 # Parameters:
-# 	1. Help template file
-#	2. Help link
+# 	1. Page title (e.g. Plugin title)
+# 	2. Help link
+#	3. Help template file (without lang)
+#	
 #####################################################
 
 sub lbheader 
 {
-	my ($helptemplate, $helplink) = @_;
+	my ($pagetitle, $helpurl, $helptemplate) = @_;
 	
-	my $helptext;
-	# Create Help page
-	# $helplink = "http://www.loxwiki.eu:80/display/LOXBERRY/Miniserverbackup";
+	my $templatetext;
+	my $templatepath;
+	my $lang = lblanguage();
+
+	if (! defined $template_title) && (defined $pagetitle)) {
+		our $template_title = $pagetitle;
+	}
 	
-	if (-e $helptemplate) {
-		if (open(F,"$helptemplate")) {
-			my @help = <F>;
-			foreach (@help)
-			{
-				s/[\n\r]/ /g;
-				$helptext = $helptext . $_;
-			}
-			close(F);
-		} else {
-		carp "Help template $helptemplate could not be opened - continuing without help.\n";
+	if (! defined $helplink) && (defined $helpurl)) {
+		our $helplink = $helpurl;
+	}
+	
+	if (! defined $helptext) {
+		if (-e "$lbtemplatedir/$lang/$helptemplate") {
+			$templatepath = "$lbtemplatedir/$lang/$helptemplate";
+		} elsif (-e "$lbtemplatedir/en/$helptemplate") {
+			$templatepath = "$lbtemplatedir/en/$helptemplate";
+		} elsif (-e "$lbtemplatedir/de/$helptemplate") {
+			$templatepath = "$lbtemplatedir/de/$helptemplate";
 		}
-	} else {
-		carp "Help template $helptemplate could not be found - continuing without help.\n";
+		
+		if ($templatepath) {
+			if (open(F,"$templatepath")) {
+				my @help = <F>;
+				foreach (@help)
+				{
+					s/[\n\r]/ /g;
+					$templatetext = $templatetext . $_;
+				}
+				close(F);
+			} else {
+			carp "Help template $templatepath could not be opened - continuing without help.\n";
+			}
+		} else {
+			carp "Help template $templatepath could not be found - continuing without help.\n";
+		}
+		
+		if (! $templatetext) {
+			if ($lang eq 'de') {
+				$templatetext = "Keine Hilfe verf&uumlgbar.";
+			} else {
+				$templatetext = "No further help available.";
+			}
+		}
+		our $helptext = $templatetext;
 	}
 	
 	# LoxBerry Header
-	my $lang = lblanguage();
-	open(F,"$lbhomedir/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
+	$templatepath = undef;
+	if (-e "$lbhomedir/templates/system/$lang/header.html") {
+		$templatepath = "$lbhomedir/templates/system/$lang/header.html";
+	} elsif (-e "$lbhomedir/templates/system/en/header.html") {
+		$templatepath = "$lbhomedir/templates/system/en/header.html";
+	} elsif (-e "$lbhomedir/templates/system/de/header.html") {
+		$templatepath = "$lbhomedir/templates/system/de/header.html";
+	}
+	
+	if (! $templatepath) {
+		confess "Missing header template for language $lang and all fallback languages - possibly an installation path issue.";
+	}
+		
+	open(F, $templatepath) or confess "Could not read header template $templatepath - possibly a file access problem.";
 	while (<F>) 
 	{
 		$_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -86,6 +127,7 @@ sub lbheader
 	}
 	close(F);
 }
+
 
 #####################################################
 # Page-Footer-Sub
