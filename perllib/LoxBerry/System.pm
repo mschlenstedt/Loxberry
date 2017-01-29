@@ -155,6 +155,20 @@ sub read_generalcfg
 	}
 	return 1;
 }
+####################################################
+# get_localip - Get local ip address
+####################################################
+sub get_localip
+{
+	my $sock = IO::Socket::INET->new(
+						   PeerAddr=> "example.com",
+						   PeerPort=> 80,
+						   Proto   => "tcp");
+	return ($sock->sockhost);
+	# close $sock;
+	# return $localip;
+
+}
 
 
 ####################################################
@@ -171,7 +185,7 @@ sub is_enabled
 	if ($text eq "enabled") { return 1;}
 	if ($text eq "enable") { return 1;}
 	if ($text eq "1") { return 1;}
-	return 0;
+	return undef;
 }
 
 ####################################################
@@ -188,7 +202,7 @@ sub is_disabled
 	if ($text eq "disabled") { return 1;}
 	if ($text eq "disable") { return 1;}
 	if ($text eq "0") { return 1;}
-	return 0;
+	return undef;
 }
 
 #####################################################
