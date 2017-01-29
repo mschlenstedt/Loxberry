@@ -64,7 +64,7 @@ my $lbtimezone;
 ##################################################################
 
 ####### Get Miniserver hash #######
-get_miniservers
+sub get_miniservers
 {
 	# If config file was read already, directly return the saved hash
 	if (%miniservers) {
@@ -78,7 +78,7 @@ get_miniservers
 }
 
 ####### Get Miniserver key by IP Address #######
-get_miniserver_by_ip
+sub get_miniserver_by_ip
 {
 	my ($ip) = @_;
 	$ip = trim(lc($ip));
@@ -98,7 +98,7 @@ get_miniserver_by_ip
 }
 
 ####### Get Miniserver key by Name #######
-get_miniserver_by_name
+sub get_miniserver_by_name
 {
 	my ($myname) = @_;
 	$myname = trim(lc($myname));
