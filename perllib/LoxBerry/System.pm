@@ -2,7 +2,9 @@ use strict;
 use Config::Simple;
 use File::HomeDir;
 use URI::Escape;
+use Cwd 'abs_path';
 use Carp;
+
 
 package LoxBerry::System;
 use base 'Exporter';
@@ -45,10 +47,11 @@ if ($ENV{LBHOMEDIR}) {
 	} else {
 		# Missing some additional functions if we are running from daemon or cron
 		$lbhomedir = '/opt/loxberry';
+		carp ("LoxBerry home was statically set to /opt/loxberry as no home directory could be found.");
 	}
 }
 
-my $part = substr ((abs_path($0)), (length($home)+1));
+my $part = substr ((Cwd::abs_path($0)), (length($lbhomedir)+1));
 our ($lbplugindir) = (split(/\//, $part))[3];
 our $lbcgidir = "$lbhomedir/webfrontend/cgi/plugins/$lbplugindir";
 our $lbhtmldir = "$lbhomedir/webfrontend/html/plugins/$lbplugindir";
@@ -134,8 +137,6 @@ sub read_generalcfg
 		return undef;
 	}
 	
-	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or carp "BASE.CLOUDDNS not defined.\n";
-	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or carp "TIMESERVER.ZONE not defined.\n";
 
 	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
 		$miniservers{$msnr}{Name} = $cfg->param("MINISERVER$msnr.NAME");
