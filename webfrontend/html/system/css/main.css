@@ -2,9 +2,15 @@
 
 .form-error-message {
   color: red;
-  line-height: 1.5em;
-  font-size: 0.75em;
-}
+  line-height: 1.0em;
+  height: 1.0em;
+  font-size: 1.0em;
+  font-family: monospace;
+  font-weight: bold;
+  padding:3px;
+  z-index:1000;
+  display:initial;
+ }
 
 /* Main Menu Table */
 
@@ -95,4 +101,11 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 #loginfo
 {
  text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
+}
+/* Table - Fieldnames */
+.formtable-caption
+{
+	text-align: right;
+  vertical-align: middle;
+  padding-right: 10px;
 }
