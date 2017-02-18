@@ -137,6 +137,8 @@ sub read_generalcfg
 		return undef;
 	}
 	
+	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or carp ("BASE.CLOUDDNS not defined.\n");
+	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or carp ("TIMESERVER.ZONE not defined.\n");
 
 	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
 		$miniservers{$msnr}{Name} = $cfg->param("MINISERVER$msnr.NAME");
