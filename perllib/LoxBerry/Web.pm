@@ -40,7 +40,7 @@ sub lblanguage
 		  return $lang;
 	}
 	# If nothing found, get language from system settings
-	my  $syscfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
+	my  $syscfg = new Config::Simple("$LoxBerry::System::lbhomedir/config/system/general.cfg");
 	$lang = $syscfg->param("BASE.LANG");
 	return substr($lang, 0, 2);
 }
@@ -62,21 +62,21 @@ sub lbheader
 	my $templatepath;
 	my $lang = lblanguage();
 
-	if (! defined $template_title) && (defined $pagetitle)) {
+	if (! (defined $main::template_title) && (defined $pagetitle)) {
 		our $template_title = $pagetitle;
 	}
 	
-	if (! defined $helplink) && (defined $helpurl)) {
+	if (! (defined $main::helplink) && (defined $helpurl)) {
 		our $helplink = $helpurl;
 	}
 	
-	if (! defined $helptext) {
-		if (-e "$lbtemplatedir/$lang/$helptemplate") {
-			$templatepath = "$lbtemplatedir/$lang/$helptemplate";
-		} elsif (-e "$lbtemplatedir/en/$helptemplate") {
-			$templatepath = "$lbtemplatedir/en/$helptemplate";
-		} elsif (-e "$lbtemplatedir/de/$helptemplate") {
-			$templatepath = "$lbtemplatedir/de/$helptemplate";
+	if (! defined $main::helptext) {
+		if (-e "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbtemplatedir/en/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbtemplatedir/en/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbtemplatedir/de/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbtemplatedir/de/$helptemplate";
 		}
 		
 		if ($templatepath) {
@@ -89,10 +89,10 @@ sub lbheader
 				}
 				close(F);
 			} else {
-			carp "Help template $templatepath could not be opened - continuing without help.\n";
+			carp ("Help template $templatepath could not be opened - continuing without help.\n");
 			}
 		} else {
-			carp "Help template $templatepath could not be found - continuing without help.\n";
+			carp ("Help template $templatepath could not be found - continuing without help.\n");
 		}
 		
 		if (! $templatetext) {
@@ -107,19 +107,19 @@ sub lbheader
 	
 	# LoxBerry Header
 	$templatepath = undef;
-	if (-e "$lbhomedir/templates/system/$lang/header.html") {
-		$templatepath = "$lbhomedir/templates/system/$lang/header.html";
-	} elsif (-e "$lbhomedir/templates/system/en/header.html") {
-		$templatepath = "$lbhomedir/templates/system/en/header.html";
-	} elsif (-e "$lbhomedir/templates/system/de/header.html") {
-		$templatepath = "$lbhomedir/templates/system/de/header.html";
+	if (-e "$LoxBerry::System::lbhomedir/templates/system/$lang/header.html") {
+		$templatepath = "$LoxBerry::System::lbhomedir/templates/system/$lang/header.html";
+	} elsif (-e "$LoxBerry::System::lbhomedir/templates/system/en/header.html") {
+		$templatepath = "$LoxBerry::System::lbhomedir/templates/system/en/header.html";
+	} elsif (-e "$LoxBerry::System::lbhomedir/templates/system/de/header.html") {
+		$templatepath = "$LoxBerry::System::lbhomedir/templates/system/de/header.html";
 	}
 	
 	if (! $templatepath) {
-		confess "Missing header template for language $lang and all fallback languages - possibly an installation path issue.";
+		confess ("Missing header template for language $lang and all fallback languages - possibly an installation path issue.");
 	}
 		
-	open(F, $templatepath) or confess "Could not read header template $templatepath - possibly a file access problem.";
+	open(F, $templatepath) or confess ("Could not read header template $templatepath - possibly a file access problem.");
 	while (<F>) 
 	{
 		$_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -136,7 +136,7 @@ sub lbheader
 sub footer 
 {
 	my $lang = lblanguage();
-	if (open(F,"$lbhomedir/templates/system/$lang/footer.html")) {
+	if (open(F,"$LoxBerry::System::lbhomedir/templates/system/$lang/footer.html")) {
 		while (<F>) 
 		{
 			$_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -144,7 +144,7 @@ sub footer
 		}
 		close(F);
 	} else {
-		carp "Failed to open template system/$lang/footer.html\n";
+		carp ("Failed to open template system/$lang/footer.html\n");
 	}
 }
 
