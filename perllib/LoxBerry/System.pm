@@ -164,9 +164,7 @@ sub read_generalcfg
 
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
-	
-	print STDERR "LoxBerry::System::GREP $LoxBerry::System::binaries->{GREP}\n";
-	
+		
 	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
 		$miniservers{$msnr}{Name} = $cfg->param("MINISERVER$msnr.NAME");
 		$miniservers{$msnr}{IPAddress} = $cfg->param("MINISERVER$msnr.IPADDRESS");
@@ -182,9 +180,46 @@ sub read_generalcfg
 		$miniservers{$msnr}{Admin_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Admin});
 		$miniservers{$msnr}{Pass_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Pass});
 		$miniservers{$msnr}{Credentials_RAW} = $miniservers{$msnr}{Admin_RAW} . ':' . $miniservers{$msnr}{Pass_RAW};
+
+		# CloudDNS handling
+		if (LoxBerry::System::is_enabled($miniservers{$msnr}{UseCloudDNS}) && ($miniservers{$msnr}{CloudURL})) {
+			set_clouddns($msnr);
+		}
+		
+		if (! $miniservers{$msnr}{Port}) {
+			$miniservers{$msnr}{Port} = 80;
+		}
+
 	}
 	return 1;
 }
+####################################################
+# set_clouddns
+# Internal function to set CloudDNS IP and Port
+####################################################
+sub set_clouddns
+{
+	my ($msnr) = @_;
+	
+	# Grep IP Address from Cloud Service
+	my $dns_info = qx( $LoxBerry::System::binaries->{CURL} -I http://$LoxBerry::System::clouddnsaddress/$miniservers{$msnr}{CloudURL} --connect-timeout 5 -m 5 2>/dev/null |$LoxBerry::System::binaries->{GREP} Location |$LoxBerry::System::binaries->{AWK} -F/ '{print \$3}');
+	my @dns_info_pieces = split /:/, $dns_info;
+
+	if ($dns_info_pieces[1]) {
+	  $miniservers{$msnr}{Port} =~ s/^\s+|\s+$//g;
+	} else {
+	  $miniservers{$msnr}{Port} = 80;
+	}
+
+	if ($dns_info_pieces[0]) {
+	  $miniservers{$msnr}{IPAddress} =~ s/^\s+|\s+$//g;
+	} else {
+	  $miniservers{$msnr}{IPAddress} = "127.0.0.1";
+	}
+
+
+}
+
 ####################################################
 # get_localip - Get local ip address
 ####################################################
