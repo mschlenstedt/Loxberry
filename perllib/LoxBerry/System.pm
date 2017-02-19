@@ -58,9 +58,11 @@ our $lbhtmldir = "$lbhomedir/webfrontend/html/plugins/$lbplugindir";
 our $lbtemplatedir = "$lbhomedir/templates/plugins/$lbplugindir";
 our $lbdatadir = "$lbhomedir/data/plugins/$lbplugindir";
 our $lblogdir = "$lbhomedir/log/plugins/$lbplugindir";
+our $lbconfigdir = "$lbhomedir/config/plugins/$lbplugindir";
 
 # Hash only valid in this module
 my %miniservers;
+my %binaries;
 my $lbtimezone;
 
 # Finished everytime code execution
@@ -120,6 +122,25 @@ sub get_miniserver_by_name
 	return undef;
 }
 
+####### Get Binaries #######
+sub get_binaries
+{
+
+	if ($LoxBerry::System::binaries) {
+		# print STDERR "Returning existing hashref\n";
+		return $LoxBerry::System::binaries;
+	} 
+
+	if (read_generalcfg()) {
+			# print STDERR "Reading config and returning hashref\n";
+			#%LoxBerry::System::binaries ? print STDERR "Hash is defined\n" : print STDERR "Hash NOT defined\n";
+			return $LoxBerry::System::binaries;
+	}
+	return undef;
+}
+
+
+
 
 ##################################################################
 # Read general.cfg
@@ -140,6 +161,11 @@ sub read_generalcfg
 	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or carp ("BASE.CLOUDDNS not defined.\n");
 	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or carp ("TIMESERVER.ZONE not defined.\n");
 
+	# Binaries
+	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
+	
+	print STDERR "LoxBerry::System::GREP $LoxBerry::System::binaries->{GREP}\n";
+	
 	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
 		$miniservers{$msnr}{Name} = $cfg->param("MINISERVER$msnr.NAME");
 		$miniservers{$msnr}{IPAddress} = $cfg->param("MINISERVER$msnr.IPADDRESS");
@@ -152,8 +178,8 @@ sub read_generalcfg
 		$miniservers{$msnr}{CloudURLFTPPort} = $cfg->param("MINISERVER$msnr.CLOUDURLFTPPORT");
 		$miniservers{$msnr}{CloudURL} = $cfg->param("MINISERVER$msnr.CLOUDURL");
 		
-		$miniservers{$msnr}{Admin_RAW} = uri_unescape($miniservers{$msnr}{Admin});
-		$miniservers{$msnr}{Pass_RAW} = uri_unescape($miniservers{$msnr}{Pass});
+		$miniservers{$msnr}{Admin_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Admin});
+		$miniservers{$msnr}{Pass_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Pass});
 		$miniservers{$msnr}{Credentials_RAW} = $miniservers{$msnr}{Admin_RAW} . ':' . $miniservers{$msnr}{Pass_RAW};
 	}
 	return 1;
