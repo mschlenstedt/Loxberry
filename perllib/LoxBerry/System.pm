@@ -3,6 +3,8 @@ use Config::Simple;
 use File::HomeDir;
 use URI::Escape;
 use Cwd 'abs_path';
+use LWP::UserAgent;
+use XML::Simple;
 use Carp;
 
 
@@ -216,9 +218,56 @@ sub set_clouddns
 	} else {
 	  $miniservers{$msnr}{IPAddress} = "127.0.0.1";
 	}
-
-
 }
+
+#####################################################
+# get_ftpport
+# Function to get FTP port  considering CloudDNS Port
+# Input: $msnr
+# Output: $port
+#####################################################
+sub get_ftpport
+{
+	my ($msnr) = @_;
+	
+	$msnr = defined $msnr ? $msnr : 1;
+	
+	# If we have no MS list, read the config
+	if (! %miniservers) {
+		# print STDERR "get_ftpport: Readconfig\n";
+		read_generalcfg();
+	}
+	
+	# If CloudDNS is enabled, return the CloudDNS FTP port
+	if (LoxBerry::System::is_enabled($miniservers{$msnr}{UseCloudDNS}) && $miniservers{$msnr}{CloudURLFTPPort}) {
+		# print STDERR "get_ftpport: Use CloudDNS FTP Port\n";
+		return $miniservers{$msnr}{CloudURLFTPPort};
+	}
+	
+	# If MS hash does not have FTP set, read FTP from Miniserver and save it in FTPPort
+	if (! $miniservers{$msnr}{FTPPort}) {
+		# print STDERR "get_ftpport: Read FTP Port from MS\n";
+		# Get FTP Port from Miniserver
+		my $url = "http://$miniservers{$msnr}{Credentials}\@$miniservers{$msnr}{IPAddress}\:$miniservers{$msnr}{Port}/dev/cfg/ftp";
+		my $ua = LWP::UserAgent->new;
+		$ua->timeout(5);
+		my $response = $ua->get($url);
+		if (!$response->is_success) {
+			carp("Cannot query FTP port because Loxone Miniserver is not reachable.");
+			return undef;
+		} 
+		my $rawxml = $response->decoded_content();
+		my $xml = XML::Simple::XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
+		$miniservers{$msnr}{FTPPort} = $xml->{value};
+	}
+	return $miniservers{$msnr}{FTPPort};
+}
+
+
+
+
+
+
 
 ####################################################
 # get_localip - Get local ip address
