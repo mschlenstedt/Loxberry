@@ -23,6 +23,7 @@ our @EXPORT = qw (
 	$lbtemplatedir
 	$lbdatadir
 	$lblogdir
+	$lbconfigdir
 	is_enabled 
 	is_disabled
 	trim 
