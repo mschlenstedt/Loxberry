@@ -1,3 +1,8 @@
+our $VERSION = "0.23_01";
+$VERSION = eval $VERSION;
+# Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
+# Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
+
 use strict;
 use Config::Simple;
 use File::HomeDir;
@@ -32,6 +37,64 @@ our @EXPORT = qw (
 	ltrim
 	rtrim
 );
+
+=head1 NAME
+
+LoxBerry::System - LoxBerry platform system module to ease writing plugins for LoxBerry. See http://www.loxwiki.eu:80/x/o4CO
+
+=head1 SYNOPSIS
+
+	use LoxBerry::System;
+	
+	# LoxBerry::System defines globals for plugin directory
+	print "Config Directory: $lbconfigdir";
+	print "CGI directory:    $lbcgidir";
+	print "HTML directory:   $lbhtmldir";
+	# See more below
+	
+	# Get all data of configured Miniservers
+	my %miniservers = LoxBerry::System::get_miniservers();
+	print "Miniserver no. 1 is called $miniservers{1}{Name} and has IP $miniservers{1}{IPAddress}.";
+	# See below for all available variables
+	
+	# Binary paths from the config can be accessed by
+	my %bins = LoxBerry::System::get_binaries();
+	system("ps aux | $bins->{GREP} perl";
+	
+	# LoxBerry::System supports  using Loxone CloudDNS
+	my $ftpport = LoxBerry::System::get_ftpport($msno);
+	# returns the FTP port, either  local or CloudDNS one
+
+=head1 DESCRIPTION
+
+Goal of LoxBerry::System (and LoxBerry::Web) is to simplify creating plugins for the LoxBerry platform. Many time-consuming steps are encapsulated to easy call-able functions.
+
+=head2 Global Variables
+
+LoxBerry::System defines a dozen of variables for easier access to the plugin directories. They are accessable directly after the use LoxBerry::System command.
+
+	$lbhomedir		# Home directory of LoxBerry, usually /opt/loxberry
+	$lbplugindir	# The unique directory name of the plugin, e.g. squeezelite
+	$lbcgidir		# Full path to the CGI directory of the current plugin. e.g. /opt/loxberry/webfrontend/cgi/plugins/squeezelite
+	$lbhtmldir		# Full path to the HTML directory of the current plugin, e.g. /opt/loxberry/webfrontend/html/plugins/squeezelite
+	$lbtemplatedir	# Full path to the Template directory of the current plugin, e.g. /opt/loxberry/templates/plugins/squeezelite
+	$lbdatadir		# Full path to the Data directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
+	$lblogdir		# Full path to the Log directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
+	$lbconfigdir	# Full path to the Config directory of the current plugin, e.g. /opt/loxberry/config/plugins/squeezelite
+
+$lbhomedir is detected in the following order:
+
+=over 12
+
+=item 1. System environment variable -> $LBHOMEDIR
+
+=item 2. If username is loxberry -> HomeDir
+
+=item 3. Static -> /opt/loxberry
+
+=back
+
+=cut
 
 ##################################################################
 # This code is executed on every use
@@ -71,6 +134,45 @@ my $lbtimezone;
 # Finished everytime code execution
 ##################################################################
 
+=head2 get_miniservers
+
+This function reads all the configuration variables of all configured Miniservers, including credentials. 
+The result is a two-dimensional hash. The first key is the Miniserver number (starting from 1), the second keys are 
+configuration settings.
+
+	use LoxBerry::System;
+	my %miniservers = LoxBerry::System::get_miniservers();
+	
+	if (! %miniservers) {
+		exit(1); # No Miniservers found
+	}
+	
+	print "Number of Miniservers: " . keys(%miniservers);
+	
+	print "Miniserver no. 1's name is $miniservers{1}{Name} and has IP $miniservers{1}{IPAddress}.";
+	
+	foreach my $ms (sort keys %miniservers) {
+		print "Miniserver no. $ms is called $miniservers{$ms}{Name} and has IP $miniservers{$ms}{IPAddress}.";
+	}
+
+Available keys are:
+
+	Name			# Name of the Miniserver
+	IPAddress		# IP address of the Miniserver
+	Port			# Web port of the Miniserver
+	Admin			# Administrative user (URL-encoded)
+	Pass			# Password of administrative user (URL-encoded)
+	Credentials		# Admin:Pass (URL-encoded)
+	Admin_RAW		# Administrative user (NOT URL-encoded)
+	Pass_RAW		# Password of administrative user (NOT URL-encoded)
+	Credentials_RAW	# Admin:Pass (NOT URL-encoded)
+	Note			# Note to the MS
+	UseCloudDNS	 	# CloudDNS enabled
+	CloudURL	 	# External URL 
+	CloudURLFTPPort	# External FTP port - use get_ftpport instead!
+
+=cut
+
 ####### Get Miniserver hash #######
 sub get_miniservers
 {
@@ -84,6 +186,20 @@ sub get_miniservers
 	}
 	return undef;
 }
+
+=head2 get_miniserver_by_ip
+
+Returns the Miniserver number using the provided IP address. 
+
+	my $ip = '192.168.0.77';
+	my %miniservers = LoxBerry::System::get_miniservers();
+	my $msno = LoxBerry::System::get_miniserver_by_ip($ip);
+	
+	if ($msno) {
+		print "Miniserver with address $ip is called $miniservers{$msno}{Name}.";
+	}
+
+=cut
 
 ####### Get Miniserver key by IP Address #######
 sub get_miniserver_by_ip
@@ -105,6 +221,20 @@ sub get_miniserver_by_ip
 	return undef;
 }
 
+=head2 get_miniserver_by_name
+
+Returns the number of the Miniserver using the provided Name. This could be useful to get the number of a name selection in a form. The name comparison is case-insensitive.
+
+	my $name = 'MyMiniserver';
+	my %miniservers = LoxBerry::System::get_miniservers();
+	my $msno = LoxBerry::System::get_miniserver_by_name($name);
+	
+	if ($msno) {
+		print "Miniserver with name $name is called $miniservers{$msno}{Name}.";
+	}
+
+=cut
+
 ####### Get Miniserver key by Name #######
 sub get_miniserver_by_name
 {
@@ -125,6 +255,40 @@ sub get_miniserver_by_name
 	return undef;
 }
 
+=head2 get_binaries
+
+Although LoxBerry in it's fundamental characteristic comes as a ready-to-use Raspberry image, it should be as platform-independent as possible. 
+Therefore, system binaries should not be executed with static paths but from variables to these binaries. 
+
+	my $bins = LoxBerry::System::get_binaries();
+	print STDERR "The binary of Grep is $bins->{GREP}.";
+	system("$bins->{ZIP} myarchive.zip *");
+
+Available binaries:
+	APT
+	AWK
+	BASH
+	BZIP2
+	CHMOD
+	CURL
+	DATE
+	GREP
+	GZIP
+	MAIL
+	NTPDATE
+	POWEROFF
+	REBOOT
+	SENDMAIL
+	SUDO
+	TAR
+	UNZIP
+	WGET
+	ZIP
+
+If your plugin needs additional system binaries, it is best practise to read the binary path from your own plugin config file.
+
+=cut
+
 ####### Get Binaries #######
 sub get_binaries
 {
@@ -142,12 +306,9 @@ sub get_binaries
 	return undef;
 }
 
-
-
-
 ##################################################################
 # Read general.cfg
-# This is called from several functions and is not exported
+# This INTERNAL is called from several functions and not exported
 ##################################################################
 sub read_generalcfg
 {
@@ -197,7 +358,7 @@ sub read_generalcfg
 }
 ####################################################
 # set_clouddns
-# Internal function to set CloudDNS IP and Port
+# INTERNAL function to set CloudDNS IP and Port
 ####################################################
 sub set_clouddns
 {
@@ -219,6 +380,19 @@ sub set_clouddns
 	  $miniservers{$msnr}{IPAddress} = "127.0.0.1";
 	}
 }
+
+=head2 get_ftpport
+
+The internal FTP port of the Miniserver is not configured in the LoxBerry configuration but can be queried by this function.
+It supports CloudDNS FTP port (which IS defined in the LoxBerry config), therefore using this functions returns either the
+internal or the CloudDNS FTP port, so you do not need to spy yourself.
+
+	my $ftpport = LoxBerry::System::get_ftpport($msnr);
+	# Returns the FTP port of Miniserver $msnr.
+	my $ftpport = LoxBerry::System::get_ftpport();
+	# Returns the FTP port of the first Miniserver.
+
+=cut
 
 #####################################################
 # get_ftpport
@@ -263,11 +437,14 @@ sub get_ftpport
 	return $miniservers{$msnr}{FTPPort};
 }
 
+=head2 get_localip
 
+Returns the current LoxBerry IP address as string.
 
+	my $ip = LoxBerry::System::get_localip();
+	print "Current LoxBerry IP is $ip.";
 
-
-
+=cut
 
 ####################################################
 # get_localip - Get local ip address
@@ -284,6 +461,22 @@ sub get_localip
 
 }
 
+=head2 is_enabled and is_disabled
+
+This function "guesses" is a string variable is enabled/true (disabled/false) by a couple of usual keywords. This is useful when parsing configuration files. 
+The check is case-insensitive. It returns 1 if the check is successful,  or undef if the keyword does not match.
+
+Keywords for is_enabled: true, yes, on, enabled, enable, 1.
+
+Keywords for is_disabled: false, no, off, disabled, disable, 0.
+
+	my $configstring = "enable_plugin = True";
+	my ($plugin_enabled, $value) = split /=/, $configstring;
+	if (is_enabled($value)) {
+		print "Plugin is enabled.";
+	}
+
+=cut
 
 ####################################################
 # is_enabled - tries to detect if a string says 'True'
@@ -319,6 +512,19 @@ sub is_disabled
 	return undef;
 }
 
+=head2 trim, ltrim, rtrim
+
+Developers from other languages feel inconvenient using RegEx for simple string operations. LoxBerry::System adopts the familiar ltrim, rtrim and trim to remove leading, trailing or both whitespaces.
+
+trim, ltrim and rtrim are exported (you don't have to prefix the command with LoxBerry::System::).
+
+	my $dirty_string = "    What a mess!        ";
+	print ltrim($dirty_string); 	# Shows 'What a mess!        '
+	print rtrim($dirty_string); 	# Shows '    What a mess!'
+	print trim($dirty_string); 		# Shows 'What a mess!'
+
+=cut
+
 #####################################################
 # Strings trimmen
 #####################################################
@@ -331,3 +537,13 @@ sub rtrim { my $s = shift; $s =~ s/\s+$//;       return $s };
 # Finally 1; ########################################
 #####################################################
 1;
+
+=head1 EXCEPTION HANDLING
+
+All functions usually return undef if an error occurs, nothing was found or the input parameters are out of scope. You have to handle this is your plugin. Functions may inform in STDERR about warnings and errors.
+
+=head1 SEE ALSO
+
+Further features especially for language and HTML support are found in LoxBerry::Web.
+
+=cut

@@ -1,3 +1,8 @@
+our $VERSION = "0.23_01";
+$VERSION = eval $VERSION;
+# Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
+# Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
+
 use strict;
 use Config::Simple;
 use CGI;
@@ -8,6 +13,7 @@ package LoxBerry::Web;
 use base 'Exporter';
 our @EXPORT = qw (
 		lblanguage
+		get_plugin_icon
 );
 
 
@@ -16,7 +22,6 @@ our @EXPORT = qw (
 ##################################################################
 
 my $lang;
-
 
 
 # Finished everytime code execution
@@ -147,6 +152,32 @@ sub footer
 		carp ("Failed to open template system/$lang/footer.html\n");
 	}
 }
+
+################################################################
+# get_plugin_icon - Returns the Web path to the Plugin logo
+# Input: Size as number in pixels
+# Output: Absolute HTTP path to the Plugin icon (without server)
+################################################################
+
+sub get_plugin_icon
+{
+	my ($iconsize) = @_;
+	$iconsize = defined $iconsize ? $iconsize : 64;
+	if 		($iconsize > 256) { $iconsize = 512; }
+	elsif	($iconsize > 128) { $iconsize = 256; }
+	elsif	($iconsize > 64) { $iconsize = 128; }
+	else					{ $iconsize = 64; }
+	
+	my $logopath = "$LoxBerry::System::lbhomedir/webfrontend/html/system/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
+	my $logopath_web = "/system/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
+	
+	if (-e $logopath) { 
+		return $logopath_web;
+	}
+	return undef;
+}
+
+
 
 
 #####################################################
