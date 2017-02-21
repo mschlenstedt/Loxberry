@@ -1,9 +1,11 @@
-our $VERSION = "0.23_01";
+our $VERSION = "0.23_02";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
 
 use strict;
+no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
+
 use Config::Simple;
 use CGI;
 use LoxBerry::System;
@@ -61,19 +63,17 @@ sub lblanguage
 
 sub lbheader 
 {
-	my ($pagetitle, $helpurl, $helptemplate) = @_;
-	
 	my $templatetext;
-	my $templatepath;
-	my $lang = lblanguage();
-
-	if (! (defined $main::template_title) && (defined $pagetitle)) {
-		our $template_title = $pagetitle;
-	}
 	
-	if (! (defined $main::helplink) && (defined $helpurl)) {
-		our $helplink = $helpurl;
-	}
+	my ($pagetitle, $helpurl, $helptemplate) = @_;
+
+	my $lang = lblanguage();
+	
+	our $template_title = $pagetitle ? $pagetitle : $main::template_title;
+	our $helplink = $helpurl ? $helpurl : $main::helplink;
+	
+	my $templatepath;
+	
 	
 	if (! defined $main::helptext) {
 		if (-e "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate") {
@@ -138,7 +138,7 @@ sub lbheader
 # Page-Footer-Sub
 #####################################################
 
-sub footer 
+sub lbfooter 
 {
 	my $lang = lblanguage();
 	if (open(F,"$LoxBerry::System::lbhomedir/templates/system/$lang/footer.html")) {
