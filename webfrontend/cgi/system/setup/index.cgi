@@ -26,6 +26,9 @@ use Config::Simple;
 use CGI::Session;
 use File::Copy;
 use DBI;
+use URI::Escape;
+#use HTML::Entities;
+
 use warnings;
 use strict;
 no strict "refs"; # we need it for template system
@@ -144,8 +147,8 @@ $adminpass1           				= param('adminpass1');
 $adminpass2           				= param('adminpass2');
 $miniserverip1        				= param('miniserverip1');
 $miniserverport1      				= param('miniserverport1');
-$miniserveruser1      				= param('miniserveruser1');
-$miniserverkennwort1  				= param('miniserverkennwort1');
+$miniserveruser1      				= uri_escape(param('miniserveruser1'));
+$miniserverkennwort1  				= uri_escape(param('miniserverkennwort1'));
 $useclouddns1         				= param('useclouddns1');
 $miniservercloudurl1  				= param('miniservercloudurl1');
 $miniservercloudurlftpport1  			= param('miniservercloudurlftpport1');
@@ -344,11 +347,11 @@ if ($saveformdata) {
 # Read data from Session file
 $miniserverip1       				= $session->param("miniserverip1");
 $miniserverport1     				= $session->param("miniserverport1");
-$miniserveruser1     				= $session->param("miniserveruser1");
-$miniserverkennwort1 				= $session->param("miniserverkennwort1");
+$miniserveruser1     				= uri_unescape($session->param("miniserveruser1"));
+$miniserverkennwort1 				= uri_unescape($session->param("miniserverkennwort1"));
 $useclouddns1        				= $session->param("useclouddns1");
 $miniservercloudurl1 				= $session->param("miniservercloudurl1");
-$miniservercloudurlftpport1 			= $session->param("miniservercloudurlftpport1");
+$miniservercloudurlftpport1 		= $session->param("miniservercloudurlftpport1");
 $miniservernote1     				= $session->param("miniservernote1");
 $miniserverfoldername1  			= $session->param("miniserverfoldername1");
 
@@ -396,6 +399,10 @@ sub step3 {
 
 # Store submitted data in session file
 if ($saveformdata) {
+  
+  $miniserveruser1 = uri_escape($miniserveruser1);
+  $miniserverkennwort1 = uri_escape($miniserverkennwort1);
+  
   $session->param("miniserverip1", $miniserverip1);
   $session->param("miniserverport1", $miniserverport1);
   $session->param("miniserveruser1", $miniserveruser1);
@@ -406,6 +413,8 @@ if ($saveformdata) {
   $session->param("miniservernote1", $miniservernote1);
   $session->param("miniserverfoldername1", $miniserverfoldername1);
 
+ 
+  
   # Test if Miniserver is reachable
   if ( $useclouddns1 eq "on" || $useclouddns1 eq "checked" || $useclouddns1 eq "true" || $useclouddns1 eq "1" )
   {
