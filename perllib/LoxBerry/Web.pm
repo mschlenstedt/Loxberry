@@ -1,4 +1,11 @@
+our $VERSION = "0.23_02";
+$VERSION = eval $VERSION;
+# Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
+# Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
+
 use strict;
+no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
+
 use Config::Simple;
 use CGI;
 use LoxBerry::System;
@@ -8,6 +15,7 @@ package LoxBerry::Web;
 use base 'Exporter';
 our @EXPORT = qw (
 		lblanguage
+		get_plugin_icon
 );
 
 
@@ -16,7 +24,6 @@ our @EXPORT = qw (
 ##################################################################
 
 my $lang;
-
 
 
 # Finished everytime code execution
@@ -56,19 +63,17 @@ sub lblanguage
 
 sub lbheader 
 {
-	my ($pagetitle, $helpurl, $helptemplate) = @_;
-	
 	my $templatetext;
-	my $templatepath;
-	my $lang = lblanguage();
-
-	if (! (defined $main::template_title) && (defined $pagetitle)) {
-		our $template_title = $pagetitle;
-	}
 	
-	if (! (defined $main::helplink) && (defined $helpurl)) {
-		our $helplink = $helpurl;
-	}
+	my ($pagetitle, $helpurl, $helptemplate) = @_;
+
+	my $lang = lblanguage();
+	
+	our $template_title = $pagetitle ? $pagetitle : $main::template_title;
+	our $helplink = $helpurl ? $helpurl : $main::helplink;
+	
+	my $templatepath;
+	
 	
 	if (! defined $main::helptext) {
 		if (-e "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate") {
@@ -133,7 +138,7 @@ sub lbheader
 # Page-Footer-Sub
 #####################################################
 
-sub footer 
+sub lbfooter 
 {
 	my $lang = lblanguage();
 	if (open(F,"$LoxBerry::System::lbhomedir/templates/system/$lang/footer.html")) {
@@ -147,6 +152,32 @@ sub footer
 		carp ("Failed to open template system/$lang/footer.html\n");
 	}
 }
+
+################################################################
+# get_plugin_icon - Returns the Web path to the Plugin logo
+# Input: Size as number in pixels
+# Output: Absolute HTTP path to the Plugin icon (without server)
+################################################################
+
+sub get_plugin_icon
+{
+	my ($iconsize) = @_;
+	$iconsize = defined $iconsize ? $iconsize : 64;
+	if 		($iconsize > 256) { $iconsize = 512; }
+	elsif	($iconsize > 128) { $iconsize = 256; }
+	elsif	($iconsize > 64) { $iconsize = 128; }
+	else					{ $iconsize = 64; }
+	
+	my $logopath = "$LoxBerry::System::lbhomedir/webfrontend/html/system/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
+	my $logopath_web = "/system/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
+	
+	if (-e $logopath) { 
+		return $logopath_web;
+	}
+	return undef;
+}
+
+
 
 
 #####################################################
