@@ -110,6 +110,9 @@ if ($ENV{LBHOMEDIR}) {
 	my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
 	if ($username eq 'loxberry') {
 		$lbhomedir = File::HomeDir->my_home;
+	} elsif ($username eq 'root') {
+		$lbhomedir = `su - loxberry -c pwd`;
+		$lbhomedir =~ s/\n|\s+//;
 	} else {
 		# Missing some additional functions if we are running from daemon or cron
 		$lbhomedir = '/opt/loxberry';
