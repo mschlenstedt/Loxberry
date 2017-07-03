@@ -1,0 +1,98 @@
+									<!-- ** START template/system/en/admin.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
+										<input type="hidden" name="saveformdata" value="1">
+										<div class="form-group">
+											<table class="formtable" border="0" width="100%">
+												<tr>
+													<td>
+													 <label>Contraseña Actual:</label>
+													</td>
+													<td>
+														<input name="adminpassold" type="password" class="textfield" value="">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+													 &nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td width="25%">
+														<label class="control-label" for="adminuser">Nombre de Usuario:</label>
+													</td>
+													<td width="50%">
+														<input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20"
+														data-validation-allowing="-_"
+														data-validation-error-msg="* El nombre de usuario debe contener entre 3 y 20 caracteres alfanum?ricos." value="<!--$adminuserold-->">
+													</td>
+													<td width="3%">
+														&nbsp;
+													</td>
+													<td width="22%">
+														<font size="-1">Caracteres permitidos: A-Z a-z 0-9 -_</font>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label>Contraseña:</label>
+													</td>
+													<td>
+														<input name="adminpass1" type="password" data-validation="strength alphanumeric length" data-validation-length="min5" data-validation-allowing="-_,.;:!?&()?+§%="
+														data-validation-strength="2" class="textfield" value=""
+														data-validation-error-msg="* La contraseña debe contener al menos 5 caracteres, incluir mayuscula, minuscula, n?mero y un caracter especial. Caracteres especiales permitidos: &#x2D;&#x5F;&#x2C;&#x2E;&#x3B;&#x3A;&#x21;&#x3F;&#x26;&#x28;&#x29;&#x3F;&#x2B;&#xC2;&#xA7;&#x25;&#x3D;">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+														<font size="-1">Caracteres permitidos: &#x2D;&#x5F;&#x2C;&#x2E;&#x3B;&#x3A;&#x21;&#x3F;&#x26;&#x28;&#x29;&#x3F;&#x2B;&#xC2;&#xA7;&#x25;&#x3D;</font>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label>Repetir Contraseña:</label>
+													</td>
+													<td>
+														<input name="adminpass2" type="password" data-validation="confirmation" data-validation-confirm="adminpass1" class="textfield" value=""
+														data-validation-error-msg="* Ambas contraseñas no son iguales">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+														<font size="-1">Introduzca de nuevo la contraseña para evitar problemas.</font>
+													</td>
+												</tr>
+												<tr>
+													<td colspan=4>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td></td>
+													<td colspan=3>
+														<div id="form-error-message" class="form-error-message"></div>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</form>
+									<p>
+										&nbsp;
+									</p>
+									<p>
+										<center>
+											<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Cancelar</a>
+											<button type="submit" form="main_form1" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Guardar</button>
+										</center>
+									</p>
+									<script>
+										var $messages = $('#form-error-message');
+										$.validate(
+										{
+											modules : 'security',
+											errorMessagePosition : $messages
+										});
+									</script>
+									<!-- ** END template/system/en/admin.html ************************************************************************************ -->
