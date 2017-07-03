@@ -23,6 +23,8 @@ use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use LWP::UserAgent;
 use Config::Simple;
+use URI::Escape;
+#use HTML::Entities;
 #use warnings;
 #use strict;
 #no strict "refs"; # we need it for template system
@@ -78,7 +80,7 @@ our $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.5";
+$version = "0.0.6";
 
 $cfg                = new Config::Simple('../../../config/system/general.cfg');
 $installfolder      = $cfg->param("BASE.INSTALLFOLDER");
@@ -176,10 +178,11 @@ $help = "miniserver";
 
 # Start
 # 1. Miniserver
+# URL-decode credentials from config file
 $miniserverip          			= $cfg->param("MINISERVER1.IPADDRESS");
 $miniserverport        			= $cfg->param("MINISERVER1.PORT");
-$miniserveruser        			= $cfg->param("MINISERVER1.ADMIN");
-$miniserverkennwort    			= $cfg->param("MINISERVER1.PASS");
+$miniserveruser        			= uri_unescape($cfg->param("MINISERVER1.ADMIN"));
+$miniserverkennwort    			= uri_unescape($cfg->param("MINISERVER1.PASS"));
 $useclouddns           			= $cfg->param("MINISERVER1.USECLOUDDNS");
 $miniservercloudurl    			= $cfg->param("MINISERVER1.CLOUDURL");
 $miniservercloudurlftpport 	= $cfg->param("MINISERVER1.CLOUDURLFTPPORT");
@@ -208,18 +211,20 @@ open(F,"$installfolder/templates/system/$lang/miniserver_start.html") || die "Mi
 close(F);
 
 # Aditional Miniservers
+# URL-decode credentials from config file
 $msno = 2;
 while ($msno <= $miniservers) {
   # Table rows
   $miniserverip       				= $cfg->param("MINISERVER$msno.IPADDRESS");
   $miniserverport     				= $cfg->param("MINISERVER$msno.PORT");
-  $miniserveruser     				= $cfg->param("MINISERVER$msno.ADMIN");
-  $miniserverkennwort 				= $cfg->param("MINISERVER$msno.PASS");
+  $miniserveruser     				= uri_unescape($cfg->param("MINISERVER$msno.ADMIN"));
+  $miniserverkennwort 				= uri_unescape($cfg->param("MINISERVER$msno.PASS"));
   $miniservernote     				= $cfg->param("MINISERVER$msno.NOTE");
   $miniserverfoldername     	= $cfg->param("MINISERVER$msno.NAME");
   $useclouddns        				= $cfg->param("MINISERVER$msno.USECLOUDDNS");
   $miniservercloudurl 				= $cfg->param("MINISERVER$msno.CLOUDURL");
   $miniservercloudurlftpport 	= $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
+  
   quotemeta($miniserverip);
   quotemeta($miniserverport);
   quotemeta($miniserveruser);
@@ -292,6 +297,10 @@ while ($msno <= $miniservers) {
   quotemeta(${miniservernote.$msno});
   quotemeta(${miniserverfoldername.$msno});
 
+  # URL-Encode form data before they are used to test the connection
+  ${miniserveruser.$msno} = uri_escape(${miniserveruser.$msno});
+  ${miniserverkennwort.$msno} = uri_escape(${miniserverkennwort.$msno});
+  
   # Test if Miniserver is reachable
   if ( ${useclouddns.$msno} eq "on" || ${useclouddns.$msno} eq "checked" || ${useclouddns.$msno} eq "true" || ${useclouddns.$msno} eq "1" )
   {
