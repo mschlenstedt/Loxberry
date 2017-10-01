@@ -23,8 +23,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Version 1.5
-# 16.09.2016 14:26:00
+# Version 1.6
+# 01.10.2017 08:20:00
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
