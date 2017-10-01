@@ -47,8 +47,9 @@ case "$1" in
           mv /opt/loxberry/system/network/interfaces  /opt/loxberry/system/network/interfaces.bkp > /dev/null 2>&1
           cp /boot/network.txt  /opt/loxberry/system/network/interfaces > /dev/null 2>&1
           dos2unix /etc/network/interfaces > /dev/null 2>&1
+	  chown loxberry:loxberry /opt/loxberry/system/network/interfaces > /dev/null 2>&1
           mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
-          /etc/init.d/networking restart > /dev/null 2>&1
+          /sbin/reboot > /dev/null 2>&1
         fi
 
         # Copy new HTACCESS User/Password Database
