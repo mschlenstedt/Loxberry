@@ -1,4 +1,4 @@
-our $VERSION = "0.23_01";
+our $VERSION = "0.23_03";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -116,7 +116,7 @@ if ($ENV{LBHOMEDIR}) {
 	} else {
 		# Missing some additional functions if we are running from daemon or cron
 		$lbhomedir = '/opt/loxberry';
-		carp ("LoxBerry home was statically set to /opt/loxberry as no home directory could be found.");
+		Carp::carp ("LoxBerry home was statically set to /opt/loxberry as no home directory could be found.");
 	}
 }
 
@@ -325,8 +325,8 @@ sub read_generalcfg
 		return undef;
 	}
 	
-	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or carp ("BASE.CLOUDDNS not defined.\n");
-	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or carp ("TIMESERVER.ZONE not defined.\n");
+	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or Carp::carp ("BASE.CLOUDDNS not defined.\n");
+	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or Carp::carp ("TIMESERVER.ZONE not defined.\n");
 
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
@@ -430,7 +430,7 @@ sub get_ftpport
 		$ua->timeout(5);
 		my $response = $ua->get($url);
 		if (!$response->is_success) {
-			carp("Cannot query FTP port because Loxone Miniserver is not reachable.");
+			Carp::carp("Cannot query FTP port because Loxone Miniserver is not reachable.");
 			return undef;
 		} 
 		my $rawxml = $response->decoded_content();
