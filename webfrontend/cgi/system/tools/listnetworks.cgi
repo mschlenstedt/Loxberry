@@ -151,7 +151,7 @@ if (!$error) {
         $table = "$table<td  style=\"vertical-align: middle; text-align: center\">$bitrates</td>";
         $table = "$table<td style=\"vertical-align: middle; text-align: center\">$quality</td>";
         $table = "$table<td style=\"vertical-align: middle; text-align: center\">$force</td>";
-        $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">Übernehmen</font></button></td></tr>\n";
+        $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">" . $phrase->param("TXT0114") . "</font></button></td></tr>\n";
       }
       $i++;
       $ssid = "";
@@ -206,7 +206,7 @@ if (!$error) {
   $table = "$table<td  style=\"vertical-align: middle; text-align: center\">$bitrates</td>";
   $table = "$table<td style=\"vertical-align: middle; text-align: center\">$quality</td>";
   $table = "$table<td style=\"vertical-align: middle; text-align: center\">$force</td>";
-  $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">Übernehmen</font></button></td></tr>\n";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">" . $phrase->param("TXT0114") . "</font></button></td></tr>\n";
   $table = "$table</tbody>\n";
 
 }

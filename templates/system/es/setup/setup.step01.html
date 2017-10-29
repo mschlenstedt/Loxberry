@@ -1,0 +1,92 @@
+									<!-- ** START template/system/en/setup/setup.step01.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<h2>Primer Paso: Definir Administrador</h2>
+									<p>
+										Tu primer trabajo es definir una cuenta de Administrador. Esta cuenta permitira configurar la configuración de tu Loxberry.
+										Debes introducir un nombre de usuario (por ejemplo "michael").
+										Una buena contraseña debe tener al menos 12 caracteres. Por favor usa mayúsculas, minúsculas y números. Tambien puedes usar caracteres especiales
+										para aumentar la seguridad - pero no todos están permitidos - usa la información adicional para saber cual puedes usar.
+									</p>
+									<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/setup/index.cgi?step=<!--$step-->&lang=<!--$lang-->&sid=<!--$sid-->">
+										<input type="hidden" name="saveformdata" value="1">
+										<div class="form-group">
+											<table class="formtable" border="0" width="100%">
+												<tr>
+													<td width="25%">
+														<label class="control-label" for="adminuser">Usuario:</label>
+													</td>
+													<td width="50%">
+														<input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length letternumeric" data-validation-length="3-20"
+															data-validation-allowing="-_"
+															data-validation-error-msg="* El nombre de usuario debe tener entre 3 y 20 caracteres alfanuméricos<br>" value="<!--$adminuser-->">
+													</td>
+													<td width="3%">
+														&nbsp;
+													</td>
+													<td width="22%">
+														<font size="-1">Caracteres permitidos: A-Z a-z 0-9</font>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label>Contraseña:</label>
+													</td>
+													<td>
+														<input name="adminpass1" type="password" data-validation="strength letternumeric length" data-validation-length="min5" data-validation-allowing="-_,.;:!?&()?+§%="
+															data-validation-strength="2" class="textfield" value="<!--$adminpass1-->"
+															data-validation-error-msg="* La contraseña debe contener mayúscula, minúscula y números. La longitud mínima es de 5 caracteres. Caracteres especiales permitidos: &#x2D;&#x5F;&#x2C;&#x2E;&#x3B;&#x3A;&#x21;&#x3F;&#x26;&#x28;&#x29;&#x3F;&#x2B;&#xC2;&#xA7;&#x25;&#x3D;">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+														<font size="-1">Caracteres permitidos: &#x2D;&#x5F;&#x2C;&#x2E;&#x3B;&#x3A;&#x21;&#x3F;&#x26;&#x28;&#x29;&#x3F;&#x2B;&#xC2;&#xA7;&#x25;&#x3D;</font>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label>Retype Password:</label>
+													</td>
+													<td>
+														<input name="adminpass2" type="password" data-validation="confirmation" data-validation-confirm="adminpass1" class="textfield" value="<!--$adminpass1-->"
+															data-validation-error-msg="* Ambas contraseñas no son iguales">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+														<font size="-1">Introduzca nuevamente la contraseña para prevenir errores</font>
+													</td>
+												</tr>
+												<tr>
+													<td colspan=4>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td></td>
+													<td colspan=3>
+														<div id="form-error-message" class="form-error-message"></div>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</form>
+									<p>
+										&nbsp;
+									</p>
+									<p>
+										<center>
+											<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->">Cancelar</a>
+											<a id="btnback" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l" href="javascript:history.back();" >Volver</a>
+											<button type="submit" form="main_form1" id="btnsubmit1" data-role="button" data-inline="true" data-mini="true" data-icon="check">Proceder al paso 2</button>
+										</center>
+									</p>
+									<script>
+										var $messages = $('#form-error-message');
+										$.validate(
+										{
+											modules : 'security',
+											errorMessagePosition : $messages
+										});
+									</script>
+										<!-- ** END template/system/en/setup/setup.step01.html ************************************************************************************ -->

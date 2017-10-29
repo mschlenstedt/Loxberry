@@ -23,8 +23,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Version 1.5
-# 16.09.2016 14:26:00
+# Version 1.6
+# 01.10.2017 08:20:00
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
@@ -47,8 +47,9 @@ case "$1" in
           mv /opt/loxberry/system/network/interfaces  /opt/loxberry/system/network/interfaces.bkp > /dev/null 2>&1
           cp /boot/network.txt  /opt/loxberry/system/network/interfaces > /dev/null 2>&1
           dos2unix /etc/network/interfaces > /dev/null 2>&1
+	  chown loxberry:loxberry /opt/loxberry/system/network/interfaces > /dev/null 2>&1
           mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
-          /etc/init.d/networking restart > /dev/null 2>&1
+          /sbin/reboot > /dev/null 2>&1
         fi
 
         # Copy new HTACCESS User/Password Database
