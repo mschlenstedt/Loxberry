@@ -1,5 +1,5 @@
-									<!-- ** START template/system/de/upgrade_menu.html 27.08.2016 21:06:07 ************************************************************************************ -->
-									<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/upgrade.cgi?do=install" enctype="multipart/form-data">
+									<!-- ** START template/system/de/updates_menu.html 02.11.2017 22:56:00 ************************************************************************************ -->
+									<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/updates.cgi?do=install" enctype="multipart/form-data">
 										<input type="hidden" name="saveformdata" value="1">
 											<div class="form-group">
 												<table class="formtable" border="0" width="100%">
@@ -19,6 +19,14 @@
 													</tr>
 													<tr>
 													<td></td>
+													<td>
+													<a data-role="button" data-inline="true" data-icon="info" data-mini="true"
+													 href="/admin/system/tools/logfile.cgi?logfile=system/upgrade.log&header=html&format=template" target="_blank">Logfile</a>
+													</td>
+													<td></td>
+													</tr>
+													<tr>
+													<td></td>
 													<td colspan=3>
 														<div id="form-error-message" class="form-error-message"></div>
 													</td>
@@ -35,4 +43,4 @@
 										errorMessagePosition : $messages,
 									});
 								</script>
-								<!-- ** END template/system/de/upgrade_menu.html ************************************************************************************ -->
+								<!-- ** END template/system/de/updates_menu.html ************************************************************************************ -->
