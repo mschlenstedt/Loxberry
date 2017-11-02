@@ -173,11 +173,11 @@ sub form {
 print "Content-Type: text/html\n\n";
 
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0103");
-$help = "upgrade";
+$help = "updates";
 
 # Print Template
 &header;
-open(F,"$installfolder/templates/system/$lang/upgrade_menu.html") || die "Missing template system/$lang/upgrade_menu.html";
+open(F,"$installfolder/templates/system/$lang/updates_menu.html") || die "Missing template system/$lang/updates_menu.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
     print $_;
@@ -214,7 +214,7 @@ if ($answer eq "yes") {
   print "Content-Type: text/html\n\n";
 
   $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0103");
-  $help = "upgrade";
+  $help = "updates";
 
   $message = $phrase->param("TXT0108");
   $nexturl = "/admin/index.cgi";
@@ -360,7 +360,7 @@ if (@uvfields[2] <= @svfields[2] && @uvfields[1] == @svfields[1] && @uvfields[0]
 print "Content-Type: text/html\n\n";
 
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0103");
-$help = "upgrade";
+$help = "updates";
 
 $nexturl = "/admin/index.cgi";
 
