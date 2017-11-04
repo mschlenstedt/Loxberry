@@ -14,10 +14,9 @@ It is a good idea to browse the issues - also issues already closed (remove the 
 
 We "excessively" use labels in issues. 
 The 'bug' label needs to be fixed definitely.
-The 'enhancement' is a user story that we try to catch, but if it has ...
-... 'must have' we will do it for 0.3.x.
+The 'enhancement' is a user story that we try to catch, but if it has 'must have' we Rallye will do it for 0.3.x.
 
-Some of our issues we additionally have labels with 'good first issue'. We thing this are parts that new developers could achieve also without knowing the entire system.
+Some of our issues we additionally have labelled with 'good first issue'. We thing this are parts that new developers could achieve also without knowing the entire system.
 
 If you have any questions, give us a message on Github or inside an issue. 
 If you speak German, our disussion base is an own area in LoxForum: https://www.loxforum.com/forum/projektforen/loxberry/entwickler
