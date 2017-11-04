@@ -32,13 +32,17 @@ PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
 case "$1" in
   start|"")
+
+	# This is done by /usr/lib/raspi-config/init_resize.sh since Rasbian Stretch.
+	# No need to do this here anymore.
+
         # Resize rootfs to maximum if not yet done
-        if [ ! -f /boot/rootfsresized ]
-        then
-          log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
-          /opt/loxberry/sbin/resize_rootfs > /dev/null 2>&1
-          touch /boot/rootfsresized
-        fi
+        #if [ ! -f /boot/rootfsresized ]
+        #then
+        #  log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
+        #  /opt/loxberry/sbin/resize_rootfs > /dev/null 2>&1
+        #  touch /boot/rootfsresized
+        #fi
 
         # Copy manual network configuration if any exists
         if [ -f /boot/network.txt ]
