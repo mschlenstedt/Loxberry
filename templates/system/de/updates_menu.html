@@ -6,24 +6,22 @@
 									<table class="formtable" border="0" width="100%">
 									<tr>
 									<td>
-									LoxBerry kann aus den Raspbian-Repositories regelmäßig neue Updates beziehen. <br>Es werden ausschließlich Sicherheits-Update installiert.<br>LoxBerry wird 
-									automatisch neu gestartet, sollte ein Update dies anfordern.
+									LoxBerry kann aus den Raspbian-Repositories regelmäßig neue Updates beziehen. <br>Es werden ausschließlich Sicherheits-Update installiert.
 									</td>
 									<td>
-									<fieldset data-role="controlgroup" data-mini="true" style="width:300px">
+									<fieldset data-role="controlgroup" data-mini="true" style="width:400px">
 									<!--$update_radio-->
-									<!--
-									<input type="radio" name="option-secupdates" id="option-secupdates-0" value="0" />
-										<label for="option-secupdates-0">aus</label>
-										<input type="radio" name="option-secupdates" id="option-secupdates-1" value="1" />
-										<label for="option-secupdates-1">täglich</label>
-										<input type="radio" name="option-secupdates" id="option-secupdates-7" value="7" />
-										<label for="option-secupdates-7">wöchentlich</label>
-										<input type="radio" name="option-secupdates" id="option-secupdates-30" value="30" />
-										<label for="option-secupdates-30">monatlich</label>
-									-->
 									</fieldset>
-									
+									</td>
+									</tr>
+									<tr>
+									<td>
+									Wenn ein Security-Update das anfordert, wird LoxBerry neu gestartet, <br>auch dann, wenn Benutzer angemeldet sind.
+									</td>
+									<td>
+									<fieldset data-role="controlgroup" data-mini="true" style="width:400px">
+									<!--$update_reboot_checkbox-->
+									</fieldset>
 									</td>
 									</tr>
 									</table>
@@ -82,21 +80,19 @@
 	// AJAX Handler for Updates setting
 	$(document).ready(function(){
 		// Request option for Automatic Updates
-		//$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: 'query'} , success: function(result){
-			//alert(result);
-			// The ajax request returns the name of the radion button, e.g. option-secupdates-7
-			//$('input:radio[id="option-secupdates-30"]').attr("checked", true);
-			//$('input:radio[id="option-secupdates-30"]').attr('data-cacheval','true'); 
-			
-		//	$("input[name=option-secupdates]").val(["30"]);
-		//}});
-		
-		
 		$('input:radio[name="option-secupdates"]').change(function(){
 			var secupdates_val = $('input[name="option-secupdates"]:checked').val();
 			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: secupdates_val} , success: function(result){
-				
-				//$('input[name="option-secupdates"]).html("dfgsdgsdgjsdgjdf");
+		}});
+		});
+		// Request option for Reboot
+		$('input:checkbox[name="updates-autoreboot"]').change(function(){
+			var secupdates_reboot;
+			if ($('input:checkbox[name="updates-autoreboot"]').is(":checked")) 
+				{ secupdates_reboot = 1; }
+			else { secupdates_reboot = 0; }
+			// alert("Value is " + secupdates_reboot);
+			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: secupdates_reboot} , success: function(result){
 		}});
 		});
 	});
