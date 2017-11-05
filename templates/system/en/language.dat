@@ -116,3 +116,9 @@ TXT0111=Settings for SMTP-Server saved and activated.
 TXT0112=Installing Uninstall-Script
 TXT0113=Please restart your LoxBerry to finish uninstallation.
 TXT0114=Select
+
+
+SECUPDATE_RADIO_OFF=Off
+SECUPDATE_RADIO_DAILY=Daily
+SECUPDATE_RADIO_WEEKLY=Weekly
+SECUPDATE_RADIO_MONTHLY=Monthly
