@@ -14,7 +14,7 @@ It is a good idea to browse the issues - also issues already closed (remove the 
 
 We "excessively" use labels in issues. 
 The 'bug' label needs to be fixed definitely.
-The 'enhancement' is a user story that we try to catch, but if it has 'must have' we Rallye will do it for 0.3.x.
+The 'enhancement' is a user story that we try to catch, but if it has 'must have' we really will do it for 0.3.x.
 
 Some of our issues we additionally have labelled with 'good first issue'. We thing this are parts that new developers could achieve also without knowing the entire system.
 
