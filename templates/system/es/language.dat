@@ -116,3 +116,9 @@ TXT0111=Configuración para el Servidor SMTP guardada y activada.
 TXT0112=Instalando Script de Desinstalación
 TXT0113=Por favor reinicie su LoxBerry para finalizar la desinstalación.
 TXT0114=Seleccionar
+
+
+SECUPDATE_RADIO_OFF=Apagado
+SECUPDATE_RADIO_DAILY=Diario
+SECUPDATE_RADIO_WEEKLY=Semanal
+SECUPDATE_RADIO_MONTHLY=Mensual
