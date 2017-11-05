@@ -21,6 +21,7 @@
 
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
+use CGI;
 use Config::Simple;
 use File::HomeDir;
 use File::Path qw(make_path remove_tree);
@@ -138,7 +139,12 @@ if (!-e "$installfolder/templates/system/$lang/language.dat") {
 
 # Read translations / phrases
 $languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+$phrases = new Config::Simple($languagefile);
+# $phrases->import_names('T');
+#Config::Simple->import_from($languagefile, \%T);
+#print STDERR "Language TEST: " . $T::SECUPDATE_RADIO_DAILY . "\n";
+#print STDERR "Language TEST phrases: " . $phrases->param('SECUPDATE_RADIO_DAILY') . "\n";
+
 
 ##########################################################################
 # Main program
@@ -172,7 +178,30 @@ sub form {
 
 print "Content-Type: text/html\n\n";
 
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0103");
+our $unattended_val = get_unattended_upgrades_days();
+our $unattended_reboot_bool = get_unattended_upgrades_autoreboot();
+
+our $cgi = new CGI;
+our %labels = ('0'=> $phrases->param('SECUPDATE_RADIO_OFF'),
+					 '1'=> $phrases->param('SECUPDATE_RADIO_DAILY'),
+					 '7'=> $phrases->param('SECUPDATE_RADIO_WEEKLY'),
+					 '30'=> $phrases->param('SECUPDATE_RADIO_MONTHLY'));
+				 
+our $update_radio = $cgi->radio_group(
+        -name    => 'option-secupdates',
+        -values  => ['0', '1', '7', '30'],
+        -labels  => \%labels,
+		-default => $unattended_val,
+    );
+
+our $update_reboot_checkbox = $cgi->checkbox( -name => 'updates-autoreboot',
+											  -checked => $unattended_reboot_bool,
+											  #-checked => 1,
+											  #-value => '1',
+											  -label => $phrases->param('SECUPDATE_REBOOT_ENABLED')
+	);
+
+$template_title = $phrases->param('TXT0000') . ": " . $phrases->param('TXT0103');
 $help = "updates";
 
 # Print Template
@@ -180,6 +209,7 @@ $help = "updates";
 open(F,"$installfolder/templates/system/$lang/updates_menu.html") || die "Missing template system/$lang/updates_menu.html";
   while (<F>) {
     $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+	# $_ =~ s/<!--\$(.*?)-->/${$1}/g;
     print $_;
   }
 close(F);
@@ -485,3 +515,78 @@ sub is_folder_empty {
   opendir(my $dh, $dirname); 
   return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
 }
+
+###################################################################
+# Returns the current days of unattended-upgrades
+###################################################################
+
+sub get_unattended_upgrades_days
+{
+	my $aptfile = "/etc/apt/apt.conf.d/02periodic";
+	if (!-f $aptfile) {
+		return 0; 
+	}
+	open(FILE, $aptfile) || die "File not found";
+	my @lines = <FILE>;
+	close(FILE);
+
+	my $querystring;
+	my $queryresult;
+	
+	foreach(@lines) {
+		if (begins_with($_, "APT::Periodic::Unattended-Upgrade"))
+			{   my ($querystring, $queryresult) = split / /;
+				$queryresult =~ s/\R//g;
+				$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
+				return $queryresult;
+			}
+	}
+return 0;
+}
+
+###################################################################
+# Returns if unattended-upgrades is set to automatically reboot
+###################################################################
+
+sub get_unattended_upgrades_autoreboot
+{
+	my $aptfile = "/etc/apt/apt.conf.d/50unattended-upgrades";
+	if (!-f $aptfile) {
+		return 0; 
+	}
+	open(FILE, $aptfile) || die "File not found";
+	my @lines = <FILE>;
+	close(FILE);
+
+	my $querystring;
+	my $queryresult;
+	
+	foreach(@lines) {
+		if (begins_with($_, "Unattended-Upgrade::Automatic-Reboot-WithUsers "))
+			{   my ($querystring, $queryresult) = split / /;
+				print STDERR "AUTOREBOOT QUERYRESULT: " . $queryresult . "\n";
+				$queryresult =~ s/\R//g;
+				#print STDERR "AUTOREBOOT QUERYRESULT: " . $queryresult . "\n";
+				$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
+				#print STDERR "AUTOREBOOT QUERYRESULT: #" . $queryresult . "#\n";
+				return $queryresult eq 'true' ? 1 : 0;
+				#print STDERR "AUTOREBOOT RETURNVAL: " . $returnval . "\n";
+				#return $returnval;
+			}
+	}
+return 0;
+}
+
+
+
+
+###################################################################
+# Returns a value if string2 is the at the beginning of string 1
+###################################################################
+
+sub begins_with
+{	
+		
+    return substr($_[0], 0, length($_[1])) eq $_[1];
+}		
+			

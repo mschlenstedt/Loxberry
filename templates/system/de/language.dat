@@ -117,9 +117,8 @@ TXT0112=Installiere Uninstall-Skript
 TXT0113=Bitte starten Sie den LoxBerry neu um die Deinstallation abzuschließen.
 TXT0114=Übernehmen
 
-
-
 SECUPDATE_RADIO_OFF=Aus
 SECUPDATE_RADIO_DAILY=Täglich
 SECUPDATE_RADIO_WEEKLY=Wöchentlich
 SECUPDATE_RADIO_MONTHLY=Monatlich
+SECUPDATE_REBOOT_ENABLED=Bei Bedarf automatisch neu starten
