@@ -2,7 +2,9 @@
 	<head>
 		<title><!--$template_title--></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8">
-		<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.min.css">
+		<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.css">
+		<!--<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.min.css">-->
+		
 		<link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css">
 		<link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css">
 		<link rel="stylesheet" href="/system/css/main.css">
@@ -44,17 +46,27 @@
 							<li><a href="/admin/system/donate.cgi">Spenden? :-)</a></li>
 							<li data-role="list-divider">Plugins</li>
 							<!-- STARTPLUGINSHERE --> <!-- Never remove this tag! -->
+<li><a href="/admin/plugins/alsatools/index.cgi">ALSA Tools</a></li>
+<li><a href="/admin/plugins/anyplugin/index.cgi">Any Plugin</a></li>
+<li><a href="/admin/plugins/dnsmasq/index.cgi">DNSmasq</a></li>
+<li><a href="/admin/plugins/lbbackup/index.cgi">LoxBerry Backup</a></li>
+<li><a href="/admin/plugins/miniserverbackup/index.cgi">Miniserver Backup</a></li>
+<li><a href="/admin/plugins/squeezelite/index.cgi">Squeezelite Player</a></li>
 							<!-- ENDPLUGINSHERE --> <!-- Never remove this tag! -->
 						</ul>
 					</div>
 				<!-- /main menu panel -->
 				<!-- info panel -->
 					<div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true">
+						<div data-role="header" class="ui-corner-all">
 						<h2>Hilfe</h2>
+						</div>
+						<div class="ui-body-a ui-corner-all">
 						<p><a href="<!--$helplink-->" target="blank">Ausf&uuml;hrliche Hilfe</a></p>
 						<p>
 							<font size="-1"><!--$helptext--></font>
 						</p>
+					</div>
 					</div>
 				<!-- /info panel -->
 				<!-- header -->

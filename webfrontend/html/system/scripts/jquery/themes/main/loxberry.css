@@ -87,8 +87,10 @@ label.ui-btn {
 -----------------------------------------------------------------------------------------------------------*/
 /* Class ui-btn-corner-all deprecated in 1.4 */
 .ui-corner-all {
-	-webkit-border-radius: .6em /*{global-radii-blocks}*/;
-	border-radius: .6em /*{global-radii-blocks}*/;
+	/* -webkit-border-radius: .6em; */ /*{global-radii-blocks}*/
+	/* border-radius: .6em; */ /*{global-radii-blocks}*/
+	-webkit-border-radius: .2em; /*{global-radii-blocks}*/
+	border-radius: .2em; /*{global-radii-blocks}*/
 }
 /* Buttons */
 .ui-btn-corner-all,
@@ -224,7 +226,8 @@ html .ui-alt-icon .ui-radio-off:after {
 html .ui-bar-a .ui-bar-inherit,
 html .ui-body-a .ui-bar-inherit,
 html body .ui-group-theme-a .ui-bar-inherit {
-	background-color: #6dac20 /*{a-bar-background-color}*/;
+	/*background-color: #6dac20; */ /*{a-bar-background-color}*/
+	background-color: #6dac20;
 	border-color: #4d6c22 /*{a-bar-border}*/;
 	color: #ffffff /*{a-bar-color}*/;
 	text-shadow: 0 /*{a-bar-shadow-x}*/ 1px /*{a-bar-shadow-y}*/ 1px /*{a-bar-shadow-radius}*/ #444444 /*{a-bar-shadow-color}*/;
@@ -238,11 +241,18 @@ html body .ui-group-theme-a .ui-bar-inherit {
 .ui-overlay-a,
 .ui-page-theme-a,
 .ui-page-theme-a .ui-panel-wrapper {
-	background-color: #e6e6e6 /*{a-page-background-color}*/;
+	background-color: #3d3d3d; /*{a-page-background-color}*/
+	/* background-color: #e6e6e6; /*{a-page-background-color}*/
 	border-color: #e6e6e6 /*{a-page-border}*/;
 	color: #000000 /*{a-page-color}*/;
 	text-shadow: 0 /*{a-page-shadow-x}*/ 1px /*{a-page-shadow-y}*/ 0 /*{a-page-shadow-radius}*/ #eeeeee /*{a-page-shadow-color}*/;
 }
+
+.ui-panel-inner {
+	background-color: #3d3d3d; /*{a-page-background-color}*/
+	min-height: -webkit-fill-available;
+}
+
 /* Body: Read-only lists, text inputs, collapsible content */
 .ui-body-a,
 .ui-page-theme-a .ui-body-inherit,
@@ -258,6 +268,7 @@ html .ui-panel-page-container-a {
 .ui-body-a {
 	border-width: 1px;
 	border-style: solid;
+	min-height: -webkit-fill-available;
 }
 /* Links */
 .ui-page-theme-a a,
