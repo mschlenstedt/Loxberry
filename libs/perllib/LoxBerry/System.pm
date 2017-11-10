@@ -1,4 +1,4 @@
-our $VERSION = "0.23_04";
+our $VERSION = "0.23_05";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -31,6 +31,14 @@ our @EXPORT = qw (
 	$lbdatadir
 	$lblogdir
 	$lbconfigdir
+	
+	$lbscgidir
+	$lbshtmldir
+	$lbstemplatedir
+	$lbsdatadir
+	$lbslogdir
+	$lbsconfigdir
+	
 	is_enabled 
 	is_disabled
 	trim 
@@ -82,6 +90,14 @@ LoxBerry::System defines a dozen of variables for easier access to the plugin di
 	$lblogdir		# Full path to the Log directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
 	$lbconfigdir	# Full path to the Config directory of the current plugin, e.g. /opt/loxberry/config/plugins/squeezelite
 
+	$lbscgidir		# Full path to the SYSTEM CGI directory /opt/loxberry/webfrontend/cgi/system
+	$lbshtmldir		# Full path to the SYSTEM HTML directory /opt/loxberry/webfrontend/html/system
+	$lbstemplatedir	# Full path to the SYSTEM Template directory /opt/loxberry/templates/system
+	$lbsdatadir		# Full path to the SYSTEM Data directory /opt/loxberry/data/system
+	$lbslogdir		# Full path to the SYSTEM Log directory /opt/loxberry/data/system
+	$lbsconfigdir	# Full path to the SYSTEM Config directory /opt/loxberry/config/system
+
+	
 $lbhomedir is detected in the following order:
 
 =over 12
@@ -128,6 +144,13 @@ our $lbtemplatedir = "$lbhomedir/templates/plugins/$lbplugindir";
 our $lbdatadir = "$lbhomedir/data/plugins/$lbplugindir";
 our $lblogdir = "$lbhomedir/log/plugins/$lbplugindir";
 our $lbconfigdir = "$lbhomedir/config/plugins/$lbplugindir";
+
+our $lbscgidir = "$lbhomedir/webfrontend/cgi/system";
+our $lbshtmldir = "$lbhomedir/webfrontend/html/system";
+our $lbstemplatedir = "$lbhomedir/templates/system";
+our $lbsdatadir = "$lbhomedir/data/system";
+our $lbslogdir = "$lbhomedir/log/system";
+our $lbsconfigdir = "$lbhomedir/config/system";
 
 # Hash only valid in this module
 my %miniservers;
