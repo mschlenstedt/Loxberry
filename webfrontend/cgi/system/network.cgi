@@ -19,6 +19,8 @@
 # Modules
 ##########################################################################
 
+use LoxBerry::System;
+
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use LWP::UserAgent;
@@ -59,10 +61,12 @@ our $netzwerkipadresse;
 our $netzwerkipmaske;
 our $netzwerkgateway;
 our $netzwerknameserver;
+our $lbfriendlyname;
 our @lines;
 our $do;
 our $message;
 our $nexturl;
+our $lbhostname = lbhostname();
 
 ##########################################################################
 # Read Settings
@@ -81,6 +85,8 @@ $netzwerkipadresse  = $cfg->param("NETWORK.IPADDRESS");
 $netzwerkipmaske    = $cfg->param("NETWORK.MASK");
 $netzwerkgateway    = $cfg->param("NETWORK.GATEWAY");
 $netzwerknameserver = $cfg->param("NETWORK.DNS");
+$lbfriendlyname 	= $cfg->param("NETWORK.FRIENDLYNAME");
+
 
 #########################################################################
 # Parameter
@@ -181,7 +187,7 @@ if ($netzwerkadressen eq "manual") {
 }
 
 print "Content-Type: text/html\n\n";
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0020");
+$template_title = $lbfriendlyname . " " . $phrase->param("TXT0000") . ": " . $phrase->param("TXT0020");
 $help = "network";
 
 # Print Template
@@ -213,6 +219,8 @@ $netzwerkipadresse  = param('netzwerkipadresse');
 $netzwerkipmaske    = param('netzwerkipmaske');
 $netzwerkgateway    = param('netzwerkgateway');
 $netzwerknameserver = param('netzwerknameserver');
+$lbfriendlyname	    = param('lbfriendlyname');
+
 
 # Filter
 quotemeta($netzwerkanschluss);
@@ -232,6 +240,8 @@ $cfg->param("NETWORK.IPADDRESS", "$netzwerkipadresse");
 $cfg->param("NETWORK.MASK", "$netzwerkipmaske");
 $cfg->param("NETWORK.GATEWAY", "$netzwerkgateway");
 $cfg->param("NETWORK.DNS", "$netzwerknameserver");
+$cfg->param("NETWORK.FRIENDLYNAME", "$lbfriendlyname");
+
 $cfg->save();
 
 # Set network options
@@ -297,7 +307,7 @@ if ($netzwerkanschluss eq "wlan0") {
 }
 
 print "Content-Type: text/html\n\n";
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0020");
+$template_title = $lbfriendlyname . " " . $phrase->param("TXT0000") . ": " . $phrase->param("TXT0020");
 $help = "network";
 
 $message = $phrase->param("TXT0037");
@@ -332,7 +342,7 @@ exit;
 
 sub error {
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
+$template_title = $lbfriendlyname . " " . $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
 $help = "network";
 
 print "Content-Type: text/html\n\n";

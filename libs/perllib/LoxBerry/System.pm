@@ -1,4 +1,4 @@
-our $VERSION = "0.23_05";
+our $VERSION = "0.23_06";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -11,7 +11,7 @@ use Cwd 'abs_path';
 use LWP::UserAgent;
 use XML::Simple;
 use Carp;
-
+use Sys::Hostname;
 
 package LoxBerry::System;
 use base 'Exporter';
@@ -32,13 +32,16 @@ our @EXPORT = qw (
 	$lblogdir
 	$lbconfigdir
 	
+	lbhostname
+	lbfriendlyname
+
 	$lbscgidir
 	$lbshtmldir
 	$lbstemplatedir
 	$lbsdatadir
 	$lbslogdir
 	$lbsconfigdir
-	
+		
 	is_enabled 
 	is_disabled
 	trim 
@@ -153,10 +156,14 @@ our $lbslogdir = "$lbhomedir/log/system";
 our $lbsconfigdir = "$lbhomedir/config/system";
 
 # Hash only valid in this module
+my $cfgwasread;
 my %miniservers;
 my %binaries;
 my $lbtimezone;
 my $pluginversion;
+my $lbhostname;
+my $lbfriendlyname;
+
 
 # Finished everytime code execution
 ##################################################################
@@ -390,6 +397,7 @@ sub read_generalcfg
 	my $clouddnsaddress;
 	
 	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
+	$cfgwasread = 1;
 	$miniservercount = $cfg->param("BASE.MINISERVERS") or return undef;
 	
 	if (($miniservercount) && ($miniservercount < 1)) {
@@ -398,7 +406,7 @@ sub read_generalcfg
 	
 	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or Carp::carp ("BASE.CLOUDDNS not defined.\n");
 	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or Carp::carp ("TIMESERVER.ZONE not defined.\n");
-
+	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME") or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
 		
@@ -534,6 +542,40 @@ sub get_localip
 	# return $localip;
 
 }
+
+=head2 lbhostname
+
+This exported function returns the current system hostname
+
+=cut
+
+####################################################
+# lbhostname - Returns the current system hostname
+####################################################
+sub lbhostname
+{
+	return Sys::Hostname::hostname();
+}
+
+=head2 lbfriendlyname
+
+This exported function returns the friendly (user defined) name
+
+=cut
+
+####################################################
+# lbhostname - Returns the current system hostname
+####################################################
+sub lbfriendlyname
+{
+	if (! $cfgwasread) 
+		{ read_generalcfg(); 
+	}
+	
+	return $lbhostname;
+	
+}
+
 
 =head2 is_enabled and is_disabled
 
