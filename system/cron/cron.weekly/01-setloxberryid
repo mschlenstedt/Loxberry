@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Create random ID and send it to stats.loxberry.de if enabled
+if [ -x /opt/loxberry/sbin/setloxberryid.pl ]
+then
+  /opt/loxberry/sbin/setloxberryid.pl
+fi
