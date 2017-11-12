@@ -44,5 +44,5 @@ echo PERL5LIB=$LBHOME/libs/perllib  >> /etc/environment
 
 # Set PHP include_path directive
 
-echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php5/apache2/conf.d/20-loxberry.ini
-echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php5/cli/conf.d/20-loxberry.ini
+echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/apache2/conf.d/20-loxberry.ini
+echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/cli/conf.d/20-loxberry.ini
