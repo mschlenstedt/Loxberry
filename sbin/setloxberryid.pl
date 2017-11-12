@@ -26,6 +26,7 @@ our $verbose = 1;
 
 my $cfg      = new Config::Simple("$lbsconfig/general.cfg");
 my $sendstat = is_enabled( $cfg->param("BASE.SENDSTATISTIC") );
+my $version  = is_enabled( $cfg->param("BASE.VERSION") );
 my $curlbin  = $cfg->param("BINARIES.CURL");
 
 # Create new ID if no exists
@@ -52,8 +53,7 @@ if ($sendstat) {
     flock(F,8);
   close(F);
 
-  my $timestamp = time;
-  my $output = qx($curlbin -f -k -s -S --show-error https://stats.loxberry.de/cgi-bin/get.cgi?id=$lbid&timestamp=$timestamp 2>&1);
+  my $output = qx($curlbin -f -k -s -S --show-error https://stats.loxberry.de/collect.php?id=$lbid&version=$version 2>&1);
 
   if (!$ouput) {
     $logmessage = "FAIL: Some error occurred. Giving up.\n";
