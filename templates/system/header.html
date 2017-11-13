@@ -33,18 +33,18 @@
 				<!-- main menu panel -->
 					<div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true">
 						<ul data-role="listview" data-ajax="false" data-inset="true">
-							<li data-role="list-divider"><TMPL_VAR PANEL_SYSTEMSETTINGS></li>
-							<li><a href="/admin/index.cgi"><TMPL_VAR PANEL_HOME></a></li>
-							<li><a href="/admin/system/admin.cgi?do=form"><TMPL_VAR PANEL_ADMIN></a></li>
-							<li><a href="/admin/system/miniserver.cgi?do=form"><TMPL_VAR PANEL_MINISERVER></a></li>
-							<li><a href="/admin/system/timeserver.cgi?do=form"><TMPL_VAR PANEL_TIMESERVER></a></li>
-							<li><a href="/admin/system/network.cgi?do=form"><TMPL_VAR PANEL_NETWORK></a></li>
-							<li><a href="/admin/system/plugininstall.cgi?do=form"><TMPL_VAR PANEL_PLUGININSTALL></a></li>
-							<li><a href="/admin/system/updates.cgi?do=form"><TMPL_VAR PANEL_UPDATES></a></li>
-							<li><a href="/admin/system/setup/index.cgi"><TMPL_VAR PANEL_SETUPASSISTENT></a></li>
-							<li><a href="/admin/system/power.cgi"><TMPL_VAR PANEL_REBOOT></a></li>
-							<li><a href="/admin/system/mailserver.cgi?do=form"><TMPL_VAR PANEL_MAILSERVER></a></li>
-							<li><a href="/admin/system/donate.cgi"><TMPL_VAR PANEL_DONATE></a></li>
+							<li data-role="list-divider"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></li>
+							<li><a href="/admin/index.cgi"><TMPL_VAR HEADER.PANEL_HOME></a></li>
+							<li><a href="/admin/system/admin.cgi?do=form"><TMPL_VAR HEADER.PANEL_ADMIN></a></li>
+							<li><a href="/admin/system/miniserver.cgi?do=form"><TMPL_VAR HEADER.PANEL_MINISERVER></a></li>
+							<li><a href="/admin/system/timeserver.cgi?do=form"><TMPL_VAR HEADER.PANEL_TIMESERVER></a></li>
+							<li><a href="/admin/system/network.cgi?do=form"><TMPL_VAR HEADER.PANEL_NETWORK></a></li>
+							<li><a href="/admin/system/plugininstall.cgi?do=form"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></a></li>
+							<li><a href="/admin/system/updates.cgi?do=form"><TMPL_VAR HEADER.PANEL_UPDATES></a></li>
+							<li><a href="/admin/system/setup/index.cgi"><TMPL_VAR HEADER.PANEL_SETUPASSISTENT></a></li>
+							<li><a href="/admin/system/power.cgi"><TMPL_VAR HEADER.PANEL_REBOOT></a></li>
+							<li><a href="/admin/system/mailserver.cgi?do=form"><TMPL_VAR HEADER.PANEL_MAILSERVER></a></li>
+							<li><a href="/admin/system/donate.cgi"><TMPL_VAR HEADER.PANEL_DONATE></a></li>
 							<!-- <li data-role="list-divider">Plugins</li> -->
 							<!-- STARTPLUGINSHERE --> <!-- Never remove this tag! -->
 							<!-- ENDPLUGINSHERE --> <!-- Never remove this tag! -->
@@ -54,10 +54,10 @@
 				<!-- info panel -->
 					<div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true">
 						<div data-role="header" class="ui-corner-all">
-						<h2><TMPL_VAR HEADER_TITLE_HELP></h2>
+						<h2><TMPL_VAR HEADER.TITLE_HELP></h2>
 						</div>
 						<div class="ui-body-a ui-corner-all">
-						<p><a href="<TMPL_VAR HELPLINK>" target="blank"><TMPL_VAR HEADER_TITLE_HELPLINK></a></p>
+						<p><a href="<TMPL_VAR HELPLINK>" target="blank"><TMPL_VAR HEADER.TITLE_HELPLINK></a></p>
 						<p>
 							<font size="-1"><TMPL_VAR HELPTEXT></font>
 						</p>
@@ -66,9 +66,9 @@
 				<!-- /info panel -->
 				<!-- header -->
 					<div align="center" data-role="header" data-position="fixed" data-tap-toggle="false">
-						<h1><!--$template_title--></h1>
-						<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext"><TMPL_VAR HEADER_TITLE_MENU></a>
-						<a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext"><TMPL_VAR HEADER_TITLE_INFO></a>
+						<h1><TMPL_VAR TEMPLATETITLE></h1>
+						<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext"><TMPL_VAR HEADER.TITLE_MENU></a>
+						<a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext"><TMPL_VAR HEADER.TITLE_INFO></a>
 					</div>
 				<!-- /header -->
 				<!-- content -->

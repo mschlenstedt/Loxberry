@@ -1,4 +1,4 @@
-our $VERSION = "0.30_02";
+our $VERSION = "0.30_03";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -577,7 +577,7 @@ This exported function returns the friendly (user defined) name
 =cut
 
 ####################################################
-# lbhostname - Returns the current system hostname
+# lbfriendlyname - Returns the friendly name
 ####################################################
 sub lbfriendlyname
 {
@@ -585,7 +585,7 @@ sub lbfriendlyname
 		{ read_generalcfg(); 
 	}
 	
-	return $lbhostname;
+	return $lbfriendlyname;
 	
 }
 

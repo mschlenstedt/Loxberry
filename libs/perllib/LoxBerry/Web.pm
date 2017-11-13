@@ -17,6 +17,8 @@ use base 'Exporter';
 our @EXPORT = qw (
 		lblanguage
 		get_plugin_icon
+		%SL
+		%L
 );
 
 
@@ -25,7 +27,8 @@ our @EXPORT = qw (
 ##################################################################
 
 my $lang;
-
+our %SL; # Shortcut for System language phrases
+our %L;  # Shortcut for Plugin language phrases
 
 # Finished everytime code execution
 ##################################################################
@@ -64,28 +67,32 @@ sub lblanguage
 
 sub lbheader 
 {
+	print STDERR "== lbheader =============================================================\n";
 	my $templatetext;
 	
 	my ($pagetitle, $helpurl, $helptemplate) = @_;
 
 	my $lang = lblanguage();
-	
-	our $template_title = $pagetitle ? LoxBerry::System::lbfriendlyname . " " . $pagetitle : LoxBerry::System::lbfriendlyname . " " . $main::template_title;
+	print STDERR "\nDetected language: $lang\n";
+	our $template_title = $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
+	print STDERR "friendlyname: " . LoxBerry::System::lbfriendlyname() . "\n";
 	our $helplink = $helpurl ? $helpurl : $main::helplink;
 	
 	my $templatepath;
 	my $ismultilang;
 	our $helptext; 
-	my %LangPhrases;
+	our %HelpPhrases;
 	my $helpobj;
 	my $headerobj;
+	my $langfile;
 	
 	my $systemcall = LoxBerry::System::is_systemcall();
 	
-	# For plugin calls
+	# Help for plugin calls
 	if (! defined $main::helptext and !$systemcall) {
 		if (-e "$LoxBerry::System::lbtemplatedir/help/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbtemplatedir/help/$helptemplate";
+			$langfile = "$LoxBerry::System::lbtemplatedir/lang/$helptemplate";
 			$ismultilang = 1;
 		} elsif (-e "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate";
@@ -96,17 +103,19 @@ sub lbheader
 		}
 	}
 	
-	# For system calls
+	# Help for system calls
 	if (! defined $main::helptext and $systemcall) {
+		print STDERR "-- System Help Template --\n";
 		if (-e "$LoxBerry::System::lbstemplatedir/help/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbstemplatedir/help/$helptemplate";
+			$langfile = "$LoxBerry::System::lbstemplatedir/lang/$helptemplate";
 			$ismultilang = 1;
-		} elsif (-e "$LoxBerry::System::lbstemplatedir/$lang/$helptemplate") {
-			$templatepath = "$LoxBerry::System::lbstemplatedir/$lang/$helptemplate";
-		} elsif (-e "$LoxBerry::System::lbstemplatedir/en/$helptemplate") {
-			$templatepath = "$LoxBerry::System::lbstemplatedir/en/$helptemplate";
-		} elsif (-e "$LoxBerry::System::lbstemplatedir/de/$helptemplate") {
-			$templatepath = "$LoxBerry::System::lbstemplatedir/de/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbstemplatedir/$lang/help/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbstemplatedir/$lang/help/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbstemplatedir/en/help/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbstemplatedir/en/help/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbstemplatedir/de/help/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbstemplatedir/de/help/$helptemplate";
 		}
 	}
 	
@@ -114,42 +123,48 @@ sub lbheader
 	## 
 	if ($ismultilang) {
 				
+		print STDERR "We are in MULTILANG help mode\n";
 		# Strip file extension
-		my $langfile  = "$LoxBerry::System::lbtemplatedir/lang/$templatepath";
 		$langfile =~ s/\.[^.]*$//;
 		
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
-		Config::Simple->import_from($langfile . "_en.ini", \%LangPhrases);
-
+		my $lang_en = $langfile . "_en.ini";
+		print STDERR "English language file: $lang_en\n";
+		
+		Config::Simple->import_from($lang_en, \%HelpPhrases) or Carp::carp(Config::Simple->error());
+		
 		# Read foreign language if exists and not English
 		$langfile = $langfile . "_" . $lang . ".ini";
+		print STDERR "Foreign language file: $langfile\n";
+		
 		# Now overwrite phrase variables with user language
 		if ((-e $langfile) and ($lang ne 'en')) {
-			Config::Simple->import_from($langfile, \%LangPhrases);
+			Config::Simple->import_from($langfile, \%HelpPhrases) or Carp::carp(Config::Simple->error());
 		}
-
-		# Parse phrase variables to html templates
-		# while (my ($name, $value) = each %LangPhrases){
-		# 	$maintemplate->param("T::$name" => $value);
-		#	#$headertemplate->param("T::$name" => $value);
-		#	#$footertemplate->param("T::$name" => $value);
-		#}
-	
+		
 		# Get another HTML::Template object for the help
 		$helpobj = HTML::Template->new(
 			filename => $templatepath,
 			global_vars => 1,
-			# loop_context_vars => 1,
-			die_on_bad_params => 0,
-			associate => %LangPhrases
-		);
+			loop_context_vars => 1,
+			die_on_bad_params=> 0,
+			# associate => $langini,
+			);
 		
+		# Insert LangPhrases
+		while (my ($name, $value) = each %HelpPhrases){
+			$helpobj->param("$name" => $value);
+		}
+					
 		$helptext = $helpobj->output();
 		undef $helpobj;
+		undef %HelpPhrases;
 	} else
-	## This is the legacy help generation
 	{
+	## This is the legacy help generation
+		print STDERR "We are in LEGACY help mode\n";
+		print STDERR "templatepath: $templatepath\n";
 		if ($templatepath) {
 			if (open(F,"$templatepath")) {
 				my @help = <F>;
@@ -186,37 +201,42 @@ sub lbheader
 	}
 	
 			
+	# System language is "hardcoded" to file language_*.ini
 	my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 	
 	# Read English language as default
 	# Missing phrases in foreign language will fall back to English
-	Config::Simple->import_from($langfile . "_en.ini", \%LangPhrases);
+	Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
 
 	# Read foreign language if exists and not English and overwrite English strings
 	$langfile = $langfile . "_" . $lang . ".ini";
 	if ((-e $langfile) and ($lang ne 'en')) {
-		Config::Simple->import_from($langfile, \%LangPhrases);
+		Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
 	}
-
-	# Parse phrase variables to html templates
-	# while (my ($name, $value) = each %LangPhrases){
-	# 	$maintemplate->param("T::$name" => $value);
-	#	#$headertemplate->param("T::$name" => $value);
-	#	#$footertemplate->param("T::$name" => $value);
-	#}
-
+	if (! %SL) {
+		Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+	}
 	# Get the HTML::Template object for the header
 	$headerobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 1,
-		# loop_context_vars => 1,
+		 loop_context_vars => 1,
 		die_on_bad_params => 0,
-		associate => %LangPhrases
 	);
-	$headerobj->params( TEMPLATETITLE => $template_title);
-	$headerobj->params( HELPLINK => $helplink);
-	$headerobj->params( HELPTEXT => $helptext);
+	while (my ($name, $value) = each %SL){
+	 	 $headerobj->param("$name" => $value);
+	 }
+
+	print STDERR "template_title: $template_title\n";
+	print STDERR "helplink:       $helplink\n";
+	# print STDERR "helptext:       $helptext\n";
+	print STDERR "Home string: " . $LoxBerry::Web::SL{'HEADER.PANEL_HOME'} . "\n";
 	
+	$headerobj->param( TEMPLATETITLE => $template_title);
+	$headerobj->param( HELPLINK => $helplink);
+	$headerobj->param( HELPTEXT => $helptext);
+
+	print "Content-Type: text/html\n\n";
 	print $headerobj->output();
 	undef $headerobj;
 
@@ -230,15 +250,101 @@ sub lbheader
 sub lbfooter 
 {
 	my $lang = lblanguage();
-	if (open(F,"$LoxBerry::System::lbhomedir/templates/system/$lang/footer.html")) {
-		while (<F>) 
-		{
-			$_ =~ s/<!--\$(.*?)-->/${$1}/g;
-			print $_;
+	# if (open(F,"$LoxBerry::System::lbhomedir/templates/system/$lang/footer.html")) {
+		# while (<F>) 
+		# {
+			# $_ =~ s/<!--\$(.*?)-->/${$1}/g;
+			# print $_;
+		# }
+		# close(F);
+	# } else {
+		# Carp::carp ("Failed to open template system/$lang/footer.html\n");
+	# }
+
+	# Get the HTML::Template object for the header
+	my $footerobj = HTML::Template->new(
+		filename => "$LoxBerry::System::lbstemplatedir/footer.html",
+		global_vars => 1,
+		 loop_context_vars => 1,
+		die_on_bad_params => 0,
+	);
+	print $footerobj->output();
+	
+	
+	}
+
+#####################################################
+# readlanguage
+# Read the language for a plugin 
+# Example Call:
+# my %Phrases = LoxBerry::Web::readlanguage($template, "language.ini");
+#####################################################
+sub readlanguage
+{
+	my ($template, $langfile) = @_;
+
+	my $lang = LoxBerry::Web::lblanguage();
+	my $issystem = LoxBerry::System::is_systemcall();
+
+	# Return if we already have them in memory.
+	if (!$template) { Carp::confess("ERROR: $template is empty."); }
+	if (!$issystem and !$langfile) { 
+		Carp::carp("WARNING: $langfile is empty, setting to language.ini. If file is missing, error will occur.");
+		$langfile = "language.ini"; }
+	if ($issystem and %SL) { return %SL; }
+	if (!$issystem and %L) { return %L; }
+
+	# SYSTEM Language
+	if ($issystem) {
+		
+		# System language is "hardcoded" to file language_*.ini
+		my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
+		
+		# Read English language as default
+		# Missing phrases in foreign language will fall back to English
+		Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
+
+		# Read foreign language if exists and not English and overwrite English strings
+		$langfile = $langfile . "_" . $lang . ".ini";
+		if ((-e $langfile) and ($lang ne 'en')) {
+			Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
 		}
-		close(F);
-	} else {
-		Carp::carp ("Failed to open template system/$lang/footer.html\n");
+		if (! %SL) {
+			Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+		}
+		
+		while (my ($name, $value) = each %SL){
+			$template->param("$name" => $value);
+		}
+		return %SL;
+	
+	} else 
+	# PLUGIN language
+		{
+		# Plugin language got in format language.ini
+		# Need to re-parse the name
+		$langfile =~ s/\.[^.]*$//;
+		$langfile  = "$LoxBerry::System::lbtemplatedir/$langfile";
+		
+		# Read English language as default
+		# Missing phrases in foreign language will fall back to English
+		Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
+
+		# Read foreign language if exists and not English and overwrite English strings
+		$langfile = $langfile . "_" . $lang . ".ini";
+		if ((-e $langfile) and ($lang ne 'en')) {
+			Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
+		}
+		if (! %L) {
+			Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+		}
+
+		while (my ($name, $value) = each %L){
+			$template->param("$name" => $value);
+		}
+		return %L;
+	
+	
 	}
 }
 
@@ -265,9 +371,6 @@ sub get_plugin_icon
 	}
 	return undef;
 }
-
-
-
 
 #####################################################
 # Finally 1; ########################################
