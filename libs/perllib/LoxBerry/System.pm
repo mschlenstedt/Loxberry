@@ -1,4 +1,4 @@
-our $VERSION = "0.23_06";
+our $VERSION = "0.30_02";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -461,6 +461,19 @@ sub set_clouddns
 	} else {
 	  $miniservers{$msnr}{IPAddress} = "127.0.0.1";
 	}
+}
+
+####################################################
+# is_systemcall
+# INTERNAL function to determine if module was
+# called from a LoxBerry system CGI
+####################################################
+sub is_systemcall
+{
+	# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
+	# print STDERR "lbscgidir: " . $lbscgidir . "\n";
+	# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbscgidir)) . "\n";
+	return substr(Cwd::abs_path($0), 0, length($lbscgidir)) eq $lbscgidir ? 1 : undef;
 }
 
 =head2 get_ftpport

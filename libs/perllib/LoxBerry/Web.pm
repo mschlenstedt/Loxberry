@@ -1,4 +1,4 @@
-our $VERSION = "0.23_03";
+our $VERSION = "0.30_02";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -10,6 +10,7 @@ use Config::Simple;
 use CGI;
 use LoxBerry::System;
 use Carp;
+use HTML::Template;
 
 package LoxBerry::Web;
 use base 'Exporter';
@@ -69,21 +70,86 @@ sub lbheader
 
 	my $lang = lblanguage();
 	
-	our $template_title = $pagetitle ? $pagetitle : $main::template_title;
+	our $template_title = $pagetitle ? LoxBerry::System::lbfriendlyname . " " . $pagetitle : LoxBerry::System::lbfriendlyname . " " . $main::template_title;
 	our $helplink = $helpurl ? $helpurl : $main::helplink;
 	
 	my $templatepath;
+	my $ismultilang;
+	our $helptext; 
+	my %LangPhrases;
+	my $helpobj;
+	my $headerobj;
 	
+	my $systemcall = LoxBerry::System::is_systemcall();
 	
-	if (! defined $main::helptext) {
-		if (-e "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate") {
+	# For plugin calls
+	if (! defined $main::helptext and !$systemcall) {
+		if (-e "$LoxBerry::System::lbtemplatedir/help/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbtemplatedir/help/$helptemplate";
+			$ismultilang = 1;
+		} elsif (-e "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate";
 		} elsif (-e "$LoxBerry::System::lbtemplatedir/en/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbtemplatedir/en/$helptemplate";
 		} elsif (-e "$LoxBerry::System::lbtemplatedir/de/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbtemplatedir/de/$helptemplate";
 		}
+	}
+	
+	# For system calls
+	if (! defined $main::helptext and $systemcall) {
+		if (-e "$LoxBerry::System::lbstemplatedir/help/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbstemplatedir/help/$helptemplate";
+			$ismultilang = 1;
+		} elsif (-e "$LoxBerry::System::lbstemplatedir/$lang/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbstemplatedir/$lang/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbstemplatedir/en/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbstemplatedir/en/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbstemplatedir/de/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbstemplatedir/de/$helptemplate";
+		}
+	}
+	
+	## This is a multi-lang template in HTML::Template ("Loxberry 0.3x mode")
+	## 
+	if ($ismultilang) {
+				
+		# Strip file extension
+		my $langfile  = "$LoxBerry::System::lbtemplatedir/lang/$templatepath";
+		$langfile =~ s/\.[^.]*$//;
 		
+		# Read English language as default
+		# Missing phrases in foreign language will fall back to English
+		Config::Simple->import_from($langfile . "_en.ini", \%LangPhrases);
+
+		# Read foreign language if exists and not English
+		$langfile = $langfile . "_" . $lang . ".ini";
+		# Now overwrite phrase variables with user language
+		if ((-e $langfile) and ($lang ne 'en')) {
+			Config::Simple->import_from($langfile, \%LangPhrases);
+		}
+
+		# Parse phrase variables to html templates
+		# while (my ($name, $value) = each %LangPhrases){
+		# 	$maintemplate->param("T::$name" => $value);
+		#	#$headertemplate->param("T::$name" => $value);
+		#	#$footertemplate->param("T::$name" => $value);
+		#}
+	
+		# Get another HTML::Template object for the help
+		$helpobj = HTML::Template->new(
+			filename => $templatepath,
+			global_vars => 1,
+			# loop_context_vars => 1,
+			die_on_bad_params => 0,
+			associate => %LangPhrases
+		);
+		
+		$helptext = $helpobj->output();
+		undef $helpobj;
+	} else
+	## This is the legacy help generation
+	{
 		if ($templatepath) {
 			if (open(F,"$templatepath")) {
 				my @help = <F>;
@@ -107,30 +173,53 @@ sub lbheader
 				$templatetext = "No further help available.";
 			}
 		}
-		our $helptext = $templatetext;
+		$helptext = $templatetext;
+	}
+	# Help is now in $helptext
+	
+	
+	###################
+	## LoxBerry Header
+	$templatepath = $templatepath = "$LoxBerry::System::lbstemplatedir/header.html";
+	if (! -e "$LoxBerry::System::lbstemplatedir/header.html") {
+		confess ("ERROR: Missing header template " . $LoxBerry::System::lbstemplatedir . "\n");
 	}
 	
-	# LoxBerry Header
-	$templatepath = undef;
-	if (-e "$LoxBerry::System::lbhomedir/templates/system/$lang/header.html") {
-		$templatepath = "$LoxBerry::System::lbhomedir/templates/system/$lang/header.html";
-	} elsif (-e "$LoxBerry::System::lbhomedir/templates/system/en/header.html") {
-		$templatepath = "$LoxBerry::System::lbhomedir/templates/system/en/header.html";
-	} elsif (-e "$LoxBerry::System::lbhomedir/templates/system/de/header.html") {
-		$templatepath = "$LoxBerry::System::lbhomedir/templates/system/de/header.html";
-	}
+			
+	my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 	
-	if (! $templatepath) {
-		confess ("Missing header template for language $lang and all fallback languages - possibly an installation path issue.");
+	# Read English language as default
+	# Missing phrases in foreign language will fall back to English
+	Config::Simple->import_from($langfile . "_en.ini", \%LangPhrases);
+
+	# Read foreign language if exists and not English and overwrite English strings
+	$langfile = $langfile . "_" . $lang . ".ini";
+	if ((-e $langfile) and ($lang ne 'en')) {
+		Config::Simple->import_from($langfile, \%LangPhrases);
 	}
-		
-	open(F, $templatepath) or confess ("Could not read header template $templatepath - possibly a file access problem.");
-	while (<F>) 
-	{
-		$_ =~ s/<!--\$(.*?)-->/${$1}/g;
-		print $_;
-	}
-	close(F);
+
+	# Parse phrase variables to html templates
+	# while (my ($name, $value) = each %LangPhrases){
+	# 	$maintemplate->param("T::$name" => $value);
+	#	#$headertemplate->param("T::$name" => $value);
+	#	#$footertemplate->param("T::$name" => $value);
+	#}
+
+	# Get the HTML::Template object for the header
+	$headerobj = HTML::Template->new(
+		filename => $templatepath,
+		global_vars => 1,
+		# loop_context_vars => 1,
+		die_on_bad_params => 0,
+		associate => %LangPhrases
+	);
+	$headerobj->params( TEMPLATETITLE => $template_title);
+	$headerobj->params( HELPLINK => $helplink);
+	$headerobj->params( HELPTEXT => $helptext);
+	
+	print $headerobj->output();
+	undef $headerobj;
+
 }
 
 
