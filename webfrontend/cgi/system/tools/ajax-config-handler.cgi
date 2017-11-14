@@ -4,7 +4,7 @@ use warnings;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
-use Switch;
+# use Switch;
 # use AptPkg::Config;
 
 print header;
@@ -14,11 +14,10 @@ my $value = param('value');
 
 print STDERR "Action: $action // Value: $value\n";
 
-switch ($action) {
-	case 'secupdates' 				{ &secupdates; }
-	case 'secupdates-autoreboot' 	{ &secupdatesautoreboot; }
-	else 				{ print "<red>Action not supported.</red>"; }
-}
+if    ($action eq 'secupdates') { &secupdates; }
+elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
+else   { print "<red>Action not supported.</red>"; }
+
 
 
 ################################
