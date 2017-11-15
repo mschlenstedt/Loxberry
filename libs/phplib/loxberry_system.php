@@ -46,6 +46,7 @@ $cfg=NULL;
 $miniservers=NULL;
 $binaries=NULL;
 $pluginversion=NULL;
+$miniservercount=NULL;
 
 ####### Get Miniserver array #######
 function get_miniservers() 
@@ -118,6 +119,7 @@ function get_binaries()
 function pluginversion()
 {
 	global $pluginversion;
+	
 	if ($pluginversion) {
 		# print STDERR "Returning already fetched version\n";
 		return $pluginversion;
@@ -143,6 +145,7 @@ function pluginversion()
 function read_generalcfg()
 {
  	global $miniservers;
+	global $miniservercount;
 	global $cfg;
 	global $binaries;
 	
@@ -153,15 +156,18 @@ function read_generalcfg()
 	# fwrite(STDERR, "general.cfg Base: " . $cfg['BASE']['VERSION'] . "\n");
 	
 	# If no miniservers are defined, return NULL
-	$miniservercount = $cfg['BASE']['MINISERVERS'];
-	if (!$miniservercount || $miniservercount < 1) {
-		return;
-	}
+	
 	# Get CloudDNS and Timezones
 	$clouddnsaddress = $cfg['BASE']['CLOUDDNS'] or fwrite(STDERR, "LoxBerry System Warning: BASE.CLOUDDNS not defined.\n");
 	$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or fwrite(STDERR, "LoxBerry System Warning: TIMESERVER.ZONE not defined.\n");
 	
 	$binaries = $cfg['BINARIES'];
+	
+	$miniservercount = $cfg['BASE']['MINISERVERS'];
+	if (!$miniservercount || $miniservercount < 1) {
+		return;
+	}
+	
 	
 	for ($msnr = 1; $msnr <= $miniservercount; $msnr++) {
 		 
@@ -204,27 +210,32 @@ function set_clouddns($msnr)
 	global $miniservers;
 	global $clouddnsaddress;
 	
+	if (!$miniservercount || $miniservercount < 1) {
+		return;
+	}
 	# Grep IP Address from Cloud Service
 	$commandline = "{$binaries['CURL']} -I http://$clouddnsaddress/{$miniservers[$msnr]['CloudURL']} --connect-timeout 5 -m 5 2>/dev/null | {$binaries['GREP']} Location | {$binaries['AWK']} -F/ '{print \$3}'";
+	# print "clouddns commandline: $commandline\n";
 	#$dns_info = `$binaries['CURL'] -I http://$clouddnsaddress/$miniservers[$msnr]['CloudURL'] --connect-timeout 5 -m 5 2>/dev/null | $binaries['GREP'] Location | $binaries['AWK'] -F/ '{print \$3}'`;
-	$dns_info = `$commandline`;
+	$dns_info = shell_exec($commandline);
 	fwrite (STDERR, "LoxBerry System Info: CloudDNS Info: " . $dns_info . "\n");
-	fwrite (STDERR, "LoxBerry System WARNING: CloudDNS NOT IMPLEMENTED!\n");
 	$dns_info_pieces = explode(':', $dns_info);
 
-	# Not implemented - need an example of above command
-	
-	# if ($dns_info_pieces[1]) {
-		# $miniservers[$msnr]['Port'] =~ s/^\s+|\s+$//g;
-	// } else {
-	  // $miniservers{$msnr}{Port} = 80;
-	// }
+	if ($dns_info_pieces[1]) {
+		# miniservers[$msnr]['Port'] =~ s/^\s+|\s+$//g;
+		preg_match( 's/^\s+|\s+$//g', $dns_info_pieces[1], $matches);
+		$miniservers[$msnr]['Port'] = $matches[0];
+	 } else {
+	 $miniservers[$msnr]['Port'] = 80;
+	}
 
-	// if ($dns_info_pieces[0]) {
-	  // $miniservers{$msnr}{IPAddress} =~ s/^\s+|\s+$//g;
-	// } else {
-	  // $miniservers{$msnr}{IPAddress} = "127.0.0.1";
-	// }
+	if ($dns_info_pieces[0]) {
+	  # $miniservers{$msnr}{IPAddress} =~ s/^\s+|\s+$//g;
+		preg_match( 's/^\s+|\s+$//g', $dns_info_pieces[0], $matches);
+		$miniservers[$msnr]['IPAddress'] = $matches[0];
+	} else {
+	  $miniservers[$msnr]['IPAddress'] = "127.0.0.1";
+	}
 }
 
 #####################################################
@@ -236,12 +247,15 @@ function set_clouddns($msnr)
 function get_ftpport($msnr = 1)
 {
 	global $miniservers;
-		
-#	$msnr = ($msnr ? $msnr : 1);
+	global $miniservercount;
 	
 	# If we have no MS list, read the config
-	if (! $miniservers) {
+	if (!$miniservers) {
 		read_generalcfg();
+	}
+	
+	if ($miniservercount < 1) {
+		return;
 	}
 	
 	# If CloudDNS is enabled, return the CloudDNS FTP port
