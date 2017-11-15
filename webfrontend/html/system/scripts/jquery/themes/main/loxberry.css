@@ -89,8 +89,8 @@ label.ui-btn {
 .ui-corner-all {
 	/* -webkit-border-radius: .6em; */ /*{global-radii-blocks}*/
 	/* border-radius: .6em; */ /*{global-radii-blocks}*/
-	-webkit-border-radius: .2em; /*{global-radii-blocks}*/
-	border-radius: .2em; /*{global-radii-blocks}*/
+	-webkit-border-radius: .4em; /*{global-radii-blocks}*/
+	border-radius: .4em; /*{global-radii-blocks}*/
 }
 /* Buttons */
 .ui-btn-corner-all,
