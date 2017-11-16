@@ -155,7 +155,7 @@ our $lbsdatadir = "$lbhomedir/data/system";
 our $lbslogdir = "$lbhomedir/log/system";
 our $lbsconfigdir = "$lbhomedir/config/system";
 
-# Hash only valid in this module
+# Variables only valid in this module
 my $cfgwasread;
 my %miniservers;
 my %binaries;
@@ -398,18 +398,18 @@ sub read_generalcfg
 	
 	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
 	$cfgwasread = 1;
-	$miniservercount = $cfg->param("BASE.MINISERVERS") or return undef;
-	
+	$miniservercount = $cfg->param("BASE.MINISERVERS") or Carp::carp ("BASE.MINISERVERS is 0 or not defined.\n");
+	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or Carp::carp ("BASE.CLOUDDNS not defined.\n");
+	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or Carp::carp ("TIMESERVER.ZONE not defined.\n");
+	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME") or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
+	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
+	# Binaries
+	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
+
 	if (($miniservercount) && ($miniservercount < 1)) {
 		return undef;
 	}
 	
-	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or Carp::carp ("BASE.CLOUDDNS not defined.\n");
-	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or Carp::carp ("TIMESERVER.ZONE not defined.\n");
-	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME") or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
-	# Binaries
-	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
-		
 	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
 		$miniservers{$msnr}{Name} = $cfg->param("MINISERVER$msnr.NAME");
 		$miniservers{$msnr}{IPAddress} = $cfg->param("MINISERVER$msnr.IPADDRESS");
@@ -585,6 +585,7 @@ sub lbfriendlyname
 		{ read_generalcfg(); 
 	}
 	
+	# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
 	return $lbfriendlyname;
 	
 }

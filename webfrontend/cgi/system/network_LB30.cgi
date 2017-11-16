@@ -175,8 +175,8 @@ if ($netzwerkadressen eq "manual") {
 }
 
 # Print Template
-LoxBerry::Web::lbheader("Network", "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry", "network.html");
-
+$template_title = $lbfriendlyname . " " . $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
+LoxBerry::Web::lbheader(undef, "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry", "network.html");
 print $maintemplate->output();
 undef $maintemplate;			
 
@@ -279,7 +279,7 @@ if ($netzwerkanschluss eq "wlan0") {
 }
 
 print "Content-Type: text/html\n\n";
-$template_title = $lbfriendlyname . " " . %SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . %SL{'NETWORK.WIDGETLABEL'};
+$template_title = $lbfriendlyname . " " . $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 $help = "network";
 
 $maintemplate->param("NEXTURL", "/admin/index.cgi");
