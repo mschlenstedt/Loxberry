@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html lang="<TMPL_VAR LANG>">
 	<head>
 		<title><TMPL_VAR TEMPLATETITLE></title>
 		<!-- THIS IS MULTI-LANG HEADER OF LOXBERRY::WEB -->
@@ -58,10 +59,8 @@
 						</div>
 						<div class="ui-body-a ui-corner-all">
 						<p><a href="<TMPL_VAR HELPLINK>" target="blank"><TMPL_VAR HEADER.TITLE_HELPLINK></a></p>
-						<p>
-							<font size="-1"><TMPL_VAR HELPTEXT></font>
-						</p>
-					</div>
+						<TMPL_VAR HELPTEXT>
+						</div>
 					</div>
 				<!-- /info panel -->
 				<!-- header -->
