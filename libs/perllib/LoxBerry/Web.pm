@@ -270,6 +270,7 @@ sub lbfooter
 		 loop_context_vars => 1,
 		die_on_bad_params => 0,
 	);
+	$footerobj->param( LANG => $lang);
 	print $footerobj->output();
 	
 	
