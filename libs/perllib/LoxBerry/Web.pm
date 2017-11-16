@@ -235,6 +235,8 @@ sub lbheader
 	$headerobj->param( TEMPLATETITLE => $template_title);
 	$headerobj->param( HELPLINK => $helplink);
 	$headerobj->param( HELPTEXT => $helptext);
+	$headerobj->param( LANG => $lang);
+	
 
 	print "Content-Type: text/html\n\n";
 	print $headerobj->output();
