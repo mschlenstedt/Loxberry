@@ -96,3 +96,74 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 {
  text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }
+
+/* Clock on mainmenu_start.html */
+
+		.clock
+		{
+			position:relative;
+			height:64px;
+			width: 64px;
+			margin: 0 auto;
+			border-radius:50%;
+			background: url('/system/images/ios_clock.svg') no-repeat center;
+			background-size: 88%;
+		}
+		.minutes-container, .hours-container, .seconds-container
+	{
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+	}
+	.hours
+	{
+		background: #000;
+		height: 20%;
+		left: 48.75%;
+		position: absolute;
+		top: 30%;
+		transform-origin: 50% 100%;
+		width: 2.5%;
+	}
+	.minutes
+	{
+		background: #000;
+		height: 40%;
+		left: 49%;
+		position: absolute;
+		top: 10%;
+		transform-origin: 50% 100%;
+		width: 2%;
+	}
+	.seconds
+	{
+		background: #000;
+		height: 45%;
+		left: 49.5%;
+		position: absolute;
+		top: 14%;
+		transform-origin: 50% 80%;
+		width: 1%;
+		z-index: 8;
+	}
+	@keyframes rotate
+	{
+		100%
+		{
+			transform: rotateZ(360deg);
+		}
+	}
+	.hours-container
+	{
+		animation: rotate 43200s infinite linear;
+	}
+	.minutes-container
+	{
+		animation: rotate 3600s infinite steps(60);
+	}
+	.seconds-container
+	{
+		animation: rotate 60s infinite steps(60);
+	}
