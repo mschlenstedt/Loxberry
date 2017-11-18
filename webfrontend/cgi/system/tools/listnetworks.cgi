@@ -56,7 +56,7 @@ our $version;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+$version = "0.0.3";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installdir      = $cfg->param("BASE.INSTALLFOLDER");
@@ -125,6 +125,7 @@ if ($? > 0) {
 
 # Scan for WLAN Hardware
 if (!$error) {
+  @result = qx(sudo /sbin/ifconfig wlan0 up 2>/dev/null);
   @result = qx(sudo /sbin/iwlist wlan0 scan 2>/dev/null);
 
   # For testing new hardware
