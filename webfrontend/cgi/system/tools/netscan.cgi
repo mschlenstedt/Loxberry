@@ -42,7 +42,7 @@ foreach ("wlan0","eth0") {
 
   # If device is plugged in (link detected)
   if ($? >> 8 == 2) {
-    $ownip = qx (/sbin/ifconfig $_ | grep inet | cut -f2 -d ":" | cut -f1 -d " ");
+    $ownip = qx (/sbin/ifconfig $_ | grep "inet " | awk '{ printf \$2; }');
     $ownip =~ s/[\n\r]//g;    
     $net = $ownip;
     $net =~ s/(.*)\.(.*)\.(.*)\.(.*)$/$1\.$2\.$3/;
