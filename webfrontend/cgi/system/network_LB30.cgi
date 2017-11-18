@@ -74,7 +74,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.0";
+$version = "0.3.1-dev1";
 
 print STDERR "== network.cgi ==\n";
 print STDERR "lbhomedir: $lbhomedir\n";
@@ -124,12 +124,15 @@ $do           = $query{'do'};
 # Everything we got from forms
 $saveformdata         = param('saveformdata');
 defined $saveformdata ? $saveformdata =~ tr/0-1//cd : undef;
+print STDERR "saveformdata: $saveformdata\n";
+print STDERR "do querystring: $do\n";
 
 ##########################################################################
 # Language Settings
 ##########################################################################
 
 $lang = lblanguage();
+print STDERR "Language in network: $lang\n";
 $maintemplate->param( "LBHOSTNAME", lbhostname());
 $maintemplate->param( "LANG", $lang);
 $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
@@ -143,7 +146,7 @@ $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 #########################################################################
 
 # Step 1 or beginning
-if (!$saveformdata || $do eq "form") {
+if (!$saveformdata) {
   print STDERR "FORM called\n";
   $maintemplate->param("FORM", 1);
   &form;
@@ -175,6 +178,7 @@ if ($netzwerkadressen eq "manual") {
 }
 
 # Print Template
+print STDERR "lbfriendlyname before output: $lbfriendlyname\n";
 $template_title = $lbfriendlyname . " " . $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 LoxBerry::Web::lbheader(undef, "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry", "network.html");
 print $maintemplate->output();
@@ -203,6 +207,7 @@ $netzwerkipmaske    = param('netzwerkipmaske');
 $netzwerkgateway    = param('netzwerkgateway');
 $netzwerknameserver = param('netzwerknameserver');
 $lbfriendlyname	    = param('lbfriendlyname');
+print STDERR "lbfriendlyname before SAVE: $lbfriendlyname\n";
 
 # Write configuration file(s)
 $cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
