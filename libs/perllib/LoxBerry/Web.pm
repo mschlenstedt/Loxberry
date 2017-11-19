@@ -1,4 +1,4 @@
-our $VERSION = "0.30_02";
+our $VERSION = "0.31_01";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -67,7 +67,71 @@ sub lblanguage
 
 sub lbheader 
 {
-	print STDERR "== lbheader =============================================================\n";
+	my ($pagetitle, $helpurl, $helptemplate) = @_;
+	LoxBerry::Web::head($pagetitle);
+	LoxBerry::Web::pagestart($pagetitle, $helpurl, $helptemplate);
+}
+
+
+#####################################################
+# Page-Footer-Sub
+#####################################################
+
+sub lbfooter 
+{
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	
+	}
+
+	
+#####################################################
+# head
+#####################################################
+sub head
+{
+
+	print STDERR "== head == prints html head including <body> start =================\n";
+	my $templatetext;
+	my ($pagetitle) = @_;
+
+	my $lang = lblanguage();
+	print STDERR "\nDetected language: $lang\n";
+	our $template_title = $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
+	print STDERR "friendlyname: " . LoxBerry::System::lbfriendlyname() . "\n";
+	
+	my $templatepath;
+	my $headobj;
+	
+	$templatepath = $templatepath = "$LoxBerry::System::lbstemplatedir/head.html";
+	if (! -e "$LoxBerry::System::lbstemplatedir/head.html") {
+		confess ("ERROR: Missing head template $templatepath \n");
+	}
+	
+	# Get the HTML::Template object for the header
+	$headobj = HTML::Template->new(
+		filename => $templatepath,
+		global_vars => 1,
+		 loop_context_vars => 1,
+		die_on_bad_params => 0,
+	);
+	
+	LoxBerry::Web::readlanguage($headobj);
+	
+	$headobj->param( TEMPLATETITLE => $template_title);
+	$headobj->param( LANG => $lang);
+	
+	print "Content-Type: text/html\n\n";
+	print $headobj->output();
+	undef $headobj;
+}
+
+#####################################################
+# pagestart
+#####################################################
+sub pagestart
+{
+	print STDERR "== pagestart == prints page including panels =================\n";
 	my $templatetext;
 	
 	my ($pagetitle, $helpurl, $helptemplate) = @_;
@@ -192,30 +256,14 @@ sub lbheader
 	}
 	# Help is now in $helptext
 	
-	
-	###################
-	## LoxBerry Header
-	$templatepath = $templatepath = "$LoxBerry::System::lbstemplatedir/header.html";
-	if (! -e "$LoxBerry::System::lbstemplatedir/header.html") {
-		confess ("ERROR: Missing header template " . $LoxBerry::System::lbstemplatedir . "\n");
+	$templatepath = $templatepath = "$LoxBerry::System::lbstemplatedir/pagestart.html";
+	if (! -e "$LoxBerry::System::lbstemplatedir/pagestart.html") {
+		confess ("ERROR: Missing pagestart template " . $templatepath . "\n");
 	}
 	
-			
 	# System language is "hardcoded" to file language_*.ini
 	my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 	
-	# Read English language as default
-	# Missing phrases in foreign language will fall back to English
-	Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
-
-	# Read foreign language if exists and not English and overwrite English strings
-	$langfile = $langfile . "_" . $lang . ".ini";
-	if ((-e $langfile) and ($lang ne 'en')) {
-		Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
-	}
-	if (! %SL) {
-		Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
-	}
 	# Get the HTML::Template object for the header
 	$headerobj = HTML::Template->new(
 		filename => $templatepath,
@@ -223,10 +271,9 @@ sub lbheader
 		 loop_context_vars => 1,
 		die_on_bad_params => 0,
 	);
-	while (my ($name, $value) = each %SL){
-	 	 $headerobj->param("$name" => $value);
-	 }
-
+	
+	LoxBerry::Web::readlanguage($headerobj);
+	
 	print STDERR "template_title: $template_title\n";
 	print STDERR "helplink:       $helplink\n";
 	# print STDERR "helptext:       $helptext\n";
@@ -236,46 +283,48 @@ sub lbheader
 	$headerobj->param( HELPLINK => $helplink);
 	$headerobj->param( HELPTEXT => $helptext);
 	$headerobj->param( LANG => $lang);
-	
 
-	print "Content-Type: text/html\n\n";
 	print $headerobj->output();
 	undef $headerobj;
-
 }
 
 
 #####################################################
-# Page-Footer-Sub
+# pageend
 #####################################################
-
-sub lbfooter 
+sub pageend
 {
 	my $lang = lblanguage();
-	# if (open(F,"$LoxBerry::System::lbhomedir/templates/system/$lang/footer.html")) {
-		# while (<F>) 
-		# {
-			# $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-			# print $_;
-		# }
-		# close(F);
-	# } else {
-		# Carp::carp ("Failed to open template system/$lang/footer.html\n");
-	# }
-
-	# Get the HTML::Template object for the header
-	my $footerobj = HTML::Template->new(
-		filename => "$LoxBerry::System::lbstemplatedir/footer.html",
-		global_vars => 1,
-		 loop_context_vars => 1,
+	my $templatepath = "$LoxBerry::System::lbstemplatedir/pageend.html";
+	my $pageendobj = HTML::Template->new(
+		filename => $templatepath,
+		global_vars => 0,
+		 loop_context_vars => 0,
 		die_on_bad_params => 0,
 	);
-	$footerobj->param( LANG => $lang);
-	print $footerobj->output();
-	
-	
-	}
+	$pageendobj->param( LANG => $lang);
+	print $pageendobj->output();
+}
 
+#####################################################
+# foot
+#####################################################
+sub foot
+{
+	my $lang = lblanguage();
+	my $templatepath = "$LoxBerry::System::lbstemplatedir/foot.html";
+	my $footobj = HTML::Template->new(
+		filename => $templatepath,
+		global_vars => 0,
+		 loop_context_vars => 0,
+		die_on_bad_params => 0,
+	);
+	$footobj->param( LANG => $lang);
+	print $footobj->output();
+}
+
+	
+	
 #####################################################
 # readlanguage
 # Read the language for a plugin 
@@ -294,8 +343,8 @@ sub readlanguage
 	if (!$issystem and !$langfile) { 
 		Carp::carp("WARNING: $langfile is empty, setting to language.ini. If file is missing, error will occur.");
 		$langfile = "language.ini"; }
-	if ($issystem and %SL) { return %SL; }
-	if (!$issystem and %L) { return %L; }
+	# if ($issystem and %SL) { return %SL; }
+	# if (!$issystem and %L) { return %L; }
 
 	# SYSTEM Language
 	if ($issystem) {
@@ -303,27 +352,29 @@ sub readlanguage
 		# System language is "hardcoded" to file language_*.ini
 		my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 		
-		# Read English language as default
-		# Missing phrases in foreign language will fall back to English
-		Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
+		if (!%SL) {
+			# Read English language as default
+			# Missing phrases in foreign language will fall back to English
 
-		# Read foreign language if exists and not English and overwrite English strings
-		$langfile = $langfile . "_" . $lang . ".ini";
-		if ((-e $langfile) and ($lang ne 'en')) {
-			Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
-		}
-		if (! %SL) {
-			Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+			Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
+
+			# Read foreign language if exists and not English and overwrite English strings
+			$langfile = $langfile . "_" . $lang . ".ini";
+			if ((-e $langfile) and ($lang ne 'en')) {
+				Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
+			}
+			if (!%SL) {
+				Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+			}
 		}
 		
-		while (my ($name, $value) = each %SL){
+		while (my ($name, $value) = each %SL) {
 			$template->param("$name" => $value);
 		}
 		return %SL;
 	
-	} else 
+	} else {
 	# PLUGIN language
-		{
 		# Plugin language got in format language.ini
 		# Need to re-parse the name
 		$langfile =~ s/\.[^.]*$//;
@@ -331,23 +382,22 @@ sub readlanguage
 		
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
-		Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
-
-		# Read foreign language if exists and not English and overwrite English strings
-		$langfile = $langfile . "_" . $lang . ".ini";
-		if ((-e $langfile) and ($lang ne 'en')) {
-			Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
+		if (!%L) {
+			Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
+		
+			# Read foreign language if exists and not English and overwrite English strings
+			$langfile = $langfile . "_" . $lang . ".ini";
+			if ((-e $langfile) and ($lang ne 'en')) {
+				Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
+			}
+			if (! %L) {
+				Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+			}
 		}
-		if (! %L) {
-			Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
-		}
-
-		while (my ($name, $value) = each %L){
+		while (my ($name, $value) = each %L) {
 			$template->param("$name" => $value);
 		}
 		return %L;
-	
-	
 	}
 }
 
