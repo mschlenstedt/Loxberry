@@ -1,7 +1,9 @@
 #!/bin/sh
-# Part of raspi-config https://github.com/RPi-Distro/raspi-config
+# Most parts taken from raspi-config https://github.com/RPi-Distro/raspi-config
 #
 # See LICENSE file for copyright and license details
+#
+# Different revisions: see https://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
 
 is_pi () {
 	grep -q "^model name\s*:\s*ARMv" /proc/cpuinfo
