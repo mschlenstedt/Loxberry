@@ -1,4 +1,4 @@
-our $VERSION = "0.31_03";
+our $VERSION = "0.31_04";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -289,6 +289,7 @@ sub pagestart
 		# navbar is defined as HASH
 		my $topnavbar = '<div data-role="navbar">' . 
 			'	<ul>';
+		my $topnavbar_haselements = undef;
 		foreach my $element (sort keys %main::navbar) {
 			my $btnactive;
 			my $btntarget;
@@ -300,14 +301,21 @@ sub pagestart
 				$btntarget = ' target="' . $main::navbar{$element}{target} . '"';
 			}
 			
-			$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . '</a></li>';
+			if ($main::navbar{$element}{Name}) {
+				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . '</a></li>';
+				$$topnavbar_haselements = 1;
+			}
 		}
 		$topnavbar .=  '	</ul>' .
 			'</div>';	
-		$headerobj->param ( TOPNAVBAR => $topnavbar);
+		if ($topnavbar_haselements) {
+			$headerobj->param ( TOPNAVBAR => $topnavbar);
+		}
+		%main::navbar = undef;
 	} elsif ($main::navbar) {
 		# navbar is defined as plain STRING
 		$headerobj->param ( TOPNAVBAR => $main::navbar);
+		$main::navbar = undef;
 	} else {
 		$headerobj->param ( TOPNAVBAR => "");
 	}
