@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<title><!--$template_title--></title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=0.8, minimum-scale=0.3, maximum-scale=1, user-scalable=yes">
+		<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.min.css">
+		<link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css">
+		<link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css">
+		<link rel="stylesheet" href="/system/css/main.css">
+		<link rel="shortcut icon" href="/system/images/icons/favicon.ico" />
+		<link rel="icon" type="image/png" href="/system/images/favicon-32x32.png" sizes="32x32" />
+		<link rel="icon" type="image/png" href="/system/images/favicon-16x16.png" sizes="16x16" />
+		<script src="/system/scripts/jquery/jquery-1.8.2.min.js"></script>
+		<script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
+		<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
+		<script src="/system/scripts/setup.js"></script>
+		<script>
+			// Disable JQUERY ♢OM Caching
+			$.mobile.page.prototype.options.domCache = false;
+			$(document).on("pagehide", "div[data-role=page]", function(event)
+			{
+				$(event.target).remove();
+			});
+			// Disable caching of AJAX responses
+			$.ajaxSetup ({ cache: false });
+		</script>
+	</head>
+	<body>
+		<!-- page -->
+			<div data-role="page" id="main" data-dom-cache="false">
+				<!-- main menu panel -->
+					<div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true">
+						<ul data-role="listview" data-ajax="false" data-inset="true">
+							<li data-role="list-divider">Configuración del Sistema</li>
+							<li><a href="/admin/index.cgi">Inicio</a></li>
+							<li><a href="/admin/system/admin.cgi?do=form">Cuenta Administrador</a></li>
+							<li><a href="/admin/system/miniserver.cgi?do=form">Miniserver</a></li>
+							<li><a href="/admin/system/timeserver.cgi?do=form">Hora del Sistema</a></li>
+							<li><a href="/admin/system/network.cgi?do=form">Red</a></li>
+							<li><a href="/admin/system/plugininstall.cgi?do=form">Administración de Plugins</a></li>
+							<li><a href="/admin/system/updates.cgi?do=form">Actualizar</a></li>
+							<li><a href="/admin/system/setup/index.cgi">Asistente de configuración</a></li>
+							<li><a href="/admin/system/power.cgi">Apagado</a></li>
+							<li><a href="/admin/system/mailserver.cgi?do=form">Servidor de Correo</a></li>
+							<li><a href="/admin/system/donate.cgi">¿Donar? :-)</a></li>
+							<li data-role="list-divider">Plugins</li>
+							<!-- STARTPLUGINSHERE --> <!-- Never remove this tag! -->
+<li><a href="/admin/plugins/anyplugin/index.cgi">Any Plugin</a></li>
+<li><a href="/admin/plugins/developertools/index.cgi">Developer Tools</a></li>
+							<!-- ENDPLUGINSHERE --> <!-- Never remove this tag! -->
+						</ul>
+					</div>
+				<!-- /main menu panel -->
+				<!-- info panel -->
+					<div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true">
+						<h2>Ayuda</h2>
+						<p><a href="<!--$helplink-->" target="blank">Ayuda Detallada</a></p>
+							<!--$helptext-->
+					</div>
+				<!-- /info panel -->
+				<!-- header -->
+					<div align="center" data-role="header" data-position="fixed" data-tap-toggle="false">
+						<h1><!--$template_title--></h1>
+						<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext">Menu</a>
+						<a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext">Info</a>
+					</div>
+				<!-- /header -->
+				<!-- content -->
+					<div role="main" class="ui-content">
+						<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
+							<!-- text -->
+								<div id="page_content" class="page_content" style="margin: 4%">
+									<!-- ************************************************************************************** -->

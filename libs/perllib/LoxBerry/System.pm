@@ -1,4 +1,4 @@
-our $VERSION = "0.30_03";
+our $VERSION = "0.31_02";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -163,7 +163,7 @@ my $lbtimezone;
 my $pluginversion;
 my $lbhostname;
 my $lbfriendlyname;
-
+my $lbversion;
 
 # Finished everytime code execution
 ##################################################################
@@ -385,6 +385,20 @@ sub pluginversion
 	return undef;
 }
 
+##################################################################################
+# Get System Version
+# Returns LoxBerry version
+##################################################################################
+sub lbversion
+{
+
+	if ($lbversion ne "") {
+		return $lbversion;
+	} 
+	read_generalcfg();
+	return $lbversion;
+}
+
 
 
 ##################################################################
@@ -402,6 +416,7 @@ sub read_generalcfg
 	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or Carp::carp ("BASE.CLOUDDNS not defined.\n");
 	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or Carp::carp ("TIMESERVER.ZONE not defined.\n");
 	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME") or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
+	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined.\n");
 	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
@@ -473,7 +488,12 @@ sub is_systemcall
 	# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
 	# print STDERR "lbscgidir: " . $lbscgidir . "\n";
 	# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbscgidir)) . "\n";
-	return substr(Cwd::abs_path($0), 0, length($lbscgidir)) eq $lbscgidir ? 1 : undef;
+	
+	if (substr(Cwd::abs_path($0), 0, length($lbscgidir)) eq $lbscgidir) { return 1; }
+	if (substr(Cwd::abs_path($0), 0, length("$lbhomedir/sbin")) eq "$lbhomedir/sbin") { return 1; }
+	if (substr(Cwd::abs_path($0), 0, length("$lbhomedir/bin")) eq "$lbhomedir/bin") { return 1; }
+	return undef;
+	# return substr(Cwd::abs_path($0), 0, length($lbscgidir)) eq $lbscgidir ? 1 : undef;
 }
 
 =head2 get_ftpport

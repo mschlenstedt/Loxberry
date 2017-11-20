@@ -1,4 +1,4 @@
-our $VERSION = "0.31_04";
+our $VERSION = "0.31_05";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -39,21 +39,24 @@ our %L;  # Shortcut for Plugin language phrases
 ##################################################################
 sub lblanguage 
 {
+	# print STDERR "current \$lang: $LoxBerry::Web::lang\n";
 	# Return if $lang is already set
-	if ($lang) {
-		return $lang;
+	if ($LoxBerry::Web::lang) {
+		return $LoxBerry::Web::lang;
 	}
 	# Get lang from query 
 	my $query = CGI->new();
 	my $querylang = $query->param('lang');
 	if ($querylang) 
-		{ $lang = substr $querylang, 0, 2;
-		  return $lang;
+		{ $LoxBerry::Web::lang = substr $querylang, 0, 2;
+		  # print STDERR "\$lang in CGI: $LoxBerry::Web::lang";
+		  return $LoxBerry::Web::lang;
 	}
 	# If nothing found, get language from system settings
 	my  $syscfg = new Config::Simple("$LoxBerry::System::lbhomedir/config/system/general.cfg");
-	$lang = $syscfg->param("BASE.LANG");
-	return substr($lang, 0, 2);
+	$LoxBerry::Web::lang = $syscfg->param("BASE.LANG");
+	# print STDERR "\$lang from general.cfg: $LoxBerry::Web::lang";
+	return substr($LoxBerry::Web::lang, 0, 2);
 }
 
 #####################################################
@@ -154,6 +157,7 @@ sub pagestart
 	
 	# Help for plugin calls
 	if (! defined $main::helptext and !$systemcall) {
+		print STDERR "-- PLUGIN Help Template --\n";
 		if (-e "$LoxBerry::System::lbtemplatedir/help/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbtemplatedir/help/$helptemplate";
 			$langfile = "$LoxBerry::System::lbtemplatedir/lang/$helptemplate";
@@ -169,7 +173,7 @@ sub pagestart
 	
 	# Help for system calls
 	if (! defined $main::helptext and $systemcall) {
-		print STDERR "-- System Help Template --\n";
+		print STDERR "-- SYSTEM Help Template --\n";
 		if (-e "$LoxBerry::System::lbstemplatedir/help/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbstemplatedir/help/$helptemplate";
 			$langfile = "$LoxBerry::System::lbstemplatedir/lang/$helptemplate";
@@ -229,7 +233,7 @@ sub pagestart
 	## This is the legacy help generation
 		print STDERR "We are in LEGACY help mode\n";
 		print STDERR "templatepath: $templatepath\n";
-		if ($templatepath) {
+		if ($templatepath && $helptemplate ne '<!--$helptext-->') {
 			if (open(F,"$templatepath")) {
 				my @help = <F>;
 				foreach (@help)
@@ -241,8 +245,10 @@ sub pagestart
 			} else {
 			Carp::carp ("Help template $templatepath could not be opened - continuing without help.\n");
 			}
+		} elsif ($helptemplate eq '<!--$helptext-->') {
+			$templatetext = '<!--$helptext-->';
 		} else {
-			Carp::carp ("Help template $templatepath could not be found - continuing without help.\n");
+			Carp::carp ("Help template \$templatepath is empty - continuing without help.\n");
 		}
 		
 		if (! $templatetext) {
@@ -385,7 +391,7 @@ sub readlanguage
 	# Return if we already have them in memory.
 	if (!$template) { Carp::confess("ERROR: $template is empty."); }
 	if (!$issystem and !$langfile) { 
-		Carp::carp("WARNING: $langfile is empty, setting to language.ini. If file is missing, error will occur.");
+		Carp::carp("WARNING: \$langfile is empty, setting to language.ini. If file is missing, error will occur.");
 		$langfile = "language.ini"; }
 	# if ($issystem and %SL) { return %SL; }
 	# if (!$issystem and %L) { return %L; }
