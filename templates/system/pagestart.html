@@ -1,7 +1,7 @@
 <!-- pagestart.html START -->
 	<div data-role="page" id="main" data-dom-cache="false">
 		<!-- main menu panel -->
-		<div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true">
+		<div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true" data-theme="c">
 			<ul data-role="listview" data-ajax="false" data-inset="true">
 				<li data-role="list-divider"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></li>
 				<li><a href="/admin/index.cgi"><TMPL_VAR HEADER.PANEL_HOME></a></li>
@@ -22,7 +22,7 @@
 		</div>
 		<!-- /main menu panel -->
 		<!-- info panel -->
-		<div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true">
+		<div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true" data-theme="c">
 			<div data-role="header" class="ui-corner-all">
 			<h2><TMPL_VAR HEADER.TITLE_HELP></h2>
 			</div>
@@ -37,11 +37,13 @@
 			<h1><TMPL_VAR TEMPLATETITLE></h1>
 			<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext"><TMPL_VAR HEADER.TITLE_MENU></a>
 			<a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext"><TMPL_VAR HEADER.TITLE_INFO></a>
+			
 		</div>
 		<!-- /header -->
 		<!-- content -->
 		<div role="main" class="ui-content">
 			<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
 				<!-- text -->
+				<TMPL_VAR TOPNAVBAR>
 				<div id="page_content" class="page_content" style="margin: 4%">
 <!-- pagestart.html END -->
