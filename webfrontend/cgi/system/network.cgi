@@ -28,7 +28,7 @@ use LWP::UserAgent;
 use Config::Simple;
 use warnings;
 use strict;
-no strict "refs"; # we need it for template system
+# no strict "refs"; # we need it for template system
 
 ##########################################################################
 # Variables
@@ -313,23 +313,23 @@ exit;
 
 sub error {
 
-$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 
-my $maintemplate = HTML::Template->new(
-			filename => "$lbstemplatedir/error.html",
-			global_vars => 1,
-			loop_context_vars => 1,
-			die_on_bad_params=> 0,
-			# associate => $cfg,
-			);
+	my $maintemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/error.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				# associate => $cfg,
+				);
 
-LoxBerry::Web::readlanguage($maintemplate);
-LoxBerry::Web::head();
-LoxBerry::Web::pagestart();
-$maintemplate->output();
-LoxBerry::Web::pageend();
-LoxBerry::Web::foot();
-exit;
+	LoxBerry::Web::readlanguage($maintemplate);
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart();
+	$maintemplate->output();
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	exit;
 
 }
 

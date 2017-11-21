@@ -1,0 +1,102 @@
+		<!-- ** START template/system/de/updates_menu.html 05.11.2017 22:56:00 ************************************************************************************ -->
+		<!-- START Form for unattended-upgrades -->
+		
+		<div><h2><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></h2></div>
+		<div class="form-group">
+		<table class="formtable" border="0" width="100%">
+		<tr>
+			<td>
+			<TMPL_VAR UPDATES.LABEL_ENABLE_UPDATES>
+			</td>
+			<td>
+			<fieldset data-role="controlgroup" data-mini="true" style="width:300px">
+			<TMPL_VAR UPDATE_RADIO>
+			</fieldset>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<TMPL_VAR UPDATES.LABEL_AUTOMATIC_REBOOT>
+			</td>
+			<td>
+			<fieldset data-role="controlgroup" data-mini="true" style="width:300px">
+			<TMPL_VAR UPDATE_REBOOT_CHECKBOX>
+			</fieldset>
+			</td>
+		</tr>
+		</table>
+		</div>
+		<!-- END Form for unattended-upgrades -->
+		<br /><br />
+		<hr>
+		<br />
+		<!-- START Form for system upgrade -->
+		<div><h2><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></h2></div>
+		<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/updates.cgi?do=install" enctype="multipart/form-data">
+			<input type="hidden" name="saveformdata" value="1">
+				<div class="form-group">
+					<table class="formtable" border="0" width="100%">
+						<tr>
+							<td width="25%">
+								<label id="labeluploadfile"><TMPL_VAR UPDATES.LABEL_UPGRADE_FILE></label>
+							</td>
+							<td width="50%">
+								<input type="file" name="uploadfile" class="textfield">
+							</td>
+							<td width="5%" valign="middle">
+								<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR UPDATES.BUTTON_INSTALL></button>
+							</td>
+							<td width="20%">
+								&nbsp;
+							</td>
+						</tr>
+						<tr>
+						<td></td>
+						<td>
+						<a data-role="button" data-inline="true" data-icon="info" data-mini="true"
+						 href="/admin/system/tools/logfile.cgi?logfile=system/upgrade.log&header=html&format=template" target="_blank"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+						</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td></td>
+						<td colspan=3>
+							<div id="form-error-message" class="form-error-message"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</form>
+		<!-- END Form for system upgrade -->
+		<br />
+<script>
+	var $messages = $('#form-error-message');
+	$.validate(
+		{
+		modules : 'file',
+		errorMessagePosition : $messages,
+	});
+
+	// AJAX Handler for Updates setting
+	$(document).ready(function(){
+		// Request option for Automatic Updates
+		//$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: 'query'} , success: function(result){
+		//alert(result);
+		// The ajax request returns the name of the radion button, e.g. option-secupdates-7
+		//$('input:radio[id="option-secupdates-30"]').attr("checked", true);
+		//$('input:radio[id="option-secupdates-30"]').attr('data-cacheval','true'); 
+
+		//	$("input[name=option-secupdates]").val(["30"]);
+		//}});
+
+
+		$('input:radio[name="option-secupdates"]').change(function(){
+			var secupdates_val = $('input[name="option-secupdates"]:checked').val();
+			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: secupdates_val} , success: function(result){
+
+		//$('input[name="option-secupdates"]).html("dfgsdgsdgjsdgjdf");
+			}});
+		});
+	});
+</script>
+	<!-- ** END template/system/de/updates_menu.html ************************************************************************************ -->
