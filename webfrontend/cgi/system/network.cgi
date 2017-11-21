@@ -34,6 +34,9 @@ no strict "refs"; # we need it for template system
 # Variables
 ##########################################################################
 
+my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helptemplate = "help_network.html";
+
 our $cfg;
 our $phrase;
 our $namef;
@@ -44,7 +47,6 @@ our $template_title;
 our $help;
 our @help;
 our $helptext;
-our $helplink;
 #our $installfolder;
 our $languagefile;
 our $version;
@@ -74,25 +76,14 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.1-dev2";
+$version = "0.3.1-dev3";
 
 print STDERR "============= network.cgi ================\n";
 print STDERR "lbhomedir: $lbhomedir\n";
 
-
-
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
-#$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
-#$lang               = $cfg->param("BASE.LANG");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
-#$netzwerkssid       = $cfg->param("NETWORK.SSID");
 $netzwerkadressen   = $cfg->param("NETWORK.TYPE");
-#$netzwerkipadresse  = $cfg->param("NETWORK.IPADDRESS");
-#$netzwerkipmaske    = $cfg->param("NETWORK.MASK");
-#$netzwerkgateway    = $cfg->param("NETWORK.GATEWAY");
-#$netzwerknameserver = $cfg->param("NETWORK.DNS");
-#$lbfriendlyname 	= $cfg->param("NETWORK.FRIENDLYNAME");
-
 
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/network.html",
@@ -124,34 +115,15 @@ $do           = $query{'do'};
 # Everything we got from forms
 $saveformdata         = param('saveformdata');
 defined $saveformdata ? $saveformdata =~ tr/0-1//cd : undef;
-print STDERR "saveformdata: $saveformdata\n";
-print STDERR "do querystring: $do\n";
 
 ##########################################################################
 # Language Settings
 ##########################################################################
 
 $lang = lblanguage();
-print STDERR "Language in network: $lang\n";
 $maintemplate->param( "LBHOSTNAME", lbhostname());
 $maintemplate->param( "LANG", $lang);
 $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
-
-#our $navbar ="<p>Hello</p>";
-
-our %navbar;
-$navbar{1}{Name} = "First Menu";
-$navbar{1}{URL} = '#';
-$navbar{1}{target} = '_blank';
-
-$navbar{2}{Name} = "Second Menu";
-$navbar{2}{URL} = '#';
-$navbar{2}{active} = 1;
-
-$navbar{3}{Name} = "External Website";
-$navbar{3}{URL} = 'http://www.loxberry.de';
-$navbar{3}{target} = '_blank';
-
 
 ##########################################################################
 # Main program
@@ -180,35 +152,30 @@ exit;
 
 sub form {
 
-# Defaults for template
-if ($netzwerkanschluss eq "eth0") {
-  $maintemplate->param( "CHECKED1", 'checked="checked"');
-} else {
-  $maintemplate->param( "CHECKED2", 'checked="checked"');
-}
+	# Defaults for template
+	if ($netzwerkanschluss eq "eth0") {
+	  $maintemplate->param( "CHECKED1", 'checked="checked"');
+	} else {
+	  $maintemplate->param( "CHECKED2", 'checked="checked"');
+	}
 
-if ($netzwerkadressen eq "manual") {
-  $maintemplate->param( "CHECKED4", 'checked="checked"');
-} else {
-  $maintemplate->param( "CHECKED3", 'checked="checked"');
-}
+	if ($netzwerkadressen eq "manual") {
+	  $maintemplate->param( "CHECKED4", 'checked="checked"');
+	} else {
+	  $maintemplate->param( "CHECKED3", 'checked="checked"');
+	}
 
-# Print Template
-print STDERR "lbfriendlyname before output: $lbfriendlyname\n";
-$template_title = $lbfriendlyname . " " . $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
-LoxBerry::Web::head();
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 
-LoxBerry::Web::pagestart(undef, "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry", "network.html");
+	print $maintemplate->output();
+	undef $maintemplate;			
 
-print $maintemplate->output();
-undef $maintemplate;			
-
-LoxBerry::Web::pageend();
-
-LoxBerry::Web::foot();
-
-exit;
-
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	exit;
 }
 
 #####################################################
@@ -216,6 +183,8 @@ exit;
 #####################################################
 
 sub save {
+
+my $friendlyname_changed;
 
 # Everything from Forms
 $netzwerkanschluss  = param('netzwerkanschluss');
@@ -227,7 +196,10 @@ $netzwerkipmaske    = param('netzwerkipmaske');
 $netzwerkgateway    = param('netzwerkgateway');
 $netzwerknameserver = param('netzwerknameserver');
 $lbfriendlyname	    = param('lbfriendlyname');
-print STDERR "lbfriendlyname before SAVE: $lbfriendlyname\n";
+
+if ($lbfriendlyname ne $cfg->param("NETWORK.FRIENDLYNAME")) {
+	$friendlyname_changed = 1;
+}
 
 # Write configuration file(s)
 $cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
@@ -303,15 +275,22 @@ if ($netzwerkanschluss eq "wlan0") {
   }
 }
 
-print "Content-Type: text/html\n\n";
-$template_title = $lbfriendlyname . " " . $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
-$help = "network";
+if ($friendlyname_changed)
+	{ 
+	my $ret = system("perl $lbscgidir/tools/generatelegacytemplates.pl --force");
+	if ($ret == 0) {
+		print STDERR "network.cgi: generatelegacytemplates.pl's was called successfully.\n";
+	} else {
+		print STDERR "network.cgi: generatelegacytemplates.pl's exit code has shown an ERROR.\n";
+	}
+}
 
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 $maintemplate->param("NEXTURL", "/admin/index.cgi");
 
 # Print Template
 LoxBerry::Web::head();
-LoxBerry::Web::pagestart();
+LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 print $maintemplate->output();
 LoxBerry::Web::pageend();
 LoxBerry::Web::foot();
@@ -334,24 +313,22 @@ exit;
 
 sub error {
 
-$template_title = $lbfriendlyname . " " . $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
-$help = "network";
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 
-print "Content-Type: text/html\n\n";
+my $maintemplate = HTML::Template->new(
+			filename => "$lbstemplatedir/error.html",
+			global_vars => 1,
+			loop_context_vars => 1,
+			die_on_bad_params=> 0,
+			# associate => $cfg,
+			);
 
+LoxBerry::Web::readlanguage($maintemplate);
 LoxBerry::Web::head();
 LoxBerry::Web::pagestart();
-
-open(F,"$lbhomedir/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-close(F);
-
+$maintemplate->output();
 LoxBerry::Web::pageend();
 LoxBerry::Web::foot();
-
 exit;
 
 }
