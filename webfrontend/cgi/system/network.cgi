@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2017 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 ##########################################################################
 
 use LoxBerry::System;
+use LoxBerry::Web;
 
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
@@ -44,7 +45,7 @@ our $help;
 our @help;
 our $helptext;
 our $helplink;
-our $installfolder;
+#our $installfolder;
 our $languagefile;
 our $version;
 our $error;
@@ -66,27 +67,42 @@ our @lines;
 our $do;
 our $message;
 our $nexturl;
-our $lbhostname = lbhostname();
+# our $lbhostname = lbhostname();
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.3.1-dev2";
 
-$cfg                = new Config::Simple('../../../config/system/general.cfg');
-$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
-$lang               = $cfg->param("BASE.LANG");
+print STDERR "============= network.cgi ================\n";
+print STDERR "lbhomedir: $lbhomedir\n";
+
+
+
+$cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
+#$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
+#$lang               = $cfg->param("BASE.LANG");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
-$netzwerkssid       = $cfg->param("NETWORK.SSID");
+#$netzwerkssid       = $cfg->param("NETWORK.SSID");
 $netzwerkadressen   = $cfg->param("NETWORK.TYPE");
-$netzwerkipadresse  = $cfg->param("NETWORK.IPADDRESS");
-$netzwerkipmaske    = $cfg->param("NETWORK.MASK");
-$netzwerkgateway    = $cfg->param("NETWORK.GATEWAY");
-$netzwerknameserver = $cfg->param("NETWORK.DNS");
-$lbfriendlyname 	= $cfg->param("NETWORK.FRIENDLYNAME");
+#$netzwerkipadresse  = $cfg->param("NETWORK.IPADDRESS");
+#$netzwerkipmaske    = $cfg->param("NETWORK.MASK");
+#$netzwerkgateway    = $cfg->param("NETWORK.GATEWAY");
+#$netzwerknameserver = $cfg->param("NETWORK.DNS");
+#$lbfriendlyname 	= $cfg->param("NETWORK.FRIENDLYNAME");
 
+
+my $maintemplate = HTML::Template->new(
+			filename => "$lbstemplatedir/network.html",
+			global_vars => 1,
+			loop_context_vars => 1,
+			die_on_bad_params=> 0,
+			associate => $cfg,
+			);
+
+LoxBerry::Web::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
@@ -107,39 +123,35 @@ $do           = $query{'do'};
 
 # Everything we got from forms
 $saveformdata         = param('saveformdata');
-
-# Filter
-quotemeta($query{'lang'});
-quotemeta($saveformdata);
-quotemeta($do);
-
-$saveformdata          =~ tr/0-1//cd;
-$saveformdata          = substr($saveformdata,0,1);
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
+defined $saveformdata ? $saveformdata =~ tr/0-1//cd : undef;
+print STDERR "saveformdata: $saveformdata\n";
+print STDERR "do querystring: $do\n";
 
 ##########################################################################
 # Language Settings
 ##########################################################################
 
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
+$lang = lblanguage();
+print STDERR "Language in network: $lang\n";
+$maintemplate->param( "LBHOSTNAME", lbhostname());
+$maintemplate->param( "LANG", $lang);
+$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
+#our $navbar ="<p>Hello</p>";
 
-# If there's no language phrases file for choosed language, use german as default
-if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
+our %navbar;
+$navbar{1}{Name} = "First Menu";
+$navbar{1}{URL} = '#';
+$navbar{1}{target} = '_blank';
 
-# Read translations / phrases
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+$navbar{2}{Name} = "Second Menu";
+$navbar{2}{URL} = '#';
+$navbar{2}{active} = 1;
+
+$navbar{3}{Name} = "External Website";
+$navbar{3}{URL} = 'http://www.loxberry.de';
+$navbar{3}{target} = '_blank';
+
 
 ##########################################################################
 # Main program
@@ -150,9 +162,13 @@ $phrase = new Config::Simple($languagefile);
 #########################################################################
 
 # Step 1 or beginning
-if (!$saveformdata || $do eq "form") {
+if (!$saveformdata) {
+  print STDERR "FORM called\n";
+  $maintemplate->param("FORM", 1);
   &form;
 } else {
+  print STDERR "SAVE called\n";
+  $maintemplate->param("SAVE", 1);
   &save;
 }
 
@@ -164,41 +180,32 @@ exit;
 
 sub form {
 
-# Filter
-quotemeta($netzwerkanschluss);
-quotemeta($netzwerkssid);
-quotemeta($netzwerkadressen);
-quotemeta($netzwerkipadresse);
-quotemeta($netzwerkipmaske);
-quotemeta($netzwerkgateway);
-quotemeta($netzwerknameserver);
-
 # Defaults for template
 if ($netzwerkanschluss eq "eth0") {
-  $checked1 = "checked\=\"checked\"";
+  $maintemplate->param( "CHECKED1", 'checked="checked"');
 } else {
-  $checked2 = "checked\=\"checked\"";
+  $maintemplate->param( "CHECKED2", 'checked="checked"');
 }
 
 if ($netzwerkadressen eq "manual") {
-  $checked4 = "checked\=\"checked\"";
+  $maintemplate->param( "CHECKED4", 'checked="checked"');
 } else {
-  $checked3 = "checked\=\"checked\"";
+  $maintemplate->param( "CHECKED3", 'checked="checked"');
 }
 
-print "Content-Type: text/html\n\n";
-$template_title = $lbfriendlyname . " " . $phrase->param("TXT0000") . ": " . $phrase->param("TXT0020");
-$help = "network";
-
 # Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/network.html") || die "Missing template system/$lang/network.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
+print STDERR "lbfriendlyname before output: $lbfriendlyname\n";
+$template_title = $lbfriendlyname . " " . $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
+LoxBerry::Web::head();
+
+LoxBerry::Web::pagestart(undef, "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry", "network.html");
+
+print $maintemplate->output();
+undef $maintemplate;			
+
+LoxBerry::Web::pageend();
+
+LoxBerry::Web::foot();
 
 exit;
 
@@ -220,17 +227,7 @@ $netzwerkipmaske    = param('netzwerkipmaske');
 $netzwerkgateway    = param('netzwerkgateway');
 $netzwerknameserver = param('netzwerknameserver');
 $lbfriendlyname	    = param('lbfriendlyname');
-
-
-# Filter
-quotemeta($netzwerkanschluss);
-quotemeta($netzwerkssid);
-quotemeta($netzwerkschluessel);
-quotemeta($netzwerkadressen);
-quotemeta($netzwerkipadresse);
-quotemeta($netzwerkipmaske);
-quotemeta($netzwerkgateway);
-quotemeta($netzwerknameserver);
+print STDERR "lbfriendlyname before SAVE: $lbfriendlyname\n";
 
 # Write configuration file(s)
 $cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
@@ -250,8 +247,8 @@ if ($netzwerkanschluss eq "wlan0") {
 
   # Manual / Static
   if ($netzwerkadressen eq "manual") {
-    open(F1,"$installfolder/system/network/interfaces.wlan_static") || die "Missing file: $installfolder/system/network/interfaces.wlan_static";
-     open(F2,">$installfolder/system/network/interfaces") || die "Missing file: $installfolder/system/network/interfaces";
+    open(F1,"$lbhomedir/system/network/interfaces.wlan_static") || die "Missing file: $lbhomedir/system/network/interfaces.wlan_static";
+     open(F2,">$lbhomedir/system/network/interfaces") || die "Missing file: $lbhomedir/system/network/interfaces";
       flock(F2,2);
       while (<F1>) {
         $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -263,8 +260,8 @@ if ($netzwerkanschluss eq "wlan0") {
 
   # DHCP
   } else {
-    open(F1,"$installfolder/system/network/interfaces.wlan_dhcp") || die "Missing file: $installfolder/system/network/interfaces.wlan_dhcp";
-     open(F2,">$installfolder/system/network/interfaces") || die "Missing file: $installfolder/system/network/interfaces";
+    open(F1,"$lbhomedir/system/network/interfaces.wlan_dhcp") || die "Missing file: $lbhomedir/system/network/interfaces.wlan_dhcp";
+     open(F2,">$lbhomedir/system/network/interfaces") || die "Missing file: $lbhomedir/system/network/interfaces";
       flock(F2,2);
       while (<F1>) {
         $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -280,8 +277,8 @@ if ($netzwerkanschluss eq "wlan0") {
 
   # Manual / Static
   if ($netzwerkadressen eq "manual") {
-    open(F1,"$installfolder/system/network/interfaces.eth_static") || die "Missing file: $installfolder/system/network/interfaces.eth_static";
-     open(F2,">$installfolder/system/network/interfaces") || die "Missing file: $installfolder/system/network/interfaces";
+    open(F1,"$lbhomedir/system/network/interfaces.eth_static") || die "Missing file: $lbhomedir/system/network/interfaces.eth_static";
+     open(F2,">$lbhomedir/system/network/interfaces") || die "Missing file: $lbhomedir/system/network/interfaces";
       flock(F2,2);
       while (<F1>) {
         $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -293,8 +290,8 @@ if ($netzwerkanschluss eq "wlan0") {
 
   # DHCP
   } else {
-    open(F1,"$installfolder/system/network/interfaces.eth_dhcp") || die "Missing file: $installfolder/system/network/interfaces.eth_dhcp";
-     open(F2,">$installfolder/system/network/interfaces") || die "Missing file: $installfolder/system/network/interfaces";
+    open(F1,"$lbhomedir/system/network/interfaces.eth_dhcp") || die "Missing file: $lbhomedir/system/network/interfaces.eth_dhcp";
+     open(F2,">$lbhomedir/system/network/interfaces") || die "Missing file: $lbhomedir/system/network/interfaces";
       flock(F2,2);
       while (<F1>) {
         $_ =~ s/<!--\$(.*?)-->/${$1}/g;
@@ -307,22 +304,17 @@ if ($netzwerkanschluss eq "wlan0") {
 }
 
 print "Content-Type: text/html\n\n";
-$template_title = $lbfriendlyname . " " . $phrase->param("TXT0000") . ": " . $phrase->param("TXT0020");
+$template_title = $lbfriendlyname . " " . $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 $help = "network";
 
-$message = $phrase->param("TXT0037");
-$nexturl = "/admin/index.cgi";
+$maintemplate->param("NEXTURL", "/admin/index.cgi");
 
 # Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
+LoxBerry::Web::head();
+LoxBerry::Web::pagestart();
+print $maintemplate->output();
+LoxBerry::Web::pageend();
+LoxBerry::Web::foot();
 exit;
 
 }
@@ -347,56 +339,21 @@ $help = "network";
 
 print "Content-Type: text/html\n\n";
 
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
+LoxBerry::Web::head();
+LoxBerry::Web::pagestart();
+
+open(F,"$lbhomedir/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
       print $_;
     }
 close(F);
-&footer;
+
+LoxBerry::Web::pageend();
+LoxBerry::Web::foot();
 
 exit;
 
 }
 
-#####################################################
-# Header
-#####################################################
-
-sub lbheader {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
-  open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
-    @help = <F>;
-    foreach (@help){
-      s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
-    }
-  close(F);
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
-#####################################################
-# Footer
-#####################################################
-
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
 

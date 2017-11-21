@@ -17,36 +17,29 @@
 <!-- Page startup -->
 <div data-role="page" id="main">
 <div data-role="header" id="warning" style="background-color: red;">
-	<h1>Warnung!</h>
+	<h1><TMPL_VAR NETWORK_CHANGEHOSTNAME.LABEL_TOP></h1>
 </div>
-
-  <!-- ************************************************************************************** -->
-
   <!-- content -->
   <div data-role="content" role="main" class="ui-content">
     <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
     <!-- text -->
     <div style="margin: 5%">
-
-      <p>
       <center>
-      <h2>Hostname des LoxBerry ändern</h2>
-	  <p>Beim Speichern wird der Hostname von Loxberry geändert. Nach der Änderung musst du LoxBerry neu starten. </p>
-	  <p>Wenn du auf anderen Geräten (z.B. am Miniserver, NAS) den Namen bereits verwendet hast, musst du dort deine Konfiguration anpassen. Informiere dich zudem bei den Entwicklern deiner Plugins, ob eine Anpassung in der Konfiguration notwendig ist. Du kannst den Namen später jederzeit erneut ändern.</p>
+      <h2><TMPL_VAR NETWORK_CHANGEHOSTNAME.HEADING></h2>
+	  <TMPL_VAR NETWORK_CHANGEHOSTNAME.INTRODUCTION>
 	  </center>
       <form method="post">
 	  <table>
 	  <tr>
 	  <td>
-	  Aktueller Hostname 
+	  <TMPL_VAR NETWORK_CHANGEHOSTNAME.LABEL_CURRENTHOSTNAME>
 	  </td>
 	  <td><b><TMPL_VAR lbhostname></b>
 	  </td>
 	  </tr>
 	  <tr>
 	  <td>
-	  <label for="lbnewhostname">Neuer Hostname</label>
+	  <label for="lbnewhostname"><TMPL_VAR NETWORK_CHANGEHOSTNAME.LABEL_NEWHOSTNAME></label>
 	  </td>
 	  <td>
 	  <input id="lbnewhostname" autocomplete="off" name="lbnewhostname" type="text" class="textfield" value="<TMPL_VAR lbnewhostname>">
@@ -57,30 +50,20 @@
 	  <td>
 	  </td>
 	  <td><button type="submit" style="width: 200px;" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true">
-      Hostname jetzt ändern</button>
+      <TMPL_VAR NETWORK_CHANGEHOSTNAME.BUTTON_CHANGE></button>
 	  <button type="button" name="btncancel" class="close" data-role="button" data-inline="true" data-mini="true" onclick="return quitBox('quit');">
-      Abbrechen</button>
-	  <a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>
-	
+      <TMPL_VAR COMMON.BUTTON_CANCEL></button>
+	  <a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 	  </td>
 	  </tr>
-			 
 	  </table>
 	  </form>
-      </p>
-
     </div>
     <!-- /text -->
-
     </div>
-
   <!-- /content -->
-
   <!-- ************************************************************************************** -->
 </div>
-
-
-
 </div>
 </TMPL_IF>
 
@@ -88,55 +71,38 @@
 <!-- Page "changed" -->
 <div data-role="page" id="main">
 <div data-role="header" id="warning">
-	<h1>LoxBerry Namensänderung</h>
+	<h1><TMPL_VAR NETWORK_CHANGEHOSTNAME.LABEL_TOP_CHANGED></h1>
 </div>
-
   <!-- ************************************************************************************** -->
-
   <!-- content -->
   <div data-role="content" role="main" class="ui-content">
     <div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
     <!-- text -->
     <div style="margin: 5%">
-
 	<TMPL_IF successfullchanged>
-	<p>Der Name wurde erfolgreich geändert. Bitte schau ins Logfile, ob es vielleicht Probleme gab.</p>
-	<p>Du solltest LoxBerry jetzt neu starten. Danach ist er mit dem neuen Hostnamen <TMPL_VAR changedname> erreichbar.</p>
-	
+		<TMPL_VAR NETWORK_CHANGEHOSTNAME.SUCCESS_MESSAGE>
+		<h2><a href="http://<TMPL_VAR changedname>">http://<TMPL_VAR changedname></a></h2>
 	<TMPL_ELSE>
-	<p><font color="red"><b>Achtung - die Namensänderung hat offenbar nicht geklappt!</b></font></p>
-	<p>Bitte schau ins Logfile, welche Probleme es gegeben haben könnte.</p>
-	<p>Eventuell musst du LoxBerry neu starten, damit die Namensänderung wirksam wird.</p>
+		<p><font color="red"><b><TMPL_VAR NETWORK_CHANGEHOSTNAME.FAILURE_MESSAGE_RED></b></font></p>
+		<TMPL_VAR NETWORK_CHANGEHOSTNAME.FAILURE_MESSAGE_INFO>
 	</TMPL_IF>
-	<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>
+	<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 	<button type="button" name="btncancel" class="close" data-role="button" data-inline="true" data-mini="true" onclick="return quitBox('quit');">
-      Abbrechen</button>
-	  
+	<TMPL_VAR COMMON.BUTTON_CLOSE></button>
     </div>
     <!-- /text -->
-
     </div>
-
   <!-- /content -->
-
   <!-- ************************************************************************************** -->
 </div>
-
-
-
 </div>
 </TMPL_IF>
 
-
-
-
 <!-- /page -->
-
-<div id="lang" style="display: none"><!--$lang--></div>
+<div id="lang" style="display: none"><TMPL_VAR LANG></div>
 <div id='overlay' style="display: none"><img src='/system/scripts/jquery/themes/main/images/ajax-loader.gif' /></div>
-
 </body>
+
 <script>
 $(document).ready(
 function(){
@@ -146,7 +112,7 @@ function(){
 				if (event.which == '13') {
 					event.preventDefault()
 					$("#btnsubmit").animate({opacity:0, height: 'toggle'},function() {
-					$(this).text("Hier klicken!")}).animate({opacity:1, height: 'toggle'});
+					$(this).text("<TMPL_VAR NETWORK_CHANGEHOSTNAME.BUTTON_CLICK_HERE>")}).animate({opacity:1, height: 'toggle'});
 				}
 			}
 		);
