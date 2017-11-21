@@ -18,28 +18,24 @@ use strict;
 use warnings;
 use LoxBerry::System;
 use LoxBerry::Web;
-use Cwd 'abs_path';
-# use File::stat;
+use Getopt::Long qw(GetOptions);
 use List::Util 'max'; 
 
-my $force = 0;
+my $force;
 
-# my $fh_lang_footer;
-# my $fh_lang_header;
-# my $fh_tmpl_head;
-# my $fh_tmpl_pagestart;
-# my $fh_tmpl_pageend;
-# my $fh_tmpl_foot;
-# my $fh_tmpl_lang;
+GetOptions('force' => \$force);
+
+if ($force) {
+	print STDERR "generatelegacytemplates.pl: Forcing creation of new templates.\n";
+}
 
 if (!$lbstemplatedir) { 
 	print STDERR "generatelegacytemplates.pl: Cannot get \$lbstemplatedir. Exiting.\n";
 	exit (1);
 }
 
-my @files = <$lbstemplatedir/lang/language_??.ini>;
-
 # Catch all language files to detect available languages
+my @files = <$lbstemplatedir/lang/language_??.ini>;
 foreach my $file (@files) {
 	$file =~ s/\.[^.]*$//;
 	my $langcode = substr($file, -2, 2);
@@ -82,7 +78,7 @@ foreach my $file (@files) {
 		  next;
 	}
 	
-	# Pre-cache the language in LoxBerry:Web
+	# Pre-set the language in LoxBerry:Web
 	$LoxBerry::Web::lang = $langcode;
 	
 	my $output_header;
@@ -93,12 +89,11 @@ foreach my $file (@files) {
 	select TOOUTPUT;
 	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
 	select STDOUT;
-	# print "OUTPUT: $output\n";
+	
 	open TOOUTPUT, '>', \$output_footer or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
 	select TOOUTPUT;
 	LoxBerry::Web::lbfooter(); 
 	select STDOUT;
-	# print "OUTPUT: $output\n";
 	
 	if ($output_header && $output_footer) {
 	open(my $fh_lang_header, ">:encoding(UTF-8)", "$lbstemplatedir/$langcode/header.html") or 
@@ -115,6 +110,5 @@ foreach my $file (@files) {
 	close $fh_lang_header;
 	close $fh_lang_footer;
 	}
-	
 }
 
