@@ -104,6 +104,12 @@ foreach my $file (@files) {
 		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/footer.html. Skipping.\n"; 
 			next;
 			};
+	
+	# This removes line 1 to 2 of the string to delete content-type: text/html 
+	# as legacy plugins send that for their own
+	$output_header =~ s/^(?:.*\n){1,2}//;
+	
+	
 	# Writing new files
 	print $fh_lang_header $output_header;
 	print $fh_lang_footer $output_footer;
