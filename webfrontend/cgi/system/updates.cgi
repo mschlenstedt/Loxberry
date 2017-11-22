@@ -179,55 +179,60 @@ exit;
 sub form {
 
 
-our $maintemplate = HTML::Template->new(
-			filename => "$lbstemplatedir/updates_menu.html",
-			global_vars => 1,
-			loop_context_vars => 1,
-			die_on_bad_params=> 0,
-			associate => $cfg,
-			#debug => 1,
-			#stack_debug => 1,
-			);
-
-our %SL = LoxBerry::Web::readlanguage($maintemplate);
-
-$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
+	our $maintemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/updates_menu.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				associate => $cfg,
+				#debug => 1,
+				#stack_debug => 1,
+				);
 
 
-our $unattended_val = get_unattended_upgrades_days();
-our $unattended_reboot_bool = get_unattended_upgrades_autoreboot();
+	# TMPL_IF use "form"
+	$maintemplate->param( "form", 1);
+	 
+				
+	our %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-print STDERR "OFF: $SL{'UPDATES.SECUPDATE_RADIO_OFF'}\n";
+	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
-our $cgi = new CGI;
-our %labels = (		'0'=>  $SL{'UPDATES.SECUPDATE_RADIO_OFF'},
-					'1'=> $SL{'UPDATES.SECUPDATE_RADIO_DAILY'},
-					'7'=> $SL{'UPDATES.SECUPDATE_RADIO_WEEKLY'},
-					'30'=> $SL{'UPDATES.SECUPDATE_RADIO_MONTHLY'});
-				 
-our $update_radio = $cgi->radio_group(
-        -name    => 'option-secupdates',
-        -values  => ['0', '1', '7', '30'],
-        -labels  => \%labels,
-		-default => $unattended_val,
-    );
-$maintemplate->param("UPDATE_RADIO", $update_radio);
-	
-our $update_reboot_checkbox = $cgi->checkbox( -name => 'updates-autoreboot',
-											  -checked => $unattended_reboot_bool,
-											  #-checked => 1,
-											  #-value => '1',
-											  -label => $SL{'UPDATES.SECUPDATE_REBOOT_ENABLED'}
-	);
-$maintemplate->param("UPDATE_REBOOT_CHECKBOX", $update_reboot_checkbox);
-	
-$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
-# Print Template
-LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
-print $maintemplate->output();
-LoxBerry::Web::lbfooter();
-exit;
+	our $unattended_val = get_unattended_upgrades_days();
+	our $unattended_reboot_bool = get_unattended_upgrades_autoreboot();
+
+	print STDERR "OFF: $SL{'UPDATES.SECUPDATE_RADIO_OFF'}\n";
+
+	our $cgi = new CGI;
+	our %labels = (		'0'=>  $SL{'UPDATES.SECUPDATE_RADIO_OFF'},
+						'1'=> $SL{'UPDATES.SECUPDATE_RADIO_DAILY'},
+						'7'=> $SL{'UPDATES.SECUPDATE_RADIO_WEEKLY'},
+						'30'=> $SL{'UPDATES.SECUPDATE_RADIO_MONTHLY'});
+					 
+	our $update_radio = $cgi->radio_group(
+			-name    => 'option-secupdates',
+			-values  => ['0', '1', '7', '30'],
+			-labels  => \%labels,
+			-default => $unattended_val,
+		);
+	$maintemplate->param("UPDATE_RADIO", $update_radio);
+		
+	our $update_reboot_checkbox = $cgi->checkbox( -name => 'updates-autoreboot',
+												  -checked => $unattended_reboot_bool,
+												  #-checked => 1,
+												  #-value => '1',
+												  -label => $SL{'UPDATES.SECUPDATE_REBOOT_ENABLED'}
+		);
+	$maintemplate->param("UPDATE_REBOOT_CHECKBOX", $update_reboot_checkbox);
+		
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
+
+	# Print Template
+	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	exit;
 
 }
 
@@ -254,7 +259,8 @@ sub install
 				die_on_bad_params=> 0,
 				associate => $cfg,
 				);
-
+	
+	
 	my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
@@ -269,7 +275,7 @@ sub install
 
 	$maintemplate->param( "MESSAGE" , $SL{'UPDATES.UPGRADE_REBOOT_INFORMATION'} );
 	$maintemplate->param( "NEXTURL", "/admin/index.cgi" );
-
+	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
@@ -400,7 +406,7 @@ sub install
 	# Print template
 	
 	my $maintemplate = HTML::Template->new(
-				filename => "$lbstemplatedir/upgrade_install.html",
+				filename => "$lbstemplatedir/updates_menu.html",
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
@@ -408,7 +414,10 @@ sub install
 				);
 
 	my %SL = LoxBerry::Web::readlanguage($maintemplate);
-	
+	# TMPL_IF use "sec_question"
+	$maintemplate->param( "sec_question", 1 );
+	$maintemplate->param( "SVERSION", $sversion );
+	$maintemplate->param( "UVERSION", $uversion );
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 	$maintemplate->param ( "NEXTURL", "/admin/index.cgi");
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};

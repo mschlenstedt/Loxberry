@@ -1,3 +1,4 @@
+<TMPL_IF form>
 		<!-- ** START template/system/de/updates_menu.html 05.11.2017 22:56:00 ************************************************************************************ -->
 		<!-- START Form for unattended-upgrades -->
 		
@@ -100,3 +101,31 @@
 	});
 </script>
 	<!-- ** END template/system/de/updates_menu.html ************************************************************************************ -->
+</TMPL_IF>
+<TMPL_IF sec_question>
+	<!-- ** START template/system/upgrade_install.html 22:59 22.11.2017 ************************************************************************************ -->
+	<center>
+		<table border=0>
+			<tr>
+				<td align="center">
+					<h2><TMPL_VAR UPDATES.UPGRADE_SURE_HEAD></h2>
+					<p>
+					<TMPL_VAR UPDATES.UPGRADE_SURE_QUESTION>
+					</p>
+					<p><TMPL_VAR UPDATES.UPGRADE_SURE_FROM_VERS> <b><TMPL_VAR SVERSION></b> <TMPL_VAR UPDATES.UPGRADE_SURE_TO_VERS> <b><TMPL_VAR UVERSION></b>.
+					</p>
+					<TMPL_VAR UPDATES.UPGRADE_SURE_INFOS>
+				</td>
+			</tr>
+			<tr>
+				<td align="center">
+					<p>
+						<a id="btnback" href="/admin/index.cgi" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+						<a id="btnreboot" href="/admin/system/updates.cgi?do=install&answer=yes" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-check"><TMPL_VAR UPDATES.UPGRADE_BUTTON_REBOOT_UPGRADE></a>
+					</p>
+				</td>
+			</tr>
+		</table>
+	</center>
+	<!-- ** END template/system/de/upgrade_install.html ************************************************************************************ -->
+</TMPL_IF>
