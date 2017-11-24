@@ -139,7 +139,7 @@ if ($do eq "poweroff") {
 # Everything else
 print STDERR "MENU called\n";
 $maintemplate->param("MENU", 1);
-&menu;
+&form;
 
 exit;
 
@@ -147,7 +147,7 @@ exit;
 # Menue
 #####################################################
 
-sub menu {
+sub form {
 	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'POWER.WIDGETLABEL'};
@@ -178,19 +178,19 @@ sub reboot {
 	LoxBerry::Web::pageend();
 	LoxBerry::Web::foot();
 	
-	# Reboot
-	# Without the following workaround
-	# the script cannot be executed as
-	# background process via CGI
-	my $pid = fork();
-	die "Fork failed: $!" if !defined $pid;
-	if ($pid == 0) {
-	# do this in the child
-	 open STDIN, "</dev/null";
-	 open STDOUT, ">/dev/null";
-	 open STDERR, ">/dev/null";
-	 # system("sleep 5 && sudo $rebootbin &");
-	}
+	# # Reboot
+	# # Without the following workaround
+	# # the script cannot be executed as
+	# # background process via CGI
+	# my $pid = fork();
+	# die "Fork failed: $!" if !defined $pid;
+	# if ($pid == 0) {
+	# # do this in the child
+	 # open STDIN, "</dev/null";
+	 # open STDOUT, ">/dev/null";
+	 # open STDERR, ">/dev/null";
+	 # # system("sleep 5 && sudo $rebootbin &");
+	# }
 	exit;
 }
 
@@ -209,18 +209,18 @@ sub poweroff {
 	LoxBerry::Web::pageend();
 	LoxBerry::Web::foot();
 
-	# Poweroff
-	# Without the following workaround
-	# the script cannot be executed as
-	# background process via CGI
-	my $pid = fork();
-	die "Fork failed: $!" if !defined $pid;
-	if ($pid == 0) {
-	# do this in the child
-	 open STDIN, "</dev/null";
-	 open STDOUT, ">/dev/null";
-	 open STDERR, ">/dev/null";
-	 # system("sleep 5 && sudo $poweroffbin &");
-	}
+	# # Poweroff
+	# # Without the following workaround
+	# # the script cannot be executed as
+	# # background process via CGI
+	# my $pid = fork();
+	# die "Fork failed: $!" if !defined $pid;
+	# if ($pid == 0) {
+	# # do this in the child
+	 # open STDIN, "</dev/null";
+	 # open STDOUT, ">/dev/null";
+	 # open STDERR, ">/dev/null";
+	 # # system("sleep 5 && sudo $poweroffbin &");
+	# }
 	exit;
 }
