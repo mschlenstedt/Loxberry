@@ -1,0 +1,40 @@
+<!-- ** START template/system/power.html 15:21 24.11.2017 ************************************************************************************ -->
+<TMPL_IF MENU>
+	<center>
+		<div style="width: 300px">
+			<a id="btnreboot" data-role="button" data-icon="recycle" href="?do=reboot"><TMPL_VAR POWER.BUTTON_REBOOT></a>
+			<br>
+			<a id="btnpoweroff" data-role="button" data-icon="power" href="?do=poweroff"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
+
+			</div>
+	</center>
+<p>
+	&nbsp;
+</p>
+	<center>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+	</center>
+	
+</TMPL_IF>
+
+<TMPL_IF REBOOT>
+	<center>
+		<p><TMPL_VAR POWER.MSG_REBOOT></p>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+	</center>
+
+
+
+</TMPL_IF>
+
+<TMPL_IF POWEROFF>
+	<center>
+		<p><TMPL_VAR POWER.MSG_POWEROFF></p>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		
+	</center>
+
+</TMPL_IF>
+
+
+<!-- ** END template/system/power.html ************************************************************************************ -->
