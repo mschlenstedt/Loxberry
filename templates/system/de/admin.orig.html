@@ -1,0 +1,102 @@
+									<!-- ** START template/system/de/admin.html 27.08.2016 21:04:38 ************************************************************************************ -->
+									<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
+										<input type="hidden" name="saveformdata" value="1">
+										<div class="form-group">
+											<table class="formtable" border="0" width="100%">
+												<tr>
+													<td>
+													 <label>Altes Passwort:</label>
+													</td>
+													<td>
+									          <input name="adminpassold" type="password" class="textfield" data-validation="length alphanumeric" data-validation-length="Min1"
+									          	data-validation-allowing="-_,.;:!?+§%="
+									          	data-validation-error-msg="* Das Passwort muss aus alphanummerischen Gross- und Kleinbuchstaben sowie aus Buchstaben und Zahlen und min. 5 Zeichen bestehen.  Es d&uuml;rfen nur folgende Sonderzeichen verwendet werden: &#x2D;&#x5F;&#x2C;&#x2E;&#x3B;&#x3A;&#x21;&#x3F;&#x2B;&#xA7;&#x25;&#x3D;" 
+          										value="">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+													 &nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td width="25%">
+														<label class="control-label" for="adminuser">Benutzername:</label>
+													</td>
+													<td width="50%">
+														<input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20"
+														data-validation-allowing="-_"
+														data-validation-error-msg="* Der Benutzername muss 3-20 Zeichen lang sein und aus alphanumerischen Zeichen bestehen." value="<!--$adminuser-->">
+													</td>
+													<td width="3%">
+														&nbsp;
+													</td>
+													<td width="22%">
+														<font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 -_</font>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label>Passwort:</label>
+													</td>
+													<td>
+									          <input name="adminpass1" type="password" data-validation="length strength alphanumeric" data-validation-allowing="-_,.;:!?+§%="
+									           data-validation-strength="2" class="textfield" value="" data-validation-length="Min1"
+									          data-validation-error-msg="* Das Passwort muss aus alphanummerischen Gross- und Kleinbuchstaben sowie aus Buchstaben und Zahlen und min. 5 Zeichen bestehen.
+														Es d&uuml;rfen nur folgende Sonderzeichen verwendet werden: &#x2D;&#x5F;&#x2C;&#x2E;&#x3B;&#x3A;&#x21;&#x3F;&#x2B;&#xA7;&#x25;&#x3D;">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+														<font size="-1">Erlaubte Zeichen: A-Z a-z 0-9 &#x2D;&#x5F;&#x2C;&#x2E;&#x3B;&#x3A;&#x21;&#x3F;&#x2B;&#xA7;&#x25;&#x3D;</font>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<label>Wiederholung:</label>
+													</td>
+													<td>
+														<input name="adminpass2" type="password" data-validation="confirmation" data-validation-confirm="adminpass1" class="textfield" value=""
+														data-validation-error-msg="* Die beiden Passw&ouml;rter stimmen nicht &uuml;berein">
+													</td>
+													<td>
+														&nbsp;
+													</td>
+													<td>
+														<font size="-1">Wiederhole hier zur Sicherheit das Passwort</font>
+													</td>
+												</tr>
+												<tr>
+													<td colspan=4>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td></td>
+													<td colspan=3>
+														<div id="form-error-message" class="form-error-message"></div>
+													</td>
+												</tr>
+											</table>
+										</div>
+										<p>
+											&nbsp;
+										</p>
+										<p>
+											<center>
+									      <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi">Abbrechen</a>
+      									<button type="submit" form="main_form1" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check">Speichern</button>
+											</center>
+										</p>
+									</form>
+									<script>
+										var $messages = $('#form-error-message');
+										$.validate(
+										{
+											modules : 'security',
+											errorMessagePosition : $messages
+										});
+									</script>
+									<!-- ** END template/system/de/admin.html ************************************************************************************ -->

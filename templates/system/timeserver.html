@@ -1,0 +1,121 @@
+<!-- ** START template/system/timeserver.html 13:51 24.11.2017 ************************************************************************************ -->
+<form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<p style=&quot;color:blue&quot;><TMPL_VAR TIMESERVER.SAVE_ASYNC_QUERY_NTP></p>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
+	<input type="hidden" name="saveformdata" value="1">
+	<div class="form-group">
+		<table class="formtable" border="0" width="100%">
+			<tr>
+				<td>
+					<TMPL_VAR TIMESERVER.LABEL_CURRENT_TIME>
+				</td>
+				<td>
+					<TMPL_VAR SYSTEMDATETIME>
+					<a href="javascript:location.reload()" data-mini="true" data-inline="true" data-role="button" data-icon="refresh" data-iconpos="notext"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
+					&nbsp;
+					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system/datetime.log&header=html&format=template" target="_blank"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+				</td>
+				<td>
+				</td>
+				<td valign="middle">
+					&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td width="25%">
+					<label id="labeluhrzeit">Time Synchronization:</label>
+				</td>
+				<td width="50%">
+					<fieldset data-role="controlgroup">
+						<input onclick="disable()" <TMPL_VAR CHECKED1> id="zeitserver_miniserver" name="zeitserver" type="radio" value="miniserver">
+							<label for="zeitserver_miniserver"><TMPL_VAR TIMESERVER.SELECT_MS></label>
+						<input onclick="disable()" <TMPL_VAR CHECKED2> id="zeitserver_ntp" name="zeitserver" type="radio" value="ntp">
+							<label for="zeitserver_ntp"><TMPL_VAR TIMESERVER.SELECT_NTP></label>
+					</fieldset>
+				</td>
+				<td width="5%" valign="middle">
+					&nbsp;
+				</td>
+				<td width="20%">
+					&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label id="labelntpserverurl"><TMPL_VAR TIMESERVER.LABEL_NTP_SERVER></label>
+				</td>
+				<td>
+					<input id="ntpserverurl" name="ntpserverurl" type="text" class="textfield" data-validation="custom" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="<TMPL_VAR TIMESERVER.MSG_VAL_INVALID_HOST>" value="<TMPL_VAR NTPSERVERURL>">
+				</td>
+				<td>
+					&nbsp;
+				</td>
+				<td valign="middle">
+					<a id="linkntpurls" href="http://www.pool.ntp.org/de/use.html" target="_blank"><TMPL_VAR TIMESERVER.LINK_OTHER_TIMESERVERS></a>
+				</td>
+			</tr>
+			<tr>
+				<td width="25%">
+					<label id="labelzeitzone"><TMPL_VAR TIMESERVER.LABEL_TIMEZONE></label>
+				</td>
+				<td width="50%">
+					<select onclick="disable()" id="zeitzone" name="zeitzone" data-mini="true">
+						<TMPL_VAR TIMEZONELIST>
+					</select>
+				</td>
+				<td width="5%" valign="middle">
+					&nbsp;
+				</td>
+				<td width="20%">
+					&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td colspan=3>
+					<div style="height:30px;" id="form-error-message" class="form-error-message">&nbsp;</div>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4">
+					<center>
+						<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+						<button type="submit" form="main_form4" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+					</center>
+				</td>
+			</tr>
+		</table>
+	</div>
+</form>
+<script>
+	var $messages = $('#form-error-message');
+	$.validate(
+	{
+		modules : 'security',
+		errorMessagePosition : $messages
+	});
+
+	// Disable some options on click depending on selected value
+	function disable()
+	{
+		// Miniserver or NTP
+		if ( $('#zeitserver_miniserver').is(':checked') )
+		{
+			$("#ntpserverurl").attr("data-validation-optional","true");
+			$('#form-error-message').fadeTo("slow",0);
+			$('#ntpserverurl').val('');
+			$('#labelntpserverurl').addClass('ui-disabled');
+			$('#ntpserverurl').addClass('ui-disabled');
+			$('#linkntpurls').addClass('ui-disabled');
+		}
+		else
+		{
+			$('#labelntpserverurl').removeClass('ui-disabled');
+			$('#ntpserverurl').removeClass('ui-disabled');
+			$('#linkntpurls').removeClass('ui-disabled');
+			$("#ntpserverurl").attr("data-validation-optional","false");
+			$('#form-error-message').fadeTo("slow",1);
+		}
+	}
+	// Disable some options on Load depending on selected value
+	disable();
+</script>
+<!-- ** END template/system/timeserver.html ************************************************************************************ -->

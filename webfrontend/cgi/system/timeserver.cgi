@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2017 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,17 +18,24 @@
 # Modules
 ##########################################################################
 
+use LoxBerry::System;
+use LoxBerry::Web;
+
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use LWP::UserAgent;
 use Config::Simple;
 use warnings;
 use strict;
-no strict "refs"; # we need it for template system
 
 ##########################################################################
 # Variables
 ##########################################################################
+
+
+my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helptemplate = "help_timeserver.html";
+
 
 our $cfg;
 our $phrase;
@@ -41,7 +48,7 @@ our $help;
 our @help;
 our $helptext;
 our $helplink;
-our $installfolder;
+# our $installfolder;
 our $languagefile;
 our $version;
 our $error;
@@ -74,11 +81,12 @@ our $grepbin;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.3";
+$version = "0.3.1-dev1";
 
-$cfg                = new Config::Simple('../../../config/system/general.cfg');
-$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
-$lang               = $cfg->param("BASE.LANG");
+$cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
+
+#$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
+# $lang               = $cfg->param("BASE.LANG");
 $zeitserver         = $cfg->param("TIMESERVER.METHOD");
 $ntpserverurl       = $cfg->param("TIMESERVER.SERVER");
 $zeitzone           = $cfg->param("TIMESERVER.ZONE");
@@ -88,6 +96,18 @@ $awkbin             = $cfg->param("BINARIES.AWK");
 $grepbin            = $cfg->param("BINARIES.GREP");
 $do                 = "";
 $helptext           = "";
+
+my $maintemplate = HTML::Template->new(
+			filename => "$lbstemplatedir/timeserver.html",
+			global_vars => 1,
+			loop_context_vars => 1,
+			die_on_bad_params=> 0,
+			associate => $cfg,
+			# debug => 1,
+			);
+
+my %SL = LoxBerry::Web::readlanguage($maintemplate);
+
 
 #########################################################################
 # Parameter
@@ -124,11 +144,6 @@ if ( $do eq "query" )
 # Everything we got from forms
 $saveformdata         = param('saveformdata');
 
-# Filter
-quotemeta($query{'lang'});
-quotemeta($saveformdata);
-quotemeta($do);
-
 $saveformdata          =~ tr/0-1//cd;
 $saveformdata          = substr($saveformdata,0,1);
 $query{'lang'}         =~ tr/a-z//cd;
@@ -137,25 +152,10 @@ $query{'lang'}         =  substr($query{'lang'},0,2);
 ##########################################################################
 # Language Settings
 ##########################################################################
-
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
-
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
-
-# If there's no language phrases file for choosed language, use german as default
-if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations / phrases
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+$lang = lblanguage();
+$maintemplate->param( "LBHOSTNAME", lbhostname());
+$maintemplate->param( "LANG", $lang);
+$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 
 ##########################################################################
 # Main program
@@ -166,10 +166,13 @@ $phrase = new Config::Simple($languagefile);
 #########################################################################
 
 # Step 1 or beginning
-if (!$saveformdata || $do eq "form") 
-{
+if (!$saveformdata || $do eq "form") {
+  print STDERR "FORM called\n";
+  $maintemplate->param("FORM", 1);
   &form;
 } else {
+  print STDERR "SAVE called\n";
+  $maintemplate->param("SAVE", 1);
   &save;
 }
 
@@ -181,58 +184,48 @@ exit;
 
 sub form {
 
-# Filter
-quotemeta($zeitserver);
-quotemeta($ntpserverurl);
-quotemeta($zeitzone);
+	# Defaults for template
+	if ($zeitserver eq "ntp") {
+	  $checked2 = 'checked="checked"';
+	  $maintemplate->param("CHECKED2", $checked2);
+	  
+	} else {
+	  $checked1 = 'checked="checked"';
+	  $maintemplate->param("CHECKED1", $checked1);
+	}
 
-# Defaults for template
-if ($zeitserver eq "ntp") {
-  $checked2 = "checked\=\"checked\"";
-} else {
-  $checked1 = "checked\=\"checked\"";
-}
+	# Prepare Timezones
+	open(F,"<$lbhomedir/templates/system/timezones.dat") || die "Missing template system/timezones.dat";
+	 flock(F,2);
+	 @lines = <F>;
+	 flock(F,8);
+	close(F);
+	foreach (@lines){
+	  s/[\n\r]//g;
+	  if ($zeitzone eq $_) {
+		$timezonelist = "$timezonelist<option selected=\"selected\" value=\"$_\">$_</option>\n";
+	  } else {
+		$timezonelist = "$timezonelist<option value=\"$_\">$_</option>\n";
+	  }
+	}
+	
+	# Create Date/Time for template
+	if ($lang eq "de") {
+	  $systemdatetime         = qx(LANG="de_DE" $datebin);
+	} else {
+	  $systemdatetime         = qx($datebin);
+	}
+	chomp($systemdatetime);
 
-# Prepare Timezones
-open(F,"<$installfolder/templates/system/timezones.dat") || die "Missing template system/timezones.dat";
- flock(F,2);
- @lines = <F>;
- flock(F,8);
-close(F);
-foreach (@lines){
-  s/[\n\r]//g;
-  if ($zeitzone eq $_) {
-    $timezonelist = "$timezonelist<option selected=\"selected\" value=\"$_\">$_</option>\n";
-  } else {
-    $timezonelist = "$timezonelist<option value=\"$_\">$_</option>\n";
-  }
-}
+	$maintemplate->param("TIMEZONELIST", $timezonelist);
+	$maintemplate->param("SYSTEMDATETIME", $systemdatetime);
+	
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
+	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
 
-# Create Date/Time for template
-if ($lang eq "de") {
-  $systemdatetime         = qx(LANG="de_DE" $datebin);
-} else {
-  $systemdatetime         = qx($datebin);
-}
-chomp($systemdatetime);
-
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
-$help = "timeserver";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/timeserver.html") || die "Missing template system/$lang/timeserver.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-exit;
-
+	exit;
 }
 
 #####################################################
@@ -241,58 +234,62 @@ exit;
 
 sub save {
 
-# Everything from Forms
-$zeitserver   = param('zeitserver');
-$ntpserverurl = param('ntpserverurl');
-$zeitzone     = param('zeitzone');
+	# Everything from Forms
+	$zeitserver   = param('zeitserver');
+	$ntpserverurl = param('ntpserverurl');
+	$zeitzone     = param('zeitzone');
 
-# Filter
-quotemeta($zeitserver);
-quotemeta($ntpserverurl);
-quotemeta($zeitzone);
+	# Test if NTP-Server is reachable
+	our $ntp_check="0"; 
+	if ( ${zeitserver} eq "ntp" )
+	{
+	 $ntp_check = system("$ntpdate -q $ntpserverurl >/dev/null 2>&1");
+	}
+	# Error if we can't get time
+	if ($ntp_check) {
+	  $error = $SL{'TIMESERVER.ERR_NTP_UNREACHABLE'};
+	  &error;
+	  exit;
+	}
 
-# Test if NTP-Server is reachable
-our $ntp_check="0"; 
-if ( ${zeitserver} eq "ntp" )
-{
- $ntp_check = system("$ntpdate -q $ntpserverurl >/dev/null 2>&1");
-}
-# Error if we can't get time
-if ($ntp_check) {
-  $error = $phrase->param("TXT0050");
-  &error;
-  exit;
-}
+	# Write configuration file(s)
+	$cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
+	$cfg->param("TIMESERVER.METHOD", "$zeitserver");
+	$cfg->param("TIMESERVER.ZONE", "$zeitzone");
+	$cfg->save();
 
-# Write configuration file(s)
-$cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
-$cfg->param("TIMESERVER.METHOD", "$zeitserver");
-$cfg->param("TIMESERVER.ZONE", "$zeitzone");
-$cfg->save();
+	# Trigger timesync
+	$output = qx($lbhomedir/sbin/setdatetime.pl);
+	$output = qx($datebin);
 
-# Trigger timesync
-$output = qx($installfolder/sbin/setdatetime.pl);
-$output = qx($datebin);
 
-print "Content-Type: text/html\n\n";
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
-$help = "timeserver";
+	my $maintemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/success.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				associate => $cfg,
+				# debug => 1,
+				);
 
-$message = $phrase->param("TXT0036") . "<br>" . $output;
-$nexturl = "/admin/index.cgi";
+	my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
 
-exit;
 
+	# print "Content-Type: text/html\n\n";
+	# $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0021");
+	# $help = "timeserver";
+
+	$message = "$SL{'TIMESERVER.SAVE_OK_SETTINGS_STORED'}<br>$output";
+
+	$maintemplate->param("MESSAGE", $message);
+	$maintemplate->param("NEXTURL", "/admin/index.cgi");
+
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
+	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	exit;
 }
 
 exit;
@@ -310,61 +307,23 @@ exit;
 
 sub error {
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
-$help = "admin";
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
 
-print "Content-Type: text/html\n\n";
-
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-close(F);
-&footer;
-
-exit;
-
-}
-
-#####################################################
-# Header
-#####################################################
-
-sub lbheader {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
-  open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
-    @help = <F>;
-    foreach (@help){
-      s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
-    }
-  close(F);
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
+	my $errtemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/error.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				# associate => $cfg,
+				);
+	print STDERR "timeserver.cgi: sub error called with message $error.\n";
+	$errtemplate->param( "ERROR", $error);
+	LoxBerry::Web::readlanguage($errtemplate);
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart();
+	print $errtemplate->output();
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	exit;
 
 }
-
-#####################################################
-# Footer
-#####################################################
-
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
