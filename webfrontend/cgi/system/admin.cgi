@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2017 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,17 +19,24 @@
 # Modules
 ##########################################################################
 
+use LoxBerry::System;
+use LoxBerry::Web;
+use MIME::Base64;
+
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
 use DBI;
 use warnings;
 use strict;
-no strict "refs"; # we need it for template system
+# no strict "refs"; # we need it for template system
 
 ##########################################################################
 # Variables
 ##########################################################################
+
+my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helptemplate = "help_admin.html";
 
 our $cfg;
 our $phrase;
@@ -69,11 +76,22 @@ our $nodefaultpwd;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.4";
+$version = "0.3.1-dev1";
 
-$cfg             = new Config::Simple('../../../config/system/general.cfg');
-$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
+$cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
+#$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
+#$lang            = $cfg->param("BASE.LANG");
+
+my $maintemplate = HTML::Template->new(
+			filename => "$lbstemplatedir/admin.html",
+			global_vars => 1,
+			loop_context_vars => 1,
+			die_on_bad_params=> 0,
+			associate => $cfg,
+			# debug => 1,
+			);
+
+LoxBerry::Web::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
@@ -94,12 +112,6 @@ $do           = $query{'do'};
 
 # Everything from Forms
 $saveformdata         = param('saveformdata');
-
-# Filter
-quotemeta($query{'lang'});
-quotemeta($saveformdata);
-quotemeta($do);
-
 $saveformdata          =~ tr/0-1//cd;
 $saveformdata          = substr($saveformdata,0,1);
 $query{'lang'}         =~ tr/a-z//cd;
@@ -108,25 +120,10 @@ $query{'lang'}         =  substr($query{'lang'},0,2);
 ##########################################################################
 # Language Settings
 ##########################################################################
-
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
-
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
-
-# If there's no language phrases file for choosed language, use german as default
-if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations / phrases
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+$lang = lblanguage();
+$maintemplate->param( "LBHOSTNAME", lbhostname());
+$maintemplate->param( "LANG", $lang);
+$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 
 ##########################################################################
 # Main program
@@ -138,8 +135,12 @@ $phrase = new Config::Simple($languagefile);
 
 # Step 1 or beginning
 if (!$saveformdata || $do eq "form") {
+  print STDERR "FORM called\n";
+  $maintemplate->param("FORM", 1);
   &form;
 } else {
+  print STDERR "SAVE called\n";
+  $maintemplate->param("SAVE", 1);
   &save;
 }
 
@@ -150,23 +151,22 @@ exit;
 #####################################################
 
 sub form {
+	
+	
+	$maintemplate->param("ADMINUSEROLD" , $adminuserold);
+		
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 
-print "Content-Type: text/html\n\n";
+	print $maintemplate->output();
+	undef $maintemplate;			
 
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0018");
-$help = "admin";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/admin.html") || die "Missing template system/$lang/admin.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-exit;
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	
+	exit;
 
 }
 
@@ -176,35 +176,39 @@ exit;
 
 sub save {
 
-$adminuser            = param('adminuser');
+$adminuser            = trim(param('adminuser'));
 $adminpass1           = param('adminpass1');
 $adminpass2           = param('adminpass2');
 $adminpassold         = param('adminpassold');
 
-# Filter
-quotemeta($adminuser);
-quotemeta($adminpass1);
-quotemeta($adminpass2);
-quotemeta($adminpassold);
+# First we have to do server-side form validation
+if (!$adminuser) {
+	$error = $SL{'ADMIN.SAVE_ERR_EMPTY_USER'};
+	&error;
+} elsif (!$adminpass1 || !$adminpass2) {
+	$error = $SL{'ADMIN.SAVE_ERR_EMPTY_PASS'};
+	&error;
+} elsif ($adminpass1 ne $adminpass2) {
+	$error = $SL{'ADMIN.SAVE_ERR_PASS_NOT_IDENTICAL'};
+	&error;
+}
 
 # Try to set new UNIX passwords for user "loxberry"
 
 # First try if default password is still valid:
 $nodefaultpwd = 0;
-$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp loxberry $adminpass1);
-if ($? eq 0) {
-  $message = $phrase->param("TXT0030") . "<br><br><table border=0 cellpadding=10><tr><td><b>" . $phrase->param("TXT0031") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>$adminuser</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr><tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
-} else {
+$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp loxberry $adminpass1);
+if ($? ne 0) {
+  print STDERR "setloxberrypasswd.exp adminpass1 ne 0\n";
   $nodefaultpwd = 1;
 }
 
 # If default password isn't valid anymore:
 if ($nodefaultpwd) {
-  $output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
-  if ($? eq 0) {
-    $message = $phrase->param("TXT0030") . "<br><br><table border=0 cellpadding=10><tr><td><b>" . $phrase->param("TXT0031") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>$adminuser</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr><tr><td><b>" . $phrase->param("TXT0025") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>loxberry</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
-  } else {
-    $error = $phrase->param("TXT0032");
+  $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
+  if ($? ne 0) {
+  print STDERR "setloxberrypasswd.exp adminpassold ne 0 - ERROR\n";
+    $error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
     &error;
     exit;
   }
@@ -212,14 +216,14 @@ if ($nodefaultpwd) {
 
 # Try to set new SAMBA passwords for user "loxberry"
 
-# First try if default password is still valid:
-$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
-# If default password isn't valid anymore:
-$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
+## First try if default password is still valid:
+$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
+## If default password isn't valid anymore:
+$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
 
 # Save Username/Password for Webarea
 $adminpasscrypted = qx(/usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1);
-open(F,">$installfolder/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
+open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
  flock(F,2);
  print F "$adminpasscrypted";
  flock(F,8);
@@ -248,28 +252,27 @@ $sqlerr = 1 if $@;
 eval {$dbh->commit};
 $sqlerr = 1 if $@;
 if ($sqlerr eq 0) {
-  $message = $message . "<tr><td><b>" . $phrase->param("TXT0042") . "</b></td><td>" . $phrase->param("TXT0023") . " <b>root</b></td><td>" . $phrase->param("TXT0024") . " <b>$adminpass1</b></td></tr>";
-}
-
-# Finalize message for Template
-$message = $message . "</table>";
-
-print "Content-Type: text/html\n\n";
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0029");
-$help = "admin";
-
-$nexturl = "/admin/index.cgi";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/success.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
+  $maintemplate->param("SQLOK", 1);
+  print STDERR "sqlerr eq 0 - OK\n";
   }
-close(F);
-&footer;
 
+my $credentialstxt = "$SL{'ADMIN.SAVE_OK_INFO'}\r\n" .  
+		"\r\n" .
+		"$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n" .
+		"$SL{'ADMIN.SAVE_OK_COL_SSH'}\t\tloxberry / $adminpass1\r\n" . 
+		"$SL{'ADMIN.SAVE_OK_COL_MYSQL'}\t\troot / $adminpass1\r\n";
+
+$credentialstxt=encode_base64($credentialstxt);
+$maintemplate->param( "ADMINUSER", $adminuser );
+$maintemplate->param( "ADMINPASS1", $adminpass1 );
+$maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
+$maintemplate->param( "NEXTURL", "/admin/index.cgi");
+
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
+print STDERR "admin.cgi OUTPUT\n";
+LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+print $maintemplate->output();
+LoxBerry::Web::lbfooter();
 exit;
 
 }
@@ -289,61 +292,23 @@ exit;
 
 sub error {
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
-$help = "admin";
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
 
-print "Content-Type: text/html\n\n";
-
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-close(F);
-&footer;
-
-exit;
-
-}
-
-#####################################################
-# Header
-#####################################################
-
-sub lbheader {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
-  open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
-    @help = <F>;
-    foreach (@help){
-      s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
-    }
-  close(F);
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
-#####################################################
-# Footer
-#####################################################
-
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
+	my $errtemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/error.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				# associate => $cfg,
+				);
+	print STDERR "admin.cgi: sub error called with message $error.\n";
+	$errtemplate->param( "ERROR", $error);
+	LoxBerry::Web::readlanguage($errtemplate);
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart();
+	print $errtemplate->output();
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	exit;
 }
 

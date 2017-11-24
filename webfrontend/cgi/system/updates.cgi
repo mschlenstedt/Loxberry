@@ -458,7 +458,7 @@ sub error {
 	LoxBerry::Web::readlanguage($maintemplate);
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart();
-	$maintemplate->output();
+	print $maintemplate->output();
 	LoxBerry::Web::pageend();
 	LoxBerry::Web::foot();
 	exit;
