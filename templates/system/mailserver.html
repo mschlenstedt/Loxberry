@@ -103,7 +103,7 @@
 		&nbsp;
 		</td>
 		<td>
-		&nbsp;
+		<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD></button>
 		</td>
 	</tr>
 	<tr>
@@ -188,6 +188,18 @@ $('#btntestsmtp').click( function(e) {
 			$('#smtpresults').html(data);
 		}
 	});
+});
+
+// Show password
+$(document).ready(function() {
+  $('#showpass').click(function() {
+    if($('#smtppass').prop('type') == 'password') {$('#smtppass').prop('type', 'text');}
+	// Don't know why I cannot toggle
+	//else {$('#smtppass').prop('type', 'text');}
+  });
+  
+  
+  
 });
 </script>
 <!-- ** END template/system/mailserver.html ************************************************************************************ -->
