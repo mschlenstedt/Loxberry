@@ -219,7 +219,7 @@ sub form {
 
 	$maintemplate->param("TIMEZONELIST", $timezonelist);
 	$maintemplate->param("SYSTEMDATETIME", $systemdatetime);
-	
+	$maintemplate->param("NTPSERVERURL", $ntpserverurl);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
