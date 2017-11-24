@@ -74,8 +74,6 @@ foreach my $file (@files) {
 	my $newest_epoch_lang = min( $lh_e, $lf_e );
 	my $newest_epoch_tmpl = max ( (stat($fh_tmpl_head))[9], (stat($fh_tmpl_pagestart))[9], (stat($fh_tmpl_pageend))[9], (stat($fh_tmpl_foot))[9], (stat($fh_tmpl_lang))[9] );
 	
-	print "MAX: $newest_epoch_lang\n";
-	
 	close $fh_lang_header;
 	close $fh_lang_footer;
 	
