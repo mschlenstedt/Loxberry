@@ -14,12 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+use utf8;
 use strict;
 use warnings;
 use LoxBerry::System;
 use LoxBerry::Web;
 use Getopt::Long qw(GetOptions);
-use List::Util 'max'; 
+use List::Util qw(max min); 
 
 my $force;
 
@@ -43,30 +44,37 @@ foreach my $file (@files) {
 
 	## Checking timestamps, getting all file handles
 	# If language files do not exist, they will be created later.
-	open(my $fh_lang_header, "<:encoding(UTF-8)", "$lbstemplatedir/$langcode/header.html") or 
+	open(my $fh_lang_header, "<", "$lbstemplatedir/$langcode/header.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/$langcode/header.html. File will be created.\n"; };
-	open(my $fh_lang_footer, "<:encoding(UTF-8)", "$lbstemplatedir/$langcode/footer.html") or 
+	open(my $fh_lang_footer, "<", "$lbstemplatedir/$langcode/footer.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/$langcode/footer.html. File will be created.\n"; };
 	
 	# If template files do not exist, we quit with error.
-	open(my $fh_tmpl_head, "<:encoding(UTF-8)", "$lbstemplatedir/head.html") or 
+	open(my $fh_tmpl_head, "<", "$lbstemplatedir/head.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/head.html. EXITING.\n"; 
 			exit(1);};
-	open(my $fh_tmpl_pagestart, "<:encoding(UTF-8)", "$lbstemplatedir/pagestart.html") or 
+	open(my $fh_tmpl_pagestart, "<", "$lbstemplatedir/pagestart.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/pagestart.html. EXITING.\n"; 
 			exit(1);};
-	open(my $fh_tmpl_pageend, "<:encoding(UTF-8)", "$lbstemplatedir/pageend.html") or 
+	open(my $fh_tmpl_pageend, "<", "$lbstemplatedir/pageend.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/pageend.html. EXITING.\n"; 
 			exit(1);};
-	open(my $fh_tmpl_foot, "<:encoding(UTF-8)", "$lbstemplatedir/foot.html") or 
+	open(my $fh_tmpl_foot, "<", "$lbstemplatedir/foot.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/foot.html. EXITING.\n"; 
 			exit(1);};
-	open(my $fh_tmpl_lang, "<:encoding(UTF-8)", "$lbstemplatedir/lang/language_$langcode.ini") or 
+	open(my $fh_tmpl_lang, "<", "$lbstemplatedir/lang/language_$langcode.ini") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/lang/language_$langcode.ini. EXITING.\n"; 
 			exit(1);};
 	
-	my $newest_epoch_lang = max( (stat($fh_lang_header))[9], (stat($fh_lang_footer))[9] );
+	
+	my ($lh_e, $lf_e) = ((stat($fh_lang_header))[9], (stat($fh_lang_footer))[9]);
+	$lh_e = defined $lh_e ? $lh_e : 0;
+	$lf_e = defined $lf_e ? $lf_e : 0;
+	
+	my $newest_epoch_lang = min( $lh_e, $lf_e );
 	my $newest_epoch_tmpl = max ( (stat($fh_tmpl_head))[9], (stat($fh_tmpl_pagestart))[9], (stat($fh_tmpl_pageend))[9], (stat($fh_tmpl_foot))[9], (stat($fh_tmpl_lang))[9] );
+	
+	print "MAX: $newest_epoch_lang\n";
 	
 	close $fh_lang_header;
 	close $fh_lang_footer;
@@ -96,11 +104,11 @@ foreach my $file (@files) {
 	select STDOUT;
 	
 	if ($output_header && $output_footer) {
-	open(my $fh_lang_header, ">:encoding(UTF-8)", "$lbstemplatedir/$langcode/header.html") or 
+	open(my $fh_lang_header, ">", "$lbstemplatedir/$langcode/header.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/header.html. Skipping.\n"; 
 			 next;
 			};
-	open(my $fh_lang_footer, ">:encoding(UTF-8)", "$lbstemplatedir/$langcode/footer.html") or 
+	open(my $fh_lang_footer, ">", "$lbstemplatedir/$langcode/footer.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/footer.html. Skipping.\n"; 
 			next;
 			};
@@ -115,6 +123,7 @@ foreach my $file (@files) {
 	print $fh_lang_footer $output_footer;
 	close $fh_lang_header;
 	close $fh_lang_footer;
+	
 	}
 }
 
