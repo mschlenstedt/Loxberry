@@ -167,3 +167,40 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 	{
 		animation: rotate 60s infinite steps(60);
 	}
+
+	
+	@media ( min-width: 35em ) {
+
+	/* wrap on wide viewports once open */
+
+	.ui-panel-page-content-open.ui-panel-page-content-position-left {
+		margin-right: 17em;
+	}
+	.ui-panel-page-content-open.ui-panel-page-content-position-right {
+		margin-left: 17em;
+	}
+	.ui-panel-page-content-open {
+		width: auto;
+	}
+
+	/* disable "dismiss" on wide viewports */
+	.ui-panel-dismiss {
+		display: none;
+	}
+
+	/* same as the above but for panels with display mode "push" only */
+
+	.ui-panel-page-content-open.ui-panel-page-content-position-left.ui-panel-page-content-display-push {
+		margin-right: 17em;
+	}
+	.ui-panel-page-content-open.ui-panel-page-content-position-right.ui-panel-page-content-display-push {
+		margin-left: 17em;
+	}
+	.ui-panel-page-content-open.ui-panel-page-content-display-push {
+		width: auto;
+	}
+
+	.ui-panel-dismiss-display-push {
+		display: none;
+	}
+}
