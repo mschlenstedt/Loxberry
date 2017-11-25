@@ -75,6 +75,8 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
   background-repeat: no-repeat;"
 }
 
+#infopanel .ui-panel-inner * {font-size:0.9em!important;}
+
 /* Logfiles */
 #logerr
 {
@@ -168,8 +170,12 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 		animation: rotate 60s infinite steps(60);
 	}
 
-	
-	@media ( min-width: 35em ) {
+	/* This is to reflow and keep the main content usable with open panels
+	   on large displays */
+@left-panel-width: 35em;
+@right-panel-width: 35em;
+
+	   @media ( min-width: 35em ) {
 
 	/* wrap on wide viewports once open */
 
@@ -203,4 +209,35 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 	.ui-panel-dismiss-display-push {
 		display: none;
 	}
+/* PANEL START */
+/* this should change the right panel width, but only works left :-( */
+/*
+.ui-panel {
+    width: 30em;
+}
+
+.ui-panel.ui-panel-position-right {
+    width: 30em;
+}
+
+.ui-panel.ui-panel-closed {
+    width: 0;
+}
+
+
+.ui-panel-animate.ui-panel-position-right.ui-panel-display-overlay, .ui-panel-animate.ui-panel-position-right.ui-panel-display-push {
+    -webkit-transform: translate3d(30em, 0, 0);
+    -moz-transform: translate3d(30em, 0, 0);
+    transform: translate3d(30em, 0, 0)
+}
+
+
+.ui-panel-animate.ui-panel-content-fixed-toolbar-position-right.ui-panel-content-fixed-toolbar-open.ui-panel-content-fixed-toolbar-display-reveal, .ui-panel-animate.ui-panel-content-fixed-toolbar-position-right.ui-panel-content-fixed-toolbar-open.ui-panel-content-fixed-toolbar-display-push, .ui-panel-animate.ui-panel-content-wrap-position-right.ui-panel-content-wrap-open.ui-panel-content-wrap-display-reveal, .ui-panel-animate.ui-panel-content-wrap-position-right.ui-panel-content-wrap-open.ui-panel-content-wrap-display-push {
+    -webkit-transform: translate3d(-30em, 0, 0);
+    -moz-transform: translate3d(-30em, 0, 0);
+    transform: translate3d(-30em, 0, 0)
+}
+	
+*/
+/* PANEL END */	
 }
