@@ -18,18 +18,20 @@
 ##########################################################################
 # Modules
 ##########################################################################
+use LoxBerry::System;
+use LoxBerry::Web;
 
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
-use File::HomeDir;
-#use warnings;
-#use strict;
-#no strict "refs"; # we need it for template system
+use warnings;
+use strict;
 
 ##########################################################################
 # Variables
 ##########################################################################
+
+my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 
 our $cfg;
 our $phrase;
@@ -44,16 +46,15 @@ our $helptext;
 our $helplink;
 our $installfolder;
 our $languagefile;
-our $home = File::HomeDir->my_home;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+my $version = "0.3.1-dev1";
 
-$cfg             = new Config::Simple("$home/config/system/general.cfg");
+$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 
@@ -71,8 +72,6 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
   $query{$namef} = $value;
 }
 
-# Filter
-quotemeta($query{'lang'});
 
 $query{'lang'}         =~ tr/a-z//cd;
 $query{'lang'}         =  substr($query{'lang'},0,2);
@@ -81,76 +80,30 @@ $query{'lang'}         =  substr($query{'lang'},0,2);
 # Language Settings
 ##########################################################################
 
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
-
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
-
-# If there's no language phrases file for choosed language, use german as default
-if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations / phrases
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+$lang = lblanguage();
 
 ##########################################################################
 # Main program
 ##########################################################################
 
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000");
+my $maintemplate = HTML::Template->new(
+		filename => "$lbstemplatedir/donate.html",
+		global_vars => 1,
+		loop_context_vars => 1,
+		die_on_bad_params=> 0,
+		associate => $cfg,
+		# debug => 1,
+		);
+	
+my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
 # Print Template
-&header;
-open(F,"$installfolder/templates/system/$lang/donate.html") || die "Missing template system/$lang/donate.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'DONATE.WIDGETLABEL'};
+LoxBerry::Web::head();
+LoxBerry::Web::pagestart($template_title, $helplink);
+print $maintemplate->output();
+undef $maintemplate;			
+LoxBerry::Web::pageend();
+LoxBerry::Web::foot();
 
 exit;
-
-
-#####################################################
-# Header
-#####################################################
-
-sub header {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
-  $helptext = "";
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
-#####################################################
-# Footer
-#####################################################
-
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
