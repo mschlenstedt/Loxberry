@@ -75,7 +75,13 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
   background-repeat: no-repeat;"
 }
 
+/* Font size of help */
 #infopanel .ui-panel-inner * {font-size:0.9em!important;}
+
+.hint
+{ 
+	font-size: 80%;
+}
 
 /* Logfiles */
 #logerr
