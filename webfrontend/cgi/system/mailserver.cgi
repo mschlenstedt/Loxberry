@@ -55,7 +55,6 @@ our $saveformdata;
 our $do;
 our $checked1;
 our $checked2;
-our $home = File::HomeDir->my_home;
 our $email;
 our $smtpserver;
 our $smtpport;
@@ -74,11 +73,11 @@ our $mailbin;
 # Version of this script
 $version = "0.3.1-dev1";
 
-$cfg                = new Config::Simple("$home/config/system/general.cfg");
+$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $mailbin            = $cfg->param("BINARIES.MAIL");
 $do                 = "";
 
-$mcfg               = new Config::Simple("$home/config/system/mail.cfg");
+$mcfg               = new Config::Simple("$lbhomedir/config/system/mail.cfg");
 $email              = $mcfg->param("SMTP.EMAIL");
 $smtpserver         = $mcfg->param("SMTP.SMTPSERVER");
 $smtpport           = $mcfg->param("SMTP.PORT");
@@ -277,7 +276,7 @@ ENDFILE
 	close(F);
 
 	# Install temporary ssmtp config file
-	my $result = qx($home/sbin/createssmtpconf.sh start 2>/dev/null);
+	my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
 
 	$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
 
