@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017 Christian Fenzl, christiantf@gmx.at
+# Copyright 2017 CF for LoxBerry, christiantf@gmx.at
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ use strict;
 ##########################################################################
 
 my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
-my $helptemplate = "help_updates.html";
+my $helptemplate = "help_myloxberry.html";
 my $template_title;
 my $error;
 
@@ -42,7 +42,7 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.1-dev1";
+my $version = "0.3.1-dev2";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -60,6 +60,7 @@ $cgi->import_names('R');
 # Set default if not available
 if (!$cfg->param("BASE.SENDSTATISTIC")) {
 	$cfg->param("BASE.SENDSTATISTIC", "on");
+	$cfg->save();
 }
 
 ##########################################################################
@@ -85,7 +86,7 @@ our $maintemplate = HTML::Template->new(
 
 our %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MYLOXBERRY.WIDGETLABEL'};
+$template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'MYLOXBERRY.WIDGETLABEL'} v$sversion";
 
 ##########################################################################
 # Main program
@@ -97,7 +98,6 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MYLOXBERRY.WID
 
 # Menu
 if (!$R::saveformdata) {
-  print STDERR "myloxberry.cgi: FORM is called\n";
   &form;
 } else {
   &save;
@@ -116,10 +116,8 @@ sub form {
 
 	our $sendstatistic_checkbox = $cgi->checkbox( -name => 'sendstatistic',
 												  -checked => is_enabled($cfg->param("BASE.SENDSTATISTIC")),
-												  #-checked => 1,
-												  #-value => '1',
 												  -label => $SL{'MYLOXBERRY.LABEL_SENDSTATISTIC'}
-		);
+											);
 	$maintemplate->param('SENDSTATISTIC_CHECKBOX', $sendstatistic_checkbox);
 		
 	# Print Template
@@ -150,7 +148,6 @@ sub save
 	if ($R::lbfriendlyname ne $cfg->param("NETWORK.FRIENDLYNAME")) {
 		$friendlyname_changed = 1;
 	}
-	print STDERR "sendstatistic: $R::sendstatistic\n";
 	$cfg->param("NETWORK.FRIENDLYNAME", $R::lbfriendlyname);
 	
 	my $sendstatistic = is_enabled($R::sendstatistic) ? "on" : "off";
