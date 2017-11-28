@@ -1,4 +1,4 @@
-our $VERSION = "0.31_03";
+our $VERSION = "0.31_04";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -643,6 +643,10 @@ sub is_enabled
 	if ($text eq "enabled") { return 1;}
 	if ($text eq "enable") { return 1;}
 	if ($text eq "1") { return 1;}
+	if ($text eq "check") { return 1;}
+	if ($text eq "checked") { return 1;}
+	if ($text eq "select") { return 1;}
+	if ($text eq "selected") { return 1;}
 	return undef;
 }
 
