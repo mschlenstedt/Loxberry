@@ -64,7 +64,6 @@ our $netzwerkipadresse;
 our $netzwerkipmaske;
 our $netzwerkgateway;
 our $netzwerknameserver;
-our $lbfriendlyname;
 our @lines;
 our $do;
 our $message;
@@ -184,8 +183,6 @@ sub form {
 
 sub save {
 
-	my $friendlyname_changed;
-
 	# Everything from Forms
 	$netzwerkanschluss  = param('netzwerkanschluss');
 	$netzwerkssid       = param('netzwerkssid');
@@ -195,11 +192,6 @@ sub save {
 	$netzwerkipmaske    = param('netzwerkipmaske');
 	$netzwerkgateway    = param('netzwerkgateway');
 	$netzwerknameserver = param('netzwerknameserver');
-	$lbfriendlyname	    = param('lbfriendlyname');
-
-	if ($lbfriendlyname ne $cfg->param("NETWORK.FRIENDLYNAME")) {
-		$friendlyname_changed = 1;
-	}
 
 	# Write configuration file(s)
 	$cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
@@ -209,7 +201,6 @@ sub save {
 	$cfg->param("NETWORK.MASK", "$netzwerkipmaske");
 	$cfg->param("NETWORK.GATEWAY", "$netzwerkgateway");
 	$cfg->param("NETWORK.DNS", "$netzwerknameserver");
-	$cfg->param("NETWORK.FRIENDLYNAME", "$lbfriendlyname");
 
 	$cfg->save();
 
@@ -264,16 +255,6 @@ sub save {
 	close $fh;
 	$ethtmpl = undef;
 					
-	if ($friendlyname_changed)
-		{ 
-		my $ret = system("perl $lbscgidir/tools/generatelegacytemplates.pl --force");
-		if ($ret == 0) {
-			print STDERR "network.cgi: generatelegacytemplates.pl's was called successfully.\n";
-		} else {
-			print STDERR "network.cgi: generatelegacytemplates.pl's exit code has shown an ERROR.\n";
-		}
-	}
-
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 	$maintemplate->param("NEXTURL", "/admin/index.cgi");
 

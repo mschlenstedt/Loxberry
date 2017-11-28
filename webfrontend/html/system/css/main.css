@@ -86,6 +86,9 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 .monospace * {font-size:80%!important;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace; 
 }
 
+.wide { font-size: 140%; letter-spacing: 0.25em; text-align: left; vertical-align: middle; border-bottom: 2px ridge #cdcdcd; padding: 7px;
+}
+
 /* Logfiles */
 #logerr
 {

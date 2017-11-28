@@ -2,190 +2,176 @@
 <TMPL_IF FORM>									
 		<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="<TMPL_VAR SELFURL>">
 			<input type="hidden" name="saveformdata" value="1">
-				<table class="formtable" border="0" width="100%">
-					<tr>
-						<td width="25%">
-							<label for="lbfriendlyname"><TMPL_VAR NETWORK.LABEL_FRIENDLYNAME></label>
-						</td>
+			<table class="formtable" border="0" width="100%">
+				<tr>
+					<td width="25%">
+						<label for="lbhostname"><TMPL_VAR NETWORK.LABEL_HOSTNAME></label>
+					</td>
 					<td width="50%">
-							<input placeholder="<TMPL_VAR HINT_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>">
-						</td>
-						<td width="5%" valign="middle">
-							&nbsp;
-						</td>
-						<td width="20%">
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td width="25%">
-							<label for="lbhostname"><TMPL_VAR NETWORK.LABEL_HOSTNAME></label>
-						</td>
+						<input id="lbhostname" name="lbhostname" disabled type="text" class="textfield" value="<TMPL_VAR LBHOSTNAME>">
+					</td>
+					<td width="5%" valign="middle">
+						<a href="#" data-role="button" id="btnlbhostname" data-inline="true" data-mini="true"
+							onClick="window.open('/admin/system/tools/changehostname.cgi?lang=<TMPL_VAR LANG>',
+							'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
+							<TMPL_VAR NETWORK.BUTTON_CHANGEHOSTNAME>
+						</a>
+					</td>
+					<td width="20%">
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td width="25%">
+						<label id="labelnetzwerkanschluss"><TMPL_VAR NETWORK.LABEL_NETWORKING></label>
+					</td>
 					<td width="50%">
-							<input id="lbhostname" name="lbhostname" disabled type="text" class="textfield" value="<TMPL_VAR LBHOSTNAME>">
-						</td>
-						<td width="5%" valign="middle">
-							<a href="#" data-role="button" id="btnlbhostname" data-inline="true" data-mini="true"
-								onClick="window.open('/admin/system/tools/changehostname.cgi?lang=<TMPL_VAR LANG>',
-								'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
-								<TMPL_VAR NETWORK.BUTTON_CHANGEHOSTNAME>
-							</a>
-						</td>
-						<td width="20%">
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td width="25%">
-							<label id="labelnetzwerkanschluss"><TMPL_VAR NETWORK.LABEL_NETWORKING></label>
-						</td>
-						<td width="50%">
-							<fieldset data-role="controlgroup">
-								<input onclick="disable()" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
-									<label for="netzwerkanschluss_eth"><TMPL_VAR NETWORK.SELECT_CABLE></label>
-								<input onclick="disable()" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
-									<label for="netzwerkanschluss_wlan"><TMPL_VAR NETWORK.SELECT_WIRELESS></label>
-							</fieldset>
-						</td>
-						<td width="5%" valign="middle">
-							<a href="#" data-role="button" id="btnlshwnetwork" data-inline="true" data-mini="true"
-								onClick="window.open('/admin/system/tools/lshwnetwork.cgi?lang=<TMPL_VAR LANG>',
-								'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
-								<TMPL_VAR NETWORK.BUTTON_NETWORKADAPTER>
-							</a>
-						</td>
-						<td width="20%">
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<label id="labelnetzwerkssid"><TMPL_VAR NETWORK.LABEL_WIRELESS></label>
-						</td>
-						<td>
-							<input id="netzwerkssid" name="netzwerkssid" type="text" class="textfield" value="<TMPL_VAR NETWORK.SSID>">
-						</td>
-						<td valign="middle">
-							<a href="#" data-role="button" id="btnlistnetworks" data-inline="true" data-mini="true"
-								onClick="window.open('/admin/system/tools/listnetworks.cgi?lang=<TMPL_VAR LANG>',
-								'NewWindow2','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=900,height=600')">
-								<TMPL_VAR NETWORK.BUTTON_SEARCHWIFI>
-							</a>
-						</td>
-						<td>
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<label id="labelnetzwerkschluessel"><TMPL_VAR NETWORK.LABEL_NETWORKKEY></label>
-						</td>
-						<td>
-							<input id="netzwerkschluessel" name="netzwerkschluessel" type="text" class="textfield"
-								value="<TMPL_VAR NETWORK.netzwerkschluessel>">
-						</td>
-						<td>
-							&nbsp;
-						</td>
-						<td>
-							
-						</td>
-					</tr>
-					<tr>
-						<td width="25%">
-							<label id="labelnetzwerkadressen"><TMPL_VAR NETWORK.LABEL_NETWORKADDRESSES></label>
-						</td>
-						<td width="50%">
-							<fieldset data-role="controlgroup">
-								<input onclick="disable()" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
-									<label for="netzwerkadressen_dhcp"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP></label>
-								<input onclick="disable()" <TMPL_VAR CHECKED4> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
-									<label for="netzwerkadressen_manual"><TMPL_VAR NETWORK.SELECT_IP_MANUAL></label>
-							</fieldset>
-						</td>
-						<td width="5%" valign="middle">
-							&nbsp;
-						</td>
-						<td width="20%">
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
-						</td>
-						<td>
-							<input id="netzwerkipadresse" name="netzwerkipadresse" type="text" class="textfield" value="<TMPL_VAR NETWORK.IPADDRESS>" data-validation-optional="true"
-								data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP><br>">
-						</td>
-						<td valign="middle">
-							&nbsp;
-						</td>
-						<td>
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
-						</td>
-						<td>
-							<input id="netzwerkipmaske" name="netzwerkipmaske" type="text" class="textfield" value="<TMPL_VAR NETWORK.MASK>" data-validation-optional="true"
-								data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK><br>">
-						</td>
-						<td valign="middle">
-							&nbsp;
-						</td>
-						<td>
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
-						</td>
-						<td>
-							<input id="netzwerkgateway" name="netzwerkgateway" type="text" class="textfield" value="<TMPL_VAR NETWORK.GATEWAY>" data-validation-optional="true"
-								data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP><br>">
-						</td>
-						<td valign="middle">
-							&nbsp;
-						</td>
-						<td>
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
-						</td>
-						<td>
-							<input id="netzwerknameserver" name="netzwerknameserver" type="text" class="textfield" value="<TMPL_VAR NETWORK.DNS>" data-validation-optional="true"
-								data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP><br>">
-						</td>
-						<td valign="middle">
-							&nbsp;
-						</td>
-						<td>
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td colspan=4>
-							&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td></td>
-						<td colspan=3>
-							<div id="form-error-message" class="form-error-message"></div>
-						</td>
-					</tr>
-				</table>
-				<center>
-					<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-					<button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-				</center>
+						<fieldset data-role="controlgroup">
+							<input onclick="disable()" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
+								<label for="netzwerkanschluss_eth"><TMPL_VAR NETWORK.SELECT_CABLE></label>
+							<input onclick="disable()" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
+								<label for="netzwerkanschluss_wlan"><TMPL_VAR NETWORK.SELECT_WIRELESS></label>
+						</fieldset>
+					</td>
+					<td width="5%" valign="middle">
+						<a href="#" data-role="button" id="btnlshwnetwork" data-inline="true" data-mini="true"
+							onClick="window.open('/admin/system/tools/lshwnetwork.cgi?lang=<TMPL_VAR LANG>',
+							'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
+							<TMPL_VAR NETWORK.BUTTON_NETWORKADAPTER>
+						</a>
+					</td>
+					<td width="20%">
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label id="labelnetzwerkssid"><TMPL_VAR NETWORK.LABEL_WIRELESS></label>
+					</td>
+					<td>
+						<input id="netzwerkssid" name="netzwerkssid" type="text" class="textfield" value="<TMPL_VAR NETWORK.SSID>">
+					</td>
+					<td valign="middle">
+						<a href="#" data-role="button" id="btnlistnetworks" data-inline="true" data-mini="true"
+							onClick="window.open('/admin/system/tools/listnetworks.cgi?lang=<TMPL_VAR LANG>',
+							'NewWindow2','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=900,height=600')">
+							<TMPL_VAR NETWORK.BUTTON_SEARCHWIFI>
+						</a>
+					</td>
+					<td>
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label id="labelnetzwerkschluessel"><TMPL_VAR NETWORK.LABEL_NETWORKKEY></label>
+					</td>
+					<td>
+						<input id="netzwerkschluessel" name="netzwerkschluessel" type="text" class="textfield"
+							value="<TMPL_VAR NETWORK.netzwerkschluessel>">
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						
+					</td>
+				</tr>
+				<tr>
+					<td width="25%">
+						<label id="labelnetzwerkadressen"><TMPL_VAR NETWORK.LABEL_NETWORKADDRESSES></label>
+					</td>
+					<td width="50%">
+						<fieldset data-role="controlgroup">
+							<input onclick="disable()" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
+								<label for="netzwerkadressen_dhcp"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP></label>
+							<input onclick="disable()" <TMPL_VAR CHECKED4> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
+								<label for="netzwerkadressen_manual"><TMPL_VAR NETWORK.SELECT_IP_MANUAL></label>
+						</fieldset>
+					</td>
+					<td width="5%" valign="middle">
+						&nbsp;
+					</td>
+					<td width="20%">
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
+					</td>
+					<td>
+						<input id="netzwerkipadresse" name="netzwerkipadresse" type="text" class="textfield" value="<TMPL_VAR NETWORK.IPADDRESS>" data-validation-optional="true"
+							data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP><br>">
+					</td>
+					<td valign="middle">
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
+					</td>
+					<td>
+						<input id="netzwerkipmaske" name="netzwerkipmaske" type="text" class="textfield" value="<TMPL_VAR NETWORK.MASK>" data-validation-optional="true"
+							data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK><br>">
+					</td>
+					<td valign="middle">
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
+					</td>
+					<td>
+						<input id="netzwerkgateway" name="netzwerkgateway" type="text" class="textfield" value="<TMPL_VAR NETWORK.GATEWAY>" data-validation-optional="true"
+							data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP><br>">
+					</td>
+					<td valign="middle">
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
+					</td>
+					<td>
+						<input id="netzwerknameserver" name="netzwerknameserver" type="text" class="textfield" value="<TMPL_VAR NETWORK.DNS>" data-validation-optional="true"
+							data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP><br>">
+					</td>
+					<td valign="middle">
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td colspan=4>
+						&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td colspan=3>
+						<div id="form-error-message" class="form-error-message"></div>
+					</td>
+				</tr>
+			</table>
+			<center>
+				<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+				<button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+			</center>
 		</form>
 		<script>
 			var $messages = $('#form-error-message');

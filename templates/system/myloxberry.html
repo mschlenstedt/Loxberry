@@ -1,0 +1,74 @@
+<TMPL_IF form>
+		<!-- ** START template/system/myloxberry.html 17:30 28.11.2017 ************************************************************************************ -->
+		
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
+	<input type="hidden" name="saveformdata" value="1">
+	<p>
+	<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
+	</p>
+
+	<table class="formtable" border="0" width="100%">
+
+		<tr>
+			<td>
+			<label for="lbfriendlyname"><TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME></label>
+			<input placeholder="<TMPL_VAR HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>">
+			</td>
+			<td>&nbsp;
+			</td>
+			<td class="hint">
+			<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
+			</td>
+		</tr>
+	</table>
+	<p>
+	<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
+	
+	</p>
+	<table class="formtable">
+		<tr>
+			<td>
+			<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
+				<TMPL_VAR SENDSTATISTIC_CHECKBOX>
+				</fieldset>
+			</td>
+			<td>&nbsp;
+			</td><td  class="hint">
+				<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
+			</td>
+		</tr>
+	</table>
+	</form>
+	<center>
+		<p>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+		</p>
+	</center>
+
+</TMPL_IF>
+
+<TMPL_IF SAVE>
+		<center>
+			<table border=0>
+				<tr>
+					<td align="center">
+						<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+						<p>
+							<TMPL_VAR MYLOXBERRY.CHANGE_SUCCESS>
+							<br/>
+							<br/>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td align="center">
+						<p>
+							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></a>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</center>
+
+</TMPL_IF>
