@@ -1,0 +1,89 @@
+<!-- ** START template/system/power.html 15:21 24.11.2017 ************************************************************************************ -->
+<TMPL_IF MENU>
+	<center>
+		<div style="width: 300px">
+			<a id="btnreboot" data-role="button" data-icon="recycle" href="?do=reboot"><TMPL_VAR POWER.BUTTON_REBOOT></a>
+			<br>
+			<a id="btnpoweroff" data-role="button" data-icon="power" href="?do=poweroff"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
+
+			</div>
+	</center>
+	<p>
+	&nbsp;
+	</p>
+	<center>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+	</center>
+	<script>
+		$(document).ready(function(){
+			$("#btnreboot").click(function(){
+				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				{
+				  action: "reboot",
+				},
+				function(data,status){
+					document.location.href="?do=reboot";
+				});
+			});
+			$("#btnpoweroff").click(function(){
+				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				{
+				  action: "poweroff",
+				},
+				function(data,status){
+					document.location.href="?do=poweroff";
+				});
+			});
+		});
+	</script>
+
+	
+	
+	
+</TMPL_IF>
+
+<TMPL_IF REBOOT>
+	<center>
+		<p><TMPL_VAR POWER.MSG_REBOOT></p>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" data-delay="15" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">30</span></p>
+		</center>
+
+	<script>
+window.onload = function(){
+  
+(function(){
+  var counter = 30;
+
+  setInterval(function() {
+    counter--;
+    if (counter >= 0) {
+      span = document.getElementById("count");
+      span.innerHTML = counter;
+    }
+    // Display 'counter' wherever you want to display it.
+    if (counter === 0) {
+        // alert('this is where it happens');
+        document.location.href="/admin/index.cgi";
+    }
+    
+  }, 1000);
+    
+})();
+  
+}
+		
+	</script>
+</TMPL_IF>
+
+<TMPL_IF POWEROFF>
+	<center>
+		<p><TMPL_VAR POWER.MSG_POWEROFF></p>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		
+	</center>
+
+</TMPL_IF>
+
+
+<!-- ** END template/system/power.html ************************************************************************************ -->

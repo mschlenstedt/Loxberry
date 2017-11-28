@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2017 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@
 # Modules
 ##########################################################################
 
+use LoxBerry::System;
+use LoxBerry::Web;
+
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use LWP::UserAgent;
@@ -25,11 +28,13 @@ use Config::Simple;
 use File::HomeDir;
 use warnings;
 use strict;
-no strict "refs"; # we need it for template system
 
 ##########################################################################
 # Variables
 ##########################################################################
+
+my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helptemplate = "help_mailserver.html";
 
 our $cfg;
 our $mcfg;
@@ -43,7 +48,6 @@ our $help;
 our @help;
 our $helptext;
 our $helplink;
-our $installfolder;
 our $languagefile;
 our $version;
 our $error;
@@ -51,7 +55,6 @@ our $saveformdata;
 our $do;
 our $checked1;
 our $checked2;
-our $home = File::HomeDir->my_home;
 our $email;
 our $smtpserver;
 our $smtpport;
@@ -68,16 +71,13 @@ our $mailbin;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.3.1-dev1";
 
-$cfg                = new Config::Simple("$home/config/system/general.cfg");
-$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
-$lang               = $cfg->param("BASE.LANG");
+$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $mailbin            = $cfg->param("BINARIES.MAIL");
 $do                 = "";
-$helptext           = "";
 
-$mcfg               = new Config::Simple("$home/config/system/mail.cfg");
+$mcfg               = new Config::Simple("$lbhomedir/config/system/mail.cfg");
 $email              = $mcfg->param("SMTP.EMAIL");
 $smtpserver         = $mcfg->param("SMTP.SMTPSERVER");
 $smtpport           = $mcfg->param("SMTP.PORT");
@@ -85,6 +85,7 @@ $smtpcrypt          = $mcfg->param("SMTP.CRYPT");
 $smtpauth           = $mcfg->param("SMTP.AUTH");
 $smtpuser           = $mcfg->param("SMTP.SMTPUSER");
 $smtppass           = $mcfg->param("SMTP.SMTPPASS");
+
 
 #########################################################################
 # Parameter
@@ -106,11 +107,6 @@ $do           = $query{'do'};
 # Everything we got from forms
 $saveformdata         = param('saveformdata');
 
-# Filter
-quotemeta($query{'lang'});
-quotemeta($saveformdata);
-quotemeta($do);
-
 $saveformdata          =~ tr/0-1//cd;
 $saveformdata          = substr($saveformdata,0,1);
 $query{'lang'}         =~ tr/a-z//cd;
@@ -120,24 +116,7 @@ $query{'lang'}         =  substr($query{'lang'},0,2);
 # Language Settings
 ##########################################################################
 
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
-
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
-
-# If there's no language phrases file for choosed language, use german as default
-if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations / phrases
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+$lang = lblanguage();
 
 ##########################################################################
 # Main program
@@ -161,41 +140,49 @@ exit;
 # Form
 #####################################################
 
-sub form {
+sub form 
+{
+	
+	my $maintemplate = HTML::Template->new(
+		filename => "$lbstemplatedir/mailserver.html",
+		global_vars => 1,
+		loop_context_vars => 1,
+		die_on_bad_params=> 0,
+		associate => $cfg,
+		# debug => 1,
+		);
+	
+	my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-# Filter
-quotemeta($email);
-quotemeta($smtpserver);
-quotemeta($smtpport);
-quotemeta($smtpcrypt);
-quotemeta($smtpauth);
-quotemeta($smtpuser);
-quotemeta($smtppass);
+	print STDERR "FORM called\n";
+	$maintemplate->param("FORM", 1);
+	$maintemplate->param( "LBHOSTNAME", lbhostname());
+	$maintemplate->param( "LANG", $lang);
+	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
+	$maintemplate->param ( 	"EMAIL" => $email, 
+							"SMTPSERVER" => $smtpserver,
+							"SMTPPORT" => $smtpport,
+							"SMTPUSER" => $smtpuser,
+							"SMTPPASS" => $smtppass
+							);
+	
+	# Defaults for template
+	if ($smtpcrypt) {
+	  $maintemplate->param( "CHECKED1", 'checked="checked"');
+	}
+	if ($smtpauth) {
+	  $maintemplate->param(  "CHECKED2", 'checked="checked"');
+	}
 
-# Defaults for template
-if ($smtpcrypt) {
-  $checked1 = "checked\=\"checked\"";
-}
-if ($smtpauth) {
-  $checked2 = "checked\=\"checked\"";
-}
-
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0110");
-$help = "mailserver";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/mailserver.html") || die "Missing template system/$lang/mailserver.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-exit;
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MAILSERVER.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	undef $maintemplate;			
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	exit;
 
 }
 
@@ -203,42 +190,51 @@ exit;
 # Save
 #####################################################
 
-sub save {
+sub save 
+{
 
-# Everything from Forms
-$email        = param('email');
-$smtpserver   = param('smtpserver');
-$smtpport     = param('smtpport');
-$smtpcrypt    = param('smtpcrypt');
-$smtpauth     = param('smtpauth');
-$smtpuser     = param('smtpuser');
-$smtppass     = param('smtppass');
+	my $maintemplate = HTML::Template->new(
+		filename => "$lbstemplatedir/success.html",
+		global_vars => 1,
+		loop_context_vars => 1,
+		die_on_bad_params=> 0,
+		associate => $cfg,
+		# debug => 1,
+		);
+	
+	my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-# Filter
-quotemeta($email);
-quotemeta($smtpserver);
-quotemeta($smtpport);
-quotemeta($smtpcrypt);
-quotemeta($smtpauth);
-quotemeta($smtpuser);
-quotemeta($smtppass);
+	print STDERR "SAVE called\n";
+	$maintemplate->param("SAVE", 1);
+	$maintemplate->param( "LBHOSTNAME", lbhostname());
+	$maintemplate->param( "LANG", $lang);
+	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
+	
+	# Everything from Forms
+	$email        = param('email');
+	$smtpserver   = param('smtpserver');
+	$smtpport     = param('smtpport');
+	$smtpcrypt    = param('smtpcrypt');
+	$smtpauth     = param('smtpauth');
+	$smtpuser     = param('smtpuser');
+	$smtppass     = param('smtppass');
 
-# Write configuration file(s)
-$mcfg->param("SMTP.ISCONFIGURED", "1");
-$mcfg->param("SMTP.EMAIL", "$email");
-$mcfg->param("SMTP.SMTPSERVER", "$smtpserver");
-$mcfg->param("SMTP.PORT", "$smtpport");
-$mcfg->param("SMTP.CRYPT", "$smtpcrypt");
-$mcfg->param("SMTP.AUTH", "$smtpauth");
-$mcfg->param("SMTP.SMTPUSER", "$smtpuser");
-$mcfg->param("SMTP.SMTPPASS", "$smtppass");
-$mcfg->save();
+	# Write configuration file(s)
+	$mcfg->param("SMTP.ISCONFIGURED", "1");
+	$mcfg->param("SMTP.EMAIL", "$email");
+	$mcfg->param("SMTP.SMTPSERVER", "$smtpserver");
+	$mcfg->param("SMTP.PORT", "$smtpport");
+	$mcfg->param("SMTP.CRYPT", "$smtpcrypt");
+	$mcfg->param("SMTP.AUTH", "$smtpauth");
+	$mcfg->param("SMTP.SMTPUSER", "$smtpuser");
+	$mcfg->param("SMTP.SMTPPASS", "$smtppass");
+	$mcfg->save();
 
-# Activate new configuration
+	# Activate new configuration
 
-# Create temporary SSMTP Config file
-open(F,">/tmp/tempssmtpconf.dat") || die "Cannot open /tmp/tempssmtpconf.dat";
-  print F <<ENDFILE;
+	# Create temporary SSMTP Config file
+	open(F,">/tmp/tempssmtpconf.dat") || die "Cannot open /tmp/tempssmtpconf.dat";
+	print F <<ENDFILE;
 #
 # Config file for sSMTP sendmail
 #
@@ -246,26 +242,26 @@ open(F,">/tmp/tempssmtpconf.dat") || die "Cannot open /tmp/tempssmtpconf.dat";
 # Make this empty to disable rewriting.
 ENDFILE
 
-print F "root=$email\n\n";
+	print F "root=$email\n\n";
 
-  print F <<ENDFILE;
+	print F <<ENDFILE;
 # The place where the mail goes. The actual machine name is required no
 # MX records are consulted. Commonly mailhosts are named mail.domain.com
 ENDFILE
-  print F "mailhub=$smtpserver\:$smtpport\n\n";
+	print F "mailhub=$smtpserver\:$smtpport\n\n";
 
-  if ($smtpauth) {
-    print F "# Authentication\n";
-    print F "AuthUser=$smtpuser\n";
-    print F "AuthPass=$smtppass\n\n";
-  }
+	if ($smtpauth) {
+		print F "# Authentication\n";
+		print F "AuthUser=$smtpuser\n";
+		print F "AuthPass=$smtppass\n\n";
+	}
 
-  if ($smtpcrypt) {
-    print F "# Use encryption\n";
-    print F "UseSTARTTLS=YES\n\n";
-  }
+	if ($smtpcrypt) {
+		print F "# Use encryption\n";
+		print F "UseSTARTTLS=YES\n\n";
+	}
 
-  print F <<ENDFILE;
+	print F <<ENDFILE;
 # Where will the mail seem to come from?
 #rewriteDomain=
 
@@ -277,114 +273,31 @@ hostname=loxberry.local
 # NO - Use the system gen
 FromLineOverride=YES
 ENDFILE
-close(F);
+	close(F);
 
-# Install temporary ssmtp config file
-my $result = qx($home/sbin/createssmtpconf.sh start 2>/dev/null);
+	# Install temporary ssmtp config file
+	my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
 
-if ($lang eq "de") {
-  $result = qx(echo "Dieses ist eine Test Email von Deinem LoxBerry. Es scheint alles OK zu sein." | $mailbin -a "From: $email" -s "Test Email von Deinem LoxBerry" -v $email 2>&1);
-} else {
-  $result = qx(echo "This is a Test from your LoxBerry. Everything seems to be OK." | $mailbin -a "From: $email" -s "Test Email from LoxBerry" -v $email 2>&1);
-}
+	$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
 
-# Delete old temporary config file
-if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
-  unlink ("/tmp/tempssmtpconf.dat");
-}
+	# Delete old temporary config file
+	if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
+	  unlink ("/tmp/tempssmtpconf.dat");
+	}
 
-# Template Output
-print "Content-Type: text/html\n\n";
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0110");
-$help = "mailserver";
+	$maintemplate->param( "MESSAGE", $SL{'MAILSERVER.SAVESUCCESS'});
+	$maintemplate->param( "NEXTURL", "/admin/index.cgi");
 
-$message = $phrase->param("TXT0111");
-$nexturl = "/admin/index.cgi";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/succses.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-exit;
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
+	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	undef $maintemplate;			
+	LoxBerry::Web::lbfooter();
+		
+	exit;
 
 }
 
 exit;
-
-
-#####################################################
-# 
-# Subroutines
-#
-#####################################################
-
-#####################################################
-# Error
-#####################################################
-
-sub error {
-
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0028");
-$help = "admin";
-
-print "Content-Type: text/html\n\n";
-
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-close(F);
-&footer;
-
-exit;
-
-}
-
-#####################################################
-# Header
-#####################################################
-
-sub lbheader {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
-  open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
-    @help = <F>;
-    foreach (@help){
-      s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
-    }
-  close(F);
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
-#####################################################
-# Footer
-#####################################################
-
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
 

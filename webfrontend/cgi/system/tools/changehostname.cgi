@@ -21,7 +21,6 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-# use Config::Simple;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use HTML::Template;
@@ -32,8 +31,6 @@ no strict "refs"; # we need it for template system
 print STDERR "LoxBerry::System\n";
 print STDERR "lbhomedir: $lbhomedir\n";
 print STDERR "lbslogdir: $lbslogdir\n";
-
-
 
 ##########################################################################
 # Variables
@@ -50,30 +47,12 @@ my $oldname;
 my $newname;
 my $successfulchanged = 0;
 
-#our $cfg;
-#our $phrase;
-#our $namef;
-#our $value;
-#our %query;
-#our $lang;
-#our $template_title;
-#our $installdir;
-#our $languagefile;
-#my  @fields;
-#my  $error;
-#our $table;
-#my  @result;
-#my  $i;
-#our $ssid;
-#our $version;
-#our $ENV;
-
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = LoxBerry::System::pluginversion() . ".2";
+my $version = LoxBerry::System::lbversion() . ".3";
 
 # Start with HTML header
 print $cgi->header(
@@ -84,10 +63,6 @@ print $cgi->header(
 # Get language from GET, POST or System setting (from LoxBerry::Web)
 my $lang = lblanguage();
 
-#$cfg             = new Config::Simple('../../../../config/system/general.cfg');
-#$installdir      = $cfg->param("BASE.INSTALLFOLDER");
-#$lang            = $cfg->param("BASE.LANG");
-
 ##########################################################################
 # Initialize html templates
 ##########################################################################
@@ -96,16 +71,15 @@ my $lang = lblanguage();
 
 # Main
 $maintemplate = HTML::Template->new(
-	filename => "$lbstemplatedir/multi/changehostname.html",
+	filename => "$lbstemplatedir/changehostname.html",
 	global_vars => 1,
 	loop_context_vars => 1,
 	die_on_bad_params => 0,
-	# associate => %pcfg,
 );
 
 $maintemplate->param( LBSLOGDIR => $lbslogdir);
 
-&translations;
+my %Phrases = LoxBerry::Web::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
@@ -126,32 +100,17 @@ if (defined $R::btnsubmit) {
 
 $maintemplate->param( STARTUP => 1 );
 
-
 ##########################################################################
 # Main program
 ##########################################################################
 
-# In LoxBerry V0.2.x we use the old LoxBerry::Web header
-
-# LoxBerry::Web::lbheader("$T{TXT0000} - $T{TXT0009}"));
-
 $maintemplate->param( lbhostname => $oldname );
 
-if (length($newname) > 0) { $maintemplate->param( lbnewhostname => $newname ); }
+if (length($newname) gt 0) { $maintemplate->param( lbnewhostname => $newname ); }
 					else {  $maintemplate->param( lbnewhostname => `hostname`); }
 $maintemplate->param( errormessage => '<tr><td colspan="2"><font color="red">' . $emsg . '</font></td></tr>' );
 
 print $maintemplate->output;
-
-# $template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0009");
-
-# Print Template
-#open(F,"$installdir/templates/system/$lang/lshwnetwork.html") || die "Missing template system/$lang/lshwnetwork.html";
-#  while (<F>) {
-#    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-#    print $_;
-#  }
-#close(F);
 
 exit;
 
@@ -161,75 +120,39 @@ exit;
 sub save 
 {
 
-$newname = $R::lbnewhostname;
+	$newname = $R::lbnewhostname;
 
-chomp $newname;
+	chomp $newname;
 
-print STDERR "hostname $oldname\n";
-print STDERR "newname $newname\n";
+	print STDERR "hostname $oldname\n";
+	print STDERR "newname $newname (len: " . length($newname) . ")\n";
 
-if ($newname eq $oldname) { $emsg = "Du hast keinen neuen Namen eingegeben. Es ist nichts passiert."; }
-if (length($newname) < 1) { $emsg = "Du musst im Feld etwas eingeben."; }
-if (length($newname) > 63) { $emsg = "Dein Hostname ist zu lang. Er darf maximal 63 Zeichen haben."; }
+	if ($newname eq $oldname) { $emsg = $Phrases{'NETWORK_CHANGEHOSTNAME.SUBMIT_ERROR_SIMILAR'}; }
+	elsif (length($newname) < 1) { $emsg = $Phrases{'NETWORK_CHANGEHOSTNAME.SUBMIT_ERROR_EMPTY'}; }
+	elsif (length($newname) > 63) { $emsg = $Phrases{'NETWORK_CHANGEHOSTNAME.SUBMIT_ERROR_HOSTNAME_TOO_LONG'}; }
 
-$_ = $newname;
-if (! /^[A-Za-z0-9-.]+$/ ) { $emsg = "In einem Host- oder Domänennamen dürfen nur vorkommen: A-Z, 0-9, -, und ggf. Domänenpunkte."; }
+	$_ = $newname;
+	if (! /^[A-Za-z0-9-.]+$/ && !$emsg) { $emsg = $Phrases{'NETWORK_CHANGEHOSTNAME.SUBMIT_ERROR_INVALIDCHARS'}; }
 
-if ($emsg ne "") 
-	{ return(); }
+	print STDERR "\$emsg: $emsg\n";
 
-# Syntax ok - let's do it
-print STDERR "CHANGE CALLED\n";
-my @result = system("sudo $lbhomedir/sbin/changehostname.sh $newname > $lbslogdir/changehostname.log 2>&1");
-# print STDERR "system Errorcode: $?\n";
-my $changedname = `hostname`;
-chomp $changedname;
-my $successfullchanged;
-if ($newname eq $changedname) { $successfullchanged = 1; 
-								print STDERR "New name is equal old name\n";}
+	if ($emsg ne "") 
+		{ return(); }
 
-# Finished-Template
-$maintemplate = HTML::Template->new(
-	filename => "$lbstemplatedir/multi/changehostname.html",
-	global_vars => 1,
-	loop_context_vars => 1,
-	die_on_bad_params => 0,
-	# associate => %pcfg,
-);
+	# Syntax ok - let's do it
+	print STDERR "CHANGE CALLED\n";
+	my @result = system("sudo $lbhomedir/sbin/changehostname.sh $newname > $lbslogdir/changehostname.log 2>&1");
+	# print STDERR "system Errorcode: $?\n";
+	my $changedname = `hostname`;
+	chomp $changedname;
+	my $successfullchanged;
+	if ($newname eq $changedname) { $successfullchanged = 1; 
+									print STDERR "New name is equal old name\n";}
 
-$maintemplate->param( CHANGED => 1 );
-$maintemplate->param( changedname => $changedname );
-$maintemplate->param( successfullchanged => $successfullchanged );
-print $maintemplate->output;
+	$maintemplate->param( CHANGED => 1 );
+	$maintemplate->param( changedname => $changedname );
+	$maintemplate->param( successfullchanged => $successfullchanged );
+	print $maintemplate->output;
 
-exit;
-
-}
-
-
-
-
-##########################################################################
-# Translations
-##########################################################################
-
-sub translations 
-{
-	my $languagefileplugin;
-	# Read transations
-	# Read English language as default
-	$languagefileplugin 	= "$lbstemplatedir/en/language.dat";
-	Config::Simple->import_from($languagefileplugin, \%T);
-
-	# Read foreign language if exists and not English
-	$languagefileplugin = "$lbstemplatedir/$lang/language.dat";
-	# Now overwrite phrase variables with user language
-	if ((-e $languagefileplugin) and ($lang ne 'en')) {
-		Config::Simple->import_from($languagefileplugin, \%T);
-	}
-
-	# Parse phrase variables to html templates
-	while (my ($name, $value) = each %T){
-		$maintemplate->param("T::$name" => $value);
-	}
+	exit;
 }

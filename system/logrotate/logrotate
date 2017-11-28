@@ -27,7 +27,7 @@
 	rotate 4
 	compress
 	delaycompress
-	ifnotempty
+	notifempty
 	nomail
 	maxsize 1M
 	maxage 5

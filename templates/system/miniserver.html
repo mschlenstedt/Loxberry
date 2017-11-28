@@ -1,0 +1,735 @@
+<!-- ** START template/system/miniserver.html 11:19 26.11.2017 ************************************************************************************ -->
+<TMPL_IF FORM>
+<form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
+	<input type="hidden" name="saveformdata" value="1">
+	<input id="miniservers" type="hidden" name="miniservers" value="<TMPL_VAR MINISERVERS>">
+	
+	<center>
+	<table id="maintable">	
+	<tbody>
+	<tr>
+	<td>
+<TMPL_LOOP NAME="MSDATA">
+<!-- This is TMPL_LOOP <TMPL_VAR MSNO> -->
+	<table id="miniservertbl<TMPL_VAR MSNO>" class="formtable" border="0" width="100%">		
+		<tr>
+				<td width="100%" colspan=4>
+					<h2><TMPL_VAR MSNO>. <TMPL_VAR COMMON.PROPERNOUN_MINISERVER> 
+					<TMPL_IF MSNAME>(<TMPL_VAR MSNAME>)</TMPL_IF></h2>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="miniserverfoldername<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSNAME></label>
+				</td>
+				<td>
+					<input value="<TMPL_VAR MSNAME>" id="miniserverfoldername<TMPL_VAR MSNO>" name="miniserverfoldername<TMPL_VAR MSNO>" type="text" class="textfield" data-validation-optional="false" data-validation="length letternumeric" data-validation-allowing="_-" data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSNAME>" data-validation-length="Max64">
+				</td>
+				<td>
+				</td>
+				<td class="hint">
+					<TMPL_VAR MINISERVER.HINT_MSNAME>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="miniserveruser<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSUSER></label>
+				</td>
+				<td>
+					<input id="miniserveruser<TMPL_VAR MSNO>" name="miniserveruser<TMPL_VAR MSNO>" type="text" data-validation="length alphanumeric" data-validation-length="Min1"
+						data-validation-allowing="-_" class="textfield" value="<TMPL_VAR MSUSER>" data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_INVALID_MSUSER>">
+				</td>
+				<td>
+					&nbsp;
+				</td>
+				<td class="hint">
+					<TMPL_VAR MINISERVER.HINT_MSUSER>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="miniserverkennwort<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSPASS></label>
+				</td>
+				<td>
+					<input id="miniserverkennwort<TMPL_VAR MSNO>" name="miniserverkennwort<TMPL_VAR MSNO>" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="<TMPL_VAR MSPASS>" data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>">
+				</td>
+				<td>
+					&nbsp;
+				</td>
+				<td class="hint">
+					<TMPL_VAR MINISERVER.HINT_MSPASS>
+				</td>
+			</tr>
+			<tr>
+				<td width="25%">
+					&nbsp;
+				</td>
+				<td width="30%">
+					<label><input type="checkbox" id="useclouddns<TMPL_VAR MSNO>" name="useclouddns<TMPL_VAR MSNO>" <TMPL_VAR USECLOUDDNS_CHECKED>><TMPL_VAR MINISERVER.LABEL_USE_CLOUD_DNS></label>
+				</td>
+				<td width="5%">
+					&nbsp;
+				</td>
+				<td width="40%" class="hint">
+					<TMPL_VAR MINISERVER.HINT_USE_CLOUD_DNS>
+				</td>
+			</tr>
+			<tr id="miniserveriprow<TMPL_VAR MSNO>" ipaddr="<TMPL_VAR MSIP>" class="noclouddns<TMPL_VAR MSNO>">
+				<td width="25%">
+					<label class="control-label" for="miniserverip<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSIP></label>
+				</td>
+				<td width="30%">
+					<input id="miniserverip<TMPL_VAR MSNO>" name="miniserverip<TMPL_VAR MSNO>" type="text" class="textfield" data-validation="custom" value="<TMPL_VAR MSIP>" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_IP>">
+				</td>
+				<td width="5%">
+				 &nbsp;
+				</td>
+				<td width="40%" class="hint">
+				 <div id="testurl"></div>
+				</td>
+			</tr>
+			<tr id="miniserverportrow<TMPL_VAR MSNO>" portaddr="<TMPL_VAR MSPORT>" class="noclouddns<TMPL_VAR MSNO>" class="clouddns<TMPL_VAR MSNO>">
+				<td>
+					<label for="miniserverport<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSPORT></label>
+				</td>
+				<td>
+					<input id="miniserverport<TMPL_VAR MSNO>" name="miniserverport<TMPL_VAR MSNO>" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="<TMPL_VAR MSPORT>" data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_PORT>">
+				</td>
+				<td>
+					&nbsp;
+				</td>
+				<td class="hint">
+					<TMPL_VAR MINISERVER.HINT_MSPORT>
+				</td>
+			</tr>
+			<tr id="miniservercloudurlrow<TMPL_VAR MSNO>" dnsurl="<TMPL_VAR MSCLOUDURL>" class="clouddns<TMPL_VAR MSNO>">
+				<td width="25%">
+					<label class="control-label" for="miniservercloudurl<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_CLOUDURL></label>
+				</td>
+				<td width="30%">
+					<input id="miniservercloudurl<TMPL_VAR MSNO>" name="miniservercloudurl<TMPL_VAR MSNO>" type="text" class="textfield"
+						data-validation-optional="false" data-validation-depends-on="useclouddns<TMPL_VAR MSNO>"  data-validation-depends-on-value="1" data-validation="custom"
+						data-validation-regexp="(^EEE000([a-zA-Z0-9]{6})$)|(^504F([a-zA-Z0-9]{8})$)" data-suggestions="EEE000xxxxxx"
+						data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_CLOUDURL>"
+						value="<TMPL_VAR MSCLOUDURL>">
+				</td>
+				<td width="5%">
+				 &nbsp;
+				</td>
+				<td width="40%" class="hint">
+					<TMPL_VAR MINISERVER.HINT_MSCLOUDURL>
+				</td>
+			</tr>
+			<tr id="miniservercloudurlftpportrow<TMPL_VAR MSNO>" dnsurlftpport="<TMPL_VAR MSCLOUDURLFTPPORT>" class="clouddns<TMPL_VAR MSNO>">
+				<td width="25%">
+					<label class="control-label" for="miniservercloudurlftpport<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSCLOUDURL_FTPPORT></label>
+				</td>
+				<td width="30%">
+					<input id="miniservercloudurlftpport<TMPL_VAR MSNO>" name="miniservercloudurlftpport<TMPL_VAR MSNO>" type="text" class="textfield"
+						data-validation-optional="false" data-validation-depends-on="useclouddns<TMPL_VAR MSNO>"  data-validation-depends-on-value="1" data-validation="custom length" data-validation-length="1-5"
+						data-validation-regexp="([0-9]$)" data-suggestions="21"
+						data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_CLOUDDNS_FTPPORT>"
+						value="<TMPL_VAR MSCLOUDURLFTPPORT>">
+				</td>
+				<td width="5%">
+					&nbsp;
+				</td>
+				<td width="40%">
+					&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="miniservernote<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSNOTE></label>
+				</td>
+				<td>
+					<SCRIPT>
+						function isUrlValid(url)
+						{
+							return /^(https?|s?ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(url);
+						}
+						function note_link (note_object)
+						{
+							if (isUrlValid($("#"+note_object).val()))
+							{
+								$("#"+note_object+"_url").attr("href",$("#"+note_object).val());
+								$("#"+note_object+"_url").css("visibility", "visible");
+							}
+							else
+							{
+								$("#"+note_object+"_url").attr("href","#");
+								$("#"+note_object+"_url").css("visibility", "hidden");
+							}
+						};
+					</SCRIPT>
+					<textarea id="miniservernote<TMPL_VAR MSNO>" name="miniservernote<TMPL_VAR MSNO>" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_NOTE>" data-validation-length="Max512"><TMPL_VAR MSNOTE></textarea>
+					<SCRIPT>
+						$("#miniservernote<TMPL_VAR MSNO>").focusout(function()
+						{
+							note_link($(this).attr("id"));
+						})
+						.blur(function()
+						{
+							note_link($(this).attr("id"));
+						});
+						note_link ("miniservernote<TMPL_VAR MSNO>");
+					</SCRIPT>
+				</td>
+				<td>
+					<a id="miniservernote<TMPL_VAR MSNO>_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note"><TMPL_VAR COMMON.BUTTON_OPEN></a>
+				</td>
+				<td>
+					&nbsp;
+				</td>
+			</tr>
+			
+			<tr>
+				<td colspan=4>
+					&nbsp;
+				</td>
+			</tr>
+			<SCRIPT>
+				$("#useclouddns<TMPL_VAR MSNO>").change(function()
+				{
+					if($(this).is(":checked"))
+					{
+						$("#miniservercloudurl<TMPL_VAR MSNO>").val($("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl" ));
+						$("#miniservercloudurl<TMPL_VAR MSNO>").attr("data-validation-optional","false");
+						$("#miniservercloudurlrow<TMPL_VAR MSNO>").fadeTo( "fast", 1 );
+						$("#miniservercloudurl<TMPL_VAR MSNO>").prop("readOnly", false);
+
+						$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val($("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport" ));
+						$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("data-validation-optional","false");
+						$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").fadeTo( "fast", 1 );
+						$("#miniservercloudurlftpport<TMPL_VAR MSNO>").prop("readOnly", false);
+
+						$("#miniserverip<TMPL_VAR MSNO>").attr("data-validation-optional","true");
+						$("#miniserverip<TMPL_VAR MSNO>").val("");
+						$("#miniserverip<TMPL_VAR MSNO>").trigger( "focus" );
+						$("#miniserveriprow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
+						$("#miniserverip<TMPL_VAR MSNO>").prop("readOnly", true);
+
+						$("#miniserverport<TMPL_VAR MSNO>").attr("data-validation-optional","true");
+						$("#miniserverport<TMPL_VAR MSNO>").val("");
+						$("#miniserverport<TMPL_VAR MSNO>").trigger( "focus" );
+						$("#miniserverportrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
+						$("#miniserverport<TMPL_VAR MSNO>").prop("readOnly", true);
+						
+						$(".noclouddns<TMPL_VAR MSNO>").hide();
+						$(".clouddns<TMPL_VAR MSNO>").show();
+						
+					}
+					else
+					{
+						$("#miniservercloudurl<TMPL_VAR MSNO>").attr("data-validation-optional","true");
+						$("#miniservercloudurlrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
+						$("#miniservercloudurl<TMPL_VAR MSNO>").prop("readOnly", true);
+						$("#miniservercloudurl<TMPL_VAR MSNO>").val("");
+						$("#miniservercloudurl<TMPL_VAR MSNO>").trigger( "focus" );
+
+						$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("data-validation-optional","true");
+						$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
+						$("#miniservercloudurlftpport<TMPL_VAR MSNO>").prop("readOnly", true);
+						$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val("");
+						$("#miniservercloudurlftpport<TMPL_VAR MSNO>").trigger( "focus" );
+
+						$("#miniserverip<TMPL_VAR MSNO>").val($("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr" ));
+						$("#miniserverip<TMPL_VAR MSNO>").attr("data-validation-optional","false");
+						$("#miniserveriprow<TMPL_VAR MSNO>" ).fadeTo( "fast", 1 );
+						$("#miniserverip<TMPL_VAR MSNO>").prop("readOnly", false);
+
+						$("#miniserverport<TMPL_VAR MSNO>").val($("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr" ));
+						$("#miniserverport<TMPL_VAR MSNO>").attr("data-validation-optional","false");
+						$("#miniserverportrow<TMPL_VAR MSNO>" ).fadeTo( "fast", 1 );
+						$("#miniserverport<TMPL_VAR MSNO>").prop("readOnly", false);
+						
+						$(".noclouddns<TMPL_VAR MSNO>").show();
+						$(".clouddns<TMPL_VAR MSNO>").hide();
+					}
+				});
+				$("#miniservercloudurl<TMPL_VAR MSNO>").change(function()
+				{
+					if ($("#useclouddns<TMPL_VAR MSNO>").is(":checked"))
+					{
+						$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>").val());
+					}
+				});
+				$("#miniservercloudurlftpport<TMPL_VAR MSNO>").change(function()
+				{
+					if ($("#useclouddns<TMPL_VAR MSNO>").is(":checked"))
+					{
+						$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val());
+					}
+				});
+				$("#miniserverip<TMPL_VAR MSNO>").change(function()
+				{
+					if (!$("#useclouddns<TMPL_VAR MSNO>").is(":checked"))
+					{
+						$("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr",$("#miniserverip<TMPL_VAR MSNO>").val());
+					}
+				});
+				$("#miniserverport<TMPL_VAR MSNO>").change(function()
+				{
+					if (!$("#useclouddns<TMPL_VAR MSNO>").is(":checked"))
+					{
+						$("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr",$("#miniserverport<TMPL_VAR MSNO>").val());
+					}
+				});
+				$("#useclouddns<TMPL_VAR MSNO>").prop("checked", "<TMPL_VAR MSUSECLOUDDNS>");
+				$("#useclouddns<TMPL_VAR MSNO>").trigger( "change" );
+			</SCRIPT>
+		</table>
+<hr>
+			</TMPL_LOOP>
+<!-- Finished TMPL_LOOP -->
+</td>
+</tr>
+</tbody>
+</table>
+
+	</center>
+	<center>
+	<table class="formtable" border="0" width="100%">
+		<tr>
+			<td></td>
+			<td colspan=3>
+				<div id="form-error-message" class="form-error-message"></div>
+			</td>
+		</tr>
+	</table>
+	<p>
+		&nbsp;
+	</p>
+	<!-- 
+	This is the AJAX function of AddMiniserver and DeleteMiniserver. As building the template in JavaScript
+	is heavy to update, I switch to oldschool save and reload --> 
+	<!-- <a href="#" id="addmsbtn" onClick="AddMiniserver();return false;"data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></a>
+	<a href="#" id="delmsbtn" onClick="DelMiniserver();return false;"data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></a>
+	-->
+	<p>
+		<center>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="/admin/index.cgi"><TMPL_VAR COMMON.BUTTON_BACK></a>
+			<button type="submit" form="main_form2" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+			<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MINISERVER.BUTTON_SHOW_PASSWORDS></button>
+		<button type="submit" form="adddel" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
+	<button type="submit" form="adddel" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
+		</center>
+	</p>
+	</center>
+</form>
+<form method="post" data-ajax="false" name="adddel" id="adddel" action="/admin/system/miniserver.cgi" novalidate="novalidate">
+	<input id="miniservers" type="hidden" name="miniservers" value="<TMPL_VAR MINISERVERS>">
+	
+</form>
+<script>
+	var $messages = $('#form-error-message');
+	$.validate(
+	{
+		modules: 'security',
+		errorMessagePosition: 'inline',
+		
+	});
+	
+	// Diable Del-Button if needed at onLoad
+	DisableDelButton();
+	// Add one more miniserver
+	function AddMiniserver()
+	{
+		
+		/*
+		// This is the code from Michael - it is well done, but you have to create the full 
+		// table layout again and create the validation stuff. Therefore it's tricky to change the layout.
+		// That's the reason I "un-AJAX" it and buttons write to config.
+		
+		// Below is code to copy the complete MS-Table. If works a bit (most IDs are canged), but 
+		// it leaves some IDs (e.g. checkbox) and the validation unchanged, so this needs to be investigated.
+		
+		
+		// Total number of miniservers
+		var iteration = document.getElementById('miniservers').value;
+		iteration = parseInt(iteration)
+		iteration += 1;
+		document.getElementById("miniservers").value = iteration;
+
+		// Add 1. row
+		var tbl = document.getElementById('miniservertbl');
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<h2>' + iteration + '. Miniserver:</h2>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		// Add 2. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '&nbsp;'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '<label><input type="checkbox" id="useclouddns' + iteration + '" name="useclouddns' + iteration + '">Use Cloud DNS</label>';
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		// Add 3. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+		row.setAttribute('id','miniserveriprow' + iteration);
+		row.setAttribute('ipaddr','');
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<label class="control-label" for="miniserverip' + iteration + '">IP-Address or Hostname:</label> </td>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '<input id="miniserverip' + iteration + '" name="miniserverip' + iteration + '" type="text" class="textfield" data-validation="custom" value="" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* The entered IP-Address or Hostname is not valid. An IP-Address has the format xxx.xxx.xxx.xxx, e. g. 192.168.1.100">'
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		// Add 4. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+		row.setAttribute('id','miniserverportrow' + iteration);
+		row.setAttribute('portaddr','');
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<label>Portnumber:</label>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '<input id="miniserverport' + iteration + '" name="miniserverport' + iteration + '" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="" data-validation-error-msg="* The Portnumber must be in the range of 1 and 65535. The default Miniserver-Port is 80.">'
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		// Add 5. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+		row.setAttribute('id','miniservercloudurlrow' + iteration);
+		row.setAttribute('dnsurl','');
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<label>MAC-Address:</label>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '  <input id="miniservercloudurl' + iteration + '" name="miniservercloudurl' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="custom" data-suggestions="EEE000xxxxxx" data-validation-regexp="(^EEE000([a-zA-Z0-9]{6})$)|(^504F([a-zA-Z0-9]{8})$)" data-validation-error-msg="* Please enter a valid MAC-Address. Example: EEE000xxxxxx oder 504Fxxxxxxxx" value="">';
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		// Add 6. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+		row.setAttribute('id','miniservercloudurlftpportrow' + iteration);
+		row.setAttribute('dnsurlftpport','');
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<label>Public FTP-Port:</label>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '  <input id="miniservercloudurlftpport' + iteration + '" name="miniservercloudurlftpport' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="custom length" data-validation-length="1-5" data-validation-regexp="([0-9]$)" data-suggestions="21" data-validation-error-msg="* Please enter a valid public FTP-Port of the Miniservers. (See Router Port Forwarding) The local Miniserver FTP-Port should be 21." value="">';
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+		
+		$("#useclouddns" + iteration).change(function()
+		{
+			if($(this).is(":checked"))
+			{
+				$("#miniservercloudurl" + iteration).val($("#miniservercloudurlrow" + iteration).attr( "dnsurl" ));
+				$("#miniservercloudurl" + iteration).attr("data-validation-optional","false");
+				$("#miniservercloudurlrow" + iteration).fadeTo( "fast", 1 );
+				$("#miniservercloudurl" + iteration).prop("readOnly", false);
+
+				$("#miniservercloudurlftpport" + iteration).val($("#miniservercloudurlftpportrow" + iteration).attr( "dnsurlftpport" ));
+				$("#miniservercloudurlftpport" + iteration).attr("data-validation-optional","false");
+				$("#miniservercloudurlftpportrow" + iteration).fadeTo( "fast", 1 );
+				$("#miniservercloudurlftpport" + iteration).prop("readOnly", false);
+
+				$("#miniserverip" + iteration).attr("data-validation-optional","true");
+				$("#miniserverip" + iteration).val("");
+				$("#miniserverip" + iteration).trigger( "focus" );
+				$("#miniserveriprow" + iteration).fadeTo( "fast", 0.3 );
+				$("#miniserverip" + iteration).prop("readOnly", true);
+
+				$("#miniserverport" + iteration).attr("data-validation-optional","true");
+				$("#miniserverport" + iteration).val("");
+				$("#miniserverport" + iteration).trigger( "focus" );
+				$("#miniserverportrow" + iteration).fadeTo( "fast", 0.3 );
+				$("#miniserverport" + iteration).prop("readOnly", true);
+			}
+			else
+			{
+				$("#miniservercloudurl" + iteration).attr("data-validation-optional","true");
+				$("#miniservercloudurlrow" + iteration).fadeTo( "fast", 0.3 );
+				$("#miniservercloudurl" + iteration).prop("readOnly", true);
+				$("#miniservercloudurl" + iteration).val("");
+				$("#miniservercloudurl" + iteration).trigger( "focus" );
+
+				$("#miniservercloudurlftpport" + iteration).attr("data-validation-optional","true");
+				$("#miniservercloudurlftpportrow" + iteration).fadeTo( "fast", 0.3 );
+				$("#miniservercloudurlftpport" + iteration).prop("readOnly", true);
+				$("#miniservercloudurlftpport" + iteration).val("");
+				$("#miniservercloudurlftpport" + iteration).trigger( "focus" );
+
+				$("#miniserverip" + iteration).val($("#miniserveriprow" + iteration).attr( "ipaddr" ));
+				$("#miniserverip" + iteration).attr("data-validation-optional","false");
+				$("#miniserveriprow" + iteration ).fadeTo( "fast", 1 );
+				$("#miniserverip" + iteration).prop("readOnly", false);
+
+				$("#miniserverport" + iteration).val($("#miniserverportrow" + iteration).attr( "portaddr" ));
+				$("#miniserverport" + iteration).attr("data-validation-optional","false");
+				$("#miniserverportrow" + iteration ).fadeTo( "fast", 1 );
+				$("#miniserverport" + iteration).prop("readOnly", false);
+			 }
+		});
+
+		$("#miniservercloudurl"+ iteration).change(function()
+		{
+			if ($("#useclouddns"+ iteration).is(":checked"))
+			{
+				$("#miniservercloudurlrow"+ iteration).attr( "dnsurl",$("#miniservercloudurl"+ iteration).val());
+			}
+		});
+		$("#miniservercloudurlftpport1").change(function()
+		{
+			if ($("#useclouddns" + iteration).is(":checked"))
+			{
+				$("#miniservercloudurlftpportrow" + iteration).attr( "dnsurlftpport",$("#miniservercloudurlftpport" + iteration).val());
+			}
+		});
+		$("#miniserverip"+ iteration).change(function()
+		{
+			if (!$("#useclouddns"+ iteration).is(":checked"))
+			{
+				$("#miniserveriprow"+ iteration).attr( "ipaddr",$("#miniserverip"+ iteration).val());
+			}
+		});
+		$("#miniserverport"+ iteration).change(function()
+		{
+			if (!$("#useclouddns"+ iteration).is(":checked"))
+			{
+				$("#miniserverportrow"+ iteration).attr( "portaddr",$("#miniserverport"+ iteration).val());
+			}
+		});
+
+	 $("#useclouddns"+ iteration).prop("checked", "");
+	 $("#useclouddns"+ iteration).trigger( "change" );
+
+
+		// Add 7. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<label>Miniserver Username:</label>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length alphanumeric" data-validation-allowing="-_" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = '<font size="-1">Allowed characters: A-Z a-z 0-9 -_</font>'
+
+		// Add 8. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<label>Miniserver Password:</label>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '<input id="miniserverkennwort' + iteration + '" name="miniserverkennwort' + iteration + '" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the password for the above Miniserver Administrator account.">'
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		// Add 9. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<label>Note / Link:</label>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '<textarea id="miniservernote' + iteration + '" name="miniservernote' + iteration + '" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF" data-validation-error-msg="* Allowed characters: a-z A-Z 0-9 &#x7B;&#x28;&#x40;&#x3A;&#x2F;&#x3F;&#x3D;&#x23;&#x5F;&#x2B;&#x21;&#x2D;&#x26;&#x29;&#x7D; (Maximum length 512 characters)" data-validation-length="Max512"></textarea>';
+
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = '<a id="miniservernote' + iteration + '_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note">Open</a>'
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		$("#miniservernote" + iteration).focusout(function()
+		{
+				note_link($(this).attr("id"));
+		})
+		.blur(function()
+		{
+				note_link($(this).attr("id"));
+		});
+		$("#miniservernote" + iteration).trigger('focusout');
+
+		// Add 10. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '<label>Name:</label>'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = '<input value="" id="miniserverfoldername' + iteration + '" name="miniserverfoldername' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation="length letternumeric" data-validation-allowing="-_" data-validation-error-msg="* Only the following characters are allowed: a-z A-Z 0-9 _- (Maximum length is 64)" data-validation-length="Max64">';
+
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		// Add 11. row
+		var lastRow = tbl.rows.length;
+		var row = tbl.insertRow(lastRow);
+
+		// Add cells
+		var cellRight = row.insertCell(0);
+		cellRight.innerHTML = '&nbsp;'
+		var cellRight = row.insertCell(1);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(2);
+		cellRight.innerHTML = ''
+		var cellRight = row.insertCell(3);
+		cellRight.innerHTML = ''
+
+		// Disable Delete-Button if needed
+		DisableDelButton();
+
+		// Reinit Validator
+		 var $messages = $('#form-error-message');
+			$.validate({
+				modules : 'security',
+				errorMessagePosition : $messages,
+			});
+
+		// Recreate JQUERY styles
+		$("#main_form2").trigger('create');
+
+
+		// END OF MICHAELS AddMiniserver
+		*/
+
+
+/* 	// CF: This code copies the full first table and adds it below.
+	// I did not finish as it has troubles correcting all ID's and validate, so it works only "a little bit".
+		
+	 // Get current count of miniservertbl's and use that value for IDs
+    var quantity = jQuery("table[id^=miniservertbl]").length + 1;
+		
+    // clone the table
+    var clone = jQuery("#miniservertbl1").clone(true);
+
+    // use native DOM methods to update the ID
+    clone[0].setAttribute('id', clone[0].getAttribute('id').substring(0, clone[0].getAttribute('id').length-1) + quantity);
+	
+    // find any text or file inputs, and iterate over them
+    clone.find(':text,:file').each(function() {
+          // use native DOM methods to update the ID
+        this.setAttribute('id', this.getAttribute('id').substring(0, this.getAttribute('id').length-1) + quantity);
+          // set the value to ""
+        this.value = "";
+		$("h2", clone).text(quantity + ". Miniserver <TMPL_VAR MINISERVER.MSG_UNSAVED>:"); 
+	});
+     // append to the <td>
+    clone.appendTo('#maintable');
+		
+*/ 		
+		
+		
+	}
+
+	function DelMiniserver()
+	{
+		// Total number of miniservers
+		var iteration = document.getElementById('miniservers').value;
+		iteration = iteration-1;
+		document.getElementById("miniservers").value = iteration;
+
+		// Del 1. row
+		var tbl = document.getElementById('miniservertbl');
+		var lastRow = tbl.rows.length;
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+		var row = tbl.deleteRow(-1);
+
+		// Disable Delete-Button if needed
+		DisableDelButton();
+
+		// Recreate JQUERY styles
+		$("#main").trigger('create');
+	
+ 
+	}
+
+	function DisableDelButton()
+	{
+		var iteration = document.getElementById('miniservers').value;
+		if (iteration < 2)
+		{
+			$('#delmsbtn').addClass('ui-disabled');
+		}
+		else
+		{
+			$('#delmsbtn').removeClass('ui-disabled');
+		}
+	}
+// Show passwords
+$(document).ready(function() {
+  $('#showpass').click(function() {
+    $('.textfield').prop('type', 'text');
+  });
+});
+	
+</SCRIPT>
+</TMPL_IF>
+
+<TMPL_IF ERRORFORM>
+	<center>
+		<h2><TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR></h2>
+		<p>
+		<TMPL_VAR ERROR>
+		</p>
+		<p><TMPL_VAR MINISERVER.SAVE_ERR_MSG_SEE_DETAILS>
+		</p>
+	</center>
+	<div data-role="collapsible">
+		<h4>Details</h4>
+		<div class="monospace"><TMPL_VAR ERRORDETAILS></div>
+		</div>
+		<center>
+		<p>
+			<a id="btnback" href="javascript:history.back();" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		</p>
+		<center>
+
+
+</TMPL_IF>
+
+<!-- ** END template/system/miniserver.html ************************************************************************************ -->

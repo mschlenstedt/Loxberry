@@ -19,16 +19,21 @@
 # Modules
 ##########################################################################
 
+use LoxBerry::System;
+use LoxBerry::Web;
+
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
 use warnings;
 use strict;
-no strict "refs"; # we need it for template system
 
 ##########################################################################
 # Variables
 ##########################################################################
+
+my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helptemplate = "help_power.html";
 
 our $cfg;
 our $phrase;
@@ -56,13 +61,24 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+$version = "0.3.1-dev1";
 
-$cfg             = new Config::Simple('../../../config/system/general.cfg');
-$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
+$cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
+#$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
+#$lang            = $cfg->param("BASE.LANG");
 $rebootbin       = $cfg->param("BINARIES.REBOOT");
 $poweroffbin     = $cfg->param("BINARIES.POWEROFF");
+
+my $maintemplate = HTML::Template->new(
+			filename => "$lbstemplatedir/power.html",
+			global_vars => 1,
+			loop_context_vars => 1,
+			die_on_bad_params=> 0,
+			associate => $cfg,
+			# debug => 1,
+			);
+
+LoxBerry::Web::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
@@ -82,8 +98,6 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 $do           = $query{'do'};
 
 # Filter
-quotemeta($query{'lang'});
-quotemeta($do);
 $query{'lang'}         =~ tr/a-z//cd;
 $query{'lang'}         =  substr($query{'lang'},0,2);
 
@@ -91,24 +105,12 @@ $query{'lang'}         =  substr($query{'lang'},0,2);
 # Language Settings
 ##########################################################################
 
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
+$lang = lblanguage();
+$maintemplate->param( "LBHOSTNAME", lbhostname());
+$maintemplate->param( "LANG", $lang);
+$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
+$maintemplate->param ( "NEXTURL", "/admin/index.cgi");
 
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
-
-# If there's no language phrases file for choosed language, use german as default
-if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations / phrases
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
 
 ##########################################################################
 # Main program
@@ -122,16 +124,22 @@ $phrase = new Config::Simple($languagefile);
 
 # Reboot
 if ($do eq "reboot") {
+  print STDERR "REBOOT called\n";
+  $maintemplate->param("REBOOT", 1);
   &reboot;
 }
 
 # Poweroff
 if ($do eq "poweroff") {
+  print STDERR "POWEROFF called\n";
+  $maintemplate->param("POWEROFF", 1);
   &poweroff;
 }
 
 # Everything else
-&menu;
+print STDERR "MENU called\n";
+$maintemplate->param("MENU", 1);
+&form;
 
 exit;
 
@@ -139,22 +147,17 @@ exit;
 # Menue
 #####################################################
 
-sub menu {
-
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0027");
-$help = "power";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/power.html") || die "Missing template system/$lang/power.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
+sub form {
+	
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'POWER.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	undef $maintemplate;			
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	exit;
 
 exit;
 
@@ -166,40 +169,29 @@ exit;
 
 sub reboot {
 
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0029");
-$help = "power";
-
-$message = $phrase->param("TXT0034");
-$nexturl = "/admin/index.cgi";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/success.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-# Reboot
-# Without the following workaround
-# the script cannot be executed as
-# background process via CGI
-my $pid = fork();
-die "Fork failed: $!" if !defined $pid;
-if ($pid == 0) {
-# do this in the child
- open STDIN, "</dev/null";
- open STDOUT, ">/dev/null";
- open STDERR, ">/dev/null";
- system("sleep 5 && sudo $rebootbin &");
-}
-
-exit;
-
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'POWER.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	undef $maintemplate;			
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	
+	# # Reboot
+	# # Without the following workaround
+	# # the script cannot be executed as
+	# # background process via CGI
+	# my $pid = fork();
+	# die "Fork failed: $!" if !defined $pid;
+	# if ($pid == 0) {
+	# # do this in the child
+	 # open STDIN, "</dev/null";
+	 # open STDOUT, ">/dev/null";
+	 # open STDERR, ">/dev/null";
+	 # # system("sleep 5 && sudo $rebootbin &");
+	# }
+	exit;
 }
 
 #####################################################
@@ -208,78 +200,27 @@ exit;
 
 sub poweroff {
 
-print "Content-Type: text/html\n\n";
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'POWER.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	undef $maintemplate;			
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0029");
-$help = "power";
-
-$message = $phrase->param("TXT0033");
-$nexturl = "/admin/index.cgi";
-
-# Print Template
-&lbheader;
-open(F,"$installfolder/templates/system/$lang/success.html") || die "Missing template system/$lang/success.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
-
-# Poweroff
-# Without the following workaround
-# the script cannot be executed as
-# background process via CGI
-my $pid = fork();
-die "Fork failed: $!" if !defined $pid;
-if ($pid == 0) {
-# do this in the child
- open STDIN, "</dev/null";
- open STDOUT, ">/dev/null";
- open STDERR, ">/dev/null";
- system("sleep 5 && sudo $poweroffbin &");
-}
-
-exit;
-
-}
-
-#####################################################
-# Header
-#####################################################
-
-sub lbheader {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
-  open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
-    @help = <F>;
-    foreach (@help){
-      s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
-    }
-  close(F);
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
-#####################################################
-# Footer
-#####################################################
-
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
+	# # Poweroff
+	# # Without the following workaround
+	# # the script cannot be executed as
+	# # background process via CGI
+	# my $pid = fork();
+	# die "Fork failed: $!" if !defined $pid;
+	# if ($pid == 0) {
+	# # do this in the child
+	 # open STDIN, "</dev/null";
+	 # open STDOUT, ">/dev/null";
+	 # open STDERR, ">/dev/null";
+	 # # system("sleep 5 && sudo $poweroffbin &");
+	# }
+	exit;
 }

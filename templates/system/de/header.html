@@ -1,10 +1,8 @@
-Content-Type: text/html
-
 <!DOCTYPE html>
 <html lang="de">
 <!-- head.html START -->
 <head>
-	<title>LB31-DEV <!--$template_title--></title>
+	<title>LB31-dev <!--$template_title--></title>
 	<!-- THIS IS MULTI-LANG HEADER OF LOXBERRY::WEB -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=0.8, minimum-scale=0.3, maximum-scale=1, user-scalable=yes">
@@ -17,7 +15,7 @@ Content-Type: text/html
 	<link rel="shortcut icon" href="/system/images/icons/favicon.ico" />
 	<link rel="icon" type="image/png" href="/system/images/favicon-32x32.png" sizes="32x32" />
 	<link rel="icon" type="image/png" href="/system/images/favicon-16x16.png" sizes="16x16" />
-	<script src="/system/scripts/jquery/jquery-1.8.2.min.js"></script>
+	<script src="/system/scripts/jquery/jquery-1.12.4.min.js"></script>
 	<script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
 	<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
 	<script src="/system/scripts/setup.js"></script>
@@ -35,12 +33,13 @@ Content-Type: text/html
 <body>
 <!-- head.html END -->
 <!-- pagestart.html START -->
-	<div data-role="page" id="main" data-dom-cache="false">
+	<div data-role="page" id="main" data-dom-cache="false" class="ui-responsive-panel">
 		<!-- main menu panel -->
 		<div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true" data-theme="c">
 			<ul data-role="listview" data-ajax="false" data-inset="true">
 				<li data-role="list-divider">System-Einstellungen</li>
 				<li><a href="/admin/index.cgi">Home</a></li>
+				<li><a href="/admin/system/myloxberry.cgi?do=form">My LoxBerry</a></li>
 				<li><a href="/admin/system/admin.cgi?do=form">Admin-Zugang</a></li>
 				<li><a href="/admin/system/miniserver.cgi?do=form">Miniserver</a></li>
 				<li><a href="/admin/system/timeserver.cgi?do=form">Systemzeit</a></li>
@@ -63,15 +62,15 @@ Content-Type: text/html
 			<h2>Hilfe</h2>
 			</div>
 			<div class="ui-body-a ui-corner-all">
-			<p><a href="<!--$helplink-->" target="blank">AusfÃ¼hrliche Hilfe</a></p>
+			<p><a href="<!--$helplink-->" target="blank">Ausführliche Hilfe</a></p>
 			<!--$helptext-->
 			</div>
 		</div>
 		<!-- /info panel -->
 		<!-- header -->
 		<div align="center" data-role="header" data-position="fixed" data-tap-toggle="false">
-			<h1>LB31-DEV <!--$template_title--></h1>
-			<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext">MenÃ¼</a>
+			<h1>LB31-dev <!--$template_title--></h1>
+			<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext">Menü</a>
 			<a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext">Info</a>
 			
 		</div>

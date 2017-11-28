@@ -1,4 +1,4 @@
-our $VERSION = "0.31_02";
+our $VERSION = "0.31_04";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -44,6 +44,7 @@ our @EXPORT = qw (
 		
 	is_enabled 
 	is_disabled
+	begins_with
 	trim 
 	ltrim
 	rtrim
@@ -642,6 +643,10 @@ sub is_enabled
 	if ($text eq "enabled") { return 1;}
 	if ($text eq "enable") { return 1;}
 	if ($text eq "1") { return 1;}
+	if ($text eq "check") { return 1;}
+	if ($text eq "checked") { return 1;}
+	if ($text eq "select") { return 1;}
+	if ($text eq "selected") { return 1;}
 	return undef;
 }
 
@@ -682,6 +687,17 @@ trim, ltrim and rtrim are exported (you don't have to prefix the command with Lo
 sub trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
 sub ltrim { my $s = shift; $s =~ s/^\s+//;       return $s };
 sub rtrim { my $s = shift; $s =~ s/\s+$//;       return $s };
+
+
+######################################################
+# Returns a value if str2 is the at the beginning of str1
+######################################################
+
+sub begins_with
+{	
+		
+    return substr($_[0], 0, length($_[1])) eq $_[1];
+}		
 
 #####################################################
 # Finally 1; ########################################

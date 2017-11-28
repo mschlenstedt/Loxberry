@@ -6,6 +6,11 @@ use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
 # use Switch;
 # use AptPkg::Config;
+use LoxBerry::System;
+
+my $bins = LoxBerry::System::get_binaries();
+# print STDERR "Das Binary zu Grep ist $bins->{GREP}.";
+# system("$bins->{ZIP} myarchive.zip *");
 
 print header;
 
@@ -16,6 +21,8 @@ print STDERR "Action: $action // Value: $value\n";
 
 if    ($action eq 'secupdates') { &secupdates; }
 elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
+elsif ($action eq 'poweroff') { &poweroff; }
+elsif ($action eq 'reboot') { &reboot; }
 else   { print "<red>Action not supported.</red>"; }
 
 
@@ -25,7 +32,7 @@ else   { print "<red>Action not supported.</red>"; }
 ################################
 sub secupdates
 {
-	print STDERR "SECUPDATES\n";
+	print STDERR "AJAX SECUPDATES\n";
 	print STDERR "Value is: $value\n";
 	
 	if (!looks_like_number($value) && $value ne 'query') 
@@ -71,7 +78,7 @@ sub secupdates
 ############################################
 sub secupdatesautoreboot
 {
-	print STDERR "SECUPDATES-AUTOREBOOT\n";
+	print STDERR "AJAX SECUPDATES-AUTOREBOOT\n";
 	print STDERR "Value is: $value\n";
 	
 	if ($value ne "1" && $value ne "0" && $value ne 'query') 
@@ -106,6 +113,25 @@ sub secupdatesautoreboot
 		print FILE @newlines;
 		close(FILE);
 	}
+}
+
+
+############################################
+# poweroff
+############################################
+sub poweroff
+{
+	print STDERR "AJAX POWEROFF called.\n";
+	system("sudo $bins->{POWEROFF}");
+}
+
+############################################
+# reboot
+############################################
+sub reboot
+{
+	print STDERR "AJAX REBOOT called.\n";
+	system("sudo $bins->{REBOOT}");
 }
 
 
