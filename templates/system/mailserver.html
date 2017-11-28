@@ -1,7 +1,6 @@
 <!-- ** START template/system/mailserver.html 21:02 24.11.2017 ************************************************************************************ -->
 <form method="post" id="main_form" action="/admin/system/mailserver.cgi">
 <input type="hidden" name="saveformdata" value="1">
-<div class="form-group">
 <table class="formtable" border="0" width="100%">
 	<tr>
 		<td width="25%">
@@ -118,7 +117,6 @@
 		</td>
 	</tr>
 </table>
-</div>
 <p>
 &nbsp;
 </p>
@@ -146,7 +144,7 @@ var $messages = $('#form-error-message');
 $.validate(
 {
 	modules : 'security',
-	errorMessagePosition : $messages
+	errorMessagePosition: 'inline',
 });
 // Disable some options on click depending on selected value
 function disable()
@@ -208,9 +206,6 @@ $(document).ready(function() {
 	// Don't know why I cannot toggle
 	//else {$('#smtppass').prop('type', 'text');}
   });
-  
-  
-  
 });
 </script>
 <!-- ** END template/system/mailserver.html ************************************************************************************ -->

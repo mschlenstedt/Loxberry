@@ -2,7 +2,6 @@
 <TMPL_IF FORM>
 	<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
 		<input type="hidden" name="saveformdata" value="1">
-		<div class="form-group">
 			<table class="formtable" border="0" width="100%">
 				<tr>
 					<td width="25%">
@@ -77,7 +76,6 @@
 					</td>
 				</tr>
 			</table>
-		</div>
 	</form>
 	<p>
 		&nbsp;
@@ -93,7 +91,7 @@
 		$.validate(
 		{
 			modules : 'security',
-			errorMessagePosition : $messages
+			errorMessagePosition: 'inline',
 		});
 	</script>
 </TMPL_IF>

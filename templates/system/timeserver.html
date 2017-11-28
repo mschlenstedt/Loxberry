@@ -1,7 +1,6 @@
 <!-- ** START template/system/timeserver.html 13:51 24.11.2017 ************************************************************************************ -->
 <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<p style=&quot;color:blue&quot;><TMPL_VAR TIMESERVER.SAVE_ASYNC_QUERY_NTP></p>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
 	<input type="hidden" name="saveformdata" value="1">
-	<div class="form-group">
 		<table class="formtable" border="0" width="100%">
 			<tr>
 				<td>
@@ -83,14 +82,13 @@
 				</td>
 			</tr>
 		</table>
-	</div>
 </form>
 <script>
 	var $messages = $('#form-error-message');
 	$.validate(
 	{
 		modules : 'security',
-		errorMessagePosition : $messages
+		errorMessagePosition: 'inline',
 	});
 
 	// Disable some options on click depending on selected value

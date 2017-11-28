@@ -1,8 +1,7 @@
-		<!-- ** START template/system/de/network.html 27.08.2016 21:11:14 ************************************************************************************ -->
+		<!-- ** START template/system/network.html 09:24 28.11.2017 ************************************************************************************ -->
 <TMPL_IF FORM>									
 		<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="<TMPL_VAR SELFURL>">
 			<input type="hidden" name="saveformdata" value="1">
-			<div class="form-group">
 				<table class="formtable" border="0" width="100%">
 					<tr>
 						<td width="25%">
@@ -183,7 +182,6 @@
 						</td>
 					</tr>
 				</table>
-			</div>
 				<center>
 					<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 					<button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
@@ -193,7 +191,7 @@
 			var $messages = $('#form-error-message');
 			$.validate({
 				modules : 'security',
-				errorMessagePosition : $messages,
+				errorMessagePosition: 'inline',
 			});
 
 			// Disable some options on Load depending on selected value
@@ -264,4 +262,4 @@
 		</center>
 
 </TMPL_IF>
-		<!-- ** END template/system/de/network.html ************************************************************************************ -->
+		<!-- ** END template/system/network.html ************************************************************************************ -->
