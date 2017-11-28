@@ -184,118 +184,106 @@ sub form {
 
 sub save {
 
-my $friendlyname_changed;
+	my $friendlyname_changed;
 
-# Everything from Forms
-$netzwerkanschluss  = param('netzwerkanschluss');
-$netzwerkssid       = param('netzwerkssid');
-$netzwerkschluessel = param('netzwerkschluessel');
-$netzwerkadressen   = param('netzwerkadressen');
-$netzwerkipadresse  = param('netzwerkipadresse');
-$netzwerkipmaske    = param('netzwerkipmaske');
-$netzwerkgateway    = param('netzwerkgateway');
-$netzwerknameserver = param('netzwerknameserver');
-$lbfriendlyname	    = param('lbfriendlyname');
+	# Everything from Forms
+	$netzwerkanschluss  = param('netzwerkanschluss');
+	$netzwerkssid       = param('netzwerkssid');
+	$netzwerkschluessel = param('netzwerkschluessel');
+	$netzwerkadressen   = param('netzwerkadressen');
+	$netzwerkipadresse  = param('netzwerkipadresse');
+	$netzwerkipmaske    = param('netzwerkipmaske');
+	$netzwerkgateway    = param('netzwerkgateway');
+	$netzwerknameserver = param('netzwerknameserver');
+	$lbfriendlyname	    = param('lbfriendlyname');
 
-if ($lbfriendlyname ne $cfg->param("NETWORK.FRIENDLYNAME")) {
-	$friendlyname_changed = 1;
-}
-
-# Write configuration file(s)
-$cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
-$cfg->param("NETWORK.SSID", "$netzwerkssid");
-$cfg->param("NETWORK.TYPE", "$netzwerkadressen");
-$cfg->param("NETWORK.IPADDRESS", "$netzwerkipadresse");
-$cfg->param("NETWORK.MASK", "$netzwerkipmaske");
-$cfg->param("NETWORK.GATEWAY", "$netzwerkgateway");
-$cfg->param("NETWORK.DNS", "$netzwerknameserver");
-$cfg->param("NETWORK.FRIENDLYNAME", "$lbfriendlyname");
-
-$cfg->save();
-
-# Set network options
-# Wireless
-if ($netzwerkanschluss eq "wlan0") {
-
-  # Manual / Static
-  if ($netzwerkadressen eq "manual") {
-    open(F1,"$lbhomedir/system/network/interfaces.wlan_static") || die "Missing file: $lbhomedir/system/network/interfaces.wlan_static";
-     open(F2,">$lbhomedir/system/network/interfaces") || die "Missing file: $lbhomedir/system/network/interfaces";
-      flock(F2,2);
-      while (<F1>) {
-        $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-        print F2 $_;
-      }
-      flock(F2,8);
-     close(F2);
-    close(F1);
-
-  # DHCP
-  } else {
-    open(F1,"$lbhomedir/system/network/interfaces.wlan_dhcp") || die "Missing file: $lbhomedir/system/network/interfaces.wlan_dhcp";
-     open(F2,">$lbhomedir/system/network/interfaces") || die "Missing file: $lbhomedir/system/network/interfaces";
-      flock(F2,2);
-      while (<F1>) {
-        $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-        print F2 $_;
-      }
-      flock(F2,8);
-     close(F2);
-    close(F1);
-  }
-
-# Ethernet
-} else {
-
-  # Manual / Static
-  if ($netzwerkadressen eq "manual") {
-    open(F1,"$lbhomedir/system/network/interfaces.eth_static") || die "Missing file: $lbhomedir/system/network/interfaces.eth_static";
-     open(F2,">$lbhomedir/system/network/interfaces") || die "Missing file: $lbhomedir/system/network/interfaces";
-      flock(F2,2);
-      while (<F1>) {
-        $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-        print F2 $_;
-      }
-      flock(F2,8);
-     close(F2);
-    close(F1);
-
-  # DHCP
-  } else {
-    open(F1,"$lbhomedir/system/network/interfaces.eth_dhcp") || die "Missing file: $lbhomedir/system/network/interfaces.eth_dhcp";
-     open(F2,">$lbhomedir/system/network/interfaces") || die "Missing file: $lbhomedir/system/network/interfaces";
-      flock(F2,2);
-      while (<F1>) {
-        $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-        print F2 $_;
-      }
-      flock(F2,8);
-     close(F2);
-    close(F1);
-  }
-}
-
-if ($friendlyname_changed)
-	{ 
-	my $ret = system("perl $lbscgidir/tools/generatelegacytemplates.pl --force");
-	if ($ret == 0) {
-		print STDERR "network.cgi: generatelegacytemplates.pl's was called successfully.\n";
-	} else {
-		print STDERR "network.cgi: generatelegacytemplates.pl's exit code has shown an ERROR.\n";
+	if ($lbfriendlyname ne $cfg->param("NETWORK.FRIENDLYNAME")) {
+		$friendlyname_changed = 1;
 	}
-}
 
-$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
-$maintemplate->param("NEXTURL", "/admin/index.cgi");
+	# Write configuration file(s)
+	$cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
+	$cfg->param("NETWORK.SSID", "$netzwerkssid");
+	$cfg->param("NETWORK.TYPE", "$netzwerkadressen");
+	$cfg->param("NETWORK.IPADDRESS", "$netzwerkipadresse");
+	$cfg->param("NETWORK.MASK", "$netzwerkipmaske");
+	$cfg->param("NETWORK.GATEWAY", "$netzwerkgateway");
+	$cfg->param("NETWORK.DNS", "$netzwerknameserver");
+	$cfg->param("NETWORK.FRIENDLYNAME", "$lbfriendlyname");
 
-# Print Template
-LoxBerry::Web::head();
-LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
-print $maintemplate->output();
-LoxBerry::Web::pageend();
-LoxBerry::Web::foot();
-exit;
+	$cfg->save();
 
+	# Set network options
+	my $interface_file = "$lbhomedir/system/network/interfaces";
+	my $ethtemplate_name = undef;
+
+	# Wireless
+	if ($netzwerkanschluss eq "wlan0") {
+		if ($netzwerkadressen eq "manual") {
+			# Manual / Static
+			$ethtemplate_name = "$lbhomedir/system/network/interfaces.wlan_static";
+		} else {
+			# DHCP
+			$ethtemplate_name = "$lbhomedir/system/network/interfaces.wlan_dhcp";
+		}
+	# Ethernet
+	} else {
+		if ($netzwerkadressen eq "manual") {
+			# Manual / Static
+			$ethtemplate_name = "$lbhomedir/system/network/interfaces.eth_static";
+		} else {
+			# DHCP	
+			$ethtemplate_name = "$lbhomedir/system/network/interfaces.eth_dhcp";
+		}
+	}
+
+	my $ethtmpl = HTML::Template->new(
+				filename => $ethtemplate_name,
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				#associate => $cfg,
+				# debug => 1,
+			) or do 
+			{ $error = "System failure: Cannot open network template $ethtemplate_name";
+			&error; };
+			
+	$ethtmpl->param( 
+					'netzwerkssid' => $netzwerkssid,
+					'netzwerkschluessel' => $netzwerkschluessel,
+					'netzwerkipadresse' => $netzwerkipadresse,
+					'netzwerkipmaske' => $netzwerkipmaske,
+					'netzwerkgateway' => $netzwerkgateway,
+					'netzwerknameserver' => $netzwerknameserver,
+					'netzwerkdnsdomain' => 'loxberry.local',
+				);
+	open(my $fh, ">" , $interface_file) or do 
+			{ $error = "System failure: Cannot open network file $interface_file";
+			&error; };
+	$ethtmpl->output(print_to => $fh);
+	close $fh;
+	$ethtmpl = undef;
+					
+	if ($friendlyname_changed)
+		{ 
+		my $ret = system("perl $lbscgidir/tools/generatelegacytemplates.pl --force");
+		if ($ret == 0) {
+			print STDERR "network.cgi: generatelegacytemplates.pl's was called successfully.\n";
+		} else {
+			print STDERR "network.cgi: generatelegacytemplates.pl's exit code has shown an ERROR.\n";
+		}
+	}
+
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
+	$maintemplate->param("NEXTURL", "/admin/index.cgi");
+
+	# Print Template
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	exit;
 }
 
 exit;
@@ -322,7 +310,8 @@ sub error {
 				die_on_bad_params=> 0,
 				# associate => $cfg,
 				);
-
+	$maintemplate->param('ERROR' => $error);
+	
 	LoxBerry::Web::readlanguage($maintemplate);
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart();
