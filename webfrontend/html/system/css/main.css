@@ -1,6 +1,6 @@
 /* Form Error Message */
 
-.form-error-message {
+.form-error, .form-error-message {
   color: red;
   line-height: 1.5em;
   font-size: 0.75em;
