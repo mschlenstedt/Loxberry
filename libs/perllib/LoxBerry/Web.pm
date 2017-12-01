@@ -1,4 +1,4 @@
-our $VERSION = "0.31_05";
+our $VERSION = "0.31_06";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -137,8 +137,12 @@ sub pagestart
 	print STDERR "== pagestart == prints page including panels =================\n";
 	my $templatetext;
 	
-	my ($pagetitle, $helpurl, $helptemplate) = @_;
-
+	my ($pagetitle, $helpurl, $helptemplate, $page) = @_;
+	
+	if (!$page) {
+		$page = "main1";
+	} 
+	
 	my $lang = lblanguage();
 	print STDERR "\nDetected language: $lang\n";
 	our $template_title = $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
@@ -285,10 +289,11 @@ sub pagestart
 	# print STDERR "helptext:       $helptext\n";
 	print STDERR "Home string: " . $LoxBerry::Web::SL{'HEADER.PANEL_HOME'} . "\n";
 	
-	$headerobj->param( TEMPLATETITLE => $template_title);
-	$headerobj->param( HELPLINK => $helplink);
-	$headerobj->param( HELPTEXT => $helptext);
-	$headerobj->param( LANG => $lang);
+	$headerobj->param( 	TEMPLATETITLE => $template_title, 
+						HELPLINK => $helplink, 
+						HELPTEXT => $helptext, 
+						PAGE => $page,
+						LANG => $lang );
 
 	# If a navigation bar is defined
 	if (%main::navbar) {
