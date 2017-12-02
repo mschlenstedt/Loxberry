@@ -143,14 +143,14 @@ if ($startsetup) {
   $help = "setup00";
 
   # Print Template
-  &header;
+  &tpl_header;
   open(F,"$installdir/templates/system/$lang/firststart.html") || die "Missing template admin/$lang/firststart.html";
     while (<F>) {
       $_ =~ s/<!--\$(.*?)-->/${$1}/g;
       print $_;
     }
   close(F);
-  &footer;
+  &tpl_footer;
 
   exit;
 
@@ -182,7 +182,7 @@ our $systemdatetime = time()*1000;
 our $systemdate         = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
 
 # Print Template
-&header;
+&tpl_header;
 
 # Print Start of Template
 open(F,"$installdir/templates/system/$lang/mainmenu_start.html") || die "Missing template admin/$lang/mainmenu_start.html";
@@ -195,24 +195,26 @@ close(F);
 # Load Plugin Database and prepare table
 $cols = 8;
 $i = 0;
-open(F,"<$installdir/data/system/plugindatabase.dat");
+open F, "<", "$installdir/data/system/plugindatabase.dat" or die "$0: open $installdir/data/system/plugindatabase.dat : $!";
+
   @data = <F>;
-  foreach (@data){
+  foreach (@data)
+  {
     s/[\n\r]//g;
     # Comments
-    if ($_ =~ /^\s*#.*/) {
-      print F "$_\n";
-      next;
+    if ($_ =~ /^\s*#.*/) 
+    {
+			print  "$_\n" unless $_ =~ /^#/;
+			next;
     }
     @fields = split(/\|/);
-    $ptitle = @fields[6];
-    $pfolder = @fields[5];
+    $ptitle = $fields[6];
+    $pfolder = $fields[5];
     if ($i == 0) {
       print "<tr>\n";
     }
     print"<td>\n";
-    print "<a href=\"/admin/plugins/$pfolder/index.cgi\"><img class=\"menutableicon\" src=\"/system/images/icons/$pfolder/icon_64.png\"><div
-class=\"menutabletext\">$ptitle</div></a>\n";
+    print "<a href=\"/admin/plugins/$pfolder/index.cgi\"><img class=\"menutableicon\" src=\"/system/images/icons/$pfolder/icon_64.png\"><div class=\"menutabletext\">$ptitle</div></a>\n";
     print"</td>\n";
     $i++;
     if ($i > $cols) {
@@ -236,7 +238,7 @@ open(F,"$installdir/templates/system/$lang/mainmenu_end.html") || die "Missing t
     print $_;
   }
 close(F);
-&footer;
+&tpl_footer;
 
 exit;
 
@@ -249,7 +251,7 @@ exit;
 # Header
 #####################################################
 
-sub header {
+sub tpl_header {
 
   # create help page
   $helptext = "";
@@ -275,7 +277,7 @@ sub header {
 # Footer
 #####################################################
 
-sub footer {
+sub tpl_footer {
 
   open(F,"$installdir/templates/system/$lang/footer.html") || die "Missing template admin/$lang/footer.html";
     while (<F>) {
