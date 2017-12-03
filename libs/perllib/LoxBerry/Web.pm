@@ -1,4 +1,4 @@
-our $VERSION = "0.31_06";
+our $VERSION = "0.31_07";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -11,6 +11,9 @@ use CGI;
 use LoxBerry::System;
 use Carp;
 use HTML::Template;
+use CGI::Carp qw(fatalsToBrowser set_message);
+
+set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
 use base 'Exporter';
