@@ -390,13 +390,14 @@ sub pluginversion
 ##################################################################################
 # Get Plugins
 # Returns all plugins in a hash
-# Parameter: 1. string 'force' to re-read the db (otherwise it's cached during the call)
+# Parameter: 	1. If defined (=1), returns no comments 
+# 				2. If defined (=1), forces to reload the DB
 ##################################################################################
 sub get_plugins
 {
-	my ($command) = @_;
+	my ($nocomments, $forcereload) = @_;
 	
-	if (@plugins && $command ne lc('force')) {
+	if (@plugins && !$forcereload) {
 		# print STDERR "Returning already fetched version\n";
 		return @plugins;
 	} 
@@ -422,8 +423,10 @@ sub get_plugins
 		my %plugin;
 		# Comments
 		if ($_ =~ /^\s*#.*/) {
-			$plugin{PLUGINDB_COMMENT} = $_;
-			push(@plugins, \%plugin);
+			if (!defined $nocomments) {
+				$plugin{PLUGINDB_COMMENT} = $_;
+				push(@plugins, \%plugin);
+			}
 			next;
 		}
 		
@@ -452,6 +455,7 @@ sub get_plugins
 		$plugin{PLUGINDB_FOLDER} = $fields[5];
 		$plugin{PLUGINDB_TITLE} = $fields[6];
 		$plugin{PLUGINDB_INTERFACE} = $fields[7];
+		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
 		push(@plugins, \%plugin);
 	}
 	return @plugins;
