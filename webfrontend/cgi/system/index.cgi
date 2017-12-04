@@ -138,52 +138,12 @@ exit;
 
 sub mainmenu {
 
+	my @plugins;
+	
 	if ($R::form ne "system") {
-
-		# Load PLUGIN database
-		my $plugindb_file = "$lbsdatadir/plugindatabase.dat";
-		my $openerr;
-		open(my $fh, "<", $plugindb_file) or ($openerr = 1);
-		if ($openerr) {
-			$error= "$0: Error opening plugin database $plugindb_file";
-			# &error;
-			return undef;
-			}
-		my @data = <$fh>;
-
-		my @plugins = ();
-		foreach (@data){
-			s/[\n\r]//g;
-			# Comments
-			if ($_ =~ /^\s*#.*/) {
-				next;
-			}
-			my @fields = split(/\|/);
-
-			## Start Debug fields of Plugin-DB
-			do {
-				my $field_nr = 0;
-				my $dbg_fields = "Plugin-DB Fields: ";
-				foreach (@fields) {
-					$dbg_fields .= "$field_nr: $_ | ";
-					$field_nr++;
-				}
-				INFO($dbg_fields);
-			} ;
-			## End Debug fields of Plugin-DB
-			
-			my %plugin;
-			# From Plugin-DB
-			$plugin{PLUGIN_MD5_CHECKSUM} = $fields[0];
-			$plugin{PLUGIN_AUTHOR_NAME} = $fields[1];
-			$plugin{PLUGIN_AUTHOR_EMAIL} = $fields[2];
-			$plugin{PLUGIN_VERSION} = $fields[3];
-			$plugin{PLUGIN_NAME} = $fields[4];
-			$plugin{PLUGIN_FOLDER} = $fields[5];
-			$plugin{PLUGIN_TITLE} = $fields[6];
-			$plugin{PLUGIN_INTERFACE} = $fields[7];
-			push(@plugins, \%plugin);
-		}
+		# Get Plugins from plugin database
+		# 1st parameter is: No comments
+		@plugins = LoxBerry::System::get_plugins(1);
 		$maintemplate->param('PLUGINS' => \@plugins);
 	} else {
 		# Create SYSTEM widget list
