@@ -1,0 +1,12 @@
+<h1>Plugin-List</h1>
+	<TMPL_LOOP PLUGINS>
+		<TMPL_IF PLUGINDB_NO>
+			<div style="display: flex">
+				<div style="min-width: 50px"><TMPL_VAR PLUGINDB_NO></div>
+				<div style="min-width: 200px"><TMPL_VAR PLUGINDB_TITLE></div>
+				<div style="min-width: 200px"><TMPL_VAR PLUGINDB_FOLDER></div>
+				<div style="min-width: 100px"><TMPL_VAR PLUGINDB_VERSION></div>
+			</div>
+		</TMPL_IF>
+	</TMPL_LOOP>
+<h4>Isn't that cool? :-)</h4>

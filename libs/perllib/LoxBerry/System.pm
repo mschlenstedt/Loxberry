@@ -1,4 +1,4 @@
-our $VERSION = "0.31_04";
+our $VERSION = "0.31_05";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -165,6 +165,7 @@ my $pluginversion;
 my $lbhostname;
 my $lbfriendlyname;
 my $lbversion;
+my @plugins;
 
 # Finished everytime code execution
 ##################################################################
@@ -385,6 +386,81 @@ sub pluginversion
 	}
 	return undef;
 }
+
+##################################################################################
+# Get Plugins
+# Returns all plugins in a hash
+# Parameter: 1. string 'force' to re-read the db (otherwise it's cached during the call)
+##################################################################################
+sub get_plugins
+{
+	my ($command) = @_;
+	
+	if (@plugins && $command ne lc('force')) {
+		# print STDERR "Returning already fetched version\n";
+		return @plugins;
+	} 
+	my $plugindb_file = "$lbsdatadir/plugindatabase.dat";
+	if (!-e $plugindb_file) {
+		Carp::carp "LoxBerry::System::pluginversion: Could not find $plugindb_file\n";
+		return undef;
+	}
+	my $openerr;
+	open(my $fh, "<", $plugindb_file) or ($openerr = 1);
+	if ($openerr) {
+		Carp::carp "Error opening plugin database $plugindb_file";
+		# &error;
+		return undef;
+		}
+	my @data = <$fh>;
+
+	@plugins = ();
+	my $plugincount = 0;
+	
+	foreach (@data){
+		s/[\n\r]//g;
+		my %plugin;
+		# Comments
+		if ($_ =~ /^\s*#.*/) {
+			$plugin{PLUGINDB_COMMENT} = $_;
+			push(@plugins, \%plugin);
+			next;
+		}
+		
+		$plugincount++;
+		my @fields = split(/\|/);
+
+		## Start Debug fields of Plugin-DB
+		# do {
+			# my $field_nr = 0;
+			# my $dbg_fields = "Plugin-DB Fields: ";
+			# foreach (@fields) {
+				# $dbg_fields .= "$field_nr: $_ | ";
+				# $field_nr++;
+			# }
+			# print STDERR "$dbg_fields\n";
+		# } ;
+		## End Debug fields of Plugin-DB
+		
+		# From Plugin-DB
+		$plugin{PLUGINDB_NO} = $plugincount;
+		$plugin{PLUGINDB_MD5_CHECKSUM} = $fields[0];
+		$plugin{PLUGINDB_AUTHOR_NAME} = $fields[1];
+		$plugin{PLUGINDB_AUTHOR_EMAIL} = $fields[2];
+		$plugin{PLUGINDB_VERSION} = $fields[3];
+		$plugin{PLUGINDB_NAME} = $fields[4];
+		$plugin{PLUGINDB_FOLDER} = $fields[5];
+		$plugin{PLUGINDB_TITLE} = $fields[6];
+		$plugin{PLUGINDB_INTERFACE} = $fields[7];
+		push(@plugins, \%plugin);
+	}
+	return @plugins;
+
+}
+
+
+
+
 
 ##################################################################################
 # Get System Version
