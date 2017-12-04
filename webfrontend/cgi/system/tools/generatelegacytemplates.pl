@@ -34,74 +34,124 @@ if (!$lbstemplatedir) {
 	print STDERR "generatelegacytemplates.pl: Cannot get \$lbstemplatedir. Exiting.\n";
 	exit (1);
 }
-
+		
 # Catch all language files to detect available languages
 my @files = <$lbstemplatedir/lang/language_??.ini>;
 foreach my $file (@files) {
 	$file =~ s/\.[^.]*$//;
 	my $langcode = substr($file, -2, 2);
-	print STDERR "generatelegacytemplates.pl: Processing language $file\n";	
+	print STDERR "generatelegacytemplates.pl: Checking language $file\n";	
 
-	## Checking timestamps, getting all file handles
-	# If language files do not exist, they will be created later.
-	open(my $fh_lang_header, "<", "$lbstemplatedir/$langcode/header.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/$langcode/header.html. File will be created.\n"; };
-	open(my $fh_lang_footer, "<", "$lbstemplatedir/$langcode/footer.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/$langcode/footer.html. File will be created.\n"; };
+	# All LB 0.3 templates
+	my @tmpl_filelist = (
+			"$lbstemplatedir/head.html",
+			"$lbstemplatedir/pagestart.html",
+			"$lbstemplatedir/pageend.html",
+			"$lbstemplatedir/foot.html",
+			"$lbstemplatedir/success.html",
+			"$lbstemplatedir/error.html",
+			"$lbstemplatedir/lang/language_$langcode.ini"
+	);
+
+	# All legacy templates
+	my @lang_filelist = (
+			"$lbstemplatedir/$langcode/header.html",
+			"$lbstemplatedir/$langcode/footer.html",
+			"$lbstemplatedir/$langcode/success.html",
+			"$lbstemplatedir/$langcode/error.html"
+	);
 	
-	# If template files do not exist, we quit with error.
-	open(my $fh_tmpl_head, "<", "$lbstemplatedir/head.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/head.html. EXITING.\n"; 
+	my $max_tmpl_epoch = 0;
+	foreach my $tmpl (@tmpl_filelist) {
+		open(my $tmpl_fh, "<", $tmpl) or 
+		do { print STDERR "generatelegacytemplates.pl: Cannot open $tmpl. EXITING.\n"; 
 			exit(1);};
-	open(my $fh_tmpl_pagestart, "<", "$lbstemplatedir/pagestart.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/pagestart.html. EXITING.\n"; 
-			exit(1);};
-	open(my $fh_tmpl_pageend, "<", "$lbstemplatedir/pageend.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/pageend.html. EXITING.\n"; 
-			exit(1);};
-	open(my $fh_tmpl_foot, "<", "$lbstemplatedir/foot.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/foot.html. EXITING.\n"; 
-			exit(1);};
-	open(my $fh_tmpl_lang, "<", "$lbstemplatedir/lang/language_$langcode.ini") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot open $lbstemplatedir/lang/language_$langcode.ini. EXITING.\n"; 
-			exit(1);};
+		if ( defined ((stat($tmpl_fh))[9]) && ((stat($tmpl_fh))[9]) gt $max_tmpl_epoch ) {
+			$max_tmpl_epoch = (stat($tmpl_fh))[9];
+		}
+		close $tmpl_fh;
+	}
 	
-	
-	my ($lh_e, $lf_e) = ((stat($fh_lang_header))[9], (stat($fh_lang_footer))[9]);
-	$lh_e = defined $lh_e ? $lh_e : 0;
-	$lf_e = defined $lf_e ? $lf_e : 0;
-	
-	my $newest_epoch_lang = min( $lh_e, $lf_e );
-	my $newest_epoch_tmpl = max ( (stat($fh_tmpl_head))[9], (stat($fh_tmpl_pagestart))[9], (stat($fh_tmpl_pageend))[9], (stat($fh_tmpl_foot))[9], (stat($fh_tmpl_lang))[9] );
-	
-	close $fh_lang_header;
-	close $fh_lang_footer;
-	
-	
+	my $min_tmpllang_epoch;
+	foreach my $tmpllang (@lang_filelist) {
+		open(my $tmpllang_fh, "<", $tmpllang) or 
+		do { print STDERR "generatelegacytemplates.pl: Cannot open $tmpllang. File will be created.\n";
+			 $min_tmpllang_epoch = 0;};
+		if ( ! defined $min_tmpllang_epoch && defined ((stat($tmpllang_fh))[9]) ) {
+			$min_tmpllang_epoch = (stat($tmpllang_fh))[9];
+		} elsif ( ((stat($tmpllang_fh))[9]) < $min_tmpllang_epoch ) {
+			$min_tmpllang_epoch = (stat($tmpllang_fh))[9];
+		}
+		close $tmpllang_fh;
+	}
+
 	# If nothing has changed, go to the next language
-	if ($newest_epoch_tmpl <= $newest_epoch_lang && !$force)
+	if ($max_tmpl_epoch <= $min_tmpllang_epoch && !$force)
 		{ print STDERR "generatelegacytemplates.pl: No need to process language $langcode.\n";
 		  next;
 	}
+	
+	print STDERR "generatelegacytemplates.pl: Language $file WILL BE RE-CREATED\n";	
+	print STDERR "max_tmpl_epoch: $max_tmpl_epoch   min_tmpllang_epoch: $min_tmpllang_epoch\n";
 	
 	# Pre-set the language in LoxBerry:Web
 	$LoxBerry::Web::lang = $langcode;
 	
 	my $output_header;
 	my $output_footer;
+	my $output_success;
+	my $output_error;
+	
 
 	# Send STDOUT to variables
+	
+	# lbheader.html
 	open TOOUTPUT, '>', \$output_header or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
 	select TOOUTPUT;
 	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
 	select STDOUT;
 	
+	# lbfooter.html
 	open TOOUTPUT, '>', \$output_footer or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
 	select TOOUTPUT;
 	LoxBerry::Web::lbfooter(); 
 	select STDOUT;
 	
-	if ($output_header && $output_footer) {
+	# error.html
+	open TOOUTPUT, '>', \$output_error or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
+	select TOOUTPUT;
+	my $maintemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/error.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				);
+	$maintemplate->param( "ERROR", '<!--$error-->');
+	LoxBerry::Web::readlanguage($maintemplate);
+	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	select STDOUT;
+	undef $maintemplate;
+	
+	# success.html
+	open TOOUTPUT, '>', \$output_success or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
+	select TOOUTPUT;
+	$maintemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/success.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				);
+	$maintemplate->param( "MESSAGE", '<!--$message-->');
+	$maintemplate->param( "NEXTURL", '<!--$nexturl-->');
+	LoxBerry::Web::readlanguage($maintemplate);
+	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	select STDOUT;
+	
+	if ($output_header && $output_footer && $output_error && $output_success) {
 	open(my $fh_lang_header, ">", "$lbstemplatedir/$langcode/header.html") or 
 		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/header.html. Skipping.\n"; 
 			 next;
@@ -110,17 +160,32 @@ foreach my $file (@files) {
 		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/footer.html. Skipping.\n"; 
 			next;
 			};
+	open(my $fh_lang_error, ">", "$lbstemplatedir/$langcode/error.html") or 
+		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/error.html. Skipping.\n"; 
+			next;
+			};
+	open(my $fh_lang_success, ">", "$lbstemplatedir/$langcode/success.html") or 
+		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/success.html. Skipping.\n"; 
+			next;
+			};
 	
 	# This removes line 1 to 2 of the string to delete content-type: text/html 
 	# as legacy plugins send that for their own
 	$output_header =~ s/^(?:.*\n){1,2}//;
+	$output_error =~ s/^(?:.*\n){1,2}//;
+	$output_success =~ s/^(?:.*\n){1,2}//;
 	
 	
 	# Writing new files
 	print $fh_lang_header $output_header;
 	print $fh_lang_footer $output_footer;
+	print $fh_lang_error $output_error;
+	print $fh_lang_success $output_success;
+		
 	close $fh_lang_header;
 	close $fh_lang_footer;
+	close $fh_lang_error;
+	close $fh_lang_success;
 	
 	}
 }
