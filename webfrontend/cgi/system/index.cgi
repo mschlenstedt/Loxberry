@@ -264,9 +264,9 @@ sub mainmenu {
 
 	our %navbar;
 	$navbar{1}{Name} = $SL{'HEADER.TITLE_PAGE_PLUGINS'};
-	$navbar{1}{URL} = "index.cgi";
+	$navbar{1}{URL} = "/admin/system/index.cgi";
 	$navbar{2}{Name} = $SL{'HEADER.TITLE_PAGE_SYSTEM'};
-	$navbar{2}{URL} = "index.cgi?form=system";
+	$navbar{2}{URL} = "/admin/system/index.cgi?form=system";
 
 	if ($R::form ne "system") {
 		$navbar{1}{active} = 1;
