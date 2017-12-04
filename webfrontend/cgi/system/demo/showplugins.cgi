@@ -39,4 +39,11 @@ LoxBerry::Web::lbheader("showplugins");
 print $htmltemplate->output();
 LoxBerry::Web::lbfooter();
 
- 
+# You can explicitly read the plugindb without comments in the array
+# With that filtered array, you don't need to skip or TMPL_IF it, but you'll loose comments on writing.
+# my @plugins = LoxBerry::System::get_plugins(1);
+
+# You can force to re-read the array from disk (during the runtime of the script, usually it is cached after one call)
+# This might be useful if you read->write->read it within one single user request.
+# my @plugins = LoxBerry::System::get_plugins(undef, 1);
+
