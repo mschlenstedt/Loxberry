@@ -1,4 +1,4 @@
-our $VERSION = "0.31_07";
+our $VERSION = "0.31_08";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -19,6 +19,8 @@ package LoxBerry::Web;
 use base 'Exporter';
 our @EXPORT = qw (
 		lblanguage
+		$lbpluginpage
+		$lbsystempage
 		get_plugin_icon
 		%SL
 		%L
@@ -32,6 +34,8 @@ our @EXPORT = qw (
 my $lang;
 our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
+$lbpluginpage = "/admin/system/index.cgi";
+$lbsystempage = "/admin/system/index.cgi?form=system";
 
 # Finished everytime code execution
 ##################################################################
