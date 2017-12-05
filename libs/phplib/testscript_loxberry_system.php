@@ -29,6 +29,24 @@ print "FTP Port: " . $ftpport . "\n";
 $localip = LoxBerry\System\get_localip();
 print "IP: " . $localip . "\n";
 
+$lbversion = LoxBerry\System\lbversion();
+print "LoxBerry Version: " . $lbversion . "\n";
+
+$lbhostname = lbhostname();
+print "LoxBerry Friendly Name: " . $lbhostname . "\n";
+
+
+$lbfriendlyname = lbfriendlyname();
+print "LoxBerry Friendly Name: " . $lbfriendlyname . "\n";
+
+print "Is enabled? " . is_enabled("true") . " (this should be 1)\n";
+print "Is disabled? " . is_disabled("off") . " (this should be 1)\n";
+
+print "Plugin list:\n";
+$myplugins = LoxBerry\System\get_plugins();
+foreach($plugins as $plugin) {
+	print "Nr. {$plugin['PLUGINDB_NO']}: {$plugin['PLUGINDB_TITLE']} version {$plugin['PLUGINDB_VERSION']} Icon-URI: {$plugin['PLUGINDB_ICONURI']}\n";
+}
 
 ?>
 

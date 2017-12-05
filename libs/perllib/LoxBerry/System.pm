@@ -1,4 +1,4 @@
-our $VERSION = "0.31_06";
+our $VERSION = "0.31_07";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -446,6 +446,7 @@ sub get_plugins
 		## End Debug fields of Plugin-DB
 		
 		# From Plugin-DB
+		
 		$plugin{PLUGINDB_NO} = $plugincount;
 		$plugin{PLUGINDB_MD5_CHECKSUM} = $fields[0];
 		$plugin{PLUGINDB_AUTHOR_NAME} = $fields[1];
@@ -457,6 +458,8 @@ sub get_plugins
 		$plugin{PLUGINDB_INTERFACE} = $fields[7];
 		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
 		push(@plugins, \%plugin);
+		# On changes of the plugindatabase format, please change here 
+		# and in libs/phplib/loxberry_system.php / function get_plugins
 	}
 	return @plugins;
 
