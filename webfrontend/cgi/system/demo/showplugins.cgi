@@ -28,8 +28,13 @@ foreach my $plugin (@plugins) {
 	print STDERR "$plugin->{PLUGINDB_NO} $plugin->{PLUGINDB_TITLE} $plugin->{PLUGINDB_VERSION}\n";
 }
 
-# Visit http://loxberry/admin/system/demo/showplugins.cgi
+# Access a single element
+print STDERR "Single element: " . $plugins[0]->{PLUGINDB_COMMENT} . "\n";
+# Keep in mind, that if comments are loaded, the index also gives you comments. 
+# In that case, array index is not equal plugin number
 
+
+# Visit http://loxberry/admin/system/demo/showplugins.cgi
 
 # Use the Array directly in HTML::Template
 my $htmltemplate = HTML::Template->new(
