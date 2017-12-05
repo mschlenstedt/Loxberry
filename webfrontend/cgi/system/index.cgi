@@ -142,8 +142,7 @@ sub mainmenu {
 	
 	if ($R::form ne "system") {
 		# Get Plugins from plugin database
-		# 1st parameter is: No comments
-		@plugins = LoxBerry::System::get_plugins(1);
+		@plugins = LoxBerry::System::get_plugins();
 		$maintemplate->param('PLUGINS' => \@plugins);
 	} else {
 		# Create SYSTEM widget list

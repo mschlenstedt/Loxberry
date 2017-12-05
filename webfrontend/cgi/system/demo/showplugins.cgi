@@ -2,7 +2,12 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-my @plugins = LoxBerry::System::get_plugins();
+
+# We explicitly use parameter 1 to read the comments (if we don't want to loose the comments).
+my @plugins = LoxBerry::System::get_plugins(1);
+# For normal situations, where ommit the parameter and only get plugins without comments.
+
+# The following example shows how to suppress the loaded comments in code and in HTML::Template.
 
 # With comments
 print STDERR "Plugins with comments:\n";
@@ -39,11 +44,10 @@ LoxBerry::Web::lbheader("showplugins");
 print $htmltemplate->output();
 LoxBerry::Web::lbfooter();
 
-# You can explicitly read the plugindb without comments in the array
-# With that filtered array, you don't need to skip or TMPL_IF it, but you'll loose comments on writing.
-# my @plugins = LoxBerry::System::get_plugins(1);
+# To only get plugins without comments, simply ommit the parameter
+# my @plugins = LoxBerry::System::get_plugins();
 
 # You can force to re-read the array from disk (during the runtime of the script, usually it is cached after one call)
 # This might be useful if you read->write->read it within one single user request.
-# my @plugins = LoxBerry::System::get_plugins(undef, 1);
-
+# my @plugins = LoxBerry::System::get_plugins(1, 1);
+# This is: re-read from disk with comments.

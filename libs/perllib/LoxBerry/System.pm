@@ -1,4 +1,4 @@
-our $VERSION = "0.31_05";
+our $VERSION = "0.31_06";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -390,12 +390,12 @@ sub pluginversion
 ##################################################################################
 # Get Plugins
 # Returns all plugins in a hash
-# Parameter: 	1. If defined (=1), returns no comments 
+# Parameter: 	1. If defined (=1), returns also comments 
 # 				2. If defined (=1), forces to reload the DB
 ##################################################################################
 sub get_plugins
 {
-	my ($nocomments, $forcereload) = @_;
+	my ($withcomments, $forcereload) = @_;
 	
 	if (@plugins && !$forcereload) {
 		# print STDERR "Returning already fetched version\n";
@@ -423,7 +423,7 @@ sub get_plugins
 		my %plugin;
 		# Comments
 		if ($_ =~ /^\s*#.*/) {
-			if (!defined $nocomments) {
+			if (defined $withcomments) {
 				$plugin{PLUGINDB_COMMENT} = $_;
 				push(@plugins, \%plugin);
 			}
