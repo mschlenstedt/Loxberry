@@ -109,7 +109,7 @@ $lang = lblanguage();
 $maintemplate->param( "LBHOSTNAME", lbhostname());
 $maintemplate->param( "LANG", $lang);
 $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
-$maintemplate->param ( "NEXTURL", "/admin/index.cgi");
+$maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
 
 
 ##########################################################################

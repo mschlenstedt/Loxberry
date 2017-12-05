@@ -521,7 +521,7 @@ print "Content-Type: text/html\n\n";
 $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
 $help = "plugin";
 
-$nexturl = "/admin/index.cgi";
+$nexturl = "/admin/system/index.cgi?form=system";
 
 # Print Template
 &header;

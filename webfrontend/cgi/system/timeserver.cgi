@@ -283,7 +283,7 @@ sub save {
 	$message = "$SL{'TIMESERVER.SAVE_OK_SETTINGS_STORED'}<br>$output";
 
 	$maintemplate->param("MESSAGE", $message);
-	$maintemplate->param("NEXTURL", "/admin/index.cgi");
+	$maintemplate->param("NEXTURL", "/admin/system/index.cgi?form=system");
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);

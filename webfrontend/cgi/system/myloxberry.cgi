@@ -143,7 +143,7 @@ sub save
 
 	$maintemplate->param( "SAVE", 1);
 	$maintemplate->param("SELFURL", $ENV{REQUEST_URI});
-	$maintemplate->param("NEXTURL", "/admin/index.cgi");
+	$maintemplate->param("NEXTURL", "/admin/system/index.cgi?form=system");
 
 	if ($R::lbfriendlyname ne $cfg->param("NETWORK.FRIENDLYNAME")) {
 		$friendlyname_changed = 1;

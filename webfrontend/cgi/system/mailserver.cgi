@@ -286,7 +286,7 @@ ENDFILE
 	}
 
 	$maintemplate->param( "MESSAGE", $SL{'MAILSERVER.SAVESUCCESS'});
-	$maintemplate->param( "NEXTURL", "/admin/index.cgi");
+	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
 
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};

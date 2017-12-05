@@ -274,7 +274,7 @@ sub install
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
 	$maintemplate->param( "MESSAGE" , $SL{'UPDATES.UPGRADE_REBOOT_INFORMATION'} );
-	$maintemplate->param( "NEXTURL", "/admin/index.cgi" );
+	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system" );
 	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
@@ -419,7 +419,7 @@ sub install
 	$maintemplate->param( "SVERSION", $sversion );
 	$maintemplate->param( "UVERSION", $uversion );
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
-	$maintemplate->param ( "NEXTURL", "/admin/index.cgi");
+	$maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
 	LoxBerry::Web::lbheader($maintemplate, $helpurl, $helptemplate);

@@ -266,7 +266,7 @@ $credentialstxt=encode_base64($credentialstxt);
 $maintemplate->param( "ADMINUSER", $adminuser );
 $maintemplate->param( "ADMINPASS1", $adminpass1 );
 $maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
-$maintemplate->param( "NEXTURL", "/admin/index.cgi");
+$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
 
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
 print STDERR "admin.cgi OUTPUT\n";
