@@ -1,4 +1,4 @@
-our $VERSION = "0.31_09";
+our $VERSION = "0.31_10";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -107,7 +107,12 @@ sub head
 
 	my $lang = lblanguage();
 	print STDERR "\nDetected language: $lang\n";
-	our $template_title = $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
+	print STDERR "main::templatetitle: $main::template_title\n";
+	our $template_title = defined $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
+	$template_title = LoxBerry::System::trim($template_title);
+	if ($template_title eq "") {
+		$template_title = "LoxBerry";
+	}
 	print STDERR "friendlyname: " . LoxBerry::System::lbfriendlyname() . "\n";
 	
 	my $templatepath;

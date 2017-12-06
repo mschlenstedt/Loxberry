@@ -218,9 +218,10 @@ sub mainmenu {
 	}
 
 	$maintemplate->param( 'SVERSION' => $sversion);
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'};
+	LoxBerry::Web::head($template_title);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . " <span class='hint'>V$sversion</span>";
-	LoxBerry::Web::head();
-
+	
 	our %navbar;
 	$navbar{1}{Name} = $SL{'HEADER.TITLE_PAGE_PLUGINS'};
 	$navbar{1}{URL} = "/admin/system/index.cgi";
