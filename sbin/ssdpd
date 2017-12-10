@@ -3,6 +3,7 @@
  # needed libio-socket-multicast-perl
 
  use strict;
+ use lib "/opt/loxberry/libs/perllib";
  use IO::Socket::Multicast;
  use IO::Socket::INET;
  use DateTime;
