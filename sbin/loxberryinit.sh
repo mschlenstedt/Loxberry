@@ -26,9 +26,22 @@
 # Version 1.6
 # 01.10.2017 08:20:00
 
+run_scripts()
+{
+    for script in $1/*; do
+
+        # skip non-executable snippets
+        [ -x "$script" ] || continue
+
+        # execute $script in the context of the current shell
+        . $script & > /dev/null 2>&1
+    done
+}
+
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 
 . /lib/lsb/init-functions
+. /etc/environment
 
 case "$1" in
   start|"")
@@ -83,11 +96,14 @@ case "$1" in
 
         # Run Daemons from Plugins and from System
         log_action_begin_msg "Running System Daemons"
-        run-parts -v /opt/loxberry/system/daemons/system > /dev/null 
-
+        # run-parts -v  /opt/loxberry/system/daemons/system > /dev/null 
+		run_scripts /opt/loxberry/system/daemons/system
+		
         log_action_begin_msg "Running Plugin Daemons"
-        run-parts -v /opt/loxberry/system/daemons/plugins > /dev/null 
-
+        #run-parts -v --new-session /opt/loxberry/system/daemons/plugins > /dev/null 
+		run_scripts /opt/loxberry/system/daemons/plugins
+		
+		
         # Run Uninstall scripts
         log_action_begin_msg "Running Uninstall Scripts"
         run-parts -v /opt/loxberry/system/daemons/uninstall > /dev/null 
