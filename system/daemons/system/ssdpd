@@ -1,0 +1,47 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          ssdpd
+# Required-Start:    $all
+# Required-Stop::    $all
+# Should-Start:      $all
+# Should-Stop:       $all
+# Default-Start:
+# Default-Stop:      0 1 6
+# Short-Description: Start ssdpd at boot time
+# Description:       Manage the ssdp daemon for Loxberry.
+### END INIT INFO
+
+#set -e
+#set -u
+#${DEBIAN_SCRIPT_DEBUG:+ set -v -x}
+. /lib/lsb/init-functions
+case "$1" in
+        'start')
+                log_daemon_msg "Starting ssdp service" "ssdpd"
+                cd /opt/loxberry/sbin
+                ./ssdpd >> /opt/loxberry/log/system/ssdpd.log &
+                log_end_msg 0 ;;
+        'stop')
+                log_daemon_msg "Stopping ssdp service" "ssdpd"
+                /usr/bin/pkill ssdpd &
+                log_end_msg 0;;
+        'restart')
+                log_daemon_msg "Restarting ssdp service" "ssdpd"
+                /usr/bin/pkill ssdpd &
+                cd /opt/loxberry/sbin
+                ./ssdpd >> /opt/loxberry/log/system/ssdpd.log &
+                log_end_msg 0;;
+        '')
+                if [ -h /etc/init.d/ssdpd ]
+                then
+                  /usr/sbin/service ssdpd start
+                else
+                  ln -s /opt/loxberry/system/daemons/system/ssdpd /etc/init.d/ssdpd
+                  /bin/systemctl daemon-reload
+                  /etc/init.d/ssdpd start
+                fi;;
+        *)
+                echo "usage $0 start|stop|restart" ;;
+
+esac

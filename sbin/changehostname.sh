@@ -60,8 +60,8 @@ sed -i "/$old/ s/$old/$new/" /etc/hosts
 #############################################
 ## sed '/match/s/.*/replacement/' file
 
-cp -p -n -T /opt/loxberry/config/system/minidlna.conf /opt/loxberry/config/system/original.minidlna.conf
-sed -i "/friendly_name=/s/.*/friendly_name=Loxberry $newfirstup/" /opt/loxberry/config/system/minidlna.conf
+#cp -p -n -T /opt/loxberry/config/system/minidlna.conf /opt/loxberry/config/system/original.minidlna.conf
+#sed -i "/friendly_name=/s/.*/friendly_name=Loxberry $newfirstup/" /opt/loxberry/config/system/minidlna.conf
 
 #############################################
 ## /etc/mailname
