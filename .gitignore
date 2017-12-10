@@ -1,0 +1,11 @@
+# Configs that could contain credentials
+config/system/general.cfg
+config/system/mail.cfg
+
+# Plugins at all
+config/plugins/**
+data/plugins/**
+log/plugins/**
+templates/plugins/**
+webfrontend/cgi/plugins/**
+webfrontend/html/plugins/**
