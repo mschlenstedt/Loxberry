@@ -102,8 +102,8 @@ if ($R::nostartsetup) {
 }
 
 # If Setup assistant wasn't started yet, ask user
-if ($startsetup) {
-  INFO("Startsetup called");
+# if ($startsetup) {
+#  INFO("Startsetup called");
   #print "Content-Type: text/html\n\n";
 
   #$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017");
@@ -119,9 +119,9 @@ if ($startsetup) {
   # close(F);
   # &footer;
 
-  exit;
+#  exit;
 
-}
+# }
 
 #########################################################################
 # What should we do
