@@ -1,4 +1,4 @@
-our $VERSION = "0.31_07";
+our $VERSION = "0.31_08";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -27,6 +27,7 @@ our @EXPORT = qw (
 	$lbplugindir
 	$lbcgidir
 	$lbhtmldir
+	$lbhtmlauthdir
 	$lbtemplatedir
 	$lbdatadir
 	$lblogdir
@@ -35,8 +36,8 @@ our @EXPORT = qw (
 	lbhostname
 	lbfriendlyname
 
-	$lbscgidir
 	$lbshtmldir
+	$lbshtmlauthdir
 	$lbstemplatedir
 	$lbsdatadir
 	$lbslogdir
@@ -60,7 +61,7 @@ LoxBerry::System - LoxBerry platform system module to ease writing plugins for L
 	
 	# LoxBerry::System defines globals for plugin directory
 	print "Config Directory: $lbconfigdir";
-	print "CGI directory:    $lbcgidir";
+	print "HTMLAUTH directory:    $lbhtmlauthdir";
 	print "HTML directory:   $lbhtmldir";
 	# See more below
 	
@@ -87,14 +88,15 @@ LoxBerry::System defines a dozen of variables for easier access to the plugin di
 
 	$lbhomedir		# Home directory of LoxBerry, usually /opt/loxberry
 	$lbplugindir	# The unique directory name of the plugin, e.g. squeezelite
-	$lbcgidir		# Full path to the CGI directory of the current plugin. e.g. /opt/loxberry/webfrontend/cgi/plugins/squeezelite
+	$lbcgidir		# Legacy variable, points to the HTMLAUTH dir . e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
+	$lbhtmlauthdir	# Full path to the HTMLAUTH directory of the current plugin. e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
 	$lbhtmldir		# Full path to the HTML directory of the current plugin, e.g. /opt/loxberry/webfrontend/html/plugins/squeezelite
 	$lbtemplatedir	# Full path to the Template directory of the current plugin, e.g. /opt/loxberry/templates/plugins/squeezelite
 	$lbdatadir		# Full path to the Data directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
 	$lblogdir		# Full path to the Log directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
 	$lbconfigdir	# Full path to the Config directory of the current plugin, e.g. /opt/loxberry/config/plugins/squeezelite
 
-	$lbscgidir		# Full path to the SYSTEM CGI directory /opt/loxberry/webfrontend/cgi/system
+	$lbshtmlauthdir	# Full path to the SYSTEM CGI directory /opt/loxberry/webfrontend/htmlauth/system
 	$lbshtmldir		# Full path to the SYSTEM HTML directory /opt/loxberry/webfrontend/html/system
 	$lbstemplatedir	# Full path to the SYSTEM Template directory /opt/loxberry/templates/system
 	$lbsdatadir		# Full path to the SYSTEM Data directory /opt/loxberry/data/system
@@ -142,15 +144,16 @@ if ($ENV{LBHOMEDIR}) {
 
 my $part = substr ((Cwd::abs_path($0)), (length($lbhomedir)+1));
 our ($lbplugindir) = (split(/\//, $part))[3];
-our $lbcgidir = "$lbhomedir/webfrontend/htmlauth/plugins/$lbplugindir";
+our $lbhtmlauthdir = "$lbhomedir/webfrontend/htmlauth/plugins/$lbplugindir";
 our $lbhtmldir = "$lbhomedir/webfrontend/html/plugins/$lbplugindir";
+our $lbcgidir = $lbhtmlauthdir;
 our $lbtemplatedir = "$lbhomedir/templates/plugins/$lbplugindir";
 our $lbdatadir = "$lbhomedir/data/plugins/$lbplugindir";
 our $lblogdir = "$lbhomedir/log/plugins/$lbplugindir";
 our $lbconfigdir = "$lbhomedir/config/plugins/$lbplugindir";
 
-our $lbscgidir = "$lbhomedir/webfrontend/htmlauth/system";
 our $lbshtmldir = "$lbhomedir/webfrontend/html/system";
+our $lbshtmlauthdir = "$lbhomedir/webfrontend/htmlauth/system";
 our $lbstemplatedir = "$lbhomedir/templates/system";
 our $lbsdatadir = "$lbhomedir/data/system";
 our $lbslogdir = "$lbhomedir/log/system";
@@ -570,14 +573,14 @@ sub set_clouddns
 sub is_systemcall
 {
 	# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
-	# print STDERR "lbscgidir: " . $lbscgidir . "\n";
-	# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbscgidir)) . "\n";
+	# print STDERR "lbshtmlauthdir: " . $lbshtmlauthdir . "\n";
+	# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) . "\n";
 	
-	if (substr(Cwd::abs_path($0), 0, length($lbscgidir)) eq $lbscgidir) { return 1; }
+	if (substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir) { return 1; }
 	if (substr(Cwd::abs_path($0), 0, length("$lbhomedir/sbin")) eq "$lbhomedir/sbin") { return 1; }
 	if (substr(Cwd::abs_path($0), 0, length("$lbhomedir/bin")) eq "$lbhomedir/bin") { return 1; }
 	return undef;
-	# return substr(Cwd::abs_path($0), 0, length($lbscgidir)) eq $lbscgidir ? 1 : undef;
+	# return substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir ? 1 : undef;
 }
 
 =head2 get_ftpport

@@ -1,4 +1,4 @@
-our $VERSION = "0.31_10";
+our $VERSION = "0.31_11";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
