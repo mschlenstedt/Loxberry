@@ -15,7 +15,7 @@ $ini = parse_ini_file(LBSCONFIGDIR . "/general.cfg",TRUE);
     <manufacturerURL>http://www.loxwiki.eu/</manufacturerURL>
     <modelDescription>Loxberry</modelDescription>
     <modelName>Loxberry</modelName>
-    <modelNumber>1</modelNumber>
+    <modelNumber><?php echo $ini['BASE']['VERSION']; ?></modelNumber>
     <modelURL>http://www.loxwiki.eu</modelURL>
     <UDN>uuid:<?php echo $ini['SSDP']['UUID']; ?></UDN>
     <iconList>
