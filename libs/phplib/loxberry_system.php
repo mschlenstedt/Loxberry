@@ -68,6 +68,7 @@ namespace LoxBerry\System
 	$lbsysversion=NULL;
 	$miniservercount=NULL;
 	$plugins=NULL;
+	$lblang=NULL;
 
 	####### Get Miniserver array #######
 	function get_miniservers() 
@@ -239,6 +240,7 @@ namespace LoxBerry\System
 		global $binaries;
 		global $lbversion;
 		global $lbfriendlyname;
+		global $lblang;
 		
 	#	print ("READ miniservers FROM DISK\n");
 
@@ -246,16 +248,16 @@ namespace LoxBerry\System
 		
 		# error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
 		
-		# If no miniservers are defined, return NULL
-		
-		# Get CloudDNS and Timezones
+		# Get CloudDNS and Timezones, System language
 		$clouddnsaddress = $cfg['BASE']['CLOUDDNS'] or error_log("LoxBerry System Warning: BASE.CLOUDDNS not defined.");
 		$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or error_log("LoxBerry System Warning: TIMESERVER.ZONE not defined.");
 		$lbversion = $cfg['BASE']['VERSION'] or error_log("LoxBerry System Warning: BASE.VERSION not defined.");
 		$lbfriendlyname = $cfg['NETWORK']['FRIENDLYNAME'] or error_log("LoxBerry System Info: NETWORK.FRIENDLYNAME not defined.");
-		
+		$lblang = $cfg['BASE']['LANG'];
+		error_log("read_generalcfg: Language is $lblang");
 		$binaries = $cfg['BINARIES'];
 		
+		# If no miniservers are defined, return NULL
 		$miniservercount = $cfg['BASE']['MINISERVERS'];
 		if (!$miniservercount || $miniservercount < 1) {
 			return;
