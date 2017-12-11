@@ -24,7 +24,7 @@ namespace LoxBerry\System
 	error_log("LoxBerry System Info: LBPLUGINDIR: " . LBPLUGINDIR);
 
 	# Defining globals for PLUGINS directories
-	define ("LBCGIDIR", LBHOMEDIR . "/webfrontend/cgi/plugins/" . LBPLUGINDIR);
+	define ("LBHTMLAUTHDIR", LBHOMEDIR . "/webfrontend/htmlauth/plugins/" . LBPLUGINDIR);
 	define ("LBHTMLDIR", LBHOMEDIR . "/webfrontend/html/plugins/" . LBPLUGINDIR);
 	define ("LBTEMPLATEDIR", LBHOMEDIR . "/templates/plugins/" . LBPLUGINDIR);
 	define ("LBDATADIR", LBHOMEDIR . "/data/plugins/" . LBPLUGINDIR);
@@ -32,7 +32,7 @@ namespace LoxBerry\System
 	define ("LBCONFIGDIR", LBHOMEDIR . "/config/plugins/" . LBPLUGINDIR);
 
 	# Defining globals for SYSTEM directories
-	define ("LBSCGIDIR", LBHOMEDIR . "/webfrontend/cgi/system");
+	define ("LBSHTMLAUTHDIR", LBHOMEDIR . "/webfrontend/htmlauth/system");
 	define ("LBSHTMLDIR", LBHOMEDIR . "/webfrontend/html/system");
 	define ("LBSTEMPLATEDIR", LBHOMEDIR . "/templates/system");
 	define ("LBSDATADIR", LBHOMEDIR . "/data/system");
@@ -44,14 +44,14 @@ namespace LoxBerry\System
 	# As globals in PHP cannot be concentrated in strings, we additionally define variables
 	$LBHOMEDIR = LBHOMEDIR;
 	$LBPLUGINDIR = LBPLUGINDIR;
-	$LBCGIDIR = LBCGIDIR;
+	$LBHTMLAUTHDIR = LBHTMLAUTHDIR;
 	$LBHTMLDIR = LBHTMLDIR;
 	$LBTEMPLATEDIR = LBTEMPLATEDIR;
 	$LBDATADIR = LBDATADIR;
 	$LBLOGDIR = LBLOGDIR;
 	$LBCONFIGDIR = LBCONFIGDIR;
 
-	$LBSCGIDIR = LBSCGIDIR;
+	$LBSHTMLAUTHDIR = LBSHTMLAUTHDIR;
 	$LBSHTMLDIR = LBSHTMLDIR;
 	$LBSTEMPLATEDIR = LBSTEMPLATEDIR;
 	$LBSDATADIR = LBSDATADIR;
