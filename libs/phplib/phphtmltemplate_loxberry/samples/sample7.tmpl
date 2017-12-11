@@ -1,0 +1,12 @@
+<tmpl_include name="header.tmpl">
+<table align="center" width="30%" border>
+<tr><th width="50%">ASCII code</th><th>Character</th></tr>
+<tmpl_loop name="chars">
+<tr>
+<td align="center"><tmpl_var name="ascii"></td>
+<td align="center"><tmpl_var name="char" escape="HTML"></td>
+</tr>
+</tmpl_loop>
+</table>
+<p><a href="index.html">Back to samples index</a></p>
+<tmpl_include name="footer.tmpl">

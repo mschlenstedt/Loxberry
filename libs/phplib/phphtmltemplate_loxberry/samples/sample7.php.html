@@ -1,0 +1,13 @@
+<code><pre>
+&lt;?php
+require_once(&quot;../template.php&quot;);
+$template =&amp; new template(array(&quot;filename&quot;=&gt;&quot;sample7.tmpl&quot;, &quot;loop_context_vars&quot;=&gt;1, &quot;debug&quot;=&gt;0));
+
+for ($i=32; $i&lt;256; $i++) {
+    $chars[] = array(&quot;char&quot;=&gt;chr($i), &quot;ascii&quot;=&gt;$i);
+}
+
+$template-&gt;AddParam(&quot;chars&quot;, &amp;$chars, &quot;title&quot;, &quot;ISO 8859-1 (should be)&quot;);
+$template-&gt;EchoOutput();
+?&gt;
+</pre></code>

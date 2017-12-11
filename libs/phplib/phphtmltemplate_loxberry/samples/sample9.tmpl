@@ -1,0 +1,51 @@
+<tmpl_include name="header.tmpl">
+<h2 align="center"><tmpl_var name="caption"></h2>
+<table align="center" border="1">
+<tmpl_loop name="another_loop">
+    <tr>
+    <td><tmpl_var __pass__></td>
+    <td><tmpl_var __PASSTOTAL__></td>
+    <td><tmpl_var caption></td>
+    <td><tmpl_var varname DEFAULT="?"></td>
+    <td><tmpl_var varname2 default="?"></td>
+    <td><tmpl_var one default="ONE"></td>
+    <td><tmpl_var two default="TWO"></td>
+    </tr>
+</tmpl_loop>
+</table>
+
+<table align="center" width="30%" border>
+<tmpl_loop name="the_loop">
+<tr>
+<td align="center">&nbsp;<tmpl_var name="varname">&nbsp;</td>
+<td align="center">
+  <table border>
+  <tmpl_loop name="insideloop">
+  <tr>
+  <td>&nbsp;<tmpl_var name="caption">&nbsp;</td>
+  <td>&nbsp;<tmpl_var name="varname">&nbsp;</td>
+  <td>&nbsp;<tmpl_var name="varname2">&nbsp;</td>
+  <td>&nbsp;
+    <table border="1">
+    <tmpl_loop name="another_loop">
+    <tr>
+    <td><tmpl_var __pass__></td>
+    <td><tmpl_var __PASSTOTAL__></td>
+    <td><tmpl_var caption></td>
+    <td><tmpl_var varname></td>
+    <td><tmpl_var varname2></td>
+    <td><tmpl_var one default="ONE"></td>
+    <td><tmpl_var two default="TWO"></td>
+    </tr>
+    </tmpl_loop>
+    </table>&nbsp;
+  </td>
+  </tr>
+</tmpl_loop>
+</table>
+</td>
+</tr>
+</tmpl_loop>
+</table>
+<p><a href="index.html">Back to samples index</a></p>
+<tmpl_include name="footer.tmpl">

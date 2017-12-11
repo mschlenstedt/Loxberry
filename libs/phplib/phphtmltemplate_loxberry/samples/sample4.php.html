@@ -1,0 +1,29 @@
+<code><pre>
+&lt;?
+require_once(&quot;../template.php&quot;);
+
+$options = array(&quot;filename&quot;=&gt;&quot;sample4.tmpl&quot;, &quot;debug&quot;=&gt;0);
+$template =&amp; new Template($options);
+
+$template-&gt;AddParam('title', 'PHP Templates made easy');
+$template-&gt;AddParam('loop',
+                 array(
+                 array('name'=&gt;'Joe', 'age'=&gt;'42',
+                       'ex-wives'=&gt;array(
+                                   array('name'=&gt;'Linda', 'age'=&gt;'38'),
+                                   array('name'=&gt;'Tina', 'age'=&gt;'42'),
+                                   array('name'=&gt;'Flora', 'age'=&gt;'62')
+                                   )
+                      ),
+                 array('name'=&gt;'Max', 'age'=&gt;'51',
+                       'ex-wives'=&gt;array(
+                                   array('name'=&gt;'Jocelyn', 'age'=&gt;'49'),
+                                   array('name'=&gt;'Mandy', 'age'=&gt;'22')
+                                   )
+                      )
+                      )
+                );
+
+$template-&gt;EchoOutput();
+?&gt;
+</pre></code>

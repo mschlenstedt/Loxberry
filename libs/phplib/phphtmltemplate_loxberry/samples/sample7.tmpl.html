@@ -1,0 +1,14 @@
+<code><pre>
+&lt;tmpl_include name=&quot;header.tmpl&quot;&gt;
+&lt;table align=&quot;center&quot; width=&quot;30%&quot; border&gt;
+&lt;tr&gt;&lt;th width=&quot;50%&quot;&gt;ASCII code&lt;/th&gt;&lt;th&gt;Character&lt;/th&gt;&lt;/tr&gt;
+&lt;tmpl_loop name=&quot;chars&quot;&gt;
+&lt;tr&gt;
+&lt;td align=&quot;center&quot;&gt;&lt;tmpl_var name=&quot;ascii&quot;&gt;&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;&lt;tmpl_var name=&quot;char&quot; escape=&quot;HTML&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tmpl_loop&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;a href=&quot;index.html&quot;&gt;Back to samples index&lt;/a&gt;&lt;/p&gt;
+&lt;tmpl_include name=&quot;footer.tmpl&quot;&gt;
+</pre></code>
