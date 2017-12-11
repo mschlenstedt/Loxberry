@@ -1,0 +1,21 @@
+<code><pre>
+&lt;?
+require_once(&quot;../template.php&quot;);
+
+$options = array(&quot;filename&quot;=&gt;&quot;sample5.tmpl&quot;, &quot;debug&quot;=&gt;0);
+$template =&amp; new Template($options);
+
+for ($i=0; $i&lt;15; $i++) {
+    $template-&gt;AddParam('cond'.($i+1), rand(0,1));
+}
+$template-&gt;AddParam('title', 'PHP Templates made easy');
+$template-&gt;EchoOutput();
+
+$template-&gt;ResetParams();
+$template-&gt;ResetOutput();
+for ($i=0; $i&lt;15; $i++) {
+    $template-&gt;AddParam('cond'.($i+1), rand(0,1));
+}
+$template-&gt;EchoOutput();
+?&gt;
+</pre></code>

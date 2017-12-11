@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html40/strict.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">  
+ <title>Template example</title>
+ <style title="Hoja de Estilo" media="Screen" type="text/css"><!--
+ html, body {
+     background-color : #fff;
+     color : #000;
+     text-align : center;
+     font-family : Arial, sans-serif;
+ }
+ table {
+     border : 1px solid #000;
+     border-collapse : collapse;
+     margin : auto;
+     font-size : 85%;
+ }
+ td, th {
+     text-align : center;
+     border : 1px solid #000; 
+     padding : 2px;
+ }
+ th {
+     font-weight : bold;
+ }
+ tr {
+     background-color : #eee;
+     color : #000;
+ }
+ tr.even {
+     background-color : #FEF5E2;
+     color : #000;
+ }
+ tr.odd {
+     background-color : #E3F1FD;
+     color : #000;
+ }
+ --></style>
+</head>
+
+<body>
+<TMPL_UNLESS domains>
+<div><TMPL_VAR NAME="error_msg"></div>
+<TMPL_ELSE>
+
+<h2>Registered domains</h2>
+<table border>
+<tr><th>Date</th><th>Domain</th><th>Credits</th><th>Status</th></tr>
+<TMPL_LOOP name="domains">
+<tr class="<TMPL_IF __odd__>odd<TMPL_ELSE>even</TMPL_IF>">
+<td><TMPL_VAR name="date"></td>
+<td><TMPL_VAR name="domain"></td>
+<td><TMPL_VAR name="credits"></td>
+<td><TMPL_IF "status">Paid<TMPL_ELSE>Pending</TMPL_IF></td>
+</tr>
+</TMPL_LOOP>
+</table>
+
+</TMPL_UNLESS>
+
+<p><a href="index.html">Back to samples index</a></p>
+</body>
+</html>

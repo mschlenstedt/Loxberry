@@ -1,0 +1,12 @@
+<code><pre>
+&lt;?
+require_once(&quot;../template.php&quot;);
+
+$template =&amp; new Template(&quot;sample1.tmpl&quot;);
+
+$template-&gt;AddParam('title', 'PHP Templates made easy');
+$template-&gt;AddParam('body', 'Hello world!');
+
+$template-&gt;EchoOutput();
+?&gt;
+</pre></code>

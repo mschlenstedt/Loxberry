@@ -33,11 +33,11 @@ namespace LoxBerry\System
 
 	# Defining globals for SYSTEM directories
 	define ("LBSCGIDIR", LBHOMEDIR . "/webfrontend/cgi/system");
-	define ("LBSHTMLDIR", LBHOMEDIR . "/webfrontend/html/system/");
-	define ("LBSTEMPLATEDIR", LBHOMEDIR . "/templates/system/");
-	define ("LBSDATADIR", LBHOMEDIR . "/data/system/");
-	define ("LBSLOGDIR", LBHOMEDIR . "/log/system/");
-	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system/");
+	define ("LBSHTMLDIR", LBHOMEDIR . "/webfrontend/html/system");
+	define ("LBSTEMPLATEDIR", LBHOMEDIR . "/templates/system");
+	define ("LBSDATADIR", LBHOMEDIR . "/data/system");
+	define ("LBSLOGDIR", LBHOMEDIR . "/log/system");
+	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system");
 
 
 

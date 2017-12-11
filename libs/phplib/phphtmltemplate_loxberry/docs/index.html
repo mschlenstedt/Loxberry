@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html40/strict.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">  
+ <title>PHP-HTML::Template - Documentation Page</title>
+ <meta name="Description" content="PHP-HTML::Template Documentation Page">
+ <meta name="Keywords" content="PHP, template, templates, HTML, HTML::Template, PHP module">
+ <meta name="Author" content="Juan R. Pozo">
+ <meta name="Copyright" content="&copy; 2002 Juan R. Pozo">
+ <link rel="stylesheet" HREF="../phphtml.css" TITLE="Screen style sheet" MEDIA="screen" TYPE="text/css">
+</head>
+
+<body>
+<h1>PHP-HTML::Template</h1>
+<h2>Documentation Page</h2>
+
+<h3 id="intro">Using the template class</h3>
+<p>Basically, you have to build a template and write a PHP script, which will open the template, assign values to the template variables, and echo the output. Go to our <a href="../samples/index.html">samples page</a> and browse the files of the first sample to grasp the basic idea.</p>
+<p>When creating the template object, always remember to use the <strong>=&amp;</strong> and <strong>not</strong> the <strong>=</strong> sign:
+<dl>
+<dt class="wrong">WRONG:</dt>
+<dd><pre>$template = new Template("test.tmpl"); // wrong!</pre></dd>
+
+<dt>CORRECT:</dt>
+<dd><pre>$template =&amp; new Template("test.tmpl");</pre></dd>
+</dl>
+
+<p>If only one parameter is specified, it is taken as the template file name. In this case the template object is created with the default options. To specify other options, you pass one (associative) array, containing option=&gt;value pairs:</p>
+
+<p><pre>$template =&amp; new Template(array("option1"=&gt;"value", "option2"=&gt;"value"));</pre></p>
+
+<p><a href="#options">Available options</a> are described later in this document.</p>
+
+<h3 id="syntax">Template syntax</h3>
+<p>Template syntax follows the same <a href="http://html-template.sourceforge.net/html_template.html">rules of HTML::Template</a> except for some <a href="#options">changes</a> that are described below in the options section.</p>
+
+<h3 id="methods">Methods</h3>
+
+<p>When the template is created, it is automatically parsed. Then you have to assign values to the template variables. To do that, you call <code>AddParam()</code>. <code>AddParam()</code> can be called in a number of ways:</p>
+
+<ol>
+<li>Setting the value of one parameter:
+<pre><code>// For simple TMPL_VARs:
+$template-&gt;AddParam('PARAM', 'value');
+
+// For TMPL_LOOPs:
+$template-&gt;AddParam('LOOP_PARAM', array(
+                    array('PARAM' =&gt; 'VALUE_FOR_FIRST_PASS', ... ), 
+                    array('PARAM' =&gt; 'VALUE_FOR_SECOND_PASS', ... )
+                   ));</code></pre></li>
+
+<li>Setting the value of a number of parameters using an associative array:
+<pre><code>$template-&gt;AddParam(array(
+                    'PARAM'  =&gt; 'value', 
+                    'PARAM2' =&gt; 'value',
+                    'LOOP_PARAM' =&gt;
+                    array(array('PARAM' =&gt; 'VALUE_FOR_FIRST_PASS', ...), 
+                          array('PARAM' =&gt; 'VALUE_FOR_SECOND_PASS', ...),
+                          ...),
+                    'ANOTHER_LOOP_PARAM' =&gt;
+                    array(array('PARAM' =&gt; 'VALUE_FOR_FIRST_PASS', ...),
+                          array('PARAM' =&gt; 'VALUE_FOR_SECOND_PASS', ...),
+                          ...)
+                    )
+                    );</code></pre></li>
+</ol>
+
+<p>To obtain the template results, you can either:</p>
+<ul>
+<li>call <code>EchoOutput()</code>, which will process the template and write its results on screen; or</li>
+<li>call <code>Output()</code>, which will process the template and store the result in the object's <code>output</code> attribute, that you can access as <code>$template-&gt;output</code>.</li>
+</ul>
+<p>In both cases the results are kept in the $output attribute. The next time you call <code>EchoOutput()</code> or <code>Output()</code>, the results will be taken from <code>$output</code> without processing the template again.</p>
+<p>You can reassign and reprocess an open template by first calling the <code>ResetParams()</code> and <code>ResetOutput()</code> methods respectively. See <a href="../samples/sample5.php.html">sample 5</a> of our <a href="../samples/index.html">samples page</a> for a demonstration.</p>
+
+
+<h3 id="options">Available options</h3>
+<p>Some of the options of HTML::Template, mainly those concerning the cache, are not implemented in PHP-HTML::Template, others produce slightly differente results, and others are new.</p>
+
+<h4>Error detection options</h4>
+<dl>
+<dt><code>die_on_bad_params</code></dt>
+<dd>If set to <code>0</code> the module will let you call <code>$template-&gt;AddParam('param_name' =&gt; 'value')</code> even if <code>'param_name'</code> doesn't exist in the template body. Defaults to <code>1</code>.</dd>
+
+<dt><code>strict</code></dt>
+<dd>If set to <code>0</code> the module will allow things that look like they might be <code>TMPL_*</code> tags to get by without dieing. Example:</dd>
+<dd><pre><code>&lt;TMPL_ LOOP NAME=ZUH&gt;</pre></code></dd>
+<dd>would normally cause an error, but if you call new with <code>'strict'=&gt;0</code>, PHP-HTML::Template will ignore it. Defaults to <code>1</code>.</dd>
+
+<dt><code>vanguard_compatibility_mode</code></dt>
+<dd>If set to <code>1</code> the module will expect to see <code>&lt;TMPL_VAR&gt;s</code> that look like %NAME% in addition to the standard syntax. Also sets <code>die_on_bad_params =&gt; 0</code>. If you're not at Vanguard Media trying to use an old format template don't worry about this one. Defaults to <code>0</code>.</dd>
+</dl>
+
+<h4>Caching Options</h4>
+
+<p>Currently there are not caching options implemented.</p>
+
+<h4>Filesystem Options</h4>
+
+<p>Currently there are not filesystem options implemented.</p>
+
+<h4>Debugging Options</h4>
+
+<dl>
+<dt><code>debug</code></dt>
+<dd>If set <code>1</code>, the module will output detailed debugging information. Defaults to <code>0</code>.</dd>
+</dl>
+
+<h4>Miscellaneous Options</h4>
+
+<dl>
+<dt><code>case_sensitive</code></dt>
+<dd>Setting this option to true causes PHP-HTML::Template to treat template variable names case-sensitively. The following example would only set one parameter without the <code>'case_sensitive'</code> option:</dd>
+<dd><pre><code>  $template =&amp; new Template('filename', 'template.tmpl', case_sensitive', 1);
+  $template-&gt;Addparam(
+    'FieldA', 'foo',
+    'fIELDa', 'bar',
+  );</code></pre></dd>
+<dd>This option defaults to off.</dd>
+
+<dd>Note: if loop_context_vars and case_sensitive options are set, the context variables are only available in lowercase.</dd>
+
+<dt><code>loop_context_vars</code></dt>
+<dd>When this parameter is set to <code>true</code> (it is <code>false</code> by default) four loop context variables are made available inside a loop: <code>__first__</code>, <code>__last__</code>, <code>__inner__</code>, <code>__odd__</code> which can be used with <code>&lt;TMPL_IF&gt;</code>, <code>&lt;TMPL_UNLESS&gt;</code> and <code>&lt;TMPL_ELSE&gt;</code> to control how a loop is output, and other three <code>__counter__</code>, <code>__pass__</code> and <code>__passtotal__</code> which can be used with <code>&lt;TMPL_VAR&gt;</code> tags. The last two are taken from <a href="http://htmltmpl.sourceforge.net/">htmltmpl</a>. <code>__counter__</code> and <code>__pass__</code> represent the same value. Example:</dd>
+<dd><pre><code>   &lt;TMPL_LOOP NAME="FOO"&gt;
+      Pass &lt;TMPL_VAR NAME="__pass__"&gt; of &lt;TMPL_VAR NAME="__passtotal__"&gt;&lt;br&gt;
+      &lt;TMPL_IF NAME="__first__"&gt;
+        This only outputs on the first pass.&lt;br&gt;
+      &lt;/TMPL_IF&gt;
+
+      &lt;TMPL_IF NAME="__odd__"&gt;
+        This outputs every other pass, on the odd passes.&lt;br&gt;
+      &lt;/TMPL_IF&gt;
+
+      &lt;TMPL_UNLESS NAME="__odd__"&gt;
+        This outputs every other pass, on the even passes.&lt;br&gt;
+      &lt;/TMPL_IF&gt;
+
+      &lt;TMPL_IF NAME="__inner__"&gt;
+        This outputs on passes that are neither first nor last.&lt;br&gt;
+      &lt;/TMPL_IF&gt;
+
+      &lt;TMPL_IF NAME="__last__"&gt;
+        This only outputs on the last pass.&lt;br&gt;
+      &lt;TMPL_IF&gt;
+   &lt;/TMPL_LOOP></code></pre></dd>
+<dd>One use of this feature is to provide a "separator" similar in effect to the PHP function <code>join()</code>. Example:</dd>
+<dd><pre><code>   &lt;TMPL_LOOP FRUIT&gt;
+      &lt;TMPL_IF __last__&gt; and &lt;/TMPL_IF&gt;
+      &lt;TMPL_VAR KIND&gt;&lt;TMPL_UNLESS __last__&gt;, &lt;TMPL_ELSE&gt;.&lt;/TMPL_UNLESS&gt;
+   &lt;/TMPL_LOOP&gt;</code></pre></dd>
+<dd>would output (in a browser) something like:</dd>
+<dd><pre><code>  Apples, Oranges, Brains, Toes, and Kiwi.</code></pre></dd>
+
+<dd>given an appropriate <code>AddParam()</code> call, of course. NOTE: A loop with only a single
+pass will get both <code>__first__</code> and <code>__last__</code> set to true, but not <code>__inner__</code>.</dd>
+
+<dt><code>no_includes</code></dt>
+<dd>Set this option to <code>1</code> to disallow the &lt;TMPL_INCLUDE&gt; tag in the template file. This can be used to make opening untrusted templates slightly less dangerous. Defaults to <code>0</code>.</dd>
+
+<dt><code>max_includes</code></dt>
+<dd>Set this variable to determine the maximum depth that includes can reach. Set to <code>10</code> by default. Including files to a depth greater than this value causes an error message to be displayed.<!-- Set to <code>0</code> to disable this protection. --></dd>
+
+<dt><code>global_vars</code></dt>
+<dd>Normally variables declared outside a loop are not available inside a loop. This option makes &lt;TMPL_VAR&gt;s like global variables in PHP - they have unlimited scope. This option also affects &lt;TMPL_IF&gt; and &lt;TMPL_UNLESS&gt;. Example:</dd>
+<dd><pre></code>  This is a normal variable: &lt;TMPL_VAR NORMAL&gt;.&lt;P&gt;
+
+  &lt;TMPL_LOOP NAME=FROOT_LOOP&gt;
+     Here it is inside the loop: &lt;TMPL_VAR NORMAL&gt;&lt;P&gt;
+  &lt;/TMPL_LOOP&gt;</code></pre></dd>
+
+<dd>Normally this wouldn't work as expected, since &lt;TMPL_VAR NORMAL&gt;'s value outside the loop is not available inside the loop.</dd>
+
+<dd>The <code>global_vars</code> option also allows you to access the values of an enclosing loop within an inner loop. For example, in this loop the inner loop will have access to the value of <code>OUTER_VAR</code> in the correct iteration:</dd>
+<dd><pre></code>   &lt;TMPL_LOOP OUTER_LOOP&gt;
+      OUTER: &lt;TMPL_VAR OUTER_VAR&gt;
+        &lt;TMPL_LOOP INNER_LOOP&gt;
+           INNER: &lt;TMPL_VAR INNER_VAR&gt;
+           INSIDE OUT: &lt;TMPL_VAR OUTER_VAR&gt;
+        &lt;/TMPL_LOOP&gt;
+   &lt;/TMPL_LOOP&gt;</code></pre></dd>
+   
+<dd>As in <a href="http://htmltmpl.sourceforge.net/">htmltmpl</a>, you can use the <code>GLOBAL</code> attribute for one variable alone, instead of setting <code>global_vars</code> on. To do so, add a <code>GLOBAL</code> attribute to the tag, this way:</dd>
+
+<dd><pre></code>&lt;TMPL_LOOP LOOP&gt;
+    &lt;TMPL_VAR NAME="COUNTRY" GLOBAL="1"&gt; &lt;br&gt;
+    &lt;TMPL_VAR NAME="NAME"&gt;
+&lt;/TMPL_LOOP&gt;</code></pre></dd>
+   
+<dt><code>hash_comments</code></dt>
+<dd><em>This option is not implemented in HTML::Template.</em> Allows to insert hash comments as in <a href="http://htmltmpl.sourceforge.net/">htmltmpl</a>. Hash comments are like this:</dd>
+
+<dd><pre><code>&lt;TMPL_VAR NAME="name"&gt; ### Three hashes and one space make a comment</code></pre></dd>
+
+<dd>The comments will be stripped away if this option is set to <code>1</code>.</dd>
+
+<dt><code>imark</code></dt>
+<dd><em>This option is not implemented in HTML::Template</em>. Allows to specify the initial marker for the template tags. Default value is &lt;</dd>
+
+<dt><code>emark</code></dt>
+<dd><em>This option is not implemented in HTML::Template</em>. Allows you to specify the end marker for the template tags. Default value is &gt;</dd>
+
+<dd>Example:
+<ul>
+<li>The script:
+<pre><code>&lt;?
+require_once "template.php";
+$options = array('filename'=&gt;'template.tmpl',
+                 'imark'=&gt;'[[', 'emark'=&gt;']]');
+$template =& new Template(&$options);
+$template-&gt;AddParam('title'=&gt;'Hello world!');
+$template-&gt;EchoOutput
+?&gt;</code></pre></li>
+
+<li>The template:
+<pre><code>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;[[TMPL_VAR NAME="title"]]&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;&lt;h1&gt;[[TMPL_VAR NAME="title"]]&lt;/h1&gt;&lt;/body&gt;
+&lt;/html&gt;</code></pre></li>
+</ul>
+
+<dt><code>parse_html_tags</code></dt>
+<dd><em>This option is not implemented in HTML::Template</em>. Tells the parser to look for template tags inside HTML comments. If you are enclosing any of your template tags inside HTML comments for your template to be valid markup, leave this option as <code>true</code>. Otherwise set it to <code>false</code>, which will make parsing slightly faster. Default value is <code>true</code>. Examples:</dd>
+
+<dd>
+<ol>
+<li>&nbsp;
+<ul>
+<li>In the script:
+<pre><code>$options = array('filename'=&gt;'template.tmpl',
+                 'imark'=&gt;'&lt;', 'emark'=&gt;'&gt;',
+                 'parse_html_tags'=&gt;true);</code></pre></li>
+<li>In the template:
+<pre><code>&lt;!-- TMPL_VAR name="title" --&gt; = &lt;TMPL_VAR name="title"&gt;</code></pre></li>
+</ul>
+</li>
+<li>
+<ul>
+<li>In the script:
+<pre><code>$options = array('filename'=&gt;'template.tmpl',
+                 'imark'=&gt;'[[', 'emark'=&gt;']]',
+                 'parse_html_tags'=&gt;true);</code></pre></li>
+<li>In the template:
+<pre><code>&lt;!-- [[TMPL_VAR name="title"]] --&gt; = [[TMPL_VAR name="title"]]</code></pre></li>
+</ul>
+</li>
+<li>
+<ul>
+<li>In the script:
+<pre><code>$options = array('filename'=&gt;'template.tmpl',
+                 'imark'=&gt;'&lt;[', 'emark'=&gt;']&gt;',
+                 'parse_html_tags'=&gt;true);</code></pre></li>
+<li>In the template:
+<pre><code>&lt;!-- [TMPL_VAR name="title"] --&gt; = &lt;[TMPL_VAR name="title"]&gt;</code></pre></li>
+</ul>
+</li>
+</ol>
+</dd>
+<dd>Note the syntax used when the initial marker begins with a &lt; sign or when the end marker ends with a &gt; sign. This is done so in order to preserve compatibility with existing HTML::Template templates.</dd>
+</dl>
+
+<h3 id="compiled">Saving and loading compiled templates</h3>
+
+<p>To save a compiled template call the <code>SaveCompiled($dir, $overwrite)</code> method. The first argument is the directory name where the compiled template file will be we stored. If it is <code>NULL</code> or not specified the directory name of the original template file is used. The compiled template file name is the original template name with a "c" character appended. If a file with that name already exists the function exits with error, unless the $overwrite argument takes a true value (defaults to <code>0</code>).</p>
+
+<p>Returns the path to the compiled template. Example:</p>
+
+<pre><code>&lt;?php
+require_once("template.php");
+$t =&amp; new Template("bench3.tpl");
+if ($output = $t-&gt;SaveCompiled(".")) {
+    echo ("$output saved");
+}
+?&gt;</code></pre>
+
+<p>If you assign variables before saving the compiled template the assigned values are stored as well.</p>
+
+<p>To load a compiled template, use the <code>LoadCompiledTemplate($filename)</code> function with the name of the compiled template file as the argument. Once loaded proceed as usual. Example:</p>
+
+<pre><code>&lt;?php
+require_once("template.php");
+$template =&amp; LoadCompiledTemplate("mytemplate.tplc");
+$template-&gt;AddParam("title", "Hellow world!");
+$template-&gt;EchoOutput();
+?&gt;</code></pre>
+
+<p><a href="../index.html">Back to main index</a> | <a href="../samples/index.html">Samples page</a></p>
+
+</body>
+</html>

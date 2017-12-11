@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html40/strict.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">  
+ <title><TMPL_VAR NAME="title"></title>
+</head>
+
+<body>
+<table border>
+<tr><th>Name</th><th>Age</th><th>Ex-wives</th></tr>
+<TMPL_LOOP NAME="loop">
+<tr><td><TMPL_VAR NAME="name"></td><td><TMPL_VAR NAME="age"></td>
+<td><table border>
+<tr><th>Name</th><th>Age</th></tr>
+<TMPL_LOOP ex-wives>
+<tr><td><tmpl_Var name></td><td><TMPL_VAR name="age"></td></tr>
+</tmpl_loop>
+</table></td>
+</tr>
+</TMPL_LOOP>
+</table>
+<p><a href="index.html">Back to samples index</a></p>
+</body>
+</html>
