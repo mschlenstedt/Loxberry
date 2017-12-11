@@ -94,7 +94,10 @@ case "$1" in
           su loxberry -c "/opt/loxberry/sbin/setdatetime.pl > /dev/null 2>&1"
         fi
 
-        # Run Daemons from Plugins and from System
+        # Create log folders for all plugins if not existing
+		perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
+			
+		# Run Daemons from Plugins and from System
         log_action_begin_msg "Running System Daemons"
         # run-parts -v  /opt/loxberry/system/daemons/system > /dev/null 
 		run_scripts /opt/loxberry/system/daemons/system
