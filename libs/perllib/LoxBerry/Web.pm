@@ -483,7 +483,7 @@ sub get_plugin_icon
 	elsif	($iconsize > 64) { $iconsize = 128; }
 	else					{ $iconsize = 64; }
 	
-	my $logopath = "$LoxBerry::System::lbhomedir/webfrontend/html/system/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
+	my $logopath = "$LoxBerry::System::lbshtmldir/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
 	my $logopath_web = "/system/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
 	
 	if (-e $logopath) { 

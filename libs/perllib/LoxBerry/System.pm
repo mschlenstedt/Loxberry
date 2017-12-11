@@ -142,14 +142,14 @@ if ($ENV{LBHOMEDIR}) {
 
 my $part = substr ((Cwd::abs_path($0)), (length($lbhomedir)+1));
 our ($lbplugindir) = (split(/\//, $part))[3];
-our $lbcgidir = "$lbhomedir/webfrontend/cgi/plugins/$lbplugindir";
+our $lbcgidir = "$lbhomedir/webfrontend/htmlauth/plugins/$lbplugindir";
 our $lbhtmldir = "$lbhomedir/webfrontend/html/plugins/$lbplugindir";
 our $lbtemplatedir = "$lbhomedir/templates/plugins/$lbplugindir";
 our $lbdatadir = "$lbhomedir/data/plugins/$lbplugindir";
 our $lblogdir = "$lbhomedir/log/plugins/$lbplugindir";
 our $lbconfigdir = "$lbhomedir/config/plugins/$lbplugindir";
 
-our $lbscgidir = "$lbhomedir/webfrontend/cgi/system";
+our $lbscgidir = "$lbhomedir/webfrontend/htmlauth/system";
 our $lbshtmldir = "$lbhomedir/webfrontend/html/system";
 our $lbstemplatedir = "$lbhomedir/templates/system";
 our $lbsdatadir = "$lbhomedir/data/system";
