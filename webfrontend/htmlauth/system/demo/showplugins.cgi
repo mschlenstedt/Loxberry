@@ -38,7 +38,7 @@ print STDERR "Single element: " . $plugins[0]->{PLUGINDB_COMMENT} . "\n";
 
 # Use the Array directly in HTML::Template
 my $htmltemplate = HTML::Template->new(
-				filename => "$lbscgidir/demo/showplugins.html",
+				filename => "$lbshtmlauthdir/demo/showplugins.html",
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,

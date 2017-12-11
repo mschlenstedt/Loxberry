@@ -156,7 +156,7 @@ sub save
 	
 	if ($friendlyname_changed)
 	{ 
-		my $ret = system("perl $lbscgidir/tools/generatelegacytemplates.pl --force");
+		my $ret = system("perl $lbshtmlauthdir/tools/generatelegacytemplates.pl --force");
 		if ($ret == 0) {
 			print STDERR "network.cgi: generatelegacytemplates.pl's was called successfully.\n";
 		} else {
