@@ -2,7 +2,7 @@
 
 namespace LoxBerry\System
 {
-	$LBMODULEVERSION = "0.31_02";
+	$LBSYSTEMVERSION = "0.31_03";
 	# define Constants for LoxBerry directories
 
 	if(getenv("LBHOMEDIR")) {
@@ -12,7 +12,7 @@ namespace LoxBerry\System
 			define("LBHOMEDIR", posix_getpwuid(posix_getpwnam('loxberry')['uid'])['dir']);
 	}
 	else {
-		fwrite(STDERR, "LoxBerry System WARNING: Falling back to /opt/loxberry\n");
+		error_log("LoxBerry System WARNING: Falling back to /opt/loxberry");
 		define("LBHOMEDIR", '/opt/loxberry');
 	}
 
@@ -20,8 +20,8 @@ namespace LoxBerry\System
 	define ("LBPLUGINDIR", $pluginname);
 	unset($pluginname);
 
-	fwrite(STDERR, "LoxBerry System Info: LBHOMEDIR: " . LBHOMEDIR . "\n");
-	fwrite(STDERR, "LoxBerry System Info: LBPLUGINDIR: " . LBPLUGINDIR . "\n");
+	error_log("LoxBerry System Info: LBHOMEDIR: " . LBHOMEDIR);
+	error_log("LoxBerry System Info: LBPLUGINDIR: " . LBPLUGINDIR);
 
 	# Defining globals for PLUGINS directories
 	define ("LBCGIDIR", LBHOMEDIR . "/webfrontend/cgi/plugins/" . LBPLUGINDIR);
@@ -150,7 +150,7 @@ namespace LoxBerry\System
 		$filestr = file(LBHOMEDIR . "/data/system/plugindatabase.dat", FILE_IGNORE_NEW_LINES);
 		#$filestr = file_get_contents(LBHOMEDIR . "/data/system/plugindatabase.dat");
 		if (! $filestr) {
-				fwrite(STDERR, "LoxBerry System ERROR: Could not read Plugin Database " . LBHOMEDIR . "/data/system/plugindatabase.dat \n");
+				error_log("LoxBerry System ERROR: Could not read Plugin Database " . LBHOMEDIR . "/data/system/plugindatabase.dat");
 				return;
 		}
 		
@@ -172,7 +172,7 @@ namespace LoxBerry\System
 		global $plugins;
 		
 		if (is_array($plugins)) {
-			fwrite(STDERR, "Returning already fetched plugin array\n");
+			error_log("Returning already fetched plugin array");
 			return $plugins;
 		} 
 		$plugins = Array();
@@ -180,7 +180,7 @@ namespace LoxBerry\System
 		$filestr = file(LBHOMEDIR . "/data/system/plugindatabase.dat", FILE_IGNORE_NEW_LINES);
 		#$filestr = file_get_contents(LBHOMEDIR . "/data/system/plugindatabase.dat");
 		if (! $filestr) {
-				fwrite(STDERR, "LoxBerry System ERROR: Could not read Plugin Database " . LBSDATADIR . "plugindatabase.dat \n");
+				error_log("LoxBerry System ERROR: Could not read Plugin Database " . LBSDATADIR . "plugindatabase.dat");
 				return;
 		}
 		
@@ -242,17 +242,17 @@ namespace LoxBerry\System
 		
 	#	print ("READ miniservers FROM DISK\n");
 
-		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_TYPED) or fwrite(STDERR, "LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/\n");
+		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_TYPED) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
 		
-		# fwrite(STDERR, "general.cfg Base: " . $cfg['BASE']['VERSION'] . "\n");
+		# error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
 		
 		# If no miniservers are defined, return NULL
 		
 		# Get CloudDNS and Timezones
-		$clouddnsaddress = $cfg['BASE']['CLOUDDNS'] or fwrite(STDERR, "LoxBerry System Warning: BASE.CLOUDDNS not defined.\n");
-		$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or fwrite(STDERR, "LoxBerry System Warning: TIMESERVER.ZONE not defined.\n");
-		$lbversion = $cfg['BASE']['VERSION'] or fwrite(STDERR, "LoxBerry System Warning: BASE.VERSION not defined.\n");
-		$lbfriendlyname = $cfg['NETWORK']['FRIENDLYNAME'] or fwrite(STDERR, "LoxBerry System Info: NETWORK.FRIENDLYNAME not defined.\n");
+		$clouddnsaddress = $cfg['BASE']['CLOUDDNS'] or error_log("LoxBerry System Warning: BASE.CLOUDDNS not defined.");
+		$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or error_log("LoxBerry System Warning: TIMESERVER.ZONE not defined.");
+		$lbversion = $cfg['BASE']['VERSION'] or error_log("LoxBerry System Warning: BASE.VERSION not defined.");
+		$lbfriendlyname = $cfg['NETWORK']['FRIENDLYNAME'] or error_log("LoxBerry System Info: NETWORK.FRIENDLYNAME not defined.");
 		
 		$binaries = $cfg['BINARIES'];
 		
@@ -363,7 +363,7 @@ namespace LoxBerry\System
 			$response = file_get_contents($url);
 			
 			if (! $response) {
-				fwrite(STDERR, "Cannot query FTP port because Loxone Miniserver is not reachable.");
+				error_log("Cannot query FTP port because Loxone Miniserver is not reachable.");
 				return;
 			} 
 			$xml = new \SimpleXMLElement($response);
