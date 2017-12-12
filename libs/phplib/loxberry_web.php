@@ -9,7 +9,7 @@ class Web
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
 	public static $lang;
-	
+		
 	///////////////////////////////////////////////////////////////////
 	// prints the head
 	///////////////////////////////////////////////////////////////////
@@ -114,6 +114,7 @@ class Web
 					'PAGE' => $page,
 					'LANG' => $lang
 					));
+		Web::readlanguage($pageobj, "language.ini", True);
 		$pageobj->output();
 		
 		error_log("<-- loxberry_web: Pagestart function finished");
@@ -125,6 +126,7 @@ class Web
 	///////////////////////////////////////////////////////////////////
 	public function pageend()
 	{
+		$lang = Web::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pageend.html";
 		$pageobj = new LBTemplate($templatepath);
 		$pageobj->param('LANG', $lang);
@@ -136,6 +138,7 @@ class Web
 	///////////////////////////////////////////////////////////////////
 	public function foot()
 	{
+		$lang = Web::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/foot.html";
 		$footobj = new LBTemplate($templatepath);
 		$footobj->param('LANG', $lang);
@@ -192,15 +195,79 @@ class Web
 		return "en";
 	}
 
+	///////////////////////////////////////////////////////////////////
+	// readlang - reads the language to an array and template
+	///////////////////////////////////////////////////////////////////
+	public function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
+	{
+		#$syscall = LoxBerry\System\is_systemcall();
+		#if ($syscall) { error_log("readlanguage: Is SYSTEM call");}
+		
+		if (!is_object($template) && is_string($template)) {
+			$genericlangfile = $template;
+			$template = NULL;
+		}
+		if ($syslang == true) {
+			$genericlangfile = LBSTEMPLATEDIR . "/lang/language.ini";
+		} else {
+			$genericlangfile = LBTEMPLATEDIR . "/lang/language.ini";
+		}
+		
+		$lang = Web::lblanguage();
+		$pos = strrpos($genericlangfile, ".");
+		if ($pos === false) {
+				error_log("readlanguage: Illegal option '$genericlangfile'. This should be in the form 'language.ini' without pathes.");
+				return null;
+		}
+		
+		
+		$langfile = substr($genericlangfile, 0, $pos) . "_" . $lang . substr($genericlangfile, $pos);
+		$enlangfile = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
+		error_log("readlanguage: $langfile enlangfile: $enlangfile");
+		
+		$currlang = Web::read_language_file($langfile);
+		$enlang = Web::read_language_file($enlangfile);
+		
+		foreach ($enlang as $section => $sectionarray)  {
+			foreach ($sectionarray as $tag => $langstring)  {
+				$language["$section.$tag"] = $langstring;
+				// error_log("Tag: $section.$tag Langstring: $langstring");
+			}
+		}
+		foreach ($currlang as $section => $sectionarray)  {
+			foreach ($sectionarray as $tag => $langstring)  {
+				$language["$section.$tag"] = $langstring;
+				// error_log("Tag: $section.$tag Langstring: $langstring");
+			}
+		}
 	
+		if (is_object($template)) {
+			$template->paramArray($language);
+		}
+	
+		return $language;
+
+	}
+	
+	
+	function read_language_file($langfile)
+	{
+		$langarray = parse_ini_file($langfile, True, INI_SCANNER_RAW) or error_log("LoxBerry Web ERROR: Could not read language file $langfile");
+		if ($langarray == false) {
+			error_log("Cannot read language $langfile");
+		}
+		return $langarray;
+	}
 }
 ////////////////////////////////////////////////////////////
 // Christian's Quick and Dirty 'HTML::Template'
 ////////////////////////////////////////////////////////////
 class LBTemplate
  {
-	public $valuearray;
-	public $template;
+	private $valuearray;
+	private $template;
+	public $L;
+	
 	
 	function __construct($templatepath)
 	{
@@ -221,7 +288,7 @@ class LBTemplate
 	function replaceTmplVar() 
 	{
 		foreach ($this->valuearray as $tmplvar => $value) {
-			error_log("Key: $tmplvar Value: $value");
+			// error_log("Key: $tmplvar Value: $value");
 			$this->template = str_replace("<TMPL_VAR $tmplvar>", $value, $this->template);
 		}
 	}
@@ -231,8 +298,6 @@ class LBTemplate
 	$this->replaceTmplVar();
 	echo $this->template;	
 	}
-	
-	
  }
 
 # main namespace
