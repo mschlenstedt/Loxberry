@@ -9,6 +9,7 @@ class Web
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
 	public static $lang;
+	private static $SL;
 		
 	///////////////////////////////////////////////////////////////////
 	// prints the head
@@ -53,6 +54,7 @@ class Web
 		$headobj = new LBTemplate($templatepath);
 		$headobj->param('TEMPLATETITLE', $fulltitle);
 		$headobj->param('LANG', $lang);
+		Web::readlanguage($headobj, "language.ini", True);
 		$headobj->output();
 
 		error_log("<-- loxberry_web: Head function finished");
@@ -83,6 +85,10 @@ class Web
 		}
 		error_log("   Determined template title: $fulltitle");
 		
+		// 
+		
+		$helptext = Web::gethelp($lang, $helptemplate);
+				
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pagestart.html";
 		if (!file_exists($templatepath)) {
 			error_log("   Could not locate pagestart template $templatepath");
@@ -119,6 +125,66 @@ class Web
 		
 		error_log("<-- loxberry_web: Pagestart function finished");
 	}
+	
+	///////////////////////////////////////////////////////////////////
+	// gethelp - Collects the help text
+	// Currently, only plugin help is supported (no system help)
+	///////////////////////////////////////////////////////////////////
+	function gethelp($lang, $helptemplate)
+	{
+		global $LBPLUGINDIR;
+		global $LBTEMPLATEDIR;
+		
+		error_log("gethelp -> LBPLUGINDIR: $LBPLUGINDIR LBTEMPLATEDIR: $LBTEMPLATEDIR");
+		error_log("   Parameters: lang: $lang helptemplate: $helptemplate");
+		
+		if (file_exists("$LBTEMPLATEDIR/help/$helptemplate")) { 
+			$templatepath = "$LBTEMPLATEDIR/help/$helptemplate";
+			$ismultilang = True;
+			error_log("gethelp: Multilang template found - using templatepath $templatepath");
+		} elseif (file_exists("$LBTEMPLATEDIR/$lang/$helptemplate")) {
+			$templatepath = "$LBTEMPLATEDIR/$lang/$helptemplate";
+			$ismultilang = False;
+			error_log("gethelp: Legacy lang $lang template found - using templatepath $templatepath");
+		} elseif (file_exists("$LBTEMPLATEDIR/en/$helptemplate")) {
+			$templatepath = "$LBTEMPLATEDIR/en/$helptemplate";
+			$ismultilang = False;
+			error_log("gethelp: Legacy fallback lang en template found - using templatepath $templatepath");
+		} elseif (file_exists("$LBTEMPLATEDIR/de/$helptemplate")) {
+			$templatepath = "$LBTEMPLATEDIR/de/$helptemplate";
+			$ismultilang = False;
+			error_log("gethelp: Legacy fallback lang de template found - using templatepath $templatepath");
+		} else {
+			error_log("gethelp: No help found. Returning default text.");
+			if ($lang === "de") {
+				$helptext = "Keine weitere Hilfe verfügbar.";
+			} else {
+				$helptext = "No further help available.";
+			}
+			return $helptext;
+		}
+		
+		if ($ismultilang) {
+			$pos = strrpos($helptemplate, ".");
+			if ($pos === false) {
+				error_log("gethelp: Illegal option '$helptemplate'. This should be in the form 'helptemplate.html' without pathes.");
+				return null;
+			}
+			$langfile = substr($helptemplate, 0, $pos) . ".ini";
+			$helpobj = new LBTemplate($templatepath);
+			Web::readlanguage($helpobj, $langfile);
+			$helptext = $helpobj->outputString();
+			return $helptext;
+		}
+		
+			
+			
+			
+		
+		
+		
+	}
+	
 	
 	
 	///////////////////////////////////////////////////////////////////
@@ -196,13 +262,10 @@ class Web
 	}
 
 	///////////////////////////////////////////////////////////////////
-	// readlang - reads the language to an array and template
+	// readlanguage - reads the language to an array and template
 	///////////////////////////////////////////////////////////////////
 	public function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
 	{
-		#$syscall = LoxBerry\System\is_systemcall();
-		#if ($syscall) { error_log("readlanguage: Is SYSTEM call");}
-		
 		if (!is_object($template) && is_string($template)) {
 			$genericlangfile = $template;
 			$template = NULL;
@@ -210,7 +273,7 @@ class Web
 		if ($syslang == true) {
 			$genericlangfile = LBSTEMPLATEDIR . "/lang/language.ini";
 		} else {
-			$genericlangfile = LBTEMPLATEDIR . "/lang/language.ini";
+			$genericlangfile = LBTEMPLATEDIR . "/lang/$genericlangfile";
 		}
 		
 		$lang = Web::lblanguage();
@@ -225,22 +288,34 @@ class Web
 		$enlangfile = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
 		error_log("readlanguage: $langfile enlangfile: $enlangfile");
 		
-		$currlang = Web::read_language_file($langfile);
-		$enlang = Web::read_language_file($enlangfile);
+		if ($syslang == false || ($syslang == True && !is_array(self::$SL))) { 
+			if (file_exists($langfile)) {
+				$currlang = Web::read_language_file($langfile);
+			}
+			if (file_exists($enlangfile)) {
+				$enlang = Web::read_language_file($enlangfile);
+			}
 		
-		foreach ($enlang as $section => $sectionarray)  {
-			foreach ($sectionarray as $tag => $langstring)  {
-				$language["$section.$tag"] = $langstring;
-				// error_log("Tag: $section.$tag Langstring: $langstring");
+			foreach ($enlang as $section => $sectionarray)  {
+				foreach ($sectionarray as $tag => $langstring)  {
+					$language["$section.$tag"] = $langstring;
+					// error_log("Tag: $section.$tag Langstring: $langstring");
+				}
 			}
-		}
-		foreach ($currlang as $section => $sectionarray)  {
-			foreach ($sectionarray as $tag => $langstring)  {
-				$language["$section.$tag"] = $langstring;
-				// error_log("Tag: $section.$tag Langstring: $langstring");
+			foreach ($currlang as $section => $sectionarray)  {
+				foreach ($sectionarray as $tag => $langstring)  {
+					$language["$section.$tag"] = $langstring;
+					// error_log("Tag: $section.$tag Langstring: $langstring");
+				}
 			}
+			if ($syslang) {
+				self::$SL = $language;
+			}
+		} elseif ($syslang == True && is_array(self::$SL)) {
+			error_log("readlanguage: Re-use cached system language"); 
+			$language = self::$SL;
 		}
-	
+		
 		if (is_object($template)) {
 			$template->paramArray($language);
 		}
@@ -266,9 +341,7 @@ class LBTemplate
  {
 	private $valuearray;
 	private $template;
-	public $L;
-	
-	
+		
 	function __construct($templatepath)
 	{
 		error_log("LBTemplate construct: templatepath: $templatepath");
@@ -297,6 +370,12 @@ class LBTemplate
 	{
 	$this->replaceTmplVar();
 	echo $this->template;	
+	}
+	
+	public function outputString()
+	{
+	$this->replaceTmplVar();
+	return $this->template;	
 	}
  }
 
