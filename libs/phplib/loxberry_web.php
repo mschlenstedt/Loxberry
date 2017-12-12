@@ -164,6 +164,7 @@ class Web
 			return $helptext;
 		}
 		
+		// Multilang templates
 		if ($ismultilang) {
 			$pos = strrpos($helptemplate, ".");
 			if ($pos === false) {
@@ -176,16 +177,12 @@ class Web
 			$helptext = $helpobj->outputString();
 			return $helptext;
 		}
-		
-			
-			
-			
-		
-		
-		
+		// Legacy templates
+		else {
+			$helptext = file_get_contents($templatepath);
+			return $helptext;
+		}
 	}
-	
-	
 	
 	///////////////////////////////////////////////////////////////////
 	// pageend - Prints the page end
