@@ -21,17 +21,29 @@ case "$1" in
                 log_daemon_msg "Starting ssdp service" "ssdpd"
                 cd /opt/loxberry/sbin
                 ./ssdpd >> /opt/loxberry/log/system/ssdpd.log &
-                log_end_msg 0 ;;
+		if pgrep ssdpd >/dev/null 2>&1 then
+                	log_end_msg 0
+		else
+			log_end_msg 1
+		fi;;
         'stop')
                 log_daemon_msg "Stopping ssdp service" "ssdpd"
-                /usr/bin/pkill ssdpd &
-                log_end_msg 0;;
+                /usr/bin/pkill ssdpd
+                if pgrep ssdpd >/dev/null 2>&1 then
+			log_end_msg 1
+		else
+			log_end_msg 0
+		fi;;
         'restart')
                 log_daemon_msg "Restarting ssdp service" "ssdpd"
-                /usr/bin/pkill ssdpd &
+                /usr/bin/pkill ssdpd
                 cd /opt/loxberry/sbin
                 ./ssdpd >> /opt/loxberry/log/system/ssdpd.log &
-                log_end_msg 0;;
+                if pgrep ssdpd > /dev/null 2>&1 then
+			log_end_msg 0
+		else
+			log_end_msg 1
+		fi;;
         '')
                 if [ -h /etc/init.d/ssdpd ]
                 then
