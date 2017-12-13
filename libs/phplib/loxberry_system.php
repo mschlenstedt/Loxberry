@@ -458,7 +458,7 @@ function lbfriendlyname()
 	global $lbfriendlyname;
 	
 	if (! $cfgwasread) {
-		LoxBerry\System\LBSystem::read_generalcfg(); 
+		LBSystem::read_generalcfg(); 
 	}
 	
 	# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
@@ -483,7 +483,7 @@ function lbwebserverport()
 	global $webserverport;
 	
 	if (! $cfgwasread) {
-		LoxBerry\System\LBSystem::read_generalcfg(); 
+		LBSystem::read_generalcfg(); 
 	}
 	if (! $webserverport) {
 		$webserverport = 80;
