@@ -1,6 +1,10 @@
 <?php
 
+namespace LoxBerry\System
+{
+	$LBSYSTEMVERSION = "0.31_04";
 	# define Constants for LoxBerry directories
+
 	if(getenv("LBHOMEDIR")) {
 		define("LBHOMEDIR", getenv("LBHOMEDIR"));
 	} 
@@ -12,36 +16,21 @@
 		define("LBHOMEDIR", '/opt/loxberry');
 	}
 
-	$plugindir_array = explode("/", substr(getcwd(), strlen(LBHOMEDIR)));
-	if (isset($plugindir_array[4])) {
-		$pluginname = $plugindir_array[4];
-	}
-		
-		
-	# $pluginname = explode("/", substr(getcwd(), strlen(LBHOMEDIR)))[4];
-	if (isset($pluginname)) {
-		define ("LBPLUGINDIR", $pluginname);
-		unset($pluginname);
-		// Plugin Constants
-		define ("LBHTMLAUTHDIR", LBHOMEDIR . "/webfrontend/htmlauth/plugins/" . LBPLUGINDIR);
-		define ("LBHTMLDIR", LBHOMEDIR . "/webfrontend/html/plugins/" . LBPLUGINDIR);
-		define ("LBTEMPLATEDIR", LBHOMEDIR . "/templates/plugins/" . LBPLUGINDIR);
-		define ("LBDATADIR", LBHOMEDIR . "/data/plugins/" . LBPLUGINDIR);
-		define ("LBLOGDIR", LBHOMEDIR . "/log/plugins/" . LBPLUGINDIR);
-		define ("LBCONFIGDIR", LBHOMEDIR . "/config/plugins/" . LBPLUGINDIR);
-		// Plugin Variables
-		$LBPLUGINDIR = LBPLUGINDIR;
-		$LBHTMLAUTHDIR = LBHTMLAUTHDIR;
-		$LBHTMLDIR = LBHTMLDIR;
-		$LBTEMPLATEDIR = LBTEMPLATEDIR;
-		$LBDATADIR = LBDATADIR;
-		$LBLOGDIR = LBLOGDIR;
-		$LBCONFIGDIR = LBCONFIGDIR;
-		error_log("LoxBerry System Info: LBPLUGINDIR: " . LBPLUGINDIR);
-	}
+	$pluginname = explode("/", substr(getcwd(), strlen(LBHOMEDIR)))[4];
+	define ("LBPLUGINDIR", $pluginname);
+	unset($pluginname);
 
 	error_log("LoxBerry System Info: LBHOMEDIR: " . LBHOMEDIR);
-	
+	error_log("LoxBerry System Info: LBPLUGINDIR: " . LBPLUGINDIR);
+
+	# Defining globals for PLUGINS directories
+	define ("LBHTMLAUTHDIR", LBHOMEDIR . "/webfrontend/htmlauth/plugins/" . LBPLUGINDIR);
+	define ("LBHTMLDIR", LBHOMEDIR . "/webfrontend/html/plugins/" . LBPLUGINDIR);
+	define ("LBTEMPLATEDIR", LBHOMEDIR . "/templates/plugins/" . LBPLUGINDIR);
+	define ("LBDATADIR", LBHOMEDIR . "/data/plugins/" . LBPLUGINDIR);
+	define ("LBLOGDIR", LBHOMEDIR . "/log/plugins/" . LBPLUGINDIR);
+	define ("LBCONFIGDIR", LBHOMEDIR . "/config/plugins/" . LBPLUGINDIR);
+
 	# Defining globals for SYSTEM directories
 	define ("LBSHTMLAUTHDIR", LBHOMEDIR . "/webfrontend/htmlauth/system");
 	define ("LBSHTMLDIR", LBHOMEDIR . "/webfrontend/html/system");
@@ -50,9 +39,18 @@
 	define ("LBSLOGDIR", LBHOMEDIR . "/log/system");
 	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system");
 
+
+
 	# As globals in PHP cannot be concentrated in strings, we additionally define variables
 	$LBHOMEDIR = LBHOMEDIR;
-	
+	$LBPLUGINDIR = LBPLUGINDIR;
+	$LBHTMLAUTHDIR = LBHTMLAUTHDIR;
+	$LBHTMLDIR = LBHTMLDIR;
+	$LBTEMPLATEDIR = LBTEMPLATEDIR;
+	$LBDATADIR = LBDATADIR;
+	$LBLOGDIR = LBLOGDIR;
+	$LBCONFIGDIR = LBCONFIGDIR;
+
 	$LBSHTMLAUTHDIR = LBSHTMLAUTHDIR;
 	$LBSHTMLDIR = LBSHTMLDIR;
 	$LBSTEMPLATEDIR = LBSTEMPLATEDIR;
@@ -73,12 +71,8 @@
 	$lblang=NULL;
 	$cfgwasread=NULL;
 
-class LBSystem
-{
-	public static $LBSYSTEMVERSION = "0.31_05";
-	
 	####### Get Miniserver array #######
-	public function get_miniservers() 
+	function get_miniservers() 
 	{
 		# If config file was read already, directly return the saved hash
 		global $miniservers;
@@ -86,18 +80,18 @@ class LBSystem
 			# print ("READ miniservers FROM MEMORY\n");
 			return $miniservers;
 		}
-		LBSystem::read_generalcfg();
+		read_generalcfg();
 		return $miniservers;
 	}
 
 	####### Get Miniserver key by IP Address #######
-	public function get_miniserver_by_ip($ip)
+	function get_miniserver_by_ip($ip)
 	{
 		global $miniservers;
 		$ip = trim(strtolower($ip));
 		
 		if (! $miniservers) {
-			LBSystem::read_generalcfg();
+			read_generalcfg();
 		}
 		
 		foreach ($miniservers as $key => $ms) {
@@ -109,13 +103,13 @@ class LBSystem
 	}
 
 	####### Get Miniserver key by Name #######
-	public function get_miniserver_by_name($myname)
+	function get_miniserver_by_name($myname)
 	{
 		global $miniservers;
 		$myname = trim(strtolower($myname));
 		
 		if (! $miniservers) {
-			LBSystem::read_generalcfg();
+			read_generalcfg();
 		}
 		
 		foreach ($miniservers as $key => $ms) {
@@ -127,7 +121,7 @@ class LBSystem
 	}
 
 	####### Get Binaries #######
-	public function get_binaries()
+	function get_binaries()
 	{
 		global $binaries;
 		if ($binaries) {
@@ -135,7 +129,7 @@ class LBSystem
 		} 
 
 		if (! $miniservers) {
-				LBSystem::read_generalcfg();
+				read_generalcfg();
 				return $binaries;
 		}
 		return;
@@ -145,19 +139,15 @@ class LBSystem
 	# Get Plugin Version
 	# Returns plugin version from plugindatabase
 	##################################################################################
-	public function pluginversion()
+	function pluginversion()
 	{
 		global $pluginversion;
-		global $LBPLUGINDIR;
 		
 		if ($pluginversion) {
 			# print STDERR "Returning already fetched version\n";
 			return $pluginversion;
 		} 
-		if (!$LBPLUGINDIR) {
-			return NULL;
-		}
-				
+		
 		# Read Plugin database copied from plugininstall.pl
 		$filestr = file(LBHOMEDIR . "/data/system/plugindatabase.dat", FILE_IGNORE_NEW_LINES);
 		#$filestr = file_get_contents(LBHOMEDIR . "/data/system/plugindatabase.dat");
@@ -179,7 +169,7 @@ class LBSystem
 	# Get Plugins
 	# Returns an array of all plugins without comments
 	##################################################################################
-	public function get_plugins($withcomments = 0, $force = 0)
+	function get_plugins($withcomments = 0, $force = 0)
 	{
 		global $plugins;
 		
@@ -222,18 +212,21 @@ class LBSystem
 		return $plugins;
 	}
 
+	
+	
+	
 	##################################################################################
 	# Get System Version
 	# Returns LoxBerry version
 	##################################################################################
-	public function lbversion()
+	function lbversion()
 	{
 		global $lbversion;
 		
 		if ($lbversion) {
 			return $lbversion;
 		} 
-		LBSystem::read_generalcfg();
+		read_generalcfg();
 		return $lbversion;
 	}
 
@@ -348,14 +341,14 @@ class LBSystem
 	# Input: $msnr
 	# Output: $port
 	#####################################################
-	public function get_ftpport($msnr = 1)
+	function get_ftpport($msnr = 1)
 	{
 		global $miniservers;
 		global $miniservercount;
 		
 		# If we have no MS list, read the config
 		if (!$miniservers) {
-			LBSystem::read_generalcfg();
+			read_generalcfg();
 		}
 		
 		if ($miniservercount < 1) {
@@ -368,7 +361,7 @@ class LBSystem
 		}
 		
 		# If $miniservers does not have FTP set, read FTP from Miniserver and save it in FTPPort
-		if (! isset($miniservers[$msnr]['FTPPort'])) {
+		if (! $miniservers[$msnr]['FTPPort']) {
 			# Get FTP Port from Miniserver
 			$url = "http://{$miniservers[$msnr]['Credentials']}@{$miniservers[$msnr]['IPAddress']}:{$miniservers[$msnr]['Port']}/dev/cfg/ftp";
 			$response = file_get_contents($url);
@@ -387,7 +380,7 @@ class LBSystem
 	####################################################
 	# get_localip - Get local ip address
 	####################################################
-	public function get_localip()
+	function get_localip()
 	{
 		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 		socket_connect($sock, "8.8.8.8", 53);
@@ -400,7 +393,7 @@ class LBSystem
 	# is_systemcall - Determine if called from system widget
 	#########################################################
 
-	public function is_systemcall()
+	function is_systemcall()
 	{
 		$mypath = getcwd();
 		error_log("is_systemcall: mypath $mypath");
@@ -415,83 +408,81 @@ class LBSystem
 	}
 }
 
-// END of class LBSystem
-
-
-####################################################
-# is_enabled - tries to detect if a string says 'True'
-####################################################
-function is_enabled($text)
-{ 
-	$text = trim($text);
-	$text = strtolower($text);
-	
-	$words = array("true", "yes", "on", "enabled", "enable", "1", "check", "checked", "select", "selected");
-	if (in_array($text, $words)) {
-		return 1;
+namespace {
+	####################################################
+	# is_enabled - tries to detect if a string says 'True'
+	####################################################
+	function is_enabled($text)
+	{ 
+		$text = trim($text);
+		$text = strtolower($text);
+		
+		$words = array("true", "yes", "on", "enabled", "enable", "1", "check", "checked", "select", "selected");
+		if (in_array($text, $words)) {
+			return 1;
+		}
+		return undef;
 	}
-	return undef;
-}
 
 
-####################################################
-# is_disabled - tries to detect if a string says 'False'
-####################################################
-function is_disabled($text)
-{ 
-	$text = trim($text);
-	$text = strtolower($text);
-	
-	$words = array("false", "no", "off", "disabled", "disable", "0");
-	if (in_array($text, $words)) {
-		return 1;
-	}
-	return undef;
-}
-
-####################################################
-# lbfriendlyname - Returns the friendly name
-####################################################
-function lbfriendlyname()
-{
-	global $cfgwasread;
-	global $lbfriendlyname;
-	
-	if (! $cfgwasread) {
-		LoxBerry\System\LBSystem::read_generalcfg(); 
+	####################################################
+	# is_disabled - tries to detect if a string says 'False'
+	####################################################
+	function is_disabled($text)
+	{ 
+		$text = trim($text);
+		$text = strtolower($text);
+		
+		$words = array("false", "no", "off", "disabled", "disable", "0");
+		if (in_array($text, $words)) {
+			return 1;
+		}
+		return undef;
 	}
 	
-	# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
-	return $lbfriendlyname;
-	
-}
-
-####################################################
-# lbhostname - Returns the network hostname
-####################################################
-function lbhostname()
-{
-	return gethostname();
-}
-
-####################################################
-# lbwebserverport - Returns Apaches webserver port
-####################################################
-function lbwebserverport()
-{
-	global $cfgwasread;
-	global $webserverport;
-	
-	if (! $cfgwasread) {
-		LoxBerry\System\LBSystem::read_generalcfg(); 
+	####################################################
+	# lbfriendlyname - Returns the friendly name
+	####################################################
+	function lbfriendlyname()
+	{
+		global $cfgwasread;
+		global $lbfriendlyname;
+		
+		if (! $cfgwasread) {
+			LoxBerry\System\read_generalcfg(); 
+		}
+		
+		# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
+		return $lbfriendlyname;
+		
 	}
-	if (! $webserverport) {
-		$webserverport = 80;
+
+	####################################################
+	# lbhostname - Returns the network hostname
+	####################################################
+	function lbhostname()
+	{
+		return gethostname();
 	}
 	
-	return $webserverport;
-	
+	####################################################
+	# lbwebserverport - Returns Apaches webserver port
+	####################################################
+	function lbwebserverport()
+	{
+		global $cfgwasread;
+		global $webserverport;
+		
+		if (! $cfgwasread) {
+			LoxBerry\System\read_generalcfg(); 
+		}
+		if (! $webserverport) {
+			$webserverport = 80;
+		}
+		
+		return $webserverport;
+		
+	}
 }
-
 
 ?>
