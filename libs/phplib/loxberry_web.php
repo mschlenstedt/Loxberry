@@ -330,6 +330,24 @@ class Web
 		}
 		return $langarray;
 	}
+	
+	function get_plugin_icon($iconsize = 64)
+	{
+		global $LBSHTMLDIR;
+		global $LBPLUGINDIR;
+		
+		if 		($iconsize > 256) { $iconsize = 512; }
+		elseif	($iconsize > 128) { $iconsize = 256; }
+		elseif	($iconsize > 64) { $iconsize = 128; }
+		else					{ $iconsize = 64; }
+		$logopath = "$LBSHTMLDIR/images/icons/$LBPLUGINDIR/icon_$iconsize.png";
+		$logopath_web = "/system/images/icons/$LBPLUGINDIR/icon_$iconsize.png";
+	
+		if (file_exists($logopath)) { 
+			return $logopath_web;
+		}
+		return undef;
+	}
 }
 ////////////////////////////////////////////////////////////
 // Christian's Quick and Dirty 'HTML::Template'
