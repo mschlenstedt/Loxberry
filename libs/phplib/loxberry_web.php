@@ -248,7 +248,7 @@ class LBWeb
 			error_log("Language " . LBWeb::$lang . " detected from post data");
 			return LBWeb::$lang;
 		}
-		LoxBerry\System\read_generalcfg();
+		LBSystem::read_generalcfg();
 		if (isset($lblang)) {
 			LBWeb::$lang = $lblang;
 			error_log("Language " . LBWeb::$lang . " used from general.cfg");

@@ -3,13 +3,13 @@
 require_once "loxberry_system.php";
 require_once "loxberry_web.php";
 
-$L = Web::readlanguage("language.ini");
+$L = LBWeb::readlanguage("language.ini");
 
 $template_title = "Hello PHP! Plugin";
 $helplink = "http://www.loxwiki.eu:80/x/_wFmAQ";
 $helptemplate = "pluginhelp.html";
 
-Web::lbheader($template_title, $helplink, $helptemplate);
+LBWeb::lbheader($template_title, $helplink, $helptemplate);
 ?>
 
 <h1><?=$L['MAIN.TITLE']?></h1>
@@ -24,10 +24,10 @@ Web::lbheader($template_title, $helplink, $helptemplate);
 <p></p>
 
 <?php 
-echo "LoxBerry System Lib Version is " . $LBSYSTEMVERSION . "<br>";
-echo "LoxBerry Web Lib Version is " . Web::$LBWEBVERSION . "<br>";
+echo "LoxBerry System Lib Version is " . LBSystem::$LBSYSTEMVERSION . "<br>";
+echo "LoxBerry Web Lib Version is " . LBWeb::$LBWEBVERSION . "<br>";
 
-echo "Language: " . Web::lblanguage();
+echo "Language: " . LBWeb::lblanguage();
 ?>
 
 <hr>
@@ -37,5 +37,5 @@ echo "Language: " . Web::lblanguage();
 </div>
 
 <?php
-Web::lbfooter();
+LBWeb::lbfooter();
 ?>
