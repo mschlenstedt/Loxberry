@@ -24,7 +24,9 @@ Web::lbheader($template_title, $helplink, $helptemplate);
 <p></p>
 
 <?php 
+echo "LoxBerry System Lib Version is " . $LBSYSTEMVERSION . "<br>";
 echo "LoxBerry Web Lib Version is " . Web::$LBWEBVERSION . "<br>";
+
 echo "Language: " . Web::lblanguage();
 ?>
 

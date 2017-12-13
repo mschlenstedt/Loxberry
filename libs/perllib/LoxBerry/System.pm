@@ -1,4 +1,4 @@
-our $VERSION = "0.31_08";
+our $VERSION = "0.31_09";
 $VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -35,6 +35,7 @@ our @EXPORT = qw (
 	
 	lbhostname
 	lbfriendlyname
+	lbwebserverport
 
 	$lbshtmldir
 	$lbshtmlauthdir
@@ -169,6 +170,7 @@ my $lbhostname;
 my $lbfriendlyname;
 my $lbversion;
 my @plugins;
+my $webserverport;
 
 # Finished everytime code execution
 ##################################################################
@@ -504,6 +506,7 @@ sub read_generalcfg
 	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or Carp::carp ("TIMESERVER.ZONE not defined.\n");
 	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME") or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
 	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined.\n");
+	$webserverport  = $cfg->param("WEBSERVER.PORT") or Carp::carp ("WEBSERVER.PORT not defined.\n");
 	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
@@ -695,6 +698,26 @@ sub lbfriendlyname
 	# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
 	return $lbfriendlyname;
 	
+}
+
+=head2 lbwebserverport
+
+This exported function returns the webserver port 
+
+=cut
+
+####################################################
+# lbwebserverport - Returns the friendly name
+####################################################
+sub lbwebserverport
+{
+	if (! $cfgwasread) 
+		{ read_generalcfg(); 
+	}
+	if (! $webserverport) {
+		$webserverport = 80;
+	}
+	return $webserverport;
 }
 
 

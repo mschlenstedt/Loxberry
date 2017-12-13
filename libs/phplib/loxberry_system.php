@@ -2,7 +2,7 @@
 
 namespace LoxBerry\System
 {
-	$LBSYSTEMVERSION = "0.31_03";
+	$LBSYSTEMVERSION = "0.31_04";
 	# define Constants for LoxBerry directories
 
 	if(getenv("LBHOMEDIR")) {
@@ -69,6 +69,7 @@ namespace LoxBerry\System
 	$miniservercount=NULL;
 	$plugins=NULL;
 	$lblang=NULL;
+	$cfgwasread=NULL;
 
 	####### Get Miniserver array #######
 	function get_miniservers() 
@@ -241,11 +242,12 @@ namespace LoxBerry\System
 		global $lbversion;
 		global $lbfriendlyname;
 		global $lblang;
+		global $cfgwasread;
 		
 	#	print ("READ miniservers FROM DISK\n");
 
 		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_TYPED) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
-		
+		$cfgwasread = 1;
 		# error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
 		
 		# Get CloudDNS and Timezones, System language
@@ -443,9 +445,10 @@ namespace {
 	####################################################
 	function lbfriendlyname()
 	{
+		global $cfgwasread;
 		global $lbfriendlyname;
 		
-		if (! $lbfriendlyname) {
+		if (! $cfgwasread) {
 			LoxBerry\System\read_generalcfg(); 
 		}
 		
@@ -462,7 +465,24 @@ namespace {
 		return gethostname();
 	}
 	
-	
+	####################################################
+	# lbwebserverport - Returns Apaches webserver port
+	####################################################
+	function lbwebserverport()
+	{
+		global $cfgwasread;
+		global $webserverport;
+		
+		if (! $cfgwasread) {
+			LoxBerry\System\read_generalcfg(); 
+		}
+		if (! $webserverport) {
+			$webserverport = 80;
+		}
+		
+		return $webserverport;
+		
+	}
 }
 
 ?>
