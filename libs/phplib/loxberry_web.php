@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "0.31_02";
+	public static $LBWEBVERSION = "0.31_03";
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
 	public static $lang;
@@ -69,6 +69,7 @@ class LBWeb
 
 		global $template_title;
 		global $helplink;
+		global $navbar;
 		
 		if ($template_title !== "") {
 			$pagetitle = $template_title;
@@ -84,8 +85,6 @@ class LBWeb
 			$fulltitle = "LoxBerry";
 		}
 		error_log("   Determined template title: $fulltitle");
-		
-		// 
 		
 		$helptext = LBWeb::gethelp($lang, $helptemplate);
 				
@@ -112,6 +111,40 @@ class LBWeb
 					// ));
 		// $pageobj->EchoOutput();
 		
+		// NavBar Start
+		
+		if (is_array($navbar)) {
+			# navbar is defined as ARRAY
+			sort($navbar, SORT_NUMERIC);
+			$topnavbar = '<div data-role="navbar">' . 
+				'	<ul>';
+			foreach ($navbar as $element) {
+				if (isset($element['active'])) {
+					$btnactive = ' class="ui-btn-active"';
+				} else { $btnactive = NULL; 
+				}
+			if (isset($element['target'])) {
+					$btntarget = ' target="' . $element['target'] . '"';
+				} else {
+					$btntarget = "";
+				}
+				
+				if (isset($element['Name'])) {
+					$topnavbar .= '		<li><a href="' . $element['URL'] . '"' . $btntarget . $btnactive . '>' . $element['Name'] . '</a></li>';
+					$topnavbar_haselements = True;
+				}
+			}
+			$topnavbar .=  '	</ul>' .
+				'</div>';	
+		
+		} elseif (is_string($navbar)) {
+			# navbar is defined as plain STRING
+			$topnavbar = $navbar;
+			$topnavbar_haselements = True;
+		} 
+		// NavBar End
+			
+		
 		$pageobj = new LBTemplate($templatepath);
 		$pageobj->paramArray(array(
 					'TEMPLATETITLE' => $fulltitle,
@@ -121,6 +154,14 @@ class LBWeb
 					'LANG' => $lang
 					));
 		LBWeb::readlanguage($pageobj, "language.ini", True);
+		
+		if ($topnavbar_haselements) {
+			$pageobj->param ( 'TOPNAVBAR', $topnavbar);
+		} else {
+			$pageobj->param ( 'TOPNAVBAR', "");
+		}
+		
+		
 		$pageobj->output();
 		
 		error_log("<-- loxberry_web: Pagestart function finished");
@@ -349,6 +390,7 @@ class LBWeb
 		return undef;
 	}
 }
+
 ////////////////////////////////////////////////////////////
 // Christian's Quick and Dirty 'HTML::Template'
 ////////////////////////////////////////////////////////////
