@@ -326,7 +326,7 @@ sub pagestart
 			
 			if ($main::navbar{$element}{Name}) {
 				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . '</a></li>';
-				$$topnavbar_haselements = 1;
+				$topnavbar_haselements = 1;
 			}
 		}
 		$topnavbar .=  '	</ul>' .
