@@ -60,6 +60,6 @@ if ( lbfriendlyname eq "") {
         <url>/system/images/LB03-Icon256.png</url>
       </icon>
     </iconList>
-    <presentationURL>http://<?php echo LoxBerry\System\get_localip();?>/</presentationURL>
+    <presentationURL>http://<?php echo LBSystem::get_localip();?>/</presentationURL>
   </device>
 </root>
