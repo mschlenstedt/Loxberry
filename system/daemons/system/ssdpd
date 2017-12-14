@@ -21,7 +21,10 @@ case "$1" in
                 log_daemon_msg "Starting ssdp service" "ssdpd"
                 cd /opt/loxberry/sbin
                 ./ssdpd >> /opt/loxberry/log/system/ssdpd.log &
-		if pgrep ssdpd >/dev/null 2>&1 then
+		RESULT=`/usr/bin/pgrep ssdpd`
+		sleep 1
+		echo "Test:$MAINPID"
+		if P=$(/usr/bin/pgrep ssdpd); then
                 	log_end_msg 0
 		else
 			log_end_msg 1
@@ -29,7 +32,7 @@ case "$1" in
         'stop')
                 log_daemon_msg "Stopping ssdp service" "ssdpd"
                 /usr/bin/pkill ssdpd
-                if pgrep ssdpd >/dev/null 2>&1 then
+                if ["${RESULT:-null}" = null]; then
 			log_end_msg 1
 		else
 			log_end_msg 0
@@ -39,7 +42,7 @@ case "$1" in
                 /usr/bin/pkill ssdpd
                 cd /opt/loxberry/sbin
                 ./ssdpd >> /opt/loxberry/log/system/ssdpd.log &
-                if pgrep ssdpd > /dev/null 2>&1 then
+                if ["${RESULT:-null}" = null]; then
 			log_end_msg 0
 		else
 			log_end_msg 1
@@ -51,7 +54,7 @@ case "$1" in
                 else
                   ln -s /opt/loxberry/system/daemons/system/ssdpd /etc/init.d/ssdpd
                   /bin/systemctl daemon-reload
-                  /etc/init.d/ssdpd start
+                  /usr/sbin/service ssdpd start
                 fi;;
         *)
                 echo "usage $0 start|stop|restart" ;;

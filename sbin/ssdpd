@@ -7,7 +7,7 @@
  use IO::Socket::Multicast;
  use IO::Socket::INET;
  use DateTime;
- use LoxBerry::System;
+ use System;
  use Config::Simple;
  use Data::UUID;
  use Thread;
@@ -32,9 +32,9 @@
 	 $cfg->param("SSDP.UUID",$UUID);
 	 $cfg->save();
  }
- my $IP = LoxBerry::System::get_localip();
- my $LBName = LoxBerry::System::lbfriendlyname() . " (" . LoxBerry::System::lbhostname() . ")";
- my $LBVer = LoxBerry::System::lbversion();
+ my $IP = System::get_localip();
+ my $LBName = System::lbfriendlyname() . " (" . LoxBerry::System::lbhostname() . ")";
+ my $LBVer = System::lbversion();
  our $msg1 = "NOTIFY * HTTP/1.1\r\nServer: $LBName $LBVer UPnP/1.0\r\nCache-Control: max-age=1800\r\nLOCATION: http://$IP/system/description.php\r\nNTS: ssdp:alive\r\nNT: upnp:rootdevice\r\nUSN: uuid:".$UUID."::upnp:rootdevice\r\nHOST: 239.255.255.250:1900\r\n\r\n";
  our $msg2 = "NOTIFY * HTTP/1.1\r\nServer: $LBName $LBVer UPnP/1.0\r\nCache-Control: max-age=1800\r\nLOCATION: http://$IP/system/descrition.php\r\nNTS: ssdp:alive\r\nNT: urn:schemas-upnp-org:device:HVAC_System:1\r\nUSN: uuid:".$UUID."::urn:schemas-upnp-org:device:HVAC_System:1\r\nHOST: 239.255.255.250:1900\r\n\r\n";
  my $msg3 = "HTTP/1.1 200 OK\r\nServer: %s %s UPnP/1.0\r\nCache-Control: max-age=1800\r\nEXT:\r\nDATE: %s\r\nLOCATION: http://%s/system/description.php\r\nST: upnp:rootdevice\r\nUSN: uuid:%s::upnp:rootdevice\r\n\r\n";
