@@ -3,9 +3,9 @@
 require_once "loxberry_system.php";
 // require_once "phphtmltemplate_loxberry/template040.php";
 
-class Web
+class LBWeb
 {
-	public static $LBWEBVERSION = "0.31_01";
+	public static $LBWEBVERSION = "0.31_03";
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
 	public static $lang;
@@ -23,7 +23,7 @@ class Web
 		if ($template_title !== "") {
 			$pagetitle = $template_title;
 		}
-		$lang = Web::lblanguage();
+		$lang = LBWeb::lblanguage();
 		
 		$fulltitle = $pagetitle !== "" ? lbfriendlyname() . " " . $pagetitle : lbfriendlyname();
 		$fulltitle = trim($fulltitle);
@@ -54,7 +54,7 @@ class Web
 		$headobj = new LBTemplate($templatepath);
 		$headobj->param('TEMPLATETITLE', $fulltitle);
 		$headobj->param('LANG', $lang);
-		Web::readlanguage($headobj, "language.ini", True);
+		LBWeb::readlanguage($headobj, "language.ini", True);
 		$headobj->output();
 
 		error_log("<-- loxberry_web: Head function finished");
@@ -69,6 +69,7 @@ class Web
 
 		global $template_title;
 		global $helplink;
+		global $navbar;
 		
 		if ($template_title !== "") {
 			$pagetitle = $template_title;
@@ -77,7 +78,7 @@ class Web
 			$helpurl = $helplink;
 		}
 		
-		$lang = Web::lblanguage();
+		$lang = LBWeb::lblanguage();
 		$fulltitle = $pagetitle !== "" ? lbfriendlyname() . " " . $pagetitle : lbfriendlyname();
 		$fulltitle = trim($fulltitle);
 		if ($fulltitle === "") {
@@ -85,9 +86,7 @@ class Web
 		}
 		error_log("   Determined template title: $fulltitle");
 		
-		// 
-		
-		$helptext = Web::gethelp($lang, $helptemplate);
+		$helptext = LBWeb::gethelp($lang, $helptemplate);
 				
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pagestart.html";
 		if (!file_exists($templatepath)) {
@@ -112,6 +111,40 @@ class Web
 					// ));
 		// $pageobj->EchoOutput();
 		
+		// NavBar Start
+		
+		if (is_array($navbar)) {
+			# navbar is defined as ARRAY
+			sort($navbar, SORT_NUMERIC);
+			$topnavbar = '<div data-role="navbar">' . 
+				'	<ul>';
+			foreach ($navbar as $element) {
+				if (isset($element['active'])) {
+					$btnactive = ' class="ui-btn-active"';
+				} else { $btnactive = NULL; 
+				}
+			if (isset($element['target'])) {
+					$btntarget = ' target="' . $element['target'] . '"';
+				} else {
+					$btntarget = "";
+				}
+				
+				if (isset($element['Name'])) {
+					$topnavbar .= '		<li><a href="' . $element['URL'] . '"' . $btntarget . $btnactive . '>' . $element['Name'] . '</a></li>';
+					$topnavbar_haselements = True;
+				}
+			}
+			$topnavbar .=  '	</ul>' .
+				'</div>';	
+		
+		} elseif (is_string($navbar)) {
+			# navbar is defined as plain STRING
+			$topnavbar = $navbar;
+			$topnavbar_haselements = True;
+		} 
+		// NavBar End
+			
+		
 		$pageobj = new LBTemplate($templatepath);
 		$pageobj->paramArray(array(
 					'TEMPLATETITLE' => $fulltitle,
@@ -120,7 +153,15 @@ class Web
 					'PAGE' => $page,
 					'LANG' => $lang
 					));
-		Web::readlanguage($pageobj, "language.ini", True);
+		LBWeb::readlanguage($pageobj, "language.ini", True);
+		
+		if ($topnavbar_haselements) {
+			$pageobj->param ( 'TOPNAVBAR', $topnavbar);
+		} else {
+			$pageobj->param ( 'TOPNAVBAR', "");
+		}
+		
+		
 		$pageobj->output();
 		
 		error_log("<-- loxberry_web: Pagestart function finished");
@@ -173,7 +214,7 @@ class Web
 			}
 			$langfile = substr($helptemplate, 0, $pos) . ".ini";
 			$helpobj = new LBTemplate($templatepath);
-			Web::readlanguage($helpobj, $langfile);
+			LBWeb::readlanguage($helpobj, $langfile);
 			$helptext = $helpobj->outputString();
 			return $helptext;
 		}
@@ -189,7 +230,7 @@ class Web
 	///////////////////////////////////////////////////////////////////
 	public function pageend()
 	{
-		$lang = Web::lblanguage();
+		$lang = LBWeb::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pageend.html";
 		$pageobj = new LBTemplate($templatepath);
 		$pageobj->param('LANG', $lang);
@@ -201,7 +242,7 @@ class Web
 	///////////////////////////////////////////////////////////////////
 	public function foot()
 	{
-		$lang = Web::lblanguage();
+		$lang = LBWeb::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/foot.html";
 		$footobj = new LBTemplate($templatepath);
 		$footobj->param('LANG', $lang);
@@ -213,8 +254,8 @@ class Web
 	///////////////////////////////////////////////////////////////////
 	public function lbheader($pagetitle = "", $helpurl = "", $helptemplate = "")
 	{
-		Web::head($pagetitle);
-		Web::pagestart($pagetitle, $helpurl, $helptemplate);
+		LBWeb::head($pagetitle);
+		LBWeb::pagestart($pagetitle, $helpurl, $helptemplate);
 	}
 	
 	///////////////////////////////////////////////////////////////////
@@ -222,8 +263,8 @@ class Web
 	///////////////////////////////////////////////////////////////////
 	public function lbfooter()
 	{
-		Web::pageend();
-		Web::foot();
+		LBWeb::pageend();
+		LBWeb::foot();
 	}
 	
 	
@@ -233,26 +274,26 @@ class Web
 	public function lblanguage() 
 	{
 		global $lblang;
-		if (isset(Web::$lang)) { 
-			error_log("Language " . Web::$lang . " is already set.");
-			return Web::$lang; }
+		if (isset(LBWeb::$lang)) { 
+			error_log("Language " . LBWeb::$lang . " is already set.");
+			return LBWeb::$lang; }
 		
 		// error_log("Will detect language");
 		if (isset($_GET["lang"])) {
-			Web::$lang = substr($_GET["lang"], 0, 2);
-			error_log("Language " . Web::$lang . " detected from Query string");
-			return Web::$lang;
+			LBWeb::$lang = substr($_GET["lang"], 0, 2);
+			error_log("Language " . LBWeb::$lang . " detected from Query string");
+			return LBWeb::$lang;
 		}
 		if (isset($_POST["lang"])) {
-			Web::$lang = substr($_GET["lang"], 0, 2);
-			error_log("Language " . Web::$lang . " detected from post data");
-			return Web::$lang;
+			LBWeb::$lang = substr($_GET["lang"], 0, 2);
+			error_log("Language " . LBWeb::$lang . " detected from post data");
+			return LBWeb::$lang;
 		}
-		LoxBerry\System\read_generalcfg();
+		LBSystem::read_generalcfg();
 		if (isset($lblang)) {
-			Web::$lang = $lblang;
-			error_log("Language " . Web::$lang . " used from general.cfg");
-			return Web::$lang;
+			LBWeb::$lang = $lblang;
+			error_log("Language " . LBWeb::$lang . " used from general.cfg");
+			return LBWeb::$lang;
 		}
 		// Finally we default to en
 		return "en";
@@ -273,7 +314,7 @@ class Web
 			$genericlangfile = LBTEMPLATEDIR . "/lang/$genericlangfile";
 		}
 		
-		$lang = Web::lblanguage();
+		$lang = LBWeb::lblanguage();
 		$pos = strrpos($genericlangfile, ".");
 		if ($pos === false) {
 				error_log("readlanguage: Illegal option '$genericlangfile'. This should be in the form 'language.ini' without pathes.");
@@ -287,10 +328,10 @@ class Web
 		
 		if ($syslang == false || ($syslang == True && !is_array(self::$SL))) { 
 			if (file_exists($langfile)) {
-				$currlang = Web::read_language_file($langfile);
+				$currlang = LBWeb::read_language_file($langfile);
 			}
 			if (file_exists($enlangfile)) {
-				$enlang = Web::read_language_file($enlangfile);
+				$enlang = LBWeb::read_language_file($enlangfile);
 			}
 		
 			foreach ($enlang as $section => $sectionarray)  {
@@ -349,6 +390,7 @@ class Web
 		return undef;
 	}
 }
+
 ////////////////////////////////////////////////////////////
 // Christian's Quick and Dirty 'HTML::Template'
 ////////////////////////////////////////////////////////////

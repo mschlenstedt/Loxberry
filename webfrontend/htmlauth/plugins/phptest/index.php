@@ -3,13 +3,27 @@
 require_once "loxberry_system.php";
 require_once "loxberry_web.php";
 
-$L = Web::readlanguage("language.ini");
+$L = LBWeb::readlanguage("language.ini");
 
 $template_title = "Hello PHP! Plugin";
 $helplink = "http://www.loxwiki.eu:80/x/_wFmAQ";
 $helptemplate = "pluginhelp.html";
 
-Web::lbheader($template_title, $helplink, $helptemplate);
+$navbar[1]['Name'] = $L['NAVBAR.FIRST'];
+$navbar[1]['URL'] = 'index.php';
+
+$navbar[2]['Name'] = $L['NAVBAR.SECOND'];
+$navbar[2]['URL'] = 'settings.php';
+
+$navbar[3]['Name'] = $L['NAVBAR.THIRD'];
+$navbar[3]['URL'] = 'http://www.loxberry.de';
+$navbar[3]['target'] = '_blank';
+
+
+// Activate the first element
+$navbar[1]['active'] = True;
+
+LBWeb::lbheader($template_title, $helplink, $helptemplate);
 ?>
 
 <h1><?=$L['MAIN.TITLE']?></h1>
@@ -24,8 +38,10 @@ Web::lbheader($template_title, $helplink, $helptemplate);
 <p></p>
 
 <?php 
-echo "LoxBerry Web Lib Version is " . Web::$LBWEBVERSION . "<br>";
-echo "Language: " . Web::lblanguage();
+echo "LoxBerry System Lib Version is " . LBSystem::$LBSYSTEMVERSION . "<br>";
+echo "LoxBerry Web Lib Version is " . LBWeb::$LBWEBVERSION . "<br>";
+
+echo "Language: " . LBWeb::lblanguage();
 ?>
 
 <hr>
@@ -35,5 +51,5 @@ echo "Language: " . Web::lblanguage();
 </div>
 
 <?php
-Web::lbfooter();
+LBWeb::lbfooter();
 ?>
