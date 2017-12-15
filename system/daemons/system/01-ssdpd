@@ -1,0 +1,15 @@
+#!/bin/bash
+
+ if [ ! -h /etc/systemd/system/ssdpd.service ]
+ then
+   ln -s /opt/loxberry/data/system/ssdpd.service /etc/systemd/system/ssdpd.service
+   /bin/systemctl daemon-reload
+   #/bin/systemctl disable ssdpd
+ fi;
+
+ if [ `cat $LBSCONFIG/general.cfg | sed -n '/^\[SSDP\]/,/^\[.*\]/p' | grep "^[ ]*DISABLED[ ]*=" | sed 's/.*=[ ]*//'` = 1 ]
+ then
+	echo "SSDP disabled"
+ else
+	 /bin/systemctl start ssdpd
+ fi;
