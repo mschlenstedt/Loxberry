@@ -1,6 +1,11 @@
 <?php
 require_once "loxberry_system.php";
 $ini = parse_ini_file(LBSCONFIGDIR . "/general.cfg",TRUE);
+if ( lbfriendlyname eq "") {
+	$lbname = lbhostname();
+} else {
+	$lbname = lbfriendlyname() . " (" . lbhostname() . ")";
+}
 ?>
 <?xml version="1.0" encoding="utf-8"?>
 <root xmlns="urn:schemas-upnp-org:device-1-0">
@@ -10,7 +15,7 @@ $ini = parse_ini_file(LBSCONFIGDIR . "/general.cfg",TRUE);
   </specVersion>
   <device>
     <deviceType>urn:schemas-upnp-org:device:HVAC_System:1</deviceType>
-    <friendlyName><?php echo lbfriendlyname() . " (" . lbhostname() . ")"; ?></friendlyName>
+    <friendlyName><?php echo $lbname; ?></friendlyName>
     <manufacturer>M.Schlenstedt</manufacturer>
     <manufacturerURL>http://www.loxwiki.eu/</manufacturerURL>
     <modelDescription>Loxberry</modelDescription>
