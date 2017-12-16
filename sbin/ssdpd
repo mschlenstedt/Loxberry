@@ -94,5 +94,5 @@
 	$s2->mcast_send($msg6,'239.255.255.250:1900');
 	$s2->mcast_send($msg7,'239.255.255.250:1900');
 	$th->kill('KILL')->join();
-	die "Dienst wurde beendet\n";
+	exit 0;
  }
