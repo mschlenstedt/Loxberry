@@ -109,7 +109,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				exit(1);
 			}
 			# This is the place where we can hand over to the real update
-			exec("sudo $lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir");
+			exec("perl $lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir");
 			# exec never returns
 			exit(0);
 		}
@@ -245,13 +245,16 @@ sub download
 	my ($url, $filename) = @_;
 	print STDERR "--> Download. URL: $url Filename: $filename\n";
 	
-	my $rel_header = GetFileSize($url);
-	
-	return undef if ($rel_header eq 0); 
-	my $download_size = $rel_header->content_length;
+	my $download_size;
+	my $rel_header;
+	for (my $x=1; $x<=3; $x++) {
+		$rel_header = GetFileSize($url);
+		$download_size = $rel_header->content_length;
+		last if (defined $download_size && $download_size > 0);
+	}
+	return undef if (!defined $download_size || $download_size == 0); 
 	print STDERR "    Expected download size: $download_size\n";
 	
-	return undef if (!defined $download_size || $download_size == 0); 
 	# print STDERR "    Header check passed.\n";
 	
 	my $ua = LWP::UserAgent->new;
@@ -431,11 +434,11 @@ sub prepare_update
 		return undef;
 	}
 		
-	if (-e "$updatedir/config/system/update_ignore.system") {
-		copy "$updatedir/config/system/update_ignore.system", "$lbhomedir/config/system/update_ignore.system";
+	if (-e "$updatedir/config/system/update_exclude.system") {
+		copy "$updatedir/config/system/update_exclude.system", "$lbhomedir/config/system/update_exclude.system";
 	}
-	if (! -e "$lbhomedir/config/system/update_ignore.system") {
-		print STDERR "Missing ignore list $lbhomedir/config/system/update_ignore.system - Quitting.\n";
+	if (! -e "$lbhomedir/config/system/update_exclude.system") {
+		print STDERR "Missing ignore list $lbhomedir/config/system/update_exclude.system - Quitting.\n";
 		return undef;
 	}
 	if (! -x "$lbhomedir/sbin/loxberryupdate.pl") {

@@ -1,0 +1,4 @@
+# This is a user-specified exclude file from system updates.
+# To exclude a file or directory from updates, use the path excluding /opt/loxberry, eg.
+#config/system
+# Do not modify the update_ignore.system file as it is overwritten with every update.
