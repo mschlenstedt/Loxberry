@@ -1,0 +1,9 @@
+bin
+config
+data
+log
+sbin
+system
+templates
+webfrontend
+
