@@ -1,4 +1,28 @@
 #!/usr/bin/perl
+#######################################################
+# Parameters
+#	querytype
+#		release
+#		prerelease
+#		testing (= latest commit of a branch)  not implemented
+#
+#	update
+#		1 	Do an update
+#		(not existing) Notify only
+#
+# 	output
+#		(not existing) STDERR
+#		json Return json with version and vers info
+#
+#	keepupdatefiles
+#		1	do not update loxberryupdate*.pl and exclude-Files
+#		(not existing) update these files
+#
+#	dryrun
+#		1	do not update loxberryupdate*.pl, exlude-file, and let rsync run dry
+#
+#######################################################
+
 use LoxBerry::System;
 use strict;
 use warnings;
@@ -29,27 +53,10 @@ if (!$cgi->param) {
 	&err;
 	exit (1);
 }
-#######################################################
-# Parameters
-#	querytype
-#		release
-#		prerelease
-#		testing (= latest commit of a branch)  not implemented
-#
-#	update
-#		1 	Do an update
-#		(not existing) Notify only
-#
-# 	output
-#		(not existing) STDERR
-#		json Return json with version and vers info
-#
-#	keepupdatefiles
-#		1	do not update loxberryupdate.pl and exclude-Files
-#		(not existing) update these files
 
-########################################################
-
+if ($cgi->param('dryrun')) {
+	$cgi->param('keepupdatefiles', 1);
+}
 	
 my $formatjson;
 
@@ -123,7 +130,8 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				exit(1);
 			}
 			# This is the place where we can hand over to the real update
-			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version");
+			my $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
+			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun");
 			# exec never returns
 			exit(0);
 		}
@@ -382,6 +390,10 @@ sub prepare_update
 	if ($dircount != 1) {
 		print STDERR "Found unclear number of directories ($dircount) in update directory.\n";
 		return undef;
+	}
+	
+	if ($cgi->param('keepupdatefiles')) {
+		print STDERR "keepupdatefiles is set - no files are copied.\n";
 	}
 	
 	$updatedir = "$updatedir/$direntry";

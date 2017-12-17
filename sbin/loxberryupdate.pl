@@ -1,4 +1,19 @@
 #!/usr/bin/perl
+
+#######################################################
+# Parameters
+#	release		
+#		{version} This is the destination version number, e.g. 0.3.2
+#		config 	  Reads the version from the destination general.cfg
+#
+#	updatedir		
+#		{path}   This is the location of the extracted update. Don't use a training slash. 
+#
+#	dryrun
+#		1	do not update loxberryupdate*.pl, exlude-file, and let rsync run dry
+#
+#######################################################
+
 use LoxBerry::System;
 use strict;
 use warnings;
@@ -55,11 +70,10 @@ if (!$release) {
 $release = version->parse($release);
 my $currversion = version->parse(LoxBerry::System::lbversion());
 
-#my ($lbmajor, $lbminor, $lbbuild, $lbdev) = split_version(LoxBerry::System::lbversion());
-#my ($major, $minor, $build, $dev) = split_version($release);
-
-
 # Set up rsync command line
+
+my $dryrun = $cgi->param('dryrun') ? "--dry-run" : "";
+
 my @rsynccommand = (
 	"rsync",
 	"-v",
@@ -74,7 +88,7 @@ my @rsynccommand = (
 	"--exclude-from=$lbhomedir/config/system/update_exclude.system",
 	"--exclude-from=$lbhomedir/config/system/update_exclude.userdefined",
 	"--human-readable",
-#	"--dry-run",
+	"$dryrun",
 	"$updatedir/",
 	"$lbhomedir/",
 );
@@ -82,6 +96,9 @@ my @rsynccommand = (
 system(@rsynccommand);
 my $exitcode  = $? >> 8;
 
+if ($dryrun ne "") {
+	print STDERR "rsync was started with dryrun. Nothing was changed.\n\n";
+}
 
 # Preparing Update scripts
 my @updatelist;
@@ -95,66 +112,42 @@ while (my $file = readdir(DIR)) {
 	push @updatelist, version->parse($nameversion);
 }
 closedir DIR;
-# @updatelist = sort { lc($a) cmp lc($b) } @updatelist;
 @updatelist = sort { version->parse($a) <=> version->parse($b) } @updatelist;
+
 foreach my $version (@updatelist)
 { 
 	print STDERR "Version: " . $version . "\n";
-	if ( version->parse($version) <= version->parse($currversion) ) {
-		print STDERR "  Skipping. To older version.\n";
+	if ( $version <= $currversion ) {
+		print STDERR "  Skipping. $version too old version.\n";
 		next;
 	}
-	if ( version->parse($version) > version->parse($release) ) {
-		print STDERR "  Skipping. To new version.\n";
+	if ( $version > $release ) {
+		print STDERR "  Skipping. $version too new version.\n";
 		next;
 	}
 	
-	exec_update_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl");
+	if (!$cgi->param('dryrun')) {
+		print STDERR "   Running update script $version...\n";
+		exec_update_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl");
+	} else {
+		print STDERR "   Dry-run. Skipping $version script.\n";
+	}
+	
 }
-
-
-
 
 sub exec_update_script
 {
-my $filename = shift;
-print STDERR "Executing $filename\n";
-system($^X, $filename);
-my $exitcode  = $? >> 8;
-print STDERR "exec_update_script errcode $exitcode\n";
+	my $filename = shift;
+	if (!$filename) {
+		print STDERR "   exec_update_script: Filename is empty. Skipping.\n";	
+		return;
+	}
+	print STDERR "Executing $filename\n";
+	system($^X, $filename);
+	my $exitcode  = $? >> 8;
+	print STDERR "exec_update_script errcode $exitcode\n";
+	return $exitcode;
 }
-
-
-
-
-	
-	
-exit;
-
-
-sub split_version 
-{
-	my ($fversion) = @_;
-	if (!$fversion) {
-		return undef;
-	}
-	
-	# If first letter is a 'V', remove it
-	my $firstletter = substr($fversion, 0, 1);
-	if ($firstletter eq 'v' || $firstletter eq 'V') {
-		$fversion = substr($fversion, 1);
-	}
-	my ($version, $dev) = split(/-/, $fversion);
-	$dev = "" if (!$dev);
-	my ($maj, $min, $build) = split(/\./, $version);
-	
-	if (defined $maj && defined $min && defined $build) {
-		return ($maj, $min, $build, $dev);
-	}
-	return undef;
-	
-}
-
 
 sub err
 {
