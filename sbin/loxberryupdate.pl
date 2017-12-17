@@ -90,8 +90,8 @@ my @rsynccommand = (
 	"-v",
 	"--checksum",
 	"--archive", # equivalent to -rlptgoD
-	"--backup",
-	"--backup-dir=/opt/loxberry_backup/",
+#	"--backup",
+	"--backup-dir=/opt/loxberry_backup",
 	"--keep-dirlinks",
 	"--delete",
 	"-F",
@@ -110,6 +110,9 @@ $exitcode  = $? >> 8;
 if ($dryrun ne "") {
 	print STDERR "rsync was started with dryrun. Nothing was changed.\n\n";
 }
+
+# Restoring permissions
+system("$lbhomedir/sbin/resetpermissions.sh");
 
 # Preparing Update scripts
 my @updatelist;
