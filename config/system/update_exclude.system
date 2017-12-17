@@ -1,13 +1,20 @@
 # System file to define excluded files during LoxBerry Update
 
+.git
+.git*
+
 bin
 
 config
 
-data
+#data
 data/plugins
-data/system
+#data/system
+data/system/notifications
+data/system/uninstall
+data/system/upgrade
 data/system/plugindatabase.dat
+data/system/lastaptupdate.dat
 
 #libs
 

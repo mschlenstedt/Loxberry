@@ -109,7 +109,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				exit(1);
 			}
 			# This is the place where we can hand over to the real update
-			exec("perl $lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir");
+			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$major.$minor.$build-$dev");
 			# exec never returns
 			exit(0);
 		}
@@ -333,12 +333,12 @@ sub unzip
 	my $bins = LoxBerry::System::get_binaries();
 	print STDERR "    Extracting ZIP file\n";
 	system("$bins->{UNZIP} -q -a -d $unzipfolder $unzipfile");
-	my $exit_value  = $? >> 8;
+	my $exitcode  = $? >> 8;
 	my $signal_num  = $? & 127;
 	my $dumped_core = $? & 128;
 
-	if ($exit_value > 0) {
-		print STDERR unziperror($exit_value) . "\n";
+	if ($exitcode > 0) {
+		print STDERR unziperror($exitcode) . "\n";
 		print STDERR "Cleaning up.\n";
 		delete_directory($unzipfile);
 		# rm($unzipfile);
