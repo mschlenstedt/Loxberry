@@ -5,6 +5,7 @@ use warnings;
 use experimental 'smartmatch';
 use CGI;
 use JSON;
+use version;
 use File::Path;
 use File::Copy qw(copy);
 use LWP::UserAgent;
@@ -32,13 +33,17 @@ if (!$cgi->param) {
 #		testing (= latest commit of a branch)  not implemented
 #
 #	update
-#		(key exists) Do an update
+#		1 	Do an update
 #		(not existing) Notify only
 #
 # 	output
 #		(not existing) STDERR
 #		json Return json with version and vers info
 #
+#	keepupdatefiles
+#		1	do not update loxberryupdate.pl and exclude-Files
+#		(not existing) update these files
+
 ########################################################
 
 	
@@ -109,7 +114,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				exit(1);
 			}
 			# This is the place where we can hand over to the real update
-			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$major.$minor.$build-$dev");
+			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$major.$minor.$build.$dev");
 			# exec never returns
 			exit(0);
 		}
@@ -422,7 +427,7 @@ sub prepare_update
 	$updatedir = "$updatedir/$direntry";
 	print STDERR "Real update directory $updatedir\n";
 	
-	if (-e "$updatedir/sbin/loxberryupdate.pl") {
+	if (-e "$updatedir/sbin/loxberryupdate.pl" && !$cgi->param('keepupdatefiles')) {
 		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl";
 		if (! $?) {
 			print STDERR "Error copying loxberryupdate to $lbhomedir/sbin/loxberryupdate.pl: $!\n";
@@ -434,7 +439,7 @@ sub prepare_update
 		return undef;
 	}
 		
-	if (-e "$updatedir/config/system/update_exclude.system") {
+	if (-e "$updatedir/config/system/update_exclude.system" && !$cgi->param('keepupdatefiles')) {
 		copy "$updatedir/config/system/update_exclude.system", "$lbhomedir/config/system/update_exclude.system";
 	}
 	if (! -e "$lbhomedir/config/system/update_exclude.system") {

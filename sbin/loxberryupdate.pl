@@ -86,7 +86,7 @@ my $exitcode  = $? >> 8;
 # Preparing Update scripts
 my @updatelist;
 my $updateprefix = 'update_';
-opendir (DIR, "$lbhomedir/data/system/loxberryupdate");
+opendir (DIR, "$lbhomedir/sbin/loxberryupdate");
 while (my $file = readdir(DIR)) {
 	next if (!begins_with($file, $updateprefix));
 	my $lastdotpos = rindex($file, '.');
@@ -109,7 +109,7 @@ foreach my $version (@updatelist)
 		next;
 	}
 	
-	exec_update_script("$lbhomedir/data/system/loxberryupdate/update_$version.pl");
+	exec_update_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl");
 }
 
 
