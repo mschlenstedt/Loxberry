@@ -52,8 +52,8 @@ if (!$release) {
 	&err;
 	exit (1);
 }
-$release = version->declare($release);
-my $currversion = version->declare(LoxBerry::System::lbversion());
+$release = version->parse($release);
+my $currversion = version->parse(LoxBerry::System::lbversion());
 
 #my ($lbmajor, $lbminor, $lbbuild, $lbdev) = split_version(LoxBerry::System::lbversion());
 #my ($major, $minor, $build, $dev) = split_version($release);
@@ -92,7 +92,7 @@ while (my $file = readdir(DIR)) {
 	my $lastdotpos = rindex($file, '.');
 	my $nameversion = lc(substr($file, length($updateprefix), length($file)-$lastdotpos-length($updateprefix)+1));
 	#print STDERR "$nameversion\n";
-	push @updatelist, version->declare($nameversion);
+	push @updatelist, version->parse($nameversion);
 }
 closedir DIR;
 # @updatelist = sort { lc($a) cmp lc($b) } @updatelist;

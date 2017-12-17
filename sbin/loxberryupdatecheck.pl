@@ -62,21 +62,36 @@ if ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'test
 	exit(1);
 }
 
-my ($lbmajor, $lbminor, $lbbuild, $lbdev) = split_version(LoxBerry::System::lbversion());
-
-if ($lbmajor eq "" || $lbminor eq "" || $lbbuild eq "") {
-	$joutput{'error'} = "Cannot aquire current version. Exiting.";
+my $lbversion;
+if (!version->is_lax(LoxBerry::System::lbversion())) {
+	$lbversion = version->parse(LoxBerry::System::lbversion());
+} else {
+	$joutput{'error'} = "Cannot read current version. Is this a real version string? Exiting.";
 	&err;
 	exit(1);
 }
 
-my @filter_major = (0);
-my @filter_minor = (3, 4);
-my @filter_build = ();
+# Filter - everything above or below is possible - ignore others
+my $min_version = "0.3.0";
+my $max_version = "0.5.0";
 
+if (version::is_lax($min_version)) {
+	$min_version = version->parse($min_version);
+} else {
+	$joutput{'error'} = "Minimal version min_version ($min_version) not a version. Is this a real version string? Exiting.";
+	&err;
+	exit(1);
+}
+if (version::is_lax($max_version)) {
+	$max_version = version->parse($max_version);
+} else {
+	$joutput{'error'} = "Maximal version max_version ($max_version) not a version. Is this a real version string? Exiting.";
+	&err;
+	exit(1);
+}
 
 if ($querytype eq 'release' or $querytype eq 'prerelease') {
-	my ($major, $minor, $build, $dev, $release_url, $release_name, $release_body) = check_releases($querytype, $lbmajor, $lbminor, $lbbuild, $lbdev);
+	my ($release_version, $release_url, $release_name, $release_body) = check_releases($querytype, $lbversion);
 	if (! defined $release_url || $release_url eq "") {
 		$joutput{'info'} = "No new version found.";
 		&err;
@@ -84,19 +99,13 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	}
 
 	$joutput{'info'} = "New version found.";
-	$joutput{'release_version'} = { vers_tag => "$major.$minor.$build", 
-							vers_major => $major,
-							vers_minor => $minor,
-							vers_build => $build
-							};
+	$joutput{'release_version'} = $release_version;
 	$joutput{'release_zipurl'} = $release_url;
 	$joutput{'release_name'} = $release_name;
 	$joutput{'release_body'} = $release_body;
 	
 	if ($cgi->param('update')) {
-		my $download_file = "$download_path/loxberry.$major.$minor.$build";
-		$download_file = "$download_file-$dev" if (defined $dev);
-		$download_file = "$download_file.zip";
+		my $download_file = "$download_path/loxberry.$release_version.zip";
 		my $filename = download($release_url, $download_file);
 		if (!$filename) {
 			print STDERR "Error downloading file.\n";
@@ -114,7 +123,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				exit(1);
 			}
 			# This is the place where we can hand over to the real update
-			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$major.$minor.$build.$dev");
+			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version");
 			# exec never returns
 			exit(0);
 		}
@@ -134,7 +143,7 @@ exit;
 sub check_releases
 {
 
-	my ($querytype, $currmajor, $currminor, $currbuild, $currdev) = @_;
+	my ($querytype, $currversion) = @_;
 	my $endpoint = 'https://api.github.com';
 	my $resource = '/repos/mschlenstedt/Loxberry/releases';
 	#my $resource = '/repos/christianTF/LoxBerry-Plugin-SamplePlugin-V2-PHP/releases';
@@ -143,6 +152,7 @@ sub check_releases
 	my $minor;
 	my $build;
 	my $dev;
+	my $release_version;
 
 	my $ua = LWP::UserAgent->new;
 	my $request = HTTP::Request->new(GET => $endpoint . $resource);
@@ -160,84 +170,48 @@ sub check_releases
 
 	my $releases = JSON->new->utf8(1)->allow_nonref->convert_blessed->decode($response->decoded_content);
 
-	print STDERR "Current LoxBerry Version: " . LoxBerry::System::lbversion() . "\n";
 	foreach my $release ( @$releases ) {
-		($major, $minor, $build, $dev) = undef;
-		($major, $minor, $build, $dev) = split_version($release->{tag_name});
-		print STDERR "RELEASE VERSION: $major.$minor.$build-$dev\n";
-		#print STDERR "TAG_NAME: " . $release->{tag_name} . " || ";
-		#print STDERR $release->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
-		#print STDERR "\n";
-		if (@filter_major and not $major ~~ @filter_major) {
-			print STDERR "MAJOR filter not matched.\n";
+		$release_version = undef;
+		if (!version::is_lax($release->{tag_name})) {
+			print STDERR "check_releases: " . $release->{tag_name} . " seems not to be a correct version number. Skipping.\n";
 			next;
+		} else {
+			$release_version = version->parse($release->{tag_name});
 		}
-		if (@filter_minor and not $minor ~~ @filter_minor) {
-			print STDERR "MINOR filter not matched.\n";
-			next;
-		}
-		# if (@filter_build) { print STDERR "FILTER BUILD IS DEFINED\n"; }
-		if (@filter_build and not $build ~~ @filter_build) {
-			print STDERR "BUILD filter not matched.\n";
+		#split_version($release->{tag_name});
+		print STDERR "RELEASE VERSION: $release_version\n";
+		
+		if ($release_version < $min_version || $release_version > $max_version) {
+			print STDERR "    Release $release_version is outside min or max version ($min_version/$max_version)\n";
 			next;
 		}
 		print STDERR "Filter check passed - continuing\n";
 		
 		# Check against current version
 		print STDERR "Comparing versions:\n";
-		print STDERR "  Current Version: $currmajor.$currminor.$currbuild-$currdev\n";
-		print STDERR "  Release Version: $major.$minor.$build-$dev\n";
-		if ($major == $currmajor && $minor == $currminor && $build == $currbuild && $dev eq $currdev) {
-			# Skip the equal version
+		print STDERR "  Current Version: $currversion\n";
+		print STDERR "  Release Version: $release_version\n";
+		if ($currversion == $release_version) {
+			print STDERR "  Skipping - this is the same version.\n";  
 			next;
 		}
-		# Now skip every older version
-		if ($major < $currmajor) 
-			{ next; }
-		if ($minor < $currminor)
-			{ next; }
-		if ($build < $currbuild)
-			{ next; }
+		if ($release_version < $currversion) {
+			print STDERR "  Skipping  - the release is older than current version.\n";
+			next;
+		}
 		
-		# At this point we now that the version is newer
-		print STDERR "This release is newer than current installation.";				
+		# At this point we know that the version is newer
+		print STDERR "This release is newer than current installation.\n";				
 		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
-			{ print STDERR "Skipping pre-release\n";
+			{ print STDERR "  Skipping pre-release\n";
 			  next;
 		}
-		print STDERR "--> Version MATCH: $major.$minor.$build matches " . $release->{tag_name} . "\n";
-		#print STDERR "URL: $release->{zipball_url})";
-		return ($major, $minor, $build, $dev, $release->{zipball_url}, $release->{name}, $release->{body});
+		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body});
 	}
 	#print STDERR "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
 	#print STDERR $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
 
 }
-
-
-sub split_version 
-{
-	my ($fversion) = @_;
-	if (!$fversion) {
-		return undef;
-	}
-	
-	# If first letter is a 'V', remove it
-	my $firstletter = substr($fversion, 0, 1);
-	if ($firstletter eq 'v' || $firstletter eq 'V') {
-		$fversion = substr($fversion, 1);
-	}
-	my ($version, $dev) = split(/-/, $fversion);
-	$dev = "" if (!$dev);
-	my ($maj, $min, $build) = split(/\./, $version);
-	
-	if (defined $maj && defined $min && defined $build) {
-		return ($maj, $min, $build, $dev);
-	}
-	return undef;
-	
-}
-
 
 ############################################
 # Downloads a file
@@ -273,21 +247,11 @@ sub download
 	return undef if (!$res->is_success);
 	my $file_size = -s $filename;
 	if ($file_size != $download_size) { 
-		print STDERR "Filesize does not match\n" &&
+		print STDERR "Filesize does not match\n";
 		return undef;
 	}
 	# print STDERR "Download saved successfully in $filename\n";
 	return $filename;
-
-
-# $link = 'http://www.domain.com/anyfile.zip';
-# $header = GetFileSize($link);
-
-# print "File size: " . $header->content_length . " bytes\n";
-# print "Last moified: " . localtime($header->last_modified) . "\n";
-# exit;
-
-
 
 }
 
