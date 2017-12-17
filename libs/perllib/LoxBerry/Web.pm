@@ -131,7 +131,7 @@ sub head
 		die_on_bad_params => 0,
 	);
 	
-	LoxBerry::Web::readlanguage($headobj);
+	LoxBerry::Web::readlanguage($headobj, undef, 1);
 	
 	$headobj->param( TEMPLATETITLE => $template_title);
 	$headobj->param( LANG => $lang);
@@ -294,7 +294,7 @@ sub pagestart
 		die_on_bad_params => 0,
 	);
 	
-	LoxBerry::Web::readlanguage($headerobj);
+	LoxBerry::Web::readlanguage($headerobj, undef, 1);
 	
 	print STDERR "template_title: $template_title\n";
 	print STDERR "helplink:       $helplink\n";
@@ -400,10 +400,14 @@ sub foot
 #####################################################
 sub readlanguage
 {
-	my ($template, $langfile) = @_;
+	my ($template, $langfile, $syslang) = @_;
 
 	my $lang = LoxBerry::Web::lblanguage();
-	my $issystem = LoxBerry::System::is_systemcall();
+	# my $issystem = LoxBerry::System::is_systemcall();
+	my $issystem;
+	if ($syslang || LoxBerry::System::is_systemcall()) {
+		$issystem = 1;
+	}
 	
 	if(!$issystem && !$template->isa("HTML::Template")) {
 		# Plugin only gave us a language 
