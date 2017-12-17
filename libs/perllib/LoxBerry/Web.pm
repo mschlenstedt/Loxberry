@@ -1,4 +1,4 @@
-our $VERSION = "0.31_11";
+our $VERSION = "0.31_12";
 $VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
@@ -406,7 +406,7 @@ sub readlanguage
 	my $issystem = LoxBerry::System::is_systemcall();
 
 	# Return if we already have them in memory.
-	if (!$template) { Carp::confess("ERROR: $template is empty."); }
+	# if (!$template) { Carp::confess("ERROR: $template is empty."); }
 	if (!$issystem and !$langfile) { 
 		Carp::carp("WARNING: \$langfile is empty, setting to language.ini. If file is missing, error will occur.");
 		$langfile = "language.ini"; }
@@ -435,8 +435,10 @@ sub readlanguage
 			}
 		}
 		
-		while (my ($name, $value) = each %SL) {
-			$template->param("$name" => $value);
+		if ($template) {
+			while (my ($name, $value) = each %SL) {
+				$template->param("$name" => $value);
+			}
 		}
 		return %SL;
 	
