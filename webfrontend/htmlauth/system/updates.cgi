@@ -180,7 +180,7 @@ sub form {
 
 
 	our $maintemplate = HTML::Template->new(
-				filename => "$lbstemplatedir/updates_menu.html",
+				filename => "$lbstemplatedir/updates.html",
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
@@ -406,7 +406,7 @@ sub install
 	# Print template
 	
 	my $maintemplate = HTML::Template->new(
-				filename => "$lbstemplatedir/updates_menu.html",
+				filename => "$lbstemplatedir/updates.html",
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
