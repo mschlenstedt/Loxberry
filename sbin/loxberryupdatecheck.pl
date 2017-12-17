@@ -15,6 +15,10 @@ my $release_url;
 my $oformat;
 my %joutput;
 my $download_path = '/tmp';
+# Filter - everything above or below is possible - ignore others
+my $min_version = "0.3.0";
+my $max_version = "0.5.0";
+
 # Command line options
 
 my $cgi = CGI->new;
@@ -71,10 +75,6 @@ if (!version->is_lax(LoxBerry::System::lbversion())) {
 	exit(1);
 }
 
-# Filter - everything above or below is possible - ignore others
-my $min_version = "0.3.0";
-my $max_version = "0.5.0";
-
 if (version::is_lax($min_version)) {
 	$min_version = version->parse($min_version);
 } else {
@@ -123,7 +123,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				exit(1);
 			}
 			# This is the place where we can hand over to the real update
-			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version");
+			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version");
 			# exec never returns
 			exit(0);
 		}
@@ -148,10 +148,6 @@ sub check_releases
 	my $resource = '/repos/mschlenstedt/Loxberry/releases';
 	#my $resource = '/repos/christianTF/LoxBerry-Plugin-SamplePlugin-V2-PHP/releases';
 
-	my $major;
-	my $minor;
-	my $build;
-	my $dev;
 	my $release_version;
 
 	my $ua = LWP::UserAgent->new;
@@ -390,6 +386,17 @@ sub prepare_update
 	
 	$updatedir = "$updatedir/$direntry";
 	print STDERR "Real update directory $updatedir\n";
+	
+	if (-e "$updatedir/sbin/loxberryupdatecheck.pl" && !$cgi->param('keepupdatefiles')) {
+		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl";
+		if (! $?) {
+			print STDERR "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!\n";
+			return undef;
+		}
+	}
+	if (! -x "$lbhomedir/sbin/loxberryupdatecheck.pl") {
+		chmod 0774, "$lbhomedir/sbin/loxberryupdatecheck.pl";
+	}
 	
 	if (-e "$updatedir/sbin/loxberryupdate.pl" && !$cgi->param('keepupdatefiles')) {
 		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl";
