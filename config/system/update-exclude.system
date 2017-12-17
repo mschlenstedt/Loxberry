@@ -1,0 +1,39 @@
+# System file to define excluded files during LoxBerry Update
+
+.git
+.git*
+
+/bin/
+/bin/plugins
+
+/config/
+
+/data/
+/data/plugins
+/data/system
+
+# /libs/
+
+/log/
+
+# /sbin/
+
+# During development, it is annoying to risk to loose that files 
+/sbin/loxberryupdate*.pl
+/sbin/plugins/
+
+
+/system/
+/system/cron/
+/system/daemons/plugins/
+/system/daemons/uninstall/
+/system/network/
+
+# /templates/
+/templates/plugins/
+
+# /webfrontend/
+/webfrontend/html/plugins/
+/webfrontend/htmlauth/plugins/
+/webfrontend/legacy/
+/webfrontend/html/system/images/icons/

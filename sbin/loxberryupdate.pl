@@ -15,6 +15,7 @@
 #######################################################
 
 use LoxBerry::System;
+# use LoxBerry::Web;
 use strict;
 use warnings;
 use experimental 'smartmatch';
@@ -70,6 +71,15 @@ if (!$release) {
 $release = version->parse($release);
 my $currversion = version->parse(LoxBerry::System::lbversion());
 
+# Change owner of the loxberryupdate dir to loxberry:loxberry
+system("chown -R loxberry:loxberry $updatedir");
+my $exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	print STDERR "Changing owner of updatedir $updatedir returned errors. This may lead to further permission problems. Exiting.\n";
+	exit(1);
+}
+
+
 # Set up rsync command line
 
 my $dryrun = $cgi->param('dryrun') ? "--dry-run" : "";
@@ -77,24 +87,25 @@ my $dryrun = $cgi->param('dryrun') ? "--dry-run" : "";
 my @rsynccommand = (
 	"rsync",
 	"-v",
-#	"-v",
+	"-v",
 	"--checksum",
 	"--archive", # equivalent to -rlptgoD
 	"--backup",
-	"--backup-dir=/opt/loxberry_backup",
+	"--backup-dir=/opt/loxberry_backup/",
 	"--keep-dirlinks",
 	"--delete",
 	"-F",
-	"--exclude-from=$lbhomedir/config/system/update_exclude.system",
-	"--exclude-from=$lbhomedir/config/system/update_exclude.userdefined",
+	"--exclude-from=$lbhomedir/config/system/update-exclude.system",
+	"--exclude-from=$lbhomedir/config/system/update-exclude.userdefined",
 	"--human-readable",
 	"$dryrun",
 	"$updatedir/",
 	"$lbhomedir/",
 );
 
+undef $exitcode;
 system(@rsynccommand);
-my $exitcode  = $? >> 8;
+$exitcode  = $? >> 8;
 
 if ($dryrun ne "") {
 	print STDERR "rsync was started with dryrun. Nothing was changed.\n\n";
@@ -114,9 +125,12 @@ while (my $file = readdir(DIR)) {
 closedir DIR;
 @updatelist = sort { version->parse($a) <=> version->parse($b) } @updatelist;
 
+print STDERR "Running update scripts...\n";
+
 foreach my $version (@updatelist)
 { 
-	print STDERR "Version: " . $version . "\n";
+	my $exitcode;
+	print STDERR "Script version: " . $version . "\n";
 	if ( $version <= $currversion ) {
 		print STDERR "  Skipping. $version too old version.\n";
 		next;
@@ -127,27 +141,65 @@ foreach my $version (@updatelist)
 	}
 	
 	if (!$cgi->param('dryrun')) {
-		print STDERR "   Running update script $version...\n";
-		exec_update_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl");
+		print STDERR "   Running update script for $version...\n";
+		undef $exitcode; 
+		$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl");
+		# Should we remember, if exec failed? I think no.
 	} else {
 		print STDERR "   Dry-run. Skipping $version script.\n";
 	}
-	
 }
 
-sub exec_update_script
+# We think that everything is up to date now.
+# I don't know what to do if error occurred during update scripts, so we simply continue.
+
+# We have to recreate the legacy templates.
+system("su - loxberry -c '$lbshtmlauthdir/tools/generatelegacytemplates.pl' >/dev/null");
+
+# Last but not least set the general.cfg to the new version.
+if (! $cgi->param('dryrun') ) {
+	print STDERR "Updating the version in general.cfg is currently disabled for testing.";
+	#my  $syscfg = new Config::Simple("$lbsconfigdir/general.cfg");
+	#$syscfg->param('BASE.VERION', $release);
+	#$syscfg->save();
+}	
+	
+print STDERR "\n<OK> Loxberry Update thinks that the update was successful. If not -> http://www.loxwiki.eu:80/x/YQR7AQ\n";
+	
+exit 0;
+
+
+###################################################################################
+# This runs a Perl script with the current Perl interpreter
+# and returns the exit code
+###################################################################################
+
+sub exec_perl_script
 {
 	my $filename = shift;
+	my $user = shift;
+	
 	if (!$filename) {
-		print STDERR "   exec_update_script: Filename is empty. Skipping.\n";	
+		print STDERR "   exec_perl_script: Filename is empty. Skipping.\n";	
 		return;
 	}
 	print STDERR "Executing $filename\n";
-	system($^X, $filename);
+	my @commandline;
+	if ($user) {
+		push @commandline, "su", "-", $user, "-c", "'$^X $filename'";
+	} else {
+		push @commandline, "$^X", $filename;
+	}
+	system(@commandline);
 	my $exitcode  = $? >> 8;
-	print STDERR "exec_update_script errcode $exitcode\n";
+	print STDERR "exec_perl_script $filename with user $user - errcode $exitcode\n";
 	return $exitcode;
 }
+
+###################################################################################
+# Prints an error in json
+# Used for talking with jQuery
+###################################################################################
 
 sub err
 {

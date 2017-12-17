@@ -24,6 +24,7 @@
 #######################################################
 
 use LoxBerry::System;
+use LoxBerry::Web;
 use strict;
 use warnings;
 use experimental 'smartmatch';
@@ -43,7 +44,9 @@ my $download_path = '/tmp';
 my $min_version = "0.3.0";
 my $max_version = "0.5.0";
 
-# Command line options
+# Read system language
+my %SL = LoxBerry::Web::readlanguage();
+# print STDERR "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
 
 my $cgi = CGI->new;
 # $cgi->import_names('R');
@@ -146,7 +149,16 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 exit;
 
 ##################################################
-# Check Releases List and return url 
+# Check Releases List
+# Parameters
+#		1. querytype ('release' or 'prerelease')
+#		2. Version object of current version
+# Returns
+#		1. $release_version (version object)
+#		2. $release->{zipball_url} (URL to the ZIP)
+#		3. $release->{name} (Name of the release)
+#		4. $release->{body}) (Description of the release)
+#		Returns undef if no new version found
 ##################################################
 sub check_releases
 {
@@ -258,7 +270,11 @@ sub download
 	return $filename;
 
 }
-
+#############################################################
+# Checks the file size before the download
+# Parameter is the download url
+# Returns the $header object of the request
+#############################################################
 sub GetFileSize
 {
     my ($url) = @_;
@@ -392,6 +408,14 @@ sub prepare_update
 		return undef;
 	}
 	
+	system("chown -R loxberry:loxberry $updatedir");
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+	print STDERR "Changing owner of updatedir $updatedir returned errors. This may lead to further permission problems. Exiting.\n";
+	return undef;
+}
+
+	
 	if ($cgi->param('keepupdatefiles')) {
 		print STDERR "keepupdatefiles is set - no files are copied.\n";
 	}
@@ -422,11 +446,11 @@ sub prepare_update
 		return undef;
 	}
 		
-	if (-e "$updatedir/config/system/update_exclude.system" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/config/system/update_exclude.system", "$lbhomedir/config/system/update_exclude.system";
+	if (-e "$updatedir/config/system/update-exclude.system" && !$cgi->param('keepupdatefiles')) {
+		copy "$updatedir/config/system/update-exclude.system", "$lbhomedir/config/system/update-exclude.system";
 	}
-	if (! -e "$lbhomedir/config/system/update_exclude.system") {
-		print STDERR "Missing ignore list $lbhomedir/config/system/update_exclude.system - Quitting.\n";
+	if (! -e "$lbhomedir/config/system/update-exclude.system") {
+		print STDERR "Missing ignore list $lbhomedir/config/system/update-exclude.system - Quitting.\n";
 		return undef;
 	}
 	if (! -x "$lbhomedir/sbin/loxberryupdate.pl") {
