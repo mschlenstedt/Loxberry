@@ -1,5 +1,3 @@
-our $VERSION = "0.31_12";
-$VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
 
@@ -16,6 +14,8 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
+our $VERSION = "0.3.1.13";
+
 use base 'Exporter';
 our @EXPORT = qw (
 		lblanguage
@@ -404,10 +404,14 @@ sub readlanguage
 
 	my $lang = LoxBerry::Web::lblanguage();
 	my $issystem = LoxBerry::System::is_systemcall();
-
+	
+	if(!$issystem && !$template->isa("HTML::Template")) {
+		# Plugin only gave us a language 
+		$langfile = $template;
+	}
+	
 	# Return if we already have them in memory.
-	# if (!$template) { Carp::confess("ERROR: $template is empty."); }
-	if (!$issystem and !$langfile) { 
+	if (!$issystem && !$langfile) { 
 		Carp::carp("WARNING: \$langfile is empty, setting to language.ini. If file is missing, error will occur.");
 		$langfile = "language.ini"; }
 	# if ($issystem and %SL) { return %SL; }
@@ -452,19 +456,22 @@ sub readlanguage
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
 		if (!%L) {
-			Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
-		
+			if (-e $langfile . "_en.ini") {
+				Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
+			}
 			# Read foreign language if exists and not English and overwrite English strings
 			$langfile = $langfile . "_" . $lang . ".ini";
 			if ((-e $langfile) and ($lang ne 'en')) {
 				Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
 			}
 			if (! %L) {
-				Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+				Carp::carp ("ERROR: Could not read any language phrases.\n");
 			}
 		}
-		while (my ($name, $value) = each %L) {
-			$template->param("$name" => $value);
+		if ($template) {
+			while (my ($name, $value) = each %L) {
+				$template->param("$name" => $value);
+			}
 		}
 		return %L;
 	}
