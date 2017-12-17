@@ -7,20 +7,15 @@ bin
 
 config
 
-#data
+data
 data/plugins
-#data/system
-data/system/notifications
-data/system/uninstall
-data/system/upgrade
-data/system/plugindatabase.dat
-data/system/lastaptupdate.dat
+data/system
 
 #libs
 
 log
 
-sbin
+#sbin
 
 system
 system/cron
@@ -28,10 +23,10 @@ system/daemons/plugins
 system/daemons/uninstall
 system/network
 
-templates
+#templates
 templates/plugins
 
-webfrontend
+#webfrontend
 webfrontend/html/plugins
 webfrontend/htmlauth/plugins
 webfrontend/legacy/
