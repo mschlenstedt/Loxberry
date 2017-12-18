@@ -85,3 +85,14 @@ awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a
 
 # echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/apache2/conf.d/20-loxberry.ini
 # echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/cli/conf.d/20-loxberry.ini
+
+# sudoers.d/lbdefault
+rm /etc/sudoers.d/lbdefaults
+ln -s $LBHOME/system/sudoers/lbdefaults /etc/sudoers.d/lbdefaults
+chmod 555 $LBHOME/system/sudoers
+chown root:root /etc/sudoers.d/lbdefaults
+chmod 664 /etc/sudoers.d/lbdefaults
+
+
+
+
