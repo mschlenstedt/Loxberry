@@ -51,6 +51,8 @@ my %SL = LoxBerry::Web::readlanguage();
 my $cgi = CGI->new;
 # $cgi->import_names('R');
 
+my %keywords = map { $_ => 1 } $cgi->keywords;
+
 if (!$cgi->param) {
 	$joutput{'error'} = "No parameters sent.";
 	&err;
@@ -62,6 +64,10 @@ if ($cgi->param('dryrun')) {
 }
 	
 my $formatjson;
+
+if ($keywords{'-test'}) {
+	print STDERR "TEST IS SET";
+}
 
 $formatjson = $cgi->param('output') eq 'json' ? 1 : undef;
 

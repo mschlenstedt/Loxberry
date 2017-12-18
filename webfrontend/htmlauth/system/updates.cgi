@@ -450,6 +450,46 @@ our $maintemplate = HTML::Template->new(
 	my %SL = LoxBerry::Web::readlanguage($maintemplate);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
+	# Releasetype
+	our %labels = (		'release'=>  $SL{'UPDATES.LBU_SEL_RELTYPE_RELEASE'},
+						'prerelease'=> $SL{'UPDATES.LBU_SEL_RELTYPE_PRERELEASE'},
+						);
+					 
+	our $releasetype_radio = $cgi->radio_group(
+			-name    => 'option-releasetype',
+			-values  => ['release', 'prerelease'],
+			-labels  => \%labels,
+			-default => $cfg->param('UPDATE.RELEASETYPE')
+		);
+	$maintemplate->param("RELEASETYPE_RADIO", $releasetype_radio);
+	
+	our %labels = (		'install'=> $SL{'UPDATES.LBU_SEL_INSTALLTYPE_INSTALL'},
+						'notify'=> $SL{'UPDATES.LBU_SEL_INSTALLTYPE_NOTIFY'},
+						'disable'=>  $SL{'UPDATES.LBU_SEL_INSTALLTYPE_DISABLE'},
+						);
+					 
+	our $installtype_radio = $cgi->radio_group(
+			-name    => 'option-installtype',
+			-values  => ['install', 'notify', 'disable'],
+			-labels  => \%labels,
+			-default => $cfg->param('UPDATE.INSTALLTYPE'),
+		);
+	$maintemplate->param("INSTALLTYPE_RADIO", $installtype_radio);
+	
+	our %labels = (		'1'=> $SL{'UPDATES.LBU_SEL_INSTALLTIME_DAILY'},
+						'7'=> $SL{'UPDATES.LBU_SEL_INSTALLTIME_WEEKLY'},
+						'30'=> $SL{'UPDATES.LBU_SEL_INSTALLTIME_MONTHLY'});
+					 
+	our $installtime_radio = $cgi->radio_group(
+			-name    => 'option-installtime',
+			-values  => ['1', '7', '30'],
+			-labels  => \%labels,
+			-default => $cfg->param('UPDATE.INTERVAL')
+		);
+	$maintemplate->param("INSTALLTIME_RADIO", $installtime_radio);
+	
+	
+	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
