@@ -16,4 +16,5 @@ loxberry ALL = NOPASSWD: /sbin/reboot
 loxberry ALL = NOPASSWD: /usr/bin/apt-get
 loxberry ALL = NOPASSWD: /usr/bin/dpkg
 loxberry ALL = NOPASSWD: /opt/loxberry/sbin/changehostname.sh
-loxberry ALL = NOPASSWD: /opt/loxberry/webfrontend/htmlauth/system/tools/lbupdate.sh
+loxberry ALL = NOPASSWD: /opt/loxberry/sbin/loxberryupdatecheck.pl
+
