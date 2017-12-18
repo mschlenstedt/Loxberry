@@ -101,7 +101,7 @@ if (version::is_lax($max_version)) {
 }
 
 if ($querytype eq 'release' or $querytype eq 'prerelease') {
-	my ($release_version, $release_url, $release_name, $release_body) = check_releases($querytype, $lbversion);
+	my ($release_version, $release_url, $release_name, $release_body, $release_published) = check_releases($querytype, $lbversion);
 	if (! defined $release_url || $release_url eq "") {
 		$joutput{'info'} = "No new version found.";
 		&err;
@@ -113,6 +113,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	$joutput{'release_zipurl'} = $release_url;
 	$joutput{'release_name'} = $release_name;
 	$joutput{'release_body'} = $release_body;
+	$joutput{'published_at'} = $release_published;
 	
 	if ($cgi->param('update')) {
 		my $download_file = "$download_path/loxberry.$release_version.zip";
@@ -222,7 +223,7 @@ sub check_releases
 			{ print STDERR "  Skipping pre-release\n";
 			  next;
 		}
-		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body});
+		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at});
 	}
 	#print STDERR "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
 	#print STDERR $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
