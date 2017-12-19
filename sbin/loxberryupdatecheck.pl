@@ -27,7 +27,6 @@ use LoxBerry::System;
 use LoxBerry::Web;
 use strict;
 use warnings;
-use experimental 'smartmatch';
 use CGI;
 use JSON;
 use version;
@@ -81,9 +80,6 @@ if ($formatjson || $cron ) {
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
 }
 
-# DEBUG SET QUERYTYPE
-# $querytype = 'release';
-
 if ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'testing') {
 	$joutput{'error'} = "Wrong query type.";
 	&err;
@@ -136,9 +132,17 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	$joutput{'release_new'} = 1;
 	
 	if ($cgi->param('update')) {
+		
+		my $pids = `pidof loxberryupdate.pl`;
+		print STDERR "PIDOF LENGTH: " . length($pids) . "\n";
+		if ($pids.length > 0) {
+			$joutput{'info'} = "It seems that another update is currently running. Update request was stopped.";
+			&err;
+			exit(1);
+		} 
+					
 		$joutput{'info'} = "Update to $release_version started. See logfile for details. Currently DRYRUN, hardcoded in ajax-config-handler.";
 		&err;
-		
 		my $download_file = "$download_path/loxberry.$release_version.zip";
 		my $filename = download($release_url, $download_file);
 		if (!$filename) {
@@ -158,7 +162,23 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			}
 			# This is the place where we can hand over to the real update
 			my $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
-			exec($^X, "$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun");
+			
+			my $pid = fork;
+			if (!$pid) {
+				print STDERR "cannot fork\n";
+			} elsif ($pid == 0) {	
+				# Fork
+				exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
+			exit(0);
+			} else {
+				# Parent
+				exit(0);
+			}
+			
+			
+			
+			
+			
 			# exec never returns
 			exit(0);
 		}
@@ -441,19 +461,19 @@ sub prepare_update
 		next if $direntry eq '.' or $direntry eq '..';
 		$dircount++;
 		last;
-}
+	}
 	closedir $DIR;
 	if ($dircount != 1) {
 		print STDERR "Found unclear number of directories ($dircount) in update directory.\n";
 		return undef;
 	}
 	
-	system("chown -R loxberry:loxberry $updatedir");
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-	print STDERR "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.\n";
-	return undef;
-}
+	# system("chown -R loxberry:loxberry $updatedir");
+	# my $exitcode  = $? >> 8;
+	# if ($exitcode != 0) {
+	# print STDERR "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.\n";
+	# return undef;
+	# }
 
 	
 	if ($cgi->param('keepupdatefiles')) {

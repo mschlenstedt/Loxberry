@@ -88,7 +88,7 @@ if (version::is_lax(LoxBerry::System::lbversion())) {
 }
 
 # Change owner of the loxberryupdate dir to loxberry:loxberry
-system("chown -R loxberry:loxberry $updatedir");
+system("chown -R loxberry:loxberry $updatedir 1>&2");
 my $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	print STDERR "Changing owner of updatedir $updatedir returned errors. This may lead to further permission problems. Exiting.\n";
@@ -132,14 +132,14 @@ if ($dryrun ne "") {
 
 print STDERR "Restoring permissions\n";
 # Restoring permissions
-system("$lbhomedir/sbin/resetpermissions.sh");
+system("$lbhomedir/sbin/resetpermissions.sh 1>&2");
 $exitcode  = $? >> 8;
 if ($exitcode != 0 ) {
 	print STDERR "Restoring permissions exited with errorcode $exitcode. Despite errors loxberryupdate.pl will continue.\n";
 	$errskipped++;
 }
 
-print STDERR "Searching ans preparing update scripts\n";
+print STDERR "Searching and preparing update scripts\n";
 # Preparing Update scripts
 my @updatelist;
 my $updateprefix = 'update_';
@@ -174,7 +174,6 @@ foreach my $version (@updatelist)
 		print STDERR "  Skipping. $version too new version.\n";
 		next;
 	}
-	
 	if (!$cgi->param('dryrun')) {
 		print STDERR "   Running update script for $version...\n";
 		undef $exitcode; 
@@ -238,9 +237,9 @@ sub exec_perl_script
 	print STDERR "Executing $filename\n";
 	my @commandline;
 	if ($user) {
-		push @commandline, "su", "-", $user, "-c", "'$^X $filename'";
+		push @commandline, "su", "-", $user, "-c", "'$^X $filename'", "1>&2";
 	} else {
-		push @commandline, "$^X", $filename;
+		push @commandline, "$^X", $filename, "1>&2";
 	}
 	system(@commandline);
 	my $exitcode  = $? >> 8;
