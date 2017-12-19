@@ -71,12 +71,12 @@ if ($keywords{'cron'}) {
 	$cron = 1;
 }
 
-$formatjson = $cgi->param('output') eq 'json' ? 1 : undef;
+$formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
 
 my $querytype = $cgi->param('querytype');
 
 # We assume that if output is json, this is a web call
-if ($formatjson ne "" || $cron == 1) {
+if ($formatjson || $cron ) {
 	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
 }
@@ -91,7 +91,7 @@ if ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'test
 }
 
 my $lbversion;
-if (!version->is_lax(LoxBerry::System::lbversion())) {
+if (version::is_lax(LoxBerry::System::lbversion())) {
 	$lbversion = version->parse(LoxBerry::System::lbversion());
 } else {
 	$joutput{'error'} = "Cannot read current version. Is this a real version string? Exiting.";
@@ -241,7 +241,7 @@ sub check_releases
 			  next;
 		}
 		
-		if ($release_safe eq "" || version->parse($release_version) > version->parse($release_safe)) {
+		if (! $release_safe || version->parse($release_version) > version->parse($release_safe)) {
 			$release_safe = $release;
 		}
 		
@@ -451,7 +451,7 @@ sub prepare_update
 	system("chown -R loxberry:loxberry $updatedir");
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
-	print STDERR "Changing owner of updatedir $updatedir returned errors. This may lead to further permission problems. Exiting.\n";
+	print STDERR "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.\n";
 	return undef;
 }
 
@@ -513,7 +513,7 @@ sub err
 	} elsif ($joutput{'info'}) {
 		print STDERR "INFO: " . $joutput{'info'} . "\n";
 	}
-	if ($formatjson == 1) {
+	if ($formatjson) {
 		my $jsntext = to_json(\%joutput);
 		print STDERR "JSON: " . $jsntext . "\n";
 		print $jsntext;
