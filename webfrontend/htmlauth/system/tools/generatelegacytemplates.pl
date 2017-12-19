@@ -34,7 +34,13 @@ if (!$lbstemplatedir) {
 	print STDERR "generatelegacytemplates.pl: Cannot get \$lbstemplatedir. Exiting.\n";
 	exit (1);
 }
-		
+
+# We need to backup the reboot state because we do not want it in the template
+my $reboot_required_file = "$lbslogdir/reboot.required";
+if (-e $reboot_required_file) {
+	rename "$reboot_required_file", "$reboot_required_file.backup";
+}
+
 # Catch all language files to detect available languages
 my @files = <$lbstemplatedir/lang/language_??.ini>;
 foreach my $file (@files) {
@@ -188,5 +194,9 @@ foreach my $file (@files) {
 	close $fh_lang_success;
 	
 	}
+}
+
+if (-e "$reboot_required_file.backup") {
+	rename "$reboot_required_file.backup", "$reboot_required_file";
 }
 
