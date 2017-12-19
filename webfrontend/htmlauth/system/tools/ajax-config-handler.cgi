@@ -131,7 +131,8 @@ sub lbupdate
 	}
 	
 	if ($action eq 'lbupdate-runinstall') {
-		system("sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1 dryrun=1");
+		exec("sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1 dryrun=1");
+		return;
 	}
 	
 	
@@ -206,17 +207,3 @@ sub change_generalcfg
 	$cfg->write() or return undef;
 	return 1;
 }
-
-
-
-
-###################################################################
-# Returns a value if string2 is the at the beginning of string 1
-###################################################################
-
-sub begins_with
-{	
-		
-    return substr($_[0], 0, length($_[1])) eq $_[1];
-}		
-			

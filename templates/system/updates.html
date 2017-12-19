@@ -272,6 +272,10 @@ $(document).ready( function () {
 	$("#lbu_button_install_cancel").click(function(){
 		$('.divTable').fadeIn();
 		$('#lbu_updateinstall').hide();
+		$('#lbu_button_install').fadeIn();
+		$('#lbu_install_pleasewait').hide();
+		$('#lbu_update_process').text("");
+		
 	});
 	$("#lbu_button_install").click(function(){
 		$('#lbu_button_install').hide();
