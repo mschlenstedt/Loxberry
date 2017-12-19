@@ -184,6 +184,11 @@ sub mainmenu {
 				WIDGET_CGI => "/admin/system/network.cgi"
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_SERVICES'},
+				WIDGET_ICON => "/system/images/icons/main_network.png",
+				WIDGET_CGI => "/admin/system/services.php"
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_PLUGININSTALL'},
 				WIDGET_ICON => "/system/images/icons/main_plugininstall.png",
 				WIDGET_CGI => "/admin/system/plugininstall.cgi"
