@@ -7,7 +7,8 @@ fi
 
 echo "LoxBerry home directory is $LBHOMEDIR"
 
-chown -v -R loxberry.loxberry $LBHOMEDIR
+chown -v -R loxberry:loxberry $LBHOMEDIR
+chown -v root:root $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -v 600 $LBHOMEDIR/system/network/interfaces
 chmod -v 600 $LBHOMEDIR/config/system/*
 
@@ -19,3 +20,4 @@ chmod -v -R 755 $LBHOMEDIR/webfrontend/html/system/*
 chmod -v -R 755 $LBHOMEDIR/webfrontend/htmlauth/system/*
 
 chown -v root.root $LBHOMEDIR/system/logrotate/logrotate
+
