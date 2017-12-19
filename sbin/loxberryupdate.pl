@@ -214,10 +214,9 @@ if (! $cgi->param('dryrun') ) {
 	#		print STDERR "Cannot write to general.cfg. Error: " . $syscfg->error() . "\n"; 
 	#		$errskipped++;
 	#}
-}
+	}
 
 # Finished. 
-
 	
 exit 0;
 
