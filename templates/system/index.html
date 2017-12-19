@@ -11,6 +11,7 @@
 <div class="widgetblock">
 	<TMPL_LOOP PLUGINS>
 	<div class="widget">
+	<TMPL_VAR PLUGIN_NOTIFY>
 			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img class="menutableicon" src="<TMPL_VAR PLUGINDB_ICONURI>"></a></div>
 			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><TMPL_VAR PLUGINDB_TITLE></a></div>
 	</div>
@@ -36,8 +37,10 @@
 <!-- START Widget container -->
 <div class="widgetblock">
 <TMPL_LOOP WIDGETS>
+	
 	<div class="widget">
-		<a href="<TMPL_VAR WIDGET_CGI>">
+	<TMPL_VAR WIDGET_NOTIFY>
+	<a href="<TMPL_VAR WIDGET_CGI>">
 			<TMPL_IF WIDGET_CLOCK>
 			<div style="margin:6px 0 4.5px 0; auto; Background-image: url('/system/images/icons/blank_64.png');	background-position: center center; background-repeat: no-repeat;">
 				<div class="clock">
@@ -58,14 +61,16 @@
 			<TMPL_ELSE>
 			<img class="menutableicon" src="<TMPL_VAR WIDGET_ICON>">
 			</TMPL_IF>
+		
 		</a>
 		<div>
 			<a href="<TMPL_VAR WIDGET_CGI>"><TMPL_VAR WIDGET_TITLE></a>
 		</div>
+	
 	</div>
+	
 </TMPL_LOOP>
 </div>
-
 
 
 <!-- END Widget container -->

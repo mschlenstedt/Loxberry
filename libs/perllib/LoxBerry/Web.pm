@@ -17,7 +17,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.14";
+our $VERSION = "0.3.1.15";
 
 use base 'Exporter';
 our @EXPORT = qw (
@@ -372,7 +372,21 @@ sub pageend
 		 loop_context_vars => 0,
 		die_on_bad_params => 0,
 	);
+	my %SL = LoxBerry::Web::readlanguage($pageendobj, undef, 1);
+	
 	$pageendobj->param( LANG => $lang);
+	
+	# my $handle;
+  # open ($handle,'>','/opt/loxberry/webfrontend/html/reboot.required') or die("Cant open ");
+  # print $handle "Hallo";
+  # close ($handle) or die ("Unable to close");
+	
+	# Reboot required button
+	if (-e "$LoxBerry::System::lbslogdir/reboot.required") {
+		print STDERR "Reboot required\n";
+		my $reboot_req_string='<a href="http://loxberry/admin/system/power.cgi"><span style="color:red; text-shadow: disabled;">' . $SL{'POWER.MSG_REBOOT_REQUIRED_SHORT'} . '</span></a>';
+		$pageendobj->param( 'REBOOT_REQUIRED', $reboot_req_string );
+	} else { print STDERR "NO Reboot\n"; }
 	print $pageendobj->output();
 }
 

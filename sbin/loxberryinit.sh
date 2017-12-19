@@ -76,6 +76,7 @@ case "$1" in
         # Cleaning Temporary folders
         log_action_begin_msg "Cleaning temporary files and folders..."
         rm -rf /opt/loxberry/webfrontend/html/tmp/* > /dev/null 2>&1
+		rm /opt/loxberry/log/system/reboot.required > /dev/null 2>&1
 
         # Set Date and Time
         if [ -f /opt/loxberry/sbin/setdatetime.pl ]
