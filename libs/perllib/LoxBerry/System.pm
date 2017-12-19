@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.10";
+our $VERSION = "0.3.1.11";
 
 use base 'Exporter';
 

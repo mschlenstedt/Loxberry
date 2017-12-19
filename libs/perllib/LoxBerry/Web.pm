@@ -2,19 +2,22 @@
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
 
 use strict;
-no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
+# no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
 
 use Config::Simple;
 use CGI;
 use LoxBerry::System;
 use Carp;
 use HTML::Template;
-use CGI::Carp qw(fatalsToBrowser set_message);
 
+
+# Potentially, this does something strange when using LoxBerry::Web without Webinterface (printing errors in HTML instead of plain text)
+# See https://github.com/mschlenstedt/Loxberry/issues/312 and https://github.com/mschlenstedt/Loxberry/issues/287
+use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.13";
+our $VERSION = "0.3.1.14";
 
 use base 'Exporter';
 our @EXPORT = qw (
