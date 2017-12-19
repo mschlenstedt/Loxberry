@@ -1,21 +1,24 @@
-our $VERSION = "0.31_11";
-$VERSION = eval $VERSION;
 # Please change version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
 
 use strict;
-no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
+# no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
 
 use Config::Simple;
 use CGI;
 use LoxBerry::System;
 use Carp;
 use HTML::Template;
-use CGI::Carp qw(fatalsToBrowser set_message);
 
+
+# Potentially, this does something strange when using LoxBerry::Web without Webinterface (printing errors in HTML instead of plain text)
+# See https://github.com/mschlenstedt/Loxberry/issues/312 and https://github.com/mschlenstedt/Loxberry/issues/287
+use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
+our $VERSION = "0.3.1.14";
+
 use base 'Exporter';
 our @EXPORT = qw (
 		lblanguage
@@ -131,7 +134,7 @@ sub head
 		die_on_bad_params => 0,
 	);
 	
-	LoxBerry::Web::readlanguage($headobj);
+	LoxBerry::Web::readlanguage($headobj, undef, 1);
 	
 	$headobj->param( TEMPLATETITLE => $template_title);
 	$headobj->param( LANG => $lang);
@@ -294,7 +297,7 @@ sub pagestart
 		die_on_bad_params => 0,
 	);
 	
-	LoxBerry::Web::readlanguage($headerobj);
+	LoxBerry::Web::readlanguage($headerobj, undef, 1);
 	
 	print STDERR "template_title: $template_title\n";
 	print STDERR "helplink:       $helplink\n";
@@ -400,14 +403,22 @@ sub foot
 #####################################################
 sub readlanguage
 {
-	my ($template, $langfile) = @_;
+	my ($template, $langfile, $syslang) = @_;
 
 	my $lang = LoxBerry::Web::lblanguage();
-	my $issystem = LoxBerry::System::is_systemcall();
-
+	# my $issystem = LoxBerry::System::is_systemcall();
+	my $issystem;
+	if ($syslang || LoxBerry::System::is_systemcall()) {
+		$issystem = 1;
+	}
+	
+	if(!$issystem && !$template->isa("HTML::Template")) {
+		# Plugin only gave us a language 
+		$langfile = $template;
+	}
+	
 	# Return if we already have them in memory.
-	if (!$template) { Carp::confess("ERROR: $template is empty."); }
-	if (!$issystem and !$langfile) { 
+	if (!$issystem && !$langfile) { 
 		Carp::carp("WARNING: \$langfile is empty, setting to language.ini. If file is missing, error will occur.");
 		$langfile = "language.ini"; }
 	# if ($issystem and %SL) { return %SL; }
@@ -435,8 +446,10 @@ sub readlanguage
 			}
 		}
 		
-		while (my ($name, $value) = each %SL) {
-			$template->param("$name" => $value);
+		if ($template) {
+			while (my ($name, $value) = each %SL) {
+				$template->param("$name" => $value);
+			}
 		}
 		return %SL;
 	
@@ -450,19 +463,22 @@ sub readlanguage
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
 		if (!%L) {
-			Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
-		
+			if (-e $langfile . "_en.ini") {
+				Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
+			}
 			# Read foreign language if exists and not English and overwrite English strings
 			$langfile = $langfile . "_" . $lang . ".ini";
 			if ((-e $langfile) and ($lang ne 'en')) {
 				Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
 			}
 			if (! %L) {
-				Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+				Carp::carp ("ERROR: Could not read any language phrases.\n");
 			}
 		}
-		while (my ($name, $value) = each %L) {
-			$template->param("$name" => $value);
+		if ($template) {
+			while (my ($name, $value) = each %L) {
+				$template->param("$name" => $value);
+			}
 		}
 		return %L;
 	}

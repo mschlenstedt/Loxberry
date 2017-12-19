@@ -1,5 +1,3 @@
-our $VERSION = "0.31_09";
-$VERSION = eval $VERSION;
 # Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
 
@@ -14,6 +12,8 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
+our $VERSION = "0.3.1.11";
+
 use base 'Exporter';
 
 # Every exported sub or variable is accessable directly in the main namespace
@@ -32,6 +32,8 @@ our @EXPORT = qw (
 	$lbdatadir
 	$lblogdir
 	$lbconfigdir
+	$lbbindir
+	$lbsbindir
 	
 	lbhostname
 	lbfriendlyname
@@ -152,6 +154,9 @@ our $lbtemplatedir = "$lbhomedir/templates/plugins/$lbplugindir";
 our $lbdatadir = "$lbhomedir/data/plugins/$lbplugindir";
 our $lblogdir = "$lbhomedir/log/plugins/$lbplugindir";
 our $lbconfigdir = "$lbhomedir/config/plugins/$lbplugindir";
+our $lbsbindir = "$lbhomedir/sbin/plugins/$lbplugindir";
+our $lbbindir = "$lbhomedir/bin/plugins/$lbplugindir";
+
 
 our $lbshtmldir = "$lbhomedir/webfrontend/html/system";
 our $lbshtmlauthdir = "$lbhomedir/webfrontend/htmlauth/system";
@@ -502,11 +507,11 @@ sub read_generalcfg
 	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
 	$cfgwasread = 1;
 	$miniservercount = $cfg->param("BASE.MINISERVERS") or Carp::carp ("BASE.MINISERVERS is 0 or not defined.\n");
-	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or Carp::carp ("BASE.CLOUDDNS not defined.\n");
-	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or Carp::carp ("TIMESERVER.ZONE not defined.\n");
-	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME") or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
+	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS"); # or Carp::carp ("BASE.CLOUDDNS not defined.\n");
+	$lbtimezone		= $cfg->param("TIMESERVER.ZONE"); # or Carp::carp ("TIMESERVER.ZONE not defined.\n");
+	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME"); # or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
 	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined.\n");
-	$webserverport  = $cfg->param("WEBSERVER.PORT") or Carp::carp ("WEBSERVER.PORT not defined.\n");
+	$webserverport  = $cfg->param("WEBSERVER.PORT"); # or Carp::carp ("WEBSERVER.PORT not defined.\n");
 	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');

@@ -29,6 +29,9 @@
 		define ("LBDATADIR", LBHOMEDIR . "/data/plugins/" . LBPLUGINDIR);
 		define ("LBLOGDIR", LBHOMEDIR . "/log/plugins/" . LBPLUGINDIR);
 		define ("LBCONFIGDIR", LBHOMEDIR . "/config/plugins/" . LBPLUGINDIR);
+		define ("LBSBINDIR", LBHOMEDIR . "/sbin/plugins/" . LBPLUGINDIR);
+		define ("LBBINDIR", LBHOMEDIR . "/bin/plugins/" . LBPLUGINDIR);
+
 		// Plugin Variables
 		$LBPLUGINDIR = LBPLUGINDIR;
 		$LBHTMLAUTHDIR = LBHTMLAUTHDIR;
@@ -37,6 +40,9 @@
 		$LBDATADIR = LBDATADIR;
 		$LBLOGDIR = LBLOGDIR;
 		$LBCONFIGDIR = LBCONFIGDIR;
+		$LBSBINDIR = LBSBINDIR;
+		$LBBINDIR = LBBINDIR;
+		
 		error_log("LoxBerry System Info: LBPLUGINDIR: " . LBPLUGINDIR);
 	}
 
@@ -75,7 +81,7 @@
 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.31_05";
+	public static $LBSYSTEMVERSION = "0.3.1.6";
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 
