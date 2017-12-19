@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "0.3.1.5";
+	public static $LBWEBVERSION = "0.3.1.6";
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
 	public static $lang;
@@ -238,7 +238,7 @@ class LBWeb
 		$pageobj->param('LANG', $lang);
 		
 		// Reboot required button
-		if ($file_exists("$LBSLOGDIR/reboot.required")) {
+		if (file_exists("$LBSLOGDIR/reboot.required")) {
 			$reboot_req_string='<a href="http://loxberry/admin/system/power.cgi"><span style="color:red; text-shadow: disabled;">' . $SL['POWER.MSG_REBOOT_REQUIRED_SHORT'] . '</span></a>';	
 			$pageobj->param('REBOOT_REQUIRED', $reboot_req_string);
 		}
