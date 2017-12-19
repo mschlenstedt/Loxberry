@@ -1,1 +1,1 @@
-perl $LBHOMEDIR/sbin/loxberryupdatecheck.pl
+sudo $LBHOMEDIR/sbin/loxberryupdatecheck.pl "$@"

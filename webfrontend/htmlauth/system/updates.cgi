@@ -93,6 +93,27 @@ if ($R::lang) {
 }
 my $lang = lblanguage();
 
+our $maintemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/updates.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				associate => $cfg,
+				);
+
+our %SL = LoxBerry::Web::readlanguage($maintemplate);
+
+				
+our %navbar;
+$navbar{1}{Name} = $SL{'UPDATES.WIDGETLABEL_UPDATES'};
+$navbar{1}{URL} = $cgi->url(-relative=>1);
+ 
+$navbar{2}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATE'};
+$navbar{2}{URL} = $cgi->url(-relative=>1) . "?do=lbupdate";
+ 
+$navbar{3}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATEHISTORY'};
+$navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbhistory";
+
 # Example: Parameter lang is now $R::lang
 
 
@@ -147,20 +168,24 @@ $saveformdata = substr($saveformdata,0,1);
 # Menu
 if (!$do || $do eq "form") {
   print STDERR "updates.cgi: FORM is called\n";
+  $navbar{1}{active} = 1;
   &form;
 }
 
 # Installation
 elsif ($do eq "install") {
+  $navbar{1}{active} = 1;
   print STDERR "updates.cgi: INSTALL is called\n";
   &install;
 }
 
 elsif ($do eq "lbupdate") {
+	$navbar{2}{active} = 1;
 	print STDERR "updates.cgi LBUPDATES is called\n";
 	&lbupdates;
 }
 else {
+ $navbar{1}{active} = 1;
   print STDERR "updates.cgi: FORM is called\n";
   &form;
 }
@@ -173,24 +198,9 @@ exit;
 
 sub form {
 
-
-	our $maintemplate = HTML::Template->new(
-				filename => "$lbstemplatedir/updates.html",
-				global_vars => 1,
-				loop_context_vars => 1,
-				die_on_bad_params=> 0,
-				associate => $cfg,
-				#debug => 1,
-				#stack_debug => 1,
-				);
-
-
 	# TMPL_IF use "form"
 	$maintemplate->param( "form", 1);
 	 
-				
-	our %SL = LoxBerry::Web::readlanguage($maintemplate);
-
 	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
 
@@ -206,7 +216,7 @@ sub form {
 						'30'=> $SL{'UPDATES.SECUPDATE_RADIO_MONTHLY'});
 					 
 	our $update_radio = $cgi->radio_group(
-			-name    => 'option-secupdates',
+			-name 	 => 'option-secupdates',
 			-values  => ['0', '1', '7', '30'],
 			-labels  => \%labels,
 			-default => $unattended_val,
@@ -434,6 +444,8 @@ exit;
 sub lbupdates
 {
 
+
+
 our $maintemplate = HTML::Template->new(
 				filename => "$lbstemplatedir/updates.html",
 				global_vars => 1,
@@ -456,7 +468,7 @@ our $maintemplate = HTML::Template->new(
 						);
 					 
 	our $releasetype_radio = $cgi->radio_group(
-			-name    => 'option-releasetype',
+			-name      => 'option-releasetype',
 			-values  => ['release', 'prerelease'],
 			-labels  => \%labels,
 			-default => $cfg->param('UPDATE.RELEASETYPE')
@@ -488,7 +500,7 @@ our $maintemplate = HTML::Template->new(
 		);
 	$maintemplate->param("INSTALLTIME_RADIO", $installtime_radio);
 	
-	
+	$maintemplate->param("LBVERSION", "V" . $sversion);
 	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
