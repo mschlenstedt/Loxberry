@@ -163,7 +163,7 @@ system("su - loxberry -c '$lbshtmlauthdir/tools/generatelegacytemplates.pl' >/de
 if (! $cgi->param('dryrun') ) {
 	print STDERR "Updating the version in general.cfg is currently disabled for testing.";
 	#my  $syscfg = new Config::Simple("$lbsconfigdir/general.cfg");
-	#$syscfg->param('BASE.VERION', $release);
+	#$syscfg->param('BASE.VERION', "$release");
 	#$syscfg->save();
 }	
 	
