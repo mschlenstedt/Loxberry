@@ -39,6 +39,7 @@ require HTTP::Request;
 my $release_url;
 my $oformat;
 my %joutput;
+my $cfg;
 my $download_path = '/tmp';
 # Filter - everything above or below is possible - ignore others
 my $min_version = "0.3.0";
@@ -51,6 +52,8 @@ my %SL = LoxBerry::Web::readlanguage();
 my $cgi = CGI->new;
 # $cgi->import_names('R');
 
+my %keywords = map { $_ => 1 } $cgi->keywords;
+
 if (!$cgi->param) {
 	$joutput{'error'} = "No parameters sent.";
 	&err;
@@ -62,10 +65,21 @@ if ($cgi->param('dryrun')) {
 }
 	
 my $formatjson;
+my $cron;
+
+if ($keywords{'cron'}) {
+	$cron = 1;
+}
 
 $formatjson = $cgi->param('output') eq 'json' ? 1 : undef;
 
 my $querytype = $cgi->param('querytype');
+
+# We assume that if output is json, this is a web call
+if ($formatjson ne "" || $cron == 1) {
+	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+	$querytype = $cfg->param('UPDATE.RELEASETYPE');
+}
 
 # DEBUG SET QUERYTYPE
 # $querytype = 'release';
@@ -104,18 +118,27 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	my ($release_version, $release_url, $release_name, $release_body, $release_published) = check_releases($querytype, $lbversion);
 	if (! defined $release_url || $release_url eq "") {
 		$joutput{'info'} = "No new version found.";
+		$joutput{'release_version'} = "$release_version";
+		$joutput{'release_zipurl'} = "";
+		$joutput{'release_name'} = $release_name;
+		$joutput{'release_body'} = $release_body;
+		$joutput{'published_at'} = $release_published;
 		&err;
 		exit 0;
 	}
 
 	$joutput{'info'} = "New version found.";
-	$joutput{'release_version'} = $release_version;
+	$joutput{'release_version'} = "$release_version";
 	$joutput{'release_zipurl'} = $release_url;
 	$joutput{'release_name'} = $release_name;
 	$joutput{'release_body'} = $release_body;
 	$joutput{'published_at'} = $release_published;
+	$joutput{'release_new'} = 1;
 	
 	if ($cgi->param('update')) {
+		$joutput{'info'} = "Update to $release_version started. See logfile for details. Currently DRYRUN, hardcoded in ajax-config-handler.";
+		&err;
+		
 		my $download_file = "$download_path/loxberry.$release_version.zip";
 		my $filename = download($release_url, $download_file);
 		if (!$filename) {
@@ -140,6 +163,12 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			exit(0);
 		}
 	}
+	
+	my $jsntext = to_json(\%joutput);
+	print STDERR "JSON: " . $jsntext . "\n";
+	#print $cgi->header('application/json');
+	print $jsntext;
+	
 	# print STDERR "ZIP URL: $release_url\n";
 	
 	} else {
@@ -178,7 +207,8 @@ sub check_releases
 
 	my $response = $ua->request($request);
 	if ($response->is_error) {
-		print STDERR "Error fetching releases: " . $response->code . " " . $response->message . "\n";
+		$joutput{'error'} = "Error fetching releases: " . $response->code . " " . $response->message;
+		&err;
 		exit(1);
 	}
 
@@ -187,6 +217,8 @@ sub check_releases
 
 	my $releases = JSON->new->utf8(1)->allow_nonref->convert_blessed->decode($response->decoded_content);
 
+	my $release_safe; # this was thought to be safe, not save!
+	
 	foreach my $release ( @$releases ) {
 		$release_version = undef;
 		if (!version::is_lax($release->{tag_name})) {
@@ -204,6 +236,15 @@ sub check_releases
 		}
 		print STDERR "Filter check passed - continuing\n";
 		
+		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
+			{ print STDERR "  Skipping pre-release\n";
+			  next;
+		}
+		
+		if ($release_safe eq "" || version->parse($release_version) > version->parse($release_safe)) {
+			$release_safe = $release;
+		}
+		
 		# Check against current version
 		print STDERR "Comparing versions:\n";
 		print STDERR "  Current Version: $currversion\n";
@@ -219,15 +260,13 @@ sub check_releases
 		
 		# At this point we know that the version is newer
 		print STDERR "This release is newer than current installation.\n";				
-		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
-			{ print STDERR "  Skipping pre-release\n";
-			  next;
-		}
+
 		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at});
 	}
 	#print STDERR "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
 	#print STDERR $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
-
+	print STDERR "No new version found: Latest version is " . $release_safe->{tag_name} . "\n";
+	return ($release_safe->{tag_name}, undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at});
 }
 
 ############################################
@@ -470,12 +509,15 @@ sub err
 {
 	if ($joutput{'error'}) {
 		print STDERR "ERROR: " . $joutput{'error'} . "\n";
+		
 	} elsif ($joutput{'info'}) {
 		print STDERR "INFO: " . $joutput{'info'} . "\n";
 	}
+	if ($formatjson == 1) {
+		my $jsntext = to_json(\%joutput);
+		print STDERR "JSON: " . $jsntext . "\n";
+		print $jsntext;
+
+	}
 }
 
-#my $jsn = JSON->new->utf8()->pretty->encode(\%joutput);
-#my $jsn = encode_json \%joutput;
-#print $jsn;
-#exit;

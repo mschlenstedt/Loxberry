@@ -2,7 +2,7 @@
 		<!-- ** START template/system/de/updates_menu.html 05.11.2017 22:56:00 ************************************************************************************ -->
 		<!-- START Form for unattended-upgrades -->
 		
-		<div><h2><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></h2></div>
+		<div class="wide"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
 		<table class="formtable" border="0" width="100%">
 		<tr>
 			<td>
@@ -25,12 +25,10 @@
 			</td>
 		</tr>
 		</table>
+		<p></p>
 		<!-- END Form for unattended-upgrades -->
-		<br /><br />
-		<hr>
-		<br />
 		<!-- START Form for system upgrade -->
-		<div><h2><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></h2></div>
+		<div class="wide"><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></div>
 		<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/updates.cgi?do=install" enctype="multipart/form-data">
 			<input type="hidden" name="saveformdata" value="1">
 					<table class="formtable" border="0" width="100%">
@@ -86,13 +84,15 @@
 		//	$("input[name=option-secupdates]").val(["30"]);
 		//}});
 
-
-		$('input:radio[name="option-secupdates"]').change(function(){
-			var secupdates_val = $('input[name="option-secupdates"]:checked').val();
-			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: secupdates_val} , success: function(result){
-
-		//$('input[name="option-secupdates"]).html("dfgsdgsdgjsdgjdf");
-			}});
+		// Radiobutton Timetable
+		$("input[name='option-secupdates']").change(function(){
+			var val = $("input[name='option-secupdates']:checked").val();
+			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: val}});
+		});
+		// Checkbox Auto-Reboot
+		$("input[name='updates-autoreboot']").change(function(){
+			var val = $("input[name='updates-autoreboot']").prop("checked");
+			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: val}});
 		});
 	});
 </script>
@@ -127,10 +127,224 @@
 </TMPL_IF>
 <TMPL_IF lbupdate>
 <!-- ** LoxBerry Update ** -->
-<div class="wide"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
+<style>
+/* DivTable.com */
+.divTable{
+	display: table;
+	width: 100%;
+	
+}
+.divTableRow {
+	display: table-row;
+	
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+	
+}
+.divTableCell, .divTableHead {
+	border: 0px;
+	display: table-cell;
+	padding: 3px 10px;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+	font-weight: bold;
+}
+.divTableFoot {
+	background-color: #EEE;
+	display: table-footer-group;
+	font-weight: bold;
+}
+.divTableBody {
+	display: table-row-group;
+}
+</style>
+<div class="wide" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
+<div class="divTable">
+<div class="divTableBody">
+<div class="divTableCell" style="width:50%;">
 <p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
 
+</div>
+<div class="divTableCell hint" style="border:2px; border-style:outset; border-radius:5px;padding:10px 10px 10px 10px;background-color:LightYellow;">
+<p><TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION> <TMPL_VAR LBVERSION></p>
+<p><TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE> <span style="color:Green;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></p>
+<p id="lbu_info">&nbsp;</p>
+<div id="lbu_error" style="color:red;"></div>
+<div style="font-size:125%;font-weight:bold;" id="lbu_release_name">&nbsp;</div>
+<div class="note" id="lbu_release_body">&nbsp;</div>
+<div id="lbu_published_at">&nbsp;</div>
+<p><TMPL_VAR UPDATES.LBU_LABEL_CHECKGITHUB> <a href="https://github.com/mschlenstedt/Loxberry/releases" target="_blank">All Releases</a></p>
+</div>
+<div class="divTableCell">
+<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
+</div>
 
+
+<div class="divTableRow">
+<div class="divTableCell" style="width:50%;">
+	<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
+	<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE> <TMPL_VAR UPDATES.LBU_HINT_PRERELEASE></span>
+	<!-- <p class="hint"><TMPL_VAR UPDATES.LBU_HINT_LATEST></p> -->
+</div>
+<div class="divTableCell">
+	<fieldset data-role="controlgroup" data-mini="true" style="min-width:250px;">
+		<TMPL_VAR RELEASETYPE_RADIO>
+	</fieldset>
+</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell">
+	<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE>
+</div>
+<div class="divTableCell">
+<fieldset data-role="controlgroup" data-mini="true" style="min-width:250px; ">
+	<TMPL_VAR INSTALLTYPE_RADIO>
+</fieldset>
+</div>
+<div class="divTableCell">
+<fieldset id="#installtime" data-role="controlgroup" data-mini="true" style="min-width:150px">
+	<TMPL_VAR INSTALLTIME_RADIO>
+</fieldset>
+</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell" style="width:50%;">
+<TMPL_VAR UPDATES.LBU_LABEL_BUTTONS>
+</div>
+<div class="divTableCell">
+<a id="lbu_button_updateinstall_pre" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-star"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
+</div>
+</div>
+</div>
+</div>
+
+<div id="lbu_updateinstall" style="display:none;">
+<p><TMPL_VAR UPDATES.LBU_LABEL_UPDATEINSTALL_INTRO1></p>
+<p><TMPL_VAR UPDATES.LBU_LABEL_UPDATEINSTALL_INTRO2></p>
+<p id="lbu_install_pleasewait" style="display:none;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></p>
+<p id="lbu_update_process">&nbsp;</p>
+<a id="lbu_button_install" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-star"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL></a>
+<a id="lbu_button_install_cancel" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR COMMON.BUTTON_BACK></a>
+</div>
+
+<script>
+$(document).ready( function () {
+	//console.log( "ready!" );
+    //var changeInstalltype = function() {  };
+
+    //changeInstalltype() // Inside the anonymous function we are cool.
+	checkUpdates();
+	
+	// Radiobutton Releasetype
+	$("input[name='option-releasetype']").change(function(){
+		var val = $("input[name='option-releasetype']:checked").val();
+		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-reltype", value: val}})
+		.done(function() {
+			clearVersion();
+			checkUpdates();
+		});
+	});
+	// Radiobutton Installtype
+	$("input[name='option-installtype']").change(function(){
+		var val = $("input[name='option-installtype']:checked").val();
+		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val}});
+	});
+	// Radiobutton Installtime
+	$("input[name='option-installtime']").change(function(){
+		var val = $("input[name='option-installtime']:checked").val();
+		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val}});
+	});
+	// Re-Check Updates button
+	$("#lbu_button_recheck").click(function(){
+     clearVersion();
+	 checkUpdates();
+	});
+	$("#lbu_button_updateinstall_pre").click(function(){
+		//$('.divTable').css("display", "none");
+		//$('#lbu_updateinstall').css("display", "inline");
+		$('.divTable').hide();
+		$('#lbu_updateinstall').fadeIn();
+	});
+	$("#lbu_button_install_cancel").click(function(){
+		$('.divTable').fadeIn();
+		$('#lbu_updateinstall').hide();
+	});
+	$("#lbu_button_install").click(function(){
+		$('#lbu_button_install').hide();
+		$('#lbu_button_install_cancel').hide();
+		$('#lbu_install_pleasewait').fadeIn();
+		installUpdate();
+	});
+	
+ });
+ 
+ function checkUpdates()
+ {
+	//$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-runcheck"}});
+	$.getJSON(
+		"/admin/system/tools/ajax-config-handler.cgi", 
+		{ action: "lbupdate-runcheck", value: 1 })
+		.done(function(data){
+			//console.log("Hallo");
+			//resp = JSON.parse(data);
+			//console.log("release_version", data.info);
+			if (data.error) {
+				$('#lbu_error').text("Error: "+data.error);
+			} else {
+				if (data.release_version) $('#lbu_release_version').text("V" + data.release_version) 
+				else $('#lbu_release_version').text("") ;
+				if (data.info) $('#lbu_info').text(data.info);
+				if (data.release_name) $('#lbu_release_name').text(data.release_name);
+				if (data.release_body) $('#lbu_release_body').text(data.release_body);
+				if (data.published_at) $('#lbu_published_at').text("<TMPL_VAR UPDATES.LBU_LABEL_PUBLISHED_AT> " + data.published_at);
+				
+				if (data.release_new) {
+						$('#lbu_release_version').css("font-weight", "bold");
+						$('#lbu_info').css("font-weight", "bold");
+				} else {
+						$('#lbu_release_version').css("color", "black");
+						//$('#lbu_info').css("font-weight", "bold");
+				}
+			}
+			
+			
+			});
+ }
+ 
+ function clearVersion()
+ {
+	$('#lbu_release_version').text("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
+	$('#lbu_release_version').css("color", "Green");
+	$('#lbu_release_version').css("font-weight", "normal");
+	$('#lbu_info').text("");
+	$('#lbu_info').css("font-weight", "normal");
+	$('#lbu_error').text("");
+	$('#lbu_release_name').text("");
+	$('#lbu_release_body').text("");
+	$('#lbu_published_at').text("");
+ 
+ }
+ 
+ function installUpdate()
+ {
+	$.getJSON(
+		"/admin/system/tools/ajax-config-handler.cgi", 
+		{ action: "lbupdate-runinstall", value: 1 })
+		.done(function(data){
+			if (data.error) {
+				$('#lbu_update_process').text("Error: "+data.error);
+			} else {
+				if (data.info) $('#lbu_update_process').text(data.info);
+			}
+			$('#lbu_button_install_cancel').fadeIn();
+		});
+ }
+
+</script>
 
 
 
