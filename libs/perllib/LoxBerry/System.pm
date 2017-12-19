@@ -507,11 +507,11 @@ sub read_generalcfg
 	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
 	$cfgwasread = 1;
 	$miniservercount = $cfg->param("BASE.MINISERVERS") or Carp::carp ("BASE.MINISERVERS is 0 or not defined.\n");
-	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS") or Carp::carp ("BASE.CLOUDDNS not defined.\n");
-	$lbtimezone		= $cfg->param("TIMESERVER.ZONE") or Carp::carp ("TIMESERVER.ZONE not defined.\n");
-	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME") or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
+	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS"); # or Carp::carp ("BASE.CLOUDDNS not defined.\n");
+	$lbtimezone		= $cfg->param("TIMESERVER.ZONE"); # or Carp::carp ("TIMESERVER.ZONE not defined.\n");
+	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME"); # or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
 	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined.\n");
-	$webserverport  = $cfg->param("WEBSERVER.PORT") or Carp::carp ("WEBSERVER.PORT not defined.\n");
+	$webserverport  = $cfg->param("WEBSERVER.PORT"); # or Carp::carp ("WEBSERVER.PORT not defined.\n");
 	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
