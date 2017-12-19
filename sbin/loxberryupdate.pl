@@ -293,7 +293,7 @@ sub err
 	} elsif ($joutput{'info'}) {
 		print STDERR "INFO: " . $joutput{'info'} . "\n";
 	}
-	if ($formatjson == 1) {
+	if ($formatjson) {
 		my $jsntext = to_json(\%joutput);
 		print STDERR "JSON: " . $jsntext . "\n";
 		print $jsntext;
