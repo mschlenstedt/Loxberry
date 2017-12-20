@@ -20,4 +20,6 @@ chmod -v -R 755 $LBHOMEDIR/webfrontend/html/system/*
 chmod -v -R 755 $LBHOMEDIR/webfrontend/htmlauth/system/*
 
 chown -v root.root $LBHOMEDIR/system/logrotate/logrotate
+chown -vR root.root $LBHOMEDIR/sbin/system/*
+chown -vR root.root $LBHOMEDIR/sbin/plugins/*
 
