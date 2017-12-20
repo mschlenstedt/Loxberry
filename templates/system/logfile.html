@@ -30,13 +30,15 @@
 					<table width="100%" border="0">
 						<tr>
 							<td width="100%">
-								<a id="btnnext" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="javascript:window.close()">Close</a>
+								<a id="btnnext" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="javascript:window.close()"><TMPL_VAR COMMON.BUTTON_CLOSE></a>
 							</td>
 							<td>
-								<label style="display:block; text-align:center; width:60px; height: 15px; font-size:11;"><input data-mini="true" type="checkbox" checked id="LogScroll">Autoscroll</label>
+								<label style="display:block; text-align:center; width:60px; height: 15px; font-size:11;"><input data-mini="true" type="checkbox" checked id="LogScroll"><TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
 							</td>
 							<td>
-								<a style="display:block; text-align:center; width:60px; height: 14px; font-size:11;" id="btndown" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=txt&format=plain" target="_blank">Download</a>
+							<!--	<a style="display:block; text-align:center; width:60px; height: 14px; font-size:11;" id="btndown" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=txt&format=plain" target="_blank"><TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>  -->
+								
+								<a style="display:block; text-align:center; width:60px; height: 14px; font-size:11;" id="download" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="#" target="_blank"><TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
 							</td>
 						</tr>
 					</table>
@@ -72,6 +74,25 @@ $("#LogScroll").click(function() {
 			clearInterval(interval);
 		}
 });
+
+var fileName =  'logfile.txt';
+function downloadDiv(filename, elementId, mimeType) {
+    var elementHtml = $('#Logfile').text();
+	elementHtml.replace(/[\n]/g, '\r\n');
+	var link = document.createElement('a');
+    mimeType = mimeType || 'text/plain';
+
+    link.setAttribute('download', filename);
+    link.setAttribute('href', 'data:' + mimeType  +  ';charset=utf-8,' + encodeURIComponent(elementHtml));
+    link.click(); 
+}
+
+
+$('#download').click(function(){
+    downloadDiv(fileName, 'LogFile','text/html');
+});
+
+
 
 /*
 $("#Logfile").scroll(function() {
