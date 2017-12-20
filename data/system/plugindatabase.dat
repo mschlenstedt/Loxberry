@@ -1,5 +1,5 @@
 #
-# Databse for installed Plugins
+# Database for installed Plugins
 #
 #  0: MD5 Checksum of AUTHORNAME,AUTHOREMAIL,NAME,FOLDER (without commas!) from plugin.cfg
 #  1: AUTHOR NAME
@@ -9,6 +9,10 @@
 #  5: FOLDER
 #  6: TITLE
 #  7: INTERFACE
+#  8: AUTOMATIC UPDATES (0/1)
+#  9: RELEASECFG
+# 10: PRERELEASECFG
+# 11: LOGLEVEL (0-7)
 #
 # Delimiter: | (Pipe)
 #
