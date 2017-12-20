@@ -3,7 +3,7 @@
 require_once "loxberry_system.php";
 
 print "LBHOMEDIR using Constant: " . LBHOMEDIR . "\n";
-print "LBHOMEDIR using variable: $LBHOMEDIR\n";
+print "lbhomedir using variable: $lbhomedir\n";
 
 print "Loxberry System Module version is " . LBSystem::$LBSYSTEMVERSION . "\n";
 
