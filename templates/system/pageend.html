@@ -6,8 +6,9 @@
 		<!-- footer -->
 		<div data-role="footer" style="text-align:center;" data-position="fixed" data-tap-toggle="false">
 			<a id="btnhome" href="/admin/system/index.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;<TMPL_VAR REBOOT_REQUIRED>&nbsp;&nbsp;&nbsp;
 			<a id="btnpower" href="/admin/system/power.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
+			
 		</div>
 		<!-- /footer -->
 	</div>
@@ -15,3 +16,4 @@
 <div id="lang" style="display: none"><TMPL_VAR LANG></div>
 <div id='overlay' style="display: none"><img src='/system/scripts/jquery/themes/main/images/ajax-loader.gif' /></div>
 <!-- pageend.html END -->
+
