@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2017 Michael Schlenstedt, michael@loxberry.de
 #                Wörsty, git@loxberry.woerstenfeld.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,51 +20,48 @@
 # Modules
 ##########################################################################
 
-use File::HomeDir;
-use Config::Simple;
+use LoxBerry::Web;
+use CGI;
 use Getopt::Long;
-#use warnings;
-#use strict;
-
-##########################################################################
-# Variables
-##########################################################################
-
-our $cfg;
-our $namef;
-our $value;
-our %query;
-our $home = File::HomeDir->my_home;
-our $logfile;
-our $logfilepath;
-our $header;
-our $format;
-our $version;
-our $installfolder;
-our $cgi;
-our $length;
-our $offset;
-our $i;
-our $lang;
-our $template_title;
-our $help;
-our $languagefile;
-our $phrase;
+use warnings;
+use strict;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+my $version = "0.3.1.1";
+my $iscgi;
 
-$cfg             = new Config::Simple("$home/config/system/general.cfg");
-$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
+my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+
+my $cgi = CGI->new;
+$cgi->import_names('R');
+
+if ($R::lang) {
+	$LoxBerry::Web::lang = substr($R::lang, 0, 2);
+}
+my $lang = lblanguage();
+
+our $maintemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/logfile.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				associate => $cfg,
+			);
+
+our %SL = LoxBerry::Web::readlanguage($maintemplate);
+			
+our $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'LOGVIEWER.WIDGETLABEL'}";
+
+# $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
+# $lang            = $cfg->param("BASE.LANG");
 
 # Read translations
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+# $languagefile = "$installfolder/templates/system/$lang/language.dat";
+# $phrase = new Config::Simple($languagefile);
 
 #########################################################################
 # Parameter
@@ -73,102 +70,108 @@ $phrase = new Config::Simple($languagefile);
 if ($ENV{'HTTP_HOST'}) {
 
   use CGI::Carp qw(fatalsToBrowser);
-  use CGI qw/:standard/;
+  # use CGI qw/:standard/;
+  
 
-  $cgi = 1;
+  
+  $iscgi = 1;
 
-  # Everything from URL
-  foreach (split(/&/,$ENV{'QUERY_STRING'})){
-    ($namef,$value) = split(/=/,$_,2);
-    $namef =~ tr/+/ /;
-    $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-    $value =~ tr/+/ /;
-    $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-    $query{$namef} = $value;
-  }
+  # # Everything from URL
+  # foreach (split(/&/,$ENV{'QUERY_STRING'})){
+    # ($namef,$value) = split(/=/,$_,2);
+    # $namef =~ tr/+/ /;
+    # $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+    # $value =~ tr/+/ /;
+    # $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+    # $query{$namef} = $value;
+  # }
 
   # And this one we really want to use
-  $header           = $query{'header'};
-  $logfile          = $query{'logfile'};
-  $format           = $query{'format'};
-  $offset           = $query{'offset'};
-  $length           = $query{'length'};
+  # $R::header           = $query{'header'};
+  # $R::logfile          = $query{'logfile'};
+  # $R::format           = $query{'format'};
+  # $R::offset           = $query{'offset'};
+  # $R::length           = $query{'length'};
 
 # Or from a terminal?
 } else {
   
-  GetOptions ('header=s'  => \$header,
-              'logfile=s' => \$logfile,
-              'format=s'  => \$format,
-              'offset=i'  => \$offset,
-              'length'    => \$length,
+  GetOptions ('header=s'  => \$R::header,
+              'logfile=s' => \$R::logfile,
+              'format=s'  => \$R::format,
+              'offset=i'  => \$R::offset,
+              'length'    => \$R::length,
   );
 
 }
-
-# Filter
-quotemeta($header);
-quotemeta($logfile);
-quotemeta($format);
-quotemeta($offset);
-quotemeta($length);
-$logfile =~ s/^\///;
 
 ##########################################################################
 # Main program
 ##########################################################################
 
 # Which header
-if ($header eq "txt") {
+if ($R::header && $R::header eq "txt") {
   print "Content-Type: text/plain\n\n";
 }
-if ($header eq "html" || ($cgi && !$header) ) {
+if ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
   print "Content-Type: text/html\n\n";
 }
 
 # Which Output Format
-if (!$format) {
-  $format = "plain";
+if (!$R::format) {
+  $R::format = "plain";
 }
 
 # Check if logfile exists
 # Note: Only ~/log, ~/webfrontend/html/tmp and /tmp are allowed
 # for security reasons
-if (!$logfile) {
-  if ($cgi) {
-    print "You must specify a logfile by adding ?logfile=YOURFILE to the URL<br><br>";
-    print "Usage: $ENV{'SCRIPT_NAME'}?logfile=FILE[&length] [&offset] [&header= txt|html|none] [&format=html|terminal|plain]";
+
+# Check if logfile parameter provided
+if (!$R::logfile) {
+  if ($iscgi) {
+    $maintemplate->param('NOLOGPARAMETER', 1);
+	
+	LoxBerry::Web::head();
+	print $maintemplate->output();
+	LoxBerry::Web::foot();
+	exit(1);
+	
   } else {
-    print "You must specify a logfile with --logfile YOURFILE\n\n";
-    print "Usage: $0 --logfile FILE [--length] [--offset]\n";
-    print "       [--header txt|html|none] [--format html|terminal|plain]\n\n";
-  }
-  exit;
+    print $SL{'LOGVIEWER.ERR_MISSING_LOGPARAMETER_TXT'};
+	exit (1);
+	}
 }
 
-if (-e "/tmp/$logfile") {
-  $logfilepath = "/tmp";
-} elsif (-e "$home/log/$logfile") {
-  $logfilepath = "$home/log";
-} elsif (-e "$home/webfrontend/html/tmp/$logfile") {
-  $logfilepath = "$home/webfrontend/html/tmp";
+$R::logfile =~ s/^\///;
+
+# Check if logfile exists
+if (-e "/tmp/$R::logfile") {
+  $R::logfilepath = "/tmp";
+} elsif (-e "$lbhomedir/log/$R::logfile") {
+  $R::logfilepath = "$lbhomedir/log";
+} elsif (-e "$lbhomedir/webfrontend/html/tmp/$R::logfile") {
+  $R::logfilepath = "$lbhomedir/webfrontend/html/tmp";
 } else {
-  if ($cgi) {
-    print "Logfile does not exist. Use file in ~/log, ~/webfrontend/html/tmp or /tmp und give relative path started from these folders.<br><br>";
-    print "Usage: $ENV{'SCRIPT_NAME'}?logfile=FILE[&length] [&offset] [&header= txt|html|none] [&format=html|terminal|plain|template]";
+  if ($iscgi) {
+   $maintemplate->param('NOLOGFILE', 1);
+   LoxBerry::Web::head();
+	print $maintemplate->output();
+	LoxBerry::Web::foot();
+	exit(1);
+   
   } else {
-    print "Logfile does not exist. Use file in ~/log, ~/webfrontend/html/tmp or\n";
-    print "/tmp und give relative path started from these folders.\n\n";
-    print "Usage: $0 --logfile FILE [--length] [--offset]\n";
-    print "       [--header txt|html|none] [--format html|terminal|plain|template]\n\n";
+    print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
   }
   exit;
 }
 
+$maintemplate->param('LOGFILE', $R::logfile);
+
+my $i;
 # Print number of lines of logfile
-if ($length) {
+if ($R::length) {
   $i = 0;
-  open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
+  open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
     while (<F>) {
       $i++
     }
@@ -178,38 +181,27 @@ if ($length) {
 }
 
 # Template Output
-if ($format eq "template") {
-
-  $template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0076");
-  $help = "setup00";
-
-  # Print Template
-  &header;
-  open(F,"$installfolder/templates/system/$lang/logfile.html") || die "Missing template system/$lang/logfile.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-  &footer;
-
-  exit;
+if ($R::format eq "template") {
+	LoxBerry::Web::head();
+	print $maintemplate->output();
+	LoxBerry::Web::foot();
+	exit;
 
 }
 
 # Print Logfile
 $i = 0;
-open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
+open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
   while (<F>) {
     # Offset
-    if ($offset) {
+    if ($R::offset) {
       $i++;
-      if ($i <= $offset) {
+      if ($i <= $R::offset) {
         next;
       }
     }
     # HTML Output
-    if ($format eq "html") {
+    if ($R::format eq "html") {
       $_ =~ s/^(.*?)\s*<OK>\s*(.*?)$/<div id='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/OK>//g;
       $_ =~ s/^(.*?)\s*<ERROR>\s*(.*?)$/<div id='logerr'>$1 <FONT color=red><B>ERROR:<\/B><\/FONT> $2<\/div>/g;
@@ -226,7 +218,7 @@ open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
     }
     # Terminal Output Colorized
     # http://misc.flogisoft.com/bash/tip_colors_and_formatting
-    if ($format eq "terminal") { 
+    if ($R::format eq "terminal") { 
       $_ =~ s/^(.*?)(\s*)<OK>\s*(.*?)$/$1$2\\e[1m\\e[32mOK:\\e[0m $3/g;
       $_ =~ s/^(.*?)(\s*)<ERROR>\s*(.*?)$/$1$2\\e[1m\\e[31mERROR:\\e[0m $3/g;
       $_ =~ s/^(.*?)(\s*)<FAIL>\s*(.*?)$/$1$2 \\e[1m\\e[31mFAIL:\\e[0m $3/g;
@@ -234,7 +226,7 @@ open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
       $_ =~ s/^(.*?)(\s*)<WARNING>\s*(.*?)$/$1$2\\e[1m\\e[31mWARNING:\\e[0m $3/g;
     }
 
-    if ($format ne "plain") { 
+    if ($R::format ne "plain") { 
       # If someone uses end tags, remove them
       $_ =~ s/<\/OK>$//g;
       $_ =~ s/<\/ERROR>$//g;
@@ -249,45 +241,4 @@ open(F,"$logfilepath/$logfile") || die "Cannot open file: $!";
 close(F);
 
 exit;
-
-
-#####################################################
-# Header
-#####################################################
-
-sub header {
-
-  # create help page
-  $helplink = "http://www.loxwiki.eu:80/x/o4CO";
-  open(F,"$installfolder/templates/system/$lang/help/$help.html") || die "Missing template system/$lang/help/$help.html";
-    @help = <F>;
-    foreach (@help){
-      s/[\n\r]/ /g;
-      $helptext = $helptext . $_;
-    }
-  close(F);
-
-  open(F,"$installfolder/templates/system/$lang/header.html") || die "Missing template system/$lang/header.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
-
-#####################################################
-# Footer
-#####################################################
-
-sub footer {
-
-  open(F,"$installfolder/templates/system/$lang/footer.html") || die "Missing template system/$lang/footer.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-  close(F);
-
-}
 

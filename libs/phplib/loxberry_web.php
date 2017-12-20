@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "0.3.1.4";
+	public static $LBWEBVERSION = "0.3.1.7";
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
 	public static $lang;
@@ -173,26 +173,26 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	function gethelp($lang, $helptemplate)
 	{
-		global $LBPLUGINDIR;
-		global $LBTEMPLATEDIR;
+		global $lbpplugindir;
+		global $lbptemplatedir;
 		
-		error_log("gethelp -> LBPLUGINDIR: $LBPLUGINDIR LBTEMPLATEDIR: $LBTEMPLATEDIR");
+		error_log("gethelp -> lbpplugindir: $lbpplugindir lbptemplatedir: $lbptemplatedir");
 		error_log("   Parameters: lang: $lang helptemplate: $helptemplate");
 		
-		if (file_exists("$LBTEMPLATEDIR/help/$helptemplate")) { 
-			$templatepath = "$LBTEMPLATEDIR/help/$helptemplate";
+		if (file_exists("$lbptemplatedir/help/$helptemplate")) { 
+			$templatepath = "$lbptemplatedir/help/$helptemplate";
 			$ismultilang = True;
 			error_log("gethelp: Multilang template found - using templatepath $templatepath");
-		} elseif (file_exists("$LBTEMPLATEDIR/$lang/$helptemplate")) {
-			$templatepath = "$LBTEMPLATEDIR/$lang/$helptemplate";
+		} elseif (file_exists("$lbptemplatedir/$lang/$helptemplate")) {
+			$templatepath = "$lbptemplatedir/$lang/$helptemplate";
 			$ismultilang = False;
 			error_log("gethelp: Legacy lang $lang template found - using templatepath $templatepath");
-		} elseif (file_exists("$LBTEMPLATEDIR/en/$helptemplate")) {
-			$templatepath = "$LBTEMPLATEDIR/en/$helptemplate";
+		} elseif (file_exists("$lbptemplatedir/en/$helptemplate")) {
+			$templatepath = "$lbptemplatedir/en/$helptemplate";
 			$ismultilang = False;
 			error_log("gethelp: Legacy fallback lang en template found - using templatepath $templatepath");
-		} elseif (file_exists("$LBTEMPLATEDIR/de/$helptemplate")) {
-			$templatepath = "$LBTEMPLATEDIR/de/$helptemplate";
+		} elseif (file_exists("$lbptemplatedir/de/$helptemplate")) {
+			$templatepath = "$lbptemplatedir/de/$helptemplate";
 			$ismultilang = False;
 			error_log("gethelp: Legacy fallback lang de template found - using templatepath $templatepath");
 		} else {
@@ -230,10 +230,19 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	public function pageend()
 	{
+		global $lbslogdir;
 		$lang = LBWeb::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pageend.html";
 		$pageobj = new LBTemplate($templatepath);
+		$SL = LBWeb::readlanguage($pageobj, "language.ini", True);
 		$pageobj->param('LANG', $lang);
+		
+		// Reboot required button
+		if (file_exists("$lbslogdir/reboot.required")) {
+			$reboot_req_string='<a href="http://loxberry/admin/system/power.cgi"><span style="color:red; text-shadow: disabled;">' . $SL['POWER.MSG_REBOOT_REQUIRED_SHORT'] . '</span></a>';	
+			$pageobj->param('REBOOT_REQUIRED', $reboot_req_string);
+		}
+
 		echo $pageobj->output();
 	}
 	
@@ -311,7 +320,7 @@ class LBWeb
 		if ($syslang == true) {
 			$genericlangfile = LBSTEMPLATEDIR . "/lang/language.ini";
 		} else {
-			$genericlangfile = LBTEMPLATEDIR . "/lang/$genericlangfile";
+			$genericlangfile = LBPTEMPLATEDIR . "/lang/$genericlangfile";
 		}
 		
 		$lang = LBWeb::lblanguage();
@@ -374,15 +383,15 @@ class LBWeb
 	
 	function get_plugin_icon($iconsize = 64)
 	{
-		global $LBSHTMLDIR;
-		global $LBPLUGINDIR;
+		global $lbshtmldir;
+		global $lbpplugindir;
 		
 		if 		($iconsize > 256) { $iconsize = 512; }
 		elseif	($iconsize > 128) { $iconsize = 256; }
 		elseif	($iconsize > 64) { $iconsize = 128; }
 		else					{ $iconsize = 64; }
-		$logopath = "$LBSHTMLDIR/images/icons/$LBPLUGINDIR/icon_$iconsize.png";
-		$logopath_web = "/system/images/icons/$LBPLUGINDIR/icon_$iconsize.png";
+		$logopath = "$lbshtmldir/images/icons/$lbpplugindir/icon_$iconsize.png";
+		$logopath_web = "/system/images/icons/$lbpplugindir/icon_$iconsize.png";
 	
 		if (file_exists($logopath)) { 
 			return $logopath_web;

@@ -160,17 +160,20 @@ sub mainmenu {
 			{ 
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MYLOXBERRY'}, 
 				WIDGET_ICON => "/system/images/icons/main_myloxberry.png",
-				WIDGET_CGI => "/admin/system/myloxberry.cgi"
+				WIDGET_CGI => "/admin/system/myloxberry.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_ADMIN'},
 				WIDGET_ICON => "/system/images/icons/main_admin.png", 
-				WIDGET_CGI => "/admin/system/admin.cgi"
+				WIDGET_CGI => "/admin/system/admin.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MINISERVER'}, 
 				WIDGET_ICON => "/system/images/icons/main_miniserver.png",
-				WIDGET_CGI => "/admin/system/miniserver.cgi"
+				WIDGET_CGI => "/admin/system/miniserver.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TIMESERVER'},
@@ -181,7 +184,8 @@ sub mainmenu {
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_NETWORK'},
 				WIDGET_ICON => "/system/images/icons/main_network.png",
-				WIDGET_CGI => "/admin/system/network.cgi"
+				WIDGET_CGI => "/admin/system/network.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_SERVICES'},
@@ -191,32 +195,38 @@ sub mainmenu {
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_PLUGININSTALL'},
 				WIDGET_ICON => "/system/images/icons/main_plugininstall.png",
-				WIDGET_CGI => "/admin/system/plugininstall.cgi"
+				WIDGET_CGI => "/admin/system/plugininstall.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_UPDATES'},
 				WIDGET_ICON => "/system/images/icons/main_updates.png",
-				WIDGET_CGI => "/admin/system/updates.cgi"
+				WIDGET_CGI => "/admin/system/updates.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_REBOOT'},
 				WIDGET_ICON => "/system/images/icons/main_power.png",
-				WIDGET_CGI => "/admin/system/power.cgi"
+				WIDGET_CGI => "/admin/system/power.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MAILSERVER'},
 				WIDGET_ICON => "/system/images/icons/main_mail.png",
-				WIDGET_CGI => "/admin/system/mailserver.cgi"
+				WIDGET_CGI => "/admin/system/mailserver.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
 				WIDGET_ICON => "/system/images/icons/main_setupassistent.png",
-				WIDGET_CGI => "/admin/system/setup/index.cgi"
+				WIDGET_CGI => "/admin/system/setup/index.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
-				WIDGET_CGI => "/admin/system/donate.cgi"
+				WIDGET_CGI => "/admin/system/donate.cgi",
+				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			}
 		]);
 		

@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.11";
+our $VERSION = "0.3.1.13";
 
 use base 'Exporter';
 
@@ -24,16 +24,16 @@ use base 'Exporter';
 
 our @EXPORT = qw (
 	$lbhomedir
-	$lbplugindir
+	$lbpplugindir
 	$lbcgidir
-	$lbhtmldir
-	$lbhtmlauthdir
-	$lbtemplatedir
-	$lbdatadir
-	$lblogdir
-	$lbconfigdir
-	$lbbindir
-	$lbsbindir
+	$lbphtmldir
+	$lbphtmlauthdir
+	$lbptemplatedir
+	$lbpdatadir
+	$lbplogdir
+	$lbpconfigdir
+	$lbpbindir
+	$lbpsbindir
 	
 	lbhostname
 	lbfriendlyname
@@ -45,6 +45,7 @@ our @EXPORT = qw (
 	$lbsdatadir
 	$lbslogdir
 	$lbsconfigdir
+	$lbssbindir
 		
 	is_enabled 
 	is_disabled
@@ -63,9 +64,9 @@ LoxBerry::System - LoxBerry platform system module to ease writing plugins for L
 	use LoxBerry::System;
 	
 	# LoxBerry::System defines globals for plugin directory
-	print "Config Directory: $lbconfigdir";
-	print "HTMLAUTH directory:    $lbhtmlauthdir";
-	print "HTML directory:   $lbhtmldir";
+	print "Config Directory: $lbpconfigdir";
+	print "HTMLAUTH directory:    $lbphtmlauthdir";
+	print "HTML directory:   $lbphtmldir";
 	# See more below
 	
 	# Get all data of configured Miniservers
@@ -90,14 +91,14 @@ Goal of LoxBerry::System (and LoxBerry::Web) is to simplify creating plugins for
 LoxBerry::System defines a dozen of variables for easier access to the plugin directories. They are accessable directly after the use LoxBerry::System command.
 
 	$lbhomedir		# Home directory of LoxBerry, usually /opt/loxberry
-	$lbplugindir	# The unique directory name of the plugin, e.g. squeezelite
+	$lbpplugindir	# The unique directory name of the plugin, e.g. squeezelite
 	$lbcgidir		# Legacy variable, points to the HTMLAUTH dir . e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
-	$lbhtmlauthdir	# Full path to the HTMLAUTH directory of the current plugin. e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
-	$lbhtmldir		# Full path to the HTML directory of the current plugin, e.g. /opt/loxberry/webfrontend/html/plugins/squeezelite
-	$lbtemplatedir	# Full path to the Template directory of the current plugin, e.g. /opt/loxberry/templates/plugins/squeezelite
-	$lbdatadir		# Full path to the Data directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
-	$lblogdir		# Full path to the Log directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
-	$lbconfigdir	# Full path to the Config directory of the current plugin, e.g. /opt/loxberry/config/plugins/squeezelite
+	$lbphtmlauthdir	# Full path to the HTMLAUTH directory of the current plugin. e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
+	$lbphtmldir		# Full path to the HTML directory of the current plugin, e.g. /opt/loxberry/webfrontend/html/plugins/squeezelite
+	$lbptemplatedir	# Full path to the Template directory of the current plugin, e.g. /opt/loxberry/templates/plugins/squeezelite
+	$lbpdatadir		# Full path to the Data directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
+	$lbplogdir		# Full path to the Log directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
+	$lbpconfigdir	# Full path to the Config directory of the current plugin, e.g. /opt/loxberry/config/plugins/squeezelite
 
 	$lbshtmlauthdir	# Full path to the SYSTEM CGI directory /opt/loxberry/webfrontend/htmlauth/system
 	$lbshtmldir		# Full path to the SYSTEM HTML directory /opt/loxberry/webfrontend/html/system
@@ -146,16 +147,16 @@ if ($ENV{LBHOMEDIR}) {
 }
 
 my $part = substr ((Cwd::abs_path($0)), (length($lbhomedir)+1));
-our ($lbplugindir) = (split(/\//, $part))[3];
-our $lbhtmlauthdir = "$lbhomedir/webfrontend/htmlauth/plugins/$lbplugindir";
-our $lbhtmldir = "$lbhomedir/webfrontend/html/plugins/$lbplugindir";
-our $lbcgidir = $lbhtmlauthdir;
-our $lbtemplatedir = "$lbhomedir/templates/plugins/$lbplugindir";
-our $lbdatadir = "$lbhomedir/data/plugins/$lbplugindir";
-our $lblogdir = "$lbhomedir/log/plugins/$lbplugindir";
-our $lbconfigdir = "$lbhomedir/config/plugins/$lbplugindir";
-our $lbsbindir = "$lbhomedir/sbin/plugins/$lbplugindir";
-our $lbbindir = "$lbhomedir/bin/plugins/$lbplugindir";
+our ($lbpplugindir) = (split(/\//, $part))[3];
+our $lbphtmlauthdir = "$lbhomedir/webfrontend/htmlauth/plugins/$lbpplugindir";
+our $lbphtmldir = "$lbhomedir/webfrontend/html/plugins/$lbpplugindir";
+our $lbcgidir = $lbphtmlauthdir;
+our $lbptemplatedir = "$lbhomedir/templates/plugins/$lbpplugindir";
+our $lbpdatadir = "$lbhomedir/data/plugins/$lbpplugindir";
+our $lbplogdir = "$lbhomedir/log/plugins/$lbpplugindir";
+our $lbpconfigdir = "$lbhomedir/config/plugins/$lbpplugindir";
+our $lbpsbindir = "$lbhomedir/sbin/plugins/$lbpplugindir";
+our $lbpbindir = "$lbhomedir/bin/plugins/$lbpplugindir";
 
 
 our $lbshtmldir = "$lbhomedir/webfrontend/html/system";
@@ -164,6 +165,7 @@ our $lbstemplatedir = "$lbhomedir/templates/system";
 our $lbsdatadir = "$lbhomedir/data/system";
 our $lbslogdir = "$lbhomedir/log/system";
 our $lbsconfigdir = "$lbhomedir/config/system";
+our $lbssbindir = "$lbhomedir/sbin/system";
 
 # Variables only valid in this module
 my $cfgwasread;
@@ -388,7 +390,7 @@ sub pluginversion
 		my @fields = split(/\|/);
 		# print STDERR "Fields: 0:" . $fields[0] . " 1:" . $fields[1] . " 2:" . $fields[2] . " 3:" . $fields[3] . " 4:" . $fields[4] . " 5:" . $fields[5] . " 6:" . $fields[6] . "\n";
 		
-		if ($fields[5] eq $lbplugindir) {
+		if ($fields[5] eq $lbpplugindir) {
 			$pluginversion = $fields[3];
 			close F;
 			return $pluginversion;

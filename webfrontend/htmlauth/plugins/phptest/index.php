@@ -47,7 +47,7 @@ echo "Language: " . LBWeb::lblanguage();
 <hr>
 <p class="hint"><?=$L['CODE.INTRO']?></p>
 <div class="monospace">
-	<p><?=str_replace("\n", "<br>", htmlspecialchars(file_get_contents("$LBHTMLAUTHDIR/index.php")))?></p>
+	<p><?=str_replace("\n", "<br>", htmlspecialchars(file_get_contents("$lbphtmlauthdir/index.php")))?></p>
 </div>
 
 <?php

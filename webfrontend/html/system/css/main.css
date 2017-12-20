@@ -86,7 +86,7 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 .monospace * {font-size:80%!important;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace; 
 }
 
-.wide { font-size:calc(14px + 1.3vw); letter-spacing: 0.25em; text-align: left; vertical-align: middle; border-bottom: 2px ridge #cdcdcd; padding: 7px; padding-top: 1px;
+.wide { font-size:calc(14px + 1.3vw); letter-spacing: 0.25em; text-align: left; vertical-align: middle; border-bottom: 2px ridge #cdcdcd; padding: 7px; padding-top: 1px; margin-top: 0px;
 }
 .widgetblock { 
 	display: flex; 
@@ -102,24 +102,59 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 	text-align: center;
 }
 
+.notifyRed {
+	z-index: 10;
+    position: relative;
+	left:-44px;
+	top: 0px;
+	
+	float: right;
+    background:#ed1d24;
+    color:#fff;
+    padding: 3px;
+    border-radius: 8px;
+    font-size: 9px;
+	margin: 5px -7px 0 0;
+	line-height: 0.8;
+	min-width: 8px;
+}
+
+.notifyBlue {
+	z-index: 10;
+    position: relative;
+	left:-44px;
+	top: 0px;
+	
+	float: right;
+    background:Blue;
+    color:#fff;
+    padding: 3px;
+    border-radius: 8px;
+    font-size: 9px;
+	margin: 5px -7px 0 0;
+	line-height: 0.8;
+	min-width: 8px;
+}
+
+
 /* Logfiles */
-#logerr
+#logerr, .logerror
 {
   text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
 }
-#logfail
+#logfail, .logfail
 {
   text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
 }
-#logwarn
+#logwarn, .logwarn
 {
   text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
 }
-#logok
+#logok, .logok
 {
  text-align:left; width:100%; color:#000000; background-color:#D8FADC;
 }
-#loginfo
+#loginfo, .loginfo
 {
  text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }

@@ -17,7 +17,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.14";
+our $VERSION = "0.3.1.16";
 
 use base 'Exporter';
 our @EXPORT = qw (
@@ -177,16 +177,16 @@ sub pagestart
 	# Help for plugin calls
 	if (! defined $main::helptext and !$systemcall) {
 		print STDERR "-- PLUGIN Help Template --\n";
-		if (-e "$LoxBerry::System::lbtemplatedir/help/$helptemplate") {
-			$templatepath = "$LoxBerry::System::lbtemplatedir/help/$helptemplate";
-			$langfile = "$LoxBerry::System::lbtemplatedir/lang/$helptemplate";
+		if (-e "$LoxBerry::System::lbptemplatedir/help/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbptemplatedir/help/$helptemplate";
+			$langfile = "$LoxBerry::System::lbptemplatedir/lang/$helptemplate";
 			$ismultilang = 1;
-		} elsif (-e "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate") {
-			$templatepath = "$LoxBerry::System::lbtemplatedir/$lang/$helptemplate";
-		} elsif (-e "$LoxBerry::System::lbtemplatedir/en/$helptemplate") {
-			$templatepath = "$LoxBerry::System::lbtemplatedir/en/$helptemplate";
-		} elsif (-e "$LoxBerry::System::lbtemplatedir/de/$helptemplate") {
-			$templatepath = "$LoxBerry::System::lbtemplatedir/de/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbptemplatedir/$lang/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbptemplatedir/$lang/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbptemplatedir/en/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbptemplatedir/en/$helptemplate";
+		} elsif (-e "$LoxBerry::System::lbptemplatedir/de/$helptemplate") {
+			$templatepath = "$LoxBerry::System::lbptemplatedir/de/$helptemplate";
 		}
 	}
 	
@@ -372,7 +372,15 @@ sub pageend
 		 loop_context_vars => 0,
 		die_on_bad_params => 0,
 	);
+	my %SL = LoxBerry::Web::readlanguage($pageendobj, undef, 1);
+	
 	$pageendobj->param( LANG => $lang);
+	
+	# Reboot required button
+	if (-e "$LoxBerry::System::lbslogdir/reboot.required") {
+		my $reboot_req_string='<a href="http://loxberry/admin/system/power.cgi"><span style="color:red; text-shadow: disabled;">' . $SL{'POWER.MSG_REBOOT_REQUIRED_SHORT'} . '</span></a>';
+		$pageendobj->param( 'REBOOT_REQUIRED', $reboot_req_string );
+	}
 	print $pageendobj->output();
 }
 
@@ -458,7 +466,7 @@ sub readlanguage
 		# Plugin language got in format language.ini
 		# Need to re-parse the name
 		$langfile =~ s/\.[^.]*$//;
-		$langfile  = "$LoxBerry::System::lbtemplatedir/$langfile";
+		$langfile  = "$LoxBerry::System::lbptemplatedir/$langfile";
 		
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
@@ -499,8 +507,8 @@ sub get_plugin_icon
 	elsif	($iconsize > 64) { $iconsize = 128; }
 	else					{ $iconsize = 64; }
 	
-	my $logopath = "$LoxBerry::System::lbshtmldir/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
-	my $logopath_web = "/system/images/icons/$LoxBerry::System::lbplugindir/icon_$iconsize.png";
+	my $logopath = "$LoxBerry::System::lbshtmldir/images/icons/$LoxBerry::System::lbpplugindir/icon_$iconsize.png";
+	my $logopath_web = "/system/images/icons/$LoxBerry::System::lbpplugindir/icon_$iconsize.png";
 	
 	if (-e $logopath) { 
 		return $logopath_web;

@@ -1,7 +1,22 @@
 <!-- ** START template/system/power.html 15:21 24.11.2017 ************************************************************************************ -->
 <TMPL_IF MENU>
 	<center>
+		<TMPL_IF REBOOT_REQUIRED>
+		<div style="width:60%">
+		<div class="logerror">
+		<p><TMPL_VAR POWER.MSG_REBOOT_REQUIRED_LONG></p>
+		<TMPL_IF REBOOT_FURTHER_INFORMATION>
+		<p><TMPL_VAR POWER.MSG_REBOOT_REQUIRED_FURTHER><br>
+		   <TMPL_VAR REBOOT_FURTHER_INFORMATION>
+		</p>
+		
+		</TMPL_IF>
+		</div>
+		</div>
+		<p>&nbsp;</p>
+		</TMPL_IF>
 		<div style="width: 300px">
+		
 			<a id="btnreboot" data-role="button" data-icon="recycle" href="?do=reboot"><TMPL_VAR POWER.BUTTON_REBOOT></a>
 			<br>
 			<a id="btnpoweroff" data-role="button" data-icon="power" href="?do=poweroff"><TMPL_VAR POWER.BUTTON_POWEROFF></a>

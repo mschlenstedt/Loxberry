@@ -20,30 +20,35 @@
 		
 	# $pluginname = explode("/", substr(getcwd(), strlen(LBHOMEDIR)))[4];
 	if (isset($pluginname)) {
-		define ("LBPLUGINDIR", $pluginname);
+		define ("LBPPLUGINDIR", $pluginname);
 		unset($pluginname);
-		// Plugin Constants
-		define ("LBHTMLAUTHDIR", LBHOMEDIR . "/webfrontend/htmlauth/plugins/" . LBPLUGINDIR);
-		define ("LBHTMLDIR", LBHOMEDIR . "/webfrontend/html/plugins/" . LBPLUGINDIR);
-		define ("LBTEMPLATEDIR", LBHOMEDIR . "/templates/plugins/" . LBPLUGINDIR);
-		define ("LBDATADIR", LBHOMEDIR . "/data/plugins/" . LBPLUGINDIR);
-		define ("LBLOGDIR", LBHOMEDIR . "/log/plugins/" . LBPLUGINDIR);
-		define ("LBCONFIGDIR", LBHOMEDIR . "/config/plugins/" . LBPLUGINDIR);
-		define ("LBSBINDIR", LBHOMEDIR . "/sbin/plugins/" . LBPLUGINDIR);
-		define ("LBBINDIR", LBHOMEDIR . "/bin/plugins/" . LBPLUGINDIR);
-
-		// Plugin Variables
-		$LBPLUGINDIR = LBPLUGINDIR;
-		$LBHTMLAUTHDIR = LBHTMLAUTHDIR;
-		$LBHTMLDIR = LBHTMLDIR;
-		$LBTEMPLATEDIR = LBTEMPLATEDIR;
-		$LBDATADIR = LBDATADIR;
-		$LBLOGDIR = LBLOGDIR;
-		$LBCONFIGDIR = LBCONFIGDIR;
-		$LBSBINDIR = LBSBINDIR;
-		$LBBINDIR = LBBINDIR;
 		
-		error_log("LoxBerry System Info: LBPLUGINDIR: " . LBPLUGINDIR);
+		// Plugin Constants
+		define ("LBPHTMLAUTHDIR", LBHOMEDIR . "/webfrontend/htmlauth/plugins/" . LBPPLUGINDIR);
+		define ("LBPHTMLDIR", LBHOMEDIR . "/webfrontend/html/plugins/" . LBPPLUGINDIR);
+		define ("LBPTEMPLATEDIR", LBHOMEDIR . "/templates/plugins/" . LBPPLUGINDIR);
+		define ("LBPDATADIR", LBHOMEDIR . "/data/plugins/" . LBPPLUGINDIR);
+		define ("LBPLOGDIR", LBHOMEDIR . "/log/plugins/" . LBPPLUGINDIR);
+		define ("LBPCONFIGDIR", LBHOMEDIR . "/config/plugins/" . LBPPLUGINDIR);
+		define ("LBPSBINDIR", LBHOMEDIR . "/sbin/plugins/" . LBPPLUGINDIR);
+		define ("LBPBINDIR", LBHOMEDIR . "/bin/plugins/" . LBPPLUGINDIR);
+
+		// lbhomedir
+		$lbhomedir = LBHOMEDIR;
+	
+		
+		// Plugin Variables
+		$lbpplugindir = LBPPLUGINDIR;
+		$lbphtmlauthdir = LBPHTMLAUTHDIR;
+		$lbphtmldir = LBPHTMLDIR;
+		$lbptemplatedir = LBPTEMPLATEDIR;
+		$lbpdatadir = LBPDATADIR;
+		$lbplogdir = LBPLOGDIR;
+		$lbpconfigdir = LBPCONFIGDIR;
+		$lbpsbindir = LBPSBINDIR;
+		$lbpbindir = LBPBINDIR;
+		
+		error_log("LoxBerry System Info: LBPPLUGINDIR: " . LBPPLUGINDIR);
 	}
 
 	error_log("LoxBerry System Info: LBHOMEDIR: " . LBHOMEDIR);
@@ -55,16 +60,19 @@
 	define ("LBSDATADIR", LBHOMEDIR . "/data/system");
 	define ("LBSLOGDIR", LBHOMEDIR . "/log/system");
 	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system");
+	define ("LBSSBINDIR", LBHOMEDIR . "/sbin/system");
+	define ("LBSBINDIR", LBHOMEDIR . "/bin");
 
 	# As globals in PHP cannot be concentrated in strings, we additionally define variables
-	$LBHOMEDIR = LBHOMEDIR;
 	
-	$LBSHTMLAUTHDIR = LBSHTMLAUTHDIR;
-	$LBSHTMLDIR = LBSHTMLDIR;
-	$LBSTEMPLATEDIR = LBSTEMPLATEDIR;
-	$LBSDATADIR = LBSDATADIR;
-	$LBSLOGDIR = LBSLOGDIR;
-	$LBSCONFIGDIR = LBSCONFIGDIR;
+	$lbshtmlauthdir = LBSHTMLAUTHDIR;
+	$lbshtmldir = LBSHTMLDIR;
+	$lbstemplatedir = LBSTEMPLATEDIR;
+	$lbsdatadir = LBSDATADIR;
+	$lbslogdir = LBSLOGDIR;
+	$lbsconfigdir = LBSCONFIGDIR;
+	$lbssbindir = LBSSBINDIR;
+	$lbsbindir = LBSSBINDIR;
 
 	# Variables to store
 
@@ -81,7 +89,7 @@
 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.1.6";
+	public static $LBSYSTEMVERSION = "0.3.1.8";
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 
@@ -154,13 +162,13 @@ class LBSystem
 	public function pluginversion()
 	{
 		global $pluginversion;
-		global $LBPLUGINDIR;
+		global $lbpplugindir;
 		
 		if ($pluginversion) {
 			# print STDERR "Returning already fetched version\n";
 			return $pluginversion;
 		} 
-		if (!$LBPLUGINDIR) {
+		if (!$lbpplugindir) {
 			return NULL;
 		}
 				
@@ -174,7 +182,7 @@ class LBSystem
 		
 		foreach ($filestr as $line) {
 			$linearr = explode('|', $line);
-			if (count($linearr) >=6  && $linearr[5] == LBPLUGINDIR) {
+			if (count($linearr) >=6  && $linearr[5] == LBPPLUGINDIR) {
 				$pluginversion = $linearr[3];
 				return $pluginversion;
 			}
