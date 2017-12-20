@@ -1,10 +1,15 @@
 #!/bin/bash
+
+if test $UID -ne 0; then
+	echo "This script has to be run as root."
+	exit;
+fi
+
 if [ ! -d $LBHOMEDIR ]; then
 	echo "Cannot find LoxBerry home directory ($LBHOMEDIR)"
 	exit 1;
 fi
   
-
 echo "LoxBerry home directory is $LBHOMEDIR"
 
 chown -v -R loxberry:loxberry $LBHOMEDIR
