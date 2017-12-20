@@ -55,6 +55,7 @@
 	define ("LBSDATADIR", LBHOMEDIR . "/data/system");
 	define ("LBSLOGDIR", LBHOMEDIR . "/log/system");
 	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system");
+	define ("LBSSBINDIR", LBHOMEDIR . "/sbin/system");
 
 	# As globals in PHP cannot be concentrated in strings, we additionally define variables
 	$LBHOMEDIR = LBHOMEDIR;
@@ -65,6 +66,7 @@
 	$LBSDATADIR = LBSDATADIR;
 	$LBSLOGDIR = LBSLOGDIR;
 	$LBSCONFIGDIR = LBSCONFIGDIR;
+	$LBSSBINDIR = LBSSBINDIR;
 
 	# Variables to store
 
@@ -81,7 +83,7 @@
 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.1.6";
+	public static $LBSYSTEMVERSION = "0.3.1.7";
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 
