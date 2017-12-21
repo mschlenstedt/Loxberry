@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.15";
+our $VERSION = "0.3.1.16";
 
 use base 'Exporter';
 
@@ -358,47 +358,48 @@ sub get_binaries
 ##################################################################################
 # Get Plugin Version
 # Returns plugin version from plugindatabase
+# With parameter name, returns the version of named plugin
 ##################################################################################
 sub pluginversion
 {
-
-	if ($pluginversion) {
-		# print STDERR "Returning already fetched version\n";
+	my ($queryname) = @_;
+	
+	if ($pluginversion && !$queryname) {
+		# print STDERR "Debug: $pluginversion is cached.\n";
 		return $pluginversion;
-	} 
-	if (!-e "$lbhomedir/data/system/plugindatabase.dat") {
-		Carp::carp "LoxBerry::System::pluginversion: Could not find $lbhomedir/data/system/plugindatabase.dat\n";
-		return undef;
 	}
-
-	# Read Plugin database copied from plugininstall.pl
-	my $openerr;
-	open(F,"<", "$lbhomedir/data/system/plugindatabase.dat") or ($openerr = 1);
-    if ($openerr) {
-		Carp::carp "LoxBerry::System::pluginversion: Error opening $lbhomedir/data/system/plugindatabase.dat\n";
-		return undef;
-		}
-    
-	my @data = <F>;
-    seek(F,0,0);
-    truncate(F,0);
-    foreach (@data){
-		s/[\n\r]//g;
-		# Comments
-		if ($_ =~ /^\s*#.*/) {
-			next;
-		}
-		my @fields = split(/\|/);
-		# print STDERR "Fields: 0:" . $fields[0] . " 1:" . $fields[1] . " 2:" . $fields[2] . " 3:" . $fields[3] . " 4:" . $fields[4] . " 5:" . $fields[5] . " 6:" . $fields[6] . "\n";
-		
-		if ($fields[5] eq $lbpplugindir) {
-			$pluginversion = $fields[3];
-			close F;
-			return $pluginversion;
-		}
-	}
-	return undef;
+	
+	my $query = $queryname ? $queryname : $lbpplugindir;
+	
+	my $plugin = LoxBerry::System::plugindata($query);
+	return $plugin->{PLUGINDB_VERSION} if ($plugin);
 }
+
+##################################################################################
+# Get all Plugin Data of current plugin from plugin database
+# With parameter name, returns the plugindata from named plugin
+##################################################################################
+
+sub plugindata
+{
+	my ($queryname) = @_;
+	
+	my $query = defined $queryname ? $queryname : $lbpplugindir;
+	
+	my @plugins = LoxBerry::System::get_plugins();
+	
+	foreach my $plugin (@plugins) {
+		if ($queryname && $plugin->{PLUGINDB_NAME} eq $query) {
+			return $plugin;
+		}
+		if (!$queryname && $plugin->{PLUGINDB_FOLDER} eq $query) {
+			$pluginversion = $plugin->{PLUGINDB_VERSION};
+			return $plugin;
+		}
+	}
+}
+
+
 
 ##################################################################################
 # Get Plugins
