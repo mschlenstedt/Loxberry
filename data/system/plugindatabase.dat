@@ -9,7 +9,7 @@
 #  5: FOLDER
 #  6: TITLE
 #  7: INTERFACE
-#  8: AUTOMATIC UPDATES (0/1)
+#  8: AUTOMATIC UPDATES (0:n/a 1:disabled 2:release 3:prerelease)
 #  9: RELEASECFG
 # 10: PRERELEASECFG
 # 11: LOGLEVEL (0-7)
