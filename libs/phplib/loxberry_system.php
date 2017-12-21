@@ -280,6 +280,7 @@ class LBSystem
 		global $lbfriendlyname;
 		global $lblang;
 		global $cfgwasread;
+		global $webserverport;
 		
 	#	print ("READ miniservers FROM DISK\n");
 
@@ -292,6 +293,7 @@ class LBSystem
 		$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or error_log("LoxBerry System Warning: TIMESERVER.ZONE not defined.");
 		$lbversion = $cfg['BASE']['VERSION'] or error_log("LoxBerry System Warning: BASE.VERSION not defined.");
 		$lbfriendlyname = $cfg['NETWORK']['FRIENDLYNAME'] or error_log("LoxBerry System Info: NETWORK.FRIENDLYNAME not defined.");
+		$webserverport = $cfg['WEBSERVER']['PORT'] or error_log("LoxBerry System Info: WEBSERVER.PORT not defined.");
 		$lblang = $cfg['BASE']['LANG'];
 		error_log("read_generalcfg: Language is $lblang");
 		$binaries = $cfg['BINARIES'];
@@ -328,7 +330,7 @@ class LBSystem
 			}
 			
 			if (! $miniservers[$msnr]['Port']) {
-				$miniservers[$msnr][Port] = 80;
+				$miniservers[$msnr]['Port'] = 80;
 			}
 
 		}

@@ -110,7 +110,15 @@ function form() {
 
 	$maintemplate->param('SSDP_CHECKBOX', $ssdp_checkbox);
 		
-	# Print Template
+	// Print Template
+	//The Navigation Bar
+	$navbar[1]['Name'] = $L['HEADER.TITLE_PAGE_Webserver'];
+	$navbar[1]['URL'] = 'mailserver.cgi';
+	$navbar[2]['Name'] = $L['HEADER.TITLE_PAGE_OPTIONS'];
+	$navbar[2]['URL'] = 'services.php';
+	// Activate the first element
+	$navbar[2]['active'] = True;
+
 	#LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();

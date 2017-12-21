@@ -60,6 +60,6 @@ if ( lbfriendlyname() === "") {
         <url>/system/images/LB03-Icon256.png</url>
       </icon>
     </iconList>
-    <presentationURL>http://<?php echo LBSystem::get_localip();?>/</presentationURL>
+    <presentationURL>http://<?php echo LBSystem::get_localip(); if (lbwebserverport() != 80) { echo ":".lbwebserverport(); } ?>/</presentationURL>
   </device>
 </root>
