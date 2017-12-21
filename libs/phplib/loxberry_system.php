@@ -87,9 +87,11 @@
 	$lblang=NULL;
 	$cfgwasread=NULL;
 
+// Functions in class LBSystem
+// 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.1.8";
+	public static $LBSYSTEMVERSION = "0.3.1.14";
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 
@@ -505,6 +507,20 @@ function lbwebserverport()
 	
 	return $webserverport;
 	
+}
+
+function currtime($format = 'hr')
+{
+	if (! $format || $format == 'hr') {
+	$timestr = date('d.m.Y H:i:s', time());
+	}
+	elseif ($format == 'file') {
+		$timestr = date('Ymd_His', time());
+	}
+	elseif ($format == 'iso') {
+		$timestr = date('"Y-m-d\TH:i:sO"', time());
+	}
+	return $timestr;
 }
 
 

@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.13";
+our $VERSION = "0.3.1.14";
 
 use base 'Exporter';
 
@@ -53,6 +53,7 @@ our @EXPORT = qw (
 	trim 
 	ltrim
 	rtrim
+	currtime
 );
 
 =head1 NAME
@@ -814,6 +815,41 @@ sub begins_with
 		
     return substr($_[0], 0, length($_[1])) eq $_[1];
 }		
+
+######################################################
+# Returns a string with the current time
+# Parameter is format:
+#		'hr' or (empty)		human readable 21.12.2017 19:32:11
+#		'file'				filename ready 20171221_193211
+#		'iso'				ISO 8601 but it is not real ISO as the time is not UTC but local time YYYY-MM-DDThh:mm:ssTZD
+#####################################################
+sub currtime
+{
+	my ($format) = @_;
+	my $timestr;
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+	$year += 1900;
+	if (!$format || $format eq 'hr') {
+		# $timestr = "$mday.$mon.$year $hour:$min:$sec";
+		$timestr = sprintf("%02d.%02d.%04d %02d:%02d:%02d", $mday, $mon, $year, $hour, $min, $sec);
+	}
+	elsif ($format eq 'file') {
+		$timestr = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
+	}
+	elsif ($format eq 'iso') {
+		$timestr = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", $year, $mon, $mday, $hour, $min, $sec);
+	}
+	
+	return $timestr;
+
+	# my $iso = $now->format_cldr("yyyy-MM-dd'T'HH:mm:ss") . sprintf("%04d", ($hour - $now->hour));
+	# print $iso . "\n";
+
+}
+
+
+
+
 
 #####################################################
 # Finally 1; ########################################
