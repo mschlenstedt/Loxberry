@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.13";
+our $VERSION = "0.3.1.16";
 
 use base 'Exporter';
 
@@ -53,6 +53,7 @@ our @EXPORT = qw (
 	trim 
 	ltrim
 	rtrim
+	currtime
 );
 
 =head1 NAME
@@ -357,47 +358,48 @@ sub get_binaries
 ##################################################################################
 # Get Plugin Version
 # Returns plugin version from plugindatabase
+# With parameter name, returns the version of named plugin
 ##################################################################################
 sub pluginversion
 {
-
-	if ($pluginversion) {
-		# print STDERR "Returning already fetched version\n";
+	my ($queryname) = @_;
+	
+	if ($pluginversion && !$queryname) {
+		# print STDERR "Debug: $pluginversion is cached.\n";
 		return $pluginversion;
-	} 
-	if (!-e "$lbhomedir/data/system/plugindatabase.dat") {
-		Carp::carp "LoxBerry::System::pluginversion: Could not find $lbhomedir/data/system/plugindatabase.dat\n";
-		return undef;
 	}
-
-	# Read Plugin database copied from plugininstall.pl
-	my $openerr;
-	open(F,"<", "$lbhomedir/data/system/plugindatabase.dat") or ($openerr = 1);
-    if ($openerr) {
-		Carp::carp "LoxBerry::System::pluginversion: Error opening $lbhomedir/data/system/plugindatabase.dat\n";
-		return undef;
-		}
-    
-	my @data = <F>;
-    seek(F,0,0);
-    truncate(F,0);
-    foreach (@data){
-		s/[\n\r]//g;
-		# Comments
-		if ($_ =~ /^\s*#.*/) {
-			next;
-		}
-		my @fields = split(/\|/);
-		# print STDERR "Fields: 0:" . $fields[0] . " 1:" . $fields[1] . " 2:" . $fields[2] . " 3:" . $fields[3] . " 4:" . $fields[4] . " 5:" . $fields[5] . " 6:" . $fields[6] . "\n";
-		
-		if ($fields[5] eq $lbpplugindir) {
-			$pluginversion = $fields[3];
-			close F;
-			return $pluginversion;
-		}
-	}
-	return undef;
+	
+	my $query = $queryname ? $queryname : $lbpplugindir;
+	
+	my $plugin = LoxBerry::System::plugindata($query);
+	return $plugin->{PLUGINDB_VERSION} if ($plugin);
 }
+
+##################################################################################
+# Get all Plugin Data of current plugin from plugin database
+# With parameter name, returns the plugindata from named plugin
+##################################################################################
+
+sub plugindata
+{
+	my ($queryname) = @_;
+	
+	my $query = defined $queryname ? $queryname : $lbpplugindir;
+	
+	my @plugins = LoxBerry::System::get_plugins();
+	
+	foreach my $plugin (@plugins) {
+		if ($queryname && $plugin->{PLUGINDB_NAME} eq $query) {
+			return $plugin;
+		}
+		if (!$queryname && $plugin->{PLUGINDB_FOLDER} eq $query) {
+			$pluginversion = $plugin->{PLUGINDB_VERSION};
+			return $plugin;
+		}
+	}
+}
+
+
 
 ##################################################################################
 # Get Plugins
@@ -468,6 +470,10 @@ sub get_plugins
 		$plugin{PLUGINDB_FOLDER} = $fields[5];
 		$plugin{PLUGINDB_TITLE} = $fields[6];
 		$plugin{PLUGINDB_INTERFACE} = $fields[7];
+		$plugin{PLUGINDB_AUTOUPDATE} = $fields[8];
+		$plugin{PLUGINDB_RELEASECFG} = $fields[9];
+		$plugin{PLUGINDB_PRERELEASECFG} = $fields[10];
+		$plugin{PLUGINDB_LOGLEVEL} = $fields[11];
 		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
 		push(@plugins, \%plugin);
 		# On changes of the plugindatabase format, please change here 
@@ -814,6 +820,41 @@ sub begins_with
 		
     return substr($_[0], 0, length($_[1])) eq $_[1];
 }		
+
+######################################################
+# Returns a string with the current time
+# Parameter is format:
+#		'hr' or (empty)		human readable 21.12.2017 19:32:11
+#		'file'				filename ready 20171221_193211
+#		'iso'				ISO 8601 but it is not real ISO as the time is not UTC but local time YYYY-MM-DDThh:mm:ssTZD
+#####################################################
+sub currtime
+{
+	my ($format) = @_;
+	my $timestr;
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+	$year += 1900;
+	if (!$format || $format eq 'hr') {
+		# $timestr = "$mday.$mon.$year $hour:$min:$sec";
+		$timestr = sprintf("%02d.%02d.%04d %02d:%02d:%02d", $mday, $mon, $year, $hour, $min, $sec);
+	}
+	elsif ($format eq 'file') {
+		$timestr = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
+	}
+	elsif ($format eq 'iso') {
+		$timestr = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", $year, $mon, $mday, $hour, $min, $sec);
+	}
+	
+	return $timestr;
+
+	# my $iso = $now->format_cldr("yyyy-MM-dd'T'HH:mm:ss") . sprintf("%04d", ($hour - $now->hour));
+	# print $iso . "\n";
+
+}
+
+
+
+
 
 #####################################################
 # Finally 1; ########################################

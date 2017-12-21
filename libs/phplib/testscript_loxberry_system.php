@@ -51,5 +51,9 @@ foreach($plugins as $plugin) {
 	print "Nr. {$plugin['PLUGINDB_NO']}: {$plugin['PLUGINDB_TITLE']} version {$plugin['PLUGINDB_VERSION']} Icon-URI: {$plugin['PLUGINDB_ICONURI']}\n";
 }
 
+print "Current time is : " . currtime() . "\n";
+print "Current time (for files) is : " . currtime('file') . "\n";
+print "Current time (iso-like) is : " . currtime('iso') . "\n";
+
 ?>
 
