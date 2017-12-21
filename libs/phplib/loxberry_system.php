@@ -91,7 +91,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.1.14";
+	public static $LBSYSTEMVERSION = "0.3.1.15";
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 
@@ -229,6 +229,10 @@ class LBSystem
 				'PLUGINDB_FOLDER' => $fields[5],
 				'PLUGINDB_TITLE' => $fields[6],
 				'PLUGINDB_INTERFACE' => $fields[7],
+				'PLUGINDB_AUTOUPDATE' => $fields[8],
+				'PLUGINDB_RELEASECFG' => $fields[9],
+				'PLUGINDB_PRERELEASECFG' => $fields[10],
+				'PLUGINDB_LOGLEVEL' => $fields[11],
 				'PLUGINDB_ICONURI' => "/system/images/icons/$fields[5]/icon_64.png"
 				);
 				# On changes of the plugindatabase format, please change here

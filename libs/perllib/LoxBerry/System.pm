@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.14";
+our $VERSION = "0.3.1.15";
 
 use base 'Exporter';
 
@@ -469,6 +469,10 @@ sub get_plugins
 		$plugin{PLUGINDB_FOLDER} = $fields[5];
 		$plugin{PLUGINDB_TITLE} = $fields[6];
 		$plugin{PLUGINDB_INTERFACE} = $fields[7];
+		$plugin{PLUGINDB_AUTOUPDATE} = $fields[8];
+		$plugin{PLUGINDB_RELEASECFG} = $fields[9];
+		$plugin{PLUGINDB_PRERELEASECFG} = $fields[10];
+		$plugin{PLUGINDB_LOGLEVEL} = $fields[11];
 		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
 		push(@plugins, \%plugin);
 		# On changes of the plugindatabase format, please change here 
