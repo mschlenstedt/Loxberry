@@ -165,7 +165,7 @@ our $lbstemplatedir = "$lbhomedir/templates/system";
 our $lbsdatadir = "$lbhomedir/data/system";
 our $lbslogdir = "$lbhomedir/log/system";
 our $lbsconfigdir = "$lbhomedir/config/system";
-our $lbssbindir = "$lbhomedir/sbin/system";
+our $lbssbindir = "$lbhomedir/sbin";
 
 # Variables only valid in this module
 my $cfgwasread;

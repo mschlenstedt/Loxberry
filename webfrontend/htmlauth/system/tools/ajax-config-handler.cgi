@@ -152,16 +152,16 @@ sub lbupdate
 
 	if ($action eq 'lbupdate-installtime') {
 		if ($value eq '1' || $value eq '7' || $value eq '30') { 
-			unlink "$lbhomedir/system/cron/cron.daily/lbupdate" if (-e "$lbhomedir/system/cron/cron.daily/lbupdate");
-			unlink "$lbhomedir/system/cron/cron.weekly/lbupdate" if (-e "$lbhomedir/system/cron/cron.weekly/lbupdate");
-			unlink "$lbhomedir/system/cron/cron.monthly/lbupdate" if (-e "$lbhomedir/system/cron/cron.monthly/lbupdate");
+			unlink "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron.sh" if (-e "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron.sh");
+			unlink "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron.sh" if (-e "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron.sh");
+			unlink "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron.sh" if (-e "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron.sh");
 			
 			if ($value eq '1') {
-				symlink "$lbshtmlauthdir/tools/lbupdate.sh", "$lbhomedir/system/cron/cron.daily/lbupdate.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.daily/lbupdate.sh";
+				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.daily/loxberryupdate_cron.sh";
 			} elsif ($value eq '7') {
-				symlink "$lbshtmlauthdir/tools/lbupdate.sh", "$lbhomedir/system/cron/cron.weekly/lbupdate.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.weekly/lbupdate.sh";;
+				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.weekly/loxberryupdate_cron.sh";
 			} elsif ($value eq '30') {
-				symlink "$lbshtmlauthdir/tools/lbupdate.sh", "$lbhomedir/system/cron/cron.monthly/lbupdate.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/lbupdate.sh";;
+				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/loxberryupdate_cron.sh";
 			}
 			change_generalcfg('UPDATE.INTERVAL', $value);
 		}
