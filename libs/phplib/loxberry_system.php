@@ -30,7 +30,7 @@
 		define ("LBPDATADIR", LBHOMEDIR . "/data/plugins/" . LBPPLUGINDIR);
 		define ("LBPLOGDIR", LBHOMEDIR . "/log/plugins/" . LBPPLUGINDIR);
 		define ("LBPCONFIGDIR", LBHOMEDIR . "/config/plugins/" . LBPPLUGINDIR);
-		define ("LBPSBINDIR", LBHOMEDIR . "/sbin/plugins/" . LBPPLUGINDIR);
+		// define ("LBPSBINDIR", LBHOMEDIR . "/sbin/plugins/" . LBPPLUGINDIR);
 		define ("LBPBINDIR", LBHOMEDIR . "/bin/plugins/" . LBPPLUGINDIR);
 
 		// lbhomedir
@@ -45,7 +45,7 @@
 		$lbpdatadir = LBPDATADIR;
 		$lbplogdir = LBPLOGDIR;
 		$lbpconfigdir = LBPCONFIGDIR;
-		$lbpsbindir = LBPSBINDIR;
+		// $lbpsbindir = LBPSBINDIR;
 		$lbpbindir = LBPBINDIR;
 		
 		error_log("LoxBerry System Info: LBPPLUGINDIR: " . LBPPLUGINDIR);
@@ -60,7 +60,7 @@
 	define ("LBSDATADIR", LBHOMEDIR . "/data/system");
 	define ("LBSLOGDIR", LBHOMEDIR . "/log/system");
 	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system");
-	define ("LBSSBINDIR", LBHOMEDIR . "/sbin/system");
+	define ("LBSSBINDIR", LBHOMEDIR . "/sbin");
 	define ("LBSBINDIR", LBHOMEDIR . "/bin");
 
 	# As globals in PHP cannot be concentrated in strings, we additionally define variables
@@ -91,7 +91,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.1.16";
+	public static $LBSYSTEMVERSION = "0.3.1.18";
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 

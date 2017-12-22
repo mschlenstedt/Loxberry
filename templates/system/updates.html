@@ -304,8 +304,10 @@ $(document).ready( function () {
 				if (data.info) $('#lbu_info').text(data.info);
 				if (data.release_name) $('#lbu_release_name').text(data.release_name);
 				if (data.release_body) $('#lbu_release_body').text(data.release_body);
-				if (data.published_at) $('#lbu_published_at').text("<TMPL_VAR UPDATES.LBU_LABEL_PUBLISHED_AT> " + data.published_at);
-				
+				if (data.published_at) {
+					publishdate = new Date(data.published_at);
+					$('#lbu_published_at').text("<TMPL_VAR UPDATES.LBU_LABEL_PUBLISHED_AT> " + publishdate.toLocaleString());
+				}
 				if (data.release_new) {
 						$('#lbu_release_version').css("font-weight", "bold");
 						$('#lbu_info').css("font-weight", "bold");
