@@ -1,5 +1,5 @@
-# Please increment version number (numbering after underscore) on EVERY change - keep it two-digits as recommended in perlmodstyle
-# Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
+# Please increment version number on EVERY change 
+# Major.Minor represents LoxBerry version (e.g. 0.3.1.12 = LoxBerry V0.3.1 the 12th change)
 
 use strict;
 use Config::Simple;
@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.16";
+our $VERSION = "0.3.1.17";
 
 use base 'Exporter';
 
@@ -33,7 +33,6 @@ our @EXPORT = qw (
 	$lbplogdir
 	$lbpconfigdir
 	$lbpbindir
-	$lbpsbindir
 	
 	lbhostname
 	lbfriendlyname
@@ -156,7 +155,7 @@ our $lbptemplatedir = "$lbhomedir/templates/plugins/$lbpplugindir";
 our $lbpdatadir = "$lbhomedir/data/plugins/$lbpplugindir";
 our $lbplogdir = "$lbhomedir/log/plugins/$lbpplugindir";
 our $lbpconfigdir = "$lbhomedir/config/plugins/$lbpplugindir";
-our $lbpsbindir = "$lbhomedir/sbin/plugins/$lbpplugindir";
+# our $lbpsbindir = "$lbhomedir/sbin/plugins/$lbpplugindir";
 our $lbpbindir = "$lbhomedir/bin/plugins/$lbpplugindir";
 
 
