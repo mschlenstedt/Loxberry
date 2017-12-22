@@ -91,7 +91,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.1.14";
+	public static $LBSYSTEMVERSION = "0.3.1.16";
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 
@@ -161,36 +161,46 @@ class LBSystem
 	# Get Plugin Version
 	# Returns plugin version from plugindatabase
 	##################################################################################
-	public function pluginversion()
+	public function pluginversion($queryname = "")
 	{
 		global $pluginversion;
 		global $lbpplugindir;
 		
-		if ($pluginversion) {
+		if ($pluginversion && $queryname == "") {
 			# print STDERR "Returning already fetched version\n";
 			return $pluginversion;
 		} 
-		if (!$lbpplugindir) {
-			return NULL;
-		}
-				
-		# Read Plugin database copied from plugininstall.pl
-		$filestr = file(LBHOMEDIR . "/data/system/plugindatabase.dat", FILE_IGNORE_NEW_LINES);
-		#$filestr = file_get_contents(LBHOMEDIR . "/data/system/plugindatabase.dat");
-		if (! $filestr) {
-				error_log("LoxBerry System ERROR: Could not read Plugin Database " . LBHOMEDIR . "/data/system/plugindatabase.dat");
-				return;
-		}
 		
-		foreach ($filestr as $line) {
-			$linearr = explode('|', $line);
-			if (count($linearr) >=6  && $linearr[5] == LBPPLUGINDIR) {
-				$pluginversion = $linearr[3];
-				return $pluginversion;
+		$query = $queryname != "" ? $queryname : $lbpplugindir;
+				
+		$plugin = LBSystem::plugindata($query);
+		return isset($plugin['PLUGINDB_VERSION']) ? $plugin['PLUGINDB_VERSION'] : null;
+	}
+	
+	##################################################################################
+	# Get Plugindata
+	# Returns the data of the current or named plugin
+	##################################################################################
+	public function plugindata($queryname = "")
+	{
+		global $pluginversion;
+		global $lbpplugindir;
+		
+		$query = $queryname != "" ? $queryname : $lbpplugindir;
+				
+		$plugins = LBSystem::get_plugins();
+		
+		foreach($plugins as $plugin) {
+			if ($queryname != "" && $plugin['PLUGINDB_NAME'] == $queryname) {
+				return $plugin;
+			}
+			if ($queryname == "" && $plugin['PLUGINDB_FOLDER'] == $lbpplugindir) {
+				$pluginversion = $plugin['PLUGINDB_VERSION'];
+				return $plugin;
 			}
 		}
 	}
-
+	
 	##################################################################################
 	# Get Plugins
 	# Returns an array of all plugins without comments
@@ -228,7 +238,11 @@ class LBSystem
 				'PLUGINDB_NAME' => $fields[4],
 				'PLUGINDB_FOLDER' => $fields[5],
 				'PLUGINDB_TITLE' => $fields[6],
-				'PLUGINDB_INTERFACE' => $fields[7],
+				'PLUGINDB_INTERFACE' => isset($fields[7]) ? $fields[7] : null,
+				'PLUGINDB_AUTOUPDATE' => isset($fields[8]) ? $fields[8] : null,
+				'PLUGINDB_RELEASECFG' => isset($fields[9]) ? $fields[9] : null,
+				'PLUGINDB_PRERELEASECFG' => isset($fields[10]) ? $fields[10] : null,
+				'PLUGINDB_LOGLEVEL' => isset($fields[11]) ? $fields[11] : null,
 				'PLUGINDB_ICONURI' => "/system/images/icons/$fields[5]/icon_64.png"
 				);
 				# On changes of the plugindatabase format, please change here
@@ -266,6 +280,7 @@ class LBSystem
 		global $lbfriendlyname;
 		global $lblang;
 		global $cfgwasread;
+		global $webserverport;
 		
 	#	print ("READ miniservers FROM DISK\n");
 
@@ -278,6 +293,7 @@ class LBSystem
 		$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or error_log("LoxBerry System Warning: TIMESERVER.ZONE not defined.");
 		$lbversion = $cfg['BASE']['VERSION'] or error_log("LoxBerry System Warning: BASE.VERSION not defined.");
 		$lbfriendlyname = $cfg['NETWORK']['FRIENDLYNAME'] or error_log("LoxBerry System Info: NETWORK.FRIENDLYNAME not defined.");
+		$webserverport = $cfg['WEBSERVER']['PORT'] or error_log("LoxBerry System Info: WEBSERVER.PORT not defined.");
 		$lblang = $cfg['BASE']['LANG'];
 		error_log("read_generalcfg: Language is $lblang");
 		$binaries = $cfg['BINARIES'];
@@ -314,7 +330,7 @@ class LBSystem
 			}
 			
 			if (! $miniservers[$msnr]['Port']) {
-				$miniservers[$msnr][Port] = 80;
+				$miniservers[$msnr]['Port'] = 80;
 			}
 
 		}

@@ -188,6 +188,11 @@ sub mainmenu {
 				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_SERVICES'},
+				WIDGET_ICON => "/system/images/icons/main_network.png",
+				WIDGET_CGI => "/admin/system/services.php"
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_PLUGININSTALL'},
 				WIDGET_ICON => "/system/images/icons/main_plugininstall.png",
 				WIDGET_CGI => "/admin/system/plugininstall.cgi",

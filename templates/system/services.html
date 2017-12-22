@@ -1,0 +1,56 @@
+<TMPL_IF form>
+		<!-- ** START template/system/services.html 22:34 17.12.2017 ************************************************************************************ -->
+		
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
+	<input type="hidden" name="saveformdata" value="1">
+	<p>
+	<div class="wide"><TMPL_VAR SERVICES.HEADING></div>
+	</p>
+
+	<table class="formtable">
+		<tr>
+			<td>
+			<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
+				<TMPL_VAR SERVICES.SSDPENABLED>
+				</fieldset>
+			</td>
+			<td>&nbsp;
+			</td><td  class="hint">
+				<TMPL_VAR SERVICES.HINT_SSDPENABLED>
+			</td>
+		</tr>
+	</table>
+	</form>
+	<center>
+		<p>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+		</p>
+	</center>
+
+</TMPL_IF>
+
+<TMPL_IF SAVE>
+		<center>
+			<table border=0>
+				<tr>
+					<td align="center">
+						<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+						<p>
+							<TMPL_VAR SERVICES.CHANGE_SUCCESS>
+							<br/>
+							<br/>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td align="center">
+						<p>
+							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></a>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</center>
+
+</TMPL_IF>
