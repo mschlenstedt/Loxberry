@@ -110,7 +110,7 @@ if (!$zipmode) {
   }
 } else {
   our $tempfolder = "/tmp/$tempfile";
-  make_path("$tempfolder" , {chmod => 0777});
+  make_path("$tempfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 }
 $tempfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
 $message =  "Temp Folder: $tempfolder";
@@ -371,47 +371,36 @@ close (F);
 # Executing preupgrade script
 if ($isupgrade) {
   if (-f "$tempfolder/preupgrade.sh") {
-    $message = $phrase->param("TXT0062");
+
+    $message =  "$SL{'PLUGININSTALL.INF_START_PREUPGRADE'}";
     &loginfo;
 
-    $message = "Command: $bashbin \"$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+    $message = "Command: $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
     &loginfo;
 
-    system("$bashbin \"$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
-    if ($? ne 0) {
-      $message = $phrase->param("TXT0064");
+    system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preupgrade.sh\" 2>&1");
+    system("$sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+    if ($? eq 1) {
+      $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
-    } else {
-      $message = $phrase->param("TXT0063");
+      push(@errors,"PREUPGRADE: $message");
+    } 
+    elsif ($? > 1) {
+      $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+      &logfail; 
+    }
+    else {
+      $message =  "$SL{'PLUGININSTALL.OK_SCRIPT'}";
       &logok;
     }
+
   }
   # Purge old installation
-  $message = $phrase->param("TXT0087");
+  $message =  "$SL{'PLUGININSTALL.INF_REMOVING_OLD_INSTALL'}";
   &loginfo;
-  # Plugin Folders
-  system("rm -r -f $lbhomedir/config/plugins/$pfolder/ 2>&1");
-  system("rm -r -f $lbhomedir/data/plugins/$pfolder/ 2>&1");
-  system("rm -r -f $lbhomedir/templates/$pfolder/ 2>&1");
-  # system("rm -r -f $lbhomedir/log/plugins/$pfolder/"); 		# Don't ourge Logfolder in case of an upgrade
-  system("rm -r -f $lbhomedir/webfrontend/cgi/plugins/$pfolder/ 2>&1");
-  system("rm -r -f $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
-  # Icons for Main Menu
-  system("rm -r -f $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
-  # Daemon file
-  system("rm -f $lbhomedir/system/daemons/plugins/$pname 2>&1");
-  # Cron jobs
-  system("rm -f $lbhomedir/system/cron/cron.01min/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.03min/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.05min/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.10min/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.15min/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.30min/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.hourly/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.daily/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.weekly/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.monthly/$pname 2>&1");
-  system("rm -f $lbhomedir/system/cron/cron.yearly/$pname 2>&1");
+
+  &purge_installation;
+
 }
 
 # Executing preinstall script
@@ -440,7 +429,7 @@ if (-f "$tempfolder/preinstall.sh") {
 }  
 
 # Copy Config files
-make_path("$lbhomedir/config/plugins/$pfolder" , {chmod => 0777});
+make_path("$lbhomedir/config/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 if (!&is_folder_empty("$tempfolder/config")) {
   $message =  "$SL{'PLUGININSTALL.INF_CONFIG'}";
   &loginfo;
@@ -456,7 +445,7 @@ if (!&is_folder_empty("$tempfolder/config")) {
 }
 
 # Copy Template files
-make_path("$lbhomedir/templates/plugins/$pfolder" , {chmod => 0777});
+make_path("$lbhomedir/templates/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 if (!&is_folder_empty("$tempfolder/templates")) {
   $message =  "$SL{'PLUGININSTALL.INF_TEMPLATES'}";
   &loginfo;
@@ -475,7 +464,7 @@ if (!&is_folder_empty("$tempfolder/templates")) {
 if (-f "$tempfolder/daemon/daemon") {
   $message =  "$SL{'PLUGININSTALL.INF_DAEMON'}";
   &loginfo;
-  system("$sudobin -n -u loxberry cp -v $tempfolder/daemon/daemon $lbhomedir/system/daemons/plugins/$pname 2>&1");
+  system("cp -v $tempfolder/daemon/daemon $lbhomedir/system/daemons/plugins/$pname 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
     &logerr; 
@@ -484,9 +473,9 @@ if (-f "$tempfolder/daemon/daemon") {
     $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -v 744 $lbhomedir/system/daemons/plugins/$pname";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -v 755 $lbhomedir/system/daemons/plugins/$pname";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -v 744 $lbhomedir/system/daemons/plugins/$pname 2>&1");
+  system("$chmodbin -v 755 $lbhomedir/system/daemons/plugins/$pname 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -512,7 +501,7 @@ if (-f "$tempfolder/daemon/daemon") {
 if (-f "$tempfolder/uninstall/uninstall") {
   $message =  "$SL{'PLUGININSTALL.INF_UNINSTALL'}";
   &loginfo;
-  system("$sudobin -n -u loxberry cp -r -v $tempfolder/uninstall/uninstall $lbhomedir/data/system/uninstall/$pname 2>&1");
+  system("cp -r -v $tempfolder/uninstall/uninstall $lbhomedir/data/system/uninstall/$pname 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
     &logerr; 
@@ -521,9 +510,9 @@ if (-f "$tempfolder/uninstall/uninstall") {
     $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -v 744 $lbhomedir/system/uninstall/$pname";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -v 755 $lbhomedir/system/uninstall/$pname";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -v 744 $lbhomedir/system/uninstall/$pname 2>&1");
+  system("$chmodbin -v 755 $lbhomedir/system/uninstall/$pname 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -638,7 +627,7 @@ if (!&is_folder_empty("$tempfolder/cron")) {
 }
 
 # Copy Data files
-make_path("$lbhomedir/data/plugins/$pfolder" , {chmod => 0777});
+make_path("$lbhomedir/data/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 if (!&is_folder_empty("$tempfolder/data")) {
   $message =  "$SL{'PLUGININSTALL.INF_DATAFILES'}";
   &loginfo;
@@ -655,7 +644,7 @@ if (!&is_folder_empty("$tempfolder/data")) {
 
 # Copy Log files
 if ( $pinterface eq "1.0" ) {
-  make_path("$lbhomedir/log/plugins/$pfolder" , {chmod => 0777});
+  make_path("$lbhomedir/log/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
   if (!&is_folder_empty("$tempfolder/log")) {
     $message =  "$SL{'PLUGININSTALL.INF_LOGFILES'}";
     &loginfo;
@@ -676,7 +665,7 @@ if ( $pinterface eq "1.0" ) {
 
 # Copy CGI files - DEPRECIATED!!!
 if ( $pinterface eq "1.0" ) {
-  make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0777});
+  make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
   if (!&is_folder_empty("$tempfolder/webfrontend/cgi")) {
     $message =  "$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
     &loginfo;
@@ -708,7 +697,7 @@ if ( $pinterface eq "1.0" ) {
 
 # Copy HTMLAUTH files
 if ( $pinterface ne "1.0" ) {
-  make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0777});
+  make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
   if (!&is_folder_empty("$tempfolder/webfrontend/htmlauth")) {
     $message =  "$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
     &loginfo;
@@ -721,9 +710,9 @@ if ( $pinterface ne "1.0" ) {
       $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
       &logok;
     }
-    $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $findbin $lbhomedir/webfrontend/htmlauth/plugins/$pfolder -iregex '.*\.cgi\|.*\.pl' -exec $chmodbin -v 755 {} \;";
+    $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $findbin $lbhomedir/webfrontend/htmlauth/plugins/$pfolder -iregex '.*\.cgi\|.*\.pl' -exec $chmodbin -v 755 {} \\;";
     &loginfo;
-    system("$sudobin -n -u loxberry $findbin $lbhomedir/webfrontend/htmlauth/plugins/$pfolder -iregex '.*\.cgi\|.*\.pl' -exec $chmodbin -v 755 {} \; 2>&1");
+    system("$sudobin -n -u loxberry $findbin $lbhomedir/webfrontend/htmlauth/plugins/$pfolder -iregex '.*\.cgi\|.*\.pl' -exec $chmodbin -v 755 {} \\; 2>&1");
     if ($? ne 0) {
       $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
       &logerr; 
@@ -736,7 +725,7 @@ if ( $pinterface ne "1.0" ) {
 }
 
 # Copy HTML files
-make_path("$lbhomedir/webfrontend/html/plugins/$pfolder" , {chmod => 0777});
+make_path("$lbhomedir/webfrontend/html/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
   $message =  "$SL{'PLUGININSTALL.INF_HTMLFILES'}";
   &loginfo;
@@ -749,9 +738,9 @@ if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $findbin $lbhomedir/webfrontend/html/plugins/$pfolder -iregex '.*\.cgi\|.*\.pl' -exec $chmodbin -v 755 {} \;";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $findbin $lbhomedir/webfrontend/html/plugins/$pfolder -iregex '.*\.cgi\|.*\.pl' -exec $chmodbin -v 755 {} \\;";
   &loginfo;
-  system("$sudobin -n -u loxberry $findbin $lbhomedir/webfrontend/html/plugins/$pfolder -iregex '.*\.cgi\|.*\.pl' -exec $chmodbin -v 755 {} \; 2>&1");
+  system("$sudobin -n -u loxberry $findbin $lbhomedir/webfrontend/html/plugins/$pfolder -iregex '.*\.cgi\|.*\.pl' -exec $chmodbin -v 755 {} \\; 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -763,7 +752,7 @@ if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
 }
 
 # Copy Icon files
-make_path("$lbhomedir/webfrontend/html/system/images/icons/$pfolder" , {chmod => 0777});
+make_path("$lbhomedir/webfrontend/html/system/images/icons/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 $message =  "$SL{'PLUGININSTALL.INF_ICONFILES'}";
 &loginfo;
 system("$sudobin -n -u loxberry cp -r -v $tempfolder/icons/* $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
@@ -795,7 +784,7 @@ if ($? ne 0) {
     &logerr;
     push(@errors,"ICON files: $message");
   } else { 
-    $message =  "$SL{'PLUGININSTALL.OK_ICONFILE'}";
+    $message =  "$SL{'PLUGININSTALL.OK_ICONFILES'}";
     &logok;
   }
 }
@@ -913,7 +902,7 @@ if (-f "$tempfolder/postinstall.sh") {
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
-    push(@errors,"POSTINSTALL: $message");
+     ush(@errors,"POSTINSTALL: $message");
   } 
   elsif ($? > 1) {
     $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
@@ -929,20 +918,28 @@ if (-f "$tempfolder/postinstall.sh") {
 # Executing postupgrade script
 if ($isupgrade) {
   if (-f "$tempfolder/postupgrade.sh") {
-    $message = $phrase->param("TXT0065");
+    $message =  "$SL{'PLUGININSTALL.INF_START_POSTUPGRADE'}";
     &loginfo;
 
-    $message = "Command: $bashbin \"$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+    $message = "Command: $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
     &loginfo;
 
-    system("$bashbin \"$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
-    if ($? ne 0) {
-      $message = $phrase->param("TXT0064");
+    system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postupgrade.sh\" 2>&1");
+    system("$sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+    if ($? eq 1) {
+      $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
-    } else {
-      $message = $phrase->param("TXT0063");
+      push(@errors,"POSTUPGRADE: $message");
+    } 
+    elsif ($? > 1) {
+      $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+      &logfail; 
+    }
+    else {
+      $message =  "$SL{'PLUGININSTALL.OK_SCRIPT'}";
       &logok;
     }
+
   }
 }
 
@@ -1018,15 +1015,40 @@ exit;
 #####################################################
 
 #####################################################
-# Error
+# Purge installation
 #####################################################
 
-sub error {
+sub purge_installation {
 
-print "$error\n\n";
-system("rm -f $tempfolder/$tempfile.log");
+  my $option = shift; # http://wiki.selfhtml.org/wiki/Perl/Subroutinen
 
-exit;
+  # Plugin Folders
+  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/config/plugins/$pfolder/ 2>&1");
+  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/data/plugins/$pfolder/ 2>&1");
+  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/templates/$pfolder/ 2>&1");
+  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
+  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
+  # Icons for Main Menu
+  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
+  # Daemon file
+  system("rm -f $lbhomedir/system/daemons/plugins/$pname 2>&1");
+  # Uninstall file
+  system("rm -f $lbhomedir/system/uninstall/plugins/$pname 2>&1");
+  # Cron jobs
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.01min/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.03min/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.05min/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.10min/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.15min/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.30min/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.hourly/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.daily/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.weekly/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.monthly/$pname 2>&1");
+  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.yearly/$pname 2>&1");
+
+  if ($option eq "all") {
+  }
 
 }
 
@@ -1047,12 +1069,12 @@ sub logerr {
 
 sub logfail {
 
-	# HIER NOCH AUFRÄUMEN, d. h. INSTALLATION RÜCKGÄNGIG MACHEN!
   open (LOG, ">>$logfile");
     print LOG "<FAIL> $message\n";
     print "\e[1m\e[31mFAIL:\e[0m $message\n";
   close (LOG);
 
+  &purge_installation("all");
   exit;
 
 }
