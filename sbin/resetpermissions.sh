@@ -12,19 +12,22 @@ fi
   
 echo "LoxBerry home directory is $LBHOMEDIR"
 
-chown -v -R loxberry:loxberry $LBHOMEDIR
-chown -v root:root $LBHOMEDIR/system/sudoers/lbdefaults
+chown -Rv loxberry:loxberry $LBHOMEDIR
+chown -Rv root:root $LBHOMEDIR/system/sudoers/
+chown -Rv root:root $LBHOMEDIR/system/daemons
+chown -Rv root.root $LBHOMEDIR/sbin
+chown -Rv root.root $LBHOMEDIR/system/logrotate
+chown -v loxberry.loxberry /etc/timezone
+chown -v loxberry.loxberry /etc/localtime
+
 chmod -v 600 $LBHOMEDIR/system/network/interfaces
 chmod -v 600 $LBHOMEDIR/config/system/*
 
-chmod -v 755 -R $LBHOMEDIR/libs
-chmod -v 755 $LBHOMEDIR/sbin
-chmod -v -R 755 $LBHOMEDIR/sbin/loxberryupdate
-chmod -v -R 755 $LBHOMEDIR/templates/system/*
-chmod -v -R 755 $LBHOMEDIR/webfrontend/html/system/*
-chmod -v -R 755 $LBHOMEDIR/webfrontend/htmlauth/system/*
-
-chown -v root.root $LBHOMEDIR/system/logrotate/logrotate
-chown -vR root.root $LBHOMEDIR/sbin/system/*
-chown -vR root.root $LBHOMEDIR/sbin/plugins/*
-
+chmod -Rv 755 $LBHOMEDIR/libs
+chmod -Rv 744 $LBHOMEDIR/sbin
+chmod -v  755 $LBHOMEDIR/sbin
+chmod -v  755 $LBHOMEDIR/sbin/loxberryupdate
+chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.cgi
+chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.cgi
+chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.pl
+chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.pl
