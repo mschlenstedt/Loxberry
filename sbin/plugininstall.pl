@@ -1022,30 +1022,35 @@ sub purge_installation {
 
   my $option = shift; # http://wiki.selfhtml.org/wiki/Perl/Subroutinen
 
-  # Plugin Folders
-  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/config/plugins/$pfolder/ 2>&1");
-  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/data/plugins/$pfolder/ 2>&1");
-  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/templates/$pfolder/ 2>&1");
-  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
-  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
-  # Icons for Main Menu
-  system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
-  # Daemon file
-  system("rm -f $lbhomedir/system/daemons/plugins/$pname 2>&1");
-  # Uninstall file
-  system("rm -f $lbhomedir/system/uninstall/plugins/$pname 2>&1");
-  # Cron jobs
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.01min/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.03min/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.05min/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.10min/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.15min/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.30min/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.hourly/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.daily/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.weekly/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.monthly/$pname 2>&1");
-  system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.yearly/$pname 2>&1");
+  if ($pfolder) {
+    # Plugin Folders
+    system("$sudobin -n -u loxberry rm -r -f $lbhomedir/config/plugins/$pfolder/ 2>&1");
+    system("$sudobin -n -u loxberry rm -r -f $lbhomedir/data/plugins/$pfolder/ 2>&1");
+    system("$sudobin -n -u loxberry rm -r -f $lbhomedir/templates/$pfolder/ 2>&1");
+    system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
+    system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
+    # Icons for Main Menu
+    system("$sudobin -n -u loxberry rm -r -f $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
+  }
+
+  if ($pname) {
+    # Daemon file
+    system("rm -f $lbhomedir/system/daemons/plugins/$pname 2>&1");
+    # Uninstall file
+    system("rm -f $lbhomedir/system/uninstall/plugins/$pname 2>&1");
+    # Cron jobs
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.01min/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.03min/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.05min/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.10min/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.15min/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.30min/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.hourly/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.daily/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.weekly/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.monthly/$pname 2>&1");
+    system("$sudobin -n -u loxberry rm -f $lbhomedir/system/cron/cron.yearly/$pname 2>&1");
+  }
 
   if ($option eq "all") {
   }
