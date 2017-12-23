@@ -179,21 +179,21 @@ if (!-f "$tempfolder/plugin.cfg") {
 }
 
 # Read Plugin-Config
-my $pcfg             = new Config::Simple("$tempfolder/plugin.cfg");
-my $pauthorname      = $pcfg->param("AUTHOR.NAME");
-my $pauthoremail     = $pcfg->param("AUTHOR.EMAIL");
-my $pversion         = $pcfg->param("PLUGIN.VERSION");
-my $pname            = $pcfg->param("PLUGIN.NAME");
-my $ptitle           = $pcfg->param("PLUGIN.TITLE");
-my $pfolder          = $pcfg->param("PLUGIN.FOLDER");
-my $pautoupdates     = $pcfg->param("AUTOUPDATE.AUTOMATIC_UPDATES");
-my $preleasecfg      = $pcfg->param("AUTOUPDATE.RELEASECFG");
-my $pprereleasecfg   = $pcfg->param("AUTOUPDATE.PRERELEASECFG");
-my $pinterface       = $pcfg->param("SYSTEM.INTERFACE");
-my $preboot          = $pcfg->param("SYSTEM.REBOOT");
-my $plbmin           = $pcfg->param("SYSTEM.LB_MINIMUM");
-my $plbmax           = $pcfg->param("SYSTEM.LB_MAXIMUM");
-my $parch            = $pcfg->param("SYSTEM.ARCHITECTURE");
+our $pcfg             = new Config::Simple("$tempfolder/plugin.cfg");
+our $pauthorname      = $pcfg->param("AUTHOR.NAME");
+our $pauthoremail     = $pcfg->param("AUTHOR.EMAIL");
+our $pversion         = $pcfg->param("PLUGIN.VERSION");
+our $pname            = $pcfg->param("PLUGIN.NAME");
+our $ptitle           = $pcfg->param("PLUGIN.TITLE");
+our $pfolder          = $pcfg->param("PLUGIN.FOLDER");
+our $pautoupdates     = $pcfg->param("AUTOUPDATE.AUTOMATIC_UPDATES");
+our $preleasecfg      = $pcfg->param("AUTOUPDATE.RELEASECFG");
+our $pprereleasecfg   = $pcfg->param("AUTOUPDATE.PRERELEASECFG");
+our $pinterface       = $pcfg->param("SYSTEM.INTERFACE");
+our $preboot          = $pcfg->param("SYSTEM.REBOOT");
+our $plbmin           = $pcfg->param("SYSTEM.LB_MINIMUM");
+our $plbmax           = $pcfg->param("SYSTEM.LB_MAXIMUM");
+our $parch            = $pcfg->param("SYSTEM.ARCHITECTURE");
 
 # Filter
 #quotemeta($pauthorname);
