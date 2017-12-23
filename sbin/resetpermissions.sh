@@ -24,9 +24,7 @@ chmod -v 600 $LBHOMEDIR/system/network/interfaces
 chmod -v 600 $LBHOMEDIR/config/system/*
 
 chmod -Rv 755 $LBHOMEDIR/libs
-chmod -Rv 744 $LBHOMEDIR/sbin
-chmod -v  755 $LBHOMEDIR/sbin
-chmod -v  755 $LBHOMEDIR/sbin/loxberryupdate
+chmod -Rv 755 $LBHOMEDIR/sbin
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.cgi
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.cgi
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.pl
