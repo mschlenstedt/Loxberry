@@ -8,7 +8,7 @@ use JSON;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.1.1";
+our $VERSION = "0.3.1.2";
 
 # This object is the object the exported LOG* functions use
 our $mainobj;
@@ -16,7 +16,6 @@ our $packagedb;
 # 
 my $packagedbfile = "$LoxBerry::System::lbsdatadir/logpackages.json";
 our %severitylist = ( 0 => 'EMERGE', 1 => 'ALERT', 2 => 'CRITICAL', 3 => 'ERROR', 4 => 'WARNING', 5 => 'OK', 6 => 'INFO', 7 => 'DEBUG' );
-
 
 ### Exports ###
 use base 'Exporter';
@@ -51,6 +50,10 @@ LOGEND
 
 ##################################################################
 
+# raise loglevel after critic
+# persistently raise loglevel on critic
+#
+#
 sub new 
 
 {
@@ -68,10 +71,16 @@ sub new
 				package => $params{package},
 				loglevel => $params{loglevel},
 				stderr => $params{stderr},
-				
+				stdout => $params{stdout},
+				nofile => $params{nofile},
+				autoraise => $params{nofile},
 	};
 	
 	bless $self, $class;
+	
+	if ($self->{autoraise} eq "") {
+		$self->{autoraise} = 1;
+	}
 	
 	# Setting package
 	print STDERR "Package: " . $self->{package} . "\n";
@@ -109,7 +118,7 @@ sub new
 		} else {
 			$self->{loglevel} = 7;
 		}
-	}
+	} 
 	
 	print STDERR "filename: " . $self->{filename} . "\n";
 	
@@ -136,6 +145,30 @@ sub loglevel
 	return $self->{loglevel};
 }
 
+sub autoraise
+{
+	my $self = shift;
+	my $param = shift;
+	if ($param == 0) {
+		undef $self->{autoraise};
+	} elsif ($param == 1) {
+		$self->{autoraise} = 1;
+	}
+	return $self->{autoraise};
+}
+
+sub filehandle
+{
+	my $self = shift;
+	if ($self->{'_FH'}) {
+		return $self->{'_FH'};
+	}
+}
+
+##########################################################
+# Functions to enable strerr and stdout, and
+# disable file writing (nofile)
+##########################################################
 sub stderr
 {
 	my $self = shift;
@@ -148,7 +181,33 @@ sub stderr
 	return $self->{stderr};
 }
 
+sub stdout
+{
+	my $self = shift;
+	my $param = shift;
+	if ($param == 0) {
+		undef $self->{stdout};
+	} elsif ($param == 1) {
+		$self->{stdout} = 1;
+	}
+	return $self->{stdout};
+}
 
+sub nofile
+{
+	my $self = shift;
+	my $param = shift;
+	if ($param == 0) {
+		undef $self->{nofile};
+	} elsif ($param == 1) {
+		$self->{nofile} = 1;
+	}
+	return $self->{nofile};
+}
+
+##################################################################################
+# Writing to logfile function
+##################################################################################
 sub write
 {
 	my $self = shift;
@@ -158,6 +217,10 @@ sub write
 	# print STDERR "\nSeverity: $severity / Loglevel: " . $self->{loglevel} . "\n";
 	# print STDERR "Log: $s\n";
 	# Do not log if loglevel is lower than severity
+	if ($severity <= 2 && $self->{autoraise} == 1) {
+		$self->{loglevel} = 6;
+	}
+	
 	if ($severity < $self->{loglevel} || $severity < 0) {
 		# print STDERR "Not filtered.\n";
 		my $fh = $self->{'_FH'};
@@ -167,15 +230,24 @@ sub write
 		} else {
 			$string = '<' . $severitylist{$severity} . '> ' . $s . "\n"; 
 		}
-		print $fh $string;
+		if (!$self->nolog) {
+			print $fh $string;
+			}
 		if ($self->{stderr}) {
 			print STDERR $string;
+		}
+		if ($self->{stdout}) {
+			print STDOUT $string;
 		}
 	}
 }
 
+
+#################################################################################
+# The severity functions
+#################################################################################
 # 0 => 'EMERGE', 1 => 'ALERT', 2 => 'CRITICAL', 3 => 'ERROR', 4 => 'WARNING', 5 => 'OK', 6 => 'INFO', 7 => 'DEBUG'
-sub DEBUG
+sub LOGDEB
 {
 	print "DEBUG\n";
 	my $self = shift;
@@ -183,47 +255,47 @@ sub DEBUG
 	$self->write(7, $s);
 }
 
-sub INFO
+sub LOGINF
 {
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(6, $s);
 }
 
-sub OK
+sub LOGOK
 {
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(5, $s);
 }
 
-sub WARN
+sub LOGWARN
 {
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(4, $s);
 }
 
-sub ERR
+sub LOGERR
 {
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(3, $s);
 }
 
-sub CRIT
+sub LOGCRIT
 {
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(2, $s);
 }
-sub ALERT
+sub LOGALERT
 {
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(1, $s);
 }
-sub EMERGE
+sub LOGEMERGE
 {
 	my $self = shift;
 	my ($s)=@_;
@@ -281,35 +353,35 @@ sub DESTROY {
 ####################################################
 sub LOGDEB 
 {
-	$LoxBerry::Log::mainobj->DEBUG(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGDEB(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGINF 
 {
-	$LoxBerry::Log::mainobj->INFO(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGINF(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGOK 
 {
-	$LoxBerry::Log::mainobj->OK(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGOK(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGWARN
 {
-	$LoxBerry::Log::mainobj->WARN(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGWARN(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGERR 
 {
-	$LoxBerry::Log::mainobj->ERR(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGERR(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGCRIT 
 {
-	$LoxBerry::Log::mainobj->CRIT(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGCRIT(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGALERT 
 {
-	$LoxBerry::Log::mainobj->ALERT(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGALERT(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGEMERGE 
 {
-	$LoxBerry::Log::mainobj->EMERGE(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGEMERGE(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGSTART 
 {
