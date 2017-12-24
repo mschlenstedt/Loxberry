@@ -202,37 +202,54 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
     }
     # HTML Output
     if ($R::format eq "html") {
-      $_ =~ s/^(.*?)\s*<OK>\s*(.*?)$/<div id='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2<\/div>/g;
-      $_ =~ s/<\/OK>//g;
-      $_ =~ s/^(.*?)\s*<ERROR>\s*(.*?)$/<div id='logerr'>$1 <FONT color=red><B>ERROR:<\/B><\/FONT> $2<\/div>/g;
-      $_ =~ s/<\/ERROR>//g;
-      $_ =~ s/^(.*?)\s*<FAIL>\s*(.*?)$/<div id='logfail'>$1 <FONT color=red><B>FAIL:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/^(.*?)\s*<EMERGE>\s*(.*?)$/<div class='logemerge'>$1 <FONT color=red><B>EMERGE:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/<\/EMERGE>//g;
+      $_ =~ s/^(.*?)\s*<ALERT>\s*(.*?)$/<div class='logalert'>$1 <FONT color=red><B>ALERT:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/<\/ALERT>//g;
+      $_ =~ s/^(.*?)\s*<FAIL>\s*(.*?)$/<div class='logcrit'>$1 <FONT color=red><B>CRITICAL:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/FAIL>//g;
-      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div id='loginfo'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2<\/div>/g;
-      $_ =~ s/<\/INFO>//g;
-      $_ =~ s/^(.*?)\s*<WARNING>\s*(.*?)$/<div id='logwarn'>$1 <FONT color=red><B>WARNING:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/^(.*?)\s*<CRITICAL>\s*(.*?)$/<div class='logcrit'>$1 <FONT color=red><B>CRITICAL:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/<\/CRITICAL>//g;
+	  $_ =~ s/^(.*?)\s*<ERROR>\s*(.*?)$/<div class='logerr'>$1 <FONT color=red><B>ERROR:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/<\/ERROR>//g;
+      $_ =~ s/^(.*?)\s*<WARNING>\s*(.*?)$/<div class='logwarn'>$1 <FONT color=red><B>WARNING:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/WARNING>//g;
-      if ($_ !~ /<\/div>\n$/) { # New Line
+      $_ =~ s/^(.*?)\s*<OK>\s*(.*?)$/<div class='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/<\/OK>//g;
+      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div class='loginfo'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/<\/INFO>//g;
+      $_ =~ s/^(.*?)\s*<DEBUG>\s*(.*?)$/<div class='logdeb'>$1 <FONT color=darkgray><B>DEBUG:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/<\/DEBUG>//g;
+      
+	  if ($_ !~ /<\/div>\n$/) { # New Line
         $_ =~ s/\n/<br>/g;
       }
     }
     # Terminal Output Colorized
     # http://misc.flogisoft.com/bash/tip_colors_and_formatting
     if ($R::format eq "terminal") { 
-      $_ =~ s/^(.*?)(\s*)<OK>\s*(.*?)$/$1$2\\e[1m\\e[32mOK:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<EMERGE>\s*(.*?)$/$1$2 \\e[1m\\e[31mEMERGE:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<ALERT>\s*(.*?)$/$1$2 \\e[1m\\e[31mALERT:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<FAIL>\s*(.*?)$/$1$2 \\e[1m\\e[31mCRITICAL:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<CRITICAL>\s*(.*?)$/$1$2 \\e[1m\\e[31mCRITICAL:\\e[0m $3/g;
       $_ =~ s/^(.*?)(\s*)<ERROR>\s*(.*?)$/$1$2\\e[1m\\e[31mERROR:\\e[0m $3/g;
-      $_ =~ s/^(.*?)(\s*)<FAIL>\s*(.*?)$/$1$2 \\e[1m\\e[31mFAIL:\\e[0m $3/g;
-      $_ =~ s/^(.*?)(\s*)<INFO>\s*(.*?)$/$1$2\\e[1mINFO:\\e[0m $3/g;
       $_ =~ s/^(.*?)(\s*)<WARNING>\s*(.*?)$/$1$2\\e[1m\\e[31mWARNING:\\e[0m $3/g;
+	  $_ =~ s/^(.*?)(\s*)<OK>\s*(.*?)$/$1$2\\e[1m\\e[32mOK:\\e[0m $3/g;
+      $_ =~ s/^(.*?)(\s*)<INFO>\s*(.*?)$/$1$2\\e[1mINFO:\\e[0m $3/g;
+	  $_ =~ s/^(.*?)(\s*)<DEBUG>\s*(.*?)$/$1$2\\e[1mDEBUG:\\e[0m $3/g;
     }
 
     if ($R::format ne "plain") { 
       # If someone uses end tags, remove them
-      $_ =~ s/<\/OK>$//g;
-      $_ =~ s/<\/ERROR>$//g;
+      $_ =~ s/<\/EMERGE>$//g;
+      $_ =~ s/<\/ALERT>$//g;
+      $_ =~ s/<\/CRITICAL>$//g;
       $_ =~ s/<\/FAIL>$//g;
+      $_ =~ s/<\/ERROR>$//g;
       $_ =~ s/<\/WARNING>$//g;
+	  $_ =~ s/<\/OK>$//g;
       $_ =~ s/<\/INFO>//g;
+      $_ =~ s/<\/DEBUG>//g;
     } 
 
     # Print line
