@@ -26,21 +26,21 @@ our %severitylist = (
 	7 => 'DEBUG' );
 
 ### Exports ###
-use base 'Exporter';
-our @EXPORT = qw (
+# use base 'Exporter';
+# our @EXPORT = qw (
 
-LOGDEB
-LOGINF
-LOGOK
-LOGWARN
-LOGERR
-LOGCRIT
-LOGALERT
-LOGEMERGE
-LOGSTART
-LOGEND
+# LOGDEB
+# LOGINF
+# LOGOK
+# LOGWARN
+# LOGERR
+# LOGCRIT
+# LOGALERT
+# LOGEMERGE
+# LOGSTART
+# LOGEND
 
-);
+# );
 
 # Variables
 
@@ -66,9 +66,10 @@ sub new
 
 {
 	my $class = shift;
-	
-	Carp::croak "Illegal parameter list has odd number of values" if @_ % 2;
-	
+	print STDERR "Class: $class\n";
+	if (@_ % 2) {
+		Carp::croak "Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
+	}
 	my %params = @_;
 	
 	my $self = { 
@@ -342,17 +343,17 @@ sub default
 }
 
 
-our $AUTOLOAD;
-sub AUTOLOAD {
-	my $self = shift;
-	# Remove qualifier from original method name...
-	my $called =  $AUTOLOAD =~ s/.*:://r;
-	# Is there an attribute of that name?
-	Carp::carp "No such attribute: $called"
-		unless exists $self->{$called};
-	# If so, return it...
-	return $self->{$called};
-}
+# our $AUTOLOAD;
+# sub AUTOLOAD {
+	# my $self = shift;
+	# # Remove qualifier from original method name...
+	# my $called =  $AUTOLOAD =~ s/.*:://r;
+	# # Is there an attribute of that name?
+	# Carp::carp "No such attribute: $called"
+		# unless exists $self->{$called};
+	# # If so, return it...
+	# return $self->{$called};
+# }
 
 sub DESTROY { 
 	my $self = shift;
@@ -361,7 +362,15 @@ sub DESTROY {
 } 
 
 
+
+
+
+
+## ===============================================================
+# Package main
+
 package main;
+
 ####################################################
 # Exported helpers
 ####################################################
