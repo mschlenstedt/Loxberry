@@ -110,6 +110,10 @@ if (!$zipmode) {
   }
 } else {
   our $tempfolder = "/tmp/$tempfile";
+  if (!-e $R::file) {
+    $message =  "$SL{'PLUGININSTALL.ERR_FILE_DOESNT_EXIST'}";
+    &logfail;
+  }
   make_path("$tempfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 }
 $tempfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
