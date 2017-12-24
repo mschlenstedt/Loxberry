@@ -495,6 +495,17 @@ if (!&is_folder_empty("$tempfolder/bin")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
     &logok;
   }
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/bin/plugins/$pfolder";
+  &loginfo;
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/bin/plugins/$pfolder 2>&1");
+  if ($? ne 0) {
+    $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
+    &logerr; 
+    push(@errors,"BIN files: $message");
+  } else {
+    $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
+    &logok;
+  }
   $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/bin/plugins/$pfolder";
   &loginfo;
   system("$chownbin -Rv loxberry.loxberry $lbhomedir/bin/plugins/$pfolder 2>&1");
@@ -620,9 +631,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.01min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.01min/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.01min/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.01min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -631,9 +642,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.01min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.01min/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.01min/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.01min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -642,9 +653,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.03min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.03min/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.03min/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.03min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -653,9 +664,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.03min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.03min/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.03min/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.03min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -664,9 +675,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.05min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.05min/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.05min/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.05min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -675,9 +686,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.05min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.05min/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.05min/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.05min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -686,9 +697,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.10min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.10min/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.10min/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.10min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -697,9 +708,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.10min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.10min/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.10min/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.10min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -708,9 +719,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.15min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.15min/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.15min/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.15min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -719,9 +730,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.15min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.15min/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.15min/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.15min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -730,9 +741,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.30min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.30min/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.30min/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.30min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -741,9 +752,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.30min/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.30min/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.30min/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.30min/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -752,9 +763,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.hourly/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.hourly/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.hourly/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.hourly/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -763,9 +774,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.hourly/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.hourly/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.hourly/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.hourly/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -774,9 +785,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.daily/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.daily/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.daily/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.daily/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -785,9 +796,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.daily/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.daily/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.daily/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.daily/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -796,9 +807,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.weekly/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.weekly/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.weekly/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.weekly/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -807,9 +818,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.weekly/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.weekly/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.weekly/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.weekly/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -818,9 +829,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.monthly/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.monthly/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.monthly/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.monthly/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -829,9 +840,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.monthly/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.monthly/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.monthly/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.monthly/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
@@ -840,9 +851,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron.yearly/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_PERMISSIONS'} . " $chmodbin -Rv 755 $lbhomedir/system/cron/cron.yearly/";
   &loginfo;
-  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron.yearly/ 2>&1");
+  system("$sudobin -n -u loxberry $chmodbin -Rv 755 $lbhomedir/system/cron/cron.yearly/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
     &logerr; 
@@ -851,9 +862,9 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
     &logok;
   }
-  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.yearly/";
+  $message = $SL{'PLUGININSTALL.INF_FILE_OWNER'} . " $chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.yearly/";
   &loginfo;
-  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron.yearly/ 2>&1");
+  system("$chownbin -Rv loxberry.loxberry $lbhomedir/system/cron/cron.yearly/ 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
     &logerr; 
