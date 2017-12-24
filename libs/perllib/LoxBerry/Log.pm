@@ -173,6 +173,15 @@ sub filehandle
 		return $self->{'_FH'};
 	}
 }
+sub filename
+{
+	my $self = shift;
+	if ($self->{filename}) {
+		return $self->{filename};
+	}
+}
+
+
 
 ##########################################################
 # Functions to enable strerr and stdout, and
@@ -237,7 +246,7 @@ sub write
 		# print STDERR "    Not filtered.\n";
 		my $fh = $self->{'_FH'};
 		my $string;
-		if ($severity == 7) {
+		if ($severity == 7 || $severity < 0) {
 			$string = $s . "\n"; 
 		} else {
 			$string = '<' . $severitylist{$severity} . '> ' . $s . "\n"; 
@@ -331,6 +340,7 @@ sub LOGEND
 	my ($s)=@_;
 	$self->write(-1, $s);
 	$self->write(-1, LoxBerry::System::currtime . " TASK FINISHED");
+	$self->DESTROY;
 }
 
 
@@ -408,11 +418,11 @@ sub LOGEMERGE
 }
 sub LOGSTART 
 {
-	$LoxBerry::Log::mainobj->START(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGSTART(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGEND 
 {
-	$LoxBerry::Log::mainobj->END(@_); # or Carp::carp("No default object set for exported logging functions.");
+	$LoxBerry::Log::mainobj->LOGEND(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 
 
