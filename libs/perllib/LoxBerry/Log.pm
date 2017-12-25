@@ -268,7 +268,7 @@ sub write
 		$self->{loglevel} = 6;
 	}
 	
-	if ($severity < $self->{loglevel} || $severity < 0) {
+	if ($severity <= $self->{loglevel} || $severity < 0) {
 		#print STDERR "Not filtered.\n";
 		my $fh = $self->{'_FH'};
 		my $string;
