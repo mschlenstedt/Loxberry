@@ -224,6 +224,14 @@ sub mainmenu {
 				
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_SERVICES'},
+				WIDGET_ICON => "/system/images/icons/main_services.png",
+				WIDGET_CGI => "/admin/system/services.php",
+				WIDGET_NOTIFY_BLUE => $notification_oks{'services'},
+				WIDGET_NOTIFY_RED => $notification_errors{'services'},
+				
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_REBOOT'},
 				WIDGET_ICON => "/system/images/icons/main_power.png",
 				WIDGET_CGI => "/admin/system/power.cgi",
