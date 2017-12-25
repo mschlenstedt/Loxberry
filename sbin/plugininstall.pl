@@ -1071,6 +1071,15 @@ $message =  "$SL{'PLUGININSTALL.OK_END'}";
 &logok;
 system("rm -f /tmp/$tempfile.log");
 
+# Error summarize
+if (@errors) {
+  $message =  "$SL{'PLUGININSTALL.INF_ERRORSUMMARIZE'}";
+  &loginfo;
+  foreach(@errors) {
+    print "$_\n"M
+  }
+}
+
 exit;
 
 }
