@@ -9,6 +9,8 @@ use CGI;
 use LoxBerry::System;
 use Carp;
 use HTML::Template;
+use DateTime;
+
 
 
 # Potentially, this does something strange when using LoxBerry::Web without Webinterface (printing errors in HTML instead of plain text)
@@ -17,7 +19,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.16";
+our $VERSION = "0.3.1.17";
 
 use base 'Exporter';
 our @EXPORT = qw (
@@ -39,6 +41,8 @@ our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
 our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
+my $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
+our @notifications;
 
 # Finished everytime code execution
 ##################################################################
@@ -319,6 +323,7 @@ sub pagestart
 		foreach my $element (sort keys %main::navbar) {
 			my $btnactive;
 			my $btntarget;
+			my $notify;
 			if ($main::navbar{$element}{active} eq 1) {
 				$btnactive = ' class="ui-btn-active"';
 			} else { $btnactive = undef; 
@@ -327,8 +332,14 @@ sub pagestart
 				$btntarget = ' target="' . $main::navbar{$element}{target} . '"';
 			}
 			
+			if ($main::navbar{$element}{notifyRed}) {
+				$notify = ' <span class="notifyRedNavBar">' . $main::navbar{$element}{notifyRed} . '</span>';
+			} elsif ($main::navbar{$element}{notifyBlue}) {
+				$notify = ' <span class="notifyBlueNavBar">' . $main::navbar{$element}{notifyBlue} . '</span>';
+			}
+
 			if ($main::navbar{$element}{Name}) {
-				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . '</a></li>';
+				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . $notify . '</a></li>';
 				$topnavbar_haselements = 1;
 			}
 		}
@@ -515,6 +526,87 @@ sub get_plugin_icon
 	}
 	return undef;
 }
+
+################################################################
+# get_notifications
+# Input: (optional) specific notification event filter
+# Output: Hash with notifications
+################################################################
+
+sub read_notificationlist
+{
+	if (@notifications) {
+		#print STDERR "Notification list cached.\n";
+		return;
+	}
+	opendir( my $DIR, $notification_dir );
+	my @files = sort {$b cmp $a} readdir($DIR);
+	my $direntry;
+	my $notifycount;
+	@notifications = ();
+		
+	while ( my $direntry = shift @files ) {
+		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
+		print STDERR "Direntry: $direntry\n";
+		my $nottype = substr($direntry, 16, rindex($direntry, '.')-16);
+		my $notdate = substr($direntry, 0, 15);
+		# LOGDEB "Log type: $nottype  Date: $notdate";
+		my $dateobj = parsedatestring($notdate);
+		my %notification;
+		$notifycount++;
+		$notification{'TYPE'} = $nottype;
+		$notification{'DATEOBJ'} = $dateobj;
+		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+		$notification{'FILENAME'} = $direntry;
+		push(@notifications, \%notification);
+		
+		
+	}
+	# return @notifications;
+	closedir $DIR;
+	# print STDERR "Number of elements: " . scalar(@notifications) . "\n";
+}
+
+sub get_notifications
+{
+	# print STDERR "get_notifications called.\n";
+	my ($filter) = @_;
+	LoxBerry::Web::read_notificationlist();
+	# print STDERR "Number of elements: " . scalar(@notifications) . "\n";
+	
+	foreach my $notification (@notifications) {
+		next if ($filter && $filter ne $notification->{TYPE});
+		print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n";
+	}
+	
+	
+	
+}
+
+sub parsedatestring 
+{
+	my ($datestring) = @_;
+	my $dt = DateTime->new(
+		year 	=> substr($datestring, 0, 4),
+		month 	=> substr($datestring, 4, 2),
+		day 	=> substr($datestring, 6, 2),
+		hour	=> substr($datestring, 9, 2),
+		minute	=> substr($datestring, 11, 2),
+		second	=> substr($datestring, 13, 2),
+	);
+	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
+	return $dt;
+}
+
+
+
+
+
+
+
+
+
+
 
 #####################################################
 # Finally 1; ########################################
