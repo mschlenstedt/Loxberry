@@ -370,6 +370,9 @@ open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
   flock(F,8);
 close (F);
 
+# Sort Plugindatabase
+&sort_plugins;
+
 # Starting installation
 
 # Executing preroot script
@@ -1392,10 +1395,12 @@ sub sort_plugins {
 
   # Ausgeben    
   open(F,"+<$lbhomedir/data/system/plugindatabase.dat");
+  flock(F,2);
   @data = <F>;
   seek(F,0,0);
   truncate(F,0);
   print F join('|', @{$_}), "\n" for @zeilen;   #sortiert wieder ausgeben
+  flock(F,8);
   close (F);
   return();
 }
