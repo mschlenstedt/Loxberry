@@ -39,6 +39,15 @@
 <TMPL_LOOP WIDGETS>
 	
 	<div class="widget">
+	<TMPL_IF WIDGET_NOTIFY_RED>
+		<div class='notifyRed'><TMPL_VAR WIDGET_NOTIFY_RED></div>
+	<TMPL_ELSE>
+		<TMPL_IF WIDGET_NOTIFY_BLUE>
+			<div class='notifyBlue'><TMPL_VAR WIDGET_NOTIFY_BLUE></div>
+		<TMPL_ELSE>
+		<div class='notifyBlue' style='visibility: hidden'>0</div>
+		</TMPL_IF>
+	</TMPL_IF>
 	<TMPL_VAR WIDGET_NOTIFY>
 	<a href="<TMPL_VAR WIDGET_CGI>">
 			<TMPL_IF WIDGET_CLOCK>

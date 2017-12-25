@@ -121,6 +121,16 @@ our $maintemplate = HTML::Template->new(
 
 our %SL = LoxBerry::Web::readlanguage($maintemplate);
 
+my @notif = LoxBerry::Web::get_notifications('updates', 'update');
+my ($check_err, $check_ok, $check_sum) = LoxBerry::Web::get_notification_count('updates', 'check');
+my ($update_err, $update_ok, $update_sum) = LoxBerry::Web::get_notification_count('updates', 'update');
+
+
+print STDERR "Notifications:\n";
+print STDERR "Update count: " . scalar(@notif) . "\n";
+print STDERR "Check: $check_err / $check_ok\n";
+print STDERR "Update: $update_err / $update_ok\n";
+
 				
 our %navbar;
 $navbar{1}{Name} = $SL{'UPDATES.WIDGETLABEL_UPDATES'};
@@ -128,10 +138,16 @@ $navbar{1}{URL} = $cgi->url(-relative=>1);
  
 $navbar{2}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATE'};
 $navbar{2}{URL} = $cgi->url(-relative=>1) . "?do=lbupdate";
+$navbar{2}{notifyBlue} = $check_err == 0 ? $check_sum : undef;
+$navbar{2}{notifyRed} = $check_err != 0 ? $check_sum : undef;
  
 $navbar{3}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATEHISTORY'};
 $navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbuhistory";
+$navbar{2}{notifyBlue} = $update_err == 0 ? $update_sum : undef;
+$navbar{2}{notifyRed} = $update_err != 0 ? $update_sum : undef;
 
+# $navbar{3}{notifyRed} = 3;
+	
 # Example: Parameter lang is now $R::lang
 
 
@@ -528,6 +544,7 @@ sub lbupdates
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
+	LoxBerry::Web::delete_notifications('updates', 'check');
 
 }
 
@@ -559,12 +576,12 @@ sub lbuhistory
 	my @updateslist = ();
 		
 	while ( my $direntry = shift @files ) {
-		next if $direntry eq '.' or $direntry eq '..';
-		LOGDEB "Direntry: $direntry";
+		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
+		# LOGDEB "Direntry: $direntry";
 		my $logtype = substr($direntry, 16, rindex($direntry, '.')-16);
 		my $logdate = substr($direntry, 0, 15);
 		next if ($logtype ne "update" && $logtype ne "check");
-		LOGDEB "Log type: $logtype Log date: $logdate";
+		# LOGDEB "Log type: $logtype Log date: $logdate";
 		my $dateobj = parsedatestring($logdate);
 		if ($logtype eq 'update') {
 			my %update;
@@ -595,6 +612,8 @@ sub lbuhistory
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
+	LoxBerry::Web::delete_notifications('updates', 'update');
+	
 	
 	
 }
@@ -612,7 +631,7 @@ sub lbuhistory
 sub error {
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
-
+	
 	my $maintemplate = HTML::Template->new(
 				filename => "$lbstemplatedir/error.html",
 				global_vars => 1,
@@ -680,7 +699,7 @@ sub parsedatestring
 		minute	=> substr($datestring, 11, 2),
 		second	=> substr($datestring, 13, 2),
 	);
-	LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
+	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
 	return $dt;
 }
 

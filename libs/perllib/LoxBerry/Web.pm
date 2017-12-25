@@ -19,7 +19,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.17";
+our $VERSION = "0.3.1.18";
 
 use base 'Exporter';
 our @EXPORT = qw (
@@ -42,7 +42,9 @@ our %L;  # Shortcut for Plugin language phrases
 our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
 my $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
-our @notifications;
+my @notifications;
+my $notifications_error;
+my $notifications_ok;
 
 # Finished everytime code execution
 ##################################################################
@@ -548,19 +550,26 @@ sub read_notificationlist
 	while ( my $direntry = shift @files ) {
 		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
 		print STDERR "Direntry: $direntry\n";
-		my $nottype = substr($direntry, 16, rindex($direntry, '.')-16);
+		my $notstr = substr($direntry, 16, rindex($direntry, '.')-16);
+		my ($package, $name, $severity) = split(/_/, $notstr);
 		my $notdate = substr($direntry, 0, 15);
 		# LOGDEB "Log type: $nottype  Date: $notdate";
 		my $dateobj = parsedatestring($notdate);
 		my %notification;
 		$notifycount++;
-		$notification{'TYPE'} = $nottype;
+		if (lc($severity) eq 'err') {
+			$notifications_error++;
+		} else {
+			$notifications_ok++;
+		}
+		$notification{'PACKAGE'} = $package;
+		$notification{'NAME'} = $name;
+		$notification{'SEVERITY'} = lc($severity);
 		$notification{'DATEOBJ'} = $dateobj;
 		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
 		$notification{'FILENAME'} = $direntry;
+		$notification{'FULLPATH'} = "$notification_dir/$direntry";
 		push(@notifications, \%notification);
-		
-		
 	}
 	# return @notifications;
 	closedir $DIR;
@@ -570,17 +579,60 @@ sub read_notificationlist
 sub get_notifications
 {
 	# print STDERR "get_notifications called.\n";
-	my ($filter) = @_;
+	my ($package, $name, $latest, $count) = @_;
 	LoxBerry::Web::read_notificationlist();
-	# print STDERR "Number of elements: " . scalar(@notifications) . "\n";
-	
-	foreach my $notification (@notifications) {
-		next if ($filter && $filter ne $notification->{TYPE});
-		print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n";
+	if (! $package) {
+		return @notifications if (! $count);
+		return $notifications_error, $notifications_ok, ($notifications_error+$notifications_ok);
 	}
 	
+	my @filtered = ();
+	my $filtered_errors=0;
+	my $filtered_ok=0;
 	
+	foreach my $notification (@notifications) {
+		next if ($package ne $notification->{PACKAGE});
+		next if ($name && $name ne $notification->{NAME});
+		if ($notification->{'SEVERITY'} eq 'err') {
+			$filtered_errors++;
+		} else {
+			$filtered_ok++;
+		}
+		push(@filtered, $notification);
+		last if ($latest);
+		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n";
+	}
+	print STDERR "get_notifications: \n";
+	print STDERR "Countings: $filtered_errors errors / $filtered_ok ok's\n";
+	return @filtered if (! $count);
+	return $filtered_errors, $filtered_ok, ($filtered_errors+$filtered_ok);
+}
+
+sub get_notification_count
+{
+	my ($package, $name, $latest) = @_;
+	my ($notification_error, $notification_ok, $notification_sum) = LoxBerry::Web::get_notifications($package, $name, $latest, 1);
+	return $notification_error, $notification_ok, $notification_sum;
+
+}
+
+sub delete_notifications
+{
+	my ($package, $name, $ignorelatest) = @_;
+	LoxBerry::Web::read_notificationlist();
+	my $latestkept=0;
 	
+	foreach my $notification (@notifications) {
+		next if ($package ne $notification->{PACKAGE});
+		next if ($name && $name ne $notification->{NAME});
+		if ($ignorelatest && $latestkept == 0) {
+			$latestkept = 1;
+		} else {
+			unlink $notification->{FULLPATH};
+		}
+		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n";
+	}
+	undef @notifications;
 }
 
 sub parsedatestring 

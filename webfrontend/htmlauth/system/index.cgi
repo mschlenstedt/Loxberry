@@ -156,24 +156,44 @@ sub mainmenu {
 								'HOUR' => $hour
 							);
 		
+		my %notification_errors;
+		my %notification_oks;
+		
+		my @notifications = LoxBerry::Web::get_notifications();
+		for my $notification (@notifications ) {
+			if ($notification->{SEVERITY} eq 'err') {
+				$notification_errors{$notification->{PACKAGE}}++;
+				$notification_oks{$notification->{PACKAGE}}++;
+			} else {
+				$notification_oks{$notification->{PACKAGE}}++;
+			}
+		}
+		
+		print STDERR "Index: Update Errors: $notification_errors{'updates'} \n";
+		print STDERR "Index: Update Infos: $notification_oks{'updates'} \n";
+		
+		
 		$maintemplate->param('WIDGETS' => [
 			{ 
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MYLOXBERRY'}, 
 				WIDGET_ICON => "/system/images/icons/main_myloxberry.png",
 				WIDGET_CGI => "/admin/system/myloxberry.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'myloxberry'},
+				WIDGET_NOTIFY_RED => $notification_errors{'myloxberry'},
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_ADMIN'},
 				WIDGET_ICON => "/system/images/icons/main_admin.png", 
 				WIDGET_CGI => "/admin/system/admin.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'admin'},
+				WIDGET_NOTIFY_RED => $notification_errors{'admin'},
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MINISERVER'}, 
 				WIDGET_ICON => "/system/images/icons/main_miniserver.png",
 				WIDGET_CGI => "/admin/system/miniserver.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'miniserver'},
+				WIDGET_NOTIFY_RED => $notification_errors{'miniserver'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TIMESERVER'},
@@ -185,48 +205,49 @@ sub mainmenu {
 				WIDGET_TITLE => $SL{'HEADER.PANEL_NETWORK'},
 				WIDGET_ICON => "/system/images/icons/main_network.png",
 				WIDGET_CGI => "/admin/system/network.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
-			},
-			{
-				WIDGET_TITLE => $SL{'HEADER.PANEL_SERVICES'},
-				WIDGET_ICON => "/system/images/icons/main_network.png",
-				WIDGET_CGI => "/admin/system/services.php"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'network'},
+				WIDGET_NOTIFY_RED => $notification_errors{'network'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_PLUGININSTALL'},
 				WIDGET_ICON => "/system/images/icons/main_plugininstall.png",
 				WIDGET_CGI => "/admin/system/plugininstall.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'plugininstall'},
+				WIDGET_NOTIFY_RED => $notification_errors{'plugininstall'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_UPDATES'},
 				WIDGET_ICON => "/system/images/icons/main_updates.png",
 				WIDGET_CGI => "/admin/system/updates.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'updates'},
+				WIDGET_NOTIFY_RED => $notification_errors{'updates'},
+				
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_REBOOT'},
 				WIDGET_ICON => "/system/images/icons/main_power.png",
 				WIDGET_CGI => "/admin/system/power.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'power'},
+				WIDGET_NOTIFY_RED => $notification_errors{'power'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MAILSERVER'},
 				WIDGET_ICON => "/system/images/icons/main_mail.png",
 				WIDGET_CGI => "/admin/system/mailserver.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'mailserver'},
+				WIDGET_NOTIFY_RED => $notification_errors{'mailserver'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
 				WIDGET_ICON => "/system/images/icons/main_setupassistent.png",
 				WIDGET_CGI => "/admin/system/setup/index.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",
-				WIDGET_NOTIFY => "<div class='notifyBlue' style='visibility: hidden'>0</div>"
+				WIDGET_NOTIFY_BLUE => $notification_oks{'donate'},
+				WIDGET_NOTIFY_RED => $notification_errors{'donate'},
 			}
 		]);
 		
