@@ -217,7 +217,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		} 
 		LOGOK "No other update running.";			
 		
-		$joutput{'info'} = "Update to $release_version started. See logfile for details. Currently DRYRUN, hardcoded in ajax-config-handler.";
+		$joutput{'info'} = "Update to $release_version started. See update logfile for details.";
 		LOGOK $joutput{'info'};
 		&err;
 		my $download_file = "$download_path/loxberry.$release_version.zip";

@@ -131,7 +131,7 @@ sub lbupdate
 	}
 	
 	if ($action eq 'lbupdate-runinstall') {
-		exec("sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1 dryrun=1");
+		exec("sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1");
 		exit(1);
 	}
 	
