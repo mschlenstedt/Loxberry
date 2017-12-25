@@ -299,7 +299,6 @@ sub write
 # 0 => 'EMERGE', 1 => 'ALERT', 2 => 'CRITICAL', 3 => 'ERROR', 4 => 'WARNING', 5 => 'OK', 6 => 'INFO', 7 => 'DEBUG'
 sub DEB
 {
-	print "DEBUG\n";
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(7, $s);
