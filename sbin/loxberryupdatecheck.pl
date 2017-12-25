@@ -25,6 +25,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::Log;
 use strict;
 use warnings;
 use CGI;
@@ -35,30 +36,59 @@ use File::Copy qw(copy);
 use LWP::UserAgent;
 require HTTP::Request;
 
-my $logfile ="$lbslogdir/loxberryupdate/logfile.log";
-open ERR, '>', $logfile;
+# Version of this script
+my $scriptversion="0.3.1.2";
+
+# print currtime('file') . "\n";
+
+# Predeclare logging functions
+#sub LOGOK { my ($s)=@_; print ERRORLOG "<OK>" . $s . "\n"; }
+#sub LOGINF { my ($s)=@_;print ERRORLOG "<INFO>" . $s . "\n"; }
+#sub LOGWARN { my ($s)=@_;print ERRORLOG "<WARNING>" . $s . "\n"; }
+#sub LOGERR { my ($s)=@_;print ERRORLOG"<ERROR>" . $s . "\n"; }
+#sub LOGCRIT { my ($s)=@_;print ERRORLOG "<FAIL>" . $s . "\n"; }
 
 my $release_url;
 my $oformat;
 my %joutput;
+my %updhistory;
+my $updhistoryfile = "$lbslogdir/loxberryupdate/history.json";
+my %thisupd;
 my $cfg;
 my $download_path = '/tmp';
 # Filter - everything above or below is possible - ignore others
 my $min_version = "0.3.0";
 my $max_version = "0.5.0";
 
-# Read system language
-my %SL = LoxBerry::Web::readlanguage();
-# print ERR "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
+my $querytype;
+my $update;
+my $output;
+my $cron;
+my $dryrun;
+my $keepupdatefiles;
+my $formatjson;
 
+# Web Request options
 my $cgi = CGI->new;
-# $cgi->import_names('R');
 
-my %keywords = map { $_ => 1 } $cgi->keywords;
+my $log = LoxBerry::Log->new(
+		package => 'LoxBerry Update',
+		name => 'check',
+		logdir => "$lbslogdir/loxberryupdate",
+		loglevel => 7,
+		stderr => 1,
+);
+						
+#my $logfile ="$lbslogdir/loxberryupdate/log$.log";
+#open ERRORLOG, '>', $logfile;
+
+LOGSTART "LoxBerry Update Check";
+LOGINF "Version of loxberrycheck.pl is $scriptversion";
 
 if (!$cgi->param) {
 	$joutput{'error'} = "No parameters sent.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit (1);
 }
 
@@ -66,16 +96,14 @@ if ($cgi->param('dryrun')) {
 	$cgi->param('keepupdatefiles', 1);
 }
 	
-my $formatjson;
-my $cron;
 
-if ($keywords{'cron'}) {
+if ($cgi->param('cron')) {
 	$cron = 1;
 }
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
 
-my $querytype = $cgi->param('querytype');
+$querytype = $cgi->param('querytype');
 
 # We assume that if output is json, this is a web call
 if ($formatjson || $cron ) {
@@ -83,37 +111,58 @@ if ($formatjson || $cron ) {
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
 }
 
-if ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'testing') {
+if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'testing')) {
 	$joutput{'error'} = "Wrong query type.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit(1);
 }
+
+LOGOK "Parameters/settings of this update:";
+LOGINF "   querytype: " . $cgi->param('querytype') . "\n";
+LOGINF "   cron:" . $cgi->param('cron') . "\n";
+LOGINF "   keepupdatefiles:" . $cgi->param('keepupdatefiles');
+LOGINF "   dryrun: " . $cgi->param('dryrun') . "\n";
+LOGINF "   output: " . $formatjson;
+
+# Read system language
+my %SL = LoxBerry::Web::readlanguage();
+# LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
 
 my $lbversion;
 if (version::is_lax(LoxBerry::System::lbversion())) {
 	$lbversion = version->parse(LoxBerry::System::lbversion());
+	LOGINF "   Current LoxBerry version: $lbversion";
+
 } else {
 	$joutput{'error'} = "Cannot read current version. Is this a real version string? Exiting.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit(1);
 }
 
+
 if (version::is_lax($min_version)) {
 	$min_version = version->parse($min_version);
+	LOGINF "   Updates limited from : $min_version";
 } else {
 	$joutput{'error'} = "Minimal version min_version ($min_version) not a version. Is this a real version string? Exiting.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit(1);
 }
 if (version::is_lax($max_version)) {
 	$max_version = version->parse($max_version);
+	LOGINF "   Updates limited to   : $max_version";
 } else {
 	$joutput{'error'} = "Maximal version max_version ($max_version) not a version. Is this a real version string? Exiting.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit(1);
 }
 
 if ($querytype eq 'release' or $querytype eq 'prerelease') {
+	LOGINF "Start checking releases...";
 	my ($release_version, $release_url, $release_name, $release_body, $release_published) = check_releases($querytype, $lbversion);
 	if (! defined $release_url || $release_url eq "") {
 		$joutput{'info'} = "No new version found.";
@@ -123,9 +172,14 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		$joutput{'release_body'} = $release_body;
 		$joutput{'published_at'} = $release_published;
 		&err;
+		LOGOK $joutput{'info'};
 		exit 0;
 	}
 
+	LOGOK  "New version found:";
+	LOGINF "   Version   : $release_version";
+	LOGINF "   Name      : $release_name";
+	LOGINF "   Published : $release_published";
 	$joutput{'info'} = "New version found.";
 	$joutput{'release_version'} = "$release_version";
 	$joutput{'release_zipurl'} = $release_url;
@@ -135,46 +189,72 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	$joutput{'release_new'} = 1;
 	
 	if ($cgi->param('update')) {
+		LOGEND "Installing new update - see the update log for update status!";
 		
+		my $log = LoxBerry::Log->new(
+			package => 'LoxBerry Update',
+			name => 'update',
+			logdir => "$lbslogdir/loxberryupdate",
+			loglevel => 7,
+			stderr => 1
+		);
+		my $logfilename = $log->filename;
+		
+		LOGSTART "Update from $lbversion to $release_version";
+		LOGINF "   Version    : $release_version";
+		LOGINF "   Name       : $release_name";
+		LOGINF "   Description: $release_body";
+		LOGINF "   Published  : $release_published";
+		
+		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
-		print ERR "PIDOF LENGTH: " . length($pids) . "\n";
+		# LOGINF "PIDOF LENGTH: " . length($pids) . "\n";
 		if (length($pids) > 0) {
 			$joutput{'info'} = "It seems that another update is currently running. Update request was stopped.";
 			&err;
+			LOGCRIT $joutput{'info'};
 			exit(1);
 		} 
-					
+		LOGOK "No other update running.";			
+		
 		$joutput{'info'} = "Update to $release_version started. See logfile for details. Currently DRYRUN, hardcoded in ajax-config-handler.";
+		LOGOK $joutput{'info'};
 		&err;
 		my $download_file = "$download_path/loxberry.$release_version.zip";
+		LOGINF "Starting download procedure for $download_file...";
 		my $filename = download($release_url, $download_file);
 		if (!$filename) {
-			print ERR "Error downloading file.\n";
+			LOGCRIT "Error downloading file.";
 		} else {
-			print ERR "Download successfully stored in $filename.\n";
+			LOGOK "Download successfully stored in $filename.";
+			LOGINF "Starting unzip procedure for $filename...";
 			my $unzipdir = unzip($filename, '/tmp/loxberryupdate');
 			if (!defined $unzipdir) {
-				print ERR "Unzipping failed.\n";
+				LOGERR "Unzipping failed.";
+				LOGINF "Deleting download file";
 				rm ($filename);
+				LOGCRIT "Update failed because file cound not be unzipped.";
 				exit(1);
 			}
+			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {
-				print ERR "prepare update returned an error. Exiting.\n";
+				LOGCRIT "prepare update returned an error. Exiting.\n";
 				exit(1);
 			}
+			LOGOK "Prepare update successful.";
 			# This is the place where we can hand over to the real update
 			my $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
-			
+			LOGINF "Forking loxberryupdate...";
 			my $pid = fork();
 			if (not defined $pid) {
-				print ERR "cannot fork\n";
+				LOGCRIT "Cannot fork loxberryupdate.";
 			} 
 			if (not $pid) {	
-				print ERR "Calling the update from fork.\n";
+				LOGINF "Executing LoxBerry Update forked...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename");
 				exit(0);
 			} 
 			exit(0);
@@ -182,14 +262,14 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	}
 	
 	my $jsntext = to_json(\%joutput);
-	print ERR "JSON: " . $jsntext . "\n";
+	LOGINF "JSON: " . $jsntext . "\n";
 	#print $cgi->header('application/json');
 	print $jsntext;
 	
-	# print ERR "ZIP URL: $release_url\n";
+	# LOGINF "ZIP URL: $release_url\n";
 	
 	} else {
-		print ERR "Nothing to do. Exiting";
+		LOGINF "Nothing to do. Exiting";
 		exit 0;
 	}
 
@@ -215,46 +295,49 @@ sub check_releases
 	my $resource = '/repos/mschlenstedt/Loxberry/releases';
 	#my $resource = '/repos/christianTF/LoxBerry-Plugin-SamplePlugin-V2-PHP/releases';
 
+	LOGINF "Checking for releases from $endpoint$resource";
 	my $release_version;
 
 	my $ua = LWP::UserAgent->new;
 	my $request = HTTP::Request->new(GET => $endpoint . $resource);
 	$request->header('Accept' => 'application/vnd.github.v3+json');
-	print ERR "Request: " . $request->as_string;
-
+	# LOGINF "Request: " . $request->as_string;
+	LOGINF "Requesting release list from GitHub...";
 	my $response = $ua->request($request);
 	if ($response->is_error) {
 		$joutput{'error'} = "Error fetching releases: " . $response->code . " " . $response->message;
 		&err;
+		LOGCRIT $joutput{'error'};
 		exit(1);
 	}
-
-	#print ERR $response->decoded_content;
-	#print ERR "\n\n";
-
+	LOGOK "Release list fetched.";
+	#LOGINF $response->decoded_content;
+	#LOGINF "\n\n";
+	LOGINF "Parsing release list...";
 	my $releases = JSON->new->utf8(1)->allow_nonref->convert_blessed->decode($response->decoded_content);
-
+	
 	my $release_safe; # this was thought to be safe, not save!
 	
 	foreach my $release ( @$releases ) {
 		$release_version = undef;
+		#LOGINF "   Checking release version tag of " . $release->{tag_name};
 		if (!version::is_lax($release->{tag_name})) {
-			print ERR "check_releases: " . $release->{tag_name} . " seems not to be a correct version number. Skipping.\n";
+			LOGWARN "   check_releases: " . $release->{tag_name} . " seems not to be a correct version number. Skipping.";
 			next;
 		} else {
 			$release_version = version->parse($release->{tag_name});
 		}
 		#split_version($release->{tag_name});
-		print ERR "RELEASE VERSION: $release_version\n";
+		LOGINF "   Release version : $release_version";
 		
 		if ($release_version < $min_version || $release_version > $max_version) {
-			print ERR "    Release $release_version is outside min or max version ($min_version/$max_version)\n";
+			LOGWARN "   Release $release_version is outside min or max version ($min_version/$max_version)\n";
 			next;
 		}
-		print ERR "Filter check passed - continuing\n";
+		LOGOK "   Filter check passed.";
 		
 		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
-			{ print ERR "  Skipping pre-release\n";
+			{ LOGOK "   Skipping pre-release because requested release type is RELEASE";
 			  next;
 		}
 		
@@ -263,26 +346,24 @@ sub check_releases
 		}
 		
 		# Check against current version
-		print ERR "Comparing versions:\n";
-		print ERR "  Current Version: $currversion\n";
-		print ERR "  Release Version: $release_version\n";
+		LOGINF "   Current Version: $currversion <--> Release Version: $release_version";
 		if ($currversion == $release_version) {
-			print ERR "  Skipping - this is the same version.\n";  
+			LOGOK "   Skipping - this is the same version.\n";  
 			next;
 		}
 		if ($release_version < $currversion) {
-			print ERR "  Skipping  - the release is older than current version.\n";
+			LOGOK "  Skipping  - the release is older than current version.";
 			next;
 		}
 		
 		# At this point we know that the version is newer
-		print ERR "This release is newer than current installation.\n";				
+		LOGOK "This release $release_version is the newest.";
 
 		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at});
 	}
-	#print ERR "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
-	#print ERR $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
-	print ERR "No new version found: Latest version is " . $release_safe->{tag_name} . "\n";
+	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
+	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
+	LOGOK "No new version found: Latest version is " . $release_safe->{tag_name};
 	return ($release_safe->{tag_name}, undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at});
 }
 
@@ -295,35 +376,39 @@ sub download
 {
 	
 	my ($url, $filename) = @_;
-	print ERR "--> Download. URL: $url Filename: $filename\n";
+	LOGINF "   Download preparing. URL: $url Filename: $filename\n";
 	
 	my $download_size;
 	my $rel_header;
 	for (my $x=1; $x<=3; $x++) {
+		LOGINF "   Try $x: Checking file size of download...";
 		$rel_header = GetFileSize($url);
 		$download_size = $rel_header->content_length;
+		LOGINF "   Returned file size: $download_size";
 		last if (defined $download_size && $download_size > 0);
 	}
 	return undef if (!defined $download_size || $download_size == 0); 
-	print ERR "    Expected download size: $download_size\n";
+	LOGINF "   Expected download size: $download_size";
 	
-	# print ERR "    Header check passed.\n";
+	# LOGINF "    Header check passed.\n";
 	
 	my $ua = LWP::UserAgent->new;
 	my $res;
 	for (my $x = 1; $x < 5; $x++) { 
-			print ERR "Download try $x\n";
+			LOGINF "   Try $x: Download of release... (" . currtime() . ")";
 			$res = $ua->mirror( $url, $filename );
 			last if ($res->is_success);
+			LOGWARN "   Download try $x has failed. (" . currtime() . ")";
 			sleep (1);
 	}
 	return undef if (!$res->is_success);
+	LOGOK "   Download successful. Comparing filesize...";
 	my $file_size = -s $filename;
 	if ($file_size != $download_size) { 
-		print ERR "Filesize does not match\n";
+		LOGCRIT "Filesize does not match";
 		return undef;
 	}
-	# print ERR "Download saved successfully in $filename\n";
+	LOGOK "Download saved successfully in $filename";
 	return $filename;
 
 }
@@ -345,11 +430,12 @@ sub GetFileSize
 			my $headers = $res->headers;
 			return $headers;
 		} else {
-		print ERR "--> GetFileSize check failed: " . $res->code . " " . $res->message . "\n";
+		LOGINF "   GetFileSize check try $x failed: " . $res->code . " " . $res->message;
 		sleep (1);
 		}
 	}
-    return 0;
+    LOGCRIT "   Filesize could not be aquired.";
+	return 0;
 }
 
 ############################################################
@@ -360,36 +446,38 @@ sub GetFileSize
 #############################################################
 sub unzip
 {
-	print ERR "--> Running unzip\n";
+	LOGINF "   Running unzip";
 	my ($unzipfile, $unzipfolder) = @_;
 	if (! -f $unzipfile) {
-		print ERR "    No unzip file.\n";
+		LOGCRIT "   Zip file $unzipfile does not exist.";
 		return undef;
 	}
 	
 	if (-d $unzipfolder) {   
+		LOGINF "   Cleaning up destination folder $unzipfolder...";
 		delete_directory($unzipfolder);
 	}
 	
 	if (-d $unzipfolder) {   
-		print ERR "    Unzip preparation: Could not clean $unzipfolder.\n";
+		LOGCRIT "   Could not clean up in $unzipfolder.";
 		return undef;
 	}
 	
 	my $bins = LoxBerry::System::get_binaries();
-	print ERR "    Extracting ZIP file\n";
+	LOGINF "   Extracting ZIP file $unzipfile to folder $unzipfolder...";
 	system("$bins->{UNZIP} -q -a -d $unzipfolder $unzipfile");
 	my $exitcode  = $? >> 8;
 	my $signal_num  = $? & 127;
 	my $dumped_core = $? & 128;
 
 	if ($exitcode > 0) {
-		print ERR unziperror($exitcode) . "\n";
-		print ERR "Cleaning up.\n";
+		LOGCRIT unziperror($exitcode);
+		LOGINF "Cleaning up unzip folder after failed unzip...";
 		delete_directory($unzipfile);
 		# rm($unzipfile);
 		return undef;
 	}
+	LOGOK "   Unzipping was successful.";
 	return $unzipfolder;
 }
 
@@ -431,9 +519,9 @@ sub delete_directory
 			for my $diag (@$err) {
 				my ($file, $message) = %$diag;
 				if ($file eq '') {
-					print ERR "Delete folder: general error: $message\n";
+					LOGERR "     Delete folder: general error: $message";
 				} else {
-					print ERR "Delete folder: problem unlinking $file: $message\n";
+					LOGERR "     Delete folder: problem unlinking $file: $message";
 				}
 			}
 		return undef;
@@ -446,10 +534,11 @@ sub prepare_update
 {
 	my $updatedir = shift;
 	if (! -d $updatedir) {
-		print ERR "prepare_update failed. Directory $updatedir does not exist.\n";
+		LOGCRIT "Prepare_update failed. Directory $updatedir does not exist.";
 		return undef;
 	}
 	
+	LOGINF "Seeking for unzipped sub-directory in $updatedir...";
 	opendir( my $DIR, $updatedir );
 	my $direntry;
 	my $dircount;
@@ -461,29 +550,29 @@ sub prepare_update
 	}
 	closedir $DIR;
 	if ($dircount != 1) {
-		print ERR "Found unclear number of directories ($dircount) in update directory.\n";
+		LOGCRIT "Found unclear number of directories ($dircount) in update directory.";
 		return undef;
 	}
 	
 	# system("chown -R loxberry:loxberry $updatedir");
 	# my $exitcode  = $? >> 8;
 	# if ($exitcode != 0) {
-	# print ERR "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.\n";
+	# LOGINF "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.\n";
 	# return undef;
 	# }
 
-	
-	if ($cgi->param('keepupdatefiles')) {
-		print ERR "keepupdatefiles is set - no files are copied.\n";
-	}
-	
 	$updatedir = "$updatedir/$direntry";
-	print ERR "Real update directory $updatedir\n";
+	LOGOK "Update directory is $updatedir\n";
+	
+	LOGINF "LoxBerry Update programs are updated from the release to your LoxBerry...";
+	if ($cgi->param('keepupdatefiles')) {
+		LOGWARN "keepupdatefiles is set - no files are copied.";
+	}
 	
 	if (-e "$updatedir/sbin/loxberryupdatecheck.pl" && !$cgi->param('keepupdatefiles')) {
 		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl";
 		if (! $?) {
-			print ERR "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!\n";
+			LOGCRIT "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!";
 			return undef;
 		}
 	}
@@ -494,47 +583,50 @@ sub prepare_update
 	if (-e "$updatedir/sbin/loxberryupdate.pl" && !$cgi->param('keepupdatefiles')) {
 		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl";
 		if (! $?) {
-			print ERR "Error copying loxberryupdate to $lbhomedir/sbin/loxberryupdate.pl: $!\n";
+			LOGCRIT "Error copying loxberryupdate to $lbhomedir/sbin/loxberryupdate.pl: $!";
 			return undef;
 		}
 	}
 	if (! -e "$lbhomedir/sbin/loxberryupdate.pl") {
-		print ERR "Cannot find part two of update, $lbhomedir/sbin/loxberryupdate.pl - Quitting.\n";
+		LOGCRIT "Cannot find part two of update, $lbhomedir/sbin/loxberryupdate.pl - Quitting.";
 		return undef;
 	}
 		
 	if (-e "$updatedir/config/system/update-exclude.system" && !$cgi->param('keepupdatefiles')) {
+		LOGINF "Copying new file exlude list from release to your LoxBerry";
 		copy "$updatedir/config/system/update-exclude.system", "$lbhomedir/config/system/update-exclude.system";
 	}
 	if (! -e "$lbhomedir/config/system/update-exclude.system") {
-		print ERR "Missing ignore list $lbhomedir/config/system/update-exclude.system - Quitting.\n";
+		LOGCRIT "Missing local exclude list $lbhomedir/config/system/update-exclude.system - Quitting.";
 		return undef;
 	}
 	if (! -x "$lbhomedir/sbin/loxberryupdate.pl") {
+		LOGINF "Setting permissions for update program";
 		chmod 0774, "$lbhomedir/sbin/loxberryupdate.pl";
 	}
 	if (! -x "$lbhomedir/sbin/loxberryupdate.pl") {
-		print ERR "Cannot set executable $lbhomedir/sbin/loxberryupdate.pl - Quitting.\n";
+		LOGCRIT "Cannot set executable $lbhomedir/sbin/loxberryupdate.pl - Quitting.";
 		exit(1);
 	}
 	
-	print ERR "Update checked and prepared successfully.\n";
+	LOGOK "Update checked and prepared successfully.";
 	return $updatedir;
 }
 
 sub err
 {
 	if ($joutput{'error'}) {
-		print ERR "ERROR: " . $joutput{'error'} . "\n";
+		LOGERR $joutput{'error'};
 		
 	} elsif ($joutput{'info'}) {
-		print ERR "INFO: " . $joutput{'info'} . "\n";
+		LOGINF $joutput{'info'};
 	}
 	if ($formatjson) {
 		my $jsntext = to_json(\%joutput);
-		print ERR "JSON: " . $jsntext . "\n";
+		LOGINF "JSON: " . $jsntext;
 		print $jsntext;
 
 	}
 }
+
 
