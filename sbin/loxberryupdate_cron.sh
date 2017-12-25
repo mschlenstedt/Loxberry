@@ -1,4 +1,4 @@
 #!/bin/bash
-sudo -n /opt/loxberry/sbin/loxberryupdatecheck.pl cron=1 dryrun=1
+sudo -n /opt/loxberry/sbin/loxberryupdatecheck.pl cron=1
 
 
