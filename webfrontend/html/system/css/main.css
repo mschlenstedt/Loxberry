@@ -147,7 +147,7 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
     padding: 3px;
     border-radius: 8px;
     font-size: 9px;
-	margin: 5px -7px 0 0;
+	margin: 3px -10px 0 0;
 	line-height: 0.8;
 	min-width: 8px;
 }
@@ -163,8 +163,8 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
     padding: 3px;
     border-radius: 8px;
     font-size: 9px;
-	margin: 5px -7px 0 0;
-	line-height: 0.8;
+	margin: 3px -10px 0 0;
+	line-height: 0.8; 
 	min-width: 8px;
 }
 

@@ -128,8 +128,8 @@ my ($update_err, $update_ok, $update_sum) = LoxBerry::Web::get_notification_coun
 
 print STDERR "Notifications:\n";
 print STDERR "Update count: " . scalar(@notif) . "\n";
-print STDERR "Check: $check_err / $check_ok\n";
-print STDERR "Update: $update_err / $update_ok\n";
+print STDERR "Check: $check_err / $check_ok / $check_sum\n";
+print STDERR "Update: $update_err / $update_ok / $check_sum\n";
 
 				
 our %navbar;
@@ -143,8 +143,8 @@ $navbar{2}{notifyRed} = $check_err != 0 ? $check_sum : undef;
  
 $navbar{3}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATEHISTORY'};
 $navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbuhistory";
-$navbar{2}{notifyBlue} = $update_err == 0 ? $update_sum : undef;
-$navbar{2}{notifyRed} = $update_err != 0 ? $update_sum : undef;
+$navbar{3}{notifyBlue} = $update_err == 0 ? $update_sum : undef;
+$navbar{3}{notifyRed} = $update_err != 0 ? $update_sum : undef;
 
 # $navbar{3}{notifyRed} = 3;
 	
