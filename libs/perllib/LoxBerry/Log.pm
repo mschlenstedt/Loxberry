@@ -139,10 +139,10 @@ sub new
 	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	# print STDERR "filename: " . $self->{filename} . "\n";
 	
-	
+	my $writetype = defined $self->{append} ? ">>" : ">";
 	# print STDERR "Write type is : " . $writetype . "\n";
 	
-	$self->open($self->{append});
+	$self->open($writetype);
 	
 	if (!$LoxBerry::Log::mainobj) {
 		$LoxBerry::Log::mainobj = $self;
@@ -193,12 +193,11 @@ sub open
 {
 	my $self = shift;
 	my $writetype = shift;
-	if (!$writetype || $writetype == 1) {
+	# print STDERR "Log open writetype before processing: " . $writetype . "\n";
+	if (!$writetype) {
 		$writetype = ">>";
-	} else {
-		$writetype = ">";
 	}
-	
+	# print STDERR "log open Writetype after processing is " . $writetype . "\n";
 	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename};
 	$self->{'_FH'} = $fh;
 }
@@ -397,6 +396,10 @@ sub default
 sub DESTROY { 
 	my $self = shift;
 	close $self->{"_FH"};
+	if ($LoxBerry::Log::mainobj == $self) {
+		# Reset default object
+		undef $LoxBerry::Log::mainobj;
+	};
 	# print STDERR "Desctuctor closed file.\n";
 } 
 
