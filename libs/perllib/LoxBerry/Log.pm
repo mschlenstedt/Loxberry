@@ -8,7 +8,7 @@ use JSON;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.1.3";
+our $VERSION = "0.3.1.4";
 
 # This object is the object the exported LOG* functions use
 our $mainobj;
@@ -66,7 +66,7 @@ sub new
 
 {
 	my $class = shift;
-	print STDERR "Class: $class\n";
+	# print STDERR "Class: $class\n";
 	if (@_ % 2) {
 		Carp::croak "Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
 	}
@@ -103,14 +103,21 @@ sub new
 	}
 	
 	# Generating filename
+	# print STDERR "1. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 	if (!$self->{logdir} && !$self->{filename} && -e $LoxBerry::System::lbplogdir) {
 		$self->{logdir} = $LoxBerry::System::lbplogdir;
 	}
+	# print STDERR "2. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 	if ($self->{logdir} && !$self->{filename}) {
 		$self->{filename} = $self->{logdir} . "/" . LoxBerry::System::currtime('file') . "_" . $self->{name} . ".log";
+		# print STDERR "3. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
+			
 	} elsif (!$self->{filename}) {
+		# print STDERR "4. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 		if ($LoxBerry::System::lbplogdir && -e $LoxBerry::System::lbplogdir) {
 			$self->{filename} = "$LoxBerry::System::lbplogdir/" . currtime('file') . "_" . $self->{name} . ".log";
+			# print STDERR "5. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
+			
 		} else {
 			Carp::croak "Cannot determine plugin log directory";
 		}
@@ -120,6 +127,7 @@ sub new
 	}
 	
 	# Get loglevel
+	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	if (!$self->{loglevel}) {
 		my %plugindata = LoxBerry::System::plugindata();
 		if ($plugindata{'PLUGINDB_LOGLEVEL'}) {
@@ -127,15 +135,15 @@ sub new
 		} else {
 			$self->{loglevel} = 7;
 		}
-	} 
-	
+	}
+	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	# print STDERR "filename: " . $self->{filename} . "\n";
 	
-	my $writetype = $self->{append} ? ">>" : ">";
 	
-	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename};
-		
-	$self->{'_FH'} = $fh;
+	# print STDERR "Write type is : " . $writetype . "\n";
+	
+	$self->open($self->{append});
+	
 	if (!$LoxBerry::Log::mainobj) {
 		$LoxBerry::Log::mainobj = $self;
 	}
@@ -181,7 +189,26 @@ sub filename
 	}
 }
 
+sub open
+{
+	my $self = shift;
+	my $writetype = shift;
+	if (!$writetype || $writetype == 1) {
+		$writetype = ">>";
+	} else {
+		$writetype = ">";
+	}
+	
+	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename};
+	$self->{'_FH'} = $fh;
+}
 
+sub close
+{
+	my $self = shift;
+	close $self->{'_FH'};
+	return $self->{filename};
+}
 
 ##########################################################
 # Functions to enable strerr and stdout, and
@@ -232,18 +259,18 @@ sub write
 	my $severity = shift;
 	my ($s)=@_;
 	
-	# print STDERR "\nSeverity: $severity / Loglevel: " . $self->{loglevel} . "\n";
+	# print STDERR "Severity: $severity / Loglevel: " . $self->{loglevel} . "\n";
 	# print STDERR "Log: $s\n";
 	# Do not log if loglevel is lower than severity
 	# print STDERR "--> write \n";
 	# print STDERR "    autoraise\n";
-	if ($severity <= 2 && $self->{autoraise} == 1) {
+	if ($severity <= 2 && $severity >= 0 && $self->{loglevel} < 6 && $self->{autoraise} == 1) {
 		# print STDERR "    autoraise to loglevel 6\n";
 		$self->{loglevel} = 6;
 	}
 	
 	if ($severity < $self->{loglevel} || $severity < 0) {
-		# print STDERR "    Not filtered.\n";
+		#print STDERR "Not filtered.\n";
 		my $fh = $self->{'_FH'};
 		my $string;
 		if ($severity == 7 || $severity < 0) {
@@ -261,6 +288,8 @@ sub write
 		if ($self->{stdout}) {
 			print STDOUT $string;
 		}
+	} else {
+		# print STDERR "Filtered: $s\n";
 	}
 }
 
