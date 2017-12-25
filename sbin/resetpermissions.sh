@@ -15,6 +15,7 @@ echo "LoxBerry home directory is $LBHOMEDIR"
 chown -Rv loxberry:loxberry $LBHOMEDIR
 chown -Rv root:root $LBHOMEDIR/system/sudoers/
 chown -Rv root:root $LBHOMEDIR/system/daemons
+chown -Rv root:root $LBHOMEDIR/system/cron/cron.d
 chown -Rv root.root $LBHOMEDIR/sbin
 chown -Rv root.root $LBHOMEDIR/system/logrotate
 chown -v loxberry.loxberry /etc/timezone
