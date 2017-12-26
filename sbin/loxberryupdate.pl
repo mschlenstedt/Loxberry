@@ -71,6 +71,7 @@ my $log = LoxBerry::Log->new(
 
 LOGOK "Update handed over from LoxBerry Update Check to LoxBerry Update";
 LOGWARN "New logfile was created as handover of logfilename did not work" if (!$logfilename);
+LOGINF "Program is running as " . $ENV{USERNAME};
 
 $logfilename = $log->filename;
 print STDERR "loxberryupdatecheck uses filename $logfilename\n";

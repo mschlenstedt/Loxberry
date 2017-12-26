@@ -84,6 +84,7 @@ my $log = LoxBerry::Log->new(
 
 LOGSTART "LoxBerry Update Check";
 LOGINF "Version of loxberrycheck.pl is $scriptversion";
+LOGINF "Program is running as " . $ENV{USERNAME};
 
 if (!$cgi->param) {
 	$joutput{'error'} = "No parameters sent.";
@@ -576,19 +577,20 @@ sub prepare_update
 	}
 	
 	if (-e "$updatedir/sbin/loxberryupdatecheck.pl" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl";
-		if (! $?) {
-			LOGCRIT "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!";
-			return undef;
-		}
+		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl" or 
+			do { LOGCRIT "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!";
+				 return undef; 
+			}
+				 
+		
 	}
 	if (! -x "$lbhomedir/sbin/loxberryupdatecheck.pl") {
 		chmod 0774, "$lbhomedir/sbin/loxberryupdatecheck.pl";
 	}
 	
 	if (-e "$updatedir/sbin/loxberryupdate.pl" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl";
-		if (! $?) {
+		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl" or
+		do {
 			LOGCRIT "Error copying loxberryupdate to $lbhomedir/sbin/loxberryupdate.pl: $!";
 			return undef;
 		}
