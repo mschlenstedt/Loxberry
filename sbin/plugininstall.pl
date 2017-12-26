@@ -362,7 +362,7 @@ if (version::is_lax(LoxBerry::System::lbversion())) {
   $versioncheck = 0;
 }
 
-if ($lbmin && $versioncheck) {
+if (defined $lbmin && $versioncheck) {
 
   if ( (version::is_lax($plbmin)) ) {
     $plbmin = version->parse($plbmin);
@@ -370,17 +370,17 @@ if ($lbmin && $versioncheck) {
     &loginfo;
 
     if ($lbversion < $plbmin) {
-      $message =  "SL{'PLUGININSTALL.ERR_MINVERSION'}";
+      $message =  "$SL{'PLUGININSTALL.ERR_MINVERSION'}";
       &logfail;
     } else {
-      $message =  "SL{'PLUGININSTALL.OK_MINVERSION'}";
+      $message =  "$SL{'PLUGININSTALL.OK_MINVERSION'}";
       &logok;
     }
   } 
 
 }
 
-if ($lbmax && $versioncheck) {
+if (defined $lbmax && $versioncheck) {
 
   if ( (version::is_lax($plbmax)) ) {
     $plbmax = version->parse($plbmax);
@@ -388,10 +388,10 @@ if ($lbmax && $versioncheck) {
     &loginfo;
 
     if ($lbversion > $plbmax) {
-      $message =  "SL{'PLUGININSTALL.ERR_MAXVERSION'}";
+      $message =  "$SL{'PLUGININSTALL.ERR_MAXVERSION'}";
       &logfail;
     } else {
-      $message =  "SL{'PLUGININSTALL.OK_MAXVERSION'}";
+      $message =  "$SL{'PLUGININSTALL.OK_MAXVERSION'}";
       &logok;
     }
   }
