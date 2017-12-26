@@ -142,7 +142,7 @@ sub new
 	my $writetype = defined $self->{append} ? ">>" : ">";
 	# print STDERR "Write type is : " . $writetype . "\n";
 	
-	if (! $nofile) {
+	if (!$self->{nofile}) {
 		$self->open($writetype);
 	}
 	
