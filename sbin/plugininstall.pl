@@ -342,12 +342,18 @@ if ( $pinterface eq "1.0" ) {
 
 # Arch check
 if ($parch ) {
-  if (!-e "$lbsconfigdir/is_$parch.cfg") {
+  my $archcheck = 0;
+  foreach (split(/,/,$parch)){
+    if (-e "$lbsconfigdir/is_$_.cfg") {
+      $archcheck = 1;
+      $message =  "$SL{'PLUGININSTALL.OK_ARCH'}";
+      &logok;
+      last;
+    } 
+  }
+  if (!$archcheck) {
     $message =  "$SL{'PLUGININSTALL.ERR_ARCH'}";
     &logfail;
-  } else {
-    $message =  "$SL{'PLUGININSTALL.OK_ARCH'}";
-    &logok;
   }
 }
 
