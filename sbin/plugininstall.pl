@@ -227,6 +227,18 @@ if ( $pautoupdates eq "false" || $pautoupdates eq "0" || $preleasecfg eq "" ) {
 } else {
   $pautoupdates = "1";
 }
+if ( $parch eq "false" || $parch eq "" ) {
+  $parch = "0";
+}
+if ( $preboot eq "false" || $preboot eq "" ) {
+  $preboot = "0";
+}
+if ( $plbmin eq "false" || $plbmin eq "" ) {
+  $plbmin = "0";
+}
+if ( $plbmax eq "false" || $plbmax eq "" ) {
+  $plbmax = "0";
+}
 
 $message = "Author:       $pauthorname";
 &loginfo;
@@ -257,6 +269,14 @@ $message = "Architecture: $parch";
 $message = "Interface:    $pinterface";
 &loginfo;
 
+if ($parch) {
+  if (!-e "/opt/loxberry/config/system/is_$parch.cfg"
+    $message =  "$SL{'PLUGININSTALL.ERR_ARCH'}";
+    &logfail;
+  } else {
+    $message =  "$SL{'PLUGININSTALL.OK_ARCH'}";
+    &logok;
+}
 if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pfolder || !$pinterface) {
   $message =  "$SL{'PLUGININSTALL.ERR_PLUGINCFG'}";
   &logfail;
@@ -1080,7 +1100,20 @@ if (@errors) {
   }
 }
 
-exit;
+# Set Status
+if (-e $statusfile) {
+  if ($preboot) {
+    open (F, ">$statusfile");
+      print F "3";
+    close (F);
+  } else {
+    open (F, ">$statusfile");
+      print F "0";
+    close (F);
+  }
+}
+
+exit (0);
 
 }
 
@@ -1189,7 +1222,14 @@ sub logfail {
   close (LOG);
 
   &purge_installation("all");
-  exit;
+ 
+  if (-e $statusfile) {
+    open (F, ">$statusfile");
+      print F "2";
+    close (F);
+  }
+
+  exit (1);
 
 }
 
