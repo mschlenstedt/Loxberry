@@ -19,3 +19,4 @@ loxberry ALL = NOPASSWD: /opt/loxberry/sbin/changehostname.sh
 loxberry ALL = NOPASSWD: /opt/loxberry/sbin/loxberryupdatecheck.pl
 loxberry ALL = NOPASSWD: /opt/loxberry/sbin/plugininstall.pl
 loxberry ALL = NOPASSWD: /opt/loxberry/sbin/installcrontab.sh
+loxberry ALL = NOPASSWD: /opt/loxberry/sbin/resetinstallpin.pl
