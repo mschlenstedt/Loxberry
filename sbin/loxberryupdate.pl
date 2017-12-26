@@ -12,13 +12,13 @@
 #	dryrun
 #		1	do not update loxberryupdate*.pl, exlude-file, and let rsync run dry
 #
-#	logfile
+#	logfilename
 #		(empty)	$lbslogdir/loxberryupdate/{timestamp}.log is used
 #		filename  filename is used
 #######################################################
 
 use LoxBerry::System;
-# use LoxBerry::Web;
+use LoxBerry::Web;
 use LoxBerry::Log;
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='0.3.1.2';
+my $scriptversion='0.3.1.4';
 
 
 # # Predeclare logging functions
@@ -50,6 +50,7 @@ my %joutput;
 my $errskipped = 0;
 my $formatjson;
 my $logfilename;
+my $cron;
 
 my $cgi = CGI->new;
 
@@ -74,9 +75,17 @@ LOGWARN "New logfile was created as handover of logfilename did not work" if (!$
 $logfilename = $log->filename;
 print STDERR "loxberryupdatecheck uses filename $logfilename\n";
 
+if ($cgi->param('cron')) {
+	$cron = $cgi->param('cron');
+	LOGOK "This update was triggered automatically by schedule.";
+} else {
+	LOGOK "This update was manually triggered.";
+}
+
 if ($cgi->param('updatedir')) {
 	$updatedir = $cgi->param('updatedir');
 }
+
 if (!$updatedir) {
 	$joutput{'error'} = "No updatedir sent.";
 	&err;
@@ -292,6 +301,7 @@ if (! $cgi->param('dryrun') ) {
 # Finished. 
 
 LOGINF "All procesures finished.";
+notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_OK'} . " $release");
 exit 0;
 
 
@@ -375,6 +385,26 @@ sub err
 	}
 }
 
+sub notify
+{
+	my ($package, $name, $message, $error) = @_;
+	if (! $package || ! $name || ! $message) {
+		print STDERR "Notification: Missing parameters\n";
+		return;
+	}
+	$package = lc($package);
+	$name = lc($name);
+	$error = '_err' if ($error);
+	
+	my $filename = $LoxBerry::Web::notification_dir . "/" . currtime('file') . "_${package}_${name}${error}.system";
+	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
+	print $fh $message . "\n";
+	close $fh;
+}
+
+
+
+
 # This routine is called at every end
 END 
 {
@@ -382,6 +412,9 @@ END
 	
 	if ($? != 0) {
 		LOGCRIT "LoxBerry Update exited or terminated with an error. Errorcode: $?";
+		if ($cron) {
+			notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_ERROR'} . " $release", 'Error');
+		}
 		
 	} else {
 		LOGOK "Loxberry Update thinks that the UPDATE WAS SUCCESSFUL!";
