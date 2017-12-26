@@ -24,9 +24,9 @@ use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8);
 use LoxBerry::System;
 use LoxBerry::Web;
+use version;
 #use warnings;
 #use strict;
-#no strict "refs"; # we need it for template system
 
 # Version of this script
 my $version = "0.0.3";
@@ -84,6 +84,13 @@ if ( $R::action eq "install" ) {
     &logfail;
   }
 }
+if ( $R::action eq "uninstall" ) {
+  if ( !$R::pid ) {
+    $message =  "$SL{'PLUGININSTALL.ERR_NOPID'}";
+    &logfail;
+  }
+}
+
 # ZIP or Folder mode?
 my $zipmode = defined $R::file ? 1 : 0;
 
@@ -91,8 +98,53 @@ my $zipmode = defined $R::file ? 1 : 0;
 if ($R::action eq "install" ) {
   &install;
 }
+if ($R::action eq "uninstall" ) {
+  &uninstall;
+}
 
-exit;
+exit (0);
+
+#####################################################
+# UnInstall
+#####################################################
+
+sub uninstall {
+
+our $pid = $R::pid;
+my $found = 0;
+our $pname;
+our $pfolder;
+open(F,"<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
+  if ($openerr) {
+    $message =  "$SL{'PLUGININSTALL.ERR_DATABASE'}";
+    &logfail;
+  }
+  @data = <F>;
+  foreach (@data){
+    s/[\n\r]//g;
+    # Comments
+    if ($_ =~ /^\s*#.*/) {
+      next;
+    }
+    @fields = split(/\|/);
+    if ($pid eq @fields[0]) {
+      $found = 1;
+      $pname   = @fields[4];
+      $pfolder = @fields[5];
+    }
+  }
+close (F);
+
+if ( !$found ) {
+  $message =  "$SL{'PLUGININSTALL.ERR_PIDNOTEXIST'}";
+  &logfail;
+}
+
+&purge_installation ("all");
+
+exit (0);
+
+}
 
 #####################################################
 # Install
@@ -121,8 +173,8 @@ $message =  "Temp Folder: $tempfolder";
 &loginfo;
 
 # Create status and logfile
-my $logfile = "/tmp/$tempfile.log";
-my $statusfile = "/tmp/$tempfile.status";
+our $logfile = "/tmp/$tempfile.log";
+our $statusfile = "/tmp/$tempfile.status";
 if (-e "$logfile" || -e "$statusfile") {
   $message =  "$SL{'PLUGININSTALL.ERR_TEMPFILES_EXISTS'}";
   &logfail;
@@ -220,12 +272,29 @@ if (length($ptitle) > 25) {
   $ptitle = substr($ptitle,0,22);
   $ptitle = $ptitle . "...";
 }
+
 if ( $pautoupdates eq "false" || $pautoupdates eq "0" || $preleasecfg eq "" ) {
   $preleasecfg = "";
   $pprereleasecfg = "";
   $pautoupdates = "0";
 } else {
   $pautoupdates = "1";
+}
+
+if ( $parch eq "false" || $parch eq "" ) {
+  $parch = "0";
+}
+
+if ( $preboot eq "false" || $preboot eq "" ) {
+  $preboot = "0";
+}
+
+if ( $plbmin eq "false" || $plbmin eq "" ) {
+  $plbmin = "0";
+}
+
+if ( $plbmax eq "false" || $plbmax eq "" ) {
+  $plbmax = "0";
 }
 
 $message = "Author:       $pauthorname";
@@ -264,10 +333,75 @@ if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pf
   $message =  "$SL{'PLUGININSTALL.OK_PLUGINCFG'}";
   &logok;
 }
+
 if ( $pinterface eq "1.0" ) {
   $message =  "*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
   &logerr; 
   push(@errors,"PLUGININTERFACE: $message");
+}
+
+# Arch check
+if ($parch ) {
+  my $archcheck = 0;
+  foreach (split(/,/,$parch)){
+    if (-e "$lbsconfigdir/is_$_.cfg") {
+      $archcheck = 1;
+      $message =  "$SL{'PLUGININSTALL.OK_ARCH'}";
+      &logok;
+      last;
+    } 
+  }
+  if (!$archcheck) {
+    $message =  "$SL{'PLUGININSTALL.ERR_ARCH'}";
+    &logfail;
+  }
+}
+
+# Version check
+my $versioncheck = 0;
+if (version::is_lax(LoxBerry::System::lbversion())) {
+  $versioncheck = 1;
+  our $lbversion = version->parse(LoxBerry::System::lbversion());
+  $message =  $SL{'PLUGININSTALL.INF_LBVERSION'} . $lbversion;
+  &loginfo;
+} else {
+  $versioncheck = 0;
+}
+
+if (defined $lbmin && $versioncheck) {
+
+  if ( (version::is_lax($plbmin)) ) {
+    $plbmin = version->parse($plbmin);
+    $message =  $SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
+    &loginfo;
+
+    if ($lbversion < $plbmin) {
+      $message =  "$SL{'PLUGININSTALL.ERR_MINVERSION'}";
+      &logfail;
+    } else {
+      $message =  "$SL{'PLUGININSTALL.OK_MINVERSION'}";
+      &logok;
+    }
+  } 
+
+}
+
+if (defined $lbmax && $versioncheck) {
+
+  if ( (version::is_lax($plbmax)) ) {
+    $plbmax = version->parse($plbmax);
+    $message =  $SL{'PLUGININSTALL.INF_MAXVERSION'} . $plbmax;
+    &loginfo;
+
+    if ($lbversion > $plbmax) {
+      $message =  "$SL{'PLUGININSTALL.ERR_MAXVERSION'}";
+      &logfail;
+    } else {
+      $message =  "$SL{'PLUGININSTALL.OK_MAXVERSION'}";
+      &logok;
+    }
+  }
+
 }
 
 # Create MD5 Checksum
@@ -1051,12 +1185,16 @@ if (-e "$lbhomedir/config/plugins/$pfolder" ) {
 }
 if (-e "$lbhomedir/bin/plugins/$pfolder" ) {
   &replaceenv ("loxberry", "1", "$lbhomedir/bin/plugins/$pfolder");
+}
 if (-e "$lbhomedir/system/daemons/plugins/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/system/daemons/plugins/$pname");
+}
 if (-e "$lbhomedir/data/system/uninstall/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/data/system/uninstall/$pname");
+}
 if (-e "$lbhomedir/system/sudoers/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/system/sudoers/$pname");
+}
 if (-e "$lbhomedir/system/cron/cron.d/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/system/cron/cron.d/$pname");
 }
@@ -1073,14 +1211,30 @@ system("rm -f /tmp/$tempfile.log");
 
 # Error summarize
 if (@errors) {
+  print "************************************************************************\n";
   $message =  "$SL{'PLUGININSTALL.INF_ERRORSUMMARIZE'}";
   &loginfo;
+  print "************************************************************************\n";
   foreach(@errors) {
-    print "$_\n"M
+    $message = $_;
+    &logerr;
   }
 }
 
-exit;
+# Set Status
+if (-e $statusfile) {
+  if ($preboot) {
+    open (F, ">$statusfile");
+      print F "3";
+    close (F);
+  } else {
+    open (F, ">$statusfile");
+      print F "0";
+    close (F);
+  }
+}
+
+exit (0);
 
 }
 
@@ -1134,6 +1288,36 @@ sub purge_installation {
 
   # This will only be purged if we do an uninstallation
   if ($option eq "all") {
+
+  # Clean Database
+  if ($pid) {
+    open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
+      if ($openerr) {
+        $message =  "$SL{'PLUGININSTALL.ERR_DATABASE'}";
+        &logerr;
+      }
+      flock(F,2);
+        @data = <F>;
+        seek(F,0,0);
+        truncate(F,0);
+        foreach (@data){
+          s/[\n\r]//g;
+          # Comments
+          if ($_ =~ /^\s*#.*/) {
+            print F "$_\n";
+            next;
+          }
+          @fields = split(/\|/);
+          if (@fields[0] eq $pid) {
+            next;
+          } else {
+            print F "$_\n";
+          }
+        }
+      flock(F,8);
+      close (F);
+    }
+
     if ($pfolder) {
       # Log
       system("$sudobin -n -u loxberry rm -rfv $lbhomedir/log/plugins/$pfolder/ 2>&1");
@@ -1159,6 +1343,7 @@ sub purge_installation {
           $message =  "$SL{'PLUGININSTALL.OK_SCRIPT'}";
           &logok;
         }
+      }
       # Crontab
       system("rm -vf $lbhomedir/system/cron/cron.d/$pname 2>&1");
     }
@@ -1189,7 +1374,14 @@ sub logfail {
   close (LOG);
 
   &purge_installation("all");
-  exit;
+ 
+  if (-e $statusfile) {
+    open (F, ">$statusfile");
+      print F "2";
+    close (F);
+  }
+
+  exit (1);
 
 }
 
@@ -1346,62 +1538,62 @@ sub replaceenv {
 
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g' {} \\; 2>&1");
 
   # File
   } else {
 
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' $target 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g' $target 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g' $target 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g' $target 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g' $target 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g' $target 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g' $target 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g' $target 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g $target 2>&1");
+    system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g' $target 2>&1");
 
   }
 
