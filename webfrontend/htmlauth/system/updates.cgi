@@ -133,13 +133,14 @@ print STDERR "Update: $update_err / $update_ok / $check_sum\n";
 
 				
 our %navbar;
-$navbar{1}{Name} = $SL{'UPDATES.WIDGETLABEL_UPDATES'};
-$navbar{1}{URL} = $cgi->url(-relative=>1);
  
-$navbar{2}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATE'};
-$navbar{2}{URL} = $cgi->url(-relative=>1) . "?do=lbupdate";
-$navbar{2}{notifyBlue} = $check_err == 0 ? $check_sum : undef;
-$navbar{2}{notifyRed} = $check_err != 0 ? $check_sum : undef;
+$navbar{1}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATE'};
+$navbar{1}{URL} = $cgi->url(-relative=>1) . "?do=lbupdate";
+$navbar{1}{notifyBlue} = $check_err == 0 ? $check_sum : undef;
+$navbar{1}{notifyRed} = $check_err != 0 ? $check_sum : undef;
+
+$navbar{2}{Name} = $SL{'UPDATES.WIDGETLABEL_UPDATES'};
+$navbar{2}{URL} = $cgi->url(-relative=>1) . "?do=form";
  
 $navbar{3}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATEHISTORY'};
 $navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbuhistory";
@@ -200,21 +201,21 @@ $saveformdata = substr($saveformdata,0,1);
 #########################################################################
 
 # Menu
-if (!$do || $do eq "form") {
+if ($do eq "form") {
   print STDERR "updates.cgi: FORM is called\n";
-  $navbar{1}{active} = 1;
+  $navbar{2}{active} = 1;
   &form;
 }
 
 # Installation
 elsif ($do eq "install") {
-  $navbar{1}{active} = 1;
+  $navbar{2}{active} = 1;
   print STDERR "updates.cgi: INSTALL is called\n";
   &install;
 }
 
-elsif ($do eq "lbupdate") {
-	$navbar{2}{active} = 1;
+elsif (!$do || $do eq "lbupdate") {
+	$navbar{1}{active} = 1;
 	print STDERR "updates.cgi LBUPDATES is called\n";
 	&lbupdates;
 }
@@ -228,7 +229,7 @@ elsif ($do eq "lbuhistory") {
 else {
  $navbar{1}{active} = 1;
   print STDERR "updates.cgi: FORM is called\n";
-  &form;
+  &lbinstall;
 }
 
 exit;
