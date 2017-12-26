@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+# Script for setting a new Plugin Installation PIN
+
 use LoxBerry::System;
 
 if ($<) {
@@ -45,10 +48,7 @@ print "New PIN saved successfully.\n";
 
 exit (0);
 
-#####################################################
-# Random
-#####################################################
-
+# Random Sub
 sub generate {
         local($e) = @_;
         my($zufall,@words,$more);
