@@ -24,9 +24,9 @@ use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8);
 use LoxBerry::System;
 use LoxBerry::Web;
+use version;
 #use warnings;
 #use strict;
-#no strict "refs"; # we need it for template system
 
 # Version of this script
 my $version = "0.0.3";
@@ -92,7 +92,7 @@ if ($R::action eq "install" ) {
   &install;
 }
 
-exit;
+exit (0);
 
 #####################################################
 # Install
@@ -220,6 +220,7 @@ if (length($ptitle) > 25) {
   $ptitle = substr($ptitle,0,22);
   $ptitle = $ptitle . "...";
 }
+
 if ( $pautoupdates eq "false" || $pautoupdates eq "0" || $preleasecfg eq "" ) {
   $preleasecfg = "";
   $pprereleasecfg = "";
@@ -227,15 +228,19 @@ if ( $pautoupdates eq "false" || $pautoupdates eq "0" || $preleasecfg eq "" ) {
 } else {
   $pautoupdates = "1";
 }
+
 if ( $parch eq "false" || $parch eq "" ) {
   $parch = "0";
 }
+
 if ( $preboot eq "false" || $preboot eq "" ) {
   $preboot = "0";
 }
+
 if ( $plbmin eq "false" || $plbmin eq "" ) {
   $plbmin = "0";
 }
+
 if ( $plbmax eq "false" || $plbmax eq "" ) {
   $plbmax = "0";
 }
@@ -270,13 +275,21 @@ $message = "Interface:    $pinterface";
 &loginfo;
 
 if ($parch) {
-  if (!-e "/opt/loxberry/config/system/is_$parch.cfg"
+  if (!-e "/opt/loxberry/config/system/is_$parch.cfg") {
     $message =  "$SL{'PLUGININSTALL.ERR_ARCH'}";
     &logfail;
   } else {
     $message =  "$SL{'PLUGININSTALL.OK_ARCH'}";
     &logok;
+  }
 }
+
+if (version::is_lax(LoxBerry::System::lbversion())) {
+  my $lbversion = version->parse(LoxBerry::System::lbversion());
+  $message =  $SL{'PLUGININSTALL.INF_VERSION'} . $lbversion;
+  &loginfo;
+}
+
 if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pfolder || !$pinterface) {
   $message =  "$SL{'PLUGININSTALL.ERR_PLUGINCFG'}";
   &logfail;
@@ -284,6 +297,7 @@ if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pf
   $message =  "$SL{'PLUGININSTALL.OK_PLUGINCFG'}";
   &logok;
 }
+
 if ( $pinterface eq "1.0" ) {
   $message =  "*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
   &logerr; 
@@ -1071,12 +1085,16 @@ if (-e "$lbhomedir/config/plugins/$pfolder" ) {
 }
 if (-e "$lbhomedir/bin/plugins/$pfolder" ) {
   &replaceenv ("loxberry", "1", "$lbhomedir/bin/plugins/$pfolder");
+}
 if (-e "$lbhomedir/system/daemons/plugins/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/system/daemons/plugins/$pname");
+}
 if (-e "$lbhomedir/data/system/uninstall/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/data/system/uninstall/$pname");
+}
 if (-e "$lbhomedir/system/sudoers/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/system/sudoers/$pname");
+}
 if (-e "$lbhomedir/system/cron/cron.d/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/system/cron/cron.d/$pname");
 }
@@ -1096,7 +1114,7 @@ if (@errors) {
   $message =  "$SL{'PLUGININSTALL.INF_ERRORSUMMARIZE'}";
   &loginfo;
   foreach(@errors) {
-    print "$_\n"M
+    print "$_\n";
   }
 }
 
@@ -1192,6 +1210,7 @@ sub purge_installation {
           $message =  "$SL{'PLUGININSTALL.OK_SCRIPT'}";
           &logok;
         }
+      }
       # Crontab
       system("rm -vf $lbhomedir/system/cron/cron.d/$pname 2>&1");
     }
