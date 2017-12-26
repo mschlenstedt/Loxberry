@@ -37,7 +37,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="0.3.1.2";
+my $scriptversion="0.3.1.4";
 
 # print currtime('file') . "\n";
 
@@ -99,7 +99,7 @@ if ($cgi->param('dryrun')) {
 
 if ($cgi->param('cron')) {
 	$cron = 1;
-}
+} 
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
 
@@ -119,9 +119,9 @@ if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $qu
 }
 
 LOGOK "Parameters/settings of this update:";
-LOGINF "   querytype: " . $cgi->param('querytype') . "\n";
-LOGINF "   cron:" . $cgi->param('cron') . "\n";
-LOGINF "   keepupdatefiles:" . $cgi->param('keepupdatefiles');
+LOGINF "   querytype:       $querytype\n";
+LOGINF "   cron:            $cron\n";
+LOGINF "   keepupdatefiles: " . $cgi->param('keepupdatefiles');
 LOGINF "   dryrun: " . $cgi->param('dryrun') . "\n";
 LOGINF "   output: " . $formatjson;
 
@@ -187,6 +187,12 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	$joutput{'release_body'} = $release_body;
 	$joutput{'published_at'} = $release_published;
 	$joutput{'release_new'} = 1;
+	
+	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
+		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_RELEASE'} . " $release_version") if $querytype eq 'release';
+		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_PRERELEASE'} . " $release_version") if $querytype eq 'prerelease';
+		LoxBerry::Web::delete_notifications('updates', 'check', 1);
+	}
 	
 	if ($cgi->param('update')) {
 		LOGEND "Installing new update - see the update log for update status!";
@@ -254,7 +260,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				LOGINF "Executing LoxBerry Update forked...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron");
 				exit(0);
 			} 
 			exit(0);
@@ -629,4 +635,36 @@ sub err
 	}
 }
 
+sub notify
+{
+	my ($package, $name, $message, $error) = @_;
+	if (! $package || ! $name || ! $message) {
+		print STDERR "Notification: Missing parameters\n";
+		return;
+	}
+	$package = lc($package);
+	$name = lc($name);
+	if ($error) {
+		$error = '_err';
+	} else { 
+		$error = "";
+	}
+	
+	my $filename = $LoxBerry::Web::notification_dir . "/" . currtime('file') . "_${package}_${name}${error}.system";
+	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
+	print $fh $message . "\n";
+	close $fh;
+}
 
+
+# This routine is called at every end
+END 
+{
+	if ($? != 0) {
+		LOGCRIT "LoxBerry Updatecheck exited or terminated with an error. Errorcode: $?";
+		if ($cron) {
+			# Create an error notification
+		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_ERROR'}, 'Error');
+		}
+	}
+}

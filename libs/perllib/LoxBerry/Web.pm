@@ -41,7 +41,7 @@ our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
 our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
-my $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
+our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
 my @notifications;
 my $notifications_error;
 my $notifications_ok;
