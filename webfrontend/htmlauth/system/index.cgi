@@ -140,6 +140,32 @@ sub mainmenu {
 
 	my @plugins;
 	
+	# Check notifications
+	my %notification_errors;
+	my %notification_oks;
+	my $notification_allerrors = 0;
+	my $notification_alloks = 0;
+	
+	my @notifications = LoxBerry::Web::get_notifications();
+	for my $notification (@notifications ) {
+		if ($notification->{SEVERITY} eq 'err') {
+			$notification_errors{$notification->{PACKAGE}}++;
+			$notification_oks{$notification->{PACKAGE}}++;
+			$notification_allerrors++;
+		} else {
+			$notification_oks{$notification->{PACKAGE}}++;
+			$notification_alloks++;
+		}
+	}
+
+	our %navbar;
+	$navbar{1}{Name} = $SL{'HEADER.TITLE_PAGE_PLUGINS'};
+	$navbar{1}{URL} = "/admin/system/index.cgi";
+	$navbar{2}{Name} = $SL{'HEADER.TITLE_PAGE_SYSTEM'};
+	$navbar{2}{URL} = "/admin/system/index.cgi?form=system";
+	$navbar{2}{notifyBlue} = $notification_allerrors == 0 && $notification_alloks != 0 ? $notification_alloks : undef;
+	$navbar{2}{notifyRed} = $notification_allerrors != 0 ? ($notification_allerrors+$notification_alloks)  : undef;
+
 	if ($R::form ne "system") {
 		# Get Plugins from plugin database
 		@plugins = LoxBerry::System::get_plugins();
@@ -156,21 +182,9 @@ sub mainmenu {
 								'HOUR' => $hour
 							);
 		
-		my %notification_errors;
-		my %notification_oks;
 		
-		my @notifications = LoxBerry::Web::get_notifications();
-		for my $notification (@notifications ) {
-			if ($notification->{SEVERITY} eq 'err') {
-				$notification_errors{$notification->{PACKAGE}}++;
-				$notification_oks{$notification->{PACKAGE}}++;
-			} else {
-				$notification_oks{$notification->{PACKAGE}}++;
-			}
-		}
-		
-		print STDERR "Index: Update Errors: $notification_errors{'updates'} \n";
-		print STDERR "Index: Update Infos: $notification_oks{'updates'} \n";
+		# print STDERR "Index: Update Errors: $notification_errors{'updates'} \n";
+		# print STDERR "Index: Update Infos: $notification_oks{'updates'} \n";
 		
 		
 		$maintemplate->param('WIDGETS' => [
@@ -266,11 +280,6 @@ sub mainmenu {
 	LoxBerry::Web::head($template_title);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . " <span class='hint'>V$sversion</span>";
 	
-	our %navbar;
-	$navbar{1}{Name} = $SL{'HEADER.TITLE_PAGE_PLUGINS'};
-	$navbar{1}{URL} = "/admin/system/index.cgi";
-	$navbar{2}{Name} = $SL{'HEADER.TITLE_PAGE_SYSTEM'};
-	$navbar{2}{URL} = "/admin/system/index.cgi?form=system";
 
 	if ($R::form ne "system") {
 		$navbar{1}{active} = 1;
