@@ -341,8 +341,8 @@ if ( $pinterface eq "1.0" ) {
 }
 
 # Arch check
-if ($parch) {
-  if (!-e "/opt/loxberry/config/system/is_$parch.cfg") {
+if ($parch ) {
+  if (!-e "$lbsconfigdir/is_$parch.cfg") {
     $message =  "$SL{'PLUGININSTALL.ERR_ARCH'}";
     &logfail;
   } else {
