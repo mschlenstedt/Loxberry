@@ -84,6 +84,13 @@ if ( $R::action eq "install" ) {
     &logfail;
   }
 }
+if ( $R::action eq "uninstall" ) {
+  if ( !$R::pid ) {
+    $message =  "$SL{'PLUGININSTALL.ERR_NOPID'}";
+    &logfail;
+  }
+}
+
 # ZIP or Folder mode?
 my $zipmode = defined $R::file ? 1 : 0;
 
@@ -91,8 +98,50 @@ my $zipmode = defined $R::file ? 1 : 0;
 if ($R::action eq "install" ) {
   &install;
 }
+if ($R::action eq "uninstall" ) {
+  &uninstall;
+}
 
 exit (0);
+
+#####################################################
+# UnInstall
+#####################################################
+
+sub uninstall {
+
+our $pid = $R::pid;
+my $found = 0;
+our $pname;
+our $pfolder;
+open(F,"<$installfolder/data/system/plugindatabase.dat");
+  @data = <F>;
+  foreach (@data){
+    s/[\n\r]//g;
+    # Comments
+    if ($_ =~ /^\s*#.*/) {
+      print F "$_\n";
+      next;
+    }
+    @fields = split(/\|/);
+    if ($pid eq @fields[0]) {
+      $found = 1;
+      $pname   = @fields[4];
+      $pfolder = @fields[5];
+    }
+  }
+close (F);
+
+if ( !$found ) {
+  $message =  "$SL{'PLUGININSTALL.ERR_PIDNOTEXIST'}";
+  &logfail;
+}
+
+&purge_installation ("all");
+
+exit (0);
+
+}
 
 #####################################################
 # Install
@@ -1188,6 +1237,32 @@ sub purge_installation {
 
   # This will only be purged if we do an uninstallation
   if ($option eq "all") {
+
+  # Clean Database
+  if ($pid) {
+      open(F,"+<$installfolder/data/system/plugindatabase.dat");
+      flock(F,2);
+        @data = <F>;
+        seek(F,0,0);
+        truncate(F,0);
+        foreach (@data){
+          s/[\n\r]//g;
+          # Comments
+          if ($_ =~ /^\s*#.*/) {
+            print F "$_\n";
+            next;
+          }
+          @fields = split(/\|/);
+          if (@fields[0] eq $pid) {
+            next;
+          } else {
+            print F "$_\n";
+          }
+        }
+      flock(F,8);
+      close (F);
+    }
+
     if ($pfolder) {
       # Log
       system("$sudobin -n -u loxberry rm -rfv $lbhomedir/log/plugins/$pfolder/ 2>&1");
