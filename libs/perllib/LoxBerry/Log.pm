@@ -279,7 +279,7 @@ sub write
 		} else {
 			$string = '<' . $severitylist{$severity} . '> ' . $s . "\n"; 
 		}
-		if (!$self->{nolog}) {
+		if (!$self->{nofile}) {
 			# print STDERR "   Print to file\n";
 			print $fh $string;
 			}
