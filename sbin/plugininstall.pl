@@ -326,22 +326,6 @@ $message = "Architecture: $parch";
 $message = "Interface:    $pinterface";
 &loginfo;
 
-if ($parch) {
-  if (!-e "/opt/loxberry/config/system/is_$parch.cfg") {
-    $message =  "$SL{'PLUGININSTALL.ERR_ARCH'}";
-    &logfail;
-  } else {
-    $message =  "$SL{'PLUGININSTALL.OK_ARCH'}";
-    &logok;
-  }
-}
-
-if (version::is_lax(LoxBerry::System::lbversion())) {
-  my $lbversion = version->parse(LoxBerry::System::lbversion());
-  $message =  $SL{'PLUGININSTALL.INF_VERSION'} . $lbversion;
-  &loginfo;
-}
-
 if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pfolder || !$pinterface) {
   $message =  "$SL{'PLUGININSTALL.ERR_PLUGINCFG'}";
   &logfail;
@@ -355,6 +339,59 @@ if ( $pinterface eq "1.0" ) {
   &logerr; 
   push(@errors,"PLUGININTERFACE: $message");
 }
+
+# Arch check
+if ($parch) {
+  if (!-e "/opt/loxberry/config/system/is_$parch.cfg") {
+    $message =  "$SL{'PLUGININSTALL.ERR_ARCH'}";
+    &logfail;
+  } else {
+    $message =  "$SL{'PLUGININSTALL.OK_ARCH'}";
+    &logok;
+  }
+}
+
+# Version check
+my $versioncheck = 0;
+if (version::is_lax(LoxBerry::System::lbversion())) {
+  $versioncheck = 1;
+  our $lbversion = version->parse(LoxBerry::System::lbversion());
+  $message =  $SL{'PLUGININSTALL.INF_LBVERSION'} . $lbversion;
+  &loginfo;
+} else {
+  $versioncheck = 0;
+}
+
+if ($lbmin && $versioncheck) {
+
+  if ( (version::is_lax($plbmin)) ) {
+    $plbmin = version->parse($plbmin);
+    $message =  $SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
+    &loginfo;
+
+    if ($lbversion < $plbmin) {
+      $message =  "SL{'PLUGININSTALL.ERR_MINVERSION'}";
+      &logfail;
+    }
+  } 
+
+}
+
+if ($lbmax && $versioncheck) {
+
+  if ( (version::is_lax($plbmax)) ) {
+    $plbmax = version->parse($plbmax);
+    $message =  $SL{'PLUGININSTALL.INF_MAXVERSION'} . $plbmax;
+    &loginfo;
+
+    if ($lbversion > $plbmax) {
+      $message =  "SL{'PLUGININSTALL.ERR_MAXVERSION'}";
+      &logfail;
+    }
+  }
+
+}
+
 
 # Create MD5 Checksum
 our $pmd5checksum = md5_hex(encode_utf8("$pauthorname$pauthoremail$pname$pfolder"));
