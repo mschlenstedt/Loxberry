@@ -372,6 +372,9 @@ if ($lbmin && $versioncheck) {
     if ($lbversion < $plbmin) {
       $message =  "SL{'PLUGININSTALL.ERR_MINVERSION'}";
       &logfail;
+    } else {
+      $message =  "SL{'PLUGININSTALL.OK_MINVERSION'}";
+      &logok;
     }
   } 
 
@@ -387,11 +390,13 @@ if ($lbmax && $versioncheck) {
     if ($lbversion > $plbmax) {
       $message =  "SL{'PLUGININSTALL.ERR_MAXVERSION'}";
       &logfail;
+    } else {
+      $message =  "SL{'PLUGININSTALL.OK_MAXVERSION'}";
+      &logok;
     }
   }
 
 }
-
 
 # Create MD5 Checksum
 our $pmd5checksum = md5_hex(encode_utf8("$pauthorname$pauthoremail$pname$pfolder"));
