@@ -114,13 +114,16 @@ our $pid = $R::pid;
 my $found = 0;
 our $pname;
 our $pfolder;
-open(F,"<$installfolder/data/system/plugindatabase.dat");
+open(F,"<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
+  if ($openerr) {
+    $message =  "$SL{'PLUGININSTALL.ERR_DATABASE'}";
+    &logfail;
+  }
   @data = <F>;
   foreach (@data){
     s/[\n\r]//g;
     # Comments
     if ($_ =~ /^\s*#.*/) {
-      print F "$_\n";
       next;
     }
     @fields = split(/\|/);
@@ -170,8 +173,8 @@ $message =  "Temp Folder: $tempfolder";
 &loginfo;
 
 # Create status and logfile
-my $logfile = "/tmp/$tempfile.log";
-my $statusfile = "/tmp/$tempfile.status";
+our $logfile = "/tmp/$tempfile.log";
+our $statusfile = "/tmp/$tempfile.status";
 if (-e "$logfile" || -e "$statusfile") {
   $message =  "$SL{'PLUGININSTALL.ERR_TEMPFILES_EXISTS'}";
   &logfail;
@@ -1240,7 +1243,11 @@ sub purge_installation {
 
   # Clean Database
   if ($pid) {
-      open(F,"+<$installfolder/data/system/plugindatabase.dat");
+    open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
+      if ($openerr) {
+        $message =  "$SL{'PLUGININSTALL.ERR_DATABASE'}";
+        &logerr;
+      }
       flock(F,2);
         @data = <F>;
         seek(F,0,0);
