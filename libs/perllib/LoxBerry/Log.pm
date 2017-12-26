@@ -142,7 +142,9 @@ sub new
 	my $writetype = defined $self->{append} ? ">>" : ">";
 	# print STDERR "Write type is : " . $writetype . "\n";
 	
-	$self->open($writetype);
+	if (!$self->{nofile}) {
+		$self->open($writetype);
+	}
 	
 	if (!$LoxBerry::Log::mainobj) {
 		$LoxBerry::Log::mainobj = $self;
@@ -277,7 +279,7 @@ sub write
 		} else {
 			$string = '<' . $severitylist{$severity} . '> ' . $s . "\n"; 
 		}
-		if (!$self->{nolog}) {
+		if (!$self->{nofile}) {
 			# print STDERR "   Print to file\n";
 			print $fh $string;
 			}
@@ -394,7 +396,9 @@ sub default
 
 sub DESTROY { 
 	my $self = shift;
-	close $self->{"_FH"};
+	if ($self->{"_FH"}) {
+		close $self->{"_FH"};
+	}
 	if ($LoxBerry::Log::mainobj == $self) {
 		# Reset default object
 		undef $LoxBerry::Log::mainobj;
