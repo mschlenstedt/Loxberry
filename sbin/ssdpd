@@ -14,7 +14,7 @@
 
  my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
- if ($cfg->param("SSDP.DISABLED")) { 
+ if (is_enabled($cfg->param("SSDP.DISABLED"))) { 
 	 print "SSDPD is disabled\n";
 	 while (1) {
 		 sleep 1;
