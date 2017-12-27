@@ -31,3 +31,5 @@ chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.cgi
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.cgi
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.pl
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.pl
+
+exit 0
