@@ -133,7 +133,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
             throw new Config_Lite_Exception_Runtime(
                 'failure, can not parse the file: ' . $filename
             );
-        }
+	}
         return $this;
     }
 
@@ -293,7 +293,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
             foreach ($sectionsarray as $section => $item) {
                 if (!is_array($item)) {
                     $value    = $this->normalizeValue($item);
-                    $globals .= $section . ' = ' . $value . $this->linebreak;
+                    $globals .= $section . '=' . $value . $this->linebreak;
                 }
             }
             $content .= $globals;
@@ -306,12 +306,12 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
                             foreach ($value as $arrkey => $arrvalue) {
                                 $arrvalue  = $this->normalizeValue($arrvalue);
                                 $arrkey    = $key . '[' . $arrkey . ']';
-                                $sections .= $arrkey . ' = ' . $arrvalue
+                                $sections .= $arrkey . '=' . $arrvalue
                                             . $this->linebreak;
                             }
                         } else {
                             $value     = $this->normalizeValue($value);
-                            $sections .= $key . ' = ' . $value . $this->linebreak;
+                            $sections .= $key . '=' . $value . $this->linebreak;
                         }
                     }
                 }
@@ -821,7 +821,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
     public function offsetGet($offset)
     {
         if (array_key_exists($offset, $this->sections)) {
-            return $this->sections[$offset];
+		return $this->sections[$offset];
         }
         return null;
     }
