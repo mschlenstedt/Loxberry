@@ -30,6 +30,7 @@ use strict;
 use warnings;
 use CGI;
 use JSON;
+use Time::HiRes qw(usleep);
 use version;
 use File::Path;
 use File::Copy qw(copy);
@@ -310,12 +311,12 @@ sub check_releases
 	# LOGINF "Request: " . $request->as_string;
 	LOGINF "Requesting release list from GitHub...";
     my $response;
-	for (my $x=1; $x<3; $x++) {
+	for (my $x=1; $x<=5; $x++) {
 		LOGINF "   Try $x: Getting release list... (" . currtime() . ")"; 
 		$response = $ua->request($request);
 		last if ($response->is_success);
 		LOGWARN "   API call try $x has failed. (" . currtime() . ") HTTP " . $response->code . " " . $response->message;
-		sleep (1);
+		usleep (100*1000);
 	}
 	
 	if ($response->is_error) {
@@ -394,12 +395,13 @@ sub download
 	
 	my $download_size;
 	my $rel_header;
-	for (my $x=1; $x<=3; $x++) {
+	for (my $x=1; $x<=5; $x++) {
 		LOGINF "   Try $x: Checking file size of download...";
 		$rel_header = GetFileSize($url);
 		$download_size = $rel_header->content_length;
 		LOGINF "   Returned file size: $download_size";
 		last if (defined $download_size && $download_size > 0);
+		usleep (100*1000);
 	}
 	return undef if (!defined $download_size || $download_size == 0); 
 	LOGINF "   Expected download size: $download_size";
@@ -408,12 +410,12 @@ sub download
 	
 	my $ua = LWP::UserAgent->new;
 	my $res;
-	for (my $x = 1; $x < 5; $x++) { 
+	for (my $x=1; $x<=5; $x++) { 
 			LOGINF "   Try $x: Download of release... (" . currtime() . ")";
 			$res = $ua->mirror( $url, $filename );
 			last if ($res->is_success);
 			LOGWARN "   Download try $x has failed. (" . currtime() . ")";
-			sleep (1);
+			usleep (100*1000);
 	}
 	return undef if (!$res->is_success);
 	LOGOK "   Download successful. Comparing filesize...";
@@ -438,14 +440,14 @@ sub GetFileSize
     $ua->agent("Mozilla/5.0");
     my $req = new HTTP::Request 'HEAD' => $url;
    #$req->header('Accept' => 'text/html');
-    for (my $x=1; $x<3; $x++) {
+    for (my $x=1; $x<=5; $x++) {
 		my $res = $ua->request($req);
 		if ($res->is_success && defined $res->headers) {
 			my $headers = $res->headers;
 			return $headers;
 		} else {
 		LOGINF "   GetFileSize check try $x failed: " . $res->code . " " . $res->message;
-		sleep (1);
+		usleep (100*1000);
 		}
 	}
     LOGCRIT "   Filesize could not be aquired.";
