@@ -93,6 +93,12 @@ chmod 555 $LBHOME/system/sudoers
 chown root:root /etc/sudoers.d/lbdefaults
 chmod 664 /etc/sudoers.d/lbdefaults
 
+# profile.d/loxberry.sh
+rm /etc/profile.d/loxberry.sh
+ln -s $LBHOME/system/profile/loxberry.sh /etc/profile.d/loxberry.sh
+chmod 755 $LBHOME/system/profile
+chown root:root /etc/profile.d/loxberry.sh
+chmod 664 /etc/profile.d/loxberry.sh
 
 
 
