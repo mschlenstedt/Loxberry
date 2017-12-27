@@ -90,15 +90,21 @@ awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a
 rm /etc/sudoers.d/lbdefaults
 ln -s $LBHOME/system/sudoers/lbdefaults /etc/sudoers.d/lbdefaults
 chmod 555 $LBHOME/system/sudoers
-chown root:root /etc/sudoers.d/lbdefaults
-chmod 664 /etc/sudoers.d/lbdefaults
+chown root:root $LBHOME/system/sudoers/lbdefaults
+chmod 664 $LBHOME/system/sudoers/lbdefaults
 
 # profile.d/loxberry.sh
 rm /etc/profile.d/loxberry.sh
 ln -s $LBHOME/system/profile/loxberry.sh /etc/profile.d/loxberry.sh
 chmod 755 $LBHOME/system/profile
-chown root:root /etc/profile.d/loxberry.sh
-chmod 664 /etc/profile.d/loxberry.sh
+chown root:root $LBHOME/system/profile/loxberry.sh
+chmod 644 $LBHOME/system/profile/loxberry.sh
 
+# /etc/php/7.0/apache2/php.ini
+rm /etc/php/7.0/apache2/php.ini
+ln -s $LBHOME/system/apache2/php.ini /etc/php/7.0/apache2/php.ini
+chmod 755 $LBHOME/system/profile
+chown root:root $LBHOME/system/apache2/php.ini
+chmod 644 $LBHOME/system/apache2/php.ini
 
 
