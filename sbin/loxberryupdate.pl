@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='0.3.1.4';
+my $scriptversion='0.3.1.5';
 
 
 # # Predeclare logging functions
@@ -71,7 +71,6 @@ my $log = LoxBerry::Log->new(
 
 LOGOK "Update handed over from LoxBerry Update Check to LoxBerry Update";
 LOGWARN "New logfile was created as handover of logfilename did not work" if (!$logfilename);
-LOGINF "Program is running as " . $ENV{USERNAME};
 
 $logfilename = $log->filename;
 print STDERR "loxberryupdatecheck uses filename $logfilename\n";
@@ -251,7 +250,7 @@ foreach my $version (@updatelist)
 	if (!$cgi->param('dryrun')) {
 		LOGINF "      Running update script for $version...\n";
 		undef $exitcode; 
-		$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl");
+		$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0 ) {
 			LOGERR "Update-Script update_$version returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
@@ -327,8 +326,10 @@ sub exec_perl_script
 	} else {
 		push @commandline, "$^X", $filename, "1>&2";
 	}
-	system(@commandline);
+	$log->close;
+	qx(@commandline);
 	my $exitcode  = $? >> 8;
+	$log->open;
 	LOGINF "exec_perl_script $filename with user $user - errcode $exitcode\n";
 	return $exitcode;
 }
