@@ -30,6 +30,7 @@ use strict;
 use warnings;
 use CGI;
 use JSON;
+use Time::HiRes qw(usleep);
 use version;
 use File::Path;
 use File::Copy qw(copy);
@@ -84,7 +85,6 @@ my $log = LoxBerry::Log->new(
 
 LOGSTART "LoxBerry Update Check";
 LOGINF "Version of loxberrycheck.pl is $scriptversion";
-LOGINF "Program is running as " . $ENV{USERNAME};
 
 if (!$cgi->param) {
 	$joutput{'error'} = "No parameters sent.";
@@ -310,9 +310,17 @@ sub check_releases
 	$request->header('Accept' => 'application/vnd.github.v3+json');
 	# LOGINF "Request: " . $request->as_string;
 	LOGINF "Requesting release list from GitHub...";
-	my $response = $ua->request($request);
+    my $response;
+	for (my $x=1; $x<=5; $x++) {
+		LOGINF "   Try $x: Getting release list... (" . currtime() . ")"; 
+		$response = $ua->request($request);
+		last if ($response->is_success);
+		LOGWARN "   API call try $x has failed. (" . currtime() . ") HTTP " . $response->code . " " . $response->message;
+		usleep (100*1000);
+	}
+	
 	if ($response->is_error) {
-		$joutput{'error'} = "Error fetching releases: " . $response->code . " " . $response->message;
+		$joutput{'error'} = "Error fetching release list: " . $response->code . " " . $response->message;
 		&err;
 		LOGCRIT $joutput{'error'};
 		exit(1);
@@ -387,12 +395,13 @@ sub download
 	
 	my $download_size;
 	my $rel_header;
-	for (my $x=1; $x<=3; $x++) {
+	for (my $x=1; $x<=5; $x++) {
 		LOGINF "   Try $x: Checking file size of download...";
 		$rel_header = GetFileSize($url);
 		$download_size = $rel_header->content_length;
 		LOGINF "   Returned file size: $download_size";
 		last if (defined $download_size && $download_size > 0);
+		usleep (100*1000);
 	}
 	return undef if (!defined $download_size || $download_size == 0); 
 	LOGINF "   Expected download size: $download_size";
@@ -401,12 +410,12 @@ sub download
 	
 	my $ua = LWP::UserAgent->new;
 	my $res;
-	for (my $x = 1; $x < 5; $x++) { 
+	for (my $x=1; $x<=5; $x++) { 
 			LOGINF "   Try $x: Download of release... (" . currtime() . ")";
 			$res = $ua->mirror( $url, $filename );
 			last if ($res->is_success);
 			LOGWARN "   Download try $x has failed. (" . currtime() . ")";
-			sleep (1);
+			usleep (100*1000);
 	}
 	return undef if (!$res->is_success);
 	LOGOK "   Download successful. Comparing filesize...";
@@ -431,14 +440,14 @@ sub GetFileSize
     $ua->agent("Mozilla/5.0");
     my $req = new HTTP::Request 'HEAD' => $url;
    #$req->header('Accept' => 'text/html');
-    for (my $x=1; $x<3; $x++) {
+    for (my $x=1; $x<=5; $x++) {
 		my $res = $ua->request($req);
 		if ($res->is_success && defined $res->headers) {
 			my $headers = $res->headers;
 			return $headers;
 		} else {
 		LOGINF "   GetFileSize check try $x failed: " . $res->code . " " . $res->message;
-		sleep (1);
+		usleep (100*1000);
 		}
 	}
     LOGCRIT "   Filesize could not be aquired.";
@@ -577,20 +586,19 @@ sub prepare_update
 	}
 	
 	if (-e "$updatedir/sbin/loxberryupdatecheck.pl" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl" or 
-			do { LOGCRIT "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!";
-				 return undef; 
-			}
-				 
-		
+		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl";
+		if (! $?) {
+			LOGCRIT "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!";
+			return undef;
+		}
 	}
 	if (! -x "$lbhomedir/sbin/loxberryupdatecheck.pl") {
 		chmod 0774, "$lbhomedir/sbin/loxberryupdatecheck.pl";
 	}
 	
 	if (-e "$updatedir/sbin/loxberryupdate.pl" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl" or
-		do {
+		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl";
+		if (! $?) {
 			LOGCRIT "Error copying loxberryupdate to $lbhomedir/sbin/loxberryupdate.pl: $!";
 			return undef;
 		}

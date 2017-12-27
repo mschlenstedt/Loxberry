@@ -15,11 +15,12 @@ use DateTime;
 
 # Potentially, this does something strange when using LoxBerry::Web without Webinterface (printing errors in HTML instead of plain text)
 # See https://github.com/mschlenstedt/Loxberry/issues/312 and https://github.com/mschlenstedt/Loxberry/issues/287
-use CGI::Carp qw(fatalsToBrowser set_message);
-set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
+# use CGI::Carp qw(fatalsToBrowser set_message);
+# set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
 our $VERSION = "0.3.1.18";
+our $DEBUG;
 
 use base 'Exporter';
 our @EXPORT = qw (
@@ -55,7 +56,7 @@ my $notifications_ok;
 ##################################################################
 sub lblanguage 
 {
-	# print STDERR "current \$lang: $LoxBerry::Web::lang\n";
+	print STDERR "current \$lang: $LoxBerry::Web::lang\n" if ($DEBUG);
 	# Return if $lang is already set
 	if ($LoxBerry::Web::lang) {
 		return $LoxBerry::Web::lang;
@@ -65,13 +66,13 @@ sub lblanguage
 	my $querylang = $query->param('lang');
 	if ($querylang) 
 		{ $LoxBerry::Web::lang = substr $querylang, 0, 2;
-		  # print STDERR "\$lang in CGI: $LoxBerry::Web::lang";
+		  print STDERR "\$lang in CGI: $LoxBerry::Web::lang" if ($DEBUG);
 		  return $LoxBerry::Web::lang;
 	}
 	# If nothing found, get language from system settings
 	my  $syscfg = new Config::Simple("$LoxBerry::System::lbhomedir/config/system/general.cfg");
 	$LoxBerry::Web::lang = $syscfg->param("BASE.LANG");
-	# print STDERR "\$lang from general.cfg: $LoxBerry::Web::lang";
+	print STDERR "\$lang from general.cfg: $LoxBerry::Web::lang" if ($DEBUG);
 	return substr($LoxBerry::Web::lang, 0, 2);
 }
 
@@ -110,19 +111,19 @@ sub lbfooter
 sub head
 {
 
-	print STDERR "== head == prints html head including <body> start =================\n";
+	print STDERR "== head == prints html head including <body> start =================\n" if ($DEBUG);
 	my $templatetext;
 	my ($pagetitle) = @_;
 
 	my $lang = lblanguage();
-	print STDERR "\nDetected language: $lang\n";
-	print STDERR "main::templatetitle: $main::template_title\n";
+	print STDERR "\nDetected language: $lang\n" if ($DEBUG);
+	print STDERR "main::templatetitle: $main::template_title\n" if ($DEBUG);
 	our $template_title = defined $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
 	$template_title = LoxBerry::System::trim($template_title);
 	if ($template_title eq "") {
 		$template_title = "LoxBerry";
 	}
-	print STDERR "friendlyname: " . LoxBerry::System::lbfriendlyname() . "\n";
+	print STDERR "friendlyname: " . LoxBerry::System::lbfriendlyname() . "\n" if ($DEBUG);
 	
 	my $templatepath;
 	my $headobj;
@@ -155,7 +156,7 @@ sub head
 #####################################################
 sub pagestart
 {
-	print STDERR "== pagestart == prints page including panels =================\n";
+	print STDERR "== pagestart == prints page including panels =================\n" if ($DEBUG);
 	my $templatetext;
 	
 	my ($pagetitle, $helpurl, $helptemplate, $page) = @_;
@@ -165,9 +166,9 @@ sub pagestart
 	} 
 	
 	my $lang = lblanguage();
-	print STDERR "\nDetected language: $lang\n";
+	print STDERR "\nDetected language: $lang\n" if ($DEBUG);
 	our $template_title = $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
-	print STDERR "friendlyname: " . LoxBerry::System::lbfriendlyname() . "\n";
+	print STDERR "friendlyname: " . LoxBerry::System::lbfriendlyname() . "\n" if ($DEBUG);
 	our $helplink = $helpurl ? $helpurl : $main::helplink;
 	
 	my $templatepath;
@@ -182,7 +183,7 @@ sub pagestart
 	
 	# Help for plugin calls
 	if (! defined $main::helptext and !$systemcall) {
-		print STDERR "-- PLUGIN Help Template --\n";
+		print STDERR "-- PLUGIN Help Template --\n" if ($DEBUG);
 		if (-e "$LoxBerry::System::lbptemplatedir/help/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbptemplatedir/help/$helptemplate";
 			$langfile = "$LoxBerry::System::lbptemplatedir/lang/$helptemplate";
@@ -198,7 +199,7 @@ sub pagestart
 	
 	# Help for system calls
 	if (! defined $main::helptext and $systemcall) {
-		print STDERR "-- SYSTEM Help Template --\n";
+		print STDERR "-- SYSTEM Help Template --\n" if ($DEBUG);
 		if (-e "$LoxBerry::System::lbstemplatedir/help/$helptemplate") {
 			$templatepath = "$LoxBerry::System::lbstemplatedir/help/$helptemplate";
 			$langfile = "$LoxBerry::System::lbstemplatedir/lang/$helptemplate";
@@ -216,20 +217,20 @@ sub pagestart
 	## 
 	if ($ismultilang) {
 				
-		print STDERR "We are in MULTILANG help mode\n";
+		print STDERR "We are in MULTILANG help mode\n" if ($DEBUG);
 		# Strip file extension
 		$langfile =~ s/\.[^.]*$//;
 		
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
 		my $lang_en = $langfile . "_en.ini";
-		print STDERR "English language file: $lang_en\n";
+		print STDERR "English language file: $lang_en\n" if ($DEBUG);
 		
 		Config::Simple->import_from($lang_en, \%HelpPhrases) or Carp::carp(Config::Simple->error());
 		
 		# Read foreign language if exists and not English
 		$langfile = $langfile . "_" . $lang . ".ini";
-		print STDERR "Foreign language file: $langfile\n";
+		print STDERR "Foreign language file: $langfile\n" if ($DEBUG);
 		
 		# Now overwrite phrase variables with user language
 		if ((-e $langfile) and ($lang ne 'en')) {
@@ -256,8 +257,8 @@ sub pagestart
 	} else
 	{
 	## This is the legacy help generation
-		print STDERR "We are in LEGACY help mode\n";
-		print STDERR "templatepath: $templatepath\n";
+		print STDERR "We are in LEGACY help mode\n" if ($DEBUG);
+		print STDERR "templatepath: $templatepath\n" if ($DEBUG);
 		if ($templatepath && $helptemplate ne '<!--$helptext-->') {
 			if (open(F,"$templatepath")) {
 				my @help = <F>;
@@ -268,12 +269,12 @@ sub pagestart
 				}
 				close(F);
 			} else {
-			Carp::carp ("Help template $templatepath could not be opened - continuing without help.\n");
+			Carp::carp ("Help template $templatepath could not be opened - continuing without help.\n") if ($DEBUG);
 			}
 		} elsif ($helptemplate eq '<!--$helptext-->') {
 			$templatetext = '<!--$helptext-->';
 		} else {
-			Carp::carp ("Help template \$templatepath is empty - continuing without help.\n");
+			Carp::carp ("Help template \$templatepath is empty - continuing without help.\n") if ($DEBUG);
 		}
 		
 		if (! $templatetext) {
@@ -305,10 +306,10 @@ sub pagestart
 	
 	LoxBerry::Web::readlanguage($headerobj, undef, 1);
 	
-	print STDERR "template_title: $template_title\n";
-	print STDERR "helplink:       $helplink\n";
-	# print STDERR "helptext:       $helptext\n";
-	print STDERR "Home string: " . $LoxBerry::Web::SL{'HEADER.PANEL_HOME'} . "\n";
+	print STDERR "template_title: $template_title\n" if ($DEBUG);
+	print STDERR "helplink:       $helplink\n" if ($DEBUG);
+	# print STDERR "helptext:       $helptext\n" if ($DEBUG);
+	print STDERR "Home string: " . $LoxBerry::Web::SL{'HEADER.PANEL_HOME'} . "\n" if ($DEBUG);
 	
 	$headerobj->param( 	TEMPLATETITLE => $template_title, 
 						HELPLINK => $helplink, 
@@ -440,7 +441,7 @@ sub readlanguage
 	
 	# Return if we already have them in memory.
 	if (!$issystem && !$langfile) { 
-		Carp::carp("WARNING: \$langfile is empty, setting to language.ini. If file is missing, error will occur.");
+		Carp::carp("WARNING: \$langfile is empty, setting to language.ini. If file is missing, error will occur.") if ($DEBUG);
 		$langfile = "language.ini"; }
 	# if ($issystem and %SL) { return %SL; }
 	# if (!$issystem and %L) { return %L; }
@@ -538,7 +539,7 @@ sub get_plugin_icon
 sub read_notificationlist
 {
 	if (@notifications) {
-		#print STDERR "Notification list cached.\n";
+		#print STDERR "Notification list cached.\n" if ($DEBUG);
 		return;
 	}
 	opendir( my $DIR, $notification_dir );
@@ -549,7 +550,7 @@ sub read_notificationlist
 		
 	while ( my $direntry = shift @files ) {
 		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
-		print STDERR "Direntry: $direntry\n";
+		print STDERR "Direntry: $direntry\n" if ($DEBUG);
 		my $notstr = substr($direntry, 16, rindex($direntry, '.')-16);
 		my ($package, $name, $severity) = split(/_/, $notstr);
 		my $notdate = substr($direntry, 0, 15);
@@ -573,12 +574,12 @@ sub read_notificationlist
 	}
 	# return @notifications;
 	closedir $DIR;
-	# print STDERR "Number of elements: " . scalar(@notifications) . "\n";
+	print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
 }
 
 sub get_notifications
 {
-	# print STDERR "get_notifications called.\n";
+	# print STDERR "get_notifications called.\n" if ($DEBUG);
 	my ($package, $name, $latest, $count) = @_;
 	LoxBerry::Web::read_notificationlist();
 	if (! $package) {
@@ -600,10 +601,10 @@ sub get_notifications
 		}
 		push(@filtered, $notification);
 		last if ($latest);
-		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n";
+		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n" if ($DEBUG);
 	}
-	print STDERR "get_notifications: \n";
-	print STDERR "Countings: $filtered_errors errors / $filtered_ok ok's\n";
+	print STDERR "get_notifications: \n" if ($DEBUG);
+	print STDERR "Countings: $filtered_errors errors / $filtered_ok ok's\n" if ($DEBUG);
 	return @filtered if (! $count);
 	return $filtered_errors, $filtered_ok, ($filtered_errors+$filtered_ok);
 }
@@ -630,7 +631,7 @@ sub delete_notifications
 		} else {
 			unlink $notification->{FULLPATH};
 		}
-		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n";
+		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n" if ($DEBUG);
 	}
 	undef @notifications;
 }
