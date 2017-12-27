@@ -1,0 +1,14 @@
+#!/bin/bash
+
+case $1 in
+	ssdpd)
+		systemctl $2 ssdpd
+		;;
+	webport_change)
+
+		;;
+	webport_success)
+
+		;;
+esac
+
