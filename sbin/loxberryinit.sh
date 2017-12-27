@@ -32,6 +32,21 @@ PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
 ENVIRONMENT=$(cat /etc/environment)
 export $ENVIRONMENT
 
+# ini_parser
+# Usage:
+# ini_parser <filename> "[SECTION]"
+# gives variables $SECTIONsetting
+ini_parser() {
+    INI_FILE=$1
+    INI_SECTION=$2
+    eval `sed -e 's/[[:space:]]*\=[[:space:]]*/=/g' \
+        -e 's/;.*$//' \
+        -e 's/[[:space:]]*$//' \
+        -e 's/^[[:space:]]*//' \
+        -e "s/^\(.*\)=\([^\"']*\)$/$INI_SECTION\1=\"\2\"/" \
+        < $INI_FILE \
+        | sed -n -e "/^\[$INI_SECTION\]/,/^\s*\[/{/^[^;].*\=.*/p;}"`
+}
 
 case "$1" in
   start|"")
@@ -50,13 +65,14 @@ case "$1" in
         # Copy manual network configuration if any exists
         if [ -f /boot/network.txt ]
         then
-          log_action_begin_msg "Found manual network configuration in /boot. Activating..."
-          mv /opt/loxberry/system/network/interfaces  /opt/loxberry/system/network/interfaces.bkp > /dev/null 2>&1
-          cp /boot/network.txt  /opt/loxberry/system/network/interfaces > /dev/null 2>&1
-          dos2unix /etc/network/interfaces > /dev/null 2>&1
-	  chown loxberry:loxberry /opt/loxberry/system/network/interfaces > /dev/null 2>&1
-          mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
-          /sbin/reboot > /dev/null 2>&1
+			log_action_begin_msg "Found manual network configuration in /boot. Activating..."
+			mv /opt/loxberry/system/network/interfaces  /opt/loxberry/system/network/interfaces.bkp > /dev/null 2>&1
+			cp /boot/network.txt  /opt/loxberry/system/network/interfaces > /dev/null 2>&1
+			dos2unix /etc/network/interfaces > /dev/null 2>&1
+			chown loxberry:loxberry /opt/loxberry/system/network/interfaces > /dev/null 2>&1
+			mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
+			log_action_cont_msg "rebooting"
+			/sbin/reboot > /dev/null 2>&1
         fi
 
         # Copy new HTACCESS User/Password Database
@@ -91,15 +107,52 @@ case "$1" in
 		# Run Daemons from Plugins and from System
         log_action_begin_msg "Running System Daemons"
         run-parts -v  /opt/loxberry/system/daemons/system > /dev/null 
+		log_action_end_msg 0
 		
         log_action_begin_msg "Running Plugin Daemons"
         run-parts -v --new-session /opt/loxberry/system/daemons/plugins > /dev/null 
+		log_action_end_msg 0
 		
         # Run Uninstall scripts
         log_action_begin_msg "Running Uninstall Scripts"
         run-parts -v /opt/loxberry/system/daemons/uninstall > /dev/null 
         rm -rf /opt/loxberry/system/daemons/uninstall/* > /dev/null 2>&1
+		log_action_end_msg 0
+		
+		# Check LoxBerry Update cronjobs
+		# Recreate them, if config has enabled them, but do not exist
+		ini_parser "$LBSCONFIG/general.cfg" "UPDATE"
+		log_action_begin_msg "Checking consistence of LoxBerry Update settings"
+		echo Update-Settings: INSTALLTYPE is $UPDATEINSTALLTYPE, INTERVAL is $UPDATEINTERVAL
+		if [ "$UPDATEINSTALLTYPE" = "notify" ] ||  [ "$UPDATEINSTALLTYPE" = "install" ]; then
+			if [ "$UPDATEINTERVAL" = "1" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then
+				log_warning_msg "Recreated daily cronjob"
+				ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"
+				if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
+				if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
+			fi
+			if [ "$UPDATEINTERVAL" = "7" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then
+				log_warning_msg "Recreated weekly cronjob"
+				ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"
+			if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
+			if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
 
+			fi
+			if [ "$UPDATEINTERVAL" = "30" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then
+				log_warning_msg "Recreated monthly cronjob"
+				ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"
+				if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
+				if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
+
+			fi
+		else
+			log_action_cont_msg "Updates are disabled, checking and deleting cronjobs"
+			if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
+			if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
+			if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
+		fi
+		log_action_end_msg 0
+		
 	;;
 	restart|reload|force-reload|status)
         echo "Error: argument '$1' not supported" >&2
@@ -113,3 +166,6 @@ case "$1" in
         exit 3
   ;;
 esac
+
+
+

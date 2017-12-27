@@ -12,13 +12,16 @@
 #	dryrun
 #		1	do not update loxberryupdate*.pl, exlude-file, and let rsync run dry
 #
+#	logfilename
+#		(empty)	$lbslogdir/loxberryupdate/{timestamp}.log is used
+#		filename  filename is used
 #######################################################
 
 use LoxBerry::System;
-# use LoxBerry::Web;
+use LoxBerry::Web;
+use LoxBerry::Log;
 use strict;
 use warnings;
-use experimental 'smartmatch';
 use CGI;
 use JSON;
 use File::Path;
@@ -27,33 +30,80 @@ use version;
 use LWP::UserAgent;
 require HTTP::Request;
 
-my $logfile ="$lbslogdir/loxberryupdate/logfile.log";
-open ERR, '>>', $logfile;
+# Version of this script
+my $scriptversion='0.3.1.4';
+
+
+# # Predeclare logging functions
+# sub LOGOK { my ($s)=@_; print ERRORLOG "<OK>" . $s . "\n"; }
+# sub LOGINF { my ($s)=@_;print ERRORLOG "<INFO>" . $s . "\n"; }
+# sub LOGWARN { my ($s)=@_;print ERRORLOG "<WARNING>" . $s . "\n"; }
+# sub LOGERR { my ($s)=@_;print ERRORLOG"<ERROR>" . $s . "\n"; }
+# sub LOGCRIT { my ($s)=@_;print ERRORLOG "<FAIL>" . $s . "\n"; }
+
+
+#my $logfile ="$lbslogdir/loxberryupdate/logfile.log";
+#open ERRORLOG, '>>', $logfile;
 
 my $updatedir;
 my %joutput;
 my $errskipped = 0;
 my $formatjson;
+my $logfilename;
+my $cron;
 
 my $cgi = CGI->new;
+
+# Initialize logfile
+if ($cgi->param('logfilename')) {
+	$logfilename = $cgi->param('logfilename');
+}
+print STDERR "Logfilename from cgi: $logfilename\n";
+my $log = LoxBerry::Log->new(
+		package => 'LoxBerry Update',
+		name => 'update',
+		filename => $logfilename,
+		logdir => "$lbslogdir/loxberryupdate",
+		loglevel => 7,
+		stderr => 1,
+		append => 1,
+);
+
+LOGOK "Update handed over from LoxBerry Update Check to LoxBerry Update";
+LOGWARN "New logfile was created as handover of logfilename did not work" if (!$logfilename);
+LOGINF "Program is running as " . $ENV{USERNAME};
+
+$logfilename = $log->filename;
+print STDERR "loxberryupdatecheck uses filename $logfilename\n";
+
+if ($cgi->param('cron')) {
+	$cron = $cgi->param('cron');
+	LOGOK "This update was triggered automatically by schedule.";
+} else {
+	LOGOK "This update was manually triggered.";
+}
 
 if ($cgi->param('updatedir')) {
 	$updatedir = $cgi->param('updatedir');
 }
+
 if (!$updatedir) {
 	$joutput{'error'} = "No updatedir sent.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit (1);
 }
 if (! -e "$updatedir/config/system/general.cfg") {
 	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg in correct path).";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit (1);
 }
 
 if (!$lbhomedir) {
 	$joutput{'error'} = "Cannot determine LBHOMEDIR.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit (1);
 }
 
@@ -61,23 +111,28 @@ my $release = $cgi->param('release');
 if (!$release) {
 	$joutput{'error'} = "No release parameter given";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit (1);
 }
+
 if ($release eq "config") {
 	my $newcfg = new Config::Simple("$updatedir/config/system/general.cfg");
 	$release = $newcfg->param('BASE.VERSION');
+	LOGWARN "Version parameter 'config' was given, destination version was read from update general.cfg (version $release).";
 }
 if (!$release) {
 	$joutput{'error'} = "Cannot detect release version number.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit (1);
 }
 
 if (version::is_lax($release)) {
 	$release = version->parse($release);
 } else {
-	$joutput{'error'} = "Cannot parse provided version $release. Is this a real version string? Exiting.";
+	$joutput{'error'} = "Cannot parse provided destination version $release. Is this a real version string? Exiting.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit(1);
 }
 my $currversion;
@@ -87,17 +142,21 @@ if (version::is_lax(LoxBerry::System::lbversion())) {
 } else {
 	$joutput{'error'} = "Cannot read current LoxBerry version $currversion. Is this a real version string? Exiting.";
 	&err;
+	LOGCRIT $joutput{'error'};
 	exit(1);
 }
 
+LOGINF "Changing the owner of the update files to loxberry:loxberry...";
+$log->close;
 # Change owner of the loxberryupdate dir to loxberry:loxberry
-system("chown -R loxberry:loxberry $updatedir >>$logfile");
+system("chown -R loxberry:loxberry $updatedir >>$logfilename");
 my $exitcode  = $? >> 8;
+$log->open;
 if ($exitcode != 0) {
-	print ERR "Changing owner of updatedir $updatedir returned errors. This may lead to further permission problems. Exiting.\n";
+	LOGCRIT "Changing owner of updatedir $updatedir returned errors. This may lead to further permission problems. Exiting.";
 	exit(1);
 }
-
+LOGOK "Changing owner was successful.";
 # Set up rsync command line
 
 my $dryrun = $cgi->param('dryrun') ? "--dry-run" : "";
@@ -116,35 +175,44 @@ my @rsynccommand = (
 	"--exclude-from=$lbhomedir/config/system/update-exclude.system",
 	"--exclude-from=$lbhomedir/config/system/update-exclude.userdefined",
 	"--human-readable",
-	"--log-file=$logfile",
+	"--log-file=$logfilename",
 	"$dryrun",
 	"$updatedir/",
 	"$lbhomedir/",
 );
 
+LOGINF "Running rsync command...";
 undef $exitcode;
+$log->close;
 #system(@rsynccommand);
 qx{@rsynccommand};
 $exitcode  = $? >> 8;
+$log->open;
 if ($exitcode != 0 ) {
-	print ERR rsyncerror($exitcode) . ". Despite errors loxberryupdate.pl will continue.\n";
+	LOGERR rsyncerror($exitcode) . ". Despite errors loxberryupdate.pl will continue.";
 	$errskipped++;
+} else {
+	LOGOK "rsync finished successful.";
 }
 
 if ($dryrun ne "") {
-	print ERR "rsync was started with dryrun. Nothing was changed.\n\n";
+	LOGWARN "rsync was started with dryrun. Nothing was changed.";
 }
 
-print ERR "Restoring permissions\n";
+LOGINF "Restoring permissions of $lbhomedir of your LoxBerry...";
+$log->close;
 # Restoring permissions
-system("$lbhomedir/sbin/resetpermissions.sh 1>&2");
+system("$lbhomedir/sbin/resetpermissions.sh 1>&2 >>$logfilename");
 $exitcode  = $? >> 8;
+$log->open;
 if ($exitcode != 0 ) {
-	print ERR "Restoring permissions exited with errorcode $exitcode. Despite errors loxberryupdate.pl will continue.\n";
+	LOGERR "Restoring permissions exited with errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
 	$errskipped++;
+} else {
+	LOGOK "Restoring permissions was successful.";
 }
 
-print ERR "Searching and preparing update scripts\n";
+LOGINF "Searching and preparing update scripts...";
 # Preparing Update scripts
 my @updatelist;
 my $updateprefix = 'update_';
@@ -153,11 +221,11 @@ while (my $file = readdir(DIR)) {
 	next if (!begins_with($file, $updateprefix));
 	my $lastdotpos = rindex($file, '.');
 	my $nameversion = lc(substr($file, length($updateprefix), length($file)-$lastdotpos-length($updateprefix)+1));
-	#print ERR "$nameversion\n";
+	#LOGINF "$nameversion\n";
 	if (version::is_lax($nameversion)) {
 		push @updatelist, version->parse($nameversion);
 	} else {
-		print ERR "Ignoring $nameversion as this does not look like a version number.\n";
+		LOGWARN "Ignoring $nameversion as this does not look like a version number.";
 		$errskipped++;
 		next;
 	}
@@ -165,63 +233,76 @@ while (my $file = readdir(DIR)) {
 closedir DIR;
 @updatelist = sort { version->parse($a) <=> version->parse($b) } @updatelist;
 
-print ERR "Running update scripts...\n";
+LOGINF "Running update scripts...";
 
+my $scripterrskipped=0;
 foreach my $version (@updatelist)
 { 
 	my $exitcode;
-	print ERR "Script version: " . $version . "\n";
+	LOGINF "   Script version: " . $version;
 	if ( $version <= $currversion ) {
-		print ERR "  Skipping. $version too old version.\n";
+		LOGINF "      Skipping. $version too old version.";
 		next;
 	}
 	if ( $version > $release ) {
-		print ERR "  Skipping. $version too new version.\n";
+		LOGINF "      Skipping. $version too new version.";
 		next;
 	}
 	if (!$cgi->param('dryrun')) {
-		print ERR "   Running update script for $version...\n";
+		LOGINF "      Running update script for $version...\n";
 		undef $exitcode; 
 		$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl");
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0 ) {
-			print ERR "Update-Script update_$version returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.\n";
+			LOGERR "Update-Script update_$version returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
 			$errskipped++;
+			$scripterrskipped++;
 		}
 		# Should we remember, if exec failed? I think no.
 	} else {
-		print ERR "   Dry-run. Skipping $version script.\n";
+		LOGWARN "   Dry-run. Skipping $version script.\n";
 	}
+}
+
+if ($scripterrskipped > 0) {
+	LOGWARN "Update scripts were processed, but $scripterrskipped did return an error code. Please check these files and create an issue at GitHub including your log.";
+} else {
+	LOGOK "Update scripts executed successful.";
 }
 
 # We think that everything is up to date now.
 # I don't know what to do if error occurred during update scripts, so we simply continue.
 
 # We have to recreate the legacy templates.
-print ERR "Updating LoxBerry legacy templates...\n";
+LOGINF "Updating LoxBerry legacy templates...";
 system("su - loxberry -c '$lbshtmlauthdir/tools/generatelegacytemplates.pl' >/dev/null");
 $exitcode  = $? >> 8;
 if ($exitcode != 0 ) {
-	print ERR "generatelegacytemplates returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.\n";
+	LOGINF "generatelegacytemplates returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
 	$errskipped++;
+} else {
+	LOGOK "LoxBerry legacy template successfully updated.";
 }
 
+LOGINF "LoxBerry's config version is updated from $currversion to $release";
 # Last but not least set the general.cfg to the new version.
 if (! $cgi->param('dryrun') ) {
-	print ERR "Updating the version in general.cfg is currently disabled for testing.\n";
+	LOGWARN "Updating the version in general.cfg is currently disabled for testing.";
 	#my $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or do {
-	#		print ERR "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
+	#		LOGINF "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
 	#		$errskipped++;
 	#}
 	#$syscfg->param('BASE.VERION', "$release");
 	#$syscfg->save() or do {
-	#		print ERR "Cannot write to general.cfg. Error: " . $syscfg->error() . "\n"; 
+	#		LOGINF "Cannot write to general.cfg. Error: " . $syscfg->error() . "\n"; 
 	#		$errskipped++;
 	#}
 	}
 
 # Finished. 
-	
+
+LOGINF "All procesures finished.";
+notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_OK'} . " $release");
 exit 0;
 
 
@@ -236,10 +317,10 @@ sub exec_perl_script
 	my $user = shift;
 	
 	if (!$filename) {
-		print ERR "   exec_perl_script: Filename is empty. Skipping.\n";	
+		LOGINF "   exec_perl_script: Filename is empty. Skipping.\n";	
 		return;
 	}
-	print ERR "Executing $filename\n";
+	LOGINF "Executing $filename\n";
 	my @commandline;
 	if ($user) {
 		push @commandline, "su", "-", $user, "-c", "'$^X $filename'", "1>&2";
@@ -248,7 +329,7 @@ sub exec_perl_script
 	}
 	system(@commandline);
 	my $exitcode  = $? >> 8;
-	print ERR "exec_perl_script $filename with user $user - errcode $exitcode\n";
+	LOGINF "exec_perl_script $filename with user $user - errcode $exitcode\n";
 	return $exitcode;
 }
 
@@ -292,29 +373,52 @@ sub rsyncerror
 sub err
 {
 	if ($joutput{'error'}) {
-		print ERR "ERROR: " . $joutput{'error'} . "\n";
+		LOGERR $joutput{'error'};
 		
 	} elsif ($joutput{'info'}) {
-		print ERR "INFO: " . $joutput{'info'} . "\n";
+		LOGINF $joutput{'info'};
 	}
 	if ($formatjson) {
 		my $jsntext = to_json(\%joutput);
-		print ERR "JSON: " . $jsntext . "\n";
+		LOGINF "JSON: " . $jsntext;
 		print $jsntext;
 
 	}
 }
 
+sub notify
+{
+	my ($package, $name, $message, $error) = @_;
+	if (! $package || ! $name || ! $message) {
+		print STDERR "Notification: Missing parameters\n";
+		return;
+	}
+	$package = lc($package);
+	$name = lc($name);
+	$error = '_err' if ($error);
+	
+	my $filename = $LoxBerry::Web::notification_dir . "/" . currtime('file') . "_${package}_${name}${error}.system";
+	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
+	print $fh $message . "\n";
+	close $fh;
+}
+
+
+
+
 # This routine is called at every end
 END 
 {
-	print ERR "<INFO> LoxBerry Update skipped at least $errskipped warnings or errors. Check the log.\n" if ($errskipped > 0 );
+	LOGWARN "LoxBerry Update skipped at least $errskipped warnings or errors. Check the log." if ($errskipped > 0 );
 	
 	if ($? != 0) {
-		print ERR "<ERROR> LoxBerry Update exited with an error. Errorcode: $?\n";
+		LOGCRIT "LoxBerry Update exited or terminated with an error. Errorcode: $?";
+		if ($cron) {
+			notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_ERROR'} . " $release", 'Error');
+		}
 		
 	} else {
-		print ERR "\n<OK> Loxberry Update thinks that the update was successful. If not -> http://www.loxwiki.eu:80/x/YQR7AQ\n";
+		LOGOK "Loxberry Update thinks that the UPDATE WAS SUCCESSFUL!";
 	}
-	close ERR;
+	# close ERR;
 }

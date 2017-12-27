@@ -351,13 +351,18 @@ $(document).ready( function () {
  }
 
 </script>
-
-
-
 </TMPL_IF>
 
-
-
+<TMPL_IF lbuhistory>
+<p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATELOGS></p>
+	<TMPL_LOOP UPDATESLIST>
+		<p style="width:60%"><TMPL_VAR DATESTR> <a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><TMPL_VAR LOGVIEWER.BUTTON_OPEN_LOGFILE></a></p>
+	</TMPL_LOOP>
+<p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
+<TMPL_LOOP UPDATECHECKSLIST>
+		<p><TMPL_VAR DATESTR> <a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><TMPL_VAR LOGVIEWER.BUTTON_OPEN_LOGFILE></a></p>
+	</TMPL_LOOP>
+</TMPL_IF>
 
 
 

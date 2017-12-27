@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "0.3.1.7";
+	public static $LBWEBVERSION = "0.3.1.17";
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
 	public static $lang;
@@ -123,10 +123,16 @@ class LBWeb
 					$btnactive = ' class="ui-btn-active"';
 				} else { $btnactive = NULL; 
 				}
-			if (isset($element['target'])) {
+				if (isset($element['target'])) {
 					$btntarget = ' target="' . $element['target'] . '"';
 				} else {
 					$btntarget = "";
+				}
+				
+				if (isset($element['notifyRed'])) {
+					$notify = ' <span class="notifyRedNavBar">' . $element['notifyRed'] . '</span>';
+				} elseif (isset($element['notifyBlue'])) {
+					$notify = ' <span class="notifyBlueNavBar">' . $element['notifyBlue'] . '</span>';
 				}
 				
 				if (isset($element['Name'])) {

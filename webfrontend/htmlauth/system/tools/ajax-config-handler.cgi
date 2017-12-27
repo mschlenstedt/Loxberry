@@ -131,7 +131,7 @@ sub lbupdate
 	}
 	
 	if ($action eq 'lbupdate-runinstall') {
-		exec("sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1 dryrun=1");
+		exec("sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1");
 		exit(1);
 	}
 	
@@ -152,16 +152,16 @@ sub lbupdate
 
 	if ($action eq 'lbupdate-installtime') {
 		if ($value eq '1' || $value eq '7' || $value eq '30') { 
-			unlink "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron.sh" if (-e "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron.sh");
-			unlink "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron.sh" if (-e "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron.sh");
-			unlink "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron.sh" if (-e "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron.sh");
+			unlink "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron" if (-e "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron");
+			unlink "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron" if (-e "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron");
+			unlink "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" if (-e "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron");
 			
 			if ($value eq '1') {
-				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.daily/loxberryupdate_cron.sh";
+				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.daily/loxberryupdate_cron";
 			} elsif ($value eq '7') {
-				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.weekly/loxberryupdate_cron.sh";
+				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.weekly/loxberryupdate_cron";
 			} elsif ($value eq '30') {
-				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron.sh" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/loxberryupdate_cron.sh";
+				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/loxberryupdate_cron";
 			}
 			change_generalcfg('UPDATE.INTERVAL', $value);
 		}

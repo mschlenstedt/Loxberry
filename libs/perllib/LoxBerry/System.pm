@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.17";
+our $VERSION = "0.3.1.19";
 
 use base 'Exporter';
 
@@ -833,6 +833,7 @@ sub currtime
 	my $timestr;
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
 	$year += 1900;
+	$mon++;
 	if (!$format || $format eq 'hr') {
 		# $timestr = "$mday.$mon.$year $hour:$min:$sec";
 		$timestr = sprintf("%02d.%02d.%04d %02d:%02d:%02d", $mday, $mon, $year, $hour, $min, $sec);

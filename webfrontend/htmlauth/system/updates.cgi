@@ -21,6 +21,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::Log;
 
 use CGI::Carp qw(fatalsToBrowser);
 #use CGI qw/:standard/;
@@ -38,6 +39,8 @@ use strict;
 my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_updates.html";
 
+my $lbulogfiledir = "$lbslogdir/loxberryupdate";
+		
 my $cfg;
 my $template_title;
 
@@ -81,6 +84,21 @@ $chmodbin        = $bins->{CHMOD};
 $rebootbin       = $bins->{REBOOT};
 
 #########################################################################
+# Initialize LoxBerry::Log logfile
+#########################################################################
+
+my $log = LoxBerry::Log->new(
+		package => 'LoxBerry Update',
+		name => 'updates.cgi',
+		logdir => "$lbslogdir",
+		loglevel => 7,
+		stderr => 1,
+		nofile => 1,
+);
+
+LOGSTART "updates.cgi called";
+
+#########################################################################
 # Parameter
 #########################################################################
 
@@ -103,17 +121,34 @@ our $maintemplate = HTML::Template->new(
 
 our %SL = LoxBerry::Web::readlanguage($maintemplate);
 
+my @notif = LoxBerry::Web::get_notifications('updates', 'update');
+my ($check_err, $check_ok, $check_sum) = LoxBerry::Web::get_notification_count('updates', 'check');
+my ($update_err, $update_ok, $update_sum) = LoxBerry::Web::get_notification_count('updates', 'update');
+
+
+print STDERR "Notifications:\n";
+print STDERR "Update count: " . scalar(@notif) . "\n";
+print STDERR "Check: $check_err / $check_ok / $check_sum\n";
+print STDERR "Update: $update_err / $update_ok / $check_sum\n";
+
 				
 our %navbar;
-$navbar{1}{Name} = $SL{'UPDATES.WIDGETLABEL_UPDATES'};
-$navbar{1}{URL} = $cgi->url(-relative=>1);
  
-$navbar{2}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATE'};
-$navbar{2}{URL} = $cgi->url(-relative=>1) . "?do=lbupdate";
+$navbar{1}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATE'};
+$navbar{1}{URL} = $cgi->url(-relative=>1) . "?do=lbupdate";
+$navbar{1}{notifyBlue} = $check_err == 0 ? $check_sum : undef;
+$navbar{1}{notifyRed} = $check_err != 0 ? $check_sum : undef;
+
+$navbar{2}{Name} = $SL{'UPDATES.WIDGETLABEL_UPDATES'};
+$navbar{2}{URL} = $cgi->url(-relative=>1) . "?do=form";
  
 $navbar{3}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATEHISTORY'};
-$navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbhistory";
+$navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbuhistory";
+$navbar{3}{notifyBlue} = $update_err == 0 ? $update_sum : undef;
+$navbar{3}{notifyRed} = $update_err != 0 ? $update_sum : undef;
 
+# $navbar{3}{notifyRed} = 3;
+	
 # Example: Parameter lang is now $R::lang
 
 
@@ -166,28 +201,35 @@ $saveformdata = substr($saveformdata,0,1);
 #########################################################################
 
 # Menu
-if (!$do || $do eq "form") {
+if ($do eq "form") {
   print STDERR "updates.cgi: FORM is called\n";
-  $navbar{1}{active} = 1;
+  $navbar{2}{active} = 1;
   &form;
 }
 
 # Installation
 elsif ($do eq "install") {
-  $navbar{1}{active} = 1;
+  $navbar{2}{active} = 1;
   print STDERR "updates.cgi: INSTALL is called\n";
   &install;
 }
 
-elsif ($do eq "lbupdate") {
-	$navbar{2}{active} = 1;
+elsif (!$do || $do eq "lbupdate") {
+	$navbar{1}{active} = 1;
 	print STDERR "updates.cgi LBUPDATES is called\n";
 	&lbupdates;
 }
+
+elsif ($do eq "lbuhistory") {
+	$navbar{3}{active} = 1;
+	print STDERR "updates.cgi LBUHISTORY is called\n";
+	&lbuhistory;
+}
+
 else {
  $navbar{1}{active} = 1;
   print STDERR "updates.cgi: FORM is called\n";
-  &form;
+  &lbinstall;
 }
 
 exit;
@@ -443,23 +485,20 @@ exit;
 
 sub lbupdates
 {
-
-
-
-our $maintemplate = HTML::Template->new(
-				filename => "$lbstemplatedir/updates.html",
-				global_vars => 1,
-				loop_context_vars => 1,
-				die_on_bad_params=> 0,
-				associate => $cfg,
-				#debug => 1,
-				#stack_debug => 1,
-				);
+	# our $maintemplate = HTML::Template->new(
+				# filename => "$lbstemplatedir/updates.html",
+				# global_vars => 1,
+				# loop_context_vars => 1,
+				# die_on_bad_params=> 0,
+				# associate => $cfg,
+				# #debug => 1,
+				# #stack_debug => 1,
+				# );
 
 
 	# TMPL_IF use "lbupdate"
 	$maintemplate->param( "lbupdate", 1);
-	my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	# my %SL = LoxBerry::Web::readlanguage($maintemplate);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
 	# Releasetype
@@ -475,7 +514,7 @@ our $maintemplate = HTML::Template->new(
 		);
 	$maintemplate->param("RELEASETYPE_RADIO", $releasetype_radio);
 	
-	our %labels = (		'install'=> $SL{'UPDATES.LBU_SEL_INSTALLTYPE_INSTALL'},
+	%labels = (		'install'=> $SL{'UPDATES.LBU_SEL_INSTALLTYPE_INSTALL'},
 						'notify'=> $SL{'UPDATES.LBU_SEL_INSTALLTYPE_NOTIFY'},
 						'disable'=>  $SL{'UPDATES.LBU_SEL_INSTALLTYPE_DISABLE'},
 						);
@@ -488,7 +527,7 @@ our $maintemplate = HTML::Template->new(
 		);
 	$maintemplate->param("INSTALLTYPE_RADIO", $installtype_radio);
 	
-	our %labels = (		'1'=> $SL{'UPDATES.LBU_SEL_INSTALLTIME_DAILY'},
+	%labels = (		'1'=> $SL{'UPDATES.LBU_SEL_INSTALLTIME_DAILY'},
 						'7'=> $SL{'UPDATES.LBU_SEL_INSTALLTIME_WEEKLY'},
 						'30'=> $SL{'UPDATES.LBU_SEL_INSTALLTIME_MONTHLY'});
 					 
@@ -506,17 +545,79 @@ our $maintemplate = HTML::Template->new(
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
-
-
-
-
-
-
+	LoxBerry::Web::delete_notifications('updates', 'check');
 
 }
 
 
+#####################################################
+# LoxBerry Update History
+#####################################################
 
+sub lbuhistory
+{
+	use DateTime;
+	LOGDEB "lbuhistory -->";
+	# TMPL_IF use "lbuhistory"
+	$maintemplate->param( "lbuhistory", 1);
+	# my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
+
+	#
+	# This is a quick and dirty implementation as LoxBerry::Log is not finished yet to view log packages.
+	#
+	print STDERR "Loglevel: " . $log->loglevel . "\n";
+	LOGDEB "Collecting files from the LoxBerry Update logfile dir $lbulogfiledir";
+	opendir( my $DIR, $lbulogfiledir );
+	my @files = sort {$b cmp $a} readdir($DIR);
+	my $direntry;
+	my $updatecheckcount;
+	my $updatecount;
+	my @updatecheckslist = ();
+	my @updateslist = ();
+		
+	while ( my $direntry = shift @files ) {
+		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
+		# LOGDEB "Direntry: $direntry";
+		my $logtype = substr($direntry, 16, rindex($direntry, '.')-16);
+		my $logdate = substr($direntry, 0, 15);
+		next if ($logtype ne "update" && $logtype ne "check");
+		# LOGDEB "Log type: $logtype Log date: $logdate";
+		my $dateobj = parsedatestring($logdate);
+		if ($logtype eq 'update') {
+			my %update;
+			$updatecount++;
+			$update{'DATEOBJ'} = $dateobj;
+			$update{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+			$update{'FILENAME'} = $direntry;
+			$update{'URLFILENAME'} = "system/loxberryupdate/$direntry";
+			push(@updateslist, \%update);
+		} elsif ($logtype eq 'check') {
+			my %updatecheck;
+			$updatecheckcount++;
+			$updatecheck{'DATEOBJ'} = $dateobj;
+			$updatecheck{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+			$updatecheck{'FILENAME'} = $direntry;
+			$updatecheck{'URLFILENAME'} = "system/loxberryupdate/$direntry";
+			push(@updatecheckslist, \%updatecheck);
+		}
+	}
+	closedir $DIR;
+	
+	# foreach my $key ( sort (keys(%updatecheckslist) ) ) {}
+	# foreach my $key ( sort (keys(%updateslist) ) ) {}
+	$maintemplate->param('UPDATESLIST', \@updateslist);
+	$maintemplate->param('UPDATECHECKSLIST', \@updatecheckslist);
+		
+	# Print Template
+	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	LoxBerry::Web::delete_notifications('updates', 'update');
+	
+	
+	
+}
 
 #####################################################
 # 
@@ -531,7 +632,7 @@ our $maintemplate = HTML::Template->new(
 sub error {
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
-
+	
 	my $maintemplate = HTML::Template->new(
 				filename => "$lbstemplatedir/error.html",
 				global_vars => 1,
@@ -583,6 +684,26 @@ sub is_folder_empty {
   opendir(my $dh, $dirname); 
   return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
 }
+
+#####################################################
+# Parse yyyymmdd_hhmmss date to date object
+#####################################################
+
+sub parsedatestring 
+{
+	my ($datestring) = @_;
+	my $dt = DateTime->new(
+		year 	=> substr($datestring, 0, 4),
+		month 	=> substr($datestring, 4, 2),
+		day 	=> substr($datestring, 6, 2),
+		hour	=> substr($datestring, 9, 2),
+		minute	=> substr($datestring, 11, 2),
+		second	=> substr($datestring, 13, 2),
+	);
+	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
+	return $dt;
+}
+
 
 ###################################################################
 # Returns the current days of unattended-upgrades

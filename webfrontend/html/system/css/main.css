@@ -136,25 +136,74 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 	min-width: 8px;
 }
 
+.notifyRedNavBar {
+	z-index: 10;
+    position: relative;
+	left:0px;
+	top: -10px;
+	float: right;
+    background:#ed1d24;
+    color:#fff;
+    padding: 3px;
+    border-radius: 8px;
+    font-size: 9px;
+	margin: 3px -10px 0 0;
+	line-height: 0.8;
+	min-width: 8px;
+}
+
+.notifyBlueNavBar {
+	z-index: 10;
+    position: relative;
+	left:0px;
+	top: -10px;
+	float: right;
+    background:Blue;
+    color:#fff;
+    padding: 3px;
+    border-radius: 8px;
+    font-size: 9px;
+	margin: 3px -10px 0 0;
+	line-height: 0.8; 
+	min-width: 8px;
+}
+
 
 /* Logfiles */
-#logerr, .logerror
+.logemerge
+{
+  text-align:left; width:100%; color:#ffff80; background-color:#6f0000;
+}
+.logalert
+{
+  text-align:left; width:100%; color:#ffffff; background-color:#0000a0;
+}
+.logcrit
+{
+  text-align:left; width:100%; color:#000000; background-color:#905050;
+}
+.logerr
 {
   text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
 }
-#logfail, .logfail
+.logwarn
 {
   text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
 }
-#logwarn, .logwarn
-{
-  text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
-}
-#logok, .logok
+.logok
 {
  text-align:left; width:100%; color:#000000; background-color:#D8FADC;
 }
-#loginfo, .loginfo
+/*.logok span
+ {
+	color: red;
+ } */
+}
+.loginf
+{
+ text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
+}
+.logdeb
 {
  text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }
