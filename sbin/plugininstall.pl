@@ -83,6 +83,10 @@ if ( $R::action eq "install" ) {
     $message =  "$SL{'PLUGININSTALL.ERR_NOFOLDER_OR_ZIP'}";
     &logfail;
   }
+  if ( !$R::pin ) {
+    $message =  "$SL{'PLUGININSTALL.ERR_NOPIN'}";
+    &logfail;
+  }
 }
 if ( $R::action eq "uninstall" ) {
   if ( !$R::pid ) {
@@ -151,6 +155,16 @@ exit (0);
 #####################################################
 
 sub install {
+
+# Check secure PIN
+my $pin = $R::pin;
+open (F, "<$lbsconfigdir/securepin.dat");
+  my $pinsaved = <F>;
+close (F);
+if (!crypt($pin,$pinsaved) eq $pinsaved) {
+  $message =  "$SL{'PLUGININSTALL.ERR_WRONGPIN'}";
+  &logfail;
+}
 
 # Choose random temp filename
 my $tempfile = &generate(10);
