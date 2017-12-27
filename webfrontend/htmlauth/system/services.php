@@ -98,7 +98,7 @@ function form() {
 	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
 	$cfg->setQuoteStrings(False);
 
-	if ($cfg->getBool('SSDP','DISABLED',0)==0) {
+	if ($cfg->getBool('SSDP','DISABLED',false)==false) {
 		$checked = " checked=\"checked\"";
 	} else {
 		$checked = "";
@@ -120,6 +120,7 @@ function form() {
 	if ($navbar[1]['active']): ?>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=2">
 	<input type="hidden" name="saveformdata" value="1">
+	<input type="hidden" name="ssdpd" value="1">
 	<p>
 	<div class="wide"><?=$SL['SERVICES.HEADING_OPT'];?></div>
 	</p>
@@ -203,6 +204,8 @@ function save()
 		} else {
 			$ssdpoff = true;
 		}
+	} else if (isset($_POST['ssdpd'])) {
+			$ssdpoff = true;
 	}
 	
 	if (isset($_POST['webport'])) {
@@ -267,7 +270,7 @@ function save()
 				<tr>
 					<td align="center">
 						<p>
-							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/services.php"><?=$SL['COMMON.BUTTON_OK']?></a>
+							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/services.php"><?=$SL['COMMON.BUTTON_OK'];?></a>
 						</p>
 					</td>
 				</tr>
@@ -275,9 +278,9 @@ function save()
 		</center>
 	<?php
 	if ($ssdpstate_changed == 1) {
-		system("serviceshelper restart_ssdpd");
+		system("sudo /opt/loxberry/sbin/serviceshelper ssdpd restart");
 	} else if ($webserver_changed == True) {
-		system("serviceshelper change_webport");
+		system("sudo /opt/loxberry/sbin/serviceshelper change_webport");
 		$newhref = "http";
 		if ($_SERVER['HTTPS']) { $newhref .= "s"; }
 		$newhref .= "://".$_SERVER['SERVER_ADDR'].":".$webport."/";
