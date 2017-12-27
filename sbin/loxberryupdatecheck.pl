@@ -84,7 +84,6 @@ my $log = LoxBerry::Log->new(
 
 LOGSTART "LoxBerry Update Check";
 LOGINF "Version of loxberrycheck.pl is $scriptversion";
-LOGINF "Program is running as " . $ENV{USERNAME};
 
 if (!$cgi->param) {
 	$joutput{'error'} = "No parameters sent.";
@@ -310,9 +309,17 @@ sub check_releases
 	$request->header('Accept' => 'application/vnd.github.v3+json');
 	# LOGINF "Request: " . $request->as_string;
 	LOGINF "Requesting release list from GitHub...";
-	my $response = $ua->request($request);
+    my $response;
+	for (my $x=1; $x<3; $x++) {
+		LOGINF "   Try $x: Getting release list... (" . currtime() . ")"; 
+		$response = $ua->request($request);
+		last if ($response->is_success);
+		LOGWARN "   API call try $x has failed. (" . currtime() . ") HTTP " . $response->code . " " . $response->message;
+		sleep (1);
+	}
+	
 	if ($response->is_error) {
-		$joutput{'error'} = "Error fetching releases: " . $response->code . " " . $response->message;
+		$joutput{'error'} = "Error fetching release list: " . $response->code . " " . $response->message;
 		&err;
 		LOGCRIT $joutput{'error'};
 		exit(1);
@@ -577,20 +584,19 @@ sub prepare_update
 	}
 	
 	if (-e "$updatedir/sbin/loxberryupdatecheck.pl" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl" or 
-			do { LOGCRIT "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!";
-				 return undef; 
-			}
-				 
-		
+		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl";
+		if (! $?) {
+			LOGCRIT "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!";
+			return undef;
+		}
 	}
 	if (! -x "$lbhomedir/sbin/loxberryupdatecheck.pl") {
 		chmod 0774, "$lbhomedir/sbin/loxberryupdatecheck.pl";
 	}
 	
 	if (-e "$updatedir/sbin/loxberryupdate.pl" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl" or
-		do {
+		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl";
+		if (! $?) {
 			LOGCRIT "Error copying loxberryupdate to $lbhomedir/sbin/loxberryupdate.pl: $!";
 			return undef;
 		}
