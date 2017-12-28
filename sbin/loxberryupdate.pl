@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='0.3.1.6';
+my $scriptversion='0.3.1.7';
 
 
 # # Predeclare logging functions
