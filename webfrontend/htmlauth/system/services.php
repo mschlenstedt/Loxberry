@@ -141,7 +141,7 @@ function form() {
 	</form>
 	<center>
 		<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/services.php?load=2&reload"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
 			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><?=$SL['COMMON.BUTTON_SAVE'];?></button>
 		</p>
 	</center>
@@ -167,7 +167,7 @@ function form() {
 	</form>
 	<center>
 		<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/services.php"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
 			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><?=$SL['COMMON.BUTTON_SAVE'];?></button>
 		</p>
 	</center>
