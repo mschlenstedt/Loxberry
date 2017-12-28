@@ -107,18 +107,19 @@ chown root:root $LBHOME/system/apache2/php.ini
 chmod 644 $LBHOME/system/apache2/php.ini
 
 # Init Script
+rm /etc/init.d/loxberry
 ln -s $LBHOME/sbin/loxberryinit.sh /etc/init.d/loxberry
 update-rc.d loxberry defaults
 
 # Apache Config
-if [! -L /etc/apache2 ]; then
+if [ ! -L /etc/apache2 ]; then
 	mv /etc/apache2 /etc/apache2.old
 fi
 rm /etc/apache2
 ln -s $LBHOME/system/apache2 /etc/apache2
 
 # Network config
-if [! -L /etc/network/interfaces ]; then
+if [ ! -L /etc/network/interfaces ]; then
 	mv /etc/network/interfaces /etc/network/interfaces.old
 fi
 rm /etc/network/interfaces
@@ -129,28 +130,28 @@ rm /etc/logrotate.d/loxberry
 ln -s $LBHOME/system/logrotate/logrotate /etc/logrotate.d/loxberry
 
 # Samba Config
-if [! -L /etc/samba ]; then
+if [ ! -L /etc/samba ]; then
 	mv /etc/samba /etc/samba.old
 fi
 rm /etc/samba
 ln -s $LBHOME/system/samba /etc/samba
 
 # VSFTPd Config
-if [! -L /etc/vsftpd.conf ]; then
+if [ ! -L /etc/vsftpd.conf ]; then
 	mv /etc/vsftpd.conf /etc/vsftpd.conf.old
 fi
 rm /etc/vsftpd.conf
 ln -s $LBHOME/system/vsftpd/vsftpd.conf /etc/vsftpd.conf
 
 # SSMTP Config
-if [! -L /etc/ssmtp ]; then
+if [ ! -L /etc/ssmtp ]; then
 	mv /etc/ssmtp /etc/ssmtp.old
 fi
 rm /etc/ssmtp
 ln -s $LBHOME/system/ssmtp /etc/ssmtp
 
 # PHP
-if [! -L /etc/php ]; then
+if [ ! -L /etc/php ]; then
 	mv /etc/php /etc/php.old
 fi
 rm /etc/php
