@@ -187,8 +187,11 @@
 <div class="divTableRow">
 <div class="divTableCell" style="width:50%;">
 	<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
-	<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE> <TMPL_VAR UPDATES.LBU_HINT_PRERELEASE></span>
-	<!-- <p class="hint"><TMPL_VAR UPDATES.LBU_HINT_LATEST></p> -->
+	<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
+	<br><TMPL_VAR UPDATES.LBU_HINT_PRERELEASE>
+	<br><TMPL_VAR UPDATES.LBU_HINT_LATEST>
+	</span>
+	
 </div>
 <div class="divTableCell">
 	<fieldset data-role="controlgroup" data-mini="true" style="min-width:250px;">
@@ -299,7 +302,7 @@ $(document).ready( function () {
 			if (data.error) {
 				$('#lbu_error').text("Error: "+data.error);
 			} else {
-				if (data.release_version) $('#lbu_release_version').text("V" + data.release_version) 
+				if (data.release_version) $('#lbu_release_version').text(data.release_version) 
 				else $('#lbu_release_version').text("") ;
 				if (data.info) $('#lbu_info').text(data.info);
 				if (data.release_name) $('#lbu_release_name').text(data.release_name);

@@ -32,13 +32,14 @@ use CGI;
 use JSON;
 use Time::HiRes qw(usleep);
 use version;
+use URI::Escape;
 use File::Path;
 use File::Copy qw(copy);
 use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="0.3.1.4";
+my $scriptversion="0.3.1.6";
 
 # print currtime('file') . "\n";
 
@@ -96,7 +97,8 @@ if (!$cgi->param) {
 if ($cgi->param('dryrun')) {
 	$cgi->param('keepupdatefiles', 1);
 }
-	
+
+$dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
 
 if ($cgi->param('cron')) {
 	$cron = 1;
@@ -107,12 +109,15 @@ $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : und
 $querytype = $cgi->param('querytype');
 
 # We assume that if output is json, this is a web call
+$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.LATESTSHA') : "0";
+
 if ($formatjson || $cron ) {
 	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
 }
 
-if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'testing')) {
+if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
 	$joutput{'error'} = "Wrong query type.";
 	&err;
 	LOGCRIT $joutput{'error'};
@@ -251,7 +256,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			}
 			LOGOK "Prepare update successful.";
 			# This is the place where we can hand over to the real update
-			my $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
+			
 			LOGINF "Forking loxberryupdate...";
 			my $pid = fork();
 			if (not defined $pid) {
@@ -275,6 +280,10 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	
 	# LOGINF "ZIP URL: $release_url\n";
 	
+	} elsif ($querytype eq 'latest') {
+		LOGINF "Start checking commits...";
+		check_commits($querytype);
+				
 	} else {
 		LOGINF "Nothing to do. Exiting";
 		exit 0;
@@ -380,6 +389,171 @@ sub check_releases
 	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
 	LOGOK "No new version found: Latest version is " . $release_safe->{tag_name};
 	return ($release_safe->{tag_name}, undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at});
+}
+
+
+##################################################
+# Check Commit List
+# OLD - we don't need this, because the branch
+#       always has the same url
+##################################################
+sub check_commits
+{
+	my ($querytype, $currversion) = @_;
+	my $endpoint = 'https://api.github.com';
+	my $resource = '/repos/mschlenstedt/Loxberry/commits';
+	my $branch = 'loxberry-0.3.0-saruman';
+	
+	# Download URL of latest commit 
+	my $release_url = "https://github.com/mschlenstedt/Loxberry/archive/" . uri_escape($branch) . ".zip";
+	my $download_file = "$download_path/$branch.zip";
+	
+	LOGINF "Checking for commits from $endpoint$resource";
+	$branch = uri_escape($branch);
+	my $ua = LWP::UserAgent->new;
+	my $request = HTTP::Request->new(GET => $endpoint . $resource . "?sha=" . $branch);
+	$request->header('Accept' => 'application/vnd.github.v3+json');
+	LOGDEB "Request: " . $request->as_string;
+	LOGINF "Requesting commit list from GitHub...";
+    my $response;
+	for (my $x=1; $x<=5; $x++) {
+		LOGINF "   Try $x: Getting commit list... (" . currtime() . ")"; 
+		$response = $ua->request($request);
+		last if ($response->is_success);
+		LOGWARN "   API call try $x has failed. (" . currtime() . ") HTTP " . $response->code . " " . $response->message;
+		usleep (100*1000);
+	}
+	
+	if ($response->is_error) {
+		$joutput{'error'} = "Error fetching commit list: " . $response->code . " " . $response->message;
+		&err;
+		LOGCRIT $joutput{'error'};
+		exit(1);
+	}
+	LOGOK "Commit list fetched.";
+	LOGINF "Parsing commit list...";
+	my $commits = JSON->new->utf8(1)->allow_nonref->convert_blessed->decode($response->decoded_content);
+	
+	my $commit_date;
+	my $commit_by;
+	my $commit_message;
+	my $commit_sha;
+	
+	foreach my $commit ( @$commits ) {
+		$commit_date = $commit->{commit}->{author}->{date};
+		$commit_by = $commit->{commit}->{author}->{name};
+		$commit_message = $commit->{commit}->{message};
+		$commit_sha = $commit->{sha};
+		last;
+	}
+	if (!$commit_date) {
+		$joutput{'error'} = "Could not find any commits. Something went wrong.";
+		&err;
+		LOGCRIT $joutput{'error'};
+		exit(1);
+	}
+	
+	my $commit_new = 1 if ($commit_sha ne $latest_sha);
+	LOGDEB "SHA's: commit_sha $commit_sha / latest_sha $latest_sha / commit_new $commit_new";
+	
+	
+	
+	LOGOK "Latest commit found:";
+	LOGINF "   Message     : $commit_message";
+	LOGINF "   Commit by   : $commit_by";
+	LOGINF "   Commited at : $commit_date";
+	LOGINF "   Commit key  : $commit_sha";
+	LOGINF "   Commit is newer than installed" if ($commit_new);
+	
+	$joutput{'info'} = "New commit found" if ($commit_new);
+	$joutput{'info'} = "No new commit found" if (!$commit_new);
+	$joutput{'release_new'} = 1 if ($commit_new);
+	$joutput{'release_version'} = $commit_sha;
+	$joutput{'release_name'} = $commit_message;
+	$joutput{'release_body'} = "commited by $commit_by";
+	$joutput{'published_at'} = $commit_date;
+	
+	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
+		notify('updates', 'check', "LoxBerry Updatecheck: New commit from $commit_by on $commit_date, message $commit_message.");
+		LoxBerry::Web::delete_notifications('updates', 'check', 1);
+	}
+	
+	# If an update was requested
+	if ($cgi->param('update')) {
+		LOGEND "Installing new commit - see the update log for update status!";
+		my $log = LoxBerry::Log->new(
+			package => 'LoxBerry Update',
+			name => 'update',
+			logdir => "$lbslogdir/loxberryupdate",
+			loglevel => 7,
+			stderr => 1
+		);
+		my $logfilename = $log->filename;
+		LOGSTART "Latest commit will be installed:";
+		LOGINF "   Message     : $commit_message";
+		LOGINF "   Commit by   : $commit_by";
+		LOGINF "   Commited at : $commit_date";
+		LOGINF "   Commit key  : $commit_sha";
+		
+		LOGINF "Checking if another update is running..."; 
+		my $pids = `pidof loxberryupdate.pl`;
+		# LOGINF "PIDOF LENGTH: " . length($pids) . "\n";
+		if (length($pids) > 0) {
+			$joutput{'info'} = "It seems that another update is currently running. Update request was stopped.";
+			&err;
+			LOGCRIT $joutput{'info'};
+			exit(1);
+		} 
+		LOGOK "No other update running.";			
+		$joutput{'info'} = "Update to latest commit started. See update logfile for details.";
+		LOGOK $joutput{'info'};
+		&err;
+		LOGINF "Starting download procedure for $download_file...";
+		my $filename = download($release_url, $download_file);
+		if (!$filename) {
+			LOGCRIT "Error downloading file.";
+		} else {
+			LOGOK "Download successfully stored in $filename.";
+			LOGINF "Starting unzip procedure for $filename...";
+			my $unzipdir = unzip($filename, '/tmp/loxberryupdate');
+			if (!defined $unzipdir) {
+				LOGERR "Unzipping failed.";
+				LOGINF "Deleting download file";
+				rm ($filename);
+				LOGCRIT "Update failed because file cound not be unzipped.";
+				exit(1);
+			}
+			LOGINF "Starting prepare update procedure...";
+			my $updatedir = prepare_update($unzipdir);
+			if (!$updatedir) {
+				LOGCRIT "prepare update returned an error. Exiting.\n";
+				exit(1);
+			}
+			LOGOK "Prepare update successful.";
+			
+			
+			# This is the place where we can hand over to the real update
+			
+			LOGINF "Forking loxberryupdate...";
+			my $pid = fork();
+			if (not defined $pid) {
+				LOGCRIT "Cannot fork loxberryupdate.";
+			} 
+			if (not $pid) {	
+				LOGINF "Executing LoxBerry Update forked...";
+				# exec never returns
+				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=config $dryrun logfilename=$logfilename cron=$cron sha=$commit_sha dryrun=1");
+				exit(0);
+			} 
+			exit(0);
+		}
+	}
+	my $jsntext = to_json(\%joutput);
+	LOGINF "JSON: " . $jsntext . "\n";
+	#print $cgi->header('application/json');
+	print $jsntext;
+	
 }
 
 ############################################
@@ -586,22 +760,22 @@ sub prepare_update
 	}
 	
 	if (-e "$updatedir/sbin/loxberryupdatecheck.pl" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl";
-		if (! $?) {
+		copy "$updatedir/sbin/loxberryupdatecheck.pl", "$lbhomedir/sbin/loxberryupdatecheck.pl" or 
+			do {
 			LOGCRIT "Error copying loxberryupdatecheck to $lbhomedir/sbin/loxberryupdatecheck.pl: $!";
 			return undef;
-		}
+			};
 	}
 	if (! -x "$lbhomedir/sbin/loxberryupdatecheck.pl") {
 		chmod 0774, "$lbhomedir/sbin/loxberryupdatecheck.pl";
 	}
 	
 	if (-e "$updatedir/sbin/loxberryupdate.pl" && !$cgi->param('keepupdatefiles')) {
-		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl";
-		if (! $?) {
+		copy "$updatedir/sbin/loxberryupdate.pl", "$lbhomedir/sbin/loxberryupdate.pl" or
+			do {
 			LOGCRIT "Error copying loxberryupdate to $lbhomedir/sbin/loxberryupdate.pl: $!";
 			return undef;
-		}
+		};
 	}
 	if (! -e "$lbhomedir/sbin/loxberryupdate.pl") {
 		LOGCRIT "Cannot find part two of update, $lbhomedir/sbin/loxberryupdate.pl - Quitting.";
