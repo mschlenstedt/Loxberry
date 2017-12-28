@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='0.3.1.5';
+my $scriptversion='0.3.1.7';
 
 
 # # Predeclare logging functions
@@ -51,6 +51,7 @@ my $errskipped = 0;
 my $formatjson;
 my $logfilename;
 my $cron;
+my $sha;
 
 my $cgi = CGI->new;
 
@@ -80,6 +81,11 @@ if ($cgi->param('cron')) {
 	LOGOK "This update was triggered automatically by schedule.";
 } else {
 	LOGOK "This update was manually triggered.";
+}
+
+if ($cgi->param('sha')) {
+	$sha = $cgi->param('sha');
+	LOGINF "SHA $sha was sent. This is an update to latest commit.";
 }
 
 if ($cgi->param('updatedir')) {
@@ -117,7 +123,7 @@ if (!$release) {
 if ($release eq "config") {
 	my $newcfg = new Config::Simple("$updatedir/config/system/general.cfg");
 	$release = $newcfg->param('BASE.VERSION');
-	LOGWARN "Version parameter 'config' was given, destination version was read from update general.cfg (version $release).";
+	LOGWARN "Version parameter 'config' was given, destination version is read from new general.cfg (version $release).";
 }
 if (!$release) {
 	$joutput{'error'} = "Cannot detect release version number.";
@@ -125,6 +131,10 @@ if (!$release) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
+
+
+
+
 
 if (version::is_lax($release)) {
 	$release = version->parse($release);
@@ -284,18 +294,22 @@ if ($exitcode != 0 ) {
 }
 
 LOGINF "LoxBerry's config version is updated from $currversion to $release";
+LOGINF "Commit SHA is updated to $sha" if ($sha);
 # Last but not least set the general.cfg to the new version.
 if (! $cgi->param('dryrun') ) {
-	LOGWARN "Updating the version in general.cfg is currently disabled for testing.";
-	#my $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or do {
-	#		LOGINF "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
-	#		$errskipped++;
-	#}
-	#$syscfg->param('BASE.VERION', "$release");
-	#$syscfg->save() or do {
-	#		LOGINF "Cannot write to general.cfg. Error: " . $syscfg->error() . "\n"; 
-	#		$errskipped++;
-	#}
+	my $syscfg;
+	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
+		do {
+			LOGINF "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
+			$errskipped++;
+			};
+	$syscfg->param('BASE.VERION', "$release");
+	$syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
+	$syscfg->save() or 
+		do {
+			LOGINF "Cannot write to general.cfg. Error: " . $syscfg->error() . "\n"; 
+			$errskipped++;
+			};
 	}
 
 # Finished. 

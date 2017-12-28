@@ -147,21 +147,6 @@ $navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbuhistory";
 $navbar{3}{notifyBlue} = $update_err == 0 ? $update_sum : undef;
 $navbar{3}{notifyRed} = $update_err != 0 ? $update_sum : undef;
 
-# $navbar{3}{notifyRed} = 3;
-	
-# Example: Parameter lang is now $R::lang
-
-
-# Everything from URL
-# foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  # ($namef,$value) = split(/=/,$_,2);
-  # $namef =~ tr/+/ /;
-  # $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  # $value =~ tr/+/ /;
-  # $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  # $query{$namef} = $value;
-# }
-
 # And this one we really want to use
 $do = $R::do;
 $answer = $R::answer;
@@ -170,31 +155,10 @@ $answer = $R::answer;
 $saveformdata = $R::saveformdata;
 $saveformdata = substr($saveformdata,0,1);
 
-##########################################################################
-# Language Settings
-##########################################################################
-
-# Override settings with URL param
-
-
-# # If there's no language phrases file for choosed language, use german as default
-# if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  # $lang = "de";
-# }
-
-# # Read translations / phrases
-# $languagefile = "$installfolder/templates/system/$lang/language.dat";
-# $phrases = new Config::Simple($languagefile);
-# # $phrases->import_names('T');
-#Config::Simple->import_from($languagefile, \%T);
-#print STDERR "Language TEST: " . $T::SECUPDATE_RADIO_DAILY . "\n";
-#print STDERR "Language TEST phrases: " . $phrases->param('SECUPDATE_RADIO_DAILY') . "\n";
-
 
 ##########################################################################
 # Main program
 ##########################################################################
-
 
 #########################################################################
 # What should we do
@@ -504,11 +468,12 @@ sub lbupdates
 	# Releasetype
 	our %labels = (		'release'=>  $SL{'UPDATES.LBU_SEL_RELTYPE_RELEASE'},
 						'prerelease'=> $SL{'UPDATES.LBU_SEL_RELTYPE_PRERELEASE'},
+						'latest' => $SL{'UPDATES.LBU_SEL_RELTYPE_LATEST'},
 						);
 					 
 	our $releasetype_radio = $cgi->radio_group(
 			-name      => 'option-releasetype',
-			-values  => ['release', 'prerelease'],
+			-values  => ['release', 'prerelease', 'latest'],
 			-labels  => \%labels,
 			-default => $cfg->param('UPDATE.RELEASETYPE')
 		);
@@ -539,7 +504,7 @@ sub lbupdates
 		);
 	$maintemplate->param("INSTALLTIME_RADIO", $installtime_radio);
 	
-	$maintemplate->param("LBVERSION", "V" . $sversion);
+	$maintemplate->param("LBVERSION", $sversion);
 	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
