@@ -28,6 +28,7 @@ chown -Rv root:root $LBHOMEDIR/system/daemons
 chown -Rv root:root $LBHOMEDIR/system/cron/cron.d
 chown -Rv root.root $LBHOMEDIR/sbin
 chown -Rv root.root $LBHOMEDIR/system/logrotate
+chown -Rv root.root $LBHOMEDIR/system/php
 chown -Rv root.root $LBHOMEDIR/config/system/installpin.dat
 chown -v loxberry.loxberry /etc/timezone
 chown -v loxberry.loxberry /etc/localtime
