@@ -9,7 +9,12 @@ if [ ! -d $LBHOMEDIR ]; then
 	echo "Cannot find LoxBerry home directory ($LBHOMEDIR)"
 	exit 1;
 fi
-  
+
+if [ "$LBHOMEDIR" -eq "" ]; then
+	echo "Variable LBHOMEDIR is empty. Exiting."
+	exit 1;
+fi
+
 echo "LoxBerry home directory is $LBHOMEDIR"
 
 chown -Rv loxberry:loxberry $LBHOMEDIR
