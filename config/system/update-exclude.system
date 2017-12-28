@@ -36,4 +36,4 @@
 /webfrontend/html/plugins/
 /webfrontend/htmlauth/plugins/
 /webfrontend/legacy/
-/webfrontend/html/system/images/icons/
+/webfrontend/html/system/images/icons/*/
