@@ -41,7 +41,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.1-dev1";
+my $version = "0.3.1-dev2";
 my $sversion = LoxBerry::System::lbversion();
 
 my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
@@ -239,7 +239,7 @@ sub mainmenu {
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_SERVICES'},
-				WIDGET_ICON => "/system/images/icons/main_service.png",
+				WIDGET_ICON => "/system/images/icons/main_services.png",
 				WIDGET_CGI => "/admin/system/services.php",
 				WIDGET_NOTIFY_BLUE => $notification_oks{'services'},
 				WIDGET_NOTIFY_RED => $notification_errors{'services'},
