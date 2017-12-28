@@ -1,18 +1,23 @@
 #!/bin/bash
 
 if test $UID -ne 0; then
-	echo "This script has to be run as root."
-	exit;
+	echo "This script has to be run as root. Exiting."
+	exit 1
 fi
 
 if [ ! -d $LBHOMEDIR ]; then
-	echo "Cannot find LoxBerry home directory ($LBHOMEDIR)"
-	exit 1;
+	echo "Cannot find LoxBerry home directory ($LBHOMEDIR). Exiting."
+	exit 1
 fi
 
-if [ "$LBHOMEDIR" -eq "" ]; then
+if [ "$LBHOMEDIR" == "" ]; then
 	echo "Variable LBHOMEDIR is empty. Exiting."
-	exit 1;
+	exit 1
+fi
+
+if [ ! -e "$LBHOMEDIR/config/system/general.cfg" ] && [ ! -e "$LBHOMEDIR/config/system/general.cfg.default" ]; then
+	echo "Cannot find general.cfg or general.cfg.default. Something is strange here. Exiting."
+	exit 1
 fi
 
 echo "LoxBerry home directory is $LBHOMEDIR"
