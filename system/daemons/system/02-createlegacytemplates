@@ -1,2 +1,2 @@
-#!/bin/sh
-perl $LBSCGI/tools/generatelegacytemplates.pl
+#!/bin/bash
+perl $LBSHTMLAUTH/tools/generatelegacytemplates.pl
