@@ -1,4 +1,10 @@
 #!/bin/bash
+
+if test $UID -ne 0; then
+  echo "This script has to be run as root. Exiting."
+  exit 1
+fi
+
 LBHOME="/opt/loxberry"
 
 # LoxBerry Home Directory in Environment
@@ -79,13 +85,6 @@ awk -v s="export LBSDATA=$LBSDATA" '/^export LBSDATA=/{$0=s;f=1} {a[++n]=$0} END
 awk -v s="export LBSLOG=$LBSLOG" '/^export LBSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSCONFIG=$LBSCONFIG" '/^export LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
-# Set PHP include_path directive
-awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/apache2/conf.d/20-loxberry.ini
-awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/cli/conf.d/20-loxberry.ini
-
-# echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/apache2/conf.d/20-loxberry.ini
-# echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/cli/conf.d/20-loxberry.ini
-
 # sudoers.d/lbdefault
 rm /etc/sudoers.d/lbdefaults
 ln -s $LBHOME/system/sudoers/lbdefaults /etc/sudoers.d/lbdefaults
@@ -107,4 +106,58 @@ chmod 755 $LBHOME/system/profile
 chown root:root $LBHOME/system/apache2/php.ini
 chmod 644 $LBHOME/system/apache2/php.ini
 
+# Init Script
+rm /etc/init.d/loxberry
+ln -s $LBHOME/sbin/loxberryinit.sh /etc/init.d/loxberry
+update-rc.d loxberry defaults
 
+# Apache Config
+if [ ! -L /etc/apache2 ]; then
+	mv /etc/apache2 /etc/apache2.old
+fi
+rm /etc/apache2
+ln -s $LBHOME/system/apache2 /etc/apache2
+
+# Network config
+if [ ! -L /etc/network/interfaces ]; then
+	mv /etc/network/interfaces /etc/network/interfaces.old
+fi
+rm /etc/network/interfaces
+ln -s $LBHOME/system/network/interfaces /etc/network/interfaces
+
+# Logrotate
+rm /etc/logrotate.d/loxberry
+ln -s $LBHOME/system/logrotate/logrotate /etc/logrotate.d/loxberry
+
+# Samba Config
+if [ ! -L /etc/samba ]; then
+	mv /etc/samba /etc/samba.old
+fi
+rm /etc/samba
+ln -s $LBHOME/system/samba /etc/samba
+
+# VSFTPd Config
+if [ ! -L /etc/vsftpd.conf ]; then
+	mv /etc/vsftpd.conf /etc/vsftpd.conf.old
+fi
+rm /etc/vsftpd.conf
+ln -s $LBHOME/system/vsftpd/vsftpd.conf /etc/vsftpd.conf
+
+# SSMTP Config
+if [ ! -L /etc/ssmtp ]; then
+	mv /etc/ssmtp /etc/ssmtp.old
+fi
+rm /etc/ssmtp
+ln -s $LBHOME/system/ssmtp /etc/ssmtp
+
+# PHP
+if [ ! -L /etc/php ]; then
+	mv /etc/php /etc/php.old
+fi
+rm /etc/php
+ln -s $LBHOME/system/php /etc/php
+# Set PHP include_path directive
+awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/apache2/conf.d/20-loxberry.ini
+awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/cli/conf.d/20-loxberry.ini
+# echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/apache2/conf.d/20-loxberry.ini
+# echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/cli/conf.d/20-loxberry.ini
