@@ -20,6 +20,7 @@
 ##########################################################################
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::CreateConfig;
 
 use CGI qw/:standard/;
 use LWP::UserAgent;
@@ -39,6 +40,9 @@ my $error;
 ##########################################################################
 # Read Configuration
 ##########################################################################
+
+LoxBerry::CreateConfig::update_configs if (! -e "$lbsconfigdir/general.cfg");
+LoxBerry::CreateConfig::update_configs if (! -e "$lbsconfigdir/mail.cfg");
 
 # Version of this script
 my $version = "0.3.1-dev2";

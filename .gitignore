@@ -3,9 +3,9 @@ config/system/general.cfg
 config/system/mail.cfg
 
 # Plugins at all
-# config/plugins/**
-# data/plugins/**
-# log/plugins/**
-# templates/plugins/**
-# webfrontend/htmlauth/plugins/**
-# webfrontend/html/plugins/**
+config/plugins/**
+data/plugins/**
+log/plugins/**
+templates/plugins/**
+webfrontend/htmlauth/plugins/**
+webfrontend/html/plugins/**
