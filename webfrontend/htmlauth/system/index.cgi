@@ -20,7 +20,6 @@
 ##########################################################################
 use LoxBerry::System;
 use LoxBerry::Web;
-use LoxBerry::CreateConfig;
 
 use CGI qw/:standard/;
 use LWP::UserAgent;
@@ -41,9 +40,9 @@ my $error;
 # Read Configuration
 ##########################################################################
 
-LoxBerry::CreateConfig::update_configs if (! -e "$lbsconfigdir/general.cfg");
-LoxBerry::CreateConfig::update_configs if (! -e "$lbsconfigdir/mail.cfg");
-
+if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/mail.cfg" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/installpin.dat" || ! -e "$lbsconfigdir/securepin.dat" ) {
+	qx ( $lbsbindir/createconfig.pl );
+}
 # Version of this script
 my $version = "0.3.1-dev2";
 my $sversion = LoxBerry::System::lbversion();
@@ -170,7 +169,7 @@ sub mainmenu {
 	$navbar{2}{notifyBlue} = $notification_allerrors == 0 && $notification_alloks != 0 ? $notification_alloks : undef;
 	$navbar{2}{notifyRed} = $notification_allerrors != 0 ? ($notification_allerrors+$notification_alloks)  : undef;
 
-	if ($R::form ne "system") {
+	if (!$R::form || $R::form ne "system") {
 		# Get Plugins from plugin database
 		@plugins = LoxBerry::System::get_plugins();
 		$maintemplate->param('PLUGINS' => \@plugins);
@@ -285,7 +284,7 @@ sub mainmenu {
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . " <span class='hint'>V$sversion</span>";
 	
 
-	if ($R::form ne "system") {
+	if (!$R::form || $R::form ne "system") {
 		$navbar{1}{active} = 1;
 		$maintemplate->param('PAGE_PLUGIN', 1);
 	} else {

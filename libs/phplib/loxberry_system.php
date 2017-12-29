@@ -72,7 +72,7 @@
 	$lbslogdir = LBSLOGDIR;
 	$lbsconfigdir = LBSCONFIGDIR;
 	$lbssbindir = LBSSBINDIR;
-	$lbsbindir = LBSSBINDIR;
+	$lbsbindir = LBSBINDIR;
 
 	# Variables to store
 
@@ -91,7 +91,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.1.18";
+	public static $LBSYSTEMVERSION = "0.3.1.19";
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 
