@@ -29,12 +29,18 @@ chown -Rv root:root $LBHOMEDIR/system/cron/cron.d
 chown -Rv root.root $LBHOMEDIR/sbin
 chown -Rv root.root $LBHOMEDIR/system/logrotate
 chown -Rv root.root $LBHOMEDIR/system/php
-chown -Rv root.root $LBHOMEDIR/config/system/installpin.dat
-chown -v loxberry.loxberry /etc/timezone
-chown -v loxberry.loxberry /etc/localtime
+chown -Rv root.root $LBHOMEDIR/config/system/securepin.dat
+chown -Rv root:root $LBHOMEDIR/system/php
+chown -v root:root $LBHOMEDIR/system/profile/loxberry.sh
+chown -v loxberry:loxberry /etc/timezone
+chown -v loxberry:loxberry /etc/localtime
 
 chmod -v 600 $LBHOMEDIR/system/network/interfaces
 chmod -v 600 $LBHOMEDIR/config/system/*
+chmod -v 555 $LBHOMEDIR/system/sudoers
+chmod -v 664 $LBHOMEDIR/system/sudoers/lbdefaults
+chmod -v 755 $LBHOMEDIR/system/profile
+chmod -v 644 $LBHOMEDIR/system/profile/loxberry.sh
 
 chmod -Rv 755 $LBHOMEDIR/libs
 chmod -Rv 755 $LBHOMEDIR/sbin
