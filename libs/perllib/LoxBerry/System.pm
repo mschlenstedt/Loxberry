@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.19";
+our $VERSION = "0.3.1.20";
 
 use base 'Exporter';
 
@@ -45,6 +45,7 @@ our @EXPORT = qw (
 	$lbslogdir
 	$lbsconfigdir
 	$lbssbindir
+	$lbsbindir
 		
 	is_enabled 
 	is_disabled
@@ -166,6 +167,7 @@ our $lbsdatadir = "$lbhomedir/data/system";
 our $lbslogdir = "$lbhomedir/log/system";
 our $lbsconfigdir = "$lbhomedir/config/system";
 our $lbssbindir = "$lbhomedir/sbin";
+our $lbsbindir = "$lbhomedir/bin";
 
 # Variables only valid in this module
 my $cfgwasread;

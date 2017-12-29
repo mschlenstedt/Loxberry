@@ -3,10 +3,13 @@
 .git
 .git*
 
-/bin/
 /bin/plugins
 
-/config/
+/config/plugins
+/config/system/*.cfg
+/config/system/*.dat
+/config/system/*.
+/config/system/update-exclude.userdefined
 
 /data/
 /data/plugins
