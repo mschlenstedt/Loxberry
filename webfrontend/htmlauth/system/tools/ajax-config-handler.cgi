@@ -28,7 +28,7 @@ elsif ($action eq 'lbupdate-installtype') { &lbupdate; }
 elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') { &lbupdate; }
-
+elsif ($action eq 'testenvironment') { &testenvironment; }
 else   { print "<red>Action not supported.</red>"; }
 
 ################################
@@ -206,4 +206,19 @@ sub change_generalcfg
 	}
 	$cfg->write() or return undef;
 	return 1;
+}
+
+sub testenvironment
+{
+print "<h2>TEST 1 with system()</h2>";
+print "ajax-config-handler: TESTENVIRONMENT (lbhomedir is $lbhomedir)<br>";
+system("sudo $lbhomedir/sbin/testenvironment.pl");
+print "ajax-config-handler: Finished.<br>";
+
+print "<h2>TEST 2 with qx{}</h2>";
+print "ajax-config-handler: TESTENVIRONMENT (lbhomedir is $lbhomedir)<br>";
+my $output = qx{sudo $lbhomedir/sbin/testenvironment.pl};
+print $output;
+print "ajax-config-handler: Finished.<br>";
+
 }
