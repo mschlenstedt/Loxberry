@@ -1,0 +1,224 @@
+
+		<!-- ** START template/system/myloxberry.html 17:30 28.11.2017 ************************************************************************************ -->
+		
+<style>
+
+div.greenTable {
+  /* border: 6px solid #6dac20 ; */
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  
+}
+.divTable.greenTable .divTableCell, .divTable.greenTable .divTableHead {
+  border: 1px solid #6dac20 ;
+  padding: 3px 2px;
+  
+}
+.divTable.greenTable .divTableBody .divTableCell {
+  font-size: 11px;
+  color: #000000;
+  
+}
+.divTable.greenTable .divTableHeading {
+  background: #6dac20 ;
+  background: -moz-linear-gradient(top, #008000 0%, #3a9e4d 66%, #6dac20  100%);
+  background: -webkit-linear-gradient(top, #008000 0%, #3a9e4d 66%, #6dac20  100%);
+  background: linear-gradient(to bottom, #008000 0%, #3a9e4d 66%, #6dac20  100%);
+  border-bottom: 0px solid #444444;
+}
+.divTable.greenTable .divTableHeading .divTableHead {
+  font-weight: bold;
+  color: #F0F0F0;
+  text-align: left;
+  border-left: 2px solid #6dac20 ;
+}
+.divTable.greenTable .divTableHeading .divTableHead:first-child {
+  border-left: none;
+}
+
+.greenTable .tableFootStyle {
+  font-size: 11px;
+}
+.greenTable .tableFootStyle .links {
+	 text-align: right;
+}
+.greenTable .tableFootStyle .links a{
+  display: inline-block;
+  background: #FFFFFF;
+  color: #6dac20 ;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+.greenTable.outerTableFooter {
+  border-top: none;
+}
+.greenTable.outerTableFooter .tableFootStyle {
+  padding: 3px 5px; 
+}
+
+
+.divTable{ display: table; }
+.divTableRow { display: table-row; }
+.divTableHeading { display: table-header-group;}
+.divTableCell, .divTableHead { display: table-cell; word-wrap: break-word; }
+.divTableHeading { display: table-header-group;}
+.divTableFoot { display: table-footer-group;}
+.divTableBody { display: table-row-group;}
+
+.CellKey { max-width:20vw; }
+.CellText { max-width: 30vw;}
+.CellTranslation { max-width: 50vw;}
+.CellSection { background-color: #0080ff; text-shadow: none; color: white; font-size: 18px;}
+
+.CellEmpty { background: #ffff71; }
+.CellEqual { background: #ffffc3; }
+
+.wrap {
+	display: flex; 
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+.langerror { font-size: 9px;
+			 color: red;
+}
+</style>
+
+	
+	<p>
+	<div class="wide"><TMPL_VAR TRANSLATE.HEADING_FRIENDLYNAME></div>
+	</p>
+	<form action="translate.cgi" method="post">
+	<div class="wrap">
+	<div style="margin:10px 10px 10px 10px;">
+	<fieldset data-role="controlgroup" data-mini="true">
+	Select the source language: <TMPL_VAR sourcelang>
+	</fieldset>
+	</div>
+	<div style="margin:10px 10px 10px 10px;">
+	<fieldset data-role="controlgroup" data-mini="true">
+	Enter your destination language: <TMPL_VAR destlang>
+	</fieldset>
+	</div>
+	<div style="margin:10px 10px 10px 10px;">
+	<fieldset data-role="controlgroup" data-mini="true">
+	Click to reload
+	<input type="submit" data-icon="eye" value="Input">
+	</fieldset>
+	</div>
+	</div>
+	</form>
+	
+	<input type="hidden" id="srclang" name="srclang" value="en">
+	<input type="hidden" id="destlang" name="destlang" value="de">
+	<input type="hidden" id="selfurl" name="selfurl" value="<TMPL_VAR SELFURL>">
+	
+	
+<div class="divTable greenTable">
+<div class="divTableHeading">
+<div class="divTableRow">
+<div class="divTableHead CellKey">KEY</div>
+<div class="divTableHead CellText">Source language</div>
+<div class="divTableHead CellTranslation">Destination language</div>
+<div class="divTableHead CellButtons">&nbsp;</div>
+</div>
+</div>
+<div class="divTableBody">
+<TMPL_LOOP langarray>
+<div class="divTableRow <TMPL_VAR CELL_EQUAL> <TMPL_VAR CELL_EMPTY>" id="row_<TMPL_VAR KEY>">
+
+<TMPL_IF SECTION>
+	<div class="divTableHead CellSection">Section <TMPL_VAR SECTION></div>
+	<div class="divTableHead CellSection">&nbsp;</div>
+	<div class="divTableHead CellSection">&nbsp;</div>
+	<div class="divTableHead CellSection">&nbsp;</div>
+	
+<TMPL_ELSE>
+	<div class="divTableCell CellKey">
+		<TMPL_VAR KEY>
+	</div>
+	<div class="divTableCell CellText" id="src_<TMPL_VAR KEY>"><TMPL_VAR TEXT>
+		<TMPL_IF TEXT_ERROR>
+			<div class="langerror"><TMPL_VAR TEXT_ERROR></div>
+		</TMPL_IF>
+	</div>
+	<div class="divTableCell CellTranslation" id="dstdiv_<TMPL_VAR KEY>">
+		<textarea class="translation" name="<TMPL_VAR KEY>" id="<TMPL_VAR KEY>" rows="1" cols="50"><TMPL_VAR TRANSLATION></textarea>
+		<input type="hidden" id="orig_<TMPL_VAR KEY>" name="orig_<TMPL_VAR KEY>" value="TMPL_VAR TRANSLATION>">
+		<TMPL_IF TRANSLATION_ERROR>
+			<div class="langerror"><TMPL_VAR TRANSLATION_ERROR></div>
+		</TMPL_IF>
+	</div>
+	<div class="divTableCell CellButtons">
+		<a href="#" name="copy_<TMPL_VAR KEY>" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-mini ui-btn-icon-left CellButtonCopy" >Copy</a>
+		<div id="success_<TMPL_VAR KEY>"></div>
+	</div>
+</TMPL_IF>
+</div>
+</TMPL_LOOP>
+</div>
+</div>	
+	
+	
+	<center>
+		<p>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		</p>
+	</center>
+
+<script>
+$(document).ready( function () {
+	
+	$( ".translation" ).blur(function(){change_translation(event.target.id, $(this).val())});
+	
+	$( ".CellButtonCopy" ).click(function(){ 
+			var key = $(this).attr('name').substring(5);
+			// console.log("Button key:", key);
+			var srckey = $("#src_" + key.replace('.', '\\.'));
+			// console.log("Source key", srckey, "Source text:", srckey.text());
+			var dstkey = $("#" + key.replace('.', '\\.'));
+			dstkey.val($.trim(srckey.text()));
+			change_translation(key, dstkey.val());
+	});
+	
+	console.log("Destination lang:", $('#destlang').val());
+
+
+
+});
+
+function change_translation (key, value)
+{
+	//console.log("Key is", event.target.id, "Value is", $(event.target).text(), "Function val is", value);
+	// console.log ("Name:", event.target.name, "ID:", event.target.id, "Orig:", "#orig_" + event.target.id, "val", $("#orig_" + event.target.id).attr('value'));
+	// if ($(event.target).text() === 
+	url = $('#selfurl').val();
+	lang = $('#destlang').val();
+	$.post( url, { 	action: "setvalue",
+					destlang: $.trim($('#destlang').val()),
+					key: key,
+					text: value,
+				 },
+				 function(data, status) {
+				 console.log("Data:", data, "Status", status);
+				 var row = $("#row_" + key.replace('.', '\\.'));
+				 srcval = $.trim($("#src_" + key.replace('.', '\\.')).text());
+				 console.log("Source value is", '#' + srcval + '#', "New value is", '#' + value + '#');
+				 if (value === "") {
+					row.addClass("CellEmpty");
+					row.removeClass("CellEqual");
+				} else if (value === srcval) {
+					row.removeClass("CellEmpty");
+					row.addClass("CellEqual");
+				} else {
+					row.removeClass("CellEmpty CellEqual");
+				}
+			 }
+			);
+
+}
+
+
+
+</script>
+
