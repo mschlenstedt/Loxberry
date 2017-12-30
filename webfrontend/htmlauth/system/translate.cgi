@@ -95,9 +95,20 @@ $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'MYLOXBERRY.WIDGETLABE
 # What should we do
 #########################################################################
 
-# Menu
+our %navbar;
+$navbar{10}{Name} = "System Translation";
+$navbar{10}{URL} = 'translate.cgi';
+ 
+# $navbar{20}{Name} = "Plugin Translation";
+# $navbar{20}{URL} = 'translate.cgi?form=plugin';
+ 
+$navbar{100}{Name} = "Translation Guide";
+$navbar{100}{URL} = 'http://www.loxwiki.eu:80/x/QgZ7AQ';
+$navbar{100}{target} = '_blank'; 
+
+$navbar{10}{active} = 1;   
    
-  &form;
+&form;
 
 exit;
 
@@ -116,6 +127,8 @@ sub form {
 	);
 	my $sourcelang = $cgi->popup_menu(
 				-name   => 'sourcelang',
+				-id => 'sourcelang',
+				-tabindex => 1,
 				-values => [sort keys %srclanguages],
 				-labels => \%srclanguages
    );
@@ -123,6 +136,8 @@ sub form {
 	
 	my $destlang = $cgi->textfield(
 			-name=>'destlang',
+			-id=>'destlang',
+			-tabindex=>2,
 		    -value=>'',
 		    -size=>10,
 		    -maxlength=>2
@@ -162,6 +177,7 @@ sub readfile {
 	
 	my @langarray = ();
 	my $currsection = "";
+	my $tabindex = 100;
 	
 	tie my %srclang, "Config::Simple", $srcfile if ($srcfile && -e $srcfile);
 	tie my %destlang, "Config::Simple", $destfile if ($destfile && -e $destfile);
@@ -198,7 +214,8 @@ sub readfile {
 		}
 		$langhash{'CELL_EMPTY'} = "CellEmpty" if (!$destlang{$key});
 		$langhash{'CELL_EQUAL'} = "CellEqual" if ($destlang{$key} && $srclang{$key} eq $destlang{$key});
-		
+		$tabindex++;
+		$langhash{'TABINDEX'} = $tabindex;
 		
 		#if (! $Config{$setting} ) {
 		#	print STDERR "<INFO> Setting missing or empty key $setting to $Default{$setting}\n";
@@ -211,10 +228,19 @@ sub readfile {
 sub ajax
 {
 	print STDERR "ajax called.\n";
+	my $cfg;
+	my $isnew;
 	if ($R::action eq "setvalue" && length($R::destlang) == 2) {
-		my $cfg = new Config::Simple("$lbstemplatedir/lang/language_" . $R::destlang . ".ini");
+		my $filename = "$lbstemplatedir/lang/language_" . $R::destlang . ".ini";
+		if(! -e $filename) {
+			$isnew=1;
+			$cfg = new Config::Simple(syntax=>'ini');
+		}	
+		
+		$cfg = new Config::Simple($filename) if (! $isnew);
 		$cfg->param($R::key, $R::text);
-		$cfg->write();
+		$cfg->write() if (! $isnew);
+		$cfg->write($filename) if ($isnew);
 		print $cgi->header('text/html');
 		print "OK";
 		exit(0);

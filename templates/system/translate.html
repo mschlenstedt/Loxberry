@@ -82,6 +82,41 @@ div.greenTable {
 .langerror { font-size: 9px;
 			 color: red;
 }
+
+
+.tooltip {
+	/*color: #c32e04;
+	text-decoration: underline;*/
+	cursor: help;
+}
+
+[data-tooltip] {
+	position: relative;
+}
+
+[data-tooltip]::after {
+	content: attr(data-tooltip);
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.5s;
+	display: block;
+	position: absolute;
+	bottom: -5em;
+	left: -10em;
+	width: 15em;
+	padding: 0.5em;
+	z-index: 100;
+	color: #000;
+	background-color: #ffffc1;
+	border: solid 1px #c32e04;
+	border-radius: 0.5em;
+}
+
+[data-tooltip]:hover::after {
+	opacity: 1;
+}
+
+
 </style>
 
 	
@@ -103,14 +138,13 @@ div.greenTable {
 	<div style="margin:10px 10px 10px 10px;">
 	<fieldset data-role="controlgroup" data-mini="true">
 	Click to reload
-	<input type="submit" data-icon="eye" value="Input">
+	<input type="submit" data-icon="eye" tabindex="3" value="Input">
 	</fieldset>
 	</div>
 	</div>
 	</form>
 	
 	<input type="hidden" id="srclang" name="srclang" value="en">
-	<input type="hidden" id="destlang" name="destlang" value="de">
 	<input type="hidden" id="selfurl" name="selfurl" value="<TMPL_VAR SELFURL>">
 	
 	
@@ -143,14 +177,19 @@ div.greenTable {
 		</TMPL_IF>
 	</div>
 	<div class="divTableCell CellTranslation" id="dstdiv_<TMPL_VAR KEY>">
-		<textarea class="translation" name="<TMPL_VAR KEY>" id="<TMPL_VAR KEY>" rows="1" cols="50"><TMPL_VAR TRANSLATION></textarea>
-		<input type="hidden" id="orig_<TMPL_VAR KEY>" name="orig_<TMPL_VAR KEY>" value="TMPL_VAR TRANSLATION>">
+		<textarea class="translation" name="<TMPL_VAR KEY>" id="<TMPL_VAR KEY>" tabindex="<TMPL_VAR TABINDEX>" rows="1" cols="50"><TMPL_VAR TRANSLATION></textarea>
+		<input type="hidden" id="orig_<TMPL_VAR KEY>" name="orig_<TMPL_VAR KEY>" value="<TMPL_VAR TRANSLATION>">
 		<TMPL_IF TRANSLATION_ERROR>
 			<div class="langerror"><TMPL_VAR TRANSLATION_ERROR></div>
 		</TMPL_IF>
 	</div>
 	<div class="divTableCell CellButtons">
-		<a href="#" name="copy_<TMPL_VAR KEY>" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-mini ui-btn-icon-left CellButtonCopy" >Copy</a>
+		<dfn class="tooltip" data-tooltip="Copies the source text to the translated field.">
+		
+		<a href="#" name="copy_<TMPL_VAR KEY>" class="ui-btn ui-icon-action ui-btn-icon-notext ui-corner-all CellButtonCopy">Copy</a></dfn>
+		<dfn class="tooltip" data-tooltip="Reverts the text to the initial value.">
+		<a href="#" name="revert_<TMPL_VAR KEY>" class="ui-btn ui-icon-back ui-btn-icon-notext ui-corner-all CellButtonRevert">Revert</a></dfn>
+		
 		<div id="success_<TMPL_VAR KEY>"></div>
 	</div>
 </TMPL_IF>
@@ -167,9 +206,16 @@ div.greenTable {
 	</center>
 
 <script>
+
+var oldvalue;
+
 $(document).ready( function () {
 	
+	
+	
 	$( ".translation" ).blur(function(){change_translation(event.target.id, $(this).val())});
+	
+	$( ".translation" ).focusin(function(){ oldvalue = $(this).val(); });
 	
 	$( ".CellButtonCopy" ).click(function(){ 
 			var key = $(this).attr('name').substring(5);
@@ -181,7 +227,19 @@ $(document).ready( function () {
 			change_translation(key, dstkey.val());
 	});
 	
-	console.log("Destination lang:", $('#destlang').val());
+	$( ".CellButtonRevert" ).click(function(){ 
+			var key = $(this).attr('name').substring(7);
+			console.log("Revert key:", key);
+			var orig = $("#orig_" + key.replace('.', '\\.')).val();
+			// console.log("Source key", srckey, "Source text:", srckey.text());
+			var dstkey = $("#" + key.replace('.', '\\.'));
+			oldvalue = dstkey.val();
+			dstkey.val($.trim(orig));
+			change_translation(key, dstkey.val());
+	});
+	
+	
+	console.log("Destination lang:", $('destlang').val());
 
 
 
@@ -189,7 +247,11 @@ $(document).ready( function () {
 
 function change_translation (key, value)
 {
-	//console.log("Key is", event.target.id, "Value is", $(event.target).text(), "Function val is", value);
+	console.log("Key is", key, "Value is", value, "Old value is", oldvalue);
+	if (value === oldvalue) {
+		console.log("Nothing changed.");
+		return;
+	}
 	// console.log ("Name:", event.target.name, "ID:", event.target.id, "Orig:", "#orig_" + event.target.id, "val", $("#orig_" + event.target.id).attr('value'));
 	// if ($(event.target).text() === 
 	url = $('#selfurl').val();
