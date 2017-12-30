@@ -82,6 +82,31 @@ awk -v s="export LBSDATA=$LBSDATA" '/^export LBSDATA=/{$0=s;f=1} {a[++n]=$0} END
 awk -v s="export LBSLOG=$LBSLOG" '/^export LBSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSCONFIG=$LBSCONFIG" '/^export LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
+# LoxBerry global environment variables in Lighttpd
+ENVVARS=$LBHOME/system/lighttpd/envars.conf
+
+echo '## LoxBerry global environment variables' > $ENVVARS
+echo 'setenv.add-environment = (' >> $ENVVARS
+echo '' >> $ENVVARS
+echo \"PERL5LIB\" \=\> \"$LBHOMEDIR/libs/perllib\", >> $ENVVARS
+echo \"LBHOMEDIR\" \=\> \"$LBHOMEDIR\", >> $ENVVARS
+echo \"LBPHTMLAUTH\" \=\> \"$LBPHTMLAUTH\", >> $ENVVARS
+echo \"LBPHTML\" \=\> \"$LBPHTML\", >> $ENVVARS
+echo \"LBPTEMPL\" \=\> \"$LBPTEMPL\", >> $ENVVARS
+echo \"LBPDATA\" \=\> \"$LBPDATA\", >> $ENVVARS
+echo \"LBPLOG\" \=\> \"$LBPLOG\", >> $ENVVARS
+echo \"LBPCONFIG\" \=\> \"$LBPCONFIG\", >> $ENVVARS
+echo '' >> $ENVVARS
+echo \"LBSHTMLAUTH\" \=\> \"$LBSHTMLAUTH\", >> $ENVVARS
+echo \"LBSHTML\" \=\> \"$LBSHTML\", >> $ENVVARS
+echo \"LBSTEMPL\" \=\> \"$LBSTEMPL\", >> $ENVVARS
+echo \"LBSDATA\" \=\> \"$LBSDATA\", >> $ENVVARS
+echo \"LBSLOG\" \=\> \"$LBSLOG\", >> $ENVVARS
+echo \"LBSCONFIG\" \=\> \"$LBSCONFIG\", >> $ENVVARS
+echo '' >> $ENVVARS
+echo ')' >> $ENVVARS
+/usr/sbin/service lighttpd force-reload
+
 # sudoers.d/lbdefault
 rm /etc/sudoers.d/lbdefaults
 ln -s $LBHOME/system/sudoers/lbdefaults /etc/sudoers.d/lbdefaults
