@@ -98,8 +98,8 @@ if (!$updatedir) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
-if (! -e "$updatedir/config/system/general.cfg") {
-	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg in correct path).";
+if (! -e "$updatedir/config/system/general.cfg.default" && ! -e "$updatedir/config/system/general.cfg") {
+	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg or general.cfg.default in correct path).";
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit (1);
@@ -121,9 +121,9 @@ if (!$release) {
 }
 
 if ($release eq "config") {
-	my $newcfg = new Config::Simple("$updatedir/config/system/general.cfg");
+	my $newcfg = new Config::Simple("$updatedir/config/system/general.cfg.default");
 	$release = $newcfg->param('BASE.VERSION');
-	LOGWARN "Version parameter 'config' was given, destination version is read from new general.cfg (version $release).";
+	LOGWARN "Version parameter 'config' was given, destination version is read from new general.cfg.default (version $release).";
 }
 if (!$release) {
 	$joutput{'error'} = "Cannot detect release version number.";
@@ -278,6 +278,17 @@ if ($scripterrskipped > 0) {
 } else {
 	LOGOK "Update scripts executed successful.";
 }
+
+LOGINF "Migrating configuration settings from default config...";
+system("su - loxberry -c '$lbsbindir/createconfig.pl' >/dev/null");
+$exitcode  = $? >> 8;
+if ($exitcode != 0 ) {
+	LOGINF "createconfig returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
+	$errskipped++;
+} else {
+	LOGOK "LoxBerry config settings updated successfully.";
+}
+
 
 # We think that everything is up to date now.
 # I don't know what to do if error occurred during update scripts, so we simply continue.
