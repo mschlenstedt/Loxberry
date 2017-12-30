@@ -83,16 +83,16 @@ case "$1" in
         fi
 
         # Do a system upgrade
-        if [ -f /opt/loxberry/data/system/upgrade/upgrade.sh ]
-        then
-          log_action_begin_msg "Found system upgrade. Installing..."
-          /opt/loxberry/data/system/upgrade/upgrade.sh > /opt/loxberry/log/system/upgrade.log 2>&1
-        fi
+        #if [ -f /opt/loxberry/data/system/upgrade/upgrade.sh ]
+        #then
+        #  log_action_begin_msg "Found system upgrade. Installing..."
+        #  /opt/loxberry/data/system/upgrade/upgrade.sh > /opt/loxberry/log/system/upgrade.log 2>&1
+        #fi
 
         # Cleaning Temporary folders
         log_action_begin_msg "Cleaning temporary files and folders..."
         rm -rf /opt/loxberry/webfrontend/html/tmp/* > /dev/null 2>&1
-		rm /opt/loxberry/log/system/reboot.required > /dev/null 2>&1
+	rm /opt/loxberry/log/system/reboot.required > /dev/null 2>&1
 
         # Set Date and Time
         if [ -f /opt/loxberry/sbin/setdatetime.pl ]
@@ -102,56 +102,56 @@ case "$1" in
         fi
 
         # Create log folders for all plugins if not existing
-		perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
+	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
 			
-		# Run Daemons from Plugins and from System
+	# Run Daemons from Plugins and from System
         log_action_begin_msg "Running System Daemons"
         run-parts -v  /opt/loxberry/system/daemons/system > /dev/null 
-		log_action_end_msg 0
+	log_action_end_msg 0
 		
         log_action_begin_msg "Running Plugin Daemons"
         run-parts -v --new-session /opt/loxberry/system/daemons/plugins > /dev/null 
-		log_action_end_msg 0
+	log_action_end_msg 0
 		
         # Run Uninstall scripts
-        log_action_begin_msg "Running Uninstall Scripts"
-        run-parts -v /opt/loxberry/system/daemons/uninstall > /dev/null 
-        rm -rf /opt/loxberry/system/daemons/uninstall/* > /dev/null 2>&1
-		log_action_end_msg 0
+        #log_action_begin_msg "Running Uninstall Scripts"
+        #run-parts -v /opt/loxberry/system/daemons/uninstall > /dev/null 
+        #rm -rf /opt/loxberry/system/daemons/uninstall/* > /dev/null 2>&1
+	#log_action_end_msg 0
 		
-		# Check LoxBerry Update cronjobs
-		# Recreate them, if config has enabled them, but do not exist
-		ini_parser "$LBSCONFIG/general.cfg" "UPDATE"
-		log_action_begin_msg "Checking consistence of LoxBerry Update settings"
-		echo Update-Settings: INSTALLTYPE is $UPDATEINSTALLTYPE, INTERVAL is $UPDATEINTERVAL
-		if [ "$UPDATEINSTALLTYPE" = "notify" ] ||  [ "$UPDATEINSTALLTYPE" = "install" ]; then
-			if [ "$UPDATEINTERVAL" = "1" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then
-				log_warning_msg "Recreated daily cronjob"
-				ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"
-				if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
-				if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
-			fi
-			if [ "$UPDATEINTERVAL" = "7" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then
-				log_warning_msg "Recreated weekly cronjob"
-				ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"
-			if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
-			if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
-
-			fi
-			if [ "$UPDATEINTERVAL" = "30" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then
-				log_warning_msg "Recreated monthly cronjob"
-				ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"
-				if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
-				if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
-
-			fi
-		else
-			log_action_cont_msg "Updates are disabled, checking and deleting cronjobs"
-			if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
+	# Check LoxBerry Update cronjobs
+	# Recreate them, if config has enabled them, but do not exist
+	ini_parser "$LBSCONFIG/general.cfg" "UPDATE"
+	log_action_begin_msg "Checking consistence of LoxBerry Update settings"
+	echo Update-Settings: INSTALLTYPE is $UPDATEINSTALLTYPE, INTERVAL is $UPDATEINTERVAL
+	if [ "$UPDATEINSTALLTYPE" = "notify" ] ||  [ "$UPDATEINSTALLTYPE" = "install" ]; then
+		if [ "$UPDATEINTERVAL" = "1" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then
+			log_warning_msg "Recreated daily cronjob"
+			ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"
 			if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
 			if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
 		fi
-		log_action_end_msg 0
+		if [ "$UPDATEINTERVAL" = "7" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then
+			log_warning_msg "Recreated weekly cronjob"
+			ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"
+		if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
+		if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
+
+		fi
+		if [ "$UPDATEINTERVAL" = "30" ] && [ ! -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then
+			log_warning_msg "Recreated monthly cronjob"
+			ln -s "$LBHOMEDIR/sbin/loxberryupdate_cron.sh" "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"
+			if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
+			if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
+
+		fi
+	else
+		log_action_cont_msg "Updates are disabled, checking and deleting cronjobs"
+		if [ -e "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.daily/loxberryupdate_cron"; fi
+		if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
+		if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
+	fi
+	log_action_end_msg 0
 		
 	;;
 	restart|reload|force-reload|status)

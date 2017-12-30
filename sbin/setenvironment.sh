@@ -8,11 +8,9 @@ fi
 LBHOME="/opt/loxberry"
 
 # LoxBerry Home Directory in Environment
-
 awk -v s="LBHOMEDIR=$LBHOME" '/^LBHOMEDIR=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
 # Main directories for plugins
-
 awk -v s="LBPHTMLAUTH=$LBHOME/webfrontend/htmlauth/plugins" '/^LBPHTMLAUTH=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBPHTML=$LBHOME/webfrontend/html/plugins" '/^LBPHTML=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBPTEMPL=$LBHOME/templates/plugins" '/^LBPTEMPL=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
@@ -28,7 +26,6 @@ awk -v s="LBPCONFIG=$LBHOME/config/plugins" '/^LBPCONFIG=/{$0=s;f=1} {a[++n]=$0}
 #echo LBPCONFIG=$LBHOME/config/plugins >> /etc/environment
 
 # Main directories for system
-
 awk -v s="LBSHTMLAUTH=$LBHOME/webfrontend/htmlauth/system" '/^LBSHTMLAUTH=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSHTML=$LBHOME/webfrontend/html/system" '/^LBSHTML=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSTEMPL=$LBHOME/templates/system" '/^LBSTEMPL=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
@@ -88,23 +85,10 @@ awk -v s="export LBSCONFIG=$LBSCONFIG" '/^export LBSCONFIG=/{$0=s;f=1} {a[++n]=$
 # sudoers.d/lbdefault
 rm /etc/sudoers.d/lbdefaults
 ln -s $LBHOME/system/sudoers/lbdefaults /etc/sudoers.d/lbdefaults
-chmod 555 $LBHOME/system/sudoers
-chown root:root $LBHOME/system/sudoers/lbdefaults
-chmod 664 $LBHOME/system/sudoers/lbdefaults
 
 # profile.d/loxberry.sh
 rm /etc/profile.d/loxberry.sh
 ln -s $LBHOME/system/profile/loxberry.sh /etc/profile.d/loxberry.sh
-chmod 755 $LBHOME/system/profile
-chown root:root $LBHOME/system/profile/loxberry.sh
-chmod 644 $LBHOME/system/profile/loxberry.sh
-
-# /etc/php/7.0/apache2/php.ini
-rm /etc/php/7.0/apache2/php.ini
-ln -s $LBHOME/system/apache2/php.ini /etc/php/7.0/apache2/php.ini
-chmod 755 $LBHOME/system/profile
-chown root:root $LBHOME/system/apache2/php.ini
-chmod 644 $LBHOME/system/apache2/php.ini
 
 # Init Script
 rm /etc/init.d/loxberry
@@ -117,6 +101,13 @@ if [ ! -L /etc/apache2 ]; then
 fi
 rm /etc/apache2
 ln -s $LBHOME/system/apache2 /etc/apache2
+
+# Lighttpd Config
+if [ ! -L /etc/lighttpd ]; then
+	mv /etc/lighttpd /etc/lighttpd.old
+fi
+rm /etc/lighttpd
+ln -s $LBHOME/system/lighttpd /etc/lighttpd
 
 # Network config
 if [ ! -L /etc/network/interfaces ]; then
@@ -161,3 +152,10 @@ awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a
 awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/cli/conf.d/20-loxberry.ini
 # echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/apache2/conf.d/20-loxberry.ini
 # echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/cli/conf.d/20-loxberry.ini
+
+# Cron.d
+if [ ! -L /etc/cron.d ]; then
+	mv /etc/cron.d /etc/cron.d.old
+fi
+rm /etc/cron.d
+ln -s $LBHOME/system/cron/cron.d /etc/cron.d
