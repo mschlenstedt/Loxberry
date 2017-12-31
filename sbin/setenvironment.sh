@@ -195,3 +195,11 @@ ln -s $LBHOME/system/cron/cron.d /etc/cron.d
 
 # Group mebership
 /usr/sbin/usermod -a -G sudo,dialout,audio,gpio,tty,www-data loxberry
+
+# Skel for system logs, LB system logs and LB plugin logs
+find $LBHOME/log/skel_system/ -exec rm {} \;
+find $LBHOME/log/skel_syslog/ -exec rm {} \;
+find $LBHOME/log/skel_plugins/ -exec rm {} \;
+
+# Clean apt cache
+rm -f /var/cache/apt/archives/*
