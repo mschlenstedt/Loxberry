@@ -82,6 +82,10 @@ awk -v s="export LBSDATA=$LBSDATA" '/^export LBSDATA=/{$0=s;f=1} {a[++n]=$0} END
 awk -v s="export LBSLOG=$LBSLOG" '/^export LBSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSCONFIG=$LBSCONFIG" '/^export LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
+if /usr/sbin/service apache2 status; then
+	/usr/sbin/service apache2 force-reload
+fi
+
 # LoxBerry global environment variables in Lighttpd
 ENVVARS=$LBHOME/system/lighttpd/envars.conf
 
@@ -105,7 +109,10 @@ echo \"LBSLOG\" \=\> \"$LBSLOG\", >> $ENVVARS
 echo \"LBSCONFIG\" \=\> \"$LBSCONFIG\", >> $ENVVARS
 echo '' >> $ENVVARS
 echo ')' >> $ENVVARS
-/usr/sbin/service lighttpd force-reload
+
+if /usr/sbin/service lighttpd status; then
+	/usr/sbin/service lighttpd force-reload
+fi
 
 # sudoers.d/lbdefault
 rm /etc/sudoers.d/lbdefaults
