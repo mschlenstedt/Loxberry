@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.20";
+our $VERSION = "0.3.1.21";
 
 use base 'Exporter';
 
@@ -589,13 +589,21 @@ sub set_clouddns
 ####################################################
 sub is_systemcall
 {
+	
+	my $filename;
+	if ($ENV{SCRIPT_FILENAME}) { 
+		$filename = $ENV{SCRIPT_FILENAME};
+	} elsif ($0) {
+		$filename = $0;
+	}
+	
 	# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
 	# print STDERR "lbshtmlauthdir: " . $lbshtmlauthdir . "\n";
 	# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) . "\n";
 	
-	if (substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir) { return 1; }
-	if (substr(Cwd::abs_path($0), 0, length("$lbhomedir/sbin")) eq "$lbhomedir/sbin") { return 1; }
-	if (substr(Cwd::abs_path($0), 0, length("$lbhomedir/bin")) eq "$lbhomedir/bin") { return 1; }
+	if (substr(Cwd::abs_path($filename), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir) { return 1; }
+	if (substr(Cwd::abs_path($filename), 0, length("$lbhomedir/sbin")) eq "$lbhomedir/sbin") { return 1; }
+	if (substr(Cwd::abs_path($filename), 0, length("$lbhomedir/bin")) eq "$lbhomedir/bin") { return 1; }
 	return undef;
 	# return substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir ? 1 : undef;
 }
