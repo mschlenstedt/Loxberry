@@ -121,26 +121,39 @@ div.greenTable {
 
 	
 	<p>
-	<div class="wide"><TMPL_VAR TRANSLATE.HEADING_FRIENDLYNAME></div>
+	<div class="wide"><TMPL_VAR TRANSLATE.WIDGETLABEL_SYSTEM></div>
 	</p>
 	<form action="translate.cgi" method="post">
 	<div class="wrap">
+	
 	<div style="margin:10px 10px 10px 10px;">
 	<fieldset data-role="controlgroup" data-mini="true">
-	Select the source language: <TMPL_VAR sourcelang>
+	<TMPL_VAR TRANSLATE.LABEL_SELECT_SOURCE_LANG> <TMPL_VAR sourcelang>
 	</fieldset>
 	</div>
+	
 	<div style="margin:10px 10px 10px 10px;">
 	<fieldset data-role="controlgroup" data-mini="true">
-	Enter your destination language: <TMPL_VAR destlang>
+	<TMPL_VAR TRANSLATE.LABEL_SELECT_DESTINATION_LANG> <TMPL_VAR destlang>
 	</fieldset>
 	</div>
+	
 	<div style="margin:10px 10px 10px 10px;">
 	<fieldset data-role="controlgroup" data-mini="true">
-	Click to reload
-	<input type="submit" data-icon="eye" tabindex="3" value="Input">
+	<TMPL_VAR TRANSLATE.LABEL_LOAD_LANGUAGE>
+	<input type="submit" data-icon="eye" tabindex="3" value="<TMPL_VAR TRANSLATE.BUTTON_LOAD>">
 	</fieldset>
 	</div>
+	
+	<div style="margin:10px 10px 10px 10px;">
+	
+	<fieldset data-role="controlgroup" data-mini="true">
+	<TMPL_VAR TRANSLATE.LABEL_DOWNLOAD><br>
+	<button id="downloadfile" class="ui-btn ui-btn-inline ui_mini"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></button>
+	<!-- <a id="downloadfile" name ="downloadfile" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#" tabindex="4"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></a> -->
+	</fieldset>
+	</div>
+	
 	</div>
 	</form>
 	
@@ -151,9 +164,9 @@ div.greenTable {
 <div class="divTable greenTable">
 <div class="divTableHeading">
 <div class="divTableRow">
-<div class="divTableHead CellKey">KEY</div>
-<div class="divTableHead CellText">Source language</div>
-<div class="divTableHead CellTranslation">Destination language</div>
+<div class="divTableHead CellKey"><TMPL_VAR TRANSLATE.TBL_HEAD_KEY></div>
+<div class="divTableHead CellText"><TMPL_VAR TRANSLATE.TBL_HEAD_SOURCE></div>
+<div class="divTableHead CellTranslation"><TMPL_VAR TRANSLATE.TBL_HEAD_DEST></div>
 <div class="divTableHead CellButtons">&nbsp;</div>
 </div>
 </div>
@@ -184,10 +197,10 @@ div.greenTable {
 		</TMPL_IF>
 	</div>
 	<div class="divTableCell CellButtons">
-		<dfn class="tooltip" data-tooltip="Copies the source text to the translated field.">
+		<dfn class="tooltip" data-tooltip="<TMPL_VAR TRANSLATE.BUTTON_TOOLTIP_COPY>">
 		
 		<a href="#" name="copy_<TMPL_VAR KEY>" class="ui-btn ui-icon-action ui-btn-icon-notext ui-corner-all CellButtonCopy">Copy</a></dfn>
-		<dfn class="tooltip" data-tooltip="Reverts the text to the initial value.">
+		<dfn class="tooltip" data-tooltip="<TMPL_VAR TRANSLATE.BUTTON_TOOLTIP_REVERT>">
 		<a href="#" name="revert_<TMPL_VAR KEY>" class="ui-btn ui-icon-back ui-btn-icon-notext ui-corner-all CellButtonRevert">Revert</a></dfn>
 		
 		<div id="success_<TMPL_VAR KEY>"></div>
@@ -201,7 +214,7 @@ div.greenTable {
 	
 	<center>
 		<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_BACK></a>
 		</p>
 	</center>
 
@@ -211,7 +224,18 @@ var oldvalue;
 
 $(document).ready( function () {
 	
+	$( "#downloadfile" ).click(function(){
+		console.log ("Download clicked");
+		var destlang = $('#destlang').val();
+		if (destlang === "") {
+			return;
+		}
+		downloadurl = "translate.cgi" + "?action=download&destlang=" + $('#destlang').val();
+		console.log("Download redirect to", downloadurl);
+		window.location = downloadurl;
 	
+	});
+
 	
 	$( ".translation" ).blur(function(){change_translation(event.target.id, $(this).val())});
 	
@@ -239,7 +263,7 @@ $(document).ready( function () {
 	});
 	
 	
-	console.log("Destination lang:", $('destlang').val());
+	console.log("Destination lang:", $('#destlang').val());
 
 
 

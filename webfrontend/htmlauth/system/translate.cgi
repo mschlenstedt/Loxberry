@@ -61,6 +61,10 @@ if ($R::action && $R::action eq "setvalue") {
 	&ajax;
 }
 
+if ($R::action && $R::action eq "download") {
+	&download;
+}
+
 
 ##########################################################################
 # Language Settings
@@ -85,7 +89,7 @@ our $maintemplate = HTML::Template->new(
 
 our %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-$template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'MYLOXBERRY.WIDGETLABEL'} v$sversion";
+$template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'TRANSLATE.WIDGETLABEL'} v$sversion";
 
 ##########################################################################
 # Main program
@@ -96,13 +100,13 @@ $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'MYLOXBERRY.WIDGETLABE
 #########################################################################
 
 our %navbar;
-$navbar{10}{Name} = "System Translation";
+$navbar{10}{Name} = $SL{'TRANSLATE.WIDGETLABEL_SYSTEM'};
 $navbar{10}{URL} = 'translate.cgi';
  
-# $navbar{20}{Name} = "Plugin Translation";
+# $navbar{20}{Name} = $SL{'TRANSLATE.WIDGETLABEL_PLUGIN'};
 # $navbar{20}{URL} = 'translate.cgi?form=plugin';
  
-$navbar{100}{Name} = "Translation Guide";
+$navbar{100}{Name} = $SL{'TRANSLATE.WIDGETLABEL_TRANSLATIONGUIDE'};
 $navbar{100}{URL} = 'http://www.loxwiki.eu:80/x/QgZ7AQ';
 $navbar{100}{target} = '_blank'; 
 
@@ -199,7 +203,7 @@ sub readfile {
 		if(ref($srclang{$key}) eq 'ARRAY') {
 			my $srcstring = getstringfromarray($srclang{$key});
 			$langhash{'TEXT'} = encode_entities($srcstring, '<>&"');
-			$langhash{'TEXT_ERROR'} = "Source string is an array - Check language file for commas, or put it under doublequotes.";
+			$langhash{'TEXT_ERROR'} = $SL{'TRANSLATE.ERROR_SOURCEFILE'};
 			print STDERR "Error in source language $srcfile Key $key\n";
 		} else {
 			$langhash{'TEXT'} = encode_entities($srclang{$key}, '<>&"');
@@ -207,7 +211,7 @@ sub readfile {
 		if(ref($destlang{$key}) eq 'ARRAY') {
 			my $dststring = getstringfromarray($destlang{$key});
 			$langhash{'TRANSLATION'} = encode_entities($dststring, '<>&"');
-			$langhash{'TRANSLATION_ERROR'} = "Current string is an array - it was tried to reconstruct.";
+			$langhash{'TRANSLATION_ERROR'} = $SL{'TRANSLATE.ERROR_DESTFILE'};
 			print STDERR "Error in destination language $destfile Key $key\n";
 		} else {
 			$langhash{'TRANSLATION'} = encode_entities($destlang{$key}, '<>&"');
@@ -276,4 +280,38 @@ sub getstringfromarray
 	print STDERR "getstringfromarray: String: $str\n";
 	return $str;
 }
+
+sub download
+{
+	my $filename = "$lbstemplatedir/lang/language_" . $R::destlang . ".ini" if ($R::destlang);
+	
+	if (!$R::destlang || ! -e $filename) {
+		$cgi->header->status('405 Method Not Allowed');
+		print $cgi->header('text/plain');
+		exit(1);
+	}
+	my $suggestedfilename = "language_" . $R::destlang . ".ini";
+	my $filecontent;
+	
+	open(my $fh, "<" , $filename) or 
+		do {
+			$cgi->header->status('500 Cannot read file');
+			print $cgi->header('text/plain');
+			exit(1);
+		};
+	{ 
+		local $/;
+		$filecontent = <$fh>; 
+	}
+	close ($fh);
+	print $cgi->header( 
+			-type => 'application/x-download',
+			-attachment => $suggestedfilename,
+			-charset => 'utf-8',
+		);
+	print $filecontent;
+	exit(0);
+
+}
+
 
