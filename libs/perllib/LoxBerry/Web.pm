@@ -19,7 +19,7 @@ use DateTime;
 # set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.18";
+our $VERSION = "0.3.1.19";
 our $DEBUG;
 
 use base 'Exporter';
@@ -392,7 +392,7 @@ sub pageend
 	
 	# Reboot required button
 	if (-e "$LoxBerry::System::lbslogdir/reboot.required") {
-		my $reboot_req_string='<a href="http://loxberry/admin/system/power.cgi"><span style="color:red; text-shadow: disabled;">' . $SL{'POWER.MSG_REBOOT_REQUIRED_SHORT'} . '</span></a>';
+		my $reboot_req_string='<a href="/admin/system/power.cgi"><span style="color:red; text-shadow: disabled;">' . $SL{'POWER.MSG_REBOOT_REQUIRED_SHORT'} . '</span></a>';
 		$pageendobj->param( 'REBOOT_REQUIRED', $reboot_req_string );
 	}
 	print $pageendobj->output();
