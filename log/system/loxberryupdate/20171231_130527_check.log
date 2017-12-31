@@ -1,0 +1,65 @@
+================================================================================
+31.12.2017 13:05:27 TASK STARTED
+LoxBerry Update Check
+<INFO> Version of loxberrycheck.pl is 0.3.1.7
+<OK> Parameters/settings of this update:
+<INFO>    querytype:       release
+
+<INFO>    cron:            
+
+<INFO>    keepupdatefiles: 
+<INFO>    dryrun: 
+
+<INFO>    output: 1
+<INFO>    Current LoxBerry version: 0.3.1
+<INFO>    Updates limited from : 0.3.0
+<INFO>    Updates limited to   : 0.5.0
+<INFO> Start checking releases...
+<INFO> Checking for releases from https://api.github.com/repos/mschlenstedt/Loxberry/releases
+<INFO> Requesting release list from GitHub...
+<INFO>    Try 1: Getting release list... (31.12.2017 13:05:27)
+<OK> Release list fetched.
+<INFO> Parsing release list...
+<INFO>    Release version : 0.3.2.1
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.10
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.9
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.8
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.7
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.6
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.5
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.4
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.3
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.2
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1.1
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.3.1
+<OK>    Filter check passed.
+<OK>    Skipping pre-release because requested release type is RELEASE
+<INFO>    Release version : 0.2.3
+<WARNING>    Release 0.2.3 is outside min or max version (0.3.0/0.5.0)
+
+<OK> No new version found: Latest version is 
+<INFO> No new version found.
+<INFO> JSON: {"release_body":null,"info":"No new version found.","published_at":null,"release_version":"","release_zipurl":"","release_name":null}
+<OK> No new version found.
