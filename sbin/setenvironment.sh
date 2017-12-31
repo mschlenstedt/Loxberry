@@ -192,3 +192,6 @@ if [ ! -L /etc/cron.d ]; then
 fi
 rm /etc/cron.d
 ln -s $LBHOME/system/cron/cron.d /etc/cron.d
+
+# Group mebership
+/usr/sbin/usermod -a -G sudo,dialout,audio,gpio,tty,www-data loxberry
