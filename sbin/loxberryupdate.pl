@@ -283,7 +283,7 @@ LOGINF "Migrating configuration settings from default config...";
 system("su - loxberry -c '$lbsbindir/createconfig.pl' >/dev/null");
 $exitcode  = $? >> 8;
 if ($exitcode != 0 ) {
-	LOGINF "createconfig returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
+	LOGWARN "$lbsbindir/createconfig.pl returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
 	$errskipped++;
 } else {
 	LOGOK "LoxBerry config settings updated successfully.";
@@ -298,7 +298,7 @@ LOGINF "Updating LoxBerry legacy templates...";
 system("su - loxberry -c '$lbshtmlauthdir/tools/generatelegacytemplates.pl' >/dev/null");
 $exitcode  = $? >> 8;
 if ($exitcode != 0 ) {
-	LOGINF "generatelegacytemplates returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
+	LOGWARN "generatelegacytemplates returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
 	$errskipped++;
 } else {
 	LOGOK "LoxBerry legacy template successfully updated.";
@@ -311,14 +311,14 @@ if (! $cgi->param('dryrun') ) {
 	my $syscfg;
 	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
 		do {
-			LOGINF "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
+			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
 			$errskipped++;
 			};
 	$syscfg->param('BASE.VERION', "$release");
 	$syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
 	$syscfg->save() or 
 		do {
-			LOGINF "Cannot write to general.cfg. Error: " . $syscfg->error() . "\n"; 
+			LOGERR "Cannot write to general.cfg. Error: " . $syscfg->error() . "\n"; 
 			$errskipped++;
 			};
 	}

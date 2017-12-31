@@ -20,8 +20,6 @@ my $defmail_file = "$lbsconfigdir/mail.cfg.default";
 my $sysmail_file = "$lbsconfigdir/mail.cfg";
 my $defhtusers_file = "$lbsconfigdir/htusers.dat.default";
 my $syshtusers_file = "$lbsconfigdir/htusers.dat";
-my $definstallpin_file = "$lbsconfigdir/installpin.dat.default";
-my $sysinstallpin_file = "$lbsconfigdir/installpin.dat";
 my $defsecurepin_file = "$lbsconfigdir/securepin.dat.default";
 my $syssecurepin_file = "$lbsconfigdir/securepin.dat";
 
@@ -30,7 +28,6 @@ my $syssecurepin_file = "$lbsconfigdir/securepin.dat";
 	update_generalcfg();
 	update_mailcfg();
 	update_htusers();
-	update_installpin();
 	update_securepin();
 
 ########################################################
@@ -93,12 +90,6 @@ sub update_htusers
 	if (copydefault( $defhtusers_file , $syshtusers_file )) 
 		{ return 1; }
 	
-}
-
-sub update_installpin
-{
-	if (copydefault( $definstallpin_file , $sysinstallpin_file )) 
-		{ return 1; }
 }
 
 sub update_securepin
