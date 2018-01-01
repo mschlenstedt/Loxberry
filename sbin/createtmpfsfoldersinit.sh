@@ -1,10 +1,11 @@
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          createtmpfsfolder
-# Required-Start:    console-setup
+# Required-Start:    
 # Required-Stop:     
 # Default-Start:     2 3 4 5
 # Default-Stop:      
+# X-Start-Before:    nmbd smbd samba-ad-dc bootlogs apache2 lighttpd
 # Short-Description: create log folders on tmpfs after mountall
 # Description:       This file creates needed folders in syslog and
 #                    loxberry system log folders.
