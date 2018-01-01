@@ -22,16 +22,23 @@ fi
 
 echo "LoxBerry home directory is $LBHOMEDIR"
 
-chown -Rv loxberry:loxberry $LBHOMEDIR
+#chown -Rv loxberry:loxberry $LBHOMEDIR
+find $LBHOMEDIR -not -path "*skel_syslog*" -exec chown -Rv loxberry:loxberry {} \;
 chown -Rv root:root $LBHOMEDIR/system/sudoers/
 chown -Rv root:root $LBHOMEDIR/system/daemons
 chown -Rv root:root $LBHOMEDIR/system/cron/cron.d
-chown -Rv root.root $LBHOMEDIR/sbin
-chown -Rv root.root $LBHOMEDIR/system/logrotate
-chown -Rv root.root $LBHOMEDIR/system/php
-chown -Rv root.root $LBHOMEDIR/config/system/securepin.dat
+chown -Rv root:root $LBHOMEDIR/sbin
+chown -Rv root:root $LBHOMEDIR/system/logrotate
 chown -Rv root:root $LBHOMEDIR/system/php
-chown -v root:root $LBHOMEDIR/system/profile/loxberry.sh
+chown -Rv root:root $LBHOMEDIR/config/system/securepin.dat
+chown -Rv root:root $LBHOMEDIR/system/php
+chown -Rv loxberry:loxberry /var/log/apache2
+chown -Rv loxberry:loxberry /var/cache/apache2
+chown -Rv loxberry:loxberry /var/lib/apache2
+chown -Rv loxberry:loxberry /var/log/lighttpd
+chown -Rv loxberry:loxberry /var/cache/lighttpd
+chown -Rv root:root $LBHOMEDIR/system/profile/loxberry.sh
+chown -v loxberry:loxberry $LBHOMEDIR/log/system/skel
 chown -v loxberry:loxberry /etc/timezone
 chown -v loxberry:loxberry /etc/localtime
 

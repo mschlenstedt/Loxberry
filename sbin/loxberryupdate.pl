@@ -304,6 +304,17 @@ if ($exitcode != 0 ) {
 	LOGOK "LoxBerry legacy template successfully updated.";
 }
 
+# We have to recreate the skels for system log folders in tmpfs
+LOGINF "Updating Skels for Logfolders...";
+system("$lbssbindir/createskelfolders.pl' >/dev/null");
+$exitcode  = $? >> 8;
+if ($exitcode != 0 ) {
+	LOGWARN "/createskelfolders.pl returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
+	$errskipped++;
+} else {
+	LOGOK "Skels for Logfolders successfully updated.";
+}
+
 LOGINF "LoxBerry's config version is updated from $currversion to $release";
 LOGINF "Commit SHA is updated to $sha" if ($sha);
 # Last but not least set the general.cfg to the new version.
