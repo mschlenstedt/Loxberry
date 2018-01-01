@@ -1,4 +1,4 @@
-/opt/loxberry/log/system/apache2/*.log {
+/opt/loxberry/log/system_tmpfs/apache2/*.log {
 	daily
 	missingok
 	rotate 4
@@ -21,7 +21,37 @@
 		fi; \
 	endscript
 }
+/opt/loxberry/log/system_tmpfs/lighttpd/*.log {
+	daily
+	missingok
+	rotate 4
+	compress
+	delaycompress
+	notifempty
+	create 644 loxberry loxberry
+	sharedscripts
+	maxsize 1M
+	maxage 5
+	nomail
+	postrotate
+                if /etc/init.d/lighttpd status > /dev/null ; then \
+                    /etc/init.d/lighttpd reload > /dev/null; \
+                fi;
+	endscript
+}
 /opt/loxberry/log/system/*.log {
+	daily
+	missingok
+	rotate 4
+	compress
+	delaycompress
+	notifempty
+	nomail
+	maxsize 1M
+	maxage 5
+	create 644 loxberry loxberry
+}
+/opt/loxberry/log/system/*/*.log {
 	daily
 	missingok
 	rotate 4

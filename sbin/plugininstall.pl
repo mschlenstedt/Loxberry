@@ -53,6 +53,7 @@ my $chmodbin        = $bins->{CHMOD};
 my $chownbin        = $bins->{CHOWN};
 my $unzipbin        = $bins->{UNZIP};
 my $findbin        = $bins->{FIND};
+my $grepbin        = $bins->{GREP};
 
 ##########################################################################
 # Language Settings
@@ -74,6 +75,7 @@ our %SL = LoxBerry::Web::readlanguage(undef);
 
 my $message;
 my @errors;
+my @warnings;
 if ( $R::action ne "install" && $R::action ne "uninstall" ) {
   $message =  "$SL{'PLUGININSTALL.ERR_ACTION'}";
   &logfail;
@@ -175,7 +177,7 @@ if (!$zipmode) {
     &logfail;
   }
 } else {
-  our $tempfolder = "/tmp/$tempfile";
+  our $tempfolder = "/tmp/uploads/$tempfile";
   if (!-e $R::file) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_DOESNT_EXIST'}";
     &logfail;
@@ -350,8 +352,8 @@ if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pf
 
 if ( $pinterface eq "1.0" ) {
   $message =  "*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
-  &logerr; 
-  push(@errors,"PLUGININTERFACE: $message");
+  &logwarn; 
+  push(@warnings,"PLUGININTERFACE: $message");
 }
 
 # Arch check
@@ -528,11 +530,11 @@ if (-f "$tempfolder/preroot.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_PREROOT'}";
   &loginfo;
 
-  $message = "Command: \"$tempfolder/preroot.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+  $message = "Command: \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preroot.sh\" 2>&1");
-  system("\"$tempfolder/preroot.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("\"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
@@ -556,11 +558,11 @@ if ($isupgrade) {
     $message =  "$SL{'PLUGININSTALL.INF_START_PREUPGRADE'}";
     &loginfo;
 
-    $message = "Command: $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+    $message = "Command: $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
     &loginfo;
 
     system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preupgrade.sh\" 2>&1");
-    system("$sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+    system("$sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
     if ($? eq 1) {
       $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
@@ -589,11 +591,11 @@ if (-f "$tempfolder/preinstall.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_PREINSTALL'}";
   &loginfo;
 
-  $message = "Command: $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+  $message = "Command: $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preinstall.sh\" 2>&1");
-  system("$sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("$sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
@@ -643,7 +645,6 @@ if (!&is_folder_empty("$tempfolder/bin")) {
   }
 
   &setrights ("755", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
-
   &setowner ("loxberry", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
 
 }
@@ -806,8 +807,8 @@ if ( $pinterface eq "1.0" && !-e "$lbhomedir/log/plugins/$pfolder" ) {
     $message =  "$SL{'PLUGININSTALL.INF_LOGFILES'}";
     &loginfo;
     $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! Log files are stored in a RAMDISC now. The plugin has to create the logfiles at runtime! Please inform the PLUGIN Author at $pauthoremail";
-    &logerr; 
-    push(@errors,"LOG files: $message");
+    &logwarn; 
+    push(@warnings,"LOG files: $message");
     system("$sudobin -n -u loxberry cp -r -v $tempfolder/log/* $lbhomedir/log/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
@@ -830,8 +831,8 @@ if ( $pinterface eq "1.0" ) {
     $message =  "$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
     &loginfo;
     $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! CGI files are stored in HTMLAUTH now. Please inform the PLUGIN Author at $pauthoremail";
-    &logerr; 
-    push(@errors,"HTMLAUTH files: $message");
+    &logwarn; 
+    push(@warnings,"HTMLAUTH files: $message");
     system("$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/cgi/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
@@ -843,7 +844,6 @@ if ( $pinterface eq "1.0" ) {
     }
 
     &setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
-
     &setrights ("755", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 
   }
@@ -866,7 +866,6 @@ if ( $pinterface ne "1.0" ) {
     }
 
     &setrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
-
     &setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 
   }
@@ -888,7 +887,6 @@ if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
   }
 
     &setrights ("755", "0", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
-
     &setowner ("loxberry", "1", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files");
 
 }
@@ -949,7 +947,6 @@ if (-f "$tempfolder/daemon/daemon") {
   }
 
   &setrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
-
   &setowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
 
 }
@@ -969,7 +966,6 @@ if (-f "$tempfolder/uninstall/uninstall") {
   }
 
   &setrights ("755", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
-
   &setowner ("root", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
 
 }
@@ -989,7 +985,6 @@ if (-f "$tempfolder/sudoers/sudoers") {
   }
 
   &setrights ("644", "0", "$lbhomedir/system/sudoers/$pname", "SUDOERS file");
-
   &setowner ("root", "0", "$lbhomedir/system/sudoers/$pname", "SUDOERS file");
 
 }
@@ -1055,8 +1050,8 @@ if (-e "$aptfile") {
   system("$aptbin -q -y install $aptpackages 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
-    &logerr; 
-    push(@errors,"APT install: $message");
+    &logwarn; 
+    push(@warnings,"APT install: $message");
     # If it failed, maybe due to an outdated apt-database... So
     # do a apt-get update once more
     $message =  "$SL{'PLUGININSTALL.INF_APTREFRESH'}";
@@ -1099,15 +1094,15 @@ if (-f "$tempfolder/postinstall.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_POSTINSTALL'}";
   &loginfo;
 
-  $message = "Command: $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+  $message = "Command: $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postinstall.sh\" 2>&1");
-  system("$sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("$sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
-     ush(@errors,"POSTINSTALL: $message");
+    push(@errors,"POSTINSTALL: $message");
   } 
   elsif ($? > 1) {
     $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
@@ -1126,11 +1121,11 @@ if ($isupgrade) {
     $message =  "$SL{'PLUGININSTALL.INF_START_POSTUPGRADE'}";
     &loginfo;
 
-    $message = "Command: $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+    $message = "Command: $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
     &loginfo;
 
     system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postupgrade.sh\" 2>&1");
-    system("$sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+    system("$sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
     if ($? eq 1) {
       $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
@@ -1153,11 +1148,11 @@ if (-f "$tempfolder/postroot.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_POSTROOT'}";
   &loginfo;
 
-  $message = "Command: \"$tempfolder/postroot.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+  $message = "Command: \"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postroot.sh\" 2>&1");
-  system("\"$tempfolder/postroot.sh\" \"$tempfolder\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("\"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
@@ -1213,6 +1208,15 @@ if (-e "$lbhomedir/system/cron/cron.d/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/system/cron/cron.d/$pname");
 }
 
+# Checking for hardcoded /opt/loxberry strings
+my $chkhcpath = `$findbin $tempfolder -type f -exec $grepbin -li '/opt/loxberry' {} \\;`;
+if ($chkhcpath) {
+    $message =  $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
+    &logwarn;
+    push(@warnings,"HARDCODED PATH'S: $message");
+    print "$chkhcpath";
+}
+
 # Cleaning
 $message =  "$SL{'PLUGININSTALL.INF_END'}";
 &loginfo;
@@ -1224,15 +1228,22 @@ $message =  "$SL{'PLUGININSTALL.OK_END'}";
 system("rm -f /tmp/$tempfile.log");
 
 # Error summarize
-if (@errors) {
-  print "************************************************************************\n";
+if (@errors || @warnings) {
+  print "**********************************************************************************\n";
   $message =  "$SL{'PLUGININSTALL.INF_ERRORSUMMARIZE'}";
   &loginfo;
-  print "************************************************************************\n";
+  print "**********************************************************************************\n";
   foreach(@errors) {
     $message = $_;
     &logerr;
   }
+  foreach(@warnings) {
+    $message = $_;
+    &logwarn;
+  }
+}
+if ($chkhcpath) {
+  print "$chkhcpath\n";
 }
 
 # Set Status
@@ -1398,6 +1409,18 @@ sub logfail {
   exit (1);
 
 }
+
+sub logwarn {
+
+  open (LOG, ">>$logfile");
+    print LOG "<WARNING> $message\n";
+    print "\e[1m\e[31mWARNING:\e[0m $message\n";
+  close (LOG);
+
+  return();
+
+}
+
 
 sub loginfo {
 
