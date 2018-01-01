@@ -149,8 +149,9 @@ div.greenTable {
 	
 	<fieldset data-role="controlgroup" data-mini="true">
 	<TMPL_VAR TRANSLATE.LABEL_DOWNLOAD><br>
-	<button id="downloadfile" class="ui-btn ui-btn-inline ui_mini"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></button>
-	<!-- <a id="downloadfile" name ="downloadfile" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#" tabindex="4"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></a> -->
+	<!-- <button id="downloadfile" class="ui-btn ui-btn-inline ui_mini"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></button> -->
+	<!-- <a id="downloadfile" name="downloadfile" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#" tabindex="4"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></a> -->
+	<a href="#" id="downloadfile" class="ui-btn ui-btn-inline"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></a>
 	</fieldset>
 	</div>
 	
@@ -224,7 +225,8 @@ var oldvalue;
 
 $(document).ready( function () {
 	
-	$( "#downloadfile" ).click(function(){
+	$( 'a#downloadfile' ).click(function(){
+		// event.preventDefault();
 		console.log ("Download clicked");
 		var destlang = $('#destlang').val();
 		if (destlang === "") {
