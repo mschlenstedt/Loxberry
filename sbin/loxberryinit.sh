@@ -61,7 +61,13 @@ case "$1" in
         #  /opt/loxberry/sbin/resize_rootfs > /dev/null 2>&1
         #  touch /boot/rootfsresized
         #fi
-
+		log_action_begin_msg "Updating general.cfg..."
+		$LBHOMEDIR/bin/createconfig.pl
+		log_action_end_msg 0
+		
+		
+		
+		
         # Copy manual network configuration if any exists
         if [ -f /boot/network.txt ]
         then

@@ -12,7 +12,11 @@
  use Data::UUID;
  use Thread;
 
- my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+ if (-e "$lbsconfigdir/general.cfg") {
+	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+ } elsif (-e "$lbsconfigdir/general.cfg.default") {
+	$cfg = new Config::Simple("$lbsconfigdir/general.cfg.default");
+ }
 
  if (is_enabled($cfg->param("SSDP.DISABLED"))) { 
 	 print "SSDPD is disabled\n";
