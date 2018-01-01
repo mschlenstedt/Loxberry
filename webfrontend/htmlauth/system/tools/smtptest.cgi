@@ -16,59 +16,47 @@
 
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.3.2.1";
 
 ##########################################################################
 # Modules
 ##########################################################################
 
+use LoxBerry::System;
+use LoxBerry::Web;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use File::Copy;
-use Config::Simple;
-use File::HomeDir;
+use strict;
 
 ##########################################################################
 # Variables
 ##########################################################################
 
-our $home	 	= File::HomeDir->my_home;
-our $email 		= param('email');
-our $smtpserver 	= param('smtpserver');
-our $smtpport 		= param('smtpport');
-our $smtpcrypt 		= param('smtpcrypt');
-our $smtpauth 		= param('smtpauth');
-our $smtpuser 		= param('smtpuser');
-our $smtppass 		= param('smtppass');
-our $lang 		= param('lang');
-our $lang 		= substr($lang,0,2);
-our $sudobin;
-our $mailbin;
-our $result;
-
-quotemeta($email);
-quotemeta($smtpserver);
-quotemeta($smtpport);
-quotemeta($smtpcrypt);
-quotemeta($smtpauth);
-quotemeta($smtpuser);
-quotemeta($smtppass);
-quotemeta($lang);
+my $email 		= param('email');
+my $smtpserver 	= param('smtpserver');
+my $smtpport 		= param('smtpport');
+my $smtpcrypt = is_enabled(param('smtpcrypt')) ? 1 : undef;
+my $smtpauth = is_enabled(param('smtpauth')) ? 1 : undef;
+my $smtpuser 		= param('smtpuser');
+my $smtppass 		= param('smtppass');
+my  $lf             = param('lf'); # Linefeed in output
+my $sudobin;
+my $mailbin;
+my $result;
 
 if (!$smtpport) {
   $smtpport = "25";
 }
 
+print STDERR "SMTPCRYPT: " . $smtpcrypt . "\n";
+
 ##########################################################################
 # Read Settings
 ##########################################################################
 
-# Version of this script
-$version = "0.0.2";
 
-$cfg             = new Config::Simple("$home/config/system/general.cfg");
-$installdir      = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
+my $cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
 $sudobin         = $cfg->param("BINARIES.SUDO");
 $mailbin         = $cfg->param("BINARIES.MAIL");
 
@@ -76,23 +64,13 @@ $mailbin         = $cfg->param("BINARIES.MAIL");
 # Language Settings
 ##########################################################################
 
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
-
-# If there's no template, use german
-if (!-e "$installdir/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations
-$languagefile = "$installdir/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+my $lang = lblanguage();
+my %SL = LoxBerry::Web::readlanguage();
 
 ##########################################################################
 # Main program
 ##########################################################################
+my $flock;
 
 # Delete old temporary config file
 if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
@@ -118,15 +96,21 @@ print F "root=$email\n\n";
 ENDFILE
   print F "mailhub=$smtpserver\:$smtpport\n\n";
 
-  if ($smtpauth) {
+  if (defined $smtpauth) {
     print F "# Authentication\n";
     print F "AuthUser=$smtpuser\n";
     print F "AuthPass=$smtppass\n\n";
   }
 
-  if ($smtpcrypt) {
+  if (defined $smtpcrypt) {
     print F "# Use encryption\n";
-    print F "UseSTARTTLS=YES\n\n";
+    print F "UseTLS=YES\n";
+	print F "UseSTARTTLS=YES\n\n";
+  }
+  else {
+    print F "# Dont use encryption\n";
+    print F "UseTLS=NO\n";
+	print F "UseSTARTTLS=NO\n\n";
   }
 
   print F <<ENDFILE;
@@ -145,29 +129,26 @@ ENDFILE
 close(F);
 
 # Install temporary ssmtp config file
-my $result = qx($home/sbin/createssmtpconf.sh start 2>/dev/null);
+my $result = qx($lbssbindir/createssmtpconf.sh start 2>/dev/null);
 
 # Send test mail
-if ($lang eq "de") {
-  $result = qx(echo "Dieses ist eine Test Email von Deinem LoxBerry. Es scheint alles OK zu sein." | $mailbin -a "From: $email" -s "Test Email von Deinem LoxBerry" -v $email 2>&1);
-} else {
-  $result = qx(echo "This is a Test from your LoxBerry. Everything seems to be OK." | $mailbin -a "From: $email" -s "Test Email from LoxBerry" -v $email 2>&1);
-}
+$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_BODY'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
 
 # Output
 print "Content-type: text/html; charset=iso-8859-15\n\n";
-$result =~ s/\n/<br>/g;
-print $phrase->param("TXT0109");
+
+$result =~ s/\n/<br>/g if (!$lf);
+print $SL{'MAILSERVER.MSG_TEST_INTRO'};
 print "<br><br><pre>\n";
 print $result;
 print "</pre>\n\n";
 
 # ReInstall original ssmtp config file
-$result = qx($home/sbin/createssmtpconf.sh stop 2>/dev/null);
+$result = qx($lbssbindir/createssmtpconf.sh stop 2>/dev/null);
 
 # Delete old temporary config file
 if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
-  unlink ("/tmp/tempssmtpconf.dat");
+	unlink ("/tmp/tempssmtpconf.dat");
 }
 
 exit;

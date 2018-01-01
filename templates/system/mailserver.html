@@ -177,8 +177,8 @@ $('#btntestsmtp').click( function(e) {
 	e.preventDefault();
 	var vals = { email: $("#email").val(),
 				 smtpserver: $("#smtpserver").val(),
-				 smtpauth: $("#smtpauth").val(),
-				 smtpcrypt: $("#smtpcrypt").val(),
+				 smtpauth: $("#smtpauth").is(":checked") ? 1 : 0,
+				 smtpcrypt: $("#smtpcrypt").is(":checked") ? 1 : 0,
 				 smtpuser: $("#smtpuser").val(),
 				 smtppass: $("#smtppass").val(),
 				 smtpport: $("#smtpport").val(),

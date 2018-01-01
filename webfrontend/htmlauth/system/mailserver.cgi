@@ -258,7 +258,12 @@ ENDFILE
 
 	if ($smtpcrypt) {
 		print F "# Use encryption\n";
+		print F "UseTLS=YES\n";
 		print F "UseSTARTTLS=YES\n\n";
+	} else {
+		print F "# Dont use encryption\n";
+		print F "UseTLS=NO\n";
+		print F "UseSTARTTLS=NO\n\n";
 	}
 
 	print F <<ENDFILE;
