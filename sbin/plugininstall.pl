@@ -53,6 +53,7 @@ my $chmodbin        = $bins->{CHMOD};
 my $chownbin        = $bins->{CHOWN};
 my $unzipbin        = $bins->{UNZIP};
 my $findbin        = $bins->{FIND};
+my $grepbin        = $bins->{GREP};
 
 ##########################################################################
 # Language Settings
@@ -74,6 +75,7 @@ our %SL = LoxBerry::Web::readlanguage(undef);
 
 my $message;
 my @errors;
+my @warnings;
 if ( $R::action ne "install" && $R::action ne "uninstall" ) {
   $message =  "$SL{'PLUGININSTALL.ERR_ACTION'}";
   &logfail;
@@ -351,7 +353,7 @@ if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pf
 if ( $pinterface eq "1.0" ) {
   $message =  "*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
   &logwarn; 
-  push(@errors,"PLUGININTERFACE: $message");
+  push(@warnings,"PLUGININTERFACE: $message");
 }
 
 # Arch check
@@ -806,7 +808,7 @@ if ( $pinterface eq "1.0" && !-e "$lbhomedir/log/plugins/$pfolder" ) {
     &loginfo;
     $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! Log files are stored in a RAMDISC now. The plugin has to create the logfiles at runtime! Please inform the PLUGIN Author at $pauthoremail";
     &logwarn; 
-    push(@errors,"LOG files: $message");
+    push(@warnings,"LOG files: $message");
     system("$sudobin -n -u loxberry cp -r -v $tempfolder/log/* $lbhomedir/log/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
@@ -830,7 +832,7 @@ if ( $pinterface eq "1.0" ) {
     &loginfo;
     $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! CGI files are stored in HTMLAUTH now. Please inform the PLUGIN Author at $pauthoremail";
     &logwarn; 
-    push(@errors,"HTMLAUTH files: $message");
+    push(@warnings,"HTMLAUTH files: $message");
     system("$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/cgi/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
@@ -1049,7 +1051,7 @@ if (-e "$aptfile") {
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
     &logwarn; 
-    push(@errors,"APT install: $message");
+    push(@warnings,"APT install: $message");
     # If it failed, maybe due to an outdated apt-database... So
     # do a apt-get update once more
     $message =  "$SL{'PLUGININSTALL.INF_APTREFRESH'}";
@@ -1206,6 +1208,15 @@ if (-e "$lbhomedir/system/cron/cron.d/$pname" ) {
   &replaceenv ("root", "0", "$lbhomedir/system/cron/cron.d/$pname");
 }
 
+# Checking for hardcoded /opt/loxberry strings
+my $chkhcpath = `$findbin $tempfolder -type f -exec $grepbin -li '/opt/loxberry' {} \\;`;
+if ($chkhcpath) {
+    $message =  $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
+    &logwarn;
+    push(@warnings,"HARDCODED PATH'S: $message");
+    print "$chkhcpath";
+}
+
 # Cleaning
 $message =  "$SL{'PLUGININSTALL.INF_END'}";
 &loginfo;
@@ -1217,15 +1228,22 @@ $message =  "$SL{'PLUGININSTALL.OK_END'}";
 system("rm -f /tmp/$tempfile.log");
 
 # Error summarize
-if (@errors) {
-  print "************************************************************************\n";
+if (@errors || @warnings) {
+  print "**********************************************************************************\n";
   $message =  "$SL{'PLUGININSTALL.INF_ERRORSUMMARIZE'}";
   &loginfo;
-  print "************************************************************************\n";
+  print "**********************************************************************************\n";
   foreach(@errors) {
     $message = $_;
     &logerr;
   }
+  foreach(@warnings) {
+    $message = $_;
+    &logwarn;
+  }
+}
+if ($chkhcpath) {
+  print "$chkhcpath\n";
 }
 
 # Set Status
