@@ -78,10 +78,12 @@ $template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].":". $SL['SERVICES.WIDGETLAB
 #########################################################################
 
 # Menu
-if (!isset($_POST['saveformdata'])) {
-  form();
-} else {
+if (isset($_GET['check_webport'])) {
+  check_webport();
+} else if (isset($_POST['saveformdata'])) {
   save();
+} else {
+  form();
 }
 
 exit;
@@ -94,6 +96,9 @@ function form() {
 
 	global $SL;
 	global $navbar;
+	global $template_title;
+	global $helplink;
+	global $helptemplate;
 	
 	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
 	$cfg->setQuoteStrings(False);
@@ -191,6 +196,9 @@ function save()
 {
 	global $navbar;
 	global $SL;
+	global $template_title;
+	global $helplink;
+	global $helptemplate;
 	
 	$ssdpstate_changed;
 	$webserver_changed;
@@ -210,9 +218,15 @@ function save()
 	
 	if (isset($_POST['webport'])) {
 		if ($_POST['webport'] > 0 && $_POST['webport'] < 65535) {
-			$webport = $_POST['webport'];
-			if ($webport != $cfg['WEBSERVER']['PORT']) {
-				$webserver_changed = True;
+			$tmp = exec("netstat -tnap | egrep ':".$_POST['webport']." '");
+			if ( $tmp === "" ) {
+				$webport = $_POST['webport'];
+				if ($webport != $cfg['WEBSERVER']['PORT']) {
+					$webserver_changed = True;
+					$weboldport = $cfg['WEBSERVER']['PORT'];
+				}
+			} else {
+				$webport = 'inuse';
 			}
  		}
 	}
@@ -241,16 +255,27 @@ function save()
 		$headermsg = $SL['COMMON.MSG_ALLOK'];
 		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
 		$waitmsg = "";
+		$href=LBWeb::$lbsystempage;
 	} else if (isset($webport)) {
-		$cfg->set("WEBSERVER","PORT",$webport);
-		$cfg->save();
-		$headermsg = $SL['COMMON.MSG_ALLOK'];
-		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
-		$waitmsg = $SL['SERVICES.WAITWEBSERVER'];
+		if ($webport === "inuse" ) {
+			$headermsg = $SL['SERVICES.ERR_PORT_IN_USE'];
+			$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
+			$waitmsg = "";
+			$href=LBWeb::$lbsystempage;
+		} else {
+			$cfg->set("WEBSERVER","PORT",$webport);
+			$cfg->set("WEBSERVER","OLDPORT",$weboldport);
+			$cfg->save();
+			$headermsg = $SL['COMMON.MSG_ALLOK'];
+			$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
+			$waitmsg = $SL['SERVICES.WAITWEBSERVER'];
+			$href="/admin/system/services.php?check_webport=1";
+		}
 	} else if (isset($_POST['webport'])) {
 		$headermsg = $SL['SERVICES.ERR_WRONG_PORT'];
 		$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
 		$waitmsg = "";
+		$href=LBWeb::$lbsystempage;
 	}
 		?>
 		<center>
@@ -270,7 +295,7 @@ function save()
 				<tr>
 					<td align="center">
 						<p>
-							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/services.php"><?=$SL['COMMON.BUTTON_OK'];?></a>
+							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<?=$href;?>"><?=$SL['SERVICES.BTN_CONT'];?></a>
 						</p>
 					</td>
 				</tr>
@@ -278,12 +303,11 @@ function save()
 		</center>
 	<?php
 	if ($ssdpstate_changed == 1) {
-		system("sudo /opt/loxberry/sbin/serviceshelper ssdpd restart");
+		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper ssdpd restart");
 	} else if ($webserver_changed == True) {
-		system("sudo /opt/loxberry/sbin/serviceshelper change_webport");
 		$newhref = "http";
 		if ($_SERVER['HTTPS']) { $newhref .= "s"; }
-		$newhref .= "://".$_SERVER['SERVER_ADDR'].":".$webport."/";
+		$newhref .= "://".$_SERVER['SERVER_NAME'].":".$webport."/admin/system/services.php?check_webport=1";
 		echo "
 		<script>
 			btnok = document.getElementById('btnok');
@@ -295,11 +319,87 @@ function save()
 			setTimeout(setHREF,10000);
 		</script>
 		";
+		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_change ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
 	}
 	LBWeb::lbfooter();
 	exit;
+}
+
+function check_webport() {
 	
-	
+	global $navbar;
+	global $SL;
+	global $template_title;
+	global $helplink;
+	global $helptemplate;
+
+	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
+	$cfg->setQuoteStrings(False);
+
+	// Print Template
+	//The Navigation Bar
+	$navbar[0]['Name'] = $SL['HEADER.TITLE_PAGE_WEBSERVER'];
+	$navbar[0]['URL'] = 'services.php?load=1';
+	$navbar[1]['Name'] = $SL['HEADER.TITLE_PAGE_OPTIONS'];
+	$navbar[1]['URL'] = 'services.php?load=2';
+	if ($_GET['load'] == 2) {
+		$navbar[1]['active'] = True;
+	} else {
+		$navbar[0]['active'] = True;
+	}
+
+	LBWeb::lbheader($template_title, $helplink, $helptemplate);
+	if ($_SERVER['SERVER_PORT'] != $cfg['WEBSERVER']['PORT']) {
+		$headermsg = $SL['SERVICES.ERR_PORTCHANGE'];
+		$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
+		$waitmsg = "";
+	} else {
+		$headermsg = $SL['COMMON.MSG_ALLOK'];
+		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
+		$waitmsg = $SL['SERVICES.WEBSERVERCLEANING'];
+		$webport = $cfg['WEBSERVER']['PORT'];
+		$weboldport = $cfg['WEBSERVER']['OLDPORT'];
+	}
+	?>
+		<center>
+			<table border=0>
+				<tr>
+					<td align="center">
+						<h2><?=$headermsg;?></h2>
+						<p>
+							<?=$resmsg?>
+							<br/>
+							<br/>
+						</p>
+						<p>
+							<?=$waitmsg;?>
+					</td>
+				</tr>
+				<tr>
+					<td align="center">
+						<p>
+							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_OK'];?></a>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</center>
+	<?php
+	if ($waitmsg != "") {
+		echo "
+		<script>
+			btnok = document.getElementById('btnok');
+			btnok.style.display = 'none';
+			function setHREF() {
+				btnok.style.display = '';
+			}
+			setTimeout(setHREF,10000);
+		</script>
+		";
+		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_success ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
+	}
+	LBWeb::lbfooter();
+	exit;
 }
 
 
