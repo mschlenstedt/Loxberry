@@ -19,88 +19,54 @@
 # Modules
 ##########################################################################
 
-use Config::Simple;
-#use warnings;
+use LoxBerry::System;
+use LoxBerry::Web;
+use warnings;
 use strict;
-no strict "refs"; # we need it for template system
 
 ##########################################################################
 # Variables
 ##########################################################################
 
-our $cfg;
-our $phrase;
-our $namef;
-our $value;
-our %query;
-our $lang;
-our $template_title;
-our $installdir;
-our $languagefile;
-my  @fields;
-my  $error;
-our $table;
-my  @result;
-my  $i;
-our $ssid;
-our $version;
-our $ENV;
+my $cfg;
+my $template_title;
+my @fields;
+my $table;
+my @result;
+my $i;
+my $version;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.3.2.1";
 
-$cfg             = new Config::Simple('../../../../config/system/general.cfg');
-$installdir      = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
+$cfg             = new Config::Simple('$lbsconfigdir/general.cfg');
 
 #########################################################################
 # Parameter
 #########################################################################
 
-# Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
-
-# And this one we really want to use
-
-# No one here
-
-# Filter
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
 
 ##########################################################################
 # Language Settings
 ##########################################################################
 
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
+my $lang = lblanguage();
 
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
+our $maintemplate = HTML::Template->new(
+				filename => "$lbstemplatedir/lshwnetwork.html",
+				global_vars => 0,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				# associate => $cfg,
+				#debug => 1,
+				#stack_debug => 1,
+				);
 
-# If there's no template, use german
-if (!-e "$installdir/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations
-$languagefile = "$installdir/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
 ##########################################################################
 # Main program
@@ -120,36 +86,40 @@ foreach (@result){
     if ($i != 1) { 
       $table = "$table<tr><td colspan=2>&nbsp;</td></tr>\n";
     }
-    $table = "$table<tr><td colspan=2><b>$i. " . $phrase->param("TXT0009") . "</b></td></tr>\n";
+    $table = "$table<tr><td colspan=2><b>$i. " . $SL{'NETWORK.LSHW_LABEL_NETWORKDEVICE'} . "</b></td></tr>\n";
     $i++;
   }
   if ($fields[0] eq "description") {
     $fields[1] =~ s/ interface//g;
-    $table = "$table<tr><td>" . $phrase->param("TXT0006") . "</td><td>$fields[1]</td></tr>\n";
+    $table = "$table<tr><td>" . $SL{'NETWORK.LSHW_LABEL_INTERFACE'} . "</td><td>$fields[1]</td></tr>\n";
   }
   if ($fields[0] eq "logical name") {
-    $table = "$table<tr><td>" . $phrase->param("TXT0007") . "</td><td>$fields[1]</td></tr>\n";
+    $table = "$table<tr><td>" . $SL{'NETWORK.LSHW_LABEL_PORT'} . "</td><td>$fields[1]</td></tr>\n";
   }
   if ($fields[0] eq "serial") {
-    $table = "$table<tr><td>" . $phrase->param("TXT0008") . "</td><td>$fields[1]</td></tr>\n";
+    $table = "$table<tr><td>" . $SL{'NETWORK.LSHW_LABEL_MACADDRESS'} . "</td><td>$fields[1]</td></tr>\n";
   }
   if ($fields[0] eq "configuration") {
-    $fields[1] =~ s/.*driver=(\S*) (.*)/$1/g;
-    $table = "$table<tr><td>" . $phrase->param("TXT0010") . "</td><td>$fields[1]</td></tr>\n";
+    $fields[1]=trim($fields[1]);
+	my @configarray = split(/ /, $fields[1]);
+	foreach my $setting (@configarray) {
+		my ($key, $value) = split(/=/, $setting);
+		if ($key eq "driver") 
+			{ $table = "$table<tr><td>" . $SL{'NETWORK.LSHW_LABEL_KERNELDRIVER'} . "</td><td>$value</td></tr>\n";
+		} elsif ($key eq "ip") {
+			$table = "$table<tr><td>" . $SL{'NETWORK.LSHW_LABEL_IPADDRESS'} . "</td><td>$value</td></tr>\n";
+		} elsif ($key eq "speed") {
+			$table = "$table<tr><td>" . $SL{'NETWORK.LSHW_LABEL_SPEED'} . "</td><td>$value</td></tr>\n";
+		}
+	}
   }
   
 }
 
-print "Content-Type: text/html\n\n";
-
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0009");
-
-# Print Template
-open(F,"$installdir/templates/system/$lang/lshwnetwork.html") || die "Missing template system/$lang/lshwnetwork.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . " - " . $SL{'NETWORK.WIDGETLABEL'};
+$maintemplate->param('TABLE' => $table);
+LoxBerry::Web::head();
+print $maintemplate->output();
+LoxBerry::Web::foot();
 
 exit;

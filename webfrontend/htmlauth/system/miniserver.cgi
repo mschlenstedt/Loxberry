@@ -48,7 +48,6 @@ our $helptext;
 our $helplink;
 our $installfolder;
 our $languagefile;
-our $version;
 our $error;
 our $saveformdata;
 our $output;
@@ -82,7 +81,7 @@ our $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.1-dev1";
+my $version = "0.3.2.2";
 
 $cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
 #$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
@@ -100,7 +99,8 @@ my $maintemplate = HTML::Template->new(
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
 		associate => $cfg,
-		debug => 1,
+		%htmltemplate_options,
+		# debug => 1,
 		);
 	
 my %SL = LoxBerry::Web::readlanguage($maintemplate);
@@ -330,6 +330,7 @@ sub save {
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
 		associate => $cfg,
+		%htmltemplate_options,
 		# debug => 1,
 	);
 	

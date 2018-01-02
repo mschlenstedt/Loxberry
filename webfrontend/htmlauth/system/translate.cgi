@@ -42,7 +42,7 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.1-dev1";
+my $version = "0.3.2.2";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -83,6 +83,7 @@ our $maintemplate = HTML::Template->new(
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				associate => $cfg,
+				%htmltemplate_options,
 				#debug => 1,
 				#stack_debug => 1,
 				);

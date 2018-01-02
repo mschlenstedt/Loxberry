@@ -3,14 +3,13 @@
 
 use strict;
 # no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
-
 use Config::Simple;
 use CGI;
 use LoxBerry::System;
 use Carp;
 use HTML::Template;
-use DateTime;
-
+# use DateTime;
+use Time::Piece;
 
 
 # Potentially, this does something strange when using LoxBerry::Web without Webinterface (printing errors in HTML instead of plain text)
@@ -19,7 +18,7 @@ use DateTime;
 # set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.19";
+our $VERSION = "0.3.2.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -30,6 +29,7 @@ our @EXPORT = qw (
 		get_plugin_icon
 		%SL
 		%L
+		%htmltemplate_options
 );
 
 
@@ -46,6 +46,15 @@ our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
 my @notifications;
 my $notifications_error;
 my $notifications_ok;
+
+# Performance optimizations
+our %htmltemplate_options = ( 
+		'shared_cache' => 0,
+		'file_cache' => 1,
+		'file_cache_dir' => '/tmp/templatecache',
+		# 'debug' => 1,
+	);
+
 
 # Finished everytime code execution
 ##################################################################
@@ -137,8 +146,9 @@ sub head
 	$headobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 1,
-		 loop_context_vars => 1,
+		loop_context_vars => 1,
 		die_on_bad_params => 0,
+		%htmltemplate_options,
 	);
 	
 	LoxBerry::Web::readlanguage($headobj, undef, 1);
@@ -243,7 +253,7 @@ sub pagestart
 			global_vars => 1,
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
-			# associate => $langini,
+			%htmltemplate_options,
 			);
 		
 		# Insert LangPhrases
@@ -300,8 +310,9 @@ sub pagestart
 	$headerobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 1,
-		 loop_context_vars => 1,
+		loop_context_vars => 1,
 		die_on_bad_params => 0,
+		%htmltemplate_options,
 	);
 	
 	LoxBerry::Web::readlanguage($headerobj, undef, 1);
@@ -342,7 +353,7 @@ sub pagestart
 			}
 
 			if ($main::navbar{$element}{Name}) {
-				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . $notify . '</a></li>';
+				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . '</a>' . $notify . '</li>';
 				$topnavbar_haselements = 1;
 			}
 		}
@@ -383,8 +394,9 @@ sub pageend
 	my $pageendobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 0,
-		 loop_context_vars => 0,
+		loop_context_vars => 0,
 		die_on_bad_params => 0,
+		%htmltemplate_options,
 	);
 	my %SL = LoxBerry::Web::readlanguage($pageendobj, undef, 1);
 	
@@ -408,8 +420,9 @@ sub foot
 	my $footobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 0,
-		 loop_context_vars => 0,
+		loop_context_vars => 0,
 		die_on_bad_params => 0,
+		%htmltemplate_options,
 	);
 	$footobj->param( LANG => $lang);
 	print $footobj->output();
@@ -448,7 +461,7 @@ sub readlanguage
 
 	# SYSTEM Language
 	if ($issystem) {
-		
+		print STDERR "This is a system call\n" if ($DEBUG);
 		# System language is "hardcoded" to file language_*.ini
 		my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 		
@@ -469,9 +482,10 @@ sub readlanguage
 		}
 		
 		if ($template) {
-			while (my ($name, $value) = each %SL) {
-				$template->param("$name" => $value);
-			}
+			#while (my ($name, $value) = each %SL) {
+			#	$template->param("$name" => $value);
+			#}
+			$template->param(%SL);
 		}
 		return %SL;
 	
@@ -479,6 +493,7 @@ sub readlanguage
 	# PLUGIN language
 		# Plugin language got in format language.ini
 		# Need to re-parse the name
+		print STDERR "This is a plugin call\n" if ($DEBUG);
 		$langfile =~ s/\.[^.]*$//;
 		$langfile  = "$LoxBerry::System::lbptemplatedir/$langfile";
 		
@@ -498,9 +513,10 @@ sub readlanguage
 			}
 		}
 		if ($template) {
-			while (my ($name, $value) = each %L) {
-				$template->param("$name" => $value);
-			}
+			#while (my ($name, $value) = each %L) {
+			#	$template->param("$name" => $value);
+			#}
+			$template->param(%L);
 		}
 		return %L;
 	}
@@ -639,7 +655,16 @@ sub delete_notifications
 sub parsedatestring 
 {
 	my ($datestring) = @_;
-	my $dt = DateTime->new(
+	# my $dt = DateTime->new(
+		# year 	=> substr($datestring, 0, 4),
+		# month 	=> substr($datestring, 4, 2),
+		# day 	=> substr($datestring, 6, 2),
+		# hour	=> substr($datestring, 9, 2),
+		# minute	=> substr($datestring, 11, 2),
+		# second	=> substr($datestring, 13, 2),
+	# );
+
+	my $dt = Time::Piece->new(
 		year 	=> substr($datestring, 0, 4),
 		month 	=> substr($datestring, 4, 2),
 		day 	=> substr($datestring, 6, 2),
@@ -647,19 +672,10 @@ sub parsedatestring
 		minute	=> substr($datestring, 11, 2),
 		second	=> substr($datestring, 13, 2),
 	);
-	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
+
+	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strptime("%d.%m.%Y %H:%M");
 	return $dt;
 }
-
-
-
-
-
-
-
-
-
-
 
 #####################################################
 # Finally 1; ########################################
