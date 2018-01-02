@@ -50,7 +50,6 @@ our $helptext;
 our $helplink;
 # our $installfolder;
 our $languagefile;
-our $version;
 our $error;
 our $saveformdata;
 our $output;
@@ -81,7 +80,7 @@ our $grepbin;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.1-dev1";
+my $version = "0.3.2.2";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -103,6 +102,7 @@ my $maintemplate = HTML::Template->new(
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
 			associate => $cfg,
+			%htmltemplate_options,
 			# debug => 1,
 			);
 
@@ -269,6 +269,7 @@ sub save {
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				associate => $cfg,
+				%htmltemplate_options,
 				# debug => 1,
 				);
 
@@ -314,6 +315,7 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WID
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
+				%htmltemplate_options,
 				# associate => $cfg,
 				);
 	print STDERR "timeserver.cgi: sub error called with message $error.\n";

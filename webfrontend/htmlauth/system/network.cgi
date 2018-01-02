@@ -49,7 +49,6 @@ our @help;
 our $helptext;
 #our $installfolder;
 our $languagefile;
-our $version;
 our $error;
 our $saveformdata;
 our $checked1;
@@ -75,7 +74,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.1-dev3";
+my $version = "0.3.2.2";
 
 print STDERR "============= network.cgi ================\n";
 print STDERR "lbhomedir: $lbhomedir\n";
@@ -90,6 +89,7 @@ my $maintemplate = HTML::Template->new(
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
 			associate => $cfg,
+			%htmltemplate_options,
 			);
 
 LoxBerry::Web::readlanguage($maintemplate);
@@ -233,6 +233,7 @@ sub save {
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
+				%htmltemplate_options,
 				#associate => $cfg,
 				# debug => 1,
 			) or do 
@@ -289,6 +290,7 @@ sub error {
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
+				%htmltemplate_options,
 				# associate => $cfg,
 				);
 	$maintemplate->param('ERROR' => $error);

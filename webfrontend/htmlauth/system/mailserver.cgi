@@ -32,20 +32,11 @@ use strict;
 my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_mailserver.html";
 
-my %htmltemplate_options = ( 
-		'shared_cache' => 0,
-		'file_cache' => 1,
-		'file_cache_dir' => '/tmp/templatecache',
-		# 'debug' => 1,
-	);
-
-
 our $cfg;
 our $mcfg;
 our $lang;
 our $template_title;
 our $helplink;
-our $version;
 our $email;
 our $smtpserver;
 our $smtpport;
@@ -60,7 +51,7 @@ our $mailbin;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.2.1";
+my $version = "0.3.2.2";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 $cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");

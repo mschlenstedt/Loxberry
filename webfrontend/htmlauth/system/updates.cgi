@@ -72,7 +72,7 @@ our $rebootbin;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.1-dev2";
+my $version = "0.3.2.2";
 
 my $bins = LoxBerry::System::get_binaries();
 $sversion = LoxBerry::System::lbversion();
@@ -117,6 +117,7 @@ our $maintemplate = HTML::Template->new(
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				associate => $cfg,
+				%htmltemplate_options,
 				);
 
 our %SL = LoxBerry::Web::readlanguage($maintemplate);
@@ -269,6 +270,7 @@ sub install
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				associate => $cfg,
+				%htmltemplate_options,
 				);
 	
 	
@@ -422,6 +424,7 @@ sub install
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				associate => $cfg,
+				%htmltemplate_options,
 				);
 
 	my %SL = LoxBerry::Web::readlanguage($maintemplate);
@@ -457,6 +460,7 @@ sub lbupdates
 				# associate => $cfg,
 				# #debug => 1,
 				# #stack_debug => 1,
+				# %htmltemplate_options,
 				# );
 
 
@@ -604,6 +608,7 @@ sub error {
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				# associate => $cfg,
+				%htmltemplate_options,
 				);
 	$maintemplate->param( "ERROR", $error);
 	LoxBerry::Web::readlanguage($maintemplate);

@@ -18,7 +18,7 @@ use Time::Piece;
 # set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.2.2";
+our $VERSION = "0.3.2.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -29,6 +29,7 @@ our @EXPORT = qw (
 		get_plugin_icon
 		%SL
 		%L
+		%htmltemplate_options
 );
 
 
@@ -47,7 +48,7 @@ my $notifications_error;
 my $notifications_ok;
 
 # Performance optimizations
-my %htmltemplate_options = ( 
+our %htmltemplate_options = ( 
 		'shared_cache' => 0,
 		'file_cache' => 1,
 		'file_cache_dir' => '/tmp/templatecache',
