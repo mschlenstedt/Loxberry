@@ -18,7 +18,7 @@ use Time::Piece;
 # set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.2.1";
+our $VERSION = "0.3.2.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -49,7 +49,7 @@ my $notifications_ok;
 # Performance optimizations
 my %htmltemplate_options = ( 
 		'shared_cache' => 0,
-		'file_cache' => 0,
+		'file_cache' => 1,
 		'file_cache_dir' => '/tmp/templatecache',
 		# 'debug' => 1,
 	);
@@ -481,9 +481,10 @@ sub readlanguage
 		}
 		
 		if ($template) {
-			while (my ($name, $value) = each %SL) {
-				$template->param("$name" => $value);
-			}
+			#while (my ($name, $value) = each %SL) {
+			#	$template->param("$name" => $value);
+			#}
+			$template->param(%SL);
 		}
 		return %SL;
 	
@@ -511,9 +512,10 @@ sub readlanguage
 			}
 		}
 		if ($template) {
-			while (my ($name, $value) = each %L) {
-				$template->param("$name" => $value);
-			}
+			#while (my ($name, $value) = each %L) {
+			#	$template->param("$name" => $value);
+			#}
+			$template->param(%L);
 		}
 		return %L;
 	}
