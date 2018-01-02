@@ -48,6 +48,7 @@ chmod -v 555 $LBHOMEDIR/system/sudoers
 chmod -v 664 $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -v 755 $LBHOMEDIR/system/profile
 chmod -v 644 $LBHOMEDIR/system/profile/loxberry.sh
+chmod -Rv 644 $LBHOMEDIR/system/logrotate/*
 
 chmod -Rv 755 $LBHOMEDIR/libs
 chmod -Rv 755 $LBHOMEDIR/sbin
