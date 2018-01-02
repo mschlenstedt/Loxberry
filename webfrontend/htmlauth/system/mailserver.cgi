@@ -20,12 +20,8 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-
 use CGI::Carp qw(fatalsToBrowser);
-use CGI qw/:standard/;
-use LWP::UserAgent;
-use Config::Simple;
-use File::HomeDir;
+use CGI;
 use warnings;
 use strict;
 
@@ -36,25 +32,20 @@ use strict;
 my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_mailserver.html";
 
+my %htmltemplate_options = ( 
+		'shared_cache' => 0,
+		'file_cache' => 1,
+		'file_cache_dir' => '/tmp/templatecache',
+		# 'debug' => 1,
+	);
+
+
 our $cfg;
 our $mcfg;
-our $phrase;
-our $namef;
-our $value;
-our %query;
 our $lang;
 our $template_title;
-our $help;
-our @help;
-our $helptext;
 our $helplink;
-our $languagefile;
 our $version;
-our $error;
-our $saveformdata;
-our $do;
-our $checked1;
-our $checked2;
 our $email;
 our $smtpserver;
 our $smtpport;
@@ -62,8 +53,6 @@ our $smtpcrypt;
 our $smtpauth;
 our $smtpuser;
 our $smtppass;
-our $message;
-our $nexturl;
 our $mailbin;
 
 ##########################################################################
@@ -71,11 +60,11 @@ our $mailbin;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.1-dev1";
-
+$version = "0.3.2.1";
+my $cgi = CGI->new;
+$cgi->import_names('R');
 $cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $mailbin            = $cfg->param("BINARIES.MAIL");
-$do                 = "";
 
 $mcfg               = new Config::Simple("$lbhomedir/config/system/mail.cfg");
 $email              = $mcfg->param("SMTP.EMAIL");
@@ -92,30 +81,10 @@ $smtppass           = $mcfg->param("SMTP.SMTPPASS");
 #########################################################################
 
 # Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
-
-# And this one we really want to use
-$do           = $query{'do'};
-
-# Everything we got from forms
-$saveformdata         = param('saveformdata');
-
-$saveformdata          =~ tr/0-1//cd;
-$saveformdata          = substr($saveformdata,0,1);
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
 
 ##########################################################################
 # Language Settings
 ##########################################################################
-
 $lang = lblanguage();
 
 ##########################################################################
@@ -126,8 +95,12 @@ $lang = lblanguage();
 # What should we do
 #########################################################################
 
-# Step 1 or beginning
-if (!$saveformdata || $do eq "form") 
+# Prevent 'only used once' warnings from Perl
+$R::saveformdata if 0;
+$R::do if 0;
+
+
+if (!$R::saveformdata || $R::do eq "form") 
 {
   &form;
 } else {
@@ -142,19 +115,18 @@ exit;
 
 sub form 
 {
-	
 	my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/mailserver.html",
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
 		associate => $cfg,
+		%htmltemplate_options,
 		# debug => 1,
 		);
-	
+
 	my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-	print STDERR "FORM called\n";
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param( "LBHOSTNAME", lbhostname());
 	$maintemplate->param( "LANG", $lang);
@@ -173,15 +145,15 @@ sub form
 	if ($smtpauth) {
 	  $maintemplate->param(  "CHECKED2", 'checked="checked"');
 	}
-
+	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MAILSERVER.WIDGETLABEL'};
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
-	undef $maintemplate;			
 	LoxBerry::Web::pageend();
 	LoxBerry::Web::foot();
+	
 	exit;
 
 }
@@ -199,12 +171,13 @@ sub save
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
 		associate => $cfg,
+		%htmltemplate_options, 
 		# debug => 1,
 		);
 	
 	my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-	print STDERR "SAVE called\n";
+	# print STDERR "SAVE called\n";
 	$maintemplate->param("SAVE", 1);
 	$maintemplate->param( "LBHOSTNAME", lbhostname());
 	$maintemplate->param( "LANG", $lang);
@@ -305,4 +278,3 @@ ENDFILE
 }
 
 exit;
-
