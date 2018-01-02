@@ -18,7 +18,7 @@ use Time::Piece;
 # set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.2.3";
+our $VERSION = "0.3.2.4";
 our $DEBUG;
 
 use base 'Exporter';
@@ -652,30 +652,20 @@ sub delete_notifications
 	undef @notifications;
 }
 
+#####################################################
+# Parse yyyymmdd_hhmmss date to date object
+#####################################################
+
 sub parsedatestring 
 {
 	my ($datestring) = @_;
-	# my $dt = DateTime->new(
-		# year 	=> substr($datestring, 0, 4),
-		# month 	=> substr($datestring, 4, 2),
-		# day 	=> substr($datestring, 6, 2),
-		# hour	=> substr($datestring, 9, 2),
-		# minute	=> substr($datestring, 11, 2),
-		# second	=> substr($datestring, 13, 2),
-	# );
-
-	my $dt = Time::Piece->new(
-		year 	=> substr($datestring, 0, 4),
-		month 	=> substr($datestring, 4, 2),
-		day 	=> substr($datestring, 6, 2),
-		hour	=> substr($datestring, 9, 2),
-		minute	=> substr($datestring, 11, 2),
-		second	=> substr($datestring, 13, 2),
-	);
-
-	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strptime("%d.%m.%Y %H:%M");
+	
+	my $dt = Time::Piece->strptime($datestring, "%Y%m%d_%H%M%S");
+	
+	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
 	return $dt;
 }
+
 
 #####################################################
 # Finally 1; ########################################

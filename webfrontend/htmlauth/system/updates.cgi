@@ -22,6 +22,8 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use Time::Piece;
+
 
 use CGI::Carp qw(fatalsToBrowser);
 #use CGI qw/:standard/;
@@ -109,6 +111,13 @@ if ($R::lang) {
 	# Nice feature: We override language detection of LoxBerry::Web
 	$LoxBerry::Web::lang = substr($R::lang, 0, 2);
 }
+
+# Remove 'only used once' warnings
+$R::saveformdata if 0;
+$R::do if 0;
+$R::answer if 0;
+
+
 my $lang = lblanguage();
 
 our $maintemplate = HTML::Template->new(
@@ -525,7 +534,6 @@ sub lbupdates
 
 sub lbuhistory
 {
-	use DateTime;
 	LOGDEB "lbuhistory -->";
 	# TMPL_IF use "lbuhistory"
 	$maintemplate->param( "lbuhistory", 1);
@@ -552,7 +560,7 @@ sub lbuhistory
 		my $logdate = substr($direntry, 0, 15);
 		next if ($logtype ne "update" && $logtype ne "check");
 		# LOGDEB "Log type: $logtype Log date: $logdate";
-		my $dateobj = parsedatestring($logdate);
+		my $dateobj = LoxBerry::Web::parsedatestring($logdate);
 		if ($logtype eq 'update') {
 			my %update;
 			$updatecount++;
@@ -654,26 +662,6 @@ sub is_folder_empty {
   opendir(my $dh, $dirname); 
   return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
 }
-
-#####################################################
-# Parse yyyymmdd_hhmmss date to date object
-#####################################################
-
-sub parsedatestring 
-{
-	my ($datestring) = @_;
-	my $dt = DateTime->new(
-		year 	=> substr($datestring, 0, 4),
-		month 	=> substr($datestring, 4, 2),
-		day 	=> substr($datestring, 6, 2),
-		hour	=> substr($datestring, 9, 2),
-		minute	=> substr($datestring, 11, 2),
-		second	=> substr($datestring, 13, 2),
-	);
-	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
-	return $dt;
-}
-
 
 ###################################################################
 # Returns the current days of unattended-upgrades
