@@ -8,8 +8,8 @@ use CGI;
 use LoxBerry::System;
 use Carp;
 use HTML::Template;
-use DateTime;
-
+# use DateTime;
+use Time::Piece;
 
 
 # Potentially, this does something strange when using LoxBerry::Web without Webinterface (printing errors in HTML instead of plain text)
@@ -18,7 +18,7 @@ use DateTime;
 # set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.20";
+our $VERSION = "0.3.2.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -45,6 +45,15 @@ our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
 my @notifications;
 my $notifications_error;
 my $notifications_ok;
+
+# Performance optimizations
+my %htmltemplate_options = ( 
+		'shared_cache' => 0,
+		'file_cache' => 0,
+		'file_cache_dir' => '/tmp/templatecache',
+		# 'debug' => 1,
+	);
+
 
 # Finished everytime code execution
 ##################################################################
@@ -136,8 +145,9 @@ sub head
 	$headobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 1,
-		 loop_context_vars => 1,
+		loop_context_vars => 1,
 		die_on_bad_params => 0,
+		%htmltemplate_options,
 	);
 	
 	LoxBerry::Web::readlanguage($headobj, undef, 1);
@@ -242,7 +252,7 @@ sub pagestart
 			global_vars => 1,
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
-			# associate => $langini,
+			%htmltemplate_options,
 			);
 		
 		# Insert LangPhrases
@@ -299,8 +309,9 @@ sub pagestart
 	$headerobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 1,
-		 loop_context_vars => 1,
+		loop_context_vars => 1,
 		die_on_bad_params => 0,
+		%htmltemplate_options,
 	);
 	
 	LoxBerry::Web::readlanguage($headerobj, undef, 1);
@@ -382,8 +393,9 @@ sub pageend
 	my $pageendobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 0,
-		 loop_context_vars => 0,
+		loop_context_vars => 0,
 		die_on_bad_params => 0,
+		%htmltemplate_options,
 	);
 	my %SL = LoxBerry::Web::readlanguage($pageendobj, undef, 1);
 	
@@ -407,8 +419,9 @@ sub foot
 	my $footobj = HTML::Template->new(
 		filename => $templatepath,
 		global_vars => 0,
-		 loop_context_vars => 0,
+		loop_context_vars => 0,
 		die_on_bad_params => 0,
+		%htmltemplate_options,
 	);
 	$footobj->param( LANG => $lang);
 	print $footobj->output();
@@ -639,7 +652,16 @@ sub delete_notifications
 sub parsedatestring 
 {
 	my ($datestring) = @_;
-	my $dt = DateTime->new(
+	# my $dt = DateTime->new(
+		# year 	=> substr($datestring, 0, 4),
+		# month 	=> substr($datestring, 4, 2),
+		# day 	=> substr($datestring, 6, 2),
+		# hour	=> substr($datestring, 9, 2),
+		# minute	=> substr($datestring, 11, 2),
+		# second	=> substr($datestring, 13, 2),
+	# );
+
+	my $dt = Time::Piece->new(
 		year 	=> substr($datestring, 0, 4),
 		month 	=> substr($datestring, 4, 2),
 		day 	=> substr($datestring, 6, 2),
@@ -647,19 +669,10 @@ sub parsedatestring
 		minute	=> substr($datestring, 11, 2),
 		second	=> substr($datestring, 13, 2),
 	);
-	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
+
+	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strptime("%d.%m.%Y %H:%M");
 	return $dt;
 }
-
-
-
-
-
-
-
-
-
-
 
 #####################################################
 # Finally 1; ########################################
