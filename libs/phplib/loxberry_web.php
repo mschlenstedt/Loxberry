@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "0.3.1.17";
+	public static $LBWEBVERSION = "0.3.1.18";
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
 	public static $lang;
@@ -16,7 +16,7 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	public function head($pagetitle = "")
 	{
-		error_log("loxberry_web: Head function called -->");
+		// error_log("loxberry_web: Head function called -->");
 		global $template_title;
 		
 		# If a global template_title is set, use it
@@ -30,7 +30,7 @@ class LBWeb
 		if ($fulltitle === "") {
 			$fulltitle = "LoxBerry";
 		}
-		error_log("   Determined template title: $fulltitle");
+		// error_log("   Determined template title: $fulltitle");
 		
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/head.html";
 		if (!file_exists($templatepath)) {
@@ -57,7 +57,7 @@ class LBWeb
 		LBWeb::readlanguage($headobj, "language.ini", True);
 		$headobj->output();
 
-		error_log("<-- loxberry_web: Head function finished");
+		// error_log("<-- loxberry_web: Head function finished");
 	}
 	
 	///////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	public function pagestart($pagetitle = "", $helpurl = "", $helptemplate = "", $page = "main1")
 	{
-		error_log("loxberry_web: pagestart function called -->");
+		// error_log("loxberry_web: pagestart function called -->");
 
 		global $template_title;
 		global $helplink;
@@ -84,7 +84,7 @@ class LBWeb
 		if ($fulltitle === "") {
 			$fulltitle = "LoxBerry";
 		}
-		error_log("   Determined template title: $fulltitle");
+		// error_log("   Determined template title: $fulltitle");
 		
 		$helptext = LBWeb::gethelp($lang, $helptemplate);
 				
@@ -136,7 +136,7 @@ class LBWeb
 				}
 				
 				if (isset($element['Name'])) {
-					$topnavbar .= '		<li><a href="' . $element['URL'] . '"' . $btntarget . $btnactive . '>' . $element['Name'] . '</a></li>';
+					$topnavbar .= '		<li><a href="' . $element['URL'] . '"' . $btntarget . $btnactive . '>' . $element['Name'] . '</a>' . $notify . '</li>';
 					$topnavbar_haselements = True;
 				}
 			}
@@ -170,7 +170,7 @@ class LBWeb
 		
 		$pageobj->output();
 		
-		error_log("<-- loxberry_web: Pagestart function finished");
+		// error_log("<-- loxberry_web: Pagestart function finished");
 	}
 	
 	///////////////////////////////////////////////////////////////////
@@ -182,27 +182,27 @@ class LBWeb
 		global $lbpplugindir;
 		global $lbptemplatedir;
 		
-		error_log("gethelp -> lbpplugindir: $lbpplugindir lbptemplatedir: $lbptemplatedir");
-		error_log("   Parameters: lang: $lang helptemplate: $helptemplate");
+		// error_log("gethelp -> lbpplugindir: $lbpplugindir lbptemplatedir: $lbptemplatedir");
+		// error_log("   Parameters: lang: $lang helptemplate: $helptemplate");
 		
 		if (file_exists("$lbptemplatedir/help/$helptemplate")) { 
 			$templatepath = "$lbptemplatedir/help/$helptemplate";
 			$ismultilang = True;
-			error_log("gethelp: Multilang template found - using templatepath $templatepath");
+			// error_log("gethelp: Multilang template found - using templatepath $templatepath");
 		} elseif (file_exists("$lbptemplatedir/$lang/$helptemplate")) {
 			$templatepath = "$lbptemplatedir/$lang/$helptemplate";
 			$ismultilang = False;
-			error_log("gethelp: Legacy lang $lang template found - using templatepath $templatepath");
+			// error_log("gethelp: Legacy lang $lang template found - using templatepath $templatepath");
 		} elseif (file_exists("$lbptemplatedir/en/$helptemplate")) {
 			$templatepath = "$lbptemplatedir/en/$helptemplate";
 			$ismultilang = False;
-			error_log("gethelp: Legacy fallback lang en template found - using templatepath $templatepath");
+			// error_log("gethelp: Legacy fallback lang en template found - using templatepath $templatepath");
 		} elseif (file_exists("$lbptemplatedir/de/$helptemplate")) {
 			$templatepath = "$lbptemplatedir/de/$helptemplate";
 			$ismultilang = False;
-			error_log("gethelp: Legacy fallback lang de template found - using templatepath $templatepath");
+			// error_log("gethelp: Legacy fallback lang de template found - using templatepath $templatepath");
 		} else {
-			error_log("gethelp: No help found. Returning default text.");
+			//error_log("gethelp: No help found. Returning default text.");
 			if ($lang === "de") {
 				$helptext = "Keine weitere Hilfe verfügbar.";
 			} else {
@@ -290,24 +290,24 @@ class LBWeb
 	{
 		global $lblang;
 		if (isset(LBWeb::$lang)) { 
-			error_log("Language " . LBWeb::$lang . " is already set.");
+			// error_log("Language " . LBWeb::$lang . " is already set.");
 			return LBWeb::$lang; }
 		
 		// error_log("Will detect language");
 		if (isset($_GET["lang"])) {
 			LBWeb::$lang = substr($_GET["lang"], 0, 2);
-			error_log("Language " . LBWeb::$lang . " detected from Query string");
+			// error_log("Language " . LBWeb::$lang . " detected from Query string");
 			return LBWeb::$lang;
 		}
 		if (isset($_POST["lang"])) {
 			LBWeb::$lang = substr($_GET["lang"], 0, 2);
-			error_log("Language " . LBWeb::$lang . " detected from post data");
+			// error_log("Language " . LBWeb::$lang . " detected from post data");
 			return LBWeb::$lang;
 		}
 		LBSystem::read_generalcfg();
 		if (isset($lblang)) {
 			LBWeb::$lang = $lblang;
-			error_log("Language " . LBWeb::$lang . " used from general.cfg");
+			// error_log("Language " . LBWeb::$lang . " used from general.cfg");
 			return LBWeb::$lang;
 		}
 		// Finally we default to en
@@ -339,7 +339,7 @@ class LBWeb
 		
 		$langfile = substr($genericlangfile, 0, $pos) . "_" . $lang . substr($genericlangfile, $pos);
 		$enlangfile = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
-		error_log("readlanguage: $langfile enlangfile: $enlangfile");
+		// error_log("readlanguage: $langfile enlangfile: $enlangfile");
 		
 		if ($syslang == false || ($syslang == True && !is_array(self::$SL))) { 
 			if (file_exists($langfile)) {
@@ -365,7 +365,7 @@ class LBWeb
 				self::$SL = $language;
 			}
 		} elseif ($syslang == True && is_array(self::$SL)) {
-			error_log("readlanguage: Re-use cached system language"); 
+			// error_log("readlanguage: Re-use cached system language"); 
 			$language = self::$SL;
 		}
 		
@@ -416,7 +416,7 @@ class LBTemplate
 		
 	function __construct($templatepath)
 	{
-		error_log("LBTemplate construct: templatepath: $templatepath");
+		// error_log("LBTemplate construct: templatepath: $templatepath");
 		$this->template = file_get_contents($templatepath);
 	}
 	public function param($varname, $value)

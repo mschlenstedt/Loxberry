@@ -3,7 +3,6 @@
 
 use strict;
 # no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
-
 use Config::Simple;
 use CGI;
 use LoxBerry::System;
@@ -19,7 +18,7 @@ use DateTime;
 # set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.1.19";
+our $VERSION = "0.3.1.20";
 our $DEBUG;
 
 use base 'Exporter';
@@ -342,7 +341,7 @@ sub pagestart
 			}
 
 			if ($main::navbar{$element}{Name}) {
-				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . $notify . '</a></li>';
+				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . '</a>' . $notify . '</li>';
 				$topnavbar_haselements = 1;
 			}
 		}
@@ -448,7 +447,7 @@ sub readlanguage
 
 	# SYSTEM Language
 	if ($issystem) {
-		
+		print STDERR "This is a system call\n" if ($DEBUG);
 		# System language is "hardcoded" to file language_*.ini
 		my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 		
@@ -479,6 +478,7 @@ sub readlanguage
 	# PLUGIN language
 		# Plugin language got in format language.ini
 		# Need to re-parse the name
+		print STDERR "This is a plugin call\n" if ($DEBUG);
 		$langfile =~ s/\.[^.]*$//;
 		$langfile  = "$LoxBerry::System::lbptemplatedir/$langfile";
 		
