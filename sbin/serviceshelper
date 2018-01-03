@@ -35,6 +35,7 @@ case $1 in
 		then
 			systemctl restart lighttpd
 		fi
+		systemctl restart ssdpd
 		;;
 	webport_success)
 		if [ -f "$AWCN" ]
