@@ -70,7 +70,7 @@ my $installdir;
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.2";
+my $version = "0.0.3";
 
 $cfg                 = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $miniserverip        = $cfg->param("MINISERVER1.IPADDRESS");
