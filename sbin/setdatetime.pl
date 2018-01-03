@@ -23,6 +23,7 @@ use XML::Simple qw(:strict);
 use Config::Simple;
 use File::Copy;
 use File::HomeDir;
+use LoxBerry::System;
 #use strict;
 #use warnings;
 
@@ -63,7 +64,6 @@ my $ntpbin;
 my $datebin;
 my $sudobin;
 my $installdir;
-our $home = File::HomeDir->my_home;
 
 ##########################################################################
 # Read Configuration
@@ -72,7 +72,7 @@ our $home = File::HomeDir->my_home;
 # Version of this script
 my $version = "0.0.2";
 
-$cfg                 = new Config::Simple("$home/config/system/general.cfg");
+$cfg                 = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $miniserverip        = $cfg->param("MINISERVER1.IPADDRESS");
 $miniserverport      = $cfg->param("MINISERVER1.PORT");
 $miniserveradmin     = $cfg->param("MINISERVER1.ADMIN");
@@ -104,7 +104,7 @@ if ($timemethod eq "miniserver") {
 
   # Use Cloud DNS?
   if ($miniserverclouddns) {
-    $output = qx($home/bin/showclouddns.pl $miniservermac);
+    $output = qx($lbhomedir/bin/showclouddns.pl $miniservermac);
     @fields = split(/:/,$output);
     $miniserverip   =  @fields[0];
     $miniserverport = @fields[1];
