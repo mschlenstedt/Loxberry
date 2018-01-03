@@ -564,7 +564,7 @@ sub lbuhistory
 		if ($logtype eq 'update') {
 			my %update;
 			$updatecount++;
-			$update{'DATEOBJ'} = $dateobj;
+			# $update{'DATEOBJ'} = $dateobj; # Caused fatal error in loop output : HTML::Template::param() : attempt to set parameter 'dateobj' with an array ref -
 			$update{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
 			$update{'FILENAME'} = $direntry;
 			$update{'URLFILENAME'} = "system/loxberryupdate/$direntry";
@@ -572,7 +572,7 @@ sub lbuhistory
 		} elsif ($logtype eq 'check') {
 			my %updatecheck;
 			$updatecheckcount++;
-			$updatecheck{'DATEOBJ'} = $dateobj;
+			# $updatecheck{'DATEOBJ'} = $dateobj; # Caused fatal error in loop output : HTML::Template::param() : attempt to set parameter 'dateobj' with an array ref -
 			$updatecheck{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
 			$updatecheck{'FILENAME'} = $direntry;
 			$updatecheck{'URLFILENAME'} = "system/loxberryupdate/$direntry";
