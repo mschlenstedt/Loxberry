@@ -12,6 +12,7 @@
  use Data::UUID;
  use Thread;
 
+ my $cfg;
  if (-e "$lbsconfigdir/general.cfg") {
 	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
  } elsif (-e "$lbsconfigdir/general.cfg.default") {
