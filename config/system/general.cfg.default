@@ -28,6 +28,7 @@ GZIP=/bin/gzip
 UNZIP=/usr/bin/unzip
 TAR=/bin/tar
 NTPDATE=/usr/sbin/ntpdate
+DPKG=/usr/bin/dpkg
 
 [BASE]
 MINISERVERS=1
