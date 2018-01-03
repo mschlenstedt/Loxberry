@@ -124,6 +124,10 @@ if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $qu
 	exit(1);
 }
 
+my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+LOGINF "Executing user of loxberryupdatecheck is $curruser";
+
+
 LOGOK "Parameters/settings of this update:";
 LOGINF "   querytype:       $querytype\n";
 LOGINF "   cron:            $cron\n";

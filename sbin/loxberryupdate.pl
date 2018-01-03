@@ -73,8 +73,11 @@ my $log = LoxBerry::Log->new(
 LOGOK "Update handed over from LoxBerry Update Check to LoxBerry Update";
 LOGWARN "New logfile was created as handover of logfilename did not work" if (!$logfilename);
 
+my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+LOGINF "Executing user of loxberryupdate is $curruser";
+
 $logfilename = $log->filename;
-print STDERR "loxberryupdatecheck uses filename $logfilename\n";
+print STDERR "loxberryupdate uses filename $logfilename\n";
 
 if ($cgi->param('cron')) {
 	$cron = $cgi->param('cron');
