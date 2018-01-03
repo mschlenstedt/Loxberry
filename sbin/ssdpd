@@ -12,6 +12,7 @@
  use Data::UUID;
  use Thread;
 
+ my $cfg;
  if (-e "$lbsconfigdir/general.cfg") {
 	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
  } elsif (-e "$lbsconfigdir/general.cfg.default") {
@@ -42,6 +43,7 @@
 	 $cfg->save();
  }
  my $IP = LoxBerry::System::get_localip();
+ if (LoxBerry::System::lbwebserverport() != 80) {$IP .= ":".LoxBerry::System::lbwebserverport();}
  my $LBName = LoxBerry::System::lbfriendlyname() . " (" . LoxBerry::System::lbhostname() . ")";
  my $LBVer = LoxBerry::System::lbversion();
  our $msg1 = "NOTIFY * HTTP/1.1\r\nServer: $LBName $LBVer UPnP/1.0\r\nCache-Control: max-age=1800\r\nLOCATION: http://$IP/system/ssdpdesc.php\r\nNTS: ssdp:alive\r\nNT: upnp:rootdevice\r\nUSN: uuid:".$UUID."::upnp:rootdevice\r\nHOST: 239.255.255.250:1900\r\n\r\n";

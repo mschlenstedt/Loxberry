@@ -1010,6 +1010,9 @@ if (-e "$aptfile") {
   if ($now > $lastaptupdate+86400) {
     $message =  "$SL{'PLUGININSTALL.INF_APTREFRESH'}";
     &loginfo;
+    $message = "Command: $dpkgbin --configure -a";
+    &loginfo;
+    system("$dpkgbin --configure -a 2>&1");
     $message = "Command: $aptbin -q -y update";
     &loginfo;
     system("$aptbin -q -y update 2>&1");
@@ -1045,6 +1048,9 @@ if (-e "$aptfile") {
   }
   close (F);
 
+  $message = "Command: $dpkgbin --configure -a";
+  &loginfo;
+  system("$dpkgbin --configure -a 2>&1");
   $message = "Command: $aptbin -q -y install $aptpackages";
   &loginfo;
   system("$aptbin -q -y install $aptpackages 2>&1");
@@ -1054,6 +1060,9 @@ if (-e "$aptfile") {
     push(@warnings,"APT install: $message");
     # If it failed, maybe due to an outdated apt-database... So
     # do a apt-get update once more
+    $message = "Command: $dpkgbin --configure -a";
+    &loginfo;
+    system("$dpkgbin --configure -a 2>&1");
     $message =  "$SL{'PLUGININSTALL.INF_APTREFRESH'}";
     &loginfo;
     $message = "Command: $aptbin -q -y update";
@@ -1071,6 +1080,9 @@ if (-e "$aptfile") {
       close(F);
     }
     # And try to install packages again...
+    $message = "Command: $dpkgbin --configure -a";
+    &loginfo;
+    system("$dpkgbin --configure -a 2>&1");
     $message = "Command: $aptbin -q -y install $aptpackages";
     &loginfo;
     system("$aptbin -q -y install $aptpackages 2>&1");
