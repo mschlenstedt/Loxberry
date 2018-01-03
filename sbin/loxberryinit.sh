@@ -26,7 +26,7 @@
 # Version 1.6
 # 01.10.2017 08:20:00
 
-PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin"
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:$LBHOMEDIR/bin:$LBHOMEDIR/sbin"
 
 . /lib/lsb/init-functions
 ENVIRONMENT=$(cat /etc/environment)
@@ -58,53 +58,45 @@ case "$1" in
         #if [ ! -f /boot/rootfsresized ]
         #then
         #  log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
-        #  /opt/loxberry/sbin/resize_rootfs > /dev/null 2>&1
+        #  $LBHOMEDIR/sbin/resize_rootfs > /dev/null 2>&1
         #  touch /boot/rootfsresized
         #fi
-		log_action_begin_msg "Updating general.cfg..."
-		$LBHOMEDIR/bin/createconfig.pl
-		log_action_end_msg 0
-		
-		
-		
-		
+
+	# Create Default config
+	log_action_begin_msg "Updating general.cfg etc...."
+	$LBHOMEDIR/bin/createconfig.pl
+	log_action_end_msg 0
+
         # Copy manual network configuration if any exists
         if [ -f /boot/network.txt ]
         then
 			log_action_begin_msg "Found manual network configuration in /boot. Activating..."
-			mv /opt/loxberry/system/network/interfaces  /opt/loxberry/system/network/interfaces.bkp > /dev/null 2>&1
-			cp /boot/network.txt  /opt/loxberry/system/network/interfaces > /dev/null 2>&1
+			mv $LBHOMEDIR/system/network/interfaces  $LBHOMEDIR/system/network/interfaces.bkp > /dev/null 2>&1
+			cp /boot/network.txt  $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
 			dos2unix /etc/network/interfaces > /dev/null 2>&1
-			chown loxberry:loxberry /opt/loxberry/system/network/interfaces > /dev/null 2>&1
+			chown loxberry:loxberry $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
 			mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
-			log_action_cont_msg "rebooting"
+			log_action_cont_msg "Rebooting"
 			/sbin/reboot > /dev/null 2>&1
         fi
 
         # Copy new HTACCESS User/Password Database
-        if [ -f /opt/loxberry/config/system/htusers.dat.new ]
+        if [ -f $LBHOMEDIR/config/system/htusers.dat.new ]
         then
           log_action_begin_msg "Found new htaccess password database. Activating..."
-          mv /opt/loxberry/config/system/htusers.dat.new /opt/loxberry/config/system/htusers.dat > /dev/null 2>&1
+          mv $LBHOMEDIR/config/system/htusers.dat.new $LBHOMEDIR/config/system/htusers.dat > /dev/null 2>&1
         fi
-
-        # Do a system upgrade
-        #if [ -f /opt/loxberry/data/system/upgrade/upgrade.sh ]
-        #then
-        #  log_action_begin_msg "Found system upgrade. Installing..."
-        #  /opt/loxberry/data/system/upgrade/upgrade.sh > /opt/loxberry/log/system/upgrade.log 2>&1
-        #fi
 
         # Cleaning Temporary folders
         log_action_begin_msg "Cleaning temporary files and folders..."
-        rm -rf /opt/loxberry/webfrontend/html/tmp/* > /dev/null 2>&1
-	rm /opt/loxberry/log/system/reboot.required > /dev/null 2>&1
+        rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
+	rm $LBHOMEDIR/log/system/reboot.required > /dev/null 2>&1
 
         # Set Date and Time
-        if [ -f /opt/loxberry/sbin/setdatetime.pl ]
+        if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
         then
           log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
-          su loxberry -c "/opt/loxberry/sbin/setdatetime.pl > /dev/null 2>&1"
+          $LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1"
         fi
 
         # Create log folders for all plugins if not existing
@@ -112,18 +104,12 @@ case "$1" in
 			
 	# Run Daemons from Plugins and from System
         log_action_begin_msg "Running System Daemons"
-        run-parts -v  /opt/loxberry/system/daemons/system > /dev/null 
+        run-parts -v  $LBHOMEDIR/system/daemons/system > /dev/null 
 	log_action_end_msg 0
 		
         log_action_begin_msg "Running Plugin Daemons"
-        run-parts -v --new-session /opt/loxberry/system/daemons/plugins > /dev/null 
+        run-parts -v --new-session $LBHOMEDIR/system/daemons/plugins > /dev/null 
 	log_action_end_msg 0
-		
-        # Run Uninstall scripts
-        #log_action_begin_msg "Running Uninstall Scripts"
-        #run-parts -v /opt/loxberry/system/daemons/uninstall > /dev/null 
-        #rm -rf /opt/loxberry/system/daemons/uninstall/* > /dev/null 2>&1
-	#log_action_end_msg 0
 		
 	# Check LoxBerry Update cronjobs
 	# Recreate them, if config has enabled them, but do not exist
