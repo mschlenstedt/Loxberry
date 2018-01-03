@@ -127,12 +127,16 @@ sub lbupdate
 	print STDERR "ajax-config-handler: lbupdate\n";
 
 	if ($action eq 'lbupdate-runcheck') {
-		system("sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json");
+		my $output = qx { sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json };
+		print $output;
+		exit(0);
+		
 	}
 	
 	if ($action eq 'lbupdate-runinstall') {
-		exec("sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1");
-		exit(1);
+		my $output = qx { sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1 };
+		print $output;
+		exit(0);
 	}
 	
 	
