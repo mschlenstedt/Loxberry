@@ -52,8 +52,9 @@ my $sudobin         = $bins->{SUDO};
 my $chmodbin        = $bins->{CHMOD};
 my $chownbin        = $bins->{CHOWN};
 my $unzipbin        = $bins->{UNZIP};
-my $findbin        = $bins->{FIND};
-my $grepbin        = $bins->{GREP};
+my $findbin         = $bins->{FIND};
+my $grepbin         = $bins->{GREP};
+my $dpkgbin         = $bins->{DPKG};
 
 ##########################################################################
 # Language Settings
