@@ -157,7 +157,7 @@ div.greenTable {
 	
 	</div>
 	</form>
-	
+	<p id="pleasewait">Please be patient as loading really takes a while...</p>
 	<input type="hidden" id="srclang" name="srclang" value="en">
 	<input type="hidden" id="selfurl" name="selfurl" value="<TMPL_VAR SELFURL>">
 	
@@ -185,16 +185,16 @@ div.greenTable {
 	<div class="divTableCell CellKey">
 		<TMPL_VAR KEY>
 	</div>
-	<div class="divTableCell CellText" id="src_<TMPL_VAR KEY>"><TMPL_VAR TEXT>
-		<TMPL_IF TEXT_ERROR>
-			<div class="langerror"><TMPL_VAR TEXT_ERROR></div>
+	<div class="divTableCell CellText" id="src_<TMPL_VAR KEY>"><TMPL_VAR SRC_TEXT>
+		<TMPL_IF SRC_TEXT_WARNING>
+			<div class="langerror"><TMPL_VAR SRC_TEXT_WARNING></div>
 		</TMPL_IF>
 	</div>
 	<div class="divTableCell CellTranslation" id="dstdiv_<TMPL_VAR KEY>">
-		<textarea class="translation" name="<TMPL_VAR KEY>" id="<TMPL_VAR KEY>" tabindex="<TMPL_VAR TABINDEX>" rows="1" cols="50"><TMPL_VAR TRANSLATION></textarea>
-		<input type="hidden" id="orig_<TMPL_VAR KEY>" name="orig_<TMPL_VAR KEY>" value="<TMPL_VAR TRANSLATION>">
-		<TMPL_IF TRANSLATION_ERROR>
-			<div class="langerror"><TMPL_VAR TRANSLATION_ERROR></div>
+		<textarea class="translation" name="<TMPL_VAR KEY>" id="<TMPL_VAR KEY>" tabindex="<TMPL_VAR TABINDEX>" rows="1" cols="50"><TMPL_VAR DEST_TEXT></textarea>
+		<input type="hidden" id="orig_<TMPL_VAR KEY>" name="orig_<TMPL_VAR KEY>" value="<TMPL_VAR DEST_TEXT>">
+		<TMPL_IF DEST_TEXT_WARNING>
+			<div class="langerror"><TMPL_VAR DEST_TEXT_WARNING></div>
 		</TMPL_IF>
 	</div>
 	<div class="divTableCell CellButtons">
@@ -237,7 +237,6 @@ $(document).ready( function () {
 		window.location = downloadurl;
 	
 	});
-
 	
 	$( ".translation" ).blur(function(){change_translation(event.target.id, $(this).val())});
 	
@@ -284,6 +283,7 @@ function change_translation (key, value)
 	lang = $('#destlang').val();
 	$.post( url, { 	action: "setvalue",
 					destlang: $.trim($('#destlang').val()),
+					srclang: $.trim($('#srclang').val()),
 					key: key,
 					text: value,
 				 },
@@ -305,7 +305,6 @@ function change_translation (key, value)
 			);
 
 }
-
 
 
 </script>
