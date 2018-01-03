@@ -309,7 +309,7 @@ if ($exitcode != 0 ) {
 
 # We have to recreate the skels for system log folders in tmpfs
 LOGINF "Updating Skels for Logfolders...";
-system("$lbssbindir/createskelfolders.pl' >/dev/null");
+system("$lbssbindir/createskelfolders.pl >/dev/null");
 $exitcode  = $? >> 8;
 if ($exitcode != 0 ) {
 	LOGWARN "/createskelfolders.pl returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
