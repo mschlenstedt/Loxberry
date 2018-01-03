@@ -325,7 +325,7 @@ if (! $cgi->param('dryrun') ) {
 			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
 			$errskipped++;
 			};
-	$syscfg->param('BASE.VERION', "$release");
+	$syscfg->param('BASE.VERSION', "$release");
 	$syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
 	$syscfg->save() or 
 		do {
