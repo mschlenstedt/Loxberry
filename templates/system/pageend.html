@@ -4,11 +4,22 @@
 		</div>
 		<!-- /content -->
 		<!-- footer -->
-		<div data-role="footer" style="text-align:center;" data-position="fixed" data-tap-toggle="false">
-			<a id="btnhome" href="/admin/system/index.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>
-			&nbsp;&nbsp;&nbsp;<TMPL_VAR REBOOT_REQUIRED>&nbsp;&nbsp;&nbsp;
-			<a id="btnpower" href="/admin/system/power.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
-			
+		<div data-role="footer" style="border:0px; text-align:center;" data-position="fixed" data-tap-toggle="false">
+			<table class="footer_table">
+				<tr>
+					<td class="footer_logo">
+					</td>
+					<td class="footer_spacer">
+					</td>
+					<td align="center">
+						<a id="btnhome" href="/admin/system/index.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>
+						&nbsp;&nbsp;&nbsp;<TMPL_VAR REBOOT_REQUIRED>&nbsp;&nbsp;&nbsp;
+						<a id="btnpower" href="/admin/system/power.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
+					</td>
+					<td class="footer_slogan">
+					</td>
+				</tr>
+			</table>
 		</div>
 		<!-- /footer -->
 	</div>

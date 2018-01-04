@@ -1,4 +1,5 @@
 /* Form Error Message */
+/* Form Error Message */
 
 .form-error, .form-error-message {
   color: red;
@@ -52,7 +53,33 @@ table.menutable td {
   background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
-	
+}
+
+.footer_table
+{
+width:100%;
+border-spacing:0px;
+white-space: nowrap;
+}
+.footer_logo
+{
+background-image: url("../images/loxberry_footer_logo.svg");
+background-repeat:no-repeat;
+background-position: left;
+width:311px;
+min-width: 311px;
+}
+.footer_spacer
+{
+width:67px;
+}
+.footer_slogan 
+{
+background-image: url("../images/BTL.svg");
+background-repeat:no-repeat;
+background-position: right;
+width:378px;
+min-width: 378px;
 }
 
 .ui-input-text input
