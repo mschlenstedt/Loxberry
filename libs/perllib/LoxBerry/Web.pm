@@ -14,16 +14,15 @@ use Time::Piece;
 
 # Potentially, this does something strange when using LoxBerry::Web without Webinterface (printing errors in HTML instead of plain text)
 # See https://github.com/mschlenstedt/Loxberry/issues/312 and https://github.com/mschlenstedt/Loxberry/issues/287
-# use CGI::Carp qw(fatalsToBrowser set_message);
-# set_message('You can report this error <a target="bugreport" href="https://github.com/mschlenstedt/Loxberry/issues/new">here</a> if you think it is a general problem and not your fault.');
+use CGI::Carp qw(fatalsToBrowser set_message);
+set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.2.4";
+our $VERSION = "0.3.3.1";
 our $DEBUG;
 
 use base 'Exporter';
 our @EXPORT = qw (
-		lblanguage
 		$lbpluginpage
 		$lbsystempage
 		get_plugin_icon
@@ -38,8 +37,6 @@ our @EXPORT = qw (
 ##################################################################
 
 my $lang;
-our %SL; # Shortcut for System language phrases
-our %L;  # Shortcut for Plugin language phrases
 our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
 our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
@@ -65,24 +62,8 @@ our %htmltemplate_options = (
 ##################################################################
 sub lblanguage 
 {
-	print STDERR "current \$lang: $LoxBerry::Web::lang\n" if ($DEBUG);
-	# Return if $lang is already set
-	if ($LoxBerry::Web::lang) {
-		return $LoxBerry::Web::lang;
-	}
-	# Get lang from query 
-	my $query = CGI->new();
-	my $querylang = $query->param('lang');
-	if ($querylang) 
-		{ $LoxBerry::Web::lang = substr $querylang, 0, 2;
-		  print STDERR "\$lang in CGI: $LoxBerry::Web::lang" if ($DEBUG);
-		  return $LoxBerry::Web::lang;
-	}
-	# If nothing found, get language from system settings
-	my  $syscfg = new Config::Simple("$LoxBerry::System::lbhomedir/config/system/general.cfg");
-	$LoxBerry::Web::lang = $syscfg->param("BASE.LANG");
-	print STDERR "\$lang from general.cfg: $LoxBerry::Web::lang" if ($DEBUG);
-	return substr($LoxBerry::Web::lang, 0, 2);
+	print STDERR "$0: LoxBerry::Web::lblanguage was moved to LoxBerry::System::lblanguage. The call was redirected, but you should update your program.\n";
+	return LoxBerry::System::lblanguage();
 }
 
 #####################################################
@@ -124,7 +105,7 @@ sub head
 	my $templatetext;
 	my ($pagetitle) = @_;
 
-	my $lang = lblanguage();
+	my $lang = LoxBerry::System::lblanguage();
 	print STDERR "\nDetected language: $lang\n" if ($DEBUG);
 	print STDERR "main::templatetitle: $main::template_title\n" if ($DEBUG);
 	our $template_title = defined $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
@@ -151,7 +132,7 @@ sub head
 		%htmltemplate_options,
 	);
 	
-	LoxBerry::Web::readlanguage($headobj, undef, 1);
+	LoxBerry::System::readlanguage($headobj, undef, 1);
 	
 	$headobj->param( TEMPLATETITLE => $template_title);
 	$headobj->param( LANG => $lang);
@@ -175,7 +156,7 @@ sub pagestart
 		$page = "main1";
 	} 
 	
-	my $lang = lblanguage();
+	my $lang = LoxBerry::System::lblanguage();
 	print STDERR "\nDetected language: $lang\n" if ($DEBUG);
 	our $template_title = $pagetitle ? LoxBerry::System::lbfriendlyname() . " " . $pagetitle : LoxBerry::System::lbfriendlyname() . " " . $main::template_title;
 	print STDERR "friendlyname: " . LoxBerry::System::lbfriendlyname() . "\n" if ($DEBUG);
@@ -315,7 +296,7 @@ sub pagestart
 		%htmltemplate_options,
 	);
 	
-	LoxBerry::Web::readlanguage($headerobj, undef, 1);
+	LoxBerry::System::readlanguage($headerobj, undef, 1);
 	
 	print STDERR "template_title: $template_title\n" if ($DEBUG);
 	print STDERR "helplink:       $helplink\n" if ($DEBUG);
@@ -389,7 +370,7 @@ sub pagestart
 #####################################################
 sub pageend
 {
-	my $lang = lblanguage();
+	my $lang = LoxBerry::System::lblanguage();
 	my $templatepath = "$LoxBerry::System::lbstemplatedir/pageend.html";
 	my $pageendobj = HTML::Template->new(
 		filename => $templatepath,
@@ -398,7 +379,7 @@ sub pageend
 		die_on_bad_params => 0,
 		%htmltemplate_options,
 	);
-	my %SL = LoxBerry::Web::readlanguage($pageendobj, undef, 1);
+	my %SL = LoxBerry::System::readlanguage($pageendobj, undef, 1);
 	
 	$pageendobj->param( LANG => $lang);
 	
@@ -415,7 +396,7 @@ sub pageend
 #####################################################
 sub foot
 {
-	my $lang = lblanguage();
+	my $lang = LoxBerry::System::lblanguage();
 	my $templatepath = "$LoxBerry::System::lbstemplatedir/foot.html";
 	my $footobj = HTML::Template->new(
 		filename => $templatepath,
@@ -432,94 +413,12 @@ sub foot
 	
 #####################################################
 # readlanguage
-# Read the language for a plugin 
-# Example Call:
-# my %Phrases = LoxBerry::Web::readlanguage($template, "language.ini");
+# Moved to LoxBerry::System
 #####################################################
 sub readlanguage
 {
-	my ($template, $langfile, $syslang) = @_;
-
-	my $lang = LoxBerry::Web::lblanguage();
-	# my $issystem = LoxBerry::System::is_systemcall();
-	my $issystem;
-	if ($syslang || LoxBerry::System::is_systemcall()) {
-		$issystem = 1;
-	}
-	
-	if(!$issystem && !$template->isa("HTML::Template")) {
-		# Plugin only gave us a language 
-		$langfile = $template;
-	}
-	
-	# Return if we already have them in memory.
-	if (!$issystem && !$langfile) { 
-		Carp::carp("WARNING: \$langfile is empty, setting to language.ini. If file is missing, error will occur.") if ($DEBUG);
-		$langfile = "language.ini"; }
-	# if ($issystem and %SL) { return %SL; }
-	# if (!$issystem and %L) { return %L; }
-
-	# SYSTEM Language
-	if ($issystem) {
-		print STDERR "This is a system call\n" if ($DEBUG);
-		# System language is "hardcoded" to file language_*.ini
-		my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
-		
-		if (!%SL) {
-			# Read English language as default
-			# Missing phrases in foreign language will fall back to English
-
-			Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
-
-			# Read foreign language if exists and not English and overwrite English strings
-			$langfile = $langfile . "_" . $lang . ".ini";
-			if ((-e $langfile) and ($lang ne 'en')) {
-				Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
-			}
-			if (!%SL) {
-				Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
-			}
-		}
-		
-		if ($template) {
-			#while (my ($name, $value) = each %SL) {
-			#	$template->param("$name" => $value);
-			#}
-			$template->param(%SL);
-		}
-		return %SL;
-	
-	} else {
-	# PLUGIN language
-		# Plugin language got in format language.ini
-		# Need to re-parse the name
-		print STDERR "This is a plugin call\n" if ($DEBUG);
-		$langfile =~ s/\.[^.]*$//;
-		$langfile  = "$LoxBerry::System::lbptemplatedir/$langfile";
-		
-		# Read English language as default
-		# Missing phrases in foreign language will fall back to English
-		if (!%L) {
-			if (-e $langfile . "_en.ini") {
-				Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
-			}
-			# Read foreign language if exists and not English and overwrite English strings
-			$langfile = $langfile . "_" . $lang . ".ini";
-			if ((-e $langfile) and ($lang ne 'en')) {
-				Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
-			}
-			if (! %L) {
-				Carp::carp ("ERROR: Could not read any language phrases.\n");
-			}
-		}
-		if ($template) {
-			#while (my ($name, $value) = each %L) {
-			#	$template->param("$name" => $value);
-			#}
-			$template->param(%L);
-		}
-		return %L;
-	}
+	print STDERR "$0: LoxBerry::Web::readlanguage was moved to LoxBerry::System::readlanguage. The call was redirected, but you should update your program.\n";
+	return LoxBerry::System::readlanguage(@_);
 }
 
 ################################################################

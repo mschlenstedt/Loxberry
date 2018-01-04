@@ -5,11 +5,10 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "0.3.1.18";
+	public static $LBWEBVERSION = "0.3.3.1";
+	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
-	public static $lang;
-	private static $SL;
 		
 	///////////////////////////////////////////////////////////////////
 	// prints the head
@@ -23,7 +22,7 @@ class LBWeb
 		if ($template_title !== "") {
 			$pagetitle = $template_title;
 		}
-		$lang = LBWeb::lblanguage();
+		$lang = LBSystem::lblanguage();
 		
 		$fulltitle = $pagetitle !== "" ? lbfriendlyname() . " " . $pagetitle : lbfriendlyname();
 		$fulltitle = trim($fulltitle);
@@ -54,7 +53,7 @@ class LBWeb
 		$headobj = new LBTemplate($templatepath);
 		$headobj->param('TEMPLATETITLE', $fulltitle);
 		$headobj->param('LANG', $lang);
-		LBWeb::readlanguage($headobj, "language.ini", True);
+		LBSystem::readlanguage($headobj, "language.ini", True);
 		$headobj->output();
 
 		// error_log("<-- loxberry_web: Head function finished");
@@ -78,7 +77,7 @@ class LBWeb
 			$helpurl = $helplink;
 		}
 		
-		$lang = LBWeb::lblanguage();
+		$lang = LBSystem::lblanguage();
 		$fulltitle = $pagetitle !== "" ? lbfriendlyname() . " " . $pagetitle : lbfriendlyname();
 		$fulltitle = trim($fulltitle);
 		if ($fulltitle === "") {
@@ -159,7 +158,7 @@ class LBWeb
 					'PAGE' => $page,
 					'LANG' => $lang
 					));
-		LBWeb::readlanguage($pageobj, "language.ini", True);
+		LBSystem::readlanguage($pageobj, "language.ini", True);
 		
 		if ($topnavbar_haselements) {
 			$pageobj->param ( 'TOPNAVBAR', $topnavbar);
@@ -220,7 +219,7 @@ class LBWeb
 			}
 			$langfile = substr($helptemplate, 0, $pos) . ".ini";
 			$helpobj = new LBTemplate($templatepath);
-			LBWeb::readlanguage($helpobj, $langfile);
+			LBSystem::readlanguage($helpobj, $langfile);
 			$helptext = $helpobj->outputString();
 			return $helptext;
 		}
@@ -237,10 +236,10 @@ class LBWeb
 	public function pageend()
 	{
 		global $lbslogdir;
-		$lang = LBWeb::lblanguage();
+		$lang = LBSystem::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pageend.html";
 		$pageobj = new LBTemplate($templatepath);
-		$SL = LBWeb::readlanguage($pageobj, "language.ini", True);
+		$SL = LBSystem::readlanguage($pageobj, "language.ini", True);
 		$pageobj->param('LANG', $lang);
 		
 		// Reboot required button
@@ -257,7 +256,7 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	public function foot()
 	{
-		$lang = LBWeb::lblanguage();
+		$lang = LBSystem::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/foot.html";
 		$footobj = new LBTemplate($templatepath);
 		$footobj->param('LANG', $lang);
@@ -284,34 +283,14 @@ class LBWeb
 	
 	
 	///////////////////////////////////////////////////////////////////
-	// Detects the language from query, post or general.cfg
+	// Detects the language 
+	// Moved to LBSystem::lblanguage
 	///////////////////////////////////////////////////////////////////
 	public function lblanguage() 
 	{
-		global $lblang;
-		if (isset(LBWeb::$lang)) { 
-			// error_log("Language " . LBWeb::$lang . " is already set.");
-			return LBWeb::$lang; }
-		
-		// error_log("Will detect language");
-		if (isset($_GET["lang"])) {
-			LBWeb::$lang = substr($_GET["lang"], 0, 2);
-			// error_log("Language " . LBWeb::$lang . " detected from Query string");
-			return LBWeb::$lang;
-		}
-		if (isset($_POST["lang"])) {
-			LBWeb::$lang = substr($_GET["lang"], 0, 2);
-			// error_log("Language " . LBWeb::$lang . " detected from post data");
-			return LBWeb::$lang;
-		}
-		LBSystem::read_generalcfg();
-		if (isset($lblang)) {
-			LBWeb::$lang = $lblang;
-			// error_log("Language " . LBWeb::$lang . " used from general.cfg");
-			return LBWeb::$lang;
-		}
-		// Finally we default to en
-		return "en";
+		$phpself = basename(__FILE__);
+		error_Log("$phpself: LBWeb::lblanguage was moved to LBSystem::lblanguage. The call was redirected, but you should update your program.");
+		return LBSystem::lblanguage();
 	}
 
 	///////////////////////////////////////////////////////////////////
@@ -319,74 +298,11 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	public function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
 	{
-		if (!is_object($template) && is_string($template)) {
-			$genericlangfile = $template;
-			$template = NULL;
-		}
-		if ($syslang == true) {
-			$genericlangfile = LBSTEMPLATEDIR . "/lang/language.ini";
-		} else {
-			$genericlangfile = LBPTEMPLATEDIR . "/lang/$genericlangfile";
-		}
-		
-		$lang = LBWeb::lblanguage();
-		$pos = strrpos($genericlangfile, ".");
-		if ($pos === false) {
-				error_log("readlanguage: Illegal option '$genericlangfile'. This should be in the form 'language.ini' without pathes.");
-				return null;
-		}
-		
-		
-		$langfile = substr($genericlangfile, 0, $pos) . "_" . $lang . substr($genericlangfile, $pos);
-		$enlangfile = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
-		// error_log("readlanguage: $langfile enlangfile: $enlangfile");
-		
-		if ($syslang == false || ($syslang == True && !is_array(self::$SL))) { 
-			if (file_exists($langfile)) {
-				$currlang = LBWeb::read_language_file($langfile);
-			}
-			if (file_exists($enlangfile)) {
-				$enlang = LBWeb::read_language_file($enlangfile);
-			}
-		
-			foreach ($enlang as $section => $sectionarray)  {
-				foreach ($sectionarray as $tag => $langstring)  {
-					$language["$section.$tag"] = $langstring;
-					// error_log("Tag: $section.$tag Langstring: $langstring");
-				}
-			}
-			foreach ($currlang as $section => $sectionarray)  {
-				foreach ($sectionarray as $tag => $langstring)  {
-					$language["$section.$tag"] = $langstring;
-					// error_log("Tag: $section.$tag Langstring: $langstring");
-				}
-			}
-			if ($syslang) {
-				self::$SL = $language;
-			}
-		} elseif ($syslang == True && is_array(self::$SL)) {
-			// error_log("readlanguage: Re-use cached system language"); 
-			$language = self::$SL;
-		}
-		
-		if (is_object($template)) {
-			$template->paramArray($language);
-		}
-	
-		return $language;
-
+		$phpself = basename(__FILE__);
+		error_Log("$phpself: LBWeb::readlanguage was moved to LBSystem::readlanguage. The call was redirected, but you should update your program.");
+		return LBSystem::readlanguage($template, $genericlangfile, $syslang);
 	}
-	
-	
-	function read_language_file($langfile)
-	{
-		$langarray = parse_ini_file($langfile, True, INI_SCANNER_RAW) or error_log("LoxBerry Web ERROR: Could not read language file $langfile");
-		if ($langarray == false) {
-			error_log("Cannot read language $langfile");
-		}
-		return $langarray;
-	}
-	
+		
 	function get_plugin_icon($iconsize = 64)
 	{
 		global $lbshtmldir;

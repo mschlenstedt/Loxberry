@@ -16,8 +16,7 @@
 	if (isset($plugindir_array[4])) {
 		$pluginname = $plugindir_array[4];
 	}
-		
-		
+
 	# $pluginname = explode("/", substr(getcwd(), strlen(LBHOMEDIR)))[4];
 	if (isset($pluginname)) {
 		define ("LBPPLUGINDIR", $pluginname);
@@ -35,7 +34,6 @@
 
 		// lbhomedir
 		$lbhomedir = LBHOMEDIR;
-	
 		
 		// Plugin Variables
 		$lbpplugindir = LBPPLUGINDIR;
@@ -86,12 +84,115 @@
 	$plugins=NULL;
 	$lblang=NULL;
 	$cfgwasread=NULL;
+	
+	
 
 // Functions in class LBSystem
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.1.19";
+	public static $LBSYSTEMVERSION = "0.3.3.1";
+	public static $lang=NULL;
+	private static $SL=NULL;
+		
+	///////////////////////////////////////////////////////////////////
+	// Detects the language from query, post or general.cfg
+	///////////////////////////////////////////////////////////////////
+	public function lblanguage() 
+	{
+		global $lblang;
+		if (isset(LBSystem::$lang)) { 
+			// error_log("Language " . LBSystem::$lang . " is already set.");
+			return LBSystem::$lang; }
+		
+		// error_log("Will detect language");
+		if (isset($_GET["lang"])) {
+			LBSystem::$lang = substr($_GET["lang"], 0, 2);
+			// error_log("Language " . LBSystem::$lang . " detected from Query string");
+			return LBSystem::$lang;
+		}
+		if (isset($_POST["lang"])) {
+			LBSystem::$lang = substr($_GET["lang"], 0, 2);
+			// error_log("Language " . LBSystem::$lang . " detected from post data");
+			return LBSystem::$lang;
+		}
+		LBSystem::read_generalcfg();
+		if (isset($lblang)) {
+			LBSystem::$lang = $lblang;
+			// error_log("Language " . LBSystem::$lang . " used from general.cfg");
+			return LBSystem::$lang;
+		}
+		// Finally we default to en
+		return "en";
+	}
+
+	public function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
+	{
+		if (!is_object($template) && is_string($template)) {
+			$genericlangfile = $template;
+			$template = NULL;
+		}
+		if ($syslang == true) {
+			$genericlangfile = LBSTEMPLATEDIR . "/lang/language.ini";
+		} else {
+			$genericlangfile = LBPTEMPLATEDIR . "/lang/$genericlangfile";
+		}
+		
+		$lang = LBSystem::lblanguage();
+		$pos = strrpos($genericlangfile, ".");
+		if ($pos === false) {
+				error_log("readlanguage: Illegal option '$genericlangfile'. This should be in the form 'language.ini' without pathes.");
+				return null;
+		}
+		
+		$langfile = substr($genericlangfile, 0, $pos) . "_" . $lang . substr($genericlangfile, $pos);
+		$enlangfile = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
+		// error_log("readlanguage: $langfile enlangfile: $enlangfile");
+		
+		if ($syslang == false || ($syslang == True && !is_array(self::$SL))) { 
+			if (file_exists($langfile)) {
+				$currlang = LBSystem::read_language_file($langfile);
+			}
+			if (file_exists($enlangfile)) {
+				$enlang = LBSystem::read_language_file($enlangfile);
+			}
+		
+			foreach ($enlang as $section => $sectionarray)  {
+				foreach ($sectionarray as $tag => $langstring)  {
+					$language["$section.$tag"] = $langstring;
+					// error_log("Tag: $section.$tag Langstring: $langstring");
+				}
+			}
+			foreach ($currlang as $section => $sectionarray)  {
+				foreach ($sectionarray as $tag => $langstring)  {
+					$language["$section.$tag"] = $langstring;
+					// error_log("Tag: $section.$tag Langstring: $langstring");
+				}
+			}
+			if ($syslang) {
+				self::$SL = $language;
+			}
+		} elseif ($syslang == True && is_array(self::$SL)) {
+			// error_log("readlanguage: Re-use cached system language"); 
+			$language = self::$SL;
+		}
+		
+		if (is_object($template)) {
+			$template->paramArray($language);
+		}
+	
+		return $language;
+
+	}
+	
+	function read_language_file($langfile)
+	{
+		$langarray = parse_ini_file($langfile, True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read language file $langfile");
+		if ($langarray == false) {
+			error_log("Cannot read language $langfile");
+		}
+		return $langarray;
+	}
 	
 	####### Get Miniserver array #######
 	public function get_miniservers() 
