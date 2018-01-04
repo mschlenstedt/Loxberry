@@ -5,6 +5,11 @@ if test $UID -ne 0; then
 	exit 1
 fi
 
+# set environment
+if [ -f /etc/environment ]; then
+	        . /etc/environment
+fi
+
 if [ ! -d $LBHOMEDIR ]; then
 	echo "Cannot find LoxBerry home directory ($LBHOMEDIR). Exiting."
 	exit 1
