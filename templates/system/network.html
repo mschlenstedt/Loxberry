@@ -3,7 +3,7 @@
 		<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="<TMPL_VAR SELFURL>">
 			<input type="hidden" name="saveformdata" value="1">
 			<table class="formtable" border="0" width="100%">
-				<tr>
+				<tr class="area-hostname">
 					<td width="25%">
 						<label for="lbhostname"><TMPL_VAR NETWORK.LABEL_HOSTNAME></label>
 					</td>
@@ -21,7 +21,7 @@
 						&nbsp;
 					</td>
 				</tr>
-				<tr>
+				<tr class="area-netzwerkanschluss">
 					<td width="25%">
 						<label id="labelnetzwerkanschluss"><TMPL_VAR NETWORK.LABEL_NETWORKING></label>
 					</td>
@@ -44,7 +44,7 @@
 						&nbsp;
 					</td>
 				</tr>
-				<tr>
+				<tr class="area-netzwerkssid" style="display:none">
 					<td>
 						<label id="labelnetzwerkssid"><TMPL_VAR NETWORK.LABEL_WIRELESS></label>
 					</td>
@@ -62,7 +62,7 @@
 						&nbsp;
 					</td>
 				</tr>
-				<tr>
+				<tr class="area-netzwerkschluessel" style="display:none">
 					<td>
 						<label id="labelnetzwerkschluessel"><TMPL_VAR NETWORK.LABEL_NETWORKKEY></label>
 					</td>
@@ -77,7 +77,7 @@
 						
 					</td>
 				</tr>
-				<tr>
+				<tr class="area-netzwerkadressen">
 					<td width="25%">
 						<label id="labelnetzwerkadressen"><TMPL_VAR NETWORK.LABEL_NETWORKADDRESSES></label>
 					</td>
@@ -96,7 +96,7 @@
 						&nbsp;
 					</td>
 				</tr>
-				<tr>
+				<tr class="area-netzwerkipadresse" style="display:none">
 					<td>
 						<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
 					</td>
@@ -111,7 +111,7 @@
 						&nbsp;
 					</td>
 				</tr>
-				<tr>
+				<tr class="area-netzwerkipmaske" style="display:none">
 					<td>
 						<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
 					</td>
@@ -126,7 +126,7 @@
 						&nbsp;
 					</td>
 				</tr>
-				<tr>
+				<tr class="area-netzwerkgateway" style="display:none">
 					<td>
 						<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
 					</td>
@@ -141,7 +141,7 @@
 						&nbsp;
 					</td>
 				</tr>
-				<tr>
+				<tr class="area-netzwerknameserver" style="display:none">
 					<td>
 						<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
 					</td>
@@ -184,44 +184,72 @@
 			disable();
 
 			// Disable some options on click depending on selected value
+			<!-- function disable() { -->
+				<!-- // Ethernet or WLAN -->
+				<!-- if ( document.main_form3.netzwerkanschluss_eth.checked == true ) { -->
+					<!-- $('#btnlistnetworks').addClass('ui-disabled'); -->
+					<!-- $('#netzwerkssid').addClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerkssid').addClass('ui-disabled'); -->
+					<!-- $('#netzwerkschluessel').addClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerkschluessel').addClass('ui-disabled'); -->
+				<!-- } -->
+				<!-- else { -->
+					<!-- $('#btnlistnetworks').removeClass('ui-disabled'); -->
+					<!-- $('#netzwerkssid').removeClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerkssid').removeClass('ui-disabled'); -->
+					<!-- $('#netzwerkschluessel').removeClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerkschluessel').removeClass('ui-disabled'); -->
+				<!-- } -->
+				<!-- // DHCP or Manual -->
+				<!-- if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) { -->
+					<!-- $('#labelnetzwerkipadresse').addClass('ui-disabled'); -->
+					<!-- $('#netzwerkipadresse').addClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerkipmaske').addClass('ui-disabled'); -->
+					<!-- $('#netzwerkipmaske').addClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerkgateway').addClass('ui-disabled'); -->
+					<!-- $('#netzwerkgateway').addClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerknameserver').addClass('ui-disabled'); -->
+					<!-- $('#netzwerknameserver').addClass('ui-disabled'); -->
+				<!-- } -->
+				<!-- else { -->
+					<!-- $('#labelnetzwerkipadresse').removeClass('ui-disabled'); -->
+					<!-- $('#netzwerkipadresse').removeClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerkipmaske').removeClass('ui-disabled'); -->
+					<!-- $('#netzwerkipmaske').removeClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerkgateway').removeClass('ui-disabled'); -->
+					<!-- $('#netzwerkgateway').removeClass('ui-disabled'); -->
+					<!-- $('#labelnetzwerknameserver').removeClass('ui-disabled'); -->
+					<!-- $('#netzwerknameserver').removeClass('ui-disabled'); -->
+				<!-- } -->
+			<!-- } -->
+			
 			function disable() {
 				// Ethernet or WLAN
 				if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
-					$('#btnlistnetworks').addClass('ui-disabled');
-					$('#netzwerkssid').addClass('ui-disabled');
-					$('#labelnetzwerkssid').addClass('ui-disabled');
-					$('#netzwerkschluessel').addClass('ui-disabled');
-					$('#labelnetzwerkschluessel').addClass('ui-disabled');
+					$('.area-netzwerkssid').fadeOut();
+					$('.area-netzwerkschluessel').fadeOut();
 				}
 				else {
-					$('#btnlistnetworks').removeClass('ui-disabled');
-					$('#netzwerkssid').removeClass('ui-disabled');
-					$('#labelnetzwerkssid').removeClass('ui-disabled');
-					$('#netzwerkschluessel').removeClass('ui-disabled');
-					$('#labelnetzwerkschluessel').removeClass('ui-disabled');
+					
+					$('.area-netzwerkssid').fadeIn();
+					$('.area-netzwerkschluessel').fadeIn();
 				}
 				// DHCP or Manual
 				if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
-					$('#labelnetzwerkipadresse').addClass('ui-disabled');
-					$('#netzwerkipadresse').addClass('ui-disabled');
-					$('#labelnetzwerkipmaske').addClass('ui-disabled');
-					$('#netzwerkipmaske').addClass('ui-disabled');
-					$('#labelnetzwerkgateway').addClass('ui-disabled');
-					$('#netzwerkgateway').addClass('ui-disabled');
-					$('#labelnetzwerknameserver').addClass('ui-disabled');
-					$('#netzwerknameserver').addClass('ui-disabled');
+					$('.area-netzwerkipadresse').fadeOut();
+					$('.area-netzwerkipmaske').fadeOut();
+					$('.area-netzwerkgateway').fadeOut();
+					$('.area-netzwerknameserver').fadeOut();
 				}
 				else {
-					$('#labelnetzwerkipadresse').removeClass('ui-disabled');
-					$('#netzwerkipadresse').removeClass('ui-disabled');
-					$('#labelnetzwerkipmaske').removeClass('ui-disabled');
-					$('#netzwerkipmaske').removeClass('ui-disabled');
-					$('#labelnetzwerkgateway').removeClass('ui-disabled');
-					$('#netzwerkgateway').removeClass('ui-disabled');
-					$('#labelnetzwerknameserver').removeClass('ui-disabled');
-					$('#netzwerknameserver').removeClass('ui-disabled');
+					$('.area-netzwerkipadresse').fadeIn();
+					$('.area-netzwerkipmaske').fadeIn();
+					$('.area-netzwerkgateway').fadeIn();
+					$('.area-netzwerknameserver').fadeIn();
 				}
 			}
+			
+			
 		</script>
 </TMPL_IF>
 <TMPL_IF SAVE>

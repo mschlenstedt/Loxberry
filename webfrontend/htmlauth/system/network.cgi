@@ -74,7 +74,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "0.3.3.1";
 
 print STDERR "============= network.cgi ================\n";
 print STDERR "lbhomedir: $lbhomedir\n";
@@ -92,7 +92,7 @@ my $maintemplate = HTML::Template->new(
 			%htmltemplate_options,
 			);
 
-LoxBerry::Web::readlanguage($maintemplate);
+my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
