@@ -270,6 +270,13 @@ sub mainmenu {
 				WIDGET_CGI => "/admin/system/setup/index.cgi",
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_TRANSLATE'},
+				WIDGET_ICON => "/system/images/icons/main_translate.png",
+				WIDGET_CGI => "/admin/system/translate.cgi",
+				WIDGET_NOTIFY_BLUE => $notification_oks{'translate'},
+				WIDGET_NOTIFY_RED => $notification_errors{'translate'},
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",

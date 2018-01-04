@@ -218,7 +218,7 @@ function save()
 	
 	if (isset($_POST['webport'])) {
 		if ($_POST['webport'] > 0 && $_POST['webport'] < 65535) {
-			$tmp = exec("netstat -tnap | egrep ':".$_POST['webport']." '");
+			$tmp = exec("netstat -tnap | egrep ':".$_POST['webport']." .*LISTEN'");
 			if ( $tmp === "" ) {
 				$webport = $_POST['webport'];
 				if ($webport != $cfg['WEBSERVER']['PORT']) {
