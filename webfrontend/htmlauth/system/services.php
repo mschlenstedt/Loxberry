@@ -316,7 +316,7 @@ function save()
 				btnok.style.display = '';
 				btnok.href = \"$newhref\";
 			}
-			setTimeout(setHREF,10000);
+			setTimeout(setHREF,5000);
 		</script>
 		";
 		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_change ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
@@ -393,7 +393,7 @@ function check_webport() {
 			function setHREF() {
 				btnok.style.display = '';
 			}
-			setTimeout(setHREF,10000);
+			setTimeout(setHREF,6000);
 		</script>
 		";
 		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_success ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");

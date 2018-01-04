@@ -12,7 +12,8 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.1.21";
+our $VERSION = "0.3.3.1";
+our $DEBUG;
 
 use base 'Exporter';
 
@@ -34,6 +35,7 @@ our @EXPORT = qw (
 	$lbpconfigdir
 	$lbpbindir
 	
+	lblanguage
 	lbhostname
 	lbfriendlyname
 	lbwebserverport
@@ -170,6 +172,7 @@ our $lbssbindir = "$lbhomedir/sbin";
 our $lbsbindir = "$lbhomedir/bin";
 
 # Variables only valid in this module
+my $lang;
 my $cfgwasread;
 my %miniservers;
 my %binaries;
@@ -180,6 +183,10 @@ my $lbfriendlyname;
 my $lbversion;
 my @plugins;
 my $webserverport;
+
+our %SL; # Shortcut for System language phrases
+our %L;  # Shortcut for Plugin language phrases
+
 
 # Finished everytime code execution
 ##################################################################
@@ -513,14 +520,19 @@ sub read_generalcfg
 	my $miniservercount;
 	my $clouddnsaddress;
 	
+	if ($cfgwasread) {
+		return 1;
+	}
+	
 	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
 	$cfgwasread = 1;
-	$miniservercount = $cfg->param("BASE.MINISERVERS") or Carp::carp ("BASE.MINISERVERS is 0 or not defined.\n");
-	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS"); # or Carp::carp ("BASE.CLOUDDNS not defined.\n");
-	$lbtimezone		= $cfg->param("TIMESERVER.ZONE"); # or Carp::carp ("TIMESERVER.ZONE not defined.\n");
-	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME"); # or Carp::carp ("NETWORK.FRIENDLYNAME not defined.\n");
-	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined.\n");
-	$webserverport  = $cfg->param("WEBSERVER.PORT"); # or Carp::carp ("WEBSERVER.PORT not defined.\n");
+	$LoxBerry::System::lang = $cfg->param("BASE.LANG") or Carp::carp ("BASE.LANG is not defined in general.cfg\n");
+	$miniservercount = $cfg->param("BASE.MINISERVERS") or Carp::carp ("BASE.MINISERVERS is 0 or not defined in general.cfg\n");
+	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS"); # or Carp::carp ("BASE.CLOUDDNS not defined in general.cfg\n");
+	$lbtimezone		= $cfg->param("TIMESERVER.ZONE"); # or Carp::carp ("TIMESERVER.ZONE not defined in general.cfg\n");
+	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME"); # or Carp::carp ("NETWORK.FRIENDLYNAME not defined in general.cfg\n");
+	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined in general.cfg\n");
+	$webserverport  = $cfg->param("WEBSERVER.PORT"); # or Carp::carp ("WEBSERVER.PORT not defined in general.cfg\n");
 	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
@@ -686,6 +698,132 @@ sub get_localip
 	# close $sock;
 	# return $localip;
 
+}
+
+
+##################################################################
+# Get LoxBerry URL parameter or System language
+##################################################################
+sub lblanguage 
+{
+	print STDERR "current \$lang: $LoxBerry::System::lang\n" if ($DEBUG);
+	# Return if $lang is already set
+	
+	# Legacy: $lang in LoxBerry::Web
+	if ($LoxBerry::Web::lang) {
+		return $LoxBerry::Web::lang;
+	}
+	if ($LoxBerry::System::lang) {
+		return $LoxBerry::System::lang;
+	}
+	# Get lang from query 
+	my $query = CGI->new();
+	my $querylang = $query->param('lang');
+	if ($querylang) 
+		{ $LoxBerry::System::lang = substr $querylang, 0, 2;
+		  print STDERR "\$lang in CGI: $LoxBerry::System::lang" if ($DEBUG);
+		  return $LoxBerry::System::lang;
+	}
+	# If nothing found, get language from system settings
+	read_generalcfg();
+	
+	#my  $syscfg = new Config::Simple("$LoxBerry::System::lbhomedir/config/system/general.cfg");
+	#$LoxBerry::System::lang = $syscfg->param("BASE.LANG");
+	print STDERR "\$lang from general.cfg: $LoxBerry::System::lang" if ($DEBUG);
+	return $LoxBerry::System::lang;
+}
+
+	
+#####################################################
+# readlanguage
+# Read the language for a plugin 
+# Example Call:
+# my %Phrases = LoxBerry::Web::readlanguage($template, "language.ini");
+#####################################################
+sub readlanguage
+{
+	my ($template, $langfile, $syslang) = @_;
+
+	my $lang = LoxBerry::System::lblanguage();
+	# my $issystem = LoxBerry::System::is_systemcall();
+	my $issystem;
+	if ($syslang || LoxBerry::System::is_systemcall()) {
+		$issystem = 1;
+	}
+	
+	if(!$issystem && !$template->isa("HTML::Template")) {
+		# Plugin only gave us a language 
+		$langfile = $template;
+	}
+	
+	# Return if we already have them in memory.
+	if (!$issystem && !$langfile) { 
+		Carp::carp("WARNING: \$langfile is empty, setting to language.ini. If file is missing, error will occur.") if ($DEBUG);
+		$langfile = "language.ini"; }
+	# if ($issystem and %SL) { return %SL; }
+	# if (!$issystem and %L) { return %L; }
+
+	# SYSTEM Language
+	if ($issystem) {
+		print STDERR "This is a system call\n" if ($DEBUG);
+		# System language is "hardcoded" to file language_*.ini
+		my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
+		
+		if (!%SL) {
+			# Read English language as default
+			# Missing phrases in foreign language will fall back to English
+
+			Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
+
+			# Read foreign language if exists and not English and overwrite English strings
+			$langfile = $langfile . "_" . $lang . ".ini";
+			if ((-e $langfile) and ($lang ne 'en')) {
+				Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
+			}
+			if (!%SL) {
+				Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
+			}
+		}
+		
+		if ($template) {
+			#while (my ($name, $value) = each %SL) {
+			#	$template->param("$name" => $value);
+			#}
+			$template->param(%SL);
+		}
+		return %SL;
+	
+	} else {
+	# PLUGIN language
+		# Plugin language got in format language.ini
+		# Need to re-parse the name
+		print STDERR "This is a plugin call\n" if ($DEBUG);
+		$langfile =~ s/\.[^.]*$//;
+		$langfile  = "$LoxBerry::System::lbptemplatedir/$langfile";
+		
+		# Read English language as default
+		# Missing phrases in foreign language will fall back to English
+		if (!%L) {
+			if (-e $langfile . "_en.ini") {
+				Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
+			}
+			# Read foreign language if exists and not English and overwrite English strings
+			$langfile = $langfile . "_" . $lang . ".ini";
+			if ((-e $langfile) and ($lang ne 'en')) {
+				Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
+			}
+			if (! %L) {
+				Carp::carp ("ERROR: Could not read any language phrases.\n");
+			}
+		}
+		if ($template) {
+			#while (my ($name, $value) = each %L) {
+			#	$template->param("$name" => $value);
+			#}
+			$template->param(%L);
+		}
+		return %L;
+	}
 }
 
 =head2 lbhostname

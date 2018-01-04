@@ -525,6 +525,7 @@ sub ajax
 				next;
 			}
 		
+			next if (!$dest{$key}{'DEST_TEXT'});
 			$line = $src{$key}{'KEY'} . '="' . $dest{$key}{'DEST_TEXT'} . '"' . "\n";
 			push(@filecont, $line);
 		}	
