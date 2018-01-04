@@ -245,8 +245,8 @@ z-index: 10;
 			width: 64px;
 			margin: 0 auto;
 			border-radius:50%;
-			/* background: url('/system/images/ios_clock.svg') no-repeat center; 
-			background-size: 88%; */
+			background: url('/system/images/ios_clock.svg') no-repeat center; 
+			background-size: 88%;
 		}
 .minutes-container, .hours-container, .seconds-container
 	{
