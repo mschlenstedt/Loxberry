@@ -1,5 +1,5 @@
 <!-- ** START template/system/mainplugins.html 03.12.2017 ************************************************************************************ -->
-<div style="font-size: 0.6em; text-align: right; vertical-align: middle;">LoxBerry Version <TMPL_VAR  SVERSION></div>
+<!-- <div style="font-size: 0.6em; text-align: right; vertical-align: middle;">LoxBerry Version <TMPL_VAR SVERSION></div> -->
 <TMPL_IF PAGE_PLUGIN>
 <p class="wide">
 	<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
@@ -13,7 +13,7 @@
 	<div class="widget">
 	<TMPL_VAR PLUGIN_NOTIFY>
 			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img class="menutableicon" src="<TMPL_VAR PLUGINDB_ICONURI>"></a></div>
-			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><TMPL_VAR PLUGINDB_TITLE></a></div>
+			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" class="nolinkstyle"><TMPL_VAR PLUGINDB_TITLE></a></div>
 	</div>
 	</TMPL_LOOP>
 </div>
@@ -73,7 +73,7 @@
 		
 		</a>
 		<div>
-			<a href="<TMPL_VAR WIDGET_CGI>"><TMPL_VAR WIDGET_TITLE></a>
+			<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
 		</div>
 	
 	</div>

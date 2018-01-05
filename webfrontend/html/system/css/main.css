@@ -57,29 +57,29 @@ table.menutable td {
 
 .footer_table
 {
-width:100%;
-border-spacing:0px;
-white-space: nowrap;
+	width:100%;
+	border-spacing:0px;
+	white-space: nowrap;
 }
 .footer_logo
 {
-background-image: url("../images/loxberry_footer_logo.svg");
-background-repeat:no-repeat;
-background-position: left;
-width:311px;
-min-width: 311px;
+	background-image: url("../images/loxberry_footer_logo.svg");
+	background-repeat:no-repeat;
+	background-position: left;
+	width:311px;
+	min-width: 311px;
 }
 .footer_spacer
 {
-width:67px;
+	width:67px;
 }
 .footer_slogan 
 {
-background-image: url("../images/BTL.svg");
-background-repeat:no-repeat;
-background-position: right;
-width:378px;
-min-width: 378px;
+	background-image: url("../images/BTL.svg");
+	background-repeat:no-repeat;
+	background-position: right;
+	width:378px;
+	min-width: 378px;
 }
 
 .ui-input-text input
@@ -115,6 +115,12 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 
 .wide { font-size:calc(14px + 1.3vw); letter-spacing: 0.25em; text-align: left; vertical-align: middle; border-bottom: 2px ridge #cdcdcd; padding: 7px; padding-top: 1px; margin-top: 0px;
 }
+
+a:link.nolinkstyle
+{
+	text-decoration: none;;
+}
+
 .widgetblock { 
 	display: flex; 
 	flex-direction: row;
