@@ -90,7 +90,7 @@ case "$1" in
         # Cleaning Temporary folders
         log_action_begin_msg "Cleaning temporary files and folders..."
         rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
-	rm $LBHOMEDIR/log/system/reboot.required > /dev/null 2>&1
+		rm -f $LBHOMEDIR/log/system/reboot.required > /dev/null 2>&1
 
         # Set Date and Time
         if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]

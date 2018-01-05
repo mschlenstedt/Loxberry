@@ -31,8 +31,9 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='0.3.1.7';
+my $scriptversion='0.3.3.1';
 
+my $backupdir="/opt/backup.loxberry";
 
 # # Predeclare logging functions
 # sub LOGOK { my ($s)=@_; print ERRORLOG "<OK>" . $s . "\n"; }
@@ -180,7 +181,7 @@ my @rsynccommand = (
 	"--checksum",
 	"--archive", # equivalent to -rlptgoD
 #	"--backup",
-	"--backup-dir=/opt/loxberry_backup",
+	"--backup-dir=$backupdir",
 	"--keep-dirlinks",
 	"--delete",
 	"-F",
