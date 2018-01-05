@@ -1,4 +1,5 @@
 /* Form Error Message */
+/* Form Error Message */
 
 .form-error, .form-error-message {
   color: red;
@@ -39,7 +40,7 @@ table.menutable td {
 }
 
 .loxberry-logo /* Loxberry Logo on white workspace */
-{
+{ 
   background-image: url("../images/loxberry.svg");
   background-repeat: no-repeat;
   background-position: center center;
@@ -54,65 +55,45 @@ table.menutable td {
   background-attachment: fixed;
 }
 
+
 .footerlogo             { width: 79px; min-width: 79px; height: 50px; overflow:hidden;}
 .footerlogotext         { width: 166px; height: 50px; overflow:hidden;}
 .footerslogan           { width: 316px; height: 50px; overflow:hidden; background-color:#6dac20; }
 .footerfadebackground   { background-color:#3d3d3d; height: 50px; overflow:hidden;}
-.footerlogogradient_l2r { background-image: linear-gradient(90deg, #3d3d3d 0%, #6dac20 100%); width: 67px; min-width: 50px; height: 50px; overflow:hidden;}
-.footerlogogradient_r2l { background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 77px); width: 77px; min-width: 60px; height: 50px; overflow:hidden;}
+.footerlogogradient_l2r { background-image: linear-gradient(90deg, #3d3d3d 0%, #6dac20 100%); width: 67px; min-width: 50px; height: 50px; overflow:hidden;} 
+.footerlogogradient_r2l { background-image: linear-gradient(90deg, #6dac20 0%, #3d3d3d 100%); width: 67px; min-width: 50px; height: 50px; overflow:hidden;}
 
 @media ( max-width: 1000px ) {
-  .footerslogan
-  {
-    opacity: 0;
-    width: 0px;
-    transition: width 1s, opacity .5s linear;
-  }
+	.footerslogan 
+	{   opacity: 0;
+		width: 0px;
+		transition: width 1s, opacity .5s linear;
+	}
 }
-@media ( min-width: 1000px )
-{
-  .footerslogan
-  {
-    opacity: 1;
-    width: 316px;
-    transition: width 1s, opacity 1s linear;
-  }
+@media ( min-width: 1000px ) 
+{ 
+	.footerslogan  
+	{
+		opacity: 1;
+		width: 316px;
+		transition: width 1s, opacity 1s linear;
+	}
 }
-@media ( max-width: 799px )
+@media ( max-width: 799px ) 
 {
-  .footerlogotext
-  {
-    opacity: 0;
-    width: 0px;
-    transition: width 1s, opacity .5s linear;
-  }
+	.footerlogotext
+	{   opacity: 0;
+		width: 0px;
+		transition: width 1s, opacity .5s linear;
+	}
 }
-@media ( min-width: 799px )
+@media ( min-width: 799px ) 
 {
-  .footerlogotext
-  {
-    opacity: 1;
-    width: 166px;
-    transition: width 1s, opacity 1s linear;
-  }
-}
-@media ( max-width: 425px )
-{
-  .footerlogogradient_r2l
-  {
-    background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 10px, #3d3d3d 27px);
-    width: 27px;
-    min-width: 27px;
-  }
-}
-@media ( min-width: 425px )
-{
-  .footerlogogradient_r2l
-  {
-    background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 77px);
-    width: 77px;
-    min-width: 77px;
-  }
+	.footerlogotext
+	{   opacity: 1;
+		width: 166px;
+		transition: width 1s, opacity 1s linear;
+	}
 }
 
 .ui-input-text input
@@ -127,11 +108,11 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 
 .empty_icon
 {
-  width:64px;
-  height:64px;
-  margin: auto auto;
-  Background-image: url('/system/images/icons/blank_64.png');
-  background-position: center center;
+  width:64px; 
+  height:64px; 
+  margin: auto auto; 
+  Background-image: url('/system/images/icons/blank_64.png');	
+  background-position: center center; 
   background-repeat: no-repeat;"
 }
 
@@ -139,11 +120,11 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 #infopanel .ui-panel-inner * {font-size:0.9em!important;}
 
 .hint
-{
-  font-size: 80%;
+{ 
+	font-size: 80%;
 }
 
-.monospace * {font-size:80%!important;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;
+.monospace * {font-size:80%!important;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace; 
 }
 
 .wide { font-size:calc(14px + 1.3vw); letter-spacing: 0.25em; text-align: left; vertical-align: middle; border-bottom: 2px ridge #cdcdcd; padding: 7px; padding-top: 1px; margin-top: 0px;
@@ -151,87 +132,87 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 
 a:link.nolinkstyle
 {
-  text-decoration: none;;
+	text-decoration: none;;
 }
 
-.widgetblock {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+.widgetblock { 
+	display: flex; 
+	flex-direction: row;
+	flex-wrap: wrap;
 }
 
-.widget {
-
-  width: 150px;
-  min-width: 150px;
-  height: 140px;
-  text-align: center;
+.widget { 
+	
+	width: 150px;
+	min-width: 150px;
+	height: 140px;
+	text-align: center;
 }
 
 .notifyRed {
-  z-index: 10;
-  position: relative;
-  left:-44px;
-  top: 0px;
-  float: right;
-  background:#ed1d24;
-  color:#fff;
-  padding: 7px;
-  border-radius: 11px;
-  font-size: 11px;
-  margin: 5px -7px 0 0;
-  line-height: 0.8;
-  min-width: 9px;
+	z-index: 10;
+	position: relative;
+	left:-44px;
+	top: 0px;
+	float: right;
+	background:#ed1d24;
+	color:#fff;
+	padding: 7px;
+	border-radius: 11px;
+	font-size: 11px;
+	margin: 5px -7px 0 0;
+	line-height: 0.8;
+	min-width: 9px;
 }
 
 .notifyBlue {
-  z-index: 10;
-  position: relative;
-  left:-44px;
-  top: 0px;
-  float: right;
-  background:#0A4586;
-  color:#fff;
-  padding: 7px;
-  border-radius: 11px;
-  font-size: 11px;
-  margin: 5px -7px 0 0;
-  line-height: 0.8;
-  min-width: 9px;
+	z-index: 10;
+	position: relative;
+	left:-44px;
+	top: 0px;
+	float: right;
+	background:#0A4586;
+	color:#fff;
+	padding: 7px;
+	border-radius: 11px;
+	font-size: 11px;
+	margin: 5px -7px 0 0;
+	line-height: 0.8;
+	min-width: 9px;
 }
 
 .notifyRedNavBar {
-  z-index: 10;
-  position: relative;
-  left:-5px;
-  top: -30px;
-  float: right;
-  background:#ed1d24;
-  color:#fff;
-  padding: 7px;
-  border-radius: 11px;
-  font-size: 11px;
-  line-height: 0.8;
-  min-width: 9px;
-  text-align: center;
-  vertical-align: middle;
+	z-index: 10;
+	position: relative;
+	left:-5px;
+	top: -30px;
+	float: right;
+	background:#ed1d24;
+	color:#fff;
+	padding: 7px;
+	border-radius: 11px;
+	font-size: 11px;
+	line-height: 0.8; 
+	min-width: 9px;
+	text-align: center;
+	vertical-align: middle;
 }
 
 .notifyBlueNavBar {
-  z-index: 10;
-  position: relative;
-  left:-5px;
-  top: -30px;
-  float: right;
-  background:#0A4586;
-  color:#fff;
-  padding: 7px;
-  border-radius: 11px;
-  font-size: 11px;
-  line-height: 0.8;
-  min-width: 9px;
-  text-align: center;
-  vertical-align: middle;
+	z-index: 10;
+	position: relative;
+	left:-5px;
+	top: -30px;
+	float: right;
+	background:#0A4586;
+	color:#fff;
+	padding: 7px;
+	border-radius: 11px;
+	font-size: 11px;
+	line-height: 0.8; 
+	min-width: 9px;
+	text-align: center;
+	vertical-align: middle;
 }
 
 
@@ -262,7 +243,7 @@ a:link.nolinkstyle
 }
 /*.logok span
  {
-  color: red;
+	color: red;
  } */
 }
 .loginf
@@ -277,114 +258,114 @@ a:link.nolinkstyle
 /* Clock on mainmenu_start.html */
 
 .clock
-    {
-      position:relative;
-
-      height:64px;
-      width: 64px;
-      margin: 0 auto;
-      border-radius:50%;
-      background: url('/system/images/ios_clock.svg') no-repeat center;
-      background-size: 88%;
-    }
+		{
+			position:relative;
+			
+			height:64px;
+			width: 64px;
+			margin: 0 auto;
+			border-radius:50%;
+			background: url('/system/images/ios_clock.svg') no-repeat center; 
+			background-size: 88%;
+		}
 .minutes-container, .hours-container, .seconds-container
-  {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
+	{
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+	}
 .hours
-  {
-    background: #000;
-    height: 20%;
-    left: 48.75%;
-    position: absolute;
-    top: 30%;
-    transform-origin: 50% 100%;
-    width: 2.5%;
-  }
+	{
+		background: #000;
+		height: 20%;
+		left: 48.75%;
+		position: absolute;
+		top: 30%;
+		transform-origin: 50% 100%;
+		width: 2.5%;
+	}
 .minutes
-  {
-    background: #000;
-    height: 40%;
-    left: 49%;
-    position: absolute;
-    top: 10%;
-    transform-origin: 50% 100%;
-    width: 2%;
-  }
+	{
+		background: #000;
+		height: 40%;
+		left: 49%;
+		position: absolute;
+		top: 10%;
+		transform-origin: 50% 100%;
+		width: 2%;
+	}
 .seconds
-  {
-    background: #000;
-    height: 45%;
-    left: 49.5%;
-    position: absolute;
-    top: 14%;
-    transform-origin: 50% 80%;
-    width: 1%;
-    z-index: 8;
-  }
+	{
+		background: #000;
+		height: 45%;
+		left: 49.5%;
+		position: absolute;
+		top: 14%;
+		transform-origin: 50% 80%;
+		width: 1%;
+		z-index: 8;
+	}
 @keyframes rotate
-  {
-    100%
-    {
-      transform: rotateZ(360deg);
-    }
-  }
+	{
+		100%
+		{
+			transform: rotateZ(360deg);
+		}
+	}
 .hours-container
-  {
-    animation: rotate 43200s infinite linear;
-  }
+	{
+		animation: rotate 43200s infinite linear;
+	}
 .minutes-container
-  {
-    animation: rotate 3600s infinite steps(60);
-  }
+	{
+		animation: rotate 3600s infinite steps(60);
+	}
 .seconds-container
-  {
-    animation: rotate 60s infinite steps(60);
-  }
+	{
+		animation: rotate 60s infinite steps(60);
+	}
 
-  /* This is to reflow and keep the main content usable with open panels
-     on large displays */
+	/* This is to reflow and keep the main content usable with open panels
+	   on large displays */
 @left-panel-width: 35em;
 @right-panel-width: 35em;
 
 @media ( min-width: 35em ) {
 
-  /* wrap on wide viewports once open */
+	/* wrap on wide viewports once open */
 
-  .ui-panel-page-content-open.ui-panel-page-content-position-left {
-    margin-right: 17em;
-  }
-  .ui-panel-page-content-open.ui-panel-page-content-position-right {
-    margin-left: 17em;
-  }
-  .ui-panel-page-content-open {
-    width: auto;
-  }
+	.ui-panel-page-content-open.ui-panel-page-content-position-left {
+		margin-right: 17em;
+	}
+	.ui-panel-page-content-open.ui-panel-page-content-position-right {
+		margin-left: 17em;
+	}
+	.ui-panel-page-content-open {
+		width: auto;
+	}
 
-  /* disable "dismiss" on wide viewports */
-  .ui-panel-dismiss {
-    display: none;
-  }
+	/* disable "dismiss" on wide viewports */
+	.ui-panel-dismiss {
+		display: none;
+	}
 
-  /* same as the above but for panels with display mode "push" only */
+	/* same as the above but for panels with display mode "push" only */
 
-  .ui-panel-page-content-open.ui-panel-page-content-position-left.ui-panel-page-content-display-push {
-    margin-right: 17em;
-  }
-  .ui-panel-page-content-open.ui-panel-page-content-position-right.ui-panel-page-content-display-push {
-    margin-left: 17em;
-  }
-  .ui-panel-page-content-open.ui-panel-page-content-display-push {
-    width: auto;
-  }
+	.ui-panel-page-content-open.ui-panel-page-content-position-left.ui-panel-page-content-display-push {
+		margin-right: 17em;
+	}
+	.ui-panel-page-content-open.ui-panel-page-content-position-right.ui-panel-page-content-display-push {
+		margin-left: 17em;
+	}
+	.ui-panel-page-content-open.ui-panel-page-content-display-push {
+		width: auto;
+	}
 
-  .ui-panel-dismiss-display-push {
-    display: none;
-  }
+	.ui-panel-dismiss-display-push {
+		display: none;
+	}
 /* PANEL START */
 /* this should change the right panel width, but only works left :-( */
 /*
@@ -413,7 +394,7 @@ a:link.nolinkstyle
     -moz-transform: translate3d(-30em, 0, 0);
     transform: translate3d(-30em, 0, 0)
 }
-
+	
 */
-/* PANEL END */
+/* PANEL END */	
 }
