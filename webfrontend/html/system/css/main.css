@@ -61,26 +61,63 @@ table.menutable td {
 	border-spacing:0px;
 	white-space: nowrap;
 }
+	
+
+.footer_spacer
+{
+	width:10px;
+}
 .footer_logo
 {
 	background-image: url("../images/loxberry_footer_logo.svg");
 	background-repeat:no-repeat;
 	background-position: left;
-	width:311px;
-	min-width: 311px;
-}
-.footer_spacer
-{
-	width:67px;
+	width:311px; 
+	
+	/*min-width: 311px;*/
 }
 .footer_slogan 
 {
 	background-image: url("../images/BTL.svg");
 	background-repeat:no-repeat;
 	background-position: right;
+	
 	width:378px;
-	min-width: 378px;
+	/*min-width: 378px;*/
 }
+
+
+@media ( max-width: 1000px ) {
+	.footer_logo	
+	{   opacity: 0;
+		width: 0px;
+		/*min-width: 0px;*/
+		transition: width 2s, opacity 2s linear;
+	}
+	.footer_slogan 
+	{   opacity: 0;
+		width: 0px;
+		/*min-width: 0px;*/
+		transition: width 2s, opacity 2s linear;
+	}
+}
+
+@media ( min-width: 1000px ) {
+	.footer_logo	
+	{   opacity: 1;
+		width: 311px;
+		/*min-width: 0px;*/
+		transition: width 0.1s, opacity 2s linear;
+	}
+.footer_slogan 
+	{   opacity: 1;
+		width: 378px;
+		/*min-width: 0px;*/
+		transition: width 0.1s, opacity 2s linear;
+	}
+}
+
+
 
 .ui-input-text input
 {
@@ -318,7 +355,7 @@ z-index: 10;
 @left-panel-width: 35em;
 @right-panel-width: 35em;
 
-	   @media ( min-width: 35em ) {
+@media ( min-width: 35em ) {
 
 	/* wrap on wide viewports once open */
 
