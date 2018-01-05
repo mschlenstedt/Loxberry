@@ -56,39 +56,44 @@ table.menutable td {
 }
 
 
-.footerlogo { width: 311px; height: 49px; overflow:hidden;}
-.footerslogan { width: 378px; height: 49px; overflow:hidden;}
+.footerlogo             { width: 79px; min-width: 79px; height: 50px; overflow:hidden;}
+.footerlogotext         { width: 166px; height: 50px; overflow:hidden;}
+.footerslogan           { width: 316px; height: 50px; overflow:hidden; background-color:#6dac20; }
+.footerfadebackground   { background-color:#3d3d3d; height: 50px; overflow:hidden;}
+.footerlogogradient_l2r { background-image: linear-gradient(90deg, #3d3d3d 0%, #6dac20 100%); width: 67px; min-width: 50px; height: 50px; overflow:hidden;} 
+.footerlogogradient_r2l { background-image: linear-gradient(90deg, #6dac20 0%, #3d3d3d 100%); width: 67px; min-width: 50px; height: 50px; overflow:hidden;}
 
 @media ( max-width: 1000px ) {
 	.footerslogan 
 	{   opacity: 0;
 		width: 0px;
-		transition: width 2s, opacity 2s linear;
+		transition: width 1s, opacity .5s linear;
 	}
 }
-@media ( min-width: 1000px ) {
-	.footerslogan 
-	{   opacity: 1;
-		width: 378px;
-		transition: width 0.1s, opacity 2s linear;
+@media ( min-width: 1000px ) 
+{ 
+	.footerslogan  
+	{
+		opacity: 1;
+		width: 316px;
+		transition: width 1s, opacity 1s linear;
 	}
 }
-@media ( max-width: 799px ) {
-	.footerlogo	
+@media ( max-width: 799px ) 
+{
+	.footerlogotext
 	{   opacity: 0;
 		width: 0px;
-		transition: width 2s, opacity 2s linear;
+		transition: width 1s, opacity .5s linear;
 	}
-	.footerbuttons { 	background-image: linear-gradient(90deg, #3d3d3d 10%, #6dac20 50%, #3d3d3d 90%); } 
 }
-@media ( min-width: 799px ) {
-	.footerlogo	
+@media ( min-width: 799px ) 
+{
+	.footerlogotext
 	{   opacity: 1;
-		width: 311px;
-		transition: width 0.1s, opacity 2s linear;
+		width: 166px;
+		transition: width 1s, opacity 1s linear;
 	}
-	.footerbuttons {background-image: none; } 
-
 }
 
 .ui-input-text input
