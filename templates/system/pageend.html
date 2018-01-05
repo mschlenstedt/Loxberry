@@ -5,23 +5,20 @@
 		<!-- /content -->
 		<!-- footer -->
 		<div data-role="footer" style="border:0px; text-align:center;" data-position="fixed" data-tap-toggle="false">
-			<table class="footer_table">
-				<tr>
-					<td class="footer_logo">
-					</td>
-					<td class="footer_spacer">
-					</td>
-					<td align="center">
-						<a id="btnhome" href="/admin/system/index.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>&nbsp;&nbsp;
-						<a id="btnhome" href="/admin/system/index.cgi?form=system&lang=<TMPL_VAR LANG>" data-role="button" data-icon="bars" data-iconpos="notext">Einstellungen</a>
-						
-						&nbsp;&nbsp;<TMPL_VAR REBOOT_REQUIRED>&nbsp;&nbsp;
-						<a id="btnpower" href="/admin/system/power.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
-					</td>
-					<td class="footer_slogan">
-					</td>
-				</tr>
-			</table>
+			<div style="display:flex; overflow:hidden; flex-wrap: nowrap; height=49px; max-height=49px;">
+				<div class="footerlogo">
+					<img src="/system/images/loxberry_footer_logo.svg">
+				</div>
+				<div style="flex-grow:1; flex-wrap: nowrap; overflow:hidden; white-space: nowrap;" >
+					<a id="btnhome" href="/admin/system/index.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>&nbsp;&nbsp;
+					<a id="btnhome" href="/admin/system/index.cgi?form=system&lang=<TMPL_VAR LANG>" data-role="button" data-icon="bars" data-iconpos="notext">Einstellungen</a>
+					&nbsp;&nbsp;<TMPL_VAR REBOOT_REQUIRED>&nbsp;&nbsp;
+					<a id="btnpower" href="/admin/system/power.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
+				</div>
+				<div class="footerslogan">
+					<img src="/system/images/BTL.svg">
+				</div>
+			</div>
 		</div>
 		<!-- /footer -->
 	</div>
