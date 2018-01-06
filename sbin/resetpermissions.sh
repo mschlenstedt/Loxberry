@@ -49,6 +49,7 @@ chown -v loxberry:loxberry /etc/localtime
 
 chmod -v 600 $LBHOMEDIR/system/network/interfaces
 chmod -v 600 $LBHOMEDIR/config/system/*
+chmod -v 644 $LBHOMEDIR/config/system/securepin.dat
 chmod -v 555 $LBHOMEDIR/system/sudoers
 chmod -v 664 $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -v 755 $LBHOMEDIR/system/profile
