@@ -1,5 +1,6 @@
 <!-- ** START template/system/admin.html 27.08.2016 10:22:04 ************************************************************************************ -->
 <TMPL_IF FORM>
+	<p><TMPL_VAR ADMIN.LABEL_INTRO></p>
 	<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
 		<input type="hidden" name="saveformdata" value="1">
 			<table class="formtable" border="0" width="100%">
@@ -38,7 +39,8 @@
 						<label for="adminpass1"><TMPL_VAR ADMIN.LABEL_NEW_PASSWORD></label>
 					</td>
 					<td>
-						<input name="adminpass1" id="adminpass1" type="password" data-validation="strength alphanumeric length" data-validation-length="min5" data-validation-allowing="-_,.;:!?&()?+§%="
+						<input name="adminpass1" id="adminpass1" type="password" data-validation="strength alphanumeric length"
+						 data-validation-length="min5" data-validation-allowing="-_,.;:!?&()?+§%=" data-validation-optional="true"
 						data-validation-strength="2" class="textfield" value=""
 						data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>">
 					</td>
@@ -65,6 +67,36 @@
 					</td>
 				</tr>
 				<tr>
+					<td>
+						<label for="securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></label>
+					</td>
+					<td>
+						<input name="securepin1" id="securepin1" type="password" data-validation="alphanumeric length" data-validation-length="4-10" 
+						class="textfield" value="" data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-optional="true">
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td class="hint">
+						<TMPL_VAR ADMIN.HINT_SECUREPIN_ALLOWED_CHARS>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label for="adminpass2"><TMPL_VAR ADMIN.LABEL_RETYPE_SECUREPIN></label>
+					</td>
+					<td>
+						<input name="securepin2" id="securepin2" type="password" data-validation="confirmation" data-validation-confirm="securepin1" class="textfield" value=""
+						data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>">
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td class="hint">
+						<TMPL_VAR ADMIN.HINT_SECUREPIN_RETYPE>
+					</td>
+				</tr>
+				<tr>
 					<td colspan=4>
 						&nbsp;
 					</td>
@@ -82,8 +114,23 @@
 	</p>
 	<p>
 		<center>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<button type="submit" form="main_form1" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+			<table class="formtable" border="0">
+			<tr>
+			<td>
+				<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			</td>
+			<td>
+				<button type="submit" form="main_form1" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+			</td>
+			<td>
+				<label for="securepinold" style="font-size: 12px"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></label>
+			</td>
+			<td>
+				<input name="securepinold" id="securepinold" type="password" size="10" data-validation="alphanumeric length" data-validation-length="4-10" 
+				class="textfield" value="" style="background-color:#FF5632" oninput="disable()">
+			</td>
+			</tr>
+			</table>
 		</center>
 	</p>
 	<script>
@@ -93,6 +140,19 @@
 			modules : 'security',
 			errorMessagePosition: 'inline',
 		});
+
+		// Disable some options on Load depending on selected value
+		disable();
+
+		function disable() {
+			if ( $('#securepinold').val().length == 0 ) {
+				$('#btnsubmit').addClass('ui-disabled');
+			}
+			else {
+				$('#btnsubmit').removeClass('ui-disabled');
+			}
+		}
+
 	</script>
 </TMPL_IF>
 	
