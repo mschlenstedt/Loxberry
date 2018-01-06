@@ -108,7 +108,6 @@
 					</td>
 				</tr>
 			</table>
-	</form>
 	<p>
 		&nbsp;
 	</p>
@@ -133,6 +132,7 @@
 			</table>
 		</center>
 	</p>
+	</form>
 	<script>
 		var $messages = $('#form-error-message');
 		$.validate(
@@ -159,28 +159,31 @@
 <TMPL_IF SAVE>
 	<p><TMPL_VAR ADMIN.SAVE_OK_INFO></p>
 	<table border=0 cellpadding=10>
-	<tr>
-		<td>
-			<b><TMPL_VAR ADMIN.SAVE_OK_WEB_ADMIN_AREA></b>
-		</td>
-		<td>
-			<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b><TMPL_VAR ADMINUSER></b>
-		</td>
-		<td>
-			<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS1></b>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<b><TMPL_VAR ADMIN.SAVE_OK_COL_SSH></b>
-		</td>
-		<td>
-			<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b>loxberry</b>
-		</td>
-		<td>
-			<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS1></b>
-		</td>
-	</tr>
+
+	<TMPL_IF ADMINOK>
+		<tr>
+			<td>
+				<b><TMPL_VAR ADMIN.SAVE_OK_WEB_ADMIN_AREA></b>
+			</td>
+			<td>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b><TMPL_VAR ADMINUSER></b>
+			</td>
+			<td>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS1></b>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<b><TMPL_VAR ADMIN.SAVE_OK_COL_SSH></b>
+			</td>
+			<td>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b>loxberry</b>
+			</td>
+			<td>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS1></b>
+			</td>
+		</tr>
+	</TMPL_IF>
 	
 	<TMPL_IF SQLOK>
 		<tr>
@@ -195,6 +198,21 @@
 			</td>
 		</tr>
 	</TMPL_IF>
+
+	<TMPL_IF SECUREPINOK>
+		<tr>
+			<td>
+				<b><TMPL_VAR ADMIN.SAVE_OK_COL_SECUREPIN></b>
+			</td>
+			<td>
+				<b><TMPL_VAR SECUREPIN1></b>
+			</td>
+			<td>
+				&nbsp;
+			</td>
+		</tr>
+	</TMPL_IF>
+
 		<tr>
 			<td colspan="3">
 				<p style="color:red"><b><TMPL_VAR ADMIN.SAVE_OK_HINT_RED></b></p>
