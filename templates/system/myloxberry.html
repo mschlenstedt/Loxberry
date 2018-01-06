@@ -3,6 +3,19 @@
 		
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
 	<input type="hidden" name="saveformdata" value="1">
+	<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
+	<div style="display:flex;">
+		<div style="margin:auto;padding:10px;">
+			<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
+			<TMPL_IF ISNOTENGLISH>
+				<br>(Select your language)
+			</TMPL_IF>
+			</div>
+		<div style="margin:auto; padding:10px;">
+		<TMPL_VAR LANGSELECTOR>
+		</div>
+	</div>	
+	
 	<p>
 	<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
 	</p>
@@ -46,6 +59,21 @@
 		</p>
 	</center>
 
+<script>
+$(document).ready( function () {
+	$("#languageselector").bind( "change", function(event, ui) {
+  		var val = $("#languageselector").val();
+		console.log("Lang", val);
+		$.post("/admin/system/tools/ajax-config-handler.cgi", { action: "changelanguage", value: val}, function(){location.reload();});
+	});
+});
+
+</script>
+
+	
+	
+	
+	
 </TMPL_IF>
 
 <TMPL_IF SAVE>

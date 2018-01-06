@@ -29,6 +29,7 @@ elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') { &lbupdate; }
 elsif ($action eq 'testenvironment') { &testenvironment; }
+elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
 else   { print "<red>Action not supported.</red>"; }
 
 ################################
