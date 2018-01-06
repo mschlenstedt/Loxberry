@@ -152,15 +152,32 @@ sub form {
    );
 	$maintemplate->param ( 'sourcelang', $sourcelang);
 	
-	my $destlang = $cgi->textfield(
-			-name=>'destlang',
-			-id=>'destlang',
-			-tabindex=>2,
-		    -value=>'',
-		    -size=>10,
-		    -maxlength=>2
+	my @values = LoxBerry::Web::iso_languages(0, 'values');
+	my %labels = LoxBerry::Web::iso_languages(0, 'labels');
+	
+	# Removes English (the element with index 1) from the list as dest lang
+	splice @values, 1, 1;
+	
+	my $destlang = $cgi->popup_menu( 
+			-name => 'destlang',
+			id => 'destlang',
+			-labels => \%labels,
+			-values => \@values,
+			-tabindex => 2,
 	);
-	$maintemplate->param ( 'destlang', $destlang);
+	$maintemplate->param('destlang', $destlang);
+	
+	
+	
+	# my $destlang = $cgi->textfield(
+			# -name=>'destlang',
+			# -id=>'destlang',
+			# -tabindex=>2,
+		    # -value=>'',
+		    # -size=>10,
+		    # -maxlength=>2
+	# );
+	# $maintemplate->param ( 'destlang', $destlang);
 	
 	my @langarray;
 	mes "Define filenames";

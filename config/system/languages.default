@@ -1,5 +1,5 @@
 SK_Language;ISO639-3Code;ISO639-2BCode;ISO639-2TCode;ISO639-1Code;LanguageName;Scope;Type;MacroLanguageISO639-3Code;MacroLanguageName;IsChild
-;;;;;--- Main European Languages ---;;;;;
+;;;;0;--- Main European Languages ---;;;;;
 11103;eng;eng;eng;en;English;Individual;Living;;;0
 10956;deu;ger;deu;de;German;Individual;Living;;;0
 13213;sqi;alb;sqi;sq;Albanian;Macrolanguage;Living;;;0
@@ -37,7 +37,7 @@ SK_Language;ISO639-3Code;ISO639-2BCode;ISO639-2TCode;ISO639-1Code;LanguageName;S
 13258;swe;swe;swe;sv;Swedish;Individual;Living;;;0
 17040;ukr;ukr;ukr;uk;Ukrainian;Individual;Living;;;0
 10949;cym;wel;cym;cy;Welsh;Individual;Living;;;0
-;;;;;--- International ---;;;;;
+;;;;1;--- International ---;;;;;
 10033;abk;abk;abk;ab;Abkhazian;Individual;Living;;;0
 10016;aar;aar;aar;aa;Afar;Individual;Living;;;0
 17664;afr;afr;afr;af;Afrikaans;Individual;Living;;;0
