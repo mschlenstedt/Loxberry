@@ -43,7 +43,6 @@ chown -Rv loxberry:loxberry /var/lib/apache2
 chown -Rv loxberry:loxberry /var/log/lighttpd
 chown -Rv loxberry:loxberry /var/cache/lighttpd
 chown -Rv root:root $LBHOMEDIR/system/profile/loxberry.sh
-chown -v loxberry:loxberry $LBHOMEDIR/log/system/skel
 chown -v loxberry:loxberry /etc/timezone
 chown -v loxberry:loxberry /etc/localtime
 
