@@ -180,7 +180,7 @@ sub lbupdate
 sub poweroff
 {
 	print STDERR "ajax-config-handler: ajax poweroff\n";
-	system("sudo $bins->{POWEROFF}");
+	system("sleep 2 && sudo $bins->{POWEROFF} 2>&1 > /dev/null &");
 }
 
 ############################################
@@ -189,7 +189,7 @@ sub poweroff
 sub reboot
 {
 	print STDERR "ajax-config-handler: ajax reboot\n";
-	system("sudo $bins->{REBOOT}");
+	system("sleep 2 && sudo $bins->{REBOOT} 2>&1 > /dev/null &");
 }
 
 ###################################################################
