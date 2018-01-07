@@ -1,0 +1,177 @@
+SK_Language;ISO639-3Code;ISO639-2BCode;ISO639-2TCode;ISO639-1Code;LanguageName;Scope;Type;MacroLanguageISO639-3Code;MacroLanguageName;IsChild
+;;;;0;--- Main European Languages ---;;;;;
+11103;eng;eng;eng;en;English;Individual;Living;;;0
+10956;deu;ger;deu;de;German;Individual;Living;;;0
+13213;sqi;alb;sqi;sq;Albanian;Macrolanguage;Living;;;0
+10496;bel;bel;bel;be;Belarusian;Individual;Living;;;0
+10472;bos;bos;bos;bs;Bosnian;Individual;Living;hbs;Serbo-CroatianCode element for 639-1 has been deprecated;1
+10685;bul;bul;bul;bg;Bulgarian;Individual;Living;;;0
+10776;cat;cat;cat;ca;Catalan;Individual;Living;;;0
+14347;cos;cos;cos;co;Corsican;Individual;Living;;;0
+14922;hrv;hrv;hrv;hr;Croatian;Individual;Living;hbs;Serbo-CroatianCode element for 639-1 has been deprecated;1
+14282;ces;cze;ces;cs;Czech;Individual;Living;;;0
+14414;dan;dan;dan;da;Danish;Individual;Living;;;0
+12547;nld;dut;nld;nl;Dutch;Individual;Living;;;0
+14647;fin;fin;fin;fi;Finnish;Individual;Living;;;0
+11151;fra;fre;fra;fr;French;Individual;Living;;;0
+11418;hun;hun;hun;hu;Hungarian;Individual;Living;;;0
+11506;isl;ice;isl;is;Icelandic;Individual;Living;;;0
+11272;gle;gle;gle;ga;Irish;Individual;Living;;;0
+11513;ita;ita;ita;it;Italian;Individual;Living;;;0
+11948;lav;lav;lav;lv;Latvian;Macrolanguage;Living;;;0
+12000;lit;lit;lit;lt;Lithuanian;Individual;Living;;;0
+12085;ltz;ltz;ltz;lb;Luxembourgish;Individual;Living;;;0
+15695;mkd;mac;mkd;mk;Macedonian;Individual;Living;;;0
+14596;ell;gre;ell;el;Modern Greek (1453-);Individual;Living;;;0
+16064;nor;nor;nor;no;Norwegian;Macrolanguage;Living;;;0
+12862;pol;pol;pol;pl;Polish;Individual;Living;;;0
+12868;por;por;por;pt;Portuguese;Individual;Living;;;0
+13025;ron;rum;ron;ro;Romanian;Individual;Living;;;0
+16494;rus;rus;rus;ru;Russian;Individual;Living;;;0
+13226;srd;srd;srd;sc;Sardinian;Macrolanguage;Living;;;0
+11269;gla;gla;gla;gd;Scottish Gaelic;Individual;Living;;;0
+13237;srp;srp;srp;sr;Serbian;Individual;Living;hbs;Serbo-CroatianCode element for 639-1 has been deprecated;1
+13169;slk;slo;slk;sk;Slovak;Individual;Living;;;0
+16617;slv;slv;slv;sl;Slovenian;Individual;Living;;;0
+13190;spa;spa;spa;es;Spanish;Individual;Living;;;0
+13258;swe;swe;swe;sv;Swedish;Individual;Living;;;0
+17040;ukr;ukr;ukr;uk;Ukrainian;Individual;Living;;;0
+10949;cym;wel;cym;cy;Welsh;Individual;Living;;;0
+;;;;1;--- International ---;;;;;
+10033;abk;abk;abk;ab;Abkhazian;Individual;Living;;;0
+10016;aar;aar;aar;aa;Afar;Individual;Living;;;0
+17664;afr;afr;afr;af;Afrikaans;Individual;Living;;;0
+10126;aka;aka;aka;ak;Akan;Macrolanguage;Living;;;0
+17727;amh;amh;amh;am;Amharic;Individual;Living;;;0
+17758;ara;ara;ara;ar;Arabic;Macrolanguage;Living;;;0
+17763;arg;arg;arg;an;Aragonese;Individual;Living;;;0
+11440;hye;arm;hye;hy;Armenian;Individual;Living;;;0
+17793;asm;asm;asm;as;Assamese;Individual;Living;;;0
+10240;ava;ava;ava;av;Avaric;Individual;Living;;;0
+17835;aym;aym;aym;ay;Aymara;Macrolanguage;Living;;;0
+17849;aze;aze;aze;az;Azerbaijani;Macrolanguage;Living;;;0
+17867;bam;bam;bam;bm;Bambara;Individual;Living;;;0
+17865;bak;bak;bak;ba;Bashkir;Individual;Living;;;0
+14605;eus;baq;eus;eu;Basque;Individual;Living;;;0
+10498;ben;ben;ben;bn;Bengali;Individual;Living;;;0
+10393;bis;bis;bis;bi;Bislama;Individual;Living;;;0
+10671;bre;bre;bre;br;Breton;Individual;Living;;;0
+12387;mya;bur;mya;my;Burmese;Individual;Living;;;0
+15179;khm;khm;khm;km;Central Khmer;Individual;Living;;;0
+14292;cha;cha;cha;ch;Chamorro;Individual;Living;;;0
+14296;che;che;che;ce;Chechen;Individual;Living;;;0
+17544;zho;chi;zho;zh;Chinese;Macrolanguage;Living;;;0
+14311;chv;chv;chv;cv;Chuvash;Individual;Living;;;0
+14346;cor;cor;cor;kw;Cornish;Individual;Living;;;0
+14372;cre;cre;cre;cr;Cree;Macrolanguage;Living;;;0
+11011;div;div;div;dv;Dhivehi;Individual;Living;;;0
+14557;dzo;dzo;dzo;dz;Dzongkha;Individual;Living;;;0
+11138;est;est;est;et;Estonian;Macrolanguage;Living;;;0
+14609;ewe;ewe;ewe;ee;Ewe;Individual;Living;;;0
+14628;fao;fao;fao;fo;Faroese;Individual;Living;;;0
+14645;fij;fij;fij;fj;Fijian;Individual;Living;;;0
+11174;ful;ful;ful;ff;Fulah;Macrolanguage;Living;;;0
+11273;glg;glg;glg;gl;Galician;Individual;Living;;;0
+12092;lug;lug;lug;lg;Ganda;Individual;Living;;;0
+15083;kat;geo;kat;ka;Georgian;Individual;Living;;;0
+11291;grn;grn;grn;gn;Guarani;Macrolanguage;Living;;;0
+11324;guj;guj;guj;gu;Gujarati;Individual;Living;;;0
+14863;hat;hat;hat;ht;Haitian;Individual;Living;;;0
+14864;hau;hau;hau;ha;Hausa;Individual;Living;;;0
+11354;heb;heb;heb;he;Hebrew;Individual;Living;;;0
+11360;her;her;her;hz;Herero;Individual;Living;;;0
+11376;hin;hin;hin;hi;Hindi;Individual;Living;;;0
+11407;hmo;hmo;hmo;ho;Hiri Motu;Individual;Living;;;0
+11453;ibo;ibo;ibo;ig;Igbo;Individual;Living;;;0
+14997;ind;ind;ind;id;Indonesian;Individual;Living;msa;Malay (macrolanguage);1
+14970;iku;iku;iku;iu;Inuktitut;Macrolanguage;Living;;;0
+11485;ipk;ipk;ipk;ik;Inupiaq;Macrolanguage;Living;;;0
+11577;jpn;jpn;jpn;ja;Japanese;Individual;Living;;;0
+15017;jav;jav;jav;jv;Javanese;Individual;Living;;;0
+15076;kal;kal;kal;kl;Kalaallisut;Individual;Living;;;0
+15078;kan;kan;kan;kn;Kannada;Individual;Living;;;0
+15084;kau;kau;kau;kr;Kanuri;Macrolanguage;Living;;;0
+15082;kas;kas;kas;ks;Kashmiri;Individual;Living;;;0
+15089;kaz;kaz;kaz;kk;Kazakh;Individual;Living;;;0
+15203;kik;kik;kik;ki;Kikuyu;Individual;Living;;;0
+15206;kin;kin;kin;rw;Kinyarwanda;Individual;Living;;;0
+15210;kir;kir;kir;ky;Kirghiz;Individual;Living;;;0
+11772;kom;kom;kom;kv;Komi;Macrolanguage;Living;;;0
+11773;kon;kon;kon;kg;Kongo;Macrolanguage;Living;;;0
+11777;kor;kor;kor;ko;Korean;Individual;Living;;;0
+11841;kua;kua;kua;kj;Kuanyama;Individual;Living;;;0
+11858;kur;kur;kur;ku;Kurdish;Macrolanguage;Living;;;0
+11941;lao;lao;lao;lo;Lao;Individual;Living;;;0
+11993;lim;lim;lim;li;Limburgan;Individual;Living;;;0
+11994;lin;lin;lin;ln;Lingala;Individual;Living;;;0
+12087;lub;lub;lub;lu;Luba-Katanga;Individual;Living;;;0
+15722;mlg;mlg;mlg;mg;Malagasy;Macrolanguage;Living;;;0
+15818;msa;may;msa;ms;Malay (macrolanguage);Macrolanguage;Living;;;0
+15587;mal;mal;mal;ml;Malayalam;Individual;Living;;;0
+15735;mlt;mlt;mlt;mt;Maltese;Individual;Living;;;0
+11282;glv;glv;glv;gv;Manx;Individual;Living;;;0
+15800;mri;mao;mri;mi;Maori;Individual;Living;;;0
+15591;mar;mar;mar;mr;Marathi;Individual;Living;;;0
+15583;mah;mah;mah;mh;Marshallese;Individual;Living;;;0
+12282;mon;mon;mon;mn;Mongolian;Macrolanguage;Living;;;0
+15898;nau;nau;nau;na;Nauru;Individual;Living;;;0
+15899;nav;nav;nav;nv;Navajo;Individual;Living;;;0
+12453;ndo;ndo;ndo;ng;Ndonga;Individual;Living;;;0
+12479;nep;nep;nep;ne;Nepali (macrolanguage);Macrolanguage;Living;;;0
+15953;nde;nde;nde;nd;North Ndebele;Individual;Living;;;0
+16626;sme;sme;sme;se;Northern Sami;Individual;Living;;;0
+16049;nob;nob;nob;nb;Norwegian Bokmål;Individual;Living;nor;Norwegian;1
+16036;nno;nno;nno;nn;Norwegian Nynorsk;Individual;Living;nor;Norwegian;1
+16130;nya;nya;nya;ny;Nyanja;Individual;Living;;;0
+12678;oci;oci;oci;oc;Occitan (post 1500);Individual;Living;;;0
+12701;oji;oji;oji;oj;Ojibwa;Macrolanguage;Living;;;0
+16215;ori;ori;ori;or;Oriya (macrolanguage);Macrolanguage;Living;;;0
+16216;orm;orm;orm;om;Oromo;Macrolanguage;Living;;;0
+12730;oss;oss;oss;os;Ossetian;Individual;Living;;;0
+12776;pan;pan;pan;pa;Panjabi;Individual;Living;;;0
+14631;fas;per;fas;fa;Persian;Macrolanguage;Living;;;0
+16388;pus;pus;pus;ps;Pushto;Macrolanguage;Living;;;0
+12924;que;que;que;qu;Quechua;Macrolanguage;Living;;;0
+13022;roh;roh;roh;rm;Romansh;Individual;Living;;;0
+16490;run;run;run;rn;Rundi;Individual;Living;;;0
+16635;smo;smo;smo;sm;Samoan;Individual;Living;;;0
+16515;sag;sag;sag;sg;Sango;Individual;Living;;;0
+14874;hbs;;;sh;Serbo-CroatianCode element for 639-1 has been deprecated;Macrolanguage;Living;;;0
+16647;sna;sna;sna;sn;Shona;Individual;Living;;;0
+14955;iii;iii;iii;ii;Sichuan Yi;Individual;Living;;;0
+16650;snd;snd;snd;sd;Sindhi;Individual;Living;;;0
+13109;sin;sin;sin;si;Sinhala;Individual;Living;;;0
+13177;som;som;som;so;Somali;Individual;Living;;;0
+15914;nbl;nbl;nbl;nr;South Ndebele;Individual;Living;;;0
+13183;sot;sot;sot;st;Southern Sotho;Individual;Living;;;0
+16741;sun;sun;sun;su;Sundanese;Individual;Living;;;0
+13255;swa;swa;swa;sw;Swahili (macrolanguage);Macrolanguage;Living;;;0
+16706;ssw;ssw;ssw;ss;Swati;Individual;Living;;;0
+16818;tgl;tgl;tgl;tl;Tagalog;Individual;Living;;;0
+16760;tah;tah;tah;ty;Tahitian;Individual;Living;;;0
+16817;tgk;tgk;tgk;tg;Tajik;Individual;Living;;;0
+16764;tam;tam;tam;ta;Tamil;Individual;Living;;;0
+16771;tat;tat;tat;tt;Tatar;Individual;Living;;;0
+13354;tel;tel;tel;te;Telugu;Individual;Living;;;0
+16832;tha;tha;tha;th;Thai;Individual;Living;;;0
+10457;bod;tib;bod;bo;Tibetan;Individual;Living;;;0
+16869;tir;tir;tir;ti;Tigrinya;Individual;Living;;;0
+16923;ton;ton;ton;to;Tonga (Tonga Islands);Individual;Living;;;0
+13504;tso;tso;tso;ts;Tsonga;Individual;Living;;;0
+13503;tsn;tsn;tsn;tn;Tswana;Individual;Living;;;0
+16994;tur;tur;tur;tr;Turkish;Individual;Living;;;0
+16988;tuk;tuk;tuk;tk;Turkmen;Individual;Living;;;0
+13516;twi;twi;twi;tw;Twi;Individual;Living;aka;Akan;1
+17030;uig;uig;uig;ug;Uighur;Individual;Living;;;0
+13585;urd;urd;urd;ur;Urdu;Individual;Living;;;0
+13625;uzb;uzb;uzb;uz;Uzbek;Macrolanguage;Living;;;0
+13651;ven;ven;ven;ve;Venda;Individual;Living;;;0
+17090;vie;vie;vie;vi;Vietnamese;Individual;Living;;;0
+17186;wln;wln;wln;wa;Walloon;Individual;Living;;;0
+11162;fry;fry;fry;fy;Western Frisian;Individual;Living;;;0
+13743;wol;wol;wol;wo;Wolof;Individual;Living;;;0
+13827;xho;xho;xho;xh;Xhosa;Individual;Living;;;0
+13993;yid;yid;yid;yi;Yiddish;Macrolanguage;Living;;;0
+17483;yor;yor;yor;yo;Yoruba;Individual;Living;;;0
+17539;zha;zha;zha;za;Zhuang;Macrolanguage;Living;;;0
+17599;zul;zul;zul;zu;Zulu;Individual;Living;;;0

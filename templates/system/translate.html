@@ -128,7 +128,10 @@ div.greenTable {
 	
 	<div style="margin:10px 10px 10px 10px;">
 	<fieldset data-role="controlgroup" data-mini="true">
-	<TMPL_VAR TRANSLATE.LABEL_SELECT_SOURCE_LANG> <TMPL_VAR sourcelang>
+	<TMPL_VAR TRANSLATE.LABEL_SELECT_SOURCE_LANG> 
+	<input type="hidden" name="sourcelang" id="sourcelang" value="en">
+	<!--<TMPL_VAR sourcelang>-->
+	<p><b>English</b> (fixed)</p>
 	</fieldset>
 	</div>
 	
@@ -149,8 +152,7 @@ div.greenTable {
 	
 	<fieldset data-role="controlgroup" data-mini="true">
 	<TMPL_VAR TRANSLATE.LABEL_DOWNLOAD><br>
-	<!-- <button id="downloadfile" class="ui-btn ui-btn-inline ui_mini"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></button> -->
-	<!-- <a id="downloadfile" name="downloadfile" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="#" tabindex="4"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></a> -->
+	
 	<a href="#" id="downloadfile" class="ui-btn ui-btn-inline"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></a>
 	</fieldset>
 	</div>

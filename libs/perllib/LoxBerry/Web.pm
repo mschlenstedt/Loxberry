@@ -18,7 +18,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.3.1";
+our $VERSION = "0.3.3.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -444,6 +444,69 @@ sub get_plugin_icon
 	}
 	return undef;
 }
+
+################################################################
+# get_languages
+# Input: 
+# 	1. 	Send 1, if only avaliable system languages (or otherwise undef)
+#	2. 	'values' to get an array with all values
+#		'labels' to request a hash with key langcode and value langname
+# 		
+# Output: Array or Hash
+# Keep in mind, that hashes are unsorted at all time
+# The array order represents the file order
+################################################################
+
+sub iso_languages
+{
+	my ($onlyavail, $selection) = @_;
+	
+	my $filename = "$LoxBerry::System::lbsconfigdir/languages.default";
+	open my $handle, '<', $filename;
+	chomp(my @lines = <$handle>);
+	close $handle;
+
+	opendir( my $DIR, "$LoxBerry::System::lbstemplatedir/lang/" ) or Carp::carp "Cannot open system language directory lbstemplatedir/lang";
+	my @files = readdir($DIR);
+	my @availlangs;
+	while ( my $direntry = shift @files ) {
+		my ($name, $ext) = split (/\./, $direntry);
+		print STDERR "Name: $name\n";
+		next if (!LoxBerry::System::begins_with($name, 'language_') or $ext ne 'ini');
+		my $filelang = substr($name, 9, 2);
+		print STDERR "Lang: $filelang\n";
+		push (@availlangs, $filelang);
+	}
+	closedir $DIR;
+		
+	my @resultvals;
+	my %resultlabels;
+	
+	for my $i (0 .. $#lines) {
+		# Skip header line of CSV
+		next if $i==0;
+		my $cl = $lines[$i];
+		if ($cl eq "") {
+			# line is empty
+			next;
+		}
+		
+		my ($SK_Language, $ISO639_3Code, $ISO639_2BCode, $ISO639_2TCode, $ISO639_1Code, $LanguageName, $Scope, $Type, $MacroLanguageISO639_3Code, $MacroLanguageName, $IsChild) = split(/;/, $cl);
+		
+		if ( $onlyavail and !grep(/^$ISO639_1Code$/, @availlangs)) {
+			next;
+		}
+		$resultlabels{$ISO639_1Code} = $LanguageName;
+		push (@resultvals, $ISO639_1Code);
+	}
+	return @resultvals if ($selection eq 'values');
+	return %resultlabels if ($selection eq 'labels');
+}
+
+
+
+
+
 
 ################################################################
 # get_notifications
