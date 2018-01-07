@@ -1,11 +1,4 @@
-<!-- ** START template/system/logfile.html 13:16 20.12.2017 ************************************************************************** -->
-<div data-role="page" id="main">
-	<div data-role="header" id="warning">
-		<h1><TMPL_VAR LOGVIEWER.WIDGETLABEL></h1>
-	</div>
-  <!-- content -->
-	<div data-role="content" role="main" class="ui-content">
-		<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
+<!-- ** START template/system/logfile.html 00:29 08.01.2018 ************************************************************************** -->
 		<!-- text -->
 			<div style="margin: 2%">
 				
@@ -24,8 +17,10 @@
 					</center>
 				<TMPL_ELSE>
 					<!-- <div style="width:100%; height:57vh;"> -->
+					Hallo wie gehts!
 					<div style="width:100%; height:60vh; background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll" id="Logfile" contenteditable="true">
 					</div>
+					
 					<!-- </div> -->
 					<table width="100%" border="0">
 						<tr>
@@ -107,6 +102,3 @@ $("#Logfile").scroll(function() {
 				</TMPL_IF>
 				
 			</div>
-		</div>
-	</div>
-</div>
