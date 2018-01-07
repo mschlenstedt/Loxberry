@@ -5,11 +5,12 @@ use strict;
 use Carp;
 use LoxBerry::System;
 use Time::Piece;
+use HTML::Entities;
 use JSON;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.3.1";
+our $VERSION = "0.3.3.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -35,14 +36,12 @@ notify
 delete_notifications
 get_notification_count
 get_notifications
+notification_content
 parsedatestring
 
 );
 
 # Variables
-
-
-
 
 ################################################################
 ## Constructor
@@ -409,6 +408,7 @@ sub DESTROY {
 # NOTIFICATION FUNCTIONS (notify)
 
 my @notifications;
+my $content_was_read;
 my $notifications_error;
 my $notifications_ok;
 our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
@@ -429,7 +429,7 @@ sub notify
 		$error = "";
 	}
 	
-	my $filename = $LoxBerry::Web::notification_dir . "/" . currtime('file') . "_${package}_${name}${error}.system";
+	my $filename = $notification_dir . "/" . LoxBerry::System::currtime('file') . "_${package}_${name}${error}.system";
 	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
 	print $fh $message . "\n";
 	close $fh;
@@ -445,8 +445,8 @@ sub notify
 sub get_notifications
 {
 	# print STDERR "get_notifications called.\n" if ($DEBUG);
-	my ($package, $name, $latest, $count) = @_;
-	LoxBerry::Log::read_notificationlist();
+	my ($package, $name, $latest, $count, $getcontent) = @_;
+	LoxBerry::Log::read_notificationlist($getcontent);
 	if (! $package) {
 		return @notifications if (! $count);
 		return $notifications_error, $notifications_ok, ($notifications_error+$notifications_ok);
@@ -474,6 +474,14 @@ sub get_notifications
 	return $filtered_errors, $filtered_ok, ($filtered_errors+$filtered_ok);
 }
 
+sub get_notifications_with_content
+{
+	my ($package, $name, $latest) = @_;
+	my @filtered = LoxBerry::Log::get_notifications($package, $name, $latest, undef, 1);
+	return @filtered;
+}
+
+# Retuns an array with the number of notifications
 sub get_notification_count
 {
 	my ($package, $name, $latest) = @_;
@@ -501,6 +509,19 @@ sub delete_notifications
 	undef @notifications;
 }
 
+sub notification_content
+{
+	my ($key) = @_;
+	my $notifyfile = "$notification_dir/$key";
+	open (my $fh, "<" , $notifyfile) or return undef; 
+	my $content = <$fh>;
+	close ($fh);
+	my $contenthtml = $content;
+	$contenthtml =~ s/\n/<br>\n/g;
+	$contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
+	return $content, $contenthtml;
+}
+
 
 #####################################################
 # Parse yyyymmdd_hhmmss date to date object
@@ -518,10 +539,10 @@ sub parsedatestring
 # INTERNAL function read_notificationlist
 sub read_notificationlist
 {
-	if (@notifications) {
-		#print STDERR "Notification list cached.\n" if ($DEBUG);
-		return;
-	}
+	my ($getcontent) = @_;
+	return if (@notifications && !$getcontent); 
+	return if (@notifications && $getcontent && $content_was_read);
+		
 	opendir( my $DIR, $notification_dir );
 	my @files = sort {$b cmp $a} readdir($DIR);
 	my $direntry;
@@ -548,12 +569,15 @@ sub read_notificationlist
 		$notification{'SEVERITY'} = lc($severity);
 		$notification{'DATEOBJ'} = $dateobj;
 		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
-		$notification{'FILENAME'} = $direntry;
+		$notification{'KEY'} = $direntry;
 		$notification{'FULLPATH'} = "$notification_dir/$direntry";
+		($notification{'CONTENTRAW'}, $notification{'CONTENTHTML'}) = notification_content($notification{'KEY'}) if ($getcontent);
+		
 		push(@notifications, \%notification);
 	}
 	# return @notifications;
 	closedir $DIR;
+	$content_was_read = 1;
 	print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
 }
 
