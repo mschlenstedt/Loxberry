@@ -57,8 +57,10 @@ our $adminuser;
 our $adminpass1;
 our $adminpass2;
 our $adminpassold;
+our $securepin1;
+our $securepin2;
+our $securepinold;
 our $output;
-our $adminpasscrypted;
 our $message;
 our $adminuserold = $ENV{REMOTE_USER};
 our $do;
@@ -69,13 +71,16 @@ our $dbh;
 our $sth;
 our $sqlerr;
 our $nodefaultpwd;
+our $creditwebadmin;
+our $creditconsole;
+our $creditsecurepin;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "0.3.2.3";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 #$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -88,10 +93,10 @@ my $maintemplate = HTML::Template->new(
 			die_on_bad_params=> 0,
 			associate => $cfg,
 			%htmltemplate_options,
-			# debug => 1,
+			#debug => 1,
 			);
 
-LoxBerry::Web::readlanguage($maintemplate);
+my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
@@ -180,91 +185,151 @@ $adminuser            = trim(param('adminuser'));
 $adminpass1           = param('adminpass1');
 $adminpass2           = param('adminpass2');
 $adminpassold         = param('adminpassold');
+$securepin1           = param('securepin1');
+$securepin2           = param('securepin2');
+$securepinold         = param('securepinold');
 
 # First we have to do server-side form validation
 if (!$adminuser) {
 	$error = $SL{'ADMIN.SAVE_ERR_EMPTY_USER'};
 	&error;
-} elsif (!$adminpass1 || !$adminpass2) {
+} elsif (!$adminpassold && $adminpass1) {
 	$error = $SL{'ADMIN.SAVE_ERR_EMPTY_PASS'};
+	&error;
+} elsif (!$securepinold) {
+	$error = $SL{'ADMIN.SAVE_ERR_EMPTY_SECUREPIN'};
 	&error;
 } elsif ($adminpass1 ne $adminpass2) {
 	$error = $SL{'ADMIN.SAVE_ERR_PASS_NOT_IDENTICAL'};
 	&error;
+} elsif ($securepin1 ne $securepin2) {
+	$error = $SL{'ADMIN.SAVE_ERR_SECUREPIN_NOT_IDENTICAL'};
+	&error;
+} elsif (!$securepin1 && !$adminpass1) {
+	$error = $SL{'ADMIN.SAVE_ERR_NOTHING_TO_CHANGE'};
+	&error;
 }
 
-# Try to set new UNIX passwords for user "loxberry"
+# Check if SecurePIN is correct
+open (F, "<$lbsconfigdir/securepin.dat");
+  my $pinsaved = <F>;
+close (F);
+
+if (crypt($securepinold,$pinsaved) ne $pinsaved) {
+	$error = $SL{'ADMIN.SAVE_ERR_SECUREPIN_WRONG'};
+	&error;
+}
 
 # First try if default password is still valid:
-$nodefaultpwd = 0;
-$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp loxberry $adminpass1);
-if ($? ne 0) {
-  print STDERR "setloxberrypasswd.exp adminpass1 ne 0\n";
-  $nodefaultpwd = 1;
+if ($adminpass1) {
+	$nodefaultpwd = 0;
+	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp loxberry $adminpass1 2>&1);
+	if ($? ne 0) {
+  		print STDERR "setloxberrypasswd.exp adminpass1 ne 0\n";
+  		$nodefaultpwd = 1;
+	} else {
+		$maintemplate->param("ADMINOK", 1);
+	}	
+
+	# If default password isn't valid anymore:
+	if ($nodefaultpwd) {
+	  $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
+	  if ($? ne 0) {
+	  print STDERR "setloxberrypasswd.exp adminpassold ne 0 - ERROR\n";
+	    $error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
+	    &error;
+	    exit;
+	  } else {
+		$maintemplate->param("ADMINOK", 1);
+	  }	
+	}
+
+	# Try to set new SAMBA passwords for user "loxberry"
+
+	## First try if default password is still valid:
+	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
+	## If default password isn't valid anymore:
+	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
+
+	# Set MYSQL Password
+	# This only works if the initial password is still valid
+	# (password: "loxberry")
+	# Use eval {} here in case somthing went wrong
+	#$sqlerr = 0;
+	#$dsn = "DBI:mysql:database=mysql";
+	#eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
+	#$sqlerr = 1 if $@;
+	#eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
+	#$sqlerr = 1 if $@;
+	#eval {$sth->execute()};
+	#$sqlerr = 1 if $@;
+	#eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
+	#$sqlerr = 1 if $@;
+	#eval {$sth->execute()};
+	#$sqlerr = 1 if $@;
+	#eval {$sth->finish()};
+	#$sqlerr = 1 if $@;
+	#eval {$dbh->{AutoCommit} = 0};
+	#$sqlerr = 1 if $@;
+	#eval {$dbh->commit};
+	#$sqlerr = 1 if $@;
+	#if ($sqlerr eq 0) {
+	#  $maintemplate->param("SQLOK", 1);
+	#  print STDERR "sqlerr eq 0 - OK\n";
+	#}
 }
-
-# If default password isn't valid anymore:
-if ($nodefaultpwd) {
-  $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
-  if ($? ne 0) {
-  print STDERR "setloxberrypasswd.exp adminpassold ne 0 - ERROR\n";
-    $error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
-    &error;
-    exit;
-  }
-}
-
-# Try to set new SAMBA passwords for user "loxberry"
-
-## First try if default password is still valid:
-$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
-## If default password isn't valid anymore:
-$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
 
 # Save Username/Password for Webarea
-$adminpasscrypted = qx(/usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1);
-open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
- flock(F,2);
- print F "$adminpasscrypted";
- flock(F,8);
-close(F);
+if ($adminpass1) {
+	$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
+	# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
+	#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
+	# flock(F,2);
+	# print F "$adminpasscrypted";
+	# flock(F,8);
+	#close(F);
+} else {
+	$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
+	# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
+	#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
+	# flock(F,2);
+	# print F "$adminpasscrypted";
+	# flock(F,8);
+	#close(F);
+}
 
-# Set MYSQL Password
-# This only works if the initial password is still valid
-# (password: "loxberry")
-# Use eval {} here in case somthing went wrong
-$sqlerr = 0;
-$dsn = "DBI:mysql:database=mysql";
-eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
-$sqlerr = 1 if $@;
-eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
-$sqlerr = 1 if $@;
-eval {$sth->execute()};
-$sqlerr = 1 if $@;
-eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
-$sqlerr = 1 if $@;
-eval {$sth->execute()};
-$sqlerr = 1 if $@;
-eval {$sth->finish()};
-$sqlerr = 1 if $@;
-eval {$dbh->{AutoCommit} = 0};
-$sqlerr = 1 if $@;
-eval {$dbh->commit};
-$sqlerr = 1 if $@;
-if ($sqlerr eq 0) {
-  $maintemplate->param("SQLOK", 1);
-  print STDERR "sqlerr eq 0 - OK\n";
-  }
+if ($securepin1) {
+	$output = qx(sudo $lbhomedir/sbin/setsecurepin.pl $securepinold $securepin1);
+	if ( $? eq 0 ) {
+		$maintemplate->param("SECUREPINOK", 1);
+		print STDERR "setsecurepin.pl securepin1 = 0 - OK\n";
+	}
+}
+
+if ($adminpass1) {
+	$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
+	$creditconsole = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
+} else {
+	$creditwebadmin = "";
+	$creditconsole = "";
+}
+if ($securepin1) {
+	$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t\t\t$securepin1\r\n";
+} else {
+	$creditsecurepin = "";
+}
 
 my $credentialstxt = "$SL{'ADMIN.SAVE_OK_INFO'}\r\n" .  
-		"\r\n" .
-		"$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n" .
-		"$SL{'ADMIN.SAVE_OK_COL_SSH'}\t\tloxberry / $adminpass1\r\n" . 
-		"$SL{'ADMIN.SAVE_OK_COL_MYSQL'}\t\troot / $adminpass1\r\n";
+	"\r\n" .
+	$creditwebadmin .
+	$creditconsole .
+	$creditsecurepin;
 
 $credentialstxt=encode_base64($credentialstxt);
+
 $maintemplate->param( "ADMINUSER", $adminuser );
 $maintemplate->param( "ADMINPASS1", $adminpass1 );
+$maintemplate->param( "SECUREPIN1", $securepin1 );
 $maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
 $maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
 

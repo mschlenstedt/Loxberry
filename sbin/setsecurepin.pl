@@ -31,7 +31,7 @@ open (F, "<$lbsconfigdir/securepin.dat");
   my $pinsaved = <F>;
 close (F);
 
-if (!crypt($pinold,$pinsaved) eq $pinsaved) {
+if (crypt($pinold,$pinsaved) ne $pinsaved) {
   print "Old PIN is wrong.\n";
   exit (1);
 }

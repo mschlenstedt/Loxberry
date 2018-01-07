@@ -43,7 +43,7 @@ ini_parser() {
         -e 's/;.*$//' \
         -e 's/[[:space:]]*$//' \
         -e 's/^[[:space:]]*//' \
-        -e "s/^\(.*\)=\([^\"']*\)$/$INI_SECTION\1=\"\2\"/" \
+#        -e "s/^\(.*\)=\([^\"']*\)$/$INI_SECTION\1=\"\2\"/" \
         < $INI_FILE \
         | sed -n -e "/^\[$INI_SECTION\]/,/^\s*\[/{/^[^;].*\=.*/p;}"`
 }
@@ -96,7 +96,7 @@ case "$1" in
         if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
         then
           log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
-          $LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1"
+          $LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
         fi
 
         # Create log folders for all plugins if not existing
@@ -150,6 +150,7 @@ case "$1" in
         echo "Error: argument '$1' not supported" >&2
         exit 3
   ;;
+
   stop)
         # No-op
         ;;

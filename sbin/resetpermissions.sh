@@ -43,12 +43,12 @@ chown -Rv loxberry:loxberry /var/lib/apache2
 chown -Rv loxberry:loxberry /var/log/lighttpd
 chown -Rv loxberry:loxberry /var/cache/lighttpd
 chown -Rv root:root $LBHOMEDIR/system/profile/loxberry.sh
-chown -v loxberry:loxberry $LBHOMEDIR/log/system/skel
 chown -v loxberry:loxberry /etc/timezone
 chown -v loxberry:loxberry /etc/localtime
 
 chmod -v 600 $LBHOMEDIR/system/network/interfaces
 chmod -v 600 $LBHOMEDIR/config/system/*
+chmod -v 644 $LBHOMEDIR/config/system/securepin.dat
 chmod -v 555 $LBHOMEDIR/system/sudoers
 chmod -v 664 $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -v 755 $LBHOMEDIR/system/profile

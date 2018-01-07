@@ -111,9 +111,27 @@ exit;
 
 sub form {
 
+	if ($lang ne "en") {
+		$maintemplate->param( "ISNOTENGLISH", 1);
+	}
 	$maintemplate->param( "FORM", 1);
 	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
+	my @values = LoxBerry::Web::iso_languages(1, 'values');
+	my %labels = LoxBerry::Web::iso_languages(1, 'labels');
+	my $langselector_popup = $cgi->popup_menu( 
+			-name => 'languageselector',
+			id => 'languageselector',
+			-labels => \%labels,
+			#-attributes => \%labels,
+			-values => \@values,
+			-default => $lang,
+		);
+	$maintemplate->param('LANGSELECTOR', $langselector_popup);
+	
+	
+	
+	
 	our $sendstatistic_checkbox = $cgi->checkbox( -name => 'sendstatistic',
 												  -checked => is_enabled($cfg->param("BASE.SENDSTATISTIC")),
 												  -label => $SL{'MYLOXBERRY.LABEL_SENDSTATISTIC'}

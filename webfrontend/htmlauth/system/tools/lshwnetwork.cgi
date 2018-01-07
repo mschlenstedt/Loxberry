@@ -41,7 +41,7 @@ my $version;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.2.1";
+$version = "0.3.2.2";
 
 $cfg             = new Config::Simple('$lbsconfigdir/general.cfg');
 
@@ -83,9 +83,6 @@ foreach (@result){
   $fields[0] =~ s/^\s+//g;
   $fields[1] =~ s/^\s+//g;
   if ($fields[0] =~ /\*-/) {
-    if ($i != 1) { 
-      $table = "$table<tr><td colspan=2>&nbsp;</td></tr>\n";
-    }
     $table = "$table<tr><td colspan=2><b>$i. " . $SL{'NETWORK.LSHW_LABEL_NETWORKDEVICE'} . "</b></td></tr>\n";
     $i++;
   }
