@@ -1236,8 +1236,11 @@ $message =  "$SL{'PLUGININSTALL.INF_END'}";
 &loginfo;
 print "Tempfolder is: $tempfile\n";
 if ( -e "/tmp/uploads/$tempffile" ) {
-	system("$sudobin -n -u loxberry rm -vrf /tmp/uploads/$tempfile");
+	system("$sudobin -n -u loxberry rm -vrf /tmp/uploads/$tempfile 2>&1");
 }
+if ( $R::tempfile ) {
+	system("$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1");
+} 
 
 # Finished
 $message =  "$SL{'PLUGININSTALL.OK_END'}";
@@ -1427,6 +1430,9 @@ sub logfail {
   if ( -e "/tmp/uploads/$tempffile" ) {
 	system("$sudobin -n -u loxberry rm -rf /tmp/uploads/$tempfile 2>&1");
   }
+  if ( $R::tempfile ) {
+	system("$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1");
+  } 
  
   if (-e $statusfile) {
     open (F, ">$statusfile");
