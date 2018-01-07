@@ -385,6 +385,20 @@ a:link.nolinkstyle
   .ui-panel-dismiss-display-push {
     display: none;
   }
+  
+    .div_input
+  {
+  	outline:none; height:line-height: 1.4em; padding:.4em;
+  }
+	.param_error
+	{
+		color: #FF0000;
+	}
+	.param_ok
+	{
+		color: #008000;
+	}
+
 /* PANEL START */
 /* this should change the right panel width, but only works left :-( */
 /*

@@ -56,7 +56,7 @@ our $version;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.3";
+$version = "0.0.4";
 
 $cfg             = new Config::Simple('../../../../config/system/general.cfg');
 $installdir      = $cfg->param("BASE.INSTALLFOLDER");
@@ -80,7 +80,7 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 
 # No one here
 
-# Filter
+# Filter	
 $query{'lang'}         =~ tr/a-z//cd;
 $query{'lang'}         =  substr($query{'lang'},0,2);
 
@@ -152,7 +152,7 @@ if (!$error) {
         $table = "$table<td  style=\"vertical-align: middle; text-align: center\">$bitrates</td>";
         $table = "$table<td style=\"vertical-align: middle; text-align: center\">$quality</td>";
         $table = "$table<td style=\"vertical-align: middle; text-align: center\">$force</td>";
-        $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">" . $phrase->param("TXT0114") . "</font></button></td></tr>\n";
+        $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.\$('#netzwerkssid_div').html('$ssid'); window.opener.\$('#netzwerkssid').val('$ssid'); window.close()\"> <font size=\"-1\">" . $phrase->param("TXT0114") . "</font></button></td></tr>\n";
       }
       $i++;
       $ssid = "";
@@ -207,7 +207,7 @@ if (!$error) {
   $table = "$table<td  style=\"vertical-align: middle; text-align: center\">$bitrates</td>";
   $table = "$table<td style=\"vertical-align: middle; text-align: center\">$quality</td>";
   $table = "$table<td style=\"vertical-align: middle; text-align: center\">$force</td>";
-  $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.document.getElementById('netzwerkssid').value = '$ssid';window.close()\"> <font size=\"-1\">" . $phrase->param("TXT0114") . "</font></button></td></tr>\n";
+  $table = "$table<td style=\"vertical-align: middle; text-align: center\"><button type=\"button\" data-role=\"button\" data-inline=\"true\" data-mini=\"true\" onClick=\"window.opener.\$('#netzwerkssid_div').html('$ssid'); window.opener.\$('#netzwerkssid').val('$ssid'); window.close()\"> <font size=\"-1\">" . $phrase->param("TXT0114") . "</font></button></td></tr>\n";
   $table = "$table</tbody>\n";
 
 }
