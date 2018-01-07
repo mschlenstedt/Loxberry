@@ -4,53 +4,50 @@
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
 	<input type="hidden" name="saveformdata" value="1">
 	<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
-	<div style="display:flex;">
-		<div style="margin:auto;padding:10px;">
+	<div style="display:flex; width:100%; text-align:left;">
+		<div style="margin:auto; padding:10px; width:20%; text-align:left;">
 			<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
 			<TMPL_IF ISNOTENGLISH>
 				<br>(Select your language)
 			</TMPL_IF>
-			</div>
-		<div style="margin:auto; padding:10px;">
+		</div>
+		<div style="margin:auto; padding:10px; width:30%">
 		<TMPL_VAR LANGSELECTOR>
 		</div>
+		<div style="margin:auto; padding:10px; width:50%">
+		</div>
 	</div>	
+	<p>&nbsp;</p>
 	
-	<p>
 	<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
-	</p>
-
-	<table class="formtable" border="0" width="100%">
-
-		<tr>
-			<td>
-			<label for="lbfriendlyname"><TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME></label>
-			<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>">
-			</td>
-			<td>&nbsp;
-			</td>
-			<td class="hint">
+	<div style="display:flex; width:100%; text-align:left;">
+		<div style="margin:auto; padding:10px; width:20%; text-align:left;">
+			<TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME>
+		</div>
+		<div style="margin:auto; padding:10px; width:30%">
+			<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname"
+		       	type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>">
+		</div>
+		<div class="hint" style="margin:auto; padding:10px; width:50%;">
 			<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
-			</td>
-		</tr>
-	</table>
+		</div>
+	</div>	
+	<p>&nbsp;</p>
+
 	<p>
 	<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
-	
-	</p>
-	<table class="formtable">
-		<tr>
-			<td>
+	<div style="display:flex; width:100%; text-align:left;">
+		<div style="margin:auto; padding:10px; width:20%; text-align:left;">
 			<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
 				<TMPL_VAR SENDSTATISTIC_CHECKBOX>
-				</fieldset>
-			</td>
-			<td>&nbsp;
-			</td><td  class="hint">
-				<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
-			</td>
-		</tr>
-	</table>
+			</fieldset>
+		</div>
+		<div class="hint" style="margin:auto; padding:10px; width:80%">
+			<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
+		</div>
+	</div>
+	<p>&nbsp;</p>
+
 	</form>
 	<center>
 		<p>
