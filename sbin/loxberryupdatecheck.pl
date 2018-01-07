@@ -39,7 +39,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="0.3.3.1";
+my $scriptversion="0.3.3.2";
 
 # print currtime('file') . "\n";
 
@@ -202,7 +202,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
 		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_RELEASE'} . " $release_version") if $querytype eq 'release';
 		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_PRERELEASE'} . " $release_version") if $querytype eq 'prerelease';
-		LoxBerry::Web::delete_notifications('updates', 'check', 1);
+		delete_notifications('updates', 'check', 1);
 	}
 	
 	if ($cgi->param('update')) {
@@ -482,7 +482,7 @@ sub check_commits
 	
 	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
 		notify('updates', 'check', "LoxBerry Updatecheck: New commit from $commit_by on $commit_date, message $commit_message.");
-		LoxBerry::Web::delete_notifications('updates', 'check', 1);
+		delete_notifications('updates', 'check', 1);
 	}
 	
 	# If an update was requested
@@ -827,28 +827,6 @@ sub err
 
 	}
 }
-
-sub notify
-{
-	my ($package, $name, $message, $error) = @_;
-	if (! $package || ! $name || ! $message) {
-		print STDERR "Notification: Missing parameters\n";
-		return;
-	}
-	$package = lc($package);
-	$name = lc($name);
-	if ($error) {
-		$error = '_err';
-	} else { 
-		$error = "";
-	}
-	
-	my $filename = $LoxBerry::Web::notification_dir . "/" . currtime('file') . "_${package}_${name}${error}.system";
-	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
-	print $fh $message . "\n";
-	close $fh;
-}
-
 
 # This routine is called at every end
 END 

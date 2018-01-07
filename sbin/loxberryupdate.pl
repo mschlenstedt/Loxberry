@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='0.3.3.2';
+my $scriptversion='0.3.3.3';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -451,26 +451,6 @@ sub delete_directory
 	}
 	return 1;
 }
-
-sub notify
-{
-	my ($package, $name, $message, $error) = @_;
-	if (! $package || ! $name || ! $message) {
-		print STDERR "Notification: Missing parameters\n";
-		return;
-	}
-	$package = lc($package);
-	$name = lc($name);
-	$error = '_err' if ($error);
-	
-	my $filename = $LoxBerry::Web::notification_dir . "/" . currtime('file') . "_${package}_${name}${error}.system";
-	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
-	print $fh $message . "\n";
-	close $fh;
-}
-
-
-
 
 # This routine is called at every end
 END 

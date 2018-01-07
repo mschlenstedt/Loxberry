@@ -18,7 +18,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.3.2";
+our $VERSION = "0.3.3.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -39,10 +39,6 @@ our @EXPORT = qw (
 my $lang;
 our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
-our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
-my @notifications;
-my $notifications_error;
-my $notifications_ok;
 
 # Performance optimizations
 our %htmltemplate_options = ( 
@@ -501,131 +497,6 @@ sub iso_languages
 	}
 	return @resultvals if ($selection eq 'values');
 	return %resultlabels if ($selection eq 'labels');
-}
-
-
-
-
-
-
-################################################################
-# get_notifications
-# Input: (optional) specific notification event filter
-# Output: Hash with notifications
-################################################################
-
-sub read_notificationlist
-{
-	if (@notifications) {
-		#print STDERR "Notification list cached.\n" if ($DEBUG);
-		return;
-	}
-	opendir( my $DIR, $notification_dir );
-	my @files = sort {$b cmp $a} readdir($DIR);
-	my $direntry;
-	my $notifycount;
-	@notifications = ();
-		
-	while ( my $direntry = shift @files ) {
-		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
-		print STDERR "Direntry: $direntry\n" if ($DEBUG);
-		my $notstr = substr($direntry, 16, rindex($direntry, '.')-16);
-		my ($package, $name, $severity) = split(/_/, $notstr);
-		my $notdate = substr($direntry, 0, 15);
-		# LOGDEB "Log type: $nottype  Date: $notdate";
-		my $dateobj = parsedatestring($notdate);
-		my %notification;
-		$notifycount++;
-		if (lc($severity) eq 'err') {
-			$notifications_error++;
-		} else {
-			$notifications_ok++;
-		}
-		$notification{'PACKAGE'} = $package;
-		$notification{'NAME'} = $name;
-		$notification{'SEVERITY'} = lc($severity);
-		$notification{'DATEOBJ'} = $dateobj;
-		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
-		$notification{'FILENAME'} = $direntry;
-		$notification{'FULLPATH'} = "$notification_dir/$direntry";
-		push(@notifications, \%notification);
-	}
-	# return @notifications;
-	closedir $DIR;
-	print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
-}
-
-sub get_notifications
-{
-	# print STDERR "get_notifications called.\n" if ($DEBUG);
-	my ($package, $name, $latest, $count) = @_;
-	LoxBerry::Web::read_notificationlist();
-	if (! $package) {
-		return @notifications if (! $count);
-		return $notifications_error, $notifications_ok, ($notifications_error+$notifications_ok);
-	}
-	
-	my @filtered = ();
-	my $filtered_errors=0;
-	my $filtered_ok=0;
-	
-	foreach my $notification (@notifications) {
-		next if ($package ne $notification->{PACKAGE});
-		next if ($name && $name ne $notification->{NAME});
-		if ($notification->{'SEVERITY'} eq 'err') {
-			$filtered_errors++;
-		} else {
-			$filtered_ok++;
-		}
-		push(@filtered, $notification);
-		last if ($latest);
-		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n" if ($DEBUG);
-	}
-	print STDERR "get_notifications: \n" if ($DEBUG);
-	print STDERR "Countings: $filtered_errors errors / $filtered_ok ok's\n" if ($DEBUG);
-	return @filtered if (! $count);
-	return $filtered_errors, $filtered_ok, ($filtered_errors+$filtered_ok);
-}
-
-sub get_notification_count
-{
-	my ($package, $name, $latest) = @_;
-	my ($notification_error, $notification_ok, $notification_sum) = LoxBerry::Web::get_notifications($package, $name, $latest, 1);
-	return $notification_error, $notification_ok, $notification_sum;
-
-}
-
-sub delete_notifications
-{
-	my ($package, $name, $ignorelatest) = @_;
-	LoxBerry::Web::read_notificationlist();
-	my $latestkept=0;
-	
-	foreach my $notification (@notifications) {
-		next if ($package ne $notification->{PACKAGE});
-		next if ($name && $name ne $notification->{NAME});
-		if ($ignorelatest && $latestkept == 0) {
-			$latestkept = 1;
-		} else {
-			unlink $notification->{FULLPATH};
-		}
-		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n" if ($DEBUG);
-	}
-	undef @notifications;
-}
-
-#####################################################
-# Parse yyyymmdd_hhmmss date to date object
-#####################################################
-
-sub parsedatestring 
-{
-	my ($datestring) = @_;
-	
-	my $dt = Time::Piece->strptime($datestring, "%Y%m%d_%H%M%S");
-	
-	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
-	return $dt;
 }
 
 

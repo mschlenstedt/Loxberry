@@ -131,9 +131,9 @@ our $maintemplate = HTML::Template->new(
 
 our %SL = LoxBerry::Web::readlanguage($maintemplate);
 
-my @notif = LoxBerry::Web::get_notifications('updates', 'update');
-my ($check_err, $check_ok, $check_sum) = LoxBerry::Web::get_notification_count('updates', 'check');
-my ($update_err, $update_ok, $update_sum) = LoxBerry::Web::get_notification_count('updates', 'update');
+my @notif = get_notifications('updates', 'update');
+my ($check_err, $check_ok, $check_sum) = get_notification_count('updates', 'check');
+my ($update_err, $update_ok, $update_sum) = get_notification_count('updates', 'update');
 
 
 print STDERR "Notifications:\n";
@@ -523,7 +523,7 @@ sub lbupdates
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
-	LoxBerry::Web::delete_notifications('updates', 'check');
+	delete_notifications('updates', 'check');
 
 }
 
@@ -560,7 +560,7 @@ sub lbuhistory
 		my $logdate = substr($direntry, 0, 15);
 		next if ($logtype ne "update" && $logtype ne "check");
 		# LOGDEB "Log type: $logtype Log date: $logdate";
-		my $dateobj = LoxBerry::Web::parsedatestring($logdate);
+		my $dateobj = parsedatestring($logdate);
 		if ($logtype eq 'update') {
 			my %update;
 			$updatecount++;
@@ -590,7 +590,7 @@ sub lbuhistory
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
-	LoxBerry::Web::delete_notifications('updates', 'update');
+	delete_notifications('updates', 'update');
 	
 	
 	

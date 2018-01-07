@@ -20,6 +20,7 @@
 ##########################################################################
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::Log;
 
 use CGI qw/:standard/;
 use LWP::UserAgent;
@@ -151,7 +152,7 @@ sub mainmenu {
 	my $notification_allerrors = 0;
 	my $notification_alloks = 0;
 	
-	my @notifications = LoxBerry::Web::get_notifications();
+	my @notifications = get_notifications();
 	for my $notification (@notifications ) {
 		if ($notification->{SEVERITY} eq 'err') {
 			$notification_errors{$notification->{PACKAGE}}++;
