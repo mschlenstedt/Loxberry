@@ -161,7 +161,6 @@
 				<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 				<button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 			</center>
-			<div id="form-error-message" class="form-error-message"></div>
 		</form>
 		<div id="form-error-message" class="form-error-message">&nbsp;</div>
 		<script>
@@ -178,7 +177,7 @@
 				$(object+'_div').on('blur keyup input focusin', function(e)
 				{
 					$(object).attr('value',$(this).text());
-					if (e.type == "blur" || e.type == "paste" )
+					if (e.type == "blur" )
 					{
 						$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
 					}
@@ -195,10 +194,10 @@
 						$(this).removeClass('param_error').addClass('param_error');
 					} 
 					
-					valid_ip_address( object,e );
+					valid_value( object,e );
 				});
 			}
-			function valid_ip_address( object,e ) 
+			function valid_value( object,e ) 
 			{
 				var rule = new RegExp($(object).attr("data-validation-rule"));
 				if( !rule.test( $(object+'_div').text() ) )
