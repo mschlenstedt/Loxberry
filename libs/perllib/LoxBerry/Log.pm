@@ -4,11 +4,13 @@
 use strict;
 use Carp;
 use LoxBerry::System;
+use Time::Piece;
 use JSON;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.1.4";
+our $VERSION = "0.3.3.1";
+our $DEBUG;
 
 # This object is the object the exported LOG* functions use
 our $mainobj;
@@ -26,21 +28,16 @@ our %severitylist = (
 	7 => 'DEBUG' );
 
 ### Exports ###
-# use base 'Exporter';
-# our @EXPORT = qw (
+use base 'Exporter';
+our @EXPORT = qw (
 
-# LOGDEB
-# LOGINF
-# LOGOK
-# LOGWARN
-# LOGERR
-# LOGCRIT
-# LOGALERT
-# LOGEMERGE
-# LOGSTART
-# LOGEND
+notify
+delete_notifications
+get_notification_count
+get_notifications
+parsedatestring
 
-# );
+);
 
 # Variables
 
@@ -407,12 +404,163 @@ sub DESTROY {
 } 
 
 
+##################################################################
+##################################################################
+# NOTIFICATION FUNCTIONS (notify)
+
+my @notifications;
+my $notifications_error;
+my $notifications_ok;
+our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
 
 
+sub notify
+{
+	my ($package, $name, $message, $error) = @_;
+	if (! $package || ! $name || ! $message) {
+		print STDERR "Notification: Missing parameters\n";
+		return;
+	}
+	$package = lc($package);
+	$name = lc($name);
+	if ($error) {
+		$error = '_err';
+	} else { 
+		$error = "";
+	}
+	
+	my $filename = $LoxBerry::Web::notification_dir . "/" . currtime('file') . "_${package}_${name}${error}.system";
+	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
+	print $fh $message . "\n";
+	close $fh;
+}
 
 
-## ===============================================================
-# Package main
+################################################################
+# get_notifications
+# Input: (optional) specific notification event filter
+# Output: Hash with notifications
+################################################################
+
+sub get_notifications
+{
+	# print STDERR "get_notifications called.\n" if ($DEBUG);
+	my ($package, $name, $latest, $count) = @_;
+	LoxBerry::Log::read_notificationlist();
+	if (! $package) {
+		return @notifications if (! $count);
+		return $notifications_error, $notifications_ok, ($notifications_error+$notifications_ok);
+	}
+	
+	my @filtered = ();
+	my $filtered_errors=0;
+	my $filtered_ok=0;
+	
+	foreach my $notification (@notifications) {
+		next if ($package ne $notification->{PACKAGE});
+		next if ($name && $name ne $notification->{NAME});
+		if ($notification->{'SEVERITY'} eq 'err') {
+			$filtered_errors++;
+		} else {
+			$filtered_ok++;
+		}
+		push(@filtered, $notification);
+		last if ($latest);
+		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n" if ($DEBUG);
+	}
+	print STDERR "get_notifications: \n" if ($DEBUG);
+	print STDERR "Countings: $filtered_errors errors / $filtered_ok ok's\n" if ($DEBUG);
+	return @filtered if (! $count);
+	return $filtered_errors, $filtered_ok, ($filtered_errors+$filtered_ok);
+}
+
+sub get_notification_count
+{
+	my ($package, $name, $latest) = @_;
+	my ($notification_error, $notification_ok, $notification_sum) = LoxBerry::Log::get_notifications($package, $name, $latest, 1);
+	return $notification_error, $notification_ok, $notification_sum;
+
+}
+
+sub delete_notifications
+{
+	my ($package, $name, $ignorelatest) = @_;
+	LoxBerry::Log::read_notificationlist();
+	my $latestkept=0;
+	
+	foreach my $notification (@notifications) {
+		next if ($package ne $notification->{PACKAGE});
+		next if ($name && $name ne $notification->{NAME});
+		if ($ignorelatest && $latestkept == 0) {
+			$latestkept = 1;
+		} else {
+			unlink $notification->{FULLPATH};
+		}
+		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n" if ($DEBUG);
+	}
+	undef @notifications;
+}
+
+
+#####################################################
+# Parse yyyymmdd_hhmmss date to date object
+#####################################################
+sub parsedatestring 
+{
+	my ($datestring) = @_;
+	
+	my $dt = Time::Piece->strptime($datestring, "%Y%m%d_%H%M%S");
+	
+	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
+	return $dt;
+}
+
+# INTERNAL function read_notificationlist
+sub read_notificationlist
+{
+	if (@notifications) {
+		#print STDERR "Notification list cached.\n" if ($DEBUG);
+		return;
+	}
+	opendir( my $DIR, $notification_dir );
+	my @files = sort {$b cmp $a} readdir($DIR);
+	my $direntry;
+	my $notifycount;
+	@notifications = ();
+		
+	while ( my $direntry = shift @files ) {
+		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
+		print STDERR "Direntry: $direntry\n" if ($DEBUG);
+		my $notstr = substr($direntry, 16, rindex($direntry, '.')-16);
+		my ($package, $name, $severity) = split(/_/, $notstr);
+		my $notdate = substr($direntry, 0, 15);
+		# LOGDEB "Log type: $nottype  Date: $notdate";
+		my $dateobj = LoxBerry::Log::parsedatestring($notdate);
+		my %notification;
+		$notifycount++;
+		if (lc($severity) eq 'err') {
+			$notifications_error++;
+		} else {
+			$notifications_ok++;
+		}
+		$notification{'PACKAGE'} = $package;
+		$notification{'NAME'} = $name;
+		$notification{'SEVERITY'} = lc($severity);
+		$notification{'DATEOBJ'} = $dateobj;
+		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+		$notification{'FILENAME'} = $direntry;
+		$notification{'FULLPATH'} = "$notification_dir/$direntry";
+		push(@notifications, \%notification);
+	}
+	# return @notifications;
+	closedir $DIR;
+	print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
+}
+
+
+##################################################################
+##################################################################
+##  PACKAGE MAIN
 
 package main;
 
