@@ -431,7 +431,7 @@ sub notify
 	
 	my $filename = $notification_dir . "/" . LoxBerry::System::currtime('file') . "_${package}_${name}${error}.system";
 	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
-	print $fh $message . "\n";
+	print $fh $message;
 	close $fh;
 }
 

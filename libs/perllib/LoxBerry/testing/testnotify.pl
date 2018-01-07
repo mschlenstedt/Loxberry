@@ -35,9 +35,9 @@ my @notifications = get_notifications( $package);
 for my $notification (@notifications ) {
 	 my ($contentraw, $contenthtml) = notification_content($notification->{KEY});
     if ( $notification->{SEVERITY} ) {
-        print STDERR "     Error at $notification->{DATESTR} in group $notification->{NAME}:\n$contentraw";
+        print STDERR "     Error at $notification->{DATESTR} in group $notification->{NAME}:\n$contentraw\n";
     } else {
-        print STDERR "     Info at $notification->{DATESTR} in group $notification->{NAME}:\n$contentraw";
+        print STDERR "     Info at $notification->{DATESTR} in group $notification->{NAME}:\n$contentraw\n";
     }
 }
 
