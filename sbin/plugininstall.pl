@@ -23,13 +23,14 @@ use File::Path qw(make_path remove_tree);
 use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8);
 use LoxBerry::System;
-use LoxBerry::Web;
+use CGI;
+#use LoxBerry::Web;
 use version;
 #use warnings;
 #use strict;
 
 # Version of this script
-my $version = "0.0.3";
+my $version = "0.1.0";
 
 ##########################################################################
 # Variables / Commandline
@@ -60,15 +61,10 @@ my $dpkgbin         = $bins->{DPKG};
 # Language Settings
 ##########################################################################
 
-if ($R::lang) {
-        # Nice feature: We override language detection of LoxBerry::Web
-        $LoxBerry::Web::lang = substr($R::lang, 0, 2);
-}
-# If we did the 'override', lblanguage will give us that language
 my $lang = lblanguage();
 
 # Read phrases from language_LANG.ini
-our %SL = LoxBerry::Web::readlanguage(undef);
+our %SL = LoxBerry::System::readlanguage(undef);
 
 ##########################################################################
 # Checks
@@ -161,16 +157,18 @@ sub install {
 
 # Check secure PIN
 my $pin = $R::pin;
-open (F, "<$lbsconfigdir/securepin.dat");
-  my $pinsaved = <F>;
-close (F);
-if (!crypt($pin,$pinsaved) eq $pinsaved) {
-  $message =  "$SL{'PLUGININSTALL.ERR_WRONGPIN'}";
-  &logfail;
+
+if ( LoxBerry::System::check_securepin($pin) ) {
+	$message =  "$SL{'PLUGININSTALL.ERR_SECUREPIN_WRONG'}";
+	&logfail;
 }
 
 # Choose random temp filename
-my $tempfile = &generate(10);
+if ( !$R::tempfile ) {;
+	our $tempfile = &generate(10);
+} else {
+	our $tempfile = $R::tempfile;
+}
 if (!$zipmode) { 
   our $tempfolder = $R::folder;
   if (!-e $tempfolder) {
@@ -185,7 +183,7 @@ if (!$zipmode) {
   }
   make_path("$tempfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 }
-$tempfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
+$tmpfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
 $message =  "Temp Folder: $tempfolder";
 &loginfo;
 
@@ -196,7 +194,7 @@ if (-e "$logfile" || -e "$statusfile") {
   $message =  "$SL{'PLUGININSTALL.ERR_TEMPFILES_EXISTS'}";
   &logfail;
 }
-$message =  "Logfile: $logfile";
+$message = "Logfile: $logfile";
 &loginfo;
 open (F, ">$logfile");
   print F "";
@@ -1184,20 +1182,23 @@ if (-f "$tempfolder/postroot.sh") {
 
 # Copy installation files
 make_path("$lbhomedir/data/system/install/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
-$message =  "$SL{'PLUGININSTALL.INF_INSTALLSCRIPTS'}";
-&loginfo;
-system("$sudobin -n -u loxberry cp -v $tempfolder/*.sh $lbhomedir/data/system/install/$pfolder 2>&1");
-if ($? ne 0) {
-  $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
-  &logerr; 
-  push(@errors,"INSTALL scripts: $message");
-} else {
-  $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
-  &logok;
-}
+my @installfiles = glob("$tempfolder/*.sh");
+if( my $cnt = @myfiles ){
+	$message =  "$SL{'PLUGININSTALL.INF_INSTALLSCRIPTS'}";
+	&loginfo;
+	system("$sudobin -n -u loxberry cp -v $tempfolder/*.sh $lbhomedir/data/system/install/$pfolder 2>&1");
+	if ($? ne 0) {
+	  $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
+	  &logerr; 
+	  push(@errors,"INSTALL scripts: $message");
+	} else {
+	  $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
+	  &logok;
+	}
+	&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
+	&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 
-&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
-&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
+}
 
 # Replacing Environment strings
 $message =  "$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
@@ -1233,12 +1234,17 @@ if ($chkhcpath) {
 # Cleaning
 $message =  "$SL{'PLUGININSTALL.INF_END'}";
 &loginfo;
-system("$sudobin -n -u loxberry cp /tmp/$tempfile.log $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
+print "Tempfolder is: $tempfile\n";
+if ( -e "/tmp/uploads/$tempffile" ) {
+	system("$sudobin -n -u loxberry rm -vrf /tmp/uploads/$tempfile 2>&1");
+}
+if ( $R::tempfile ) {
+	system("$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1");
+} 
 
 # Finished
 $message =  "$SL{'PLUGININSTALL.OK_END'}";
 &logok;
-system("rm -f /tmp/$tempfile.log");
 
 # Error summarize
 if (@errors || @warnings) {
@@ -1265,6 +1271,10 @@ if (-e $statusfile) {
     open (F, ">$statusfile");
       print F "3";
     close (F);
+    open (F, ">>$lbslogdir/reboot.required");
+      print F "$SL{'PLUGININSTALL.INF_REBOOT'} $ptitle";
+    close (F);
+
   } else {
     open (F, ">$statusfile");
       print F "0";
@@ -1272,6 +1282,11 @@ if (-e $statusfile) {
   }
 }
 
+system("cp -v /tmp/$tempfile.log $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
+&setowner ("loxberry", "0", "$lbhomedir/log/system/plugininstall/$pname.log", "LOG Save");
+system("rm -f /tmp/$tempfile.log 2>&1");
+
+print "\e[1mINFO:\e[0m Good bye.\n";
 exit (0);
 
 }
@@ -1412,6 +1427,12 @@ sub logfail {
   close (LOG);
 
   &purge_installation("all");
+  if ( -e "/tmp/uploads/$tempffile" ) {
+	system("$sudobin -n -u loxberry rm -rf /tmp/uploads/$tempfile 2>&1");
+  }
+  if ( $R::tempfile ) {
+	system("$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1");
+  } 
  
   if (-e $statusfile) {
     open (F, ">$statusfile");

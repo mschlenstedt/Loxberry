@@ -90,6 +90,20 @@ $do = quotemeta($do);
 $saveformdata          =~ tr/0-1//cd;
 $saveformdata          = substr($saveformdata,0,1);
 
+my $maintemplate = HTML::Template->new(
+      filename => "$lbstemplatedir/plugininstall.html",
+      global_vars => 1,
+      loop_context_vars => 1,
+      die_on_bad_params=> 0,
+      associate => $cfg,
+      %htmltemplate_options,
+      debug => 1,
+);
+
+$maintemplate->param( "LBHOSTNAME", lbhostname());
+$maintemplate->param( "LANG", $lang);
+$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
+
 
 ##########################################################################
 # Language Settings
@@ -98,9 +112,6 @@ $saveformdata          = substr($saveformdata,0,1);
 my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 my $lang = lblanguage();
-$maintemplate->param( "LBHOSTNAME", lbhostname());
-$maintemplate->param( "LANG", $lang);
-$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 
 
 ##########################################################################
@@ -119,6 +130,7 @@ system("rm -r -f /tmp/uploads/");
 if (!$do || $do eq "form") {
   print STDERR "FORM called\n";
   $maintemplate->param("FORM", 1);
+
   &form;
 }
 
@@ -150,17 +162,6 @@ exit;
 #####################################################
 
 sub form {
-
-	my $maintemplate = HTML::Template->new(
-		filename => "$lbstemplatedir/plugininstall.html",
-		global_vars => 1,
-		loop_context_vars => 1,
-		die_on_bad_params=> 0,
-		associate => $cfg,
-		%htmltemplate_options,
-		debug => 1,
-	);
-
 
 #open(F,"<$installfolder/data/system/plugindatabase.dat");
 #  @data = <F>;
@@ -215,23 +216,12 @@ sub uninstall {
 
 sub install {
 
-	my $maintemplate = HTML::Template->new(
-		filename => "$lbstemplatedir/plugininstall_log.html",
-		global_vars => 1,
-		loop_context_vars => 1,
-		die_on_bad_params=> 0,
-		associate => $cfg,
-		%htmltemplate_options,
-		debug => 1,
-	);
-
 	# Check if SecurePIN is correct
 	if ( LoxBerry::System::check_securepin($securepin) ) {
 		print STDERR "The entered securepin is wrong.";
 		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_SECUREPIN_WRONG'};
 		&error;
 	}
-
 	my $uploadfile = param('uploadfile');
 	print STDERR "The upload file is $uploadfile.\n";
 
@@ -267,9 +257,29 @@ sub install {
 		&error;
 	}
 
-		$error = "Stopping";
-		&error;
+	my $logtemplate = HTML::Template->new(
+		filename => "$lbstemplatedir/plugininstall_log.html",
+		global_vars => 1,
+		loop_context_vars => 1,
+		die_on_bad_params=> 0,
+		associate => $cfg,
+		%htmltemplate_options,
+		debug => 1,
+	);
+	my %SL = LoxBerry::System::readlanguage($logtemplate);
+	$logtemplate->param( "LOGFILE", "$tempfile.log");
+	
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 
+	print $logtemplate->output();
+	undef $logtemplate;
+
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	
 	# Without the following workaround
 	# the script cannot be executed as
 	# background process via CGI
@@ -277,11 +287,24 @@ sub install {
 	die "Fork failed: $!" if !defined $pid;
 
 	if ($pid == 0) {
+
+		my $logfile = "/tmp/$tempfile.log";
+
 		# do this in the child
 		open STDIN, "</dev/null";
 		open STDOUT, ">$logfile";
 		#open STDERR, ">$logfile";
 		open STDERR, ">/dev/null";
+
+		open UPLOADFILE, ">/tmp/$tempfile.zip" or ($openerr = 1);
+		binmode $uploadfile;
+		while ( <$uploadfile> ) {
+			print UPLOADFILE;
+		}
+		close UPLOADFILE;
+
+		# Do the installation
+		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=/tmp/$tempfile.zip pin=$securepin tempfile=$tempfile");
 
 	} # End Child process
 

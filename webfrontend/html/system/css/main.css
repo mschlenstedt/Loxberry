@@ -397,6 +397,7 @@ a:link.nolinkstyle
 	.param_ok
 	{
 		color: #008000;
+		border-color: #7e7e7e;
 	}
 
 /* PANEL START */
