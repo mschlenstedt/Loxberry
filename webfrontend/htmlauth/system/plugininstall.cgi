@@ -19,13 +19,13 @@
 # Modules
 ##########################################################################
 
+use LoxBerry::System;
+use LoxBerry::Web;
+
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
-use File::HomeDir;
 use File::Path qw(make_path remove_tree);
-use Digest::MD5 qw(md5_hex);
-use Encode qw(encode_utf8);
 #use warnings;
 #use strict;
 #no strict "refs"; # we need it for template system
@@ -34,13 +34,10 @@ use Encode qw(encode_utf8);
 # Variables
 ##########################################################################
 
-our $cfg;
-our $pcfg;
+my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helptemplate = "help_plugininstall.html";
+
 our $phrase;
-our $namef;
-our $value;
-our %query;
-our $lang;
 our $template_title;
 our $help;
 our @help;
@@ -49,14 +46,10 @@ our $helplink;
 our $saveformdata;
 our $installfolder;
 our $languagefile;
-our $version;
-our $error;
-our $saveformdata;
 our $uploadfile;
 our $output;
 our $message;
 our $e;
-our $do;
 our $nexturl;
 our $filesize;
 our $max_filesize;
@@ -108,22 +101,37 @@ our $now;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.7";
+my $version = "0.1.0";
 
-$cfg             = new Config::Simple("$home/config/system/general.cfg");
-$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
-$unzipbin        = $cfg->param("BINARIES.UNZIP");
-$bashbin         = $cfg->param("BINARIES.BASH");
-$aptbin          = $cfg->param("BINARIES.APT");
-$sudobin         = $cfg->param("BINARIES.SUDO");
-$chmodbin        = $cfg->param("BINARIES.CHMOD");
+my $cfg						= new Config::Simple("$lbsconfigdir/general.cfg");
+#$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
+#$lang            = $cfg->param("BASE.LANG");
+#$unzipbin        = $cfg->param("BINARIES.UNZIP");
+#$bashbin         = $cfg->param("BINARIES.BASH");
+#$aptbin          = $cfg->param("BINARIES.APT");
+#$sudobin         = $cfg->param("BINARIES.SUDO");
+#$chmodbin        = $cfg->param("BINARIES.CHMOD");
+
+my $maintemplate = HTML::Template->new(
+	filename => "$lbstemplatedir/plugininstall.html",
+	global_vars => 1,
+	loop_context_vars => 1,
+	die_on_bad_params=> 0,
+	associate => $cfg,
+	%htmltemplate_options,
+	debug => 1,
+);
+
+my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
 #########################################################################
 
 # Everything from URL
+my %query;
+my $namef;
+my $value;
 foreach (split(/&/,$ENV{'QUERY_STRING'})){
   ($namef,$value) = split(/=/,$_,2);
   $namef =~ tr/+/ /;
@@ -134,45 +142,31 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 }
 
 # And this one we really want to use
-$do           = $query{'do'};
-$answer       = $query{'answer'};
-$pid          = $query{'pid'};
+my $do           = $query{'do'};
+my $answer       = $query{'answer'};
+my $pid          = $query{'pid'};
 
 # Everything from Forms
-$saveformdata = param('saveformdata');
+my $saveformdata = param('saveformdata');
+my $securepin = param('securepin');
 
 # Filter
-quotemeta($query{'lang'});
-quotemeta($saveformdata);
-quotemeta($do);
+$saveformdata = quotemeta($saveformdata);
+$do = quotemeta($do);
 
 $saveformdata          =~ tr/0-1//cd;
 $saveformdata          = substr($saveformdata,0,1);
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
+
+my $error;
 
 ##########################################################################
 # Language Settings
 ##########################################################################
 
-# Override settings with URL param
-if ($query{'lang'}) {
-  $lang = $query{'lang'};
-}
-
-# Standard is german
-if ($lang eq "") {
-  $lang = "de";
-}
-
-# If there's no language phrases file for choosed language, use german as default
-if (!-e "$installfolder/templates/system/$lang/language.dat") {
-  $lang = "de";
-}
-
-# Read translations / phrases
-$languagefile = "$installfolder/templates/system/$lang/language.dat";
-$phrase = new Config::Simple($languagefile);
+my $lang = lblanguage();
+$maintemplate->param( "LBHOSTNAME", lbhostname());
+$maintemplate->param( "LANG", $lang);
+$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 
 ##########################################################################
 # Main program
@@ -187,20 +181,28 @@ system("rm -r -f /tmp/uploads/");
 
 # Menu
 if (!$do || $do eq "form") {
+  print STDERR "FORM called\n";
+  $maintemplate->param("FORM", 1);
   &form;
 }
 
 # Installation
 elsif ($do eq "install") {
+  print STDERR "INSTALL called\n";
+  $maintemplate->param("INSTALL", 1);
   &install;
 }
 
 # Installation
 elsif ($do eq "uninstall") {
+  print STDERR "UINSTALL called\n";
+  $maintemplate->param("UINSTALL", 1);
   &uninstall;
 }
 
 else {
+  print STDERR "FORM called\n";
+  $maintemplate->param("FORM", 1);
   &form;
 }
 
@@ -212,46 +214,39 @@ exit;
 
 sub form {
 
-print "Content-Type: text/html\n\n";
+#open(F,"<$installfolder/data/system/plugindatabase.dat");
+#  @data = <F>;
+#  foreach (@data){
+#    s/[\n\r]//g;
+#    # Comments
+#    if ($_ =~ /^\s*#.*/) {
+#      print F "$_\n";
+#      next;
+#    }
+#    @fields = split(/\|/);
+#    $pmd5checksum = @fields[0];
+#    $pname = @fields[4];
+#    $btn1 = $phrase->param("TXT0101");
+#    $btn2 = $phrase->param("TXT0102");
+#    $ptablerows = $ptablerows . "<tr><th>$i</th><td>@fields[6]</td><td>@fields[3]</td><td>@fields[1]</td>";
+#    $ptablerows = $ptablerows . "<td><a data-role=\"button\" data-inline=\"true\" data-icon=\"info\" data-mini=\"true\" href=\"/admin/system/tools/logfile.cgi?logfile=system/plugininstall/$pname.log&header=html&format=template\" target=\"_blank\">$btn1</a>&nbsp;";
+#    $ptablerows = $ptablerows . "<a data-role=\"button\" data-inline=\"true\" data-icon=\"delete\" data-mini=\"true\" href=\"/admin/system/plugininstall.cgi?do=uninstall&pid=$pmd5checksum\">$btn2</a></td></tr>\n";
+#    $i++;
+#  }
+#close (F);
 
-$template_title = $phrase->param("TXT0000") . ": " . $phrase->param("TXT0043");
-$help = "plugin";
+	# Print Template
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 
-# Create table rows for each Plugin entry
-$ptablerows = "";
-$i = 1;
-open(F,"<$installfolder/data/system/plugindatabase.dat");
-  @data = <F>;
-  foreach (@data){
-    s/[\n\r]//g;
-    # Comments
-    if ($_ =~ /^\s*#.*/) {
-      print F "$_\n";
-      next;
-    }
-    @fields = split(/\|/);
-    $pmd5checksum = @fields[0];
-    $pname = @fields[4];
-    $btn1 = $phrase->param("TXT0101");
-    $btn2 = $phrase->param("TXT0102");
-    $ptablerows = $ptablerows . "<tr><th>$i</th><td>@fields[6]</td><td>@fields[3]</td><td>@fields[1]</td>";
-    $ptablerows = $ptablerows . "<td><a data-role=\"button\" data-inline=\"true\" data-icon=\"info\" data-mini=\"true\" href=\"/admin/system/tools/logfile.cgi?logfile=system/plugininstall/$pname.log&header=html&format=template\" target=\"_blank\">$btn1</a>&nbsp;";
-    $ptablerows = $ptablerows . "<a data-role=\"button\" data-inline=\"true\" data-icon=\"delete\" data-mini=\"true\" href=\"/admin/system/plugininstall.cgi?do=uninstall&pid=$pmd5checksum\">$btn2</a></td></tr>\n";
-    $i++;
-  }
-close (F);
+	print $maintemplate->output();
+	undef $maintemplate;
 
-# Print Template
-&header;
-open(F,"$installfolder/templates/system/$lang/plugininstall_menu.html") || die "Missing template system/$lang/plugininstall_menu.html";
-  while (<F>) {
-    $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-    print $_;
-  }
-close(F);
-&footer;
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
 
-exit;
+	exit;
 
 }
 
@@ -458,6 +453,15 @@ exit;
 #####################################################
 
 sub install {
+
+# Check if SecurePIN is correct
+if (! LoxBerry::System::check_securepin($securepin) {
+	print STDERR "The entered securepin is wrong.";
+	$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_SECUREPIN_WRONG'};
+	&error;
+}
+
+exit;
 
 $uploadfile = param('uploadfile');
 my $origname = $uploadfile;
@@ -1302,21 +1306,26 @@ exit;
 
 sub error {
 
-$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0043");
-$help = "plugin";
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};
 
-print "Content-Type: text/html\n\n";
+	my $errtemplate = HTML::Template->new(
+	filename => "$lbstemplatedir/error.html",
+	global_vars => 1,
+	loop_context_vars => 1,
+	die_on_bad_params=> 0,
+	%htmltemplate_options,
+	# associate => $cfg,
+	);
 
-&header;
-open(F,"$installfolder/templates/system/$lang/error.html") || die "Missing template system/$lang/error.html";
-    while (<F>) {
-      $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      print $_;
-    }
-close(F);
-&footer;
-
-exit;
+	print STDERR "plugininstall.cgi: sub error called with message $error.\n";
+	$errtemplate->param( "ERROR", $error);
+	LoxBerry::Web::readlanguage($errtemplate);
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart();
+	print $errtemplate->output();
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
+	exit;
 
 }
 

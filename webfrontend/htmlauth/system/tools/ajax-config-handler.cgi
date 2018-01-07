@@ -105,7 +105,7 @@ sub secupdatesautoreboot
 				if ($value eq 'query') {
 					my ($querystring, $queryresult) = split / /;
 					# print STDERR "### QUERY result: " . $queryresult . "\n";
-					$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
+					$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g; #" Syntax highlighting fix for UltraEdit
 					print "secupdates-autoreboot-" . $queryresult;
 				} else {
 					$_ = $value eq "false" ? "Unattended-Upgrade::Automatic-Reboot-WithUsers \"false\";\n" : "Unattended-Upgrade::Automatic-Reboot-WithUsers \"true\";\n";}

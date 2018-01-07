@@ -1,0 +1,72 @@
+<!-- ** START template/system/plugininstall.html Sun  7 Jan 07:09:54 CET 2018 ************************************************************************************ -->
+<TMPL_IF FORM>
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
+		<input type="hidden" name="saveformdata" value="1">
+		<div style="display:flex; width:100%; text-align:left;">
+			<div style="margin:auto; padding:10px; width:15%; text-align:left;">
+				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
+			</div>
+			<div style="margin:auto; padding:10px; width:50%; text-align:left;">
+				<input type="file" name="uploadfile" class="textfield">
+			</div>
+			<div style="margin:auto; padding:10px; width:10%; text-align:left;">
+				<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+			</div>
+			<div style="margin:auto; padding:10px; width:15%; text-align:left;">
+				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
+			</div>
+			<div style="margin:auto; padding:10px; width:10%; text-align:left;">
+				<input name="securepin" id="securepin" type="password" size="10"
+				class="textfield" value="" style="background-color:#FF5632" oninput="disable()">
+			</div>
+		</div>
+	</form>
+	<p>&nbsp;</p>
+
+
+	<div style="display:flex; width:100%; text-align:left;">
+		<div style="margin:auto; padding:10px;text-align:left;">
+			<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
+		</div>
+		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
+			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
+		</div>
+	</div>
+
+	<table data-role="table" data-mode="columntoggle" class="ui-responsive table-stroke" data-column-btn-text="Display Columns">
+		<thead>
+			<tr>
+				<th data-priority="2"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_NO></th>
+				<th data-priority="1"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_PLUGIN></th>
+				<th data-priority="3"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_VERSION></th>
+				<th data-priority="3"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_UPDATES></th>
+				<th data-priority="1"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_OPTIONS></th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+
+	<script>
+		var $messages = $('#form-error-message');
+		$.validate(
+		{
+			modules : 'file',
+			errorMessagePosition: 'inline',
+		});
+
+		// Disable some options on Load depending on selected value
+		disable();
+
+		function disable() {
+		if ( $('#securepin').val().length == 0 ) {
+			$('#btnsubmit').addClass('ui-disabled');
+		}
+		else {
+			$('#btnsubmit').removeClass('ui-disabled');
+		}
+	}
+
+	</script>
+</TMPL_IF>
+<!-- ** END template/system/plugininstall.html ************************************************************************************ -->
