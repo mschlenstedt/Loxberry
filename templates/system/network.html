@@ -1,4 +1,4 @@
-		<!-- ** START template/system/network.html 09:24 28.11.2017 ************************************************************************************ -->
+		<!-- ** START template/system/network.html 07.01.2018 19:54:15  ************************************************************************************ -->
 <TMPL_IF FORM>									
 		<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="<TMPL_VAR SELFURL>">
 			<input type="hidden" name="saveformdata" value="1">
@@ -27,9 +27,9 @@
 					</td>
 					<td width="50%">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable()" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
+							<input onclick="disable(); clean_values('netzwerkssid netzwerkschluessel');" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
 								<label for="netzwerkanschluss_eth"><TMPL_VAR NETWORK.SELECT_CABLE></label>
-							<input onclick="disable()" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
+							<input onclick="disable(); $('#netzwerkssid').attr('value',$('#netzwerkssid_div').text()); $('#netzwerkschluessel').attr('value',$('#netzwerkschluessel_div').text());" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
 								<label for="netzwerkanschluss_wlan"><TMPL_VAR NETWORK.SELECT_WIRELESS></label>
 						</fieldset>
 					</td>
@@ -49,7 +49,8 @@
 						<label id="labelnetzwerkssid"><TMPL_VAR NETWORK.LABEL_WIRELESS></label>
 					</td>
 					<td>
-						<input id="netzwerkssid" name="netzwerkssid" type="text" class="textfield" value="<TMPL_VAR NETWORK.SSID>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkssid_div'><TMPL_VAR NETWORK.SSID></div>
+						<input id='netzwerkssid' name='netzwerkssid' type='hidden' value='<TMPL_VAR NETWORK.SSID>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="^([\w\u0020\u0024\u0040\u005e\u0060\u002c\u007c\u0025\u003b\u002e\u007e\u0028\u0029\u002f\u005c\u007b\u007d\u003a\u003f\u005b\u005d\u003d\u002d\u002b\u00f5\u0023\u0021]{1,32})$">
 					</td>
 					<td valign="middle">
 						<a href="#" data-role="button" id="btnlistnetworks" data-inline="true" data-mini="true"
@@ -67,14 +68,13 @@
 						<label id="labelnetzwerkschluessel"><TMPL_VAR NETWORK.LABEL_NETWORKKEY></label>
 					</td>
 					<td>
-						<input id="netzwerkschluessel" name="netzwerkschluessel" type="text" class="textfield"
-							value="<TMPL_VAR NETWORK.WPA>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkschluessel_div' name='netzwerkschluessel_div'><TMPL_VAR NETWORK.WPA></div>
+						<input id='netzwerkschluessel' name='netzwerkschluessel' type='hidden' value='<TMPL_VAR NETWORK.WPA>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="^([\u0020-\u007e\u00a0-\u00ff]{8,64})$">
 					</td>
 					<td>
 						&nbsp;
 					</td>
 					<td>
-						
 					</td>
 				</tr>
 				<tr class="area-netzwerkadressen">
@@ -83,7 +83,7 @@
 					</td>
 					<td width="50%">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable()" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
+							<input onclick="disable(); clean_values('netzwerkipadresse netzwerkipmaske netzwerkgateway netzwerknameserver');" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
 								<label for="netzwerkadressen_dhcp"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP></label>
 							<input onclick="disable()" <TMPL_VAR CHECKED4> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
 								<label for="netzwerkadressen_manual"><TMPL_VAR NETWORK.SELECT_IP_MANUAL></label>
@@ -101,8 +101,8 @@
 						<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
 					</td>
 					<td>
-						<input id="netzwerkipadresse" name="netzwerkipadresse" type="text" class="textfield" value="<TMPL_VAR NETWORK.IPADDRESS>" data-validation-optional="true"
-							data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP><br>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkipadresse_div'><TMPL_VAR NETWORK.IPADDRESS></div>
+						<input id='netzwerkipadresse' name='netzwerkipadresse' type='hidden' value='<TMPL_VAR NETWORK.IPADDRESS>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'>
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -116,8 +116,8 @@
 						<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
 					</td>
 					<td>
-						<input id="netzwerkipmaske" name="netzwerkipmaske" type="text" class="textfield" value="<TMPL_VAR NETWORK.MASK>" data-validation-optional="true"
-							data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK><br>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkipmaske_div'><TMPL_VAR NETWORK.MASK></div>
+						<input id='netzwerkipmaske' name='netzwerkipmaske' type='hidden' value='<TMPL_VAR NETWORK.MASK>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="^(((255\.){3}(254|252|248|240|224|192|128|0+))|((255\.){2}(255|254|252|248|240|224|192|128|0+)\.0)|((255\.)(255|254|252|248|240|224|192|128|0+)(\.0+){2})|((255|252|248|240|224|192|128|0+)(\.0+){3}))$">
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -131,8 +131,8 @@
 						<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
 					</td>
 					<td>
-						<input id="netzwerkgateway" name="netzwerkgateway" type="text" class="textfield" value="<TMPL_VAR NETWORK.GATEWAY>" data-validation-optional="true"
-							data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP><br>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkgateway_div'><TMPL_VAR NETWORK.GATEWAY></div>
+						<input id='netzwerkgateway' name='netzwerkgateway' type='hidden' value='<TMPL_VAR NETWORK.GATEWAY>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -146,8 +146,8 @@
 						<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
 					</td>
 					<td>
-						<input id="netzwerknameserver" name="netzwerknameserver" type="text" class="textfield" value="<TMPL_VAR NETWORK.DNS>" data-validation-optional="true"
-							data-validation-regexp="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP><br>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerknameserver_div'><TMPL_VAR NETWORK.DNS></div>
+						<input id='netzwerknameserver' name='netzwerknameserver' type='hidden' value='<TMPL_VAR NETWORK.DNS>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -156,29 +156,78 @@
 						&nbsp;
 					</td>
 				</tr>
-				<tr>
-					<td colspan=4>
-						&nbsp;
-					</td>
-				</tr>
-				<tr>
-					<td></td>
-					<td colspan=3>
-						<div id="form-error-message" class="form-error-message"></div>
-					</td>
-				</tr>
 			</table>
 			<center>
 				<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 				<button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 			</center>
+			<div id="form-error-message" class="form-error-message"></div>
 		</form>
+		<div id="form-error-message" class="form-error-message">&nbsp;</div>
 		<script>
-			var $messages = $('#form-error-message');
-			$.validate({
-				modules : 'security',
-				errorMessagePosition: 'inline',
-			});
+			function clean_values( to_clean ) 
+			{
+				$('#form-error-message').hide();
+				$.each(to_clean.split(" "), function(i, obj)
+				{
+					$("#"+obj).attr('value','');
+				});
+			}
+			function enable_validation( object ) 
+			{
+				$(object+'_div').on('blur keyup paste input focusin', function(e)
+				{
+					$(object).attr('value',$(this).text());
+					if (e.type == "blur" || e.type == "paste" )
+					{
+						$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
+					}
+					else 
+					{
+						$(this).removeClass("ui-shadow-inset").addClass("ui-focus");
+					}
+					if ( $(this).hasClass('param_ok') )
+					{
+						$(this).removeClass('param_ok').addClass('param_ok');
+					}
+					else
+					{
+						$(this).removeClass('param_error').addClass('param_error');
+					} 
+					
+					valid_ip_address( object,e );
+				});
+			}
+			function valid_ip_address( object,e ) 
+			{
+				var rule = new RegExp($(object).attr("data-validation-rule"));
+				if( !rule.test( $(object+'_div').text() ) )
+				{
+					if (e.type == "blur" || e.type == "paste" )
+					{ 
+						$('#form-error-message').html( $(object).attr('data-validation-error-msg'));
+						var offset = $(object+'_div').offset();  
+						$('#form-error-message').fadeIn(400);
+						$('#form-error-message').css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'z-index': 1000, 'top': offset.top - 35, 'left': offset.left, 'position':'absolute'});
+						setTimeout( function() { $('#form-error-message').fadeOut(400); }, 3000);
+					}
+						$(object+'_div').removeClass('param_ok').addClass('param_error');
+						$(object).val('');
+					return false
+				}
+				else
+				{
+					$(object+'_div').removeClass('param_error').addClass('param_ok');
+					$(object).val($(object+'_div').text());
+					return true
+				}
+			}
+			enable_validation('#netzwerkssid');
+			enable_validation('#netzwerkschluessel');
+			enable_validation('#netzwerkipadresse');
+			enable_validation('#netzwerkipmaske');
+			enable_validation('#netzwerkgateway');
+			enable_validation('#netzwerknameserver');
 
 			// Disable some options on Load depending on selected value
 			disable();
