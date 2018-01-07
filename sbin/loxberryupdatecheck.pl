@@ -39,7 +39,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="0.3.1.7";
+my $scriptversion="0.3.3.1";
 
 # print currtime('file') . "\n";
 
@@ -58,6 +58,7 @@ my $updhistoryfile = "$lbslogdir/loxberryupdate/history.json";
 my %thisupd;
 my $cfg;
 my $download_path = '/tmp';
+my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
 my $min_version = "0.3.0";
 my $max_version = "0.5.0";
@@ -244,7 +245,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		} else {
 			LOGOK "Download successfully stored in $filename.";
 			LOGINF "Starting unzip procedure for $filename...";
-			my $unzipdir = unzip($filename, '/tmp/loxberryupdate');
+			my $unzipdir = unzip($filename, $update_path);
 			if (!defined $unzipdir) {
 				LOGERR "Unzipping failed.";
 				LOGINF "Deleting download file";
@@ -252,6 +253,8 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				LOGCRIT "Update failed because file cound not be unzipped.";
 				exit(1);
 			}
+			LOGINF "Deleting zipfile after unzip was successful";
+			rm ($filename);
 			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {
@@ -519,7 +522,7 @@ sub check_commits
 		} else {
 			LOGOK "Download successfully stored in $filename.";
 			LOGINF "Starting unzip procedure for $filename...";
-			my $unzipdir = unzip($filename, '/tmp/loxberryupdate');
+			my $unzipdir = unzip($filename, $update_path);
 			if (!defined $unzipdir) {
 				LOGERR "Unzipping failed.";
 				LOGINF "Deleting download file";
@@ -527,6 +530,8 @@ sub check_commits
 				LOGCRIT "Update failed because file cound not be unzipped.";
 				exit(1);
 			}
+			LOGINF "Deleting zipfile after unzip was successful";
+			rm ($filename);
 			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {

@@ -31,9 +31,10 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='0.3.3.1';
+my $scriptversion='0.3.3.2';
 
 my $backupdir="/opt/backup.loxberry";
+my $update_path = '/tmp/loxberryupdate';
 
 # # Predeclare logging functions
 # sub LOGOK { my ($s)=@_; print ERRORLOG "<OK>" . $s . "\n"; }
@@ -339,6 +340,8 @@ if (! $cgi->param('dryrun') ) {
 	}
 
 # Finished. 
+LOGINF "Cleaning up temporary download folder";
+delete_directory($update_path);
 
 LOGINF "All procesures finished.";
 notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_OK'} . " $release");
@@ -425,6 +428,28 @@ sub err
 		print $jsntext;
 
 	}
+}
+
+
+sub delete_directory
+{
+	my $delfolder = shift;
+	
+	if (-d $delfolder) {   
+		rmtree($delfolder, {error => \my $err});
+		if (@$err) {
+			for my $diag (@$err) {
+				my ($file, $message) = %$diag;
+				if ($file eq '') {
+					LOGERR "     Delete folder: general error: $message";
+				} else {
+					LOGERR "     Delete folder: problem unlinking $file: $message";
+				}
+			}
+		return undef;
+		}
+	}
+	return 1;
 }
 
 sub notify
