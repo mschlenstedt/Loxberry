@@ -214,7 +214,6 @@ sub in_subnet($$)
 	return( 0 );
 }
 
-open my $log_fh, '>>', '/opt/loxberry/stderrlogfile.txt'; *STDERR = $log_fh;
 if ($saveformdata) 
 {
 	$netzwerkanschluss  = param('netzwerkanschluss');
