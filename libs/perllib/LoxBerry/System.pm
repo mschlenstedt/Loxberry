@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.3.1";
+our $VERSION = "0.3.3.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -999,9 +999,33 @@ sub currtime
 	# print $iso . "\n";
 
 }
+######################################################
+# check_securepin
+# Parameter is the entered secure pin
+# Returns 0 or undef if successful, or an error code if not ok
+# Error code 1 is 
+#####################################################
 
+sub check_securepin
+{
+	my ($securepin) = shift;
+	
+	open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat") or 
+		do {
+			Carp::carp("check_securepin: Cannot open $LoxBerry::System::lbsconfigdir/securepin.dat\n");
+			return (2);
+			};
+	my $securepinsaved = <$fh>;
+	close ($fh);
 
-
+	if (crypt($securepin, $securepinsaved) ne $securepinsaved) {
+			# Not equal
+			return (1);
+	} else {
+			# OK
+			return (undef);
+	}
+}
 
 
 #####################################################
