@@ -175,7 +175,7 @@
 			}
 			function enable_validation( object ) 
 			{
-				$(object+'_div').on('blur keyup paste input focusin', function(e)
+				$(object+'_div').on('blur keyup input focusin', function(e)
 				{
 					$(object).attr('value',$(this).text());
 					if (e.type == "blur" || e.type == "paste" )
