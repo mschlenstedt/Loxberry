@@ -69,7 +69,7 @@ our $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'LOGVIEWER.WIDGETL
 # Are we called from a browser/web enviroment?
 if ($ENV{'HTTP_HOST'}) {
 
-  use CGI::Carp qw(fatalsToBrowser);
+ # use CGI::Carp qw(fatalsToBrowser);
   # use CGI qw/:standard/;
   
 
@@ -201,8 +201,9 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
       }
     }
     # HTML Output
-    if ($R::format eq "html") {
-      $_ =~ s/^(.*?)\s*<EMERGE>\s*(.*?)$/<div class='logemerge'>$1 <FONT color=red><B>EMERGE:<\/B><\/FONT> $2<\/div>/g;
+    if ($R::format eq "html" || $R::format eq "template") {
+      $_ =~ s/([\e].*?)[m]//g;
+	  $_ =~ s/^(.*?)\s*<EMERGE>\s*(.*?)$/<div class='logemerge'>$1 <FONT color=red><B>EMERGE:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/EMERGE>//g;
       $_ =~ s/^(.*?)\s*<ALERT>\s*(.*?)$/<div class='logalert'>$1 <FONT color=red><B>ALERT:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/ALERT>//g;
@@ -220,8 +221,7 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
       $_ =~ s/<\/INFO>//g;
       $_ =~ s/^(.*?)\s*<DEBUG>\s*(.*?)$/<div class='logdeb'>$1 <FONT color=darkgray><B>DEBUG:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/DEBUG>//g;
-      
-	  if ($_ !~ /<\/div>\n$/) { # New Line
+      if ($_ !~ /<\/div>\n$/) { # New Line
         $_ =~ s/\n/<br>/g;
       }
     }
