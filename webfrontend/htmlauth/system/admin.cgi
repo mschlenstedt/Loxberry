@@ -93,7 +93,7 @@ my $maintemplate = HTML::Template->new(
 			die_on_bad_params=> 0,
 			associate => $cfg,
 			%htmltemplate_options,
-			debug => 1,
+			#debug => 1,
 			);
 
 my %SL = LoxBerry::Web::readlanguage($maintemplate);
