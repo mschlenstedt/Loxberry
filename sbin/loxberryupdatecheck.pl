@@ -249,12 +249,12 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			if (!defined $unzipdir) {
 				LOGERR "Unzipping failed.";
 				LOGINF "Deleting download file";
-				rm ($filename);
+				unlink ($filename);
 				LOGCRIT "Update failed because file cound not be unzipped.";
 				exit(1);
 			}
 			LOGINF "Deleting zipfile after unzip was successful";
-			rm ($filename);
+			unlink ($filename);
 			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {
@@ -526,12 +526,12 @@ sub check_commits
 			if (!defined $unzipdir) {
 				LOGERR "Unzipping failed.";
 				LOGINF "Deleting download file";
-				rm ($filename);
+				unlink ($filename);
 				LOGCRIT "Update failed because file cound not be unzipped.";
 				exit(1);
 			}
 			LOGINF "Deleting zipfile after unzip was successful";
-			rm ($filename);
+			unlink ($filename);
 			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {
@@ -673,7 +673,7 @@ sub unzip
 		LOGCRIT unziperror($exitcode);
 		LOGINF "Cleaning up unzip folder after failed unzip...";
 		delete_directory($unzipfile);
-		# rm($unzipfile);
+		# unlink ($unzipfile);
 		return undef;
 	}
 	LOGOK "   Unzipping was successful.";
