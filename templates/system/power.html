@@ -61,33 +61,67 @@
 	<center>
 		<p><TMPL_VAR POWER.MSG_REBOOT></p>
 		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" data-delay="15" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
-		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">30</span></p>
+		<style>
+			.progress-bar 
+			{
+        background-color: #3F3F3F;
+        height: 25px;
+        padding: 5px;
+        width: 350px;
+        margin: 10px 0 20px 0;			
+        -moz-border-radius: 5px;
+				-webkit-border-radius: 5px;
+				border-radius: 5px;
+        -moz-box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+				-webkit-box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+				box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;           
+       }
+			.progress-bar span 
+			{
+        display: inline-block;
+        height: 100%;
+				background-color: #777;
+        -moz-border-radius: 3px;
+				-webkit-border-radius: 3px;
+				border-radius: 3px;
+        -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+				-webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+				box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+				-webkit-transition: width .4s ease-in-out;
+				-moz-transition: width .4s ease-in-out;
+				-ms-transition: width .4s ease-in-out;
+				-o-transition: width .4s ease-in-out;
+				transition: width .4s ease-in-out;		
+			}
+			.blue span 
+			{
+				background-color: #6DAE26;   
+ 			}
+    </style>   
+		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">30.0</span> s </p>
+		<div class="progress-bar blue stripes"><span id="bar" style="width: 100%;"></span></div>
 		</center>
-
 	<script>
-window.onload = function(){
-  
-(function(){
-  var counter = 30;
-
-  setInterval(function() {
-    counter--;
-    if (counter >= 0) {
-      span = document.getElementById("count");
-      span.innerHTML = counter;
-    }
-    // Display 'counter' wherever you want to display it.
-    if (counter === 0) {
-        // alert('this is where it happens');
-        document.location.href="/admin/system/index.cgi?form=system";
-    }
-    
-  }, 1000);
-    
-})();
-  
-}
-		
+		$(document).ready(function()
+		{ 
+		  var counter = 300;
+		  setInterval(function() {
+		    
+		    if (counter > 0) {
+					counter--;
+		      span = document.getElementById("count");
+					var bar = (100/300 * counter);
+		      span.innerHTML = Number(counter/10).toFixed(1);
+					$('#bar').css('width',bar+"%");
+		    }
+		    // Display 'counter' wherever you want to display it.
+		    if (counter === 0) 
+		    {
+		    	$('.progress-bar').css( "visibility", "hidden" );
+		      document.location.href="/";
+		    }
+		  }, 100);
+		});
 	</script>
 </TMPL_IF>
 
