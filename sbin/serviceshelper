@@ -26,6 +26,7 @@ case $1 in
 		sed -i -e '/^$SERVER/,+0d' $LPC
 		sed -i -e "s/^server\.port.*/server.port = $2\n$SVR[\"socket\"] == \":$3\" {}/" $LPC
 		ln -s $AWCN $AWCL
+		systemctl stop ssdpd
 		sleep 2
 		if [ -n "$APACHE" ]
 		then
@@ -35,7 +36,6 @@ case $1 in
 		then
 			systemctl restart lighttpd
 		fi
-		systemctl restart ssdpd
 		;;
 	webport_success)
 		if [ -f "$AWCN" ]
@@ -48,15 +48,16 @@ case $1 in
 			unlink $AWCL
 			rm -f $AWC
 			mv $AWCN $AWC
+			systemctl start ssdpd
 			sleep 2
-   		if [ -n "$APACHE" ]
-   		then
-   			systemctl restart apache2
-   		fi
-   			if [ -n "$LIGHTY" ]
-   		then
-   			systemctl restart lighttpd
-   		fi
+   			if [ -n "$APACHE" ]
+   			then
+   				systemctl restart apache2
+   			fi
+   				if [ -n "$LIGHTY" ]
+   			then
+   				systemctl restart lighttpd
+   			fi
 		fi
 		;;
 esac

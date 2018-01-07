@@ -266,7 +266,7 @@ function save()
 			$cfg->set("WEBSERVER","PORT",$webport);
 			$cfg->set("WEBSERVER","OLDPORT",$weboldport);
 			$cfg->save();
-			$headermsg = $SL['COMMON.MSG_ALLOK'];
+			$headermsg = $SL['SERVICES.MSG_STEP1'];
 			$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
 			$waitmsg = $SL['SERVICES.WAITWEBSERVER'];
 			$href="/admin/system/services.php?check_webport=1";
@@ -354,8 +354,8 @@ function check_webport() {
 		$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
 		$waitmsg = "";
 	} else {
-		$headermsg = $SL['COMMON.MSG_ALLOK'];
-		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
+		$headermsg = $SL['SERVICES.MSG_STEP2'];
+		$resmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
 		$waitmsg = $SL['SERVICES.WEBSERVERCLEANING'];
 		$webport = $cfg['WEBSERVER']['PORT'];
 		$weboldport = $cfg['WEBSERVER']['OLDPORT'];

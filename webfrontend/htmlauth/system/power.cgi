@@ -79,7 +79,7 @@ my $maintemplate = HTML::Template->new(
 			# debug => 1,
 			);
 
-LoxBerry::Web::readlanguage($maintemplate);
+my %SL = LoxBerry::Web::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
