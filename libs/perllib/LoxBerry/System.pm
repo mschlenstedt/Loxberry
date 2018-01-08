@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.3.2";
+our $VERSION = "0.3.3.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -56,6 +56,7 @@ our @EXPORT = qw (
 	ltrim
 	rtrim
 	currtime
+	reboot_required
 );
 
 =head1 NAME
@@ -186,6 +187,7 @@ my $webserverport;
 
 our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
+our $reboot_required_file = "$lbhomedir/log/system_tmpfs/reboot.required";
 
 
 # Finished everytime code execution
@@ -1026,6 +1028,21 @@ sub check_securepin
 			return (undef);
 	}
 }
+
+#########################################################
+sub reboot_required
+{
+	my ($message) = shift;
+	open(my $fh, ">>", $LoxBerry::System::reboot_required_file) or Carp::carp "Cannot open/create reboot.required file $reboot_required_file.";
+	if (! $message) {
+		print $fh "A reboot was requested by $0\n";
+	} else {
+		print $fh "$message\n";
+	}
+	close $fh;
+	
+}
+
 
 
 #####################################################

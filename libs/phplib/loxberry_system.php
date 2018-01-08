@@ -12,6 +12,9 @@
 		define("LBHOMEDIR", '/opt/loxberry');
 	}
 
+	// lbhomedir
+	$lbhomedir = LBHOMEDIR;
+		
 	$plugindir_array = explode("/", substr(getcwd(), strlen(LBHOMEDIR)));
 	if (isset($plugindir_array[4])) {
 		$pluginname = $plugindir_array[4];
@@ -32,9 +35,6 @@
 		// define ("LBPSBINDIR", LBHOMEDIR . "/sbin/plugins/" . LBPPLUGINDIR);
 		define ("LBPBINDIR", LBHOMEDIR . "/bin/plugins/" . LBPPLUGINDIR);
 
-		// lbhomedir
-		$lbhomedir = LBHOMEDIR;
-		
 		// Plugin Variables
 		$lbpplugindir = LBPPLUGINDIR;
 		$lbphtmlauthdir = LBPHTMLAUTHDIR;
@@ -46,10 +46,10 @@
 		// $lbpsbindir = LBPSBINDIR;
 		$lbpbindir = LBPBINDIR;
 		
-		error_log("LoxBerry System Info: LBPPLUGINDIR: " . LBPPLUGINDIR);
+		// error_log("LoxBerry System Info: LBPPLUGINDIR: " . LBPPLUGINDIR);
 	}
 
-	error_log("LoxBerry System Info: LBHOMEDIR: " . LBHOMEDIR);
+	// error_log("LoxBerry System Info: LBHOMEDIR: " . LBHOMEDIR);
 	
 	# Defining globals for SYSTEM directories
 	define ("LBSHTMLAUTHDIR", LBHOMEDIR . "/webfrontend/htmlauth/system");
@@ -85,13 +85,14 @@
 	$lblang=NULL;
 	$cfgwasread=NULL;
 	
-	
+	$reboot_required_file = "$lbhomedir/log/system_tmpfs/reboot.required";
+
 
 // Functions in class LBSystem
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.3.1";
+	public static $LBSYSTEMVERSION = "0.3.3.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -311,7 +312,7 @@ class LBSystem
 		global $plugins;
 		
 		if (is_array($plugins)) {
-			error_log("Returning already fetched plugin array");
+			// error_log("Returning already fetched plugin array");
 			return $plugins;
 		} 
 		$plugins = Array();
@@ -396,7 +397,7 @@ class LBSystem
 		$lbfriendlyname = $cfg['NETWORK']['FRIENDLYNAME'] or error_log("LoxBerry System Info: NETWORK.FRIENDLYNAME not defined.");
 		$webserverport = $cfg['WEBSERVER']['PORT'] or error_log("LoxBerry System Info: WEBSERVER.PORT not defined.");
 		$lblang = $cfg['BASE']['LANG'];
-		error_log("read_generalcfg: Language is $lblang");
+		// error_log("read_generalcfg: Language is $lblang");
 		$binaries = $cfg['BINARIES'];
 		
 		# If no miniservers are defined, return NULL
@@ -536,7 +537,7 @@ class LBSystem
 	public function is_systemcall()
 	{
 		$mypath = getcwd();
-		error_log("is_systemcall: mypath $mypath");
+		// error_log("is_systemcall: mypath $mypath");
 		# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
 		# print STDERR "lbshtmlauthdir: " . $lbshtmlauthdir . "\n";
 		# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) . "\n";
@@ -626,6 +627,9 @@ function lbwebserverport()
 	
 }
 
+####################################################
+# currtime - Returns current in different formats
+####################################################
 function currtime($format = 'hr')
 {
 	if (! $format || $format == 'hr') {
@@ -639,6 +643,24 @@ function currtime($format = 'hr')
 	}
 	return $timestr;
 }
+
+####################################################
+# reboot_required - Sets the reboot required state
+####################################################
+function reboot_required($message = 'A reboot was requested')
+{
+	global $reboot_required_file;
+	$fh = fopen($reboot_required_file, "a");
+	if(!$fh) {
+		error_log("Unable to open reboot_required file $reboot_required_file.");
+		return(0);
+	}
+	fwrite($fh, $message);
+	fclose($fh);
+}
+
+
+
 
 
 ?>
