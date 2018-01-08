@@ -4,7 +4,6 @@ use warnings;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
-use JSON;
 # use Switch;
 # use AptPkg::Config;
 use LoxBerry::System;
@@ -137,10 +136,8 @@ sub lbupdate
 	
 	if ($action eq 'lbupdate-runinstall') {
 		my $output = qx { nohup sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1 2>&1 >/dev/null &};
-		my %joutput
-		$joutput{'info'} = "Update started. See update logfile for details.";
-		my $jsntext = to_json(\%joutput);
-		print $jsntext;
+		$output='{"info":"Update started. See update logfile for details."}';
+		print $output;
 		exit(0);
 	}
 	
