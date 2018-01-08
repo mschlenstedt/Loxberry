@@ -63,48 +63,7 @@
           }
 
       }
-			function enable_validation( object ) 
-			{
-				window.to_validate = ( typeof window.to_validate != 'undefined' && window.to_validate instanceof Array ) ? window.to_validate : [];
-				$( $(object).closest('form') ).submit(function(e) 
-				{
-					if (!validate_form())
-					{
-						e.preventDefault();
-					}
-				});
-				$(object+'_div').on('paste', function(e)
-				{
-					OnPaste_StripFormatting(this, event);
-				});
 
-				$(object+'_div').on('blur keyup input focusin', function(e)
-				{
-					$(object).attr('value',$(this).text());
-					if (e.type == "focusin" )
-					{
-						this.text($(object+'_div').text());
-					}
-					if (e.type == "blur" )
-					{
-						$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
-					}
-					else 
-					{
-						$(this).removeClass("ui-shadow-inset").addClass("ui-focus");
-					}
-					if ( $(this).hasClass('param_ok') )
-					{
-						$(this).removeClass('param_ok').addClass('param_ok');
-					}
-					else
-					{
-						$(this).removeClass('param_error').addClass('param_error');
-					} 
-					
-					valid_value( object,e );
-				});
-			}
 			function valid_value( object,evt,rule ) 
 			{
 				evt = evt || 0;
@@ -131,4 +90,42 @@
 					$(object).val($(object+'_div').text());
 					return true
 				}
+			}
+						function enable_validation( object ) 
+			{
+				window.to_validate = ( typeof window.to_validate != 'undefined' && window.to_validate instanceof Array ) ? window.to_validate : [];
+				$( $(object).closest('form') ).submit(function(e) 
+				{
+					if (!validate_form())
+					{
+						e.preventDefault();
+					}
+				});
+				$(object+'_div').on('paste', function(e)
+				{
+					OnPaste_StripFormatting(this, event);
+				});
+
+				$(object+'_div').on('blur keyup input ', function(e)
+				{
+					if (e.type == "blur" )
+					{
+						$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
+					}
+					else 
+					{
+						$(this).removeClass("ui-shadow-inset").addClass("ui-focus");
+					}
+					if ( $(this).hasClass('param_ok') )
+					{
+						$(this).removeClass('param_ok').addClass('param_ok');
+					}
+					else
+					{
+						$(this).removeClass('param_error').addClass('param_error');
+					} 
+					
+					valid_value( object,e );
+				});
+				$(object).attr('value',$(object+"_div").text());
 			}
