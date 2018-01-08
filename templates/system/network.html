@@ -167,6 +167,35 @@
 			<div id="form-error-message" class="form-error-message"></div>
 		</form>
 		<script>
+		function disable() 
+		{
+			// Ethernet or WLAN
+			if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
+				$('.area-netzwerkssid').fadeOut();
+				$('.area-netzwerkschluessel').fadeOut();
+				clean_values(['#netzwerkssid','#netzwerkschluessel']);
+			}
+			else {
+				window.to_validate = ['#netzwerkssid','#netzwerkschluessel'];
+				$('.area-netzwerkssid').fadeIn();
+				$('.area-netzwerkschluessel').fadeIn();
+			}
+			// DHCP or Manual
+			if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
+				$('.area-netzwerkipadresse').fadeOut();
+				$('.area-netzwerkipmaske').fadeOut();
+				$('.area-netzwerkgateway').fadeOut();
+				$('.area-netzwerknameserver').fadeOut();
+				clean_values(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
+			}
+			else {
+				window.to_validate = ['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver'];
+				$('.area-netzwerkipadresse').fadeIn();
+				$('.area-netzwerkipmaske').fadeIn();
+				$('.area-netzwerkgateway').fadeIn();
+				$('.area-netzwerknameserver').fadeIn();
+			}
+		}
 		$( document ).ready(function()
 		{
 			enable_validation('#netzwerkssid');
@@ -176,38 +205,11 @@
 			enable_validation('#netzwerkgateway');
 			enable_validation('#netzwerknameserver');
 
-			// Disable some options on Load depending on selected value
+
+	
+						// Disable some options on Load depending on selected value
 			disable();
 
-			function disable() 
-			{
-				// Ethernet or WLAN
-				if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
-					$('.area-netzwerkssid').fadeOut();
-					$('.area-netzwerkschluessel').fadeOut();
-					clean_values(['#netzwerkssid','#netzwerkschluessel']);
-				}
-				else {
-					window.to_validate = ['#netzwerkssid','#netzwerkschluessel'];
-					$('.area-netzwerkssid').fadeIn();
-					$('.area-netzwerkschluessel').fadeIn();
-				}
-				// DHCP or Manual
-				if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
-					$('.area-netzwerkipadresse').fadeOut();
-					$('.area-netzwerkipmaske').fadeOut();
-					$('.area-netzwerkgateway').fadeOut();
-					$('.area-netzwerknameserver').fadeOut();
-					clean_values(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
-				}
-				else {
-					window.to_validate = ['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver'];
-					$('.area-netzwerkipadresse').fadeIn();
-					$('.area-netzwerkipmaske').fadeIn();
-					$('.area-netzwerkgateway').fadeIn();
-					$('.area-netzwerknameserver').fadeIn();
-				}
-			}
 		});
 		</script>
 </TMPL_IF>
