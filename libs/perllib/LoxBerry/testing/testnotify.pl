@@ -6,7 +6,9 @@ use warnings;
 print "\nTest Notification\n";
 print "=================\n";
 print "Documentation of notify for Perl: http://www.loxwiki.eu:80/x/eQd7AQ\n\n";
-print "All tests are using package 'test' and groupname 'testing'\n";
+print "All tests are using package 'test' and groupname 'testing'\n\n";
+print "Notification directory is: " . $LoxBerry::Log::notification_dir . "\n\n";
+
 print "TEST: Setting two info, one error notification\n";
 
 my $package = "test";
