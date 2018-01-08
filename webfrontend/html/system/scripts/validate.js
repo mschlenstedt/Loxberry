@@ -1,17 +1,59 @@
 			function clean_values( to_clean ) 
 			{
 				$('#form-error-message').hide();
-				$.each(to_clean.split(" "), function(i, obj)
+				to_clean = ( typeof to_clean != 'undefined' && to_clean instanceof Array ) ? to_clean : [];
+				$.each(to_clean, function(i, obj)
 				{
-					$("#"+obj).attr('value','');
+					$(obj).val('');
+					$(obj+"_div").text('');
 				});
 			}
+			
+			function validate_form()
+			{
+			  var trueCount=-1;
+        var falseCount=-1;
+        var what_to_test = window.to_validate;
+     		$.each(what_to_test, function (i,v) 
+     		  {
+   		  	var saveval = $(v+'_div').text();
+   		  	$(v+'_div').text($(v).val());
+          if (valid_value.call(this,v)) {
+            trueCount++;
+          }
+          else {
+            falseCount++;
+          }
+   		  	$(this+'_div').text(saveval);
+   		  	saveval='';
+          });
+          
+          if (falseCount >= 0) 
+          {
+				    return false;
+          }
+          if (trueCount >= 0) 
+          {
+				    return true;
+          }
+          return false;
+			}	
+			
 			function enable_validation( object ) 
 			{
+				window.to_validate = ( typeof window.to_validate != 'undefined' && window.to_validate instanceof Array ) ? window.to_validate : [];
+				$( $(object).closest('form') ).submit(function(e) 
+				{
+					if (!validate_form())
+					{
+						e.preventDefault();
+					}
+				});
+
 				$(object+'_div').on('blur keyup input focusin', function(e)
 				{
 					$(object).attr('value',$(this).text());
-					if (e.type == "blur" || e.type == "paste" )
+					if (e.type == "blur" )
 					{
 						$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
 					}
@@ -31,12 +73,15 @@
 					valid_value( object,e );
 				});
 			}
-			function valid_value( object,e ) 
+			function valid_value( object,evt,rule ) 
 			{
-				var rule = new RegExp($(object).attr("data-validation-rule"));
-				if( !rule.test( $(object+'_div').text() ) )
+				evt = evt || 0;
+				var rule = rule || $(object).attr("data-validation-rule");
+				rule = rule || "(?=a)b";
+				rule = new RegExp(rule);
+				if( !rule.test( $(object+'_div').text() )  )
 				{
-					if (e.type == "blur" )
+					if (evt.type == "blur"  || evt === 0 )
 					{ 
 						$('#form-error-message').html( $(object).attr('data-validation-error-msg'));
 						var offset = $(object+'_div').offset();  
@@ -46,9 +91,6 @@
 					}
 						$(object+'_div').removeClass('param_ok').addClass('param_error');
 						$(object).val('');
-						$($(object).closest('form')).submit(function(e){
-						        e.preventDefault();
-						    });
 					return false
 				}
 				else
