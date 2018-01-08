@@ -41,10 +41,12 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Command line or CGI?
-if ($ENV{'HTTP_HOST'}) {
+if ( $R::cgi ) {
 	our $is_cgi = 1;
+	print "We are in CGI mode.\n";
 } else {
 	our $is_cgi = 0;
+	print "We are in Command line mode.\n";
 }
 
 ##########################################################################
@@ -197,16 +199,17 @@ $message =  "Temp Folder: $tempfolder";
 # Create status and logfile
 our $logfile = "/tmp/$tempfile.log";
 our $statusfile = "/tmp/$tempfile.status";
-if (-e "$logfile" || -e "$statusfile") {
+if (-e "$statusfile") {
   $message =  "$SL{'PLUGININSTALL.ERR_TEMPFILES_EXISTS'}";
   &logfail;
 }
 $message = "Logfile: $logfile";
 &loginfo;
-open (F, ">$logfile");
-  print F "";
-close (F);
-
+if ( ! $is_cgi ) {
+	open (F, ">$logfile");
+	  print F "";
+	close (F);
+}
 $message =  "Statusfile: $statusfile";
 &loginfo;
 open (F, ">$statusfile");
@@ -1295,7 +1298,7 @@ system("cp -v /tmp/$tempfile.log $lbhomedir/log/system/plugininstall/$pname.log 
 $message = "Good bye.";
 &loginfo;
 
-system("rm -f /tmp/$tempfile.log 2>&1");
+#system("rm -f /tmp/$tempfile.log 2>&1");
 
 exit (0);
 
@@ -1420,71 +1423,91 @@ sub purge_installation {
 
 sub logerr {
 
-  open (LOG, ">>$logfile");
-    print LOG "<ERROR> $message\n";
-    if ( !$is_cgi ) {print "\e[1m\e[31mERROR:\e[0m $message\n"};
-  close (LOG);
+	if ( !$is_cgi ) {
+		print "\e[1m\e[31mERROR:\e[0m $message\n";
+  		open (LOG, ">>$logfile");
+    		print LOG "<ERROR> $message\n";
+  		close (LOG);
+	} else {
+    		print "<ERROR> $message\n";
+	}
 
-  return();
+	return();
 
 }
 
 sub logfail {
 
-  open (LOG, ">>$logfile");
-    print LOG "<FAIL> $message\n";
-    if ( !$is_cgi ) {print "\e[1m\e[31mFAIL:\e[0m $message\n"};
-  close (LOG);
+	if ( !$is_cgi ) {
+		print "\e[1m\e[31mFAIL:\e[0m $message\n";
+  		open (LOG, ">>$logfile");
+    		print LOG "<FAIL> $message\n";
+  		close (LOG);
+	} else {
+    		print "<FAIL> $message\n";
+	}
 
-  &purge_installation("all");
-  if ( -e "/tmp/uploads/$tempffile" ) {
-	system("$sudobin -n -u loxberry rm -rf /tmp/uploads/$tempfile 2>&1");
-  }
-  if ( $R::tempfile ) {
-	system("$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1");
-  } 
- 
-  if (-e $statusfile) {
-    open (F, ">$statusfile");
-      print F "2";
-    close (F);
-  }
+	&purge_installation("all");
+	if ( -e "/tmp/uploads/$tempffile" ) {
+	      system("$sudobin -n -u loxberry rm -rf /tmp/uploads/$tempfile 2>&1");
+	}
+	if ( $R::tempfile ) {
+		system("$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1");
+	} 
 
-  exit (1);
+	if (-e $statusfile) {
+	  open (F, ">$statusfile");
+	    print F "2";
+	  close (F);
+	}
+
+	exit (1);
 
 }
 
 sub logwarn {
 
-  open (LOG, ">>$logfile");
-    print LOG "<WARNING> $message\n";
-    if ( !$is_cgi ) {print "\e[1m\e[31mWARNING:\e[0m $message\n"};
-  close (LOG);
+	if ( !$is_cgi ) {
+		print "\e[1m\e[31mWARNING:\e[0m $message\n";
+  		open (LOG, ">>$logfile");
+    		print LOG "<WARNING> $message\n";
+  		close (LOG);
+	} else {
+    		print "<WARNING> $message\n";
+	}
 
-  return();
+	return();
 
 }
 
 
 sub loginfo {
 
-  open (LOG, ">>$logfile");
-    print LOG "<INFO> $message\n";
-    if ( !$is_cgi ) {print "\e[1mINFO:\e[0m $message\n"};
-  close (LOG);
+	if ( !$is_cgi ) {
+		print "\e[1mINFO:\e[0m $message\n";
+  		open (LOG, ">>$logfile");
+    		print LOG "<INFO> $message\n";
+  		close (LOG);
+	} else {
+    		print "<INFO> $message\n";
+	}
 
-  return();
+	return();
 
 }
 
 sub logok {
 
-  open (LOG, ">>$logfile");
-    print LOG "<OK> $message\n";
-    if ( !$is_cgi ) {print "\e[1m\e[32mOK:\e[0m $message\n"};
-  close (LOG);
+	if ( !$is_cgi ) {
+		print "\e[1m\e[32mOK:\e[0m $message\n";
+  		open (LOG, ">>$logfile");
+    		print LOG "<OK> $message\n";
+  		close (LOG);
+	} else {
+    		print "<OK> $message\n";
+	}
 
-  return();
+	return();
 
 }
 
