@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.3.3";
+our $VERSION = "0.3.3.4";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1042,6 +1042,43 @@ sub reboot_required
 	close $fh;
 	
 }
+
+sub diskspaceinfo
+{
+	my ($folder) = shift;
+	
+	my $output = qx ( df -P $folder );
+	# my $output = qx ( df -P );
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
+		return undef;
+	}
+	my @outarr = split(/\n/, $output);
+	my %disklist;
+	
+	my $linenr = 0;
+	foreach my $line (@outarr) {
+		my %diskhash;
+		# Remove blanks
+		$line =~ s/ +/ /g;
+		$linenr++;
+		next if ($linenr == 1);
+		# print "Line: $line\n";
+		my ($fs, $size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line);
+		$diskhash{filesystem} = $fs;
+		$diskhash{size} = $size;
+		$diskhash{used} = $used;
+		$diskhash{available} = $available;
+		$diskhash{usedpercent} = $usedpercent;
+		$diskhash{mountpoint} = $mountpoint;
+		return %diskhash if ($folder);
+		$disklist{$mountpoint} = \%diskhash;
+		
+	}
+	return %disklist;
+	}
+
 
 
 
