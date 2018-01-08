@@ -22,7 +22,7 @@ SK_Language;ISO639-3Code;ISO639-2BCode;ISO639-2TCode;ISO639-1Code;LanguageName;S
 12000;lit;lit;lit;lt;Lithuanian;Individual;Living;;;0
 12085;ltz;ltz;ltz;lb;Luxembourgish;Individual;Living;;;0
 15695;mkd;mac;mkd;mk;Macedonian;Individual;Living;;;0
-14596;ell;gre;ell;el;Modern Greek (1453-);Individual;Living;;;0
+14596;ell;gre;ell;el;Greek;Individual;Living;;;0
 16064;nor;nor;nor;no;Norwegian;Macrolanguage;Living;;;0
 12862;pol;pol;pol;pl;Polish;Individual;Living;;;0
 12868;por;por;por;pt;Portuguese;Individual;Living;;;0
@@ -136,7 +136,6 @@ SK_Language;ISO639-3Code;ISO639-2BCode;ISO639-2TCode;ISO639-1Code;LanguageName;S
 16490;run;run;run;rn;Rundi;Individual;Living;;;0
 16635;smo;smo;smo;sm;Samoan;Individual;Living;;;0
 16515;sag;sag;sag;sg;Sango;Individual;Living;;;0
-14874;hbs;;;sh;Serbo-CroatianCode element for 639-1 has been deprecated;Macrolanguage;Living;;;0
 16647;sna;sna;sna;sn;Shona;Individual;Living;;;0
 14955;iii;iii;iii;ii;Sichuan Yi;Individual;Living;;;0
 16650;snd;snd;snd;sd;Sindhi;Individual;Living;;;0
