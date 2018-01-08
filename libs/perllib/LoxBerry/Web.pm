@@ -380,8 +380,7 @@ sub pageend
 	$pageendobj->param( LANG => $lang);
 	
 	# Reboot required button
-	print STDERR "Reboot_required_file: " . $LoxBerry::Systemreboot_required_file . "\n";
-if (-e $LoxBerry::System::reboot_required_file) {
+	if (-e $LoxBerry::System::reboot_required_file) {
 		my $reboot_req_string='<a href="/admin/system/power.cgi"><span style="color:red; text-shadow: disabled;">' . $SL{'POWER.MSG_REBOOT_REQUIRED_SHORT'} . '</span></a>';
 		$pageendobj->param( 'REBOOT_REQUIRED', $reboot_req_string );
 	}
