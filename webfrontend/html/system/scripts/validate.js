@@ -36,7 +36,7 @@
 				var rule = new RegExp($(object).attr("data-validation-rule"));
 				if( !rule.test( $(object+'_div').text() ) )
 				{
-					if (e.type == "blur" || e.type == "paste" )
+					if (e.type == "blur" )
 					{ 
 						$('#form-error-message').html( $(object).attr('data-validation-error-msg'));
 						var offset = $(object+'_div').offset();  
@@ -46,6 +46,9 @@
 					}
 						$(object+'_div').removeClass('param_ok').addClass('param_error');
 						$(object).val('');
+						$($(object).closest('form')).submit(function(e){
+						        e.preventDefault();
+						    });
 					return false
 				}
 				else
