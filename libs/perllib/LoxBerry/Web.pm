@@ -18,7 +18,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.3.3";
+our $VERSION = "0.3.3.4";
 our $DEBUG;
 
 use base 'Exporter';
@@ -380,7 +380,8 @@ sub pageend
 	$pageendobj->param( LANG => $lang);
 	
 	# Reboot required button
-	if (-e "$LoxBerry::System::lbslogdir/reboot.required") {
+	print STDERR "Reboot_required_file: " . $LoxBerry::Systemreboot_required_file . "\n";
+if (-e $LoxBerry::System::reboot_required_file) {
 		my $reboot_req_string='<a href="/admin/system/power.cgi"><span style="color:red; text-shadow: disabled;">' . $SL{'POWER.MSG_REBOOT_REQUIRED_SHORT'} . '</span></a>';
 		$pageendobj->param( 'REBOOT_REQUIRED', $reboot_req_string );
 	}
