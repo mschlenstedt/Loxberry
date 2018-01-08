@@ -40,6 +40,13 @@ my $version = "0.1.0";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
+# Command line or CGI?
+if ($ENV{'HTTP_HOST'}) {
+	our $is_cgi = 1;
+} else {
+	our $is_cgi = 0;
+}
+
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -1284,9 +1291,12 @@ if (-e $statusfile) {
 
 system("cp -v /tmp/$tempfile.log $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
 &setowner ("loxberry", "0", "$lbhomedir/log/system/plugininstall/$pname.log", "LOG Save");
+
+$message = "Good bye.";
+&loginfo;
+
 system("rm -f /tmp/$tempfile.log 2>&1");
 
-print "\e[1mINFO:\e[0m Good bye.\n";
 exit (0);
 
 }
@@ -1412,7 +1422,7 @@ sub logerr {
 
   open (LOG, ">>$logfile");
     print LOG "<ERROR> $message\n";
-    print "\e[1m\e[31mERROR:\e[0m $message\n";
+    if ( !$is_cgi ) {print "\e[1m\e[31mERROR:\e[0m $message\n"};
   close (LOG);
 
   return();
@@ -1423,7 +1433,7 @@ sub logfail {
 
   open (LOG, ">>$logfile");
     print LOG "<FAIL> $message\n";
-    print "\e[1m\e[31mFAIL:\e[0m $message\n";
+    if ( !$is_cgi ) {print "\e[1m\e[31mFAIL:\e[0m $message\n"};
   close (LOG);
 
   &purge_installation("all");
@@ -1448,7 +1458,7 @@ sub logwarn {
 
   open (LOG, ">>$logfile");
     print LOG "<WARNING> $message\n";
-    print "\e[1m\e[31mWARNING:\e[0m $message\n";
+    if ( !$is_cgi ) {print "\e[1m\e[31mWARNING:\e[0m $message\n"};
   close (LOG);
 
   return();
@@ -1460,7 +1470,7 @@ sub loginfo {
 
   open (LOG, ">>$logfile");
     print LOG "<INFO> $message\n";
-    print "\e[1mINFO:\e[0m $message\n";
+    if ( !$is_cgi ) {print "\e[1mINFO:\e[0m $message\n"};
   close (LOG);
 
   return();
@@ -1471,7 +1481,7 @@ sub logok {
 
   open (LOG, ">>$logfile");
     print LOG "<OK> $message\n";
-    print "\e[1m\e[32mOK:\e[0m $message\n";
+    if ( !$is_cgi ) {print "\e[1m\e[32mOK:\e[0m $message\n"};
   close (LOG);
 
   return();
