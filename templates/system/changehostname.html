@@ -43,7 +43,7 @@
 	  </td>
 	  <td>
 		<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='lbnewhostname_div'><TMPL_VAR lbnewhostname></div>
-		<input id='lbnewhostname' name='lbnewhostname' type='text' value='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDHOSTNAME>" data-validation-rule="^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$">
+		<input id='lbnewhostname' name='lbnewhostname' type='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDHOSTNAME>" data-validation-rule="^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$">
 	  </td>
 	  </tr>
 	  <TMPL_VAR errormessage>
@@ -110,8 +110,8 @@
 $(document).ready(
 function(){
 
-	window.to_validate = ['#lbnewhostname'];			
-	enable_validation('#lbnewhostname');
+    window.to_validate = ['#lbnewhostname'];			
+		enable_validation('#lbnewhostname');
             
 		$(document).keypress(
 			function(event){
