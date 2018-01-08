@@ -5,13 +5,18 @@ use LoxBerry::System;
 use Config::Simple;
 use File::Copy qw(copy);
 
-
 # Functions to copy or update config files
 # This is called in the index.cgi and on every LoxBerry Update.
 
 
 if (! $lbsconfigdir || $lbsconfigdir eq "") {
 	die "<CRIT> Loxberry System Config dir (lbsconfigdir) not set.\n";
+}
+
+my %folderinfo = LoxBerry::System::diskspaceinfo($lbsconfigdir);
+if (%folderinfo && $folderinfo{available} < 2048) {
+	print STDERR "Free disk space below 2 MB. Update of configfiles skipped!\n";
+	exit(1);
 }
 
 my $defgeneralcfg_file = "$lbsconfigdir/general.cfg.default";

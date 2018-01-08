@@ -2,14 +2,13 @@
 <TMPL_IF MENU>
 	<center>
 		<TMPL_IF REBOOT_REQUIRED>
-		<div style="width:60%">
+		<div style="width:60%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
 		<div class="logerror">
-		<p><TMPL_VAR POWER.MSG_REBOOT_REQUIRED_LONG></p>
+		<p><b><TMPL_VAR POWER.MSG_REBOOT_REQUIRED_LONG></b>
 		<TMPL_IF REBOOT_FURTHER_INFORMATION>
-		<p><TMPL_VAR POWER.MSG_REBOOT_REQUIRED_FURTHER><br>
-		   <TMPL_VAR REBOOT_FURTHER_INFORMATION>
+			<p><TMPL_VAR POWER.MSG_REBOOT_REQUIRED_FURTHER>
 		</p>
-		
+		<p><TMPL_VAR REBOOT_FURTHER_INFORMATION></p>
 		</TMPL_IF>
 		</div>
 		</div>

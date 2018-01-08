@@ -54,7 +54,8 @@ LOGOK "Update script $0 started.";
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
-# needsreboot();
+LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
+reboot_required("LoxBerry Update script $0 requests a reboot.");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
@@ -62,12 +63,4 @@ LOGERR "Update script $0 finished with errors." if ($errors != 0);
 # End of script
 exit(0);
 
-
-sub needsreboot
-{
-	my $reboot_required_file = "$lbslogdir/reboot.required";
-	open(my $fh, ">>", $reboot_required_file) or warn "Cannot open/create reboot.required file $reboot_required_file.";
-	print $fh "LoxBerry Update: Update file $0 requests a reboot.\n";
-	LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-}
 

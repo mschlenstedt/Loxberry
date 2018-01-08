@@ -27,10 +27,17 @@
 					</td>
 					<td width="50%">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable(); clean_values('netzwerkssid netzwerkschluessel');" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
+							<input onclick="disable(); clean_values(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
 								<label for="netzwerkanschluss_eth"><TMPL_VAR NETWORK.SELECT_CABLE></label>
-							<input onclick="disable(); $('#netzwerkssid').attr('value',$('#netzwerkssid_div').text()); $('#netzwerkschluessel').attr('value',$('#netzwerkschluessel_div').text());" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
+							<input onclick="disable();  window.to_validate = ['#netzwerkssid','#netzwerkschluessel'];" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
 								<label for="netzwerkanschluss_wlan"><TMPL_VAR NETWORK.SELECT_WIRELESS></label>
+									
+	
+			
+
+
+									
+									
 						</fieldset>
 					</td>
 					<td width="5%" valign="middle">
@@ -50,7 +57,7 @@
 					</td>
 					<td>
 						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkssid_div'><TMPL_VAR NETWORK.SSID></div>
-						<input id='netzwerkssid' name='netzwerkssid' type='hidden' value='<TMPL_VAR NETWORK.SSID>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="^([\w\u0020\u0024\u0040\u005e\u0060\u002c\u007c\u0025\u003b\u002e\u007e\u0028\u0029\u002f\u005c\u007b\u007d\u003a\u003f\u005b\u005d\u003d\u002d\u002b\u00f5\u0023\u0021]{1,32})$">
+						<input id='netzwerkssid' name='netzwerkssid' type='hidden'  data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="^([\u0020-\u007e\u00a0-\u00ff]{8,64})$">
 					</td>
 					<td valign="middle">
 						<a href="#" data-role="button" id="btnlistnetworks" data-inline="true" data-mini="true"
@@ -69,11 +76,7 @@
 					</td>
 					<td>
 						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkschluessel_div' name='netzwerkschluessel_div'><TMPL_VAR NETWORK.WPA></div>
-						<input id='netzwerkschluessel' name='netzwerkschluessel' type='hidden' value='<TMPL_VAR NETWORK.WPA>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="^([\u0020-\u007e\u00a0-\u00ff]{8,64})$">
-					</td>
-					<td>
-						&nbsp;
-					</td>
+						<input id='netzwerkschluessel' name='netzwerkschluessel' type='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="^([\u0020-\u007e\u00a0-\u00ff]{8,64})$">
 					<td>
 					</td>
 				</tr>
@@ -83,9 +86,9 @@
 					</td>
 					<td width="50%">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable(); clean_values('netzwerkipadresse netzwerkipmaske netzwerkgateway netzwerknameserver');" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
+							<input onclick="disable(); clean_values(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
 								<label for="netzwerkadressen_dhcp"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP></label>
-							<input onclick="disable()" <TMPL_VAR CHECKED4> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
+							<input onclick="disable(); window.to_validate = ['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver'];" <TMPL_VAR CHECKED4> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
 								<label for="netzwerkadressen_manual"><TMPL_VAR NETWORK.SELECT_IP_MANUAL></label>
 						</fieldset>
 					</td>
@@ -102,7 +105,7 @@
 					</td>
 					<td>
 						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkipadresse_div'><TMPL_VAR NETWORK.IPADDRESS></div>
-						<input id='netzwerkipadresse' name='netzwerkipadresse' type='hidden' value='<TMPL_VAR NETWORK.IPADDRESS>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'>
+						<input id='netzwerkipadresse' name='netzwerkipadresse' type='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'>
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -117,7 +120,7 @@
 					</td>
 					<td>
 						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkipmaske_div'><TMPL_VAR NETWORK.MASK></div>
-						<input id='netzwerkipmaske' name='netzwerkipmaske' type='hidden' value='<TMPL_VAR NETWORK.MASK>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="^(((255\.){3}(254|252|248|240|224|192|128|0+))|((255\.){2}(255|254|252|248|240|224|192|128|0+)\.0)|((255\.)(255|254|252|248|240|224|192|128|0+)(\.0+){2})|((255|252|248|240|224|192|128|0+)(\.0+){3}))$">
+						<input id='netzwerkipmaske' name='netzwerkipmaske' type='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="^(((255\.){3}(254|252|248|240|224|192|128|0+))|((255\.){2}(255|254|252|248|240|224|192|128|0+)\.0)|((255\.)(255|254|252|248|240|224|192|128|0+)(\.0+){2})|((255|252|248|240|224|192|128|0+)(\.0+){3}))$">
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -132,7 +135,7 @@
 					</td>
 					<td>
 						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerkgateway_div'><TMPL_VAR NETWORK.GATEWAY></div>
-						<input id='netzwerkgateway' name='netzwerkgateway' type='hidden' value='<TMPL_VAR NETWORK.GATEWAY>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+						<input id='netzwerkgateway' name='netzwerkgateway' type='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -147,7 +150,7 @@
 					</td>
 					<td>
 						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='netzwerknameserver_div'><TMPL_VAR NETWORK.DNS></div>
-						<input id='netzwerknameserver' name='netzwerknameserver' type='hidden' value='<TMPL_VAR NETWORK.DNS>' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+						<input id='netzwerknameserver' name='netzwerknameserver' type='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -159,11 +162,42 @@
 			</table>
 			<center>
 				<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-				<button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+				<button type="submit" form="main_form3" name="btnsubmit" id="btnsubmit"  onsubmit=""; data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 			</center>
+			<div id="form-error-message" class="form-error-message"></div>
 		</form>
-		<div id="form-error-message" class="form-error-message">&nbsp;</div>
 		<script>
+		function disable() 
+		{
+			// Ethernet or WLAN
+			if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
+				$('.area-netzwerkssid').fadeOut();
+				$('.area-netzwerkschluessel').fadeOut();
+				clean_values(['#netzwerkssid','#netzwerkschluessel']);
+			}
+			else {
+				window.to_validate = ['#netzwerkssid','#netzwerkschluessel'];
+				$('.area-netzwerkssid').fadeIn();
+				$('.area-netzwerkschluessel').fadeIn();
+			}
+			// DHCP or Manual
+			if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
+				$('.area-netzwerkipadresse').fadeOut();
+				$('.area-netzwerkipmaske').fadeOut();
+				$('.area-netzwerkgateway').fadeOut();
+				$('.area-netzwerknameserver').fadeOut();
+				clean_values(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
+			}
+			else {
+				window.to_validate = ['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver'];
+				$('.area-netzwerkipadresse').fadeIn();
+				$('.area-netzwerkipmaske').fadeIn();
+				$('.area-netzwerkgateway').fadeIn();
+				$('.area-netzwerknameserver').fadeIn();
+			}
+		}
+		$( document ).ready(function()
+		{
 			enable_validation('#netzwerkssid');
 			enable_validation('#netzwerkschluessel');
 			enable_validation('#netzwerkipadresse');
@@ -171,76 +205,12 @@
 			enable_validation('#netzwerkgateway');
 			enable_validation('#netzwerknameserver');
 
-			// Disable some options on Load depending on selected value
+
+	
+						// Disable some options on Load depending on selected value
 			disable();
 
-			// Disable some options on click depending on selected value
-			<!-- function disable() { -->
-				<!-- // Ethernet or WLAN -->
-				<!-- if ( document.main_form3.netzwerkanschluss_eth.checked == true ) { -->
-					<!-- $('#btnlistnetworks').addClass('ui-disabled'); -->
-					<!-- $('#netzwerkssid').addClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerkssid').addClass('ui-disabled'); -->
-					<!-- $('#netzwerkschluessel').addClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerkschluessel').addClass('ui-disabled'); -->
-				<!-- } -->
-				<!-- else { -->
-					<!-- $('#btnlistnetworks').removeClass('ui-disabled'); -->
-					<!-- $('#netzwerkssid').removeClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerkssid').removeClass('ui-disabled'); -->
-					<!-- $('#netzwerkschluessel').removeClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerkschluessel').removeClass('ui-disabled'); -->
-				<!-- } -->
-				<!-- // DHCP or Manual -->
-				<!-- if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) { -->
-					<!-- $('#labelnetzwerkipadresse').addClass('ui-disabled'); -->
-					<!-- $('#netzwerkipadresse').addClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerkipmaske').addClass('ui-disabled'); -->
-					<!-- $('#netzwerkipmaske').addClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerkgateway').addClass('ui-disabled'); -->
-					<!-- $('#netzwerkgateway').addClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerknameserver').addClass('ui-disabled'); -->
-					<!-- $('#netzwerknameserver').addClass('ui-disabled'); -->
-				<!-- } -->
-				<!-- else { -->
-					<!-- $('#labelnetzwerkipadresse').removeClass('ui-disabled'); -->
-					<!-- $('#netzwerkipadresse').removeClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerkipmaske').removeClass('ui-disabled'); -->
-					<!-- $('#netzwerkipmaske').removeClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerkgateway').removeClass('ui-disabled'); -->
-					<!-- $('#netzwerkgateway').removeClass('ui-disabled'); -->
-					<!-- $('#labelnetzwerknameserver').removeClass('ui-disabled'); -->
-					<!-- $('#netzwerknameserver').removeClass('ui-disabled'); -->
-				<!-- } -->
-			<!-- } -->
-			
-			function disable() {
-				// Ethernet or WLAN
-				if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
-					$('.area-netzwerkssid').fadeOut();
-					$('.area-netzwerkschluessel').fadeOut();
-				}
-				else {
-					
-					$('.area-netzwerkssid').fadeIn();
-					$('.area-netzwerkschluessel').fadeIn();
-				}
-				// DHCP or Manual
-				if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
-					$('.area-netzwerkipadresse').fadeOut();
-					$('.area-netzwerkipmaske').fadeOut();
-					$('.area-netzwerkgateway').fadeOut();
-					$('.area-netzwerknameserver').fadeOut();
-				}
-				else {
-					$('.area-netzwerkipadresse').fadeIn();
-					$('.area-netzwerkipmaske').fadeIn();
-					$('.area-netzwerkgateway').fadeIn();
-					$('.area-netzwerknameserver').fadeIn();
-				}
-			}
-			
-			
+		});
 		</script>
 </TMPL_IF>
 <TMPL_IF SAVE>

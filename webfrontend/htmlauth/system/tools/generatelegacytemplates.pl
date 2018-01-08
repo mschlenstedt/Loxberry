@@ -36,7 +36,7 @@ if (!$lbstemplatedir) {
 }
 
 # We need to backup the reboot state because we do not want it in the template
-my $reboot_required_file = "$lbslogdir/reboot.required";
+my $reboot_required_file = $LoxBerry::System::reboot_required_file;
 if (-e $reboot_required_file) {
 	rename "$reboot_required_file", "$reboot_required_file.backup";
 }

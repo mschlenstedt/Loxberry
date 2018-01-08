@@ -23,7 +23,6 @@ use LoxBerry::System;
 use LoxBerry::Web;
 use HTML::Entities;
 
-use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
 use warnings;
@@ -79,7 +78,7 @@ my $maintemplate = HTML::Template->new(
 			# debug => 1,
 			);
 
-my %SL = LoxBerry::Web::readlanguage($maintemplate);
+my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
@@ -151,7 +150,7 @@ exit;
 sub form {
 	
 	
-	my $reboot_required_file = "$lbslogdir/reboot.required";
+	my $reboot_required_file = $LoxBerry::System::reboot_required_file;
 	if (-e $reboot_required_file) {
 		print STDERR "READ FILE\n";
 		my $filecontent;
@@ -161,6 +160,8 @@ sub form {
 		print STDERR $filecontent . "\n";
 		if (length($filecontent) > 5) {
 			$filecontent = encode_entities($filecontent);
+			$filecontent =~ s/\n/<br>/g;
+			
 			$maintemplate->param('REBOOT_FURTHER_INFORMATION', $filecontent);
 		}
 		$maintemplate->param('REBOOT_REQUIRED', 1);
