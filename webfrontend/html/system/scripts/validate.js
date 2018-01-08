@@ -73,7 +73,6 @@
 						e.preventDefault();
 					}
 				});
-
 				$(object+'_div').on('paste', function(e)
 				{
 					OnPaste_StripFormatting(this, event);
@@ -82,6 +81,10 @@
 				$(object+'_div').on('blur keyup input focusin', function(e)
 				{
 					$(object).attr('value',$(this).text());
+					if (e.type == "focusin" )
+					{
+						this.text($(object+'_div').text());
+					}
 					if (e.type == "blur" )
 					{
 						$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
