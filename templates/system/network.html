@@ -1,4 +1,4 @@
-		<!-- ** START template/system/network.html 07.01.2018 19:54:15  ************************************************************************************ -->
+		<!-- ** START template/system/network.html 09.01.2018 18:36:11  ************************************************************************************ -->
 <TMPL_IF FORM>									
 		<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="<TMPL_VAR SELFURL>">
 			<input type="hidden" name="saveformdata" value="1">
@@ -27,17 +27,10 @@
 					</td>
 					<td width="50%">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable(); clean_values(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
+							<input onclick="disable(); validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
 								<label for="netzwerkanschluss_eth"><TMPL_VAR NETWORK.SELECT_CABLE></label>
-							<input onclick="disable();  window.to_validate = ['#netzwerkssid','#netzwerkschluessel'];" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
+							<input onclick="disable();  validate_chk_object(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
 								<label for="netzwerkanschluss_wlan"><TMPL_VAR NETWORK.SELECT_WIRELESS></label>
-									
-	
-			
-
-
-									
-									
 						</fieldset>
 					</td>
 					<td width="5%" valign="middle">
@@ -86,9 +79,9 @@
 					</td>
 					<td width="50%">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable(); clean_values(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
+							<input onclick="disable(); validate_clean_objects(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
 								<label for="netzwerkadressen_dhcp"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP></label>
-							<input onclick="disable(); window.to_validate = ['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver'];" <TMPL_VAR CHECKED4> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
+							<input onclick="disable(); validate_chk_object(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" <TMPL_VAR CHECKED4> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
 								<label for="netzwerkadressen_manual"><TMPL_VAR NETWORK.SELECT_IP_MANUAL></label>
 						</fieldset>
 					</td>
@@ -171,25 +164,25 @@
 		{
 			// Ethernet or WLAN
 			if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
+				validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);
 				$('.area-netzwerkssid').fadeOut();
 				$('.area-netzwerkschluessel').fadeOut();
-				clean_values(['#netzwerkssid','#netzwerkschluessel']);
 			}
 			else {
-				window.to_validate = ['#netzwerkssid','#netzwerkschluessel'];
+				validate_chk_object(['#netzwerkssid','#netzwerkschluessel']);
 				$('.area-netzwerkssid').fadeIn();
 				$('.area-netzwerkschluessel').fadeIn();
 			}
 			// DHCP or Manual
 			if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
+				validate_clean_objects(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
 				$('.area-netzwerkipadresse').fadeOut();
 				$('.area-netzwerkipmaske').fadeOut();
 				$('.area-netzwerkgateway').fadeOut();
 				$('.area-netzwerknameserver').fadeOut();
-				clean_values(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
 			}
 			else {
-				window.to_validate = ['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver'];
+				validate_chk_object(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
 				$('.area-netzwerkipadresse').fadeIn();
 				$('.area-netzwerkipmaske').fadeIn();
 				$('.area-netzwerkgateway').fadeIn();
@@ -198,18 +191,14 @@
 		}
 		$( document ).ready(function()
 		{
-			enable_validation('#netzwerkssid');
-			enable_validation('#netzwerkschluessel');
-			enable_validation('#netzwerkipadresse');
-			enable_validation('#netzwerkipmaske');
-			enable_validation('#netzwerkgateway');
-			enable_validation('#netzwerknameserver');
-
-
-	
-						// Disable some options on Load depending on selected value
+			validate_enable('#netzwerkssid');
+			validate_enable('#netzwerkschluessel');
+			validate_enable('#netzwerkipadresse');
+			validate_enable('#netzwerkipmaske');
+			validate_enable('#netzwerkgateway');
+			validate_enable('#netzwerknameserver');
+			// Disable some options on Load depending on selected value
 			disable();
-
 		});
 		</script>
 </TMPL_IF>
@@ -235,6 +224,5 @@
 				</tr>
 			</table>
 		</center>
-
 </TMPL_IF>
 		<!-- ** END template/system/network.html ************************************************************************************ -->
