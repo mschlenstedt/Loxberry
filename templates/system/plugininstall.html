@@ -1,4 +1,4 @@
-<!-- ** START template/system/plugininstall.html Sun  7 Jan 07:09:54 CET 2018 ************************************************************************************ -->
+<!-- ** START template/system/plugininstall.html 10.01.2018 00:03:37  ************************************************************************************ -->
 <TMPL_IF FORM>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
 		<input type="hidden" name="saveformdata" value="1">
@@ -7,7 +7,9 @@
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
 			<div style="margin:auto; padding:10px; width:50%; text-align:left;">
-				<input type="file" name="uploadfile" class="textfield">
+				<input type="file" id="uploadfile" name="uploadfile" class="textfield" >
+						<div class='' style="visibility:hidden; width:0px; height:0px;" id='uploadfile_chk_div'></div>
+						<input id='uploadfile_chk' name='uploadfile_chk' type='hidden'  data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
 			</div>
 			<div style="margin:auto; padding:10px; width:15%; text-align:right;">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
@@ -89,6 +91,17 @@
 			$('#btnsubmit').removeClass('ui-disabled');
 		}
 	}
+	
+	validate_enable('#uploadfile_chk');
+	validate_chk_object(['#uploadfile_chk']);
+	$('input[type=file]').on('change click blur', function(e)
+	{
+		var filename = $('input[type=file]').val().replace(/C:\\fakepath\\/i, '')
+		$("#uploadfile_chk_div").html(filename);
+  	$("#uploadfile_chk").val(filename);
+  	$("#error-msg-uploadfile_chk").fadeOut(400);
+	});
+	$('input[type=file]').trigger('change');
 
 	</script>
 </TMPL_IF>
