@@ -268,6 +268,7 @@ sub install {
 	);
 	my %SL = LoxBerry::System::readlanguage($logtemplate);
 	$logtemplate->param( "LOGFILE", "$tempfile.log");
+	$logtemplate->param( "STATUSFILE", "$tempfile.status");
 	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};

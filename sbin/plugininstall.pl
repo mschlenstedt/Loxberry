@@ -1281,10 +1281,7 @@ if (-e $statusfile) {
     open (F, ">$statusfile");
       print F "3";
     close (F);
-    open (F, ">>$lbslogdir/reboot.required");
-      print F "$SL{'PLUGININSTALL.INF_REBOOT'} $ptitle";
-    close (F);
-
+    reboot_required("$SL{'PLUGININSTALL.INF_REBOOT'} $ptitle");
   } else {
     open (F, ">$statusfile");
       print F "0";
