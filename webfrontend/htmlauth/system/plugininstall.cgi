@@ -39,6 +39,8 @@ my $helptemplate = "help_plugininstall.html";
 
 my $error;
 
+@plugins = LoxBerry::System::get_plugins();
+
 
 ##########################################################################
 # Read Settings
@@ -100,9 +102,10 @@ my $maintemplate = HTML::Template->new(
       debug => 1,
 );
 
-$maintemplate->param( "LBHOSTNAME", lbhostname());
-$maintemplate->param( "LANG", $lang);
-$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
+$maintemplate->param("LBHOSTNAME", lbhostname());
+$maintemplate->param("LANG", $lang);
+$maintemplate->param("SELFURL", $ENV{REQUEST_URI});
+$maintemplate->param("PLUGINS" => \@plugins);
 
 
 ##########################################################################
@@ -269,6 +272,7 @@ sub install {
 	my %SL = LoxBerry::System::readlanguage($logtemplate);
 	$logtemplate->param( "LOGFILE", "$tempfile.log");
 	$logtemplate->param( "STATUSFILE", "$tempfile.status");
+
 	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};

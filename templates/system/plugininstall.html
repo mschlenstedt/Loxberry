@@ -44,6 +44,29 @@
 			</tr>
 		</thead>
 		<tbody>
+
+		<!-- START Plugin container -->
+		<TMPL_IF PLUGINS>
+			<TMPL_LOOP PLUGINS>
+			<tr>
+				<th><TMPL_VAR PLUGINDB_NO></th>
+				<td><TMPL_VAR PLUGINDB_TITLE></td>
+				<td><TMPL_VAR PLUGINDB_VERSION></td>
+				<td></td>
+				<td>
+				<a data-role="button" data-inline="true" data-icon="info" data-mini="true" 
+				href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template"
+				target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>&nbsp;
+				<a data-role="button" data-inline="true" data-icon="delete" data-mini="true" 
+				href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"
+				target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>&nbsp;
+				</td>
+			</tr>
+			</TMPL_LOOP>
+		<TMPL_ELSE>
+		</TMPL_IF>
+		<!-- END Plugin container -->
+
 		</tbody>
 	</table>
 
