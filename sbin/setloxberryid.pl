@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2017-2018 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,53 +14,62 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-use LoxBerry::System;
-use Config::Simple;
+use LoxBerry::Log;
 
-# As long as LoxBerry::system does not provide all ENV
-my $lbsconfig = $ENV{LBSCONFIG};
-my $lbslog = $ENV{LBSLOG};
+my $logfilename = "$lbhomedir/log/system_tmpfs/loxberryid.log";
+my $log = LoxBerry::Log->new ( package => "core", name => "loxberryid", filename => $logfilename, append => 1 );
 
-our $logmessage;
-our $verbose = 1;
+$log->loglevel(6);
+LOGSTART "LogBerry setloxberryid";
+$log->stdout(1);
 
-my $cfg      = new Config::Simple("$lbsconfig/general.cfg");
+my $cfg      = new Config::Simple("$lbsconfigdir/general.cfg");
 my $sendstat = is_enabled( $cfg->param("BASE.SENDSTATISTIC") );
 my $version  = $cfg->param("BASE.VERSION");
 my $curlbin  = $cfg->param("BINARIES.CURL");
 
 # Create new ID if no exists
-if (!-e "$lbsconfig/loxberryid.cfg" && $sendstat) {
+if (!-e "$lbsconfigdir/loxberryid.cfg" && $sendstat) {
 
-  $logmessage = "INFO: Creating new random ID\n";
-  &log;
+	LOGINF "Creating new random ID";
 
-  open(F,">$lbsconfig/loxberryid.cfg") or die "Cannot write $lbsconfig/loxberryid.cfg: $!";
-    flock(F,2);
-    print F generate(128);
-    flock(F,8);
-  close(F);
-
+	open($fh, ">", "$lbsconfigdir/loxberryid.cfg") or 
+		do {
+			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
+			exit(1);
+		};
+    flock($fh,2);
+    print $fh generate(128);
+    flock($fh,8);
+	close($fh);
 }
 
 # Send ID to loxberry.de fpr usage statistics. Nothing more than Date/Time (in Unixformat) and
 # the randomly ID will be send. No personal data, no data of your LoxBerry.
 if ($sendstat) {
 
-  open(F,"<$lbsconfig/loxberryid.cfg") or die "Cannot write $lbsconfig/loxberryid.cfg: $!";
-    flock(F,2);
-    my $lbid = <F>;
-    flock(F,8);
-  close(F);
+	open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
+		do {
+			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
+			exit(1);
+		};
+	flock($fh,2);
+	my $lbid = <$fh>;
+	flock($fh,8);
+	close($fh);
 
-  system("$curlbin -f -k -s -S --show-error -o /dev/null \"https://stats.loxberry.de/collect.php?id=$lbid&version=$version\"");
-
-  $logmessage = "INFO: Send request successfully: https://stats.loxberry.de/collect.php?id=$lbid&version=$version\n";
-  &log;
-
+	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version";
+	my $output = qx { $curlbin -f -k -s -S --stderr - --show-error -o /dev/null "$url" };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0 ) {
+		LOGCRIT "ERROR $exitcode sending statistics to $url\n$output\n";
+		exit(1);
+	
+	} else {
+	LOGOK "Sent request successfully: https://stats.loxberry.de/collect.php?id=$lbid&version=$version\n";
+	}
 }
-
-
+LOGEND "Finished successfully.";
 exit;
 
 #
@@ -85,26 +94,4 @@ sub generate {
         }
 
         return($zufall);
-}
-
-# Logfile
-sub log {
-# Today's date for logfile
-  (my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst) = localtime();
-  $year = $year+1900;
-  $mon = $mon+1;
-  $mon = sprintf("%02d", $mon);
-  $mday = sprintf("%02d", $mday);
-  $hour = sprintf("%02d", $hour);
-  $min = sprintf("%02d", $min);
-  $sec = sprintf("%02d", $sec);
-
-  if ($verbose || $error) {print "$logmessage";}
-
-  # Logfile
-  open(F,">>$lbslog/loxberryid.log");
-    print F "$year-$mon-$mday $hour:$min:$sec $logmessage";
-  close (F);
-
-  return ();
 }
