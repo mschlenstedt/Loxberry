@@ -70,6 +70,7 @@ my $log = LoxBerry::Log->new(
 		loglevel => 7,
 		stderr => 1,
 		append => 1,
+		addtime => 1,
 );
 
 LOGOK "Update handed over from LoxBerry Update Check to LoxBerry Update";

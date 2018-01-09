@@ -77,9 +77,10 @@ my $cgi = CGI->new;
 my $log = LoxBerry::Log->new(
 		package => 'LoxBerry Update',
 		name => 'check',
-		logdir => "$lbhomedir/log/system_tmpfs/loxberryupdate",
+		filename => "$lbhomedir/log/system_tmpfs/loxberryupdate/updatecheck.log",
 		loglevel => 7,
 		stderr => 1,
+		append => 1,
 );
 						
 #my $logfile ="$lbslogdir/loxberryupdate/log$.log";
@@ -222,7 +223,8 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			name => 'update',
 			logdir => "$lbslogdir/loxberryupdate",
 			loglevel => 7,
-			stderr => 1
+			stderr => 1,
+			addtime => 1,
 		);
 		my $logfilename = $log->filename;
 		
