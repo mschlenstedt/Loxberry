@@ -28,6 +28,8 @@ my $sendstat = is_enabled( $cfg->param("BASE.SENDSTATISTIC") );
 my $version  = $cfg->param("BASE.VERSION");
 my $curlbin  = $cfg->param("BINARIES.CURL");
 
+my ($ver_major, $ver_minor, $ver_sub) = split (/\./, trim($version));
+
 # Create new ID if no exists
 if (!-e "$lbsconfigdir/loxberryid.cfg" && $sendstat) {
 
@@ -58,7 +60,7 @@ if ($sendstat) {
 	flock($fh,8);
 	close($fh);
 
-	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version";
+	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub";
 	my $output = qx { $curlbin -f -k -s -S --stderr - --show-error -o /dev/null "$url" };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0 ) {
@@ -66,7 +68,7 @@ if ($sendstat) {
 		exit(1);
 	
 	} else {
-	LOGOK "Sent request successfully: https://stats.loxberry.de/collect.php?id=$lbid&version=$version\n";
+	LOGOK "Sent request successfully: $url\n";
 	}
 }
 LOGEND "Finished successfully.";
