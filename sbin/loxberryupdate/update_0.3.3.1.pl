@@ -46,7 +46,7 @@ use File::Path;
 File::Path::make_path("$lbhomedir/log/system_tmpfs/loxberryupdate");
 
 LOGINF "Moving LoxBerry Update Check logfiles to system_tmpfs...";
-my $output = qx { mv -f $lbslogdir/loxberryupdate/*_check.log* $lbhomedir/log/system_tmpfs/loxberryupdate/ };
+my $output = qx { if [ -e $lbslogdir/loxberryupdate/*_check.log* ] ; then mv -f $lbslogdir/loxberryupdate/*_check.log* $lbhomedir/log/system_tmpfs/loxberryupdate/ ; fi };
 my $exitcode  = $? >> 8;
 
 if ($exitcode != 0) {
