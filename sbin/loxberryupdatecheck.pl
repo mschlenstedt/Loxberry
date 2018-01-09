@@ -39,7 +39,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="0.3.3.2";
+my $scriptversion="0.3.3.4";
 
 # print currtime('file') . "\n";
 
@@ -77,7 +77,7 @@ my $cgi = CGI->new;
 my $log = LoxBerry::Log->new(
 		package => 'LoxBerry Update',
 		name => 'check',
-		logdir => "$lbslogdir/loxberryupdate",
+		logdir => "$lbhomedir/log/system_tmpfs/loxberryupdate",
 		loglevel => 7,
 		stderr => 1,
 );
@@ -88,11 +88,21 @@ my $log = LoxBerry::Log->new(
 LOGSTART "LoxBerry Update Check";
 LOGINF "Version of loxberrycheck.pl is $scriptversion";
 
+$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+
 if (!$cgi->param) {
 	$joutput{'error'} = "No parameters sent.";
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit (1);
+}
+
+# If general.cfg's UPDATE.DRYRUN is defined, do nothing
+if ( is_enabled($cfg->param('UPDATE.DRYRUN')) ) {
+	$cgi->param('dryrun', 1)
+}
+if ( is_enabled($cfg->param('UPDATE.KEEPUPDATEFILES')) ){
+	$cgi->param('keepupdatefiles', 1)
 }
 
 if ($cgi->param('dryrun')) {
@@ -109,9 +119,8 @@ $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : und
 
 $querytype = $cgi->param('querytype');
 
-# We assume that if output is json, this is a web call
-$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.LATESTSHA') : "0";
+
 
 if ($formatjson || $cron ) {
 	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");

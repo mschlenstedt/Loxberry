@@ -42,6 +42,8 @@ my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_updates.html";
 
 my $lbulogfiledir = "$lbslogdir/loxberryupdate";
+my $lbuchecklogfiledir = "$lbhomedir/log/system_tmpfs/loxberryupdate";
+
 		
 my $cfg;
 my $template_title;
@@ -74,7 +76,7 @@ our $rebootbin;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "0.3.3.1";
 
 my $bins = LoxBerry::System::get_binaries();
 $sversion = LoxBerry::System::lbversion();
@@ -580,6 +582,45 @@ sub lbuhistory
 		}
 	}
 	closedir $DIR;
+	
+	LOGDEB "Collecting files from the LoxBerry Update Check logfile dir $lbuchecklogfiledir";
+	opendir( $DIR, $lbuchecklogfiledir );
+	@files = sort {$b cmp $a} readdir($DIR);
+		
+	while ( my $direntry = shift @files ) {
+		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
+		# LOGDEB "Direntry: $direntry";
+		my $logtype = substr($direntry, 16, rindex($direntry, '.')-16);
+		my $logdate = substr($direntry, 0, 15);
+		next if ($logtype ne "update" && $logtype ne "check");
+		# LOGDEB "Log type: $logtype Log date: $logdate";
+		my $dateobj = parsedatestring($logdate);
+		if ($logtype eq 'update') {
+			my %update;
+			$updatecount++;
+			# $update{'DATEOBJ'} = $dateobj; # Caused fatal error in loop output : HTML::Template::param() : attempt to set parameter 'dateobj' with an array ref -
+			$update{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+			$update{'FILENAME'} = $direntry;
+			$update{'URLFILENAME'} = "system/loxberryupdate/$direntry";
+			push(@updateslist, \%update);
+		} elsif ($logtype eq 'check') {
+			my %updatecheck;
+			$updatecheckcount++;
+			# $updatecheck{'DATEOBJ'} = $dateobj; # Caused fatal error in loop output : HTML::Template::param() : attempt to set parameter 'dateobj' with an array ref -
+			$updatecheck{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+			$updatecheck{'FILENAME'} = $direntry;
+			$updatecheck{'URLFILENAME'} = "system/loxberryupdate/$direntry";
+			push(@updatecheckslist, \%updatecheck);
+		}
+	}
+	closedir $DIR;
+	
+	
+	
+	
+	
+	
+	
 	
 	# foreach my $key ( sort (keys(%updatecheckslist) ) ) {}
 	# foreach my $key ( sort (keys(%updateslist) ) ) {}

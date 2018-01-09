@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='0.3.3.3';
+my $scriptversion='0.3.3.4';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
