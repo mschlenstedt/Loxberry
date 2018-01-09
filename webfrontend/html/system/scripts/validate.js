@@ -48,29 +48,35 @@ function validate_all()
   var trueCount=-1;
   var falseCount=-1;
   var what_to_test = window.obj_to_validate;
-	$.each(what_to_test, function (i,v) 
-	  {
-  	var saveval = $(v+'_div').text();
-  	$(v+'_div').text($(v).val());
-    if (validate_chk_value.call(this,v)) {
-      trueCount++;
-    }
-    else {
-      falseCount++;
-    }
-  	$(this+'_div').text(saveval);
-  	saveval='';
-    });
-    
-    if (falseCount >= 0) 
-    {
-	    return false;
-    }
-    if (trueCount >= 0) 
-    {
-	    return true;
-    }
+	if (what_to_test.length === 0 )
+	{
+		return true;
+	}
+	else
+	{
+		$.each(what_to_test, function (i,v) 
+		  {
+	  	var saveval = $(v+'_div').text();
+	  	$(v+'_div').text($(v).val());
+	    if (validate_chk_value.call(this,v)) {
+	      trueCount++;
+	    }
+	    else {
+	      falseCount++;
+	    }
+	  	$(this+'_div').text(saveval);
+	  	saveval='';
+	    });
+	}
+  if (falseCount >= 0) 
+  {
     return false;
+  }
+  if (trueCount >= 0) 
+  {
+    return true;
+  }
+  return false;
 }	
 
 var _onPaste_StripFormatting_IEPaste = false;
