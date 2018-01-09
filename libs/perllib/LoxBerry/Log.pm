@@ -7,10 +7,12 @@ use LoxBerry::System;
 use Time::Piece;
 use HTML::Entities;
 use JSON;
+use File::Basename;
+use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.3.2";
+our $VERSION = "0.3.3.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -195,6 +197,10 @@ sub open
 	if (!$writetype) {
 		$writetype = ">>";
 	}
+	
+	my $dir = File::Basename::dirname($self->{filename});
+	File::Path::make_path($dir);
+	
 	# print STDERR "log open Writetype after processing is " . $writetype . "\n";
 	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename};
 	$self->{'_FH'} = $fh;
