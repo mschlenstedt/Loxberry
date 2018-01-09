@@ -1,40 +1,46 @@
-function validate_chk_object( obj_to_validate ) 
+function validate_enable ( object ) 
 {
-	obj_to_validate = ( typeof obj_to_validate != 'undefined' && obj_to_validate instanceof Array ) ? obj_to_validate : [];
-	$.each(obj_to_validate, function(i, obj)
+	if($("#page_content").length == 0) 
 	{
-	    window.obj_to_validate.push(obj);
-	});
-	window.obj_to_validate = jQuery.unique( window.obj_to_validate );
-	$.each(window.obj_to_validate, function(i, obj)
+		$( "body" ).append($('<div id="page_content" class="page_content"></div>'));
+	}
+	$( ".page_content" ).append($('<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>'));
+	$( '#error-msg-'+object.substring(1) ).css('display','none');
+	window.obj_to_validate = ( typeof window.obj_to_validate != 'undefined' && window.obj_to_validate instanceof Array ) ? window.obj_to_validate : [];
+	$( $(object).closest('form') ).submit(function(e) 
 	{
-		setTimeout( function() 
+		if (!validate_all())
 		{
-			var offset = $(obj+'_div').offset();
-			$('#error-msg-'+obj.substring(1)).css({'top': offset.top - 30, 'left': offset.left});
-	  }, 150);
+			e.preventDefault();
+		}
 	});
-}
-function validate_clean_objects( to_clean ) 
-{
-	to_clean = ( typeof to_clean != 'undefined' && to_clean instanceof Array ) ? to_clean : [];
-	$.each(to_clean, function(i, obj)
+	$(object+'_div').on('paste', function(e)
 	{
-		$(obj).val('');
-		$(obj+"_div").text('');
-		$('#error-msg-'+obj.substring(1)).fadeOut(100);
-		$(obj+"_div").removeClass('param_error').addClass('param_ok');
-		window.obj_to_validate.splice($.inArray(obj, obj_to_validate),1);
+		validate_OnPaste_StripFormatting(this, event);
 	});
-	window.obj_to_validate = jQuery.unique( window.obj_to_validate );
-	$.each(window.obj_to_validate, function(i, obj)
+	$(object+'_div').on('blur keyup input ', function(e)
 	{
-		setTimeout( function() 
-		{ 
-			var offset = $(obj+'_div').offset();  
-			$('#error-msg-'+obj.substring(1)).css({'top': offset.top - 30, 'left': offset.left});
-		}, 450);
+		if (e.type == "blur" )
+		{
+			$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
+		}
+		else 
+		{
+			$(this).removeClass("ui-shadow-inset").addClass("ui-focus");
+		}
+		if ( $(this).hasClass('param_ok') )
+		{
+			$(this).removeClass('param_ok').addClass('param_ok');
+			$('#error-msg-'+object.substring(1)).fadeOut(400);
+		}
+		else
+		{
+			$(this).removeClass('param_error').addClass('param_error');
+		} 
+		
+		validate_chk_value( object,e );
 	});
+	$(object).attr('value',$(object+"_div").text());
 }
 
 function validate_all()
@@ -117,43 +123,42 @@ function validate_chk_value( object,evt,rule )
 		return true
 	}
 }
-function validate_enable ( object ) 
+
+function validate_chk_object( obj_to_validate ) 
 {
-	$( ".page_content" ).append($('<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>'));
-	$( '#error-msg-'+object.substring(1) ).css('display','none');
-	window.obj_to_validate = ( typeof window.obj_to_validate != 'undefined' && window.obj_to_validate instanceof Array ) ? window.obj_to_validate : [];
-	$( $(object).closest('form') ).submit(function(e) 
+	obj_to_validate = ( typeof obj_to_validate != 'undefined' && obj_to_validate instanceof Array ) ? obj_to_validate : [];
+	$.each(obj_to_validate, function(i, obj)
 	{
-		if (!validate_all())
-		{
-			e.preventDefault();
-		}
+	    window.obj_to_validate.push(obj);
 	});
-	$(object+'_div').on('paste', function(e)
+	window.obj_to_validate = jQuery.unique( window.obj_to_validate );
+	$.each(window.obj_to_validate, function(i, obj)
 	{
-		validate_OnPaste_StripFormatting(this, event);
+		setTimeout( function() 
+		{
+			var offset = $(obj+'_div').offset();
+			$('#error-msg-'+obj.substring(1)).css({'top': offset.top - 30, 'left': offset.left});
+	  }, 150);
 	});
-	$(object+'_div').on('blur keyup input ', function(e)
+}
+function validate_clean_objects( to_clean ) 
+{
+	to_clean = ( typeof to_clean != 'undefined' && to_clean instanceof Array ) ? to_clean : [];
+	$.each(to_clean, function(i, obj)
 	{
-		if (e.type == "blur" )
-		{
-			$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
-		}
-		else 
-		{
-			$(this).removeClass("ui-shadow-inset").addClass("ui-focus");
-		}
-		if ( $(this).hasClass('param_ok') )
-		{
-			$(this).removeClass('param_ok').addClass('param_ok');
-			$('#error-msg-'+object.substring(1)).fadeOut(400);
-		}
-		else
-		{
-			$(this).removeClass('param_error').addClass('param_error');
-		} 
-		
-		validate_chk_value( object,e );
+		$(obj).val('');
+		$(obj+"_div").text('');
+		$('#error-msg-'+obj.substring(1)).fadeOut(100);
+		$(obj+"_div").removeClass('param_error').addClass('param_ok');
+		window.obj_to_validate.splice($.inArray(obj, obj_to_validate),1);
 	});
-	$(object).attr('value',$(object+"_div").text());
+	window.obj_to_validate = jQuery.unique( window.obj_to_validate );
+	$.each(window.obj_to_validate, function(i, obj)
+	{
+		setTimeout( function() 
+		{ 
+			var offset = $(obj+'_div').offset();  
+			$('#error-msg-'+obj.substring(1)).css({'top': offset.top - 30, 'left': offset.left});
+		}, 450);
+	});
 }
