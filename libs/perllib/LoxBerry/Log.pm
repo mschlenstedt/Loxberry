@@ -81,6 +81,7 @@ sub new
 				stdout => $params{stdout},
 				nofile => $params{nofile},
 				autoraise => $params{nofile},
+				addtime => $params{addtime},
 	};
 	
 	bless $self, $class;
@@ -276,10 +277,19 @@ sub write
 		#print STDERR "Not filtered.\n";
 		my $fh = $self->{'_FH'};
 		my $string;
+		my $currtime = "";
+		if ($self->{addtime}) {
+			my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+			$year += 1900;
+			$currtime = sprintf("%02d:%02d:%02d", $hour, $min, $sec);
+			$currtime = $currtime . " ";
+		}
+		
+		
 		if ($severity == 7 || $severity < 0) {
-			$string = $s . "\n"; 
+			$string = $currtime . $s . "\n"; 
 		} else {
-			$string = '<' . $severitylist{$severity} . '> ' . $s . "\n"; 
+			$string = '<' . $severitylist{$severity} . '> ' . $currtime . $s . "\n"; 
 		}
 		if (!$self->{nofile}) {
 			# print STDERR "   Print to file\n";
