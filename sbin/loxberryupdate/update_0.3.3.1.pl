@@ -13,7 +13,7 @@ use CGI;
 my $cgi = CGI->new;
 
 # Initialize logfile and parameters
-
+	my $logfilename;
 	if ($cgi->param('logfilename')) {
 		$logfilename = $cgi->param('logfilename');
 	}
