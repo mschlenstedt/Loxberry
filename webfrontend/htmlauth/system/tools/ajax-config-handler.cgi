@@ -137,7 +137,7 @@ sub lbupdate
 	if ($action eq 'lbupdate-runinstall') {
 		my $output;
 		system("nohup sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1 </dev/null >/dev/null 2>&1 & ");
-		$output='{"info":"Update started. See update logfile for details."}';
+		$output='{"info":"Update started. See LoxBerry Update history for details."}';
 		print $output;
 		exit(0);
 	}
