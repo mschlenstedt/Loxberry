@@ -304,7 +304,7 @@ sub install {
 		close UPLOADFILE;
 
 		# Do the installation
-		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=/tmp/$tempfile.zip pin=$securepin tempfile=$tempfile");
+		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=/tmp/$tempfile.zip pin=$securepin tempfile=$tempfile cgi=1 >> $logfile 2>&1");
 
 	} # End Child process
 
