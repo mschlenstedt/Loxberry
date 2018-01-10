@@ -47,16 +47,9 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "0.1.0";
+my $version = "0.1.1";
 
 my $cfg			= new Config::Simple("$lbsconfigdir/general.cfg");
-#$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-#$lang            = $cfg->param("BASE.LANG");
-#$unzipbin        = $cfg->param("BINARIES.UNZIP");
-#$bashbin         = $cfg->param("BINARIES.BASH");
-#$aptbin          = $cfg->param("BINARIES.APT");
-#$sudobin         = $cfg->param("BINARIES.SUDO");
-#$chmodbin        = $cfg->param("BINARIES.CHMOD");
 
 
 #########################################################################
@@ -78,8 +71,8 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 
 # And this one we really want to use
 my $do           = $query{'do'};
-my $answer       = $query{'answer'};
 my $pid          = $query{'pid'};
+my $answer       = $query{'answer'};
 
 # Everything from Forms
 my $saveformdata = param('saveformdata');
@@ -88,9 +81,14 @@ my $securepin = param('securepin');
 # Filter
 $saveformdata = quotemeta($saveformdata);
 $do = quotemeta($do);
+$pid = quotemeta($pid);
+$securepin = quotemeta($securepin);
+$answer = quotemeta($answer);
 
 $saveformdata          =~ tr/0-1//cd;
 $saveformdata          = substr($saveformdata,0,1);
+$answer                =~ tr/0-1//cd;
+$answer                = substr($answer,0,1);
 
 my $maintemplate = HTML::Template->new(
       filename => "$lbstemplatedir/plugininstall.html",
@@ -99,11 +97,8 @@ my $maintemplate = HTML::Template->new(
       die_on_bad_params=> 0,
       associate => $cfg,
       %htmltemplate_options,
-      debug => 1,
+      #debug => 1,
 );
-
-$maintemplate->param("LBHOSTNAME", lbhostname());
-$maintemplate->param("LANG", $lang);
 $maintemplate->param("SELFURL", $ENV{REQUEST_URI});
 $maintemplate->param("PLUGINS" => \@plugins);
 
@@ -113,7 +108,6 @@ $maintemplate->param("PLUGINS" => \@plugins);
 ##########################################################################
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
-
 my $lang = lblanguage();
 
 
@@ -129,6 +123,8 @@ system("rm -r -f /tmp/uploads/");
 # What should we do
 #########################################################################
 
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};
+
 # Menu
 if (!$do || $do eq "form") {
   print STDERR "FORM called\n";
@@ -140,14 +136,12 @@ if (!$do || $do eq "form") {
 # Installation
 elsif ($do eq "install") {
   print STDERR "INSTALL called\n";
-  $maintemplate->param("INSTALL", 1);
   &install;
 }
 
 # UnInstallation
 elsif ($do eq "uninstall") {
   print STDERR "UINSTALL called\n";
-  $maintemplate->param("UINSTALL", 1);
   &uninstall;
 }
 
@@ -166,29 +160,7 @@ exit;
 
 sub form {
 
-#open(F,"<$installfolder/data/system/plugindatabase.dat");
-#  @data = <F>;
-#  foreach (@data){
-#    s/[\n\r]//g;
-#    # Comments
-#    if ($_ =~ /^\s*#.*/) {
-#      print F "$_\n";
-#      next;
-#    }
-#    @fields = split(/\|/);
-#    $pmd5checksum = @fields[0];
-#    $pname = @fields[4];
-#    $btn1 = $phrase->param("TXT0101");
-#    $btn2 = $phrase->param("TXT0102");
-#    $ptablerows = $ptablerows . "<tr><th>$i</th><td>@fields[6]</td><td>@fields[3]</td><td>@fields[1]</td>";
-#    $ptablerows = $ptablerows . "<td><a data-role=\"button\" data-inline=\"true\" data-icon=\"info\" data-mini=\"true\" href=\"/admin/system/tools/logfile.cgi?logfile=system/plugininstall/$pname.log&header=html&format=template\" target=\"_blank\">$btn1</a>&nbsp;";
-#    $ptablerows = $ptablerows . "<a data-role=\"button\" data-inline=\"true\" data-icon=\"delete\" data-mini=\"true\" href=\"/admin/system/plugininstall.cgi?do=uninstall&pid=$pmd5checksum\">$btn2</a></td></tr>\n";
-#    $i++;
-#  }
-#close (F);
-
 	# Print Template
-	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 
@@ -207,6 +179,31 @@ sub form {
 #####################################################
 
 sub uninstall {
+
+	if (!$answer) {
+		print STDERR "Asking for uninstallation.";
+		$maintemplate->param("QUESTION", 1);
+		foreach my $plugin (@plugins) {
+			if ($plugin->{PLUGINDB_MD5_CHECKSUM} eq $pid) {
+				$maintemplate->param("UNINSTALL_QUESTION", $SL{'PLUGININSTALL.UI_MSG_UNINSTALL_QUESTION'} . " <b>" . $plugin->{PLUGINDB_TITLE} . "</b>?");
+				last;
+			}
+		}
+	} else {
+		print STDERR "Doing uninstallation of $pid.";
+		$maintemplate->param("UNINSTALL", 1);
+		system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid 2>&1");
+	}
+	
+	# Print Template
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+
+	print $maintemplate->output();
+	undef $maintemplate;
+
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
 
   exit;
 
