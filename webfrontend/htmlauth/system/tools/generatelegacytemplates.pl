@@ -21,6 +21,7 @@ use LoxBerry::System;
 use LoxBerry::Web;
 use Getopt::Long qw(GetOptions);
 use List::Util qw(max min); 
+use File::Path qw(make_path);
 
 my $force;
 
@@ -158,41 +159,44 @@ foreach my $file (@files) {
 	select STDOUT;
 	
 	if ($output_header && $output_footer && $output_error && $output_success) {
-	open(my $fh_lang_header, ">", "$lbstemplatedir/$langcode/header.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/header.html. Skipping.\n"; 
-			 next;
-			};
-	open(my $fh_lang_footer, ">", "$lbstemplatedir/$langcode/footer.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/footer.html. Skipping.\n"; 
-			next;
-			};
-	open(my $fh_lang_error, ">", "$lbstemplatedir/$langcode/error.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/error.html. Skipping.\n"; 
-			next;
-			};
-	open(my $fh_lang_success, ">", "$lbstemplatedir/$langcode/success.html") or 
-		do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/success.html. Skipping.\n"; 
-			next;
-			};
-	
-	# This removes line 1 to 2 of the string to delete content-type: text/html 
-	# as legacy plugins send that for their own
-	$output_header =~ s/^(?:.*\n){1,2}//;
-	$output_error =~ s/^(?:.*\n){1,2}//;
-	$output_success =~ s/^(?:.*\n){1,2}//;
-	
-	
-	# Writing new files
-	print $fh_lang_header $output_header;
-	print $fh_lang_footer $output_footer;
-	print $fh_lang_error $output_error;
-	print $fh_lang_success $output_success;
+
+		make_path("$lbstemplatedir/$langcode", { owner => "loxberry", group => "loxberry" });
 		
-	close $fh_lang_header;
-	close $fh_lang_footer;
-	close $fh_lang_error;
-	close $fh_lang_success;
-	
+		open(my $fh_lang_header, ">", "$lbstemplatedir/$langcode/header.html") or 
+			do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/header.html. Skipping.\n"; 
+				 next;
+				};
+		open(my $fh_lang_footer, ">", "$lbstemplatedir/$langcode/footer.html") or 
+			do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/footer.html. Skipping.\n"; 
+				next;
+				};
+		open(my $fh_lang_error, ">", "$lbstemplatedir/$langcode/error.html") or 
+			do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/error.html. Skipping.\n"; 
+				next;
+				};
+		open(my $fh_lang_success, ">", "$lbstemplatedir/$langcode/success.html") or 
+			do { print STDERR "generatelegacytemplates.pl: Cannot write $lbstemplatedir/$langcode/success.html. Skipping.\n"; 
+				next;
+				};
+		
+		# This removes line 1 to 2 of the string to delete content-type: text/html 
+		# as legacy plugins send that for their own
+		$output_header =~ s/^(?:.*\n){1,2}//;
+		$output_error =~ s/^(?:.*\n){1,2}//;
+		$output_success =~ s/^(?:.*\n){1,2}//;
+		
+		
+		# Writing new files
+		print $fh_lang_header $output_header;
+		print $fh_lang_footer $output_footer;
+		print $fh_lang_error $output_error;
+		print $fh_lang_success $output_success;
+			
+		close $fh_lang_header;
+		close $fh_lang_footer;
+		close $fh_lang_error;
+		close $fh_lang_success;
+		
 	}
 }
 

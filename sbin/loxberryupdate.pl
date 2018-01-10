@@ -301,7 +301,7 @@ if ($exitcode != 0 ) {
 
 # We have to recreate the legacy templates.
 LOGINF "Updating LoxBerry legacy templates...";
-system("su - loxberry -c '$lbshtmlauthdir/tools/generatelegacytemplates.pl' >/dev/null");
+system("su - loxberry -c '$lbshtmlauthdir/tools/generatelegacytemplates.pl' --force >/dev/null");
 $exitcode  = $? >> 8;
 if ($exitcode != 0 ) {
 	LOGWARN "generatelegacytemplates returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";

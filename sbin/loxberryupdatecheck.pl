@@ -284,7 +284,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				LOGINF "Executing LoxBerry Update forked...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron </dev/null >/dev/null 2>&1 &");
 				exit(0);
 			} 
 			exit(0);
@@ -554,6 +554,7 @@ sub check_commits
 			
 			# This is the place where we can hand over to the real update
 			
+			#LOGINF "Run loxberryupdate in bachground ...";
 			LOGINF "Forking loxberryupdate...";
 			my $pid = fork();
 			if (not defined $pid) {
@@ -563,7 +564,7 @@ sub check_commits
 				LOGINF "Executing LoxBerry Update forked...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=config $dryrun logfilename=$logfilename cron=$cron sha=$commit_sha");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=config $dryrun logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
 				exit(0);
 			} 
 			exit(0);

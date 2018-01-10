@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.3.4";
+our $VERSION = "0.3.3.5";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1040,7 +1040,10 @@ sub reboot_required
 		print $fh "$message\n";
 	}
 	close $fh;
-	
+	eval {
+		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+		chown $uid, $gid, $LoxBerry::System::reboot_required_file;
+		};
 }
 
 sub diskspaceinfo
