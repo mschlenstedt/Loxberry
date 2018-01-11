@@ -556,30 +556,24 @@ sub lbuhistory
 	my @updateslist = ();
 		
 	while ( my $direntry = shift @files ) {
-		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
+		LOGDEB "Direntry BEFORE: $direntry";
+		next if (length($direntry) lt 25); # next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
+		next if (substr($direntry, 15, 11) ne "_update.log");
+		next if (substr($direntry, -3) eq ".gz");
+		next if (-s "$lbulogfiledir/$direntry" == 0);
+		LOGDEB "Direntry FILTERED: $direntry";
+		
 		# LOGDEB "Direntry: $direntry";
-		my $logtype = substr($direntry, 16, rindex($direntry, '.')-16);
+		my $logtype = "update";
 		my $logdate = substr($direntry, 0, 15);
-		next if ($logtype ne "update" && $logtype ne "check");
-		# LOGDEB "Log type: $logtype Log date: $logdate";
 		my $dateobj = parsedatestring($logdate);
-		if ($logtype eq 'update') {
-			my %update;
-			$updatecount++;
-			# $update{'DATEOBJ'} = $dateobj; # Caused fatal error in loop output : HTML::Template::param() : attempt to set parameter 'dateobj' with an array ref -
-			$update{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
-			$update{'FILENAME'} = $direntry;
-			$update{'URLFILENAME'} = "system/loxberryupdate/$direntry";
-			push(@updateslist, \%update);
-		} elsif ($logtype eq 'check') {
-			my %updatecheck;
-			$updatecheckcount++;
-			# $updatecheck{'DATEOBJ'} = $dateobj; # Caused fatal error in loop output : HTML::Template::param() : attempt to set parameter 'dateobj' with an array ref -
-			$updatecheck{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
-			$updatecheck{'FILENAME'} = $direntry;
-			$updatecheck{'URLFILENAME'} = "system/loxberryupdate/$direntry";
-			push(@updatecheckslist, \%updatecheck);
-		}
+		my %update;
+		$updatecount++;
+		# $update{'DATEOBJ'} = $dateobj; # Caused fatal error in loop output : HTML::Template::param() : attempt to set parameter 'dateobj' with an array ref -
+		$update{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+		$update{'FILENAME'} = $direntry;
+		$update{'URLFILENAME'} = "system/loxberryupdate/$direntry";
+		push(@updateslist, \%update);
 	}
 	closedir $DIR;
 	
