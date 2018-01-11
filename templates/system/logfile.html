@@ -74,7 +74,13 @@ function updatelog()
 		// Load Logfile
 		//$('#Logfile').load('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&head=none&format=html');
 		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&head=none&format=html&clientsize='+filesize, 
-			function( data, textStatus, request ) { $('#Logfile').html( data ); 
+			function( data, textStatus, request ) { 
+				filesize = request.getResponseHeader('filesize');
+				if (filesize == 0) {
+					$('#Logfile').html( "<TMPL_VAR LOGVIEWER.ERR_LOGFILE_EMPTY_HTML>" );
+				} else {
+					$('#Logfile').html( data ); 
+				}
 				// console.log ("filesize response header:", request.getResponseHeader('filesize'));
 				filesize = request.getResponseHeader('filesize');
 
