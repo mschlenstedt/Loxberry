@@ -15,9 +15,10 @@
 # limitations under the License.
 
 use LoxBerry::Log;
+use Getopt::Long;
 
 my $logfilename = "$lbhomedir/log/system_tmpfs/loxberryid.log";
-my $log = LoxBerry::Log->new ( package => "core", name => "loxberryid", filename => $logfilename, append => 1 );
+my $log = LoxBerry::Log->new ( package => "core", name => "loxberryid", filename => $logfilename, append => 1, addtime => 1 );
 
 $log->loglevel(6);
 LOGSTART "LogBerry setloxberryid";
@@ -49,7 +50,14 @@ if (!-e "$lbsconfigdir/loxberryid.cfg" && $sendstat) {
 # Send ID to loxberry.de fpr usage statistics. Nothing more than Date/Time (in Unixformat) and
 # the randomly ID will be send. No personal data, no data of your LoxBerry.
 if ($sendstat) {
-
+	
+	GetOptions ('delay' => \$delay);
+	my $random = int(rand(3600));
+	if ($delay) {
+		LOGINF "Called with delay - sleeping randomly for $random seconds...";
+		sleep($random);
+		LOGINF "Continuing.";
+	}
 	open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
 		do {
 			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
