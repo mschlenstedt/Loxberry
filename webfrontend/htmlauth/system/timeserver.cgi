@@ -106,7 +106,7 @@ my $maintemplate = HTML::Template->new(
 			# debug => 1,
 			);
 
-my %SL = LoxBerry::Web::readlanguage($maintemplate);
+my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 
 #########################################################################
@@ -273,7 +273,7 @@ sub save {
 				# debug => 1,
 				);
 
-	my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 
 
@@ -320,7 +320,7 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WID
 				);
 	print STDERR "timeserver.cgi: sub error called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
-	LoxBerry::Web::readlanguage($errtemplate);
+	LoxBerry::System::readlanguage($errtemplate);
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart();
 	print $errtemplate->output();

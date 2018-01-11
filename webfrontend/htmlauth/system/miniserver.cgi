@@ -103,7 +103,7 @@ my $maintemplate = HTML::Template->new(
 		# debug => 1,
 		);
 	
-my %SL = LoxBerry::Web::readlanguage($maintemplate);
+my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter
@@ -334,7 +334,7 @@ sub save {
 		# debug => 1,
 	);
 	
-	my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 	$maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
 	# Print Template

@@ -116,7 +116,7 @@ sub form
 		# debug => 1,
 		);
 
-	my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param( "LBHOSTNAME", lbhostname());
@@ -166,7 +166,7 @@ sub save
 		# debug => 1,
 		);
 	
-	my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 	# print STDERR "SAVE called\n";
 	$maintemplate->param("SAVE", 1);
