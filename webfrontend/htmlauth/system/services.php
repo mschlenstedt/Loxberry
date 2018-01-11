@@ -37,7 +37,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.1-dev1";
+$version = "0.3.3.1";
 
 $sversion = LBSystem::lbversion();
 
@@ -63,9 +63,9 @@ if (isset($_GET['lang'])) {
 	#LBWeb::lang() = substr($_GET['lang'], 0, 2);
 }
 # If we did the 'override', lblanguage will give us that language
-$lang = LBWeb::lblanguage();
+$lang = LBSystem::lblanguage();
 
-$SL = LBWeb::readlanguage($maintemplate,"language.ini",True);
+$SL = LBSystem::readlanguage(NULL, "language.ini", True);
 
 $template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].":". $SL['SERVICES.WIDGETLABEL']." v$sversion";
 
@@ -115,14 +115,14 @@ function form() {
 	$navbar[0]['URL'] = 'services.php?load=1';
 	$navbar[1]['Name'] = $SL['HEADER.TITLE_PAGE_OPTIONS'];
 	$navbar[1]['URL'] = 'services.php?load=2';
-	if ($_GET['load'] == 2) {
+	if (isset($_GET['load']) && ($_GET['load'] == 2)) {
 		$navbar[1]['active'] = True;
 	} else {
 		$navbar[0]['active'] = True;
 	}
 
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
-	if ($navbar[1]['active']): ?>
+	if (isset($navbar[1]['active'])): ?>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=2">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="ssdpd" value="1">
@@ -248,7 +248,7 @@ function save()
 	}
 
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
-	if ($ssdpoff != $cfg->getBool('SSDP','DISABLED',false)) {
+	if (isset($ssdpoff) && $ssdpoff != $cfg->getBool('SSDP','DISABLED',false)) {
 		$ssdpstate_changed = 1;
 	}
 	
@@ -305,9 +305,9 @@ function save()
 			</table>
 		</center>
 	<?php
-	if ($ssdpstate_changed == 1) {
+	if (isset($ssdpstate_changed) && $ssdpstate_changed == 1) {
 		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper ssdpd restart");
-	} else if ($webserver_changed == True) {
+	} else if (isset($webserver_changed) && $webserver_changed == True) {
 		$newhref = "http";
 		if ($_SERVER['HTTPS']) { $newhref .= "s"; }
 		$newhref .= "://".$_SERVER['SERVER_NAME'].":".$webport."/admin/system/services.php?check_webport=1";
@@ -413,7 +413,7 @@ function check_webport() {
 function error() {
 	$maintemplate = new LBTemplate(LBSTEMPLATEDIR."/error.html");
 	$maintemplate->param( "ERROR", $error);
-	LBWeb::readlanguage($maintemplate);
+	LBSystem::readlanguage($maintemplate);
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LBWeb::lbfooter();
