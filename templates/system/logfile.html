@@ -63,6 +63,7 @@ $.urlParam = function(name){
 }
 
 var filesize;
+var call_in_progress = 0;
 
 function updatelog() 
 	{
@@ -73,18 +74,24 @@ function updatelog()
 		});
 		// Load Logfile
 		//$('#Logfile').load('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&head=none&format=html');
-		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&head=none&format=html&clientsize='+filesize, 
-			function( data, textStatus, request ) { 
-				filesize = request.getResponseHeader('filesize');
-				if (filesize == 0) {
-					$('#Logfile').html( "<TMPL_VAR LOGVIEWER.ERR_LOGFILE_EMPTY_HTML>" );
-				} else {
-					$('#Logfile').html( data ); 
-				}
-				// console.log ("filesize response header:", request.getResponseHeader('filesize'));
-				filesize = request.getResponseHeader('filesize');
+		
+		// This 'if' prevents multiple loads in parallel, put Perl is too slow 
+		if (call_in_progress == 0 ) {
+			call_in_progress = 1;
+			$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&head=none&format=html&clientsize='+filesize, 
+				function( data, textStatus, request ) { 
+					filesize = request.getResponseHeader('filesize');
+					if (filesize == 0) {
+						$('#Logfile').html( "<TMPL_VAR LOGVIEWER.ERR_LOGFILE_EMPTY_HTML>" );
+					} else {
+						$('#Logfile').html( data ); 
+					}
+					// console.log ("filesize response header:", request.getResponseHeader('filesize'));
+					filesize = request.getResponseHeader('filesize');
 
-				});
+					})
+					.always(function() { call_in_progress = 0; });
+		}
 		
 		//console.log("Number of nodes:", $('#Logfile>br').length);
 		if ($("#LogScroll").is(":checked"))
@@ -101,7 +108,7 @@ if ($.urlParam('only') === 'once') {
 		$("input[type='checkbox']").attr("checked",false); /*.checkboxradio("refresh"); */
 				
 	} else {
-		 interval = window.setInterval(updatelog, 1000);	
+		 interval = window.setInterval(updatelog, 300);	
 	}
 
 
