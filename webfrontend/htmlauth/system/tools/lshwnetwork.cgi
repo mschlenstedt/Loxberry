@@ -66,7 +66,7 @@ our $maintemplate = HTML::Template->new(
 				#stack_debug => 1,
 				);
 
-my %SL = LoxBerry::Web::readlanguage($maintemplate);
+my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 ##########################################################################
 # Main program

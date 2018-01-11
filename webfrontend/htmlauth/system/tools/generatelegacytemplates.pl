@@ -134,10 +134,10 @@ foreach my $file (@files) {
 				die_on_bad_params=> 0,
 				);
 	$maintemplate->param( "ERROR", '<!--$error-->');
-	LoxBerry::Web::readlanguage($maintemplate);
-	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
+	readlanguage($maintemplate);
+	# LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
 	print $maintemplate->output();
-	LoxBerry::Web::lbfooter();
+	# LoxBerry::Web::lbfooter();
 	select STDOUT;
 	undef $maintemplate;
 	
@@ -152,10 +152,10 @@ foreach my $file (@files) {
 				);
 	$maintemplate->param( "MESSAGE", '<!--$message-->');
 	$maintemplate->param( "NEXTURL", '<!--$nexturl-->');
-	LoxBerry::Web::readlanguage($maintemplate);
-	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
+	readlanguage($maintemplate);
+	# LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
 	print $maintemplate->output();
-	LoxBerry::Web::lbfooter();
+	# LoxBerry::Web::lbfooter();
 	select STDOUT;
 	
 	if ($output_header && $output_footer && $output_error && $output_success) {

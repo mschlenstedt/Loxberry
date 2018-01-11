@@ -84,7 +84,7 @@ our $maintemplate = HTML::Template->new(
 				#stack_debug => 1,
 				);
 
-our %SL = LoxBerry::Web::readlanguage($maintemplate);
+our %SL = LoxBerry::System::readlanguage($maintemplate);
 
 $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'MYLOXBERRY.WIDGETLABEL'} v$sversion";
 
@@ -208,7 +208,7 @@ sub error {
 				# associate => $cfg,
 				);
 	$maintemplate->param( "ERROR", $error);
-	LoxBerry::Web::readlanguage($maintemplate);
+	LoxBerry::System::readlanguage($maintemplate);
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart();
 	print $maintemplate->output();

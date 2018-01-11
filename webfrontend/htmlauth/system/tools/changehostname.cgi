@@ -79,7 +79,7 @@ $maintemplate = HTML::Template->new(
 
 $maintemplate->param( LBSLOGDIR => $lbslogdir);
 
-my %Phrases = LoxBerry::Web::readlanguage($maintemplate);
+my %Phrases = LoxBerry::System::readlanguage($maintemplate);
 
 #########################################################################
 # Parameter

@@ -65,7 +65,7 @@ $mailbin         = $cfg->param("BINARIES.MAIL");
 ##########################################################################
 
 my $lang = lblanguage();
-my %SL = LoxBerry::Web::readlanguage();
+my %SL = LoxBerry::System::readlanguage();
 
 ##########################################################################
 # Main program

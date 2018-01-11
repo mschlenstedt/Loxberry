@@ -95,7 +95,7 @@ our $maintemplate = HTML::Template->new(
 				#stack_debug => 1,
 				);
 
-our %SL = LoxBerry::Web::readlanguage($maintemplate);
+our %SL = LoxBerry::System::readlanguage($maintemplate);
 
 $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}";
 

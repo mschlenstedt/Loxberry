@@ -491,7 +491,7 @@ sub error {
 				);
 	$maintemplate->param('ERROR' => $error);
 	
-	LoxBerry::Web::readlanguage($maintemplate);
+	LoxBerry::System::readlanguage($maintemplate);
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart();
 	print $maintemplate->output();

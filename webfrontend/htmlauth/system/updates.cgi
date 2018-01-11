@@ -131,7 +131,7 @@ our $maintemplate = HTML::Template->new(
 				%htmltemplate_options,
 				);
 
-our %SL = LoxBerry::Web::readlanguage($maintemplate);
+our %SL = LoxBerry::System::readlanguage($maintemplate);
 
 my @notif = get_notifications('updates', 'update');
 my ($check_err, $check_ok, $check_sum) = get_notification_count('updates', 'check');
@@ -285,7 +285,7 @@ sub install
 				);
 	
 	
-	my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 	  
@@ -438,7 +438,7 @@ sub install
 				%htmltemplate_options,
 				);
 
-	my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	my %SL = LoxBerry::System::readlanguage($maintemplate);
 	# TMPL_IF use "sec_question"
 	$maintemplate->param( "sec_question", 1 );
 	$maintemplate->param( "SVERSION", $sversion );
@@ -477,7 +477,7 @@ sub lbupdates
 
 	# TMPL_IF use "lbupdate"
 	$maintemplate->param( "lbupdate", 1);
-	# my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	# my %SL = LoxBerry::System::readlanguage($maintemplate);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
 	# Releasetype
@@ -539,7 +539,7 @@ sub lbuhistory
 	LOGDEB "lbuhistory -->";
 	# TMPL_IF use "lbuhistory"
 	$maintemplate->param( "lbuhistory", 1);
-	# my %SL = LoxBerry::Web::readlanguage($maintemplate);
+	# my %SL = LoxBerry::System::readlanguage($maintemplate);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
 	#
@@ -622,7 +622,7 @@ sub error {
 				%htmltemplate_options,
 				);
 	$maintemplate->param( "ERROR", $error);
-	LoxBerry::Web::readlanguage($maintemplate);
+	LoxBerry::System::readlanguage($maintemplate);
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart();
 	print $maintemplate->output();

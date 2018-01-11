@@ -52,7 +52,7 @@ our $maintemplate = HTML::Template->new(
 				associate => $cfg,
 			);
 
-our %SL = LoxBerry::Web::readlanguage($maintemplate);
+our %SL = LoxBerry::System::readlanguage($maintemplate);
 			
 our $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'LOGVIEWER.WIDGETLABEL'}";
 

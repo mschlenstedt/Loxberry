@@ -96,7 +96,7 @@ my $maintemplate = HTML::Template->new(
 		# debug => 1,
 		);
 	
-my %SL = LoxBerry::Web::readlanguage($maintemplate);
+my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 # Print Template
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'DONATE.WIDGETLABEL'};

@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "0.3.3.2";
+	public static $LBWEBVERSION = "0.3.3.3";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -128,6 +128,7 @@ class LBWeb
 					$btntarget = "";
 				}
 				
+				$notify = "";
 				if (isset($element['notifyRed'])) {
 					$notify = ' <span class="notifyRedNavBar">' . $element['notifyRed'] . '</span>';
 				} elseif (isset($element['notifyBlue'])) {

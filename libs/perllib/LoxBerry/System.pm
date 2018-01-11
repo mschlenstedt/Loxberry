@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.3.5";
+our $VERSION = "0.3.3.6";
 our $DEBUG;
 
 use base 'Exporter';
@@ -36,6 +36,7 @@ our @EXPORT = qw (
 	$lbpbindir
 	
 	lblanguage
+	readlanguage
 	lbhostname
 	lbfriendlyname
 	lbwebserverport
