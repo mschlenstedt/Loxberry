@@ -76,23 +76,6 @@ if ($ENV{'HTTP_HOST'}) {
   
   $iscgi = 1;
 
-  # # Everything from URL
-  # foreach (split(/&/,$ENV{'QUERY_STRING'})){
-    # ($namef,$value) = split(/=/,$_,2);
-    # $namef =~ tr/+/ /;
-    # $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-    # $value =~ tr/+/ /;
-    # $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-    # $query{$namef} = $value;
-  # }
-
-  # And this one we really want to use
-  # $R::header           = $query{'header'};
-  # $R::logfile          = $query{'logfile'};
-  # $R::format           = $query{'format'};
-  # $R::offset           = $query{'offset'};
-  # $R::length           = $query{'length'};
-
 # Or from a terminal?
 } else {
   
@@ -108,14 +91,6 @@ if ($ENV{'HTTP_HOST'}) {
 ##########################################################################
 # Main program
 ##########################################################################
-
-# Which header
-if ($R::header && $R::header eq "txt") {
-  print "Content-Type: text/plain\n\n";
-}
-if ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
-  print "Content-Type: text/html\n\n";
-}
 
 # Which Output Format
 if (!$R::format) {
@@ -152,13 +127,13 @@ if (-e "/tmp/$R::logfile") {
 } elsif (-e "$lbhomedir/webfrontend/html/tmp/$R::logfile") {
   $R::logfilepath = "$lbhomedir/webfrontend/html/tmp";
 } else {
-  if ($iscgi) {
-   $maintemplate->param('NOLOGFILE', 1);
-   LoxBerry::Web::head();
-	print $maintemplate->output();
-	LoxBerry::Web::foot();
-	exit(1);
-   
+	if ($iscgi) {
+		$maintemplate->param('NOLOGFILE', 1);
+		LoxBerry::Web::head();
+		print $maintemplate->output();
+		LoxBerry::Web::foot();
+		exit(1);
+	   
   } else {
     print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
   }
@@ -183,14 +158,39 @@ if ($R::length) {
 # Template Output
 if ($R::format eq "template") {
 	LoxBerry::Web::head();
-	print $maintemplate->output();
-	LoxBerry::Web::foot();
-	exit;
-
 }
 
+
+# Which header
+my $header;
+my $currfilesize = -s "$R::logfilepath/$R::logfile";
+
+if ($R::header && $R::header eq "txt") {
+  $header = "Content-Type: text/plain\n\n";
+} elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
+	if ($R::clientsize && $R::clientsize != 0) {
+		if($R::clientsize == $currfilesize) {
+			$header = $cgi->header(-type => 'text/html',
+									-status => "304 Not Modified",
+									-filesize => $currfilesize,
+				);
+			print $header;
+			exit(0);
+		}
+	}
+  # print $cgi->header('text/html','304 Not Modified');
+	$header = $cgi->header(-type => 'text/html',
+			     -filesize => $currfilesize,
+				);
+	# $header = "Content-Type: text/html\n\n";
+}
+
+print $header;
+
 # Print Logfile
+my @logcontent;
 $i = 0;
+my $l = 0;
 open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
   while (<F>) {
     # Offset
@@ -253,9 +253,31 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
     } 
 
     # Print line
-    print "$_";
+	if ($R::format eq "template") {
+		if ($l < 200) {
+			my %line;
+			$l++;
+			$line{'logcontentline'} = "$_";
+			push (@logcontent, \%line);
+		} else {
+			last;
+		}
+	} else {
+		print "$_";
+	}
   }
 close(F);
+
+# Template Output
+if ($R::format eq "template") {
+	$maintemplate->param( 'logcontent' => \@logcontent );
+	print $maintemplate->output();
+	LoxBerry::Web::foot();
+	exit;
+}
+
+
+
 
 exit;
 
