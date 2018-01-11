@@ -54,53 +54,64 @@ table.menutable td {
   background-attachment: fixed;
 }
 
-.footeralignment        { display:flex; height: 50px;  width:100%; }
-.footerfadebackground   { display:flex; background-color:#3d3d3d;  }
-.footerlogo             { width: 72px; min-width: 72px; background-image: url("../images/loxberry_footer_logo_only.svg");        background-repeat: no-repeat; }
-.footerlogotext         { flex-grow:1; width: 166px;    background-image: url("../images/loxberry_footer_loxberry_text_ws.svg"); background-repeat: no-repeat; }
-.footerlogokeepspacel 	{ display:flex; text-align:left;  }
-.footerlogogradient_l2r { background-image: linear-gradient(90deg, #3d3d3d 0%,  #6dac20 100%);               width: 77px; min-width: 77px; }
-.footerlogokeepspacer   { display:flex; text-align:right; }
-.footerlogogradient_r2l { background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 77px); width: 77px; min-width: 77px; align-items: right; text-align:right;  justify-content: right; }
-.footerslogan           { flex-grow:1; width: 316px;    background-image: url("../images/BTL.svg");  background-color:#6dac20;   background-repeat: no-repeat; }
+.footerlogo             { width: 79px; min-width: 79px; height: 50px; overflow:hidden;}
+.footerlogotext         { width: 166px; height: 50px; overflow:hidden;}
+.footerslogan           { width: 316px; height: 50px; overflow:hidden; background-color:#6dac20; }
+.footerfadebackground   { background-color:#3d3d3d; height: 50px; overflow:hidden;}
+.footerlogogradient_l2r { background-image: linear-gradient(90deg, #3d3d3d 0%, #6dac20 100%); width: 67px; min-width: 50px; height: 50px; overflow:hidden;}
+.footerlogogradient_r2l { background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 77px); width: 77px; min-width: 60px; height: 50px; overflow:hidden;}
 
-@media ( max-width: 875px ) {
+@media ( max-width: 1000px ) {
   .footerslogan
   {
     opacity: 0;
     width: 0px;
-    min-width: 0px;
     transition: width 1s, opacity .5s linear;
   }
 }
-@media ( min-width: 875px )
+@media ( min-width: 1000px )
 {
   .footerslogan
   {
     opacity: 1;
     width: 316px;
-    min-width: 316px;
     transition: width 1s, opacity 1s linear;
   }
 }
-@media ( max-width: 675px )
+@media ( max-width: 799px )
 {
   .footerlogotext
   {
     opacity: 0;
     width: 0px;
-    min-width: 0px;
     transition: width 1s, opacity .5s linear;
   }
 }
-@media ( min-width: 675px )
+@media ( min-width: 799px )
 {
   .footerlogotext
   {
     opacity: 1;
     width: 166px;
-    min-width: 166px;
     transition: width 1s, opacity 1s linear;
+  }
+}
+@media ( max-width: 425px )
+{
+  .footerlogogradient_r2l
+  {
+    background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 10px, #3d3d3d 27px);
+    width: 27px;
+    min-width: 27px;
+  }
+}
+@media ( min-width: 425px )
+{
+  .footerlogogradient_r2l
+  {
+    background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 77px);
+    width: 77px;
+    min-width: 77px;
   }
 }
 
