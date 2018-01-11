@@ -1,9 +1,0 @@
-#!/bin/sh
-
-# Create random ID and send it to stats.loxberry.de if enabled
-if [ -x /opt/loxberry/sbin/setloxberryid.pl ]
-then
-  # Randomly wait x seconds (to reduce load of the webserver)
-  sleep $(($RANDOM % 3600))
-  /opt/loxberry/sbin/setloxberryid.pl
-fi
