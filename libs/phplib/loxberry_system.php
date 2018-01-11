@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.3.2";
+	public static $LBSYSTEMVERSION = "0.3.3.3";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -388,14 +388,14 @@ class LBSystem
 
 		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_TYPED) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
 		$cfgwasread = 1;
-		# error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
+		// error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
 		
 		# Get CloudDNS and Timezones, System language
 		$clouddnsaddress = $cfg['BASE']['CLOUDDNS'] or error_log("LoxBerry System Warning: BASE.CLOUDDNS not defined.");
 		$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or error_log("LoxBerry System Warning: TIMESERVER.ZONE not defined.");
 		$lbversion = $cfg['BASE']['VERSION'] or error_log("LoxBerry System Warning: BASE.VERSION not defined.");
-		$lbfriendlyname = $cfg['NETWORK']['FRIENDLYNAME'] or error_log("LoxBerry System Info: NETWORK.FRIENDLYNAME not defined.");
-		$webserverport = $cfg['WEBSERVER']['PORT'] or error_log("LoxBerry System Info: WEBSERVER.PORT not defined.");
+		$lbfriendlyname = $cfg['NETWORK']['FRIENDLYNAME'];
+		$webserverport = $cfg['WEBSERVER']['PORT'];
 		$lblang = $cfg['BASE']['LANG'];
 		// error_log("read_generalcfg: Language is $lblang");
 		$binaries = $cfg['BINARIES'];
