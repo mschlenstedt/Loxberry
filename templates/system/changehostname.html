@@ -45,13 +45,13 @@
 	  <td>
 		<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='lbnewhostname_div'><TMPL_VAR lbnewhostname></div>
 		<input id='lbnewhostname' name='lbnewhostname' type='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDHOSTNAME>" data-validation-rule="^(?!<TMPL_VAR lbhostname>$)(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$">
-	  </td>
+		</td>
 	  </tr>
-	  <TMPL_VAR errormessage>
-	  <div id="form-error-message" class="form-error-message"></div>
+	  <tr style="vertical-align: middle; height:40px;">
+	  <td colspan=2><TMPL_VAR errormessage></td>
+		</tr>
 	  <tr>
-	  <td>
-	  </td>
+	  <td></td>
 	  <td><button type="submit" style="width: 200px;" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true">
       <TMPL_VAR NETWORK_CHANGEHOSTNAME.BUTTON_CHANGE></button>
 	  <button type="button" name="btncancel" class="close" data-role="button" data-inline="true" data-mini="true" onclick="return quitBox('quit');">
@@ -59,6 +59,9 @@
 	  <a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 	  </td>
 	  </tr>
+	  <tr style="vertical-align: middle; height:50px;">
+	  <td colspan=2></td>
+		</tr>
 	  </table>
 	  </form>
     </div>

@@ -107,8 +107,14 @@ $maintemplate->param( STARTUP => 1 );
 $maintemplate->param( lbhostname => $oldname );
 
 if (length($newname) gt 0) { $maintemplate->param( lbnewhostname => $newname ); }
-					else {  $maintemplate->param( lbnewhostname => `hostname`); }
+					else 
+					{  
+						my $lbnewhostname = `hostname`;
+						$lbnewhostname =~ s/^\s+|\s+$//g;
+						$maintemplate->param( lbnewhostname => $lbnewhostname); 
+					}
 $maintemplate->param( errormessage => '<tr><td colspan="2"><font color="red">' . $emsg . '</font></td></tr>' );
+
 
 print $maintemplate->output;
 

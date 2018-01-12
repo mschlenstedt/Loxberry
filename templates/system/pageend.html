@@ -5,36 +5,89 @@
 		<!-- /content -->
 		<!-- footer -->
 		<div data-role="footer" style="border:0px; text-align:center;" data-position="fixed" data-tap-toggle="false">
-			<div style="display:flex; overflow:hidden; flex-wrap: nowrap; height=49px; max-height=49px;">
-				<div class="footerlogo">
-					<img src="/system/images/loxberry_footer_logo_only.svg">
-				</div>
-				<div class="footerfadebackground">
-					<div class="footerlogotext">
-						<img src="/system/images/loxberry_footer_loxberry_text_ws.svg">
-					</div>
-				</div>
-				<div class="footerlogogradient_l2r">
-				</div>
-				<div style="min-width:200px; flex-grow:1; flex-wrap: nowrap; overflow:hidden; white-space: nowrap;" >
-					<a id="btnhome" href="/admin/system/index.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>&nbsp;&nbsp;
-					<a id="btnhome" href="/admin/system/index.cgi?form=system&lang=<TMPL_VAR LANG>" data-role="button" data-icon="bars" data-iconpos="notext">Einstellungen</a>
-					&nbsp;&nbsp;<TMPL_VAR REBOOT_REQUIRED>&nbsp;&nbsp;
-					<a id="btnpower" href="/admin/system/power.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
-				</div>
-				<div class="footerlogogradient_r2l">
-				</div>
-				<div class="footerfadebackground">
-					<div class="footerslogan">
-						<img src="/system/images/BTL.svg">
-					</div>
-				</div>
+			<div style="display:none;" class="footeralignmentIE"><div class="footeralignmentIE_l_outer"><img src="/system/images/loxberry_footer_logo_only.svg"><div class="footerlogotextIE"><img src="/system/images/loxberry_footer_loxberry_text_ws.svg"></div><div class="footeralignmentIE_l"></div></div><div class="footeralignmentIE_r_outer"><div class="footeralignmentIE_r"><div class="footersloganIE_r"><img src="/system/images/BTL.svg"></div></div></div></div>
+			<div style="display:none;" class="footeralignment"><div class="footerlogo"></div><div class="footerlogokeepspacel"><div class="footerfadebackground"><div class="footerlogotext"></div></div></div><div class="footerlogogradient_l2r"></div><div style="display:flex; width:100%;"></div><div class="footerlogokeepspacel"><div class="footerlogogradient_r2l"></div><div class="footerfadebackground"><div class="footerslogan"></div></div></div></div>
+			  <div height:50px; style="min-width:130px; margin-top:-50px; margin-left:auto; z-index:5000; margin-right:auto; display: flex; align-items: center; justify-content: center; flex-grow:1; flex-wrap: nowrap; overflow:hidden; white-space: nowrap;" >
 			</div>
+				<a id="btnhome" href="/admin/system/index.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>&nbsp;&nbsp;
+				<a id="btnhome" href="/admin/system/index.cgi?form=system&lang=<TMPL_VAR LANG>" data-role="button" data-icon="bars" data-iconpos="notext">Einstellungen</a>&nbsp;&nbsp;
+				<a id="btnpower" href="/admin/system/power.cgi?lang=<TMPL_VAR LANG>" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
+				<TMPL_VAR REBOOT_REQUIRED>
 		</div>
+		<SCRIPT>
+		$( document ).ready(function() {
+		/** Target IE 10 with JavaScript and CSS property detection.  Thanks to Tim Pietrusky timpietrusky.com **/
+		 // IE 10 only CSS properties
+		 var ie10Styles = [
+		     'msTouchAction',
+		     'msWrapFlow',
+		     'msWrapMargin',
+		     'msWrapThrough',
+		     'msOverflowStyle',
+		     'msScrollChaining',
+		     'msScrollLimit',
+		     'msScrollLimitXMin',
+		     'msScrollLimitYMin',
+		     'msScrollLimitXMax',
+		     'msScrollLimitYMax',
+		     'msScrollRails',
+		     'msScrollSnapPointsX',
+		     'msScrollSnapPointsY',
+		     'msScrollSnapType',
+		     'msScrollSnapX',
+		     'msScrollSnapY',
+		     'msScrollTranslation',
+		     'msFlexbox',
+		     'msFlex',
+		     'msFlexOrder'];
+		
+		 var ie11Styles = [
+		     'msTextCombineHorizontal'];
+		 var d = document;
+		 var b = d.body;
+		 var s = b.style;
+		 var ieVersion = null;
+		 var property;
+		
+		 // Test IE10 properties
+		 for (var i = 0; i < ie10Styles.length; i++) {
+		     property = ie10Styles[i];
+		     if (s[property] != undefined) 
+		     {
+		         ieVersion = "ie10";
+		     }
+		 }
+		 // Test IE11 properties
+		 for (var i = 0; i < ie11Styles.length; i++) {
+		     property = ie11Styles[i];
+		     if (s[property] != undefined) 
+		     {
+		         ieVersion = "ie11";
+		     }
+		 }
+		
+		 if (ieVersion) 
+		 {
+		     b.className = ieVersion;
+		     $(".footeralignmentIE").css('display','inline-block');
+		     $(".footeralignmentIE_l").css('display','inline-block');	
+		     $(".footeralignmentIE_r_outer").css('display','inline-block');	
+		     $(".footeralignmentIE_l_outer").css('display','inline-block');	
+		     $(".footeralignmentIE_r").css('display','inline-block');	
+		     $(".footersloganIE_r").css('display','inline-block');	
+		     $(".footerlogotextIE").css('display','inline-block');	
+		 }
+		 else
+		 {
+		 		//Not IE10 or 11.
+		     $(".footeralignment").css('display','flex');	
+		 
+		 }
+		});
+		</SCRIPT>
 		<!-- /footer -->
 	</div>
 <!-- /page -->
 <div id="lang" style="display: none"><TMPL_VAR LANG></div>
 <div id='overlay' style="display: none"><img src='/system/scripts/jquery/themes/main/images/ajax-loader.gif' /></div>
 <!-- pageend.html END -->
-
