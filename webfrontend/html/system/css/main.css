@@ -54,64 +54,89 @@ table.menutable td {
   background-attachment: fixed;
 }
 
-.footerlogo             { width: 79px; min-width: 79px; height: 50px; overflow:hidden;}
-.footerlogotext         { width: 166px; height: 50px; overflow:hidden;}
-.footerslogan           { width: 316px; height: 50px; overflow:hidden; background-color:#6dac20; }
-.footerfadebackground   { background-color:#3d3d3d; height: 50px; overflow:hidden;}
-.footerlogogradient_l2r { background-image: linear-gradient(90deg, #3d3d3d 0%, #6dac20 100%); width: 67px; min-width: 50px; height: 50px; overflow:hidden;}
-.footerlogogradient_r2l { background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 77px); width: 77px; min-width: 60px; height: 50px; overflow:hidden;}
+.footeralignment        		{	display:none; height: 50px;	width:100%; white-space: nowrap; }
+.footeralignmentIE      		{ display:none; height: 50px;	width:100%; white-space: nowrap; }
+.footeralignmentIE_r_outer 	{ display:none; height: 50px;							width:50%; 	 min-width:393px; text-align:right; }
+.footeralignmentIE_l_outer 	{ display:none; height: 50px;							width:50%; 	 min-width:240px; text-align:left;  }
+.footeralignmentIE_l      	{ display:none; height: 50px;							width:78px;  min-width:78px;  background-image: linear-gradient(90deg, #3d3d3d 0px, #6dac20 72px);               }
+.footeralignmentIE_r      	{ display:none; height: 50px;							width:78px;  min-width:78px;  background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 78px, #6dac20 78px); }
+.footersloganIE_r          	{ display:none; height: 50px;							width:316px; min-width:316px; background-color:#6dac20; }
+.footerlogotextIE         	{ display:none; height: 50px;							width:166px; min-width:166px; }
 
-@media ( max-width: 1000px ) {
-  .footerslogan
-  {
-    opacity: 0;
-    width: 0px;
-    transition: width 1s, opacity .5s linear;
-  }
-}
-@media ( min-width: 1000px )
+.footerfadebackground   { display:flex; background-color:#3d3d3d;  }
+.footerlogo, 
+.footerlogoIE 					{ width: 72px; min-width: 72px; background-image: url("../images/loxberry_footer_logo_only.svg");        background-repeat: no-repeat; }
+.footerlogotext         { display:flex; flex-grow:1; width: 166px; min-width: 166px; background-image: url("../images/loxberry_footer_loxberry_text_ws.svg"); background-repeat: no-repeat; }
+.footerlogokeepspacel 	{ display:flex; text-align:left;  }
+.footerlogogradient_l2r { background-image: linear-gradient(90deg, #3d3d3d 0%,  #6dac20 100%);               width: 78px; min-width: 78px; height: 50px; }
+.footerlogokeepspacer   { display:flex; text-align:right; }
+.footerlogogradient_r2l { background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 78px); width: 78px; min-width: 78px; align-items: right; text-align:right;  justify-content: right; }
+.footerslogan           { display:flex; flex-grow:1; width: 316px;    background-image: url("../images/BTL.svg");  background-color:#6dac20;   background-repeat: no-repeat; }
+
+@media ( max-width: 875px ) 
 {
-  .footerslogan
+	.footeralignmentIE_l_outer 	{ width:20%; min-width:78px; }
+	.footeralignmentIE_r_outer 	{	width:80%; min-width:78px; }
+	.footersloganIE_r, .footerslogan, .footerlogotextIE
+	{
+	    opacity: 0;
+	    width: 0;
+	    min-width: 0;
+	    transition: width 1s, opacity .5s linear;
+	}
+	.footeralignmentIE_r
+	{
+	    opacity: 1;
+	    width: 78px;
+	    min-width: 78px;
+	    transition: width 1s, opacity .5s linear;
+	}
+	
+}
+@media ( min-width: 875px )
+{
+	.footeralignmentIE_l_outer 	{ width:50%; min-width:240px; }
+	.footeralignmentIE_r_outer 	{	width:50%; min-width:400px; }
+	.footerlogotextIE
+	{
+    opacity: 1;
+    width: 166px;
+    min-width: 166px;
+    transition: width 1s, opacity 1s linear;
+	}
+  .footersloganIE_r,	.footerslogan  
   {
     opacity: 1;
     width: 316px;
+    min-width: 316px;
     transition: width 1s, opacity 1s linear;
   }
+	.footeralignmentIE_r
+	{
+	    opacity: 1;
+	    width: 393px;
+	    min-width: 393px;
+	    transition: width 1s, opacity .5s linear;
+	}
 }
-@media ( max-width: 799px )
+@media ( max-width: 675px )
 {
   .footerlogotext
   {
     opacity: 0;
     width: 0px;
+    min-width: 0px;
     transition: width 1s, opacity .5s linear;
   }
 }
-@media ( min-width: 799px )
+@media ( min-width: 675px )
 {
   .footerlogotext
   {
     opacity: 1;
     width: 166px;
+    min-width: 166px;
     transition: width 1s, opacity 1s linear;
-  }
-}
-@media ( max-width: 425px )
-{
-  .footerlogogradient_r2l
-  {
-    background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 10px, #3d3d3d 27px);
-    width: 27px;
-    min-width: 27px;
-  }
-}
-@media ( min-width: 425px )
-{
-  .footerlogogradient_r2l
-  {
-    background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 77px);
-    width: 77px;
-    min-width: 77px;
   }
 }
 
