@@ -7,15 +7,15 @@
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
 			<div style="margin:auto; padding:10px; width:50%; text-align:left;">
-				<input type="file" id="uploadfile" name="uploadfile" class="textfield" >
-						<div class='' style="visibility:hidden; width:0px; height:0px;" id='uploadfile_chk_div'></div>
+				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" >
+						<div class='' style="visibility:hidden; width:auto; height:0px;" id='uploadfile_chk_div'></div>
 						<input id='uploadfile_chk' name='uploadfile_chk' type='hidden'  data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
 			</div>
 			<div style="margin:auto; padding:10px; width:15%; text-align:right;">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
 			</div>
 			<div style="margin:auto; padding:10px; width:10%; text-align:left;">
-				<input name="securepin" id="securepin" type="password" size="10"
+				<input name="securepin" id="securepin" type="password" autocomplete="off" autocomplete="new-password" size="10"
 				class="textfield" value="" style="background-color:#FF5632" oninput="disable()">
 			</div>
 			<div style="margin:auto; padding:10px; width:10%; text-align:left;">
