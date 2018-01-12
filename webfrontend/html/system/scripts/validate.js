@@ -3,6 +3,9 @@ function validate_enable ( object )
 	// This function is called from the code to enable validation for this object 
   // Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id>_div (INPUT-DIV) which must exists in the HTML page
 	$( '<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object+'_div' ) );
+	// Prevent return key
+	$(object+"_div").keypress(function(e){ return e.which != 13; });
+	
 	// Handling screen resizing...
 	$( window ).resize(function() 
 	{
