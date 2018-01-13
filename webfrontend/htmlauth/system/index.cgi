@@ -41,10 +41,10 @@ my $error;
 # Read Configuration
 ##########################################################################
 
-if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/mail.cfg" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/installpin.dat" || ! -e "$lbsconfigdir/securepin.dat" ) {
+if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/mail.cfg" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/securepin.dat" ) {
 	qx ( $lbsbindir/createconfig.pl );
 }
-if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbsconfigdir/htusers.dat" || -z "$lbsconfigdir/installpin.dat" || -z "$lbsconfigdir/securepin.dat" ) {
+if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbsconfigdir/htusers.dat" || -z "$lbsconfigdir/securepin.dat" ) {
 	die "CRITICAL: One of your configuration files (general.cfg, mail.cfg, installpin.dat, securepin.dat) exists but have zero size. LoxBerry is not working in this condition.\n" . 
 		"Please check if your SD card is full. If you have fixed the issue, delete all of the mentioned files that have 0 Bytes so LoxBerry can re-create them, or restore them from a backup.\n\n" . 
 		"Sorry for any troubles. We love you!\n";
@@ -52,7 +52,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbscon
 }
 
 # Version of this script
-my $version = "0.3.3.1";
+my $version = "0.3.3.2";
 
 my $sversion = LoxBerry::System::lbversion();
 
