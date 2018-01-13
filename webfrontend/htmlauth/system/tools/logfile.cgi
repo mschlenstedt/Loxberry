@@ -166,18 +166,13 @@ if ($R::length) {
   exit;
 }
 
-# Template Output
-if ($R::format eq "template") {
-	LoxBerry::Web::head();
-}
-
-
 # Which header
 my $header;
 my $currfilesize = -s "$R::logfilepath/$R::logfile";
 
 if ($R::header && $R::header eq "txt") {
   $header = "Content-Type: text/plain\n\n";
+  print $header;
 } elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
 	if ($R::clientsize && $R::clientsize ne "0") {
 		if($R::clientsize == $currfilesize) {
@@ -193,10 +188,15 @@ if ($R::header && $R::header eq "txt") {
 	$header = $cgi->header(-type => 'text/html',
 			     -filesize => $currfilesize,
 				);
+	print $header if ($R::format ne 'template');
 	# $header = "Content-Type: text/html\n\n";
 }
 
-print $header;
+# Template Output
+if ($R::format eq "template") {
+	LoxBerry::Web::head();
+}
+
 
 # Print Logfile
 my @logcontent;
