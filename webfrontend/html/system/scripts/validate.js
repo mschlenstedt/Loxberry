@@ -11,8 +11,11 @@ function validate_enable ( object )
 	{
 		// Get position of the related INPUT-DIV
 		var offset = $(object+'_div').position();  
+		// Set minimum width of the tooltip if the object is smaller
+		var width = $(object+'_div').width();
+		if ( width < 250 ) { width = 250; };
 		// Set position of tooltip below the related INPUT-DIV
-		$('#error-msg-'+object.substring(1)).css({'width': $(object+'_div').width(), 'top': offset.top + 40 , 'left': offset.left});
+		$('#error-msg-'+object.substring(1)).css({'width': width, 'top': offset.top + 40 , 'left': offset.left});
 	});
 	// The global variable window.obj_to_validate holds all objects which prevent submitting the form, 
 	// if the content doesn't match the rule in parameter data-validation-rule of the INPUT-DIV
@@ -39,8 +42,8 @@ function validate_enable ( object )
 		validate_OnPaste_StripFormatting(this, event);
 	});
 	// Adding an event handler if someone leaves, enters the INPUT-DIV or 
-	// lift the finger from a key or input something into the INPUT-DIV 
-	$(object+'_div').on('blur keyup input focusin', function(e)
+	// lift the finger from a key into the INPUT-DIV 
+	$(object+'_div').on('blur keyup focusin', function(e)
 	{
 		// In case of leaving the INPUT-DIV (blur)  
 		if (e.type == "blur" )
@@ -50,7 +53,7 @@ function validate_enable ( object )
 		}
 		else 
 		{
-			// For all other cases (keyup input focusin) add the focus CSS
+			// For all other cases (keyup focusin) add the focus CSS
 			$(this).removeClass("ui-shadow-inset").addClass("ui-focus");
 		}
 		// If the object has CSS param_ok enabled ...
@@ -171,12 +174,44 @@ function validate_chk_value( object,evt,rule )
 	// If the rule is neither given when calling the function, not in the value 
 	// of attribute data-validation-rule of the INPUT-DIV define a rule which
 	// returns always false to be sure nothing bad is validated by mistake
-	rule = rule || "(?=a)b";
+	rule = rule || '(?=a)b';
+	// Detect and handle special conditions:
+	if ( rule.substring(0,8) === "special:" )
+	{
+		// Convert rule into array
+		var rule_array = rule.split(':');
+		// Get condition from rule array
+		var condition = rule_array[1];
+		switch (condition) 
+		{ 
+			// Condition cases
+			case 'compare-with': 
+				// If the value of object is the same as in the given object
+				// to compare with... 
+				if( $(rule_array[2]+'_div').text() == $(object+'_div').text()  )
+				{
+					// It is the same => replace rule by a rule which is always true 
+					rule = '$';
+				}
+				else
+				{
+					// It is not the same => replace rule by a rule which is always false
+					rule = '(?=x)y';
+				}
+				break;
+			default:
+				// Unknown condition => replace rule by a rule which is always false
+				rule = '(?=x)y';
+		}
+	}
 	// Convert the rule string into a regular expression
 	rule = new RegExp(rule);
+
+ 	console.log( "The rule is " + rule + "=" + rule.test('test'));
 	// Check, if the INPUT-DIV value matches the rule
-	if( !rule.test( $(object+'_div').text() )  )
+	if( !rule.test($(object+'_div').text()))
 	{
+		console.log( "doesnt");
 		// The rule doesn't match => That's bad
 		// If the validate_chk_value was called when leaving a field,
 		// or no event is given, apply the following:
@@ -184,8 +219,11 @@ function validate_chk_value( object,evt,rule )
 		{ 
 			// Get the position of the INPUT-DIV on the page
 			var offset = $(object+'_div').position();  
+			// Set minimum width of the tooltip if the object is smaller
+			var width = $(object+'_div').width();
+			if ( width < 250 ) { width = 250; };
 			// Set the position of the tooltip below INPUT-DIV 
-			$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'z-index': 1000, 'width': $(object+'_div').width(), 'top': offset.top + 40, 'left': offset.left, 'position':'absolute'});
+			$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'z-index': 1000, 'width': width, 'top': offset.top + 40, 'left': offset.left, 'position':'absolute'});
 			// Show the tooltip 
 			$('#error-msg-'+object.substring(1)).fadeIn(400);
 		}
@@ -198,6 +236,8 @@ function validate_chk_value( object,evt,rule )
 	}
 	else
 	{
+				console.log( "ok");
+
 		// The rule matches => That's good
 		// Remove the CSS for param_error and add param_ok instead
 		$(object+'_div').removeClass('param_error').addClass('param_ok');
@@ -264,8 +304,11 @@ function validate_place_tooltips ()
 		{
 			// Get the INPUT-DIV position 
 			var offset = $(single_object+'_div').position();  
+			// Set minimum width of the tooltip if the object is smaller
+			var width = $(single_object+'_div').width();
+			if ( width < 250 ) { width = 250; };
 			// Place the tooltip below the INPUT-DIV 
-			$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'z-index': 1000, 'width': $(single_object+'_div').width(), 'top': offset.top + 40, 'left': offset.left, 'position':'absolute'});
+			$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'z-index': 1000, 'width': width, 'top': offset.top + 40, 'left': offset.left, 'position':'absolute'});
 		}, 450);
 	});
 	return;
