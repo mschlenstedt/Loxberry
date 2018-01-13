@@ -191,8 +191,8 @@ function validate_chk_value( object,evt,rule )
 		}
 		// Remove the CSS for param_ok and add param_error instead
 		$(object+'_div').removeClass('param_ok').addClass('param_error');
-		// Remove the (invalid) value from the hidden input box
-		$(object).val('');
+		// Put the (unvalidated) value into the hidden input box
+		$(object).val($(object+'_div').text());
 		// Return false to the caller
 		return false
 	}
