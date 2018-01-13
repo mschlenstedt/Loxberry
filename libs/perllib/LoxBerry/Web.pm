@@ -2,13 +2,9 @@
 # Major.Minor represents LoxBerry version (e.g. 0.23 = LoxBerry V0.2.3)
 
 use strict;
-# no strict "refs"; # Currently header/footer template replacement regex needs this. Ideas?
-use Config::Simple;
-use CGI;
 use LoxBerry::System;
-use Carp;
+use CGI;
 use HTML::Template;
-# use DateTime;
 use Time::Piece;
 
 
@@ -18,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.3.4";
+our $VERSION = "0.3.3.5";
 our $DEBUG;
 
 use base 'Exporter';
