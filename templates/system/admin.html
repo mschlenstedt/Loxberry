@@ -9,9 +9,8 @@
 						<label class="control-label" for="adminuser"><TMPL_VAR ADMIN.LABEL_USERNAME></label>
 					</td>
 					<td width="40%">
-						<input id="adminuser" name="adminuser" type="text" class="textfield" data-validation="length alphanumeric" data-validation-length="3-20"
-						data-validation-allowing="-_"
-						data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_ERROR>" value="<TMPL_VAR ADMINUSEROLD>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminuser_div'><TMPL_VAR ADMINUSEROLD></div>
+						<input id='adminuser' name='adminuser' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_USERNAME_ERROR>" data-validation-rule="^([A-Za-z0-9]|_-){3,20}$">
 					</td>
 					<td width="3%">
 						&nbsp;
@@ -25,7 +24,8 @@
 					 <label for="adminpassold"><TMPL_VAR ADMIN.LABEL_CURRENT_PASSWORD></label>
 					</td>
 					<td>
-						<input name="adminpassold" id="adminpassold" type="password" class="textfield" value="">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpassold_div'></div>
+						<input id='adminpassold' name='adminpassold' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>" data-validation-rule="^(.)*$">
 					</td>
 					<td>
 						&nbsp;
@@ -39,10 +39,8 @@
 						<label for="adminpass1"><TMPL_VAR ADMIN.LABEL_NEW_PASSWORD></label>
 					</td>
 					<td>
-						<input name="adminpass1" id="adminpass1" type="password" data-validation="strength alphanumeric length"
-						 data-validation-length="min5" data-validation-allowing="-_,.;:!?&()?+§%=" data-validation-optional="true"
-						data-validation-strength="2" class="textfield" value=""
-						data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpass1_div'></div>
+						<input id='adminpass1' name='adminpass1' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>" data-validation-rule="^(?=loxberry$)|^((((?=.*[A-Z])(?=.*[\!\@\#\$\&\*\.\-\_])(?=.*[0-9])(?=.*[a-z].*[a-z]).{5,20}$))|(){0})$">
 					</td>
 					<td>
 						&nbsp;
@@ -56,8 +54,8 @@
 						<label for="adminpass2"><TMPL_VAR ADMIN.LABEL_RETYPE_PASSWORD></label>
 					</td>
 					<td>
-						<input name="adminpass2" id="adminpass2" type="password" data-validation="confirmation" data-validation-confirm="adminpass1" class="textfield" value=""
-						data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_DIFFERENT>">
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpass2_div'></div>
+						<input id='adminpass2' name='adminpass2' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_DIFFERENT>" data-validation-rule="special:compare-with:#adminpass1">
 					</td>
 					<td>
 						&nbsp;
@@ -71,8 +69,8 @@
 						<label for="securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></label>
 					</td>
 					<td>
-						<input name="securepin1" id="securepin1" type="password" data-validation="alphanumeric length" data-validation-length="4-10" 
-						class="textfield" value="" data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-optional="true">
+					<div style="width:50px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin1_div'></div>
+					<input id='securepin1' name='securepin1' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^((([A-Za-z0-9]){4,10})|(){0})$">
 					</td>
 					<td>
 						&nbsp;
@@ -86,8 +84,8 @@
 						<label for="adminpass2"><TMPL_VAR ADMIN.LABEL_RETYPE_SECUREPIN></label>
 					</td>
 					<td>
-						<input name="securepin2" id="securepin2" type="password" data-validation="confirmation" data-validation-confirm="securepin1" class="textfield" value=""
-						data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>">
+					<div style="width:50px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin2_div'></div>
+					<input id='securepin2' name='securepin2' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>" data-validation-rule="special:compare-with:#securepin1">
 					</td>
 					<td>
 						&nbsp;
@@ -96,37 +94,25 @@
 						<TMPL_VAR ADMIN.HINT_SECUREPIN_RETYPE>
 					</td>
 				</tr>
-				<tr>
-					<td colspan=4>
-						&nbsp;
-					</td>
-				</tr>
-				<tr>
-					<td></td>
-					<td colspan=3>
-						<div id="form-error-message" class="form-error-message"></div>
-					</td>
-				</tr>
 			</table>
-	<p>
-		&nbsp;
-	</p>
 	<p>
 		<center>
 			<table class="formtable" border="0">
 			<tr>
 			<td>
+				<label for="securepinold" style="font-size: 12px"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></label>
+			</td>
+			<td>
+					<div style="width:50px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepinold_div'></div>
+					<input id='securepinold' name='securepinold' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+			</td>
+		</tr>
+		<tr>
+			<td>
 				<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 			</td>
 			<td>
 				<button type="submit" form="main_form1" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-			</td>
-			<td>
-				<label for="securepinold" style="font-size: 12px"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></label>
-			</td>
-			<td>
-				<input name="securepinold" id="securepinold" type="password" size="10" data-validation="alphanumeric length" data-validation-length="4-10" 
-				class="textfield" value="" style="background-color:#FF5632" oninput="disable()">
 			</td>
 			</tr>
 			</table>
@@ -134,24 +120,35 @@
 	</p>
 	</form>
 	<script>
+		
+$( document ).ready(function()
+		{
+			validate_enable('#adminuser');
+			validate_enable('#adminpassold');
+			validate_enable('#adminpass1');
+			validate_enable('#adminpass2');
+			validate_enable('#securepin1');
+			validate_enable('#securepin2');
+			validate_enable('#securepinold');
+			
+			validate_chk_object(['#adminuser','#adminpass1','#adminpass2','#securepin1','#securepin2','#securepinold']);
+			$('#adminpassold_div').css('-webkit-text-security','disc');
+			$('#adminpass1_div').css('-webkit-text-security','disc');
+			$('#adminpass2_div').css('-webkit-text-security','disc');
+			$('#securepin1_div').css('-webkit-text-security','disc');
+			$('#securepin2_div').css('-webkit-text-security','disc');
+			$('#securepinold_div').css('-webkit-text-security','disc');
+			$('#securepinold_div').css('background-color','#FFFFC0');
+
+		});
+
+		
 		var $messages = $('#form-error-message');
 		$.validate(
 		{
 			modules : 'security',
 			errorMessagePosition: 'inline',
 		});
-
-		// Disable some options on Load depending on selected value
-		disable();
-
-		function disable() {
-			if ( $('#securepinold').val().length == 0 ) {
-				$('#btnsubmit').addClass('ui-disabled');
-			}
-			else {
-				$('#btnsubmit').removeClass('ui-disabled');
-			}
-		}
 
 	</script>
 </TMPL_IF>
