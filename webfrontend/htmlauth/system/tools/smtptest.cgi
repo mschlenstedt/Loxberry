@@ -132,7 +132,7 @@ close(F);
 my $result = qx($lbssbindir/createssmtpconf.sh start 2>/dev/null);
 
 # Send test mail
-$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_BODY'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
+$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
 
 # Output
 print "Content-type: text/html; charset=iso-8859-15\n\n";
