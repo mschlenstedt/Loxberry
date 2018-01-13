@@ -371,16 +371,16 @@ sub LOGSTART
 	my ($s)=@_;
 	# print STDERR "Logstart -->\n";
 	$self->write(-1, "================================================================================");
-	$self->write(-1, LoxBerry::System::currtime . " TASK STARTED");
-	$self->write(-1, $s);
+	$self->write(-1, "<LOGSTART>" . LoxBerry::System::currtime . " TASK STARTED");
+	$self->write(-1, "<LOGSTART>" . $s);
 }
 
 sub LOGEND
 {
 	my $self = shift;
 	my ($s)=@_;
-	$self->write(-1, $s);
-	$self->write(-1, LoxBerry::System::currtime . " TASK FINISHED");
+	$self->write(-1, "<LOGEND>" . $s);
+	$self->write(-1, "<LOGEND>" . LoxBerry::System::currtime . " TASK FINISHED");
 	$self->DESTROY;
 }
 

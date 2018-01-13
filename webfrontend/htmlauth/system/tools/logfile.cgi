@@ -215,23 +215,26 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
     if ($R::format eq "html" || $R::format eq "template") {
       $_ =~ s/([\e].*?)[m]//g;
 	  $_ =~ s/^(.*?)\s*<EMERGE>\s*(.*?)$/<div class='logemerge'>$1 <FONT color=red><B>EMERGE:<\/B><\/FONT> $2<\/div>/g;
-      $_ =~ s/<\/EMERGE>//g;
+     # $_ =~ s/<\/EMERGE>//g;
       $_ =~ s/^(.*?)\s*<ALERT>\s*(.*?)$/<div class='logalert'>$1 <FONT color=red><B>ALERT:<\/B><\/FONT> $2<\/div>/g;
-      $_ =~ s/<\/ALERT>//g;
+     # $_ =~ s/<\/ALERT>//g;
       $_ =~ s/^(.*?)\s*<FAIL>\s*(.*?)$/<div class='logcrit'>$1 <FONT color=red><B>CRITICAL:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/FAIL>//g;
       $_ =~ s/^(.*?)\s*<CRITICAL>\s*(.*?)$/<div class='logcrit'>$1 <FONT color=red><B>CRITICAL:<\/B><\/FONT> $2<\/div>/g;
-      $_ =~ s/<\/CRITICAL>//g;
+     # $_ =~ s/<\/CRITICAL>//g;
 	  $_ =~ s/^(.*?)\s*<ERROR>\s*(.*?)$/<div class='logerr'>$1 <FONT color=red><B>ERROR:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/ERROR>//g;
       $_ =~ s/^(.*?)\s*<WARNING>\s*(.*?)$/<div class='logwarn'>$1 <FONT color=red><B>WARNING:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/WARNING>//g;
       $_ =~ s/^(.*?)\s*<OK>\s*(.*?)$/<div class='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/OK>//g;
-      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div class='loginf'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div class='loginf'>$1 <FONT color=black><B>INFO:<\/B> $2<\/FONT><\/div>/g;
       $_ =~ s/<\/INFO>//g;
       $_ =~ s/^(.*?)\s*<DEBUG>\s*(.*?)$/<div class='logdeb'>$1 <FONT color=darkgray><B>DEBUG:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/DEBUG>//g;
+	  $_ =~ s/^(.*?)\s*<LOGSTART>\s*(.*?)$/<div class='logstart'>$1 $2<\/div>/g;
+      $_ =~ s/^(.*?)\s*<LOGEND>\s*(.*?)$/<div class='logend'>$1 $2<\/div>/g;
+  
       if ($_ !~ /<\/div>\n$/) { # New Line
         $_ =~ s/\n/<br>/g;
       }
@@ -252,9 +255,9 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
 
     if ($R::format ne "plain") { 
       # If someone uses end tags, remove them
-      $_ =~ s/<\/EMERGE>$//g;
-      $_ =~ s/<\/ALERT>$//g;
-      $_ =~ s/<\/CRITICAL>$//g;
+    #  $_ =~ s/<\/EMERGE>$//g;
+    #  $_ =~ s/<\/ALERT>$//g;
+    #  $_ =~ s/<\/CRITICAL>$//g;
       $_ =~ s/<\/FAIL>$//g;
       $_ =~ s/<\/ERROR>$//g;
       $_ =~ s/<\/WARNING>$//g;

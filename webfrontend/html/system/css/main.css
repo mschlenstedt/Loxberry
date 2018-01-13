@@ -285,11 +285,6 @@ a:link.nolinkstyle
 {
  text-align:left; width:100%; color:#000000; background-color:#D8FADC;
 }
-/*.logok span
- {
-  color: red;
- } */
-}
 .loginf
 {
  text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
@@ -298,7 +293,14 @@ a:link.nolinkstyle
 {
  text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }
-
+.logstart
+{
+ text-align:left; font-size: 130%; font-family: "Calibri", Georgia, Serif; width:100%; color:#FFFFFF; background-color:#6dac20;
+}
+.logend
+{ 
+text-align:left; font-size: 130%; font-family: "Calibri", Georgia, Serif; width:100%; 
+}
 /* Clock on mainmenu_start.html */
 
 .clock
