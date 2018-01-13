@@ -634,7 +634,7 @@ if (!&is_folder_empty("$tempfolder/config")) {
     $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
     &logok;
   }
-  &setowner ("loxberry", "1", "$lbhomedir/config/plugins/$pfolder", "CONFIG files");
+  #&#&setsetowner ("loxberry", "1", "$lbhomedir/config/plugins/$pfolder", "CONFIG files");
 
 }
 
@@ -653,8 +653,8 @@ if (!&is_folder_empty("$tempfolder/bin")) {
     &logok;
   }
 
-  &setrights ("755", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
-  &setowner ("loxberry", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
+  #&#&setsetowner ("loxberry", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
 
 }
 
@@ -673,7 +673,7 @@ if (!&is_folder_empty("$tempfolder/templates")) {
     &logok;
   }
 
-  &setowner ("loxberry", "1", "$lbhomedir/templates/plugins/$pfolder", "TEMPLATE files");
+  #&#&setsetowner ("loxberry", "1", "$lbhomedir/templates/plugins/$pfolder", "TEMPLATE files");
   
 }
 
@@ -763,30 +763,30 @@ if (!&is_folder_empty("$tempfolder/cron")) {
     &logok;
   }
 
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.01min", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.01min", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.03min", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.03min", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.05min", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.05min", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.10min", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.10min", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.15min", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.15min", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.30min", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.30min", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.hourly", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.hourly", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.daily", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.daily", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.weekly", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.weekly", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.monthly", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.monthly", "CRONJOB files");
-  &setrights ("755", "1", "$lbhomedir/system/cron/cron.yearly", "CRONJOB files");
-  &setowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.yearly", "CRONJOB files");
-  &setrights ("644", "0", "$lbhomedir/system/cron/cron.d/*", "CRONTAB files");
-  &setowner  ("root", "0", "$lbhomedir/system/cron/cron.d/*", "CRONTAB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.01min", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.01min", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.03min", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.03min", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.05min", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.05min", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.10min", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.10min", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.15min", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.15min", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.30min", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.30min", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.hourly", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.hourly", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.daily", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.daily", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.weekly", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.weekly", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.monthly", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.monthly", "CRONJOB files");
+  #&#&setsetrights ("755", "1", "$lbhomedir/system/cron/cron.yearly", "CRONJOB files");
+  #&#&setsetowner  ("loxberry", "1", "$lbhomedir/system/cron/cron.yearly", "CRONJOB files");
+  #&#&setsetrights ("644", "0", "$lbhomedir/system/cron/cron.d/*", "CRONTAB files");
+  #&#&setsetowner  ("root", "0", "$lbhomedir/system/cron/cron.d/*", "CRONTAB files");
 
 }
 
@@ -805,7 +805,7 @@ if (!&is_folder_empty("$tempfolder/data")) {
     &logok;
   }
 
-  &setowner ("loxberry", "1", "$lbhomedir/data/plugins/$pfolder", "DATA files");
+  #&#&setsetowner ("loxberry", "1", "$lbhomedir/data/plugins/$pfolder", "DATA files");
 
 }
 
@@ -828,7 +828,7 @@ if ( $pinterface eq "1.0" && !-e "$lbhomedir/log/plugins/$pfolder" ) {
       &logok;
     }
 
-    &setowner ("loxberry", "1", "$lbhomedir/log/plugins/$pfolder", "LOG files");
+    #&#&setsetowner ("loxberry", "1", "$lbhomedir/log/plugins/$pfolder", "LOG files");
 
   }
 }
@@ -852,8 +852,8 @@ if ( $pinterface eq "1.0" ) {
       &logok;
     }
 
-    &setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
-    &setrights ("755", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    #&#&setsetowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    #&#&setsetrights ("755", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 
   }
 }
@@ -874,8 +874,8 @@ if ( $pinterface ne "1.0" ) {
       &logok;
     }
 
-    &setrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
-    &setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    #&#&setsetrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
+    #&#&setsetowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 
   }
 }
@@ -895,8 +895,8 @@ if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
     &logok;
   }
 
-    &setrights ("755", "0", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
-    &setowner ("loxberry", "1", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files");
+    #&#&setsetrights ("755", "0", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
+    #&#&setsetowner ("loxberry", "1", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files");
 
 }
 
@@ -937,7 +937,7 @@ if ($? ne 0) {
     &logok;
   }
 
-  &setowner ("loxberry", "1", "$lbhomedir/webfrontend/html/system/images/icons/$pfolder", "ICON files");
+  #&#&setsetowner ("loxberry", "1", "$lbhomedir/webfrontend/html/system/images/icons/$pfolder", "ICON files");
 
 }
 
@@ -955,8 +955,8 @@ if (-f "$tempfolder/daemon/daemon") {
     &logok;
   }
 
-  &setrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
-  &setowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
+  #&#&setsetrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
+  #&#&setsetowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
 
 }
 
@@ -974,8 +974,8 @@ if (-f "$tempfolder/uninstall/uninstall") {
     &logok;
   }
 
-  &setrights ("755", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
-  &setowner ("root", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
+  #&#&setsetrights ("755", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
+  #&#&setsetowner ("root", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
 
 }
 
@@ -993,8 +993,8 @@ if (-f "$tempfolder/sudoers/sudoers") {
     &logok;
   }
 
-  &setrights ("644", "0", "$lbhomedir/system/sudoers/$pname", "SUDOERS file");
-  &setowner ("root", "0", "$lbhomedir/system/sudoers/$pname", "SUDOERS file");
+  #&#&setsetrights ("644", "0", "$lbhomedir/system/sudoers/$pname", "SUDOERS file");
+  #&#&setsetowner ("root", "0", "$lbhomedir/system/sudoers/$pname", "SUDOERS file");
 
 }
 
@@ -1205,8 +1205,8 @@ if( my $cnt = @myfiles ){
 	  $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
 	  &logok;
 	}
-	&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
-	&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
+	#&#&setsetowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
+	#&#&setsetrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 
 }
 
@@ -1240,6 +1240,11 @@ if ($chkhcpath) {
     push(@warnings,"HARDCODED PATH'S: $message");
     print "$chkhcpath";
 }
+
+# Set permissions
+$message =  "$SL{'PLUGININSTALL.INF_PERMISSIONS'}";
+&loginfo;
+system("$lbssbindir/resetpermissions.sh 2>&1");
 
 # Cleaning
 $message =  "$SL{'PLUGININSTALL.INF_END'}";
@@ -1291,7 +1296,7 @@ if (-e $statusfile) {
 }
 
 system("cp -v /tmp/$tempfile.log $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
-&setowner ("loxberry", "0", "$lbhomedir/log/system/plugininstall/$pname.log", "LOG Save");
+#&#&setsetowner ("loxberry", "0", "$lbhomedir/log/system/plugininstall/$pname.log", "LOG Save");
 
 $message = "Good bye.";
 &loginfo;
@@ -1546,8 +1551,8 @@ sub is_folder_empty {
 # Set owner
 #####################################################
 
-# &setowner ("loxberry", "1", "path/to/folder", "CONFIG files");
-# &setowner ("root", "0", "path/to/file", "DAEMON script");
+# #&#&setsetowner ("loxberry", "1", "path/to/folder", "CONFIG files");
+# #&#&setsetowner ("root", "0", "path/to/file", "DAEMON script");
 
 sub setowner {
 
@@ -1581,8 +1586,8 @@ sub setowner {
 # Set permissions
 #####################################################
 
-# &setrights ("755", "1", "path/to/folder", "CONFIG files" [,"Regex"]);
-# &setrights ("644", "0", "path/to/file", "DAEMON script" [,"Regex"]);
+# #&#&setsetrights ("755", "1", "path/to/folder", "CONFIG files" [,"Regex"]);
+# #&#&setsetrights ("644", "0", "path/to/file", "DAEMON script" [,"Regex"]);
 
 sub setrights {
 
