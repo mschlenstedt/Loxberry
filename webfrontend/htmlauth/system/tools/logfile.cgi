@@ -228,7 +228,7 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
       $_ =~ s/<\/WARNING>//g;
       $_ =~ s/^(.*?)\s*<OK>\s*(.*?)$/<div class='logok'>$1 <FONT color=green><B>OK:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/OK>//g;
-      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div class='loginfo'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2<\/div>/g;
+      $_ =~ s/^(.*?)\s*<INFO>\s*(.*?)$/<div class='loginf'>$1 <FONT color=black><B>INFO:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/INFO>//g;
       $_ =~ s/^(.*?)\s*<DEBUG>\s*(.*?)$/<div class='logdeb'>$1 <FONT color=darkgray><B>DEBUG:<\/B><\/FONT> $2<\/div>/g;
       $_ =~ s/<\/DEBUG>//g;
