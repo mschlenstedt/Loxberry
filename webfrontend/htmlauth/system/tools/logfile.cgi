@@ -19,8 +19,9 @@
 ##########################################################################
 # Modules
 ##########################################################################
+use LoxBerry::System;
 
-use LoxBerry::Web;
+# use LoxBerry::Web;
 use CGI;
 use Getopt::Long;
 use warnings;
@@ -33,6 +34,9 @@ use strict;
 # Version of this script
 my $version = "0.3.1.1";
 my $iscgi;
+my $maintemplate;
+my %SL;
+my $template_title;
 
 my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -40,21 +44,9 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 if ($R::lang) {
-	$LoxBerry::Web::lang = substr($R::lang, 0, 2);
+	$LoxBerry::System::lang = substr($R::lang, 0, 2);
 }
-my $lang = lblanguage();
-
-our $maintemplate = HTML::Template->new(
-				filename => "$lbstemplatedir/logfile.html",
-				global_vars => 1,
-				loop_context_vars => 1,
-				die_on_bad_params=> 0,
-				associate => $cfg,
-			);
-
-our %SL = LoxBerry::System::readlanguage($maintemplate);
-			
-our $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'LOGVIEWER.WIDGETLABEL'}";
+my $lang = LoxBerry::System::lblanguage();
 
 # $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 # $lang            = $cfg->param("BASE.LANG");
@@ -71,11 +63,30 @@ if ($ENV{'HTTP_HOST'}) {
 
  # use CGI::Carp qw(fatalsToBrowser);
   # use CGI qw/:standard/;
-  
+	  
+	$iscgi = 1;
+	
+	
+	if ($R::format eq 'template') {
+		require LoxBerry::Web;
+		$maintemplate = HTML::Template->new(
+						filename => "$lbstemplatedir/logfile.html",
+						global_vars => 1,
+						loop_context_vars => 1,
+						die_on_bad_params=> 0,
+						associate => $cfg,
+					);
+		%SL = LoxBerry::System::readlanguage($maintemplate);
+		
+	} else {
+		%SL = LoxBerry::System::readlanguage();
+	}
+
+	
+	$template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'LOGVIEWER.WIDGETLABEL'}";
 
   
-  $iscgi = 1;
-
+ 
 # Or from a terminal?
 } else {
   
@@ -103,7 +114,7 @@ if (!$R::format) {
 
 # Check if logfile parameter provided
 if (!$R::logfile) {
-  if ($iscgi) {
+  if ($iscgi && $R::format eq 'template') {
     $maintemplate->param('NOLOGPARAMETER', 1);
 	
 	LoxBerry::Web::head();
@@ -140,7 +151,7 @@ if (-e "/tmp/$R::logfile") {
   exit;
 }
 
-$maintemplate->param('LOGFILE', $R::logfile);
+$maintemplate->param('LOGFILE', $R::logfile) if ($R::format eq 'template');
 
 my $i;
 # Print number of lines of logfile
