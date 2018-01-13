@@ -168,7 +168,7 @@ my $currfilesize = -s "$R::logfilepath/$R::logfile";
 if ($R::header && $R::header eq "txt") {
   $header = "Content-Type: text/plain\n\n";
 } elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
-	if ($R::clientsize && $R::clientsize != 0) {
+	if ($R::clientsize && $R::clientsize ne "0") {
 		if($R::clientsize == $currfilesize) {
 			$header = $cgi->header(-type => 'text/html',
 									-status => "304 Not Modified",
