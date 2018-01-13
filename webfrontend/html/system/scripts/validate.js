@@ -30,10 +30,6 @@ function validate_enable ( object )
 			// Prevent submitting the form.
 			e.preventDefault();
 		}
-		else
-		{
-			console.log("Submitting form");
-		}	
 	});
 	// Adding an event handler if someone pastes a value into the INPUT-DIV
 	$(object+'_div').on('paste', function(e)
@@ -207,11 +203,9 @@ function validate_chk_value( object,evt,rule )
 	// Convert the rule string into a regular expression
 	rule = new RegExp(rule);
 
- 	console.log( "The rule is " + rule + "=" + rule.test('test'));
 	// Check, if the INPUT-DIV value matches the rule
 	if( !rule.test($(object+'_div').text()))
 	{
-		console.log( "doesnt");
 		// The rule doesn't match => That's bad
 		// If the validate_chk_value was called when leaving a field,
 		// or no event is given, apply the following:
@@ -236,8 +230,6 @@ function validate_chk_value( object,evt,rule )
 	}
 	else
 	{
-				console.log( "ok");
-
 		// The rule matches => That's good
 		// Remove the CSS for param_error and add param_ok instead
 		$(object+'_div').removeClass('param_error').addClass('param_ok');
