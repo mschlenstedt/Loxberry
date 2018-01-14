@@ -299,6 +299,9 @@ if ($exitcode != 0 ) {
 # We think that everything is up to date now.
 # I don't know what to do if error occurred during update scripts, so we simply continue.
 
+LOGINF "Deleting template cache...";
+delete_directory('/tmp/templatecache');
+
 # We have to recreate the legacy templates.
 LOGINF "Updating LoxBerry legacy templates...";
 system("su - loxberry -c '$lbshtmlauthdir/tools/generatelegacytemplates.pl --force'  >/dev/null");
@@ -309,6 +312,8 @@ if ($exitcode != 0 ) {
 } else {
 	LOGOK "LoxBerry legacy template successfully updated.";
 }
+
+
 
 # We have to recreate the skels for system log folders in tmpfs
 LOGINF "Updating Skels for Logfolders...";
@@ -434,7 +439,7 @@ sub err
 
 sub delete_directory
 {
-	my $delfolder = shift;
+	my ($delfolder) = @_;
 	
 	if (-d $delfolder) {   
 		rmtree($delfolder, {error => \my $err});
