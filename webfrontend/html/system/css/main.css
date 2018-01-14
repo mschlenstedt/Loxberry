@@ -420,10 +420,16 @@ text-align:left; font-size: 130%; font-family: "Calibri", Georgia, Serif; width:
 	.param_error
 	{
 		color: #FF0000;
+		border-color: #FF0000;
 	}
 	.param_ok
 	{
 		color: #008000;
+		border-color: #7e7e7e;
+	}
+	.param_nocoloring
+	{
+		color: #000000;
 		border-color: #7e7e7e;
 	}
 
