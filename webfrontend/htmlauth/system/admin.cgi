@@ -280,8 +280,12 @@ if ($adminpass1) {
 }
 
 if ($securepin1) {
-	$output = qx(sudo $lbhomedir/sbin/setsecurepin.pl $securepinold $securepin1);
-	if ( $? eq 0 ) {
+	$output = qx { sudo --non-interactive $lbhomedir/sbin/setsecurepin.pl $securepinold $securepin1 };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "setsecurepin.pl Errorcode $exitcode";
+		&error;
+	} else {
 		$maintemplate->param("SECUREPINOK", 1);
 		print STDERR "setsecurepin.pl securepin1 = 0 - OK\n";
 	}
