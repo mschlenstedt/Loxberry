@@ -1,95 +1,95 @@
 <!-- ** START template/system/myloxberry.html 14.01.2018 19:26:41 ************************************************************************************ -->
 <TMPL_IF form>
-					<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
-						<input type="hidden" name="saveformdata" value="1">
-						<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
-						<div style="display:flex; width:100%; text-align:left;">
-							<div style="margin:auto; padding:10px; width:20%; text-align:left;">
-								<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
-								<TMPL_IF ISNOTENGLISH>
-								<br>(Select your language)
-								</TMPL_IF>
-							</div>
-							<div style="margin:auto; padding:10px; width:30%">
-								<TMPL_VAR LANGSELECTOR>
-							</div>
-							<div style="margin:auto; padding:10px; width:50%"></div>
-						</div>
-						<p>&nbsp;</p>
-						<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
-						<div style="display:flex; width:100%; text-align:left;">
-							<div style="margin:auto; padding:10px; width:20%; text-align:left;">
-								<TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME>
-							</div>
-							<div style="margin:auto; padding:10px; width:30%">
-								<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>">
-							</div>
-							<div class="hint" style="margin:auto; padding:10px; width:50%;">
-								<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
-							</div>
-						</div>
-						<p>&nbsp;</p>
-						<p>
-						<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
-						<div style="display:flex; width:100%; text-align:left;">
-							<div style="margin:auto; padding:10px; width:20%; text-align:left;">
-								<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
-									<TMPL_VAR SENDSTATISTIC_CHECKBOX>
-								</fieldset>
-							</div>
-							<div class="hint" style="margin:auto; padding:10px; width:80%">
-								<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
-							</div>
-						</div>
-						<p>&nbsp;</p>
-					</form>
-					<center>
-						<p>
-							<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-							<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-						</p>
-					</center>
-					<script>
-						$(document).ready( function ()
-						{
-							$("#languageselector").bind( "change", function(event, ui)
-							{
-								var val = $("#languageselector").val();
-								//console.log("Lang", val);
-								$.post("/admin/system/tools/ajax-config-handler.cgi",
-									{
-										action: "changelanguage",
-										value: val
-									}, function()
-									{
-										location.reload();
-									});
-							});
-						});
-					</script>
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
+		<input type="hidden" name="saveformdata" value="1">
+		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
+		<div style="display:flex; width:100%; text-align:left;">
+			<div style="margin:auto; padding:10px; width:20%; text-align:left;">
+				<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
+				<TMPL_IF ISNOTENGLISH>
+				<br>(Select your language)
+				</TMPL_IF>
+			</div>
+			<div style="margin:auto; padding:10px; width:30%">
+				<TMPL_VAR LANGSELECTOR>
+			</div>
+			<div style="margin:auto; padding:10px; width:50%"></div>
+		</div>
+		<p>&nbsp;</p>
+		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
+		<div style="display:flex; width:100%; text-align:left;">
+			<div style="margin:auto; padding:10px; width:20%; text-align:left;">
+				<TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME>
+			</div>
+			<div style="margin:auto; padding:10px; width:30%">
+				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>">
+			</div>
+			<div class="hint" style="margin:auto; padding:10px; width:50%;">
+				<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
+			</div>
+		</div>
+		<p>&nbsp;</p>
+		<p>
+		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
+		<div style="display:flex; width:100%; text-align:left;">
+			<div style="margin:auto; padding:10px; width:20%; text-align:left;">
+				<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
+					<TMPL_VAR SENDSTATISTIC_CHECKBOX>
+				</fieldset>
+			</div>
+			<div class="hint" style="margin:auto; padding:10px; width:80%">
+				<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
+			</div>
+		</div>
+		<p>&nbsp;</p>
+	</form>
+	<center>
+		<p>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+		</p>
+	</center>
+	<script>
+		$(document).ready( function ()
+		{
+			$("#languageselector").bind( "change", function(event, ui)
+			{
+				var val = $("#languageselector").val();
+				//console.log("Lang", val);
+				$.post("/admin/system/tools/ajax-config-handler.cgi",
+					{
+						action: "changelanguage",
+						value: val
+					}, function()
+					{
+						location.reload();
+					});
+			});
+		});
+	</script>
 </TMPL_IF>
 
 <TMPL_IF SAVE>
-					<center>
-						<table border=0>
-							<tr>
-								<td align="center">
-									<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
-									<p>
-										<TMPL_VAR MYLOXBERRY.CHANGE_SUCCESS>
-										<br/>
-										<br/>
-									</p>
-								</td>
-							</tr>
-							<tr>
-								<td align="center">
-									<p>
-										<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></a>
-									</p>
-								</td>
-							</tr>
-						</table>
-					</center>
+	<center>
+		<table border=0>
+			<tr>
+				<td align="center">
+					<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+					<p>
+						<TMPL_VAR MYLOXBERRY.CHANGE_SUCCESS>
+						<br/>
+						<br/>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td align="center">
+					<p>
+						<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></a>
+					</p>
+				</td>
+			</tr>
+		</table>
+	</center>
 </TMPL_IF>
 <!-- ** END template/system/myloxberry.html ************************************************************************************ -->
