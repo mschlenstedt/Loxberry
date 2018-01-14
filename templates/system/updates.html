@@ -306,7 +306,13 @@ $(document).ready( function () {
 				if (data.release_version) $('#lbu_release_version').text(data.release_version) 
 				else $('#lbu_release_version').text("") ;
 				if (data.info) $('#lbu_info').text(data.info);
-				if (data.release_name) $('#lbu_release_name').text(data.release_name);
+				if (data.release_name) 
+				{
+					var release_name_details = data.release_name;
+					release_name_details = release_name_details.replace(/(\n\n)/, '<br><hr></div><div style="color:#404080; font-size:75%;font-weight:normal;" id="lbu_release_name_details">');
+					release_name_details = release_name_details + "<hr>";
+					$('#lbu_release_name').html(release_name_details.replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
+				}
 				if (data.release_body) $('#lbu_release_body').text(data.release_body);
 				if (data.published_at) {
 					publishdate = new Date(data.published_at);
