@@ -190,7 +190,7 @@ sub form {
 		$ms{MSPORT} = $cfg->param("MINISERVER$msno.PORT");
 		$ms{MSUSER} = uri_unescape($cfg->param("MINISERVER$msno.ADMIN"));
 		$ms{MSPASS} = uri_unescape($cfg->param("MINISERVER$msno.PASS"));
-		$ms{MSUSECLOUDDNS} = is_enabled ($cfg->param("MINISERVER$msno.USECLOUDDNS_CHECKED")) ? "checked" : "";
+		$ms{MSUSECLOUDDNS} = is_enabled ($cfg->param("MINISERVER$msno.USECLOUDDNS")) ? "checked" : "";
 		$ms{MSCLOUDURL} = $cfg->param("MINISERVER$msno.CLOUDURL");
 		$ms{MSCLOUDURLFTPPORT} = $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
 		$ms{MSNOTE} = $cfg->param("MINISERVER$msno.NOTE");
