@@ -196,6 +196,11 @@ open (my $fh, "<", "$lbsconfigdir/securepin.dat");
   my $pinsaved = <$fh>;
 close ($fh);
 
+if (!$pinsaved || $pinsaved eq 0) {
+	$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "Cannot read securepin.dat or pin is empty";
+	&error;
+}
+
 if (crypt($securepinold, $pinsaved) ne $pinsaved) {
 	$error = $SL{'ADMIN.SAVE_ERR_SECUREPIN_WRONG'};
 	&error;
@@ -263,6 +268,13 @@ if ($adminpass1) {
 # Save Username/Password for Webarea
 if ($adminpass1) {
 	$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "htpasswd htusers.dat adminuser adminpass1 Errorcode $exitcode";
+		&error;
+	} 
+	
+	
 	# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
 	#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
 	# flock(F,2);
@@ -271,6 +283,11 @@ if ($adminpass1) {
 	#close(F);
 } else {
 	$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "htpasswd htusers.dat adminuser adminpassold Errorcode $exitcode";
+		&error;
+	} 
 	# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
 	#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
 	# flock(F,2);
@@ -280,7 +297,7 @@ if ($adminpass1) {
 }
 
 if ($securepin1) {
-	$output = qx { sudo --non-interactive $lbhomedir/sbin/setsecurepin.pl $securepinold $securepin1 };
+	$output = qx(sudo $lbhomedir/sbin/setsecurepin.pl $securepinold $securepin1);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "setsecurepin.pl Errorcode $exitcode";
