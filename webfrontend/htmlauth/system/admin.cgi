@@ -84,12 +84,16 @@ my $version = "0.3.3.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 
+my $cgi = CGI->new;
+$cgi->import_names('R');
+
+
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/admin.html",
 			global_vars => 1,
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
-			associate => $cfg,
+			associate => $cgi,
 			%htmltemplate_options,
 			#debug => 1,
 			);
@@ -99,9 +103,6 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 #########################################################################
 # Parameter
 #########################################################################
-
-my $cgi = CGI->new;
-$cgi->import_names('R');
 
 ##########################################################################
 # Language Settings
@@ -162,185 +163,225 @@ sub form {
 
 sub save {
 
-$adminuser            = trim($R::adminuser);
-$adminpass1           = $R::adminpass1;
-$adminpass2           = $R::adminpass2;
-$adminpassold         = $R::adminpassold;
-$securepin1           = $R::securepin1;
-$securepin2           = $R::securepin2;
-$securepinold         = $R::securepinold;
+	my $exitcode;
+	
+	$adminuserold		  = $R::adminuserold;
+	$adminuser            = trim($R::adminuser);
+	$adminpass1           = $R::adminpass1;
+	$adminpass2           = $R::adminpass2;
+	$adminpassold         = $R::adminpassold;
+	$securepin1           = $R::securepin1;
+	$securepin2           = $R::securepin2;
+	$securepinold         = $R::securepinold;
 
-# First we have to do server-side form validation
-if (!$adminuser) {
-	$error = $SL{'ADMIN.SAVE_ERR_EMPTY_USER'};
-	&error;
-} elsif (!$adminpassold && $adminpass1) {
-	$error = $SL{'ADMIN.SAVE_ERR_EMPTY_PASS'};
-	&error;
-} elsif (!$securepinold) {
-	$error = $SL{'ADMIN.SAVE_ERR_EMPTY_SECUREPIN'};
-	&error;
-} elsif ($adminpass1 ne $adminpass2) {
-	$error = $SL{'ADMIN.SAVE_ERR_PASS_NOT_IDENTICAL'};
-	&error;
-} elsif ($securepin1 ne $securepin2) {
-	$error = $SL{'ADMIN.SAVE_ERR_SECUREPIN_NOT_IDENTICAL'};
-	&error;
-} elsif (!$securepin1 && !$adminpass1) {
-	$error = $SL{'ADMIN.SAVE_ERR_NOTHING_TO_CHANGE'};
-	&error;
-}
-
-# Check if SecurePIN is correct
-open (my $fh, "<", "$lbsconfigdir/securepin.dat");
-  my $pinsaved = <$fh>;
-close ($fh);
-
-if (!$pinsaved || $pinsaved eq 0) {
-	$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "Cannot read securepin.dat or pin is empty";
-	&error;
-}
-
-if (crypt($securepinold, $pinsaved) ne $pinsaved) {
-	$error = $SL{'ADMIN.SAVE_ERR_SECUREPIN_WRONG'};
-	&error;
-}
-
-# First try if default password is still valid:
-if ($adminpass1) {
-	$nodefaultpwd = 0;
-	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp loxberry $adminpass1 2>&1);
-	if ($? ne 0) {
-  		print STDERR "setloxberrypasswd.exp adminpass1 ne 0\n";
-  		$nodefaultpwd = 1;
-	} else {
-		$maintemplate->param("ADMINOK", 1);
-	}	
-
-	# If default password isn't valid anymore:
-	if ($nodefaultpwd) {
-	  $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
-	  if ($? ne 0) {
-	  print STDERR "setloxberrypasswd.exp adminpassold ne 0 - ERROR\n";
-	    $error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
-	    &error;
-	    exit;
-	  } else {
-		$maintemplate->param("ADMINOK", 1);
-	  }	
+	##################################
+	#  server-side form validation
+	##################################
+	
+	# Check password and PIN
+	
+	# IMMED: SecurePIN does not match
+	if (LoxBerry::System::check_securepin($securepinold)) {
+		$error = $SL{'ADMIN.SAVE_ERR_SECUREPIN_WRONG'};
+		&error;
 	}
 
-	# Try to set new SAMBA passwords for user "loxberry"
-
-	## First try if default password is still valid:
-	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
-	## If default password isn't valid anymore:
-	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
-
-	# Set MYSQL Password
-	# This only works if the initial password is still valid
-	# (password: "loxberry")
-	# Use eval {} here in case somthing went wrong
-	#$sqlerr = 0;
-	#$dsn = "DBI:mysql:database=mysql";
-	#eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
-	#$sqlerr = 1 if $@;
-	#eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
-	#$sqlerr = 1 if $@;
-	#eval {$sth->execute()};
-	#$sqlerr = 1 if $@;
-	#eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
-	#$sqlerr = 1 if $@;
-	#eval {$sth->execute()};
-	#$sqlerr = 1 if $@;
-	#eval {$sth->finish()};
-	#$sqlerr = 1 if $@;
-	#eval {$dbh->{AutoCommit} = 0};
-	#$sqlerr = 1 if $@;
-	#eval {$dbh->commit};
-	#$sqlerr = 1 if $@;
-	#if ($sqlerr eq 0) {
-	#  $maintemplate->param("SQLOK", 1);
-	#  print STDERR "sqlerr eq 0 - OK\n";
-	#}
-}
-
-# Save Username/Password for Webarea
-if ($adminpass1) {
-	$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "htpasswd htusers.dat adminuser adminpass1 Errorcode $exitcode";
+	# IMMED: Check Password
+	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl checkpasswd loxberry $R::adminpassold);
+	$exitcode  = $? >> 8;
+	if ($exitcode == 1) {
+		$error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
 		&error;
-	} 
-	
-	
-	# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
-	#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
-	# flock(F,2);
-	# print F "$adminpasscrypted";
-	# flock(F,8);
-	#close(F);
-} else {
-	$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "htpasswd htusers.dat adminuser adminpassold Errorcode $exitcode";
+	} elsif ($exitcode != 0) {	
+		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "credentialshandler.pl checkpasswd Errorcode $exitcode";
 		&error;
-	} 
-	# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
-	#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
-	# flock(F,2);
-	# print F "$adminpasscrypted";
-	# flock(F,8);
-	#close(F);
-}
-
-if ($securepin1) {
-	$output = qx(sudo $lbhomedir/sbin/setsecurepin.pl $securepinold $securepin1);
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "setsecurepin.pl Errorcode $exitcode";
-		&error;
-	} else {
-		$maintemplate->param("SECUREPINOK", 1);
-		print STDERR "setsecurepin.pl securepin1 = 0 - OK\n";
 	}
-}
+	
+	##
+	## AT THIS STAGE, USER HAS SUCCESSFULLY AUTHENTICATED WITH PASSWORD AND SECUREPIN
+	##
+	
+	# Validate username
+	if ($adminuser ne $adminuserold) {
+		# Username changed
+		$_ = $adminuser;
+		if (! m/^([A-Za-z0-9]|_-){3,20}$/) {
+			$error = $SL{'ADMIN.MSG_VAL_USERNAME_ERROR'};
+			&error;
+		}
+	
+	}
+	
+	# Validate passwords
+	if ($adminpass1 || $adminpass2) {
+		$_ = $adminpass1;
+		if (! m/^(?=loxberry$)|^(((?=.*[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=])(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=]{4,64}$)|^(){0})$/ ) {
+			$error = $SL{'ADMIN.MSG_VAL_PASSWORD_ERROR'};
+			&error;
+		}
+		if ($adminpass1 ne $adminpass2) {
+			$error = $SL{'ADMIN.MSG_VAL_PASSWORD_DIFFERENT'};
+			&error;
+		}
+	}
 
-if ($adminpass1) {
-	$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
-	$creditconsole = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
-} else {
-	$creditwebadmin = "";
-	$creditconsole = "";
-}
-if ($securepin1) {
-	$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t\t\t$securepin1\r\n";
-} else {
-	$creditsecurepin = "";
-}
+	# Validate new SecurePINs
+	if ($securepin1 || $securepin2) {
+		$_ = $securepin1;
+		if (! m/^((([A-Za-z0-9]){4,10})|(){0})$/ ) {
+			$error = $SL{'ADMIN.MSG_VAL_SECUREPIN_ERROR'};
+			&error;
+		}
+		if ( $securepin1 ne $securepin2 ) {
+			$error = $SL{'ADMIN.MSG_VAL_SECUREPIN_DIFFERENT'};
+			&error;
+		}
+	}
 
-my $credentialstxt = "$SL{'ADMIN.SAVE_OK_INFO'}\r\n" .  
-	"\r\n" .
-	$creditwebadmin .
-	$creditconsole .
-	$creditsecurepin;
+	# Validate if anything was changed
+	if (!$securepin1 && !$adminpass1 && $adminuserold eq $adminuser) {
+		$error = $SL{'ADMIN.SAVE_ERR_NOTHING_TO_CHANGE'};
+		&error;
+	
+	##
+	## AT THIS STAGE, ALL REQUIRED FIELDS ARE VALIDATED
+	##
+	
+	if ($adminpass1) {
+		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
+		$exitcode  = $? >> 8;
+		if ($exitcode ne 0) {
+			print STDERR "setloxberrypasswd.exp adminpassold Exitcode $exitcode\n";
+			$error .= " setloxberrypasswd.exp adminpassold Exitcode $exitcode<br>";
+			# &error;
+			# exit;
+		} else {
+			$maintemplate->param("ADMINOK", 1);
+		}	
+	}
 
-$credentialstxt=encode_base64($credentialstxt);
+		# Try to set new SAMBA passwords for user "loxberry"
 
-$maintemplate->param( "ADMINUSER", $adminuser );
-$maintemplate->param( "ADMINPASS1", $adminpass1 );
-$maintemplate->param( "SECUREPIN1", $securepin1 );
-$maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
-$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
+		## First try if default password is still valid:
+		# $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
+		## If default password isn't valid anymore:
+		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
+		$exitcode  = $? >> 8;
+		if ($exitcode ne 0) {
+			print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
+			$error .= " setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode<br>";
+			# &error;
+			# exit;
+		} else {
+			$maintemplate->param("ADMINOK", 1);
+			$maintemplate->param("SAMBAOK", 1);
+		}	
+		# Set MYSQL Password
+		# This only works if the initial password is still valid
+		# (password: "loxberry")
+		# Use eval {} here in case somthing went wrong
+		#$sqlerr = 0;
+		#$dsn = "DBI:mysql:database=mysql";
+		#eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
+		#$sqlerr = 1 if $@;
+		#eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
+		#$sqlerr = 1 if $@;
+		#eval {$sth->execute()};
+		#$sqlerr = 1 if $@;
+		#eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
+		#$sqlerr = 1 if $@;
+		#eval {$sth->execute()};
+		#$sqlerr = 1 if $@;
+		#eval {$sth->finish()};
+		#$sqlerr = 1 if $@;
+		#eval {$dbh->{AutoCommit} = 0};
+		#$sqlerr = 1 if $@;
+		#eval {$dbh->commit};
+		#$sqlerr = 1 if $@;
+		#if ($sqlerr eq 0) {
+		#  $maintemplate->param("SQLOK", 1);
+		#  print STDERR "sqlerr eq 0 - OK\n";
+		#}
+	}
 
-$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
-print STDERR "admin.cgi OUTPUT\n";
-LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
-print $maintemplate->output();
-LoxBerry::Web::lbfooter();
-exit;
+	# Save Username/Password for Webarea
+	if ($adminpass1) {
+		$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
+		my $exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
+			# &error;
+		} 
+		
+		
+		# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
+		#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
+		# flock(F,2);
+		# print F "$adminpasscrypted";
+		# flock(F,8);
+		#close(F);
+	} else {
+		$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
+		my $exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$error .= "htpasswd htusers.dat adminuser adminpassold Errorcode $exitcode<br>";
+			#&error;
+		} 
+		# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
+		#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
+		# flock(F,2);
+		# print F "$adminpasscrypted";
+		# flock(F,8);
+		#close(F);
+	}
+
+	if ($securepin1) {
+		$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl changesecurepin $securepinold $securepin1);
+		my $exitcode  = $? >> 8;
+		if ($exitcode ne 0) {
+			$error .= "credentialshandler.pl changesecurepin Errorcode $exitcode<br>";
+			#&error;
+		} else {
+			$maintemplate->param("SECUREPINOK", 1);
+			print STDERR "credentialshandler.pl changesecurepin securepin1 = 0 - OK\n";
+		}
+	}
+
+	if ($adminpass1) {
+		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
+		$creditconsole = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
+	} else {
+		$creditwebadmin = "";
+		$creditconsole = "";
+	}
+	if ($securepin1) {
+		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t\t\t$securepin1\r\n";
+	} else {
+		$creditsecurepin = "";
+	}
+
+	my $credentialstxt = "$SL{'ADMIN.SAVE_OK_INFO'}\r\n" .  
+		"\r\n" .
+		$creditwebadmin .
+		$creditconsole .
+		$creditsecurepin;
+
+	$credentialstxt=encode_base64($credentialstxt);
+
+	$maintemplate->param( "ADMINUSER", $adminuser );
+	$maintemplate->param( "ADMINPASS1", $adminpass1 );
+	$maintemplate->param( "SECUREPIN1", $securepin1 );
+	$maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
+	
+	$maintemplate->param( "ERRORS", $error);
+	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
+
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
+	print STDERR "admin.cgi OUTPUT\n";
+	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	exit;
 
 }
 
