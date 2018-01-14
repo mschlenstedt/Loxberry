@@ -14,7 +14,7 @@
 								<TMPL_VAR LANGSELECTOR>
 							</div>
 							<div style="margin:auto; padding:10px; width:50%"></div>
-						</div>	
+						</div>
 						<p>&nbsp;</p>
 						<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
 						<div style="display:flex; width:100%; text-align:left;">
@@ -27,7 +27,7 @@
 							<div class="hint" style="margin:auto; padding:10px; width:50%;">
 								<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
 							</div>
-						</div>	
+						</div>
 						<p>&nbsp;</p>
 						<p>
 						<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
@@ -50,15 +50,15 @@
 						</p>
 					</center>
 					<script>
-						$(document).ready( function () 
+						$(document).ready( function ()
 						{
-							$("#languageselector").bind( "change", function(event, ui) 
+							$("#languageselector").bind( "change", function(event, ui)
 							{
-					  		var val = $("#languageselector").val();
+								var val = $("#languageselector").val();
 								//console.log("Lang", val);
-								$.post("/admin/system/tools/ajax-config-handler.cgi", 
-									{ 
-										action: "changelanguage", 
+								$.post("/admin/system/tools/ajax-config-handler.cgi",
+									{
+										action: "changelanguage",
 										value: val
 									}, function()
 									{
