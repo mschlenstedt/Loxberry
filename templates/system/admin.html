@@ -1,11 +1,15 @@
 <!-- ** START template/system/admin.html 27.08.2016 10:22:04 ************************************************************************************ -->
 <TMPL_IF FORM>
-	<p><TMPL_VAR ADMIN.LABEL_INTRO></p>
 	<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
 		<input type="hidden" name="saveformdata" value="1">
 			<table class="formtable" border="0" width="100%">
 				<tr>
-					<td width="25%">
+					<td colspan="4">
+						<p><TMPL_VAR ADMIN.LABEL_INTRO></p>
+					</td>
+				</tr>
+				<tr>
+					<td width="15%">
 						<label class="control-label" for="adminuser"><TMPL_VAR ADMIN.LABEL_USERNAME></label>
 					</td>
 					<td width="40%">
@@ -20,18 +24,8 @@
 					</td>
 				</tr>
 				<tr>
-					<td>
-					 <label for="adminpassold"><TMPL_VAR ADMIN.LABEL_CURRENT_PASSWORD></label>
-					</td>
-					<td>
-						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpassold_div'></div>
-						<input id='adminpassold' name='adminpassold' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>" data-validation-rule="^(.)*$">
-					</td>
-					<td>
-						&nbsp;
-					</td>
-					<td>
-					 &nbsp;
+					<td colspan="4">
+						<hr>
 					</td>
 				</tr>
 				<tr>
@@ -65,11 +59,16 @@
 					</td>
 				</tr>
 				<tr>
+					<td colspan="4">
+						<hr>
+					</td>
+				</tr>
+			  <tr>
 					<td>
 						<label for="securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></label>
 					</td>
 					<td>
-					<div style="width:50px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin1_div'></div>
+					<div style="width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin1_div'></div>
 					<input id='securepin1' name='securepin1' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^((([A-Za-z0-9]){4,10})|(){0})$">
 					</td>
 					<td>
@@ -84,7 +83,7 @@
 						<label for="adminpass2"><TMPL_VAR ADMIN.LABEL_RETYPE_SECUREPIN></label>
 					</td>
 					<td>
-					<div style="width:50px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin2_div'></div>
+					<div style="width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin2_div'></div>
 					<input id='securepin2' name='securepin2' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>" data-validation-rule="special:compare-with:#securepin1">
 					</td>
 					<td>
@@ -94,20 +93,52 @@
 						<TMPL_VAR ADMIN.HINT_SECUREPIN_RETYPE>
 					</td>
 				</tr>
+				<tr>
+					<td colspan="4">
+						<hr>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<p><TMPL_VAR ADMIN.LABEL_SECURITY_HINT></p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					 <label for="adminpassold"><TMPL_VAR ADMIN.LABEL_CURRENT_PASSWORD></label>
+					</td>
+					<td>
+						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpassold_div'></div>
+						<input id='adminpassold' name='adminpassold' type='hidden' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_PASS>" data-validation-rule="^(.){1,64}$">
+					</td>
+					</td>
+					<td>
+					</td>
+					<td>
+				</tr>
+				<tr>
+					<td>
+						<label for="securepinold"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></label>
+					</td>
+					<td>
+					<div style="width:75px; min-width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepinold_div'></div>
+					<input id='securepinold' name='securepinold' type='hidden' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_SECUREPIN>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+					</td>
+					<td>
+					</td>
+					<td>
+					</td>
+				</tr>
+			</table>
+		</td>
+		<td colspan="2">
+					</td>
+				</tr>
 			</table>
 	<p>
 		<center>
 			<table class="formtable" border="0">
 			<tr>
-			<td>
-				<label for="securepinold" style="font-size: 12px"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></label>
-			</td>
-			<td>
-					<div style="width:50px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepinold_div'></div>
-					<input id='securepinold' name='securepinold' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
-			</td>
-		</tr>
-		<tr>
 			<td>
 				<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 			</td>
@@ -131,7 +162,7 @@ $( document ).ready(function()
 			validate_enable('#securepin2');
 			validate_enable('#securepinold');
 			
-			validate_chk_object(['#adminuser','#adminpass1','#adminpass2','#securepin1','#securepin2','#securepinold']);
+			validate_chk_object(['#adminuser','#adminpass1','#adminpass2','#securepin1','#securepin2','#securepinold','#adminpassold']);
 			$('#adminpassold_div').css('-webkit-text-security','disc');
 			$('#adminpass1_div').css('-webkit-text-security','disc');
 			$('#adminpass2_div').css('-webkit-text-security','disc');
@@ -139,6 +170,7 @@ $( document ).ready(function()
 			$('#securepin2_div').css('-webkit-text-security','disc');
 			$('#securepinold_div').css('-webkit-text-security','disc');
 			$('#securepinold_div').css('background-color','#FFFFC0');
+			$('#adminpassold_div').css('background-color','#FFFFC0');
 
 		});
 

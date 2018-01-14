@@ -2,30 +2,29 @@
 <TMPL_IF FORM>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
 		<input type="hidden" name="saveformdata" value="1">
-		<div style="display:flex; width:100%; text-align:left;">
-			<div style="margin:auto; padding:10px; width:15%; text-align:left;">
+		<div style="margin:auto; padding:10px; display:flex; text-align:left; width:90%; white-space: nowrap; ">
+			<div style="padding-right:10px; text-align:left; margin-top:15px;">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
-			<div style="margin:auto; padding:10px; width:50%; text-align:left;">
+			<div style="text-align:left; width:100%;">
 				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" >
-						<div class='' style="visibility:hidden; width:auto; height:0px;" id='uploadfile_chk_div'></div>
-						<input id='uploadfile_chk' name='uploadfile_chk' type='hidden'  data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
-			</div>
-			<div style="margin:auto; padding:10px; width:15%; text-align:right;">
-				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
-			</div>
-			<div style="margin:auto; padding:10px; width:10%; text-align:left;">
-				<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin_div'></div>
-				<input id='securepin' name='securepin' type='hidden' data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
-			</div>
-			<div style="margin:auto; padding:10px; width:10%; text-align:left;">
-				<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+				<div style="visibility:hidden; width:auto; height:0px;" id='uploadfile_chk_div'></div>
+				<input id='uploadfile_chk' name='uploadfile_chk' type='hidden'  data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
 			</div>
 		</div>
+		<div style="margin:auto; padding:10px; display:flex; text-align:left; width:90%; white-space: nowrap; ">
+			<div style="padding-right:10px; text-align:left; margin-top:15px; ">
+				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN> 
+			</div>
+			<div style="width:100%; text-align:left;">
+				<div style="width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin_div'></div>
+				<input id='securepin' name='securepin' type='hidden' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+			</div>
+		<div style=" width:10%; text-align:left; padding-right:20px;">
+			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+		</div>
+		</div>
 	</form>
-	<p>&nbsp;</p>
-
-
 	<div style="display:flex; width:100%; text-align:left;">
 		<div style="margin:auto; padding:10px;text-align:left;">
 			<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
