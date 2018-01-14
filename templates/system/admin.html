@@ -2,6 +2,7 @@
 <TMPL_IF FORM>
 	<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
 		<input type="hidden" name="saveformdata" value="1">
+		<input type="hidden" name="adminuserold" value="<TMPL_VAR ADMINUSEROLD>">
 			<table class="formtable" border="0" width="100%">
 				<tr>
 					<td colspan="4">
@@ -242,6 +243,11 @@ $( document ).ready(function()
 		</tr>
 	</TMPL_IF>
 
+	<TMPL_IF ERRORS>
+		<TMPL_VAR ADMIN.SAVE_ERR_GENERAL>
+		<p><TMPL_VAR ERRORS></p>
+	</TMPL_IF>
+	
 		<tr>
 			<td colspan="3">
 				<p style="color:red"><b><TMPL_VAR ADMIN.SAVE_OK_HINT_RED></b></p>
