@@ -1000,9 +1000,9 @@ if (-f "$tempfolder/sudoers/sudoers") {
 
 # Installing additional packages
 if ( $pinterface eq "1.0" ) {
-	my $aptfile="$tempfolder/apt";
+	our $aptfile="$tempfolder/apt";
 } else {
-	my $aptfile="$tempfolder/dpkg/apt";
+	our $aptfile="$tempfolder/dpkg/apt";
 }
 
 if (-e "$aptfile") {
