@@ -80,11 +80,9 @@ our $creditsecurepin;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.3";
+my $version = "0.3.3.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
-#$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-#$lang            = $cfg->param("BASE.LANG");
 
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/admin.html",
@@ -102,25 +100,8 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 # Parameter
 #########################################################################
 
-# Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
-
-# And this one we really want to use
-$do           = $query{'do'};
-
-# Everything from Forms
-$saveformdata         = param('saveformdata');
-$saveformdata          =~ tr/0-1//cd;
-$saveformdata          = substr($saveformdata,0,1);
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
+my $cgi = CGI->new;
+$cgi->import_names('R');
 
 ##########################################################################
 # Language Settings
@@ -139,7 +120,7 @@ $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 #########################################################################
 
 # Step 1 or beginning
-if (!$saveformdata || $do eq "form") {
+if (!$R::saveformdata || $R::do eq "form") {
   print STDERR "FORM called\n";
   $maintemplate->param("FORM", 1);
   &form;
@@ -181,13 +162,13 @@ sub form {
 
 sub save {
 
-$adminuser            = trim(param('adminuser'));
-$adminpass1           = param('adminpass1');
-$adminpass2           = param('adminpass2');
-$adminpassold         = param('adminpassold');
-$securepin1           = param('securepin1');
-$securepin2           = param('securepin2');
-$securepinold         = param('securepinold');
+$adminuser            = trim($R::adminuser);
+$adminpass1           = $R::adminpass1;
+$adminpass2           = $R::adminpass2;
+$adminpassold         = $R::adminpassold;
+$securepin1           = $R::securepin1;
+$securepin2           = $R::securepin2;
+$securepinold         = $R::securepinold;
 
 # First we have to do server-side form validation
 if (!$adminuser) {
@@ -211,11 +192,16 @@ if (!$adminuser) {
 }
 
 # Check if SecurePIN is correct
-open (F, "<$lbsconfigdir/securepin.dat");
-  my $pinsaved = <F>;
-close (F);
+open (my $fh, "<", "$lbsconfigdir/securepin.dat");
+  my $pinsaved = <$fh>;
+close ($fh);
 
-if (crypt($securepinold,$pinsaved) ne $pinsaved) {
+if (!$pinsaved || $pinsaved eq 0) {
+	$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "Cannot read securepin.dat or pin is empty";
+	&error;
+}
+
+if (crypt($securepinold, $pinsaved) ne $pinsaved) {
 	$error = $SL{'ADMIN.SAVE_ERR_SECUREPIN_WRONG'};
 	&error;
 }
@@ -282,6 +268,13 @@ if ($adminpass1) {
 # Save Username/Password for Webarea
 if ($adminpass1) {
 	$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "htpasswd htusers.dat adminuser adminpass1 Errorcode $exitcode";
+		&error;
+	} 
+	
+	
 	# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
 	#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
 	# flock(F,2);
@@ -290,6 +283,11 @@ if ($adminpass1) {
 	#close(F);
 } else {
 	$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "htpasswd htusers.dat adminuser adminpassold Errorcode $exitcode";
+		&error;
+	} 
 	# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
 	#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
 	# flock(F,2);
@@ -300,7 +298,11 @@ if ($adminpass1) {
 
 if ($securepin1) {
 	$output = qx(sudo $lbhomedir/sbin/setsecurepin.pl $securepinold $securepin1);
-	if ( $? eq 0 ) {
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "setsecurepin.pl Errorcode $exitcode";
+		&error;
+	} else {
 		$maintemplate->param("SECUREPINOK", 1);
 		print STDERR "setsecurepin.pl securepin1 = 0 - OK\n";
 	}

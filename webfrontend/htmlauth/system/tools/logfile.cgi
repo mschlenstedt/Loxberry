@@ -175,7 +175,7 @@ if ($R::header && $R::header eq "txt") {
   print $header;
 } elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
 	if ($R::clientsize && $R::clientsize ne "0") {
-		if($R::clientsize == $currfilesize) {
+		if($R::clientsize eq $currfilesize) {
 			$header = $cgi->header(-type => 'text/html',
 									-status => "304 Not Modified",
 									-filesize => $currfilesize,
