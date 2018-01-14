@@ -34,7 +34,7 @@
 					</td>
 					<td>
 						<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpass1_div'></div>
-						<input id='adminpass1' name='adminpass1' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>" data-validation-rule="^(?=loxberry$)|^((((?=.*[A-Z])(?=.*[\!\@\#\$\&\*\.\-\_])(?=.*[0-9])(?=.*[a-z].*[a-z]).{5,20}$))|(){0})$">
+						<input id='adminpass1' name='adminpass1' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>" data-validation-rule="^(?=loxberry$)|^(((?=.*[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=])(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=]{4,64}$)|^(){0})$">
 					</td>
 					<td>
 						&nbsp;
