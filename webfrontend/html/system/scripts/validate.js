@@ -217,12 +217,21 @@ function validate_chk_value( object,evt,rule )
 			var width = $(object+'_div').width();
 			if ( width < 250 ) { width = 250; };
 			// Set the position of the tooltip below INPUT-DIV 
-			$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'z-index': 1000, 'width': width, 'top': offset.top + 40, 'left': offset.left, 'position':'absolute'});
+			$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal'});
 			// Show the tooltip 
 			$('#error-msg-'+object.substring(1)).fadeIn(400);
 		}
-		// Remove the CSS for param_ok and add param_error instead
-		$(object+'_div').removeClass('param_ok').addClass('param_error');
+		// If coloring is not disabled change the color
+		if ( $(object).attr('data-validation-coloring') != 'off' )
+		{
+			// Remove the CSS for param_ok and add param_error instead
+			$(object+'_div').removeClass('param_ok').addClass('param_error');
+		} 
+		else
+		{
+			// Remove the CSS for param_ok and param_error add none instead
+			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+		}
 		// Put the (unvalidated) value into the hidden input box
 		$(object).val($(object+'_div').text());
 		// Return false to the caller
@@ -231,8 +240,17 @@ function validate_chk_value( object,evt,rule )
 	else
 	{
 		// The rule matches => That's good
-		// Remove the CSS for param_error and add param_ok instead
-		$(object+'_div').removeClass('param_error').addClass('param_ok');
+		// If coloring is not disabled change the color
+		if ( $(object).attr('data-validation-coloring') != 'off' )
+		{
+			// Remove the CSS for param_error and add param_ok instead
+			$(object+'_div').removeClass('param_error').addClass('param_ok');
+		} 
+		else
+		{
+			// Remove the CSS for param_ok and param_error add none instead
+			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+		}
 		// Put the (validated) value into the hidden input box
 		$(object).val($(object+'_div').text());
 		// Hide the tooltip 
@@ -274,8 +292,17 @@ function validate_clean_objects( to_clean )
 		$(object+"_div").text('');
 		// Hide the tooltip
 		$('#error-msg-'+object.substring(1)).fadeOut(100);
-		// Remove the CSS for param_error and add param_ok
-		$(object+"_div").removeClass('param_error').addClass('param_ok');
+		// If coloring is not disabled change the color
+		if ( $(object).attr('data-validation-coloring') != 'off' )
+		{
+			// Remove the CSS for param_error and add param_ok
+			$(object+"_div").removeClass('param_error').addClass('param_ok');
+		} 
+		else
+		{
+			// Remove the CSS for param_ok and param_error add none instead
+			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+		}
 		// Remove the object from the global array window.obj_to_validate
 	  window.obj_to_validate.splice($.inArray(object, obj_to_validate),1);
 	});
@@ -300,7 +327,7 @@ function validate_place_tooltips ()
 			var width = $(single_object+'_div').width();
 			if ( width < 250 ) { width = 250; };
 			// Place the tooltip below the INPUT-DIV 
-			$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'z-index': 1000, 'width': width, 'top': offset.top + 40, 'left': offset.left, 'position':'absolute'});
+			$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal' });
 		}, 450);
 	});
 	return;
