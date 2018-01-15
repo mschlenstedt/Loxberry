@@ -1,4 +1,4 @@
-<!-- ** START template/system/plugininstall.html 10.01.2018 00:03:37  ************************************************************************************ -->
+	<!-- ** START template/system/plugininstall.html 10.01.2018 00:03:37  ************************************************************************************ -->
 <TMPL_IF FORM>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
 		<input type="hidden" name="saveformdata" value="1">
@@ -14,7 +14,7 @@
 		</div>
 		<div style="margin:auto; padding:10px; display:flex; text-align:left; width:90%; white-space: nowrap; ">
 			<div style="padding-right:10px; text-align:left; margin-top:15px; ">
-				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN> 
+				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
 			</div>
 			<div style="width:100%; text-align:left;">
 				<div style="width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin_div'></div>
@@ -55,10 +55,10 @@
 				<td><TMPL_VAR PLUGINDB_VERSION></td>
 				<td></td>
 				<td>
-				<a data-role="button" data-inline="true" data-icon="info" data-mini="true" 
+				<a data-role="button" data-inline="true" data-icon="info" data-mini="true"
 				href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once"
 				target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>&nbsp;
-				<a data-role="button" data-inline="true" data-icon="delete" data-mini="true" 
+				<a data-role="button" data-inline="true" data-icon="delete" data-mini="true"
 				href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>&nbsp;
 				</td>
@@ -75,30 +75,31 @@
 	</table>
 
 	<script>
-		var $messages = $('#form-error-message');
+		$(document).ready( function()
+		{
+
 		$.validate(
 		{
 			modules : 'file',
 			errorMessagePosition: 'inline',
 		});
 
-	
+
 	validate_enable('#uploadfile_chk');
-	validate_chk_object(['#uploadfile_chk']);
 	validate_enable('#securepin');
-	validate_chk_object(['#securepin']);
-	
+	validate_chk_object(['#securepin','#uploadfile_chk']);
+
 	$('#securepin_div').css('background-color','#FFFFC0');
 	$('#securepin_div').css('-webkit-text-security','disc');
-  $('input[type=file]').on('change click blur', function(e)
+	$('input[type=file]').on('change click blur', function(e)
 	{
 		var filename = $('input[type=file]').val().replace(/C:\\fakepath\\/i, '')
 		$("#uploadfile_chk_div").html(filename);
-  	$("#uploadfile_chk").val(filename);
-  	$("#error-msg-uploadfile_chk").fadeOut(400);
+		$("#uploadfile_chk").val(filename);
+		$("#error-msg-uploadfile_chk").fadeOut(400);
 	});
-	$('input[type=file]').trigger('change');
-
+	$('input[type=file]').trigger('blur');
+});
 	</script>
 </TMPL_IF>
 
@@ -118,9 +119,9 @@
 	<tr>
 		<td align="center">
 			<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" 
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true"
 			data-icon="delete" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<a id="btnok" data-role="button" data-inline="true" data-mini="true" 
+			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
 			data-icon="check" href="<TMPL_VAR SELFURL>&answer=1"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
 			</p>
 		</td>
@@ -145,7 +146,7 @@
 	<tr>
 		<td align="center">
 			<p>
-			<a id="btnok" data-role="button" data-inline="true" data-mini="true" 
+			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
 			data-icon="check" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
 			</p>
 		</td>

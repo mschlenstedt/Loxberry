@@ -214,8 +214,8 @@ function validate_chk_value( object,evt,rule )
 			// Get the position of the INPUT-DIV on the page
 			var offset = $(object+'_div').position();  
 			// Set minimum width of the tooltip if the object is smaller
-			var width = $(object+'_div').width();
-			if ( width < 250 ) { width = 250; };
+			var width = "auto";
+			if ( $(object+'_div').width() < 250 ) { width = 250; };
 			// Set the position of the tooltip below INPUT-DIV 
 			$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal'});
 			// Show the tooltip 
@@ -324,8 +324,8 @@ function validate_place_tooltips ()
 			// Get the INPUT-DIV position 
 			var offset = $(single_object+'_div').position();  
 			// Set minimum width of the tooltip if the object is smaller
-			var width = $(single_object+'_div').width();
-			if ( width < 250 ) { width = 250; };
+			var width = "auto";
+			if ( $(single_object+'_div').width() < 250 ) { width = 250; };
 			// Place the tooltip below the INPUT-DIV 
 			$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal' });
 		}, 450);
