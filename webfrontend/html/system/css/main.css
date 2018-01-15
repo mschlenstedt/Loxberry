@@ -65,7 +65,7 @@ table.menutable td {
 
 .footerfadebackground   { display:flex; background-color:#3d3d3d;  }
 .footerlogo, 
-.footerlogoIE 					{ width: 72px; min-width: 72px; background-image: url("../images/loxberry_footer_logo_only.svg");        background-repeat: no-repeat; }
+.footerlogoIE 			{ width: 79px; min-width: 79px; background-image: url("../images/loxberry_footer_logo_only.svg");        background-repeat: no-repeat; }
 .footerlogotext         { display:flex; flex-grow:1; width: 166px; min-width: 166px; background-image: url("../images/loxberry_footer_loxberry_text_ws.svg"); background-repeat: no-repeat; }
 .footerlogokeepspacel 	{ display:flex; text-align:left;  }
 .footerlogogradient_l2r { background-image: linear-gradient(90deg, #3d3d3d 0%,  #6dac20 100%);               width: 78px; min-width: 78px; height: 50px; }
