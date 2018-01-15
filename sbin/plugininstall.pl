@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "0.1.0";
+my $version = "0.3.3.1";
 
 ##########################################################################
 # Variables / Commandline
@@ -955,6 +955,10 @@ if (-f "$tempfolder/daemon/daemon") {
     &logok;
   }
 
+  if ( $pinterface eq "1.0" ) {
+		setrights ("777", "1", "$lbhomedir/system/daemons/plugins", "Plugin interface V1.0 DAEMON script");
+ }
+	
   #&#&setsetrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
   #&#&setsetowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
 
