@@ -10,11 +10,20 @@ function validate_enable ( object )
 	{
 		// Get position of the related INPUT-DIV
 		var offset = $(object+'_div').position();  
-		// Set minimum width of the tooltip if the object is smaller
-		var width = $(object+'_div').width();
-		if ( width < 250 ) { width = 250; };
-		// Set position of tooltip below the related INPUT-DIV
-		$('#error-msg-'+object.substring(1)).css({'width': width, 'top': offset.top + 40 , 'left': offset.left});
+		// Check if object still there 
+		if (typeof offset === 'undefined')
+		{
+			// On page switch remove old values
+			window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+		}
+		else
+		{
+			// Set minimum width of the tooltip if the object is smaller
+			var width = $(object+'_div').width();
+			if ( width < 250 ) { width = 250; };
+			// Set position of tooltip below the related INPUT-DIV
+			$('#error-msg-'+object.substring(1)).css({'width': width, 'top': offset.top + 40 , 'left': offset.left});
+		}
 	});
 	// The global variable window.obj_to_validate holds all objects which prevent submitting the form, 
 	// if the content doesn't match the rule in parameter data-validation-rule of the INPUT-DIV
@@ -212,13 +221,22 @@ function validate_chk_value( object,evt,rule )
 		{ 
 			// Get the position of the INPUT-DIV on the page
 			var offset = $(object+'_div').position();  
-			// Set minimum width of the tooltip if the object is smaller
-			var width = "auto";
-			if ( $(object+'_div').width() < 250 ) { width = 250; };
-			// Set the position of the tooltip below INPUT-DIV 
-			$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal'});
-			// Show the tooltip 
-			$('#error-msg-'+object.substring(1)).fadeIn(400);
+			// Check if object still there 
+			if (typeof offset === 'undefined')
+			{
+				// On page switch remove old values
+				window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+			}
+			else
+			{
+				// Set minimum width of the tooltip if the object is smaller
+				var width = "auto";
+				if ( $(object+'_div').width() < 250 ) { width = 250; };
+				// Set the position of the tooltip below INPUT-DIV 
+				$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal'});
+				// Show the tooltip 
+				$('#error-msg-'+object.substring(1)).fadeIn(400);
+			}
 		}
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
@@ -322,12 +340,21 @@ function validate_place_tooltips ()
 		{
 			// Get the INPUT-DIV position 
 			var offset = $(single_object+'_div').position();  
-			// Set minimum width of the tooltip if the object is smaller
-			var width = "auto";
-			if ( $(single_object+'_div').width() < 250 ) { width = 250; };
-			// Place the tooltip below the INPUT-DIV 
-			$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal' });
-		}, 450);
+			// Check if object still there 
+			if (typeof offset === 'undefined')
+			{
+				// On page switch remove old values
+				window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+			}
+			else
+			{
+				// Set minimum width of the tooltip if the object is smaller
+				var width = "auto";
+				if ( $(single_object+'_div').width() < 250 ) { width = 250; };
+				// Place the tooltip below the INPUT-DIV 
+				$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal' });
+			}
+		}, 500);
 	});
 	return;
 }
