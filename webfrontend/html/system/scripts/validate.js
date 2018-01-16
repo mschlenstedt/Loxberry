@@ -1,11 +1,10 @@
 function validate_enable ( object ) 
 { 
 	// This function is called from the code to enable validation for this object 
-  // Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id>_div (INPUT-DIV) which must exists in the HTML page
+  	// Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id>_div (INPUT-DIV) which must exists in the HTML page
 	$( '<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object+'_div' ) );
 	// Prevent return key
 	$(object+"_div").keypress(function(e){ return e.which != 13; });
-	
 	// Handling screen resizing...
 	$( window ).resize(function() 
 	{
@@ -224,13 +223,13 @@ function validate_chk_value( object,evt,rule )
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
 		{
-			// Remove the CSS for param_ok and add param_error instead
-			$(object+'_div').removeClass('param_ok').addClass('param_error');
+			// Set color for error
+			$(object+'_div').css('color','#ff0000').css('border-color','#ff0000');
 		} 
 		else
 		{
-			// Remove the CSS for param_ok and param_error add none instead
-			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+			// Set color for nocolor
+			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
 		}
 		// Put the (unvalidated) value into the hidden input box
 		$(object).val($(object+'_div').text());
@@ -243,13 +242,13 @@ function validate_chk_value( object,evt,rule )
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
 		{
-			// Remove the CSS for param_error and add param_ok instead
-			$(object+'_div').removeClass('param_error').addClass('param_ok');
+			// Set color for ok
+			$(object+'_div').css('color','#008000').css('border-color','#7c7c7c');
 		} 
 		else
 		{
-			// Remove the CSS for param_ok and param_error add none instead
-			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+			// Set color for nocolor
+			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
 		}
 		// Put the (validated) value into the hidden input box
 		$(object).val($(object+'_div').text());
@@ -295,13 +294,13 @@ function validate_clean_objects( to_clean )
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
 		{
-			// Remove the CSS for param_error and add param_ok
-			$(object+"_div").removeClass('param_error').addClass('param_ok');
+			// Set color for ok
+			$(object+'_div').css('color','#008000').css('border-color','#7c7c7c');
 		} 
 		else
 		{
-			// Remove the CSS for param_ok and param_error add none instead
-			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+			// Set color for nocolor
+			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
 		}
 		// Remove the object from the global array window.obj_to_validate
 	  window.obj_to_validate.splice($.inArray(object, obj_to_validate),1);
