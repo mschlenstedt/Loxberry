@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "0.1.0";
+my $version = "0.3.3.1";
 
 ##########################################################################
 # Variables / Commandline
@@ -653,8 +653,8 @@ if (!&is_folder_empty("$tempfolder/bin")) {
     &logok;
   }
 
-  #&#&setsetrights ("755", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
-  #&#&setsetowner ("loxberry", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
+  setrights ("755", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
+  setowner ("loxberry", "1", "$lbhomedir/bin/plugins/$pfolder", "BIN files");
 
 }
 
@@ -673,7 +673,7 @@ if (!&is_folder_empty("$tempfolder/templates")) {
     &logok;
   }
 
-  #&#&setsetowner ("loxberry", "1", "$lbhomedir/templates/plugins/$pfolder", "TEMPLATE files");
+  setowner ("loxberry", "1", "$lbhomedir/templates/plugins/$pfolder", "TEMPLATE files");
   
 }
 
@@ -805,7 +805,7 @@ if (!&is_folder_empty("$tempfolder/data")) {
     &logok;
   }
 
-  #&#&setsetowner ("loxberry", "1", "$lbhomedir/data/plugins/$pfolder", "DATA files");
+  setowner ("loxberry", "1", "$lbhomedir/data/plugins/$pfolder", "DATA files");
 
 }
 
@@ -828,7 +828,7 @@ if ( $pinterface eq "1.0" && !-e "$lbhomedir/log/plugins/$pfolder" ) {
       &logok;
     }
 
-    #&#&setsetowner ("loxberry", "1", "$lbhomedir/log/plugins/$pfolder", "LOG files");
+    setowner ("loxberry", "1", "$lbhomedir/log/plugins/$pfolder", "LOG files");
 
   }
 }
@@ -852,8 +852,8 @@ if ( $pinterface eq "1.0" ) {
       &logok;
     }
 
-    #&#&setsetowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
-    #&#&setsetrights ("755", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    setrights ("755", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 
   }
 }
@@ -874,8 +874,8 @@ if ( $pinterface ne "1.0" ) {
       &logok;
     }
 
-    #&#&setsetrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
-    #&#&setsetowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    setrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 
   }
 }
@@ -895,8 +895,8 @@ if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
     &logok;
   }
 
-    #&#&setsetrights ("755", "0", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
-    #&#&setsetowner ("loxberry", "1", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files");
+    setrights ("755", "0", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
+    setowner ("loxberry", "1", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files");
 
 }
 
@@ -937,7 +937,7 @@ if ($? ne 0) {
     &logok;
   }
 
-  #&#&setsetowner ("loxberry", "1", "$lbhomedir/webfrontend/html/system/images/icons/$pfolder", "ICON files");
+  setowner ("loxberry", "1", "$lbhomedir/webfrontend/html/system/images/icons/$pfolder", "ICON files");
 
 }
 
@@ -955,8 +955,12 @@ if (-f "$tempfolder/daemon/daemon") {
     &logok;
   }
 
-  #&#&setsetrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
-  #&#&setsetowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
+  if ( $pinterface eq "1.0" ) {
+		setrights ("777", "1", "$lbhomedir/system/daemons/plugins", "Plugin interface V1.0 DAEMON script");
+ }
+	
+  #setsetrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
+  #setsetowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
 
 }
 
@@ -974,8 +978,8 @@ if (-f "$tempfolder/uninstall/uninstall") {
     &logok;
   }
 
-  #&#&setsetrights ("755", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
-  #&#&setsetowner ("root", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
+  #setrights ("755", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
+  #setowner ("root", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
 
 }
 
