@@ -12,12 +12,12 @@
 				<input id='uploadfile_chk' name='uploadfile_chk' type='hidden'  data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
 			</div>
 		</div>
-		<div style="margin:auto; padding:10px; display:flex; text-align:left; width:90%; white-space: nowrap; ">
-			<div style="padding-right:10px; text-align:left; margin-top:15px; ">
+		<div style="margin:auto; padding:10px; display:flex; text-align:left; width:90%;">
+			<div style="padding-right:10px; text-align:left; margin-top:15px; white-space: nowrap; ">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
 			</div>
-			<div style="width:100%; text-align:left;">
-				<div style="width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin_div'></div>
+			<div style="text-align:left; padding-right:50px;">
+				<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' style="width:auto; min-width:165px;" contenteditable='true' id='securepin_div'></div>
 				<input id='securepin' name='securepin' type='hidden' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
 			</div>
 		<div style=" width:10%; text-align:left; padding-right:20px;">
@@ -88,9 +88,13 @@
 	validate_enable('#uploadfile_chk');
 	validate_enable('#securepin');
 	validate_chk_object(['#securepin','#uploadfile_chk']);
-
-	$('#securepin_div').css('background-color','#FFFFC0');
 	$('#securepin_div').css('-webkit-text-security','disc');
+	$('#securepin_div').css('font-family','password').css('color','#FFFFFF');
+	$('#securepin_div').on('input', function(e) 
+	{ 
+		$('#securepin_div').css('color','#7c7c7c'); 
+	});
+	
 	$('input[type=file]').on('change click blur', function(e)
 	{
 		var filename = $('input[type=file]').val().replace(/C:\\fakepath\\/i, '')

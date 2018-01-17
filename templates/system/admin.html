@@ -69,7 +69,7 @@
 				<label for="securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></label>
 			</td>
 			<td>
-				<div style="width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin1_div'></div>
+				<div style="width:175px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin1_div'></div>
 				<input id='securepin1' name='securepin1' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^((([A-Za-z0-9]){4,10})|(){0})$">
 			</td>
 			<td>
@@ -84,7 +84,7 @@
 				<label for="adminpass2"><TMPL_VAR ADMIN.LABEL_RETYPE_SECUREPIN></label>
 			</td>
 			<td>
-				<div style="width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin2_div'></div>
+				<div style="width:175px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin2_div'></div>
 				<input id='securepin2' name='securepin2' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>" data-validation-rule="special:compare-with:#securepin1">
 			</td>
 			<td>
@@ -157,14 +157,28 @@ $( document ).ready(function()
 	validate_enable('#securepin2');
 	validate_enable('#securepinold');
 	validate_chk_object(['#adminuser','#adminpass1','#adminpass2','#securepin1','#securepin2','#securepinold','#adminpassold']);
+
 	$('#adminpassold_div').css('-webkit-text-security','disc');
-	$('#adminpass1_div').css('-webkit-text-security','disc');
-	$('#adminpass2_div').css('-webkit-text-security','disc');
-	$('#securepin1_div').css('-webkit-text-security','disc');
-	$('#securepin2_div').css('-webkit-text-security','disc');
-	$('#securepinold_div').css('-webkit-text-security','disc');
-	$('#securepinold_div').css('background-color','#FFFFC0');
+	$('#adminpassold_div').css('font-family','password').css('color','#FFFFC0');
+	$('#adminpassold_div').on('input', function(e) { $(this).css('color','#7c7c7c'); });
 	$('#adminpassold_div').css('background-color','#FFFFC0');
+
+	$('#adminpass1_div').css('-webkit-text-security','disc');
+	$('#adminpass1_div').css('font-family','password').css('color','#FFFFFF');
+
+	$('#adminpass2_div').css('-webkit-text-security','disc');
+	$('#adminpass2_div').css('font-family','password').css('color','#FFFFFF');
+
+	$('#securepin1_div').css('-webkit-text-security','disc');
+	$('#securepin1_div').css('font-family','password').css('color','#FFFFFF');
+
+	$('#securepin2_div').css('-webkit-text-security','disc');
+	$('#securepin2_div').css('font-family','password').css('color','#FFFFFF');
+
+	$('#securepinold_div').css('-webkit-text-security','disc');
+	$('#securepinold_div').css('font-family','password').css('color','#FFFFC0');
+	$('#securepinold_div').css('background-color','#FFFFC0');
+
 });
 </script>
 </TMPL_IF>

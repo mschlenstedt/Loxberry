@@ -1,21 +1,29 @@
 function validate_enable ( object ) 
 { 
 	// This function is called from the code to enable validation for this object 
-  // Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id>_div (INPUT-DIV) which must exists in the HTML page
+  	// Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id>_div (INPUT-DIV) which must exists in the HTML page
 	$( '<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object+'_div' ) );
 	// Prevent return key
 	$(object+"_div").keypress(function(e){ return e.which != 13; });
-	
 	// Handling screen resizing...
 	$( window ).resize(function() 
 	{
 		// Get position of the related INPUT-DIV
 		var offset = $(object+'_div').position();  
-		// Set minimum width of the tooltip if the object is smaller
-		var width = $(object+'_div').width();
-		if ( width < 250 ) { width = 250; };
-		// Set position of tooltip below the related INPUT-DIV
-		$('#error-msg-'+object.substring(1)).css({'width': width, 'top': offset.top + 40 , 'left': offset.left});
+		// Check if object still there 
+		if (typeof offset === 'undefined')
+		{
+			// On page switch remove old values
+			window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+		}
+		else
+		{
+			// Set minimum width of the tooltip if the object is smaller
+			var width = $(object+'_div').width();
+			if ( width < 250 ) { width = 250; };
+			// Set position of tooltip below the related INPUT-DIV
+			$('#error-msg-'+object.substring(1)).css({'width': width, 'top': offset.top + 40 , 'left': offset.left});
+		}
 	});
 	// The global variable window.obj_to_validate holds all objects which prevent submitting the form, 
 	// if the content doesn't match the rule in parameter data-validation-rule of the INPUT-DIV
@@ -213,24 +221,33 @@ function validate_chk_value( object,evt,rule )
 		{ 
 			// Get the position of the INPUT-DIV on the page
 			var offset = $(object+'_div').position();  
-			// Set minimum width of the tooltip if the object is smaller
-			var width = "auto";
-			if ( $(object+'_div').width() < 250 ) { width = 250; };
-			// Set the position of the tooltip below INPUT-DIV 
-			$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal'});
-			// Show the tooltip 
-			$('#error-msg-'+object.substring(1)).fadeIn(400);
+			// Check if object still there 
+			if (typeof offset === 'undefined')
+			{
+				// On page switch remove old values
+				window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+			}
+			else
+			{
+				// Set minimum width of the tooltip if the object is smaller
+				var width = "auto";
+				if ( $(object+'_div').width() < 250 ) { width = 250; };
+				// Set the position of the tooltip below INPUT-DIV 
+				$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal'});
+				// Show the tooltip 
+				$('#error-msg-'+object.substring(1)).fadeIn(400);
+			}
 		}
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
 		{
-			// Remove the CSS for param_ok and add param_error instead
-			$(object+'_div').removeClass('param_ok').addClass('param_error');
+			// Set color for error
+			$(object+'_div').css('color','#ff0000').css('border-color','#ff0000');
 		} 
 		else
 		{
-			// Remove the CSS for param_ok and param_error add none instead
-			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+			// Set color for nocolor
+			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
 		}
 		// Put the (unvalidated) value into the hidden input box
 		$(object).val($(object+'_div').text());
@@ -243,13 +260,13 @@ function validate_chk_value( object,evt,rule )
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
 		{
-			// Remove the CSS for param_error and add param_ok instead
-			$(object+'_div').removeClass('param_error').addClass('param_ok');
+			// Set color for ok
+			$(object+'_div').css('color','#008000').css('border-color','#7c7c7c');
 		} 
 		else
 		{
-			// Remove the CSS for param_ok and param_error add none instead
-			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+			// Set color for nocolor
+			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
 		}
 		// Put the (validated) value into the hidden input box
 		$(object).val($(object+'_div').text());
@@ -295,13 +312,13 @@ function validate_clean_objects( to_clean )
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
 		{
-			// Remove the CSS for param_error and add param_ok
-			$(object+"_div").removeClass('param_error').addClass('param_ok');
+			// Set color for ok
+			$(object+'_div').css('color','#008000').css('border-color','#7c7c7c');
 		} 
 		else
 		{
-			// Remove the CSS for param_ok and param_error add none instead
-			$(object+'_div').removeClass('param_ok').removeClass('param_error').addClass('param_nocoloring');
+			// Set color for nocolor
+			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
 		}
 		// Remove the object from the global array window.obj_to_validate
 	  window.obj_to_validate.splice($.inArray(object, obj_to_validate),1);
@@ -323,12 +340,21 @@ function validate_place_tooltips ()
 		{
 			// Get the INPUT-DIV position 
 			var offset = $(single_object+'_div').position();  
-			// Set minimum width of the tooltip if the object is smaller
-			var width = "auto";
-			if ( $(single_object+'_div').width() < 250 ) { width = 250; };
-			// Place the tooltip below the INPUT-DIV 
-			$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal' });
-		}, 450);
+			// Check if object still there 
+			if (typeof offset === 'undefined')
+			{
+				// On page switch remove old values
+				window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+			}
+			else
+			{
+				// Set minimum width of the tooltip if the object is smaller
+				var width = "auto";
+				if ( $(single_object+'_div').width() < 250 ) { width = 250; };
+				// Place the tooltip below the INPUT-DIV 
+				$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal' });
+			}
+		}, 500);
 	});
 	return;
 }
