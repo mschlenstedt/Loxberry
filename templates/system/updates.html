@@ -301,11 +301,11 @@ $(document).ready( function () {
 			//resp = JSON.parse(data);
 			//console.log("release_version", data.info);
 			if (data.error) {
-				$('#lbu_error').text("Error: "+data.error);
+				$('#lbu_error').html("Error: "+data.error);
 			} else {
-				if (data.release_version) $('#lbu_release_version').text(data.release_version) 
-				else $('#lbu_release_version').text("") ;
-				if (data.info) $('#lbu_info').text(data.info);
+				if (data.release_version) $('#lbu_release_version').html(data.release_version) 
+				else $('#lbu_release_version').html("") ;
+				if (data.info) $('#lbu_info').html(data.info);
 				if (data.release_name) 
 				{
 					var release_name_details = data.release_name;
@@ -313,10 +313,10 @@ $(document).ready( function () {
 					release_name_details = release_name_details + "<hr>";
 					$('#lbu_release_name').html(release_name_details.replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
 				}
-				if (data.release_body) $('#lbu_release_body').text(data.release_body);
+				if (data.release_body) $('#lbu_release_body').html(data.release_body);
 				if (data.published_at) {
 					publishdate = new Date(data.published_at);
-					$('#lbu_published_at').text("<TMPL_VAR UPDATES.LBU_LABEL_PUBLISHED_AT> " + publishdate.toLocaleString());
+					$('#lbu_published_at').html("<TMPL_VAR UPDATES.LBU_LABEL_PUBLISHED_AT> " + publishdate.toLocaleString());
 				}
 				if (data.release_new) {
 						$('#lbu_release_version').css("font-weight", "bold");
