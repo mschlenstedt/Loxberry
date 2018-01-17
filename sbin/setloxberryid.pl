@@ -67,8 +67,14 @@ if ($sendstat) {
 	my $lbid = <$fh>;
 	flock($fh,8);
 	close($fh);
-
-	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub";
+	
+	# Architecture
+	my $architecture;
+	$architecture = "ARM" if (-e "$lbsconfigdir/is_raspberry.cfg");
+	$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
+	$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
+	
+	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture";
 	my $output = qx { $curlbin -f -k -s -S --stderr - --show-error -o /dev/null "$url" };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0 ) {
