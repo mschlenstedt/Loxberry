@@ -179,14 +179,17 @@ sub lbupdate
 ############################################
 sub poweroff
 {
-	print STDERR "ajax-config-handler: ajax poweroff\n";
-	LOGINF "Forking poweroff ...";
+	print STDERR "ajax-config-handler: ajax poweroff - Forking poweroff\n";
+	# LOGINF "Forking poweroff ...";
 	my $pid = fork();
 	if (not defined $pid) {
-		LOGCRIT "Cannot fork poweroff.";
+		print STDERR "ajax-config-handler: Cannot fork poweroff.";
+		# LOGCRIT "Cannot fork poweroff.";
 	} 
 	if (not $pid) {	
-		LOGINF "Executing poweroff forked...";
+		# LOGINF "Executing poweroff forked...";
+		print STDERR "Executing poweroff forked...";
+		
 		exec("sleep 5 && sudo $bins->{POWEROFF} </dev/null >/dev/null 2>&1 &");
 		exit(0);
 	}
@@ -199,13 +202,15 @@ sub poweroff
 sub reboot
 {
 	print STDERR "ajax-config-handler: ajax reboot\n";
-	LOGINF "Forking reboot ...";
+	# LOGINF "Forking reboot ...";
 	my $pid = fork();
 	if (not defined $pid) {
-		LOGCRIT "Cannot fork reboot.";
+		# LOGCRIT "Cannot fork reboot.";
+		print STDERR "Cannot fork reboot.";
 	}
 	if (not $pid) {
-		LOGINF "Executing reboot forked...";
+		# LOGINF "Executing reboot forked...";
+		print STDERR "Executing reboot forked...";
 		exec("sleep 5 && sudo $bins->{REBOOT} </dev/null >/dev/null 2>&1 &");
 		exit(0);
 	}
