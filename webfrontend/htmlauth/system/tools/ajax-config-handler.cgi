@@ -180,7 +180,17 @@ sub lbupdate
 sub poweroff
 {
 	print STDERR "ajax-config-handler: ajax poweroff\n";
-	system("sleep 2 && sudo $bins->{POWEROFF} 2>&1 > /dev/null &");
+	LOGINF "Forking poweroff ...";
+	my $pid = fork();
+	if (not defined $pid) {
+		LOGCRIT "Cannot fork poweroff.";
+	} 
+	if (not $pid) {	
+		LOGINF "Executing poweroff forked...";
+		exec("sleep 5 && sudo $bins->{POWEROFF} </dev/null >/dev/null 2>&1 &");
+		exit(0);
+	}
+	exit(0);
 }
 
 ############################################
@@ -189,7 +199,17 @@ sub poweroff
 sub reboot
 {
 	print STDERR "ajax-config-handler: ajax reboot\n";
-	system("sleep 2 && sudo $bins->{REBOOT} 2>&1 > /dev/null &");
+	LOGINF "Forking reboot ...";
+	my $pid = fork();
+	if (not defined $pid) {
+		LOGCRIT "Cannot fork reboot.";
+	}
+	if (not $pid) {
+		LOGINF "Executing reboot forked...";
+		exec("sleep 5 && sudo $bins->{REBOOT} </dev/null >/dev/null 2>&1 &");
+		exit(0);
+	}
+	exit(0);
 }
 
 ###################################################################
