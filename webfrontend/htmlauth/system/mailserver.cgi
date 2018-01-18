@@ -174,24 +174,33 @@ sub save
 	$maintemplate->param( "LANG", $lang);
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 	
-	# Everything from Forms
-	$email        = param('email');
-	$smtpserver   = param('smtpserver');
-	$smtpport     = param('smtpport');
-	$smtpcrypt    = param('smtpcrypt');
-	$smtpauth     = param('smtpauth');
-	$smtpuser     = param('smtpuser');
-	$smtppass     = param('smtppass');
+	# # Everything from Forms
+	# $email        = param('email');
+	# $smtpserver   = param('smtpserver');
+	# $smtpport     = param('smtpport');
+	# $smtpcrypt    = param('smtpcrypt');
+	# $smtpauth     = param('smtpauth');
+	# $smtpuser     = param('smtpuser');
+	# $smtppass     = param('smtppass');
 
+	# Prevent warnings 'only used once'
+	$R::email if (0);
+	$R::smtpserver if (0);
+	$R::smtpport if (0);
+	$R::smtpcrypt if (0);
+	$R::smtpauth if (0);
+	$R::smtpuser if (0);
+	$R::smtppass if (0);
+	
 	# Write configuration file(s)
 	$mcfg->param("SMTP.ISCONFIGURED", "1");
-	$mcfg->param("SMTP.EMAIL", "$email");
-	$mcfg->param("SMTP.SMTPSERVER", "$smtpserver");
-	$mcfg->param("SMTP.PORT", "$smtpport");
-	$mcfg->param("SMTP.CRYPT", "$smtpcrypt");
-	$mcfg->param("SMTP.AUTH", "$smtpauth");
-	$mcfg->param("SMTP.SMTPUSER", "$smtpuser");
-	$mcfg->param("SMTP.SMTPPASS", "$smtppass");
+	$mcfg->param("SMTP.EMAIL", "$R::email");
+	$mcfg->param("SMTP.SMTPSERVER", "$R::smtpserver");
+	$mcfg->param("SMTP.PORT", "$R::smtpport");
+	$mcfg->param("SMTP.CRYPT", "$R::smtpcrypt");
+	$mcfg->param("SMTP.AUTH", "$R::smtpauth");
+	$mcfg->param("SMTP.SMTPUSER", "$R::smtpuser");
+	$mcfg->param("SMTP.SMTPPASS", "$R::smtppass");
 	$mcfg->save();
 
 	# Activate new configuration
