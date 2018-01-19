@@ -159,7 +159,7 @@ sub save
 	$maintemplate->param( changedname => $changedname );
 	$maintemplate->param( successfullchanged => $successfullchanged );
 	print $maintemplate->output;
-	reboot_required(%Phrases{'NETWORK_CHANGEHOSTNAME.SUCCESS_REBOOT_REQUIRED_MSG'});
+	reboot_required($Phrases{'NETWORK_CHANGEHOSTNAME.SUCCESS_REBOOT_REQUIRED_MSG'});
 	
 	exit;
 }
