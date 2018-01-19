@@ -328,11 +328,9 @@ function validate_chk_value( object,evt,rule )
 			else
 			{
 				// Set the position of the tooltip below INPUT
+				$('#error-msg-'+object.substring(1)).css({'z-index':1000, 'margin': '-1px', 'margin-top':'auto', 'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '0px 0px 8px 8px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'white-space': 'normal'});
 				$(".ui-input-text").css("margin-bottom",0);
-				$('#error-msg-'+object.substring(1)).css({'margin': '-1px', 'margin-top':'0px;', 'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '0px 0px 8px 8px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'white-space': 'normal'});
-
-				// Remove the bottom round corners of input to connect the error message 
-				$(object).css({'border-radius': '8px 8px 0px 0px'});
+				$('#error-msg-'+object.substring(1)).css('margin-top','-1px');
 
 				// Show the tooltip
 				$('#error-msg-'+object.substring(1)).fadeIn(500);
