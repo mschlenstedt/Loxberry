@@ -16,9 +16,9 @@
 		</TMPL_IF>
 		<div style="width: 300px">
 		
-			<a id="btnreboot" data-role="button" data-icon="recycle" href="?do=reboot"><TMPL_VAR POWER.BUTTON_REBOOT></a>
+			<a id="btnreboot" data-role="button" data-icon="recycle" href="#"><TMPL_VAR POWER.BUTTON_REBOOT></a>
 			<br>
-			<a id="btnpoweroff" data-role="button" data-icon="power" href="?do=poweroff"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
+			<a id="btnpoweroff" data-role="button" data-icon="power" href="#"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
 
 			</div>
 	</center>
@@ -37,7 +37,7 @@
 				  action: "reboot",
 				},
 				function(data,status){
-					//document.location.href="?do=reboot";
+					document.location.href="?do=reboot";
 				});
 			});
 			$("#btnpoweroff").click(function(){
@@ -46,7 +46,7 @@
 				  action: "poweroff",
 				},
 				function(data,status){
-					//document.location.href="?do=poweroff";
+					document.location.href="?do=poweroff";
 				});
 			});
 		});
