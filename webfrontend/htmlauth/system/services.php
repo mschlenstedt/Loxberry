@@ -160,7 +160,14 @@ function form() {
 		<tr>
 			<td>
 			<label for="webport"><?=$SL['SERVICES.LABEL_WEBPORT'];?></label>
-			<input placeholder="<?=$SL['SERVICES.HINT_INNER_WEBPORT'];?>" id="webport" name="webport" type="text" style="min-width:15em" class="textfield" value="<?=$cfg['WEBSERVER']['PORT'];?>">
+			<input placeholder="<?=$SL['SERVICES.HINT_INNER_WEBPORT'];?>" id="webport" name="webport" type="text" style="min-width:15em" class="textfield" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_PORT'];?>" data-validation-rule="special:port" value="<?=$cfg['WEBSERVER']['PORT'];?>">
+			<script>
+				$(document).ready( function ()
+				{
+					validate_enable('#webport');
+					validate_chk_object(['#webport']);
+				});
+			</script>
 			</td>
 			<td>&nbsp;
 			</td>
