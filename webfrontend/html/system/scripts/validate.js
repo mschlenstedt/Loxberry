@@ -285,10 +285,6 @@ function validate_chk_value( object,evt,rule )
 				// Check if WLAN WPA Key 
 				rule ='^([\\u0020-\\u007e\\u00a0-\\u00ff]{8,64})$';
 				break;
-			case 'wpa':
-				// Check if WLAN WPA Key 
-				rule ='^([\\u0020-\\u007e\\u00a0-\\u00ff]{8,64})$';
-				break;
 			default:
 				// Unknown condition => replace rule by a rule which is always false
 				console.log("Error: Unknown condition! Resulting rule: " + rule + " (false)");
