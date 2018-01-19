@@ -149,6 +149,10 @@ function validate_chk_value( object,evt,rule )
 		switch (condition)
 		{
 			// Condition cases
+			case 'any':
+				// Accept letters a-z and A-Z
+				rule = '^[a-zA-Z]*$';
+				break;
 			case 'compare-with':
 				// If the value of object is the same as in the given object
 				// to compare with...
@@ -266,6 +270,14 @@ function validate_chk_value( object,evt,rule )
 			case 'ipaddr':
 				// Check if IP Address e.g. 123.34.56.78
 				rule ='^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+				break;
+			case 'hostname_or_ipaddr':
+				// Check if IP Address e.g. 123.34.56.78 or hostname
+				rule ='^(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$|^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+				break;
+			case 'domainname_or_ipaddr':
+				// Check if IP Address e.g. 123.34.56.78 or hostname
+				rule ='^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\\.[a-zA-Z]{2,3})$|^(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$|^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
 				break;
 			case 'netmask':
 			case 'ipmask':
