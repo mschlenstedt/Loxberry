@@ -5,7 +5,8 @@ function validate_enable ( object )
 	// This function is called from the code to enable validation for this object
 	// Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id> (INPUT) which must exists in the HTML page
 	$( '<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object ) );
-
+	$(".ui-input-text").css("margin-bottom",0);
+    
 	// Prevent return key
 	$(object).keypress(function(e){ return e.which != 13; });
 
@@ -327,7 +328,8 @@ function validate_chk_value( object,evt,rule )
 			else
 			{
 				// Set the position of the tooltip below INPUT
-				$('#error-msg-'+object.substring(1)).css({'margin': '-1px', 'margin-top':'-5px;', 'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '0px 0px 8px 8px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'white-space': 'normal'});
+				$(".ui-input-text").css("margin-bottom",0);
+				$('#error-msg-'+object.substring(1)).css({'margin': '-1px', 'margin-top':'0px;', 'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '0px 0px 8px 8px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'white-space': 'normal'});
 
 				// Remove the bottom round corners of input to connect the error message 
 				$(object).css({'border-radius': '8px 8px 0px 0px'});
