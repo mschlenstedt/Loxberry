@@ -1,4 +1,4 @@
-<!-- ** START template/system/admin.html 14.01.2018 19:28:37 ************************************************************************************ -->
+<!-- ** START template/system/admin.html 19.01.2018 19:20:03 ************************************************************************************ -->
 <TMPL_IF FORM>
 <form method="post" data-ajax="false" name="main_form1" id="main_form1" action="/admin/system/admin.cgi">
 	<input type="hidden" name="saveformdata" value="1">
@@ -14,8 +14,7 @@
 				<label class="control-label" for="adminuser"><TMPL_VAR ADMIN.LABEL_USERNAME></label>
 			</td>
 			<td width="40%">
-				<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminuser_div'><TMPL_VAR ADMINUSEROLD></div>
-				<input id='adminuser' name='adminuser' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_USERNAME_ERROR>" data-validation-rule="^([A-Za-z0-9]|_-){3,20}$">
+				<input value='<TMPL_VAR ADMINUSEROLD>' id='adminuser' name='adminuser' type='text' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_USERNAME_ERROR>" data-validation-rule="^([A-Za-z0-9]|_-){3,20}$">
 			</td>
 			<td width="3%">
 				&nbsp;
@@ -34,8 +33,7 @@
 				<label for="adminpass1"><TMPL_VAR ADMIN.LABEL_NEW_PASSWORD></label>
 			</td>
 			<td>
-				<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpass1_div'></div>
-				<input id='adminpass1' name='adminpass1' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>" data-validation-rule="^(?=loxberry$)|^(((?=.*[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=])(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=]{4,64}$)|^(){0})$">
+				<input id='adminpass1' name='adminpass1' autocomplete="off" type='password' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>" data-validation-rule="^(?=loxberry$)|^(((?=.*[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=])(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=]{4,64}$)|^(){0})$">
 			</td>
 			<td>
 				&nbsp;
@@ -49,8 +47,7 @@
 				<label for="adminpass2"><TMPL_VAR ADMIN.LABEL_RETYPE_PASSWORD></label>
 			</td>
 			<td>
-				<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpass2_div'></div>
-				<input id='adminpass2' name='adminpass2' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_DIFFERENT>" data-validation-rule="special:compare-with:#adminpass1">
+				<input id='adminpass2' name='adminpass2' autocomplete="off" type='password' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_DIFFERENT>" data-validation-rule="special:compare-with:#adminpass1">
 			</td>
 			<td>
 				&nbsp;
@@ -69,8 +66,7 @@
 				<label for="securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></label>
 			</td>
 			<td>
-				<div style="width:175px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin1_div'></div>
-				<input id='securepin1' name='securepin1' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^((([A-Za-z0-9]){4,10})|(){0})$">
+				<input id='securepin1' name='securepin1' autocomplete="off" type='password' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^((([A-Za-z0-9]){4,10})|(){0})$">
 			</td>
 			<td>
 				&nbsp;
@@ -84,8 +80,7 @@
 				<label for="adminpass2"><TMPL_VAR ADMIN.LABEL_RETYPE_SECUREPIN></label>
 			</td>
 			<td>
-				<div style="width:175px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepin2_div'></div>
-				<input id='securepin2' name='securepin2' type='hidden' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>" data-validation-rule="special:compare-with:#securepin1">
+				<input id='securepin2' name='securepin2' autocomplete="off" type='password' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>" data-validation-rule="special:compare-with:#securepin1">
 			</td>
 			<td>
 				&nbsp;
@@ -109,8 +104,7 @@
 			 <label for="adminpassold"><TMPL_VAR ADMIN.LABEL_CURRENT_PASSWORD></label>
 			</td>
 			<td>
-				<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='adminpassold_div'></div>
-				<input id='adminpassold' name='adminpassold' type='hidden' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_PASS>" data-validation-rule="^(.){1,64}$">
+				<input id='adminpassold' name='adminpassold' type='password' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_PASS>" data-validation-rule="^(.){1,64}$">
 			</td>
 			<td>
 			</td>
@@ -122,8 +116,7 @@
 				<label for="securepinold"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></label>
 			</td>
 			<td>
-				<div style="width:75px; min-width:75px;" class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='securepinold_div'></div>
-				<input id='securepinold' name='securepinold' type='hidden' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_SECUREPIN>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+				<input  id='securepinold' name='securepinold' type='password' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_SECUREPIN>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
 			</td>
 			<td>
 			</td>
@@ -150,35 +143,17 @@
 $( document ).ready(function()
 {
 	validate_enable('#adminuser');
-	validate_enable('#adminpassold');
 	validate_enable('#adminpass1');
+	$("#adminpass1").on('keyup', function(e) { validate_chk_value( "#adminpass2","keyup","special:compare-with:#adminpass1"); });
 	validate_enable('#adminpass2');
 	validate_enable('#securepin1');
+	$("#securepin1").on('keyup', function(e) { validate_chk_value( "#securepin2","keyup","special:compare-with:#securepin1"); });
 	validate_enable('#securepin2');
+	validate_enable('#adminpassold');
+	$( '#adminpassold' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0"); 
 	validate_enable('#securepinold');
 	validate_chk_object(['#adminuser','#adminpass1','#adminpass2','#securepin1','#securepin2','#securepinold','#adminpassold']);
-
-	$('#adminpassold_div').css('-webkit-text-security','disc');
-	$('#adminpassold_div').css('font-family','password').css('color','#FFFFC0');
-	$('#adminpassold_div').on('input', function(e) { $(this).css('color','#7c7c7c'); });
-	$('#adminpassold_div').css('background-color','#FFFFC0');
-
-	$('#adminpass1_div').css('-webkit-text-security','disc');
-	$('#adminpass1_div').css('font-family','password').css('color','#FFFFFF');
-
-	$('#adminpass2_div').css('-webkit-text-security','disc');
-	$('#adminpass2_div').css('font-family','password').css('color','#FFFFFF');
-
-	$('#securepin1_div').css('-webkit-text-security','disc');
-	$('#securepin1_div').css('font-family','password').css('color','#FFFFFF');
-
-	$('#securepin2_div').css('-webkit-text-security','disc');
-	$('#securepin2_div').css('font-family','password').css('color','#FFFFFF');
-
-	$('#securepinold_div').css('-webkit-text-security','disc');
-	$('#securepinold_div').css('font-family','password').css('color','#FFFFC0');
-	$('#securepinold_div').css('background-color','#FFFFC0');
-
+	$( '#securepinold' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
 });
 </script>
 </TMPL_IF>

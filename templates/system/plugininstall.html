@@ -1,4 +1,4 @@
-	<!-- ** START template/system/plugininstall.html 10.01.2018 00:03:37  ************************************************************************************ -->
+<!-- ** START template/system/plugininstall.html 19.01.2018 19:18:59  ************************************************************************************ -->
 <TMPL_IF FORM>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
 		<input type="hidden" name="saveformdata" value="1">
@@ -7,22 +7,19 @@
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
 			<div style="text-align:left; width:100%;">
-				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" >
-				<div style="visibility:hidden; width:auto; height:0px;" id='uploadfile_chk_div'></div>
-				<input id='uploadfile_chk' name='uploadfile_chk' type='hidden'  data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
+				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
 			</div>
-		</div>
-		<div style="margin:auto; padding:10px; display:flex; text-align:left; width:90%;">
-			<div style="padding-right:10px; text-align:left; margin-top:15px; white-space: nowrap; ">
-				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
+			<div style="margin:auto; display:flex; width:100%;">
+				<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap; ">
+					<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
+				</div>
+				<div style="width:100%; ">
+					<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+				</div>
+				<div style=" width:10%; text-align:left; margin-top:3px;  padding-left:20px;">
+					<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+				</div>
 			</div>
-			<div style="text-align:left; padding-right:50px;">
-				<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' style="width:auto; min-width:165px;" contenteditable='true' id='securepin_div'></div>
-				<input id='securepin' name='securepin' type='hidden' data-validation-coloring="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
-			</div>
-		<div style=" width:10%; text-align:left; padding-right:20px;">
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
-		</div>
 		</div>
 	</form>
 	<div style="display:flex; width:100%; text-align:left;">
@@ -33,7 +30,6 @@
 			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
 		</div>
 	</div>
-
 	<table data-role="table" data-mode="columntoggle" class="ui-responsive table-stroke" data-column-btn-text="Display Columns">
 		<thead>
 			<tr>
@@ -77,33 +73,10 @@
 	<script>
 		$(document).ready( function()
 		{
-
-		$.validate(
-		{
-			modules : 'file',
-			errorMessagePosition: 'inline',
+			validate_enable('#uploadfile');
+			validate_enable('#securepin');
+			validate_chk_object(['#securepin','#uploadfile']);
 		});
-
-
-	validate_enable('#uploadfile_chk');
-	validate_enable('#securepin');
-	validate_chk_object(['#securepin','#uploadfile_chk']);
-	$('#securepin_div').css('-webkit-text-security','disc');
-	$('#securepin_div').css('font-family','password').css('color','#FFFFFF');
-	$('#securepin_div').on('input', function(e) 
-	{ 
-		$('#securepin_div').css('color','#7c7c7c'); 
-	});
-	
-	$('input[type=file]').on('change click blur', function(e)
-	{
-		var filename = $('input[type=file]').val().replace(/C:\\fakepath\\/i, '')
-		$("#uploadfile_chk_div").html(filename);
-		$("#uploadfile_chk").val(filename);
-		$("#error-msg-uploadfile_chk").fadeOut(400);
-	});
-	$('input[type=file]').trigger('blur');
-});
 	</script>
 </TMPL_IF>
 

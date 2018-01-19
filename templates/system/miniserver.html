@@ -1,4 +1,4 @@
-<!-- ** START template/system/miniserver.html 14.01.2018 20:26:30 ************************************************************************************ -->
+<!-- ** START template/system/miniserver.html 19.01.2018 19:22:13 ************************************************************************************ -->
 <TMPL_IF FORM>
 <form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
 	<input type="hidden" name="saveformdata" value="1">
@@ -22,8 +22,7 @@
 			<label for="miniserverfoldername<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSNAME></label>
 		</td>
 		<td>
-			<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='miniserverfoldername<TMPL_VAR MSNO>_div'><TMPL_VAR MSNAME></div>
-			<input id='miniserverfoldername<TMPL_VAR MSNO>' name='miniserverfoldername<TMPL_VAR MSNO>' type='hidden' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSNAME>" data-validation-rule="^([A-Za-z0-9]){1,64}$">
+			<input value="<TMPL_VAR MSNAME>" id='miniserverfoldername<TMPL_VAR MSNO>' name='miniserverfoldername<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSNAME>" data-validation-rule="^([A-Za-z0-9]){1,64}$">
 		</td>
 		<td>
 		</td>
@@ -36,8 +35,7 @@
 			<label for="miniserveruser<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSUSER></label>
 		</td>
 		<td>
-			<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='miniserveruser<TMPL_VAR MSNO>_div'><TMPL_VAR MSUSER></div>
-			<input id='miniserveruser<TMPL_VAR MSNO>' name='miniserveruser<TMPL_VAR MSNO>' type='hidden' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSUSER>" data-validation-rule="^([A-Za-z0-9\!\§\$\%\&\(\)\=]){1,64}$">
+			<input value="<TMPL_VAR MSUSER>" id='miniserveruser<TMPL_VAR MSNO>' name='miniserveruser<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSUSER>" data-validation-rule="^([A-Za-z0-9\!\§\$\%\&\(\)\=]){1,64}$">
 		</td>
 		<td>
 			&nbsp;
@@ -51,8 +49,7 @@
 			<label for="miniserverkennwort<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSPASS></label>
 		</td>
 		<td>
-			<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='miniserverkennwort<TMPL_VAR MSNO>_div'><TMPL_VAR MSPASS></div>
-			<input id='miniserverkennwort<TMPL_VAR MSNO>' name='miniserverkennwort<TMPL_VAR MSNO>' type='hidden' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>" data-validation-rule="^([A-Za-z0-9\!\§\$\%\&\(\)\=]){1,64}$">
+			<input value="<TMPL_VAR MSPASS>" id='miniserverkennwort<TMPL_VAR MSNO>' name='miniserverkennwort<TMPL_VAR MSNO>' type='password' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>" data-validation-rule="^([A-Za-z0-9\!\§\$\%\&\(\)\=]){1,64}$" data-validation-coloring="off" autocomplete="off" >
 		</td>
 		<td>
 			&nbsp;
@@ -80,8 +77,7 @@
 			<label class="control-label" for="miniserverip<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSIP></label>
 		</td>
 		<td width="30%">
-			<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='miniserverip<TMPL_VAR MSNO>_div'><TMPL_VAR MSIP></div>
-			<input id='miniserverip<TMPL_VAR MSNO>' name='miniserverip<TMPL_VAR MSNO>' type='hidden' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_IP>" data-validation-rule="^(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$|^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+			<input value="<TMPL_VAR MSIP>" id='miniserverip<TMPL_VAR MSNO>' name='miniserverip<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_IP>" data-validation-rule="^(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$|^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
 		</td>
 		<td width="5%">
 		 &nbsp;
@@ -95,8 +91,7 @@
 			<label for="miniserverport<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSPORT></label>
 		</td>
 		<td>
-			<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='miniserverport<TMPL_VAR MSNO>_div'><TMPL_VAR MSPORT></div>
-			<input id='miniserverport<TMPL_VAR MSNO>' name='miniserverport<TMPL_VAR MSNO>' type='hidden' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_PORT>" data-validation-rule="^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$">
+			<input value="<TMPL_VAR MSPORT>" id='miniserverport<TMPL_VAR MSNO>' name='miniserverport<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_PORT>" data-validation-rule="^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$">
 		</td>
 		<td>
 			&nbsp;
@@ -110,8 +105,7 @@
 			<label class="control-label" for="miniservercloudurl<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_CLOUDURL></label>
 		</td>
 		<td width="30%">
-			<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='miniservercloudurl<TMPL_VAR MSNO>_div'><TMPL_VAR MSCLOUDURL></div>
-			<input id='miniservercloudurl<TMPL_VAR MSNO>' name='miniservercloudurl<TMPL_VAR MSNO>' type='hidden' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_CLOUDURL>" data-validation-rule="(^[Ee][Ee][Ee]000([a-zA-Z0-9]{6})$)|(^504[Ff]([a-fA-F0-9]{8})$)">
+			<input value="<TMPL_VAR MSCLOUDURL>" id='miniservercloudurl<TMPL_VAR MSNO>' name='miniservercloudurl<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_CLOUDURL>" data-validation-rule="(^[Ee][Ee][Ee]000([a-zA-Z0-9]{6})$)|(^504[Ff]([a-fA-F0-9]{8})$)">
 		</td>
 		<td width="5%">
 		 &nbsp;
@@ -125,8 +119,7 @@
 			<label class="control-label" for="miniservercloudurlftpport<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSCLOUDURL_FTPPORT></label>
 		</td>
 		<td width="30%">
-			<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='miniservercloudurlftpport<TMPL_VAR MSNO>_div'><TMPL_VAR MSCLOUDURLFTPPORT></div>
-			<input id='miniservercloudurlftpport<TMPL_VAR MSNO>' name='miniservercloudurlftpport<TMPL_VAR MSNO>' type='hidden' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_CLOUDDNS_FTPPORT>" data-validation-rule="^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$">
+			<input value="<TMPL_VAR MSCLOUDURLFTPPORT>" id='miniservercloudurlftpport<TMPL_VAR MSNO>' name='miniservercloudurlftpport<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_CLOUDDNS_FTPPORT>" data-validation-rule="^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$">
 		</td>
 		<td width="5%">
 			&nbsp;
@@ -193,19 +186,19 @@
 			validate_enable('#miniserverport<TMPL_VAR MSNO>');
 			validate_enable('#miniservercloudurl<TMPL_VAR MSNO>');
 			validate_enable('#miniservercloudurlftpport<TMPL_VAR MSNO>');
-			$("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr",$("#miniserverip<TMPL_VAR MSNO>_div").text());
-			$("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr",$("#miniserverport<TMPL_VAR MSNO>_div").text());
-			$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>_div").text());
-			$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>_div").text());
+			$("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr",$("#miniserverip<TMPL_VAR MSNO>").val());
+			$("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr",$("#miniserverport<TMPL_VAR MSNO>").val());
+			$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>").val());
+			$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val());
 
 			$("#useclouddns<TMPL_VAR MSNO>").change(function()
 			{
 				if($(this).is(":checked"))
 				{
-					$("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr",$("#miniserverip<TMPL_VAR MSNO>_div").text());
-					$("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr",$("#miniserverport<TMPL_VAR MSNO>_div").text());
-					$("#miniservercloudurl<TMPL_VAR MSNO>_div").html($("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl" ));
-					$("#miniservercloudurlftpport<TMPL_VAR MSNO>_div").html($("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport" ));
+					$("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr",$("#miniserverip<TMPL_VAR MSNO>").val());
+					$("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr",$("#miniserverport<TMPL_VAR MSNO>").val());
+					$("#miniservercloudurl<TMPL_VAR MSNO>").val($("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl" ));
+					$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val($("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport" ));
 					validate_chk_object(['#miniserverfoldername<TMPL_VAR MSNO>','#miniserveruser<TMPL_VAR MSNO>','#miniserverkennwort<TMPL_VAR MSNO>','#miniservercloudurl<TMPL_VAR MSNO>','#miniservercloudurlftpport<TMPL_VAR MSNO>']);
 					validate_clean_objects(['#miniserverip<TMPL_VAR MSNO>','#miniserverport<TMPL_VAR MSNO>']);				
 					$("#miniservercloudurlrow<TMPL_VAR MSNO>").fadeTo( "fast", 1 );
@@ -214,15 +207,15 @@
 					$("#miniserverportrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
 					$(".noclouddns<TMPL_VAR MSNO>").hide();
 					$(".clouddns<TMPL_VAR MSNO>").show();
-					$("#miniservercloudurl<TMPL_VAR MSNO>_div").trigger( "focusin" );
-					$("#miniservercloudurlftpport<TMPL_VAR MSNO>_div").trigger( "focusin" );
+					$("#miniservercloudurl<TMPL_VAR MSNO>").trigger( "keyup" );
+					$("#miniservercloudurlftpport<TMPL_VAR MSNO>").trigger( "keyup" );
 				}
 				else
 				{
-					$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>_div").text());
-					$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>_div").text());
-					$("#miniserverip<TMPL_VAR MSNO>_div").html($("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr" ));
-					$("#miniserverport<TMPL_VAR MSNO>_div").html($("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr" ));
+					$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>").val());
+					$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val());
+					$("#miniserverip<TMPL_VAR MSNO>").val($("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr" ));
+					$("#miniserverport<TMPL_VAR MSNO>").val($("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr" ));
 					validate_chk_object(['#miniserverfoldername<TMPL_VAR MSNO>','#miniserveruser<TMPL_VAR MSNO>','#miniserverkennwort<TMPL_VAR MSNO>','#miniserverip<TMPL_VAR MSNO>','#miniserverport<TMPL_VAR MSNO>']);
 					validate_clean_objects(['#miniservercloudurl<TMPL_VAR MSNO>','#miniservercloudurlftpport<TMPL_VAR MSNO>']);				
 					$("#miniservercloudurlrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
@@ -231,12 +224,15 @@
 					$("#miniserverportrow<TMPL_VAR MSNO>" ).fadeTo( "fast", 1 );
 					$(".noclouddns<TMPL_VAR MSNO>").show();
 					$(".clouddns<TMPL_VAR MSNO>").hide();
-					$("#miniserverip<TMPL_VAR MSNO>_div").trigger( "focusin" );
-					$("#miniserverport<TMPL_VAR MSNO>_div").trigger( "focusin" );
+					$("#miniserverip<TMPL_VAR MSNO>").trigger( "keyup" );
+					$("#miniserverport<TMPL_VAR MSNO>").trigger( "keyup" );
 				}
 			});
 			$("#useclouddns<TMPL_VAR MSNO>").trigger( "change" );
-
+			$("#miniserverip<TMPL_VAR MSNO>").css("background-color",$("#miniserverip<TMPL_VAR MSNO>").attr("original-background-color")); 
+			$("#miniserverport<TMPL_VAR MSNO>").css("background-color",$("#miniserverport<TMPL_VAR MSNO>").attr("original-background-color")); 
+			$("#miniservercloudurl<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurl<TMPL_VAR MSNO>").attr("original-background-color")); 
+			$("#miniservercloudurlftpport<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("original-background-color")); 
 		});
 	</SCRIPT>
 </table>

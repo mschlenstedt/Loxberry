@@ -1,36 +1,25 @@
-function validate_enable ( object ) 
-{ 
-	// This function is called from the code to enable validation for this object 
-  	// Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id>_div (INPUT-DIV) which must exists in the HTML page
-	$( '<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object+'_div' ) );
+/* Loxberry webfrontend/html/system/scripts/validate.js 19.01.2018 19:15:55 */
+
+function validate_enable ( object )
+{
+	// This function is called from the code to enable validation for this object
+	// Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id> (INPUT) which must exists in the HTML page
+	$( '<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object ) );
+
 	// Prevent return key
-	$(object+"_div").keypress(function(e){ return e.which != 13; });
-	// Handling screen resizing...
-	$( window ).resize(function() 
-	{
-		// Get position of the related INPUT-DIV
-		var offset = $(object+'_div').position();  
-		// Check if object still there 
-		if (typeof offset === 'undefined')
-		{
-			// On page switch remove old values
-			window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
-		}
-		else
-		{
-			// Set minimum width of the tooltip if the object is smaller
-			var width = $(object+'_div').width();
-			if ( width < 250 ) { width = 250; };
-			// Set position of tooltip below the related INPUT-DIV
-			$('#error-msg-'+object.substring(1)).css({'width': width, 'top': offset.top + 40 , 'left': offset.left});
-		}
-	});
-	// The global variable window.obj_to_validate holds all objects which prevent submitting the form, 
-	// if the content doesn't match the rule in parameter data-validation-rule of the INPUT-DIV
-  // Checking here if window.obj_to_validate is set and valid, otherwise create an empty array
+	$(object).keypress(function(e){ return e.which != 13; });
+
+	// Save original background-color
+	originalbackgroundcolor = ( typeof $(object).attr("background-color") != 'undefined') ? $(object).attr("background-color") : "transparent";
+	$(object).attr("original-background-color", originalbackgroundcolor );
+
+	// The global variable window.obj_to_validate holds all objects which prevent submitting the form,
+	// if the content doesn't match the rule in parameter data-validation-rule of the INPUT
+	// Checking here if window.obj_to_validate is set and valid, otherwise create an empty array
 	window.obj_to_validate = ( typeof window.obj_to_validate != 'undefined' && window.obj_to_validate instanceof Array ) ? window.obj_to_validate : [];
+
 	// Find the form which is related to the object to validate.
-	$( $(object).closest('form') ).submit(function(e) 
+	$( $(object).closest('form') ).submit(function(e)
 	{
 		// Call function validate_all() and it is NOT true, prevent submitting the form.
 		if (!validate_all())
@@ -39,59 +28,35 @@ function validate_enable ( object )
 			e.preventDefault();
 		}
 	});
-	// Adding an event handler if someone pastes a value into the INPUT-DIV
-	$(object+'_div').on('paste', function(e)
+
+	// Adding an event handler if someone pastes a value into the INPUT
+	$(object).on('paste', function(e)
 	{
 		// In case of pasting values, remove any formatting
 		validate_OnPaste_StripFormatting(this, event);
 	});
-	// Adding an event handler if someone leaves, enters the INPUT-DIV or 
-	// lift the finger from a key into the INPUT-DIV 
-	$(object+'_div').on('blur keyup focusin', function(e)
+
+	// Adding an event handler if someone leaves, enters the INPUT or
+	// lift the finger from a key into the INPUT
+	$(object).on('blur input keyup', function(e)
 	{
-		// In case of leaving the INPUT-DIV (blur)  
-		if (e.type == "blur" )
-		{
-			// Remove the focus CSS
-			$(this).removeClass("ui-focus").addClass("ui-shadow-inset");
-		}
-		else 
-		{
-			// For all other cases (keyup focusin) add the focus CSS
-			$(this).removeClass("ui-shadow-inset").addClass("ui-focus");
-		}
-		// If the object has CSS param_ok enabled ...
-		if ( $(this).hasClass('param_ok') )
-		{
-			// ...remove the CSS param_ok and add it at the end to prevent overwriting by other CSS rules
-			$(this).removeClass('param_ok').addClass('param_ok');
-			// Hide the tooltip 
-			$('#error-msg-'+object.substring(1)).fadeOut(400);
-		}
-		else
-		{
-			// ...otherwise remove the CSS param_error and add it at the end to prevent overwriting by other CSS rules
-			$(this).removeClass('param_error').addClass('param_error');
-		} 
-		// Check the current value of the INPUT-DIV 
 		validate_chk_value( object,e );
 	});
-	// Put the value in the INPUT-DIV into the hidden INPUT field of the HTML page.
-	// This is the value, which is really sent to the server when submitting the form. 
-	$(object).attr('value',$(object+"_div").text());
 }
 
 function validate_all()
 {
-	// This function validates all INPUT-DIV which were added to the array window.obj_to_validate
+	// This function validates all INPUT which were added to the array window.obj_to_validate
 	// by calling the validate_chk_object(['<OBJECT>']); from the HTML page
 	// The function validate_all() returns true only, if all fields are correct filled.
 	// As soon as one field is wrong, false is returned. If the array window.obj_to_validate is
 	// empty, true is returned.
-	var trueCount			=-1;
-  var falseCount		=-1;
-  // Put the array window.obj_to_validate in to the local variable what_to_test
-  var what_to_test 	= window.obj_to_validate;
+	var trueCount       =-1;
+	var falseCount      =-1;
+
+	// Put the array window.obj_to_validate in to the local variable what_to_test
+	 var what_to_test   = window.obj_to_validate;
+
 	// If what_to_test is empty, abort and retrun true...
 	if (what_to_test.length === 0 )
 	{
@@ -101,82 +66,77 @@ function validate_all()
 	else
 	{
 		// Get each object to validate...
-		$.each(what_to_test, function (i,v) 
+		$.each(what_to_test, function (i,v)
 		  {
-		  	// Write the value from hidden input field into the INPUT-DIV 
-		  	// to have both fields consistent before starting the check
-		  	// and show the user the real value which is validated as the
-		  	// hidden INPUT field is not visible
-			  $(v+'_div').text($(v).val());
-		    // Check the value...
-		    if (validate_chk_value.call(this,v)) 
-		    {
-		    	// If the value matches the rule in attribute data-validation-rule 
-		    	// of the INPUT-DIV, increase the true counter
-		      trueCount++;
-		    }
-		    else 
-		    {
-	 	    	// If the value doesn't match the rule in attribute data-validation-rule 
-		    	// of the INPUT-DIV, increase the false counter
-		      falseCount++;
-		    }
-	    });
+			// Check the value...
+			if (validate_chk_value.call(this,v))
+			{
+				// If the value matches the rule in attribute data-validation-rule
+				// of the INPUT, increase the true counter
+				trueCount++;
+			}
+			else
+			{
+				// If the value doesn't match the rule in attribute data-validation-rule
+				// of the INPUT, increase the false counter
+			  	falseCount++;
+			}
+		});
 	}
 	// If falseCount is equal or greater than 0 something was wrong (initial value is -1)
-  if (falseCount >= 0) 
-  {
-    return false;
-  }
-	// If trueCount is equal or greater than 0 something was ok - so I expect all was ok 
+	if (falseCount >= 0)
+	{
+	  return false;
+	}
+	// If trueCount is equal or greater than 0 something was ok - so I expect all was ok
 	// as nothing was wrong before with falseCount (initial value is -1)
-  if (trueCount >= 0) 
+  if (trueCount >= 0)
   {
-    return true;
+	return true;
   }
   // Never should arrive here but if, return false to be sure nothin bad is submitted
   return false;
-}	
-
-// Function block to remove formatting 
-var _onPaste_StripFormatting_IEPaste = false;
-function validate_OnPaste_StripFormatting(elem, e) 
-{
-    if (e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.getData) 
-    {
-        e.preventDefault();
-        var text = e.originalEvent.clipboardData.getData('text/plain');
-        window.document.execCommand('insertText', false, text);
-    }
-    else if (e.clipboardData && e.clipboardData.getData) 
-    {
-        e.preventDefault();
-        var text = e.clipboardData.getData('text/plain');
-        window.document.execCommand('insertText', false, text);
-    }
-    else if (window.clipboardData && window.clipboardData.getData) 
-    {
-        // Stop stack overflow
-        if (!_onPaste_StripFormatting_IEPaste) {
-            _onPaste_StripFormatting_IEPaste = true;
-            e.preventDefault();
-            window.document.execCommand('ms-pasteTextOnly', false);
-        }
-        _onPaste_StripFormatting_IEPaste = false;
-    }
 }
 
-function validate_chk_value( object,evt,rule ) 
+// Function block to remove formatting
+var _onPaste_StripFormatting_IEPaste = false;
+function validate_OnPaste_StripFormatting(elem, e)
+{
+	if (e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.getData)
+	{
+		e.preventDefault();
+		var text = e.originalEvent.clipboardData.getData('text/plain');
+		window.document.execCommand('insertText', false, text);
+	}
+	else if (e.clipboardData && e.clipboardData.getData)
+	{
+		e.preventDefault();
+		var text = e.clipboardData.getData('text/plain');
+		window.document.execCommand('insertText', false, text);
+	}
+	else if (window.clipboardData && window.clipboardData.getData)
+	{
+		// Stop stack overflow
+		if (!_onPaste_StripFormatting_IEPaste) {
+			_onPaste_StripFormatting_IEPaste = true;
+			e.preventDefault();
+			window.document.execCommand('ms-pasteTextOnly', false);
+		}
+		_onPaste_StripFormatting_IEPaste = false;
+	}
+}
+
+function validate_chk_value( object,evt,rule )
 {
 	// This function does the checking against the regular expression rule
-	// If the event is not defined, set it to 0 
+	// If the event is not defined, set it to 0
 	// (This happens if called from the code itself)
 	evt = evt || 0;
-	// If the rule is not given when calling the function, get the value 
-	// in attribute data-validation-rule of the INPUT-DIV 
+	// If the rule is not given when calling the function, get the value
+	// in attribute data-validation-rule of the INPUT
 	var rule = rule || $(object).attr("data-validation-rule");
-	// If the rule is neither given when calling the function, not in the value 
-	// of attribute data-validation-rule of the INPUT-DIV define a rule which
+	// If the rule is neither given when calling the function, not in the value
+	// of attribute data-validation-rule of the INPUT define a rule which
 	// returns always false to be sure nothing bad is validated by mistake
 	rule = rule || '(?=a)b';
 	// Detect and handle special conditions:
@@ -186,15 +146,15 @@ function validate_chk_value( object,evt,rule )
 		var rule_array = rule.split(':');
 		// Get condition from rule array
 		var condition = rule_array[1];
-		switch (condition) 
-		{ 
+		switch (condition)
+		{
 			// Condition cases
-			case 'compare-with': 
+			case 'compare-with':
 				// If the value of object is the same as in the given object
-				// to compare with... 
-				if( $(rule_array[2]+'_div').text() == $(object+'_div').text()  )
+				// to compare with...
+				if( $(rule_array[2]).val() == $(object).val()  )
 				{
-					// It is the same => replace rule by a rule which is always true 
+					// It is the same => replace rule by a rule which is always true
 					rule = '$';
 				}
 				else
@@ -211,17 +171,17 @@ function validate_chk_value( object,evt,rule )
 	// Convert the rule string into a regular expression
 	rule = new RegExp(rule);
 
-	// Check, if the INPUT-DIV value matches the rule
-	if( !rule.test($(object+'_div').text()))
+	// Check, if the INPUT value matches the rule
+	if( !rule.test($(object).val()))
 	{
 		// The rule doesn't match => That's bad
 		// If the validate_chk_value was called when leaving a field,
 		// or no event is given, apply the following:
 		if (evt.type == "blur"  || evt === 0 )
-		{ 
-			// Get the position of the INPUT-DIV on the page
-			var offset = $(object+'_div').position();  
-			// Check if object still there 
+		{
+			// Get the position of the INPUT on the page
+			var offset = $(object).position();
+			// Check if object still there
 			if (typeof offset === 'undefined')
 			{
 				// On page switch remove old values
@@ -229,57 +189,77 @@ function validate_chk_value( object,evt,rule )
 			}
 			else
 			{
-				// Set minimum width of the tooltip if the object is smaller
-				var width = "auto";
-				if ( $(object+'_div').width() < 250 ) { width = 250; };
-				// Set the position of the tooltip below INPUT-DIV 
-				$('#error-msg-'+object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal'});
-				// Show the tooltip 
-				$('#error-msg-'+object.substring(1)).fadeIn(400);
+				// Set the position of the tooltip below INPUT
+				$('#error-msg-'+object.substring(1)).css({'margin': '-1px', 'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '0px 0px 8px 8px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'white-space': 'normal'});
+
+				// Remove the bottom round corners of input to connect the error message 
+				$(object).css({'border-radius': '8px 8px 0px 0px'});
+
+				// Show the tooltip
+				$('#error-msg-'+object.substring(1)).fadeIn(500);
 			}
 		}
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
 		{
-			// Set color for error
-			$(object+'_div').css('color','#ff0000').css('border-color','#ff0000');
-		} 
+			if ( $(object).val() == '' )
+			{
+				// Set color for nocolor
+				$( object ).css("background-color",$(object).attr("original-background-color"));
+			}
+			else
+			{
+				// Set color for error
+				$( object ).css("background-color","#FFC0C0");
+			}
+		}
 		else
 		{
 			// Set color for nocolor
-			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
+			$( object ).css("background-color",$(object).attr("original-background-color"));
 		}
-		// Put the (unvalidated) value into the hidden input box
-		$(object).val($(object+'_div').text());
+
 		// Return false to the caller
 		return false
 	}
 	else
 	{
 		// The rule matches => That's good
+
 		// If coloring is not disabled change the color
 		if ( $(object).attr('data-validation-coloring') != 'off' )
 		{
-			// Set color for ok
-			$(object+'_div').css('color','#008000').css('border-color','#7c7c7c');
-		} 
+			if ( $(object).val() == '' )
+			{
+				// Set color for nocolor
+				$( object ).css("background-color",$(object).attr("original-background-color"));
+			}
+			else
+			{
+				// Set color for ok
+				$( object ).css("background-color","#C0FFC0");
+			}
+		}
 		else
 		{
 			// Set color for nocolor
-			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
+			$( object ).css("background-color",$(object).attr("original-background-color"));
 		}
-		// Put the (validated) value into the hidden input box
-		$(object).val($(object+'_div').text());
-		// Hide the tooltip 
-  	$('#error-msg-'+object.substring(1)).fadeOut(400);
+
+		// Hide the tooltip
+		$('#error-msg-'+object.substring(1)).fadeOut(100);
+
+		// Add the bottom round corners of input after disconnecting the error message 
+		$(object).css({'border-radius': 'inherit'});
+
 		// Return false to the caller
 		return true
 	}
 }
 
-function validate_chk_object( obj_to_validate ) 
+function validate_chk_object( obj_to_validate )
 {
-	// Function to define (add) which objects must have 
+	// Function to define (add) which objects must have
 	// correct values to be able to submit the form
 	// Check the given variable. If not okay, create an empty array
 	var obj_to_validate = ( typeof obj_to_validate != 'undefined' && obj_to_validate instanceof Array ) ? obj_to_validate : [];
@@ -287,72 +267,55 @@ function validate_chk_object( obj_to_validate )
 	$.each(obj_to_validate, function(i, obj)
 	{
 			// Put the object into the global array window.obj_to_validate
-	    window.obj_to_validate.push(obj);
+		window.obj_to_validate.push(obj);
 	});
 	// Remove duplicates from the global array window.obj_to_validate
 	window.obj_to_validate = jQuery.unique( window.obj_to_validate );
 	// Reorganize the tooltips
 	validate_place_tooltips ();
 }
-function validate_clean_objects( to_clean ) 
+function validate_clean_objects( to_clean )
 {
-	// Function to define (remove) which objects must NOT have 
+	// Function to define (remove) which objects must NOT have
 	// correct values any longer to be able to submit the form
 	// Check the given variable. If not okay, create an empty array
 	var to_clean = ( typeof to_clean != 'undefined' && to_clean instanceof Array ) ? to_clean : [];
 	// Go through each object ...
 	$.each(to_clean, function(i, object)
 	{
-		// Delete the value in the hidden input field 
+		// Delete the value in the input field
 		$(object).val('');
-		// Delete the value in the INPUT-DIV
-		$(object+"_div").text('');
 		// Hide the tooltip
 		$('#error-msg-'+object.substring(1)).fadeOut(100);
-		// If coloring is not disabled change the color
-		if ( $(object).attr('data-validation-coloring') != 'off' )
-		{
-			// Set color for ok
-			$(object+'_div').css('color','#008000').css('border-color','#7c7c7c');
-		} 
-		else
-		{
-			// Set color for nocolor
-			$(object+'_div').css('color','#7c7c7c').css('border-color','#7c7c7c');
-		}
+
+		// Set color for nocolor
+		$( object ).css("background-color",$(object).attr("original-background-color"));
+
 		// Remove the object from the global array window.obj_to_validate
-	  window.obj_to_validate.splice($.inArray(object, obj_to_validate),1);
+		window.obj_to_validate.splice($.inArray(object, obj_to_validate),1);
 	});
 	// Reorganize the tooltips
 	validate_place_tooltips ();
 }
 
-function validate_place_tooltips () 
+function validate_place_tooltips ()
 {
 	// Function to reorganize the tooltips
-	// Remove duplicates from window.obj_to_validate 
+	// Remove duplicates from window.obj_to_validate
 	window.obj_to_validate = jQuery.unique( window.obj_to_validate );
 	// Go through each object ...
 	$.each(window.obj_to_validate, function(i, single_object)
 	{
 		// Correct the position of the tooltip after 450 ms from now
-		setTimeout( function() 
+		setTimeout( function()
 		{
-			// Get the INPUT-DIV position 
-			var offset = $(single_object+'_div').position();  
-			// Check if object still there 
+			// Get the INPUT position
+			var offset = $(single_object).position();
+			// Check if object still there
 			if (typeof offset === 'undefined')
 			{
 				// On page switch remove old values
 				window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
-			}
-			else
-			{
-				// Set minimum width of the tooltip if the object is smaller
-				var width = "auto";
-				if ( $(single_object+'_div').width() < 250 ) { width = 250; };
-				// Place the tooltip below the INPUT-DIV 
-				$('#error-msg-'+single_object.substring(1)).css({'padding': '5px', 'border': '1px solid #FF0000', 'border-radius': '5px', 'color': '#FF0000', 'background-color': '#FFFFC0', 'width': width, 'top': offset.top + 40, 'left': offset.left, 'white-space': 'normal' });
 			}
 		}, 500);
 	});

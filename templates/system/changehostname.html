@@ -1,5 +1,5 @@
 <html>
-<!-- ** START template/system/changehostname.html 14.01.2018 20:21:28 ****************************************** -->
+<!-- ** START template/system/changehostname.html 19.01.2018 19:24:21 ****************************************** -->
 <head>
   <title><!--$template_title--></title>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -47,8 +47,7 @@
 								<label for="lbnewhostname"><TMPL_VAR NETWORK_CHANGEHOSTNAME.LABEL_NEWHOSTNAME></label>
 							</td>
 							<td>
-									<div class='ui-input-text ui-corner-all ui-shadow-inset div_input param_ok' contenteditable='true' id='lbnewhostname_div'><TMPL_VAR lbnewhostname></div>
-									<input id='lbnewhostname' name='lbnewhostname' type='hidden' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDHOSTNAME>" data-validation-rule="^(?!<TMPL_VAR lbhostname>$)(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$">
+									<input value="<TMPL_VAR lbnewhostname>" id='lbnewhostname' name='lbnewhostname' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDHOSTNAME>" data-validation-rule="^(?!<TMPL_VAR lbhostname>$)(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$">
 								</td>
 						</tr>
 						<tr style="vertical-align: middle; height:40px;">
@@ -117,7 +116,7 @@
 	{
 		validate_enable('#lbnewhostname');
 		validate_chk_object(['#lbnewhostname']);
-		$("#lbnewhostname_div").trigger('keyup');
+		$("#lbnewhostname").trigger('keyup');
 		$(document).keypress(
 			function(event)
 			{
