@@ -49,7 +49,7 @@
 						<label id="labelnetzwerkssid"><TMPL_VAR NETWORK.LABEL_WIRELESS></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.SSID>" id='netzwerkssid' name='netzwerkssid' type='text'  data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="^([\w\u0020\u0024\u0040\u005e\u0060\u002c\u007c\u0025\u003b\u002e\u007e\u0028\u0029\u002f\u005c\u007b\u007d\u003a\u003f\u005b\u005d\u003d\u002d\u002b\u00f5\u0023\u0021]{1,32})$">
+						<input value="<TMPL_VAR NETWORK.SSID>" id='netzwerkssid' name='netzwerkssid' type='text'  data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="special:ssid">
 					</td>
 					<td valign="middle">
 						<a href="#" data-role="button" id="btnlistnetworks" data-inline="true" data-mini="true"
@@ -67,7 +67,7 @@
 						<label id="labelnetzwerkschluessel"><TMPL_VAR NETWORK.LABEL_NETWORKKEY></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.WPA>" id='netzwerkschluessel' name='netzwerkschluessel' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="^([\u0020-\u007e\u00a0-\u00ff]{8,64})$">
+						<input value="<TMPL_VAR NETWORK.WPA>" id='netzwerkschluessel' name='netzwerkschluessel' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="special:wpa">
 					<td>
 					</td>
 				</tr>
@@ -95,7 +95,7 @@
 						<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.IPADDRESS>" id='netzwerkipadresse' name='netzwerkipadresse' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'>
+						<input value="<TMPL_VAR NETWORK.IPADDRESS>" id='netzwerkipadresse' name='netzwerkipadresse' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='special:ipaddr'>
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -109,7 +109,7 @@
 						<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.MASK>" id='netzwerkipmaske' name='netzwerkipmaske' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="^(((255\.){3}(254|252|248|240|224|192|128|0+))|((255\.){2}(255|254|252|248|240|224|192|128|0+)\.0)|((255\.)(255|254|252|248|240|224|192|128|0+)(\.0+){2})|((255|252|248|240|224|192|128|0+)(\.0+){3}))$">
+						<input value="<TMPL_VAR NETWORK.MASK>" id='netzwerkipmaske' name='netzwerkipmaske' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="special:netmask">
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -123,7 +123,7 @@
 						<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.GATEWAY>" id='netzwerkgateway' name='netzwerkgateway' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+						<input value="<TMPL_VAR NETWORK.GATEWAY>" id='netzwerkgateway' name='netzwerkgateway' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="special:ipaddr">
 					</td>
 					<td valign="middle">
 						&nbsp;
@@ -137,7 +137,7 @@
 						<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.DNS>" id='netzwerknameserver' name='netzwerknameserver' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+						<input value="<TMPL_VAR NETWORK.DNS>" id='netzwerknameserver' name='netzwerknameserver' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="special:ipaddr">
 					</td>
 					<td valign="middle">
 						&nbsp;

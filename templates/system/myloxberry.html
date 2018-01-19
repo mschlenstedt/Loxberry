@@ -22,7 +22,7 @@
 				<TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME>
 			</div>
 			<div style="margin:auto; padding:10px; width:30%">
-				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>">
+				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>" data-validation-error-msg="<TMPL_VAR MYLOXBERRY.ERR_FRIENDLYNAME>"  data-validation-rule="special:alpha-ws">
 			</div>
 			<div class="hint" style="margin:auto; padding:10px; width:50%;">
 				<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
@@ -52,6 +52,7 @@
 	<script>
 		$(document).ready( function ()
 		{
+			validate_enable('#lbfriendlyname');
 			$("#languageselector").bind( "change", function(event, ui)
 			{
 				var val = $("#languageselector").val();

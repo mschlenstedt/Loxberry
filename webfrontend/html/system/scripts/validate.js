@@ -163,10 +163,143 @@ function validate_chk_value( object,evt,rule )
 					rule = '(?=x)y';
 				}
 				break;
+			case 'alpha':
+				// Accept letters a-z and A-Z
+				rule = '^[a-zA-Z]*$';
+				break;
+			case 'alpha-uppercase':
+				// Accept uppercase letters A-Z
+				rule = '^[A-Z]*$';
+				break;
+			case 'alpha-lowercase':
+				// Accept lowercase letters a-z
+				rule = '^[a-z]*$';
+				break;
+			case 'alphanumeric':
+				// Accept letters a-z and A-Z and digits 0-9 
+				rule = '^[a-zA-Z0-9]*$';
+				break;
+			case 'alphanumeric-lowercase':
+				// Accept lowercase letters a-z and digits 0-9
+				rule = '^[a-z0-9]*$';
+				break;
+			case 'alphanumeric-uppercase':
+				// Accept uppercase letters A-Z and digits 0-9
+				rule = '^[A-Z0-9]*$';
+				break;
+
+			case 'alpha-ws':
+				// Accept letters a-z and A-Z + whitespaces
+				rule = '^[a-zA-Z\\s]*$';
+				break;
+			case 'alpha-uppercase-ws':
+				// Accept uppercase letters A-Z + whitespaces
+				rule = '^[A-Z\\s]*$';
+				break;
+			case 'alpha-lowercase-ws':
+				// Accept lowercase letters a-z + whitespaces
+				rule = '^[a-z\\s]*$';
+				break;
+			case 'alphanumeric-ws':
+				// Accept letters a-z and A-Z and digits 0-9  + whitespaces
+				rule = '^[a-zA-Z0-9\\s]*$';
+				break;
+			case 'alphanumeric-lowercase-ws':
+				// Accept lowercase letters a-z and digits 0-9 + whitespaces
+				rule = '^[a-z0-9\\s]*$';
+				break;
+			case 'alphanumeric-uppercase-ws':
+				// Accept uppercase letters A-Z and digits 0-9 + whitespaces
+				rule = '^[A-Z0-9\\s]*$';
+				break;
+
+			case 'digits':
+			case 'number':
+			case 'numeric':
+				// Accept digits
+				rule = '^\\d*$';
+				break;
+			case 'number-exact-digits':
+				// Check if exact number of digits is given otherwise default 1
+				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseInt(rule_array[2])) ) ? parseInt(rule_array[2]) : '1';
+				rule = '^[0-9]{'+rule_array[2]+'}$';
+				break;
+			case 'number-min-digits':
+				// Check if min digits value is given otherwise default 1
+				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseInt(rule_array[2])) ) ? parseInt(rule_array[2]) : '1';
+				rule = '^([0-9]{'+rule_array[2]+'}[0-9]*)$';
+				break;
+			case 'number-max-digits':
+				// Check if max digits value is given otherwise default 1
+				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseInt(rule_array[2])) ) ? parseInt(rule_array[2]) : '1';
+				rule = '^[0-9]{1,'+rule_array[2]+'}$';
+				break;
+			case 'number-min-max-digits':
+				// Check if min + max digits values are given otherwise default to 1
+				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseInt(rule_array[2])) ) ? parseInt(rule_array[2]) : '1';
+				rule_array[3] = ( typeof rule_array[3] != 'undefined' && !isNaN(parseInt(rule_array[3])) ) ? parseInt(rule_array[3]) : '1';
+				rule_array[3] = ( rule_array[3] > rule_array[2]  ) ? rule_array[3] : rule_array[3] = rule_array[2];
+				rule = '^[0-9]{'+rule_array[2]+','+rule_array[3]+'}$';
+				break;
+			case 'number-exact-value':
+				// Check if exact number is given 
+				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseInt(rule_array[2])) ) ? parseInt(rule_array[2]) : '(?=x)y';
+				rule = '^'+rule_array[2]+'$';
+				break;
+			case 'number-min-value':
+				// Check if number is minumum 
+				console.log(parseInt($(object).val())  +" >= " +parseInt(rule_array[2]));
+				rule = ( parseInt($(object).val())  >= parseInt(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				break;
+			case 'number-max-value':
+				// Check if number is maximum
+				rule = ( parseInt($(object).val())  <= parseInt(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				break;
+			case 'number-min-max-value':
+				// Check if min + max digits values are given otherwise default to 1
+				rule = ( parseInt($(object).val())  >= parseInt(rule_array[2]) && parseInt($(object).val())  <= parseInt(rule_array[3])  ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				break;
+			case 'hostname':
+				// Check if hostname following RFC1123
+				rule ='^(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$';
+				break;
+			case 'ipaddr':
+				// Check if IP Address 123.34.56.78
+				rule ='^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+				break;
+			case 'ipaddr':
+				// Check if IP Address e.g. 123.34.56.78
+				rule ='^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+				break;
+			case 'netmask':
+			case 'ipmask':
+				// Check if IP Mask e.g. 255.255.255.0
+				rule ='^(((255\\.){3}(254|252|248|240|224|192|128|0+))|((255\\.){2}(255|254|252|248|240|224|192|128|0+)\\.0)|((255\\.)(255|254|252|248|240|224|192|128|0+)(\\.0+){2})|((255|252|248|240|224|192|128|0+)(\\.0+){3}))$';
+				break;
+			case 'port':
+			case 'ipport':
+				// Check if IP Port 1-65535
+				rule ='^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$';
+				break;
+			case 'ssid':
+				// Check if WLAN SSID 
+				rule ='^([\\w\\u0020\\u0024\\u0040\\u005e\\u0060\\u002c\\u007c\\u0025\\u003b\\u002e\\u007e\\u0028\\u0029\\u002f\\u005c\\u007b\\u007d\\u003a\\u003f\\u005b\\u005d\\u003d\\u002d\\u002b\\u00f5\\u0023\\u0021]{1,32})$';
+				break;
+			case 'wpa':
+				// Check if WLAN WPA Key 
+				rule ='^([\\u0020-\\u007e\\u00a0-\\u00ff]{8,64})$';
+				break;
+			case 'wpa':
+				// Check if WLAN WPA Key 
+				rule ='^([\\u0020-\\u007e\\u00a0-\\u00ff]{8,64})$';
+				break;
 			default:
 				// Unknown condition => replace rule by a rule which is always false
+				console.log("Error: Unknown condition! Resulting rule: " + rule + " (false)");
 				rule = '(?=x)y';
 		}
+		console.log("Special rule found: ("+rule_array.join(',')+") Resulting rule: " + rule);
+
 	}
 	// Convert the rule string into a regular expression
 	rule = new RegExp(rule);
