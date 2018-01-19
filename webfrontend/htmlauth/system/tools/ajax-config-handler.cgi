@@ -190,7 +190,7 @@ sub poweroff
 		# LOGINF "Executing poweroff forked...";
 		print STDERR "Executing poweroff forked...";
 		
-		exec("sleep 5 && sudo $bins->{POWEROFF} </dev/null >/dev/null 2>&1 &");
+		exec("$lbhomedir/sbin/sleeper.sh sudo $bins->{POWEROFF} </dev/null >/dev/null 2>&1 &");
 		exit(0);
 	}
 	exit(0);
@@ -211,7 +211,7 @@ sub reboot
 	if (not $pid) {
 		# LOGINF "Executing reboot forked...";
 		print STDERR "Executing reboot forked...";
-		exec("sleep 5 && sudo $bins->{REBOOT} </dev/null >/dev/null 2>&1 &");
+		exec("$lbhomedir/sbin/sleeper.sh sudo $bins->{REBOOT} </dev/null >/dev/null 2>&1 &");
 		exit(0);
 	}
 	exit(0);
