@@ -89,6 +89,18 @@ if ($cgi->param('cron')) {
 	LOGOK "This update was manually triggered.";
 }
 
+my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
+if ($folderinfo{available} < 102400) {
+	$joutput{'error'} = "Available diskspace is below 100MB. Update is skipped.";
+	&err;
+	LOGCRIT $joutput{'error'};
+	notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update was prevented.", 'Error');
+	exit (1);
+}
+
+
+
+
 if ($cgi->param('sha')) {
 	$sha = $cgi->param('sha');
 	LOGINF "SHA $sha was sent. This is an update to latest commit.";
