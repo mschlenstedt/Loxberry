@@ -35,7 +35,7 @@
 			<label for="miniserveruser<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSUSER></label>
 		</td>
 		<td>
-			<input value="<TMPL_VAR MSUSER>" id='miniserveruser<TMPL_VAR MSNO>' name='miniserveruser<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSUSER>" data-validation-rule="^([A-Za-z0-9\!\§\$\%\&\(\)\=]){1,64}$">
+			<input value="<TMPL_VAR MSUSER>" id='miniserveruser<TMPL_VAR MSNO>' name='miniserveruser<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSUSER>" data-validation-rule="^([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]]){1}([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]])*$" data-validation-coloring="off" >
 		</td>
 		<td>
 			&nbsp;
@@ -49,7 +49,7 @@
 			<label for="miniserverkennwort<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSPASS></label>
 		</td>
 		<td>
-			<input class="textfield" value="<TMPL_VAR MSPASS>" id='miniserverkennwort<TMPL_VAR MSNO>' name='miniserverkennwort<TMPL_VAR MSNO>' type='password' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>" data-validation-rule="^([A-Za-z0-9\!\§\$\%\&\(\)\=]){1,64}$" data-validation-coloring="off" autocomplete="off" >
+			<input class="textfield" value="<TMPL_VAR MSPASS>" id='miniserverkennwort<TMPL_VAR MSNO>' name='miniserverkennwort<TMPL_VAR MSNO>' type='password' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>" data-validation-rule="^.{1}.*$" data-validation-coloring="off" autocomplete="off" >
 		</td>
 		<td>
 			&nbsp;
@@ -80,10 +80,11 @@
 			<input value="<TMPL_VAR MSIP>" id='miniserverip<TMPL_VAR MSNO>' name='miniserverip<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr">
 		</td>
 		<td width="5%">
-		 &nbsp;
+			<a style="margin-top:13px;" id="miniserverlog<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-icon="star" onclick="open_ms_log('<TMPL_VAR MSNO>');" target="miniserver_log"><TMPL_VAR MINISERVER.BUTTON_OPEN_LOG></a>
 		</td>
 		<td width="40%" class="hint">
-		 <div id="testurl"></div>
+			<TMPL_VAR MINISERVER.HINT_BUTTON_OPEN_LOG>
+		 	<div id="testurl"></div>
 		</td>
 	</tr>
 	<tr id="miniserverportrow<TMPL_VAR MSNO>" portaddr="<TMPL_VAR MSPORT>" class="noclouddns<TMPL_VAR MSNO>" class="clouddns<TMPL_VAR MSNO>">
@@ -176,6 +177,13 @@
 	</tr>
 	<SCRIPT>
 		$("#useclouddns<TMPL_VAR MSNO>").prop("checked", "<TMPL_VAR MSUSECLOUDDNS>");
+		function open_ms_log ( ms_id )
+		{
+			if ( (validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id))  )
+			{
+				open('http://'+$("#miniserveruser"+ms_id).val()+':'+$("#miniserverkennwort"+ms_id).val()+'@'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val()+'/dev/fsget/log/def.log', '_blank');				
+			}
+		}
 		$(document).ready( function()
 		{
 			note_link ("miniservernote<TMPL_VAR MSNO>");
@@ -199,8 +207,8 @@
 					$("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr",$("#miniserverport<TMPL_VAR MSNO>").val());
 					$("#miniservercloudurl<TMPL_VAR MSNO>").val($("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl" ));
 					$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val($("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport" ));
-					validate_chk_object(['#miniserverfoldername<TMPL_VAR MSNO>','#miniserveruser<TMPL_VAR MSNO>','#miniserverkennwort<TMPL_VAR MSNO>','#miniservercloudurl<TMPL_VAR MSNO>','#miniservercloudurlftpport<TMPL_VAR MSNO>']);
 					validate_clean_objects(['#miniserverip<TMPL_VAR MSNO>','#miniserverport<TMPL_VAR MSNO>']);				
+					validate_chk_object(['#miniserverfoldername<TMPL_VAR MSNO>','#miniserveruser<TMPL_VAR MSNO>','#miniserverkennwort<TMPL_VAR MSNO>','#miniservercloudurl<TMPL_VAR MSNO>','#miniservercloudurlftpport<TMPL_VAR MSNO>']);
 					$("#miniservercloudurlrow<TMPL_VAR MSNO>").fadeTo( "fast", 1 );
 					$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").fadeTo( "fast", 1 );
 					$("#miniserveriprow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
@@ -216,8 +224,8 @@
 					$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val());
 					$("#miniserverip<TMPL_VAR MSNO>").val($("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr" ));
 					$("#miniserverport<TMPL_VAR MSNO>").val($("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr" ));
-					validate_chk_object(['#miniserverfoldername<TMPL_VAR MSNO>','#miniserveruser<TMPL_VAR MSNO>','#miniserverkennwort<TMPL_VAR MSNO>','#miniserverip<TMPL_VAR MSNO>','#miniserverport<TMPL_VAR MSNO>']);
 					validate_clean_objects(['#miniservercloudurl<TMPL_VAR MSNO>','#miniservercloudurlftpport<TMPL_VAR MSNO>']);				
+					validate_chk_object(['#miniserverfoldername<TMPL_VAR MSNO>','#miniserveruser<TMPL_VAR MSNO>','#miniserverkennwort<TMPL_VAR MSNO>','#miniserverip<TMPL_VAR MSNO>','#miniserverport<TMPL_VAR MSNO>']);
 					$("#miniservercloudurlrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
 					$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
 					$("#miniserveriprow<TMPL_VAR MSNO>" ).fadeTo( "fast", 1 );
@@ -233,6 +241,22 @@
 			$("#miniserverport<TMPL_VAR MSNO>").css("background-color",$("#miniserverport<TMPL_VAR MSNO>").attr("original-background-color")); 
 			$("#miniservercloudurl<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurl<TMPL_VAR MSNO>").attr("original-background-color")); 
 			$("#miniservercloudurlftpport<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("original-background-color")); 
+
+			function enable_logbutton<TMPL_VAR MSNO>()
+			{
+				if ( validate_chk_value('#miniserveruser<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverkennwort<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverip<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverport<TMPL_VAR MSNO>','keyup')  )
+				{
+					$("#miniserverlog<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
+				}
+				else
+				{
+					$("#miniserverlog<TMPL_VAR MSNO>").addClass( "ui-disabled" );
+				}
+			}
+			$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
 		});
 	</SCRIPT>
 </table>

@@ -681,7 +681,7 @@ sub get_unattended_upgrades_days
 		if (begins_with($_, "APT::Periodic::Unattended-Upgrade"))
 			{   my ($querystring, $queryresult) = split / /;
 				$queryresult =~ s/\R//g;
-				$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
+				$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g; #" Highlighting fix for Ultra Edit
 				return $queryresult;
 			}
 	}

@@ -41,18 +41,18 @@ $version = "0.3.3.1";
 
 $sversion = LBSystem::lbversion();
 
-$cfg	  = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
-$cfg->setQuoteStrings(False);
+//$cfg	  = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
+//$cfg->setQuoteStrings(False);
 
 #########################################################################
 # Parameter
 #########################################################################
 
 # Set default if not available
-if (!$cfg->has("SSDP","DISABLED")) {
-	$cfg->set("SSDP","DISABLED", 0);
-	$cfg->save();
-}
+//if (!$cfg->has("SSDP","DISABLED")) {
+//	$cfg->set("SSDP","DISABLED", 0);
+//	$cfg->save();
+//}
 
 ##########################################################################
 # Language Settings
@@ -102,6 +102,12 @@ function form() {
 	
 	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
 	$cfg->setQuoteStrings(False);
+	
+	//set default if doesn't exist
+	if (!$cfg->has("SSDP","DISABLED")) {
+		$cfg->set("SSDP","DISABLED", 0);
+		$cfg->save();
+	}
 
 	if ($cfg->getBool('SSDP','DISABLED',false)==false) {
 		$checked = " checked=\"checked\"";

@@ -121,6 +121,9 @@ $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 #########################################################################
 
 # Step 1 or beginning
+$R::saveformdata if (0);
+$R::do if (0);
+
 if (!$R::saveformdata || $R::do eq "form") {
   print STDERR "FORM called\n";
   $maintemplate->param("FORM", 1);
@@ -164,6 +167,15 @@ sub form {
 sub save {
 
 	my $exitcode;
+	
+	$R::adminuserold if (0);
+	$R::adminuser if (0);
+	$R::adminpass1 if (0);
+	$R::adminpass2 if (0);
+	$R::adminpassold if (0);
+	$R::securepin1 if (0);
+	$R::securepin2 if (0);
+	$R::securepinold if (0);
 	
 	$adminuserold		  = $R::adminuserold;
 	$adminuser            = trim($R::adminuser);
