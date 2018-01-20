@@ -183,10 +183,6 @@
 			{
 				open('http://'+$("#miniserveruser"+ms_id).val()+':'+$("#miniserverkennwort"+ms_id).val()+'@'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val()+'/dev/fsget/log/def.log', '_blank');				
 			}
-			else
-			{
-				console.log('Unable to open log for Miniserver '+ms_id+' because one of the mandatory fields is invalid.');
-			}
 		}
 		$(document).ready( function()
 		{
@@ -248,7 +244,7 @@
 
 			function enable_logbutton<TMPL_VAR MSNO>()
 			{
-				if ( (validate_chk_value('#miniserveruser<TMPL_VAR MSNO>') && validate_chk_value('#miniserverkennwort<TMPL_VAR MSNO>') && validate_chk_value('#miniserverip<TMPL_VAR MSNO>') && validate_chk_value('#miniserverport<TMPL_VAR MSNO>'))  )
+				if ( validate_chk_value('#miniserveruser<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverkennwort<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverip<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverport<TMPL_VAR MSNO>','keyup')  )
 				{
 					$("#miniserverlog<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
 				}
@@ -257,10 +253,10 @@
 					$("#miniserverlog<TMPL_VAR MSNO>").addClass( "ui-disabled" );
 				}
 			}
-			$('#miniserveruser<TMPL_VAR MSNO>').on('change keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverkennwort<TMPL_VAR MSNO>').on('change keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverip<TMPL_VAR MSNO>').on('change keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverport<TMPL_VAR MSNO>').on('change keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
 		});
 	</SCRIPT>
 </table>
