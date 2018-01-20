@@ -573,6 +573,14 @@ sub lbuhistory
 		$update{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
 		$update{'FILENAME'} = $direntry;
 		$update{'URLFILENAME'} = "system/loxberryupdate/$direntry";
+		$update{'LOG_ID'} = $dateobj->strftime("%Y%m%d%H%M%S");;
+		open my $file, '<', "$lbulogfiledir/$direntry"; 
+		my $firstLine = <$file>; 
+		my $firstLine = <$file>; 
+		my $firstLine = <$file>; 
+		my $firstLine = <$file>; 
+		close $file;
+		$update{'FIRSTLINE'} = "$firstLine";
 		push(@updateslist, \%update);
 	}
 	closedir $DIR;

@@ -364,12 +364,44 @@ $(document).ready( function () {
 </TMPL_IF>
 
 <TMPL_IF lbuhistory>
+<p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
+<div data-role="collapsible">
+    <h4><TMPL_VAR LOGVIEWER.BUTTON_OPEN_LOGFILE></h4>
+    <div id="Logfile_update_check"><TMPL_VAR LOGVIEWER.LOADING_LOGFILE></div>
+    	<script>
+	    		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&head=none&format=html',
+				function( data, textStatus, request ) {
+				filesize = request.getResponseHeader('filesize');
+				if (filesize == 0) {
+					$('#Logfile_update_check').html( "<TMPL_VAR LOGVIEWER.ERR_LOGFILE_EMPTY_HTML>" );
+				} else {
+					$('#Logfile_update_check').html( data );
+				}
+				});
+	</script>
+</div>
+<br>
 <p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATELOGS></p>
 	<TMPL_LOOP UPDATESLIST>
-		<p><TMPL_VAR DATESTR> <a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><TMPL_VAR LOGVIEWER.BUTTON_OPEN_LOGFILE></a></p>
+	<div data-role="collapsible">
+	    <h4 onclick="readlog<TMPL_VAR LOG_ID> ();"><TMPL_VAR DATESTR> <TMPL_VAR FIRSTLINE></h4>
+	    <div id="Logfile<TMPL_VAR LOG_ID>"><TMPL_VAR LOGVIEWER.LOADING_LOGFILE></div>
+	    	<script>
+	    		function readlog<TMPL_VAR LOG_ID> ()
+	    		{
+		    		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&head=none&format=html',
+					function( data, textStatus, request ) {
+					filesize = request.getResponseHeader('filesize');
+					if (filesize == 0) {
+						$('#Logfile<TMPL_VAR LOG_ID>').html( "<TMPL_VAR LOGVIEWER.ERR_LOGFILE_EMPTY_HTML>" );
+					} else {
+						$('#Logfile<TMPL_VAR LOG_ID>').html( data );
+					}
+					});
+				}
+		</script>
+	</div>
 	</TMPL_LOOP>
-<p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
-		<p><a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=html&format=template" target="_blank"><TMPL_VAR LOGVIEWER.BUTTON_OPEN_LOGFILE></a></p>
 </TMPL_IF>
 
 
