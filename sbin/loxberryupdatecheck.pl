@@ -383,7 +383,7 @@ sub check_releases
 			  next;
 		}
 		
-		if (! $release_safe || version->parse($release_version) > version->parse($release_safe)) {
+		if (! $release_safe || version->parse($release_version) > version->parse($release_safe->{tag_name})) {
 			$release_safe = $release;
 		}
 		
