@@ -484,7 +484,7 @@ sub check_commits
 	LOGINF "   Commit is newer than installed" if ($commit_new);
 	
 	$joutput{'info'} = "<span style='color:green;'>" . $SL{'UPDATES.INFO_NEW_COMMIT_FOUND'} . "</span>" if ($commit_new);
-	$joutput{'info'} = "<span style='color:red;'>" . $SL{'UPDATES.INFO_NO_NEW_COMMIT_FOUND'} . "</span>" if (!$commit_new);
+	$joutput{'info'} = $SL{'UPDATES.INFO_NO_NEW_COMMIT_FOUND'}  if (!$commit_new);
 	$joutput{'release_new'} = 1 if ($commit_new);
 	$joutput{'release_version'} = $commit_sha;
 	$joutput{'release_name'} = "$commit_message" if ($commit_new);
