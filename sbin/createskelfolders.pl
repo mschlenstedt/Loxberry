@@ -29,9 +29,14 @@ if ($<) {
   exit (1);
 }
 
+# Restore Log folders on tmpfs
 system ("cp -ra /var/log/* $lbhomedir/log/skel_syslog");
 system ("cp -ra $lbhomedir/log/system_tmpfs/* $lbhomedir/log/skel_system/");
 system ("find $lbhomedir/log/skel_system/ -exec rm {} \\;");
 system ("find $lbhomedir/log/skel_syslog/ -exec rm {} \\;");
+
+# Create lighttpd cahce folder
+system ("mkdir -p /tmp/lighttpdcompress/");
+system ("chown loxberry:loxberry /tmp/lighttpdcompress/");
 
 exit (0);

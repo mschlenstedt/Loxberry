@@ -110,6 +110,22 @@ echo \"LBSCONFIG\" \=\> \"$LBSCONFIG\", >> $ENVVARS
 echo '' >> $ENVVARS
 echo ')' >> $ENVVARS
 
+# LoxBerry Home Directory in Lighttpd FASTCGI PHP Environment
+awk -v s="\t\t\t\"LBHOMEDIR\" => \"$LBHOMEDIR\"," '/^\t\t\t"LBHOMEDIR" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"PERL5LIB\" => \"$LBHOMEDIR/libs/perllib\"," '/^\t\t\t"PERL5LIB" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBPHTMLAUTH\" => \"$LBPHTMLAUTH\"," '/^\t\t\t"LBPHTMLAUTH" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBPHTML\" => \"$LBPHTML\"," '/^\t\t\t"LBPHTML" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBPTEMPL\" => \"$LBPTEMPL\"," '/^\t\t\t"LBPTEMPL" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBPDATA\" => \"$LBPDATA\"," '/^\t\t\t"LBPDATA" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBPLOG\" => \"$LBPLOG\"," '/^\t\t\t"LBPLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBPCONFIG\" => \"$LBPCONFIG\"," '/^\t\t\t"LBPCONFIG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSHTMLAUTH\" => \"$LBSHTMLAUTH\"," '/^\t\t\t"LBSHTMLAUTH" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSHTML\" => \"$LBSHTML\"," '/^\t\t\t"LBSHTML" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSTEMPL\" => \"$LBSTEMPL\"," '/^\t\t\t"LBSTEMPL" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSDATA\" => \"$LBSDATA\"," '/^\t\t\t"LBSDATA" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSLOG\" => \"$LBSLOG\"," '/^\t\t\t"LBSLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSCONFIG\" => \"$LBSCONFIG\"," '/^\t\t\t"LBSCONFIG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+
 if /usr/sbin/service lighttpd status; then
 	/usr/sbin/service lighttpd force-reload
 fi
