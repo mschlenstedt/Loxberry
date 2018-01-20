@@ -28,7 +28,7 @@ my $log = LoxBerry::Log->new (
 
 LOGSTART $message;
 my $currfilename = $log->close;
-my $currfilename = $log->loglevel;
-print "\"$filename\" $currloglevel";
+my $currloglevel = $log->loglevel;
+print "\"$currfilename\" $currloglevel\n";
 
 exit;
