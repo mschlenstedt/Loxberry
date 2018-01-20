@@ -43,7 +43,7 @@ our $test;
 # Version of this script
 $version = "0.0.3";
 
-$cfg             = new Config::Simple("$home/config/system/general.cfg");
+$cfg             = new Config::Simple("$home/config/system/general.cfg.default");
 $aptbin          = $cfg->param("BINARIES.APT");
 $sudobin         = $cfg->param("BINARIES.SUDO");
 
