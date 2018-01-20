@@ -143,7 +143,7 @@ rm /etc/init.d/loxberry
 ln -s $LBHOME/sbin/loxberryinit.sh /etc/init.d/loxberry
 update-rc.d loxberry defaults
 
-rm /etc/init.d/createtmpfsfolders
+rm /etc/init.d/createtmpfsfoldersinit
 ln -s $LBHOME/sbin/createtmpfsfoldersinit.sh /etc/init.d/createtmpfsfoldersinit
 update-rc.d createtmpfsfoldersinit defaults
 
