@@ -7,8 +7,7 @@
 				<label><TMPL_VAR MAILSERVER.LABEL_DEFAULT_EMAIL></label>
 		</td>
 		<td width="40%">
-			<input id="email" name="email" type="text" class="textfield" data-validation="email" value="<TMPL_VAR EMAIL>"
-			data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
+			<input value="<TMPL_VAR EMAIL>" id="email" name="email" type="email" class="textfield" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
 		</td>
 		<td width="5%">
 		&nbsp;
@@ -22,9 +21,7 @@
 		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_SERVER></label>
 		</td>
 		<td>
-		<input id="smtpserver" name="smtpserver" type="text" class="textfield" value="<TMPL_VAR SMTPSERVER>" data-validation="custom"
-		data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.\-\_]+$)"
-		data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
+		<input id="smtpserver" name="smtpserver" type="text" class="textfield" value="<TMPL_VAR SMTPSERVER>"  data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
 		</td>
 		<td>
 		&nbsp;
@@ -38,9 +35,7 @@
 		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_PORT></label>
 		</td>
 		<td>
-		<input id="smtpport" name="smtpport" type="text" class="textfield" value="<TMPL_VAR SMTPPORT>" 
-		data-validation="number" data-validation-allowing="range[1;65535]"
-		data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
+		<input id="smtpport" name="smtpport" type="text" class="textfield" value="<TMPL_VAR SMTPPORT>" data-validation-rule="special:port" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
 		</td>
 		<td>
 		&nbsp;
@@ -140,6 +135,14 @@
 </center>
 
 <script>
+	$(document).ready( function ()
+	{
+		validate_enable('#email');
+		validate_enable('#smtpserver');
+		validate_enable('#smtpport');
+		validate_chk_object(['#email','#smtpserver','#smtpport']);
+	});
+	
 var $messages = $('#form-error-message');
 $.validate(
 {
