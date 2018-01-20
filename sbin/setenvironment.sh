@@ -194,11 +194,11 @@ rm /etc/ssmtp
 ln -s $LBHOME/system/ssmtp /etc/ssmtp
 
 # PHP
-if [ ! -L /etc/php ]; then
-	mv /etc/php /etc/php.old
-fi
-rm /etc/php
-ln -s $LBHOME/system/php /etc/php
+#if [ ! -L /etc/php ]; then
+#	mv /etc/php /etc/php.old
+#fi
+#rm /etc/php
+#ln -s $LBHOME/system/php /etc/php
 # Set PHP include_path directive
 awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/apache2/conf.d/20-loxberry.ini
 awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/cli/conf.d/20-loxberry.ini
