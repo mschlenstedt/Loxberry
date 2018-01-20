@@ -92,7 +92,7 @@ LOGINF "Version of loxberrycheck.pl is $scriptversion";
 $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
 if (!$cgi->param) {
-	$joutput{'error'} = "No parameters sent.";
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_NO_PARAMETERS'};
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit (1);
@@ -129,7 +129,7 @@ if ($formatjson || $cron ) {
 }
 
 if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
-	$joutput{'error'} = "Wrong query type.";
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_WRONG_QUERY_TYPE'};
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit(1);
@@ -156,7 +156,7 @@ if (version::is_lax(LoxBerry::System::lbversion())) {
 	LOGINF "   Current LoxBerry version: $lbversion";
 
 } else {
-	$joutput{'error'} = "Cannot read current version. Is this a real version string? Exiting.";
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_CANNOT_READ_CURRENT_VERSION'};
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit(1);
@@ -167,7 +167,7 @@ if (version::is_lax($min_version)) {
 	$min_version = version->parse($min_version);
 	LOGINF "   Updates limited from : $min_version";
 } else {
-	$joutput{'error'} = "Minimal version min_version ($min_version) not a version. Is this a real version string? Exiting.";
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_INVALID_MIN_VERSION_PREFIX'} . $min_version . $SL{'UPDATES.UPGRADE_ERROR_INVALID_MIN_VERSION_SUFFIX'};
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit(1);
@@ -176,7 +176,7 @@ if (version::is_lax($max_version)) {
 	$max_version = version->parse($max_version);
 	LOGINF "   Updates limited to   : $max_version";
 } else {
-	$joutput{'error'} = "Maximal version max_version ($max_version) not a version. Is this a real version string? Exiting.";
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_INVALID_MAX_VERSION_PREFIX'} . $max_version . $SL{'UPDATES.UPGRADE_ERROR_INVALID_MAX_VERSION_SUFFIX'};
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit(1);
@@ -186,7 +186,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	LOGINF "Start checking releases...";
 	my ($release_version, $release_url, $release_name, $release_body, $release_published) = check_releases($querytype, $lbversion);
 	if (! defined $release_url || $release_url eq "") {
-		$joutput{'info'} = "No new version found.";
+		$joutput{'info'} = $SL{'UPDATES.INFO_NO_NEW_VERSION_FOUND'};
 		$joutput{'release_version'} = "$release_version";
 		$joutput{'release_zipurl'} = "";
 		$joutput{'release_name'} = $release_name;
@@ -201,7 +201,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	LOGINF "   Version   : $release_version";
 	LOGINF "   Name      : $release_name";
 	LOGINF "   Published : $release_published";
-	$joutput{'info'} = "New version found.";
+	$joutput{'info'} = $SL{'UPDATES.INFO_NEW_VERSION_FOUND'};
 	$joutput{'release_version'} = "$release_version";
 	$joutput{'release_zipurl'} = $release_url;
 	$joutput{'release_name'} = $release_name;
@@ -238,14 +238,14 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		my $pids = `pidof loxberryupdate.pl`;
 		# LOGINF "PIDOF LENGTH: " . length($pids) . "\n";
 		if (length($pids) > 0) {
-			$joutput{'info'} = "It seems that another update is currently running. Update request was stopped.";
+			$joutput{'info'} = $SL{'UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING'};
 			&err;
 			LOGCRIT $joutput{'info'};
 			exit(1);
 		} 
 		LOGOK "No other update running.";			
 		
-		$joutput{'info'} = "Update to $release_version started. See update logfile for details.";
+		$joutput{'info'} = $SL{'UPDATES.INFO_UPDATE_STARTED_PREFIX'} . $release_version . $SL{'UPDATES.INFO_UPDATE_STARTED_SUFFIX'}; 
 		LOGOK $joutput{'info'};
 		&err;
 		my $download_file = "$download_path/loxberry.$release_version.zip";
@@ -347,7 +347,7 @@ sub check_releases
 	}
 	
 	if ($response->is_error) {
-		$joutput{'error'} = "Error fetching release list: " . $response->code . " " . $response->message;
+		$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_FETCHING_RELEASE_LIST'} . $response->code . " " . $response->message;
 		&err;
 		LOGCRIT $joutput{'error'};
 		exit(1);
@@ -383,7 +383,7 @@ sub check_releases
 			  next;
 		}
 		
-		if (! $release_safe || version->parse($release_version) > version->parse($release_safe->{tag_name})) {
+		if (! $release_safe || version->parse($release_version) > version->parse($release_safe)) {
 			$release_safe = $release;
 		}
 		
@@ -443,7 +443,7 @@ sub check_commits
 	}
 	
 	if ($response->is_error) {
-		$joutput{'error'} = "Error fetching commit list: " . $response->code . " " . $response->message;
+		$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_FETCHING_COMMIT_LIST'} . $response->code . " " . $response->message;
 		&err;
 		LOGCRIT $joutput{'error'};
 		exit(1);
@@ -465,7 +465,7 @@ sub check_commits
 		last;
 	}
 	if (!$commit_date) {
-		$joutput{'error'} = "Could not find any commits. Something went wrong.";
+		$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_NO_COMMITS_FOUND'};
 		&err;
 		LOGCRIT $joutput{'error'};
 		exit(1);
@@ -483,13 +483,13 @@ sub check_commits
 	LOGINF "   Commit key  : $commit_sha";
 	LOGINF "   Commit is newer than installed" if ($commit_new);
 	
-	$joutput{'info'} = "<span style='color:green;'>New commit found</span>" if ($commit_new);
-	$joutput{'info'} = "No new commit found" if (!$commit_new);
+	$joutput{'info'} = "<span style='color:green;'>" . $SL{'UPDATES.INFO_NEW_COMMIT_FOUND'} . "</span>" if ($commit_new);
+	$joutput{'info'} = "<span style='color:red;'>" . $SL{'UPDATES.INFO_NO_NEW_COMMIT_FOUND'} . "</span>" if (!$commit_new);
 	$joutput{'release_new'} = 1 if ($commit_new);
 	$joutput{'release_version'} = $commit_sha;
 	$joutput{'release_name'} = "$commit_message" if ($commit_new);
 	$joutput{'release_name'} = "<span style='color:gray;'>$commit_message</span>" if (!$commit_new);
-	$joutput{'release_body'} = "commited by $commit_by";
+	$joutput{'release_body'} = $SL{'UPDATES.INFO_COMMITED_BY'} . " $commit_by";
 	$joutput{'published_at'} = $commit_date;
 	
 	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
@@ -518,13 +518,15 @@ sub check_commits
 		my $pids = `pidof loxberryupdate.pl`;
 		# LOGINF "PIDOF LENGTH: " . length($pids) . "\n";
 		if (length($pids) > 0) {
-			$joutput{'info'} = "It seems that another update is currently running. Update request was stopped.";
+			$joutput{'info'} = $SL{'UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING'};
 			&err;
 			LOGCRIT $joutput{'info'};
 			exit(1);
 		} 
 		LOGOK "No other update running.";			
-		$joutput{'info'} = "Update to latest commit started. See update logfile for details.";
+
+
+		$joutput{'info'} = $SL{'UPDATES.INFO_UPDATE_COMMIT_STARTED'};
 		LOGOK $joutput{'info'};
 		&err;
 		LOGINF "Starting download procedure for $download_file...";
