@@ -76,7 +76,6 @@ sub changesecurepin
 #####################################################
 
 # Only works as root (loxberry cannot access shadow file)
-# Need to be in an extra file, therefore not used
 
 sub check_current_passwd 
 {
@@ -103,7 +102,7 @@ sub check_current_passwd
 	}
 
 	if (!$founduser) {
-		# print STDERR "User not found\n";
+		print "User not found\n";
 		return(2);
 	}
 
@@ -111,11 +110,11 @@ sub check_current_passwd
 
 	my $crypt_test = crypt($pass, $foundencpass);
 
-	print STDERR "Shadow : $foundencpass\n";
-	print STDERR "Entered: $crypt_test\n";
+	# print STDERR "Shadow : $foundencpass\n";
+	# print STDERR "Entered: $crypt_test\n";
 
 	if ($foundencpass ne $crypt_test) {
-		print STDERR "Wrong password\n";
+		print "Wrong password\n";
 		return(1);
 	}
 	return(0);
