@@ -21,7 +21,7 @@ use LoxBerry::System;
 use LoxBerry::Web;
 use Getopt::Long qw(GetOptions);
 use List::Util qw(max min); 
-use File::Path qw(make_path);
+use File::Path qw(make_path rmtree);
 
 my $force;
 
@@ -202,5 +202,30 @@ foreach my $file (@files) {
 
 if (-e "$reboot_required_file.backup") {
 	rename "$reboot_required_file.backup", "$reboot_required_file";
+}
+
+delete_directory ('/tmp/templatecache');
+
+
+
+sub delete_directory
+{
+	my ($delfolder) = @_;
+	
+	if (-d $delfolder) {   
+		rmtree($delfolder, {error => \my $err});
+		if (@$err) {
+			for my $diag (@$err) {
+				my ($file, $message) = %$diag;
+				if ($file eq '') {
+					# LOGERR "     Delete folder: general error: $message";
+				} else {
+					# LOGERR "     Delete folder: problem unlinking $file: $message";
+				}
+			}
+		return undef;
+		}
+	}
+	return 1;
 }
 
