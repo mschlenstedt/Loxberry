@@ -389,7 +389,8 @@ sub save {
 	$ethtmpl->output(print_to => $fh);
 	close $fh;
 	$ethtmpl = undef;
-					
+	reboot_required($SL{'NETWORK.CHANGE_REBOOT_REQUIRED_MSG'});
+	
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 	$maintemplate->param("NEXTURL", "/admin/system/index.cgi?form=system");
 
