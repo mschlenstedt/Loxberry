@@ -57,6 +57,9 @@
 				<a data-role="button" data-inline="true" data-icon="delete" data-mini="true"
 				href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>&nbsp;
+				<a data-role="button" data-inline="true" data-icon="gear" data-mini="true"
+				href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/">
+				<TMPL_VAR PLUGININSTALL.UI_LABEL_PLUGIN_CFG></a>&nbsp;
 				</td>
 			</tr>
 			</TMPL_LOOP>

@@ -1,58 +1,80 @@
 #only works in bash scripting
 
 function LOGDEB { 
-	if [ "$LOGLVL" -gt 6 ]
+	if [ "$LOGLEVEL" -gt 6 ]
 	then
-		echo "<DEBUG>$@" >> $LOGFILE
+		if [ -z ${ADDTIME+x} ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
+		echo "<DEBUG> $CURRTIME$@" >> $LOGFILE
 	fi
 }
 function LOGINF { 
-	if [ "$LOGLVL" -gt 5 ]
+	if [ "$LOGLEVEL" -gt 5 ]
 	then
-		echo "<INFO>$@" >> $LOGFILE
+		if [ -z ${ADDTIME+x} ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
+		echo "<INFO> $CURRTIME$@" >> $LOGFILE
 	fi
 }
 function LOGOK { 
-	if [ "$LOGLVL" -gt 4 ]
+	if [ "$LOGLEVEL" -gt 4 ]
 	then
-		echo "<OK>$@" >> $LOGFILE
+		if [ -z ${ADDTIME+x} ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
+		echo "<OK> $CURRTIME$@" >> $LOGFILE
 	fi
 }
 function LOGWARN { 
-	if [ "$LOGLVL" -gt 3 ]
+	if [ "$LOGLEVEL" -gt 3 ]
 	then
-		echo "<WARNING>$@" >> $LOGFILE
+		if [ -z ${ADDTIME+x} ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
+		echo "<WARNING> $CURRTIME$@" >> $LOGFILE
 	fi
 }
 function LOGERR { 
-	if [ "$LOGLVL" -gt 2 ]
+	if [ "$LOGLEVEL" -gt 2 ]
 	then
-		echo "<ERROR>$@" >> $LOGFILE
+		if [ -z ${ADDTIME+x} ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
+		echo "<ERROR> $CURRTIME$@" >> $LOGFILE
 	fi
 }
 function LOGCRIT { 
-	if [ "$LOGLVL" -gt 1 ]
+	if [ "$LOGLEVEL" -gt 1 ]
 	then
-		echo "<CRITICAL>$@" >> $LOGFILE
+		if [ -z ${ADDTIME+x} ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
+		echo "<CRITICAL> $CURRTIME$@" >> $LOGFILE
 	fi
 }
 function LOGALERT { 
-	if [ "$LOGLVL" -gt 0 ]
+	if [ "$LOGLEVEL" -gt 0 ]
 	then
-		echo "<ALERT>$@" >> $LOGFILE
+		if [ -z ${ADDTIME+x} ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
+		echo "<ALERT> $CURRTIME$@" >> $LOGFILE
 	fi
 }
 function LOGEMERGE { 
-	if [ "$LOGLVL" -ge 0 ]
+	if [ "$LOGLEVEL" -ge 0 ]
 	then
-		echo "<EMERGE>$@" >> $LOGFILE
+		if [ -z ${ADDTIME+x} ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
+		echo "<EMERGE> $CURRTIME$@" >> $LOGFILE
 	fi
 }
-function LOGSTART { 
-	
+function LOGSTART {
+	if [ -n "$LOGPACKAGE" ] && [ -n "$LOGNAME" ]
+	then
+		echo "$LOGNAME:$LOGPACKAGE:$@\n"
+		LOG=(`./initlog.pl --name=$LOGNAME --package=$LOGPACKAGE --message=\"$@\"`)
+		LOGFILE=${LOG[0]//\"}
+		if [ -z ${LOGLEVEL+x} ];then LOGLEVEL=${LOG[1]}; fi
+		if [ -z ${LOGFILE+x} ] || [ -z ${LOGLEVEL} ]
+		then
+			echo "Log could not be startet" 1>&2
+			exit 1
+		fi
+	else
+		echo "Log could not be set because LOGPACKAGE and/or LOGNAME is not given" 1>&2
+		exit 1
+	fi
 }
 function LOGEND {
-	if [ "$LOGLVL" -ge -1 ]
+	if [ "$LOGLEVEL" -ge -1 ]
 	then
 		echo "<LOGEND>$@" >> $LOGFILE
 		echo "<LOGEND>"$(date +"%d.%m.%Y %H:%M:%S")" TASK FINISHED" >> $LOGFILE

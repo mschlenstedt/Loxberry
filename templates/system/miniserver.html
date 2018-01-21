@@ -22,7 +22,7 @@
 			<label for="miniserverfoldername<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSNAME></label>
 		</td>
 		<td>
-			<input value="<TMPL_VAR MSNAME>" id='miniserverfoldername<TMPL_VAR MSNO>' name='miniserverfoldername<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSNAME>" data-validation-rule="^([A-Za-z0-9]){1,64}$">
+			<input value="<TMPL_VAR MSNAME>" id='miniserverfoldername<TMPL_VAR MSNO>' name='miniserverfoldername<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSNAME>" data-validation-rule="^([A-Za-z0-9\_\-]){1,64}$">
 		</td>
 		<td>
 		</td>
