@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.3.6";
+our $VERSION = "0.3.5.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -802,7 +802,7 @@ sub readlanguage
 		# Need to re-parse the name
 		print STDERR "This is a plugin call\n" if ($DEBUG);
 		$langfile =~ s/\.[^.]*$//;
-		$langfile  = "$LoxBerry::System::lbptemplatedir/$langfile";
+		$langfile  = "$LoxBerry::System::lbptemplatedir/lang/$langfile";
 		
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
@@ -816,7 +816,7 @@ sub readlanguage
 				Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
 			}
 			if (! %L) {
-				Carp::carp ("ERROR: Could not read any language phrases.\n");
+				Carp::carp ("ERROR: Could not read any language phrases from $langfile.\n");
 			}
 		}
 		if ($template) {
