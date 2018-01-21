@@ -386,7 +386,7 @@ class LBSystem
 		
 	#	print ("READ miniservers FROM DISK\n");
 
-		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_TYPED) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
+		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
 		$cfgwasread = 1;
 		// error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
 		

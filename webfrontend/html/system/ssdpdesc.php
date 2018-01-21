@@ -1,6 +1,6 @@
 <?php
 require_once "loxberry_system.php";
-$ini = parse_ini_file(LBSCONFIGDIR . "/general.cfg",TRUE);
+$ini = parse_ini_file(LBSCONFIGDIR . "/general.cfg",TRUE,INI_SCANNER_RAW);
 if ( lbfriendlyname() === "") {
 	$lbname = lbhostname();
 } else {
