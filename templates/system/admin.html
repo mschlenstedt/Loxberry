@@ -162,7 +162,6 @@ $( document ).ready(function()
 	<p><TMPL_VAR ADMIN.SAVE_OK_INFO></p>
 	<table border=0 cellpadding=10>
 
-	<TMPL_IF ADMINOK>
 		<tr>
 			<td>
 				<b><TMPL_VAR ADMIN.SAVE_OK_WEB_ADMIN_AREA></b>
@@ -171,7 +170,7 @@ $( document ).ready(function()
 				<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b><TMPL_VAR ADMINUSER></b>
 			</td>
 			<td>
-				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS1></b>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS></b>
 			</td>
 		</tr>
 		<tr>
@@ -182,13 +181,10 @@ $( document ).ready(function()
 				<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b>loxberry</b>
 			</td>
 			<td>
-				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS1></b>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS></b>
 			</td>
 		</tr>
-	</TMPL_IF>
-
-	<TMPL_IF SQLOK>
-		<tr>
+		<!--<tr>
 			<td>
 				<b><TMPL_VAR ADMIN.SAVE_OK_COL_MYSQL></b>
 			</td>
@@ -196,24 +192,20 @@ $( document ).ready(function()
 				<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b>root</b>
 			</td>
 			<td>
-				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS1></b>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ADMINPASS></b>
 			</td>
-		</tr>
-	</TMPL_IF>
-
-	<TMPL_IF SECUREPINOK>
+		</tr>-->
 		<tr>
 			<td>
 				<b><TMPL_VAR ADMIN.SAVE_OK_COL_SECUREPIN></b>
 			</td>
 			<td>
-				<b><TMPL_VAR SECUREPIN1></b>
+				<b><TMPL_VAR SECUREPIN></b>
 			</td>
 			<td>
 				&nbsp;
 			</td>
 		</tr>
-	</TMPL_IF>
 
 	<TMPL_IF ERRORS>
 						<TMPL_VAR ADMIN.SAVE_ERR_GENERAL>

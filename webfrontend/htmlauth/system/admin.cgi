@@ -177,7 +177,7 @@ sub save {
 	$R::securepin2 if (0);
 	$R::securepinold if (0);
 	
-	$adminuserold		  = $R::adminuserold;
+	$adminuserold         = $R::adminuserold;
 	$adminuser            = trim($R::adminuser);
 	$adminpass1           = $R::adminpass1;
 	$adminpass2           = $R::adminpass2;
@@ -221,7 +221,6 @@ sub save {
 			$error = $SL{'ADMIN.MSG_VAL_USERNAME_ERROR'};
 			&error;
 		}
-	
 	}
 	
 	# Validate passwords
@@ -254,11 +253,32 @@ sub save {
 	if (!$securepin1 && !$adminpass1 && $adminuserold eq $adminuser) {
 		$error = $SL{'ADMIN.SAVE_ERR_NOTHING_TO_CHANGE'};
 		&error;
+	}
 	
 	##
 	## AT THIS STAGE, ALL REQUIRED FIELDS ARE VALIDATED
 	##
 	
+	##
+	## User wants to change the username but NOT the password
+	##
+	if ($adminuser && !$adminpass1) {
+	
+		# Save Username/Password for Webarea
+		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
+		my $exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
+			# &error;
+		} else {
+			$maintemplate->param("WEBOK", 1);
+		} 
+
+	}
+	
+	##
+	## User wants to change the password (and maybe also the username):
+	##
 	if ($adminpass1) {
 		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
 		$exitcode  = $? >> 8;
@@ -270,7 +290,6 @@ sub save {
 		} else {
 			$maintemplate->param("ADMINOK", 1);
 		}	
-	}
 
 		# Try to set new SAMBA passwords for user "loxberry"
 
@@ -285,9 +304,9 @@ sub save {
 			# &error;
 			# exit;
 		} else {
-			$maintemplate->param("ADMINOK", 1);
 			$maintemplate->param("SAMBAOK", 1);
 		}	
+
 		# Set MYSQL Password
 		# This only works if the initial password is still valid
 		# (password: "loxberry")
@@ -314,39 +333,22 @@ sub save {
 		#  $maintemplate->param("SQLOK", 1);
 		#  print STDERR "sqlerr eq 0 - OK\n";
 		#}
-	}
 
-	# Save Username/Password for Webarea
-	if ($adminpass1) {
-		$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
+		# Save Username/Password for Webarea
+		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
 			# &error;
+		} else {
+			$maintemplate->param("WEBOK", 1);
 		} 
 		
-		
-		# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
-		#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
-		# flock(F,2);
-		# print F "$adminpasscrypted";
-		# flock(F,8);
-		#close(F);
-	} else {
-		$output = qx(/usr/bin/htpasswd -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
-		my $exitcode  = $? >> 8;
-		if ($exitcode != 0) {
-			$error .= "htpasswd htusers.dat adminuser adminpassold Errorcode $exitcode<br>";
-			#&error;
-		} 
-		# For Apache: /usr/bin/htpasswd -n -b -B -C 5 $adminuser $adminpass1
-		#open(F,">$lbhomedir/config/system/htusers.dat") || die "Missing file: config/system/htusers.dat";
-		# flock(F,2);
-		# print F "$adminpasscrypted";
-		# flock(F,8);
-		#close(F);
 	}
 
+	##
+	## User wants to change the SecurePIN:
+	##
 	if ($securepin1) {
 		$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl changesecurepin $securepinold $securepin1);
 		my $exitcode  = $? >> 8;
@@ -358,18 +360,25 @@ sub save {
 			print STDERR "credentialshandler.pl changesecurepin securepin1 = 0 - OK\n";
 		}
 	}
-
+	
+	##
+	## Overview of new passwords:
+	##
 	if ($adminpass1) {
 		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
-		$creditconsole = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
+		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $adminpass1\r\n";
+		$maintemplate->param( "ADMINPASS", $adminpass1 );
 	} else {
-		$creditwebadmin = "";
-		$creditconsole = "";
+		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpassold\r\n";
+		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $adminpassold\r\n";
+		$maintemplate->param( "ADMINPASS", $adminpassold );
 	}
 	if ($securepin1) {
-		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t\t\t$securepin1\r\n";
+		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t$securepin1\r\n";
+		$maintemplate->param( "SECUREPIN", $securepin1 );
 	} else {
-		$creditsecurepin = "";
+		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t$securepinold\r\n";
+		$maintemplate->param( "SECUREPIN", $securepinold );
 	}
 
 	my $credentialstxt = "$SL{'ADMIN.SAVE_OK_INFO'}\r\n" .  
@@ -381,8 +390,6 @@ sub save {
 	$credentialstxt=encode_base64($credentialstxt);
 
 	$maintemplate->param( "ADMINUSER", $adminuser );
-	$maintemplate->param( "ADMINPASS1", $adminpass1 );
-	$maintemplate->param( "SECUREPIN1", $securepin1 );
 	$maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
 	
 	$maintemplate->param( "ERRORS", $error);
