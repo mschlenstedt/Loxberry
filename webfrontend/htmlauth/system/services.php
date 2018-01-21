@@ -319,7 +319,11 @@ function save()
 		</center>
 	<?php
 	if (isset($ssdpstate_changed) && $ssdpstate_changed == 1) {
-		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper ssdpd restart");
+		if ($ssdpoff) {
+			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper ssdpd stop");
+		} else {
+			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper ssdpd restart");
+		}
 	} else if (isset($webserver_changed) && $webserver_changed == True) {
 		$newhref = "http";
 		if ($_SERVER['HTTPS']) { $newhref .= "s"; }
