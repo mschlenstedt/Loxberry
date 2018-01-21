@@ -22,10 +22,9 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 
-use CGI::Carp qw(fatalsToBrowser);
+use URI::Escape;
 use CGI qw/:standard/;
 use LWP::UserAgent;
-use Config::Simple;
 use Socket qw( inet_aton );
 use warnings;
 use strict;
@@ -75,7 +74,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.3.2";
+my $version = "0.3.5.1";
 
 print STDERR "============= network.cgi ================\n";
 print STDERR "lbhomedir: $lbhomedir\n";
@@ -94,6 +93,16 @@ my $maintemplate = HTML::Template->new(
 			);
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
+
+# SSID and WPA-Key are URI-Encoded in general.cfg, therefore send it unencoded
+# to the template
+$maintemplate->param ( 
+	'NETWORK.SSID' => uri_unescape($cfg->param('NETWORK.SSID')),
+	'NETWORK.WPA' => uri_unescape($cfg->param('NETWORK.WPA')),
+);
+					
+
+
 #########################################################################
 # Parameter
 #########################################################################
@@ -142,77 +151,6 @@ my $ipno = qr/
     |
     [1-9]?\d
 /x;
-
-sub ip2bin
-{
-	# Convert IP address like 192.168.178.50 to binary like 11000000 10101000 10110010 00110010
-  my ($ip, $delimiter) = @_;
-  return join($delimiter,  map 
-        substr(unpack("B32",pack("N",$_)),-8), 
-        split(/\./,$ip));
-}
-
-sub ip2long($)
-{
-	return( unpack( 'N', inet_aton(shift) ) );
-}
-
-sub in_subnet($$)
-{
-	my $ip = shift;
-	my $subnet = shift;
-  print STDERR "Validating $ip with $subnet\n";
-	
-	my $ip_long = ip2long( $ip );
-
-	if( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$| )
-	{
-		my $subnet = ip2long( $1 );
-		my $mask = ip2long( $2 );
-
-		if( ($ip_long & $mask)==$subnet )
-		{
-			return( 1 );
-		}
-	}
-	elsif( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})$| )
-	{
-		my $subnet = ip2long( $1 );
-		my $bits = $2;
-		my $mask = -1<<(32-$bits);
-
-		$subnet&= $mask;
-
-		if( ($ip_long & $mask)==$subnet )
-		{
-			return( 1 );
-		}
-	}
-	elsif( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.)(\d{1,3})-(\d{1,3})$| )
-	{
-		my $start_ip = ip2long( $1.$2 );
-		my $end_ip = ip2long( $1.$3 );
-
-		if( $start_ip<=$ip_long and $end_ip>=$ip_long )
-		{
-			return( 1 );
-		}
-	}
-	elsif( $subnet=~m|^[\d\*]{1,3}\.[\d\*]{1,3}\.[\d\*]{1,3}\.[\d\*]{1,3}$| )
-	{
-		my $search_string = $subnet;
-
-		$search_string=~s/\./\\\./g;
-		$search_string=~s/\*/\.\*/g;
-
-		if( $ip=~/^$search_string$/ )
-		{
-			return( 1 );
-		}
-	}
-
-	return( 0 );
-}
 
 if ($saveformdata) 
 {
@@ -390,8 +328,8 @@ sub save {
 
 	# Write configuration file(s)
 	$cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
-	$cfg->param("NETWORK.SSID", "$netzwerkssid");
-	$cfg->param("NETWORK.WPA", "$netzwerkschluessel");
+	$cfg->param("NETWORK.SSID", uri_escape($netzwerkssid));
+	$cfg->param("NETWORK.WPA", uri_escape($netzwerkschluessel));
 	$cfg->param("NETWORK.TYPE", "$netzwerkadressen");
 	$cfg->param("NETWORK.IPADDRESS", "$netzwerkipadresse");
 	$cfg->param("NETWORK.MASK", "$netzwerkipmaske");
@@ -472,6 +410,81 @@ exit;
 # Subroutines
 #
 #####################################################
+
+#####################################################
+# IP and subnet checking subs 
+#####################################################
+
+sub ip2bin
+{
+	# Convert IP address like 192.168.178.50 to binary like 11000000 10101000 10110010 00110010
+  my ($ip, $delimiter) = @_;
+  return join($delimiter,  map 
+        substr(unpack("B32",pack("N",$_)),-8), 
+        split(/\./,$ip));
+}
+
+sub ip2long
+{
+	return( unpack( 'N', inet_aton($_) ) );
+}
+
+sub in_subnet
+{
+	my ($ip, $subnet) = @_;
+	
+	print STDERR "Validating $ip with $subnet\n";
+	
+	my $ip_long = ip2long( $ip );
+
+	if( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$| )
+	{
+		my $subnet = ip2long( $1 );
+		my $mask = ip2long( $2 );
+
+		if( ($ip_long & $mask)==$subnet )
+		{
+			return( 1 );
+		}
+	}
+	elsif( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})$| )
+	{
+		my $subnet = ip2long( $1 );
+		my $bits = $2;
+		my $mask = -1<<(32-$bits);
+
+		$subnet&= $mask;
+
+		if( ($ip_long & $mask)==$subnet )
+		{
+			return( 1 );
+		}
+	}
+	elsif( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.)(\d{1,3})-(\d{1,3})$| )
+	{
+		my $start_ip = ip2long( $1.$2 );
+		my $end_ip = ip2long( $1.$3 );
+
+		if( $start_ip<=$ip_long and $end_ip>=$ip_long )
+		{
+			return( 1 );
+		}
+	}
+	elsif( $subnet=~m|^[\d\*]{1,3}\.[\d\*]{1,3}\.[\d\*]{1,3}\.[\d\*]{1,3}$| )
+	{
+		my $search_string = $subnet;
+
+		$search_string=~s/\./\\\./g;
+		$search_string=~s/\*/\.\*/g;
+
+		if( $ip=~/^$search_string$/ )
+		{
+			return( 1 );
+		}
+	}
+
+	return( 0 );
+}
 
 #####################################################
 # Error
