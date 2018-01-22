@@ -20,6 +20,7 @@
 	<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
 	<script src="/system/scripts/setup.js"></script>
 	<script src="/system/scripts/validate.js"></script>
+	<script src="/system/scripts/browser.js"></script>
 	<script>
 		// Disable JQUERY DOM Caching
 		$.mobile.page.prototype.options.domCache = false;
@@ -29,8 +30,6 @@
 		});
 		// Disable caching of AJAX responses
 		$.ajaxSetup ({ cache: false });
-		var is_chrome = ((navigator.userAgent.toLowerCase().indexOf('chrome') > -1) &&(navigator.vendor.toLowerCase().indexOf("google") > -1));
-		$(document).ready( function() { if ( is_chrome ) { $( '.display_chome_only' ).fadeIn(100); } });
 	</script>
 </head>
 <body>
