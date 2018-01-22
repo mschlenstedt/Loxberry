@@ -96,7 +96,7 @@ if ( $R::action eq "install" ) {
     &logfail;
   }
 }
-if ( $R::action eq "uninstall" || $R::action ne "autoupdate" ) {
+if ( $R::action eq "uninstall" || $R::action eq "autoupdate" ) {
   if ( !$R::pid ) {
     $message =  "$SL{'PLUGININSTALL.ERR_NOPID'}";
     &logfail;
@@ -557,6 +557,8 @@ close (F);
 $message = $SL{'PLUGININSTALL.INF_SHADOWDB'};
 &loginfo;
 system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.dat- 2>&1");
+&setrights ("644", "0", "$lbsdatadir/plugindatabase.dat-", "PLUGIN DATABASE");
+&setowner ("root", "0", "$lbsdatadir/plugindatabase.dat-", "PLUGIN DATABASE");
 
 # Starting installation
 
