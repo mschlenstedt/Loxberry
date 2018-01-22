@@ -41,12 +41,11 @@ LOGINF "Executing user of $0 is $curruser";
 my %SL = LoxBerry::System::readlanguage();
 # LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
 
-exit;
 
 my $lbversion;
 if (version::is_lax(LoxBerry::System::lbversion())) {
 	$lbversion = version->parse(LoxBerry::System::lbversion());
-	LOGINF "   Current LoxBerry version: $lbversion";
+	LOGINF "Current LoxBerry version: $lbversion";
 
 } else {
 	$joutput{'error'} = "Cannot read current version. Is this a real version string? Exiting.";
@@ -55,25 +54,66 @@ if (version::is_lax(LoxBerry::System::lbversion())) {
 	exit(1);
 }
 
+my @plugins = LoxBerry::System::get_plugins();
 
-if (version::is_lax($min_version)) {
-	$min_version = version->parse($min_version);
-	LOGINF "   Updates limited from : $min_version";
-} else {
-	$joutput{'error'} = "Minimal version min_version ($min_version) not a version. Is this a real version string? Exiting.";
-	&err;
-	LOGCRIT $joutput{'error'};
-	exit(1);
+foreach (@plugins) {
+
+	my $notify;
+	my $prerelease;
+	my $release;
+
+	LOGINF "$_->{PLUGINDB_NAME}: Found plugin $_->{PLUGINDB_TITLE}.";
+
+	if (!$_->{PLUGINDB_AUTOUPDATE}) {
+		LOGINF "$_->{PLUGINDB_NAME}: Provide no automatic updates. Skipping.";
+		next;
+	}
+	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
+		LOGINF "$_->{PLUGINDB_NAME}: Automatic updates are disabled. Skipping.";
+		next;
+	}
+	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "2") {
+		LOGINF "$_->{PLUGINDB_NAME}: NOTIFY about new versions is enabled.";
+		$notify = 1;
+	}
+	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "3") {
+		LOGINF "$_->{PLUGINDB_NAME}: RELEASES enabled.";
+		$notify = 1;
+		$release = 1;
+	}
+	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "4") {
+		LOGINF "$_->{PLUGINDB_NAME}: PRERELEASES enabled.";
+		$notify = 1;
+		$release = 1;
+		$prerelease = 1;
+	}
+	else {
+		LOGINF "$_->{PLUGINDB_NAME}: Unknown option ($_->{PLUGINDB_AUTOUPDATE}). Skipping.";
+		next;
+	}
+
 }
-if (version::is_lax($max_version)) {
-	$max_version = version->parse($max_version);
-	LOGINF "   Updates limited to   : $max_version";
-} else {
-	$joutput{'error'} = "Maximal version max_version ($max_version) not a version. Is this a real version string? Exiting.";
-	&err;
-	LOGCRIT $joutput{'error'};
-	exit(1);
-}
+
+exit;
+
+#if (version::is_lax($min_version)) {
+#	$min_version = version->parse($min_version);
+#	LOGINF "   Updates limited from : $min_version";
+#} else {
+#	$joutput{'error'} = "Minimal version min_version ($min_version) not a version. Is this a real version string? Exiting.";
+#	&err;
+#	LOGCRIT $joutput{'error'};
+#	exit(1);
+#}
+#if (version::is_lax($max_version)) {
+#	$max_version = version->parse($max_version);
+#	LOGINF "   Updates limited to   : $max_version";
+#} else {
+#	$joutput{'error'} = "Maximal version max_version ($max_version) not a version. Is this a real version string? Exiting.";
+#	&err;
+#	LOGCRIT $joutput{'error'};
+#	exit(1);
+#}
 
 if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	LOGINF "Start checking releases...";
