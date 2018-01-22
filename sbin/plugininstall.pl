@@ -553,6 +553,11 @@ close (F);
 # Sort Plugindatabase
 &sort_plugins;
 
+# Create shadow plugindatabase.dat
+$message = $SL{'PLUGININSTALL.INF_SHADOWDB'};
+&loginfo;
+system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.dat- 2>&1");
+
 # Starting installation
 
 # Executing preroot script
