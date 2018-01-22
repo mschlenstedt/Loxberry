@@ -51,10 +51,19 @@ if (!-e "$lbsconfigdir/loxberryid.cfg" && $sendstat) {
 # the randomly ID will be send. No personal data, no data of your LoxBerry.
 if ($sendstat) {
 	
-	GetOptions ('delay' => \$delay);
-	my $random = int(rand(3600));
-	if ($delay) {
-		LOGINF "Called with delay - sleeping randomly for $random seconds...";
+	GetOptions (
+		'delay=i' => \$delay,
+		'wait=i' => \$wait,
+	);
+	
+	if ($wait && $wait > 0) {
+		LOGINF "Called with wait time - sleeping for $wait seconds...";
+		sleep($wait);
+	}
+	
+	if ($delay && $delay > 0) {
+		my $random = int(rand($delay));
+		LOGINF "Called with delay to max. $delay seconds - sleeping randomly for $random seconds...";
 		sleep($random);
 		LOGINF "Continuing.";
 	}
