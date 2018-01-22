@@ -576,9 +576,9 @@ sub lbuhistory
 		$update{'LOG_ID'} = $dateobj->strftime("%Y%m%d%H%M%S");;
 		open my $file, '<', "$lbulogfiledir/$direntry"; 
 		my $firstLine = <$file>; 
-		my $firstLine = <$file>; 
-		my $firstLine = <$file>; 
-		my $firstLine = <$file>; 
+		$firstLine = <$file>; 
+		$firstLine = <$file>; 
+		$firstLine = <$file>; 
 		close $file;
 		$update{'FIRSTLINE'} = "$firstLine";
 		push(@updateslist, \%update);
