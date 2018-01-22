@@ -217,7 +217,7 @@ sub readfile
 	mes "readinputfile SRC";
 	my %src = readinputfile($srcfile, "SRC");
 	mes "readinputfile DEST";
-	my %dest = readinputfile($destfile, "DEST");
+	my %dest = readinputfile($destfile, "DEST", 'fixerrors');
 	my @merged;
 	my $tabindex=100;
 	
@@ -253,7 +253,7 @@ sub readfile
 
 sub readinputfile
 {
-	my ($filename, $keyprefix) = @_;
+	my ($filename, $keyprefix, $fixerrors) = @_;
 	return undef if (! -e $filename);
 	return undef if (! $keyprefix);
 	
@@ -286,9 +286,30 @@ sub readinputfile
 		
 		my ($key, $phrase) = split(/=/, $cl, 2);
 		$key = trim($key);
+		my $fullkey = "$currsection.$key";
 		$phrase = trim($phrase);
 		
-		if (substr($phrase, -1, 2) eq '";') {
+		# Do some checks
+		my $doublecount = $phrase =~ tr/\"//; 
+		my $commacount = $phrase =~ tr/,//; 
+		my $escapecount = $phrase =~ tr/\\//;
+		my $extradoublecount = $doublecount;
+		$extradoublecount-- if substr($phrase, 0, 1) eq '"';
+		$extradoublecount-- if substr($phrase, -1, 1) eq '"';
+		
+		# How many double-quotes?
+		$result{$fullkey}{$keyprefix . '_' . 'WARNING'} .= "Uneven double quotation marks<br>" if ($doublecount%2 == 1);
+		$result{$fullkey}{$keyprefix . '_' . 'WARNING'} .= "Double quotation marks required if comma in string<br>" if ($commacount > 0 && $doublecount < 2 && !$fixerrors);
+		$result{$fullkey}{$keyprefix . '_' . 'WARNING'} .= "No semicolon allowed at the end<br>" if (substr($phrase, -2, 2) eq '";' && !$fixerrors);
+		#$result{$fullkey}{$keyprefix . '_' . 'WARNING'} .= "Double quotation marks in phrase need to be escaped with backslash<br>" if ($extradoublecount > 0);
+		#$result{$fullkey}{$keyprefix . '_' . 'WARNING'} .= "Backslashes need to be escaped with backslash<br>" if ($escapecount > 0);
+		
+		
+		
+		
+		
+		
+		if (substr($phrase, -2, 2) eq '";' && $fixerrors) {
 			# Some programmer used "; - strip semicolon
 			$phrase = substr($phrase, 0, -1);
 		}
@@ -298,17 +319,16 @@ sub readinputfile
 			$phrase = substr($phrase, 1, -1);
 		}
 			
-		my $fullkey = "$currsection.$key";
+		
 		
 		$result{$fullkey}{'KEY'} = $key;
 		$result{$fullkey}{'SECTION'} = $currsection;
 		$result{$fullkey}{$keyprefix . '_' . 'TEXT'} = $phrase;
 		$result{$fullkey}{$keyprefix . '_' . 'LINENUMBER'} = $i;
 					
-		# Do some checks
-		# How many double-quotes?
-		my $doubleqcount = $phrase =~ tr/\"//; 
-		$result{$fullkey}{$keyprefix . '_' . 'WARNING'} = "Uneven doublequotes" if ($doubleqcount%2 == 1);
+		
+		
+		
 	}
 	return %result;
 	

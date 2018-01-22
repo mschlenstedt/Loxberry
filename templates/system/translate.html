@@ -188,15 +188,15 @@ div.greenTable {
 		<TMPL_VAR KEY>
 	</div>
 	<div class="divTableCell CellText" id="src_<TMPL_VAR KEY>"><TMPL_VAR SRC_TEXT>
-		<TMPL_IF SRC_TEXT_WARNING>
-			<div class="langerror"><TMPL_VAR SRC_TEXT_WARNING></div>
+		<TMPL_IF SRC_WARNING>
+			<div class="langerror"><TMPL_VAR SRC_WARNING></div>
 		</TMPL_IF>
 	</div>
 	<div class="divTableCell CellTranslation" id="dstdiv_<TMPL_VAR KEY>">
 		<textarea class="translation" name="<TMPL_VAR KEY>" id="<TMPL_VAR KEY>" tabindex="<TMPL_VAR TABINDEX>" rows="1" cols="50"><TMPL_VAR DEST_TEXT></textarea>
 		<input type="hidden" id="orig_<TMPL_VAR KEY>" name="orig_<TMPL_VAR KEY>" value="<TMPL_VAR DEST_TEXT>">
-		<TMPL_IF DEST_TEXT_WARNING>
-			<div class="langerror"><TMPL_VAR DEST_TEXT_WARNING></div>
+		<TMPL_IF DEST_WARNING>
+			<div class="langerror"><TMPL_VAR DEST_WARNING></div>
 		</TMPL_IF>
 	</div>
 	<div class="divTableCell CellButtons">
