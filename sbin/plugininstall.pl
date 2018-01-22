@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "0.3.3.2";
+my $version = "0.3.3.3";
 
 ##########################################################################
 # Variables / Commandline
@@ -82,7 +82,7 @@ our %SL = LoxBerry::System::readlanguage(undef);
 my $message;
 my @errors;
 my @warnings;
-if ( $R::action ne "install" && $R::action ne "uninstall" ) {
+if ( $R::action ne "install" && $R::action ne "uninstall" && $R::action ne "autoupdate" ) {
   $message =  "$SL{'PLUGININSTALL.ERR_ACTION'}";
   &logfail;
 }
@@ -91,12 +91,12 @@ if ( $R::action eq "install" ) {
     $message =  "$SL{'PLUGININSTALL.ERR_NOFOLDER_OR_ZIP'}";
     &logfail;
   }
-  if ( !$R::pin ) {
+  if ( !$R::pin && $R::action ne "autoupdate" ) {
     $message =  "$SL{'PLUGININSTALL.ERR_NOPIN'}";
     &logfail;
   }
 }
-if ( $R::action eq "uninstall" ) {
+if ( $R::action eq "uninstall" || $R::action eq "autoupdate" ) {
   if ( !$R::pid ) {
     $message =  "$SL{'PLUGININSTALL.ERR_NOPID'}";
     &logfail;
@@ -107,7 +107,7 @@ if ( $R::action eq "uninstall" ) {
 my $zipmode = defined $R::file ? 1 : 0;
 
 # Which Action should be perfomred?
-if ($R::action eq "install" ) {
+if ($R::action eq "install" || $R::action eq "autoupdate" ) {
   &install;
 }
 if ($R::action eq "uninstall" ) {
@@ -165,11 +165,32 @@ exit (0);
 sub install {
 
 # Check secure PIN
-my $pin = $R::pin;
+if ( $R::action ne "autoupdate" ) {
+	my $pin = $R::pin;
 
-if ( LoxBerry::System::check_securepin($pin) ) {
-	$message =  "$SL{'PLUGININSTALL.ERR_SECUREPIN_WRONG'}";
-	&logfail;
+	if ( LoxBerry::System::check_securepin($pin) ) {
+		$message =  "$SL{'PLUGININSTALL.ERR_SECUREPIN_WRONG'}";
+		&logfail;
+	}
+}
+
+# Check if plugin is installed (autoupdate)
+if ( $R::action eq "autoupdate" ) {
+
+	my $pid = $R::pid;
+	my $found = 0;
+	my @plugins = LoxBerry::System::get_plugins();
+
+	foreach (@plugins) {
+		if ( $_->{PLUGINDB_MD5_CHECKSUM} eq $pid ) {
+			$found = 1;
+		}
+	}
+	if ( !$found ) {
+	  $message =  "$SL{'PLUGININSTALL.ERR_PIDNOTEXIST'}";
+	  &logfail;
+	}
+
 }
 
 # Choose random temp filename
@@ -531,6 +552,13 @@ close (F);
 
 # Sort Plugindatabase
 &sort_plugins;
+
+# Create shadow plugindatabase.dat
+$message = $SL{'PLUGININSTALL.INF_SHADOWDB'};
+&loginfo;
+system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.dat- 2>&1");
+&setrights ("644", "0", "$lbsdatadir/plugindatabase.dat-", "PLUGIN DATABASE");
+&setowner ("root", "0", "$lbsdatadir/plugindatabase.dat-", "PLUGIN DATABASE");
 
 # Starting installation
 
