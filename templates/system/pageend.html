@@ -17,7 +17,8 @@
 		<SCRIPT>
 		$( document ).ready(function() 
 		{
-			if ( $(document.body).hasClass("chrome") ) { $( '.display_chome_only' ).show(); } else { $( '.display_chome_only' ).hide(); } 
+			if ( $(document.body).hasClass("chrome") ) { $( '.display_chome_only' ).show(); } else { $( '.display_chome_only' ).hide(); }
+			if ( $(document.body).hasClass("ie11") || $(document.body).hasClass("ie10") ) { $(".footeralignment").css('display','none'); } else { $(".footeralignment").css('display','flex');	 }
 		});
 		</SCRIPT>
 		<!-- /footer -->
