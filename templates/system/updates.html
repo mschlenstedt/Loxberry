@@ -372,18 +372,18 @@ $(document).ready( function () {
 	    <h4 style="width:100%; style="white-space:nowrap;" onclick="readlog<TMPL_VAR LOG_ID> ();"><TMPL_VAR DATESTR> <TMPL_VAR FIRSTLINE></h4>
 	    <div id="Logfile<TMPL_VAR LOG_ID>"></div>
 	    	<script>
-	    		var butons='<a target="_blank" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=bin&format=plain"><img src="/system/images/icons/download.svg"><TMPL_VAR LOGVIEWER.BUTTON_DOWNLOAD></a><a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><img src="/system/images/icons/open_new_win.svg"><TMPL_VAR LOGVIEWER.BUTTON_NEW_WINDOW></a><br>';
+	    		var butons<TMPL_VAR LOG_ID>='<a target="_blank" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=bin&format=plain"><img src="/system/images/icons/download.svg"><TMPL_VAR LOGVIEWER.BUTTON_DOWNLOAD></a><a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><img src="/system/images/icons/open_new_win.svg"><TMPL_VAR LOGVIEWER.BUTTON_NEW_WINDOW></a><br>';
 				$('#Logfile<TMPL_VAR LOG_ID>').css('font-family','monospace');
 	    		function readlog<TMPL_VAR LOG_ID> ()
 	    		{
-	    			$('#Logfile<TMPL_VAR LOG_ID>').html( butons + '<br><TMPL_VAR LOGVIEWER.LOADING_LOGFILE>');
+	    			$('#Logfile<TMPL_VAR LOG_ID>').html( butons<TMPL_VAR LOG_ID> + '<br><TMPL_VAR LOGVIEWER.LOADING_LOGFILE>');
 		    		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&head=none&format=html',
 					function( data, textStatus, request ) {
 					filesize = request.getResponseHeader('filesize');
 					if (filesize == 0) {
 						$('#Logfile<TMPL_VAR LOG_ID>').html( "<TMPL_VAR LOGVIEWER.ERR_LOGFILE_EMPTY_HTML>" );
 					} else {
-						$('#Logfile<TMPL_VAR LOG_ID>').html( butons + data );
+						$('#Logfile<TMPL_VAR LOG_ID>').html( butons<TMPL_VAR LOG_ID> + data );
 					}
 					});
 				}
