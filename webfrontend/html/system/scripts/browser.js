@@ -56,18 +56,6 @@ $( document ).ready(function()
 	 if (ieVersion) 
 	 {
 	     $(b).addClass(ieVersion);
-	     $(".footeralignmentIE").css('display','inline-block');
-	     $(".footeralignmentIE_l").css('display','inline-block');	
-	     $(".footeralignmentIE_r_outer").css('display','inline-block');	
-	     $(".footeralignmentIE_l_outer").css('display','inline-block');	
-	     $(".footeralignmentIE_r").css('display','inline-block');	
-	     $(".footersloganIE_r").css('display','inline-block');	
-	     $(".footerlogotextIE").css('display','inline-block');	
-	 }
-	 else
-	 {
- 		//Not IE10 or 11.
-	     $(".footeralignment").css('display','flex');	
 	 }
 
 	var is_chrome = ((navigator.userAgent.toLowerCase().indexOf('chrome') > -1) &&(navigator.vendor.toLowerCase().indexOf("google") > -1));

@@ -18,7 +18,20 @@
 		$( document ).ready(function() 
 		{
 			if ( $(document.body).hasClass("chrome") ) { $( '.display_chome_only' ).show(); } else { $( '.display_chome_only' ).hide(); }
-			if ( $(document.body).hasClass("ie11") || $(document.body).hasClass("ie10") ) { $(".footeralignment").css('display','none'); } else { $(".footeralignment").css('display','flex');	 }
+			if ( $(document.body).hasClass("ie11") || $(document.body).hasClass("ie10") ) 
+			{ 
+				 $(".footeralignmentIE").css('display','inline-block');
+			     $(".footeralignmentIE_l").css('display','inline-block');	
+			     $(".footeralignmentIE_r_outer").css('display','inline-block');	
+			     $(".footeralignmentIE_l_outer").css('display','inline-block');	
+			     $(".footeralignmentIE_r").css('display','inline-block');	
+			     $(".footersloganIE_r").css('display','inline-block');	
+			     $(".footerlogotextIE").css('display','inline-block');	
+ 			} 
+ 			else 
+ 			{ 
+				$(".footeralignment").css('display','flex');	 
+ 			}
 		});
 		</SCRIPT>
 		<!-- /footer -->
