@@ -19,7 +19,7 @@
 # Modules
 ##########################################################################
 
-use LoxBerry::System;
+
 use LoxBerry::Web;
 
 use CGI::Carp qw(fatalsToBrowser);
@@ -27,6 +27,9 @@ use CGI qw/:standard/;
 use LWP::UserAgent;
 use Config::Simple;
 use URI::Escape;
+use warnings;
+use strict;
+
 
 ##########################################################################
 # Variables
@@ -35,63 +38,67 @@ use URI::Escape;
 my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_miniserver.html";
 
-our $cfg;
-our $phrase;
-our $namef;
-our $value;
-our %query;
-our $lang;
-our $template_title;
-our $help;
-our @help;
-our $helptext;
-our $helplink;
-our $installfolder;
-our $languagefile;
-our $error;
-our $saveformdata;
-our $output;
-our $message;
-our $do;
-my  $url;
-my  $ua;
-my  $response;
-my  $urlstatus;
-my  $urlstatuscode;
-our $nexturl;
-our $miniservers;
-our $miniserversprev;
-our $msno;
-our $miniserverip;
-our $miniserverport;
-our $miniserveruser;
-our $miniserverkennwort;
-our $useclouddns;
-our $miniservercloudurl;
-our $miniservercloudurlftpport;
-our $curlbin;
-our $grepbin;
-our $awkbin;
-our $miniservernote;
-our $miniserverfoldername;
-our $clouddnsaddress;
+# my $cfg;
+# our $phrase;
+# our $namef;
+# our $value;
+# our %query;
+my $lang;
+my $template_title;
+# our $help;
+# our @help;
+# our $helptext;
+my $helplink;
+# our $installfolder;
+# our $languagefile;
+my $error;
+# our $saveformdata;
+# our $output;
+# our $message;
+# our $do;
+my $url;
+my $ua;
+my $response;
+my $urlstatus;
+my $urlstatuscode;
+# our $nexturl;
+my $miniservers;
+my $miniserversprev;
+my $msno;
+# our $miniserverip;
+# our $miniserverport;
+# our $miniserveruser;
+# our $miniserverkennwort;
+# our $useclouddns;
+# our $miniservercloudurl;
+# our $miniservercloudurlftpport;
+# our $curlbin;
+# #our $grepbin;
+# our $awkbin;
+# our $miniservernote;
+# our $miniserverfoldername;
+my $clouddnsaddress;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "0.3.5.1";
 
-$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
+my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
+my $bins = LoxBerry::System::get_binaries();
+
 #$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
 #$lang               = $cfg->param("BASE.LANG");
 $miniservers        = $cfg->param("BASE.MINISERVERS");
 $clouddnsaddress    = $cfg->param("BASE.CLOUDDNS");
 $miniserversprev    = $miniservers;
-$curlbin            = $cfg->param("BINARIES.CURL");
-$grepbin            = $cfg->param("BINARIES.GREP");
-$awkbin             = $cfg->param("BINARIES.AWK");
+
+
+#$curlbin            = $cfg->param("BINARIES.CURL");
+#$grepbin            = $cfg->param("BINARIES.GREP");
+#$awkbin             = $cfg->param("BINARIES.AWK");
 
 my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/miniserver.html",
@@ -110,28 +117,28 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 #########################################################################
 
 our  $cgi = CGI->new;
+$cgi->import_names('R');
 
-# Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
+
+# # Everything from URL
+# foreach (split(/&/,$ENV{'QUERY_STRING'})){
+  # ($namef,$value) = split(/=/,$_,2);
+  # $namef =~ tr/+/ /;
+  # $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+  # $value =~ tr/+/ /;
+  # $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+  # $query{$namef} = $value;
+# }
 
 # And this one we really want to use
-$do           = $query{'do'};
+#$do           = $query{'do'};
 
 # Everything we got from forms
-$saveformdata         = param('saveformdata');
+# $saveformdata         = param('saveformdata');
 
 
-$saveformdata          =~ tr/0-1//cd;
-$saveformdata          = substr($saveformdata,0,1);
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
+# $saveformdata          =~ tr/0-1//cd;
+# $saveformdata          = substr($saveformdata,0,1);
 
 ##########################################################################
 # Language Settings
@@ -159,7 +166,7 @@ if ($cgi->param("addbtn")) {
 	$cfg->param("BASE.MINISERVERS", $miniservers);
 	$cfg->save();
 	&form;
-} elsif (!$saveformdata || $do eq "form") {
+} elsif (!$R::saveformdata || $R::do eq "form") {
   &form;
 } else {
   &save;
@@ -230,29 +237,31 @@ sub save {
 	$cfg->param("BASE.MINISERVERS", $miniservers);
 
 	$msno = 1;
+	my %ms;
+	
 	while ($msno <= $miniservers) {
 		# Data from form
-		${miniserverip.$msno}       				= param("miniserverip$msno");
-		${miniserverport.$msno}     				= param("miniserverport$msno");
-		${miniserveruser.$msno}     				= param("miniserveruser$msno");
-		${miniserverkennwort.$msno} 				= param("miniserverkennwort$msno");
-		${miniservernote.$msno}     				= param("miniservernote$msno");
-		${miniserverfoldername.$msno}  		   	= param("miniserverfoldername$msno");
-		${useclouddns.$msno}        				= param("useclouddns$msno");
-		${miniservercloudurl.$msno} 				= param("miniservercloudurl$msno");
-		${miniservercloudurlftpport.$msno} 	= param("miniservercloudurlftpport$msno");
+		$ms{"miniserverip.$msno"}       				= param("miniserverip$msno");
+		$ms{"miniserverport.$msno"}     				= param("miniserverport$msno");
+		$ms{"miniserveruser.$msno"}     				= param("miniserveruser$msno");
+		$ms{"miniserverkennwort.$msno"} 				= param("miniserverkennwort$msno");
+		$ms{"miniservernote.$msno"}     				= param("miniservernote$msno");
+		$ms{"miniserverfoldername.$msno"}  		   	= param("miniserverfoldername$msno");
+		$ms{"useclouddns.$msno"}        				= param("useclouddns$msno");
+		$ms{"miniservercloudurl.$msno"} 				= param("miniservercloudurl$msno");
+		$ms{"miniservercloudurlftpport.$msno"} 	= param("miniservercloudurlftpport$msno");
 
-		${useclouddns.$msno} = defined ${useclouddns.$msno} ? ${useclouddns.$msno} : "0";
+		$ms{"useclouddns.$msno"} = defined $ms{"useclouddns.$msno"} ? $ms{"useclouddns.$msno"} : "0";
   
 		# URL-Encode form data before they are used to test the connection
-		${miniserveruser.$msno} = uri_escape(${miniserveruser.$msno});
-		${miniserverkennwort.$msno} = uri_escape(${miniserverkennwort.$msno});
+		$ms{"miniserveruser.$msno"} = uri_escape($ms{"miniserveruser.$msno"});
+		$ms{"miniserverkennwort.$msno"} = uri_escape($ms{"miniserverkennwort.$msno"});
 		
 		# Test if Miniserver is reachable
-		if ( is_enabled(${useclouddns.$msno})) {
+		if ( is_enabled($ms{"useclouddns.$msno"})) {
 			# With Cloud DNS
-			${useclouddns.$msno} = "1";
-			our $dns_info = `$curlbin -I http://$clouddnsaddress/${miniservercloudurl.$msno} --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+			$ms{"useclouddns.$msno"} = "1";
+			our $dns_info = `$bins->{'CURL'} -I http://$clouddnsaddress/$ms{"miniservercloudurl.$msno"} --connect-timeout 5 -m 5 2>/dev/null |$bins->{'GREP'} Location |$bins->{'AWK'} -F/ '{print \$3}'`;
 			my @dns_info_pieces = split /:/, $dns_info;
 			if ($dns_info_pieces[1]) {
 				$dns_info_pieces[1] =~ s/^\s+|\s+$//g;
@@ -264,11 +273,11 @@ sub save {
 			} else {
 				$dns_info_pieces[0] = "[DNS-Error]"; 
 			}
-			$url = "http://${miniserveruser.$msno}:${miniserverkennwort.$msno}\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
+			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
 		} else {
 			# With local access
-			${useclouddns.$msno} = "0";
-			$url = "http://${miniserveruser.$msno}:${miniserverkennwort.$msno}\@${miniserverip.$msno}\:${miniserverport.$msno}/dev/cfg/version";
+			$ms{"useclouddns.$msno"} = "0";
+			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$ms{\"miniserverip.$msno\"}\:$ms{\"miniserverport.$msno\"}/dev/cfg/version";
 		}
 		$ua = LWP::UserAgent->new;
 		$ua->timeout(5);
@@ -285,7 +294,7 @@ sub save {
 		if ($urlstatuscode ne "200") {
 			$error = $SL{'MINISERVER.SAVE_ERR_CANNOT_LOGIN'} . " <b>$msno. Miniserver</b>. " . $SL{'MINISERVER.SAVE_ERR_MS_UNREACHABLE'};
 			$maintemplate->param ( "ERROR", $error );
-			$errordetails =  "<p>Request:<br>$url<p>" .
+			my $errordetails =  "<p>Request:<br>$url<p>" .
 				"<p>Response: HTTP $urlstatus</p>" . 
 				"<p>" . $response->content . "</p>";
 			
@@ -294,15 +303,15 @@ sub save {
 		}
 
 		# Write configuration file(s)
-		$cfg->param("MINISERVER$msno.PORT", "${miniserverport.$msno}");
-		$cfg->param("MINISERVER$msno.PASS", "${miniserverkennwort.$msno}");
-		$cfg->param("MINISERVER$msno.ADMIN", "${miniserveruser.$msno}");
-		$cfg->param("MINISERVER$msno.IPADDRESS", "${miniserverip.$msno}");
-		$cfg->param("MINISERVER$msno.USECLOUDDNS", "${useclouddns.$msno}");
-		$cfg->param("MINISERVER$msno.CLOUDURL", "${miniservercloudurl.$msno}");
-		$cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", "${miniservercloudurlftpport.$msno}");
-		$cfg->param("MINISERVER$msno.NOTE", "${miniservernote.$msno}");
-		$cfg->param("MINISERVER$msno.NAME", "${miniserverfoldername.$msno}");
+		$cfg->param("MINISERVER$msno.PORT", $ms{"miniserverport.$msno"});
+		$cfg->param("MINISERVER$msno.PASS", $ms{"miniserverkennwort.$msno"});
+		$cfg->param("MINISERVER$msno.ADMIN", $ms{"miniserveruser.$msno"});
+		$cfg->param("MINISERVER$msno.IPADDRESS", $ms{"miniserverip.$msno"});
+		$cfg->param("MINISERVER$msno.USECLOUDDNS", $ms{"useclouddns.$msno"});
+		$cfg->param("MINISERVER$msno.CLOUDURL", $ms{"miniservercloudurl.$msno"});
+		$cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", $ms{"miniservercloudurlftpport.$msno"});
+		$cfg->param("MINISERVER$msno.NOTE", $ms{"miniservernote.$msno"});
+		$cfg->param("MINISERVER$msno.NAME", $ms{"miniserverfoldername.$msno"});
 		# Next
 		$msno++;
 	}
