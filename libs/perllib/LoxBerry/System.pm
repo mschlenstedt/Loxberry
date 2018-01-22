@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.5.1";
+our $VERSION = "0.3.5.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -184,6 +184,7 @@ my $lbhostname;
 my $lbfriendlyname;
 my $lbversion;
 my @plugins;
+my $plugins_delcache;
 my $webserverport;
 
 our %SL; # Shortcut for System language phrases
@@ -420,13 +421,23 @@ sub plugindata
 ##################################################################################
 sub get_plugins
 {
-	my ($withcomments, $forcereload) = @_;
+	my ($withcomments, $forcereload, $plugindb_file) = @_;
 	
-	if (@plugins && !$forcereload) {
-		# print STDERR "Returning already fetched version\n";
+	if (@plugins && !$forcereload && !$plugindb_file && !$plugins_delcache) {
+		print STDERR "get_plugins: Returning cached version of plugindatabase\n" if $DEBUG;
 		return @plugins;
-	} 
-	my $plugindb_file = "$lbsdatadir/plugindatabase.dat";
+	} else {
+		print STDERR "get_plugins: Re-reading plugindatabase\n" if $DEBUG;
+	}
+	
+	if (! $plugindb_file) {
+		$plugindb_file = "$lbsdatadir/plugindatabase.dat";
+	} else {
+		$plugins_delcache = 1;
+	}
+	
+	print STDERR "get_plugins: Using file $plugindb_file\n" if $DEBUG;
+	
 	if (!-e $plugindb_file) {
 		Carp::carp "LoxBerry::System::pluginversion: Could not find $plugindb_file\n";
 		return undef;
