@@ -1294,7 +1294,7 @@ $message =  "$SL{'PLUGININSTALL.OK_END'}";
 &logok;
 
 # Check for a reboot for older plugins (V1)
-system ("cat /tmp/$tempfile.log | grep -iq 'Please reboot' 2>&1");
+system ("cat /tmp/$tempfile.log | grep -E -iq 'reboot|restart|neustart|neu starten' 2>&1");
 if ($? eq 0) {
 	$preboot = 1;
 }
