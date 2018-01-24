@@ -255,12 +255,14 @@ $(document).ready( function () {
 	// Radiobutton Installtype
 	$("input[name='option-installtype']").change(function(){
 		var val = $("input[name='option-installtype']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val}});
+		var val2 = $("input[name='option-installtime']:checked").val();
+		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val, installtime: val2}});
 	});
 	// Radiobutton Installtime
 	$("input[name='option-installtime']").change(function(){
 		var val = $("input[name='option-installtime']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val}});
+		var val2 = $("input[name='option-installtype']:checked").val();
+		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val, installtype: val2}});
 	});
 	// Re-Check Updates button
 	$("#lbu_button_recheck").click(function(){
@@ -372,7 +374,7 @@ $(document).ready( function () {
 	    <h4 style="width:100%; style="white-space:nowrap;" onclick="readlog<TMPL_VAR LOG_ID> ();"><TMPL_VAR DATESTR> <TMPL_VAR FIRSTLINE></h4>
 	    <div id="Logfile<TMPL_VAR LOG_ID>"></div>
 	    	<script>
-	    		var buttons<TMPL_VAR LOG_ID>='<a target="_blank" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=bin&format=plain"><img src="/system/images/icons/download.svg"><TMPL_VAR LOGVIEWER.BUTTON_DOWNLOAD></a><a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><img src="/system/images/icons/open_new_win.svg"><TMPL_VAR LOGVIEWER.BUTTON_NEW_WINDOW></a><br>';
+	    		var buttons<TMPL_VAR LOG_ID>='<a class="nolinkstyle ui-link" style="font-size: 1em; line-height: 1.3; font-family: sans-serif; font-weight: bold;" target="_self" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=file&format=plain"><img src="/system/images/icons/download.svg"> <TMPL_VAR LOGVIEWER.BUTTON_DOWNLOAD></a><span style="padding-left:20px;"></span><a class="nolinkstyle ui-link" style="font-size: 1em; line-height: 1.3; font-family: sans-serif; font-weight: bold;" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><img src="/system/images/icons/open_new_win.svg"> <TMPL_VAR LOGVIEWER.BUTTON_NEW_WINDOW></a><br>';
 				$('#Logfile<TMPL_VAR LOG_ID>').css('font-family','monospace');
 	    		function readlog<TMPL_VAR LOG_ID> ()
 	    		{
