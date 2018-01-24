@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use CGI::Carp qw(fatalsToBrowser);
-use CGI qw/:standard/;
+#use CGI::Carp qw(fatalsToBrowser);
+use CGI;
 use Scalar::Util qw(looks_like_number);
 # use Switch;
 # use AptPkg::Config;
@@ -12,10 +12,18 @@ my $bins = LoxBerry::System::get_binaries();
 # print STDERR "Das Binary zu Grep ist $bins->{GREP}.";
 # system("$bins->{ZIP} myarchive.zip *");
 
-print header;
+my $cgi = CGI->new;
+$cgi->import_names('R');
 
-my $action = param('action');
-my $value = param('value');
+print $cgi->header;
+
+
+# Prevent 'only used once' warning
+$R::action if 0;
+$R::value if 0;
+
+my $action = $R::action;
+my $value = $R::value;
 
 print STDERR "Action: $action // Value: $value\n";
 
@@ -28,6 +36,8 @@ elsif ($action eq 'lbupdate-installtype') { &lbupdate; }
 elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') { &lbupdate; }
+elsif ($action eq 'plugin-loglevel') {plugindb_update('loglevel', $R::pluginmd5, $R::value); }
+elsif ($action eq 'plugin-autoupdate') {plugindb_update('autoupdate', $R::pluginmd5, $R::value); }
 elsif ($action eq 'testenvironment') { &testenvironment; }
 elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
 else   { print "<red>Action not supported.</red>"; }
@@ -238,6 +248,61 @@ sub change_generalcfg
 	return 1;
 }
 
+###################################################################
+# Change Plugin log and Update settings
+###################################################################
+sub plugindb_update
+{
+	my ($action, $md5, $value) = @_;
+
+	my @plugin_new;
+	
+	
+	my @plugins = LoxBerry::System::get_plugins(1);
+	foreach my $plugin (@plugins) {
+		my $pluginline;
+		if ($plugin->{PLUGINDB_COMMENT}) {
+			$pluginline = "$plugin->{PLUGINDB_COMMENT}\n";
+			push(@plugin_new, $pluginline);
+			next;
+		}
+		if ($plugin->{PLUGINDB_MD5_CHECKSUM} eq $md5) {
+			$plugin->{PLUGINDB_AUTOUPDATE} = $value if ($action eq 'autoupdate');
+			$plugin->{PLUGINDB_LOGLEVEL} = $value if ($action eq 'loglevel');
+		}
+		$pluginline = 
+			$plugin->{PLUGINDB_MD5_CHECKSUM} . "|" . 
+			$plugin->{PLUGINDB_AUTHOR_NAME} . "|" . 
+			$plugin->{PLUGINDB_AUTHOR_EMAIL} . "|" . 
+			$plugin->{PLUGINDB_VERSION} . "|" . 
+			$plugin->{PLUGINDB_NAME} . "|" . 
+			$plugin->{PLUGINDB_FOLDER} . "|" . 
+			$plugin->{PLUGINDB_TITLE} . "|" . 
+			$plugin->{PLUGINDB_INTERFACE} . "|" . 
+			$plugin->{PLUGINDB_AUTOUPDATE} . "|" . 
+			$plugin->{PLUGINDB_RELEASECFG} . "|" . 
+			$plugin->{PLUGINDB_PRERELEASECFG} . "|" . 
+			$plugin->{PLUGINDB_LOGLEVEL} . "\n";
+		push(@plugin_new, $pluginline);
+	}
+	
+	open(my $fh, '>', "$lbsdatadir/plugindatabase.dat");
+	print $fh @plugin_new;
+	close($fh);
+    
+}
+
+
+
+
+
+
+
+
+
+###################################################################
+# test environment variables
+###################################################################
 sub testenvironment
 {
 print "<h2>TEST 1 with system()</h2>";
