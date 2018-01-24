@@ -255,12 +255,14 @@ $(document).ready( function () {
 	// Radiobutton Installtype
 	$("input[name='option-installtype']").change(function(){
 		var val = $("input[name='option-installtype']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val}});
+		var val2 = $("input[name='option-installtime']:checked").val();
+		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val, installtime: val2}});
 	});
 	// Radiobutton Installtime
 	$("input[name='option-installtime']").change(function(){
 		var val = $("input[name='option-installtime']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val}});
+		var val2 = $("input[name='option-installtype']:checked").val();
+		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val, installtype: val2}});
 	});
 	// Re-Check Updates button
 	$("#lbu_button_recheck").click(function(){
