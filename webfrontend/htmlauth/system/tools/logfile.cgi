@@ -173,6 +173,11 @@ my $currfilesize = -s "$R::logfilepath/$R::logfile";
 if ($R::header && $R::header eq "txt") {
   $header = "Content-Type: text/plain\n\n";
   print $header;
+} elsif ($R::header && $R::header eq "file" ) 
+{
+	use File::Basename;
+	$header = "Content-Disposition: attachment; filename='" . basename($R::logfile) . "'\n\n";
+  	print $header;
 } elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
 	if ($R::clientsize && $R::clientsize ne "0") {
 		if($R::clientsize eq $currfilesize) {
@@ -190,7 +195,8 @@ if ($R::header && $R::header eq "txt") {
 				);
 	print $header if ($R::format ne 'template');
 	# $header = "Content-Type: text/html\n\n";
-}
+} 
+
 
 # Template Output
 if ($R::format eq "template") {
