@@ -23,33 +23,23 @@
 		</div>
 	</form>
 	<div style="display:flex; width:100%; text-align:left;">
-		<!-- 
 		<div style="margin:auto; padding:10px;text-align:left;">
-			<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
+			<img width="80" height="80" src="/system/images/icons/main_plugins_title.svg">
 		</div>
-		-->
 		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
 			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
 		</div>
 	</div>
+	<div style="height:15px;">
+	</div>
 	<table data-role="table" data-mode="table" class="ui-responsive">
-<!--		<thead>
-			<tr>
-				<th data-priority="2"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_NO></th>
-				<th data-priority="1"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_PLUGIN></th>
-				<th data-priority="3"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_VERSION></th>
-				<th data-priority="3"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_UPDATES></th>
-				<th data-priority="1"><TMPL_VAR PLUGININSTALL.UI_LABEL_TABLE_OPTIONS></th>
-			</tr>
-		</thead>
--->
 		<tbody>
 
 		<!-- START Plugin container -->
 		<TMPL_IF PLUGINS>
 			<TMPL_LOOP PLUGINS>
 			<tr>
-				<td rowspan="2"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img src="/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png"></a><!-- <TMPL_VAR PLUGINDB_NO> -->
+				<td rowspan="2"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img src="/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png"></a>
 				</td>
 				<td><span style="font-size:150%;"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
 				<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
@@ -60,9 +50,6 @@
 				<td>
 					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
 					<a data-role="button" data-inline="true" data-icon="delete" data-mini="true" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
-					<!-- <a data-role="button" data-inline="true" data-icon="gear" data-mini="true"
-					href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/">
-					<TMPL_VAR PLUGININSTALL.UI_LABEL_PLUGIN_CFG></a>&nbsp; -->
 				</td>
 			</tr>
 			<tr style="border-bottom: 1.5px solid LightGray;">
@@ -80,7 +67,7 @@
 					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4">Pre- and Releases</label>
 				</fieldset>
 				<script>
-				$(document).ready( function()
+				$(document).on('pagecreate',function()
 				{
 					$( "#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option"+<TMPL_VAR PLUGINDB_AUTOUPDATE> ).prop( "checked", true ).checkboxradio( "refresh" );
 				});
@@ -91,7 +78,7 @@
 				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Logging Level</label>
 					<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
 					<select name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-mini="true">
-						<!-- <option value="0">The 1st Option</option> -->
+						<option value="0">Off</option>
 						<!-- <option value="1">The 1st Option</option> -->
 						<option value="2">Failures</option>
 						<option value="3">Errors</option>
@@ -108,12 +95,7 @@
 			<script>
 			$(document).ready( function()
 				{
-					//var loglevel = $( "#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" );
-					//loglevel[0].selectedIndex = <TMPL_VAR PLUGINDB_LOGLEVEL>;
-					//loglevel.selectmenu( "refresh" );
-					
 					$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>').change();
-					
 				});
 			
 			</script>
