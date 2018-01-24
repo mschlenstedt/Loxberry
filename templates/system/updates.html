@@ -374,7 +374,7 @@ $(document).ready( function () {
 	    <h4 style="width:100%; style="white-space:nowrap;" onclick="readlog<TMPL_VAR LOG_ID> ();"><TMPL_VAR DATESTR> <TMPL_VAR FIRSTLINE></h4>
 	    <div id="Logfile<TMPL_VAR LOG_ID>"></div>
 	    	<script>
-	    		var buttons<TMPL_VAR LOG_ID>='<a target="_blank" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=bin&format=plain"><img src="/system/images/icons/download.svg"><TMPL_VAR LOGVIEWER.BUTTON_DOWNLOAD></a><a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><img src="/system/images/icons/open_new_win.svg"><TMPL_VAR LOGVIEWER.BUTTON_NEW_WINDOW></a><br>';
+	    		var buttons<TMPL_VAR LOG_ID>='<a target="_self" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=file&format=plain"><img src="/system/images/icons/download.svg"><TMPL_VAR LOGVIEWER.BUTTON_DOWNLOAD></a><a href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template" target="_blank"><img src="/system/images/icons/open_new_win.svg"><TMPL_VAR LOGVIEWER.BUTTON_NEW_WINDOW></a><br>';
 				$('#Logfile<TMPL_VAR LOG_ID>').css('font-family','monospace');
 	    		function readlog<TMPL_VAR LOG_ID> ()
 	    		{
