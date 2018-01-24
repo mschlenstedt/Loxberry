@@ -38,22 +38,12 @@
 <!-- START Widget container -->
 <div class="widgetblock">
 <TMPL_LOOP WIDGETS>
-	
-	<div class="widget">
-	<TMPL_IF WIDGET_NOTIFY_RED>
-		<div class='notifyRed'><TMPL_VAR WIDGET_NOTIFY_RED></div>
-	<TMPL_ELSE>
-		<TMPL_IF WIDGET_NOTIFY_BLUE>
-			<div class='notifyBlue'><TMPL_VAR WIDGET_NOTIFY_BLUE></div>
-		<TMPL_ELSE>
-		<div class='notifyBlue' style='visibility: hidden'>0</div>
-		</TMPL_IF>
-	</TMPL_IF>
+<div class="widget">
 	<TMPL_VAR WIDGET_NOTIFY>
 	<a href="<TMPL_VAR WIDGET_CGI>">
 			<TMPL_IF WIDGET_CLOCK>
-			<div style="margin:6px 0 4.5px 0; auto;">
-				<div class="clock">
+			<div class="menutableicon" style="width:100%; height:80px; padding:1px 0 10px 0;">
+				<div class="clock" style="text-align:center;  margin:10px 0 0 43px" >
 					<div class="hours-container">
 						<div class="hours">
 						</div>
@@ -69,16 +59,23 @@
 				</div>
 			</div>
 			<TMPL_ELSE>
-			<img class="menutableicon" src="<TMPL_VAR WIDGET_ICON>">
+			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR WIDGET_ICON>');  background-repeat: no-repeat; background-position: center center;">
+				<TMPL_IF WIDGET_NOTIFY_RED>
+					<div class='notifyRed'><TMPL_VAR WIDGET_NOTIFY_RED>1</div>
+				<TMPL_ELSE>
+					<TMPL_IF WIDGET_NOTIFY_BLUE>
+						<div class='notifyBlue'><TMPL_VAR WIDGET_NOTIFY_BLUE></div>
+					<TMPL_ELSE>
+						<div class='notifyBlue' style='visibility: hidden'>0</div>
+					</TMPL_IF>
+				</TMPL_IF>
+			</div>
 			</TMPL_IF>
-		
-		</a>
-		<div>
-			<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
-		</div>
-	
+	</a>
+	<div>
+		<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
 	</div>
-	
+</div>
 </TMPL_LOOP>
 </div>
 
