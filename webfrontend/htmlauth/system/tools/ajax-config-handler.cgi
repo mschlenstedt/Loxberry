@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 #use CGI::Carp qw(fatalsToBrowser);
-use CGI;
+use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
 # use Switch;
 # use AptPkg::Config;
