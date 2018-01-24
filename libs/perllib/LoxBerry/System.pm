@@ -3,16 +3,16 @@
 
 use strict;
 use Config::Simple;
-use File::HomeDir;
+#use File::HomeDir;
 use URI::Escape;
 use Cwd 'abs_path';
 use LWP::UserAgent;
-use XML::Simple;
+#use XML::Simple;
 use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.5.2";
+our $VERSION = "0.3.5.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -138,6 +138,7 @@ our $lbhomedir;
 if ($ENV{LBHOMEDIR}) {
 	$lbhomedir = $ENV{LBHOMEDIR};
 } else {
+	require File::HomeDir;
 	my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
 	if ($username eq 'loxberry') {
 		$lbhomedir = File::HomeDir->my_home;
@@ -655,6 +656,8 @@ internal or the CloudDNS FTP port, so you do not need to spy yourself.
 #####################################################
 sub get_ftpport
 {
+	require XML::Simple;
+	
 	my ($msnr) = @_;
 	
 	$msnr = defined $msnr ? $msnr : 1;
