@@ -163,11 +163,11 @@ sub lbupdate
 		unlink "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron" if (-e "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron");
 		unlink "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" if (-e "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron");
 		if ($value eq 'notify' || $value eq 'install') {
-			if (param('installtime') eq '1') {
+			if ($R::installtime eq '1') {
 				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.daily/loxberryupdate_cron";
-			} elsif (param('installtime') eq '7') {
+			} elsif ($R::$installtime eq '7') {
 				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.weekly/loxberryupdate_cron";
-			} elsif (param('installtime') eq '30') {
+			} elsif ($R::installtime eq '30') {
 				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/loxberryupdate_cron";
 			}
 		}
@@ -181,7 +181,7 @@ sub lbupdate
 		unlink "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron" if (-e "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron");
 		unlink "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron" if (-e "$lbhomedir/system/cron/cron.weekly/loxberryupdate_cron");
 		unlink "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" if (-e "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron");
-		if (($value eq '1' || $value eq '7' || $value eq '30') && (param('installtype') eq 'install' || param('installtype') eq 'notify')) {	
+		if (($value eq '1' || $value eq '7' || $value eq '30') && ($R::installtype eq 'install' || $R::installtype eq 'notify')) {	
 			if ($value eq '1') {
 				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.daily/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.daily/loxberryupdate_cron";
 			} elsif ($value eq '7') {
