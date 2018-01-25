@@ -1,0 +1,1 @@
+/opt/loxberry/sbin/pluginsupdate.pl
