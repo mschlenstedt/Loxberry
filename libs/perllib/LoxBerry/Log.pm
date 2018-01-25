@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.3.3";
+our $VERSION = "0.3.5.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -210,7 +210,7 @@ sub open
 sub close
 {
 	my $self = shift;
-	close $self->{'_FH'};
+	close $self->{'_FH'} if $self->{'_FH'};
 	return $self->{filename};
 }
 
