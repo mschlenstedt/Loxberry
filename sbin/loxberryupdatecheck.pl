@@ -501,7 +501,7 @@ sub check_commits
 	}
 	
 	# If an update was requested
-	if ($cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron )) {
+	if ($cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron && $commit_new )) {
 		LOGEND "Installing new commit - see the update log for update status!";
 		my $log = LoxBerry::Log->new(
 			package => 'LoxBerry Update',
