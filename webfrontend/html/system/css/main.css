@@ -295,11 +295,11 @@ a:link.nolinkstyle
 }
 .logstart
 {
- text-align:left; font-size: 130%; font-family: "Calibri", Georgia, Serif; width:100%; color:#FFFFFF; background-color:#6dac20;
+ text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; color:#FFFFFF; background-color:#6dac20;
 }
 .logend
 { 
-text-align:left; font-size: 130%; font-family: "Calibri", Georgia, Serif; width:100%; 
+text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; 
 }
 /* Clock on mainmenu_start.html */
 
