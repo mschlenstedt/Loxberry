@@ -114,6 +114,9 @@ $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
 
 if ($cgi->param('cron')) {
 	$cron = 1;
+	
+	
+	
 } 
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
@@ -215,7 +218,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		delete_notifications('updates', 'check', 1);
 	}
 	
-	if ($cgi->param('update')) {
+	if ( $cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron ) ) {
 		LOGEND "Installing new update - see the update log for update status!";
 		
 		my $log = LoxBerry::Log->new(
@@ -498,7 +501,7 @@ sub check_commits
 	}
 	
 	# If an update was requested
-	if ($cgi->param('update')) {
+	if ($cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron )) {
 		LOGEND "Installing new commit - see the update log for update status!";
 		my $log = LoxBerry::Log->new(
 			package => 'LoxBerry Update',
