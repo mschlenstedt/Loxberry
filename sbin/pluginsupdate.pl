@@ -197,7 +197,7 @@ foreach (@plugins) {
 			LOGOK "Archive file fetched.";
 			LOGINF "Installing new (pre-)release... Logs are going to the plugins install logfile. Please be patient...";
 			$logfile = "/tmp/$tempfile.log";
-			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile");
+			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile > $logfile 2>&1");
 		}
 	}
 
