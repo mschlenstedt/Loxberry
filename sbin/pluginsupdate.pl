@@ -92,12 +92,10 @@ foreach (@plugins) {
 	}
 	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "3") {
 		LOGINF "$_->{PLUGINDB_NAME}: RELEASES enabled.";
-		$notify = 1;
 		$release = 1;
 	}
 	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "4") {
 		LOGINF "$_->{PLUGINDB_NAME}: PRERELEASES enabled.";
-		$notify = 1;
 		$release = 1;
 		$prerelease = 1;
 	}
@@ -199,7 +197,7 @@ foreach (@plugins) {
 			LOGOK "Archive file fetched.";
 			LOGINF "Installing new (pre-)release... Logs are going to the plugins install logfile. Please be patient...";
 			$logfile = "/tmp/$tempfile.log";
-			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile > $logfile 2>&1");
+			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile");
 		}
 	}
 
