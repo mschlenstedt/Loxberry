@@ -446,12 +446,3 @@ text-align:left; font-size: 130%; font-family: "Calibri", Georgia, Serif; width:
 /* PANEL END */
 }
 
-@font-face {
-  font-family: 'password';
-  src: url('password.woff') format('woff'),
-       url('password.woff2') format('woff2'),
-       url('password.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
