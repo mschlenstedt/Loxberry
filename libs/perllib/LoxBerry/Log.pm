@@ -538,6 +538,13 @@ sub notification_content
 	return $content, $contenthtml;
 }
 
+sub get_notifications_html
+{
+	my ($package, $name, $type, $buttons) = @_;
+	my @notifs = LoxBerry::Log::get_notifications($package, $name, undef, undef, 1);
+	
+}
+
 
 #####################################################
 # Parse yyyymmdd_hhmmss date to date object
@@ -599,6 +606,26 @@ sub read_notificationlist
 	$content_was_read = 1;
 	print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ##################################################################
