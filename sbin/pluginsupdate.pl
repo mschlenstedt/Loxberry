@@ -32,10 +32,9 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="0.3.3.2";
+my $scriptversion="0.3.3.3";
 
 # Global vars
-my $download_path = '/tmp';
 my $update_path = '/tmp/pluginsupdate';
 my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -63,6 +62,8 @@ my $installversion;
 my $tempfile;
 my $openerr;
 my $timestamp;
+my $pluginname;
+my $message;
 
 # Language
 my $lang = lblanguage();
@@ -71,6 +72,7 @@ my $lang = lblanguage();
 my %SL = LoxBerry::System::readlanguage(undef);
 
 # Creating temp folder
+system ("rm -rf $update_path");
 system ("mkdir -p $update_path");
 
 
@@ -102,6 +104,8 @@ foreach (@plugins) {
 
 	$pid = $_->{PLUGINDB_MD5_CHECKSUM};
 	$currentver = $_->{PLUGINDB_VERSION};
+	$plugintitle = $_->{PLUGINDB_TITLE};
+	$pluginname = $_->{PLUGINDB_NAME};
 	$installarchive = "";
 
 	LOGINF "$_->{PLUGINDB_NAME}: Found plugin $_->{PLUGINDB_TITLE}.";
@@ -152,7 +156,7 @@ foreach (@plugins) {
 		}
 	}
 
-	if ( !$release && !$prerelease ) {
+	if ( !$endpointrelease && !$endpointprerelease ) {
 		LOGCRIT "No RELEASE or PRERELEASE URL in plugin configuration. Skipping...";
 		next;
 	}
@@ -183,8 +187,17 @@ foreach (@plugins) {
 
 			if ( $releasever > $currentver ) {
 				LOGINF "Release version is newer than current installed version.";
-				$installarchive = $releasearchive;
 				$installversion = $releasever;
+				if ( !$notify ) {
+					$installarchive = $releasearchive;
+				} else {
+					$message = "<p>$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion</p>\n";
+					$message .= "<p><a href='$releaseinfo' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a></p>\n";
+					$message .= "<p><a href='$releasearchive'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a></p>\n";
+					$message .= "<p><a href='#install'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a></p>";
+					notify ( "plugininstall", "$pluginname", $message);
+					sleep 1;
+				}
 			} else {
 				LOGINF "Release version is not newer than installed version.";
 			}
@@ -192,7 +205,6 @@ foreach (@plugins) {
 		}
 
 	}
-
 	#
 	# Check for a prerelease
 	#
@@ -220,8 +232,16 @@ foreach (@plugins) {
 
 			if ( $prereleasever > $releasever ) {
 				LOGINF "Prerelease version is newer than release version.";
-				$installarchive = $prereleasearchive;
 				$installversion = $prereleasever;
+				if ( !$notify ) {
+					$installarchive = $releasearchive;
+				} else {
+					$message = "<p>$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion</p>\n";
+					$message .= "<p><a href='$prereleaseinfo' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a></p>\n";
+					$message .= "<p><a href='$prereleasearchive'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a></p>\n";
+					$message .= "<p><a href='#install'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a></p>";
+					notify ( "plugininstall", "$pluginname", $message);
+				}
 			} else {
 				LOGINF "Prerelease version is not newer than release version version.";
 			}
@@ -250,17 +270,12 @@ foreach (@plugins) {
 
 			$logfile = "/tmp/$tempfile.log";
 			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile > $logfile 2>&1");
+			#system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile");
 
-				# Create notification
-				if ($? eq 0 ) {
-					$timestamp = currtime('file');
-				open(F,">$lbsdatadir/notifications/$timestamp_plugininstall_$_->{PLUGINDB_NAME}.txt") or ($openerr = 1);
-					if ($openerr) {
-						LOGCRIT "Could not create notification file.";
-					}
-					print F "$_->{PLUGINDB_NAME}: $SL{'PLUGININSTALL.INF_NOTIFY_AUTOINSTALL_DONE'} $installversion";
-				close (F);
-
+			# Create notification
+			if ($? eq 0 ) {
+				$message = "$pluginname - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DONE'} $installversion";
+				notify ( "plugininstall", "pluginautoupdate", $message);
 			}
 
 		}
