@@ -575,6 +575,7 @@ sub read_notificationlist
 		my $notdate = substr($direntry, 0, 15);
 		# LOGDEB "Log type: $nottype  Date: $notdate";
 		my $dateobj = LoxBerry::Log::parsedatestring($notdate);
+		next if (!$dateobj); 
 		my %notification;
 		$notifycount++;
 		if (lc($severity) eq 'err') {
@@ -586,7 +587,7 @@ sub read_notificationlist
 		$notification{'NAME'} = $name;
 		$notification{'SEVERITY'} = lc($severity);
 		$notification{'DATEOBJ'} = $dateobj;
-		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M") if $dateobj;
+		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
 		$notification{'KEY'} = $direntry;
 		$notification{'FULLPATH'} = "$notification_dir/$direntry";
 		($notification{'CONTENTRAW'}, $notification{'CONTENTHTML'}) = notification_content($notification{'KEY'}) if ($getcontent);
