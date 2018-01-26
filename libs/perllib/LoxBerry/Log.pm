@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.5.1";
+our $VERSION = "0.3.5.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -546,8 +546,10 @@ sub parsedatestring
 {
 	my ($datestring) = @_;
 	
-	my $dt = Time::Piece->strptime($datestring, "%Y%m%d_%H%M%S");
-	
+	my $dt;
+	eval {
+		$dt = Time::Piece->strptime($datestring, "%Y%m%d_%H%M%S");
+	};
 	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
 	return $dt;
 }
@@ -584,7 +586,7 @@ sub read_notificationlist
 		$notification{'NAME'} = $name;
 		$notification{'SEVERITY'} = lc($severity);
 		$notification{'DATEOBJ'} = $dateobj;
-		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M") if $dateobj;
 		$notification{'KEY'} = $direntry;
 		$notification{'FULLPATH'} = "$notification_dir/$direntry";
 		($notification{'CONTENTRAW'}, $notification{'CONTENTHTML'}) = notification_content($notification{'KEY'}) if ($getcontent);
