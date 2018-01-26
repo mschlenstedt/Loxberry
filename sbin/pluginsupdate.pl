@@ -1,5 +1,24 @@
 #!/usr/bin/perl
 
+# Copyright 2018 Michael Schlenstedt, michael@loxberry.de
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+##########################################################################
+# Modules
+##########################################################################
+
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
@@ -7,39 +26,19 @@ use LoxBerry::Log;
 #use warnings;
 use version;
 
-# Version of this script
-my $scriptversion="0.3.3.1";
 
+##########################################################################
+# Global
+##########################################################################
+
+# Version of this script
+my $scriptversion="0.3.3.2";
+
+# Global vars
 my $download_path = '/tmp';
 my $update_path = '/tmp/pluginsupdate';
-my $cfg;
+my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
-
-# Creating temp folder
-system ("mkdir -p $update_path");
-
-# Log
-my $log = LoxBerry::Log->new(
-                package => 'Plugins Update',
-                name => 'check',
-                filename => "$lbhomedir/log/system_tmpfs/pluginsupdatecheck.log",
-                loglevel => 7,
-                stderr => 1,
-                append => 1,
-);
-
-LOGSTART "LoxBerry Plugins Update Check";
-LOGINF "Version of $0 is $scriptversion";
-
-$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
-
-my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
-LOGINF "Executing user of $0 is $curruser";
-
-# Read system language
-my %SL = LoxBerry::System::readlanguage();
-# LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
-
 my @plugins = LoxBerry::System::get_plugins();
 my $endpointrelease;
 my $endpointprerelease;
@@ -60,7 +59,44 @@ my $pid;
 my $currentver;
 my $resp;
 my $installarchive;
+my $installversion;
 my $tempfile;
+my $openerr;
+my $timestamp;
+
+# Language
+my $lang = lblanguage();
+
+# Read phrases from language_LANG.ini
+my %SL = LoxBerry::System::readlanguage(undef);
+
+# Creating temp folder
+system ("mkdir -p $update_path");
+
+
+##########################################################################
+# Logfile
+##########################################################################
+
+my $log = LoxBerry::Log->new(
+                package => 'Plugins Update',
+                name => 'check',
+                filename => "$lbhomedir/log/system_tmpfs/pluginsupdatecheck.log",
+                loglevel => 7,
+                stderr => 1,
+                append => 1,
+);
+
+LOGSTART "LoxBerry Plugins Update Check";
+LOGINF "Version of $0 is $scriptversion";
+
+my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+LOGINF "Executing user of $0 is $curruser";
+
+
+##########################################################################
+# Parse Plugins
+##########################################################################
 
 foreach (@plugins) {
 
@@ -68,6 +104,11 @@ foreach (@plugins) {
 	$currentver = $_->{PLUGINDB_VERSION};
 	$installarchive = "";
 
+	LOGINF "$_->{PLUGINDB_NAME}: Found plugin $_->{PLUGINDB_TITLE}.";
+
+	#
+	# Checks
+	#
 	if ( !version::is_lax($currentver) ) {
 		LOGCRIT "Cannot check plugin's version number. Is this a real version number? $currentver. Skipping...";
 		next;
@@ -76,8 +117,6 @@ foreach (@plugins) {
 		LOGINF "Current version is: $currentver";
 	}
 	
-	LOGINF "$_->{PLUGINDB_NAME}: Found plugin $_->{PLUGINDB_TITLE}.";
-
 	if (!$_->{PLUGINDB_AUTOUPDATE}) {
 		LOGINF "$_->{PLUGINDB_NAME}: Provide no automatic updates. Skipping.";
 		next;
@@ -118,7 +157,9 @@ foreach (@plugins) {
 		next;
 	}
 
+	#
 	# Check for a release
+	#
 	if ( ($release || $notify) && $endpointrelease ) {
 
 		LOGINF "Requesting release file from $endpointrelease";
@@ -143,6 +184,7 @@ foreach (@plugins) {
 			if ( $releasever > $currentver ) {
 				LOGINF "Release version is newer than current installed version.";
 				$installarchive = $releasearchive;
+				$installversion = $releasever;
 			} else {
 				LOGINF "Release version is not newer than installed version.";
 			}
@@ -151,7 +193,9 @@ foreach (@plugins) {
 
 	}
 
+	#
 	# Check for a prerelease
+	#
 	if ( ($prerelease || $notify) && $endpointprerelease ) {
 
 		LOGINF "Requesting prerelease from $endpointprerelease";
@@ -177,6 +221,7 @@ foreach (@plugins) {
 			if ( $prereleasever > $releasever ) {
 				LOGINF "Prerelease version is newer than release version.";
 				$installarchive = $prereleasearchive;
+				$installversion = $prereleasever;
 			} else {
 				LOGINF "Prerelease version is not newer than release version version.";
 			}
@@ -185,27 +230,50 @@ foreach (@plugins) {
 
 	}
 
+	#
 	# Install new version
+	#
 	if ($installarchive) {
+
 		# Randomly file naming
         	$tempfile = &generate(10);
 		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo /tmp/pluginsupdate/$tempfile.zip $installarchive  2>&1`;
 		if ($? ne 0) {
 			LOGCRIT "Could not fetch archive file. Error: $resp. Skipping this plugin...";
 			next;
+
 		} else {
+
+			# Installation
 			LOGOK "Archive file fetched.";
 			LOGINF "Installing new (pre-)release... Logs are going to the plugins install logfile. Please be patient...";
+
 			$logfile = "/tmp/$tempfile.log";
 			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile > $logfile 2>&1");
+
+				# Create notification
+				if ($? eq 0 ) {
+					$timestamp = currtime('file');
+				open(F,">$lbsdatadir/notifications/$timestamp_plugininstall_$_->{PLUGINDB_NAME}.txt") or ($openerr = 1);
+					if ($openerr) {
+						LOGCRIT "Could not create notification file.";
+					}
+					print F "$_->{PLUGINDB_NAME}: $SL{'PLUGININSTALL.INF_NOTIFY_AUTOINSTALL_DONE'} $installversion";
+				close (F);
+
+			}
+
 		}
+
 	}
 
 }
 
+# Clean up
 system ("rm -rf $update_path");
 
 exit;
+
 
 #####################################################
 # Random
