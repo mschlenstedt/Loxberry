@@ -25,13 +25,13 @@
 	<center>
 	<table border=0 width="75%" cellpadding="10">
 		<tr>
-			<td width="15%">
+			<td width="10%">
 			<a style="display:block; text-align:center;" id="btnnext" data-role="button" data-inline="true" data-mini="true" data-icon="check" data-ajax="false" href="/admin/system/plugininstall.cgi?do=form"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_NEXT></a>
 			</td>
-			<td width="15%">
+			<td width="10%">
 			<a style="display:block; text-align:center;" id="btnreboot" data-role="button" data-inline="true" data-mini="true" data-icon="check" data-ajax="false" href="/admin/system/power.cgi"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOT></a>
 			</td>
-			<td width="70%">
+			<td width="80%">
 			<div id="pstatus" style="width:100%; padding:5px 5px 5px 5px; vertical-align:middle; line-height:35px; vertical-align:middle; border-style: dotted; border-width:1px; border-color:red; background-color:#ffffe6; text-size:11px"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE></div>
 			</td>
 		</tr>
@@ -97,25 +97,25 @@ function updatelog()
 		var pstatus = parseInt(response);
 		if (pstatus == 3)
 		{
-			document.getElementById("pstatus").innerHTML = "<b><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED></b>";
+			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED>";
 			$('#btnnext').removeClass('ui-disabled');
 			$('#btnreboot').removeClass('ui-disabled');
 			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 		}
 		else if (pstatus == 2)
 		{
-			document.getElementById("pstatus").innerHTML = "<b><font color='#FF0000'><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_ERROR></font></b>";
+			document.getElementById("pstatus").innerHTML = "<font color='#FF0000'><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_ERROR></font>";
 			$('#btnnext').removeClass('ui-disabled');
 			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 		}
 		else if (pstatus == 1)
 		{
-			document.getElementById("pstatus").innerHTML = "<b><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE></b>";
+			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE>";
 			$('#btnnext').addClass('ui-disabled');
 		}
 		else
 		{
-			document.getElementById("pstatus").innerHTML = "<b><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_SUCCESS></b>";
+			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_SUCCESS>";
 			$('#btnnext').removeClass('ui-disabled');
 			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 		}
