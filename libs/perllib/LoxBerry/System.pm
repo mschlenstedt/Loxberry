@@ -12,8 +12,8 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.5.3";
-our $DEBUG;
+our $VERSION = "0.3.5.4";
+our $DEBUG = 0;
 
 use base 'Exporter';
 
@@ -137,33 +137,75 @@ $lbhomedir is detected in the following order:
 our $lbhomedir;
 if ($ENV{LBHOMEDIR}) {
 	$lbhomedir = $ENV{LBHOMEDIR};
+	print STDERR "lbhomedir $lbhomedir detected by environment\n" if ($DEBUG);
 } else {
 	require File::HomeDir;
 	my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
 	if ($username eq 'loxberry') {
 		$lbhomedir = File::HomeDir->my_home;
+		print STDERR "lbhomedir $lbhomedir detected by loxberry HomeDir\n" if ($DEBUG);
 	} elsif ($username eq 'root') {
 		$lbhomedir = `su - loxberry -c pwd`;
 		$lbhomedir =~ s/\n|\s+//;
+		print STDERR "lbhomedir $lbhomedir detected as user root by loxberry's pwd HomeDir\n" if ($DEBUG);
 	} else {
 		# Missing some additional functions if we are running from daemon or cron
 		$lbhomedir = '/opt/loxberry';
+		print STDERR "lbhomedir $lbhomedir set to /opt/loxberry as fallback\n" if ($DEBUG);
 		Carp::carp ("LoxBerry home was statically set to /opt/loxberry as no home directory could be found.");
 	}
 }
 
-my $part = substr ((Cwd::abs_path($0)), (length($lbhomedir)+1));
-our ($lbpplugindir) = (split(/\//, $part))[3];
-our $lbphtmlauthdir = "$lbhomedir/webfrontend/htmlauth/plugins/$lbpplugindir";
-our $lbphtmldir = "$lbhomedir/webfrontend/html/plugins/$lbpplugindir";
-our $lbcgidir = $lbphtmlauthdir;
-our $lbptemplatedir = "$lbhomedir/templates/plugins/$lbpplugindir";
-our $lbpdatadir = "$lbhomedir/data/plugins/$lbpplugindir";
-our $lbplogdir = "$lbhomedir/log/plugins/$lbpplugindir";
-our $lbpconfigdir = "$lbhomedir/config/plugins/$lbpplugindir";
-# our $lbpsbindir = "$lbhomedir/sbin/plugins/$lbpplugindir";
-our $lbpbindir = "$lbhomedir/bin/plugins/$lbpplugindir";
+my $abspath;
+our $lbpplugindir;
 
+if ($ENV{SCRIPT_FILENAME}) { 
+		$abspath = Cwd::abs_path($ENV{SCRIPT_FILENAME});
+	} elsif ($0) {
+		$abspath = Cwd::abs_path($0);
+	}
+
+print STDERR "Script call \$0 is $0 abspath is $abspath\n" if ($DEBUG);
+my $lbhomedirlength = length($lbhomedir);
+
+my $rindex = rindex($abspath, ".");
+print STDERR "rindex is $rindex\n" if ($DEBUG);
+$rindex = length($abspath) if ($rindex < 0);
+
+my $part = substr ($abspath, ($lbhomedirlength+1), $rindex-$lbhomedirlength-1);
+
+print STDERR "part is $part\n" if ($DEBUG);
+
+my ($p1, $p2, $p3, $p4, $p5, $p6) = split(/\//, $part);
+if ($DEBUG) {
+	print STDERR "P1 = $p1\n" if ($p1);
+	print STDERR "P2 = $p2\n" if ($p2);
+	print STDERR "P3 = $p3\n" if ($p3);
+	print STDERR "P4 = $p4\n" if ($p4);
+	print STDERR "P5 = $p5\n" if ($p5);
+	print STDERR "P6 = $p6\n" if ($p6);
+}
+
+if 		($p1 eq 'webfrontend' && $p3 eq 'plugins' && $p4 )  { $lbpplugindir = $p4; }
+elsif 	($p1 eq 'templates' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
+elsif	($p1 eq 'log' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
+elsif	($p1 eq 'data' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
+elsif	($p1 eq 'config' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
+elsif	($p1 eq 'bin' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
+elsif	($p1 eq 'system' && $p2 eq 'daemons' && $p3 eq 'plugins' && $p4 ) { $lbpplugindir = $p4; }
+
+if ($lbpplugindir) {
+	# our ($lbpplugindir) = (split(/\//, $part))[3];
+	our $lbphtmlauthdir = "$lbhomedir/webfrontend/htmlauth/plugins/$lbpplugindir";
+	our $lbphtmldir = "$lbhomedir/webfrontend/html/plugins/$lbpplugindir";
+	our $lbcgidir = $lbphtmlauthdir;
+	our $lbptemplatedir = "$lbhomedir/templates/plugins/$lbpplugindir";
+	our $lbpdatadir = "$lbhomedir/data/plugins/$lbpplugindir";
+	our $lbplogdir = "$lbhomedir/log/plugins/$lbpplugindir";
+	our $lbpconfigdir = "$lbhomedir/config/plugins/$lbpplugindir";
+	# our $lbpsbindir = "$lbhomedir/sbin/plugins/$lbpplugindir";
+	our $lbpbindir = "$lbhomedir/bin/plugins/$lbpplugindir";
+}
 
 our $lbshtmldir = "$lbhomedir/webfrontend/html/system";
 our $lbshtmlauthdir = "$lbhomedir/webfrontend/htmlauth/system";
@@ -425,10 +467,10 @@ sub get_plugins
 	my ($withcomments, $forcereload, $plugindb_file) = @_;
 	
 	if (@plugins && !$forcereload && !$plugindb_file && !$plugins_delcache) {
-		print STDERR "get_plugins: Returning cached version of plugindatabase\n" if $DEBUG;
+		print STDERR "get_plugins: Returning cached version of plugindatabase\n" if ($DEBUG);
 		return @plugins;
 	} else {
-		print STDERR "get_plugins: Re-reading plugindatabase\n" if $DEBUG;
+		print STDERR "get_plugins: Re-reading plugindatabase\n" if ($DEBUG);
 	}
 	
 	if (! $plugindb_file) {
@@ -437,7 +479,7 @@ sub get_plugins
 		$plugins_delcache = 1;
 	}
 	
-	print STDERR "get_plugins: Using file $plugindb_file\n" if $DEBUG;
+	print STDERR "get_plugins: Using file $plugindb_file\n" if ($DEBUG);
 	
 	if (!-e $plugindb_file) {
 		Carp::carp "LoxBerry::System::pluginversion: Could not find $plugindb_file\n";
