@@ -104,7 +104,8 @@
 	<script>
 		$(document).ready(function()
 		{ 
-		  var counter = 300;
+		  //var counter = 300;
+		  <TMPL_VAR REBOOT_IN_PROGRESS>
 		  setInterval(function() {
 		    
 		    if (counter > 0) {
@@ -117,7 +118,7 @@
 		    // Display 'counter' wherever you want to display it.
 		    if (counter === 0) 
 		    {
-		    	$('.progress-bar').css( "visibility", "hidden" );
+		    	$('.progress-bar').hide();
 		      document.location.href="/";
 		    }
 		  }, 100);
