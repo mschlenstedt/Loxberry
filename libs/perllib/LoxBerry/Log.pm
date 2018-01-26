@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.5.2";
+our $VERSION = "0.3.5.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -117,11 +117,12 @@ sub new
 			$self->{filename} = "$LoxBerry::System::lbplogdir/" . currtime('file') . "_" . $self->{name} . ".log";
 			# print STDERR "5. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 			
-		} else {
+		
+		} elsif (! $self->{nofile}) {
 			Carp::croak "Cannot determine plugin log directory";
 		}
 	} 
-	if (!$self->{filename}) {
+	if (!$self->{filename} && !$self->{nofile}) {
 		Carp::croak "Cannot smartly detect where your logfile should be placed. Check your parameters.";
 	}
 	
