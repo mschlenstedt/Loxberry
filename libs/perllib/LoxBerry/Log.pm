@@ -548,8 +548,84 @@ sub notification_content
 
 sub get_notifications_html
 {
+	
+	my %p = @_;
 	my ($package, $name, $type, $buttons) = @_;
+	
+	print STDERR "get_notifications_html called.\n" if ($DEBUG);
+	
+	$p{package} = $package if ($package);
+	$p{name} = $name if ($name);
+	$p{buttons} = $buttons if ($buttons);
+	
+	$p{error} = 1 if (!$type || $type == 2 || $type eq 'all' || $type eq 'err' || $type eq 'error' || $type eq 'errors');
+	$p{info} = 1 if (!$type || $type == 1 || $type eq 'all' || $type eq 'inf' || $type eq 'info' || $type eq 'infos');
+		
 	my @notifs = LoxBerry::Log::get_notifications($package, $name, undef, undef, 1);
+	
+	if ($DEBUG) {
+		print STDERR "Parameters used:\n";
+		print STDERR "   package: $p{package}\n";
+		print STDERR "   name: $p{name}\n";
+		print STDERR "   buttons: $p{buttons}\n";
+		print STDERR "   error: $p{error}\n";
+		print STDERR "   info: $p{info}\n";
+	}
+		
+	if (! @notifs) {
+		print STDERR "No notifications found. Returning nothing.\n" if ($DEBUG);
+		return;
+	}
+	
+	my @notify_html;
+	my $all_notifys;
+	
+	for my $not (@notifs) {
+		# Don't show info when errors are requested
+		print STDERR "Notification: $not->{SEVERITY} $not->{DATESTR} $not->{PACKAGE} $not->{NAME} $not->{CONTENT_RAW}\n" if ($DEBUG);
+		
+		
+		if (! $not->{SEVERITY} && ! $p{error} ) {
+			print STDERR "Skipping notification - is error but info requested\n" if ($DEBUG);
+			next;
+		}
+		# Don't show errors when infos are requested
+		if ( $not->{SEVERITY} eq 'err' && ! $p{error} ) {
+			print STDERR "Skipping notification - is info but error requested\n" if ($DEBUG);
+			next;
+		}
+		my $notif_line;
+		$notif_line .= 	'<div style="display:table-row;">';
+		$notif_line .= 	'<div style="display:table-cell;vertical-align: middle;width:30px;">';
+		if (! $not->{SEVERITY}) {
+			$notif_line .= '<img src="/system/images/notification_info_small.svg">';
+		} elsif ($not->{SEVERITY} eq 'err') {
+			$notif_line .= '<img src="/system/images/notification_error_small.svg">';
+		}
+		$notif_line .= "</div>";
+		$notif_line .= "<div style='display: table-cell;'><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
+		$notif_line .= "<div style='display: table-cell;text-align: right;'>";
+		$notif_line .= "<a href='#' class='ui-btn ui-icon-delete ui-mini ui-btn-icon-notext ui-corner-all'>Dismiss</a>";
+		$notif_line .= "</div>";
+		print STDERR $notif_line if ($DEBUG);
+		$notif_line .= "</div>";
+		$all_notifys .= $notif_line;
+		push (@notify_html, $notif_line);
+	}
+	
+	
+	
+	our $maintemplate = HTML::Template->new(
+				filename => "$LoxBerry::System::lbstemplatedir/get_notification_html.html",
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				%LoxBerry::System::htmltemplate_options,
+				);
+	$maintemplate->param( 'NOTIFICATIONS' => $all_notifys);
+	#print STDERR 
+	return $maintemplate->output();
+	
 	
 }
 
@@ -614,25 +690,6 @@ sub read_notificationlist
 	$content_was_read = 1;
 	print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
