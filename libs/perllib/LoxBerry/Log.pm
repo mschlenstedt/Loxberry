@@ -446,9 +446,13 @@ sub notify
 		$error = "";
 	}
 	
+	my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
 	my $filename = $notification_dir . "/" . LoxBerry::System::currtime('file') . "_${package}_${name}${error}.system";
-	open(my $fh, '>', $filename) or warn "loxberryupdatecheck: Could not create a notification at '$filename' $!";
+	open(my $fh, '>', $filename) or warn "Could not create a notification at '$filename' $!";
 	print $fh $message;
+	eval {
+		chown $uid, $gid, $fh;
+	};
 	close $fh;
 }
 
