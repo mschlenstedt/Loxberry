@@ -9,14 +9,11 @@ use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
 
 my $bins = LoxBerry::System::get_binaries();
-# print STDERR "Das Binary zu Grep ist $bins->{GREP}.";
-# system("$bins->{ZIP} myarchive.zip *");
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
 print $cgi->header;
-
 
 # Prevent 'only used once' warning
 $R::action if 0;
@@ -267,7 +264,7 @@ sub plugindb_update
 	my ($action, $md5, $value) = @_;
 
 	my @plugin_new;
-	
+	my $dbchanged;
 	
 	my @plugins = LoxBerry::System::get_plugins(1);
 	foreach my $plugin (@plugins) {
@@ -278,8 +275,14 @@ sub plugindb_update
 			next;
 		}
 		if ($plugin->{PLUGINDB_MD5_CHECKSUM} eq $md5) {
-			$plugin->{PLUGINDB_AUTOUPDATE} = $value if ($action eq 'autoupdate');
-			$plugin->{PLUGINDB_LOGLEVEL} = $value if ($action eq 'loglevel');
+			if ($action eq 'autoupdate' && $plugin->{PLUGINDB_AUTOUPDATE} ne $value) {
+				$plugin->{PLUGINDB_AUTOUPDATE} = $value;
+				$dbchanged = 1;
+			} 
+			if ($action eq 'loglevel' && $plugin->{PLUGINDB_LOGLEVEL} ne $value) {
+				$plugin->{PLUGINDB_LOGLEVEL} = $value;
+				$dbchanged = 1;
+			}
 		}
 		$pluginline = 
 			$plugin->{PLUGINDB_MD5_CHECKSUM} . "|" . 
@@ -297,19 +300,16 @@ sub plugindb_update
 		push(@plugin_new, $pluginline);
 	}
 	
-	open(my $fh, '>', "$lbsdatadir/plugindatabase.dat");
-	print $fh @plugin_new;
-	close($fh);
-    
+	if ($dbchanged) {
+		open(my $fh, '>', "$lbsdatadir/plugindatabase.dat");
+		print $fh @plugin_new;
+		close($fh);
+		#print STDERR "plugindatabase VALUES CHANGED.\n";
+		
+	} else {
+		#print STDERR "plugindatabase nothing changed.\n";
+	}
 }
-
-
-
-
-
-
-
-
 
 ###################################################################
 # test environment variables
