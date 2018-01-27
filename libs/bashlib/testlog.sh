@@ -5,9 +5,10 @@ source $LBHOMEDIR/libs/bashlib/loxberry_log.sh
 NAME=Test
 PACKAGE=System
 FILENAME=${LBSLOG}/test.log
+#APPEND=1
 #ADDTIME=1
 #LOGLEVEL=3
-STDERR=1
+#STDERR=1
 #NOFILE=1
 
 LOGSTART "Dies ist der Log Start"
@@ -25,5 +26,7 @@ LOGEMERGE "Dies ist eine Emergency Meldung"
 
 LOGEND "Ich habe fertig"
 
-echo "Logfile Inhalt:"
-cat $LOGFILE
+if [ -n "$LOGFILE" ];then
+	echo "Logfile Inhalt:"
+	cat $LOGFILE
+fi
