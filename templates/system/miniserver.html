@@ -1,4 +1,4 @@
-<!-- ** START template/system/miniserver.html 19.01.2018 19:22:13 ************************************************************************************ -->
+<!-- ** START template/system/miniserver.html 27.01.2018 14:39:31 ************************************************************************************ -->
 <TMPL_IF FORM>
 <form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
 	<input type="hidden" name="saveformdata" value="1">
@@ -121,13 +121,9 @@
 		</td>
 		<td>
 			<SCRIPT>
-				function isUrlValid(url)
-				{
-					return /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/i.test(url);
-				}
 				function note_link (note_object)
 				{
-					if (isUrlValid($("#"+note_object).val()))
+					if ( validate_chk_value( "#"+note_object,'keyup','special:url') )
 					{
 						$("#"+note_object+"_url").attr("href",$("#"+note_object).val());
 						$("#"+note_object+"_url").css("visibility", "visible");
@@ -137,10 +133,9 @@
 						$("#"+note_object+"_url").attr("href","#");
 						$("#"+note_object+"_url").css("visibility", "hidden");
 					}
-					
 				};
 			</SCRIPT>
-			<textarea id="miniservernote<TMPL_VAR MSNO>" name="miniservernote<TMPL_VAR MSNO>" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-À-ÖØ-öø-ÿ" data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_NOTE>" data-validation-length="Max512"><TMPL_VAR MSNOTE></textarea>
+			<textarea id="miniservernote<TMPL_VAR MSNO>" name="miniservernote<TMPL_VAR MSNO>" type="textarea" class="textfield" data-validation-coloring="off" data-validation-rule=".*{0,512}" data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_NOTE>" ><TMPL_VAR MSNOTE></textarea>
 			<SCRIPT>
 				$("#miniservernote<TMPL_VAR MSNO>").keyup(function()
 				{
