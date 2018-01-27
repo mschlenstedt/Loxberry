@@ -1,27 +1,50 @@
 <!-- ** START template/system/plugininstall.html 19.01.2018 19:18:59  ************************************************************************************ -->
 <TMPL_IF FORM>
+	<div style="display:flex; width:100%; text-align:left;">
+		<div style="margin:auto; padding:10px;text-align:left;">
+			<img width="80" height="80" src="/system/images/icons/main_plugins_install.svg">
+		</div>
+		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
+			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
+		</div>
+	</div>
+
+	<div style="height:15px;">
+	</div>
+
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
 		<input type="hidden" name="saveformdata" value="1">
-		<div style="margin:auto; padding:10px; display:flex; text-align:left; width:90%; white-space: nowrap; ">
-			<div style="padding-right:10px; text-align:left; margin-top:15px;">
+		<div style="margin:auto; padding:10px 10px 0px 10px; display:flex; text-align:left; width:100%; white-space: nowrap; ">
+			<div style="width:25%; text-align:left; margin-top:15px;">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
-			<div style="text-align:left; width:100%;">
+			<div style="text-align:left; width:75%;">
 				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
 			</div>
-			<div style="margin:auto; display:flex; width:100%;">
-				<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap; ">
-					<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
-				</div>
-				<div style="width:100%; ">
-					<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
-				</div>
-				<div style=" width:10%; text-align:left; margin-top:3px;  padding-left:20px;">
-					<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
-				</div>
+		</div>
+		<div style="margin:auto; padding:0px 10px 10px 10px; display:flex; text-align:left; width:100%; white-space: nowrap; ">
+			<div style="width:25%; text-align:left;">
+			</div>
+			<div style="text-align:left; width:75%;">
+				<input type="text"  id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>">
+			</div>
+		</div>
+		<div style="margin:auto; display:flex; width:30%; text-align:center">
+			<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap; ">
+				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
+			</div>
+			<div style="width:100%;">
+				<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+			</div>
+			<div style=" width:10%; text-align:left; margin-top:3px;  padding-left:20px;">
+				<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
 			</div>
 		</div>
 	</form>
+
+	<div style="height:60px;">
+	</div>
+
 	<div style="display:flex; width:100%; text-align:left;">
 		<div style="margin:auto; padding:10px;text-align:left;">
 			<img width="80" height="80" src="/system/images/icons/main_plugins_title.svg">
