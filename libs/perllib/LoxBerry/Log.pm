@@ -439,7 +439,10 @@ sub notify
 		return;
 	}
 	$package = lc($package);
+	$package =~ s/_//g;
 	$name = lc($name);
+	$name =~ s/_//g;
+	
 	if ($error) {
 		$error = '_err';
 	} else { 
