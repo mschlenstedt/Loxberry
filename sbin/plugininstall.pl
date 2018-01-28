@@ -228,13 +228,17 @@ $message = "Logfile: $logfile";
 &loginfo;
 if ( ! $is_cgi ) {
 	open (F, ">$logfile");
+	flock(F,2);
 	  print F "";
+	flock(F,8);
 	close (F);
 }
 $message =  "Statusfile: $statusfile";
 &loginfo;
 open (F, ">$statusfile");
+flock(F,2);
   print F "1";
+flock(F,8);
 close (F);
 
 # Starting
@@ -1065,7 +1069,9 @@ if (-e "$aptfile") {
       $message =  "$SL{'PLUGININSTALL.OK_APTREFRESH'}";
       &logok;
       open(F,">$lbhomedir/data/system/lastaptupdate.dat");
+	flock(F,2);
         print F $now;
+	flock(F,8);
       close(F);
     }
   }
@@ -1117,7 +1123,9 @@ if (-e "$aptfile") {
       $message =  "$SL{'PLUGININSTALL.OK_APTREFRESH'}";
       &logok;
       open(F,">$lbhomedir/data/system/lastaptupdate.dat");
+	flock(F,2);
         print F $now;
+	flock(F,8);
       close(F);
     }
     # And try to install packages again...
@@ -1303,12 +1311,16 @@ if ($? eq 0) {
 if (-e $statusfile) {
   if ($preboot) {
     open (F, ">$statusfile");
+    flock(F,2);
       print F "3";
+    flock(F,8);
     close (F);
     reboot_required("$SL{'PLUGININSTALL.INF_REBOOT'} $ptitle");
   } else {
     open (F, ">$statusfile");
+    flock(F,2);
       print F "0";
+    flock(F,8);
     close (F);
   }
 }
@@ -1472,7 +1484,9 @@ sub logerr {
 	if ( !$is_cgi ) {
 		print "\e[1m\e[31mERROR:\e[0m $message\n";
   		open (LOG, ">>$logfile");
+		flock(LOG,2);
     		print LOG "<ERROR> $message\n";
+		flock(LOG,8);
   		close (LOG);
 	} else {
     		print "<ERROR> $message\n";
@@ -1487,7 +1501,9 @@ sub logfail {
 	if ( !$is_cgi ) {
 		print "\e[1m\e[31mFAIL:\e[0m $message\n";
   		open (LOG, ">>$logfile");
+		flock(LOG,2);
     		print LOG "<FAIL> $message\n";
+		flock(LOG,8);
   		close (LOG);
 	} else {
     		print "<FAIL> $message\n";
@@ -1503,7 +1519,9 @@ sub logfail {
 
 	if (-e $statusfile) {
 	  open (F, ">$statusfile");
+	  flock(F,2);
 	    print F "2";
+	  flock(F,8);
 	  close (F);
 	}
 
@@ -1516,7 +1534,9 @@ sub logwarn {
 	if ( !$is_cgi ) {
 		print "\e[1m\e[31mWARNING:\e[0m $message\n";
   		open (LOG, ">>$logfile");
+		flock(LOG,2);
     		print LOG "<WARNING> $message\n";
+		flock(LOG,8);
   		close (LOG);
 	} else {
     		print "<WARNING> $message\n";
@@ -1532,7 +1552,9 @@ sub loginfo {
 	if ( !$is_cgi ) {
 		print "\e[1mINFO:\e[0m $message\n";
   		open (LOG, ">>$logfile");
+		flock(LOG,2);
     		print LOG "<INFO> $message\n";
+		flock(LOG,8);
   		close (LOG);
 	} else {
     		print "<INFO> $message\n";
@@ -1547,7 +1569,9 @@ sub logok {
 	if ( !$is_cgi ) {
 		print "\e[1m\e[32mOK:\e[0m $message\n";
   		open (LOG, ">>$logfile");
+		flock(LOG,2);
     		print LOG "<OK> $message\n";
+		flock(LOG,8);
   		close (LOG);
 	} else {
     		print "<OK> $message\n";
