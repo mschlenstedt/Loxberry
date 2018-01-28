@@ -12,12 +12,13 @@
 $(document).on('pagecreate',function() {
 	$(".notifdelete").click(function() {
 		var delid = $(this).attr('data-delid');
+		var delid_encoded = delid.replace(".", "\\.");
 		console.log("Delete key", delid);
-		$("#notifyrow"+delid).fadeOut();
-		//$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
-		//				{ 	action: 'notify-deletekey',
-		//					value: delid,
-		//				});
+		$("#notifyrow"+delid_encoded).fadeOut();
+		$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+						{ 	action: 'notify-deletekey',
+							value: delid,
+						});
 	});
 
 });
