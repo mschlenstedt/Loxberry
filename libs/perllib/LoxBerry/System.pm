@@ -1091,11 +1091,13 @@ sub reboot_required
 {
 	my ($message) = shift;
 	open(my $fh, ">>", $LoxBerry::System::reboot_required_file) or Carp::carp "Cannot open/create reboot.required file $reboot_required_file.";
+	flock($fh,2);
 	if (! $message) {
 		print $fh "A reboot was requested by $0\n";
 	} else {
 		print $fh "$message\n";
 	}
+	flock($fh,8);
 	close $fh;
 	eval {
 		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
