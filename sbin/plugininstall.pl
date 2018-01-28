@@ -559,12 +559,15 @@ close (F);
 # Sort Plugindatabase
 &sort_plugins;
 
-# Create shadow plugindatabase.dat
+# Create shadow plugindatabase.dat and backup of plugindatabase
 $message = $SL{'PLUGININSTALL.INF_SHADOWDB'};
 &loginfo;
 system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.dat- 2>&1");
 &setrights ("644", "0", "$lbsdatadir/plugindatabase.dat-", "PLUGIN DATABASE");
 &setowner ("root", "0", "$lbsdatadir/plugindatabase.dat-", "PLUGIN DATABASE");
+system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.bkp 2>&1");
+&setrights ("644", "0", "$lbsdatadir/plugindatabase.bkp", "PLUGIN DATABASE");
+&setowner ("loxberry", "0", "$lbsdatadir/plugindatabase.bkp", "PLUGIN DATABASE");
 
 # Starting installation
 
