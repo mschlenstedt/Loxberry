@@ -154,6 +154,8 @@ if ( !$found ) {
 
 &purge_installation ("all");
 
+system ("rm /var/lock/plugininstall.lock");
+
 exit (0);
 
 }
@@ -1357,7 +1359,7 @@ if ($chkhcpath) {
   print "$chkhcpath";
 }
 
-
+system ("rm /var/lock/plugininstall.lock");
 exit (0);
 
 }
@@ -1525,6 +1527,7 @@ sub logfail {
 	  close (F);
 	}
 
+	system ("rm /var/lock/plugininstall.lock");
 	exit (1);
 
 }
