@@ -64,9 +64,9 @@
 		<TMPL_IF PLUGINS>
 			<TMPL_LOOP PLUGINS>
 			<tr>
-				<td rowspan="2"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img src="/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png"></a>
+				<td rowspan="2"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false"><img src="/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png"></a>
 				</td>
-				<td><span style="font-size:150%;"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
+				<td><span style="font-size:150%;"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
 				<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
 				</td>
 				<td style="vertical-align: middle;"><b>Version <TMPL_VAR PLUGINDB_VERSION></b>
