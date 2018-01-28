@@ -37,7 +37,10 @@ elsif ($action eq 'plugin-loglevel') {plugindb_update('loglevel', $R::pluginmd5,
 elsif ($action eq 'plugin-autoupdate') {plugindb_update('autoupdate', $R::pluginmd5, $R::value); }
 elsif ($action eq 'testenvironment') { &testenvironment; }
 elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
+elsif ($action eq 'notify-deletekey') {notifydelete();}
 else   { print "<red>Action not supported.</red>"; }
+
+exit;
 
 ################################
 # unattended-upgrades setting
@@ -308,6 +311,25 @@ sub plugindb_update
 		
 	} else {
 		#print STDERR "plugindatabase nothing changed.\n";
+	}
+}
+
+###################################################################
+# Delete notify
+###################################################################
+sub notifydelete
+{
+	require LoxBerry::Log;
+	
+	my $key = $R::value;
+	$key =~ s/[\/\\]//g;
+	
+	$LoxBerry::Log::notification_dir if (0);
+	
+	my $filename = "$LoxBerry::Log::notification_dir/$key";
+	print STDERR "Delete file $filename\n";
+	if (-e $filename ) { 
+		unlink $filename;
 	}
 }
 

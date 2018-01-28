@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.5.3";
+our $VERSION = "0.3.5.4";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -595,7 +595,7 @@ sub get_notifications_html
 			next;
 		}
 		my $notif_line;
-		$notif_line .= 	'<div style="display:table-row;">';
+		$notif_line .= 	"<div style='display:table-row;' id='notifyrow$not->{KEY}'>";
 		$notif_line .= 	'<div style="display:table-cell;vertical-align: middle;width:30px;">';
 		if (! $not->{SEVERITY}) {
 			$notif_line .= '<img src="/system/images/notification_info_small.svg">';
@@ -603,11 +603,11 @@ sub get_notifications_html
 			$notif_line .= '<img src="/system/images/notification_error_small.svg">';
 		}
 		$notif_line .= "</div>";
-		$notif_line .= "<div style='display: table-cell;'><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
+		$notif_line .= "<div style='display: table-cell;width:90%;'><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
 		$notif_line .= "<div style='display: table-cell;text-align: right;'>";
-		$notif_line .= "<a href='#' class='ui-btn ui-icon-delete ui-mini ui-btn-icon-notext ui-corner-all'>Dismiss</a>";
+		$notif_line .= "<a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>Dismiss</a>";
 		$notif_line .= "</div>";
-		print STDERR $notif_line if ($DEBUG);
+		# print STDERR $notif_line if ($DEBUG);
 		$notif_line .= "</div>";
 		$all_notifys .= $notif_line;
 		push (@notify_html, $notif_line);

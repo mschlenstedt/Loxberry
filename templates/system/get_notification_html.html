@@ -3,9 +3,25 @@
 		<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; display: block; margin-left: auto; margin-right: auto;">
 			<img src="/system/images/notification_info_big.svg" >
 		</div>
-		<div style="display:table; padding: 5px; font-size:90%;">
+		<div style="display:table; padding: 5px;">
 			<TMPL_VAR NOTIFICATIONS>
 		</div>
 	</div>
+
+<script>
+$(document).on('pagecreate',function() {
+	$(".notifdelete").click(function() {
+		var delid = $(this).attr('data-delid');
+		console.log("Delete key", delid);
+		$("#notifyrow"+delid).fadeOut();
+		//$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+		//				{ 	action: 'notify-deletekey',
+		//					value: delid,
+		//				});
+	});
+
+});
+
+</script>
 
 <!-- ** END template/system/get_notification_html.html ************************************************************************************ -->
