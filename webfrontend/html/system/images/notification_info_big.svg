@@ -13,9 +13,9 @@
    viewBox="0 0 30.000003 30"
    width="30"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="info_bommel_big.svg">
+   sodipodi:docname="notification_info_big.svg">
   <title
-     id="title4141">Reboot required</title>
+     id="title4141">Info</title>
   <metadata
      id="metadata13">
     <rdf:RDF>
@@ -24,7 +24,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title>Reboot required</dc:title>
+        <dc:title>Info</dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -42,9 +42,9 @@
      id="namedview11"
      showgrid="false"
      inkscape:zoom="20.094487"
-     inkscape:cx="17.190804"
+     inkscape:cx="5.7199961"
      inkscape:cy="15.398682"
-     inkscape:window-x="1912"
+     inkscape:window-x="-8"
      inkscape:window-y="1072"
      inkscape:window-maximized="1"
      inkscape:current-layer="g4143"

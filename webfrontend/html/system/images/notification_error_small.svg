@@ -7,15 +7,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   height="30"
+   height="16"
    id="svg4658"
    version="1.1"
-   viewBox="0 0 30.000003 30"
-   width="30"
+   viewBox="0 0 16.000002 16"
+   width="16"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="reboot_required.svg">
+   sodipodi:docname="notification_error_small.svg">
   <title
-     id="title4141">Reboot required</title>
+     id="title4141">Error</title>
   <metadata
      id="metadata13">
     <rdf:RDF>
@@ -24,7 +24,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title>Reboot required</dc:title>
+        <dc:title>Error</dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -42,9 +42,9 @@
      id="namedview11"
      showgrid="false"
      inkscape:zoom="20.094487"
-     inkscape:cx="17.190804"
+     inkscape:cx="5.7199961"
      inkscape:cy="15.398682"
-     inkscape:window-x="1912"
+     inkscape:window-x="-8"
      inkscape:window-y="1072"
      inkscape:window-maximized="1"
      inkscape:current-layer="g4143"
@@ -53,23 +53,22 @@
      id="defs4660" />
   <g
      id="layer2"
-     transform="matrix(0.15537045,0,0,0.15557762,-223.48131,-119.04355)">
+     transform="matrix(0.15537045,0,0,0.15557762,-223.48131,-133.04355)">
     <g
        id="g4143"
-       transform="matrix(0.13832806,0,0,0.13832806,1336.7536,727.93085)">
-      <circle
+       transform="matrix(0.28019896,0,0,0.28019896,1035.9143,688.61721)">
+      <ellipse
+         ry="179.69301"
+         rx="179.69298"
          style="display:inline;opacity:1;fill:#ef2929;fill-opacity:1;stroke:none;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.63372091"
-         r="339.70789"
-         id="circle5045"
-         cy="-456.80579"
-         cx="1780.8065"
-         transform="translate(0,1073.6222)" />
+         id="circle5045-7"
+         cy="775.89459"
+         cx="1620.9431" />
       <path
          inkscape:connector-curvature="0"
-         transform="translate(0,1073.6222)"
          style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.63372091"
          id="path5047"
-         d="m 1778.3934,-702.68361 c -24.198,0 -45.7525,17.09403 -58.3305,36.21373 -18.3838,27.94472 -15.374,65.7984 -14.8555,99.24382 0.8565,55.24183 8.6469,112.23992 29.6066,163.07923 11.7609,28.5274 22.5362,54.6364 46.1476,54.55105 20.8761,-0.0752 35.0823,-30.6882 42.0092,-53.44625 16.7084,-54.89509 32.9731,-106.89858 33.7436,-164.18403 0.4822,-35.84151 1.6179,-76.9915 -19.8675,-105.68346 -13.107,-17.50307 -35.6346,-29.77409 -58.4535,-29.77409 z m 3.8516,396.74167 a 47.506345,47.506345 0 0 0 -47.5067,47.50684 47.506345,47.506345 0 0 0 47.5067,47.5067 47.506345,47.506345 0 0 0 47.5068,-47.5067 47.506345,47.506345 0 0 0 -47.5068,-47.50684 z" />
+         d="m 1619.6667,645.83417 c -12.7998,0 -24.2014,9.04212 -30.8547,19.15574 -9.7244,14.78173 -8.1322,34.80494 -7.858,52.49634 0.4531,29.2209 4.574,59.37079 15.6608,86.26293 6.2211,15.08994 11.9208,28.90065 24.4105,28.85549 11.0426,-0.0398 18.5571,-16.23293 22.2213,-28.2711 8.8381,-29.03749 17.4415,-56.54542 17.8491,-86.84732 0.255,-18.95885 0.8558,-40.72568 -10.5092,-55.90267 -6.9331,-9.25848 -18.8494,-15.74941 -30.9198,-15.74941 z m 2.0374,209.86179 a 25.129109,25.129113 0 0 0 -25.1292,25.12936 25.129109,25.129113 0 0 0 25.1292,25.12931 25.129109,25.129113 0 0 0 25.1293,-25.12931 25.129109,25.129113 0 0 0 -25.1293,-25.12936 z" />
     </g>
   </g>
 </svg>
