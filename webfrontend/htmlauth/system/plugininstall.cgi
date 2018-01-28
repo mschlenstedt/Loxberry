@@ -111,14 +111,6 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 my $lang = lblanguage();
 
 
-##########################################################################
-# Cleaning
-##########################################################################
-
-# Clean up old files
-system("rm -r -f /tmp/uploads/");
-
-
 #########################################################################
 # What should we do
 #########################################################################
@@ -128,8 +120,6 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.
 # Menu
 if (!$do || $do eq "form") {
   print STDERR "FORM called\n";
-  $maintemplate->param("FORM", 1);
-
   &form;
 }
 
@@ -159,6 +149,16 @@ exit;
 #####################################################
 
 sub form {
+
+	# Check for running autoupdates/installations...
+	if ( -e "/var/lock/pluginsupdate.lock" || -e "/var/lock/lbupdate.lock" || -e "/var/lock/plugininstall.lock" ) {
+  		print STDERR "Running Autoupdates/Installations\n";
+		$maintemplate->param("LOCK", 1);
+	} else {
+		# Clean up old files
+		system("rm -r -f /tmp/uploads/*");
+  		$maintemplate->param("FORM", 1);
+	}
 
 	# Print Template
 	LoxBerry::Web::head();
@@ -190,9 +190,19 @@ sub uninstall {
 			}
 		}
 	} else {
-		print STDERR "Doing uninstallation of $pid.";
-		$maintemplate->param("UNINSTALL", 1);
-		system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid 2>&1");
+		# Check for running autoupdates/installations...
+		if ( -e "/var/lock/pluginsupdate.lock" || -e "/var/lock/lbupdate.lock" || -e "/var/lock/plugininstall.lock" ) {
+			print STDERR "Running Autoupdates/Installations\n";
+			$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_RUNNING_UPDATES'};
+			&error;
+		} else {
+			# Clean up old files
+			system("rm -r -f /tmp/uploads/*");
+			# Uninstallation
+			print STDERR "Doing uninstallation of $pid.";
+			$maintemplate->param("UNINSTALL", 1);
+			system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid 2>&1");
+		}
 	}
 	
 	# Print Template
@@ -215,6 +225,17 @@ sub uninstall {
 #####################################################
 
 sub install {
+	
+	# Check for running autoupdates/installations...
+	if ( -e "/var/lock/pluginsupdate.lock" || -e "/var/lock/lbupdate.lock" || -e "/var/lock/plugininstall.lock" ) {
+		print STDERR "Running Autoupdates/Installations\n";
+		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_RUNNING_UPDATES'};
+		&error;
+	} else {
+		# Clean up old files
+		system("rm -r -f /tmp/uploads/*");
+		system("touch /var/lock/plugininstall.lock");
+	}
 
 	# Check if SecurePIN is correct
 	if ( LoxBerry::System::check_securepin($securepin) ) {
@@ -321,6 +342,8 @@ exit;
 #####################################################
 
 sub error {
+
+	system("rm /var/lock/plugininstall.lock");
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};
 

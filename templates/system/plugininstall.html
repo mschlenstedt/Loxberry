@@ -19,15 +19,17 @@
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
 			<div style="text-align:left; width:75%;">
-				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*">
+				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*">
 			</div>
 		</div>
 		<div style="margin:auto; padding:0px 10px 10px 10px; display:flex; text-align:left; width:100%; white-space: nowrap; ">
 			<div style="width:25%; text-align:left;">
 			</div>
 			<div style="text-align:left; width:75%;">
-				<input type="text"  id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_NOFOLDER_OR_ZIP>" data-validation-rule=".*\S.*" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>">
+				<input type="text"  id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>">
 			</div>
+		</div>
+		<div style="height:30px;">
 		</div>
 		<div style="margin:auto; display:flex; width:30%; text-align:center">
 			<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap; ">
@@ -150,7 +152,9 @@
 		{
 			validate_enable('#uploadfile');
 			validate_enable('#securepin');
-			validate_chk_object(['#securepin','#uploadfile']);
+			validate_enable('#archiveurl');
+			validate_chk_object(['#securepin']);
+			$( '#securepin' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
 		});
 		
 		function post_value (action, pluginmd5, value)
@@ -185,6 +189,30 @@
 			data-icon="delete" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
 			data-icon="check" href="<TMPL_VAR SELFURL>&answer=1"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+			</p>
+		</td>
+	</tr>
+	</table>
+	</center>
+</TMPL_IF>
+
+<TMPL_IF LOCK>
+	<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+			<h2><TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>
+			<p>
+			<TMPL_VAR PLUGININSTALL.UI_INSTALL_ERR_RUNNING_UPDATES>
+			<br/>
+			<br/>
+			</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<p>
+			 <a id="btnreload" href="javascript:location.reload();" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
 			</p>
 		</td>
 	</tr>
