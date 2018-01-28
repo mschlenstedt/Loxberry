@@ -83,7 +83,9 @@ sub secupdates
 
 	if ($value ne 'query') {
 		open(FILE, '>', $aptfile) || die "File not found";
+		flock(FILE,2);
 		print FILE @newlines;
+		flock(FILE,8);
 		close(FILE);
 	}
 }
@@ -125,7 +127,9 @@ sub secupdatesautoreboot
 
 	if ($value ne 'query') {
 		open(FILE, '>', $aptfile) || die "File not found";
+		flock(FILE,2);
 		print FILE @newlines;
+		flock(FILE,8);
 		close(FILE);
 	}
 }
@@ -305,7 +309,9 @@ sub plugindb_update
 	
 	if ($dbchanged) {
 		open(my $fh, '>', "$lbsdatadir/plugindatabase.dat");
+		flock($fh,2);
 		print $fh @plugin_new;
+		flock($fh,8);
 		close($fh);
 		#print STDERR "plugindatabase VALUES CHANGED.\n";
 		
