@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="0.3.3.3";
+my $scriptversion="0.3.3.4";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -64,6 +64,7 @@ my $openerr;
 my $timestamp;
 my $pluginname;
 my $message;
+my $check;
 
 # Language
 my $lang = lblanguage();
@@ -95,6 +96,26 @@ LOGINF "Version of $0 is $scriptversion";
 my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
 LOGINF "Executing user of $0 is $curruser";
 
+##########################################################################
+# Check if anothe rupdate or installation is running...
+##########################################################################
+
+for (my $i=0; $i <= 10; $i++) {
+	if ( -e "/var/lock/pluginsupdate.lock" || -e "/var/lock/lbupdate.lock" || -e "/var/lock/plugininstall.lock" ) {
+		sleep (60);
+	} else {
+		last;
+		$check = 1;
+	}
+}
+
+if (!$check) {
+	LOGCRIT "There seems to be another update or installation running. I cannot wait anymore. Giving up...";
+	exit (1);
+}
+
+# Create Lock file
+system ("touch /var/lock/pluginsupdate.lock");
 
 ##########################################################################
 # Parse Plugins
@@ -286,6 +307,7 @@ foreach (@plugins) {
 
 # Clean up
 system ("rm -rf $update_path");
+system ("rm /var/lock/pluginsupdate.lock");
 
 exit;
 
