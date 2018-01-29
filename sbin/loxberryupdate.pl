@@ -73,6 +73,8 @@ my $log = LoxBerry::Log->new(
 		addtime => 1,
 );
 
+our %SL = LoxBerry::System::readlanguage();
+
 LOGOK "Update handed over from LoxBerry Update Check to LoxBerry Update";
 LOGWARN "New logfile was created as handover of logfilename did not work" if (!$logfilename);
 

@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.5.4";
+our $VERSION = "0.3.5.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -545,6 +545,7 @@ sub notification_content
 	my $contenthtml = $content;
 	$contenthtml =~ s/\n/<br>\n/g;
 	$contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
+	print STDERR "Contentraw: $content ContentHTML: $contenthtml\n" if ($DEBUG);
 	return $content, $contenthtml;
 }
 
@@ -652,7 +653,7 @@ sub read_notificationlist
 {
 	my ($getcontent) = @_;
 	return if (@notifications && !$getcontent); 
-	return if (@notifications && $getcontent && $content_was_read);
+	#return if (@notifications && $getcontent && $content_was_read);
 		
 	opendir( my $DIR, $notification_dir );
 	my @files = sort {$b cmp $a} readdir($DIR);

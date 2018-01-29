@@ -150,7 +150,7 @@ LOGINF "   dryrun: " . $cgi->param('dryrun') . "\n";
 LOGINF "   output: " . $formatjson;
 
 # Read system language
-my %SL = LoxBerry::Web::readlanguage();
+my %SL = LoxBerry::System::readlanguage();
 # LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
 
 my $lbversion;
