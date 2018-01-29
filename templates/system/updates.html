@@ -166,12 +166,19 @@
 <div class="wide" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
 <div class="divTable">
 <div class="divTableBody">
-<div class="divTableCell" style="width:50%;">
+<div class="divTableCell">
 <p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
 
 </div>
 <div class="divTableCell hint" style="border:2px; border-style:outset; border-radius:5px;padding:10px 10px 10px 10px;background-color:LightYellow;">
-<p><TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION> <TMPL_VAR LBVERSION></p>
+<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
+	<div style="flex-grow: 2;">
+	<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION> <TMPL_VAR LBVERSION>
+	</div>
+	<div style="flex-grow: 1;">
+	<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
+	</div>
+</div>
 <p><TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE> <a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
 <p id="lbu_info">&nbsp;</p>
 <div id="lbu_error" style="color:red;"></div>
@@ -180,13 +187,9 @@
 <div id="lbu_published_at">&nbsp;</div>
 <p><TMPL_VAR UPDATES.LBU_LABEL_CHECKGITHUB> <a href="https://github.com/mschlenstedt/Loxberry/releases" target="_blank">All Releases</a></p>
 </div>
-<div class="divTableCell">
-<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
-</div>
-
 
 <div class="divTableRow">
-<div class="divTableCell" style="width:50%;">
+<div class="divTableCell">
 	<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
 	<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
 	<br><TMPL_VAR UPDATES.LBU_HINT_PRERELEASE>
@@ -195,7 +198,7 @@
 	
 </div>
 <div class="divTableCell">
-	<fieldset data-role="controlgroup" data-mini="true" style="min-width:250px;">
+	<fieldset data-role="controlgroup" data-mini="true">
 		<TMPL_VAR RELEASETYPE_RADIO>
 	</fieldset>
 </div>
@@ -205,18 +208,31 @@
 	<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE>
 </div>
 <div class="divTableCell">
-<fieldset data-role="controlgroup" data-mini="true" style="min-width:250px; ">
+<fieldset data-role="controlgroup" data-mini="true">
 	<TMPL_VAR INSTALLTYPE_RADIO>
-</fieldset>
-</div>
-<div class="divTableCell">
-<fieldset id="#installtime" data-role="controlgroup" data-mini="true" style="min-width:150px">
-	<TMPL_VAR INSTALLTIME_RADIO>
 </fieldset>
 </div>
 </div>
 <div class="divTableRow">
-<div class="divTableCell" style="width:50%;">
+	<div class="divTableCell">
+	<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTIME>
+	
+	</div>
+	
+	
+	
+	
+	<div class="divTableCell">
+	<fieldset id="#installtime" data-role="controlgroup" data-mini="true">
+		<TMPL_VAR INSTALLTIME_RADIO>
+	</fieldset>
+	</div>
+</div>
+
+
+
+<div class="divTableRow">
+<div class="divTableCell">
 <TMPL_VAR UPDATES.LBU_LABEL_BUTTONS>
 </div>
 <div class="divTableCell">
