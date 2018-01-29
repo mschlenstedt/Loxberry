@@ -598,16 +598,16 @@ sub get_notifications_html
 			next;
 		}
 		my $notif_line;
-		$notif_line .= 	"<div style='display:table-row;' id='notifyrow$not->{KEY}'>";
-		$notif_line .= 	'<div style="display:table-cell;vertical-align: middle;width:30px;">';
+		$notif_line .= 	"<div style='display:table-row;' class='notifyrow' id='notifyrow$not->{KEY}'>";
+		$notif_line .= 	'<div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">';
 		if (! $not->{SEVERITY}) {
 			$notif_line .= '<img src="/system/images/notification_info_small.svg">';
 		} elsif ($not->{SEVERITY} eq 'err') {
 			$notif_line .= '<img src="/system/images/notification_error_small.svg">';
 		}
 		$notif_line .= "</div>";
-		$notif_line .= "<div style='display: table-cell;width:90%;'><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
-		$notif_line .= "<div style='display: table-cell;text-align: right;'>";
+		$notif_line .= "<div style='vertical-align: middle; width:90%; display: table-cell; '><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
+		$notif_line .= "<div style='vertical-align: middle; width:10%; display: table-cell; align:right; text-align: right;'>";
 		$notif_line .= "<a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>Dismiss</a>";
 		$notif_line .= "</div>";
 		# print STDERR $notif_line if ($DEBUG);
