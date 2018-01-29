@@ -7,11 +7,11 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   height="16"
+   height="21"
    id="svg4658"
    version="1.1"
-   viewBox="0 0 16.000002 16"
-   width="16"
+   viewBox="0 0 21.000003 21"
+   width="21"
    inkscape:version="0.91 r13725"
    sodipodi:docname="notification_info_small.svg">
   <title
@@ -53,13 +53,13 @@
      id="defs4660" />
   <g
      id="layer2"
-     transform="matrix(0.15537045,0,0,0.15557762,-223.48131,-133.04355)">
+     transform="matrix(0.15537045,0,0,0.15557762,-223.48131,-128.04355)">
     <g
        id="g4143"
        transform="matrix(0.28019896,0,0,0.28019896,1035.9143,688.61721)">
       <g
          id="g4167"
-         transform="matrix(0.52841431,0,0,0.52841431,679.60145,451.08317)">
+         transform="matrix(0.7031603,0,0,0.7031603,425.48902,286.21755)">
         <circle
            transform="translate(0,1073.6222)"
            cx="1780.8065"
