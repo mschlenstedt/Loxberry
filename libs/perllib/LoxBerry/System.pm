@@ -1142,6 +1142,125 @@ sub diskspaceinfo
 	}
 
 
+#########################################################
+# File locking features
+# To keep LoxBerry consistent 
+#########################################################
+#
+# lock
+# Params: 	lockfile => 'lbupdate' (omit to only get status of important files)
+#			wait => 120 (sec) (omit for immediate return)
+# Return:
+#	undef	lock is done, or nothing is locked
+#	$name	On error, string with the locked file
+
+sub lock 
+{
+	
+	require File::Pid;
+	
+	my %p = @_;	
+	
+	if ($p{wait} && $p{wait} < 5) {
+		print STDERR "Setting wait to 5\n" if ($DEBUG);
+		$p{wait} = 5;
+	}
+		
+	print STDERR "lock: file $p{lockfile} wait $p{wait}\n"  if ($DEBUG);
+	
+	# Read important lock files list
+	my $importantlockfilesfile = "$LoxBerry::System::lbsconfigdir/lockfiles.default";
+	my $openerr;
+	open(my $fh, "<", $importantlockfilesfile) or ($openerr = 1);
+	if ($openerr) {
+		Carp::carp "Error opening important lock files file  $importantlockfilesfile";
+		# &error;
+		return "Error";
+		}
+	my @data = <$fh>;
+	close $fh;
+	
+	# Check other lockfiles
+	my $lockfilename;
+	foreach my $lockfile (@data) {
+		$lockfile = LoxBerry::System::trim($lockfile);
+		$lockfilename = "/var/lock/$lockfile.lock";
+		print STDERR "Read: $lockfile ($lockfilename)\n"  if ($DEBUG);
+		next if (! -e $lockfilename);
+		next if ($p{lockfile} eq $lockfile); # At the moment, skip own file
+		print STDERR "Lock test: Locking $lockfilename\n"  if ($DEBUG);
+		
+		my $delay = 0;
+		my $pidfile = File::Pid->new( { file => $lockfilename } );
+		my $pid = $pidfile->pid;
+		print STDERR "File $lockfilename has pid $pid\n"  if ($DEBUG);
+		my $seemsrunning;
+		do {
+			print STDERR "running loop delay $delay from $p{wait}\n" if ($DEBUG);
+			if (-d "/proc/$pid") {
+				print STDERR "PID $pid is running\n" if ($DEBUG);
+				return $lockfile if ( ! $p{wait} );
+				$seemsrunning = 1;
+				
+			} else {
+				print STDERR "Trying to remove unused PID file\n" if ($DEBUG);
+				$pidfile->remove if (-e $lockfilename);
+				$seemsrunning = 1 if (-e $lockfilename);
+				$seemsrunning = 0 if (! -e $lockfilename);
+				return $lockfile if ($seemsrunning && ! $p{wait}); 
+				
+				last if ($seemsrunning == 0);
+			}
+			sleep(5);
+			$delay += 5;
+			
+		} while ($delay < $p{wait});
+		
+		return $lockfile if ($seemsrunning);
+	}
+
+	# Check and set own lockfile
+	if ($p{lockfile}) {
+		$lockfilename = "/var/lock/$p{lockfile}.lock";
+		print STDERR "Other tests ok - Locking $p{lockfile} ($lockfilename) \n" if ($DEBUG);
+		my $delay = 0;
+		my $pidfile = File::Pid->new( { file => $lockfilename } );
+		do {
+			print STDERR "running loop delay $delay from $p{wait}\n" if ($DEBUG);
+			my $pid = $pidfile->running;
+			if ($pid) {
+				return $p{lockfile} if ( ! $p{wait} );
+				
+			} else {
+				$pidfile->pid($$);
+				$pidfile->write;
+				print STDERR "My PID is $$\n" if ($DEBUG);
+				return;
+			}
+			sleep(5);
+			$delay += 5;
+		} while ($delay < $p{wait});
+		return $p{lockfile};
+	}
+	return "Undefined status";
+}
+
+sub unlock
+{
+
+	require File::Pid;
+	
+	my %p = @_;
+
+	print STDERR "unlock: file $p{lockfile}\n"  if ($DEBUG);
+	my $lockfilename = "/var/lock/$p{lockfile}.lock";
+	if (-e $lockfilename) {
+		my $pidfile = File::Pid->new( { file => $lockfilename } );
+		$pidfile->remove or return "Cannot unlink pid file $lockfilename\n";
+	}
+}
+
+# INTERNAL FUNCTION
 
 
 #####################################################
