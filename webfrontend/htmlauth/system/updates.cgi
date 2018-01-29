@@ -523,9 +523,9 @@ sub lbupdates
 	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	print LoxBerry::Log::get_notifications_html('updates', 'check');
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
-	delete_notifications('updates', 'check');
 
 }
 
@@ -593,11 +593,10 @@ sub lbuhistory
 	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	print LoxBerry::Log::get_notifications_html('updates', 'update');
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
-	delete_notifications('updates', 'update');
-	
-	
+
 	
 }
 
