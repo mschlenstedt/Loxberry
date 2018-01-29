@@ -583,6 +583,8 @@ sub get_notifications_html
 	my @notify_html;
 	my $all_notifys;
 	
+	my $randval = int(rand(30000));
+	
 	for my $not (@notifs) {
 		# Don't show info when errors are requested
 		print STDERR "Notification: $not->{SEVERITY} $not->{DATESTR} $not->{PACKAGE} $not->{NAME} $not->{CONTENT_RAW}\n" if ($DEBUG);
@@ -598,7 +600,7 @@ sub get_notifications_html
 			next;
 		}
 		my $notif_line;
-		$notif_line .= 	"<div style='display:table-row;' class='notifyrow' id='notifyrow$not->{KEY}'>";
+		$notif_line .= 	"<div style='display:table-row;' class='notifyrow$randval' id='notifyrow$not->{KEY}'>";
 		$notif_line .= 	'<div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">';
 		if (! $not->{SEVERITY}) {
 			$notif_line .= '<img src="/system/images/notification_info_small.svg">';
@@ -626,6 +628,7 @@ sub get_notifications_html
 				%LoxBerry::System::htmltemplate_options,
 				);
 	$maintemplate->param( 'NOTIFICATIONS' => $all_notifys);
+	$maintemplate->param( 'RAND' => $randval );
 	#print STDERR 
 	return $maintemplate->output();
 	
