@@ -326,7 +326,11 @@ $(document).ready( function () {
 			if (data.error) {
 				$('#lbu_error').html("Error: "+data.error);
 			} else {
-				if (data.release_version) $('#lbu_release_version').html(data.release_version.substring(0, 30) + '... '); 
+				if (data.release_version) {
+					stripped_relvers = data.release_version;
+					if (stripped_relvers.length > 30) stripped_relvers = stripped_relvers.substring(0, 30) + '... ';
+					$('#lbu_release_version').html(stripped_relvers); 
+				}
 				else $('#lbu_release_version').html("") ;
 				if (data.info) $('#lbu_info').html(data.info);
 				if (data.release_name) 
