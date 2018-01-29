@@ -1234,6 +1234,9 @@ sub lock
 			} else {
 				$pidfile->pid($$);
 				$pidfile->write;
+				eval {
+					chmod 0660, $lockfilename;
+					};
 				print STDERR "My PID is $$\n" if ($DEBUG);
 				return;
 			}
