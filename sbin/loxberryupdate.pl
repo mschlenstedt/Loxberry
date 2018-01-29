@@ -89,6 +89,28 @@ if ($cgi->param('cron')) {
 	LOGOK "This update was manually triggered.";
 }
 
+if ($cron) {
+	LOGINF "Locking lbupdate - delaying up to 10 minutes...";
+	my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate', wait => 600 );
+	if ($lockstate) {
+		LOGCRIT "Could not get lock for lbupdate. Skipping this update.";
+		LOGINF "Locking error reason is: $lockstate";
+		notify('updates', 'update', "LoxBerry Update: Could not get lock for lbupdate. Locking error reason: $lockstate. Update was prevented.", 'Error');
+		exit (1);
+	}
+} else {
+	LOGINF "Locking lbupdate - return immediately if lock stat is not secure...";
+	my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate');
+	if ($lockstate) {
+		LOGCRIT "Could not get lock for lbupdate. Exiting.";
+		LOGINF "Locking error reason is: $lockstate";
+		notify('updates', 'update', "LoxBerry Update: Could not get lock for lbupdate. Locking error reason: $lockstate. Update was prevented.", 'Error');
+		exit (1);
+	}
+}
+
+LOGOK "Lock successfully set.";
+
 my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
 if ($folderinfo{available} < 102400) {
 	$joutput{'error'} = "Available diskspace is below 100MB. Update is skipped.";
@@ -97,8 +119,6 @@ if ($folderinfo{available} < 102400) {
 	notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update was prevented.", 'Error');
 	exit (1);
 }
-
-
 
 
 if ($cgi->param('sha')) {
@@ -485,4 +505,6 @@ END
 		LOGOK "Loxberry Update thinks that the UPDATE WAS SUCCESSFUL!";
 	}
 	# close ERR;
+	LoxBerry::System::unlock( lockfile => 'lbupdate' );
+
 }
