@@ -133,7 +133,9 @@
 .divTable{
 	display: table;
 	width: 100%;
-	
+	word-wrap: break-word;
+	overflow:hidden;
+	text-overflow:ellipsis;
 }
 .divTableRow {
 	display: table-row;
@@ -166,20 +168,23 @@
 <div class="wide" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
 <div class="divTable">
 <div class="divTableBody">
+<div class="divTableRow" style="overflow:hidden; text-overflow:ellipsis; width:100%;">
 <div class="divTableCell">
 <p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
 
 </div>
-<div class="divTableCell hint" style="border:2px; border-style:outset; border-radius:5px;padding:10px 10px 10px 10px;background-color:LightYellow;">
+<div class="divTableCell hint" style="border:2px; border-style:outset; border-radius:5px;padding:10px 10px 10px 10px;background-color:LightYellow; width:30%;">
 <div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
 	<div style="flex-grow: 2;">
-	<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION> <TMPL_VAR LBVERSION>
+	<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
+	<b><TMPL_VAR LBVERSION></b>
 	</div>
 	<div style="flex-grow: 1;">
 	<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
 	</div>
 </div>
-<p><TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE> <a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
+<p><TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE><br>
+<a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
 <p id="lbu_info">&nbsp;</p>
 <div id="lbu_error" style="color:red;"></div>
 <div style="font-size:125%;font-weight:bold;" id="lbu_release_name">&nbsp;</div>
@@ -187,7 +192,7 @@
 <div id="lbu_published_at">&nbsp;</div>
 <p><TMPL_VAR UPDATES.LBU_LABEL_CHECKGITHUB> <a href="https://github.com/mschlenstedt/Loxberry/releases" target="_blank">All Releases</a></p>
 </div>
-
+</div>
 <div class="divTableRow">
 <div class="divTableCell">
 	<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
@@ -321,7 +326,7 @@ $(document).ready( function () {
 			if (data.error) {
 				$('#lbu_error').html("Error: "+data.error);
 			} else {
-				if (data.release_version) $('#lbu_release_version').html(data.release_version) 
+				if (data.release_version) $('#lbu_release_version').html(data.release_version.substring(0, 30) + '... '); 
 				else $('#lbu_release_version').html("") ;
 				if (data.info) $('#lbu_info').html(data.info);
 				if (data.release_name) 
