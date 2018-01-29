@@ -64,12 +64,25 @@
 		<TMPL_IF PLUGINS>
 			<TMPL_LOOP PLUGINS>
 			<tr>
-				<td rowspan="2"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false"><img src="/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png"></a>
+				<style>
+				#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 128px; width: 128px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png); }
+				
+				@media (max-width: 875px) {
+					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_64.png); }
+				}
+				</style>
+				<td rowspan="2">
+				<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
 				</td>
-				<td><span style="font-size:150%;"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
-				<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
-				</td>
-				<td style="vertical-align: middle;"><b>Version <TMPL_VAR PLUGINDB_VERSION></b>
+				<td colspan="2">
+				<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
+					<div style="flex-grow: 2;">
+					<span style="font-size:calc(13px + 1.2vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
+					<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
+					</div>
+					<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <TMPL_VAR PLUGINDB_VERSION></b>
+				</div>
+				<div>
 				</td>
 				
 				<td>
