@@ -38,6 +38,8 @@ my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_myloxberry.html";
 my $template_title;
 my $error;
+my $plugin;
+my $system;
 
 my $cfg;
 
@@ -46,11 +48,11 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "0.3.5.1";
 
 my $sversion = LoxBerry::System::lbversion();
 
-$cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
+$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
 #########################################################################
 # Parameter
@@ -62,6 +64,12 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 # Example: Parameter lang is now $R::lang
 
+if ($R::form eq 'plugin' || $R::plugin) {
+	$plugin = 1;
+} else { 
+	$system = 1;
+}
+
 if ($R::action && $R::action eq "setvalue") {
 	mes "ajax setvalue";
 	&ajax;
@@ -72,6 +80,10 @@ if ($R::action && $R::action eq "download") {
 	&download;
 }
 
+if ($R::action && $R::action eq "getlangfiles") {
+	mes "ajax getlangfiles";
+	&getlangfiles;
+}
 ##########################################################################
 # Language Settings
 ##########################################################################
@@ -112,14 +124,18 @@ our %navbar;
 $navbar{10}{Name} = $SL{'TRANSLATE.WIDGETLABEL_SYSTEM'};
 $navbar{10}{URL} = 'translate.cgi';
  
-# $navbar{20}{Name} = $SL{'TRANSLATE.WIDGETLABEL_PLUGIN'};
-# $navbar{20}{URL} = 'translate.cgi?form=plugin';
+$navbar{20}{Name} = $SL{'TRANSLATE.WIDGETLABEL_PLUGIN'};
+$navbar{20}{URL} = 'translate.cgi?form=plugin';
  
-$navbar{100}{Name} = $SL{'TRANSLATE.WIDGETLABEL_TRANSLATIONGUIDE'};
-$navbar{100}{URL} = 'http://www.loxwiki.eu:80/x/QgZ7AQ';
-$navbar{100}{target} = '_blank'; 
+$navbar{99}{Name} = $SL{'TRANSLATE.WIDGETLABEL_TRANSLATIONGUIDE'};
+$navbar{99}{URL} = 'http://www.loxwiki.eu:80/x/QgZ7AQ';
+$navbar{99}{target} = '_blank'; 
 
-$navbar{10}{active} = 1;   
+if ($plugin) {
+	$navbar{20}{active} = 1;
+} else {
+	$navbar{10}{active} = 1;   
+}
 
 mes "Call form";
 &form;
@@ -136,9 +152,47 @@ exit;
 sub form {
 
 	mes "Create form elements";
+	$maintemplate->param( "SYSTEM", 1) if ($system);
+	$maintemplate->param( "PLUGIN", 1) if ($plugin);
+	
 	$maintemplate->param( "FORM", 1);
 	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
+	# Extra controls for plugins
+	my $pluginlist;
+	my $languagefilelist;
+	
+	if ($plugin) {
+		
+		my @plugins = LoxBerry::System::get_plugins();
+		my %pluginlist;
+		$pluginlist{0} = $SL{'TRANSLATE.LABEL_SELECT_PLUGIN'} . "...";
+		foreach my $pluginentry (@plugins) {
+			$pluginlist{$pluginentry->{PLUGINDB_FOLDER}} = $pluginentry->{PLUGINDB_TITLE};
+		}
+		
+		$pluginlist = $cgi->popup_menu(
+				-name   => 'plugin',
+				-id => 'plugin',
+				-tabindex => 1,
+				-values => [sort keys %pluginlist],
+				-labels => \%pluginlist
+				 
+		);
+		$maintemplate->param ( 'pluginselection', $pluginlist);
+	
+		$languagefilelist = $cgi->popup_menu(
+				-name   => 'languagefile',
+				-id => 'languagefile',
+				-tabindex => 2,
+				#-values => [''],
+				#-labels => \%pluginlist
+		);
+		$maintemplate->param ( 'languagefileselection', $languagefilelist);
+
+	}
+	
+	# Common (System AND Plugin)
 	my %srclanguages = (
 		'en'  => 'English',
 	#	'de'  => 'German',
@@ -146,7 +200,7 @@ sub form {
 	my $sourcelang = $cgi->popup_menu(
 				-name   => 'sourcelang',
 				-id => 'sourcelang',
-				-tabindex => 1,
+				-tabindex => 3,
 				-values => [sort keys %srclanguages],
 				-labels => \%srclanguages
    );
@@ -163,32 +217,29 @@ sub form {
 			id => 'destlang',
 			-labels => \%labels,
 			-values => \@values,
-			-tabindex => 2,
+			-tabindex => 4,
 	);
 	$maintemplate->param('destlang', $destlang);
 	
-	
-	
-	# my $destlang = $cgi->textfield(
-			# -name=>'destlang',
-			# -id=>'destlang',
-			# -tabindex=>2,
-		    # -value=>'',
-		    # -size=>10,
-		    # -maxlength=>2
-	# );
-	# $maintemplate->param ( 'destlang', $destlang);
-	
 	my @langarray;
 	mes "Define filenames";
-	if ($R::sourcelang) {
-		my $srclangfile = "$lbstemplatedir/lang/language_" . $R::sourcelang . ".ini";
-		my $destlangfile = "$lbstemplatedir/lang/language_" . $R::destlang . ".ini" if ($R::destlang && length($R::destlang) == 2);
-		if (length($R::sourcelang) == 2) { 
-			mes "readfile";
-			@langarray = readfile($srclangfile, $destlangfile);
-			mes "readfile finished";
+	if ($R::sourcelang && length($R::sourcelang) == 2) {
+		my $srclangfile;
+		my $destlangfile;
+		if ($system) {
+			$srclangfile = "$lbstemplatedir/lang/language_" . $R::sourcelang . ".ini";
+			$destlangfile = "$lbstemplatedir/lang/language_" . $R::destlang . ".ini" if ($R::destlang && length($R::destlang) == 2);
+		} elsif ($plugin) {
+			my $langfile = substr($R::languagefile, 0, index($R::languagefile, "_"));
+			$srclangfile = "$lbhomedir/templates/plugins/$R::plugin/lang/" . $langfile . "_" . $R::sourcelang . ".ini";
+			$destlangfile = "$lbhomedir/templates/plugins/$R::plugin/lang/" . $langfile . "_" . $R::destlang . ".ini" if ($R::destlang && length($R::destlang) == 2);
 		}
+		print STDERR "Source lang file : $srclangfile\n";
+		print STDERR "Dest lang file   : $destlangfile\n";
+		mes "readfile";
+		@langarray = readfile($srclangfile, $destlangfile);
+		mes "readfile finished";
+		
 	}
 	
 	$maintemplate->param ( 'langarray' => \@langarray);
@@ -304,11 +355,6 @@ sub readinputfile
 		#$result{$fullkey}{$keyprefix . '_' . 'WARNING'} .= "Double quotation marks in phrase need to be escaped with backslash<br>" if ($extradoublecount > 0);
 		#$result{$fullkey}{$keyprefix . '_' . 'WARNING'} .= "Backslashes need to be escaped with backslash<br>" if ($escapecount > 0);
 		
-		
-		
-		
-		
-		
 		if (substr($phrase, -2, 2) eq '";' && $fixerrors) {
 			# Some programmer used "; - strip semicolon
 			$phrase = substr($phrase, 0, -1);
@@ -318,20 +364,14 @@ sub readinputfile
 			# Strip doublequotes
 			$phrase = substr($phrase, 1, -1);
 		}
-			
-		
 		
 		$result{$fullkey}{'KEY'} = $key;
 		$result{$fullkey}{'SECTION'} = $currsection;
 		$result{$fullkey}{$keyprefix . '_' . 'TEXT'} = $phrase;
 		$result{$fullkey}{$keyprefix . '_' . 'LINENUMBER'} = $i;
-					
-		
-		
 		
 	}
 	return %result;
-	
 
 }
 
@@ -341,13 +381,23 @@ sub ajax
 	print STDERR "ajax called.\n";
 	my $cfg;
 	my $isnew;
+	
 	if ($R::action eq "setvalue" && length($R::destlang) == 2) {
-		my $srcfilename = "$lbstemplatedir/lang/language_" . $R::srclang . ".ini";
-		my $destfilename = "$lbstemplatedir/lang/language_" . $R::destlang . ".ini";
+		my $srcfilename;
+		my $destfilename;
+		if ($system) {
+			$srcfilename = "$lbstemplatedir/lang/language_" . $R::srclang . ".ini";
+			$destfilename = "$lbstemplatedir/lang/language_" . $R::destlang . ".ini";
+		} elsif ($plugin && $R::languagefile) {
+			my $langfile = substr($R::languagefile, 0, index($R::languagefile, "_"));
+			$srcfilename = "$lbhomedir/templates/plugins/$R::plugin/lang/" . $langfile . "_" . $R::srclang . ".ini";
+			$destfilename = "$lbhomedir/templates/plugins/$R::plugin/lang/" . $langfile . "_" . $R::destlang . ".ini" if ($R::destlang && length($R::destlang) == 2);	
+		}	
 		
 		if(! -e $srcfilename) {
-			print $cgi->header('text/html');
-			print "Source file does not exist";
+			print $cgi->header('text/plain');
+			print "Source file does not exist\n";
+			print "Srcfilename: $srcfilename";
 			exit(1);
 		}	
 		
@@ -396,14 +446,23 @@ sub ajax
 
 sub download
 {
-	my $filename = "$lbstemplatedir/lang/language_" . $R::destlang . ".ini" if ($R::destlang);
+	my $filename;
+	my $suggestedfilename;
+	if ($system) {
+		$filename = "$lbstemplatedir/lang/language_" . $R::destlang . ".ini" if ($R::destlang);
+		$suggestedfilename = "language_" . $R::destlang . ".ini";
+	} elsif ($plugin) {
+		my $langfile = substr($R::languagefile, 0, index($R::languagefile, "_"));
+		$filename = "$lbhomedir/templates/plugins/$R::plugin/lang/" . $langfile . "_" . $R::destlang . ".ini" if ($R::destlang && length($R::destlang) == 2);	
+		$suggestedfilename = $langfile . "_" . $R::destlang . ".ini";
+	}
 	
 	if (!$R::destlang || ! -e $filename) {
 		$cgi->header->status('405 Method Not Allowed');
 		print $cgi->header('text/plain');
 		exit(1);
 	}
-	my $suggestedfilename = "language_" . $R::destlang . ".ini";
+	
 	my $filecontent;
 	
 	open(my $fh, "<" , $filename) or 
@@ -427,3 +486,36 @@ sub download
 
 }
 
+sub getlangfiles
+{
+	exit if (! $R::plugin);
+	
+	my $langdir = "$lbhomedir/templates/plugins/$R::plugin/lang/";
+	my $globfilter = $langdir . "*_en.ini";
+	my @files = glob($globfilter);
+	my %filenames;
+	print STDERR "Lang filelist:\n";
+	$filenames{0} = "Select file ...";
+	foreach my $file (@files) {
+        print STDERR "File: $file\n";
+		my $rpos = rindex($file, '/');
+		$file = substr $file, $rpos+1;
+		$filenames{$file} = $file;
+		
+    }
+	
+	my $languagefilelist = $cgi->popup_menu(
+				-name => 'languagefile',
+				-id => 'languagefile',
+				-tabindex => 2,
+				-values => [sort keys %filenames],
+				#-values => [''],
+				-labels => \%filenames,
+		);
+		
+	print $cgi->header('text/html');
+	print $languagefilelist;
+	exit;
+
+
+}

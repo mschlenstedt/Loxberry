@@ -121,10 +121,33 @@ div.greenTable {
 
 	
 	<p>
-	<div class="wide"><TMPL_VAR TRANSLATE.WIDGETLABEL_SYSTEM></div>
+	<TMPL_IF SYSTEM>
+		<div class="wide"><TMPL_VAR TRANSLATE.WIDGETLABEL_SYSTEM></div>
+	</TMPL_IF>
+	<TMPL_IF PLUGIN>
+		<div class="wide"><TMPL_VAR TRANSLATE.WIDGETLABEL_PLUGIN></div>
+	</TMPL_IF>
+	
 	</p>
+	
 	<form action="translate.cgi" method="post">
 	<div class="wrap">
+	
+	<TMPL_IF PLUGIN>
+		<div style="margin:10px 10px 10px 10px;">
+		<fieldset data-role="controlgroup" data-mini="true">
+		<TMPL_VAR TRANSLATE.LABEL_SELECT_PLUGIN> 
+		<TMPL_VAR pluginselection>
+		</fieldset>
+		</div>
+	
+		<div style="margin:10px 10px 10px 10px;">
+		<fieldset data-role="controlgroup" data-mini="true">
+		<TMPL_VAR TRANSLATE.LABEL_SELECT_LANGUAGEFILE> 
+		<TMPL_VAR languagefileselection>
+		</fieldset>
+		</div>
+	</TMPL_IF>
 	
 	<div style="margin:10px 10px 10px 10px;">
 	<fieldset data-role="controlgroup" data-mini="true">
@@ -162,7 +185,6 @@ div.greenTable {
 	<p id="pleasewait">Please be patient as loading really takes a while...</p>
 	<input type="hidden" id="srclang" name="srclang" value="en">
 	<input type="hidden" id="selfurl" name="selfurl" value="<TMPL_VAR SELFURL>">
-	
 	
 <div class="divTable greenTable">
 <div class="divTableHeading">
@@ -214,7 +236,6 @@ div.greenTable {
 </div>
 </div>	
 	
-	
 	<center>
 		<p>
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_BACK></a>
@@ -224,6 +245,7 @@ div.greenTable {
 <script>
 
 var oldvalue;
+url = $('#selfurl').val();
 
 $(document).ready( function () {
 	
@@ -265,10 +287,22 @@ $(document).ready( function () {
 			change_translation(key, dstkey.val());
 	});
 	
+	$("#plugin").change(function() {
+		if ($(this).val() === 0) return;
+		$("#languagefile").selectmenu('disable');	
+		$.post( url, { 	
+				action: "getlangfiles",
+				plugin: $("#plugin").val(),
+			 },
+			 function(data, status) {
+			 console.log("Data:", data, "Status", status);
+			$("#languagefile").html(data);
+			$("#languagefile").selectmenu('refresh', true);
+			$("#languagefile").selectmenu('enable');
+		});
+	});
 	
 	console.log("Destination lang:", $('#destlang').val());
-
-
 
 });
 
@@ -284,6 +318,8 @@ function change_translation (key, value)
 	url = $('#selfurl').val();
 	lang = $('#destlang').val();
 	$.post( url, { 	action: "setvalue",
+					plugin: $("#plugin").val(),
+					languagefile: $("#languagefile").val(),
 					destlang: $.trim($('#destlang').val()),
 					srclang: $.trim($('#srclang').val()),
 					key: key,
