@@ -203,6 +203,8 @@ sub save
 	$mcfg->param("SMTP.SMTPPASS", "$R::smtppass");
 	$mcfg->save();
 
+
+
 	# Activate new configuration
 
 	# Create temporary SSMTP Config file
@@ -215,21 +217,21 @@ sub save
 # Make this empty to disable rewriting.
 ENDFILE
 
-	print F "root=$email\n\n";
+	print F "root=$R::email\n\n";
 
 	print F <<ENDFILE;
 # The place where the mail goes. The actual machine name is required no
 # MX records are consulted. Commonly mailhosts are named mail.domain.com
 ENDFILE
-	print F "mailhub=$smtpserver\:$smtpport\n\n";
+	print F "mailhub=$R::smtpserver\:$R::smtpport\n\n";
 
-	if ($smtpauth) {
+	if ($R::smtpauth) {
 		print F "# Authentication\n";
-		print F "AuthUser=$smtpuser\n";
-		print F "AuthPass=$smtppass\n\n";
+		print F "AuthUser=$R::smtpuser\n";
+		print F "AuthPass=$R::smtppass\n\n";
 	}
 
-	if ($smtpcrypt) {
+	if ($R::smtpcrypt) {
 		print F "# Use encryption\n";
 		print F "UseTLS=YES\n";
 		print F "UseSTARTTLS=YES\n\n";
