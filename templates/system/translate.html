@@ -130,7 +130,7 @@ div.greenTable {
 	
 	</p>
 	
-	<form action="translate.cgi" method="post">
+	<form action="translate.cgi" method="post" data-ajax="false">
 	<div class="wrap">
 	
 	<TMPL_IF PLUGIN>
@@ -247,16 +247,19 @@ div.greenTable {
 var oldvalue;
 url = $('#selfurl').val();
 
-$(document).ready( function () {
+// $(document).ready( function () {
+$(document).on('pageinit', function() {
 	
 	$( 'a#downloadfile' ).click(function(){
 		// event.preventDefault();
 		console.log ("Download clicked");
 		var destlang = $('#destlang').val();
+		var plugin = $("#plugin").val();
+		var languagefile = $("#languagefile").val();
 		if (destlang === "") {
 			return;
 		}
-		downloadurl = "translate.cgi" + "?action=download&destlang=" + $('#destlang').val();
+		downloadurl = "translate.cgi" + "?action=download&destlang=" + destlang + "&plugin=" + plugin + "&languagefile=" + languagefile;
 		console.log("Download redirect to", downloadurl);
 		window.location = downloadurl;
 	
