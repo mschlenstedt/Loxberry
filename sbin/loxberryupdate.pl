@@ -93,22 +93,27 @@ if ($cgi->param('cron')) {
 
 if ($cron) {
 	LOGINF "Locking lbupdate - delaying up to 10 minutes...";
-	my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate', wait => 600 );
-	if ($lockstate) {
-		LOGCRIT "Could not get lock for lbupdate. Skipping this update.";
-		LOGINF "Locking error reason is: $lockstate";
-		notify('updates', 'update', "LoxBerry Update: Could not get lock for lbupdate. Locking error reason: $lockstate. Update was prevented.", 'Error');
-		exit (1);
-	}
+	eval {
+			my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate', wait => 600 );
+		
+		if ($lockstate) {
+			LOGCRIT "Could not get lock for lbupdate. Skipping this update.";
+			LOGINF "Locking error reason is: $lockstate";
+			notify('updates', 'update', "LoxBerry Update: Could not get lock for lbupdate. Locking error reason: $lockstate. Update was prevented.", 'Error');
+			exit (1);
+		}
+	};
 } else {
 	LOGINF "Locking lbupdate - return immediately if lock stat is not secure...";
-	my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate');
-	if ($lockstate) {
-		LOGCRIT "Could not get lock for lbupdate. Exiting.";
-		LOGINF "Locking error reason is: $lockstate";
-		notify('updates', 'update', "LoxBerry Update: Could not get lock for lbupdate. Locking error reason: $lockstate. Update was prevented.", 'Error');
-		exit (1);
-	}
+	eval {
+		my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate');
+		if ($lockstate) {
+			LOGCRIT "Could not get lock for lbupdate. Exiting.";
+			LOGINF "Locking error reason is: $lockstate";
+			notify('updates', 'update', "LoxBerry Update: Could not get lock for lbupdate. Locking error reason: $lockstate. Update was prevented.", 'Error');
+			exit (1);
+		}
+	};
 }
 
 LOGOK "Lock successfully set.";
