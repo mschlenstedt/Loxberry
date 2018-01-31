@@ -478,6 +478,9 @@ sub get_notifications
 		return $notifications_error, $notifications_ok, ($notifications_error+$notifications_ok);
 	}
 	
+	$package = lc($package) if ($package);
+	$name = lc($name) if ($name);
+	
 	my @filtered = ();
 	my $filtered_errors=0;
 	my $filtered_ok=0;
@@ -523,8 +526,8 @@ sub delete_notifications
 	my $latestkept=0;
 	
 	foreach my $notification (@notifications) {
-		next if ($package ne $notification->{PACKAGE});
-		next if ($name && $name ne $notification->{NAME});
+		next if (lc($package) ne $notification->{PACKAGE});
+		next if ($name && lc($name) ne $notification->{NAME});
 		if ($ignorelatest && $latestkept == 0) {
 			$latestkept = 1;
 		} else {
@@ -557,8 +560,8 @@ sub get_notifications_html
 	
 	print STDERR "get_notifications_html called.\n" if ($DEBUG);
 	
-	$p{package} = $package if ($package);
-	$p{name} = $name if ($name);
+	$p{package} = lc($package) if ($package);
+	$p{name} = lc($name) if ($name);
 	$p{buttons} = $buttons if ($buttons);
 	
 	$p{error} = 1 if (!$type || $type == 2 || $type eq 'all' || $type eq 'err' || $type eq 'error' || $type eq 'errors');
