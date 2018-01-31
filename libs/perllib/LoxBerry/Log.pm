@@ -680,8 +680,8 @@ sub read_notificationlist
 		} else {
 			$notifications_ok++;
 		}
-		$notification{'PACKAGE'} = $package;
-		$notification{'NAME'} = $name;
+		$notification{'PACKAGE'} = lc($package);
+		$notification{'NAME'} = lc($name);
 		$notification{'SEVERITY'} = lc($severity);
 		$notification{'DATEOBJ'} = $dateobj;
 		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
