@@ -31,6 +31,7 @@ awk -v s="LBSHTML=$LBHOME/webfrontend/html/system" '/^LBSHTML=/{$0=s;f=1} {a[++n
 awk -v s="LBSTEMPL=$LBHOME/templates/system" '/^LBSTEMPL=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSDATA=$LBHOME/data/system" '/^LBSDATA=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSLOG=$LBHOME/log/system" '/^LBSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
+awk -v s="LBSTMPFSLOG=$LBHOME/log/system_tmpfs" '/^LBSTMPFSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSCONFIG=$LBHOME/config/system" '/^LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
 # echo LBSHTMLAUTH=$LBHOME/webfrontend/htmlauth/system >> /etc/environment
@@ -43,6 +44,9 @@ awk -v s="LBSCONFIG=$LBHOME/config/system" '/^LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} 
 # Set Perl library path for LoxBerry Modules
 awk -v s="PERL5LIB=$LBHOME/libs/perllib" '/^PERL5LIB=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 # echo PERL5LIB=$LBHOME/libs/perllib  >> /etc/environment
+
+#Environment Variablen laden
+source /etc/environment
 
 # LoxBerry global environment variables in Apache
 ENVVARS=$LBHOME/system/apache2/envvars
@@ -65,6 +69,8 @@ ENVVARS=$LBHOME/system/apache2/envvars
 # echo export LBSLOG=$LBSLOG >> $ENVVARS
 # echo export LBSCONFIG=$LBSCONFIG >> $ENVVARS
 
+awk -v s="export APACHE_LOG_DIR=$LBSTMPFSLOG/apache2\$SUFFIX" '/^export APACHE_LOG_DIR=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
+
 awk -v s="## LoxBerry global environment variables" '/^## LoxBerry global environment variables/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBHOMEDIR=$LBHOMEDIR" '/^export LBHOMEDIR=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
@@ -80,11 +86,15 @@ awk -v s="export LBSHTML=$LBSHTML" '/^export LBSHTML=/{$0=s;f=1} {a[++n]=$0} END
 awk -v s="export LBSTEMPL=$LBSTEMPL" '/^export LBSTEMPL=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSDATA=$LBSDATA" '/^export LBSDATA=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSLOG=$LBSLOG" '/^export LBSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
+awk -v s="export LBSTMPFSLOG=$LBSTMPFSLOG" '/^export LBSTMPFSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSCONFIG=$LBSCONFIG" '/^export LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
 if /usr/sbin/service apache2 status; then
 	/usr/sbin/service apache2 force-reload
 fi
+
+awk -v s="server.errorlog             = \"$LBSTMPFSLOG/lighttpd/error.log\"" '/^server.errorlog/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/lighttpd.conf
+awk -v s="server.breakagelog          = \"$LBSTMPFSLOG/lighttpd/cgierr.log\"" '/^server.breakagelog/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/lighttpd.conf
 
 # LoxBerry global environment variables in Lighttpd
 ENVVARS=$LBHOME/system/lighttpd/envars.conf
@@ -106,6 +116,7 @@ echo \"LBSHTML\" \=\> \"$LBSHTML\", >> $ENVVARS
 echo \"LBSTEMPL\" \=\> \"$LBSTEMPL\", >> $ENVVARS
 echo \"LBSDATA\" \=\> \"$LBSDATA\", >> $ENVVARS
 echo \"LBSLOG\" \=\> \"$LBSLOG\", >> $ENVVARS
+echo \"LBSTMPFSLOG\" \=\> \"$LBSTMPFSLOG\", >> $ENVVARS
 echo \"LBSCONFIG\" \=\> \"$LBSCONFIG\", >> $ENVVARS
 echo '' >> $ENVVARS
 echo ')' >> $ENVVARS
@@ -124,6 +135,7 @@ awk -v s="\t\t\t\"LBSHTML\" => \"$LBSHTML\"," '/^\t\t\t"LBSHTML" => /{$0=s;f=1} 
 awk -v s="\t\t\t\"LBSTEMPL\" => \"$LBSTEMPL\"," '/^\t\t\t"LBSTEMPL" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSDATA\" => \"$LBSDATA\"," '/^\t\t\t"LBSDATA" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSLOG\" => \"$LBSLOG\"," '/^\t\t\t"LBSLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSTMPFSLOG\" => \"$LBSTMPFSLOG\"," '/^\t\t\t"LBSTMPFSLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSCONFIG\" => \"$LBSCONFIG\"," '/^\t\t\t"LBSCONFIG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 
 if /usr/sbin/service lighttpd status; then
