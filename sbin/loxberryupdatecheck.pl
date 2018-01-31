@@ -39,7 +39,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="0.3.3.5";
+my $scriptversion="1.0.0.1";
 
 # print currtime('file') . "\n";
 
@@ -61,7 +61,7 @@ my $download_path = '/tmp';
 my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
 my $min_version = "0.3.0";
-my $max_version = "0.5.0";
+my $max_version = "1.99.99";
 
 my $querytype;
 my $update;
