@@ -70,6 +70,7 @@ ENVVARS=$LBHOME/system/apache2/envvars
 # echo export LBSCONFIG=$LBSCONFIG >> $ENVVARS
 
 awk -v s="export APACHE_LOG_DIR=$LBSTMPFSLOG/apache2\$SUFFIX" '/^export APACHE_LOG_DIR=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
+awk -v s="export APACHE_SERVER_ROOT=$LBHOMEDIR/system/apache2" '/^export APACHE_SERVER_ROOT=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
 awk -v s="## LoxBerry global environment variables" '/^## LoxBerry global environment variables/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBHOMEDIR=$LBHOMEDIR" '/^export LBHOMEDIR=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS

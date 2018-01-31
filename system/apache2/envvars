@@ -20,7 +20,7 @@ export APACHE_PID_FILE=/var/run/apache2/apache2$SUFFIX.pid
 export APACHE_RUN_DIR=/var/run/apache2$SUFFIX
 export APACHE_LOCK_DIR=/var/lock/apache2$SUFFIX
 # Only /var/log/apache2 is handled by /etc/logrotate.d/apache2.
-export APACHE_LOG_DIR=/opt/loxberry/log/system/apache2$SUFFIX
+export APACHE_LOG_DIR=/opt/loxberry/log/system_tmpfs/apache2$SUFFIX
 
 ## The locale used by some modules like mod_dav
 export LANG=C
@@ -58,4 +58,5 @@ export LBSHTML=/opt/loxberry/webfrontend/html/system
 export LBSTEMPL=/opt/loxberry/templates/system
 export LBSDATA=/opt/loxberry/data/system
 export LBSLOG=/opt/loxberry/log/system
+export LBSTMPFSLOG=/opt/loxberry/log/system_tmpfs
 export LBSCONFIG=/opt/loxberry/config/system
