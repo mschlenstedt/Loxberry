@@ -28,7 +28,7 @@ class LBLog
 # notify
 function notify ($package, $name, $message, $error = false)
 {
-	echo "Notifdir: " . LBLog::$notification_dir . "\n";
+	// error_log "Notifdir: " . LBLog::$notification_dir . "\n";
 	if (! $package || ! $name || ! $message) {
 		error_log("Notification: Missing parameters\n");
 		return;
