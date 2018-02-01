@@ -19,14 +19,14 @@
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
 			<div style="text-align:left; width:75%;">
-				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*">
+				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
 			</div>
 		</div>
 		<div style="margin:auto; padding:0px 10px 10px 10px; display:flex; text-align:left; width:100%; white-space: nowrap; ">
 			<div style="width:25%; text-align:left;">
 			</div>
 			<div style="text-align:left; width:75%;">
-				<input readonly type="url" autocomplete="false" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
+				<input readonly type="url" autocomplete="false" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
 			</div>
 		</div>
 		<div style="height:30px;">
@@ -166,7 +166,7 @@
 			validate_enable('#uploadfile');
 			validate_enable('#securepin');
 			validate_enable('#archiveurl');
-			validate_chk_object(['#securepin']);
+			validate_chk_object(['#securepin','#archiveurl','#uploadfile']);
 			$( '#securepin' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
 		});
 		

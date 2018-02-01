@@ -127,19 +127,8 @@ function validate_OnPaste_StripFormatting(elem, e)
 	}
 }
 
-function validate_chk_value( object,evt,rule )
+function validate_convert_rule (object, rule)
 {
-	// This function does the checking against the regular expression rule
-	// If the event is not defined, set it to 0
-	// (This happens if called from the code itself)
-	evt = evt || 0;
-	// If the rule is not given when calling the function, get the value
-	// in attribute data-validation-rule of the INPUT
-	var rule = rule || $(object).attr("data-validation-rule");
-	// If the rule is neither given when calling the function, not in the value
-	// of attribute data-validation-rule of the INPUT define a rule which
-	// returns always false to be sure nothing bad is validated by mistake
-	rule = rule || '(?=a)b';
 	// Detect and handle special conditions:
 	if ( rule.substring(0,8) === "special:" )
 	{
@@ -253,7 +242,6 @@ function validate_chk_value( object,evt,rule )
 				break;
 			case 'number-min-value':
 				// Check if number is minumum 
-				console.log(parseInt($(object).val())  +" >= " +parseInt(rule_array[2]));
 				rule = ( parseInt($(object).val())  >= parseInt(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
 				break;
 			case 'number-max-value':
@@ -313,9 +301,65 @@ function validate_chk_value( object,evt,rule )
 				console.log("Error: Unknown condition! Resulting rule: " + rule + " (false)");
 				rule = '(?=x)y';
 		}
-		console.log("Special rule found: ("+rule_array.join(',')+") Resulting rule: " + rule);
-
 	}
+	return rule;
+}
+
+function validate_chk_value( object,evt,rule )
+{
+	// This function does the checking against the regular expression rule
+	// If the event is not defined, set it to 0
+	// (This happens if called from the code itself)
+	evt = evt || 0;
+	// If the rule is not given when calling the function, get the value
+	// in attribute data-validation-rule of the INPUT
+	var rule = rule || $(object).attr("data-validation-rule");
+	// If the rule is neither given when calling the function, not in the value
+	// of attribute data-validation-rule of the INPUT define a rule which
+	// returns always false to be sure nothing bad is validated by mistake
+	rule = rule || '(?=a)b';
+	rule = validate_convert_rule(object , rule);
+
+	// Special case or
+	if ( $(object).attr('data-validation-or') )
+	{
+	    var or_object = $(object).attr('data-validation-or');
+		var ruleA = new RegExp(validate_convert_rule ( or_object ,$(or_object).attr('data-validation-rule')));
+        var ruleB = new RegExp(validate_convert_rule ( object ,$(object).attr('data-validation-rule')));
+		if ( ruleA.test($(or_object).val()) || ruleB.test($(object).val()) )
+		{
+			if ( ruleA.test($(or_object).val()) )
+			{
+				$(object).val('');
+			}
+			if ( ruleB.test($(object).val())  )
+			{
+				$(or_object).val('');
+			}
+			rule = '$';
+		    $('#error-msg-'+or_object.substring(1)).fadeOut(100);
+			// If coloring is not disabled change the color
+			if ( $(or_object).attr('data-validation-coloring') != 'off' )
+			{
+				if ( $(or_object).val() == '' )
+				{
+					// Set color for nocolor
+					$( or_object ).css("background-color",$(or_object).attr("original-background-color"));
+				}
+				else
+				{
+					// Set color for ok
+					$( or_object ).css("background-color","#C0FFC0");
+				}
+			}
+			else
+			{
+				// Set color for nocolor
+				$( or_object ).css("background-color",$(or_object).attr("original-background-color"));
+			}
+		}
+	}
+
 	// Convert the rule string into a regular expression
 	rule = new RegExp(rule);
 
@@ -471,3 +515,4 @@ function validate_place_tooltips ()
 	});
 	return;
 }
+
