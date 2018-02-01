@@ -14,6 +14,29 @@ print $cgi->header('application/json');
 
 my $ua = LWP::UserAgent->new;
 $ua->timeout(10);
+$ua->max_redirect( 0 );
+
+# Cloud DNS handling
+if (is_enabled($R::useclouddns)) {
+	if (! $R::clouddns) {
+		print "clouddns not set";
+		exit;
+	}
+	
+	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
+	my $cloudaddress = $cfg->param('BASE.CLOUDDNS');
+	my $checkurl = "http://$cloudaddress/$R::clouddns";
+	my $resp = $ua->head($checkurl);
+	# print $resp->status_line;
+	my $header = $resp->header('location');
+	# Removes http://
+	$header =~ s/http:\/\///;
+	# Removes /
+	$header =~ s/\///;
+	$R::ip = $header;
+}
+
+
 
 my $urlnonadmin = "http://$R::user:$R::pass\@$R::ip\:$R::port/dev/cfg/version";
 my $urladmin = "http://$R::user:$R::pass\@$R::ip\:$R::port/dev/cfg/ip";

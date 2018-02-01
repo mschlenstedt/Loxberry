@@ -184,8 +184,8 @@
 										port: $("#miniserverport<TMPL_VAR MSNO>").val(),
 										user: $("#miniserveruser<TMPL_VAR MSNO>").val(),
 										pass: $("#miniserverkennwort<TMPL_VAR MSNO>").val(),
-										useclouddns: $("#useclouddns<TMPL_VAR MSNO>").val(),
-										clouddns: $("#miniserverkennwort<TMPL_VAR MSNO>").val(),
+										useclouddns: $("#useclouddns<TMPL_VAR MSNO>").is(':checked'),
+										clouddns: $("#miniservercloudurl<TMPL_VAR MSNO>").val(),
 						} );
 				checkresult.done(function( data ) {
 					//resultdiv.html("<span style='color:blue;'>Call successful</span>");
