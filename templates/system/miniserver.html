@@ -17,6 +17,8 @@
 			<TMPL_IF MSNAME>(<TMPL_VAR MSNAME>)</TMPL_IF></p>
 			 <a id="miniserverweb<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="grid" onclick="open_ms_web('<TMPL_VAR MSNO>');"><TMPL_VAR MINISERVER.BUTTON_OPEN_WEBIF></a>
 			 <a id="miniserverlog<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="star" onclick="open_ms_log('<TMPL_VAR MSNO>');" target="miniserver_log"><TMPL_VAR MINISERVER.BUTTON_OPEN_LOG></a>
+			 <a id="miniservercheck<TMPL_VAR MSNO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_CHECKMS></a>
+			 <div id="miniservercheck<TMPL_VAR MSNO>_result"></div>
 		</td>
 	</tr>
 	<tr>
@@ -172,6 +174,54 @@
 		}
 		$(document).ready( function()
 		{
+			
+			$("#miniservercheck<TMPL_VAR MSNO>").click(function() {
+				var url = "/admin/system/tools/ajax-check-miniserver.cgi";
+				var resultdiv = $("#miniservercheck<TMPL_VAR MSNO>_result");
+				resultdiv.html("Please wait...");
+				var checkresult = $.post( url, 
+									{	ip: $("#miniserverip<TMPL_VAR MSNO>").val(),
+										port: $("#miniserverport<TMPL_VAR MSNO>").val(),
+										user: $("#miniserveruser<TMPL_VAR MSNO>").val(),
+										pass: $("#miniserverkennwort<TMPL_VAR MSNO>").val(),
+										useclouddns: $("#useclouddns<TMPL_VAR MSNO>").val(),
+										clouddns: $("#miniserverkennwort<TMPL_VAR MSNO>").val(),
+						} );
+				checkresult.done(function( data ) {
+					//resultdiv.html("<span style='color:blue;'>Call successful</span>");
+					/* This would parse XML response, but later prefered JSON
+					var entry = $(data).find('LL');
+					console.log ("Entry", entry.attr('value'));
+					*/
+					console.log ("Output:", data);
+					var html;
+					if (data.success) {
+						html = "<span style='color:green;'>Successfully authenticated</span>";
+						if (data.isadmin) html+= "<br>This user is in the Administrators group of the Miniserver.";
+						if (data.isnonadmin) html+= "<br>This user <b>is not</b> in the Administrators group of the Miniserver. Plugins may have problems to perform tasks.";
+						resultdiv.html();
+					} else {
+						html = "<span style='color:red;'>Cannot access your Miniserver</span>";
+						html+= "<br>" + data.status_line;
+					}
+					resultdiv.html(html);
+
+
+						});
+				checkresult.fail(function( status, data ) {
+					resultdiv.html("<span style='color:red;'>Internal server error on call of ajax-check-miniserver.cgi</span> (HTTP "+status.status + " "+ status.statusText + ")");
+					console.log("Internal server error on call of ajax-check-miniserver.cgi", status.status, status.statusText);
+				});
+						
+			
+			
+			
+			
+			
+			
+			});
+			
+			
 			note_link ("miniservernote<TMPL_VAR MSNO>");
 			validate_enable('#miniserverfoldername<TMPL_VAR MSNO>');
 			validate_enable('#miniserveruser<TMPL_VAR MSNO>');

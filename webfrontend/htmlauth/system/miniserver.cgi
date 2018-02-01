@@ -257,6 +257,11 @@ sub save {
 		$ms{"miniserveruser.$msno"} = uri_escape($ms{"miniserveruser.$msno"});
 		$ms{"miniserverkennwort.$msno"} = uri_escape($ms{"miniserverkennwort.$msno"});
 		
+		
+# Removed as saving should not check MS anymote		
+		
+<<'COMMENTED_OUT';
+		
 		# Test if Miniserver is reachable
 		if ( is_enabled($ms{"useclouddns.$msno"})) {
 			# With Cloud DNS
@@ -302,6 +307,8 @@ sub save {
 			&error;
 		}
 
+COMMENTED_OUT
+		
 		# Write configuration file(s)
 		$cfg->param("MINISERVER$msno.PORT", $ms{"miniserverport.$msno"});
 		$cfg->param("MINISERVER$msno.PASS", $ms{"miniserverkennwort.$msno"});
