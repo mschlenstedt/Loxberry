@@ -3,7 +3,7 @@
 
 use strict;
 use LoxBerry::System;
-use CGI;
+# use CGI;
 use HTML::Template;
 use Time::Piece;
 
@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.3.5";
+our $VERSION = "0.3.5.1";
 our $DEBUG;
 
 use base 'Exporter';

@@ -6,13 +6,13 @@ use Config::Simple;
 #use File::HomeDir;
 use URI::Escape;
 use Cwd 'abs_path';
-use LWP::UserAgent;
+# use LWP::UserAgent;
 #use XML::Simple;
 use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.5.4";
+our $VERSION = "0.3.5.5";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -699,6 +699,7 @@ internal or the CloudDNS FTP port, so you do not need to spy yourself.
 sub get_ftpport
 {
 	require XML::Simple;
+	require LWP::UserAgent;
 	
 	my ($msnr) = @_;
 	
