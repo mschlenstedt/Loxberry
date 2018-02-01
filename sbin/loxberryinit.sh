@@ -101,7 +101,20 @@ case "$1" in
 
         # Create log folders for all plugins if not existing
 	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
-			
+	
+	# wait for network completely up
+	log_action_begin_msg "waiting for network comming completely up"
+
+	COUNTER=0
+	wget -q --spider http://google.com
+	while [ "$?" -ne 0 ] && [ "$COUNTER" -lt 24 ]; do
+		log_action_cont_msg "waiting 5 seconds an retest"
+		sleep 5
+		COUNTER=$((COUNTER + 1))
+		wget -q --spider http://google.com
+	done
+	log_action_end_msg 0
+
 	# Run Daemons from Plugins and from System
         log_action_begin_msg "Running System Daemons"
         run-parts -v  $LBHOMEDIR/system/daemons/system > /dev/null 
