@@ -515,4 +515,4 @@ function validate_place_tooltips ()
 	});
 	return;
 }
- 
+
