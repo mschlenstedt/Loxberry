@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.0";
+my $version = "1.0.0.1";
 
 ##########################################################################
 # Variables / Commandline
@@ -397,6 +397,11 @@ if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pf
 }  else {
   $message =  "$SL{'PLUGININSTALL.OK_PLUGINCFG'}";
   &logok;
+}
+
+if ( $pinterface ne "1.0" && $pinterface ne "2.0" ) {
+  $message =  "$SL{'PLUGININSTALL.ERR_UNKNOWNINTERFACE'}";
+  &logfail; 
 }
 
 if ( $pinterface eq "1.0" ) {
@@ -862,7 +867,7 @@ if (!&is_folder_empty("$tempfolder/data")) {
 # Copy Log files
 if ( $pinterface eq "1.0" && !-e "$lbhomedir/log/plugins/$pfolder" ) {
   make_path("$lbhomedir/log/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
-  if (!&is_folder_empty("$tempfolder/log")) {
+  if (!&is_folder_empty("$tempfolder/log") && $pinterface ne "1.0" ) {
     $message =  "$SL{'PLUGININSTALL.INF_LOGFILES'}";
     &loginfo;
     $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! Log files are stored in a RAMDISC now. The plugin has to create the logfiles at runtime! Please inform the PLUGIN Author at $pauthoremail";
@@ -886,7 +891,7 @@ if ( $pinterface eq "1.0" && !-e "$lbhomedir/log/plugins/$pfolder" ) {
 # Copy CGI files - DEPRECIATED!!!
 if ( $pinterface eq "1.0" ) {
   make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
-  if (!&is_folder_empty("$tempfolder/webfrontend/cgi")) {
+  if (!&is_folder_empty("$tempfolder/webfrontend/cgi") && $pinterface ne "1.0") {
     $message =  "$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
     &loginfo;
     $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! CGI files are stored in HTMLAUTH now. Please inform the PLUGIN Author at $pauthoremail";
@@ -1291,12 +1296,14 @@ if (-e "$lbhomedir/system/cron/cron.d/$pname" ) {
 }
 
 # Checking for hardcoded /opt/loxberry strings
-my $chkhcpath = `$findbin $tempfolder -type f -exec $grepbin -li '/opt/loxberry' {} \\;`;
-if ($chkhcpath) {
-    $message =  $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
-    &logwarn;
-    push(@warnings,"HARDCODED PATH'S: $message");
-    print "$chkhcpath";
+if ( $pinterface ne "1.0" ) {
+	my $chkhcpath = `$findbin $tempfolder -type f -exec $grepbin -li '/opt/loxberry' {} \\;`;
+	if ($chkhcpath) {
+	    $message =  $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
+	    &logwarn;
+	    push(@warnings,"HARDCODED PATH'S: $message");
+	    print "$chkhcpath";
+	}
 }
 
 # Set permissions
