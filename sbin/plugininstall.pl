@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.4";
+my $version = "1.0.0.5";
 
 ##########################################################################
 # Variables / Commandline
@@ -1285,7 +1285,21 @@ if( my $cnt = @myfiles ){
 	}
 	&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 	&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
-
+}
+if( -e "$tempfolder/apt" ){
+	$message =  "$SL{'PLUGININSTALL.INF_INSTALLAPT'}";
+	&loginfo;
+	system("$sudobin -n -u loxberry cp -rv $tempfolder/apt $lbhomedir/data/system/install/$pfolder 2>&1");
+	if ($? ne 0) {
+	  $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
+	  &logerr; 
+	  push(@errors,"INSTALL scripts: $message");
+	} else {
+	  $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
+	  &logok;
+	}
+	&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
+	&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 }
 
 # Checking for hardcoded /opt/loxberry strings
