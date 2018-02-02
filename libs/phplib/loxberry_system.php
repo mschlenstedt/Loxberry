@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.1";
+	public static $LBSYSTEMVERSION = "1.0.0.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -428,7 +428,7 @@ class LBSystem
 			
 			# CloudDNS handling
 			if ($miniservers[$msnr]['UseCloudDNS'] && $miniservers[$msnr]['CloudURL']) {
-				set_clouddns($msnr, $clouddnsaddress);
+				LBSystem::set_clouddns($msnr, $clouddnsaddress);
 			}
 			
 			if (! $miniservers[$msnr]['Port']) {
