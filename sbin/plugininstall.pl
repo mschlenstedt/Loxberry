@@ -1188,6 +1188,25 @@ if (-e "$aptfile") {
 
 }
 
+if ( $pinterface ne "1.0" ) {
+
+	my @debfiles = glob("$tempfolder/dpkg/*.deb");
+	if( my $cnt = @myfiles ){
+		$message = "Command: $dpkgbin -i -R $tempfolder/dpkg";
+		&loginfo;
+		system("$dpkgbin -i -R $tempfolder/dpkg 2>&1");
+		if ($? ne 0) {
+			$message =  "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
+			&logerr; 
+			push(@errors,"APT install: $message");
+		} else {
+			$message =  "$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
+			&logok;
+		}
+	}
+	
+}
+
 # Executing postinstall script
 if (-f "$tempfolder/postinstall.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_POSTINSTALL'}";
