@@ -1257,7 +1257,7 @@ sub lock
 		} while ($delay < $p{wait});
 		return $p{lockfile};
 	}
-	return "Undefined status";
+	return;
 }
 
 sub unlock
