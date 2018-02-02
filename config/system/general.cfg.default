@@ -29,6 +29,7 @@ UNZIP=/usr/bin/unzip
 TAR=/bin/tar
 NTPDATE=/usr/sbin/ntpdate
 DPKG=/usr/bin/dpkg
+DOS2UNIX=/usr/bin/dos2unix
 
 [BASE]
 MINISERVERS=1

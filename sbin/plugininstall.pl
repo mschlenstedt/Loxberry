@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.2";
+my $version = "1.0.0.3";
 
 ##########################################################################
 # Variables / Commandline
@@ -63,6 +63,7 @@ my $unzipbin        = $bins->{UNZIP};
 my $findbin         = $bins->{FIND};
 my $grepbin         = $bins->{GREP};
 my $dpkgbin         = $bins->{DPKG};
+my $dos2unix        = $bins->{DOS2UNIX};
 
 ##########################################################################
 # Language Settings
@@ -594,6 +595,13 @@ $message =  "$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
 &loginfo;
 if (-e "$tempfolder" ) {
   &replaceenv ("loxberry", "1", "$tempfolder");
+}
+
+# Executing DOS2UNIX for all pluginfiles
+$message =  "$SL{'PLUGININSTALL.INF_DOS2UNIX'}";
+&loginfo;
+if (-e "$tempfolder" ) {
+  &dos2unix ("loxberry", "1", "$tempfolder");
 }
 
 # Executing preroot script
@@ -1787,6 +1795,35 @@ sub replaceenv {
   return();
 
 }
+
+#####################################################
+# Conerting all files to unix fileformat
+#####################################################
+
+# &dos2unix ("loxberry", "1", "path/to/folder");
+
+sub dos2unix {
+
+  my $user = shift;
+  my $recursive = shift;
+  my $target = shift;
+
+  # Folder
+  if ($recursive) {
+
+    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec $dos2unix {} \\; 2>&1");
+
+  # File
+  } else {
+
+    system("$sudobin -n -u $user $dos2unix $target 2>&1");
+
+  }
+
+  return();
+
+}
+
 
 #####################################################
 # Sorting Plugin Database
