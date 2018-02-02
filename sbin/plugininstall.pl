@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "1.0.0.2";
 
 ##########################################################################
 # Variables / Commandline
@@ -588,6 +588,13 @@ system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.bkp 2>&1
 &setowner ("loxberry", "0", "$lbsdatadir/plugindatabase.bkp", "PLUGIN DATABASE");
 
 # Starting installation
+
+# Replacing Environment strings
+$message =  "$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
+&loginfo;
+if (-e "$tempfolder" ) {
+  &replaceenv ("loxberry", "1", "$tempfolder");
+}
 
 # Executing preroot script
 if (-f "$tempfolder/preroot.sh") {
@@ -1271,28 +1278,6 @@ if( my $cnt = @myfiles ){
 	&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 	&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 
-}
-
-# Replacing Environment strings
-$message =  "$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
-&loginfo;
-if (-e "$lbhomedir/config/plugins/$pfolder" ) {
-  &replaceenv ("loxberry", "1", "$lbhomedir/config/plugins/$pfolder");
-}
-if (-e "$lbhomedir/bin/plugins/$pfolder" ) {
-  &replaceenv ("loxberry", "1", "$lbhomedir/bin/plugins/$pfolder");
-}
-if (-e "$lbhomedir/system/daemons/plugins/$pname" ) {
-  &replaceenv ("root", "0", "$lbhomedir/system/daemons/plugins/$pname");
-}
-if (-e "$lbhomedir/data/system/uninstall/$pname" ) {
-  &replaceenv ("root", "0", "$lbhomedir/data/system/uninstall/$pname");
-}
-if (-e "$lbhomedir/system/sudoers/$pname" ) {
-  &replaceenv ("root", "0", "$lbhomedir/system/sudoers/$pname");
-}
-if (-e "$lbhomedir/system/cron/cron.d/$pname" ) {
-  &replaceenv ("root", "0", "$lbhomedir/system/cron/cron.d/$pname");
 }
 
 # Checking for hardcoded /opt/loxberry strings
