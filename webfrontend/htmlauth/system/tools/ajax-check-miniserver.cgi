@@ -16,10 +16,19 @@ my $ua = LWP::UserAgent->new;
 $ua->timeout(10);
 $ua->max_redirect( 0 );
 
+$R::useclouddns if (0);
+$R::ip if (0);
+
+my $hostport = "$R::ip";
+$hostport .= ":$R::port" if ($R::port);
+
 # Cloud DNS handling
 if (is_enabled($R::useclouddns)) {
 	if (! $R::clouddns) {
-		print "clouddns not set";
+		$jout{error} = 1;
+		$jout{success} = 0;
+		$jout{status_line} = "Cloud DNS not set";
+		print to_json(\%jout);
 		exit;
 	}
 	
@@ -33,13 +42,20 @@ if (is_enabled($R::useclouddns)) {
 	$header =~ s/http:\/\///;
 	# Removes /
 	$header =~ s/\///;
-	$R::ip = $header;
+	$hostport = $header;
+	$jout{isclouddns} = 1;
 }
 
+$jout{hostport} = $hostport;
+	
+if ($R::get_hostport) {
+	print to_json(\%jout);
+	exit;
+}
 
+my $urlnonadmin = "http://$R::user:$R::pass\@$hostport/dev/cfg/version";
+my $urladmin = "http://$R::user:$R::pass\@$hostport/dev/cfg/ip";
 
-my $urlnonadmin = "http://$R::user:$R::pass\@$R::ip\:$R::port/dev/cfg/version";
-my $urladmin = "http://$R::user:$R::pass\@$R::ip\:$R::port/dev/cfg/ip";
 
 my $nonadmin;
 my $admin;
