@@ -73,16 +73,19 @@ if ($R::form eq 'plugin' || $R::plugin) {
 if ($R::action && $R::action eq "setvalue") {
 	mes "ajax setvalue";
 	&ajax;
+	exit;
 }
 
 if ($R::action && $R::action eq "download") {
 	mes "download";
 	&download;
+	exit;
 }
 
 if ($R::action && $R::action eq "getlangfiles") {
 	mes "ajax getlangfiles";
-	&getlangfiles;
+	&getlangfiles (1);
+	exit;
 }
 ##########################################################################
 # Language Settings
@@ -181,13 +184,15 @@ sub form {
 		);
 		$maintemplate->param ( 'pluginselection', $pluginlist);
 	
-		$languagefilelist = $cgi->popup_menu(
-				-name   => 'languagefile',
-				-id => 'languagefile',
-				-tabindex => 2,
-				#-values => [''],
-				#-labels => \%pluginlist
-		);
+		# $languagefilelist = $cgi->popup_menu(
+				# -name   => 'languagefile',
+				# -id => 'languagefile',
+				# -tabindex => 2,
+				# #-values => [''],
+				# #-labels => \%pluginlist
+		# );
+
+		$languagefilelist = getlangfiles();
 		$maintemplate->param ( 'languagefileselection', $languagefilelist);
 
 	}
@@ -458,8 +463,8 @@ sub download
 	}
 	
 	if (!$R::destlang || ! -e $filename) {
-		$cgi->header->status('405 Method Not Allowed');
-		print $cgi->header('text/plain');
+		print $cgi->header('text/plain', '405 Method Not Allowed');
+		print '405 Method Not Allowed';
 		exit(1);
 	}
 	
@@ -467,8 +472,8 @@ sub download
 	
 	open(my $fh, "<" , $filename) or 
 		do {
-			$cgi->header->status('500 Cannot read file');
-			print $cgi->header('text/plain');
+			print $cgi->header('text/plain', '500 Cannot read file');
+			print '500 Cannot read file';
 			exit(1);
 		};
 	{ 
@@ -488,7 +493,10 @@ sub download
 
 sub getlangfiles
 {
-	exit if (! $R::plugin);
+	
+	my ($ajax) = @_;
+	
+	# return if (! $R::plugin);
 	
 	my $langdir = "$lbhomedir/templates/plugins/$R::plugin/lang/";
 	my $globfilter = $langdir . "*_en.ini";
@@ -513,8 +521,9 @@ sub getlangfiles
 				-labels => \%filenames,
 		);
 		
-	print $cgi->header('text/html');
-	print $languagefilelist;
+	print $cgi->header('text/html') if ($ajax);
+	print $languagefilelist if ($ajax);
+	return $languagefilelist if (! $ajax);
 	exit;
 
 

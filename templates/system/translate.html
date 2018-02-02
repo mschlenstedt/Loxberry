@@ -182,7 +182,7 @@ div.greenTable {
 	
 	</div>
 	</form>
-	<p id="pleasewait">Please be patient as loading really takes a while...</p>
+	<!-- <p id="pleasewait">Please be patient as loading really takes a while...</p> -->
 	<input type="hidden" id="srclang" name="srclang" value="en">
 	<input type="hidden" id="selfurl" name="selfurl" value="<TMPL_VAR SELFURL>">
 	
@@ -195,7 +195,7 @@ div.greenTable {
 <div class="divTableHead CellButtons">&nbsp;</div>
 </div>
 </div>
-<div class="divTableBody">
+<div class="divTableBody" id="divTableBody">
 <TMPL_LOOP langarray>
 <div class="divTableRow <TMPL_VAR CELL_EQUAL> <TMPL_VAR CELL_EMPTY>" id="row_<TMPL_VAR KEY>">
 
@@ -285,6 +285,7 @@ $(document).on('pageinit', function() {
 	});
 	
 	$("#plugin").change(function() {
+		$("#divTableBody").html("");
 		if ($(this).val() === 0) return;
 		$("#languagefile").selectmenu('disable');	
 		$.post( url, { 	
@@ -298,6 +299,11 @@ $(document).on('pageinit', function() {
 			$("#languagefile").selectmenu('enable');
 		});
 	});
+	
+	$("#languagefile").change(function() {
+		$("#divTableBody").html("");
+	});
+	
 	
 	console.log("Destination lang:", $('#destlang').val());
 
