@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.5";
+my $version = "1.0.0.6";
 
 ##########################################################################
 # Variables / Commandline
@@ -1446,7 +1446,9 @@ sub purge_installation {
     # Daemon file
     system("rm -fv $lbhomedir/system/daemons/plugins/$pname 2>&1");
     # Uninstall file
-    system("rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1");
+    if ($option ne "all") {
+      system("rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1");
+    }
     # Cron jobs
     system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.01min/$pname 2>&1");
     system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.03min/$pname 2>&1");
@@ -1521,6 +1523,8 @@ sub purge_installation {
           &logok;
         }
       }
+      system("rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1");
+
       # Crontab
       system("rm -vf $lbhomedir/system/cron/cron.d/$pname 2>&1");
     }
