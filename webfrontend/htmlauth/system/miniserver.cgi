@@ -326,14 +326,7 @@ COMMENTED_OUT
 	# Deleting old Miniserver if any (TODO: How to delete the BLOCKs?!?)
 	
 	while ($miniserversprev > $miniservers) {
-		# $cfg->delete("MINISERVER$miniserversprev.PORT");
-		# $cfg->delete("MINISERVER$miniserversprev.PASS");
-		# $cfg->delete("MINISERVER$miniserversprev.ADMIN");
-		# $cfg->delete("MINISERVER$miniserversprev.IPADDRESS");
-		# $cfg->delete("MINISERVER$miniserversprev.USECLOUDDNS");
-		# $cfg->delete("MINISERVER$miniserversprev.CLOUDURL");
 		$cfg->set_block("MINISERVER$miniserversprev", {});
-		# Does not work: $cfg->delete(-block=>'MINISERVER2');
 		$miniserversprev--;
 	}
 
@@ -353,6 +346,7 @@ COMMENTED_OUT
 	my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 	$maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
+	$maintemplate->param ( "MESSAGE", $SL{'MINISERVER.SAVE_OK_MSG'});
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MINISERVER.WIDGETLABEL'};
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);

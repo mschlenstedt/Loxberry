@@ -178,7 +178,7 @@
 			$("#miniservercheck<TMPL_VAR MSNO>").click(function() {
 				var url = "/admin/system/tools/ajax-check-miniserver.cgi";
 				var resultdiv = $("#miniservercheck<TMPL_VAR MSNO>_result");
-				resultdiv.html("Please wait...");
+				resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
 				var checkresult = $.post( url, 
 									{	ip: $("#miniserverip<TMPL_VAR MSNO>").val(),
 										port: $("#miniserverport<TMPL_VAR MSNO>").val(),
@@ -193,15 +193,14 @@
 					var entry = $(data).find('LL');
 					console.log ("Entry", entry.attr('value'));
 					*/
-					console.log ("Output:", data);
+					// console.log ("Output:", data);
 					var html;
 					if (data.success) {
-						html = "<span style='color:green;'>Successfully authenticated</span>";
-						if (data.isadmin) html+= "<br>This user is in the Administrators group of the Miniserver.";
-						if (data.isnonadmin) html+= "<br>This user <b>is not</b> in the Administrators group of the Miniserver. Plugins may have problems to perform tasks.";
-						resultdiv.html();
+						html = "<span style='color:green;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
+						if (data.isadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_ADMIN>";
+						if (data.isnonadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_NONADMIN>";
 					} else {
-						html = "<span style='color:red;'>Cannot access your Miniserver</span>";
+						html = "<span style='color:red;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
 						html+= "<br>" + data.status_line;
 					}
 					resultdiv.html(html);
@@ -212,15 +211,8 @@
 					resultdiv.html("<span style='color:red;'>Internal server error on call of ajax-check-miniserver.cgi</span> (HTTP "+status.status + " "+ status.statusText + ")");
 					console.log("Internal server error on call of ajax-check-miniserver.cgi", status.status, status.statusText);
 				});
-						
-			
-			
-			
-			
-			
 			
 			});
-			
 			
 			note_link ("miniservernote<TMPL_VAR MSNO>");
 			validate_enable('#miniserverfoldername<TMPL_VAR MSNO>');
