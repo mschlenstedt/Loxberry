@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "0.3.5.5";
+our $VERSION = "1.0.0.1";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -616,7 +616,7 @@ sub read_generalcfg
 
 		# CloudDNS handling
 		if (LoxBerry::System::is_enabled($miniservers{$msnr}{UseCloudDNS}) && ($miniservers{$msnr}{CloudURL})) {
-			set_clouddns($msnr);
+			set_clouddns($msnr, $clouddnsaddress);
 		}
 		
 		if (! $miniservers{$msnr}{Port}) {
@@ -632,20 +632,31 @@ sub read_generalcfg
 ####################################################
 sub set_clouddns
 {
-	my ($msnr) = @_;
+	my ($msnr, $clouddnsaddress) = @_;
 	
-	# Grep IP Address from Cloud Service
-	my $dns_info = qx( $LoxBerry::System::binaries->{CURL} -I http://$LoxBerry::System::clouddnsaddress/$miniservers{$msnr}{CloudURL} --connect-timeout 5 -m 5 2>/dev/null |$LoxBerry::System::binaries->{GREP} Location |$LoxBerry::System::binaries->{AWK} -F/ '{print \$3}');
-	my @dns_info_pieces = split /:/, $dns_info;
+	require LWP::UserAgent;
+	my $ua = LWP::UserAgent->new;
+	$ua->timeout(10);
+	$ua->max_redirect( 0 );
+	
+	my $checkurl = "http://$clouddnsaddress/" . $miniservers{$msnr}{CloudURL};
+	my $resp = $ua->head($checkurl);
+	my $header = $resp->header('location');
+	# Removes http://
+	$header =~ s/http:\/\///;
+	# Removes /
+	$header =~ s/\///;
+	
+	my @dns_info_pieces = split /:/, $header;
 
 	if ($dns_info_pieces[1]) {
-	  $miniservers{$msnr}{Port} =~ s/^\s+|\s+$//g;
+	  $miniservers{$msnr}{Port} = $dns_info_pieces[1];
 	} else {
 	  $miniservers{$msnr}{Port} = 80;
 	}
 
 	if ($dns_info_pieces[0]) {
-	  $miniservers{$msnr}{IPAddress} =~ s/^\s+|\s+$//g;
+	  $miniservers{$msnr}{IPAddress} = $dns_info_pieces[0];
 	} else {
 	  $miniservers{$msnr}{IPAddress} = "127.0.0.1";
 	}

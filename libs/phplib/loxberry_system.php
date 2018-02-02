@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "0.3.3.4";
+	public static $LBSYSTEMVERSION = "1.0.0.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -428,7 +428,7 @@ class LBSystem
 			
 			# CloudDNS handling
 			if ($miniservers[$msnr]['UseCloudDNS'] && $miniservers[$msnr]['CloudURL']) {
-				set_clouddns($msnr);
+				set_clouddns($msnr, $clouddnsaddress);
 			}
 			
 			if (! $miniservers[$msnr]['Port']) {
@@ -442,35 +442,50 @@ class LBSystem
 	# set_clouddns
 	# INTERNAL function to set CloudDNS IP and Port
 	####################################################
-	function set_clouddns($msnr)
+	function set_clouddns($msnr, $clouddnsaddress)
 	{
 		global $binaries;
 		global $miniservers;
-		global $clouddnsaddress;
 		
 		if (!$miniservercount || $miniservercount < 1) {
 			return;
 		}
-		# Grep IP Address from Cloud Service
+
+		$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL'];
+
+		// Set fetch type to HEAD
+		stream_context_set_default(array('http' => array('method' => 'HEAD')));
+		
+		$resp = get_headers($url, 1);
+		
+		// Revert fetch type to GET
+		stream_context_set_default(array('http' => array('method' => 'GET')));
+	
+		$header = $resp['Location'];
+		
+		
+		# Removes http://
+		$header = str_replace( 'http://', '', $header);
+		# Removes /
+		$header = str_replace( '/', '', $header);
+	
+/*		# Grep IP Address from Cloud Service
 		$commandline = "{$binaries['CURL']} -I http://$clouddnsaddress/{$miniservers[$msnr]['CloudURL']} --connect-timeout 5 -m 5 2>/dev/null | {$binaries['GREP']} Location | {$binaries['AWK']} -F/ '{print \$3}'";
 		# print "clouddns commandline: $commandline\n";
 		#$dns_info = `$binaries['CURL'] -I http://$clouddnsaddress/$miniservers[$msnr]['CloudURL'] --connect-timeout 5 -m 5 2>/dev/null | $binaries['GREP'] Location | $binaries['AWK'] -F/ '{print \$3}'`;
 		$dns_info = shell_exec($commandline);
 		fwrite (STDERR, "LoxBerry System Info: CloudDNS Info: " . $dns_info . "\n");
-		$dns_info_pieces = explode(':', $dns_info);
+*/
+		$dns_info_pieces = explode(':', $header);
 
 		if ($dns_info_pieces[1]) {
-			# miniservers[$msnr]['Port'] =~ s/^\s+|\s+$//g;
-			preg_match( 's/^\s+|\s+$//g', $dns_info_pieces[1], $matches);
-			$miniservers[$msnr]['Port'] = $matches[0];
+			$miniservers[$msnr]['Port'] = $dns_info_pieces[1];
 		 } else {
 		 $miniservers[$msnr]['Port'] = 80;
 		}
 
 		if ($dns_info_pieces[0]) {
-		  # $miniservers{$msnr}{IPAddress} =~ s/^\s+|\s+$//g;
-			preg_match( 's/^\s+|\s+$//g', $dns_info_pieces[0], $matches);
-			$miniservers[$msnr]['IPAddress'] = $matches[0];
+			$miniservers[$msnr]['IPAddress'] = $dns_info_pieces[0];
 		} else {
 		  $miniservers[$msnr]['IPAddress'] = "127.0.0.1";
 		}
