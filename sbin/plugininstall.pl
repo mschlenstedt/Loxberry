@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.6";
+my $version = "1.0.0.7";
 
 ##########################################################################
 # Variables / Commandline
@@ -1205,6 +1205,21 @@ if ( $pinterface ne "1.0" ) {
 		}
 	}
 	
+}
+
+# We have to recreate the skels for system log folders in tmpfs
+$message =  "$SL{'PLUGININSTALL.INF_LOGSKELS'}";
+&loginfo;
+$message = "Command: $lbssbindir/createskelfolders.pl";
+system("$lbssbindir/createskelfolders.pl 2>&1");
+if ($? eq 1) {
+  $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+  &logerr; 
+  push(@errors,"SKEL FOLDERS: $message");
+} 
+else {
+  $message =  "$SL{'PLUGININSTALL.OK_SCRIPT'}";
+  &logok;
 }
 
 # Executing postinstall script
