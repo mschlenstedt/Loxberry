@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.3";
+my $version = "1.0.0.4";
 
 ##########################################################################
 # Variables / Commandline
@@ -1401,7 +1401,7 @@ sub purge_installation {
     system("$sudobin -n -u loxberry rm -rfv $lbhomedir/config/plugins/$pfolder/ 2>&1");
     system("$sudobin -n -u loxberry rm -rfv $lbhomedir/bin/plugins/$pfolder/ 2>&1");
     system("$sudobin -n -u loxberry rm -rfv $lbhomedir/data/plugins/$pfolder/ 2>&1");
-    system("$sudobin -n -u loxberry rm -rfv $lbhomedir/templates/$pfolder/ 2>&1");
+    system("$sudobin -n -u loxberry rm -rfv $lbhomedir/templates/plugins/$pfolder/ 2>&1");
     system("$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
     system("$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
     system("$sudobin -n -u loxberry rm -rfv $lbhomedir/data/system/install/$pfolder 2>&1");
