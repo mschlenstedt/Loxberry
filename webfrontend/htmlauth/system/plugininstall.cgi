@@ -47,9 +47,9 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "0.1.1";
+my $version = "1.0.0.0";
 
-my $cfg			= new Config::Simple("$lbsconfigdir/general.cfg");
+my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 
 
 #########################################################################
@@ -151,8 +151,9 @@ exit;
 sub form {
 
 	# Check for running autoupdates/installations...
-	if ( -e "/var/lock/pluginsupdate.lock" || -e "/var/lock/lbupdate.lock" || -e "/var/lock/plugininstall.lock" ) {
-  		print STDERR "Running Autoupdates/Installations\n";
+	my $status = LoxBerry::System::lock();
+	if ($status) {
+  		print STDERR "Running Autoupdates/Installations: $status\n";
 		$maintemplate->param("LOCK", 1);
 	} else {
 		# Clean up old files
@@ -198,6 +199,7 @@ sub uninstall {
 		} else {
 			# Clean up old files
 			system("rm -r -f /tmp/uploads/*");
+			system("touch /var/lock/plugininstall.lock");
 			# Uninstallation
 			print STDERR "Doing uninstallation of $pid.";
 			$maintemplate->param("UNINSTALL", 1);

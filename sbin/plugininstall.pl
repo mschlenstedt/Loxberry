@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "0.3.3.3";
+my $version = "1.0.0.0";
 
 ##########################################################################
 # Variables / Commandline
@@ -52,8 +52,6 @@ if ( $R::cgi ) {
 ##########################################################################
 # Read Settings
 ##########################################################################
-
-#my $cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
 
 my $bins = LoxBerry::System::get_binaries();
 my $bashbin         = $bins->{BASH};
@@ -102,6 +100,20 @@ if ( $R::action eq "uninstall" || $R::action eq "autoupdate" ) {
     &logfail;
   }
 }
+
+# Locking
+LOGINF "Locking plugininstall - delaying up to 10 minutes...";
+eval {
+	my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 600 );
+
+	if ($lockstate) {
+		LOGCRIT "Could not get lock for plugininstall. Skipping this installation.";
+		LOGINF "Locking error reason is: $lockstate";
+		exit (1);
+	}
+};
+
+LOGOK "Lock successfully set.";
 
 # ZIP or Folder mode?
 my $zipmode = defined $R::file ? 1 : 0;
@@ -154,7 +166,8 @@ if ( !$found ) {
 
 &purge_installation ("all");
 
-system ("rm /var/lock/plugininstall.lock");
+# Remove Lock
+LoxBerry::System::unlock( lockfile => 'plugininstall' );
 
 exit (0);
 
@@ -1362,7 +1375,9 @@ if ($chkhcpath) {
   print "$chkhcpath";
 }
 
-system ("rm /var/lock/plugininstall.lock");
+# Remove Lock
+LoxBerry::System::unlock( lockfile => 'plugininstall' );
+
 exit (0);
 
 }
