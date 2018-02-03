@@ -28,7 +28,7 @@ if ($lockstatus) {
 } else {
 	print "lbupdate is locked by me\n";
 }
-sleep 60;
+sleep 30;
 LoxBerry::System::unlock(lockfile => 'lbupdate');
 exit;
 
