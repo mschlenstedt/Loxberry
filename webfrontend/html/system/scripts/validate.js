@@ -304,8 +304,8 @@ function validate_convert_rule (object, rule)
 				rule = '^[a-zA-Z0-9.!#$%&\u2019*+\\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$';
 				break;
 			case 'alphanumeric-accented-ws':
-				// Accept letters a-z and A-Z and digits 0-9  + whitespaces + accented chars + _- .
-				rule = '^([a-zA-Z0-9\\_\\-\\.\\s\\u00C0-\\u017F])*$';
+				// Accept letters a-z and A-Z and digits 0-9  + whitespaces + accented chars + _- . ! ?
+				rule = '^([a-zA-Z0-9\\?\\!\\_\\-\\.\\s\\u00C0-\\u017F])*$';
 				break;
 			default:
 				// Unknown condition => replace rule by a rule which is always false
