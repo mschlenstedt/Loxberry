@@ -206,11 +206,6 @@ function validate_convert_rule (object, rule)
 				// Accept uppercase letters A-Z and digits 0-9 + whitespaces
 				rule = '^[A-Z0-9\\s]*$';
 				break;
-			case 'alphanumeric-accented-ws':
-				// Accept letters a-z and A-Z and digits 0-9  + whitespaces + àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153
-				var accentedCharacters = "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153";
-				rule = '^[a-zA-Z0-9\\s' + accentedCharacters + ']*$';
-				break;
 			case 'digits':
 			case 'number':
 			case 'numeric':
@@ -307,6 +302,12 @@ function validate_convert_rule (object, rule)
 			case 'email':
 				// Check if eMail address
 				rule = '^[a-zA-Z0-9.!#$%&\u2019*+\\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$';
+				break;
+			case 'alphanumeric-accented-ws':
+				// Accept letters a-z and A-Z and digits 0-9  + whitespaces + àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153 + _-
+				var accentedCharacters = "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153";
+				var specialCharacters = "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153";
+				rule = '^[a-zA-Z0-9\\s' + accentedCharacters + '-_]*$';
 				break;
 			default:
 				// Unknown condition => replace rule by a rule which is always false
@@ -528,3 +529,4 @@ function validate_place_tooltips ()
 	return;
 }
 
+ 
