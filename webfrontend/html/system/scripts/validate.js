@@ -305,9 +305,7 @@ function validate_convert_rule (object, rule)
 				break;
 			case 'alphanumeric-accented-ws':
 				// Accept letters a-z and A-Z and digits 0-9  + whitespaces + àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153 + _-
-				var accentedCharacters = "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153";
-				var specialCharacters = "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153";
-				rule = '^[a-zA-Z0-9\\s' + accentedCharacters + '-_]*$';
+				rule = '^([-_a-zA-Z0-9\\s\à\è\ì\ò\ù\À\È\Ì\Ò\Ù\á\é\í\ó\ú\ý\Á\É\Í\Ó\Ú\Ý\â\ê\î\ô\û\Â\Ê\Î\Ô\Û\ã\ñ\õ\Ã\Ñ\Õ\ä\ë\ï\ö\ü\ÿ\Ä\Ë\Ï\Ö\Ü\\u0178\ç\Ç\ß\Ø\ø\Å\å\Æ\æ\\u0153])*$';
 				break;
 			default:
 				// Unknown condition => replace rule by a rule which is always false
@@ -529,4 +527,3 @@ function validate_place_tooltips ()
 	return;
 }
 
- 
