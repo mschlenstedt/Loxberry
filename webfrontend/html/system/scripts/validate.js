@@ -206,7 +206,11 @@ function validate_convert_rule (object, rule)
 				// Accept uppercase letters A-Z and digits 0-9 + whitespaces
 				rule = '^[A-Z0-9\\s]*$';
 				break;
-
+			case 'alphanumeric-accented-ws':
+				// Accept letters a-z and A-Z and digits 0-9  + whitespaces + àèìòùÀÈÌÒÙáéíóúıÁÉÍÓÚİâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153
+				var accentedCharacters = "àèìòùÀÈÌÒÙáéíóúıÁÉÍÓÚİâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜ\u0178çÇßØøÅåÆæ\u0153";
+				rule = '^[a-zA-Z0-9\\s' + accentedCharacters + ']*$';
+				break;
 			case 'digits':
 			case 'number':
 			case 'numeric':
