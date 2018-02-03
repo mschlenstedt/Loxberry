@@ -47,7 +47,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.0";
+my $version = "1.0.0.1";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -73,6 +73,7 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 my $do           = $query{'do'};
 my $pid          = $query{'pid'};
 my $answer       = $query{'answer'};
+my $url          = $query{'url'};
 
 # Everything from Forms
 my $saveformdata = param('saveformdata');
@@ -152,13 +153,17 @@ sub form {
 
 	# Check for running autoupdates/installations...
 	my $status = LoxBerry::System::lock();
-	if ($status) {
-  		print STDERR "Running Autoupdates/Installations: $status\n";
-		$maintemplate->param("LOCK", 1);
-	} else {
+#	if ($status) {
+#		print STDERR "Running Autoupdates/Installations: $status\n";
+#		$maintemplate->param("LOCK", 1);
+#	} else {
 		# Clean up old files
 		system("rm -r -f /tmp/uploads/*");
   		$maintemplate->param("FORM", 1);
+#	}
+
+	if ($url) {
+  		$maintemplate->param("ARCHIVEURL", "$url");
 	}
 
 	# Print Template
@@ -245,6 +250,9 @@ sub install {
 		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_SECUREPIN_WRONG'};
 		&error;
 	}
+
+	my $archiveurl = param('archiveurl');
+	print STDERR "The archive url is $archiveurl.\n";
 	my $uploadfile = param('uploadfile');
 	print STDERR "The upload file is $uploadfile.\n";
 
@@ -254,30 +262,36 @@ sub install {
 	# Filter
 	#quotemeta($uploadfile);
 
-	# allowed file endings (use | to seperate more than one)
-	my $allowed_filetypes = "zip";
+	#
+	# If there's no URL given, check the upload file
+	#
+	if (!$archiveurl) {
+		# allowed file endings (use | to seperate more than one)
+		my $allowed_filetypes = "zip";
 
-	# Max filesize (KB)
-	my $max_filesize = 50000;
+		# Max filesize (KB)
+		my $max_filesize = 50000;
 
-	# Filter Backslashes
-	$uploadfile =~ s/.*[\/\\](.*)/$1/;
+		# Filter Backslashes
+		$uploadfile =~ s/.*[\/\\](.*)/$1/;
 
-	# Filesize
-	my $filesize = -s $uploadfile;
-	$filesize /= 1000;
-	print STDERR "The upload file is $filesize.\n";
+		# Filesize
+		my $filesize = -s $uploadfile;
+		$filesize /= 1000;
+		print STDERR "The upload file is $filesize.\n";
 
-	# If it's larger than allowed...
-	if ($filesize > $max_filesize) {
-		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_MAX_FILESIZE'};
-		&error;
-	}
+		# If it's larger than allowed...
+		if ($filesize > $max_filesize) {
+			$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_MAX_FILESIZE'};
+			&error;
+		}
 
-	# Test if filetype is allowed
-	if($uploadfile !~ /^.+\.($allowed_filetypes)/) {
-		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_WRONG_FILETYPE'};
-		&error;
+		# Test if filetype is allowed
+		if($uploadfile !~ /^.+\.($allowed_filetypes)/) {
+			$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_WRONG_FILETYPE'};
+			&error;
+		}
+
 	}
 
 	my $logtemplate = HTML::Template->new(
