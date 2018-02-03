@@ -168,6 +168,7 @@
 			validate_enable('#archiveurl');
 			validate_chk_object(['#securepin','#archiveurl','#uploadfile']);
 			$( '#securepin' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
+			if ( $('#archiveurl').length > 0 ) $('#archiveurl').trigger('keyup');
 		});
 		
 		function post_value (action, pluginmd5, value)

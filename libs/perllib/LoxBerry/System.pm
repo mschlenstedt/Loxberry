@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.1";
+our $VERSION = "1.0.0.2";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -822,7 +822,7 @@ sub readlanguage
 		$issystem = 1;
 	}
 	
-	if(!$issystem && !$template->isa("HTML::Template")) {
+	if(!$issystem && $template && !$template->isa("HTML::Template")) {
 		# Plugin only gave us a language 
 		$langfile = $template;
 	}
