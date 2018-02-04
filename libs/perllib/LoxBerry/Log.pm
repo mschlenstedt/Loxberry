@@ -590,7 +590,7 @@ sub get_notifications_html
 	
 	for my $not (@notifs) {
 		# Don't show info when errors are requested
-		print STDERR "Notification: $not->{SEVERITY} $not->{DATESTR} $not->{PACKAGE} $not->{NAME} $not->{CONTENT_RAW}\n" if ($DEBUG);
+		print STDERR "Notification: $not->{SEVERITY} $not->{DATESTR} $not->{PACKAGE} $not->{NAME} $not->{CONTENTRAW}\n" if ($DEBUG);
 		
 		
 		if (! $not->{SEVERITY} && ! $p{error} ) {
@@ -611,7 +611,7 @@ sub get_notifications_html
 			$notif_line .= '<img src="/system/images/notification_error_small.svg">';
 		}
 		$notif_line .= "</div>";
-		$notif_line .= "<div style='vertical-align: middle; width:90%; display: table-cell; '><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
+		$notif_line .= "<div style='vertical-align: middle; width:90%; display: table-cell; '><b>$not->{DATESTR}:</b> $not->{CONTENTHTML}</div>";
 		$notif_line .= "<div style='vertical-align: middle; width:10%; display: table-cell; align:right; text-align: right;'>";
 		$notif_line .= "<a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>Dismiss</a>";
 		$notif_line .= "</div>";
