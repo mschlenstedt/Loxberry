@@ -28,6 +28,7 @@ if    ($action eq 'secupdates') { &secupdates; }
 elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
 elsif ($action eq 'poweroff') { &poweroff; }
 elsif ($action eq 'reboot') { &reboot; }
+elsif ($action eq 'ping') { print "pong"; exit; }
 elsif ($action eq 'lbupdate-reltype') { &lbupdate; }
 elsif ($action eq 'lbupdate-installtype') { &lbupdate; }
 elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
