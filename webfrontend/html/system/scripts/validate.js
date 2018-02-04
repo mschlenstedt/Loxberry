@@ -81,8 +81,15 @@ function validate_all()
 				// If the value doesn't match the rule in attribute data-validation-rule
 				// of the INPUT, increase the false counter
 			  	falseCount++;
+				if ( !$('body').attr('validatefailed') )
+				{
+					$('body').attr('validatefailed',v);
+			  		var x = $(v).offset().top - 50;
+			   		jQuery('html,body').animate({scrollTop: x}, 400);
+					setTimeout(function(){ $('body').removeAttr('validatefailed'); }, 1000);		   		
+				}
 			}
-		});
+		  });
 	}
 	// If falseCount is equal or greater than 0 something was wrong (initial value is -1)
 	if (falseCount >= 0)
@@ -301,7 +308,7 @@ function validate_convert_rule (object, rule)
 				break;
 			case 'email':
 				// Check if eMail address
-				rule = '^[a-zA-Z0-9.!#$%&\u2019*+\\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$';
+				rule = '^(^[a-zA-Z0-9.!#$%&\u2019*+\\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$';
 				break;
 			case 'alphanumeric-accented-ws':
 				// Accept letters a-z and A-Z and digits 0-9  + whitespaces + accented chars + _- . ! ?
