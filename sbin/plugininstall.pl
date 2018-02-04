@@ -1867,7 +1867,7 @@ sub dos2unix {
   # Folder
   if ($recursive) {
 
-    system("$sudobin -n -u $user $findbin $target -iregex '.*\\..*' -exec $dos2unix {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec $dos2unix {} \\; 2>&1");
 
   # File
   } else {
