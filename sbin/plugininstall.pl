@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.7";
+my $version = "1.0.0.8";
 
 ##########################################################################
 # Variables / Commandline
@@ -948,7 +948,7 @@ if ( $pinterface ne "1.0" ) {
       &logok;
     }
 
-    &setrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    &setrights ("755", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
     &setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 
   }
