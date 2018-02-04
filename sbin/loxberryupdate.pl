@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.0.0.1';
+my $scriptversion='1.0.0.2';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -181,8 +181,8 @@ if (!$release) {
 
 
 
-if (version::is_lax($release)) {
-	$release = version->parse($release);
+if (version::is_strict(vers_tag($release))) {
+	$release = version->parse(vers_tag($release));
 } else {
 	$joutput{'error'} = "Cannot parse provided destination version $release. Is this a real version string? Exiting.";
 	&err;
@@ -191,8 +191,8 @@ if (version::is_lax($release)) {
 }
 my $currversion;
 
-if (version::is_lax(LoxBerry::System::lbversion())) {
-	$currversion = version->parse(LoxBerry::System::lbversion());
+if (version::is_strict(vers_tag(LoxBerry::System::lbversion()))) {
+	$currversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
 } else {
 	$joutput{'error'} = "Cannot read current LoxBerry version $currversion. Is this a real version string? Exiting.";
 	&err;
@@ -276,8 +276,8 @@ while (my $file = readdir(DIR)) {
 	my $lastdotpos = rindex($file, '.');
 	my $nameversion = lc(substr($file, length($updateprefix), length($file)-$lastdotpos-length($updateprefix)+1));
 	#LOGINF "$nameversion\n";
-	if (version::is_lax($nameversion)) {
-		push @updatelist, version->parse($nameversion);
+	if (version::is_strict(vers_tag($nameversion))) {
+		push @updatelist, version->parse(vers_tag($nameversion));
 	} else {
 		LOGWARN "Ignoring $nameversion as this does not look like a version number.";
 		$errskipped++;
@@ -338,8 +338,8 @@ if ($exitcode != 0 ) {
 # We think that everything is up to date now.
 # I don't know what to do if error occurred during update scripts, so we simply continue.
 
-LOGINF "Deleting template cache...";
-delete_directory('/tmp/templatecache');
+# LOGINF "Deleting template cache...";
+# delete_directory('/tmp/templatecache');
 
 # We have to recreate the legacy templates.
 LOGINF "Updating LoxBerry legacy templates...";
@@ -375,7 +375,7 @@ if (! $cgi->param('dryrun') ) {
 			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
 			$errskipped++;
 			};
-	$syscfg->param('BASE.VERSION', "$release");
+	$syscfg->param('BASE.VERSION', vers_tag("$release", 1));
 	$syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
 	$syscfg->save() or 
 		do {

@@ -39,7 +39,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.1";
+my $scriptversion="1.0.0.2";
 
 # print currtime('file') . "\n";
 
@@ -60,8 +60,8 @@ my $cfg;
 my $download_path = '/tmp';
 my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
-my $min_version = "0.3.0";
-my $max_version = "1.99.99";
+my $min_version = "v0.3.0";
+my $max_version = "v1.99.99";
 
 my $querytype;
 my $update;
@@ -154,8 +154,8 @@ my %SL = LoxBerry::System::readlanguage();
 # LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
 
 my $lbversion;
-if (version::is_lax(LoxBerry::System::lbversion())) {
-	$lbversion = version->parse(LoxBerry::System::lbversion());
+if (version::is_strict(vers_tag(LoxBerry::System::lbversion()))) {
+	$lbversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
 	LOGINF "   Current LoxBerry version: $lbversion";
 
 } else {
@@ -166,7 +166,7 @@ if (version::is_lax(LoxBerry::System::lbversion())) {
 }
 
 
-if (version::is_lax($min_version)) {
+if (version::is_strict($min_version)) {
 	$min_version = version->parse($min_version);
 	LOGINF "   Updates limited from : $min_version";
 } else {
@@ -175,7 +175,7 @@ if (version::is_lax($min_version)) {
 	LOGCRIT $joutput{'error'};
 	exit(1);
 }
-if (version::is_lax($max_version)) {
+if (version::is_strict($max_version)) {
 	$max_version = version->parse($max_version);
 	LOGINF "   Updates limited to   : $max_version";
 } else {
@@ -366,11 +366,11 @@ sub check_releases
 	foreach my $release ( @$releases ) {
 		$release_version = undef;
 		#LOGINF "   Checking release version tag of " . $release->{tag_name};
-		if (!version::is_lax($release->{tag_name})) {
-			LOGWARN "   check_releases: " . $release->{tag_name} . " seems not to be a correct version number. Skipping.";
+		if (!version::is_strict(vers_tag($release->{tag_name}))) {
+			LOGWARN "   check_releases: " . vers_tag($release->{tag_name}) . " seems not to be a correct version number. Skipping.";
 			next;
 		} else {
-			$release_version = version->parse($release->{tag_name});
+			$release_version = version->parse(vers_tag($release->{tag_name}));
 		}
 		#split_version($release->{tag_name});
 		LOGINF "   Release version : $release_version";
@@ -386,7 +386,7 @@ sub check_releases
 			  next;
 		}
 		
-		if (! $release_safe || version->parse($release_version) > version->parse($release_safe->{tag_name})) {
+		if (! $release_safe || version->parse($release_version) > version->parse(vers_tag($release_safe->{tag_name}))) {
 			$release_safe = $release;
 		}
 		
@@ -408,8 +408,8 @@ sub check_releases
 	}
 	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
 	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
-	LOGOK "No new version found: Latest version is " . $release_safe->{tag_name};
-	return ($release_safe->{tag_name}, undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at});
+	LOGOK "No new version found: Latest version is " . vers_tag($release_safe->{tag_name});
+	return (vers_tag($release_safe->{tag_name}), undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at});
 }
 
 
@@ -477,8 +477,6 @@ sub check_commits
 	
 	my $commit_new = 1 if ($commit_sha ne $latest_sha);
 	LOGDEB "SHA's: commit_sha $commit_sha / latest_sha $latest_sha / commit_new $commit_new";
-	
-	
 	
 	LOGOK "Latest commit found:";
 	LOGINF "   Message     : $commit_message";

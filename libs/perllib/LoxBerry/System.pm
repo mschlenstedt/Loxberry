@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.4";
+our $VERSION = "1.0.0.5";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1323,9 +1323,11 @@ sub unlock
 
 sub vers_tag
 {
-	my ($vers) = @_;
+	my ($vers, $reverse) = @_;
 	$vers = lc(LoxBerry::System::trim($vers));
-	$vers = "v$vers" if (substr($vers, 0, 1) ne 'v');
+	$vers = "v$vers" if (substr($vers, 0, 1) ne 'v' && ! $reverse);
+	$vers = substr($vers, 1) if (substr($vers, 0, 1) eq 'v' && $reverse);
+	
 	return $vers;
 
 }
