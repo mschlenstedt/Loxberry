@@ -497,6 +497,19 @@ sub delete_directory
 	return 1;
 }
 
+
+sub vers_tag
+{
+	my ($vers, $reverse) = @_;
+	$vers = lc(LoxBerry::System::trim($vers));
+	$vers = "v$vers" if (substr($vers, 0, 1) ne 'v' && ! $reverse);
+	$vers = substr($vers, 1) if (substr($vers, 0, 1) eq 'v' && $reverse);
+	
+	return $vers;
+
+}
+
+
 # This routine is called at every end
 END 
 {
