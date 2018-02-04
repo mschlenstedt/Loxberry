@@ -30,7 +30,12 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.8";
+my $version = "1.0.0.9";
+
+if ($<) {
+	print "This script has to be run as root or with sudo.\n";
+	exit (1);
+}
 
 ##########################################################################
 # Variables / Commandline
