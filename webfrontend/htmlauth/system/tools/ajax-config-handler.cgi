@@ -13,7 +13,8 @@ my $bins = LoxBerry::System::get_binaries();
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
-print $cgi->header;
+#print $cgi->header;
+print $cgi->header('application/json;charset=utf-8');
 
 # Prevent 'only used once' warning
 $R::action if 0;
