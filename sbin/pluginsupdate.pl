@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.0.0.2";
+my $scriptversion="1.0.0.3";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -245,7 +245,7 @@ foreach (@plugins) {
 					notify ( "plugininstall", "$pluginname", $message);
 				}
 			} else {
-				LOGINF "Prerelease version is not newer than release version version.";
+				LOGINF "Prerelease version is not newer than release version.";
 			}
 
 		}
