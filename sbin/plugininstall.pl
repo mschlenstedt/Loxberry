@@ -107,22 +107,36 @@ if ( $R::action eq "uninstall" || $R::action eq "autoupdate" ) {
   }
 }
 
+# Check free space
+my %folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
+if ($folderinfo{available} < 153600) {
+	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'}";
+	&logfail;
+        exit (1);
+}
+%folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
+if ($folderinfo{available} < 153600) {
+	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'}";
+	&logfail;
+        exit (1);
+}
+
 # Locking
-$message = "Locking plugininstall - delaying up to 10 minutes...";
+$message = "$SL{'PLUGININSTALL.INF_LOCKING'}";
 &loginfo;
 eval {
 	my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 600 );
 
 	if ($lockstate) {
-		$message = "Could not get lock for plugininstall. Skipping this installation.";
+		$message = "$SL{'PLUGININSTALL.ERR_LOCKING'}";
 		&logerr;
-		$message = "Locking error reason is: $lockstate";
+		$message = "$SL{'PLUGININSTALL.ERR_LOCKING_REASON'} $lockstate";
 		&logfail;
 		exit (1);
 	}
 };
 
-$message = "Lock successfully set.";
+$message = "$SL{'PLUGININSTALL.OK_LOCKING'}";
 &logok;
 
 # ZIP or Folder mode?
