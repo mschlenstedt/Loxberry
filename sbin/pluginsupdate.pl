@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.0.0.1";
+my $scriptversion="1.0.0.2";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -114,7 +114,7 @@ foreach (@plugins) {
 	#
 	# Checks
 	#
-	if ( !version::is_strict(vers_tag($currentver)) ) {
+	if ( !version::is_lax(vers_tag($currentver)) ) {
 		LOGCRIT "Cannot check plugin's version number. Is this a real version number? $currentver. Skipping...";
 		next;
 	} else {
@@ -179,7 +179,7 @@ foreach (@plugins) {
 			$releasearchive = $releasecfg->param("AUTOUPDATE.ARCHIVEURL");
 			$releaseinfo = $releasecfg->param("AUTOUPDATE.INFOURL");
 
-			if ( version::is_strict(vers_tag($releasever)) ) {
+			if ( version::is_lax(vers_tag($releasever)) ) {
 				$releasever = version->parse(vers_tag($releasever));
 				LOGINF "Found release version: $releasever";
 			} else {
@@ -225,7 +225,7 @@ foreach (@plugins) {
 			$prereleasearchive = $prereleasecfg->param("AUTOUPDATE.ARCHIVEURL");
 			$prereleaseinfo = $prereleasecfg->param("AUTOUPDATE.INFOURL");
 
-			if ( version::is_strict(vers_tag($prereleasever)) ) {
+			if ( version::is_lax(vers_tag($prereleasever)) ) {
 				$prereleasever = version->parse(vers_tag($prereleasever));
 				LOGINF "Found prerelease version: $prereleasever";
 			} else {
