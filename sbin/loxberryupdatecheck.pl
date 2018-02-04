@@ -337,7 +337,7 @@ sub check_releases
 
 	my $ua = LWP::UserAgent->new;
 	my $request = HTTP::Request->new(GET => $endpoint . $resource);
-	$request->header('Accept' => 'application/vnd.github.v3+json');
+	$request->header('Accept' => 'application/vnd.github.v3+json', 'Accept-Charset' => 'utf-8');
 	# LOGINF "Request: " . $request->as_string;
 	LOGINF "Requesting release list from GitHub...";
     my $response;
@@ -434,7 +434,8 @@ sub check_commits
 	my $ua = LWP::UserAgent->new;
 	my $request = HTTP::Request->new(GET => $endpoint . $resource . "?sha=" . $branch);
 	$request->header('Accept' => 'application/vnd.github.v3+json',
-					 'Content-Type' => 'application/json; charset=utf-8',);
+					 'Accept-Charset' => 'utf-8',
+					 );
 	LOGDEB "Request: " . $request->as_string;
 	LOGINF "Requesting commit list from GitHub...";
     my $response;
