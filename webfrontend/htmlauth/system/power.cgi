@@ -159,7 +159,7 @@ sub form {
 		close $fh;
 		print STDERR $filecontent . "\n";
 		if (length($filecontent) > 5) {
-			$filecontent = encode_entities($filecontent);
+			$filecontent = encode_entities($filecontent, '<>&"');
 			$filecontent =~ s/\n/<br>/g;
 			
 			$maintemplate->param('REBOOT_FURTHER_INFORMATION', $filecontent);
