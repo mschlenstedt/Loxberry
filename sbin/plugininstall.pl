@@ -103,18 +103,22 @@ if ( $R::action eq "uninstall" || $R::action eq "autoupdate" ) {
 }
 
 # Locking
-LOGINF "Locking plugininstall - delaying up to 10 minutes...";
+$message = "Locking plugininstall - delaying up to 10 minutes...";
+&loginfo;
 eval {
 	my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 600 );
 
 	if ($lockstate) {
-		LOGCRIT "Could not get lock for plugininstall. Skipping this installation.";
-		LOGINF "Locking error reason is: $lockstate";
+		$message = "Could not get lock for plugininstall. Skipping this installation.";
+		&logerr;
+		$message = "Locking error reason is: $lockstate";
+		&logfail;
 		exit (1);
 	}
 };
 
-LOGOK "Lock successfully set.";
+$message = "Lock successfully set.";
+&logok;
 
 # ZIP or Folder mode?
 my $zipmode = defined $R::file ? 1 : 0;
