@@ -613,6 +613,17 @@ system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.bkp 2>&1
 
 # Starting installation
 
+# Checking for hardcoded /opt/loxberry strings
+if ( $pinterface ne "1.0" ) {
+	my $chkhcpath = `$findbin $tempfolder -type f -exec $grepbin -li '/opt/loxberry' {} \\;`;
+	if ($chkhcpath) {
+	    $message =  $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
+	    &logwarn;
+	    push(@warnings,"HARDCODED PATH'S: $message");
+	    print "$chkhcpath";
+	}
+}
+
 # Replacing Environment strings
 $message =  "$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
 &loginfo;
@@ -1357,17 +1368,6 @@ if( -e "$tempfolder/apt" ){
 	}
 	&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 	&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
-}
-
-# Checking for hardcoded /opt/loxberry strings
-if ( $pinterface ne "1.0" ) {
-	my $chkhcpath = `$findbin $tempfolder -type f -exec $grepbin -li '/opt/loxberry' {} \\;`;
-	if ($chkhcpath) {
-	    $message =  $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
-	    &logwarn;
-	    push(@warnings,"HARDCODED PATH'S: $message");
-	    print "$chkhcpath";
-	}
 }
 
 # Set permissions
