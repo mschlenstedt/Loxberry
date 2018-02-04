@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.3";
+our $VERSION = "1.0.0.4";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -58,6 +58,7 @@ our @EXPORT = qw (
 	rtrim
 	currtime
 	reboot_required
+	vers_tag
 );
 
 =head1 NAME
@@ -1319,6 +1320,18 @@ sub unlock
 		}
 	}
 }
+
+sub vers_tag
+{
+	my ($vers) = @_;
+	$vers = lc(LoxBerry::System::trim($vers));
+	$vers = "v$vers" if (substr($vers, 0, 1) ne 'v');
+	return $vers;
+
+}
+
+
+
 
 #####################################################
 # Finally 1; ########################################
