@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "0.3.5.1";
+our $VERSION = "1.0.0.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -129,7 +129,7 @@ sub head
 	$headobj->param( TEMPLATETITLE => $template_title);
 	$headobj->param( LANG => $lang);
 	
-	print "Content-Type: text/html\n\n";
+	print "Content-Type: text/html; charset=utf-8\n\n";
 	print $headobj->output();
 	undef $headobj;
 }
