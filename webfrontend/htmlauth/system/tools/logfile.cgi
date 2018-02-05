@@ -171,7 +171,7 @@ my $header;
 my $currfilesize = -s "$R::logfilepath/$R::logfile";
 
 if ($R::header && $R::header eq "txt") {
-  $header = "Content-Type: text/plain\n\n";
+  $header = "Content-Type: text/plain;charset=utf-8\n\n";
   print $header;
 } elsif ($R::header && $R::header eq "file" ) 
 {
@@ -181,7 +181,7 @@ if ($R::header && $R::header eq "txt") {
 } elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
 	if ($R::clientsize && $R::clientsize ne "0") {
 		if($R::clientsize eq $currfilesize) {
-			$header = $cgi->header(-type => 'text/html',
+			$header = $cgi->header(-type => 'text/html;charset=utf-8',
 									-status => "304 Not Modified",
 									-filesize => $currfilesize,
 				);
@@ -190,7 +190,7 @@ if ($R::header && $R::header eq "txt") {
 		}
 	}
   # print $cgi->header('text/html','304 Not Modified');
-	$header = $cgi->header(-type => 'text/html',
+	$header = $cgi->header(-type => 'text/html;charset=utf-8',
 			     -filesize => $currfilesize,
 				);
 	print $header if ($R::format ne 'template');

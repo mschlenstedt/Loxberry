@@ -154,7 +154,7 @@ my %SL = LoxBerry::System::readlanguage();
 # LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
 
 my $lbversion;
-if (version::is_strict(vers_tag(LoxBerry::System::lbversion()))) {
+if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 	$lbversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
 	LOGINF "   Current LoxBerry version: $lbversion";
 
@@ -166,7 +166,7 @@ if (version::is_strict(vers_tag(LoxBerry::System::lbversion()))) {
 }
 
 
-if (version::is_strict($min_version)) {
+if (version::is_lax($min_version)) {
 	$min_version = version->parse($min_version);
 	LOGINF "   Updates limited from : $min_version";
 } else {
@@ -175,7 +175,7 @@ if (version::is_strict($min_version)) {
 	LOGCRIT $joutput{'error'};
 	exit(1);
 }
-if (version::is_strict($max_version)) {
+if (version::is_lax($max_version)) {
 	$max_version = version->parse($max_version);
 	LOGINF "   Updates limited to   : $max_version";
 } else {
@@ -337,7 +337,7 @@ sub check_releases
 
 	my $ua = LWP::UserAgent->new;
 	my $request = HTTP::Request->new(GET => $endpoint . $resource);
-	$request->header('Accept' => 'application/vnd.github.v3+json');
+	$request->header('Accept' => 'application/vnd.github.v3+json', 'Accept-Charset' => 'utf-8');
 	# LOGINF "Request: " . $request->as_string;
 	LOGINF "Requesting release list from GitHub...";
     my $response;
@@ -366,7 +366,7 @@ sub check_releases
 	foreach my $release ( @$releases ) {
 		$release_version = undef;
 		#LOGINF "   Checking release version tag of " . $release->{tag_name};
-		if (!version::is_strict(vers_tag($release->{tag_name}))) {
+		if (!version::is_lax(vers_tag($release->{tag_name}))) {
 			LOGWARN "   check_releases: " . vers_tag($release->{tag_name}) . " seems not to be a correct version number. Skipping.";
 			next;
 		} else {
@@ -434,7 +434,8 @@ sub check_commits
 	my $ua = LWP::UserAgent->new;
 	my $request = HTTP::Request->new(GET => $endpoint . $resource . "?sha=" . $branch);
 	$request->header('Accept' => 'application/vnd.github.v3+json',
-					 'Content-Type' => 'application/json; charset=utf-8',);
+					 'Accept-Charset' => 'utf-8',
+					 );
 	LOGDEB "Request: " . $request->as_string;
 	LOGINF "Requesting commit list from GitHub...";
     my $response;

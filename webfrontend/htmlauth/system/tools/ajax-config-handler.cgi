@@ -13,7 +13,8 @@ my $bins = LoxBerry::System::get_binaries();
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
-print $cgi->header;
+#print $cgi->header;
+
 
 # Prevent 'only used once' warning
 $R::action if 0;
@@ -24,22 +25,22 @@ my $value = $R::value;
 
 print STDERR "Action: $action // Value: $value\n";
 
-if    ($action eq 'secupdates') { &secupdates; }
-elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
-elsif ($action eq 'poweroff') { &poweroff; }
-elsif ($action eq 'reboot') { &reboot; }
-elsif ($action eq 'ping') { print "pong"; exit; }
-elsif ($action eq 'lbupdate-reltype') { &lbupdate; }
-elsif ($action eq 'lbupdate-installtype') { &lbupdate; }
-elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
-elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
-elsif ($action eq 'lbupdate-runinstall') { &lbupdate; }
-elsif ($action eq 'plugin-loglevel') {plugindb_update('loglevel', $R::pluginmd5, $R::value); }
-elsif ($action eq 'plugin-autoupdate') {plugindb_update('autoupdate', $R::pluginmd5, $R::value); }
-elsif ($action eq 'testenvironment') { &testenvironment; }
-elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
-elsif ($action eq 'notify-deletekey') {notifydelete();}
-else   { print "<red>Action not supported.</red>"; }
+if    ($action eq 'secupdates') { print $cgi->header; &secupdates; }
+elsif ($action eq 'secupdates-autoreboot') { print $cgi->header; &secupdatesautoreboot; }
+elsif ($action eq 'poweroff') { print $cgi->header; &poweroff; }
+elsif ($action eq 'reboot') { print $cgi->header; &reboot; }
+elsif ($action eq 'ping') { print $cgi->header; print "pong"; exit; }
+elsif ($action eq 'lbupdate-reltype') { print $cgi->header; &lbupdate; }
+elsif ($action eq 'lbupdate-installtype') { print $cgi->header; &lbupdate; }
+elsif ($action eq 'lbupdate-installtime') { print $cgi->header; &lbupdate; }
+elsif ($action eq 'lbupdate-runcheck') { print $cgi->header('application/json;charset=utf-8'); &lbupdate; }
+elsif ($action eq 'lbupdate-runinstall') { print $cgi->header('application/json;charset=utf-8'); &lbupdate; }
+elsif ($action eq 'plugin-loglevel') {print $cgi->header; plugindb_update('loglevel', $R::pluginmd5, $R::value); }
+elsif ($action eq 'plugin-autoupdate') {print $cgi->header; plugindb_update('autoupdate', $R::pluginmd5, $R::value); }
+elsif ($action eq 'testenvironment') { print $cgi->header; &testenvironment; }
+elsif ($action eq 'changelanguage') { print $cgi->header; change_generalcfg("BASE.LANG", $value);}
+elsif ($action eq 'notify-deletekey') {print $cgi->header; notifydelete();}
+else   { print $cgi->header; print "<red>Action not supported.</red>"; }
 
 exit;
 
@@ -159,6 +160,7 @@ sub lbupdate
 	if ($action eq 'lbupdate-reltype') {
 		if ($value eq 'release' || $value eq 'prerelease' || $value eq 'latest') { 
 			change_generalcfg('UPDATE.RELEASETYPE', $value);
+			print "Changed release type to $value";
 		}
 	return;
 	}

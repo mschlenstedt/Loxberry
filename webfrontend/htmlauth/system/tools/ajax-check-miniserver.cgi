@@ -10,7 +10,7 @@ my %jout;
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
-print $cgi->header('application/json');
+print $cgi->header('application/json;charset=utf-8');
 
 my $ua = LWP::UserAgent->new;
 $ua->timeout(10);

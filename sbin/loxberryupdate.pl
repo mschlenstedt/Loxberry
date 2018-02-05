@@ -181,7 +181,7 @@ if (!$release) {
 
 
 
-if (version::is_strict(vers_tag($release))) {
+if (version::is_lax(vers_tag($release))) {
 	$release = version->parse(vers_tag($release));
 } else {
 	$joutput{'error'} = "Cannot parse provided destination version $release. Is this a real version string? Exiting.";
@@ -191,7 +191,7 @@ if (version::is_strict(vers_tag($release))) {
 }
 my $currversion;
 
-if (version::is_strict(vers_tag(LoxBerry::System::lbversion()))) {
+if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 	$currversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
 } else {
 	$joutput{'error'} = "Cannot read current LoxBerry version $currversion. Is this a real version string? Exiting.";
@@ -276,7 +276,7 @@ while (my $file = readdir(DIR)) {
 	my $lastdotpos = rindex($file, '.');
 	my $nameversion = lc(substr($file, length($updateprefix), length($file)-$lastdotpos-length($updateprefix)+1));
 	#LOGINF "$nameversion\n";
-	if (version::is_strict(vers_tag($nameversion))) {
+	if (version::is_lax(vers_tag($nameversion))) {
 		push @updatelist, version->parse(vers_tag($nameversion));
 	} else {
 		LOGWARN "Ignoring $nameversion as this does not look like a version number.";
