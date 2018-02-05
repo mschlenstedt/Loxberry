@@ -2,6 +2,18 @@
 <TMPL_IF FORM>									
 		<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="<TMPL_VAR SELFURL>">
 			<input type="hidden" name="saveformdata" value="1">
+			<center>
+				<a href="#" data-role="button" id="btnlshwnetwork" data-inline="true" data-mini="true"
+					onClick="window.open('/admin/system/tools/lshwnetwork.cgi?lang=<TMPL_VAR LANG>',
+					'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
+					<TMPL_VAR NETWORK.BUTTON_NETWORKADAPTER>
+				</a>
+				<a href="#" data-role="button" id="btnlbhostname" data-inline="true" data-mini="true"
+					onClick="window.open('/admin/system/tools/changehostname.cgi?lang=<TMPL_VAR LANG>',
+					'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
+					<TMPL_VAR NETWORK.BUTTON_CHANGEHOSTNAME>
+				</a>
+			</center>
 			<table class="formtable" border="0" width="100%">
 				<tr class="area-hostname">
 					<td width="25%">
@@ -11,11 +23,6 @@
 						<input id="lbhostname" name="lbhostname" disabled type="text" class="textfield" value="<TMPL_VAR LBHOSTNAME>">
 					</td>
 					<td width="5%" valign="middle">
-						<a href="#" data-role="button" id="btnlbhostname" data-inline="true" data-mini="true"
-							onClick="window.open('/admin/system/tools/changehostname.cgi?lang=<TMPL_VAR LANG>',
-							'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
-							<TMPL_VAR NETWORK.BUTTON_CHANGEHOSTNAME>
-						</a>
 					</td>
 					<td width="20%">
 						&nbsp;
@@ -34,11 +41,6 @@
 						</fieldset>
 					</td>
 					<td width="5%" valign="middle">
-						<a href="#" data-role="button" id="btnlshwnetwork" data-inline="true" data-mini="true"
-							onClick="window.open('/admin/system/tools/lshwnetwork.cgi?lang=<TMPL_VAR LANG>',
-							'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
-							<TMPL_VAR NETWORK.BUTTON_NETWORKADAPTER>
-						</a>
 					</td>
 					<td width="20%">
 						&nbsp;
