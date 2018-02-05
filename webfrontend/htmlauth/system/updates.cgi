@@ -76,7 +76,7 @@ our $rebootbin;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.3.1";
+my $version = "1.0.0.1";
 
 my $bins = LoxBerry::System::get_binaries();
 $sversion = LoxBerry::System::lbversion();
@@ -580,7 +580,8 @@ sub lbuhistory
 		$firstLine = <$file>; 
 		$firstLine = <$file>; 
 		close $file;
-		$update{'FIRSTLINE'} = "$firstLine";
+		$firstLine =~ s|<.+?>||g;
+		$update{'FIRSTLINE'} = encode_entities($firstLine, '<>&"');
 		push(@updateslist, \%update);
 	}
 	closedir $DIR;
