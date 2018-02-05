@@ -107,38 +107,6 @@ if ( $R::action eq "uninstall" || $R::action eq "autoupdate" ) {
   }
 }
 
-# Check free space
-#my %folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
-#if ($folderinfo{available} < 153600) {
-#	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'}";
-#	&logfail;
-#       exit (1);
-#}
-#%folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-#if ($folderinfo{available} < 153600) {
-#	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'}";
-#	&logfail;
-#        exit (1);
-#}
-
-# Locking
-$message = "$SL{'PLUGININSTALL.INF_LOCKING'}";
-&loginfo;
-eval {
-	my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 600 );
-
-	if ($lockstate) {
-		$message = "$SL{'PLUGININSTALL.ERR_LOCKING'}";
-		&logerr;
-		$message = "$SL{'PLUGININSTALL.ERR_LOCKING_REASON'} $lockstate";
-		&logfail;
-		exit (1);
-	}
-};
-
-$message = "$SL{'PLUGININSTALL.OK_LOCKING'}";
-&logok;
-
 # ZIP or Folder mode?
 my $zipmode = defined $R::file ? 1 : 0;
 
@@ -279,6 +247,38 @@ flock(F,2);
   print F "1";
 flock(F,8);
 close (F);
+
+# Check free space
+my %folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
+#if ($folderinfo{available} < 153600) { # 150 MB
+if ($folderinfo{available} < 102400) { # 100 MB
+	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'}";
+	&logfail;
+}
+%folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
+#if ($folderinfo{available} < 153600) { # 150 MB
+if ($folderinfo{available} < 102400) { # 100 MB
+	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'}";
+	&logfail;
+}
+
+# Locking
+$message = "$SL{'PLUGININSTALL.INF_LOCKING'}";
+&loginfo;
+eval {
+	my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 600 );
+
+	if ($lockstate) {
+		$message = "$SL{'PLUGININSTALL.ERR_LOCKING'}";
+		&logerr;
+		$message = "$SL{'PLUGININSTALL.ERR_LOCKING_REASON'} $lockstate";
+		&logfail;
+	}
+};
+
+$message = "$SL{'PLUGININSTALL.OK_LOCKING'}";
+&logok;
+
 
 # Starting
 $message =  "$SL{'PLUGININSTALL.INF_START'}";
