@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.10";
+my $version = "1.0.0.11";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -452,9 +452,9 @@ if ($parch ) {
 
 # Version check
 my $versioncheck = 0;
-if (version::is_lax(LoxBerry::System::lbversion())) {
+if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
   $versioncheck = 1;
-  our $lbversion = version->parse(LoxBerry::System::lbversion());
+  our $lbversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
   $message =  $SL{'PLUGININSTALL.INF_LBVERSION'} . $lbversion;
   &loginfo;
 } else {
@@ -463,8 +463,8 @@ if (version::is_lax(LoxBerry::System::lbversion())) {
 
 if (defined $lbmin && $versioncheck) {
 
-  if ( (version::is_lax($plbmin)) ) {
-    $plbmin = version->parse($plbmin);
+  if ( (version::is_lax(vers_tag($plbmin))) ) {
+    $plbmin = version->parse(vers_tag($plbmin));
     $message =  $SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
     &loginfo;
 
@@ -481,8 +481,8 @@ if (defined $lbmin && $versioncheck) {
 
 if (defined $lbmax && $versioncheck) {
 
-  if ( (version::is_lax($plbmax)) ) {
-    $plbmax = version->parse($plbmax);
+  if ( (version::is_lax(vers_tag($plbmax))) ) {
+    $plbmax = version->parse(vers_tag($plbmax));
     $message =  $SL{'PLUGININSTALL.INF_MAXVERSION'} . $plbmax;
     &loginfo;
 
