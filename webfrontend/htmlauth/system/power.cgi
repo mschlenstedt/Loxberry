@@ -200,12 +200,6 @@ sub reboot {
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'POWER.WIDGETLABEL'};
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
-	my $rip = `pgrep -f $rebootbin`;
-	if ( $rip ne "" ) {
-		$maintemplate->param('REBOOT_IN_PROGRESS' => "var counter = 300;");
-	} else {
-		$maintemplate->param('REBOOT_IN_PROGRESS' => "var counter = 0;");
-	}
 	print $maintemplate->output();
 	undef $maintemplate;			
 	LoxBerry::Web::pageend();

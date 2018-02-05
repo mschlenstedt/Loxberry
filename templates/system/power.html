@@ -98,31 +98,52 @@
 				background-color: #6DAE26;   
  			}
     </style>   
-		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">30.0</span> s </p>
-		<div class="progress-bar blue stripes"><span id="bar" style="width: 100%;"></span></div>
+		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">60.0</span> s </p>
+		<div class="progress-bar blue stripes" style="display: none;"><span id="bar" style="width: 100%;"></span></div>
 		</center>
 	<script>
+		var counter = 600;
 		$(document).ready(function()
-		{ 
-		  //var counter = 300;
-		  <TMPL_VAR REBOOT_IN_PROGRESS>
-		  setInterval(function() {
-		    
-		    if (counter > 0) {
-					counter--;
-		      span = document.getElementById("count");
-					var bar = (100/300 * counter);
-		      span.innerHTML = Number(counter/10).toFixed(1);
-					$('#bar').css('width',bar+"%");
-		    }
-		    // Display 'counter' wherever you want to display it.
-		    if (counter === 0) 
-		    {
-		    	$('.progress-bar').hide();
-		      document.location.href="/";
-		    }
-		  }, 100);
+		{
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.timeout = 800;
+		  xhttp.ontimeout = function() {
+			  if ( counter == 600 ) {
+				  showprogressbar();
+			  }
+		  };
+		  xhttp.onreadystatechange = function() {
+			  if (this.readyState == 4 && this.status == 200) {
+				var res = JSON.parse(this.responseText);
+				if ( counter == 600 && res.reboot_in_progress == 1 ) {
+					showprogressbar();
+				} else if ( res.reboot_in_progress == 0 ) {
+					$('.progress-bar').hide();
+					document.location.href="/";
+				}
+			  }
+		  };
+		  var maini = setInterval(function() {
+			  xhttp.open("GET","/admin/system/tools/power-handler.php",true);
+			  xhttp.send();},1000);
 		});
+		function showprogressbar() {
+			$('.progress-bar').show();
+			var progi = setInterval(function() {
+				if (counter > 0) {
+					counter--;
+					span = document.getElementById("count");
+					var bar = (100/600 * counter);
+					span.innerHTML = Number(counter/10).toFixed(1);
+					$('#bar').css('width',bar+"%");
+				}
+				// Display 'counter' whereever you want to display it.
+				if (counter === 0)
+				{
+					$('.progress-bar').hide();
+				}
+			},100);
+		}
 	</script>
 </TMPL_IF>
 
