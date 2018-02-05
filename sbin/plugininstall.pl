@@ -279,7 +279,6 @@ eval {
 $message = "$SL{'PLUGININSTALL.OK_LOCKING'}";
 &logok;
 
-
 # Starting
 $message =  "$SL{'PLUGININSTALL.INF_START'}";
 &loginfo;
@@ -978,7 +977,7 @@ if ( $pinterface ne "1.0" ) {
       &logok;
     }
 
-    &setrights ("755", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+    &setrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl\\|.*\\.sh");
     &setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 
   }
@@ -999,8 +998,8 @@ if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
     &logok;
   }
 
-    &setrights ("755", "0", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl");
-    &setowner ("loxberry", "1", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTMLAUTH files");
+    &setrights ("755", "0", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTML files", ".*\\.cgi\\|.*\\.pl\\|.*\\.sh");
+    &setowner ("loxberry", "1", "$lbhomedir/webfrontend/html/plugins/$pfolder", "HTML files");
 
 }
 
@@ -1427,11 +1426,11 @@ print "\n\n";
 
 # Error summarize
 if (@errors || @warnings) {
-  $message = "**********************************************************************************";
+  $message = "==================================================================================";
   &loginfo;
   $message =  "$SL{'PLUGININSTALL.INF_ERRORSUMMARIZE'}";
   &loginfo;
-  $message = "**********************************************************************************";
+  $message = "==================================================================================";
   &loginfo;
   foreach(@errors) {
     $message = $_;
