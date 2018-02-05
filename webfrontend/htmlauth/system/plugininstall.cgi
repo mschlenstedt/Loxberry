@@ -47,10 +47,10 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "1.0.0.2";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
-
+my $bins = LoxBerry::System::get_binaries();
 
 #########################################################################
 # Parameter
@@ -153,14 +153,14 @@ sub form {
 
 	# Check for running autoupdates/installations...
 	my $status = LoxBerry::System::lock();
-#	if ($status) {
-#		print STDERR "Running Autoupdates/Installations: $status\n";
-#		$maintemplate->param("LOCK", 1);
-#	} else {
+	if ($status) {
+		print STDERR "Running Autoupdates/Installations: $status\n";
+		$maintemplate->param("LOCK", 1);
+	} else {
 		# Clean up old files
 		system("rm -r -f /tmp/uploads/*");
   		$maintemplate->param("FORM", 1);
-#	}
+	}
 
 	if ($url) {
   		$maintemplate->param("ARCHIVEURL", "$url");
@@ -196,20 +196,12 @@ sub uninstall {
 			}
 		}
 	} else {
-		# Check for running autoupdates/installations...
-		if ( -e "/var/lock/pluginsupdate.lock" || -e "/var/lock/lbupdate.lock" || -e "/var/lock/plugininstall.lock" ) {
-			print STDERR "Running Autoupdates/Installations\n";
-			$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_RUNNING_UPDATES'};
-			&error;
-		} else {
-			# Clean up old files
-			system("rm -r -f /tmp/uploads/*");
-			system("touch /var/lock/plugininstall.lock");
-			# Uninstallation
-			print STDERR "Doing uninstallation of $pid.";
-			$maintemplate->param("UNINSTALL", 1);
-			system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid 2>&1");
-		}
+		# Clean up old files
+		system("rm -r -f /tmp/uploads/*");
+		# Uninstallation
+		print STDERR "Doing uninstallation of $pid.";
+		$maintemplate->param("UNINSTALL", 1);
+		system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid 2>&1");
 	}
 	
 	# Print Template
@@ -233,16 +225,7 @@ sub uninstall {
 
 sub install {
 	
-	# Check for running autoupdates/installations...
-	if ( -e "/var/lock/pluginsupdate.lock" || -e "/var/lock/lbupdate.lock" || -e "/var/lock/plugininstall.lock" ) {
-		print STDERR "Running Autoupdates/Installations\n";
-		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_RUNNING_UPDATES'};
-		&error;
-	} else {
-		# Clean up old files
-		system("rm -r -f /tmp/uploads/*");
-		system("touch /var/lock/plugininstall.lock");
-	}
+	system("rm -r -f /tmp/uploads/*");
 
 	# Check if SecurePIN is correct
 	if ( LoxBerry::System::check_securepin($securepin) ) {
@@ -335,12 +318,16 @@ sub install {
 		#open STDERR, ">$logfile";
 		open STDERR, ">/dev/null";
 
-		open UPLOADFILE, ">/tmp/$tempfile.zip" or ($openerr = 1);
-		binmode $uploadfile;
-		while ( <$uploadfile> ) {
-			print UPLOADFILE;
+		if ($archiveurl) {
+			$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo /tmp/$tempfile.zip $archiveurl  2>&1`;
+		} else {
+			open UPLOADFILE, ">/tmp/$tempfile.zip" or ($openerr = 1);
+			binmode $uploadfile;
+			while ( <$uploadfile> ) {
+				print UPLOADFILE;
+			}
+			close UPLOADFILE;
 		}
-		close UPLOADFILE;
 
 		# Do the installation
 		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=/tmp/$tempfile.zip pin=$securepin tempfile=$tempfile cgi=1 >> $logfile 2>&1");
