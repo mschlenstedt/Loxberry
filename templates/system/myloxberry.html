@@ -3,17 +3,16 @@
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
 		<input type="hidden" name="saveformdata" value="1">
 		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
-		<div style="display:flex; width:100%; text-align:left;">
-			<div style="margin:auto; padding:10px; width:20%; text-align:left;">
+		<div style="display:flex; justify-content: flex-start; align-items: center;">
+			<div style="margin:10px; padding:10px; text-align:left; ">
 				<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
 				<TMPL_IF ISNOTENGLISH>
 				<br>(Select your language)
 				</TMPL_IF>
 			</div>
-			<div style="margin:auto; padding:10px; width:30%">
+			<div style="margin:10px; padding:10px; ">
 				<TMPL_VAR LANGSELECTOR>
 			</div>
-			<div style="margin:auto; padding:10px; width:50%"></div>
 		</div>
 		<p>&nbsp;</p>
 		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
@@ -32,12 +31,12 @@
 		<p>
 		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
 		<div style="display:flex; width:100%; text-align:left;">
-			<div style="margin:auto; padding:10px; width:20%; text-align:left;">
+			<div style="flex-grow:1;margin:auto; padding:10px; text-align:left;">
 				<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
 					<TMPL_VAR SENDSTATISTIC_CHECKBOX>
 				</fieldset>
 			</div>
-			<div class="hint" style="margin:auto; padding:10px; width:80%">
+			<div class="hint" style="flex-grow:2;margin:auto; padding:10px;">
 				<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
 			</div>
 		</div>
