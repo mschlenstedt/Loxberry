@@ -9,8 +9,8 @@
 		<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
 
 		<!-- text -->
-		<div style="margin: 5%; position:relative;">
-			<div style="width:100%; text-align:right; position:absolute;"><button type="button" name="btnsubmit" data-role="button" data-inline="true" data-mini="true" onClick="location.reload();"><font size=\"-1\"><TMPL_VAR COMMON.BUTTON_REFRESH></font></button></div>
+			<div style="width:95%; text-align:right; white-space:nowrap; position:relative;"><button type="button" name="btnsubmit" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" onClick="location.reload();"><font size=\"-1\"><TMPL_VAR COMMON.BUTTON_REFRESH></font></button><button type="button" name="btnclose" data-role="button" data-icon="delete" data-inline="true" data-mini="true" onClick="self.close();"><font size=\"-1\"><TMPL_VAR COMMON.BUTTON_CLOSE></font></button></div>
+			<div style="margin: 5%; margin-top: 0%; position:relative;">
 			<center>
 			<table data-role="table" data-mode="" class="ui-responsive ui-shadow" id="lshwnetworkTable" width="90%">
 			<TMPL_VAR TABLE>
