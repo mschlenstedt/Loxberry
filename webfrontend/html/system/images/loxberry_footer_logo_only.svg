@@ -16,6 +16,8 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="loxberry_footer_logo_only.svg">
+  <title
+     id="title4140">LoxBerry Footer Logo</title>
   <defs
      id="defs4290" />
   <sodipodi:namedview
@@ -25,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="8.0000004"
-     inkscape:cx="32.666775"
-     inkscape:cy="12.4148"
+     inkscape:zoom="5.6568545"
+     inkscape:cx="65.582125"
+     inkscape:cy="33.338203"
      inkscape:document-units="px"
      inkscape:current-layer="layer3"
      showgrid="false"
@@ -35,7 +37,7 @@
      inkscape:window-width="1920"
      inkscape:window-height="1057"
      inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-y="1072"
      inkscape:window-maximized="1"
      borderlayer="false" />
   <metadata
@@ -46,7 +48,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title>LoxBerry Footer Logo</dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -85,12 +87,5 @@
            style="clip-rule:evenodd;fill:#000000;fill-opacity:1;fill-rule:evenodd" />
       </g>
     </g>
-    <rect
-       style="fill:none;fill-opacity:1;stroke:none;stroke-opacity:1"
-       id="rect6177"
-       width="95.964493"
-       height="45.961941"
-       x="85.844872"
-       y="-21.055534" />
   </g>
 </svg>
