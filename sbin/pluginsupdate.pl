@@ -192,12 +192,13 @@ foreach (@plugins) {
 				if ( !$notify ) {
 					$installarchive = $releasearchive;
 				} else {
-					$message = "<p>$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion</p>\n";
-					$message .= "<p><a href='$releaseinfo' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a></p>\n";
-					$message .= "<p><a href='$releasearchive'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a></p>\n";
-					$message .= "<p><a href='#install'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a></p>";
+					$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
+					$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
+					$message .= "<a href='$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
+					$message .= "<a href='/admin/system/plugininstall.cgi?url=$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
 					notify ( "plugininstall", "$pluginname", $message);
 					sleep 1;
+					LOGINF "Notification saved.";
 				}
 			} else {
 				LOGINF "Release version is not newer than installed version.";
@@ -238,11 +239,13 @@ foreach (@plugins) {
 				if ( !$notify ) {
 					$installarchive = $releasearchive;
 				} else {
-					$message = "<p>$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion</p>\n";
-					$message .= "<p><a href='$prereleaseinfo' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a></p>\n";
-					$message .= "<p><a href='$prereleasearchive'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a></p>\n";
-					$message .= "<p><a href='#install'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a></p>";
+					$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
+					$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
+					$message .= "<a href='$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
+					$message .= "<a href='/admin/system/plugininstall.cgi?url=$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
 					notify ( "plugininstall", "$pluginname", $message);
+					sleep 1;
+					LOGINF "Notification saved.";
 				}
 			} else {
 				LOGINF "Prerelease version is not newer than release version.";

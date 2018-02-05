@@ -21,6 +21,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::Log;
 
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
@@ -47,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.2";
+my $version = "1.0.0.3";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -169,6 +170,10 @@ sub form {
 	# Print Template
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+
+	if (!$url) {
+		print LoxBerry::Log::get_notifications_html('plugininstall');
+	}
 
 	print $maintemplate->output();
 	undef $maintemplate;
