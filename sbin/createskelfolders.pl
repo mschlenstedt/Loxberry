@@ -32,8 +32,8 @@ if ($<) {
 # Restore Log folders on tmpfs
 system ("cp -ra /var/log/* $lbhomedir/log/skel_syslog");
 system ("cp -ra $lbhomedir/log/system_tmpfs/* $lbhomedir/log/skel_system/");
-system ("find -type f $lbhomedir/log/skel_system/ -exec rm {} \\;");
-system ("find -type f $lbhomedir/log/skel_syslog/ -exec rm {} \\;");
+system ("find $lbhomedir/log/skel_system/ -type f -exec rm {} \\;");
+system ("find $lbhomedir/log/skel_syslog/ -type f -exec rm {} \\;");
 
 # Create lighttpd cache folder
 system ("mkdir -p /tmp/lighttpdcompress/");
