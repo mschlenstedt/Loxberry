@@ -217,7 +217,7 @@ sub mainmenu {
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MINISERVER'}, 
-				WIDGET_ICON => "/system/images/icons/main_miniserver.png",
+				WIDGET_ICON => "/system/images/icons/main_miniserver.svg",
 				WIDGET_CGI => "/admin/system/miniserver.cgi",
 				WIDGET_NOTIFY_BLUE => $notification_oks{'miniserver'},
 				WIDGET_NOTIFY_RED => $notification_errors{'miniserver'},
