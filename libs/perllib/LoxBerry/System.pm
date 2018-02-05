@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.5";
+our $VERSION = "1.0.0.6";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -789,6 +789,7 @@ sub lblanguage
 		return $LoxBerry::System::lang;
 	}
 	# Get lang from query 
+	require CGI;
 	my $query = CGI->new();
 	my $querylang = $query->param('lang');
 	if ($querylang) 
