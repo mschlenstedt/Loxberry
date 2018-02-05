@@ -1,6 +1,15 @@
 <!-- ** START template/system/power.html 15:21 24.11.2017 ************************************************************************************ -->
 <TMPL_IF MENU>
 	<center>
+	<TMPL_IF SYSTEM_LOCKED>
+		<div style="width:60%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
+			<div class="logerror">
+				<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; background-image: url('../../system/images/reboot_required_big.svg');"></div>
+				<p><b><TMPL_VAR POWER.UI_INSTALL_ERR_RUNNING_UPDATES></b>&nbsp;<TMPL_VAR SYSTEM_LOCKED></p>
+			</div>
+		</div>
+		<p>&nbsp;</p>
+	<TMPL_ELSE>
 		<TMPL_IF REBOOT_REQUIRED>
 		<div style="width:60%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
 		<div class="logerror">
@@ -14,13 +23,14 @@
 		</div>
 		<p>&nbsp;</p>
 		</TMPL_IF>
-		<div style="width: 300px">
 		
-			<a id="btnreboot" data-role="button" data-icon="recycle" href="#"><TMPL_VAR POWER.BUTTON_REBOOT></a>
-			<br>
-			<a id="btnpoweroff" data-role="button" data-icon="power" href="#"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
-
+			
+			<div style="width: 300px">
+				<a id="btnreboot" data-role="button" data-icon="recycle" href="#"><TMPL_VAR POWER.BUTTON_REBOOT></a>
+				<br>
+				<a id="btnpoweroff" data-role="button" data-icon="power" href="#"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
 			</div>
+	</TMPL_IF>
 	</center>
 	<p>
 	&nbsp;

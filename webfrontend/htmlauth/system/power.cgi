@@ -167,14 +167,11 @@ sub form {
 		$maintemplate->param('REBOOT_REQUIRED', 1);
 
 	}
-		
-	
-
-		
-		
-		
-	
-	
+	my $lockstatus = LoxBerry::System::lock();
+	if ($lockstatus) {
+		# Something is locked
+		$maintemplate->param('SYSTEM_LOCKED', $lockstatus);
+	} 
 	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'POWER.WIDGETLABEL'};
