@@ -203,7 +203,7 @@ sub mainmenu {
 		$maintemplate->param('WIDGETS' => [
 			{ 
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MYLOXBERRY'}, 
-				WIDGET_ICON => "/system/images/icons/main_myloxberry.png",
+				WIDGET_ICON => "/system/images/icons/main_myloxberry.svg",
 				WIDGET_CGI => "/admin/system/myloxberry.cgi",
 				WIDGET_NOTIFY_BLUE => $notification_oks{'myloxberry'},
 				WIDGET_NOTIFY_RED => $notification_errors{'myloxberry'},
