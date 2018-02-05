@@ -359,7 +359,7 @@ sub check_releases
 	#LOGINF $response->decoded_content;
 	#LOGINF "\n\n";
 	LOGINF "Parsing release list...";
-	my $releases = JSON->new->utf8(1)->allow_nonref->convert_blessed->decode($response->decoded_content);
+	my $releases = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
 	
 	my $release_safe; # this was thought to be safe, not save!
 	
@@ -455,7 +455,7 @@ sub check_commits
 	}
 	LOGOK "Commit list fetched.";
 	LOGINF "Parsing commit list...";
-	my $commits = JSON->new->utf8(1)->allow_nonref->convert_blessed->decode($response->decoded_content);
+	my $commits = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
 	
 	my $commit_date;
 	my $commit_by;
