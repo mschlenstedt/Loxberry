@@ -7,7 +7,6 @@
 		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
 		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
 	   <a id="scan" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_SCAN></a>
-	   <div id="miniservercheck<TMPL_VAR MSNO>_result"></div>
 	   <div id="scan_result"></div>
 		<table id="maintable">
 		<tbody>
@@ -23,6 +22,7 @@
 			 <a id="miniserverweb<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="grid" onclick="open_ms_web('<TMPL_VAR MSNO>');"><TMPL_VAR MINISERVER.BUTTON_OPEN_WEBIF></a>
 			 <a id="miniserverlog<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="star" onclick="open_ms_log('<TMPL_VAR MSNO>');" target="miniserver_log"><TMPL_VAR MINISERVER.BUTTON_OPEN_LOG></a>
 			 <a id="miniservercheck<TMPL_VAR MSNO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_CHECKMS></a>
+		   <div id="miniservercheck<TMPL_VAR MSNO>_result"></div>
 		</td>
 	</tr>
 	<tr>
