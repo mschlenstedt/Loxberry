@@ -1,0 +1,40 @@
+<!-- ** START template/system/wizard/welcome.html  ************************************************************************************ -->
+<center>
+<TMPL_VAR WIZARD.WELCOME><br>
+<TMPL_VAR WIZARD.VERSION> <TMPL_VAR VERSION><br>
+<object style="width:710px;height:370px;overflow:hidden; transform: scale(0.8,0.8); " data="/system/splash/index.html"></object><br>
+<div style="display:flex; justify-content: center; align-items: center;">
+	<div style="margin:10px; padding:10px; text-align:left; ">
+	<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
+	</div>
+	<div style="margin:10px; padding:10px; ">
+	<TMPL_VAR LANGSELECTOR>
+	</div>
+</div>
+<div>
+<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<!--$lang-->"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+<button type="submit" form="main_form0" id="btnsubmit0" name="btnsubmit0" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR WIZARD.BUTTON_STEP2></button>
+</div>
+
+</center>
+
+<script>
+$(document).ready( function ()
+		{
+
+		$("#languageselector").bind( "change", function(event, ui)
+			{
+				var val = $("#languageselector").val();
+				//console.log("Lang", val);
+				$.post("/admin/system/tools/ajax-config-handler.cgi",
+					{
+						action: "changelanguage",
+						value: val
+					}, function()
+					{
+						location.reload();
+					});
+			});
+		});
+</script>
+<!-- ** END template/system/wizard/welcome.html  ************************************************************************************ -->
