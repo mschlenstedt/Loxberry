@@ -23,7 +23,7 @@ function validate_enable ( object )
 	$( $(object).closest('form') ).submit(function(e)
 	{
 		// Call function validate_all() and it is NOT true, prevent submitting the form.
-		if (!validate_all())
+		if (!validate_all() && window.validate_override != 1)
 		{
 			// Prevent submitting the form.
 			e.preventDefault();
