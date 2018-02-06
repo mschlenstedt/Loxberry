@@ -922,6 +922,9 @@ sub inittemplate
 	%SL = LoxBerry::System::readlanguage($maintemplate);
 	$maintemplate->param( 'STEP', $step );
 	$maintemplate->param( 'SID', $sid );
+	$maintemplate->param( 'SELFURL', $ENV{REQUEST_URI} );
+	$maintemplate->param( 'LANG', lblanguage() );
+	
 
 }
 
