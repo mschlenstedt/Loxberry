@@ -12,9 +12,12 @@
 	</div>
 </div>
 <div>
-<form method="post" data-ajax="false" name="main_form0" id="main_form0" action="<TMPL_VAR SELFURL>?step=<TMPL_VAR STEP>&sid=<TMPL_VAR SID>">
+<form method="post" data-ajax="false" name="main_form0" id="main_form0" action="<TMPL_VAR SELFURL>">
 <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-<button type="submit" form="main_form0" id="btnsubmit0" name="btnsubmit0" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR WIZARD.BUTTON_STEP2></button>
+<INPUT type="hidden" name="currentstep" id="currentstep" value="<TMPL_VAR STEP>">
+<INPUT type="hidden" name="sid" id="sid" value="<TMPL_VAR SID>">
+
+<button type="submit" form="main_form<TMPL_VAR STEP>" id="btnsubmit" name="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR WIZARD.BUTTON_STEP2></button>
 </form>
 </div>
 

@@ -153,7 +153,7 @@ $cgi->import_names('R');
 # }
 
 # And this one we really want to use
-$step           = $R::step;
+$step           = $R::currentstep;
 $sid            = $R::sid;
 
 # Everything from Forms
@@ -231,7 +231,9 @@ $session->expire('+24h');    # expire after 24 hour
 
 # Step 1 or beginning
 if ($step eq "0" || !$step) {
+  $step = 0;
   &welcome;
+  exit;
 }
 
 # if ($step eq "1") {
@@ -262,6 +264,8 @@ if ($step eq "0" || !$step) {
   # &step7;
 # }
 
+# On any doubts: Call welcome
+&welcome;
 exit;
 
 #####################################################
@@ -270,7 +274,6 @@ exit;
 #####################################################
 sub welcome
 {
-	$step++;
 		
 	$template_title = "Welcome to LoxBerry";
 	LoxBerry::Web::head($template_title);
@@ -290,11 +293,6 @@ sub welcome
 			-default => $lang,
 		);
 	$maintemplate->param('LANGSELECTOR', $langselector_popup);
-	
-	
-	
-	$maintemplate->param('VERSION', LoxBerry::System::lbversion());
-	
 	
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
@@ -924,7 +922,7 @@ sub inittemplate
 	$maintemplate->param( 'SID', $sid );
 	$maintemplate->param( 'SELFURL', $ENV{REQUEST_URI} );
 	$maintemplate->param( 'LANG', lblanguage() );
-	
+	$maintemplate->param('VERSION', LoxBerry::System::lbversion());
 
 }
 
