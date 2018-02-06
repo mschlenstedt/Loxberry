@@ -4,6 +4,10 @@
 	<input type="hidden" name="saveformdata" value="1">
 	<input id="miniservers" type="hidden" name="miniservers" value="<TMPL_VAR MINISERVERS>">
 	<center>
+		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
+		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
+	   <a id="scan" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_SCAN></a>
+	   <div id="scan_result"></div>
 		<table id="maintable">
 		<tbody>
 			<tr>
@@ -18,7 +22,7 @@
 			 <a id="miniserverweb<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="grid" onclick="open_ms_web('<TMPL_VAR MSNO>');"><TMPL_VAR MINISERVER.BUTTON_OPEN_WEBIF></a>
 			 <a id="miniserverlog<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="star" onclick="open_ms_log('<TMPL_VAR MSNO>');" target="miniserver_log"><TMPL_VAR MINISERVER.BUTTON_OPEN_LOG></a>
 			 <a id="miniservercheck<TMPL_VAR MSNO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_CHECKMS></a>
-			 <div id="miniservercheck<TMPL_VAR MSNO>_result"></div>
+		   <div id="miniservercheck<TMPL_VAR MSNO>_result"></div>
 		</td>
 	</tr>
 	<tr>
@@ -49,7 +53,7 @@
 			<label for="miniserverkennwort<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSPASS></label>
 		</td>
 		<td>
-			<input class="textfield" value="<TMPL_VAR MSPASS>" id='miniserverkennwort<TMPL_VAR MSNO>' name='miniserverkennwort<TMPL_VAR MSNO>' type='password' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>" data-validation-rule="^.{1}.*$" data-validation-coloring="off" autocomplete="new-password">
+			<input class="textfield" value="<TMPL_VAR MSPASS>" id='miniserverkennwort<TMPL_VAR MSNO>' name='miniserverkennwort<TMPL_VAR MSNO>' type='password' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>" data-validation-rule="^.{1}.*$" data-validation-coloring="off" autocomplete="nope">
 		</td>
 		
 		<td class="hint">
@@ -174,6 +178,7 @@
 		{
 			
 			$("#miniservercheck<TMPL_VAR MSNO>").click(function() {
+      				$('#scan_result').html('');
 				var url = "/admin/system/tools/ajax-check-miniserver.cgi";
 				var resultdiv = $("#miniservercheck<TMPL_VAR MSNO>_result");
 				resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
@@ -213,13 +218,13 @@
 			});
 			
 			note_link ("miniservernote<TMPL_VAR MSNO>");
-			<!-- validate_enable('#miniserverfoldername<TMPL_VAR MSNO>'); -->
-			<!-- validate_enable('#miniserveruser<TMPL_VAR MSNO>'); -->
-			<!-- validate_enable('#miniserverkennwort<TMPL_VAR MSNO>'); -->
-			<!-- validate_enable('#miniserverip<TMPL_VAR MSNO>'); -->
-			<!-- validate_enable('#miniserverport<TMPL_VAR MSNO>'); -->
-			<!-- validate_enable('#miniservercloudurl<TMPL_VAR MSNO>'); -->
-			<!-- validate_enable('#miniservercloudurlftpport<TMPL_VAR MSNO>'); -->
+			validate_enable('#miniserverfoldername<TMPL_VAR MSNO>'); 
+			validate_enable('#miniserveruser<TMPL_VAR MSNO>'); 
+			validate_enable('#miniserverkennwort<TMPL_VAR MSNO>'); 
+			validate_enable('#miniserverip<TMPL_VAR MSNO>'); 
+			validate_enable('#miniserverport<TMPL_VAR MSNO>'); 
+			validate_enable('#miniservercloudurl<TMPL_VAR MSNO>'); 
+			validate_enable('#miniservercloudurlftpport<TMPL_VAR MSNO>'); 
 			$("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr",$("#miniserverip<TMPL_VAR MSNO>").val());
 			$("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr",$("#miniserverport<TMPL_VAR MSNO>").val());
 			$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>").val());
@@ -298,31 +303,16 @@
 <hr>
 	</center>
 	<center>
-	<!--
-	This is the AJAX function of AddMiniserver and DeleteMiniserver. As building the template in JavaScript
-	is heavy to update, I switch to oldschool save and reload -->
-	<!-- <a href="#" id="addmsbtn" onClick="AddMiniserver();return false;"data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></a>
-	<a href="#" id="delmsbtn" onClick="DelMiniserver();return false;"data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></a>
-	-->
 	<p>
 		<center>
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 			<button type="submit" form="main_form2" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 			<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MINISERVER.BUTTON_SHOW_PASSWORDS></button>
-		<button type="submit" form="main_form2" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
-	<button type="submit" form="main_form2" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
 		</center>
 	</p>
 	</center>
 </form>
 <script>
-	//var $messages = $('#form-error-message');
-	//$.validate(
-	//{
-	//	modules: 'security',
-	//	errorMessagePosition: 'inline',
-	//
-	//});
 
 	// Diable Del-Button if needed at onLoad
 	DisableDelButton();
@@ -698,6 +688,70 @@
 $(document).ready(function() {
   $('#showpass').click(function() {
 	$('.textfield').prop('type', 'text');
+  });
+	
+	
+	////////////////// Some logic to prevent garbage in MS config /////////////
+	$("#main_form2 input[type=text]").on('keyup paste input', function(e) 
+	{ 
+		var what_to_test = ( typeof window.obj_to_validate != 'undefined' && window.obj_to_validate instanceof Array ) ? window.obj_to_validate : [];
+		var chkerr = 0;
+		$.each(what_to_test, function (i,v)
+		{
+			if ( !validate_chk_value( v,'keyup' ,$(v).attr('data-validation-rule') ) )
+			{
+				if ( $(v).val() == "" ) 
+				{
+					chkerr = chkerr + 1;
+					$("#addmsbtn").attr('disabled','disabled');
+				}
+				else
+				{
+					chkerr = chkerr + 1;
+					$("#delmsbtn").attr('disabled','disabled');
+					$("#addmsbtn").attr('disabled','disabled');
+				}
+			}
+		});
+			if ( chkerr == 0 )
+			{
+				$("#addmsbtn").removeAttr('disabled');
+				$("#delmsbtn").removeAttr('disabled');
+			}
+	});
+	////////////////// Some logic to prevent garbage in MS config /////////////
+
+});
+
+// Scan for Miniserver
+$('#scan').click( function(e) {
+$('#miniservercheck<TMPL_VAR MSNO>_result').html('');
+$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
+  e.preventDefault();
+  $.ajax({
+    contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
+    type: "GET",
+    url: "/admin/system/tools/netscan.cgi",
+    data: "data",
+    success: function(data){
+      data.replace(/\r|\n/g, "");
+      $('#miniserverip1').empty();
+      if (data.length < 3) {
+
+        $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
+
+      } else {
+
+      $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
+
+      $("#miniserveriprow1").attr( "ipaddr" , data );
+      $("#miniserverportrow1").attr( "portaddr" , "80");
+      $("#useclouddns1").prop("checked", false);
+      $("#useclouddns1").trigger( "change" );
+      //$("#miniserverport1").value = "80";
+
+      }
+    }
   });
 });
 
