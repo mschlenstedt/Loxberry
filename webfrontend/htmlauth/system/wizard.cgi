@@ -920,6 +920,9 @@ sub inittemplate
 				);
 
 	%SL = LoxBerry::System::readlanguage($maintemplate);
+	$maintemplate->param( 'STEP', $step );
+	$maintemplate->param( 'SID', $sid );
+
 }
 
 #####################################################
