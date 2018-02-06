@@ -4,6 +4,8 @@
 	<input type="hidden" name="saveformdata" value="1">
 	<input id="miniservers" type="hidden" name="miniservers" value="<TMPL_VAR MINISERVERS>">
 	<center>
+		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
+		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
 		<table id="maintable">
 		<tbody>
 			<tr>
@@ -306,8 +308,6 @@
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 			<button type="submit" form="main_form2" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 			<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MINISERVER.BUTTON_SHOW_PASSWORDS></button>
-		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
-	<button onclick="var validate_override=1;" type="submit" form="main_form2" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
 		</center>
 	</p>
 	</center>
@@ -689,6 +689,38 @@ $(document).ready(function() {
   $('#showpass').click(function() {
 	$('.textfield').prop('type', 'text');
   });
+	
+	
+	////////////////// Some logic to prevent garbage in MS config /////////////
+	$("#main_form2 input[type=text]").on('keyup paste input', function(e) 
+	{ 
+		var what_to_test = ( typeof window.obj_to_validate != 'undefined' && window.obj_to_validate instanceof Array ) ? window.obj_to_validate : [];
+		var chkerr = 0;
+		$.each(what_to_test, function (i,v)
+		{
+			if ( !validate_chk_value( v,'keyup' ,$(v).attr('data-validation-rule') ) )
+			{
+				if ( $(v).val() == "" ) 
+				{
+					chkerr = chkerr + 1;
+					$("#addmsbtn").attr('disabled','disabled');
+				}
+				else
+				{
+					chkerr = chkerr + 1;
+					$("#delmsbtn").attr('disabled','disabled');
+					$("#addmsbtn").attr('disabled','disabled');
+				}
+			}
+		});
+			if ( chkerr == 0 )
+			{
+				$("#addmsbtn").removeAttr('disabled');
+				$("#delmsbtn").removeAttr('disabled');
+			}
+	});
+	////////////////// Some logic to prevent garbage in MS config /////////////
+
 });
 
 // Scan for Miniserver
