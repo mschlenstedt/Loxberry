@@ -18,7 +18,9 @@
 			 <a id="miniserverweb<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="grid" onclick="open_ms_web('<TMPL_VAR MSNO>');"><TMPL_VAR MINISERVER.BUTTON_OPEN_WEBIF></a>
 			 <a id="miniserverlog<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="star" onclick="open_ms_log('<TMPL_VAR MSNO>');" target="miniserver_log"><TMPL_VAR MINISERVER.BUTTON_OPEN_LOG></a>
 			 <a id="miniservercheck<TMPL_VAR MSNO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_CHECKMS></a>
+			 <a id="scan" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_SCAN></a>
 			 <div id="miniservercheck<TMPL_VAR MSNO>_result"></div>
+			 <div id="scan_result"></div>
 		</td>
 	</tr>
 	<tr>
@@ -174,6 +176,7 @@
 		{
 			
 			$("#miniservercheck<TMPL_VAR MSNO>").click(function() {
+      				$('#scan_result').html('');
 				var url = "/admin/system/tools/ajax-check-miniserver.cgi";
 				var resultdiv = $("#miniservercheck<TMPL_VAR MSNO>_result");
 				resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
@@ -298,12 +301,6 @@
 <hr>
 	</center>
 	<center>
-	<!--
-	This is the AJAX function of AddMiniserver and DeleteMiniserver. As building the template in JavaScript
-	is heavy to update, I switch to oldschool save and reload -->
-	<!-- <a href="#" id="addmsbtn" onClick="AddMiniserver();return false;"data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></a>
-	<a href="#" id="delmsbtn" onClick="DelMiniserver();return false;"data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></a>
-	-->
 	<p>
 		<center>
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
@@ -316,13 +313,6 @@
 	</center>
 </form>
 <script>
-	//var $messages = $('#form-error-message');
-	//$.validate(
-	//{
-	//	modules: 'security',
-	//	errorMessagePosition: 'inline',
-	//
-	//});
 
 	// Diable Del-Button if needed at onLoad
 	DisableDelButton();
@@ -698,6 +688,38 @@
 $(document).ready(function() {
   $('#showpass').click(function() {
 	$('.textfield').prop('type', 'text');
+  });
+});
+
+// Scan for Miniserver
+$('#scan').click( function(e) {
+$('#miniservercheck<TMPL_VAR MSNO>_result').html('');
+$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
+  e.preventDefault();
+  $.ajax({
+    contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
+    type: "GET",
+    url: "/admin/system/tools/netscan.cgi",
+    data: "data",
+    success: function(data){
+      data.replace(/\r|\n/g, "");
+      $('#miniserverip1').empty();
+      if (data.length < 3) {
+
+        $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
+
+      } else {
+
+      $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
+
+      $("#miniserveriprow1").attr( "ipaddr" , data );
+      $("#miniserverportrow1").attr( "portaddr" , "80");
+      $("#useclouddns1").prop("checked", false);
+      $("#useclouddns1").trigger( "change" );
+      //$("#miniserverport1").value = "80";
+
+      }
+    }
   });
 });
 
