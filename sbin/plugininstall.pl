@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.11";
+my $version = "1.0.0.12";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -250,14 +250,14 @@ close (F);
 
 # Check free space
 my %folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
-#if ($folderinfo{available} < 153600) { # 150 MB
-if ($folderinfo{available} < 102400) { # 100 MB
+if ($folderinfo{available} < 153600) { # 150 MB
+#if ($folderinfo{available} < 102400) { # 100 MB
 	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'}";
 	&logfail;
 }
 %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-#if ($folderinfo{available} < 153600) { # 150 MB
-if ($folderinfo{available} < 102400) { # 100 MB
+if ($folderinfo{available} < 153600) { # 150 MB
+#if ($folderinfo{available} < 102400) { # 100 MB
 	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'}";
 	&logfail;
 }
