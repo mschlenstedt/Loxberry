@@ -19,13 +19,11 @@
 # Modules
 ##########################################################################
 
-
 use LoxBerry::Web;
 
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use LWP::UserAgent;
-use Config::Simple;
 use URI::Escape;
 use warnings;
 use strict;
@@ -38,45 +36,18 @@ use strict;
 my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_miniserver.html";
 
-# my $cfg;
-# our $phrase;
-# our $namef;
-# our $value;
-# our %query;
 my $lang;
 my $template_title;
-# our $help;
-# our @help;
-# our $helptext;
 my $helplink;
-# our $installfolder;
-# our $languagefile;
 my $error;
-# our $saveformdata;
-# our $output;
-# our $message;
-# our $do;
 my $url;
 my $ua;
 my $response;
 my $urlstatus;
 my $urlstatuscode;
-# our $nexturl;
 my $miniservers;
 my $miniserversprev;
 my $msno;
-# our $miniserverip;
-# our $miniserverport;
-# our $miniserveruser;
-# our $miniserverkennwort;
-# our $useclouddns;
-# our $miniservercloudurl;
-# our $miniservercloudurlftpport;
-# our $curlbin;
-# #our $grepbin;
-# our $awkbin;
-# our $miniservernote;
-# our $miniserverfoldername;
 my $clouddnsaddress;
 
 ##########################################################################
@@ -84,21 +55,14 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.5.1";
+my $version = "1.0.0.1";
 
 my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
 
-#$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
-#$lang               = $cfg->param("BASE.LANG");
 $miniservers        = $cfg->param("BASE.MINISERVERS");
 $clouddnsaddress    = $cfg->param("BASE.CLOUDDNS");
 $miniserversprev    = $miniservers;
-
-
-#$curlbin            = $cfg->param("BINARIES.CURL");
-#$grepbin            = $cfg->param("BINARIES.GREP");
-#$awkbin             = $cfg->param("BINARIES.AWK");
 
 my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/miniserver.html",
@@ -119,27 +83,6 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 our  $cgi = CGI->new;
 $cgi->import_names('R');
 
-
-# # Everything from URL
-# foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  # ($namef,$value) = split(/=/,$_,2);
-  # $namef =~ tr/+/ /;
-  # $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  # $value =~ tr/+/ /;
-  # $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  # $query{$namef} = $value;
-# }
-
-# And this one we really want to use
-#$do           = $query{'do'};
-
-# Everything we got from forms
-# $saveformdata         = param('saveformdata');
-
-
-# $saveformdata          =~ tr/0-1//cd;
-# $saveformdata          = substr($saveformdata,0,1);
-
 ##########################################################################
 # Language Settings
 ##########################################################################
@@ -158,18 +101,26 @@ my $form_mscount = $cgi->param("miniservers");
 if ($cgi->param("addbtn")) {
 	$miniservers = $form_mscount + 1;
 	$cfg->param("BASE.MINISERVERS", $miniservers);
+	param('miniservers', $miniservers);
 #	$cfg->save();
+	&save;
 	&form;
+	exit;
 } elsif ($cgi->param("delbtn") && $form_mscount gt 1) {
 	$cfg->set_block("MINISERVER$form_mscount", {});
 	$miniservers = $form_mscount - 1;
 	$cfg->param("BASE.MINISERVERS", $miniservers);
-	$cfg->save();
+	param('miniservers', $miniservers);
+	# $cfg->save();
+	&save;
 	&form;
+	exit;
 } elsif (!$R::saveformdata || $R::do eq "form") {
   &form;
+  exit;
 } else {
   &save;
+  exit;
 }
 
 exit;
@@ -333,6 +284,10 @@ COMMENTED_OUT
 	# Save Config
 	$cfg->save();
 
+	if ($cgi->param("delbtn") || $cgi->param("addbtn")) { 
+		return;
+	}
+	
 	my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/success.html",
 		global_vars => 1,

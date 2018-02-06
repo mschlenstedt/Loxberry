@@ -213,13 +213,13 @@
 			});
 			
 			note_link ("miniservernote<TMPL_VAR MSNO>");
-			validate_enable('#miniserverfoldername<TMPL_VAR MSNO>');
-			validate_enable('#miniserveruser<TMPL_VAR MSNO>');
-			validate_enable('#miniserverkennwort<TMPL_VAR MSNO>');
-			validate_enable('#miniserverip<TMPL_VAR MSNO>');
-			validate_enable('#miniserverport<TMPL_VAR MSNO>');
-			validate_enable('#miniservercloudurl<TMPL_VAR MSNO>');
-			validate_enable('#miniservercloudurlftpport<TMPL_VAR MSNO>');
+			<!-- validate_enable('#miniserverfoldername<TMPL_VAR MSNO>'); -->
+			<!-- validate_enable('#miniserveruser<TMPL_VAR MSNO>'); -->
+			<!-- validate_enable('#miniserverkennwort<TMPL_VAR MSNO>'); -->
+			<!-- validate_enable('#miniserverip<TMPL_VAR MSNO>'); -->
+			<!-- validate_enable('#miniserverport<TMPL_VAR MSNO>'); -->
+			<!-- validate_enable('#miniservercloudurl<TMPL_VAR MSNO>'); -->
+			<!-- validate_enable('#miniservercloudurlftpport<TMPL_VAR MSNO>'); -->
 			$("#miniserveriprow<TMPL_VAR MSNO>").attr( "ipaddr",$("#miniserverip<TMPL_VAR MSNO>").val());
 			$("#miniserverportrow<TMPL_VAR MSNO>").attr( "portaddr",$("#miniserverport<TMPL_VAR MSNO>").val());
 			$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>").val());
@@ -309,15 +309,11 @@
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 			<button type="submit" form="main_form2" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 			<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MINISERVER.BUTTON_SHOW_PASSWORDS></button>
-		<button type="submit" form="adddel" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
-	<button type="submit" form="adddel" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
+		<button type="submit" form="main_form2" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
+	<button type="submit" form="main_form2" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
 		</center>
 	</p>
 	</center>
-</form>
-<form method="post" data-ajax="false" name="adddel" id="adddel" action="/admin/system/miniserver.cgi" novalidate="novalidate">
-	<input id="miniserversadddel" type="hidden" name="miniservers" value="<TMPL_VAR MINISERVERS>">
-
 </form>
 <script>
 	//var $messages = $('#form-error-message');
