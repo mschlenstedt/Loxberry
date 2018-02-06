@@ -153,8 +153,21 @@ $cgi->import_names('R');
 # }
 
 # And this one we really want to use
+# $step           = $cgi->url_param("currentstep");
+# $sid            = $cgi->url_param("sid");
+
 $step           = $R::currentstep;
 $sid            = $R::sid;
+
+
+print STDERR "Step $step SID $sid\n";
+
+if ($R::btnsubmit) {
+	$step++;
+} elsif ($R::btnback) {
+	$step--;
+}
+$step = 1 if (! $step || $step < 1);
 
 # Everything from Forms
 $saveformdata         				= param('saveformdata');
@@ -206,6 +219,8 @@ if (!$sid) {
 # Sessions are valid for 24 hour
 $session->expire('+24h');    # expire after 24 hour
 
+$session->save_param($cgi);
+
 ##########################################################################
 # Language Settings
 ##########################################################################
@@ -230,19 +245,26 @@ $session->expire('+24h');    # expire after 24 hour
 #########################################################################
 
 # Step 1 or beginning
-if ($step eq "0" || !$step) {
-  $step = 0;
+if ($step eq "1" || !$step) {
+  $step = 1;
   &welcome;
   exit;
 }
 
-# if ($step eq "1") {
-  # &step1;
-# }
+if ($step eq "2") {
+   $step = 2;
+   &admin;
+}
 
-# if ($step eq "2") {
-  # &step2;
-# }
+if ($step eq "3") {
+   $step = 3;
+   &admin_save;
+}
+
+if ($step eq "4") {
+	$step = 4;
+	&nextsteps;
+}
 
 # if ($step eq "3") {
   # &step3;
@@ -264,18 +286,19 @@ if ($step eq "0" || !$step) {
   # &step7;
 # }
 
+
 # On any doubts: Call welcome
 &welcome;
 exit;
 
 #####################################################
-# Step Welcome
+# Step 1 Welcome
 # Welcome Message
 #####################################################
 sub welcome
 {
 		
-	$template_title = "Welcome to LoxBerry";
+	$template_title = "Step 1 - Welcome to LoxBerry";
 	LoxBerry::Web::head($template_title);
 	$template_title .= " <span class='hint'>V$sversion</span>";
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
@@ -298,10 +321,107 @@ sub welcome
 	LoxBerry::Web::lbfooter();
 	exit;
 
+}
+
+#####################################################
+# Step 2 admin
+# User settings
+#####################################################
+sub admin
+{
+
+	$template_title = "Step 2 - Admin Settings";
+	LoxBerry::Web::head($template_title);
+	$template_title .= " <span class='hint'>V$sversion</span>";
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	
+	inittemplate("admin.html");
+	my $adminuserold = $ENV{REMOTE_USER};
+	$maintemplate->param("ADMINUSEROLD" , $adminuserold);
+	
+	my $changedcredentials;
+	
+	# IMMED: SecurePIN does not match
+	if (LoxBerry::System::check_securepin("0000")) {
+		$changedcredentials = 1;
+	}
+
+	# IMMED: Check Password
+	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl checkpasswd loxberry "loxberry");
+	my $exitcode  = $? >> 8;
+	if ($exitcode == 1) {
+		$changedcredentials = 1;
+	}
+	
+	if ($changedcredentials) {
+		$step++;
+		$maintemplate->param("STEP" , $step);
+		$maintemplate->param("WIZARD_SKIPADMIN" , $changedcredentials);
+		$maintemplate->param("FORM" , undef);
+	}
+	
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	exit;
+
+
 
 }
 
 
+#####################################################
+# Step 3 Show Passwords
+# 
+#####################################################
+sub admin_save
+{
+
+	$template_title = "Step 3 - Store your credentials";
+	LoxBerry::Web::head($template_title);
+	$template_title .= " <span class='hint'>V$sversion</span>";
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	
+	inittemplate("admin.html");
+	my $adminuserold = $ENV{REMOTE_USER};
+	$maintemplate->param("ADMINUSEROLD" , $adminuserold);
+	$maintemplate->param("FORM" , 0);
+	$maintemplate->param("SAVE" , 1);
+	
+	###############################################
+	# All THE CREDENTIALS SETTING NEEDS TO BE HERE
+	###############################################
+	
+	# Using session data:
+	my $s = $session->dataref();
+	print STDERR "Session test: " . $s->{adminuser} . "\n";
+	
+	
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	exit;
+
+}
+
+
+#####################################################
+# Step 4 Next steps and donate
+# 
+#####################################################
+sub nextsteps
+{
+		
+	$template_title = "Step 4 - What next";
+	LoxBerry::Web::head($template_title);
+	$template_title .= " <span class='hint'>V$sversion</span>";
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	
+	inittemplate("wizard/finish.html");
+	
+	print $maintemplate->output();
+	LoxBerry::Web::lbfooter();
+	exit;
+
+}
 
 # #####################################################
 # # Step 0
@@ -914,15 +1034,25 @@ sub inittemplate
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
-				associate => $cfg,
+				associate => $session,
 				);
 
 	%SL = LoxBerry::System::readlanguage($maintemplate);
+	
+	my $selfurl = $cgi->self_url;
+	my $querypos = index($selfurl, '?');
+	$selfurl = substr($selfurl, 0, $querypos) if ($querypos != -1);
+	print STDERR "selfurl: $selfurl\n";
+	
+	$maintemplate->param( 'WIZARD', 1);
 	$maintemplate->param( 'STEP', $step );
+	$maintemplate->param( 'PREVSTEPNR', $step-1 );
+	$maintemplate->param( 'NEXTSTEPNR', $step+1 );
 	$maintemplate->param( 'SID', $sid );
-	$maintemplate->param( 'SELFURL', $ENV{REQUEST_URI} );
+	$maintemplate->param( 'SELFURL', $selfurl );
 	$maintemplate->param( 'LANG', lblanguage() );
-	$maintemplate->param('VERSION', LoxBerry::System::lbversion());
+	$maintemplate->param( 'FORM', 1 );
+	$maintemplate->param( 'VERSION', LoxBerry::System::lbversion());
 
 }
 

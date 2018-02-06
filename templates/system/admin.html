@@ -1,12 +1,29 @@
 <!-- ** START template/system/admin.html 19.01.2018 19:20:03 ************************************************************************************ -->
+<TMPL_IF WIZARD_SKIPADMIN>
+	<center>
+	<TMPL_VAR WIZARD.ADMIN_MSG_SKIPPED>
+	<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="<TMPL_VAR SELFURL>">
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		<INPUT type="hidden" name="currentstep" id="currentstep" value="<TMPL_VAR STEP>">
+		<INPUT type="hidden" name="sid" id="sid" value="<TMPL_VAR SID>">
+		<button type="submit" form="main_form1" id="btnback" name="btnback" value="1" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l"><TMPL_VAR WIZARD.BUTTON_PREV_STEP>&nbsp;<TMPL_VAR PREVSTEPNR></button>
+		<button type="submit" form="main_form1" id="btnsubmit" name="btnsubmit" value="1" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-r"><TMPL_VAR WIZARD.BUTTON_NEXT_STEP>&nbsp;<TMPL_VAR NEXTSTEPNR></button>
+	</form>
+	</center>
+</TMPL_IF>
+
 <TMPL_IF FORM>
-<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="<TMPL_VAR SELFURL>">
+	<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="<TMPL_VAR SELFURL>">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="adminuserold" value="<TMPL_VAR ADMINUSEROLD>">
 	<table class="formtable" border="0" width="100%">
 		<tr>
 			<td colspan="4">
-				<p><TMPL_VAR ADMIN.LABEL_INTRO></p>
+				<TMPL_IF WIZARD>
+					<p><TMPL_VAR WIZARD.ADMIN_LABEL_INTRO>
+				<TMPL_ELSE>
+					<p><TMPL_VAR ADMIN.LABEL_INTRO></p>
+				</TMPL_IF>
 			</td>
 		</tr>
 		<tr>
@@ -61,6 +78,9 @@
 				<hr>
 			</td>
 		</tr>
+	<TMPL_IF WIZARD>
+		<!-- fields removed for wizard -->
+	<TMPL_ELSE>
 		<tr>
 			<td>
 				<label for="securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></label>
@@ -123,17 +143,31 @@
 			<td>
 			</td>
 		</tr>
+	</TMPL_IF>
 	</table>
 	<p>
 		<center>
 			<table class="formtable" border="0">
 				<tr>
+					<TMPL_IF WIZARD>
+					<!-- Buttons for wizard -->
+					<td>
+						
+						<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+						<INPUT type="hidden" name="currentstep" id="currentstep" value="<TMPL_VAR STEP>">
+						<INPUT type="hidden" name="sid" id="sid" value="<TMPL_VAR SID>">
+						<button type="submit" form="main_form1" id="btnback" name="btnback" value="1" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l"><TMPL_VAR WIZARD.BUTTON_PREV_STEP>&nbsp;<TMPL_VAR PREVSTEPNR></button>
+						<button type="submit" form="main_form1" id="btnsubmit" name="btnsubmit" value="1" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-r"><TMPL_VAR WIZARD.BUTTON_NEXT_STEP>&nbsp;<TMPL_VAR NEXTSTEPNR></button>
+					</td>
+					<TMPL_ELSE>
+					<!-- Buttons for widget -->
 					<td>
 						<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 					</td>
 					<td>
 						<button type="submit" form="main_form1" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 					</td>
+					</TMPL_IF>
 				</tr>
 			</table>
 		</center>
@@ -161,7 +195,6 @@ $( document ).ready(function()
 <TMPL_IF SAVE>
 	<p><TMPL_VAR ADMIN.SAVE_OK_INFO></p>
 	<table border=0 cellpadding=10>
-
 		<tr>
 			<td>
 				<b><TMPL_VAR ADMIN.SAVE_OK_WEB_ADMIN_AREA></b>
@@ -206,7 +239,19 @@ $( document ).ready(function()
 				&nbsp;
 			</td>
 		</tr>
-
+		<TMPL_IF WIZARD>
+		<tr>
+			<td>
+				<b><TMPL_VAR ADMIN.SAVE_OK_ROOT_USER></b>
+			</td>
+			<td>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b>root</b>
+			</td>
+			<td>
+				<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b><TMPL_VAR ROOTPASS></b>
+			</td>
+		</tr>
+		</TMPL_IF>
 	<TMPL_IF ERRORS>
 						<TMPL_VAR ADMIN.SAVE_ERR_GENERAL>
 						<p><TMPL_VAR ERRORS></p>
@@ -223,9 +268,19 @@ $( document ).ready(function()
 		<table border=0>
 			<tr>
 				<td align="center">
+					<TMPL_IF WIZARD>
+						<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="<TMPL_VAR SELFURL>">
+						<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+						<INPUT type="hidden" name="currentstep" id="currentstep" value="<TMPL_VAR STEP>">
+						<INPUT type="hidden" name="sid" id="sid" value="<TMPL_VAR SID>">
+						<button type="submit" form="main_form1" id="btnback" name="btnback" value="1" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-l"><TMPL_VAR WIZARD.BUTTON_PREV_STEP>&nbsp;<TMPL_VAR PREVSTEPNR></button>
+						<button type="submit" form="main_form1" id="btnsubmit" name="btnsubmit" value="1" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-r"><TMPL_VAR WIZARD.BUTTON_NEXT_STEP>&nbsp;<TMPL_VAR NEXTSTEPNR></button>
+						</form>
+					<TMPL_ELSE>
 					<p>
 						<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></a>
 					</p>
+					</TMPL_IF>
 				</td>
 			</tr>
 		</table>

@@ -16,8 +16,7 @@
 <a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 <INPUT type="hidden" name="currentstep" id="currentstep" value="<TMPL_VAR STEP>">
 <INPUT type="hidden" name="sid" id="sid" value="<TMPL_VAR SID>">
-
-<button type="submit" form="main_form<TMPL_VAR STEP>" id="btnsubmit" name="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR WIZARD.BUTTON_STEP2></button>
+<button type="submit" id="btnsubmit" name="btnsubmit" value="1" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-r"><TMPL_VAR WIZARD.BUTTON_NEXT_STEP>&nbsp;<TMPL_VAR NEXTSTEPNR></button>
 </form>
 </div>
 
