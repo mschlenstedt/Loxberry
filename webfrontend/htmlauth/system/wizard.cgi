@@ -485,7 +485,7 @@ sub admin_save
 		
 	# Set root password
 	my $rootnewpassword = generate();
-	$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setrootpasswd.exp loxberry $rootnewpassword);
+	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setrootpasswd.exp loxberry $rootnewpassword);
 	$exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$error .= "setrootpasswd.exp loxberry <password> Exitcode $exitcode<br>";
@@ -494,7 +494,60 @@ sub admin_save
 		} 
 	
 	################################################
-		
+	
+	my $creditwebadmin;
+	my $creditconsole;
+	my $creditsecurepin;
+	my $creditroot;
+	
+	
+	
+	
+	if ($maintemplate->param("ADMINOK")) {
+		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$s->{adminuser} / $s->{adminpass1}\r\n";
+		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $s->{adminpass1}\r\n";
+		$maintemplate->param( "ADMINPASS", $s->{adminpass1} );
+	} else {
+		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$s->{adminuser} / loxberry\r\n";
+		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / loxberry\r\n";
+		$maintemplate->param( "ADMINPASS", "loxberry" );
+	}
+	if ($maintemplate->param("SECUREPINOK")) {
+		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t$securepin1\r\n";
+		$maintemplate->param( "SECUREPIN", $securepin1 );
+	} else {
+		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t0000\r\n";
+		$maintemplate->param( "SECUREPIN", "0000" );
+	}
+	if ($maintemplate->param("ROOTPASSOK")) {
+		$creditroot = "$SL{'ADMIN.SAVE_OK_ROOT_USER'}\t$rootnewpassword\r\n";
+		$maintemplate->param( "ROOTPASS", $rootnewpassword );
+	} else {
+		$creditroot = "$SL{'ADMIN.SAVE_OK_ROOT_USER'}\tloxberry\r\n";
+		$maintemplate->param( "ROOTPASS", "loxberry" );
+	}
+	
+	
+	
+	my $credentialstxt = "$SL{'ADMIN.SAVE_OK_INFO'}\r\n" .  
+		"\r\n" .
+		$creditwebadmin .
+		$creditconsole .
+		$creditsecurepin . 
+		$creditroot;
+
+	$credentialstxt=encode_base64($credentialstxt);
+
+	$maintemplate->param( "ADMINUSER", $adminuser );
+	$maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
+	
+	$maintemplate->param( "ERRORS", $error);
+	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
+
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
+	
+	
+	###############################################
 	
 	$template_title = "Step 3 - Archive your credentials";
 	LoxBerry::Web::head($template_title);
