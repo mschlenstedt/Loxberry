@@ -48,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.4";
+my $version = "1.0.0.5";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -206,7 +206,7 @@ sub uninstall {
 		# Uninstallation
 		print STDERR "Doing uninstallation of $pid.";
 		$maintemplate->param("UNINSTALL", 1);
-		system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid 2>&1");
+		system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid > /dev/null 2>&1");
 	}
 	
 	# Print Template
