@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.13";
+my $version = "1.0.0.14";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -266,7 +266,7 @@ if ( $zipmode ) {
 
 # Check free space in $lbhomedir
 %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-if ($folderinfo{available} < < $pluginsize * 1.1) { # exstracted size + 10%
+if ($folderinfo{available} < $pluginsize * 1.1) { # exstracted size + 10%
 	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'} " . $folderinfo{available} . " kB";
 	&logfail;
 }
