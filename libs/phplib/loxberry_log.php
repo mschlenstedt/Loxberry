@@ -48,7 +48,3 @@ function notify ($package, $name, $message, $error = false)
 	fclose($fh);
 	chown ($filename, 'loxberry');
 }
-
-
-
-?>
