@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.12";
+my $version = "1.0.0.14";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -220,7 +220,7 @@ if (!$zipmode) {
   }
   make_path("$tempfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 }
-$tmpfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
+$tempfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
 $message =  "Temp Folder: $tempfolder";
 &loginfo;
 
@@ -248,16 +248,25 @@ flock(F,2);
 flock(F,8);
 close (F);
 
-# Check free space
-my %folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
-if ($folderinfo{available} < 153600) { # 150 MB
-#if ($folderinfo{available} < 102400) { # 100 MB
-	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'} " . $folderinfo{available} . " kB";
-	&logfail;
+# Check free space in tmp
+my $pluginsize;
+my %folderinfo;
+if ( $zipmode ) {
+	$pluginsize = `$unzipbin -l $R::file | tail -1 | xargs | cut -d' ' -f1`;
+	$pluginsize = $pluginsize / 1000; # kBytes
+	%folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
+	if ($folderinfo{available} < $pluginsize * 1.1) { # exstracted size + 10%
+		$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'} " . $folderinfo{available} . " kB";
+		&logfail;
+	}
+} else {
+	$pluginsize = `du -bs $tempfolder | tail -1 | xargs | cut -d' ' -f1`;
+	$pluginsize = $pluginsize / 1000; # kBytes
 }
+
+# Check free space in $lbhomedir
 %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-if ($folderinfo{available} < 153600) { # 150 MB
-#if ($folderinfo{available} < 102400) { # 100 MB
+if ($folderinfo{available} < $pluginsize * 1.1) { # exstracted size + 10%
 	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'} " . $folderinfo{available} . " kB";
 	&logfail;
 }
