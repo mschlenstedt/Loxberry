@@ -57,7 +57,7 @@ ii  cpp-4.9                           4.9.3-14                          armhf   
 ii  cpp-6                             6.3.0-18+rpi1                     armhf        GNU C preprocessor
 ii  crda                              3.18-1                            armhf        wireless Central Regulatory Domain Agent
 ii  cron                              3.0pl1-128                        armhf        process scheduling daemon
-ii  curl                              7.52.1-5+deb9u3                   armhf        command line tool for transferring data with URL syntax
+ii  curl                              7.52.1-5+deb9u4                   armhf        command line tool for transferring data with URL syntax
 ii  dash                              0.5.8-2.4                         armhf        POSIX-compliant shell
 ii  dbus                              1.10.24-0+deb9u1                  armhf        simple interprocess messaging system (daemon and utilities)
 ii  dc                                1.06.95-9                         armhf        GNU dc arbitrary precision reverse-polish calculator
@@ -76,6 +76,7 @@ ii  dmidecode                         3.0-4                             armhf   
 ii  dmsetup                           2:1.02.137-2                      armhf        Linux Kernel Device Mapper userspace library
 ii  dos2unix                          7.3.4-3                           armhf        convert text file line endings between CRLF and LF
 ii  dosfstools                        4.1-1                             armhf        utilities for making and checking MS-DOS FAT filesystems
+ii  dphys-swapfile                    20100506-3                        all          Autogenerate and use a swap file
 ii  dpkg                              1.18.24                           armhf        Debian package management system
 ii  dpkg-dev                          1.18.24                           all          Debian package development tools
 ii  e2fslibs:armhf                    1.43.4-2                          armhf        ext2/ext3/ext4 file system libraries
@@ -86,7 +87,7 @@ ii  expect                            5.45-7+deb9u1                     armhf   
 ii  fake-hwclock                      0.11                              all          Save/restore system clock on machines without working RTC hardware
 ii  fakeroot                          1.21-3.1                          armhf        tool for simulating superuser privileges
 ii  fbset                             2.1-29                            armhf        framebuffer device maintenance program
-ii  ffmpeg                            7:3.2.9-1~deb9u1                  armhf        Tools for transcoding, streaming and playing of multimedia files
+ii  ffmpeg                            7:3.2.10-1~deb9u1+rpt1            armhf        Tools for transcoding, streaming and playing of multimedia files
 ii  file                              1:5.30-1+deb9u1                   armhf        Recognize the type of data in a file using "magic" numbers
 ii  findutils                         4.6.0+git+20161106-2              armhf        utilities for finding files--find, xargs
 ii  firmware-atheros                  1:20161130-3+rpi2                 all          Binary firmware for Atheros wireless cards
@@ -207,16 +208,16 @@ ii  libavahi-common-data:armhf        0.6.32-2                          armhf   
 ii  libavahi-common3:armhf            0.6.32-2                          armhf        Avahi common library
 ii  libavahi-core7:armhf              0.6.32-2                          armhf        Avahi's embeddable mDNS/DNS-SD library
 ii  libavc1394-0:armhf                0.5.4-4                           armhf        control IEEE 1394 audio/video devices
-ii  libavcodec-dev:armhf              7:3.2.9-1~deb9u1                  armhf        FFmpeg library with de/encoders for audio/video codecs - development files
-ii  libavcodec57:armhf                7:3.2.9-1~deb9u1                  armhf        FFmpeg library with de/encoders for audio/video codecs - runtime files
-ii  libavdevice57:armhf               7:3.2.9-1~deb9u1                  armhf        FFmpeg library for handling input and output devices - runtime files
-ii  libavfilter6:armhf                7:3.2.9-1~deb9u1                  armhf        FFmpeg library containing media filters - runtime files
-ii  libavformat-dev:armhf             7:3.2.9-1~deb9u1                  armhf        FFmpeg library with (de)muxers for multimedia containers - development files
-ii  libavformat57:armhf               7:3.2.9-1~deb9u1                  armhf        FFmpeg library with (de)muxers for multimedia containers - runtime files
-ii  libavresample-dev:armhf           7:3.2.9-1~deb9u1                  armhf        FFmpeg compatibility library for resampling - development files
-ii  libavresample3:armhf              7:3.2.9-1~deb9u1                  armhf        FFmpeg compatibility library for resampling - runtime files
-ii  libavutil-dev:armhf               7:3.2.9-1~deb9u1                  armhf        FFmpeg library with functions for simplifying programming - development files
-ii  libavutil55:armhf                 7:3.2.9-1~deb9u1                  armhf        FFmpeg library with functions for simplifying programming - runtime files
+ii  libavcodec-dev:armhf              7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library with de/encoders for audio/video codecs - development files
+ii  libavcodec57:armhf                7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library with de/encoders for audio/video codecs - runtime files
+ii  libavdevice57:armhf               7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library for handling input and output devices - runtime files
+ii  libavfilter6:armhf                7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library containing media filters - runtime files
+ii  libavformat-dev:armhf             7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library with (de)muxers for multimedia containers - development files
+ii  libavformat57:armhf               7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library with (de)muxers for multimedia containers - runtime files
+ii  libavresample-dev:armhf           7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg compatibility library for resampling - development files
+ii  libavresample3:armhf              7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg compatibility library for resampling - runtime files
+ii  libavutil-dev:armhf               7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library with functions for simplifying programming - development files
+ii  libavutil55:armhf                 7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library with functions for simplifying programming - runtime files
 ii  libb-hooks-endofscope-perl        0.21-1                            all          module for executing code after a scope finished compilation
 ii  libbabeltrace-ctf1:armhf          1.5.1-1                           armhf        Common Trace Format (CTF) library
 ii  libbabeltrace1:armhf              1.5.1-1                           armhf        Babeltrace conversion libraries
@@ -276,8 +277,8 @@ ii  libcryptsetup4:armhf              2:1.7.3-4                         armhf   
 ii  libcups2:armhf                    2.2.1-8                           armhf        Common UNIX Printing System(tm) - Core library
 ii  libcupsfilters1:armhf             1.11.6-3+rpi1                     armhf        OpenPrinting CUPS Filters - Shared library
 ii  libcupsimage2:armhf               2.2.1-8                           armhf        Common UNIX Printing System(tm) - Raster image library
-ii  libcurl3:armhf                    7.52.1-5+deb9u3                   armhf        easy-to-use client-side URL transfer library (OpenSSL flavour)
-ii  libcurl3-gnutls:armhf             7.52.1-5+deb9u3                   armhf        easy-to-use client-side URL transfer library (GnuTLS flavour)
+ii  libcurl3:armhf                    7.52.1-5+deb9u4                   armhf        easy-to-use client-side URL transfer library (OpenSSL flavour)
+ii  libcurl3-gnutls:armhf             7.52.1-5+deb9u4                   armhf        easy-to-use client-side URL transfer library (GnuTLS flavour)
 ii  libcwidget3v5:armhf               0.5.17-4                          armhf        high-level terminal interface library for C++ (runtime files)
 ii  libdaemon0:armhf                  0.14-6                            armhf        lightweight C library for daemons - runtime library
 ii  libdata-optlist-perl              0.110-1                           all          module to parse and validate simple name/value option pairs
@@ -291,6 +292,7 @@ ii  libdatrie1:armhf                  0.2.10-4                          armhf   
 ii  libdb5.3:armhf                    5.3.28-12+deb9u1                  armhf        Berkeley v5.3 Database Libraries [runtime]
 ii  libdbd-mysql-perl                 4.041-2                           armhf        Perl5 database interface to the MariaDB/MySQL database
 ii  libdbd-pg-perl                    3.5.3-1+b2                        armhf        Perl DBI driver for the PostgreSQL database server
+ii  libdbd-sqlite3-perl               1.54-1                            armhf        Perl DBI driver with a self-contained RDBMS
 ii  libdbi-perl                       1.636-1+b1                        armhf        Perl Database Interface (DBI)
 ii  libdbus-1-3:armhf                 1.10.24-0+deb9u1                  armhf        simple interprocess messaging system (library)
 ii  libdc1394-22:armhf                2.2.5-1                           armhf        high level programming interface for IEEE 1394 digital cameras
@@ -614,7 +616,7 @@ ii  libpod-readme-perl                1.1.2-1                           all     
 ii  libpopt0:armhf                    1.16-10                           armhf        lib for parsing cmdline parameters
 ii  libportaudio2:armhf               19.6.0-1                          armhf        Portable audio I/O - shared library
 ii  libpostproc52                     6:0.git20120821-4                 armhf        FFmpeg derived postprocessing library
-ii  libpostproc54:armhf               7:3.2.9-1~deb9u1                  armhf        FFmpeg library for post processing - runtime files
+ii  libpostproc54:armhf               7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library for post processing - runtime files
 ii  libpq5:armhf                      9.6.6-0+deb9u1                    armhf        PostgreSQL C client library
 ii  libprocps6:armhf                  2:3.3.12-3                        armhf        library for accessing process information from /proc
 ii  libpsl5:armhf                     0.17.0-3                          armhf        Library for Public Suffix List (shared libraries)
@@ -675,6 +677,7 @@ ii  libsoxr0:armhf                    0.1.2-2                           armhf   
 ii  libspecio-perl                    0.33-1                            all          Perl module providing type constraints and coercions
 ii  libspeex1:armhf                   1.2~rc1.2-1                       armhf        The Speex codec runtime library
 ii  libspiffy-perl                    0.41-1                            all          Spiffy Perl Interface Framework For You
+ii  libsqlite0                        2.8.17-14                         armhf        SQLite 2 shared library
 ii  libsqlite3-0:armhf                3.16.2-5+deb9u1                   armhf        SQLite 3 shared library
 ii  libsqlite3-dev:armhf              3.16.2-5+deb9u1                   armhf        SQLite 3 development files
 ii  libss2:armhf                      1.43.4-2                          armhf        command-line interface parsing library
@@ -691,9 +694,9 @@ ii  libsub-exporter-progressive-perl  0.001013-1                        all     
 ii  libsub-identify-perl              0.12-2+b1                         armhf        module to retrieve names of code references
 ii  libsub-install-perl               0.928-1                           all          module for installing subroutines into packages easily
 ii  libsub-name-perl                  0.21-1                            armhf        module for assigning a new name to referenced sub
-ii  libswresample-dev:armhf           7:3.2.9-1~deb9u1                  armhf        FFmpeg library for audio resampling, rematrixing etc. - development files
-ii  libswresample2:armhf              7:3.2.9-1~deb9u1                  armhf        FFmpeg library for audio resampling, rematrixing etc. - runtime files
-ii  libswscale4:armhf                 7:3.2.9-1~deb9u1                  armhf        FFmpeg library for image scaling and various conversions - runtime files
+ii  libswresample-dev:armhf           7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library for audio resampling, rematrixing etc. - development files
+ii  libswresample2:armhf              7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library for audio resampling, rematrixing etc. - runtime files
+ii  libswscale4:armhf                 7:3.2.10-1~deb9u1+rpt1            armhf        FFmpeg library for image scaling and various conversions - runtime files
 ii  libsysfs2:armhf                   2.1.0+repack-4                    armhf        interface library to sysfs
 ii  libsystemd0:armhf                 232-25+deb9u1                     armhf        systemd utility library
 ii  libtag1v5:armhf                   1.11.1+dfsg.1-0.1                 armhf        audio meta-data library
@@ -715,7 +718,7 @@ ii  libthai-data                      0.1.26-1                          all     
 ii  libthai0:armhf                    0.1.26-1                          armhf        Thai language support library
 ii  libtheora0:armhf                  1.1.1+dfsg.1-14                   armhf        Theora Video Compression Codec
 ii  libtie-ixhash-perl                1.23-2                            all          Perl module to order associative arrays
-ii  libtiff5:armhf                    4.0.8-2+deb9u1                    armhf        Tag Image File Format (TIFF) library
+ii  libtiff5:armhf                    4.0.8-2+deb9u2                    armhf        Tag Image File Format (TIFF) library
 ii  libtimedate-perl                  2.3000-2                          all          collection of modules to manipulate date/time information
 ii  libtinfo5:armhf                   6.0+20161126-1+deb9u1             armhf        shared low-level terminfo library for terminal handling
 ii  libtirpc1:armhf                   0.2.5-1.2                         armhf        transport-independent RPC library
@@ -885,8 +888,8 @@ ii  openssh-server                    1:7.4p1-10+deb9u2                 armhf   
 ii  openssh-sftp-server               1:7.4p1-10+deb9u2                 armhf        secure shell (SSH) sftp server module, for SFTP access from remote machines
 ii  openssl                           1.1.0f-3+deb9u1                   armhf        Secure Sockets Layer toolkit - cryptographic utility
 ii  oss-compat                        6                                 armhf        Open Sound System (OSS) compatibility package
-ii  p7zip                             16.02+dfsg-3                      armhf        7zr file archiver with high compression ratio
-ii  p7zip-full                        16.02+dfsg-3                      armhf        7z and 7za file archivers with high compression ratio
+ii  p7zip                             16.02+dfsg-3+deb9u1               armhf        7zr file archiver with high compression ratio
+ii  p7zip-full                        16.02+dfsg-3+deb9u1               armhf        7z and 7za file archivers with high compression ratio
 ii  parted                            3.2-17                            armhf        disk partition manipulator
 ii  passwd                            1:4.4-4.1                         armhf        change and administer password and group data
 ii  patch                             2.7.5-1                           armhf        Apply a diff file to an original
@@ -902,6 +905,7 @@ ii  php-gettext                       1.0.12-0.1                        all     
 ii  php-mbstring                      1:7.0+49                          all          MBSTRING module for PHP [default]
 ii  php-pear                          1:1.10.1+submodules+notgz-9       all          PEAR Base System
 ii  php-php-gettext                   1.0.12-0.1                        all          read gettext MO files directly, without requiring anything other than PHP
+ii  php-soap                          1:7.0+49                          all          SOAP module for PHP [default]
 ii  php-tcpdf                         6.2.12+dfsg2-1                    all          PHP class for generating PDF files on-the-fly
 ii  php-xml                           1:7.0+49                          all          DOM, SimpleXML, WDDX, XML, and XSL module for PHP [default]
 ii  php7.0                            7.0.27-0+deb9u1                   all          server-side, HTML-embedded scripting language (metapackage)
@@ -915,10 +919,11 @@ ii  php7.0-mbstring                   7.0.27-0+deb9u1                   armhf   
 ii  php7.0-mysql                      7.0.27-0+deb9u1                   armhf        MySQL module for PHP
 ii  php7.0-opcache                    7.0.27-0+deb9u1                   armhf        Zend OpCache module for PHP
 ii  php7.0-readline                   7.0.27-0+deb9u1                   armhf        readline module for PHP
+ii  php7.0-soap                       7.0.27-0+deb9u1                   armhf        SOAP module for PHP
 ii  php7.0-sqlite3                    7.0.27-0+deb9u1                   armhf        SQLite3 module for PHP
 ii  php7.0-xml                        7.0.27-0+deb9u1                   armhf        DOM, SimpleXML, WDDX, XML, and XSL module for PHP
 ii  php7.0-zip                        7.0.27-0+deb9u1                   armhf        Zip module for PHP
-ii  pi-bluetooth                      0.1.6                             armhf        Raspberry Pi 3 bluetooth
+ii  pi-bluetooth                      0.1.7                             all          Raspberry Pi 3 bluetooth
 ii  pinentry-curses                   1.0.0-2                           armhf        curses-based PIN or pass-phrase entry dialog for GnuPG
 ii  pkg-config                        0.29-4                            armhf        manage compile and link flags for libraries
 ii  plymouth                          0.9.2-4+rpi1                      armhf        boot animation, logger and I/O multiplexer
@@ -981,6 +986,8 @@ ii  shared-mime-info                  1.8-1                             armhf   
 ii  socat                             1.7.3.1-2+deb9u1                  armhf        multipurpose relay for bidirectional data transfer
 ii  spawn-fcgi                        1.6.4-1                           armhf        FastCGI process spawner
 ii  splay                             0.9.5.2-14                        armhf        Sound player for MPEG-1,2 layer 1,2,3
+ii  sqlite                            2.8.17-14                         armhf        command line interface for SQLite 2
+ii  sqlite3                           3.16.2-5+deb9u1                   armhf        Command line interface for SQLite 3
 ii  ssh                               1:7.4p1-10+deb9u2                 all          secure shell client and server (metapackage)
 ii  ssl-cert                          1.0.39                            all          simple debconf wrapper for OpenSSL
 ii  ssmtp                             2.64-8                            armhf        extremely simple MTA to get mail off the system to a mail hub
