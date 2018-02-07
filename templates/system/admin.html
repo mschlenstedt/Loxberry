@@ -20,7 +20,8 @@
 		<tr>
 			<td colspan="4">
 				<TMPL_IF WIZARD>
-					<p><TMPL_VAR WIZARD.ADMIN_LABEL_INTRO>
+					<p><TMPL_VAR WIZARD.ADMIN_LABEL_INTRO></p>
+					<p style="color:red"><TMPL_VAR ERROR></p>
 				<TMPL_ELSE>
 					<p><TMPL_VAR ADMIN.LABEL_INTRO></p>
 				</TMPL_IF>
@@ -254,7 +255,7 @@ $( document ).ready(function()
 		</TMPL_IF>
 	<TMPL_IF ERRORS>
 						<TMPL_VAR ADMIN.SAVE_ERR_GENERAL>
-						<p><TMPL_VAR ERRORS></p>
+						<p style="color:red;"><TMPL_VAR ERRORS></p>
 	</TMPL_IF>
 
 		<tr>

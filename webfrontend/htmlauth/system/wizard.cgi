@@ -298,10 +298,6 @@ exit;
 sub welcome
 {
 		
-	$template_title = "Step 1 - Welcome to LoxBerry";
-	LoxBerry::Web::head($template_title);
-	$template_title .= " <span class='hint'>V$sversion</span>";
-	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 	
 	inittemplate("wizard/welcome.html");
 	
@@ -317,6 +313,11 @@ sub welcome
 		);
 	$maintemplate->param('LANGSELECTOR', $langselector_popup);
 	
+	$template_title = "Step 1 - Welcome to LoxBerry";
+	LoxBerry::Web::head($template_title);
+	$template_title .= " <span class='hint'>V$sversion</span>";
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
 	exit;
@@ -331,11 +332,9 @@ sub admin
 {
 
 	$template_title = "Step 2 - Admin Settings";
-	LoxBerry::Web::head($template_title);
-	$template_title .= " <span class='hint'>V$sversion</span>";
-	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 	
 	inittemplate("admin.html");
+	$maintemplate->param( 'ERROR', $error);
 	my $adminuserold = $ENV{REMOTE_USER};
 	$maintemplate->param("ADMINUSEROLD" , $adminuserold);
 	
@@ -353,12 +352,19 @@ sub admin
 		$changedcredentials = 1;
 	}
 	
-	if ($changedcredentials) {
+	if ($changedcredentials && $R::btnsubmit) {
 		$step++;
 		$maintemplate->param("STEP" , $step);
 		$maintemplate->param("WIZARD_SKIPADMIN" , $changedcredentials);
 		$maintemplate->param("FORM" , undef);
+	} elsif ($changedcredentials && $R::btnback) {
+		$step = 1;
+		&welcome;
+		exit;
 	}
+	LoxBerry::Web::head($template_title);
+	$template_title .= " <span class='hint'>V$sversion</span>";
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 	
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
@@ -376,10 +382,6 @@ sub admin
 sub admin_save
 {
 
-	$template_title = "Step 3 - Store your credentials";
-	LoxBerry::Web::head($template_title);
-	$template_title .= " <span class='hint'>V$sversion</span>";
-	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 	
 	inittemplate("admin.html");
 	my $adminuserold = $ENV{REMOTE_USER};
@@ -395,7 +397,109 @@ sub admin_save
 	my $s = $session->dataref();
 	print STDERR "Session test: " . $s->{adminuser} . "\n";
 	
+	##############################################
+	# Slightly modified code from admin.cgi
 	
+	undef $error;
+	
+	# Validate username
+	if ($s->{adminuser} ne $s->{adminuserold}) {
+		# Username changed
+		$_ = $adminuser;
+		if (! m/^([A-Za-z0-9]|_-){3,20}$/) {
+			$error = $SL{'ADMIN.MSG_VAL_USERNAME_ERROR'};
+		}
+	}
+	
+	# Validate passwords
+	if ($s->{adminpass1} || $s->{adminpass2}) {
+		$_ = $s->{adminpass1};
+		if (! m/^(?=loxberry$)|^(((?=.*[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=])(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=]{4,64}$)|^(){0})$/ ) {
+			$error = $SL{'ADMIN.MSG_VAL_PASSWORD_ERROR'};
+		}
+		if ($s->{adminpass1} ne $s->{adminpass2}) {
+			$error = $SL{'ADMIN.MSG_VAL_PASSWORD_DIFFERENT'};
+		}
+	}
+
+	##############################################
+
+	if ($error) {
+		# If errors exist, re-load step 2
+		&admin;
+		exit;
+	}
+	
+	###############################################
+	
+	my $exitcode;
+	
+	##
+	## User wants to change the password (and maybe also the username):
+	##
+	if ($s->{adminpass1}) {
+		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp loxberry $s->{adminpass1});
+		$exitcode  = $? >> 8;
+		if ($exitcode ne 0) {
+			print STDERR "setloxberrypasswd.exp adminpassold Exitcode $exitcode\n";
+			$error .= " setloxberrypasswd.exp adminpassold Exitcode $exitcode<br>";
+			# &error;
+			# exit;
+		} else {
+			$maintemplate->param("ADMINOK", 1);
+		}	
+
+		# Try to set new SAMBA passwords for user "loxberry"
+
+		## If default password isn't valid anymore:
+		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $s->{adminpass1} );
+		$exitcode  = $? >> 8;
+		if ($exitcode ne 0) {
+			print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
+			$error .= " setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode<br>";
+		} else {
+			$maintemplate->param("SAMBAOK", 1);
+		}	
+
+		# Save Username/Password for Webarea
+		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $s->{adminuser} $s->{adminpass1} );
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
+			# &error;
+		} else {
+			$maintemplate->param("WEBOK", 1);
+		} 
+		
+	}
+
+	# Set Secure PIN
+	my $securepin1 = 1000 + int(rand(8999));
+	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl changesecurepin 0000 $securepin1);
+	$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$error .= "credentialshandler.pl changesecurepin 0000 $securepin1 Exitcode $exitcode<br>";
+		} else {
+			$maintemplate->param("SECUREPINOK", 1);
+		} 
+		
+	# Set root password
+	my $rootnewpassword = generate();
+	$output = qx(LANG="en_GB.UTF-8" $installfolder/sbin/setrootpasswd.exp loxberry $rootnewpassword);
+	$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$error .= "setrootpasswd.exp loxberry <password> Exitcode $exitcode<br>";
+		} else {
+			$maintemplate->param("ROOTPASSOK", 1);
+		} 
+	
+	################################################
+		
+	
+	$template_title = "Step 3 - Archive your credentials";
+	LoxBerry::Web::head($template_title);
+	$template_title .= " <span class='hint'>V$sversion</span>";
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
 	exit;
@@ -410,13 +514,13 @@ sub admin_save
 sub nextsteps
 {
 		
+	
+	inittemplate("wizard/finish.html");
+	
 	$template_title = "Step 4 - What next";
 	LoxBerry::Web::head($template_title);
 	$template_title .= " <span class='hint'>V$sversion</span>";
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
-	
-	inittemplate("wizard/finish.html");
-	
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
 	exit;
