@@ -1,4 +1,4 @@
-	  <b><big>Error <?php echo $_SERVER["REDIRECT_STATUS"] ?> :-(
+	  <b><big>Error <?php echo $_SERVER["REDIRECT_STATUS"] ?> 
 	  <br><br></big></b>
      <?php
 
@@ -127,6 +127,6 @@
 			  }
 		 ?>
          <br><br><br>
-         <a href="javascript:window.history.back();">Back</a>
+         <a style="color:#FF5A00" href="javascript:window.history.back();">Back</a>
 	 </font>
 	</center>

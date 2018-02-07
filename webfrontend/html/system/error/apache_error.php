@@ -6,11 +6,11 @@
   <TITLE>LoxBerry  - Error :-(</TITLE>
   <LINK rel="shortcut icon"              href="/system/images/favicon.ico">
  </HEAD>
- <BODY bgColor="#FAF8FB" leftmargin="5px" topMargin="0px" marginheight="0px" marginwidth="5px">
+ <BODY bgColor="#3d3d3d" leftmargin="5px" topMargin="0px" marginheight="0px" marginwidth="5px">
  <center>
   <font face="Verdana, Arial, sans-serif" font-size="14px" color="#FF5A00">
   <br>
-  <img src="/system/images/apache_error.png">
+  <img src="/system/images/apache_error.svg">
   <br>
 
 
