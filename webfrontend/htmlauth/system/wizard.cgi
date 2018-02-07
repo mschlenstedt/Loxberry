@@ -27,6 +27,8 @@ use CGI::Session;
 use File::Copy;
 use DBI;
 use URI::Escape;
+use MIME::Base64;
+
 #use HTML::Entities;
 
 use warnings;
@@ -487,7 +489,7 @@ sub admin_save
 	my $rootnewpassword = generate();
 	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setrootpasswd.exp loxberry $rootnewpassword);
 	$exitcode  = $? >> 8;
-		if ($exitcode != 0) {
+		if ($exitcode ne 0) {
 			$error .= "setrootpasswd.exp loxberry <password> Exitcode $exitcode<br>";
 		} else {
 			$maintemplate->param("ROOTPASSOK", 1);
@@ -503,7 +505,7 @@ sub admin_save
 	
 	
 	
-	if ($maintemplate->param("ADMINOK")) {
+	if ($maintemplate->param('ADMINOK' eq "1" )) {
 		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$s->{adminuser} / $s->{adminpass1}\r\n";
 		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $s->{adminpass1}\r\n";
 		$maintemplate->param( "ADMINPASS", $s->{adminpass1} );
@@ -512,14 +514,14 @@ sub admin_save
 		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / loxberry\r\n";
 		$maintemplate->param( "ADMINPASS", "loxberry" );
 	}
-	if ($maintemplate->param("SECUREPINOK")) {
+	if ($maintemplate->param("SECUREPINOK") eq "1") {
 		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t$securepin1\r\n";
 		$maintemplate->param( "SECUREPIN", $securepin1 );
 	} else {
 		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t0000\r\n";
 		$maintemplate->param( "SECUREPIN", "0000" );
 	}
-	if ($maintemplate->param("ROOTPASSOK")) {
+	if ($maintemplate->param("ROOTPASSOK") eq "1") {
 		$creditroot = "$SL{'ADMIN.SAVE_OK_ROOT_USER'}\t$rootnewpassword\r\n";
 		$maintemplate->param( "ROOTPASS", $rootnewpassword );
 	} else {
