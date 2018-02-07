@@ -252,13 +252,13 @@ close (F);
 my %folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
 if ($folderinfo{available} < 153600) { # 150 MB
 #if ($folderinfo{available} < 102400) { # 100 MB
-	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'}";
+	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'} " . $folderinfo{available} . " kB";
 	&logfail;
 }
 %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
 if ($folderinfo{available} < 153600) { # 150 MB
 #if ($folderinfo{available} < 102400) { # 100 MB
-	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'}";
+	$message =  "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'} " . $folderinfo{available} . " kB";
 	&logfail;
 }
 
