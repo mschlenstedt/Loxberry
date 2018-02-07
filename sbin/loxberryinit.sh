@@ -55,12 +55,12 @@ case "$1" in
 	# No need to do this here anymore.
 
         # Resize rootfs to maximum if not yet done
-        #if [ ! -f /boot/rootfsresized ]
-        #then
-        #  log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
-        #  $LBHOMEDIR/sbin/resize_rootfs > /dev/null 2>&1
-        #  touch /boot/rootfsresized
-        #fi
+        if [ ! -f /boot/rootfsresized ]
+        then
+          log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
+          $LBHOMEDIR/sbin/resize_rootfs > /dev/null 2>&1
+          touch /boot/rootfsresized
+        fi
 
 	# Create Default config
 	log_action_begin_msg "Updating general.cfg etc...."
