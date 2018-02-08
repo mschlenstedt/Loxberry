@@ -1,0 +1,39 @@
+<code><pre>
+&lt;?php
+require_once(&quot;../template.php&quot;);
+
+$options = array('filename'          =&gt; &quot;sample9.tmpl&quot;,
+                 'debug'             =&gt; 0,
+                 'global_vars'       =&gt; 1,
+                 'case_sensitive'    =&gt; 0,
+                 'loop_context_vars' =&gt; 1);
+
+$template =&amp; new Template($options);
+
+$loop2a = array(
+          array(&quot;varname2&quot; =&gt; &quot;qw&quot;),
+          array(&quot;varname2&quot; =&gt; &quot;er&quot;),
+          array(&quot;varname2&quot; =&gt; &quot;ty&quot;));
+         
+$loop2b = array(
+          array(&quot;varname2&quot; =&gt; &quot;as&quot;),
+          array(&quot;varname2&quot; =&gt; &quot;df&quot;));
+
+$loop1 = array(
+         array(&quot;varname&quot; =&gt; &quot;12&quot;, &quot;insideloop&quot; =&gt; &amp;$loop2a),
+         array(&quot;varname&quot; =&gt; &quot;34&quot;, &quot;insideloop&quot; =&gt; &amp;$loop2b));
+         
+$loop3 = array(
+               array(&quot;one&quot;=&gt;&quot;1&quot;, &quot;two&quot;=&gt;&quot;2&quot;),
+               array(&quot;two&quot;=&gt;&quot;22&quot;),
+               array(&quot;one&quot;=&gt;&quot;111&quot;)
+              );
+         
+$template-&gt;AddParam(&quot;the_loop&quot;, &amp;$loop1);
+$template-&gt;AddParam(&quot;another_loop&quot;, &amp;$loop3);
+$template-&gt;AddParam(&quot;caption&quot;, &quot;Some text&quot;);
+$template-&gt;AddParam(&quot;title&quot;, &quot;Global vars and defaults example&quot;);
+
+$template-&gt;EchoOutput();
+?&gt;
+</pre></code>

@@ -1,0 +1,64 @@
+#!/bin/bash
+
+APC=${LBHOMEDIR}/system/apache2/ports.conf
+AWC=${LBHOMEDIR}/system/apache2/sites-available/000-default.conf
+AWCN=${LBHOMEDIR}/system/apache2/sites-available/000-default_${2}.conf
+AWCL=${LBHOMEDIR}/system/apache2/sites-enabled/000-default_${2}.conf
+ABF=${APC}_$(date +%Y%m%d%H%M%S)
+LPC=${LBHOMEDIR}/system/lighttpd/port.conf
+LBF=${LPC}_$(date +%Y%m%d%H%M%S)
+SVR='$SERVER'
+APACHE=$(pgrep apache2)
+LIGHTY=$(pgrep lighttpd)
+
+case $1 in
+	ssdpd)
+		systemctl $2 ssdpd
+		;;
+	webport_change)
+		cp $APC $ABF
+		cp $LPC $LBF
+		sed -i -e "0,/^Listen.*/ s//&\nListen NEW/" $APC
+		sed -i -e "/^Listen.*$2/,+0d" $APC
+		sed -i -e "s/^Listen.*NEW/Listen $2/" $APC
+		cp $AWC $AWCN
+		sed -i -e "s/<VirtualHost.*/<VirtualHost *:$2>/" $AWCN
+		sed -i -e '/^$SERVER/,+0d' $LPC
+		sed -i -e "s/^server\.port.*/server.port = $2\n$SVR[\"socket\"] == \":$3\" {}/" $LPC
+		ln -s $AWCN $AWCL
+		systemctl stop ssdpd
+		sleep 2
+		if [ -n "$APACHE" ]
+		then
+			systemctl restart apache2
+		fi
+			if [ -n "$LIGHTY" ]
+		then
+			systemctl restart lighttpd
+		fi
+		;;
+	webport_success)
+		if [ -f "$AWCN" ]
+		then
+			sed -i -e "0,/^Listen.*/ s//&\nListen NEW/" $APC
+			sed -i -e "/^Listen.*$2/,+0d" $APC
+			sed -i -e "/^Listen.*$3/,+0d" $APC
+			sed -i -e "s/^Listen.*NEW/Listen $2/" $APC
+			sed -i -e '/^$SERVER/,+0d' $LPC
+			unlink $AWCL
+			rm -f $AWC
+			mv $AWCN $AWC
+			systemctl start ssdpd
+			sleep 2
+   			if [ -n "$APACHE" ]
+   			then
+   				systemctl restart apache2
+   			fi
+   				if [ -n "$LIGHTY" ]
+   			then
+   				systemctl restart lighttpd
+   			fi
+		fi
+		;;
+esac
+

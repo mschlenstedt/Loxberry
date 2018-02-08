@@ -1,0 +1,159 @@
+<!-- ** START template/system/logfile.html 00:29 08.01.2018 ************************************************************************** -->
+<div style="margin: 2%">
+				
+	<!-- <div style="width:100%; height:57vh;"> -->
+	<div><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE></div>
+	<br>
+	<div autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100%; height:40vh; background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll" id="Logfile">
+	</div>
+	
+	<!-- </div> -->
+	<table width="100%" border="0">
+		<tr>
+			<td width="50%">
+			</td>
+			<td width="25%">
+			<label style="display:block; text-align:center;"><input data-mini="true" type="checkbox" checked id="LogScroll"><TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
+			</td>
+			<td width="25%">
+			 <a style="display:block; text-align:center;" id="btndown" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=bin&format=plain" target="_blank" download="<TMPL_VAR LOGFILE>"><TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
+			</td>
+		</tr>
+	</table>
+
+	<p>
+	<center>
+	<table border=0 width="75%" cellpadding="10">
+		<tr>
+			<td width="10%">
+			<a style="display:block; text-align:center;" id="btnnext" data-role="button" data-inline="true" data-mini="true" data-icon="check" data-ajax="false" href="/admin/system/plugininstall.cgi?do=form"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_NEXT></a>
+			</td>
+			<td width="10%">
+			<a style="display:block; text-align:center;" id="btnreboot" data-role="button" data-inline="true" data-mini="true" data-icon="check" data-ajax="false" href="/admin/system/power.cgi"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOT></a>
+			</td>
+			<td width="80%">
+			<div id="pstatus" style="width:100%; padding:5px 5px 5px 5px; vertical-align:middle; line-height:35px; vertical-align:middle; border-style: dotted; border-width:1px; border-color:red; background-color:#ffffe6; text-size:11px"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE></div>
+			</td>
+		</tr>
+	</table>
+	</center>
+	</p>
+
+</div>
+
+<script>
+var interval;
+
+$.urlParam = function(name){
+	var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+	if (results==null){
+		return null;
+	}
+	else{
+		return decodeURI(results[1]) || 0;
+	}
+}
+
+var filesize;
+var call_in_progress = 0;
+
+// Disable buttons
+$('#btnnext').addClass('ui-disabled');
+$('#btnreboot').addClass('ui-disabled');
+
+function updatelog() 
+{
+	// Disable caching of AJAX responses
+	$.ajaxSetup (
+	{
+		cache: false
+	});
+	// Load Logfile
+	//$('#Logfile').load('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&head=none&format=html');
+	// This 'if' prevents multiple loads in parallel, put Perl is too slow
+	if (call_in_progress == 0 ) {
+		call_in_progress = 1;
+		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&head=none&format=html&clientsize='+filesize,
+			function( data, textStatus, request ) {
+			filesize = request.getResponseHeader('filesize');
+			if (filesize == 0) {
+				$('#Logfile').html( "<TMPL_VAR LOGVIEWER.ERR_LOGFILE_EMPTY_HTML>" );
+			} else {
+				$('#Logfile').html( data );
+			}
+			// console.log ("filesize response header:", request.getResponseHeader('filesize'));
+			filesize = request.getResponseHeader('filesize');
+		})
+		.always(function() { call_in_progress = 0; });
+	}
+
+	if ($("#LogScroll").is(":checked"))
+	{
+		$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+	}
+	// Load Status
+	$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR STATUSFILE>&head=none&format=ascii', function (response)
+	{
+		var pstatus = parseInt(response);
+		if (pstatus == 3)
+		{
+			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED>";
+			$('#btnnext').removeClass('ui-disabled');
+			$('#btnreboot').removeClass('ui-disabled');
+			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+		}
+		else if (pstatus == 2)
+		{
+			document.getElementById("pstatus").innerHTML = "<font color='#FF0000'><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_ERROR></font>";
+			$('#btnnext').removeClass('ui-disabled');
+			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+		}
+		else if (pstatus == 1)
+		{
+			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE>";
+			$('#btnnext').addClass('ui-disabled');
+		}
+		else
+		{
+			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_SUCCESS>";
+			$('#btnnext').removeClass('ui-disabled');
+			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+		}
+	});
+	return;
+}
+var interval = window.setInterval(updatelog, 1000);
+
+$("#Logfile").click(function() {
+		clearInterval(interval);
+		$("input[type='checkbox']").attr("checked",false).checkboxradio("refresh");
+});
+
+$("#LogScroll").click(function() {
+		if ( $(this).is(':checked') ) {
+			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight).delay(100);
+			interval = window.setInterval(updatelog, 1000);
+		} else {
+			clearInterval(interval);
+		}
+});
+
+var fileName =  'logfile.txt';
+function downloadDiv(filename, elementId, mimeType) {
+    var elementHtml = $('#Logfile').text();
+	elementHtml.replace(/[\n]/g, '\r\n');
+	var link = document.createElement('a');
+    mimeType = mimeType || 'text/plain';
+
+    link.setAttribute('download', filename);
+    link.setAttribute('href', 'data:' + mimeType  +  ';charset=utf-8,' + encodeURIComponent(elementHtml));
+    link.click(); 
+}
+
+
+$('#download').click(function(){
+    downloadDiv(fileName, 'LogFile','text/html');
+});
+
+</script>
+				

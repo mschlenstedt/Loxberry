@@ -5,6 +5,38 @@
 											<table class="formtable" border="0" width="100%">
 												<tr>
 													<td width="25%">
+														<label for="lbfriendlyname">Freier Name deines LoxBerry:</label>
+													</td>
+												<td width="50%">
+														<input placeholder="z.B. Wohnzimmer" id="lbfriendlyname" name="lbfriendlyname" type="text" class="textfield" value="<!--$lbfriendlyname-->">
+													</td>
+													<td width="5%" valign="middle">
+														&nbsp;
+													</td>
+													<td width="20%">
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td width="25%">
+														<label for="lbhostname">Netzwerk-Hostname:</label>
+													</td>
+												<td width="50%">
+														<input id="lbhostname" name="lbhostname" disabled type="text" class="textfield" value="<!--$lbhostname-->">
+													</td>
+													<td width="5%" valign="middle">
+														<a href="#" data-role="button" id="btnlbhostname" data-inline="true" data-mini="true"
+															onClick="window.open('/admin/system/tools/changehostname.cgi?lang=<!--$lang-->',
+															'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')"">
+															<font size="-1">Hostname ändern</font>
+														</a>
+													</td>
+													<td width="20%">
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td width="25%">
 														<label id="labelnetzwerkanschluss">Netzwerkanschluss:</label>
 													</td>
 													<td width="50%">

@@ -1,0 +1,191 @@
+									<!-- ** START template/system/en/mainmenu_start.html 02.11.2017 23:39:00 ************************************************************************************ -->
+									<p>
+										<div style="font-size: 0.6em; text-align: right; vertical-align: middle;">Versión: <!--$sversion--></div>
+      						</p>
+									<p>
+										<center>
+											<table class="menutable" border="0" width="90%">
+												<tr>
+													<td>
+														<img height="64" width="64" src="/system/images/icons/main_system_title.svg">
+													</td>
+													<td colspan=7>
+														<div class="caption">Panel de Control</div>
+													</td>
+												</tr>
+												<tr>
+													<td colspan=8>
+														<hr>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<a href="/admin/system/admin.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_admin.png"><div class="menutabletext">Cuenta Administrador</div></a>
+													</td>
+													<td>
+														<a href="/admin/system/miniserver.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_miniserver.png"><div class="menutabletext">Miniserver</div></a>
+													</td>
+													<td>
+														<a href="/admin/system/timeserver.cgi?do=form">
+															<div style=" margin: 6px 0 0 0;">
+																<div style=" margin:5px auto;">
+																	<div class="clock">
+																		<div class="hours-container">
+																			<div class="hours"></div>
+																		</div>
+																		<div class="minutes-container">
+																			<div class="minutes"></div>
+																		</div>
+																		<div class="seconds-container">
+																			<div class="seconds"></div>
+																		</div>
+																	</div>
+																</div>
+															</div>
+															<div class="menutabletext">Hora del Sistema</div>
+														</a>
+													<SCRIPT>
+														/*
+														 * Starts any clocks using the user's local time
+														 * From: cssanimation.rocks/clocks
+														 */
+															// Get the local time using JS
+															var seconds = <!--$sec-->;
+															var minutes = <!--$min-->;
+															var hours = <!--$hour-->;
+
+															// Create an object with each hand and it's angle in degrees
+															var hands = [
+																{
+																	hand: 'hours',
+																	angle: (hours * 30) + (minutes / 2)
+																},
+																{
+																	hand: 'minutes',
+																	angle: (minutes * 6)
+																},
+																{
+																	hand: 'seconds',
+																	angle: (seconds * 6)
+																}
+															];
+															// Loop through each of these hands to set their angle
+															for (var j = 0; j < hands.length; j++)
+															{
+																var elements = document.querySelectorAll('.' + hands[j].hand);
+																for (var k = 0; k < elements.length; k++) {
+																		elements[k].style.webkitTransform = 'rotateZ('+ hands[j].angle +'deg)';
+																		elements[k].style.transform = 'rotateZ('+ hands[j].angle +'deg)';
+																		// If this is a minute hand, note the seconds position (to calculate minute position later)
+																		if (hands[j].hand === 'minutes') {
+																			elements[k].parentNode.setAttribute('data-second-angle', hands[j + 1].angle);
+																		}
+																}
+															}
+														/*
+														 * Set a timeout for the first minute hand movement (less than 1 minute), then rotate it every minute after that
+														 */
+														function setUpMinuteHands()
+														{
+															// Find out how far into the minute we are
+															var containers = document.querySelectorAll('.minutes-container');
+															var secondAngle = containers[0].getAttribute("data-second-angle");
+															if (secondAngle > 0) {
+																// Set a timeout until the end of the current minute, to move the hand
+																var delay = (((360 - secondAngle) / 6) + 0.1) * 1000;
+																setTimeout(function() {
+																	moveMinuteHands(containers);
+																}, delay);
+															}
+														}
+
+														/*
+														 * Do the first minute's rotation
+														 */
+														function moveMinuteHands(containers)
+														{
+															for (var i = 0; i < containers.length; i++) {
+																containers[i].style.webkitTransform = 'rotateZ(6deg)';
+																containers[i].style.transform = 'rotateZ(6deg)';
+															}
+															// Then continue with a 60 second interval
+															setInterval(function() {
+																for (var i = 0; i < containers.length; i++) {
+																	if (containers[i].angle === undefined) {
+																		containers[i].angle = 12;
+																	} else {
+																		containers[i].angle += 6;
+																	}
+																	containers[i].style.webkitTransform = 'rotateZ('+ containers[i].angle +'deg)';
+																	containers[i].style.transform = 'rotateZ('+ containers[i].angle +'deg)';
+																}
+															}, 60000);
+														}
+														/*
+														 * Move the second containers
+														 */
+														function moveSecondHands()
+														{
+															var containers = document.querySelectorAll('.seconds-container');
+															setInterval(function() {
+																for (var i = 0; i < containers.length; i++) {
+																	if (containers[i].angle === undefined) {
+																		containers[i].angle = 6;
+																	} else {
+																		containers[i].angle += 6;
+																	}
+																	containers[i].style.webkitTransform = 'rotateZ('+ containers[i].angle +'deg)';
+																	containers[i].style.transform = 'rotateZ('+ containers[i].angle +'deg)';
+																}
+															}, 1000);
+														}
+													</SCRIPT>
+													</td>
+													<td>
+														<a href="/admin/system/network.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_network.png"><div class="menutabletext">Red</div></a>
+													</td>
+													<td>
+														<a href="/admin/system/plugininstall.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_plugininstall.png"><div class="menutabletext">Administración de Plugins</div></a>
+													</td>
+													<td>
+														<a href="/admin/system/updates.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_updates.png"><div class="menutabletext">Actualizar</div></a>
+													</td>
+													<td>
+														<a href="/admin/system/setup/index.cgi"><img class="menutableicon" src="/system/images/icons/main_setupassistent.png"><div class="menutabletext">Asistente de configuración</div></a>
+													</td>
+													<td>
+														<a href="/admin/system/power.cgi"><img class="menutableicon" src="/system/images/icons/main_power.png"><div class="menutabletext">Apagado</div></a>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<a href="/admin/system/mailserver.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_mail.png"><div class="menutabletext">Servidor de Correo</div></a>
+													</td>
+													<td>
+														<a href="/admin/system/donate.cgi"><img class="menutableicon" src="/system/images/icons/main_donate.png"><div class="menutabletext">¿Donar? :-)</div></a>
+													</td>
+													<td colspan=6>
+													</td>
+												</tr>
+												<tr>
+													<td colspan=8>
+														&nbsp;
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
+													</td>
+													<td colspan=4>
+														<div class="caption">Plugins</div>
+													</td>
+													<td colspan=3>
+														<a href="http://plugins.loxberry.de/" target="_blank" data-role="button" data-inline="true" data-mini="true">Archivo de Plugins</a>
+													</td>
+												</tr>
+												<tr>
+													<td colspan=8>
+														<hr>
+													</td>
+												</tr>
+									<!-- ** END template/system/en/mainmenu_start.html ************************************************************************************ -->

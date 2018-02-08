@@ -104,7 +104,7 @@ TXT0099=Refreshing system menus
 TXT0100=System menüs refreshed successfully
 TXT0101=Show Logfile
 TXT0102=Uninstall
-TXT0103=System-Upgrade
+TXT0103=Updates
 TXT0104=You can upload files with a max. size of 100 MB.
 TXT0105=Error while extracting the Upgrade archive.
 TXT0106=It seems that some important files are missing in the upgrade archive.
@@ -115,3 +115,11 @@ TXT0110=Mailserver
 TXT0111=Settings for SMTP-Server saved and activated.
 TXT0112=Installing Uninstall-Script
 TXT0113=Please restart your LoxBerry to finish uninstallation.
+TXT0114=Select
+
+
+SECUPDATE_RADIO_OFF=Off
+SECUPDATE_RADIO_DAILY=Daily
+SECUPDATE_RADIO_WEEKLY=Weekly
+SECUPDATE_RADIO_MONTHLY=Monthly
+SECUPDATE_REBOOT_ENABLED=Restart automatically if update requests

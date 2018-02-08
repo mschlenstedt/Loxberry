@@ -1,0 +1,214 @@
+<!-- ** START template/system/mailserver.html 21:02 24.11.2017 ************************************************************************************ -->
+<form method="post" id="main_form" action="/admin/system/mailserver.cgi">
+<input type="hidden" name="saveformdata" value="1">
+<table class="formtable" border="0" width="100%">
+	<tr>
+		<td width="25%">
+				<label><TMPL_VAR MAILSERVER.LABEL_DEFAULT_EMAIL></label>
+		</td>
+		<td width="40%">
+			<input value="<TMPL_VAR EMAIL>" id="email" name="email" type="email" class="textfield" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
+		</td>
+		<td width="5%">
+		&nbsp;
+		</td>
+		<td width="30%">
+		&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_SERVER></label>
+		</td>
+		<td>
+		<input id="smtpserver" name="smtpserver" type="text" class="textfield" value="<TMPL_VAR SMTPSERVER>"  data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
+		</td>
+		<td>
+		&nbsp;
+		</td>
+		<td>
+		&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_PORT></label>
+		</td>
+		<td>
+		<input id="smtpport" name="smtpport" type="text" class="textfield" value="<TMPL_VAR SMTPPORT>" data-validation-rule="special:port" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
+		</td>
+		<td>
+		&nbsp;
+		</td>
+		<td class="hint">
+		<TMPL_VAR MAILSERVER.HINT_SMTP_PORT>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;
+		</td>
+		<td>
+		<label><input onclick="disable()" <TMPL_VAR CHECKED1> type="checkbox" id="smtpcrypt" name="smtpcrypt" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_ENCRYPTED></label>
+		</td>
+		<td>
+		&nbsp;
+		</td>
+		<td class="hint">
+		<TMPL_VAR MAILSERVER.HINT_SMTP_ENCRYPTED>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;
+		</td>
+		<td>
+		<label><input onclick="disable()" <TMPL_VAR CHECKED2> type="checkbox" id="smtpauth" name="smtpauth" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_AUTHENTICATION></label>
+		</td>
+		<td>
+		&nbsp;
+		</td>
+		<td class="hint">
+		<TMPL_VAR MAILSERVER.HINT_SMTP_AUTHENTICATION>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<label id="labelsmtpuser"><TMPL_VAR MAILSERVER.LABEL_SMTP_USER></label>
+		</td>
+		<td>
+		<input id="smtpuser" name="smtpuser" type="text" class="textfield" value="<TMPL_VAR SMTPUSER>">
+		</td>
+		<td>
+		&nbsp;
+		</td>
+		<td>
+		&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<label id="labelsmtppass"><TMPL_VAR MAILSERVER.LABEL_SMTP_PASSWORD></label>
+		</td>
+		<td>
+		<input id="smtppass" name="smtppass" type="password" class="textfield" value="<TMPL_VAR SMTPPASS>">
+		</td>
+		<td>
+		&nbsp;
+		</td>
+		<td>
+		<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD></button>
+		</td>
+	</tr>
+	<tr>
+		<td colspan=4>
+		&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td colspan=3>
+		<div id="form-error-message" class="form-error-message"></div>
+		</td>
+	</tr>
+</table>
+<p>
+&nbsp;
+</p>
+<p>
+<center>
+<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+<a href="#" id="btntestsmtp" name="btntestsmtp" data-role="button" data-inline="true" data-mini="true" data-icon="mail"><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></a>
+</center>
+</p>
+</form>
+<br><br>
+<center>
+<table width="70%" border="0">
+	<tr>
+		<td>
+		<div id="smtpresults"></div>
+		</td>
+	</tr>
+</table>
+</center>
+
+<script>
+	$(document).ready( function ()
+	{
+		validate_enable('#email');
+		validate_enable('#smtpserver');
+		validate_enable('#smtpport');
+		validate_chk_object(['#email','#smtpserver','#smtpport']);
+	});
+	
+var $messages = $('#form-error-message');
+$.validate(
+{
+	modules : 'security',
+	errorMessagePosition: 'inline',
+});
+// Disable some options on click depending on selected value
+function disable()
+{
+	if ( $('#smtpauth').is(':checked') )
+	{
+		$('#smtpuser').removeClass('ui-disabled');
+		$('#smtppass').removeClass('ui-disabled');
+		$('#labelsmtpuser').removeClass('ui-disabled');
+		$('#labelsmtppass').removeClass('ui-disabled');
+	}
+	else
+	{
+		$('#smtpuser').addClass('ui-disabled');
+		$('#smtppass').addClass('ui-disabled');
+		$('#labelsmtpuser').addClass('ui-disabled');
+		$('#labelsmtppass').addClass('ui-disabled');
+	}
+}
+// Disable some options on Load depending on selected value
+disable();
+
+// Set language
+var lang = '<TMPL_VAR LANG>';
+
+// Test Mailserver
+$('#btntestsmtp').click( function(e) {
+	$('#smtpresults').html('<font color=blue><TMPL_VAR MAILSERVER.MSG_TESTMAIL_WAIT></font>');
+	
+	e.preventDefault();
+	var vals = { email: $("#email").val(),
+				 smtpserver: $("#smtpserver").val(),
+				 smtpauth: $("#smtpauth").is(":checked") ? 1 : 0,
+				 smtpcrypt: $("#smtpcrypt").is(":checked") ? 1 : 0,
+				 smtpuser: $("#smtpuser").val(),
+				 smtppass: $("#smtppass").val(),
+				 smtpport: $("#smtpport").val(),
+				 lang: lang 
+				};
+	data = jQuery.param( vals );
+	
+	
+	$.ajax({
+		contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
+		type: "POST",
+		url: "/admin/system/tools/smtptest.cgi",
+		data: data,
+		success: function(data){
+			$('#smtpresults').empty();
+			$('#smtpresults').html(data);
+		}
+	});
+});
+
+// Show password
+$(document).ready(function() {
+  $('#showpass').click(function() {
+    if($('#smtppass').prop('type') == 'password') {$('#smtppass').prop('type', 'text');}
+	// Don't know why I cannot toggle
+	//else {$('#smtppass').prop('type', 'text');}
+  });
+});
+</script>
+<!-- ** END template/system/mailserver.html ************************************************************************************ -->

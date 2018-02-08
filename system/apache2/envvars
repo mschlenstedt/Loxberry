@@ -20,7 +20,7 @@ export APACHE_PID_FILE=/var/run/apache2/apache2$SUFFIX.pid
 export APACHE_RUN_DIR=/var/run/apache2$SUFFIX
 export APACHE_LOCK_DIR=/var/lock/apache2$SUFFIX
 # Only /var/log/apache2 is handled by /etc/logrotate.d/apache2.
-export APACHE_LOG_DIR=/opt/loxberry/log/system/apache2$SUFFIX
+export APACHE_LOG_DIR=/opt/loxberry/log/system_tmpfs/apache2$SUFFIX
 
 ## The locale used by some modules like mod_dav
 export LANG=C
@@ -45,3 +45,18 @@ export LANG
 ## This will produce a verbose output on package installations of web server modules and web application
 ## installations which interact with Apache
 #export APACHE2_MAINTSCRIPT_DEBUG=1
+## LoxBerry global environment variables
+export LBHOMEDIR=/opt/loxberry
+export LBPHTMLAUTH=/opt/loxberry/webfrontend/htmlauth/plugins
+export LBPHTML=/opt/loxberry/webfrontend/html/plugins
+export LBPTEMPL=/opt/loxberry/templates/plugins
+export LBPDATA=/opt/loxberry/data/plugins
+export LBPLOG=/opt/loxberry/log/plugins
+export LBPCONFIG=/opt/loxberry/config/plugins
+export LBSHTMLAUTH=/opt/loxberry/webfrontend/htmlauth/system
+export LBSHTML=/opt/loxberry/webfrontend/html/system
+export LBSTEMPL=/opt/loxberry/templates/system
+export LBSDATA=/opt/loxberry/data/system
+export LBSLOG=/opt/loxberry/log/system
+export LBSTMPFSLOG=/opt/loxberry/log/system_tmpfs
+export LBSCONFIG=/opt/loxberry/config/system

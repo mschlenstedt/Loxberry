@@ -1,0 +1,262 @@
+<!-- ** START template/system/plugininstall.html 19.01.2018 19:18:59  ************************************************************************************ -->
+<TMPL_IF FORM>
+	<div style="display:flex; width:100%; text-align:left;">
+		<div style="margin:auto; padding:10px;text-align:left;">
+			<img width="80" height="80" src="/system/images/icons/main_plugins_install.svg">
+		</div>
+		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
+			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
+		</div>
+	</div>
+
+	<div style="height:15px;">
+	</div>
+
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
+		<input type="hidden" name="saveformdata" value="1">
+		<div style="margin:auto; padding:10px 10px 0px 10px; display:flex; text-align:left; width:100%; white-space: nowrap; ">
+			<div style="width:25%; text-align:left; margin-top:15px;">
+				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
+			</div>
+			<div style="text-align:left; width:75%;">
+				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
+			</div>
+		</div>
+		<div style="margin:auto; padding:0px 10px 10px 10px; display:flex; text-align:left; width:100%; white-space: nowrap; ">
+			<div style="width:25%; text-align:left;">
+			</div>
+			<div style="text-align:left; width:75%;">
+				<input readonly type="url" autocomplete="false" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
+			</div>
+		</div>
+		<div style="height:30px;">
+		</div>
+		<div style="margin:auto; display:flex; width:30%; text-align:center">
+			<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap; ">
+				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
+			</div>
+			<div style="width:100%;">
+				<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+			</div>
+			<div style=" width:10%; text-align:left; margin-top:3px;  padding-left:20px;">
+				<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+			</div>
+		</div>
+	</form>
+
+	<div style="height:60px;">
+	</div>
+
+	<div style="display:flex; width:100%; text-align:left;">
+		<div style="margin:auto; padding:10px;text-align:left;">
+			<img width="80" height="80" src="/system/images/icons/main_plugins_title.svg">
+		</div>
+		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
+			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
+		</div>
+	</div>
+	<div style="height:15px;">
+	</div>
+	<table data-role="table" data-mode="table" class="ui-responsive">
+		<tbody>
+
+		<!-- START Plugin container -->
+		<TMPL_IF PLUGINS>
+			<TMPL_LOOP PLUGINS>
+			<tr>
+				<style>
+				#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 128px; width: 128px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png); }
+				
+				@media (max-width: 875px) {
+					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_64.png); }
+				}
+				</style>
+				<td rowspan="2">
+				<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
+				</td>
+				<td colspan="2">
+				<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
+					<div style="flex-grow: 2;">
+					<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
+					<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
+					</div>
+					<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <TMPL_VAR PLUGINDB_VERSION></b>
+				</div>
+				<div>
+				</td>
+				
+				<td>
+					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
+					<a data-role="button" data-inline="true" data-icon="delete" data-mini="true" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+				</td>
+			</tr>
+			<tr style="border-bottom: 1.5px solid LightGray;">
+				<td colspan="2">
+				<TMPL_IF PLUGINDB_AUTOUPDATE>
+				<label>Automatic Updates</label>
+				<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"	value="1">
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1">Off</label>
+					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2"	value="2">
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2">Notify only</label>
+					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3"	value="3">
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3">Releases</label>
+					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"	value="4">
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4">Pre- and Releases</label>
+				</fieldset>
+				<script>
+				$(document).on('pagecreate',function()
+				{
+					$( "#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option"+<TMPL_VAR PLUGINDB_AUTOUPDATE> ).prop( "checked", true ).checkboxradio( "refresh" );
+				});
+				$("[id^=au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option]").change(function(){
+					var val = $(this).val();
+					console.log("Auto-Update", val);
+					post_value('plugin-autoupdate', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', val); 
+				});
+				
+				
+				
+				</script>
+				</TMPL_IF>
+				</td>
+				<td>
+				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Logging Level</label>
+					<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+					<select name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-mini="true">
+						<option value="0">Off</option>
+						<!-- <option value="1">The 1st Option</option> -->
+						<option value="2">Failures</option>
+						<option value="3">Errors</option>
+						<!-- <option value="4">Warnings</option> -->
+						<!-- <option value="5">The 4th Option</option> -->
+						<option value="6">Informational</option>
+						<option value="7">Debug</option>
+					</select>
+					</fieldset>
+				</td>
+			</tr>
+			
+			
+			<script>
+			$(document).ready( function()
+				{
+					$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>').change();
+				});
+			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
+					var val = $(this).val();
+					console.log("Loglevel", val);
+					post_value('plugin-loglevel', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', val); 
+				});
+			</script>
+			</TMPL_LOOP>
+		<TMPL_ELSE>
+			<tr>
+				<td colspan=5 align=center><br><TMPL_VAR PLUGININSTALL.UI_LABEL_NOPLUGINS></td>
+			</tr>
+		</TMPL_IF>
+		<!-- END Plugin container -->
+
+		</tbody>
+	</table>
+
+	<script>
+		$(document).ready( function()
+		{
+			validate_enable('#uploadfile');
+			validate_enable('#securepin');
+			validate_enable('#archiveurl');
+			validate_chk_object(['#securepin','#archiveurl','#uploadfile']);
+			$( '#securepin' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
+			if ( $('#archiveurl').length > 0 ) $('#archiveurl').trigger('keyup');
+		});
+		
+		function post_value (action, pluginmd5, value)
+		{
+			console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
+			$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+						{ 	action: action,
+							value: value,
+							pluginmd5: pluginmd5
+						});
+		}
+	</script>
+</TMPL_IF>
+
+<TMPL_IF QUESTION>
+	<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+			<h2><TMPL_VAR COMMON.MSG_ARE_YOU_SURE></h2>
+			<p>
+			<TMPL_VAR UNINSTALL_QUESTION>
+			<br/>
+			<br/>
+			</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<p>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true"
+			data-icon="delete" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
+			data-icon="check" href="<TMPL_VAR SELFURL>&answer=1"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+			</p>
+		</td>
+	</tr>
+	</table>
+	</center>
+</TMPL_IF>
+
+<TMPL_IF LOCK>
+	<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+			<h2><TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR></h2>
+			<p>
+			<TMPL_VAR PLUGININSTALL.UI_INSTALL_ERR_RUNNING_UPDATES>
+			<br/>
+			<br/>
+			</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<p>
+			 <a id="btnreload" href="javascript:location.reload();" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
+			</p>
+		</td>
+	</tr>
+	</table>
+	</center>
+</TMPL_IF>
+
+<TMPL_IF UNINSTALL>
+	<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+			<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+			<p>
+			<TMPL_VAR PLUGININSTALL.UI_MSG_UNINSTALL_SUCCESS>
+			<br/>
+			<br/>
+			</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<p>
+			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
+			data-icon="check" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+			</p>
+		</td>
+	</tr>
+	</table>
+	</center>
+</TMPL_IF>
+
+<!-- ** END template/system/plugininstall.html ************************************************************************************ -->

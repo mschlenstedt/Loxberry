@@ -1,0 +1,52 @@
+<!-- pagestart.html START -->
+	<div data-role="page" id="<TMPL_VAR PAGE>" data-dom-cache="false" class="ui-responsive-panel">
+		<!-- main menu panel -->
+		<div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true" data-theme="c">
+			<ul data-role="listview" data-ajax="false" data-inset="true">
+				<li data-role="list-divider"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></li>
+				<li><a href="/admin/system/index.cgi"><TMPL_VAR HEADER.PANEL_HOME></a></li>
+				<li><a href="/admin/system/myloxberry.cgi"><TMPL_VAR HEADER.PANEL_MYLOXBERRY></a></li>
+				<li><a href="/admin/system/admin.cgi"><TMPL_VAR HEADER.PANEL_ADMIN></a></li>
+				<li><a href="/admin/system/miniserver.cgi"><TMPL_VAR HEADER.PANEL_MINISERVER></a></li>
+				<li><a href="/admin/system/timeserver.cgi"><TMPL_VAR HEADER.PANEL_TIMESERVER></a></li>
+				<li><a href="/admin/system/network.cgi"><TMPL_VAR HEADER.PANEL_NETWORK></a></li>
+				<li><a href="/admin/system/plugininstall.cgi"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></a></li>
+				<li><a href="/admin/system/updates.cgi"><TMPL_VAR HEADER.PANEL_UPDATES></a></li>
+				<li><a href="/admin/system/services.php"><TMPL_VAR HEADER.PANEL_SERVICES></a></li>
+				<li><a href="/admin/system/power.cgi"><TMPL_VAR HEADER.PANEL_REBOOT></a></li>
+				<li><a href="/admin/system/mailserver.cgi"><TMPL_VAR HEADER.PANEL_MAILSERVER></a></li>
+				<li><a href="/admin/system/wizard.cgi"><TMPL_VAR HEADER.PANEL_SETUPASSISTENT></a></li>
+				<li><a href="/admin/system/translate.cgi"><TMPL_VAR HEADER.PANEL_TRANSLATE></a></li>
+				<li><a href="/admin/system/donate.cgi"><TMPL_VAR HEADER.PANEL_DONATE></a></li>
+				<!-- <li data-role="list-divider">Plugins</li> -->
+				<!-- STARTPLUGINSHERE --> <!-- Never remove this tag! -->
+				<!-- ENDPLUGINSHERE --> <!-- Never remove this tag! -->
+			</ul>
+		</div>
+		<!-- /main menu panel -->
+		<!-- info panel -->
+		<div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true" data-theme="c">
+			<div data-role="header" class="ui-corner-all">
+			<h2><TMPL_VAR HEADER.TITLE_HELP></h2>
+			</div>
+			<div class="ui-body-a ui-corner-all" style="padding:10px;">
+			<p><a href="<TMPL_VAR HELPLINK>" target="blank"><TMPL_VAR HEADER.TITLE_HELPLINK></a></p>
+			<TMPL_VAR HELPTEXT>
+			</div>
+		</div>
+		<!-- /info panel -->
+		<!-- header -->
+		<div align="center" data-role="header" data-position="fixed" data-tap-toggle="false">
+			<h1><TMPL_VAR TEMPLATETITLE></h1>
+			<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext"><TMPL_VAR HEADER.TITLE_MENU></a>
+			<a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext"><TMPL_VAR HEADER.TITLE_INFO></a>
+			
+		</div>
+		<!-- /header -->
+		<!-- content -->
+		<div role="main" class="ui-content">
+			<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
+				<!-- text -->
+				<TMPL_VAR TOPNAVBAR>
+				<div id="page_content" class="page_content" style="margin: 4%">
+<!-- pagestart.html END -->

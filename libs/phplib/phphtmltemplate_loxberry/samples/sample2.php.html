@@ -1,0 +1,15 @@
+<code><pre>
+&lt;?
+require_once(&quot;../template.php&quot;);
+
+$options = array(&quot;filename&quot;=&gt;&quot;sample2.tmpl&quot;, &quot;debug&quot;=&gt;0);
+$template =&amp; new Template($options);
+
+$template-&gt;AddParam('title', 'PHP Templates made easy');
+$template-&gt;AddParam('msg1', 'Condition is true :)');
+$template-&gt;AddParam('msg2', 'Condition is false :(');
+$template-&gt;AddParam('condition', '1');
+
+$template-&gt;EchoOutput();
+?&gt;
+</pre></code>

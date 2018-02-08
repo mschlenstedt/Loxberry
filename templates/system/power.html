@@ -1,0 +1,170 @@
+<!-- ** START template/system/power.html 15:21 24.11.2017 ************************************************************************************ -->
+<TMPL_IF MENU>
+	<center>
+	<TMPL_IF SYSTEM_LOCKED>
+		<div style="width:60%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
+			<div class="logerror">
+				<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; background-image: url('../../system/images/reboot_required_big.svg');"></div>
+				<p><b><TMPL_VAR POWER.UI_INSTALL_ERR_RUNNING_UPDATES></b>&nbsp;<TMPL_VAR SYSTEM_LOCKED></p>
+			</div>
+		</div>
+		<p>&nbsp;</p>
+	<TMPL_ELSE>
+		<TMPL_IF REBOOT_REQUIRED>
+		<div style="width:60%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
+		<div class="logerror">
+		<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; background-image: url('../../system/images/reboot_required_big.svg');"></div>
+		<p><b><TMPL_VAR POWER.MSG_REBOOT_REQUIRED_LONG></b>
+		<TMPL_IF REBOOT_FURTHER_INFORMATION>
+		<p><TMPL_VAR POWER.MSG_REBOOT_REQUIRED_FURTHER></p>
+		<p><TMPL_VAR REBOOT_FURTHER_INFORMATION></p>
+		</TMPL_IF>
+		</div>
+		</div>
+		<p>&nbsp;</p>
+		</TMPL_IF>
+		
+			
+			<div style="width: 300px">
+				<a id="btnreboot" data-role="button" data-icon="recycle" href="#"><TMPL_VAR POWER.BUTTON_REBOOT></a>
+				<br>
+				<a id="btnpoweroff" data-role="button" data-icon="power" href="#"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
+			</div>
+	</TMPL_IF>
+	</center>
+	<p>
+	&nbsp;
+	</p>
+	<center>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+	</center>
+	<script>
+		$(document).ready(function(){
+			$("#btnreboot_alert").hide();
+			$("#btnreboot").click(function(){
+				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				{
+				  action: "reboot",
+				},
+				function(data,status){
+					document.location.href="?do=reboot";
+				});
+			});
+			$("#btnpoweroff").click(function(){
+				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				{
+				  action: "poweroff",
+				},
+				function(data,status){
+					document.location.href="?do=poweroff";
+				});
+			});
+		});
+	</script>
+
+	
+	
+	
+</TMPL_IF>
+
+<TMPL_IF REBOOT>
+	<center>
+		<p><TMPL_VAR POWER.MSG_REBOOT></p>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" data-delay="15" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		<style>
+			.progress-bar 
+			{
+        background-color: #3F3F3F;
+        height: 25px;
+        padding: 5px;
+        width: 350px;
+        margin: 10px 0 20px 0;			
+        -moz-border-radius: 5px;
+				-webkit-border-radius: 5px;
+				border-radius: 5px;
+        -moz-box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+				-webkit-box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+				box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;           
+       }
+			.progress-bar span 
+			{
+        display: inline-block;
+        height: 100%;
+				background-color: #777;
+        -moz-border-radius: 3px;
+				-webkit-border-radius: 3px;
+				border-radius: 3px;
+        -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+				-webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+				box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+				-webkit-transition: width .4s ease-in-out;
+				-moz-transition: width .4s ease-in-out;
+				-ms-transition: width .4s ease-in-out;
+				-o-transition: width .4s ease-in-out;
+				transition: width .4s ease-in-out;		
+			}
+			.blue span 
+			{
+				background-color: #6DAE26;   
+ 			}
+    </style>   
+		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">60.0</span> s </p>
+		<div class="progress-bar blue stripes" style="display: none;"><span id="bar" style="width: 100%;"></span></div>
+		</center>
+	<script>
+		var counter = 600;
+		$(document).ready(function()
+		{
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.timeout = 800;
+		  xhttp.ontimeout = function() {
+			  if ( counter == 600 ) {
+				  showprogressbar();
+			  }
+		  };
+		  xhttp.onreadystatechange = function() {
+			  if (this.readyState == 4 && this.status == 200) {
+				var res = JSON.parse(this.responseText);
+				if ( counter == 600 && res.reboot_in_progress == 1 ) {
+					showprogressbar();
+				} else if ( res.reboot_in_progress == 0 ) {
+					$('.progress-bar').hide();
+					document.location.href="/";
+				}
+			  }
+		  };
+		  var maini = setInterval(function() {
+			  xhttp.open("GET","/admin/system/tools/power-handler.php",true);
+			  xhttp.send();},1000);
+		});
+		function showprogressbar() {
+			$('.progress-bar').show();
+			var progi = setInterval(function() {
+				if (counter > 0) {
+					counter--;
+					span = document.getElementById("count");
+					var bar = (100/600 * counter);
+					span.innerHTML = Number(counter/10).toFixed(1);
+					$('#bar').css('width',bar+"%");
+				}
+				// Display 'counter' whereever you want to display it.
+				if (counter === 0)
+				{
+					$('.progress-bar').hide();
+				}
+			},100);
+		}
+	</script>
+</TMPL_IF>
+
+<TMPL_IF POWEROFF>
+	<center>
+		<p><TMPL_VAR POWER.MSG_POWEROFF></p>
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		
+	</center>
+
+</TMPL_IF>
+
+
+<!-- ** END template/system/power.html ************************************************************************************ -->

@@ -1,4 +1,4 @@
-									<!-- ** START template/system/en/mainmenu_start.html 27.08.2016 10:22:04 ************************************************************************************ -->
+									<!-- ** START template/system/en/mainmenu_start.html 02.11.2017 23:05:00 ************************************************************************************ -->
 									<p>
 										<div style="font-size: 0.6em; text-align: right; vertical-align: middle;">Version: <!--$sversion--></div>
       						</p>
@@ -27,91 +27,23 @@
 													</td>
 													<td>
 														<a href="/admin/system/timeserver.cgi?do=form">
-															<div style=" margin:0 auto; Background-image: url('/system/images/icons/blank_64.png');	background-position: center center; background-repeat: no-repeat;">
-																<div class="clock">
-																	<div class="hours-container">
-																		<div class="hours"></div>
-																	</div>
-																	<div class="minutes-container">
-																		<div class="minutes"></div>
-																	</div>
-																	<div class="seconds-container">
-																		<div class="seconds"></div>
+															<div style=" margin: 6px 0 0 0;">
+																<div style=" margin:5px auto;">
+																	<div class="clock">
+																		<div class="hours-container">
+																			<div class="hours"></div>
+																		</div>
+																		<div class="minutes-container">
+																			<div class="minutes"></div>
+																		</div>
+																		<div class="seconds-container">
+																			<div class="seconds"></div>
+																		</div>
 																	</div>
 																</div>
 															</div>
 															<div class="menutabletext">System Time</div>
 														</a>
-														<STYLE>
-															.clock
-															{
-																position:relative;
-																height:64px;
-																width: 64px;
-																margin: 0 auto;
-																border-radius:50%;
-																background: url('/system/images/ios_clock.svg') no-repeat center;
-																background-size: 88%;
-															}
-															.minutes-container, .hours-container, .seconds-container
-														{
-															position: absolute;
-															top: 0;
-															right: 0;
-															bottom: 0;
-															left: 0;
-														}
-														.hours
-														{
-															background: #000;
-															height: 20%;
-															left: 48.75%;
-															position: absolute;
-															top: 30%;
-															transform-origin: 50% 100%;
-															width: 2.5%;
-														}
-														.minutes
-														{
-															background: #000;
-															height: 40%;
-															left: 49%;
-															position: absolute;
-															top: 10%;
-															transform-origin: 50% 100%;
-															width: 2%;
-														}
-														.seconds
-														{
-															background: #000;
-															height: 45%;
-															left: 49.5%;
-															position: absolute;
-															top: 14%;
-															transform-origin: 50% 80%;
-															width: 1%;
-															z-index: 8;
-														}
-														@keyframes rotate
-														{
-															100%
-															{
-																transform: rotateZ(360deg);
-															}
-														}
-														.hours-container
-														{
-															animation: rotate 43200s infinite linear;
-														}
-														.minutes-container
-														{
-															animation: rotate 3600s infinite steps(60);
-														}
-														.seconds-container
-														{
-															animation: rotate 60s infinite steps(60);
-														}
-													</STYLE>
 													<SCRIPT>
 														/*
 														 * Starts any clocks using the user's local time
@@ -216,7 +148,7 @@
 														<a href="/admin/system/plugininstall.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_plugininstall.png"><div class="menutabletext">Plugin Administration</div></a>
 													</td>
 													<td>
-														<a href="/admin/system/upgrade.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_upgrade.png"><div class="menutabletext">Upgrade</div></a>
+														<a href="/admin/system/updates.cgi?do=form"><img class="menutableicon" src="/system/images/icons/main_updates.png"><div class="menutabletext">Updates</div></a>
 													</td>
 													<td>
 														<a href="/admin/system/setup/index.cgi"><img class="menutableicon" src="/system/images/icons/main_setupassistent.png"><div class="menutabletext">Setup Wizard</div></a>

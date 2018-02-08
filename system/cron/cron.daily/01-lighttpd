@@ -1,0 +1,10 @@
+#!/bin/bash
+# Cleanup lighttpd compress cache
+
+cache=/tmp/lighttpd
+if test -d "$cache/compress"; then
+    find $cache/compress -type f -atime +30 -print0 | xargs -0 -r rm
+fi
+if test -d "$cache/uploads"; then
+    find $cache/uploads -type f -atime +1 -print0 | xargs -0 -r rm
+fi

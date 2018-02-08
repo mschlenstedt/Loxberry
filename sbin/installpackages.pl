@@ -41,9 +41,9 @@ our $test;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.2";
+$version = "0.0.3";
 
-$cfg             = new Config::Simple("$home/config/system/general.cfg");
+$cfg             = new Config::Simple("$home/config/system/general.cfg.default");
 $aptbin          = $cfg->param("BINARIES.APT");
 $sudobin         = $cfg->param("BINARIES.SUDO");
 
@@ -71,19 +71,24 @@ if (!$file) {
 
 # Install
 open(F,"$file") || die "Cannot open file: $!";
+  my $packages="";
   while (<F>) {
     # Pase only installed packages
     if ($_ =~ /^ii  /) {
       $_ =~ s/^ii  (\S*)(.*)$/$1/g;
       chomp($_);
       # Print line
-      if ($test) {
+      if ($test) 
+      {
         print "$_\n";
-      } else {
-        system("$sudobin $aptbin -y install $_");
+      } 
+      else 
+      {
+      	$packages = $packages." ".$_;
       }
     }
   }
+  system("$sudobin $aptbin -y install $packages --no-install-recommends");
 close(F);
 
 exit;

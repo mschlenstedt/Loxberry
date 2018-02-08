@@ -1,0 +1,64 @@
+html {
+    background : url("logo.gif") top left no-repeat fixed #C6D7C1;
+    margin : 0;
+    padding : 0;
+    border : none
+}
+
+body {
+    margin : 0;
+    padding : 0;
+    border : none;
+    padding-left : 120px;
+    font-family : Arial;
+}
+
+p.image {
+    text-align : center
+}
+
+img {
+    border : 0
+}
+
+.me {
+    font-style : italic
+}
+
+h1, p.nav {
+    display : inline;
+    font-weight : bold
+}
+
+p.nav a {
+    padding : 0 .5em 0 1em;
+    text-decoration : none
+}
+
+p.nav span {
+    display : none
+}
+
+a:link {
+    color : #009;
+    background-color : #C6D7C1;
+}
+
+a:visited {
+    color : purple;
+    background-color : #C6D7C1;
+}
+
+a:hover {
+    color : #c00;
+    background-color : #C6D7C1;
+    text-decoration : none
+}
+
+.wrong {
+    color : #c00
+}
+
+dt {
+    font-weight : bold
+}

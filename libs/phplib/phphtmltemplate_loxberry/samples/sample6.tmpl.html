@@ -1,0 +1,66 @@
+<code><pre>
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01//EN&quot; &quot;http://www.w3.org/TR/html40/strict.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+ &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=ISO-8859-1&quot;&gt;  
+ &lt;title&gt;Template example&lt;/title&gt;
+ &lt;style title=&quot;Hoja de Estilo&quot; media=&quot;Screen&quot; type=&quot;text/css&quot;&gt;&lt;!--
+ html, body {
+     background-color : #fff;
+     color : #000;
+     text-align : center;
+     font-family : Arial, sans-serif;
+ }
+ table {
+     border : 1px solid #000;
+     border-collapse : collapse;
+     margin : auto;
+     font-size : 85%;
+ }
+ td, th {
+     text-align : center;
+     border : 1px solid #000; 
+     padding : 2px;
+ }
+ th {
+     font-weight : bold;
+ }
+ tr {
+     background-color : #eee;
+     color : #000;
+ }
+ tr.even {
+     background-color : #FEF5E2;
+     color : #000;
+ }
+ tr.odd {
+     background-color : #E3F1FD;
+     color : #000;
+ }
+ --&gt;&lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+&lt;TMPL_UNLESS domains&gt;
+&lt;div&gt;&lt;TMPL_VAR NAME=&quot;error_msg&quot;&gt;&lt;/div&gt;
+&lt;TMPL_ELSE&gt;
+
+&lt;h2&gt;Registered domains&lt;/h2&gt;
+&lt;table border&gt;
+&lt;tr&gt;&lt;th&gt;Date&lt;/th&gt;&lt;th&gt;Domain&lt;/th&gt;&lt;th&gt;Credits&lt;/th&gt;&lt;th&gt;Status&lt;/th&gt;&lt;/tr&gt;
+&lt;TMPL_LOOP name=&quot;domains&quot;&gt;
+&lt;tr class=&quot;&lt;TMPL_IF __odd__&gt;odd&lt;TMPL_ELSE&gt;even&lt;/TMPL_IF&gt;&quot;&gt;
+&lt;td&gt;&lt;TMPL_VAR name=&quot;date&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;TMPL_VAR name=&quot;domain&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;TMPL_VAR name=&quot;credits&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;TMPL_IF &quot;status&quot;&gt;Paid&lt;TMPL_ELSE&gt;Pending&lt;/TMPL_IF&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/TMPL_LOOP&gt;
+&lt;/table&gt;
+
+&lt;/TMPL_UNLESS&gt;
+
+&lt;p&gt;&lt;a href=&quot;index.html&quot;&gt;Back to samples index&lt;/a&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre></code>

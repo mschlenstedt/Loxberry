@@ -27,5 +27,7 @@ send "$passwordnew\r"
 expect "Retype new UNIX password"
 send "$passwordnew\r"
 sleep 1
-interact
-exit
+expect { 
+	"passwd: password updated successfully" { exit 0 }
+	default { exit 1 }
+}	

@@ -1,0 +1,54 @@
+#!/bin/sh
+# Most parts taken from raspi-config https://github.com/RPi-Distro/raspi-config
+#
+# See LICENSE file for copyright and license details
+#
+# Different revisions: see https://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
+
+is_pi () {
+	grep -q "^model name\s*:\s*ARMv" /proc/cpuinfo
+	return $?
+}
+
+if ! is_pi ; then
+   echo nopi
+   exit
+fi
+
+is_pione() {
+   if grep -q "^Revision\s*:\s*00[0-9a-fA-F][0-9a-fA-F]$" /proc/cpuinfo; then
+      return 0
+   elif grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]0[0-36][0-9a-fA-F]$" /proc/cpuinfo ; then
+      return 0
+   else
+      return 1
+   fi
+}
+
+is_pitwo() {
+   grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]04[0-9a-fA-F]$" /proc/cpuinfo
+   return $?
+}
+
+is_pithree() {
+   grep -q "^Revision\s*:\s*a[0,2]2082$" /proc/cpuinfo
+   return $?
+}
+
+is_pizero() {
+   grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]0[9cC][0-9a-fA-F]$" /proc/cpuinfo
+   return $?
+}
+
+# Show Raspi Type
+if is_pione; then
+   echo type_1
+elif is_pitwo; then
+   echo type_2
+elif is_pithree; then
+   echo type_3
+elif is_pizero; then
+   echo type_0
+else
+   echo unknown
+fi

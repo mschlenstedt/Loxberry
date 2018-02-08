@@ -19,5 +19,5 @@ sind.
  
 Weitere Informationen
 ---------------------
-
+ 
 Weitere Informationen findest Du im Wiki unter http://www.loxwiki.eu:80/x/o4CO

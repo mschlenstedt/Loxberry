@@ -1,0 +1,183 @@
+<!-- ** START template/system/mainplugins.html 03.12.2017 ************************************************************************************ -->
+<!-- <div style="font-size: 0.6em; text-align: right; vertical-align: middle;">LoxBerry Version <TMPL_VAR SVERSION></div> -->
+<TMPL_IF PAGE_PLUGIN>
+<p class="wide">
+	<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
+	<TMPL_VAR HEADER.TITLE_PAGE_PLUGINS>
+</p>
+
+<!-- START Plugin container -->
+<TMPL_IF PLUGINS>
+<div class="widgetblock">
+	<TMPL_LOOP PLUGINS>
+	<div class="widget">
+	<TMPL_VAR PLUGIN_NOTIFY>
+			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img class="menutableicon" src="<TMPL_VAR PLUGINDB_ICONURI>"></a></div>
+			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" class="nolinkstyle"><TMPL_VAR PLUGINDB_TITLE></a></div>
+	</div>
+	</TMPL_LOOP>
+</div>
+<TMPL_ELSE>
+<p><TMPL_VAR HEADER.MSG_WHERE_ARE_SETTINGS></p>
+<p><TMPL_VAR HEADER.MSG_NO_PLUGINS></p>
+</TMPL_IF>
+
+<!-- END Plugin container -->
+<p>
+	<a href="/admin/system/plugininstall.cgi" data-role="button" data-inline="true" data-mini="true" data-icon="grid"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></a>
+	<a href="http://www.loxwiki.eu/display/LOXBERRY/Plugins/" target="_blank" data-role="button" data-inline="true" data-mini="true" data-icon="search">Plugin Archive</a>
+</p>
+</TMPL_IF>
+
+<TMPL_IF PAGE_SYSTEM>
+
+<p class="wide">
+	<img height="64" width="64" src="/system/images/icons/main_system_title.svg">
+	<TMPL_VAR HEADER.TITLE_PAGE_SYSTEM>
+</p>
+<!-- START Widget container -->
+<div class="widgetblock">
+<TMPL_LOOP WIDGETS>
+<div class="widget">
+	<TMPL_VAR WIDGET_NOTIFY>
+	<a href="<TMPL_VAR WIDGET_CGI>">
+			<TMPL_IF WIDGET_CLOCK>
+			<div class="menutableicon" style="width:100%; height:80px; padding:1px 0 10px 0;">
+				<div class="clock" style="text-align:center;  margin:10px 0 0 43px" >
+					<div class="hours-container">
+						<div class="hours">
+						</div>
+					</div>
+					<div class="minutes-container">
+						<div class="minutes">
+						</div>
+					</div>
+					<div class="seconds-container">
+						<div class="seconds">
+						</div>
+					</div>
+				</div>
+			</div>
+			<TMPL_ELSE>
+			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR WIDGET_ICON>');  background-repeat: no-repeat; background-position: center center;">
+				<TMPL_IF WIDGET_NOTIFY_RED>
+					<div class='notifyRed'><TMPL_VAR WIDGET_NOTIFY_RED>1</div>
+				<TMPL_ELSE>
+					<TMPL_IF WIDGET_NOTIFY_BLUE>
+						<div class='notifyBlue'><TMPL_VAR WIDGET_NOTIFY_BLUE></div>
+					<TMPL_ELSE>
+						<div class='notifyBlue' style='visibility: hidden'>0</div>
+					</TMPL_IF>
+				</TMPL_IF>
+			</div>
+			</TMPL_IF>
+	</a>
+	<div>
+		<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
+	</div>
+</div>
+</TMPL_LOOP>
+</div>
+
+
+<!-- END Widget container -->
+<SCRIPT>
+/*
+ * Starts any clocks using the user's local time
+ * From: cssanimation.rocks/clocks
+ */
+	// Get the local time using JS
+	var seconds = <TMPL_VAR SEC>;
+	var minutes = <TMPL_VAR MIN>;
+	var hours = <TMPL_VAR HOUR>;
+
+	// Create an object with each hand and it's angle in degrees
+	var hands = [
+		{
+			hand: 'hours',
+			angle: (hours * 30) + (minutes / 2)
+		},
+		{
+			hand: 'minutes',
+			angle: (minutes * 6)
+		},
+		{
+			hand: 'seconds',
+			angle: (seconds * 6)
+		}
+	];
+	// Loop through each of these hands to set their angle
+	for (var j = 0; j < hands.length; j++)
+	{
+		var elements = document.querySelectorAll('.' + hands[j].hand);
+		for (var k = 0; k < elements.length; k++) {
+				elements[k].style.webkitTransform = 'rotateZ('+ hands[j].angle +'deg)';
+				elements[k].style.transform = 'rotateZ('+ hands[j].angle +'deg)';
+				// If this is a minute hand, note the seconds position (to calculate minute position later)
+				if (hands[j].hand === 'minutes') {
+					elements[k].parentNode.setAttribute('data-second-angle', hands[j + 1].angle);
+				}
+		}
+	}
+/*
+ * Set a timeout for the first minute hand movement (less than 1 minute), then rotate it every minute after that
+ */
+function setUpMinuteHands()
+{
+	// Find out how far into the minute we are
+	var containers = document.querySelectorAll('.minutes-container');
+	var secondAngle = containers[0].getAttribute("data-second-angle");
+	if (secondAngle > 0) {
+		// Set a timeout until the end of the current minute, to move the hand
+		var delay = (((360 - secondAngle) / 6) + 0.1) * 1000;
+		setTimeout(function() {
+			moveMinuteHands(containers);
+		}, delay);
+	}
+}
+
+/*
+ * Do the first minute's rotation
+ */
+function moveMinuteHands(containers)
+{
+	for (var i = 0; i < containers.length; i++) {
+		containers[i].style.webkitTransform = 'rotateZ(6deg)';
+		containers[i].style.transform = 'rotateZ(6deg)';
+	}
+	// Then continue with a 60 second interval
+	setInterval(function() {
+		for (var i = 0; i < containers.length; i++) {
+			if (containers[i].angle === undefined) {
+				containers[i].angle = 12;
+			} else {
+				containers[i].angle += 6;
+			}
+			containers[i].style.webkitTransform = 'rotateZ('+ containers[i].angle +'deg)';
+			containers[i].style.transform = 'rotateZ('+ containers[i].angle +'deg)';
+		}
+	}, 60000);
+}
+/*
+ * Move the second containers
+ */
+function moveSecondHands()
+{
+	var containers = document.querySelectorAll('.seconds-container');
+	setInterval(function() {
+		for (var i = 0; i < containers.length; i++) {
+			if (containers[i].angle === undefined) {
+				containers[i].angle = 6;
+			} else {
+				containers[i].angle += 6;
+			}
+			containers[i].style.webkitTransform = 'rotateZ('+ containers[i].angle +'deg)';
+			containers[i].style.transform = 'rotateZ('+ containers[i].angle +'deg)';
+		}
+	}, 1000);
+}
+</SCRIPT>
+
+
+</TMPL_IF>
+<!-- ** END template/system/mainplugins.html ************************************************************************************ -->
