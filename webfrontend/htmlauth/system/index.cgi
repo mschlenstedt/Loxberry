@@ -58,7 +58,6 @@ my $sversion = LoxBerry::System::lbversion();
 
 my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 my %Config = $cfg->vars();
-my $startsetup = $Config{'BASE.STARTSETUP'};
 
 #########################################################################
 # Parameter
@@ -69,11 +68,17 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 # Example: Parameter lang is now $R::lang
 
-# Filter 
-if ($R::nostartsetup) {
-  $R::nostartsetup =~ tr/0-1//cd;
-  $R::nostartsetup = substr($R::nostartsetup,0,1);
+##########################################################################
+# Check for first start and setup assistent
+##########################################################################
+
+my $wizardfile = "$lbsdatadir/wizard.dat";
+if (! -e $wizardfile) {
+	 print $cgi->redirect('/admin/system/wizard.cgi');
+	exit;
 }
+
+
 ##########################################################################
 # Language Settings
 ##########################################################################
@@ -102,39 +107,6 @@ $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}";
 ##########################################################################
 # Main program
 ##########################################################################
-
-##########################################################################
-# Check for first start and setup assistent
-##########################################################################
-
-# If no setup assistant is wanted, don't bother user anymore
-if ($R::nostartsetup) {
-  $startsetup = 0;
-  $cfg->param("BASE.STARTSETUP", "0");
-  $cfg->save();
-}
-
-# If Setup assistant wasn't started yet, ask user
-# if ($startsetup) {
-#  INFO("Startsetup called");
-  #print "Content-Type: text/html\n\n";
-
-  #$template_title = $phrase->param("TXT0000") . " - " . $phrase->param("TXT0017");
-  # $help = "setup00";
-
-  # # Print Template
-  # &header;
-  # open(F,"$lbhomedir/templates/system/$lang/firststart.html") || die "Missing template admin/$lang/firststart.html";
-    # while (<F>) {
-      # $_ =~ s/<!--\$(.*?)-->/${$1}/g;
-      # print $_;
-    # }
-  # close(F);
-  # &footer;
-
-#  exit;
-
-# }
 
 #########################################################################
 # What should we do
@@ -272,11 +244,11 @@ sub mainmenu {
 				WIDGET_NOTIFY_BLUE => $notification_oks{'mailserver'},
 				WIDGET_NOTIFY_RED => $notification_errors{'mailserver'},
 			},
-			# {
-				# WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
-				# WIDGET_ICON => "/system/images/icons/main_setupassistent.png",
-				# WIDGET_CGI => "/admin/system/setup/index.cgi",
-			# },
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
+				WIDGET_ICON => "/system/images/icons/main_setupassistent.png",
+				WIDGET_CGI => "/admin/system/wizard.cgi",
+			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TRANSLATE'},
 				WIDGET_ICON => "/system/images/icons/main_translate.png",
