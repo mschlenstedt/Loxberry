@@ -173,7 +173,7 @@ sub welcome
 		);
 	$maintemplate->param('LANGSELECTOR', $langselector_popup);
 	
-	$template_title = "Step 1 - Welcome to LoxBerry";
+	$template_title = $SL{'WIZARD.TITLE_STEP1'};
 	LoxBerry::Web::head($template_title);
 	$template_title .= " <span class='hint'>V$sversion</span>";
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
@@ -191,9 +191,10 @@ sub welcome
 sub admin
 {
 
-	$template_title = "Step 2 - Admin Settings";
 	
 	inittemplate("admin.html");
+	$template_title = $SL{'WIZARD.TITLE_STEP2'};
+	
 	$maintemplate->param( 'ERROR', $error);
 	my $adminuserold = $ENV{REMOTE_USER};
 	$maintemplate->param("ADMINUSEROLD" , $adminuserold);
@@ -252,7 +253,7 @@ sub admin_save
 	
 	# Using session data:
 	my $s = $session->dataref();
-	print STDERR "Session test: " . $s->{adminuser} . "\n";
+	# print STDERR "Session test: " . $s->{adminuser} . "\n";
 	
 	##############################################
 	# Slightly modified code from admin.cgi
@@ -358,7 +359,7 @@ sub admin_save
 	$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setrootpasswd.exp loxberry $rootnewpassword);
 	$exitcode  = $? >> 8;
 		if ($exitcode ne 0) {
-			$error .= "Cannot change root password. You may already have set it before.<br>";
+			$error .= $SL{'WIZARD.ERROR_CANNOT_CHANGE_ROOT'} . "<br>";
 		} else {
 			$maintemplate->param("ROOTPASSOK", 1);
 			$rootpassok = 1;
@@ -415,7 +416,7 @@ sub admin_save
 	
 	###############################################
 	
-	$template_title = "Step 3 - Archive your credentials";
+	$template_title = $SL{'WIZARD.TITLE_STEP3'};
 	LoxBerry::Web::head($template_title);
 	$template_title .= " <span class='hint'>V$sversion</span>";
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
@@ -434,7 +435,7 @@ sub nextsteps
 	
 	inittemplate("wizard/finish.html");
 	
-	$template_title = "Step 4 - What next";
+	$template_title = $SL{'WIZARD.TITLE_STEP4'};
 	LoxBerry::Web::head($template_title);
 	$template_title .= " <span class='hint'>V$sversion</span>";
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
@@ -472,7 +473,7 @@ sub inittemplate
 	my $selfurl = $cgi->self_url;
 	my $querypos = index($selfurl, '?');
 	$selfurl = substr($selfurl, 0, $querypos) if ($querypos != -1);
-	print STDERR "selfurl: $selfurl\n";
+	# print STDERR "selfurl: $selfurl\n";
 	
 	$maintemplate->param( 'WIZARD', 1);
 	$maintemplate->param( 'STEP', $step );
