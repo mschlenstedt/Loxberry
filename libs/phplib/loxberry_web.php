@@ -370,6 +370,3 @@ class LBTemplate
 
 # main namespace
 	
-
-
-?>

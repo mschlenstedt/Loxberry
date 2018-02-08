@@ -674,8 +674,3 @@ function reboot_required($message = 'A reboot was requested')
 	fclose($fh);
 }
 
-
-
-
-
-?>
