@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.14";
+my $version = "1.0.0.15";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -948,12 +948,9 @@ if ( $pinterface eq "1.0" && !-e "$lbhomedir/log/plugins/$pfolder" ) {
 # Copy CGI files - DEPRECIATED!!!
 if ( $pinterface eq "1.0" ) {
   make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
-  if (!&is_folder_empty("$tempfolder/webfrontend/cgi") && $pinterface ne "1.0") {
+  if (!&is_folder_empty("$tempfolder/webfrontend/cgi")) {
     $message =  "$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
     &loginfo;
-    $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! CGI files are stored in HTMLAUTH now. Please inform the PLUGIN Author at $pauthoremail";
-    &logwarn; 
-    push(@warnings,"HTMLAUTH files: $message");
     system("$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/cgi/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
     if ($? ne 0) {
       $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
