@@ -423,7 +423,7 @@ sub check_commits
 	my ($querytype, $currversion) = @_;
 	my $endpoint = 'https://api.github.com';
 	my $resource = '/repos/mschlenstedt/Loxberry/commits';
-	my $branch = 'loxberry-0.3.0-saruman';
+	my $branch = 'master';
 	
 	# Download URL of latest commit 
 	my $release_url = "https://github.com/mschlenstedt/Loxberry/archive/" . uri_escape($branch) . ".zip";
