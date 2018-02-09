@@ -248,6 +248,7 @@
 					$(".clouddns<TMPL_VAR MSNO>").show();
 					$("#miniservercloudurl<TMPL_VAR MSNO>").trigger( "keyup" );
 					$("#miniservercloudurlftpport<TMPL_VAR MSNO>").trigger( "keyup" );
+					$(this).prev().removeClass( "ui-checkbox-off" ).addClass( "ui-checkbox-on" );
 				}
 				else
 				{
@@ -265,6 +266,7 @@
 					$(".clouddns<TMPL_VAR MSNO>").hide();
 					$("#miniserverip<TMPL_VAR MSNO>").trigger( "keyup" );
 					$("#miniserverport<TMPL_VAR MSNO>").trigger( "keyup" );
+					$(this).prev().removeClass( "ui-checkbox-on" ).addClass( "ui-checkbox-off" );
 				}
 			});
 			$("#useclouddns<TMPL_VAR MSNO>").trigger( "change" );
@@ -736,20 +738,17 @@ $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
     success: function(data){
       data.replace(/\r|\n/g, "");
       $('#miniserverip1').empty();
-      if (data.length < 3) {
-
-        $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
-
-      } else {
-
-      $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
-
-      $("#miniserveriprow1").attr( "ipaddr" , data );
-      $("#miniserverportrow1").attr( "portaddr" , "80");
-      $("#useclouddns1").prop("checked", false);
-      $("#useclouddns1").trigger( "change" );
-      //$("#miniserverport1").value = "80";
-
+      if (data.length < 3) 
+      {
+		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
+      } 
+      else 
+      {
+		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
+		$("#miniserveriprow1").attr( "ipaddr" , data );
+		$("#miniserverportrow1").attr( "portaddr" , "80");
+		$("#useclouddns1").prop("checked", false);
+		$("#useclouddns1").trigger( "change" );
       }
     }
   });
