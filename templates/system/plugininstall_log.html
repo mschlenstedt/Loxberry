@@ -56,6 +56,7 @@ $.urlParam = function(name){
 
 var filesize;
 var call_in_progress = 0;
+var status_in_progress = 0;
 
 // Disable buttons
 $('#btnnext').addClass('ui-disabled');
@@ -92,37 +93,42 @@ function updatelog()
 		$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 	}
 	// Load Status
-	$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR STATUSFILE>&head=none&format=ascii', function (response)
-	{
-		var pstatus = parseInt(response);
-		if (pstatus == 3)
+	if (status_in_progress == 0) {
+		status_in_progress = 1;
+		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR STATUSFILE>&head=none&format=ascii', function (response)
 		{
-			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED>";
-			$('#btnnext').removeClass('ui-disabled');
-			$('#btnreboot').removeClass('ui-disabled');
-			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
-		}
-		else if (pstatus == 2)
-		{
-			document.getElementById("pstatus").innerHTML = "<font color='#FF0000'><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_ERROR></font>";
-			$('#btnnext').removeClass('ui-disabled');
-			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
-		}
-		else if (pstatus == 1)
-		{
-			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE>";
-			$('#btnnext').addClass('ui-disabled');
-		}
-		else
-		{
-			document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_SUCCESS>";
-			$('#btnnext').removeClass('ui-disabled');
-			$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
-		}
-	});
+			var pstatus = parseInt(response);
+			if (pstatus == 3)
+			{
+				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED>";
+				$('#btnnext').removeClass('ui-disabled');
+				$('#btnreboot').removeClass('ui-disabled');
+				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+			}
+			else if (pstatus == 2)
+			{
+				document.getElementById("pstatus").innerHTML = "<font color='#FF0000'><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_ERROR></font>";
+				$('#btnnext').removeClass('ui-disabled');
+				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+			}
+			else if (pstatus == 1)
+			{
+				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE>";
+				$('#btnnext').addClass('ui-disabled');
+			}
+			else
+			{
+				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_SUCCESS>";
+				$('#btnnext').removeClass('ui-disabled');
+				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+			}
+		})
+			.always(function() { status_in_progress = 0; });
+	}
 	return;
 }
-var interval = window.setInterval(updatelog, 1000);
+
+var interval = window.setInterval(updatelog, 500);
 
 $("#Logfile").click(function() {
 		clearInterval(interval);
