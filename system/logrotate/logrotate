@@ -52,20 +52,7 @@
 	maxage 5
 	create 644 loxberry loxberry
 }
-/opt/loxberry/log/system/plugininstall/*.log {
-	missingok
-	rotate 4
-	compress
-	delaycompress
-	notifempty
-	nomail
-	maxsize 1M
-	maxage 5
-	create 644 loxberry loxberry
-}
-
 /opt/loxberry/log/system/*/*.log {
-	daily
 	missingok
 	rotate 4
 	compress
