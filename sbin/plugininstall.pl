@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.15";
+my $version = "1.0.0.16";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -440,6 +440,8 @@ if ( $pinterface eq "1.0" ) {
   $message =  "*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
   &logwarn; 
   push(@warnings,"PLUGININTERFACE: $message");
+  # Always reboot with V1 plugins
+  $preboot = 1;
 }
 
 # Arch check
@@ -1396,10 +1398,10 @@ $message =  "$SL{'PLUGININSTALL.OK_END'}";
 &logok;
 
 # Check for a reboot for older plugins (V1)
-system ("cat /tmp/$tempfile.log | grep -E -iq 'reboot|restart|neustart|neu starten' 2>&1");
-if ($? eq 0) {
-	$preboot = 1;
-}
+#system ("cat /tmp/$tempfile.log | grep -E -iq 'reboot|restart|neustart|neu starten' 2>&1");
+#if ($? eq 0) {
+#	$preboot = 1;
+#}
 
 # Set Status
 if (-e $statusfile) {
