@@ -76,7 +76,7 @@ $cgi->import_names('R');
 my $wizardfile = "$lbsdatadir/wizard.dat";
 if (! -e $wizardfile) {
 	# Resize SDCard
-	system ("$bins->{SUDO} $lbsbindir/resize_rootfs > /boot/rootfsresized");
+	system ("$bins->{SUDO} $lbssbindir/resize_rootfs > /boot/rootfsresized");
 	# Start Wizard
 	print $cgi->redirect('/admin/system/wizard.cgi');
 	exit;
