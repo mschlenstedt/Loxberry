@@ -5,6 +5,8 @@
 #
 # Modified for Loxberry by Michael Schlenstedt <info@loxberry.de>
 
+update-rc.d -f resize2fs_once remove &&
+
 get_init_sys() {
   if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then
     SYSTEMD=1
