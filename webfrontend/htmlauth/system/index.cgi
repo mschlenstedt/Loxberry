@@ -78,6 +78,7 @@ my $wizardfile = "$lbsdatadir/wizard.dat";
 if (! -e $wizardfile) {
 	# Resize SDCard
 	system ("$sudobin -n $lbssbindir/resize_rootfs > $lbslogdir/rootfsresized.log 2>&1");
+	reboot_required("Setup Wizard");
 	# Start Wizard
 	print $cgi->redirect('/admin/system/wizard.cgi');
 	exit;
