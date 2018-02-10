@@ -59,6 +59,7 @@ my $sversion = LoxBerry::System::lbversion();
 my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 my %Config = $cfg->vars();
 my $bins = LoxBerry::System::get_binaries();
+my $sudobin = $bins->{SUDO};
 
 #########################################################################
 # Parameter
@@ -76,7 +77,7 @@ $cgi->import_names('R');
 my $wizardfile = "$lbsdatadir/wizard.dat";
 if (! -e $wizardfile) {
 	# Resize SDCard
-	system ("$bins->{SUDO} $lbssbindir/resize_rootfs > /boot/rootfsresized");
+	system ("$sudobin -n $lbssbindir/resize_rootfs > $lbslogdir/rootfsresized.log 2>&1");
 	# Start Wizard
 	print $cgi->redirect('/admin/system/wizard.cgi');
 	exit;
