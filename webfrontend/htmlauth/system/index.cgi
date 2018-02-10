@@ -52,7 +52,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbscon
 }
 
 # Version of this script
-my $version = "0.3.3.2";
+my $version = "0.3.3.3";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -74,7 +74,10 @@ $cgi->import_names('R');
 
 my $wizardfile = "$lbsdatadir/wizard.dat";
 if (! -e $wizardfile) {
-	 print $cgi->redirect('/admin/system/wizard.cgi');
+	# Resize SDCard
+	system ("$lbsbindir/resize_rootfs > /boot/rootfsresized");
+	# Start Wizard
+	print $cgi->redirect('/admin/system/wizard.cgi');
 	exit;
 }
 
