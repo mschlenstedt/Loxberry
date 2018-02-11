@@ -257,9 +257,15 @@ ln -s $LBHOME/system/cron/cron.d /etc/cron.d
 /usr/sbin/usermod -a -G sudo,dialout,audio,gpio,tty,www-data loxberry
 
 # Skel for system logs, LB system logs and LB plugin logs
-find $LBHOME/log/skel_system/ -type f -exec rm {} \;
-find $LBHOME/log/skel_syslog/ -type f -exec rm {} \;
-find $LBHOME/log/skel_plugins/ -type f -exec rm {} \;
+if [ -d $LBHOME/log/skel_system/ ]; then
+    find $LBHOME/log/skel_system/ -type f -exec rm {} \;
+fi
+if [ -d $LBHOME/log/skel_syslog/ ]; then
+    find $LBHOME/log/skel_syslog/ -type f -exec rm {} \;
+fi
+if [ -d $LBHOME/log/skel_plugins/ ]; then
+    find $LBHOME/log/skel_plugins/ -type f -exec rm {} \;
+fi
 
 # Clean apt cache
 rm -rf /var/cache/apt/archives/*
