@@ -138,19 +138,27 @@ if /usr/sbin/service lighttpd status; then
 fi
 
 # sudoers.d/lbdefault
-rm /etc/sudoers.d/lbdefaults
+if [ -f /sudoers.d/lbdefault ]; then
+    rm /etc/sudoers.d/lbdefaults
+fi
 ln -s $LBHOME/system/sudoers/lbdefaults /etc/sudoers.d/lbdefaults
 
 # profile.d/loxberry.sh
-rm /etc/profile.d/loxberry.sh
+if [ -f /etc/profile.d/loxberry.sh ]; then
+    rm /etc/profile.d/loxberry.sh
+fi
 ln -s $LBHOME/system/profile/loxberry.sh /etc/profile.d/loxberry.sh
 
 # Init Script
-rm /etc/init.d/loxberry
+if [ -f /etc/init.d/loxberry ]; then  
+   rm /etc/init.d/loxberry
+fi
 ln -s $LBHOME/sbin/loxberryinit.sh /etc/init.d/loxberry
 update-rc.d loxberry defaults
 
-rm /etc/init.d/createtmpfsfoldersinit
+if [ -f /etc/init.d/createtmpfsfoldersinit ]; then  
+   rm /etc/init.d/createtmpfsfoldersinit
+fi
 ln -s $LBHOME/sbin/createtmpfsfoldersinit.sh /etc/init.d/createtmpfsfoldersinit
 update-rc.d createtmpfsfoldersinit defaults
 
@@ -158,46 +166,60 @@ update-rc.d createtmpfsfoldersinit defaults
 if [ ! -L /etc/apache2 ]; then
 	mv /etc/apache2 /etc/apache2.old
 fi
-rm /etc/apache2
+if [ -f /etc/apache2 ]; then  
+    rm /etc/apache2
+fi
 ln -s $LBHOME/system/apache2 /etc/apache2
 
 # Lighttpd Config
 if [ ! -L /etc/lighttpd ]; then
 	mv /etc/lighttpd /etc/lighttpd.old
 fi
-rm /etc/lighttpd
+if [ -f /etc/lighttpd ]; then  
+	rm /etc/lighttpd
+fi
 ln -s $LBHOME/system/lighttpd /etc/lighttpd
 
 # Network config
 if [ ! -L /etc/network/interfaces ]; then
 	mv /etc/network/interfaces /etc/network/interfaces.old
 fi
-rm /etc/network/interfaces
+if [ -f /etc/network/interfaces ]; then  
+    rm /etc/network/interfaces
+fi
 ln -s $LBHOME/system/network/interfaces /etc/network/interfaces
 
 # Logrotate
-rm /etc/logrotate.d/loxberry
+if [ -f /etc/logrotate.d/loxberry ]; then
+    rm /etc/logrotate.d/loxberry
+fi
 ln -s $LBHOME/system/logrotate/logrotate /etc/logrotate.d/loxberry
 
 # Samba Config
 if [ ! -L /etc/samba ]; then
 	mv /etc/samba /etc/samba.old
 fi
-rm /etc/samba
+if [ -f /etc/samba ]; then
+    rm /etc/samba
+fi
 ln -s $LBHOME/system/samba /etc/samba
 
 # VSFTPd Config
 if [ ! -L /etc/vsftpd.conf ]; then
 	mv /etc/vsftpd.conf /etc/vsftpd.conf.old
 fi
-rm /etc/vsftpd.conf
+if [ -f /etc/vsftpd.conf ]; then
+    rm /etc/vsftpd.conf
+fi
 ln -s $LBHOME/system/vsftpd/vsftpd.conf /etc/vsftpd.conf
 
 # SSMTP Config
 if [ ! -L /etc/ssmtp ]; then
 	mv /etc/ssmtp /etc/ssmtp.old
 fi
-rm /etc/ssmtp
+if [ -f /etc/ssmtp ]; then
+    rm /etc/ssmtp
+fi
 ln -s $LBHOME/system/ssmtp /etc/ssmtp
 
 # PHP
@@ -226,16 +248,21 @@ awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a
 if [ ! -L /etc/cron.d ]; then
 	mv /etc/cron.d /etc/cron.d.old
 fi
-rm /etc/cron.d
+if [ -f /etc/cron.d ]; then
+    rm /etc/cron.d
+fi
 ln -s $LBHOME/system/cron/cron.d /etc/cron.d
 
 # Group mebership
 /usr/sbin/usermod -a -G sudo,dialout,audio,gpio,tty,www-data loxberry
 
 # Skel for system logs, LB system logs and LB plugin logs
-find $LBHOME/log/skel_system/ -exec rm {} \;
-find $LBHOME/log/skel_syslog/ -exec rm {} \;
-find $LBHOME/log/skel_plugins/ -exec rm {} \;
+#find $LBHOME/log/skel_system/ -exec rm {} \;
+#find $LBHOME/log/skel_syslog/ -exec rm {} \;
+#find $LBHOME/log/skel_plugins/ -exec rm {} \;
+rm -rf $LBHOME/log/skel_system/*
+rm -rf $LBHOME/log/skel_syslog/*
+rm -rf $LBHOME/log/skel_plugins/*
 
 # Clean apt cache
-rm -f /var/cache/apt/archives/*
+rm -rf /var/cache/apt/archives/*
