@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.16";
+my $version = "1.0.0.18";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -332,7 +332,14 @@ if (!-f "$tempfolder/plugin.cfg") {
 }
 
 # Read Plugin-Config
-our $pcfg             = new Config::Simple("$tempfolder/plugin.cfg");
+eval {
+        our $pcfg = new Config::Simple("$tempfolder/plugin.cfg") or  die Config::Simple->error();
+};
+if ($@) {
+        $message = "$SL{'PLUGININSTALL.ERR_UNKNOWN_FORMAT_PLUGINCFG'}";
+        &logfail;
+}
+
 our $pauthorname      = $pcfg->param("AUTHOR.NAME");
 our $pauthoremail     = $pcfg->param("AUTHOR.EMAIL");
 our $pversion         = $pcfg->param("PLUGIN.VERSION");
@@ -1815,31 +1822,31 @@ sub replaceenv {
 
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g' {} \\; 2>&1");
     $message =  $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
     &loginfo;
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g' {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g' {} \\; 2>&1");
 
   # File
   } else {
@@ -1893,7 +1900,7 @@ sub dos2unix {
   # Folder
   if ($recursive) {
 
-    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*\\..*' -exec $dos2unix {} \\; 2>&1");
+    system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec $dos2unix {} \\; 2>&1");
 
   # File
   } else {
