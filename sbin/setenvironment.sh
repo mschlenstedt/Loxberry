@@ -260,9 +260,6 @@ ln -s $LBHOME/system/cron/cron.d /etc/cron.d
 #find $LBHOME/log/skel_system/ -exec rm {} \;
 #find $LBHOME/log/skel_syslog/ -exec rm {} \;
 #find $LBHOME/log/skel_plugins/ -exec rm {} \;
-rm -rf $LBHOME/log/skel_system/*
-rm -rf $LBHOME/log/skel_syslog/*
-rm -rf $LBHOME/log/skel_plugins/*
 
 # Clean apt cache
 rm -rf /var/cache/apt/archives/*
