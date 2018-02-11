@@ -239,3 +239,11 @@ find $LBHOME/log/skel_plugins/ -exec rm {} \;
 
 # Clean apt cache
 rm -f /var/cache/apt/archives/*
+
+# Disable PrivateTmp for Apache2 on systemd
+# (also included in 1.0.2 Update script)
+if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
+	mkdir -p /etc/systemd/system/apache2.service.d
+	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
+fi
+
