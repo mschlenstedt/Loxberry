@@ -31,6 +31,17 @@ my $curlbin  = $cfg->param("BINARIES.CURL");
 
 my ($ver_major, $ver_minor, $ver_sub) = split (/\./, trim($version));
 
+if (-e "$lbsconfigdir/loxberryid.cfg") {
+	open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
+		do {
+			LOGCRIT "Cannot open $lbsconfigdir/loxberryid.cfg: $!";
+			exit(1);
+		};
+	my $epoch_timestamp = (stat($fh))[9];
+	close $fh;
+	unlink "$lbsconfigdir/loxberryid.cfg" if ($epoch_timestamp == "1517978534");
+}
+		
 # Create new ID if no exists
 if (!-e "$lbsconfigdir/loxberryid.cfg" && $sendstat) {
 
