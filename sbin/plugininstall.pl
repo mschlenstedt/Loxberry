@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.17";
+my $version = "1.0.0.18";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -332,7 +332,14 @@ if (!-f "$tempfolder/plugin.cfg") {
 }
 
 # Read Plugin-Config
-our $pcfg             = new Config::Simple("$tempfolder/plugin.cfg");
+eval {
+        our $pcfg = new Config::Simple("$tempfolder/plugin.cfg") or  die Config::Simple->error();
+};
+if ($@) {
+        $message = "$SL{'PLUGININSTALL.ERR_UNKNOWN_FORMAT_PLUGINCFG'}";
+        &logfail;
+}
+
 our $pauthorname      = $pcfg->param("AUTHOR.NAME");
 our $pauthoremail     = $pcfg->param("AUTHOR.EMAIL");
 our $pversion         = $pcfg->param("PLUGIN.VERSION");
