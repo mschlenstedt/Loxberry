@@ -2,7 +2,7 @@
 
 Thanks for taking time to read our contribution tips! :tada::+1:
 
-We have released LoxBerry Version 1.0 (formerly known as 0.3.x saruman) that brings LoxBerry Update, an automatic update feature, to the users. This means - every changes needs to be tested well and every new feature should not break others, as the update directly source from our GitHub repository.
+We have released LoxBerry Version 1.0 (formerly known as 0.3.x saruman) that brings LoxBerry Update, an automatic update feature, to the users. This means - every changes needs to be tested well and every new feature should not break others, as the update directly sources from our GitHub repository.
 
 The current development branch is *master*. Pull any change requests to the master repository. We do not merge any code to to other branches - especially older branches - anymore.
 
