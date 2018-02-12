@@ -60,3 +60,4 @@ export LBSDATA=/opt/loxberry/data/system
 export LBSLOG=/opt/loxberry/log/system
 export LBSTMPFSLOG=/opt/loxberry/log/system_tmpfs
 export LBSCONFIG=/opt/loxberry/config/system
+export PERL5LIB=/opt/loxberry/libs/perllib
