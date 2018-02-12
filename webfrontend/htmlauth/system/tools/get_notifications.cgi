@@ -1,14 +1,11 @@
 #!/usr/bin/perl
 # Get notifications in html format 
-# Quick and dirty
-use lib '../../../libs/perllib/';
-use LoxBerry::Web;
+use HTML::Template;
 use LoxBerry::Log;
 use CGI qw/:standard/;
 my $num_args = $#ARGV + 1;
 my $package;
 my $nname;
-
 if ( param("package") ne "" )
 {
 	print "Content-Type: text/html\n\n";
