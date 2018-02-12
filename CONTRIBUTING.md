@@ -2,27 +2,23 @@
 
 Thanks for taking time to read our contribution tips! :tada::+1:
 
-We currently work on LoxBerry Version 0.3 that will be a major step from 0.2x, as we got lot of feedback from users and developers, and found several issues that restrict plugin developers.
-Also we will do some moderate changes to the user interface and experience.
+We have released LoxBerry Version 1.0 (formerly known as 0.3.x saruman) that brings LoxBerry Update, an automatic update feature, to the users. This means - every changes needs to be tested well and every new feature should not break others, as the update directly source from our GitHub repository.
 
-The current development branch is *loxberry-0.3.0-saruman*, not master. Therefore, if you do any Pull requests, please request your pull for loxberry-0.3 instead to master.
-We do not merge any code to the master anymore, as 0.23 is stable since a while.
+The current development branch is *master*. Pull any change requests to the master repository. We do not merge any code to to other branches - especially older branches - anymore.
 
-To get a good basis to start surfing code, test and develop, you should install the DEV-Image of LB 0.3.x. You'll find the images on https://download.loxberry.de/testing/images/rasppi/. Take the lastest 0.3.x saruman and install it to your RaspBerry.
+To get a good basis to start surfing code, test and develop, you should install the latest LoxBerry 1.0 image. You'll find the images on https://download.loxberry.de. Then, use _LoxBerry Update_ to update your LoxBerry to the _Latest commit_.
 
 It is a good idea to browse the issues - also issues already closed (remove the is:open filter) to see where the journey goes.
 
 We "excessively" use labels in issues. 
 The 'bug' label needs to be fixed definitely.
-The 'enhancement' is a user story that we try to catch, but if it has 'must have' we really will do it for 0.3.x.
+The 'enhancement' is a user story that we try to catch, but if it has 'must have' we really will do it for 1.0.
 
 Some of our issues we additionally have labelled with 'good first issue'. We thing this are parts that new developers could achieve also without knowing the entire system.
+
+We hardly accept Pull requests that change current functionality of the files in /libs as they are part of the SDK and are used from all system widgets and plugins. Please drop us a note, if you want to change these libs.
 
 If you have any questions, give us a message on Github or inside an issue. 
 If you speak German, our disussion base is an own area in LoxForum: https://www.loxforum.com/forum/projektforen/loxberry/entwickler
 
 Thank you and we are awaiting your first pull request! :)
-
-
-
-
