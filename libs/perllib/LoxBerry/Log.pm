@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "0.3.5.5";
+our $VERSION = "1.0.0.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -621,7 +621,7 @@ sub get_notifications_html
 		push (@notify_html, $notif_line);
 	}
 	
-	
+	require HTML::Template;
 	
 	our $maintemplate = HTML::Template->new(
 				filename => "$LoxBerry::System::lbstemplatedir/get_notification_html.html",
