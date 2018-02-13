@@ -14,31 +14,25 @@
 
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
 		<input type="hidden" name="saveformdata" value="1">
-		<div style="margin:auto; padding:10px 10px 0px 10px; display:flex; text-align:left; width:100%; white-space: nowrap; ">
-			<div style="width:25%; text-align:left; margin-top:15px;">
+		<div style="margin:auto; padding:10px 10px 0px 10px; display:flex; text-align:left; white-space: nowrap; flex-wrap:wrap;">
+			<div style="text-align:left; margin-top:15px;">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
 			<div style="text-align:left; width:75%;">
 				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
-			</div>
-		</div>
-		<div style="margin:auto; padding:0px 10px 10px 10px; display:flex; text-align:left; width:100%; white-space: nowrap; ">
-			<div style="width:25%; text-align:left;">
-			</div>
-			<div style="text-align:left; width:75%;">
 				<input readonly type="url" autocomplete="false" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
 			</div>
 		</div>
 		<div style="height:30px;">
 		</div>
-		<div style="margin:auto; display:flex; width:30%; text-align:center">
-			<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap; ">
+		<div style="margin:auto; display:flex; flex-wrap: wrap; justify-content:flex-end; text-align:center">
+			<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap;">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
 			</div>
-			<div style="width:100%;">
-				<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+			<div>
+				<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$" size="10">
 			</div>
-			<div style=" width:10%; text-align:left; margin-top:3px;  padding-left:20px;">
+			<div style="text-align:left; margin-top:3px;  padding-left:20px;">
 				<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
 			</div>
 		</div>
