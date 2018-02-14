@@ -171,6 +171,29 @@ exit (0);
 
 sub install {
 
+# Choose random temp filename
+if ( !$R::tempfile ) {;
+	our $tempfile = &generate(10);
+} else {
+	our $tempfile = $R::tempfile;
+}
+# Create status and logfile
+our $logfile = "/tmp/$tempfile.log";
+our $statusfile = "/tmp/$tempfile.status";
+if (-e "$statusfile") {
+  $message =  "$SL{'PLUGININSTALL.ERR_TEMPFILES_EXISTS'}";
+  &logfail;
+}
+
+$message =  "Statusfile: $statusfile";
+&loginfo;
+open (F, ">$statusfile");
+flock(F,2);
+  print F "1";
+flock(F,8);
+close (F);
+
+
 # Check secure PIN
 if ( $R::action ne "autoupdate" ) {
 	my $pin = $R::pin;
@@ -200,12 +223,7 @@ if ( $R::action eq "autoupdate" ) {
 
 }
 
-# Choose random temp filename
-if ( !$R::tempfile ) {;
-	our $tempfile = &generate(10);
-} else {
-	our $tempfile = $R::tempfile;
-}
+
 if (!$zipmode) { 
   our $tempfolder = $R::folder;
   if (!-e $tempfolder) {
@@ -224,13 +242,6 @@ $tempfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
 $message =  "Temp Folder: $tempfolder";
 &loginfo;
 
-# Create status and logfile
-our $logfile = "/tmp/$tempfile.log";
-our $statusfile = "/tmp/$tempfile.status";
-if (-e "$statusfile") {
-  $message =  "$SL{'PLUGININSTALL.ERR_TEMPFILES_EXISTS'}";
-  &logfail;
-}
 $message = "Logfile: $logfile";
 &loginfo;
 if ( ! $is_cgi ) {
@@ -240,13 +251,6 @@ if ( ! $is_cgi ) {
 	flock(F,8);
 	close (F);
 }
-$message =  "Statusfile: $statusfile";
-&loginfo;
-open (F, ">$statusfile");
-flock(F,2);
-  print F "1";
-flock(F,8);
-close (F);
 
 # Check free space in tmp
 my $pluginsize;
@@ -1634,7 +1638,7 @@ sub logfail {
 	  close (F);
 	}
 
-	system ("rm /var/lock/plugininstall.lock");
+	LoxBerry::System::unlock( lockfile => 'plugininstall' );
 	exit (1);
 
 }

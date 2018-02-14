@@ -74,7 +74,7 @@ function updatelog()
 	// This 'if' prevents multiple loads in parallel, put Perl is too slow
 	if (call_in_progress == 0 ) {
 		call_in_progress = 1;
-		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&head=none&format=html&clientsize='+filesize,
+		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=html&format=html&clientsize='+filesize,
 			function( data, textStatus, request ) {
 			filesize = request.getResponseHeader('filesize');
 			if (filesize == 0) {
@@ -95,23 +95,23 @@ function updatelog()
 	// Load Status
 	if (status_in_progress == 0) {
 		status_in_progress = 1;
-		$.get('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR STATUSFILE>&head=none&format=ascii', function (response)
+		$.get('/admin/system/tools/ajax-config-handler.cgi?action=plugininstall-status&value=<TMPL_VAR STATUSFILE>', function (response)
 		{
 			var pstatus = parseInt(response);
-			if (pstatus == 3)
+			if (pstatus === 3)
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED>";
 				$('#btnnext').removeClass('ui-disabled');
 				$('#btnreboot').removeClass('ui-disabled');
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 			}
-			else if (pstatus == 2)
+			else if (pstatus === 2)
 			{
 				document.getElementById("pstatus").innerHTML = "<font color='#FF0000'><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_ERROR></font>";
 				$('#btnnext').removeClass('ui-disabled');
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 			}
-			else if (pstatus == 1)
+			else if (pstatus === 1)
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE>";
 				$('#btnnext').addClass('ui-disabled');

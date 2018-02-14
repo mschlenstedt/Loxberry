@@ -40,6 +40,7 @@ elsif ($action eq 'plugin-autoupdate') {print $cgi->header; plugindb_update('aut
 elsif ($action eq 'testenvironment') { print $cgi->header; &testenvironment; }
 elsif ($action eq 'changelanguage') { print $cgi->header; change_generalcfg("BASE.LANG", $value);}
 elsif ($action eq 'notify-deletekey') {print $cgi->header; notifydelete();}
+elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 else   { print $cgi->header; print "<red>Action not supported.</red>"; }
 
 exit;
@@ -358,4 +359,29 @@ my $output = qx{sudo $lbhomedir/sbin/testenvironment.pl};
 print $output;
 print "ajax-config-handler: Finished.<br>";
 
+}
+
+sub plugininstall_status
+{
+	print STDERR "plugininstall-status: $R::value\n";
+	# Quick safety check
+	if (index($R::value, '/') ne -1) {
+		print $cgi->header(-type => 'text/html;charset=utf-8',
+							-status => "500 Invalid request",
+		);
+		exit;
+	}
+	if (! -e "/tmp/$R::value") {
+		print $cgi->header(-type => 'text/html;charset=utf-8',
+							-status => "404 File not found",
+		);
+		exit;
+	}
+	open (my $fh, "<", "/tmp/$R::value");
+	my $status = <$fh>;
+	close ($fh);
+	chomp $status;
+	print $cgi->header;
+	print $status;
+	exit;
 }

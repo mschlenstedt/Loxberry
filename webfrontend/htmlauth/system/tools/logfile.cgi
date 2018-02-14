@@ -32,7 +32,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.1.1";
+my $version = "1.0.0.1";
 my $iscgi;
 my $maintemplate;
 my %SL;
@@ -116,13 +116,13 @@ if (!$R::format) {
 if (!$R::logfile) {
   if ($iscgi && $R::format eq 'template') {
     $maintemplate->param('NOLOGPARAMETER', 1);
-	
 	LoxBerry::Web::head();
 	print $maintemplate->output();
 	LoxBerry::Web::foot();
 	exit(1);
 	
-  } else {
+  } 
+  else {
     print $SL{'LOGVIEWER.ERR_MISSING_LOGPARAMETER_TXT'};
 	exit (1);
 	}
@@ -138,17 +138,21 @@ if (-e "/tmp/$R::logfile") {
 } elsif (-e "$lbhomedir/webfrontend/html/tmp/$R::logfile") {
   $R::logfilepath = "$lbhomedir/webfrontend/html/tmp";
 } else {
-	if ($iscgi) {
+	# File does not exist
+	if ($iscgi && $maintemplate) {
 		$maintemplate->param('NOLOGFILE', 1);
 		LoxBerry::Web::head();
 		print $maintemplate->output();
 		LoxBerry::Web::foot();
-		exit(1);
 	   
-  } else {
-    print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
-  }
-  exit;
+	} elsif ($iscgi) {
+		print $cgi->header();
+		#print "Content-Type: text/plain;charset=utf-8\n";
+		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
+	} else {
+		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
+	}
+	exit (1);
 }
 
 $maintemplate->param('LOGFILE', $R::logfile) if ($R::format eq 'template');
