@@ -45,7 +45,7 @@ LOGINF "Disabling Apache2 PrivateTmp in systemd";
 
 $output = qx { mkdir /etc/systemd/system/apache2.service.d  };
 LOGINF $output;
-$output = qx { echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf  };
+$output = qx { echo "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf  };
 LOGINF $output;
 
 LOGINF "Adding PERL5LIB to Apache envvars";
