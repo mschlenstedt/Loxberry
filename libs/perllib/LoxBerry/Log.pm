@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.1";
+our $VERSION = "1.0.0.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -433,33 +433,139 @@ our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
 
 sub notify
 {
+	
+	my $severity;
+	
 	my ($package, $name, $message, $error) = @_;
-	if (! $package || ! $name || ! $message) {
-		print STDERR "Notification: Missing parameters\n";
-		return;
-	}
-	$package = lc($package);
-	$package =~ s/_//g;
-	$name = lc($name);
-	$name =~ s/_//g;
+	
+	# if (! $package || ! $name || ! $message) {
+		# print STDERR "Notification: Missing parameters\n";
+		# return;
+	# }
 	
 	if ($error) {
-		$error = '_err';
-	} else { 
-		$error = "";
+		$severity = 3;
+	} else {
+		$severity = 6;
 	}
 	
-	my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
-	my $filename = $notification_dir . "/" . LoxBerry::System::currtime('file') . "_${package}_${name}${error}.system";
-	open(my $fh, '>', $filename) or warn "Could not create a notification at '$filename' $!";
-	flock($fh,2);
-	print $fh $message;
-	eval {
-		chown $uid, $gid, $fh;
-	};
-	flock($fh,8);
-	close $fh;
+	
+	# SQLite interface
+	require DBI;
+	my $dbh;
+	
+	$dbh = notify_init_database();
+	return undef if (! $dbh);
+	
+	# Build hash
+	my %data = ( 
+		package => $package,
+		name => $name,
+		message => $message,
+		severity => $severity
+	);
+	
+	notify_insert_notification($dbh, \%data);
+
 }
+
+
+sub notify_init_database
+{
+
+	my $dbfile = $LoxBerry::System::lbsdatadir . "/notifications_sqlite.dat";
+	
+	my $dbh;
+	my $dores;
+	
+	$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or 
+		do {
+			print STDERR "notify_init_database connect: $DBI::errstr\n";
+			return undef;
+			};
+
+	$dbh->do("CREATE TABLE IF NOT EXISTS notifications (
+				package VARCHAR(255) NOT NULL,
+				name VARCHAR(255) NOT NULL,
+				message TEXT,
+				severity INT,
+				timestamp DATETIME NOT NULL,
+				notifykey INTEGER PRIMARY KEY 
+			)") or 
+		do {
+			print STDERR "notify_init_database create table notifications: $DBI::errstr\n";
+			return undef;
+			};
+
+	$dbh->do("CREATE TABLE IF NOT EXISTS notifications_attr (
+				keyref INTEGER NOT NULL,
+				attrib VARCHAR(255) NOT NULL,
+				value VARCHAR(255),
+				PRIMARY KEY ( keyref, attrib )
+				)") or
+		do {
+			print STDERR "notify_init_database create table notifications_attr: $DBI::errstr\n";
+			return undef;
+		};
+	
+	return $dbh;
+}
+
+sub notify_insert_notification
+{
+	
+	my $dbh = shift;
+	my %p = %{shift()};
+		
+	# print STDERR "Package: " . $p{'package'} . "\n";
+	
+	# Check mandatory fields
+	Carp::croak "Create notification: No package defined\n" if (! $p{package});
+	Carp::croak "Create notification: No name defined\n" if (! $p{name});
+	Carp::croak "Create notification: No message defined\n" if (! $p{message});
+	Carp::croak "Create notification: No severity defined\n" if (! $p{severity});
+
+
+	# Start transaction
+	
+	$dbh->do("BEGIN TRANSACTION;"); 
+	
+	# Insert main notification
+	my $sth = $dbh->prepare('INSERT INTO notifications (package, name, message, severity, timestamp) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP);');
+	$sth->execute($p{package}, $p{name}, $p{message} , $p{severity}) or 
+		do {
+			Carp::croak "Error inserting notification: $DBI::errstr\n";
+			return undef;
+		};
+	
+	my $id = $dbh->sqlite_last_insert_rowid();
+	
+	# Process further attributes
+	
+	my $sth2;
+	$sth2 = $dbh->prepare('INSERT INTO notifications_attr (keyref, attrib, value) VALUES (?, ?, ?);');
+	
+	for my $key (keys %p) {
+		next if ($key eq 'package' or $key eq 'name' or $key eq 'message' or $key eq 'severity');
+		$sth2->execute($id, $key, $p{$key});
+	}
+
+	$dbh->do("COMMIT;") or
+		do {
+			print STDERR "notify: commit failed: $DBI::errstr\n";
+			return undef;
+		};
+	
+	return "Success";
+	
+	$sth2->execute($id, 'logfile', 'This is the log');
+	$sth2->execute($id, 'level', 5);
+
+}
+
+
+
+
 
 
 ################################################################
