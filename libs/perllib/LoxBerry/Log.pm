@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.2";
+our $VERSION = "1.0.0.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -430,7 +430,7 @@ my $notifications_error;
 my $notifications_ok;
 our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
 
-
+# EXTERNAL FUNCTION
 sub notify
 {
 	
@@ -448,7 +448,6 @@ sub notify
 	} else {
 		$severity = 6;
 	}
-	
 	
 	# SQLite interface
 	require DBI;
@@ -469,7 +468,23 @@ sub notify
 
 }
 
+# EXTERNAL FUNCTION
+sub notify_ext
+{
+	# SQLite interface
+	require DBI;
+	my $dbh;
+	
+	my $data = shift;
+	
+	$dbh = notify_init_database();
+	return undef if (! $dbh);
+	notify_insert_notification($dbh, $data);
 
+}
+
+
+# INTERNAL FUNCTIONS
 sub notify_init_database
 {
 
@@ -511,6 +526,7 @@ sub notify_init_database
 	return $dbh;
 }
 
+# INTERNAL FUNCTION
 sub notify_insert_notification
 {
 	
