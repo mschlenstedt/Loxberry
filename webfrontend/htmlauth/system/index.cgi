@@ -52,7 +52,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbscon
 }
 
 # Version of this script
-my $version = "0.3.3.4";
+my $version = "1.0.0.1";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -131,6 +131,8 @@ exit;
 
 sub mainmenu {
 
+	# $LoxBerry::Log::DEBUG = 1;
+	
 	my @plugins;
 	
 	# Check notifications
@@ -140,12 +142,14 @@ sub mainmenu {
 	my $notification_alloks = 0;
 	
 	my @notifications = get_notifications();
-	for my $notification (@notifications ) {
-		if ($notification->{SEVERITY} eq 'err') {
+	for my $notification ( @notifications ) {
+		print STDERR "Notification: $notification->{PACKAGE} $notification->{MESSAGE}\n";
+		
+		if ($notification->{SEVERITY} == 3) {
 			$notification_errors{$notification->{PACKAGE}}++;
 			$notification_oks{$notification->{PACKAGE}}++;
 			$notification_allerrors++;
-		} else {
+		} elsif ($notification->{SEVERITY} == 6) {
 			$notification_oks{$notification->{PACKAGE}}++;
 			$notification_alloks++;
 		}
