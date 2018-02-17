@@ -334,13 +334,8 @@ sub notifydelete
 	my $key = $R::value;
 	$key =~ s/[\/\\]//g;
 	
-	$LoxBerry::Log::notification_dir if (0);
+	LoxBerry::Log::delete_notification_key($key);
 	
-	my $filename = "$LoxBerry::Log::notification_dir/$key";
-	print STDERR "Delete file $filename\n";
-	if (-e $filename ) { 
-		unlink $filename;
-	}
 }
 
 ###################################################################

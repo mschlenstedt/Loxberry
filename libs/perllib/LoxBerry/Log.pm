@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.4";
+our $VERSION = "1.0.0.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -35,10 +35,11 @@ use base 'Exporter';
 our @EXPORT = qw (
 
 notify
+notify_ext
 delete_notifications
+delete_notification_key
 get_notification_count
 get_notifications
-notification_content
 parsedatestring
 
 );
@@ -434,17 +435,11 @@ our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
 sub notify
 {
 	
-	my $severity;
-	
 	my ($package, $name, $message, $error) = @_;
-	
-	# if (! $package || ! $name || ! $message) {
-		# print STDERR "Notification: Missing parameters\n";
-		# return;
-	# }
 	
 	print STDERR "notify --->\n" if ($DEBUG);
 	
+	my $severity;
 	if ($error) {
 		$severity = 3;
 	} else {
@@ -464,13 +459,20 @@ sub notify
 		PACKAGE => $package,
 		NAME => $name,
 		MESSAGE => $message,
-		SEVERITY => $severity
+		SEVERITY => $severity,
 	);
+	
+	if ($LoxBerry::System::lbpplugindir) {
+		print STDERR "   Detected plugin notification\n" if ($DEBUG);
+		$data{_ISPLUGIN} = 1;
+	} else {
+		print STDERR "   Detected system notification\n" if ($DEBUG);
+		$data{_ISSYSTEM} = 1;
+	}
 	
 	notify_insert_notification($dbh, \%data);
 	
 	print STDERR "<--- notify\n" if ($DEBUG);
-	
 
 }
 
@@ -487,12 +489,19 @@ sub notify_ext
 	
 	$dbh = notify_init_database();
 	print STDERR "notify_ext: Could not init database.\n" if (! $dbh);
-	
 	return undef if (! $dbh);
+	
+	if ($LoxBerry::System::lbpplugindir) {
+		print STDERR "   Detected plugin notification\n" if ($DEBUG);
+		$data->{_ISPLUGIN} = 1;
+	} else {
+		print STDERR "   Detected system notification\n" if ($DEBUG);
+		$data->{_ISSYSTEM} = 1;
+	}
+	
 	notify_insert_notification($dbh, $data);
 	
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
-	
 
 }
 
@@ -605,19 +614,24 @@ sub get_notifications
 	# print STDERR "get_notifications called.\n" if ($DEBUG);
 	my ($package, $name) = @_;
 
+	print STDERR "--> get_notifications\n" if ($DEBUG);
+	
 	# SQLite interface
 	require DBI;
 	my $dbh;
 	
 	my $dbh = notify_init_database();
+	print STDERR "get_notifications: Could not init database\n" if (! $dbh);
 	return undef if (! $dbh);
 	
 	my $qu;
-	$qu = "SELECT * FROM notifications WHERE ";
-	
+	$qu = "SELECT * FROM notifications ";
+	$qu .= "WHERE " if ($package);
 	$qu .= "PACKAGE = '$package' AND NAME = '$name' " if ($package && $name);
 	$qu .= "PACKAGE = '$package' " if ($package && !$name);
 	$qu .= "ORDER BY timestamp DESC ";
+	print STDERR "   Query: $qu\n" if ($DEBUG);
+	
 	
 	my $notifhr = $dbh->selectall_hashref($qu, "notifykey");
 	
@@ -684,8 +698,8 @@ sub get_notification_count
 	my @resinf;
 	my @reserr;
 	
-	$qu = "SELECT count(*) FROM notifications WHERE ";
-	
+	$qu = "SELECT count(*) FROM notifications ";
+	$qu .= "WHERE " if ($package);
 	$qu .= "PACKAGE = '$package' AND NAME = '$name' AND " if ($package && $name);
 	$qu .= "PACKAGE = '$package' AND " if ($package && !$name);
 	my $querr = $qu . "SEVERITY = 3;";
@@ -760,6 +774,31 @@ sub delete_notifications
 	$dbh->do("COMMIT;"); 
 	
 	print STDERR "<--- delete_notifications\n" if ($DEBUG);
+	
+}
+
+sub delete_notification_key
+{
+	my ($key) = @_;
+	print STDERR "delete_notification_key -->\n" if ($DEBUG);
+	print STDERR "   No Key defined. Return undef\n<-- delete_notification_key\n" if (!$key && $DEBUG);
+	return undef if (!$key);
+	
+	# SQLite interface
+	require DBI;
+	my $dbh;
+	
+	my $dbh = notify_init_database();
+	return undef if (! $dbh);
+
+	$dbh->do("BEGIN TRANSACTION;"); 
+	$dbh->do("DELETE FROM notifications_attr WHERE keyref = $key;");
+	$dbh->do("DELETE FROM notifications WHERE notifykey = $key;");
+	
+	print STDERR "   Commit\n" if ($DEBUG);
+	$dbh->do("COMMIT;"); 
+	
+	print STDERR "<--- delete_notification_key\n" if ($DEBUG);
 	
 }
 
