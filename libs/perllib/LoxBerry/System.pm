@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.6";
+our $VERSION = "1.0.0.7";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -445,7 +445,7 @@ sub plugindata
 	my @plugins = LoxBerry::System::get_plugins();
 	
 	foreach my $plugin (@plugins) {
-		if ($queryname && $plugin->{PLUGINDB_NAME} eq $query) {
+		if ($queryname && ( $plugin->{PLUGINDB_NAME} eq $query || $plugin->{PLUGINDB_FOLDER} eq $query) ) {
 			return $plugin;
 		}
 		if (!$queryname && $plugin->{PLUGINDB_FOLDER} eq $query) {
