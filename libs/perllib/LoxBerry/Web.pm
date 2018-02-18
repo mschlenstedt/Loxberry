@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.0.0.1";
+our $VERSION = "1.0.0.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -318,15 +318,20 @@ sub pagestart
 			if ($main::navbar{$element}{target}) {
 				$btntarget = ' target="' . $main::navbar{$element}{target} . '"';
 			}
-			
-			if ($main::navbar{$element}{notifyRed}) {
-				$notify = ' <span class="notifyRedNavBar">' . $main::navbar{$element}{notifyRed} . '</span>';
-			} elsif ($main::navbar{$element}{notifyBlue}) {
-				$notify = ' <span class="notifyBlueNavBar">' . $main::navbar{$element}{notifyBlue} . '</span>';
-			}
 
+			# # NavBar Notify old
+			# if ($main::navbar{$element}{notifyRed}) {
+				# $notify = ' <span class="notifyRedNavBar">' . $main::navbar{$element}{notifyRed} . '</span>';
+			# } elsif ($main::navbar{$element}{notifyBlue}) {
+				# $notify = ' <span class="notifyBlueNavBar">' . $main::navbar{$element}{notifyBlue} . '</span>';
+			# }
+
+			$notify = qq(<div class="notifyRedNavBar" id="notifyRedNavBar$element" style="display: none">0</div>);
+			$notify .= qq(<div class="notifyBlueNavBar" id="notifyBlueNavBar$element" style="display: none">0</div>);
+			
+			
 			if ($main::navbar{$element}{Name}) {
-				$topnavbar .= '		<li><a href="' . $main::navbar{$element}{URL} . '"' . $btntarget . $btnactive . '>' . $main::navbar{$element}{Name} . '</a>' . $notify . '</li>';
+				$topnavbar .= qq( <li><div style="position:relative">$notify<a href="$main::navbar{$element}{URL}"$btntarget$btnactive>$main::navbar{$element}{Name}</a></div></li>);
 				$topnavbar_haselements = 1;
 			}
 		}

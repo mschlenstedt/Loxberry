@@ -160,6 +160,10 @@ sub mainmenu {
 	$navbar{1}{URL} = "/admin/system/index.cgi";
 	$navbar{2}{Name} = $SL{'HEADER.TITLE_PAGE_SYSTEM'};
 	$navbar{2}{URL} = "/admin/system/index.cgi?form=system";
+
+	# $navbar{2}{notifyBlue} = 2;
+	# $navbar{2}{notifyRed} = 3;
+	
 #	$navbar{2}{notifyBlue} = $notification_allerrors == 0 && $notification_alloks != 0 ? $notification_alloks : undef;
 #	$navbar{2}{notifyRed} = $notification_allerrors != 0 ? ($notification_allerrors+$notification_alloks)  : undef;
 
