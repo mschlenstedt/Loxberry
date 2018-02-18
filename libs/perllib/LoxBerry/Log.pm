@@ -862,7 +862,7 @@ sub get_notifications_html
 			next;
 		}
 		# Don't show errors when infos are requested
-		if ( $not->{SEVERITY} ==6 && ! $p{error} ) {
+		if ( $not->{SEVERITY} == 6 && ! $p{error} ) {
 			print STDERR "Skipping notification - is info but error requested\n" if ($DEBUG);
 			next;
 		}

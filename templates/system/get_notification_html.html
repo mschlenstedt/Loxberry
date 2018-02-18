@@ -19,7 +19,14 @@
 	$.post ( '/admin/system/tools/ajax-notification-handler.cgi', 
 					{ 	action: 'notify-deletekey',
 						value: delid,
-					});
+					})
+	.always(function(data) {
+		if (typeof updatenavbar !== 'undefined' && $.isFunction(updatenavbar)) {
+			console.log("Done");
+			updatenavbar();
+		}
+	});
+					
 	});
 </script>
 

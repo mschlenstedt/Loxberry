@@ -29,6 +29,7 @@ print STDERR "--> ajax-notification-handler:\n   Action: $action\n";
 
 if ($action eq 'notify-deletekey') {notifydelete();}
 elsif ($action eq 'get_notifications') {getnotifications();}
+elsif ($action eq 'get_notification_count') {getnotificationcount();}
 
 else {
 	print $cgi->header(-type => 'application/json;charset=utf-8', -status => "500 Action not supported");
@@ -55,6 +56,7 @@ sub notifydelete
 	
 	print $cgi->header(-type => 'application/json;charset=utf-8',
 					-status => "200 OK");
+	print "{status: 'OK'}";
 	exit;
 	
 }
@@ -72,6 +74,25 @@ sub getnotifications
 	my @notifications = get_notifications($R::package, $R::name);
 	
 	print JSON->new->encode(\@notifications);
+	
+	exit;
+
+}
+
+
+sub getnotificationcount
+{
+	
+	$R::package if (0);
+	$R::name if (0);
+	
+	
+	print $cgi->header(-type => 'application/json;charset=utf-8',
+					-status => "200 OK");
+					
+	my @notification_count = get_notification_count($R::package, $R::name);
+	
+	print JSON->new->encode(\@notification_count);
 	
 	exit;
 

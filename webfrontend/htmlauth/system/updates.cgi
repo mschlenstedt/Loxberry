@@ -133,31 +133,37 @@ our $maintemplate = HTML::Template->new(
 
 our %SL = LoxBerry::System::readlanguage($maintemplate);
 
-my @notif = get_notifications('updates', 'update');
-my ($check_err, $check_ok, $check_sum) = get_notification_count('updates', 'check');
-my ($update_err, $update_ok, $update_sum) = get_notification_count('updates', 'update');
+# my @notif = get_notifications('updates', 'update');
+# my ($check_err, $check_ok, $check_sum) = get_notification_count('updates', 'check');
+# my ($update_err, $update_ok, $update_sum) = get_notification_count('updates', 'update');
 
 
-print STDERR "Notifications:\n";
-print STDERR "Update count: " . scalar(@notif) . "\n";
-print STDERR "Check: $check_err / $check_ok / $check_sum\n";
-print STDERR "Update: $update_err / $update_ok / $check_sum\n";
+# print STDERR "Notifications:\n";
+# print STDERR "Update count: " . scalar(@notif) . "\n";
+# print STDERR "Check: $check_err / $check_ok / $check_sum\n";
+# print STDERR "Update: $update_err / $update_ok / $check_sum\n";
 
 				
 our %navbar;
  
 $navbar{1}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATE'};
 $navbar{1}{URL} = $cgi->url(-relative=>1) . "?do=lbupdate";
-$navbar{1}{notifyBlue} = $check_err == 0 ? $check_sum : undef;
-$navbar{1}{notifyRed} = $check_err != 0 ? $check_sum : undef;
+$navbar{1}{Notify_Package} = 'updates';
+$navbar{1}{Notify_Name} = 'check';
+
+#$navbar{1}{notifyBlue} = $check_err == 0 ? $check_sum : undef;
+#$navbar{1}{notifyRed} = $check_err != 0 ? $check_sum : undef;
 
 $navbar{2}{Name} = $SL{'UPDATES.WIDGETLABEL_UPDATES'};
 $navbar{2}{URL} = $cgi->url(-relative=>1) . "?do=form";
  
 $navbar{3}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATEHISTORY'};
 $navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbuhistory";
-$navbar{3}{notifyBlue} = $update_err == 0 ? $update_sum : undef;
-$navbar{3}{notifyRed} = $update_err != 0 ? $update_sum : undef;
+$navbar{3}{Notify_Package} = 'updates';
+$navbar{3}{Notify_Name} = 'update';
+
+#$navbar{3}{notifyBlue} = $update_err == 0 ? $update_sum : undef;
+#$navbar{3}{notifyRed} = $update_err != 0 ? $update_sum : undef;
 
 # And this one we really want to use
 $do = $R::do;
