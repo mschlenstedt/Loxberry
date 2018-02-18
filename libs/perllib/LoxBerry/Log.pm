@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.5";
+our $VERSION = "1.0.0.6";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -869,9 +869,9 @@ sub get_notifications_html
 		my $notif_line;
 		$notif_line .= 	"<div style='display:table-row;' class='notifyrow$randval' id='notifyrow$not->{KEY}'>";
 		$notif_line .= 	'<div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">';
-		if (! $not->{SEVERITY}) {
+		if ($not->{SEVERITY} == 6) {
 			$notif_line .= '<img src="/system/images/notification_info_small.svg">';
-		} elsif ($not->{SEVERITY} eq 'err') {
+		} elsif ($not->{SEVERITY} == 3) {
 			$notif_line .= '<img src="/system/images/notification_error_small.svg">';
 		}
 		$notif_line .= "</div>";
@@ -961,7 +961,48 @@ sub parsedatestring
 	# print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
 # }
 
+# INTERNAL FUNCTION
+sub get_severity
+{
+	my ($sevstr) = @_;
+	$sevstr = lc $sevstr;
+	
+	# Ordered by most possible occurrency
+	
+	# 3
+	my @error = ("3", "err", "error", "logerr");
+	return 3 if ( grep( /^$sevstr$/, @error ) );
+	
+	# 6
+	my @info = ("6", "inf", "info", "loginf");
+	return 6 if ( grep( /^$sevstr$/, @info ) );
+	
+	# 4
+	my @warning = ("4", "warn", "warning", "logwarn");
+	return 4 if ( grep( /^$sevstr$/, @warning ) );
+	
+	# 5
+	my @ok = ("5", "ok", "logok");
+	return 5 if ( grep( /^$sevstr$/, @ok ) );
 
+	# 7
+	my @debug = ("7", "debug", "deb", "logdeb", "logdebug");
+	return 7 if ( grep( /^$sevstr$/, @debug ) );
+
+	# 2
+	my @critical = ("2", "critical", "crit", "critic", "logcrit");
+	return 2 if ( grep( /^$sevstr$/, @critical ) );
+
+	# 1
+	my @alert = ("1", "alert", "logalert");
+	return 1 if ( grep( /^$sevstr$/, @alert ) );
+
+	# 0
+	my @emerge = ("0", "emerg", "emerge", "emergency", "logemerge");
+	return 0 if ( grep( /^$sevstr$/, @emerge ) );
+
+	return undef;
+}
 
 ##################################################################
 ##################################################################
