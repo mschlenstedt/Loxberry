@@ -18,12 +18,11 @@
 ##########################################################################
 # Modules
 ##########################################################################
-use LoxBerry::System;
 use LoxBerry::Web;
 # use LoxBerry::Log;
 
 use CGI qw/:standard/;
-use LWP::UserAgent;
+# use LWP::UserAgent;
 # use CGI::Session;
 use warnings;
 use strict;
@@ -52,7 +51,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbscon
 }
 
 # Version of this script
-my $version = "1.0.0.2";
+my $version = "1.0.0.3";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -135,26 +134,6 @@ sub mainmenu {
 	
 	my @plugins;
 	
-	# # Check notifications
-	# my %notification_errors;
-	# my %notification_oks;
-	# my $notification_allerrors = 0;
-	# my $notification_alloks = 0;
-	
-	# my @notifications = get_notifications();
-	# for my $notification ( @notifications ) {
-		# print STDERR "Notification: $notification->{PACKAGE} $notification->{MESSAGE}\n";
-		
-		# if ($notification->{SEVERITY} == 3) {
-			# $notification_errors{$notification->{PACKAGE}}++;
-			# $notification_oks{$notification->{PACKAGE}}++;
-			# $notification_allerrors++;
-		# } elsif ($notification->{SEVERITY} == 6) {
-			# $notification_oks{$notification->{PACKAGE}}++;
-			# $notification_alloks++;
-		# }
-	# }
-
 	our %navbar;
 	$navbar{1}{Name} = $SL{'HEADER.TITLE_PAGE_PLUGINS'};
 	$navbar{1}{URL} = "/admin/system/index.cgi";
@@ -194,24 +173,18 @@ sub mainmenu {
 				WIDGET_ICON => "/system/images/icons/main_myloxberry.svg",
 				WIDGET_CGI => "/admin/system/myloxberry.cgi",
 				NOTIFY_PACKAGE => "myloxberry",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'myloxberry'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'myloxberry'},
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_ADMIN'},
 				WIDGET_ICON => "/system/images/icons/main_admin.png", 
 				WIDGET_CGI => "/admin/system/admin.cgi",
 				NOTIFY_PACKAGE => "admin",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'admin'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'admin'},
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MINISERVER'}, 
 				WIDGET_ICON => "/system/images/icons/main_miniserver.svg",
 				WIDGET_CGI => "/admin/system/miniserver.cgi",
 				NOTIFY_PACKAGE => "miniserver",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'miniserver'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'miniserver'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TIMESERVER'},
@@ -225,24 +198,18 @@ sub mainmenu {
 				WIDGET_ICON => "/system/images/icons/main_network.png",
 				WIDGET_CGI => "/admin/system/network.cgi",
 				NOTIFY_PACKAGE => "network",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'network'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'network'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_PLUGININSTALL'},
 				WIDGET_ICON => "/system/images/icons/main_plugininstall.png",
 				WIDGET_CGI => "/admin/system/plugininstall.cgi",
 				NOTIFY_PACKAGE => "plugininstall",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'plugininstall'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'plugininstall'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_UPDATES'},
 				WIDGET_ICON => "/system/images/icons/main_updates.png",
 				WIDGET_CGI => "/admin/system/updates.cgi",
 				NOTIFY_PACKAGE => "updates",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'updates'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'updates'},
 				
 			},
 			{
@@ -250,8 +217,6 @@ sub mainmenu {
 				WIDGET_ICON => "/system/images/icons/main_services.png",
 				WIDGET_CGI => "/admin/system/services.php",
 				NOTIFY_PACKAGE => "services",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'services'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'services'},
 				
 			},
 			{
@@ -259,16 +224,12 @@ sub mainmenu {
 				WIDGET_ICON => "/system/images/icons/main_power.png",
 				WIDGET_CGI => "/admin/system/power.cgi",
 				NOTIFY_PACKAGE => "power",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'power'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'power'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MAILSERVER'},
 				WIDGET_ICON => "/system/images/icons/main_mail.png",
 				WIDGET_CGI => "/admin/system/mailserver.cgi",
 				NOTIFY_PACKAGE => "mailserver",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'mailserver'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'mailserver'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
@@ -281,16 +242,12 @@ sub mainmenu {
 				WIDGET_ICON => "/system/images/icons/main_translate.png",
 				WIDGET_CGI => "/admin/system/translate.cgi",
 				NOTIFY_PACKAGE => "translate",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'translate'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'translate'},
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",
 				NOTIFY_PACKAGE => "donate",
-#				WIDGET_NOTIFY_BLUE => $notification_oks{'donate'},
-#				WIDGET_NOTIFY_RED => $notification_errors{'donate'},
 			}
 		]);
 		
