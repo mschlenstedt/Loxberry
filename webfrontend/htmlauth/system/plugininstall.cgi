@@ -21,7 +21,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-use LoxBerry::Log;
+#use LoxBerry::Log;
 
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;

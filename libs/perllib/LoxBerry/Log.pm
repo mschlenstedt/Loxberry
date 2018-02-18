@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.6";
+our $VERSION = "1.0.0.7";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -491,14 +491,15 @@ sub notify_ext
 	print STDERR "notify_ext: Could not init database.\n" if (! $dbh);
 	return undef if (! $dbh);
 	
-	if ($LoxBerry::System::lbpplugindir) {
-		print STDERR "   Detected plugin notification\n" if ($DEBUG);
-		$data->{_ISPLUGIN} = 1;
-	} else {
-		print STDERR "   Detected system notification\n" if ($DEBUG);
-		$data->{_ISSYSTEM} = 1;
+	if (! $data->{_ISPLUGIN} && ! $data->{_ISSYSTEM}) {
+		if ($LoxBerry::System::lbpplugindir) {
+			print STDERR "   Detected plugin notification\n" if ($DEBUG);
+			$data->{_ISPLUGIN} = 1;
+		} else {
+			print STDERR "   Detected system notification\n" if ($DEBUG);
+			$data->{_ISSYSTEM} = 1;
+		}
 	}
-	
 	notify_insert_notification($dbh, $data);
 	
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);

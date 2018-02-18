@@ -5,9 +5,8 @@ require_once "loxberry_system.php";
 
 class LBLog
 {
-	public static $VERSION = "0.3.3.1";
-	public static $notification_dir = LBSDATADIR . "/notifications";
-
+	public static $VERSION = "1.0.0.1";
+	
 	function get_notifications ($package = NULL, $name = NULL, $latest = NULL, $count = NULL, $getcontent = NULL)
 	{
 		error_log("get_notifications called.\n");
@@ -28,23 +27,44 @@ class LBLog
 # notify
 function notify ($package, $name, $message, $error = false)
 {
+	global $lbpplugindir;
+
+	$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
 	// error_log "Notifdir: " . LBLog::$notification_dir . "\n";
 	if (! $package || ! $name || ! $message) {
 		error_log("Notification: Missing parameters\n");
 		return;
 	}
-	$package = str_replace('_', '', trim(strtolower($package)));
-	$name = str_replace('_', '', trim(strtolower($name)));
 	
-	if ($error) {
-		$error = '_err';
-	} else { 
-		$error = "";
+	if ($error == True) {
+		$severity = 3;
+	} else {
+		$severity = 6;
 	}
 	
-	$filename = LBLog::$notification_dir . "/" . currtime('file') . "_{$package}_{$name}{$error}.system";
-	$fh = fopen($filename, "w") or trigger_error("Could not create a notification at '{$filename}': $!", E_USER_WARNING);
-	fwrite($fh, $message);
-	fclose($fh);
-	chown ($filename, 'loxberry');
+	$fields = array(
+		'action' => 'notifyext',
+		'PACKAGE' => $package, 
+		'NAME' => $name,
+		'MESSAGE' => $message,
+		'SEVERITY' => $severity,
+	);
+	
+	if (isset($lbpplugindir)) {
+		$fields['_ISPLUGIN'] = 1;
+	} else {
+		$fields['_ISSYSTEM'] = 1;
+	}
+	
+	$options = array(
+		'http' => array(
+			'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+			'method'  => 'POST',
+			'content' => http_build_query($fields)
+			)
+	);
+	$context  = stream_context_create($options);
+	$result = file_get_contents($NOTIFHANDLERURL, false, $context);
+	if ($result === FALSE) { /* Handle error */ }
+	
 }
