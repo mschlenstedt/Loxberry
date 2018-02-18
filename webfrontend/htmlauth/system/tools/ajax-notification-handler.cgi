@@ -30,6 +30,7 @@ print STDERR "--> ajax-notification-handler:\n   Action: $action\n";
 if ($action eq 'notify-deletekey') {notifydelete();}
 elsif ($action eq 'get_notifications') {getnotifications();}
 elsif ($action eq 'get_notification_count') {getnotificationcount();}
+elsif ($action eq 'get_notifications_html') {getnotificationshtml();}
 elsif ($action eq 'notifyext') {setnotifyext();}
 
 else {
@@ -118,6 +119,29 @@ sub setnotifyext
 	LoxBerry::Log::notify_ext(\%params);
 	
 	print "{status: OK}";
+	
+	exit;
+
+}
+
+
+sub getnotificationshtml
+{
+	
+	$R::package if (0);
+	$R::name if (0);
+	
+	my $html = LoxBerry::Log::get_notifications_html($R::package, $R::name, $R::type, $R::buttons);
+	
+	if (! $html) {
+		print $cgi->header(-type => 'text/html;charset=utf-8',
+							-status => "500 Unknown error");
+		exit;
+	}
+	
+	print $cgi->header(-type => 'text/html;charset=utf-8',
+						-status => "200 OK");
+	print $html;
 	
 	exit;
 

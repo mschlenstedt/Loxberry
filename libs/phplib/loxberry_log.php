@@ -5,13 +5,48 @@ require_once "loxberry_system.php";
 
 class LBLog
 {
-	public static $VERSION = "1.0.0.1";
+	public static $VERSION = "1.0.0.2";
 	
 	function get_notifications ($package = NULL, $name = NULL, $latest = NULL, $count = NULL, $getcontent = NULL)
 	{
 		error_log("get_notifications called.\n");
 		
 		
+	}
+	
+	// get_notifications_html
+	function get_notifications_html ($package = NULL, $name = NULL, $type = NULL, $buttons = NULL)
+	{
+		error_log("get_notifications_html called.\n");
+		
+		global $lbpplugindir;
+
+		$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
+	
+		$fields = array(
+			'action' => 'get_notifications_html',
+			'package' => "$package", 
+			'name' => "$name",
+			'type' => "$type",
+			'buttons' => "$buttons"
+		);
+		
+		$options = array(
+			'http' => array(
+				'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+				'method'  => 'POST',
+				'content' => http_build_query($fields)
+				)
+		);
+		$context  = stream_context_create($options);
+		$result = file_get_contents($NOTIFHANDLERURL, false, $context);
+		if ($result === FALSE) { 
+			error_log("get_notifications_html: Could not get notifications"); 
+			return;
+		}
+		
+		return $result;
+	
 	}
 	
 }
