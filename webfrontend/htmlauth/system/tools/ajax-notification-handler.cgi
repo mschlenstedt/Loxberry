@@ -25,9 +25,10 @@ if (! $R::action) {
 
 my $action = $R::action;
 
-print STDERR "--> ajax-notification-handler:\nAction: $action\n";
+print STDERR "--> ajax-notification-handler:\n   Action: $action\n";
 
 if ($action eq 'notify-deletekey') {notifydelete();}
+elsif ($action eq 'get_notifications') {getnotifications();}
 
 else {
 	print $cgi->header(-type => 'application/json;charset=utf-8', -status => "500 Action not supported");
@@ -56,4 +57,22 @@ sub notifydelete
 					-status => "200 OK");
 	exit;
 	
+}
+
+sub getnotifications 
+{
+	
+	$R::package if (0);
+	$R::name if (0);
+	
+	
+	print $cgi->header(-type => 'application/json;charset=utf-8',
+					-status => "200 OK");
+					
+	my @notifications = get_notifications($R::package, $R::name);
+	
+	print JSON->new->encode(\@notifications);
+	
+	exit;
+
 }

@@ -646,7 +646,7 @@ sub get_notifications
 		$contenthtml =~ s/\n/<br>\n/g;
 		$contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
 		
-		$notification{'DATEOBJ'} = $dateobj;
+		$notification{'DATEISO'} = $dateobj->datetime;
 		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
 		$notification{'PACKAGE'} = ${$notifhr}{$key}{'PACKAGE'};
 		$notification{'NAME'} = ${$notifhr}{$key}{'NAME'};
