@@ -8,12 +8,19 @@
 
 <!-- START Plugin container -->
 <TMPL_IF PLUGINS>
-<div class="widgetblock">
+<div class="widgetblock" id="pluginwidgets">
 	<TMPL_LOOP PLUGINS>
 	<div class="widget">
-	<TMPL_VAR PLUGIN_NOTIFY>
-			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img class="menutableicon" src="<TMPL_VAR PLUGINDB_ICONURI>"></a></div>
-			<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" class="nolinkstyle"><TMPL_VAR PLUGINDB_TITLE></a></div>
+			<!-- <div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img class="menutableicon" src="<TMPL_VAR PLUGINDB_ICONURI>"></a></div> -->
+			<!-- <div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" class="nolinkstyle"><TMPL_VAR PLUGINDB_TITLE></a></div> -->
+
+		<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/">
+			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR PLUGINDB_ICONURI>');  background-repeat: no-repeat; background-position: center center;">
+				<div class='notifyBlue' style='display: none' id="notifyBlue<TMPL_VAR PLUGINDB_FOLDER>">0</div>
+				<div class='notifyRed' style='display: none' id="notifyRed<TMPL_VAR PLUGINDB_FOLDER>">0</div>		
+			</div>
+		</a>
+		<div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" class="nolinkstyle"><TMPL_VAR PLUGINDB_TITLE></a></div>
 	</div>
 	</TMPL_LOOP>
 </div>
@@ -36,10 +43,10 @@
 	<TMPL_VAR HEADER.TITLE_PAGE_SYSTEM>
 </p>
 <!-- START Widget container -->
-<div class="widgetblock">
+<div class="widgetblock" id="systemwidgets">
 <TMPL_LOOP WIDGETS>
 <div class="widget">
-	<TMPL_VAR WIDGET_NOTIFY>
+	<!-- <TMPL_VAR WIDGET_NOTIFY> -->
 	<a href="<TMPL_VAR WIDGET_CGI>">
 			<TMPL_IF WIDGET_CLOCK>
 			<div class="menutableicon" style="width:100%; height:80px; padding:1px 0 10px 0;">
@@ -60,15 +67,8 @@
 			</div>
 			<TMPL_ELSE>
 			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR WIDGET_ICON>');  background-repeat: no-repeat; background-position: center center;">
-				<TMPL_IF WIDGET_NOTIFY_RED>
-					<div class='notifyRed'><TMPL_VAR WIDGET_NOTIFY_RED>1</div>
-				<TMPL_ELSE>
-					<TMPL_IF WIDGET_NOTIFY_BLUE>
-						<div class='notifyBlue'><TMPL_VAR WIDGET_NOTIFY_BLUE></div>
-					<TMPL_ELSE>
-						<div class='notifyBlue' style='visibility: hidden'>0</div>
-					</TMPL_IF>
-				</TMPL_IF>
+				<div class='notifyBlue' style='display: none' id="notifyBlue<TMPL_VAR NOTIFY_PACKAGE>">0</div>
+				<div class='notifyRed' style='display: none' id="notifyRed<TMPL_VAR NOTIFY_PACKAGE>">0</div>
 			</div>
 			</TMPL_IF>
 	</a>
@@ -178,6 +178,105 @@ function moveSecondHands()
 }
 </SCRIPT>
 
-
 </TMPL_IF>
+
+<SCRIPT>
+// Notification scripts
+var pluginerrors = 0;
+var plugininfos = 0;
+var systemerrors = 0;
+var systeminfos = 0;
+
+$(function() {
+    //console.log( "Calling updatenotify" );
+	updatenotify();
+	setInterval(function(){ updatenotify(); }, 5000);
+});
+	
+	
+function updatenotify() {
+    console.log ("Started updatenotify");
+	$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notifications' } )
+	.done(function(data) {
+		  // console.log("get_notifications executed successfully");
+          //$("#msudpport").value=data.UDPPort;
+          //$('#msenabled').val(data.SendData).flipswitch('refresh');
+          //$("#do").prop('disabled', true);
+          //$("#do").button('refresh');
+		
+		pluginerrors = 0;
+		plugininfos = 0;
+		systemerrors = 0;
+		systeminfos = 0;
+
+		
+		var packages = [];
+		$(".notifyBlue").each( function() {
+			$("#"+this.id).text("0");
+		});
+		$(".notifyRed").each( function() {
+			$("#"+this.id).text("0");
+		});
+		
+		$.each(data, function(index) {
+			// console.log("Notification:", data[index].PACKAGE, data[index].NAME, data[index].CONTENTHTML);
+			if (data[index].SEVERITY === 6) {
+				packages.push(data[index].PACKAGE);
+				var count = $("#notifyBlue"+data[index].PACKAGE).text();
+				count++;
+				$("#notifyBlue"+data[index].PACKAGE).text(count);
+				if (data[index]._ISSYSTEM) systeminfos++;
+				if (data[index]._ISPLUGIN) plugininfos++;
+			} else if (data[index].SEVERITY === 3) {
+				packages.push(data[index].PACKAGE);
+				var count = $("#notifyRed"+data[index].PACKAGE).text();
+				count++;
+				$("#notifyRed"+data[index].PACKAGE).text(count);
+				if (data[index]._ISSYSTEM) systemerrors++;
+				if (data[index]._ISPLUGIN) pluginerrors++;
+			}
+		});
+		$.unique(packages);
+		
+		$(".notifyBlue").each( function(index) {
+			// console.log ("Widget Blue:", this.id, $("#"+this.id).text());
+			if ($("#"+this.id).text() == 0) $("#"+this.id).fadeOut('slow');
+			else if ($("#"+this.id).text() != 0) $("#"+this.id).fadeIn('slow');
+		});
+		$(".notifyRed").each( function(index) {
+			// console.log ("Widget Red:", this.id, $("#"+this.id).text());
+			if ($("#"+this.id).text() == 0) $("#"+this.id).fadeOut('slow');
+			else if ($("#"+this.id).text() != 0) $("#"+this.id).fadeIn('slow');
+		});
+		
+		// NavBar injection
+		console.log ("System Infos/Errors:", systeminfos, systemerrors, "Plugin Infos/Errors:", plugininfos, pluginerrors);
+		if (pluginerrors != 0) $("#notifyRedNavBar1").text(pluginerrors).fadeIn('slow');
+		else $("#notifyRedNavBar1").text('0').fadeOut('slow');
+		if (plugininfos != 0) $("#notifyBlueNavBar1").text(plugininfos).fadeIn('slow');
+		else $("#notifyBlueNavBar1").text('0').fadeOut('slow');
+		if (systemerrors != 0) $("#notifyRedNavBar2").text(systemerrors).fadeIn('slow');
+		else $("#notifyRedNavBar2").text('0').fadeOut('slow');
+		if (systeminfos != 0) $("#notifyBlueNavBar2").text(systeminfos).fadeIn('slow');
+		else $("#notifyBlueNavBar2").text('0').fadeOut('slow');
+		
+		
+		<!-- $.each(packages, function (index) { -->
+			<!-- errors = $("#notifyRed"+packages[index]).text(); -->
+			<!-- infos = $("#notifyBlue"+packages[index]).text(); -->
+			<!-- console.log ("Package:", packages[index], "Errors:", errors, "Infos:", infos); -->
+			<!-- if (errors != 0)  -->
+				<!-- $("#notifyRed"+packages[index]).fadeIn('slow'); -->
+			<!-- if (infos != 0)  -->
+				<!-- $("#notifyBlue"+packages[index]).fadeIn('slow'); -->
+			
+		<!-- }); -->
+	});
+};
+
+</SCRIPT>
+
+
+
+
 <!-- ** END template/system/mainplugins.html ************************************************************************************ -->

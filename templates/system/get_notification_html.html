@@ -16,10 +16,17 @@
 		if ( $(".notifyrow<TMPL_VAR RAND>:visible").length <= 1 ) { $(".notify_block<TMPL_VAR RAND>").fadeOut();}
 		$("#notifyrow"+delid_encoded).fadeOut();
 		$(".spacer<TMPL_VAR RAND>").fadeOut();
-	$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+	$.post ( '/admin/system/tools/ajax-notification-handler.cgi', 
 					{ 	action: 'notify-deletekey',
 						value: delid,
-					});
+					})
+	.always(function(data) {
+		if (typeof updatenavbar !== 'undefined' && $.isFunction(updatenavbar)) {
+			console.log("Done");
+			updatenavbar();
+		}
+	});
+					
 	});
 </script>
 

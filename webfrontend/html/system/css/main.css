@@ -227,9 +227,9 @@ a:link.nolinkstyle
 
 .notifyRedNavBar {
   z-index: 10;
-  position: relative;
-  left:-5px;
-  top: -40px;
+  position: absolute;
+  right:5px;
+  top: -5px;
   float: right;
   background:#ed1d24;
   color:#fff;
@@ -244,9 +244,9 @@ a:link.nolinkstyle
 
 .notifyBlueNavBar {
   z-index: 10;
-  position: relative;
-  left:-5px;
-  top: -40px;
+  position: absolute;
+  right:5px;
+  top: -5px;
   float: right;
   background:#0A4586;
   color:#fff;

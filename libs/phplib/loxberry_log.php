@@ -5,14 +5,80 @@ require_once "loxberry_system.php";
 
 class LBLog
 {
-	public static $VERSION = "0.3.3.1";
-	public static $notification_dir = LBSDATADIR . "/notifications";
-
-	function get_notifications ($package = NULL, $name = NULL, $latest = NULL, $count = NULL, $getcontent = NULL)
+	public static $VERSION = "1.0.0.3";
+	
+	function get_notifications ($package = NULL, $name = NULL)
 	{
-		error_log("get_notifications called.\n");
+		// error_log("get_notifications called.\n");
 		
+		global $lbpplugindir;
+
+		$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
+	
+		$fields = array(
+			'action' => 'get_notifications',
+		);
+
+		if (isset($package)) { $fields['package'] = $package; }
+		if (isset($name)) { $fields['name'] = $name; }
 		
+		$options = array(
+			'http' => array(
+				'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+				'method'  => 'POST',
+				'content' => http_build_query($fields)
+				)
+		);
+		$context  = stream_context_create($options);
+		$result = file_get_contents($NOTIFHANDLERURL, false, $context);
+		if ($result === FALSE) { 
+			error_log("get_notifications_html: Could not get notifications"); 
+			return;
+		}
+		
+		$jsonresult = json_decode($result, true);
+		# var_dump($jsonresult);
+		
+		return ($jsonresult);
+	
+	}
+	
+		
+	
+	
+	// get_notifications_html
+	function get_notifications_html ($package = NULL, $name = NULL, $type = NULL, $buttons = NULL)
+	{
+		error_log("get_notifications_html called.\n");
+		
+		global $lbpplugindir;
+
+		$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
+	
+		$fields = array(
+			'action' => 'get_notifications_html',
+			'package' => "$package", 
+			'name' => "$name",
+			'type' => "$type",
+			'buttons' => "$buttons"
+		);
+		
+		$options = array(
+			'http' => array(
+				'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+				'method'  => 'POST',
+				'content' => http_build_query($fields)
+				)
+		);
+		$context  = stream_context_create($options);
+		$result = file_get_contents($NOTIFHANDLERURL, false, $context);
+		if ($result === FALSE) { 
+			error_log("get_notifications_html: Could not get notifications"); 
+			return;
+		}
+		
+		return $result;
+	
 	}
 	
 }
@@ -28,23 +94,80 @@ class LBLog
 # notify
 function notify ($package, $name, $message, $error = false)
 {
+	global $lbpplugindir;
+
+	$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
 	// error_log "Notifdir: " . LBLog::$notification_dir . "\n";
 	if (! $package || ! $name || ! $message) {
 		error_log("Notification: Missing parameters\n");
 		return;
 	}
-	$package = str_replace('_', '', trim(strtolower($package)));
-	$name = str_replace('_', '', trim(strtolower($name)));
 	
-	if ($error) {
-		$error = '_err';
-	} else { 
-		$error = "";
+	if ($error == True) {
+		$severity = 3;
+	} else {
+		$severity = 6;
 	}
 	
-	$filename = LBLog::$notification_dir . "/" . currtime('file') . "_{$package}_{$name}{$error}.system";
-	$fh = fopen($filename, "w") or trigger_error("Could not create a notification at '{$filename}': $!", E_USER_WARNING);
-	fwrite($fh, $message);
-	fclose($fh);
-	chown ($filename, 'loxberry');
+	$fields = array(
+		'action' => 'notifyext',
+		'PACKAGE' => $package, 
+		'NAME' => $name,
+		'MESSAGE' => $message,
+		'SEVERITY' => $severity,
+	);
+	
+	if (isset($lbpplugindir)) {
+		$fields['_ISPLUGIN'] = 1;
+	} else {
+		$fields['_ISSYSTEM'] = 1;
+	}
+	
+	$options = array(
+		'http' => array(
+			'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+			'method'  => 'POST',
+			'content' => http_build_query($fields)
+			)
+	);
+	$context  = stream_context_create($options);
+	$result = file_get_contents($NOTIFHANDLERURL, false, $context);
+	if ($result === FALSE) { /* Handle error */ }
+	
+}
+
+function notify_ext ($fields)
+{
+	global $lbpplugindir;
+
+	$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
+	// error_log "Notifdir: " . LBLog::$notification_dir . "\n";
+	if ( ! isset($fields['PACKAGE']) || ! isset($fields['NAME']) || ! isset($fields['MESSAGE']) ) {
+		error_log("Notification: Missing parameters\n");
+		return;
+	}
+	
+	if ( ! isset($fields['SEVERITY']) ) {
+		$severity = 6;
+	}
+	
+	$fields['action'] = "notifyext";
+		
+	if (isset($lbpplugindir)) {
+		$fields['_ISPLUGIN'] = 1;
+	} else {
+		$fields['_ISSYSTEM'] = 1;
+	}
+	
+	$options = array(
+		'http' => array(
+			'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+			'method'  => 'POST',
+			'content' => http_build_query($fields)
+			)
+	);
+	$context  = stream_context_create($options);
+	$result = file_get_contents($NOTIFHANDLERURL, false, $context);
+	if ($result === FALSE) { /* Handle error */ }
+	
 }

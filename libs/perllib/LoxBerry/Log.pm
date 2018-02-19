@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.1";
+our $VERSION = "1.0.0.7";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -35,10 +35,11 @@ use base 'Exporter';
 our @EXPORT = qw (
 
 notify
+notify_ext
 delete_notifications
+delete_notification_key
 get_notification_count
 get_notifications
-notification_content
 parsedatestring
 
 );
@@ -430,36 +431,177 @@ my $notifications_error;
 my $notifications_ok;
 our $notification_dir = $LoxBerry::System::lbsdatadir . "/notifications";
 
-
+# PUBLIC FUNCTION
 sub notify
 {
+	
 	my ($package, $name, $message, $error) = @_;
-	if (! $package || ! $name || ! $message) {
-		print STDERR "Notification: Missing parameters\n";
-		return;
-	}
-	$package = lc($package);
-	$package =~ s/_//g;
-	$name = lc($name);
-	$name =~ s/_//g;
 	
+	print STDERR "notify --->\n" if ($DEBUG);
+	
+	my $severity;
 	if ($error) {
-		$error = '_err';
-	} else { 
-		$error = "";
+		$severity = 3;
+	} else {
+		$severity = 6;
 	}
 	
-	my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
-	my $filename = $notification_dir . "/" . LoxBerry::System::currtime('file') . "_${package}_${name}${error}.system";
-	open(my $fh, '>', $filename) or warn "Could not create a notification at '$filename' $!";
-	flock($fh,2);
-	print $fh $message;
-	eval {
-		chown $uid, $gid, $fh;
-	};
-	flock($fh,8);
-	close $fh;
+	# SQLite interface
+	require DBI;
+	my $dbh;
+	
+	$dbh = notify_init_database();
+	print STDERR "notify: Could not init database.\n" if (! $dbh);
+	return undef if (! $dbh);
+	
+	# Build hash
+	my %data = ( 
+		PACKAGE => $package,
+		NAME => $name,
+		MESSAGE => $message,
+		SEVERITY => $severity,
+	);
+	
+	if ($LoxBerry::System::lbpplugindir) {
+		print STDERR "   Detected plugin notification\n" if ($DEBUG);
+		$data{_ISPLUGIN} = 1;
+	} else {
+		print STDERR "   Detected system notification\n" if ($DEBUG);
+		$data{_ISSYSTEM} = 1;
+	}
+	
+	notify_insert_notification($dbh, \%data);
+	
+	print STDERR "<--- notify\n" if ($DEBUG);
+
 }
+
+# PUBLIC FUNCTION
+sub notify_ext
+{
+	print STDERR "notify_ext --->\n" if ($DEBUG);
+	
+	# SQLite interface
+	require DBI;
+	my $dbh;
+	
+	my $data = shift;
+	
+	$dbh = notify_init_database();
+	print STDERR "notify_ext: Could not init database.\n" if (! $dbh);
+	return undef if (! $dbh);
+	
+	if (! $data->{_ISPLUGIN} && ! $data->{_ISSYSTEM}) {
+		if ($LoxBerry::System::lbpplugindir) {
+			print STDERR "   Detected plugin notification\n" if ($DEBUG);
+			$data->{_ISPLUGIN} = 1;
+		} else {
+			print STDERR "   Detected system notification\n" if ($DEBUG);
+			$data->{_ISSYSTEM} = 1;
+		}
+	}
+	notify_insert_notification($dbh, $data);
+	
+	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
+
+}
+
+
+# INTERNAL FUNCTIONS
+sub notify_init_database
+{
+
+	my $dbfile = $LoxBerry::System::lbsdatadir . "/notifications_sqlite.dat";
+	
+	my $dbh;
+	my $dores;
+	
+	$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or 
+		do {
+			print STDERR "notify_init_database connect: $DBI::errstr\n";
+			return undef;
+			};
+	
+	$dbh->do("CREATE TABLE IF NOT EXISTS notifications (
+				PACKAGE VARCHAR(255) NOT NULL,
+				NAME VARCHAR(255) NOT NULL,
+				MESSAGE TEXT,
+				SEVERITY INT,
+				timestamp DATETIME NOT NULL,
+				notifykey INTEGER PRIMARY KEY 
+			)") or 
+		do {
+			print STDERR "notify_init_database create table notifications: $DBI::errstr\n";
+			return undef;
+			};
+
+	$dbh->do("CREATE TABLE IF NOT EXISTS notifications_attr (
+				keyref INTEGER NOT NULL,
+				attrib VARCHAR(255) NOT NULL,
+				value VARCHAR(255),
+				PRIMARY KEY ( keyref, attrib )
+				)") or
+		do {
+			print STDERR "notify_init_database create table notifications_attr: $DBI::errstr\n";
+			return undef;
+		};
+	
+	return $dbh;
+
+}
+
+# INTERNAL FUNCTION
+sub notify_insert_notification
+{
+	
+	my $dbh = shift;
+	my %p = %{shift()};
+		
+	# print STDERR "Package: " . $p{'package'} . "\n";
+	
+	# Check mandatory fields
+	Carp::croak "Create notification: No PACKAGE defined\n" if (! $p{PACKAGE});
+	Carp::croak "Create notification: No NAMEdefined\n" if (! $p{NAME});
+	Carp::croak "Create notification: No MESSAGE defined\n" if (! $p{MESSAGE});
+	Carp::croak "Create notification: No SEVERITY defined\n" if (! $p{SEVERITY});
+
+	# Start transaction
+	
+	$dbh->do("BEGIN TRANSACTION;"); 
+	
+	# Insert main notification
+	my $sth = $dbh->prepare('INSERT INTO notifications (PACKAGE, NAME, MESSAGE, SEVERITY, timestamp) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP);');
+	$sth->execute($p{PACKAGE}, $p{NAME}, $p{MESSAGE} , $p{SEVERITY}) or 
+		do {
+			Carp::croak "Error inserting notification: $DBI::errstr\n";
+			return undef;
+		};
+	
+	my $id = $dbh->sqlite_last_insert_rowid();
+	
+	# Process further attributes
+	
+	my $sth2;
+	$sth2 = $dbh->prepare('INSERT INTO notifications_attr (keyref, attrib, value) VALUES (?, ?, ?);');
+	
+	for my $key (keys %p) {
+		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'MESSAGE' or $key eq 'SEVERITY');
+		$sth2->execute($id, $key, $p{$key});
+	}
+
+	$dbh->do("COMMIT;") or
+		do {
+			print STDERR "notify: commit failed: $DBI::errstr\n";
+			return undef;
+		};
+	
+	return "Success";
+	
+	$sth2->execute($id, 'logfile', 'This is the log');
+	$sth2->execute($id, 'level', 5);
+
+}
+
 
 
 ################################################################
@@ -467,90 +609,213 @@ sub notify
 # Input: (optional) specific notification event filter
 # Output: Hash with notifications
 ################################################################
-
+# PUBLIC FUNCTION
 sub get_notifications
 {
 	# print STDERR "get_notifications called.\n" if ($DEBUG);
-	my ($package, $name, $latest, $count, $getcontent) = @_;
-	LoxBerry::Log::read_notificationlist($getcontent);
-	if (! $package) {
-		return @notifications if (! $count);
-		return $notifications_error, $notifications_ok, ($notifications_error+$notifications_ok);
-	}
+	my ($package, $name) = @_;
+
+	print STDERR "--> get_notifications\n" if ($DEBUG);
 	
-	$package = lc($package) if ($package);
-	$name = lc($name) if ($name);
+	# SQLite interface
+	require DBI;
+	my $dbh;
 	
-	my @filtered = ();
-	my $filtered_errors=0;
-	my $filtered_ok=0;
+	my $dbh = notify_init_database();
+	print STDERR "get_notifications: Could not init database\n" if (! $dbh);
+	return undef if (! $dbh);
 	
-	foreach my $notification (@notifications) {
-		next if ($package ne $notification->{PACKAGE});
-		next if ($name && $name ne $notification->{NAME});
-		if ($notification->{'SEVERITY'} eq 'err') {
-			$filtered_errors++;
-		} else {
-			$filtered_ok++;
+	my $qu;
+	$qu = "SELECT * FROM notifications ";
+	$qu .= "WHERE " if ($package);
+	$qu .= "PACKAGE = '$package' AND NAME = '$name' " if ($package && $name);
+	$qu .= "PACKAGE = '$package' " if ($package && !$name);
+	$qu .= "ORDER BY timestamp DESC ";
+	print STDERR "   Query: $qu\n" if ($DEBUG);
+	
+	
+	my $notifhr = $dbh->selectall_hashref($qu, "notifykey");
+	
+	my @notifications;
+	
+	foreach my $key (keys %$notifhr ) {
+		my %notification;
+		
+		my $dateobj = Time::Piece->strptime(${$notifhr}{$key}{'timestamp'}, "%Y-%m-%d %H:%M:%S");
+		
+		my $contenthtml = ${$notifhr}{$key}{'MESSAGE'};
+		$contenthtml =~ s/\n/<br>\n/g;
+		$contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
+		
+		$notification{'DATEISO'} = $dateobj->datetime;
+		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+		$notification{'PACKAGE'} = ${$notifhr}{$key}{'PACKAGE'};
+		$notification{'NAME'} = ${$notifhr}{$key}{'NAME'};
+		$notification{'SEVERITY'} = ${$notifhr}{$key}{'SEVERITY'};
+		$notification{'KEY'} = $key;
+		$notification{'CONTENTRAW'} =  ${$notifhr}{$key}{'MESSAGE'};
+		$notification{'CONTENTHTML'} =  $contenthtml;
+		
+		my $qu_attr = "SELECT * FROM notifications_attr WHERE keyref = '$key';";
+		my @attribs = $dbh->selectall_array($qu_attr);
+		if (@attribs) {
+			foreach my $attrib (@attribs) {
+				$notification{@$attrib[1]} =  @$attrib[2];
+				# print STDERR "Attrib: 0:" . @$attrib[0] . " 1:" . @$attrib[1] . " 2:" . @$attrib[2] . "\n";
+			}
 		}
-		push(@filtered, $notification);
-		last if ($latest);
-		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n" if ($DEBUG);
+		
+		push(@notifications, \%notification);
+
 	}
-	print STDERR "get_notifications: \n" if ($DEBUG);
-	print STDERR "Countings: $filtered_errors errors / $filtered_ok ok's\n" if ($DEBUG);
-	return @filtered if (! $count);
-	return $filtered_errors, $filtered_ok, ($filtered_errors+$filtered_ok);
+	
+	return @notifications;
 }
 
-sub get_notifications_with_content
-{
-	my ($package, $name, $latest) = @_;
-	my @filtered = LoxBerry::Log::get_notifications($package, $name, $latest, undef, 1);
-	return @filtered;
-}
+# sub get_notifications_with_content
+# {
+	# my ($package, $name, $latest) = @_;
+	# my @filtered = LoxBerry::Log::get_notifications($package, $name, $latest, undef, 1);
+	# return @filtered;
+# }
 
 # Retuns an array with the number of notifications
+# PUBLIC FUNCTION
 sub get_notification_count
 {
 	my ($package, $name, $latest) = @_;
-	my ($notification_error, $notification_ok, $notification_sum) = LoxBerry::Log::get_notifications($package, $name, $latest, 1);
-	return $notification_error, $notification_ok, $notification_sum;
+	#my ($notification_error, $notification_ok, $notification_sum) = LoxBerry::Log::get_notifications($package, $name, $latest, 1);
+	
+	print STDERR "get_notification_count -->\n" if ($DEBUG);
+	
+	# SQLite interface
+	require DBI;
+	my $dbh;
+	
+	my $dbh = notify_init_database();
+	return undef if (! $dbh);
+
+	my $qu;
+	my @resinf;
+	my @reserr;
+	
+	$qu = "SELECT count(*) FROM notifications ";
+	$qu .= "WHERE " if ($package);
+	$qu .= "PACKAGE = '$package' AND NAME = '$name' AND " if ($package && $name);
+	$qu .= "PACKAGE = '$package' AND " if ($package && !$name);
+	my $querr = $qu . "SEVERITY = 3;";
+	my $quinf = $qu . "SEVERITY = 6;";
+	# print STDERR "Error Query: $querr\n" if ($DEBUG);
+	# print STDERR "Info Query: $quinf\n" if ($DEBUG);
+	my ($notification_error) = $dbh->selectrow_array($querr);
+	my ($notification_ok) = $dbh->selectrow_array($quinf);
+		
+	print STDERR "   Error Count: $notification_error\n" if ($DEBUG);
+	print STDERR "   Info Count: $notification_ok\n" if ($DEBUG);
+	print STDERR "<-- get_notification_count\n" if ($DEBUG);
+	
+	return $notification_error, $notification_ok, ($notification_error+$notification_ok);
 
 }
-
+# PUBLIC FUNCTION
 sub delete_notifications
 {
 	my ($package, $name, $ignorelatest) = @_;
-	LoxBerry::Log::read_notificationlist();
-	my $latestkept=0;
+	print STDERR "delete_notifications -->\n" if ($DEBUG);
+	print STDERR "   No PACKAGE defined. Return undef\n<-- delete_notifications\n" if (!$package && $DEBUG);
+	return undef if (!$package);
 	
-	foreach my $notification (@notifications) {
-		next if (lc($package) ne $notification->{PACKAGE});
-		next if ($name && lc($name) ne $notification->{NAME});
-		if ($ignorelatest && $latestkept == 0) {
-			$latestkept = 1;
-		} else {
-			unlink $notification->{FULLPATH};
-		}
-		# print STDERR "Notification datestring: " . $notification->{DATESTR} . "\n" if ($DEBUG);
+	# SQLite interface
+	require DBI;
+	my $dbh;
+	
+	my $dbh = notify_init_database();
+	return undef if (! $dbh);
+
+	my $qu;
+	my @resinf;
+	my @reserr;
+	
+	$dbh->do("BEGIN TRANSACTION;"); 
+	
+	$qu = "SELECT notifykey FROM notifications ";
+	$qu .= "WHERE " if ($package || $name || $ignorelatest);
+	$qu .= "PACKAGE = '$package' AND NAME = '$name' " if ($package && $name);
+	$qu .= "PACKAGE = '$package' " if ($package && !$name);
+	if ($ignorelatest) {
+		my $qu_latest = $qu . "ORDER BY timestamp DESC LIMIT 1;"; 
+		my ($latest) = $dbh->selectrow_array($qu_latest);
+		$qu .= "AND " if ($package && $latest);
+		$qu .= "notifykey <> $latest " if ($package && $latest);
+		print STDERR "   Key to keep: $latest\n" if ($DEBUG);
 	}
-	undef @notifications;
+	$qu .=";";
+	#  print STDERR "Select Keys to delete query: $qu\n";
+	my @keylist = $dbh->selectall_array($qu);
+	my $number_to_delete = scalar @keylist;
+	print STDERR "   Number of elements to delete: $number_to_delete\n" if ($DEBUG);
+	if ($number_to_delete < 1) {
+		
+		print STDERR "   Nothing to do. Rollback and returning.\n<--- delete_notifications\n";
+		$dbh->do("ROLLBACK;");
+		return;
+	}
+	
+	my $deletelist;
+	foreach my $key (@keylist) {
+		$deletelist .= "@$key[0], ";
+	}
+	$deletelist = LoxBerry::System::trim($deletelist);
+	$deletelist =~ s/,$//;
+	print STDERR "   Deletelist: $deletelist\n" if ($DEBUG);
+	$dbh->do("DELETE FROM notifications_attr WHERE keyref IN ($deletelist);");
+	$dbh->do("DELETE FROM notifications WHERE notifykey IN ($deletelist);");
+	
+	print STDERR "   Commit\n" if ($DEBUG);
+	$dbh->do("COMMIT;"); 
+	
+	print STDERR "<--- delete_notifications\n" if ($DEBUG);
+	
 }
 
-sub notification_content
+sub delete_notification_key
 {
 	my ($key) = @_;
-	my $notifyfile = "$notification_dir/$key";
-	open (my $fh, "<" , $notifyfile) or return undef; 
-	my $content = <$fh>;
-	close ($fh);
-	my $contenthtml = $content;
-	$contenthtml =~ s/\n/<br>\n/g;
-	$contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
-	print STDERR "Contentraw: $content ContentHTML: $contenthtml\n" if ($DEBUG);
-	return $content, $contenthtml;
+	print STDERR "delete_notification_key -->\n" if ($DEBUG);
+	print STDERR "   No Key defined. Return undef\n<-- delete_notification_key\n" if (!$key && $DEBUG);
+	return undef if (!$key);
+	
+	# SQLite interface
+	require DBI;
+	my $dbh;
+	
+	my $dbh = notify_init_database();
+	return undef if (! $dbh);
+
+	$dbh->do("BEGIN TRANSACTION;"); 
+	$dbh->do("DELETE FROM notifications_attr WHERE keyref = $key;");
+	$dbh->do("DELETE FROM notifications WHERE notifykey = $key;");
+	
+	print STDERR "   Commit\n" if ($DEBUG);
+	$dbh->do("COMMIT;"); 
+	
+	print STDERR "<--- delete_notification_key\n" if ($DEBUG);
+	
 }
+
+# sub notification_content
+# {
+	# my ($key) = @_;
+	# my $notifyfile = "$notification_dir/$key";
+	# open (my $fh, "<" , $notifyfile) or return undef; 
+	# my $content = <$fh>;
+	# close ($fh);
+	# my $contenthtml = $content;
+	# $contenthtml =~ s/\n/<br>\n/g;
+	# $contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
+	# print STDERR "Contentraw: $content ContentHTML: $contenthtml\n" if ($DEBUG);
+	# return $content, $contenthtml;
+# }
 
 sub get_notifications_html
 {
@@ -558,28 +823,28 @@ sub get_notifications_html
 	my %p = @_;
 	my ($package, $name, $type, $buttons) = @_;
 	
-	print STDERR "get_notifications_html called.\n" if ($DEBUG);
+	print STDERR "get_notifications_html --->\n" if ($DEBUG);
 	
-	$p{package} = lc($package) if ($package);
-	$p{name} = lc($name) if ($name);
+	$p{package} = $package if ($package);
+	$p{name} = $name if ($name);
 	$p{buttons} = $buttons if ($buttons);
 	
 	$p{error} = 1 if (!$type || $type == 2 || $type eq 'all' || $type eq 'err' || $type eq 'error' || $type eq 'errors');
 	$p{info} = 1 if (!$type || $type == 1 || $type eq 'all' || $type eq 'inf' || $type eq 'info' || $type eq 'infos');
 		
-	my @notifs = LoxBerry::Log::get_notifications($package, $name, undef, undef, 1);
+	my @notifs = LoxBerry::Log::get_notifications($package, $name);
 	
 	if ($DEBUG) {
-		print STDERR "Parameters used:\n";
-		print STDERR "   package: $p{package}\n";
-		print STDERR "   name: $p{name}\n";
-		print STDERR "   buttons: $p{buttons}\n";
-		print STDERR "   error: $p{error}\n";
-		print STDERR "   info: $p{info}\n";
+		print STDERR "   Parameters used:\n";
+		print STDERR "      package: $p{package}\n";
+		print STDERR "      name: $p{name}\n";
+		print STDERR "      buttons: $p{buttons}\n";
+		print STDERR "      error: $p{error}\n";
+		print STDERR "      info: $p{info}\n";
 	}
 		
 	if (! @notifs) {
-		print STDERR "No notifications found. Returning nothing.\n" if ($DEBUG);
+		print STDERR "<--- No notifications found. Returning nothing.\n" if ($DEBUG);
 		return;
 	}
 	
@@ -593,21 +858,21 @@ sub get_notifications_html
 		print STDERR "Notification: $not->{SEVERITY} $not->{DATESTR} $not->{PACKAGE} $not->{NAME} $not->{CONTENTRAW}\n" if ($DEBUG);
 		
 		
-		if (! $not->{SEVERITY} && ! $p{error} ) {
+		if ( $not->{SEVERITY} == 3 && ! $p{error} ) {
 			print STDERR "Skipping notification - is error but info requested\n" if ($DEBUG);
 			next;
 		}
 		# Don't show errors when infos are requested
-		if ( $not->{SEVERITY} eq 'err' && ! $p{error} ) {
+		if ( $not->{SEVERITY} == 6 && ! $p{error} ) {
 			print STDERR "Skipping notification - is info but error requested\n" if ($DEBUG);
 			next;
 		}
 		my $notif_line;
 		$notif_line .= 	"<div style='display:table-row;' class='notifyrow$randval' id='notifyrow$not->{KEY}'>";
 		$notif_line .= 	'<div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">';
-		if (! $not->{SEVERITY}) {
+		if ($not->{SEVERITY} == 6) {
 			$notif_line .= '<img src="/system/images/notification_info_small.svg">';
-		} elsif ($not->{SEVERITY} eq 'err') {
+		} elsif ($not->{SEVERITY} == 3) {
 			$notif_line .= '<img src="/system/images/notification_error_small.svg">';
 		}
 		$notif_line .= "</div>";
@@ -638,7 +903,6 @@ sub get_notifications_html
 	
 }
 
-
 #####################################################
 # Parse yyyymmdd_hhmmss date to date object
 #####################################################
@@ -654,53 +918,92 @@ sub parsedatestring
 	return $dt;
 }
 
-# INTERNAL function read_notificationlist
-sub read_notificationlist
+# # INTERNAL function read_notificationlist
+# sub read_notificationlist
+# {
+	# my ($getcontent) = @_;
+		
+	# opendir( my $DIR, $notification_dir );
+	# my @files = sort {$b cmp $a} readdir($DIR);
+	# my $direntry;
+	# my $notifycount;
+	# @notifications = ();
+		
+	# while ( my $direntry = shift @files ) {
+		# next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
+		# print STDERR "Direntry: $direntry\n" if ($DEBUG);
+		# my $notstr = substr($direntry, 16, rindex($direntry, '.')-16);
+		# my ($package, $name, $severity) = split(/_/, $notstr);
+		# my $notdate = substr($direntry, 0, 15);
+		# # LOGDEB "Log type: $nottype  Date: $notdate";
+		# my $dateobj = LoxBerry::Log::parsedatestring($notdate);
+		# next if (!$dateobj); 
+		# my %notification;
+		# $notifycount++;
+		# if (lc($severity) eq 'err') {
+			# $notifications_error++;
+		# } else {
+			# $notifications_ok++;
+		# }
+		# $notification{'PACKAGE'} = lc($package);
+		# $notification{'NAME'} = lc($name);
+		# $notification{'SEVERITY'} = lc($severity);
+		# $notification{'DATEOBJ'} = $dateobj;
+		# $notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
+		# $notification{'KEY'} = $direntry;
+		# $notification{'FULLPATH'} = "$notification_dir/$direntry";
+		# ($notification{'CONTENTRAW'}, $notification{'CONTENTHTML'}) = notification_content($notification{'KEY'}) if ($getcontent);
+		
+		# push(@notifications, \%notification);
+	# }
+	# # return @notifications;
+	# closedir $DIR;
+	# $content_was_read = 1;
+	# print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
+# }
+
+# INTERNAL FUNCTION
+sub get_severity
 {
-	my ($getcontent) = @_;
-	return if (@notifications && !$getcontent); 
-	#return if (@notifications && $getcontent && $content_was_read);
-		
-	opendir( my $DIR, $notification_dir );
-	my @files = sort {$b cmp $a} readdir($DIR);
-	my $direntry;
-	my $notifycount;
-	@notifications = ();
-		
-	while ( my $direntry = shift @files ) {
-		next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
-		print STDERR "Direntry: $direntry\n" if ($DEBUG);
-		my $notstr = substr($direntry, 16, rindex($direntry, '.')-16);
-		my ($package, $name, $severity) = split(/_/, $notstr);
-		my $notdate = substr($direntry, 0, 15);
-		# LOGDEB "Log type: $nottype  Date: $notdate";
-		my $dateobj = LoxBerry::Log::parsedatestring($notdate);
-		next if (!$dateobj); 
-		my %notification;
-		$notifycount++;
-		if (lc($severity) eq 'err') {
-			$notifications_error++;
-		} else {
-			$notifications_ok++;
-		}
-		$notification{'PACKAGE'} = lc($package);
-		$notification{'NAME'} = lc($name);
-		$notification{'SEVERITY'} = lc($severity);
-		$notification{'DATEOBJ'} = $dateobj;
-		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
-		$notification{'KEY'} = $direntry;
-		$notification{'FULLPATH'} = "$notification_dir/$direntry";
-		($notification{'CONTENTRAW'}, $notification{'CONTENTHTML'}) = notification_content($notification{'KEY'}) if ($getcontent);
-		
-		push(@notifications, \%notification);
-	}
-	# return @notifications;
-	closedir $DIR;
-	$content_was_read = 1;
-	print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
+	my ($sevstr) = @_;
+	$sevstr = lc $sevstr;
+	
+	# Ordered by most possible occurrency
+	
+	# 3
+	my @error = ("3", "err", "error", "logerr");
+	return 3 if ( grep( /^$sevstr$/, @error ) );
+	
+	# 6
+	my @info = ("6", "inf", "info", "loginf");
+	return 6 if ( grep( /^$sevstr$/, @info ) );
+	
+	# 4
+	my @warning = ("4", "warn", "warning", "logwarn");
+	return 4 if ( grep( /^$sevstr$/, @warning ) );
+	
+	# 5
+	my @ok = ("5", "ok", "logok");
+	return 5 if ( grep( /^$sevstr$/, @ok ) );
+
+	# 7
+	my @debug = ("7", "debug", "deb", "logdeb", "logdebug");
+	return 7 if ( grep( /^$sevstr$/, @debug ) );
+
+	# 2
+	my @critical = ("2", "critical", "crit", "critic", "logcrit");
+	return 2 if ( grep( /^$sevstr$/, @critical ) );
+
+	# 1
+	my @alert = ("1", "alert", "logalert");
+	return 1 if ( grep( /^$sevstr$/, @alert ) );
+
+	# 0
+	my @emerge = ("0", "emerg", "emerge", "emergency", "logemerge");
+	return 0 if ( grep( /^$sevstr$/, @emerge ) );
+
+	return undef;
 }
-
-
 
 ##################################################################
 ##################################################################

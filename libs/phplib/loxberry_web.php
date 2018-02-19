@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "0.3.3.3";
+	public static $LBWEBVERSION = "1.0.0.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -69,6 +69,7 @@ class LBWeb
 		global $template_title;
 		global $helplink;
 		global $navbar;
+		global $lbpplugindir;
 		
 		if ($template_title !== "") {
 			$pagetitle = $template_title;
@@ -128,18 +129,51 @@ class LBWeb
 					$btntarget = "";
 				}
 				
-				$notify = "";
-				if (isset($element['notifyRed'])) {
-					$notify = ' <span class="notifyRedNavBar">' . $element['notifyRed'] . '</span>';
-				} elseif (isset($element['notifyBlue'])) {
-					$notify = ' <span class="notifyBlueNavBar">' . $element['notifyBlue'] . '</span>';
-				}
+				// // NavBar Notify Old
+				// $notify = "";
+				// if (isset($element['notifyRed'])) {
+					// $notify = ' <span class="notifyRedNavBar">' . $element['notifyRed'] . '</span>';
+				// } elseif (isset($element['notifyBlue'])) {
+					// $notify = ' <span class="notifyBlueNavBar">' . $element['notifyBlue'] . '</span>';
+				// }
+				
+				$notify .= <<<EOT
+				<div class="notifyBlueNavBar" id="notifyBlueNavBar$element" style="display: none">0</div>
+				<div class="notifyRedNavBar" id="notifyRedNavBar$element" style="display: none">0</div>
+EOT;
 				
 				if (isset($element['Name'])) {
-					$topnavbar .= '		<li><a href="' . $element['URL'] . '"' . $btntarget . $btnactive . '>' . $element['Name'] . '</a>' . $notify . '</li>';
+					$topnavbar .= <<<EOT
+				<li>
+					<div style="position:relative">$notify<a href="{$element['URL']}"{$btntarget}{$btnactive}>{$element['Name']}</a></div></li>
+EOT;
 					$topnavbar_haselements = True;
+				
+					// Inject Notify JS code
+					$notifyname = $element['Notify_Name'];
+					$notifypackage = $element['Notify_Package'];
+					if (isset($notifyname) && ! isset($notifypackage) && isset($lbpplugindir)) {
+						$notifypackage = $lbpplugindir;
+					}
+					if (isset($notifypackage)) {
+						$topnavbar_notify_js .= <<<EOT
+
+		$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notification_count', package: '$notifypackage', name: '$notifyname' })
+			.done(function(data) { 
+				console.log("get_notification_count executed successfully");
+				console.log("{$element['Name']}", data[0], data[1], data[2]);
+				if (data[0] != 0) \$("#notifyRedNavBar{$element}").text(data[2]).fadeIn('slow');
+				else \$("#notifyRedNavBar{$element}").text('0').fadeOut('slow');
+				if (data[1] != 0) \$("#notifyBlueNavBar{$element}").text(data[1]).fadeIn('slow');
+				else \$("#notifyBlueNavBar{$element}").text('0').fadeOut('slow');
+				
+			});
+EOT;
+
+					}
 				}
 			}
+			
 			$topnavbar .=  '	</ul>' .
 				'</div>';	
 		
@@ -166,6 +200,25 @@ class LBWeb
 		} else {
 			$pageobj->param ( 'TOPNAVBAR', "");
 		}
+		if ($topnavbar_notify_js) {
+			$notify_js = 
+<<<EOT
+
+<SCRIPT>
+\$(function() { updatenavbar(); });
+function updatenavbar() {
+	console.log("updatenavbar called");
+	$topnavbar_notify_js
+};
+</SCRIPT>
+EOT;
+			$pageobj->param ( 'NAVBARJS', $notify_js);
+		} else {
+			$pageobj->param ( 'NAVBARJS', "");
+		}	
+		
+		
+		
 		
 		
 		$pageobj->output();

@@ -39,7 +39,6 @@ elsif ($action eq 'plugin-loglevel') {print $cgi->header; plugindb_update('logle
 elsif ($action eq 'plugin-autoupdate') {print $cgi->header; plugindb_update('autoupdate', $R::pluginmd5, $R::value); }
 elsif ($action eq 'testenvironment') { print $cgi->header; &testenvironment; }
 elsif ($action eq 'changelanguage') { print $cgi->header; change_generalcfg("BASE.LANG", $value);}
-elsif ($action eq 'notify-deletekey') {print $cgi->header; notifydelete();}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 else   { print $cgi->header; print "<red>Action not supported.</red>"; }
 
@@ -321,25 +320,6 @@ sub plugindb_update
 		
 	} else {
 		#print STDERR "plugindatabase nothing changed.\n";
-	}
-}
-
-###################################################################
-# Delete notify
-###################################################################
-sub notifydelete
-{
-	require LoxBerry::Log;
-	
-	my $key = $R::value;
-	$key =~ s/[\/\\]//g;
-	
-	$LoxBerry::Log::notification_dir if (0);
-	
-	my $filename = "$LoxBerry::Log::notification_dir/$key";
-	print STDERR "Delete file $filename\n";
-	if (-e $filename ) { 
-		unlink $filename;
 	}
 }
 

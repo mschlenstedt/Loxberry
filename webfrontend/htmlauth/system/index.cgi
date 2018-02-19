@@ -18,12 +18,11 @@
 ##########################################################################
 # Modules
 ##########################################################################
-use LoxBerry::System;
 use LoxBerry::Web;
-use LoxBerry::Log;
+# use LoxBerry::Log;
 
 use CGI qw/:standard/;
-use LWP::UserAgent;
+# use LWP::UserAgent;
 # use CGI::Session;
 use warnings;
 use strict;
@@ -52,7 +51,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbscon
 }
 
 # Version of this script
-my $version = "0.3.3.4";
+my $version = "1.0.0.3";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -131,33 +130,21 @@ exit;
 
 sub mainmenu {
 
+	# $LoxBerry::Log::DEBUG = 1;
+	
 	my @plugins;
 	
-	# Check notifications
-	my %notification_errors;
-	my %notification_oks;
-	my $notification_allerrors = 0;
-	my $notification_alloks = 0;
-	
-	my @notifications = get_notifications();
-	for my $notification (@notifications ) {
-		if ($notification->{SEVERITY} eq 'err') {
-			$notification_errors{$notification->{PACKAGE}}++;
-			$notification_oks{$notification->{PACKAGE}}++;
-			$notification_allerrors++;
-		} else {
-			$notification_oks{$notification->{PACKAGE}}++;
-			$notification_alloks++;
-		}
-	}
-
 	our %navbar;
 	$navbar{1}{Name} = $SL{'HEADER.TITLE_PAGE_PLUGINS'};
 	$navbar{1}{URL} = "/admin/system/index.cgi";
 	$navbar{2}{Name} = $SL{'HEADER.TITLE_PAGE_SYSTEM'};
 	$navbar{2}{URL} = "/admin/system/index.cgi?form=system";
-	$navbar{2}{notifyBlue} = $notification_allerrors == 0 && $notification_alloks != 0 ? $notification_alloks : undef;
-	$navbar{2}{notifyRed} = $notification_allerrors != 0 ? ($notification_allerrors+$notification_alloks)  : undef;
+
+	# $navbar{2}{notifyBlue} = 2;
+	# $navbar{2}{notifyRed} = 3;
+	
+#	$navbar{2}{notifyBlue} = $notification_allerrors == 0 && $notification_alloks != 0 ? $notification_alloks : undef;
+#	$navbar{2}{notifyRed} = $notification_allerrors != 0 ? ($notification_allerrors+$notification_alloks)  : undef;
 
 	if (!$R::form || $R::form ne "system") {
 		# Get Plugins from plugin database
@@ -185,91 +172,82 @@ sub mainmenu {
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MYLOXBERRY'}, 
 				WIDGET_ICON => "/system/images/icons/main_myloxberry.svg",
 				WIDGET_CGI => "/admin/system/myloxberry.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'myloxberry'},
-				WIDGET_NOTIFY_RED => $notification_errors{'myloxberry'},
+				NOTIFY_PACKAGE => "myloxberry",
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_ADMIN'},
 				WIDGET_ICON => "/system/images/icons/main_admin.png", 
 				WIDGET_CGI => "/admin/system/admin.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'admin'},
-				WIDGET_NOTIFY_RED => $notification_errors{'admin'},
+				NOTIFY_PACKAGE => "admin",
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MINISERVER'}, 
 				WIDGET_ICON => "/system/images/icons/main_miniserver.svg",
 				WIDGET_CGI => "/admin/system/miniserver.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'miniserver'},
-				WIDGET_NOTIFY_RED => $notification_errors{'miniserver'},
+				NOTIFY_PACKAGE => "miniserver",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TIMESERVER'},
 				WIDGET_ICON => "/system/images/icons/blank_64.png",
 				WIDGET_CGI => "/admin/system/timeserver.cgi",
+				NOTIFY_PACKAGE => "timeserver",
 				WIDGET_CLOCK => 1
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_NETWORK'},
 				WIDGET_ICON => "/system/images/icons/main_network.png",
 				WIDGET_CGI => "/admin/system/network.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'network'},
-				WIDGET_NOTIFY_RED => $notification_errors{'network'},
+				NOTIFY_PACKAGE => "network",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_PLUGININSTALL'},
 				WIDGET_ICON => "/system/images/icons/main_plugininstall.png",
 				WIDGET_CGI => "/admin/system/plugininstall.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'plugininstall'},
-				WIDGET_NOTIFY_RED => $notification_errors{'plugininstall'},
+				NOTIFY_PACKAGE => "plugininstall",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_UPDATES'},
 				WIDGET_ICON => "/system/images/icons/main_updates.png",
 				WIDGET_CGI => "/admin/system/updates.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'updates'},
-				WIDGET_NOTIFY_RED => $notification_errors{'updates'},
+				NOTIFY_PACKAGE => "updates",
 				
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_SERVICES'},
 				WIDGET_ICON => "/system/images/icons/main_services.png",
 				WIDGET_CGI => "/admin/system/services.php",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'services'},
-				WIDGET_NOTIFY_RED => $notification_errors{'services'},
+				NOTIFY_PACKAGE => "services",
 				
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_REBOOT'},
 				WIDGET_ICON => "/system/images/icons/main_power.png",
 				WIDGET_CGI => "/admin/system/power.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'power'},
-				WIDGET_NOTIFY_RED => $notification_errors{'power'},
+				NOTIFY_PACKAGE => "power",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MAILSERVER'},
 				WIDGET_ICON => "/system/images/icons/main_mail.png",
 				WIDGET_CGI => "/admin/system/mailserver.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'mailserver'},
-				WIDGET_NOTIFY_RED => $notification_errors{'mailserver'},
+				NOTIFY_PACKAGE => "mailserver",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
 				WIDGET_ICON => "/system/images/icons/main_setupassistent.png",
 				WIDGET_CGI => "/admin/system/wizard.cgi",
+				NOTIFY_PACKAGE => "wizard",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TRANSLATE'},
 				WIDGET_ICON => "/system/images/icons/main_translate.png",
 				WIDGET_CGI => "/admin/system/translate.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'translate'},
-				WIDGET_NOTIFY_RED => $notification_errors{'translate'},
+				NOTIFY_PACKAGE => "translate",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",
-				WIDGET_NOTIFY_BLUE => $notification_oks{'donate'},
-				WIDGET_NOTIFY_RED => $notification_errors{'donate'},
+				NOTIFY_PACKAGE => "donate",
 			}
 		]);
 		
