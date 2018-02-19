@@ -92,14 +92,14 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.2";
+	public static $LBSYSTEMVERSION = "1.0.0.4";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
 	///////////////////////////////////////////////////////////////////
 	// Detects the language from query, post or general.cfg
 	///////////////////////////////////////////////////////////////////
-	public function lblanguage() 
+	public static function lblanguage() 
 	{
 		global $lblang;
 		if (isset(LBSystem::$lang)) { 
@@ -127,7 +127,7 @@ class LBSystem
 		return "en";
 	}
 
-	public function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
+	public static function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
 	{
 		if (!is_object($template) && is_string($template)) {
 			$genericlangfile = $template;
@@ -196,7 +196,7 @@ class LBSystem
 	}
 	
 	####### Get Miniserver array #######
-	public function get_miniservers() 
+	public static function get_miniservers() 
 	{
 		# If config file was read already, directly return the saved hash
 		global $miniservers;
@@ -209,7 +209,7 @@ class LBSystem
 	}
 
 	####### Get Miniserver key by IP Address #######
-	public function get_miniserver_by_ip($ip)
+	public static function get_miniserver_by_ip($ip)
 	{
 		global $miniservers;
 		$ip = trim(strtolower($ip));
@@ -227,7 +227,7 @@ class LBSystem
 	}
 
 	####### Get Miniserver key by Name #######
-	public function get_miniserver_by_name($myname)
+	public static function get_miniserver_by_name($myname)
 	{
 		global $miniservers;
 		$myname = trim(strtolower($myname));
@@ -245,7 +245,7 @@ class LBSystem
 	}
 
 	####### Get Binaries #######
-	public function get_binaries()
+	public static function get_binaries()
 	{
 		global $binaries;
 		if ($binaries) {
@@ -263,7 +263,7 @@ class LBSystem
 	# Get Plugin Version
 	# Returns plugin version from plugindatabase
 	##################################################################################
-	public function pluginversion($queryname = "")
+	public static function pluginversion($queryname = "")
 	{
 		global $pluginversion;
 		global $lbpplugindir;
@@ -283,7 +283,7 @@ class LBSystem
 	# Get Plugindata
 	# Returns the data of the current or named plugin
 	##################################################################################
-	public function plugindata($queryname = "")
+	public static function plugindata($queryname = "")
 	{
 		global $pluginversion;
 		global $lbpplugindir;
@@ -307,7 +307,7 @@ class LBSystem
 	# Get Plugins
 	# Returns an array of all plugins without comments
 	##################################################################################
-	public function get_plugins($withcomments = 0, $force = 0)
+	public static function get_plugins($withcomments = 0, $force = 0)
 	{
 		global $plugins;
 		
@@ -358,7 +358,7 @@ class LBSystem
 	# Get System Version
 	# Returns LoxBerry version
 	##################################################################################
-	public function lbversion()
+	public static function lbversion()
 	{
 		global $lbversion;
 		
@@ -497,7 +497,7 @@ class LBSystem
 	# Input: $msnr
 	# Output: $port
 	#####################################################
-	public function get_ftpport($msnr = 1)
+	public static function get_ftpport($msnr = 1)
 	{
 		global $miniservers;
 		global $miniservercount;
@@ -536,7 +536,7 @@ class LBSystem
 	####################################################
 	# get_localip - Get local ip address
 	####################################################
-	public function get_localip()
+	public static function get_localip()
 	{
 		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 		socket_connect($sock, "8.8.8.8", 53);
@@ -549,7 +549,7 @@ class LBSystem
 	# is_systemcall - Determine if called from system widget
 	#########################################################
 
-	public function is_systemcall()
+	public static function is_systemcall()
 	{
 		$mypath = getcwd();
 		// error_log("is_systemcall: mypath $mypath");

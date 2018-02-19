@@ -135,7 +135,7 @@ sub getnotificationshtml
 	
 	if (! $html) {
 		print $cgi->header(-type => 'text/html;charset=utf-8',
-							-status => "500 Unknown error");
+							-status => "204 No notifications found");
 		exit;
 	}
 	

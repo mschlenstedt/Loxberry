@@ -5,9 +5,9 @@ require_once "loxberry_system.php";
 
 class LBLog
 {
-	public static $VERSION = "1.0.0.3";
+	public static $VERSION = "1.0.0.4";
 	
-	function get_notifications ($package = NULL, $name = NULL)
+	public static function get_notifications ($package = NULL, $name = NULL)
 	{
 		// error_log("get_notifications called.\n");
 		
@@ -43,11 +43,9 @@ class LBLog
 	
 	}
 	
-		
-	
 	
 	// get_notifications_html
-	function get_notifications_html ($package = NULL, $name = NULL, $type = NULL, $buttons = NULL)
+	public static function get_notifications_html ($package = NULL, $name = NULL, $type = NULL, $buttons = NULL)
 	{
 		error_log("get_notifications_html called.\n");
 		
@@ -57,11 +55,13 @@ class LBLog
 	
 		$fields = array(
 			'action' => 'get_notifications_html',
-			'package' => "$package", 
-			'name' => "$name",
-			'type' => "$type",
-			'buttons' => "$buttons"
 		);
+		
+		if (isset($package)) { $fields['package'] = $package; }
+		if (isset($name)) { $fields['name'] = $name; }
+		if (isset($type)) { $fields['type'] = $type; }
+		if (isset($buttons)) { $fields['buttons'] = $buttons; }
+		
 		
 		$options = array(
 			'http' => array(

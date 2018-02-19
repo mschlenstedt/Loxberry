@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.0.0.1";
+	public static $LBWEBVERSION = "1.0.0.2";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -13,7 +13,7 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	// prints the head
 	///////////////////////////////////////////////////////////////////
-	public function head($pagetitle = "")
+	public static function head($pagetitle = "")
 	{
 		// error_log("loxberry_web: Head function called -->");
 		global $template_title;
@@ -62,7 +62,7 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	// pagestart - Prints the page
 	///////////////////////////////////////////////////////////////////
-	public function pagestart($pagetitle = "", $helpurl = "", $helptemplate = "", $page = "main1")
+	public static function pagestart($pagetitle = "", $helpurl = "", $helptemplate = "", $page = "main1")
 	{
 		// error_log("loxberry_web: pagestart function called -->");
 
@@ -287,7 +287,7 @@ EOT;
 	///////////////////////////////////////////////////////////////////
 	// pageend - Prints the page end
 	///////////////////////////////////////////////////////////////////
-	public function pageend()
+	public static function pageend()
 	{
 		global $reboot_required_file;
 		$lang = LBSystem::lblanguage();
@@ -308,7 +308,7 @@ EOT;
 	///////////////////////////////////////////////////////////////////
 	// foot - Prints the footer
 	///////////////////////////////////////////////////////////////////
-	public function foot()
+	public static function foot()
 	{
 		$lang = LBSystem::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/foot.html";
@@ -320,7 +320,7 @@ EOT;
 	///////////////////////////////////////////////////////////////////
 	// lbheader - Prints head and pagestart
 	///////////////////////////////////////////////////////////////////
-	public function lbheader($pagetitle = "", $helpurl = "", $helptemplate = "")
+	public static function lbheader($pagetitle = "", $helpurl = "", $helptemplate = "")
 	{
 		LBWeb::head($pagetitle);
 		LBWeb::pagestart($pagetitle, $helpurl, $helptemplate);
@@ -329,7 +329,7 @@ EOT;
 	///////////////////////////////////////////////////////////////////
 	// lbfooter - Prints pageend and footer
 	///////////////////////////////////////////////////////////////////
-	public function lbfooter()
+	public static function lbfooter()
 	{
 		LBWeb::pageend();
 		LBWeb::foot();
@@ -340,7 +340,7 @@ EOT;
 	// Detects the language 
 	// Moved to LBSystem::lblanguage
 	///////////////////////////////////////////////////////////////////
-	public function lblanguage() 
+	public static function lblanguage() 
 	{
 		$phpself = basename(__FILE__);
 		error_Log("$phpself: LBWeb::lblanguage was moved to LBSystem::lblanguage. The call was redirected, but you should update your program.");
@@ -350,7 +350,7 @@ EOT;
 	///////////////////////////////////////////////////////////////////
 	// readlanguage - reads the language to an array and template
 	///////////////////////////////////////////////////////////////////
-	public function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
+	public static function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
 	{
 		$phpself = basename(__FILE__);
 		error_Log("$phpself: LBWeb::readlanguage was moved to LBSystem::readlanguage. The call was redirected, but you should update your program.");
