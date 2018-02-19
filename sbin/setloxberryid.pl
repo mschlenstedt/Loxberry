@@ -94,16 +94,44 @@ if ($sendstat) {
 	$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
 	$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
 	
+	# Send LoxBerry version info
 	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture";
 	my $output = qx { $curlbin -f -k -s -S --stderr - --show-error -o /dev/null "$url" };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0 ) {
 		LOGCRIT "ERROR $exitcode sending statistics to $url\n$output\n";
-		exit(1);
-	
 	} else {
 	LOGOK "Sent request successfully: $url\n";
 	}
+	
+	# Send Plugin version info
+	my @plugins = LoxBerry::System::get_plugins();
+	foreach my $plugin (@plugins) {
+		# print STDERR "$plugin->{PLUGINDB_NO} $plugin->{PLUGINDB_TITLE} $plugin->{PLUGINDB_VERSION}\n";
+		my ($ver_major, $ver_minor, $ver_sub) = split (/\./, trim($plugin->{PLUGINDB_VERSION}));
+		my $url = "https://stats.loxberry.de/collectplugin.php" .
+			"?uid=$lbid" .
+			"&pluginmd5=" . uri_escape($plugin->{PLUGINDB_MD5_CHECKSUM}) .  
+			"&plugintitle=" . uri_escape($plugin->{PLUGINDB_TITLE}) . 
+			"&pluginname=" . uri_escape($plugin->{PLUGINDB_NAME}) . 
+			"&plugindir=" . uri_escape($plugin->{PLUGINDB_FOLDER}) . 
+			"&pluginauthor=" . uri_escape($plugin->{PLUGINDB_AUTHOR_NAME}) . 
+			"&pluginemail=" . uri_escape($plugin->{PLUGINDB_AUTHOR_EMAIL}) . 
+			"&ver_major=" . uri_escape($ver_major) . 
+			"&ver_minor=" . uri_escape($ver_minor) . 
+			"&ver_sub=" . uri_escape($ver_sub) . 
+			"&version=" . uri_escape($plugin->{PLUGINDB_VERSION}); 
+		
+		my $output = qx { $curlbin -f -k -s -S --stderr - --show-error "$url" };
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0 ) {
+			LOGCRIT "ERROR $exitcode sending statistics to $url\n$output\n";	
+		} else {
+		LOGOK "Successfully sent plugin request for $plugin->{PLUGINDB_TITLE}: $url\n$output\n";
+		}
+	}
+	
+	
 }
 LOGEND "Finished successfully.";
 exit;
