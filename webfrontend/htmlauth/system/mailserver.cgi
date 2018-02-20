@@ -20,6 +20,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::Log;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI;
 use warnings;
@@ -51,7 +52,7 @@ our $mailbin;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "1.0.0.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 $cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
@@ -137,10 +138,24 @@ sub form
 	  $maintemplate->param(  "CHECKED2", 'checked="checked"');
 	}
 	
+	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_INFOS"))) {
+		$maintemplate->param("MAIL_SYSTEM_INFOS", 'checked');
+	}
+	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_ERRORS"))) {
+		$maintemplate->param("MAIL_SYSTEM_ERRORS", 'checked');
+	}
+	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_INFOS"))) {
+		$maintemplate->param("MAIL_PLUGIN_INFOS", 'checked');
+	}
+	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_ERRORS"))) {
+		$maintemplate->param("MAIL_PLUGIN_ERRORS", 'checked');
+	}
+	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MAILSERVER.WIDGETLABEL'};
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	print LoxBerry::Log::get_notifications_html("mailserver");
 	print $maintemplate->output();
 	LoxBerry::Web::pageend();
 	LoxBerry::Web::foot();

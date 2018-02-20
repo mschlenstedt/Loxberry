@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.8";
+our $VERSION = "1.0.0.9";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -45,6 +45,8 @@ parsedatestring
 );
 
 # Variables
+
+my $notifymailerror;
 
 ################################################################
 ## Constructor
@@ -613,19 +615,20 @@ sub notify_send_mail
 	my $message;
 	my %mcfg;
 	
+	return if ($notifymailerror);
+	
 	Config::Simple->import_from("$LoxBerry::System::lbsconfigdir/mail.cfg", \%mcfg) or return;
-	print STDERR "Check $mcfg{'NOTIFICATION.MAIL_SYSTEM_ERRORS'} / SEVERITY $p{SEVERITY} / $p{_ISSYSTEM}\n";
+
 	return if ($p{SEVERITY} != 3 && $p{SEVERITY} != 6);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_ERRORS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_INFOS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_ERRORS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_INFOS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
-	print STDERR "Check2\n";
 	
 	my $hostname = LoxBerry::System::lbhostname();
 	my $friendlyname = LoxBerry::System::lbfriendlyname();
-	my $friendlyname = $friendlyname ? $friendlyname : $hostname;
-	my $friendlyname .= " LoxBerry";
+	$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
+	$friendlyname .= " LoxBerry";
 	
 	my $status = $p{SEVERITY} == 3 ? "Error" : "Info";
 	
@@ -653,12 +656,13 @@ sub notify_send_mail
 	my $bins = LoxBerry::System::get_binaries(); 
 	my $mailbin = $bins->{MAIL};
 	my $email = $mcfg{'SMTP.EMAIL'};
-	
-	print STDERR "Sending email...\n";
-		
+
 	my $result = qx(echo "$message" | $mailbin -a "From: $email" -s "$subject" -v $email 2>&1);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
+		$notifymailerror = 1; # Prevents loops
+		my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+		notify("mailserver", "mailerror", $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'}, "error");
 		print STDERR "Error sending email notification - Error $exitcode:\n";
 		print STDERR $result . "\n";
 	} 
@@ -680,8 +684,6 @@ sub get_notifications
 	
 	# SQLite interface
 	require DBI;
-	my $dbh;
-	
 	my $dbh = notify_init_database();
 	print STDERR "get_notifications: Could not init database\n" if (! $dbh);
 	return undef if (! $dbh);
@@ -695,15 +697,14 @@ sub get_notifications
 	print STDERR "   Query: $qu\n" if ($DEBUG);
 	
 	
-	my $notifhr = $dbh->selectall_hashref($qu, "notifykey");
+	my $notifhr = $dbh->selectall_hashref($qu, "timestamp");
 	
 	my @notifications;
 	
-	foreach my $key (keys %$notifhr ) {
+	foreach my $key (reverse sort keys %$notifhr ) {
 		my %notification;
 		
 		my $dateobj = Time::Piece->strptime(${$notifhr}{$key}{'timestamp'}, "%Y-%m-%d %H:%M:%S");
-		
 		my $contenthtml = ${$notifhr}{$key}{'MESSAGE'};
 		$contenthtml =~ s/\n/<br>\n/g;
 		$contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
@@ -713,7 +714,7 @@ sub get_notifications
 		$notification{'PACKAGE'} = ${$notifhr}{$key}{'PACKAGE'};
 		$notification{'NAME'} = ${$notifhr}{$key}{'NAME'};
 		$notification{'SEVERITY'} = ${$notifhr}{$key}{'SEVERITY'};
-		$notification{'KEY'} = $key;
+		$notification{'KEY'} = ${$notifhr}{$key}{'notifykey'};
 		$notification{'CONTENTRAW'} =  ${$notifhr}{$key}{'MESSAGE'};
 		$notification{'CONTENTHTML'} =  $contenthtml;
 		
@@ -751,8 +752,6 @@ sub get_notification_count
 	
 	# SQLite interface
 	require DBI;
-	my $dbh;
-	
 	my $dbh = notify_init_database();
 	return undef if (! $dbh);
 
@@ -788,8 +787,6 @@ sub delete_notifications
 	
 	# SQLite interface
 	require DBI;
-	my $dbh;
-	
 	my $dbh = notify_init_database();
 	return undef if (! $dbh);
 
@@ -848,8 +845,6 @@ sub delete_notification_key
 	
 	# SQLite interface
 	require DBI;
-	my $dbh;
-	
 	my $dbh = notify_init_database();
 	return undef if (! $dbh);
 
@@ -914,7 +909,7 @@ sub get_notifications_html
 	
 	my $randval = int(rand(30000));
 	
-	for my $not (@notifs) {
+	foreach my $not (@notifs) {
 		# Don't show info when errors are requested
 		print STDERR "Notification: $not->{SEVERITY} $not->{DATESTR} $not->{PACKAGE} $not->{NAME} $not->{CONTENTRAW}\n" if ($DEBUG);
 		

@@ -39,6 +39,10 @@ elsif ($action eq 'plugin-loglevel') {print $cgi->header; plugindb_update('logle
 elsif ($action eq 'plugin-autoupdate') {print $cgi->header; plugindb_update('autoupdate', $R::pluginmd5, $R::value); }
 elsif ($action eq 'testenvironment') { print $cgi->header; &testenvironment; }
 elsif ($action eq 'changelanguage') { print $cgi->header; change_generalcfg("BASE.LANG", $value);}
+elsif ($action eq 'MAIL_SYSTEM_INFOS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_SYSTEM_INFOS", $value);}
+elsif ($action eq 'MAIL_SYSTEM_ERRORS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_SYSTEM_ERRORS", $value);}
+elsif ($action eq 'MAIL_PLUGIN_INFOS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_PLUGIN_INFOS", $value);}
+elsif ($action eq 'MAIL_PLUGIN_ERRORS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_PLUGIN_ERRORS", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 else   { print $cgi->header; print "<red>Action not supported.</red>"; }
 
@@ -263,6 +267,29 @@ sub change_generalcfg
 		$cfg->param($key, $val);
 	}
 	$cfg->write() or return undef;
+	return 1;
+}
+
+
+###################################################################
+# change mail.cfg
+###################################################################
+sub change_mailcfg
+{
+	my ($key, $val) = @_;
+	if (!$key) {
+		return undef;
+	}
+	my $cfg = new Config::Simple("$lbsconfigdir/mail.cfg") or return undef;
+
+	if (!$val) {
+		# Delete key
+		$cfg->delete($key);
+		$cfg->write() or return undef;
+	} elsif ($cfg->param($key) ne $val) {
+		$cfg->param($key, $val);
+		$cfg->write() or return undef;
+	}
 	return 1;
 }
 
