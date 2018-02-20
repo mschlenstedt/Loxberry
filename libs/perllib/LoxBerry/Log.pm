@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.7";
+our $VERSION = "1.0.0.8";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -471,6 +471,7 @@ sub notify
 	}
 	
 	notify_insert_notification($dbh, \%data);
+	notify_send_mail(\%data);
 	
 	print STDERR "<--- notify\n" if ($DEBUG);
 
@@ -501,6 +502,7 @@ sub notify_ext
 		}
 	}
 	notify_insert_notification($dbh, $data);
+	notify_send_mail($data);
 	
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
 
@@ -602,6 +604,65 @@ sub notify_insert_notification
 
 }
 
+# INTERNAL FUNCTION
+sub notify_send_mail
+{
+	my %p = %{shift()};
+	
+	my $subject;
+	my $message;
+	my %mcfg;
+	
+	Config::Simple->import_from("$LoxBerry::System::lbsconfigdir/mail.cfg", \%mcfg) or return;
+	print STDERR "Check $mcfg{'NOTIFICATION.MAIL_SYSTEM_ERRORS'} / SEVERITY $p{SEVERITY} / $p{_ISSYSTEM}\n";
+	return if ($p{SEVERITY} != 3 && $p{SEVERITY} != 6);
+	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_ERRORS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 3);
+	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_INFOS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
+	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_ERRORS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
+	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_INFOS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
+	print STDERR "Check2\n";
+	
+	my $hostname = LoxBerry::System::lbhostname();
+	my $friendlyname = LoxBerry::System::lbfriendlyname();
+	my $friendlyname = $friendlyname ? $friendlyname : $hostname;
+	my $friendlyname .= " LoxBerry";
+	
+	my $status = $p{SEVERITY} == 3 ? "Error" : "Info";
+	
+	if ($p{_ISSYSTEM}) {
+		# Camel-case Package and Name
+		my $package = $p{PACKAGE};
+		$package =~  s/([^\s\w]*)(\S+)/$1\u\L$2/g;
+		my $name = $p{NAME};
+		$name =~  s/([^\s\w]*)(\S+)/$1\u\L$2/g;
+		
+		$subject = "$friendlyname $status in $package $name";
+		$message = $p{MESSAGE} . "\n\n";
+		$message .= "$friendlyname (http://$hostname:" . LoxBerry::System::lbwebserverport() . "/)";
+	}
+	else 
+	{
+		my %plugin = LoxBerry::System::plugindata($p{PACKAGE});
+		my $plugintitle = $plugin{PLUGINDB_TITLE};
+		
+		$subject = "$friendlyname $status in $plugintitle";
+		$message = $p{MESSAGE} . "\n\n";
+		$message .= "$friendlyname (http://$hostname:" . LoxBerry::System::lbwebserverport() . "/)";
+	}
+
+	my $bins = LoxBerry::System::get_binaries(); 
+	my $mailbin = $bins->{MAIL};
+	my $email = $mcfg{'SMTP.EMAIL'};
+	
+	print STDERR "Sending email...\n";
+		
+	my $result = qx(echo "$message" | $mailbin -a "From: $email" -s "$subject" -v $email 2>&1);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		print STDERR "Error sending email notification - Error $exitcode:\n";
+		print STDERR $result . "\n";
+	} 
+}
 
 
 ################################################################
