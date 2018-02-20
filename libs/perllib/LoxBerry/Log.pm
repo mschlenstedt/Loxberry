@@ -867,6 +867,14 @@ sub get_notifications_html
 			print STDERR "Skipping notification - is info but error requested\n" if ($DEBUG);
 			next;
 		}
+		
+		my $logfilepath;
+		if ( $not->{LOGFILE} ) {
+			$logfilepath = $not->{LOGFILE};
+			$logfilepath =~ s/^$LoxBerry::System::lbhomedir\///;
+		}
+		
+		
 		my $notif_line;
 		$notif_line .= 	"<div style='display:table-row;' class='notifyrow$randval' id='notifyrow$not->{KEY}'>";
 		$notif_line .= 	'<div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">';
@@ -876,8 +884,9 @@ sub get_notifications_html
 			$notif_line .= '<img src="/system/images/notification_error_small.svg">';
 		}
 		$notif_line .= "</div>";
-		$notif_line .= "<div style='vertical-align: middle; width:90%; display: table-cell; '><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
-		$notif_line .= "<div style='vertical-align: middle; width:10%; display: table-cell; align:right; text-align: right;'>";
+		$notif_line .= "<div style='vertical-align: middle; width:80%; display: table-cell; '><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
+		$notif_line .= "<div style='vertical-align: middle; width:20%; display: table-cell; align:right; text-align: right;'>";
+		$notif_line .= '<a class="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=' . $logfilepath . '&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>' if ($logfilepath);
 		$notif_line .= "<a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>Dismiss</a>";
 		$notif_line .= "</div>";
 		# print STDERR $notif_line if ($DEBUG);
