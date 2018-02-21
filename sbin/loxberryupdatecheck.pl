@@ -39,7 +39,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.2";
+my $scriptversion="1.0.0.3";
 
 # print currtime('file') . "\n";
 
@@ -213,9 +213,27 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	$joutput{'release_new'} = 1;
 	
 	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
-		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_RELEASE'} . " $release_version") if $querytype eq 'release';
-		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_PRERELEASE'} . " $release_version") if $querytype eq 'prerelease';
-		delete_notifications('updates', 'check', 1);
+		my @notifications = get_notifications( 'updates', 'lastnotifiedrelease');
+		if ($notifications[0] && $notifications[0]->{version} eq "$release_version") {
+			LOGOK "Skipping notification because version has already been notified.";
+		} else {
+			# Delete old helper notification
+			delete_notifications('updates', 'lastnotifiedrelease');
+			# Set a new helper notification with the new version
+			my %notification = (
+						PACKAGE => "updates",
+						NAME => "lastnotifiedrelease",
+						MESSAGE => "This helper notification keeps track of last notified releases",
+						SEVERITY => 7,
+						version => "$release_version",
+				);
+			LoxBerry::Log::notify_ext( \%notification );
+			
+			# Create the normal user notification
+			notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_RELEASE'} . " $release_version") if $querytype eq 'release';
+			notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_PRERELEASE'} . " $release_version") if $querytype eq 'prerelease';
+			delete_notifications('updates', 'check', 1);
+		}
 	}
 	
 	if ( $cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron ) ) {
@@ -496,8 +514,26 @@ sub check_commits
 	$joutput{'published_at'} = $commit_date;
 	
 	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
-		notify('updates', 'check', "LoxBerry Updatecheck: New commit from $commit_by on $commit_date, message $commit_message.");
-		delete_notifications('updates', 'check', 1);
+		
+		my @notifications = get_notifications( 'updates', 'lastnotifiedcommit');
+		if ($notifications[0] && $notifications[0]->{commitsha} eq "$commit_sha") {
+			LOGOK "Skipping notification because commit has already been notified.";
+		} else {
+			# Delete old helper notification
+			delete_notifications('updates', 'lastnotifiedcommit');
+			# Set a new helper notification with the new version
+			my %notification = (
+						PACKAGE => "updates",
+						NAME => "lastnotifiedcommit",
+						MESSAGE => "This helper notification keeps track of last notified commits",
+						SEVERITY => 7,
+						commitsha => "$commit_sha",
+				);
+			LoxBerry::Log::notify_ext( \%notification );
+	
+			notify('updates', 'check', "LoxBerry Updatecheck: New commit from $commit_by on $commit_date, message $commit_message.");
+			delete_notifications('updates', 'check', 1);
+		}
 	}
 	
 	# If an update was requested
