@@ -473,6 +473,7 @@ sub notify
 	}
 	
 	notify_insert_notification($dbh, \%data);
+	$dbh->disconnect;
 	notify_send_mail(\%data);
 	
 	print STDERR "<--- notify\n" if ($DEBUG);
@@ -504,9 +505,11 @@ sub notify_ext
 		}
 	}
 	notify_insert_notification($dbh, $data);
+	$dbh->disconnect;
 	notify_send_mail($data);
 	
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
+	
 
 }
 
@@ -697,28 +700,27 @@ sub get_notifications
 	print STDERR "   Query: $qu\n" if ($DEBUG);
 	
 	
-	my $notifhr = $dbh->selectall_hashref($qu, "timestamp");
+	my $notifhr = $dbh->selectall_arrayref($qu, { Slice => {} });
 	
 	my @notifications;
 	
-	foreach my $key (reverse sort keys %$notifhr ) {
+	foreach my $key (@$notifhr ) {
 		my %notification;
-		
-		my $dateobj = Time::Piece->strptime(${$notifhr}{$key}{'timestamp'}, "%Y-%m-%d %H:%M:%S");
-		my $contenthtml = ${$notifhr}{$key}{'MESSAGE'};
+		my $dateobj = Time::Piece->strptime($key->{'timestamp'}, "%Y-%m-%d %H:%M:%S");
+		my $contenthtml = $key->{'MESSAGE'};
 		$contenthtml =~ s/\n/<br>\n/g;
 		$contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
 		
 		$notification{'DATEISO'} = $dateobj->datetime;
 		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
-		$notification{'PACKAGE'} = ${$notifhr}{$key}{'PACKAGE'};
-		$notification{'NAME'} = ${$notifhr}{$key}{'NAME'};
-		$notification{'SEVERITY'} = ${$notifhr}{$key}{'SEVERITY'};
-		$notification{'KEY'} = ${$notifhr}{$key}{'notifykey'};
-		$notification{'CONTENTRAW'} =  ${$notifhr}{$key}{'MESSAGE'};
+		$notification{'PACKAGE'} = $key->{'PACKAGE'};
+		$notification{'NAME'} = $key->{'NAME'};
+		$notification{'SEVERITY'} = $key->{'SEVERITY'};
+		$notification{'KEY'} = $key->{'notifykey'};
+		$notification{'CONTENTRAW'} =  $key->{'MESSAGE'};
 		$notification{'CONTENTHTML'} =  $contenthtml;
 		
-		my $qu_attr = "SELECT * FROM notifications_attr WHERE keyref = '${$notifhr}{$key}{'notifykey'}';";
+		my $qu_attr = "SELECT * FROM notifications_attr WHERE keyref = '$key->{'notifykey'}';";
 		my @attribs = $dbh->selectall_array($qu_attr);
 		if (@attribs) {
 			foreach my $attrib (@attribs) {
