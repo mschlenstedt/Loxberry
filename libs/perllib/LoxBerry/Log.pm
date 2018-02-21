@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.10";
+our $VERSION = "1.0.0.11";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -913,6 +913,7 @@ sub get_notifications_html
 		# Don't show info when errors are requested
 		print STDERR "Notification: $not->{SEVERITY} $not->{DATESTR} $not->{PACKAGE} $not->{NAME} $not->{CONTENTRAW}\n" if ($DEBUG);
 		
+		next if ($not->{SEVERITY} != 3 && $not->{SEVERITY} != 6);
 		
 		if ( $not->{SEVERITY} == 3 && ! $p{error} ) {
 			print STDERR "Skipping notification - is error but info requested\n" if ($DEBUG);
