@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.0.0.3";
+my $scriptversion="1.0.0.4";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -165,6 +165,9 @@ foreach (@plugins) {
 	#
 	# Check for a release
 	#
+	
+	my $installtype;
+	
 	if ( ($release || $notify) && $endpointrelease ) {
 
 		LOGINF "Requesting release file from $endpointrelease";
@@ -189,25 +192,46 @@ foreach (@plugins) {
 			if ( $releasever > $currentver ) {
 				LOGINF "Release version is newer than current installed version.";
 				$installversion = $releasever;
+				$installtype = "release";
 				if ( !$notify ) {
 					$installarchive = $releasearchive;
 				} else {
-					$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
-					$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
-					$message .= "<a href='$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
-					$message .= "<a href='/admin/system/plugininstall.cgi?url=$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
-					notify ( "plugininstall", "$pluginname", $message);
-					sleep 1;
-					LOGINF "Notification saved.";
+					my @notifications = get_notifications( 'plugininstall', "lastnotified-rel-$pluginname");
+					my $last_notified_version;
+					$last_notified_version = $notifications[0]->{version} if ($notifications[0]);
+					delete_notifications('plugininstall', "lastnotified-rel-$pluginname");
+					my %notification = (
+								PACKAGE => "plugininstall",
+								NAME => "lastnotified-rel-$pluginname",
+								MESSAGE => "This helper notification keeps track of last notified release of $plugintitle",
+								SEVERITY => 7,
+								version => "$releasever",
+								installarchive => "$releasearchive",
+								type => "release",
+								LINK => $releaseinfo,
+						);
+					LoxBerry::Log::notify_ext( \%notification );
+					if ($last_notified_version && $last_notified_version eq "$releasever") {
+						LOGOK "Skipping notification because version has already been notified.";
+					} else {
+						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
+						$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
+						$message .= "<a href='$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
+						$message .= "<a href='/admin/system/plugininstall.cgi?url=$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
+						notify ( "plugininstall", "$pluginname", $message);
+						LOGINF "Notification saved.";
+					}
+				
 				}
+
 			} else {
+				# Installed version is equal or newer. Helper notification can be deleted.
 				LOGINF "Release version is not newer than installed version.";
+				delete_notifications('plugininstall', "lastnotified-rel-$pluginname");
 			}
 
 		}
-
 	}
-	
 	#
 	# Check for a prerelease
 	#
@@ -233,22 +257,41 @@ foreach (@plugins) {
 				LOGCRIT "Cannot check prerelease version number. Is this a real version number?";
 			}
 
-			if ( $prereleasever > $releasever ) {
-				LOGINF "Prerelease version is newer than release version.";
+			if ( $prereleasever > $releasever && $prereleasever > $currentver) {
+				LOGINF "Prerelease version is newer than release version, and newer than installed version.";
 				$installversion = $prereleasever;
+				$installtype = "prerelease";
 				if ( !$notify ) {
-					$installarchive = $releasearchive;
+					$installarchive = $prereleasearchive;
 				} else {
-					$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
-					$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
-					$message .= "<a href='$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
-					$message .= "<a href='/admin/system/plugininstall.cgi?url=$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
-					notify ( "plugininstall", "$pluginname", $message);
-					sleep 1;
-					LOGINF "Notification saved.";
+					my @notifications = get_notifications( 'plugininstall', "lastnotified-prerel-$pluginname");
+					my $last_notified_version;
+					$last_notified_version = $notifications[0]->{version} if ($notifications[0]);
+					delete_notifications('plugininstall', "lastnotified-prerel-$pluginname");
+					my %notification = (
+								PACKAGE => "plugininstall",
+								NAME => "lastnotified-prerel-$pluginname",
+								MESSAGE => "This helper notification keeps track of last notified pre-release of $plugintitle",
+								SEVERITY => 7,
+								version => "$prereleasever",
+								installarchive => "$prereleasearchive",
+								type => "prerelease",
+						);
+					LoxBerry::Log::notify_ext( \%notification );
+					if ($last_notified_version && $last_notified_version eq "$prereleasever") {
+						LOGOK "Skipping notification because version has already been notified.";
+					} else {
+						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
+						$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
+						$message .= "<a href='$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
+						$message .= "<a href='/admin/system/plugininstall.cgi?url=$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
+						notify ( "plugininstall", "$pluginname", $message);
+						LOGINF "Notification saved.";
+					}
 				}
 			} else {
 				LOGINF "Prerelease version is not newer than release version.";
+				delete_notifications('plugininstall', "lastnotified-prerel-$pluginname");
 			}
 
 		}
@@ -271,7 +314,8 @@ foreach (@plugins) {
 
 			# Installation
 			LOGOK "Archive file fetched.";
-			LOGINF "Installing new (pre-)release... Logs are going to the plugins install logfile. Please be patient...";
+			LOGINF "Installing new RELEASE... Logs are going to the plugins install logfile. Please be patient..." if ($installtype eq "release");
+			LOGINF "Installing new PRE-RELEASE... Logs are going to the plugins install logfile. Please be patient..." if ($installtype eq "prerelease");
 
 			$logfile = "/tmp/$tempfile.log";
 			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile > $logfile 2>&1");
@@ -281,6 +325,8 @@ foreach (@plugins) {
 			if ($? eq 0 ) {
 				$message = "$pluginname - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DONE'} $installversion";
 				notify ( "plugininstall", "pluginautoupdate", $message);
+				delete_notifications('plugininstall', "lastnotified-prerel-$pluginname") if ($installtype eq "release");
+				delete_notifications('plugininstall', "lastnotified-rel-$pluginname"); if ($installtype eq "prerelease" || $installtype eq "release");
 			}
 
 		}
