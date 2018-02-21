@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.4";
+	public static $LBSYSTEMVERSION = "1.0.0.5";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -268,14 +268,20 @@ class LBSystem
 		global $pluginversion;
 		global $lbpplugindir;
 		
-		if ($pluginversion && $queryname == "") {
-			# print STDERR "Returning already fetched version\n";
+		if (isset($pluginversion) && $queryname == "") {
+			# error_log("Returning already fetched version\n");
 			return $pluginversion;
 		} 
 		
+		
 		$query = $queryname != "" ? $queryname : $lbpplugindir;
-				
+		
 		$plugin = LBSystem::plugindata($query);
+		
+		if (isset($plugin['PLUGINDB_VERSION']) && $queryname == "") {
+				$pluginversion = $plugin['PLUGINDB_VERSION'];
+		}
+		
 		return isset($plugin['PLUGINDB_VERSION']) ? $plugin['PLUGINDB_VERSION'] : null;
 	}
 	
@@ -293,7 +299,7 @@ class LBSystem
 		$plugins = LBSystem::get_plugins();
 		
 		foreach($plugins as $plugin) {
-			if ($queryname != "" && $plugin['PLUGINDB_NAME'] == $queryname) {
+			if ($queryname != "" && ( $plugin['PLUGINDB_NAME'] == $queryname || $plugin['PLUGINDB_FOLDER'] == $queryname) ) {
 				return $plugin;
 			}
 			if ($queryname == "" && $plugin['PLUGINDB_FOLDER'] == $lbpplugindir) {
