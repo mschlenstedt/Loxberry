@@ -326,7 +326,7 @@ foreach (@plugins) {
 				$message = "$pluginname - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DONE'} $installversion";
 				notify ( "plugininstall", "pluginautoupdate", $message);
 				delete_notifications('plugininstall', "lastnotified-prerel-$pluginname") if ($installtype eq "release");
-				delete_notifications('plugininstall', "lastnotified-rel-$pluginname"); if ($installtype eq "prerelease" || $installtype eq "release");
+				delete_notifications('plugininstall', "lastnotified-rel-$pluginname") if ($installtype eq "prerelease" || $installtype eq "release");
 			}
 
 		}
