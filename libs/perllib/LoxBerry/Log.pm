@@ -931,23 +931,30 @@ sub get_notifications_html
 			$logfilepath =~ s/^$LoxBerry::System::lbhomedir\///;
 		}
 		
+		my $link;
+		my $linktarget;
+		if ( $not->{LINK} ) {
+			$link = $not->{LINK};
+			$linktarget = LoxBerry::System::begins_with($link, "http://") or LoxBerry::System::begins_with($link, "https://") ? "_blank" : "_self";
+		}
 		
 		my $notif_line;
-		$notif_line .= 	"<div style='display:table-row;' class='notifyrow$randval' id='notifyrow$not->{KEY}'>";
-		$notif_line .= 	'<div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">';
+		$notif_line = 	qq(<div style='display:table-row;' class='notifyrow$randval' id='notifyrow$not->{KEY}'>\n);
+		$notif_line .= 	qq(   <div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">\n);
 		if ($not->{SEVERITY} == 6) {
-			$notif_line .= '<img src="/system/images/notification_info_small.svg">';
+			$notif_line .= qq(      <img src="/system/images/notification_info_small.svg">\n);
 		} elsif ($not->{SEVERITY} == 3) {
-			$notif_line .= '<img src="/system/images/notification_error_small.svg">';
+			$notif_line .= qq(      <img src="/system/images/notification_error_small.svg">\n);
 		}
-		$notif_line .= "</div>";
-		$notif_line .= "<div style='vertical-align: middle; width:80%; display: table-cell; '><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>";
-		$notif_line .= "<div style='vertical-align: middle; width:20%; display: table-cell; align:right; text-align: right;'>";
-		$notif_line .= '<a class="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=' . $logfilepath . '&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>' if ($logfilepath);
-		$notif_line .= "<a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>Dismiss</a>";
-		$notif_line .= "</div>";
+		$notif_line .= qq(   </div>\n);
+		$notif_line .= qq(   <div style='vertical-align: middle; width:75%; display: table-cell; '><b>$not->{DATESTR}:</b> $not->{CONTENTRAW}</div>\n);
+		$notif_line .= qq(   <div style='vertical-align: middle; width:25%; display: table-cell; align:right; text-align: right;'>\n);
+		$notif_line .= qq(      <a class="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=' . $logfilepath . '&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>\n) if ($logfilepath);
+		$notif_line .= qq(      <a class="btnlink" data-role="button" href="$link" target="$linktarget" data-inline="true" data-mini="true" data-icon="action">Details</a>\n) if ($link);
+		$notif_line .= qq(      <a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>Dismiss</a>\n);
+		$notif_line .= qq(   </div>\n);
 		# print STDERR $notif_line if ($DEBUG);
-		$notif_line .= "</div>";
+		$notif_line .= qq(</div>\n);
 		$all_notifys .= $notif_line;
 		push (@notify_html, $notif_line);
 	}
