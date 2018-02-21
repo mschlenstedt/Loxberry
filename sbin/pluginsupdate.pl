@@ -283,8 +283,8 @@ foreach (@plugins) {
 					} else {
 						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
 						$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
-						$message .= "<a href='$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
-						$message .= "<a href='/admin/system/plugininstall.cgi?url=$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
+						$message .= "<a href='$prereleasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
+						$message .= "<a href='/admin/system/plugininstall.cgi?url=$prereleasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
 						notify ( "plugininstall", "$pluginname", $message);
 						LOGINF "Notification saved.";
 					}
