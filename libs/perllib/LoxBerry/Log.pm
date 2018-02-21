@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.9";
+our $VERSION = "1.0.0.10";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -718,7 +718,7 @@ sub get_notifications
 		$notification{'CONTENTRAW'} =  ${$notifhr}{$key}{'MESSAGE'};
 		$notification{'CONTENTHTML'} =  $contenthtml;
 		
-		my $qu_attr = "SELECT * FROM notifications_attr WHERE keyref = '$key';";
+		my $qu_attr = "SELECT * FROM notifications_attr WHERE keyref = '${$notifhr}{$key}{'notifykey'}';";
 		my @attribs = $dbh->selectall_array($qu_attr);
 		if (@attribs) {
 			foreach my $attrib (@attribs) {
