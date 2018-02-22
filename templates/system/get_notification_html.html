@@ -1,5 +1,5 @@
 <!-- ** START template/system/get_notification_html.html ************************************************************************************ -->
-		<div class="notify_block<TMPL_VAR RAND>" style="min-width:100%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
+	<div class="notify_block<TMPL_VAR RAND>" style="min-width:100%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
 		<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; display: block; margin-left: auto; margin-right: auto;">
 			<img src="/system/images/notification_info_big.svg" >
 		</div>
@@ -13,9 +13,8 @@
 		var delid = $(this).attr('data-delid');
 		var delid_encoded = delid.replace(".", "\\.");
 		console.log("Delete key", delid);
-		if ( $(".notifyrow<TMPL_VAR RAND>:visible").length <= 1 ) { $(".notify_block<TMPL_VAR RAND>").fadeOut();}
+		if ( $(".notifyrow<TMPL_VAR RAND>:visible").length <= 1 ) { $(".notify_block<TMPL_VAR RAND>").fadeOut(); $(".spacer<TMPL_VAR RAND>").fadeOut();}
 		$("#notifyrow"+delid_encoded).fadeOut();
-		$(".spacer<TMPL_VAR RAND>").fadeOut();
 	$.post ( '/admin/system/tools/ajax-notification-handler.cgi', 
 					{ 	action: 'notify-deletekey',
 						value: delid,
@@ -29,5 +28,4 @@
 					
 	});
 </script>
-
 <!-- ** END template/system/get_notification_html.html ************************************************************************************ -->
