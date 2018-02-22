@@ -44,6 +44,20 @@ LOGOK "Update script $0 started.";
 LOGOK "This update migrates the notification feature from file-based to SQLite-based and introduces new notification functions. Therefore, old notifications will be deleted.";
 delete_directory "$lbsdatadir/notifications";
  
+LOGINF "Replacing system default sudoers file";
+LOGINF "Copying new";
+
+my $output = qx { if [ -e $updatedir/system/sudoers/lbdefaults ] ; then cp -f $updatedir/system/sudoers/lbdefaults $lbhomedir/system/sudoers/ ; fi };
+my $exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error copying new lbdefaults - Error $exitcode";
+	$errors++;
+} else {
+	LOGOK "New lbdefaults copied.";
+}
+
+qx { chown root:root $lbhomedir/system/sudoers/lbdefaults };
 
 
 
