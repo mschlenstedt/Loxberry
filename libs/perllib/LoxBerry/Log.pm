@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.12";
+our $VERSION = "1.0.0.13";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -534,7 +534,7 @@ sub notify_init_database
 				NAME VARCHAR(255) NOT NULL,
 				MESSAGE TEXT,
 				SEVERITY INT,
-				timestamp DATETIME NOT NULL,
+				timestamp DATETIME DEFAULT (datetime('now','localtime')) NOT NULL,
 				notifykey INTEGER PRIMARY KEY 
 			)") or 
 		do {
@@ -577,7 +577,7 @@ sub notify_insert_notification
 	$dbh->do("BEGIN TRANSACTION;"); 
 	
 	# Insert main notification
-	my $sth = $dbh->prepare('INSERT INTO notifications (PACKAGE, NAME, MESSAGE, SEVERITY, timestamp) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP);');
+	my $sth = $dbh->prepare('INSERT INTO notifications (PACKAGE, NAME, MESSAGE, SEVERITY) VALUES (?, ?, ?, ?) ;');
 	$sth->execute($p{PACKAGE}, $p{NAME}, $p{MESSAGE} , $p{SEVERITY}) or 
 		do {
 			Carp::croak "Error inserting notification: $DBI::errstr\n";
@@ -816,7 +816,7 @@ sub delete_notifications
 	print STDERR "   Number of elements to delete: $number_to_delete\n" if ($DEBUG);
 	if ($number_to_delete < 1) {
 		
-		print STDERR "   Nothing to do. Rollback and returning.\n<--- delete_notifications\n";
+		print STDERR "   Nothing to do. Rollback and returning.\n<--- delete_notifications\n" if ($DEBUG);
 		$dbh->do("ROLLBACK;");
 		return;
 	}

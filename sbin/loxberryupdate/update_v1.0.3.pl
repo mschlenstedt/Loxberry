@@ -42,8 +42,28 @@ my $errors = 0;
 LOGOK "Update script $0 started.";
 
 LOGOK "This update migrates the notification feature from file-based to SQLite-based and introduces new notification functions. Therefore, old notifications will be deleted.";
-delete_directory "$lbsdatadir/notifications";
+delete_directory ("$lbsdatadir/notifications");
+
+if (-e "$lbsdatadir/notifications_sqlite.dat" ) {
+	LOGWARN "Deleting notification database from 'Latest Commit' users as time format has changed from GMT to localtime";
+	unlink "$lbsdatadir/notifications_sqlite.dat";
+}
+
  
+LOGINF "Replacing system default sudoers file";
+LOGINF "Copying new";
+
+my $output = qx { if [ -e $updatedir/system/sudoers/lbdefaults ] ; then cp -f $updatedir/system/sudoers/lbdefaults $lbhomedir/system/sudoers/ ; fi };
+my $exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error copying new lbdefaults - Error $exitcode";
+	$errors++;
+} else {
+	LOGOK "New lbdefaults copied.";
+}
+
+qx { chown root:root $lbhomedir/system/sudoers/lbdefaults };
 
 
 
