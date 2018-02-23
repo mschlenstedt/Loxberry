@@ -16,7 +16,7 @@
 
 
 # Version of this script
-$version = "0.3.2.2";
+$version = "0.3.2.1";
 
 ##########################################################################
 # Modules
@@ -34,7 +34,6 @@ use strict;
 ##########################################################################
 
 my $email 		= param('email');
-my $sender 		= param('sender');
 my $smtpserver 	= param('smtpserver');
 my $smtpport 		= param('smtpport');
 my $smtpcrypt = is_enabled(param('smtpcrypt')) ? 1 : undef;
@@ -133,13 +132,11 @@ close(F);
 my $result = qx($lbssbindir/createssmtpconf.sh start 2>/dev/null);
 
 # Send test mail
-$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "Content-type: text/html; charset=utf-8" -a "From: \"$sender\" <$email>" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
+$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
 
 # Output
 print "Content-type: text/html; charset=utf-8\n\n";
 
-$result =~ s/</&lt;/g; # Replace < to make it visible in result
-$result =~ s/>/&gt;/g; # Replace > to make it visible in result 
 $result =~ s/\n/<br>/g if (!$lf);
 print $SL{'MAILSERVER.MSG_TEST_INTRO'};
 print "<br><br><pre>\n";
