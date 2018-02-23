@@ -25,7 +25,7 @@ if (! $R::action) {
 
 my $action = $R::action;
 
-print STDERR "--> ajax-notification-handler:\n   Action: $action\n";
+print STDERR "--> ajax-notification-handler:\n   Action: $action\n" if ($LoxBerry::Log::DEBUG);
 
 if ($action eq 'notify-deletekey') {notifydelete();}
 elsif ($action eq 'get_notifications') {getnotifications();}
@@ -130,6 +130,9 @@ sub getnotificationshtml
 	
 	$R::package if (0);
 	$R::name if (0);
+	$R::buttons if (0);
+	$R::type if (0);
+	
 	
 	my $html = LoxBerry::Log::get_notifications_html($R::package, $R::name, $R::type, $R::buttons);
 	
