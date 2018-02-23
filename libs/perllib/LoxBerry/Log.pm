@@ -660,7 +660,7 @@ sub notify_send_mail
 	my $mailbin = $bins->{MAIL};
 	my $email = $mcfg{'SMTP.EMAIL'};
 
-	my $result = qx(echo "$message" | $mailbin -a "From: $email" -s "$subject" -v $email 2>&1);
+	my $result = qx(echo "$message" | $mailbin -a "FROM: $friendlyname <loxberry\@$hostname>" -s "$subject" -v $email 2>&1);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$notifymailerror = 1; # Prevents loops
