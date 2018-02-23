@@ -46,7 +46,11 @@
 			<img width="80" height="80" src="/system/images/icons/main_plugins_title.svg">
 		</div>
 		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
-			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
+			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS>
+			</div>
+			<div>
+			<a href="#" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" id="btnrecheck"><TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a>&nbsp;<span id="recheckstatus" style=""></span>
+			</div>
 		</div>
 	</div>
 	<div style="height:15px;">
@@ -235,6 +239,27 @@
 			//var scrollpos = $('#installationheader'.offset().top).scrollTop();
 			//$("html").animate( {scrollTop: scrollpos} , 600);
 		});
+		
+		$("#btnrecheck").click(function() {
+			$("#recheckstatus").attr("style", "color:green");
+			$("#recheckstatus").text("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
+			$("#btnrecheck").prop( "disabled", true );
+			$.post ( '/admin/system/tools/ajax-config-handler.cgi', {action: 'pluginsupdate-check'})
+			.done(function() {
+				$("#recheckstatus").text("");
+				update_notifications();
+				$("#btnrecheck").prop( "disabled", false );
+			})
+			.fail(function() {
+				$("#recheckstatus").attr("style", "color:red");
+				$("#recheckstatus").text("<TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>");
+				$("#btnrecheck").prop( "disabled", false );
+			});
+		
+		
+		
+		});
+		
 		
 		function post_value (action, pluginmd5, value)
 		{

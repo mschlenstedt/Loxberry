@@ -44,6 +44,8 @@ elsif ($action eq 'MAIL_SYSTEM_ERRORS') { print $cgi->header; change_mailcfg("NO
 elsif ($action eq 'MAIL_PLUGIN_INFOS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_PLUGIN_INFOS", $value);}
 elsif ($action eq 'MAIL_PLUGIN_ERRORS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_PLUGIN_ERRORS", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
+elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
+
 else   { print $cgi->header; print "<red>Action not supported.</red>"; }
 
 exit;
@@ -348,6 +350,25 @@ sub plugindb_update
 	} else {
 		#print STDERR "plugindatabase nothing changed.\n";
 	}
+}
+
+############################################
+# pluginsupdate_check
+############################################
+sub pluginsupdate_check
+{
+	print STDERR "ajax-config-handler: ajax pluginsupdate_check\n";
+	# LOGINF "Forking reboot ...";
+	qx($lbhomedir/sbin/pluginsupdate.pl --checkonly >/dev/null 2>&1);
+	if ($? ne 0) {
+		print $cgi->header(-type => 'application/json;charset=utf-8',
+					-status => "500 Could not check plugin update status");
+		exit (1);
+	}
+	
+	print $cgi->header(-type => 'application/json;charset=utf-8',
+					-status => "204 OK");
+	exit;
 }
 
 ###################################################################

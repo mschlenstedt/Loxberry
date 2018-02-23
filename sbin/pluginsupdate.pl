@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.0.0.4";
+my $scriptversion="1.0.0.5";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -98,6 +98,16 @@ LOGINF "Executing user of $0 is $curruser";
 
 
 ##########################################################################
+# Parse command line options
+##########################################################################
+
+my $checkonly;
+foreach my $arg(@ARGV) {
+	$checkonly = 1 if (lc($arg) eq "--checkonly");
+	$checkonly = 1 if (lc($arg) eq "-c");
+}
+
+##########################################################################
 # Parse Plugins
 ##########################################################################
 
@@ -149,6 +159,11 @@ foreach (@plugins) {
 		next;
 	}
 
+	if($checkonly) {
+		LOGINF "Commandline parameter --checkonly - only checking for updates";
+		$notify = 1;
+	}
+	
 	# Read URLs from shadowed plugindatabase for security reasons)
 	my @pluginsshadow = LoxBerry::System::get_plugins(0,1,"$lbsdatadir/plugindatabase.dat-");
 	foreach (@pluginsshadow) {
@@ -217,11 +232,11 @@ foreach (@plugins) {
 					LoxBerry::Log::notify_ext( \%notification );
 					if ($last_notified_version && $last_notified_version eq "$releasever") {
 						LOGOK "Skipping notification because version has already been notified.";
+					} elsif ($checkonly) {
+						LOGINF "Skipping notification because of --checkonly parameter. This is an interactive call.";
 					} else {
-						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
-						$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
-						$message .= "<a href='$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
-						$message .= "<a href='/admin/system/plugininstall.cgi?url=$releasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
+						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RELEASE_AVAILABLE'} $installversion\n";
+						$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};
 						notify ( "plugininstall", "$pluginname", $message);
 						LOGINF "Notification saved.";
 					}
@@ -287,11 +302,11 @@ foreach (@plugins) {
 					LoxBerry::Log::notify_ext( \%notification );
 					if ($last_notified_version && $last_notified_version eq "$prereleasever") {
 						LOGOK "Skipping notification because version has already been notified.";
+					} elsif ($checkonly) {
+						LOGINF "Skipping notification because of --checkonly parameter. This is an interactive call.";
 					} else {
-						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_AVAILABLE'} $installversion ";
-						$message .= "<a href='$releaseinfo' class='ui-btn ui-mini ui-btn-inline' target='_blank'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INFOBUTTON'}</a> ";
-						$message .= "<a href='$prereleasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DOWNLOADBUTTON'}</a> ";
-						$message .= "<a href='/admin/system/plugininstall.cgi?url=$prereleasearchive' class='ui-btn ui-mini ui-btn-inline'>$SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTALLBUTTON'}</a>";
+						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_PRERELEASE_AVAILABLE'} $installversion\n";
+						$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};
 						notify ( "plugininstall", "$pluginname", $message);
 						LOGINF "Notification saved.";
 					}
