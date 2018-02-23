@@ -107,6 +107,7 @@ foreach (@plugins) {
 	$currentver = $_->{PLUGINDB_VERSION};
 	$plugintitle = $_->{PLUGINDB_TITLE};
 	$pluginname = $_->{PLUGINDB_NAME};
+	$pluginmd5 = $_->{PLUGINDB_MD5_CHECKSUM};
 	$installarchive = "";
 
 	LOGINF "$_->{PLUGINDB_NAME}: Found plugin $_->{PLUGINDB_TITLE}.";
@@ -205,8 +206,11 @@ foreach (@plugins) {
 								NAME => "lastnotified-rel-$pluginname",
 								MESSAGE => "This helper notification keeps track of last notified release of $plugintitle",
 								SEVERITY => 7,
+								pluginname => $pluginname,
+								pluginmd5 => $pluginmd5,
 								version => "$releasever",
 								installarchive => "$releasearchive",
+								releaseinfo => $releaseinfo,
 								type => "release",
 								LINK => $releaseinfo,
 						);
@@ -273,8 +277,11 @@ foreach (@plugins) {
 								NAME => "lastnotified-prerel-$pluginname",
 								MESSAGE => "This helper notification keeps track of last notified pre-release of $plugintitle",
 								SEVERITY => 7,
+								pluginname => $pluginname,
+								pluginmd5 => $pluginmd5,
 								version => "$prereleasever",
 								installarchive => "$prereleasearchive",
+								releaseinfo => $prereleaseinfo,
 								type => "prerelease",
 						);
 					LoxBerry::Log::notify_ext( \%notification );

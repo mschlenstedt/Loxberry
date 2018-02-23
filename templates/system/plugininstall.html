@@ -71,15 +71,21 @@
 				<td colspan="2">
 				<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
 					<div style="flex-grow: 2;">
-					<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
-					<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
+						<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
+						<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
 					</div>
-					<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <TMPL_VAR PLUGINDB_VERSION></b>
+					<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b>
+						<div style="color:green; font-size:70%" class="releaseverslabel" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">New Release <span id="relver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span></div>
+						<div style="color:#660066; font-size:70%" class="prereleaseverslabel" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">New Pre-Release <span id="prever-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span></div>
+					</div>
 				</div>
-				<div>
 				</td>
 				
 				<td>
+					<div>
+						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" class="btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Release</a>
+						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" class="btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Pre-Release</a>
+					</div>
 					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
 					<a data-role="button" data-inline="true" data-icon="delete" data-mini="true" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
 				</td>
@@ -157,13 +163,78 @@
 	<script>
 		$(document).ready( function()
 		{
+			update_notifications();
 			validate_enable('#uploadfile');
 			validate_enable('#securepin');
 			validate_enable('#archiveurl');
 			validate_chk_object(['#securepin','#archiveurl','#uploadfile']);
 			$( '#securepin' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
 			if ( $('#archiveurl').length > 0 ) $('#archiveurl').trigger('keyup');
+
 		});
+		
+		
+		
+		function update_notifications() {
+			console.log ("Started update_notify");
+			
+			$(".btnrelease").hide();
+			$(".btnprerelease").hide();
+			$(".releaseverslabel").hide();
+			$(".prereleaseverslabel").hide();
+			
+			
+			
+			$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notifications', package: 'plugininstall' } )
+			.done(function(notifications) {
+				console.log("get_notifications executed successfully");
+				for (i = 0; i < notifications.length; i++) {
+					var not = notifications[i];
+					// console.log("Data unfiltered", not.CONTENTRAW, not.SEVERITY);
+					if (not.SEVERITY != 7) continue;
+					
+					// strip v from version tag
+					var version = not.version;
+					if( version.charAt( 0 ) === 'v' )
+						version = version.slice( 1 );
+					
+					var curver = $("#curver-" + not.pluginmd5).text();
+					var newer = versionCompare(version, curver);
+					console.log("Notification:", version, "Current version:", curver);
+					console.log("Is newer?", newer);
+					if (newer != true) continue;
+					if (not.type == "prerelease") {
+						$("#prever-" + not.pluginmd5).text(version);
+						$("#labelpre-" + not.pluginmd5).show();
+						$("#prebtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
+						$("#prebtn-" + not.pluginmd5).show();
+					}
+					if (not.type == "release") {
+						$("#relver-" + not.pluginmd5).text(version);
+						$("#labelrel-" + not.pluginmd5).show();
+						$("#relbtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
+						$("#relbtn-" + not.pluginmd5).show();
+					}
+				
+				
+				
+				
+				
+				}
+
+
+
+			//$("#msudpport").value=data.UDPPort;
+			//$('#msenabled').val(data.SendData).flipswitch('refresh');
+			//$("#do").prop('disabled', true);
+			//$("#do").button('refresh');
+			});
+		
+		}
+		
+		
+		
+		
 		
 		function post_value (action, pluginmd5, value)
 		{
@@ -174,6 +245,58 @@
 							pluginmd5: pluginmd5
 						});
 		}
+	
+
+	
+// 	https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
+function versionCompare(v1, v2, options) {
+    var lexicographical = options && options.lexicographical,
+        zeroExtend = options && options.zeroExtend,
+        v1parts = v1.split('.'),
+        v2parts = v2.split('.');
+
+    function isValidPart(x) {
+        return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
+    }
+
+    if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) {
+        return NaN;
+    }
+
+    if (zeroExtend) {
+        while (v1parts.length < v2parts.length) v1parts.push("0");
+        while (v2parts.length < v1parts.length) v2parts.push("0");
+    }
+
+    if (!lexicographical) {
+        v1parts = v1parts.map(Number);
+        v2parts = v2parts.map(Number);
+    }
+
+    for (var i = 0; i < v1parts.length; ++i) {
+        if (v2parts.length == i) {
+            return 1;
+        }
+
+        if (v1parts[i] == v2parts[i]) {
+            continue;
+        }
+        else if (v1parts[i] > v2parts[i]) {
+            return 1;
+        }
+        else {
+            return -1;
+        }
+    }
+
+    if (v1parts.length != v2parts.length) {
+        return -1;
+    }
+
+    return 0;
+}
+	
+	
 	</script>
 </TMPL_IF>
 
