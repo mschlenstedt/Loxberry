@@ -644,7 +644,7 @@ sub notify_send_mail
 		
 		$subject = "$friendlyname $status in $package $name";
 		$message = $p{MESSAGE} . "\n\n";
-		$message .= "$friendlyname (http://$hostname:" . LoxBerry::System::lbwebserverport() . "/)";
+		$message .= "<br>--<br><a href='http://$hostname:" . LoxBerry::System::lbwebserverport() . "/'>$friendlyname</a>";
 	}
 	else 
 	{
@@ -653,14 +653,17 @@ sub notify_send_mail
 		
 		$subject = "$friendlyname $status in $plugintitle";
 		$message = $p{MESSAGE} . "\n\n";
-		$message .= "$friendlyname (http://$hostname:" . LoxBerry::System::lbwebserverport() . "/)";
+		$message .= "<br>--<br><a href='http://$hostname:" . LoxBerry::System::lbwebserverport() . "/'>$friendlyname</a>";
 	}
 
 	my $bins = LoxBerry::System::get_binaries(); 
 	my $mailbin = $bins->{MAIL};
-	my $email = $mcfg{'SMTP.EMAIL'};
+	my $email	= $mcfg{'SMTP.EMAIL'};
 
-	my $result = qx(echo "$message" | $mailbin -a "FROM: $friendlyname <loxberry\@$hostname>" -s "$subject" -v $email 2>&1);
+	my $from = $hostname;
+	   $from = $friendlyname if $friendlyname;
+	
+	my $result = qx(echo "$message" | $mailbin  -a "Content-type: text/html; charset=utf-8" -a "FROM: \"$from\" <$email>" -s "$subject" -v $email 2>&1);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$notifymailerror = 1; # Prevents loops

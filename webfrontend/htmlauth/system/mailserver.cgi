@@ -39,7 +39,6 @@ our $lang;
 our $template_title;
 our $helplink;
 our $email;
-our $sender;
 our $smtpserver;
 our $smtpport;
 our $smtpcrypt;
@@ -61,7 +60,6 @@ $mailbin            = $cfg->param("BINARIES.MAIL");
 
 $mcfg               = new Config::Simple("$lbhomedir/config/system/mail.cfg");
 $email              = $mcfg->param("SMTP.EMAIL");
-$sender             = $mcfg->param("SMTP.SENDER");
 $smtpserver         = $mcfg->param("SMTP.SMTPSERVER");
 $smtpport           = $mcfg->param("SMTP.PORT");
 $smtpcrypt          = $mcfg->param("SMTP.CRYPT");
@@ -126,7 +124,6 @@ sub form
 	$maintemplate->param( "LANG", $lang);
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 	$maintemplate->param ( 	"EMAIL" => $email, 
-							"SENDER" => $sender, 
 							"SMTPSERVER" => $smtpserver,
 							"SMTPPORT" => $smtpport,
 							"SMTPUSER" => $smtpuser,
@@ -194,7 +191,6 @@ sub save
 	
 	# # Everything from Forms
 	# $email        = param('email');
-	# $sender       = param('sender');
 	# $smtpserver   = param('smtpserver');
 	# $smtpport     = param('smtpport');
 	# $smtpcrypt    = param('smtpcrypt');
@@ -204,7 +200,6 @@ sub save
 
 	# Prevent warnings 'only used once'
 	$R::email if (0);
-	$R::sender if (0);
 	$R::smtpserver if (0);
 	$R::smtpport if (0);
 	$R::smtpcrypt if (0);
@@ -215,7 +210,6 @@ sub save
 	# Write configuration file(s)
 	$mcfg->param("SMTP.ISCONFIGURED", "1");
 	$mcfg->param("SMTP.EMAIL", "$R::email");
-	$mcfg->param("SMTP.SENDER", "$R::sender");
 	$mcfg->param("SMTP.SMTPSERVER", "$R::smtpserver");
 	$mcfg->param("SMTP.PORT", "$R::smtpport");
 	$mcfg->param("SMTP.CRYPT", "$R::smtpcrypt");
@@ -278,8 +272,12 @@ ENDFILE
 
 	# Install temporary ssmtp config file
 	my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
+	my $hostname = LoxBerry::System::lbhostname();
+	my $friendlyname = LoxBerry::System::lbfriendlyname();	
+   		$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
+   		$friendlyname .= " LoxBerry";
 
-	$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: \"$sender\" <$email>" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
+	$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "Content-type: text/html; charset=utf-8" -a "From: \"$friendlyname\" <$email>" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
 
 	# Delete old temporary config file
 	if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
