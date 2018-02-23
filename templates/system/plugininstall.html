@@ -1,6 +1,6 @@
 <!-- ** START template/system/plugininstall.html 19.01.2018 19:18:59  ************************************************************************************ -->
 <TMPL_IF FORM>
-	<div style="display:flex; width:100%; text-align:left;">
+	<div style="display:flex; width:100%; text-align:left;" id="installationheader">
 		<div style="margin:auto; padding:10px;text-align:left;">
 			<img width="80" height="80" src="/system/images/icons/main_plugins_install.svg">
 		</div>
@@ -76,15 +76,15 @@
 					</div>
 					<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b>
 						<div style="color:green; font-size:70%" class="releaseverslabel" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">New Release <span id="relver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span></div>
-						<div style="color:#660066; font-size:70%" class="prereleaseverslabel" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">New Pre-Release <span id="prever-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span></div>
+						<div style="color:#e53734; font-size:70%" class="prereleaseverslabel" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">New Pre-Release <span id="prever-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span></div>
 					</div>
 				</div>
 				</td>
 				
 				<td>
 					<div>
-						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" class="btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Release</a>
-						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" class="btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Pre-Release</a>
+						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" data-updatelink="" class="btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Release</a>
+						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" data-updatelink="" class="btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Pre-Release</a>
 					</div>
 					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
 					<a data-role="button" data-inline="true" data-icon="delete" data-mini="true" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
@@ -206,35 +206,35 @@
 					if (not.type == "prerelease") {
 						$("#prever-" + not.pluginmd5).text(version);
 						$("#labelpre-" + not.pluginmd5).show();
-						$("#prebtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
+						//$("#prebtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
+						$("#prebtn-" + not.pluginmd5).attr("data-updatelink", not.installarchive);
 						$("#prebtn-" + not.pluginmd5).show();
 					}
 					if (not.type == "release") {
 						$("#relver-" + not.pluginmd5).text(version);
 						$("#labelrel-" + not.pluginmd5).show();
-						$("#relbtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
+						//$("#relbtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
+						$("#relbtn-" + not.pluginmd5).attr("data-updatelink", not.installarchive);
 						$("#relbtn-" + not.pluginmd5).show();
 					}
-				
-				
-				
-				
-				
 				}
-
-
-
-			//$("#msudpport").value=data.UDPPort;
-			//$('#msenabled').val(data.SendData).flipswitch('refresh');
-			//$("#do").prop('disabled', true);
-			//$("#do").button('refresh');
 			});
 		
 		}
 		
+		$(".btnrelease").click(function() {
+			$("#archiveurl").val( $(this).attr("data-updatelink") );
+			$(window).scrollTop($('#installationheader').offset().top-30);
+			//var scrollpos = $('#installationheader'.offset().top).scrollTop();
+			//$("html").animate( {scrollTop: scrollpos} , 600);
+		});
 		
-		
-		
+		$(".btnprerelease").click(function() {
+			$("#archiveurl").val( $(this).attr("data-updatelink") );
+			$(window).scrollTop($('#installationheader').offset().top-30);
+			//var scrollpos = $('#installationheader'.offset().top).scrollTop();
+			//$("html").animate( {scrollTop: scrollpos} , 600);
+		});
 		
 		function post_value (action, pluginmd5, value)
 		{
