@@ -79,8 +79,8 @@
 						<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
 					</div>
 					<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b>
-						<div style="color:green; font-size:70%" class="releaseverslabel" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">New Release <span id="relver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span></div>
-						<div style="color:#e53734; font-size:70%" class="prereleaseverslabel" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">New Pre-Release <span id="prever-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span></div>
+						<div style="color:green; font-size:70%" class="releaseverslabel" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
+						<div style="color:#e53734; font-size:70%" class="prereleaseverslabel" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
 					</div>
 				</div>
 				</td>
@@ -208,14 +208,21 @@
 					console.log("Is newer?", newer);
 					if (newer != true) continue;
 					if (not.type == "prerelease") {
-						$("#prever-" + not.pluginmd5).text(version);
+						//$("#prever-" + not.pluginmd5).text(version);
+						var vertext = "New Pre-Release " + version;
+						if(not.releaseinfo != "") 
+							vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:#ef6558;font-weight: normal;" >' + vertext + '</a>';
+						$("#labelpre-" + not.pluginmd5).html(vertext);
 						$("#labelpre-" + not.pluginmd5).show();
 						//$("#prebtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
 						$("#prebtn-" + not.pluginmd5).attr("data-updatelink", not.installarchive);
 						$("#prebtn-" + not.pluginmd5).show();
 					}
 					if (not.type == "release") {
-						$("#relver-" + not.pluginmd5).text(version);
+						var vertext = "New Release " + version;
+						if(not.releaseinfo != "") 
+							vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:green;font-weight: normal;">' + vertext + '</a>';
+						$("#labelrel-" + not.pluginmd5).html(vertext);
 						$("#labelrel-" + not.pluginmd5).show();
 						//$("#relbtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
 						$("#relbtn-" + not.pluginmd5).attr("data-updatelink", not.installarchive);
