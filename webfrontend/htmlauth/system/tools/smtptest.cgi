@@ -34,6 +34,7 @@ use strict;
 ##########################################################################
 
 my $email 		= param('email');
+my $sender 		= param('sender');
 my $smtpserver 	= param('smtpserver');
 my $smtpport 		= param('smtpport');
 my $smtpcrypt = is_enabled(param('smtpcrypt')) ? 1 : undef;
@@ -132,12 +133,7 @@ close(F);
 my $result = qx($lbssbindir/createssmtpconf.sh start 2>/dev/null);
 
 # Send test mail
-my $hostname = LoxBerry::System::lbhostname();
-my $friendlyname = LoxBerry::System::lbfriendlyname();	
-   $friendlyname = defined $friendlyname ? $friendlyname : $hostname;
-   $friendlyname .= " LoxBerry";
-
-$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "Content-type: text/html; charset=utf-8" -a "From: \"$friendlyname\" <$email>" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
+$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "Content-type: text/html; charset=utf-8" -a "From: \"$sender\" <$email>" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
 
 # Output
 print "Content-type: text/html; charset=utf-8\n\n";

@@ -17,6 +17,20 @@
 		</td>
 	</tr>
 	<tr>
+		<td width="25%">
+				<label><TMPL_VAR MAILSERVER.LABEL_DEFAULT_SENDER></label>
+		</td>
+		<td width="40%">
+			<input value="<TMPL_VAR SENDER>" id="sender" name="sender" type="text" class="textfield" placeholder="<TMPL_VAR MAILSERVER.SUGGESTION_DEFAULT_SENDER>">
+		</td>
+		<td width="5%">
+		&nbsp;
+		</td>
+		<td width="30%">
+		&nbsp;
+		</td>
+	</tr>
+	<tr>
 		<td>
 		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_SERVER></label>
 		</td>
@@ -227,6 +241,7 @@ $('#btntestsmtp').click( function(e) {
 	
 	e.preventDefault();
 	var vals = { email: $("#email").val(),
+				 sender: $("#sender").val(),
 				 smtpserver: $("#smtpserver").val(),
 				 smtpauth: $("#smtpauth").is(":checked") ? 1 : 0,
 				 smtpcrypt: $("#smtpcrypt").is(":checked") ? 1 : 0,
