@@ -9,10 +9,11 @@ use HTML::Entities;
 use JSON;
 use File::Basename;
 use File::Path;
-
+use File::Temp;
+use Encode;
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.16";
+our $VERSION = "1.0.0.17";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -627,7 +628,7 @@ sub notify_send_mail
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_INFOS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_ERRORS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_INFOS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
-		
+	
 	my $hostname = LoxBerry::System::lbhostname();
 	my $friendlyname = LoxBerry::System::lbfriendlyname();
 	$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
@@ -644,7 +645,6 @@ sub notify_send_mail
 		
 		$subject = "$friendlyname $status in $package $name";
 		$message = $p{MESSAGE} . "\n\n";
-		$message .= "$friendlyname (http://$hostname:" . LoxBerry::System::lbwebserverport() . "/)";
 	}
 	else 
 	{
@@ -653,21 +653,59 @@ sub notify_send_mail
 		
 		$subject = "$friendlyname $status in $plugintitle";
 		$message = $p{MESSAGE} . "\n\n";
-		$message .= "$friendlyname (http://$hostname:" . LoxBerry::System::lbwebserverport() . "/)";
 	}
 
-	
 	my $bins = LoxBerry::System::get_binaries(); 
-	my $mailbin = $bins->{MAIL};
-	my $email = $mcfg{'SMTP.EMAIL'};
+	my $mailbin = $bins->{SENDMAIL};
+	my $email	= $mcfg{'SMTP.EMAIL'};
 
-	require MIME::Base64;
-	
-	my $subject= "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
-	my $headers = "From: =?utf-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">\r\n";
-	$headers.= 'Content-Type: text/plain; charset="UTF-8"';
-	
-	my $result = qx(echo "$message" | $mailbin -a "$headers" -s "$subject" -v $email 2>&1);
+  require MIME::Base64;
+  print STDERR "--> send HTML Notification eMail \n" if ($DEBUG);
+  my $outer_boundary= "o81add1737def0b40de8f43e5c9295f1f";
+  my $inner_boundary= "i81add1737def0b40de8f43e5c9295f1f";
+  $message = "From: =?UTF-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">
+To: ".$email."
+Subject: =?utf-8?b?".MIME::Base64::encode($subject, "")."?= 
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary=\"------------$outer_boundary\"
+
+This is a multi-part message in MIME format.
+--------------$outer_boundary
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+".Encode::decode("utf8",$message)."
+
+--------------$outer_boundary
+Content-Type: multipart/related;
+ boundary=\"------------$inner_boundary\"
+
+
+--------------$inner_boundary
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">
+  </head>
+  <body text=\"#000000\" bgcolor=\"#cfcfcf\">
+	<div style=\"border-radius: .6em .6em .6em .6em; padding:10px; background-color: #ffffff; border-color: #8c8c8;\">".Encode::decode("utf8",$message)."<br>\n--\n<br><a href='http://$hostname:". LoxBerry::System::lbwebserverport() . "/'>".Encode::decode("utf8",$friendlyname)."</a></div>
+  </body>
+</html>
+
+
+--------------$inner_boundary--
+
+--------------$outer_boundary--\n\n";
+
+	my ($mfh, $mfilename);
+	($mfh, $mfilename) = File::Temp::tempfile() or print STDERR "Cannot create temporary mailfile"; 
+	binmode( $mfh, ":utf8" );
+	print $mfh $message;
+	print STDERR "--> HTML Notification eMail tempfile: $mfilename \n" if ($DEBUG);
+	my $result = qx($mailbin -t 1>&2 < $mfilename );
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$notifymailerror = 1; # Prevents loops
@@ -676,7 +714,10 @@ sub notify_send_mail
 		print STDERR "Error sending email notification - Error $exitcode:\n";
 		print STDERR $result . "\n";
 	} 
+	close($mfh) or print STDERR "Cannot close temporary mailfile $mfilename";
+	unlink ($mfilename) or print STDERR "Cannot delete temporary mailfile $mfilename"; 
 }
+
 
 ################################################################
 # get_notifications
