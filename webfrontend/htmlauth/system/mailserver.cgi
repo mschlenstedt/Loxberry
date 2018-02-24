@@ -52,7 +52,7 @@ our $mailbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "1.0.0.2";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 $cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
@@ -280,7 +280,7 @@ ENDFILE
 	  unlink ("/tmp/tempssmtpconf.dat");
 	}
 
-	$maintemplate->param( "MESSAGE", $SL{'MAILSERVER.SAVESUCCESS'});
+	$maintemplate->param( "MESSAGE", $SL{'MAILSERVER.SAVE_SUCCESS'});
 	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
 
 	# Print Template
