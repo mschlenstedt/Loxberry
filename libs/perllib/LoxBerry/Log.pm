@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.14";
+our $VERSION = "1.0.0.15";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -627,7 +627,7 @@ sub notify_send_mail
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_INFOS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_ERRORS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_INFOS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
-	
+		
 	my $hostname = LoxBerry::System::lbhostname();
 	my $friendlyname = LoxBerry::System::lbfriendlyname();
 	$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
@@ -656,11 +656,18 @@ sub notify_send_mail
 		$message .= "$friendlyname (http://$hostname:" . LoxBerry::System::lbwebserverport() . "/)";
 	}
 
+	
 	my $bins = LoxBerry::System::get_binaries(); 
 	my $mailbin = $bins->{MAIL};
 	my $email = $mcfg{'SMTP.EMAIL'};
 
-	my $result = qx(echo "$message" | $mailbin -r "$friendlyname <loxberry\@$hostname.local>" -s "$subject" -v $email 2>&1);
+	require MIME::Base64;
+	
+	my $subject= "=?utf-8?b?".MIME::Base64::encode($subject)."?=";
+	my $headers = "From: =?utf-8?b?".MIME::Base64::encode($friendlyname)."?= <".$email.">\r\n";
+	$headers.= "Content-Type: text/plain;charset=utf-8\r\n";
+	
+	my $result = qx(echo "$message" | $mailbin -a "$headers" -s "$subject" -v $email 2>&1);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$notifymailerror = 1; # Prevents loops
@@ -670,7 +677,6 @@ sub notify_send_mail
 		print STDERR $result . "\n";
 	} 
 }
-
 
 ################################################################
 # get_notifications
