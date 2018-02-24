@@ -16,7 +16,7 @@
 
 
 # Version of this script
-$version = "0.3.2.1";
+$version = "1.0.0.2";
 
 ##########################################################################
 # Modules
@@ -131,8 +131,21 @@ close(F);
 # Install temporary ssmtp config file
 my $result = qx($lbssbindir/createssmtpconf.sh start 2>/dev/null);
 
+my $friendlyname = trim(LoxBerry::System::lbfriendlyname());
+my $hostname = LoxBerry::System::lbhostname();
+$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
+$friendlyname .= " LoxBerry";
+
+require MIME::Base64;
+
+my $subject = $SL{'MAILSERVER.TESTMAIL_SUBJECT'};
+$subject= "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
+my $headerfrom = "From: =?utf-8?b?". MIME::Base64::encode($friendlyname, "") . "?= <" . $email . ">";
+my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
+my $message = $SL{'MAILSERVER.TESTMAIL_CONTENT'};
+
 # Send test mail
-$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
+$result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $email 2>&1);
 
 # Output
 print "Content-type: text/html; charset=utf-8\n\n";

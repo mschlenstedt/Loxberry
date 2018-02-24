@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.15";
+our $VERSION = "1.0.0.16";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -663,9 +663,9 @@ sub notify_send_mail
 
 	require MIME::Base64;
 	
-	my $subject= "=?utf-8?b?".MIME::Base64::encode($subject)."?=";
-	my $headers = "From: =?utf-8?b?".MIME::Base64::encode($friendlyname)."?= <".$email.">\r\n";
-	$headers.= "Content-Type: text/plain;charset=utf-8\r\n";
+	my $subject= "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
+	my $headers = "From: =?utf-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">\r\n";
+	$headers.= 'Content-Type: text/plain; charset="UTF-8"';
 	
 	my $result = qx(echo "$message" | $mailbin -a "$headers" -s "$subject" -v $email 2>&1);
 	my $exitcode  = $? >> 8;
