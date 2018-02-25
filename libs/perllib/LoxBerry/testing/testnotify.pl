@@ -24,7 +24,7 @@ sleep(1);
 $message = "This is an error notification";
 notify ( $package, $group, $message, 1);
 print "Notifications created\n";
-# exit(0); 
+# exit(0);
 
 print "TEST: Check notification count\n";
 my ($check_err, $check_ok, $check_sum) = get_notification_count( $package, $group);
