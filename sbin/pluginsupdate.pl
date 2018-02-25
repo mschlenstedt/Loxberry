@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.0.0.5";
+my $scriptversion="1.0.0.6";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -120,47 +120,47 @@ foreach (@plugins) {
 	$pluginmd5 = $_->{PLUGINDB_MD5_CHECKSUM};
 	$installarchive = "";
 
-	LOGINF "$_->{PLUGINDB_NAME}: Found plugin $_->{PLUGINDB_TITLE}.";
+	LOGINF "$pluginname: Found plugin $_->{PLUGINDB_TITLE}.";
 
 	#
 	# Checks
 	#
 	if ( !version::is_lax(vers_tag($currentver)) ) {
-		LOGCRIT "Cannot check plugin's version number. Is this a real version number? $currentver. Skipping...";
+		LOGCRIT "$pluginname: Cannot check plugin's version number. Is this a real version number? $currentver. Skipping...";
 		next;
 	} else {
 		$currentver = version->parse(vers_tag($currentver));
-		LOGINF "Current version is: $currentver";
+		LOGINF "$pluginname: Current version is: $currentver";
 	}
 	
 	if (!$_->{PLUGINDB_AUTOUPDATE}) {
-		LOGINF "$_->{PLUGINDB_NAME}: Provide no automatic updates. Skipping.";
+		LOGINF "$pluginname: Provide no automatic updates. Skipping.";
 		next;
 	}
 	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
-		LOGINF "$_->{PLUGINDB_NAME}: Automatic updates are disabled. Skipping.";
+		LOGINF "$pluginname: Automatic updates are disabled. Skipping.";
 		next;
 	}
 	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "2") {
-		LOGINF "$_->{PLUGINDB_NAME}: NOTIFY about new versions is enabled.";
+		LOGINF "$pluginname: NOTIFY about new versions is enabled.";
 		$notify = 1;
 	}
 	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "3") {
-		LOGINF "$_->{PLUGINDB_NAME}: RELEASES enabled.";
+		LOGINF "$pluginname: RELEASES enabled.";
 		$release = 1;
 	}
 	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "4") {
-		LOGINF "$_->{PLUGINDB_NAME}: PRERELEASES enabled.";
+		LOGINF "$pluginname: PRERELEASES enabled.";
 		$release = 1;
 		$prerelease = 1;
 	}
 	else {
-		LOGINF "$_->{PLUGINDB_NAME}: Unknown option ($_->{PLUGINDB_AUTOUPDATE}). Skipping.";
+		LOGINF "$pluginname: Unknown option ($_->{PLUGINDB_AUTOUPDATE}). Skipping.";
 		next;
 	}
 
 	if($checkonly) {
-		LOGINF "Commandline parameter --checkonly - only checking for updates";
+		LOGINF "$pluginname: Commandline parameter --checkonly. Checking for updates only. No installations will be done.";
 		$notify = 1;
 	}
 	
@@ -174,7 +174,7 @@ foreach (@plugins) {
 	}
 
 	if ( !$endpointrelease && !$endpointprerelease ) {
-		LOGCRIT "No RELEASE or PRERELEASE URL in plugin configuration. Skipping...";
+		LOGCRIT "$pluginname: No RELEASE or PRERELEASE URL in plugin configuration. Skipping...";
 		next;
 	}
 
@@ -186,13 +186,13 @@ foreach (@plugins) {
 	
 	if ( ($release || $notify) && $endpointrelease ) {
 
-		LOGINF "Requesting release file from $endpointrelease";
+		LOGINF "$pluginname: Requesting release file from $endpointrelease";
 		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo $releasefile $endpointrelease  2>&1`;
 		if ($? ne 0) {
-			LOGCRIT "Could not fetch RELEASE file. Error: $resp Skipping this plugin...";
+			LOGCRIT "$pluginname: Could not fetch RELEASE file. Error: $resp Skipping this plugin...";
 			next;
 		} else {
-			LOGOK "Release file fetched.";
+			LOGOK "$pluginname: Release file fetched.";
 			$releasecfg = new Config::Simple("$releasefile");
 			$releasever = $releasecfg->param("AUTOUPDATE.VERSION");
 			$releasearchive = $releasecfg->param("AUTOUPDATE.ARCHIVEURL");
@@ -200,13 +200,13 @@ foreach (@plugins) {
 
 			if ( version::is_lax(vers_tag($releasever)) ) {
 				$releasever = version->parse(vers_tag($releasever));
-				LOGINF "Found release version: $releasever";
+				LOGINF "$pluginname: Found release version: $releasever";
 			} else {
-				LOGCRIT "Cannot check release version number. Is this a real version number?";
+				LOGCRIT "$pluginname: Cannot check release version number. Is this a real version number?";
 			}
 
 			if ( $releasever > $currentver ) {
-				LOGINF "Release version is newer than current installed version.";
+				LOGINF "$pluginname: Release version is newer than current installed version.";
 				$installversion = $releasever;
 				$installtype = "release";
 				if ( !$notify ) {
@@ -228,42 +228,43 @@ foreach (@plugins) {
 								releaseinfo => $releaseinfo,
 								type => "release",
 								LINK => $releaseinfo,
-						);
+					);
 					LoxBerry::Log::notify_ext( \%notification );
 					if ($last_notified_version && $last_notified_version eq "$releasever") {
-						LOGOK "Skipping notification because version has already been notified.";
+						LOGOK "$pluginname: Skipping notification because version has already been notified.";
 					} elsif ($checkonly) {
-						LOGINF "Skipping notification because of --checkonly parameter. This is an interactive call.";
+						LOGINF "$pluginname: Skipping notification because of --checkonly parameter. This is an interactive call.";
 					} else {
 						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RELEASE_AVAILABLE'} $installversion\n";
 						$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};
 						notify ( "plugininstall", "$pluginname", $message);
-						LOGINF "Notification saved.";
+						LOGINF "$pluginname: Notification saved.";
 					}
 				
 				}
 
 			} else {
 				# Installed version is equal or newer. Helper notification can be deleted.
-				LOGINF "Release version is not newer than installed version.";
+				LOGINF "$pluginname: Release version is not newer than installed version.";
 				delete_notifications('plugininstall', "lastnotified-rel-$pluginname");
 			}
 
 		}
 	}
+	
 	#
 	# Check for a prerelease
 	#
 	if ( ($prerelease || $notify) && $endpointprerelease ) {
 
-		LOGINF "Requesting prerelease from $endpointprerelease";
+		LOGINF "$pluginname: Requesting prerelease from $endpointprerelease";
 
 		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo $releasefile $endpointprerelease  2>&1`;
 		if ($? ne 0) {
-			LOGCRIT "Could not fetch PRERELEASE file. Error: $resp Skipping this plugin...";
+			LOGCRIT "$pluginname: Could not fetch PRERELEASE file. Error: $resp Skipping this plugin...";
 			next;
 		} else {
-			LOGOK "Prerelease file fetched.";
+			LOGOK "$pluginname: Prerelease file fetched.";
 			$prereleasecfg = new Config::Simple("$releasefile");
 			$prereleasever = $prereleasecfg->param("AUTOUPDATE.VERSION");
 			$prereleasearchive = $prereleasecfg->param("AUTOUPDATE.ARCHIVEURL");
@@ -271,13 +272,13 @@ foreach (@plugins) {
 
 			if ( version::is_lax(vers_tag($prereleasever)) ) {
 				$prereleasever = version->parse(vers_tag($prereleasever));
-				LOGINF "Found prerelease version: $prereleasever";
+				LOGINF "$pluginname: Found prerelease version: $prereleasever";
 			} else {
-				LOGCRIT "Cannot check prerelease version number. Is this a real version number?";
+				LOGCRIT "$pluginname: Cannot check prerelease version number. Is this a real version number?";
 			}
 
 			if ( $prereleasever > $releasever && $prereleasever > $currentver) {
-				LOGINF "Prerelease version is newer than release version, and newer than installed version.";
+				LOGINF "$pluginname: Prerelease version is newer than release version, and newer than installed version.";
 				$installversion = $prereleasever;
 				$installtype = "prerelease";
 				if ( !$notify ) {
@@ -301,18 +302,18 @@ foreach (@plugins) {
 						);
 					LoxBerry::Log::notify_ext( \%notification );
 					if ($last_notified_version && $last_notified_version eq "$prereleasever") {
-						LOGOK "Skipping notification because version has already been notified.";
+						LOGOK "$pluginname: Skipping notification because version has already been notified.";
 					} elsif ($checkonly) {
-						LOGINF "Skipping notification because of --checkonly parameter. This is an interactive call.";
+						LOGINF "$pluginname: Skipping notification because of --checkonly parameter. This is an interactive call.";
 					} else {
 						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_PRERELEASE_AVAILABLE'} $installversion\n";
 						$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};
 						notify ( "plugininstall", "$pluginname", $message);
-						LOGINF "Notification saved.";
+						LOGINF "$pluginname: Notification saved.";
 					}
 				}
 			} else {
-				LOGINF "Prerelease version is not newer than release version.";
+				LOGINF "$pluginname: Prerelease version is not newer than release version.";
 				delete_notifications('plugininstall', "lastnotified-prerel-$pluginname");
 			}
 
@@ -329,19 +330,19 @@ foreach (@plugins) {
         	$tempfile = &generate(10);
 		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo /tmp/pluginsupdate/$tempfile.zip $installarchive  2>&1`;
 		if ($? ne 0) {
-			LOGCRIT "Could not fetch archive file. Error: $resp. Skipping this plugin...";
+			LOGCRIT "$pluginname: Could not fetch archive file. Error: $resp. Skipping this plugin...";
 			next;
 
 		} else {
 
 			# Installation
-			LOGOK "Archive file fetched.";
-			LOGINF "Installing new RELEASE... Logs are going to the plugins install logfile. Please be patient..." if ($installtype eq "release");
-			LOGINF "Installing new PRE-RELEASE... Logs are going to the plugins install logfile. Please be patient..." if ($installtype eq "prerelease");
+			LOGOK "$pluginname: Archive file fetched.";
+			LOGINF "$pluginname: Installing new RELEASE... Logs are going to the plugin's install logfile. Please be patient..." if ($installtype eq "release");
+			LOGINF "$pluginname: Installing new PRE-RELEASE... Logs are going to the plugin's install logfile. Please be patient..." if ($installtype eq "prerelease");
 
 			$logfile = "/tmp/$tempfile.log";
 			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile > $logfile 2>&1");
-			#system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile");
+			LOGINF "$pluginname: Installation routine finished. Check plugin's logfile for details.";
 
 			# Create notification
 			if ($? eq 0 ) {
@@ -358,8 +359,10 @@ foreach (@plugins) {
 }
 
 # Clean up
+LOGINF "Deleting temporary files.";
 system ("rm -rf $update_path");
 
+LOGINF "$0 finished.";
 exit;
 
 
