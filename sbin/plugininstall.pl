@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.18";
+my $version = "1.0.0.19";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -223,7 +223,6 @@ if ( $R::action eq "autoupdate" ) {
 
 }
 
-
 if (!$zipmode) { 
   our $tempfolder = $R::folder;
   if (!-e $tempfolder) {
@@ -355,6 +354,7 @@ our $preleasecfg      = $pcfg->param("AUTOUPDATE.RELEASECFG");
 our $pprereleasecfg   = $pcfg->param("AUTOUPDATE.PRERELEASECFG");
 our $pinterface       = $pcfg->param("SYSTEM.INTERFACE");
 our $preboot          = $pcfg->param("SYSTEM.REBOOT");
+our $pcustomlog       = $pcfg->param("SYSTEM.CUSTOM_LOGLEVELS");
 our $plbmin           = $pcfg->param("SYSTEM.LB_MINIMUM");
 our $plbmax           = $pcfg->param("SYSTEM.LB_MAXIMUM");
 our $parch            = $pcfg->param("SYSTEM.ARCHITECTURE");
@@ -381,28 +381,36 @@ if (length($ptitle) > 25) {
   $ptitle = $ptitle . "...";
 }
 
-if ( $pautoupdates eq "false" || $pautoupdates eq "0" || $preleasecfg eq "" ) {
+if ( is_disabled ($pautoupdates) || $preleasecfg eq "" ) {
   $preleasecfg = "";
   $pprereleasecfg = "";
-  $pautoupdates = "0";
+  $pautoupdates = "False";
 } else {
-  $pautoupdates = "1";
+  $pautoupdates = "True";
 }
 
-if ( $parch eq "false" || $parch eq "" ) {
-  $parch = "0";
+if ( is_disabled($parch) || $parch eq "" ) {
+  $parch = "False";
 }
 
-if ( $preboot eq "false" || $preboot eq "" ) {
-  $preboot = "0";
+if ( is_disabled($preboot) || $preboot eq "" ) {
+  $preboot = "False";
+} else {
+  $preboot = "True";
 }
 
-if ( $plbmin eq "false" || $plbmin eq "" ) {
-  $plbmin = "0";
+if ( is_disabled($pcustomlog) || $pcustomlog eq "" ) {
+  $pcustomlog = "False";
+} else {
+  $pcustomlog = "True";
 }
 
-if ( $plbmax eq "false" || $plbmax eq "" ) {
-  $plbmax = "0";
+if ( is_disabled($plbmin) || $plbmin eq "" ) {
+  $plbmin = "False";
+}
+
+if ( is_disabled($plbmax) || $plbmax eq "" ) {
+  $plbmax = "False";
 }
 
 $message = "Author:       $pauthorname";
@@ -431,9 +439,17 @@ $message = "Max LB Vers:  $plbmax";
 &loginfo;
 $message = "Architecture: $parch";
 &loginfo;
+$message = "Custom Log:   $pcustomlog";
+&loginfo;
 $message = "Interface:    $pinterface";
 &loginfo;
 
+# Use 0/1 for enabled/disabled from here on
+$pautoupdates = is_disabled($pautoupdates) ? 0 : 1;
+$preboot = is_disabled($preboot) ? 0 : 1;
+$pcustomlog = is_disabled($pcustomlog) ? 99 : 3; # 99 = disabled, 3 = Default
+
+# Some checks
 if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pfolder || !$pinterface) {
   $message =  "$SL{'PLUGININSTALL.ERR_PLUGINCFG'}";
   &logfail;
@@ -456,7 +472,7 @@ if ( $pinterface eq "1.0" ) {
 }
 
 # Arch check
-if ($parch ) {
+if ( is_enabled($parch) ) {
   my $archcheck = 0;
   foreach (split(/,/,$parch)){
     if (-e "$lbsconfigdir/is_$_.cfg") {
@@ -483,7 +499,7 @@ if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
   $versioncheck = 0;
 }
 
-if (defined $lbmin && $versioncheck) {
+if ( !is_disabled($lbmin) && $versioncheck) {
 
   if ( (version::is_lax(vers_tag($plbmin))) ) {
     $plbmin = version->parse(vers_tag($plbmin));
@@ -501,7 +517,7 @@ if (defined $lbmin && $versioncheck) {
 
 }
 
-if (defined $lbmax && $versioncheck) {
+if ( !is_disabled($lbmax) && $versioncheck) {
 
   if ( (version::is_lax(vers_tag($plbmax))) ) {
     $plbmax = version->parse(vers_tag($plbmax));
@@ -551,10 +567,13 @@ open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
     # If this is an upgrade use existing data
     if (@fields[0] eq $pmd5checksum) {
       $isupgrade = 1;
-      if ( $pautoupdates && @fields[8] > $pautoupdates ) {
+      if ( is_enabled($pautoupdates) && @fields[8] > $pautoupdates ) {
         $pautoupdates = @fields[8] 
       };
-      print F "@fields[0]|@fields[1]|@fields[2]|$pversion|@fields[4]|@fields[5]|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|3\n";
+      if ( $pcustomlog == 3 && @fields[11] < 99 ) {
+        $pcustomlog = @fields[11];
+      }
+      print F "@fields[0]|@fields[1]|@fields[2]|$pversion|@fields[4]|@fields[5]|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|$pcustomlog\n";
       $pname = @fields[4];
       $pfolder = @fields[5];
       $message =  "$SL{'PLUGININSTALL.INF_ISUPDATE'}";
@@ -614,7 +633,7 @@ open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
       $message =  "$SL{'PLUGININSTALL.ERR_DBENTRY'}";
       &logfail;
     }
-    print F "$pmd5checksum|$pauthorname|$pauthoremail|$pversion|$pname|$pfolder|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|0\n";
+    print F "$pmd5checksum|$pauthorname|$pauthoremail|$pversion|$pname|$pfolder|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|$pcustomlog\n";
   }
   flock(F,8);
 close (F);
@@ -682,7 +701,6 @@ if (-f "$tempfolder/preroot.sh") {
     $message =  "$SL{'PLUGININSTALL.OK_SCRIPT'}";
     &logok;
   }
-
 }
 
 # Executing preupgrade script
@@ -710,14 +728,12 @@ if ($isupgrade) {
       $message =  "$SL{'PLUGININSTALL.OK_SCRIPT'}";
       &logok;
     }
-
   }
   # Purge old installation
   $message =  "$SL{'PLUGININSTALL.INF_REMOVING_OLD_INSTALL'}";
   &loginfo;
 
   &purge_installation;
-
 }
 
 # Executing preinstall script
@@ -1241,22 +1257,31 @@ if (-e "$aptfile") {
 }
 
 if ( $pinterface ne "1.0" ) {
-
-	my @debfiles = glob("$tempfolder/dpkg/*.deb");
-	if( my $cnt = @myfiles ){
-		$message = "Command: $dpkgbin -i -R $tempfolder/dpkg";
-		&loginfo;
-		system("$dpkgbin -i -R $tempfolder/dpkg 2>&1");
-		if ($? ne 0) {
-			$message =  "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
-			&logerr; 
-			push(@errors,"APT install: $message");
-		} else {
-			$message =  "$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
-			&logok;
+	if (-e "$lbsconfigdir/is_raspberry.cfg") {
+		my $thisarch = "raspberry";
+	}
+	elsif (-e "$lbsconfigdir/is_x86.cfg") {
+		my $thisarch = "x86";
+	}
+	elsif (-e "$lbsconfigdir/is_x64.cfg") {
+		my $thisarch = "x64";
+	}
+	if ( $thisarch ) {
+		my @debfiles = glob("$tempfolder/dpkg/$thisarch/*.deb");
+		if( my $cnt = @myfiles ){
+			$message = "Command: $dpkgbin -i -R $tempfolder/dpkg/$thisarch";
+			&loginfo;
+			system("$dpkgbin -i -R $tempfolder/dpkg/$thisarch 2>&1");
+			if ($? ne 0) {
+				$message =  "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
+				&logerr; 
+				push(@errors,"APT install: $message");
+			} else {
+				$message =  "$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
+				&logok;
+			}
 		}
 	}
-	
 }
 
 # We have to recreate the skels for system log folders in tmpfs
@@ -1357,7 +1382,7 @@ if (-f "$tempfolder/postroot.sh") {
 # Copy installation files
 make_path("$lbhomedir/data/system/install/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 my @installfiles = glob("$tempfolder/*.sh");
-if( my $cnt = @myfiles ){
+if( my $cnt = @installfiles ){
 	$message =  "$SL{'PLUGININSTALL.INF_INSTALLSCRIPTS'}";
 	&loginfo;
 	system("$sudobin -n -u loxberry cp -v $tempfolder/*.sh $lbhomedir/data/system/install/$pfolder 2>&1");
@@ -1376,6 +1401,21 @@ if( -e "$tempfolder/apt" ){
 	$message =  "$SL{'PLUGININSTALL.INF_INSTALLAPT'}";
 	&loginfo;
 	system("$sudobin -n -u loxberry cp -rv $tempfolder/apt $lbhomedir/data/system/install/$pfolder 2>&1");
+	if ($? ne 0) {
+	  $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
+	  &logerr; 
+	  push(@errors,"INSTALL scripts: $message");
+	} else {
+	  $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
+	  &logok;
+	}
+	&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
+	&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
+}
+if( -e "$tempfolder/dpkg" ){
+	$message =  "$SL{'PLUGININSTALL.INF_INSTALLAPT'}";
+	&loginfo;
+	system("$sudobin -n -u loxberry cp -rv $tempfolder/dpkg $lbhomedir/data/system/install/$pfolder 2>&1");
 	if ($? ne 0) {
 	  $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
 	  &logerr; 
