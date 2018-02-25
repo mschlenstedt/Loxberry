@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.22";
+our $VERSION = "1.0.0.23";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -490,7 +490,8 @@ sub notify_ext
 	my $dbh;
 	
 	my $data = shift;
-	
+	$data->{MESSAGE} = HTML::Entities::decode($data->{MESSAGE});
+
 	$dbh = notify_init_database();
 	print STDERR "notify_ext: Could not init database.\n" if (! $dbh);
 	return undef if (! $dbh);
@@ -505,10 +506,11 @@ sub notify_ext
 		}
 	}
 	
+	require Encode;	
+	notify_send_mail($data);
+	$data->{MESSAGE} = Encode::encode("utf8", $data->{MESSAGE});
 	notify_insert_notification($dbh, $data);
 	$dbh->disconnect;
-	notify_send_mail($data);
-	
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
 
 }
