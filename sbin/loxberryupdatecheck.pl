@@ -36,10 +36,11 @@ use URI::Escape;
 use File::Path;
 use File::Copy qw(copy);
 use LWP::UserAgent;
+use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.3";
+my $scriptversion="1.0.0.4";
 
 # print currtime('file') . "\n";
 
@@ -531,7 +532,8 @@ sub check_commits
 				);
 			LoxBerry::Log::notify_ext( \%notification );
 	
-			notify('updates', 'check', "LoxBerry Updatecheck: New commit from $commit_by on $commit_date, message $commit_message.");
+			my $message = Encode::decode("utf8", "LoxBerry Updatecheck: New commit from $commit_by on $commit_date, message $commit_message.");
+			notify('updates', 'check', $message);
 			delete_notifications('updates', 'check', 1);
 		}
 	}
