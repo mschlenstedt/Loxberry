@@ -280,7 +280,47 @@ if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
 	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
 fi
 
+# Do not let mountd USB disapear after udev script terminates - needed for usbmount
+# Details: https://github.com/rbrito/usbmount/issues/2
+# (also included in 1.0.3 Update script)
+if [ ! -e /etc/systemd/system/systemd-udevd.service ]; then
+(cat <<END
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+[Unit]
+Description=udev Kernel Device Manager
+Documentation=man:systemd-udevd.service(8) man:udev(7)
+DefaultDependencies=no
+Wants=systemd-udevd-control.socket systemd-udevd-kernel.socket
+After=systemd-udevd-control.socket systemd-udevd-kernel.socket systemd-sysusers.service
+Before=sysinit.target
+ConditionPathIsReadWrite=/sys
+
+[Service]
+Type=notify
+OOMScoreAdjust=-1000
+Sockets=systemd-udevd-control.socket systemd-udevd-kernel.socket
+Restart=always
+RestartSec=0
+ExecStart=/lib/systemd/systemd-udevd
+KillMode=mixed
+WatchdogSec=3min
+TasksMax=infinity
+MountFlags=shared
+MemoryDenyWriteExecute=yes
+RestrictRealtime=yes
+RestrictAddressFamilies=AF_UNIX AF_NETLINK AF_INET AF_INET6
+END
+) > /etc/systemd/system/systemd-udevd.service
+fi
+
 # Configuring usbmount
+# (also included in 1.0.3 Update script)
 if [ -e /etc/usbmount/usbmount.conf ]; then
 	awk -v s='FILESYSTEMS="vfat ntfs fuseblk ext2 ext3 ext4 hfsplus"' '/^FILESYSTEMS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf
 	awk -v s='FS_MOUNTOPTIONS="-fstype=ntfs-3g,nls=utf8,umask=007,gid=1001 -fstype=fuseblk,nls=utf8,umask=007,gid=1001 -fstype=vfat,gid=1001,uid=1001,umask=007"' '/^FS_MOUNTOPTIONS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf
