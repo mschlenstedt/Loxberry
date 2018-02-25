@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.20";
+our $VERSION = "1.0.0.21";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -679,6 +679,8 @@ sub notify_send_mail
   print STDERR "--> send HTML Notification eMail \n" if ($DEBUG);
   my $outer_boundary= "o".Digest::MD5::md5_hex( time . rand(100) );
   my $inner_boundary= "i".Digest::MD5::md5_hex( time . rand(100) );
+  
+  $message = utf8::upgrade($message) if !utf8::is_utf8($message);
   $message = "From: =?UTF-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">
 To: ".$email."
 Subject: =?utf-8?b?".MIME::Base64::encode($subject, "")."?= 
@@ -691,7 +693,7 @@ This is a multi-part message in MIME format.
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-".Encode::decode("utf8",$message)."
+".$message."
 
 --------------$outer_boundary
 Content-Type: multipart/related;
@@ -707,7 +709,7 @@ Content-Transfer-Encoding: 7bit
     <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">
   </head>
   <body text=\"#000000\" bgcolor=\"#cfcfcf\">
-	<div style=\"border-radius: .6em .6em .6em .6em; padding:10px; background-color: #ffffff; border-color: #8c8c8;\">".Encode::decode("utf8",$message)."<br>\n--\n<br><a href='http://$hostname:". LoxBerry::System::lbwebserverport() . "/'>".Encode::decode("utf8",$friendlyname)."</a></div>
+	<div style=\"border-radius: .6em .6em .6em .6em; padding:10px; background-color: #ffffff; border-color: #8c8c8;\">".$message."<br>\n--\n<br><a href='http://$hostname:". LoxBerry::System::lbwebserverport() . "/'>".Encode::decode("utf8",$friendlyname)."</a></div>
   </body>
 </html>
 
