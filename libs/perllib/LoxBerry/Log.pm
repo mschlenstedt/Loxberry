@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.19";
+our $VERSION = "1.0.0.20";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -674,10 +674,11 @@ sub notify_send_mail
 	require MIME::Base64;
 	require File::Temp;
 	require Encode;
+	require Digest::MD5;
 
   print STDERR "--> send HTML Notification eMail \n" if ($DEBUG);
-  my $outer_boundary= "o81add1737def0b40de8f43e5c9295f1f";
-  my $inner_boundary= "i81add1737def0b40de8f43e5c9295f1f";
+  my $outer_boundary= "o".Digest::MD5::md5_hex( time . rand(100) );
+  my $inner_boundary= "i".Digest::MD5::md5_hex( time . rand(100) );
   $message = "From: =?UTF-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">
 To: ".$email."
 Subject: =?utf-8?b?".MIME::Base64::encode($subject, "")."?= 
