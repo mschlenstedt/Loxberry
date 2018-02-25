@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.19";
+my $version = "1.0.0.20";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -447,7 +447,7 @@ $message = "Interface:    $pinterface";
 # Use 0/1 for enabled/disabled from here on
 $pautoupdates = is_disabled($pautoupdates) ? 0 : 1;
 $preboot = is_disabled($preboot) ? 0 : 1;
-$pcustomlog = is_disabled($pcustomlog) ? 99 : 3; # 99 = disabled, 3 = Default
+$pcustomlog = is_disabled($pcustomlog) ? -1 : 3; # -1 = disabled, 3 = Default
 
 # Some checks
 if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pfolder || !$pinterface) {
@@ -570,7 +570,7 @@ open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
       if ( is_enabled($pautoupdates) && @fields[8] > $pautoupdates ) {
         $pautoupdates = @fields[8] 
       };
-      if ( $pcustomlog == 3 && @fields[11] < 99 ) {
+      if ( $pcustomlog == 3 && @fields[11] > -1 ) {
         $pcustomlog = @fields[11];
       }
       print F "@fields[0]|@fields[1]|@fields[2]|$pversion|@fields[4]|@fields[5]|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|$pcustomlog\n";
