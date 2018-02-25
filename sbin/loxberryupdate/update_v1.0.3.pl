@@ -118,6 +118,20 @@ if ($exitcode != 0) {
 	LOGOK "Symlink $lbhomedir/system/storage created successfully";
 }
 
+LOGINF "Replacing system samba config file";
+LOGINF "Copying new";
+
+$output = qx { if [ -e $updatedir/system/samba/smb.conf ] ; then cp -f $updatedir/system/samba/smb.conf $lbhomedir/system/samba/ ; fi };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error copying new samba config file - Error $exitcode";
+	$errors++;
+} else {
+	LOGOK "New samba config file copied.";
+}
+qx { chown loxberry:loxberry $lbhomedir/system/samba/smb.conf };
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 reboot_required("LoxBerry Update requests a reboot.");
