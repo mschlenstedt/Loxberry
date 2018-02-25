@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.18";
+our $VERSION = "1.0.0.19";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -448,6 +448,11 @@ sub notify
 		$severity = 6;
 	}
 	
+	# Strip HTML from $message
+	$message =~ s|<br>|\\n|g;
+	$message =~ s|<p>|\\n|g;
+	$message =~ s|<.+?>||g;
+	
 	# SQLite interface
 	require DBI;
 	my $dbh;
@@ -504,6 +509,14 @@ sub notify_ext
 			$data->{_ISSYSTEM} = 1;
 		}
 	}
+	
+	# Strip HTML from $message
+	$data->{MESSAGE} =~ s|<br>|\\n|g;
+	$data->{MESSAGE} =~ s|<p>|\\n|g;
+	$data->{MESSAGE} =~ s|<.+?>||g;
+	
+	
+	
 	notify_insert_notification($dbh, $data);
 	$dbh->disconnect;
 	notify_send_mail($data);
