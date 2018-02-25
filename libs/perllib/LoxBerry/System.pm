@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.7";
+our $VERSION = "1.0.0.8";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -442,10 +442,13 @@ sub plugindata
 	
 	my $query = defined $queryname ? $queryname : $lbpplugindir;
 	
+	print STDERR "plugindata: Query '$query'\n";# if ($DEBUG);
+	
 	my @plugins = LoxBerry::System::get_plugins();
 	
 	foreach my $plugin (@plugins) {
 		if ($queryname && ( $plugin->{PLUGINDB_NAME} eq $query || $plugin->{PLUGINDB_FOLDER} eq $query) ) {
+			print STDERR "   Returning plugin $plugin->{PLUGINDB_TITLE}\n";
 			return $plugin;
 		}
 		if (!$queryname && $plugin->{PLUGINDB_FOLDER} eq $query) {
@@ -998,6 +1001,7 @@ sub is_enabled
 sub is_disabled
 { 
 	my ($text) = @_;
+	if (! $text) { return 1;} 
 	$text =~ s/^\s+|\s+$//g;
 	$text = lc $text;
 	if ($text eq "false") { return 1;}

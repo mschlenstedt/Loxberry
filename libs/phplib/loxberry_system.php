@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.5";
+	public static $LBSYSTEMVERSION = "1.0.0.6";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -594,6 +594,9 @@ function is_enabled($text)
 ####################################################
 function is_disabled($text)
 { 
+	if (! isset($text)) {
+		return 1;
+	}
 	$text = trim($text);
 	$text = strtolower($text);
 	
