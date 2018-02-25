@@ -93,6 +93,7 @@ if ($sendstat) {
 	$architecture = "ARM" if (-e "$lbsconfigdir/is_raspberry.cfg");
 	$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
 	$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
+	$architecture = "Virtuozzo" if (-e "$lbsconfigdir/is_virtuozzo.cfg");
 	
 	# Send LoxBerry version info
 	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture";
