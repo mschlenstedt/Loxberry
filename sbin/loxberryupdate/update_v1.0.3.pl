@@ -50,27 +50,41 @@ if (-e "$lbsdatadir/notifications_sqlite.dat" ) {
 }
 
  
-LOGINF "Replacing system default sudoers file";
-LOGINF "Copying new";
+#LOGINF "Replacing system default sudoers file";
+#LOGINF "Copying new";
 
-my $output = qx { if [ -e $updatedir/system/sudoers/lbdefaults ] ; then cp -f $updatedir/system/sudoers/lbdefaults $lbhomedir/system/sudoers/ ; fi };
+#my $output = qx { if [ -e $updatedir/system/sudoers/lbdefaults ] ; then cp -f $updatedir/system/sudoers/lbdefaults $lbhomedir/system/sudoers/ ; fi };
+#my $exitcode  = $? >> 8;
+
+#if ($exitcode != 0) {
+#	LOGERR "Error copying new lbdefaults - Error $exitcode";
+#	$errors++;
+#} else {
+#	LOGOK "New lbdefaults copied.";
+#}
+#qx { chown root:root $lbhomedir/system/sudoers/lbdefaults };
+
+LOGINF "Installing packages usbmount and ntfs-3g";
+
+my $output = qx { /usr/bin/dpkg --configure -a };
+my $output = qx { /usr/bin/apt-get -q -y update };
+my $output = qx { /usr/bin/apt-get -q -y install usbmount ntfs-3g };
 my $exitcode  = $? >> 8;
-
 if ($exitcode != 0) {
-	LOGERR "Error copying new lbdefaults - Error $exitcode";
+	LOGERR "Error installing packages usbmount ntfs-3g with apt-get - Error $exitcode";
 	$errors++;
 } else {
-	LOGOK "New lbdefaults copied.";
+	LOGOK "Installing usbmount ntfs-3g successfully.";
 }
 
-qx { chown root:root $lbhomedir/system/sudoers/lbdefaults };
-
-
-
+if ( -e "/etc/usbmount/usbmount.conf" ) {
+	my $output = qx {awk -v s='FILESYSTEMS="vfat ntfs fuseblk ext2 ext3 ext4 hfsplus"' '/^FILESYSTEMS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf };
+	my $output = qx {awk -v s='FS_MOUNTOPTIONS="-fstype=ntfs-3g,nls=utf8,umask=007,gid=1001 -fstype=fuseblk,nls=utf8,umask=007,gid=1001 -fstype=vfat,gid=1001,uid=1001,umask=007"' '/^FS_MOUNTOPTIONS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf };
+}
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
-# LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-# reboot_required("LoxBerry Update requests a reboot.");
+LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
+reboot_required("LoxBerry Update requests a reboot.");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
