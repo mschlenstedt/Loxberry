@@ -7,7 +7,7 @@ $LoxBerry::Log::DEBUG = 1;
 
 my $package = "NOTIFY";
 my $group = "Test";
-my $message = "äää ööö üüü ßßß";
+my $message = "äää ööö üüü ßßß ÖÖÖÖ";
 #my $message = undef;
 
 
