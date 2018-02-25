@@ -1,4 +1,4 @@
-# Please increment version number on EVERY change 
+# Please increment version number on EVERY change
 # Major.Minor represents LoxBerry version (e.g. 0.3.1.12 = LoxBerry V0.3.1 the 12th change)
 
 use strict;
