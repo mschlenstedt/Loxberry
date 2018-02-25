@@ -279,3 +279,10 @@ if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
 	mkdir -p /etc/systemd/system/apache2.service.d
 	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
 fi
+
+# Configuring usbmount
+if [ -e /etc/usbmount/usbmount.conf ]; then
+	awk -v s='FILESYSTEMS="vfat ntfs fuseblk ext2 ext3 ext4 hfsplus"' '/^FILESYSTEMS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf
+	awk -v s='FS_MOUNTOPTIONS="-fstype=ntfs-3g,nls=utf8,umask=007,gid=1001 -fstype=fuseblk,nls=utf8,umask=007,gid=1001 -fstype=vfat,gid=1001,uid=1001,umask=007"' '/^FS_MOUNTOPTIONS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf
+fi
+
