@@ -67,9 +67,23 @@ if (-e "$lbsdatadir/notifications_sqlite.dat" ) {
 LOGINF "Installing packages usbmount and ntfs-3g";
 
 my $output = qx { /usr/bin/dpkg --configure -a };
-my $output = qx { /usr/bin/apt-get -q -y update };
-my $output = qx { /usr/bin/apt-get -q -y install usbmount ntfs-3g };
 my $exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
+        $errors++;
+} else {
+        LOGOK "Configuring dpkg successfully.";
+}
+$output = qx { /usr/bin/apt-get -q -y update };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error updating apt database - Error $exitcode";
+        $errors++;
+} else {
+        LOGOK "Apt database updated successfully.";
+}
+$output = qx { /usr/bin/apt-get -q -y install usbmount ntfs-3g };
+$exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	LOGERR "Error installing packages usbmount ntfs-3g with apt-get - Error $exitcode";
 	$errors++;
@@ -78,8 +92,30 @@ if ($exitcode != 0) {
 }
 
 if ( -e "/etc/usbmount/usbmount.conf" ) {
-	my $output = qx {awk -v s='FILESYSTEMS="vfat ntfs fuseblk ext2 ext3 ext4 hfsplus"' '/^FILESYSTEMS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf };
-	my $output = qx {awk -v s='FS_MOUNTOPTIONS="-fstype=ntfs-3g,nls=utf8,umask=007,gid=1001 -fstype=fuseblk,nls=utf8,umask=007,gid=1001 -fstype=vfat,gid=1001,uid=1001,umask=007"' '/^FS_MOUNTOPTIONS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf };
+	$output = qx {awk -v s='FILESYSTEMS="vfat ntfs fuseblk ext2 ext3 ext4 hfsplus"' '/^FILESYSTEMS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+       		LOGERR "Error replacing string FILESYSTEMS= in /etc/usbmount/usbmount.conf - Error $exitcode";
+      		$errors++;
+	} else {
+        	LOGOK "Replacing string FILESYSTEMS= successfully in /etc/usbmount/usbmount.conf.";
+	}
+	$output = qx {awk -v s='FS_MOUNTOPTIONS="-fstype=ntfs-3g,nls=utf8,umask=007,gid=1001 -fstype=fuseblk,nls=utf8,umask=007,gid=1001 -fstype=vfat,gid=1001,uid=1001,umask=007"' '/^FS_MOUNTOPTIONS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+       		LOGERR "Error replacing string FS_MOUNTOPTIONS= in /etc/usbmount/usbmount.conf - Error $exitcode";
+      		$errors++;
+	} else {
+        	LOGOK "Replacing string FS_MOUNTOPTIONS= successfully in /etc/usbmount/usbmount.conf.";
+	}
+}
+$output = qx { ln -s /var/run/usbmount/ $lbhomedir/system/storage };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error creating symlink $lbhomedir/system/storage - Error $exitcode";
+	$errors++;
+} else {
+	LOGOK "Symlink $lbhomedir/system/storage created successfully";
 }
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
