@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.7";
+	public static $LBSYSTEMVERSION = "1.0.0.8";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -284,6 +284,26 @@ class LBSystem
 		
 		return isset($plugin['PLUGINDB_VERSION']) ? $plugin['PLUGINDB_VERSION'] : null;
 	}
+
+	##################################################################################
+	# Get Plugin Loglevel
+	# Returns plugin loglevel from plugindatabase
+	##################################################################################
+	public static function pluginloglevel($queryname = "")
+	{
+		global $lbpplugindir;
+		
+		$query = $queryname != "" ? $queryname : $lbpplugindir;
+		
+		$plugin = LBSystem::plugindata($query);
+		
+		if (isset($plugin['PLUGINDB_LOGLEVEL']) && $queryname == "") {
+				$pluginversion = $plugin['PLUGINDB_LOGLEVEL'];
+		}
+		
+		return isset($plugin['PLUGINDB_LOGLEVEL']) ? $plugin['PLUGINDB_LOGLEVEL'] : 0;
+	}
+
 	
 	##################################################################################
 	# Get Plugindata

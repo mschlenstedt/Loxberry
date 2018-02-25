@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.9";
+our $VERSION = "1.0.0.10";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -429,6 +429,21 @@ sub pluginversion
 	
 	my $plugin = LoxBerry::System::plugindata($query);
 	return $plugin->{PLUGINDB_VERSION} if ($plugin);
+}
+
+##################################################################################
+# Get Plugin Loglevel
+# Returns plugin loglevel from plugindatabase
+# With parameter name, returns the loglevel of named plugin
+##################################################################################
+sub pluginversion
+{
+	my ($queryname) = @_;
+	
+	my $query = $queryname ? $queryname : $lbpplugindir;
+	
+	my $plugin = LoxBerry::System::plugindata($query);
+	return $plugin->{PLUGINDB_LOGLEVEL} ? $plugin->{PLUGINDB_LOGLEVEL} : 0;
 }
 
 ##################################################################################
