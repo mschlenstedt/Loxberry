@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.6";
+	public static $LBSYSTEMVERSION = "1.0.0.7";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -351,6 +351,7 @@ class LBSystem
 				'PLUGINDB_RELEASECFG' => isset($fields[9]) ? $fields[9] : null,
 				'PLUGINDB_PRERELEASECFG' => isset($fields[10]) ? $fields[10] : null,
 				'PLUGINDB_LOGLEVEL' => isset($fields[11]) ? $fields[11] : null,
+				'PLUGINDB_LOGLEVELS_ENABLED' => isset($fields[11]) && $fields[11] >= 0 ? 1 : 0,
 				'PLUGINDB_ICONURI' => "/system/images/icons/$fields[5]/icon_64.png"
 				);
 				# On changes of the plugindatabase format, please change here
