@@ -506,11 +506,12 @@ sub notify_ext
 		}
 	}
 	
-	require Encode;	
-	notify_send_mail($data);
-	$data->{MESSAGE} = Encode::encode("utf8", $data->{MESSAGE});
+	#require Encode;	
+	#$data->{MESSAGE} = Encode::encode("utf8", $data->{MESSAGE});
 	notify_insert_notification($dbh, $data);
 	$dbh->disconnect;
+	notify_send_mail($data);
+	
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
 
 }
@@ -662,61 +663,16 @@ sub notify_send_mail
 	}
 
 	my $bins = LoxBerry::System::get_binaries(); 
-	my $mailbin = $bins->{SENDMAIL};
+	my $mailbin = $bins->{MAIL};
 	my $email	= $mcfg{'SMTP.EMAIL'};
 
 	require MIME::Base64;
-	require File::Temp;
-	require Encode;
-	require Digest::MD5;
-
-  print STDERR "--> send HTML Notification eMail \n" if ($DEBUG);
-  my $outer_boundary= "o".Digest::MD5::md5_hex( time . rand(100) );
-  my $inner_boundary= "i".Digest::MD5::md5_hex( time . rand(100) );
-  
-  $message = "From: =?UTF-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">
-To: ".$email."
-Subject: =?utf-8?b?".MIME::Base64::encode($subject, "")."?= 
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary=\"------------$outer_boundary\"
-
-This is a multi-part message in MIME format.
---------------$outer_boundary
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-".$message."
-
---------------$outer_boundary
-Content-Type: multipart/related;
- boundary=\"------------$inner_boundary\"
-
-
---------------$inner_boundary
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">
-  </head>
-  <body text=\"#000000\" bgcolor=\"#cfcfcf\">
-	<div style=\"border-radius: .6em .6em .6em .6em; padding:10px; background-color: #ffffff; border-color: #8c8c8;\">".$message."<br>\n--\n<br><a href='http://$hostname:". LoxBerry::System::lbwebserverport() . "/'>".Encode::decode("utf8",$friendlyname)."</a></div>
-  </body>
-</html>
-
-
---------------$inner_boundary--
-
---------------$outer_boundary--\n\n";
-
-	my ($mfh, $mfilename);
-	($mfh, $mfilename) = File::Temp::tempfile() or print STDERR "Cannot create temporary mailfile"; 
-	binmode( $mfh, ":utf8" );
-	print $mfh $message;
-	print STDERR "--> HTML Notification eMail tempfile: $mfilename \n" if ($DEBUG);
-	my $result = qx($mailbin -t 1>&2 < $mfilename );
+	
+	$subject = "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
+	my $headerfrom = 'From:=?utf-8?b?' . MIME::Base64::encode($friendlyname, "") . '?= <' . $email . '>';
+	my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
+	
+	my $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $email 2>&1);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$notifymailerror = 1; # Prevents loops
@@ -725,8 +681,68 @@ Content-Transfer-Encoding: 7bit
 		print STDERR "Error sending email notification - Error $exitcode:\n";
 		print STDERR $result . "\n";
 	} 
-	close($mfh) or print STDERR "Cannot close temporary mailfile $mfilename";
-	unlink ($mfilename) or print STDERR "Cannot delete temporary mailfile $mfilename"; 
+   
+  # my $outer_boundary= "o".Digest::MD5::md5_hex( time . rand(100) );
+  # my $inner_boundary= "i".Digest::MD5::md5_hex( time . rand(100) );
+  
+  
+  # $message = "From: =?UTF-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">
+# To: ".$email."
+# Subject: =?utf-8?b?".MIME::Base64::encode($subject, "")."?= 
+# MIME-Version: 1.0
+# Content-Type: multipart/alternative;
+ # boundary=\"------------$outer_boundary\"
+
+# This is a multi-part message in MIME format.
+# --------------$outer_boundary
+# Content-Type: text/plain; charset=utf-8; format=flowed
+# Content-Transfer-Encoding: 7bit
+
+# ".$message."
+
+# --------------$outer_boundary
+# Content-Type: multipart/related;
+ # boundary=\"------------$inner_boundary\"
+
+
+# --------------$inner_boundary
+# Content-Type: text/html; charset=utf-8
+# Content-Transfer-Encoding: 7bit
+
+# <html>
+  # <head>
+    # <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">
+  # </head>
+  # <body text=\"#000000\" bgcolor=\"#cfcfcf\">
+	# <div style=\"border-radius: .6em .6em .6em .6em; padding:10px; background-color: #ffffff; border-color: #8c8c8;\">".$message."<br>\n--\n<br><a href='http://$hostname:". LoxBerry::System::lbwebserverport() . "/'>".Encode::decode("utf8",$friendlyname)."</a></div>
+  # </body>
+# </html>
+
+
+# --------------$inner_boundary--
+
+# --------------$outer_boundary--\n\n";
+
+	# my ($mfh, $mfilename);
+	# ($mfh, $mfilename) = File::Temp::tempfile() or print STDERR "Cannot create temporary mailfile"; 
+	# binmode( $mfh, ":utf8" );
+	# print $mfh $message;
+	# print STDERR "--> HTML Notification eMail tempfile: $mfilename \n" if ($DEBUG);
+	# my $result = qx($mailbin -t 1>&2 < $mfilename );
+	# my $exitcode  = $? >> 8;
+	# if ($exitcode != 0) {
+		# $notifymailerror = 1; # Prevents loops
+		# my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+		# notify("mailserver", "mailerror", $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'}, "error");
+		# print STDERR "Error sending email notification - Error $exitcode:\n";
+		# print STDERR $result . "\n";
+	# } 
+	# close($mfh) or print STDERR "Cannot close temporary mailfile $mfilename";
+	# unlink ($mfilename) or print STDERR "Cannot delete temporary mailfile $mfilename"; 
+
+	
+	
+	
 }
 
 
