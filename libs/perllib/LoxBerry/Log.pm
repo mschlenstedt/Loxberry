@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.21";
+our $VERSION = "1.0.0.22";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -448,11 +448,6 @@ sub notify
 		$severity = 6;
 	}
 	
-	# Strip HTML from $message
-	$message =~ s|<br>|\\n|g;
-	$message =~ s|<p>|\\n|g;
-	$message =~ s|<.+?>||g;
-	
 	# SQLite interface
 	require DBI;
 	my $dbh;
@@ -510,19 +505,11 @@ sub notify_ext
 		}
 	}
 	
-	# Strip HTML from $message
-	$data->{MESSAGE} =~ s|<br>|\\n|g;
-	$data->{MESSAGE} =~ s|<p>|\\n|g;
-	$data->{MESSAGE} =~ s|<.+?>||g;
-	
-	
-	
 	notify_insert_notification($dbh, $data);
 	$dbh->disconnect;
 	notify_send_mail($data);
 	
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
-	
 
 }
 
@@ -585,8 +572,13 @@ sub notify_insert_notification
 	Carp::croak "Create notification: No MESSAGE defined\n" if (! $p{MESSAGE});
 	Carp::croak "Create notification: No SEVERITY defined\n" if (! $p{SEVERITY});
 
-	# Start transaction
+	# Strip HTML from $message
+	$p{MESSAGE} =~ s/<br>/\\n/g;
+	$p{MESSAGE} =~ s/<p>/\\n/g;
+	$p{MESSAGE} =~ s/<.+?>//g;
 	
+	
+	# Start transaction
 	$dbh->do("BEGIN TRANSACTION;"); 
 	
 	# Insert main notification
@@ -680,7 +672,6 @@ sub notify_send_mail
   my $outer_boundary= "o".Digest::MD5::md5_hex( time . rand(100) );
   my $inner_boundary= "i".Digest::MD5::md5_hex( time . rand(100) );
   
-  $message = utf8::upgrade($message) if !utf8::is_utf8($message);
   $message = "From: =?UTF-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">
 To: ".$email."
 Subject: =?utf-8?b?".MIME::Base64::encode($subject, "")."?= 
@@ -773,8 +764,8 @@ sub get_notifications
 		my %notification;
 		my $dateobj = Time::Piece->strptime($key->{'timestamp'}, "%Y-%m-%d %H:%M:%S");
 		my $contenthtml = $key->{'MESSAGE'};
-		$contenthtml =~ s/\n/<br>\n/g;
 		$contenthtml = HTML::Entities::encode_entities($contenthtml, '<>&"');
+		$contenthtml =~ s/\n/<br>\n/g;
 		
 		$notification{'DATEISO'} = $dateobj->datetime;
 		$notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
