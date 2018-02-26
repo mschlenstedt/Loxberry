@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.0.0.2';
+my $scriptversion='1.0.0.3';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -388,7 +388,7 @@ if (! $cgi->param('dryrun') ) {
 LOGINF "Cleaning up temporary download folder";
 delete_directory($update_path);
 
-LOGINF "All procesures finished.";
+LOGINF "All procedures finished.";
 notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_OK'} . " $release");
 exit 0;
 
