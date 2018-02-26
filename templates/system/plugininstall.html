@@ -97,16 +97,16 @@
 			<tr style="border-bottom: 1.5px solid LightGray;">
 				<td colspan="2">
 				<TMPL_IF PLUGINDB_AUTOUPDATE>
-				<label>Automatic Updates</label>
+				<label><TMPL_VAR PLUGININSTALL.UI_LABEL_AUTOMATIC_UPDATES></label>
 				<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
 					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"	value="1">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1">Off</label>
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_OFF></label>
 					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2"	value="2">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2">Notify only</label>
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_NOTIFY_ONLY></label>
 					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3"	value="3">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3">Releases</label>
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_RELEASES></label>
 					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"	value="4">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4">Pre- and Releases</label>
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_PRE_AND_RELEASES></label>
 				</fieldset>
 				<script>
 				$(document).on('pagecreate',function()
@@ -126,17 +126,17 @@
 				</td>
 				<td>
 				<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
-				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Logging Level</label>
+				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGGING_LEVEL></label>
 					<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
 					<select name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-mini="true">
-						<option value="0">Off</option>
-						<!-- <option value="1">The 1st Option</option> -->
-						<option value="2">Failures</option>
-						<option value="3">Errors</option>
-						<!-- <option value="4">Warnings</option> -->
-						<!-- <option value="5">The 4th Option</option> -->
-						<option value="6">Informational</option>
-						<option value="7">Debug</option>
+						<option value="0"><TMPL_VAR PLUGININSTALL.UI_LOG_0_OFF></option>
+					<!--<option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_1_ALERT></option>//-->
+						<option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_2_FAILURES></option>
+						<option value="3"><TMPL_VAR PLUGININSTALL.UI_LOG_3_ERRORS></option>
+						<option value="4"><TMPL_VAR PLUGININSTALL.UI_LOG_4_WARNING></option>
+					<!--<option value="5"><TMPL_VAR PLUGININSTALL.UI_LOG_5_OK></option>//-->
+						<option value="6"><TMPL_VAR PLUGININSTALL.UI_LOG_6_INFO></option>
+						<option value="7"><TMPL_VAR PLUGININSTALL.UI_LOG_7_DEBUG></option>
 					</select>
 					</fieldset>
 				</TMPL_IF>
