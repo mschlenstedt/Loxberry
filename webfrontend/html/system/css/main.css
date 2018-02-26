@@ -161,7 +161,8 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 }
 
 /* Font size of help */
-#infopanel .ui-panel-inner * {font-size:0.9em!important;}
+#infopanel .ui-panel-inner * {font-size:0.95em!important;}
+#infopanel .ui-panel-inner a {color: #000000; font-weight:normal;}
 
 .hint
 {
