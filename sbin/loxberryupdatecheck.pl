@@ -267,7 +267,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		} 
 		LOGOK "No other update running.";			
 		
-		$joutput{'info'} = $SL{'UPDATES.INFO_UPDATE_STARTED_PREFIX'} . $release_version . $SL{'UPDATES.INFO_UPDATE_STARTED_SUFFIX'}; 
+		$joutput{'info'} = "$SL{'UPDATES.INFO_UPDATE_STARTED_PREFIX'} $release_version $SL{'UPDATES.INFO_UPDATE_STARTED_SUFFIX'}"; 
 		LOGOK $joutput{'info'};
 		&err;
 		my $download_file = "$download_path/loxberry.$release_version.zip";

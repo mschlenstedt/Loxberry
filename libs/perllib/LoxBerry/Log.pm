@@ -473,7 +473,16 @@ sub notify
 	}
 	
 	notify_insert_notification($dbh, \%data);
+	my $dbfile = $dbh->sqlite_db_filename();
 	$dbh->disconnect;
+	eval {
+		my $uid = (stat $dbfile)[4];
+		my $owner = (getpwuid $uid)[0];
+		if ($owner ne 'loxberry') {
+			my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
+			chown $uid, $gid, $dbfile;
+		}
+	};
 	notify_send_mail(\%data);
 	
 	print STDERR "<--- notify\n" if ($DEBUG);
@@ -509,7 +518,17 @@ sub notify_ext
 	#require Encode;	
 	#$data->{MESSAGE} = Encode::encode("utf8", $data->{MESSAGE});
 	notify_insert_notification($dbh, $data);
+	my $dbfile = $dbh->sqlite_db_filename();
 	$dbh->disconnect;
+	eval {
+		my $uid = (stat $dbfile)[4];
+		my $owner = (getpwuid $uid)[0];
+		if ($owner ne 'loxberry') {
+			my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
+			chown $uid, $gid, $dbfile;
+		}
+	};
+	
 	notify_send_mail($data);
 	
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
