@@ -201,10 +201,15 @@
 					
 					// strip v from version tag
 					var version = not.version;
-					if( version.charAt( 0 ) === 'v' )
+					if( version.charAt( 0 ).toLowerCase() === 'v' )
 						version = version.slice( 1 );
 					
 					var curver = $("#curver-" + not.pluginmd5).text();
+					if( curver.charAt( 0 ).toLowerCase() === 'v' )
+						curver = curver.slice( 1 );
+					
+					
+					
 					var newer = versionCompare(version, curver);
 					console.log("Notification:", version, "Current version:", curver);
 					console.log("Is newer?", newer);
