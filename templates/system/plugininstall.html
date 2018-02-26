@@ -217,8 +217,7 @@
 					if (not.type == "prerelease") {
 						//$("#prever-" + not.pluginmd5).text(version);
 						var vertext = "New Pre-Release " + version;
-						if(not.releaseinfo != "") 
-							vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:#ef6558;font-weight: normal;" >' + vertext + '</a>';
+						if(not.releaseinfo != null) vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:#ef6558;font-weight: normal;" >' + vertext + '</a>';
 						$("#labelpre-" + not.pluginmd5).html(vertext);
 						$("#labelpre-" + not.pluginmd5).show();
 						//$("#prebtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
@@ -227,8 +226,7 @@
 					}
 					if (not.type == "release") {
 						var vertext = "New Release " + version;
-						if(not.releaseinfo != "") 
-							vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:green;font-weight: normal;">' + vertext + '</a>';
+						if(not.releaseinfo != null) vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:green;font-weight: normal;">' + vertext + '</a>';
 						$("#labelrel-" + not.pluginmd5).html(vertext);
 						$("#labelrel-" + not.pluginmd5).show();
 						//$("#relbtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
