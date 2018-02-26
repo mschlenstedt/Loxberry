@@ -326,3 +326,6 @@ if [ -e /etc/usbmount/usbmount.conf ]; then
 	awk -v s='FS_MOUNTOPTIONS="-fstype=ntfs-3g,nls=utf8,umask=007,gid=1001 -fstype=fuseblk,nls=utf8,umask=007,gid=1001 -fstype=vfat,gid=1001,uid=1001,umask=007"' '/^FS_MOUNTOPTIONS=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/usbmount/usbmount.conf
 fi
 
+# Activating i2c
+# (also included in 1.0.3 Update script)
+$LBHOME/sbin/activate_i2c.sh

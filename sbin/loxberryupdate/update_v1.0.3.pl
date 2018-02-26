@@ -187,7 +187,7 @@ $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	LOGERR "Error copying new samba config file - Error $exitcode";
 	LOGDEB $output;
-      			$errors++;
+	$errors++;
 } else {
 	LOGOK "New samba config file copied.";
 }
