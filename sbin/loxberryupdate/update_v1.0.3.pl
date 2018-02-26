@@ -41,6 +41,10 @@ my $cgi = CGI->new;
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
+#
+# Notify
+#
+
 LOGOK "This update migrates the notification feature from file-based to SQLite-based and introduces new notification functions. Therefore, old notifications will be deleted.";
 delete_directory ("$lbsdatadir/notifications");
 
@@ -49,6 +53,9 @@ if (-e "$lbsdatadir/notifications_sqlite.dat" ) {
 	unlink "$lbsdatadir/notifications_sqlite.dat";
 }
 
+#
+# Sudoers
+#
  
 #LOGINF "Replacing system default sudoers file";
 #LOGINF "Copying new";
@@ -63,6 +70,10 @@ if (-e "$lbsdatadir/notifications_sqlite.dat" ) {
 #	LOGOK "New lbdefaults copied.";
 #}
 #qx { chown root:root $lbhomedir/system/sudoers/lbdefaults };
+
+#
+# usbmount
+#
 
 LOGINF "Installing packages usbmount and ntfs-3g";
 
@@ -118,20 +129,6 @@ if ($exitcode != 0) {
 	LOGOK "Symlink $lbhomedir/system/storage created successfully";
 }
 
-LOGINF "Replacing system samba config file";
-LOGINF "Copying new";
-
-$output = qx { if [ -e $updatedir/system/samba/smb.conf ] ; then cp -f $updatedir/system/samba/smb.conf $lbhomedir/system/samba/ ; fi };
-$exitcode  = $? >> 8;
-
-if ($exitcode != 0) {
-	LOGERR "Error copying new samba config file - Error $exitcode";
-	$errors++;
-} else {
-	LOGOK "New samba config file copied.";
-}
-qx { chown loxberry:loxberry $lbhomedir/system/samba/smb.conf };
-
 LOGINF "Creating /etc/systemd/system/systemd-udevd.service";
 
 if ( !-e "/etc/systemd/system/systemd-udevd.service" ) {
@@ -170,6 +167,43 @@ RestrictAddressFamilies=AF_UNIX AF_NETLINK AF_INET AF_INET6
 EOF
 	close (F);
 }
+
+#
+# Samba
+#
+
+LOGINF "Replacing system samba config file";
+LOGINF "Copying new";
+
+$output = qx { if [ -e $updatedir/system/samba/smb.conf ] ; then cp -f $updatedir/system/samba/smb.conf $lbhomedir/system/samba/ ; fi };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error copying new samba config file - Error $exitcode";
+	$errors++;
+} else {
+	LOGOK "New samba config file copied.";
+}
+
+qx { chown loxberry:loxberry $lbhomedir/system/samba/smb.conf };
+
+#
+# i2c
+#
+
+LOGINF "Activating i2c";
+
+$output = qx { $lbhomedir/sbin/activate_i2c.sh };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error activating i2c - Error $exitcode";
+	$errors++;
+} else {
+	LOGOK "i2c activated.";
+}
+
+
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
