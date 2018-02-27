@@ -471,8 +471,7 @@ class LBSystem
 	####################################################
 	function set_clouddns($msnr, $clouddnsaddress)
 	{
-		global $binaries;
-		global $miniservers;
+		global $binaries, $miniservers, $miniservercount;
 		
 		if (!$miniservercount || $miniservercount < 1) {
 			return;
