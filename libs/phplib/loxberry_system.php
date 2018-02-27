@@ -471,8 +471,7 @@ class LBSystem
 	####################################################
 	function set_clouddns($msnr, $clouddnsaddress)
 	{
-		global $binaries;
-		global $miniservers;
+		global $binaries, $miniservers, $miniservercount;
 		
 		if (!$miniservercount || $miniservercount < 1) {
 			return;
@@ -483,7 +482,7 @@ class LBSystem
 		// Set fetch type to HEAD
 		stream_context_set_default(array('http' => array('method' => 'HEAD')));
 		
-		$resp = get_headers($url, 1);
+		$resp = get_headers($checkurl, 1);
 		
 		// Revert fetch type to GET
 		stream_context_set_default(array('http' => array('method' => 'GET')));
@@ -496,13 +495,6 @@ class LBSystem
 		# Removes /
 		$header = str_replace( '/', '', $header);
 	
-/*		# Grep IP Address from Cloud Service
-		$commandline = "{$binaries['CURL']} -I http://$clouddnsaddress/{$miniservers[$msnr]['CloudURL']} --connect-timeout 5 -m 5 2>/dev/null | {$binaries['GREP']} Location | {$binaries['AWK']} -F/ '{print \$3}'";
-		# print "clouddns commandline: $commandline\n";
-		#$dns_info = `$binaries['CURL'] -I http://$clouddnsaddress/$miniservers[$msnr]['CloudURL'] --connect-timeout 5 -m 5 2>/dev/null | $binaries['GREP'] Location | $binaries['AWK'] -F/ '{print \$3}'`;
-		$dns_info = shell_exec($commandline);
-		fwrite (STDERR, "LoxBerry System Info: CloudDNS Info: " . $dns_info . "\n");
-*/
 		$dns_info_pieces = explode(':', $header);
 
 		if ($dns_info_pieces[1]) {
