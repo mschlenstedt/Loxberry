@@ -496,13 +496,6 @@ class LBSystem
 		# Removes /
 		$header = str_replace( '/', '', $header);
 	
-/*		# Grep IP Address from Cloud Service
-		$commandline = "{$binaries['CURL']} -I http://$clouddnsaddress/{$miniservers[$msnr]['CloudURL']} --connect-timeout 5 -m 5 2>/dev/null | {$binaries['GREP']} Location | {$binaries['AWK']} -F/ '{print \$3}'";
-		# print "clouddns commandline: $commandline\n";
-		#$dns_info = `$binaries['CURL'] -I http://$clouddnsaddress/$miniservers[$msnr]['CloudURL'] --connect-timeout 5 -m 5 2>/dev/null | $binaries['GREP'] Location | $binaries['AWK'] -F/ '{print \$3}'`;
-		$dns_info = shell_exec($commandline);
-		fwrite (STDERR, "LoxBerry System Info: CloudDNS Info: " . $dns_info . "\n");
-*/
 		$dns_info_pieces = explode(':', $header);
 
 		if ($dns_info_pieces[1]) {
