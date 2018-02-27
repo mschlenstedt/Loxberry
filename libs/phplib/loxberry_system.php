@@ -483,7 +483,7 @@ class LBSystem
 		// Set fetch type to HEAD
 		stream_context_set_default(array('http' => array('method' => 'HEAD')));
 		
-		$resp = get_headers($url, 1);
+		$resp = get_headers($checkurl, 1);
 		
 		// Revert fetch type to GET
 		stream_context_set_default(array('http' => array('method' => 'GET')));
