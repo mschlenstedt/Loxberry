@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.24";
+our $VERSION = "1.0.0.25";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -655,12 +655,14 @@ sub notify_send_mail
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_ERRORS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_INFOS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
 	
+	my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+	
 	my $hostname = LoxBerry::System::lbhostname();
 	my $friendlyname = LoxBerry::System::lbfriendlyname();
 	$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
 	$friendlyname .= " LoxBerry";
 	
-	my $status = $p{SEVERITY} == 3 ? "Error" : "Info";
+	my $status = $p{SEVERITY} == 3 ? $SL{'NOTIFY.SUBJECT_ERROR'} : $SL{'NOTIFY.SUBJECT_INFO'} ;
 	
 	if ($p{_ISSYSTEM}) {
 		# Camel-case Package and Name
@@ -669,18 +671,36 @@ sub notify_send_mail
 		my $name = $p{NAME};
 		$name =~  s/([^\s\w]*)(\S+)/$1\u\L$2/g;
 		
-		$subject = "$friendlyname $status in $package $name";
-		$message = $p{MESSAGE} . "\n\n";
+		$subject = "$friendlyname $status " . $SL{'NOTIFY.SUBJECT_SYSTEM_IN'} . " $package $name";
+		$message = "$package " . $SL{'NOTIFY.MESSAGE_SYSTEM_INFO'} . "\n\n" if ($p{SEVERITY} == 6);
+		$message = "$package " . $SL{'NOTIFY.MESSAGE_SYSTEM_ERROR'} . "\n\n" if ($p{SEVERITY} == 3);
+		$message.= $p{MESSAGE} . "\n\n";
 	}
 	else 
 	{
 		my $plugin = LoxBerry::System::plugindata($p{PACKAGE});
 		my $plugintitle = $plugin->{PLUGINDB_TITLE};
 		
-		$subject = "$friendlyname $status in $plugintitle";
-		$message = $p{MESSAGE} . "\n\n";
+		$subject = "$friendlyname $status " . $SL{'NOTIFY.SUBJECT_PLUGIN_IN'} . " $plugintitle " . $SL{'NOTIFY.SUBJECT_PLUGIN_PLUGIN'};
+		$message = "$plugintitle " . $SL{'NOTIFY.MESSAGE_PLUGIN_INFO'} . "\n" if ($p{SEVERITY} == 6);
+		$message = "$plugintitle " . $SL{'NOTIFY.MESSAGE_PLUGIN_ERROR'} . "\n" if ($p{SEVERITY} == 3);
+		$message .= "__________________________________________________\n\n\n";
+		
+		$message .= $p{MESSAGE} . "\n\n";
 	}
-
+	
+	$message .= $SL{'NOTIFY.MESSAGE_LINK'} . " " . $p{LINK} . "\n" if $p{LINK};
+	if ($p{LOGFILE}) {
+		my $logfilepath = $p{LOGFILE};
+		$logfilepath =~ s/^$LoxBerry::System::lbhomedir\///;
+		$logfilepath =~ s/^log\///;
+		$logfilepath = "http://$hostname:" . LoxBerry::System::lbwebserverport() . "/admin/system/tools/logfile.cgi?logfile=$logfilepath&header=html&format=template";
+		$message .= $SL{'NOTIFY.MESSAGE_LOGFILE'} . " $logfilepath\n" if $p{LOGFILE};
+	}
+	$message .= "\n";
+	$message .= "__________________________________________________\n\n";
+	$message .= $SL{'NOTIFY.MESSAGE_FOOTER_FROM'} . " " . LoxBerry::System::trim(LoxBerry::System::lbfriendlyname() . " LoxBerry") . " (http://$hostname:". LoxBerry::System::lbwebserverport() . "/)\n";
+	$message .= $SL{'NOTIFY.MESSAGE_SENT_AT'} . " " . LoxBerry::System::currtime() ."\n";
 	my $bins = LoxBerry::System::get_binaries(); 
 	my $mailbin = $bins->{MAIL};
 	my $email	= $mcfg{'SMTP.EMAIL'};
@@ -695,7 +715,6 @@ sub notify_send_mail
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$notifymailerror = 1; # Prevents loops
-		my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
 		notify("mailserver", "mailerror", $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'}, "error");
 		print STDERR "Error sending email notification - Error $exitcode:\n";
 		print STDERR $result . "\n";
@@ -1024,6 +1043,8 @@ sub get_notifications_html
 		if ( $not->{LOGFILE} ) {
 			$logfilepath = $not->{LOGFILE};
 			$logfilepath =~ s/^$LoxBerry::System::lbhomedir\///;
+			$logfilepath =~ s/^log\///;
+		
 		}
 		
 		my $link;
