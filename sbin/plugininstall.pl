@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.20";
+my $version = "1.0.0.21";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -683,11 +683,11 @@ if (-f "$tempfolder/preroot.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_PREROOT'}";
   &loginfo;
 
-  $message = "Command: \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+  $message = "Command: cd \"$tempfolder\" && \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preroot.sh\" 2>&1");
-  system("\"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("cd \"$tempfolder\" && \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
@@ -710,11 +710,11 @@ if ($isupgrade) {
     $message =  "$SL{'PLUGININSTALL.INF_START_PREUPGRADE'}";
     &loginfo;
 
-    $message = "Command: $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+    $message = "Command: cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
     &loginfo;
 
     system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preupgrade.sh\" 2>&1");
-    system("$sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+    system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"2>&1");
     if ($? eq 1) {
       $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
@@ -741,11 +741,11 @@ if (-f "$tempfolder/preinstall.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_PREINSTALL'}";
   &loginfo;
 
-  $message = "Command: $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+  $message = "Command: cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preinstall.sh\" 2>&1");
-  system("$sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
@@ -1304,11 +1304,11 @@ if (-f "$tempfolder/postinstall.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_POSTINSTALL'}";
   &loginfo;
 
-  $message = "Command: $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+  $message = "Command: cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postinstall.sh\" 2>&1");
-  system("$sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
@@ -1331,11 +1331,11 @@ if ($isupgrade) {
     $message =  "$SL{'PLUGININSTALL.INF_START_POSTUPGRADE'}";
     &loginfo;
 
-    $message = "Command: $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+    $message = "Command: cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
     &loginfo;
 
     system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postupgrade.sh\" 2>&1");
-    system("$sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+    system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
     if ($? eq 1) {
       $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
@@ -1358,11 +1358,11 @@ if (-f "$tempfolder/postroot.sh") {
   $message =  "$SL{'PLUGININSTALL.INF_START_POSTROOT'}";
   &loginfo;
 
-  $message = "Command: \"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\"";
+  $message = "Command: cd \"$tempfolder\" && \"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postroot.sh\" 2>&1");
-  system("\"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("cd \"$tempfolder\" && \"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
