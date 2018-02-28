@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.8";
+	public static $LBSYSTEMVERSION = "1.0.0.9";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -252,7 +252,7 @@ class LBSystem
 			return $binaries;
 		} 
 
-		if (! $miniservers) {
+		if (! isset($miniservers)) {
 				LBSystem::read_generalcfg();
 				return $binaries;
 		}
