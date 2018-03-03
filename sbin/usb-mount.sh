@@ -10,6 +10,7 @@
 # a USB drive.
 
 # Modified for LoxBerry by Michael Schlenstedt
+# Original: https://github.com/six-k/automount-usb
 
 # Parse environments
 . /etc/environment
