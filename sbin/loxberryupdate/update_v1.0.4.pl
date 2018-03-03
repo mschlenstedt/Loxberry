@@ -139,11 +139,11 @@ if ($exitcode != 0) {
 $output = qx {awk -v s='/media/smb /etc/auto.smb --timeout=300 --ghost' '/^\\/media\\/smb/{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/auto.master };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
-        LOGERR "Error replacing string FILESYSTEMS= in /etc/usbmount/usbmount.conf - Error $exitcode";
-                LOGDEB $output;
+        LOGERR "Error replacing string /media/smb in /etc/auto.master - Error $exitcode";
+        LOGDEB $output;
         $errors++;
 } else {
-        LOGOK "Replacing string FILESYSTEMS= successfully in /etc/usbmount/usbmount.conf.";
+        LOGOK "Replacing string /media/smb successfully in /etc/auto.master";
 }
 
 #
