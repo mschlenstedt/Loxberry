@@ -153,6 +153,7 @@ if ($exitcode != 0) {
 LOGINF "Replacing system samba config file";
 LOGINF "Copying new";
 
+qx { mkdir -p $lbhomedir/system/samba/credentials };
 $output = qx { if [ -e $updatedir/system/samba/smb.conf ] ; then cp -f $updatedir/system/samba/smb.conf $lbhomedir/system/samba/ ; fi };
 $exitcode  = $? >> 8;
 
@@ -164,7 +165,19 @@ if ($exitcode != 0) {
 	LOGOK "New samba config file copied.";
 }
 
+$output = qx { ln -f -s $lbhomedir/system/samba/credentials /etc/creds };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error creating symlink /etc/creds - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "Symlink /etc/creds created successfully";
+}
+
 qx { chown loxberry:loxberry $lbhomedir/system/samba/smb.conf };
+qx { chown -R loxberry:loxberry $lbhomedir/system/samba/credentials };
+qx { chmod 700 $lbhomedir/system/samba/credentials };
 
 
 

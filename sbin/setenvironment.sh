@@ -152,6 +152,12 @@ if [ -L /etc/profile.d/loxberry.sh ]; then
 fi
 ln -s $LBHOME/system/profile/loxberry.sh /etc/profile.d/loxberry.sh
 
+# /etc/creds for autofs and smb
+if [ -e /etc/creds ]; then
+	rm /etc/creds
+fi
+ln -s $LBHOME/system/samba/credentials /etc/creds
+
 # Init Script
 if [ -L /etc/init.d/loxberry ]; then  
    rm /etc/init.d/loxberry
