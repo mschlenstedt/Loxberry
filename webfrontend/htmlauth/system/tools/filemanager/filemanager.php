@@ -134,7 +134,7 @@ if ($use_auth) {
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
         ?>
 	<center>
-        <div class="path" style="width: 600px">
+        <div class="path" style="width: 300px">
 	<p><center><?php echo $SL['FILEMANAGER.LABEL_SECUREPIN']?></center></p>
             <form action="" method="post" style="margin:10px;text-align:center">
                 <input type="hidden" name="fm_usr" value="loxberry">
@@ -143,7 +143,7 @@ if ($use_auth) {
             </form>
         </div>
 	<br><br>
-        <div class="path" style="background: red; font-color: black; text-shadow: none; width: 600px; border: black 1px solid; padding: 5px">
+        <div class="path" style="background: red; font-color: black; text-shadow: none; width: 300px; border: black 1px solid; padding: 5px">
 	<p style="font-weight: bold;">
 	<?php echo $SL['FILEMANAGER.WARNING_TITLE']?>
 	</p>
