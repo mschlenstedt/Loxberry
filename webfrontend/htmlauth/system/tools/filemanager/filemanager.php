@@ -109,30 +109,39 @@ if ($use_auth) {
         // Logging In
         sleep(1);
 //        if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
-        if ( isset($auth_users[$_POST['fm_usr']]) ) {
+	exec ('./securepin.pl ' . $_POST['fm_pwd'], $output, $result);
+        if ( isset($auth_users[$_POST['fm_usr']]) && $result === 0 ) {
             $_SESSION['logged'] = $_POST['fm_usr'];
-            fm_set_msg('You are logged in');
-            fm_redirect(FM_SELF_URL . '?p=');
+            fm_set_msg('You are logged in.');
+            fm_redirect(FM_SELF_URL . '?p=' . $_GET['p']);
         } else {
             unset($_SESSION['logged']);
             fm_set_msg('Wrong SecurePIN', 'error');
-            fm_redirect(FM_SELF_URL);
+            fm_redirect(FM_SELF_URL . '&p=' . $_GET['p']);
         }
     } else {
         // Form
         unset($_SESSION['logged']);
-        fm_show_header();
-        fm_show_message();
+        //fm_show_header();
+        //fm_show_message();
+	$template_title = "LoxBerry File Manager";
+	$helplink = "http://www.loxwiki.eu/x/o4CO";
+	$helptemplate = "";
+	LBWeb::lbheader($template_title, $helplink, $helptemplate);
         ?>
-        <div class="path">
+	<center>
+        <div class="path" style="width: 600px">
+	<p><center>Your SecurePIN is needed due to security reasons:</center></p>
             <form action="" method="post" style="margin:10px;text-align:center">
                 <input type="hidden" name="fm_usr" value="loxberry">
                 <input type="password" name="fm_pwd" value="" placeholder="SecurePIN" required>
                 <input type="submit" value="Submit">
             </form>
         </div>
+	</center>
         <?php
-        fm_show_footer();
+	LBWeb::lbfooter();
+        //fm_show_footer();
         exit;
     }
 }
