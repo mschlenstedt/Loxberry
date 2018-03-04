@@ -11,6 +11,10 @@
 require_once "loxberry_system.php";
 require_once "loxberry_web.php";
 
+// Language
+$lang = LBSystem::lblanguage();
+$SL = LBSystem::readlanguage(NULL, "language.ini", True);
+
 // Auth with login/password (set true/false to enable/disable it)
 $use_auth = true;
 
@@ -124,20 +128,30 @@ if ($use_auth) {
         unset($_SESSION['logged']);
         //fm_show_header();
         //fm_show_message();
-	$template_title = "LoxBerry File Manager";
+	$template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].": ". $SL['FILEMANAGER.WIDGETLABEL'];
 	$helplink = "http://www.loxwiki.eu/x/o4CO";
 	$helptemplate = "";
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
         ?>
 	<center>
         <div class="path" style="width: 600px">
-	<p><center>Your SecurePIN is needed due to security reasons:</center></p>
+	<p><center><?php echo $SL['FILEMANAGER.LABEL_SECUREPIN']?></center></p>
             <form action="" method="post" style="margin:10px;text-align:center">
                 <input type="hidden" name="fm_usr" value="loxberry">
                 <input type="password" name="fm_pwd" value="" placeholder="SecurePIN" required>
-                <input type="submit" value="Submit">
+		<input type="submit" value="<?php echo $SL['COMMON.BUTTON_OK']?>">
             </form>
         </div>
+	<br><br>
+        <div class="path" style="background: red; font-color: black; text-shadow: none; width: 600px; border: black 1px solid; padding: 5px">
+	<p style="font-weight: bold;">
+	<?php echo $SL['FILEMANAGER.WARNING_TITLE']?>
+	</p>
+	<hr>
+	<p>
+	<?php echo $SL['FILEMANAGER.WARNING_TEXT']?>
+	</p>
+	</div>
 	</center>
         <?php
 	LBWeb::lbfooter();
