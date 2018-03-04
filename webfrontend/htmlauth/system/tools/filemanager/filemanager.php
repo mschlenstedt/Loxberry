@@ -12,11 +12,11 @@ require_once "loxberry_system.php";
 require_once "loxberry_web.php";
 
 // Auth with login/password (set true/false to enable/disable it)
-$use_auth = false;
+$use_auth = true;
 
 // Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
 $auth_users = array(
-    'fm_admin' => 'fm_admin',
+    'loxberry' => '0000',
 );
 
 // Enable highlight.js (https://highlightjs.org/) on view's page
@@ -108,13 +108,14 @@ if ($use_auth) {
     } elseif (isset($_POST['fm_usr'], $_POST['fm_pwd'])) {
         // Logging In
         sleep(1);
-        if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
+//        if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
+        if ( isset($auth_users[$_POST['fm_usr']]) ) {
             $_SESSION['logged'] = $_POST['fm_usr'];
             fm_set_msg('You are logged in');
             fm_redirect(FM_SELF_URL . '?p=');
         } else {
             unset($_SESSION['logged']);
-            fm_set_msg('Wrong password', 'error');
+            fm_set_msg('Wrong SecurePIN', 'error');
             fm_redirect(FM_SELF_URL);
         }
     } else {
@@ -125,9 +126,9 @@ if ($use_auth) {
         ?>
         <div class="path">
             <form action="" method="post" style="margin:10px;text-align:center">
-                <input name="fm_usr" value="" placeholder="Username" required>
-                <input type="password" name="fm_pwd" value="" placeholder="Password" required>
-                <input type="submit" value="Login">
+                <input type="hidden" name="fm_usr" value="loxberry">
+                <input type="password" name="fm_pwd" value="" placeholder="SecurePIN" required>
+                <input type="submit" value="Submit">
             </form>
         </div>
         <?php
