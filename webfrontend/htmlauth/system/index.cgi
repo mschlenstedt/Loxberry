@@ -51,7 +51,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbscon
 }
 
 # Version of this script
-my $version = "1.0.0.3";
+my $version = "1.0.0.4";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -248,6 +248,12 @@ sub mainmenu {
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",
 				NOTIFY_PACKAGE => "donate",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_FILEMANAGER'},
+				WIDGET_ICON => "/system/images/icons/main_filemanager.png",
+				WIDGET_CGI => "/admin/system/tools/filemanager/filemanager.php",
+				NOTIFY_PACKAGE => "filemanager",
 			}
 		]);
 		

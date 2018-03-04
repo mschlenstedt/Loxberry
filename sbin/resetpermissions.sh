@@ -53,6 +53,7 @@ chmod -v 644 $LBHOMEDIR/config/system/securepin.dat
 chmod -v 555 $LBHOMEDIR/system/sudoers
 chmod -v 664 $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -v 755 $LBHOMEDIR/system/profile
+chmod -v 700 $LBHOMEDIR/system/samba/credentials
 chmod -v 644 $LBHOMEDIR/system/profile/loxberry.sh
 chmod -Rv 644 $LBHOMEDIR/system/logrotate/*
 
