@@ -42,7 +42,7 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.1-dev2";
+my $version = "1.0.0";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -96,8 +96,19 @@ $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'MYLOXBERRY.WIDGETLABE
 # What should we do
 #########################################################################
 
+our %navbar;
+$navbar{1}{Name} = "$SL{'MYLOXBERRY.LABEL_SETTINGS'}";
+$navbar{1}{URL} = 'myloxberry.cgi?load=1';
+ 
+$navbar{2}{Name} = "$SL{'MYLOXBERRY.LABEL_SYSINFO'}";
+$navbar{2}{URL} = 'myloxberry.cgi?load=2';
+
 # Menu
-if (!$R::saveformdata) {
+if (!$R::saveformdata && $R::load eq "2") {
+  $navbar{2}{active} = 1;
+  &form;
+} elsif (!$R::saveformdata) {
+  $navbar{1}{active} = 1;
   &form;
 } else {
   &save;
@@ -106,7 +117,7 @@ if (!$R::saveformdata) {
 exit;
 
 #####################################################
-# Form / Menu
+# Form / Menu 
 #####################################################
 
 sub form {
@@ -114,7 +125,13 @@ sub form {
 	if ($lang ne "en") {
 		$maintemplate->param( "ISNOTENGLISH", 1);
 	}
-	$maintemplate->param( "FORM", 1);
+
+	if ($R::load eq "2") {
+		$maintemplate->param( "FORM2", 1);
+	} else {
+		$maintemplate->param( "FORM1", 1);
+	}
+
 	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
 	my @values = LoxBerry::Web::iso_languages(1, 'values');
@@ -129,13 +146,10 @@ sub form {
 		);
 	$maintemplate->param('LANGSELECTOR', $langselector_popup);
 	
-	
-	
-	
 	our $sendstatistic_checkbox = $cgi->checkbox( -name => 'sendstatistic',
-												  -checked => is_enabled($cfg->param("BASE.SENDSTATISTIC")),
-												  -label => $SL{'MYLOXBERRY.LABEL_SENDSTATISTIC'}
-											);
+			  -checked => is_enabled($cfg->param("BASE.SENDSTATISTIC")),
+			  -label => $SL{'MYLOXBERRY.LABEL_SENDSTATISTIC'}
+	);
 	$maintemplate->param('SENDSTATISTIC_CHECKBOX', $sendstatistic_checkbox);
 		
 	# Print Template

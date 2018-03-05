@@ -1,5 +1,5 @@
 <!-- ** START template/system/myloxberry.html 14.01.2018 19:26:41 ************************************************************************************ -->
-<TMPL_IF form>
+<TMPL_IF form1>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
 		<input type="hidden" name="saveformdata" value="1">
 		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
@@ -91,5 +91,14 @@
 			</tr>
 		</table>
 	</center>
+</TMPL_IF>
+
+<TMPL_IF form2>
+<script>
+function resizeIframe(obj) {
+	obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+}
+</script>
+<iframe src="/admin/system/tools/linfo/index.php" width="100%" frameborder="0" scrolling="no" onload="resizeIframe(this)" />
 </TMPL_IF>
 <!-- ** END template/system/myloxberry.html ************************************************************************************ -->

@@ -199,6 +199,9 @@ class Html implements Output
 <body id="info">';
 
 echo '
+<p align="right">
+<a href="/admin/system/tools/linfo/index.php?out=xml" download="loxberry_sysinfo.xml">XML Export</a>
+</p>
 <div class="col1">
 	<div class="col">
 		<div class="infoTable">
