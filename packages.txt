@@ -1016,7 +1016,6 @@ ii  udev                              232-25+deb9u1                     armhf   
 ii  unattended-upgrades               0.93.1+nmu1                       all          automatic installation of security upgrades
 ii  unzip                             6.0-21                            armhf        De-archiver for .zip files
 ii  update-inetd                      4.44                              all          inetd configuration file updater
-ii  usbmount                          0.0.22                            all          automatically mount and unmount USB mass storage devices
 ii  usb-modeswitch                    2.5.0+repack0-1                   armhf        mode switching tool for controlling "flip flop" USB devices
 ii  usb-modeswitch-data               20170120-1                        all          mode switching data for usb-modeswitch
 ii  usbutils                          1:007-4                           armhf        Linux USB utilities
@@ -1051,3 +1050,5 @@ ii  youtube-dl                        2017.05.18.1-1                    all     
 ii  zip                               3.0-11                            armhf        Archiver for .zip files
 ii  zlib1g:armhf                      1:1.2.8.dfsg-5                    armhf        compression library - runtime
 ii  zlib1g-dev:armhf                  1:1.2.8.dfsg-5                    armhf        compression library - development
+ii  smbclient                         2:4.5.12+dfsg-2+deb9u1            armhf        command-line SMB/CIFS clients for Unix
+ii  autofs                            5.1.2-1                           armhf        kernel-based automounter for Linux
