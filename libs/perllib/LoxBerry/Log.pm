@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.25";
+our $VERSION = "1.0.0.26";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -715,9 +715,16 @@ sub notify_send_mail
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$notifymailerror = 1; # Prevents loops
-		notify("mailserver", "mailerror", $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'}, "error");
-		print STDERR "Error sending email notification - Error $exitcode:\n";
-		print STDERR $result . "\n";
+		my %notification = (
+            PACKAGE => "mailserver",
+            NAME => "mailerror",
+            MESSAGE => $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'},
+            SEVERITY => 3, # Error
+			_ISSYSTEM => 1
+    );
+	LoxBerry::Log::notify_ext( \%notification );
+	print STDERR "Error sending email notification - Error $exitcode:\n";
+	print STDERR $result . "\n";
 	} 
    
   # my $outer_boundary= "o".Digest::MD5::md5_hex( time . rand(100) );
