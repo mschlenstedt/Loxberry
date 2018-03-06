@@ -48,6 +48,8 @@ LOGINF "Removing old usbmount";
 
 qx { rm -f /etc/systemd/system/systemd-udevd.service };
 qx { rm -rf $lbhomedir/system/storage };
+qx { rm -rf /media/smb };
+qx { rm -rf /media/usb };
 
 my $output = qx { /usr/bin/dpkg --configure -a };
 my $exitcode  = $? >> 8;

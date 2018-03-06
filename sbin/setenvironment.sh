@@ -315,6 +315,14 @@ fi
 if [ ! -e /etc/auto.master ]; then
 	awk -v s='/media/smb /etc/auto.smb --timeout=300 --ghost' '/^\/media\/smb/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/auto.master
 fi
+mkdir -p /media/smb
+mkdir -p /media/usb
+
+# creds for AutoFS (SMB)
+if [ -L /etc/creds ]; then
+    rm /etc/creds
+fi
+ln -s $LBHOME/system/samba/credentials /etc/creds
 
 # Activating i2c
 # (also included in 1.0.3 Update script)
