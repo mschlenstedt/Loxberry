@@ -12,6 +12,7 @@
 	nomail
 	postrotate
                 if /etc/init.d/apache2 status > /dev/null ; then \
+                    /bin/systemctl daemon-reload; \
                     /etc/init.d/apache2 reload > /dev/null; \
                 fi;
 	endscript

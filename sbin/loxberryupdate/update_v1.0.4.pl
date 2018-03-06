@@ -181,6 +181,11 @@ qx { chown loxberry:loxberry $lbhomedir/system/samba/smb.conf };
 qx { chown -R loxberry:loxberry $lbhomedir/system/samba/credentials };
 qx { chmod 700 $lbhomedir/system/samba/credentials };
 
+#
+# Remove obsolete Apache2 logrotate
+#
+LOGINF "Removing obsolete Apache2 logrotate config";
+qx { rm -f /etc/logrotate.d/apache2 };
 
 
 

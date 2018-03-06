@@ -158,6 +158,11 @@ if [ -e /etc/creds ]; then
 fi
 ln -s $LBHOME/system/samba/credentials /etc/creds
 
+# Obsolete Apache2 logrotate config (we this by our own)
+if [ -e /etc/logrotate.d/apache2 ]; then
+    rm /etc/logrotate.d/apache2
+fi
+
 # Init Script
 if [ -L /etc/init.d/loxberry ]; then  
    rm /etc/init.d/loxberry
