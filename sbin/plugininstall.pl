@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.21";
+my $version = "1.0.0.23";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -655,7 +655,7 @@ system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.bkp 2>&1
 
 # Checking for hardcoded /opt/loxberry strings
 if ( $pinterface ne "1.0" ) {
-	my $chkhcpath = `$findbin $tempfolder -type f -exec $grepbin -li '/opt/loxberry' {} \\;`;
+	my $chkhcpath = `$findbin $tempfolder -type f ! -iname '*.md' ! -iname '*.html' ! -iname '*.txt' ! -iname '*.dat' ! -iname '*.log' -exec $grepbin -li '/opt/loxberry' {} \\;`;
 	if ($chkhcpath) {
 	    $message =  $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
 	    &logwarn;
@@ -951,27 +951,30 @@ if (!&is_folder_empty("$tempfolder/data")) {
 }
 
 # Copy Log files
-if ( $pinterface eq "1.0" && !-e "$lbhomedir/log/plugins/$pfolder" ) {
-  make_path("$lbhomedir/log/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
-  if (!&is_folder_empty("$tempfolder/log") && $pinterface ne "1.0" ) {
-    $message =  "$SL{'PLUGININSTALL.INF_LOGFILES'}";
-    &loginfo;
+make_path("$lbhomedir/log/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
+if (!&is_folder_empty("$tempfolder/log")) {
+
+  $message =  "$SL{'PLUGININSTALL.INF_LOGFILES'}";
+  &loginfo;
+
+  if ( $pinterface ne "1.0" ) {
     $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! Log files are stored in a RAMDISC now. The plugin has to create the logfiles at runtime! Please inform the PLUGIN Author at $pauthoremail";
     &logwarn; 
     push(@warnings,"LOG files: $message");
-    system("$sudobin -n -u loxberry cp -r -v $tempfolder/log/* $lbhomedir/log/plugins/$pfolder/ 2>&1");
-    if ($? ne 0) {
-      $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
-      &logerr; 
-      push(@errors,"LOG files: $message");
-    } else {
-      $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
-      &logok;
-    }
-
-    &setowner ("loxberry", "1", "$lbhomedir/log/plugins/$pfolder", "LOG files");
-
   }
+
+  system("$sudobin -n -u loxberry cp -r -v $tempfolder/log/* $lbhomedir/log/plugins/$pfolder/ 2>&1");
+  if ($? ne 0) {
+    $message =  "$SL{'PLUGININSTALL.ERR_FILES'}";
+    &logerr; 
+    push(@errors,"LOG files: $message");
+  } else {
+    $message =  "$SL{'PLUGININSTALL.OK_FILES'}";
+    &logok;
+  }
+
+  &setowner ("loxberry", "1", "$lbhomedir/log/plugins/$pfolder", "LOG files");
+
 }
 
 # Copy CGI files - DEPRECIATED!!!

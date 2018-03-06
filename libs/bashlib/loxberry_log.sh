@@ -1,5 +1,4 @@
 #only works in bash scripting 
-
 LOGS=0
 ACTIVELOG=0
 declare -A ARRLOGS
@@ -50,7 +49,7 @@ function LOGCRIT {
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "<CRITICAL> $CURRTIME$@"
-		if [ "$pLOGLEVEL" -lt 6 ];then ARRLOGS[$ACTIVELOG]['loglevel']=6; fi
+		if [ "$pLOGLEVEL" -lt 6 ];then set ARRLOGS[$ACTIVELOG]['loglevel'] = 6; fi
 	fi
 }
 function LOGALERT {
@@ -59,7 +58,7 @@ function LOGALERT {
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "<ALERT> $CURRTIME$@"
-		if [ "$pLOGLEVEL" -lt 6 ];then ARRLOGS[$ACTIVELOG]['loglevel']=6; fi
+		if [ "$pLOGLEVEL" -lt 6 ];then set ARRLOGS[$ACTIVELOG]['loglevel'] = 6; fi
 	fi
 }
 function LOGEMERGE {
@@ -68,7 +67,7 @@ function LOGEMERGE {
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "<EMERGE> $CURRTIME$@"
-		if [ "$pLOGLEVEL" -lt 6 ];then ARRLOGS[$ACTIVELOG]['loglevel']=6; fi
+		if [ "$pLOGLEVEL" -lt 6 ];then set ARRLOGS[$ACTIVELOG]['loglevel'] = 6; fi
 	fi
 }
 function LOGSTART {
@@ -96,7 +95,7 @@ function LOGSTART {
 		if [ -n "$ADDTIME" ]; then ARRLOGS["$LOGS.addtime"]=$ADDTIME; fi
 		if ([ -z ${NOFILE:+x} ] && [ -z ${FILENAME:+x} ]) || [ -z ${LOGLEVEL:+x} ]
 		then
-			echo "Log could not be startet" 1>&2
+			echo "Log could not be started" 1>&2
 			if [ ${ARRLOGS["$LOGS.stderr"]+_} ]; then unset ARRLOGS["$LOGS.stderr"]; fi
 			if [ ${ARRLOGS["$LOGS.append"]+_} ]; then unset ARRLOGS["$LOGS.append"]; fi
 			if [ ${ARRLOGS["$LOGS.nofile"]+_} ]; then unset ARRLOGS["$LOGS.nofile"]; fi

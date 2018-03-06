@@ -362,7 +362,7 @@ sub get_miniserver_by_name
 
 =head2 get_binaries
 
-Although LoxBerry in it's fundamental characteristic comes as a ready-to-use Raspberry image, it should be as platform-independent as possible. 
+Although LoxBerry in its fundamental characteristic comes as a ready-to-use Raspberry image, it should be as platform-independent as possible. 
 Therefore, system binaries should not be executed with static paths but from variables to these binaries. 
 
 	my $bins = LoxBerry::System::get_binaries();
@@ -457,7 +457,7 @@ sub plugindata
 	
 	my $query = defined $queryname ? $queryname : $lbpplugindir;
 	
-	print STDERR "plugindata: Query '$query'\n";# if ($DEBUG);
+	print STDERR "plugindata: Query '$query'\n" if ($DEBUG);
 	
 	my @plugins = LoxBerry::System::get_plugins();
 	

@@ -227,7 +227,7 @@ foreach (@plugins) {
 								installarchive => "$releasearchive",
 								releaseinfo => $releaseinfo,
 								type => "release",
-								LINK => $releaseinfo,
+								LINK => $releaseinfo
 					);
 					LoxBerry::Log::notify_ext( \%notification );
 					if ($last_notified_version && $last_notified_version eq "$releasever") {
@@ -299,6 +299,7 @@ foreach (@plugins) {
 								installarchive => "$prereleasearchive",
 								releaseinfo => $prereleaseinfo,
 								type => "prerelease",
+								LINK => $prereleaseinfo
 						);
 					LoxBerry::Log::notify_ext( \%notification );
 					if ($last_notified_version && $last_notified_version eq "$prereleasever") {
