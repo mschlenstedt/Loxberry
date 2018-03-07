@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.25";
+our $VERSION = "1.0.0.28";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -209,6 +209,11 @@ sub open
 	# print STDERR "log open Writetype after processing is " . $writetype . "\n";
 	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename};
 	$self->{'_FH'} = $fh;
+	eval {
+		my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
+		chown $uid, $gid, $fh;
+		chmod 0666, $fh;
+	};
 }
 
 sub close
@@ -715,9 +720,16 @@ sub notify_send_mail
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$notifymailerror = 1; # Prevents loops
-		notify("mailserver", "mailerror", $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'}, "error");
-		print STDERR "Error sending email notification - Error $exitcode:\n";
-		print STDERR $result . "\n";
+		my %notification = (
+            PACKAGE => "mailserver",
+            NAME => "mailerror",
+            MESSAGE => $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'},
+            SEVERITY => 3, # Error
+			_ISSYSTEM => 1
+    );
+	LoxBerry::Log::notify_ext( \%notification );
+	print STDERR "Error sending email notification - Error $exitcode:\n";
+	print STDERR $result . "\n";
 	} 
    
   # my $outer_boundary= "o".Digest::MD5::md5_hex( time . rand(100) );
@@ -1063,7 +1075,7 @@ sub get_notifications_html
 			$notif_line .= qq(      <img src="/system/images/notification_error_small.svg">\n);
 		}
 		$notif_line .= qq(   </div>\n);
-		$notif_line .= qq(   <div style='vertical-align: middle; width:75%; display: table-cell; '><b>$not->{DATESTR}:</b> $not->{CONTENTHTML}</div>\n);
+		$notif_line .= qq(   <div style='vertical-align: middle; width:75%; display: table-cell; padding: 7px;'><b>$not->{DATESTR}:</b> $not->{CONTENTHTML}</div>\n);
 		$notif_line .= qq(   <div style='vertical-align: middle; width:25%; display: table-cell; align:right; text-align: right;'>\n);
 		$notif_line .= qq(      <a class="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=$logfilepath&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>\n) if ($logfilepath);
 		$notif_line .= qq(      <a class="btnlink" data-role="button" href="$link" target="$linktarget" data-inline="true" data-mini="true" data-icon="action">Details</a>\n) if ($link);
