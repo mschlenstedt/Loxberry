@@ -5,10 +5,15 @@ use CGI;
 use LoxBerry::System;
 use LWP::UserAgent;
 use JSON;
+use URI::Escape;
 
 my %jout;
 my $cgi = CGI->new;
 $cgi->import_names('R');
+
+$R::user = uri_escape($R::user);
+$R::pass = uri_escape($R::pass);
+
 
 print $cgi->header('application/json;charset=utf-8');
 
@@ -55,7 +60,6 @@ if ($R::get_hostport) {
 
 my $urlnonadmin = "http://$R::user:$R::pass\@$hostport/dev/cfg/version";
 my $urladmin = "http://$R::user:$R::pass\@$hostport/dev/cfg/ip";
-
 
 my $nonadmin;
 my $admin;
