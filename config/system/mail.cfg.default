@@ -1,4 +1,4 @@
-; Config::Simple  4.59
+; Config::Simple 4.59
 
 [SMTP]
 ISCONFIGURED=0
