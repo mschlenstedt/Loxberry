@@ -40,10 +40,51 @@ my $error;
 # Read Configuration
 ##########################################################################
 
-if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/mail.cfg" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/securepin.dat" ) {
+# If config is empty delete it because it's lost anyway
+if ( -z "$lbsconfigdir/general.cfg" ) 
+{ 
+	unlink "$lbsconfigdir/general.cfg";
+}
+
+# If config is not there (or was empty) create it 
+if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/mail.cfg" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/securepin.dat" ) 
+{
 	qx ( $lbsbindir/createconfig.pl );
 }
-if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbsconfigdir/htusers.dat" || -z "$lbsconfigdir/securepin.dat" ) {
+
+# If config is invalid try to detect issues to prevent a LoxBerry deadlock
+use File::Copy;
+#use Data::Dumper;
+my $cfg_chk = new Config::Simple();
+my $cfg_err = "";
+my $message = "";
+eval { $cfg_chk =  $cfg_chk->Config::Simple::read("$lbsconfigdir/general.cfg"); };
+eval { $cfg_err = $cfg_chk->Config::Simple::error(); };
+if ($cfg_err ne "" || ref $cfg_chk ne "HASH" )
+{
+	$cfg_err ="Config seems empty.";
+	eval {$cfg_err  = $cfg_chk->Config::Simple::error() if ( ref $cfg_chk ne "HASH" );};
+	$message  = "<hr>The reason for that action was: <br>$lbsconfigdir/general.cfg: <br><span style='color:#0000FF;'>".$cfg_err."</span>";	
+	print "content-type: text/html \n\n";
+	print "<html>";
+	print "<title>LoxBerry</title>";
+	print "<meta http-equiv='Content-type' content='text/html; charset=iso-8859-1' />";
+	print "<body style='background-color:#FFFF00'>";
+	print "<span style='font-family:\"Courier New\', monospace;'><center>";
+	print "<br><br><span style='color:#FF0000;'><b><big>+ + + WARNING + + + WARNING + + + WARNING + + + WARNING + + + </big><br>Something really bad happened and your LoxBerry default configuration has been restored!</b><br></span>";
+    print $message;
+	print "<br><br>Please report the issue to the Core developer team in GitHub <a target='_bug' href='https://github.com/mschlenstedt/Loxberry/issues/new?title=general.cfg+issue&body=I+have+a+corrupted+general.cfg&labels=CRITICAL'>here</a>.</center></span>";
+	print "<br><br>";
+	copy("$lbsconfigdir/general.cfg","$lbshtmlauthdir/general.cfg.faulty")  or print "<br>Oh no! Saving corrupt config file failed, too: $! <br>Your config is lost, unfortunately you have to re-setup your LoxBerry if you have no backup.";
+	copy("$lbsconfigdir/general.cfg.default","$lbsconfigdir/general.cfg")   or print "<br>Sorry, restoring default config failed: $! <br>Your LoxBerry is dead. Try to get support here: <a target='_bug' href='https://github.com/mschlenstedt/Loxberry/issues/new?title=general.cfg+issue&body=I+have+a+dead+LoxBerry+after+a+corrupted+general.cfg&labels=CRITICAL'>here</a>";
+	#print Dumper("-".$cfg_chk."-");
+	print "</body>";
+	print "</html>";
+	undef $cfg_chk;
+	exit;
+}
+
+if (-z "$lbsconfigdir/mail.cfg" || -z "$lbsconfigdir/htusers.dat" || -z "$lbsconfigdir/securepin.dat" ) {
 	die "CRITICAL: One of your configuration files (general.cfg, mail.cfg, installpin.dat, securepin.dat) exists but have zero size. LoxBerry is not working in this condition.\n" . 
 		"Please check if your SD card is full. If you have fixed the issue, delete all of the mentioned files that have 0 Bytes so LoxBerry can re-create them, or restore them from a backup.\n\n" . 
 		"Sorry for any troubles. We love you!\n";
