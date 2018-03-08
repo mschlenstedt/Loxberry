@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.9";
+	public static $LBSYSTEMVERSION = "1.0.0.10";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -186,7 +186,7 @@ class LBSystem
 
 	}
 	
-	function read_language_file($langfile)
+	public static function read_language_file($langfile)
 	{
 		$langarray = parse_ini_file($langfile, True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read language file $langfile");
 		if ($langarray == false) {
@@ -399,7 +399,7 @@ class LBSystem
 	#########################################################################
 	# INTERNAL function read_generalcfg
 	#########################################################################
-	function read_generalcfg()
+	public static function read_generalcfg()
 	{
 		global $miniservers;
 		global $miniservercount;
@@ -469,7 +469,7 @@ class LBSystem
 	# set_clouddns
 	# INTERNAL function to set CloudDNS IP and Port
 	####################################################
-	function set_clouddns($msnr, $clouddnsaddress)
+	public static function set_clouddns($msnr, $clouddnsaddress)
 	{
 		global $binaries, $miniservers, $miniservercount;
 		

@@ -1,0 +1,5 @@
+#!/bin/bash
+$LBHOMEDIR/bin/db_maint.pl action=reduce_notifys
+
+
+

@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.4";
+my $scriptversion="1.0.0.5";
 
 # print currtime('file') . "\n";
 
@@ -474,8 +474,7 @@ sub check_commits
 	}
 	LOGOK "Commit list fetched.";
 	LOGINF "Parsing commit list...";
-	my $commits = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
-	
+	my $commits = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content());
 	my $commit_date;
 	my $commit_by;
 	my $commit_message;
@@ -532,7 +531,7 @@ sub check_commits
 				);
 			LoxBerry::Log::notify_ext( \%notification );
 	
-			my $message = Encode::decode("utf8", "LoxBerry Updatecheck: New commit from $commit_by on $commit_date, message $commit_message.");
+			my $message = "LoxBerry Updatecheck: New commit from $commit_by on $commit_date, message $commit_message.";
 			notify('updates', 'check', $message);
 			delete_notifications('updates', 'check', 1);
 		}
