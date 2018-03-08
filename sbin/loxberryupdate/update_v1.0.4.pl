@@ -151,7 +151,6 @@ if ($exitcode != 0) {
 #
 # Samba
 #
-
 LOGINF "Replacing system samba config file";
 LOGINF "Copying new";
 
@@ -187,7 +186,20 @@ qx { chmod 700 $lbhomedir/system/samba/credentials };
 LOGINF "Removing obsolete Apache2 logrotate config";
 qx { rm -f /etc/logrotate.d/apache2 };
 
+#
+# Copy new logrotate
+#
+LOGINF "Installing new logrotate config";
+$output = qx { if [ -e $updatedir/system/logrotate/logrotate ] ; then cp -f $updatedir/system/logrotate/logrotate $lbhomedir/system/logrotate/ ; fi };
+$exitcode  = $? >> 8;
 
+if ($exitcode != 0) {
+	LOGERR "Error copying new logrotate config file - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "New samba config file copied.";
+}
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended

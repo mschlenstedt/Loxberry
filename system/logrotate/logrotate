@@ -17,6 +17,7 @@
                 fi;
 	endscript
 	prerotate
+                /bin/systemctl daemon-reload; \
 		if [ -d /etc/logrotate.d/httpd-prerotate ]; then \
 			run-parts /etc/logrotate.d/httpd-prerotate; \
 		fi; \
