@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.28";
+our $VERSION = "1.0.0.29";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -555,6 +555,7 @@ sub notify_init_database
 			print STDERR "notify_init_database connect: $DBI::errstr\n";
 			return undef;
 			};
+	$dbh->{sqlite_unicode} = 1;
 	
 	$dbh->do("CREATE TABLE IF NOT EXISTS notifications (
 				PACKAGE VARCHAR(255) NOT NULL,
@@ -679,7 +680,7 @@ sub notify_send_mail
 		$subject = "$friendlyname $status " . $SL{'NOTIFY.SUBJECT_SYSTEM_IN'} . " $package $name";
 		$message = "$package " . $SL{'NOTIFY.MESSAGE_SYSTEM_INFO'} . "\n\n" if ($p{SEVERITY} == 6);
 		$message = "$package " . $SL{'NOTIFY.MESSAGE_SYSTEM_ERROR'} . "\n\n" if ($p{SEVERITY} == 3);
-		$message.= $p{MESSAGE} . "\n\n";
+		$message .= $p{MESSAGE} . "\n\n";
 	}
 	else 
 	{
@@ -711,10 +712,13 @@ sub notify_send_mail
 	my $email	= $mcfg{'SMTP.EMAIL'};
 
 	require MIME::Base64;
+	require Encode;
 	
 	$subject = "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
 	my $headerfrom = 'From:=?utf-8?b?' . MIME::Base64::encode($friendlyname, "") . '?= <' . $email . '>';
 	my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
+	
+	$message = Encode::decode("utf8", $message);
 	
 	my $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $email 2>&1);
 	my $exitcode  = $? >> 8;
