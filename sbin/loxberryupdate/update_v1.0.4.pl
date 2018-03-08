@@ -189,6 +189,13 @@ qx { rm -f /etc/logrotate.d/apache2 };
 
 
 
+#
+# Install cronjob for notification maintenance (weekly reduce notifys to 20 per package)
+#
+LOGINF "Install job for notification maintenance (weekly reduce notifys to 20 per package)";
+copy_to_loxberry("/system/cron/cron.weekly/db_maint");
+
+
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
@@ -223,3 +230,36 @@ sub delete_directory
 	}
 	return 1;
 }
+
+
+####################################################################
+# Copy a file or dir from updatedir to lbhomedir including error handling
+# Parameter:
+#	file/dir starting from ~ 
+#   (without /opt/loxberry, with leading /)
+####################################################################
+sub copy_to_loxberry
+{
+	my ($destparam) = @_;
+		
+	my $destfile = $lbhomedir . $destparam;
+	my $srcfile = $updatedir . $destparam;
+		
+	if (! -e $srcfile) {
+		LOGERR "$srcfile does not exist";
+		$errors++;
+		return;
+	}
+	
+	my $output = qx { cp -f $srcfile $destfile };
+	my $exitcode  = $? >> 8;
+
+	if ($exitcode != 0) {
+		LOGERR "Error copying $destparam - Error $exitcode";
+		LOGINF "Message: $output";
+		$errors++;
+	} else {
+		LOGOK "$destparam installed.";
+	}
+}
+
