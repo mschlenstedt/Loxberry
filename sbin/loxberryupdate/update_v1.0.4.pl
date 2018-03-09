@@ -193,6 +193,12 @@ LOGINF "Installing new logrotate config";
 copy_to_loxberry("/system/logrotate/logrotate");
 
 #
+# Copy new apache2.conf
+#
+LOGINF "Installing new apache2 config";
+copy_to_loxberry("/system/apache2/apache2.conf");
+
+#
 # Install cronjob for notification maintenance (weekly reduce notifys to 20 per package)
 #
 LOGINF "Install job for notification maintenance (weekly reduce notifys to 20 per package)";
