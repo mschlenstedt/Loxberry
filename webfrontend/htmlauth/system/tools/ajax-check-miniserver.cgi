@@ -63,14 +63,24 @@ my $urladmin = "http://$R::user:$R::pass\@$hostport/dev/cfg/ip";
 
 my $nonadmin;
 my $admin;
+require HTTP::Status;
 
 # Try an admin access
 for (my $x = 1; $x <= 3; $x++) {
 	my $resp = $ua->get($urladmin);
+	
+	# Cloud redirect ?
+	if ( $resp->code == &HTTP::Status::RC_MOVED_PERMANENTLY or $resp->code == &HTTP::Status::RC_MOVED_TEMPORARILY or $resp->code == &HTTP::Status::RC_FOUND or $resp->code == &HTTP::Status::RC_SEE_OTHER or $resp->code == &HTTP::Status::RC_TEMPORARY_REDIRECT )
+	{ 
+    	use URI;
+    	my $uri = URI->new($resp->header('location'));
+    	my $redirect = $uri->scheme."://$R::user:$R::pass\@".$uri->host.":".$uri->port.$uri->path;
+    	$resp = $ua->get($redirect);
+	}
 	$jout{code} = $resp->code;
 	$jout{message} = $resp->message;
 	$jout{status_line} = $resp->status_line;
-		
+
 	if (! $resp->is_success) {
 		$jout{error} = 1;
 		$jout{success} = 0;
