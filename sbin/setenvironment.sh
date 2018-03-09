@@ -140,11 +140,14 @@ if /usr/sbin/service lighttpd status; then
 	/usr/sbin/service lighttpd force-reload
 fi
 
-# sudoers.d/lbdefault
-if [ -L /etc/sudoers.d/lbdefaults ]; then
-    rm /etc/sudoers.d/lbdefaults
+# sudoers.d
+if [ -d /etc/suddoers.d ]; then
+	mv /etc/sudoers.d /etc/sudoers.d.orig
 fi
-ln -s $LBHOME/system/sudoers/lbdefaults /etc/sudoers.d/lbdefaults
+if [ -L /etc/sudoers.d ]; then
+    rm /etc/sudoers.d
+fi
+ln -s $LBHOME/system/sudoers /etc/sudoers.d
 
 # profile.d/loxberry.sh
 if [ -L /etc/profile.d/loxberry.sh ]; then

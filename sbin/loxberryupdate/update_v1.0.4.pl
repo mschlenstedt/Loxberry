@@ -190,16 +190,7 @@ qx { rm -f /etc/logrotate.d/apache2 };
 # Copy new logrotate
 #
 LOGINF "Installing new logrotate config";
-$output = qx { if [ -e $updatedir/system/logrotate/logrotate ] ; then cp -f $updatedir/system/logrotate/logrotate $lbhomedir/system/logrotate/ ; fi };
-$exitcode  = $? >> 8;
-
-if ($exitcode != 0) {
-	LOGERR "Error copying new logrotate config file - Error $exitcode";
-	LOGDEB $output;
-	$errors++;
-} else {
-	LOGOK "New samba config file copied.";
-}
+copy_to_loxberry("/system/logrotate/logrotate");
 
 #
 # Install cronjob for notification maintenance (weekly reduce notifys to 20 per package)
@@ -207,6 +198,20 @@ if ($exitcode != 0) {
 LOGINF "Install job for notification maintenance (weekly reduce notifys to 20 per package)";
 copy_to_loxberry("/system/cron/cron.weekly/db_maint");
 
+#
+# Correct symlink from /etc/sudoers.d to ~/system/sudoers
+#
+LOGINF "Creating new symlink from /etc/sudoers.d to ~/system/susdoers";
+$output = qx { mv /etc/sudoers.d /etc/sudoers.d.orig };
+$output = qx { ln -f -s $lbhomedir/system/sudoers/ /etc/sudoers.d };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error creating symlink /etc/sudoers.d - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "Symlink /etc/sudoeers.d created successfully";
+}
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended

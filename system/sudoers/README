@@ -1,0 +1,2 @@
+/etc/sudoers.d. At least one file must exit. No files
+with a dot . or ~ in it will be read.
