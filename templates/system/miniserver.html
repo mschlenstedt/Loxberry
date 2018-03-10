@@ -164,7 +164,26 @@
 		{
 			if ( (validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id))  )
 			{
-				open('http://'+$("#miniserveruser"+ms_id).val()+':'+$("#miniserverkennwort"+ms_id).val()+'@'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val()+'/dev/fsget/log/def.log', '_blank');				
+				open('http://'+encodeURIComponent($("#miniserveruser"+ms_id).val())+':'+encodeURIComponent($("#miniserverkennwort"+ms_id).val())+'@'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val()+'/dev/fsget/log/def.log', '_blank');				
+			}
+			if ( validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniservercloudurl'+ms_id) )
+			{
+			  $.ajax({
+			    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			    type: "GET",
+			    url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+ms_id).val(),
+			    success: function(data)
+			    {
+			    	if (typeof(data['error']) != "undefined") 
+			    	{
+			    		$("#miniservercheck"+ms_id+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
+			    	}
+			    	else
+			    	{
+			    		open('http://'+encodeURIComponent($("#miniserveruser"+ms_id).val())+':'+encodeURIComponent($("#miniserverkennwort"+ms_id).val())+'@'+data['IPAddress']+':'+data['Port']+'/dev/fsget/log/def.log', '_blank');				
+			    	}
+			    }
+			  });
 			}
 		}
 		function open_ms_web ( ms_id )
@@ -172,6 +191,25 @@
 			if ( validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id)) 
 			{
 				open('http://'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val(), '_blank');				
+			}
+			if ( validate_chk_value('#miniservercloudurl'+ms_id) )
+			{
+			  $.ajax({
+			    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			    type: "GET",
+			    url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+ms_id).val(),
+			    success: function(data)
+			    {
+			    	if (typeof(data['error']) != "undefined") 
+			    	{
+			    		$("#miniservercheck"+ms_id+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
+			    	}
+			    	else
+			    	{
+				    	open('http://'+data['IPAddress']+':'+data['Port'], '_blank');				
+			    	}
+			    }
+			  });
 			}
 		}
 		$(document).ready( function()

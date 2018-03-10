@@ -45,6 +45,7 @@ elsif ($action eq 'MAIL_PLUGIN_INFOS') { print $cgi->header; change_mailcfg("NOT
 elsif ($action eq 'MAIL_PLUGIN_ERRORS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_PLUGIN_ERRORS", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
+elsif ($action eq 'get-clouddnsdata') { get_clouddnsdata($value); }
 
 else   { print $cgi->header; print "<red>Action not supported.</red>"; }
 
@@ -411,5 +412,40 @@ sub plugininstall_status
 	chomp $status;
 	print $cgi->header;
 	print $status;
+	exit;
+}
+
+################################################
+# get_clouddnsdata
+# Returns first matching miniserver data as json 
+# for a # provided MAC address 
+# Example see miniserver.html
+# /admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value=504f90123456
+# Will return on success
+# {"Name":"miniservername","Note":"MSnote","UseCloudDNS":"on","IPAddress":"79.194.49.50","Admin_uri":"loginname_uri","Port":80,"CloudURLFTPPort":"21","Credentials_RAW":"loginname:pass","CloudURL":"504f90123456","Credentials":"loginname_uri:pass_uri","Pass_RAW":"pass","Pass":"pass_uri","Admin_RAW":"dev"}
+# and on error
+# {"error":"Miniserver not found: 504F90123456. Please check and save your config."}
+################################################
+sub get_clouddnsdata
+{
+	my $mac = uc $R::value;
+	#print STDERR "ajax-config-handler: ajax get_clouddnsdata for ${mac}";
+	my %miniservers = LoxBerry::System::get_miniservers();
+  	print $cgi->header(-type => 'application/json;charset=utf-8');
+	if (! %miniservers) 
+	{
+	    exit 1;
+	}
+	foreach my $ms (sort keys %miniservers) 
+	{
+		if ( uc "$miniservers{$ms}{CloudURL}" eq "${mac}" )
+		{
+			use JSON;
+			my $j = new JSON;
+   			print encode_json($miniservers{$ms});
+		    exit;
+		}
+	}
+	print '{"error":"'.${mac}.'"}';
 	exit;
 }
