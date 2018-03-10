@@ -91,7 +91,7 @@ chomp $oldname;
 ##########################################################################
 # Process form data
 ##########################################################################
-
+$R::btnsubmit if (0);
 if (defined $R::btnsubmit) {
 	# Data were posted - save 
 	print STDERR "POST\n";
@@ -125,7 +125,7 @@ exit;
 ##########################################################################
 sub save 
 {
-
+	$R::lbnewhostname if (0);
 	$newname = $R::lbnewhostname;
 
 	chomp $newname;

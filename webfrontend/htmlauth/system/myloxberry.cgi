@@ -181,7 +181,7 @@ sub save
 		$friendlyname_changed = 1;
 	}
 	$cfg->param("NETWORK.FRIENDLYNAME", $R::lbfriendlyname);
-	
+	$R::sendstatistic if (0);
 	my $sendstatistic = is_enabled($R::sendstatistic) ? "on" : "off";
 	$cfg->param("BASE.SENDSTATISTIC", $sendstatistic);
 	$cfg->save();

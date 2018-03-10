@@ -98,6 +98,8 @@ $lang = lblanguage();
 #########################################################################
 
 my $form_mscount = $cgi->param("miniservers");
+$R::saveformdata if (0);
+$R::do if (0);
 if ($cgi->param("addbtn")) {
 	$miniservers = $form_mscount + 1;
 	$cfg->param("BASE.MINISERVERS", $miniservers);
