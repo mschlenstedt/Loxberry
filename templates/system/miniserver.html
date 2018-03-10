@@ -240,9 +240,13 @@
 						html = "<span style='color:green;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
 						if (data.isadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_ADMIN>";
 						if (data.isnonadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_NONADMIN>";
+						$("#miniserverlog<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
+						$("#miniserverweb<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
 					} else {
 						html = "<span style='color:red;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
 						html+= "<br>" + data.status_line;
+						$("#miniserverlog<TMPL_VAR MSNO>").addClass( "ui-disabled" );
+						$("#miniserverweb<TMPL_VAR MSNO>").addClass( "ui-disabled" );
 					}
 					resultdiv.html(html);
 
@@ -313,23 +317,10 @@
 			$("#miniservercloudurl<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurl<TMPL_VAR MSNO>").attr("original-background-color")); 
 			$("#miniservercloudurlftpport<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("original-background-color")); 
 
-			function enable_logbutton<TMPL_VAR MSNO>()
-			{
-				if ( validate_chk_value('#miniserveruser<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverkennwort<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverip<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverport<TMPL_VAR MSNO>','keyup')  )
-				{
-					$("#miniserverlog<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
-					$("#miniserverweb<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
-				}
-				else
-				{
-					$("#miniserverlog<TMPL_VAR MSNO>").addClass( "ui-disabled" );
-					$("#miniserverweb<TMPL_VAR MSNO>").addClass( "ui-disabled" );
-				}
-			}
-			$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+			$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+			$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+			$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
 		});
 	</SCRIPT>
 </table>
