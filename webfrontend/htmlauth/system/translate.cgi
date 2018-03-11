@@ -63,7 +63,7 @@ mes "Initialize CGI and import names";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 # Example: Parameter lang is now $R::lang
-
+$R::form if (0);
 if ($R::form eq 'plugin' || $R::plugin) {
 	$plugin = 1;
 } else { 
@@ -411,6 +411,8 @@ sub ajax
 		mes "readinputfile DEST";
 		my %dest = readinputfile($destfilename, "DEST");
 		mes "set new key/value to hash";
+		$R::text if (0);
+		$R::key if (0);
 		$dest{$R::key}{'DEST_TEXT'} = $R::text;
 		
 		my @filecont;

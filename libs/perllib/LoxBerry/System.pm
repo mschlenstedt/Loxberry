@@ -653,33 +653,16 @@ sub read_generalcfg
 sub set_clouddns
 {
 	my ($msnr, $clouddnsaddress) = @_;
-	
 	require LWP::UserAgent;
+	require URI;
 	my $ua = LWP::UserAgent->new;
 	$ua->timeout(10);
 	$ua->max_redirect( 0 );
-	
-	my $checkurl = "http://$clouddnsaddress/" . $miniservers{$msnr}{CloudURL};
-	my $resp = $ua->head($checkurl);
-	my $header = $resp->header('location');
-	# Removes http://
-	$header =~ s/http:\/\///;
-	# Removes /
-	$header =~ s/\///;
-	
-	my @dns_info_pieces = split /:/, $header;
-
-	if ($dns_info_pieces[1]) {
-	  $miniservers{$msnr}{Port} = $dns_info_pieces[1];
-	} else {
-	  $miniservers{$msnr}{Port} = 80;
-	}
-
-	if ($dns_info_pieces[0]) {
-	  $miniservers{$msnr}{IPAddress} = $dns_info_pieces[0];
-	} else {
-	  $miniservers{$msnr}{IPAddress} = "127.0.0.1";
-	}
+	my $checkurl = "http://$clouddnsaddress/" . $miniservers{$msnr}{CloudURL}."/dev/cfg/ip";
+	my $resp 	 = $ua->head($checkurl);
+	my $uri = URI->new($resp->header('location'));
+	$miniservers{$msnr}{Port} 	    = $uri->port;
+	$miniservers{$msnr}{IPAddress} 	= $uri->host;
 }
 
 ####################################################

@@ -164,7 +164,26 @@
 		{
 			if ( (validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id))  )
 			{
-				open('http://'+$("#miniserveruser"+ms_id).val()+':'+$("#miniserverkennwort"+ms_id).val()+'@'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val()+'/dev/fsget/log/def.log', '_blank');				
+				open('http://'+encodeURIComponent($("#miniserveruser"+ms_id).val())+':'+encodeURIComponent($("#miniserverkennwort"+ms_id).val())+'@'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val()+'/dev/fsget/log/def.log', '_blank');				
+			}
+			if ( validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniservercloudurl'+ms_id) )
+			{
+			  $.ajax({
+			    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			    type: "GET",
+			    url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+ms_id).val(),
+			    success: function(data)
+			    {
+			    	if (typeof(data['error']) != "undefined") 
+			    	{
+			    		$("#miniservercheck"+ms_id+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
+			    	}
+			    	else
+			    	{
+			    		open('http://'+encodeURIComponent($("#miniserveruser"+ms_id).val())+':'+encodeURIComponent($("#miniserverkennwort"+ms_id).val())+'@'+data['IPAddress']+':'+data['Port']+'/dev/fsget/log/def.log', '_blank');				
+			    	}
+			    }
+			  });
 			}
 		}
 		function open_ms_web ( ms_id )
@@ -172,6 +191,25 @@
 			if ( validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id)) 
 			{
 				open('http://'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val(), '_blank');				
+			}
+			if ( validate_chk_value('#miniservercloudurl'+ms_id) )
+			{
+			  $.ajax({
+			    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			    type: "GET",
+			    url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+ms_id).val(),
+			    success: function(data)
+			    {
+			    	if (typeof(data['error']) != "undefined") 
+			    	{
+			    		$("#miniservercheck"+ms_id+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
+			    	}
+			    	else
+			    	{
+				    	open('http://'+data['IPAddress']+':'+data['Port'], '_blank');				
+			    	}
+			    }
+			  });
 			}
 		}
 		$(document).ready( function()
@@ -202,9 +240,13 @@
 						html = "<span style='color:green;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
 						if (data.isadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_ADMIN>";
 						if (data.isnonadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_NONADMIN>";
+						$("#miniserverlog<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
+						$("#miniserverweb<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
 					} else {
 						html = "<span style='color:red;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
 						html+= "<br>" + data.status_line;
+						$("#miniserverlog<TMPL_VAR MSNO>").addClass( "ui-disabled" );
+						$("#miniserverweb<TMPL_VAR MSNO>").addClass( "ui-disabled" );
 					}
 					resultdiv.html(html);
 
@@ -275,23 +317,11 @@
 			$("#miniservercloudurl<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurl<TMPL_VAR MSNO>").attr("original-background-color")); 
 			$("#miniservercloudurlftpport<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("original-background-color")); 
 
-			function enable_logbutton<TMPL_VAR MSNO>()
-			{
-				if ( validate_chk_value('#miniserveruser<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverkennwort<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverip<TMPL_VAR MSNO>','keyup') && validate_chk_value('#miniserverport<TMPL_VAR MSNO>','keyup')  )
-				{
-					$("#miniserverlog<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
-					$("#miniserverweb<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
-				}
-				else
-				{
-					$("#miniserverlog<TMPL_VAR MSNO>").addClass( "ui-disabled" );
-					$("#miniserverweb<TMPL_VAR MSNO>").addClass( "ui-disabled" );
-				}
-			}
-			$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
-			$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { enable_logbutton<TMPL_VAR MSNO>()	});
+			$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+			$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+			$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+			$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+			$("#miniservercloudurl<TMPL_VAR MSNO>").on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
 		});
 	</SCRIPT>
 </table>

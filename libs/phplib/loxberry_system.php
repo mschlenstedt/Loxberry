@@ -477,37 +477,12 @@ class LBSystem
 			return;
 		}
 
-		$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL'];
-
-		// Set fetch type to HEAD
-		stream_context_set_default(array('http' => array('method' => 'HEAD')));
-		
-		$resp = get_headers($checkurl, 1);
-		
-		// Revert fetch type to GET
-		stream_context_set_default(array('http' => array('method' => 'GET')));
-	
-		$header = $resp['Location'];
-		
-		
-		# Removes http://
-		$header = str_replace( 'http://', '', $header);
-		# Removes /
-		$header = str_replace( '/', '', $header);
-	
-		$dns_info_pieces = explode(':', $header);
-
-		if ($dns_info_pieces[1]) {
-			$miniservers[$msnr]['Port'] = $dns_info_pieces[1];
-		 } else {
-		 $miniservers[$msnr]['Port'] = 80;
-		}
-
-		if ($dns_info_pieces[0]) {
-			$miniservers[$msnr]['IPAddress'] = $dns_info_pieces[0];
-		} else {
-		  $miniservers[$msnr]['IPAddress'] = "127.0.0.1";
-		}
+		$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL']."/dev/cfg/ip";
+		$ch = curl_init($checkurl);
+		$response = curl_exec($ch);
+		$lastUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL );
+	    (!parse_url($lastUrl,PHP_URL_PORT))?$miniservers[$msnr]['Port']=80:$miniservers[$msnr]['Port']=parse_url($lastUrl,PHP_URL_PORT);
+	    (!parse_url($lastUrl,PHP_URL_HOST))?$miniservers[$msnr]['IPAddress']='127.0.0.1':$miniservers[$msnr]['IPAddress']=parse_url($lastUrl,PHP_URL_HOST);
 	}
 
 	#####################################################

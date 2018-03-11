@@ -143,7 +143,7 @@ if ($use_auth) {
             </form>
         </div>
 	<br><br>
-        <div class="path" style="background: red; font-color: black; text-shadow: none; width: 300px; border: black 1px solid; padding: 5px">
+        <div class="path" style="background: #FF8080; font-color: black; text-shadow: none; width: 300px; border: black 1px solid; padding: 5px">
 	<p style="font-weight: bold;">
 	<?php echo $SL['FILEMANAGER.WARNING_TITLE']?>
 	</p>
