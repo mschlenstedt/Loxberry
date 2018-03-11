@@ -218,6 +218,7 @@ if ($exitcode != 0) {
 } else {
 	LOGOK "Symlink /etc/sudoeers.d created successfully";
 }
+qx { cp -fv /etc/sudoers.d.orig/* /etc/sudoers.d };
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
