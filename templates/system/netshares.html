@@ -1,65 +1,133 @@
-<!-- ** START template/system/miniserver.html 27.01.2018 14:39:31 ************************************************************************************ -->
+<!-- ** START template/system/netshares.html ************************************************************************************ -->
+
 <TMPL_IF FORM>
 
 	<center>
-	<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="addsharebtn" value="add" id="addsharebtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR NETSHARES.BUTTON_ADD_SHARE></button>
+	<a id="add" data-role="button" data-inline="true" data-mini="true" data-icon="plus" href="./netshares.cgi?a=add"><TMPL_VAR NETSHARES.BUTTON_ADD_SERVER></a>
+	<a id="del" data-role="button" data-inline="true" data-mini="true" data-icon="minus" href="./netshares.cgi?a=del"><TMPL_VAR NETSHARES.BUTTON_DEL_SERVER></a>
 	<a id="browse" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system%2Fstorage" target="_blank"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a>
 	<hr>
 	</center>
 	<!-- START Plugin container -->
-	<TMPL_IF NETSHARES>
-		<table data-role="table" data-mode="columntoggle" data-filter="true" data-input="#filterTable-input" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-text="Zeige Spalten">
+	<table data-role="table" data-mode="columntoggle" data-filter="true" data-input="#filterTable-input" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-text="<TMPL_VAR NETSHARES.BUTTON_SHOWCOLS>">
 		<thead>
 		<tr class="ui-bar-d">
-			<th data-priority="7">Nr.</th>
-			<th data-priority="1">Server</th>
-			<th data-priority="3">Name</th>
-			<th data-priority="4">Type</th>
-			<th data-priority="2">Freigabe</th>
-			<th data-priority="5">Status</th>
+			<th data-priority="7"><TMPL_VAR NETSHARES.SHARESTABLE_NO></th>
+			<th data-priority="1"><TMPL_VAR NETSHARES.SHARESTABLE_SERVER></th>
+			<th data-priority="3"><TMPL_VAR NETSHARES.SHARESTABLE_NAME></th>
+			<th data-priority="4"><TMPL_VAR NETSHARES.SHARESTABLE_TYPE></th>
+			<th data-priority="2"><TMPL_VAR NETSHARES.SHARESTABLE_SHARE></th>
+			<th data-priority="5"><TMPL_VAR NETSHARES.SHARESTABLE_STATUS></th>
 			<th data-priority="6"></th>
 		</tr>
 		</thead>
 		<tbody>
-		<TMPL_LOOP NETSHARES>
-		<tr>
-			<td><TMPL_VAR NETSHARE_NO></td>
-			<td><TMPL_VAR NETSHARE_SERVER></td>
-			<td><TMPL_VAR NETSHARE_SERVERNAME></td>
-			<td><TMPL_VAR NETSHARE_TYPE></td>
-			<td><TMPL_VAR NETSHARE_SHARENAME></td>
-			<td><TMPL_VAR NETSHARE_STATE></td>
-			<td><a id="browse<TMPL_VAR NETSHARE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_blank"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a></td>
-		</tr>
-		 </TMPL_LOOP>
+		<TMPL_IF NETSHARES>
+			<TMPL_LOOP NETSHARES>
+			<tr>
+				<td><TMPL_VAR NETSHARE_NO></td>
+				<td><TMPL_VAR NETSHARE_SERVER></td>
+				<td><TMPL_VAR NETSHARE_SERVERNAME></td>
+				<td><TMPL_VAR NETSHARE_TYPE></td>
+				<td><TMPL_VAR NETSHARE_SHARENAME></td>
+				<td><TMPL_VAR NETSHARE_STATE></td>
+				<td><a id="browse<TMPL_VAR NETSHARE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_blank"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a></td>
+			</tr>
+			</TMPL_LOOP>
+		<TMPL_ELSE>
+			<tr>
+				<td colspan="7"><TMPL_VAR NETSHARES.HINT_NOSERVERS></td>
+			</tr>
+		</TMPL_IF>
 		</tbody>
 		</table>
 
-	</TMPL_IF>
-
 </TMPL_IF>
 
-<TMPL_IF ERRORFORM>
+<TMPL_IF ADD>
+
+<form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
+	<input type="hidden" name="saveformdata" value="1">
+
 	<center>
-		<h2><TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR></h2>
-		<p>
-		<TMPL_VAR ERROR>
-		</p>
-		<p><TMPL_VAR MINISERVER.SAVE_ERR_MSG_SEE_DETAILS>
-		</p>
+	<table id="addserver" class="formtable" border="0" width="100%" cellpadding="5px">
+	<tr>
+		<td>
+			<label for="servername"><TMPL_VAR NETSHARES.LABEL_SERVERNAME></label>
+		</td>
+		<td>
+			<input value="" id="servername" name="servername" type="text" data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_SERVERNAME>" data-validation-rule="^([A-Za-z0-9\_\-]){1,64}$">
+		</td>
+		<td class="hint">
+			<TMPL_VAR NETSHARES.HINT_SERVERNAME>
+		</td>
+	</tr>
+	<tr>
+		<td width="25%">
+			<label class="control-label" for="serverip"><TMPL_VAR NETSHARES.LABEL_SERVERIP></label>
+		</td>
+		<td width="30%">
+			<input value="" id='serverip' name='serverip' type='text' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr">
+		</td>
+		
+		<td width="40%" class="hint">
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<label for="username"><TMPL_VAR NETSHARES.LABEL_USERNAME></label>
+		</td>
+		<td>
+			<input value="" id='username' name='username' type='text' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_USER>" data-validation-rule="^([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]]){1}([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]])*$" data-validation-coloring="off" >
+		</td>
+		
+		<td class="hint">
+			<TMPL_VAR NETSHARES.HINT_USERNAME>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<label for="password"><TMPL_VAR NETSHARES.LABEL_PASSWORD></label>
+		</td>
+		<td>
+			<input class="textfield" value="" id='password' name='password' type='password' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_PASSWORD>" data-validation-rule="^.{1}.*$" data-validation-coloring="off" autocomplete="nope">
+		</td>
+		
+		<td class="hint">
+			<TMPL_VAR NETSHARES.HINT_PASSWORD>
+		</td>
+	</tr>
+	<tr>
+		<td colspan=4>
+			&nbsp;
+		</td>
+	</tr>
+	</table>
 	</center>
-	<div data-role="collapsible">
-		<h4>Details</h4>
-		<div class="monospace"><TMPL_VAR ERRORDETAILS></div>
-		</div>
-		<center>
-		<p>
-			<a id="btnback" href="javascript:history.back();" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete"><TMPL_VAR COMMON.BUTTON_BACK></a>
-		</p>
-		<center>
+	
+	<hr>
 
+	<center>
+	<p>
+		<center>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="./netshares.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<button type="submit" form="main_form2" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+			<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR NETSHARES.BUTTON_SHOW_PASSWORDS></button>
+		</center>
+	</p>
+	</center>
+</form>
+
+<SCRIPT>
+// Show passwords
+$(document).ready(function() {
+  $('#showpass').click(function() {
+	$('.textfield').prop('type', 'text');
+  });
+});
+</SCRIPT>
 
 </TMPL_IF>
 
-<!-- ** END template/system/miniserver.html ************************************************************************************ -->
+<!-- ** END template/system/netshares.html ************************************************************************************ -->
  

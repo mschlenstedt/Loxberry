@@ -62,8 +62,33 @@ $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $lang = lblanguage();
 
 ##########################################################################
+# Netshare Config
+##########################################################################
+
+if ( !-e "$lbhomedir/data/system/netshares.dat" ) {
+        open(F,">$lbhomedir/data/system/netshares.dat");
+        print F <<EOF;
+#
+# Database for Net Shares
+#
+#  0: Server
+#  1: Type
+#  2: Name
+#  3: User
+#  4: Password
+#
+# Delimiter: | (Pipe)
+#
+EOF
+        close (F);
+	qx ("chmod 600 $lbhomedir/data/system/netshares.dat);
+}
+##########################################################################
 # Main program
 ##########################################################################
+
+# Get CGI
+our  $cgi = CGI->new;
 
 # Get all Network shares
 my @netshares = LoxBerry::Storage::get_netshares(0, 1);
@@ -85,8 +110,12 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETSHARES.WIDG
 
 LoxBerry::Web::lbheader();
 
-$maintemplate->param("FORM", 1);
-$maintemplate->param("NETSHARES", \@netshares);
+if ($cgi->param("a") eq "add") {
+	$maintemplate->param("ADD", 1);
+} else {
+	$maintemplate->param("FORM", 1);
+	$maintemplate->param("NETSHARES", \@netshares);
+}
 
 print $maintemplate->output();
 undef $maintemplate;			
