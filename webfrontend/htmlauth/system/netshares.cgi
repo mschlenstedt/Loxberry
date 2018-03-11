@@ -19,6 +19,7 @@
 # Modules
 ##########################################################################
 use LoxBerry::System;
+use LoxBerry::Storage;
 use LoxBerry::Web;
 
 use Config::Simple;
@@ -64,6 +65,9 @@ $lang = lblanguage();
 # Main program
 ##########################################################################
 
+# Get all Network shares
+my @netshares = LoxBerry::Storage::get_netshares(0, 1);
+
 my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/netshares.html",
 		global_vars => 1,
@@ -78,10 +82,15 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 # Print Template
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETSHARES.WIDGETLABEL'};
+
 LoxBerry::Web::lbheader();
+
 $maintemplate->param("FORM", 1);
+$maintemplate->param("NETSHARES", \@netshares);
+
 print $maintemplate->output();
 undef $maintemplate;			
+
 LoxBerry::Web::lbfooter();
 
 exit;

@@ -107,9 +107,9 @@ sub get_netshares
 				$netsharecount++;
 				$netshare{NETSHARE_NO} = $netsharecount;
 				$netshare{NETSHARE_SERVER} = $fields[0];
-				$netshare{NETSHARE_TYP} = $fields[1];
+				$netshare{NETSHARE_TYPE} = $fields[1];
 				$netshare{NETSHARE_SERVERPATH} = "$LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]";
-				$netshare{NETSHARE_SERVERNAME} = $fields[3];
+				$netshare{NETSHARE_SERVERNAME} = $fields[2];
 				$netshare{NETSHARE_SHAREPATH} = "$LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]/$_";
 				$netshare{NETSHARE_SHARENAME} = "$_";
 				$netshare{NETSHARE_STATE} = "$state";
