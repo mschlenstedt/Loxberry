@@ -83,6 +83,7 @@ EOF
         close (F);
 	qx ("chmod 600 $lbhomedir/data/system/netshares.dat);
 }
+
 ##########################################################################
 # Main program
 ##########################################################################
@@ -110,11 +111,35 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETSHARES.WIDG
 
 LoxBerry::Web::lbheader();
 
+# Add new server?
 if ($cgi->param("a") eq "add") {
 	$maintemplate->param("ADD", 1);
 } else {
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param("NETSHARES", \@netshares);
+}
+
+# Save new server
+if ($cgi->param("saveformdata")) {
+	$maintemplate->param("FORM", 1);
+
+	# Credits
+	my $file=$cgi->param("serverip");
+	my $username=$cgi->param("username");
+	my $password=$cgi->param("password");
+	my $type=$cgi->param("type");
+	my $shortname=$cgi->param("servername");
+        open(F,">$lbhomedir/system/samba/credentials/$file");
+        print F <<EOF;
+uid=1001
+gid=1001
+username="$username"
+password="$password"
+EOF
+        close (F);
+
+	qx(ln -f -s /media/$type/$file $lbhomedir/system/storage/$type/$file);
+	qx(ln -f -s /media/$type/$file $lbhomedir/system/storage/$type/$shortname);
 }
 
 print $maintemplate->output();

@@ -46,8 +46,9 @@
 
 <TMPL_IF ADD>
 
-<form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
+<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/netshares.cgi">
 	<input type="hidden" name="saveformdata" value="1">
+	<input type="hidden" name="type" value="smb">
 
 	<center>
 	<table id="addserver" class="formtable" border="0" width="100%" cellpadding="5px">
@@ -71,6 +72,7 @@
 		</td>
 		
 		<td width="40%" class="hint">
+			<TMPL_VAR NETSHARES.HINT_SERVERIP>
 		</td>
 	</tr>
 	<tr>
@@ -78,7 +80,7 @@
 			<label for="username"><TMPL_VAR NETSHARES.LABEL_USERNAME></label>
 		</td>
 		<td>
-			<input value="" id='username' name='username' type='text' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_USER>" data-validation-rule="^([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]]){1}([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]])*$" data-validation-coloring="off" >
+			<input value="" id='username' name='username' type='text'>
 		</td>
 		
 		<td class="hint">
@@ -90,7 +92,7 @@
 			<label for="password"><TMPL_VAR NETSHARES.LABEL_PASSWORD></label>
 		</td>
 		<td>
-			<input class="textfield" value="" id='password' name='password' type='password' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_PASSWORD>" data-validation-rule="^.{1}.*$" data-validation-coloring="off" autocomplete="nope">
+			<input class="textfield" value="" id='password' name='password' type='password' autocomplete="nope">
 		</td>
 		
 		<td class="hint">
@@ -111,7 +113,7 @@
 	<p>
 		<center>
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="./netshares.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<button type="submit" form="main_form2" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 			<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR NETSHARES.BUTTON_SHOW_PASSWORDS></button>
 		</center>
 	</p>
@@ -121,9 +123,12 @@
 <SCRIPT>
 // Show passwords
 $(document).ready(function() {
-  $('#showpass').click(function() {
-	$('.textfield').prop('type', 'text');
-  });
+	$('#showpass').click(function() {
+		$('.textfield').prop('type', 'text');
+	});
+	validate_enable('#serverip');
+	validate_enable('#servername');
+	validate_chk_object(['#serverip','#servername']);
 });
 </SCRIPT>
 
