@@ -5,10 +5,10 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.1";
+our $VERSION = "1.0.4.3";
 our $DEBUG;
 
-use base 'Exporter';
+#use base 'Exporter';
 
 # Every exported sub or variable is accessable directly in the main namespace
 # Not exported subs and global (our) variables can be accessed by specifying the 
@@ -16,9 +16,8 @@ use base 'Exporter';
 # $text = LoxBerry::System::is_enabled($text);
 # my $variable = LoxBerry::System::$systemvariable;
 
-our @EXPORT = qw (
-);
-
+#our @EXPORT = qw (
+#);
 
 ##################################################################
 # This code is executed on every use
@@ -29,7 +28,6 @@ my @netshares;
 my $netshares_delcache;
 my @usbstorage;
 my $usbstorage_delcache;
-
 
 # Finished everytime code execution
 ##################################################################
@@ -52,66 +50,75 @@ sub get_netshares
 	} else {
 		print STDERR "get_netshares: Re-reading netshares\n" if ($DEBUG);
 	}
-	
-	if (!-e "$LoxBerry::System::lbsdatadir/netshares.dat") {
-		Carp::carp "LoxBerry::Storage::get_netshares: Could not find $LoxBerry::System::lbsdatadir/netshares.dat\n";
-		return undef;
-	}
-	my $openerr;
-	open(my $fh, "<", "$LoxBerry::System::lbsdatadir/netshares.dat") or ($openerr = 1);
+	my $openerr = 0;
+	opendir(my $fh1, "$LoxBerry::System::lbhomedir/system/storage") or ($openerr = 1);
 	if ($openerr) {
-		Carp::carp "Error opening netshares database $LoxBerry::System::lbsdatadir/netshares.dat";
+		Carp::carp "Error opening storage folder $LoxBerry::System::lbhomedir/system/storage";
 		return undef;
 	}
-	my @data = <$fh>;
-	close ($fh);
+	my @sharetypes = readdir($fh1);
+	closedir($fh1);
 
 	@netshares = ();
 	my $netsharecount = 0;
 	
-	foreach (@data){
+	foreach (@sharetypes){
 		s/[\n\r]//g;
-		# Comments
-		if ($_ =~ /^\s*#.*/) {
+		if($_ eq "." || $_ eq ".." || $_ eq "usb") {
 			next;
 		}
-		
-		my @fields = split(/\|/);
-
-		opendir(my $fh2, "$LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]") or ($openerr = 1);
+		my $type = $_;	
+		opendir(my $fh2, "$LoxBerry::System::lbhomedir/system/storage/$type") or ($openerr = 1);
 		if ($openerr) {
-			Carp::carp "Error opening netshare $LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]";
-			return undef;
+			$openerr = 0;
+			next;
 		}
-  		my @sharefolders = readdir($fh2);
+  		my @serverfolders = readdir($fh2);
 		closedir($fh2);
 
-		foreach(@sharefolders) {
-			my %netshare;
-			my $state;
+		foreach(@serverfolders) {
 			s/[\n\r]//g;
-			if($_ ne "." && $_ ne "..") {
+			if($_ eq "." || $_ eq "..") {
+				next;
+			}
+			my $server = $_;	
+			opendir(my $fh3, "$LoxBerry::System::lbhomedir/system/storage/$type/$server") or ($openerr = 1);
+			if ($openerr) {
+				$openerr = 0;
+				next;
+			}
+  			my @sharefolders = readdir($fh3);
+			closedir($fh3);
+
+			foreach (@sharefolders) {
+				s/[\n\r]//g;
+				if($_ eq "." || $_ eq "..") {
+					next;
+				}
+				my $share = $_;
+				my %netshare;
+				my $state;
 				# Check read/write state
-				qx(ls $LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]/$_);
+				qx(ls $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share);
 				if ($? eq 0) {
 					$state .= "r";
 				}
-				qx(touch $LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]/$_/check_loxberry_rw_state.tmp);
+				qx(touch $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp);
 				if ($? eq 0) {
 					$state .= "w";
 				}
-				qx(rm $LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]/$_/check_loxberry_rw_state.tmp);
+				qx(rm $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp);
 				if ($readwriteonly && $state ne "rw") {
 					next;
 				}
 				$netsharecount++;
 				$netshare{NETSHARE_NO} = $netsharecount;
-				$netshare{NETSHARE_SERVER} = $fields[0];
-				$netshare{NETSHARE_TYPE} = $fields[1];
-				$netshare{NETSHARE_SERVERPATH} = "$LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]";
-				$netshare{NETSHARE_SERVERNAME} = $fields[2];
-				$netshare{NETSHARE_SHAREPATH} = "$LoxBerry::System::lbhomedir/system/storage/@fields[1]/@fields[0]/$_";
-				$netshare{NETSHARE_SHARENAME} = "$_";
+				$netshare{NETSHARE_SERVER} = $server;
+				$netshare{NETSHARE_TYPE} = $type;
+				$netshare{NETSHARE_SERVERPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server";
+				$netshare{NETSHARE_SERVERNAME} = $server;
+				$netshare{NETSHARE_SHAREPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share";
+				$netshare{NETSHARE_SHARENAME} = "$share";
 				$netshare{NETSHARE_STATE} = "$state";
 				push(@netshares, \%netshare);
 				# On changes of the plugindatabase format, please change here 
