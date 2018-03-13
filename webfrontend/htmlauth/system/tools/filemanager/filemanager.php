@@ -1086,7 +1086,7 @@ folders: <?php echo $num_folders ?>
 }
 ?>
 </table>
-<p class="path2"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> Select all</a> &nbsp;
+<p class="path"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> Select all</a> &nbsp;
 <a href="#" onclick="unselect_all();return false;"><i class="icon-checkbox_uncheck"></i> Unselect all</a> &nbsp;
 <a href="#" onclick="invert_all();return false;"><i class="icon-checkbox_invert"></i> Invert selection</a></p>
 <p><input type="submit" name="delete" value="Delete" onclick="return confirm('Delete selected files and folders?')">
@@ -1762,8 +1762,7 @@ pre.with-hljs{padding:0}
 pre.with-hljs code{margin:0;border:0;overflow:visible}
 code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;padding:0}
 #wrapper{max-width:1000px;min-width:400px;margin:10px auto}
-.path{padding:10px 7px;border:1px solid #ddd;margin-bottom:10px; background-color: #6dac20;}
-.path2{padding:4px 7px;border:1px solid #ddd;margin-bottom:10px; background-color: #FFFFFF;}
+.path{padding:4px 7px;border:1px solid #ddd;margin-bottom:10px; background-color: #FFFFFF;}
 .right{text-align:right}.center{text-align:center}.float-right{float:right}
 .message{padding:4px 7px;border:1px solid #ddd;background-color:#fff}
 .message.ok{border-color:green;color:green}
