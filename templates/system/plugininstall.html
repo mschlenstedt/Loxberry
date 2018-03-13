@@ -175,6 +175,14 @@
 			validate_enable('#securepin');
 			validate_enable('#archiveurl');
 			validate_chk_object(['#securepin','#archiveurl','#uploadfile']);
+			$(function() 
+			{
+     			$("input:file").change(function ()
+     			{
+       				$(this).trigger('blur');
+     			});
+  			});
+
 			$( '#securepin' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
 			if ( $('#archiveurl').length > 0 ) $('#archiveurl').trigger('keyup');
 
