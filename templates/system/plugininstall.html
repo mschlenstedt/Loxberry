@@ -177,9 +177,19 @@
 			validate_chk_object(['#securepin','#archiveurl','#uploadfile']);
 			$(function() 
 			{
-     			$("input:file").change(function ()
+     			$("#uploadfile").change(function ()
      			{
-       				$(this).trigger('blur');
+       				if ( $(this).val().length > 1 )
+       				{
+       					$(this).trigger('blur');
+       					$('#archiveurl').fadeOut();
+       				}
+       				else
+       				{
+       					$('#archiveurl').fadeIn();
+       					$(this).trigger('blur');
+       					$('#error-msg-uploadfile').fadeOut(100);
+       				}
      			});
   			});
 
