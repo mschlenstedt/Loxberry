@@ -40,7 +40,7 @@
 				<td><TMPL_VAR NETSHARE_TYPE></td>
 				<td><TMPL_VAR NETSHARE_SHARENAME></td>
 				<td><TMPL_VAR NETSHARE_STATE></td>
-				<td><a id="browse<TMPL_VAR NETSHARE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_blank"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a>
+				<td><a id="browse<TMPL_VAR NETSHARE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_self"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a>
 				</td>
 			</tr>
 			</TMPL_LOOP>

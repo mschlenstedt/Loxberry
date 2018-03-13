@@ -1086,7 +1086,7 @@ folders: <?php echo $num_folders ?>
 }
 ?>
 </table>
-<p class="path"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> Select all</a> &nbsp;
+<p class="path2"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> Select all</a> &nbsp;
 <a href="#" onclick="unselect_all();return false;"><i class="icon-checkbox_uncheck"></i> Unselect all</a> &nbsp;
 <a href="#" onclick="invert_all();return false;"><i class="icon-checkbox_invert"></i> Invert selection</a></p>
 <p><input type="submit" name="delete" value="Delete" onclick="return confirm('Delete selected files and folders?')">
@@ -1750,7 +1750,7 @@ function fm_show_header()
 html,body,div,span,p,pre,a,code,em,img,small,strong,ol,ul,li,form,label,table,tr,th,td{margin:0;padding:0;vertical-align:baseline;outline:none;font-size:100%;background:transparent;border:none;text-decoration:none}
 html{overflow-y:scroll}body{padding:0;font:13px/16px Tahoma,Arial,sans-serif;color:#222;background:#efefef}
 input,select,textarea,button{font-size:inherit;font-family:inherit}
-a{color:#296ea3;text-decoration:none}a:hover{color:#b00}img{vertical-align:middle;border:none}
+a{color:#3388cc;text-decoration:none}a:hover{color:#005599}img{vertical-align:middle;border:none}
 a img{border:none}span.gray{color:#777}small{font-size:11px;color:#999}p{margin-bottom:10px}
 ul{margin-left:2em;margin-bottom:10px}ul{list-style-type:none;margin-left:0}ul li{padding:3px 0}
 table{border-collapse:collapse;border-spacing:0;margin-bottom:10px;width:100%}
@@ -1762,13 +1762,14 @@ pre.with-hljs{padding:0}
 pre.with-hljs code{margin:0;border:0;overflow:visible}
 code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;padding:0}
 #wrapper{max-width:1000px;min-width:400px;margin:10px auto}
-.path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
+.path{padding:10px 7px;border:1px solid #ddd;margin-bottom:10px; background-color: #6dac20;}
+.path2{padding:4px 7px;border:1px solid #ddd;margin-bottom:10px; background-color: #FFFFFF;}
 .right{text-align:right}.center{text-align:center}.float-right{float:right}
 .message{padding:4px 7px;border:1px solid #ddd;background-color:#fff}
 .message.ok{border-color:green;color:green}
 .message.error{border-color:red;color:red}
 .message.alert{border-color:orange;color:orange}
-.btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
+.btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#3388cc;cursor:pointer}.btn:hover{color:#005599}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
 .preview-video{position:relative;max-width:100%;height:0;padding-bottom:62.5%;margin-bottom:10px}.preview-video video{position:absolute;width:100%;height:100%;left:0;top:0;background:#000}
 [class*="icon-"]{display:inline-block;width:16px;height:16px;background:url("<?php echo FM_SELF_URL ?>?img=sprites&amp;t=<?php echo $sprites_ver ?>") no-repeat 0 0;vertical-align:bottom}
@@ -1797,6 +1798,26 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .compact-table{border:0;width:auto}.compact-table td,.compact-table th{width:100px;border:0;text-align:center}.compact-table tr:hover td{background-color:#fff}
 .filename{max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .break-word{word-wrap:break-word}
+body {background-color: #3d3d3d;}
+.wrapper {padding:15px; border-radius: .6em; background-color: #ffffff;}
+.header {
+    font-size: .6em;
+    min-height: 1.1em;
+    text-align: center;
+    margin: 0 0 0;
+    padding: .7em 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    outline: 0!important;
+    background-color: #6dac20 /*{a-bar-background-color}*/;
+    border-color: #4d6c22 /*{a-bar-border}*/;
+    color: #ffffff /*{a-bar-color}*/;
+    text-shadow: 0 /*{a-bar-shadow-x}*/ 1px /*{a-bar-shadow-y}*/ 1px /*{a-bar-shadow-radius}*/ #444444 /*{a-bar-shadow-color}*/;
+    font-weight: bold;
+    width:100%;
+}
+
 </style>
 <link rel="icon" href="<?php echo FM_SELF_URL ?>?img=favicon" type="image/png">
 <link rel="shortcut icon" href="<?php echo FM_SELF_URL ?>?img=favicon" type="image/png">
@@ -1805,7 +1826,10 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 <?php endif; ?>
 </head>
 <body>
-<div id="wrapper">
+<div align="center" class="header">
+			<h1 class="ui-title" role="heading" aria-level="1">LoxBerry: LoxBerry Filemanager</h1>
+</div>
+<div id="wrapper" class="wrapper">
 <?php
 }
 
