@@ -1826,7 +1826,7 @@ body {background-color: #3d3d3d;}
 </head>
 <body>
 <div align="center" class="header">
-			<h1 class="ui-title" role="heading" aria-level="1">LoxBerry: LoxBerry Filemanager</h1>
+			<h1 class="ui-title" role="heading" aria-level="1">LoxBerry Filemanager</h1>
 </div>
 <div id="wrapper" class="wrapper">
 <?php
