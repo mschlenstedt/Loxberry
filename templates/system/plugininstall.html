@@ -181,14 +181,16 @@
      			{
        				if ( $(this).val().length > 1 )
        				{
-       					$(this).trigger('blur');
        					$('#archiveurl').fadeOut();
+       					$('#archiveurl').val('');
+       					$(this).trigger('blur');
+       					$('#error-msg-archiveurl').fadeOut(10);
        				}
        				else
        				{
        					$('#archiveurl').fadeIn();
        					$(this).trigger('blur');
-       					$('#error-msg-uploadfile').fadeOut(100);
+       					$('#error-msg-uploadfile').fadeOut(10);
        				}
      			});
   			});
