@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.23";
+my $version = "1.0.0.24";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1665,7 +1665,6 @@ sub logfail {
     		print "<FAIL> $message\n";
 	}
 
-	&purge_installation("all");
 	if ( -e "/tmp/uploads/$tempffile" ) {
 	      system("$sudobin -n -u loxberry rm -rf /tmp/uploads/$tempfile 2>&1");
 	}
