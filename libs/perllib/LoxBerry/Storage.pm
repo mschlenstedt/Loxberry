@@ -116,13 +116,10 @@ sub get_netshares
 				$netshare{NETSHARE_SERVER} = $server;
 				$netshare{NETSHARE_TYPE} = $type;
 				$netshare{NETSHARE_SERVERPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server";
-				$netshare{NETSHARE_SERVERNAME} = $server;
 				$netshare{NETSHARE_SHAREPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share";
 				$netshare{NETSHARE_SHARENAME} = "$share";
 				$netshare{NETSHARE_STATE} = "$state";
 				push(@netshares, \%netshare);
-				# On changes of the plugindatabase format, please change here 
-				# and in libs/phplib/loxberry_system.php / function get_plugins
 			}
 		}
 	}
@@ -132,6 +129,57 @@ sub get_netshares
 }
 
 
+##################################################################################
+# Get Netservers
+# Returns all netshare servers in a hash
+##################################################################################
+sub get_netservers
+{
+	my $openerr = 0;
+	opendir(my $fh1, "$LoxBerry::System::lbhomedir/system/storage") or ($openerr = 1);
+	if ($openerr) {
+		Carp::carp "Error opening storage folder $LoxBerry::System::lbhomedir/system/storage";
+		return undef;
+	}
+	my @sharetypes = readdir($fh1);
+	closedir($fh1);
+
+	my @netservers = ();
+	my $netservercount = 0;
+	
+	foreach (@sharetypes){
+		s/[\n\r]//g;
+		if($_ eq "." || $_ eq ".." || $_ eq "usb") {
+			next;
+		}
+		my $type = $_;	
+		opendir(my $fh2, "$LoxBerry::System::lbhomedir/system/storage/$type") or ($openerr = 1);
+		if ($openerr) {
+			$openerr = 0;
+			next;
+		}
+  		my @serverfolders = readdir($fh2);
+		closedir($fh2);
+
+		foreach(@serverfolders) {
+			s/[\n\r]//g;
+			if($_ eq "." || $_ eq "..") {
+				next;
+			}
+			my $server = $_;	
+			my %netserver;
+			$netservercount++;
+			$netserver{NETSERVER_NO} = $netservercount;
+			$netserver{NETSERVER_SERVER} = $server;
+			$netserver{NETSERVER_TYPE} = $type;
+			$netserver{NETSERVER_SERVERPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server";
+			push(@netservers, \%netserver);
+		}
+	}
+
+	return @netservers;
+
+}
 
 
 

@@ -3,9 +3,20 @@
 <TMPL_IF FORM>
 
 	<center>
-	<a id="add" data-role="button" data-inline="true" data-mini="true" data-icon="plus" href="./netshares.cgi?a=add"><TMPL_VAR NETSHARES.BUTTON_ADD_SERVER></a>
-	<a id="del" data-role="button" data-inline="true" data-mini="true" data-icon="minus" href="./netshares.cgi?a=del"><TMPL_VAR NETSHARES.BUTTON_DEL_SERVER></a>
-	<a id="browse" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system%2Fstorage" target="_blank"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a>
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/netshares.cgi">
+		<input type="hidden" name="a" id="a" value="del">
+		<a id="add" data-role="button" data-inline="true" data-mini="true" data-icon="plus" href="/admin/system/netshares.cgi?a=add"><TMPL_VAR NETSHARES.BUTTON_ADD_SERVER></a>
+		<button type="submit" form="main_form" name="submitbtn" value="submit" id="submitbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR NETSHARES.BUTTON_DEL_SERVER></button>
+		<select onclick="disable();" name="server" id="server" data-mini="true" data-inline="true">
+			<option value=""><TMPL_VAR NETSHARES.LABEL_SELECT></option>
+			<TMPL_LOOP NETSERVERS>
+			<option value="<TMPL_VAR NETSERVER_SERVER>|<TMPL_VAR NETSERVER_TYPE>"><TMPL_VAR NETSERVER_SERVER></option>
+			</TMPL_LOOP>
+		</select>
+	</form>
+
+
+
 	<hr>
 	</center>
 	<!-- START Plugin container -->
@@ -14,7 +25,6 @@
 		<tr class="ui-bar-d">
 			<th data-priority="7"><TMPL_VAR NETSHARES.SHARESTABLE_NO></th>
 			<th data-priority="1"><TMPL_VAR NETSHARES.SHARESTABLE_SERVER></th>
-			<th data-priority="3"><TMPL_VAR NETSHARES.SHARESTABLE_NAME></th>
 			<th data-priority="4"><TMPL_VAR NETSHARES.SHARESTABLE_TYPE></th>
 			<th data-priority="2"><TMPL_VAR NETSHARES.SHARESTABLE_SHARE></th>
 			<th data-priority="5"><TMPL_VAR NETSHARES.SHARESTABLE_STATUS></th>
@@ -27,20 +37,34 @@
 			<tr>
 				<td><TMPL_VAR NETSHARE_NO></td>
 				<td><TMPL_VAR NETSHARE_SERVER></td>
-				<td><TMPL_VAR NETSHARE_SERVERNAME></td>
 				<td><TMPL_VAR NETSHARE_TYPE></td>
 				<td><TMPL_VAR NETSHARE_SHARENAME></td>
 				<td><TMPL_VAR NETSHARE_STATE></td>
-				<td><a id="browse<TMPL_VAR NETSHARE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_blank"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a></td>
+				<td><a id="browse<TMPL_VAR NETSHARE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_blank"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a>
+				</td>
 			</tr>
 			</TMPL_LOOP>
 		<TMPL_ELSE>
 			<tr>
-				<td colspan="7"><TMPL_VAR NETSHARES.HINT_NOSERVERS></td>
+				<td colspan="6"><TMPL_VAR NETSHARES.HINT_NOSERVERS></td>
 			</tr>
 		</TMPL_IF>
 		</tbody>
 		</table>
+<SCRIPT>
+function disable()
+{
+        if ( $('#server').val().length != 0 ) {
+			$('#submitbtn').removeClass( "ui-disabled" );
+        }
+        else {
+			$('#submitbtn').addClass( "ui-disabled" );
+        }
+}
+$(document).ready(function() {
+	disable();
+});
+</SCRIPT>
 
 </TMPL_IF>
 
@@ -52,17 +76,6 @@
 
 	<center>
 	<table id="addserver" class="formtable" border="0" width="100%" cellpadding="5px">
-	<tr>
-		<td>
-			<label for="servername"><TMPL_VAR NETSHARES.LABEL_SERVERNAME></label>
-		</td>
-		<td>
-			<input value="" id="servername" name="servername" type="text" data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_SERVERNAME>" data-validation-rule="^([A-Za-z0-9\_\-]){1,64}$">
-		</td>
-		<td class="hint">
-			<TMPL_VAR NETSHARES.HINT_SERVERNAME>
-		</td>
-	</tr>
 	<tr>
 		<td width="25%">
 			<label class="control-label" for="serverip"><TMPL_VAR NETSHARES.LABEL_SERVERIP></label>
@@ -80,7 +93,7 @@
 			<label for="username"><TMPL_VAR NETSHARES.LABEL_USERNAME></label>
 		</td>
 		<td>
-			<input value="" id='username' name='username' type='text'>
+			<input class="textfield" readonly onfocus="this.removeAttribute('readonly');" value="" id='username' name='username' type='text'>
 		</td>
 		
 		<td class="hint">
@@ -92,7 +105,7 @@
 			<label for="password"><TMPL_VAR NETSHARES.LABEL_PASSWORD></label>
 		</td>
 		<td>
-			<input class="textfield" value="" id='password' name='password' type='password' autocomplete="nope">
+			<input class="textfield" readonly onfocus="this.removeAttribute('readonly');" value="" id='password' name='password' type='password' autocomplete="nope">
 		</td>
 		
 		<td class="hint">
@@ -127,11 +140,91 @@ $(document).ready(function() {
 		$('.textfield').prop('type', 'text');
 	});
 	validate_enable('#serverip');
-	validate_enable('#servername');
-	validate_chk_object(['#serverip','#servername']);
+	validate_chk_object(['#serverip']);
 });
 </SCRIPT>
 
+</TMPL_IF>
+
+<TMPL_IF SAVE>
+<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+		<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+		<p>
+		<TMPL_VAR NETSHARES.ADD_SUCCESS>
+		<br/>
+		<br/>
+		<TMPL_VAR WARNING>
+		<br/>
+		<br/>
+		</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+		<p>
+		<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/netshares.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+		</p>
+		</td>
+	</tr>
+	</table>
+</center>
+</TMPL_IF>
+
+<TMPL_IF QUESTION>
+	<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+			<h2><TMPL_VAR COMMON.MSG_ARE_YOU_SURE></h2>
+			<p>
+			<TMPL_VAR NETSHARES.REMOVE_QUESTION>
+			<br/>
+			<br/>
+			<b><TMPL_VAR SERVER></b>
+			<br/>
+			<br/>
+			</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<p>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true"
+			data-icon="delete" href="/admin/system/netshares.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
+		       data-icon="check" href="<TMPL_VAR SELFURL>&q=y"><TMPL_VAR COMMON.BUTTON_OK></a>
+			</p>
+		</td>
+	</tr>
+	</table>
+	</center>
+</TMPL_IF>
+
+<TMPL_IF DEL>
+<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+		<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+		<p>
+		<TMPL_VAR NETSHARES.REMOVE_SUCCESS>
+		<br/>
+		<br/>
+		</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+		<p>
+		<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/netshares.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+		</p>
+		</td>
+	</tr>
+	</table>
+</center>
 </TMPL_IF>
 
 <!-- ** END template/system/netshares.html ************************************************************************************ -->

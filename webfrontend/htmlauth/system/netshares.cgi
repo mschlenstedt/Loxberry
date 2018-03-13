@@ -62,37 +62,11 @@ $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $lang = lblanguage();
 
 ##########################################################################
-# Netshare Config
-##########################################################################
-
-if ( !-e "$lbhomedir/data/system/netshares.dat" ) {
-        open(F,">$lbhomedir/data/system/netshares.dat");
-        print F <<EOF;
-#
-# Database for Net Shares
-#
-#  0: Server
-#  1: Type
-#  2: Name
-#  3: User
-#  4: Password
-#
-# Delimiter: | (Pipe)
-#
-EOF
-        close (F);
-	qx ("chmod 600 $lbhomedir/data/system/netshares.dat);
-}
-
-##########################################################################
 # Main program
 ##########################################################################
 
 # Get CGI
 our  $cgi = CGI->new;
-
-# Get all Network shares
-my @netshares = LoxBerry::Storage::get_netshares(0, 1);
 
 my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/netshares.html",
@@ -111,24 +85,16 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETSHARES.WIDG
 
 LoxBerry::Web::lbheader();
 
-# Add new server?
-if ($cgi->param("a") eq "add") {
-	$maintemplate->param("ADD", 1);
-} else {
-	$maintemplate->param("FORM", 1);
-	$maintemplate->param("NETSHARES", \@netshares);
-}
-
 # Save new server
 if ($cgi->param("saveformdata")) {
-	$maintemplate->param("FORM", 1);
+	
+	$maintemplate->param("SAVE", 1);
 
 	# Credits
 	my $file=$cgi->param("serverip");
 	my $username=$cgi->param("username");
 	my $password=$cgi->param("password");
 	my $type=$cgi->param("type");
-	my $shortname=$cgi->param("servername");
         open(F,">$lbhomedir/system/samba/credentials/$file");
         print F <<EOF;
 uid=1001
@@ -139,7 +105,50 @@ EOF
         close (F);
 
 	qx(ln -f -s /media/$type/$file $lbhomedir/system/storage/$type/$file);
-	qx(ln -f -s /media/$type/$file $lbhomedir/system/storage/$type/$shortname);
+
+	# Check read state
+	qx(ls $lbhomedir/system/storage/$type/$file/*);
+	if ($? ne 0) {
+		$maintemplate->param("WARNING", $SL{'NETSHARES.ADD_WARNING'});
+	}
+
+} else {
+
+	# Add new server?
+	if ($cgi->param("a") eq "add") {
+
+		$maintemplate->param("ADD", 1);
+
+	# Remove server?
+	} elsif ($cgi->param("a") eq "del") {
+
+		my @fields = split(/\|/, $cgi->param("server"));
+		my $server = @fields[0];
+		my $type = @fields[1];
+		if ($cgi->param("q") ne "y") {
+			$maintemplate->param("SELFURL", "/admin/system/netshares.cgi?a=del&s=$server&t=$type");
+			$maintemplate->param("SERVER", $server);
+			$maintemplate->param("QUESTION", 1);
+		} else {
+			my $server = $cgi->param("s");
+			my $type = $cgi->param("t");
+			qx(rm -f $lbhomedir/system/storage/$type/$server);
+			qx(rm -f $lbhomedir/system/samba/credentials/$server);
+			$maintemplate->param("DEL", 1);
+		}
+
+	# Show overview
+	} else {
+
+		# Get all Network shares
+		my @netshares = LoxBerry::Storage::get_netshares(0, 1);
+		my @netservers = LoxBerry::Storage::get_netservers();
+		$maintemplate->param("FORM", 1);
+		$maintemplate->param("NETSHARES", \@netshares);
+		$maintemplate->param("NETSERVERS", \@netservers);
+
+	}
+
 }
 
 print $maintemplate->output();
