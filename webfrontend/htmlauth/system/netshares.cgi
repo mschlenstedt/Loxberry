@@ -51,7 +51,7 @@ our $languagefile;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.0";
+my $version = "1.0.0.1";
 
 $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 
@@ -107,6 +107,7 @@ EOF
 	qx(ln -f -s /media/$type/$file $lbhomedir/system/storage/$type/$file);
 
 	# Check read state
+	qx(sudo /etc/init.d/autofs restart);
 	qx(ls $lbhomedir/system/storage/$type/$file/*);
 	if ($? ne 0) {
 		$maintemplate->param("WARNING", $SL{'NETSHARES.ADD_WARNING'});
