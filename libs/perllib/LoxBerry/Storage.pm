@@ -185,7 +185,7 @@ sub get_netservers
 # Get USB Storage
 # Returns all usb storage devices in a hash
 ##################################################################################
-sub get_usbstorage
+sub get_usbstorages
 {
 	my $openerr = 0;
 	opendir(my $fh1, "$LoxBerry::System::lbhomedir/system/storage/usb") or ($openerr = 1);
