@@ -99,8 +99,8 @@ if ($cgi->param("saveformdata")) {
         print F <<EOF;
 uid=1001
 gid=1001
-username="$username"
-password="$password"
+username=$username
+password=$password
 EOF
         close (F);
 
