@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.11";
+our $VERSION = "1.0.0.12";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1285,6 +1285,8 @@ sub lock
 				print STDERR "    Lock file successfully created.\n" if ($DEBUG);
 				print STDERR "    Changing permissions to 0666\n" if ($DEBUG);
 				eval {
+					my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+					chown $uid, $gid, $lockfilename;
 					chmod 0666, $lockfilename;
 					};
 				print STDERR "    Could not change permissions (but lock file was created)\n" if ($@ && $DEBUG);
