@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.4";
+our $VERSION = "1.0.4.5";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -96,18 +96,18 @@ sub get_netshares
 				}
 				my $share = $_;
 				my %netshare;
-				my $state;
+				my $state = "";
 				# Check read/write state
-				qx(ls $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share);
+				qx(ls \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share\");
 				if ($? eq 0) {
-					$state .= "r";
+					$state = "Readonly";
 				}
-				qx(touch $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp);
+				qx(touch \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\");
 				if ($? eq 0) {
-					$state .= "w";
+					$state = "Writable";
 				}
-				qx(rm $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp);
-				if ($readwriteonly && $state ne "rw") {
+				qx(rm \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\");
+				if ( ($readwriteonly && $state ne "rw") || !$state ) {
 					next;
 				}
 				$netsharecount++;
@@ -185,7 +185,7 @@ sub get_netservers
 # Get USB Storage
 # Returns all usb storage devices in a hash
 ##################################################################################
-sub get_usbstorages
+sub get_usbstorage
 {
 	my $openerr = 0;
 	opendir(my $fh1, "$LoxBerry::System::lbhomedir/system/storage/usb") or ($openerr = 1);
