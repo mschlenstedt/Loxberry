@@ -220,6 +220,24 @@ if ($exitcode != 0) {
 }
 qx { cp -fv /etc/sudoers.d.orig/* /etc/sudoers.d };
 
+#
+# Sudoers
+#
+
+LOGINF "Replacing system default sudoers file";
+LOGINF "Copying new";
+
+my $output = qx { if [ -e $updatedir/system/sudoers/lbdefaults ] ; then cp -f $updatedir/system/sudoers/lbdefaults $lbhomedir/system/sudoers/ ; fi };
+my $exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+       LOGERR "Error copying new lbdefaults - Error $exitcode";
+       $errors++;
+} else {
+       LOGOK "New lbdefaults copied.";
+}
+qx { chown root:root $lbhomedir/system/sudoers/lbdefaults };
+
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
