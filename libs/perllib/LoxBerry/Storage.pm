@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.3";
+our $VERSION = "1.0.4.4";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -26,8 +26,7 @@ our $DEBUG;
 # Variables only valid in this module
 my @netshares;
 my $netshares_delcache;
-my @usbstorage;
-my $usbstorage_delcache;
+my @usbstorages;
 
 # Finished everytime code execution
 ##################################################################
@@ -182,6 +181,41 @@ sub get_netservers
 }
 
 
+##################################################################################
+# Get USB Storage
+# Returns all usb storage devices in a hash
+##################################################################################
+sub get_usbstorage
+{
+	my $openerr = 0;
+	opendir(my $fh1, "$LoxBerry::System::lbhomedir/system/storage/usb") or ($openerr = 1);
+	if ($openerr) {
+		Carp::carp "Error opening storage folder $LoxBerry::System::lbhomedir/system/storage/usb";
+		return undef;
+	}
+	my @usbdevices = readdir($fh1);
+	closedir($fh1);
+
+	my @usbstorages = ();
+	my $usbstoragecount = 0;
+	
+	foreach (@usbdevices){
+		s/[\n\r]//g;
+		if($_ eq "." || $_ eq "..") {
+			next;
+		}
+		my $device = $_;	
+		my %usbstorage;
+		$usbstoragecount++;
+		$usbstorage{USBSTORAGE_NO} = $usbstoragecount;
+		$usbstorage{USBSTORAGE_DEVICE} = $device;
+		$usbstorage{USBSTORAGE_DEVICEPATH} = "$LoxBerry::System::lbhomedir/system/storage/usb/$device";
+		push(@usbstorages, \%usbstorage);
+	}
+
+	return @usbstorages;
+
+}
 
 #####################################################
 # Finally 1; ########################################
