@@ -146,8 +146,7 @@ if (-e "/tmp/$R::logfile") {
 		LoxBerry::Web::foot();
 	   
 	} elsif ($iscgi) {
-		print $cgi->header();
-		#print "Content-Type: text/plain;charset=utf-8\n";
+		print $cgi->header(-type => 'text/plain;charset=utf-8');
 		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
 	} else {
 		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
