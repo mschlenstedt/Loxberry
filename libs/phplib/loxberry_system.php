@@ -154,6 +154,10 @@ class LBSystem
 			if (file_exists($langfile)) {
 				$currlang = LBSystem::read_language_file($langfile);
 			}
+			else
+			{
+				$currlang = [];
+			}
 			if (file_exists($enlangfile)) {
 				$enlang = LBSystem::read_language_file($enlangfile);
 			}
