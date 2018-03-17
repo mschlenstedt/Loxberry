@@ -34,6 +34,14 @@ DEVICE="/dev/${DEVBASE}"
 
 # See if this drive is already mounted, and if so where
 MOUNT_POINT=$(mount | grep ${DEVICE} | awk '{ print $3 }')
+if [[ ! -n ${MOUNT_POINT} ]]; then
+        PART_UUID=$(blkid | grep ${DEVICE} | awk '{ print $6 }' | cut -d '"' -f2)
+        MOUNT_POINT=$(mount | grep ${PART_UUID} | awk '{ print $3 }')
+fi
+if [[ ! -n ${MOUNT_POINT} ]]; then
+        UUID=$(blkid | grep ${DEVICE} | awk '{ print $4 }' | cut -d '"' -f2)
+        MOUNT_POINT=$(mount | grep ${UUID} | awk '{ print $3 }')
+fi
 
 DEV_LABEL=""
 
