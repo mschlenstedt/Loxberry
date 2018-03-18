@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.8";
+my $scriptversion="1.0.0.9";
 
 # print currtime('file') . "\n";
 
@@ -101,11 +101,12 @@ if (!$cgi->param) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
-if ( $cgi->param('querytype') ne "release" && $cgi->param('querytype') ne "prerelease" && $cgi->param('querytype') ne "testing" ) {
-	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_NO_VALIDQUERYTYPE'};
+$querytype = $cgi->param('querytype');
+if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_WRONG_QUERY_TYPE'};
 	&err;
 	LOGCRIT $joutput{'error'};
-	exit (1);
+	exit(1);
 }
 
 # If general.cfg's UPDATE.DRYRUN is defined, do nothing
@@ -137,21 +138,12 @@ if ($cgi->param('nodiscspacecheck')) {
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
 
-$querytype = $cgi->param('querytype');
-
 my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.LATESTSHA') : "0";
 
 
 if ($formatjson || $cron ) {
 	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
-}
-
-if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
-	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_WRONG_QUERY_TYPE'};
-	&err;
-	LOGCRIT $joutput{'error'};
-	exit(1);
 }
 
 my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
