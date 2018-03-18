@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.5";
+my $scriptversion="1.0.0.6";
 
 # print currtime('file') . "\n";
 
@@ -98,6 +98,12 @@ if (!$cgi->param) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
+if ( $cgi->param('querytype') ne "release" && $cgi->param('querytype') ne "prerelease" && $cgi->param('querytype') ne "testing" ) {
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_NO_VALIDQUERYTYPE'};
+	&err;
+	LOGCRIT $joutput{'error'};
+	exit (1);
+}
 
 # If general.cfg's UPDATE.DRYRUN is defined, do nothing
 if ( is_enabled($cfg->param('UPDATE.DRYRUN')) ) {
@@ -115,9 +121,6 @@ $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
 
 if ($cgi->param('cron')) {
 	$cron = 1;
-	
-	
-	
 } 
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
