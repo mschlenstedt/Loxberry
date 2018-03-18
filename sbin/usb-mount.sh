@@ -43,12 +43,28 @@ if [[ ! -n ${MOUNT_POINT} ]]; then
         MOUNT_POINT=$(mount | grep ${UUID} | awk '{ print $3 }')
 fi
 
+# See if device is mentioned in /etc/fstab
+MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${DEVICE} | awk '{ print $2 }')
+if [[ ! -n ${MOUNT_POINT_FSTAB} ]]; then
+        PART_UUID=$(blkid | grep ${DEVICE} | awk '{ print $6 }' | cut -d '"' -f2)
+        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${PART_UUID} | awk '{ print $2 }')
+fi
+if [[ ! -n ${MOUNT_POINT_FSTAB} ]]; then
+        UUID=$(blkid | grep ${DEVICE} | awk '{ print $4 }' | cut -d '"' -f2)
+        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${UUID} | awk '{ print $3 }')
+fi
+
 DEV_LABEL=""
 
 do_mount()
 {
     if [[ -n ${MOUNT_POINT} ]]; then
         ${log} "Warning: ${DEVICE} is already mounted at ${MOUNT_POINT}"
+        exit 1
+    fi
+
+    if [[ -n ${MOUNT_POINT_FSTAB} ]]; then
+        ${log} "Warning: ${DEVICE} is mentioned in /etc/fstab at ${MOUNT_POINT}"
         exit 1
     fi
 
