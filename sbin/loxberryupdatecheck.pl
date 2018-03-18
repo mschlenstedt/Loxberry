@@ -98,12 +98,6 @@ if (!$cgi->param) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
-if ( $cgi->param('querytype') ne "release" && $cgi->param('querytype') ne "prerelease" && $cgi->param('querytype') ne "testing" ) {
-	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_NO_VALIDQUERYTYPE'};
-	&err;
-	LOGCRIT $joutput{'error'};
-	exit (1);
-}
 
 # If general.cfg's UPDATE.DRYRUN is defined, do nothing
 if ( is_enabled($cfg->param('UPDATE.DRYRUN')) ) {
