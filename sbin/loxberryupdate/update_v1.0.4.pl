@@ -69,7 +69,7 @@ if ($exitcode != 0) {
 } else {
         LOGOK "Apt database updated successfully.";
 }
-$output = qx { /usr/bin/apt-get -q -y remove usbmount pmount };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y remove usbmount pmount };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error uninstalling packages usbmount pmount with apt-get - Error $exitcode";
@@ -128,7 +128,7 @@ EOF
 #
 LOGINF "Installing Autofs";
 
-$output = qx { /usr/bin/apt-get -q -y install autofs smbclient };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y install autofs smbclient };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error installing packages autofs smbclient with apt-get - Error $exitcode";
