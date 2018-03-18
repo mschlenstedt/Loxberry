@@ -26,7 +26,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
-use strict;
+#use strict;
 use warnings;
 use CGI;
 use JSON;
@@ -70,6 +70,8 @@ my $output;
 my $cron;
 my $dryrun;
 my $nofork;
+my $nobackup;
+my $nodiscspacecheck;
 my $keepupdatefiles;
 my $formatjson;
 
@@ -125,6 +127,12 @@ if ($cgi->param('cron')) {
 } 
 if ($cgi->param('nofork')) {
 	$nofork = 1;
+} 
+if ($cgi->param('nobackup')) {
+	$nobackup = 1;
+} 
+if ($cgi->param('nodiscspacecheck')) {
+	$nodiscspacecheck = 1;
 } 
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
@@ -304,7 +312,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			LOGOK "Prepare update successful.";
 			# This is the place where we can hand over to the real update
 			
-			if ($nofork) {
+			if (!$nofork) {
 				LOGINF "Forking loxberryupdate...";
 				my $pid = fork();
 				if (not defined $pid) {
@@ -314,7 +322,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 					LOGINF "Executing LoxBerry Update forked...";
 					# exec never returns
 					# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron </dev/null >/dev/null 2>&1 &");
+					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck </dev/null >/dev/null 2>&1 &");
 					exit(0);
 				} 
 				exit(0);
@@ -322,7 +330,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				LOGINF "Executing LoxBerry Update...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
 			}
 		}
 	}
