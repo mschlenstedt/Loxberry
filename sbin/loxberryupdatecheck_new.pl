@@ -26,7 +26,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
-#use strict;
+use strict;
 use warnings;
 use CGI;
 use JSON;
@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.7";
+my $scriptversion="1.0.0.8";
 
 # print currtime('file') . "\n";
 
@@ -119,9 +119,9 @@ if ( is_enabled($cfg->param('UPDATE.KEEPUPDATEFILES')) ){
 if ($cgi->param('dryrun')) {
 	$cgi->param('keepupdatefiles', 1);
 }
-
-$dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
-
+if ($cgi->param('dryrun')) {
+	$dryrun = 1;
+} 
 if ($cgi->param('cron')) {
 	$cron = 1;
 } 
@@ -330,7 +330,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				LOGINF "Executing LoxBerry Update...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version dryrun=$dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
 			}
 		}
 	}
