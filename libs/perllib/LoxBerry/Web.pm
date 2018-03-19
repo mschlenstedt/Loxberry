@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.0.0.2";
+our $VERSION = "1.0.0.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -293,7 +293,7 @@ sub pagestart
 	print STDERR "template_title: $template_title\n" if ($DEBUG);
 	print STDERR "helplink:       $helplink\n" if ($DEBUG);
 	# print STDERR "helptext:       $helptext\n" if ($DEBUG);
-	print STDERR "Home string: " . $LoxBerry::Web::SL{'HEADER.PANEL_HOME'} . "\n" if ($DEBUG);
+	print STDERR "Home string: " . $LoxBerry::System::SL{'HEADER.PANEL_HOME'} . "\n" if ($DEBUG);
 	
 	$headerobj->param( 	TEMPLATETITLE => $template_title, 
 						HELPLINK => $helplink, 
