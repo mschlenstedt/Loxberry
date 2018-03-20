@@ -101,9 +101,12 @@ foreach my $file (@files) {
 	print STDERR "generatelegacytemplates.pl: Language $file WILL BE RE-CREATED\n";	
 	print STDERR "max_tmpl_epoch: $max_tmpl_epoch   min_tmpllang_epoch: $min_tmpllang_epoch\n";
 	
-	# Pre-set the language in LoxBerry:Web
-	$LoxBerry::Web::lang = $langcode;
+	# Pre-set the language in LoxBerry:System
+	$LoxBerry::System::lang = $langcode;
 	
+	# Delete language cache
+	undef %LoxBerry::System::SL;
+		
 	my $output_header;
 	my $output_footer;
 	my $output_success;

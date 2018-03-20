@@ -106,9 +106,20 @@
 		</td>
 	</tr>
 	<tr>
-		<td>&nbsp;</td>
-		<td colspan=3>
-		<div id="form-error-message" class="form-error-message"></div>
+		<td colspan=4>
+			<p>
+			<center>
+			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+			<a href="#" id="btntestsmtp" name="btntestsmtp" data-role="button" data-inline="true" data-mini="true" data-icon="mail"><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></a>
+			</center>
+			</p>
+		</td>
+	</tr>
+	<tr>
+		<td colspan=4>
+			<hr>
+			<TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS>
 		</td>
 	</tr>
 	<tr>
@@ -126,7 +137,7 @@
 		</td>
 		<td>
 		</td>
-		<td rowspan="2" class="hint"><TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS>
+		<td rowspan="2" class="hint">
 		</td>
 	</tr>
 	<tr>
@@ -146,14 +157,6 @@
 		</td>
 	</tr>
 </table>
-
-<p>
-<center>
-<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-<a href="#" id="btntestsmtp" name="btntestsmtp" data-role="button" data-inline="true" data-mini="true" data-icon="mail"><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></a>
-</center>
-</p>
 </form>
 <br><br>
 <center>
@@ -191,12 +194,6 @@ function post_value (action, value)
 				});
 }
 
-var $messages = $('#form-error-message');
-$.validate(
-{
-	modules : 'security',
-	errorMessagePosition: 'inline',
-});
 // Disable some options on click depending on selected value
 function disable()
 {
