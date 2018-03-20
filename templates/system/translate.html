@@ -260,7 +260,7 @@ $(document).on('pageinit', function() {
 	
 	});
 	
-	$( ".translation" ).blur(function(){change_translation(event.target.id, $(this).val())});
+	$( ".translation" ).blur(function(e){change_translation(e.target.id, $(this).val())});
 	
 	$( ".translation" ).focusin(function(){ oldvalue = $(this).val(); });
 	
