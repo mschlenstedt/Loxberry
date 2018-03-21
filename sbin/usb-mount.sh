@@ -50,8 +50,7 @@ if [[ ! -n ${MOUNT_POINT_FSTAB} ]]; then
         MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${ID_FS_PARTUUID} | awk '{ print $2 }')
 fi
 if [[ ! -n ${MOUNT_POINT_FSTAB} ]]; then
-        UUID=$(blkid | grep ${DEVICE} | awk '{ print $4 }' | cut -d '"' -f2)
-        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${ID_FS_UUID} | awk '{ print $3 }')
+        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${ID_FS_UUID} | awk '{ print $2 }')
 fi
 
 DEV_LABEL=""
