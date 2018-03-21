@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.0.0.3';
+my $scriptversion='1.0.0.4';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -53,6 +53,8 @@ my $errskipped = 0;
 my $formatjson;
 my $logfilename;
 my $cron;
+my $nobackup;
+my $nodiscspacecheck;
 my $sha;
 
 my $cgi = CGI->new;
@@ -116,17 +118,25 @@ if ($cron) {
 	};
 }
 
-LOGOK "Lock successfully set.";
-
-my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-if ($folderinfo{available} < 102400) {
-	$joutput{'error'} = "Available diskspace is below 100MB. Update is skipped.";
-	&err;
-	LOGCRIT $joutput{'error'};
-	notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update was prevented.", 'Error');
-	exit (1);
+if ($cgi->param('nodiscspacecheck')) {
+	$nodiscspacecheck = 1;
+}
+if ($cgi->param('nobackup')) {
+	$nobackup = 1;
 }
 
+LOGOK "Lock successfully set.";
+
+if (!$nodiscspacecheck) {
+	my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
+	if ($folderinfo{available} < 102400) {
+		$joutput{'error'} = "Available diskspace is below 100MB. Update is skipped.";
+		&err;
+		LOGCRIT $joutput{'error'};
+		notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update was prevented.", 'Error');
+		exit (1);
+	}
+}
 
 if ($cgi->param('sha')) {
 	$sha = $cgi->param('sha');
@@ -214,6 +224,7 @@ LOGOK "Changing owner was successful.";
 # Set up rsync command line
 
 my $dryrun = $cgi->param('dryrun') ? "--dry-run" : "";
+my $backup = $cgi->param('nobackup') ? "" : "--backup-dir=$backupdir";
 
 my @rsynccommand = (
 	"rsync",
@@ -222,7 +233,7 @@ my @rsynccommand = (
 	"--checksum",
 	"--archive", # equivalent to -rlptgoD
 #	"--backup",
-	"--backup-dir=$backupdir",
+	"$backup",
 	"--keep-dirlinks",
 	"--delete",
 	"-F",

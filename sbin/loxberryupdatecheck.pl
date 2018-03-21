@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.6";
+my $scriptversion="1.0.0.9";
 
 # print currtime('file') . "\n";
 
@@ -69,6 +69,9 @@ my $update;
 my $output;
 my $cron;
 my $dryrun;
+my $nofork;
+my $nobackup;
+my $nodiscspacecheck;
 my $keepupdatefiles;
 my $formatjson;
 
@@ -98,6 +101,13 @@ if (!$cgi->param) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
+$querytype = $cgi->param('querytype');
+if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_WRONG_QUERY_TYPE'};
+	&err;
+	LOGCRIT $joutput{'error'};
+	exit(1);
+}
 
 # If general.cfg's UPDATE.DRYRUN is defined, do nothing
 if ( is_enabled($cfg->param('UPDATE.DRYRUN')) ) {
@@ -110,16 +120,23 @@ if ( is_enabled($cfg->param('UPDATE.KEEPUPDATEFILES')) ){
 if ($cgi->param('dryrun')) {
 	$cgi->param('keepupdatefiles', 1);
 }
-
-$dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
-
+if ($cgi->param('dryrun')) {
+	$dryrun = 1;
+} 
 if ($cgi->param('cron')) {
 	$cron = 1;
 } 
+if ($cgi->param('nofork')) {
+	$nofork = 1;
+} 
+if ($cgi->param('nobackup')) {
+	$nobackup = 1;
+} 
+if ($cgi->param('nodiscspacecheck')) {
+	$nodiscspacecheck = 1;
+} 
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
-
-$querytype = $cgi->param('querytype');
 
 my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.LATESTSHA') : "0";
 
@@ -127,13 +144,6 @@ my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.L
 if ($formatjson || $cron ) {
 	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
-}
-
-if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
-	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_WRONG_QUERY_TYPE'};
-	&err;
-	LOGCRIT $joutput{'error'};
-	exit(1);
 }
 
 my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
@@ -294,19 +304,26 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			LOGOK "Prepare update successful.";
 			# This is the place where we can hand over to the real update
 			
-			LOGINF "Forking loxberryupdate...";
-			my $pid = fork();
-			if (not defined $pid) {
-				LOGCRIT "Cannot fork loxberryupdate.";
-			} 
-			if (not $pid) {	
-				LOGINF "Executing LoxBerry Update forked...";
+			if (!$nofork) {
+				LOGINF "Forking loxberryupdate...";
+				my $pid = fork();
+				if (not defined $pid) {
+					LOGCRIT "Cannot fork loxberryupdate.";
+				} 
+				if (not $pid) {	
+					LOGINF "Executing LoxBerry Update forked...";
+					# exec never returns
+					# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
+					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck </dev/null >/dev/null 2>&1 &");
+					exit(0);
+				} 
+				exit(0);
+			} else {
+				LOGINF "Executing LoxBerry Update...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron </dev/null >/dev/null 2>&1 &");
-				exit(0);
-			} 
-			exit(0);
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version dryrun=$dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
+			}
 		}
 	}
 	
