@@ -32,26 +32,26 @@ ACTION=$1
 DEVBASE=$2
 DEVICE="/dev/${DEVBASE}"
 
+# Get info for this drive: $ID_FS_LABEL, $ID_FS_UUID, $ID_FS_TYPE $ID_FS_PARTUUID
+eval $(blkid -o udev ${DEVICE})
+
 # See if this drive is already mounted, and if so where
 MOUNT_POINT=$(mount | grep ${DEVICE} | awk '{ print $3 }')
 if [[ ! -n ${MOUNT_POINT} ]]; then
-        PART_UUID=$(blkid | grep ${DEVICE} | awk '{ print $6 }' | cut -d '"' -f2)
-        MOUNT_POINT=$(mount | grep ${PART_UUID} | awk '{ print $3 }')
+        MOUNT_POINT=$(mount | grep ${ID_FS_PARTUUID} | awk '{ print $3 }')
 fi
 if [[ ! -n ${MOUNT_POINT} ]]; then
-        UUID=$(blkid | grep ${DEVICE} | awk '{ print $4 }' | cut -d '"' -f2)
-        MOUNT_POINT=$(mount | grep ${UUID} | awk '{ print $3 }')
+        MOUNT_POINT=$(mount | grep ${ID_FS_UUID} | awk '{ print $3 }')
 fi
 
 # See if device is mentioned in /etc/fstab
 MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${DEVICE} | awk '{ print $2 }')
 if [[ ! -n ${MOUNT_POINT_FSTAB} ]]; then
-        PART_UUID=$(blkid | grep ${DEVICE} | awk '{ print $6 }' | cut -d '"' -f2)
-        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${PART_UUID} | awk '{ print $2 }')
+        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${ID_FS_PARTUUID} | awk '{ print $2 }')
 fi
 if [[ ! -n ${MOUNT_POINT_FSTAB} ]]; then
         UUID=$(blkid | grep ${DEVICE} | awk '{ print $4 }' | cut -d '"' -f2)
-        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${UUID} | awk '{ print $3 }')
+        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${ID_FS_UUID} | awk '{ print $3 }')
 fi
 
 DEV_LABEL=""
@@ -64,12 +64,9 @@ do_mount()
     fi
 
     if [[ -n ${MOUNT_POINT_FSTAB} ]]; then
-        ${log} "Warning: ${DEVICE} is mentioned in /etc/fstab at ${MOUNT_POINT}"
+        ${log} "Warning: ${DEVICE} is mentioned in /etc/fstab at ${MOUNT_POINT_FSTAB}"
         exit 1
     fi
-
-    # Get info for this drive: $ID_FS_LABEL, $ID_FS_UUID, and $ID_FS_TYPE
-    eval $(blkid -o udev ${DEVICE})
 
     # Figure out a mount point to use
     LABEL=${ID_FS_LABEL}
