@@ -253,13 +253,14 @@ $(document).on('pageinit', function() {
 		if (destlang === "") {
 			return;
 		}
+		
 		downloadurl = "translate.cgi" + "?action=download&destlang=" + destlang + "&plugin=" + plugin + "&languagefile=" + languagefile;
 		console.log("Download redirect to", downloadurl);
 		window.location = downloadurl;
 	
 	});
 	
-	$( ".translation" ).blur(function(){change_translation(event.target.id, $(this).val())});
+	$( ".translation" ).blur(function(e){change_translation(e.target.id, $(this).val())});
 	
 	$( ".translation" ).focusin(function(){ oldvalue = $(this).val(); });
 	
