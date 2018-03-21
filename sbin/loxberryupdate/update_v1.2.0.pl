@@ -55,7 +55,7 @@ if ($exitcode != 0) {
 } else {
         LOGOK "Configuring dpkg successfully.";
 }
-$output = qx { /usr/bin/apt-get -y update };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error updating apt database - Error $exitcode";
@@ -64,7 +64,7 @@ if ($exitcode != 0) {
 } else {
         LOGOK "Apt database updated successfully.";
 }
-$output = qx { /usr/bin/apt-get -y upgrade };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y upgrade };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error upgrading system - Error $exitcode";
