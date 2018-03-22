@@ -205,6 +205,7 @@ my $currversion;
 
 if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 	$currversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
+	LOGINF "Current LoxBerry version is $currversion";
 } else {
 	$joutput{'error'} = "Cannot read current LoxBerry version $currversion. Is this a real version string? Exiting.";
 	&err;

@@ -316,7 +316,7 @@ $(document).ready( function () {
 		if (failed_ver != "") {
 			if( failed_ver.charAt( 0 ).toLowerCase() === 'v' )
 				failed_ver = failed_ver.slice( 1 );
-		var reset_ver = failed_ver + "_999";		
+			var reset_ver = ver_minus_one(failed_ver);		
 	//		var val = $("input[name='option-installtime']:checked").val();
 //		var val2 = $("input[name='option-installtype']:checked").val();
 			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-resetver", value: reset_ver }})
@@ -329,14 +329,30 @@ $(document).ready( function () {
 		
 	});
 
-
-
-
-
-
-	
  });
  
+ function ver_minus_one(vers) 
+ {
+	//console.log ("ver_minus_one called");
+	var parts = vers.split(".");
+	for (i = parts.length-1; i >= 0; i--) {
+		//console.log ("i", i, "value from i", parts[i]);
+		if (parts[i] == 0) {
+			parts.splice(i, 1);
+		} else {
+			parts[i]--;
+			break;
+		}
+	}
+	var newvers = parts.join(".") + ".999";
+	// console.log ("Joined version", newvers);
+	return newvers;
+ 
+ }
+ 
+
+
+
  function checkUpdates()
  {
 	//$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-runcheck"}});
