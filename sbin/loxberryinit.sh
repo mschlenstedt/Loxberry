@@ -23,8 +23,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Version 1.6
-# 01.10.2017 08:20:00
+# Version 1.7
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:$LBHOMEDIR/bin:$LBHOMEDIR/sbin"
 
@@ -165,12 +164,17 @@ case "$1" in
   ;;
 
   stop)
-        # No-op
-        ;;
+	awk '!/^#/ && ($2 != "swap") && ($2 != "/") && ($2 != "/boot") { if(!match($4, /nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
+	cp /etc/fstab /etc/fstab.backup
+	cat /etc/fstab.new > /etc/fstab
+	rm /etc/fstab.new
+  ;;
+
   *)
         echo "Usage: $0 [start|stop]" >&2
         exit 3
   ;;
+
 esac
 
 

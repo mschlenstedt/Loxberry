@@ -46,7 +46,7 @@ LOGOK "Update script $0 started.";
 #
 LOGINF "Adding 'nofail' option to /etc/fstab";
 
-qx { awk '!/^#/ && (\$2 != "swap") && (\$2 != "/") && (\$2 != "/boot") { if(!match(/nofail/, \$4)) \$4=\$4",nofail" } 1' /etc/fstab > /etc/fstab.new };
+qx { awk '!/^#/ && (\$2 != "swap") && (\$2 != "/") && (\$2 != "/boot") { if(!match(\$4,/nofail/)) \$4=\$4",nofail" } 1' /etc/fstab > /etc/fstab.new };
 qx { cp /etc/fstab /etc/fstab.backup };
 qx { cat /etc/fstab.new > /etc/fstab };
 qx { rm /etc/fstab.new };
