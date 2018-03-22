@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.9";
+my $scriptversion="1.0.0.10";
 
 # print currtime('file') . "\n";
 
@@ -95,18 +95,15 @@ LOGINF "Version of loxberrycheck.pl is $scriptversion";
 
 $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
+# Read system language
+my %SL = LoxBerry::System::readlanguage();
+# LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
+
 if (!$cgi->param) {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_NO_PARAMETERS'};
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit (1);
-}
-$querytype = $cgi->param('querytype');
-if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
-	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_WRONG_QUERY_TYPE'};
-	&err;
-	LOGCRIT $joutput{'error'};
-	exit(1);
 }
 
 # If general.cfg's UPDATE.DRYRUN is defined, do nothing
@@ -120,9 +117,9 @@ if ( is_enabled($cfg->param('UPDATE.KEEPUPDATEFILES')) ){
 if ($cgi->param('dryrun')) {
 	$cgi->param('keepupdatefiles', 1);
 }
-if ($cgi->param('dryrun')) {
-	$dryrun = 1;
-} 
+
+$dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
+
 if ($cgi->param('cron')) {
 	$cron = 1;
 } 
@@ -136,6 +133,8 @@ if ($cgi->param('nodiscspacecheck')) {
 	$nodiscspacecheck = 1;
 } 
 
+$querytype = $cgi->param('querytype');
+
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
 
 my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.LATESTSHA') : "0";
@@ -144,6 +143,13 @@ my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.L
 if ($formatjson || $cron ) {
 	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
+}
+
+if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
+	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_WRONG_QUERY_TYPE'};
+	&err;
+	LOGCRIT $joutput{'error'};
+	exit(1);
 }
 
 my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
@@ -156,10 +162,6 @@ LOGINF "   cron:            $cron\n";
 LOGINF "   keepupdatefiles: " . $cgi->param('keepupdatefiles');
 LOGINF "   dryrun: " . $cgi->param('dryrun') . "\n";
 LOGINF "   output: " . $formatjson;
-
-# Read system language
-my %SL = LoxBerry::System::readlanguage();
-# LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
 
 my $lbversion;
 if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
