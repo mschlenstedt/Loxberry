@@ -42,6 +42,28 @@ my $errors = 0;
 LOGOK "Update script $0 started.";
 
 #
+# Upgrading usb-mount
+#
+LOGINF "Upgrading usb-mount to enable mountings over fstab"
+
+if ( -e "/etc/udev/rules.d/99-usbmount.rules" ) {
+	qx {rm -f /etc/udev/rules.d/99-usbmount.rules };
+}
+open(F,">/etc/udev/rules.d/99-usbmount.rules");
+print F <<EOF;
+KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/opt/loxberry/sbin/usb-mount.sh chkadd %k"
+KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
+EOF
+close(F);
+
+LOGINF "Removing nofail from fstab"
+
+qx { sed 's/,nofail//g' /etc/fstab > fstab.new };
+qx { cp /etc/fstab /etc/fstab.bak };
+qx { cat /etc/fstab.new > /etc/fstab };
+qx { rm /etc/fstab.new };
+
+#
 # Upgrade Raspbian
 #
 LOGINF "Upgrading system to latest Raspbian release. This may take a long time - please be patient...";
