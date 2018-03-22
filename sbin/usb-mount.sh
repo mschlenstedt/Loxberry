@@ -20,7 +20,7 @@ log="logger -t usb-mount.sh -s "
 
 usage()
 {
-    ${log} "Usage: $0 {add|remove} device_name (e.g. sdb1)"
+    ${log} "Usage: $0 {chkadd|add|remove} device_name (e.g. sdb1)"
     exit 1
 }
 
@@ -55,7 +55,7 @@ fi
 
 DEV_LABEL=""
 
-do_mount()
+check_add()
 {
     if [[ -n ${MOUNT_POINT} ]]; then
         ${log} "Warning: ${DEVICE} is already mounted at ${MOUNT_POINT}"
@@ -66,7 +66,11 @@ do_mount()
         ${log} "Warning: ${DEVICE} is mentioned in /etc/fstab at ${MOUNT_POINT_FSTAB}"
         exit 1
     fi
+    systemctl start usb-mount@${DEVBASE}.service
+}
 
+do_mount()
+{
     # Figure out a mount point to use
     LABEL=${ID_FS_LABEL}
     if grep -q " /media/usb/${LABEL} " /etc/mtab; then
@@ -121,6 +125,9 @@ do_unmount()
 }
 
 case "${ACTION}" in
+    chkadd)
+	check_add
+	;;
     add)
         do_mount
         ;;
