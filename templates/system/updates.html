@@ -166,6 +166,11 @@
 }
 </style>
 <div class="wide" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
+<div id="script_failed_block" style="border:1px solid red; background:yellow; display:none;">
+	<TMPL_VAR UPDATES.LBU_SCRIPT_FAILED>
+	<a id="script_failed_versreset" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR UPDATES.LBU_BUTTON_SCRIPT_FAILED_VERSRESET>&nbsp;<span id="failed_version"></span></a>
+
+</div>
 <div class="divTable">
 <div class="divTableBody">
 <div class="divTableRow" style="overflow:hidden; text-overflow:ellipsis; width:100%;">
@@ -177,7 +182,7 @@
 <div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
 	<div style="flex-grow: 2;">
 	<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
-	<b><TMPL_VAR LBVERSION></b>
+	<b id="current_version"><TMPL_VAR LBVERSION></b>
 	</div>
 	<div style="flex-grow: 1;">
 	<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
@@ -304,6 +309,31 @@ $(document).ready( function () {
 		$('#lbu_install_pleasewait').fadeIn();
 		installUpdate();
 	});
+
+	$("#script_failed_versreset").click(function(){
+		var failed_ver = $("#failed_version").text();
+		console.log("failed_ver", failed_ver);
+		if (failed_ver != "") {
+			if( failed_ver.charAt( 0 ).toLowerCase() === 'v' )
+				failed_ver = failed_ver.slice( 1 );
+		var reset_ver = failed_ver + "_999";		
+	//		var val = $("input[name='option-installtime']:checked").val();
+//		var val2 = $("input[name='option-installtype']:checked").val();
+			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-resetver", value: reset_ver }})
+			.done(function() { 
+				$("#current_version").text(reset_ver);
+				clearVersion();
+				checkUpdates();
+			});
+		}
+		
+	});
+
+
+
+
+
+
 	
  });
  
@@ -317,6 +347,15 @@ $(document).ready( function () {
 			//console.log("Hallo");
 			//resp = JSON.parse(data);
 			//console.log("release_version", data.info);
+			
+			if (data.failed_script) {
+				$("#failed_version").text(data.failed_script);
+				$("#script_failed_block").fadeIn();
+			} else {
+				$("#script_failed_block").fadeOut();
+				$("#failed_version").text("");
+			}
+			
 			if (data.error) {
 				$('#lbu_error').html("Error: "+data.error);
 			} else {
