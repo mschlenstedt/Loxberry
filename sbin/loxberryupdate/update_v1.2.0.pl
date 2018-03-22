@@ -58,7 +58,7 @@ close(F);
 
 LOGINF "Removing nofail from fstab";
 
-qx { sed 's/,nofail//g' /etc/fstab > fstab.new };
+qx { sed 's/,nofail//g' /etc/fstab > /etc/fstab.new };
 qx { cp /etc/fstab /etc/fstab.bak };
 qx { cat /etc/fstab.new > /etc/fstab };
 qx { rm /etc/fstab.new };
