@@ -44,7 +44,7 @@ LOGOK "Update script $0 started.";
 #
 # Upgrading usb-mount
 #
-LOGINF "Upgrading usb-mount to enable mountings over fstab"
+LOGINF "Upgrading usb-mount to enable mountings over fstab";
 
 if ( -e "/etc/udev/rules.d/99-usbmount.rules" ) {
 	qx {rm -f /etc/udev/rules.d/99-usbmount.rules };
@@ -56,7 +56,7 @@ KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemc
 EOF
 close(F);
 
-LOGINF "Removing nofail from fstab"
+LOGINF "Removing nofail from fstab";
 
 qx { sed 's/,nofail//g' /etc/fstab > fstab.new };
 qx { cp /etc/fstab /etc/fstab.bak };
