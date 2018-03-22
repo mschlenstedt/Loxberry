@@ -342,7 +342,7 @@ foreach my $version (@updatelist)
 			}
 			$errskipped++;
 			$scripterrskipped++;
-		} elsif (version->parse($version) eq "$failed_script") {
+		} elsif ($failed_script && version->parse($version) eq "$failed_script") {
 			LOGOK "Previously failed script now finished successfully. Removing failed script version from general.cfg";
 			undef $failed_script;
 			$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
