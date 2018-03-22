@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.0.0.4';
+my $scriptversion='1.2.0.1';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -56,6 +56,8 @@ my $cron;
 my $nobackup;
 my $nodiscspacecheck;
 my $sha;
+my $syscfg;
+my $failed_script;
 
 my $cgi = CGI->new;
 
@@ -298,6 +300,16 @@ while (my $file = readdir(DIR)) {
 closedir DIR;
 @updatelist = sort { version->parse($a) <=> version->parse($b) } @updatelist;
 
+LOGINF "Reading current update script fail state from general.cfg...";
+$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+if (! $syscfg->param('UPDATE.FAILED_SCRIPT')) {
+	LOGOK "All previously executed update scripts were successful.";
+} else {
+	$failed_script = version->parse(vers_tag($syscfg->param('UPDATE.FAILED_SCRIPT')));
+	LOGWARN "In a previous run of LoxBerry Update this update script failed: $failed_script. LoxBerry Update will continue. Please check the logfiles of previous updates for errors.";
+}
+undef $syscfg;
+
 LOGINF "Running update scripts...";
 
 my $scripterrskipped=0;
@@ -320,8 +332,23 @@ foreach my $version (@updatelist)
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0 ) {
 			LOGERR "Update-Script update_$version returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
+			if (!$failed_script) {
+				LOGINF "Setting update script update_$version as failed in general.cfg.";
+				$failed_script = version->parse(vers_tag($version));
+				$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+				$syscfg->param('UPDATE.FAILED_SCRIPT', "$failed_script");
+				$syscfg->write();
+				undef $syscfg;
+			}
 			$errskipped++;
 			$scripterrskipped++;
+		} elsif (version->parse($version) eq "$failed_script") {
+			LOGOK "Previously failed script now finished successfully. Removing failed script version from general.cfg";
+			undef $failed_script;
+			$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+			$syscfg->delete('UPDATE.FAILED_SCRIPT');
+			$syscfg->write();
+			undef $syscfg;
 		}
 		# Should we remember, if exec failed? I think no.
 	} else {
@@ -380,7 +407,6 @@ LOGINF "LoxBerry's config version is updated from $currversion to $release";
 LOGINF "Commit SHA is updated to $sha" if ($sha);
 # Last but not least set the general.cfg to the new version.
 if (! $cgi->param('dryrun') ) {
-	my $syscfg;
 	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
 		do {
 			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
