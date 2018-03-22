@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.10";
+my $scriptversion="1.2.0.1";
 
 # print currtime('file') . "\n";
 
@@ -74,6 +74,7 @@ my $nobackup;
 my $nodiscspacecheck;
 my $keepupdatefiles;
 my $formatjson;
+my $failed_script;
 
 # Web Request options
 my $cgi = CGI->new;
@@ -141,8 +142,13 @@ my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.L
 
 
 if ($formatjson || $cron ) {
-	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
+}
+
+if ($cfg->param('UPDATE.FAILED_SCRIPT')) {
+	$failed_script = version->parse(vers_tag($cfg->param('UPDATE.FAILED_SCRIPT')));
+	LOGWARN "In a previous run of LoxBerry Update this update script failed: $failed_script";
+	$joutput{'failed_script'} = "$failed_script";
 }
 
 if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
@@ -174,7 +180,6 @@ if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 	LOGCRIT $joutput{'error'};
 	exit(1);
 }
-
 
 if (version::is_lax($min_version)) {
 	$min_version = version->parse($min_version);
