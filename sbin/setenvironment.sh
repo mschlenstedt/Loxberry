@@ -313,7 +313,7 @@ fi
 # (also included in 1.0.4 Update script)
 if [ ! -e /etc/udev/rules.d/99-usbmount.rules ]; then
 (cat <<END
-KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/bin/systemctl start usb-mount@%k.service"
+KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/opt/loxberry/sbin/usb-mount.sh chkadd %k"
 KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
 END
 ) > /etc/udev/rules.d/99-usbmount.rules
