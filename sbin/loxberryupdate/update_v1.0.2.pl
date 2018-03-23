@@ -43,6 +43,7 @@ LOGOK "Update script $0 started.";
 
 LOGINF "Disabling Apache2 PrivateTmp in systemd";
 
+$output = qx { rm -fr /etc/systemd/system/apache2.service.d  };
 $output = qx { mkdir /etc/systemd/system/apache2.service.d  };
 LOGINF $output;
 $output = qx { echo "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf  };

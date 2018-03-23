@@ -57,7 +57,7 @@ if (-e "$lbsconfigdir/is_raspberry.cfg") {
 		LOGOK "Successfully installed.";
 	}
 } else {
-	LOGOK "Skipping installation of Raspberry libs as this is not a Raspberry.";
+	LOGOK "Skipping installation of Raspberry libs because this is not a Raspberry.";
 
 }
 

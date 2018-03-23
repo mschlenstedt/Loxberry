@@ -69,14 +69,33 @@ if ($exitcode != 0) {
 } else {
         LOGOK "Apt database updated successfully.";
 }
-$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y remove usbmount pmount };
+
+qx { dpkg -l | grep -q -e "ii *usbmount" };
 $exitcode  = $? >> 8;
-if ($exitcode != 0) {
-        LOGERR "Error uninstalling packages usbmount pmount with apt-get - Error $exitcode";
-        LOGDEB $output;
-        $errors++;
-} else {
-        LOGOK "Uninstalling usbmount pmount successfully.";
+if ($exitcode eq 0) {
+	$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y remove usbmount };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+	        LOGERR "Error uninstalling packages usbmount pmount with apt-get - Error $exitcode";
+	        LOGDEB $output;
+	        $errors++;
+	} else {
+	        LOGOK "Uninstalling usbmount pmount successfully.";
+	}
+}
+
+qx { dpkg -l | grep -q -e "ii *pmount" };
+$exitcode  = $? >> 8;
+if ($exitcode eq 0) {
+	$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y remove pmount };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+	        LOGERR "Error uninstalling packages usbmount pmount with apt-get - Error $exitcode";
+	        LOGDEB $output;
+	        $errors++;
+	} else {
+	        LOGOK "Uninstalling usbmount pmount successfully.";
+	}
 }
 
 #
@@ -87,6 +106,7 @@ qx { mkdir -p /media/smb };
 qx { mkdir -p /media/usb };
 qx { mkdir -p $lbhomedir/system/storage };
 qx { mkdir -p $lbhomedir/system/storage/smb };
+qx { rm -fr $lbhomedir/system/storage/usb };
 $output = qx { ln -f -s /media/usb $lbhomedir/system/storage/usb };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -97,31 +117,6 @@ if ($exitcode != 0) {
 	LOGOK "Symlink $lbhomedir/system/storage/usb created successfully";
 }
 qx { chown -R loxberry:loxberry $lbhomedir/system/storage };
-
-LOGINF "Creating /etc/systemd/system/usb-mount@.service";
-
-if ( !-e "/etc/systemd/system/usb-mount@.service" ) {
-	open(F,">/etc/systemd/system/usb-mount@.service");
-	print F <<EOF;
-[Unit]
-Description=Mount USB Drive on %i
-[Service]
-Type=oneshot
-RemainAfterExit=true
-ExecStart=$lbhomedir/sbin/usb-mount.sh add %i
-ExecStop=$lbhomedir/sbin/usb-mount.sh remove %i
-EOF
-	close (F);
-}
-
-if ( !-e "/etc/udev/rules.d/99-usbmount.rules" ) {
-	open(F,">/etc/udev/rules.d/99-usbmount.rules");
-	print F <<EOF;
-KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/bin/systemctl start usb-mount@%k.service"
-KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
-EOF
-	close (F);
-}
 
 #
 # Installing autofs for SMB automounts
@@ -166,6 +161,7 @@ if ($exitcode != 0) {
 	LOGOK "New samba config file copied.";
 }
 
+qx { rm -fr $lbhomedir/system/samba/credentials };
 $output = qx { ln -f -s $lbhomedir/system/samba/credentials /etc/creds };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {

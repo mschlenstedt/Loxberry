@@ -56,12 +56,29 @@ KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemc
 EOF
 close(F);
 
-LOGINF "Removing nofail from fstab";
+LOGINF "Creating /etc/systemd/system/usb-mount@.service";
+if ( -e "/etc/systemd/system/usb-mount@.service" ) {
+	qx {rm -f /etc/systemd/system/usb-mount@.service };
+}
+open(F,">/etc/systemd/system/usb-mount@.service");
+print F <<EOF;
+[Unit]
+Description=Mount USB Drive on %i
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=$lbhomedir/sbin/usb-mount.sh add %i
+ExecStop=$lbhomedir/sbin/usb-mount.sh remove %i
+EOF
+close (F);
 
-qx { sed 's/,nofail//g' /etc/fstab > /etc/fstab.new };
-qx { cp /etc/fstab /etc/fstab.bak };
-qx { cat /etc/fstab.new > /etc/fstab };
-qx { rm /etc/fstab.new };
+
+#LOGINF "Removing nofail from fstab";
+
+#qx { sed 's/,nofail//g' /etc/fstab > /etc/fstab.new };
+#qx { cp /etc/fstab /etc/fstab.bak };
+#qx { cat /etc/fstab.new > /etc/fstab };
+#qx { rm /etc/fstab.new };
 
 #
 # Upgrade Raspbian
