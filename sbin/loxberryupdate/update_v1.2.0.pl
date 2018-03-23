@@ -83,8 +83,8 @@ close (F);
 #
 # Upgrade Raspbian
 #
-LOGINF "Preparing Guru Meditation..."
-LOGINF "This will take some time now. We suggest getting a coffee or a beer."
+LOGINF "Preparing Guru Meditation...";
+LOGINF "This will take some time now. We suggest getting a coffee or a beer.";
 LOGINF "Upgrading system to latest Raspbian release.";
 
 my $output = qx { /usr/bin/dpkg --configure -a };
@@ -121,8 +121,8 @@ qx { /var/cache/apt/archives/* };
 # Update Kernel and Firmware
 #
 if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
-	LOGINF "Preparing Guru Meditation - PART II..."
-	LOGINF "This will again take some time now. We suggest getting a second coffee or a second beer :-)"
+	LOGINF "Preparing Guru Meditation - PART II...";
+	LOGINF "This will again take some time now. We suggest getting a second coffee or a second beer :-)";
 	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
 	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 /usr/bin/rpi-update };
