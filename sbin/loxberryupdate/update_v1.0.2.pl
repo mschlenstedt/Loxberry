@@ -45,9 +45,7 @@ LOGINF "Disabling Apache2 PrivateTmp in systemd";
 
 $output = qx { rm -fr /etc/systemd/system/apache2.service.d  };
 $output = qx { mkdir /etc/systemd/system/apache2.service.d  };
-LOGINF $output;
 $output = qx { echo "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf  };
-LOGINF $output;
 
 LOGINF "Adding PERL5LIB to Apache envvars";
 #print "LBHOMEDIR $lbhomedir";
@@ -86,9 +84,6 @@ if ($@) {
 	LOGERR "Something failed writing the new entry to Apache envvars.";
 	$errors++;
 }
-
-
-LOGINF $output;
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";

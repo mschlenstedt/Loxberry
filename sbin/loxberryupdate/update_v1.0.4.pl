@@ -121,7 +121,7 @@ qx { chown -R loxberry:loxberry $lbhomedir/system/storage };
 #
 # Installing autofs for SMB automounts
 #
-LOGINF "Installing Autofs";
+LOGINF "Installing Autofs and smbclient";
 
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y install autofs smbclient };
 $exitcode  = $? >> 8;
@@ -130,7 +130,7 @@ if ($exitcode != 0) {
         LOGDEB $output;
         $errors++;
 } else {
-        LOGOK "Installing autofs smbclient successfully.";
+        LOGOK "Installing autofs and smbclient successfully.";
 }
 
 $output = qx {awk -v s='/media/smb /etc/auto.smb --timeout=300 --ghost' '/^\\/media\\/smb/{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/auto.master };
@@ -147,7 +147,6 @@ if ($exitcode != 0) {
 # Samba
 #
 LOGINF "Replacing system samba config file";
-LOGINF "Copying new";
 
 qx { mkdir -p $lbhomedir/system/samba/credentials };
 $output = qx { if [ -e $updatedir/system/samba/smb.conf ] ; then cp -f $updatedir/system/samba/smb.conf $lbhomedir/system/samba/ ; fi };
@@ -161,7 +160,7 @@ if ($exitcode != 0) {
 	LOGOK "New samba config file copied.";
 }
 
-qx { rm -fr $lbhomedir/system/samba/credentials };
+qx { rm -fr /etc/creds };
 $output = qx { ln -f -s $lbhomedir/system/samba/credentials /etc/creds };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -204,7 +203,11 @@ copy_to_loxberry("/system/cron/cron.weekly/db_maint");
 # Correct symlink from /etc/sudoers.d to ~/system/sudoers
 #
 LOGINF "Creating new symlink from /etc/sudoers.d to ~/system/susdoers";
-$output = qx { mv /etc/sudoers.d /etc/sudoers.d.orig };
+if ( -d "/etc/sudoers.d") {
+	qx { mv /etc/sudoers.d /etc/sudoers.d.orig };
+} else {
+	qx { rm -rf /etc/sudoers.d };
+}
 $output = qx { ln -f -s $lbhomedir/system/sudoers/ /etc/sudoers.d };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -214,7 +217,10 @@ if ($exitcode != 0) {
 } else {
 	LOGOK "Symlink /etc/sudoeers.d created successfully";
 }
-qx { cp -fv /etc/sudoers.d.orig/* /etc/sudoers.d };
+if ( -d "/etc/sudoers.d.orig") {
+	qx { cp -fv /etc/sudoers.d.orig/* /etc/sudoers.d };
+	qx { rm -fr /etc/sudoers.d.orig };
+}
 
 #
 # Sudoers

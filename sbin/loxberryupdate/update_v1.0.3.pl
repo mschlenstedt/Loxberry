@@ -138,44 +138,44 @@ if (-e "$lbsdatadir/notifications_sqlite.dat" ) {
 #	LOGOK "Symlink $lbhomedir/system/storage created successfully";
 #}
 
-LOGINF "Creating /etc/systemd/system/systemd-udevd.service";
+#LOGINF "Creating /etc/systemd/system/systemd-udevd.service";
 
-if ( !-e "/etc/systemd/system/systemd-udevd.service" ) {
-	open(F,">/etc/systemd/system/systemd-udevd.service");
-	print F <<EOF;
-This file is part of systemd.
+#if ( !-e "/etc/systemd/system/systemd-udevd.service" ) {
+#	open(F,">/etc/systemd/system/systemd-udevd.service");
+#	print F <<EOF;
+#This file is part of systemd.
+##
+##  systemd is free software; you can redistribute it and/or modify it
+##  under the terms of the GNU Lesser General Public License as published by
+##  the Free Software Foundation; either version 2.1 of the License, or
+##  (at your option) any later version.
 #
-#  systemd is free software; you can redistribute it and/or modify it
-#  under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-[Unit]
-Description=udev Kernel Device Manager
-Documentation=man:systemd-udevd.service(8) man:udev(7)
-DefaultDependencies=no
-Wants=systemd-udevd-control.socket systemd-udevd-kernel.socket
-After=systemd-udevd-control.socket systemd-udevd-kernel.socket systemd-sysusers.service
-Before=sysinit.target
-ConditionPathIsReadWrite=/sys
-
-[Service]
-Type=notify
-OOMScoreAdjust=-1000
-Sockets=systemd-udevd-control.socket systemd-udevd-kernel.socket
-Restart=always
-RestartSec=0
-ExecStart=/lib/systemd/systemd-udevd
-KillMode=mixed
-WatchdogSec=3min
-TasksMax=infinity
-MountFlags=shared
-MemoryDenyWriteExecute=yes
-RestrictRealtime=yes
-RestrictAddressFamilies=AF_UNIX AF_NETLINK AF_INET AF_INET6
-EOF
-	close (F);
-}
+#[Unit]
+#Description=udev Kernel Device Manager
+#Documentation=man:systemd-udevd.service(8) man:udev(7)
+#DefaultDependencies=no
+#Wants=systemd-udevd-control.socket systemd-udevd-kernel.socket
+#After=systemd-udevd-control.socket systemd-udevd-kernel.socket systemd-sysusers.service
+#Before=sysinit.target
+#ConditionPathIsReadWrite=/sys
+#
+#[Service]
+#Type=notify
+#OOMScoreAdjust=-1000
+#Sockets=systemd-udevd-control.socket systemd-udevd-kernel.socket
+#Restart=always
+#RestartSec=0
+#ExecStart=/lib/systemd/systemd-udevd
+#KillMode=mixed
+#WatchdogSec=3min
+#TasksMax=infinity
+#MountFlags=shared
+#MemoryDenyWriteExecute=yes
+#RestrictRealtime=yes
+#RestrictAddressFamilies=AF_UNIX AF_NETLINK AF_INET AF_INET6
+#EOF
+#	close (F);
+#}
 
 #
 # Samba
@@ -200,7 +200,7 @@ qx { chown loxberry:loxberry $lbhomedir/system/samba/smb.conf };
 # i2c
 #
 
-LOGINF "Activating i2c";
+LOGINF "Activating i2c. This may take some time - please be patient...";
 
 $output = qx { $lbhomedir/sbin/activate_i2c.sh };
 $exitcode  = $? >> 8;

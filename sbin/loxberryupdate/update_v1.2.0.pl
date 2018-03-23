@@ -103,6 +103,7 @@ if ($exitcode != 0) {
 } else {
         LOGOK "Apt database updated successfully.";
 }
+LOGINF "Now upgrading all packages... Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y upgrade };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -117,7 +118,7 @@ if ($exitcode != 0) {
 # Update Kernel and Firmware
 #
 if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
-	LOGINF "Upgrading system kernel and firmware. This may take a long time - please be patient...";
+	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
 	my $output = qx { SKIP_WARNING=1 /usr/bin/rpi-update };
 	my $exitcode  = $? >> 8;
