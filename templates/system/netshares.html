@@ -13,6 +13,10 @@
 			<option value="<TMPL_VAR NETSERVER_SERVER>|<TMPL_VAR NETSERVER_TYPE>"><TMPL_VAR NETSERVER_SERVER></option>
 			</TMPL_LOOP>
 		</select>
+		<a id="debug" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/netshares.cgi?a=debuglog"><TMPL_VAR NETSHARES.BUTTON_ADD_DEBUGLOG></a>
+		<TMPL_IF DEBUGLOGEXISTS>
+		<a id="log" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/netshare_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR NETSHARES.BUTTON_SHOW_DEBUGLOG></a>
+		</TMPL_IF>
 	</form>
 
 
@@ -28,7 +32,7 @@
 			<th data-priority="4"><TMPL_VAR NETSHARES.SHARESTABLE_TYPE></th>
 			<th data-priority="2"><TMPL_VAR NETSHARES.SHARESTABLE_SHARE></th>
 			<th data-priority="5"><TMPL_VAR NETSHARES.SHARESTABLE_STATUS></th>
-			<th data-priority="6"></th>
+			<th data-priority="6"><TMPL_VAR NETSHARES.SHARESTABLE_ACTION></th>
 		</tr>
 		</thead>
 		<tbody>
@@ -211,6 +215,33 @@ $(document).ready(function() {
 		<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
 		<p>
 		<TMPL_VAR NETSHARES.REMOVE_SUCCESS>
+		<br/>
+		<br/>
+		</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+		<p>
+		<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/netshares.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+		</p>
+		</td>
+	</tr>
+	</table>
+</center>
+</TMPL_IF>
+
+<TMPL_IF DEBUGLOG>
+<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+		<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+		<p>
+		<TMPL_VAR NETSHARES.ADD_DEBUGLOG_SUCCESS>
+		<br/>
+		<br/>
+		<a href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/netshare_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR NETSHARES.BUTTON_SHOW_DEBUGLOG></a>
 		<br/>
 		<br/>
 		</p>

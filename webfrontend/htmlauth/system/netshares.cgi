@@ -21,6 +21,7 @@
 use LoxBerry::System;
 use LoxBerry::Storage;
 use LoxBerry::Web;
+use LoxBerry::Log;
 
 use Config::Simple;
 use warnings;
@@ -113,45 +114,108 @@ EOF
 		$maintemplate->param("WARNING", $SL{'NETSHARES.ADD_WARNING'});
 	}
 
-} else {
+}
 
-	# Add new server?
-	if ($cgi->param("a") eq "add") {
+# Add new server?
+if ($cgi->param("a") eq "add") {
 
-		$maintemplate->param("ADD", 1);
+	$maintemplate->param("ADD", 1);
 
-	# Remove server?
-	} elsif ($cgi->param("a") eq "del") {
+}
 
-		my @fields = split(/\|/, $cgi->param("server"));
-		my $server = @fields[0];
-		my $type = @fields[1];
-		if ($cgi->param("q") ne "y") {
-			$maintemplate->param("SELFURL", "/admin/system/netshares.cgi?a=del&s=$server&t=$type");
-			$maintemplate->param("SERVER", $server);
-			$maintemplate->param("QUESTION", 1);
-		} else {
-			my $server = $cgi->param("s");
-			my $type = $cgi->param("t");
-			qx(rm -f $lbhomedir/system/storage/$type/$server);
-			qx(rm -f $lbhomedir/system/samba/credentials/$server);
-			$maintemplate->param("DEL", 1);
-		}
+# Remove server?
+if ($cgi->param("a") eq "del") {
 
-	# Show overview
+	my @fields = split(/\|/, $cgi->param("server"));
+	my $server = @fields[0];
+	my $type = @fields[1];
+	if ($cgi->param("q") ne "y") {
+		$maintemplate->param("SELFURL", "/admin/system/netshares.cgi?a=del&s=$server&t=$type");
+		$maintemplate->param("SERVER", $server);
+		$maintemplate->param("QUESTION", 1);
 	} else {
-
-		# Get all Network shares
-		my @netshares = LoxBerry::Storage::get_netshares(0, 1);
-		my @netservers = LoxBerry::Storage::get_netservers();
-		$maintemplate->param("FORM", 1);
-		$maintemplate->param("NETSHARES", \@netshares);
-		$maintemplate->param("NETSERVERS", \@netservers);
-
+		my $server = $cgi->param("s");
+		my $type = $cgi->param("t");
+		qx(rm -f $lbhomedir/system/storage/$type/$server);
+		qx(rm -f $lbhomedir/system/samba/credentials/$server);
+		$maintemplate->param("DEL", 1);
 	}
 
 }
 
+# Create debuglog?
+if ($cgi->param("a") eq "debuglog") {
+
+	$maintemplate->param("DEBUGLOG", 1);
+
+	# Create a logging object
+	my $log = LoxBerry::Log->new (	
+			name => 'daemon',
+       			filename => "$lbhomedir/log/system_tmpfs/netshare_debug.log",
+			package => 'LoxBerry Netshares',
+			name => 'netshares.cgi',
+			loglevel => 7,
+			stderr => 1,
+	);
+	
+	LOGSTART "netshares.cgi - debugging starts";
+	LOGALERT "WARNING! THIS LOGFILE WILL CONTAIN YOUR NETSHARE CREDENTIALS!";
+
+	my @netservers = LoxBerry::Storage::get_netservers();
+	LOGINF "Output of 'cat /etc/fstab':";
+	$log->close;
+	qx ( cat /etc/fstab >> $lbhomedir/log/system_tmpfs/netshare_debug.log 2>&1 );
+	$log->open;
+	LOGINF "Output of 'mount':";
+	$log->close;
+	qx ( mount >> $lbhomedir/log/system_tmpfs/netshare_debug.log 2>&1 );
+	$log->open;
+	LOGINF "Output of 'ls -l /etc/creds':";
+	$log->close;
+	qx ( ls -l /etc/creds  >> $lbhomedir/log/system_tmpfs/netshare_debug.log 2>&1 );
+	$log->open;
+	LOGINF "Output of 'ls -l $lbhomedir/system/samba/credentials':";
+	$log->close;
+	qx ( ls -l $lbhomedir/system/samba/credentials  >> $lbhomedir/log/system_tmpfs/netshare_debug.log 2>&1 );
+	$log->open;
+	foreach my $netserver (@netservers) {
+		LOGOK "Server: $netserver->{NETSERVER_SERVER}";
+		LOGINF "Type: $netserver->{NETSERVER_TYPE}";
+		LOGINF "PATH: $netserver->{NETSERVER_SERVERPATH}";
+		if ($netserver->{NETSERVER_TYPE} eq "smb") {
+			LOGINF "Output of 'cat $lbhomedir/system/samba/credentials/$netserver->{NETSERVER_SERVER}':";
+			$log->close;
+			qx ( cat $lbhomedir/system/samba/credentials/$netserver->{NETSERVER_SERVER}  >> $lbhomedir/log/system_tmpfs/netshare_debug.log 2>&1 );
+			$log->open;
+			LOGINF "Output of '/etc/auto.smb $netserver->{NETSERVER_SERVER}'";
+			$log->close;
+			qx ( /etc/auto.smb $netserver->{NETSERVER_SERVER} >> $lbhomedir/log/system_tmpfs/netshare_debug.log 2>&1 );
+			$log->open;
+			LOGINF "Output of 'smbclient -A $lbhomedir/system/samba/credentials/$netserver->{NETSERVER_SERVER} -gL $netserver->{NETSERVER_SERVER} --debuglevel=10':";
+			$log->close;
+			qx ( smbclient -A $lbhomedir/system/samba/credentials/$netserver->{NETSERVER_SERVER} -gL $netserver->{NETSERVER_SERVER} --debuglevel=10 >> $lbhomedir/log/system_tmpfs/netshare_debug.log 2>&1 );
+			$log->open;
+		}
+	}
+
+}
+
+# Show overview?
+if ( !$cgi->param("a") && !$cgi->param("saveformdata") ) {
+
+	# Get all Network shares
+	my @netshares = LoxBerry::Storage::get_netshares(0, 1);
+	my @netservers = LoxBerry::Storage::get_netservers();
+	if (-e "$lbhomedir/log/system_tmpfs/netshare_debug.log" ) {
+		$maintemplate->param("DEBUGLOGEXISTS", 1);
+	}
+	$maintemplate->param("FORM", 1);
+	$maintemplate->param("NETSHARES", \@netshares);
+	$maintemplate->param("NETSERVERS", \@netservers);
+
+}
+
+# Output Template
 print $maintemplate->output();
 undef $maintemplate;			
 
