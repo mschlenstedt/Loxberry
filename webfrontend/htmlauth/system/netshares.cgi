@@ -109,9 +109,13 @@ EOF
 
 	# Check read state
 	qx(sudo /etc/init.d/autofs restart);
-	qx(ls $lbhomedir/system/storage/$type/$file/*);
+	qx(ls $lbhomedir/system/storage/$type/$file/);
 	if ($? ne 0) {
-		$maintemplate->param("WARNING", $SL{'NETSHARES.ADD_WARNING'});
+		# Some servers semms not to list the shares, so try to list files inside the shares
+		qx(ls $lbhomedir/system/storage/$type/$file/*);
+		if ($? ne 0) {
+			$maintemplate->param("WARNING", $SL{'NETSHARES.ADD_WARNING'});
+		}
 	}
 
 }
