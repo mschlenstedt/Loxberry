@@ -116,12 +116,12 @@ if ($use_auth) {
 	exec ('./securepin.pl ' . $_POST['fm_pwd'], $output, $result);
         if ( isset($auth_users[$_POST['fm_usr']]) && $result === 0 ) {
             $_SESSION['logged'] = $_POST['fm_usr'];
-            fm_set_msg('You are logged in.');
+            //fm_set_msg('You are logged in.');
             fm_redirect(FM_SELF_URL . '?p=' . $_GET['p']);
         } else {
             unset($_SESSION['logged']);
-            fm_set_msg('Wrong SecurePIN', 'error');
-            fm_redirect(FM_SELF_URL . '&p=' . $_GET['p']);
+            //fm_set_msg('Wrong SecurePIN', 'error');
+            fm_redirect(FM_SELF_URL . '?wrongpin=1&p=' . $_GET['p']);
         }
     } else {
         // Form
@@ -135,6 +135,13 @@ if ($use_auth) {
         ?>
 	<center>
         <div class="path" style="width: 300px">
+	<?php
+	if (isset($_GET['wrongpin'])){
+		?><p><center><font color='red'><?php
+		echo $SL['FILEMANAGER.WRONGPIN_TEXT'];
+		?></font></center></p><?php
+	};
+	?>
 	<p><center><?php echo $SL['FILEMANAGER.LABEL_SECUREPIN']?></center></p>
             <form action="" method="post" style="margin:10px;text-align:center">
                 <input type="hidden" name="fm_usr" value="loxberry">
