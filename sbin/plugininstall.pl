@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.24";
+my $version = "1.0.0.25";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -687,7 +687,7 @@ if (-f "$tempfolder/preroot.sh") {
   &loginfo;
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preroot.sh\" 2>&1");
-  system("cd \"$tempfolder\" && \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" 2>&1");
+  system("cd \"$tempfolder\" && \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
   if ($? eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
@@ -714,7 +714,7 @@ if ($isupgrade) {
     &loginfo;
 
     system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preupgrade.sh\" 2>&1");
-    system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"2>&1");
+    system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
     if ($? eq 1) {
       $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
