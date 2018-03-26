@@ -97,7 +97,8 @@ defined('FM_SELF_URL') || define('FM_SELF_URL', ($is_https ? 'https' : 'http') .
 // logout
 if (isset($_GET['logout'])) {
     unset($_SESSION['logged']);
-    fm_redirect(FM_SELF_URL);
+    //fm_redirect(FM_SELF_URL);
+    fm_redirect('/admin/system/index.cgi?form=system');
 }
 
 // Show image here
