@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.0.0.25";
+my $version = "1.2.0.1";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1260,14 +1260,15 @@ if (-e "$aptfile") {
 }
 
 if ( $pinterface ne "1.0" ) {
+	my $thisarch;
 	if (-e "$lbsconfigdir/is_raspberry.cfg") {
-		my $thisarch = "raspberry";
+		$thisarch = "raspberry";
 	}
 	elsif (-e "$lbsconfigdir/is_x86.cfg") {
-		my $thisarch = "x86";
+		$thisarch = "x86";
 	}
 	elsif (-e "$lbsconfigdir/is_x64.cfg") {
-		my $thisarch = "x64";
+		$thisarch = "x64";
 	}
 	if ( $thisarch ) {
 		my @debfiles = glob("$tempfolder/dpkg/$thisarch/*.deb");
