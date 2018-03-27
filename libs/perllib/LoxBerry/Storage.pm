@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.8";
+our $VERSION = "1.0.4.9";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -207,13 +207,14 @@ sub get_usbstorages
 	my @df;
 	my $used;
 	my $available;
+	my $opt;
 	foreach (@usbdevices){
 		s/[\n\r]//g;
 		if($_ eq "." || $_ eq "..") {
 			next;
 		}
 		$device = $_;	
-		if ( $ size eq "H" ) {
+		if ( $size eq "H" | $size eq "h" ) {
 			$opt = "-h";
 		}
 		$output = qx { df -P -l -T $opt | grep /media/usb/$device | sed 's/[[:space:]]\\+/|/g' };
@@ -224,7 +225,11 @@ sub get_usbstorages
 		} elsif ($size eq "GB" || $size eq "gb" ) {
 			$used = sprintf "%.1f",$df[3] / 1000 / 1000;
 			$available = sprintf "%.1f",$df[4] / 1000 / 1000;
+		} else {
+			$used = $df[3];
+			$available = $df[4];
 		}
+
 		$usbstoragecount++;
 		$usbstorage{USBSTORAGE_NO} = $usbstoragecount;
 		$usbstorage{USBSTORAGE_DEVICE} = $device;
