@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.6";
+our $VERSION = "1.0.4.7";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -184,9 +184,12 @@ sub get_netservers
 ##################################################################################
 # Get USB Storage
 # Returns all usb storage devices in a hash
+# Parameter: 	1. Defines Filesize. Allowed values: MB, GB. If empty, kB is used.
 ##################################################################################
 sub get_usbstorages
 {
+	my ($size) = @_;
+
 	my $openerr = 0;
 	opendir(my $fh1, "$LoxBerry::System::lbhomedir/system/storage/usb") or ($openerr = 1);
 	if ($openerr) {
@@ -198,17 +201,37 @@ sub get_usbstorages
 
 	my @usbstorages = ();
 	my $usbstoragecount = 0;
-	
+	my $device;
+	my %usbstorage;
+	my $output;
+	my @df;
+	my $used;
+	my $available;
 	foreach (@usbdevices){
 		s/[\n\r]//g;
 		if($_ eq "." || $_ eq "..") {
 			next;
 		}
-		my $device = $_;	
-		my %usbstorage;
+		$device = $_;	
+		#my $blkdevice = qx { mount | grep /media/usb/$device | awk '\{ print \$1 \}' };
+		#chomp($blkdevice);
+		$output = qx { df -P -l -T | grep /media/usb/$device | sed 's/[[:space:]]\\+/|/g' };
+		@df = split(/\|/,$output);	
+		if ($size eq "MB" || $size eq "mb" ) {
+			$used = sprintf "%.1f",$df[3] / 1000;
+			$available = sprintf "%.1f",$df[4] / 1000;
+		} elsif ($size eq "GB" || $size eq "gb" ) {
+			$used = sprintf "%.1f",$df[3] / 1000 / 1000;
+			$available = sprintf "%.1f",$df[4] / 1000 / 1000;
+		}
 		$usbstoragecount++;
 		$usbstorage{USBSTORAGE_NO} = $usbstoragecount;
 		$usbstorage{USBSTORAGE_DEVICE} = $device;
+		$usbstorage{USBSTORAGE_BLOCKDEVICE} = $df[0];
+		$usbstorage{USBSTORAGE_TYPE} = $df[1];
+		$usbstorage{USBSTORAGE_USED} = $used;
+		$usbstorage{USBSTORAGE_AVAILABLE} = $available;
+		$usbstorage{USBSTORAGE_CAPACITY} = $df[5];
 		$usbstorage{USBSTORAGE_DEVICEPATH} = "$LoxBerry::System::lbhomedir/system/storage/usb/$device";
 		push(@usbstorages, \%usbstorage);
 	}
