@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.7";
+our $VERSION = "1.0.4.8";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -213,9 +213,10 @@ sub get_usbstorages
 			next;
 		}
 		$device = $_;	
-		#my $blkdevice = qx { mount | grep /media/usb/$device | awk '\{ print \$1 \}' };
-		#chomp($blkdevice);
-		$output = qx { df -P -l -T | grep /media/usb/$device | sed 's/[[:space:]]\\+/|/g' };
+		if ( $ size eq "H" ) {
+			$opt = "-h";
+		}
+		$output = qx { df -P -l -T $opt | grep /media/usb/$device | sed 's/[[:space:]]\\+/|/g' };
 		@df = split(/\|/,$output);	
 		if ($size eq "MB" || $size eq "mb" ) {
 			$used = sprintf "%.1f",$df[3] / 1000;
