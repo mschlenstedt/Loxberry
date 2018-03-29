@@ -61,6 +61,39 @@ if ($exitcode != 0) {
 qx { chown loxberry:loxberry $lbhomedir/system/samba/smb.conf };
 qx { service smbd restart };
 
+#
+# Install exfat-fuse
+#
+LOGINF "Installing exfat-fuse filesystem driver.";
+
+my $output = qx { /usr/bin/dpkg --configure -a };
+my $exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
+        LOGDEB $output;
+                $errors++;
+} else {
+        LOGOK "Configuring dpkg successfully.";
+}
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error updating apt database - Error $exitcode";
+                LOGDEB $output;
+        $errors++;
+} else {
+        LOGOK "Apt database updated successfully.";
+}
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y install exfat-fuse };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error installing exfat-fuse - Error $exitcode";
+                LOGDEB $output;
+        $errors++;
+} else {
+        LOGOK "Installed exfat-fuse successfully.";
+}
+qx { /var/cache/apt/archives/* };
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
