@@ -30,7 +30,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.2.0.1";
+my $version = "1.2.0.2";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1272,7 +1272,7 @@ if ( $pinterface ne "1.0" ) {
 	}
 	if ( $thisarch ) {
 		my @debfiles = glob("$tempfolder/dpkg/$thisarch/*.deb");
-		if( my $cnt = @myfiles ){
+		if( my $cnt = @debfiles ){
 			$message = "Command: $dpkgbin -i -R $tempfolder/dpkg/$thisarch";
 			&loginfo;
 			system("$dpkgbin -i -R $tempfolder/dpkg/$thisarch 2>&1");
