@@ -1,0 +1,79 @@
+<!-- ** START template/system/usbstorage.html ************************************************************************************ -->
+
+<TMPL_IF FORM>
+
+	<center>
+		<a id="debug" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/usbstorage.cgi?a=debuglog"><TMPL_VAR USBSTORAGE.BUTTON_ADD_DEBUGLOG></a>
+		<TMPL_IF DEBUGLOGEXISTS>
+		<a id="log" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/usbstorage_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR USBSTORAGE.BUTTON_SHOW_DEBUGLOG></a>
+		</TMPL_IF>
+	<hr>
+	</center>
+	<!-- START container -->
+	<table data-role="table" data-mode="columntoggle" data-filter="true" data-input="#filterTable-input" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-text="<TMPL_VAR NETSHARES.BUTTON_SHOWCOLS>">
+		<thead>
+		<tr class="ui-bar-d">
+			<th data-priority="7"><TMPL_VAR USBSTORAGE.STORAGESTABLE_NO></th>
+			<th data-priority="1"><TMPL_VAR USBSTORAGE.STORAGESTABLE_DEVICENAME></th>
+			<th data-priority="1"><TMPL_VAR USBSTORAGE.STORAGESTABLE_BLOCKDEVICE></th>
+			<th data-priority="4"><TMPL_VAR USBSTORAGE.STORAGESTABLE_TYPE></th>
+			<th data-priority="2"><TMPL_VAR USBSTORAGE.STORAGESTABLE_USED></th>
+			<th data-priority="2"><TMPL_VAR USBSTORAGE.STORAGESTABLE_AVAILABLE></th>
+			<th data-priority="5"><TMPL_VAR USBSTORAGE.STORAGESTABLE_CAPACITY></th>
+			<th data-priority="6"><TMPL_VAR USBSTORAGE.STORAGESTABLE_ACTION></th>
+		</tr>
+		</thead>
+		<tbody>
+		<TMPL_IF USBSTORAGES>
+			<TMPL_LOOP USBSTORAGES>
+			<tr>
+				<td><TMPL_VAR USBSTORAGE_NO></td>
+				<td><TMPL_VAR USBSTORAGE_DEVICE></td>
+				<td><TMPL_VAR USBSTORAGE_BLOCKDEVICE></td>
+				<td><TMPL_VAR USBSTORAGE_TYPE></td>
+				<td><TMPL_VAR USBSTORAGE_USED></td>
+				<td><TMPL_VAR USBSTORAGE_AVAILABLE></td>
+				<td><TMPL_VAR USBSTORAGE_CAPACITY></td>
+				<td><a id="browse<TMPL_VAR USBSTORAGE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/usb/<TMPL_VAR USBSTORAGE_DEVICE>" target="_self"><TMPL_VAR USBSTORAGE.BUTTON_BROWSE></a>
+				</td>
+			</tr>
+			</TMPL_LOOP>
+		<TMPL_ELSE>
+			<tr>
+				<td colspan="8"><TMPL_VAR USBSTORAGE.HINT_NOSTORAGE></td>
+			</tr>
+		</TMPL_IF>
+		</tbody>
+		</table>
+
+</TMPL_IF>
+
+<TMPL_IF DEBUGLOG>
+<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+		<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+		<p>
+		<TMPL_VAR USBSTORAGE.ADD_DEBUGLOG_SUCCESS>
+		<br/>
+		<br/>
+		<a href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/usbstorage_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR USBSTORAGE.BUTTON_SHOW_DEBUGLOG></a>
+		<br/>
+		<br/>
+		</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+		<p>
+		<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/usbstorage.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+		</p>
+		</td>
+	</tr>
+	</table>
+</center>
+</TMPL_IF>
+
+<!-- ** END template/system/netshares.html ************************************************************************************ -->
+ 
