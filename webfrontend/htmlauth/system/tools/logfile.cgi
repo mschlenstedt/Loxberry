@@ -128,7 +128,12 @@ if (!$R::logfile) {
 	}
 }
 
+if (begins_with($R::logfile, $lbhomedir . "/log")) {
+	$R::logfile = substr($R::logfile, length($lbhomedir . "/log"));
+}
 $R::logfile =~ s/^\///;
+
+print STDERR "Logfile: $R::logfile\n";
 
 # Check if logfile exists
 if (-e "/tmp/$R::logfile") {
