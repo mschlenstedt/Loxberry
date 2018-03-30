@@ -125,7 +125,7 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
 	LOGINF "This will again take some time now. We suggest getting a second coffee or a second beer :-)";
 	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
-	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 /usr/bin/rpi-update };
+	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
         	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
