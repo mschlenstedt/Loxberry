@@ -173,11 +173,13 @@ if ($R::length) {
 my $header;
 my $currfilesize = -s "$R::logfilepath/$R::logfile";
 
+if (!$R::header || ($R::header ne "txt" && $R::header ne "file" && $R::header ne "html") ) {
+	$R::header = "html";
+}
 if ($R::header && $R::header eq "txt") {
-  $header = "Content-Type: text/plain;charset=utf-8\n\n";
-  print $header;
-} elsif ($R::header && $R::header eq "file" ) 
-{
+	$header = "Content-Type: text/plain;charset=utf-8\n\n";
+	print $header;
+} elsif ($R::header && $R::header eq "file" ) {
 	use File::Basename;
 	$header = "Content-Disposition: attachment; filename='" . basename($R::logfile) . "'\n\n";
   	print $header;
@@ -185,17 +187,17 @@ if ($R::header && $R::header eq "txt") {
 	if ($R::clientsize && $R::clientsize ne "0") {
 		if($R::clientsize eq $currfilesize) {
 			$header = $cgi->header(-type => 'text/html;charset=utf-8',
-									-status => "304 Not Modified",
-									-filesize => $currfilesize,
-				);
+						-status => "304 Not Modified",
+						-filesize => $currfilesize,
+			);
 			print $header;
 			exit(0);
 		}
 	}
-  # print $cgi->header('text/html','304 Not Modified');
+	# print $cgi->header('text/html','304 Not Modified');
 	$header = $cgi->header(-type => 'text/html;charset=utf-8',
 			     -filesize => $currfilesize,
-				);
+	);
 	print $header if ($R::format ne 'template');
 	# $header = "Content-Type: text/html\n\n";
 } 
@@ -209,7 +211,6 @@ if ($R::format eq "template") {
 
 # Print Logfile
 my @logcontent;
-$i = 0;
 my $l = 0;
 open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
   while (<F>) {
