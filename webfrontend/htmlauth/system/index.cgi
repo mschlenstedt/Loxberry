@@ -256,6 +256,12 @@ sub mainmenu {
 				NOTIFY_PACKAGE => "netshares",
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_USBSTORAGE'},
+				WIDGET_ICON => "/system/images/icons/main_usbstorage.png",
+				WIDGET_CGI => "/admin/system/usbstorage.cgi",
+				NOTIFY_PACKAGE => "usbstoage",
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",
