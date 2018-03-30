@@ -96,7 +96,7 @@ do_mount()
     # File system type specific mount options
     # NTFS
     if [[ ${ID_FS_TYPE} == "ntfs" ]]; then
-        OPTS+=",gid=1001,uid=1001,umask=000,utf8,flush"
+        OPTS+=",gid=1001,uid=1001,umask=000,nls=utf8"
     fi
     # extFAT
     if [[ ${ID_FS_TYPE} == "exfat" ]]; then
