@@ -52,6 +52,7 @@ case "$1" in
 
 	# Remove old mountpoints
 	rm -r /media/usb/*
+	rm -r /media/smb/*
 
 	# This is done by /usr/lib/raspi-config/init_resize.sh since Rasbian Stretch.
 	# No need to do this here anymore.
