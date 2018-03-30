@@ -50,6 +50,9 @@ ini_parser() {
 case "$1" in
   start|"")
 
+	# Remove old mountpoints
+	rm -r /media/usb/*
+
 	# This is done by /usr/lib/raspi-config/init_resize.sh since Rasbian Stretch.
 	# No need to do this here anymore.
 
@@ -164,7 +167,7 @@ case "$1" in
   ;;
 
   stop)
-	awk '!/^#/ && ($2 != "swap") && ($2 != "/") && ($2 != "/boot") { if(!match($4, /nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
+	awk '!/^#/ { if(!match($4, /nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
 	cp /etc/fstab /etc/fstab.backup
 	cat /etc/fstab.new > /etc/fstab
 	rm /etc/fstab.new

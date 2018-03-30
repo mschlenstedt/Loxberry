@@ -95,6 +95,16 @@ if ($exitcode != 0) {
 }
 qx { /var/cache/apt/archives/* };
 
+#
+# Add nofail to all devices in /etc/fstab for automount
+#
+LOGINF "Adding 'nofail' option to /etc/fstab";
+
+qx { awk '!/^#/ { if(!match(\$4,/nofail/)) \$4=\$4",nofail" } 1' /etc/fstab > /etc/fstab.new };
+qx { cp /etc/fstab /etc/fstab.backup };
+qx { cat /etc/fstab.new > /etc/fstab };
+qx { rm /etc/fstab.new };
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");
