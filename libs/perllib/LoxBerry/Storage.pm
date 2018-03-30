@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.9";
+our $VERSION = "1.0.4.10";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -202,7 +202,6 @@ sub get_usbstorages
 	my @usbstorages = ();
 	my $usbstoragecount = 0;
 	my $device;
-	my %usbstorage;
 	my $output;
 	my @df;
 	my $used;
@@ -213,7 +212,8 @@ sub get_usbstorages
 		if($_ eq "." || $_ eq "..") {
 			next;
 		}
-		$device = $_;	
+		my $device = $_;	
+		my %usbstorage;
 		if ( $size eq "H" | $size eq "h" ) {
 			$opt = "-h";
 		}
