@@ -17,8 +17,8 @@
 		<TMPL_IF DEBUGLOGEXISTS>
 		<a id="log" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/netshare_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR NETSHARES.BUTTON_SHOW_DEBUGLOG></a>
 		</TMPL_IF>
+		<button type="button" name="btnsubmit" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" onClick="location.reload();"><font size=\"-1\"><TMPL_VAR COMMON.BUTTON_REFRESH></font></button>
 	</form>
-
 
 
 	<hr>
