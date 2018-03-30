@@ -87,7 +87,8 @@ my $log = LoxBerry::Log->new(
 		stderr => 1,
 		append => 1,
 );
-						
+$joutput{'logfile'} = $log->filename;
+
 #my $logfile ="$lbslogdir/loxberryupdate/log$.log";
 #open ERRORLOG, '>', $logfile;
 
@@ -263,6 +264,8 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			addtime => 1,
 		);
 		my $logfilename = $log->filename;
+		
+		$joutput{'logfile'} = $log->filename;
 		
 		LOGSTART "Update from $lbversion to $release_version";
 		LOGINF "   Version    : $release_version";
@@ -568,6 +571,7 @@ sub check_commits
 			loglevel => 7,
 			stderr => 1
 		);
+		$joutput{'logfile'} = $log->filename;
 		my $logfilename = $log->filename;
 		LOGSTART "Latest commit will be installed:";
 		LOGINF "   Message     : $commit_message";
