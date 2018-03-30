@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.10";
+our $VERSION = "1.0.4.11";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -205,6 +205,7 @@ sub get_usbstorages
 	my $output;
 	my @df;
 	my $used;
+	my $type;
 	my $available;
 	my $opt;
 	foreach (@usbdevices){
@@ -229,12 +230,12 @@ sub get_usbstorages
 			$used = $df[3];
 			$available = $df[4];
 		}
-
+		$type = qx ( blkid -o udev $df[0] | grep ID_FS_TYPE | awk -F "=" '{ print \$2 }' );
 		$usbstoragecount++;
 		$usbstorage{USBSTORAGE_NO} = $usbstoragecount;
 		$usbstorage{USBSTORAGE_DEVICE} = $device;
 		$usbstorage{USBSTORAGE_BLOCKDEVICE} = $df[0];
-		$usbstorage{USBSTORAGE_TYPE} = $df[1];
+		$usbstorage{USBSTORAGE_TYPE} = $type;
 		$usbstorage{USBSTORAGE_USED} = $used;
 		$usbstorage{USBSTORAGE_AVAILABLE} = $available;
 		$usbstorage{USBSTORAGE_CAPACITY} = $df[5];
