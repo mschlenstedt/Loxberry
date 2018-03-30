@@ -329,10 +329,26 @@ foreach my $version (@updatelist)
 	if (!$cgi->param('dryrun')) {
 		LOGINF "      Running update script for $version...\n";
 		undef $exitcode; 
-		$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
+		my $lowdiskspace = 1;
+		if (!$nodiscspacecheck) {
+			my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
+			if ($folderinfo{available} < 102400) {
+				$joutput{'error'} = "Available diskspace is below 100MB. Execution of this and further update scripts will be canceled.";
+				LOGCRIT $joutput{'error'};
+				notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update script processing was canceled.", 'Error');
+			} else {
+				$lowdiskspace = 0;
+			}	
+		}
+		
+		if (! $lowdiskspace) {
+			$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
+		}
 		$exitcode  = $? >> 8;
-		if ($exitcode != 0 ) {
-			LOGERR "Update-Script update_$version returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
+		if ($exitcode != 0 || $lowdiskspace) {
+			LOGERR "Update-Script update_$version returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue." if ($exitcode != 0);
+			LOGERR "Update-Script update_$version did not execute because of low disk space condition. Further update scripts are prevented from run. You can re-apply the updates from within LoxBerry Update when enough disk space is available (> 100MB). Continuing without update scripts." if ($lowdiskspace);
+			
 			if (!$failed_script) {
 				LOGINF "Setting update script update_$version as failed in general.cfg.";
 				$failed_script = version->parse(vers_tag($version));
@@ -343,6 +359,10 @@ foreach my $version (@updatelist)
 			}
 			$errskipped++;
 			$scripterrskipped++;
+			
+			if ($lowdiskspace) {
+				last;
+			}
 		} elsif ($failed_script && version->parse($version) eq "$failed_script") {
 			LOGOK "Previously failed script now finished successfully. Removing failed script version from general.cfg";
 			undef $failed_script;
@@ -427,7 +447,8 @@ LOGINF "Cleaning up temporary download folder";
 delete_directory($update_path);
 
 LOGINF "All procedures finished.";
-notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_OK'} . " $release");
+notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_OK'} . " $release") if (! $errskipped);
+notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_ERROR'} . " $release", "err") if ($errskipped);
 exit 0;
 
 
@@ -551,7 +572,7 @@ sub vers_tag
 # This routine is called at every end
 END 
 {
-	LOGWARN "LoxBerry Update skipped at least $errskipped warnings or errors. Check the log." if ($errskipped > 0 );
+	LOGWARN "LoxBerry Update was SUCCESSFULL, but skipped at least $errskipped warnings or errors. Check the log." if ($errskipped > 0 );
 	
 	if ($? != 0) {
 		LOGCRIT "LoxBerry Update exited or terminated with an error. Errorcode: $?";
@@ -560,7 +581,7 @@ END
 		}
 		
 	} else {
-		LOGOK "Loxberry Update thinks that the UPDATE WAS SUCCESSFUL!";
+		LOGOK "Loxberry Update WAS SUCCESSFUL!" if (!$errskipped);
 	}
 	# close ERR;
 	LoxBerry::System::unlock( lockfile => 'lbupdate' );
