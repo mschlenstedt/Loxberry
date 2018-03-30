@@ -91,11 +91,20 @@ do_mount()
     mkdir -p ${MOUNT_POINT}
 
     # Global mount options
-    OPTS="rw,relatime"
+    OPTS="users,rw,relatime"
 
     # File system type specific mount options
+    # NTFS
+    if [[ ${ID_FS_TYPE} == "ntfs" ]]; then
+        OPTS+=",gid=1001,uid=1001,umask=000,utf8,flush"
+    fi
+    # extFAT
+    if [[ ${ID_FS_TYPE} == "exfat" ]]; then
+        OPTS+=",gid=1001,uid=1001,umask=000,utf8,flush"
+	echo $OPTS
+    fi
     if [[ ${ID_FS_TYPE} == "vfat" ]]; then
-        OPTS+=",users,gid=1001,uid=1001,umask=000,shortname=mixed,utf8=1,flush"
+        OPTS+=",gid=1001,uid=1001,umask=000,shortname=mixed,utf8,flush"
     fi
 
     if ! mount -o ${OPTS} ${DEVICE} ${MOUNT_POINT}; then
