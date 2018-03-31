@@ -21,6 +21,7 @@
 			<th data-priority="2"><TMPL_VAR USBSTORAGE.STORAGESTABLE_USED></th>
 			<th data-priority="2"><TMPL_VAR USBSTORAGE.STORAGESTABLE_AVAILABLE></th>
 			<th data-priority="5"><TMPL_VAR USBSTORAGE.STORAGESTABLE_CAPACITY></th>
+			<th data-priority="5"><TMPL_VAR USBSTORAGE.STORAGESTABLE_STATUS></th>
 			<th data-priority="6"><TMPL_VAR USBSTORAGE.STORAGESTABLE_ACTION></th>
 		</tr>
 		</thead>
@@ -35,13 +36,14 @@
 				<td><TMPL_VAR USBSTORAGE_USED></td>
 				<td><TMPL_VAR USBSTORAGE_AVAILABLE></td>
 				<td><TMPL_VAR USBSTORAGE_CAPACITY></td>
+				<td><TMPL_VAR USBSTORAGE_STATE></td>
 				<td><a id="browse<TMPL_VAR USBSTORAGE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/usb/<TMPL_VAR USBSTORAGE_DEVICE>" target="_self"><TMPL_VAR USBSTORAGE.BUTTON_BROWSE></a>
 				</td>
 			</tr>
 			</TMPL_LOOP>
 		<TMPL_ELSE>
 			<tr>
-				<td colspan="8"><TMPL_VAR USBSTORAGE.HINT_NOSTORAGE></td>
+				<td colspan="9"><TMPL_VAR USBSTORAGE.HINT_NOSTORAGE></td>
 			</tr>
 		</TMPL_IF>
 		</tbody>

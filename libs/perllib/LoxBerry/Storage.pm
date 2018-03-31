@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.0.4.11";
+our $VERSION = "1.2.0.1";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -107,7 +107,7 @@ sub get_netshares
 					$state = "Writable";
 				}
 				qx(rm \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\");
-				if ( ($readwriteonly && $state ne "rw") || !$state ) {
+				if ( ($readwriteonly && $state ne "Writeable") || !$state ) {
 					next;
 				}
 				$netsharecount++;
@@ -185,10 +185,11 @@ sub get_netservers
 # Get USB Storage
 # Returns all usb storage devices in a hash
 # Parameter: 	1. Defines Filesize. Allowed values: MB, GB. If empty, kB is used.
+#            	2. If defined (=1), returns only devices with read/write access
 ##################################################################################
 sub get_usbstorages
 {
-	my ($size) = @_;
+	my ($size, $readwriteonly) = @_;
 
 	my $openerr = 0;
 	opendir(my $fh1, "$LoxBerry::System::lbhomedir/system/storage/usb") or ($openerr = 1);
@@ -231,11 +232,26 @@ sub get_usbstorages
 			$available = $df[4];
 		}
 		$type = qx ( blkid -o udev $df[0] | grep ID_FS_TYPE | awk -F "=" '{ print \$2 }' );
+		my $state = "";
+		# Check read/write state
+		qx(ls \"$LoxBerry::System::lbhomedir/system/storage/usb/$device\");
+		if ($? eq 0) {
+			$state = "Readonly";
+		}
+		qx(touch \"$LoxBerry::System::lbhomedir/system/storage/usb/$device/check_loxberry_rw_state.tmp\");
+		if ($? eq 0) {
+			$state = "Writable";
+		}
+		qx(rm \"$LoxBerry::System::lbhomedir/system/storage/usb/$device/check_loxberry_rw_state.tmp\");
+		if ( ($readwriteonly && $state ne "Writable") || !$state ) {
+			next;
+		}
 		$usbstoragecount++;
 		$usbstorage{USBSTORAGE_NO} = $usbstoragecount;
 		$usbstorage{USBSTORAGE_DEVICE} = $device;
 		$usbstorage{USBSTORAGE_BLOCKDEVICE} = $df[0];
 		$usbstorage{USBSTORAGE_TYPE} = $type;
+		$usbstorage{USBSTORAGE_STATE} = $state;
 		$usbstorage{USBSTORAGE_USED} = $used;
 		$usbstorage{USBSTORAGE_AVAILABLE} = $available;
 		$usbstorage{USBSTORAGE_CAPACITY} = $df[5];
