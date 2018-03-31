@@ -251,7 +251,7 @@
 <p><TMPL_VAR UPDATES.LBU_LABEL_UPDATEINSTALL_INTRO2></p>
 <p id="lbu_install_pleasewait" style="display:none;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></p>
 <p id="lbu_update_process">&nbsp;</p>
-<a id="lbu_button_update_logfile" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-arrow-d" style="display:none"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+<a id="lbu_button_update_logfile" href="#" target="_blank" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-arrow-d" style="display:none"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 <a id="lbu_button_install_cancel" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR COMMON.BUTTON_BACK></a>
 <a id="lbu_button_install" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-star"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL></a>
 </div>
@@ -453,7 +453,7 @@ $(document).ready( function () {
 	    <div class="ui-btn ui-corner-all" style="padding-bottom:20px; text-align:left; cursor:pointer; font-size: 1em; font-family: sans-serif; ">
 			<span style="font-size:125%;"><TMPL_VAR DATESTR></span>
 			&nbsp;
-			<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template', 'log')" target="_blank"><img src="/system/images/icons/open_new_win.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
+			<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template&only=once', 'log')" target="_blank"><img src="/system/images/icons/open_new_win.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
 			&nbsp;
 			<a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=file&format=plain'; return false;"  target="_self"><img src="/system/images/icons/download.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></a>
 			<span style="padding-left:10px;">&nbsp;<TMPL_VAR FIRSTLINE></span></div>
@@ -463,7 +463,7 @@ $(document).ready( function () {
     <div class="ui-btn ui-corner-all" style="padding-bottom:20px; text-align:left; cursor:pointer; font-size: 1em; font-family: sans-serif;" >
 	<span style="font-size:125%;"><TMPL_VAR LOGVIEWER.UPDATECHECKLOGFILE></span>
 	&nbsp;
-	<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=html&format=template', 'log')" target="_blank"><img src="/system/images/icons/open_new_win.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
+	<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=html&format=template&only=once', 'log')" target="_blank"><img src="/system/images/icons/open_new_win.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
 	&nbsp;
 	<a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=file&format=plain'; return false;"  target="_self"><img src="/system/images/icons/download.svg"> <TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></a>
 	
