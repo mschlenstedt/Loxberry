@@ -50,9 +50,13 @@ ini_parser() {
 case "$1" in
   start|"")
 
-	# Remove old mountpoints
-	rm -r /media/usb/*
-	rm -r /media/smb/*
+	# Remove old mountpoints from AutoFS and USB automount (in case they were not
+	# unmounted correctly and di not exist anymore)
+	rm -r /media/usb/* > /dev/null 2>&1
+	rm -r /media/smb/* > /dev/null 2>&1
+
+	# Let fsck run only every 10th boot (only for clean devices)
+	tune2fs -c 10 /dev/mmcblk0p2 > /dev/null 2>&1
 
 	# This is done by /usr/lib/raspi-config/init_resize.sh since Rasbian Stretch.
 	# No need to do this here anymore.
@@ -168,6 +172,7 @@ case "$1" in
   ;;
 
   stop)
+	# Add "nofail" option to all mounts in /etc/fstab (needed for USB automount to work correctly)
 	awk '!/^#/ { if(!match($4, /nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
 	cp /etc/fstab /etc/fstab.backup
 	cat /etc/fstab.new > /etc/fstab
