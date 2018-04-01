@@ -450,22 +450,10 @@ $(document).ready( function () {
 <TMPL_IF lbuhistory>
 <p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATELOGS></p>
 	<TMPL_LOOP UPDATESLIST>
-	    <div class="ui-btn ui-corner-all" style="padding-bottom:20px; text-align:left; cursor:pointer; font-size: 1em; font-family: sans-serif; ">
-			<span style="font-size:125%;"><TMPL_VAR DATESTR></span>
-			&nbsp;
-			<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template&only=once', 'log')" target="_blank"><img src="/system/images/icons/open_new_win.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
-			&nbsp;
-			<a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=file&format=plain'; return false;"  target="_self"><img src="/system/images/icons/download.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></a>
-			<span style="padding-left:10px;">&nbsp;<TMPL_VAR FIRSTLINE></span></div>
+	    <div class="ui-btn ui-corner-all" style="text-align:left; cursor:default; font-size: 1em; font-family: sans-serif;"><span style="font-size:125%;"><TMPL_VAR DATESTR></span><a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template&only=once', 'log')" target="_blank"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-action"><TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></span></a><a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=file&format=plain'; return false;"     target="_self"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-arrow-d"><TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></span></a><span style="padding-left:10px;"><TMPL_VAR FIRSTLINE></span></div>
 	</TMPL_LOOP>
 <br>
 <p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
-    <div class="ui-btn ui-corner-all" style="padding-bottom:20px; text-align:left; cursor:pointer; font-size: 1em; font-family: sans-serif;" >
-	<span style="font-size:125%;"><TMPL_VAR LOGVIEWER.UPDATECHECKLOGFILE></span>
-	&nbsp;
-	<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=html&format=template&only=once', 'log')" target="_blank"><img src="/system/images/icons/open_new_win.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
-	&nbsp;
-	<a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=file&format=plain'; return false;"  target="_self"><img src="/system/images/icons/download.svg"> <TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></a>
-	
-	<span style="padding-left:10px;">&nbsp;<TMPL_VAR FIRSTLINE></span></div>
+    <div class="ui-btn ui-corner-all" style="text-align:left; cursor:pointer; font-size: 1em; font-family: sans-serif;" >
+	<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=html&format=template&only=once', 'log')" target="_blank"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-action"><TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></span></a><a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=file&format=plain'; return false;"  target="_self"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-arrow-d"><TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></span></a><span style="font-size:125%;"><TMPL_VAR LOGVIEWER.UPDATECHECKLOGFILE></span></div>
 </TMPL_IF>
