@@ -60,6 +60,7 @@ chmod -Rv 644 $LBHOMEDIR/system/logrotate/*
 
 chmod -Rv 755 $LBHOMEDIR/libs
 chmod -Rv 755 $LBHOMEDIR/sbin
+chmod -v 755 $LBHOMEDIR/bin/*
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.cgi
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.cgi
 chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.pl
