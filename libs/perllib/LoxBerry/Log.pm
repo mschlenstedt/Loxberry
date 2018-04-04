@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.0.0.29";
+our $VERSION = "1.2.0.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -511,7 +511,8 @@ sub notify_ext
 	return undef if (! $dbh);
 	
 	if (! $data->{_ISPLUGIN} && ! $data->{_ISSYSTEM}) {
-		if ($LoxBerry::System::lbpplugindir) {
+		my $plugin = LoxBerry::System::plugindata($data->{PACKAGE});
+		if ($LoxBerry::System::lbpplugindir || $plugin) {
 			print STDERR "   Detected plugin notification\n" if ($DEBUG);
 			$data->{_ISPLUGIN} = 1;
 		} else {
