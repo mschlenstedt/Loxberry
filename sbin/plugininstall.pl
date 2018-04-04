@@ -23,6 +23,7 @@ use File::Path qw(make_path remove_tree);
 use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8);
 use LoxBerry::System;
+use LoxBerry::Log;
 use CGI;
 #use LoxBerry::Web;
 use version;
@@ -157,6 +158,9 @@ if ( !$found ) {
 }
 
 &purge_installation ("all");
+
+# Purge plugin notifications
+LoxBerry::Log::delete_notifications($pfolder) if ($pfolder);
 
 # Remove Lock
 LoxBerry::System::unlock( lockfile => 'plugininstall' );
