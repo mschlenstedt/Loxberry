@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.2.0.1";
+my $scriptversion="1.2.0.2";
 
 # print currtime('file') . "\n";
 
@@ -203,7 +203,7 @@ if (version::is_lax($max_version)) {
 
 if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	LOGINF "Start checking releases...";
-	my ($release_version, $release_url, $release_name, $release_body, $release_published) = check_releases($querytype, $lbversion);
+	my ($release_version, $release_url, $release_name, $release_body, $release_published, $release_isprerelease) = check_releases($querytype, $lbversion);
 	if (! defined $release_url || $release_url eq "") {
 		$joutput{'info'} = $SL{'UPDATES.INFO_NO_NEW_VERSION_FOUND'};
 		$joutput{'release_version'} = "$release_version";
@@ -211,15 +211,19 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		$joutput{'release_name'} = $release_name;
 		$joutput{'release_body'} = $release_body;
 		$joutput{'published_at'} = $release_published;
+		$joutput{'releasetype'} = $release_isprerelease eq 1 ? "prerelease" : "release";
+		
 		&err;
 		LOGOK $joutput{'info'};
 		exit 0;
 	}
 
 	LOGOK  "New version found:";
-	LOGINF "   Version   : $release_version";
-	LOGINF "   Name      : $release_name";
-	LOGINF "   Published : $release_published";
+	LOGINF "   Version     : $release_version";
+	LOGINF "   Name        : $release_name";
+	LOGINF "   Published   : $release_published";
+	LOGINF "   Releasetype : " . ($release_isprerelease eq 1 ? "Pre-Release" : "Release");
+		
 	$joutput{'info'} = $SL{'UPDATES.INFO_NEW_VERSION_FOUND'};
 	$joutput{'release_version'} = "$release_version";
 	$joutput{'release_zipurl'} = $release_url;
@@ -227,6 +231,8 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	$joutput{'release_body'} = $release_body;
 	$joutput{'published_at'} = $release_published;
 	$joutput{'release_new'} = 1;
+	$joutput{'releasetype'} = $release_isprerelease eq 1 ? "prerelease" : "release";
+		
 	
 	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
 		my @notifications = get_notifications( 'updates', 'lastnotifiedrelease');
@@ -268,10 +274,11 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		$joutput{'logfile'} = $log->filename;
 		
 		LOGSTART "Update from $lbversion to $release_version";
-		LOGINF "   Version    : $release_version";
-		LOGINF "   Name       : $release_name";
-		LOGINF "   Description: $release_body";
-		LOGINF "   Published  : $release_published";
+		LOGINF "   Version     : $release_version";
+		LOGINF "   Name        : $release_name";
+		LOGINF "   Description : $release_body";
+		LOGINF "   Published   : $release_published";
+		LOGINF "   Releasetype : " . ($release_isprerelease eq 1 ? "Pre-Release" : "Release");
 		
 		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
@@ -447,12 +454,12 @@ sub check_releases
 		# At this point we know that the version is newer
 		LOGOK "This release $release_version is the newest.";
 
-		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at});
+		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at}, $release->{prerelease});
 	}
 	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
 	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
 	LOGOK "No new version found: Latest version is " . vers_tag($release_safe->{tag_name});
-	return (vers_tag($release_safe->{tag_name}), undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at});
+	return (vers_tag($release_safe->{tag_name}), undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at}, $release_safe->{prerelease});
 }
 
 
@@ -536,6 +543,8 @@ sub check_commits
 	$joutput{'release_name'} = "<span style='color:gray;'>$commit_message</span>" if (!$commit_new);
 	$joutput{'release_body'} = $SL{'UPDATES.INFO_COMMITED_BY'} . " $commit_by";
 	$joutput{'published_at'} = $commit_date;
+	$joutput{'releasetype'} = "commit";
+	
 	
 	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
 		
