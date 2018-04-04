@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.2.0.1';
+my $scriptversion='1.2.0.2';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -329,10 +329,11 @@ foreach my $version (@updatelist)
 	if (!$cgi->param('dryrun')) {
 		LOGINF "      Running update script for $version...\n";
 		undef $exitcode; 
-		my $lowdiskspace = 1;
-		if (!$nodiscspacecheck) {
+		my $lowdiskspace;
+		if (! $nodiscspacecheck) {
 			my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
 			if ($folderinfo{available} < 102400) {
+				$lowdiskspace = 1;
 				$joutput{'error'} = "Available diskspace is below 100MB. Execution of this and further update scripts will be canceled.";
 				LOGCRIT $joutput{'error'};
 				notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update script processing was canceled.", 'Error');
