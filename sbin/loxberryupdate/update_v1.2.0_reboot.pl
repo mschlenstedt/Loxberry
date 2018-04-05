@@ -46,7 +46,7 @@ if ($cgi->param('updatedir')) {
 ########################################################################
 
 my $errors = 0;
-LOGOK "Update Reboot script $0 started.";
+LOGSTART "Update Reboot script $0 started.";
 
 # Sleep waiting network to be up after boot
 use Net::Ping;
@@ -57,7 +57,7 @@ foreach my $c (1 .. 5) {
 	LOGINF "Try to reach $hostname";
 	my ($ret, $duration, $ip) = $p->ping($hostname);
 	if ($ret) {
-		LOGOK "$hostname is reachable, so network seems to be up";
+		LOGOK "$hostname is reachable, so network seems to be up.";
 		$success = 1;
 		last;
 	} else {

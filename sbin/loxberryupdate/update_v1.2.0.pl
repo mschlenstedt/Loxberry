@@ -81,8 +81,19 @@ close (F);
 #qx { rm /etc/fstab.new };
 
 #
-# Upgrade Raspbian
+# Upgrade Raspbian on next reboot
 #
+LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
+open(F,">/etc/cron.d/lbupdate_reboot_v1.2.0");
+print F <<EOF;
+MAILTO=""
+PATH=/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# m h  dom mon dow   command
+@reboot root $lbhomedir/sbin/loxberryupdate/update_v1.2.0_reboot.pl logfilename=$logfilename-reboot > /dev/null 2>&1
+EOF
+close (F);
+
 #LOGINF "Preparing Guru Meditation...";
 #LOGINF "This will take some time now. We suggest getting a coffee or a beer.";
 #LOGINF "Upgrading system to latest Raspbian release.";
