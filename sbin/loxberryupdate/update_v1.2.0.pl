@@ -83,39 +83,39 @@ close (F);
 #
 # Upgrade Raspbian
 #
-LOGINF "Preparing Guru Meditation...";
-LOGINF "This will take some time now. We suggest getting a coffee or a beer.";
-LOGINF "Upgrading system to latest Raspbian release.";
+#LOGINF "Preparing Guru Meditation...";
+#LOGINF "This will take some time now. We suggest getting a coffee or a beer.";
+#LOGINF "Upgrading system to latest Raspbian release.";
 
-my $output = qx { /usr/bin/dpkg --configure -a };
-my $exitcode  = $? >> 8;
-if ($exitcode != 0) {
-        LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
-        LOGDEB $output;
-                $errors++;
-} else {
-        LOGOK "Configuring dpkg successfully.";
-}
-$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
-$exitcode  = $? >> 8;
-if ($exitcode != 0) {
-        LOGERR "Error updating apt database - Error $exitcode";
-                LOGDEB $output;
-        $errors++;
-} else {
-        LOGOK "Apt database updated successfully.";
-}
-LOGINF "Now upgrading all packages... Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
-$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y upgrade };
-$exitcode  = $? >> 8;
-if ($exitcode != 0) {
-        LOGERR "Error upgrading system - Error $exitcode";
-                LOGDEB $output;
-        $errors++;
-} else {
-        LOGOK "System upgrade successfully.";
-}
-qx { /var/cache/apt/archives/* };
+#my $output = qx { /usr/bin/dpkg --configure -a };
+#my $exitcode  = $? >> 8;
+#if ($exitcode != 0) {
+#        LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
+#        LOGDEB $output;
+#                $errors++;
+#} else {
+#        LOGOK "Configuring dpkg successfully.";
+#}
+#$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
+#$exitcode  = $? >> 8;
+#if ($exitcode != 0) {
+#        LOGERR "Error updating apt database - Error $exitcode";
+#                LOGDEB $output;
+#        $errors++;
+#} else {
+#        LOGOK "Apt database updated successfully.";
+#}
+#LOGINF "Now upgrading all packages... Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
+#$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y upgrade };
+#$exitcode  = $? >> 8;
+#if ($exitcode != 0) {
+#        LOGERR "Error upgrading system - Error $exitcode";
+#                LOGDEB $output;
+#        $errors++;
+#} else {
+#        LOGOK "System upgrade successfully.";
+#}
+#qx { rm /var/cache/apt/archives/* };
 
 #
 # Update Kernel and Firmware
