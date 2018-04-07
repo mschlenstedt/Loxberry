@@ -76,7 +76,7 @@ our $rebootbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "1.2.0.1";
 
 my $bins = LoxBerry::System::get_binaries();
 $sversion = LoxBerry::System::lbversion();
@@ -564,7 +564,7 @@ sub lbuhistory
 	while ( my $direntry = shift @files ) {
 		LOGDEB "Direntry BEFORE: $direntry";
 		next if (length($direntry) lt 25); # next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
-		next if (substr($direntry, 15, 11) ne "_update.log");
+		next if (substr($direntry, 15, 7) ne "_update");
 		next if (substr($direntry, -3) eq ".gz");
 		next if (-s "$lbulogfiledir/$direntry" == 0);
 		LOGDEB "Direntry FILTERED: $direntry";
