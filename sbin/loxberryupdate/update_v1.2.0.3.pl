@@ -50,6 +50,17 @@ LOGINF "Setting notification database maintenance job to +x";
 $output = qx { chmod +x $lbhomedir/system/cron/cron.weekly/db_maint };
 $output = qx { chmod +x $lbhomedir/bin/db_maint.pl };
 
+#
+# Mount all filesystems from /etc/fstab during boot
+#
+LOGINF "Make sure all mountpoints in /etc/fstab will be mounted during boot";
+qx { grep -q -e "^mount -a" /etc/rc.local };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	qx { sed -i 's/^exit 0/mount -a\\n\\nexit 0/g' /etc/rc.local };
+}
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");

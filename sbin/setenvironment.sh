@@ -335,3 +335,8 @@ ln -s $LBHOME/system/samba/credentials /etc/creds
 # Activating i2c
 # (also included in 1.0.3 Update script)
 $LBHOME/sbin/activate_i2c.sh
+
+# Mount all from /etc/fstab
+if ! grep -q -e "^mount -a" /etc/rc.local; then
+	sed -i 's/^exit 0/mount -a\n\nexit 0/g' /etc/rc.local
+fi
