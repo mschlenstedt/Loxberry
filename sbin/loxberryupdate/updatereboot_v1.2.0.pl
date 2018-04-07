@@ -19,7 +19,7 @@ if ($cgi->param('logfilename')) {
 	$logfilename = $cgi->param('logfilename');
 	my $n = 0;
 	$ext = "";
-	while ( -e "$lbslogdir/loxberryupdate/$logfilename$ext.log" ) {
+	while ( -e "$logfilename$ext.log" ) {
 		$n++;
 		$ext = "-$n";
 	}
@@ -28,14 +28,13 @@ if ($cgi->param('logfilename')) {
 my $log = LoxBerry::Log->new(
 		package => 'LoxBerry Update',
 		name => 'update',
-		filename => "$lbslogdir/loxberryupdate/$logfilename$ext.log",
+		filename => "$logfilename$ext.log",
 		logdir => "$lbslogdir/loxberryupdate",
 		loglevel => 7,
 		stderr => 1,
 		append => 1,
 );
 $logfilename = $log->filename;
-LOGINF "Logfile is: $logfilename";
 
 if ($cgi->param('updatedir')) {
 	$updatedir = $cgi->param('updatedir');
@@ -61,7 +60,7 @@ if (!-e "/boot/rebootupdatescript") {
 LOGINF "This script already started $starts times.";
 if ($starts >=10) {
 	LOGCRIT "We tried 10 times without success. This is the last try.";
-	qx { rm /etc/cron.d/lbupdate_reboot_v1.2.0 };
+	qx { rm /etc/cron.d/lbupdaterebootv120 };
 	qx { rm /boot/rebootupdatescript };
 } else {
 	open(F,">/boot/rebootupdatescript");
@@ -160,7 +159,7 @@ if ($errors) {
 	$syscfg->write();
 	undef $syscfg;
 } else {
-	qx { rm /etc/cron.d/lbupdate_reboot_v1.2.0 };
+	qx { rm /etc/cron.d/lbupdaterebootv120 };
 	qx { rm /boot/rebootupdatescript };
 }
 

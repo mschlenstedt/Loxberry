@@ -86,13 +86,13 @@ close (F);
 # Upgrade Raspbian on next reboot
 #
 LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
-open(F,">/etc/cron.d/lbupdate_reboot_v1.2.0");
+open(F,">/etc/cron.d/lbupdaterebootv120");
 print F <<EOF;
 MAILTO=""
 PATH=/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # m h  dom mon dow   command
-\@reboot root $lbhomedir/sbin/loxberryupdate/updatereboot_v1.2.0.pl logfilename=$logfilename_wo_ext-reboot > /dev/null 2>&1
+\@reboot root perl $lbhomedir/sbin/loxberryupdate/updatereboot_v1.2.0.pl logfilename=$logfilename_wo_ext-reboot > /dev/null 2>&1
 EOF
 close (F);
 
