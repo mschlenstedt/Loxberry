@@ -61,6 +61,14 @@ if ($exitcode != 0) {
 	qx { sed -i 's/^exit 0/mount -a\\n\\nexit 0/g' /etc/rc.local };
 }
 
+#
+# Mount Samba Shares with file_mode=0664,dir_mode=0775
+#
+if ( -e "/etc/auto.smb" ) {
+	LOGINF "Mount SMB Shares with file_mode=0664,dir_mode=0775";
+	qx { awk -v s="opts=\\"-fstype=cifs,file_mode=0664,dir_mode=0775\\"" '/^opts=/{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/auto.smb };
+}
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");
