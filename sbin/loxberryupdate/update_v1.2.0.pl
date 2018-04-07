@@ -29,7 +29,7 @@ my $cgi = CGI->new;
 	);
 	$logfilename = $log->filename;
 	my $logfilename_wo_ext = $logfilename;
-	my $logfilename_wo_ext =~ s{\.[^.]+$}{};
+	$logfilename_wo_ext =~ s{\.[^.]+$}{};
 
 	if ($cgi->param('updatedir')) {
 		$updatedir = $cgi->param('updatedir');
@@ -92,7 +92,7 @@ MAILTO=""
 PATH=/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # m h  dom mon dow   command
-@reboot root $lbhomedir/sbin/loxberryupdate/update_v1.2.0_reboot.pl logfilename=$logfilename_wo_ext-reboot > /dev/null 2>&1
+\@reboot root $lbhomedir/sbin/loxberryupdate/update_v1.2.0_reboot.pl logfilename=$logfilename_wo_ext-reboot > /dev/null 2>&1
 EOF
 close (F);
 
