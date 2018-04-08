@@ -3,9 +3,172 @@
 require_once "loxberry_system.php";
 // require_once "phphtmltemplate_loxberry/template040.php";
 
+class intLog
+{
+	private $params;
+	
+	public function __construct($args)
+	{
+		global $lbpplugindir;
+		$this->params = $args;
+		if (!isset($this->params["package"])) {$this->params["package"] = $lbpplugindir;}
+	}
+	
+	public function __get($name)
+	{
+		if (isset($this->params[$name]))
+		{
+			return $this->params[$name];
+		} else {
+			return NULL;
+		}
+	}
+	public function __set($name, $value)
+  {
+    // ignore, Variables are read-only
+  }
+	
+	public function startlog($msg)
+	{
+		//initializing the log an printout the start message
+		global $lbhomedir;
+		$cmdparams="";
+		if (isset($this->params["package"]) && isset($this->params["name"]) && (isset($this->params["filename"]) || isset($this->params["logdir"]) || isset($this->params["nofile"])))
+		{
+			if (isset($this->params["stderr"])) {$cmdparams=" --stderr";}
+			if (isset($this->params["append"])) {$cmdparams=" --append";}
+			if (isset($this->params["nofile"]))
+			{
+				$cmdparams .= " --nofile";
+			} else {
+				if (isset($this->params["filename"])) {$cmdparams .= " --filename=" . $this->params["filename"];}
+				if (isset($this->params["logdir"])) {$cmdparams .= " --logdir=" . $this->params["logdir"];}
+			}
+			$log=exec($lbhomedir . '/libs/bashlib/initlog.pl --name='.$this->params["name"].' --package='.$this->params["package"].$cmdparams.' "--message='.$msg.'"');
+			if ($log == "")
+			{
+				echo "initlog returns a empty string.";
+				return false;
+			}
+			$log=str_getcsv($log," ");
+			$this->params["filename"] = $log[0];
+			if ( ! isset($this->params["loglevel"])) {$this->params["loglevel"] = $log[1];}
+		} else {
+			echo "not enough parameters given.\n";
+		}
+	}
+	
+	public function logdeb($msg)
+	{
+		if ($this->loglevel > 6)
+		{
+	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			$this->writelog("<DEBUG> $currtime$msg");
+		}
+	}
+
+	public function loginf($msg)
+	{
+		if ($this->loglevel > 5)
+		{
+	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			$this->writelog("<INFO> $currtime$msg");
+		}
+	}
+
+	public function logok($msg)
+	{
+		if ($this->loglevel > 4)
+		{
+	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			$this->writelog("<OK> $currtime$msg");
+		}
+	}
+
+	public function logwarn($msg)
+	{
+		if ($this->loglevel > 3)
+		{
+	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			$this->writelog("<WARNING> $currtime$msg");
+		}
+	}
+
+	public function logerr($msg)
+	{
+		if ($this->loglevel > 2)
+		{
+	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			$this->writelog("<ERROR> $currtime$msg");
+		}
+	}
+
+	public function logcrit($msg)
+	{
+		if ($this->loglevel > 1)
+		{
+	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			$this->writelog("<CRITICAL> $currtime$msg");
+			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
+		}
+	}
+
+	public function logalert($msg)
+	{
+		if ($this->loglevel > 0)
+		{
+	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			$this->writelog("<ALERT> $currtime$msg");
+			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
+		}
+	}
+
+	public function logemerg($msg)
+	{
+		if ($this->loglevel >= 0)
+		{
+	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			$this->writelog("<EMERG> $currtime$msg");
+			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
+		}
+	}
+	
+	public function logend($msg)
+	{
+		if ($this->params["loglevel"] >= -1)
+		{
+			if (!isset($this->params["nofile"]) && $this->params["filename"] != "")
+			{
+				file_put_contents($this->params["filename"], "<LOGEND>$msg" . PHP_EOL, FILE_APPEND);
+				file_put_contents($this->params["filename"], "<LOGEND>".date("d.m.Y H:i:s")." TASK FINISHED" . PHP_EOL, FILE_APPEND);
+			}
+			if (isset($this->params["stderr"]))
+			{
+				fwrite(STDERR, "<LOGEND>$msg" . PHP_EOL);
+				fwrite(STDERR, "<LOGEND>".date("d.m.Y H:i:s")." TASK FINISHED" . PHP_EOL);
+			}
+		}
+	}
+
+	public function writelog($msg) {
+		if (isset($this->params["nofile"])) {fwrite(STDOUT,$msg . PHP_EOL);}
+		if (isset($this->params["stderr"]) || (!isset($this->params["nofile"]) && $this->params["filename"] == "")) {fwrite(STDERR,$msg . PHP_EOL);}
+		if (!isset($this->params["nofile"]) && $this->params["filename"] != "") {file_put_contents($this->params["filename"], $msg . PHP_EOL, FILE_APPEND);}
+	}
+}
+
 class LBLog
 {
-	public static $VERSION = "1.0.0.4";
+	public static $VERSION = "1.0.0.5";
+	private $stdLog;
+	
+	public static function newLog($args)
+	{
+		global $stdLog;
+		$newlog = new intLog($args);
+		if ( ! $stdLog ) { $stdLog = $newlog; }
+		return $newlog;
+	}
 	
 	public static function get_notifications ($package = NULL, $name = NULL)
 	{
