@@ -264,43 +264,43 @@ a:link.nolinkstyle
 /* Logfiles */
 .logemerge
 {
-  text-align:left; width:100%; color:#ffff80; background-color:#6f0000;
+  white-space:pre; text-align:left; width:100%; color:#ffff80; background-color:#6f0000;
 }
 .logalert
 {
-  text-align:left; width:100%; color:#ffffff; background-color:#0000a0;
+  white-space:pre; text-align:left; width:100%; color:#ffffff; background-color:#0000a0;
 }
 .logcrit
 {
-  text-align:left; width:100%; color:#000000; background-color:#FFc0c0;
+  white-space:pre; text-align:left; width:100%; color:#000000; background-color:#FFc0c0;
 }
 .logerr
 {
-  text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
+  white-space:pre; text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
 }
 .logwarn
 {
-  text-align:left; width:100%; color:#000000; background-color:#FFFFC0;
+  white-space:pre; text-align:left; width:100%; color:#000000; background-color:#FFFFC0;
 }
 .logok
 {
- text-align:left; width:100%; color:#000000; background-color:#D8FADC;
+ white-space:pre; text-align:left; width:100%; color:#000000; background-color:#D8FADC;
 }
 .loginf
 {
- text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
+ white-space:pre; text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }
 .logdeb
 {
- text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
+ white-space:pre; text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
 }
 .logstart
 {
- text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; color:#FFFFFF; background-color:#6dac20;
+ white-space:pre; text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; color:#FFFFFF; background-color:#6dac20;
 }
 .logend
 { 
-text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; 
+ white-space:pre; text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; 
 }
 /* Clock on mainmenu_start.html */
 

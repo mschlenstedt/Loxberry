@@ -32,7 +32,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.2";
+my $version = "1.2.0.3";
 my $iscgi;
 my $maintemplate;
 my %SL;
@@ -228,7 +228,6 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
     }
     # HTML Output
     if ($R::format eq "html" || $R::format eq "template") {
-      $_ =~ s/ /&nbsp;/g;
       $_ =~ s/([\e].*?)[m]//g;
 	  $_ =~ s/^(.*?)\s*<EMERGE>\s*(.*?)$/<div class='logemerge'>$1 <FONT color=red><B>EMERGE:<\/B><\/FONT> $2<\/div>/g;
      # $_ =~ s/<\/EMERGE>//g;
