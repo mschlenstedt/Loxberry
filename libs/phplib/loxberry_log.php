@@ -28,7 +28,7 @@ class intLog
     // ignore, Variables are read-only
   }
 	
-	public function startlog($msg)
+	public function LOGSTART($msg)
 	{
 		//initializing the log an printout the start message
 		global $lbhomedir;
@@ -58,7 +58,7 @@ class intLog
 		}
 	}
 	
-	public function logdeb($msg)
+	public function DEB($msg)
 	{
 		if ($this->loglevel > 6)
 		{
@@ -67,7 +67,7 @@ class intLog
 		}
 	}
 
-	public function loginf($msg)
+	public function INF($msg)
 	{
 		if ($this->loglevel > 5)
 		{
@@ -76,7 +76,7 @@ class intLog
 		}
 	}
 
-	public function logok($msg)
+	public function OK($msg)
 	{
 		if ($this->loglevel > 4)
 		{
@@ -85,7 +85,7 @@ class intLog
 		}
 	}
 
-	public function logwarn($msg)
+	public function WARN($msg)
 	{
 		if ($this->loglevel > 3)
 		{
@@ -94,7 +94,7 @@ class intLog
 		}
 	}
 
-	public function logerr($msg)
+	public function ERR($msg)
 	{
 		if ($this->loglevel > 2)
 		{
@@ -103,7 +103,7 @@ class intLog
 		}
 	}
 
-	public function logcrit($msg)
+	public function CRIT($msg)
 	{
 		if ($this->loglevel > 1)
 		{
@@ -113,7 +113,7 @@ class intLog
 		}
 	}
 
-	public function logalert($msg)
+	public function ALERT($msg)
 	{
 		if ($this->loglevel > 0)
 		{
@@ -123,7 +123,7 @@ class intLog
 		}
 	}
 
-	public function logemerg($msg)
+	public function EMERG($msg)
 	{
 		if ($this->loglevel >= 0)
 		{
@@ -133,7 +133,7 @@ class intLog
 		}
 	}
 	
-	public function logend($msg)
+	public function LOGEND($msg)
 	{
 		if ($this->params["loglevel"] >= -1)
 		{
@@ -159,8 +159,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.0.0.5";
-	private $stdLog;
+	public static $VERSION = "1.0.0.6";
 	
 	public static function newLog($args)
 	{
@@ -333,4 +332,66 @@ function notify_ext ($fields)
 	$result = file_get_contents($NOTIFHANDLERURL, false, $context);
 	if ($result === FALSE) { /* Handle error */ }
 	
+}
+
+$stdLog = NULL;
+
+function LOGSTART ($msg)
+{
+	global $stdLog;
+	$stdLog->LOGSTART($msg);
+}
+
+function LOGDEB ($msg)
+{
+	global $stdLog;
+	$stdLog->DEB($msg);
+}
+
+function LOGINF ($msg)
+{
+	global $stdLog;
+	$stdLog->INF($msg);
+}
+
+function LOGOK ($msg)
+{
+	global $stdLog;
+	$stdLog->OK($msg);
+}
+
+function LOGWARN ($msg)
+{
+	global $stdLog;
+	$stdLog->WARN($msg);
+}
+
+function LOGERR ($msg)
+{
+	global $stdLog;
+	$stdLog->ERR($msg);
+}
+
+function LOGCRIT ($msg)
+{
+	global $stdLog;
+	$stdLog->CRIT($msg);
+}
+
+function LOGALERT ($msg)
+{
+	global $stdLog;
+	$stdLog->ALERT($msg);
+}
+
+function LOGEMERG ($msg)
+{
+	global $stdLog;
+	$stdLog->EMERG($msg);
+}
+
+function LOGEND ($msg)
+{
+	global $stdLog;
+	$stdLog->LOGEND($msg);
 }
