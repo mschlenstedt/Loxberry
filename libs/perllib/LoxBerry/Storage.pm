@@ -274,7 +274,7 @@ sub get_usbstorages
 
 }
 
-sub get_all_storage
+sub get_storage
 {
 
 	my ($readwriteonly) = @_;
