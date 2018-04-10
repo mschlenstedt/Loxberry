@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.12";
+our $VERSION = "1.2.0.1";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1338,7 +1338,40 @@ sub vers_tag
 
 }
 
+sub bytes_humanreadable
+{
+	my ($size, $inputfactor) = @_;
+	
+	my $outputfactor;
+	
+	$inputfactor = uc($inputfactor);
+	$size = $size*1024 if ($inputfactor eq 'K');
+	$size = $size*1024*1024 if ($inputfactor eq 'M');
+	$size = $size*1024*1024*1024 if ($inputfactor eq 'G');
+	$size = $size*1024*1024*1024*1024 if ($inputfactor eq 'T');
+	
+	if ($size > (1024*1024*1024*1024)) {
+		$outputfactor = "T";
+		$size = $size/1024/1024/1024/1024;
+		
+	} elsif ($size > (1024*1024*1024)) {
+		$outputfactor = "G";
+		$size = $size/1024/1024/1024;
+	} elsif ($size > (1024*1024)) {
+		$outputfactor = "M";
+		$size = $size/1024/1024;
+	} elsif ($size > (1024)) {
+		$outputfactor = "K";
+		$size = $size/1024;
+	} else {
+		$outputfactor = "";
+	}
 
+	my $outstring = sprintf "%.1f", $size;
+	$outstring .= $outputfactor . "B";
+	return $outstring;
+	
+}
 
 
 #####################################################

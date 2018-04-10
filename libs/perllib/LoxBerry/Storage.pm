@@ -216,20 +216,30 @@ sub get_usbstorages
 		}
 		my $device = $_;	
 		my %usbstorage;
-		if ( $size eq "H" | $size eq "h" ) {
-			$opt = "-h";
-		}
-		$output = qx { df -P -l -T $opt | grep /media/usb/$device | sed 's/[[:space:]]\\+/|/g' };
-		@df = split(/\|/,$output);	
-		if ($size eq "MB" || $size eq "mb" ) {
-			$used = sprintf "%.1f",$df[3] / 1000;
-			$available = sprintf "%.1f",$df[4] / 1000;
-		} elsif ($size eq "GB" || $size eq "gb" ) {
-			$used = sprintf "%.1f",$df[3] / 1000 / 1000;
-			$available = sprintf "%.1f",$df[4] / 1000 / 1000;
+		# if ( $size eq "H" | $size eq "h" ) {
+			# $opt = "-h";
+		# }
+		# $output = qx { df -P -l -T $opt | grep /media/usb/$device | sed 's/[[:space:]]\\+/|/g' };
+		# @df = split(/\|/,$output);	
+
+		my %disk = LoxBerry::System::diskspaceinfo("$LoxBerry::System::lbhomedir/system/storage/usb/$device");
+
+		if (lc($size) eq "h") {
+			$used = LoxBerry::System::bytes_humanreadable($disk{used}, "k");
+			$size = LoxBerry::System::bytes_humanreadable($disk{size}, "k");
+			$available = LoxBerry::System::bytes_humanreadable($disk{available}, "k");
+		} elsif (lc($size) eq "mb" ) {
+			$used = sprintf "%.1f", $disk{used} / 1024;
+			$available = sprintf "%.1f", $disk{available} / 1024;
+			$size = sprintf "%.1f", $disk{size} / 1024;
+		} elsif (lc($size) eq "gb" ) {
+			$used = sprintf "%.1f", $disk{used} / 1024 / 1024;
+			$available = sprintf "%.1f", $disk{available} / 1024 / 1024;
+			$size = sprintf "%.1f", $disk{size} / 1024 /1024;
 		} else {
-			$used = $df[3];
-			$available = $df[4];
+			$used = $disk{used};
+			$available = $disk{available};
+			$size = $disk{size};
 		}
 		$type = qx ( blkid -o udev $df[0] | grep ID_FS_TYPE | awk -F "=" '{ print \$2 }' );
 		my $state = "";
@@ -249,12 +259,13 @@ sub get_usbstorages
 		$usbstoragecount++;
 		$usbstorage{USBSTORAGE_NO} = $usbstoragecount;
 		$usbstorage{USBSTORAGE_DEVICE} = $device;
-		$usbstorage{USBSTORAGE_BLOCKDEVICE} = $df[0];
+		$usbstorage{USBSTORAGE_BLOCKDEVICE} = $disk{filesystem};
 		$usbstorage{USBSTORAGE_TYPE} = $type;
 		$usbstorage{USBSTORAGE_STATE} = $state;
 		$usbstorage{USBSTORAGE_USED} = $used;
+		$usbstorage{USBSTORAGE_SIZE} = $size;
 		$usbstorage{USBSTORAGE_AVAILABLE} = $available;
-		$usbstorage{USBSTORAGE_CAPACITY} = $df[5];
+		$usbstorage{USBSTORAGE_CAPACITY} = $disk{usedpercent};
 		$usbstorage{USBSTORAGE_DEVICEPATH} = "$LoxBerry::System::lbhomedir/system/storage/usb/$device";
 		push(@usbstorages, \%usbstorage);
 	}
@@ -279,7 +290,11 @@ sub get_all_storage
 		$storage{TYPE} = $netshare->{NETSHARE_TYPE};
 		$storage{PATH} = $netshare->{NETSHARE_SHAREPATH};
 		$storage{WRITEABLE} = $netshare->{NETSHARE_STATE} eq 'Writable' ? 1 : 0;
-		$storage{NAME} = $netshare->{NETSHARE_SERVER} . '::' . $netshare->{NETSHARE_SHARENAME};
+		my %disk = LoxBerry::System::diskspaceinfo($netshare->{NETSHARE_SHAREPATH});
+		$storage{SIZE} = $disk{size};
+		$storage{SIZE_GB} = int($disk{size}/1024/1024+0.5);
+		$storage{NAME} = $netshare->{NETSHARE_SERVER} . '::' . $netshare->{NETSHARE_SHARENAME} . " (" . $storage{SIZE_GB} . " GB)";
+		
 		# Fields only per group
 		$storage{NETSHARE_SERVER} =  $netshare->{NETSHARE_SERVER};
 		$storage{NETSHARE_SHARENAME} = $netshare->{NETSHARE_SHARENAME}; 
@@ -296,7 +311,9 @@ sub get_all_storage
 		$storage{TYPE} = $usbdevice->{USBSTORAGE_TYPE};
 		$storage{PATH} = $usbdevice->{USBSTORAGE_DEVICEPATH};
 		$storage{WRITEABLE} = $usbdevice->{USBSTORAGE_STATE} eq 'Writable' ? 1 : 0;
-		$storage{NAME} = $usbdevice->{USBSTORAGE_DEVICE};
+		$storage{SIZE} = $usbdevice->{USBSTORAGE_SIZE};
+		$storage{SIZE_GB} = int($storage{SIZE}/1024/1024+0.5);
+		$storage{NAME} = "USB::" . $usbdevice->{USBSTORAGE_DEVICE} . " (" . $storage{SIZE_GB} . " GB)";
 		# Fields only per group
 		$storage{USBSTORAGE_DEVICE} = $usbdevice->{USBSTORAGE_DEVICE};
 		$storage{USBSTORAGE_BLOCKDEVICE} = $usbdevice->{USBSTORAGE_BLOCKDEVICE};
@@ -311,7 +328,11 @@ sub get_all_storage
 		$storage{TYPE} = 'local';
 		$storage{PATH} = $LoxBerry::System::lbpdatadir;
 		$storage{WRITEABLE} = 1;
-		$storage{NAME} = 'Local Plugin Datadir';
+		my %disk = LoxBerry::System::diskspaceinfo($LoxBerry::System::lbpdatadir);
+		$storage{SIZE} = $disk{size};
+		$storage{SIZE_GB} = int($disk{size}/1024/1024+0.5);
+		
+		$storage{NAME} = 'Local Plugin Datadir (' . $storage{SIZE_GB} . ' GB)';
 		push(@storages, \%storage);
 	}
 
