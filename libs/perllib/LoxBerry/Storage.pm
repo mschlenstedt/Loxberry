@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.2.0.1";
+our $VERSION = "1.2.0.2";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -107,7 +107,7 @@ sub get_netshares
 					$state = "Writable";
 				}
 				qx(rm \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\");
-				if ( ($readwriteonly && $state ne "Writeable") || !$state ) {
+				if ( ($readwriteonly && $state ne "Writable") || !$state ) {
 					next;
 				}
 				$netsharecount++;
@@ -263,6 +263,75 @@ sub get_usbstorages
 
 }
 
+sub get_all_storage
+{
+
+	my ($readwriteonly) = @_;
+	
+	my @storages;
+	
+	# Network Shares
+	my @netshares = LoxBerry::Storage::get_netshares($readwriteonly);
+	foreach my $netshare (@netshares) {
+		my %storage;
+		# print STDERR "$netshare->{NETSHARE_NO} $netshare->{NETSHARE_TYPE} $netshare->{NETSHARE_SHAREPATH}\n";
+		$storage{GROUP} = 'net';
+		$storage{TYPE} = $netshare->{NETSHARE_TYPE};
+		$storage{PATH} = $netshare->{NETSHARE_SHAREPATH};
+		$storage{WRITEABLE} = $netshare->{NETSHARE_STATE} eq 'Writable' ? 1 : 0;
+		$storage{NAME} = $netshare->{NETSHARE_SERVER} . '::' . $netshare->{NETSHARE_SHARENAME};
+		# Fields only per group
+		$storage{NETSHARE_SERVER} =  $netshare->{NETSHARE_SERVER};
+		$storage{NETSHARE_SHARENAME} = $netshare->{NETSHARE_SHARENAME}; 
+		
+		push(@storages, \%storage);
+	}
+	
+	# USB devices
+	my @usbdevices = LoxBerry::Storage::get_usbstorages(undef, $readwriteonly);
+	foreach my $usbdevice (@usbdevices) {
+		my %storage;
+		# print STDERR "$usbdevice->{USBSTORAGE_NO} $usbdevice->{USBSTORAGE_DEVICE} $usbdevice->{USBSTORAGE_DEVICEPATH}\n";
+		$storage{GROUP} = 'usb';
+		$storage{TYPE} = $usbdevice->{USBSTORAGE_TYPE};
+		$storage{PATH} = $usbdevice->{USBSTORAGE_DEVICEPATH};
+		$storage{WRITEABLE} = $usbdevice->{USBSTORAGE_STATE} eq 'Writable' ? 1 : 0;
+		$storage{NAME} = $usbdevice->{USBSTORAGE_DEVICE};
+		# Fields only per group
+		$storage{USBSTORAGE_DEVICE} = $usbdevice->{USBSTORAGE_DEVICE};
+		$storage{USBSTORAGE_BLOCKDEVICE} = $usbdevice->{USBSTORAGE_BLOCKDEVICE};
+		
+		push(@storages, \%storage);
+	}
+	
+	# Local Plugin data directory
+	if ($LoxBerry::System::lbpdatadir) {
+		my %storage;
+		$storage{GROUP} = 'local';
+		$storage{TYPE} = 'local';
+		$storage{PATH} = $LoxBerry::System::lbpdatadir;
+		$storage{WRITEABLE} = 1;
+		$storage{NAME} = 'Local Plugin Datadir';
+		push(@storages, \%storage);
+	}
+
+	return @storages;
+
+}
+
+sub get_storage_html
+{
+
+
+
+
+
+
+
+
+
+
+}
 #####################################################
 # Finally 1; ########################################
 #####################################################
