@@ -303,7 +303,7 @@ sub get_storage
 	}
 	
 	# USB devices
-	my @usbdevices = LoxBerry::Storage::get_usbstorages(undef, $readwriteonly);
+	my @usbdevices = LoxBerry::Storage::get_usbstorage(undef, $readwriteonly);
 	foreach my $usbdevice (@usbdevices) {
 		my %storage;
 		# print STDERR "$usbdevice->{USBSTORAGE_NO} $usbdevice->{USBSTORAGE_DEVICE} $usbdevice->{USBSTORAGE_DEVICEPATH}\n";
