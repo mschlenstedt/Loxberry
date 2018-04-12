@@ -289,7 +289,7 @@ sub get_storage
 		$storage{GROUP} = 'net';
 		$storage{TYPE} = $netshare->{NETSHARE_TYPE};
 		$storage{PATH} = $netshare->{NETSHARE_SHAREPATH};
-		$storage{WRITEABLE} = $netshare->{NETSHARE_STATE} eq 'Writable' ? 1 : 0;
+		$storage{WRITABLE} = $netshare->{NETSHARE_STATE} eq 'Writable' ? 1 : 0;
 		my %disk = LoxBerry::System::diskspaceinfo($netshare->{NETSHARE_SHAREPATH});
 		$storage{SIZE} = $disk{size};
 		$storage{SIZE_GB} = int($disk{size}/1024/1024+0.5);
@@ -310,7 +310,7 @@ sub get_storage
 		$storage{GROUP} = 'usb';
 		$storage{TYPE} = $usbdevice->{USBSTORAGE_TYPE};
 		$storage{PATH} = $usbdevice->{USBSTORAGE_DEVICEPATH};
-		$storage{WRITEABLE} = $usbdevice->{USBSTORAGE_STATE} eq 'Writable' ? 1 : 0;
+		$storage{WRITABLE} = $usbdevice->{USBSTORAGE_STATE} eq 'Writable' ? 1 : 0;
 		$storage{SIZE} = $usbdevice->{USBSTORAGE_SIZE};
 		$storage{SIZE_GB} = int($storage{SIZE}/1024/1024+0.5);
 		$storage{NAME} = "USB::" . $usbdevice->{USBSTORAGE_DEVICE} . " (" . $storage{SIZE_GB} . " GB)";
@@ -327,7 +327,7 @@ sub get_storage
 		$storage{GROUP} = 'local';
 		$storage{TYPE} = 'local';
 		$storage{PATH} = $LoxBerry::System::lbpdatadir;
-		$storage{WRITEABLE} = 1;
+		$storage{WRITABLE} = 1;
 		my %disk = LoxBerry::System::diskspaceinfo($LoxBerry::System::lbpdatadir);
 		$storage{SIZE} = $disk{size};
 		$storage{SIZE_GB} = int($disk{size}/1024/1024+0.5);
