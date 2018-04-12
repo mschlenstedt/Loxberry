@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.2.0.2";
+our $VERSION = "1.2.0.3";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -187,7 +187,7 @@ sub get_netservers
 # Parameter: 	1. Defines Filesize. Allowed values: MB, GB. If empty, kB is used.
 #            	2. If defined (=1), returns only devices with read/write access
 ##################################################################################
-sub get_usbstorages
+sub get_usbstorage
 {
 	my ($size, $readwriteonly) = @_;
 
