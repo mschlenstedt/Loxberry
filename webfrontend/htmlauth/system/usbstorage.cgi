@@ -52,7 +52,7 @@ our $languagefile;
 ##########################################################################
 
 # Version of this script
-my $version = "1.2.0.1";
+my $version = "1.2.0.2";
 
 $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 
@@ -103,7 +103,7 @@ if ($cgi->param("a") eq "debuglog") {
 	
 	LOGSTART "usbstorage.cgi - debugging starts";
 
-	my @usbstorages = LoxBerry::Storage::get_usbstorages("H");
+	my @usbstorages = LoxBerry::Storage::get_usbstorage("H");
 
 	LOGINF "Output of 'cat /etc/fstab':";
 	$log->close;
@@ -142,7 +142,7 @@ if ($cgi->param("a") eq "debuglog") {
 if ( !$cgi->param("a") ) {
 
 	# Get all Network shares
-	my @usbstorages = LoxBerry::Storage::get_usbstorages("H");
+	my @usbstorages = LoxBerry::Storage::get_usbstorage("H");
 	if (-e "$lbhomedir/log/system_tmpfs/usbstorage_debug.log" ) {
 		$maintemplate->param("DEBUGLOGEXISTS", 1);
 	}
