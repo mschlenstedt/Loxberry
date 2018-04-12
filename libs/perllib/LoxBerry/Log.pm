@@ -1084,7 +1084,7 @@ sub get_notifications_html
 		$notif_line .= qq(   <div style='vertical-align: middle; width:25%; display: table-cell; align:right; text-align: right;'>\n);
 		$notif_line .= qq(      <a class="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=$logfilepath&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>\n) if ($logfilepath);
 		$notif_line .= qq(      <a class="btnlink" data-role="button" href="$link" target="$linktarget" data-inline="true" data-mini="true" data-icon="action">Details</a>\n) if ($link);
-		$notif_line .= qq(      <a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>Dismiss</a>\n);
+		$notif_line .= qq(      <a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>(X)</a>\n);
 		$notif_line .= qq(   </div>\n);
 		# print STDERR $notif_line if ($DEBUG);
 		$notif_line .= qq(</div>\n);
@@ -1105,6 +1105,7 @@ sub get_notifications_html
 				);
 	$maintemplate->param( 'NOTIFICATIONS' => $all_notifys);
 	$maintemplate->param( 'RAND' => $randval );
+	my %SL = LoxBerry::System::readlanguage($maintemplate, undef, 1);
 	#print STDERR 
 	return $maintemplate->output();
 	
