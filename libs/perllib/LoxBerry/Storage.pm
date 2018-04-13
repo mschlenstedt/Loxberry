@@ -341,12 +341,14 @@ sub get_storage
 }
 
 # EXTERNAL function to query storage form HTML
+# Returns a HTML to select storage (see http://www.loxwiki.eu/x/BgHgAQ)
+# This function creates a POST request to the ajax-storage-handler, that by itself calls LoxBerry::Storage::get_storage
+# This kind of processing simplifies AJAX requests and scripting language independency
+
 sub get_storage_html
 {
 	
 	my %args = @_;
-	
-	print STDERR "Args: " . $args{formid} . "\n";
 	
 	require LWP::UserAgent;
 	my $ua = LWP::UserAgent->new;
@@ -359,6 +361,7 @@ sub get_storage_html
 	 
 	# add POST data to HTTP request body
 	my $post_data;
+	$post_data = "action=init&";
 	foreach my $param (keys %args) {
 		$post_data .= URI::Escape::uri_escape($param) . '=' . URI::Escape::uri_escape($args{$param}) . '&'; 
 	}
@@ -375,15 +378,6 @@ sub get_storage_html
 		print STDERR "get_storage_html: HTTP POST error message: ", $resp->message, "\n";
 		return undef;
 	}
-
-}
-
-# INTERNAL Worker function for ajax-storage-handler
-sub get_storage_html_worker
-{
-
-
-
 
 }
 
