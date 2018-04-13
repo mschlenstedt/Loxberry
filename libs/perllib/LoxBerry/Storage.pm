@@ -348,6 +348,7 @@ sub get_storage
 sub get_storage_html
 {
 	
+	#shift;
 	my %args = @_;
 	
 	require LWP::UserAgent;
@@ -363,6 +364,7 @@ sub get_storage_html
 	my $post_data;
 	$post_data = "action=init&";
 	foreach my $param (keys %args) {
+		#print STDERR "Storage.pm: $param --> $args{$param}\n";
 		$post_data .= URI::Escape::uri_escape($param) . '=' . URI::Escape::uri_escape($args{$param}) . '&'; 
 	}
 	

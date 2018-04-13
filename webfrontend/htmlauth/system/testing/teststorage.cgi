@@ -20,9 +20,11 @@ print "<p>";
     # print "$storage->{GROUP} $storage->{TYPE} $storage->{NAME} $storage->{PATH} Writable:$storage->{WRITEABLE}<br>";
 # }
 
-print LoxBerry::Storage::get_storage_html(formid => 'myform');
-
-
+print LoxBerry::Storage::get_storage_html(
+	formid => 'mystorage', 
+	currentpath => '/opt/loxberry/system/storage/usb/9daec47a-01/test/',
+	custom_folder => 1,
+);
 
 LoxBerry::Web::lbfooter();
 
