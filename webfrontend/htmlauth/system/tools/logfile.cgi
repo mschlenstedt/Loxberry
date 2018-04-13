@@ -32,7 +32,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "1.2.0.3";
+my $version = "1.2.0.4";
 my $iscgi;
 my $maintemplate;
 my %SL;
@@ -132,8 +132,6 @@ if (begins_with($R::logfile, $lbhomedir . "/log")) {
 	$R::logfile = substr($R::logfile, length($lbhomedir . "/log"));
 }
 $R::logfile =~ s/^\///;
-
-print STDERR "Logfile: $R::logfile\n";
 
 # Check if logfile exists
 if (-e "/tmp/$R::logfile") {
