@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.2.0.3";
+our $VERSION = "1.2.0.4";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -340,19 +340,53 @@ sub get_storage
 
 }
 
+# EXTERNAL function to query storage form HTML
 sub get_storage_html
+{
+	
+	my %args = @_;
+	
+	print STDERR "Args: " . $args{formid} . "\n";
+	
+	require LWP::UserAgent;
+	my $ua = LWP::UserAgent->new;
+	 
+	my $server_endpoint = "http://localhost:" . LoxBerry::System::lbwebserverport() . "/admin/system/tools/ajax-storage-handler.cgi";
+	 
+	# set custom HTTP request header fields
+	my $req = HTTP::Request->new(POST => $server_endpoint);
+	$req->header('content-type' => 'application/x-www-form-urlencoded');
+	 
+	# add POST data to HTTP request body
+	my $post_data;
+	foreach my $param (keys %args) {
+		$post_data .= URI::Escape::uri_escape($param) . '=' . URI::Escape::uri_escape($args{$param}) . '&'; 
+	}
+	
+	$req->content($post_data);
+	 
+	my $resp = $ua->request($req);
+	if ($resp->is_success) {
+		my $message = $resp->decoded_content;
+		return $message;
+	}
+	else {
+		print STDERR "get_storage_html: HTTP POST error code: ", $resp->code, "\n";
+		print STDERR "get_storage_html: HTTP POST error message: ", $resp->message, "\n";
+		return undef;
+	}
+
+}
+
+# INTERNAL Worker function for ajax-storage-handler
+sub get_storage_html_worker
 {
 
 
 
 
-
-
-
-
-
-
 }
+
 #####################################################
 # Finally 1; ########################################
 #####################################################
