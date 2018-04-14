@@ -48,6 +48,12 @@ exit;
 sub init_html 
 {
 
+	my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+
+	if(! $R::label) {
+		$R::label = $SL{'STORAGE.GET_STORAGE_HTML_LABEL'};
+	}
+	
 	if (! $R::formid) {
 		$R::formid = "storage" . int(rand(1000));
 	}
@@ -57,7 +63,7 @@ sub init_html
 	}
 
 	if (! $R::type_all && ! $R::type_usb && ! $R::type_net && ! $R::type_local && ! $R::type_custom) {
-		$R::typeall = 1;
+		$R::type_all = 1;
 	}
 	if ($R::type_all eq "1") {
 		$R::type_usb = "1";
@@ -66,19 +72,24 @@ sub init_html
 		$R::type_custom = "1";
 	}
 
-	print $cgi->header(-type => 'text/html;charset=utf-8',
+	print $cgi->header(-type => 'text/html',
 					-status => "200 OK",
 	);
 	
+	# print $cgi->header(-type => 'text/html;charset=utf-8',
+					# -status => "200 OK",
+	# );
+	
+	
 	my $html = <<EOF;
 	<div data-role="fieldcontain">
-		<label for="$R::formid-select">Select storage</label>
+		<label for="$R::formid-select">$R::label</label>
 		<select name="$R::formid-select" id="$R::formid-select" disabled>
-			<option value="">Please wait...</option>
+			<option value="">$SL{'COMMON.MSG_PLEASEWAIT'}</option>
 		</select>	
 	</div>
 	<div data-role="fieldcontain" id="$R::formid-foldercontain" style="display:none">
-		<label for="$R::formid-folder">Subfolder</label>
+		<label for="$R::formid-folder">$SL{'STORAGE.GET_STORAGE_HTML_FOLDER'}</label>
 		<input name="$R::formid-folder" id="$R::formid-folder" type="text" name="folder" disabled>
 	</div>
 	<input type="hidden" name="$R::formid" id="$R::formid" value="$R::currentpath">
@@ -114,7 +125,7 @@ var ${R::formid}_storage = [""];
 	.done(function(stor) {
 		console.log("AJAX done");
 		var currentpath = "$R::currentpath";
-		var option = \$('<option></option>').attr("value", "").text("Select...");
+		var option = \$('<option></option>').attr("value", "").text("$SL{'STORAGE.GET_STORAGE_HTML_SELECT'}");
 		select.empty().append(option);
 		
 		for (var i=0; i < stor.length; i++) {
@@ -138,7 +149,7 @@ var ${R::formid}_storage = [""];
 		}
 		
 		if (type_custom == "1") {
-			option = \$('<option></option>').attr("value", "0").text("Custom path:");
+			option = \$('<option></option>').attr("value", "0").text("$SL{'STORAGE.GET_STORAGE_HTML_CUSTOMPATH'}");
 			select.append(option);
 			// console.log("Selected:", select.val());
 			if(currentpath != "" && select.val() == "") {

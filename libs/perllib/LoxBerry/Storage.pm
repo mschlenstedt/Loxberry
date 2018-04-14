@@ -358,7 +358,7 @@ sub get_storage_html
 	 
 	# set custom HTTP request header fields
 	my $req = HTTP::Request->new(POST => $server_endpoint);
-	$req->header('content-type' => 'application/x-www-form-urlencoded');
+	$req->header('content-type' => 'application/x-www-form-urlencoded; charset=utf-8');
 	 
 	# add POST data to HTTP request body
 	my $post_data;
@@ -371,6 +371,7 @@ sub get_storage_html
 	foreach my $param (keys %args) {
 		#print STDERR "Storage.pm: $param --> $args{$param}\n";
 		$post_data .= URI::Escape::uri_escape($param) . '=' . URI::Escape::uri_escape($args{$param}) . '&'; 
+		# $post_data .= $param . '=' . $args{$param} . '&'; 
 	}
 	
 	$req->content($post_data);
