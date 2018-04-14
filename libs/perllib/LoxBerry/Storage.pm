@@ -277,7 +277,7 @@ sub get_usbstorage
 sub get_storage
 {
 
-	my ($readwriteonly) = @_;
+	my ($readwriteonly, $localdir) = @_;
 	
 	my @storages;
 	
@@ -322,17 +322,17 @@ sub get_storage
 	}
 	
 	# Local Plugin data directory
-	if ($LoxBerry::System::lbpdatadir) {
+	if ($LoxBerry::System::lbpdatadir || $localdir) {
 		my %storage;
 		$storage{GROUP} = 'local';
 		$storage{TYPE} = 'local';
-		$storage{PATH} = $LoxBerry::System::lbpdatadir;
+		$storage{PATH} = $localdir ? $localdir : $LoxBerry::System::lbpdatadir;
 		$storage{WRITABLE} = 1;
-		my %disk = LoxBerry::System::diskspaceinfo($LoxBerry::System::lbpdatadir);
+		my %disk = LoxBerry::System::diskspaceinfo($storage{PATH});
 		$storage{SIZE} = $disk{size};
 		$storage{SIZE_GB} = int($disk{size}/1024/1024+0.5);
 		
-		$storage{NAME} = 'Local Plugin Datadir (' . $storage{SIZE_GB} . ' GB)';
+		$storage{NAME} = 'Local Datadir (' . $storage{SIZE_GB} . ' GB)';
 		push(@storages, \%storage);
 	}
 
@@ -363,6 +363,11 @@ sub get_storage_html
 	# add POST data to HTTP request body
 	my $post_data;
 	$post_data = "action=init&";
+	
+	if($LoxBerry::System::lbpdatadir) {
+		$post_data .= 'localdir=' . URI::Escape::uri_escape($LoxBerry::System::lbpdatadir) . '&';
+	}
+	
 	foreach my $param (keys %args) {
 		#print STDERR "Storage.pm: $param --> $args{$param}\n";
 		$post_data .= URI::Escape::uri_escape($param) . '=' . URI::Escape::uri_escape($args{$param}) . '&'; 

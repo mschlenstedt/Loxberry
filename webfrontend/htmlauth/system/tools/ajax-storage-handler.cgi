@@ -55,7 +55,17 @@ sub init_html
 	if (substr($R::currentpath, -1) eq "/") {
 		$R::currentpath = substr($R::currentpath, 0, -1);
 	}
-	
+
+	if (! $R::type_all && ! $R::type_usb && ! $R::type_net && ! $R::type_local && ! $R::type_custom) {
+		$R::typeall = 1;
+	}
+	if ($R::type_all eq "1") {
+		$R::type_usb = "1";
+		$R::type_net = "1";
+		$R::type_local = "1";
+		$R::type_custom = "1";
+	}
+
 	print $cgi->header(-type => 'text/html;charset=utf-8',
 					-status => "200 OK",
 	);
@@ -74,34 +84,71 @@ sub init_html
 	<input type="hidden" name="$R::formid" id="$R::formid" value="$R::currentpath">
 	
 <script>
+/*
+DEBUG
+	type_all: $R::type_all
+	type_usb: $R::type_usb
+	type_net: $R::type_net
+	type_local: $R::type_local
+	type_custom: $R::type_custom
+
+*/
+var ${R::formid}_storage = [""];
+
 \$(function() {
 	console.log( "JS loaded" );
+	
+	// Init things to display
+	
+	
+	
 	var select = \$("#$R::formid-select");
 	if ("$R::custom_folder" > 0) 
 		\$("#$R::formid-foldercontain").fadeIn();
 	
 	\$.post ( '/admin/system/tools/ajax-storage-handler.cgi', 
 					{ 	action: 'get-storage',
-						
+						readwriteonly: '$R::readwriteonly',
+						localdir: '$R::localdir',
 					})
 	.done(function(stor) {
 		console.log("AJAX done");
 		var currentpath = "$R::currentpath";
 		var option = \$('<option></option>').attr("value", "").text("Select...");
 		select.empty().append(option);
-		//var option = "<option value=''>Select...</option>";
+		
 		for (var i=0; i < stor.length; i++) {
 			// console.log("Storage " + i, stor[i].NAME);
-			option = \$('<option></option>').attr("value", stor[i].PATH).text(stor[i].NAME);
-			// storhtml += "<option value=\"" + stor[i].PATH + "\">" + stor[i].NAME + "</option>";
+			if (stor[i].GROUP == "net" && "$R::type_net" != "1") continue;
+			if (stor[i].GROUP == "usb" && "$R::type_usb" != "1") continue;
+			if (stor[i].GROUP == "local" && "$R::type_local" != "1") continue;
+			${R::formid}_storage[i+1] = stor[i].PATH;
+			option = \$('<option></option>').attr("value", i+1).text(stor[i].NAME);
 			select.append(option);
 			if(currentpath.startsWith(stor[i].PATH)) {
-				select.val(stor[i].PATH);
+				select.val(i+1);
 				var foldertmp = currentpath.substr(stor[i].PATH.length);
 				\$("#$R::formid-folder").val(foldertmp);
 			}
-				
 		}
+		
+		var type_custom = "$R::type_custom";
+		if (currentpath != "" && select.val() == "") {
+			type_custom = "1";
+		}
+		
+		if (type_custom == "1") {
+			option = \$('<option></option>').attr("value", "0").text("Custom path:");
+			select.append(option);
+			// console.log("Selected:", select.val());
+			if(currentpath != "" && select.val() == "") {
+				\$("#$R::formid-folder").val(currentpath);
+				select.val("0");
+				\$("#$R::formid-foldercontain").fadeIn();
+			}
+		}
+		
+		
 		//select.selectmenu();
 		select.selectmenu('enable');
 		select.selectmenu('refresh', true);
@@ -118,7 +165,18 @@ sub init_html
 	
 	select.change(function() {
 		console.log("SELECT changed");
-		\$("#$R::formid").val(select.val() + \$("#$R::formid-folder").val());
+		if(select.val() == "0")
+			\$("#$R::formid-foldercontain").fadeIn();
+		if(select.val() != "0" && "$R::custom_folder" != "1") {
+			\$("#$R::formid-foldercontain").fadeOut();
+			\$("#$R::formid-folder").val("");
+		}
+		if (select.val() != "") 
+			\$("#$R::formid").val(${R::formid}_storage[select.val()] + \$("#$R::formid-folder").val());
+		else 
+			\$("#$R::formid").val("");
+		
+		
 	});
 	
 	\$("#$R::formid-folder").blur(function() {
@@ -133,7 +191,7 @@ sub init_html
 			\$("#$R::formid-folder").val(folder);
 		}
 		
-		\$("#$R::formid").val(select.val() + folder);
+		\$("#$R::formid").val(${R::formid}_storage[select.val()] + folder);
 	});
 	
 	
@@ -152,7 +210,7 @@ EOF
 sub get_storage
 {
 	print $cgi->header(-type => 'application/json;charset=utf-8', -status => "200 OK");
-	my @storage = LoxBerry::Storage::get_storage();
+	my @storage = LoxBerry::Storage::get_storage($R::readwriteonly, $R::localdir);
 	print to_json(\@storage);
 	exit;
 }

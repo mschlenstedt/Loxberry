@@ -22,8 +22,11 @@ print "<p>";
 
 print LoxBerry::Storage::get_storage_html(
 	formid => 'mystorage', 
-	currentpath => '/opt/loxberry/system/storage/usb/9daec47a-01/test/',
+	# currentpath => '/opt/loxberry/system/storage/usb/9daec47a-01/test/',
+	currentpath => '/backup/',
 	custom_folder => 1,
+	type_all => 1,
+	readwriteonly => 1,
 );
 
 LoxBerry::Web::lbfooter();
