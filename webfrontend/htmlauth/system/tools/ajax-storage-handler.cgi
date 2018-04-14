@@ -38,10 +38,10 @@ elsif ($action eq 'get-storage') {get_storage();}
 # elsif ($action eq 'get_notifications_html') {getnotificationshtml();}
 # elsif ($action eq 'notifyext') {setnotifyext();}
 
-# else {
-	# print $cgi->header(-type => 'application/json;charset=utf-8', -status => "500 Action not supported");
-	# exit;
-# }
+else {
+	print $cgi->header(-type => 'application/json;charset=utf-8', -status => "500 Action not supported");
+	exit;
+}
 
 exit;
 
@@ -76,11 +76,6 @@ sub init_html
 					-status => "200 OK",
 	);
 	
-	# print $cgi->header(-type => 'text/html;charset=utf-8',
-					# -status => "200 OK",
-	# );
-	
-	
 	my $html = <<EOF;
 	<div data-role="fieldcontain">
 		<label for="$R::formid-select">$R::label</label>
@@ -107,11 +102,7 @@ DEBUG
 var ${R::formid}_storage = [""];
 
 \$(function() {
-	console.log( "JS loaded" );
-	
 	// Init things to display
-	
-	
 	
 	var select = \$("#$R::formid-select");
 	if ("$R::custom_folder" > 0) 
@@ -159,8 +150,6 @@ var ${R::formid}_storage = [""];
 			}
 		}
 		
-		
-		//select.selectmenu();
 		select.selectmenu('enable');
 		select.selectmenu('refresh', true);
 		\$("#$R::formid-folder").textinput({ disabled: false });
@@ -187,10 +176,11 @@ var ${R::formid}_storage = [""];
 		else 
 			\$("#$R::formid").val("");
 		
+		\$("#$R::formid").trigger("change");
 		
 	});
 	
-	\$("#$R::formid-folder").blur(function() {
+	\$("#$R::formid-folder").change(function() {
 		console.log("FOLDER changed");
 		var folder = \$("#$R::formid-folder").val();
 		if (folder.charAt(0) != "/") {
@@ -203,12 +193,9 @@ var ${R::formid}_storage = [""];
 		}
 		
 		\$("#$R::formid").val(${R::formid}_storage[select.val()] + folder);
+		\$("#$R::formid").trigger("change");
 	});
-	
-	
 });
-
-
 
 </script>
 EOF
