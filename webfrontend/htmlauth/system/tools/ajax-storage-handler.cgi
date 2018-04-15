@@ -111,7 +111,13 @@ var ${R::formid}_storage = [""];
 	var select = \$("#$R::formid-select");
 	if ("$R::custom_folder" > 0) 
 		\$("#$R::formid-foldercontain").fadeIn();
-	
+	var ${R::formid}_load_interval = setInterval(function(){ 
+		var optiontext = \$('select[name=$R::formid-select] > option:first-child').text();
+		// console.log("Current Waiting text:", optiontext);
+		optiontext = optiontext + ".";
+		\$('select[name=$R::formid-select] > option:first-child').text(optiontext);
+		select.selectmenu('refresh', true);
+		}, 2000); 
 	\$.post ( '/admin/system/tools/ajax-storage-handler.cgi', 
 					{ 	action: 'get-storage',
 						readwriteonly: '$R::readwriteonly',
@@ -161,10 +167,7 @@ var ${R::formid}_storage = [""];
 	})
 	
 	.always(function(data) {
-		//if (typeof updatenavbar !== 'undefined' && \$.isFunction(updatenavbar)) {
-		//	console.log("Done");
-		//	updatenavbar();
-		//}
+		clearInterval(${R::formid}_load_interval);
 	});
 	
 	select.change(function() {
