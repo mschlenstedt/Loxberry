@@ -18,7 +18,7 @@ function get_storage_html ($args)
 	
 	if (isset($lbpdatadir)) {
 		$args['localdir'] = $lbpdatadir;
-	)
+	}
 	
 	$options = array(
 		'http' => array(
