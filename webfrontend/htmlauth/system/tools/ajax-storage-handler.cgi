@@ -72,6 +72,9 @@ sub init_html
 		$R::type_custom = "1";
 	}
 
+	if ($R::data_mini eq "1") {
+		$R::jqm_data_mini = 'data-mini="true"';
+	}
 	print $cgi->header(-type => 'text/html',
 					-status => "200 OK",
 	);
@@ -79,19 +82,20 @@ sub init_html
 	my $html = <<EOF;
 	<div data-role="fieldcontain">
 		<label for="$R::formid-select">$R::label</label>
-		<select name="$R::formid-select" id="$R::formid-select" disabled>
+		<select name="$R::formid-select" id="$R::formid-select" disabled $R::jqm_data_mini>
 			<option value="">$SL{'COMMON.MSG_PLEASEWAIT'}</option>
 		</select>	
 	</div>
 	<div data-role="fieldcontain" id="$R::formid-foldercontain" style="display:none">
 		<label for="$R::formid-folder">$SL{'STORAGE.GET_STORAGE_HTML_FOLDER'}</label>
-		<input name="$R::formid-folder" id="$R::formid-folder" type="text" name="folder" disabled>
+		<input name="$R::formid-folder" id="$R::formid-folder" type="text" name="folder" disabled $R::jqm_data_mini>
 	</div>
 	<input type="hidden" name="$R::formid" id="$R::formid" value="$R::currentpath">
 	
 <script>
 /*
 DEBUG
+	formid: $R::formid
 	type_all: $R::type_all
 	type_usb: $R::type_usb
 	type_net: $R::type_net
