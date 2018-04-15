@@ -16,7 +16,7 @@ function get_storage_html ($args)
 		// 'action' => 'init',
 	// );
 	
-	if (isset($lbpdatadir)) {
+	if (!isset($args['localdir']) && isset($lbpdatadir)) {
 		$args['localdir'] = $lbpdatadir;
 	}
 	
@@ -24,13 +24,13 @@ function get_storage_html ($args)
 		'http' => array(
 			'header'  => "Content-type: application/x-www-form-urlencoded; charset=utf-8\r\n",
 			'method'  => 'POST',
-			'content' => http_build_query($fields)
+			'content' => http_build_query($args)
 			)
 	);
 	$context  = stream_context_create($options);
 	$result = file_get_contents($STORAGEHANDLERURL, false, $context);
 	if ($result === FALSE) { 
-		error_log("get_notifications_html: Could not get notifications"); 
+		error_log("get_storage_html: Could not get storage html"); 
 		return;
 	}
 	
