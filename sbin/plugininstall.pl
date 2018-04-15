@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.2.0.2";
+my $version = "1.2.0.3";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -364,20 +364,6 @@ our $plbmax           = $pcfg->param("SYSTEM.LB_MAXIMUM");
 our $parch            = $pcfg->param("SYSTEM.ARCHITECTURE");
 
 # Filter
-#quotemeta($pauthorname);
-#quotemeta($pauthoremail);
-#quotemeta($pversion);
-#quotemeta($pname);
-#quotemeta($ptitle);
-#quotemeta($pfolder);
-#quotemeta($pinterface);
-#quotemeta($pautoupdates);
-#quotemeta($preleasecfg);
-#quotemeta($pprereleasecfg);
-#quotemeta($preboot);
-#quotemeta($plbmin);
-#quotemeta($plbmax);
-#quotemeta($parch);
 $pname =~ tr/A-Za-z0-9_-//cd;
 $pfolder =~ tr/A-Za-z0-9_-//cd;
 if (length($ptitle) > 25) {
@@ -503,7 +489,7 @@ if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
   $versioncheck = 0;
 }
 
-if ( !is_disabled($lbmin) && $versioncheck) {
+if ( !is_disabled($plbmin) && $versioncheck) {
 
   if ( (version::is_lax(vers_tag($plbmin))) ) {
     $plbmin = version->parse(vers_tag($plbmin));
@@ -521,7 +507,7 @@ if ( !is_disabled($lbmin) && $versioncheck) {
 
 }
 
-if ( !is_disabled($lbmax) && $versioncheck) {
+if ( !is_disabled($plbmax) && $versioncheck) {
 
   if ( (version::is_lax(vers_tag($plbmax))) ) {
     $plbmax = version->parse(vers_tag($plbmax));
