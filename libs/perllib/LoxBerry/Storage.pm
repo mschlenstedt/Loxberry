@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.2.0.4";
+our $VERSION = "1.2.0.5";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -241,7 +241,7 @@ sub get_usbstorage
 			$available = $disk{available};
 			$size = $disk{size};
 		}
-		$type = qx ( blkid -o udev $df[0] | grep ID_FS_TYPE | awk -F "=" '{ print \$2 }' );
+		$type = qx ( blkid -o udev $disk{filesystem} | grep ID_FS_TYPE | awk -F "=" '{ print \$2 }' );
 		my $state = "";
 		# Check read/write state
 		qx(ls \"$LoxBerry::System::lbhomedir/system/storage/usb/$device\");
