@@ -439,6 +439,176 @@ sub DESTROY {
 	# print STDERR "Desctuctor closed file.\n";
 } 
 
+################################################
+# Database function for logging
+################################################
+
+# INTERNAL FUNCTIONS
+sub log_db_init_database
+{
+
+	my $dbfile = $LoxBerry::System::lbsdatadir . "/logs_sqlite.dat";
+	
+	my $dbh;
+	my $dores;
+	
+	$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or 
+		do {
+			print STDERR "log_init_database connect: $DBI::errstr\n";
+			return undef;
+			};
+	$dbh->{sqlite_unicode} = 1;
+	
+	$dbh->do("CREATE TABLE IF NOT EXISTS logs (
+				PACKAGE VARCHAR(255) NOT NULL,
+				NAME VARCHAR(255) NOT NULL,
+				FILENAME VARCHAR (2048) NOT NULL,
+				LOGSTART DATETIME NOT NULL,
+				LOGEND DATETIME,
+				LOGKEY INTEGER PRIMARY KEY 
+			)") or 
+		do {
+			print STDERR "log_init_database create table notifications: $DBI::errstr\n";
+			return undef;
+			};
+
+	# $dbh->do("CREATE TABLE IF NOT EXISTS notifications_attr (
+				# keyref INTEGER NOT NULL,
+				# attrib VARCHAR(255) NOT NULL,
+				# value VARCHAR(255),
+				# PRIMARY KEY ( keyref, attrib )
+				# )") or
+		# do {
+			# print STDERR "notify_init_database create table notifications_attr: $DBI::errstr\n";
+			# return undef;
+		# };
+	
+	return $dbh;
+
+}
+
+sub log_db_query_id
+{
+	
+	my $dbh = shift;
+	my %p = %{shift()};
+		
+	# Check mandatory fields
+	Carp::croak "log_db_queryid: No FILENAME defined\n" if (! $p{FILENAME});
+		
+	# Search filename
+	my $qu = "SELECT LOGKEY FROM logs FILENAME LIKE %p{FILENAME} ORDER BY LOGSTART DESC LIMIT 1;"; 
+	my ($logid) = $dbh->selectrow_array($qu);
+	
+	if ($logid) {
+		return $logid;
+	}
+	return;
+
+}
+
+
+sub log_db_startlog
+{
+	
+	my $dbh = shift;
+	my %p = %{shift()};
+		
+	# print STDERR "Package: " . $p{'package'} . "\n";
+	
+	# Check mandatory fields
+	Carp::croak "Create DB log entry: No PACKAGE defined\n" if (! $p{PACKAGE});
+	Carp::croak "Create DB log entry: No NAME defined\n" if (! $p{NAME});
+	Carp::croak "Create DB log entry: No FILENAME defined\n" if (! $p{FILENAME});
+	# Carp::croak "Create DB log entry: No LOGSTART defined\n" if (! $p{LOGSTART});
+
+	if (!$p{LOGSTART}) {
+		my $t = localtime;
+		$p{LOGSTART} = $t->strftime("%Y-%m-%d %H:%M:%S");
+	}
+	
+	# Start transaction
+	$dbh->do("BEGIN TRANSACTION;"); 
+	
+	# Insert main notification
+	my $sth = $dbh->prepare('INSERT INTO logs (PACKAGE, NAME, FILENAME, LOGSTART) VALUES (?, ?, ?, ?) ;');
+	$sth->execute($p{PACKAGE}, $p{NAME}, $p{FILENAME} , $p{LOGSTART}) or 
+		do {
+			Carp::croak "Error inserting log to DB: $DBI::errstr\n";
+			return undef;
+		};
+	
+	my $id = $dbh->sqlite_last_insert_rowid();
+	
+	# # Process further attributes
+	
+	# my $sth2;
+	# $sth2 = $dbh->prepare('INSERT INTO notifications_attr (keyref, attrib, value) VALUES (?, ?, ?);');
+	
+	# for my $key (keys %p) {
+		# next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'MESSAGE' or $key eq 'SEVERITY');
+		# $sth2->execute($id, $key, $p{$key});
+	# }
+
+	$dbh->do("COMMIT;") or
+		do {
+			print STDERR "log_insert: commit failed: $DBI::errstr\n";
+			return undef;
+		};
+	
+	return "Success";
+
+}
+
+sub log_db_endlog
+{
+	
+	my $dbh = shift;
+	my %p = %{shift()};
+		
+	# print STDERR "Package: " . $p{'package'} . "\n";
+	
+	# Check mandatory fields
+	Carp::croak "log_db_endlog: No LOGID defined\n" if (! $p{LOGID});
+	
+	my $t = localtime;
+	my $logend = $t->strftime("%Y-%m-%d %H:%M:%S");
+
+	
+	# Start transaction
+	$dbh->do("BEGIN TRANSACTION;"); 
+	
+	# Insert main notification
+	my $sth = $dbh->prepare('UPDATE logs set LOGEND = ? WHERE LOGKEY = ? ;');
+	$sth->execute($logend, $p{LOGID}) or 
+		do {
+			Carp::croak "Error updating logend in DB: $DBI::errstr\n";
+			return undef;
+		};
+	
+	# my $id = $dbh->sqlite_last_insert_rowid();
+	
+	# # Process further attributes
+	
+	# my $sth2;
+	# $sth2 = $dbh->prepare('INSERT INTO notifications_attr (keyref, attrib, value) VALUES (?, ?, ?);');
+	
+	# for my $key (keys %p) {
+		# next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'MESSAGE' or $key eq 'SEVERITY');
+		# $sth2->execute($id, $key, $p{$key});
+	# }
+
+	$dbh->do("COMMIT;") or
+		do {
+			print STDERR "log_db_endlog: commit failed: $DBI::errstr\n";
+			return undef;
+		};
+	
+	return "Success";
+
+}
+
+
 
 ##################################################################
 ##################################################################
@@ -609,7 +779,7 @@ sub notify_insert_notification
 	
 	# Check mandatory fields
 	Carp::croak "Create notification: No PACKAGE defined\n" if (! $p{PACKAGE});
-	Carp::croak "Create notification: No NAMEdefined\n" if (! $p{NAME});
+	Carp::croak "Create notification: No NAME defined\n" if (! $p{NAME});
 	Carp::croak "Create notification: No MESSAGE defined\n" if (! $p{MESSAGE});
 	Carp::croak "Create notification: No SEVERITY defined\n" if (! $p{SEVERITY});
 
