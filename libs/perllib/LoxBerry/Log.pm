@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.1";
+our $VERSION = "1.2.0.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -221,6 +221,18 @@ sub close
 	my $self = shift;
 	close $self->{'_FH'} if $self->{'_FH'};
 	return $self->{filename};
+}
+
+sub addtime
+{
+	my $self = shift;
+	my $param = shift;
+	if ($param == 0) {
+		undef $self->{addtime};
+	} elsif ($param == 1) {
+		$self->{addtime} = 1;
+	}
+	return $self->{addtime};
 }
 
 ##########################################################
