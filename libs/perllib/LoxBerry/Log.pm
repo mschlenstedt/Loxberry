@@ -153,6 +153,12 @@ sub new
 		$LoxBerry::Log::mainobj = $self;
 	}
 	
+	# SQLite init
+	
+	if($self->{append} && !$self->{nofile}) {
+		$self->{dbh} = log_db_init_database();
+		$self->{dbkey} = log_db_query_id($self->{dbh}, $self);
+	}
 	
 	return $self;
 }
@@ -394,6 +400,13 @@ sub LOGSTART
 	$self->write(-1, "================================================================================");
 	$self->write(-1, "<LOGSTART>" . LoxBerry::System::currtime . " TASK STARTED");
 	$self->write(-1, "<LOGSTART>" . $s);
+
+	if(! $self->{nofile}) {
+		if(!$self->{dbh}) {
+			$self->{dbh} = log_db_init_database();
+		}
+		$self->{dbkey} = log_db_logstart($self->{dbh}, $self);		
+	}
 }
 
 sub LOGEND
@@ -403,6 +416,18 @@ sub LOGEND
 	$self->write(-1, "<LOGEND>" . $s);
 	$self->write(-1, "<LOGEND>" . LoxBerry::System::currtime . " TASK FINISHED");
 	$self->DESTROY;
+	
+	if(! $self->{nofile}) {
+		if(!$self->{dbh}) {
+			$self->{dbh} = log_db_init_database();
+		}
+		if(!$self->{dbkey}) {
+			$self->{dbkey} = log_db_query_id($self->{dbh}, $self);
+		}
+		
+		$self->{dbkey} = log_db_logend($self->{dbh}, $self);		
+	}
+
 }
 
 
@@ -446,7 +471,9 @@ sub DESTROY {
 # INTERNAL FUNCTIONS
 sub log_db_init_database
 {
-
+	require DBI;
+	
+	print STDERR "log_db_init_database";
 	my $dbfile = $LoxBerry::System::lbsdatadir . "/logs_sqlite.dat";
 	
 	my $dbh;
@@ -463,8 +490,9 @@ sub log_db_init_database
 				PACKAGE VARCHAR(255) NOT NULL,
 				NAME VARCHAR(255) NOT NULL,
 				FILENAME VARCHAR (2048) NOT NULL,
-				LOGSTART DATETIME NOT NULL,
+				LOGSTART DATETIME,
 				LOGEND DATETIME,
+				LASTMODIFIED DATETIME NOT NULL,
 				LOGKEY INTEGER PRIMARY KEY 
 			)") or 
 		do {
@@ -483,6 +511,17 @@ sub log_db_init_database
 			# return undef;
 		# };
 	
+	eval {
+		my $uid = (stat $dbfile)[4];
+		my $owner = (getpwuid $uid)[0];
+		if ($owner ne 'loxberry') {
+			my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
+			chown $uid, $gid, $dbfile;
+		}
+	};
+	
+	
+	
 	return $dbh;
 
 }
@@ -494,10 +533,10 @@ sub log_db_query_id
 	my %p = %{shift()};
 		
 	# Check mandatory fields
-	Carp::croak "log_db_queryid: No FILENAME defined\n" if (! $p{FILENAME});
+	Carp::croak "log_db_queryid: No FILENAME defined\n" if (! $p{filename});
 		
 	# Search filename
-	my $qu = "SELECT LOGKEY FROM logs FILENAME LIKE %p{FILENAME} ORDER BY LOGSTART DESC LIMIT 1;"; 
+	my $qu = "SELECT LOGKEY FROM logs FILENAME LIKE %p{filename} ORDER BY LOGSTART DESC LIMIT 1;"; 
 	my ($logid) = $dbh->selectrow_array($qu);
 	
 	if ($logid) {
@@ -508,7 +547,7 @@ sub log_db_query_id
 }
 
 
-sub log_db_startlog
+sub log_db_logstart
 {
 	
 	my $dbh = shift;
@@ -517,13 +556,14 @@ sub log_db_startlog
 	# print STDERR "Package: " . $p{'package'} . "\n";
 	
 	# Check mandatory fields
-	Carp::croak "Create DB log entry: No PACKAGE defined\n" if (! $p{PACKAGE});
-	Carp::croak "Create DB log entry: No NAME defined\n" if (! $p{NAME});
-	Carp::croak "Create DB log entry: No FILENAME defined\n" if (! $p{FILENAME});
+	Carp::croak "Create DB log entry: No PACKAGE defined\n" if (! $p{package});
+	Carp::croak "Create DB log entry: No NAME defined\n" if (! $p{name});
+	Carp::croak "Create DB log entry: No FILENAME defined\n" if (! $p{filename});
 	# Carp::croak "Create DB log entry: No LOGSTART defined\n" if (! $p{LOGSTART});
 
 	if (!$p{LOGSTART}) {
-		my $t = localtime;
+		my $t = Time::Piece->localtime;
+		# my $t = localtime;
 		$p{LOGSTART} = $t->strftime("%Y-%m-%d %H:%M:%S");
 	}
 	
@@ -531,8 +571,8 @@ sub log_db_startlog
 	$dbh->do("BEGIN TRANSACTION;"); 
 	
 	# Insert main notification
-	my $sth = $dbh->prepare('INSERT INTO logs (PACKAGE, NAME, FILENAME, LOGSTART) VALUES (?, ?, ?, ?) ;');
-	$sth->execute($p{PACKAGE}, $p{NAME}, $p{FILENAME} , $p{LOGSTART}) or 
+	my $sth = $dbh->prepare('INSERT INTO logs (PACKAGE, NAME, FILENAME, LOGSTART, LASTMODIFIED) VALUES (?, ?, ?, ?, ?) ;');
+	$sth->execute($p{package}, $p{name}, $p{filename} , $p{LOGSTART}, $p{LOGSTART}) or 
 		do {
 			Carp::croak "Error inserting log to DB: $DBI::errstr\n";
 			return undef;
@@ -556,11 +596,11 @@ sub log_db_startlog
 			return undef;
 		};
 	
-	return "Success";
+	return $id;
 
 }
 
-sub log_db_endlog
+sub log_db_logend
 {
 	
 	my $dbh = shift;
@@ -569,9 +609,9 @@ sub log_db_endlog
 	# print STDERR "Package: " . $p{'package'} . "\n";
 	
 	# Check mandatory fields
-	Carp::croak "log_db_endlog: No LOGID defined\n" if (! $p{LOGID});
+	Carp::croak "log_db_endlog: No dbkey defined\n" if (! $p{dbkey});
 	
-	my $t = localtime;
+	my $t = Time::Piece->localtime;
 	my $logend = $t->strftime("%Y-%m-%d %H:%M:%S");
 
 	
@@ -579,8 +619,8 @@ sub log_db_endlog
 	$dbh->do("BEGIN TRANSACTION;"); 
 	
 	# Insert main notification
-	my $sth = $dbh->prepare('UPDATE logs set LOGEND = ? WHERE LOGKEY = ? ;');
-	$sth->execute($logend, $p{LOGID}) or 
+	my $sth = $dbh->prepare('UPDATE logs set LOGEND = ?, LASTMODIFIED = ? WHERE LOGKEY = ? ;');
+	$sth->execute($logend, $logend, $p{dbkey}) or 
 		do {
 			Carp::croak "Error updating logend in DB: $DBI::errstr\n";
 			return undef;
