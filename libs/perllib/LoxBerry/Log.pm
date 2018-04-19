@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.3";
+our $VERSION = "1.2.0.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -439,7 +439,6 @@ sub default
 	$LoxBerry::Log::mainobj = $self;
 }
 
-
 # our $AUTOLOAD;
 # sub AUTOLOAD {
 	# my $self = shift;
@@ -500,16 +499,16 @@ sub log_db_init_database
 			return undef;
 			};
 
-	# $dbh->do("CREATE TABLE IF NOT EXISTS notifications_attr (
-				# keyref INTEGER NOT NULL,
-				# attrib VARCHAR(255) NOT NULL,
-				# value VARCHAR(255),
-				# PRIMARY KEY ( keyref, attrib )
-				# )") or
-		# do {
-			# print STDERR "notify_init_database create table notifications_attr: $DBI::errstr\n";
-			# return undef;
-		# };
+	$dbh->do("CREATE TABLE IF NOT EXISTS logs_attr (
+				keyref INTEGER NOT NULL,
+				attrib VARCHAR(255) NOT NULL,
+				value VARCHAR(255),
+				PRIMARY KEY ( keyref, attrib )
+				)") or
+		do {
+			print STDERR "log_db_init_database create table logs_attr: $DBI::errstr\n";
+			return undef;
+		};
 	
 	eval {
 		my $uid = (stat $dbfile)[4];
@@ -519,8 +518,6 @@ sub log_db_init_database
 			chown $uid, $gid, $dbfile;
 		}
 	};
-	
-	
 	
 	return $dbh;
 
@@ -567,6 +564,12 @@ sub log_db_logstart
 		$p{LOGSTART} = $t->strftime("%Y-%m-%d %H:%M:%S");
 	}
 	
+	my $plugin = LoxBerry::System::plugindata($p{package});
+	if ($plugin and $plugin->{PLUGINDB_TITLE}) {
+		$p{_ISPLUGIN} = 1;
+		$p{PLUGINTITLE} = $plugin->{PLUGINDB_TITLE};
+	}
+	
 	# Start transaction
 	$dbh->do("BEGIN TRANSACTION;"); 
 	
@@ -580,19 +583,19 @@ sub log_db_logstart
 	
 	my $id = $dbh->sqlite_last_insert_rowid();
 	
-	# # Process further attributes
+	# Process further attributes
 	
-	# my $sth2;
-	# $sth2 = $dbh->prepare('INSERT INTO notifications_attr (keyref, attrib, value) VALUES (?, ?, ?);');
+	my $sth2;
+	$sth2 = $dbh->prepare('INSERT INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
-	# for my $key (keys %p) {
-		# next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'MESSAGE' or $key eq 'SEVERITY');
-		# $sth2->execute($id, $key, $p{$key});
-	# }
+	for my $key (keys %p) {
+		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'STARTLOG' or $key eq 'ENDLOG' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME');
+		$sth2->execute($id, $key, $p{$key});
+	}
 
 	$dbh->do("COMMIT;") or
 		do {
-			print STDERR "log_insert: commit failed: $DBI::errstr\n";
+			print STDERR "log_db_logstart: commit failed: $DBI::errstr\n";
 			return undef;
 		};
 	
@@ -626,21 +629,21 @@ sub log_db_logend
 			return undef;
 		};
 	
-	# my $id = $dbh->sqlite_last_insert_rowid();
+	my $id = $dbh->sqlite_last_insert_rowid();
 	
-	# # Process further attributes
+	# Process further attributes
 	
-	# my $sth2;
-	# $sth2 = $dbh->prepare('INSERT INTO notifications_attr (keyref, attrib, value) VALUES (?, ?, ?);');
+	my $sth2;
+	$sth2 = $dbh->prepare('INSERT INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
-	# for my $key (keys %p) {
-		# next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'MESSAGE' or $key eq 'SEVERITY');
-		# $sth2->execute($id, $key, $p{$key});
-	# }
+	for my $key (keys %p) {
+		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME');
+		$sth2->execute($id, $key, $p{$key});
+	}
 
 	$dbh->do("COMMIT;") or
 		do {
-			print STDERR "log_db_endlog: commit failed: $DBI::errstr\n";
+			print STDERR "log_db_logend: commit failed: $DBI::errstr\n";
 			return undef;
 		};
 	
@@ -667,17 +670,17 @@ sub log_db_delete_logkey
 	
 	# SQLite interface
 	require DBI;
-	my $dbh = notify_init_database();
+	my $dbh = log_db_init_database();
 	return undef if (! $dbh);
 
 	$dbh->do("BEGIN TRANSACTION;"); 
-	$dbh->do("DELETE FROM notifications_attr WHERE keyref = $key;");
-	$dbh->do("DELETE FROM notifications WHERE notifykey = $key;");
+	$dbh->do("DELETE FROM logs_attr WHERE keyref = $key;");
+	$dbh->do("DELETE FROM logs WHERE LOGKEY = $key;");
 	
 	print STDERR "   Commit\n" if ($DEBUG);
 	$dbh->do("COMMIT;"); 
 	
-	print STDERR "<--- log_db_deletelogkey\n" if ($DEBUG);
+	print STDERR "<--- log_db_delete_logkey\n" if ($DEBUG);
 	
 }
 
@@ -731,14 +734,14 @@ sub get_logs
 		$log{'FILENAME'} = $key->{'FILENAME'};
 		$log{'KEY'} = $key->{'LOGKEY'};
 		
-		# my $qu_attr = "SELECT * FROM logs_attr WHERE keyref = '$key->{'LOGKEY'}';";
-		# my @attribs = $dbh->selectall_array($qu_attr);
-		# if (@attribs) {
-			# foreach my $attrib (@attribs) {
-				# $notification{@$attrib[1]} =  @$attrib[2];
-				# # print STDERR "Attrib: 0:" . @$attrib[0] . " 1:" . @$attrib[1] . " 2:" . @$attrib[2] . "\n";
-			# }
-		# }
+		my $qu_attr = "SELECT * FROM logs_attr WHERE keyref = '$key->{'LOGKEY'}';";
+		my @attribs = $dbh->selectall_array($qu_attr);
+		if (@attribs) {
+			foreach my $attrib (@attribs) {
+				$log{@$attrib[1]} =  @$attrib[2];
+				# print STDERR "Attrib: 0:" . @$attrib[0] . " 1:" . @$attrib[1] . " 2:" . @$attrib[2] . "\n";
+			}
+		}
 		
 		push(@logs, \%log);
 

@@ -30,7 +30,8 @@ my $currpackage;
 for my $log (@logs ) {
     if ($currpackage ne $log->{PACKAGE}) {
 		print "<tr><td colspan='4'>\n";
-		print "<h2>Package $log->{PACKAGE}</h2>\n";
+		print "<h2>Package $log->{PACKAGE}</h2>\n" if (!$log->{_ISPLUGIN});
+		print "<h2>Plugin $log->{PLUGINTITLE} (Package $log->{PACKAGE})</h2>\n" if ($log->{_ISPLUGIN});
 		$currpackage = $log->{PACKAGE};
 		print "</td></tr>\n";
 		print "<th style='text-align:left'>Log name</th><th style='text-align:left'>Start time</th><th style='text-align:left'>End time</th><th style='text-align:left'>Filename</th>\n";
@@ -39,7 +40,10 @@ for my $log (@logs ) {
 	print "<td>$log->{NAME}</td>\n";
 	print "<td>$log->{LOGSTARTSTR}</td>\n";
 	print "<td>$log->{LOGENDSTR}</td>\n";
-	print "<td>$log->{FILENAME}</td>\n";
+	print "<td>\n";
+	print '<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=' . $log->{FILENAME} . '&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>';
+	print " $log->{FILENAME}\n";
+	print "</td>\n";
 	print "</tr>\n";
 }
 
