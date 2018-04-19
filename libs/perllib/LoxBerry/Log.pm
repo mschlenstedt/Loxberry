@@ -717,6 +717,13 @@ sub get_logs
 	my @logs;
 	
 	foreach my $key (@$logshr ) {
+		if ($key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
+			print STDERR "$key->{'FILENAME'} does not exist - db-key will be deleted" if ($DEBUG);
+			log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			next;
+		}
+		
+		
 		my %log;
 		my $logstartobj = Time::Piece->strptime($key->{'LOGSTART'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGSTART'});
 		my $logendobj = Time::Piece->strptime($key->{'LOGEND'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGEND'});
