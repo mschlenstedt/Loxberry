@@ -26,17 +26,19 @@ if (!$action) {
 
 $action = lc($action);
 
-if( $action eq "init" ) {
+if( $action eq "new" ) {
 	init();
 	my $currfilename = $log->close;
 	my $currloglevel = $log->loglevel;
 	print "\"$currfilename\" $currloglevel\n";
 	exit(0);
-} elsif ( $action eq "start" ) {
+} elsif ( $action eq "logstart" ) {
+	init();
 	start();
 	exit(0);
-} elsif ( $action eq "end" ) {
-	start();
+} elsif ( $action eq "logend" ) {
+	init();
+	end();
 	exit(0);
 }
 
@@ -58,12 +60,15 @@ sub init
 	my $currfilename = $log->close;
 	my $currloglevel = $log->loglevel;
 	print "\"$currfilename\" $currloglevel\n";
+	
 	}
 
 sub start
 {
 	LOGSTART $message;
-	
+	my $currfilename = $log->close;
+	my $currloglevel = $log->loglevel;
+	print "\"$currfilename\" $currloglevel\n";
 }
 
 sub end
