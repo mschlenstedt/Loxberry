@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.2.0.2";
+my $scriptversion="1.2.0.3";
 
 # print currtime('file') . "\n";
 
@@ -940,5 +940,8 @@ END
 			# Create an error notification
 		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_ERROR'}, 'Error');
 		}
+	}
+	if ($log) {
+		LOGEND;
 	}
 }
