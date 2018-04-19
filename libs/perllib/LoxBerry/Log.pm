@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.5";
+our $VERSION = "1.2.0.6";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -400,7 +400,17 @@ sub LOGSTART
 	$self->write(-1, "================================================================================");
 	$self->write(-1, "<LOGSTART>" . LoxBerry::System::currtime . " TASK STARTED");
 	$self->write(-1, "<LOGSTART>" . $s);
-
+	
+	my @is_files = glob( $LoxBerry::System::lbsconfigdir . '/is_*.cfg' );
+	my $is_file_str = "";
+	foreach my $is_file (@is_files) {
+		$is_file_str .= substr($is_file, rindex($is_file, '/')+1) . " ";
+	}
+	if ($is_file_str) {
+		$is_file_str = "( " . $is_file_str . ")";
+	}
+	$self->write(-1, "<INFO>LoxBerry Version: " . LoxBerry::System::lbversion() . " " . $is_file_str);
+	$self->write(-1, "<INFO>Plugin-Version: " . LoxBerry::System::pluginversion()) if (LoxBerry::System::pluginversion());
 	if(! $self->{nofile}) {
 		if(!$self->{dbh}) {
 			$self->{dbh} = log_db_init_database();
