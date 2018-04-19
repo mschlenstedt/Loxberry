@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.2";
+our $VERSION = "1.2.0.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -648,6 +648,104 @@ sub log_db_logend
 
 }
 
+
+sub log_db_delete_logkey
+{
+	my ($dbh, $key) = @_;
+	print STDERR "log_db_deletelogkey -->\n" if ($DEBUG);
+	if(!$dbh && $DEBUG) {
+		print STDERR "   dbh not defined. Return undef\n<-- log_db_deletelogkey\n";
+		return undef;
+	}
+	
+	if(!$key && $DEBUG) {
+		print STDERR "   No Key defined. Return undef\n<-- log_db_deletelogkey\n";
+		return undef;
+	}
+	
+		
+	
+	# SQLite interface
+	require DBI;
+	my $dbh = notify_init_database();
+	return undef if (! $dbh);
+
+	$dbh->do("BEGIN TRANSACTION;"); 
+	$dbh->do("DELETE FROM notifications_attr WHERE keyref = $key;");
+	$dbh->do("DELETE FROM notifications WHERE notifykey = $key;");
+	
+	print STDERR "   Commit\n" if ($DEBUG);
+	$dbh->do("COMMIT;"); 
+	
+	print STDERR "<--- log_db_deletelogkey\n" if ($DEBUG);
+	
+}
+
+
+################################################################
+# get_logs
+# Input: (optional) package, name
+# Output: Array with hashref to log entries
+################################################################
+# PUBLIC FUNCTION
+sub get_logs
+{
+	my ($package, $name) = @_;
+
+	print STDERR "--> get_logs\n" if ($DEBUG);
+	
+	# SQLite interface
+	require DBI;
+	my $dbh = log_db_init_database();
+	print STDERR "get_logs: Could not init database\n" if (! $dbh);
+	return undef if (! $dbh);
+	
+	my $qu;
+	$qu = "SELECT * FROM logs ";
+	$qu .= "WHERE " if ($package);
+	$qu .= "PACKAGE = '$package' AND NAME = '$name' " if ($package && $name);
+	$qu .= "PACKAGE = '$package' " if ($package && !$name);
+	$qu .= "ORDER BY PACKAGE, NAME, LASTMODIFIED DESC ";
+	print STDERR "   Query: $qu\n" if ($DEBUG);
+	
+	
+	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
+	
+	my @logs;
+	
+	foreach my $key (@$logshr ) {
+		my %log;
+		my $logstartobj = Time::Piece->strptime($key->{'LOGSTART'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGSTART'});
+		my $logendobj = Time::Piece->strptime($key->{'LOGEND'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGEND'});
+		my $lastmodifiedobj = Time::Piece->strptime($key->{'LASTMODIFIED'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LASTMODIFIED'});
+		
+		$log{'LOGSTARTISO'} = $logstartobj->datetime if($logstartobj);
+		$log{'LOGSTARTSTR'} = $logstartobj->strftime("%d.%m.%Y %H:%M") if($logstartobj);
+		$log{'LOGENDISO'} = $logendobj->datetime if ($logendobj);
+		$log{'LOGENDSTR'} = $logendobj->strftime("%d.%m.%Y %H:%M") if ($logendobj);
+		$log{'LASTMODIFIEDISO'} = $lastmodifiedobj->datetime if ($lastmodifiedobj);
+		$log{'LASTMODIFIEDSTR'} = $lastmodifiedobj->strftime("%d.%m.%Y %H:%M") if ($lastmodifiedobj);
+		
+		$log{'PACKAGE'} = $key->{'PACKAGE'};
+		$log{'NAME'} = $key->{'NAME'};
+		$log{'FILENAME'} = $key->{'FILENAME'};
+		$log{'KEY'} = $key->{'LOGKEY'};
+		
+		# my $qu_attr = "SELECT * FROM logs_attr WHERE keyref = '$key->{'LOGKEY'}';";
+		# my @attribs = $dbh->selectall_array($qu_attr);
+		# if (@attribs) {
+			# foreach my $attrib (@attribs) {
+				# $notification{@$attrib[1]} =  @$attrib[2];
+				# # print STDERR "Attrib: 0:" . @$attrib[0] . " 1:" . @$attrib[1] . " 2:" . @$attrib[2] . "\n";
+			# }
+		# }
+		
+		push(@logs, \%log);
+
+	}
+	
+	return @logs;
+}
 
 
 ##################################################################
