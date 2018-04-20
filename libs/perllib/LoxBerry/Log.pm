@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.8";
+our $VERSION = "1.2.0.10";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -103,7 +103,6 @@ sub new
 		Carp::croak "A 'package' must be defined if this log is not from a plugin";
 		}
 	}
-	
 	# Generating filename
 	# print STDERR "1. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 	if (!$self->{logdir} && !$self->{filename} && -e $LoxBerry::System::lbplogdir) {
@@ -133,7 +132,7 @@ sub new
 	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	if (!$self->{loglevel}) {
 		my $plugindata = LoxBerry::System::plugindata($self->{package});
-		if ($plugindata->{PLUGINDB_LOGLEVEL}) {
+		if ($plugindata and $plugindata->{PLUGINDB_LOGLEVEL}) {
 			$self->{loglevel} = $plugindata->{'PLUGINDB_LOGLEVEL'};
 		} else {
 			$self->{loglevel} = 7;
@@ -158,6 +157,7 @@ sub new
 	if($self->{append} && !$self->{nofile}) {
 		$self->{dbh} = log_db_init_database();
 		$self->{dbkey} = log_db_query_id($self->{dbh}, $self);
+		# print STDERR "Appending to file $self->{filename} with key $self->{dbkey}\n";
 	}
 	
 	return $self;
@@ -430,7 +430,6 @@ sub LOGEND
 	my ($s)=@_;
 	$self->write(-1, "<LOGEND>" . $s);
 	$self->write(-1, "<LOGEND>" . LoxBerry::System::currtime . " TASK FINISHED");
-	$self->DESTROY;
 	
 	if(! $self->{nofile}) {
 		if(!$self->{dbh}) {
@@ -442,6 +441,8 @@ sub LOGEND
 		
 		$self->{dbkey} = log_db_logend($self->{dbh}, $self);		
 	}
+	$self->DESTROY;
+	
 
 }
 
@@ -487,7 +488,7 @@ sub log_db_init_database
 {
 	require DBI;
 	
-	print STDERR "log_db_init_database";
+	# print STDERR "log_db_init_database\n";
 	my $dbfile = $LoxBerry::System::lbsdatadir . "/logs_sqlite.dat";
 	
 	my $dbh;
@@ -548,11 +549,13 @@ sub log_db_query_id
 	Carp::croak "log_db_queryid: No FILENAME defined\n" if (! $p{filename});
 		
 	# Search filename
-	my $qu = "SELECT LOGKEY FROM logs FILENAME LIKE %p{filename} ORDER BY LOGSTART DESC LIMIT 1;"; 
+	my $qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '$p{filename}' ORDER BY LOGSTART DESC LIMIT 1;"; 
 	my ($logid) = $dbh->selectrow_array($qu);
 	
 	if ($logid) {
 		return $logid;
+	} else {
+		print STDERR "log_db_queryid: Could not find filename $p{filename}\n";
 	}
 	return;
 
@@ -590,6 +593,7 @@ sub log_db_logstart
 	
 	# Insert main notification
 	my $sth = $dbh->prepare('INSERT INTO logs (PACKAGE, NAME, FILENAME, LOGSTART, LASTMODIFIED) VALUES (?, ?, ?, ?, ?) ;');
+	# print STDERR "package $p{package}, name $p{name}\n";
 	$sth->execute($p{package}, $p{name}, $p{filename} , $p{LOGSTART}, $p{LOGSTART}) or 
 		do {
 			Carp::croak "Error inserting log to DB: $DBI::errstr\n";
@@ -601,10 +605,11 @@ sub log_db_logstart
 	# Process further attributes
 	
 	my $sth2;
-	$sth2 = $dbh->prepare('INSERT INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
+	$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
 	for my $key (keys %p) {
 		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME' or ! $p{$key} );
+		# print STDERR "INSERT id $id, key $key, value $p{$key}\n";
 		$sth2->execute($id, $key, $p{$key});
 	}
 
@@ -649,7 +654,7 @@ sub log_db_logend
 	# Process further attributes
 	
 	my $sth2;
-	$sth2 = $dbh->prepare('INSERT INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
+	$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
 	for my $key (keys %p) {
 		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME');
@@ -670,7 +675,7 @@ sub log_db_logend
 sub log_db_delete_logkey
 {
 	my ($dbh, $key) = @_;
-	print STDERR "log_db_deletelogkey -->\n" if ($DEBUG);
+	# print STDERR "log_db_deletelogkey -->\n" if ($DEBUG);
 	if(!$dbh && $DEBUG) {
 		print STDERR "   dbh not defined. Return undef\n<-- log_db_deletelogkey\n";
 		return undef;

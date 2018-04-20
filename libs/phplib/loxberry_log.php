@@ -10,8 +10,44 @@ class intLog
 	public function __construct($args)
 	{
 		global $lbpplugindir;
+		global $lbplogdir;
+		global $lbhomedir;
+
+		# echo "CONSTRUCTOR\n";
+		
 		$this->params = $args;
 		if (!isset($this->params["package"])) {$this->params["package"] = $lbpplugindir;}
+		if (!isset($this->params["package"])) {
+			echo "Could not determine your plugin name. If you are not inside a plugin, package must be defined.\n";
+			exit(1);
+		}
+		if (!isset($this->params["name"])) {
+			echo "The name parameter must be defined.\n";
+			exit(1);
+		}
+
+		
+		$cmdparams = " --action=new";
+		
+		foreach ($this->params as $key => $value) {
+			# echo "key: $key // value $value\n";
+			$cmdparams .= " --$key=\"$value\"";
+		}
+		# echo "CMD-Params: $cmdparams\n";
+		$log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
+		if ($log == "")
+		{
+			echo "Log initialisation failed";
+			exit(1);
+		}
+		
+		$log=str_getcsv($log," ");
+		$this->params["filename"] = $log[0];
+		$this->params["loglevel"] = $log[1];
+		# echo "Constructor: Filename " . $this->params["filename"] . "\n";
+		
+		
+		
 	}
 	
 	public function __get($name)
@@ -28,34 +64,35 @@ class intLog
     // ignore, Variables are read-only
   }
 	
-	public function LOGSTART($msg)
+	public function LOGSTART($msg = "")
 	{
-		//initializing the log an printout the start message
 		global $lbhomedir;
-		$cmdparams="";
-		if (isset($this->params["package"]) && isset($this->params["name"]) && (isset($this->params["filename"]) || isset($this->params["logdir"]) || isset($this->params["nofile"])))
-		{
-			if (isset($this->params["stderr"])) {$cmdparams=" --stderr";}
-			if (isset($this->params["append"])) {$cmdparams=" --append";}
-			if (isset($this->params["nofile"]))
-			{
-				$cmdparams .= " --nofile";
-			} else {
-				if (isset($this->params["filename"])) {$cmdparams .= " --filename=" . $this->params["filename"];}
-				if (isset($this->params["logdir"])) {$cmdparams .= " --logdir=" . $this->params["logdir"];}
-			}
-			$log=exec($lbhomedir . '/libs/bashlib/initlog.pl --name='.$this->params["name"].' --package='.$this->params["package"].$cmdparams.' "--message='.$msg.'"');
-			if ($log == "")
-			{
-				echo "initlog returns a empty string.";
-				return false;
-			}
-			$log=str_getcsv($log," ");
-			$this->params["filename"] = $log[0];
-			if ( ! isset($this->params["loglevel"])) {$this->params["loglevel"] = $log[1];}
-		} else {
-			echo "not enough parameters given.\n";
+		
+		if (!isset($this->params["package"]) && !isset($this->params["name"])) {
+			echo "Object is not initialized.";
+			exit(1);
 		}
+				
+		//initializing the log an printout the start message
+		$cmdparams = " --action=logstart --filename=\"" . $this->params["filename"] . "\" ";
+		
+		foreach ($this->params as $key => $value) {
+			# echo "key: $key // value $value\n";
+			$cmdparams .= " --$key=\"$value\"";
+		}
+		
+		if(isset($msg)) {
+			$cmdparams .= " --message=\"$msg\"";
+		}
+		
+		# echo "CMD-Params: $cmdparams\n";
+		$log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
+		if ($log == "")
+		{
+			echo "initlog returns a empty string.";
+			return false;
+		}
+		
 	}
 	
 	public function DEB($msg)
@@ -135,19 +172,32 @@ class intLog
 	
 	public function LOGEND($msg)
 	{
-		if ($this->params["loglevel"] >= -1)
-		{
-			if (!isset($this->params["nofile"]) && $this->params["filename"] != "")
-			{
-				file_put_contents($this->params["filename"], "<LOGEND>$msg" . PHP_EOL, FILE_APPEND);
-				file_put_contents($this->params["filename"], "<LOGEND>".date("d.m.Y H:i:s")." TASK FINISHED" . PHP_EOL, FILE_APPEND);
-			}
-			if (isset($this->params["stderr"]))
-			{
-				fwrite(STDERR, "<LOGEND>$msg" . PHP_EOL);
-				fwrite(STDERR, "<LOGEND>".date("d.m.Y H:i:s")." TASK FINISHED" . PHP_EOL);
-			}
+		global $lbhomedir;
+		
+		if (!isset($this->params["package"]) && !isset($this->params["name"])) {
+			echo "Object is not initialized.";
 		}
+				
+		//initializing the log an printout the start message
+		$cmdparams = " --action=logend --filename=\"" . $this->params["filename"] . "\" ";
+		
+		foreach ($this->params as $key => $value) {
+			# echo "key: $key // value $value\n";
+			$cmdparams .= " --$key=\"$value\"";
+		}
+		
+		if(isset($msg)) {
+			$cmdparams .= " --message=\"$msg\"";
+		}
+		
+		# echo "CMD-Params: $cmdparams\n";
+		$log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
+		if ($log == "")
+		{
+			echo "initlog returns a empty string.";
+			return false;
+		}
+		
 	}
 
 	public function writelog($msg) {
