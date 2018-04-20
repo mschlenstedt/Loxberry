@@ -409,8 +409,11 @@ sub LOGSTART
 	if ($is_file_str) {
 		$is_file_str = "( " . $is_file_str . ")";
 	}
-	$self->write(-1, "<INFO>LoxBerry Version: " . LoxBerry::System::lbversion() . " " . $is_file_str);
-	$self->write(-1, "<INFO>Plugin-Version: " . LoxBerry::System::pluginversion($self->{package})) if (LoxBerry::System::pluginversion($self->{package}));
+	
+	my $plugin = LoxBerry::System::plugindata($self->{package});
+	
+	$self->write(-1, "<INFO>LoxBerry Version " . LoxBerry::System::lbversion() . " " . $is_file_str);
+	$self->write(-1, "<INFO>" . $plugin->{PLUGINDB_TITLE} . " Version " . $plugin->{PLUGINDB_VERSION} ) if ($plugin);
 	$self->write(-1, "<INFO>Loglevel: " . $self->{loglevel});
 	
 	if(! $self->{nofile}) {
