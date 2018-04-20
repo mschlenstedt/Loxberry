@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.7";
+our $VERSION = "1.2.0.8";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -132,9 +132,9 @@ sub new
 	# Get loglevel
 	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	if (!$self->{loglevel}) {
-		my %plugindata = LoxBerry::System::plugindata();
-		if ($plugindata{'PLUGINDB_LOGLEVEL'}) {
-			$self->{loglevel} = $plugindata{'PLUGINDB_LOGLEVEL'};
+		my $plugindata = LoxBerry::System::plugindata($self->{package});
+		if ($plugindata->{PLUGINDB_LOGLEVEL}) {
+			$self->{loglevel} = $plugindata->{'PLUGINDB_LOGLEVEL'};
 		} else {
 			$self->{loglevel} = 7;
 		}
@@ -411,6 +411,8 @@ sub LOGSTART
 	}
 	$self->write(-1, "<INFO>LoxBerry Version: " . LoxBerry::System::lbversion() . " " . $is_file_str);
 	$self->write(-1, "<INFO>Plugin-Version: " . LoxBerry::System::pluginversion($self->{package})) if (LoxBerry::System::pluginversion($self->{package}));
+	$self->write(-1, "<INFO>Loglevel: " . $self->{loglevel});
+	
 	if(! $self->{nofile}) {
 		if(!$self->{dbh}) {
 			$self->{dbh} = log_db_init_database();
@@ -599,7 +601,7 @@ sub log_db_logstart
 	$sth2 = $dbh->prepare('INSERT INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
 	for my $key (keys %p) {
-		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'STARTLOG' or $key eq 'ENDLOG' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME');
+		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME' or ! $p{$key} );
 		$sth2->execute($id, $key, $p{$key});
 	}
 
