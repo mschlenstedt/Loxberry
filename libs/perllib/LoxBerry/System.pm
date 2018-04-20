@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.0.2";
+our $VERSION = "1.2.0.3";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -421,7 +421,7 @@ sub pluginversion
 	my ($queryname) = @_;
 	
 	if ($pluginversion && !$queryname) {
-		# print STDERR "Debug: $pluginversion is cached.\n";
+		print STDERR "Debug: $pluginversion is cached.\n" if ($DEBUG);
 		return $pluginversion;
 	}
 	
@@ -463,7 +463,7 @@ sub plugindata
 	
 	foreach my $plugin (@plugins) {
 		if ($queryname && ( $plugin->{PLUGINDB_NAME} eq $query || $plugin->{PLUGINDB_FOLDER} eq $query) ) {
-			print STDERR "   Returning plugin $plugin->{PLUGINDB_TITLE}\n";
+			print STDERR "   Returning plugin $plugin->{PLUGINDB_TITLE}\n" if ($DEBUG);
 			return $plugin;
 		}
 		if (!$queryname && $plugin->{PLUGINDB_FOLDER} eq $query) {
@@ -1246,7 +1246,7 @@ sub lock
 					next;
 				}
 			}
-			print STDERR "Seemsrunning: $seemsrunning // pwait: $p{wait} // delay: $delay\n";
+			print STDERR "Seemsrunning: $seemsrunning // pwait: $p{wait} // delay: $delay\n" if ($DEBUG);
 			if ($seemsrunning && $p{wait}) {
 				print STDERR "Waiting..." if ($DEBUG);
 				sleep(5);
@@ -1290,7 +1290,7 @@ sub lock
 					chmod 0666, $lockfilename;
 					};
 				print STDERR "    Could not change permissions (but lock file was created)\n" if ($@ && $DEBUG);
-				print STDERR "Lock is set - returning undef to indicate success\n";
+				print STDERR "Lock is set - returning undef to indicate success\n" if ($DEBUG);
 				return undef;
 			}
 			sleep(5) if ( ! $p{wait} );
