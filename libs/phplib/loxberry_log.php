@@ -201,8 +201,8 @@ class intLog
 	}
 
 	public function writelog($msg) {
-		if (isset($this->params["nofile"])) {fwrite(STDOUT,$msg . PHP_EOL);}
-		if (isset($this->params["stderr"]) || (!isset($this->params["nofile"]) && $this->params["filename"] == "")) {fwrite(STDERR,$msg . PHP_EOL);}
+		if (isset($this->params["stdout"])) {fwrite(STDOUT,$msg . PHP_EOL);}
+		if (isset($this->params["stderr"])) {fwrite(STDERR,$msg . PHP_EOL);}
 		if (!isset($this->params["nofile"]) && $this->params["filename"] != "") {file_put_contents($this->params["filename"], $msg . PHP_EOL, FILE_APPEND);}
 	}
 }
