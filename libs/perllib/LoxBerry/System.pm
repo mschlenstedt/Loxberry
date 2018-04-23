@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.0.3";
+our $VERSION = "1.2.0.4";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1139,12 +1139,19 @@ sub diskspaceinfo
 	my $linenr = 0;
 	foreach my $line (@outarr) {
 		my %diskhash;
-		# Remove blanks
-		$line =~ s/ +/ /g;
 		$linenr++;
 		next if ($linenr == 1);
-		# print "Line: $line\n";
-		my ($fs, $size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line);
+		
+		# Find first double-blank
+		my $dblblanc = index($line, '  ');
+		my $fs = substr($line, 0, 	$dblblanc);
+		# print STDERR "FS: $fs\n";
+		# Remove fs from line
+		$line = trim(substr($line, $dblblanc));
+		# Remove other blanks
+		$line =~ s/ +/ /g;
+		# print STDERR "Line: '$line'\n";
+		my ($size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line);
 		$diskhash{filesystem} = $fs;
 		$diskhash{size} = $size;
 		$diskhash{used} = $used;
