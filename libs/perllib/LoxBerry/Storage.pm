@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.2.0.6";
+our $VERSION = "1.2.0.7";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -121,9 +121,12 @@ sub get_netshares
 				$netshare{NETSHARE_SHAREPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share";
 				$netshare{NETSHARE_SHARENAME} = "$share";
 				$netshare{NETSHARE_STATE} = "$state";
-				$netshare{NETSHARE_USED} = LoxBerry::System::bytes_humanreadable($folderinfo{used}, "k");
-				$netshare{NETSHARE_AVAILABLE} = LoxBerry::System::bytes_humanreadable($folderinfo{available}, "k");
-				$netshare{NETSHARE_SIZE} = LoxBerry::System::bytes_humanreadable($folderinfo{size}, "k");
+				$netshare{NETSHARE_USED} = $folderinfo{used};
+				$netshare{NETSHARE_USED_HR} = LoxBerry::System::bytes_humanreadable($folderinfo{used}, "k");
+				$netshare{NETSHARE_AVAILABLE} = $folderinfo{available};
+				$netshare{NETSHARE_AVAILABLE_HR} = LoxBerry::System::bytes_humanreadable($folderinfo{available}, "k");
+				$netshare{NETSHARE_SIZE} = $folderinfo{size};
+				$netshare{NETSHARE_SIZE_HR} = LoxBerry::System::bytes_humanreadable($folderinfo{size}, "k");
 				$netshare{NETSHARE_USEDPERCENT} = $folderinfo{usedpercent};
 		
 				push(@netshares, \%netshare);
@@ -299,9 +302,10 @@ sub get_storage
 		$storage{TYPE} = $netshare->{NETSHARE_TYPE};
 		$storage{PATH} = $netshare->{NETSHARE_SHAREPATH};
 		$storage{WRITABLE} = $netshare->{NETSHARE_STATE} eq 'Writable' ? 1 : 0;
-		my %disk = LoxBerry::System::diskspaceinfo($netshare->{NETSHARE_SHAREPATH});
-		$storage{SIZE} = $disk{size};
-		$storage{SIZE_GB} = int($disk{size}/1024/1024+0.5);
+		$storage{AVAILABLE} = $netshare->{NETSHARE_AVAILABLE};
+		$storage{USED} = $netshare->{NETSHARE_USED};
+		$storage{SIZE} = $netshare->{NETSHARE_SIZE};
+		$storage{SIZE_GB} = int($storage{SIZE}/1024/1024+0.5);
 		$storage{NAME} = $netshare->{NETSHARE_SERVER} . '::' . $netshare->{NETSHARE_SHARENAME} . " (" . $storage{SIZE_GB} . " GB)";
 		
 		# Fields only per group
@@ -320,6 +324,8 @@ sub get_storage
 		$storage{TYPE} = $usbdevice->{USBSTORAGE_TYPE};
 		$storage{PATH} = $usbdevice->{USBSTORAGE_DEVICEPATH};
 		$storage{WRITABLE} = $usbdevice->{USBSTORAGE_STATE} eq 'Writable' ? 1 : 0;
+		$storage{AVAILABLE} = $usbdevice->{USBSTORAGE_AVAILABLE};
+		$storage{USED} = $usbdevice->{USBSTORAGE_USED};
 		$storage{SIZE} = $usbdevice->{USBSTORAGE_SIZE};
 		$storage{SIZE_GB} = int($storage{SIZE}/1024/1024+0.5);
 		$storage{NAME} = "USB::" . $usbdevice->{USBSTORAGE_DEVICE} . " (" . $storage{SIZE_GB} . " GB)";
@@ -338,6 +344,8 @@ sub get_storage
 		$storage{PATH} = $localdir ? $localdir : $LoxBerry::System::lbpdatadir;
 		$storage{WRITABLE} = 1;
 		my %disk = LoxBerry::System::diskspaceinfo($storage{PATH});
+		$storage{AVAILABLE} = $disk{available};
+		$storage{USED} = $disk{used};
 		$storage{SIZE} = $disk{size};
 		$storage{SIZE_GB} = int($disk{size}/1024/1024+0.5);
 		
