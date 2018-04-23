@@ -7,22 +7,40 @@
 
 use LoxBerry::Web;
 use LoxBerry::Log;
+use CGI;
 
 use warnings;
 use strict;
 
-$LoxBerry::Log::DEBUG = 1;
+my $template_title;
+my $helplink;
 
-our $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
-our $template_title = "Show all logs";
+# $LoxBerry::Log::DEBUG = 1;
+
+my $cgi = CGI->new;
+$cgi->import_names('R');
+
 
 # Version of this script
 my $version = "1.2.0.2";
 
-LoxBerry::Web::lbheader($template_title, $helplink);
+if ($R::package) {
+	my $plugin = LoxBerry::System::plugindata($R::package);
+	if ($plugin->{PLUGINDB_TITLE}) {
+		$template_title = $plugin->{PLUGINDB_TITLE} . " : Logfiles";
+	} else {
+		$template_title = ": Logfiles";
+	}
+} else {
+	$template_title = ": All Logfiles";
+}
 
-my $cgi = CGI->new;
-$cgi->import_names('R');
+
+$helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+
+
+
+LoxBerry::Web::lbheader($template_title, $helplink);
 
 my @logs = LoxBerry::Log::get_logs($R::package, $R::name);
 
@@ -33,8 +51,8 @@ my $currpackage;
 for my $log (@logs ) {
     if ($currpackage ne $log->{PACKAGE}) {
 		print "<tr><td colspan='5'>\n";
-		print "<h2>Package $log->{PACKAGE}</h2>\n" if (!$log->{_ISPLUGIN});
-		print "<h2>Plugin $log->{PLUGINTITLE} (Package $log->{PACKAGE})</h2>\n" if ($log->{_ISPLUGIN});
+		print "<h2>Logfiles Package $log->{PACKAGE}</h2>\n" if (!$log->{_ISPLUGIN});
+		print "<h2>Logfiles Plugin $log->{PLUGINTITLE}</h2>\n" if ($log->{_ISPLUGIN});
 		$currpackage = $log->{PACKAGE};
 		print "</td></tr>\n";
 		print "<th style='text-align:left'>Log name</th><th style='text-align:left'>Start time</th><th style='text-align:left'>End time</th><th style='text-align:left'>Logfile</th>\n";
