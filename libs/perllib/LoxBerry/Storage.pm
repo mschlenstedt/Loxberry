@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.2.0.5";
+our $VERSION = "1.2.0.6";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -110,6 +110,9 @@ sub get_netshares
 				if ( ($readwriteonly && $state ne "Writable") || !$state ) {
 					next;
 				}
+				
+				my %folderinfo = LoxBerry::System::diskspaceinfo("$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share");			
+				
 				$netsharecount++;
 				$netshare{NETSHARE_NO} = $netsharecount;
 				$netshare{NETSHARE_SERVER} = $server;
@@ -118,6 +121,11 @@ sub get_netshares
 				$netshare{NETSHARE_SHAREPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share";
 				$netshare{NETSHARE_SHARENAME} = "$share";
 				$netshare{NETSHARE_STATE} = "$state";
+				$netshare{NETSHARE_USED} = LoxBerry::System::bytes_humanreadable($folderinfo{used}, "k");
+				$netshare{NETSHARE_AVAILABLE} = LoxBerry::System::bytes_humanreadable($folderinfo{available}, "k");
+				$netshare{NETSHARE_SIZE} = LoxBerry::System::bytes_humanreadable($folderinfo{size}, "k");
+				$netshare{NETSHARE_USEDPERCENT} = $folderinfo{usedpercent};
+		
 				push(@netshares, \%netshare);
 			}
 		}
@@ -266,6 +274,7 @@ sub get_usbstorage
 		$usbstorage{USBSTORAGE_SIZE} = $size;
 		$usbstorage{USBSTORAGE_AVAILABLE} = $available;
 		$usbstorage{USBSTORAGE_CAPACITY} = $disk{usedpercent};
+		$usbstorage{USBSTORAGE_USEDPERCENT} = $disk{usedpercent};
 		$usbstorage{USBSTORAGE_DEVICEPATH} = "$LoxBerry::System::lbhomedir/system/storage/usb/$device";
 		push(@usbstorages, \%usbstorage);
 	}

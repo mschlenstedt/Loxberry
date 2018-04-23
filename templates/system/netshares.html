@@ -31,6 +31,9 @@
 			<th data-priority="1"><TMPL_VAR NETSHARES.SHARESTABLE_SERVER></th>
 			<th data-priority="4"><TMPL_VAR NETSHARES.SHARESTABLE_TYPE></th>
 			<th data-priority="2"><TMPL_VAR NETSHARES.SHARESTABLE_SHARE></th>
+			<th data-priority="2"><TMPL_VAR NETSHARES.SHARESTABLE_SIZE></th>
+			<th data-priority="2"><TMPL_VAR NETSHARES.SHARESTABLE_USED></th>
+			<th data-priority="7"><TMPL_VAR NETSHARES.SHARESTABLE_AVAILABLE></th>
 			<th data-priority="5"><TMPL_VAR NETSHARES.SHARESTABLE_STATUS></th>
 			<th data-priority="6"><TMPL_VAR NETSHARES.SHARESTABLE_ACTION></th>
 		</tr>
@@ -43,6 +46,10 @@
 				<td><TMPL_VAR NETSHARE_SERVER></td>
 				<td><TMPL_VAR NETSHARE_TYPE></td>
 				<td><TMPL_VAR NETSHARE_SHARENAME></td>
+				<td><TMPL_VAR NETSHARE_SIZE></td>
+				<td><TMPL_VAR NETSHARE_USED></td>
+				<td><TMPL_VAR NETSHARE_AVAILABLE></td>
+				
 				<td><TMPL_VAR NETSHARE_STATE></td>
 				<td><a id="browse<TMPL_VAR NETSHARE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_self"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a>
 				</td>
