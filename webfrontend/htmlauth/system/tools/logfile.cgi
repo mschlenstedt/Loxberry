@@ -95,6 +95,8 @@ if ($ENV{'HTTP_HOST'}) {
               'format=s'  => \$R::format,
               'offset=i'  => \$R::offset,
               'length'    => \$R::length,
+			  'package'	  => \$R::package,
+			  'name'	  => \$R::name,
   );
 
 }
@@ -106,6 +108,17 @@ if ($ENV{'HTTP_HOST'}) {
 # Which Output Format
 if (!$R::format) {
   $R::format = "plain";
+}
+
+# If package and/or name was used, get the latest logfile name.
+if (! $R::logfile and $R::package) {
+	require LoxBerry::Log;
+	my @logs = LoxBerry::Log::get_logs( $R::package, $R::name); 
+	if ($logs[0]->{FILENAME}) {
+		$R::logfile = $logs[0]->{FILENAME};
+	} else {
+		$R::logfile = "/not/existing";
+	}
 }
 
 # Check if logfile exists
