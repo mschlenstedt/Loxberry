@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.0.0.3";
+our $VERSION = "1.2.0.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -543,6 +543,37 @@ sub iso_languages
 	return @resultvals if ($selection eq 'values');
 	return %resultlabels if ($selection eq 'labels');
 }
+
+sub logfile_button_html
+{
+	my %p = @_;
+	my $datamini;
+	my $dataicon;
+	if(! $p{LABEL}) {
+		my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+		$p{LABEL} = $SL{'COMMON.BUTTON_LOGFILE'};
+	}
+	if ($p{NAME} and !$p{PACKAGE} and $LoxBerry::System::lbpplugindir) {
+		$p{PACKAGE} = $LoxBerry::System::lbpplugindir;
+	}
+	
+	if($p{DATA_MINI} eq "0" ) {
+		$datamini = "false";
+	} else {
+		$datamini = "true";
+	}
+	
+	if ($p{DATA_ICON}) {
+		$dataicon = $p{DATA_ICON};
+	} else {
+		$dataicon = "action";
+	}
+	
+	return "<a data-role=\"button\" href=\"/admin/system/tools/logfile.cgi?logfile=$p{LOGFILE}&package=$p{PACKAGE}&name=$p{NAME}&header=html&format=template\" target=\"_blank\" data-inline=\"true\" data-mini=\"$datamini\" data-icon=\"$dataicon\">$p{LABEL}</a>\n";
+
+}
+
+
 
 
 #####################################################
