@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.0.0.2";
+	public static $LBWEBVERSION = "1.2.0.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -374,6 +374,35 @@ EOT;
 		}
 		return undef;
 	}
+
+	public static function logfile_button_html ($p)
+	{
+		global $lbpplugindir;
+		
+		if (! isset($p['LABEL'])) {
+			$SL = LBSystem::readlanguage(0, 0, True);
+			$p['LABEL'] = $SL['COMMON.BUTTON_LOGFILE'];
+		}
+		if (isset($p['NAME']) && !isset($p['PACKAGE']) && isset($lbpplugindir)) {
+			$p['PACKAGE'] = $lbpplugindir;
+		}
+		
+		if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == 0 ) {
+			$datamini = "false";
+		} else {
+			$datamini = "true";
+		}
+	
+		if (isset($p['DATA_ICON'])) {
+			$dataicon = $p['DATA_ICON'];
+		} else {
+			$dataicon = "action";
+		}
+	
+		return "<a data-role=\"button\" href=\"/admin/system/tools/logfile.cgi?logfile=${p['LOGFILE']}&package=${p['PACKAGE']}&name=${p['NAME']}&header=html&format=template\" target=\"_blank\" data-inline=\"true\" data-mini=\"${datamini}\" data-icon=\"${dataicon}\">${p['LABEL']}</a>\n";
+			
+	}
+	
 }
 
 ////////////////////////////////////////////////////////////
