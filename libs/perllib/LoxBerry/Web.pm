@@ -573,6 +573,49 @@ sub logfile_button_html
 
 }
 
+sub loglist_url
+{
+	my %p = @_;
+	
+	if (!$p{PACKAGE} and $LoxBerry::System::lbpplugindir) {
+		$p{PACKAGE} = $LoxBerry::System::lbpplugindir;
+	}
+	
+	return "/admin/system/tools/showalllogs.cgi?package=$p{PACKAGE}&name=$p{NAME}\n";
+}
+
+sub loglist_button_html
+{
+	my %p = @_;
+	my $datamini;
+	my $dataicon;
+	if(! $p{LABEL}) {
+		my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+		$p{LABEL} = $SL{'COMMON.BUTTON_LOGFILE_LIST'};
+	}
+	if (!$p{PACKAGE} and $LoxBerry::System::lbpplugindir) {
+		$p{PACKAGE} = $LoxBerry::System::lbpplugindir;
+	}
+	
+	if($p{DATA_MINI} eq "0" ) {
+		$datamini = "false";
+	} else {
+		$datamini = "true";
+	}
+	
+	if ($p{DATA_ICON}) {
+		$dataicon = $p{DATA_ICON};
+	} else {
+		$dataicon = "bars";
+	}
+	
+	return "<a data-role=\"button\" href=\"/admin/system/tools/showalllogs.cgi?package=$p{PACKAGE}&name=$p{NAME}\" target=\"_blank\" data-inline=\"true\" data-mini=\"$datamini\" data-icon=\"$dataicon\">$p{LABEL}</a>\n";
+
+}
+
+
+
+
 
 
 

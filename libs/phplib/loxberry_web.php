@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.0.1";
+	public static $LBWEBVERSION = "1.2.0.2";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -400,6 +400,46 @@ EOT;
 		}
 	
 		return "<a data-role=\"button\" href=\"/admin/system/tools/logfile.cgi?logfile=${p['LOGFILE']}&package=${p['PACKAGE']}&name=${p['NAME']}&header=html&format=template\" target=\"_blank\" data-inline=\"true\" data-mini=\"${datamini}\" data-icon=\"${dataicon}\">${p['LABEL']}</a>\n";
+			
+	}
+
+	public static function loglist_url($p)
+{
+	global $lbpplugindir;
+	
+	if (!isset($p['PACKAGE']) && isset($lbpplugindir)) {
+		$p['PACKAGE'] = $lbpplugindir;
+	}
+	
+	return "/admin/system/tools/showalllogs.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\n";
+
+}
+
+	public static function loglist_button_html ($p)
+	{
+		global $lbpplugindir;
+		
+		if (! isset($p['LABEL'])) {
+			$SL = LBSystem::readlanguage(0, 0, True);
+			$p['LABEL'] = $SL['COMMON.BUTTON_LOGFILE_LIST'];
+		}
+		if (!isset($p['PACKAGE']) && isset($lbpplugindir)) {
+			$p['PACKAGE'] = $lbpplugindir;
+		}
+		
+		if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == 0 ) {
+			$datamini = "false";
+		} else {
+			$datamini = "true";
+		}
+	
+		if (isset($p['DATA_ICON'])) {
+			$dataicon = $p['DATA_ICON'];
+		} else {
+			$dataicon = "action";
+		}
+	
+		return "<a data-role=\"button\" href=\"/admin/system/tools/showalllogs.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\" target=\"_blank\" data-inline=\"true\" data-mini=\"${datamini}\" data-icon=\"${dataicon}\">${p['LABEL']}</a>\n";
 			
 	}
 	
