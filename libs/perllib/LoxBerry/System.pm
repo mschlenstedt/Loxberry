@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.0.5";
+our $VERSION = "1.2.0.6";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1126,8 +1126,9 @@ sub diskspaceinfo
 {
 	my ($folder) = shift;
 	
-	my $output = qx ( df -P "$folder" ) if ($folder);
-	my $output = qx ( df -P ) if (!$folder);
+	my $output;
+	$output = qx ( df -P "$folder" ) if ($folder);
+	$output = qx ( df -P ) if (!$folder);
 	
 	# my $output = qx ( df -P );
 	my $exitcode  = $? >> 8;
