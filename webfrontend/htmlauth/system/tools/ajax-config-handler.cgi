@@ -36,8 +36,8 @@ elsif ($action eq 'lbupdate-installtime') { print $cgi->header; &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { print $cgi->header('application/json;charset=utf-8'); &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') { print $cgi->header('application/json;charset=utf-8'); &lbupdate; }
 elsif ($action eq 'lbupdate-resetver') { print $cgi->header; change_generalcfg("BASE.VERSION", $value) if ($value); }
-elsif ($action eq 'plugin-loglevel') {print $cgi->header; plugindb_update('loglevel', $R::pluginmd5, $R::value); }
-elsif ($action eq 'plugin-autoupdate') {print $cgi->header; plugindb_update('autoupdate', $R::pluginmd5, $R::value); }
+elsif ($action eq 'plugin-loglevel') {print $cgi->header; plugindb_update('loglevel', $R::pluginmd5, $R::value) if ($R::value); }
+elsif ($action eq 'plugin-autoupdate') {print $cgi->header; plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
 elsif ($action eq 'testenvironment') { print $cgi->header; &testenvironment; }
 elsif ($action eq 'changelanguage') { print $cgi->header; change_generalcfg("BASE.LANG", $value);}
 elsif ($action eq 'MAIL_SYSTEM_INFOS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_SYSTEM_INFOS", $value);}
