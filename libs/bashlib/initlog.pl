@@ -4,6 +4,8 @@ use LoxBerry::Log;
 use Getopt::Long;
 
 my $log;
+my $currfilename;
+my $currloglevel;
 
 # Collecting options
 GetOptions (
@@ -31,8 +33,8 @@ $action = lc($action);
 if( $action eq "new" ) {
 	# print STDERR "initlog.pl: init\n";
 	init();
-	my $currfilename = $log->close;
-	my $currloglevel = $log->loglevel;
+	$currfilename = $log->close;
+	$currloglevel = $log->loglevel;
 	print "\"$currfilename\" $currloglevel\n";
 	exit(0);
 } elsif ( $action eq "logstart" ) {
@@ -71,8 +73,8 @@ sub init
 	}
 	
 	
-	#my $currfilename = $log->close;
-	my $currloglevel = $log->loglevel;
+	$currfilename = $log->close;
+	$currloglevel = $log->loglevel;
 	print "\"$currfilename\" $currloglevel\n";
 	
 	}
