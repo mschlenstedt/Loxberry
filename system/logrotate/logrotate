@@ -1,7 +1,6 @@
 /opt/loxberry/log/system_tmpfs/apache2/*.log {
-	daily
 	missingok
-	rotate 4
+	rotate 2
 	compress
 	delaycompress
 	notifempty
@@ -24,10 +23,9 @@
 	endscript
 }
 /opt/loxberry/log/system_tmpfs/lighttpd/*.log {
-	daily
 	copytruncate
 	missingok
-	rotate 4
+	rotate 2
 	compress
 	delaycompress
 	notifempty
@@ -43,9 +41,8 @@
 	endscript
 }
 /opt/loxberry/log/system/*.log {
-	daily
 	missingok
-	rotate 4
+	rotate 2
 	compress
 	delaycompress
 	notifempty
@@ -56,7 +53,7 @@
 }
 /opt/loxberry/log/system/*/*.log {
 	missingok
-	rotate 4
+	rotate 2
 	compress
 	delaycompress
 	notifempty
@@ -66,9 +63,8 @@
 	create 644 loxberry loxberry
 }
 /opt/loxberry/log/plugins/*/*.log {
-	daily
 	missingok
-	rotate 4
+	rotate 2
 	compress
 	delaycompress
 	notifempty
