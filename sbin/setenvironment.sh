@@ -206,7 +206,9 @@ if [ -L /etc/network/interfaces ]; then
 fi
 ln -s $LBHOME/system/network/interfaces /etc/network/interfaces
 
-# Logrotate
+# Logrotate job - move to hourly
+if [ -e /etc/cron.daily/logrotate ] ; then mv -f /etc/cron.daily/logrotate /etc/cron.hourly/ ; fi 
+# Logrotate config
 if [ -L /etc/logrotate.d/loxberry ]; then
     rm /etc/logrotate.d/loxberry
 fi
