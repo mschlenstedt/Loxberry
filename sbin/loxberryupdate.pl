@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.2.0.2';
+my $scriptversion='1.2.0.3';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -224,6 +224,18 @@ if ($exitcode != 0) {
 	exit(1);
 }
 LOGOK "Changing owner was successful.";
+
+LOGINF "Pre-Changing the owner of special files in updatedir to root:root...";
+$log->close;
+system("chown -R root:root $updatedir/system/cron/cron.d $updatedir/system/daemons/system $updatedir/system/sudoers $updatedir/system/logrotate  >>$logfilename");
+$exitcode  = $? >> 8;
+$log->open;
+if ($exitcode != 0) {
+	LOGCRIT "Changing owner of $updatedir/system/ folders and files to root returned errors.";
+	$errskipped++;
+}
+LOGOK "Pre-Changing owner was successful.";
+
 # Set up rsync command line
 
 my $dryrun = $cgi->param('dryrun') ? "--dry-run" : "";
