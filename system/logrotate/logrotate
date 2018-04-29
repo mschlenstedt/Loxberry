@@ -6,7 +6,7 @@
 	notifempty
 	create 644 loxberry loxberry
 	sharedscripts
-	maxsize 1M
+	maxsize 5M
 	maxage 5
 	nomail
 	postrotate
@@ -31,7 +31,7 @@
 	notifempty
 	create 644 loxberry loxberry
 	sharedscripts
-	maxsize 1M
+	maxsize 5M
 	maxage 5
 	nomail
 	postrotate
@@ -47,7 +47,18 @@
 	delaycompress
 	notifempty
 	nomail
-	maxsize 1M
+	maxsize 10M
+	maxage 5
+	create 644 loxberry loxberry
+}
+/opt/loxberry/log/system_tmpfs/*.log {
+	missingok
+	rotate 2
+	compress
+	delaycompress
+	notifempty
+	nomail
+	maxsize 5M
 	maxage 5
 	create 644 loxberry loxberry
 }
@@ -58,7 +69,7 @@
 	delaycompress
 	notifempty
 	nomail
-	maxsize 1M
+	maxsize 10M
 	maxage 5
 	create 644 loxberry loxberry
 }
@@ -69,7 +80,7 @@
 	delaycompress
 	notifempty
 	nomail
-	maxsize 500k
+	maxsize 5M
 	maxage 5
 	create 644 loxberry loxberry
 }
