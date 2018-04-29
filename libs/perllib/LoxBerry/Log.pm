@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.11";
+our $VERSION = "1.2.0.12";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -736,19 +736,46 @@ sub get_logs
 	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
 	
 	my @logs;
+	my %logcount;
 	
 	foreach my $key (@$logshr ) {
+		my $filesize;
+		my $fileexists;
+		$fileexists = -e $key->{'FILENAME'};
+		$filesize = -s $key->{'FILENAME'} if ($fileexists);
+		
+		if (! $fileexists or $filesize eq "0") {
+			if (-e "$key->{'FILENAME'}.1" and -s "$key->{'FILENAME'}.1" ne "0") { 
+				$key->{'FILENAME'} = "$key->{'FILENAME'}.1";
+			} elsif (-e "$key->{'FILENAME'}.2" and -s "$key->{'FILENAME'}.2" ne "0") {
+				$key->{'FILENAME'} = "$key->{'FILENAME'}.2";
+			} elsif (-e "$key->{'FILENAME'}.3" and -s "$key->{'FILENAME'}.3" ne "0") {
+				$key->{'FILENAME'} = "$key->{'FILENAME'}.3";
+			}
+		}
 		if ($key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
 			print STDERR "$key->{'FILENAME'} does not exist - db-key will be deleted" if ($DEBUG);
 			log_db_delete_logkey($dbh, $key->{'LOGKEY'});
 			next;
 		}
 		
-		
 		my %log;
 		my $logstartobj = Time::Piece->strptime($key->{'LOGSTART'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGSTART'});
 		my $logendobj = Time::Piece->strptime($key->{'LOGEND'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGEND'});
 		my $lastmodifiedobj = Time::Piece->strptime($key->{'LASTMODIFIED'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LASTMODIFIED'});
+		
+		# Delete by age (older than 1 month)
+		if (time > ($lastmodifiedobj+2629746) ) {
+			log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			next;
+		}
+		
+		# Count and delete (more than 20 per package)
+		$logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
+		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 20) {
+			log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			next;
+		}
 		
 		$log{'LOGSTARTISO'} = $logstartobj->datetime if($logstartobj);
 		$log{'LOGSTARTSTR'} = $logstartobj->strftime("%d.%m.%Y %H:%M") if($logstartobj);
