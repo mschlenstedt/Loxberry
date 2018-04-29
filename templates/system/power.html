@@ -108,24 +108,24 @@
 				background-color: #6DAE26;   
  			}
     </style>   
-		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">60.0</span> s </p>
+		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">240.0</span> s </p>
 		<div class="progress-bar blue stripes" style="display: none;"><span id="bar" style="width: 100%;"></span></div>
 		</center>
 	<script>
-		var counter = 600;
+		var counter = 2400;
 		$(document).ready(function()
 		{
 		  var xhttp = new XMLHttpRequest();
 		  xhttp.timeout = 800;
 		  xhttp.ontimeout = function() {
-			  if ( counter == 600 ) {
+			  if ( counter == 2400 ) {
 				  showprogressbar();
 			  }
 		  };
 		  xhttp.onreadystatechange = function() {
 			  if (this.readyState == 4 && this.status == 200) {
 				var res = JSON.parse(this.responseText);
-				if ( counter == 600 && res.reboot_in_progress == 1 ) {
+				if ( counter == 2400 && res.reboot_in_progress == 1 ) {
 					showprogressbar();
 				} else if ( res.reboot_in_progress == 0 ) {
 					$('.progress-bar').hide();
@@ -143,7 +143,7 @@
 				if (counter > 0) {
 					counter--;
 					span = document.getElementById("count");
-					var bar = (100/600 * counter);
+					var bar = (100/2400 * counter);
 					span.innerHTML = Number(counter/10).toFixed(1);
 					$('#bar').css('width',bar+"%");
 				}
