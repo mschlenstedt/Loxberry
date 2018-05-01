@@ -100,7 +100,7 @@ class intLog
 		if ($this->loglevel > 6)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("<DEBUG> $currtime$msg");
+			$this->writelog("$currtime$msg");
 		}
 	}
 

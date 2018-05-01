@@ -8,7 +8,7 @@ function LOGDEB {
 	if [ "$pLOGLEVEL" -gt 6 ]
 	then
 	  if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
-		WRITE "<DEBUG> $CURRTIME$@"
+		WRITE "$CURRTIME$@"
 	fi
 }
 function LOGINF {
