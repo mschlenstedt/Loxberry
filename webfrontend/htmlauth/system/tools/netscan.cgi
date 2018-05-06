@@ -26,6 +26,7 @@ $version = "0.0.2";
 
 require LWP::UserAgent;
 use CGI::Carp qw(fatalsToBrowser);
+use Socket;
 
 ##########################################################################
 #
@@ -34,79 +35,53 @@ use CGI::Carp qw(fatalsToBrowser);
 ##########################################################################
 
 
-# Scan both possible devices: eth0 and wlan0
-foreach ("wlan0","eth0") {
+# Scan MiniServers over ssdp
 
-  # Figure out own IP and own Network
-  my $result = qx(/usr/sbin/ifplugstatus $_ 2>/dev/null);
-
-  # If device is plugged in (link detected)
-  if ($? >> 8 == 2) {
-    $ownip = qx (/sbin/ifconfig $_ | grep "inet " | awk '{ printf \$2; }');
-    $ownip =~ s/[\n\r]//g;    
-    $net = $ownip;
-    $net =~ s/(.*)\.(.*)\.(.*)\.(.*)$/$1\.$2\.$3/;
-    $net = "$net.0/24";
-
-    # Scan network into tmp file
-    if ((-f "/tmp/netscan.dat" && !-l "/tmp/netscan.dat") || !-e "/tmp/netscan.dat") {
-      my $result = qx(/usr/bin/nmap -d0 -T5 -sP -oG /tmp/netscan.dat $net 2>/dev/null);
+my $IP             = "239.255.255.250";
+my $PORT           = 1900;
+my $TIMEOUT        = 3;
+ 
+my $request_header = <<"__REQUEST_HEADER__";
+M-SEARCH * HTTP/1.1
+Host:$IP:$PORT
+Man:"ssdp:discover"
+ST: urn:schemas-upnp-org:device:HVAC_System:1
+MX:3
+ 
+__REQUEST_HEADER__
+  
+$request_header =~ s/\r//g;
+$request_header =~ s/\n/\r\n/g;
+ 
+my $proto = getprotobyname('udp');
+socket(S, AF_INET, SOCK_DGRAM, $proto) || die "socket(S): $!\n";
+setsockopt(S, SOL_SOCKET, SO_BROADCAST, 1) || die "setsockopt(S): $!\n";
+my $that = sockaddr_in($PORT, inet_aton($IP));
+ 
+send(S, $request_header, 0, $that) || die "send(S): $!\n";
+ 
+my $rin = '';
+my $rout = '';
+my $miniserverip = '';
+my $miniserverport = '';
+my $miniservname = '';
+vec($rin, fileno(S), 1) = 1;
+while( select($rout = $rin, undef, undef, $TIMEOUT) ) {
+    recv(S, $response_header, 4096, 0) || die "recv(S): $!\n";
+    if ($response_header =~ /Loxone/) {
+    	($miniserverip) = $response_header =~ m/http:\/\/(.*)\//;
+    	($miniserverport) = $miniserverip =~ m/:([0-9]{1,5})/;
+    	if ($miniserverport == "") { $miniserverport = 80; }
+    	($miniserverip) =~ s/:[0-9]{1,5}//;
+    	($miniservername) = $response_header =~ m/Miniserver (.*) UPnP/;
     }
-
-    # Scan each IP address in tmp file for a Miniserver
-    if (-e "/tmp/netscan.dat") {
-      open(F,"</tmp/netscan.dat") || die "Cannot open /tmp/netscan.dat";
-        flock(F,2) if($flock);
-        my @netscan = <F>;
-        foreach (@netscan){
-          s/[\n\r]//g;
-          # Kommentare und Leerzeilen überspringen
-          $commentchar = substr($_,0,1);
-          if ($commentchar eq "#" || $_ eq "") {
-            next;
-          }
-          @fields = split(/ /);
-          if (@fields[1] =~ /(\d*)\.(\d*)\.(\d*)\.(\d*)/) {
-            my $url = "http://@fields[1]/dev/cfg/version";
-            my $ua = LWP::UserAgent->new;
-            $ua->timeout(1);
-            local $SIG{ALRM} = sub { die };
-            eval {
-              alarm(1);
-              my $response = $ua->get($url);
-              # Test server sig (will not work from V7.0 on due to
-              # security reasons)...
-              my $server = $response->header('Server');
-              if ($server =~ /Loxone/) {
-                $miniserverip = @fields[1],
-                last;
-              }
-              # ... so we scan for blocked Auth - not as accurate but
-              # better then nothing...
-              my $statusline = $response->status_line;
-              if ($statusline =~ /Unauthorized/) {
-                $miniserverip = @fields[1],
-                last;
-              }
-            };
-            alarm(0);
-          }
-        }
-        flock(F,8) if($flock);
-      close(F);
-    }
-
-    # Delete tmp file
-    if (!-l "/tmp/netscan.dat" && -T "/tmp/netscan.dat") {
-      unlink ("/tmp/netscan.dat");
-    }
-
-  }
-
 }
+ 
+close(S);
+
 
 # Print last found ip address
 print "Content-type: text/html; charset=iso-8859-15\n\n";
-print "$miniserverip";
+print "{\"Name\" : \"$miniservername\",\n\"IP\" : \"$miniserverip\",\n\"Port\" : \"$miniserverport\"}\n";
 
 exit;

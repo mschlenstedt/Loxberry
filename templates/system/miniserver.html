@@ -765,18 +765,20 @@ $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
     type: "GET",
     url: "/admin/system/tools/netscan.cgi",
     data: "data",
+    dataType: "json",
     success: function(data){
-      data.replace(/\r|\n/g, "");
+      //data.replace(/\r|\n/g, "");
       $('#miniserverip1').empty();
-      if (data.length < 3) 
+      if (data.IP.lenght < 3) 
       {
 		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
       } 
       else 
       {
 		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
-		$("#miniserveriprow1").attr( "ipaddr" , data );
-		$("#miniserverportrow1").attr( "portaddr" , "80");
+		$("#miniserveriprow1").attr( "ipaddr" , data.IP );
+		$("#miniserverportrow1").attr( "portaddr" , data.Port);
+		$("#miniserverfoldername1").val(data.Name);
 		$("#useclouddns1").prop("checked", false);
 		$("#useclouddns1").trigger( "change" );
       }
