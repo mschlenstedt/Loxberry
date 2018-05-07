@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.0.6";
+our $VERSION = "1.2.0.7";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -629,10 +629,13 @@ sub read_generalcfg
 		$miniservers{$msnr}{UseCloudDNS} = $cfg->param("MINISERVER$msnr.USECLOUDDNS");
 		$miniservers{$msnr}{CloudURLFTPPort} = $cfg->param("MINISERVER$msnr.CLOUDURLFTPPORT");
 		$miniservers{$msnr}{CloudURL} = $cfg->param("MINISERVER$msnr.CLOUDURL");
-		
 		$miniservers{$msnr}{Admin_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Admin});
 		$miniservers{$msnr}{Pass_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Pass});
 		$miniservers{$msnr}{Credentials_RAW} = $miniservers{$msnr}{Admin_RAW} . ':' . $miniservers{$msnr}{Pass_RAW};
+		
+		$miniservers{$msnr}{SecureGateway} = $cfg->param("MINISERVER$msnr.SECUREGATEWAY");
+		$miniservers{$msnr}{EncryptResponse} = $cfg->param("MINISERVER$msnr.ENCRYPTRESPONSE");
+		
 
 		# CloudDNS handling
 		if (LoxBerry::System::is_enabled($miniservers{$msnr}{UseCloudDNS}) && ($miniservers{$msnr}{CloudURL})) {

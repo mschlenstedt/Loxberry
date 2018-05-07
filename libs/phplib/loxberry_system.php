@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.11";
+	public static $LBSYSTEMVERSION = "1.2.0.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -450,11 +450,15 @@ class LBSystem
 			$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
 			$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
 			$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];
-			
 			$miniservers[$msnr]['Admin_RAW'] = urldecode($miniservers[$msnr]['Admin']);
 			$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
 			$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
 
+			$miniservers[$msnr]['SecureGateway'] = $cfg["MINISERVER$msnr"]['SECUREGATEWAY'];
+			$miniservers[$msnr]['EncryptResponse'] = $cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE'];
+			
+			
+			
 			######## TO IMPLEMENT
 			
 			# CloudDNS handling
