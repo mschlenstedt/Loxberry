@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.0.1";
+	public static $LBSYSTEMVERSION = "1.2.0.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -454,8 +454,8 @@ class LBSystem
 			$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
 			$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
 
-			$miniservers[$msnr]['SecureGateway'] = $cfg["MINISERVER$msnr"]['SECUREGATEWAY'];
-			$miniservers[$msnr]['EncryptResponse'] = $cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE'];
+			$miniservers[$msnr]['SecureGateway'] = isset($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) && is_enabled($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) ? 1 : 0;
+			$miniservers[$msnr]['EncryptResponse'] = isset ($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) && is_enabled($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) ? 1 : 0;
 			
 			
 			
@@ -581,7 +581,7 @@ function is_enabled($text)
 	if (in_array($text, $words)) {
 		return 1;
 	}
-	return undef;
+	return NULL;
 }
 
 
@@ -600,7 +600,7 @@ function is_disabled($text)
 	if (in_array($text, $words)) {
 		return 1;
 	}
-	return undef;
+	return NULL;
 }
 
 ####################################################
