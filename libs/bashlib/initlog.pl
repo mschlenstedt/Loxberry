@@ -7,6 +7,8 @@ my $log;
 my $currfilename;
 my $currloglevel;
 
+print STDERR "initlog.pl Commandline: " . $0 . " ". (join " ", @ARGV) . "\n";
+
 # Collecting options
 GetOptions (
 	'action:s' => \$action,
@@ -31,23 +33,23 @@ if (!$action) {
 $action = lc($action);
 
 if( $action eq "new" ) {
-	# print STDERR "initlog.pl: init\n";
+	print STDERR "initlog.pl: init\n";
 	init();
 	$currfilename = $log->close;
 	$currloglevel = $log->loglevel;
 	print "\"$currfilename\" $currloglevel\n";
 	exit(0);
 } elsif ( $action eq "logstart" ) {
-	# print STDERR "initlog.pl: init\n";
+	print STDERR "initlog.pl: init\n";
 	init();
-	# print STDERR "initlog.pl: start\n";
+	print STDERR "initlog.pl: start\n";
 	start();
 	exit(0);
 } elsif ( $action eq "logend" ) {
-	# print STDERR "initlog.pl: init\n";
+	print STDERR "initlog.pl: init\n";
 	$append = 1;
 	init();
-	# print STDERR "initlog.pl: end\n";
+	print STDERR "initlog.pl: end\n";
 	end();
 	exit(0);
 }
@@ -81,6 +83,7 @@ sub init
 
 sub start
 {
+	$log->open;
 	LOGSTART $message;
 #	my $currfilename = $log->close;
 #	my $currloglevel = $log->loglevel;
