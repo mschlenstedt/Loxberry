@@ -769,7 +769,7 @@ $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
     success: function(data){
       //data.replace(/\r|\n/g, "");
       $('#miniserverip1').empty();
-      if (data.IP.lenght < 3) 
+      if (data.IP.length < 3) 
       {
 		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
       } 
