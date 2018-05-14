@@ -76,10 +76,10 @@ function LOGSTART {
 		LOGS=$((LOGS + 1))
 		PARAM=""
 		if [ "$LOGS" -eq 1 ];then ACTIVELOG=1; fi
-		if [ -n "$STDERR" ];then PARAM=" --stderr"; ARRLOGS["$LOGS.stderr"]=$STDERR; fi
-		if [ -n "$APPEND" ];then PARAM=" --append"; ARRLOGS["$LOGS.append"]=$APPEND; fi
+		if [ -n "$STDERR" ];then PARAM=" --stderr=1"; ARRLOGS["$LOGS.stderr"]=$STDERR; fi
+		if [ -n "$APPEND" ];then PARAM=" --append=1"; ARRLOGS["$LOGS.append"]=$APPEND; fi
 		if [ -n "$NOFILE" ];then
-			PARAM="$PARAM --nofile"
+			PARAM="$PARAM --nofile=1"
 			ARRLOGS["$LOGS.nofile"]=$NOFILE
 		else
 			if [ -n "$FILENAME" ];then PARAM="$PARAM --filename=$FILENAME"; fi
