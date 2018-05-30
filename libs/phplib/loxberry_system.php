@@ -92,7 +92,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.0.2";
+	public static $LBSYSTEMVERSION = "1.2.0.3";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -547,23 +547,6 @@ class LBSystem
 		return $localip;
 	}
 
-	#########################################################
-	# is_systemcall - Determine if called from system widget
-	#########################################################
-
-	public static function is_systemcall()
-	{
-		$mypath = getcwd();
-		// error_log("is_systemcall: mypath $mypath");
-		# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
-		# print STDERR "lbshtmlauthdir: " . $lbshtmlauthdir . "\n";
-		# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) . "\n";
-		
-		if (substr($mypath, 0, strlen(LBSHTMLAUTHDIR)) === LBSHTMLAUTHDIR) { return 1; }
-		if (substr($mypath, 0, strlen(LBHOMEDIR . "/sbin")) === LBHOMEDIR . "/sbin") { return 1; }
-		if (substr($mypath, 0, strlen(LBHOMEDIR . "/bin")) === LBHOMEDIR . "/bin") { return 1; }
-		return null;
-	}
 }
 
 // END of class LBSystem

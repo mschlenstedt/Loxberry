@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.0.7";
+our $VERSION = "1.2.0.8";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -668,32 +668,6 @@ sub set_clouddns
 	$miniservers{$msnr}{IPAddress} 	= $uri->host;
 }
 
-####################################################
-# is_systemcall
-# INTERNAL function to determine if module was
-# called from a LoxBerry system CGI
-####################################################
-sub is_systemcall
-{
-	
-	my $filename;
-	if ($ENV{SCRIPT_FILENAME}) { 
-		$filename = $ENV{SCRIPT_FILENAME};
-	} elsif ($0) {
-		$filename = $0;
-	}
-	
-	# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
-	# print STDERR "lbshtmlauthdir: " . $lbshtmlauthdir . "\n";
-	# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) . "\n";
-	
-	if (substr(Cwd::abs_path($filename), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir) { return 1; }
-	if (substr(Cwd::abs_path($filename), 0, length("$lbhomedir/sbin")) eq "$lbhomedir/sbin") { return 1; }
-	if (substr(Cwd::abs_path($filename), 0, length("$lbhomedir/bin")) eq "$lbhomedir/bin") { return 1; }
-	return undef;
-	# return substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir ? 1 : undef;
-}
-
 =head2 get_ftpport
 
 The internal FTP port of the Miniserver is not configured in the LoxBerry configuration but can be queried by this function.
@@ -825,7 +799,8 @@ sub readlanguage
 	my $lang = LoxBerry::System::lblanguage();
 	# my $issystem = LoxBerry::System::is_systemcall();
 	my $issystem;
-	if ($syslang || LoxBerry::System::is_systemcall()) {
+#	if ($syslang || LoxBerry::System::is_systemcall()) {
+	if ($syslang || !$LoxBerry::System::lbpplugindir) {
 		$issystem = 1;
 	}
 	

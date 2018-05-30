@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.0.1";
+our $VERSION = "1.2.0.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -162,7 +162,8 @@ sub pagestart
 	my $headerobj;
 	my $langfile;
 	
-	my $systemcall = LoxBerry::System::is_systemcall();
+	#my $systemcall = LoxBerry::System::is_systemcall();
+	my $systemcall = defined $LoxBerry::System::lbpplugindir ? undef : 1;
 	
 	# Help for plugin calls
 	if (! defined $main::helptext and !$systemcall) {
