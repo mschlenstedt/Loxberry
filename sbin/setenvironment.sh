@@ -17,6 +17,7 @@ awk -v s="LBPTEMPL=$LBHOME/templates/plugins" '/^LBPTEMPL=/{$0=s;f=1} {a[++n]=$0
 awk -v s="LBPDATA=$LBHOME/data/plugins" '/^LBPDATA=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBPLOG=$LBHOME/log/plugins" '/^LBPLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBPCONFIG=$LBHOME/config/plugins" '/^LBPCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
+awk -v s="LBPBIN=$LBHOME/bin/plugins" '/^LBPBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
 #echo LBPHTMLAUTH=$LBHOME/webfrontend/htmlauth/plugins >> /etc/environment
 #echo LBPHTML=$LBHOME/webfrontend/html/plugins >> /etc/environment
@@ -33,6 +34,8 @@ awk -v s="LBSDATA=$LBHOME/data/system" '/^LBSDATA=/{$0=s;f=1} {a[++n]=$0} END{if
 awk -v s="LBSLOG=$LBHOME/log/system" '/^LBSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSTMPFSLOG=$LBHOME/log/system_tmpfs" '/^LBSTMPFSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSCONFIG=$LBHOME/config/system" '/^LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
+awk -v s="LBSBIN=$LBHOME/bin" '/^LBSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
+awk -v s="LBSSBIN=$LBHOME/sbin" '/^LBSSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
 # echo LBSHTMLAUTH=$LBHOME/webfrontend/htmlauth/system >> /etc/environment
 # echo LBSHTML=$LBHOME/webfrontend/html/system >> /etc/environment
@@ -78,6 +81,7 @@ awk -v s="export LBPTEMPL=$LBPTEMPL" '/^export LBPTEMPL=/{$0=s;f=1} {a[++n]=$0} 
 awk -v s="export LBPDATA=$LBPDATA" '/^export LBPDATA=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBPLOG=$LBPLOG" '/^export LBPLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBPCONFIG=$LBPCONFIG" '/^export LBPCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
+awk -v s="export LBPBIN=$LBPBIN" '/^export LBPBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
 awk -v s="export LBSHTMLAUTH=$LBSHTMLAUTH" '/^export LBSHTMLAUTH=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSHTML=$LBSHTML" '/^export LBSHTML=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
@@ -86,6 +90,8 @@ awk -v s="export LBSDATA=$LBSDATA" '/^export LBSDATA=/{$0=s;f=1} {a[++n]=$0} END
 awk -v s="export LBSLOG=$LBSLOG" '/^export LBSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSTMPFSLOG=$LBSTMPFSLOG" '/^export LBSTMPFSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSCONFIG=$LBSCONFIG" '/^export LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
+awk -v s="export LBSBIN=$LBSBIN" '/^export LBSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
+awk -v s="export LBSSBIN=$LBSSBIN" '/^export LBSSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
 awk -v s="export PERL5LIB=$PERL5LIB" '/^export PERL5LIB=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
@@ -108,6 +114,8 @@ echo \"LBPTEMPL\" \=\> \"$LBPTEMPL\", >> $ENVVARS
 echo \"LBPDATA\" \=\> \"$LBPDATA\", >> $ENVVARS
 echo \"LBPLOG\" \=\> \"$LBPLOG\", >> $ENVVARS
 echo \"LBPCONFIG\" \=\> \"$LBPCONFIG\", >> $ENVVARS
+echo \"LBPBIN\" \=\> \"$LBPBIN\", >> $ENVVARS
+
 echo '' >> $ENVVARS
 echo \"LBSHTMLAUTH\" \=\> \"$LBSHTMLAUTH\", >> $ENVVARS
 echo \"LBSHTML\" \=\> \"$LBSHTML\", >> $ENVVARS
@@ -116,6 +124,9 @@ echo \"LBSDATA\" \=\> \"$LBSDATA\", >> $ENVVARS
 echo \"LBSLOG\" \=\> \"$LBSLOG\", >> $ENVVARS
 echo \"LBSTMPFSLOG\" \=\> \"$LBSTMPFSLOG\", >> $ENVVARS
 echo \"LBSCONFIG\" \=\> \"$LBSCONFIG\", >> $ENVVARS
+echo \"LBSBIN\" \=\> \"$LBSBIN\", >> $ENVVARS
+echo \"LBSSBIN\" \=\> \"$LBSSBIN\", >> $ENVVARS
+
 echo '' >> $ENVVARS
 echo ')' >> $ENVVARS
 
@@ -128,6 +139,7 @@ awk -v s="\t\t\t\"LBPTEMPL\" => \"$LBPTEMPL\"," '/^\t\t\t"LBPTEMPL" => /{$0=s;f=
 awk -v s="\t\t\t\"LBPDATA\" => \"$LBPDATA\"," '/^\t\t\t"LBPDATA" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBPLOG\" => \"$LBPLOG\"," '/^\t\t\t"LBPLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBPCONFIG\" => \"$LBPCONFIG\"," '/^\t\t\t"LBPCONFIG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBPBIN\" => \"$LBPBIN\"," '/^\t\t\t"LBPBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSHTMLAUTH\" => \"$LBSHTMLAUTH\"," '/^\t\t\t"LBSHTMLAUTH" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSHTML\" => \"$LBSHTML\"," '/^\t\t\t"LBSHTML" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSTEMPL\" => \"$LBSTEMPL\"," '/^\t\t\t"LBSTEMPL" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
@@ -135,6 +147,8 @@ awk -v s="\t\t\t\"LBSDATA\" => \"$LBSDATA\"," '/^\t\t\t"LBSDATA" => /{$0=s;f=1} 
 awk -v s="\t\t\t\"LBSLOG\" => \"$LBSLOG\"," '/^\t\t\t"LBSLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSTMPFSLOG\" => \"$LBSTMPFSLOG\"," '/^\t\t\t"LBSTMPFSLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSCONFIG\" => \"$LBSCONFIG\"," '/^\t\t\t"LBSCONFIG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSBIN\" => \"$LBSBIN\"," '/^\t\t\t"LBSBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
+awk -v s="\t\t\t\"LBSSBIN\" => \"$LBSSBIN\"," '/^\t\t\t"LBSSBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 
 if /usr/sbin/service lighttpd status; then
 	/usr/sbin/service lighttpd force-reload
