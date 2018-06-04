@@ -26,24 +26,54 @@ class intLog
 			exit(1);
 		}
 
-		
-		$cmdparams = " --action=new";
-		
-		foreach ($this->params as $key => $value) {
-			# echo "key: $key // value $value\n";
-			$cmdparams .= " --$key=\"$value\"";
+		if(!isset($this->params["loglevel"]) && isset($lbpplugindir)) {
+			$this->params["loglevel"] = LBSystem::pluginloglevel();
 		}
-		# echo "CMD-Params: $cmdparams\n";
-		$log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
-		if ($log == "")
-		{
-			echo "Log initialisation failed";
+		if(!isset($this->params["loglevel"])) {
+			echo "No loglevel defined - defaulting to 7 DEBUG.\n";
+			$this->params["loglevel"] = 7;
+		}
+
+		# Generating filename
+		if (!isset($this->params["logdir"]) && !isset($this->params["filename"]) && is_dir($lbplogdir)) {
+			$this->params["logdir"] = $lbplogdir;
+		}
+		
+		if (isset($this->params["logdir"]) && !isset($this->params["filename"])) {
+			$this->params["filename"] = $this->params["logdir"] . "/" . currtime('file') . "_" . $this->params["name"] . ".log";
+		} elseif (!isset($this->params["filename"])) {
+			if(is_dir($lbplogdir)) {
+				$this->params["filename"] = "$lbplogdir/" . currtime('file') . "_" . $this->params["name"] . ".log";
+			} elseif ( !isset($this->params["nofile"] )) {
+				echo "Cannot determine plugin log directory. Terminating.\n";
+				exit(1);
+			}
+		}
+		
+		if (!isset($this->params["filename"])) {
+			echo "Could not smartly detect where your logfile should be placed. Check your parameters. Terminating.";
 			exit(1);
 		}
 		
-		$log=str_getcsv($log," ");
-		$this->params["filename"] = $log[0];
-		$this->params["loglevel"] = $log[1];
+		
+		
+		// $cmdparams = " --action=new";
+		
+		// foreach ($this->params as $key => $value) {
+			// # echo "key: $key // value $value\n";
+			// $cmdparams .= " --$key=\"$value\"";
+		// }
+		// # echo "CMD-Params: $cmdparams\n";
+		// $log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
+		// if ($log == "")
+		// {
+			// echo "Log initialisation failed";
+			// exit(1);
+		// }
+		
+		// $log=str_getcsv($log," ");
+		// $this->params["filename"] = $log[0];
+		// $this->params["loglevel"] = $log[1];
 		# echo "Constructor: Filename " . $this->params["filename"] . "\n";
 		
 		
@@ -72,26 +102,84 @@ class intLog
 			echo "Object is not initialized.";
 			exit(1);
 		}
-				
-		//initializing the log an printout the start message
-		$cmdparams = " --action=logstart --filename=\"" . $this->params["filename"] . "\" ";
 		
-		foreach ($this->params as $key => $value) {
-			# echo "key: $key // value $value\n";
-			$cmdparams .= " --$key=\"$value\"";
-		}
-		
+		$this->writelog( "================================================================================");
+		$this->writelog( "<LOGSTART>" . currtime() . " TASK STARTED");
 		if(isset($msg)) {
-			$cmdparams .= " --message=\"$msg\"";
+			$this->writelog( "<LOGSTART>" . $msg);
+		}
+		$is_file_str = "";
+		foreach (glob( LBSCONFIGDIR . '/is_*.cfg') as $filename) {
+			$is_file_str .= substr($filename, strrpos($filename, "/")+1) . " ";
+		}
+		if (isset($is_file_str)) {
+			$is_file_str = "( " . $is_file_str . ")";
 		}
 		
-		# echo "CMD-Params: $cmdparams\n";
-		$log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
-		if ($log == "")
-		{
-			echo "initlog returns a empty string.";
-			return false;
+		$plugin = LBSystem::plugindata($this->params["package"]);
+		
+		$this->writelog("<INFO>LoxBerry Version " . LBSystem::lbversion() . " " . $is_file_str);
+		if (isset($plugin)) {
+			$this->writelog("<INFO>" . $plugin['PLUGINDB_TITLE'] . " Version " . $plugin['PLUGINDB_VERSION']);
 		}
+		$this->writelog("<INFO>Loglevel: " . $this->params["loglevel"]);
+	
+
+		
+		// //initializing the log an printout the start message
+		// $cmdparams = " --action=logstart --filename=\"" . $this->params["filename"] . "\" ";
+		
+		// foreach ($this->params as $key => $value) {
+			// # echo "key: $key // value $value\n";
+			// $cmdparams .= " --$key=\"$value\"";
+		// }
+		
+		// if(isset($msg)) {
+			// $cmdparams .= " --message=\"$msg\"";
+		// }
+		
+		// # echo "CMD-Params: $cmdparams\n";
+		// $log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
+		// if ($log == "")
+		// {
+			// echo "initlog returns a empty string.";
+			// return false;
+		// }
+		// else { error_log("log returns: $log\n");
+		// }
+		
+	}
+	
+	public function LOGEND($msg)
+	{
+		global $lbhomedir;
+		
+		if (!isset($this->params["package"]) && !isset($this->params["name"])) {
+			echo "Object is not initialized.";
+		}
+		
+		$this->writelog("<LOGEND>" . $msg);
+		$this->writelog("<LOGEND>" . currtime() . " TASK FINISHED");
+		
+		// //initializing the log an printout the start message
+		// $cmdparams = " --action=logend --filename=\"" . $this->params["filename"] . "\" ";
+		
+		// foreach ($this->params as $key => $value) {
+			// # echo "key: $key // value $value\n";
+			// $cmdparams .= " --$key=\"$value\"";
+		// }
+		
+		// if(isset($msg)) {
+			// $cmdparams .= " --message=\"$msg\"";
+		// }
+		
+		// # echo "CMD-Params: $cmdparams\n";
+		// $log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
+		// if ($log == "")
+		// {
+			// echo "initlog returns a empty string.";
+			// return false;
+		// }
 		
 	}
 	
@@ -170,35 +258,7 @@ class intLog
 		}
 	}
 	
-	public function LOGEND($msg)
-	{
-		global $lbhomedir;
-		
-		if (!isset($this->params["package"]) && !isset($this->params["name"])) {
-			echo "Object is not initialized.";
-		}
-				
-		//initializing the log an printout the start message
-		$cmdparams = " --action=logend --filename=\"" . $this->params["filename"] . "\" ";
-		
-		foreach ($this->params as $key => $value) {
-			# echo "key: $key // value $value\n";
-			$cmdparams .= " --$key=\"$value\"";
-		}
-		
-		if(isset($msg)) {
-			$cmdparams .= " --message=\"$msg\"";
-		}
-		
-		# echo "CMD-Params: $cmdparams\n";
-		$log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
-		if ($log == "")
-		{
-			echo "initlog returns a empty string.";
-			return false;
-		}
-		
-	}
+	
 
 	public function writelog($msg) {
 		if (isset($this->params["stdout"])) {fwrite(STDOUT,$msg . PHP_EOL);}
