@@ -96,8 +96,8 @@ awk -v s="export LBSSBIN=$LBSSBIN" '/^export LBSSBIN=/{$0=s;f=1} {a[++n]=$0} END
 awk -v s="export PERL5LIB=$PERL5LIB" '/^export PERL5LIB=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
 
-if /usr/sbin/service apache2 status; then
-	/usr/sbin/service apache2 force-reload
+if systemctl --no-pager status apache2; then
+	systemctl force-reload apache2 
 fi
 
 # LoxBerry global environment variables in Lighttpd
@@ -150,8 +150,8 @@ awk -v s="\t\t\t\"LBSCONFIG\" => \"$LBSCONFIG\"," '/^\t\t\t"LBSCONFIG" => /{$0=s
 awk -v s="\t\t\t\"LBSBIN\" => \"$LBSBIN\"," '/^\t\t\t"LBSBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSSBIN\" => \"$LBSSBIN\"," '/^\t\t\t"LBSSBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 
-if /usr/sbin/service lighttpd status; then
-	/usr/sbin/service lighttpd force-reload
+if systemctl --no-pager status lighttpd; then
+	systemctl force-reload lighttpd 
 fi
 
 # sudoers.d
