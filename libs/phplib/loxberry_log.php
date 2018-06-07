@@ -124,7 +124,16 @@ class intLog
 		}
 		$this->writelog("<INFO>Loglevel: " . $this->params["loglevel"]);
 	
-
+		
+		if(!isset($this->params["nofile"])) {
+			
+			if(!isset($this->params["dbh"])) {
+				$this->params["dbh"] = intLog::log_db_init_database();
+			}
+			$this->params["dbkey"] = intLog::log_db_logstart($this->params["dbh"], $this);
+			
+		}
+		
 		
 		// //initializing the log an printout the start message
 		// $cmdparams = " --action=logstart --filename=\"" . $this->params["filename"] . "\" ";
@@ -160,6 +169,22 @@ class intLog
 		
 		$this->writelog("<LOGEND>" . $msg);
 		$this->writelog("<LOGEND>" . currtime() . " TASK FINISHED");
+		
+		// echo "LOGEND\n";
+		if(!isset($this->params["nofile"])) {
+			// echo "Nofile not set\n";
+			if(!isset($this->params["dbh"])) {
+				// echo "Init db\n";
+				$this->params["dbh"] = intLog::log_db_init_database();
+			}
+			if(!isset($this->params["dbkey"])) {
+				// echo "DBKey not set - return\n";
+				$p->params["dbkey"] = intLog::log_db_query_id($this->params["dbh"], $this);
+			}
+			intLog::log_db_logend($this->params["dbh"], $this);
+			
+		}
+		
 		
 		// //initializing the log an printout the start message
 		// $cmdparams = " --action=logend --filename=\"" . $this->params["filename"] . "\" ";
@@ -265,6 +290,167 @@ class intLog
 		if (isset($this->params["stderr"])) {fwrite(STDERR,$msg . PHP_EOL);}
 		if (!isset($this->params["nofile"]) && $this->params["filename"] != "") {file_put_contents($this->params["filename"], $msg . PHP_EOL, FILE_APPEND);}
 	}
+
+	private function log_db_init_database() 
+	{
+		
+		$dbfile = LBSDATADIR . "/logs_sqlite.dat";
+		$db = new SQLite3($dbfile);
+		$res = $db->exec("CREATE TABLE IF NOT EXISTS logs (
+				PACKAGE VARCHAR(255) NOT NULL,
+				NAME VARCHAR(255) NOT NULL,
+				FILENAME VARCHAR (2048) NOT NULL,
+				LOGSTART DATETIME,
+				LOGEND DATETIME,
+				LASTMODIFIED DATETIME NOT NULL,
+				LOGKEY INTEGER PRIMARY KEY 
+			)");
+		if($res != True) {
+			error_log("log_init_database create table 'logs' notifications: " . $db->lastErrorMsg());
+			return;
+		}
+		$res = $db->exec("CREATE TABLE IF NOT EXISTS logs_attr (
+				keyref INTEGER NOT NULL,
+				attrib VARCHAR(255) NOT NULL,
+				value VARCHAR(255),
+				PRIMARY KEY ( keyref, attrib )
+				)");
+		if($res != True) {
+			error_log("log_init_database create table 'logs_attr' notifications: " . $db->lastErrorMsg());
+			return;
+		}
+		if (posix_getpwuid(fileowner($dbfile)) != "loxberry") {
+				chown($dbfile, "loxberry");
+		}
+		
+		return $db;
+		
+	}
+	
+	private function log_db_logstart($dbh, $p)
+	{
+		// echo "Package: " . $p->params["package"] . "\n";
+		if(!isset($p->params["package"])) { throw new Exception("Create DB log entry: No PACKAGE defined");}
+		if(!isset($p->params["name"])) { throw new Exception("Create DB log entry: No NAME defined");}
+		if(!isset($p->params["filename"])) { throw new Exception("Create DB log entry: No FILENAME defined");}
+
+		if(!isset($p->params["LOGSTART"])) {
+			$p->params["LOGSTART"] = date("Y-m-d H:i:s");
+		}
+		$plugin = LBSystem::plugindata($p->params["package"]);
+		if(isset($plugin) && isset($plugin['PLUGINDB_TITLE'])) {
+			$p->params["_ISPLUGIN"] = 1;
+			$p->params["PLUGINTITLE"] = $plugin['PLUGINDB_TITLE'];
+		}
+		
+		# Start transaction;
+		$dbh->exec("BEGIN TRANSACTION;");
+		
+		# Insert main log entry
+		$sth = $dbh->prepare('INSERT INTO logs (PACKAGE, NAME, FILENAME, LOGSTART, LASTMODIFIED) VALUES (:package, :name, :filename, :logstart, :logmodified) ;');
+		$sth->bindValue(':package', $p->params["package"]);
+		$sth->bindValue(':name', $p->params["name"]);
+		$sth->bindValue(':filename', $p->params["filename"]);
+		$sth->bindValue(':logstart', $p->params["LOGSTART"]);
+		$sth->bindValue(':logmodified', $p->params["LOGSTART"]);
+		$res = $sth->execute();
+		if ($res == False) {
+			error_log("Error inserting log to DB: " . $dbh->lastErrorMsg());
+			return;
+		}
+		$id = $dbh->lastInsertRowid();
+		
+		# Process further attributes
+		
+		$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (:keyref, :attrib, :value);');
+		
+		foreach ($p->params as $key => $value) {
+			if($key == "PACKAGE" || $key == "NAME" || $key == "LOGSTART" || $key == "LOGEND" || $key == "LASTMODIFIED" || $key == "FILENAME" || $key == "dbh" || $p->params[$key] == "" ) {
+				continue;
+			}
+			// echo "Key: $key    Value: $value\n";
+			$sth2->bindValue(':keyref', $id);
+			$sth2->bindValue(':attrib', $key);
+			$sth2->bindValue(':value', $value);
+			$sth2->execute();
+		}
+		
+		$res = $dbh->exec("COMMIT;");
+		if ($res == False) {
+			error_log("log_db_logstart: commit failed: " . $dbh->lastErrorMsg());
+			return;
+		}
+	
+	return $id;
+	
+	}
+	
+	private function log_db_logend($dbh, $p)
+	{
+		if(!isset($p->params["dbkey"])) { throw new Exception("log_db_endlog: No dbkey defined");}
+		
+		$p->params["LOGEND"] = date("Y-m-d H:i:s");
+		
+		# Start transaction;
+		$dbh->exec("BEGIN TRANSACTION;");
+		
+		# Insert main log entry
+		$sth = $dbh->prepare('UPDATE logs set LOGEND = :logend, LASTMODIFIED = :lastmodified WHERE LOGKEY = :logkey ;');
+		$sth->bindValue(':logend', $p->params["LOGEND"]);
+		$sth->bindValue(':lastmodified', $p->params["LOGEND"]);
+		$sth->bindValue(':logkey', $p->params["dbkey"]);
+		$res = $sth->execute();
+		if ($res == False) {
+			error_log("Error updating logend in DB: " . $dbh->lastErrorMsg());
+			return;
+		}
+		$id = $dbh->lastInsertRowid();
+		
+		# Process further attributes
+		
+		$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (:keyref, :attrib, :value);');
+		
+		foreach ($p->params as $key => $value) {
+			if($key == "PACKAGE" || $key == "NAME" || $key == "LOGSTART" || $key == "LOGEND" || $key == "LASTMODIFIED" || $key == "FILENAME" || $key == "dbh" || $p->params[$key] == "" ) {
+				continue;
+			}
+			// echo "Key: $key    Value: $value\n";
+			$sth2->bindValue(':keyref', $id);
+			$sth2->bindValue(':attrib', $key);
+			$sth2->bindValue(':value', $value);
+			$sth2->execute();
+		}
+		
+		$res = $dbh->exec("COMMIT;");
+		if ($res == False) {
+			error_log("log_db_logend: commit failed: " . $dbh->lastErrorMsg());
+			return;
+		}
+	
+	return "Success";
+	
+	}
+	
+	private function log_db_query_id($dbh, $p)
+	{
+
+		# Check mandatory fields
+		if(!isset($p->params["filename"])) { throw new Exception("log_db_queryid: No FILENAME defined");}
+			
+		# Search filename
+		$qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '{$p->params["filename"]}' ORDER BY LOGSTART DESC LIMIT 1;"; 
+		$res = $dbh->QUERY($qu);
+		$row = $res->fetch();
+		if (isset($row["logid"])) {
+			return $logid;
+		} else {
+			error_log ("log_db_queryid: Could not find filename {$p->params["filename"]}\n");
+		}
+		return;
+
+	}
+
+	
 }
 
 class LBLog
