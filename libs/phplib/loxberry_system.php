@@ -14,12 +14,30 @@
 
 	// lbhomedir
 	$lbhomedir = LBHOMEDIR;
-		
-	$plugindir_array = explode("/", substr(getcwd(), strlen(LBHOMEDIR)));
-	if (isset($plugindir_array[4])) {
-		$pluginname = $plugindir_array[4];
-	}
+	list($scriptPath) = get_included_files();
+	$p = explode("/", substr($scriptPath, strlen(LBHOMEDIR)));
+	
+	// // Debugging
+	// error_log("Path parts");
+	// error_log("P1 = $p[1]");
+	// error_log("P2 = $p[2]");
+	// error_log("P3 = $p[3]");
+	// error_log("P4 = $p[4]");
+	// error_log("P5 = $p[5]");
+	// error_log("P6 = $p[6]");
+	
+	if 		($p[1] == 'webfrontend' && $p[3] == 'plugins' && isset($p[4]) )  { $pluginname = $p[4]; }
+	elseif 	($p[1] == 'templates' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'log' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'data' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'config' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'bin' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'system' && $p[2] == 'daemons' && $p[3] == 'plugins' && isset($p[4]) ) { $pluginname = $p[4]; }
 
+	// error_log("Determined plugin name is $pluginname");
+	
+	
+	
 	# $pluginname = explode("/", substr(getcwd(), strlen(LBHOMEDIR)))[4];
 	if (isset($pluginname)) {
 		define ("LBPPLUGINDIR", $pluginname);
@@ -92,7 +110,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.0.3";
+	public static $LBSYSTEMVERSION = "1.2.0.4";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
