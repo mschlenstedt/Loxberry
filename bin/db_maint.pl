@@ -15,6 +15,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 if ($R::action eq "reduce_notifys") { reduce_notifys(); }
+if ($R::action eq "reduce_logfiles") { reduce_logfiles(); }
 
 
 exit;
@@ -40,4 +41,15 @@ sub reduce_notifys
 			delete_notification_key($notification->{KEY});
 		}
 	}
+}
+
+#############################################################
+# Function reduce_notifys
+#############################################################
+sub reduce_logfiles
+{
+	print STDERR "Logfile maintenance: reduce_logfiles called.\n";
+	LoxBerry::Log::logfiles_cleanup();
+	my @logs = LoxBerry::Log::get_logs();
+	
 }
