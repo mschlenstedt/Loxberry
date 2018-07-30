@@ -52,7 +52,7 @@ our $mailbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "1.2.0.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 $cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
@@ -189,15 +189,6 @@ sub save
 	$maintemplate->param( "LANG", $lang);
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 	
-	# # Everything from Forms
-	# $email        = param('email');
-	# $smtpserver   = param('smtpserver');
-	# $smtpport     = param('smtpport');
-	# $smtpcrypt    = param('smtpcrypt');
-	# $smtpauth     = param('smtpauth');
-	# $smtpuser     = param('smtpuser');
-	# $smtppass     = param('smtppass');
-
 	# Prevent warnings 'only used once'
 	$R::email if (0);
 	$R::smtpserver if (0);
@@ -214,8 +205,8 @@ sub save
 	$mcfg->param("SMTP.PORT", "$R::smtpport");
 	$mcfg->param("SMTP.CRYPT", "$R::smtpcrypt");
 	$mcfg->param("SMTP.AUTH", "$R::smtpauth");
-	$mcfg->param("SMTP.SMTPUSER", "$R::smtpuser");
-	$mcfg->param("SMTP.SMTPPASS", "$R::smtppass");
+	$mcfg->param("SMTP.SMTPUSER", "\"$R::smtpuser\"");
+	$mcfg->param("SMTP.SMTPPASS", "\"$R::smtppass\"");
 	$mcfg->save();
 
 
