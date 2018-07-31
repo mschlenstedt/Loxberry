@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.0.8";
+our $VERSION = "1.2.0.9";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -646,6 +646,14 @@ sub read_generalcfg
 			$miniservers{$msnr}{Port} = 80;
 		}
 
+		# Miniserver values consistency check
+		# If a Miniserver entry is not plausible, the full Miniserver hash entry is deleted
+		if($miniservers{$msnr}{Name} eq '' or $miniservers{$msnr}{IPAddress} eq '' or $miniservers{$msnr}{Admin} eq '' or $miniservers{$msnr}{Pass} eq ''
+			or $miniservers{$msnr}{Port} eq '') {
+			delete @miniservers{$msnr};
+		}
+		
+		
 	}
 	return 1;
 }

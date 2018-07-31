@@ -110,7 +110,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.0.4";
+	public static $LBSYSTEMVERSION = "1.2.0.5";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -475,10 +475,6 @@ class LBSystem
 			$miniservers[$msnr]['SecureGateway'] = isset($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) && is_enabled($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) ? 1 : 0;
 			$miniservers[$msnr]['EncryptResponse'] = isset ($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) && is_enabled($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) ? 1 : 0;
 			
-			
-			
-			######## TO IMPLEMENT
-			
 			# CloudDNS handling
 			if ($miniservers[$msnr]['UseCloudDNS'] && $miniservers[$msnr]['CloudURL']) {
 				LBSystem::set_clouddns($msnr, $clouddnsaddress);
@@ -488,6 +484,15 @@ class LBSystem
 				$miniservers[$msnr]['Port'] = 80;
 			}
 
+			// Miniserver values consistency check
+			// If a Miniserver entry is not plausible, the full Miniserver entry is deleted
+		
+		if(empty($miniservers[$msnr]['Name']) || empty($miniservers[$msnr]['IPAddress']) || empty($miniservers[$msnr]['Admin']) || empty($miniservers[$msnr]['Pass']) || empty($miniservers[$msnr]['Port'])) {
+			// echo "Miniserver $msnr is inconsistent!\n";
+			unset($miniservers[$msnr]);
+		}
+
+		
 		}
 	}
 
