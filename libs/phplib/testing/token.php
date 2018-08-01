@@ -4,13 +4,9 @@
 	
 	$cobj = curl_init();
 
-	$msurl = "schlenn.dynvpn.de:6080";
-	$user = "loxberryadmin";
-	$pass = "loxberry";
-
-	// $msurl = "reifen01.fenzis.net";
-	// $user = "admin";
-	// $pass = "j1lSPHeu";
+	$msurl = "miniserver";
+	$user = "admin";
+	$pass = "admin";
 
 	
 	$publickey = NULL;
