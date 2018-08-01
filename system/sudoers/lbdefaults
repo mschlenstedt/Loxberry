@@ -7,6 +7,7 @@ Defaults        env_delete -= "PERL5DB PERL5OPT PERL5LIB PERLLIB"
 
 # Standard
 loxberry ALL = NOPASSWD: /usr/sbin/ntpdate
+loxberry ALL = NOPASSWD: /usr/bin/timedatectl
 loxberry ALL = NOPASSWD: /bin/date
 loxberry ALL = NOPASSWD: /sbin/iwlist
 loxberry ALL = NOPASSWD: /sbin/ifconfig

@@ -62,6 +62,7 @@ my  $urlstatus;
 my  $urlstatuscode;
 our @lines;
 our $timezonelist;
+our $timezones;
 our $zeitserver;
 our $ntpserverurl;
 our $zeitzone;
@@ -195,11 +196,8 @@ sub form {
 	}
 
 	# Prepare Timezones
-	open(F,"<$lbhomedir/templates/system/timezones.dat") || die "Missing template system/timezones.dat";
-	 flock(F,2);
-	 @lines = <F>;
-	 flock(F,8);
-	close(F);
+	$timezones = qx( timedatectl  list-timezones|grep Europe/; timedatectl  list-timezones|grep -v  Europe/) || die "Problem reading timezones";
+    @lines = split(/\n/,$timezones);
 	foreach (@lines){
 	  s/[\n\r]//g;
 	  if ($zeitzone eq $_) {

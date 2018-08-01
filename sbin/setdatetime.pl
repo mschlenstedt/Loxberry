@@ -58,6 +58,7 @@ my $success;
 my $output;
 my $timeserver;
 my $timezone;
+my $timezoneresult;
 our $logmessage;
 our $errormessage;
 my $ntpbin;
@@ -70,7 +71,7 @@ my $installdir;
 ##########################################################################
 
 # Version of this script
-my $version = "0.0.3";
+my $version = "0.0.4";
 
 $cfg                 = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $miniserverip        = $cfg->param("MINISERVER1.IPADDRESS");
@@ -92,12 +93,12 @@ $installdir          = $cfg->param("BASE.INSTALLFOLDER");
 ##########################################################################
 
 # Set timezone
-copy("/usr/share/zoneinfo/$timezone","/etc/localtime");
-open(F,">/etc/timezone") or die "Cannot write /etc/timezone: $!";
- flock(F,2);
- print F "$timezone";
- flock(F,8);
-close(F);
+$timezoneresult = qx(sudo /usr/bin/timedatectl set-timezone "$timezone");
+$logmessage = "Setting Timezone to '$timezone'\n $timezoneresult\n";
+&log;
+$timezoneresult = qx(/usr/bin/timedatectl status);
+$logmessage = "Timezone status: \n $timezoneresult \n";
+&log;
 
 # If Method is Miniserver
 if ($timemethod eq "miniserver") {
