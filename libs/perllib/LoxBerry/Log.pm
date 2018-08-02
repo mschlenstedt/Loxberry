@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.12";
+our $VERSION = "1.2.0.13";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -672,6 +672,31 @@ sub log_db_logend
 
 }
 
+sub log_db_bulk_delete_logkey
+{
+	my ($dbh, @keys) = @_;
+	if(!$dbh && $DEBUG) {
+		print STDERR "   dbh not defined. Return undef\n<-- log_db_bulk_delete_logkey\n";
+		return undef;
+	}
+	
+	if(!@keys && $DEBUG) {
+		print STDERR "   No Keys defined. Return undef\n<-- log_db_bulk_delete_logkey\n";
+		return undef;
+	}
+
+	require DBI;
+	return undef if (! $dbh);
+	print STDERR "Bulk delete BEGIN TRAN\n";
+	$dbh->do("BEGIN TRANSACTION;"); 
+	foreach my $key (@keys) {
+		$dbh->do("DELETE FROM logs_attr WHERE keyref = $key;");
+		$dbh->do("DELETE FROM logs WHERE LOGKEY = $key;");	
+	}
+	print STDERR "Bulk delete COMMIT\n";
+	$dbh->do("COMMIT;"); 
+	
+}
 
 sub log_db_delete_logkey
 {
@@ -691,7 +716,7 @@ sub log_db_delete_logkey
 	
 	# SQLite interface
 	require DBI;
-	my $dbh = log_db_init_database();
+	# my $dbh = log_db_init_database();
 	return undef if (! $dbh);
 
 	$dbh->do("BEGIN TRANSACTION;"); 
@@ -737,6 +762,7 @@ sub get_logs
 	
 	my @logs;
 	my %logcount;
+	my @keystodelete;
 	
 	foreach my $key (@$logshr ) {
 		my $filesize;
@@ -755,7 +781,8 @@ sub get_logs
 		}
 		if ($key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
 			print STDERR "$key->{'FILENAME'} does not exist - db-key will be deleted" if ($DEBUG);
-			log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			push @keystodelete, $key->{'LOGKEY'};
+			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
 			next;
 		}
 		
@@ -766,14 +793,16 @@ sub get_logs
 		
 		# Delete by age (older than 1 month)
 		if (time > ($lastmodifiedobj+2629746) ) {
-			log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			push @keystodelete, $key->{'LOGKEY'};
+			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
 			next;
 		}
 		
 		# Count and delete (more than 20 per package)
 		$logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
 		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 20) {
-			log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			push @keystodelete, $key->{'LOGKEY'};
+			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
 			next;
 		}
 		
@@ -801,6 +830,8 @@ sub get_logs
 		push(@logs, \%log);
 
 	}
+	
+	log_db_bulk_delete_logkey($dbh, @keystodelete);
 	
 	return @logs;
 }
