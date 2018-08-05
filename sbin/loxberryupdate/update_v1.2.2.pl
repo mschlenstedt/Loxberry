@@ -67,6 +67,11 @@ if ($exitcode != 0) {
 } else {
 	LOGOK "New Apache 000-default copied.";
 }
+my $apacheport = lbwebserverport();
+if ($apacheport ne "80") {
+	LOGINF "Webserver port is not 80 - changing webserver port in Apache config to $apacheport";
+	qx { sed -i -e "s/<VirtualHost.*/<VirtualHost *:$apacheport>/" $lbhomedir/system/apache2/sites-available/000-default.conf };
+}
 qx { chown loxberry:loxberry $lbhomedir/system/apache2/sites-available/000-default.conf };
 
 ###  system/lighttpd/conf-available/
