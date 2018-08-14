@@ -81,7 +81,7 @@ our $grepbin;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "1.2.3.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -250,6 +250,11 @@ sub save {
 	  exit;
 	}
 
+	# Check if the timezone was changed
+	my $tzchanged;
+	$tzchanged = 1 if ($cfg->param("TIMESERVER.ZONE") ne $zeitzone);
+	
+		
 	# Write configuration file(s)
 	$cfg->param("TIMESERVER.SERVER", "$ntpserverurl");
 	$cfg->param("TIMESERVER.METHOD", "$zeitserver");
@@ -280,6 +285,12 @@ sub save {
 	# $help = "timeserver";
 
 	$message = "$SL{'TIMESERVER.SAVE_OK_SETTINGS_STORED'}<br>$output";
+	
+	if ($tzchanged) {
+		reboot_required($SL{'TIMESERVER.MSG_TZCHANGED'});
+		$message = $message . "<p>" . $SL{'TIMESERVER.MSG_TZCHANGED'} . "</p>";
+	}
+	
 
 	$maintemplate->param("MESSAGE", $message);
 	$maintemplate->param("NEXTURL", "/admin/system/index.cgi?form=system");
