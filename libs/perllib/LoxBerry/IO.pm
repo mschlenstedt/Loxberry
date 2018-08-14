@@ -1,11 +1,15 @@
 
 use strict;
+use Config::Simple;
 use LoxBerry::Log;
+
 # use IO::Select;
 
 package LoxBerry::IO;
 our $VERSION = "1.2.4.1";
 our $DEBUG = 0;
+our $mem_sendall = 0;
+our $mem_sendall_sec = 3600;
 
 my %udpsocket;
 
@@ -119,6 +123,80 @@ sub mshttp_send
 	}
 	return %response if (@params > 2);
 	return $response{$params[0]} if (@params == 2);
+}
+
+sub mshttp_send_mem
+{
+	my $msnr = shift;
+	
+	if (! $msnr) {
+		print STDERR "Miniserver must be specified\n";
+		return undef;
+	}
+	
+	if (@_ % 2) {
+		Carp::croak "mshttp_send: Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
+	}
+	my @params = @_;
+	my @newparams;
+	my %response;
+
+	my $memfile = "/run/shm/mshttp_mem_${msnr}.tmp";
+	print STDERR "mshttp_send_mem: Memory file is $memfile\n" if ($DEBUG);
+	
+	my $mem;
+	my $timestamp;
+	# Create or open memory file
+	if (! -e $memfile) {
+		$mem = new Config::Simple(syntax=>'ini');
+		$timestamp = time;
+		$mem->param('Main.timestamp', $timestamp);
+		$mem->write($memfile) or print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";
+		$mem_sendall = 1;
+	} else {
+		$mem = new Config::Simple($memfile);
+		$timestamp = $mem->param('Main.timestamp');
+	}
+	
+	# Check if this call should be set to mem_sendall
+	if ($timestamp < (time-$mem_sendall_sec)) {
+		$mem_sendall = 1;
+		$mem->set_block('default', undef);
+		$mem->param('Main.timestamp', time);
+	}
+		
+	if (! $mem->param('Main.lastMSRebootCheck') or $mem->param('Main.lastMSRebootCheck') < (time-300)) {
+		# Try to check if MS was restarted (in only possible with MS Admin)
+		$mem->param('Main.lastMSRebootCheck', time);
+		my $lasttxp = $mem->param('Main.MSTXP');
+		my ($code, $newtxp) = mshttp_call($msnr, "/dev/lan/txp");
+		if ($code eq "200") {
+			$mem->param('Main.MSTXP', $newtxp);
+			if($newtxp < $lasttxp) {
+				$mem_sendall = 1;
+				$mem->set_block('default', undef);
+			}
+		}
+	}
+	
+	# Build new delta parameter list
+	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
+			
+		if ($mem->param($params[$pidx]) ne $params[$pidx+1] or $mem_sendall == 1) {
+			push(@newparams, $params[$pidx], $params[$pidx+1]);
+			$mem->param($params[$pidx], $params[$pidx+1]);
+		}	
+	}
+	
+	$mem->param('Main.timestamp', time);
+		$mem->save($memfile) or print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";;
+	$mem_sendall = 0;
+	
+	if (@newparams) {
+		return mshttp_send($msnr, @newparams);
+	} else {
+		return 1;
+	}
 }
 
 #####################################################
@@ -251,6 +329,80 @@ sub msudp_send
 		$udpsocket{$msnr}{$udpport}->send($line);
 	}
 	return 1;
+}
+
+sub msudp_send_mem
+{
+	my $msnr = shift;
+	my $udpport = shift;
+	my $prefix = shift;
+	my @params = @_;
+	my @newparams;
+	
+	my $memfile = "/run/shm/msudp_mem_${msnr}_${udpport}.tmp";
+	print STDERR "msudp_send_mem: Memory file is $memfile\n" if ($DEBUG);
+	
+	if (! $udpport or $udpport > 65535) {
+		print STDERR "UDP port $udpport invalid or not defined\n";
+		return undef;
+	}
+	if (! $msnr) {
+		print STDERR "Miniserver must be specified\n";
+		return undef;
+	}
+	
+	my $mem;
+	my $timestamp;
+	# Create or open memory file
+	if (! -e $memfile) {
+		$mem = new Config::Simple(syntax=>'ini');
+		$timestamp = time;
+		$mem->param('Main.timestamp', $timestamp);
+		$mem->write($memfile) or print STDERR "msudp_send_mem: Could not write memory file $memfile\n";
+		$mem_sendall = 1;
+	} else {
+		$mem = new Config::Simple($memfile);
+		$timestamp = $mem->param('Main.timestamp');
+	}
+	
+	# Check if this call should be set to mem_sendall
+	if ($timestamp < (time-$mem_sendall_sec)) {
+		$mem_sendall = 1;
+		$mem->set_block('default', undef);
+		$mem->param('Main.timestamp', time);
+	}
+	
+	if (! $mem->param('Main.lastMSRebootCheck') or $mem->param('Main.lastMSRebootCheck') < (time-300)) {
+		# Try to check if MS was restarted (in only possible with MS Admin)
+		$mem->param('Main.lastMSRebootCheck', time);
+		my $lasttxp = $mem->param('Main.MSTXP');
+		my ($code, $newtxp) = mshttp_call($msnr, "/dev/lan/txp");
+		if ($code eq "200") {
+			$mem->param('Main.MSTXP', $newtxp);
+			if($newtxp < $lasttxp) {
+				$mem_sendall = 1;
+				$mem->set_block('default', undef);
+			}
+		}
+	}
+	
+	# Build new delta parameter list
+	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
+			
+		if ($mem->param($params[$pidx]) ne $params[$pidx+1] or $mem_sendall == 1) {
+			push(@newparams, $params[$pidx], $params[$pidx+1]);
+			$mem->param($params[$pidx], $params[$pidx+1]);
+		}	
+	}
+	
+	$mem->save($memfile) or print STDERR "msudp_send_mem: Could not write memory file $memfile\n";;
+	$mem_sendall = 0;
+	
+	if (@newparams) {
+		return msudp_send($msnr, $udpport, $prefix, @newparams);
+	} else {
+		return 1;
+	}
 }
 
 #####################################################
