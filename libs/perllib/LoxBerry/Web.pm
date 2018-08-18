@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.0.2";
+our $VERSION = "1.2.4.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -614,7 +614,52 @@ sub loglist_button_html
 
 }
 
+sub mslist_select_html
+{
+	my %p = @_;
+	
+	my $datamini;
+	my $selected;
+	
+	if (! $p{LABEL}) {
+		my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+		$p{LABEL} = $SL{'COMMON.PROPERNOUN_MINISERVER'};
+	}
+	if($p{DATA_MINI} eq "0" ) {
+		$datamini = "false";
+	} else {
+		$datamini = "true";
+	}
+	if (! $p{FORMID}) {
+		$p{FORMID} = "select_miniserver";
+	}
+	
+	my %miniservers;
+	%miniservers = LoxBerry::System::get_miniservers();
+	if (! %miniservers) {
+		return ('<div>No Miniservers defined</div>');
+	}
+	if (! %miniservers{$p{SELECTED}}) {
+		$p{SELECTED} = '1';
+	}
+	
+	$miniservers{$p{SELECTED}}{_selected} = 'selected="selected"';
+	
+	my $html = <<EOF;
+	<div class="ui-field-contain">
+    <label for="$p{FORMID}">$p{LABEL}</label>
+    <select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
+EOF
 
+	foreach my $ms (sort keys %miniservers) {
+		$html .= "<option value=\"$ms\" $miniservers{$ms}{_selected}>" . $miniservers{$ms}{Name} . " (" . $miniservers{$ms}{IPAddress} . ")</option>";
+	}
+	$html .= <<EOF;
+	</select>
+	</div>
+EOF
+
+}
 
 
 
