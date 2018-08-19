@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.0.9";
+our $VERSION = "1.2.4.1";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -846,7 +846,7 @@ sub readlanguage
 			}
 		}
 		
-		if ($template) {
+		if ($template and $template->isa("HTML::Template")) {
 			#while (my ($name, $value) = each %SL) {
 			#	$template->param("$name" => $value);
 			#}
@@ -877,7 +877,7 @@ sub readlanguage
 				Carp::carp ("ERROR: Could not read any language phrases from $langfile.\n");
 			}
 		}
-		if ($template) {
+		if ($template and $template->isa("HTML::Template")) {
 			#while (my ($name, $value) = each %L) {
 			#	$template->param("$name" => $value);
 			#}
