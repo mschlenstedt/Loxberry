@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.4.1";
+our $VERSION = "1.2.4.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -647,8 +647,8 @@ sub mslist_select_html
 	
 	my $html = <<EOF;
 	<div class="ui-field-contain">
-    <label for="$p{FORMID}">$p{LABEL}</label>
-    <select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
+	<label for="$p{FORMID}">$p{LABEL}</label>
+	<select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
 EOF
 
 	foreach my $ms (sort keys %miniservers) {
