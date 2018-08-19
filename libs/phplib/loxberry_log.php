@@ -17,11 +17,11 @@ class intLog
 		
 		$this->params = $args;
 		if (!isset($this->params["package"])) {$this->params["package"] = $lbpplugindir;}
-		if (!isset($this->params["package"])) {
+		if (!isset($this->params["package"]) && !isset($this->params["nofile"])) {
 			echo "Could not determine your plugin name. If you are not inside a plugin, package must be defined.\n";
 			exit(1);
 		}
-		if (!isset($this->params["name"])) {
+		if (!isset($this->params["name"]) && !isset($this->params["nofile"])) {
 			echo "The name parameter must be defined.\n";
 			exit(1);
 		}
@@ -39,45 +39,22 @@ class intLog
 			$this->params["logdir"] = $lbplogdir;
 		}
 		
-		if (isset($this->params["logdir"]) && !isset($this->params["filename"])) {
-			$this->params["filename"] = $this->params["logdir"] . "/" . currtime('file') . "_" . $this->params["name"] . ".log";
-		} elseif (!isset($this->params["filename"])) {
-			if(is_dir($lbplogdir)) {
-				$this->params["filename"] = "$lbplogdir/" . currtime('file') . "_" . $this->params["name"] . ".log";
-			} elseif ( !isset($this->params["nofile"] )) {
-				echo "Cannot determine plugin log directory. Terminating.\n";
+		if (!isset($this->params["nofile"])) {
+			if (isset($this->params["logdir"]) && !isset($this->params["filename"])) {
+				$this->params["filename"] = $this->params["logdir"] . "/" . currtime('file') . "_" . $this->params["name"] . ".log";
+			} elseif (!isset($this->params["filename"])) {
+				if(is_dir($lbplogdir)) {
+					$this->params["filename"] = "$lbplogdir/" . currtime('file') . "_" . $this->params["name"] . ".log";
+				} else {
+					echo "Cannot determine plugin log directory. Terminating.\n";
+					exit(1);
+				}
+			}
+			if (!isset($this->params["filename"])) {
+				echo "Could not smartly detect where your logfile should be placed. Check your parameters. Terminating.";
 				exit(1);
 			}
 		}
-		
-		if (!isset($this->params["filename"])) {
-			echo "Could not smartly detect where your logfile should be placed. Check your parameters. Terminating.";
-			exit(1);
-		}
-		
-		
-		
-		// $cmdparams = " --action=new";
-		
-		// foreach ($this->params as $key => $value) {
-			// # echo "key: $key // value $value\n";
-			// $cmdparams .= " --$key=\"$value\"";
-		// }
-		// # echo "CMD-Params: $cmdparams\n";
-		// $log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
-		// if ($log == "")
-		// {
-			// echo "Log initialisation failed";
-			// exit(1);
-		// }
-		
-		// $log=str_getcsv($log," ");
-		// $this->params["filename"] = $log[0];
-		// $this->params["loglevel"] = $log[1];
-		# echo "Constructor: Filename " . $this->params["filename"] . "\n";
-		
-		
-		
 	}
 	
 	public function __get($name)
@@ -133,30 +110,6 @@ class intLog
 			$this->params["dbkey"] = intLog::log_db_logstart($this->params["dbh"], $this);
 			
 		}
-		
-		
-		// //initializing the log an printout the start message
-		// $cmdparams = " --action=logstart --filename=\"" . $this->params["filename"] . "\" ";
-		
-		// foreach ($this->params as $key => $value) {
-			// # echo "key: $key // value $value\n";
-			// $cmdparams .= " --$key=\"$value\"";
-		// }
-		
-		// if(isset($msg)) {
-			// $cmdparams .= " --message=\"$msg\"";
-		// }
-		
-		// # echo "CMD-Params: $cmdparams\n";
-		// $log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
-		// if ($log == "")
-		// {
-			// echo "initlog returns a empty string.";
-			// return false;
-		// }
-		// else { error_log("log returns: $log\n");
-		// }
-		
 	}
 	
 	public function LOGEND($msg)
@@ -184,28 +137,6 @@ class intLog
 			intLog::log_db_logend($this->params["dbh"], $this);
 			
 		}
-		
-		
-		// //initializing the log an printout the start message
-		// $cmdparams = " --action=logend --filename=\"" . $this->params["filename"] . "\" ";
-		
-		// foreach ($this->params as $key => $value) {
-			// # echo "key: $key // value $value\n";
-			// $cmdparams .= " --$key=\"$value\"";
-		// }
-		
-		// if(isset($msg)) {
-			// $cmdparams .= " --message=\"$msg\"";
-		// }
-		
-		// # echo "CMD-Params: $cmdparams\n";
-		// $log=exec($lbhomedir . "/libs/bashlib/initlog.pl $cmdparams");
-		// if ($log == "")
-		// {
-			// echo "initlog returns a empty string.";
-			// return false;
-		// }
-		
 	}
 	
 	public function DEB($msg)
@@ -447,10 +378,7 @@ class intLog
 			error_log ("log_db_queryid: Could not find filename {$p->params["filename"]}\n");
 		}
 		return;
-
 	}
-
-	
 }
 
 class LBLog
@@ -635,59 +563,87 @@ $stdLog = NULL;
 function LOGSTART ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->LOGSTART($msg);
 }
 
 function LOGDEB ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->DEB($msg);
 }
 
 function LOGINF ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->INF($msg);
 }
 
 function LOGOK ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->OK($msg);
 }
 
 function LOGWARN ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->WARN($msg);
 }
 
 function LOGERR ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->ERR($msg);
 }
 
 function LOGCRIT ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->CRIT($msg);
 }
 
 function LOGALERT ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->ALERT($msg);
 }
 
 function LOGEMERG ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->EMERG($msg);
 }
 
 function LOGEND ($msg)
 {
 	global $stdLog;
+	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->LOGEND($msg);
+}
+
+function create_temp_logobject()
+{
+		global $stdLog;
+		global $lbpplugindir;
+		if (! defined($lbpplugindir)) {
+			$package = basename(__FILE__, '.php'); 
+		} else {
+			$package = $lbpplugindir;
+		}
+		$stdLog = LBLog::newLog( [ 
+			"package" => $package, 
+			"name" => "PHPLog",
+			"stderr" => 1,
+			"nofile" => 1,
+			"addtime" => 1,
+		] );
 }

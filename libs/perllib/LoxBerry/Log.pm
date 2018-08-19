@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.0.13";
+our $VERSION = "1.2.4.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -93,41 +93,43 @@ sub new
 		$self->{autoraise} = 1;
 	}
 	
-	# Setting package
-	# print STDERR "Package: " . $self->{package} . "\n";
-	if (!$self->{package}) {
-		if ($LoxBerry::System::lbpplugindir) {
-			$self->{package} = $LoxBerry::System::lbpplugindir;
-		}
-		if (!$self->{package}) {
-		Carp::croak "A 'package' must be defined if this log is not from a plugin";
-		}
-	}
-	# Generating filename
-	# print STDERR "1. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
-	if (!$self->{logdir} && !$self->{filename} && -e $LoxBerry::System::lbplogdir) {
-		$self->{logdir} = $LoxBerry::System::lbplogdir;
-	}
-	# print STDERR "2. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
-	if ($self->{logdir} && !$self->{filename}) {
-		$self->{filename} = $self->{logdir} . "/" . LoxBerry::System::currtime('file') . "_" . $self->{name} . ".log";
-		# print STDERR "3. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
-			
-	} elsif (!$self->{filename}) {
-		# print STDERR "4. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
-		if ($LoxBerry::System::lbplogdir && -e $LoxBerry::System::lbplogdir) {
-			$self->{filename} = "$LoxBerry::System::lbplogdir/" . currtime('file') . "_" . $self->{name} . ".log";
-			# print STDERR "5. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
-			
-		
-		} elsif (! $self->{nofile}) {
-			Carp::croak "Cannot determine plugin log directory";
-		}
-	} 
-	if (!$self->{filename} && !$self->{nofile}) {
-		Carp::croak "Cannot smartly detect where your logfile should be placed. Check your parameters.";
-	}
 	
+	# If nofile is given, we don't need to do any smart things
+	if(!$self->{nofile}) {
+		# Setting package
+		# print STDERR "Package: " . $self->{package} . "\n";
+		if (!$self->{package}) {
+			if ($LoxBerry::System::lbpplugindir) {
+				$self->{package} = $LoxBerry::System::lbpplugindir;
+			}
+			if (!$self->{package}) {
+			Carp::croak "A 'package' must be defined if this log is not from a plugin";
+			}
+		}
+		
+		if (!$self->{logdir} && !$self->{filename} && -e $LoxBerry::System::lbplogdir) {
+			$self->{logdir} = $LoxBerry::System::lbplogdir;
+		}
+		# print STDERR "2. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
+		if ($self->{logdir} && !$self->{filename}) {
+			$self->{filename} = $self->{logdir} . "/" . LoxBerry::System::currtime('file') . "_" . $self->{name} . ".log";
+			# print STDERR "3. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
+				
+		} elsif (!$self->{filename}) {
+			# print STDERR "4. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
+			if ($LoxBerry::System::lbplogdir && -e $LoxBerry::System::lbplogdir) {
+				$self->{filename} = "$LoxBerry::System::lbplogdir/" . currtime('file') . "_" . $self->{name} . ".log";
+				# print STDERR "5. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
+				
+			
+			} else {
+				Carp::croak "Cannot determine plugin log directory";
+			}
+		} 
+		if (!$self->{filename}) {
+			Carp::croak "Cannot smartly detect where your logfile should be placed. Check your parameters.";
+		}
+	}
 	# Get loglevel
 	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	if (!$self->{loglevel}) {
@@ -1615,50 +1617,6 @@ sub parsedatestring
 	return $dt;
 }
 
-# # INTERNAL function read_notificationlist
-# sub read_notificationlist
-# {
-	# my ($getcontent) = @_;
-		
-	# opendir( my $DIR, $notification_dir );
-	# my @files = sort {$b cmp $a} readdir($DIR);
-	# my $direntry;
-	# my $notifycount;
-	# @notifications = ();
-		
-	# while ( my $direntry = shift @files ) {
-		# next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
-		# print STDERR "Direntry: $direntry\n" if ($DEBUG);
-		# my $notstr = substr($direntry, 16, rindex($direntry, '.')-16);
-		# my ($package, $name, $severity) = split(/_/, $notstr);
-		# my $notdate = substr($direntry, 0, 15);
-		# # LOGDEB "Log type: $nottype  Date: $notdate";
-		# my $dateobj = LoxBerry::Log::parsedatestring($notdate);
-		# next if (!$dateobj); 
-		# my %notification;
-		# $notifycount++;
-		# if (lc($severity) eq 'err') {
-			# $notifications_error++;
-		# } else {
-			# $notifications_ok++;
-		# }
-		# $notification{'PACKAGE'} = lc($package);
-		# $notification{'NAME'} = lc($name);
-		# $notification{'SEVERITY'} = lc($severity);
-		# $notification{'DATEOBJ'} = $dateobj;
-		# $notification{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
-		# $notification{'KEY'} = $direntry;
-		# $notification{'FULLPATH'} = "$notification_dir/$direntry";
-		# ($notification{'CONTENTRAW'}, $notification{'CONTENTHTML'}) = notification_content($notification{'KEY'}) if ($getcontent);
-		
-		# push(@notifications, \%notification);
-	# }
-	# # return @notifications;
-	# closedir $DIR;
-	# $content_was_read = 1;
-	# print STDERR "Number of elements: " . scalar(@notifications) . "\n" if ($DEBUG);
-# }
-
 # INTERNAL FUNCTION
 sub get_severity
 {
@@ -1713,44 +1671,76 @@ package main;
 ####################################################
 sub LOGDEB 
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->DEB(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGINF 
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->INF(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGOK 
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->OK(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGWARN
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->WARN(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGERR
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->ERR(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGCRIT 
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->CRIT(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGALERT 
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->ALERT(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGEMERGE 
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->EMERGE(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGSTART 
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->LOGSTART(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
 sub LOGEND 
 {
+	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->LOGEND(@_); # or Carp::carp("No default object set for exported logging functions.");
 }
+
+sub create_temp_logobject
+{
+	my $package;
+	if (! $LoxBerry::System::lbpplugindir) {
+		# No package found
+		$package = $0;
+	}
+	else {
+		$package = $LoxBerry::System::lbpplugindir;
+	}
+	$LoxBerry::Log::mainobj = LoxBerry::Log->new (
+				package => $package,
+				name => 'STDERR',
+				stderr => 1,
+				nofile => 1,
+				addtime => 1,
+	);
+}
+
+
+
 
 
 #####################################################
