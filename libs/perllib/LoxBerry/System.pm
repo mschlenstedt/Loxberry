@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.4.1";
+our $VERSION = "1.2.4.2";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -665,15 +665,14 @@ sub set_clouddns
 {
 	my ($msnr, $clouddnsaddress) = @_;
 	require LWP::UserAgent;
-	require URI;
+	require JSON;
 	my $ua = LWP::UserAgent->new;
 	$ua->timeout(10);
 	$ua->max_redirect( 0 );
-	my $checkurl = "http://$clouddnsaddress/" . $miniservers{$msnr}{CloudURL}."/dev/cfg/ip";
-	my $resp 	 = $ua->head($checkurl);
-	my $uri = URI->new($resp->header('location'));
-	$miniservers{$msnr}{Port} 	    = $uri->port;
-	$miniservers{$msnr}{IPAddress} 	= $uri->host;
+	my $checkurl = "http://$clouddnsaddress?getip&snr=" . $miniservers{$msnr}{CloudURL}."&json=true";
+	my $resp 	 = $ua->get($checkurl);
+	my $respjson = JSON::decode_json($resp->content);
+	($miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port}) = split(/:/, $respjson->{IP}, 2);
 }
 
 =head2 get_ftpport
