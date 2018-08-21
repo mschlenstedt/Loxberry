@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.0.2";
+	public static $LBWEBVERSION = "1.2.4.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -441,6 +441,54 @@ EOT;
 	
 		return "<a data-role=\"button\" href=\"/admin/system/tools/showalllogs.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\" target=\"_blank\" data-inline=\"true\" data-mini=\"${datamini}\" data-icon=\"${dataicon}\">${p['LABEL']}</a>\n";
 			
+	}
+	
+	public static function mslist_select_html($p)
+	{
+		if (! isset($p['LABEL'])) {
+			$SL = LBSystem::readlanguage(0, 0, True);
+			$p['LABEL'] = $SL['COMMON.PROPERNOUN_MINISERVER'];
+		}
+		if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == "0" ) {
+			$datamini = "false";
+		} else {
+			$datamini = "true";
+		}
+		if (!isset($p['FORMID'])) {
+			$p['FORMID'] = "select_miniserver";
+		}
+		
+		$miniservers = LBSystem::get_miniservers();
+		if (! is_array($miniservers)) {
+			return ('<div>No Miniservers defined</div>');
+		}
+		if (! isset($miniservers[$p['SELECTED']])) {
+			$p['SELECTED'] = 1;
+		}
+		
+		$selectkey = $p['SELECTED'];
+		$miniservers[$selectkey]['_selected'] = 'selected="selected"';
+		
+		$html = <<<EOF
+		<div class="ui-field-contain">
+		<label for="{$p['FORMID']}">{$p['LABEL']}</label>
+		<select name="{$p['FORMID']}" id="{$p['FORMID']}" data-mini="$datamini">
+
+EOF;
+
+		foreach ($miniservers as $msnr=>$ms) {
+			if (!isset($ms['_selected'])) {
+				$ms['_selected'] = "";
+			}
+			$html .= "\t\t\t<option value=\"$msnr\" " . $ms['_selected'] . ">" . $ms['Name'] . " (" . $ms['IPAddress'] . ")</option>\n";
+		}
+		$html .= <<<EOF
+		</select>
+		</div>
+
+EOF;
+
+	return $html;
 	}
 	
 }

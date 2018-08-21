@@ -2,6 +2,8 @@
 <?php
 require_once "loxberry_web.php";
 
-$lang = LBWeb::readlanguage();
+// Test HTML output
+$mshtml = LBWeb::mslist_select_html( ['FORMID' => 'msno', 'SELECTED' => 2,  ]);
+echo $mshtml;
 
 ?>
