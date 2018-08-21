@@ -24,7 +24,7 @@ $ua->max_redirect( 0 );
 $R::useclouddns if (0);
 $R::ip if (0);
 
-my $hostport = "$R::ip";
+my $hostport = "$R::ip" if ($R::ip);
 $hostport .= ":$R::port" if ($R::port);
 
 # Cloud DNS handling
@@ -39,15 +39,23 @@ if (is_enabled($R::useclouddns)) {
 	
 	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 	my $cloudaddress = $cfg->param('BASE.CLOUDDNS');
-	my $checkurl = "http://$cloudaddress/$R::clouddns";
-	my $resp = $ua->head($checkurl);
-	# print $resp->status_line;
-	my $header = $resp->header('location');
-	# Removes http://
-	$header =~ s/http:\/\///;
-	# Removes /
-	$header =~ s/\///;
-	$hostport = $header;
+	
+	## Old CloudDNS implementation (pre Aug. 2018)
+	# my $checkurl = "http://$cloudaddress/$R::clouddns";
+	# my $resp = $ua->head($checkurl);
+	# # print $resp->status_line;
+	# my $header = $resp->header('location');
+	# # Removes http://
+	# $header =~ s/http:\/\///;
+	# # Removes /
+	# $header =~ s/\///;
+	# $hostport = $header;
+
+	## New CloudDNS implementation (Loxone changed the handling)
+	my $checkurl = "http://$cloudaddress?getip&snr=$R::clouddns&json=true";
+	my $resp = $ua->get($checkurl);
+	my $respjson = decode_json($resp->content);
+	$hostport = $respjson->{IP};
 	$jout{isclouddns} = 1;
 }
 
