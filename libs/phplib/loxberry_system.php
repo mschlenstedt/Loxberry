@@ -508,12 +508,20 @@ class LBSystem
 			return;
 		}
 
-		$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL']."/dev/cfg/ip";
-		$ch = curl_init($checkurl);
-		$response = curl_exec($ch);
-		$lastUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL );
-	    (!parse_url($lastUrl,PHP_URL_PORT))?$miniservers[$msnr]['Port']=80:$miniservers[$msnr]['Port']=parse_url($lastUrl,PHP_URL_PORT);
-	    (!parse_url($lastUrl,PHP_URL_HOST))?$miniservers[$msnr]['IPAddress']='127.0.0.1':$miniservers[$msnr]['IPAddress']=parse_url($lastUrl,PHP_URL_HOST);
+		//$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL']."/dev/cfg/ip";
+		$checkurl = "http://".$clouddnsaddress."/?getip&snr=".$miniservers[$msnr]['CloudURL']."&json=true";
+		$response = file_get_contents($checkurl);
+		$ip_info = json_decode($response);
+		$ip_info = explode(":",$ip_info->IP);
+		$miniservers[$msnr]['IPAddress']=$ip_info[0];
+		if (count($ip_info) == 2) {
+			$miniservers[$msnr]['Port']=$ip_info[1];
+		} else {
+			$miniservers[$msnr]['Port']=80;
+		}
+		//$lastUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL );
+	  //  (!parse_url($lastUrl,PHP_URL_PORT))?$miniservers[$msnr]['Port']=80:$miniservers[$msnr]['Port']=parse_url($lastUrl,PHP_URL_PORT);
+	  //  (!parse_url($lastUrl,PHP_URL_HOST))?$miniservers[$msnr]['IPAddress']='127.0.0.1':$miniservers[$msnr]['IPAddress']=parse_url($lastUrl,PHP_URL_HOST);
 	}
 
 	#####################################################
