@@ -22,6 +22,7 @@
 
 use Config::Simple;
 use File::HomeDir;
+use JSON;
 #use warnings;
 #use strict;
 
@@ -42,7 +43,7 @@ our $home = File::HomeDir->my_home;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.1";
+$version = "0.0.2";
 
 $cfg                = new Config::Simple($home.'/config/system/general.cfg');
 $clouddnsaddress    = $cfg->param("BASE.CLOUDDNS");
@@ -61,7 +62,12 @@ if (!$ARGV[0]) {
 }
 
 # Grep IP Address from Cloud Service
-our $dns_info = `$curlbin -I http://$clouddnsaddress/$ARGV[0] --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+#our $dns_info = `$curlbin -I http://$clouddnsaddress/$ARGV[0] --connect-timeout 5 -m 5 2>/dev/null |$grepbin Location |$awkbin -F/ '{print \$3}'`;
+my $ip_info = `$curlbin 'http://'$clouddnsaddress'/?getip&snr='$ARGV[0]'&json=true' 2>/dev/null`;
+my $json = JSON->new;
+my $ip_info = $json->decode($ip_info);
+our $dns_info = $ip_info->{IP};
+
 my @dns_info_pieces = split /:/, $dns_info;
 
 if ($dns_info_pieces[1]) {
