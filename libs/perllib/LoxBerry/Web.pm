@@ -659,6 +659,7 @@ EOF
 	</div>
 EOF
 
+	return $html;
 }
 
 
