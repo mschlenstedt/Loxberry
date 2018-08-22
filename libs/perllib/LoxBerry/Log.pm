@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.3";
+our $VERSION = "1.2.4.4";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -695,6 +695,8 @@ sub log_db_bulk_delete_logkey
 		$dbh->do("DELETE FROM logs_attr WHERE keyref = $key;");
 		$dbh->do("DELETE FROM logs WHERE LOGKEY = $key;");	
 	}
+	$dbh->do("DELETE FROM logs_attr WHERE keyref NOT IN (SELECT logkey FROM logs);");	
+	
 	print STDERR "Bulk delete COMMIT\n";
 	$dbh->do("COMMIT;"); 
 	
