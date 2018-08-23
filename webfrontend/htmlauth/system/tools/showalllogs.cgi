@@ -22,14 +22,14 @@ $cgi->import_names('R');
 
 
 # Version of this script
-my $version = "1.2.0.2";
+my $version = "1.2.4.1";
 
 if ($R::package) {
 	my $plugin = LoxBerry::System::plugindata($R::package);
-	if ($plugin->{PLUGINDB_TITLE}) {
+	if ($plugin and $plugin->{PLUGINDB_TITLE}) {
 		$template_title = $plugin->{PLUGINDB_TITLE} . " : Logfiles";
 	} else {
-		$template_title = ": Logfiles";
+		$template_title = "$R::package : Logfiles";
 	}
 } else {
 	$template_title = ": All Logfiles";
