@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.4";
+our $VERSION = "1.2.4.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -215,7 +215,7 @@ sub open
 	File::Path::make_path($dir);
 	
 	# print STDERR "log open Writetype after processing is " . $writetype . "\n";
-	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename};
+	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . ")";
 	$self->{'_FH'} = $fh;
 	eval {
 		my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
@@ -307,18 +307,17 @@ sub write
 		my $fh = $self->{'_FH'};
 		my $string;
 		my $currtime = "";
-		if ($self->{addtime}) {
+		
+		if ($self->{addtime} and $severity > -2) {
 			my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
 			$year += 1900;
 			$currtime = sprintf("%02d:%02d:%02d", $hour, $min, $sec);
 			$currtime = $currtime . " ";
 		}
-		
-		
-		if ($severity == 7 || $severity < 0) {
+		if ($severity == 7 or $severity < 0) {
 			$string = $currtime . $s . "\n"; 
 		} else {
-			$string = '<' . $severitylist{$severity} . '> ' . $currtime . $s . "\n"; 
+			$string = $currtime . '<' . $severitylist{$severity} . '> ' . $s . "\n"; 
 		}
 		if (!$self->{nofile}) {
 			# print STDERR "   Print to file\n";
@@ -399,9 +398,9 @@ sub LOGSTART
 	my $self = shift;
 	my ($s)=@_;
 	# print STDERR "Logstart -->\n";
-	$self->write(-1, "================================================================================");
-	$self->write(-1, "<LOGSTART>" . LoxBerry::System::currtime . " TASK STARTED");
-	$self->write(-1, "<LOGSTART>" . $s);
+	$self->write(-2, "================================================================================");
+	$self->write(-2, "<LOGSTART> " . LoxBerry::System::currtime . " TASK STARTED");
+	$self->write(-2, "<LOGSTART> " . $s);
 	
 	my @is_files = glob( $LoxBerry::System::lbsconfigdir . '/is_*.cfg' );
 	my $is_file_str = "";
@@ -414,9 +413,9 @@ sub LOGSTART
 	
 	my $plugin = LoxBerry::System::plugindata($self->{package});
 	
-	$self->write(-1, "<INFO>LoxBerry Version " . LoxBerry::System::lbversion() . " " . $is_file_str);
-	$self->write(-1, "<INFO>" . $plugin->{PLUGINDB_TITLE} . " Version " . $plugin->{PLUGINDB_VERSION} ) if ($plugin);
-	$self->write(-1, "<INFO>Loglevel: " . $self->{loglevel});
+	$self->write(-1, "<INFO> LoxBerry Version " . LoxBerry::System::lbversion() . " " . $is_file_str);
+	$self->write(-1, "<INFO> " . $plugin->{PLUGINDB_TITLE} . " Version " . $plugin->{PLUGINDB_VERSION} ) if ($plugin);
+	$self->write(-1, "<INFO> Loglevel: " . $self->{loglevel});
 	
 	if(! $self->{nofile}) {
 		if(!$self->{dbh}) {
@@ -430,8 +429,8 @@ sub LOGEND
 {
 	my $self = shift;
 	my ($s)=@_;
-	$self->write(-1, "<LOGEND>" . $s);
-	$self->write(-1, "<LOGEND>" . LoxBerry::System::currtime . " TASK FINISHED");
+	$self->write(-2, "<LOGEND> " . $s);
+	$self->write(-2, "<LOGEND> " . LoxBerry::System::currtime . " TASK FINISHED");
 	
 	if(! $self->{nofile}) {
 		if(!$self->{dbh}) {
