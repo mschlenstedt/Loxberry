@@ -95,11 +95,11 @@ class intLog
 		
 		$plugin = LBSystem::plugindata($this->params["package"]);
 		
-		$this->writelog("<INFO>LoxBerry Version " . LBSystem::lbversion() . " " . $is_file_str);
+		$this->writelog("<INFO> LoxBerry Version " . LBSystem::lbversion() . " " . $is_file_str);
 		if (isset($plugin)) {
-			$this->writelog("<INFO>" . $plugin['PLUGINDB_TITLE'] . " Version " . $plugin['PLUGINDB_VERSION']);
+			$this->writelog("<INFO> " . $plugin['PLUGINDB_TITLE'] . " Version " . $plugin['PLUGINDB_VERSION']);
 		}
-		$this->writelog("<INFO>Loglevel: " . $this->params["loglevel"]);
+		$this->writelog("<INFO> Loglevel: " . $this->params["loglevel"]);
 	
 		
 		if(!isset($this->params["nofile"])) {
@@ -120,8 +120,8 @@ class intLog
 			echo "Object is not initialized.";
 		}
 		
-		$this->writelog("<LOGEND>" . $msg);
-		$this->writelog("<LOGEND>" . currtime() . " TASK FINISHED");
+		$this->writelog("<LOGEND> " . $msg);
+		$this->writelog("<LOGEND> " . currtime() . " TASK FINISHED");
 		
 		// echo "LOGEND\n";
 		if(!isset($this->params["nofile"])) {
@@ -153,7 +153,7 @@ class intLog
 		if ($this->loglevel > 5)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("<INFO> $currtime$msg");
+			$this->writelog("$currtime<INFO> $msg");
 		}
 	}
 
@@ -162,7 +162,7 @@ class intLog
 		if ($this->loglevel > 4)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("<OK> $currtime$msg");
+			$this->writelog("$currtime<OK> $msg");
 		}
 	}
 
@@ -171,7 +171,7 @@ class intLog
 		if ($this->loglevel > 3)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("<WARNING> $currtime$msg");
+			$this->writelog("$currtime<WARNING> $msg");
 		}
 	}
 
@@ -180,7 +180,7 @@ class intLog
 		if ($this->loglevel > 2)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("<ERROR> $currtime$msg");
+			$this->writelog("$currtime<ERROR> $msg");
 		}
 	}
 
@@ -189,7 +189,7 @@ class intLog
 		if ($this->loglevel > 1)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("<CRITICAL> $currtime$msg");
+			$this->writelog("$currtime<CRITICAL> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
 	}
@@ -199,7 +199,7 @@ class intLog
 		if ($this->loglevel > 0)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("<ALERT> $currtime$msg");
+			$this->writelog("$currtime<ALERT> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
 	}
@@ -209,7 +209,7 @@ class intLog
 		if ($this->loglevel >= 0)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("<EMERG> $currtime$msg");
+			$this->writelog("$currtime<EMERG> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
 	}
