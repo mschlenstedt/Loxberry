@@ -16,7 +16,7 @@ function LOGINF {
 	if [ "$pLOGLEVEL" -gt 5 ]
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
-		WRITE "<INFO> $CURRTIME$@"
+		WRITE "$CURRTIME<INFO> $@"
 	fi
 }
 function LOGOK {
@@ -24,7 +24,7 @@ function LOGOK {
 	if [ "$pLOGLEVEL" -gt 4 ]
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
-		WRITE "<OK> $CURRTIME$@"
+		WRITE "$CURRTIME<OK> $@"
 	fi
 }
 function LOGWARN {
@@ -32,7 +32,7 @@ function LOGWARN {
 	if [ "$pLOGLEVEL" -gt 3 ]
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
-		WRITE "<WARNING> $CURRTIME$@"
+		WRITE "$CURRTIME<WARNING> $@"
 	fi
 }
 function LOGERR {
@@ -40,7 +40,7 @@ function LOGERR {
 	if [ "$pLOGLEVEL" -gt 2 ]
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
-		WRITE "<ERROR> $CURRTIME$@"
+		WRITE "$CURRTIME<ERROR> $@"
 	fi
 }
 function LOGCRIT {
@@ -48,7 +48,7 @@ function LOGCRIT {
 	if [ "$pLOGLEVEL" -gt 1 ]
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
-		WRITE "<CRITICAL> $CURRTIME$@"
+		WRITE "$CURRTIME<CRITICAL> $@"
 		if [ "$pLOGLEVEL" -lt 6 ];then set ARRLOGS[$ACTIVELOG]['loglevel'] = 6; fi
 	fi
 }
@@ -57,7 +57,7 @@ function LOGALERT {
 	if [ "$pLOGLEVEL" -gt 0 ]
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
-		WRITE "<ALERT> $CURRTIME$@"
+		WRITE "$CURRTIME<ALERT> $@"
 		if [ "$pLOGLEVEL" -lt 6 ];then set ARRLOGS[$ACTIVELOG]['loglevel'] = 6; fi
 	fi
 }
@@ -66,7 +66,7 @@ function LOGEMERGE {
 	if [ "$pLOGLEVEL" -ge 0 ]
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
-		WRITE "<EMERGE> $CURRTIME$@"
+		WRITE "$CURRTIME<EMERGE> $@"
 		if [ "$pLOGLEVEL" -lt 6 ];then set ARRLOGS[$ACTIVELOG]['loglevel'] = 6; fi
 	fi
 }

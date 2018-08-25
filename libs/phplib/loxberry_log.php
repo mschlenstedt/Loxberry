@@ -95,11 +95,13 @@ class intLog
 		
 		$plugin = LBSystem::plugindata($this->params["package"]);
 		
-		$this->writelog("<INFO> LoxBerry Version " . LBSystem::lbversion() . " " . $is_file_str);
+		if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+		
+		$this->writelog("$currtime<INFO> LoxBerry Version " . LBSystem::lbversion() . " " . $is_file_str);
 		if (isset($plugin)) {
-			$this->writelog("<INFO> " . $plugin['PLUGINDB_TITLE'] . " Version " . $plugin['PLUGINDB_VERSION']);
+			$this->writelog("$currtime<INFO> " . $plugin['PLUGINDB_TITLE'] . " Version " . $plugin['PLUGINDB_VERSION']);
 		}
-		$this->writelog("<INFO> Loglevel: " . $this->params["loglevel"]);
+		$this->writelog("$currtime<INFO> Loglevel: " . $this->params["loglevel"]);
 	
 		
 		if(!isset($this->params["nofile"])) {

@@ -2,7 +2,7 @@
 <?php
 require_once "loxberry_log.php";
 
-$mylog = LBLog::newLog(array("name" => "PHPLog", "package" => "core", "logdir" => $lbslogdir));
+$mylog = LBLog::newLog(array("addtime" => "1", "name" => "PHPLog", "package" => "core", "logdir" => $lbslogdir));
 LOGSTART("Das ist mein gl PHP Log");
 LOGDEB("Das ist eine gl Debug Message");
 LOGINF("Das ist eine gl Info Message");
