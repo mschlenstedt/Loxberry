@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.5";
+our $VERSION = "1.2.4.6";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -557,7 +557,7 @@ sub log_db_query_id
 	if ($logid) {
 		return $logid;
 	} else {
-		print STDERR "log_db_queryid: Could not find filename $p{filename}\n";
+		print STDERR "log_db_queryid: Could not find filename $p{filename}\n" if ($DEBUG);
 	}
 	return;
 
