@@ -748,10 +748,11 @@ Returns the current LoxBerry IP address as string.
 ####################################################
 sub get_localip
 {
+	require IO::Socket::INET;
 	my $sock = IO::Socket::INET->new(
-						   PeerAddr=> "example.com",
-						   PeerPort=> 80,
-						   Proto   => "tcp");
+						   PeerAddr=> "8.8.8.8",
+						   PeerPort=> 53,
+						   Proto   => "udp");
 	return ($sock->sockhost);
 	# close $sock;
 	# return $localip;
