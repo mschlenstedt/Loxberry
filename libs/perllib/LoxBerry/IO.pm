@@ -6,7 +6,7 @@ use LoxBerry::Log;
 # use IO::Select;
 
 package LoxBerry::IO;
-our $VERSION = "1.2.4.1";
+our $VERSION = "1.2.4.3";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -114,7 +114,7 @@ sub mshttp_send
 	
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
 		print STDERR "Param: $params[$pidx] is $params[$pidx+1]\n" if ($DEBUG);
-		my ($respcode, $respvalue) = mshttp_call($msnr, "/dev/sps/io/" . $params[$pidx] . "/" . $params[$pidx+1]);
+		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . $params[$pidx] . "/" . $params[$pidx+1]);
 		if($respcode == 200) {
 			$response{$params[$pidx]} = 1;
 		} else {
@@ -143,7 +143,7 @@ sub mshttp_send_mem
 
 	my $memfile = "/run/shm/mshttp_mem_${msnr}.tmp";
 	print STDERR "mshttp_send_mem: Memory file is $memfile\n" if ($DEBUG);
-	
+		
 	my $mem;
 	my $timestamp;
 	# Create or open memory file
@@ -169,7 +169,7 @@ sub mshttp_send_mem
 		# Try to check if MS was restarted (in only possible with MS Admin)
 		$mem->param('Main.lastMSRebootCheck', time);
 		my $lasttxp = $mem->param('Main.MSTXP');
-		my ($code, $newtxp) = mshttp_call($msnr, "/dev/lan/txp");
+		my ($newtxp, $code) = mshttp_call($msnr, "/dev/lan/txp");
 		if ($code eq "200") {
 			$mem->param('Main.MSTXP', $newtxp);
 			if($newtxp < $lasttxp) {
@@ -212,7 +212,7 @@ sub mshttp_get
 	
 	for (my $pidx = 0; $pidx < @params; $pidx++) {
 		print STDERR "Querying param: $params[$pidx]\n" if ($DEBUG);
-		my ($respcode, $respvalue) = mshttp_call($msnr, "/dev/sps/io/" . $params[$pidx]); 
+		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . $params[$pidx]); 
 		if($respcode == 200) {
 			$response{$params[$pidx]} = $respvalue;
 		} else {
@@ -238,7 +238,7 @@ sub mshttp_call
 	my %ms = LoxBerry::System::get_miniservers();
 	if (! %ms{$msnr}) {
 		print STDERR "No Miniservers configured\n";
-		return (601, undef);
+		return (undef, 601, undef);
 	}
 	my $mscred = $ms{$msnr}{Credentials};
 	my $msip = $ms{$msnr}{IPAddress};
@@ -254,11 +254,12 @@ sub mshttp_call
 	# If the request completely fails
 	if ($response->is_error) {
 		print STDERR "mshttp_call: http\://$msip\:$msport" . $command . " FAILED - Error " . $response->status_line . "\n" if ($DEBUG);
-		return ($response->code, undef);
+		return (undef, $response->code, undef);
 	}
 	my $xmlresp = XML::Simple::XMLin($response->content);
 	print STDERR "Loxone Response: Code " . $xmlresp->{Code} . " Value " . $xmlresp->{value} . "\n" if ($DEBUG);
-	return ($xmlresp->{Code}, $xmlresp->{value});
+	# return ($xmlresp->{Code}, $xmlresp->{value});
+	return ($xmlresp->{value},  $xmlresp->{Code}, $xmlresp);
 }
 
 
@@ -368,7 +369,6 @@ sub msudp_send_mem
 	# Check if this call should be set to mem_sendall
 	if ($timestamp < (time-$mem_sendall_sec)) {
 		$mem_sendall = 1;
-		$mem->set_block('default', undef);
 		$mem->param('Main.timestamp', time);
 	}
 	
@@ -381,9 +381,12 @@ sub msudp_send_mem
 			$mem->param('Main.MSTXP', $newtxp);
 			if($newtxp < $lasttxp) {
 				$mem_sendall = 1;
-				$mem->set_block('default', undef);
 			}
 		}
+	}
+
+	if ($mem_sendall == 1) {
+		$mem->set_block('default', undef);
 	}
 	
 	# Build new delta parameter list
