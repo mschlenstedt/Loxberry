@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.6";
+our $VERSION = "1.2.4.7";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -1731,12 +1731,19 @@ sub create_temp_logobject
 	else {
 		$package = $LoxBerry::System::lbpplugindir;
 	}
+	
+	my $pluginloglevel = LoxBerry::System::pluginloglevel();
+	if (! $pluginloglevel or $pluginloglevel < 0) {
+		$pluginloglevel = 7;
+	}
+	
 	$LoxBerry::Log::mainobj = LoxBerry::Log->new (
 				package => $package,
 				name => 'STDERR',
 				stderr => 1,
 				nofile => 1,
 				addtime => 1,
+				loglevel => $pluginloglevel
 	);
 }
 
