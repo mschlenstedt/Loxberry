@@ -495,13 +495,28 @@ if ( !is_disabled($plbmin) && $versioncheck) {
     $plbmin = version->parse(vers_tag($plbmin));
     $message =  $SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
     &loginfo;
-
-    if ($lbversion < $plbmin) {
-      $message =  "$SL{'PLUGININSTALL.ERR_MINVERSION'}";
-      &logfail;
+	if ($lbversion < $plbmin) {
+		my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
+		if ($generalcfg->param("UPDATE.RELEASETYPE") and $generalcfg->param("UPDATE.RELEASETYPE") eq "latest") {
+			$message =  $SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
+			push(@warnings, "$message");
+			&logwarn;
+			$message = "This plugin requests a newer LoxBerry version than installed. As you have set LoxBerry Update ";
+			push(@warnings, "$message");
+			&logwarn;
+			$message = "to 'Latest commit', this plugin installation is allowed at your own risk. To test this plugin, you should ";
+			push(@warnings, "$message");
+			$logwarn;
+			$message = "now also run LoxBerry Update. Don't bother the plugin developer if you haven't done so. Happy testing!";
+			push(@warnings, "$message");
+			&logwarn;
+		} else {
+			$message =  "$SL{'PLUGININSTALL.ERR_MINVERSION'}";
+			&logfail;
+		}
     } else {
-      $message =  "$SL{'PLUGININSTALL.OK_MINVERSION'}";
-      &logok;
+		$message =  "$SL{'PLUGININSTALL.OK_MINVERSION'}";
+		&logok;
     }
   } 
 
@@ -515,11 +530,27 @@ if ( !is_disabled($plbmax) && $versioncheck) {
     &loginfo;
 
     if ($lbversion > $plbmax) {
-      $message =  "$SL{'PLUGININSTALL.ERR_MAXVERSION'}";
-      &logfail;
+		my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
+		if ($generalcfg->param("UPDATE.RELEASETYPE") and $generalcfg->param("UPDATE.RELEASETYPE") eq "latest") {
+			$message =  $SL{'PLUGININSTALL.INF_MAXVERSION'} . $plbmin;
+			push(@warnings, "$message");
+			&logwarn;
+			$message = "This plugin requests an older LoxBerry version than installed. As you have set LoxBerry Update ";
+			push(@warnings, "$message");
+			&logwarn;
+			$message = "to 'Latest commit', this plugin installation is allowed at your own risk. Don't bother the plugin ";
+			push(@warnings, "$message");
+			&logwarn;
+			$message = "developer if he hadn't asked you to do so. Happy testing!";
+			push(@warnings, "$message");
+			&logwarn;
+		} else {
+			$message =  "$SL{'PLUGININSTALL.ERR_MAXVERSION'}";
+			&logfail;
+		}
     } else {
-      $message =  "$SL{'PLUGININSTALL.OK_MAXVERSION'}";
-      &logok;
+		$message =  "$SL{'PLUGININSTALL.OK_MAXVERSION'}";
+		&logok;
     }
   }
 
