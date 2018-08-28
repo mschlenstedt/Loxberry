@@ -29,41 +29,41 @@ echo "LoxBerry home directory is $LBHOMEDIR"
 
 #chown -Rv loxberry:loxberry $LBHOMEDIR
 find $LBHOMEDIR -not -path "*skel_syslog*" -exec chown -Rv loxberry:loxberry {} \;
-chown -Rv root:root $LBHOMEDIR/system/sudoers/
-chown -Rv root:root $LBHOMEDIR/system/daemons
-chown -Rv root:root $LBHOMEDIR/system/cron/cron.d
-chown -Rv root:root $LBHOMEDIR/sbin
-chown -Rv root:root $LBHOMEDIR/system/logrotate
-chown -Rv root:root $LBHOMEDIR/system/php
-chown -Rv root:root $LBHOMEDIR/config/system/securepin.dat
-chown -Rv root:root $LBHOMEDIR/system/php
-chown -Rv loxberry:loxberry /var/log/apache2
-chown -Rv loxberry:loxberry /var/cache/apache2
-chown -Rv loxberry:loxberry /var/lib/apache2
-chown -Rv loxberry:loxberry /var/log/lighttpd
-chown -Rv loxberry:loxberry /var/cache/lighttpd
-chown -Rv root:root $LBHOMEDIR/system/profile/loxberry.sh
-chown -v root:root $LBHOMEDIR/system/vsftpd/vsftpd.conf
-chown -v loxberry:loxberry /etc/timezone
-chown -v loxberry:loxberry /etc/localtime
+chown -Rc root:root $LBHOMEDIR/system/sudoers/
+chown -Rc root:root $LBHOMEDIR/system/daemons
+chown -Rc root:root $LBHOMEDIR/system/cron/cron.d
+chown -Rc root:root $LBHOMEDIR/sbin
+chown -Rc root:root $LBHOMEDIR/system/logrotate
+chown -Rc root:root $LBHOMEDIR/system/php
+chown -Rc root:root $LBHOMEDIR/config/system/securepin.dat
+chown -Rc root:root $LBHOMEDIR/system/php
+chown -Rc loxberry:loxberry /var/log/apache2
+chown -Rc loxberry:loxberry /var/cache/apache2
+chown -Rc loxberry:loxberry /var/lib/apache2
+chown -Rc loxberry:loxberry /var/log/lighttpd
+chown -Rc loxberry:loxberry /var/cache/lighttpd
+chown -Rc root:root $LBHOMEDIR/system/profile/loxberry.sh
+chown -c root:root $LBHOMEDIR/system/vsftpd/vsftpd.conf
+chown -c loxberry:loxberry /etc/timezone
+chown -c loxberry:loxberry /etc/localtime
 
-chmod -v 600 $LBHOMEDIR/system/network/interfaces
-chmod -v 600 $LBHOMEDIR/config/system/*
-chmod -v 600 $LBHOMEDIR/data/system/netshares.dat
-chmod -v 644 $LBHOMEDIR/config/system/securepin.dat
-chmod -v 555 $LBHOMEDIR/system/sudoers
-chmod -v 664 $LBHOMEDIR/system/sudoers/lbdefaults
-chmod -v 755 $LBHOMEDIR/system/profile
-chmod -v 700 $LBHOMEDIR/system/samba/credentials
-chmod -v 644 $LBHOMEDIR/system/profile/loxberry.sh
-chmod -Rv 644 $LBHOMEDIR/system/logrotate/*
+chmod -c 600 $LBHOMEDIR/system/network/interfaces
+chmod -c 600 $LBHOMEDIR/config/system/*
+chmod -c 600 $LBHOMEDIR/data/system/netshares.dat
+chmod -c 644 $LBHOMEDIR/config/system/securepin.dat
+chmod -c 555 $LBHOMEDIR/system/sudoers
+chmod -c 664 $LBHOMEDIR/system/sudoers/lbdefaults
+chmod -c 755 $LBHOMEDIR/system/profile
+chmod -c 700 $LBHOMEDIR/system/samba/credentials
+chmod -c 644 $LBHOMEDIR/system/profile/loxberry.sh
+chmod -Rc 644 $LBHOMEDIR/system/logrotate/*
 
-chmod -Rv 755 $LBHOMEDIR/libs
-chmod -Rv 755 $LBHOMEDIR/sbin
-chmod -v 755 $LBHOMEDIR/bin/*
-chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.cgi
-chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.cgi
-chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.pl
-chmod -Rv 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.pl
+chmod -Rc 755 $LBHOMEDIR/libs
+chmod -Rc 755 $LBHOMEDIR/sbin
+chmod -c 755 $LBHOMEDIR/bin/*
+chmod -Rc 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.cgi
+chmod -Rc 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.cgi
+chmod -Rc 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.pl
+chmod -Rc 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.pl
 
 exit 0

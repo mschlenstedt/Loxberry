@@ -244,7 +244,6 @@ my $backup = $cgi->param('nobackup') ? "" : "--backup-dir=$backupdir";
 my @rsynccommand = (
 	"rsync",
 	"-v",
-	"-v",
 	"--checksum",
 	"--archive", # equivalent to -rlptgoD
 #	"--backup",
