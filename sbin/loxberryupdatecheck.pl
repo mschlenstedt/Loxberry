@@ -665,18 +665,18 @@ sub download
 	my ($url, $filename) = @_;
 	LOGINF "   Download preparing. URL: $url Filename: $filename\n";
 	
-	my $download_size;
-	my $rel_header;
-	for (my $x=1; $x<=5; $x++) {
-		LOGINF "   Try $x: Checking file size of download...";
-		$rel_header = GetFileSize($url);
-		$download_size = $rel_header->content_length;
-		LOGINF "   Returned file size: $download_size";
-		last if (defined $download_size && $download_size > 0);
-		usleep (100*1000);
-	}
-	return undef if (!defined $download_size || $download_size == 0); 
-	LOGINF "   Expected download size: $download_size";
+	# my $download_size;
+	# my $rel_header;
+	# for (my $x=1; $x<=5; $x++) {
+		# LOGINF "   Try $x: Checking file size of download...";
+		# $rel_header = GetFileSize($url);
+		# $download_size = $rel_header->content_length;
+		# LOGINF "   Returned file size: $download_size";
+		# last if (defined $download_size && $download_size > 0);
+		# usleep (100*1000);
+	# }
+	# return undef if (!defined $download_size || $download_size == 0); 
+	# LOGINF "   Expected download size: $download_size";
 	
 	# LOGINF "    Header check passed.\n";
 	
@@ -687,15 +687,15 @@ sub download
 			$res = $ua->mirror( $url, $filename );
 			last if ($res->is_success);
 			LOGWARN "   Download try $x has failed. (" . currtime() . ")";
-			usleep (100*1000);
+			usleep (300*1000);
 	}
 	return undef if (!$res->is_success);
-	LOGOK "   Download successful. Comparing filesize...";
-	my $file_size = -s $filename;
-	if ($file_size != $download_size) { 
-		LOGCRIT "Filesize does not match";
-		return undef;
-	}
+	# LOGOK "   Download successful. Comparing filesize...";
+	# my $file_size = -s $filename;
+	# if ($file_size != $download_size) { 
+		# LOGCRIT "Filesize does not match";
+		# return undef;
+	# }
 	LOGOK "Download saved successfully in $filename";
 	return $filename;
 
