@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.7";
+our $VERSION = "1.2.4.8";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -302,6 +302,11 @@ sub write
 		$self->{loglevel} = 6;
 	}
 	
+	if ($severity >= 0 and $severity < $self->{STATUS}) {
+		# Remember highest severity sent
+		$self->{STATUS} = $severity;
+	}
+	
 	if ($severity <= $self->{loglevel} || $severity < 0) {
 		#print STDERR "Not filtered.\n";
 		my $fh = $self->{'_FH'};
@@ -421,7 +426,7 @@ sub LOGSTART
 		if(!$self->{dbh}) {
 			$self->{dbh} = log_db_init_database();
 		}
-		$self->{dbkey} = log_db_logstart($self->{dbh}, $self);		
+		$self->{dbkey} = log_db_logstart($self->{dbh}, $self);	
 	}
 }
 
@@ -432,6 +437,11 @@ sub LOGEND
 	$self->write(-2, "<LOGEND> " . $s);
 	$self->write(-2, "<LOGEND> " . LoxBerry::System::currtime . " TASK FINISHED");
 	
+	if(!$self->{STATUS}) {
+		# If no status was collected, let's say it's ok
+		$self->{STATUS} = '5';
+	}
+	
 	if(! $self->{nofile}) {
 		if(!$self->{dbh}) {
 			$self->{dbh} = log_db_init_database();
@@ -439,12 +449,10 @@ sub LOGEND
 		if(!$self->{dbkey}) {
 			$self->{dbkey} = log_db_query_id($self->{dbh}, $self);
 		}
-		
-		$self->{dbkey} = log_db_logend($self->{dbh}, $self);		
+		log_db_logend($self->{dbh}, $self);		
 	}
-	$self->DESTROY;
 	
-	logfiles_cleanup();
+	$self->{logend_called} = 1;
 	
 }
 
@@ -479,6 +487,15 @@ sub DESTROY {
 		undef $LoxBerry::Log::mainobj;
 	};
 	# print STDERR "Desctuctor closed file.\n";
+		
+	if(!$self->{nofile} and $self->{dbh} and $self->{dbkey} 
+		and $self->{STATUS} and !$self->{logend_called}) {
+
+		my $dbh = $self->{dbh};
+		$dbh->do("INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (" . $self->{dbkey} . ", 'STATUS', '" . $self->{STATUS} . "');COMMIT;");
+	}
+	logfiles_cleanup();
+
 } 
 
 ################################################
@@ -593,7 +610,7 @@ sub log_db_logstart
 	# Start transaction
 	$dbh->do("BEGIN TRANSACTION;"); 
 	
-	# Insert main notification
+	# Insert main attributes
 	my $sth = $dbh->prepare('INSERT INTO logs (PACKAGE, NAME, FILENAME, LOGSTART, LASTMODIFIED) VALUES (?, ?, ?, ?, ?) ;');
 	# print STDERR "package $p{package}, name $p{name}\n";
 	$sth->execute($p{package}, $p{name}, $p{filename} , $p{LOGSTART}, $p{LOGSTART}) or 
@@ -643,15 +660,13 @@ sub log_db_logend
 	# Start transaction
 	$dbh->do("BEGIN TRANSACTION;"); 
 	
-	# Insert main notification
+	# Insert main attributes
 	my $sth = $dbh->prepare('UPDATE logs set LOGEND = ?, LASTMODIFIED = ? WHERE LOGKEY = ? ;');
 	$sth->execute($logend, $logend, $p{dbkey}) or 
 		do {
 			Carp::croak "Error updating logend in DB: $DBI::errstr\n";
 			return undef;
 		};
-	
-	my $id = $dbh->sqlite_last_insert_rowid();
 	
 	# Process further attributes
 	
@@ -660,7 +675,7 @@ sub log_db_logend
 	
 	for my $key (keys %p) {
 		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME');
-		$sth2->execute($id, $key, $p{$key});
+		$sth2->execute($p{dbkey}, $key, $p{$key});
 	}
 
 	$dbh->do("COMMIT;") or
@@ -688,7 +703,7 @@ sub log_db_bulk_delete_logkey
 
 	require DBI;
 	return undef if (! $dbh);
-	print STDERR "Bulk delete BEGIN TRAN\n";
+	print STDERR "Bulk delete BEGIN TRAN\n" if ($DEBUG);
 	$dbh->do("BEGIN TRANSACTION;"); 
 	foreach my $key (@keys) {
 		$dbh->do("DELETE FROM logs_attr WHERE keyref = $key;");
@@ -696,7 +711,7 @@ sub log_db_bulk_delete_logkey
 	}
 	$dbh->do("DELETE FROM logs_attr WHERE keyref NOT IN (SELECT logkey FROM logs);");	
 	
-	print STDERR "Bulk delete COMMIT\n";
+	print STDERR "Bulk delete COMMIT\n" if ($DEBUG);
 	$dbh->do("COMMIT;"); 
 	
 }

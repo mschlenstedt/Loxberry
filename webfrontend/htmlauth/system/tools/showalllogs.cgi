@@ -48,17 +48,22 @@ print "<table border='1px' style='width:100%; padding:8px; border: 1px solid #dd
 
 my $currpackage;
 
-for my $log (@logs ) {
+for my $log (@logs) {
     if ($currpackage ne $log->{PACKAGE}) {
-		print "<tr><td colspan='5'>\n";
+		print "<tr><td colspan='6'>\n";
 		print "<h2>Logfiles Package $log->{PACKAGE}</h2>\n" if (!$log->{_ISPLUGIN});
 		print "<h2>Logfiles Plugin $log->{PLUGINTITLE}</h2>\n" if ($log->{_ISPLUGIN});
 		$currpackage = $log->{PACKAGE};
 		print "</td></tr>\n";
-		print "<th style='text-align:left'>Log name</th><th style='text-align:left'>Start time</th><th style='text-align:left'>End time</th><th style='text-align:left'>Logfile</th>\n";
+		print "<th style='text-align:center'>Status</th>\n";
+		print "<th style='text-align:left'>Log name</th>\n";
+		print "<th style='text-align:left'>Start time</th>\n";
+		print "<th style='text-align:left'>End time</th>\n";
+		print "<th style='text-align:left'>Logfile</th>\n";
 		print "<th style='text-align:left'>File size</th>\n";
 	}
 	print "<tr>\n";
+	print "<td style='text-align:center'>$log->{STATUS}</td>\n";
 	print "<td>$log->{NAME}</td>\n";
 	print "<td>$log->{LOGSTARTSTR}</td>\n";
 	print "<td>$log->{LOGENDSTR}</td>\n";
