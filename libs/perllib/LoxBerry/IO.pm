@@ -246,7 +246,7 @@ sub mshttp_call
 	my $msip = $ms{$msnr}{IPAddress};
 	my $msport = $ms{$msnr}{Port};
 		
-	my $virtinenc = URI::Escape::uri_escape( $command );
+	#my $virtinenc = URI::Escape::uri_escape( $command );
 		
 	my $url = "http://$mscred\@$msip\:$msport" . $command;
 	# $url_nopass = "http://$miniserveradmin:*****\@$miniserverip\:$miniserverport/dev/sps/io/$player_label/$textenc";
