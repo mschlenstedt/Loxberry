@@ -232,6 +232,7 @@ sub mshttp_call
 {
 	require LWP::UserAgent;
 	require XML::Simple;
+	require Encode;
 	
 		
 	my ($msnr, $command) = @_;
