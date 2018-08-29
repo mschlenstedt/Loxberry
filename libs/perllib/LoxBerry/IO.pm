@@ -109,12 +109,15 @@ sub mshttp_send
 	if (@_ % 2) {
 		Carp::croak "mshttp_send: Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
 	}
+	
+	require URI::Escape;
+	
 	my @params = @_;
 	my %response;
 	
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
 		print STDERR "Param: $params[$pidx] is $params[$pidx+1]\n" if ($DEBUG);
-		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . $params[$pidx] . "/" . $params[$pidx+1]);
+		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . "/" . URI::Escape::uri_escape($params[$pidx+1]));
 		if($respcode == 200) {
 			$response{$params[$pidx]} = 1;
 		} else {
@@ -210,9 +213,11 @@ sub mshttp_get
 	my @params = @_;
 	my %response;
 	
+	require URI::Escape;
+	
 	for (my $pidx = 0; $pidx < @params; $pidx++) {
 		print STDERR "Querying param: $params[$pidx]\n" if ($DEBUG);
-		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . $params[$pidx]); 
+		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx])); 
 		if($respcode == 200) {
 			$response{$params[$pidx]} = $respvalue;
 		} else {
