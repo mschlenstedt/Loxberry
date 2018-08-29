@@ -258,6 +258,9 @@ sub mshttp_call
 		print STDERR "mshttp_call: http\://$msip\:$msport" . $command . " FAILED - Error " . $response->status_line . "\n" if ($DEBUG);
 		return (undef, $response->code, undef);
 	}
+	#require Data::Dumper;
+	# print STDERR Data::Dumper::Dumper ($response);
+	
 	my $xmlresp = XML::Simple::XMLin(Encode::encode_utf8($response->content));
 	
 	print STDERR "Loxone Response: Code " . $xmlresp->{Code} . " Value " . $xmlresp->{value} . "\n" if ($DEBUG);
