@@ -22,7 +22,7 @@ $cgi->import_names('R');
 
 
 # Version of this script
-my $version = "1.2.4.1";
+my $version = "1.2.4.2";
 
 if ($R::package) {
 	my $plugin = LoxBerry::System::plugindata($R::package);
@@ -57,16 +57,18 @@ for my $log (@logs) {
 		print "</td></tr>\n";
 		print "<th style='text-align:center'>Status</th>\n";
 		print "<th style='text-align:left'>Log name</th>\n";
-		print "<th style='text-align:left'>Start time</th>\n";
-		print "<th style='text-align:left'>End time</th>\n";
+		print "<th style='text-align:left'>Start message</th>\n";
+		print "<th style='text-align:left'>Start and End time</th>\n";
+		#print "<th style='text-align:left'>End time</th>\n";
 		print "<th style='text-align:left'>Logfile</th>\n";
 		print "<th style='text-align:left'>File size</th>\n";
 	}
 	print "<tr>\n";
 	print "<td style='text-align:center'>$log->{STATUS}</td>\n";
 	print "<td>$log->{NAME}</td>\n";
-	print "<td>$log->{LOGSTARTSTR}</td>\n";
-	print "<td>$log->{LOGENDSTR}</td>\n";
+	print "<td>$log->{LOGSTARTMESSAGE}</td>\n";
+	print "<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
+	#print "<td>$log->{LOGENDSTR}</td>\n";
 	print "<td>\n";
 	print '<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=' . $log->{FILENAME} . '&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>';
 	print " $log->{FILENAME}\n" if ($R::showfilename);
