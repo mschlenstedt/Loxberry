@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.9";
+our $VERSION = "1.2.4.10";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -302,9 +302,9 @@ sub write
 		$self->{loglevel} = 6;
 	}
 	
-	if ($severity >= 0 and $severity < $self->{STATUS}) {
+	if ((!$self->{STATUS} or $severity < $self->{STATUS}) and $severity >= 0) {
 		# Remember highest severity sent
-		$self->{STATUS} = $severity;
+		$self->{STATUS} = "$severity";
 	}
 	
 	if ($severity <= $self->{loglevel} || $severity < 0) {
@@ -488,12 +488,13 @@ sub DESTROY {
 	if ($LoxBerry::Log::mainobj == $self) {
 		# Reset default object
 		undef $LoxBerry::Log::mainobj;
-	};
-	# print STDERR "Desctuctor closed file.\n";
-		
-	if(!$self->{nofile} and $self->{dbh} and $self->{dbkey} 
+	};	
+	
+	if(!$self->{nofile} and $self->{dbkey} 
 		and $self->{STATUS} and !$self->{logend_called}) {
-
+		if(!$self->{dbh}) {
+			$self->{dbh} = log_db_init_database();
+		}
 		my $dbh = $self->{dbh};
 		$dbh->do("INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (" . $self->{dbkey} . ", 'STATUS', '" . $self->{STATUS} . "');COMMIT;");
 	}
