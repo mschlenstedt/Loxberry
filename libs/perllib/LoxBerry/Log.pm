@@ -630,7 +630,8 @@ sub log_db_logstart
 	$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
 	for my $key (keys %p) {
-		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME' or ! $p{$key} );
+		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or 
+			$key eq 'LASTMODIFIED' or $key eq 'FILENAME' or $key eq 'dbh' or $key eq '_FH' or ! $p{$key} );
 		# print STDERR "INSERT id $id, key $key, value $p{$key}\n";
 		$sth2->execute($id, $key, $p{$key});
 	}
@@ -677,7 +678,8 @@ sub log_db_logend
 	$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
 	for my $key (keys %p) {
-		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or $key eq 'LASTMODIFIED' or $key eq 'FILENAME');
+		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or 
+			$key eq 'LASTMODIFIED' or $key eq 'FILENAME' or $key eq 'dbh' or $key eq '_FH');
 		$sth2->execute($p{dbkey}, $key, $p{$key});
 	}
 
