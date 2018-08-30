@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.4.2";
+our $VERSION = "1.2.4.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -128,6 +128,7 @@ sub head
 	
 	$headobj->param( TEMPLATETITLE => $template_title);
 	$headobj->param( LANG => $lang);
+	$headobj->param( HTMLHEAD => $main::htmlhead);
 	
 	print "Content-Type: text/html; charset=utf-8\n\n";
 	print $headobj->output();
@@ -652,7 +653,7 @@ sub mslist_select_html
 EOF
 
 	foreach my $ms (sort keys %miniservers) {
-		$html .= "<option value=\"$ms\" $miniservers{$ms}{_selected}>" . $miniservers{$ms}{Name} . " (" . $miniservers{$ms}{IPAddress} . ")</option>";
+		$html .= "\t\t\t<option value=\"$ms\" $miniservers{$ms}{_selected}>" . $miniservers{$ms}{Name} . " (" . $miniservers{$ms}{IPAddress} . ")</option>\n";
 	}
 	$html .= <<EOF;
 	</select>

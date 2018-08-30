@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.4.1";
+	public static $LBWEBVERSION = "1.2.4.2";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -17,6 +17,7 @@ class LBWeb
 	{
 		// error_log("loxberry_web: Head function called -->");
 		global $template_title;
+		global $htmlhead;
 		
 		# If a global template_title is set, use it
 		if ($template_title !== "") {
@@ -53,6 +54,7 @@ class LBWeb
 		$headobj = new LBTemplate($templatepath);
 		$headobj->param('TEMPLATETITLE', $fulltitle);
 		$headobj->param('LANG', $lang);
+		$headobj->param('HTMLHEAD', $htmlhead);
 		LBSystem::readlanguage($headobj, "language.ini", True);
 		$headobj->output();
 
