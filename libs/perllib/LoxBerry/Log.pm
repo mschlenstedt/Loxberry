@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.8";
+our $VERSION = "1.2.4.9";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -406,6 +406,7 @@ sub LOGSTART
 	$self->write(-2, "================================================================================");
 	$self->write(-2, "<LOGSTART> " . LoxBerry::System::currtime . " TASK STARTED");
 	$self->write(-2, "<LOGSTART> " . $s);
+	$self->{LOGSTARTMESSAGE} = $s if ($s);
 	
 	my @is_files = glob( $LoxBerry::System::lbsconfigdir . '/is_*.cfg' );
 	my $is_file_str = "";
@@ -436,6 +437,8 @@ sub LOGEND
 	my ($s)=@_;
 	$self->write(-2, "<LOGEND> " . $s);
 	$self->write(-2, "<LOGEND> " . LoxBerry::System::currtime . " TASK FINISHED");
+	
+	$self->{LOGENDMESSAGE} = $s if ($s);
 	
 	if(!$self->{STATUS}) {
 		# If no status was collected, let's say it's ok
