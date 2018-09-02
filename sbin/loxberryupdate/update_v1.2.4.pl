@@ -83,8 +83,12 @@ LOGINF "Reactivating Swap...";
 system("swapoff -a");
 system ("swapon -a");
 
-
-
+#
+# Replacing allow-hotplug with auto in $lbhomedir/system/network/interfaces
+# This makes sure the noetwork connection is up when the system tries to mount network shares from /etc/fstab
+#
+LOGINF "Replacing allow-hotplug in /etc/network/interfaces to make sure network is up when the system tries to mount network shares at boottime...";
+system ("sed -i 's/^allow-hotplug/auto/g' $lbhomedir/system/network/interfaces");
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
