@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.2.0.3";
+my $version = "1.2.4.0";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1228,9 +1228,9 @@ if (-e "$aptfile") {
   $message = "Command: $dpkgbin --configure -a";
   &loginfo;
   system("$dpkgbin --configure -a 2>&1");
-  $message = "Command: $aptbin -q -y install $aptpackages";
+  $message = "Command: $aptbin --no-install-recommends -q -y install $aptpackages";
   &loginfo;
-  system("$aptbin -q -y install $aptpackages 2>&1");
+  system("$aptbin --no-install-recommends -q -y install $aptpackages 2>&1");
   if ($? ne 0) {
     $message =  "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
     &logwarn; 
@@ -1262,9 +1262,9 @@ if (-e "$aptfile") {
     $message = "Command: $dpkgbin --configure -a";
     &loginfo;
     system("$dpkgbin --configure -a 2>&1");
-    $message = "Command: $aptbin -q -y install $aptpackages";
+    $message = "Command: $aptbin --no-install-recommends -q -y install $aptpackages";
     &loginfo;
-    system("$aptbin -q -y install $aptpackages 2>&1");
+    system("$aptbin --no-install-recommends -q -y install $aptpackages 2>&1");
     if ($? ne 0) {
       $message =  "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
       &logerr; 
