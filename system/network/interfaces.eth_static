@@ -1,7 +1,7 @@
 auto lo
 iface lo inet loopback
 
-allow-hotplug eth0
+auto eth0
 iface eth0 inet static
   address <TMPL_VAR netzwerkipadresse>
   netmask <TMPL_VAR netzwerkipmaske>

@@ -1,7 +1,7 @@
 auto lo
 iface lo inet loopback
 
-allow-hotplug wlan0
+auto wlan0
 iface wlan0 inet dhcp
  wpa-ssid <TMPL_VAR netzwerkssid>
  wpa-psk <TMPL_VAR netzwerkschluessel>
