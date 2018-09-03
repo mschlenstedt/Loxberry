@@ -22,7 +22,7 @@ $cgi->import_names('R');
 
 
 # Version of this script
-my $version = "1.2.4.2";
+my $version = "1.2.4.3";
 
 if ($R::package) {
 	my $plugin = LoxBerry::System::plugindata($R::package);
@@ -64,7 +64,20 @@ for my $log (@logs) {
 		print "<th style='text-align:left'>File size</th>\n";
 	}
 	print "<tr>\n";
-	print "<td style='text-align:center'>$log->{STATUS}</td>\n";
+	# print "<td style='text-align:center'>$log->{STATUS}</td>\n";
+	print "<td style='text-align:center;background-color: #FFFFFF;'></td>\n" if ($log->{STATUS} eq "");
+	print "<td style='text-align:center;background-color: #FF007F;color:white;text-shadow: none;'>EMERGENCY</td>\n" if ($log->{STATUS} eq "0");
+	print "<td style='text-align:center;background-color: #990000;color:white;text-shadow: none;'>ALERT</td>\n" if ($log->{STATUS} eq "1");
+	print "<td style='text-align:center;background-color: #CC0000;color:white;text-shadow: none;'>CRITICAL</td>\n" if ($log->{STATUS} eq "2");
+	print "<td style='text-align:center;background-color: #FF3333;color:white;text-shadow: none;'>Error</td>\n" if ($log->{STATUS} eq "3");
+	print "<td style='text-align:center;background-color: #FFFF33;'>Warning</td>\n" if ($log->{STATUS} eq "4");
+	print "<td style='text-align:center;background-color: #009900;color:white;text-shadow: none;'>OK</td>\n" if ($log->{STATUS} eq "5");
+	print "<td style='text-align:center;background-color: #3333FF;color:white;text-shadow: none;'>Info</td>\n" if ($log->{STATUS} eq "6");
+	print "<td style='text-align:center;background-color: #CCE5FF;'>Debug</td>\n" if ($log->{STATUS} eq "7");
+	
+	
+	
+	
 	print "<td>$log->{NAME}</td>\n";
 	print "<td>$log->{LOGSTARTMESSAGE}</td>\n";
 	print "<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
