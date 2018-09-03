@@ -30,7 +30,7 @@ class intLog
 			$this->params["loglevel"] = LBSystem::pluginloglevel();
 		}
 		if(!isset($this->params["loglevel"])) {
-			echo "No loglevel defined - defaulting to 7 DEBUG.\n";
+			# echo "No loglevel defined - defaulting to 7 DEBUG.\n";
 			$this->params["loglevel"] = 7;
 		}
 
