@@ -129,6 +129,8 @@ class intLog
 		}
 		$this->writelog("<LOGEND> " . currtime() . " TASK FINISHED");
 		
+		$this->params["logend_called"] = 1;
+		
 		// echo "LOGEND\n";
 		if(!isset($this->params["nofile"])) {
 			// echo "Nofile not set\n";
@@ -418,6 +420,22 @@ class intLog
 		}
 		return;
 	}
+
+	public function __destruct() 
+	{
+		echo "Desctructor.\n";
+		if(!isset($this->params["logend_called"]) && !isset($this->params["nofile"])) {
+			echo "!logend_called && !nofile\n";
+			if(isset($this->params["dbkey"])) {
+				if(!isset($this->params["dbh"])) {
+					$this->params["dbh"] = intLog::log_db_init_database();
+				}
+				$dbh = $this->params["dbh"];
+				$dbh->exec("INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (" . $this->params["dbkey"] . ", 'STATUS', '" . $this->params["STATUS"] . "');");
+			}
+		}
+	}
+
 }
 
 class LBLog
