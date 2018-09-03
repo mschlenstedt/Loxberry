@@ -84,6 +84,7 @@ class intLog
 		$this->writelog( "<LOGSTART>" . currtime() . " TASK STARTED");
 		if(isset($msg)) {
 			$this->writelog( "<LOGSTART>" . $msg);
+			$this->params["LOGSTARTMESSAGE"] = $msg;
 		}
 		$is_file_str = "";
 		foreach (glob( LBSCONFIGDIR . '/is_*.cfg') as $filename) {
@@ -122,7 +123,10 @@ class intLog
 			echo "Object is not initialized.";
 		}
 		
-		$this->writelog("<LOGEND> " . $msg);
+		if (isset($msg)) {
+			$this->params["LOGENDMESSAGE"] = $msg;
+			$this->writelog("<LOGEND> " . $msg);
+		}
 		$this->writelog("<LOGEND> " . currtime() . " TASK FINISHED");
 		
 		// echo "LOGEND\n";
