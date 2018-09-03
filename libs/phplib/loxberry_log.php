@@ -349,7 +349,11 @@ class intLog
 	
 	private function log_db_logend($dbh, $p)
 	{
-		if(!isset($p->params["dbkey"])) { throw new Exception("log_db_endlog: No dbkey defined");}
+		if(!isset($p->params["dbkey"])) { 
+			# Seems that LOGEND was started without LOGSTART
+			#throw new Exception("log_db_endlog: No dbkey defined");
+			return;
+		}
 		
 		$p->params["LOGEND"] = date("Y-m-d H:i:s");
 		
@@ -366,7 +370,7 @@ class intLog
 			error_log("Error updating logend in DB: " . $dbh->lastErrorMsg());
 			return;
 		}
-		$id = $dbh->lastInsertRowid();
+		$id = $p->params["dbkey"];
 		
 		# Process further attributes
 		
