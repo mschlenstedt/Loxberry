@@ -423,9 +423,7 @@ class intLog
 
 	public function __destruct() 
 	{
-		echo "Desctructor.\n";
 		if(!isset($this->params["logend_called"]) && !isset($this->params["nofile"])) {
-			echo "!logend_called && !nofile\n";
 			if(isset($this->params["dbkey"])) {
 				if(!isset($this->params["dbh"])) {
 					$this->params["dbh"] = intLog::log_db_init_database();
