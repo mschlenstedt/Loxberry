@@ -143,6 +143,10 @@ class intLog
 	
 	public function DEB($msg)
 	{
+		if(!isset($this->params{"STATUS"})) {
+			$this->params{"STATUS"} = 7;
+		}
+		
 		if ($this->loglevel > 6)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
@@ -152,33 +156,45 @@ class intLog
 
 	public function INF($msg)
 	{
+		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 6) {
+			$this->params{"STATUS"} = 6;
+		}
 		if ($this->loglevel > 5)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
-			$this->writelog("$currtime<INFO> $msg");
+		$this->writelog("$currtime<INFO> $msg");
 		}
 	}
 
 	public function OK($msg)
 	{
+		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 5) {
+			$this->params{"STATUS"} = 5;
+		}
 		if ($this->loglevel > 4)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
 			$this->writelog("$currtime<OK> $msg");
 		}
 	}
 
 	public function WARN($msg)
 	{
+		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 4) {
+			$this->params{"STATUS"} = 4;
+		}
 		if ($this->loglevel > 3)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
 			$this->writelog("$currtime<WARNING> $msg");
 		}
 	}
 
 	public function ERR($msg)
 	{
+		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 3) {
+			$this->params{"STATUS"} = 3;
+		}
 		if ($this->loglevel > 2)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
@@ -188,6 +204,10 @@ class intLog
 
 	public function CRIT($msg)
 	{
+		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 2) {
+			$this->params{"STATUS"} = 2;
+		}
+
 		if ($this->loglevel > 1)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
@@ -198,6 +218,10 @@ class intLog
 
 	public function ALERT($msg)
 	{
+		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 1) {
+			$this->params{"STATUS"} = 1;
+		}
+
 		if ($this->loglevel > 0)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
@@ -208,6 +232,10 @@ class intLog
 
 	public function EMERG($msg)
 	{
+		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 0) {
+			$this->params{"STATUS"} = "0";
+		}
+
 		if ($this->loglevel >= 0)
 		{
 	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
@@ -219,9 +247,10 @@ class intLog
 	
 
 	public function writelog($msg) {
+		
 		if (isset($this->params["stdout"])) {fwrite(STDOUT,$msg . PHP_EOL);}
 		if (isset($this->params["stderr"])) {fwrite(STDERR,$msg . PHP_EOL);}
-	if ($this->params["loglevel"] != 0 && !isset($this->params["nofile"]) && $this->params["filename"] != "") {file_put_contents($this->params["filename"], $msg . PHP_EOL, FILE_APPEND);}
+		if ($this->params["loglevel"] != 0 && !isset($this->params["nofile"]) && $this->params["filename"] != "") {file_put_contents($this->params["filename"], $msg . PHP_EOL, FILE_APPEND);}
 	}
 
 	private function log_db_init_database() 
