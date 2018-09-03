@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.10";
+our $VERSION = "1.2.4.11";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -307,7 +307,7 @@ sub write
 		$self->{STATUS} = "$severity";
 	}
 	
-	if ($severity <= $self->{loglevel} || $severity < 0) {
+	if ($self->{loglevel} != 0 and $severity <= $self->{loglevel} or $severity < 0) {
 		#print STDERR "Not filtered.\n";
 		my $fh = $self->{'_FH'};
 		my $string;
