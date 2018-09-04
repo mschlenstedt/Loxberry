@@ -41,7 +41,7 @@ my $release = $cgi->param('release');
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
-LOGINF "Clean up apt databases and update"
+LOGINF "Clean up apt databases and update";
 my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
 $output = qx { rm -r /var/lib/apt/lists/* };
