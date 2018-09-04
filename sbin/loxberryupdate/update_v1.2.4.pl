@@ -41,7 +41,13 @@ my $release = $cgi->param('release');
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
-my $output = qx { /usr/bin/dpkg --configure -a };
+LOGINF "Clean up apt databases and update";
+my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
+$output = qx { rm -r /var/lib/apt/lists/* };
+$output = qx { rm -r /var/cache/apt/archives/* };
+
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/dpkg --configure -a };
 my $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
@@ -50,7 +56,7 @@ if ($exitcode != 0) {
 } else {
         LOGOK "Configuring dpkg successfully.";
 }
-$output = qx { /usr/bin/apt-get -q -y update };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error updating apt database - Error $exitcode";
@@ -64,7 +70,24 @@ if ($exitcode != 0) {
 # Activating SWAP (just in case tmpfs/RAM is full...)
 #
 LOGINF "Installing dphys-swapfile...";
+$output = qx { service dphys-swapfile stop };
+$output = qx { swapoff -a };
+$output = qx { rm -r /var/swap };
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y install dphys-swapfile };
+
+# This does not work here, because in case of free discspace smaller than 2 GB the installation fails :-(
+#$exitcode  = $? >> 8;
+#if ($exitcode != 0) {
+#        LOGERR "Error installing dphys-swapfile with apt-get - Error $exitcode";
+#        LOGDEB $output;
+#        $errors++;
+#} else {
+#        LOGOK "Installing dphys-swapfile successfully.";
+#}
+
+# If "swapon" exists we think the installation was successfull... Dirty trick, but normal
+# way dies not work here - see above.
+my $output1 = qx { which swapon };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error installing dphys-swapfile with apt-get - Error $exitcode";
@@ -74,13 +97,55 @@ if ($exitcode != 0) {
         LOGOK "Installing dphys-swapfile successfully.";
 }
 
+# Configure dphys-swapfile
+my %folderinfo = LoxBerry::System::diskspaceinfo('/var');
+my $free = $folderinfo{available}/1000;
+LOGINF "Free discspace on /var is $free MB. Using a maximum of 50% for SWAP file.";
+my $maxswap = $free/2;
+$maxswap = sprintf "%.0f", $maxswap;
+$output = qx { swapoff -a };
+$output = qx { rm -r /var/swap };
+$output = qx { service dphys-swapfile stop };
+
+LOGINF "Creating /etc/dphys-swapfile...";
+open(F,">/etc/dphys-swapfile");
+print F <<EOF;
+# /etc/dphys-swapfile - user settings for dphys-swapfile package
+# author Neil Franklin, last modification 2010.05.05
+# copyright ETH Zuerich Physics Departement
+#   use under either modified/non-advertising BSD or GPL license
+
+# this file is sourced with . so full normal sh syntax applies
+
+# the default settings are added as commented out CONF_*=* lines
+
+
+# where we want the swapfile to be, this is the default
+CONF_SWAPFILE=/var/swap
+
+# set size to absolute value, leaving empty (default) then uses computed value
+#   you most likely don't want this, unless you have an special disk situation
+#CONF_SWAPSIZE=
+
+# set size to computed value, this times RAM size, dynamically adapts,
+#   guarantees that there is enough swap without wasting disk space on excess
+CONF_SWAPFACTOR=2
+
+# restrict size (computed and absolute!) to maximally this limit
+#   can be set to empty for no limit, but beware of filled partitions!
+#   this is/was a (outdated?) 32bit kernel limit (in MBytes), do not overrun it
+#   but is also sensible on 64bit to prevent filling /var or even / partition
+CONF_MAXSWAP=$maxswap
+EOF
+close(F);
+
 LOGINF "Set swappiness to 1...";
 open (F,">/etc/sysctl.d/97-swappiness.conf");
 	print F "vm.swappiness = 1";
 close (F);
 
 LOGINF "Reactivating Swap...";
-system("swapoff -a");
+$output = qx { service dphys-swapfile start };
 system ("swapon -a");
 
 #
