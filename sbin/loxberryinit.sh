@@ -23,7 +23,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Version 1.7
+# Version 1.8
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:$LBHOMEDIR/bin:$LBHOMEDIR/sbin"
 
@@ -58,9 +58,6 @@ case "$1" in
 	# Let fsck run only every 10th boot (only for clean devices)
 	tune2fs -c 10 /dev/mmcblk0p2 > /dev/null 2>&1
 
-	# This is done by /usr/lib/raspi-config/init_resize.sh since Rasbian Stretch.
-	# No need to do this here anymore.
-
         # Resize rootfs to maximum if not yet done
         if [ ! -f /boot/rootfsresized ]
         then
@@ -72,6 +69,11 @@ case "$1" in
 	# Create Default config
 	log_action_begin_msg "Updating general.cfg etc...."
 	$LBHOMEDIR/bin/createconfig.pl
+	log_action_end_msg 0
+
+	# Create swap config
+	log_action_begin_msg "Configuring swap...."
+	$LBHOMEDIR/sbin/setswap.pl
 	log_action_end_msg 0
 
         # Copy manual network configuration if any exists
