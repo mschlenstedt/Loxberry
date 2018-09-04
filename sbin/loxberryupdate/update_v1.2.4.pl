@@ -100,8 +100,9 @@ if ($exitcode != 0) {
 # Configure dphys-swapfile
 my %folderinfo = LoxBerry::System::diskspaceinfo('/var');
 my $free = $folderinfo{available}/1000;
-LOGINF "Free discspace on /var is $free MB. Using a maximum of 50% for SPAP file.";
+LOGINF "Free discspace on /var is $free MB. Using a maximum of 50% for SWAP file.";
 my $maxswap = $free/2;
+$maxswap = sprintf "%.0f", $maxswap;
 $output = qx { swapoff -a };
 $output = qx { rm -r /var/swap };
 $output = qx { service dphys-swapfile stop };
