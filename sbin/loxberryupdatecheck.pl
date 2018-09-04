@@ -582,7 +582,7 @@ sub check_commits
 		);
 		$joutput{'logfile'} = $log->filename;
 		my $logfilename = $log->filename;
-		LOGSTART "Latest commit will be installed:";
+		LOGSTART "Installing latest commit: $commit_sha";
 		LOGINF "   Message     : $commit_message";
 		LOGINF "   Commit by   : $commit_by";
 		LOGINF "   Commited at : $commit_date";
