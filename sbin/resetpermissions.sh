@@ -28,7 +28,7 @@ fi
 echo "LoxBerry home directory is $LBHOMEDIR"
 
 #chown -Rv loxberry:loxberry $LBHOMEDIR
-find $LBHOMEDIR -not -path "*skel_syslog*" -exec chown -Rv loxberry:loxberry {} \;
+find $LBHOMEDIR -not -path "*skel_syslog*" -exec chown -Rc loxberry:loxberry {} \;
 chown -Rc root:root $LBHOMEDIR/system/sudoers/
 chown -Rc root:root $LBHOMEDIR/system/daemons
 chown -Rc root:root $LBHOMEDIR/system/cron/cron.d
