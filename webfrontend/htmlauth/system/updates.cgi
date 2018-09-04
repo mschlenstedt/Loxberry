@@ -548,55 +548,41 @@ sub lbuhistory
 	# my %SL = LoxBerry::System::readlanguage($maintemplate);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
-	#
-	# This is a quick and dirty implementation as LoxBerry::Log is not finished yet to view log packages.
-	#
-	print STDERR "Loglevel: " . $log->loglevel . "\n";
-	LOGDEB "Collecting files from the LoxBerry Update logfile dir $lbulogfiledir";
-	opendir( my $DIR, $lbulogfiledir );
-	my @files = sort {$b cmp $a} readdir($DIR);
-	my $direntry;
-	my $updatecheckcount;
-	my $updatecount;
-	my @updatecheckslist = ();
-	my @updateslist = ();
-		
-	while ( my $direntry = shift @files ) {
-		LOGDEB "Direntry BEFORE: $direntry";
-		next if (length($direntry) lt 25); # next if $direntry eq '.' or $direntry eq '..' or $direntry eq '.dummy';
-		next if (substr($direntry, 15, 7) ne "_update");
-		next if (substr($direntry, -3) eq ".gz");
-		next if (-s "$lbulogfiledir/$direntry" == 0);
-		LOGDEB "Direntry FILTERED: $direntry";
-		
-		# LOGDEB "Direntry: $direntry";
-		my $logtype = "update";
-		my $logdate = substr($direntry, 0, 15);
-		my $dateobj = parsedatestring($logdate);
-		my %update;
-		$updatecount++;
-		# $update{'DATEOBJ'} = $dateobj; # Caused fatal error in loop output : HTML::Template::param() : attempt to set parameter 'dateobj' with an array ref -
-		$update{'DATESTR'} = $dateobj->strftime("%d.%m.%Y %H:%M");
-		$update{'FILENAME'} = $direntry;
-		$update{'URLFILENAME'} = "system/loxberryupdate/$direntry";
-		$update{'LOG_ID'} = $dateobj->strftime("%Y%m%d%H%M%S");;
-		open my $file, '<', "$lbulogfiledir/$direntry"; 
-		my $firstLine = <$file>; 
-		$firstLine = <$file>; 
-		$firstLine = <$file>; 
-		$firstLine = <$file>; 
-		close $file;
-		$firstLine =~ s|<.+?>||g;
-		$update{'FIRSTLINE'} = encode_entities($firstLine, '<>&"');
-		push(@updateslist, \%update);
-	}
-	closedir $DIR;
+	# Copy from showalllogs
 	
-		# foreach my $key ( sort (keys(%updatecheckslist) ) ) {}
-	# foreach my $key ( sort (keys(%updateslist) ) ) {}
-	$maintemplate->param('UPDATESLIST', \@updateslist);
-	# $maintemplate->param('UPDATECHECKSLIST', \@updatecheckslist);
-	$maintemplate->param('UPDATECHECKLOGFILE', "system_tmpfs/loxberryupdate/updatecheck.log");
+	my @updatelogs = LoxBerry::Log::get_logs("LoxBerry Update", "update");
+	for my $log (@updatelogs) {
+		$log->{NOSTATUS} = 1 if ($log->{STATUS} eq "");
+		$log->{DEBUG} = 1 if ($log->{STATUS} == 7);
+		$log->{INFO} = 1 if ($log->{STATUS} == 6);
+		$log->{OK} = 1 if ($log->{STATUS} == 5);
+		$log->{WARNING} = 1 if ($log->{STATUS} == 4);
+		$log->{ERROR} = 1 if ($log->{STATUS} == 3);
+		$log->{CRITICAL} = 1 if ($log->{STATUS} == 2);
+		$log->{ALERT} = 1 if ($log->{STATUS} == 1);
+		$log->{EMERGENCY} = 1 if ($log->{STATUS} == 0);
+		$log->{FILESIZE} = -s $log->{FILENAME};
+		$log->{FILESIZE} =LoxBerry::System::bytes_humanreadable($log->{FILESIZE}, "B");
+	}
+	$maintemplate->param('updatelogs', \@updatelogs);
+	
+	my @checklogs = LoxBerry::Log::get_logs("LoxBerry Update", "check");
+	for my $log (@checklogs) {
+		$log->{NOSTATUS} = 1 if ($log->{STATUS} eq "");
+		$log->{DEBUG} = 1 if ($log->{STATUS} == 7);
+		$log->{INFO} = 1 if ($log->{STATUS} == 6);
+		$log->{OK} = 1 if ($log->{STATUS} == 5);
+		$log->{WARNING} = 1 if ($log->{STATUS} == 4);
+		$log->{ERROR} = 1 if ($log->{STATUS} == 3);
+		$log->{CRITICAL} = 1 if ($log->{STATUS} == 2);
+		$log->{ALERT} = 1 if ($log->{STATUS} == 1);
+		$log->{EMERGENCY} = 1 if ($log->{STATUS} == 0);
+		$log->{FILESIZE} = -s $log->{FILENAME};
+		$log->{FILESIZE} =LoxBerry::System::bytes_humanreadable($log->{FILESIZE}, "B");
+	}
+	$maintemplate->param('checklogs', \@checklogs);
+	
+	
 	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
