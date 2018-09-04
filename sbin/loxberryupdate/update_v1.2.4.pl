@@ -98,55 +98,8 @@ if ($exitcode != 0) {
 }
 
 # Configure dphys-swapfile
-my %folderinfo = LoxBerry::System::diskspaceinfo('/var');
-my $free = $folderinfo{available}/1000;
-LOGINF "Free discspace on /var is $free MB. Using a maximum of 50% for SWAP file.";
-my $maxswap = $free/2;
-$maxswap = sprintf "%.0f", $maxswap;
-$output = qx { swapoff -a };
-$output = qx { rm -r /var/swap };
-$output = qx { service dphys-swapfile stop };
-
-LOGINF "Creating /etc/dphys-swapfile...";
-open(F,">/etc/dphys-swapfile");
-print F <<EOF;
-# /etc/dphys-swapfile - user settings for dphys-swapfile package
-# author Neil Franklin, last modification 2010.05.05
-# copyright ETH Zuerich Physics Departement
-#   use under either modified/non-advertising BSD or GPL license
-
-# this file is sourced with . so full normal sh syntax applies
-
-# the default settings are added as commented out CONF_*=* lines
-
-
-# where we want the swapfile to be, this is the default
-CONF_SWAPFILE=/var/swap
-
-# set size to absolute value, leaving empty (default) then uses computed value
-#   you most likely don't want this, unless you have an special disk situation
-#CONF_SWAPSIZE=
-
-# set size to computed value, this times RAM size, dynamically adapts,
-#   guarantees that there is enough swap without wasting disk space on excess
-CONF_SWAPFACTOR=2
-
-# restrict size (computed and absolute!) to maximally this limit
-#   can be set to empty for no limit, but beware of filled partitions!
-#   this is/was a (outdated?) 32bit kernel limit (in MBytes), do not overrun it
-#   but is also sensible on 64bit to prevent filling /var or even / partition
-CONF_MAXSWAP=$maxswap
-EOF
-close(F);
-
-LOGINF "Set swappiness to 1...";
-open (F,">/etc/sysctl.d/97-swappiness.conf");
-	print F "vm.swappiness = 1";
-close (F);
-
-LOGINF "Reactivating Swap...";
-$output = qx { service dphys-swapfile start };
-system ("swapon -a");
+LOGINF "Configuring Swap...";
+$output = qx { $lbhomedir/sbin/setswap.pl };
 
 #
 # Replacing allow-hotplug with auto in $lbhomedir/system/network/interfaces
