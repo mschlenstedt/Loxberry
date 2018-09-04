@@ -260,8 +260,8 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	
 	if ( $cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron ) ) {
 		LOGEND "Installing new update - see the update log for update status!";
-		
-		my $log = LoxBerry::Log->new(
+		undef $log if ($log);
+		$log = LoxBerry::Log->new(
 			package => 'LoxBerry Update',
 			name => 'update',
 			logdir => "$lbslogdir/loxberryupdate",
@@ -331,6 +331,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 					LOGINF "Executing LoxBerry Update forked...";
 					# exec never returns
 					# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
+					undef $log if ($log);
 					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck </dev/null >/dev/null 2>&1 &");
 					exit(0);
 				} 
@@ -339,6 +340,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				LOGINF "Executing LoxBerry Update...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
+				undef $log if ($log);
 				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version dryrun=$dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
 			}
 		}
@@ -573,6 +575,7 @@ sub check_commits
 	# If an update was requested
 	if ($cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron && $commit_new )) {
 		LOGEND "Installing new commit - see the update log for update status!";
+		undef $log if ($log);
 		my $log = LoxBerry::Log->new(
 			package => 'LoxBerry Update',
 			name => 'update',
@@ -639,6 +642,7 @@ sub check_commits
 			} 
 			if (not $pid) {	
 				LOGINF "Executing LoxBerry Update forked...";
+				undef $log if ($log);
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
 				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=config $dryrun logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
