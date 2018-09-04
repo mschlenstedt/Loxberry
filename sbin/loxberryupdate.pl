@@ -597,5 +597,6 @@ END
 	}
 	# close ERR;
 	LoxBerry::System::unlock( lockfile => 'lbupdate' );
+	LOGEND("LoxBerry Update processing finished.");
 
 }
