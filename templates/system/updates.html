@@ -449,11 +449,70 @@ $(document).ready( function () {
 
 <TMPL_IF lbuhistory>
 <p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATELOGS></p>
-	<TMPL_LOOP UPDATESLIST>
-	    <div class="ui-btn ui-corner-all" style="text-align:left; cursor:default; font-size: 1em; font-family: sans-serif;"><span style="font-size:125%;"><TMPL_VAR DATESTR></span><a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template&only=once', 'log')" target="_blank"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-action"><TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></span></a><a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=file&format=plain'; return false;"     target="_self"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-arrow-d"><TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></span></a><span style="padding-left:10px;"><TMPL_VAR FIRSTLINE></span></div>
-	</TMPL_LOOP>
+<table border='1px' style='width:100%; padding:8px; border: 1px solid #ddd; border-collapse: collapse; '>
+	<tr>
+		<th style='text-align:center'>Status</th>
+		<th style='text-align:left'>Start message</th>
+		<th style='text-align:left'>Start and End time</th>
+		<th style='text-align:left'>Logfile</th>
+		<th style='text-align:left'>File size</th>
+	</tr>
+<TMPL_LOOP updatelogs>
+	<tr>
+		<TMPL_IF EMERGENCY><td style='text-align:center;background-color: #FF007F;color:white;text-shadow: none;'>EMERGENCY</td></TMPL_IF>
+		<TMPL_IF ALERT><td style='text-align:center;background-color: #990000;color:white;text-shadow: none;'>ALERT</td></TMPL_IF>
+		<TMPL_IF CRITICAL><td style='text-align:center;background-color: #CC0000;color:white;text-shadow: none;'>CRITICAL</td></TMPL_IF>
+		<TMPL_IF ERROR><td style='text-align:center;background-color: #FF3333;color:white;text-shadow: none;'>Error</td></TMPL_IF>
+		<TMPL_IF WARNING><td style='text-align:center;background-color: #FFFF33;'>Warning</td></TMPL_IF>
+		<TMPL_IF OK><td style='text-align:center;background-color: #009900;color:white;text-shadow: none;'>OK</td></TMPL_IF>
+		<TMPL_IF INFO><td style='text-align:center;background-color: #3333FF;color:white;text-shadow: none;'>Info</td></TMPL_IF>
+		<TMPL_IF DEBUG><td style='text-align:center;background-color: #CCE5FF;'>Debug</td></TMPL_IF>
+		<TMPL_IF NOSTATUS><td style='text-align:center;background-color: #FFFFFF;'></td></TMPL_IF>
+	<td><TMPL_VAR LOGSTARTMESSAGE></td>
+	<td><TMPL_VAR LOGSTARTSTR> - <br><TMPL_VAR LOGENDSTR></td>
+	<td>
+		<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR FILENAME>&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action"><TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
+		<a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR FILENAME>&header=file&format=plain'; return false;" target="_self"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-arrow-d"><TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></span></a>
+	</td>
+	<td><TMPL_VAR FILESIZE></td>
+	</tr>
+	
+</TMPL_LOOP>
+</table>
+
+
 <br>
 <p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
-    <div class="ui-btn ui-corner-all" style="text-align:left; cursor:pointer; font-size: 1em; font-family: sans-serif;" >
-	<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=html&format=template&only=once', 'log')" target="_blank"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-action"><TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></span></a><a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=file&format=plain'; return false;"  target="_self"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-arrow-d"><TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></span></a><span style="font-size:125%;"><TMPL_VAR LOGVIEWER.UPDATECHECKLOGFILE></span></div>
+<table border='1px' style='width:100%; padding:8px; border: 1px solid #ddd; border-collapse: collapse; '>
+	<tr>
+		<th style='text-align:center'>Status</th>
+		<th style='text-align:left'>Start message</th>
+		<th style='text-align:left'>Start and End time</th>
+		<th style='text-align:left'>Logfile</th>
+		<th style='text-align:left'>File size</th>
+	</tr>
+<TMPL_LOOP checklogs>
+	<tr>
+		<TMPL_IF EMERGENCY><td style='text-align:center;background-color: #FF007F;color:white;text-shadow: none;'>EMERGENCY</td></TMPL_IF>
+		<TMPL_IF ALERT><td style='text-align:center;background-color: #990000;color:white;text-shadow: none;'>ALERT</td></TMPL_IF>
+		<TMPL_IF CRITICAL><td style='text-align:center;background-color: #CC0000;color:white;text-shadow: none;'>CRITICAL</td></TMPL_IF>
+		<TMPL_IF ERROR><td style='text-align:center;background-color: #FF3333;color:white;text-shadow: none;'>Error</td></TMPL_IF>
+		<TMPL_IF WARNING><td style='text-align:center;background-color: #FFFF33;'>Warning</td></TMPL_IF>
+		<TMPL_IF OK><td style='text-align:center;background-color: #009900;color:white;text-shadow: none;'>OK</td></TMPL_IF>
+		<TMPL_IF INFO><td style='text-align:center;background-color: #3333FF;color:white;text-shadow: none;'>Info</td></TMPL_IF>
+		<TMPL_IF DEBUG><td style='text-align:center;background-color: #CCE5FF;'>Debug</td></TMPL_IF>
+		<TMPL_IF NOSTATUS><td style='text-align:center;background-color: #FFFFFF;'></td></TMPL_IF>
+	<td><TMPL_VAR LOGSTARTMESSAGE></td>
+	<td><TMPL_VAR LOGSTARTSTR> - <br><TMPL_VAR LOGENDSTR></td>
+	<td>
+		<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR FILENAME>&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action"><TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
+		<a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR FILENAME>&header=file&format=plain'; return false;" target="_self"><span class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-arrow-d"><TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></span></a>
+	</td>
+	<td><TMPL_VAR FILESIZE></td>
+	</tr>
+	
+</TMPL_LOOP>
+</table>
+
+
 </TMPL_IF>
