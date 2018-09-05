@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.4.3";
+our $VERSION = "1.2.4.4";
 our $DEBUG;
 
 use base 'Exporter';
@@ -25,6 +25,8 @@ our @EXPORT = qw (
 		%SL
 		%L
 		%htmltemplate_options
+		mslist_select_html
+		
 );
 
 
@@ -622,10 +624,6 @@ sub mslist_select_html
 	my $datamini;
 	my $selected;
 	
-	if (! $p{LABEL}) {
-		my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
-		$p{LABEL} = $SL{'COMMON.PROPERNOUN_MINISERVER'};
-	}
 	if($p{DATA_MINI} eq "0" ) {
 		$datamini = "false";
 	} else {
@@ -648,7 +646,13 @@ sub mslist_select_html
 	
 	my $html = <<EOF;
 	<div class="ui-field-contain">
+EOF
+	if ($p{LABEL}) {
+		$html .= <<EOF;
 	<label for="$p{FORMID}">$p{LABEL}</label>
+EOF
+	}
+	$html .= <<EOF;
 	<select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
 EOF
 

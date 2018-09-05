@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.4.2";
+	public static $LBWEBVERSION = "1.2.4.3";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -447,10 +447,6 @@ EOT;
 	
 	public static function mslist_select_html($p)
 	{
-		if (! isset($p['LABEL'])) {
-			$SL = LBSystem::readlanguage(0, 0, True);
-			$p['LABEL'] = $SL['COMMON.PROPERNOUN_MINISERVER'];
-		}
 		if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == "0" ) {
 			$datamini = "false";
 		} else {
@@ -473,9 +469,14 @@ EOT;
 		
 		$html = <<<EOF
 		<div class="ui-field-contain">
+EOF;
+		if (isset($p['LABEL'])) {
+			$html .= <<<EOF
 		<label for="{$p['FORMID']}">{$p['LABEL']}</label>
+EOF;
+		}
+		$html .= <<<EOF
 		<select name="{$p['FORMID']}" id="{$p['FORMID']}" data-mini="$datamini">
-
 EOF;
 
 		foreach ($miniservers as $msnr=>$ms) {
