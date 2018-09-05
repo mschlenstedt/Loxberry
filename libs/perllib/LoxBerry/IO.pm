@@ -5,8 +5,21 @@ use LoxBerry::Log;
 
 # use IO::Select;
 
+use base 'Exporter';
+
+our @EXPORT = qw (
+	mshttp_send
+	mshttp_send_mem
+	mshttp_get
+	mshttp_call
+	msudp_send
+	msudp_send_mem
+);
+
+
+
 package LoxBerry::IO;
-our $VERSION = "1.2.4.3";
+our $VERSION = "1.2.4.4";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
