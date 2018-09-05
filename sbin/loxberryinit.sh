@@ -108,9 +108,17 @@ case "$1" in
           $LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
         fi
 
-        # Create log folders for all plugins if not existing
+    # Create log folders for all plugins if not existing
 	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
 	
+	# Copy logdb from SD card to RAM disk
+	if [ -e $LBHOMEDIR/data/system/logs_sqlite.dat ]
+	then
+		cp -f $LBHOMEDIR/data/system/logs_sqlite.dat $LBHOMEDIR/log/system_tmpfs/
+		chown loxberry:loxberry $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		chmod +rw $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+	fi
+		
 	# Run Daemons from Plugins and from System
         log_action_begin_msg "Running System Daemons"
         run-parts -v  $LBHOMEDIR/system/daemons/system > /dev/null 
@@ -166,6 +174,13 @@ case "$1" in
 	cp /etc/fstab /etc/fstab.backup
 	cat /etc/fstab.new > /etc/fstab
 	rm /etc/fstab.new
+	
+	# Copy logdb from RAM disk to SD card
+	if [ -e $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat ]
+	then
+		 echo "VACUUM;" | sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		cp -f $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat $LBHOMEDIR/data/system/
+	fi
   ;;
 
   *)

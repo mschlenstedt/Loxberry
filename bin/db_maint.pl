@@ -44,12 +44,15 @@ sub reduce_notifys
 }
 
 #############################################################
-# Function reduce_notifys
+# Function reduce_logfiles
 #############################################################
 sub reduce_logfiles
 {
 	print STDERR "Logfile maintenance: reduce_logfiles called.\n";
 	LoxBerry::Log::logfiles_cleanup();
 	my @logs = LoxBerry::Log::get_logs();
+	# Vacuum logdb and copy backup from ram disk to sd card
+	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
+	qx { cp -f $lbhomedir/log/system_tmpfs/logs_sqlite.dat $lbhomedir/data/system/ };
 	
 }

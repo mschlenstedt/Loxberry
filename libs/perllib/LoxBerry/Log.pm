@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.12";
+our $VERSION = "1.2.4.13";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -513,7 +513,7 @@ sub log_db_init_database
 	require DBI;
 	
 	# print STDERR "log_db_init_database\n";
-	my $dbfile = $LoxBerry::System::lbsdatadir . "/logs_sqlite.dat";
+	my $dbfile = $LoxBerry::System::lbhomedir . "/log/system_tmpfs/logs_sqlite.dat";
 	
 	my $dbh;
 	my $dores;

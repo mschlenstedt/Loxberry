@@ -262,7 +262,7 @@ class intLog
 	private function log_db_init_database() 
 	{
 		
-		$dbfile = LBSDATADIR . "/logs_sqlite.dat";
+		$dbfile = LBHOMEDIR . "/log/system_tmpfs/logs_sqlite.dat";
 		$db = new SQLite3($dbfile);
 		$res = $db->exec("CREATE TABLE IF NOT EXISTS logs (
 				PACKAGE VARCHAR(255) NOT NULL,
