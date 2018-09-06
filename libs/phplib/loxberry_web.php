@@ -72,7 +72,12 @@ class LBWeb
 		global $helplink;
 		global $navbar;
 		global $lbpplugindir;
+		$nopanels = 0;
 		
+		if ($helpurl === "nopanels") {
+			//error_log("Detected nopanels-option. Sidepanels will not be rendered.");
+			$nopanels = 1;
+		}
 		if ($template_title !== "") {
 			$pagetitle = $template_title;
 		}
@@ -89,13 +94,24 @@ class LBWeb
 		// error_log("   Determined template title: $fulltitle");
 		
 		$helptext = LBWeb::gethelp($lang, $helptemplate);
-				
-		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pagestart.html";
-		if (!file_exists($templatepath)) {
-			error_log("   Could not locate pagestart template $templatepath");
-			echo "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
-			exit(1);
+
+		if ($nopanels) {
+			$templatepath = $templatepath = LBSTEMPLATEDIR . "/pagestart_nopanels.html";
+			if (!file_exists($templatepath)) {
+				error_log("   Could not locate pagestart template $templatepath");
+				echo "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
+				exit(1);
+			}
+		} else {
+			$templatepath = $templatepath = LBSTEMPLATEDIR . "/pagestart.html";
+			if (!file_exists($templatepath)) {
+				error_log("   Could not locate pagestart template $templatepath");
+				echo "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
+				exit(1);
+			}
 		}
+
+
 		// $pageobj = new Template( array ( 
 								// 'filename' => $templatepath,
 								// 'die_on_bad_params' => 0,
