@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.13";
+our $VERSION = "1.2.4.14";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -403,6 +403,7 @@ sub LOGSTART
 	my $self = shift;
 	my ($s)=@_;
 	# print STDERR "Logstart -->\n";
+	$self->{LOGSTARTBYTE} = -e $self->{filename} ? -s $self->{filename} : 0;
 	$self->write(-2, "================================================================================");
 	$self->write(-2, "<LOGSTART> " . LoxBerry::System::currtime . " TASK STARTED");
 	$self->write(-2, "<LOGSTART> " . $s);
