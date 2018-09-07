@@ -147,6 +147,13 @@ sub pagestart
 	
 	my ($pagetitle, $helpurl, $helptemplate, $page) = @_;
 	
+        # If not helptemplate, render website without LoxBerry menu and Help Slider
+        my $nopanels = 0;
+        if ( $helpurl eq "nopanels" ) {
+                print STDERR "\nDetected nopanels-option. Sidepanels will not be rendered.\n" if ($DEBUG);
+                $nopanels = 1;
+        }
+
 	if (!$page) {
 		$page = "main1";
 	} 
@@ -275,10 +282,17 @@ sub pagestart
 	}
 	# Help is now in $helptext
 	
-	$templatepath = $templatepath = "$LoxBerry::System::lbstemplatedir/pagestart.html";
-	if (! -e "$LoxBerry::System::lbstemplatedir/pagestart.html") {
-		confess ("ERROR: Missing pagestart template " . $templatepath . "\n");
-	}
+        if ( $nopanels ) {
+                $templatepath = "$LoxBerry::System::lbstemplatedir/pagestart_nopanels.html";
+                if (! -e "$LoxBerry::System::lbstemplatedir/pagestart_nopanels.html") {
+                        confess ("ERROR: Missing pagestart template " . $templatepath . "\n");
+                }
+        } else {
+                $templatepath = "$LoxBerry::System::lbstemplatedir/pagestart.html";
+                if (! -e "$LoxBerry::System::lbstemplatedir/pagestart.html") {
+                        confess ("ERROR: Missing pagestart template " . $templatepath . "\n");
+                }
+        }
 	
 	# System language is "hardcoded" to file language_*.ini
 	my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
