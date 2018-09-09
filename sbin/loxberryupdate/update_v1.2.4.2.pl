@@ -43,12 +43,26 @@ LOGOK "Update script $0 started.";
 
 # Move logdb to ramdisk
 if (-e "$lbhomedir/data/system/logs_sqlite.dat") {
+	my $dbsize = -s "$lbhomedir/data/system/logs_sqlite.dat";
+	LOGINF "Current log database size is $dbsize bytes.";
+	LOGINF "Deleting old log database entries...";
+	eval {
+		qx { echo "DELETE FROM logs_attr WHERE keyref NOT IN (SELECT logkey FROM logs);" | sqlite3 -batch $lbhomedir/data/system/logs_sqlite.dat };
+	};
 	LOGINF "Shrink log database...";
-	$output = qx { echo "VACUUM;" | sqlite3 $lbhomedir/data/system/logs_sqlite.dat };
-	LOGINF "Moving log database to ramdisk...";
-	qx {cp -f $lbhomedir/data/system/logs_sqlite.dat $lbhomedir/log/system_tmpfs/};
-	qx {chown loxberry:loxberry $lbhomedir/log/system_tmpfs/logs_sqlite.dat};
-	qx {chmod +rw $lbhomedir/log/system_tmpfs/logs_sqlite.dat};
+	$output = qx { echo "VACUUM;" | sqlite3 -batch $lbhomedir/data/system/logs_sqlite.dat };
+	$dbsize = -s "$lbhomedir/data/system/logs_sqlite.dat";
+	LOGINF "New log database size is $dbsize bytes.";
+	if ($dbsize && $dbsize > 15728640) {
+		LOGINF "Log database is too big and will be deleted and automatically recreated.";
+		LOGWARN "LoxBerry Update History will not show logfiles of past updates.";
+		unlink "$lbhomedir/data/system/logs_sqlite.dat";
+	} else {
+		LOGINF "Moving log database to ramdisk...";
+		qx {cp -f $lbhomedir/data/system/logs_sqlite.dat $lbhomedir/log/system_tmpfs/};
+		qx {chown loxberry:loxberry $lbhomedir/log/system_tmpfs/logs_sqlite.dat};
+		qx {chmod +rw $lbhomedir/log/system_tmpfs/logs_sqlite.dat};
+	}
 }
 
 # End of script
