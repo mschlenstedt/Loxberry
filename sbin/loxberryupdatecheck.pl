@@ -24,7 +24,7 @@
 #######################################################
 
 use LoxBerry::System;
-use LoxBerry::Web;
+#use LoxBerry::Web;
 use LoxBerry::Log;
 use strict;
 use warnings;
@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.2.0.3";
+my $scriptversion="1.2.5.1";
 
 # print currtime('file') . "\n";
 
@@ -76,6 +76,9 @@ my $keepupdatefiles;
 my $formatjson;
 my $failed_script;
 
+my $branch;
+
+
 # Web Request options
 my $cgi = CGI->new;
 
@@ -93,7 +96,7 @@ $joutput{'logfile'} = $log->filename;
 #open ERRORLOG, '>', $logfile;
 
 LOGSTART "LoxBerry Update Check";
-LOGINF "Version of loxberrycheck.pl is $scriptversion";
+LOGINF "Version of loxberryupdatecheck.pl is $scriptversion";
 
 $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -135,6 +138,16 @@ if ($cgi->param('nodiscspacecheck')) {
 	$nodiscspacecheck = 1;
 } 
 
+# Commit branch
+if ($cfg->param('UPDATE.BRANCH')) {
+	$branch = $cfg->param('UPDATE.BRANCH');
+}
+if ($cgi->param('branch')) {
+	$branch = $cgi->param('branch');
+} 
+$branch = defined $branch ? $branch : "master";
+
+
 $querytype = $cgi->param('querytype');
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
@@ -142,7 +155,7 @@ $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : und
 my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.LATESTSHA') : "0";
 
 
-if ($formatjson || $cron ) {
+if (($formatjson || $cron) and !$querytype ) {
 	$querytype = $cfg->param('UPDATE.RELEASETYPE');
 }
 
@@ -475,7 +488,7 @@ sub check_commits
 	my ($querytype, $currversion) = @_;
 	my $endpoint = 'https://api.github.com';
 	my $resource = '/repos/mschlenstedt/Loxberry/commits';
-	my $branch = 'master';
+	# $branch is taken from UPDATE.BRANCH or commandline parameter
 	
 	# Download URL of latest commit 
 	my $release_url = "https://github.com/mschlenstedt/Loxberry/archive/" . uri_escape($branch) . ".zip";
@@ -931,7 +944,6 @@ sub vers_tag
 	$vers = substr($vers, 1) if (substr($vers, 0, 1) eq 'v' && $reverse);
 	
 	return $vers;
-
 }
 
 
@@ -940,6 +952,10 @@ END
 {
 	if ($? != 0) {
 		LOGCRIT "LoxBerry Updatecheck exited or terminated with an error. Errorcode: $?";
+		if (!$joutput{'error'}) {
+		$joutput{'error'} = "LoxBerry Updatecheck exited or terminated with an error. Errorcode: $?. Please see the Update Check Logfile.";
+		err();
+		}
 		if ($cron) {
 			# Create an error notification
 		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_ERROR'}, 'Error');
