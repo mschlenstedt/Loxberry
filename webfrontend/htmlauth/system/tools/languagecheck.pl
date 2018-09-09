@@ -24,7 +24,7 @@ if($R::loglevel) {
 }
 
 # Skip files with that file extensions
-my @excludefileext = ("log", "txt", "dummy", "tmp", "jpg", "png", "ico", "psd", "svg", "js", "css", "map", "gif", "zip", "7z", "sass", "ini", "dat", "cfg");
+my @excludefileext = ("log", "txt", "dummy", "tmp", "jpg", "png", "ico", "psd", "svg", "js", "css", "map", "gif", "zip", "7z", "sass", "ini", "dat", "cfg", "deb");
 
 my $log = LoxBerry::Log->new (
         package => 'translate', 

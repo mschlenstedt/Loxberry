@@ -1,0 +1,65 @@
+<!-- content -->
+<div role="main" class="ui-content">
+	<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
+
+	<!-- text -->
+	<div style="margin: 5%">
+
+		<p>
+		<center>
+		<table data-role="table" data-mode="" class="ui-body-d ui-shadow table-stripe ui-responsive" id="lshwnetworkTable" width="90%">
+
+<TMPL_IF NOWIFI>
+
+			 <tr><td><TMPL_VAR NETWORK_LISTNETWORKS.MSG_NO_WIFI></td></tr>
+
+<TMPL_ELSE>
+
+		<thead>
+				<tr>
+					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_NETWORK></th>
+					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_ENCRYPTED></th>
+					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SPEED></th>
+					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SIGNALQUALITY></th>
+					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SIGNALSTRENGTH></th>
+					<th></th>
+				</tr>
+			</thead>
+			
+			<tbody>
+
+	<TMPL_LOOP networks>
+			
+				<tr>
+					<th style="vertical-align: middle; text-align: left"><b><TMPL_VAR ssid></b></th>
+					<td style="vertical-align: middle; text-align: center"><TMPL_VAR encryption></td>
+					<td style="vertical-align: middle; text-align: center; font-size:75%;"><TMPL_VAR bitrates></td>
+					<td style="vertical-align: middle; text-align: center"><TMPL_VAR quality></td>
+					<td style="vertical-align: middle; text-align: center"><TMPL_VAR force></td>
+					<td style="vertical-align: middle; text-align: center">
+						<button type="button" data-role="button" data-inline="true" data-mini="true" onClick="window.opener.$('#netzwerkssid').val('<TMPL_VAR ssid>'); window.opener.$('#netzwerkssid').trigger('keyup'); window.close()"> <font><TMPL_VAR COMMON.BUTTON_SELECT></font></button>
+					</td>
+				</tr>
+
+	</TMPL_LOOP>
+			
+			</tbody>		
+		
+</TMPL_IF>
+
+		</table>
+		</center>
+		<button name="btnsubmit" type="button" data-role="button" data-inline="true" data-mini="true" onClick="location.reload();">
+		<font size=\"-1\">Refresh</font></button>
+
+		</p>
+
+	</div>
+	<!-- /text -->
+
+	</div>
+
+</div>
+<!-- /content -->
+
+<!-- ************************************************************************************** -->
