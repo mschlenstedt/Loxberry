@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.4.14";
+our $VERSION = "1.2.5.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -457,6 +457,7 @@ sub LOGEND
 	}
 	
 	$self->{logend_called} = 1;
+	logfiles_cleanup();
 	$self->DESTROY();
 	
 }
@@ -500,8 +501,6 @@ sub DESTROY {
 		my $dbh = $self->{dbh};
 		$dbh->do("INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (" . $self->{dbkey} . ", 'STATUS', '" . $self->{STATUS} . "');COMMIT;");
 	}
-	logfiles_cleanup();
-
 } 
 
 ################################################
