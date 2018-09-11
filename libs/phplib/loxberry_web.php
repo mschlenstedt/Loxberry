@@ -96,14 +96,14 @@ class LBWeb
 		$helptext = LBWeb::gethelp($lang, $helptemplate);
 
 		if ($nopanels) {
-			$templatepath = $templatepath = LBSTEMPLATEDIR . "/pagestart_nopanels.html";
+			$templatepath = LBSTEMPLATEDIR . "/pagestart_nopanels.html";
 			if (!file_exists($templatepath)) {
 				error_log("   Could not locate pagestart template $templatepath");
 				echo "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
 				exit(1);
 			}
 		} else {
-			$templatepath = $templatepath = LBSTEMPLATEDIR . "/pagestart.html";
+			$templatepath = LBSTEMPLATEDIR . "/pagestart.html";
 			if (!file_exists($templatepath)) {
 				error_log("   Could not locate pagestart template $templatepath");
 				echo "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";

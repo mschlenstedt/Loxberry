@@ -26,26 +26,14 @@ use CGI;
 use JSON;
 use File::Path;
 use version;
-# use Sort::Versions;
 use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.2.0.3';
+my $scriptversion='1.2.5.1';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
-
-# # Predeclare logging functions
-# sub LOGOK { my ($s)=@_; print ERRORLOG "<OK>" . $s . "\n"; }
-# sub LOGINF { my ($s)=@_;print ERRORLOG "<INFO>" . $s . "\n"; }
-# sub LOGWARN { my ($s)=@_;print ERRORLOG "<WARNING>" . $s . "\n"; }
-# sub LOGERR { my ($s)=@_;print ERRORLOG"<ERROR>" . $s . "\n"; }
-# sub LOGCRIT { my ($s)=@_;print ERRORLOG "<FAIL>" . $s . "\n"; }
-
-
-#my $logfile ="$lbslogdir/loxberryupdate/logfile.log";
-#open ERRORLOG, '>>', $logfile;
 
 my $updatedir;
 my %joutput;
@@ -180,7 +168,7 @@ if (!$release) {
 if ($release eq "config") {
 	my $newcfg = new Config::Simple("$updatedir/config/system/general.cfg.default");
 	$release = $newcfg->param('BASE.VERSION');
-	LOGWARN "Version parameter 'config' was given, destination version is read from new general.cfg.default (version $release).";
+	LOGINF "Version parameter 'config' was given, destination version is read from new general.cfg.default (version $release).";
 }
 if (!$release) {
 	$joutput{'error'} = "Cannot detect release version number.";
@@ -188,10 +176,6 @@ if (!$release) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
-
-
-
-
 
 if (version::is_lax(vers_tag($release))) {
 	$release = version->parse(vers_tag($release));

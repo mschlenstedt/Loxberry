@@ -111,9 +111,9 @@ if (!$error) {
     }
     if ($fields[0] eq "Encryption key") {
       if ($fields[1] eq "on") {
-      $network{encryption} = $SL{'COMMON.YES'};
+      $network{encryption} = $SL{'COMMON.MSG_YES'};
       } else {
-      $network{encryption} = $SL{'COMMON.NO'};
+      $network{encryption} = $SL{'COMMON.MSG_NO'};
       } 
     }
     # Bit Rates are a little more tricky
