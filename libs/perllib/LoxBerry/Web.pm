@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.4.4";
+our $VERSION = "1.2.4.5";
 our $DEBUG;
 
 use base 'Exporter';
@@ -392,7 +392,7 @@ EOT
 <<"EOT";
 
 <SCRIPT>
-\$(function() { updatenavbar(); });
+\$(document).on('pageshow',function(){ updatenavbar(); });
 function updatenavbar() {
 	console.log("updatenavbar called");
 	$topnavbar_notify_js
