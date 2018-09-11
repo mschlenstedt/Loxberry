@@ -20,9 +20,13 @@ my $helplink;
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
-
 # Version of this script
 my $version = "1.2.4.3";
+
+my $embed;
+if ($R::header eq "none") {
+	$embed = 1;
+}
 
 if ($R::package) {
 	my $plugin = LoxBerry::System::plugindata($R::package);
@@ -40,7 +44,8 @@ $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 
 
 
-LoxBerry::Web::lbheader($template_title, $helplink);
+LoxBerry::Web::lbheader($template_title, $helplink) if (!$embed);
+print $cgi->header(-charset=>'utf-8') if ($embed);
 
 my @logs = LoxBerry::Log::get_logs($R::package, $R::name);
 
@@ -75,9 +80,6 @@ for my $log (@logs) {
 	print "<td style='text-align:center;background-color: #3333FF;color:white;text-shadow: none;'>Info</td>\n" if ($log->{STATUS} eq "6");
 	print "<td style='text-align:center;background-color: #CCE5FF;'>Debug</td>\n" if ($log->{STATUS} eq "7");
 	
-	
-	
-	
 	print "<td>$log->{NAME}</td>\n";
 	print "<td>$log->{LOGSTARTMESSAGE}</td>\n";
 	print "<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
@@ -92,5 +94,5 @@ for my $log (@logs) {
 }
 
 
-LoxBerry::Web::lbfooter();
+LoxBerry::Web::lbfooter() if (!$embed);
 
