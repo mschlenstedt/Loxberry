@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.4.2";
+our $VERSION = "1.2.5.1";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -831,16 +831,25 @@ sub readlanguage
 		my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 		
 		if (!%SL) {
-			# Read English language as default
-			# Missing phrases in foreign language will fall back to English
-
-			Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
+			# print STDERR "READ\n";
+			
+			my $langfile_en = $langfile . "_en.ini";
+			my $langfile_foreign = $langfile . "_" . $lang . ".ini";
+			
+			if ( $lang ne 'en' and (-e $langfile_foreign)) {
+				# Config::Simple->import_from($langfile_foreign, \%SL) or Carp::carp(Config::Simple->error());
+				my $cont_foreign = LoxBerry::System::read_file($langfile_foreign);
+				LoxBerry::System::_parse_lang_file($cont_foreign, \%SL);
+				undef $cont_foreign;
+			}
+			
+			# Config::Simple->import_from($langfile_en, \%SL) or Carp::carp(Config::Simple->error());
+			my $cont_en = LoxBerry::System::read_file($langfile_en);
+			LoxBerry::System::_parse_lang_file($cont_en, \%SL);
+			undef $cont_en;
 
 			# Read foreign language if exists and not English and overwrite English strings
-			$langfile = $langfile . "_" . $lang . ".ini";
-			if ((-e $langfile) and ($lang ne 'en')) {
-				Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
-			}
+			
 			if (!%SL) {
 				Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
 			}
@@ -865,14 +874,24 @@ sub readlanguage
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
 		if (!%L) {
-			if (-e $langfile . "_en.ini") {
-				Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
+			my $langfile_en = $langfile . "_en.ini";
+			my $langfile_foreign = $langfile . "_" . $lang . ".ini";
+			
+			if ( $lang ne 'en' and (-e $langfile_foreign)) {
+				# Config::Simple->import_from($langfile_foreign, \%L) or Carp::carp(Config::Simple->error());
+				my $cont_foreign = LoxBerry::System::read_file($langfile_foreign);
+				LoxBerry::System::_parse_lang_file($cont_foreign, \%L);
+				undef $cont_foreign;
 			}
-			# Read foreign language if exists and not English and overwrite English strings
-			$langfile = $langfile . "_" . $lang . ".ini";
-			if ((-e $langfile) and ($lang ne 'en')) {
-				Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
+			
+			if (-e $langfile_en) {
+				# Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
+				my $cont_en = LoxBerry::System::read_file($langfile_en);
+				LoxBerry::System::_parse_lang_file($cont_en, \%L);
+				undef $cont_en;
+				
 			}
+						
 			if (! %L) {
 				Carp::carp ("ERROR: Could not read any language phrases from $langfile.\n");
 			}
@@ -886,6 +905,48 @@ sub readlanguage
 		return %L;
 	}
 }
+
+sub _parse_lang_file
+{
+	my ($content, $langhash) = @_;
+	my @cont = split(/\n/, $content);
+
+	my $section = 'default';
+
+	foreach my $line (@cont) {
+		# Trim
+		$line =~ s/^\s+|\s+$//g;	
+		my $firstletter = substr($line, 0, 1);
+		# print "Firstletter: $firstletter\n";
+		# Comments
+		if($firstletter eq '' or $firstletter eq '#' or $firstletter eq '/' or $firstletter eq ';') {
+			next;}
+		# Sections
+		if ($firstletter eq '[') {
+			my $closebracket = index($line, ']', 1);
+			if($closebracket == -1) {
+				next;
+			}
+			$section = substr($line, 1, $closebracket-1);
+			# print "\n[$section]\n";
+			next;
+		}
+		# Define variables
+		my ($param, $value) = split(/=/, $line, 2);
+		$param =~ s/^\s+|\s+$//g;	
+		next if ($langhash->{"$section.$param"});
+		$value =~ s/^\s+|\s+$//g;
+		my $firsthyphen=substr($value, 0, 1);
+		my $lasthyphen=substr($value, -1, 1);
+		if ($firsthyphen eq '"' and $lasthyphen eq '"') {
+			$value = substr($value, 1, -1);
+		}
+		# print "$param=$value\n";
+		$langhash->{"$section.$param"} = $value;
+	}
+}
+
+
 
 =head2 lbhostname
 
@@ -1367,6 +1428,16 @@ sub bytes_humanreadable
 	$outstring .= $outputfactor . "B";
 	return $outstring;
 	
+}
+
+sub read_file
+{
+	my ($filename) = @_;
+	local $/=undef;
+	open FILE, $filename or return undef;
+	my $string = <FILE>;
+	close FILE;
+	return $string;
 }
 
 
