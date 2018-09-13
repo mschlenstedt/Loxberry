@@ -232,9 +232,9 @@ function mshttp_get($msnr, $inputs)
 	
 	
 	foreach ($inputs as $input) {
-		echo "Querying param: $input\n";
+		// echo "Querying param: $input\n";
 		list($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input)); 
-		echo "Responseval: $respvalue Respcode: $respcode\n";
+		// echo "Responseval: $respvalue Respcode: $respcode\n";
 		if($respcode == 200) {
 			$response[$input] = $respvalue;
 		} else {
@@ -250,8 +250,43 @@ function mshttp_get($msnr, $inputs)
 	}
 }
 	
-
-
-
+function mshttp_send($msnr, $inputs, $value = null)
+{
+	
+	$ms = LBSystem::get_miniservers();
+	if (!isset($ms[$msnr])) {
+		error_log("Miniserver $msnr not defined\n");
+		return;
+	}
+	
+	if(!is_array($inputs)) {
+		if($value === null) {
+			error_log("mshttp_send: Input string provided, but value missing");
+			return;
+		}
+		echo "Input is flat\n";
+		$inputs = [ $inputs => $value ];
+		$input_was_string = true;
+	}
+	
+	foreach ($inputs as $input => $val) {
+		echo "Sending param: $input = $val \n";
+		list($respvalue, $respcode) = mshttp_call($msnr, '/dev/sps/io/' . rawurlencode($input) . '/' . rawurlencode($val)); 
+		echo "Responseval: $respvalue Respcode: $respcode\n";
+		if($respcode == 200) {
+			$response[$input] = $respvalue;
+		} else {
+			$response[$input] = null;
+		}
+	}
+	
+	if (isset($input_was_string)) {
+		
+		return array_values($response)[0];
+	} else {
+		return $response;
+	}
+	
+}
 
 ?>
