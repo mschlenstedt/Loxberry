@@ -43,6 +43,7 @@ LOGOK "Update script $0 started.";
 
 # Configure dphys-swapfile
 LOGINF "Configuring Swap...";
+qx { rm -r $lbhomedir/system/dphys-swapfile }
 &copy_to_loxberry('/system/dphys-swapfile');
 $output = qx { $lbhomedir/sbin/setswap.pl };
 
