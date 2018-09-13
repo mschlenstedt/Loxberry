@@ -8,8 +8,8 @@ require_once "loxberry_io.php";
 
 // test_mshttp_call();
 // test_mshttp_get();
-test_mshttp_send();
-
+// test_mshttp_send();
+test_mshttp_send_mem();
 
 function test_mshttp_call()
 {
@@ -45,6 +45,19 @@ function test_mshttp_send()
 	
 	// Multiple values
 	$value = mshttp_send(2, [ 'Zone Partyraum Titel' => 'nix', 'Zone Wohnküche Titel' => 'garnix' ] );
+	echo "Value Wohnküche: {$value['Zone Wohnküche Titel']}\n";
+}
+
+
+function test_mshttp_send_mem()
+{
+	// Single value
+	$value = mshttp_send_mem(2, 'Zone Partyraum Titel', 'Spielt nix');
+	echo var_dump($value);
+	echo "Value: $value\n";
+	
+	// Multiple values
+	$value = mshttp_send_mem(2, [ 'Zone Partyraum Titel' => 'nix', 'Zone Wohnküche Titel' => 'garnix' ] );
 	echo "Value Wohnküche: {$value['Zone Wohnküche Titel']}\n";
 }
 

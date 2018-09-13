@@ -98,7 +98,7 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 // _udp_send (internal)
 function _udp_send($udpsocket, $message, $ip, $udpport)
 {
-	echo "Send message: $message\n";
+	// echo "Send message: $message\n";
 	$udperror = Null;
 	$udpsent = socket_sendto($udpsocket, $message, strlen($message), 0, $ip, $udpport);	
 	if ($udpsent == null) {
@@ -139,7 +139,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 		// Check if Miniserver was rebooted after 5 minutes
 		$mem['Main']['lastMSRebootCheck'] = time();
 		list($newtxp, $code) = mshttp_call($msnr, "/dev/lan/txp");
-		echo "newtxp: $newtxp Code: $code\n";
+		// echo "newtxp: $newtxp Code: $code\n";
 		if($code == "200" && ( !isset($mem['Main']['MSTXP']) || $newtxp < $mem['Main']['MSTXP']) ) {
 			$mem_sendall = 1;
 			$mem['Main']['MSTXP'] = $newtxp;
@@ -178,7 +178,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 			
 		}
 	}
-
+	return $udpres;
 }
 
 // mshttp_call
@@ -249,7 +249,8 @@ function mshttp_get($msnr, $inputs)
 		return $response;
 	}
 }
-	
+
+// mshttp_send
 function mshttp_send($msnr, $inputs, $value = null)
 {
 	
@@ -264,15 +265,15 @@ function mshttp_send($msnr, $inputs, $value = null)
 			error_log("mshttp_send: Input string provided, but value missing");
 			return;
 		}
-		echo "Input is flat\n";
+		// echo "Input is flat\n";
 		$inputs = [ $inputs => $value ];
 		$input_was_string = true;
 	}
 	
 	foreach ($inputs as $input => $val) {
-		echo "Sending param: $input = $val \n";
+		// echo "Sending param: $input = $val \n";
 		list($respvalue, $respcode) = mshttp_call($msnr, '/dev/sps/io/' . rawurlencode($input) . '/' . rawurlencode($val)); 
-		echo "Responseval: $respvalue Respcode: $respcode\n";
+		// echo "Responseval: $respvalue Respcode: $respcode\n";
 		if($respcode == 200) {
 			$response[$input] = $respvalue;
 		} else {
@@ -286,7 +287,96 @@ function mshttp_send($msnr, $inputs, $value = null)
 	} else {
 		return $response;
 	}
-	
 }
+
+// mshttp_send_mem
+function mshttp_send_mem($msnr, $params, $value = null)
+{
+	global $mem_sendall_sec;
+	global $mem_sendall;
+	
+	$memfile = "/run/shm/mshttp_mem_${msnr}.tmp";
+	
+	if(file_exists($memfile)) {
+		// echo "Read file\n";
+		$jsonstr = file_get_contents($memfile);
+		if(isset($jsonstr)) {
+			$mem = json_decode($jsonstr, true);
+		}
+	}
+	
+	if(empty($mem['Main']['timestamp'])) {
+		$mem['Main']['timestamp'] = time();
+	}
+	
+	if( $mem['Main']['timestamp'] < (time()-$mem_sendall_sec) ) {
+		$mem_sendall = 1;
+	}
+	
+	if ( empty($mem['Main']['lastMSRebootCheck']) || $mem['Main']['lastMSRebootCheck'] < (time()-300)) {
+		// Check if Miniserver was rebooted after 5 minutes
+		$mem['Main']['lastMSRebootCheck'] = time();
+		list($newtxp, $code) = mshttp_call($msnr, "/dev/lan/txp");
+		// echo "newtxp: $newtxp Code: $code\n";
+		if($code == "200" && ( !isset($mem['Main']['MSTXP']) || $newtxp < $mem['Main']['MSTXP']) ) {
+			$mem_sendall = 1;
+			$mem['Main']['MSTXP'] = $newtxp;
+		}
+	}
+	//echo "mem_sendall: $mem_sendall\n";
+	
+	if( $mem_sendall <> 0 ) {
+		$mem['Params'] = Null;
+		$mem['Main']['timestamp'] = time();
+		$mem_sendall = 0;
+	}
+	
+	if(!is_array($params)) {
+		if($value === null) {
+			error_log("mshttp_send_mem: Input string provided, but value missing");
+			return;
+		}
+		// echo "Input is flat\n";
+		$params = [ $params => $value ];
+		$input_was_string = true;
+	}
+	
+	
+	$newparams = array();
+	
+	foreach ($params as $param => $value) {
+		if( !isset($mem['Params'][$param]) || $mem['Params'][$param] !== $value ) {
+			// Param has changed
+			// echo "Param changed: $param = $value\n";
+			$newparams[$param] = $value;
+		}
+	}
+	
+	if(!empty($newparams)) {
+		$httpres = mshttp_send($msnr, $newparams);
+		if ($httpres != null) {
+			if(!isset($mem['Params'])) {
+				$mem['Params'] = array();
+			}
+			$mem['Params'] = array_merge($mem['Params'], $newparams);
+			$jsonstr = json_encode( $mem, JSON_PRETTY_PRINT, 20);
+			file_put_contents($memfile, $jsonstr);
+		}
+	}
+	
+	// We need to generate a response for all values if it came from ram
+	foreach ($params as $param => $value) {
+		if(isset($mem['Params'][$param])) {
+			$httpres[$param] = $value;
+		}
+	}
+	
+	if (isset($input_was_string)) {
+		return array_values($httpres)[0];
+	} else {
+		return $httpres;
+	}
+}
+
 
 ?>
