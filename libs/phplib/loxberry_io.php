@@ -6,8 +6,9 @@ require_once "loxberry_system.php";
 $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 
-$LBIOVERSION = "1.2.5.1";
+$LBIOVERSION = "1.2.5.2";
 
+// msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
 {
 	global $udpsocket;
@@ -94,6 +95,7 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 	}
 }
 
+// _udp_send (internal)
 function _udp_send($udpsocket, $message, $ip, $udpport)
 {
 	echo "Send message: $message\n";
@@ -104,7 +106,7 @@ function _udp_send($udpsocket, $message, $ip, $udpport)
 	}
 	return $udperror;
 }
-
+// msudp_send_mem
 function msudp_send_mem($msnr, $udpport, $prefix, $params)
 {
 	global $mem_sendall_sec;
@@ -179,6 +181,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 
 }
 
+// mshttp_call
 function mshttp_call($msnr, $command) 
 {
 	$ms = LBSystem::get_miniservers();
@@ -212,6 +215,43 @@ function mshttp_call($msnr, $command)
 	return array ($value, $code, $xmlresp);
 	
 }
+
+// mshttp_get
+function mshttp_get($msnr, $inputs)
+{
+	$ms = LBSystem::get_miniservers();
+	if (!isset($ms[$msnr])) {
+		error_log("Miniserver $msnr not defined\n");
+		return;
+	}
+	
+	if(!is_array($inputs)) {
+		$inputs = array ( $inputs );
+		$input_was_string = true;
+	}
+	
+	
+	foreach ($inputs as $input) {
+		echo "Querying param: $input\n";
+		list($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input)); 
+		echo "Responseval: $respvalue Respcode: $respcode\n";
+		if($respcode == 200) {
+			$response[$input] = $respvalue;
+		} else {
+			$response[$input] = null;
+		}
+	}
+	
+	if (isset($input_was_string)) {
+		
+		return array_values($response)[0];
+	} else {
+		return $response;
+	}
+}
+	
+
+
 
 
 ?>

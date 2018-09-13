@@ -6,17 +6,39 @@ require_once "loxberry_io.php";
 //udp_singlearray();
 //udp_multi();
 
-test_mshttp_call();
+// test_mshttp_call();
+test_mshttp_get();
 
 
 
 function test_mshttp_call()
 {
 	// Send raw text
-	$call = '/dev/sps/io/' . 'Zone Wohnküche' . '/all';
-	list($value, $code, $xml) = mshttp_call(2, $call);
+	$call = '/dev/sps/io/' . rawurlencode('Verbrauch Luftentfeuchter') . '/all';
+	list($value, $code, $resp) = mshttp_call(2, $call);
 	echo "Code: $code Value: $value\n";
+	// echo var_dump($resp);
+	
+	foreach($resp->output as $output) {
+		echo $output->attributes()->name . ": " . $output->attributes()->value . "\n";
+	}
 	
 }
+
+function test_mshttp_get()
+{
+	// Single value
+	$value = mshttp_get(2, 'Lüftung UG');
+	echo var_dump($value);
+	echo "Value: $value\n";
+	
+	// Multiple values
+	$value = mshttp_get(2, [ 'Luefter_TV', 'Luefter_Kue', 'Luefter_WZ' ] );
+	echo "Value TV: {$value['Luefter_TV']}\n";
+	
+	
+}
+
+
 
 ?>
