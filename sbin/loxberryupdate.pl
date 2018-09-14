@@ -30,7 +30,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.2.5.1';
+my $scriptversion='1.2.5.2';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -43,6 +43,7 @@ my $logfilename;
 my $cron;
 my $nobackup;
 my $nodiscspacecheck;
+my $keepinstallfiles;
 my $sha;
 my $syscfg;
 my $failed_script;
@@ -113,6 +114,9 @@ if ($cgi->param('nodiscspacecheck')) {
 }
 if ($cgi->param('nobackup')) {
 	$nobackup = 1;
+}
+if ($cgi->param('keepinstallfiles')) {
+	$keepinstallfiles = 1;
 }
 
 LOGOK "Lock successfully set.";
@@ -440,7 +444,8 @@ if (! $cgi->param('dryrun') ) {
 
 # Finished. 
 LOGINF "Cleaning up temporary download folder";
-delete_directory($update_path);
+delete_directory($update_path) if(!$keepinstallfiles);
+LOGWARN "Unzipped install files are kept in $update_path" if($keepinstallfiles);
 
 LOGINF "All procedures finished.";
 notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_OK'} . " $release") if (! $errskipped);

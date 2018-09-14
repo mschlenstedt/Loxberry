@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.2.5.1";
+my $scriptversion="1.2.5.2";
 
 # print currtime('file') . "\n";
 
@@ -73,6 +73,7 @@ my $nofork;
 my $nobackup;
 my $nodiscspacecheck;
 my $keepupdatefiles;
+my $keepinstallfiles="0";
 my $formatjson;
 my $failed_script;
 
@@ -116,12 +117,14 @@ if ( is_enabled($cfg->param('UPDATE.DRYRUN')) ) {
 	$cgi->param('dryrun', 1)
 }
 if ( is_enabled($cfg->param('UPDATE.KEEPUPDATEFILES')) ){
-	$cgi->param('keepupdatefiles', 1)
+	$cgi->param('keepupdatefiles', 1);
 }
 
 if ($cgi->param('dryrun')) {
 	$cgi->param('keepupdatefiles', 1);
 }
+
+
 
 $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
 
@@ -138,6 +141,13 @@ if ($cgi->param('nodiscspacecheck')) {
 	$nodiscspacecheck = 1;
 } 
 
+if ( is_enabled($cfg->param('UPDATE.KEEPINSTALLFILES')) ) {
+	$cgi->param('keepinstallfiles', 1);
+}
+if ($cgi->param('keepinstallfiles')) {
+	$keepinstallfiles = 1;
+}
+
 # Commit branch
 if ($cfg->param('UPDATE.BRANCH')) {
 	$branch = $cfg->param('UPDATE.BRANCH');
@@ -145,8 +155,11 @@ if ($cfg->param('UPDATE.BRANCH')) {
 if ($cgi->param('branch')) {
 	$branch = $cgi->param('branch');
 } 
+$joutput{'branch'} = $branch;
 $branch = defined $branch ? $branch : "master";
-
+$joutput{'dryrun'} = $dryrun;
+$joutput{'keepupdatefiles'} = $cgi->param('keepupdatefiles');
+$joutput{'keepinstallfiles'} = $keepinstallfiles;
 
 $querytype = $cgi->param('querytype');
 
@@ -345,7 +358,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 					# exec never returns
 					# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
 					undef $log if ($log);
-					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck </dev/null >/dev/null 2>&1 &");
+					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck </dev/null >/dev/null 2>&1 &");
 					exit(0);
 				} 
 				exit(0);
@@ -354,7 +367,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
 				undef $log if ($log);
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version dryrun=$dryrun logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
 			}
 		}
 	}
@@ -658,7 +671,7 @@ sub check_commits
 				undef $log if ($log);
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=config $dryrun logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=config $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
 				exit(0);
 			} 
 			exit(0);

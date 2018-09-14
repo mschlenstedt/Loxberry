@@ -174,29 +174,32 @@
 <div class="divTable">
 <div class="divTableBody">
 <div class="divTableRow" style="overflow:hidden; text-overflow:ellipsis; width:100%;">
-<div class="divTableCell">
-<p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
-
-</div>
-<div class="divTableCell hint" style="border:2px; border-style:outset; border-radius:5px;padding:10px 10px 10px 10px;background-color:LightYellow; width:30%;">
-<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
-	<div style="flex-grow: 2;">
-	<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
-	<b id="current_version"><TMPL_VAR LBVERSION></b>
+	<div class="divTableCell">
+		<p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
 	</div>
-	<div style="flex-grow: 1;">
-	<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
+	<div class="divTableCell hint" style="border:2px; border-style:outset; border-radius:5px;padding:10px 10px 10px 10px;background-color:LightYellow; width:30%;">
+		<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
+			<div style="flex-grow: 2;">
+			<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
+			<b id="current_version"><TMPL_VAR LBVERSION></b>
+			</div>
+			<div style="flex-grow: 1;">
+			<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
+			</div>
+		</div>
+		<p><TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE><br>
+		<a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
+		<p id="lbu_info">&nbsp;</p>
+		<div id="lbu_error" style="color:red;"></div>
+		<div style="font-size:125%;font-weight:bold;" id="lbu_release_name">&nbsp;</div>
+		<div class="note" id="lbu_release_body">&nbsp;</div>
+		<div id="lbu_published_at">&nbsp;</div>
+		<p><TMPL_VAR UPDATES.LBU_LABEL_CHECKGITHUB> <a href="https://github.com/mschlenstedt/Loxberry/releases" target="_blank">All Releases</a></p>
+		<div id="branch" class="hint" style="color:red;"></div>
+		<div id="dryrun" class="hint" style="color:red;"></div>
+		<div id="keepupdatefiles" class="hint" style="color:red;"></div>
+		<div id="keepinstallfiles" class="hint" style="color:red;"></div>
 	</div>
-</div>
-<p><TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE><br>
-<a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
-<p id="lbu_info">&nbsp;</p>
-<div id="lbu_error" style="color:red;"></div>
-<div style="font-size:125%;font-weight:bold;" id="lbu_release_name">&nbsp;</div>
-<div class="note" id="lbu_release_body">&nbsp;</div>
-<div id="lbu_published_at">&nbsp;</div>
-<p><TMPL_VAR UPDATES.LBU_LABEL_CHECKGITHUB> <a href="https://github.com/mschlenstedt/Loxberry/releases" target="_blank">All Releases</a></p>
-</div>
 </div>
 <div class="divTableRow">
 <div class="divTableCell">
@@ -351,9 +354,6 @@ $(document).ready( function () {
 	return newvers;
  
  }
- 
-
-
 
  function checkUpdates()
  {
@@ -405,6 +405,17 @@ $(document).ready( function () {
 				}
 			}
 			
+			if(data.dryrun != undefined && data.dryrun !== "dryrun=0") { $("#dryrun").text("DRYRUN is set"); }
+				else { $("#dryrun").text(""); }
+			if(data.keepupdatefiles != undefined && data.keepupdatefiles !== "0") { $("#keepupdatefiles").text("KEEPUPDATEFILES is set"); }
+				else { $("#keepupdatefiles").text(""); }
+			if(data.keepinstallfiles != undefined && data.keepinstallfiles !=="0") { $("#keepinstallfiles").text("KEEPINSTALLFILES is set"); }
+				else { $("#keepinstallfiles").text(""); }
+			if(data.branch != undefined && data.branch !== "master" ) { $("#branch").text("Branch "+data.branch+" is set"); }
+				else { $("#branch").text(""); }
+			
+			
+			
 			
 			});
  }
@@ -420,7 +431,10 @@ $(document).ready( function () {
 	$('#lbu_release_name').text("");
 	$('#lbu_release_body').text("");
 	$('#lbu_published_at').text("");
- 
+	$("#dryrun").text(""); 
+	$("#keepupdatefiles").text("");
+	$("#keepinstallfiles").text("");
+	$("#branch").text("");
  }
  
  function installUpdate()
