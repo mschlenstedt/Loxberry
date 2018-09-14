@@ -186,6 +186,16 @@ class intLog
 
 	public function WARN($msg)
 	{
+		
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<WARNING> $msg";
+		
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 4) {
 			$this->params{"STATUS"} = 4;
 		}
@@ -198,6 +208,14 @@ class intLog
 
 	public function ERR($msg)
 	{
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<ERROR> $msg";
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 3) {
 			$this->params{"STATUS"} = 3;
 		}
@@ -210,6 +228,14 @@ class intLog
 
 	public function CRIT($msg)
 	{
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<CRITICAL> $msg";
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 2) {
 			$this->params{"STATUS"} = 2;
 		}
@@ -224,6 +250,14 @@ class intLog
 
 	public function ALERT($msg)
 	{
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<ALERT> $msg";
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 1) {
 			$this->params{"STATUS"} = 1;
 		}
@@ -238,6 +272,14 @@ class intLog
 
 	public function EMERG($msg)
 	{
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<EMERG> $msg";
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 0) {
 			$this->params{"STATUS"} = "0";
 		}

@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.2";
+our $VERSION = "1.2.5.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -322,6 +322,12 @@ sub write
 	if ((!$self->{STATUS} or $severity < $self->{STATUS}) and $severity >= 0) {
 		# Remember highest severity sent
 		$self->{STATUS} = "$severity";
+	}
+	
+	if($severity >= 0 and $severity <= 4) {
+		# Store all warnings, errors, etc. in a string
+		$self->{ATTENTIONMESSAGES} .= "\n" if ($self->{ATTENTIONMESSAGES});
+		$self->{ATTENTIONMESSAGES} .= '<' . $severitylist{$severity} . '> ' . $s;
 	}
 	
 	if ($self->{loglevel} != 0 and $severity <= $self->{loglevel} or $severity < 0) {
