@@ -40,16 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.2.5.2";
-
-# print currtime('file') . "\n";
-
-# Predeclare logging functions
-#sub LOGOK { my ($s)=@_; print ERRORLOG "<OK>" . $s . "\n"; }
-#sub LOGINF { my ($s)=@_;print ERRORLOG "<INFO>" . $s . "\n"; }
-#sub LOGWARN { my ($s)=@_;print ERRORLOG "<WARNING>" . $s . "\n"; }
-#sub LOGERR { my ($s)=@_;print ERRORLOG"<ERROR>" . $s . "\n"; }
-#sub LOGCRIT { my ($s)=@_;print ERRORLOG "<FAIL>" . $s . "\n"; }
+my $scriptversion="1.2.5.3";
 
 my $release_url;
 my $oformat;
@@ -103,7 +94,7 @@ $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
 # Read system language
 my %SL = LoxBerry::System::readlanguage();
-# LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
+# LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}";
 
 if (!$cgi->param) {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_NO_PARAMETERS'};
@@ -190,10 +181,10 @@ LOGINF "Executing user of loxberryupdatecheck is $curruser";
 
 
 LOGOK "Parameters/settings of this update:";
-LOGINF "   querytype:       $querytype\n";
-LOGINF "   cron:            $cron\n";
+LOGINF "   querytype:       $querytype";
+LOGINF "   cron:            $cron";
 LOGINF "   keepupdatefiles: " . $cgi->param('keepupdatefiles');
-LOGINF "   dryrun: " . $cgi->param('dryrun') . "\n";
+LOGINF "   dryrun: " . $cgi->param('dryrun');
 LOGINF "   output: " . $formatjson;
 
 my $lbversion;
@@ -308,7 +299,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		
 		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
-		# LOGINF "PIDOF LENGTH: " . length($pids) . "\n";
+		# LOGINF "PIDOF LENGTH: " . length($pids);
 		if (length($pids) > 0) {
 			$joutput{'info'} = $SL{'UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING'};
 			&err;
@@ -341,7 +332,7 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {
-				LOGCRIT "prepare update returned an error. Exiting.\n";
+				LOGCRIT "prepare update returned an error. Exiting.";
 				exit(1);
 			}
 			LOGOK "Prepare update successful.";
@@ -373,11 +364,11 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	}
 	
 	my $jsntext = to_json(\%joutput);
-	LOGINF "JSON: " . $jsntext . "\n";
+	LOGINF "JSON: " . $jsntext;
 	#print $cgi->header('application/json');
 	print $jsntext;
 	
-	# LOGINF "ZIP URL: $release_url\n";
+	# LOGINF "ZIP URL: $release_url";
 	
 	} elsif ($querytype eq 'latest') {
 		LOGINF "Start checking commits...";
@@ -435,7 +426,6 @@ sub check_releases
 	}
 	LOGOK "Release list fetched.";
 	#LOGINF $response->decoded_content;
-	#LOGINF "\n\n";
 	LOGINF "Parsing release list...";
 	my $releases = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
 	
@@ -454,7 +444,7 @@ sub check_releases
 		LOGINF "   Release version : $release_version";
 		
 		if ($release_version < $min_version || $release_version > $max_version) {
-			LOGWARN "   Release $release_version is outside min or max version ($min_version/$max_version)\n";
+			LOGWARN "   Release $release_version is outside min or max version ($min_version/$max_version)";
 			next;
 		}
 		LOGOK "   Filter check passed.";
@@ -471,7 +461,7 @@ sub check_releases
 		# Check against current version
 		LOGINF "   Current Version: $currversion <--> Release Version: $release_version";
 		if ($currversion == $release_version) {
-			LOGOK "   Skipping - this is the same version.\n";  
+			LOGOK "   Skipping - this is the same version.";  
 			next;
 		}
 		if ($release_version < $currversion) {
@@ -484,7 +474,7 @@ sub check_releases
 
 		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at}, $release->{prerelease});
 	}
-	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
+	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name};
 	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
 	LOGOK "No new version found: Latest version is " . vers_tag($release_safe->{tag_name});
 	return (vers_tag($release_safe->{tag_name}), undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at}, $release_safe->{prerelease});
@@ -619,7 +609,7 @@ sub check_commits
 		
 		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
-		# LOGINF "PIDOF LENGTH: " . length($pids) . "\n";
+		# LOGINF "PIDOF LENGTH: " . length($pids);
 		if (length($pids) > 0) {
 			$joutput{'info'} = $SL{'UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING'};
 			&err;
@@ -652,7 +642,7 @@ sub check_commits
 			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {
-				LOGCRIT "prepare update returned an error. Exiting.\n";
+				LOGCRIT "prepare update returned an error. Exiting.";
 				exit(1);
 			}
 			LOGOK "Prepare update successful.";
@@ -678,7 +668,7 @@ sub check_commits
 		}
 	}
 	my $jsntext = to_json(\%joutput);
-	LOGINF "JSON: " . $jsntext . "\n";
+	LOGINF "JSON: " . $jsntext;
 	#print $cgi->header('application/json');
 	print $jsntext;
 	
@@ -693,7 +683,7 @@ sub download
 {
 	
 	my ($url, $filename) = @_;
-	LOGINF "   Download preparing. URL: $url Filename: $filename\n";
+	LOGINF "   Download preparing. URL: $url Filename: $filename";
 	
 	# my $download_size;
 	# my $rel_header;
@@ -708,7 +698,7 @@ sub download
 	# return undef if (!defined $download_size || $download_size == 0); 
 	# LOGINF "   Expected download size: $download_size";
 	
-	# LOGINF "    Header check passed.\n";
+	# LOGINF "    Header check passed.";
 	
 	my $ua = LWP::UserAgent->new;
 	my $res;
@@ -875,12 +865,12 @@ sub prepare_update
 	# system("chown -R loxberry:loxberry $updatedir");
 	# my $exitcode  = $? >> 8;
 	# if ($exitcode != 0) {
-	# LOGINF "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.\n";
+	# LOGINF "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.";
 	# return undef;
 	# }
 
 	$updatedir = "$updatedir/$direntry";
-	LOGOK "Update directory is $updatedir\n";
+	LOGOK "Update directory is $updatedir";
 	
 	LOGINF "LoxBerry Update programs are updated from the release to your LoxBerry...";
 	if ($cgi->param('keepupdatefiles')) {
