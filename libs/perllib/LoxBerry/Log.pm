@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.1";
+our $VERSION = "1.2.5.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -241,6 +241,23 @@ sub addtime
 		$self->{addtime} = 1;
 	}
 	return $self->{addtime};
+}
+
+sub logtitle
+{
+	my $self = shift;
+	my $title = shift;
+	if ($title) {
+		$self->{LOGSTARTMESSAGE} = $title;
+		if (!$self->{nofile} and $self->{dbkey} and $self->{dbh}) {
+			eval {
+				my $dbh = $self->{dbh};
+				$dbh->do("UPDATE logs_attr SET value = '$self->{LOGSTARTMESSAGE}' WHERE keyref = $self->{dbkey} AND attrib = 'LOGSTARTMESSAGE';");
+			};
+		}
+	}
+	
+	return $self->{LOGSTARTMESSAGE};
 }
 
 ##########################################################
@@ -1741,6 +1758,12 @@ sub LOGEND
 {
 	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->LOGEND(@_); # or Carp::carp("No default object set for exported logging functions.");
+}
+
+sub LOGTITLE
+{
+	return if (! $LoxBerry::Log::mainobj);
+	$LoxBerry::Log::mainobj->logtitle(@_);
 }
 
 sub create_temp_logobject
