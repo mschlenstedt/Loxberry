@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.4.4";
+our $VERSION = "1.2.5.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -26,6 +26,7 @@ our @EXPORT = qw (
 		%L
 		%htmltemplate_options
 		mslist_select_html
+		loglist_html
 		
 );
 
@@ -392,7 +393,7 @@ EOT
 <<"EOT";
 
 <SCRIPT>
-\$(function() { updatenavbar(); });
+\$(document).on('pageshow',function(){ updatenavbar(); });
 function updatenavbar() {
 	console.log("updatenavbar called");
 	$topnavbar_notify_js
@@ -681,7 +682,23 @@ EOF
 	return $html;
 }
 
-
+sub loglist_html
+{
+	my %p = @_;
+	if (!$p{PACKAGE} and $LoxBerry::System::lbpplugindir) {
+		$p{PACKAGE} = $LoxBerry::System::lbpplugindir;
+	}
+	require LWP::UserAgent;
+	my $ua = new LWP::UserAgent;
+	my $url = 'http://' . LoxBerry::System::lbhostname() . ':' . LoxBerry::System::lbwebserverport() . '/admin/system/tools/showalllogs.cgi?package=' . URI::Escape::uri_escape($p{PACKAGE}) . '&name=' . URI::Escape::uri_escape($p{NAME}) . '&header=none';
+	print STDERR "loglist_html $p{PACKAGE} Url: $url\n" if ($DEBUG);
+	my $response = $ua->get($url);
+	if($response->is_error) {
+		print STDERR "loglist_html: Error requesting loglist. Error HTTP $response->code $response->message Url: $url\n";
+		return undef;
+	}
+	return $response->content;
+}
 
 
 
