@@ -16,7 +16,7 @@ $cgi->import_names('R');
 
 if ($R::action eq "reduce_notifys") { reduce_notifys(); }
 if ($R::action eq "reduce_logfiles") { reduce_logfiles(); }
-
+if ($R::action eq "backup_logdb") { backup_logdb(); }
 
 exit;
 
@@ -53,6 +53,16 @@ sub reduce_logfiles
 	my @logs = LoxBerry::Log::get_logs();
 	# Vacuum logdb and copy backup from ram disk to sd card
 	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
-	qx { cp -f $lbhomedir/log/system_tmpfs/logs_sqlite.dat $lbhomedir/data/system/ };
 	
+}
+
+#############################################################
+# Function backup_logdb (every week)
+#############################################################
+sub backup_logdb
+{
+	print STDERR "Sleeping 20 seconds to not colidate with other jobs...\n";
+	sleep 20;
+	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
+	qx { cp -f $lbhomedir/log/system_tmpfs/logs_sqlite.dat $lbhomedir/data/system/ };
 }
