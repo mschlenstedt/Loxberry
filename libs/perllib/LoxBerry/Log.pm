@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.4";
+our $VERSION = "1.2.5.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -215,8 +215,14 @@ sub open
 	File::Path::make_path($dir);
 	
 	# print STDERR "log open Writetype after processing is " . $writetype . "\n";
-	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . ")";
-	$self->{'_FH'} = $fh;
+	my $fh;
+	eval {
+		open($fh, $writetype, $self->{filename});
+		$self->{'_FH'} = $fh if($fh);
+	};
+	if ($@) {
+		print STDERR "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . "): $@";
+	}
 	eval {
 		my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
 		chown $uid, $gid, $fh;
@@ -349,7 +355,7 @@ sub write
 		}
 		if (!$self->{nofile}) {
 			# print STDERR "   Print to file\n";
-			print $fh $string;
+			print $fh $string if($fh);
 			}
 		if ($self->{stderr}) {
 			print STDERR $string;
