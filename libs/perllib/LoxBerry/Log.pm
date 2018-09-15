@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.6";
+our $VERSION = "1.2.5.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -315,8 +315,6 @@ sub write
 	my $severity = shift;
 	my ($s)=@_;
 	
-	$self->LOGSTART if (!$self->{__logStarted});
-		
 	# print STDERR "Severity: $severity / Loglevel: " . $self->{loglevel} . "\n";
 	# print STDERR "Log: $s\n";
 	# Do not log if loglevel is lower than severity
@@ -433,7 +431,6 @@ sub LOGSTART
 {
 	my $self = shift;
 	my ($s)=@_;
-	$self->{__logStarted} = 1;
 	# print STDERR "Logstart -->\n";
 	$self->{LOGSTARTBYTE} = -e $self->{filename} ? -s $self->{filename} : 0;
 	$self->write(-2, "================================================================================");
@@ -666,8 +663,7 @@ sub log_db_logstart
 	
 	for my $key (keys %p) {
 		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or 
-			$key eq 'LASTMODIFIED' or $key eq 'FILENAME' or $key eq 'dbh' or $key eq '_FH' or 
-			substr($key, 0, 2) eq '__' or $key or !$p{$key} );
+			$key eq 'LASTMODIFIED' or $key eq 'FILENAME' or $key eq 'dbh' or $key eq '_FH' or ! $p{$key} );
 		# print STDERR "INSERT id $id, key $key, value $p{$key}\n";
 		$sth2->execute($id, $key, $p{$key});
 	}
@@ -715,7 +711,7 @@ sub log_db_logend
 	
 	for my $key (keys %p) {
 		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or 
-			$key eq 'LASTMODIFIED' or $key eq 'FILENAME' or $key eq 'dbh' or $key eq '_FH' or substr($key, 0, 2) eq '__');
+			$key eq 'LASTMODIFIED' or $key eq 'FILENAME' or $key eq 'dbh' or $key eq '_FH');
 		$sth2->execute($p{dbkey}, $key, $p{$key});
 	}
 
