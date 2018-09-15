@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.3";
+our $VERSION = "1.2.5.4";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -480,7 +480,8 @@ sub LOGEND
 	}
 	
 	$self->{logend_called} = 1;
-	logfiles_cleanup();
+	# get_logs($self->{package}, $self->{name});
+	# logfiles_cleanup();
 	$self->DESTROY();
 	
 }
