@@ -46,7 +46,7 @@ LOGINF "Moving logfile maintenance tasks from weekly to hourly";
 
 my $delfile = "$lbhomedir/system/cron/cron.weekly/db_maint";
 $result = unlink $delfile;
-LOGERR "Could not delete $delfile" if ($result < 1);
+LOGINF "Could not delete $delfile - possibly this is not the first run of the script" if ($result < 1);
 LOGOK "Old cronjob deleted successfully" if ($result == 1);
 
 copy_to_loxberry("/system/cron.weekly/db_maint_weekly";
