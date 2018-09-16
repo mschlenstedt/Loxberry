@@ -30,7 +30,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.2.5.1';
+my $scriptversion='1.2.5.3';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -43,6 +43,7 @@ my $logfilename;
 my $cron;
 my $nobackup;
 my $nodiscspacecheck;
+my $keepinstallfiles;
 my $sha;
 my $syscfg;
 my $failed_script;
@@ -113,6 +114,9 @@ if ($cgi->param('nodiscspacecheck')) {
 }
 if ($cgi->param('nobackup')) {
 	$nobackup = 1;
+}
+if ($cgi->param('keepinstallfiles')) {
+	$keepinstallfiles = 1;
 }
 
 LOGOK "Lock successfully set.";
@@ -322,7 +326,7 @@ foreach my $version (@updatelist)
 		next;
 	}
 	if (!$cgi->param('dryrun')) {
-		LOGINF "      Running update script for $version...\n";
+		LOGINF "      Running update script for $version...";
 		undef $exitcode; 
 		my $lowdiskspace;
 		if (! $nodiscspacecheck) {
@@ -369,7 +373,7 @@ foreach my $version (@updatelist)
 		}
 		# Should we remember, if exec failed? I think no.
 	} else {
-		LOGWARN "   Dry-run. Skipping $version script.\n";
+		LOGWARN "   Dry-run. Skipping $version script.";
 	}
 }
 
@@ -426,21 +430,22 @@ LOGINF "Commit SHA is updated to $sha" if ($sha);
 if (! $cgi->param('dryrun') ) {
 	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
 		do {
-			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error() . "\n"; 
+			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error(); 
 			$errskipped++;
 			};
 	$syscfg->param('BASE.VERSION', vers_tag("$release", 1));
 	$syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
 	$syscfg->save() or 
 		do {
-			LOGERR "Cannot write to general.cfg. Error: " . $syscfg->error() . "\n"; 
+			LOGERR "Cannot write to general.cfg. Error: " . $syscfg->error(); 
 			$errskipped++;
 			};
 	}
 
 # Finished. 
 LOGINF "Cleaning up temporary download folder";
-delete_directory($update_path);
+delete_directory($update_path) if(!$keepinstallfiles);
+LOGWARN "Unzipped install files are kept in $update_path" if($keepinstallfiles);
 
 LOGINF "All procedures finished.";
 notify('updates', 'update', "LoxBerry Update: " . $SL{'UPDATES.LBU_NOTIFY_UPDATE_INSTALL_OK'} . " $release") if (! $errskipped);
@@ -459,10 +464,10 @@ sub exec_perl_script
 	my $user = shift;
 	
 	if (!$filename) {
-		LOGINF "   exec_perl_script: Filename is empty. Skipping.\n";	
+		LOGINF "   exec_perl_script: Filename is empty. Skipping.";	
 		return;
 	}
-	LOGINF "Executing $filename\n";
+	LOGINF "Executing $filename";
 	my @commandline;
 	if ($user) {
 		push @commandline, "su", "-", $user, "-c", "'$^X $filename'", "1>&2";
@@ -473,7 +478,7 @@ sub exec_perl_script
 	qx(@commandline);
 	my $exitcode  = $? >> 8;
 	$log->open;
-	LOGINF "exec_perl_script $filename with user $user - errcode $exitcode\n";
+	LOGINF "exec_perl_script $filename with user $user - errcode $exitcode";
 	return $exitcode;
 }
 
