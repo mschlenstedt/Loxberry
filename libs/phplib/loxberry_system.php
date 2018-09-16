@@ -1,5 +1,4 @@
 <?php
-
 	# define Constants for LoxBerry directories
 	if(getenv("LBHOMEDIR")) {
 		define("LBHOMEDIR", getenv("LBHOMEDIR"));
@@ -110,7 +109,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.0.5";
+	public static $LBSYSTEMVERSION = "1.2.5.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -164,34 +163,25 @@ class LBSystem
 				return null;
 		}
 		
-		$langfile = substr($genericlangfile, 0, $pos) . "_" . $lang . substr($genericlangfile, $pos);
-		$enlangfile = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
-		// error_log("readlanguage: $langfile enlangfile: $enlangfile");
+		$langfile_foreign = substr($genericlangfile, 0, $pos) . "_" . $lang . substr($genericlangfile, $pos);
+		$langfile_en = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
+		// error_log("readlanguage: $langfile_foreign enlangfile: $langfile_en");
 		
 		if ($syslang == false || ($syslang == True && !is_array(self::$SL))) { 
-			if (file_exists($langfile)) {
-				$currlang = LBSystem::read_language_file($langfile);
+
+			if (file_exists($langfile_foreign)) {
+				$currlang = LBSystem::read_language_file($langfile_foreign);
+				LBSystem::parse_lang_file($currlang, $language);
 			}
 			else
 			{
 				$currlang = [];
 			}
-			if (file_exists($enlangfile)) {
-				$enlang = LBSystem::read_language_file($enlangfile);
+			if (file_exists($langfile_en)) {
+				$enlang = LBSystem::read_language_file($langfile_en);
+				LBSystem::parse_lang_file($enlang, $language);
 			}
 		
-			foreach ($enlang as $section => $sectionarray)  {
-				foreach ($sectionarray as $tag => $langstring)  {
-					$language["$section.$tag"] = $langstring;
-					// error_log("Tag: $section.$tag Langstring: $langstring");
-				}
-			}
-			foreach ($currlang as $section => $sectionarray)  {
-				foreach ($sectionarray as $tag => $langstring)  {
-					$language["$section.$tag"] = $langstring;
-					// error_log("Tag: $section.$tag Langstring: $langstring");
-				}
-			}
 			if ($syslang) {
 				self::$SL = $language;
 			}
@@ -208,9 +198,54 @@ class LBSystem
 
 	}
 	
+	private static function parse_lang_file($content, &$langhash)
+{
+	
+	// In Perl, $content alread is an array!
+	
+	$section = 'default';
+
+	foreach ($content as $line) {
+		# Trim
+		$line=trim($line);
+		$firstletter = substr($line, 0, 1);
+		// echo "Firstletter: $firstletter\n";
+		# Comments
+		if($firstletter == '' || $firstletter == '#' || $firstletter == '/' || $firstletter == ';') {
+			continue;}
+		# Sections
+		if ($firstletter == '[') {
+			$closebracket = strpos($line, ']', 1);
+			if($closebracket == FALSE) {
+				continue;
+			}
+			$section = substr($line, 1, $closebracket-1);
+			// echo "\n[$section]\n";
+			continue;
+		}
+		# Define variables
+		list($param, $value) = explode('=', $line, 2);
+		$param = rtrim($param);
+		if (!empty($langhash["$section.$param"])) {
+			continue;
+		}
+		$value = ltrim($value);
+		$firsthyphen = substr($value, 0, 1);
+		$lasthyphen = substr($value, -1, 1);
+		if ($firsthyphen == '"' && $lasthyphen == '"') {
+			$value = substr($value, 1, -1);
+		}
+		// echo "$param=$value\n";
+		$langhash["$section.$param"] = $value;
+	}
+}
+
+
+	
+	
 	public static function read_language_file($langfile)
 	{
-		$langarray = parse_ini_file($langfile, True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read language file $langfile");
+		$langarray = file($langfile, FILE_SKIP_EMPTY_LINES) or error_log("LoxBerry System ERROR: Could not read language file $langfile");
 		if ($langarray == false) {
 			error_log("Cannot read language $langfile");
 		}

@@ -1,0 +1,6 @@
+#!/bin/bash
+$LBHOMEDIR/bin/db_maint.pl action=backup_logdb
+
+
+
+

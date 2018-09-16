@@ -186,6 +186,16 @@ class intLog
 
 	public function WARN($msg)
 	{
+		
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<WARNING> $msg";
+		
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 4) {
 			$this->params{"STATUS"} = 4;
 		}
@@ -198,6 +208,14 @@ class intLog
 
 	public function ERR($msg)
 	{
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<ERROR> $msg";
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 3) {
 			$this->params{"STATUS"} = 3;
 		}
@@ -210,6 +228,14 @@ class intLog
 
 	public function CRIT($msg)
 	{
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<CRITICAL> $msg";
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 2) {
 			$this->params{"STATUS"} = 2;
 		}
@@ -224,6 +250,14 @@ class intLog
 
 	public function ALERT($msg)
 	{
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<ALERT> $msg";
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 1) {
 			$this->params{"STATUS"} = 1;
 		}
@@ -238,6 +272,14 @@ class intLog
 
 	public function EMERG($msg)
 	{
+		// Collect all messages from severity warning and above
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "<EMERG> $msg";
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 0) {
 			$this->params{"STATUS"} = "0";
 		}
@@ -250,7 +292,18 @@ class intLog
 		}
 	}
 	
-	
+	public function logtitle($title) 
+	{
+		if(isset($title)) {
+			$this->params["LOGSTARTMESSAGE"] = $title;
+			if( isset($this->params["nofile"]) && isset($this->params["dbkey"]) && isset($this->params["dbh"]) ) { 
+				$dbh = $this->params["dbh"];
+				$dbh->exec("UPDATE logs_attr SET value = '" . $this->params["LOGSTARTMESSAGE"] . "' WHERE keyref = " . $this->params["dbkey"] . " AND attrib = 'LOGSTARTMESSAGE';");
+			}
+		}
+		return $this->params["LOGSTARTMESSAGE"];
+		
+	}
 
 	public function writelog($msg) {
 		
@@ -438,7 +491,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.0.0.6";
+	public static $VERSION = "1.2.5.1";
 	
 	public static function newLog($args)
 	{
@@ -683,6 +736,13 @@ function LOGEND ($msg)
 	global $stdLog;
 	if (!isset($stdLog)) { create_temp_logobject(); }
 	$stdLog->LOGEND($msg);
+}
+
+function LOGTITLE ($title)
+{
+	global $stdLog;
+	if (!isset($stdLog)) { return $title; }
+	$stdLog->logtitle($title);
 }
 
 function create_temp_logobject()

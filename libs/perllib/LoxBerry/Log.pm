@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.1";
+our $VERSION = "1.2.5.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -215,8 +215,14 @@ sub open
 	File::Path::make_path($dir);
 	
 	# print STDERR "log open Writetype after processing is " . $writetype . "\n";
-	open(my $fh, $writetype, $self->{filename}) or Carp::croak "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . ")";
-	$self->{'_FH'} = $fh;
+	my $fh;
+	eval {
+		open($fh, $writetype, $self->{filename});
+		$self->{'_FH'} = $fh if($fh);
+	};
+	if ($@) {
+		print STDERR "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . "): $@";
+	}
 	eval {
 		my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
 		chown $uid, $gid, $fh;
@@ -241,6 +247,23 @@ sub addtime
 		$self->{addtime} = 1;
 	}
 	return $self->{addtime};
+}
+
+sub logtitle
+{
+	my $self = shift;
+	my $title = shift;
+	if ($title) {
+		$self->{LOGSTARTMESSAGE} = $title;
+		if (!$self->{nofile} and $self->{dbkey} and $self->{dbh}) {
+			eval {
+				my $dbh = $self->{dbh};
+				$dbh->do("UPDATE logs_attr SET value = '$self->{LOGSTARTMESSAGE}' WHERE keyref = $self->{dbkey} AND attrib = 'LOGSTARTMESSAGE';");
+			};
+		}
+	}
+	
+	return $self->{LOGSTARTMESSAGE};
 }
 
 ##########################################################
@@ -307,6 +330,12 @@ sub write
 		$self->{STATUS} = "$severity";
 	}
 	
+	if($severity >= 0 and $severity <= 4) {
+		# Store all warnings, errors, etc. in a string
+		$self->{ATTENTIONMESSAGES} .= "\n" if ($self->{ATTENTIONMESSAGES});
+		$self->{ATTENTIONMESSAGES} .= '<' . $severitylist{$severity} . '> ' . $s;
+	}
+	
 	if ($self->{loglevel} != 0 and $severity <= $self->{loglevel} or $severity < 0) {
 		#print STDERR "Not filtered.\n";
 		my $fh = $self->{'_FH'};
@@ -326,7 +355,7 @@ sub write
 		}
 		if (!$self->{nofile}) {
 			# print STDERR "   Print to file\n";
-			print $fh $string;
+			print $fh $string if($fh);
 			}
 		if ($self->{stderr}) {
 			print STDERR $string;
@@ -457,7 +486,8 @@ sub LOGEND
 	}
 	
 	$self->{logend_called} = 1;
-	logfiles_cleanup();
+	# get_logs($self->{package}, $self->{name});
+	# logfiles_cleanup();
 	$self->DESTROY();
 	
 }
@@ -1741,6 +1771,12 @@ sub LOGEND
 {
 	create_temp_logobject() if (! $LoxBerry::Log::mainobj);
 	$LoxBerry::Log::mainobj->LOGEND(@_); # or Carp::carp("No default object set for exported logging functions.");
+}
+
+sub LOGTITLE
+{
+	return if (! $LoxBerry::Log::mainobj);
+	$LoxBerry::Log::mainobj->logtitle(@_);
 }
 
 sub create_temp_logobject
