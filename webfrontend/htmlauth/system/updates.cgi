@@ -52,7 +52,6 @@ our $namef;
 our $value;
 our %query;
 our $helplink;
-our $saveformdata;
 our $error;
 our $uploadfile;
 our $output;
@@ -115,7 +114,6 @@ if ($R::lang) {
 }
 
 # Remove 'only used once' warnings
-$R::saveformdata if 0;
 $R::do if 0;
 $R::answer if 0;
 
@@ -168,11 +166,6 @@ $navbar{3}{Notify_Name} = 'update';
 # And this one we really want to use
 $do = $R::do;
 $answer = $R::answer;
-
-# Everything from Forms
-$saveformdata = $R::saveformdata;
-$saveformdata = substr($saveformdata,0,1);
-
 
 ##########################################################################
 # Main program
@@ -552,15 +545,15 @@ sub lbuhistory
 	
 	my @updatelogs = LoxBerry::Log::get_logs("LoxBerry Update", "update");
 	for my $log (@updatelogs) {
-		$log->{NOSTATUS} = 1 if ($log->{STATUS} eq "");
-		$log->{DEBUG} = 1 if ($log->{STATUS} eq "7");
-		$log->{INFO} = 1 if ($log->{STATUS} eq "6");
-		$log->{OK} = 1 if ($log->{STATUS} eq "5");
-		$log->{WARNING} = 1 if ($log->{STATUS} eq "4");
-		$log->{ERROR} = 1 if ($log->{STATUS} eq "3");
-		$log->{CRITICAL} = 1 if ($log->{STATUS} eq "2");
-		$log->{ALERT} = 1 if ($log->{STATUS} eq "1");
-		$log->{EMERGENCY} = 1 if ($log->{STATUS} eq "0");
+		$log->{NOSTATUS} = 1 if ($log->{STATUS} and $log->{STATUS} eq "");
+		$log->{DEBUG} = 1 if ($log->{STATUS} and $log->{STATUS} eq "7");
+		$log->{INFO} = 1 if ($log->{STATUS} and $log->{STATUS} eq "6");
+		$log->{OK} = 1 if ($log->{STATUS} and $log->{STATUS} eq "5");
+		$log->{WARNING} = 1 if ($log->{STATUS} and $log->{STATUS} eq "4");
+		$log->{ERROR} = 1 if ($log->{STATUS} and $log->{STATUS} eq "3");
+		$log->{CRITICAL} = 1 if ($log->{STATUS} and $log->{STATUS} eq "2");
+		$log->{ALERT} = 1 if ($log->{STATUS} and $log->{STATUS} eq "1");
+		$log->{EMERGENCY} = 1 if ($log->{STATUS} and $log->{STATUS} eq "0");
 		$log->{FILESIZE} = -s $log->{FILENAME};
 		$log->{FILESIZE} =LoxBerry::System::bytes_humanreadable($log->{FILESIZE}, "B");
 	}
@@ -568,15 +561,15 @@ sub lbuhistory
 	
 	my @checklogs = LoxBerry::Log::get_logs("LoxBerry Update", "check");
 	for my $log (@checklogs) {
-		$log->{NOSTATUS} = 1 if ($log->{STATUS} eq "");
-		$log->{DEBUG} = 1 if ($log->{STATUS} eq "7");
-		$log->{INFO} = 1 if ($log->{STATUS} eq "6");
-		$log->{OK} = 1 if ($log->{STATUS} eq "5");
-		$log->{WARNING} = 1 if ($log->{STATUS} eq "4");
-		$log->{ERROR} = 1 if ($log->{STATUS} eq "3");
-		$log->{CRITICAL} = 1 if ($log->{STATUS} eq "2");
-		$log->{ALERT} = 1 if ($log->{STATUS} eq "1");
-		$log->{EMERGENCY} = 1 if ($log->{STATUS} eq "0");
+		$log->{NOSTATUS} = 1 if ($log->{STATUS} and $log->{STATUS} eq "");
+		$log->{DEBUG} = 1 if ($log->{STATUS} and $log->{STATUS} eq "7");
+		$log->{INFO} = 1 if ($log->{STATUS} and $log->{STATUS} eq "6");
+		$log->{OK} = 1 if ($log->{STATUS} and $log->{STATUS} eq "5");
+		$log->{WARNING} = 1 if ($log->{STATUS} and $log->{STATUS} eq "4");
+		$log->{ERROR} = 1 if ($log->{STATUS} and $log->{STATUS} eq "3");
+		$log->{CRITICAL} = 1 if ($log->{STATUS} and $log->{STATUS} eq "2");
+		$log->{ALERT} = 1 if ($log->{STATUS} and $log->{STATUS} eq "1");
+		$log->{EMERGENCY} = 1 if ($log->{STATUS} and $log->{STATUS} eq "0");
 		$log->{FILESIZE} = -s $log->{FILENAME};
 		$log->{FILESIZE} =LoxBerry::System::bytes_humanreadable($log->{FILESIZE}, "B");
 	}
