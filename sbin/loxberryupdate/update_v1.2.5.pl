@@ -52,8 +52,10 @@ LOGOK "Old cronjob deleted successfully" if ($result == 1);
 copy_to_loxberry("/system/cron/cron.weekly/db_maint_weekly");
 copy_to_loxberry("/system/cron/cron.hourly/db_maint_hourly");
 
-qx { chown loxberry:loxberry $lbhomedir/system/cron.weekly/db_maint_weekly };
-qx { chown loxberry:loxberry $lbhomedir/system/cron.hourly/db_maint_hourly };
+qx { chown loxberry:loxberry $lbhomedir/system/cron/cron.weekly/db_maint_weekly };
+qx { chown loxberry:loxberry $lbhomedir/system/cron/cron.hourly/db_maint_hourly };
+qx { chmod +x $lbhomedir/system/cron/cron.weekly/db_maint_weekly };
+qx { chmod +x $lbhomedir/system/cron/cron.hourly/db_maint_hourly };
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
