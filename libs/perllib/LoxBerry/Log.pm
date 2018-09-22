@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.5";
+our $VERSION = "1.2.5.6";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -600,8 +600,11 @@ sub log_db_query_id
 	my %p = %{shift()};
 		
 	# Check mandatory fields
-	Carp::croak "log_db_queryid: No FILENAME defined\n" if (! $p{filename});
-		
+	if (! $p{filename}) {
+		Carp::cluck "log_db_queryid: No FILENAME defined\n";
+		return;
+	}
+	
 	# Search filename
 	my $qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '$p{filename}' ORDER BY LOGSTART DESC LIMIT 1;"; 
 	my ($logid) = $dbh->selectrow_array($qu);
@@ -625,11 +628,14 @@ sub log_db_logstart
 	# print STDERR "Package: " . $p{'package'} . "\n";
 	
 	# Check mandatory fields
-	Carp::croak "Create DB log entry: No PACKAGE defined\n" if (! $p{package});
-	Carp::croak "Create DB log entry: No NAME defined\n" if (! $p{name});
-	Carp::croak "Create DB log entry: No FILENAME defined\n" if (! $p{filename});
+	Carp::cluck "Create DB log entry: No PACKAGE defined\n" if (! $p{package});
+	Carp::cluck "Create DB log entry: No NAME defined\n" if (! $p{name});
+	Carp::cluck "Create DB log entry: No FILENAME defined\n" if (! $p{filename});
 	# Carp::croak "Create DB log entry: No LOGSTART defined\n" if (! $p{LOGSTART});
-
+	if(!$p{package} or !$p{name} or !$p{filename}) {
+		return;
+	}
+	
 	if (!$p{LOGSTART}) {
 		my $t = Time::Piece->localtime;
 		# my $t = localtime;
@@ -650,7 +656,7 @@ sub log_db_logstart
 	# print STDERR "package $p{package}, name $p{name}\n";
 	$sth->execute($p{package}, $p{name}, $p{filename} , $p{LOGSTART}, $p{LOGSTART}) or 
 		do {
-			Carp::croak "Error inserting log to DB: $DBI::errstr\n";
+			Carp::cluck "Error inserting log to DB: $DBI::errstr\n";
 			return undef;
 		};
 	
@@ -687,7 +693,11 @@ sub log_db_logend
 	# print STDERR "Package: " . $p{'package'} . "\n";
 	
 	# Check mandatory fields
-	Carp::croak "log_db_endlog: No dbkey defined\n" if (! $p{dbkey});
+	
+	if (! $p{dbkey}) {
+		Carp::cluck "log_db_endlog: No dbkey defined\n"; 
+		return;
+	}
 	
 	my $t = Time::Piece->localtime;
 	my $logend = $t->strftime("%Y-%m-%d %H:%M:%S");
@@ -700,7 +710,7 @@ sub log_db_logend
 	my $sth = $dbh->prepare('UPDATE logs set LOGEND = ?, LASTMODIFIED = ? WHERE LOGKEY = ? ;');
 	$sth->execute($logend, $logend, $p{dbkey}) or 
 		do {
-			Carp::croak "Error updating logend in DB: $DBI::errstr\n";
+			Carp::cluck "Error updating logend in DB: $DBI::errstr\n";
 			return undef;
 		};
 	
