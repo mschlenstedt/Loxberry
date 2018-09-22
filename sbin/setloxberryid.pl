@@ -40,6 +40,7 @@ if (-e "$lbsconfigdir/loxberryid.cfg") {
 	my $epoch_timestamp = (stat($fh))[9];
 	close $fh;
 	unlink "$lbsconfigdir/loxberryid.cfg" if ($epoch_timestamp == "1517978534");
+	unlink "$lbsconfigdir/loxberryid.cfg" if ($epoch_timestamp == "1521542625");
 }
 		
 # Create new ID if no exists
