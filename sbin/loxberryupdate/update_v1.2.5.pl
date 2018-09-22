@@ -49,8 +49,8 @@ $result = unlink $delfile;
 LOGINF "Could not delete $delfile - possibly this is not the first run of the script" if ($result < 1);
 LOGOK "Old cronjob deleted successfully" if ($result == 1);
 
-copy_to_loxberry("/system/cron.weekly/db_maint_weekly");
-copy_to_loxberry("/system/cron.hourly/db_maint_hourly");
+copy_to_loxberry("/system/cron/cron.weekly/db_maint_weekly");
+copy_to_loxberry("/system/cron/cron.hourly/db_maint_hourly");
 
 qx { chown loxberry:loxberry $lbhomedir/system/cron.weekly/db_maint_weekly };
 qx { chown loxberry:loxberry $lbhomedir/system/cron.hourly/db_maint_hourly };
