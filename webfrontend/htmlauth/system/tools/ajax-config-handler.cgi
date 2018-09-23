@@ -1,20 +1,14 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-#use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
-# use Switch;
-# use AptPkg::Config;
 use LoxBerry::System;
 
 my $bins = LoxBerry::System::get_binaries();
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
-
-#print $cgi->header;
-
 
 # Prevent 'only used once' warning
 $R::action if 0;
@@ -36,7 +30,7 @@ elsif ($action eq 'lbupdate-installtime') { print $cgi->header; &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { print $cgi->header('application/json;charset=utf-8'); &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') { print $cgi->header('application/json;charset=utf-8'); &lbupdate; }
 elsif ($action eq 'lbupdate-resetver') { print $cgi->header; change_generalcfg("BASE.VERSION", $value) if ($value); }
-elsif ($action eq 'plugin-loglevel') {print $cgi->header; plugindb_update('loglevel', $R::pluginmd5, $R::value) if ($R::value); }
+elsif ($action eq 'plugin-loglevel') {print $cgi->header; plugindb_update('loglevel', $R::pluginmd5, $R::value); }
 elsif ($action eq 'plugin-autoupdate') {print $cgi->header; plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
 elsif ($action eq 'testenvironment') { print $cgi->header; &testenvironment; }
 elsif ($action eq 'changelanguage') { print $cgi->header; change_generalcfg("BASE.LANG", $value);}
