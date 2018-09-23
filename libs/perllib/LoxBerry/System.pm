@@ -12,7 +12,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.5.1";
+our $VERSION = "1.2.5.2";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -230,6 +230,8 @@ my $lbversion;
 my @plugins;
 my $plugins_delcache;
 my $webserverport;
+my $clouddnsaddress;
+my $msClouddnsFetched;
 
 our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
@@ -281,15 +283,35 @@ Available keys are:
 ####### Get Miniserver hash #######
 sub get_miniservers
 {
+	
 	# If config file was read already, directly return the saved hash
-	if (%miniservers) {
+	if ($msClouddnsFetched) {
 		return %miniservers;
 	}
 
-	if (read_generalcfg()) {
-		return %miniservers;
+	if (!%miniservers) {
+		read_generalcfg();
 	}
-	return undef;
+	
+	# CloudDNS handling
+	foreach my $msnr (keys %miniservers) {
+		if (LoxBerry::System::is_enabled($miniservers{$msnr}{UseCloudDNS}) && ($miniservers{$msnr}{CloudURL})) {
+			set_clouddns($msnr, $clouddnsaddress);
+		}
+		
+		if (! $miniservers{$msnr}{Port}) {
+			$miniservers{$msnr}{Port} = 80;
+		}
+
+		# Miniserver values consistency check
+		# If a Miniserver entry is not plausible, the full Miniserver hash entry is deleted
+		if($miniservers{$msnr}{Name} eq '' or $miniservers{$msnr}{IPAddress} eq '' or $miniservers{$msnr}{Admin} eq '' or $miniservers{$msnr}{Pass} eq ''
+			or $miniservers{$msnr}{Port} eq '') {
+			delete @miniservers{$msnr};
+		}
+	}
+	$msClouddnsFetched = 1;
+	return %miniservers;
 }
 
 =head2 get_miniserver_by_ip
@@ -312,10 +334,8 @@ sub get_miniserver_by_ip
 	my ($ip) = @_;
 	$ip = trim(lc($ip));
 	
-	if (! %miniservers) {
-		if (! read_generalcfg()) {
-			return undef;
-		}
+	if(!$msClouddnsFetched) {
+		LoxBerry::System::get_miniservers();
 	}
 	
 	foreach my $msip (keys %miniservers) {
@@ -346,10 +366,8 @@ sub get_miniserver_by_name
 	my ($myname) = @_;
 	$myname = trim(lc($myname));
 	
-	if (! %miniservers) {
-		if (! read_generalcfg()) {
-			return undef;
-		}
+	if(!$msClouddnsFetched) {
+		LoxBerry::System::get_miniservers();
 	}
 	
 	foreach my $msname (keys %miniservers) {
@@ -595,7 +613,6 @@ sub lbversion
 sub read_generalcfg
 {
 	my $miniservercount;
-	my $clouddnsaddress;
 	
 	if ($cfgwasread) {
 		return 1;
@@ -635,24 +652,6 @@ sub read_generalcfg
 		
 		$miniservers{$msnr}{SecureGateway} = $cfg->param("MINISERVER$msnr.SECUREGATEWAY");
 		$miniservers{$msnr}{EncryptResponse} = $cfg->param("MINISERVER$msnr.ENCRYPTRESPONSE");
-		
-
-		# CloudDNS handling
-		if (LoxBerry::System::is_enabled($miniservers{$msnr}{UseCloudDNS}) && ($miniservers{$msnr}{CloudURL})) {
-			set_clouddns($msnr, $clouddnsaddress);
-		}
-		
-		if (! $miniservers{$msnr}{Port}) {
-			$miniservers{$msnr}{Port} = 80;
-		}
-
-		# Miniserver values consistency check
-		# If a Miniserver entry is not plausible, the full Miniserver hash entry is deleted
-		if($miniservers{$msnr}{Name} eq '' or $miniservers{$msnr}{IPAddress} eq '' or $miniservers{$msnr}{Admin} eq '' or $miniservers{$msnr}{Pass} eq ''
-			or $miniservers{$msnr}{Port} eq '') {
-			delete @miniservers{$msnr};
-		}
-		
 		
 	}
 	return 1;
