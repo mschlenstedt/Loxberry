@@ -109,7 +109,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.5.1";
+	public static $LBSYSTEMVERSION = "1.2.5.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -256,12 +256,33 @@ class LBSystem
 	public static function get_miniservers() 
 	{
 		# If config file was read already, directly return the saved hash
+		global $clouddnsaddress, $msClouddnsFetched;
 		global $miniservers;
-		if ($miniservers) {
-			# print ("READ miniservers FROM MEMORY\n");
+		
+		if(!empty($msClouddnsFetched)) {
 			return $miniservers;
 		}
-		LBSystem::read_generalcfg();
+		
+		if (empty($miniservers)) {
+			LBSystem::read_generalcfg();
+		}
+		
+		foreach ($miniservers as $msnr => $value) {
+			# CloudDNS handling
+			if ($miniservers[$msnr]['UseCloudDNS'] && $miniservers[$msnr]['CloudURL']) {
+				LBSystem::set_clouddns($msnr, $clouddnsaddress);
+			}
+			if (! $miniservers[$msnr]['Port']) {
+				$miniservers[$msnr]['Port'] = 80;
+			}
+
+			// Miniserver values consistency check
+			// If a Miniserver entry is not plausible, the full Miniserver entry is deleted
+			if(empty($miniservers[$msnr]['Name']) || empty($miniservers[$msnr]['IPAddress']) || empty($miniservers[$msnr]['Admin']) || empty($miniservers[$msnr]['Pass']) || empty($miniservers[$msnr]['Port'])) {
+				unset($miniservers[$msnr]);
+			}
+		}
+		$msClouddnsFetched = 1;
 		return $miniservers;
 	}
 
@@ -467,6 +488,7 @@ class LBSystem
 		global $lblang;
 		global $cfgwasread;
 		global $webserverport;
+		global $clouddnsaddress;
 		
 	#	print ("READ miniservers FROM DISK\n");
 
@@ -509,25 +531,6 @@ class LBSystem
 
 			$miniservers[$msnr]['SecureGateway'] = isset($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) && is_enabled($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) ? 1 : 0;
 			$miniservers[$msnr]['EncryptResponse'] = isset ($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) && is_enabled($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) ? 1 : 0;
-			
-			# CloudDNS handling
-			if ($miniservers[$msnr]['UseCloudDNS'] && $miniservers[$msnr]['CloudURL']) {
-				LBSystem::set_clouddns($msnr, $clouddnsaddress);
-			}
-			
-			if (! $miniservers[$msnr]['Port']) {
-				$miniservers[$msnr]['Port'] = 80;
-			}
-
-			// Miniserver values consistency check
-			// If a Miniserver entry is not plausible, the full Miniserver entry is deleted
-		
-		if(empty($miniservers[$msnr]['Name']) || empty($miniservers[$msnr]['IPAddress']) || empty($miniservers[$msnr]['Admin']) || empty($miniservers[$msnr]['Pass']) || empty($miniservers[$msnr]['Port'])) {
-			// echo "Miniserver $msnr is inconsistent!\n";
-			unset($miniservers[$msnr]);
-		}
-
-		
 		}
 	}
 
