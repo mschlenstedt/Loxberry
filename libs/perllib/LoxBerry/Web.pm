@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.5.1";
+our $VERSION = "1.2.5.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -681,6 +681,73 @@ EOF
 
 	return $html;
 }
+
+sub loglevel_select_html
+{
+
+	my %p = @_;
+	
+	my $datamini;
+	my $selected;
+	
+	my $plugin = LoxBerry::System::plugindata($p{PLUGIN});
+	
+	if(!$plugin->{PLUGINDB_LOGLEVELS_ENABLED}) {
+		return "";
+	}
+	
+	my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+		
+	if($p{DATA_MINI} eq "0" ) {
+		$datamini = "false";
+	} else {
+		$datamini = "true";
+	}
+	if (! $p{FORMID}) {
+		$p{FORMID} = "select_loglevel";
+	}
+
+	my $html = <<EOF;
+	<label for="$p{FORMID}">$SL{'PLUGININSTALL.UI_LABEL_LOGGING_LEVEL'}</label>
+	<fieldset data-role="controlgroup" data-type="horizontal" data-mini="$datamini">
+	<select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
+		<option value="0">$SL{'PLUGININSTALL.UI_LOG_0_OFF'}</option>
+		<option value="3">$SL{'PLUGININSTALL.UI_LOG_3_ERRORS'}</option>
+		<option value="4">$SL{'PLUGININSTALL.UI_LOG_4_WARNING'}</option>
+		<option value="6">$SL{'PLUGININSTALL.UI_LOG_6_INFO'}</option>
+		<option value="7">$SL{'PLUGININSTALL.UI_LOG_7_DEBUG'}</option>
+	</select>
+	</fieldset>
+
+	<script>
+	\$(document).ready( function()
+	{
+		\$("#$p{FORMID}").val('$plugin->{PLUGINDB_LOGLEVEL}').change();
+	});
+		
+	\$("#$p{FORMID}").change(function(){
+		var val = \$(this).val();
+		console.log("Loglevel", val);
+		post_value('plugin-loglevel', '$plugin->{PLUGINDB_MD5_CHECKSUM}', val); 
+	});
+	
+	function post_value (action, pluginmd5, value)
+	{
+	console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
+	\$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+		{ 	action: action,
+			value: value,
+			pluginmd5: pluginmd5
+		});
+	}
+
+	</script>
+EOF
+	
+	return $html;
+
+}
+
 
 sub loglist_html
 {
