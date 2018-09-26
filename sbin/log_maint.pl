@@ -55,7 +55,7 @@ sub reduce_logfiles
 	if (!-e "$lbhomedir/log/system_tmpfs/logs_sqlite.dat" && -e "$lbhomedir/log/system/logs_sqlite.dat.bkp") {
 		qx { cp -f $lbhomedir/log/system/logs_sqlite.dat.bkp $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
 		qx { chown loxberry:loxberry $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
-		qx { chmod +rw $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat };
+		qx { chmod +rw $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
 	}
 	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
 	
