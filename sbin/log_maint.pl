@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Database maintenace for SQLite databases
+# Maintenance for Logfiles, Notifys and Log SQLite Database
 
 use LoxBerry::System;
 use LoxBerry::Log;

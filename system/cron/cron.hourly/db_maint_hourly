@@ -1,6 +1,0 @@
-#!/bin/bash
-$LBHOMEDIR/bin/db_maint.pl action=reduce_notifys
-$LBHOMEDIR/bin/db_maint.pl action=reduce_logfiles
-
-
-
