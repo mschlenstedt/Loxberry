@@ -51,7 +51,12 @@ sub reduce_logfiles
 	print STDERR "Logfile maintenance: reduce_logfiles called.\n";
 	LoxBerry::Log::logfiles_cleanup();
 	my @logs = LoxBerry::Log::get_logs();
-	# Vacuum logdb and copy backup from ram disk to sd card
+	# Vacuum logdb 
+	if (!-e "$lbhomedir/log/system_tmpfs/logs_sqlite.dat" && -e "$lbhomedir/log/system/logs_sqlite.dat.bkp") {
+		qx { cp -f $lbhomedir/log/system/logs_sqlite.dat.bkp $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
+		qx { chown loxberry:loxberry $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
+		qx { chmod +rw $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat };
+	}
 	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
 	
 }
@@ -63,6 +68,8 @@ sub backup_logdb
 {
 	print STDERR "Sleeping 20 seconds to not colidate with other jobs...\n";
 	sleep 20;
-	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
-	qx { cp -f $lbhomedir/log/system_tmpfs/logs_sqlite.dat $lbhomedir/data/system/ };
+	if (-e "$lbhomedir/log/system_tmpfs/logs_sqlite.dat") {
+		qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
+		qx { cp -f $lbhomedir/log/system_tmpfs/logs_sqlite.dat $lbhomedir/log/system/logs_sqlite.dat.bkp };
+	}
 }

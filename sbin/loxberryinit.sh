@@ -99,7 +99,7 @@ case "$1" in
         # Cleaning Temporary folders
         log_action_begin_msg "Cleaning temporary files and folders..."
         rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
-		rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
+	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
 
         # Set Date and Time
         if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
@@ -108,13 +108,13 @@ case "$1" in
           $LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
         fi
 
-    # Create log folders for all plugins if not existing
+        # Create log folders for all plugins if not existing
 	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
 	
 	# Copy logdb from SD card to RAM disk
-	if [ -e $LBHOMEDIR/data/system/logs_sqlite.dat ]
+	if [ -e $LBHOMEDIR/log/system/logs_sqlite.dat.bkp ]
 	then
-		cp -f $LBHOMEDIR/data/system/logs_sqlite.dat $LBHOMEDIR/log/system_tmpfs/
+		cp -f $LBHOMEDIR/log/system/logs_sqlite.dat.bkp $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
 		chown loxberry:loxberry $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
 		chmod +rw $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
 	fi
