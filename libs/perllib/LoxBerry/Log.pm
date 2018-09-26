@@ -12,7 +12,7 @@ use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.6";
+our $VERSION = "1.2.5.7";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -486,8 +486,6 @@ sub LOGEND
 	}
 	
 	$self->{logend_called} = 1;
-	# get_logs($self->{package}, $self->{name});
-	# logfiles_cleanup();
 	$self->DESTROY();
 	
 }
@@ -899,86 +897,6 @@ sub get_logs
 	log_db_bulk_delete_logkey($dbh, @keystodelete);
 	
 	return @logs;
-}
-
-
-#######################################################
-# Logfile housekeeping for all logfiles
-#######################################################
-
-sub logfiles_cleanup
-{
-	# If less than this percent is free, start housekeeping
-	our $deletefactor = 25;
-	
-	my %disks = LoxBerry::System::diskspaceinfo();
-	foreach my $disk (keys %disks) {
-		# print STDERR "Checking $disks{$disk}{mountpoint} ($disks{$disk}{filesystem} - Available " . $disks{$disk}{available}/$disks{$disk}{size}*100 . "\n" if ($DEBUG);
-		next if($disks{$disk}{filesystem} ne "tmpfs");
-		next if( $disks{$disk}{size} eq "0" or ($disks{$disk}{available}/$disks{$disk}{size}*100) > $deletefactor );
-		print STDERR "--> $disks{$disk}{mountpoint} below limit AVAL $disks{$disk}{available} SIZE $disks{$disk}{size} - housekeeping...\n" if ($DEBUG);
-		
-		our $diskavailable = $disks{$disk}{available};
-		our $disksize = $disks{$disk}{size};
-		
-		require File::Find;
-		File::Find::find ( { preprocess => \&logfiles_orderbydate, wanted => \&logfiles_delete }, $disks{$disk}{mountpoint} );
-	
-		undef $diskavailable;
-		undef $disksize;
-	}
-}	
-
-sub logfiles_orderbydate
-{
-	my @files = @_;
-	my @filesnew;
-	
-	print STDERR "logfiles_orderbydate called for folder $File::Find::dir\n" if ($DEBUG);
-	
-	foreach my $filename (@files) {
-		next if ($filename eq ".");
-		next if ($filename eq "..");
-		# next if ($filename eq $File::Find::dir);	
-#		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat($filename);
-		# my $ctimeobj = Time::Piece->new();
-		# $ctimeobj = $ctimeobj->strptime($ctime, '%s');
-		# print STDERR "Filename: $filename Modification Time: " . $ctimeobj->strftime("%d.%m.%Y %H:%M:%S") . "\n";
-		push(@filesnew, $filename);
-	}
-	
-	@filesnew = sort {(stat $a)[10] <=> (stat $b)[10]} @filesnew;
-	# print STDERR "AFTER\n";
-	# foreach (@filesnew) {
-		# my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat($_);
-		# my $ctimeobj = Time::Piece->new();
-		# $ctimeobj = $ctimeobj->strptime($ctime, '%s');
-		# print STDERR "Filename: $_ Modification Time: " . $ctimeobj->strftime("%d.%m.%Y %H:%M:%S") . "\n";
-		
-	# }
-
-	return @filesnew;
-
-}
-
-sub logfiles_delete
-{
-	
-	return if (-d $File::Find::name);
-	return if (index($_, ".log") == -1);
-	return if (! $LoxBerry::Log::deletefactor or ($LoxBerry::Log::diskavailable / $LoxBerry::Log::disksize * 100) > $LoxBerry::Log::deletefactor);
-	my $size = (stat $File::Find::name)[7] / 1024;
-	print STDERR "logfiles_delete called with $File::Find::name (SIZE $size KB, Available: $LoxBerry::Log::diskavailable KB)\n" if ($DEBUG);
-	# Unlink
-	my $delcount = unlink $File::Find::name;
-	if($delcount) {
-		print STDERR "   DELETED $_\n" if ($DEBUG);
-		$LoxBerry::Log::diskavailable += $size;
-	} else {
-		print STDERR "   COULD NOT DELETE $_\n" if ($DEBUG);
-	}
-	return;
-
 }
 
 ##################################################################
