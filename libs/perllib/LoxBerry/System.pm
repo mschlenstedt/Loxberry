@@ -3,16 +3,13 @@
 
 use strict;
 use Config::Simple;
-#use File::HomeDir;
 use URI::Escape;
 use Cwd 'abs_path';
-# use LWP::UserAgent;
-#use XML::Simple;
 use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.5.2";
+our $VERSION = "1.2.5.3";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -232,6 +229,7 @@ my $plugins_delcache;
 my $webserverport;
 my $clouddnsaddress;
 my $msClouddnsFetched;
+my $sysloglevel;
 
 our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
@@ -586,10 +584,6 @@ sub get_plugins
 
 }
 
-
-
-
-
 ##################################################################################
 # Get System Version
 # Returns LoxBerry version
@@ -604,7 +598,18 @@ sub lbversion
 	return $lbversion;
 }
 
+##################################################################################
+# systemloglevel
+# Returns LoxBerry System Loglevel
+##################################################################################
 
+sub systemloglevel
+{
+	return $sysloglevel if ($sysloglevel);
+	read_generalcfg();
+	return $sysloglevel if ($sysloglevel);
+	return 6;
+}
 
 ##################################################################
 # Read general.cfg
@@ -627,6 +632,7 @@ sub read_generalcfg
 	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME"); # or Carp::carp ("NETWORK.FRIENDLYNAME not defined in general.cfg\n");
 	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined in general.cfg\n");
 	$webserverport  = $cfg->param("WEBSERVER.PORT"); # or Carp::carp ("WEBSERVER.PORT not defined in general.cfg\n");
+	$sysloglevel	= $cfg->param("BASE.SYSTEMLOGLEVEL");
 	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
 	# Binaries
 	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
