@@ -50,12 +50,12 @@ LOGINF "Could not delete $delfile - possibly this is not the first run of the sc
 LOGOK "Old cronjob deleted successfully" if ($result == 1);
 
 copy_to_loxberry("/system/cron/cron.daily/01-log_maint");
-copy_to_loxberry("/system/cron/cron.hourly/02_log_maint");
+copy_to_loxberry("/system/cron/cron.hourly/02-log_maint");
 
 qx { chown loxberry:loxberry $lbhomedir/system/cron/cron.daily/01-log_maint };
-qx { chown loxberry:loxberry $lbhomedir/system/cron/cron.hourly/02_log_maint };
+qx { chown loxberry:loxberry $lbhomedir/system/cron/cron.hourly/02-log_maint };
 qx { chmod +x $lbhomedir/system/cron/cron.daily/01-log_maint };
-qx { chmod +x $lbhomedir/system/cron/cron.hourly/02_log_maint };
+qx { chmod +x $lbhomedir/system/cron/cron.hourly/02-log_maint };
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
