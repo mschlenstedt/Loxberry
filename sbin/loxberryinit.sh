@@ -179,7 +179,7 @@ case "$1" in
 	if [ -e $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat ]
 	then
 		 echo "VACUUM;" | sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
-		cp -f $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat $LBHOMEDIR/data/system/
+		cp -f $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat $LBHOMEDIR/log/system/logs_sqlite.dat.bkp
 	fi
   ;;
 
