@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.2.5.3";
+my $scriptversion="1.2.5.4";
 
 my $release_url;
 my $oformat;
@@ -67,6 +67,7 @@ my $keepupdatefiles;
 my $keepinstallfiles="0";
 my $formatjson;
 my $failed_script;
+my $release;
 
 my $branch;
 
@@ -115,8 +116,6 @@ if ($cgi->param('dryrun')) {
 	$cgi->param('keepupdatefiles', 1);
 }
 
-
-
 $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
 
 if ($cgi->param('cron')) {
@@ -131,6 +130,9 @@ if ($cgi->param('nobackup')) {
 if ($cgi->param('nodiscspacecheck')) {
 	$nodiscspacecheck = 1;
 } 
+if ($cgi->param('release')) {
+	$release=$cgi->param('release');
+}
 
 if ( is_enabled($cfg->param('UPDATE.KEEPINSTALLFILES')) ) {
 	$cgi->param('keepinstallfiles', 1);
@@ -186,6 +188,7 @@ LOGINF "   cron:            $cron";
 LOGINF "   keepupdatefiles: " . $cgi->param('keepupdatefiles');
 LOGINF "   dryrun: " . $cgi->param('dryrun');
 LOGINF "   output: " . $formatjson;
+LOGINF "   release param: " . $release if ($release);
 
 my $lbversion;
 if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
@@ -606,7 +609,7 @@ sub check_commits
 		LOGINF "   Commit by   : $commit_by";
 		LOGINF "   Commited at : $commit_date";
 		LOGINF "   Commit key  : $commit_sha";
-		
+		LOGINF "   Release no. : $release" if ($release);    
 		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
 		# LOGINF "PIDOF LENGTH: " . length($pids);
@@ -661,7 +664,8 @@ sub check_commits
 				undef $log if ($log);
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=config $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
+				my $releaseparam = defined $release ? $release : "config";
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$releaseparam $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
 				exit(0);
 			} 
 			exit(0);

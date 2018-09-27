@@ -30,7 +30,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.2.5.3';
+my $scriptversion='1.2.5.4';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -173,7 +173,11 @@ if ($release eq "config") {
 	my $newcfg = new Config::Simple("$updatedir/config/system/general.cfg.default");
 	$release = $newcfg->param('BASE.VERSION');
 	LOGINF "Version parameter 'config' was given, destination version is read from new general.cfg.default (version $release).";
+} else {
+	LOGWARN "Version parameter '$release' was given. This will be used to process update scripts, independent of what version is installed.";
+	LOGWARN "This version '$release' will also be set to your general.cfg. Reset it after your test!";
 }
+
 if (!$release) {
 	$joutput{'error'} = "Cannot detect release version number.";
 	&err;
