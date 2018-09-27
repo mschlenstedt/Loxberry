@@ -4,15 +4,15 @@
 use strict;
 use Carp;
 use LoxBerry::System;
-use Time::Piece;
-use HTML::Entities;
-use JSON;
-use File::Basename;
-use File::Path;
+# use Time::Piece;
+# use HTML::Entities;
+# use JSON;
+# use File::Basename;
+# use File::Path;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.7";
+our $VERSION = "1.2.5.8";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -211,7 +211,9 @@ sub open
 		$writetype = ">>";
 	}
 	
+	require File::Basename;
 	my $dir = File::Basename::dirname($self->{filename});
+	require File::Path;
 	File::Path::make_path($dir);
 	
 	# print STDERR "log open Writetype after processing is " . $writetype . "\n";
@@ -635,6 +637,7 @@ sub log_db_logstart
 	}
 	
 	if (!$p{LOGSTART}) {
+		require Time::Piece;
 		my $t = Time::Piece->localtime;
 		# my $t = localtime;
 		$p{LOGSTART} = $t->strftime("%Y-%m-%d %H:%M:%S");
@@ -697,6 +700,7 @@ sub log_db_logend
 		return;
 	}
 	
+	require Time::Piece;
 	my $t = Time::Piece->localtime;
 	my $logend = $t->strftime("%Y-%m-%d %H:%M:%S");
 
@@ -850,6 +854,7 @@ sub get_logs
 		}
 		
 		my %log;
+		require Time::Piece;
 		my $logstartobj = Time::Piece->strptime($key->{'LOGSTART'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGSTART'});
 		my $logendobj = Time::Piece->strptime($key->{'LOGEND'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGEND'});
 		my $lastmodifiedobj = Time::Piece->strptime($key->{'LASTMODIFIED'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LASTMODIFIED'});
@@ -972,6 +977,7 @@ sub notify_ext
 	
 	# SQLite interface
 	require DBI;
+	require HTML::Entities;
 	my $dbh;
 	
 	my $data = shift;
@@ -1305,6 +1311,8 @@ sub get_notifications
 	my @notifications;
 	
 	foreach my $key (@$notifhr ) {
+		require HTML::Entities;
+		require Time::Piece;
 		my %notification;
 		my $dateobj = Time::Piece->strptime($key->{'timestamp'}, "%Y-%m-%d %H:%M:%S");
 		my $contenthtml = $key->{'MESSAGE'};
@@ -1592,6 +1600,7 @@ sub parsedatestring
 	
 	my $dt;
 	eval {
+		require Time::Piece;
 		$dt = Time::Piece->strptime($datestring, "%Y%m%d_%H%M%S");
 	};
 	# LOGDEB "parsedatestring: Calculated date/time: " . $dt->strftime("%d.%m.%Y %H:%M");
