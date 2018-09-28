@@ -57,10 +57,12 @@ qx { chown loxberry:loxberry $lbhomedir/system/cron/cron.hourly/02-log_maint };
 qx { chmod +x $lbhomedir/system/cron/cron.daily/01-log_maint };
 qx { chmod +x $lbhomedir/system/cron/cron.hourly/02-log_maint };
 
+LOGINF "Deactivating old tmpfs entries in /etc/fstab";
+qx {sed -i -r '/^\\s*#/!{/(tmpfs \\/var\\/log|tmpfs \\/var\\/tmp|tmpfs \\/tmp)|tmpfs \\/opt\\/loxberry/s/(.*)/#\\1/}' /etc/fstab };
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
-# LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-# reboot_required("LoxBerry Update requests a reboot.");
+LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
+reboot_required("LoxBerry Update requests a reboot.");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
