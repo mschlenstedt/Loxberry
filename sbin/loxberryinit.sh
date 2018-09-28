@@ -58,12 +58,22 @@ case "$1" in
 	# Let fsck run only every 10th boot (only for clean devices)
 	tune2fs -c 10 /dev/mmcblk0p2 > /dev/null 2>&1
 
+        # Bring Image to latest Release
+        if [ -f /boot/rootfsresized ] && [ -f /boot/do_lbupdate ]
+        then
+          log_action_begin_msg "Updating LoxBerry to latest Release version"
+	  /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=release update=1 nobackup=1
+          rm /boot/do_lbupdate
+	  log_action_end_msg 0
+        fi
+
         # Resize rootfs to maximum if not yet done
         if [ ! -f /boot/rootfsresized ]
         then
           log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
           $LBHOMEDIR/sbin/resize_rootfs > /dev/null 2>&1
           touch /boot/rootfsresized
+	  log_action_end_msg 0
         fi
 
 	# Create Default config
@@ -87,6 +97,7 @@ case "$1" in
 			mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
 			log_action_cont_msg "Rebooting"
 			/sbin/reboot > /dev/null 2>&1
+	  		log_action_end_msg 0
         fi
 
         # Copy new HTACCESS User/Password Database
@@ -94,29 +105,36 @@ case "$1" in
         then
           log_action_begin_msg "Found new htaccess password database. Activating..."
           mv $LBHOMEDIR/config/system/htusers.dat.new $LBHOMEDIR/config/system/htusers.dat > /dev/null 2>&1
+	  log_action_end_msg 0
         fi
 
         # Cleaning Temporary folders
         log_action_begin_msg "Cleaning temporary files and folders..."
         rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
+	log_action_end_msg 0
 
         # Set Date and Time
         if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
         then
           log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
           $LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
+	  log_action_end_msg 0
         fi
 
         # Create log folders for all plugins if not existing
+        log_action_begin_msg "Create log folders for all installed plugins"
 	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
+	log_action_end_msg 0
 	
 	# Copy logdb from SD card to RAM disk
 	if [ -e $LBHOMEDIR/log/system/logs_sqlite.dat.bkp ]
 	then
+        	log_action_begin_msg "Copy back Backup of Logs SQLite Database"
 		cp -f $LBHOMEDIR/log/system/logs_sqlite.dat.bkp $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
 		chown loxberry:loxberry $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
 		chmod +rw $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		log_action_end_msg 0
 	fi
 		
 	# Run Daemons from Plugins and from System
