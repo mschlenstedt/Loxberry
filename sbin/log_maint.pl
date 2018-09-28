@@ -126,7 +126,7 @@ sub logfiles_delete
 	
 	return if (-d $File::Find::name);
 	return if (index($_, ".log") == -1);
-	return if (! $LoxBerry::Log::deletefactor or ($LoxBerry::Log::diskavailable / $LoxBerry::Log::disksize * 100) > $LoxBerry::Log::deletefactor);
+	return if (! $LoxBerry::Log::deletefactor or ($LoxBerry::Log::diskavailable / $LoxBerry::Log::disksize * 100) > ($LoxBerry::Log::deletefactor+3));
 	my $size = (stat $File::Find::name)[7] / 1024;
 	LOGDEB "logfiles_delete called with $File::Find::name (SIZE $size KB, Available: $LoxBerry::Log::diskavailable KB)";
 	# Unlink
