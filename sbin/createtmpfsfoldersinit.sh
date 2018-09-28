@@ -57,9 +57,6 @@ case "$1" in
 		mkdir -p /tmp/loxberry/var/log
 		chown -R daemon:daemon /tmp/loxberry/var/log
 		chmod -R 755 /tmp/loxberry/var/log
-		#mkdir -p /tmp/loxberry/tmp
-		#chown -R root:root /tmp/loxberry/tmp
-		#chmod -R 777 /tmp/loxberry/tmp
 		mkdir -p /tmp/loxberry/log/plugins
 		chown -R loxberry:loxberry /tmp/loxberry/log/plugins
 		chmod -R 755 /tmp/loxberry/log/plugins
@@ -71,7 +68,6 @@ case "$1" in
 		cp -ra /var/log/* /tmp/loxberry/var/log
 		rm -rf /var/log/* 
 		mount --bind /tmp/loxberry/var/log /var/log
-		mount --bind /tmp/loxberry/tmp /tmp
 		mount --bind /tmp/loxberry/log/plugins $LBHOMEDIR/log/plugins
 		mount --bind /tmp/loxberry/log/system_tmpfs $LBHOMEDIR/log/system_tmpfs
 	fi
