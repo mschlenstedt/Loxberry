@@ -62,7 +62,7 @@ case "$1" in
         if [ -f /boot/rootfsresized ] && [ -f /boot/do_lbupdate ]
         then
           log_action_begin_msg "Updating LoxBerry to latest Release version"
-	  /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=release update=1 nobackup=1
+	  $LBHOMEDIR/sbin/loxberryupdatecheck.pl querytype=release update=1 nobackup=1
           rm /boot/do_lbupdate
 	  log_action_end_msg 0
         fi
