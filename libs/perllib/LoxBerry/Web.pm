@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.5.2";
+our $VERSION = "1.2.5.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -689,10 +689,18 @@ sub loglevel_select_html
 	
 	my $datamini;
 	my $selected;
+	my $html;
 	
-	my $plugin = LoxBerry::System::plugindata($p{PLUGIN});
+	my $pluginfolder = defined $p{PLUGIN} ? $p{PLUGIN} : $LoxBerry::System::lbpplugindir;
+	# print "pluginfolder: $pluginfolder\n";
+	my $plugin = LoxBerry::System::plugindata($pluginfolder);
 	
-	if(!$plugin->{PLUGINDB_LOGLEVELS_ENABLED}) {
+	if(!$plugin) {
+		Carp::carp "loglevel_select_html called, but could not determine plugin";
+		return "";
+	}
+	if (!$plugin->{'PLUGINDB_LOGLEVELS_ENABLED'}) {
+		Carp::carp "loglevel_select_html called, but CUSTOM_LOGLEVELS not enabled in plugin.cfg (plugin " . $pluginfolder . ")";
 		return "";
 	}
 	
@@ -707,8 +715,16 @@ sub loglevel_select_html
 		$p{FORMID} = "select_loglevel";
 	}
 
-	my $html = <<EOF;
-	<label for="$p{FORMID}">$SL{'PLUGININSTALL.UI_LABEL_LOGGING_LEVEL'}</label>
+	if (defined $p{LABEL} and $p{LABEL} eq "") {
+		$html = "";
+	} elsif ($p{LABEL} and $p{LABEL} ne "") {
+		$html = qq { <label for="$p{FORMID}">$p{LABEL}</label> };
+	} else {
+		$html = qq { <label for="$p{FORMID}">$SL{'PLUGININSTALL.UI_LABEL_LOGGING_LEVEL'}</label> };
+	}
+	
+	$html .= <<EOF;
+	
 	<fieldset data-role="controlgroup" data-type="horizontal" data-mini="$datamini">
 	<select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
 		<option value="0">$SL{'PLUGININSTALL.UI_LOG_0_OFF'}</option>
