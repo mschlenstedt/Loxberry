@@ -58,14 +58,15 @@ case "$1" in
 	# Let fsck run only every 10th boot (only for clean devices)
 	tune2fs -c 10 /dev/mmcblk0p2 > /dev/null 2>&1
 
-        # Resize rootfs to maximum if not yet done
-        if [ ! -f /boot/rootfsresized ]
-        then
-          log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
-          $LBHOMEDIR/sbin/resize_rootfs > /dev/null 2>&1
-          touch /boot/rootfsresized
-	  log_action_end_msg 0
-        fi
+    # Resize rootfs to maximum if not yet done
+	# This is done by wizard.cgi now
+    #    if [ ! -f /boot/rootfsresized ]
+    #    then
+    #      log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
+    #      $LBHOMEDIR/sbin/resize_rootfs > /dev/null 2>&1
+    #      touch /boot/rootfsresized
+	# 	   log_action_end_msg 0
+    #    fi
 
 	# Create Default config
 	log_action_begin_msg "Updating general.cfg etc...."
@@ -73,9 +74,12 @@ case "$1" in
 	log_action_end_msg 0
 
 	# Create swap config
-	log_action_begin_msg "Configuring swap...."
-	$LBHOMEDIR/sbin/setswap.pl
-	log_action_end_msg 0
+	if [ -f /boot/rootfsresized ]
+	then
+		log_action_begin_msg "Configuring swap...."
+		$LBHOMEDIR/sbin/setswap.pl
+		log_action_end_msg 0
+	fi
 
         # Copy manual network configuration if any exists
         if [ -f /boot/network.txt ]
