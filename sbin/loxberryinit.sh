@@ -58,15 +58,6 @@ case "$1" in
 	# Let fsck run only every 10th boot (only for clean devices)
 	tune2fs -c 10 /dev/mmcblk0p2 > /dev/null 2>&1
 
-        # Bring Image to latest Release
-        if [ -f /boot/rootfsresized ] && [ -f /boot/do_lbupdate ]
-        then
-          log_action_begin_msg "Updating LoxBerry to latest Release version"
-	  $LBHOMEDIR/sbin/loxberryupdatecheck.pl querytype=release update=1 nobackup=1
-          rm /boot/do_lbupdate
-	  log_action_end_msg 0
-        fi
-
         # Resize rootfs to maximum if not yet done
         if [ ! -f /boot/rootfsresized ]
         then
