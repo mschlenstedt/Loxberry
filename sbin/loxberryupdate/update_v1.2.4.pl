@@ -70,10 +70,8 @@ if ($exitcode != 0) {
 # Activating SWAP (just in case tmpfs/RAM is full...)
 #
 LOGINF "Installing dphys-swapfile...";
-$output = qx { service dphys-swapfile stop };
-$output = qx { swapoff -a };
-$output = qx { rm -r /var/swap };
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y install dphys-swapfile };
+$output = qx { service dphys-swapfile stop };
 $output = qx { swapoff -a };
 $output = qx { rm -r /var/swap };
 
