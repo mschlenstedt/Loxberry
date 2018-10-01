@@ -60,6 +60,9 @@ qx { chmod +x $lbhomedir/system/cron/cron.hourly/02-log_maint };
 LOGINF "Deactivating old tmpfs entries in /etc/fstab";
 qx {sed -i -r '/^\\s*#/!{/(tmpfs \\/var\\/log|tmpfs \\/var\\/tmp|tmpfs \\/tmp)|tmpfs \\/opt\\/loxberry/s/(.*)/#\\1/}' /etc/fstab };
 
+LOGINF "Installing Daemin script for LBUpdate after first reboot";
+copy_to_loxberry("/system/daemons/system/03-loxberryupdate");
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 reboot_required("LoxBerry Update requests a reboot.");
