@@ -59,7 +59,7 @@ case "$1" in
 	tune2fs -c 10 /dev/mmcblk0p2 > /dev/null 2>&1
 
     # Resize rootfs to maximum if not yet done
-	# This is done by wizard.cgi now
+	# This is done by index.cgi now
     #    if [ ! -f /boot/rootfsresized ]
     #    then
     #      log_action_begin_msg "Resizing Rootfs to maximum on next reboot"
