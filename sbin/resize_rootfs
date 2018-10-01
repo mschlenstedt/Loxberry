@@ -105,7 +105,8 @@ EOF
 # Resize Root Partition to maximum
 do_expand_rootfs
 
-echo "Done and exit."
+# Mark
 touch /boot/rootfsresized
- 
+
+echo "Done and exit."
 exit
