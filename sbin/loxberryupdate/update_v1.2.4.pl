@@ -74,6 +74,8 @@ $output = qx { service dphys-swapfile stop };
 $output = qx { swapoff -a };
 $output = qx { rm -r /var/swap };
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y install dphys-swapfile };
+$output = qx { swapoff -a };
+$output = qx { rm -r /var/swap };
 
 # This does not work here, because in case of free discspace smaller than 2 GB the installation fails :-(
 #$exitcode  = $? >> 8;
