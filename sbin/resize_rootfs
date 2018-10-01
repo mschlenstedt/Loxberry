@@ -106,4 +106,6 @@ EOF
 do_expand_rootfs
 
 echo "Done and exit."
+touch /boot/rootfsresized
+ 
 exit
