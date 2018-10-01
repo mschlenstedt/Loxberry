@@ -1,0 +1,26 @@
+#!/bin/sh
+# Bring Image to latest Release
+if [ -f /boot/rootfsresized ] && [ -f /boot/do_lbupdate ]
+then
+	echo "Updating LoxBerry to latest Release version..."
+	# Use the "old way" here for the old 1.2.0c Image
+	COUNTER=0
+	ping -q -c1 -W2 loxberry.de1 > /dev/null 2>&1
+	while [ "$?" -ne 0 ] && [ "$COUNTER" -lt 6 ]; do
+		echo "We seems to be still offline. Waiting 5 seconds and retest."
+		sleep 5
+		COUNTER=$((COUNTER + 1))
+		ping -q -c1 -W2 loxberry.de1 > /dev/null 2>&1
+	done
+	if [ "$?" -eq 0 ] 
+	then
+		echo "We are online. Trigger the update."
+		$LBHOMEDIR/sbin/loxberryupdatecheck.pl querytype=release update=1 nobackup=1
+		rm /boot/do_lbupdate
+	else
+		echo "Giving up. Please perform update manually."
+		rm /boot/do_lbupdate
+		. $LBHOMEDIR/libs/bashlib/notify.sh
+		notify_ext PACKAGE=updates NAME=update MESSAGE="Please update your LoxBerry to the latest release!" err
+	fi
+fi
