@@ -41,6 +41,49 @@ my $release = $cgi->param('release');
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
+LOGINF "Clean up apt databases and update";
+my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
+$output = qx { rm -r /var/lib/apt/lists/* };
+$output = qx { rm -r /var/cache/apt/archives/* };
+
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/dpkg --configure -a };
+my $exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
+        LOGDEB $output;
+                $errors++;
+} else {
+        LOGOK "Configuring dpkg successfully.";
+}
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error updating apt database - Error $exitcode";
+                LOGDEB $output;
+        $errors++;
+} else {
+        LOGOK "Apt database updated successfully.";
+}
+
+#
+# Installing libfile-find-rule-perl (for log_maint.pl)
+#
+LOGINF "Installing libfile-find-rule-perl...";
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install libfile-find-rule-perl };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error installing libfile-find-rule-perl package - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "libfile-find-rule-perl package successfully installed";
+}
+
+#
+# logdb maintanance
+#
 my $result;
 LOGINF "Moving logfile maintenance tasks from weekly to hourly";
 
@@ -57,10 +100,16 @@ qx { chown loxberry:loxberry $lbhomedir/system/cron/cron.hourly/02-log_maint };
 qx { chmod +x $lbhomedir/system/cron/cron.daily/01-log_maint };
 qx { chmod +x $lbhomedir/system/cron/cron.hourly/02-log_maint };
 
+#
+# TMPFS reconfiguring
+#
 LOGINF "Deactivating old tmpfs entries in /etc/fstab";
 qx {sed -i -r '/^\\s*#/!{/(tmpfs \\/var\\/log|tmpfs \\/var\\/tmp|tmpfs \\/tmp)|tmpfs \\/opt\\/loxberry/s/(.*)/#\\1/}' /etc/fstab };
 
-LOGINF "Installing Daemin script for LBUpdate after first reboot";
+#
+# LBUpdate after very first reboot
+#
+LOGINF "Installing Daemon script for LBUpdate after first reboot";
 copy_to_loxberry("/system/daemons/system/03-loxberryupdate");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
