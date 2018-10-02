@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.8";
+our $VERSION = "1.2.5.9";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -837,15 +837,6 @@ sub get_logs
 		$fileexists = -e $key->{'FILENAME'};
 		$filesize = -s $key->{'FILENAME'} if ($fileexists);
 		
-		if (! $fileexists or $filesize eq "0") {
-			if (-e "$key->{'FILENAME'}.1" and -s "$key->{'FILENAME'}.1" ne "0") { 
-				$key->{'FILENAME'} = "$key->{'FILENAME'}.1";
-			} elsif (-e "$key->{'FILENAME'}.2" and -s "$key->{'FILENAME'}.2" ne "0") {
-				$key->{'FILENAME'} = "$key->{'FILENAME'}.2";
-			} elsif (-e "$key->{'FILENAME'}.3" and -s "$key->{'FILENAME'}.3" ne "0") {
-				$key->{'FILENAME'} = "$key->{'FILENAME'}.3";
-			}
-		}
 		if ($key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
 			print STDERR "$key->{'FILENAME'} does not exist - db-key will be deleted" if ($DEBUG);
 			push @keystodelete, $key->{'LOGKEY'};
