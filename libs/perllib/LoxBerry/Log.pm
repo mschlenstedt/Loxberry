@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.9";
+our $VERSION = "1.2.5.10";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -467,7 +467,7 @@ sub LOGEND
 {
 	my $self = shift;
 	my ($s)=@_;
-	$self->write(-2, "<LOGEND> " . $s);
+	$self->write(-2, "<LOGEND> " . $s) if $s;
 	$self->write(-2, "<LOGEND> " . LoxBerry::System::currtime . " TASK FINISHED");
 	
 	$self->{LOGENDMESSAGE} = $s if ($s);
@@ -529,7 +529,7 @@ sub DESTROY {
 			$self->{dbh} = log_db_init_database();
 		}
 		my $dbh = $self->{dbh};
-		$dbh->do("INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (" . $self->{dbkey} . ", 'STATUS', '" . $self->{STATUS} . "');COMMIT;");
+		$dbh->do("INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (" . $self->{dbkey} . ", 'STATUS', '" . $self->{STATUS} . "');COMMIT;") if ($dbh);
 	}
 } 
 
@@ -600,19 +600,24 @@ sub log_db_query_id
 	my %p = %{shift()};
 		
 	# Check mandatory fields
-	if (! $p{filename}) {
-		Carp::cluck "log_db_queryid: No FILENAME defined\n";
+	Carp::cluck "log_db_query_id: No FILENAME defined\n" if (!$p{filename});
+	Carp::cluck "Create DB log entry: DBH not defined\n" if (!$dbh);
+	if (!$p{filename} or !$dbh) {
 		return;
 	}
 	
 	# Search filename
 	my $qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '$p{filename}' ORDER BY LOGSTART DESC LIMIT 1;"; 
-	my ($logid) = $dbh->selectrow_array($qu);
+	my ($logid) = $dbh->selectrow_array($qu) or
+		do {
+				Carp::cluck "Error getting filename from logdb: $DBI::errstr\n";
+				return undef;
+			};
 	
 	if ($logid) {
 		return $logid;
 	} else {
-		print STDERR "log_db_queryid: Could not find filename $p{filename}\n" if ($DEBUG);
+		print STDERR "log_db_query_id: Could not find filename $p{filename}\n" if ($DEBUG);
 	}
 	return;
 
@@ -628,11 +633,11 @@ sub log_db_logstart
 	# print STDERR "Package: " . $p{'package'} . "\n";
 	
 	# Check mandatory fields
+	Carp::cluck "Create DB log entry: DBH not defined\n" if (!$dbh);
 	Carp::cluck "Create DB log entry: No PACKAGE defined\n" if (! $p{package});
 	Carp::cluck "Create DB log entry: No NAME defined\n" if (! $p{name});
 	Carp::cluck "Create DB log entry: No FILENAME defined\n" if (! $p{filename});
-	# Carp::croak "Create DB log entry: No LOGSTART defined\n" if (! $p{LOGSTART});
-	if(!$p{package} or !$p{name} or !$p{filename}) {
+	if(!$dbh or !$p{package} or !$p{name} or !$p{filename}) {
 		return;
 	}
 	
@@ -694,9 +699,9 @@ sub log_db_logend
 	# print STDERR "Package: " . $p{'package'} . "\n";
 	
 	# Check mandatory fields
-	
-	if (! $p{dbkey}) {
-		Carp::cluck "log_db_endlog: No dbkey defined\n"; 
+	Carp::cluck "log_db_logend: Create DB log entry: DBH not defined\n" if (!$dbh);
+	Carp::cluck "log_db_logend: No dbkey defined\n" if (!$p{dbkey});
+	if (!$dbh or !$p{dbkey}) {
 		return;
 	}
 	
