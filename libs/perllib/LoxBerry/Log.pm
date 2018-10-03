@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.10";
+our $VERSION = "1.2.5.11";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -555,6 +555,25 @@ sub log_db_init_database
 			};
 	$dbh->{sqlite_unicode} = 1;
 	
+	if(-e $dbfile) {
+		$dbh->do("SELECT LOGKEY FROM logs LIMIT 1;") or
+			do {
+				my $dbierror = $DBI::err;
+				print STDERR "log_init_database Check query failed: Error $DBI::err ($DBI::errstr)\n";
+				# https://www.sqlite.org/c3ref/c_abort.html
+				# 11 - The database disk image is malformed
+				if ($dbierror eq "11") {
+					print STDERR "logdb seems to be corrupted - deleting and recreating...\n";
+					$dbh->disconnect();
+					unlink $dbfile;
+					$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or return undef;
+				} else {
+					return undef;
+				}
+			};
+	}
+	
+	$dbh->do('BEGIN;');
 	$dbh->do("CREATE TABLE IF NOT EXISTS logs (
 				PACKAGE VARCHAR(255) NOT NULL,
 				NAME VARCHAR(255) NOT NULL,
@@ -566,6 +585,7 @@ sub log_db_init_database
 			)") or 
 		do {
 			print STDERR "log_init_database create table notifications: $DBI::errstr\n";
+			$dbh->do('ROLLBACK;');
 			return undef;
 			};
 
@@ -577,8 +597,11 @@ sub log_db_init_database
 				)") or
 		do {
 			print STDERR "log_db_init_database create table logs_attr: $DBI::errstr\n";
+			$dbh->do('ROLLBACK;');
 			return undef;
 		};
+	
+	$dbh->do('COMMIT;');
 	
 	eval {
 		my $uid = (stat $dbfile)[4];
