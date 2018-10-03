@@ -566,8 +566,13 @@ sub log_db_init_database
 					print STDERR "logdb seems to be corrupted - deleting and recreating...\n";
 					$dbh->disconnect();
 					unlink $dbfile;
-					$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or return undef;
+					$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or 
+						do {    
+							$dbh->disconnect() if ($dbh);
+							return undef;
+						};
 				} else {
+					$dbh->disconnect() if ($dbh);
 					return undef;
 				}
 			};
