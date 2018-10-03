@@ -6,6 +6,8 @@ use LoxBerry::System;
 use LoxBerry::Log;
 use CGI;
 use strict;
+use File::Find::Rule;
+use DBI;
 
 # Global vars
 our $deletefactor;
@@ -69,13 +71,7 @@ sub reduce_logfiles
 	LOGTITLE "reduce_logfiles";
 	LOGINF "Logfile maintenance: reduce_logfiles called.";
 	logfiles_cleanup();
-	# Vacuum logdb 
-	if (!-e "$lbhomedir/log/system_tmpfs/logs_sqlite.dat" && -e "$lbhomedir/log/system/logs_sqlite.dat.bkp") {
-		qx { cp -f $lbhomedir/log/system/logs_sqlite.dat.bkp $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
-		qx { chown loxberry:loxberry $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
-		qx { chmod +rw $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
-	}
-	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
+	logdb_cleanup();
 	
 }
 
@@ -102,10 +98,9 @@ sub logfiles_cleanup
 
 	if (!@paths) {
 		LOGDEB "No tmpfs disk available.";
-		exit(0);
+		return(1);
 	}
 	
-	require File::Find::Rule;
 	my $bins = LoxBerry::System::get_binaries();
 
 	foreach (@paths) {
@@ -168,7 +163,7 @@ sub logfiles_cleanup
 
 	if (!@paths) {
 		LOGDEB "No emergency housekeeping for any disk needed.";
-		exit(0);
+		return(2);
 	}
 	
 	foreach (@paths) {
@@ -197,7 +192,7 @@ sub logfiles_cleanup
 
 	if (!@paths) {
 		LOGDEB "No emergency housekeeping for any disk needed.";
-		exit(0);
+		return(3);
 	}
 	
 	foreach (@paths) {
@@ -225,7 +220,7 @@ sub logfiles_cleanup
 
 	if (!@paths) {
 		LOGDEB "No emergency housekeeping for any disk needed.";
-		exit(0);
+		return(4);
 	}
 	
 	foreach (@paths) {
@@ -328,6 +323,46 @@ sub checkdisks_emerg {
 #	return;
 #
 #}
+
+sub logdb_cleanup
+{
+
+	my @logs = LoxBerry::Log::get_logs();
+	my @keystodelete;
+	my %logcount;
+	
+	for my $key (@logs) {
+		LOGDEB "Processing key $key->{KEY} from $key->{PACKAGE}/$key->{NAME} (file $key->{FILENAME})";
+		# Delete entries that have a logstart event but no file
+		if ($key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
+			LOGDEB "$key->{'FILENAME'} does not exist - dbkey added to delete list";
+			push @keystodelete, $key->{'KEY'};
+			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			next;
+		}
+			
+		# Count and delete (more than 20 per package)
+		$logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
+		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 20) {
+			LOGDEB "Filename $key->{FILENAME} will be deleted, it is more than 20 in $key->{'PACKAGE'}/$key->{'NAME'}";
+			push @keystodelete, $key->{'KEY'};
+			unlink ($key->{'FILENAME'});
+			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			next;
+		}
+	}
+	
+	LOGINF "Init database for deletion of logkeys";
+	my $dbh = LoxBerry::Log::log_db_init_database();
+	LOGERR "logdb_cleanup: Could not init database - returning" if (! $dbh);
+	return undef if (! $dbh);
+	LOGINF "logdb_cleanup: Deleting obsolete logdb entries...";
+	LoxBerry::Log::log_db_bulk_delete_logkey($dbh, @keystodelete);
+	LOGINF "logdb_cleanup: Running VACUUM of logdb on ramdisk...";
+	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
+	LOGOK "Finished logdb_cleanup.";
+
+}
 
 #############################################################
 # Function backup_logdb (every week)

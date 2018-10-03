@@ -829,18 +829,16 @@ sub get_logs
 	
 	my @logs;
 	my %logcount;
-	my @keystodelete;
+	# my @keystodelete;
 	
-	foreach my $key (@$logshr ) {
+	foreach my $key (@$logshr) {
 		my $filesize;
 		my $fileexists;
 		$fileexists = -e $key->{'FILENAME'};
 		$filesize = -s $key->{'FILENAME'} if ($fileexists);
 		
 		if ($key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
-			print STDERR "$key->{'FILENAME'} does not exist - db-key will be deleted" if ($DEBUG);
-			push @keystodelete, $key->{'LOGKEY'};
-			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			print STDERR "$key->{'FILENAME'} does not exist - skipping" if ($DEBUG);
 			next;
 		}
 		
@@ -850,20 +848,20 @@ sub get_logs
 		my $logendobj = Time::Piece->strptime($key->{'LOGEND'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LOGEND'});
 		my $lastmodifiedobj = Time::Piece->strptime($key->{'LASTMODIFIED'}, "%Y-%m-%d %H:%M:%S") if ($key->{'LASTMODIFIED'});
 		
-		# Delete by age (older than 1 month)
-		if (time > ($lastmodifiedobj+2629746) ) {
-			push @keystodelete, $key->{'LOGKEY'};
-			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
-			next;
-		}
+		# # Delete by age (older than 1 month)
+		# if (time > ($lastmodifiedobj+2629746) ) {
+			# push @keystodelete, $key->{'LOGKEY'};
+			# # log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			# next;
+		# }
 		
-		# Count and delete (more than 20 per package)
-		$logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
-		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 20) {
-			push @keystodelete, $key->{'LOGKEY'};
-			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
-			next;
-		}
+		# # Count and delete (more than 20 per package)
+		# $logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
+		# if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 20) {
+			# push @keystodelete, $key->{'LOGKEY'};
+			# # log_db_delete_logkey($dbh, $key->{'LOGKEY'});
+			# next;
+		# }
 		
 		$log{'LOGSTARTISO'} = $logstartobj->datetime if($logstartobj);
 		$log{'LOGSTARTSTR'} = $logstartobj->strftime("%d.%m.%Y %H:%M") if($logstartobj);
@@ -890,7 +888,7 @@ sub get_logs
 
 	}
 	
-	log_db_bulk_delete_logkey($dbh, @keystodelete);
+	# log_db_bulk_delete_logkey($dbh, @keystodelete);
 	
 	return @logs;
 }
