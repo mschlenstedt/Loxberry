@@ -140,7 +140,7 @@ sub logfiles_cleanup
 		LOGDEB "Scanning $_ for GZ-Files >= " . $gzdays . " days and DELETE them...";
 
 		my @files = File::Find::Rule->file()
-			->name( '*.gz' )
+			->name( '*.log.gz' )
 			->mtime( "<=$gzmtime")
         		->in($_);
 
@@ -170,7 +170,7 @@ sub logfiles_cleanup
 		LOGDEB "Scanning $_ for GZ-Files >= " . $size . " MB and DELETE them...";
 
 		my @files = File::Find::Rule->file()
-			->name( '*.gz' )
+			->name( '*.log.gz' )
 			->size( ">=$size" . "M" )
         		->in($_);
 
@@ -199,7 +199,7 @@ sub logfiles_cleanup
 		LOGDEB "Scanning $_ for any GZ-Files and DELETE them...";
 
 		my @files = File::Find::Rule->file()
-			->name( '*.gz' )
+			->name( '*.log.gz' )
         		->in($_);
 
 		for my $file (@files){
