@@ -150,8 +150,7 @@ sub copy_to_loxberry
 	my $srcfile = $updatedir . $destparam;
 		
 	if (! -e $srcfile) {
-		LOGERR "$srcfile does not exist";
-		$errors++;
+		LOGINF "$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.";
 		return;
 	}
 	
