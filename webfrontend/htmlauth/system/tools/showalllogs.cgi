@@ -21,7 +21,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Version of this script
-my $version = "1.2.4.3";
+my $version = "1.2.5.1";
 
 # Remove 'only used once' warnings
 $R::showfilename if 0;
@@ -75,7 +75,7 @@ for my $log (@logs) {
 	}
 	print "<tr>\n";
 	# print "<td style='text-align:center'>$log->{STATUS}</td>\n";
-	print "<td style='text-align:center;background-color: #FFFFFF;'></td>\n" if ($log->{STATUS} and $log->{STATUS} eq "");
+	print "<td style='text-align:center;background-color: #FFFFFF;'></td>\n" if (!$log->{STATUS} or $log->{STATUS} eq "");
 	print "<td style='text-align:center;background-color: #FF007F;color:white;text-shadow: none;'>EMERGENCY</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "0");
 	print "<td style='text-align:center;background-color: #990000;color:white;text-shadow: none;'>ALERT</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "1");
 	print "<td style='text-align:center;background-color: #CC0000;color:white;text-shadow: none;'>CRITICAL</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "2");
