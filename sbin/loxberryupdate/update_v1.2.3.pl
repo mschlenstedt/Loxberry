@@ -155,7 +155,7 @@ sub copy_to_loxberry
 		return;
 	}
 	
-	my $output = qx { cp -f $srcfile $destfile };
+	my $output = qx { cp -f $srcfile $destfile 2>&1 };
 	my $exitcode  = $? >> 8;
 
 	if ($exitcode != 0) {

@@ -101,12 +101,11 @@ sub copy_to_loxberry
 	my $srcfile = $updatedir . $destparam;
 		
 	if (! -e $srcfile) {
-		LOGERR "$srcfile does not exist";
-		$errors++;
+		LOGINF "$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.";
 		return;
 	}
 	
-	my $output = qx { cp -f $srcfile $destfile };
+	my $output = qx { cp -f $srcfile $destfile 2>&1 };
 	my $exitcode  = $? >> 8;
 
 	if ($exitcode != 0) {
