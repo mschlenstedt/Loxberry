@@ -41,12 +41,38 @@ my $cgi = CGI->new;
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
+LOGINF "Clean up apt databases and update";
+my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
+$output = qx { rm -r /var/lib/apt/lists/* };
+$output = qx { rm -r /var/cache/apt/archives/* };
+
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/dpkg --configure -a };
+my $exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
+        LOGDEB $output;
+                $errors++;
+} else {
+        LOGOK "Configuring dpkg successfully.";
+}
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error updating apt database - Error $exitcode";
+                LOGDEB $output;
+        $errors++;
+} else {
+        LOGOK "Apt database updated successfully.";
+}
+
 #
 # Reinstalling Timezones
 #
 LOGINF "Correcting timezone package of Debian...";
-my $output = qx { apt-get --fix-broken --quiet --yes --reinstall install tzdata };
-my $exitcode  = $? >> 8;
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install tzdata };
+#my $output = qx { apt-get --fix-broken --quiet --yes --reinstall install tzdata };
+$exitcode  = $? >> 8;
 
 if ($exitcode != 0) {
 	LOGERR "Error reinstalling timezone package - Error $exitcode";
@@ -124,12 +150,11 @@ sub copy_to_loxberry
 	my $srcfile = $updatedir . $destparam;
 		
 	if (! -e $srcfile) {
-		LOGERR "$srcfile does not exist";
-		$errors++;
+		LOGINF "$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.";
 		return;
 	}
 	
-	my $output = qx { cp -f $srcfile $destfile };
+	my $output = qx { cp -f $srcfile $destfile 2>&1 };
 	my $exitcode  = $? >> 8;
 
 	if ($exitcode != 0) {

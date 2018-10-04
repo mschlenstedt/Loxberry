@@ -43,6 +43,9 @@ LOGOK "Update script $0 started.";
 
 # Configure dphys-swapfile
 LOGINF "Configuring Swap...";
+$output = qx { service dphys-swapfile stop };
+$output = qx { swapoff -a };
+$output = qx { rm -r /var/swap };
 qx { rm -r $lbhomedir/system/dphys-swapfile }
 &copy_to_loxberry('/system/dphys-swapfile');
 $output = qx { $lbhomedir/sbin/setswap.pl };
@@ -89,12 +92,11 @@ sub copy_to_loxberry
 	my $srcfile = $updatedir . $destparam;
 		
 	if (! -e $srcfile) {
-		LOGERR "$srcfile does not exist";
-		$errors++;
+		LOGINF "$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.";
 		return;
 	}
 	
-	my $output = qx { cp -rf $srcfile $destfile 2>&1 };
+	my $output = qx { cp -f $srcfile $destfile 2>&1 };
 	my $exitcode  = $? >> 8;
 
 	if ($exitcode != 0) {
