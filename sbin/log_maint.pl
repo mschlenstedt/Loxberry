@@ -52,6 +52,7 @@ sub reduce_notifys
 	LOGINF "   Found " . scalar @notifications . " notifications in total";
 	
 	my %packagecount;
+	my $delNotifyCount;
 	
 	for my $notification (@notifications) {
 		next if ( $notification->{SEVERITY} != 3 && $notification->{SEVERITY} != 6);
@@ -59,8 +60,10 @@ sub reduce_notifys
 		if ($packagecount{$notification->{PACKAGE}} > 20) {
 			LOGINF "   Deleting notification $notification->{PACKAGE} / $notification->{NAME} / Severity $notification->{SEVERITY} / $notification->{DATESTR}";
 			delete_notification_key($notification->{KEY});
+			$delNotifyCount++;
 		}
 	}
+	LOGOK "Notification-Cleanup finished. $delNotifyCount cleared.";
 }
 
 #############################################################
