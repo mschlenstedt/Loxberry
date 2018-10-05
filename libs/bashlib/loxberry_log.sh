@@ -71,6 +71,15 @@ function LOGEMERGE {
 	fi
 }
 function LOGSTART {
+	if [ -n "$FILENAME" ]
+	then
+		COUNTER=0
+		while [  $COUNTER -lt $LOGS ]; do
+			COUNTER=$((COUNTER + 1))
+			TESTFN=${ARRLOGS["$COUNTER.filename"]}
+			if [ "$FILENAME" = "$TESTFN" ];then FILENAME=""; COUNTER=${LOGS}; fi
+		done
+	fi
 	if [ -n "$PACKAGE" ] && [ -n "$NAME" ] && ([ -n "$LOGDIR" ] || [ -n "$FILENAME" ] || [ -n "$NOFILE" ])
 	then
 		LOGS=$((LOGS + 1))
