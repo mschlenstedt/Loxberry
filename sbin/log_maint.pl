@@ -349,7 +349,8 @@ sub logdb_cleanup
 		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 20) {
 			LOGDEB "Filename $key->{FILENAME} will be deleted, it is more than 20 in $key->{'PACKAGE'}/$key->{'NAME'}";
 			push @keystodelete, $key->{'KEY'};
-			unlink ($key->{'FILENAME'});
+			my $files_deleted = unlink ($key->{'FILENAME'});
+			LOGDEB "  File $key->{'FILENAME'} NOT deleted" if ($files_deleted == 0);
 			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
 			next;
 		}
