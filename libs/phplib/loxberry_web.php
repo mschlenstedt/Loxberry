@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.5.1";
+	public static $LBWEBVERSION = "1.2.5.2";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -429,7 +429,7 @@ EOT;
 		$p['PACKAGE'] = $lbpplugindir;
 	}
 	
-	return "/admin/system/tools/showalllogs.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\n";
+	return "/admin/system/logmanager.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\n";
 
 }
 
@@ -457,7 +457,7 @@ EOT;
 			$dataicon = "action";
 		}
 	
-		return "<a data-role=\"button\" href=\"/admin/system/tools/showalllogs.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\" target=\"_blank\" data-inline=\"true\" data-mini=\"${datamini}\" data-icon=\"${dataicon}\">${p['LABEL']}</a>\n";
+		return "<a data-role=\"button\" href=\"/admin/system/logmanager.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\" target=\"_blank\" data-inline=\"true\" data-mini=\"${datamini}\" data-icon=\"${dataicon}\">${p['LABEL']}</a>\n";
 			
 	}
 	
@@ -518,7 +518,7 @@ EOF;
 			$p['PACKAGE'] = $lbpplugindir;
 		}
 		
-		$url = "http://" . lbhostname() . ":" . lbwebserverport() . "/admin/system/tools/showalllogs.cgi?package=" .  urlencode(${p['PACKAGE']}) . "&name=" .  urlencode(${p['NAME']}) . "&header=none";
+		$url = "http://" . lbhostname() . ":" . lbwebserverport() . "/admin/system/logmanager.cgi?package=" .  urlencode(${p['PACKAGE']}) . "&name=" .  urlencode(${p['NAME']}) . "&header=none";
 		$html = file_get_contents($url);
 		
 		return $html;

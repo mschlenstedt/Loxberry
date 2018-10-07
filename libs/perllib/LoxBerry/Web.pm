@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.5.3";
+our $VERSION = "1.2.5.4";
 our $DEBUG;
 
 use base 'Exporter';
@@ -600,7 +600,7 @@ sub loglist_url
 		$p{PACKAGE} = $LoxBerry::System::lbpplugindir;
 	}
 	
-	return "/admin/system/tools/showalllogs.cgi?package=$p{PACKAGE}&name=$p{NAME}\n";
+	return "/admin/system/logmanager.cgi?package=$p{PACKAGE}&name=$p{NAME}\n";
 }
 
 sub loglist_button_html
@@ -628,7 +628,7 @@ sub loglist_button_html
 		$dataicon = "bars";
 	}
 	
-	return "<a data-role=\"button\" href=\"/admin/system/tools/showalllogs.cgi?package=$p{PACKAGE}&name=$p{NAME}\" target=\"_blank\" data-inline=\"true\" data-mini=\"$datamini\" data-icon=\"$dataicon\">$p{LABEL}</a>\n";
+	return "<a data-role=\"button\" href=\"/admin/system/logmanager.cgi?package=$p{PACKAGE}&name=$p{NAME}\" target=\"_blank\" data-inline=\"true\" data-mini=\"$datamini\" data-icon=\"$dataicon\">$p{LABEL}</a>\n";
 
 }
 
@@ -773,7 +773,7 @@ sub loglist_html
 	}
 	require LWP::UserAgent;
 	my $ua = new LWP::UserAgent;
-	my $url = 'http://' . LoxBerry::System::lbhostname() . ':' . LoxBerry::System::lbwebserverport() . '/admin/system/tools/showalllogs.cgi?package=' . URI::Escape::uri_escape($p{PACKAGE}) . '&name=' . URI::Escape::uri_escape($p{NAME}) . '&header=none';
+	my $url = 'http://' . LoxBerry::System::lbhostname() . ':' . LoxBerry::System::lbwebserverport() . '/admin/system/logmanager.cgi?package=' . URI::Escape::uri_escape($p{PACKAGE}) . '&name=' . URI::Escape::uri_escape($p{NAME}) . '&header=none';
 	print STDERR "loglist_html $p{PACKAGE} Url: $url\n" if ($DEBUG);
 	my $response = $ua->get($url);
 	if($response->is_error) {
