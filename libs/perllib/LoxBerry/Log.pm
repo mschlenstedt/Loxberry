@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.11";
+our $VERSION = "1.2.5.12";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -112,13 +112,13 @@ sub new
 		}
 		# print STDERR "2. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 		if ($self->{logdir} && !$self->{filename}) {
-			$self->{filename} = $self->{logdir} . "/" . LoxBerry::System::currtime('file') . "_" . $self->{name} . ".log";
+			$self->{filename} = $self->{logdir} . "/" . LoxBerry::System::currtime('filehires') . "_" . $self->{name} . ".log";
 			# print STDERR "3. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 				
 		} elsif (!$self->{filename}) {
 			# print STDERR "4. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 			if ($LoxBerry::System::lbplogdir && -e $LoxBerry::System::lbplogdir) {
-				$self->{filename} = "$LoxBerry::System::lbplogdir/" . currtime('file') . "_" . $self->{name} . ".log";
+				$self->{filename} = "$LoxBerry::System::lbplogdir/" . currtime('filehires') . "_" . $self->{name} . ".log";
 				# print STDERR "5. logdir: " . $self->{logdir} . " filename: " . $self->{filename} . "\n";
 				
 			

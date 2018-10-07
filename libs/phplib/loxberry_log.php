@@ -41,10 +41,10 @@ class intLog
 		
 		if (!isset($this->params["nofile"])) {
 			if (isset($this->params["logdir"]) && !isset($this->params["filename"])) {
-				$this->params["filename"] = $this->params["logdir"] . "/" . currtime('file') . "_" . $this->params["name"] . ".log";
+				$this->params["filename"] = $this->params["logdir"] . "/" . currtime('filehires') . "_" . $this->params["name"] . ".log";
 			} elseif (!isset($this->params["filename"])) {
 				if(is_dir($lbplogdir)) {
-					$this->params["filename"] = "$lbplogdir/" . currtime('file') . "_" . $this->params["name"] . ".log";
+					$this->params["filename"] = "$lbplogdir/" . currtime('filehires') . "_" . $this->params["name"] . ".log";
 				} else {
 					echo "Cannot determine plugin log directory. Terminating.\n";
 					exit(1);
@@ -491,7 +491,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.1";
+	public static $VERSION = "1.2.5.2";
 	
 	public static function newLog($args)
 	{
