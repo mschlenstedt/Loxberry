@@ -10,15 +10,17 @@
 
 # http://www.loxwiki.eu/x/cA7L
 
-iniparser() {
-    INI_FILE=$1
-    INI_SECTION=$2
-    eval `sed -e 's/[[:space:]]*\=[[:space:]]*/=/g' \
-        -e 's/;.*$//' \
-        -e 's/[[:space:]]*$//' \
-        -e 's/^[[:space:]]*//' \
-        -e "s/^\(.*\)=\([^\"']*\)$/$INI_SECTION\1=\"\2\"/" \
-        < $INI_FILE \
-        | sed -n -e "/^\[$INI_SECTION\]/,/^\s*\[/{/^[^;].*\=.*/p;}"`
-}
+# Version: 1.2.6.0
 
+iniparser() {
+	INI_FILE=$1
+	INI_SECTION=$2
+	eval `sed -e 's/[[:space:]]*\=[[:space:]]*/=/g' \
+		-e 's/\"//g' \
+		-e 's/;.*$//' \
+		-e 's/[[:space:]]*$//' \
+		-e 's/^[[:space:]]*//' \
+		-e "s/^\(.*\)=\([^\"']*\)$/$INI_SECTION\1=\"\2\"/" \
+		< $INI_FILE \
+		| sed -n -e "/^\[$INI_SECTION\]/,/^\s*\[/{/^[^;].*\=.*/p;}"`
+}
