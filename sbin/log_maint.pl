@@ -21,6 +21,8 @@ my $log = LoxBerry::Log->new (
 	stdout => 1
 );
 LOGSTART;
+my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+LOGDEB "Executing user of log_maint.pl is $curruser";
 
 #############################################################
 # Read parameters
@@ -350,8 +352,10 @@ sub logdb_cleanup
 			LOGDEB "Filename $key->{FILENAME} will be deleted, it is more than 20 in $key->{'PACKAGE'}/$key->{'NAME'}";
 			unlink ($key->{'FILENAME'}) or 
 			do {
-				LOGDEB "  File $key->{'FILENAME'} NOT deleted: $!";
-				next;
+				if (-e $key->{'FILENAME'}) {
+					LOGWARN "  File $key->{'FILENAME'} NOT deleted: $!";
+					next;
+				}
 			};
 			push @keystodelete, $key->{'KEY'};
 			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
