@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.5.3";
+our $VERSION = "1.2.5.4";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1116,7 +1116,13 @@ sub currtime
 	}
 	elsif ($format eq 'file') {
 		$timestr = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
+	} 
+	elsif ($format eq 'filehires') {
+		require Time::HiRes;
+		my (undef, $nsec) = Time::HiRes::gettimeofday();
+		$timestr = sprintf("%04d%02d%02d_%02d%02d%02d_%03d", $year, $mon, $mday, $hour, $min, $sec, $nsec/1000);
 	}
+	
 	elsif ($format eq 'iso') {
 		$timestr = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", $year, $mon, $mday, $hour, $min, $sec);
 	}

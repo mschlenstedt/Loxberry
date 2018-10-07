@@ -35,9 +35,6 @@
 
 	// error_log("Determined plugin name is $pluginname");
 	
-	
-	
-	# $pluginname = explode("/", substr(getcwd(), strlen(LBHOMEDIR)))[4];
 	if (isset($pluginname)) {
 		define ("LBPPLUGINDIR", $pluginname);
 		unset($pluginname);
@@ -109,7 +106,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.5.2";
+	public static $LBSYSTEMVERSION = "1.2.5.3";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -709,6 +706,10 @@ function currtime($format = 'hr')
 	}
 	elseif ($format == 'file') {
 		$timestr = date('Ymd_His', time());
+	}
+	elseif ($format == 'filehires') {
+		$date = DateTime::createFromFormat('U.u', microtime(TRUE));
+		$timestr = $date->format('Ymd_His_v');
 	}
 	elseif ($format == 'iso') {
 		$timestr = date('"Y-m-d\TH:i:sO"', time());
