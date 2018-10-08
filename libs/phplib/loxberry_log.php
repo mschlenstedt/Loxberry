@@ -6,6 +6,8 @@ require_once "loxberry_system.php";
 class intLog
 {
 	private $params;
+	private $db_attribute_exclude_list = array ( "package", "name", "LOGSTART", "LOGEND", "LASTMODIFIED", "filename", "dbh", "dbkey" );
+	private $dbh;
 	
 	public function __construct($args)
 	{
@@ -14,8 +16,14 @@ class intLog
 		global $lbhomedir;
 
 		# echo "CONSTRUCTOR\n";
-		
+				
 		$this->params = $args;
+		
+		# If a dbkey was given, recreate logging session
+		if(isset($args["dbkey"])) {
+			$this->log_db_recreate_session_by_id();
+		}
+			
 		if (!isset($this->params["package"])) {$this->params["package"] = $lbpplugindir;}
 		if (!isset($this->params["package"]) && !isset($this->params["nofile"])) {
 			echo "Could not determine your plugin name. If you are not inside a plugin, package must be defined.\n";
@@ -103,14 +111,11 @@ class intLog
 			$this->writelog("$currtime<INFO> " . $plugin['PLUGINDB_TITLE'] . " Version " . $plugin['PLUGINDB_VERSION']);
 		}
 		$this->writelog("$currtime<INFO> Loglevel: " . $this->params["loglevel"]);
-	
-		
 		if(!isset($this->params["nofile"])) {
-			
-			if(!isset($this->params["dbh"])) {
-				$this->params["dbh"] = intLog::log_db_init_database();
+			if(!isset($this->dbh)) {
+				$this->dbh = intLog::log_db_init_database();
 			}
-			$this->params["dbkey"] = intLog::log_db_logstart($this->params["dbh"], $this);
+			$this->params["dbkey"] = intLog::log_db_logstart($this->dbh, $this);
 			
 		}
 	}
@@ -134,16 +139,15 @@ class intLog
 		// echo "LOGEND\n";
 		if(!isset($this->params["nofile"])) {
 			// echo "Nofile not set\n";
-			if(!isset($this->params["dbh"])) {
+			if(!isset($this->dbh)) {
 				// echo "Init db\n";
-				$this->params["dbh"] = intLog::log_db_init_database();
+				$this->dbh = intLog::log_db_init_database();
 			}
 			if(!isset($this->params["dbkey"])) {
 				// echo "DBKey not set - return\n";
-				$p->params["dbkey"] = intLog::log_db_query_id($this->params["dbh"], $this);
+				$p->params["dbkey"] = intLog::log_db_query_id($this->dbh, $this);
 			}
-			intLog::log_db_logend($this->params["dbh"], $this);
-			
+			intLog::log_db_logend($this->dbh, $this);
 		}
 	}
 	
@@ -296,8 +300,7 @@ class intLog
 	{
 		if(isset($title)) {
 			$this->params["LOGSTARTMESSAGE"] = $title;
-			if( isset($this->params["nofile"]) && isset($this->params["dbkey"]) && isset($this->params["dbh"]) ) { 
-				$dbh = $this->params["dbh"];
+			if( isset($this->params["nofile"]) && isset($this->params["dbkey"]) && isset($this->dbh) ) { 
 				$dbh->exec("UPDATE logs_attr SET value = '" . $this->params["LOGSTARTMESSAGE"] . "' WHERE keyref = " . $this->params["dbkey"] . " AND attrib = 'LOGSTARTMESSAGE';");
 			}
 		}
@@ -312,11 +315,23 @@ class intLog
 		if ($this->params["loglevel"] != 0 && !isset($this->params["nofile"]) && $this->params["filename"] != "") {file_put_contents($this->params["filename"], $msg . PHP_EOL, FILE_APPEND);}
 	}
 
+	public function dbkey() 
+	{
+		if (isset($this->params["dbkey"]))
+		{
+			return $this->params["dbkey"];
+		} else {
+			return NULL;
+		}
+	}
+	
 	private function log_db_init_database() 
 	{
 		
 		$dbfile = LBHOMEDIR . "/log/system_tmpfs/logs_sqlite.dat";
-		$db = new SQLite3($dbfile);
+		$this->dbh = new SQLite3($dbfile);
+		$db = $this->dbh;
+		$db->exec("BEGIN TRANSACTION;");
 		$res = $db->exec("CREATE TABLE IF NOT EXISTS logs (
 				PACKAGE VARCHAR(255) NOT NULL,
 				NAME VARCHAR(255) NOT NULL,
@@ -340,6 +355,7 @@ class intLog
 			error_log("log_init_database create table 'logs_attr' notifications: " . $db->lastErrorMsg());
 			return;
 		}
+		$db->exec("COMMIT;");
 		if (posix_getpwuid(fileowner($dbfile)) != "loxberry") {
 				chown($dbfile, "loxberry");
 		}
@@ -350,6 +366,7 @@ class intLog
 	
 	private function log_db_logstart($dbh, $p)
 	{
+		
 		// echo "Package: " . $p->params["package"] . "\n";
 		if(!isset($p->params["package"])) { throw new Exception("Create DB log entry: No PACKAGE defined");}
 		if(!isset($p->params["name"])) { throw new Exception("Create DB log entry: No NAME defined");}
@@ -386,7 +403,8 @@ class intLog
 		$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (:keyref, :attrib, :value);');
 		
 		foreach ($p->params as $key => $value) {
-			if($key == "PACKAGE" || $key == "NAME" || $key == "LOGSTART" || $key == "LOGEND" || $key == "LASTMODIFIED" || $key == "FILENAME" || $key == "dbh" || $p->params[$key] == "" ) {
+			
+			if(in_array($key, $this->db_attribute_exclude_list) || $p->params[$key] == "" ) {
 				continue;
 			}
 			// echo "Key: $key    Value: $value\n";
@@ -436,7 +454,7 @@ class intLog
 		$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (:keyref, :attrib, :value);');
 		
 		foreach ($p->params as $key => $value) {
-			if($key == "PACKAGE" || $key == "NAME" || $key == "LOGSTART" || $key == "LOGEND" || $key == "LASTMODIFIED" || $key == "FILENAME" || $key == "dbh" || $p->params[$key] == "" ) {
+			if(in_array($key, $this->db_attribute_exclude_list) || $p->params[$key] == "" ) {
 				continue;
 			}
 			// echo "Key: $key    Value: $value\n";
@@ -452,7 +470,7 @@ class intLog
 			return;
 		}
 	
-	return "Success";
+		return "Success";
 	
 	}
 	
@@ -474,24 +492,95 @@ class intLog
 		return;
 	}
 
+	private function log_db_recreate_session_by_id()
+	{
+		$key = $this->params["dbkey"];
+		if( !isset($this->dbh) ) {
+			$this->dbh = intLog::log_db_init_database();
+			$dbh = $this->dbh;
+		}
+		if(!$dbh) {
+			error_log("   dbh not defined. Return undef\n<-- log_db_recreate_session_by_id");
+			return;
+		}
+		
+		if(!$key) {
+			error_log("   No logdb key defined. Return undef\n<-- log_db_recreate_session_by_id");
+			return;
+		}
+
+		# Get log object
+		$qu = "SELECT PACKAGE, NAME, FILENAME, LOGSTART, LOGEND FROM logs WHERE LOGKEY = $key LIMIT 1;";
+		// echo "Query: $qu\n";
+		$logshr = $dbh->query($qu);
+		
+		if (!isset($logshr)) {
+			error_log("   LOGKEY does not exist. Return NULL <-- log_db_recreate_session_by_id");
+			return;
+		}
+		$result = $logshr->fetchArray(SQLITE3_ASSOC);
+		# It is not possible to recover a finished session
+		
+		// echo var_dump( $result );
+		
+		if (isset($result["LOGEND"])) {
+			error_log("   LOGKEY $key found, but log session has a LOGEND (session is finished) - return NULL");
+			return;
+		}
+				
+		# Get log attributes
+		$qu2 = "SELECT attrib, value FROM logs_attr WHERE keyref = $key;";
+		$logattrshr = $dbh->query($qu2);
+		
+		## Recreate log object with data
+		
+		# Data from log table
+		if(isset($result["PACKAGE"])) {
+			// echo "Package: " . $result["PACKAGE"] . "\n";
+			$this->params["package"] = $result["PACKAGE"];
+		}
+		if(isset($result["NAME"])) {
+			// echo "Name: " . $result["NAME"] . "\n";
+			$this->params["name"] = $result["NAME"];
+		}
+		if(isset($result["FILENAME"])) {
+			// echo "FILENAME: " . $result["FILENAME"] . "\n";
+			$this->params["filename"] = $result["FILENAME"];
+		}
+		
+		# Data from attribute table - loop through attributes
+		while ($row = $logattrshr->fetchArray(SQLITE3_ASSOC)) {
+			// echo "Attribute: " . $row["attrib"] . " / Value: " . $row["value"] . "\n";
+			$this->params[$row["attrib"]] = $row["value"];
+		}
+
+		return $key;
+
+	}
+	
 	public function __destruct() 
 	{
-		if(!isset($this->params["logend_called"]) && !isset($this->params["nofile"])) {
-			if(isset($this->params["dbkey"])) {
-				if(!isset($this->params["dbh"])) {
-					$this->params["dbh"] = intLog::log_db_init_database();
+		// echo "__descruct called\n";
+		if( !isset($this->params["logend_called"]) && !isset($this->params["nofile"]) ) {
+			if( isset($this->params["dbkey"]) && isset($this->params["STATUS"]) ) {
+				if( !isset($this->dbh) ) {
+					$dbh = intLog::log_db_init_database();
+				} else {
+					$dbh = $this->dbh;
 				}
-				$dbh = $this->params["dbh"];
 				$dbh->exec("INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (" . $this->params["dbkey"] . ", 'STATUS', '" . $this->params["STATUS"] . "');");
+				$dbh->close();
 			}
 		}
+		
+		// unset($stdLog);
 	}
 
 }
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.2";
+	public static $VERSION = "1.2.5.3";
 	
 	public static function newLog($args)
 	{
