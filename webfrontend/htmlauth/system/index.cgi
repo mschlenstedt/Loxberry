@@ -214,7 +214,7 @@ sub mainmenu {
 			},
 			{
 				WIDGET_TITLE => 'Log Manager',
-				WIDGET_ICON => "/system/images/icons/main_services.png",
+				WIDGET_ICON => "/system/images/icons/main_logmanager.png",
 				WIDGET_CGI => "/admin/system/logmanager.cgi",
 				NOTIFY_PACKAGE => "logmanager",
 				
