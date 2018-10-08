@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.12";
+our $VERSION = "1.2.5.13";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -47,6 +47,7 @@ parsedatestring
 # Variables
 
 my $notifymailerror;
+my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED filename dbh _FH dbkey );
 
 ################################################################
 ## Constructor
@@ -85,6 +86,7 @@ sub new
 				nofile => $params{nofile},
 				autoraise => $params{nofile},
 				addtime => $params{addtime},
+				dbkey => $params{dbkey},
 	};
 	
 	bless $self, $class;
@@ -96,6 +98,12 @@ sub new
 	
 	# If nofile is given, we don't need to do any smart things
 	if(!$self->{nofile}) {
+		
+		# If a dbkey was given, recreate logging session
+		if($params{dbkey}) {
+			$self->log_db_recreate_session_by_id();
+		}
+		
 		# Setting package
 		# print STDERR "Package: " . $self->{package} . "\n";
 		if (!$self->{package}) {
@@ -194,11 +202,20 @@ sub filehandle
 		return $self->{'_FH'};
 	}
 }
+
 sub filename
 {
 	my $self = shift;
 	if ($self->{filename}) {
 		return $self->{filename};
+	}
+}
+
+sub dbkey
+{
+	my $self = shift;
+	if ($self->{dbkey}) {
+		return $self->{dbkey};
 	}
 }
 
@@ -702,8 +719,7 @@ sub log_db_logstart
 	$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
 	for my $key (keys %p) {
-		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or 
-			$key eq 'LASTMODIFIED' or $key eq 'FILENAME' or $key eq 'dbh' or $key eq '_FH' or ! $p{$key} );
+		next if ( grep ( /^$key$/, @db_attribute_exclude_list ) or !$p{$key} );
 		# print STDERR "INSERT id $id, key $key, value $p{$key}\n";
 		$sth2->execute($id, $key, $p{$key});
 	}
@@ -755,8 +771,7 @@ sub log_db_logend
 	$sth2 = $dbh->prepare('INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (?, ?, ?);');
 	
 	for my $key (keys %p) {
-		next if ($key eq 'PACKAGE' or $key eq 'NAME' or $key eq 'LOGSTART' or $key eq 'LOGEND' or 
-			$key eq 'LASTMODIFIED' or $key eq 'FILENAME' or $key eq 'dbh' or $key eq '_FH');
+		next if ( grep ( /^$key$/, @db_attribute_exclude_list ) );
 		$sth2->execute($p{dbkey}, $key, $p{$key});
 	}
 
@@ -767,6 +782,60 @@ sub log_db_logend
 		};
 	
 	return "Success";
+
+}
+
+sub log_db_recreate_session_by_id
+{
+	my $self = shift;
+	
+	my $key = $self->{dbkey};
+	my $dbh = log_db_init_database();
+		
+	if(!$dbh) {
+		print STDERR "   dbh not defined. Return undef\n<-- log_db_recreate_session_by_id\n";
+		return undef;
+	}
+	
+	if(!$key) {
+		print STDERR "   No logdb key defined. Return undef\n<-- log_db_recreate_session_by_id\n";
+		return undef;
+	}
+
+	require DBI;
+	
+	# Get log object
+	my $qu = "SELECT PACKAGE, NAME, FILENAME, LOGSTART, LOGEND FROM logs WHERE LOGKEY = $key LIMIT 1;";
+	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
+	if (!@$logshr) {
+		print STDERR "   LOGKEY does not exist. Return undef\n<-- log_db_recreate_session_by_id\n";
+		return undef;
+	}
+	
+	# It is not possible to recover a finished session
+	if (@$logshr[0]->{LOGEND}) {
+		print STDERR "   LOGKEY $key found, but log session has a LOGEND (session is finished) - return undef\n";
+		return undef;
+	}
+			
+	# Get log attributes
+	my $qu2 = "SELECT attrib, value FROM logs_attr WHERE keyref = $key;";
+	my $logattrshr = $dbh->selectall_arrayref($qu2, { Slice => {} });
+	
+	## Recreate log object with data
+	
+	# Data from log table
+	$self->{package} = @$logshr[0]->{PACKAGE} if (@$logshr[0]->{PACKAGE});
+	$self->{name} = @$logshr[0]->{NAME} if (@$logshr[0]->{NAME});
+	$self->{filename} = @$logshr[0]->{FILENAME} if (@$logshr[0]->{FILENAME});
+	
+	# Data from attribute table - loop through attributes
+	foreach my $attr ( keys @$logattrshr ) {
+		print "Attribute: @$logattrshr[$attr]->{attrib} / Value: @$logattrshr[$attr]->{value} \n";
+		$self->{@$logattrshr[$attr]->{attrib}} = @$logattrshr[$attr]->{value} if (!$self->{@$logattrshr[$attr]->{attrib}});
+	}
+
+	return $key;
 
 }
 
