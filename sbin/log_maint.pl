@@ -98,6 +98,7 @@ sub logfiles_cleanup
 
 	# Paths to check
 	my @paths = ("$lbhomedir/log/plugins",
+		"$lbhomedir/log/system",
 		"$lbhomedir/log/system_tmpfs");
 
 	# Check which disks must be cleaned
@@ -111,6 +112,7 @@ sub logfiles_cleanup
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
 			->size( ">=$size" . "M" )
+			->nonempty
         		->in($_);
 
 		for my $file (@files){
@@ -127,6 +129,7 @@ sub logfiles_cleanup
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
 			->mtime( "<=$logmtime")
+			->nonempty
         		->in($_);
 
 		for my $file (@files){
@@ -143,6 +146,7 @@ sub logfiles_cleanup
 		my @files = File::Find::Rule->file()
 			->name( '*.log.gz' )
 			->mtime( "<=$gzmtime")
+			->nonempty
         		->in($_);
 
 		for my $file (@files){
@@ -172,6 +176,7 @@ sub logfiles_cleanup
 		my @files = File::Find::Rule->file()
 			->name( '*.log.gz' )
 			->size( ">=$size" . "M" )
+			->nonempty
         		->in($_);
 
 		for my $file (@files){
@@ -200,6 +205,7 @@ sub logfiles_cleanup
 
 		my @files = File::Find::Rule->file()
 			->name( '*.log.gz' )
+			->nonempty
         		->in($_);
 
 		for my $file (@files){
@@ -228,6 +234,7 @@ sub logfiles_cleanup
 
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
+			->nonempty
         		->in($_);
 
 		for my $file (@files){
