@@ -11,13 +11,13 @@ use DBI;
 
 # Global vars
 our $deletefactor;
-our %disks = LoxBerry::System::diskspaceinfo();
 
 my $log = LoxBerry::Log->new (
     package => 'core',
 	name => 'Log Maintenance',
 	logdir => "$lbhomedir/log/system_tmpfs",
-	loglevel => LoxBerry::System::systemloglevel(),
+#	loglevel => LoxBerry::System::systemloglevel(),
+	loglevel => 7,
 	stdout => 1
 );
 LOGSTART;
@@ -95,19 +95,15 @@ sub logfiles_cleanup
 
 	my $logmtime = time() - (60*60*24*$logdays);
 	my $gzmtime = time() - (60*60*24*$gzdays);
-	my @paths;
+
+	# Paths to check
+	my @paths = ("$lbhomedir/log/plugins",
+		"$lbhomedir/log/system_tmpfs");
 
 	# Check which disks must be cleaned
 	LOGDEB "*** STAGE 1: Scanning for tmpfs disks... ***";
-	@paths = &checkdisks();
 
-	if (!@paths) {
-		LOGDEB "No tmpfs disk available.";
-		return(1);
-	}
-	
 	my $bins = LoxBerry::System::get_binaries();
-
 	foreach (@paths) {
 
 		LOGDEB "Scanning $_ for LOG-Files >= $size MB and GZIP them...";
@@ -160,18 +156,17 @@ sub logfiles_cleanup
 		}	
 
 	}
-	undef @paths;
 
 	# Re-Check which disks must still be cleaned
 	LOGDEB "*** STAGE 2: Scanning for tmpfs disks below $deletefactor% free capacity... ***";
-	@paths = &checkdisks_emerg();
+	my @emergpaths = &checkdisks(@paths);
 
-	if (!@paths) {
+	if (!@emergpaths) {
 		LOGDEB "No emergency housekeeping for any disk needed.";
 		return(2);
 	}
 	
-	foreach (@paths) {
+	foreach (@emergpaths) {
 		LOGDEB "Scanning $_ for GZ-Files >= " . $size . " MB and DELETE them...";
 
 		my @files = File::Find::Rule->file()
@@ -189,18 +184,18 @@ sub logfiles_cleanup
 			}
 		}	
 	}
-	undef @paths;
+	undef @emergpaths;
 	
 	# Re-Check which disks must still be cleaned
 	LOGDEB "*** STAGE 3: Re-Scanning for tmpfs disks below $deletefactor% free capacity... ***";
-	@paths = &checkdisks_emerg();
+	@emergpaths = &checkdisks(@paths);
 
-	if (!@paths) {
+	if (!@emergpaths) {
 		LOGDEB "No emergency housekeeping for any disk needed.";
 		return(3);
 	}
 	
-	foreach (@paths) {
+	foreach (@emergpaths) {
 		LOGDEB "Scanning $_ for any GZ-Files and DELETE them...";
 
 		my @files = File::Find::Rule->file()
@@ -217,18 +212,18 @@ sub logfiles_cleanup
 			}
 		}	
 	}
-	undef @paths;
+	undef @emergpaths;
 	
 	# Re-Check which disks must still be cleaned
 	LOGDEB "*** STAGE 4: Re-Scanning for tmpfs disks below $deletefactor% free capacity... ***";
-	@paths = &checkdisks_emerg();
+	@emergpaths = &checkdisks(@paths);
 
-	if (!@paths) {
+	if (!@emergpaths) {
 		LOGDEB "No emergency housekeeping for any disk needed.";
 		return(4);
 	}
 	
-	foreach (@paths) {
+	foreach (@emergpaths) {
 		LOGDEB "Scanning $_ for any LOG-Files and DELETE them...";
 
 		my @files = File::Find::Rule->file()
@@ -245,7 +240,8 @@ sub logfiles_cleanup
 			}
 		}	
 	}
-	
+	undef(@emergpaths);
+
 	# If less than this percent is free, start housekeeping
 	#our $deletefactor = 25;
 	
@@ -269,24 +265,12 @@ sub logfiles_cleanup
 
 sub checkdisks {
 	my @paths;
-	foreach my $disk (keys %disks) {
-		LOGDEB "Checking $disks{$disk}{mountpoint} ($disks{$disk}{filesystem})";
-		next if($disks{$disk}{filesystem} ne "tmpfs");
-		next if( $disks{$disk}{size} eq "0" );
-		LOGDEB "--> $disks{$disk}{mountpoint} - housekeeping needed.";
-		push(@paths, $disks{$disk}{mountpoint});
-	}
-	return(@paths);
-}
-
-sub checkdisks_emerg {
-	my @paths;
-	foreach my $disk (keys %disks) {
-		LOGDEB "Checking $disks{$disk}{mountpoint} ($disks{$disk}{filesystem} - Available " . sprintf("%.1f",$disks{$disk}{available}/$disks{$disk}{size}*100) . "%)";
-		next if($disks{$disk}{filesystem} ne "tmpfs");
-		next if( $disks{$disk}{size} eq "0" or ($disks{$disk}{available}/$disks{$disk}{size}*100) > $deletefactor );
-		LOGDEB "--> $disks{$disk}{mountpoint} below limit AVAL $disks{$disk}{available} SIZE $disks{$disk}{size} - EMERGENCY housekeeping needed.";
-		push(@paths, $disks{$disk}{mountpoint});
+	foreach my $disk (@_) {
+		my %folderinfo = LoxBerry::System::diskspaceinfo($disk);
+		LOGDEB "Checking $folderinfo{mountpoint} ($folderinfo{filesystem} - Available " . sprintf("%.1f",$folderinfo{available}/$folderinfo{size}*100) . "%)";
+		next if( $folderinfo{size} eq "0" or ($folderinfo{available}/$folderinfo{size}*100) > $deletefactor );
+		LOGDEB "--> $folderinfo{mountpoint} below limit AVAL $folderinfo{available} SIZE $folderinfo{size} - EMERGENCY housekeeping needed.";
+		push(@paths, $disk);
 	}
 	return(@paths);
 }
