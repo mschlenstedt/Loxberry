@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.13";
+our $VERSION = "1.2.5.14";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -47,7 +47,7 @@ parsedatestring
 # Variables
 
 my $notifymailerror;
-my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED filename dbh _FH dbkey );
+my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED filename dbh _FH dbkey loxberry_uid loxberry_gid );
 
 ################################################################
 ## Constructor
@@ -101,7 +101,9 @@ sub new
 		
 		# If a dbkey was given, recreate logging session
 		if($params{dbkey}) {
-			$self->log_db_recreate_session_by_id();
+			my $recreatestate = $self->log_db_recreate_session_by_id();
+			return undef if (!$recreatestate);
+			$self->{append} = 1;
 		}
 		
 		# Setting package
@@ -151,11 +153,14 @@ sub new
 	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	# print STDERR "filename: " . $self->{filename} . "\n";
 	
-	my $writetype = defined $self->{append} ? ">>" : ">";
-	# print STDERR "Write type is : " . $writetype . "\n";
-	
-	if (!$self->{nofile}) {
-		$self->open($writetype);
+	if (!$self->{append} and !$self->{nofile}) {
+		unlink $self->{filename};
+		require File::Basename;
+		my $dir = File::Basename::dirname($self->{filename});
+		if (! -d $dir) {
+			require File::Path;
+			File::Path::make_path($dir);
+		}
 	}
 	
 	if (!$LoxBerry::Log::mainobj) {
@@ -163,7 +168,6 @@ sub new
 	}
 	
 	# SQLite init
-	
 	if($self->{append} && !$self->{nofile}) {
 		$self->{dbh} = log_db_init_database();
 		$self->{dbkey} = log_db_query_id($self->{dbh}, $self);
@@ -195,10 +199,14 @@ sub autoraise
 	return $self->{autoraise};
 }
 
+# Legacy for LB <1.2.5
 sub filehandle
 {
 	my $self = shift;
 	if ($self->{'_FH'}) {
+		return $self->{'_FH'};
+	} else {
+		$self->open();
 		return $self->{'_FH'};
 	}
 }
@@ -222,29 +230,24 @@ sub dbkey
 sub open
 {
 	my $self = shift;
-	my $writetype = shift;
-	# print STDERR "Log open writetype before processing: " . $writetype . "\n";
-	if (!$writetype) {
-		$writetype = ">>";
-	}
-	
-	require File::Basename;
-	my $dir = File::Basename::dirname($self->{filename});
-	require File::Path;
-	File::Path::make_path($dir);
-	
-	# print STDERR "log open Writetype after processing is " . $writetype . "\n";
+	my $writetype = ">>";
 	my $fh;
+
 	eval {
 		open($fh, $writetype, $self->{filename});
 		$self->{'_FH'} = $fh if($fh);
 	};
 	if ($@) {
 		print STDERR "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . "): $@";
+		return;
 	}
 	eval {
-		my ($login,$pass,$uid,$gid) = getpwnam('loxberry');
-		chown $uid, $gid, $fh;
+		if(!$self->{loxberry_uid}) {
+			my (undef,undef,$uid,$gid) = getpwnam('loxberry');
+			$self->{loxberry_uid} = $uid;
+			$self->{loxberry_uid} = $gid;
+		}
+		chown $self->{loxberry_uid}, $self->{loxberry_uid}, $fh;
 		chmod 0666, $fh;
 	};
 }
@@ -253,6 +256,7 @@ sub close
 {
 	my $self = shift;
 	close $self->{'_FH'} if $self->{'_FH'};
+	undef $self->{'_FH'};
 	return $self->{filename};
 }
 
@@ -357,6 +361,9 @@ sub write
 	
 	if ($self->{loglevel} != 0 and $severity <= $self->{loglevel} or $severity < 0) {
 		#print STDERR "Not filtered.\n";
+		if(!$self->{'_FH'}) {
+			$self->open();
+		}
 		my $fh = $self->{'_FH'};
 		my $string;
 		my $currtime = "";
@@ -397,6 +404,7 @@ sub DEB
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(7, $s);
+	$self->close();
 }
 
 sub INF
@@ -404,6 +412,7 @@ sub INF
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(6, $s);
+	$self->close();
 }
 
 sub OK
@@ -411,6 +420,7 @@ sub OK
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(5, $s);
+	$self->close();
 }
 
 sub WARN
@@ -418,6 +428,7 @@ sub WARN
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(4, $s);
+	$self->close();
 }
 
 sub ERR
@@ -425,6 +436,7 @@ sub ERR
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(3, $s);
+	$self->close();
 }
 
 sub CRIT
@@ -432,18 +444,21 @@ sub CRIT
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(2, $s);
+	$self->close();
 }
 sub ALERT
 {
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(1, $s);
+	$self->close();
 }
 sub EMERGE
 {
 	my $self = shift;
 	my ($s)=@_;
 	$self->write(0, $s);
+	$self->close();
 }
 
 sub LOGSTART
@@ -478,6 +493,7 @@ sub LOGSTART
 		}
 		$self->{dbkey} = log_db_logstart($self->{dbh}, $self);	
 	}
+	$self->close();
 }
 
 sub LOGEND
