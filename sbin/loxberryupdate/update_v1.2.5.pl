@@ -82,6 +82,11 @@ if ($exitcode != 0) {
 }
 
 #
+# Logrotate is disabled from now on
+#
+copy_to_loxberry("/system/logrotate/logrotate");
+
+#
 # logdb maintanance
 #
 my $result;
