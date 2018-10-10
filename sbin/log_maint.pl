@@ -288,15 +288,15 @@ sub checkdisks {
 
 sub prelogcleanup {
 	# Take care for Apache
-	qx {/bin/systemctl daemon-reload >/dev/null}
+	qx {$bins->\{SUDO\} -n /bin/systemctl daemon-reload >/dev/null}
 	return();
 }
 
 sub postlogcleanup {
 	# Take care for Apache
-	qx {/etc/init.d/apache2 status >/dev/null}
+	qx {$bins->\{SUDO\} -n /etc/init.d/apache2 status >/dev/null}
 	if ($? eq "0") {
-		qx {/etc/init.d/apache2 reload > /dev/null};
+		qx {$bins->\{SUDO\} -n /etc/init.d/apache2 reload > /dev/null};
 	}
 	return();
 }
