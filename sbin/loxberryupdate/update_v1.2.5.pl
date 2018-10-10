@@ -83,8 +83,11 @@ if ($exitcode != 0) {
 
 #
 # Logrotate is disabled from now on
+# and maintanance is done by ~/sbin/log_maint.pl
 #
 copy_to_loxberry("/system/logrotate/logrotate");
+copy_to_loxberry("/system/sudoers/lbdefaults");
+
 
 #
 # logdb maintanance
