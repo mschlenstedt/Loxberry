@@ -80,7 +80,10 @@ function LOGSTART {
 			if [ "$FILENAME" = "$TESTFN" ];then FILENAME=""; COUNTER=${LOGS}; fi
 		done
 	fi
-	if [ -n "$PACKAGE" ] && [ -n "$NAME" ] && ([ -n "$LOGDIR" ] || [ -n "$FILENAME" ] || [ -n "$NOFILE" ])
+	if [ -n "$DBKEY" ]
+	then
+		LOG=(`$LBHOMEDIR/libs/bashlib/initlog.php -dbkey=$DBKEY "--message=$@"`)
+	elif [ -n "$PACKAGE" ] && [ -n "$NAME" ] && ([ -n "$LOGDIR" ] || [ -n "$FILENAME" ] || [ -n "$NOFILE" ])
 	then
 		LOGS=$((LOGS + 1))
 		PARAM=""
@@ -101,6 +104,7 @@ function LOGSTART {
 		ARRLOGS["$LOGS.filename"]=$FILENAME
 		if [ -z "$LOGLEVEL" ];then LOGLEVEL=${LOG[1]}; fi
 		ARRLOGS["$LOGS.loglevel"]=$LOGLEVEL
+		ARRLOGS["$LOGS.dbkey"]=${LOG[2]};
 		if [ -n "$ADDTIME" ]; then ARRLOGS["$LOGS.addtime"]=$ADDTIME; fi
 		if ([ -z ${NOFILE:+x} ] && [ -z ${FILENAME:+x} ]) || [ -z ${LOGLEVEL:+x} ]
 		then
@@ -114,6 +118,7 @@ function LOGSTART {
 			if [ ${ARRLOGS["$LOGS.filename"]+_} ]; then unset ARRLOGS["$LOGS.filename"]; fi
 			if [ ${ARRLOGS["$LOGS.loglevel"]+_} ]; then unset ARRLOGS["$LOGS.loglevel"]; fi
 			if [ ${ARRLOGS["$LOGS.addtime"]+_} ]; then unset ARRLOGS["$LOGS.addtime"]; fi
+			if [ ${ARRLOGS["$LOGS.dbkey"]+_} ]; then unset ARRLOGS["$LOGS.dbkey"]; fi
 			LOGS=$((LOGS -1))
 			exit 1
 		fi
