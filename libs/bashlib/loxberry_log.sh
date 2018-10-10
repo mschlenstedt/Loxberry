@@ -96,7 +96,7 @@ function LOGSTART {
 		fi
 		ARRLOGS["$LOGS.name"]=$NAME
 		ARRLOGS["$LOGS.package"]=$PACKAGE
-		LOG=(`$LBHOMEDIR/libs/bashlib/initlog.pl --name=$NAME --package=$PACKAGE$PARAM "--message=$@"`)
+		LOG=(`$LBHOMEDIR/libs/bashlib/initlog.php --name=$NAME --package=$PACKAGE$PARAM "--message=$@"`)
 		FILENAME=${LOG[0]//\"}
 		ARRLOGS["$LOGS.filename"]=$FILENAME
 		if [ -z "$LOGLEVEL" ];then LOGLEVEL=${LOG[1]}; fi
