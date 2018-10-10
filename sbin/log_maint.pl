@@ -16,8 +16,7 @@ my $log = LoxBerry::Log->new (
     package => 'core',
 	name => 'Log Maintenance',
 	logdir => "$lbhomedir/log/system_tmpfs",
-#	loglevel => LoxBerry::System::systemloglevel(),
-	loglevel => 7,
+	loglevel => LoxBerry::System::systemloglevel(),
 	stdout => 1
 );
 LOGSTART;
@@ -104,6 +103,9 @@ sub logfiles_cleanup
 	# Check which disks must be cleaned
 	LOGDEB "*** STAGE 1: Scanning for tmpfs disks... ***";
 
+	# Pre-Logcleanup
+	&prelogcleanup();
+
 	my $bins = LoxBerry::System::get_binaries();
 	foreach (@paths) {
 
@@ -160,6 +162,9 @@ sub logfiles_cleanup
 		}	
 
 	}
+	
+	# Post-Logcleanup
+	&postlogcleanup();
 
 	# Re-Check which disks must still be cleaned
 	LOGDEB "*** STAGE 2: Scanning for tmpfs disks below $deletefactor% free capacity... ***";
@@ -169,6 +174,9 @@ sub logfiles_cleanup
 		LOGDEB "No emergency housekeeping for any disk needed.";
 		return(2);
 	}
+	
+	# Pre-Logcleanup
+	&prelogcleanup();
 	
 	foreach (@emergpaths) {
 		LOGDEB "Scanning $_ for GZ-Files >= " . $size . " MB and DELETE them...";
@@ -191,6 +199,9 @@ sub logfiles_cleanup
 	}
 	undef @emergpaths;
 	
+	# Post-Logcleanup
+	&postlogcleanup();
+	
 	# Re-Check which disks must still be cleaned
 	LOGDEB "*** STAGE 3: Re-Scanning for tmpfs disks below $deletefactor% free capacity... ***";
 	@emergpaths = &checkdisks(@paths);
@@ -199,6 +210,9 @@ sub logfiles_cleanup
 		LOGDEB "No emergency housekeeping for any disk needed.";
 		return(3);
 	}
+	
+	# Pre-Logcleanup
+	&prelogcleanup();
 	
 	foreach (@emergpaths) {
 		LOGDEB "Scanning $_ for any GZ-Files and DELETE them...";
@@ -220,6 +234,9 @@ sub logfiles_cleanup
 	}
 	undef @emergpaths;
 	
+	# Post-Logcleanup
+	&postlogcleanup();
+	
 	# Re-Check which disks must still be cleaned
 	LOGDEB "*** STAGE 4: Re-Scanning for tmpfs disks below $deletefactor% free capacity... ***";
 	@emergpaths = &checkdisks(@paths);
@@ -228,6 +245,9 @@ sub logfiles_cleanup
 		LOGDEB "No emergency housekeeping for any disk needed.";
 		return(4);
 	}
+	
+	# Pre-Logcleanup
+	&prelogcleanup();
 	
 	foreach (@emergpaths) {
 		LOGDEB "Scanning $_ for any LOG-Files and DELETE them...";
@@ -248,26 +268,10 @@ sub logfiles_cleanup
 		}	
 	}
 	undef(@emergpaths);
-
-	# If less than this percent is free, start housekeeping
-	#our $deletefactor = 25;
 	
-	#my %disks = LoxBerry::System::diskspaceinfo();
-	#foreach my $disk (keys %disks) {
-	#	LOGDEB "Checking $disks{$disk}{mountpoint} ($disks{$disk}{filesystem} - Available " . $disks{$disk}{available}/$disks{$disk}{size}*100;
-	#	next if($disks{$disk}{filesystem} ne "tmpfs");
-	#	next if( $disks{$disk}{size} eq "0" or ($disks{$disk}{available}/$disks{$disk}{size}*100) > $deletefactor );
-	#	LOGDEB "--> $disks{$disk}{mountpoint} below limit AVAL $disks{$disk}{available} SIZE $disks{$disk}{size} - housekeeping...";
-	#	
-	#	our $diskavailable = $disks{$disk}{available};
-	#	our $disksize = $disks{$disk}{size};
-	#	
-	#	require File::Find;
-	#	File::Find::find ( { preprocess => \&logfiles_orderbydate, wanted => \&logfiles_delete }, $disks{$disk}{mountpoint} );
-	#
-	#	undef $diskavailable;
-	#	undef $disksize;
-	#}
+	# Post-Logcleanup
+	&postlogcleanup();
+
 }	
 
 sub checkdisks {
@@ -282,43 +286,20 @@ sub checkdisks {
 	return(@paths);
 }
 
-#sub logfiles_orderbydate
-#{
-#	my @files = @_;
-#	my @filesnew;
-#	
-#	LOGDEB "logfiles_orderbydate called for folder $File::Find::dir";
-#	
-#	foreach my $filename (@files) {
-#		next if ($filename eq ".");
-#		next if ($filename eq "..");
-#		push(@filesnew, $filename);
-#	}
-#	
-#	@filesnew = sort {(stat $a)[10] <=> (stat $b)[10]} @filesnew;
-#
-#	return @filesnew;
-#}
+sub prelogcleanup {
+	# Take care for Apache
+	qx {/bin/systemctl daemon-reload >/dev/null}
+	return();
+}
 
-#sub logfiles_delete
-#{
-#	
-#	return if (-d $File::Find::name);
-#	return if (index($_, ".log") == -1);
-#	return if (! $LoxBerry::Log::deletefactor or ($LoxBerry::Log::diskavailable / $LoxBerry::Log::disksize * 100) > ($LoxBerry::Log::deletefactor+3));
-#	my $size = (stat $File::Find::name)[7] / 1024;
-#	LOGDEB "logfiles_delete called with $File::Find::name (SIZE $size KB, Available: $LoxBerry::Log::diskavailable KB)";
-#	# Unlink
-#	my $delcount = unlink $File::Find::name;
-#	if($delcount) {
-#		LOGDEB "   DELETED $_";
-#		$LoxBerry::Log::diskavailable += $size;
-#	} else {
-#		LOGDEB "   COULD NOT DELETE $_";
-#	}
-#	return;
-#
-#}
+sub postlogcleanup {
+	# Take care for Apache
+	qx {/etc/init.d/apache2 status >/dev/null}
+	if ($? eq "0") {
+		qx {/etc/init.d/apache2 reload > /dev/null};
+	}
+	return();
+}
 
 sub logdb_cleanup
 {
