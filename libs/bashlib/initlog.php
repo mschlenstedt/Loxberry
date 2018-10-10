@@ -3,6 +3,8 @@
 
 require_once "loxberry_log.php";
 
+$initlog_version = "1.2.5.2";
+
 $log = null;
 $currfilename = null;
 $currloglevel = null;
@@ -10,24 +12,24 @@ $currloglevel = null;
 fwrite (STDERR, "initlog.php Commandline: " . implode(" ", $argv) . "\n");
 
 # Collecting options
-$longopts = array( "action:", 'package::', 'name::', 'filename::', 'logdir::', 'append::', 'nofile::', 'stderr::', 'stdout::', 'message::', 'loglevel::' );
+$longopts = array( 
+			'action:', 
+			'package::', 
+			'name::', 
+			'filename::', 
+			'logdir::', 
+			'append::', 
+			'nofile::', 
+			'stderr::', 
+			'stdout::', 
+			'message::', 
+			'loglevel::',
+			'logtitle::',
+			'status::',
+			'dbkey::',
+			'attentionmessages::',
+);
 $opt = getopt(null, $longopts);
-
-
-
-// GetOptions (
-	// 'action:s' => \$action,
-	// 'package:s' => \$package,
-	// 'name:s' => \$name,
-	// 'filename:s' => \$logfilename,
-	// 'logdir:s' => \$logdir,
-	// 'append:s' => \$append,
-	// 'nofile:s' => \$nofile,
-	// 'stderr:s' => \$stderr,
-	// 'stdout:s' => \$stdout,
-	// 'message:s' => \$message,
-	// 'loglevel:s' => \$loglevel,
-// );
 
 if (empty($opt["action"])) { 
 	$opt["action"] = "logstart";
@@ -35,26 +37,29 @@ if (empty($opt["action"])) {
 
 $opt["action"] = strtolower($opt["action"]);
 
-if( $opt["action"] == "new" ) {
-	fwrite( STDERR , "initlog.php: init\n");
-	do_init();
-	$currfilename = $log->close;
-	$currloglevel = $log->loglevel;
-	echo "\"$currfilename\" $currloglevel\n";
-	exit(0);
-} elseif ( $opt["action"] == "logstart" ) {
-	fwrite (STDERR, "initlog.php: init\n");
-	do_init();
-	fwrite (STDERR, "initlog.php: start\n");
-	do_logstart($opt["message"]);
-	exit(0);
-} elseif ( $opt["action"] == "logend" ) {
-	fwrite(STDERR, "initlog.php: init\n");
-	$opt["append"] = 1;
-	do_init();
-	fwrite(STDERR, "initlog.php: end\n");
-	do_logend($opt["message"]);
-	exit(0);
+switch($opt["action"]) {
+	case "new":
+		fwrite( STDERR , "initlog.php: action new\n");
+		do_init();
+		return_stdout();
+		exit(0);
+		break;
+	case "logstart":
+		fwrite( STDERR , "initlog.php: action logstart\n");
+		do_init();
+		do_logstart();
+		return_stdout();
+		exit(0);
+		break;
+	case "logend":
+		fwrite( STDERR , "initlog.php: action logend\n");
+		$opt["append"] = 1;
+		do_init();
+		do_logend();
+		exit(0);
+		break;
+	default: 
+		fwrite( STDERR , "initlog.php: action unknown (Action: " . $opt["action"] . "\n");
 }
 
 exit;
@@ -71,33 +76,66 @@ function do_init()
 		fwrite(STDERR, "Logfile not initialized.\n");
 		exit(1);
 	}
-	
-	$currfilename = $log->filename;
-	$currloglevel = $log->loglevel;
-	fwrite(STDERR, "Output to bash:  \"$currfilename\" $currloglevel\n");
-	echo "\"$currfilename\" $currloglevel\n";
-	
-	}
+}
 
-function do_logstart($message = "")
+function do_logstart()
 {
-	global $log;
+	global $log, $opt;
+		
+	fwrite(STDERR, "do_logstart()\n");
 	
-	fwrite(STDERR, "do_logstart($message)\n");
-	
-	$log->LOGSTART($message);
+	$log->LOGSTART($opt["message"]);
 #	my $currfilename = $log->close;
 #	my $currloglevel = $log->loglevel;
 #	print "\"$currfilename\" $currloglevel\n";
 }
 
-function do_logend($message = "")
+function do_logend()
 {
-	global $log;
+	global $log, $opt;
 	
-	fwrite(STDERR, "do_logend($message)\n");
+	fwrite(STDERR, "do_logend()\n");
+	
+	do_status();
+	do_attentionmessages();
+	$log->LOGEND($opt["message"]);
+}
+
+function do_status()
+{
+	global $log, $opt;
+	
+	fwrite(STDERR, "do_status()\n");
+	
+	if(isset($opt["status"])) {
+			$log->STATUS($opt["status"]);
+	}
+}
+
+function do_attentionmessages()
+{
+	global $log, $opt;
+	
+	fwrite(STDERR, "do_attentionmessages()\n");
+	
+	if(isset($opt["attentionmessages"])) {
+			$log->ATTENTIONMESSAGES($opt["attentionmessages"]);
+	}
+}
+
+function return_stdout()
+{
+	global $log, $opt;
+	
+	fwrite(STDERR, "return_stdout()\n");
 	
 	
-	# print STDERR "End: Filename: " . $log->filename . "\n";
-	$log->LOGEND($message);
+	$currfilename = $log->filename;
+	$currloglevel = $log->loglevel;
+	fwrite(STDERR, "DEBUG: " . $log->dbkey . "\n");
+	
+	$currdbkey = $log->dbkey ? $log->dbkey : "";
+	fwrite(STDERR, "Output to bash:  \"$currfilename\" $currloglevel $currdbkey\n");
+	echo "\"$currfilename\" $currloglevel $currdbkey\n";
+	
 }
