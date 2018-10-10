@@ -90,7 +90,7 @@ if (!$R::form or $R::form eq 'log') {
 	print "Error: Unknown form $R::form";
 }
 
-#print $maintemplate->output();
+print $maintemplate->output();
 
 LoxBerry::Web::lbfooter() if (!$embed);
 exit;
@@ -124,7 +124,7 @@ sub form_log
 		
 		if (! defined($currpackage) or ($currpackage ne $log->{PACKAGE})) {
 			my $expandview = defined $R::package ? 'false' : 'true';
-			print "<div data-role='collapsible' data-content-theme='true' data-collapsed='$expandview' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>\n";
+			print "<div data-role='collapsible' id='coll_package_$log->{PACKAGE}' data-content-theme='true' data-collapsed='$expandview' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>\n";
 			print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>" . ucfirst($log->{PACKAGE}) . " <span style='font-size:80%;'>(LoxBerry System Log)</span></h2>\n" if (!$log->{'_ISPLUGIN'});
 			print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>$log->{PLUGINTITLE} <span style='font-size:80%;'>(Plugin Log)</span></h2>\n" if ($log->{'_ISPLUGIN'});
 		}

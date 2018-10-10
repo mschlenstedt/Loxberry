@@ -1,3 +1,40 @@
+<TMPL_IF FORM_LOG>
+
+<script>
+
+$( document ).ready(function() {
+    restoreWindow();
+	$(".ui-collapsible").on("collapsiblecollapse", function(event, ui) {console.log("Collaps", $(this).attr('id'));storeWindow($(this).attr('id'), "collapse");});
+	$(".ui-collapsible").on("collapsibleexpand", function(event, ui) {console.log("Expand", $(this).attr('id'));storeWindow($(this).attr('id'), "expand");});
+});
+
+function storeWindow (name, pos) 
+{
+	sessionStorage.setItem("coll_"+name, pos);
+}
+
+function restoreWindow() 
+{
+	$.each( $(".ui-collapsible"), function ( index, value ) {
+		var pos = sessionStorage.getItem("coll_"+$(value).attr('id'));
+		if(pos === "expand" || pos === "collapse") {
+			$(value).collapsible( pos );
+		} else {
+			sessionStorage.removeItem("coll_"+$(value).attr('id'));
+		}
+		console.log($(value).attr('id'), pos);	}
+	);
+		
+
+
+}
+
+
+</script>
+
+
+</TMPL_IF>
+
 <TMPL_IF FORM_LEGACYLOG>
 	<p><TMPL_VAR LOGMANAGER.LEGACY_INTRO></p>
 </TMPL_IF>
