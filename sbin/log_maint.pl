@@ -11,6 +11,7 @@ use DBI;
 
 # Global vars
 our $deletefactor;
+my $bins = LoxBerry::System::get_binaries();
 
 my $log = LoxBerry::Log->new (
     package => 'core',
@@ -106,7 +107,6 @@ sub logfiles_cleanup
 	# Pre-Logcleanup
 	&prelogcleanup();
 
-	my $bins = LoxBerry::System::get_binaries();
 	foreach (@paths) {
 
 		LOGDEB "Scanning $_ for LOG-Files >= $size MB and GZIP them...";
