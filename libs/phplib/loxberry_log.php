@@ -21,7 +21,13 @@ class intLog
 		
 		# If a dbkey was given, recreate logging session
 		if(isset($args["dbkey"])) {
-			$this->log_db_recreate_session_by_id();
+			$recreatestate = $this->log_db_recreate_session_by_id();
+			if (empty($recreatestate)) 
+				{ return null;
+			}
+			# Always append to a recovered logfile
+			$this->params["append"] = 1;
+		
 		}
 			
 		if (!isset($this->params["package"])) {$this->params["package"] = $lbpplugindir;}
@@ -61,6 +67,21 @@ class intLog
 			if (!isset($this->params["filename"])) {
 				echo "Could not smartly detect where your logfile should be placed. Check your parameters. Terminating.";
 				exit(1);
+			}
+			
+			if (empty($this->params["append"]) && empty($this->params["nofile"])) {
+				if(file_exists($this->params["filename"])) unlink($this->params["filename"]);
+				$dir = dirname($this->params["filename"]);
+				if (!is_dir($dir)) {
+					mkdir($dir, 0777, true);
+				}
+			}
+			# SQLite init
+			if(!empty($this->params["append"]) && empty($this->params["nofile"])) {
+				if(empty($this->dbh)) {
+					$this->dbh = intLog::log_db_init_database();
+				}
+				$this->params["dbkey"] = intLog::log_db_query_id($this->dbh, $this);
 			}
 		}
 	}
@@ -145,7 +166,7 @@ class intLog
 			}
 			if(!isset($this->params["dbkey"])) {
 				// echo "DBKey not set - return\n";
-				$p->params["dbkey"] = intLog::log_db_query_id($this->dbh, $this);
+				$this->params["dbkey"] = intLog::log_db_query_id($this->dbh, $this);
 			}
 			intLog::log_db_logend($this->dbh, $this);
 		}
@@ -479,15 +500,19 @@ class intLog
 
 		# Check mandatory fields
 		if(!isset($p->params["filename"])) { throw new Exception("log_db_queryid: No FILENAME defined");}
-			
+		if(!isset($dbh)) { error_log("log_db_query_id: dbh not defined\n"); return; }
+		
+		
+		
 		# Search filename
 		$qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '{$p->params["filename"]}' ORDER BY LOGSTART DESC LIMIT 1;"; 
+		error_log("log_db_queryid: Query $qu\n");
 		$res = $dbh->QUERY($qu);
-		$row = $res->fetch();
-		if (isset($row["logid"])) {
-			return $logid;
+		$row = $res->fetchArray(SQLITE3_ASSOC);
+		if (!empty($row["LOGKEY"])) {
+			return $row["LOGKEY"];
 		} else {
-			error_log ("log_db_queryid: Could not find filename {$p->params["filename"]}\n");
+			error_log ("log_db_queryid: Could not find database entry for {$p->params["filename"]}\n");
 		}
 		return;
 	}
@@ -553,7 +578,7 @@ class intLog
 			// echo "Attribute: " . $row["attrib"] . " / Value: " . $row["value"] . "\n";
 			$this->params[$row["attrib"]] = $row["value"];
 		}
-
+		
 		return $key;
 
 	}
