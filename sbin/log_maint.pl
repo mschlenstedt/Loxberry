@@ -32,6 +32,11 @@ LOGDEB "Executing user of log_maint.pl is $curruser";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
+# Default to reduce_logfiles
+if (!$R::action) {
+	$R::action = 'reduce_logfiles';
+}
+
 if ($R::action eq "reduce_notifys") { reduce_notifys(); }
 elsif ($R::action eq "reduce_logfiles") { reduce_logfiles(); }
 elsif ($R::action eq "backup_logdb") { backup_logdb(); }
@@ -317,7 +322,7 @@ sub logdb_cleanup
 
 	LOGINF "Logfile maintenance: logdb_cleanup called.";
 
-	my @logs = LoxBerry::Log::get_logs();
+	my @logs = LoxBerry::Log::get_logs(undef, undef, 'nofilter');
 	my @keystodelete;
 	my %logcount;
 	

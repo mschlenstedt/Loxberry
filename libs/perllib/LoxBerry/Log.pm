@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.15";
+our $VERSION = "1.2.5.16";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -950,10 +950,10 @@ sub log_db_delete_logkey
 # PUBLIC FUNCTION
 sub get_logs
 {
-	my ($package, $name) = @_;
+	my ($package, $name, $nofilter) = @_;
 
 	print STDERR "--> get_logs\n" if ($DEBUG);
-	
+		
 	# SQLite interface
 	require DBI;
 	my $dbh = log_db_init_database();
@@ -968,7 +968,6 @@ sub get_logs
 	$qu .= "ORDER BY PACKAGE, NAME, LASTMODIFIED DESC ";
 	print STDERR "   Query: $qu\n" if ($DEBUG);
 	
-	
 	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
 	
 	my @logs;
@@ -981,7 +980,7 @@ sub get_logs
 		$fileexists = -e $key->{'FILENAME'};
 		$filesize = -s $key->{'FILENAME'} if ($fileexists);
 		
-		if ($key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
+		if (!$nofilter and $key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
 			print STDERR "$key->{'FILENAME'} does not exist - skipping" if ($DEBUG);
 			next;
 		}
