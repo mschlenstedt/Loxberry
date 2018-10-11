@@ -1,5 +1,27 @@
 <TMPL_IF FORM_LOG>
 
+</TMPL_IF>
+
+<TMPL_IF FORM_LEGACYLOG>
+	<p><TMPL_VAR LOGMANAGER.LEGACY_INTRO></p>
+	<TMPL_LOOP PLUGINS>
+		<div data-role='collapsible' id='coll_package_<TMPL_VAR PLUGINDB_FOLDER>' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
+			<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_<TMPL_VAR PLUGINDB_FOLDER>'><TMPL_VAR PLUGINDB_TITLE> <span style='font-size:80%;'>(Plugin Log)</span></h2>
+			
+			<table border='1px' style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
+				<TMPL_LOOP FILES>
+				<tr>
+					<td><TMPL_VAR filename></td>
+					<td><TMPL_VAR filemtime></td>
+					<td><a id='btnlogs' data-role='button' href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR filename>&header=html&format=template' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
+					<td><TMPL_VAR filesize></td>
+				</tr>
+				</TMPL_LOOP>
+			</table>
+		</div>
+	</TMPL_LOOP>
+</TMPL_IF>
+
 <script>
 
 $( document ).ready(function() {
@@ -24,17 +46,6 @@ function restoreWindow()
 		}
 		console.log($(value).attr('id'), pos);	}
 	);
-		
-
-
 }
 
-
 </script>
-
-
-</TMPL_IF>
-
-<TMPL_IF FORM_LEGACYLOG>
-	<p><TMPL_VAR LOGMANAGER.LEGACY_INTRO></p>
-</TMPL_IF>
