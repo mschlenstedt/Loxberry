@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.14";
+our $VERSION = "1.2.5.15";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -575,71 +575,75 @@ sub log_db_init_database
 {
 	require DBI;
 	
-	# print STDERR "log_db_init_database\n";
+	print STDERR "log_db_init_database\n" if ($DEBUG);
 	my $dbfile = $LoxBerry::System::lbhomedir . "/log/system_tmpfs/logs_sqlite.dat";
 	
 	my $dbh;
 	my $dores;
 	
-	$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or 
-		do {
-			print STDERR "log_init_database connect: $DBI::errstr\n";
-			return undef;
-			};
-	$dbh->{sqlite_unicode} = 1;
+	my $dbok = 1;
+	my $dbierr;
+	my $dbierrstr;
 	
-	if(-e $dbfile) {
-		$dbh->do("SELECT LOGKEY FROM logs LIMIT 1;") or
+	for (my $i=1; $i <= 2; $i++) {  
+	
+		$dbierr = undef;
+		$dbierrstr = undef;
+	
+		$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or 
 			do {
-				my $dbierror = $DBI::err;
-				print STDERR "log_init_database Check query failed: Error $DBI::err ($DBI::errstr)\n";
-				# https://www.sqlite.org/c3ref/c_abort.html
-				# 11 - The database disk image is malformed
-				if ($dbierror eq "11") {
-					print STDERR "logdb seems to be corrupted - deleting and recreating...\n";
-					$dbh->disconnect();
-					unlink $dbfile;
-					$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or 
-						do {    
-							$dbh->disconnect() if ($dbh);
-							return undef;
-						};
-				} else {
-					$dbh->disconnect() if ($dbh);
-					return undef;
-				}
+				print STDERR "log_init_database connect: $DBI::errstr\n";
+				return undef;
+				};
+		$dbh->{sqlite_unicode} = 1;
+		
+		$dbh->do('BEGIN;');
+		$dbh->do("CREATE TABLE IF NOT EXISTS logs (
+					PACKAGE VARCHAR(255) NOT NULL,
+					NAME VARCHAR(255) NOT NULL,
+					FILENAME VARCHAR (2048) NOT NULL,
+					LOGSTART DATETIME,
+					LOGEND DATETIME,
+					LASTMODIFIED DATETIME NOT NULL,
+					LOGKEY INTEGER PRIMARY KEY 
+				)") or 
+			do {
+				print STDERR "log_init_database create table notifications: $DBI::errstr\n";
+				$dbierr = $DBI::err;
+				$dbierrstr = $DBI::errstr;
+				$dbh->do('ROLLBACK;');
+				$dbok = 0;
+				log_db_repair($dbfile, $dbh, $dbierr);
+				
+				};
+
+		$dbh->do("CREATE TABLE IF NOT EXISTS logs_attr (
+					keyref INTEGER NOT NULL,
+					attrib VARCHAR(255) NOT NULL,
+					value VARCHAR(255),
+					PRIMARY KEY ( keyref, attrib )
+					)") or
+			do {
+				print STDERR "log_db_init_database create table logs_attr: $DBI::errstr\n";
+				$dbierr = $DBI::err;
+				$dbierrstr = $DBI::errstr;
+				$dbh->do('ROLLBACK;');
+				$dbok = 0;
+				log_db_repair($dbfile, $dbh, $dbierr);
 			};
+		
+		$dbh->do('COMMIT;');
+		
+		if ($dbok) {
+			last;
+		}
 	}
 	
-	$dbh->do('BEGIN;');
-	$dbh->do("CREATE TABLE IF NOT EXISTS logs (
-				PACKAGE VARCHAR(255) NOT NULL,
-				NAME VARCHAR(255) NOT NULL,
-				FILENAME VARCHAR (2048) NOT NULL,
-				LOGSTART DATETIME,
-				LOGEND DATETIME,
-				LASTMODIFIED DATETIME NOT NULL,
-				LOGKEY INTEGER PRIMARY KEY 
-			)") or 
-		do {
-			print STDERR "log_init_database create table notifications: $DBI::errstr\n";
-			$dbh->do('ROLLBACK;');
-			return undef;
-			};
-
-	$dbh->do("CREATE TABLE IF NOT EXISTS logs_attr (
-				keyref INTEGER NOT NULL,
-				attrib VARCHAR(255) NOT NULL,
-				value VARCHAR(255),
-				PRIMARY KEY ( keyref, attrib )
-				)") or
-		do {
-			print STDERR "log_db_init_database create table logs_attr: $DBI::errstr\n";
-			$dbh->do('ROLLBACK;');
-			return undef;
-		};
-	
-	$dbh->do('COMMIT;');
+	if(!$dbok) {
+		print STDERR "log_db_init_database: FAILED TO RECOVER DATABASE (Database error $dbierr - $dbierrstr)\n";
+		LoxBerry::Log::notify( "logmanager", "Log Database", "The logfile database sends an error and cannot automatically be recovered. Please inform the LoxBerry-Core team about this error:\nError $dbierr ($dbierrstr)", 'error');
+		return undef;
+	}
 	
 	eval {
 		my $uid = (stat $dbfile)[4];
@@ -652,6 +656,28 @@ sub log_db_init_database
 	
 	return $dbh;
 
+}
+
+sub log_db_repair
+{
+	my ($dbfile, $dbh, $dbierror) = @_;
+	print STDERR "log_db_repair: Repairing DB (Error $dbierror)\n";
+	# https://www.sqlite.org/c3ref/c_abort.html
+	# 11 - The database disk image is malformed
+	if ($dbierror eq "11") {
+		print STDERR "logdb seems to be corrupted - deleting and recreating...\n";
+		$dbh->disconnect();
+		unlink $dbfile;
+		$dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","") or 
+			do {    
+				$dbh->disconnect() if ($dbh);
+				return undef;
+			};
+	} else {
+		$dbh->disconnect() if ($dbh);
+		return undef;
+	}
+		
 }
 
 sub log_db_query_id
