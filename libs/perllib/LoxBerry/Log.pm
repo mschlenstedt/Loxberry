@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.16";
+our $VERSION = "1.2.5.17";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -348,7 +348,7 @@ sub write
 		$self->{loglevel} = 6;
 	}
 	
-	if ((!$self->{STATUS} or $severity < $self->{STATUS}) and $severity >= 0) {
+	if ((!defined($self->{STATUS}) or $severity < $self->{STATUS}) and $severity >= 0) {
 		# Remember highest severity sent
 		$self->{STATUS} = "$severity";
 	}
@@ -505,9 +505,9 @@ sub LOGEND
 	
 	$self->{LOGENDMESSAGE} = $s if ($s);
 	
-	if(!$self->{STATUS}) {
+	if(!defined($self->{STATUS})) {
 		# If no status was collected, let's say it's ok
-		$self->{STATUS} = '5';
+		$self->{STATUS} = 5;
 	}
 	
 	if(! $self->{nofile}) {
@@ -557,7 +557,7 @@ sub DESTROY {
 	};	
 	
 	if(!$self->{nofile} and $self->{dbkey} 
-		and $self->{STATUS} and !$self->{logend_called}) {
+		and defined $self->{STATUS} and !$self->{logend_called}) {
 		if(!$self->{dbh}) {
 			$self->{dbh} = log_db_init_database();
 		}

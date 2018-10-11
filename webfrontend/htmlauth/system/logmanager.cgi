@@ -139,15 +139,15 @@ sub form_log
 		}
 		
 		print "\t\t<tr>\n";
-		print "\t\t\t<td style='text-align:center; background-color:#FFFFFF; width:80px; color:white; text-shadow: none;'></td>\n" if (!$log->{STATUS} or $log->{STATUS} eq "");
-		print "\t\t\t<td style='text-align:center; background-color:#FF007F; width:80px; color:white;text-shadow: none;'>EMERGENCY</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "0");
-		print "\t\t\t<td style='text-align:center; background-color:#990000; width:80px; color:white; text-shadow: none;'>ALERT</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "1");
-		print "\t\t\t<td style='text-align:center; background-color:#CC0000; width:80px; color:white; text-shadow: none;'>CRITICAL</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "2");
-		print "\t\t\t<td style='text-align:center; background-color:#FF3333; width:80px; color:white; text-shadow: none;'>Error</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "3");
-		print "\t\t\t<td style='text-align:center; background-color:#FFFF33; width:80px; text-shadow: none;'>Warning</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "4");
-		print "\t\t\t<td style='text-align:center; background-color:#6DAC20; width:80px; color:white; text-shadow: none;'>OK</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "5");
-		print "\t\t\t<td style='text-align:center; background-color:#3333FF; width:80px; color:white; text-shadow: none;'>Info</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "6");
-		print "\t\t\t<td style='text-align:center; background-color:#CCE5FF; width:80px; text-shadow: none;'>Debug</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "7");
+		print "\t\t\t<td style='text-align:center; background-color:#FFFFFF; width:80px; color:white; text-shadow: none;'></td>\n" if (!defined $log->{STATUS} or $log->{STATUS} eq "");
+		print "\t\t\t<td style='text-align:center; background-color:#FF007F; width:80px; color:white;text-shadow: none;'>EMERGENCY</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "0");
+		print "\t\t\t<td style='text-align:center; background-color:#990000; width:80px; color:white; text-shadow: none;'>ALERT</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "1");
+		print "\t\t\t<td style='text-align:center; background-color:#CC0000; width:80px; color:white; text-shadow: none;'>CRITICAL</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "2");
+		print "\t\t\t<td style='text-align:center; background-color:#FF3333; width:80px; color:white; text-shadow: none;'>Error</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "3");
+		print "\t\t\t<td style='text-align:center; background-color:#FFFF33; width:80px; text-shadow: none;'>Warning</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "4");
+		print "\t\t\t<td style='text-align:center; background-color:#6DAC20; width:80px; color:white; text-shadow: none;'>OK</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "5");
+		print "\t\t\t<td style='text-align:center; background-color:#3333FF; width:80px; color:white; text-shadow: none;'>Info</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "6");
+		print "\t\t\t<td style='text-align:center; background-color:#CCE5FF; width:80px; text-shadow: none;'>Debug</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "7");
 		
 		print "\t\t\t<td>$log->{LOGSTARTMESSAGE}</td>\n";
 		print "\t\t\t<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
