@@ -280,7 +280,7 @@ sub checkdisks {
 		my %folderinfo = LoxBerry::System::diskspaceinfo($disk);
 		LOGDEB "Checking $folderinfo{mountpoint} ($folderinfo{filesystem} - Available " . sprintf("%.1f",$folderinfo{available}/$folderinfo{size}*100) . "%)";
 		next if( $folderinfo{size} eq "0" or ($folderinfo{available}/$folderinfo{size}*100) > $deletefactor );
-		LOGDEB "--> $folderinfo{mountpoint} below limit AVAL $folderinfo{available} SIZE $folderinfo{size} - EMERGENCY housekeeping needed.";
+		LOGWARN "--> $folderinfo{mountpoint} below limit AVAL $folderinfo{available} SIZE $folderinfo{size} - EMERGENCY housekeeping needed.";
 		push(@paths, $disk);
 	}
 	return(@paths);
@@ -303,6 +303,8 @@ sub postlogcleanup {
 
 sub logdb_cleanup
 {
+
+	LOGINF "Logfile maintenance: logdb_cleanup called.";
 
 	my @logs = LoxBerry::Log::get_logs();
 	my @keystodelete;
