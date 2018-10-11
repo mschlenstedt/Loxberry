@@ -113,7 +113,7 @@ sub form_log
 
 	my @logs = LoxBerry::Log::get_logs($R::package, $R::name);
 	# print "Logs: " . scalar (@logs) . "\n";
-	@logs = sort { $a->{'_ISPLUGIN'} <=> $b->{'_ISPLUGIN'} } @logs;
+	@logs = sort { $a->{'_ISPLUGIN'} cmp $b->{'_ISPLUGIN'} } @logs;
 	
 	my $currpackage;
 	my $currname;
