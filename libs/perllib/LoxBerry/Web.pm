@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.5.4";
+our $VERSION = "1.2.5.5";
 our $DEBUG;
 
 use base 'Exporter';
@@ -715,17 +715,18 @@ sub loglevel_select_html
 		$p{FORMID} = "select_loglevel";
 	}
 
+	$html = '<div class="ui-field-contain">';
+		
 	if (defined $p{LABEL} and $p{LABEL} eq "") {
-		$html = "";
+		
 	} elsif ($p{LABEL} and $p{LABEL} ne "") {
-		$html = qq { <label for="$p{FORMID}">$p{LABEL}</label> };
+		$html .= qq { <label for="$p{FORMID}">$p{LABEL}</label> };
 	} else {
-		$html = qq { <label for="$p{FORMID}">$SL{'PLUGININSTALL.UI_LABEL_LOGGING_LEVEL'}</label> };
+		$html .= qq { <label for="$p{FORMID}">$SL{'PLUGININSTALL.UI_LABEL_LOGGING_LEVEL'}</label> };
 	}
 	
 	$html .= <<EOF;
-	
-	<fieldset data-role="controlgroup" data-type="horizontal" data-mini="$datamini">
+	<!-- <fieldset data-role="controlgroup" data-type="horizontal" data-mini="$datamini"> -->
 	<select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
 		<option value="0">$SL{'PLUGININSTALL.UI_LOG_0_OFF'}</option>
 		<option value="3">$SL{'PLUGININSTALL.UI_LOG_3_ERRORS'}</option>
@@ -733,8 +734,9 @@ sub loglevel_select_html
 		<option value="6">$SL{'PLUGININSTALL.UI_LOG_6_INFO'}</option>
 		<option value="7">$SL{'PLUGININSTALL.UI_LOG_7_DEBUG'}</option>
 	</select>
-	</fieldset>
-
+	<!-- </fieldset> -->
+	</div>
+	
 	<script>
 	\$(document).ready( function()
 	{
