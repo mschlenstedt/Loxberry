@@ -502,11 +502,9 @@ class intLog
 		if(!isset($p->params["filename"])) { throw new Exception("log_db_queryid: No FILENAME defined");}
 		if(!isset($dbh)) { error_log("log_db_query_id: dbh not defined\n"); return; }
 		
-		
-		
 		# Search filename
 		$qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '{$p->params["filename"]}' ORDER BY LOGSTART DESC LIMIT 1;"; 
-		error_log("log_db_queryid: Query $qu\n");
+		// error_log("log_db_queryid: Query $qu\n");
 		$res = $dbh->QUERY($qu);
 		$row = $res->fetchArray(SQLITE3_ASSOC);
 		if (!empty($row["LOGKEY"])) {
@@ -605,7 +603,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.3";
+	public static $VERSION = "1.2.5.4";
 	
 	public static function newLog($args)
 	{
