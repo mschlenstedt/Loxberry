@@ -65,7 +65,9 @@ $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 if (!$embed and !$R::package) {
 	$navbar{1}{Name} = "Logfiles";
 	$navbar{1}{URL} = '?form=log';
-	 
+	$navbar{1}{Notify_Package} = "logmanager";
+	$navbar{1}{Notify_Name} = 'Log Database';
+
 	$navbar{2}{Name} = "Legacy Logfiles";
 	$navbar{2}{URL} = '?form=legacylog';
 	 
@@ -101,14 +103,17 @@ exit;
 sub form_log
 {
 	$maintemplate->param( 'FORM_LOG', 1);
+	print LoxBerry::Log::get_notifications_html("logmanager", 'Log Database');
+	
+	$LoxBerry::Log::DEBUG=1;
+	
 	
 	# For embedded mode, send header
 	print $cgi->header(-charset=>'utf-8') if ($embed);
 
 	my @logs = LoxBerry::Log::get_logs($R::package, $R::name);
-	my @logs = sort { $a->{'_ISPLUGIN'} <=> $b->{'_ISPLUGIN'} } @logs;
-
-	# $maintemplate->param('logs', \@logs);
+	# print "Logs: " . scalar (@logs) . "\n";
+	@logs = sort { $a->{'_ISPLUGIN'} cmp $b->{'_ISPLUGIN'} } @logs;
 	
 	my $currpackage;
 	my $currname;
@@ -134,15 +139,15 @@ sub form_log
 		}
 		
 		print "\t\t<tr>\n";
-		print "\t\t\t<td style='text-align:center; background-color:#FFFFFF; width:80px; color:white; text-shadow: none;'></td>\n" if (!$log->{STATUS} or $log->{STATUS} eq "");
-		print "\t\t\t<td style='text-align:center; background-color:#FF007F; width:80px; color:white;text-shadow: none;'>EMERGENCY</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "0");
-		print "\t\t\t<td style='text-align:center; background-color:#990000; width:80px; color:white; text-shadow: none;'>ALERT</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "1");
-		print "\t\t\t<td style='text-align:center; background-color:#CC0000; width:80px; color:white; text-shadow: none;'>CRITICAL</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "2");
-		print "\t\t\t<td style='text-align:center; background-color:#FF3333; width:80px; color:white; text-shadow: none;'>Error</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "3");
-		print "\t\t\t<td style='text-align:center; background-color:#FFFF33; width:80px; text-shadow: none;'>Warning</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "4");
-		print "\t\t\t<td style='text-align:center; background-color:#6DAC20; width:80px; color:white; text-shadow: none;'>OK</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "5");
-		print "\t\t\t<td style='text-align:center; background-color:#3333FF; width:80px; color:white; text-shadow: none;'>Info</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "6");
-		print "\t\t\t<td style='text-align:center; background-color:#CCE5FF; width:80px; text-shadow: none;'>Debug</td>\n" if ($log->{STATUS} and $log->{STATUS} eq "7");
+		print "\t\t\t<td style='text-align:center; background-color:#FFFFFF; width:80px; color:white; text-shadow: none;'></td>\n" if (!defined $log->{STATUS} or $log->{STATUS} eq "");
+		print "\t\t\t<td style='text-align:center; background-color:#FF007F; width:80px; color:white;text-shadow: none;'>EMERGENCY</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "0");
+		print "\t\t\t<td style='text-align:center; background-color:#990000; width:80px; color:white; text-shadow: none;'>ALERT</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "1");
+		print "\t\t\t<td style='text-align:center; background-color:#CC0000; width:80px; color:white; text-shadow: none;'>CRITICAL</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "2");
+		print "\t\t\t<td style='text-align:center; background-color:#FF3333; width:80px; color:white; text-shadow: none;'>Error</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "3");
+		print "\t\t\t<td style='text-align:center; background-color:#FFFF33; width:80px; text-shadow: none;'>Warning</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "4");
+		print "\t\t\t<td style='text-align:center; background-color:#6DAC20; width:80px; color:white; text-shadow: none;'>OK</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "5");
+		print "\t\t\t<td style='text-align:center; background-color:#3333FF; width:80px; color:white; text-shadow: none;'>Info</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "6");
+		print "\t\t\t<td style='text-align:center; background-color:#CCE5FF; width:80px; text-shadow: none;'>Debug</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "7");
 		
 		print "\t\t\t<td>$log->{LOGSTARTMESSAGE}</td>\n";
 		print "\t\t\t<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
@@ -175,6 +180,7 @@ sub form_log
 sub form_legacylog
 {
 	require File::Find::Rule;
+	require Time::Piece;
 	
 	$maintemplate->param( 'FORM_LEGACYLOG', 1);
 	
@@ -184,41 +190,51 @@ sub form_legacylog
 		push(@plugins, \$plugin);
 	} else {
 		@plugins = LoxBerry::System::get_plugins();
-		@plugins = sort { $a->{'PLUGINDB_TITLE'} <=> $b->{'PLUGINDB_TITLE'} } @plugins;
+		@plugins = sort { $a->{'PLUGINDB_TITLE'} cmp $b->{'PLUGINDB_TITLE'} } @plugins;
 	}
 	
 	# Generate logfile list of LogDB
 	my @logs = LoxBerry::Log::get_logs($R::package);
-	my %dblogfiles_hash;
-	my @dblogfiles;
+	
 	# Uniquify logfiles from LogDB
+	my %dblogfiles_hash;
 	foreach(@logs) {
 		$dblogfiles_hash{$_->{'FILENAME'}} = 1;
 	}
-	#@dblogfiles = keys %dblogfiles_hash;
 	
 	# Get all logfiles of plugin log directories
-	foreach my $plugin (@plugins) {
+	my @displayplugins;
+	foreach my $key (keys @plugins) {
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
 			#->nonempty
-			->in("$lbhomedir/log/plugins/$plugin->{PLUGINDB_FOLDER}");
+			->in("$lbhomedir/log/plugins/$plugins[$key]->{'PLUGINDB_FOLDER'}");
 		
+		next if(!@files);
 		#Remove logs from the SDK 
 		@files = grep {not exists $dblogfiles_hash{$_}} @files; 
 		
-		next if(!@files);
+		# Loop through files to get size and modification date
+		my @pluginfiles;
+		foreach my $filename (@files) {
+			my %filedata;
+			my @statdata = stat($filename);
+			$filedata{'filename'} = $filename;
+			$filedata{'filesize'} = LoxBerry::System::bytes_humanreadable($statdata[7]);
+			#my $t = localtime($statdata[9]);
+			$filedata{'filemtime'} = localtime($statdata[9])->strftime("%d.%m.%Y %H:%M");
+			push @pluginfiles, \%filedata;
+		}
+		$plugins[$key]->{'FILES'} = \@pluginfiles;
+		push @displayplugins, $plugins[$key];
 		
-		print "<h2>Plugin " . $plugin->{'PLUGINDB_TITLE'} . "</h2>";
-		
-		
-		require Data::Dumper;
-		print Data::Dumper->Dump(\@files) . "\n";
-		
-	
-	
-	
 	}
+	
+	#require Data::Dumper;
+	#print Data::Dumper->Dump(\@plugins) . "\n";
+		
+	
+	$maintemplate->param("PLUGINS", \@displayplugins);
 	
 	return;
 }
