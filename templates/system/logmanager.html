@@ -1,9 +1,15 @@
 <TMPL_IF FORM_LOG>
-
+	<TMPL_UNLESS SINGLE_PACKAGE>
+	<p><TMPL_VAR LOGMANAGER.LOG_INTRO></p>
+	<!-- <h3>Logfile and database information</h3> -->
+	
+	
+	
+	
+	</TMPL_UNLESS>
 </TMPL_IF>
 
 <TMPL_IF FORM_LEGACYLOG>
-	<p><TMPL_VAR LOGMANAGER.LEGACY_INTRO></p>
 	<TMPL_LOOP PLUGINS>
 		<div data-role='collapsible' id='coll_package_<TMPL_VAR PLUGINDB_FOLDER>' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
 			<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_<TMPL_VAR PLUGINDB_FOLDER>'><TMPL_VAR PLUGINDB_TITLE> <span style='font-size:80%;'>(Plugin Log)</span></h2>
@@ -20,6 +26,7 @@
 			</table>
 		</div>
 	</TMPL_LOOP>
+	<p><TMPL_VAR LOGMANAGER.LEGACY_INTRO></p>
 </TMPL_IF>
 
 <script>

@@ -55,6 +55,7 @@ if ($R::package) {
 	} else {
 		$template_title = "$R::package : Logfiles";
 	}
+	$maintemplate->param('SINGLE_PACKAGE', 1);
 } else {
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . "Log Manager"; #$SL{'LOGMANAGER.WIDGETLABEL'};
 }
@@ -68,7 +69,7 @@ if (!$embed and !$R::package) {
 	$navbar{1}{Notify_Package} = "logmanager";
 	$navbar{1}{Notify_Name} = 'Log Database';
 
-	$navbar{2}{Name} = "Legacy Logfiles";
+	$navbar{2}{Name} = "More Logfiles";
 	$navbar{2}{URL} = '?form=legacylog';
 	 
 	$navbar{3}{Name} = "Apache Log";
@@ -118,7 +119,6 @@ sub form_log
 	my $currpackage;
 	my $currname;
 
-	# print STDERR "==== SHOWALLLOGS ====\n";
 	foreach my $log (@logs) {
 		if (($currname and $currname ne $log->{NAME}) or ($currpackage and $currpackage ne $log->{PACKAGE})) {
 			print "</table>\n";
@@ -130,8 +130,16 @@ sub form_log
 		if (! defined($currpackage) or ($currpackage ne $log->{PACKAGE})) {
 			my $expandview = defined $R::package ? 'false' : 'true';
 			print "<div data-role='collapsible' id='coll_package_$log->{PACKAGE}' data-content-theme='true' data-collapsed='$expandview' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>\n";
-			print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>" . ucfirst($log->{PACKAGE}) . " <span style='font-size:80%;'>(LoxBerry System Log)</span></h2>\n" if (!$log->{'_ISPLUGIN'});
-			print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>$log->{PLUGINTITLE} <span style='font-size:80%;'>(Plugin Log)</span></h2>\n" if ($log->{'_ISPLUGIN'});
+			if($log->{'_ISPLUGIN'}) {
+				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>$log->{PLUGINTITLE} <span style='font-size:80%;'>(Plugin Log)</span></h2>\n";
+				print LoxBerry::Web::loglevel_select_html(
+					LABEL => "Current Loglevel",
+					FORMID => "loglevel_" . $log->{PACKAGE},
+					PLUGIN => $log->{PACKAGE}
+				);
+			} else {
+				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>" . ucfirst($log->{PACKAGE}) . " <span style='font-size:80%;'>(LoxBerry System Log)</span></h2>\n";
+			}
 		}
 		if (! defined($currname) or ($currname ne $log->{NAME})) {
 			print "\t<h4>Group '" . ucfirst($log->{NAME}) . "'</h4>\n";
@@ -139,16 +147,33 @@ sub form_log
 		}
 		
 		print "\t\t<tr>\n";
-		print "\t\t\t<td style='text-align:center; background-color:#FFFFFF; width:80px; color:white; text-shadow: none;'></td>\n" if (!defined $log->{STATUS} or $log->{STATUS} eq "");
-		print "\t\t\t<td style='text-align:center; background-color:#FF007F; width:80px; color:white;text-shadow: none;'>EMERGENCY</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "0");
-		print "\t\t\t<td style='text-align:center; background-color:#990000; width:80px; color:white; text-shadow: none;'>ALERT</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "1");
-		print "\t\t\t<td style='text-align:center; background-color:#CC0000; width:80px; color:white; text-shadow: none;'>CRITICAL</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "2");
-		print "\t\t\t<td style='text-align:center; background-color:#FF3333; width:80px; color:white; text-shadow: none;'>Error</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "3");
-		print "\t\t\t<td style='text-align:center; background-color:#FFFF33; width:80px; text-shadow: none;'>Warning</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "4");
-		print "\t\t\t<td style='text-align:center; background-color:#6DAC20; width:80px; color:white; text-shadow: none;'>OK</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "5");
-		print "\t\t\t<td style='text-align:center; background-color:#3333FF; width:80px; color:white; text-shadow: none;'>Info</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "6");
-		print "\t\t\t<td style='text-align:center; background-color:#CCE5FF; width:80px; text-shadow: none;'>Debug</td>\n" if (defined $log->{STATUS} and $log->{STATUS} eq "7");
+		print "\t\t\t<td style='text-align:center; background-color:#FFFFFF; width:80px; color:white; text-shadow: none;'>" if (!defined $log->{STATUS} or $log->{STATUS} eq "");
+		print "\t\t\t<td style='text-align:center; background-color:#FF007F; width:125px; color:white;text-shadow: none;'>EMERGENCY" if (defined $log->{STATUS} and $log->{STATUS} eq "0");
+		print "\t\t\t<td style='text-align:center; background-color:#990000; width:80px; color:white; text-shadow: none;'>ALERT" if (defined $log->{STATUS} and $log->{STATUS} eq "1");
+		print "\t\t\t<td style='text-align:center; background-color:#CC0000; width:80px; color:white; text-shadow: none;'>CRITICAL" if (defined $log->{STATUS} and $log->{STATUS} eq "2");
+		print "\t\t\t<td style='text-align:center; background-color:#FF3333; width:80px; color:white; text-shadow: none;'>Error" if (defined $log->{STATUS} and $log->{STATUS} eq "3");
+		print "\t\t\t<td style='text-align:center; background-color:#FFFF33; width:80px; text-shadow: none;'>Warning" if (defined $log->{STATUS} and $log->{STATUS} eq "4");
+		print "\t\t\t<td style='text-align:center; background-color:#6DAC20; width:80px; color:white; text-shadow: none;'>OK" if (defined $log->{STATUS} and $log->{STATUS} eq "5");
+		print "\t\t\t<td style='text-align:center; background-color:#3333FF; width:80px; color:white; text-shadow: none;'>Info" if (defined $log->{STATUS} and $log->{STATUS} eq "6");
+		print "\t\t\t<td style='text-align:center; background-color:#CCE5FF; width:80px; text-shadow: none;'>Debug" if (defined $log->{STATUS} and $log->{STATUS} eq "7");
 		
+		# Show info symbol for attention messages
+		if(defined $log->{STATUS} and $log->{STATUS} <= 4 and defined $log->{ATTENTIONMESSAGES} and $log->{ATTENTIONMESSAGES} ne "") {
+			$log->{ATTENTIONMESSAGES} =~ s/\n/<br>\n/g;
+			print "&nbsp;<a href='#attmsg_$log->{KEY}' data-rel='popup' data-transition='fade'><img src='/system/images/notification_info_small.svg' height='15' width='15'></a>\n";
+			print "\t\t\t\t<div data-role='popup' id='attmsg_$log->{KEY}' class='ui-content' data-arrow='true'>\n";
+			print "\t\t\t\t\t<p><b>";
+			print "Summery of important logfile messages:";
+			print "</b><br>";
+			print "$log->{ATTENTIONMESSAGES}";
+			print "</p>\n";
+			print "\t\t\t\t</div>";
+		
+		}
+		
+		
+		
+		print "</td>\n";
 		print "\t\t\t<td>$log->{LOGSTARTMESSAGE}</td>\n";
 		print "\t\t\t<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
 		print "\t\t\t<td>";
