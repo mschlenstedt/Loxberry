@@ -161,7 +161,8 @@ sub form_log
 		if(defined $log->{STATUS} and $log->{STATUS} <= 4 and defined $log->{ATTENTIONMESSAGES} and $log->{ATTENTIONMESSAGES} ne "") {
 			$log->{ATTENTIONMESSAGES} =~ s/\n/<br>\n/g;
 			print "&nbsp;<a href='#attmsg_$log->{KEY}' data-rel='popup' data-transition='fade'><img src='/system/images/notification_info_small.svg' height='15' width='15'></a>\n";
-			print "\t\t\t\t<div data-role='popup' id='attmsg_$log->{KEY}' class='ui-content' data-arrow='true'>\n";
+			print "\t\t\t\t<div data-role='popup' id='attmsg_$log->{KEY}' class='ui-content' data-arrow='true' >\n";
+			print "\t\t\t\t\t<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left'>Close</a>\n";
 			print "\t\t\t\t\t<p><b>";
 			print "Summery of important logfile messages:";
 			print "</b><br>";
@@ -241,10 +242,12 @@ sub form_legacylog
 		
 		# Loop through files to get size and modification date
 		my @pluginfiles;
+		my $basepath_length = length("$lbhomedir/log/plugins/$plugins[$key]->{'PLUGINDB_FOLDER'}") + 1;
 		foreach my $filename (@files) {
 			my %filedata;
 			my @statdata = stat($filename);
 			$filedata{'filename'} = $filename;
+			$filedata{'fileshortname'} = substr($filename, $basepath_length);
 			$filedata{'filesize'} = LoxBerry::System::bytes_humanreadable($statdata[7]);
 			#my $t = localtime($statdata[9]);
 			$filedata{'filemtime'} = localtime($statdata[9])->strftime("%d.%m.%Y %H:%M");

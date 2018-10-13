@@ -17,7 +17,7 @@
 			<table border='1px' style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
 				<TMPL_LOOP FILES>
 				<tr>
-					<td><TMPL_VAR filename></td>
+					<td><TMPL_VAR fileshortname></td>
 					<td><TMPL_VAR filemtime></td>
 					<td><a id='btnlogs' data-role='button' href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR filename>&header=html&format=template' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
 					<td><TMPL_VAR filesize></td>
