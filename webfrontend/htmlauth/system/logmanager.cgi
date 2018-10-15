@@ -17,7 +17,6 @@ my $helplink;
 my $plugin;
 our %navbar;
 
-
 # $LoxBerry::Log::DEBUG = 1;
 
 my $cgi = CGI->new;
@@ -64,12 +63,12 @@ $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 
 # Navigation (only for full mode)
 if (!$embed and !$R::package) {
-	$navbar{1}{Name} = "Logfiles";
+	$navbar{1}{Name} = $SL{'LOGMANAGER.LOG_NAVBAR'};
 	$navbar{1}{URL} = '?form=log';
 	$navbar{1}{Notify_Package} = "logmanager";
 	$navbar{1}{Notify_Name} = 'Log Database';
 
-	$navbar{2}{Name} = "More Logfiles";
+	$navbar{2}{Name} = $SL{'LOGMANAGER.LEGACY_NAVBAR'};
 	$navbar{2}{URL} = '?form=legacylog';
 	 
 	$navbar{3}{Name} = "Apache Log";
@@ -133,7 +132,7 @@ sub form_log
 			if($log->{'_ISPLUGIN'}) {
 				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>$log->{PLUGINTITLE} <span style='font-size:80%;'>(Plugin Log)</span></h2>\n";
 				print LoxBerry::Web::loglevel_select_html(
-					LABEL => "Current Loglevel",
+					LABEL => $SL{'LOGMANAGER.CURRENT_LOGLEVEL'},
 					FORMID => "loglevel_" . $log->{PACKAGE},
 					PLUGIN => $log->{PACKAGE}
 				);
@@ -142,7 +141,7 @@ sub form_log
 			}
 		}
 		if (! defined($currname) or ($currname ne $log->{NAME})) {
-			print "\t<h4>Group '" . ucfirst($log->{NAME}) . "'</h4>\n";
+			print "\t<h4>$SL{'LOGMANAGER.LOG_GROUP'} '" . ucfirst($log->{NAME}) . "'</h4>\n";
 			print "\t<table border='1px' style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>\n";
 		}
 		
@@ -164,7 +163,7 @@ sub form_log
 			print "\t\t\t\t<div data-role='popup' id='attmsg_$log->{KEY}' class='ui-content' data-arrow='true' >\n";
 			print "\t\t\t\t\t<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left'>Close</a>\n";
 			print "\t\t\t\t\t<p><b>";
-			print "Summery of important logfile messages:";
+			print $SL{'LOGMANAGER.ATTMSG_POPUP_HEADING'};
 			print "</b><br>";
 			print "$log->{ATTENTIONMESSAGES}";
 			print "</p>\n";
@@ -172,14 +171,12 @@ sub form_log
 		
 		}
 		
-		
-		
 		print "</td>\n";
 		print "\t\t\t<td>$log->{LOGSTARTMESSAGE}</td>\n";
 		print "\t\t\t<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
 		print "\t\t\t<td>";
-		print "<a id='btnlogs' data-role='button' href='/admin/system/tools/logfile.cgi?logfile=$log->{FILENAME}&header=html&format=template' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a>";
-		print "\t\t\t\t\t$log->{FILENAME}\n" if ($R::showfilename);
+		print "<a id='btnlogs' data-role='button' href='/admin/system/tools/logfile.cgi?logfile=$log->{FILENAME}&header=html&format=template' target='_blank' data-inline='true' data-mini='true' data-icon='action'>$SL{'COMMON.BUTTON_OPEN'}</a>";
+		print "\t\t\t\t\t<br><span style='font-size:70%;'>$log->{FILENAME}</span>\n" if ($R::showfilename);
 		print "</td>\n";
 		my $filesize = -s $log->{FILENAME};
 		print "\t\t\t<td>" . LoxBerry::System::bytes_humanreadable($filesize, "B") . "</td>\n";
@@ -265,7 +262,6 @@ sub form_legacylog
 	#require Data::Dumper;
 	#print Data::Dumper->Dump(\@plugins) . "\n";
 		
-	
 	$maintemplate->param("PLUGINS", \@displayplugins);
 	
 	return;
