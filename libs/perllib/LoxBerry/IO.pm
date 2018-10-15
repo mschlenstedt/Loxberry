@@ -401,10 +401,28 @@ sub msudp_send_mem
 		$mem = new Config::Simple(syntax=>'ini');
 		$timestamp = time;
 		$mem->param('Main.timestamp', $timestamp);
-		$mem->write($memfile) or print STDERR "msudp_send_mem: Could not write memory file $memfile\n";
+		$mem->write($memfile) or 
+		do {
+			print STDERR "msudp_send_mem: Could not write memory file $memfile\n";
+			return;
+		};
 		$mem_sendall = 1;
 	} else {
-		$mem = new Config::Simple($memfile);
+		$mem = new Config::Simple($memfile) or 
+		do {
+			print STDERR "msudp_send_mem: Memory file $memfile seems to be corrupted - recreating. Error: " . Config::Simple->error() . "\n";
+			unlink $memfile;
+			$mem = new Config::Simple(syntax=>'ini') or 
+			do { 
+				print STDERR "msudp_send_mem: Could not recreate $memfile. Error: " . Config::Simple->error() . "\n";
+				return;
+			};
+			$timestamp = time;
+			$mem->param('Main.timestamp', $timestamp);
+			$mem->write($memfile) or print STDERR "msudp_send_mem: Could not write memory file $memfile\n";
+			$mem_sendall = 1;
+		
+		};
 		$timestamp = $mem->param('Main.timestamp');
 	}
 	
