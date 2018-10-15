@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "1.2.4.4";
+our $VERSION = "1.2.5.1";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -167,10 +167,28 @@ sub mshttp_send_mem
 		$mem = new Config::Simple(syntax=>'ini');
 		$timestamp = time;
 		$mem->param('Main.timestamp', $timestamp);
-		$mem->write($memfile) or print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";
+		$mem->write($memfile) or 
+		do {
+			print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";
+			return;
+			};
 		$mem_sendall = 1;
 	} else {
-		$mem = new Config::Simple($memfile);
+		$mem = new Config::Simple($memfile) or
+		do {
+			print STDERR "mshttp_send_mem: Memory file $memfile seems to be corrupted - recreating. Error: " . Config::Simple->error() . "\n";
+			unlink $memfile;
+			$mem = new Config::Simple(syntax=>'ini') or 
+			do { 
+				print STDERR "mshttp_send_mem: Could not recreate $memfile. Error: " . Config::Simple->error() . "\n";
+				return;
+			};
+			$timestamp = time;
+			$mem->param('Main.timestamp', $timestamp);
+			$mem->write($memfile) or print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";
+			$mem_sendall = 1;
+		
+		};
 		$timestamp = $mem->param('Main.timestamp');
 	}
 	
