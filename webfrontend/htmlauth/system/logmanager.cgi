@@ -126,23 +126,26 @@ sub form_log
 		print "</div>\n";		
 		}
 		
+		my $package_esc = $log->{PACKAGE};
+		$package_esc =~ tr/ /_/;
+		
 		if (! defined($currpackage) or ($currpackage ne $log->{PACKAGE})) {
 			my $expandview = defined $R::package ? 'false' : 'true';
-			print "<div data-role='collapsible' id='coll_package_$log->{PACKAGE}' data-content-theme='true' data-collapsed='$expandview' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>\n";
+			print "<div data-role='collapsible' id='coll_package_$package_esc' data-content-theme='true' data-collapsed='$expandview' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>\n";
 			if($log->{'_ISPLUGIN'}) {
-				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>$log->{PLUGINTITLE} <span style='font-size:80%;'>(Plugin Log)</span></h2>\n";
+				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$package_esc'>$log->{PLUGINTITLE} <span style='font-size:80%;'>(Plugin Log)</span></h2>\n";
 				print LoxBerry::Web::loglevel_select_html(
 					LABEL => $SL{'LOGMANAGER.CURRENT_LOGLEVEL'},
-					FORMID => "loglevel_" . $log->{PACKAGE},
+					FORMID => "loglevel_" . $package_esc,
 					PLUGIN => $log->{PACKAGE}
 				);
 			} else {
-				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$log->{PACKAGE}'>" . ucfirst($log->{PACKAGE}) . " <span style='font-size:80%;'>(LoxBerry System Log)</span></h2>\n";
+				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$package_esc'>" . ucfirst($log->{PACKAGE}) . " <span style='font-size:80%;'>(LoxBerry System Log)</span></h2>\n";
 			}
 		}
 		if (! defined($currname) or ($currname ne $log->{NAME})) {
 			print "\t<h4>$SL{'LOGMANAGER.LOG_GROUP'} '" . ucfirst($log->{NAME}) . "'</h4>\n";
-			print "\t<table border='1px' style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>\n";
+			print "\t<table style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>\n";
 		}
 		
 		print "\t\t<tr>\n";
@@ -158,8 +161,11 @@ sub form_log
 		
 		# Show info symbol for attention messages
 		if(defined $log->{STATUS} and $log->{STATUS} <= 4 and defined $log->{ATTENTIONMESSAGES} and $log->{ATTENTIONMESSAGES} ne "") {
+			# Strip other html tags
+			$log->{ATTENTIONMESSAGES} =~ s|<.+?>||g;
+			# Replace <br> with \n
 			$log->{ATTENTIONMESSAGES} =~ s/\n/<br>\n/g;
-			print "&nbsp;<a href='#attmsg_$log->{KEY}' data-rel='popup' data-transition='fade'><img src='/system/images/notification_info_small.svg' height='15' width='15'></a>\n";
+			print "&nbsp;<a href='#attmsg_$log->{KEY}' data-rel='popup' data-transition='fade'><img alt='Info' src='/system/images/notification_info_small.svg' height='15' width='15'></a>\n";
 			print "\t\t\t\t<div data-role='popup' id='attmsg_$log->{KEY}' class='ui-content' data-arrow='true' >\n";
 			print "\t\t\t\t\t<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left'>Close</a>\n";
 			print "\t\t\t\t\t<p><b>";
@@ -175,7 +181,7 @@ sub form_log
 		print "\t\t\t<td>$log->{LOGSTARTMESSAGE}</td>\n";
 		print "\t\t\t<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
 		print "\t\t\t<td>";
-		print "<a id='btnlogs' data-role='button' href='/admin/system/tools/logfile.cgi?logfile=$log->{FILENAME}&header=html&format=template' target='_blank' data-inline='true' data-mini='true' data-icon='action'>$SL{'COMMON.BUTTON_OPEN'}</a>";
+		print "<a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=" . uri_escape($log->{FILENAME}) . "&header=html&format=template' target='_blank' data-inline='true' data-mini='true' data-icon='action'>$SL{'COMMON.BUTTON_OPEN'}</a>";
 		print "\t\t\t\t\t<br><span style='font-size:70%;'>$log->{FILENAME}</span>\n" if ($R::showfilename);
 		print "</td>\n";
 		my $filesize = -s $log->{FILENAME};
@@ -249,6 +255,7 @@ sub form_legacylog
 			my @statdata = stat($filename);
 			$filedata{'filename'} = $filename;
 			$filedata{'fileshortname'} = substr($filename, $basepath_length);
+			$filedata{'filename_esc'} = uri_escape($filename);
 			$filedata{'filesize'} = LoxBerry::System::bytes_humanreadable($statdata[7]);
 			#my $t = localtime($statdata[9]);
 			$filedata{'filemtime'} = localtime($statdata[9])->strftime("%d.%m.%Y %H:%M");
