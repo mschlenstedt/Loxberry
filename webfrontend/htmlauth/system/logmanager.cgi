@@ -24,7 +24,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Version of this script
-my $version = "1.2.5.3";
+my $version = "1.2.5.4";
 
 # Remove 'only used once' warnings
 $R::showfilename if 0;
@@ -231,14 +231,18 @@ sub form_legacylog
 	# Get all logfiles of plugin log directories
 	my @displayplugins;
 	foreach my $key (keys @plugins) {
+		# print STDERR "legacylog: Plugin $plugins[$key]->{'PLUGINDB_TITLE'} \n";
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
 			#->nonempty
 			->in("$lbhomedir/log/plugins/$plugins[$key]->{'PLUGINDB_FOLDER'}");
 		
 		next if(!@files);
+		# print STDERR "$plugins[$key]->{'PLUGINDB_TITLE'}: " . scalar @files . " found\n";
 		#Remove logs from the SDK 
 		@files = grep {not exists $dblogfiles_hash{$_}} @files; 
+		# print STDERR "$plugins[$key]->{'PLUGINDB_TITLE'}: " . scalar @files . " left after filter\n";
+		next if(!@files);
 		
 		# Loop through files to get size and modification date
 		my @pluginfiles;
