@@ -6,7 +6,7 @@ require_once "loxberry_system.php";
 $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 
-$LBIOVERSION = "1.2.5.2";
+$LBIOVERSION = "1.2.5.3";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -112,7 +112,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 	global $mem_sendall_sec;
 	global $mem_sendall;
 	
-	$memfile = "/run/shm/msudp_mem_${msnr}_${udpport}.tmp";
+	$memfile = "/run/shm/msudp_mem_${msnr}_${udpport}.json";
 	
 	if(empty($udpport) || $udpport > 65535) {
 		error_log("UDP port $udpport invalid or not defined\n");
@@ -295,7 +295,7 @@ function mshttp_send_mem($msnr, $params, $value = null)
 	global $mem_sendall_sec;
 	global $mem_sendall;
 	
-	$memfile = "/run/shm/mshttp_mem_${msnr}.tmp";
+	$memfile = "/run/shm/mshttp_mem_${msnr}.json";
 	
 	if(file_exists($memfile)) {
 		// echo "Read file\n";
