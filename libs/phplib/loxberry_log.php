@@ -317,6 +317,16 @@ class intLog
 		}
 	}
 	
+	public function STATUS($severity = null)
+	{
+		if($severity >= 0 and $severity <=7 and ( empty($this->params{"STATUS"}) or $severity < $this->params{"STATUS"})) {
+			$this->params{"STATUS"} = $severity;
+		}
+		return $this->params{"STATUS"};
+		
+	}
+
+	
 	public function logtitle($title) 
 	{
 		if(isset($title)) {
@@ -603,7 +613,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.4";
+	public static $VERSION = "1.2.5.5";
 	
 	public static function newLog($args)
 	{
