@@ -1,6 +1,6 @@
 <!-- ** START template/system/admin.html 19.01.2018 19:20:03 ************************************************************************************ -->
 <TMPL_IF WIZARD_SKIPADMIN>
-	<center>
+	<div style="text-align:center;">
 	<TMPL_VAR WIZARD.ADMIN_MSG_SKIPPED>
 	<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="<TMPL_VAR SELFURL>">
 		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
@@ -11,14 +11,14 @@
 -->
 		<button type="submit" form="main_form1" id="btnsubmit" name="btnsubmit" value="1" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-r"><TMPL_VAR WIZARD.BUTTON_NEXT_STEP>&nbsp;<TMPL_VAR NEXTSTEPNR></button>
 	</form>
-	</center>
+	</div>
 </TMPL_IF>
 
 <TMPL_IF FORM>
 	<form method="post" data-ajax="false" name="main_form1" id="main_form1" action="<TMPL_VAR SELFURL>">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="adminuserold" value="<TMPL_VAR ADMINUSEROLD>">
-	<table class="formtable" border="0" width="100%">
+	<table class="formtable" style="width:100%;border-width:0;padding:10px;">
 		<tr>
 			<td colspan="4">
 				<TMPL_IF WIZARD>
@@ -30,16 +30,16 @@
 			</td>
 		</tr>
 		<tr>
-			<td width="15%">
+			<td style="width:15%;">
 				<label class="control-label" for="adminuser"><TMPL_VAR ADMIN.LABEL_USERNAME></label>
 			</td>
-			<td width="40%">
+			<td style="width:40%;">
 				<input value='<TMPL_VAR ADMINUSEROLD>' id='adminuser' name='adminuser' type='text' data-validation-error-msg="<TMPL_VAR ADMIN.MSG_VAL_USERNAME_ERROR>" data-validation-rule="^([A-Za-z0-9]|_-){3,20}$">
 			</td>
-			<td width="3%">
+			<td style="width:3%;">
 				&nbsp;
 			</td>
-			<td width="32%" class="hint">
+			<td style="width:32%;" class="hint">
 				<TMPL_VAR ADMIN.HINT_USERNAME_ALLOWED_CHARS>
 			</td>
 		</tr>
@@ -148,9 +148,8 @@
 		</tr>
 	</TMPL_IF>
 	</table>
-	<p>
-		<center>
-			<table class="formtable" border="0">
+		<div style="text-align:center;">
+			<table class="formtable" style="border-width:0;padding:10px;">
 				<tr>
 					<TMPL_IF WIZARD>
 					<!-- Buttons for wizard -->
@@ -175,8 +174,7 @@
 					</TMPL_IF>
 				</tr>
 			</table>
-		</center>
-	</p>
+		</div>
 </form>
 <script>
 $( document ).ready(function()
@@ -199,7 +197,7 @@ $( document ).ready(function()
 
 <TMPL_IF SAVE>
 	<p><TMPL_VAR ADMIN.SAVE_OK_INFO></p>
-	<table border=0 cellpadding=10>
+	<table style="border-width:0; padding:10px;">
 		<tr>
 			<td>
 				<b><TMPL_VAR ADMIN.SAVE_OK_WEB_ADMIN_AREA></b>
@@ -269,8 +267,8 @@ $( document ).ready(function()
 			</td>
 		</tr>
 	</table>
-	<center>
-		<table border=0>
+	<div style="text-align:center;">
+		<table style="border-width:0; padding:10px;">
 			<tr>
 				<td align="center">
 					<TMPL_IF WIZARD>
@@ -291,6 +289,6 @@ $( document ).ready(function()
 				</td>
 			</tr>
 		</table>
-	</center>
+	</div>
 </TMPL_IF>
 <!-- ** END template/system/admin.html ************************************************************************************ -->
