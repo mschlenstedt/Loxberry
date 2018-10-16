@@ -80,10 +80,7 @@ function LOGSTART {
 			if [ "$FILENAME" = "$TESTFN" ];then FILENAME=""; COUNTER=${LOGS}; fi
 		done
 	fi
-	if [ -n "$DBKEY" ]
-	then
-		LOG=(`$LBHOMEDIR/libs/bashlib/initlog.php -dbkey=$DBKEY "--message=$@"`)
-	elif [ -n "$PACKAGE" ] && [ -n "$NAME" ] && ([ -n "$LOGDIR" ] || [ -n "$FILENAME" ] || [ -n "$NOFILE" ])
+	if [ -n "$PACKAGE" ] && [ -n "$NAME" ] && ([ -n "$LOGDIR" ] || [ -n "$FILENAME" ] || [ -n "$NOFILE" ])
 	then
 		LOGS=$((LOGS + 1))
 		PARAM=""
@@ -135,14 +132,7 @@ function LOGEND {
 	loadvariables
 	if [ "$pLOGLEVEL" -ge -1 ]
 	then
-			if [ -z ${pNOFILE:+x} ] && [ -n "$pFILEID" ]; then
-				echo "<LOGEND>$@" >&${pFILEID}
-				echo "<LOGEND>"$(date +"%d.%m.%Y %H:%M:%S")" TASK FINISHED" >&${pFILEID}
-			fi
-			if [ -n "$STDERR" ];then
-				echo "<LOGEND>$@" 1>&2
-				echo "<LOGEND>"$(date +"%d.%m.%Y %H:%M:%S")" TASK FINISHED" 1>&2
-			fi
+		$LBHOMEDIR/libs/bashlib/initlog.php --action=logend --dbkey=${pDBKEY} "--message=$@"
 	fi
 }
 function WRITE {
@@ -157,6 +147,7 @@ function loadvariables {
 	unset pFILEID
 	unset pADDTIME
 	unset pLOGLEVEL
+	unset pDBKEY
 	if [ ${ARRLOGS["$ACTIVELOG.name"]+_} ]; then
 		if [ ${ARRLOGS["$ACTIVELOG.nofile"]+_} ]; then pNOFILE=${ARRLOGS["$ACTIVELOG.nofile"]}; fi
 		if [ ${ARRLOGS["$ACTIVELOG.stderr"]+_} ]; then pSTDERR=${ARRLOGS["$ACTIVELOG.stderr"]}; fi
@@ -164,6 +155,7 @@ function loadvariables {
 		if [ ${ARRLOGS["$ACTIVELOG.fileid"]+_} ]; then pFILEID=${ARRLOGS["$ACTIVELOG.fileid"]}; fi
 		if [ ${ARRLOGS["$ACTIVELOG.addtime"]+_} ]; then pADDTIME=${ARRLOGS["$ACTIVELOG.addtime"]}; fi
 		if [ ${ARRLOGS["$ACTIVELOG.loglevel"]+_} ]; then pLOGLEVEL=${ARRLOGS["$ACTIVELOG.loglevel"]}; fi
+		if [ ${ARRLOGS["$ACTIVELOG.dbkey"]+_} ]; then pDBKEY=${ARRLOGS["$ACTIVELOG.dbkey"]}; fi
 	else
 		pLOGLEVEL=3
 		WRITE "<ERROR> No valid logfile selected"
