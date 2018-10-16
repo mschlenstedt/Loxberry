@@ -541,40 +541,8 @@ sub lbuhistory
 	# my %SL = LoxBerry::System::readlanguage($maintemplate);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
-	# Copy from showalllogs
-	
-	my @updatelogs = LoxBerry::Log::get_logs("LoxBerry Update", "update");
-	for my $log (@updatelogs) {
-		$log->{NOSTATUS} = 1 if ($log->{STATUS} and $log->{STATUS} eq "");
-		$log->{DEBUG} = 1 if ($log->{STATUS} and $log->{STATUS} eq "7");
-		$log->{INFO} = 1 if ($log->{STATUS} and $log->{STATUS} eq "6");
-		$log->{OK} = 1 if ($log->{STATUS} and $log->{STATUS} eq "5");
-		$log->{WARNING} = 1 if ($log->{STATUS} and $log->{STATUS} eq "4");
-		$log->{ERROR} = 1 if ($log->{STATUS} and $log->{STATUS} eq "3");
-		$log->{CRITICAL} = 1 if ($log->{STATUS} and $log->{STATUS} eq "2");
-		$log->{ALERT} = 1 if ($log->{STATUS} and $log->{STATUS} eq "1");
-		$log->{EMERGENCY} = 1 if ($log->{STATUS} and $log->{STATUS} eq "0");
-		$log->{FILESIZE} = -s $log->{FILENAME};
-		$log->{FILESIZE} =LoxBerry::System::bytes_humanreadable($log->{FILESIZE}, "B");
-	}
-	$maintemplate->param('updatelogs', \@updatelogs);
-	
-	my @checklogs = LoxBerry::Log::get_logs("LoxBerry Update", "check");
-	for my $log (@checklogs) {
-		$log->{NOSTATUS} = 1 if ($log->{STATUS} and $log->{STATUS} eq "");
-		$log->{DEBUG} = 1 if ($log->{STATUS} and $log->{STATUS} eq "7");
-		$log->{INFO} = 1 if ($log->{STATUS} and $log->{STATUS} eq "6");
-		$log->{OK} = 1 if ($log->{STATUS} and $log->{STATUS} eq "5");
-		$log->{WARNING} = 1 if ($log->{STATUS} and $log->{STATUS} eq "4");
-		$log->{ERROR} = 1 if ($log->{STATUS} and $log->{STATUS} eq "3");
-		$log->{CRITICAL} = 1 if ($log->{STATUS} and $log->{STATUS} eq "2");
-		$log->{ALERT} = 1 if ($log->{STATUS} and $log->{STATUS} eq "1");
-		$log->{EMERGENCY} = 1 if ($log->{STATUS} and $log->{STATUS} eq "0");
-		$log->{FILESIZE} = -s $log->{FILENAME};
-		$log->{FILESIZE} =LoxBerry::System::bytes_humanreadable($log->{FILESIZE}, "B");
-	}
-	$maintemplate->param('checklogs', \@checklogs);
-	
+	$maintemplate->param("UPDATELOGS_HTML", loglist_html( PACKAGE => 'LoxBerry Update', NAME => 'update' ));
+	$maintemplate->param("UPDATECHECKLOGS_HTML", loglist_html( PACKAGE => 'LoxBerry Update', NAME => 'check' ));
 	
 	
 	# Print Template
