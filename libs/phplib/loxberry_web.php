@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.5.2";
+	public static $LBWEBVERSION = "1.2.5.3";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -136,7 +136,7 @@ class LBWeb
 			sort($navbar, SORT_NUMERIC);
 			$topnavbar = '<div data-role="navbar">' . 
 				'	<ul>';
-			foreach ($navbar as $element) {
+			foreach ($navbar as $key => $element) {
 				if (isset($element['active'])) {
 					$btnactive = ' class="ui-btn-active"';
 				} else { $btnactive = NULL; 
@@ -155,15 +155,17 @@ class LBWeb
 					// $notify = ' <span class="notifyBlueNavBar">' . $element['notifyBlue'] . '</span>';
 				// }
 				
-				$notify .= <<<EOT
-				<div class="notifyBlueNavBar" id="notifyBlueNavBar$element" style="display: none">0</div>
-				<div class="notifyRedNavBar" id="notifyRedNavBar$element" style="display: none">0</div>
+				$notify = <<<EOT
+				<div class="notifyBlueNavBar" id="notifyBlueNavBar$key" style="display: none">0</div>
+				<div class="notifyRedNavBar" id="notifyRedNavBar$key" style="display: none">0</div>
 EOT;
 				
 				if (isset($element['Name'])) {
 					$topnavbar .= <<<EOT
 				<li>
-					<div style="position:relative">$notify<a href="{$element['URL']}"{$btntarget}{$btnactive}>{$element['Name']}</a></div></li>
+					<div style="position:relative">$notify<a href="{$element['URL']}"{$btntarget}{$btnactive}>{$element['Name']}</a>
+					</div>
+				</li>
 EOT;
 					$topnavbar_haselements = True;
 				
@@ -180,10 +182,10 @@ EOT;
 			.done(function(data) { 
 				console.log("get_notification_count executed successfully");
 				console.log("{$element['Name']}", data[0], data[1], data[2]);
-				if (data[0] != 0) \$("#notifyRedNavBar{$element}").text(data[2]).fadeIn('slow');
-				else \$("#notifyRedNavBar{$element}").text('0').fadeOut('slow');
-				if (data[1] != 0) \$("#notifyBlueNavBar{$element}").text(data[1]).fadeIn('slow');
-				else \$("#notifyBlueNavBar{$element}").text('0').fadeOut('slow');
+				if (data[0] != 0) \$("#notifyRedNavBar{$key}").text(data[2]).fadeIn('slow');
+				else \$("#notifyRedNavBar{$key}").text('0').fadeOut('slow');
+				if (data[1] != 0) \$("#notifyBlueNavBar{$key}").text(data[1]).fadeIn('slow');
+				else \$("#notifyBlueNavBar{$key}").text('0').fadeOut('slow');
 				
 			});
 EOT;
