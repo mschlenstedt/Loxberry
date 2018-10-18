@@ -9,8 +9,8 @@ function LOGDEB {
 	then
 	  if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "$CURRTIME$@"
-		if [ "$pSTATUS" -gt 7 ];then ARRLOGS["$ACTIVELOG.status"]=7; fi
 	fi
+	if [ "$pSTATUS" -gt 7 ];then ARRLOGS["$ACTIVELOG.status"]=7; fi
 }
 function LOGINF {
 	loadvariables
@@ -18,8 +18,8 @@ function LOGINF {
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "$CURRTIME<INFO> $@"
-		if [ "$pSTATUS" -gt 6 ];then ARRLOGS["$ACTIVELOG.status"]=6; fi
 	fi
+	if [ "$pSTATUS" -gt 6 ];then ARRLOGS["$ACTIVELOG.status"]=6; fi
 }
 function LOGOK {
 	loadvariables
@@ -27,8 +27,8 @@ function LOGOK {
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "$CURRTIME<OK> $@"
-		if [ "$pSTATUS" -gt 5 ];then ARRLOGS["$ACTIVELOG.status"]=5; fi
 	fi
+	if [ "$pSTATUS" -gt 5 ];then ARRLOGS["$ACTIVELOG.status"]=5; fi
 }
 function LOGWARN {
 	loadvariables
@@ -36,8 +36,8 @@ function LOGWARN {
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "$CURRTIME<WARNING> $@"
-		if [ "$pSTATUS" -gt 4 ];then ARRLOGS["$ACTIVELOG.status"]=4; fi
 	fi
+	if [ "$pSTATUS" -gt 4 ];then ARRLOGS["$ACTIVELOG.status"]=4; fi
 }
 function LOGERR {
 	loadvariables
@@ -45,8 +45,8 @@ function LOGERR {
 	then
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "$CURRTIME<ERROR> $@"
-		if [ "$pSTATUS" -gt 3 ];then ARRLOGS["$ACTIVELOG.status"]=3; fi
 	fi
+	if [ "$pSTATUS" -gt 3 ];then ARRLOGS["$ACTIVELOG.status"]=3; fi
 }
 function LOGCRIT {
 	loadvariables
@@ -55,8 +55,8 @@ function LOGCRIT {
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "$CURRTIME<CRITICAL> $@"
 		if [ "$pLOGLEVEL" -lt 6 ];then ARRLOGS["$ACTIVELOG.loglevel"]=6; fi
-		if [ "$pSTATUS" -gt 2 ];then ARRLOGS["$ACTIVELOG.status"]=2; fi
 	fi
+	if [ "$pSTATUS" -gt 2 ];then ARRLOGS["$ACTIVELOG.status"]=2; fi
 }
 function LOGALERT {
 	loadvariables
@@ -75,8 +75,8 @@ function LOGEMERGE {
 		if [ -n "$pADDTIME" ];then CURRTIME=$(date +"%H:%M:%S ");else CURRTIME=""; fi
 		WRITE "$CURRTIME<EMERGE> $@"
 		if [ "$pLOGLEVEL" -lt 6 ];then ARRLOGS["$ACTIVELOG.loglevel"]=6; fi
-		if [ "$pSTATUS" -gt 0 ];then ARRLOGS["$ACTIVELOG.status"]=0; fi
 	fi
+	if [ "$pSTATUS" -gt 0 ];then ARRLOGS["$ACTIVELOG.status"]=0; fi
 }
 function LOGSTART {
 	if [ -n "$FILENAME" ]
@@ -110,7 +110,7 @@ function LOGSTART {
 		if [ -z "$LOGLEVEL" ];then LOGLEVEL=${LOG[1]}; fi
 		ARRLOGS["$LOGS.loglevel"]=$LOGLEVEL
 		ARRLOGS["$LOGS.dbkey"]=${LOG[2]};
-		ARRLOGS["$LOGS.status"]=7;
+		ARRLOGS["$LOGS.status"]=99;
 		if [ -n "$ADDTIME" ]; then ARRLOGS["$LOGS.addtime"]=$ADDTIME; fi
 		if ([ -z ${NOFILE:+x} ] && [ -z ${FILENAME:+x} ]) || [ -z ${LOGLEVEL:+x} ]
 		then
@@ -142,7 +142,10 @@ function LOGEND {
 	loadvariables
 	if [ "$pLOGLEVEL" -ge -1 ]
 	then
-		$LBHOMEDIR/libs/bashlib/initlog.php --action=logend --dbkey=${pDBKEY} --status=${pSTATUS} "--message=$@"
+		strSTATUS=""
+		if [ "$pSTATUS" -lt 99 ];then strSTATUS=" --status=${pSTATUS}"; fi
+		$LBHOMEDIR/libs/bashlib/initlog.php --action=logend --dbkey=${pDBKEY}${strSTATUS} "--message=$@"
+
 	fi
 }
 function WRITE {
