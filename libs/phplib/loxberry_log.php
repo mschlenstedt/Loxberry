@@ -326,6 +326,15 @@ class intLog
 		
 	}
 
+	public function ATTENTIONMESSAGES($messages = null)
+	{
+		if(!empty($messages)) {
+			$this->params{"ATTENTIONMESSAGES"} = $messages;
+		}
+		return $this->params{"ATTENTIONMESSAGES"};
+
+	}
+
 	
 	public function logtitle($title) 
 	{
@@ -613,7 +622,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.5";
+	public static $VERSION = "1.2.5.6";
 	
 	public static function newLog($args)
 	{
