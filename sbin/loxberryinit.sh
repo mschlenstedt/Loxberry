@@ -81,64 +81,54 @@ case "$1" in
 		log_action_end_msg 0
 	fi
 
-        # Copy manual network configuration if any exists
-        if [ -f /boot/network.txt ]
-        then
-			log_action_begin_msg "Found manual network configuration in /boot. Activating..."
-			mv $LBHOMEDIR/system/network/interfaces  $LBHOMEDIR/system/network/interfaces.bkp > /dev/null 2>&1
-			cp /boot/network.txt  $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
-			dos2unix /etc/network/interfaces > /dev/null 2>&1
-			chown loxberry:loxberry $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
-			mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
-			log_action_cont_msg "Rebooting"
-			/sbin/reboot > /dev/null 2>&1
-	  		log_action_end_msg 0
-        fi
+	# Copy manual network configuration if any exists
+	if [ -f /boot/network.txt ]
+	then
+		log_action_begin_msg "Found manual network configuration in /boot. Activating..."
+		mv $LBHOMEDIR/system/network/interfaces  $LBHOMEDIR/system/network/interfaces.bkp > /dev/null 2>&1
+		cp /boot/network.txt  $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
+		dos2unix /etc/network/interfaces > /dev/null 2>&1
+		chown loxberry:loxberry $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
+		mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
+		log_action_cont_msg "Rebooting"
+		/sbin/reboot > /dev/null 2>&1
+		log_action_end_msg 0
+	fi
 
-        # Copy new HTACCESS User/Password Database
-        if [ -f $LBHOMEDIR/config/system/htusers.dat.new ]
-        then
-          log_action_begin_msg "Found new htaccess password database. Activating..."
-          mv $LBHOMEDIR/config/system/htusers.dat.new $LBHOMEDIR/config/system/htusers.dat > /dev/null 2>&1
-	  log_action_end_msg 0
-        fi
+	# Copy new HTACCESS User/Password Database
+	if [ -f $LBHOMEDIR/config/system/htusers.dat.new ]
+	then
+		log_action_begin_msg "Found new htaccess password database. Activating..."
+		mv $LBHOMEDIR/config/system/htusers.dat.new $LBHOMEDIR/config/system/htusers.dat > /dev/null 2>&1
+		log_action_end_msg 0
+	fi
 
-        # Cleaning Temporary folders
-        log_action_begin_msg "Cleaning temporary files and folders..."
-        rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
+	# Cleaning Temporary folders
+	log_action_begin_msg "Cleaning temporary files and folders..."
+	rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
 	log_action_end_msg 0
 
-        # Set Date and Time
-        if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
-        then
-          log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
-          $LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
-	  log_action_end_msg 0
-        fi
-
-        # Create log folders for all plugins if not existing
-        log_action_begin_msg "Create log folders for all installed plugins"
-	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
-	log_action_end_msg 0
-	
-	# Copy logdb from SD card to RAM disk
-	if [ -e $LBHOMEDIR/log/system/logs_sqlite.dat.bkp ]
+	# Set Date and Time
+	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
 	then
-        	log_action_begin_msg "Copy back Backup of Logs SQLite Database"
-		cp -f $LBHOMEDIR/log/system/logs_sqlite.dat.bkp $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
-		chown loxberry:loxberry $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
-		chmod +rw $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		log_action_begin_msg "Syncing Date/Time with Miniserver or NTP-Server"
+		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
 		log_action_end_msg 0
 	fi
-		
-	# Run Daemons from Plugins and from System
-        log_action_begin_msg "Running System Daemons"
-        run-parts -v  $LBHOMEDIR/system/daemons/system > /dev/null 
+
+	# Create log folders for all plugins if not existing
+	log_action_begin_msg "Create log folders for all installed plugins"
+	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
 	log_action_end_msg 0
 		
-        log_action_begin_msg "Running Plugin Daemons"
-        run-parts -v --new-session $LBHOMEDIR/system/daemons/plugins > /dev/null 
+	# Run Daemons from Plugins and from System
+    log_action_begin_msg "Running System Daemons"
+    run-parts -v  $LBHOMEDIR/system/daemons/system > /dev/null 
+	log_action_end_msg 0
+		
+    log_action_begin_msg "Running Plugin Daemons"
+	run-parts -v --new-session $LBHOMEDIR/system/daemons/plugins > /dev/null 
 	log_action_end_msg 0
 		
 	# Check LoxBerry Update cronjobs
@@ -174,11 +164,12 @@ case "$1" in
 		if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
 	fi
 	log_action_end_msg 0
-		
-	;;
-	restart|reload|force-reload|status)
-        echo "Error: argument '$1' not supported" >&2
-        exit 3
+	exit 0
+  ;;
+	
+  restart|reload|force-reload|status)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
   ;;
 
   stop)
@@ -187,13 +178,6 @@ case "$1" in
 	cp /etc/fstab /etc/fstab.backup
 	cat /etc/fstab.new > /etc/fstab
 	rm /etc/fstab.new
-	
-	# Copy logdb from RAM disk to SD card
-	if [ -e $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat ]
-	then
-		 echo "VACUUM;" | sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
-		cp -f $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat $LBHOMEDIR/log/system/logs_sqlite.dat.bkp
-	fi
   ;;
 
   *)
