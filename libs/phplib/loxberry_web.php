@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.5.4";
+	public static $LBWEBVERSION = "1.2.5.5";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -514,6 +514,106 @@ EOF;
 	return $html;
 	}
 
+	// loglevel_select_html
+	
+	public function loglevel_select_html($p)
+{
+	global $lbpplugindir;
+	$datamini = 1;
+	$selected = 0;
+	$html = "";
+	
+	$pluginfolder = isset($p['PLUGIN']) ? $p['PLUGIN'] : $lbpplugindir;
+	# print "pluginfolder: $pluginfolder\n";
+	$plugin = LBSystem::plugindata($pluginfolder);
+	
+	if(empty($plugin)) {
+		error_log("loglevel_select_html (PHP): Could not determine plugin");
+		return "";
+	}
+	if (empty($plugin['PLUGINDB_LOGLEVELS_ENABLED'])) {
+		error_log("loglevel_select_html (PHP): CUSTOM_LOGLEVELS not enabled in plugin.cfg (plugin " . $pluginfolder . ")");
+		return "";
+	}
+	
+	$SL = LBSystem::readlanguage(undef, undef, 1);
+		
+	if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == 0 ) {
+		$datamini = "false";
+	} else {
+		$datamini = "true";
+	}
+	if (empty($p['FORMID'])) {
+		$p['FORMID'] = "select_loglevel";
+	}
+
+	$html = '<div data-role="fieldcontain">';
+	
+	if (isset($p['LABEL']) && $p['LABEL'] == "") {
+		
+	} elseif (!empty($p['LABEL'])) {
+	$html .= " <label for=\"{$p['FORMID']}\" style=\"display:inline-block;\">{$p['LABEL']}</label>\n";
+	} else {
+		$html .= "<label for=\"{$p['FORMID']}\" style=\"display:inline-block;\">{$SL['PLUGININSTALL.UI_LABEL_LOGGING_LEVEL']}</label>\n";
+	}
+	$html .= "<fieldset data-role='controlgroup' data-mini='$datamini' style='width:200px;'>\n";
+	
+	$html .= <<<EOF
+	
+	<select name="{$p['FORMID']}" id="{$p['FORMID']}" data-mini="$datamini">
+		<option value="0">{$SL['PLUGININSTALL.UI_LOG_0_OFF']}</option>
+		<option value="3">{$SL['PLUGININSTALL.UI_LOG_3_ERRORS']}</option>
+		<option value="4">{$SL['PLUGININSTALL.UI_LOG_4_WARNING']}</option>
+		<option value="6">{$SL['PLUGININSTALL.UI_LOG_6_INFO']}</option>
+		<option value="7">{$SL['PLUGININSTALL.UI_LOG_7_DEBUG']}</option>
+	</select>
+	</fieldset>
+	</div>
+	
+	<script>
+	\$(document).ready( function()
+	{
+		\$("#{$p['FORMID']}").val('{$plugin['PLUGINDB_LOGLEVEL']}').change();
+	});
+		
+	\$("#{$p['FORMID']}").change(function(){
+		var val = \$(this).val();
+		console.log("Loglevel", val);
+		post_value('plugin-loglevel', '{$plugin['PLUGINDB_MD5_CHECKSUM']}', val); 
+	});
+	
+	function post_value (action, pluginmd5, value)
+	{
+	console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
+	\$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+		{ 	action: action,
+			value: value,
+			pluginmd5: pluginmd5
+		});
+	}
+
+	</script>
+EOF;
+	
+	return $html;
+
+}
+
+	
+	
+	
+	
+	
+	
+	// loglevel_select_html finish
+	
+	
+	
+	
+	
+	
+	
+	
 	public static function loglist_html($p)
 	{
 		global $lbpplugindir;
