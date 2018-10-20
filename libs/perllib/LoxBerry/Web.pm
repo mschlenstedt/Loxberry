@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.5.5";
+our $VERSION = "1.2.5.6";
 our $DEBUG;
 
 use base 'Exporter';
@@ -296,7 +296,7 @@ sub pagestart
         }
 	
 	# System language is "hardcoded" to file language_*.ini
-	my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
+	$langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 	
 	# Get the HTML::Template object for the header
 	$headerobj = HTML::Template->new(
@@ -653,7 +653,7 @@ sub mslist_select_html
 	if (! %miniservers) {
 		return ('<div>No Miniservers defined</div>');
 	}
-	if (! %miniservers{$p{SELECTED}}) {
+	if (! $miniservers{$p{SELECTED}}) {
 		$p{SELECTED} = '1';
 	}
 	

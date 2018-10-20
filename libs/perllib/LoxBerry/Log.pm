@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.18";
+our $VERSION = "1.2.5.19";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -549,7 +549,7 @@ sub default
 sub DESTROY { 
 	my $self = shift;
 	if ($self->{"_FH"}) {
-		close $self->{"_FH"};
+		CORE::close $self->{"_FH"};
 	}
 	if ($LoxBerry::Log::mainobj == $self) {
 		# Reset default object
@@ -1679,7 +1679,7 @@ sub get_notifications_html
 		my $linktarget;
 		if ( $not->{LINK} ) {
 			$link = $not->{LINK};
-			$linktarget = LoxBerry::System::begins_with($link, "http://") or LoxBerry::System::begins_with($link, "https://") ? "_blank" : "_self";
+			$linktarget = ( LoxBerry::System::begins_with($link, "http://") or LoxBerry::System::begins_with($link, "https://") ) ? "_blank" : "_self";
 		}
 		
 		my $notif_line;
