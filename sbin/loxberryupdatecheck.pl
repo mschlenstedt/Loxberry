@@ -78,15 +78,11 @@ my $cgi = CGI->new;
 my $log = LoxBerry::Log->new(
 		package => 'LoxBerry Update',
 		name => 'check',
-		filename => "$lbhomedir/log/system_tmpfs/loxberryupdate/updatecheck.log",
+		logdir => "$lbhomedir/log/system_tmpfs/loxberryupdate",
 		loglevel => 7,
 		stderr => 1,
-		append => 1,
 );
 $joutput{'logfile'} = $log->filename;
-
-#my $logfile ="$lbslogdir/loxberryupdate/log$.log";
-#open ERRORLOG, '>', $logfile;
 
 LOGSTART "LoxBerry Update Check";
 LOGINF "Version of loxberryupdatecheck.pl is $scriptversion";

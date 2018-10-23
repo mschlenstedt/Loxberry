@@ -2,7 +2,7 @@
 <!-- <div style="font-size: 0.6em; text-align: right; vertical-align: middle;">LoxBerry Version <TMPL_VAR SVERSION></div> -->
 <TMPL_IF PAGE_PLUGIN>
 <p class="wide">
-	<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
+	<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg" alt="">
 	<TMPL_VAR HEADER.TITLE_PAGE_PLUGINS>
 </p>
 
@@ -11,7 +11,7 @@
 <div class="widgetblock" id="pluginwidgets">
 	<TMPL_LOOP PLUGINS>
 	<div class="widget">
-			<!-- <div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img class="menutableicon" src="<TMPL_VAR PLUGINDB_ICONURI>"></a></div> -->
+			<!-- <div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img class="menutableicon" src="<TMPL_VAR PLUGINDB_ICONURI>" alt=""></a></div> -->
 			<!-- <div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" class="nolinkstyle"><TMPL_VAR PLUGINDB_TITLE></a></div> -->
 
 		<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/">
@@ -39,7 +39,7 @@
 <TMPL_IF PAGE_SYSTEM>
 
 <p class="wide">
-	<img height="64" width="64" src="/system/images/icons/main_system_title.svg">
+	<img height="64" width="64" src="/system/images/icons/main_system_title.svg" alt="">
 	<TMPL_VAR HEADER.TITLE_PAGE_SYSTEM>
 </p>
 <!-- START Widget container -->

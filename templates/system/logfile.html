@@ -25,21 +25,21 @@
 					<!-- <div style="width:100%; height:57vh;"> -->
 					
 					<!-- Removed div tag contenteditable="true" as browser is much faster without. Re-insert it, if removing has side-effects. (CF) -->
-					<div autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="border-style: solid;  border-color: #c0c0c0; padding:5px; padding-top:10px; border-width: 1px; margin:5px; width:100%; height:65vh; background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll" id="Logfile" >
+					<div spellcheck="false" style="border-style: solid;  border-color: #c0c0c0; padding:5px; padding-top:10px; border-width: 1px; margin:5px; width:100%; height:65vh; background-color: transparent; font-family:monospace; color:#8080FF; overflow-y: scroll" id="Logfile" >
 					<TMPL_LOOP logcontent>
 						<TMPL_VAR logcontentline>
 					</TMPL_LOOP>
 					</div>
 					<!-- </div> -->
-					<table width="100%" border="0">
+					<table style="width:100%; border:0;">
 						<tr>
-							<td width="50%">
+							<td style="width:50%;">
 								<a id="btnnext" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="javascript:window.close()"><TMPL_VAR COMMON.BUTTON_CLOSE></a>
 							</td>
-							<td width="25%">
+							<td style="width:25%;">
 								<label style="display:block; text-align:center;"><input data-mini="true" type="checkbox" checked id="LogScroll"><TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
 							</td>
-							<td width="25%">
+							<td style="width:25%;">
 							<a style="display:block; text-align:center;" id="btndown" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=file&format=plain" target="_blank" download="<TMPL_VAR LOGFILE>"><TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
 								
 								<!-- <a style="display:block; text-align:center; width:60px; height: 14px; font-size:11;" id="download" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="#" target="_blank"><TMPL_VAR COMMON.BUTTON_DOWNLOAD></a> -->

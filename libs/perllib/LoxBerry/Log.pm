@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.17";
+our $VERSION = "1.2.5.19";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -142,9 +142,9 @@ sub new
 	}
 	# Get loglevel
 	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
-	if (!$self->{loglevel}) {
+	if (!defined $self->{loglevel}) {
 		my $plugindata = LoxBerry::System::plugindata($self->{package});
-		if ($plugindata and $plugindata->{PLUGINDB_LOGLEVEL}) {
+		if ($plugindata and defined $plugindata->{PLUGINDB_LOGLEVEL}) {
 			$self->{loglevel} = $plugindata->{'PLUGINDB_LOGLEVEL'};
 		} else {
 			$self->{loglevel} = 7;
@@ -181,7 +181,7 @@ sub loglevel
 {
 	my $self = shift;
 	my $loglevel = shift;
-	if ($loglevel && $loglevel >= 0 && $loglevel <= 7) {
+	if (defined $loglevel && $loglevel >= 0 && $loglevel <= 7) {
 		$self->{loglevel} = $loglevel;
 	}
 	return $self->{loglevel};
@@ -379,7 +379,7 @@ sub write
 		} else {
 			$string = $currtime . '<' . $severitylist{$severity} . '> ' . $s . "\n"; 
 		}
-		if (!$self->{nofile}) {
+		if (!$self->{nofile} && $self->{loglevel} != 0) {
 			# print STDERR "   Print to file\n";
 			print $fh $string if($fh);
 			}
@@ -549,7 +549,7 @@ sub default
 sub DESTROY { 
 	my $self = shift;
 	if ($self->{"_FH"}) {
-		close $self->{"_FH"};
+		CORE::close $self->{"_FH"};
 	}
 	if ($LoxBerry::Log::mainobj == $self) {
 		# Reset default object
@@ -1679,7 +1679,7 @@ sub get_notifications_html
 		my $linktarget;
 		if ( $not->{LINK} ) {
 			$link = $not->{LINK};
-			$linktarget = LoxBerry::System::begins_with($link, "http://") or LoxBerry::System::begins_with($link, "https://") ? "_blank" : "_self";
+			$linktarget = ( LoxBerry::System::begins_with($link, "http://") or LoxBerry::System::begins_with($link, "https://") ) ? "_blank" : "_self";
 		}
 		
 		my $notif_line;

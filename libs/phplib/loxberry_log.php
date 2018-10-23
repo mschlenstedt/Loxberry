@@ -317,6 +317,25 @@ class intLog
 		}
 	}
 	
+	public function STATUS($severity = null)
+	{
+		if($severity >= 0 and $severity <=7 and ( empty($this->params{"STATUS"}) or $severity < $this->params{"STATUS"})) {
+			$this->params{"STATUS"} = $severity;
+		}
+		return $this->params{"STATUS"};
+		
+	}
+
+	public function ATTENTIONMESSAGES($messages = null)
+	{
+		if(!empty($messages)) {
+			$this->params{"ATTENTIONMESSAGES"} = $messages;
+		}
+		return $this->params{"ATTENTIONMESSAGES"};
+
+	}
+
+	
 	public function logtitle($title) 
 	{
 		if(isset($title)) {
@@ -350,40 +369,86 @@ class intLog
 	{
 		
 		$dbfile = LBHOMEDIR . "/log/system_tmpfs/logs_sqlite.dat";
-		$this->dbh = new SQLite3($dbfile);
-		$db = $this->dbh;
-		$db->exec("BEGIN TRANSACTION;");
-		$res = $db->exec("CREATE TABLE IF NOT EXISTS logs (
-				PACKAGE VARCHAR(255) NOT NULL,
-				NAME VARCHAR(255) NOT NULL,
-				FILENAME VARCHAR (2048) NOT NULL,
-				LOGSTART DATETIME,
-				LOGEND DATETIME,
-				LASTMODIFIED DATETIME NOT NULL,
-				LOGKEY INTEGER PRIMARY KEY 
-			)");
-		if($res != True) {
-			error_log("log_init_database create table 'logs' notifications: " . $db->lastErrorMsg());
-			return;
-		}
-		$res = $db->exec("CREATE TABLE IF NOT EXISTS logs_attr (
-				keyref INTEGER NOT NULL,
-				attrib VARCHAR(255) NOT NULL,
-				value VARCHAR(255),
-				PRIMARY KEY ( keyref, attrib )
+		
+		for($i=1; $i <= 2; $i++) {
+			$dbok = 1;
+			try {			
+				$this->dbh = new SQLite3($dbfile);
+				$db = $this->dbh;
+			} catch (Exception $e) {
+				error_log("log_db_init_database: Opening database failed - " . $e->getMessage());
+				$dbok = 0;
+			}
+			
+			$db->exec("BEGIN TRANSACTION;");
+			$res = $db->exec("CREATE TABLE IF NOT EXISTS logs (
+					PACKAGE VARCHAR(255) NOT NULL,
+					NAME VARCHAR(255) NOT NULL,
+					FILENAME VARCHAR (2048) NOT NULL,
+					LOGSTART DATETIME,
+					LOGEND DATETIME,
+					LASTMODIFIED DATETIME NOT NULL,
+					LOGKEY INTEGER PRIMARY KEY 
 				)");
-		if($res != True) {
-			error_log("log_init_database create table 'logs_attr' notifications: " . $db->lastErrorMsg());
-			return;
-		}
-		$db->exec("COMMIT;");
+			if($res != True) {
+				$dberr = $db->lastErrorCode();
+				$dberrstr = $db->lastErrorMsg();
+				error_log("log_db_init_database: Create table 'logs': Error $dberr $dberrstr");
+				$dbok = 0;
+			}
+			$res = $db->exec("CREATE TABLE IF NOT EXISTS logs_attr (
+					keyref INTEGER NOT NULL,
+					attrib VARCHAR(255) NOT NULL,
+					value VARCHAR(255),
+					PRIMARY KEY ( keyref, attrib )
+					)");
+			if($res != True) {
+				$dberr = $db->lastErrorCode();
+				$dberrstr = $db->lastErrorMsg();
+				error_log("log_db_init_database: Create table 'logs_attr': Error $dberr $dberrstr");
+				$dbok = 0;
+			}
+			$db->exec("COMMIT;");
+			
+			if ($dbok==1) {
+				break;
+			} else {
+				error_log("Database error $dberr ($dberrstr)");	
+				$this->log_db_repair($dbfile, $db, $dberr);
+			}
+		}			
+		
+		if($dbok != 1) {
+			error_log("log_db_init_database: FAILED TO RECOVER DATABASE (Database error $dbierr - $dbierrstr)");
+			notify( "logmanager", "Log Database", "The logfile database sends an error and cannot automatically be recovered. Please inform the LoxBerry-Core team about this error:\nError $dberr ($dberrstr)", 'error');
+			return null;
+		}	
+					
+		# chown
 		if (posix_getpwuid(fileowner($dbfile)) != "loxberry") {
 				chown($dbfile, "loxberry");
 		}
 		
 		return $db;
-		
+
 	}
+	
+	private function log_db_repair($dbfile, $dbh, $dbierror)
+	{
+		error_log("log_db_repair: Repairing DB (Error $dbierror)");
+		# https://www.sqlite.org/c3ref/c_abort.html
+		# 11 - The database disk image is malformed
+		if ($dbierror == "11") {
+			error_log("logdb seems to be corrupted - deleting and recreating...");
+			$dbh->close();
+			unlink($dbfile);
+		} else {
+			unset($dbh);
+			unset($this->dbh); 
+			return null;
+		}
+	}
+	
 	
 	private function log_db_logstart($dbh, $p)
 	{
@@ -393,6 +458,11 @@ class intLog
 		if(!isset($p->params["name"])) { throw new Exception("Create DB log entry: No NAME defined");}
 		if(!isset($p->params["filename"])) { throw new Exception("Create DB log entry: No FILENAME defined");}
 
+		if(empty($dbh)) {
+			error_log("log_db_logstart: dbh not defined");
+			return;
+		}
+		
 		if(!isset($p->params["LOGSTART"])) {
 			$p->params["LOGSTART"] = date("Y-m-d H:i:s");
 		}
@@ -450,6 +520,11 @@ class intLog
 		if(!isset($p->params["dbkey"])) { 
 			# Seems that LOGEND was started without LOGSTART
 			#throw new Exception("log_db_endlog: No dbkey defined");
+			return;
+		}
+		
+		if(empty($dbh)) {
+			error_log("log_db_logend: dbh not defined");
 			return;
 		}
 		
@@ -523,12 +598,12 @@ class intLog
 			$dbh = $this->dbh;
 		}
 		if(!$dbh) {
-			error_log("   dbh not defined. Return undef\n<-- log_db_recreate_session_by_id");
+			error_log("log_db_recreate_session_by_id: dbh not defined");
 			return;
 		}
 		
 		if(!$key) {
-			error_log("   No logdb key defined. Return undef\n<-- log_db_recreate_session_by_id");
+			error_log("log_db_recreate_session_by_id: No logdb key defined.");
 			return;
 		}
 
@@ -538,7 +613,7 @@ class intLog
 		$logshr = $dbh->query($qu);
 		
 		if (!isset($logshr)) {
-			error_log("   LOGKEY does not exist. Return NULL <-- log_db_recreate_session_by_id");
+			error_log("log_db_recreate_session_by_id: LOGKEY does not exist.");
 			return;
 		}
 		$result = $logshr->fetchArray(SQLITE3_ASSOC);
@@ -547,7 +622,7 @@ class intLog
 		// echo var_dump( $result );
 		
 		if (isset($result["LOGEND"])) {
-			error_log("   LOGKEY $key found, but log session has a LOGEND (session is finished) - return NULL");
+			error_log("log_db_recreate_session_by_id: LOGKEY $key found, but log session has a LOGEND (session is finished)");
 			return;
 		}
 				
@@ -591,6 +666,8 @@ class intLog
 				} else {
 					$dbh = $this->dbh;
 				}
+				if(empty($dbh)) { error_log("__destruct: dbh not defined"); return;}
+				
 				$dbh->exec("INSERT OR REPLACE INTO logs_attr (keyref, attrib, value) VALUES (" . $this->params["dbkey"] . ", 'STATUS', '" . $this->params["STATUS"] . "');");
 				$dbh->close();
 			}
@@ -603,7 +680,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.4";
+	public static $VERSION = "1.2.5.7";
 	
 	public static function newLog($args)
 	{

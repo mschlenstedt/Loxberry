@@ -3,13 +3,15 @@
 
 require_once "loxberry_log.php";
 
-$initlog_version = "1.2.5.2";
+$initlog_version = "1.2.5.3";
+
+$INITLOG_DEBUG = 0;
 
 $log = null;
 $currfilename = null;
 $currloglevel = null;
 
-fwrite (STDERR, "initlog.php Commandline: " . implode(" ", $argv) . "\n");
+if($INITLOG_DEBUG) fwrite (STDERR, "initlog.php Commandline: " . implode(" ", $argv) . "\n");
 
 # Collecting options
 $longopts = array( 
@@ -39,20 +41,20 @@ $opt["action"] = strtolower($opt["action"]);
 
 switch($opt["action"]) {
 	case "new":
-		fwrite( STDERR , "initlog.php: action new\n");
+		if($INITLOG_DEBUG) fwrite( STDERR , "initlog.php: action new\n");
 		do_init();
 		return_stdout();
 		exit(0);
 		break;
 	case "logstart":
-		fwrite( STDERR , "initlog.php: action logstart\n");
+		if($INITLOG_DEBUG) fwrite( STDERR , "initlog.php: action logstart\n");
 		do_init();
 		do_logstart();
 		return_stdout();
 		exit(0);
 		break;
 	case "logend":
-		fwrite( STDERR , "initlog.php: action logend\n");
+		if($INITLOG_DEBUG) fwrite( STDERR , "initlog.php: action logend\n");
 		$opt["append"] = 1;
 		do_init();
 		do_logend();
@@ -66,9 +68,9 @@ exit;
 
 function do_init()
 {
-	global $log, $opt;
+	global $log, $opt, $INITLOG_DEBUG;
 	
-	fwrite(STDERR, "do_init()\n");
+	if($INITLOG_DEBUG) fwrite(STDERR, "do_init()\n");
 	
 	$log = LBLog::newLog( $opt ); 
 	
@@ -80,9 +82,9 @@ function do_init()
 
 function do_logstart()
 {
-	global $log, $opt;
+	global $log, $opt, $INITLOG_DEBUG;
 		
-	fwrite(STDERR, "do_logstart()\n");
+	if($INITLOG_DEBUG) fwrite(STDERR, "do_logstart()\n");
 	
 	$log->LOGSTART($opt["message"]);
 #	my $currfilename = $log->close;
@@ -92,9 +94,9 @@ function do_logstart()
 
 function do_logend()
 {
-	global $log, $opt;
+	global $log, $opt, $INITLOG_DEBUG;
 	
-	fwrite(STDERR, "do_logend()\n");
+	if($INITLOG_DEBUG) fwrite(STDERR, "do_logend()\n");
 	
 	do_status();
 	do_attentionmessages();
@@ -103,9 +105,9 @@ function do_logend()
 
 function do_status()
 {
-	global $log, $opt;
+	global $log, $opt, $INITLOG_DEBUG;
 	
-	fwrite(STDERR, "do_status()\n");
+	if($INITLOG_DEBUG) fwrite(STDERR, "do_status()\n");
 	
 	if(isset($opt["status"])) {
 			$log->STATUS($opt["status"]);
@@ -114,9 +116,9 @@ function do_status()
 
 function do_attentionmessages()
 {
-	global $log, $opt;
+	global $log, $opt, $INITLOG_DEBUG;
 	
-	fwrite(STDERR, "do_attentionmessages()\n");
+	if($INITLOG_DEBUG) fwrite(STDERR, "do_attentionmessages()\n");
 	
 	if(isset($opt["attentionmessages"])) {
 			$log->ATTENTIONMESSAGES($opt["attentionmessages"]);
@@ -125,17 +127,17 @@ function do_attentionmessages()
 
 function return_stdout()
 {
-	global $log, $opt;
+	global $log, $opt, $INITLOG_DEBUG;
 	
-	fwrite(STDERR, "return_stdout()\n");
+	if($INITLOG_DEBUG) fwrite(STDERR, "return_stdout()\n");
 	
 	
 	$currfilename = $log->filename;
 	$currloglevel = $log->loglevel;
-	fwrite(STDERR, "DEBUG: " . $log->dbkey . "\n");
+	if($INITLOG_DEBUG) fwrite(STDERR, "DEBUG: " . $log->dbkey . "\n");
 	
 	$currdbkey = $log->dbkey ? $log->dbkey : "";
-	fwrite(STDERR, "Output to bash:  \"$currfilename\" $currloglevel $currdbkey\n");
+	if($INITLOG_DEBUG) fwrite(STDERR, "Output to bash:  \"$currfilename\" $currloglevel $currdbkey\n");
 	echo "\"$currfilename\" $currloglevel $currdbkey\n";
 	
 }

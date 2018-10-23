@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.5.2";
+	public static $LBWEBVERSION = "1.2.5.5";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -136,7 +136,7 @@ class LBWeb
 			sort($navbar, SORT_NUMERIC);
 			$topnavbar = '<div data-role="navbar">' . 
 				'	<ul>';
-			foreach ($navbar as $element) {
+			foreach ($navbar as $key => $element) {
 				if (isset($element['active'])) {
 					$btnactive = ' class="ui-btn-active"';
 				} else { $btnactive = NULL; 
@@ -155,15 +155,17 @@ class LBWeb
 					// $notify = ' <span class="notifyBlueNavBar">' . $element['notifyBlue'] . '</span>';
 				// }
 				
-				$notify .= <<<EOT
-				<div class="notifyBlueNavBar" id="notifyBlueNavBar$element" style="display: none">0</div>
-				<div class="notifyRedNavBar" id="notifyRedNavBar$element" style="display: none">0</div>
+				$notify = <<<EOT
+				<div class="notifyBlueNavBar" id="notifyBlueNavBar$key" style="display: none">0</div>
+				<div class="notifyRedNavBar" id="notifyRedNavBar$key" style="display: none">0</div>
 EOT;
 				
 				if (isset($element['Name'])) {
 					$topnavbar .= <<<EOT
 				<li>
-					<div style="position:relative">$notify<a href="{$element['URL']}"{$btntarget}{$btnactive}>{$element['Name']}</a></div></li>
+					<div style="position:relative">$notify<a href="{$element['URL']}"{$btntarget}{$btnactive}>{$element['Name']}</a>
+					</div>
+				</li>
 EOT;
 					$topnavbar_haselements = True;
 				
@@ -180,10 +182,10 @@ EOT;
 			.done(function(data) { 
 				console.log("get_notification_count executed successfully");
 				console.log("{$element['Name']}", data[0], data[1], data[2]);
-				if (data[0] != 0) \$("#notifyRedNavBar{$element}").text(data[2]).fadeIn('slow');
-				else \$("#notifyRedNavBar{$element}").text('0').fadeOut('slow');
-				if (data[1] != 0) \$("#notifyBlueNavBar{$element}").text(data[1]).fadeIn('slow');
-				else \$("#notifyBlueNavBar{$element}").text('0').fadeOut('slow');
+				if (data[0] != 0) \$("#notifyRedNavBar{$key}").text(data[2]).fadeIn('slow');
+				else \$("#notifyRedNavBar{$key}").text('0').fadeOut('slow');
+				if (data[1] != 0) \$("#notifyBlueNavBar{$key}").text(data[1]).fadeIn('slow');
+				else \$("#notifyBlueNavBar{$key}").text('0').fadeOut('slow');
 				
 			});
 EOT;
@@ -318,6 +320,8 @@ EOT;
 		if (file_exists("$reboot_required_file")) {
 			$reboot_req_string='<div data-href="/admin/system/power.cgi" id="btnpower_alert" style="pointer-events: none; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url(\'/system/images/reboot_required.svg\');"></div><script>$(document).ready( function(){ $("#btnpower").attr("title","'.$SL['POWER.MSG_REBOOT_REQUIRED_SHORT'].'");  $("#btnpower_alert").on("click", function(e){ var ele = e.target; window.location.replace(ele.getAttribute("data-href"));}); function reboot_on(){ var reboot_alert_offset = $("#btnpower").offset(); $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); $("#btnpower_alert").fadeTo( 2000 , 1.0, function() { setTimeout(function(){ reboot_off(); }, 2700); }); }; function reboot_off(){ var reboot_alert_offset = $("#btnpower").offset(); $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); $("#btnpower_alert").fadeTo( 2000 , 0.1, function() { setTimeout(function(){ reboot_on(); }, 100); });   }; reboot_on(); });</script>';
 			$pageobj->param('REBOOT_REQUIRED', $reboot_req_string);
+		} else {
+			$pageobj->param('REBOOT_REQUIRED', null);
 		}
 
 		echo $pageobj->output();
@@ -510,6 +514,106 @@ EOF;
 	return $html;
 	}
 
+	// loglevel_select_html
+	
+	public function loglevel_select_html($p)
+{
+	global $lbpplugindir;
+	$datamini = 1;
+	$selected = 0;
+	$html = "";
+	
+	$pluginfolder = isset($p['PLUGIN']) ? $p['PLUGIN'] : $lbpplugindir;
+	# print "pluginfolder: $pluginfolder\n";
+	$plugin = LBSystem::plugindata($pluginfolder);
+	
+	if(empty($plugin)) {
+		error_log("loglevel_select_html (PHP): Could not determine plugin");
+		return "";
+	}
+	if (empty($plugin['PLUGINDB_LOGLEVELS_ENABLED'])) {
+		error_log("loglevel_select_html (PHP): CUSTOM_LOGLEVELS not enabled in plugin.cfg (plugin " . $pluginfolder . ")");
+		return "";
+	}
+	
+	$SL = LBSystem::readlanguage(undef, undef, 1);
+		
+	if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == 0 ) {
+		$datamini = "false";
+	} else {
+		$datamini = "true";
+	}
+	if (empty($p['FORMID'])) {
+		$p['FORMID'] = "select_loglevel";
+	}
+
+	$html = '<div data-role="fieldcontain">';
+	
+	if (isset($p['LABEL']) && $p['LABEL'] == "") {
+		
+	} elseif (!empty($p['LABEL'])) {
+	$html .= " <label for=\"{$p['FORMID']}\" style=\"display:inline-block;\">{$p['LABEL']}</label>\n";
+	} else {
+		$html .= "<label for=\"{$p['FORMID']}\" style=\"display:inline-block;\">{$SL['PLUGININSTALL.UI_LABEL_LOGGING_LEVEL']}</label>\n";
+	}
+	$html .= "<fieldset data-role='controlgroup' data-mini='$datamini' style='width:200px;'>\n";
+	
+	$html .= <<<EOF
+	
+	<select name="{$p['FORMID']}" id="{$p['FORMID']}" data-mini="$datamini">
+		<option value="0">{$SL['PLUGININSTALL.UI_LOG_0_OFF']}</option>
+		<option value="3">{$SL['PLUGININSTALL.UI_LOG_3_ERRORS']}</option>
+		<option value="4">{$SL['PLUGININSTALL.UI_LOG_4_WARNING']}</option>
+		<option value="6">{$SL['PLUGININSTALL.UI_LOG_6_INFO']}</option>
+		<option value="7">{$SL['PLUGININSTALL.UI_LOG_7_DEBUG']}</option>
+	</select>
+	</fieldset>
+	</div>
+	
+	<script>
+	\$(document).ready( function()
+	{
+		\$("#{$p['FORMID']}").val('{$plugin['PLUGINDB_LOGLEVEL']}').change();
+	});
+		
+	\$("#{$p['FORMID']}").change(function(){
+		var val = \$(this).val();
+		console.log("Loglevel", val);
+		post_value('plugin-loglevel', '{$plugin['PLUGINDB_MD5_CHECKSUM']}', val); 
+	});
+	
+	function post_value (action, pluginmd5, value)
+	{
+	console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
+	\$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+		{ 	action: action,
+			value: value,
+			pluginmd5: pluginmd5
+		});
+	}
+
+	</script>
+EOF;
+	
+	return $html;
+
+}
+
+	
+	
+	
+	
+	
+	
+	// loglevel_select_html finish
+	
+	
+	
+	
+	
+	
+	
+	
 	public static function loglist_html($p)
 	{
 		global $lbpplugindir;

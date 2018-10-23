@@ -120,6 +120,10 @@ qx {sed -i -r '/^\\s*#/!{/(tmpfs \\/var\\/log|tmpfs \\/var\\/tmp|tmpfs \\/tmp)|t
 LOGINF "Installing Daemon script for LBUpdate after first reboot";
 copy_to_loxberry("/system/daemons/system/03-loxberryupdate");
 
+# Reload systemd 
+LOGINF "Re-init systemd for the changed loxberryinit and createtmpfsfolderinit services";
+qx {systemctl daemon-reload};
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 reboot_required("LoxBerry Update requests a reboot.");

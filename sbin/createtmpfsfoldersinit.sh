@@ -5,7 +5,7 @@
 # Required-Stop:     
 # Default-Start:     2 3 4 5
 # Default-Stop:      
-# X-Start-Before:    nmbd smbd samba-ad-dc bootlogs apache2 lighttpd
+# X-Start-Before:    cron nmbd smbd samba-ad-dc bootlogs apache2 lighttpd
 # Short-Description: create log folders on tmpfs after mountall
 # Description:       This file creates needed folders in syslog and
 #                    loxberry system log folders.
@@ -78,15 +78,34 @@ case "$1" in
 	cp -ra /opt/loxberry/log/skel_system/* /opt/loxberry/log/system_tmpfs
 	log_action_end_msg 0
 
-        exit 0
+	# Copy logdb from SD card to RAM disk
+	if [ -e $LBHOMEDIR/log/system/logs_sqlite.dat.bkp ]
+	then
+        log_action_begin_msg "Copy back Backup of Logs SQLite Database"
+		cp -f $LBHOMEDIR/log/system/logs_sqlite.dat.bkp $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		chown loxberry:loxberry $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		chmod +rw $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		log_action_end_msg 0
+	fi
+    exit 0
 	;;
 
   restart|reload|force-reload)
-        echo "Error: argument '$1' not supported" >&2
-        exit 3
-        ;;
+	echo "Error: argument '$1' not supported" >&2
+    exit 3
+    ;;
 
-  stop|status)
+  stop)
+	# Copy logdb from RAM disk to SD card
+	if [ -e $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat ]
+	then
+		 echo "VACUUM;" | sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		cp -f $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat $LBHOMEDIR/log/system/logs_sqlite.dat.bkp
+	fi
+	exit 0
+	;;
+  
+  status)
         # No-op
         exit 0
         ;;

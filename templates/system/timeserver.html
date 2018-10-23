@@ -1,7 +1,7 @@
 <!-- ** START template/system/timeserver.html 13:51 24.11.2017 ************************************************************************************ -->
 <form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<p style=&quot;color:blue&quot;><TMPL_VAR TIMESERVER.SAVE_ASYNC_QUERY_NTP></p>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
 	<input type="hidden" name="saveformdata" value="1">
-		<table class="formtable" border="0" width="100%">
+		<table class="formtable" style="border:0; width:100%;">
 			<tr>
 				<td>
 					<TMPL_VAR TIMESERVER.LABEL_CURRENT_TIME>
@@ -14,15 +14,15 @@
 				</td>
 				<td>
 				</td>
-				<td valign="middle">
+				<td>
 					&nbsp;
 				</td>
 			</tr>
 			<tr>
-				<td width="25%">
+				<td style="width:25%;">
 					<label id="labeluhrzeit"><TMPL_VAR TIMESERVER.LABEL_TYPE_TIME></label>
 				</td>
-				<td width="50%">
+				<td style="width:50%;">
 					<fieldset data-role="controlgroup">
 						<input onclick="disable()" <TMPL_VAR CHECKED1> id="zeitserver_miniserver" name="zeitserver" type="radio" value="miniserver">
 							<label for="zeitserver_miniserver"><TMPL_VAR TIMESERVER.SELECT_MS></label>
@@ -30,10 +30,10 @@
 							<label for="zeitserver_ntp"><TMPL_VAR TIMESERVER.SELECT_NTP></label>
 					</fieldset>
 				</td>
-				<td width="5%" valign="middle">
+				<td style="width:5%;vertical-align:middle;">
 					&nbsp;
 				</td>
-				<td width="20%">
+				<td style="width:20%;">
 					&nbsp;
 				</td>
 			</tr>
@@ -47,23 +47,23 @@
 				<td>
 					&nbsp;
 				</td>
-				<td valign="middle">
+				<td style="vertical-align:middle;">
 					<a id="linkntpurls" href="http://www.pool.ntp.org/de/use.html" target="_blank" class="hint"><TMPL_VAR TIMESERVER.LINK_OTHER_TIMESERVERS></a>
 				</td>
 			</tr>
 			<tr>
-				<td width="25%">
+				<td style="width:25%;">
 					<label id="labelzeitzone"><TMPL_VAR TIMESERVER.LABEL_TIMEZONE></label>
 				</td>
-				<td width="50%">
+				<td style="width:50%;">
 					<select onclick="disable()" id="zeitzone" name="zeitzone" data-mini="true">
 						<TMPL_VAR TIMEZONELIST>
 					</select>
 				</td>
-				<td width="5%" valign="middle">
+				<td style="width:5%;vertical-align:middle;">
 					&nbsp;
 				</td>
-				<td width="20%">
+				<td style="width:20%;">
 					&nbsp;
 				</td>
 			</tr>
@@ -75,10 +75,10 @@
 			</tr>
 			<tr>
 				<td colspan="4">
-					<center>
+					<div style="text-align:center;">
 						<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 						<button type="submit" form="main_form4" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-					</center>
+					</div>
 				</td>
 			</tr>
 		</table>

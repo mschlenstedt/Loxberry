@@ -2,7 +2,7 @@
 <TMPL_IF FORM>
 	<div style="display:flex; width:100%; text-align:left;" id="installationheader">
 		<div style="margin:auto; padding:10px;text-align:left;">
-			<img width="80" height="80" src="/system/images/icons/main_plugins_install.svg">
+			<img width="80" height="80" src="/system/images/icons/main_plugins_install.svg" alt="">
 		</div>
 		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
 			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
@@ -21,7 +21,7 @@
 			</div>
 			<div style="text-align:left; width:75%;">
 				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
-				<input readonly type="url" autocomplete="false" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
+				<input readonly type="url" autocomplete="off" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
 			</div>
 		</div>
 		<div style="height:30px;">
@@ -44,7 +44,7 @@
 
 	<div style="display:flex; width:100%; text-align:left;">
 		<div style="margin:auto; padding:10px;text-align:left;">
-			<img width="80" height="80" src="/system/images/icons/main_plugins_title.svg">
+			<img width="80" height="80" src="/system/images/icons/main_plugins_title.svg" alt="">
 		</div>
 		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
 			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS>
@@ -62,28 +62,28 @@
 		<!-- START Plugin container -->
 		<TMPL_IF PLUGINS>
 			<TMPL_LOOP PLUGINS>
-			<tr>
-				<style>
+			<style>
 				#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 128px; width: 128px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png); }
 				
 				@media (max-width: 875px) {
 					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_64.png); }
 				}
-				</style>
+			</style>
+			<tr>
 				<td rowspan="2">
-				<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
+					<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
 				</td>
-				<td colspan="2">
-				<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
-					<div style="flex-grow: 2;">
-						<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
-						<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
+				<td>
+					<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
+						<div style="flex-grow: 2;">
+							<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
+							<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
+						</div>
+						<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b>
+							<div style="color:green; font-size:70%" class="releaseverslabel" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
+							<div style="color:#e53734; font-size:70%" class="prereleaseverslabel" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
+						</div>
 					</div>
-					<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b>
-						<div style="color:green; font-size:70%" class="releaseverslabel" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-						<div style="color:#e53734; font-size:70%" class="prereleaseverslabel" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-					</div>
-				</div>
 				</td>
 				
 				<td>
@@ -96,7 +96,7 @@
 				</td>
 			</tr>
 			<tr style="border-bottom: 1.5px solid LightGray;">
-				<td colspan="2">
+				<td>
 				<TMPL_IF PLUGINDB_AUTOUPDATE>
 				<label><TMPL_VAR PLUGININSTALL.UI_LABEL_AUTOMATIC_UPDATES></label>
 				<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
@@ -160,7 +160,7 @@
 			</TMPL_LOOP>
 		<TMPL_ELSE>
 			<tr>
-				<td colspan=5 align=center><br><TMPL_VAR PLUGININSTALL.UI_LABEL_NOPLUGINS></td>
+				<td style="text-align:center;"><br><TMPL_VAR PLUGININSTALL.UI_LABEL_NOPLUGINS></td>
 			</tr>
 		</TMPL_IF>
 		<!-- END Plugin container -->

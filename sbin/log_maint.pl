@@ -19,6 +19,7 @@ my $log = LoxBerry::Log->new (
 	name => 'Log Maintenance',
 	logdir => "$lbhomedir/log/system_tmpfs",
 	loglevel => LoxBerry::System::systemloglevel(),
+	addtime => 1,
 	stdout => 1
 );
 LOGSTART;

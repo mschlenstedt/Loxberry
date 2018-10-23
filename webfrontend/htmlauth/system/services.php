@@ -132,10 +132,8 @@ function form() {
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=2">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="ssdpd" value="1">
-	<p>
 	<div class="wide"><?=$SL['SERVICES.HEADING_OPT'];?></div>
-	</p>
-
+	<br>
 	<table class="formtable">
 		<tr>
 			<td>
@@ -150,19 +148,17 @@ function form() {
 		</tr>
 	</table>
 	</form>
-	<center>
-		<p>
+	<br>
+	<div style="text-align:center;">
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
 			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><?=$SL['COMMON.BUTTON_SAVE'];?></button>
-		</p>
-	</center>
+	</div>
 	<?php else: ?>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=1">
 	<input type="hidden" name="saveformdata" value="1">
-	<p>
 	<div class="wide"><?=$SL['SERVICES.HEADING_APACHE'];?></div>
-	</p>
-	<table class="formtable" border="0" width="100%">
+	<br>
+	<table class="formtable" style="border:0; width:100%;">
 		<tr>
 			<td>
 			<label for="webport"><?=$SL['SERVICES.LABEL_WEBPORT'];?></label>
@@ -183,8 +179,8 @@ function form() {
 		</tr>
 	</table>
 	</form>
-	<center>
-		<p>
+	<br>
+	<div style="text-align:center;">
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
 			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><?=$SL['COMMON.BUTTON_SAVE'];?></button>
 			<pre> </pre>
@@ -195,8 +191,8 @@ function form() {
 			<!-- 
 			<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/lighttpd/cgierr.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Webserver Script Errorlog</a>
 			-->
-		</p>
-	</center>
+		
+	</div>
 	<?php endif;
 
 	LBWeb::lbfooter();
@@ -299,8 +295,8 @@ function save()
 		$href=LBWeb::$lbsystempage;
 	}
 		?>
-		<center>
-			<table border=0>
+		<div style="text-align:center;">
+			<table style="border:0;">
 				<tr>
 					<td align="center">
 						<h2><?=$headermsg;?></h2>
@@ -321,7 +317,7 @@ function save()
 					</td>
 				</tr>
 			</table>
-		</center>
+		</div>
 	<?php
 	if (isset($ssdpstate_changed) && $ssdpstate_changed == 1) {
 		if ($ssdpoff) {
@@ -386,8 +382,8 @@ function check_webport() {
 		$weboldport = $cfg['WEBSERVER']['OLDPORT'];
 	}
 	?>
-		<center>
-			<table border=0>
+		<div style="text-align:center;">
+			<table style="border:0;">
 				<tr>
 					<td align="center">
 						<h2><?=$headermsg;?></h2>
@@ -408,7 +404,7 @@ function check_webport() {
 					</td>
 				</tr>
 			</table>
-		</center>
+		</div>
 	<?php
 	if ($waitmsg != "") {
 		echo "
