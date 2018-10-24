@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.5.5";
+	public static $LBWEBVERSION = "1.2.5.6";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -622,7 +622,7 @@ EOF;
 			$p['PACKAGE'] = $lbpplugindir;
 		}
 		
-		$url = "http://" . lbhostname() . ":" . lbwebserverport() . "/admin/system/logmanager.cgi?package=" .  urlencode(${p['PACKAGE']}) . "&name=" .  urlencode(${p['NAME']}) . "&header=none";
+		$url = "http://localhost:" . lbwebserverport() . "/admin/system/logmanager.cgi?package=" .  urlencode(${p['PACKAGE']}) . "&name=" .  urlencode(${p['NAME']}) . "&header=none";
 		$html = file_get_contents($url);
 		
 		return $html;
