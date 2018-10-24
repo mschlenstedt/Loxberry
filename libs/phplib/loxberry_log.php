@@ -125,7 +125,7 @@ class intLog
 		
 		$plugin = LBSystem::plugindata($this->params["package"]);
 		
-		if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+		if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 		
 		$this->writelog("$currtime<INFO> LoxBerry Version " . LBSystem::lbversion() . " " . $is_file_str);
 		if (isset($plugin)) {
@@ -180,7 +180,7 @@ class intLog
 		
 		if ($this->loglevel > 6)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 			$this->writelog("$currtime$msg");
 		}
 	}
@@ -192,7 +192,7 @@ class intLog
 		}
 		if ($this->loglevel > 5)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 		$this->writelog("$currtime<INFO> $msg");
 		}
 	}
@@ -204,7 +204,7 @@ class intLog
 		}
 		if ($this->loglevel > 4)
 		{
-			if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 			$this->writelog("$currtime<OK> $msg");
 		}
 	}
@@ -226,7 +226,7 @@ class intLog
 		}
 		if ($this->loglevel > 3)
 		{
-			if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+			if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 			$this->writelog("$currtime<WARNING> $msg");
 		}
 	}
@@ -246,7 +246,7 @@ class intLog
 		}
 		if ($this->loglevel > 2)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 			$this->writelog("$currtime<ERROR> $msg");
 		}
 	}
@@ -267,7 +267,7 @@ class intLog
 
 		if ($this->loglevel > 1)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 			$this->writelog("$currtime<CRITICAL> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
@@ -289,7 +289,7 @@ class intLog
 
 		if ($this->loglevel > 0)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 			$this->writelog("$currtime<ALERT> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
@@ -311,7 +311,7 @@ class intLog
 
 		if ($this->loglevel >= 0)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=date("H:i:s ");} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=date_format(DateTime::createFromFormat('U.u', microtime(true)), "H:i:s.v ");} else {$currtime="";}
 			$this->writelog("$currtime<EMERG> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
@@ -680,7 +680,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.7";
+	public static $VERSION = "1.2.5.8";
 	
 	public static function newLog($args)
 	{
