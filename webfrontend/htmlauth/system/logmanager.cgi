@@ -105,15 +105,12 @@ sub form_log
 	$maintemplate->param( 'FORM_LOG', 1);
 	print LoxBerry::Log::get_notifications_html("logmanager", 'Log Database');
 	
-	$LoxBerry::Log::DEBUG=1;
-	
-	
 	# For embedded mode, send header
 	print $cgi->header(-charset=>'utf-8') if ($embed);
 
 	my @logs = LoxBerry::Log::get_logs($R::package, $R::name);
 	# print "Logs: " . scalar (@logs) . "\n";
-	@logs = sort { $a->{'_ISPLUGIN'} cmp $b->{'_ISPLUGIN'} } @logs;
+	@logs = sort { (defined $a->{'_ISPLUGIN'} ? $a->{'_ISPLUGIN'} : "0") cmp (defined $b->{'_ISPLUGIN'} ? $b->{'_ISPLUGIN'} : "0") } @logs;
 	
 	my $currpackage;
 	my $currname;
@@ -179,7 +176,11 @@ sub form_log
 		
 		print "</td>\n";
 		print "\t\t\t<td>$log->{LOGSTARTMESSAGE}</td>\n";
-		print "\t\t\t<td>$log->{LOGSTARTSTR} - $log->{LOGENDSTR}</td>\n";
+		print "\t\t\t<td>"; 
+		if($log->{LOGSTARTSTR}) {print "$log->{LOGSTARTSTR}";}
+		print " - ";
+		if($log->{LOGENDSTR}) {print "$log->{LOGENDSTR}";}
+		print "</td>\n";
 		print "\t\t\t<td>";
 		print "<a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=" . uri_escape($log->{FILENAME}) . "&header=html&format=template' target='_blank' data-inline='true' data-mini='true' data-icon='action'>$SL{'COMMON.BUTTON_OPEN'}</a>";
 		print "\t\t\t\t\t<br><span style='font-size:70%;'>$log->{FILENAME}</span>\n" if ($R::showfilename);
