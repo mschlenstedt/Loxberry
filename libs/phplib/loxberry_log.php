@@ -141,7 +141,7 @@ class intLog
 		}
 	}
 	
-	public function LOGEND($msg)
+	public function LOGEND($msg = "")
 	{
 		global $lbhomedir;
 		
@@ -149,7 +149,7 @@ class intLog
 			echo "Object is not initialized.";
 		}
 		
-		if (isset($msg)) {
+		if (!empty($msg)) {
 			$this->params["LOGENDMESSAGE"] = $msg;
 			$this->writelog("<LOGEND> " . $msg);
 		}
@@ -680,7 +680,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.8";
+	public static $VERSION = "1.2.5.9";
 	
 	public static function newLog($args)
 	{
@@ -857,7 +857,7 @@ function notify_ext ($fields)
 
 $stdLog = NULL;
 
-function LOGSTART ($msg)
+function LOGSTART ($msg="")
 {
 	global $stdLog;
 	if (!isset($stdLog)) { create_temp_logobject(); }
@@ -920,7 +920,7 @@ function LOGEMERG ($msg)
 	$stdLog->EMERG($msg);
 }
 
-function LOGEND ($msg)
+function LOGEND ($msg = "")
 {
 	global $stdLog;
 	if (!isset($stdLog)) { create_temp_logobject(); }
