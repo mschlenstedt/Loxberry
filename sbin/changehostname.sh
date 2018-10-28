@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 date
 
@@ -53,7 +53,8 @@ hostnamectl --no-ask-password set-hostname $new
 #############################################
 
 cp -p -n -T /etc/hosts /etc/original.hosts
-sed -i "/$old/ s/$old/$new/" /etc/hosts
+sed -i '/$old.*$/d' /etc/hosts
+sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
 
 #############################################
 ## /opt/loxberry/config/system/minidlna.conf
@@ -76,9 +77,6 @@ echo $new > /etc/mailname
 
 cp -p -n -T /etc/ssmtp/ssmtp.conf /etc/ssmtp/original.ssmtp.conf
 sed -i "/hostname=/s/.*/hostname=$new.local/" /etc/ssmtp/ssmtp.conf
-
-
-
 
 #############################################
 #############################################
