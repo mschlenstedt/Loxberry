@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.5.6";
+	public static $LBWEBVERSION = "1.2.5.7";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -433,7 +433,7 @@ EOT;
 		$p['PACKAGE'] = $lbpplugindir;
 	}
 	
-	return "/admin/system/logmanager.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\n";
+	return "/admin/system/logmanager.cgi?package=${p['PACKAGE']}&name=${p['NAME']}";
 
 }
 

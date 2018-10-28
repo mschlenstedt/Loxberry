@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.5.7";
+our $VERSION = "1.2.5.8";
 our $DEBUG;
 
 use base 'Exporter';
@@ -600,7 +600,7 @@ sub loglist_url
 		$p{PACKAGE} = $LoxBerry::System::lbpplugindir;
 	}
 	
-	return "/admin/system/logmanager.cgi?package=$p{PACKAGE}&name=$p{NAME}\n";
+	return "/admin/system/logmanager.cgi?package=$p{PACKAGE}&name=$p{NAME}";
 }
 
 sub loglist_button_html
