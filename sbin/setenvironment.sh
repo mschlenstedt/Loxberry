@@ -150,6 +150,9 @@ awk -v s="\t\t\t\"LBSCONFIG\" => \"$LBSCONFIG\"," '/^\t\t\t"LBSCONFIG" => /{$0=s
 awk -v s="\t\t\t\"LBSBIN\" => \"$LBSBIN\"," '/^\t\t\t"LBSBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 awk -v s="\t\t\t\"LBSSBIN\" => \"$LBSSBIN\"," '/^\t\t\t"LBSSBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
 
+# Remove 127.0.1.1 from /etc/hosts
+sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
+
 if systemctl --no-pager status lighttpd; then
 	systemctl force-reload lighttpd 
 fi
