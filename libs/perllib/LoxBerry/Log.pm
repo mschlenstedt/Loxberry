@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.20";
+our $VERSION = "1.2.5.21";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -369,15 +369,7 @@ sub write
 		my $currtime = "";
 		
 		if ($self->{addtime} and $severity > -2) {
-			my $epochsec;
-			my $msec;
-			require Time::HiRes;
-			($epochsec, $msec) = Time::HiRes::gettimeofday();
-			$msec = $msec/1000; # Microseconds to milliseconds
-			my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($epochsec);
-			$year += 1900;
-			$currtime = sprintf("%02d:%02d:%02d.%03d", $hour, $min, $sec, $msec);
-			$currtime = $currtime . " ";
+			$currtime = LoxBerry::System::currtime('hrtimehires') . " ";
 		}
 		if ($severity == 7 or $severity < 0) {
 			$string = $currtime . $s . "\n"; 
