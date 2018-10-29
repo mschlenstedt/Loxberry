@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.5.4";
+our $VERSION = "1.2.5.5";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1111,9 +1111,16 @@ sub currtime
 	$year += 1900;
 	$mon++;
 	if (!$format || $format eq 'hr') {
-		# $timestr = "$mday.$mon.$year $hour:$min:$sec";
 		$timestr = sprintf("%02d.%02d.%04d %02d:%02d:%02d", $mday, $mon, $year, $hour, $min, $sec);
 	}
+	elsif ($format eq 'hrtime') {
+		$timestr = sprintf("%02d:%02d:%02d", $hour, $min, $sec);
+	} 
+	elsif ($format eq 'hrtimehires') {
+		require Time::HiRes;
+		my (undef, $nsec) = Time::HiRes::gettimeofday();
+		$timestr = sprintf("%02d:%02d:%02d.%03d", $hour, $min, $sec, $nsec/1000);
+	} 
 	elsif ($format eq 'file') {
 		$timestr = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
 	} 

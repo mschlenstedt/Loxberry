@@ -106,7 +106,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.5.3";
+	public static $LBSYSTEMVERSION = "1.2.5.4";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -704,12 +704,21 @@ function currtime($format = 'hr')
 	if (! $format || $format == 'hr') {
 	$timestr = date('d.m.Y H:i:s', time());
 	}
+	elseif ($format == 'hrtime') {
+	$timestr = date('H:i:s', time());
+	}
+	elseif ($format == 'hrtimehires') {
+		list($usec, $sec) = explode(' ', microtime());
+		$usec = substr($usec, 2, 3);
+		$timestr = date('H:i:s', $sec) . '.' . $usec;
+	}
 	elseif ($format == 'file') {
 		$timestr = date('Ymd_His', time());
 	}
 	elseif ($format == 'filehires') {
-		$date = DateTime::createFromFormat('U.u', microtime(TRUE));
-		$timestr = $date->format('Ymd_His_v');
+		list($usec, $sec) = explode(' ', microtime());
+		$usec = substr($usec, 2, 3);
+		$timestr = date('Ymd_His') . '_' . $usec;
 	}
 	elseif ($format == 'iso') {
 		$timestr = date('"Y-m-d\TH:i:sO"', time());
