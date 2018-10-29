@@ -187,8 +187,10 @@
 			<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
 			</div>
 		</div>
-		<p><TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE><br>
-		<a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
+		<p>
+			<span id="LBU_HINT_RELEASE_TYPE"></span>
+			<br>
+			<a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
 		<p id="lbu_info">&nbsp;</p>
 		<div id="lbu_error" style="color:red;"></div>
 		<div style="font-size:125%;font-weight:bold;" id="lbu_release_name">&nbsp;</div>
@@ -377,6 +379,23 @@ $(document).ready( function () {
 			if (data.error) {
 				$('#lbu_error').html("Error: "+data.error);
 			} else {
+				
+				switch(data.releasetype) {
+					case "release": 
+						$("#LBU_HINT_RELEASE_TYPE").html("<TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE>");
+						break;
+					case "prerelease":
+						$("#LBU_HINT_RELEASE_TYPE").html("<TMPL_VAR UPDATES.LBU_HINT_LATEST_PRERELEASE>");
+						break;
+					case "commit":
+						$("#LBU_HINT_RELEASE_TYPE").html("<TMPL_VAR UPDATES.LBU_SEL_RELTYPE_LATEST>:");
+						break;
+					default:
+						$("#LBU_HINT_RELEASE_TYPE").html("");
+				}
+				$("#LBU_HINT_RELEASE_TYPE").show();
+
+				
 				if (data.release_version) {
 					stripped_relvers = data.release_version;
 					if (stripped_relvers.length > 30) stripped_relvers = stripped_relvers.substring(0, 30) + '... ';
@@ -422,9 +441,10 @@ $(document).ready( function () {
  
  function clearVersion()
  {
+	$("#LBU_HINT_RELEASE_TYPE").html("");
 	$('#lbu_release_version').text("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
 	$('#lbu_release_version').css("color", "Green");
-	$('#lbu_release_version').css("font-weight", "normal");
+	$('#lbu_release_version').css("font-weight", "bold");
 	$('#lbu_info').text("");
 	$('#lbu_info').css("font-weight", "normal");
 	$('#lbu_error').text("");
