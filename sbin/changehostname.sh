@@ -53,7 +53,7 @@ hostnamectl --no-ask-password set-hostname $new
 #############################################
 
 cp -p -n -T /etc/hosts /etc/original.hosts
-sed -i '/$old.*$/d' /etc/hosts
+sed -i "/$old.*$/d" /etc/hosts
 sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
 
 #############################################
