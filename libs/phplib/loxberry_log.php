@@ -180,7 +180,7 @@ class intLog
 		
 		if ($this->loglevel > 6)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 			$this->writelog("$currtime$msg");
 		}
 	}
@@ -680,7 +680,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.10";
+	public static $VERSION = "1.2.5.11";
 	
 	public static function newLog($args)
 	{
