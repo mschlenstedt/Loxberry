@@ -14,25 +14,25 @@ my $cgi = CGI->new;
  
 
 # Initialize logfile and parameters
-my $logfilename;
-if ($cgi->param('logfilename')) {
-	$logfilename = $cgi->param('logfilename');
-}
-my $log = LoxBerry::Log->new(
-		package => 'LoxBerry Update',
-		name => 'update',
-		filename => $logfilename,
-		logdir => "$lbslogdir/loxberryupdate",
-		loglevel => 7,
-		stderr => 1,
-		append => 1,
-);
-$logfilename = $log->filename;
+	my $logfilename;
+	if ($cgi->param('logfilename')) {
+		$logfilename = $cgi->param('logfilename');
+	}
+	my $log = LoxBerry::Log->new(
+			package => 'LoxBerry Update',
+			name => 'update',
+			filename => $logfilename,
+			logdir => "$lbslogdir/loxberryupdate",
+			loglevel => 7,
+			stderr => 1,
+			append => 1,
+	);
+	$logfilename = $log->filename;
 
-if ($cgi->param('updatedir')) {
-	$updatedir = $cgi->param('updatedir');
-}
-my $release = $cgi->param('release');
+	if ($cgi->param('updatedir')) {
+		$updatedir = $cgi->param('updatedir');
+	}
+	my $release = $cgi->param('release');
 
 # Finished initializing
 # Start program here
@@ -41,7 +41,32 @@ my $release = $cgi->param('release');
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
+LOGINF "Removing obsolete 127.0.1.1 entry from /etc/hosts";
 system ('sed -i "/127\.0\.1\.1.*$/d" /etc/hosts');
+
+
+$output = qx { ln -f -s $lbhomedir/sbin/sethosts.sh /etc/network/if-up.d/001hosts };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error creating symlink $lbhomedir/sbin/sethosts.sh /etc/network/if-up.d/001hosts - Errorcode $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "Symlink /etc/network/if-up.d/001hosts created successfully";
+}
+
+
+$output = qx { ln -f -s $lbhomedir/sbin/sethosts.sh /etc/dhcp/dhclient-exit-hooks.d/sethosts };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error creating symlink $lbhomedir/sbin/sethosts.sh /etc/dhcp/dhclient-exit-hooks.d/sethosts - Errorcode $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "Symlink /etc/dhcp/dhclient-exit-hooks.d/sethosts created successfully";
+}
+
+
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
@@ -76,35 +101,3 @@ sub delete_directory
 	}
 	return 1;
 }
-
-
-####################################################################
-# Copy a file or dir from updatedir to lbhomedir including error handling
-# Parameter:
-#	file/dir starting from ~ 
-#   (without /opt/loxberry, with leading /)
-####################################################################
-sub copy_to_loxberry
-{
-	my ($destparam) = @_;
-		
-	my $destfile = $lbhomedir . $destparam;
-	my $srcfile = $updatedir . $destparam;
-		
-	if (! -e $srcfile) {
-		LOGINF "$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.";
-		return;
-	}
-	
-	my $output = qx { cp -rf $srcfile $destfile 2>&1 };
-	my $exitcode  = $? >> 8;
-
-	if ($exitcode != 0) {
-		LOGERR "Error copying $destparam - Error $exitcode";
-		LOGINF "Message: $output";
-		$errors++;
-	} else {
-		LOGOK "$destparam installed.";
-	}
-}
-
