@@ -29,6 +29,5 @@ send "$passwordnew\r"
 sleep 1
 expect { 
 	"passwd: password updated successfully" { exit 0 }
-	"Bad: new password is just a wrapped version of the old one" { exit 2 }	
 	default { exit 1 }
 }	
