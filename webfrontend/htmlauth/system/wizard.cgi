@@ -297,7 +297,7 @@ sub admin_save
 	my $securepinok;
 	my $rootpassok;
 	my $output;
-	
+	our $wraperror = 0;	
 	##
 	## User wants to change the password (and maybe also the username):
 	##
@@ -307,7 +307,20 @@ sub admin_save
 	if ($s->{adminpass1}) {
 		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp loxberry $s->{adminpass1});
 		$exitcode  = $? >> 8;
-		if ($exitcode ne 0) {
+		if ($exitcode eq 1) {
+			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."<br>";
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode eq 2) {
+			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."<br>";
+			$wraperror = 1;
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode ne 0) {
 			print STDERR "setloxberrypasswd.exp adminpassold Exitcode $exitcode\n";
 			$error .= " setloxberrypasswd.exp adminpassold Exitcode $exitcode<br>";
 			# &error;
@@ -317,30 +330,32 @@ sub admin_save
 			$adminok = 1;
 		}	
 
-		# Try to set new SAMBA passwords for user "loxberry"
-
-		## If default password isn't valid anymore:
-		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $s->{adminpass1} );
-		$exitcode  = $? >> 8;
-		if ($exitcode ne 0) {
-			print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
-			$error .= " setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode<br>";
-		} else {
-			$maintemplate->param("SAMBAOK", 1);
-			$sambaok = 1;
-		}	
-
-		# Save Username/Password for Webarea
-		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $s->{adminuser} $s->{adminpass1} );
-		$exitcode  = $? >> 8;
-		if ($exitcode != 0) {
-			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
-			# &error;
-		} else {
-			$maintemplate->param("WEBOK", 1);
-			$webok = 1;
-		} 
+		if ($wraperror ne 1) {
 		
+			# Try to set new SAMBA passwords for user "loxberry"
+	
+			## If default password isn't valid anymore:
+			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $s->{adminpass1} );
+			$exitcode  = $? >> 8;
+			if ($exitcode ne 0) {
+				print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
+				$error .= " setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode<br>";
+			} else {
+				$maintemplate->param("SAMBAOK", 1);
+				$sambaok = 1;
+			}	
+	
+			# Save Username/Password for Webarea
+			$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $s->{adminuser} $s->{adminpass1} );
+			$exitcode  = $? >> 8;
+			if ($exitcode != 0) {
+				$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
+				# &error;
+			} else {
+				$maintemplate->param("WEBOK", 1);
+				$webok = 1;
+			} 
+		}
 	}
 
 	# Set Secure PIN
@@ -372,7 +387,7 @@ sub admin_save
 	my $creditsecurepin;
 	my $creditroot;
 	
-	if ($adminok) {
+	if ($adminok && $wraperror ne 1) {
 		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$s->{adminuser} / $s->{adminpass1}\r\n";
 		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $s->{adminpass1}\r\n";
 		$maintemplate->param( "ADMINPASS", $s->{adminpass1} );
