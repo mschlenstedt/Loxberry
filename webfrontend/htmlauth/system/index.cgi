@@ -51,7 +51,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbscon
 }
 
 # Version of this script
-my $version = "1.2.5.1";
+my $version = "1.2.5.2";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -290,6 +290,15 @@ sub mainmenu {
 	} else {
 		$navbar{2}{active} = 1;
 		$maintemplate->param('PAGE_SYSTEM', 1);
+	}
+
+	# Slow down Notitfys for PI1 (needs too much CPU)
+	my $output = qx ($lbsbindir/showpitype);
+	chomp ($output);
+	if ($output eq "type_1") {
+		$maintemplate->param('NOTIFY_POLLTIME', 30000);
+	} else {
+		$maintemplate->param('NOTIFY_POLLTIME', 5000);
 	}
 
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
