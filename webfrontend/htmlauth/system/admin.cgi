@@ -74,6 +74,7 @@ our $nodefaultpwd;
 our $creditwebadmin;
 our $creditconsole;
 our $creditsecurepin;
+our $wraperror = 0;
 
 ##########################################################################
 # Read Settings
@@ -282,7 +283,14 @@ sub save {
 	if ($adminpass1) {
 		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
 		$exitcode  = $? >> 8;
-		if ($exitcode ne 0) {
+		if ($exitcode eq 2) {
+			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."<br>";
+			$wraperror = 1;
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode ne 0) {
 			print STDERR "setloxberrypasswd.exp adminpassold Exitcode $exitcode\n";
 			$error .= " setloxberrypasswd.exp adminpassold Exitcode $exitcode<br>";
 			# &error;
@@ -290,60 +298,61 @@ sub save {
 		} else {
 			$maintemplate->param("ADMINOK", 1);
 		}	
-
-		# Try to set new SAMBA passwords for user "loxberry"
-
-		## First try if default password is still valid:
-		# $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
-		## If default password isn't valid anymore:
-		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
-		$exitcode  = $? >> 8;
-		if ($exitcode ne 0) {
-			print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
-			$error .= " setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode<br>";
-			# &error;
-			# exit;
-		} else {
-			$maintemplate->param("SAMBAOK", 1);
-		}	
-
-		# Set MYSQL Password
-		# This only works if the initial password is still valid
-		# (password: "loxberry")
-		# Use eval {} here in case somthing went wrong
-		#$sqlerr = 0;
-		#$dsn = "DBI:mysql:database=mysql";
-		#eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
-		#$sqlerr = 1 if $@;
-		#eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
-		#$sqlerr = 1 if $@;
-		#eval {$sth->execute()};
-		#$sqlerr = 1 if $@;
-		#eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
-		#$sqlerr = 1 if $@;
-		#eval {$sth->execute()};
-		#$sqlerr = 1 if $@;
-		#eval {$sth->finish()};
-		#$sqlerr = 1 if $@;
-		#eval {$dbh->{AutoCommit} = 0};
-		#$sqlerr = 1 if $@;
-		#eval {$dbh->commit};
-		#$sqlerr = 1 if $@;
-		#if ($sqlerr eq 0) {
-		#  $maintemplate->param("SQLOK", 1);
-		#  print STDERR "sqlerr eq 0 - OK\n";
-		#}
-
-		# Save Username/Password for Webarea
-		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
-		my $exitcode  = $? >> 8;
-		if ($exitcode != 0) {
-			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
-			# &error;
-		} else {
-			$maintemplate->param("WEBOK", 1);
-		} 
-		
+		if ($wraperror ne 1) {
+			
+			# Try to set new SAMBA passwords for user "loxberry"
+	
+			## First try if default password is still valid:
+			# $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
+			## If default password isn't valid anymore:
+			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
+			$exitcode  = $? >> 8;
+			if ($exitcode ne 0) {
+				print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
+				$error .= " setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode<br>";
+				# &error;
+				# exit;
+			} else {
+				$maintemplate->param("SAMBAOK", 1);
+			}	
+	
+			# Set MYSQL Password
+			# This only works if the initial password is still valid
+			# (password: "loxberry")
+			# Use eval {} here in case somthing went wrong
+			#$sqlerr = 0;
+			#$dsn = "DBI:mysql:database=mysql";
+			#eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
+			#$sqlerr = 1 if $@;
+			#eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
+			#$sqlerr = 1 if $@;
+			#eval {$sth->execute()};
+			#$sqlerr = 1 if $@;
+			#eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
+			#$sqlerr = 1 if $@;
+			#eval {$sth->execute()};
+			#$sqlerr = 1 if $@;
+			#eval {$sth->finish()};
+			#$sqlerr = 1 if $@;
+			#eval {$dbh->{AutoCommit} = 0};
+			#$sqlerr = 1 if $@;
+			#eval {$dbh->commit};
+			#$sqlerr = 1 if $@;
+			#if ($sqlerr eq 0) {
+			#  $maintemplate->param("SQLOK", 1);
+			#  print STDERR "sqlerr eq 0 - OK\n";
+			#}
+	
+			# Save Username/Password for Webarea
+			$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
+			my $exitcode  = $? >> 8;
+			if ($exitcode != 0) {
+				$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
+				# &error;
+			} else {
+				$maintemplate->param("WEBOK", 1);
+			} 
+		}
 	}
 
 	##
@@ -364,7 +373,7 @@ sub save {
 	##
 	## Overview of new passwords:
 	##
-	if ($adminpass1) {
+	if ($adminpass1 && $wraperror ne 1) {
 		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
 		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $adminpass1\r\n";
 		$maintemplate->param( "ADMINPASS", $adminpass1 );
@@ -439,4 +448,3 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLA
 	LoxBerry::Web::foot();
 	exit;
 }
-
