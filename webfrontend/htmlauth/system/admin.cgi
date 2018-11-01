@@ -283,7 +283,13 @@ sub save {
 	if ($adminpass1) {
 		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
 		$exitcode  = $? >> 8;
-		if ($exitcode eq 2) {
+		if ($exitcode eq 1) {
+			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."<br>";
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode eq 2) {
 			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."<br>";
 			$wraperror = 1;
