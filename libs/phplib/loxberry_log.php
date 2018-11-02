@@ -374,12 +374,14 @@ class intLog
 			$dbok = 1;
 			try {			
 				$this->dbh = new SQLite3($dbfile);
+				$this->dbh->busyTimeout(5000);
 				$db = $this->dbh;
+				
 			} catch (Exception $e) {
 				error_log("log_db_init_database: Opening database failed - " . $e->getMessage());
 				$dbok = 0;
 			}
-			
+			$db->exec('PRAGMA journal_mode = wal;');
 			$db->exec("BEGIN TRANSACTION;");
 			$res = $db->exec("CREATE TABLE IF NOT EXISTS logs (
 					PACKAGE VARCHAR(255) NOT NULL,
@@ -395,6 +397,7 @@ class intLog
 				$dberrstr = $db->lastErrorMsg();
 				error_log("log_db_init_database: Create table 'logs': Error $dberr $dberrstr");
 				$dbok = 0;
+				$db->exec('ROLLBACK;');
 			}
 			$res = $db->exec("CREATE TABLE IF NOT EXISTS logs_attr (
 					keyref INTEGER NOT NULL,
@@ -407,6 +410,7 @@ class intLog
 				$dberrstr = $db->lastErrorMsg();
 				error_log("log_db_init_database: Create table 'logs_attr': Error $dberr $dberrstr");
 				$dbok = 0;
+				$db->exec('ROLLBACK;');
 			}
 			$db->exec("COMMIT;");
 			
@@ -485,6 +489,7 @@ class intLog
 		$res = $sth->execute();
 		if ($res == False) {
 			error_log("Error inserting log to DB: " . $dbh->lastErrorMsg());
+			$dbh->exec("ROLLBACK;");
 			return;
 		}
 		$id = $dbh->lastInsertRowid();
@@ -541,6 +546,7 @@ class intLog
 		$res = $sth->execute();
 		if ($res == False) {
 			error_log("Error updating logend in DB: " . $dbh->lastErrorMsg());
+			$dbh->exec("ROLLBACK;");
 			return;
 		}
 		$id = $p->params["dbkey"];
@@ -680,7 +686,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.5.11";
+	public static $VERSION = "1.2.6.1";
 	
 	public static function newLog($args)
 	{
