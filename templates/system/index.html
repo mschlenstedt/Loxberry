@@ -190,7 +190,7 @@ var systeminfos = 0;
 $(function() {
     //console.log( "Calling updatenotify" );
 	updatenotify();
-	setInterval(function(){ updatenotify(); }, 5000);
+	setInterval(function(){ updatenotify(); }, <TMPL_VAR NOTIFY_POLLTIME>);
 });
 	
 	
