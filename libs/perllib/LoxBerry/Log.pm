@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.5.21";
+our $VERSION = "1.2.6.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -469,7 +469,10 @@ sub LOGSTART
 	$self->write(-2, "<LOGSTART> " . $s);
 	$self->{LOGSTARTMESSAGE} = $s if ($s);
 	
-	my @is_files = glob( $LoxBerry::System::lbsconfigdir . '/is_*.cfg' );
+	opendir(my $DIR, "$LoxBerry::System::lbsconfigdir/");
+	my @is_files = grep(/is\_.*\.cfg/,readdir($DIR));
+	closedir($DIR);
+	
 	my $is_file_str = "";
 	foreach my $is_file (@is_files) {
 		$is_file_str .= substr($is_file, rindex($is_file, '/')+1) . " ";
@@ -593,7 +596,8 @@ sub log_db_init_database
 				return undef;
 				};
 		$dbh->{sqlite_unicode} = 1;
-		
+		$dbh->do('PRAGMA journal_mode = wal;');
+		$dbh->do('PRAGMA busy_timeout = 5000;'); 
 		$dbh->do('BEGIN;');
 		$dbh->do("CREATE TABLE IF NOT EXISTS logs (
 					PACKAGE VARCHAR(255) NOT NULL,
