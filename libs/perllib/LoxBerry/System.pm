@@ -47,6 +47,7 @@ our @EXPORT = qw (
 	$lbssbindir
 	$lbsbindir
 		
+	canonical_path
 	is_enabled 
 	is_disabled
 	begins_with
@@ -110,20 +111,79 @@ LoxBerry::System defines a dozen of variables for easier access to the plugin di
 	$lbslogdir		# Full path to the SYSTEM Log directory /opt/loxberry/data/system
 	$lbsconfigdir	# Full path to the SYSTEM Config directory /opt/loxberry/config/system
 
-	
+
 $lbhomedir is detected in the following order:
 
 =over 12
 
 =item 1. System environment variable -> $LBHOMEDIR
 
-=item 2. If username is loxberry -> HomeDir
+=item 2. Relative to a path in the environment variable PERL5LIB
 
 =item 3. Static -> /opt/loxberry
 
 =back
 
 =cut
+
+sub canonical_path {
+	my $path = shift;
+	my @ret = ();
+	$path .= '/' if $path =~ /[.\/]$/;
+	for my $tok (split(/\/+/, $path . '-')) {
+		next if $tok eq '.';
+		if ($tok eq '..') {
+			pop @ret;
+			next;
+		}
+		push @ret, $tok if $tok;
+	}
+	'/' . substr(join('/', @ret), 0, -1)
+}
+
+sub get_plugindir {
+	use Cwd 'abs_path';
+	my $use_abs = shift;
+	my @p = ();
+	my $s, my $t, my $i;
+
+	$s = $ENV{SCRIPT_FILENAME}; $t = $0;
+	if ($s) {
+		$s = cwd() . "/" . $s unless ($s =~ /^\//);
+		$s = $use_abs ? Cwd::abs_path($s) : canonical_path($s);
+	} else {
+		$s = '/';
+	}
+	$t = cwd() . "/" . $t unless ($t eq "" || $t =~ /^\//);
+	if ($s != $t ) {
+		$t = $use_abs ? Cwd::abs_path($t) : canonical_path($t);
+	} else {
+		$t = '/';
+	}
+	return '' if ($s eq '/' && $t eq '/');
+
+	push @p, $s unless ($s eq '/');
+	push @p, $t unless ($t eq '/' || $s eq $t);
+
+	my %parents = (templates => 1, log => 2, data => 3, config => 4, bin => 5);
+	foreach $t (@p) {
+		print STDERR "Checking '$t' for '/plugins/' ...\n" if ($DEBUG);
+		my @pc = split('/', $t);
+		for ($i=$#pc-2; $i > 0; $i--) {
+			next unless ($pc[$i] eq 'plugins');
+			if ($i >= 2 && $pc[$i-2] eq 'webfrontend') {
+				return $pc[$i+1];
+			} elsif ($parents{$pc[$i-1]}) {
+				return $pc[$i+1];
+			} elsif ($i >= 2 && $pc[$i-2] eq 'system'
+				&& $pc[$i-1] eq 'daemon')
+			{
+				return $pc[$i+1];
+			}
+		}
+	}
+	return ($use_abs) ? '' : get_plugindir(1);
+}
 
 ##################################################################
 # This code is executed on every use
@@ -137,63 +197,24 @@ if ($ENV{LBHOMEDIR}) {
 	$lbhomedir = $ENV{LBHOMEDIR};
 	print STDERR "lbhomedir $lbhomedir detected by environment\n" if ($DEBUG);
 } else {
-	require File::HomeDir;
-	my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
-	if ($username eq 'loxberry') {
-		$lbhomedir = File::HomeDir->my_home;
-		print STDERR "lbhomedir $lbhomedir detected by loxberry HomeDir\n" if ($DEBUG);
-	} elsif ($username eq 'root') {
-		$lbhomedir = `su - loxberry -c pwd`;
-		$lbhomedir =~ s/\n|\s+//;
-		print STDERR "lbhomedir $lbhomedir detected as user root by loxberry's pwd HomeDir\n" if ($DEBUG);
-	} else {
-		# Missing some additional functions if we are running from daemon or cron
-		$lbhomedir = '/opt/loxberry';
-		print STDERR "lbhomedir $lbhomedir set to /opt/loxberry as fallback\n" if ($DEBUG);
-		Carp::carp ("LoxBerry home was statically set to /opt/loxberry as no home directory could be found.");
+	foreach my $d  (@INC) {
+		if (-e $d ."/LoxBerry/Web.pm" && -e $d ."/../phplib/loxberry_web.php") {
+			$lbhomedir = canonical_path($d . "/../..");
+			print STDERR "$lbhomedir set to " . $lbhomedir . "\n" if ($DEBUG);
+		}
 	}
 }
-
-my $abspath;
-our $lbpplugindir;
-
-if ($ENV{SCRIPT_FILENAME}) { 
-		$abspath = Cwd::abs_path($ENV{SCRIPT_FILENAME});
-	} elsif ($0) {
-		$abspath = Cwd::abs_path($0);
-	}
-
-print STDERR "Script call \$0 is $0 abspath is $abspath\n" if ($DEBUG);
-my $lbhomedirlength = length($lbhomedir);
-
-my $rindex = rindex($abspath, ".");
-print STDERR "rindex is $rindex\n" if ($DEBUG);
-$rindex = length($abspath) if ($rindex < 0);
-
-my $part = substr ($abspath, ($lbhomedirlength+1), $rindex-$lbhomedirlength-1);
-
-print STDERR "part is $part\n" if ($DEBUG);
-
-my ($p1, $p2, $p3, $p4, $p5, $p6) = split(/\//, $part);
-if ($DEBUG) {
-	print STDERR "P1 = $p1\n" if ($p1);
-	print STDERR "P2 = $p2\n" if ($p2);
-	print STDERR "P3 = $p3\n" if ($p3);
-	print STDERR "P4 = $p4\n" if ($p4);
-	print STDERR "P5 = $p5\n" if ($p5);
-	print STDERR "P6 = $p6\n" if ($p6);
+if (!$lbhomedir) {
+	# Missing some additional functions if we are running from daemon or cron
+	$lbhomedir = '/opt/loxberry';
+	print STDERR "lbhomedir $lbhomedir set to /opt/loxberry as fallback\n" if ($DEBUG);
+	Carp::carp ("LoxBerry home was statically set to /opt/loxberry as no home directory could be found.");
 }
 
-if 		($p1 eq 'webfrontend' && $p3 eq 'plugins' && $p4 )  { $lbpplugindir = $p4; }
-elsif 	($p1 eq 'templates' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
-elsif	($p1 eq 'log' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
-elsif	($p1 eq 'data' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
-elsif	($p1 eq 'config' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
-elsif	($p1 eq 'bin' && $p2 eq 'plugins' && $p3 ) { $lbpplugindir = $p3; }
-elsif	($p1 eq 'system' && $p2 eq 'daemons' && $p3 eq 'plugins' && $p4 ) { $lbpplugindir = $p4; }
+our $lbpplugindir = get_plugindir();
 
 if ($lbpplugindir) {
-	# our ($lbpplugindir) = (split(/\//, $part))[3];
+	print STDERR "lbpplugindir = $lbpplugindir\n" if ($DEBUG);
 	our $lbphtmlauthdir = "$lbhomedir/webfrontend/htmlauth/plugins/$lbpplugindir";
 	our $lbphtmldir = "$lbhomedir/webfrontend/html/plugins/$lbpplugindir";
 	our $lbcgidir = $lbphtmlauthdir;
