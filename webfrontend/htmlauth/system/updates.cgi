@@ -29,7 +29,6 @@ use CGI::Carp qw(fatalsToBrowser);
 #use CGI qw/:standard/;
 use CGI;
 use Config::Simple;
-use File::HomeDir;
 use File::Path qw(make_path remove_tree);
 use warnings;
 use strict;

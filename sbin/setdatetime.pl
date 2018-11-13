@@ -22,7 +22,6 @@ use LWP::UserAgent;
 use XML::Simple qw(:strict);
 use Config::Simple;
 use File::Copy;
-use File::HomeDir;
 use LoxBerry::System;
 #use strict;
 #use warnings;

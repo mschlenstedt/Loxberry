@@ -4,7 +4,6 @@ use CGI::Fast;
 use Carp;
 use JSON;
 use Config::Simple;
-use File::HomeDir;
 use URI::Escape;
 use LWP::UserAgent;
 use XML::Simple;

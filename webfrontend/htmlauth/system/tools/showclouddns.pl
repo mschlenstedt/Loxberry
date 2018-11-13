@@ -21,7 +21,6 @@
 ##########################################################################
 
 use Config::Simple;
-use File::HomeDir;
 use JSON;
 #use warnings;
 #use strict;
@@ -36,7 +35,7 @@ our $curlbin;
 our $awkbin;
 our $grepbin;
 our $version;
-our $home = File::HomeDir->my_home;
+our $home = $ENV{'LBHOMEDIR'};
 
 ##########################################################################
 # Read Settings

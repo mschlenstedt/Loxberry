@@ -20,7 +20,6 @@
 # Modules
 ##########################################################################
 
-use File::HomeDir;
 use Config::Simple;
 use Getopt::Long;
 #use warnings;
@@ -32,7 +31,7 @@ use Getopt::Long;
 
 our $cfg;
 our $file;
-our $home = File::HomeDir->my_home;
+our $home = $ENV{'LBHOMEDIR'};
 our $aptbin;
 our $test;
 
