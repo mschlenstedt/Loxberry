@@ -46,7 +46,6 @@ our $help;
 our @help;
 our $helptext;
 our $helplink;
-our $installfolder;
 our $languagefile;
 our $rebootbin;
 our $poweroffbin;
@@ -63,7 +62,6 @@ our $nexturl;
 my $version = "0.3.2.2";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
-#$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 #$lang            = $cfg->param("BASE.LANG");
 $rebootbin       = $cfg->param("BINARIES.REBOOT");
 $poweroffbin     = $cfg->param("BINARIES.POWEROFF");

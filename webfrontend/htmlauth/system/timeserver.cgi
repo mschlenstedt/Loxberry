@@ -48,7 +48,6 @@ our $help;
 our @help;
 our $helptext;
 our $helplink;
-# our $installfolder;
 our $languagefile;
 our $error;
 our $saveformdata;
@@ -85,7 +84,6 @@ my $version = "1.2.3.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 
-#$installfolder      = $cfg->param("BASE.INSTALLFOLDER");
 # $lang               = $cfg->param("BASE.LANG");
 $zeitserver         = $cfg->param("TIMESERVER.METHOD");
 $ntpserverurl       = $cfg->param("TIMESERVER.SERVER");

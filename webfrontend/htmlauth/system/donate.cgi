@@ -44,7 +44,6 @@ our $help;
 our @help;
 our $helptext;
 our $helplink;
-our $installfolder;
 our $languagefile;
 
 ##########################################################################
@@ -55,7 +54,6 @@ our $languagefile;
 my $version = "0.3.2.2";
 
 $cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
-$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 
 #########################################################################

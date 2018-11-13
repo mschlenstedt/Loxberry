@@ -86,7 +86,7 @@ $timezone            = $cfg->param("TIMESERVER.ZONE");
 $ntpbin              = $cfg->param("BINARIES.NTPDATE");
 $datebin             = $cfg->param("BINARIES.DATE");
 $sudobin             = $cfg->param("BINARIES.SUDO");
-$installdir          = $cfg->param("BASE.INSTALLFOLDER");
+$installdir          = $lbhomedir;
 
 ##########################################################################
 # Main program

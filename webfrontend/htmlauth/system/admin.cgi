@@ -49,7 +49,6 @@ our $help;
 our @help;
 our $helptext;
 our $helplink;
-our $installfolder;
 our $languagefile;
 our $error;
 our $saveformdata;

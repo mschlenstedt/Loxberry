@@ -48,11 +48,9 @@ if ($R::lang) {
 }
 my $lang = LoxBerry::System::lblanguage();
 
-# $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 # $lang            = $cfg->param("BASE.LANG");
 
 # Read translations
-# $languagefile = "$installfolder/templates/system/$lang/language.dat";
 # $phrase = new Config::Simple($languagefile);
 
 #########################################################################

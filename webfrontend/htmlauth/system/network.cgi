@@ -47,7 +47,6 @@ our $template_title;
 our $help;
 our @help;
 our $helptext;
-#our $installfolder;
 our $languagefile;
 our $error;
 our $saveformdata;
