@@ -2,40 +2,91 @@
 	# define Constants for LoxBerry directories
 	if(getenv("LBHOMEDIR")) {
 		define("LBHOMEDIR", getenv("LBHOMEDIR"));
-	} 
-	elseif (posix_getpwuid(posix_getpwnam('loxberry')['uid'])['dir']) {
-			define("LBHOMEDIR", posix_getpwuid(posix_getpwnam('loxberry')['uid'])['dir']);
+	} else {
+		$p = explode(':', get_include_path());
+		for ($i=count($p)-1; $i >= 0; $i--) {
+			if (substr($p[$i], -11) == 'libs/phplib'
+				&& file_exists($p[$i] . '/loxberry_web.php')
+				&& file_exists($p[$i] .'/../perllib/LoxBerry/Web.pm'))
+			{
+				DEFINE("LBHOMEDIR", substr($p[$i], 0, -11));
+				break;
+			}
+		}
+		if (!defined('LBHOMEDIR')) {
+			error_log("LoxBerry System WARNING: Falling back to /opt/loxberry");
+			define("LBHOMEDIR", '/opt/loxberry');
+		}
 	}
-	else {
-		error_log("LoxBerry System WARNING: Falling back to /opt/loxberry");
-		define("LBHOMEDIR", '/opt/loxberry');
+
+function canonical_path($path) {
+	$ret = array();
+	$s = substr($path,-1,1);
+	if ($s == '.' || $s == '/')
+		$path .= '/';
+	foreach (preg_split('/\/+/', $path . '-', 0, PREG_SPLIT_NO_EMPTY) as $tok) {
+		if ($tok == '.')
+			continue;
+		if ($tok == '..') {
+			array_pop($ret);
+			continue;
+		}
+		$ret[] = $tok;
 	}
+	return '/' . substr(implode('/', $ret), 0, -1);
+}
+
+function get_plugindir($use_abs) {
+	$p = array();
+
+	$s = getenv('SCRIPT_FILENAME');
+	$t = (isset($argv)) ? $argv[0] : '';
+	if ($s) {
+		if (substr($s, 0, 1) != '/')
+			$s = getcwd() . "/" . $s;
+		$s = $use_abs ? realpath($s) : canonical_path($s);
+	} else {
+		$s = '/';
+	}
+	if ($t != '' && substr($t, 0, 1) != '/')
+		$t = getcwd() . "/" . $t;
+	if ($s != $t && $t != '') {
+		$t = $use_abs ? realpath($t) : canonical_path($t);
+	} else {
+		$t = '/';
+	}
+	if ($s == '/' && $t == '/')
+		return '';
+
+	if ($s != '/')
+		$p[] = $s;
+	if ($t != '/' && $s != $t)
+		$p[] = $t;
+
+	$parents = array('templates' => 1, 'log' => 2, 'data' => 3, 'config' => 4, 'bin' => 5);
+	foreach ($p as $t) {
+		#error_log("Checking '$t' for '/plugins/' ...\n");
+		$pc = explode('/', $t);
+		for ($i=count($pc)-2; $i > 0; $i--) {
+			if($pc[$i] != 'plugins')
+				continue;
+			if ($i >= 2 && $pc[$i-2] == 'webfrontend') {
+				return $pc[$i+1];
+			} else if (array_key_exists($pc[$i-1], $parents)) {
+				return $pc[$i+1];
+			} else if ($i >= 2 && $pc[$i-2] =='system' && $pc[$i-1] =='daemon'){
+				return $pc[$i+1];
+			}
+		}
+	}
+	return ($use_abs) ? '' : get_plugindir(1);
+}
 
 	// lbhomedir
 	$lbhomedir = LBHOMEDIR;
-	list($scriptPath) = get_included_files();
-	$p = explode("/", substr($scriptPath, strlen(LBHOMEDIR)));
+	$pluginname = get_plugindir(0);
 	
-	// // Debugging
-	// error_log("Path parts");
-	// error_log("P1 = $p[1]");
-	// error_log("P2 = $p[2]");
-	// error_log("P3 = $p[3]");
-	// error_log("P4 = $p[4]");
-	// error_log("P5 = $p[5]");
-	// error_log("P6 = $p[6]");
-	
-	if 		($p[1] == 'webfrontend' && $p[3] == 'plugins' && isset($p[4]) )  { $pluginname = $p[4]; }
-	elseif 	($p[1] == 'templates' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
-	elseif	($p[1] == 'log' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
-	elseif	($p[1] == 'data' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
-	elseif	($p[1] == 'config' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
-	elseif	($p[1] == 'bin' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
-	elseif	($p[1] == 'system' && $p[2] == 'daemons' && $p[3] == 'plugins' && isset($p[4]) ) { $pluginname = $p[4]; }
-
-	// error_log("Determined plugin name is $pluginname");
-	
-	if (isset($pluginname)) {
+	if ($pluginname != '') {
 		define ("LBPPLUGINDIR", $pluginname);
 		unset($pluginname);
 		
@@ -59,8 +110,6 @@
 		$lbpconfigdir = LBPCONFIGDIR;
 		// $lbpsbindir = LBPSBINDIR;
 		$lbpbindir = LBPBINDIR;
-		
-		// error_log("LoxBerry System Info: LBPPLUGINDIR: " . LBPPLUGINDIR);
 	}
 
 	// error_log("LoxBerry System Info: LBHOMEDIR: " . LBHOMEDIR);
@@ -740,4 +789,3 @@ function reboot_required($message = 'A reboot was requested')
 	fwrite($fh, $message);
 	fclose($fh);
 }
-
