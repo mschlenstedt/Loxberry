@@ -176,6 +176,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 			$jsonstr = json_encode( $mem, JSON_PRETTY_PRINT, 20);
 			file_put_contents($memfile, $jsonstr);
 			chown($memfile, "loxberry");
+			chgrp($memfile, "loxberry");
 			
 		}
 	}
@@ -363,6 +364,7 @@ function mshttp_send_mem($msnr, $params, $value = null)
 			$jsonstr = json_encode( $mem, JSON_PRETTY_PRINT, 20);
 			file_put_contents($memfile, $jsonstr);
 			chown($memfile, "loxberry");
+			chgrp($memfile, "loxberry");
 		}
 	}
 	
