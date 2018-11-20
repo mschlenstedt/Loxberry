@@ -6,7 +6,7 @@ require_once "loxberry_system.php";
 $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 
-$LBIOVERSION = "1.2.5.3";
+$LBIOVERSION = "1.2.6.1";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -175,6 +175,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 			//echo var_dump($mem);
 			$jsonstr = json_encode( $mem, JSON_PRETTY_PRINT, 20);
 			file_put_contents($memfile, $jsonstr);
+			chown($memfile, "loxberry");
 			
 		}
 	}
@@ -361,6 +362,7 @@ function mshttp_send_mem($msnr, $params, $value = null)
 			$mem['Params'] = array_merge($mem['Params'], $newparams);
 			$jsonstr = json_encode( $mem, JSON_PRETTY_PRINT, 20);
 			file_put_contents($memfile, $jsonstr);
+			chown($memfile, "loxberry");
 		}
 	}
 	
