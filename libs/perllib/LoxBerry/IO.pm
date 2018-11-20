@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "1.2.5.1";
+our $VERSION = "1.2.5.5";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -191,6 +191,8 @@ sub mshttp_send_mem
 		};
 		$timestamp = $mem->param('Main.timestamp');
 	}
+	my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+	chown $uid, $gid, $memfile;
 	
 	# Check if this call should be set to mem_sendall
 	if ($timestamp < (time-$mem_sendall_sec)) {
@@ -224,6 +226,8 @@ sub mshttp_send_mem
 	
 	$mem->param('Main.timestamp', time);
 		$mem->save($memfile) or print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";;
+		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+		chown $uid, $gid, $memfile;
 	$mem_sendall = 0;
 	
 	if (@newparams) {
@@ -425,6 +429,8 @@ sub msudp_send_mem
 		};
 		$timestamp = $mem->param('Main.timestamp');
 	}
+	my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+	chown $uid, $gid, $memfile;
 	
 	# Check if this call should be set to mem_sendall
 	if ($timestamp < (time-$mem_sendall_sec)) {
@@ -459,6 +465,8 @@ sub msudp_send_mem
 	}
 	
 	$mem->save($memfile) or print STDERR "msudp_send_mem: Could not write memory file $memfile\n";;
+	my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+	chown $uid, $gid, $memfile;
 	$mem_sendall = 0;
 	
 	if (@newparams) {
