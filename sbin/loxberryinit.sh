@@ -23,7 +23,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Version 1.8
+# Version 1.9
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:$LBHOMEDIR/bin:$LBHOMEDIR/sbin"
 
@@ -52,8 +52,27 @@ case "$1" in
 
 	# Remove old mountpoints from AutoFS and USB automount (in case they were not
 	# unmounted correctly and di not exist anymore)
-	rm -r /media/usb/* > /dev/null 2>&1
-	rm -r /media/smb/* > /dev/null 2>&1
+	for folder in /media/usb/*
+	do
+		if [ -d ${folder} ]
+		then
+			if  ! mount | grep -q ${folder}
+			then
+				rm -r ${folder} > /dev/null 2>&1
+			fi
+		fi
+	done
+
+	for folder in /media/smb/*
+	do
+		if [ -d ${folder} ]
+		then
+			if  ! mount | grep -q ${folder}
+			then
+				rm -r ${folder} > /dev/null 2>&1
+			fi
+		fi
+	done
 
 	# Let fsck run only every 10th boot (only for clean devices)
 	tune2fs -c 10 /dev/mmcblk0p2 > /dev/null 2>&1
