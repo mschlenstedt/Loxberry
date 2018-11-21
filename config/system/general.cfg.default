@@ -1,6 +1,16 @@
 ; Config::Simple 4.58
 ; Mon Nov 13 21:33:02 2017
 
+[BASE]
+MINISERVERS=1
+CLOUDDNS=dns.loxonecloud.com
+LANG=en
+INSTALLFOLDER=/opt/loxberry
+STARTSETUP=1
+SENDSTATISTIC=1
+VERSION=1.2.6
+SYSTEMLOGLEVEL=6
+
 [TIMESERVER]
 METHOD=ntp
 SERVER=0.europe.pool.ntp.org
@@ -30,16 +40,6 @@ TAR=/bin/tar
 NTPDATE=/usr/sbin/ntpdate
 DPKG=/usr/bin/dpkg
 DOS2UNIX=/usr/bin/dos2unix
-
-[BASE]
-MINISERVERS=1
-CLOUDDNS=dns.loxonecloud.com
-LANG=en
-INSTALLFOLDER=/opt/loxberry
-STARTSETUP=1
-SENDSTATISTIC=1
-VERSION=1.2.5.4
-SYSTEMLOGLEVEL=6
 
 [UPDATE]
 RELEASETYPE=release
