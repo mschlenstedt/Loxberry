@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.4.0.0";
+my $version = "1.4.0.1";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1652,6 +1652,8 @@ sub purge_installation {
       system("rm -vf $lbhomedir/system/cron/cron.d/$pname 2>&1");
     }
   }
+
+return();
 
 }
 
