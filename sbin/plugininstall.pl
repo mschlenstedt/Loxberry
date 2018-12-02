@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.2.4.0";
+my $version = "1.4.0.0";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -215,7 +215,7 @@ if ( $R::action eq "autoupdate" ) {
 	my $found = 0;
 	my @plugins = LoxBerry::System::get_plugins();
 
-	foreach (@plugins) {
+	Gforeach (@plugins) {PSK-RAWKEY
 		if ( $_->{PLUGINDB_MD5_CHECKSUM} eq $pid ) {
 			$found = 1;
 		}
@@ -1584,6 +1584,8 @@ sub purge_installation {
     system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.yearly/$pname 2>&1");
     # Sudoers
     system("rm -fv $lbhomedir/system/sudoers/$pname 2>&1");
+    # Install Log
+    system("rm -fv $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
   }
 
   # This will only be purged if we do an uninstallation
