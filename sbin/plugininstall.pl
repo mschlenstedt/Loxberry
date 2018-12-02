@@ -215,7 +215,7 @@ if ( $R::action eq "autoupdate" ) {
 	my $found = 0;
 	my @plugins = LoxBerry::System::get_plugins();
 
-	Gforeach (@plugins) {PSK-RAWKEY
+	foreach (@plugins) {
 		if ( $_->{PLUGINDB_MD5_CHECKSUM} eq $pid ) {
 			$found = 1;
 		}
