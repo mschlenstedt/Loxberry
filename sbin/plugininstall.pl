@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.4.0.2";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1663,15 +1663,16 @@ return();
 
 sub logerr {
 
+	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "\e[1m\e[31mERROR:\e[0m $message\n";
+		print "$currtime \e[1m\e[31mERROR:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "<ERROR> $message\n";
+    		print LOG "$currtime <ERROR> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "<ERROR> $message\n";
+    		print "$currtime <ERROR> $message\n";
 	}
 
 	return();
@@ -1680,15 +1681,16 @@ sub logerr {
 
 sub logfail {
 
+	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "\e[1m\e[31mFAIL:\e[0m $message\n";
+		print "$currtime \e[1m\e[31mFAIL:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "<FAIL> $message\n";
+    		print LOG "$currtime <FAIL> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "<FAIL> $message\n";
+    		print "$currtime <FAIL> $message\n";
 	}
 
 	if ( -e "/tmp/uploads/$tempffile" ) {
@@ -1713,15 +1715,16 @@ sub logfail {
 
 sub logwarn {
 
+	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "\e[1m\e[31mWARNING:\e[0m $message\n";
+		print "$currtime \e[1m\e[31mWARNING:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "<WARNING> $message\n";
+    		print LOG "$currtime <WARNING> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "<WARNING> $message\n";
+    		print "$currtime <WARNING> $message\n";
 	}
 
 	return();
@@ -1731,15 +1734,16 @@ sub logwarn {
 
 sub loginfo {
 
+	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "\e[1mINFO:\e[0m $message\n";
+		print "$currtime \e[1mINFO:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "<INFO> $message\n";
+    		print LOG "$currtime <INFO> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "<INFO> $message\n";
+    		print "$currtime <INFO> $message\n";
 	}
 
 	return();
@@ -1748,15 +1752,16 @@ sub loginfo {
 
 sub logok {
 
+	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "\e[1m\e[32mOK:\e[0m $message\n";
+		print "$currtime \e[1m\e[32mOK:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "<OK> $message\n";
+    		print LOG "$currtime <OK> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "<OK> $message\n";
+    		print "$currtime <OK> $message\n";
 	}
 
 	return();
