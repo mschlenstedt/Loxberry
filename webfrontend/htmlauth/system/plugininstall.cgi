@@ -48,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.5";
+my $version = "1.4.0.0";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -289,7 +289,7 @@ sub install {
 		die_on_bad_params=> 0,
 		associate => $cfg,
 		%htmltemplate_options,
-		debug => 1,
+#		debug => 1,
 	);
 	my %SL = LoxBerry::System::readlanguage($logtemplate);
 	$logtemplate->param( "LOGFILE", "$tempfile.log");
