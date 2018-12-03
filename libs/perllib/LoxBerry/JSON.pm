@@ -113,7 +113,8 @@ sub write
 	
 	print STDERR "LoxBerry::JSON->write: JSON has changed - write to $self->{filename}\n" if ($DEBUG);
 	
-	CORE::open(my $fh, '>', $self->{filename} . ".tmp") or print STDERR "Error opening file: $!@\n";
+	# CORE::open(my $fh, '>', $self->{filename} . ".tmp") or print STDERR "Error opening file: $!@\n";
+	CORE::open(my $fh, '>', $self->{filename}) or print STDERR "Error opening file: $!@\n";
 	print $fh $jsoncontent_new;
 	close($fh);
 	## Backup of old json
