@@ -400,12 +400,18 @@ sub plugindb_update
 		open(my $fh, '>', "$lbsdatadir/plugindatabase.dat");
 		flock($fh,2);
 		print $fh @plugin_new;
-		flock($fh,8);
 		close($fh);
 		#print STDERR "plugindatabase VALUES CHANGED.\n";
+		$response{error} = 0;
+		$response{message} = "plugindatabase: updated";
+		
+		
 		
 	} else {
 		#print STDERR "plugindatabase nothing changed.\n";
+		$response{error} = 0;
+		$response{message} = "plugindatabase: no update required";
+		
 	}
 }
 
@@ -418,13 +424,13 @@ sub pluginsupdate_check
 	# LOGINF "Forking reboot ...";
 	qx($lbhomedir/sbin/pluginsupdate.pl --checkonly >/dev/null 2>&1);
 	if ($? ne 0) {
-		print $cgi->header(-type => 'application/json;charset=utf-8',
-					-status => "500 Could not check plugin update status");
+		$response{error} = -1;
+		$response{message} = "Could not check plugin update status";
 		exit (1);
 	}
 	
-	print $cgi->header(-type => 'application/json;charset=utf-8',
-					-status => "204 OK");
+	$response{error} = 0;
+	$response{message} = "Pluginsupdate checked successfully.";
 	exit;
 }
 
@@ -433,6 +439,8 @@ sub pluginsupdate_check
 ###################################################################
 sub testenvironment
 {
+# Script to test environment variables inside of the webserver and system() call
+
 print "<h2>TEST 1 with system()</h2>";
 print "ajax-config-handler: TESTENVIRONMENT (lbhomedir is $lbhomedir)<br>";
 system("sudo $lbhomedir/sbin/testenvironment.pl");
@@ -451,18 +459,17 @@ sub plugininstall_status
 	print STDERR "plugininstall-status: $R::value\n";
 	# Quick safety check
 	if (index($R::value, '/') ne -1) {
-		print $cgi->header(-type => 'text/html;charset=utf-8',
-							-status => "500 Invalid request",
-		);
+		$response{error} = -1;
+		$response{message} = "Invalid request";
 		exit;
 	}
 	if (! -e "/tmp/$R::value") {
-		print $cgi->header(-type => 'text/html;charset=utf-8',
-							-status => "404 File not found",
-		);
+		$response{error} = -1;
+		$response{message} = "File not found";
 		exit;
 	}
 	open (my $fh, "<", "/tmp/$R::value");
+	flock($fh, 1);
 	my $status = <$fh>;
 	close ($fh);
 	chomp $status;
@@ -487,21 +494,26 @@ sub get_clouddnsdata
 	my $mac = uc $R::value;
 	#print STDERR "ajax-config-handler: ajax get_clouddnsdata for ${mac}";
 	my %miniservers = LoxBerry::System::get_miniservers();
-  	print $cgi->header(-type => 'application/json;charset=utf-8');
+  	
 	if (! %miniservers) 
 	{
 	    exit 1;
+		
 	}
 	foreach my $ms (sort keys %miniservers) 
 	{
-		if ( uc "$miniservers{$ms}{CloudURL}" eq "${mac}" )
+		if ( uc "$miniservers{$ms}{CloudURL}" eq "$mac" )
 		{
-			my $j = new JSON;
-   			print encode_json($miniservers{$ms});
+			#my $j = new JSON;
+   			$response{error} = 0;
+			$response{customresponse} = 1;
+			$response{output} = encode_json($miniservers{$ms});
 		    exit;
 		}
 	}
-	print '{"error":"'.${mac}.'"}';
+	$response{error} = $mac;
+	$response{message} = "Miniserver with mac $mac not found";
+	
 	exit;
 }
 
@@ -524,6 +536,8 @@ sub change_generalcfg
 		$cfg->param($key, $val);
 	}
 	$cfg->write() or return undef;
+	$response{error} = 0;
+	$response{message} = "OK";
 	return 1;
 }
 
