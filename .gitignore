@@ -1,6 +1,7 @@
 # Configs that could contain credentials
 config/system/general.cfg
 config/system/mail.cfg
+config/system/mail.json
 
 # Plugins at all
 config/plugins/**
