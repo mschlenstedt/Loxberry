@@ -340,12 +340,16 @@ sub change_mailcfg
 	elsif (!$val) {
 		# Delete key
 		delete $mcfg->{NOTIFICATION}->{$key};
-		$mcfg->write() or return undef;
+		$mailobj->write() or return undef;
+		$response{error} = 0;
+		$response{message} = "mail.json: $key deleted";
 	} elsif ($mcfg->{NOTIFICATION}->{$key} ne $val) {
 		$mcfg->{NOTIFICATION}->{$key} = $val;
-		$mcfg->write() or return undef;
+		$mailobj->write() or return undef;
+		$response{error} = 0;
+		$response{message} = "mail.json: $key changed to $val";
 	}
-	return 0;
+	exit 0;
 }
 
 ###################################################################

@@ -148,9 +148,9 @@
 		<td>
 		<fieldset data-role="controlgroup" data-type="horizontal">
         <!-- <legend>System notifications</legend> -->
-        <input type="checkbox" name="MAIL_SYSTEM_INFOS" id="MAIL_SYSTEM_INFOS" class="MAILNOTIFY" <TMPL_VAR MAIL_SYSTEM_INFOS>>
+        <input type="checkbox" name="MAIL_SYSTEM_INFOS" id="MAIL_SYSTEM_INFOS" class="MAILNOTIFY">
         <label for="MAIL_SYSTEM_INFOS"><TMPL_VAR MAILSERVER.OPTION_INFOS></label>
-        <input type="checkbox" name="MAIL_SYSTEM_ERRORS" id="MAIL_SYSTEM_ERRORS" class="MAILNOTIFY" <TMPL_VAR MAIL_SYSTEM_ERRORS>>
+        <input type="checkbox" name="MAIL_SYSTEM_ERRORS" id="MAIL_SYSTEM_ERRORS" class="MAILNOTIFY">
         <label for="MAIL_SYSTEM_ERRORS"><TMPL_VAR MAILSERVER.OPTION_ERRORS></label>
 		</fieldset>
 		</td>
@@ -166,9 +166,9 @@
 		<td>
 		<fieldset data-role="controlgroup" data-type="horizontal">
         <!-- <legend>Plugin notifications</legend> -->
-        <input type="checkbox" name="MAIL_PLUGIN_INFOS" id="MAIL_PLUGIN_INFOS" class="MAILNOTIFY" <TMPL_VAR MAIL_PLUGIN_INFOS>>
+        <input type="checkbox" name="MAIL_PLUGIN_INFOS" id="MAIL_PLUGIN_INFOS" class="MAILNOTIFY">
         <label for="MAIL_PLUGIN_INFOS"><TMPL_VAR MAILSERVER.OPTION_INFOS></label>
-        <input type="checkbox" name="MAIL_PLUGIN_ERRORS" id="MAIL_PLUGIN_ERRORS" class="MAILNOTIFY" <TMPL_VAR MAIL_PLUGIN_ERRORS>>
+        <input type="checkbox" name="MAIL_PLUGIN_ERRORS" id="MAIL_PLUGIN_ERRORS" class="MAILNOTIFY">
         <label for="MAIL_PLUGIN_ERRORS"><TMPL_VAR MAILSERVER.OPTION_ERRORS></label>
 		</fieldset>
 		</td>
@@ -343,6 +343,9 @@ function fillForm ( data )
 	// Fill the form with json data retrieved from the ajax getmailcfg call
 	// As this are little fields, we do it "by hand" (see MQTT plugin for an automated form filling)
 	console.log ("Fill form", data);
+	
+	// SMTP Form
+	
 	if(data.SMTP) {
 		if(data.SMTP.EMAIL) $("#email").val(data.SMTP.EMAIL);
 		if(data.SMTP.SMTPSERVER) $("#smtpserver").val(data.SMTP.SMTPSERVER);
@@ -351,15 +354,45 @@ function fillForm ( data )
 		if(data.SMTP.SMTPPASS) $("#smtppass").val(data.SMTP.SMTPPASS);
 		
 		// Checkboxes
-		if(data.SMTP.AUTH && data.SMTP.AUTH == true) $("#smtpauth").prop('checked', true).checkboxradio("refresh");
-		if(data.SMTP.CRYPT && data.SMTP.CRYPT == true) $("#smtpcrypt").prop('checked', true).checkboxradio("refresh");
+		if(is_enabled(data.SMTP.AUTH)) $("#smtpauth").prop('checked', true).checkboxradio("refresh");
+		if(is_enabled(data.SMTP.CRYPT)) $("#smtpcrypt").prop('checked', true).checkboxradio("refresh");
 	}
 
+	// Notifications Area
+	if(data.NOTIFICATION) {
+		if(is_enabled(data.NOTIFICATION.MAIL_SYSTEM_ERRORS)) 
+			$("#MAIL_SYSTEM_ERRORS").prop('checked', true).checkboxradio("refresh");
+		
+		if(is_enabled(data.NOTIFICATION.MAIL_SYSTEM_INFOS)) 
+			$("#MAIL_SYSTEM_INFOS").prop('checked', true).checkboxradio("refresh");
+		
+		if(is_enabled(data.NOTIFICATION.MAIL_PLUGIN_ERRORS)) 
+			$("#MAIL_PLUGIN_ERRORS").prop('checked', true).checkboxradio("refresh");
+		if(is_enabled(data.NOTIFICATION.MAIL_PLUGIN_INFOS)) 
+			$("#MAIL_PLUGIN_INFOS").prop('checked', true).checkboxradio("refresh");
+	}
+	
+	
+	
+	
+	
 	
 
 
 
 }
+
+function is_enabled( val ) 
+{
+	// Returns true if val is in one of the possibilities 
+	var enabled_values = [ true, "true", 1, "1", "checked", "selected", "enabled", "enable", "on" ];
+			
+	return (enabled_values.indexOf(val) > -1);
+	
+}
+	
+
+
 
 
 
