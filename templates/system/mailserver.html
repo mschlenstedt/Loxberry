@@ -19,6 +19,7 @@
 	</div>
 	
 <form method="post" id="main_form" action="/admin/system/mailserver.cgi" style="display:none;">
+<div class="wide">Mail settings</div>
 <input type="hidden" name="saveformdata" value="1">
 <table class="formtable" border="0" width="100%">
 	<tr>
@@ -130,19 +131,18 @@
 			<center>
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-			<a href="#" id="btntestsmtp" name="btntestsmtp" data-role="button" data-inline="true" data-mini="true" data-icon="mail"><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></a>
+			<a href="#" id="btntestsmtp" name="btntestsmtp" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-mail ui-btn-icon-left ui-mini" ><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></a>
 			</center>
 			</p>
 		</td>
 	</tr>
+</table>
+<div class="wide">Mail Notifications</div>
+<p><TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS></p>
+
+<table >
 	<tr>
-		<td colspan=4>
-			<hr>
-			<TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS>
-		</td>
-	</tr>
-	<tr>
-		<td>
+		<td style="padding:20px">
 			<TMPL_VAR MAILSERVER.LABEL_SYSTEM_NOTIFICATIONS>
 		</td>
 		<td>
@@ -154,13 +154,9 @@
         <label for="MAIL_SYSTEM_ERRORS"><TMPL_VAR MAILSERVER.OPTION_ERRORS></label>
 		</fieldset>
 		</td>
-		<td>
-		</td>
-		<td rowspan="2" class="hint">
-		</td>
 	</tr>
 	<tr>
-		<td>
+		<td style="padding:20px">
 			<TMPL_VAR MAILSERVER.LABEL_PLUGIN_NOTIFICATIONS>
 		</td>
 		<td>
@@ -172,22 +168,25 @@
         <label for="MAIL_PLUGIN_ERRORS"><TMPL_VAR MAILSERVER.OPTION_ERRORS></label>
 		</fieldset>
 		</td>
-		<td>
-		</td>
 	</tr>
 </table>
 </form>
-<br><br>
-<center>
-<table width="70%" border="0">
-	<tr>
-		<td>
-		<div id="smtpresults"></div>
-		</td>
-	</tr>
-</table>
-</center>
 
+
+<!-- Testmail overlay -->
+
+<div data-role="popup" id="testmailoverlay" style="min-width:500px;max-width:80%;min-height:600px;" class="ui-content">
+    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left">Close</a>
+	<div data-role="header">
+    	<h1>Test-Email</h1>
+    </div>
+    <div role="main" class="ui-content">
+		<div id="smtpresults" style="word-wrap:break-word;"></div>
+    </div>
+</div>
+		
+		
+		
 <script>
 
 
@@ -257,6 +256,7 @@ var lang = '<TMPL_VAR LANG>';
 
 // Test Mailserver
 $('#btntestsmtp').click( function(e) {
+	$( "#testmailoverlay" ).popup( "open" );  
 	$('#smtpresults').html('<font color=blue><TMPL_VAR MAILSERVER.MSG_TESTMAIL_WAIT></font>');
 	
 	e.preventDefault();
@@ -371,16 +371,22 @@ function fillForm ( data )
 		if(is_enabled(data.NOTIFICATION.MAIL_PLUGIN_INFOS)) 
 			$("#MAIL_PLUGIN_INFOS").prop('checked', true).checkboxradio("refresh");
 	}
-	
-	
-	
-	
-	
-	
 
+}
+
+function sendForm()
+{
+	
 
 
 }
+
+
+
+
+
+
+
 
 function is_enabled( val ) 
 {

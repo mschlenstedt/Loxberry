@@ -21,6 +21,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use LoxBerry::JSON;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI;
 use warnings;
@@ -33,7 +34,7 @@ use strict;
 my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_mailserver.html";
 
-our $cfg;
+#our $cfg;
 our $mcfg;
 our $lang;
 our $template_title;
@@ -52,27 +53,21 @@ our $mailbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.2.0.1";
+my $version = "1.4.0.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
-$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
-$mailbin            = $cfg->param("BINARIES.MAIL");
 
-$mcfg               = new Config::Simple("$lbhomedir/config/system/mail.cfg");
-$email              = $mcfg->param("SMTP.EMAIL");
-$smtpserver         = $mcfg->param("SMTP.SMTPSERVER");
-$smtpport           = $mcfg->param("SMTP.PORT");
-$smtpcrypt          = $mcfg->param("SMTP.CRYPT");
-$smtpauth           = $mcfg->param("SMTP.AUTH");
-$smtpuser           = $mcfg->param("SMTP.SMTPUSER");
-$smtppass           = $mcfg->param("SMTP.SMTPPASS");
+#$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
 
+# $mcfg               = new Config::Simple("$lbhomedir/config/system/mail.cfg");
+# $email              = $mcfg->param("SMTP.EMAIL");
+# $smtpserver         = $mcfg->param("SMTP.SMTPSERVER");
+# $smtpport           = $mcfg->param("SMTP.PORT");
+# $smtpcrypt          = $mcfg->param("SMTP.CRYPT");
+# $smtpauth           = $mcfg->param("SMTP.AUTH");
+# $smtpuser           = $mcfg->param("SMTP.SMTPUSER");
+# $smtppass           = $mcfg->param("SMTP.SMTPPASS");
 
-#########################################################################
-# Parameter
-#########################################################################
-
-# Everything from URL
 
 ##########################################################################
 # Language Settings
@@ -112,7 +107,7 @@ sub form
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
+		#associate => $cfg,
 		%htmltemplate_options,
 		# debug => 1,
 		);
@@ -122,34 +117,34 @@ sub form
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param( "LBHOSTNAME", lbhostname());
 	$maintemplate->param( "LANG", $lang);
-	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
-	$maintemplate->param ( 	"EMAIL" => $email, 
-							"SMTPSERVER" => $smtpserver,
-							"SMTPPORT" => $smtpport,
-							"SMTPUSER" => $smtpuser,
-							"SMTPPASS" => $smtppass
-							);
+	# $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
+	# $maintemplate->param ( 	"EMAIL" => $email, 
+							# "SMTPSERVER" => $smtpserver,
+							# "SMTPPORT" => $smtpport,
+							# "SMTPUSER" => $smtpuser,
+							# "SMTPPASS" => $smtppass
+							# );
 	
 	# Defaults for template
-	if ($smtpcrypt) {
-	  $maintemplate->param( "CHECKED1", 'checked="checked"');
-	}
-	if ($smtpauth) {
-	  $maintemplate->param(  "CHECKED2", 'checked="checked"');
-	}
+	# if ($smtpcrypt) {
+	  # $maintemplate->param( "CHECKED1", 'checked="checked"');
+	# }
+	# if ($smtpauth) {
+	  # $maintemplate->param(  "CHECKED2", 'checked="checked"');
+	# }
 	
-	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_INFOS"))) {
-		$maintemplate->param("MAIL_SYSTEM_INFOS", 'checked');
-	}
-	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_ERRORS"))) {
-		$maintemplate->param("MAIL_SYSTEM_ERRORS", 'checked');
-	}
-	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_INFOS"))) {
-		$maintemplate->param("MAIL_PLUGIN_INFOS", 'checked');
-	}
-	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_ERRORS"))) {
-		$maintemplate->param("MAIL_PLUGIN_ERRORS", 'checked');
-	}
+	# if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_INFOS"))) {
+		# $maintemplate->param("MAIL_SYSTEM_INFOS", 'checked');
+	# }
+	# if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_ERRORS"))) {
+		# $maintemplate->param("MAIL_SYSTEM_ERRORS", 'checked');
+	# }
+	# if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_INFOS"))) {
+		# $maintemplate->param("MAIL_PLUGIN_INFOS", 'checked');
+	# }
+	# if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_ERRORS"))) {
+		# $maintemplate->param("MAIL_PLUGIN_ERRORS", 'checked');
+	# }
 	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MAILSERVER.WIDGETLABEL'};
@@ -165,18 +160,23 @@ sub form
 }
 
 #####################################################
-# Save
+# Save (AJAX)
 #####################################################
 
 sub save 
 {
+
+	my $bins = LoxBerry::System::get_binaries();
+	$mailbin = $bins->{MAIL};
+
+
 
 	my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/success.html",
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
+		#associate => $cfg,
 		%htmltemplate_options, 
 		# debug => 1,
 		);
