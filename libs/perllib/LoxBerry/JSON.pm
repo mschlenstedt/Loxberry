@@ -58,7 +58,7 @@ sub open
 		print STDERR "LoxBerry::JSON->open: ERROR Can't open $self->{filename} -> returning undef : $!\n" if ($DEBUG);
 		return undef; 
 	};
-	
+	flock($fh, 1); # SHARED LOCK
 	local $/;
 	$self->{jsoncontent} = <$fh>;
 	close $fh;
@@ -115,6 +115,7 @@ sub write
 	
 	# CORE::open(my $fh, '>', $self->{filename} . ".tmp") or print STDERR "Error opening file: $!@\n";
 	CORE::open(my $fh, '>', $self->{filename}) or print STDERR "Error opening file: $!@\n";
+	flock($fh, 2); # EXCLUSIVE LOCK
 	print $fh $jsoncontent_new;
 	close($fh);
 	## Backup of old json
