@@ -414,10 +414,13 @@ function saveForm()
 	console.log("saveForm");
 	$('#ajaxstatus').html('<span style="color:blue">Saving. Please wait...</span>');
 	
-	// Delete user/pass if auth is disabled
-	if( ! $('#smtpauth').is(':checked') ) {
+	// Delete user/pass if auth is disabled, or mail is disabled
+	if( ! $('#smtpauth').is(':checked') || ! $('#activate_mail').is(':checked') ) {
 		$("#smtpuser").val("");
 		$("#smtppass").val("");
+	}
+	if( ! $('#activate_mail').is(':checked') ) {
+		$("#email").val("");
 	}
 	
 	// Send form as json
