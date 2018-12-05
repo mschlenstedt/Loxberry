@@ -200,10 +200,10 @@ sub change_mailcfg
 		};
 		if ($@) {
 			$response{error} = 1;
-			$response{message} = "Error: $!";
+			$response{message} = $SL{'MAILSERVER.SAVE_ERROR'}." $!";
 		} else {
 			$response{error} = 0;
-			$response{message} = "Successfully saved.";
+			$response{message} = $SL{'MAILSERVER.SAVE_SUCCESS'};
 		}
 	}
 	elsif (!$val) {

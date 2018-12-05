@@ -4,7 +4,7 @@
 		<!-- <div id="securepin_block"> -->
 			<div style="flex-grow:3; padding: 5px 5px 5px 5px;">
 				<!-- <div class="ui-field-contain"> -->
-					<br><label for="securepin" style="color:red;"><TMPL_VAR MAILSERVER.EMAIL_SETTINGS_SECURE_PIN></label>
+					<br><label for="securepin"><TMPL_VAR MAILSERVER.EMAIL_SETTINGS_SECURE_PIN></label>
 				<!-- </div> -->
 			</div>
 			<div style="flex-grow:1;padding: 5px 5px 5px 5px;">
@@ -363,6 +363,8 @@ function disable()
 	}
 }
 
+$('#btnpower_alert').css('visibility','hidden');
+
 // Test Mailserver
 $('#btntestsmtp').click( function(e) {
 	$( "#testmailoverlay" ).popup( "open" );  
@@ -397,7 +399,7 @@ function checkSecurePIN() {
 	// var data = $('form').serialize() + "&save=true";
 	console.log("Checking secure pin");
 	$("#check_securepin").attr("disabled", true);
-	$("#check_hint").attr("style", "color:blue;").html("One second...");
+	$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR MAILSERVER.CHECK_WAIT>");
 	$.ajax( { 
 			type: 'POST',
 			//url: '/admin/system/tools/ajax-config-handler.cgi', 
@@ -405,7 +407,7 @@ function checkSecurePIN() {
 		} )
 	.fail(function( data ) {
 		console.log( "Error", data );
-		$("#check_hint").attr("style", "color:red").html("Error checking your SecurePIN.");
+		$("#check_hint").attr("style", "color:red").html("<TMPL_VAR MAILSERVER.EMAIL_SETTINGS_SECURE_PIN_CHECK_FAILED>");
 	})
 	.done(function( data ) {
 		console.log( "getcred Success", data );
