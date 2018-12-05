@@ -49,11 +49,6 @@ elsif ($action eq 'plugin-loglevel') { plugindb_update('loglevel', $R::pluginmd5
 elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
 elsif ($action eq 'testenvironment') {  &testenvironment; }
 elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
-elsif ($action eq 'getmailcfg') { change_mailcfg("getmailcfg", $R::secpin);}
-elsif ($action eq 'MAIL_SYSTEM_INFOS') { change_mailcfg("MAIL_SYSTEM_INFOS", $value);}
-elsif ($action eq 'MAIL_SYSTEM_ERRORS') { change_mailcfg("MAIL_SYSTEM_ERRORS", $value);}
-elsif ($action eq 'MAIL_PLUGIN_INFOS') { change_mailcfg("MAIL_PLUGIN_INFOS", $value);}
-elsif ($action eq 'MAIL_PLUGIN_ERRORS') { change_mailcfg("MAIL_PLUGIN_ERRORS", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
 elsif ($action eq 'get-clouddnsdata') { get_clouddnsdata($value); }
@@ -316,43 +311,6 @@ sub reboot
 }
 
 ###################################################################
-# change mail configuration (mail.json)
-###################################################################
-sub change_mailcfg
-{
-	my ($key, $val) = @_;
-	if (!$key) {
-		return undef;
-	}
-	
-	my $mailfile = $lbsconfigdir . "/mail.json";
-	
-	my $mailobj = LoxBerry::JSON->new();
-	my $mcfg = $mailobj->open(filename => $mailfile);
-	
-	if($key eq "getmailcfg" and defined $val) {
-		exit if(checksecpin($val));
-		$response{error} = 0;
-		$response{customresponse} = 1;
-		$response{output} = encode_json($mcfg);
-		exit(0);
-	} 
-	elsif (!$val) {
-		# Delete key
-		delete $mcfg->{NOTIFICATION}->{$key};
-		$mailobj->write() or return undef;
-		$response{error} = 0;
-		$response{message} = "mail.json: $key deleted";
-	} elsif ($mcfg->{NOTIFICATION}->{$key} ne $val) {
-		$mcfg->{NOTIFICATION}->{$key} = $val;
-		$mailobj->write() or return undef;
-		$response{error} = 0;
-		$response{message} = "mail.json: $key changed to $val";
-	}
-	exit 0;
-}
-
-###################################################################
 # Change Plugin log and Update settings
 ###################################################################
 sub plugindb_update
@@ -541,25 +499,6 @@ sub change_generalcfg
 	return 1;
 }
 
-
-sub checksecpin
-{
-	my ($secpin) = @_;
-	my $checkres = LoxBerry::System::check_securepin($secpin);
-	if ( $checkres and $checkres == 1 ) {
-		$response{message} = "The entered SecurePIN is wrong. Please try again.";
-		$response{error} = 1;
-    } elsif ( $checkres and $checkres == 2) {
-		$response{message} = "Your SecurePIN file could not be opened.";
-		$response{error} = 2;
-	} else {
-    		$response{message} = "You have entered the correct SecurePIN.";
-			$response{error} = 0;
-	}
-
-	return $response{error};
-
-}
 
 END {
 

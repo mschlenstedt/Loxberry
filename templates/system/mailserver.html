@@ -18,11 +18,28 @@
 		</div>
 	</div>
 	
-<form method="post" id="main_form" action="/admin/system/mailserver.cgi" style="display:none;">
-<div class="wide">Mail settings</div>
-<input type="hidden" name="saveformdata" value="1">
+<!-- <form method="post" id="main_form" action="/admin/system/mailserver.cgi" style="display:none;"> -->
+ <form id="main_form" style="display:none;">
+
+<div class="wide">Mail Settings</div>
+<input type="hidden" name="action" value="setmailcfg">
 <table class="formtable" border="0" width="100%">
-	<tr>
+	
+	<td width="25%">
+				<label>Enable email settings</label>
+		</td>
+		<td width="40%">
+			<label><input onclick="disable();" type="checkbox" id="activate_mail" name="activate_mail" value="1">Enable email settings on LoxBerry</label>
+		</td>
+		<td width="5%">
+		&nbsp;
+		</td>
+		<td width="30%">
+		&nbsp;
+		</td>
+	
+	
+	<tr class="mailsettings">
 		<td width="25%">
 				<label><TMPL_VAR MAILSERVER.LABEL_DEFAULT_EMAIL></label>
 		</td>
@@ -36,7 +53,7 @@
 		&nbsp;
 		</td>
 	</tr>
-	<tr>
+	<tr class="mailsettings">
 		<td>
 		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_SERVER></label>
 		</td>
@@ -50,7 +67,7 @@
 		&nbsp;
 		</td>
 	</tr>
-	<tr>
+	<tr class="mailsettings">
 		<td>
 		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_PORT></label>
 		</td>
@@ -64,12 +81,12 @@
 		<TMPL_VAR MAILSERVER.HINT_SMTP_PORT>
 		</td>
 	</tr>
-	<tr>
+	<tr class="mailsettings">
 		<td>
 		&nbsp;
 		</td>
 		<td>
-		<label><input onclick="disable()" type="checkbox" id="smtpcrypt" name="smtpcrypt" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_ENCRYPTED></label>
+		<label><input onclick="disable();" type="checkbox" id="smtpcrypt" name="smtpcrypt" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_ENCRYPTED></label>
 		</td>
 		<td>
 		&nbsp;
@@ -78,7 +95,7 @@
 		<TMPL_VAR MAILSERVER.HINT_SMTP_ENCRYPTED>
 		</td>
 	</tr>
-	<tr>
+	<tr class="mailsettings">
 		<td>
 		&nbsp;
 		</td>
@@ -92,7 +109,7 @@
 		<TMPL_VAR MAILSERVER.HINT_SMTP_AUTHENTICATION>
 		</td>
 	</tr>
-	<tr>
+	<tr class="mailsettings mailcredentials">
 		<td>
 		<label id="labelsmtpuser"><TMPL_VAR MAILSERVER.LABEL_SMTP_USER></label>
 		</td>
@@ -106,7 +123,7 @@
 		<TMPL_VAR MAILSERVER.HINT_SMTP_USER>
 		</td>
 	</tr>
-	<tr>
+	<tr class="mailsettings mailcredentials">
 		<td>
 		<label id="labelsmtppass"><TMPL_VAR MAILSERVER.LABEL_SMTP_PASSWORD></label>
 		</td>
@@ -120,27 +137,27 @@
 		<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD></button>
 		</td>
 	</tr>
-	<tr>
-		<td colspan=4>
-		&nbsp;
-		</td>
-	</tr>
-	<tr>
-		<td colspan=4>
-			<p>
-			<center>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-			<a href="#" id="btntestsmtp" name="btntestsmtp" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-mail ui-btn-icon-left ui-mini" ><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></a>
-			</center>
-			</p>
-		</td>
-	</tr>
 </table>
+
+<!-- Button area -->
+<div style="margin: auto; width:100%; padding:10px; text-align:center;">
+
+	<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+	
+	<button type="submit" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+
+	<a href="#" id="btntestsmtp" name="btntestsmtp" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-mail ui-btn-icon-left ui-mini" ><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></a>
+
+</div>
+
+<!-- AJAX response status area --> 
+<div id="ajaxstatus" style="margin: auto; width:100%; padding:10px; text-align:center;">&nbsp;
+</div>
+
 <div class="wide">Mail Notifications</div>
 <p><TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS></p>
 
-<table >
+<table>
 	<tr>
 		<td style="padding:20px">
 			<TMPL_VAR MAILSERVER.LABEL_SYSTEM_NOTIFICATIONS>
@@ -175,7 +192,7 @@
 
 <!-- Testmail overlay -->
 
-<div data-role="popup" id="testmailoverlay" style="min-width:500px;max-width:80%;min-height:600px;" class="ui-content">
+<div data-role="popup" id="testmailoverlay" style="min-width:500px;max-width:80%;min-height:600px;" class="ui-content" data-transition="fade">
     <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left">Close</a>
 	<div data-role="header">
     	<h1>Test-Email</h1>
@@ -189,11 +206,12 @@
 		
 <script>
 
-
+// Set language
+var lang = '<TMPL_VAR LANG>';
 
 $(function() {
 
-
+	// Check SecurePIN by ajax and load form data
 	$("#check_securepin").click(function(){
 		console.log("Check securepin called");
 		checkSecurePIN();
@@ -205,9 +223,7 @@ $(function() {
 		$('#check_securepin').trigger("click");
 	}
 	
-	
-	
-	
+	// Post changes of notify settings
 	$(".MAILNOTIFY").change(function(){
 				var key = this.id;
 				var val = $(this).is(':checked');
@@ -215,16 +231,38 @@ $(function() {
 				post_value(key, val); 
 			});
 	
+	// Validation
 	validate_enable('#email');
 	validate_enable('#smtpserver');
 	validate_enable('#smtpport');
 	validate_chk_object(['#email','#smtpserver','#smtpport']);
+	
+	// Show password
+	$('#showpass').click(function() {
+		if($('#smtppass').prop('type') == 'password') 
+			$('#smtppass').prop('type', 'text');
+	});
+
+	// Change the SMTP port on click events
+	$('#smtpcrypt').click(function() {
+		if( $(this).is(':checked') ) 
+			$('#smtpport').val("587");
+		else 
+			$('#smtpport').val("25");
+	
+	});
+	
+	// Form submit 
+	$('#btnsubmit').click(function(event) { 
+		event.preventDefault();
+		saveForm();
+	});
 });
 
 function post_value (action, value)
 {
 	// console.log("Action:", action, "Value:", value);
-	$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+	$.post ( null , 
 				{ 	action: action,
 					value: value,
 				});
@@ -233,6 +271,19 @@ function post_value (action, value)
 // Disable some options on click depending on selected value
 function disable()
 {
+	
+	if ( $('#activate_mail').is(':checked') ) {
+		$(".mailsettings").fadeIn();
+	
+		if ( $('#smtpauth').is(':checked') )
+			$(".mailcredentials").fadeIn();
+		else 
+			$(".mailcredentials").fadeOut();
+	}
+	else 
+		$(".mailsettings").fadeOut();
+	
+/*	
 	if ( $('#smtpauth').is(':checked') )
 	{
 		$('#smtpuser').removeClass('ui-disabled');
@@ -247,12 +298,8 @@ function disable()
 		$('#labelsmtpuser').addClass('ui-disabled');
 		$('#labelsmtppass').addClass('ui-disabled');
 	}
+*/
 }
-// Disable some options on Load depending on selected value
-disable();
-
-// Set language
-var lang = '<TMPL_VAR LANG>';
 
 // Test Mailserver
 $('#btntestsmtp').click( function(e) {
@@ -270,8 +317,7 @@ $('#btntestsmtp').click( function(e) {
 				 lang: lang 
 				};
 	data = jQuery.param( vals );
-	
-	
+
 	$.ajax({
 		contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
 		type: "POST",
@@ -284,16 +330,6 @@ $('#btntestsmtp').click( function(e) {
 	});
 });
 
-// Show password
-$(document).ready(function() {
-  $('#showpass').click(function() {
-    if($('#smtppass').prop('type') == 'password') {$('#smtppass').prop('type', 'text');}
-	// Don't know why I cannot toggle
-	//else {$('#smtppass').prop('type', 'text');}
-  });
-});
-
-
 function checkSecurePIN() {
 
 	// var data = $('form').serialize() + "&save=true";
@@ -302,9 +338,7 @@ function checkSecurePIN() {
 	$("#check_hint").attr("style", "color:blue;").html("One second...");
 	$.ajax( { 
 			type: 'POST',
-			url: '/admin/system/tools/ajax-config-handler.cgi', 
-			//dataType: 'json',
-			//contentType: 'text/plain; charset=UTF-8',
+			//url: '/admin/system/tools/ajax-config-handler.cgi', 
 			data: { action: 'getmailcfg', secpin: $('#securepin').val() }
 		} )
 	.fail(function( data ) {
@@ -354,6 +388,7 @@ function fillForm ( data )
 		if(data.SMTP.SMTPPASS) $("#smtppass").val(data.SMTP.SMTPPASS);
 		
 		// Checkboxes
+		if(is_enabled(data.SMTP.ACTIVATE_MAIL)) $("#activate_mail").prop('checked', true).checkboxradio("refresh");
 		if(is_enabled(data.SMTP.AUTH)) $("#smtpauth").prop('checked', true).checkboxradio("refresh");
 		if(is_enabled(data.SMTP.CRYPT)) $("#smtpcrypt").prop('checked', true).checkboxradio("refresh");
 	}
@@ -371,36 +406,57 @@ function fillForm ( data )
 		if(is_enabled(data.NOTIFICATION.MAIL_PLUGIN_INFOS)) 
 			$("#MAIL_PLUGIN_INFOS").prop('checked', true).checkboxradio("refresh");
 	}
-
+	disable();
 }
 
-function sendForm()
+function saveForm()
 {
+	console.log("saveForm");
+	$('#ajaxstatus').html('<span style="color:blue">Saving. Please wait...</span>');
 	
+	// Delete user/pass if auth is disabled
+	if( ! $('#smtpauth').is(':checked') ) {
+		$("#smtpuser").val("");
+		$("#smtppass").val("");
+	}
+	
+	// Send form as json
+	var config = $('#main_form').serialize();
+	
+	var jqxhr = $.ajax( { 
+					type: "POST", 
+					data: config
+		})
 
-
+	.done(function( data ) {
+    console.log ( "Success" );
+	if (data.error != 0) {
+		$('#ajaxstatus').html('<span style="color:red">'+data.message+'</span>');
+	} else {
+		$('#ajaxstatus').html('<span style="color:green">'+data.message+'</span>');
+	}
+	
+  })
+	.fail(function( data ) {
+    console.log( "Failed", data );
+	$('#ajaxstatus').html('<span style="color:red">'+data.status+' '+data.statusText+'</span>');
+	
+  });
+  
+	
+	
 }
 
 
-
-
-
-
-
-
+// is_enabled, equivalent to Perls/PHPs LoxBerry is_enabled function
 function is_enabled( val ) 
 {
 	// Returns true if val is in one of the possibilities 
 	var enabled_values = [ true, "true", 1, "1", "checked", "selected", "enabled", "enable", "on" ];
-			
 	return (enabled_values.indexOf(val) > -1);
 	
 }
 	
-
-
-
-
 
 
 </script>
