@@ -73,6 +73,7 @@ LOGINF "Converting mail.cfg to mail.json";
 $oldmailfile = $lbsconfigdir . "/mail.cfg";
 $newmailfile = $lbsconfigdir . "/mail.json";
 
+
 if (! -e $oldmailfile) {
 	LOGWARN "No mail configuration found to migrate - skipping migration";
 } else { 
@@ -96,6 +97,12 @@ if (! -e $oldmailfile) {
 		my $logline = index(lc($key), 'pass') != -1 ? "Migrated $section.$param = *****" : "Migrated $section.$param = $oldmcfg{$key}";
 		LOGINF $logline;
 	}
+	
+	if ( $newmcfg->{SMTP}->{EMAIL} and $newmcfg->{SMTP}->{SMTPSERVER} and $newmcfg->{SMTP}->{PORT} ) {
+		# Enable mail by default if settings are made
+		$newmcfg->{SMTP}->{ACTIVATE_MAIL} = "1";
+	}
+	
 	$newmailobj->write();
 	`chown loxberry:loxberry $newmailfile`;
 }
