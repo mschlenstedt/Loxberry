@@ -1,23 +1,23 @@
 <!-- ** START template/system/mailserver.html 21:02 24.11.2017 ************************************************************************************ -->
-	<div id="securepin_block" style="background-color:lightyellow;">
+	<div id="securepin_block">
 		<div style="display:flex;justify-content:center;align-content:space-around;">
 		<!-- <div id="securepin_block"> -->
 			<div style="flex-grow:3; padding: 5px 5px 5px 5px;">
 				<!-- <div class="ui-field-contain"> -->
-					<label for="securepin" style="color:red;">To display the settings, enter your LoxBerry SecurePIN</label>
+					<br><label for="securepin" style="color:red;"><TMPL_VAR MAILSERVER.EMAIL_SETTINGS_SECURE_PIN></label>
 				<!-- </div> -->
 			</div>
 			<div style="flex-grow:1;padding: 5px 5px 5px 5px;">
 				<input name="securepin" id="securepin" type="text">
 			</div>
 			<div style="flex-grow:1; padding: 5px 5px 5px 5px;">
-				<button class="ui-btn ui-btn-icon-right ui-corner-all" id="check_securepin" data-inline="true">Check PIN</button>
+				<button class="ui-btn ui-btn-icon-right ui-corner-all" id="check_securepin" data-inline="true"><TMPL_VAR MAILSERVER.EMAIL_SETTINGS_SECURE_PIN_CHECK></button>
 			</div>
 		</div>
-		<div class="hint" id="check_hint" style="display:flex; flex-flow:wrap; padding: 5px 5px 5px 5px;">If a cyber attacker could find out your LoxBerry web password, this is an additional 2-phase protection to not spy additional credentials.</div>
+		<div class="hint" id="check_hint" style="display:flex; flex-flow:wrap; padding: 5px 5px 5px 5px;"><TMPL_VAR MAILSERVER.EMAIL_SETTINGS_SECURE_PIN_WHY></div>
 		</div>
 	</div>
-	
+
 <FORM	method="post" 
 		id="main_form" 
 		action="/admin/system/mailserver.cgi"
@@ -330,9 +330,13 @@ function disable()
 	
 	
 		if ( $('#smtpauth').is(':checked') )
+		{
 			$(".mailcredentials").fadeIn();
+		}
 		else 
+		{
 			$(".mailcredentials").fadeOut();
+		}
 			
 	}
 	else
