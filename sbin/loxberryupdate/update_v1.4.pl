@@ -90,8 +90,16 @@ if (! -e $oldmailfile) {
 	
 	LOGDEB "Migrating settings...";
 	
-	foreach my $key (keys %oldmcfg) {
+	foreach my $key (sort keys %oldmcfg) {
 		my ($section, $param) = split('\.', $key, 2);
+		#LOGDEB "ref $param is " . ref($oldmcfg{$key});
+		if(ref($oldmcfg{$key}) eq 'ARRAY') {
+			LOGWARN "Parameter $param had commas in it's field. Migration has tried to";
+			LOGWARN "restore the value, but you should check the Mailserver widget settings and";
+			LOGWARN "save it's settings again.";
+			my $tmpfield = join(',', @{$oldmcfg{$key}});
+			$oldmcfg{$key} = $tmpfield;
+		}
 		# LOGDEB "$section $param = " . $oldmcfg{$key};
 		$newmcfg->{$section}->{$param} = %oldmcfg{$key};
 		my $logline = index(lc($key), 'pass') != -1 ? "Migrated $section.$param = *****" : "Migrated $section.$param = $oldmcfg{$key}";
