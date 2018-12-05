@@ -18,151 +18,188 @@
 		</div>
 	</div>
 	
-<!-- <form method="post" id="main_form" action="/admin/system/mailserver.cgi" style="display:none;"> -->
- <form id="main_form" style="display:none;">
+<FORM	method="post" 
+		id="main_form" 
+		action="/admin/system/mailserver.cgi"
+		style="display:none;">
+<INPUT	type="hidden" 
+		name="saveformdata" 
+		value="1">
+<STYLE>
+	.lb_flex-item 
+	{	
+		min-width	:450px;
+		width		:450px;
+		max-width	:450px;
+		flex-wrap	:nowrap;
+		margin-top: -10px;  
+	}
+	.lb_flex-item-help 
+	{
+		min-width	:100px;
+		width		:100%;
+		position	:relative;
+		margin-left	:10px;
+	}
+</STYLE>
 
-<div class="wide">Mail Settings</div>
+<div class="wide"><TMPL_VAR MAILSERVER.LABEL_EMAIL_SETTINGS></div>
 <input type="hidden" name="action" value="setmailcfg">
-<table class="formtable" border="0" width="100%">
-	
-	<td width="25%">
-				<label>Enable email settings</label>
-		</td>
-		<td width="40%">
-			<label><input onclick="disable();" type="checkbox" id="activate_mail" name="activate_mail" value="1">Enable email settings on LoxBerry</label>
-		</td>
-		<td width="5%">
-		&nbsp;
-		</td>
-		<td width="30%">
-		&nbsp;
-		</td>
-	
-	
-	<tr class="mailsettings">
-		<td width="25%">
-				<label><TMPL_VAR MAILSERVER.LABEL_DEFAULT_EMAIL></label>
-		</td>
-		<td width="40%">
-			<input value="" id="email" name="email" type="email" class="textfield" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
-		</td>
-		<td width="5%">
-		&nbsp;
-		</td>
-		<td width="30%">
-		&nbsp;
-		</td>
-	</tr>
-	<tr class="mailsettings">
-		<td>
-		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_SERVER></label>
-		</td>
-		<td>
-		<input id="smtpserver" name="smtpserver" type="text" class="textfield" value=""  data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
-		</td>
-		<td>
-		&nbsp;
-		</td>
-		<td>
-		&nbsp;
-		</td>
-	</tr>
-	<tr class="mailsettings">
-		<td>
-		<label><TMPL_VAR MAILSERVER.LABEL_SMTP_PORT></label>
-		</td>
-		<td>
-		<input id="smtpport" name="smtpport" type="text" class="textfield" value="" data-validation-rule="special:port" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
-		</td>
-		<td>
-		&nbsp;
-		</td>
-		<td class="hint">
+<br>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<label><input onclick="disable();" type="checkbox" id="activate_mail" name="activate_mail" value="1"><TMPL_VAR MAILSERVER.LABEL_ENABLE_EMAIL_SETTINGS></label>
+	</DIV>
+	<DIV	class="lb_flex-item-help">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+
+
+<DIV	class="lb_flex-container mailsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="email"><TMPL_VAR MAILSERVER.LABEL_DEFAULT_EMAIL></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="100%" value="<TMPL_VAR EMAIL>" id="email" name="email" type="email" class="textfield" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
+	</DIV>
+	<DIV	class="lb_flex-item-help">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+<DIV	class="lb_flex-container mailsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="smtpserver"><TMPL_VAR MAILSERVER.LABEL_SMTP_SERVER></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input id="smtpserver" name="smtpserver" type="text" class="textfield" value="<TMPL_VAR SMTPSERVER>"  data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
+	</DIV>
+	<DIV	class="lb_flex-item-help">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+
+
+<DIV	class="lb_flex-container mailsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="smtpport"><TMPL_VAR MAILSERVER.LABEL_SMTP_PORT></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input id="smtpport" name="smtpport" type="text" class="textfield" value="<TMPL_VAR SMTPPORT>" data-validation-rule="special:port" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
 		<TMPL_VAR MAILSERVER.HINT_SMTP_PORT>
-		</td>
-	</tr>
-	<tr class="mailsettings">
-		<td>
-		&nbsp;
-		</td>
-		<td>
-		<label><input onclick="disable();" type="checkbox" id="smtpcrypt" name="smtpcrypt" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_ENCRYPTED></label>
-		</td>
-		<td>
-		&nbsp;
-		</td>
-		<td class="hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+<DIV	class="lb_flex-container mailsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label"></DIV>
+	<DIV	class="lb_flex-item">
+		<label><input onclick="disable()" <TMPL_VAR CHECKED1> type="checkbox" id="smtpcrypt" name="smtpcrypt" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_ENCRYPTED></label>
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
 		<TMPL_VAR MAILSERVER.HINT_SMTP_ENCRYPTED>
-		</td>
-	</tr>
-	<tr class="mailsettings">
-		<td>
-		&nbsp;
-		</td>
-		<td>
-		<label><input onclick="disable()" type="checkbox" id="smtpauth" name="smtpauth" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_AUTHENTICATION></label>
-		</td>
-		<td>
-		&nbsp;
-		</td>
-		<td class="hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+<DIV	class="lb_flex-container mailsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label"></DIV>
+	<DIV	class="lb_flex-item">
+		<label><input onclick="disable()" <TMPL_VAR CHECKED2> type="checkbox" id="smtpauth" name="smtpauth" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_AUTHENTICATION></label>
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
 		<TMPL_VAR MAILSERVER.HINT_SMTP_AUTHENTICATION>
-		</td>
-	</tr>
-	<tr class="mailsettings mailcredentials">
-		<td>
-		<label id="labelsmtpuser"><TMPL_VAR MAILSERVER.LABEL_SMTP_USER></label>
-		</td>
-		<td>
-		<input id="smtpuser" name="smtpuser" type="text" class="textfield" value="">
-		</td>
-		<td>
-		&nbsp;
-		</td>
-		<td class="hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+<DIV	class="lb_flex-container mailsettings mailcredentials">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="smtpuser"><TMPL_VAR MAILSERVER.LABEL_SMTP_USER></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input id="smtpuser" name="smtpuser" type="text" class="textfield" value="<TMPL_VAR SMTPUSER>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
 		<TMPL_VAR MAILSERVER.HINT_SMTP_USER>
-		</td>
-	</tr>
-	<tr class="mailsettings mailcredentials">
-		<td>
-		<label id="labelsmtppass"><TMPL_VAR MAILSERVER.LABEL_SMTP_PASSWORD></label>
-		</td>
-		<td>
-		<input id="smtppass" name="smtppass" type="password" class="textfield" value="">
-		</td>
-		<td>
-		&nbsp;
-		</td>
-		<td>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+
+<DIV	class="lb_flex-container mailsettings mailcredentials">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label" id="labelsmtppass"
+			for="smtppass"><TMPL_VAR MAILSERVER.LABEL_SMTP_PASSWORD></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input id="smtppass" name="smtppass" type="password" class="textfield" value="<TMPL_VAR SMTPPASS>">
+	</DIV>
+	<DIV	class="lb_flex-item-help">
 		<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD></button>
-		</td>
-	</tr>
-</table>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
 
 <!-- Button area -->
-<div style="margin: auto; width:100%; padding:10px; text-align:center;">
 
-	<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-	
-	<button type="submit" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-
-	<a href="#" id="btntestsmtp" name="btntestsmtp" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-mail ui-btn-icon-left ui-mini" ><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></a>
-
-</div>
+<DIV style="text-align:right;">
+		<!-- Buttons for widget -->
+		<A	id=		"btncancel"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"delete"
+			href=		"/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></A>
+		<BUTTON	type=		"submit"
+			form=		"main_form1"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"check"><TMPL_VAR COMMON.BUTTON_SAVE></BUTTON>
+		<A 	href="#" 
+			id="btntestsmtp" 
+			name="btntestsmtp" 
+			data-role="button" 
+			data-inline="true" 
+			data-mini="true" 
+			data-icon="mail"><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></A>
+</DIV>
 
 <!-- AJAX response status area --> 
 <div id="ajaxstatus" style="margin: auto; width:100%; padding:10px; text-align:center;">&nbsp;
 </div>
 
-<div class="wide">Mail Notifications</div>
-<p><TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS></p>
-
-<table>
-	<tr>
-		<td style="padding:20px">
-			<TMPL_VAR MAILSERVER.LABEL_SYSTEM_NOTIFICATIONS>
-		</td>
-		<td>
+<div class="wide mailsettings"><TMPL_VAR MAILSERVER.LABEL_MAIL_NOTIFICATIONS></div>
+<p class="mailsettings"><TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS></p>
+<BR>
+<BR>
+<DIV	class="lb_flex-container mailsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<LABEL	class=	"control-label"><TMPL_VAR MAILSERVER.LABEL_SYSTEM_NOTIFICATIONS></LABEL>
 		<fieldset data-role="controlgroup" data-type="horizontal">
         <!-- <legend>System notifications</legend> -->
         <input type="checkbox" name="MAIL_SYSTEM_INFOS" id="MAIL_SYSTEM_INFOS" class="MAILNOTIFY">
@@ -170,13 +207,18 @@
         <input type="checkbox" name="MAIL_SYSTEM_ERRORS" id="MAIL_SYSTEM_ERRORS" class="MAILNOTIFY">
         <label for="MAIL_SYSTEM_ERRORS"><TMPL_VAR MAILSERVER.OPTION_ERRORS></label>
 		</fieldset>
-		</td>
-	</tr>
-	<tr>
-		<td style="padding:20px">
-			<TMPL_VAR MAILSERVER.LABEL_PLUGIN_NOTIFICATIONS>
-		</td>
-		<td>
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+<DIV	class="lb_flex-container mailsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<LABEL	class=	"control-label"><TMPL_VAR MAILSERVER.LABEL_PLUGIN_NOTIFICATIONS></LABEL>
 		<fieldset data-role="controlgroup" data-type="horizontal">
         <!-- <legend>Plugin notifications</legend> -->
         <input type="checkbox" name="MAIL_PLUGIN_INFOS" id="MAIL_PLUGIN_INFOS" class="MAILNOTIFY">
@@ -184,18 +226,19 @@
         <input type="checkbox" name="MAIL_PLUGIN_ERRORS" id="MAIL_PLUGIN_ERRORS" class="MAILNOTIFY">
         <label for="MAIL_PLUGIN_ERRORS"><TMPL_VAR MAILSERVER.OPTION_ERRORS></label>
 		</fieldset>
-		</td>
-	</tr>
-</table>
-</form>
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
 
+</FORM>
 
 <!-- Testmail overlay -->
-
 <div data-role="popup" id="testmailoverlay" style="min-width:500px;max-width:80%;min-height:600px;" class="ui-content" data-transition="fade">
     <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left">Close</a>
 	<div data-role="header">
-    	<h1>Test-Email</h1>
+    	<h1><TMPL_VAR MAILSERVER.CAPTION_TESTMAIL_DIALOG></h1>
     </div>
     <div role="main" class="ui-content">
 		<div id="smtpresults" style="word-wrap:break-word;"></div>
@@ -238,11 +281,19 @@ $(function() {
 	validate_chk_object(['#email','#smtpserver','#smtpport']);
 	
 	// Show password
-	$('#showpass').click(function() {
-		if($('#smtppass').prop('type') == 'password') 
-			$('#smtppass').prop('type', 'text');
-	});
-
+	  $('#showpass').click(function() {
+	    if($('#smtppass').prop('type') == 'password') 
+	    {
+	    	$('#smtppass').prop('type', 'text');
+	    	$('#showpass').html('<TMPL_VAR MAILSERVER.BUTTON_HIDE_PASSWORD>');
+	    } 
+	    else 
+		{
+			$('#smtppass').prop('type', 'password');
+	    	$('#showpass').html('<TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD>');
+		}
+	  });
+	
 	// Change the SMTP port on click events
 	$('#smtpcrypt').click(function() {
 		if( $(this).is(':checked') ) 
@@ -272,16 +323,22 @@ function post_value (action, value)
 function disable()
 {
 	
-	if ( $('#activate_mail').is(':checked') ) {
+	if ( $('#activate_mail').is(':checked') ) 
+	{
 		$(".mailsettings").fadeIn();
+		$("#btntestsmtp").fadeIn();
+	
 	
 		if ( $('#smtpauth').is(':checked') )
 			$(".mailcredentials").fadeIn();
 		else 
 			$(".mailcredentials").fadeOut();
+			
 	}
-	else 
+	else
+	{ 
 		$(".mailsettings").fadeOut();
+		$("#btntestsmtp").fadeOut();
 	
 /*	
 	if ( $('#smtpauth').is(':checked') )
@@ -299,6 +356,7 @@ function disable()
 		$('#labelsmtppass').addClass('ui-disabled');
 	}
 */
+	}
 }
 
 // Test Mailserver
