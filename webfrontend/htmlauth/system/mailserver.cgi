@@ -90,7 +90,10 @@ $lang = lblanguage();
 
 # Prevent 'only used once' warnings from Perl
 # $R::saveformdata if 0;
-$R::do if 0;
+$R::action if 0;
+$R::value if 0;
+$R::activate_mail if 0;
+$R::secpin if 0;
 
 my $action = $R::action;
 my $value = $R::value;
