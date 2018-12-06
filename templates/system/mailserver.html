@@ -509,16 +509,11 @@ function saveForm()
 	
   })
 	.fail(function( data ) {
-    console.log( "Failed", data );
-	$('#ajaxstatus').html('<span style="color:red">'+data.status+' '+data.statusText+'</span>');
-	
+  .error(function(XMLHttpRequest, textStatus, errorThrown) {
+  	console.log( "Error");
+     $('#ajaxstatus').html('<span style="color:red"><TMPL_VAR MAILSERVER.SAVE_ERROR> '+errorThrown+'</span>');
   });
-  
-	
-	
 }
-
-
 // is_enabled, equivalent to Perls/PHPs LoxBerry is_enabled function
 function is_enabled( val ) 
 {
