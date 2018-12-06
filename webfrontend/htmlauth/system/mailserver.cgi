@@ -198,12 +198,14 @@ sub change_mailcfg
 		eval {
 			save();
 		};
+		my %SL = LoxBerry::System::readlanguage();
 		if ($@) {
 			$response{error} = 1;
-			$response{message} = "Error: $!";
+			$response{message} = 'MAILSERVER.SAVE_ERROR';
+			$response{reason} = $!;
 		} else {
 			$response{error} = 0;
-			$response{message} = "Successfully saved.";
+			$response{message} = 'MAILSERVER.SAVE_SUCCESS';
 		}
 	}
 	elsif (!$val) {
