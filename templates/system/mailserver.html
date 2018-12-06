@@ -17,10 +17,7 @@
 		<div class="hint" id="check_hint" style="display:flex; flex-flow:wrap; padding: 5px 5px 5px 5px;"><TMPL_VAR MAILSERVER.EMAIL_SETTINGS_SECURE_PIN_WHY></div>
 	</div>
 
-<FORM	method="post" 
-		id="main_form" 
-		action="/admin/system/mailserver.cgi"
-		style="display:none;">
+<form id="main_form" style="display:none;">
 <STYLE>
 	.lb_flex-item 
 	{	
@@ -77,7 +74,7 @@
 			for="smtpserver"><TMPL_VAR MAILSERVER.LABEL_SMTP_SERVER></LABEL>
 	</DIV>
 	<DIV	class="lb_flex-item">
-		<input id="smtpserver" name="smtpserver" type="text" class="textfield" value="<TMPL_VAR SMTPSERVER>"  data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
+		<input id="smtpserver" name="smtpserver" type="text" class="textfield" value=""  data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
 	</DIV>
 	<DIV	class="lb_flex-item-help">
 	</DIV>
@@ -93,7 +90,7 @@
 			for="smtpport"><TMPL_VAR MAILSERVER.LABEL_SMTP_PORT></LABEL>
 	</DIV>
 	<DIV	class="lb_flex-item">
-		<input id="smtpport" name="smtpport" type="text" class="textfield" value="<TMPL_VAR SMTPPORT>" data-validation-rule="special:port" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
+		<input id="smtpport" name="smtpport" type="text" class="textfield" value="" data-validation-rule="special:port" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
 	</DIV>
 	<DIV	class="lb_flex-item-help hint">
 		<TMPL_VAR MAILSERVER.HINT_SMTP_PORT>
@@ -132,7 +129,7 @@
 			for="smtpuser"><TMPL_VAR MAILSERVER.LABEL_SMTP_USER></LABEL>
 	</DIV>
 	<DIV	class="lb_flex-item">
-		<input id="smtpuser" name="smtpuser" type="text" class="textfield" value="<TMPL_VAR SMTPUSER>">
+		<input id="smtpuser" name="smtpuser" type="text" class="textfield" value="">
 	</DIV>
 	<DIV	class="lb_flex-item-help hint">
 		<TMPL_VAR MAILSERVER.HINT_SMTP_USER>
@@ -148,7 +145,7 @@
 			for="smtppass"><TMPL_VAR MAILSERVER.LABEL_SMTP_PASSWORD></LABEL>
 	</DIV>
 	<DIV	class="lb_flex-item">
-		<input id="smtppass" name="smtppass" type="password" class="textfield" value="<TMPL_VAR SMTPPASS>">
+		<input id="smtppass" name="smtppass" type="password" class="textfield" value="">
 	</DIV>
 	<DIV	class="lb_flex-item-help">
 		<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD></button>
