@@ -115,7 +115,21 @@ if (! -e $oldmailfile) {
 	`chown loxberry:loxberry $newmailfile`;
 }
 
-	
+LOGINF "Installing jq (json parser for shell)...";
+
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install jq };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error installing jq - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "jq package successfully installed";
+}
+
+
+
 	
 	
 
