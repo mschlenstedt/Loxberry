@@ -492,12 +492,23 @@ function saveForm()
 		})
 
 	.done(function( data ) {
-    console.log ( "Success" );
-	if (data.error != 0) {
-		$('#ajaxstatus').html('<span style="color:red">'+data.message+'</span>');
-	} else {
-		$('#ajaxstatus').html('<span style="color:green">'+data.message+'</span>');
-	}
+	    console.log ( "Success" );
+		if ( data.message == 'MAILSERVER.SAVE_ERROR' )
+		{
+			data.message = '<TMPL_VAR MAILSERVER.SAVE_ERROR>';
+		}
+		else if ( data.message == 'MAILSERVER.SAVE_SUCCESS' )
+		{
+			data.message = '<TMPL_VAR MAILSERVER.SAVE_SUCCESS>';
+		}
+		if (data.error != 0) 
+		{
+			$('#ajaxstatus').html('<span style="color:red">'+data.message+'</span><br>'+data.reason);
+		} 
+		else 
+		{
+			$('#ajaxstatus').html('<span style="color:green">'+data.message+'</span>');
+		}
 	
   })
 	.fail(function( data ) {
