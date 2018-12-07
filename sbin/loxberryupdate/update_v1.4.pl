@@ -113,6 +113,8 @@ if (! -e $oldmailfile) {
 	
 	$newmailobj->write();
 	`chown loxberry:loxberry $newmailfile`;
+	`chmod 0600 $newmailfile`;
+	
 }
 
 LOGINF "Installing jq (json parser for shell)...";

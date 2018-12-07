@@ -74,7 +74,8 @@ sub update_mailcfg
 {
 
 	if (copydefault( $defmail_file , $sysmail_file )) 
-		{ return 1; }
+		{ 	`chmod 0600 $sysmail_file`;
+			return 1; }
 	
 	my $defmailobj = LoxBerry::JSON->new();
 	my $sysmailobj = LoxBerry::JSON->new();
@@ -101,6 +102,7 @@ sub update_mailcfg
 		}
 		
 	}
+	`chmod 0600 $sysmail_file`;
 }
 
 sub update_htusers
