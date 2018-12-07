@@ -49,6 +49,7 @@ our $mailbin;
 
 my $mailobj;
 my $mcfg;
+my %SL;
 
 my %response;
 $response{error} = -1;
@@ -94,6 +95,7 @@ $R::action if 0;
 $R::value if 0;
 $R::activate_mail if 0;
 $R::secpin if 0;
+$R::smptport if 0;
 
 my $action = $R::action;
 my $value = $R::value;
@@ -126,7 +128,7 @@ sub form
 		# debug => 1,
 		);
 
-	my %SL = LoxBerry::System::readlanguage($maintemplate);
+	%SL = LoxBerry::System::readlanguage($maintemplate);
 
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param( "LBHOSTNAME", lbhostname());
@@ -185,27 +187,30 @@ sub change_mailcfg
 	
 	my $mailfile = $lbsconfigdir . "/mail.json";
 	
+	%SL = LoxBerry::System::readlanguage();
+
+	
 	$mailobj = LoxBerry::JSON->new();
 	$mcfg = $mailobj->open(filename => $mailfile);
 	
-	if($key eq "getmailcfg" and defined $val) {
-		exit if(checksecpin($val));
-		$response{error} = 0;
-		$response{customresponse} = 1;
-		$response{output} = encode_json($mcfg);
+	if($key eq "getmailcfg") {
+		my $resp = checksecpin($val);
+		if($resp == 0) {
+			$response{error} = 0;
+			$response{customresponse} = 1;
+			$response{output} = encode_json($mcfg);
+		}
 	} 
 	elsif($key eq "setmailcfg") {
 		eval {
 			save();
 		};
-		my %SL = LoxBerry::System::readlanguage();
 		if ($@) {
 			$response{error} = 1;
-			$response{message} = 'MAILSERVER.SAVE_ERROR';
-			$response{reason} = $!;
+			$response{message} = "Error: $!";
 		} else {
 			$response{error} = 0;
-			$response{message} = 'MAILSERVER.SAVE_SUCCESS';
+			$response{message} = $SL{'COMMON.MSG_ALLOK'};
 		}
 	}
 	elsif (!$val) {
@@ -236,25 +241,8 @@ sub save
 	my $bins = LoxBerry::System::get_binaries();
 	$mailbin = $bins->{MAIL};
 
-	my %SL = LoxBerry::System::readlanguage();
-
+	%SL = LoxBerry::System::readlanguage();
 	
-	
-
-	
-	# Write configuration file(s)
-	# $mcfg->param("SMTP.ISCONFIGURED", "1");
-	# $mcfg->param("SMTP.EMAIL", "$R::email");
-	# $mcfg->param("SMTP.SMTPSERVER", "$R::smtpserver");
-	# $mcfg->param("SMTP.PORT", "$R::smtpport");
-	# $mcfg->param("SMTP.CRYPT", "$R::smtpcrypt");
-	# $mcfg->param("SMTP.AUTH", "$R::smtpauth");
-	# $mcfg->param("SMTP.SMTPUSER", "\"$R::smtpuser\"");
-	# $mcfg->param("SMTP.SMTPPASS", "\"$R::smtppass\"");
-	# $mcfg->save();
-
-	# $mcfg->{SMTP}->{ISCONFIGURED} = $R::
-		
 	$mcfg->{SMTP}->{ACTIVATE_MAIL} = is_enabled($R::activate_mail) ? 1 : 0;
 	$mcfg->{SMTP}->{AUTH} = is_enabled($R::smtpauth) ? 1 : 0;
 	$mcfg->{SMTP}->{CRYPT} = is_enabled($R::smtpcrypt) ? 1 : 0;
@@ -266,7 +254,14 @@ sub save
 	
 	$mailobj->write();
 	
-	
+	# Delete values if email is disabled
+	if (! $mcfg->{SMTP}->{ACTIVATE_MAIL}) {
+		$R::smtpserver = "";
+		$R::smptport = "";
+		$R::email = "";
+		$R::smtpuser = "";
+		$R::smtppass = "";
+	}
 	
 
 	# Activate new configuration
@@ -375,13 +370,13 @@ sub checksecpin
 	my ($secpin) = @_;
 	my $checkres = LoxBerry::System::check_securepin($secpin);
 	if ( $checkres and $checkres == 1 ) {
-		$response{message} = "The entered SecurePIN is wrong. Please try again.";
+		$response{message} = $SL{'SECUREPIN.ERROR_WRONG'};
 		$response{error} = 1;
     } elsif ( $checkres and $checkres == 2) {
-		$response{message} = "Your SecurePIN file could not be opened.";
+		$response{message} = $SL{'SECUREPIN.ERROR_OPEN'};
 		$response{error} = 2;
 	} else {
-    		$response{message} = "You have entered the correct SecurePIN.";
+    		$response{message} = $SL{'SECUREPIN.SUCCESS'};
 			$response{error} = 0;
 	}
 

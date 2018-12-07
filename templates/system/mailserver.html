@@ -1,22 +1,24 @@
 <!-- ** START template/system/mailserver.html 06.12.2018 22:20:43 ************************************************************************************ -->
-	<div id="securepin_block">
-		<div style="display:flex;justify-content:center;align-content:space-around;">
-		<!-- <div id="securepin_block"> -->
-			<div style="flex-grow:3; padding: 5px 5px 5px 5px;">
-				<!-- <div class="ui-field-contain"> -->
-					<br><label for="securepin"><TMPL_VAR SECURE_PIN.ENTER_SECURE_PIN></label>
-				<!-- </div> -->
-			</div>
-			<div style="flex-grow:1;padding: 5px 5px 5px 5px;">
-				<input name="securepin" id="securepin" type="text">
-			</div>
-			<div style="flex-grow:1; padding: 5px 5px 5px 5px;">
-				<button class="ui-btn ui-btn-icon-right ui-corner-all" id="check_securepin" data-inline="true"><TMPL_VAR SECURE_PIN.SECURE_PIN_CHECK></button>
-			</div>
-		</div>
-		<div class="hint" id="check_hint" style="display:flex; flex-flow:wrap; padding: 5px 5px 5px 5px;"><TMPL_VAR SECURE_PIN.SECURE_PIN_PREVENT_SPY></div>
+	
+<!-- SecurePIN --> 
+<div id="securepin_block" style="margin: 0 auto; width:350px;">
+	<TMPL_VAR SECUREPIN.ENTER_SECUREPIN>
+	<input name="securepin" id="securepin" type="text">
+	<button class="ui-btn ui-btn-icon-right ui-corner-all" id="check_securepin" data-inline="true"><TMPL_VAR COMMON.BUTTON_OK></button>
+	<div class="hint" id="check_hint" style="padding: 5px 5px 5px 5px;">&nbsp;</div>
+	<br>
+	<div class="path" style="background: #FF8080; font-color: black; text-shadow: none; border: black 1px solid; padding: 5px;">
+		<p style="font-weight: bold;">
+			<TMPL_VAR SECUREPIN.WARNING_TITLE>
+		</p>
+		<hr>
+		<p>
+			<TMPL_VAR SECUREPIN.PREVENT_SPY>
+		</p>
 	</div>
+</div>
 
+	
 <form id="main_form" style="display:none;">
 <STYLE>
 	.lb_flex-item 
@@ -183,8 +185,8 @@
 <div id="ajaxstatus" style="margin: auto; width:100%; padding:10px; text-align:center;">&nbsp;
 </div>
 
-<div class="wide mailsettings"><TMPL_VAR MAILSERVER.LABEL_MAIL_NOTIFICATIONS></div>
-<p class="mailsettings"><TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS></p>
+<div class="wide"><TMPL_VAR MAILSERVER.LABEL_MAIL_NOTIFICATIONS></div>
+<p><TMPL_VAR MAILSERVER.HINT_NOTIFICATIONS></p>
 <BR>
 <BR>
 <DIV	class="lb_flex-container mailsettings">
@@ -316,27 +318,6 @@ function post_value (action, value)
 function disable()
 {
 	
-	<!-- if ( $('#activate_mail').is(':checked') )  -->
-	<!-- { -->
-		<!-- $(".mailsettings").fadeIn(); -->
-		<!-- $("#btntestsmtp").fadeIn(); -->
-	
-		<!-- if ( $('#smtpauth').is(':checked') ) -->
-		<!-- { -->
-			<!-- $(".mailcredentials").fadeIn(); -->
-		<!-- } -->
-		<!-- else  -->
-		<!-- { -->
-			<!-- $(".mailcredentials").fadeOut(); -->
-		<!-- } -->
-			
-	<!-- } -->
-	<!-- else -->
-	<!-- {  -->
-		<!-- $(".mailsettings").fadeOut(); -->
-		<!-- $("#btntestsmtp").fadeOut(); -->
-	<!-- } -->
-
 	if ( $('#activate_mail').is(':checked') ) 
 	{
 		$(".mailsettings").removeClass( 'ui-disabled' );
@@ -395,7 +376,7 @@ function checkSecurePIN() {
 	// var data = $('form').serialize() + "&save=true";
 	console.log("Checking secure pin");
 	$("#check_securepin").attr("disabled", true);
-	$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR SECURE_PIN.SECURE_PIN_CHECK_WAIT>");
+	$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR SECUREPIN.CHECK_WAIT>");
 	$.ajax( { 
 			type: 'POST',
 			//url: '/admin/system/tools/ajax-config-handler.cgi', 
@@ -403,7 +384,7 @@ function checkSecurePIN() {
 		} )
 	.fail(function( data ) {
 		console.log( "Error", data );
-		$("#check_hint").attr("style", "color:red").html("<TMPL_VAR SECURE_PIN.SECURE_PIN_CHECK_FAILED>");
+		$("#check_hint").attr("style", "color:red").html("<TMPL_VAR SECUREPIN.ERROR_GENERIC>: "+data.statusText);
 	})
 	.done(function( data ) {
 		console.log( "getcred Success", data );
