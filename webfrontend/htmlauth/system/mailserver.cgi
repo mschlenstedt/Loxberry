@@ -106,6 +106,8 @@ elsif ($action eq 'MAIL_SYSTEM_INFOS') { change_mailcfg("MAIL_SYSTEM_INFOS", $va
 elsif ($action eq 'MAIL_SYSTEM_ERRORS') { change_mailcfg("MAIL_SYSTEM_ERRORS", $value);}
 elsif ($action eq 'MAIL_PLUGIN_INFOS') { change_mailcfg("MAIL_PLUGIN_INFOS", $value);}
 elsif ($action eq 'MAIL_PLUGIN_ERRORS') { change_mailcfg("MAIL_PLUGIN_ERRORS", $value);}
+elsif ($action eq 'testmail') { testmail_button(); }
+
 
 # If not ajax, it must be the form
 &form;
@@ -133,35 +135,7 @@ sub form
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param( "LBHOSTNAME", lbhostname());
 	$maintemplate->param( "LANG", $lang);
-	# $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
-	# $maintemplate->param ( 	"EMAIL" => $email, 
-							# "SMTPSERVER" => $smtpserver,
-							# "SMTPPORT" => $smtpport,
-							# "SMTPUSER" => $smtpuser,
-							# "SMTPPASS" => $smtppass
-							# );
-	
-	# Defaults for template
-	# if ($smtpcrypt) {
-	  # $maintemplate->param( "CHECKED1", 'checked="checked"');
-	# }
-	# if ($smtpauth) {
-	  # $maintemplate->param(  "CHECKED2", 'checked="checked"');
-	# }
-	
-	# if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_INFOS"))) {
-		# $maintemplate->param("MAIL_SYSTEM_INFOS", 'checked');
-	# }
-	# if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_ERRORS"))) {
-		# $maintemplate->param("MAIL_SYSTEM_ERRORS", 'checked');
-	# }
-	# if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_INFOS"))) {
-		# $maintemplate->param("MAIL_PLUGIN_INFOS", 'checked');
-	# }
-	# if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_ERRORS"))) {
-		# $maintemplate->param("MAIL_PLUGIN_ERRORS", 'checked');
-	# }
-	
+
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MAILSERVER.WIDGETLABEL'};
 	LoxBerry::Web::head();
@@ -210,7 +184,7 @@ sub change_mailcfg
 			$response{message} = "Error: $!";
 		} else {
 			$response{error} = 0;
-			$response{message} = $SL{'COMMON.MSG_ALLOK'};
+			$response{message} = $SL{'MAILSERVER.SAVE_SUCCESS'};
 		}
 	}
 	elsif (!$val) {
@@ -237,10 +211,7 @@ sub change_mailcfg
 
 sub save 
 {
-
-	my $bins = LoxBerry::System::get_binaries();
-	$mailbin = $bins->{MAIL};
-
+	
 	%SL = LoxBerry::System::readlanguage();
 	
 	$mcfg->{SMTP}->{ACTIVATE_MAIL} = is_enabled($R::activate_mail) ? 1 : 0;
@@ -262,77 +233,13 @@ sub save
 		$R::smtpuser = "";
 		$R::smtppass = "";
 	}
-	
 
 	# Activate new configuration
-
-	# Create temporary SSMTP Config file
-	open(F,">/tmp/tempssmtpconf.dat") || die "Cannot open /tmp/tempssmtpconf.dat";
-	print F <<ENDFILE;
-#
-# Config file for sSMTP sendmail
-#
-# The person who gets all mail for userids < 1000
-# Make this empty to disable rewriting.
-ENDFILE
-
-	print F "root=$R::email\n\n";
-
-	print F <<ENDFILE;
-# The place where the mail goes. The actual machine name is required no
-# MX records are consulted. Commonly mailhosts are named mail.domain.com
-ENDFILE
-	print F "mailhub=$R::smtpserver\:$R::smtpport\n\n";
-
-	if ($R::smtpauth) {
-		print F "# Authentication\n";
-		print F "AuthUser=$R::smtpuser\n";
-		print F "AuthPass=$R::smtppass\n\n";
-	}
-
-	if ($R::smtpcrypt) {
-		print F "# Use encryption\n";
-		print F "UseTLS=YES\n";
-		print F "UseSTARTTLS=YES\n\n";
-	} else {
-		print F "# Dont use encryption\n";
-		print F "UseTLS=NO\n";
-		print F "UseSTARTTLS=NO\n\n";
-	}
-
-	print F <<ENDFILE;
-# Where will the mail seem to come from?
-#rewriteDomain=
-
-# The full hostname
-hostname=loxberry.local
-
-# Are users allowed to set their own From: address?
-# YES - Allow the user to specify their own From: address
-# NO - Use the system gen
-FromLineOverride=YES
-ENDFILE
-	close(F);
-
-	# Install temporary ssmtp config file
-	my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
-
-	$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
-
-	# Delete old temporary config file
-	if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
-	  unlink ("/tmp/tempssmtpconf.dat");
-	}
-
-	# $maintemplate->param( "MESSAGE", $SL{'MAILSERVER.SAVESUCCESS'});
-	# $maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
-
-	# # Print Template
-	# $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
-	# LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
-	# print $maintemplate->output();
-	# undef $maintemplate;			
-	# LoxBerry::Web::lbfooter();
+	
+	createtmpconfig();
+	installtmpconfig();
+	sendtestmail() if (is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
+	cleanuptmpconfig();
 		
 	return;
 
@@ -385,4 +292,147 @@ sub checksecpin
 
 	return $response{error};
 
+}
+
+sub createtmpconfig
+{
+	
+	# my $flock;
+	
+	# Create temporary SSMTP Config file
+	open(F,">/tmp/tempssmtpconf.dat") || die "Cannot open /tmp/tempssmtpconf.dat";
+	flock(F,2);
+	print F <<ENDFILE;
+#
+# Config file for sSMTP sendmail
+#
+# The person who gets all mail for userids < 1000
+# Make this empty to disable rewriting.
+ENDFILE
+
+	print F "root=$R::email\n\n";
+
+	print F <<ENDFILE;
+# The place where the mail goes. The actual machine name is required no
+# MX records are consulted. Commonly mailhosts are named mail.domain.com
+ENDFILE
+	print F "mailhub=$R::smtpserver\:$R::smtpport\n\n";
+
+	if ($R::smtpauth) {
+		print F "# Authentication\n";
+		print F "AuthUser=$R::smtpuser\n";
+		print F "AuthPass=$R::smtppass\n\n";
+	}
+
+	if ($R::smtpcrypt) {
+		print F "# Use encryption\n";
+		print F "UseTLS=YES\n";
+		print F "UseSTARTTLS=YES\n\n";
+	} else {
+		print F "# Dont use encryption\n";
+		print F "UseTLS=NO\n";
+		print F "UseSTARTTLS=NO\n\n";
+	}
+
+	print F <<ENDFILE;
+# Where will the mail seem to come from?
+#rewriteDomain=
+
+# The full hostname
+hostname=loxberry.local
+
+# Are users allowed to set their own From: address?
+# YES - Allow the user to specify their own From: address
+# NO - Use the system gen
+FromLineOverride=YES
+ENDFILE
+	close(F);
+
+}
+
+sub installtmpconfig
+{
+
+	# Install temporary ssmtp config file
+	my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
+
+}
+
+sub restoressmtpconfig
+{
+
+	# ReInstall original ssmtp config file
+	my $result = qx($lbssbindir/createssmtpconf.sh stop 2>/dev/null);
+
+}
+
+sub sendtestmail
+{
+
+	my $bins = LoxBerry::System::get_binaries();
+	$mailbin = $bins->{MAIL};
+
+	
+	
+	#my $result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $R::email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $R::email 2>&1);
+
+	my $friendlyname = trim(LoxBerry::System::lbfriendlyname());
+	my $hostname = LoxBerry::System::lbhostname();
+	$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
+	$friendlyname .= " LoxBerry";
+
+	require MIME::Base64;
+
+	my $subject = $SL{'MAILSERVER.TESTMAIL_SUBJECT'};
+	$subject= "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
+	my $headerfrom = "From: =?utf-8?b?". MIME::Base64::encode($friendlyname, "") . "?= <" . $R::email . ">";
+	my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
+	my $message = $SL{'MAILSERVER.TESTMAIL_CONTENT'};
+
+	# Send test mail
+	my $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $R::email 2>&1);
+
+	return $result;
+	
+}
+
+sub cleanuptmpconfig
+{
+	
+	# Delete old temporary config file
+	if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
+	  unlink ("/tmp/tempssmtpconf.dat");
+	}
+
+}
+
+sub testmail_htmlout
+{
+	my ($result) = @_; 
+	my $lf = 0;
+	# Output
+	print "Content-type: text/html; charset=utf-8\n\n";
+
+	$result =~ s/\n/<br>/g if (!$lf);
+	print '<p>' . $SL{'MAILSERVER.MSG_TEST_INTRO'} . '</p>';
+	print '<div style="font-size:80%;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;">';
+	print $result;
+	print "</div>";
+
+}
+
+
+sub testmail_button
+{
+
+	%SL = LoxBerry::System::readlanguage();
+
+	createtmpconfig();
+	installtmpconfig();
+	my $result = sendtestmail();
+	testmail_htmlout($result);
+	restoressmtpconfig();
+	cleanuptmpconfig();	
+	exit;
+	
 }

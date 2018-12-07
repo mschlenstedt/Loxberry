@@ -348,7 +348,8 @@ $('#btntestsmtp').click( function(e) {
 	$('#smtpresults').html('<font color=blue><TMPL_VAR MAILSERVER.MSG_TESTMAIL_WAIT></font>');
 	
 	e.preventDefault();
-	var vals = { email: $("#email").val(),
+	var vals = { action: "testmail",
+				 email: $("#email").val(),
 				 smtpserver: $("#smtpserver").val(),
 				 smtpauth: $("#smtpauth").is(":checked") ? 1 : 0,
 				 smtpcrypt: $("#smtpcrypt").is(":checked") ? 1 : 0,
@@ -360,9 +361,9 @@ $('#btntestsmtp').click( function(e) {
 	data = jQuery.param( vals );
 
 	$.ajax({
-		contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
+		// contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
 		type: "POST",
-		url: "/admin/system/tools/smtptest.cgi",
+		// url: "/admin/system/tools/smtptest.cgi",
 		data: data,
 		success: function(data){
 			$('#smtpresults').empty();
@@ -466,7 +467,7 @@ function saveForm()
 		$("#smtpport").val("");
 	}
 	
-	// Send form as json
+	// Post form
 	var config = $('#main_form').serialize();
 	
 	var jqxhr = $.ajax( { 
@@ -476,14 +477,6 @@ function saveForm()
 
 	.done(function( data ) {
 	    console.log ( "Success" );
-		if ( data.message == 'MAILSERVER.SAVE_ERROR' )
-		{
-			data.message = '<TMPL_VAR MAILSERVER.SAVE_ERROR>';
-		}
-		else if ( data.message == 'MAILSERVER.SAVE_SUCCESS' )
-		{
-			data.message = '<TMPL_VAR MAILSERVER.SAVE_SUCCESS>';
-		}
 		if (data.error != 0) 
 		{
 			$('#ajaxstatus').html('<span style="color:red">'+data.message+'</span><br>'+data.reason);
@@ -507,8 +500,6 @@ function is_enabled( val )
 	return (enabled_values.indexOf(val) > -1);
 	
 }
-	
-
 
 </script>
 <!-- ** END template/system/mailserver.html ************************************************************************************ -->
