@@ -22,7 +22,7 @@ use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
 use LoxBerry::JSON;
-use CGI::Carp qw(fatalsToBrowser);
+#use CGI::Carp qw(fatalsToBrowser);
 use CGI;
 use warnings;
 use strict;
@@ -176,9 +176,9 @@ sub change_mailcfg
 		}
 	} 
 	elsif($key eq "setmailcfg") {
-		eval {
+		#eval {
 			save();
-		};
+		#};
 		if ($@) {
 			$response{error} = 1;
 			$response{message} = "Error: $!";
@@ -353,17 +353,41 @@ ENDFILE
 sub installtmpconfig
 {
 
+	require File::Copy;
+	
 	# Install temporary ssmtp config file
-	my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
+	#my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
 
+	if ( -e "/tmp/tempssmtpconf.dat" and -e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
+		# Backup old file
+		File::Copy::move ("$lbhomedir/system/ssmtp/ssmtp.conf", "$lbhomedir/system/ssmtp/ssmtp.conf.bkp");
+		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf.bkp";
+	}
+	
+	if ( -e "/tmp/tempssmtpconf.dat" ) {
+		# Copy new file
+		chmod 0600, "/tmp/tempssmtpconf.dat";
+		File::Copy::copy ("/tmp/tempssmtpconf.dat", "$lbhomedir/system/ssmtp/ssmtp.conf");
+		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf";
+		unlink "/tmp/tempssmtpconf.dat";
+	}
+		
 }
 
 sub restoressmtpconfig
 {
-
+	
+	require File::Copy;
+	
 	# ReInstall original ssmtp config file
-	my $result = qx($lbssbindir/createssmtpconf.sh stop 2>/dev/null);
+	# my $result = qx($lbssbindir/createssmtpconf.sh stop 2>/dev/null);
 
+	if ( -e "$lbhomedir/system/ssmtp/ssmtp.conf.bkp" and -e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
+		# Re-Create old file
+		File::Copy::move ("$lbhomedir/system/ssmtp/ssmtp.conf.bkp", "$lbhomedir/system/ssmtp/ssmtp.conf");
+		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf";
+	}
+	
 }
 
 sub sendtestmail
