@@ -316,44 +316,56 @@ function post_value (action, value)
 function disable()
 {
 	
+	<!-- if ( $('#activate_mail').is(':checked') )  -->
+	<!-- { -->
+		<!-- $(".mailsettings").fadeIn(); -->
+		<!-- $("#btntestsmtp").fadeIn(); -->
+	
+		<!-- if ( $('#smtpauth').is(':checked') ) -->
+		<!-- { -->
+			<!-- $(".mailcredentials").fadeIn(); -->
+		<!-- } -->
+		<!-- else  -->
+		<!-- { -->
+			<!-- $(".mailcredentials").fadeOut(); -->
+		<!-- } -->
+			
+	<!-- } -->
+	<!-- else -->
+	<!-- {  -->
+		<!-- $(".mailsettings").fadeOut(); -->
+		<!-- $("#btntestsmtp").fadeOut(); -->
+	<!-- } -->
+
 	if ( $('#activate_mail').is(':checked') ) 
 	{
-		$(".mailsettings").fadeIn();
-		$("#btntestsmtp").fadeIn();
-	
+		$(".mailsettings").removeClass( 'ui-disabled' );
+		$("#btntestsmtp").removeClass( 'ui-disabled' );
 	
 		if ( $('#smtpauth').is(':checked') )
 		{
-			$(".mailcredentials").fadeIn();
+			$(".mailcredentials").removeClass( 'ui-disabled' );
 		}
 		else 
 		{
-			$(".mailcredentials").fadeOut();
+			$(".mailcredentials").addClass( 'ui-disabled' );
 		}
 			
 	}
 	else
 	{ 
-		$(".mailsettings").fadeOut();
-		$("#btntestsmtp").fadeOut();
+		$(".mailsettings").addClass( 'ui-disabled' );
+		$("#btntestsmtp").addClass( 'ui-disabled' );
+	}
 	
-/*	
-	if ( $('#smtpauth').is(':checked') )
-	{
-		$('#smtpuser').removeClass('ui-disabled');
-		$('#smtppass').removeClass('ui-disabled');
-		$('#labelsmtpuser').removeClass('ui-disabled');
-		$('#labelsmtppass').removeClass('ui-disabled');
-	}
-	else
-	{
-		$('#smtpuser').addClass('ui-disabled');
-		$('#smtppass').addClass('ui-disabled');
-		$('#labelsmtpuser').addClass('ui-disabled');
-		$('#labelsmtppass').addClass('ui-disabled');
-	}
-*/
-	}
+	
+	
+	
+	
+	
+	
+	
+	
 }
 
 $('#btnpower_alert').css('visibility','hidden');
