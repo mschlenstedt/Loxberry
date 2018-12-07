@@ -198,7 +198,7 @@ sub change_mailcfg
 		if($resp == 0) {
 			$response{error} = 0;
 			$response{customresponse} = 1;
-			$response{output} = encode_json($mcfg);
+			$response{output} = to_json($mcfg);
 		}
 	} 
 	elsif($key eq "setmailcfg") {
@@ -356,7 +356,7 @@ sub jsonresponse {
 	}
 
 	if (!$response{customresponse}) {
-		print encode_json(\%response);
+		print to_json(\%response);
 	} else {
 		print $response{output};
 	}
@@ -375,6 +375,9 @@ sub checksecpin
     } elsif ( $checkres and $checkres == 2) {
 		$response{message} = $SL{'SECUREPIN.ERROR_OPEN'};
 		$response{error} = 2;
+    } elsif ( $checkres and $checkres == 3) {
+		$response{message} = $SL{'SECUREPIN.ERROR_LOCKED'};
+		$response{error} = 3;
 	} else {
     		$response{message} = $SL{'SECUREPIN.SUCCESS'};
 			$response{error} = 0;
