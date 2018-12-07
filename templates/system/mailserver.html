@@ -357,15 +357,6 @@ function disable()
 		$(".mailsettings").addClass( 'ui-disabled' );
 		$("#btntestsmtp").addClass( 'ui-disabled' );
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
 
 $('#btnpower_alert').css('visibility','hidden');
@@ -490,6 +481,8 @@ function saveForm()
 	}
 	if( ! $('#activate_mail').is(':checked') ) {
 		$("#email").val("");
+		$("#smtpserver").val("");
+		$("#smtpport").val("");
 	}
 	
 	// Send form as json
