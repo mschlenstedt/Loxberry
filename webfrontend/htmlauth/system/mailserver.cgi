@@ -19,8 +19,6 @@
 ##########################################################################
 
 use LoxBerry::System;
-use LoxBerry::Web;
-use LoxBerry::Log;
 use LoxBerry::JSON;
 #use CGI::Carp qw(fatalsToBrowser);
 use CGI;
@@ -64,18 +62,6 @@ my $version = "1.4.0.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
-#$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
-
-# $mcfg               = new Config::Simple("$lbhomedir/config/system/mail.cfg");
-# $email              = $mcfg->param("SMTP.EMAIL");
-# $smtpserver         = $mcfg->param("SMTP.SMTPSERVER");
-# $smtpport           = $mcfg->param("SMTP.PORT");
-# $smtpcrypt          = $mcfg->param("SMTP.CRYPT");
-# $smtpauth           = $mcfg->param("SMTP.AUTH");
-# $smtpuser           = $mcfg->param("SMTP.SMTPUSER");
-# $smtppass           = $mcfg->param("SMTP.SMTPPASS");
-
-
 ##########################################################################
 # Language Settings
 ##########################################################################
@@ -85,10 +71,6 @@ $lang = lblanguage();
 # Main program
 ##########################################################################
 
-#########################################################################
-# What should we do
-#########################################################################
-
 # Prevent 'only used once' warnings from Perl
 # $R::saveformdata if 0;
 $R::action if 0;
@@ -96,6 +78,7 @@ $R::value if 0;
 $R::activate_mail if 0;
 $R::secpin if 0;
 $R::smptport if 0;
+%LoxBerry::Web::htmltemplate_options if 0;
 
 my $action = $R::action;
 my $value = $R::value;
@@ -107,6 +90,10 @@ elsif ($action eq 'MAIL_SYSTEM_ERRORS') { change_mailcfg("MAIL_SYSTEM_ERRORS", $
 elsif ($action eq 'MAIL_PLUGIN_INFOS') { change_mailcfg("MAIL_PLUGIN_INFOS", $value);}
 elsif ($action eq 'MAIL_PLUGIN_ERRORS') { change_mailcfg("MAIL_PLUGIN_ERRORS", $value);}
 elsif ($action eq 'testmail') { testmail_button(); }
+
+
+require LoxBerry::Web;
+require LoxBerry::Log;
 
 
 # If not ajax, it must be the form
@@ -126,7 +113,7 @@ sub form
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
 		#associate => $cfg,
-		%htmltemplate_options,
+		%LoxBerry::Web::htmltemplate_options,
 		# debug => 1,
 		);
 
@@ -161,7 +148,7 @@ sub change_mailcfg
 	
 	my $mailfile = $lbsconfigdir . "/mail.json";
 	
-	%SL = LoxBerry::System::readlanguage();
+	# %SL = LoxBerry::System::readlanguage();
 
 	
 	$mailobj = LoxBerry::JSON->new();
@@ -184,7 +171,7 @@ sub change_mailcfg
 			$response{message} = "Error: $!";
 		} else {
 			$response{error} = 0;
-			$response{message} = $SL{'MAILSERVER.SAVE_SUCCESS'};
+			$response{message} = "Successfully saved.";
 		}
 	}
 	elsif (!$val) {
@@ -277,16 +264,16 @@ sub checksecpin
 	my ($secpin) = @_;
 	my $checkres = LoxBerry::System::check_securepin($secpin);
 	if ( $checkres and $checkres == 1 ) {
-		$response{message} = $SL{'SECUREPIN.ERROR_WRONG'};
+		$response{message} = "SecurePIN wrong"; #$SL{'SECUREPIN.ERROR_WRONG'};
 		$response{error} = 1;
     } elsif ( $checkres and $checkres == 2) {
-		$response{message} = $SL{'SECUREPIN.ERROR_OPEN'};
+		$response{message} = "Cannot open SecurePIN file"; # $SL{'SECUREPIN.ERROR_OPEN'};
 		$response{error} = 2;
     } elsif ( $checkres and $checkres == 3) {
-		$response{message} = $SL{'SECUREPIN.ERROR_LOCKED'};
+		$response{message} = "SecurePIN is LOCKED"; # $SL{'SECUREPIN.ERROR_LOCKED'};
 		$response{error} = 3;
 	} else {
-    		$response{message} = $SL{'SECUREPIN.SUCCESS'};
+    		$response{message} = "SecurePIN is correct."; # $SL{'SECUREPIN.SUCCESS'};
 			$response{error} = 0;
 	}
 

@@ -1,10 +1,11 @@
 <!-- ** START template/system/mailserver.html 06.12.2018 22:20:43 ************************************************************************************ -->
 	
 <!-- SecurePIN --> 
-<div id="securepin_block" style="margin: 0 auto; width:350px;">
+<div id="securepin_block" style="margin: 0 auto; width:350px; display:none">
 	<TMPL_VAR SECUREPIN.ENTER_SECUREPIN>
-	<input name="securepin" id="securepin" type="text">
+	<input name="securepin" id="securepin" type="text" onkeypress="return AddKeyPress(event, $('#check_securepin'));">
 	<button class="ui-btn ui-btn-icon-right ui-corner-all" id="check_securepin" data-inline="true"><TMPL_VAR COMMON.BUTTON_OK></button>
+	
 	<div class="hint" id="check_hint" style="padding: 5px 5px 5px 5px;">&nbsp;</div>
 	<br>
 	<div class="path" style="background: #FF8080; font-color: black; text-shadow: none; border: black 1px solid; padding: 5px;">
@@ -19,7 +20,7 @@
 </div>
 
 	
-<form id="main_form" style="display:none;">
+<form id="main_form" style="visibility:hidden;"> <!-- style="display:none;" --> 
 <STYLE>
 	.lb_flex-item 
 	{	
@@ -259,7 +260,11 @@ $(function() {
 	$('#securepin').val(sessionStorage.getItem("securePIN"));
 	if( $('#securepin').val() ) {
 		$('#check_securepin').trigger("click");
+	} else {
+		$("#securepin_block").fadeIn();
 	}
+		
+		
 	
 	// Post changes of notify settings
 	$(".MAILNOTIFY").change(function(){
@@ -385,6 +390,7 @@ function checkSecurePIN() {
 		} )
 	.fail(function( data ) {
 		console.log( "Error", data );
+		$("#securepin_block").fadeIn();
 		$("#check_hint").attr("style", "color:red").html("<TMPL_VAR SECUREPIN.ERROR_GENERIC>: "+data.statusText);
 	})
 	.done(function( data ) {
@@ -392,6 +398,12 @@ function checkSecurePIN() {
 		// $("#savemessages").attr("style", "color:green").html("Saved successfully |");
 		
 		if( data.error && data.error != 0 ) {
+			switch (data.error) {
+				case 1: data.message = '<TMPL_VAR SECUREPIN.ERROR_WRONG>'; break;
+				case 2: data.message = '<TMPL_VAR SECUREPIN.ERROR_WRONG>'; break;
+				case 3: data.message = '<TMPL_VAR SECUREPIN.ERROR_WRONG>'; break; 
+			}
+			
 			$("#check_hint").attr("style", "color:red").html(data.message);
 			return;
 		}
@@ -402,7 +414,8 @@ function checkSecurePIN() {
 		
 		fillForm( data );
 		
-		$("#main_form").fadeIn();
+		// $("#main_form").fadeIn();
+		$("#main_form").css( 'visibility', 'visible');
 		
 	})
 	
@@ -479,11 +492,11 @@ function saveForm()
 	    console.log ( "Success" );
 		if (data.error != 0) 
 		{
-			$('#ajaxstatus').html('<span style="color:red">'+data.message+'</span><br>'+data.reason);
+			$('#ajaxstatus').html('<span style="color:red">'+data.message+'</span>');
 		} 
 		else 
 		{
-			$('#ajaxstatus').html('<span style="color:green">'+data.message+'</span>');
+			$('#ajaxstatus').html('<span style="color:green"><TMPL_VAR MAILSERVER.SAVE_SUCCESS></span>');
 		}
 	
   })
@@ -500,6 +513,17 @@ function is_enabled( val )
 	return (enabled_values.indexOf(val) > -1);
 	
 }
+
+function AddKeyPress(event, submitobj ) { 
+        // look for window.event in case event isn't passed in
+		event = event || window.event;
+        if (event.keyCode == 13) {
+            submitobj.click();
+            return false;
+        }
+        return true;
+    }
+
 
 </script>
 <!-- ** END template/system/mailserver.html ************************************************************************************ -->
