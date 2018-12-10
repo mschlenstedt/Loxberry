@@ -6,7 +6,7 @@ use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
 use LoxBerry::JSON;
 			
-my $version = "1.4.0.1"; # Version of this script
+my $version = "1.4.0.2"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -26,8 +26,6 @@ $cgi->import_names('R');
 # Prevent 'only used once' warning
 $R::action if 0;
 $R::value if 0;
-$R::secpin if 0;
-
 
 my $action = $R::action;
 my $value = $R::value;
