@@ -22,7 +22,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
-
+print STDERR "Execute plugininstall.cgi\n#########################\n";
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
@@ -121,24 +121,24 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.
 
 # Menu
 if (!$do || $do eq "form") {
-  print STDERR "FORM called\n";
+  print STDERR "Calling subfunction FORM\n";
   &form;
 }
 
 # Installation
 elsif ($do eq "install") {
-  print STDERR "INSTALL called\n";
+  print STDERR "Calling subfunction INSTALL\n";
   &install;
 }
 
 # UnInstallation
 elsif ($do eq "uninstall") {
-  print STDERR "UINSTALL called\n";
+  print STDERR "Calling subfunction UNINSTALL\n";
   &uninstall;
 }
 
 else {
-  print STDERR "FORM called\n";
+  print STDERR "Calling subfunction FORM (default)\n";
   $maintemplate->param("FORM", 1);
   &form;
 }
@@ -364,7 +364,7 @@ sub error {
 		# associate => $cfg,
 	);
 
-	print STDERR "plugininstall.cgi: sub error called with message $error.\n";
+	print STDERR "plugininstall.cgi: Sub ERROR called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
 
 	LoxBerry::System::readlanguage($errtemplate);
