@@ -1,0 +1,68 @@
+<TMPL_IF FORM>
+
+<p><TMPL_VAR REMOTE.HINT_INTRODUCTION></p>
+<br>
+
+<form id="main_form"> 
+
+<STYLE>
+	.lb_flex-item 
+	{	
+		min-width	:450px;
+		width		:450px;
+		max-width	:450px;
+		flex-wrap	:nowrap;
+		margin-top: -10px;  
+	}
+	.lb_flex-item-help 
+	{
+		min-width	:100px;
+		width		:100%;
+		position	:relative;
+		margin-left	:10px;
+	}
+</STYLE>
+
+<DIV	class="lb_flex-container remote">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="supportkey"><TMPL_VAR REMOTE.LABEL_SUPPORTKEY></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="100%" value="<TMPL_VAR EMAIL>" id="supportkey" name="supportkey" type="text" class="textfield" 
+		data-validation-rule="^([a-z0-9]){5,5}$" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_SUPPORTKEY>" maxlength="5">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container remote">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<BUTTON	type=		"submit"
+			form=		"main_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"check">
+			<TMPL_VAR REMOTE.BUTTON_ACTIVATE>
+		</BUTTON>
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+</form>
+
+<script>
+	// Validation
+	validate_enable('#supportkey');
+	validate_chk_object(['#supportkey']);
+</script>
+
+
+</TMPL_IF>

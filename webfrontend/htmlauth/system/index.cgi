@@ -269,6 +269,12 @@ sub mainmenu {
 				NOTIFY_PACKAGE => "usbstoage",
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_REMOTE'},
+				WIDGET_ICON => "/system/images/icons/main_remote.png",
+				WIDGET_CGI => "/admin/system/remote.cgi",
+				NOTIFY_PACKAGE => "remote",
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",

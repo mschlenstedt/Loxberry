@@ -28,3 +28,5 @@ loxberry ALL = NOPASSWD: /opt/loxberry/sbin/resize_rootfs
 loxberry ALL = NOPASSWD: /etc/init.d/autofs
 loxberry ALL = NOPASSWD: /etc/init.d/apache2
 loxberry ALL = NOPASSWD: /bin/systemctl
+loxberry ALL = NOPASSWD: /sbin/ip
+loxberry ALL = NOPASSWD: /opt/loxberry/sbin/openvpn-startup
