@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.0.1";
+our $VERSION = "1.4.0.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -47,23 +47,14 @@ parsedatestring
 # Variables
 
 my $notifymailerror;
-my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED filename dbh _FH dbkey loxberry_uid loxberry_gid );
+my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED filename dbh _FH dbkey loxberry_uid loxberry_gid _plugindb_timestamp);
 
 ################################################################
 ## Constructor
 ## 	Params [square brackets mean optional]
-##		name 			The name of the log
-##		[filename]		If provided, this file is be used
-##		[logdir]		If provided without filename, a file in this directory will be created
-##		append = 1		If the file already exists, it will append
-
-
+## See https://www.loxwiki.eu/x/pQHgAQ
 ##################################################################
 
-# raise loglevel after critic
-# persistently raise loglevel on critic
-#
-#
 sub new 
 
 {
@@ -148,8 +139,12 @@ sub new
 			$self->{loglevel} = $plugindata->{'PLUGINDB_LOGLEVEL'};
 		} else {
 			$self->{loglevel} = 7;
+			$self->{loglevel_is_static} = 1;
 		}
+	} else {
+		$self->{loglevel_is_static} = 1;
 	}
+	
 	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	# print STDERR "filename: " . $self->{filename} . "\n";
 	
@@ -183,6 +178,7 @@ sub loglevel
 	my $loglevel = shift;
 	if (defined $loglevel && $loglevel >= 0 && $loglevel <= 7) {
 		$self->{loglevel} = $loglevel;
+		$self->{loglevel_is_static} = 1;
 	}
 	return $self->{loglevel};
 }
@@ -343,9 +339,23 @@ sub write
 	# Do not log if loglevel is lower than severity
 	# print STDERR "--> write \n";
 	# print STDERR "    autoraise\n";
+	
+	# Change loglevel if it was changed in the UI aka PluginDB
+	if( !$self->{loglevel_is_static} and LoxBerry::System::plugindb_changed_time() != !$self->{_plugindb_timestamp} ) {
+		$self->{_plugindb_timestamp} = LoxBerry::System::plugindb_changed_time();
+		my $newloglevel = LoxBerry::System::pluginloglevel($self->{package});
+		if ( defined $newloglevel and $newloglevel >= 0 and $newloglevel <=7 and $newloglevel != $self->{loglevel} ) {
+			my $oldloglevel = $self->{loglevel};
+			$self->{loglevel} = $newloglevel;
+			$self->write(-1, "<INFO> User changed loglevel from $oldloglevel to $newloglevel");
+		}
+	}
+	
+	
 	if ($severity <= 2 && $severity >= 0 && $self->{loglevel} < 6 && $self->{autoraise} == 1) {
 		# print STDERR "    autoraise to loglevel 6\n";
 		$self->{loglevel} = 6;
+		$self->{loglevel_is_static} = 1;
 	}
 	
 	if ((!defined($self->{STATUS}) or $severity < $self->{STATUS}) and $severity >= 0) {
