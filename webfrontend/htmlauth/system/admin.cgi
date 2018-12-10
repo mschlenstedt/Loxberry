@@ -21,6 +21,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
+print STDERR "Execute admin.cgi\n#################\n";
 use MIME::Base64;
 
 use CGI::Carp qw(fatalsToBrowser);
@@ -83,7 +84,7 @@ my $quoted_adminpassold;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.3.1";
+my $version = "0.3.3.3";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -128,11 +129,11 @@ $R::saveformdata if (0);
 $R::do if (0);
 
 if (!$R::saveformdata || $R::do eq "form") {
-  print STDERR "FORM called\n";
+  print STDERR "Calling subfunction FORM\n";
   $maintemplate->param("FORM", 1);
   &form;
 } else {
-  print STDERR "SAVE called\n";
+  print STDERR "Calling subfunction SAVE\n";
   $maintemplate->param("SAVE", 1);
   &save;
 }
@@ -290,42 +291,42 @@ sub save {
 		$exitcode  = $? >> 8;
 		print STDERR "setloxberrypasswd.exp Exitcode ".$exitcode."\n";
 		if ($exitcode eq 1) {
-			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
+			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."<br>";
 			# &error;
 			# exit;
 		}
 		elsif ($exitcode eq 2) {
-			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
+			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."<br>";
 			$wraperror = 1;
 			# &error;
 			# exit;
 		}
 		elsif ($exitcode eq 3) {
-			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."\n";
+			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."<br>";
 			$wraperror = 1;
 			# &error;
 			# exit;
 		}
 		elsif ($exitcode eq 4) {
-			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."\n";
+			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."<br>";
 			$wraperror = 1;
 			# &error;
 			# exit;
 		}
 		elsif ($exitcode eq 5) {
-			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."\n";
+			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."<br>";
 			$wraperror = 1;
 			# &error;
 			# exit;
 		}
 		elsif ($exitcode ne 0) {
-			print STDERR "setloxberrypasswd.exp adminpassold Exitcode $exitcode\n";
-			$error .= " setloxberrypasswd.exp adminpassold Exitcode $exitcode<br>";
+			print STDERR "setloxberrypasswd.exp: adminpassold Exitcode $exitcode\n";
+			$error .= " setloxberrypasswd.exp: adminpassold Exitcode $exitcode<br>";
 			# &error;
 			# exit;
 		} else {
@@ -341,8 +342,8 @@ sub save {
 			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $quoted_adminpassold $quoted_adminpass1);
 			$exitcode  = $? >> 8;
 			if ($exitcode ne 0) {
-				print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
-				$error .= " setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode<br>";
+				print STDERR "setloxberrypasswdsmb.exp: adminpassold Exitcode $exitcode\n";
+				$error .= " setloxberrypasswdsmb.exp: adminpassold Exitcode $exitcode<br>";
 				# &error;
 				# exit;
 			} else {
@@ -399,7 +400,7 @@ sub save {
 			#&error;
 		} else {
 			$maintemplate->param("SECUREPINOK", 1);
-			print STDERR "credentialshandler.pl changesecurepin securepin1 = 0 - OK\n";
+			print STDERR "credentialshandler.pl: changesecurepin securepin1 = 0 - OK\n";
 		}
 	}
 	
@@ -438,7 +439,7 @@ sub save {
 	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
-	print STDERR "admin.cgi OUTPUT\n";
+	print STDERR "admin.cgi: Send OUTPUT and exit\n";
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
@@ -471,7 +472,7 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLA
 				%htmltemplate_options,
 				# associate => $cfg,
 				);
-	print STDERR "admin.cgi: sub error called with message $error.\n";
+	print STDERR "admin.cgi: Sub ERROR called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
 	LoxBerry::System::readlanguage($errtemplate);
 	LoxBerry::Web::head();
