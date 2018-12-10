@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.0.2";
+our $VERSION = "1.4.0.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -341,7 +341,7 @@ sub write
 	# print STDERR "    autoraise\n";
 	
 	# Change loglevel if it was changed in the UI aka PluginDB
-	if( !$self->{loglevel_is_static} and LoxBerry::System::plugindb_changed_time() != !$self->{_plugindb_timestamp} ) {
+	if( !$self->{loglevel_is_static} and LoxBerry::System::plugindb_changed_time() != $self->{_plugindb_timestamp} ) {
 		$self->{_plugindb_timestamp} = LoxBerry::System::plugindb_changed_time();
 		my $newloglevel = LoxBerry::System::pluginloglevel($self->{package});
 		if ( defined $newloglevel and $newloglevel >= 0 and $newloglevel <=7 and $newloglevel != $self->{loglevel} ) {
