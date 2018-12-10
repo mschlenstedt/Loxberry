@@ -22,7 +22,7 @@ use LoxBerry::System;
 use LoxBerry::Storage;
 use LoxBerry::Web;
 use LoxBerry::Log;
-
+print STDERR "Execute usbstorage.cgi\n######################\n";
 use Config::Simple;
 use warnings;
 use strict;
@@ -46,7 +46,7 @@ our $helptext;
 our $helplink;
 our $installfolder;
 our $languagefile;
-
+my  $param_a="";
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -86,8 +86,10 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'USBSTORAGE.WID
 
 LoxBerry::Web::lbheader();
 
+$param_a=$cgi->param("a") if $cgi->param("a");
+
 # Create debuglog?
-if ($cgi->param("a") eq "debuglog") {
+if ($param_a eq "debuglog") {
 
 	$maintemplate->param("DEBUGLOG", 1);
 
@@ -139,7 +141,7 @@ if ($cgi->param("a") eq "debuglog") {
 }
 
 # Show overview?
-if ( !$cgi->param("a") ) {
+if ( !$param_a ) {
 
 	# Get all Network shares
 	my @usbstorages = LoxBerry::Storage::get_usbstorage("H");

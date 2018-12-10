@@ -48,7 +48,8 @@ our $mailbin;
 my $mailobj;
 my $mcfg;
 my %SL;
-
+my $action="";
+my $value="";
 my %response;
 $response{error} = -1;
 $response{message} = "Unspecified error";
@@ -80,8 +81,8 @@ $R::secpin if 0;
 $R::smptport if 0;
 %LoxBerry::Web::htmltemplate_options if 0;
 
-my $action = $R::action;
-my $value = $R::value;
+$action = $R::action if $R::action;
+$value = $R::value if $R::value;
 
 if ($action eq 'getmailcfg') { change_mailcfg("getmailcfg", $R::secpin);}
 elsif ($action eq 'setmailcfg') { change_mailcfg("setmailcfg"); }
