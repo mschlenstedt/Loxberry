@@ -114,6 +114,9 @@ if (! -e $oldmailfile) {
 	$newmailobj->write();
 	`chown loxberry:loxberry $newmailfile`;
 	`chmod 0600 $newmailfile`;
+	LOGINF "Deleting old mail settings file...";
+	unlink $oldmailfile;
+	LOGOK "Migrated your mail settings. Check your settings in the Mailserver widget.";
 	
 }
 
