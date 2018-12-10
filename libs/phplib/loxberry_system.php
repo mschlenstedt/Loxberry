@@ -98,6 +98,10 @@
 	$plugins=NULL;
 	$lblang=NULL;
 	$cfgwasread=NULL;
+	$plugindb_timestamp = 0;
+	$plugindb_lastchecked = 0;
+	$plugindb_timestamp_last = 0;
+
 	
 	$reboot_required_file = "$lbhomedir/log/system_tmpfs/reboot.required";
 
@@ -106,7 +110,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.2.5.4";
+	public static $LBSYSTEMVERSION = "1.4.0.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -410,12 +414,26 @@ class LBSystem
 	##################################################################################
 	public static function get_plugins($withcomments = 0, $force = 0)
 	{
-		global $plugins;
+		global $plugins, $plugindb_timestamp_last;
+		
+		if($force != 0) {
+			$plugins = null;
+		}
+		
+		if($plugindb_timestamp_last != LBSystem::plugindb_changed_time()) {
+			// Changed
+			$plugindb_timestamp_new = LBSystem::plugindb_changed_time();
+			$plugins = null;
+			// error_log("get_plugins: Plugindb timestamp has changed (old: $plugindb_timestamp_last new: $plugindb_timestamp_new)");
+			$plugindb_timestamp_last = $plugindb_timestamp_new;
+		}
 		
 		if (is_array($plugins)) {
 			// error_log("Returning already fetched plugin array");
 			return $plugins;
 		} 
+		// error_log("Reading plugindb");
+			
 		$plugins = Array();
 		# Read Plugin database copied from plugininstall.pl
 		$filestr = file(LBHOMEDIR . "/data/system/plugindatabase.dat", FILE_IGNORE_NEW_LINES);
@@ -456,6 +474,29 @@ class LBSystem
 		return $plugins;
 	}
 
+	##################################################################################
+	# INTERNAL function plugindb_changed
+	# Returns the timestamp of the plugindb. Only really checks every minute
+	##################################################################################
+
+public static function plugindb_changed_time()
+{
+	global $plugindb_timestamp, $plugindb_lastchecked;
+	
+	$plugindb_file = LBSDATADIR . "/plugindatabase.dat";
+	
+	# If it was never checked, it cannot have changed
+	if ($plugindb_timestamp == 0 || ($plugindb_lastchecked+60) < time()) {
+		clearstatcache(TRUE, $plugindb_file);
+		$plugindb_timestamp = filemtime($plugindb_file);
+		$plugindb_lastchecked = time();
+		// error_log("Updating plugindb timestamp variable to $plugindb_timestamp ($plugindb_file)");
+	}
+	return ($plugindb_timestamp);	
+
+}
+
+	
 	##################################################################################
 	# Get System Version
 	# Returns LoxBerry version
