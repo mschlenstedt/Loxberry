@@ -73,6 +73,7 @@ LOGINF "Converting mail.cfg to mail.json";
 $oldmailfile = $lbsconfigdir . "/mail.cfg";
 $newmailfile = $lbsconfigdir . "/mail.json";
 
+
 if (! -e $oldmailfile) {
 	LOGWARN "No mail configuration found to migrate - skipping migration";
 } else { 
@@ -89,18 +90,48 @@ if (! -e $oldmailfile) {
 	
 	LOGDEB "Migrating settings...";
 	
-	foreach my $key (keys %oldmcfg) {
+	foreach my $key (sort keys %oldmcfg) {
 		my ($section, $param) = split('\.', $key, 2);
+		#LOGDEB "ref $param is " . ref($oldmcfg{$key});
+		if(ref($oldmcfg{$key}) eq 'ARRAY') {
+			LOGWARN "Parameter $param had commas in it's field. Migration has tried to";
+			LOGWARN "restore the value, but you should check the Mailserver widget settings and";
+			LOGWARN "save it's settings again.";
+			my $tmpfield = join(',', @{$oldmcfg{$key}});
+			$oldmcfg{$key} = $tmpfield;
+		}
 		# LOGDEB "$section $param = " . $oldmcfg{$key};
 		$newmcfg->{$section}->{$param} = %oldmcfg{$key};
 		my $logline = index(lc($key), 'pass') != -1 ? "Migrated $section.$param = *****" : "Migrated $section.$param = $oldmcfg{$key}";
 		LOGINF $logline;
 	}
+	
+	if ( $newmcfg->{SMTP}->{EMAIL} and $newmcfg->{SMTP}->{SMTPSERVER} and $newmcfg->{SMTP}->{PORT} ) {
+		# Enable mail by default if settings are made
+		$newmcfg->{SMTP}->{ACTIVATE_MAIL} = "1";
+	}
+	
 	$newmailobj->write();
 	`chown loxberry:loxberry $newmailfile`;
+	`chmod 0600 $newmailfile`;
+	
 }
 
-	
+LOGINF "Installing jq (json parser for shell)...";
+
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install jq };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error installing jq - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "jq package successfully installed";
+}
+
+
+
 	
 	
 

@@ -75,6 +75,8 @@ our $creditwebadmin;
 our $creditconsole;
 our $creditsecurepin;
 our $wraperror = 0;
+my $quoted_adminpass1;
+my $quoted_adminpassold;
 
 ##########################################################################
 # Read Settings
@@ -200,7 +202,9 @@ sub save {
 	}
 
 	# IMMED: Check Password
-	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl checkpasswd loxberry $R::adminpassold);
+	$quoted_adminpassold = quotemeta($R::adminpassold);
+	$quoted_adminpass1 = quotemeta($R::adminpass1);
+	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl checkpasswd loxberry $quoted_adminpassold);
 	$exitcode  = $? >> 8;
 	if ($exitcode == 1) {
 		$error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
@@ -266,7 +270,7 @@ sub save {
 	if ($adminuser && !$adminpass1) {
 	
 		# Save Username/Password for Webarea
-		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
+		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $quoted_adminpassold);
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
@@ -281,7 +285,7 @@ sub save {
 	## User wants to change the password (and maybe also the username):
 	##
 	if ($adminpass1) {
-		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
+		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp "$adminpassold" "$adminpass1");
 		$exitcode  = $? >> 8;
 		if ($exitcode eq 1) {
 			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
@@ -292,6 +296,13 @@ sub save {
 		elsif ($exitcode eq 2) {
 			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."<br>";
+			$wraperror = 1;
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode eq 3) {
+			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."<br>";
 			$wraperror = 1;
 			# &error;
 			# exit;
@@ -311,7 +322,7 @@ sub save {
 			## First try if default password is still valid:
 			# $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
 			## If default password isn't valid anymore:
-			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
+			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $quoted_adminpassold $quoted_adminpass1);
 			$exitcode  = $? >> 8;
 			if ($exitcode ne 0) {
 				print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
@@ -350,7 +361,7 @@ sub save {
 			#}
 	
 			# Save Username/Password for Webarea
-			$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
+			$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $quoted_adminpass1);
 			my $exitcode  = $? >> 8;
 			if ($exitcode != 0) {
 				$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";

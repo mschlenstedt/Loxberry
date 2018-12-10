@@ -19,9 +19,8 @@
 ##########################################################################
 
 use LoxBerry::System;
-use LoxBerry::Web;
-use LoxBerry::Log;
-use CGI::Carp qw(fatalsToBrowser);
+use LoxBerry::JSON;
+#use CGI::Carp qw(fatalsToBrowser);
 use CGI;
 use warnings;
 use strict;
@@ -33,8 +32,7 @@ use strict;
 my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_mailserver.html";
 
-our $cfg;
-our $mcfg;
+#our $cfg;
 our $lang;
 our $template_title;
 our $helplink;
@@ -47,32 +45,22 @@ our $smtpuser;
 our $smtppass;
 our $mailbin;
 
+my $mailobj;
+my $mcfg;
+my %SL;
+
+my %response;
+$response{error} = -1;
+$response{message} = "Unspecified error";
+
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.2.0.1";
+my $version = "1.4.0.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
-$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
-$mailbin            = $cfg->param("BINARIES.MAIL");
-
-$mcfg               = new Config::Simple("$lbhomedir/config/system/mail.cfg");
-$email              = $mcfg->param("SMTP.EMAIL");
-$smtpserver         = $mcfg->param("SMTP.SMTPSERVER");
-$smtpport           = $mcfg->param("SMTP.PORT");
-$smtpcrypt          = $mcfg->param("SMTP.CRYPT");
-$smtpauth           = $mcfg->param("SMTP.AUTH");
-$smtpuser           = $mcfg->param("SMTP.SMTPUSER");
-$smtppass           = $mcfg->param("SMTP.SMTPPASS");
-
-
-#########################################################################
-# Parameter
-#########################################################################
-
-# Everything from URL
 
 ##########################################################################
 # Language Settings
@@ -83,21 +71,33 @@ $lang = lblanguage();
 # Main program
 ##########################################################################
 
-#########################################################################
-# What should we do
-#########################################################################
-
 # Prevent 'only used once' warnings from Perl
-$R::saveformdata if 0;
-$R::do if 0;
+# $R::saveformdata if 0;
+$R::action if 0;
+$R::value if 0;
+$R::activate_mail if 0;
+$R::secpin if 0;
+$R::smptport if 0;
+%LoxBerry::Web::htmltemplate_options if 0;
+
+my $action = $R::action;
+my $value = $R::value;
+
+if ($action eq 'getmailcfg') { change_mailcfg("getmailcfg", $R::secpin);}
+elsif ($action eq 'setmailcfg') { change_mailcfg("setmailcfg"); }
+elsif ($action eq 'MAIL_SYSTEM_INFOS') { change_mailcfg("MAIL_SYSTEM_INFOS", $value);}
+elsif ($action eq 'MAIL_SYSTEM_ERRORS') { change_mailcfg("MAIL_SYSTEM_ERRORS", $value);}
+elsif ($action eq 'MAIL_PLUGIN_INFOS') { change_mailcfg("MAIL_PLUGIN_INFOS", $value);}
+elsif ($action eq 'MAIL_PLUGIN_ERRORS') { change_mailcfg("MAIL_PLUGIN_ERRORS", $value);}
+elsif ($action eq 'testmail') { testmail_button(); }
 
 
-if (!$R::saveformdata || $R::do eq "form") 
-{
-  &form;
-} else {
-  &save;
-}
+require LoxBerry::Web;
+require LoxBerry::Log;
+
+
+# If not ajax, it must be the form
+&form;
 
 exit;
 
@@ -112,45 +112,17 @@ sub form
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
-		%htmltemplate_options,
+		#associate => $cfg,
+		%LoxBerry::Web::htmltemplate_options,
 		# debug => 1,
 		);
 
-	my %SL = LoxBerry::System::readlanguage($maintemplate);
+	%SL = LoxBerry::System::readlanguage($maintemplate);
 
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param( "LBHOSTNAME", lbhostname());
 	$maintemplate->param( "LANG", $lang);
-	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
-	$maintemplate->param ( 	"EMAIL" => $email, 
-							"SMTPSERVER" => $smtpserver,
-							"SMTPPORT" => $smtpport,
-							"SMTPUSER" => $smtpuser,
-							"SMTPPASS" => $smtppass
-							);
-	
-	# Defaults for template
-	if ($smtpcrypt) {
-	  $maintemplate->param( "CHECKED1", 'checked="checked"');
-	}
-	if ($smtpauth) {
-	  $maintemplate->param(  "CHECKED2", 'checked="checked"');
-	}
-	
-	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_INFOS"))) {
-		$maintemplate->param("MAIL_SYSTEM_INFOS", 'checked');
-	}
-	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_SYSTEM_ERRORS"))) {
-		$maintemplate->param("MAIL_SYSTEM_ERRORS", 'checked');
-	}
-	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_INFOS"))) {
-		$maintemplate->param("MAIL_PLUGIN_INFOS", 'checked');
-	}
-	if (is_enabled($mcfg->param("NOTIFICATION.MAIL_PLUGIN_ERRORS"))) {
-		$maintemplate->param("MAIL_PLUGIN_ERRORS", 'checked');
-	}
-	
+
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MAILSERVER.WIDGETLABEL'};
 	LoxBerry::Web::head();
@@ -164,57 +136,159 @@ sub form
 
 }
 
+###################################################################
+# change mail configuration (mail.json) (AJAX)
+###################################################################
+sub change_mailcfg
+{
+	my ($key, $val) = @_;
+	if (!$key) {
+		return undef;
+	}
+	
+	my $mailfile = $lbsconfigdir . "/mail.json";
+	
+	# %SL = LoxBerry::System::readlanguage();
+
+	
+	$mailobj = LoxBerry::JSON->new();
+	$mcfg = $mailobj->open(filename => $mailfile);
+	
+	if($key eq "getmailcfg") {
+		my $resp = checksecpin($val);
+		if($resp == 0) {
+			$response{error} = 0;
+			$response{customresponse} = 1;
+			$response{output} = to_json($mcfg);
+		}
+	} 
+	elsif($key eq "setmailcfg") {
+		#eval {
+			save();
+		#};
+		if ($@) {
+			$response{error} = 1;
+			$response{message} = "Error: $!";
+		} else {
+			$response{error} = 0;
+			$response{message} = "Successfully saved.";
+		}
+	}
+	elsif (!$val) {
+		# Delete key
+		delete $mcfg->{NOTIFICATION}->{$key};
+		$mailobj->write() or return undef;
+		$response{error} = 0;
+		$response{message} = "mail.json: $key deleted";
+	} elsif ($mcfg->{NOTIFICATION}->{$key} ne $val) {
+		$mcfg->{NOTIFICATION}->{$key} = $val;
+		$mailobj->write() or return undef;
+		$response{error} = 0;
+		$response{message} = "mail.json: $key changed to $val";
+	}
+	
+	jsonresponse();
+}
+
+
+
 #####################################################
-# Save
+# Save (AJAX)
 #####################################################
 
 sub save 
 {
-
-	my $maintemplate = HTML::Template->new(
-		filename => "$lbstemplatedir/success.html",
-		global_vars => 1,
-		loop_context_vars => 1,
-		die_on_bad_params=> 0,
-		associate => $cfg,
-		%htmltemplate_options, 
-		# debug => 1,
-		);
 	
-	my %SL = LoxBerry::System::readlanguage($maintemplate);
-
-	# print STDERR "SAVE called\n";
-	$maintemplate->param("SAVE", 1);
-	$maintemplate->param( "LBHOSTNAME", lbhostname());
-	$maintemplate->param( "LANG", $lang);
-	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
+	%SL = LoxBerry::System::readlanguage();
 	
-	# Prevent warnings 'only used once'
-	$R::email if (0);
-	$R::smtpserver if (0);
-	$R::smtpport if (0);
-	$R::smtpcrypt if (0);
-	$R::smtpauth if (0);
-	$R::smtpuser if (0);
-	$R::smtppass if (0);
+	$mcfg->{SMTP}->{ACTIVATE_MAIL} = is_enabled($R::activate_mail) ? 1 : 0;
+	$mcfg->{SMTP}->{AUTH} = is_enabled($R::smtpauth) ? 1 : 0;
+	$mcfg->{SMTP}->{CRYPT} = is_enabled($R::smtpcrypt) ? 1 : 0;
+	$mcfg->{SMTP}->{SMTPSERVER} = $R::smtpserver;
+	$mcfg->{SMTP}->{PORT} = $R::smtpport;
+	$mcfg->{SMTP}->{EMAIL} = $R::email;
+	$mcfg->{SMTP}->{SMTPUSER} = $R::smtpuser;
+	$mcfg->{SMTP}->{SMTPPASS} = $R::smtppass;
 	
-	# Write configuration file(s)
-	$mcfg->param("SMTP.ISCONFIGURED", "1");
-	$mcfg->param("SMTP.EMAIL", "$R::email");
-	$mcfg->param("SMTP.SMTPSERVER", "$R::smtpserver");
-	$mcfg->param("SMTP.PORT", "$R::smtpport");
-	$mcfg->param("SMTP.CRYPT", "$R::smtpcrypt");
-	$mcfg->param("SMTP.AUTH", "$R::smtpauth");
-	$mcfg->param("SMTP.SMTPUSER", "\"$R::smtpuser\"");
-	$mcfg->param("SMTP.SMTPPASS", "\"$R::smtppass\"");
-	$mcfg->save();
-
-
+	$mailobj->write();
+	
+	# Delete values if email is disabled
+	if (! $mcfg->{SMTP}->{ACTIVATE_MAIL}) {
+		$R::smtpserver = "";
+		$R::smptport = "";
+		$R::email = "";
+		$R::smtpuser = "";
+		$R::smtppass = "";
+	}
 
 	# Activate new configuration
+	
+	createtmpconfig();
+	installtmpconfig();
+	sendtestmail() if (is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
+	cleanuptmpconfig();
+		
+	return;
 
+}
+
+
+sub jsonresponse {
+
+	if($response{error} == -1) {
+		print $cgi->header(
+			-type => 'application/json',
+			-charset => 'utf-8',
+			-status => '500 Internal Server Error',
+		);	
+	} else {
+		print $cgi->header(
+			-type => 'application/json',
+			-charset => 'utf-8',
+			-status => '200 OK',
+		);	
+	}
+
+	if (!$response{customresponse}) {
+		print to_json(\%response);
+	} else {
+		print $response{output};
+	}
+	exit($response{error});
+
+}
+
+
+sub checksecpin
+{
+	my ($secpin) = @_;
+	my $checkres = LoxBerry::System::check_securepin($secpin);
+	if ( $checkres and $checkres == 1 ) {
+		$response{message} = "SecurePIN wrong"; #$SL{'SECUREPIN.ERROR_WRONG'};
+		$response{error} = 1;
+    } elsif ( $checkres and $checkres == 2) {
+		$response{message} = "Cannot open SecurePIN file"; # $SL{'SECUREPIN.ERROR_OPEN'};
+		$response{error} = 2;
+    } elsif ( $checkres and $checkres == 3) {
+		$response{message} = "SecurePIN is LOCKED"; # $SL{'SECUREPIN.ERROR_LOCKED'};
+		$response{error} = 3;
+	} else {
+    		$response{message} = "SecurePIN is correct."; # $SL{'SECUREPIN.SUCCESS'};
+			$response{error} = 0;
+	}
+
+	return $response{error};
+
+}
+
+sub createtmpconfig
+{
+	
+	# my $flock;
+	
 	# Create temporary SSMTP Config file
 	open(F,">/tmp/tempssmtpconf.dat") || die "Cannot open /tmp/tempssmtpconf.dat";
+	flock(F,2);
 	print F <<ENDFILE;
 #
 # Config file for sSMTP sendmail
@@ -261,28 +335,115 @@ FromLineOverride=YES
 ENDFILE
 	close(F);
 
+}
+
+sub installtmpconfig
+{
+
+	require File::Copy;
+	
 	# Install temporary ssmtp config file
-	my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
+	#my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
 
-	$result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $email 2>&1);
+	if ( -e "/tmp/tempssmtpconf.dat" and -e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
+		# Backup old file
+		File::Copy::move ("$lbhomedir/system/ssmtp/ssmtp.conf", "$lbhomedir/system/ssmtp/ssmtp.conf.bkp");
+		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf.bkp";
+	}
+	
+	if ( -e "/tmp/tempssmtpconf.dat" ) {
+		# Copy new file
+		chmod 0600, "/tmp/tempssmtpconf.dat";
+		File::Copy::copy ("/tmp/tempssmtpconf.dat", "$lbhomedir/system/ssmtp/ssmtp.conf");
+		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf";
+		unlink "/tmp/tempssmtpconf.dat";
+	}
+		
+}
 
+sub restoressmtpconfig
+{
+	
+	require File::Copy;
+	
+	# ReInstall original ssmtp config file
+	# my $result = qx($lbssbindir/createssmtpconf.sh stop 2>/dev/null);
+
+	if ( -e "$lbhomedir/system/ssmtp/ssmtp.conf.bkp" and -e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
+		# Re-Create old file
+		File::Copy::move ("$lbhomedir/system/ssmtp/ssmtp.conf.bkp", "$lbhomedir/system/ssmtp/ssmtp.conf");
+		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf";
+	}
+	
+}
+
+sub sendtestmail
+{
+
+	my $bins = LoxBerry::System::get_binaries();
+	$mailbin = $bins->{MAIL};
+
+	
+	
+	#my $result = qx(echo "$SL{'MAILSERVER.TESTMAIL_CONTENT'}" | $mailbin -a "From: $R::email" -s "$SL{'MAILSERVER.TESTMAIL_SUBJECT'}" -v $R::email 2>&1);
+
+	my $friendlyname = trim(LoxBerry::System::lbfriendlyname());
+	my $hostname = LoxBerry::System::lbhostname();
+	$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
+	$friendlyname .= " LoxBerry";
+
+	require MIME::Base64;
+
+	my $subject = $SL{'MAILSERVER.TESTMAIL_SUBJECT'};
+	$subject= "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
+	my $headerfrom = "From: =?utf-8?b?". MIME::Base64::encode($friendlyname, "") . "?= <" . $R::email . ">";
+	my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
+	my $message = $SL{'MAILSERVER.TESTMAIL_CONTENT'};
+
+	# Send test mail
+	my $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $R::email 2>&1);
+
+	return $result;
+	
+}
+
+sub cleanuptmpconfig
+{
+	
 	# Delete old temporary config file
 	if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
 	  unlink ("/tmp/tempssmtpconf.dat");
 	}
 
-	$maintemplate->param( "MESSAGE", $SL{'MAILSERVER.SAVESUCCESS'});
-	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
+}
 
-	# Print Template
-	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
-	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
-	print $maintemplate->output();
-	undef $maintemplate;			
-	LoxBerry::Web::lbfooter();
-		
-	exit;
+sub testmail_htmlout
+{
+	my ($result) = @_; 
+	my $lf = 0;
+	# Output
+	print "Content-type: text/html; charset=utf-8\n\n";
+
+	$result =~ s/\n/<br>/g if (!$lf);
+	print '<p>' . $SL{'MAILSERVER.MSG_TEST_INTRO'} . '</p>';
+	print '<div style="font-size:80%;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;">';
+	print $result;
+	print "</div>";
 
 }
 
-exit;
+
+sub testmail_button
+{
+
+	%SL = LoxBerry::System::readlanguage();
+
+	createtmpconfig();
+	installtmpconfig();
+	my $result = sendtestmail();
+	testmail_htmlout($result);
+	restoressmtpconfig();
+	cleanuptmpconfig();	
+	exit;
+	
+}

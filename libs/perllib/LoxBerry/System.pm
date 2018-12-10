@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.5.5";
+our $VERSION = "1.4.0.1";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1151,6 +1151,10 @@ sub check_securepin
 {
 	my ($securepin) = shift;
 	
+	my $pinerror_file = '/dev/shm/securepin.errors';
+	my $pinerrobj;
+	my $pinerr;
+	
 	open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat") or 
 		do {
 			Carp::carp("check_securepin: Cannot open $LoxBerry::System::lbsconfigdir/securepin.dat\n");
@@ -1158,13 +1162,47 @@ sub check_securepin
 			};
 	my $securepinsaved = <$fh>;
 	close ($fh);
-
-	if (crypt($securepin, $securepinsaved) ne $securepinsaved) {
+	
+	if (-e $pinerror_file) {
+		require LoxBerry::JSON;
+		$pinerrobj = LoxBerry::JSON->new();
+		$pinerr = $pinerrobj->open(filename => $pinerror_file);
+		
+		if ( $pinerr and $pinerr->{locked} ) {
+			if( time < ($pinerr->{locked}+5*60) ) {
+				print STDERR "SecurePIN is locked";
+				sleep(3);
+				return (3);
+			} else {
+				delete $pinerr->{locked};
+				delete $pinerr->{failure_count};
+				
+			}
+		}
+		$pinerrobj->write();
+		undef $pinerrobj;
+	}
+	
+	if ( crypt($securepin, $securepinsaved) ne $securepinsaved ) {
 			# Not equal
+			require LoxBerry::JSON;
+			$pinerrobj = LoxBerry::JSON->new();
+			$pinerr = $pinerrobj->open(filename => $pinerror_file, writeonclose => 1);
+			$pinerr->{failure_count} = 0 if (! $pinerr->{failure_count});
+			sleep($pinerr->{failure_count});
+			$pinerr->{failure_count} += 1;
+			
+			$pinerr->{failure_time} = time if (! $pinerr->{failure_time});
+			if( $pinerr->{failure_count} > 5) {
+				print STDERR "SecurePIN was locked";
+				$pinerr->{locked} = time;
+				return (3);
+			}
 			return (1);
 	} else {
-			# OK
-			return (undef);
+		# OK
+		unlink $pinerror_file;
+		return (undef);
 	}
 }
 

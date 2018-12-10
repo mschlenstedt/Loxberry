@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.2.6.1";
+our $VERSION = "1.4.0.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -1264,13 +1264,18 @@ sub notify_send_mail
 	
 	return if ($notifymailerror);
 	
-	Config::Simple->import_from("$LoxBerry::System::lbsconfigdir/mail.cfg", \%mcfg) or return;
-
+	require LoxBerry::JSON;
+	
+	my $sysmailobj = LoxBerry::JSON->new();
+	my $mcfg = $sysmailobj->open(filename => "$LoxBerry::System::lbsconfigdir/mail.json", readonly => 1);
+	
+	return if (! $mcfg or ! LoxBerry::System::is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
+	
 	return if ($p{SEVERITY} != 3 && $p{SEVERITY} != 6);
-	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_ERRORS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 3);
-	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_INFOS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
-	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_ERRORS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
-	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_INFOS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
+	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_SYSTEM_ERRORS}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 3);
+	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_SYSTEM_INFOS}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
+	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_ERRORS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
+	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_INFOS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
 	
 	my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
 	
@@ -1301,7 +1306,7 @@ sub notify_send_mail
 		$subject = "$friendlyname $status " . $SL{'NOTIFY.SUBJECT_PLUGIN_IN'} . " $plugintitle " . $SL{'NOTIFY.SUBJECT_PLUGIN_PLUGIN'};
 		$message = "$plugintitle " . $SL{'NOTIFY.MESSAGE_PLUGIN_INFO'} . "\n" if ($p{SEVERITY} == 6);
 		$message = "$plugintitle " . $SL{'NOTIFY.MESSAGE_PLUGIN_ERROR'} . "\n" if ($p{SEVERITY} == 3);
-		$message .= "__________________________________________________\n\n\n";
+		$message .= "__________________________________________\n\n\n";
 		
 		$message .= $p{MESSAGE} . "\n\n";
 	}
@@ -1320,7 +1325,7 @@ sub notify_send_mail
 	$message .= $SL{'NOTIFY.MESSAGE_SENT_AT'} . " " . LoxBerry::System::currtime() ."\n";
 	my $bins = LoxBerry::System::get_binaries(); 
 	my $mailbin = $bins->{MAIL};
-	my $email	= $mcfg{'SMTP.EMAIL'};
+	my $email	= $mcfg->{SMTP}->{EMAIL};
 
 	require MIME::Base64;
 	require Encode;

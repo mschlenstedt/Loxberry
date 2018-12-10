@@ -143,7 +143,7 @@ if ($use_auth) {
 		?></font></center></p><?php
 	};
 	?>
-	<p><center><?php echo $SL['FILEMANAGER.LABEL_SECUREPIN']?></center></p>
+	<p><center><?php echo $SL['SECUREPIN.ENTER_SECUREPIN']?></center></p>
             <form action="" method="post" style="margin:10px;text-align:center">
                 <input type="hidden" name="fm_usr" value="loxberry">
                 <input type="password" name="fm_pwd" value="" placeholder="SecurePIN" required>

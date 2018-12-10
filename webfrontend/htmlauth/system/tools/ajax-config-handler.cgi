@@ -4,6 +4,19 @@ use warnings;
 use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
+use LoxBerry::JSON;
+			
+my $version = "1.4.0.1"; # Version of this script
+			
+## ABOUT %response
+## The END block sends the %response as json automatically
+## The default, {error} = -1, sends a 500 Internal Server Error header
+## All other {error} codes send a 200 OK message, but with your set {error} code to parse in JSON
+## Set $response{customresponse} = 1 to NOT send the %response as json (to send 
+## your own json). The {error} = -1 rule for the header still applies!
+my %response;
+$response{error} = -1;
+$response{message} = "Unspecified error";
 
 my $bins = LoxBerry::System::get_binaries();
 
@@ -13,36 +26,37 @@ $cgi->import_names('R');
 # Prevent 'only used once' warning
 $R::action if 0;
 $R::value if 0;
+$R::secpin if 0;
+
 
 my $action = $R::action;
 my $value = $R::value;
 
 print STDERR "Action: $action // Value: $value\n";
 
-if    ($action eq 'secupdates') { print $cgi->header; &secupdates; }
-elsif ($action eq 'secupdates-autoreboot') { print $cgi->header; &secupdatesautoreboot; }
-elsif ($action eq 'poweroff') { print $cgi->header; &poweroff; }
-elsif ($action eq 'reboot') { print $cgi->header; &reboot; }
-elsif ($action eq 'ping') { print $cgi->header; print "pong"; exit; }
-elsif ($action eq 'lbupdate-reltype') { print $cgi->header; &lbupdate; }
-elsif ($action eq 'lbupdate-installtype') { print $cgi->header; &lbupdate; }
-elsif ($action eq 'lbupdate-installtime') { print $cgi->header; &lbupdate; }
-elsif ($action eq 'lbupdate-runcheck') { print $cgi->header('application/json;charset=utf-8'); &lbupdate; }
-elsif ($action eq 'lbupdate-runinstall') { print $cgi->header('application/json;charset=utf-8'); &lbupdate; }
-elsif ($action eq 'lbupdate-resetver') { print $cgi->header; change_generalcfg("BASE.VERSION", $value) if ($value); }
-elsif ($action eq 'plugin-loglevel') {print $cgi->header; plugindb_update('loglevel', $R::pluginmd5, $R::value); }
-elsif ($action eq 'plugin-autoupdate') {print $cgi->header; plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
-elsif ($action eq 'testenvironment') { print $cgi->header; &testenvironment; }
-elsif ($action eq 'changelanguage') { print $cgi->header; change_generalcfg("BASE.LANG", $value);}
-elsif ($action eq 'MAIL_SYSTEM_INFOS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_SYSTEM_INFOS", $value);}
-elsif ($action eq 'MAIL_SYSTEM_ERRORS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_SYSTEM_ERRORS", $value);}
-elsif ($action eq 'MAIL_PLUGIN_INFOS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_PLUGIN_INFOS", $value);}
-elsif ($action eq 'MAIL_PLUGIN_ERRORS') { print $cgi->header; change_mailcfg("NOTIFICATION.MAIL_PLUGIN_ERRORS", $value);}
+if    ($action eq 'secupdates') { &secupdates; }
+elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
+elsif ($action eq 'poweroff') { &poweroff; }
+elsif ($action eq 'reboot') { &reboot; }
+elsif ($action eq 'ping') { $response{message} = "pong"; $response{error} = 0; exit; }
+elsif ($action eq 'lbupdate-reltype') { &lbupdate; }
+elsif ($action eq 'lbupdate-installtype') { &lbupdate; }
+elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
+elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
+elsif ($action eq 'lbupdate-runinstall') {  &lbupdate; }
+elsif ($action eq 'lbupdate-resetver') { change_generalcfg("BASE.VERSION", $value) if ($value); }
+elsif ($action eq 'plugin-loglevel') { plugindb_update('loglevel', $R::pluginmd5, $R::value); }
+elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
+elsif ($action eq 'testenvironment') {  &testenvironment; }
+elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
 elsif ($action eq 'get-clouddnsdata') { get_clouddnsdata($value); }
 
-else   { print $cgi->header; print "<red>Action not supported.</red>"; }
+else   { 
+	$response{error} = 1; 
+	$response{message} = "<red>Action not supported.</red>"
+}
 
 exit;
 
@@ -55,11 +69,13 @@ sub secupdates
 	print STDERR "Value is: $value\n";
 	
 	if (!looks_like_number($value) && $value ne 'query') 
-		{ print "<red>Value not supported.</red>"; 
+		{ $response{message} = "<red>Value $value not supported.</red>"; 
+		  $response{error} = 1;
 		  return();}
 	
 	my $aptfile = "/etc/apt/apt.conf.d/02periodic";
 	open(FILE, $aptfile) || die "File not found";
+	flock(FILE,1);
 	my @lines = <FILE>;
 	close(FILE);
 
@@ -70,13 +86,14 @@ sub secupdates
 	foreach(@lines) {
 		if (begins_with($_, "APT::Periodic::Unattended-Upgrade"))
 			{   # print STDERR "############ FOUND #############";
-				if ($value eq 'query') {
-					my ($querystring, $queryresult) = split / /;
-					print STDERR "### QUERY result: " . $queryresult . "\n";
-					$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
-					print "option-secupdates-" . $queryresult;
-				} else {
-					$_ = "APT::Periodic::Unattended-Upgrade \"$value\";\n"; }
+				# if ($value eq 'query') {
+					# my ($querystring, $queryresult) = split / /;
+					# print STDERR "### QUERY result: " . $queryresult . "\n";
+					# $queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
+					# # print "option-secupdates-" . $queryresult;
+				# } else {
+				$_ = "APT::Periodic::Unattended-Upgrade \"$value\";\n"; 
+				#}
 			}
 		if (begins_with($_, "APT::Periodic::Update-Package-Lists") && $value ne 'query')
 			{   # print STDERR "############ FOUND #############";
@@ -86,11 +103,19 @@ sub secupdates
 	}
 
 	if ($value ne 'query') {
-		open(FILE, '>', $aptfile) || die "File not found";
-		flock(FILE,2);
-		print FILE @newlines;
-		flock(FILE,8);
-		close(FILE);
+		eval {
+			open(FILE, '>', $aptfile);
+			flock(FILE,2);
+			print FILE @newlines;
+			close(FILE);
+			$response{message} = "Change of APT::Periodic::Unattended-Upgrade to $value written successfully";
+			$response{error} = 0;
+		};
+		if ($@) {
+			$response{message} = "ERROR: Change of APT::Periodic::Unattended-Upgrade to $value: $!";
+			$response{error} = 1;
+		}
+		
 	}
 }
 
@@ -102,12 +127,15 @@ sub secupdatesautoreboot
 	print STDERR "ajax-config-handler: secupdates-autoreboot\n";
 	print STDERR "Value is: $value\n";
 	
-	if ($value ne "true" && $value ne "false" && $value ne "query") 
-		{ print "<red>Value not supported.</red>"; 
-		  return();}
+	if ($value ne "true" && $value ne "false" && $value ne "query") { 
+		$response{message} = "<red>Value not supported.</red>"; 
+		$response{error} = 1;
+		return();
+	}
 	
 	my $aptfile = "/etc/apt/apt.conf.d/50unattended-upgrades";
 	open(FILE, $aptfile) || die "File not found";
+	flock(FILE,1);
 	my @lines = <FILE>;
 	close(FILE);
 
@@ -116,25 +144,33 @@ sub secupdatesautoreboot
 	
 	my @newlines;
 	foreach(@lines) {
-		if (begins_with($_, "Unattended-Upgrade::Automatic-Reboot-WithUsers"))
-			{   # print STDERR "############ FOUND #############";
-				if ($value eq 'query') {
-					my ($querystring, $queryresult) = split / /;
-					# print STDERR "### QUERY result: " . $queryresult . "\n";
-					$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g; #" Syntax highlighting fix for UltraEdit
-					print "secupdates-autoreboot-" . $queryresult;
-				} else {
-					$_ = $value eq "false" ? "Unattended-Upgrade::Automatic-Reboot-WithUsers \"false\";\n" : "Unattended-Upgrade::Automatic-Reboot-WithUsers \"true\";\n";}
-			}
+		if (begins_with($_, "Unattended-Upgrade::Automatic-Reboot-WithUsers")) { 
+			# print STDERR "############ FOUND #############";
+			# if ($value eq 'query') {
+				# my ($querystring, $queryresult) = split / /;
+				# # print STDERR "### QUERY result: " . $queryresult . "\n";
+				# $queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g; #" Syntax highlighting fix for UltraEdit
+				# print "secupdates-autoreboot-" . $queryresult;
+			# } else {
+				$_ = $value eq "false" ? "Unattended-Upgrade::Automatic-Reboot-WithUsers \"false\";\n" : "Unattended-Upgrade::Automatic-Reboot-WithUsers \"true\";\n";
+			# }
+		}
 		push(@newlines,$_);
 	}
 
 	if ($value ne 'query') {
-		open(FILE, '>', $aptfile) || die "File not found";
-		flock(FILE,2);
-		print FILE @newlines;
-		flock(FILE,8);
-		close(FILE);
+		eval {
+			open(FILE, '>', $aptfile);
+			flock(FILE,2);
+			print FILE @newlines;
+			close(FILE);
+			$response{message} = "Change of Unattended-Upgrade::Automatic-Reboot-WithUsers to $value written successfully";
+			$response{error} = 0;
+		};
+		if ($@) {
+			$response{message} = "ERROR: Change of Unattended-Upgrade::Automatic-Reboot-WithUsers to $value: $!";
+			$response{error} = 1;
+		}
 	}
 }
 
@@ -144,17 +180,21 @@ sub secupdatesautoreboot
 sub lbupdate
 {
 	print STDERR "ajax-config-handler: lbupdate\n";
-
+	
 	if ($action eq 'lbupdate-runcheck') {
 		my $output = qx { sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json };
-		print $output;
+		$response{error} = 0;
+		$response{customresponse} = 1;
+		$response{output} = $output;
 		exit(0);
 		
 	}
 	
 	if ($action eq 'lbupdate-runinstall') {
 		my $output = qx {sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json update=1};
-		print $output;
+		$response{error} = 0;
+		$response{customresponse} = 1;
+		$response{output} = $output;
 		exit(0);
 	}
 	
@@ -162,7 +202,8 @@ sub lbupdate
 	if ($action eq 'lbupdate-reltype') {
 		if ($value eq 'release' || $value eq 'prerelease' || $value eq 'latest') { 
 			change_generalcfg('UPDATE.RELEASETYPE', $value);
-			print "Changed release type to $value";
+			$response{error} = 0;
+			$response{message} = "Changed release type to $value";
 		}
 	return;
 	}
@@ -180,8 +221,15 @@ sub lbupdate
 				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/loxberryupdate_cron";
 			}
 		}
-		if ($value eq 'disabled' || $value eq 'notify' || $value eq 'install') { 
-			change_generalcfg('UPDATE.INSTALLTYPE', $value);
+		if ($value eq 'disable' || $value eq 'notify' || $value eq 'install') { 
+			my $ret = change_generalcfg('UPDATE.INSTALLTYPE', $value);
+			if (!$ret) {
+				$response{error} = 1;
+				$response{message} = "Error changing lbupdate-installtype";
+			} else {
+				$response{error} = 0;
+				$response{message} = "lbupdate-installtype changed to $value";
+			}
 		}
 	return;
 	}
@@ -198,7 +246,14 @@ sub lbupdate
 			} elsif ($value eq '30') {
 				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/loxberryupdate_cron";
 			}
-			change_generalcfg('UPDATE.INTERVAL', $value);
+			my $ret = change_generalcfg('UPDATE.INTERVAL', $value);
+			if (!$ret) {
+				$response{error} = 1;
+				$response{message} = "Error changing lbupdate-installtime";
+			} else {
+				$response{error} = 0;
+				$response{message} = "lbupdate-installtime changed to $value";
+			}
 		}
 	return;
 	}
@@ -213,12 +268,16 @@ sub poweroff
 	# LOGINF "Forking poweroff ...";
 	my $pid = fork();
 	if (not defined $pid) {
-		print STDERR "ajax-config-handler: Cannot fork poweroff.";
+		$response{error} = 1;
+		$response{message} = "ajax-config-handler: Cannot fork poweroff.";
+		print STDERR $response{message};
 		# LOGCRIT "Cannot fork poweroff.";
 	} 
 	if (not $pid) {	
 		# LOGINF "Executing poweroff forked...";
-		print STDERR "Executing poweroff forked...";
+		$response{error} = 0;
+		$response{message} = "ajax-config-handler: Executing poweroff forked...";
+		print STDERR $response{message};
 		
 		exec("$lbhomedir/sbin/sleeper.sh sudo $bins->{POWEROFF} </dev/null >/dev/null 2>&1 &");
 		exit(0);
@@ -236,59 +295,19 @@ sub reboot
 	my $pid = fork();
 	if (not defined $pid) {
 		# LOGCRIT "Cannot fork reboot.";
-		print STDERR "Cannot fork reboot.";
+		$response{error} = 1;
+		$response{message} = "ajax-config-handler: Cannot fork reboot.";
+		print STDERR $response{message};
 	}
 	if (not $pid) {
 		# LOGINF "Executing reboot forked...";
-		print STDERR "Executing reboot forked...";
+		$response{error} = 0;
+		$response{message} = "ajax-config-handler: Executing reboot forked...";
+		print STDERR $response{message};
 		exec("$lbhomedir/sbin/sleeper.sh sudo $bins->{REBOOT} </dev/null >/dev/null 2>&1 &");
 		exit(0);
 	}
 	exit(0);
-}
-
-###################################################################
-# change general.cfg
-###################################################################
-sub change_generalcfg
-{
-	my ($key, $val) = @_;
-	if (!$key) {
-		return undef;
-	}
-	my $cfg = new Config::Simple("$lbsconfigdir/general.cfg") or return undef;
-
-	if (!$val) {
-		# Delete key
-		$cfg->delete($key);
-	} else {
-		$cfg->param($key, $val);
-	}
-	$cfg->write() or return undef;
-	return 1;
-}
-
-
-###################################################################
-# change mail.cfg
-###################################################################
-sub change_mailcfg
-{
-	my ($key, $val) = @_;
-	if (!$key) {
-		return undef;
-	}
-	my $cfg = new Config::Simple("$lbsconfigdir/mail.cfg") or return undef;
-
-	if (!$val) {
-		# Delete key
-		$cfg->delete($key);
-		$cfg->write() or return undef;
-	} elsif ($cfg->param($key) ne $val) {
-		$cfg->param($key, $val);
-		$cfg->write() or return undef;
-	}
-	return 1;
 }
 
 ###################################################################
@@ -339,12 +358,18 @@ sub plugindb_update
 		open(my $fh, '>', "$lbsdatadir/plugindatabase.dat");
 		flock($fh,2);
 		print $fh @plugin_new;
-		flock($fh,8);
 		close($fh);
 		#print STDERR "plugindatabase VALUES CHANGED.\n";
+		$response{error} = 0;
+		$response{message} = "plugindatabase: updated";
+		
+		
 		
 	} else {
 		#print STDERR "plugindatabase nothing changed.\n";
+		$response{error} = 0;
+		$response{message} = "plugindatabase: no update required";
+		
 	}
 }
 
@@ -357,13 +382,13 @@ sub pluginsupdate_check
 	# LOGINF "Forking reboot ...";
 	qx($lbhomedir/sbin/pluginsupdate.pl --checkonly >/dev/null 2>&1);
 	if ($? ne 0) {
-		print $cgi->header(-type => 'application/json;charset=utf-8',
-					-status => "500 Could not check plugin update status");
+		$response{error} = -1;
+		$response{message} = "Could not check plugin update status";
 		exit (1);
 	}
 	
-	print $cgi->header(-type => 'application/json;charset=utf-8',
-					-status => "204 OK");
+	$response{error} = 0;
+	$response{message} = "Pluginsupdate checked successfully.";
 	exit;
 }
 
@@ -372,6 +397,8 @@ sub pluginsupdate_check
 ###################################################################
 sub testenvironment
 {
+# Script to test environment variables inside of the webserver and system() call
+
 print "<h2>TEST 1 with system()</h2>";
 print "ajax-config-handler: TESTENVIRONMENT (lbhomedir is $lbhomedir)<br>";
 system("sudo $lbhomedir/sbin/testenvironment.pl");
@@ -390,18 +417,17 @@ sub plugininstall_status
 	print STDERR "plugininstall-status: $R::value\n";
 	# Quick safety check
 	if (index($R::value, '/') ne -1) {
-		print $cgi->header(-type => 'text/html;charset=utf-8',
-							-status => "500 Invalid request",
-		);
+		$response{error} = -1;
+		$response{message} = "Invalid request";
 		exit;
 	}
 	if (! -e "/tmp/$R::value") {
-		print $cgi->header(-type => 'text/html;charset=utf-8',
-							-status => "404 File not found",
-		);
+		$response{error} = -1;
+		$response{message} = "File not found";
 		exit;
 	}
 	open (my $fh, "<", "/tmp/$R::value");
+	flock($fh, 1);
 	my $status = <$fh>;
 	close ($fh);
 	chomp $status;
@@ -426,21 +452,75 @@ sub get_clouddnsdata
 	my $mac = uc $R::value;
 	#print STDERR "ajax-config-handler: ajax get_clouddnsdata for ${mac}";
 	my %miniservers = LoxBerry::System::get_miniservers();
-  	print $cgi->header(-type => 'application/json;charset=utf-8');
+  	
 	if (! %miniservers) 
 	{
 	    exit 1;
+		
 	}
 	foreach my $ms (sort keys %miniservers) 
 	{
-		if ( uc "$miniservers{$ms}{CloudURL}" eq "${mac}" )
+		if ( uc "$miniservers{$ms}{CloudURL}" eq "$mac" )
 		{
-			use JSON;
-			my $j = new JSON;
-   			print encode_json($miniservers{$ms});
+			#my $j = new JSON;
+   			$response{error} = 0;
+			$response{customresponse} = 1;
+			$response{output} = encode_json($miniservers{$ms});
 		    exit;
 		}
 	}
-	print '{"error":"'.${mac}.'"}';
+	$response{error} = $mac;
+	$response{message} = "Miniserver with mac $mac not found";
+	
 	exit;
+}
+
+
+###################################################################
+# change general.cfg (internal function)
+###################################################################
+sub change_generalcfg
+{
+	my ($key, $val) = @_;
+	if (!$key) {
+		return undef;
+	}
+	my $cfg = new Config::Simple("$lbsconfigdir/general.cfg") or return undef;
+
+	if (!$val) {
+		# Delete key
+		$cfg->delete($key);
+	} else {
+		$cfg->param($key, $val);
+	}
+	$cfg->write() or return undef;
+	$response{error} = 0;
+	$response{message} = "OK";
+	return 1;
+}
+
+
+END {
+
+	if($response{error} == -1) {
+		print $cgi->header(
+			-type => 'application/json',
+			-charset => 'utf-8',
+			-status => '500 Internal Server Error',
+		);	
+	} else {
+		print $cgi->header(
+			-type => 'application/json',
+			-charset => 'utf-8',
+			-status => '200 OK',
+		);	
+	}
+
+	if (!$response{customresponse}) {
+		print encode_json(\%response);
+	} else {
+		print $response{output};
+	}
+	exit($response{error});
+
 }
