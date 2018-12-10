@@ -6,7 +6,7 @@ use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
 use LoxBerry::JSON;
 			
-my $version = "1.4.0.2"; # Version of this script
+my $version = "1.4.0.3"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
