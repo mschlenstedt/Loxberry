@@ -96,6 +96,9 @@ sub get_netshares
 				my $share = $_;
 				my %netshare;
 				my $state = "";
+
+				print STDERR "Check share $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share \n";
+
 				# Check read/write state
 				qx(ls \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share\" 2>/dev/null);
 
