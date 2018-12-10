@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.4.0.1";
+our $VERSION = "1.4.0.2";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -1367,7 +1367,7 @@ sub lock
 			}
 			
 		}
-	print "seemsrunning: $seemsrunning\n";
+	print STDERR "seemsrunning: $seemsrunning\n" if ($DEBUG);
 	} while ($seemsrunning && $p{wait} && $delay < $p{wait});
 	return $seemsrunning if ($seemsrunning);
 	
