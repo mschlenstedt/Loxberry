@@ -179,7 +179,7 @@ LOGINF "Executing user of loxberryupdatecheck is $curruser";
 
 
 # Aquire a lock to check if an update is currently running
-#eval {
+eval {
 	LOGINF "Locking lbupdate to check if an update is running...";
 	my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate' );
 	if ($lockstate) {
@@ -191,7 +191,7 @@ LOGINF "Executing user of loxberryupdatecheck is $curruser";
 		LOGOK "No update seems to be running currently";
 		my $unlockstatus = LoxBerry::System::unlock(lockfile => 'lbupdate');
 	}
-#};
+};
 
 
 LOGOK "Parameters/settings of this update:";
