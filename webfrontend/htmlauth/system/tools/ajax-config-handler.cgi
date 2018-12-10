@@ -330,7 +330,6 @@ sub plugindb_update
 			if ($action eq 'autoupdate' && $plugin->{PLUGINDB_AUTOUPDATE} ne $value) {
 				$plugin->{PLUGINDB_AUTOUPDATE} = $value;
 				$dbchanged = 1;
-			} 
 			}
 			if ($action eq 'loglevel' && $plugin->{PLUGINDB_LOGLEVEL} ne $value) {
 				$plugin->{PLUGINDB_LOGLEVEL} = $value;
