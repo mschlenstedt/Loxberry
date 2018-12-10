@@ -375,45 +375,45 @@ class intLog
 			try {			
 				$this->dbh = new SQLite3($dbfile);
 				$this->dbh->busyTimeout(5000);
+				$this->dbh->exec('PRAGMA journal_mode = wal;');
 				$db = $this->dbh;
 				
+				$db->exec("BEGIN TRANSACTION;");
+				$res = $db->exec("CREATE TABLE IF NOT EXISTS logs (
+						PACKAGE VARCHAR(255) NOT NULL,
+						NAME VARCHAR(255) NOT NULL,
+						FILENAME VARCHAR (2048) NOT NULL,
+						LOGSTART DATETIME,
+						LOGEND DATETIME,
+						LASTMODIFIED DATETIME NOT NULL,
+						LOGKEY INTEGER PRIMARY KEY 
+					)");
+				if($res != True) {
+					$dberr = $db->lastErrorCode();
+					$dberrstr = $db->lastErrorMsg();
+					error_log("log_db_init_database: Create table 'logs': Error $dberr $dberrstr");
+					$dbok = 0;
+					$db->exec('ROLLBACK;');
+				}
+				$res = $db->exec("CREATE TABLE IF NOT EXISTS logs_attr (
+						keyref INTEGER NOT NULL,
+						attrib VARCHAR(255) NOT NULL,
+						value VARCHAR(255),
+						PRIMARY KEY ( keyref, attrib )
+						)");
+				if($res != True) {
+					$dberr = $db->lastErrorCode();
+					$dberrstr = $db->lastErrorMsg();
+					error_log("log_db_init_database: Create table 'logs_attr': Error $dberr $dberrstr");
+					$dbok = 0;
+					$db->exec('ROLLBACK;');
+				}
+				$db->exec("COMMIT;");
 			} catch (Exception $e) {
 				error_log("log_db_init_database: Opening database failed - " . $e->getMessage());
 				$dbok = 0;
 			}
-			$db->exec('PRAGMA journal_mode = wal;');
-			$db->exec("BEGIN TRANSACTION;");
-			$res = $db->exec("CREATE TABLE IF NOT EXISTS logs (
-					PACKAGE VARCHAR(255) NOT NULL,
-					NAME VARCHAR(255) NOT NULL,
-					FILENAME VARCHAR (2048) NOT NULL,
-					LOGSTART DATETIME,
-					LOGEND DATETIME,
-					LASTMODIFIED DATETIME NOT NULL,
-					LOGKEY INTEGER PRIMARY KEY 
-				)");
-			if($res != True) {
-				$dberr = $db->lastErrorCode();
-				$dberrstr = $db->lastErrorMsg();
-				error_log("log_db_init_database: Create table 'logs': Error $dberr $dberrstr");
-				$dbok = 0;
-				$db->exec('ROLLBACK;');
-			}
-			$res = $db->exec("CREATE TABLE IF NOT EXISTS logs_attr (
-					keyref INTEGER NOT NULL,
-					attrib VARCHAR(255) NOT NULL,
-					value VARCHAR(255),
-					PRIMARY KEY ( keyref, attrib )
-					)");
-			if($res != True) {
-				$dberr = $db->lastErrorCode();
-				$dberrstr = $db->lastErrorMsg();
-				error_log("log_db_init_database: Create table 'logs_attr': Error $dberr $dberrstr");
-				$dbok = 0;
-				$db->exec('ROLLBACK;');
-			}
-			$db->exec("COMMIT;");
-			
+	
 			if ($dbok==1) {
 				break;
 			} else {
@@ -686,7 +686,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.2.6.1";
+	public static $VERSION = "1.4.0.1";
 	
 	public static function newLog($args)
 	{
