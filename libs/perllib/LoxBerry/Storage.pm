@@ -57,7 +57,6 @@ sub get_netshares
 	}
 	my @sharetypes = readdir($fh1);
 	closedir($fh1);
-
 	@netshares = ();
 	my $netsharecount = 0;
 	
@@ -98,15 +97,16 @@ sub get_netshares
 				my %netshare;
 				my $state = "";
 				# Check read/write state
-				qx(ls \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share\");
+				qx(ls \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share\" 2>/dev/null);
+
 				if ($? eq 0) {
 					$state = "Readonly";
 				}
-				qx(touch \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\");
+				qx(touch \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\" 2>/dev/null);
 				if ($? eq 0) {
 					$state = "Writable";
 				}
-				qx(rm \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\");
+				qx(rm \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\" 2>/dev/null);
 				if ( ($readwriteonly && $state ne "Writable") || !$state ) {
 					next;
 				}
