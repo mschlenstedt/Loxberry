@@ -206,6 +206,7 @@ sub save {
 	$quoted_adminpass1 = quotemeta($R::adminpass1);
 	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl checkpasswd loxberry $quoted_adminpassold);
 	$exitcode  = $? >> 8;
+	print STDERR "credentialshandler.pl Exitcode ".$exitcode."\n";
 	if ($exitcode == 1) {
 		$error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
 		&error;
@@ -287,6 +288,7 @@ sub save {
 	if ($adminpass1) {
 		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp "$adminpassold" "$adminpass1");
 		$exitcode  = $? >> 8;
+		print STDERR "setloxberrypasswd.exp Exitcode ".$exitcode."\n";
 		if ($exitcode eq 1) {
 			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."<br>";
@@ -303,6 +305,20 @@ sub save {
 		elsif ($exitcode eq 3) {
 			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."<br>";
+			$wraperror = 1;
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode eq 4) {
+			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."<br>";
+			$wraperror = 1;
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode eq 5) {
+			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."<br>";
 			$wraperror = 1;
 			# &error;
 			# exit;
