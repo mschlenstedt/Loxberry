@@ -6,7 +6,7 @@ use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
 use LoxBerry::JSON;
 			
-my $version = "1.4.0.3"; # Version of this script
+my $version = "1.4.0.4"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -264,6 +264,9 @@ sub poweroff
 {
 	print STDERR "ajax-config-handler: ajax poweroff - Forking poweroff\n";
 	# LOGINF "Forking poweroff ...";
+	$response{error} = 0;
+	$response{message} = "ajax-config-handler: Executing poweroff forked...";
+		
 	my $pid = fork();
 	if (not defined $pid) {
 		$response{error} = 1;
@@ -273,8 +276,6 @@ sub poweroff
 	} 
 	if (not $pid) {	
 		# LOGINF "Executing poweroff forked...";
-		$response{error} = 0;
-		$response{message} = "ajax-config-handler: Executing poweroff forked...";
 		print STDERR $response{message};
 		
 		exec("$lbhomedir/sbin/sleeper.sh sudo $bins->{POWEROFF} </dev/null >/dev/null 2>&1 &");
@@ -290,6 +291,9 @@ sub reboot
 {
 	print STDERR "ajax-config-handler: ajax reboot\n";
 	# LOGINF "Forking reboot ...";
+	$response{error} = 0;
+	$response{message} = "ajax-config-handler: Executing reboot forked...";
+		
 	my $pid = fork();
 	if (not defined $pid) {
 		# LOGCRIT "Cannot fork reboot.";
@@ -299,8 +303,6 @@ sub reboot
 	}
 	if (not $pid) {
 		# LOGINF "Executing reboot forked...";
-		$response{error} = 0;
-		$response{message} = "ajax-config-handler: Executing reboot forked...";
 		print STDERR $response{message};
 		exec("$lbhomedir/sbin/sleeper.sh sudo $bins->{REBOOT} </dev/null >/dev/null 2>&1 &");
 		exit(0);
