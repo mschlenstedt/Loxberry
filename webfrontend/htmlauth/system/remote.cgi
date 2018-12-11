@@ -61,6 +61,7 @@ my $reset = $R::reset;
 my $connect = $R::connect;
 my $disconnect = $R::disconnect;
 my $saveformdata = $R::saveformdata;
+my $resp;
 
 # Template
 my $maintemplate = HTML::Template->new(
@@ -76,6 +77,7 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 # Clear expired key
 if (-e "$lbhomedir/system/supportvpn/loxberry.crt" ) {
+
 	my $certdate = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Not After" | cut -d: -f2-10 | cut -d" " -f2-10`;
 	$certdate = `date --date '$certdate'`;
 	chomp ($certdate);
@@ -84,25 +86,33 @@ if (-e "$lbhomedir/system/supportvpn/loxberry.crt" ) {
 	my $nowepoche = `date +%s`;
 	if ($nowepoche > $certepoche) {
 
-
-                #
-                # ADD HERE: STOP OPENVPN CONNECTION
-                #
-
+		# Kill an existing connection
+		my $supportkey = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Subject: CN" | cut -d= -f2 | cut -d" " -f2`;
+		chomp ($supportkey);
+		if (-e "$lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid") {
+			my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
+			chomp ($pid);
+			$resp = `kill $pid`;
+		}
 
 		notify( "remote", "supportkey", $SL{'REMOTE.LABEL_SUPPORTKEY'} . " " . $supportkey . " - " . $SL{'REMOTE.MSGERROR_KEY_EXPIRED'}, 1);
-		my $resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
+		$resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
 	}
+
 }
 
 # Reset / Delete Support Key
 if ($reset) {
 
-                #
-                # ADD HERE: STOP OPENVPN CONNECTION
-                #
-
-	my $resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
+	# Kill an existing connection
+	my $supportkey = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Subject: CN" | cut -d= -f2 | cut -d" " -f2`;
+	chomp ($supportkey);
+	if (-e "$lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid") {
+		my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
+		chomp ($pid);
+		$resp = `kill $pid`;
+	}
+	$resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
 
 }
 
@@ -117,7 +127,41 @@ if ($connect && -e "$lbhomedir/system/supportvpn/loxberry.cfg" && -e "$lbhomedir
 	if (!$ret) {
 		my $supportkey = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Subject: CN" | cut -d= -f2 | cut -d" " -f2`;
 		chomp ($supportkey);
-		my $resp = `openvpn --daemon --writepid $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid --log $lbhomedir/log/system_tmpfs/openvpn.log --config $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+		# Kill an existing connection
+		if (-e "$lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid") {
+			my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
+			chomp ($pid);
+			$resp = `kill $pid`;
+		}
+		$resp = `sudo $lbhomedir/sbin/openvpn-startup 2>&1`;
+		$resp = `cd $lbhomedir/system/supportvpn && openvpn --daemon --writepid $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid --log $lbhomedir/log/system_tmpfs/openvpn.log --config $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+	}
+	
+	# Check Online Status
+	for (my $i=0; $i < 10; $i++) {
+		my $p = Net::Ping->new();
+		my $hostname = '10.98.98.1';
+		my ($ret, $duration, $ip) = $p->ping($hostname);
+		if (!$ret) {
+			sleep (1);
+			next;
+		} else {
+			last;
+		}
+	}
+
+}
+
+# Disconnect
+if ($disconnect && -e "$lbhomedir/system/supportvpn/loxberry.crt" ) {
+
+	# Kill an existing connection
+	my $supportkey = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Subject: CN" | cut -d= -f2 | cut -d" " -f2`;
+	chomp ($supportkey);
+	if (-e "$lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid") {
+		my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
+		chomp ($pid);
+		$resp = `kill $pid`;
 	}
 
 }
@@ -136,14 +180,35 @@ if ($saveformdata) {
 	}
 	$jsonobj->write();
 
+	if ($R::Remote_Httpproxy) {
+		my $proxy = $R::Remote_Httpproxy;
+		my $port = $R::Remote_Httpport;
+		$resp = `/bin/sed -i 's#^;http-proxy .*#http-proxy $proxy $port#g' $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+		$resp = `/bin/sed -i 's#^http-proxy .*#http-proxy $proxy $port#g' $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+		$resp = `/bin/sed -i 's#^;http-proxy\$#http-proxy $proxy $port#g' $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+		$resp = `/bin/sed -i 's#^http-proxy\$#http-proxy $proxy $port#g' $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+	} else {
+		$resp = `/bin/sed -i 's#^http-proxy .*#;http-proxy#g' $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+	}
+
 }
 
 # New Support Key submitted
 if ($supportkey) {
+
 	my $bins = LoxBerry::System::get_binaries();
 	my $keyurl = "https://supportvpn.loxberry.de/keys/$supportkey/key.tgz";
+	
+	# Kill an existing connection
+	my $supportkey = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Subject: CN" | cut -d= -f2 | cut -d" " -f2`;
+	chomp ($supportkey);
+	if (-e "$lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid") {
+		my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
+		chomp ($pid);
+		$resp = `kill $pid`;
+	}
 
-	my $resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
+	$resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
 	$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo $lbhomedir/system/supportvpn/$supportkey.tgz $keyurl 2>&1`;
 	if ($? ne "0") {
 		$maintemplate->param("ERROR", 1);
