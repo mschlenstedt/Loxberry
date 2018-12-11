@@ -2,9 +2,9 @@
 
 <TMPL_IF FORM1>
 
-<p><TMPL_VAR REMOTE.HINT_INTRODUCTION></p>
-<br>
+<P><TMPL_VAR REMOTE.HINT_INTRODUCTION></P>
 
+<BR>
 
 <STYLE>
 	.lb_flex-item 
@@ -145,6 +145,35 @@
 
 <BR>
 <BR>
+
+<!-- Button area 1 -->
+
+<DIV style="text-align:center;">
+		<!-- Buttons for widget -->
+		<BUTTON	type=		"submit"
+			form=		"connect_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			style=		"background-color: rgba(37, 226, 18, 0.6); margin-left:50px"
+			data-icon=	"check">
+			<TMPL_VAR REMOTE.BUTTON_CONNECT>
+		</BUTTON>
+		<BUTTON	type=		"submit"
+			form=		"disconnect_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			style=		"background-color: rgba(255, 128, 128, 0.9)"
+			data-icon=	"delete">
+			<TMPL_VAR REMOTE.BUTTON_DISCONNECT>
+		</BUTTON>
+</DIV>
+
+<BR>
+<BR>
 <BR>
 
 <FORM id="main_form" method="post" data-ajax="false"> 
@@ -194,7 +223,7 @@
 </DIV>
 </FORM>
 
-<!-- Button area -->
+<!-- Button area 2 -->
 
 <BR>
 <BR>
@@ -216,26 +245,6 @@
 			data-mini=	"true"
 			data-icon=	"check">
 			<TMPL_VAR COMMON.BUTTON_SAVE>
-		</BUTTON>
-		<BUTTON	type=		"submit"
-			form=		"connect_form"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			style=		"background-color: rgba(37, 226, 18, 0.6); margin-left:50px"
-			data-icon=	"check">
-			<TMPL_VAR REMOTE.BUTTON_CONNECT>
-		</BUTTON>
-		<BUTTON	type=		"submit"
-			form=		"disconnect_form"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			style=		"background-color: rgba(255, 128, 128, 0.9)"
-			data-icon=	"delete">
-			<TMPL_VAR REMOTE.BUTTON_DISCONNECT>
 		</BUTTON>
 </DIV>
 
