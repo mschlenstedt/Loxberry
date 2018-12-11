@@ -71,6 +71,7 @@
 	define ("LBSTEMPLATEDIR", LBHOMEDIR . "/templates/system");
 	define ("LBSDATADIR", LBHOMEDIR . "/data/system");
 	define ("LBSLOGDIR", LBHOMEDIR . "/log/system");
+	define ("LBSTMPFSLOGDIR", LBHOMEDIR . "/log/system_tmpfs");
 	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system");
 	define ("LBSSBINDIR", LBHOMEDIR . "/sbin");
 	define ("LBSBINDIR", LBHOMEDIR . "/bin");
@@ -82,6 +83,7 @@
 	$lbstemplatedir = LBSTEMPLATEDIR;
 	$lbsdatadir = LBSDATADIR;
 	$lbslogdir = LBSLOGDIR;
+	$lbstmpfslogdir = LBSTMPFSLOGDIR;
 	$lbsconfigdir = LBSCONFIGDIR;
 	$lbssbindir = LBSSBINDIR;
 	$lbsbindir = LBSBINDIR;
@@ -103,14 +105,14 @@
 	$plugindb_timestamp_last = 0;
 
 	
-	$reboot_required_file = "$lbhomedir/log/system_tmpfs/reboot.required";
+	$reboot_required_file = "$lbstmpfslogdir/reboot.required";
 
 
 // Functions in class LBSystem
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.4.0.1";
+	public static $LBSYSTEMVERSION = "1.4.0.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		

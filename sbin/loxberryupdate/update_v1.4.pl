@@ -134,6 +134,8 @@ if ($exitcode != 0) {
 }
 
 
+copy_to_loxberry("/system/sudoers/lbdefaults");
+
 
 	
 	

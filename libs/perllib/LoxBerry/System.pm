@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.4.0.3";
+our $VERSION = "1.4.0.4";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -43,6 +43,7 @@ our @EXPORT = qw (
 	$lbstemplatedir
 	$lbsdatadir
 	$lbslogdir
+	$lbstmpfslogdir
 	$lbsconfigdir
 	$lbssbindir
 	$lbsbindir
@@ -212,13 +213,14 @@ our $lbshtmlauthdir = "$lbhomedir/webfrontend/htmlauth/system";
 our $lbstemplatedir = "$lbhomedir/templates/system";
 our $lbsdatadir = "$lbhomedir/data/system";
 our $lbslogdir = "$lbhomedir/log/system";
+our $lbstmpfslogdir = "$lbhomedir/log/system_tmpfs";
 our $lbsconfigdir = "$lbhomedir/config/system";
 our $lbssbindir = "$lbhomedir/sbin";
 our $lbsbindir = "$lbhomedir/bin";
 
 our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
-our $reboot_required_file = "$lbhomedir/log/system_tmpfs/reboot.required";
+our $reboot_required_file = "$lbstmpfslogdir/reboot.required";
 
 
 # Variables only valid in this module
