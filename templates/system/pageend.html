@@ -12,7 +12,7 @@
 				<a id="btnhome" href="/admin/system/index.cgi" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>&nbsp;&nbsp;
 				<a id="btnsystem" href="/admin/system/index.cgi?form=system" data-role="button" data-icon="bars" data-iconpos="notext">Einstellungen</a>&nbsp;&nbsp;
 				<a id="btnpower" href="/admin/system/power.cgi" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
-				<TMPL_VAR REBOOT_REQUIRED>
+				<div data-href="/admin/system/power.cgi" id="btnpower_alert" style="pointer-events: none; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>
 		</div>
 		<SCRIPT>
 		$( document ).ready(function() 
@@ -32,8 +32,82 @@
  			{ 
 				$(".footeralignment").css('display','flex');	 
  			}
+			var reboot_check_interval_timer = setInterval(reboot_required, 30000);
+			reboot_required();
+		
+		function reboot_on()
+		{ 
+			var reboot_alert_offset = $("#btnpower").offset(); 
+			$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
+			if ( $("#btnpower").prop("animate_reboot") == 1 )
+			{ 
+				$("#btnpower_alert").fadeTo( 2000 , 1.0, function() 
+				{ 
+					setTimeout(function(){ reboot_off(); }, 2700); 
+				}); 
+			}
+			else
+			{
+				$("#btnpower_alert").css("display", "none"); 
+			}
+		}; 
+		function reboot_off()
+		{ 
+			var reboot_alert_offset = $("#btnpower").offset(); 
+			$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
+			if ( $("#btnpower").prop("animate_reboot") == 1 )
+			{ 
+				$("#btnpower_alert").fadeTo( 2000 , 0.1, function() 
+				{ 
+					setTimeout(function(){ reboot_on(); }, 100); 
+				});   
+			}
+			else
+			{
+				$("#btnpower_alert").fadeTo( 2000 , 0);
+				setTimeout(function()
+				{ 
+					$("#btnpower_alert").css("display", "none"); 
+					$("#btnpower").attr("title",""); 
+					$("#btnpower_alert").on("click", ""); 
+				}, 2000); 
+			}
+		}; 
+		function reboot_required() 
+		{
+			$.ajax( "tools/ajax-reboot-required-handler.php")
+				.done(function(data) 
+				{ 
+					var response_data = JSON.parse(data);
+					console.log("ajax-reboot-required-handler.php executed",response_data);
+					if (response_data.reboot_required != 0) 
+					{
+						$("#btnpower").attr("title","<TMPL_VAR POWER.MSG_REBOOT_REQUIRED_SHORT>"); 
+						$("#btnpower_alert").on("click", function(e)
+						{ 
+							var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
+						}); 
+						if ( $("#btnpower").prop("animate_reboot") != 1 )
+						{
+							$("#btnpower").prop("animate_reboot",1); 
+							reboot_on();
+						}
+					}
+					else 
+					{
+						$("#btnpower").prop("animate_reboot",""); 
+						reboot_off();
+					}
+				})
+				.error(function(XMLHttpRequest, textStatus, errorThrown) 
+				{
+  					console.log( "ajax-reboot-required-handler.php Call failed: " + textStatus + "=" + errorThrown);
+  				});
+  		}
+  		
 		});
-		</SCRIPT>
+	
+  	</SCRIPT>
 		<!-- /footer -->
 	</div>
 <!-- /page -->

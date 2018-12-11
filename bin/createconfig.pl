@@ -7,7 +7,7 @@ use Config::Simple;
 use File::Copy qw(copy);
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.4.0.2";
 
 # Functions to copy or update config files
 # This is called in the index.cgi and on every LoxBerry Update.
@@ -24,6 +24,8 @@ if (%folderinfo && $folderinfo{available} < 2048) {
 
 my $defgeneralcfg_file = "$lbsconfigdir/general.cfg.default";
 my $sysgeneralcfg_file = "$lbsconfigdir/general.cfg";
+my $defgeneraljson_file = "$lbsconfigdir/general.json.default";
+my $sysgeneraljson_file = "$lbsconfigdir/general.json";
 my $defmail_file = "$lbsconfigdir/mail.json.default";
 my $sysmail_file = "$lbsconfigdir/mail.json";
 my $defhtusers_file = "$lbsconfigdir/htusers.dat.default";
@@ -34,6 +36,7 @@ my $syssecurepin_file = "$lbsconfigdir/securepin.dat";
 
 # Call all routines for different config files
 	update_generalcfg();
+	update_generaljson();
 	update_mailcfg();
 	update_htusers();
 	update_securepin();
@@ -66,6 +69,18 @@ sub update_generalcfg
 	tied(%Config)->write();
 
 }
+
+########################################################
+# general.json
+########################################################
+sub update_generaljson
+{
+
+	if (copydefault( $defgeneraljson_file , $sysgeneraljson_file )) 
+		{ return 1; }
+	
+}
+
 
 ########################################################
 # mail.json
