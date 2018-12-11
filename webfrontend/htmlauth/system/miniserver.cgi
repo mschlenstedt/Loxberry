@@ -20,13 +20,13 @@
 ##########################################################################
 
 use LoxBerry::Web;
-
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use LWP::UserAgent;
 use URI::Escape;
 use warnings;
 use strict;
+print STDERR "Execute miniserver.cgi\n######################\n";
 
 
 ##########################################################################
@@ -55,7 +55,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "1.0.0.2";
 
 my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -133,7 +133,7 @@ exit;
 
 sub form {
 
-	print STDERR "FORM called\n";
+	print STDERR "Calling subfunction FORM\n";
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param( "LANG", $lang);
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
@@ -211,56 +211,56 @@ sub save {
 		$ms{"miniserverkennwort.$msno"} = uri_escape($ms{"miniserverkennwort.$msno"});
 		
 		
-# Removed as saving should not check MS anymote		
-		
-<<'COMMENTED_OUT';
-		
-		# Test if Miniserver is reachable
-		if ( is_enabled($ms{"useclouddns.$msno"})) {
-			# With Cloud DNS
-			$ms{"useclouddns.$msno"} = "1";
-			our $dns_info = `$bins->{'CURL'} -I http://$clouddnsaddress/$ms{"miniservercloudurl.$msno"} --connect-timeout 5 -m 5 2>/dev/null |$bins->{'GREP'} Location |$bins->{'AWK'} -F/ '{print \$3}'`;
-			my @dns_info_pieces = split /:/, $dns_info;
-			if ($dns_info_pieces[1]) {
-				$dns_info_pieces[1] =~ s/^\s+|\s+$//g;
-			} else {
-				$dns_info_pieces[1] = 80;
-			}
-			if ($dns_info_pieces[0]) {
-				$dns_info_pieces[0] =~ s/^\s+|\s+$//g;
-			} else {
-				$dns_info_pieces[0] = "[DNS-Error]"; 
-			}
-			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
-		} else {
-			# With local access
-			$ms{"useclouddns.$msno"} = "0";
-			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$ms{\"miniserverip.$msno\"}\:$ms{\"miniserverport.$msno\"}/dev/cfg/version";
-		}
-		$ua = LWP::UserAgent->new;
-		$ua->timeout(5);
-#		local $SIG{ALRM} = sub { die };
-#		eval {
-#			alarm(1);
-			$response = $ua->get($url);
-			$urlstatus = $response->status_line;
-#		};
-#		alarm(0);
-
-		# Error if we can't login
-		$urlstatuscode = substr($urlstatus,0,3);
-		if ($urlstatuscode ne "200") {
-			$error = $SL{'MINISERVER.SAVE_ERR_CANNOT_LOGIN'} . " <b>$msno. Miniserver</b>. " . $SL{'MINISERVER.SAVE_ERR_MS_UNREACHABLE'};
-			$maintemplate->param ( "ERROR", $error );
-			my $errordetails =  "<p>Request:<br>$url<p>" .
-				"<p>Response: HTTP $urlstatus</p>" . 
-				"<p>" . $response->content . "</p>";
-			
-			$maintemplate->param( "ERRORDETAILS", $errordetails );
-			&error;
-		}
-
-COMMENTED_OUT
+### Removed as saving should not check MS anymote		
+##		
+##<<'COMMENTED_OUT';
+##		
+##		# Test if Miniserver is reachable
+##		if ( is_enabled($ms{"useclouddns.$msno"})) {
+##			# With Cloud DNS
+##			$ms{"useclouddns.$msno"} = "1";
+##			our $dns_info = `$bins->{'CURL'} -I http://$clouddnsaddress/$ms{"miniservercloudurl.$msno"} --connect-timeout 5 -m 5 2>/dev/null |$bins->{'GREP'} Location |$bins->{'AWK'} -F/ '{print \$3}'`;
+##			my @dns_info_pieces = split /:/, $dns_info;
+##			if ($dns_info_pieces[1]) {
+##				$dns_info_pieces[1] =~ s/^\s+|\s+$//g;
+##			} else {
+##				$dns_info_pieces[1] = 80;
+##			}
+##			if ($dns_info_pieces[0]) {
+##				$dns_info_pieces[0] =~ s/^\s+|\s+$//g;
+##			} else {
+##				$dns_info_pieces[0] = "[DNS-Error]"; 
+##			}
+##			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
+##		} else {
+##			# With local access
+##			$ms{"useclouddns.$msno"} = "0";
+##			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$ms{\"miniserverip.$msno\"}\:$ms{\"miniserverport.$msno\"}/dev/cfg/version";
+##		}
+##		$ua = LWP::UserAgent->new;
+##		$ua->timeout(5);
+###		local $SIG{ALRM} = sub { die };
+###		eval {
+###			alarm(1);
+##			$response = $ua->get($url);
+##			$urlstatus = $response->status_line;
+###		};
+###		alarm(0);
+##
+##		# Error if we can't login
+##		$urlstatuscode = substr($urlstatus,0,3);
+##		if ($urlstatuscode ne "200") {
+##			$error = $SL{'MINISERVER.SAVE_ERR_CANNOT_LOGIN'} . " <b>$msno. Miniserver</b>. " . $SL{'MINISERVER.SAVE_ERR_MS_UNREACHABLE'};
+##			$maintemplate->param ( "ERROR", $error );
+##			my $errordetails =  "<p>Request:<br>$url<p>" .
+##				"<p>Response: HTTP $urlstatus</p>" . 
+##				"<p>" . $response->content . "</p>";
+##			
+##			$maintemplate->param( "ERRORDETAILS", $errordetails );
+##			&error;
+##		}
+##
+##COMMENTED_OUT
 		
 		# Write configuration file(s)
 		$cfg->param("MINISERVER$msno.PORT", $ms{"miniserverport.$msno"});

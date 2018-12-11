@@ -6,7 +6,7 @@ use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
 use LoxBerry::JSON;
 			
-my $version = "1.4.0.2"; # Version of this script
+my $version = "1.4.0.3"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -317,7 +317,6 @@ sub plugindb_update
 
 	my @plugin_new;
 	my $dbchanged;
-	
 	my @plugins = LoxBerry::System::get_plugins(1);
 	foreach my $plugin (@plugins) {
 		my $pluginline;
@@ -326,11 +325,12 @@ sub plugindb_update
 			push(@plugin_new, $pluginline);
 			next;
 		}
+		$plugin->{PLUGINDB_LOGLEVEL} = 0 if !$plugin->{PLUGINDB_LOGLEVEL}; 
 		if ($plugin->{PLUGINDB_MD5_CHECKSUM} eq $md5) {
 			if ($action eq 'autoupdate' && $plugin->{PLUGINDB_AUTOUPDATE} ne $value) {
 				$plugin->{PLUGINDB_AUTOUPDATE} = $value;
 				$dbchanged = 1;
-			} 
+			}
 			if ($action eq 'loglevel' && $plugin->{PLUGINDB_LOGLEVEL} ne $value) {
 				$plugin->{PLUGINDB_LOGLEVEL} = $value;
 				$dbchanged = 1;

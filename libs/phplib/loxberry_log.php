@@ -6,7 +6,7 @@ require_once "loxberry_system.php";
 class intLog
 {
 	private $params;
-	private $db_attribute_exclude_list = array ( "package", "name", "LOGSTART", "LOGEND", "LASTMODIFIED", "filename", "dbh", "dbkey" );
+	private $db_attribute_exclude_list = array ( "package", "name", "LOGSTART", "LOGEND", "LASTMODIFIED", "filename", "dbh", "dbkey", "_plugindb_timestamp");
 	private $dbh;
 	
 	public function __construct($args)
@@ -40,12 +40,16 @@ class intLog
 			exit(1);
 		}
 
-		if(!isset($this->params["loglevel"]) && isset($lbpplugindir)) {
-			$this->params["loglevel"] = LBSystem::pluginloglevel();
+		if(!isset($this->params["loglevel"]) && isset($this->params["package"])) {
+			$this->params["loglevel"] = LBSystem::pluginloglevel($this->params["package"]);
+		} else {
+			$this->params["loglevel_is_static"] = 1;
 		}
+		
 		if(!isset($this->params["loglevel"])) {
 			# echo "No loglevel defined - defaulting to 7 DEBUG.\n";
 			$this->params["loglevel"] = 7;
+			$this->params["loglevel_is_static"] = 1;
 		}
 
 		# Generating filename
@@ -174,6 +178,9 @@ class intLog
 	
 	public function DEB($msg)
 	{
+		
+		$this->checkloglevel();
+		
 		if(!isset($this->params{"STATUS"})) {
 			$this->params{"STATUS"} = 7;
 		}
@@ -187,6 +194,8 @@ class intLog
 
 	public function INF($msg)
 	{
+		$this->checkloglevel();
+			
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 6) {
 			$this->params{"STATUS"} = 6;
 		}
@@ -199,6 +208,8 @@ class intLog
 
 	public function OK($msg)
 	{
+		$this->checkloglevel();
+		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 5) {
 			$this->params{"STATUS"} = 5;
 		}
@@ -211,6 +222,8 @@ class intLog
 
 	public function WARN($msg)
 	{
+		
+		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
 		if (isset($this->params{'ATTENTIONMESSAGES'})) {
@@ -233,6 +246,8 @@ class intLog
 
 	public function ERR($msg)
 	{
+		$this->checkloglevel();
+		
 		// Collect all messages from severity warning and above
 		if (isset($this->params{'ATTENTIONMESSAGES'})) {
 		$this->params{'ATTENTIONMESSAGES'} .= "\n";
@@ -253,6 +268,8 @@ class intLog
 
 	public function CRIT($msg)
 	{
+		$this->checkloglevel();
+		
 		// Collect all messages from severity warning and above
 		if (isset($this->params{'ATTENTIONMESSAGES'})) {
 		$this->params{'ATTENTIONMESSAGES'} .= "\n";
@@ -275,6 +292,8 @@ class intLog
 
 	public function ALERT($msg)
 	{
+		$this->checkloglevel();
+		
 		// Collect all messages from severity warning and above
 		if (isset($this->params{'ATTENTIONMESSAGES'})) {
 		$this->params{'ATTENTIONMESSAGES'} .= "\n";
@@ -297,6 +316,8 @@ class intLog
 
 	public function EMERG($msg)
 	{
+		$this->checkloglevel();
+		
 		// Collect all messages from severity warning and above
 		if (isset($this->params{'ATTENTIONMESSAGES'})) {
 		$this->params{'ATTENTIONMESSAGES'} .= "\n";
@@ -348,7 +369,32 @@ class intLog
 		
 	}
 
+	public function checkloglevel()
+	{
+		// DEBUG 
+		// echo "Is static: " . $this->params["loglevel_is_static"] . "\n";
+		// echo "plugindb_changed_time " . LBSystem::plugindb_changed_time() . "\n";
+		// echo "saved timestamp " . $this->params["_plugindb_timestamp"] . "\n";
+		// $ct = LBSystem::plugindb_changed_time();
+		// echo "changed_time: $ct (" . date ("F d Y H:i:s", $ct) . ") _pdb_timestamp: " . $this->params["_plugindb_timestamp"] . "(" . date ("H:i:s", $this->params["_plugindb_timestamp"]) . ")\n";
+		
+		if ( empty($this->params["loglevel_is_static"]) && ( empty($this->params["_plugindb_timestamp"] ) or LBSystem::plugindb_changed_time() != $this->params["_plugindb_timestamp"] ) ) {
+			// error_log("Next poll cycle");
+			$this->params["_plugindb_timestamp"] = LBSystem::plugindb_changed_time();
+			$newloglevel = LBSystem::pluginloglevel($this->params["package"]);
+			if( isset($newloglevel) && $newloglevel >= 0 && $newloglevel <= 7 && $newloglevel != $this->params["loglevel"] ) {
+				$oldloglevel = $this->params["loglevel"];
+				$this->params["loglevel"] = $newloglevel;
+				// error_log("<INFO> User changed loglevel from $oldloglevel to $newloglevel");
+				if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+				$this->writelog("$currtime<INFO> User changed loglevel from $oldloglevel to $newloglevel");
+			}
+		}
+	}
+	
+	
 	public function writelog($msg) {
+		
 		
 		if (isset($this->params["stdout"])) {fwrite(STDOUT,$msg . PHP_EOL);}
 		if (isset($this->params["stderr"])) {fwrite(STDERR,$msg . PHP_EOL);}
@@ -363,6 +409,18 @@ class intLog
 		} else {
 			return NULL;
 		}
+	}
+	
+	public function loglevel($newloglevel = null)
+	{
+		if (is_null($newloglevel)) {
+			return($this->params["loglevel"]);
+		}	
+		if ($newloglevel >= 0 && $newloglevel <= 7) {
+			$this->params["loglevel"] = $newloglevel;
+			$this->params["loglevel_is_static"] = 1;
+		}
+		return($this->params["loglevel"]);
 	}
 	
 	private function log_db_init_database() 
@@ -686,7 +744,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.4.0.1";
+	public static $VERSION = "1.4.0.2";
 	
 	public static function newLog($args)
 	{
