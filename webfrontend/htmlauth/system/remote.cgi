@@ -58,6 +58,9 @@ $R::supportkey if 0;
 # CGI Vars
 my $supportkey = $R::supportkey;
 my $reset = $R::reset;
+my $connect = $R::connect;
+my $disconnect = $R::disconnect;
+my $saveformdata = $R::saveformdata;
 
 # Template
 my $maintemplate = HTML::Template->new(
@@ -100,6 +103,38 @@ if ($reset) {
                 #
 
 	my $resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
+
+}
+
+# Connect
+if ($connect && -e "$lbhomedir/system/supportvpn/loxberry.cfg" && -e "$lbhomedir/system/supportvpn/loxberry.crt" ) {
+
+	# Check Online Status
+	my $p = Net::Ping->new();
+	my $hostname = '10.98.98.1';
+	my ($ret, $duration, $ip) = $p->ping($hostname);
+	# If not already connected
+	if (!$ret) {
+		my $supportkey = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Subject: CN" | cut -d= -f2 | cut -d" " -f2`;
+		chomp ($supportkey);
+		my $resp = `openvpn --daemon --writepid $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid --log $lbhomedir/log/system_tmpfs/openvpn.log --config $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+	}
+
+}
+
+# Save config
+if ($saveformdata) {
+
+	my $jsonobj = LoxBerry::JSON->new();
+	my $cfg = $jsonobj->open(filename => $cfgfile);
+	$cfg->{Remote}->{Httpproxy} = $R::Remote_Httpproxy;
+	$cfg->{Remote}->{Httpport} = $R::Remote_Httpport;
+	if ($R::Remote_Autoconnect) {
+	       $cfg->{Remote}->{Autoconnect} = "1";
+	} else {
+	       $cfg->{Remote}->{Autoconnect} = "0";
+	}
+	$jsonobj->write();
 
 }
 
@@ -171,9 +206,6 @@ if (-e "$lbhomedir/system/supportvpn/loxberry.crt" && !$maintemplate->param("ERR
 	my $cfgfilecontent = LoxBerry::System::read_file($cfgfile);
 	$cfgfilecontent =~ s/[\r\n]//g;
 	$maintemplate->param('JSONCONFIG', $cfgfilecontent);
-
-	my $js = LoxBerry::JSON::read_file($cfgfile, 'Remote');
-	$maintemplate->param('JSONCONFIGSCRIPT', $js);
 
 }
 
