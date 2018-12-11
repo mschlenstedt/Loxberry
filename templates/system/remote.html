@@ -253,6 +253,13 @@
 
 <script>
 
+	function is_enabled( val ) 
+	{
+		// Returns true if val is in one of the possibilities 
+		var enabled_values = [ true, "true", 1, "1", "checked", "selected", "enabled", "enable", "on" ];
+		return (enabled_values.indexOf(val) > -1);
+	}
+
 	// Validation
 	validate_enable('#httpproxy');
 	validate_enable('#httpport');
@@ -269,12 +276,16 @@
 		for(var elemname in cfg.Remote) {
 			var inputType = $("#Remote\\."+elemname).attr('type');
 			console.log("Element", elemname, cfg.Remote[elemname], inputType);
-			if(inputType == "checkbox" && cfg.Remote[elemname] == 1) {
+			if(inputType == "checkbox" && is_enabled (cfg.Remote[elemname])) {
 				$("#Remote\\."+elemname).prop('checked', true);
 			} else {
 				$("#Remote\\."+elemname).val(cfg.Remote[elemname]);
 			}
 		}
+
+		$('select').selectmenu('refresh', true);
+		$('input:checkbox').checkboxradio('refresh');
+
 	});
 
 </script>
