@@ -61,7 +61,7 @@ if (!-e "/boot/rebootupdatescript") {
 LOGINF "This script already started $starts times.";
 if ($starts >=10) {
 	LOGCRIT "We tried 10 times without success. This is the last try.";
-	qx { rm /etc/cron.d/lbupdaterebootv120 };
+	qx { rm /etc/cron.d/lbupdaterebootv140 };
 	qx { rm /boot/rebootupdatescript };
 } else {
 	open(F,">/boot/rebootupdatescript");
@@ -160,7 +160,7 @@ if ($errors) {
 	$syscfg->write();
 	undef $syscfg;
 } else {
-	qx { rm /etc/cron.d/lbupdaterebootv120 };
+	qx { rm /etc/cron.d/lbupdaterebootv140 };
 	qx { rm /boot/rebootupdatescript };
 }
 
