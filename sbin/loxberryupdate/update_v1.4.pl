@@ -150,6 +150,36 @@ copy_to_loxberry("/system/sudoers/lbdefaults");
 copy_to_loxberry("/system/supportvpn");
 copy_to_loxberry("/system/daemons/system/04-remotesupport");
 
+
+# Upgrade Raspbian on next reboot
+LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
+open(F,">/etc/cron.d/lbupdaterebootv140");
+print F <<EOF;
+MAILTO=""
+PATH=/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# m h  dom mon dow   command
+\@reboot root perl $lbhomedir/sbin/loxberryupdate/updatereboot_v1.4.0.pl logfilename=$logfilename_wo_ext-reboot > /dev/null 2>&1
+EOF
+close (F);
+
+# Update Kernel and Firmware
+if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
+	LOGINF "Preparing Guru Meditation...";
+	LOGINF "This will again take some time now. We suggest getting a second coffee or a second beer :-)";
+	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
+
+	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+        	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
+        	LOGDEB $output;
+                $errors++;
+	} else {
+        	LOGOK "Upgrading kernel and firmware successfully.";
+	}
+}
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");
