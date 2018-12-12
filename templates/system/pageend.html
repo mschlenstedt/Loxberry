@@ -83,7 +83,7 @@
 		function reboot_required() 
 		{
 			var reboot_alert_offset = $("#btnpower").offset(); 
-			$.ajax( "tools/ajax-reboot-required-handler.php")
+			$.ajax( "/admin/system/tools/ajax-reboot-required-handler.php")
 				.done(function(data) 
 				{ 
 					var response_data = JSON.parse(data);
@@ -116,7 +116,7 @@
   		}
   		function update_alert() 
 		{
-			$.ajax( "tools/ajax-update-running-handler.php")
+			$.ajax( "/admin/system/tools/ajax-update-running-handler.php")
 				.done(function(data) 
 				{ 
 					var response_data = JSON.parse(data);
