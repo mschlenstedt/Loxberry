@@ -43,36 +43,61 @@ LOGOK "Update script $0 started.";
 
 
 ## Commented, possibly re-use in 1.4? (from 1.2.5 updatescript)
-# LOGINF "Clean up apt databases and update";
-# my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
-# $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
-# $output = qx { rm -r /var/lib/apt/lists/* };
-# $output = qx { rm -r /var/cache/apt/archives/* };
+LOGINF "Clean up apt databases and update";
+my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
+$output = qx { rm -r /var/lib/apt/lists/* };
+$output = qx { rm -r /var/cache/apt/archives/* };
 
-# $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/dpkg --configure -a };
-# my $exitcode  = $? >> 8;
-# if ($exitcode != 0) {
-        # LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
-        # LOGDEB $output;
-                # $errors++;
-# } else {
-        # LOGOK "Configuring dpkg successfully.";
-# }
-# $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
-# $exitcode  = $? >> 8;
-# if ($exitcode != 0) {
-        # LOGERR "Error updating apt database - Error $exitcode";
-                # LOGDEB $output;
-        # $errors++;
-# } else {
-        # LOGOK "Apt database updated successfully.";
-# }
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/dpkg --configure -a };
+my $exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
+        LOGDEB $output;
+        $errors++;
+} else {
+        LOGOK "Configuring dpkg successfully.";
+}
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y update };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error updating apt database - Error $exitcode";
+                LOGDEB $output;
+        $errors++;
+} else {
+        LOGOK "Apt database updated successfully.";
+}
+
+LOGINF "Installing jq (json parser for shell)...";
+
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install jq };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error installing jq - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "jq package successfully installed";
+}
+
+LOGINF "Installing openvpn (for Remote Support Widget)...";
+
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install openvpn };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error installing openvpn - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "openvpn package successfully installed";
+}
 
 LOGINF "Converting mail.cfg to mail.json";
 
 $oldmailfile = $lbsconfigdir . "/mail.cfg";
 $newmailfile = $lbsconfigdir . "/mail.json";
-
 
 if (! -e $oldmailfile) {
 	LOGWARN "No mail configuration found to migrate - skipping migration";
@@ -120,25 +145,10 @@ if (! -e $oldmailfile) {
 	
 }
 
-LOGINF "Installing jq (json parser for shell)...";
-
-$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install jq };
-$exitcode  = $? >> 8;
-
-if ($exitcode != 0) {
-	LOGERR "Error installing jq - Error $exitcode";
-	LOGDEB $output;
-	$errors++;
-} else {
-	LOGOK "jq package successfully installed";
-}
-
-
+# Some new files from ~/system
 copy_to_loxberry("/system/sudoers/lbdefaults");
-
-
-	
-	
+copy_to_loxberry("/system/supportvpn");
+copy_to_loxberry("/system/daemons/system/04-remotesupport");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
