@@ -149,7 +149,10 @@ if (! -e $oldmailfile) {
 copy_to_loxberry("/system/sudoers/lbdefaults");
 copy_to_loxberry("/system/supportvpn");
 copy_to_loxberry("/system/daemons/system/04-remotesupport");
-
+copy_to_loxberry("/system/network/interfaces.eth_dhcp");
+copy_to_loxberry("/system/network/interfaces.eth_static");
+copy_to_loxberry("/system/network/interfaces.wlan_dhcp");
+copy_to_loxberry("/system/network/interfaces.wlan_static");
 
 # Upgrade Raspbian on next reboot
 LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
