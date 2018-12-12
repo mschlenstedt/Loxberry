@@ -33,7 +33,7 @@ echo "LoxBerry home directory is $LBHOMEDIR"
 #find $LBHOMEDIR -type d -print | grep -z -v /tmp/excludelist.txt | while read line ; do chown -c loxberry:loxberry $line ; chown -c loxberry:loxberry $line/* ; done
 
 
-find $LBHOMEDIR ! -path "*skel_syslog*" ! -path "*/system/sudoers*" ! -path "*/system/daemons/system*" -print0 | perl -e '@pipe = split(/\0/, <>); (undef,undef,$uid,$gid) = getpwnam("loxberry");$count=chown $uid, $gid, @pipe;print join("\n", @pipe) . "\n$count files changed\n";'
+find $LBHOMEDIR ! -path "*skel_syslog*" ! -path "*/system/sudoers*" ! -path "*/system/daemons/system*" -print0 | perl -e '@pipe = split(/\0/, <>); (undef,undef,$uid,$gid) = getpwnam("loxberry");$count=chown $uid, $gid, @pipe;print "chmod loxberry:loxberry: $count files changed\n";'
  
  
 chown -Rc root:root $LBHOMEDIR/system/dphys-swapfile
