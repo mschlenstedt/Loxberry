@@ -1,0 +1,36 @@
+<?php
+#Currently known types are: lbupdate, plugininstall
+$lockfile_definitions = $_SERVER['LBHOMEDIR']."/config/system/lockfiles.default";
+$at_least_one_running = 0;
+if (file_exists($lockfile_definitions))
+{
+	$lockfiles = file($lockfile_definitions);
+	$which = ', "which": [ ';
+	foreach ($lockfiles as $lockfilename) 
+	{
+		$lockfilename = trim($lockfilename, " \t\n\r\0\x0B");
+		if (file_exists("/var/lock/".$lockfilename.".lock")) 
+		{
+			$which .= '"'.$lockfilename.'",';
+			$at_least_one_running = 1;
+		} 
+	}
+	if ($at_least_one_running)
+	{
+		
+		$which = rtrim($which,",").' ]'; 
+	}
+	else
+	{
+		$which = "";
+	}
+}
+if ($at_least_one_running)
+{
+	echo '{"update_running": "1"'.$which.'}';
+}
+else
+{
+	echo '{"update_running": "0"}';
+}
+?>
