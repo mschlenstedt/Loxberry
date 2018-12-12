@@ -29,7 +29,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.4.0.2";
 
 my $cfgfile = "$lbsconfigdir/general.json";
 my $jsonobj = LoxBerry::JSON->new();
@@ -84,8 +84,8 @@ if ( is_enabled($cfg->{Remote}->{Autoconnect}) && -e "$lbhomedir/system/supportv
 			chomp ($pid);
 			$resp = `kill $pid`;
 		}
-		$resp = `sudo $lbhomedir/sbin/openvpn-startup 2>&1`;
-		$resp = `cd $lbhomedir/system/supportvpn && openvpn --daemon --writepid $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid --log $lbhomedir/log/system_tmpfs/openvpn.log --config $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
+		$resp = `$lbhomedir/sbin/openvpn-startup 2>&1`; # No need for sudo here - we are root
+		$resp = `sudo -n -u loxberry openvpn --daemon --cd $lbhomedir/system/supportvpn --writepid $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid --log $lbhomedir/log/system_tmpfs/openvpn.log --config $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
 	}
 
 }
