@@ -114,6 +114,25 @@
 					reboot_off();
   				});
   		}
+
+
+		var sdegree = 0;
+		var rotate_update_timer;
+  		function rotate_update_running() 
+		{
+			    
+		  		rotate_update_timer  = setInterval(function(){ sdegree ++ ;
+			    sdegree = sdegree - 5 ;
+			    var srotate = "rotate(" + sdegree + "deg)";
+			    $("#update_alert").css({
+			      "-webkit-transform" : srotate,
+			      "transform" : srotate,
+			      "-webkit-transform-origin" : "50% 50%",
+			      "transform-origin" : "50% 50%"
+			    });
+			    if ( sdegree == -360 ) sdegree = 0; }, 50);
+		}
+	
   		function update_alert() 
 		{
 			$.ajax( "/admin/system/tools/ajax-update-running-handler.php")
@@ -131,12 +150,16 @@
 						{ 
 							var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
 						}); 
+						clearInterval (rotate_update_timer);
+						rotate_update_running();
+						
 					}
 					else 
 					{
 						$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"default" }); 
 						$("#update_alert").attr("title",""); 
 						$("#update_alert").fadeTo( 2000 , 0); 
+						clearInterval (rotate_update_timer);
 					}
 				})
 				.error(function(XMLHttpRequest, textStatus, errorThrown) 
