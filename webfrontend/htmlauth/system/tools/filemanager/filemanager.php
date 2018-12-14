@@ -1705,8 +1705,8 @@ function fm_show_nav_path($path)
 </div>
         <?php
         $path = fm_clean_path($path);
-        $root_url = "<a href='?p='><i class='icon-home' title='" . FM_ROOT_PATH . "'></i></a>";
         $sep = '<i class="icon-separator"></i>';
+        $root_url = "<a href='?p='><i class='icon-home' title='" . FM_ROOT_PATH . "'></i></a> ".str_replace("/",$sep, FM_ROOT_PATH);
         if ($path != '') {
             $exploded = explode('/', $path);
             $count = count($exploded);

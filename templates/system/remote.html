@@ -34,7 +34,7 @@
 	</DIV>
 	<DIV	class="lb_flex-item">
 		<INPUT width="100%" value="<TMPL_VAR SUPPORTKEY>" id="supportkey" name="supportkey" type="text" class="textfield" 
-		data-validation-rule="^([a-z0-9]){5,5}$" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_SUPPORTKEY>" maxlength="5">
+		data-validation-rule="^([A-Za-z0-9]){25,25}$" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_SUPPORTKEY>" maxlength="25">
 	</DIV>
 	<DIV	class="lb_flex-item-help hint">
 	</DIV>
@@ -103,7 +103,7 @@
 		margin-left	:10px;
 		text-align	:left;
 		font-weight	:bold;
-		font-size	:1.1em;
+		font-size	:1.0em;
 	       	font-family	:Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;
 		text-align	:center;
 	}
@@ -170,6 +170,14 @@
 			data-icon=	"delete">
 			<TMPL_VAR REMOTE.BUTTON_DISCONNECT>
 		</BUTTON>
+		<A	id=		"btnlogfile"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"info"
+			href=		"/admin/system/tools/logfile.cgi?logfile=system_tmpfs%2Fopenvpn.log&header=html&format=template"
+			target=		"_blank">
+			<TMPL_VAR COMMON.BUTTON_LOGFILE></A>
 </DIV>
 
 <BR>
