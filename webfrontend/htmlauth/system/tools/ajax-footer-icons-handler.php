@@ -25,12 +25,20 @@ if (file_exists($lockfile_definitions))
 		$which = "";
 	}
 }
+
+if (file_exists($_SERVER['LBHOMEDIR']."/log/system_tmpfs/reboot.required")) 
+{
+	$reboot_required='"reboot_required": "1",';
+} else {
+	$reboot_required='"reboot_required": "0",';
+}
+
 if ($at_least_one_running)
 {
-	echo '{"update_running": "1"'.$which.'}';
+	echo '{'.$reboot_required.'"update_running": "1"'.$which.'}';
 }
 else
 {
-	echo '{"update_running": "0"}';
+	echo '{'.$reboot_required.'"update_running": "0"}';
 }
 ?>

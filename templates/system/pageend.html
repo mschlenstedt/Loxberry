@@ -33,146 +33,123 @@
  			{ 
 				$(".footeralignment").css('display','flex');	 
  			}
-			var reboot_check_interval_timer = setInterval(reboot_required, 30000);
 
-		$( window ).resize(function() {
-			  reboot_required();
-			  update_alert();
-
-		});
+			var refresh_footer_icons_interval_timer = setInterval(refresh_footer_icons, 30000);
+			$( window ).resize(function() { refresh_footer_icons(); });
 		
-		
-		function reboot_on()
-		{ 
-			var reboot_alert_offset = $("#btnpower").offset(); 
-			$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
-			if ( $("#btnpower").prop("animate_reboot") == 1 )
-			{ 
-				$("#btnpower_alert").fadeTo( 2000 , 1.0, function() 
-				{ 
-					setTimeout(function(){ reboot_off(); }, 2700); 
-				}); 
-			}
-			else
+			// Footer icon animation for Updates/Installations 
+			var sdegree = 0; 			// Rotation Angle
+			var rotate_update_timer;	// Rotation Timer
+	  		function rotate_update_running_icon() 
 			{
-				$("#btnpower_alert").css("display", "none"); 
+		  		rotate_update_timer  = setInterval(function()
+		  		{
+		  			sdegree 	++ ;
+			    	sdegree 	= sdegree - 5 ;
+			    	var srotate = "rotate(" + sdegree + "deg)";
+			    	$("#update_alert").css({"-webkit-transform" : srotate,"transform" : srotate,"-webkit-transform-origin" : "50% 50%","transform-origin" : "50% 50%"});
+			    	if ( sdegree == -360 ) sdegree = 0; 
+			    }, 50); // Rotate by -5 degrees every 50 ms
 			}
-		}; 
-		function reboot_off()
-		{ 
-			var reboot_alert_offset = $("#btnpower").offset(); 
-			$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
-			if ( $("#btnpower").prop("animate_reboot") == 1 )
+			
+			// Footer icon animation for Reboot (fade in)
+			function reboot_on()
 			{ 
-				$("#btnpower_alert").fadeTo( 2000 , 0.1, function() 
+				var reboot_alert_offset = $("#btnpower").offset(); 
+				$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
+				if ( $("#btnpower").prop("animate_reboot") == 1 )
 				{ 
-					setTimeout(function(){ reboot_on(); }, 100); 
-				});   
-			}
-			else
-			{
-				$("#btnpower_alert").fadeTo( 2000 , 0);
-				setTimeout(function()
-				{ 
+					$("#btnpower_alert").fadeTo( 2000 , 1.0, function() 
+					{ 
+						setTimeout(function(){ reboot_off(); }, 2700); 
+					}); 
+				}
+				else
+				{
 					$("#btnpower_alert").css("display", "none"); 
-					$("#btnpower").attr("title",""); 
-					$("#btnpower_alert").on("click", ""); 
-				}, 2000); 
-			}
-		}; 
-		function reboot_required() 
-		{
-			var reboot_alert_offset = $("#btnpower").offset(); 
-			$.ajax( "/admin/system/tools/ajax-reboot-required-handler.php")
-				.done(function(data) 
+				}
+			}; 
+
+			// Footer icon animation for Reboot (fade out)
+			function reboot_off()
+			{ 
+				var reboot_alert_offset = $("#btnpower").offset(); 
+				$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
+				if ( $("#btnpower").prop("animate_reboot") == 1 )
 				{ 
-					var response_data = JSON.parse(data);
-					//console.log("ajax-reboot-required-handler.php executed",response_data);
-					if (response_data.reboot_required != 0) 
-					{
-						$("#btnpower").attr("title","<TMPL_VAR POWER.MSG_REBOOT_REQUIRED_SHORT>"); 
-						$("#btnpower_alert").on("click", function(e)
-						{ 
-							var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
-						}); 
-						if ( $("#btnpower").prop("animate_reboot") != 1 )
+					$("#btnpower_alert").fadeTo( 2000 , 0.1, function() 
+					{ 
+						setTimeout(function(){ reboot_on(); }, 100); 
+					});   
+				}
+				else
+				{
+					$("#btnpower_alert").fadeTo( 2000 , 0);
+					setTimeout(function()
+					{ 
+						$("#btnpower_alert").css("display", "none"); 
+						$("#btnpower").attr("title",""); 
+						$("#btnpower_alert").on("click", ""); 
+					}, 2000); 
+				}
+			}; 
+			function refresh_footer_icons () 
+			{
+				$.ajax( "/admin/system/tools/ajax-footer-icons-handler.php")
+					.done(function(data) 
+					{ 
+						var response_data = JSON.parse(data);
+						var update_alert_offset = $("#btnpower").offset(); 
+						//console.log("ajax-reboot-required-handler.php executed",response_data);
+						if (response_data.reboot_required != 0) 
 						{
-							$("#btnpower").prop("animate_reboot",1); 
-							reboot_on();
+							$("#btnpower").attr("title","<TMPL_VAR POWER.MSG_REBOOT_REQUIRED_SHORT>"); 
+							$("#btnpower_alert").on("click", function(e)
+							{ 
+								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
+							}); 
+							if ( $("#btnpower").prop("animate_reboot") != 1 )
+							{
+								$("#btnpower").prop("animate_reboot",1); 
+								reboot_on();
+							}
 						}
-					}
-					else 
+						else 
+						{
+							$("#btnpower").prop("animate_reboot",""); 
+							reboot_off();
+						}
+						if (response_data.update_running == 1) 
+						{
+							$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"pointer" }); 
+							$("#update_alert").fadeTo( 2000 , 1.0); 
+							$("#update_alert").attr("title","<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+response_data.which.toString()+")"); 
+							$("#update_alert").on("click", function(e)
+							{ 
+								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
+							}); 
+							clearInterval (rotate_update_timer);
+							//rotate_update_running_icon();
+						}
+						else 
+						{
+							$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"default" }); 
+							$("#update_alert").attr("title",""); 
+							$("#update_alert").fadeTo( 2000 , 0); 
+							clearInterval (rotate_update_timer);
+						}
+					})
+					.error(function(XMLHttpRequest, textStatus, errorThrown) 
 					{
+	  					//console.log( "ajax-reboot-required-handler.php Call failed: " + textStatus + "=" + errorThrown);
 						$("#btnpower").prop("animate_reboot",""); 
 						reboot_off();
-					}
-				})
-				.error(function(XMLHttpRequest, textStatus, errorThrown) 
-				{
-  					//console.log( "ajax-reboot-required-handler.php Call failed: " + textStatus + "=" + errorThrown);
-					$("#btnpower").prop("animate_reboot",""); 
-					reboot_off();
-  				});
-  		}
-
-
-		var sdegree = 0;
-		var rotate_update_timer;
-  		function rotate_update_running() 
-		{
-			    
-		  		rotate_update_timer  = setInterval(function(){ sdegree ++ ;
-			    sdegree = sdegree - 5 ;
-			    var srotate = "rotate(" + sdegree + "deg)";
-			    $("#update_alert").css({
-			      "-webkit-transform" : srotate,
-			      "transform" : srotate,
-			      "-webkit-transform-origin" : "50% 50%",
-			      "transform-origin" : "50% 50%"
-			    });
-			    if ( sdegree == -360 ) sdegree = 0; }, 50);
-		}
-	
-  		function update_alert() 
-		{
-			$.ajax( "/admin/system/tools/ajax-update-running-handler.php")
-				.done(function(data) 
-				{ 
-					var response_data = JSON.parse(data);
-					var update_alert_offset = $("#btnpower").offset(); 
-					//console.log("ajax-update-running-handler.php executed",response_data);
-					if (response_data.update_running == 1) 
-					{
-						$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"pointer" }); 
-						$("#update_alert").fadeTo( 2000 , 1.0); 
-						$("#update_alert").attr("title","<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+response_data.which.toString()+")"); 
-						$("#update_alert").on("click", function(e)
-						{ 
-							var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
-						}); 
-						clearInterval (rotate_update_timer);
-						rotate_update_running();
-						
-					}
-					else 
-					{
 						$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"default" }); 
 						$("#update_alert").attr("title",""); 
 						$("#update_alert").fadeTo( 2000 , 0); 
-						clearInterval (rotate_update_timer);
-					}
-				})
-				.error(function(XMLHttpRequest, textStatus, errorThrown) 
-				{
-  					//console.log( "ajax-update-running-handler.php Call failed: " + textStatus + "=" + errorThrown);
-						$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"default" }); 
-						$("#update_alert").attr("title",""); 
-					$("#update_alert").fadeTo( 2000 , 0); 
-  				});
-				setTimeout(function(){ update_alert(); }, 10000); 
-		}
-  				setTimeout(function(){ reboot_required(); update_alert(); }, 1500); 
-  		
+	  				});
+	  		}
+			setTimeout(function(){ refresh_footer_icons(); }, 500); 
 		});
 	
   	</SCRIPT>

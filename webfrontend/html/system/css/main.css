@@ -64,7 +64,7 @@ table.menutable td {
 .footerlogotextIE         	{ display:none; height: 50px;							width:166px; min-width:166px; }
 
 .footerfadebackground   { display:flex; background-color:#3d3d3d;  }
-.footerlogo, 
+.footerlogo,
 .footerlogoIE 			{ width: 79px; min-width: 79px; background-image: url("../images/loxberry_footer_logo_only.svg");        background-repeat: no-repeat; }
 .footerlogotext         { display:flex; flex-grow:1; width: 166px; min-width: 166px; background-image: url("../images/loxberry_footer_loxberry_text_ws.svg"); background-repeat: no-repeat; }
 .footerlogokeepspacel 	{ display:flex; text-align:left;  }
@@ -74,7 +74,7 @@ table.menutable td {
 .footerslogan           { display:flex; flex-grow:1; width: 316px;    background-image: url("../images/BTL.svg");  background-color:#6dac20;   background-repeat: no-repeat; }
 
 
-			.lb_flex-container 
+			.lb_flex-container
 			{
 				display: -webkit-box;
 				display: -moz-box;
@@ -89,11 +89,11 @@ table.menutable td {
 				text-align: left;
 				flex-direction: row;
 			}
-			.lb_flex-item-spacer 
+			.lb_flex-item-spacer
 			{
 	  			width:25%;
 			}
-			.lb_flex-item-label 
+			.lb_flex-item-label
 			{
 				min-width	:200px;
 		  		width		:200px;
@@ -101,25 +101,25 @@ table.menutable td {
 	      		text-align	:right;
 		  		margin-right:10px;
 	      	}
-			.lb_flex-item 
+			.lb_flex-item
 			{
 				min-width	:250px;
 				width		:250px;
 				max-width	:250px;
 				flex-wrap	:nowrap;
-				margin-top: -10px;  
+				margin-top: -10px;
 			}
-			.lb_flex-item-help 
+			.lb_flex-item-help
 			{
 		  		min-width	:300px;
 		  		width		:100%;
 				position	:relative;
 				margin-left	:10px;
 			}
-		
-		
 
-@media ( max-width: 875px ) 
+
+
+@media ( max-width: 875px )
 {
 	.footeralignmentIE_l_outer 	{ width:20%; min-width:78px; }
 	.footeralignmentIE_r_outer 	{	width:80%; min-width:78px; }
@@ -137,7 +137,7 @@ table.menutable td {
 	    min-width: 78px;
 	    transition: width 1s, opacity .5s linear;
 	}
-	
+
 
 	.lb_flex-container {
 			  -webkit-flex-flow: column wrap;
@@ -147,23 +147,23 @@ table.menutable td {
 			  flex-direction: column;
 			  text-align:center;
 			}
-			.lb_flex-item-spacer 
+			.lb_flex-item-spacer
 			{
 	  			width:0%;
 			}
-			.lb_flex-item-label 
+			.lb_flex-item-label
 			{
 	    		text-align	:center;
 	    		white-space	:nowrap;
 	      	}
-			.lb_flex-item 
+			.lb_flex-item
 			{
 	    		text-align	:center;
 				min-width	:250px;
 				width		:250px;
 				max-width	:250px;
 			}
-			.lb_flex-item-help 
+			.lb_flex-item-help
 			{
 	    		text-align	:center;
 		  		width		:100%;
@@ -183,7 +183,7 @@ table.menutable td {
     min-width: 166px;
     transition: width 1s, opacity 1s linear;
 	}
-  .footersloganIE_r,	.footerslogan  
+  .footersloganIE_r,	.footerslogan
   {
     opacity: 1;
     width: 316px;
@@ -339,6 +339,21 @@ a:link.nolinkstyle
   vertical-align: middle;
 }
 
+@keyframes rotateua {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+
+#update_alert {
+	-webkit-animation: 1s ease 0s infinite reverse rotateua;
+	-moz-animation: 1s ease 0s infinite reverse rotateua;
+	-o-animation: 1s ease 0s infinite reverse rotateua;
+	-ms-animation: 1s ease 0s infinite reverse rotateua;
+	animation: 1s ease 0s infinite reverse rotateua;
+}
+
 
 /* Logfiles */
 .logemerge
@@ -378,8 +393,8 @@ a:link.nolinkstyle
  white-space:pre; text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; color:#FFFFFF; background-color:#6dac20;
 }
 .logend
-{ 
- white-space:pre; text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; 
+{
+ white-space:pre; text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%;
 }
 /* Clock on mainmenu_start.html */
 
@@ -492,7 +507,7 @@ a:link.nolinkstyle
   .ui-panel-dismiss-display-push {
     display: none;
   }
-  
+
 /* PANEL START */
 /* this should change the right panel width, but only works left :-( */
 /*
@@ -525,4 +540,3 @@ a:link.nolinkstyle
 */
 /* PANEL END */
 }
-
