@@ -20,6 +20,7 @@
 ##########################################################################
 
 require_once "loxberry_web.php";
+require_once "loxberry_system.php";
 require_once "Config/Lite.php";
 
 ##########################################################################
@@ -37,7 +38,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.3.1";
+$version = "1.4.0.1";
 
 $sversion = LBSystem::lbversion();
 
@@ -67,7 +68,7 @@ $lang = LBSystem::lblanguage();
 
 $SL = LBSystem::readlanguage(NULL, "language.ini", True);
 
-$template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].":". $SL['SERVICES.WIDGETLABEL']." v$sversion";
+$template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].": ". $SL['SERVICES.WIDGETLABEL']." v$sversion";
 
 ##########################################################################
 # Main program
@@ -110,49 +111,130 @@ function form() {
 	}
 
 	if ($cfg->getBool('SSDP','DISABLED',false)==false) {
-		$checked = " checked=\"checked\"";
+		$checkedssdp = "checked=\"checked\"";
 	} else {
-		$checked = "";
+		$checkedssdp = "";
 	}
 		
+	$output = shell_exec('grep -E "console=(serial0|ttyAMA0|ttyS0)" /boot/cmdline.txt'); 
+	if ($output) {
+		$checkedconsole = "checked=\"checked\"";
+	} else {
+		$checkedconsole = "";
+	}
+
+	$output = shell_exec('grep -E "^enable_uart=1" /boot/config.txt'); 
+	if ($output) {
+		$checkedserial = "checked=\"checked\"";
+	} else {
+		$checkedserial = "";
+	}
+
 	// Print Template
 	//The Navigation Bar
-	$navbar[0]['Name'] = $SL['HEADER.TITLE_PAGE_WEBSERVER'];
+	$navbar[0]['Name'] = $SL['SERVICES.TITLE_PAGE_WEBSERVER'];
 	$navbar[0]['URL'] = 'services.php?load=1';
-	$navbar[1]['Name'] = $SL['HEADER.TITLE_PAGE_OPTIONS'];
+	$navbar[1]['Name'] = $SL['SERVICES.TITLE_PAGE_WATCHDOG'];
 	$navbar[1]['URL'] = 'services.php?load=2';
+	$navbar[2]['Name'] = $SL['SERVICES.TITLE_PAGE_OPTIONS'];
+	$navbar[2]['URL'] = 'services.php?load=3';
 	if (isset($_GET['load']) && ($_GET['load'] == 2)) {
 		$navbar[1]['active'] = True;
+	} elseif (isset($_GET['load']) && ($_GET['load'] == 3)) {
+		$navbar[2]['active'] = True;
 	} else {
 		$navbar[0]['active'] = True;
 	}
 
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
-	if (isset($navbar[1]['active'])): ?>
-	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=2">
+
+	if (isset($navbar[2]['active'])): ?>
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=3">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="ssdpd" value="1">
-	<div class="wide"><?=$SL['SERVICES.HEADING_OPT'];?></div>
+	<input type="hidden" name="serial" value="1">
+	<input type="hidden" name="console" value="1">
+	<div class="wide"><?=$SL['SERVICES.HEADING_SSDP'];?></div>
 	<br>
 	<table class="formtable">
 		<tr>
-			<td>
-			<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
-				<label><input type="checkbox" name="ssdpenabled"<?=$checked;?> value="enabled"/><?=$SL['SERVICES.LABEL_SSDPENABLED'];?></label>
-				</fieldset>
+			<td width="20%">
+				<label for ="ssdpenabled"><?=$SL['SERVICES.LABEL_SSDPENABLED'];?></label>
 			</td>
-			<td>&nbsp;
-			</td><td  class="hint">
+			<td width="2%">&nbsp;</td>
+			<td width="20%">
+				<input data-role="flipswitch" type="checkbox" id="ssdpenabled" name="ssdpenabled" <?=$checkedssdp;?> value="enabled"/>
+			</td>
+			<td width="2%">&nbsp;</td>
+			<td  class="hint">
 				<?=$SL['SERVICES.HINT_SSDP'];?>
 			</td>
 		</tr>
 	</table>
-	</form>
+	<script>
+	$( "#ssdpenabled" ).flipswitch({
+		onText: "<?=$SL['COMMON.BUTTON_ON'];?>"
+	});
+	$( "#ssdpenabled" ).flipswitch({
+		offText: "<?=$SL['COMMON.BUTTON_OFF'];?>"
+	});
+	</script>
+	<br><br><br>
+	<div class="wide"><?=$SL['SERVICES.HEADING_SERIAL'];?></div>
 	<br>
+	<table class="formtable">
+		<tr>
+			<td width="20%">
+				<label for ="serialenabled"><?=$SL['SERVICES.LABEL_SERIAL'];?></label>
+			</td>
+			<td width="2%">&nbsp;</td>
+			<td width="20%">
+				<input data-role="flipswitch" type="checkbox" id="serialenabled" name="serialenabled" <?=$checkedserial;?> value="enabled"/>
+			</td>
+			<td width="2%">&nbsp;</td>
+			<td  class="hint">
+				<?=$SL['SERVICES.HINT_SERIAL'];?>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<table class="formtable">
+		<tr>
+			<td width="20%">
+				<label for ="consoleenabled"><?=$SL['SERVICES.LABEL_CONSOLE'];?></label>
+			</td>
+			<td width="2%">&nbsp;</td>
+			<td width="20%">
+				<input data-role="flipswitch" type="checkbox" id="consoleenabled" name="consoleenabled" <?=$checkedconsole;?> value="enabled"/>
+			</td>
+			<td width="2%">&nbsp;</td>
+			<td  class="hint">
+				<?=$SL['SERVICES.HINT_CONSOLE'];?>
+			</td>
+		</tr>
+	</table>
+	<script>
+	$( "#serialenabled" ).flipswitch({
+		onText: "<?=$SL['COMMON.BUTTON_ON'];?>"
+	});
+	$( "#serialenabled" ).flipswitch({
+		offText: "<?=$SL['COMMON.BUTTON_OFF'];?>"
+	});
+	$( "#consoleenabled" ).flipswitch({
+		onText: "<?=$SL['COMMON.BUTTON_ON'];?>"
+	});
+	$( "#consoleenabled" ).flipswitch({
+		offText: "<?=$SL['COMMON.BUTTON_OFF'];?>"
+	});
+	</script>
+	</form>
+	<br><br><br>
 	<div style="text-align:center;">
 			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
 			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><?=$SL['COMMON.BUTTON_SAVE'];?></button>
 	</div>
+
+
 	<?php else: ?>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=1">
 	<input type="hidden" name="saveformdata" value="1">
@@ -232,6 +314,22 @@ function save()
 	} else if (isset($_POST['ssdpd'])) {
 			$ssdpoff = true;
 	}
+
+	if (isset($_POST['serial'])) {
+		if ($_POST['serialenabled'] === "enabled") {
+			exec("sudo ".LBHOMEDIR."/sbin/setserial en_uart");
+		} else {
+			exec("sudo ".LBHOMEDIR."/sbin/setserial dis_uart");
+		}
+	}
+
+	if (isset($_POST['console'])) {
+		if ($_POST['consoleenabled'] === "enabled") {
+			exec("sudo ".LBHOMEDIR."/sbin/setserial en_console");
+		} else {
+			exec("sudo ".LBHOMEDIR."/sbin/setserial dis_console");
+		}
+	}
 	
 	if (isset($_POST['webport'])) {
 		if ($_POST['webport'] > 0 && $_POST['webport'] < 65535) {
@@ -250,15 +348,13 @@ function save()
 	
 	
 	// Print Template
-	//The Navigation Bar
-	$navbar[0]['Name'] = $SL['HEADER.TITLE_PAGE_WEBSERVER'];
-	$navbar[0]['URL'] = 'services.php?load=1';
-	$navbar[1]['Name'] = $SL['HEADER.TITLE_PAGE_OPTIONS'];
-	$navbar[1]['URL'] = 'services.php?load=2';
-	if ($_GET['load'] == 2) {
-		$navbar[1]['active'] = True;
+	# Return URL
+	if (isset($_GET['load']) && ($_GET['load'] == 2)) {
+		$returnurl="/admin/system/services.php?load=2";
+	} elseif (isset($_GET['load']) && ($_GET['load'] == 3)) {
+		$returnurl="/admin/system/services.php?load=3";
 	} else {
-		$navbar[0]['active'] = True;
+		$returnurl="/admin/system/services.php?load=1";
 	}
 
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
@@ -272,13 +368,13 @@ function save()
 		$headermsg = $SL['COMMON.MSG_ALLOK'];
 		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
 		$waitmsg = "";
-		$href=LBWeb::$lbsystempage;
+		$href=$returnurl;
 	} else if (isset($webport)) {
 		if ($webport === "inuse" ) {
 			$headermsg = $SL['SERVICES.ERR_PORT_IN_USE'];
 			$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
 			$waitmsg = "";
-			$href=LBWeb::$lbsystempage;
+			$href=$returnurl;
 		} else {
 			$cfg->set("WEBSERVER","PORT",$webport);
 			$cfg->set("WEBSERVER","OLDPORT",$weboldport);
@@ -292,10 +388,11 @@ function save()
 		$headermsg = $SL['SERVICES.ERR_WRONG_PORT'];
 		$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
 		$waitmsg = "";
-		$href=LBWeb::$lbsystempage;
+		$href=$returnurl;
 	}
 		?>
 		<div style="text-align:center;">
+			<center>
 			<table style="border:0;">
 				<tr>
 					<td align="center">
@@ -317,6 +414,7 @@ function save()
 					</td>
 				</tr>
 			</table>
+			</center>
 		</div>
 	<?php
 	if (isset($ssdpstate_changed) && $ssdpstate_changed == 1) {
@@ -358,17 +456,6 @@ function check_webport() {
 	$cfg->setQuoteStrings(False);
 
 	// Print Template
-	//The Navigation Bar
-	$navbar[0]['Name'] = $SL['HEADER.TITLE_PAGE_WEBSERVER'];
-	$navbar[0]['URL'] = 'services.php?load=1';
-	$navbar[1]['Name'] = $SL['HEADER.TITLE_PAGE_OPTIONS'];
-	$navbar[1]['URL'] = 'services.php?load=2';
-	if ($_GET['load'] == 2) {
-		$navbar[1]['active'] = True;
-	} else {
-		$navbar[0]['active'] = True;
-	}
-
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
 	if ($_SERVER['SERVER_PORT'] != $cfg['WEBSERVER']['PORT']) {
 		$headermsg = $SL['SERVICES.ERR_PORTCHANGE'];
@@ -383,6 +470,7 @@ function check_webport() {
 	}
 	?>
 		<div style="text-align:center;">
+			<center>
 			<table style="border:0;">
 				<tr>
 					<td align="center">
@@ -399,11 +487,12 @@ function check_webport() {
 				<tr>
 					<td align="center">
 						<p>
-							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_OK'];?></a>
+							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/services.php?load=1"><?=$SL['COMMON.BUTTON_OK'];?></a>
 						</p>
 					</td>
 				</tr>
 			</table>
+			</center>
 		</div>
 	<?php
 	if ($waitmsg != "") {
