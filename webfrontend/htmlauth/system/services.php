@@ -38,7 +38,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "1.4.0.1";
+$version = "1.4.0.2";
 
 $sversion = LBSystem::lbversion();
 
@@ -116,14 +116,14 @@ function form() {
 		$checkedssdp = "";
 	}
 		
-	$output = shell_exec('grep -E "console=(serial0|ttyAMA0|ttyS0)" /boot/cmdline.txt'); 
+	$output = exec('grep -E "console=(serial0|ttyAMA0|ttyS0)" /boot/cmdline.txt'); 
 	if ($output) {
 		$checkedconsole = "checked=\"checked\"";
 	} else {
 		$checkedconsole = "";
 	}
 
-	$output = shell_exec('grep -E "^enable_uart=1" /boot/config.txt'); 
+	$output = exec('grep -E "^enable_uart=1" /boot/config.txt'); 
 	if ($output) {
 		$checkedserial = "checked=\"checked\"";
 	} else {
@@ -182,6 +182,20 @@ function form() {
 	<br><br><br>
 	<div class="wide"><?=$SL['SERVICES.HEADING_SERIAL'];?></div>
 	<br>
+
+	<?php
+	$output = exec(LBHOMEDIR."/bin/showpitype"); 
+	if ($output === "unknnown"): ?>
+	<center>
+	<div style="background: #FF8080; font-color: black; text-shadow: none; width: 80%; border: black 1px solid; padding: 5px">
+	<p>
+	<?=$SL['SERVICES.HINT_NOPI'];?>
+	</p>
+	</div>
+	</center>
+	<br>
+	<?php endif;?>
+
 	<table class="formtable">
 		<tr>
 			<td width="20%">
