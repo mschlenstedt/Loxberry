@@ -52,7 +52,7 @@ our $param_a="";
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "1.4.0.1";
 
 $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 
