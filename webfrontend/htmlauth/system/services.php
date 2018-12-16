@@ -135,7 +135,7 @@ function form() {
 	$navbar[0]['Name'] = $SL['SERVICES.TITLE_PAGE_WEBSERVER'];
 	$navbar[0]['URL'] = 'services.php?load=1';
 	$navbar[1]['Name'] = $SL['SERVICES.TITLE_PAGE_WATCHDOG'];
-	$navbar[1]['URL'] = 'services.php?load=2';
+	$navbar[1]['URL'] = 'watchdog.cgi';
 	$navbar[2]['Name'] = $SL['SERVICES.TITLE_PAGE_OPTIONS'];
 	$navbar[2]['URL'] = 'services.php?load=3';
 	if (isset($_GET['load']) && ($_GET['load'] == 2)) {
