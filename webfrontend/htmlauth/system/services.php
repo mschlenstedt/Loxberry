@@ -38,7 +38,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "1.4.0.2";
+$version = "1.4.0.3";
 
 $sversion = LBSystem::lbversion();
 
@@ -329,18 +329,42 @@ function save()
 			$ssdpoff = true;
 	}
 
+	$output = exec('grep -E "^enable_uart=1" /boot/config.txt'); 
+	if ($output) {
+		$serialstatus = "1";
+	} else {
+		$serialstatus = "";
+	}
 	if (isset($_POST['serial'])) {
 		if ($_POST['serialenabled'] === "enabled") {
+			if (!$serialstatus) {
+				reboot_required($SL['SERVICES.HINT_REBOOT']);
+			}
 			exec("sudo ".LBHOMEDIR."/sbin/setserial en_uart");
 		} else {
+			if ($serialstatus) {
+				reboot_required($SL['SERVICES.HINT_REBOOT']);
+			}
 			exec("sudo ".LBHOMEDIR."/sbin/setserial dis_uart");
 		}
 	}
 
+	$output = exec('grep -E "console=(serial0|ttyAMA0|ttyS0)" /boot/cmdline.txt'); 
+	if ($output) {
+		$consolestatus = "1";
+	} else {
+		$consolestatus = "";
+	}
 	if (isset($_POST['console'])) {
 		if ($_POST['consoleenabled'] === "enabled") {
+			if (!$consolestatus) {
+				reboot_required($SL['SERVICES.HINT_REBOOT']);
+			}
 			exec("sudo ".LBHOMEDIR."/sbin/setserial en_console");
 		} else {
+			if ($consolestatus) {
+				reboot_required($SL['SERVICES.HINT_REBOOT']);
+			}
 			exec("sudo ".LBHOMEDIR."/sbin/setserial dis_console");
 		}
 	}
