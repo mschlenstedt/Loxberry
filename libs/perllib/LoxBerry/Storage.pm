@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.2.0.7";
+our $VERSION = "1.4.0.1";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -173,7 +173,9 @@ sub get_netservers
 		}
   		my @serverfolders = readdir($fh2);
 		closedir($fh2);
-
+		
+		my %serveruser;
+		
 		foreach(@serverfolders) {
 			s/[\n\r]//g;
 			if($_ eq "." || $_ eq "..") {
@@ -186,6 +188,19 @@ sub get_netservers
 			$netserver{NETSERVER_SERVER} = $server;
 			$netserver{NETSERVER_TYPE} = $type;
 			$netserver{NETSERVER_SERVERPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server";
+			
+			
+			if ($netserver{NETSERVER_TYPE} eq "smb" and ! defined $serveruser{$netserver{NETSERVER_SERVER}} ) {
+				eval {
+					my $samba_cred = new Config::Simple("$LoxBerry::System::lbhomedir/system/samba/credentials/$netserver{NETSERVER_SERVER}");
+					if ( defined $samba_cred->param("default.username") ) {
+						$serveruser{$netserver{NETSERVER_SERVER}} = $samba_cred->param("default.username");
+					} else {
+						$serveruser{$netserver{NETSERVER_SERVER}} = "";
+					}
+				};
+			}
+			$netserver{NETSERVER_USERNAME} = $serveruser{$netserver{NETSERVER_SERVER}};
 			push(@netservers, \%netserver);
 		}
 	}

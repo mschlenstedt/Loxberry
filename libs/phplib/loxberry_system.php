@@ -112,7 +112,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.4.0.2";
+	public static $LBSYSTEMVERSION = "1.4.0.3";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -780,7 +780,7 @@ function reboot_required($message = 'A reboot was requested')
 		error_log("Unable to open reboot_required file $reboot_required_file.");
 		return(0);
 	}
-	fwrite($fh, $message);
+	fwrite($fh, $message . "\n");
 	fclose($fh);
 }
 

@@ -376,7 +376,7 @@ fi
 rm /etc/network/if-up.d/001hosts
 rm /etc/dhcp/dhclient-exit-hooks.d/sethosts
 ln -f -s $LBHOME/sbin/sethosts.sh /etc/network/if-up.d/001host
-n -f -s $LBHOM/sbin/sethosts.sh /etc/dhcp/dhclient-exit-hooks.d/sethosts 
+ln -f -s $LBHOME/sbin/sethosts.sh /etc/dhcp/dhclient-exit-hooks.d/sethosts 
 
 # Configure swap
 service dphys-swapfile stop
