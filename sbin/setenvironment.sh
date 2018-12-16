@@ -351,6 +351,18 @@ if [ -L /etc/creds ]; then
 fi
 ln -s $LBHOME/system/samba/credentials /etc/creds
 
+# Config for watchdog
+systemctl disable watchdog.service
+systemctl stop watchdog.service
+
+if [ ! -L /etc/watchdog.conf ]; then
+	mv /etc/watchdog.conf /etc/watchdog.bkp
+fi
+if [ -L /etc/watchdog.conf ]; then
+    rm /etc/watchdog.conf
+fi
+ln -f -s /etc/watchdog.conf $LBHOME/system/watchdog/watchdog.conf
+
 # Activating i2c
 # (also included in 1.0.3 Update script)
 $LBHOME/sbin/activate_i2c.sh
@@ -359,3 +371,15 @@ $LBHOME/sbin/activate_i2c.sh
 if ! grep -q -e "^mount -a" /etc/rc.local; then
 	sed -i 's/^exit 0/mount -a\n\nexit 0/g' /etc/rc.local
 fi
+
+# Set hosts environment
+rm /etc/network/if-up.d/001hosts
+rm /etc/dhcp/dhclient-exit-hooks.d/sethosts
+ln -f -s $LBHOME/sbin/sethosts.sh /etc/network/if-up.d/001host
+n -f -s $LBHOM/sbin/sethosts.sh /etc/dhcp/dhclient-exit-hooks.d/sethosts 
+
+# Configure swap
+service dphys-swapfile stop
+swapoff -a
+rm -r /var/swap
+

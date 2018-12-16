@@ -94,6 +94,35 @@ if ($exitcode != 0) {
 	LOGOK "openvpn package successfully installed";
 }
 
+LOGINF "Installing watchdog...";
+
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install watchdog };
+$exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+	LOGERR "Error installing watchdog - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "watchdog package successfully installed";
+}
+
+# Diable it by default: watchdog
+$output = qx { systemctl disable watchdog.service };
+$output = qx { systemctl stop watchdog.service };
+
+# Installing default config: watchdog
+$output = qx { mv /etc/watchdog.conf /etc/watchdog.bkp };
+$output = qx { ln -f -s /etc/watchdog.conf $lbhomedir/system/watchdog/watchdog.conf };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error creating symlink $lbhomedir/system/watchdog/watchdog.conf - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "Symlink $lbhomedir/system/watchdog/watchdog.conf created successfully";
+}
+
 LOGINF "Converting mail.cfg to mail.json";
 
 $oldmailfile = $lbsconfigdir . "/mail.cfg";
