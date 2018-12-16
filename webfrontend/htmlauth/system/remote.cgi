@@ -32,7 +32,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_remote.html";
 
 ##########################################################################
@@ -40,7 +40,7 @@ my $helptemplate = "help_remote.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.4.0.2";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -53,6 +53,10 @@ my $cfgfile = "$lbsconfigdir/general.json";
 # Prevent 'only used once' warnings from Perl
 $R::saveformdata if 0;
 $R::supportkey if 0;
+$R::disconnect if 0;
+$R::Remote_Autoconnect if 0;
+$R::connect if 0;
+$R::reset if 0;
 %LoxBerry::Web::htmltemplate_options if 0;
 
 # CGI Vars
@@ -284,8 +288,6 @@ if (!-e "$lbhomedir/system/supportvpn/loxberry.crt" && !$maintemplate->param("ER
 
 # Print Template
 my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'REMOTE.WIDGETLABEL'};
-my $helplink;
-my $helptemplate;
 LoxBerry::Web::head();
 LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 if ($maintemplate->param("FORM1")) {
