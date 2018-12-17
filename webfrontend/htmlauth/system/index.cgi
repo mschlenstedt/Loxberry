@@ -40,18 +40,18 @@ my $error;
 # Read Configuration
 ##########################################################################
 
-if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/mail.cfg" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/securepin.dat" ) {
+if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/general.json" || ! -e "$lbsconfigdir/mail.json" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/securepin.dat" ) {
 	qx ( $lbsbindir/createconfig.pl );
 }
-if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/mail.cfg" || -z "$lbsconfigdir/htusers.dat" || -z "$lbsconfigdir/securepin.dat" ) {
-	die "CRITICAL: One of your configuration files (general.cfg, mail.cfg, installpin.dat, securepin.dat) exists but have zero size. LoxBerry is not working in this condition.\n" . 
+if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/general.json" || -z "$lbsconfigdir/mail.json" || -z "$lbsconfigdir/htusers.dat" || -z "$lbsconfigdir/securepin.dat" ) {
+	die "CRITICAL: One of your configuration files (general.cfg, mail.json, installpin.dat, securepin.dat) exists but have zero size. LoxBerry is not working in this condition.\n" . 
 		"Please check if your SD card is full. If you have fixed the issue, delete all of the mentioned files that have 0 Bytes so LoxBerry can re-create them, or restore them from a backup.\n\n" . 
 		"Sorry for any troubles. We love you!\n";
 		exit(1);
 }
 
 # Version of this script
-my $version = "1.2.5.2";
+my $version = "1.4.0.2";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -267,6 +267,12 @@ sub mainmenu {
 				WIDGET_ICON => "/system/images/icons/main_usbstorage.png",
 				WIDGET_CGI => "/admin/system/usbstorage.cgi",
 				NOTIFY_PACKAGE => "usbstoage",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_REMOTE'},
+				WIDGET_ICON => "/system/images/icons/main_remote.png",
+				WIDGET_CGI => "/admin/system/remote.cgi",
+				NOTIFY_PACKAGE => "remote",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},

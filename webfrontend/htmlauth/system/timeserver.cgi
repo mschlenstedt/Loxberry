@@ -20,7 +20,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-
+print STDERR "Execute timeserver.cgi\n######################\n";
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use LWP::UserAgent;
@@ -42,7 +42,7 @@ our $phrase;
 our $namef;
 our $value;
 our %query;
-our $lang;
+our $lang="en";
 our $template_title;
 our $help;
 our @help;
@@ -51,17 +51,17 @@ our $helplink;
 # our $installfolder;
 our $languagefile;
 our $error;
-our $saveformdata;
+our $saveformdata=0;
 our $output;
 our $message;
-our $do;
+our $do="form";
 my  $url;
 my  $ua;
 my  $response;
 my  $urlstatus;
 my  $urlstatuscode;
 our @lines;
-our $timezonelist;
+our $timezonelist="";
 our $timezones;
 our $zeitserver;
 our $ntpserverurl;
@@ -108,6 +108,7 @@ my $maintemplate = HTML::Template->new(
 			);
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
+$R::do if (0);
 
 
 #########################################################################
@@ -125,7 +126,7 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 }
 
 # And this one we really want to use
-$do           = $query{'do'};
+$do           = $query{'do'}   if $query{'do'};
 
 # Just for testing via: http://loxberry/admin/system/timeserver.cgi?do=query
 if ( $do eq "query" ) 
@@ -143,12 +144,9 @@ if ( $do eq "query" )
 }
 
 # Everything we got from forms
-$saveformdata         = param('saveformdata');
-
+$saveformdata         = param('saveformdata') if param('saveformdata');
 $saveformdata          =~ tr/0-1//cd;
 $saveformdata          = substr($saveformdata,0,1);
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
 
 ##########################################################################
 # Language Settings
@@ -168,11 +166,11 @@ $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 
 # Step 1 or beginning
 if (!$saveformdata || $do eq "form") {
-  print STDERR "FORM called\n";
+  print STDERR "Calling subfunction FORM\n";
   $maintemplate->param("FORM", 1);
   &form;
 } else {
-  print STDERR "SAVE called\n";
+  print STDERR "Calling subfunction SAVE\n";
   $maintemplate->param("SAVE", 1);
   &save;
 }
@@ -327,7 +325,7 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WID
 				%htmltemplate_options,
 				# associate => $cfg,
 				);
-	print STDERR "timeserver.cgi: sub error called with message $error.\n";
+	print STDERR "timeserver.cgi: Sub ERROR called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
 	LoxBerry::System::readlanguage($errtemplate);
 	LoxBerry::Web::head();

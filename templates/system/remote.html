@@ -1,0 +1,340 @@
+<!-- ********************* FORM 1 ******************** -->
+
+<TMPL_IF FORM1>
+
+<P><TMPL_VAR REMOTE.HINT_INTRODUCTION></P>
+
+<BR>
+
+<STYLE>
+	.lb_flex-item 
+	{	
+		min-width	:450px;
+		width		:450px;
+		max-width	:450px;
+		flex-wrap	:nowrap;
+		margin-top: -10px;  
+	}
+	.lb_flex-item-help 
+	{
+		min-width	:100px;
+		width		:100%;
+		position	:relative;
+		margin-left	:10px;
+	}
+</STYLE>
+
+<FORM id="main_form" method="post" data-ajax="false"> 
+
+<DIV	class="lb_flex-container remote">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="supportkey"><TMPL_VAR REMOTE.LABEL_SUPPORTKEY></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<INPUT width="100%" value="<TMPL_VAR SUPPORTKEY>" id="supportkey" name="supportkey" type="text" class="textfield" 
+		data-validation-rule="^([A-Za-z0-9]){25,25}$" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_SUPPORTKEY>" maxlength="25">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container remote">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<A	id=		"btncancel"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"delete"
+			href=		"/admin/system/index.cgi?form=system">
+			<TMPL_VAR COMMON.BUTTON_CANCEL></A>
+		<BUTTON	type=		"submit"
+			form=		"main_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"check">
+			<TMPL_VAR REMOTE.BUTTON_ACTIVATE>
+		</BUTTON>
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+</FORM>
+
+<script>
+	// Validation
+	validate_enable('#supportkey');
+	validate_chk_object(['#supportkey']);
+</script>
+
+
+</TMPL_IF>
+
+<!-- ********************* FORM 2 ******************** -->
+
+<TMPL_IF FORM2>
+
+<STYLE>
+	.lb_flex-item 
+	{	
+		min-width	:450px;
+		width		:450px;
+		max-width	:450px;
+		flex-wrap	:nowrap;
+		margin-top	:-10px;  
+	}
+	.lb_flex-item-label
+	{
+		min-width	:100px;
+		position	:relative;
+		margin-left	:10px;
+	}
+	.lb_flex-data
+	{
+		min-width	:100px;
+		position	:relative;
+		margin-left	:10px;
+		text-align	:left;
+		font-weight	:bold;
+		font-size	:1.0em;
+	       	font-family	:Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;
+		text-align	:center;
+	}
+	.lb_flex-item-help 
+	{
+		min-width	:100px;
+		width		:100%;
+		position	:relative;
+		margin-left	:10px;
+	}
+</STYLE>
+
+<TMPL_IF OFFLINE>
+	<DIV style="background-color: rgba(255, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; padding:10px;">
+</TMPL_IF>
+<TMPL_IF ONLINE>
+	<DIV style="background-color: rgba(205, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; padding:10px;">
+</TMPL_IF>
+		<DIV	class="lb_flex-container" style="margin-bottom: 0px; justify-content: center;">
+			<DIV	class="lb_flex-item-label"><TMPL_VAR REMOTE.LABEL_ACTIVE_SUPPORTKEY></DIV>
+			<DIV	class="lb_flex-data"><TMPL_VAR SUPPORTKEY></DIV>
+			<DIV	class="lb_flex-item-label" style="text-align: left;">
+			<BUTTON	type=		"submit"
+				form=		"reset_form"
+				id=		"btnsubmit"
+				data-role=	"button"
+				data-inline=	"true"
+				data-mini=	"true"
+				data-icon=	"delete">
+				<TMPL_VAR REMOTE.BUTTON_RESET>
+			</BUTTON>
+			</DIV>
+			<DIV	class="lb_flex-item-label"><TMPL_VAR REMOTE.LABEL_VALID></DIV>
+			<DIV	class="lb_flex-data"><TMPL_VAR CERTDATE></DIV>
+			<DIV	class="lb_flex-item-label"><TMPL_VAR REMOTE.LABEL_STATUS></DIV>
+			<DIV	class="lb_flex-data"><TMPL_VAR STATUS></DIV>
+		</DIV>
+	</DIV>
+
+<BR>
+<BR>
+
+<!-- Button area 1 -->
+
+<DIV style="text-align:center;">
+		<!-- Buttons for widget -->
+		<BUTTON	type=		"submit"
+			form=		"connect_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			style=		"background-color: rgba(37, 226, 18, 0.6); margin-left:50px"
+			data-icon=	"check">
+			<TMPL_VAR REMOTE.BUTTON_CONNECT>
+		</BUTTON>
+		<BUTTON	type=		"submit"
+			form=		"disconnect_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			style=		"background-color: rgba(255, 128, 128, 0.9)"
+			data-icon=	"delete">
+			<TMPL_VAR REMOTE.BUTTON_DISCONNECT>
+		</BUTTON>
+		<A	id=		"btnlogfile"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"info"
+			href=		"/admin/system/tools/logfile.cgi?logfile=system_tmpfs%2Fopenvpn.log&header=html&format=template"
+			target=		"_blank">
+			<TMPL_VAR COMMON.BUTTON_LOGFILE></A>
+</DIV>
+
+<BR>
+<BR>
+<BR>
+
+<FORM id="main_form" method="post" data-ajax="false"> 
+<INPUT id="saveformdata" name="saveformdata" type="hidden" value="1">
+<DIV	class="lb_flex-container openvpnsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label" ><TMPL_VAR REMOTE.LABEL_AUTOCONNECT></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<label><input type="checkbox" id="Remote.Autoconnect" name="Remote.Autoconnect" value="1"><TMPL_VAR REMOTE.LABEL_AUTOCONNECT2></label>
+	</DIV>
+	<DIV	class="lb_flex-item-help">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container openvpnsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="httpproxy"><TMPL_VAR REMOTE.LABEL_HTTPPROXY></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="100%" value="" id="Remote.Httpproxy" name="Remote.Httpproxy" type="text" class="textfield" 
+		data-validation-rule="special:url" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_URL>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR REMOTE.HINT_HTTPPROXY>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+<DIV	class="lb_flex-container openvpnsettings">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="httpport"><TMPL_VAR REMOTE.LABEL_HTTPPORT></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input id="Remote.Httpport" name="Remote.Httpport" type="text" class="textfield" value=""  
+		data-validation-rule="special:number-min-max-value:1:65000" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_PORT>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR REMOTE.HINT_HTTPPORT>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+</FORM>
+
+<!-- Button area 2 -->
+
+<BR>
+
+<DIV style="text-align:center;">
+		<!-- Buttons for widget -->
+		<A	id=		"btncancel"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"delete"
+			href=		"/admin/system/index.cgi?form=system">
+			<TMPL_VAR COMMON.BUTTON_CANCEL></A>
+		<BUTTON	type=		"submit"
+			form=		"main_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"check">
+			<TMPL_VAR COMMON.BUTTON_SAVE>
+		</BUTTON>
+</DIV>
+
+<FORM id="connect_form" method="post" data-ajax="false"> 
+<INPUT value="1" id="connect" name="connect" type="hidden">
+</FORM>
+
+<FORM id="disconnect_form" method="post" data-ajax="false"> 
+<INPUT value="1" id="disconnect" name="disconnect" type="hidden">
+</FORM>
+
+<FORM id="reset_form" method="post" data-ajax="false"> 
+<INPUT value="1" id="reset" name="reset" type="hidden">
+</FORM>
+
+<script>
+
+	function is_enabled( val ) 
+	{
+		// Returns true if val is in one of the possibilities 
+		var enabled_values = [ true, "true", 1, "1", "checked", "selected", "enabled", "enable", "on" ];
+		return (enabled_values.indexOf(val) > -1);
+	}
+
+	// Validation
+	validate_enable('#httpproxy');
+	validate_enable('#httpport');
+
+	var cfg;
+	
+	$(function() {
+		
+		// Parse config
+		cfg = JSON.parse('<TMPL_VAR JSONCONFIG>');
+		console.log("Config", cfg, cfg.Remote, cfg.subscriptions);
+
+		// Elements in Remote
+		for(var elemname in cfg.Remote) {
+			var inputType = $("#Remote\\."+elemname).attr('type');
+			console.log("Element", elemname, cfg.Remote[elemname], inputType);
+			if(inputType == "checkbox") {
+				if( cfg.Remote[elemname] == 1) 
+					$("#Remote\\."+elemname).prop('checked', true);
+				else
+					$("#Remote\\."+elemname).prop('checked', false);
+			} else {
+					$("#Remote\\."+elemname).val(cfg.Remote[elemname]);
+			}
+		}
+
+		$('select').selectmenu('refresh', true);
+		$('input:checkbox').checkboxradio('refresh');
+
+	});
+
+</script>
+
+</TMPL_IF>
+
+
+<!-- ********************* ERROR ******************** -->
+
+
+<TMPL_IF ERROR>
+	<center>
+	<table border=0>
+	<tr>
+		<td align="center">
+			<h2><TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR></h2>
+			<p>
+			<TMPL_VAR ERRORMSG>
+			<br/>
+			<br/>
+			</p>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<p>
+			 <a id="btnback" href="javascript:history.back();" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR COMMON.BUTTON_BACK></a>
+			</p>
+		</td>
+	</tr>
+	</table>
+	</center>
+</TMPL_IF>

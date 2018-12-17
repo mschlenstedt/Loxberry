@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.2.5.5";
+our $VERSION = "1.4.0.4";
 our $DEBUG = 0;
 
 use base 'Exporter';
@@ -43,6 +43,7 @@ our @EXPORT = qw (
 	$lbstemplatedir
 	$lbsdatadir
 	$lbslogdir
+	$lbstmpfslogdir
 	$lbsconfigdir
 	$lbssbindir
 	$lbsbindir
@@ -129,6 +130,8 @@ $lbhomedir is detected in the following order:
 # This code is executed on every use
 ##################################################################
 
+print STDERR "=== " . currtime('hr') . " === DEBUG ENABLED (executing $0) =======================\n" if ($DEBUG);
+
 # Set global variables
 
 # Get LoxBerry home directory
@@ -210,9 +213,15 @@ our $lbshtmlauthdir = "$lbhomedir/webfrontend/htmlauth/system";
 our $lbstemplatedir = "$lbhomedir/templates/system";
 our $lbsdatadir = "$lbhomedir/data/system";
 our $lbslogdir = "$lbhomedir/log/system";
+our $lbstmpfslogdir = "$lbhomedir/log/system_tmpfs";
 our $lbsconfigdir = "$lbhomedir/config/system";
 our $lbssbindir = "$lbhomedir/sbin";
 our $lbsbindir = "$lbhomedir/bin";
+
+our %SL; # Shortcut for System language phrases
+our %L;  # Shortcut for Plugin language phrases
+our $reboot_required_file = "$lbstmpfslogdir/reboot.required";
+
 
 # Variables only valid in this module
 my $lang;
@@ -226,14 +235,15 @@ my $lbfriendlyname;
 my $lbversion;
 my @plugins;
 my $plugins_delcache;
+my $plugindb_timestamp = 0;
+my $plugindb_timestamp_last = 0;
+my $plugindb_lastchecked = 0;
+
 my $webserverport;
 my $clouddnsaddress;
 my $msClouddnsFetched;
 my $sysloglevel;
 
-our %SL; # Shortcut for System language phrases
-our %L;  # Shortcut for Plugin language phrases
-our $reboot_required_file = "$lbhomedir/log/system_tmpfs/reboot.required";
 
 
 # Finished everytime code execution
@@ -499,8 +509,19 @@ sub plugindata
 ##################################################################################
 sub get_plugins
 {
+	
 	my ($withcomments, $forcereload, $plugindb_file) = @_;
 	
+	# When the plugindb has changed, always force a reload of the plugindb
+	
+	if($plugindb_timestamp_last != plugindb_changed_time()) {
+			# Changed
+			my $plugindb_timestamp_new = plugindb_changed_time();
+			$forcereload = 1;
+			print STDERR "get_plugins: Plugindb timestamp has changed (old: $plugindb_timestamp_last new: $plugindb_timestamp_new)\n" if ($DEBUG);
+			$plugindb_timestamp_last = $plugindb_timestamp_new;
+		}
+		
 	if (@plugins && !$forcereload && !$plugindb_file && !$plugins_delcache) {
 		print STDERR "get_plugins: Returning cached version of plugindatabase\n" if ($DEBUG);
 		return @plugins;
@@ -510,6 +531,7 @@ sub get_plugins
 	
 	if (! $plugindb_file) {
 		$plugindb_file = "$lbsdatadir/plugindatabase.dat";
+		$plugins_delcache = 0;
 	} else {
 		$plugins_delcache = 1;
 	}
@@ -583,6 +605,28 @@ sub get_plugins
 	return @plugins;
 
 }
+
+##################################################################################
+# INTERNAL function plugindb_changed
+# Returns the timestamp of the plugindb. Only really checks every minute
+##################################################################################
+
+sub plugindb_changed_time
+{
+	
+	my $plugindb_file = "$lbsdatadir/plugindatabase.dat";
+	
+	# If it was never checked, it cannot have changed
+	if ($plugindb_timestamp == 0 or $plugindb_lastchecked+60 < time) {
+		$plugindb_timestamp = (stat $plugindb_file)[9];
+		$plugindb_lastchecked = time;
+		print STDERR "Updating plugindb timestamp variable to $plugindb_timestamp\n" if ($DEBUG);
+	}
+	
+	return $plugindb_timestamp;	
+
+}
+
 
 ##################################################################################
 # Get System Version
@@ -1151,6 +1195,10 @@ sub check_securepin
 {
 	my ($securepin) = shift;
 	
+	my $pinerror_file = '/dev/shm/securepin.errors';
+	my $pinerrobj;
+	my $pinerr;
+	
 	open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat") or 
 		do {
 			Carp::carp("check_securepin: Cannot open $LoxBerry::System::lbsconfigdir/securepin.dat\n");
@@ -1158,13 +1206,47 @@ sub check_securepin
 			};
 	my $securepinsaved = <$fh>;
 	close ($fh);
-
-	if (crypt($securepin, $securepinsaved) ne $securepinsaved) {
+	
+	if (-e $pinerror_file) {
+		require LoxBerry::JSON;
+		$pinerrobj = LoxBerry::JSON->new();
+		$pinerr = $pinerrobj->open(filename => $pinerror_file);
+		
+		if ( $pinerr and $pinerr->{locked} ) {
+			if( time < ($pinerr->{locked}+5*60) ) {
+				print STDERR "SecurePIN is locked";
+				sleep(3);
+				return (3);
+			} else {
+				delete $pinerr->{locked};
+				delete $pinerr->{failure_count};
+				
+			}
+		}
+		$pinerrobj->write();
+		undef $pinerrobj;
+	}
+	
+	if ( crypt($securepin, $securepinsaved) ne $securepinsaved ) {
 			# Not equal
+			require LoxBerry::JSON;
+			$pinerrobj = LoxBerry::JSON->new();
+			$pinerr = $pinerrobj->open(filename => $pinerror_file, writeonclose => 1);
+			$pinerr->{failure_count} = 0 if (! $pinerr->{failure_count});
+			sleep($pinerr->{failure_count});
+			$pinerr->{failure_count} += 1;
+			
+			$pinerr->{failure_time} = time if (! $pinerr->{failure_time});
+			if( $pinerr->{failure_count} > 5) {
+				print STDERR "SecurePIN was locked";
+				$pinerr->{locked} = time;
+				return (3);
+			}
 			return (1);
 	} else {
-			# OK
-			return (undef);
+		# OK
+		unlink $pinerror_file;
+		return (undef);
 	}
 }
 
@@ -1329,7 +1411,7 @@ sub lock
 			}
 			
 		}
-	print "seemsrunning: $seemsrunning\n";
+	print STDERR "seemsrunning: $seemsrunning\n" if ($DEBUG);
 	} while ($seemsrunning && $p{wait} && $delay < $p{wait});
 	return $seemsrunning if ($seemsrunning);
 	

@@ -10,7 +10,7 @@
 		<select onclick="disable();" name="server" id="server" data-mini="true" data-inline="true">
 			<option value=""><TMPL_VAR NETSHARES.LABEL_SELECT></option>
 			<TMPL_LOOP NETSERVERS>
-			<option value="<TMPL_VAR NETSERVER_SERVER>|<TMPL_VAR NETSERVER_TYPE>"><TMPL_VAR NETSERVER_SERVER></option>
+			<option value="<TMPL_VAR NETSERVER_SERVER>|<TMPL_VAR NETSERVER_TYPE>"><TMPL_VAR NETSERVER_SERVER> (<TMPL_VAR NETSERVER_USERNAME>)</option>
 			</TMPL_LOOP>
 		</select>
 		<a id="debug" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/netshares.cgi?a=debuglog"><TMPL_VAR NETSHARES.BUTTON_ADD_DEBUGLOG></a>

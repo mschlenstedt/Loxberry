@@ -143,7 +143,7 @@ if ($use_auth) {
 		?></font></center></p><?php
 	};
 	?>
-	<p><center><?php echo $SL['FILEMANAGER.LABEL_SECUREPIN']?></center></p>
+	<p><center><?php echo $SL['SECUREPIN.ENTER_SECUREPIN']?></center></p>
             <form action="" method="post" style="margin:10px;text-align:center">
                 <input type="hidden" name="fm_usr" value="loxberry">
                 <input type="password" name="fm_pwd" value="" placeholder="SecurePIN" required>
@@ -1705,8 +1705,8 @@ function fm_show_nav_path($path)
 </div>
         <?php
         $path = fm_clean_path($path);
-        $root_url = "<a href='?p='><i class='icon-home' title='" . FM_ROOT_PATH . "'></i></a>";
         $sep = '<i class="icon-separator"></i>';
+        $root_url = "<a href='?p='><i class='icon-home' title='" . FM_ROOT_PATH . "'></i></a> ".str_replace("/",$sep, FM_ROOT_PATH);
         if ($path != '') {
             $exploded = explode('/', $path);
             $count = count($exploded);

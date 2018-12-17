@@ -26,8 +26,12 @@ expect "Enter new UNIX password"
 send "$passwordnew\r"
 expect "Retype new UNIX password"
 send "$passwordnew\r"
-sleep 1
+sleep .5
 expect { 
 	"passwd: password updated successfully" { exit 0 }
-	default { exit 1 }
+	"Password unchanged"  { exit 1 }	
+	"Bad: new password is just a wrapped version of the old one" { exit 2 }	
+	"Bad: new and old password are too similar"  { exit 3 }	
+	"You must choose a longer password"  { exit 4 }	
+	default { exit 5 }
 }	
