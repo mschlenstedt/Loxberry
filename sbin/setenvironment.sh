@@ -7,6 +7,9 @@ fi
 
 LBHOME="/opt/loxberry"
 
+# Group membership
+/usr/sbin/usermod -a -G sudo,dialout,audio,gpio,tty,www-data loxberry
+
 # LoxBerry Home Directory in Environment
 awk -v s="LBHOMEDIR=$LBHOME" '/^LBHOMEDIR=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
@@ -205,14 +208,21 @@ if [ -L /etc/apache2 ]; then
 fi
 ln -s $LBHOME/system/apache2 /etc/apache2
 
+# Disable PrivateTmp for Apache2 on systemd
+# (also included in 1.0.2 Update script)
+if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
+	mkdir -p /etc/systemd/system/apache2.service.d
+	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
+fi
+
 # Lighttpd Config
-if [ ! -L /etc/lighttpd ]; then
-	mv /etc/lighttpd /etc/lighttpd.old
-fi
-if [ -L /etc/lighttpd ]; then  
-	rm /etc/lighttpd
-fi
-ln -s $LBHOME/system/lighttpd /etc/lighttpd
+#if [ ! -L /etc/lighttpd ]; then
+#	mv /etc/lighttpd /etc/lighttpd.old
+#fi
+#if [ -L /etc/lighttpd ]; then  
+#	rm /etc/lighttpd
+#fi
+#ln -s $LBHOME/system/lighttpd /etc/lighttpd
 
 # Network config
 if [ ! -L /etc/network/interfaces ]; then
@@ -289,9 +299,6 @@ if [ -L /etc/cron.d ]; then
 fi
 ln -s $LBHOME/system/cron/cron.d /etc/cron.d
 
-# Group mebership
-/usr/sbin/usermod -a -G sudo,dialout,audio,gpio,tty,www-data loxberry
-
 # Skel for system logs, LB system logs and LB plugin logs
 if [ -d $LBHOME/log/skel_system/ ]; then
     find $LBHOME/log/skel_system/ -type f -exec rm {} \;
@@ -305,13 +312,6 @@ fi
 
 # Clean apt cache
 rm -rf /var/cache/apt/archives/*
-
-# Disable PrivateTmp for Apache2 on systemd
-# (also included in 1.0.2 Update script)
-if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
-	mkdir -p /etc/systemd/system/apache2.service.d
-	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
-fi
 
 # Systemd service for usb automount
 # (also included in 1.0.4 Update script)
@@ -361,7 +361,10 @@ fi
 if [ -L /etc/watchdog.conf ]; then
     rm /etc/watchdog.conf
 fi
-ln -f -s /etc/watchdog.conf $LBHOME/system/watchdog/watchdog.conf
+/bin/sed -i "s#REPLACELBHOMEDIR#"$LBHOMEDIR"#g" $LBHOME/system/watchdog/rsyslog.conf
+ln -f -s $LBHOME/system/watchdog/watchdog.conf /etc/watchdog.conf
+ln -f -s $LBHOME/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf
+systemctl restart rsyslog.service
 
 # Activating i2c
 # (also included in 1.0.3 Update script)
