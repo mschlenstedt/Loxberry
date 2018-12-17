@@ -37,21 +37,6 @@
 			var refresh_footer_icons_interval_timer = setInterval(refresh_footer_icons, 30000);
 			$( window ).resize(function() { refresh_footer_icons(); });
 		
-			// Footer icon animation for Updates/Installations 
-			var sdegree = 0; 			// Rotation Angle
-			var rotate_update_timer;	// Rotation Timer
-	  		function rotate_update_running_icon() 
-			{
-		  		rotate_update_timer  = setInterval(function()
-		  		{
-		  			sdegree 	++ ;
-			    	sdegree 	= sdegree - 5 ;
-			    	var srotate = "rotate(" + sdegree + "deg)";
-			    	$("#update_alert").css({"-webkit-transform" : srotate,"transform" : srotate,"-webkit-transform-origin" : "50% 50%","transform-origin" : "50% 50%"});
-			    	if ( sdegree == -360 ) sdegree = 0; 
-			    }, 50); // Rotate by -5 degrees every 50 ms
-			}
-			
 			// Footer icon animation for Reboot (fade in)
 			function reboot_on()
 			{ 
@@ -129,7 +114,6 @@
 								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
 							}); 
 							clearInterval (rotate_update_timer);
-							//rotate_update_running_icon();
 						}
 						else 
 						{
