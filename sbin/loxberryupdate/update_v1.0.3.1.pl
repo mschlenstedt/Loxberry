@@ -71,7 +71,7 @@ sub delete_directory
 	my $delfolder = shift;
 	
 	if (-d $delfolder) {   
-		File::Path::rmtree($delfolder, {error => \my $err});
+		rmtree($delfolder, {error => \my $err});
 		if (@$err) {
 			for my $diag (@$err) {
 				my ($file, $message) = %$diag;
