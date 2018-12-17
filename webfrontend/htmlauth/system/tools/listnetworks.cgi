@@ -83,10 +83,11 @@ if (!$error) {
   #  @result = <F>;
   #close (F);
 
-  $i = 1;
+  $i = 0;
   
   my @networks;
   my %network;
+  my $hashrefhash;
   foreach (@result){
     
 	s/[\n\r]//g;
@@ -96,9 +97,9 @@ if (!$error) {
     
 	
     if ($fields[0] =~ /Cell \d+ - Address/) {
- 	  $i++;
-      push @networks, \%network;
-	  %network = ();
+ 	  push @networks, $network{$i} if ($i != 0);
+	  $i++;
+      #%network = ();
 	  # $ssid = "";
       # $encryption = "";
       # $bitrates = "";
@@ -107,45 +108,45 @@ if (!$error) {
     }
     if ($fields[0] eq "ESSID") {
       $fields[1] =~ s/"//g;
-      $network{ssid} = $fields[1];
+      $network{$i}{ssid} = $fields[1];
     }
     if ($fields[0] eq "Encryption key") {
       if ($fields[1] eq "on") {
-      $network{encryption} = $SL{'COMMON.MSG_YES'};
+      $network{$i}{encryption} = $SL{'COMMON.MSG_YES'};
       } else {
-      $network{encryption} = $SL{'COMMON.MSG_NO'};
+      $network{$i}{encryption} = $SL{'COMMON.MSG_NO'};
       } 
     }
     # Bit Rates are a little more tricky
-    if ($fields[0] eq "Bit Rates" && $network{bitrates}) {
-      $network{bitrates} = "$network{bitrates}; $fields[1]";
+    if ($fields[0] eq "Bit Rates" && $network{$i}{bitrates}) {
+      $network{$i}{bitrates} = "$network{$i}{bitrates}; $fields[1]";
     }
-    if ($fields[0] eq "Bit Rates" && !$network{bitrates}) {
-      $network{bitrates} = "$fields[1]";
+    if ($fields[0] eq "Bit Rates" && !$network{$i}{bitrates}) {
+      $network{$i}{bitrates} = "$fields[1]";
     }
     if ($fields[0] =~ /^\d+ Mb\/s/) {
-      $network{bitrates} = "$network{bitrates}; $fields[0]";
+      $network{$i}{bitrates} = "$network{$i}{bitrates}; $fields[0]";
     }
     # We found some different listings for different WLAN adapters here...
     if ($fields[0] =~ /^Quality/) {
       @fields1 = split(/=/,$fields[0]);
       $fields1[1] =~ s/  Signal level$//g;
       $fields1[2] =~ s/\s+$//g;
-      $network{quality} = $fields1[1];
-      $network{force} = $fields1[2];
+      $network{$i}{quality} = $fields1[1];
+      $network{$i}{force} = $fields1[2];
     } 
     if ($fields[0] =~ /^Signal level/) {
       $fields[0] =~ s/Signal level=//g;
       @fields1 = split(/\//,$fields[0]);
       $fields1[2] =~ s/\s+$//g;
-      $network{quality} = $fields1[1];
-      $network{force} = $fields1[0];
+      $network{$i}{quality} = $fields1[1];
+      $network{$i}{force} = $fields1[0];
 
     } 
     
   }
 
-   push @networks, \%network;
+   push @networks, $network{$i};
    $maintemplate->param('networks', \@networks);
 
 }

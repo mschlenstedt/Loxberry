@@ -59,7 +59,7 @@ if (!-e "$lbsconfigdir/loxberryid.cfg" && $sendstat) {
 	close($fh);
 }
 
-# Send ID to loxberry.de fpr usage statistics. Nothing more than Date/Time (in Unixformat) and
+# Send ID to loxberry.de for usage statistics. Nothing more than Date/Time (in Unixformat) and
 # the randomly ID will be send. No personal data, no data of your LoxBerry.
 if ($sendstat) {
 	
@@ -95,6 +95,8 @@ if ($sendstat) {
 	$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
 	$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
 	$architecture = "Virtuozzo" if (-e "$lbsconfigdir/is_virtuozzo.cfg");
+	$architecture = "Odroid" if (-e "$lbsconfigdir/is_odroidxu3xu4.cfg");
+	
 	
 	# Send LoxBerry version info
 	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture";

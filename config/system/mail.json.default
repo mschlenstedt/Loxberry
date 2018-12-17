@@ -1,0 +1,19 @@
+{
+   "NOTIFICATION" : {
+      "MAIL_PLUGIN_ERRORS" : "true",
+      "MAIL_PLUGIN_INFOS" : "true",
+      "MAIL_SYSTEM_ERRORS" : "true",
+      "MAIL_SYSTEM_INFOS" : "true"
+   },
+   "SMTP" : {
+      "ACTIVATE_MAIL" : 0,
+      "AUTH" : 1,
+      "CRYPT" : 1,
+      "EMAIL" : "",
+      "ISCONFIGURED" : "1",
+      "PORT" : "587",
+      "SMTPPASS" : "",
+      "SMTPSERVER" : "",
+      "SMTPUSER" : ""
+   }
+}

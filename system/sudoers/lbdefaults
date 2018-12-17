@@ -1,5 +1,5 @@
 # Keep LoxBerry environment with sudo
-Defaults        env_keep += "LBHOMEDIR LBPCGI LBPHTML LBPTEMPL LBPDATA LBPLOG LBPCONFIG LBPBIN LBSCGI LBSHTML LBSTEMPL LBSDATA LBSLOG LBSCONFIG LBSBIN LBSSBIN PERL5LIB LBPHTMLAUTH LBSHTMLAUTH"
+Defaults        env_keep += "LBHOMEDIR LBPCGI LBPHTML LBPTEMPL LBPDATA LBPLOG LBPCONFIG LBPBIN LBSCGI LBSHTML LBSTEMPL LBSDATA LBSLOG LBSTMPFSLOG LBSCONFIG LBSBIN LBSSBIN PERL5LIB LBPHTMLAUTH LBSHTMLAUTH"
 Defaults        env_delete -= "PERL5DB PERL5OPT PERL5LIB PERLLIB"
 
 # Allow members of group sudo to execute any command
@@ -28,3 +28,6 @@ loxberry ALL = NOPASSWD: /opt/loxberry/sbin/resize_rootfs
 loxberry ALL = NOPASSWD: /etc/init.d/autofs
 loxberry ALL = NOPASSWD: /etc/init.d/apache2
 loxberry ALL = NOPASSWD: /bin/systemctl
+loxberry ALL = NOPASSWD: /sbin/ip
+loxberry ALL = NOPASSWD: /opt/loxberry/sbin/openvpn-startup
+loxberry ALL = NOPASSWD: /opt/loxberry/sbin/setserial
