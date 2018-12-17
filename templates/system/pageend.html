@@ -113,14 +113,12 @@
 							{ 
 								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
 							}); 
-							clearInterval (rotate_update_timer);
 						}
 						else 
 						{
 							$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"default" }); 
 							$("#update_alert").attr("title",""); 
 							$("#update_alert").fadeTo( 2000 , 0); 
-							clearInterval (rotate_update_timer);
 						}
 					})
 					.error(function(XMLHttpRequest, textStatus, errorThrown) 
