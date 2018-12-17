@@ -21,7 +21,6 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute admin.cgi\n#################\n";
 use MIME::Base64;
 
 use CGI::Carp qw(fatalsToBrowser);
@@ -75,16 +74,13 @@ our $nodefaultpwd;
 our $creditwebadmin;
 our $creditconsole;
 our $creditsecurepin;
-our $wraperror = 0;
-my $quoted_adminpass1;
-my $quoted_adminpassold;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.3.3";
+my $version = "0.3.3.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -129,11 +125,11 @@ $R::saveformdata if (0);
 $R::do if (0);
 
 if (!$R::saveformdata || $R::do eq "form") {
-  print STDERR "Calling subfunction FORM\n";
+  print STDERR "FORM called\n";
   $maintemplate->param("FORM", 1);
   &form;
 } else {
-  print STDERR "Calling subfunction SAVE\n";
+  print STDERR "SAVE called\n";
   $maintemplate->param("SAVE", 1);
   &save;
 }
@@ -203,11 +199,8 @@ sub save {
 	}
 
 	# IMMED: Check Password
-	$quoted_adminpassold = quotemeta($R::adminpassold);
-	$quoted_adminpass1 = quotemeta($R::adminpass1);
-	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl checkpasswd loxberry $quoted_adminpassold);
+	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl checkpasswd loxberry $R::adminpassold);
 	$exitcode  = $? >> 8;
-	print STDERR "credentialshandler.pl Exitcode ".$exitcode."\n";
 	if ($exitcode == 1) {
 		$error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
 		&error;
@@ -272,7 +265,7 @@ sub save {
 	if ($adminuser && !$adminpass1) {
 	
 		# Save Username/Password for Webarea
-		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $quoted_adminpassold);
+		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $adminpassold);
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
@@ -287,106 +280,70 @@ sub save {
 	## User wants to change the password (and maybe also the username):
 	##
 	if ($adminpass1) {
-		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp "$adminpassold" "$adminpass1");
+		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp $adminpassold $adminpass1);
 		$exitcode  = $? >> 8;
-		print STDERR "setloxberrypasswd.exp Exitcode ".$exitcode."\n";
-		if ($exitcode eq 1) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."<br>";
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode eq 2) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."<br>";
-			$wraperror = 1;
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode eq 3) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."<br>";
-			$wraperror = 1;
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode eq 4) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."<br>";
-			$wraperror = 1;
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode eq 5) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."<br>";
-			$wraperror = 1;
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode ne 0) {
-			print STDERR "setloxberrypasswd.exp: adminpassold Exitcode $exitcode\n";
-			$error .= " setloxberrypasswd.exp: adminpassold Exitcode $exitcode<br>";
+		if ($exitcode ne 0) {
+			print STDERR "setloxberrypasswd.exp adminpassold Exitcode $exitcode\n";
+			$error .= " setloxberrypasswd.exp adminpassold Exitcode $exitcode<br>";
 			# &error;
 			# exit;
 		} else {
 			$maintemplate->param("ADMINOK", 1);
 		}	
-		if ($wraperror ne 1) {
-			
-			# Try to set new SAMBA passwords for user "loxberry"
-	
-			## First try if default password is still valid:
-			# $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
-			## If default password isn't valid anymore:
-			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $quoted_adminpassold $quoted_adminpass1);
-			$exitcode  = $? >> 8;
-			if ($exitcode ne 0) {
-				print STDERR "setloxberrypasswdsmb.exp: adminpassold Exitcode $exitcode\n";
-				$error .= " setloxberrypasswdsmb.exp: adminpassold Exitcode $exitcode<br>";
-				# &error;
-				# exit;
-			} else {
-				$maintemplate->param("SAMBAOK", 1);
-			}	
-	
-			# Set MYSQL Password
-			# This only works if the initial password is still valid
-			# (password: "loxberry")
-			# Use eval {} here in case somthing went wrong
-			#$sqlerr = 0;
-			#$dsn = "DBI:mysql:database=mysql";
-			#eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
-			#$sqlerr = 1 if $@;
-			#eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
-			#$sqlerr = 1 if $@;
-			#eval {$sth->execute()};
-			#$sqlerr = 1 if $@;
-			#eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
-			#$sqlerr = 1 if $@;
-			#eval {$sth->execute()};
-			#$sqlerr = 1 if $@;
-			#eval {$sth->finish()};
-			#$sqlerr = 1 if $@;
-			#eval {$dbh->{AutoCommit} = 0};
-			#$sqlerr = 1 if $@;
-			#eval {$dbh->commit};
-			#$sqlerr = 1 if $@;
-			#if ($sqlerr eq 0) {
-			#  $maintemplate->param("SQLOK", 1);
-			#  print STDERR "sqlerr eq 0 - OK\n";
-			#}
-	
-			# Save Username/Password for Webarea
-			$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $quoted_adminpass1);
-			my $exitcode  = $? >> 8;
-			if ($exitcode != 0) {
-				$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
-				# &error;
-			} else {
-				$maintemplate->param("WEBOK", 1);
-			} 
-		}
+
+		# Try to set new SAMBA passwords for user "loxberry"
+
+		## First try if default password is still valid:
+		# $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
+		## If default password isn't valid anymore:
+		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $adminpassold $adminpass1);
+		$exitcode  = $? >> 8;
+		if ($exitcode ne 0) {
+			print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
+			$error .= " setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode<br>";
+			# &error;
+			# exit;
+		} else {
+			$maintemplate->param("SAMBAOK", 1);
+		}	
+
+		# Set MYSQL Password
+		# This only works if the initial password is still valid
+		# (password: "loxberry")
+		# Use eval {} here in case somthing went wrong
+		#$sqlerr = 0;
+		#$dsn = "DBI:mysql:database=mysql";
+		#eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
+		#$sqlerr = 1 if $@;
+		#eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
+		#$sqlerr = 1 if $@;
+		#eval {$sth->execute()};
+		#$sqlerr = 1 if $@;
+		#eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
+		#$sqlerr = 1 if $@;
+		#eval {$sth->execute()};
+		#$sqlerr = 1 if $@;
+		#eval {$sth->finish()};
+		#$sqlerr = 1 if $@;
+		#eval {$dbh->{AutoCommit} = 0};
+		#$sqlerr = 1 if $@;
+		#eval {$dbh->commit};
+		#$sqlerr = 1 if $@;
+		#if ($sqlerr eq 0) {
+		#  $maintemplate->param("SQLOK", 1);
+		#  print STDERR "sqlerr eq 0 - OK\n";
+		#}
+
+		# Save Username/Password for Webarea
+		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $adminpass1);
+		my $exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
+			# &error;
+		} else {
+			$maintemplate->param("WEBOK", 1);
+		} 
+		
 	}
 
 	##
@@ -400,14 +357,14 @@ sub save {
 			#&error;
 		} else {
 			$maintemplate->param("SECUREPINOK", 1);
-			print STDERR "credentialshandler.pl: changesecurepin securepin1 = 0 - OK\n";
+			print STDERR "credentialshandler.pl changesecurepin securepin1 = 0 - OK\n";
 		}
 	}
 	
 	##
 	## Overview of new passwords:
 	##
-	if ($adminpass1 && $wraperror ne 1) {
+	if ($adminpass1) {
 		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
 		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $adminpass1\r\n";
 		$maintemplate->param( "ADMINPASS", $adminpass1 );
@@ -439,7 +396,7 @@ sub save {
 	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
-	print STDERR "admin.cgi: Send OUTPUT and exit\n";
+	print STDERR "admin.cgi OUTPUT\n";
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
@@ -472,7 +429,7 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLA
 				%htmltemplate_options,
 				# associate => $cfg,
 				);
-	print STDERR "admin.cgi: Sub ERROR called with message $error.\n";
+	print STDERR "admin.cgi: sub error called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
 	LoxBerry::System::readlanguage($errtemplate);
 	LoxBerry::Web::head();
@@ -482,3 +439,4 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLA
 	LoxBerry::Web::foot();
 	exit;
 }
+

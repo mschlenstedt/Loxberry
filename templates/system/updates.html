@@ -1,5 +1,5 @@
 <TMPL_IF form>
-		<!-- ** START template/system/de/updates_menu.html 07.12.2018 21:13:12 ************************************************************************************ -->
+		<!-- ** START template/system/de/updates_menu.html 05.11.2017 22:56:00 ************************************************************************************ -->
 		<!-- START Form for unattended-upgrades -->
 		
 		<div class="wide"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
@@ -190,7 +190,7 @@
 		<p>
 			<span id="LBU_HINT_RELEASE_TYPE"></span>
 			<br>
-			<a id="GitHub" style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
+			<a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
 		<p id="lbu_info">&nbsp;</p>
 		<div id="lbu_error" style="color:red;"></div>
 		<div style="font-size:125%;font-weight:bold;" id="lbu_release_name">&nbsp;</div>
@@ -430,16 +430,8 @@ $(document).ready( function () {
 				else { $("#keepupdatefiles").text(""); }
 			if(data.keepinstallfiles != undefined && data.keepinstallfiles !=="0") { $("#keepinstallfiles").text("KEEPINSTALLFILES is set"); }
 				else { $("#keepinstallfiles").text(""); }
-			if(data.branch != undefined && data.branch !== "master" ) 
-			{ 
-				$("#branch").text("Branch "+data.branch+" is set"); 
-				$("#GitHub").prop("href","https://github.com/mschlenstedt/Loxberry/commits/"+data.branch); 
-			}
-			else 
-			{ 
-				$("#branch").text(""); 
-				$("#GitHub").prop("href","https://github.com/mschlenstedt/Loxberry/commits/master"); 
-			}
+			if(data.branch != undefined && data.branch !== "master" ) { $("#branch").text("Branch "+data.branch+" is set"); }
+				else { $("#branch").text(""); }
 			
 			
 			

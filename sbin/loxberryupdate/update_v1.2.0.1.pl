@@ -100,7 +100,7 @@ qx { /var/cache/apt/archives/* };
 #
 LOGINF "Adding 'nofail' option to /etc/fstab";
 
-qx { awk '!/^#/ && !/^\\s/ && /^[a-zA-Z0-9]/ { if(!match(\$4,/nofail/)) \$4=\$4",nofail" } 1' /etc/fstab > /etc/fstab.new };
+qx { awk '!/^#/ && !/^ / && /^[a-zA-Z0-9]/ { if(!match(\$4,/nofail/)) \$4=\$4",nofail" } 1' /etc/fstab > /etc/fstab.new };
 qx { cp /etc/fstab /etc/fstab.backup };
 qx { cat /etc/fstab.new > /etc/fstab };
 qx { rm /etc/fstab.new };

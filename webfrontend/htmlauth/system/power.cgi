@@ -22,7 +22,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use HTML::Entities;
-print STDERR "Execute power.cgi\n#################\n";
+
 use CGI qw/:standard/;
 use Config::Simple;
 use warnings;
@@ -50,7 +50,7 @@ our $installfolder;
 our $languagefile;
 our $rebootbin;
 our $poweroffbin;
-our $do="";
+our $do;
 our $output;
 our $message;
 our $nexturl;
@@ -60,7 +60,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.3";
+my $version = "0.3.2.2";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 #$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -95,7 +95,11 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 }
 
 # And this one we really want to use
-$do           = $query{'do'} if $query{'do'};
+$do           = $query{'do'};
+
+# Filter
+$query{'lang'}         =~ tr/a-z//cd;
+$query{'lang'}         =  substr($query{'lang'},0,2);
 
 ##########################################################################
 # Language Settings
@@ -120,20 +124,20 @@ $maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
 
 # Reboot
 if ($do eq "reboot") {
-  print STDERR "Calling Subfunction REBOOT\n";
+  print STDERR "REBOOT called\n";
   $maintemplate->param("REBOOT", 1);
   &reboot;
 }
 
 # Poweroff
 if ($do eq "poweroff") {
-  print STDERR "Calling Subfunction POWEROFF\n";
+  print STDERR "POWEROFF called\n";
   $maintemplate->param("POWEROFF", 1);
   &poweroff;
 }
 
 # Everything else
-print STDERR "Calling Subfunction MENU\n";
+print STDERR "MENU called\n";
 $maintemplate->param("MENU", 1);
 &form;
 
@@ -148,7 +152,7 @@ sub form {
 	
 	my $reboot_required_file = $LoxBerry::System::reboot_required_file;
 	if (-e $reboot_required_file) {
-		print STDERR "READ reboot_required_file FILE\n";
+		print STDERR "READ FILE\n";
 		my $filecontent;
 		open my $fh, '<', $reboot_required_file;
 		read( $fh, $filecontent, 1000);

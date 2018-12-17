@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.4.0.1";
+my $scriptversion="1.2.5.4";
 
 my $release_url;
 my $oformat;
@@ -176,22 +176,6 @@ if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $qu
 
 my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
 LOGINF "Executing user of loxberryupdatecheck is $curruser";
-
-
-# Aquire a lock to check if an update is currently running
-eval {
-	LOGINF "Locking lbupdate to check if an update is running...";
-	my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate' );
-	if ($lockstate) {
-		LOGERR "Lock not possible. Reason: $lockstate";
-		$joutput{'error'} = $SL{"UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING"} . " (Lockstate $lockstate)";
-		&err;
-		exit(1);
-	} else {
-		LOGOK "No update seems to be running currently";
-		my $unlockstatus = LoxBerry::System::unlock(lockfile => 'lbupdate');
-	}
-};
 
 
 LOGOK "Parameters/settings of this update:";
@@ -676,16 +660,7 @@ sub check_commits
 				undef $log if ($log);
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				
-				my $releaseparam;
-				if( defined $release) {
-					LOGWARN "Version parameter '$release' was given. This will be used to process update scripts, independent of what version is installed.";
-					LOGWARN "This version '$release' will also be set to your general.cfg. Reset it after your test!";
-					$releaseparam = $release;
-				} else {
-					LOGINF "Version parameter 'config' was given";
-					$releaseparam = "config";
-				}
+				my $releaseparam = defined $release ? $release : "config";
 				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$releaseparam $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
 				exit(0);
 			} 

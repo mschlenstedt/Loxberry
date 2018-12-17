@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.4.0.1";
+my $scriptversion="1.0.0.6";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -363,7 +363,7 @@ foreach (@plugins) {
 LOGINF "Deleting temporary files.";
 system ("rm -rf $update_path");
 
-LOGEND "$0 finished.";
+LOGINF "$0 finished.";
 exit;
 
 

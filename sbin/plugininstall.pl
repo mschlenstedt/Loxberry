@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.4.0.2";
+my $version = "1.2.4.0";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1584,8 +1584,6 @@ sub purge_installation {
     system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.yearly/$pname 2>&1");
     # Sudoers
     system("rm -fv $lbhomedir/system/sudoers/$pname 2>&1");
-    # Install Log
-    system("rm -fv $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
   }
 
   # This will only be purged if we do an uninstallation
@@ -1653,8 +1651,6 @@ sub purge_installation {
     }
   }
 
-return();
-
 }
 
 #####################################################
@@ -1663,16 +1659,15 @@ return();
 
 sub logerr {
 
-	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "$currtime \e[1m\e[31mERROR:\e[0m $message\n";
+		print "\e[1m\e[31mERROR:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "$currtime <ERROR> $message\n";
+    		print LOG "<ERROR> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "$currtime <ERROR> $message\n";
+    		print "<ERROR> $message\n";
 	}
 
 	return();
@@ -1681,16 +1676,15 @@ sub logerr {
 
 sub logfail {
 
-	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "$currtime \e[1m\e[31mFAIL:\e[0m $message\n";
+		print "\e[1m\e[31mFAIL:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "$currtime <FAIL> $message\n";
+    		print LOG "<FAIL> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "$currtime <FAIL> $message\n";
+    		print "<FAIL> $message\n";
 	}
 
 	if ( -e "/tmp/uploads/$tempffile" ) {
@@ -1715,16 +1709,15 @@ sub logfail {
 
 sub logwarn {
 
-	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "$currtime \e[1m\e[31mWARNING:\e[0m $message\n";
+		print "\e[1m\e[31mWARNING:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "$currtime <WARNING> $message\n";
+    		print LOG "<WARNING> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "$currtime <WARNING> $message\n";
+    		print "<WARNING> $message\n";
 	}
 
 	return();
@@ -1734,16 +1727,15 @@ sub logwarn {
 
 sub loginfo {
 
-	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "$currtime \e[1mINFO:\e[0m $message\n";
+		print "\e[1mINFO:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "$currtime <INFO> $message\n";
+    		print LOG "<INFO> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "$currtime <INFO> $message\n";
+    		print "<INFO> $message\n";
 	}
 
 	return();
@@ -1752,16 +1744,15 @@ sub loginfo {
 
 sub logok {
 
-	my $currtime = currtime(hr);
 	if ( !$is_cgi ) {
-		print "$currtime \e[1m\e[32mOK:\e[0m $message\n";
+		print "\e[1m\e[32mOK:\e[0m $message\n";
   		open (LOG, ">>$logfile");
 		flock(LOG,2);
-    		print LOG "$currtime <OK> $message\n";
+    		print LOG "<OK> $message\n";
 		flock(LOG,8);
   		close (LOG);
 	} else {
-    		print "$currtime <OK> $message\n";
+    		print "<OK> $message\n";
 	}
 
 	return();

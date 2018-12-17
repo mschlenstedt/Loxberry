@@ -22,7 +22,7 @@ use LoxBerry::System;
 use LoxBerry::Storage;
 use LoxBerry::Web;
 use LoxBerry::Log;
-print STDERR "Execute netshares.cgi\n#####################\n";
+
 use Config::Simple;
 use warnings;
 use strict;
@@ -46,13 +46,13 @@ our $helptext;
 our $helplink;
 our $installfolder;
 our $languagefile;
-our $param_a="";
+
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.0.0.1";
 
 $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 
@@ -105,14 +105,14 @@ password=$password
 EOF
         close (F);
 
-	qx(ln -f -s /media/$type/$file $lbhomedir/system/storage/$type/$file 2>/dev/null);
+	qx(ln -f -s /media/$type/$file $lbhomedir/system/storage/$type/$file);
 
 	# Check read state
 	qx(sudo /etc/init.d/autofs restart);
-	qx(ls $lbhomedir/system/storage/$type/$file/ 2>/dev/null);
+	qx(ls $lbhomedir/system/storage/$type/$file/);
 	if ($? ne 0) {
 		# Some servers semms not to list the shares, so try to list files inside the shares
-		qx(ls $lbhomedir/system/storage/$type/$file/* 2>/dev/null);
+		qx(ls $lbhomedir/system/storage/$type/$file/*);
 		if ($? ne 0) {
 			$maintemplate->param("WARNING", $SL{'NETSHARES.ADD_WARNING'});
 		}
@@ -121,20 +121,18 @@ EOF
 }
 
 # Add new server?
-$param_a=$cgi->param("a") if $cgi->param("a");
-
-if ($param_a eq "add") {
+if ($cgi->param("a") eq "add") {
 
 	$maintemplate->param("ADD", 1);
 
 }
 
 # Remove server?
-if ($param_a eq "del") {
+if ($cgi->param("a") eq "del") {
 
 	my @fields = split(/\|/, $cgi->param("server"));
-	my $server = $fields[0];
-	my $type = $fields[1];
+	my $server = @fields[0];
+	my $type = @fields[1];
 	if ($cgi->param("q") ne "y") {
 		$maintemplate->param("SELFURL", "/admin/system/netshares.cgi?a=del&s=$server&t=$type");
 		$maintemplate->param("SERVER", $server);
@@ -142,15 +140,15 @@ if ($param_a eq "del") {
 	} else {
 		my $server = $cgi->param("s");
 		my $type = $cgi->param("t");
-		qx(rm -f $lbhomedir/system/storage/$type/$server 2>/dev/null);
-		qx(rm -f $lbhomedir/system/samba/credentials/$server 2>/dev/null);
+		qx(rm -f $lbhomedir/system/storage/$type/$server);
+		qx(rm -f $lbhomedir/system/samba/credentials/$server);
 		$maintemplate->param("DEL", 1);
 	}
 
 }
 
 # Create debuglog?
-if ($param_a eq "debuglog") {
+if ($cgi->param("a") eq "debuglog") {
 
 	$maintemplate->param("DEBUGLOG", 1);
 
@@ -207,7 +205,7 @@ if ($param_a eq "debuglog") {
 }
 
 # Show overview?
-if ( !$param_a && !$cgi->param("saveformdata") ) {
+if ( !$cgi->param("a") && !$cgi->param("saveformdata") ) {
 
 	# Get all Network shares
 	my @netshares = LoxBerry::Storage::get_netshares(0, 1);

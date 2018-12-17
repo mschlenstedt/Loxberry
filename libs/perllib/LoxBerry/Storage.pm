@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.4.0.1";
+our $VERSION = "1.2.0.7";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -57,6 +57,7 @@ sub get_netshares
 	}
 	my @sharetypes = readdir($fh1);
 	closedir($fh1);
+
 	@netshares = ();
 	my $netsharecount = 0;
 	
@@ -96,20 +97,16 @@ sub get_netshares
 				my $share = $_;
 				my %netshare;
 				my $state = "";
-
-				print STDERR "Check share $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share \n";
-
 				# Check read/write state
-				qx(ls \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share\" 2>/dev/null);
-
+				qx(ls \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share\");
 				if ($? eq 0) {
 					$state = "Readonly";
 				}
-				qx(touch \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\" 2>/dev/null);
+				qx(touch \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\");
 				if ($? eq 0) {
 					$state = "Writable";
 				}
-				qx(rm \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\" 2>/dev/null);
+				qx(rm \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share/check_loxberry_rw_state.tmp\");
 				if ( ($readwriteonly && $state ne "Writable") || !$state ) {
 					next;
 				}
@@ -173,9 +170,7 @@ sub get_netservers
 		}
   		my @serverfolders = readdir($fh2);
 		closedir($fh2);
-		
-		my %serveruser;
-		
+
 		foreach(@serverfolders) {
 			s/[\n\r]//g;
 			if($_ eq "." || $_ eq "..") {
@@ -188,19 +183,6 @@ sub get_netservers
 			$netserver{NETSERVER_SERVER} = $server;
 			$netserver{NETSERVER_TYPE} = $type;
 			$netserver{NETSERVER_SERVERPATH} = "$LoxBerry::System::lbhomedir/system/storage/$type/$server";
-			
-			
-			if ($netserver{NETSERVER_TYPE} eq "smb" and ! defined $serveruser{$netserver{NETSERVER_SERVER}} ) {
-				eval {
-					my $samba_cred = new Config::Simple("$LoxBerry::System::lbhomedir/system/samba/credentials/$netserver{NETSERVER_SERVER}");
-					if ( defined $samba_cred->param("default.username") ) {
-						$serveruser{$netserver{NETSERVER_SERVER}} = $samba_cred->param("default.username");
-					} else {
-						$serveruser{$netserver{NETSERVER_SERVER}} = "";
-					}
-				};
-			}
-			$netserver{NETSERVER_USERNAME} = $serveruser{$netserver{NETSERVER_SERVER}};
 			push(@netservers, \%netserver);
 		}
 	}

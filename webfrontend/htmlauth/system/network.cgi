@@ -21,7 +21,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute network.cgi\n###################\n";
+
 use URI::Escape;
 use CGI qw/:standard/;
 use LWP::UserAgent;
@@ -74,7 +74,10 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.5.2";
+my $version = "0.3.5.1";
+
+print STDERR "============= network.cgi ================\n";
+print STDERR "lbhomedir: $lbhomedir\n";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
@@ -264,11 +267,11 @@ if ($saveformdata)
 
 
 if (!$saveformdata) {
-  print STDERR "Calling subfunction FORM\n";
+  print STDERR "FORM called\n";
   $maintemplate->param("FORM", 1);
   &form;
 } else {
-  print STDERR "Calling subfunction SAVE\n";
+  print STDERR "SAVE called\n";
   $maintemplate->param("SAVE", 1);
   &save;
 }
