@@ -106,7 +106,7 @@ case "$1" in
 		log_action_begin_msg "Found manual network configuration in /boot. Activating..."
 		mv $LBHOMEDIR/system/network/interfaces  $LBHOMEDIR/system/network/interfaces.bkp > /dev/null 2>&1
 		cp /boot/network.txt  $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
-		dos2unix $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
+		dos2unix /etc/network/interfaces > /dev/null 2>&1
 		chown loxberry:loxberry $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
 		mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
 		log_action_cont_msg "Rebooting"
@@ -193,7 +193,7 @@ case "$1" in
 
   stop)
 	# Add "nofail" option to all mounts in /etc/fstab (needed for USB automount to work correctly)
-	awk '!/^#/ && !/^\s/ && /^[a-zA-Z0-9]/ { if(!match($4,/nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new };
+	awk '!/^#/ { if(!match($4, /nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
 	cp /etc/fstab /etc/fstab.backup
 	cat /etc/fstab.new > /etc/fstab
 	rm /etc/fstab.new

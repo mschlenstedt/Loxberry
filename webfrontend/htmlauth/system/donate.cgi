@@ -20,7 +20,7 @@
 ##########################################################################
 use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute donate.cgi\n##################\n";
+
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
@@ -72,6 +72,9 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
   $query{$namef} = $value;
 }
 
+
+$query{'lang'}         =~ tr/a-z//cd;
+$query{'lang'}         =  substr($query{'lang'},0,2);
 
 ##########################################################################
 # Language Settings

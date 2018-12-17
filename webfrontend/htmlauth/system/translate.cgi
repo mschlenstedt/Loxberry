@@ -21,7 +21,6 @@
 use Config::Simple '-strict';
 # use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute translate.cgi\n#####################\n";
 use LoxBerry::TimeMes;
 use HTML::Entities;
 use CGI;
@@ -41,7 +40,7 @@ my $template_title;
 my $error;
 my $plugin;
 my $system;
-my $form="";
+
 my $cfg;
 
 ##########################################################################
@@ -49,7 +48,7 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.4.2";
+my $version = "1.0.4.1";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -65,9 +64,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 # Example: Parameter lang is now $R::lang
 $R::form if (0);
-$form = $R::form if $R::form;
-
-if ($form eq 'plugin' || ($R::plugin && $R::plugin ne "undefined")) {
+if ($R::form eq 'plugin' || ($R::plugin && $R::plugin ne "undefined")) {
 	$plugin = 1;
 } else { 
 	$system = 1;

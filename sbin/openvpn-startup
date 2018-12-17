@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if test $UID -ne 0; then
-        echo "This script has to be run as root. Exiting."
-        exit 1
-fi
-
-openvpn --rmtun --dev tun99
-openvpn --mktun --dev tun99 --dev-type tun --user loxberry --group loxberry

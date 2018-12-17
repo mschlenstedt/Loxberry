@@ -22,7 +22,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
-print STDERR "Execute plugininstall.cgi\n#########################\n";
+
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
@@ -48,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.0";
+my $version = "1.0.0.5";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -121,24 +121,24 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.
 
 # Menu
 if (!$do || $do eq "form") {
-  print STDERR "Calling subfunction FORM\n";
+  print STDERR "FORM called\n";
   &form;
 }
 
 # Installation
 elsif ($do eq "install") {
-  print STDERR "Calling subfunction INSTALL\n";
+  print STDERR "INSTALL called\n";
   &install;
 }
 
 # UnInstallation
 elsif ($do eq "uninstall") {
-  print STDERR "Calling subfunction UNINSTALL\n";
+  print STDERR "UINSTALL called\n";
   &uninstall;
 }
 
 else {
-  print STDERR "Calling subfunction FORM (default)\n";
+  print STDERR "FORM called\n";
   $maintemplate->param("FORM", 1);
   &form;
 }
@@ -289,7 +289,7 @@ sub install {
 		die_on_bad_params=> 0,
 		associate => $cfg,
 		%htmltemplate_options,
-#		debug => 1,
+		debug => 1,
 	);
 	my %SL = LoxBerry::System::readlanguage($logtemplate);
 	$logtemplate->param( "LOGFILE", "$tempfile.log");
@@ -364,7 +364,7 @@ sub error {
 		# associate => $cfg,
 	);
 
-	print STDERR "plugininstall.cgi: Sub ERROR called with message $error.\n";
+	print STDERR "plugininstall.cgi: sub error called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
 
 	LoxBerry::System::readlanguage($errtemplate);

@@ -18,14 +18,6 @@
 # Version of this script
 $version = "1.0.0.2";
 
-
-##
-## THIS SCRIPT IS OBSOLETE STARTING FROM LOXBERRY 1.4
-## TESTMAIL IS SENT FROM mailserver.cgi using AJAX
-##
-
-
-
 ##########################################################################
 # Modules
 ##########################################################################
@@ -159,10 +151,10 @@ $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$
 print "Content-type: text/html; charset=utf-8\n\n";
 
 $result =~ s/\n/<br>/g if (!$lf);
-print '<p>' . $SL{'MAILSERVER.MSG_TEST_INTRO'} . '</p>';
-print '<div style="font-size:80%;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;">';
+print $SL{'MAILSERVER.MSG_TEST_INTRO'};
+print "<br><br><pre>\n";
 print $result;
-print "</div>";
+print "</pre>\n\n";
 
 # ReInstall original ssmtp config file
 $result = qx($lbssbindir/createssmtpconf.sh stop 2>/dev/null);

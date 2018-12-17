@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.0.3";
+our $VERSION = "1.2.6.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -47,14 +47,23 @@ parsedatestring
 # Variables
 
 my $notifymailerror;
-my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED filename dbh _FH dbkey loxberry_uid loxberry_gid _plugindb_timestamp);
+my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED filename dbh _FH dbkey loxberry_uid loxberry_gid );
 
 ################################################################
 ## Constructor
 ## 	Params [square brackets mean optional]
-## See https://www.loxwiki.eu/x/pQHgAQ
+##		name 			The name of the log
+##		[filename]		If provided, this file is be used
+##		[logdir]		If provided without filename, a file in this directory will be created
+##		append = 1		If the file already exists, it will append
+
+
 ##################################################################
 
+# raise loglevel after critic
+# persistently raise loglevel on critic
+#
+#
 sub new 
 
 {
@@ -139,12 +148,8 @@ sub new
 			$self->{loglevel} = $plugindata->{'PLUGINDB_LOGLEVEL'};
 		} else {
 			$self->{loglevel} = 7;
-			$self->{loglevel_is_static} = 1;
 		}
-	} else {
-		$self->{loglevel_is_static} = 1;
 	}
-	
 	# print STDERR "Log.pm: Loglevel is " . $self->{loglevel} . "\n";
 	# print STDERR "filename: " . $self->{filename} . "\n";
 	
@@ -178,7 +183,6 @@ sub loglevel
 	my $loglevel = shift;
 	if (defined $loglevel && $loglevel >= 0 && $loglevel <= 7) {
 		$self->{loglevel} = $loglevel;
-		$self->{loglevel_is_static} = 1;
 	}
 	return $self->{loglevel};
 }
@@ -339,23 +343,9 @@ sub write
 	# Do not log if loglevel is lower than severity
 	# print STDERR "--> write \n";
 	# print STDERR "    autoraise\n";
-	
-	# Change loglevel if it was changed in the UI aka PluginDB
-	if( !$self->{loglevel_is_static} and LoxBerry::System::plugindb_changed_time() != $self->{_plugindb_timestamp} ) {
-		$self->{_plugindb_timestamp} = LoxBerry::System::plugindb_changed_time();
-		my $newloglevel = LoxBerry::System::pluginloglevel($self->{package});
-		if ( defined $newloglevel and $newloglevel >= 0 and $newloglevel <=7 and $newloglevel != $self->{loglevel} ) {
-			my $oldloglevel = $self->{loglevel};
-			$self->{loglevel} = $newloglevel;
-			$self->write(-1, "<INFO> User changed loglevel from $oldloglevel to $newloglevel");
-		}
-	}
-	
-	
 	if ($severity <= 2 && $severity >= 0 && $self->{loglevel} < 6 && $self->{autoraise} == 1) {
 		# print STDERR "    autoraise to loglevel 6\n";
 		$self->{loglevel} = 6;
-		$self->{loglevel_is_static} = 1;
 	}
 	
 	if ((!defined($self->{STATUS}) or $severity < $self->{STATUS}) and $severity >= 0) {
@@ -1274,18 +1264,13 @@ sub notify_send_mail
 	
 	return if ($notifymailerror);
 	
-	require LoxBerry::JSON;
-	
-	my $sysmailobj = LoxBerry::JSON->new();
-	my $mcfg = $sysmailobj->open(filename => "$LoxBerry::System::lbsconfigdir/mail.json", readonly => 1);
-	
-	return if (! $mcfg or ! LoxBerry::System::is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
-	
+	Config::Simple->import_from("$LoxBerry::System::lbsconfigdir/mail.cfg", \%mcfg) or return;
+
 	return if ($p{SEVERITY} != 3 && $p{SEVERITY} != 6);
-	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_SYSTEM_ERRORS}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 3);
-	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_SYSTEM_INFOS}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
-	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_ERRORS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
-	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_INFOS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
+	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_ERRORS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 3);
+	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_SYSTEM_INFOS'}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
+	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_ERRORS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
+	return if (! LoxBerry::System::is_enabled($mcfg{'NOTIFICATION.MAIL_PLUGIN_INFOS'}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
 	
 	my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
 	
@@ -1316,7 +1301,7 @@ sub notify_send_mail
 		$subject = "$friendlyname $status " . $SL{'NOTIFY.SUBJECT_PLUGIN_IN'} . " $plugintitle " . $SL{'NOTIFY.SUBJECT_PLUGIN_PLUGIN'};
 		$message = "$plugintitle " . $SL{'NOTIFY.MESSAGE_PLUGIN_INFO'} . "\n" if ($p{SEVERITY} == 6);
 		$message = "$plugintitle " . $SL{'NOTIFY.MESSAGE_PLUGIN_ERROR'} . "\n" if ($p{SEVERITY} == 3);
-		$message .= "__________________________________________\n\n\n";
+		$message .= "__________________________________________________\n\n\n";
 		
 		$message .= $p{MESSAGE} . "\n\n";
 	}
@@ -1335,7 +1320,7 @@ sub notify_send_mail
 	$message .= $SL{'NOTIFY.MESSAGE_SENT_AT'} . " " . LoxBerry::System::currtime() ."\n";
 	my $bins = LoxBerry::System::get_binaries(); 
 	my $mailbin = $bins->{MAIL};
-	my $email	= $mcfg->{SMTP}->{EMAIL};
+	my $email	= $mcfg{'SMTP.EMAIL'};
 
 	require MIME::Base64;
 	require Encode;

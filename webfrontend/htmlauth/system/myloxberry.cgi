@@ -21,12 +21,11 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute myloxberry.cgi\n######################\n";
 
 use CGI;
 use warnings;
 use strict;
-my $load="";
+
 ##########################################################################
 # Variables
 ##########################################################################
@@ -43,11 +42,12 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.1";
+my $version = "1.0.0";
 
 my $sversion = LoxBerry::System::lbversion();
 
 $cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
+
 #########################################################################
 # Parameter
 #########################################################################
@@ -56,7 +56,6 @@ $cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
 my $cgi = CGI->new;
 $cgi->import_names('R');
 # Example: Parameter lang is now $R::lang
-$load = $R::load if $R::load;
 
 # Set default if not available
 if (!$cfg->param("BASE.SENDSTATISTIC")) {
@@ -105,7 +104,7 @@ $navbar{2}{Name} = "$SL{'MYLOXBERRY.LABEL_SYSINFO'}";
 $navbar{2}{URL} = 'myloxberry.cgi?load=2';
 
 # Menu
-if (!$R::saveformdata && $load eq "2") {
+if (!$R::saveformdata && $R::load eq "2") {
   $navbar{2}{active} = 1;
   &form;
 } elsif (!$R::saveformdata) {
@@ -127,7 +126,7 @@ sub form {
 		$maintemplate->param( "ISNOTENGLISH", 1);
 	}
 
-	if ($load eq "2") {
+	if ($R::load eq "2") {
 		$maintemplate->param( "FORM2", 1);
 	} else {
 		$maintemplate->param( "FORM1", 1);

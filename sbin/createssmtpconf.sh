@@ -1,13 +1,5 @@
 #!/bin/bash
 
-##
-## THIS SCRIPT IS OBSOLETE STARTING FROM LOXBERRY 1.4
-## Config is set from within mailserver.cgi
-##
-
-
-
-
 # What to do
 case "$1" in
 
