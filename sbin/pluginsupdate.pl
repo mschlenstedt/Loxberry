@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.4.0.1";
+my $scriptversion="1.4.0.2";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -82,8 +82,8 @@ system ("mkdir -p $update_path");
 ##########################################################################
 
 my $log = LoxBerry::Log->new(
-                package => 'Plugins Update',
-                name => 'check',
+                package => 'Plugin Installation',
+                name => 'Update Check',
                 filename => "$lbhomedir/log/system_tmpfs/pluginsupdatecheck.log",
                 loglevel => 7,
                 stderr => 1,
