@@ -43,13 +43,14 @@ $mailTmpl->param( "LOGFILE_REL" , $p->{LOGFILE_REL} );
 
 my $status = $p->{SEVERITY} == 3 ? $SL{'NOTIFY.SUBJECT_ERROR'} : $SL{'NOTIFY.SUBJECT_INFO'} ;
 
+my $package = $p->{PACKAGE};
+my $name = $p->{NAME};
+
+$package =~ s/([^\s\w]*)(\S+)/$1\u\L$2/g;
+$name =~  s/([^\s\w]*)(\S+)/$1\u\L$2/g;
+
 if ($p->{_ISSYSTEM}) {
-	my $package = $p->{PACKAGE};
-	my $name = $p->{NAME};
-
-	$package =~ s/([^\s\w]*)(\S+)/$1\u\L$2/g;
-	$name =~  s/([^\s\w]*)(\S+)/$1\u\L$2/g;
-
+	
 	$mailTmpl->param( 'package' , $package);
 	$mailTmpl->param( 'name' , $name);
 
@@ -61,10 +62,7 @@ if ($p->{_ISSYSTEM}) {
 }
 else 
 {
-	$name =~  s/([^\s\w]*)(\S+)/$1\u\L$2/g;
-	
-	my $plugintitle = defined $p->{PLUGINTITLE} ? $p->{PLUGINTITLE} : $p->{PACKAGE};
-	my $name = $p->{NAME};
+	my $plugintitle = defined $p->{PLUGINTITLE} ? $p->{PLUGINTITLE} : $package;
 	
 	$subject = "$friendlyname $status " . $SL{'NOTIFY.SUBJECT_PLUGIN_IN'} . " $plugintitle " . $SL{'NOTIFY.SUBJECT_PLUGIN_PLUGIN'};
 	
