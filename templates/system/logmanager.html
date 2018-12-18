@@ -7,7 +7,11 @@
 <TMPL_IF FORM_LEGACYLOG>
 	<TMPL_LOOP PLUGINS>
 		<div data-role='collapsible' id='coll_package_<TMPL_VAR PLUGINDB_FOLDER>' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-			<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_<TMPL_VAR PLUGINDB_FOLDER>'><TMPL_VAR PLUGINDB_TITLE> <span style='font-size:80%;'>(Plugin Log)</span></h2>
+			<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_<TMPL_VAR PLUGINDB_FOLDER>'><TMPL_VAR PLUGINDB_TITLE> <span style='font-size:80%;'>
+				<TMPL_IF ISSYSTEM>
+				<TMPL_ELSE>(Plugin Log)
+				</TMPL_IF>
+				</span></h2>
 			
 			<table style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
 				<TMPL_LOOP FILES>

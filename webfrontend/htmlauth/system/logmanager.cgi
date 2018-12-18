@@ -23,7 +23,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.4.0.2";
 
 # Remove 'only used once' warnings
 $R::showfilename if 0;
@@ -232,8 +232,46 @@ sub form_legacylog
 		$dblogfiles_hash{$_->{'FILENAME'}} = 1;
 	}
 	
-	# Get all logfiles of plugin log directories
+	# This is the final array for HTML::Template
 	my @displayplugins;
+
+	##
+	## Get System logfiles
+	##
+	
+	my @files = File::Find::Rule->file()
+		->name( '*.log' )
+		#->nonempty
+		->in( ( "$lbslogdir", "$lbstmpfslogdir") );
+	
+	@files = grep {not exists $dblogfiles_hash{$_}} @files; 
+	
+	my @systemfiles;
+	foreach my $filename (@files) {
+		# print STDERR "System filename: $filename\n";
+		my %filedata;
+		my @statdata = stat($filename);
+		$filedata{'filename'} = $filename;
+		$filedata{'fileshortname'} = substr($filename, rindex($filename, '/')+1);
+		$filedata{'filename_esc'} = uri_escape($filename);
+		$filedata{'filesize'} = LoxBerry::System::bytes_humanreadable($statdata[7]);
+		#my $t = localtime($statdata[9]);
+		$filedata{'filemtime'} = localtime($statdata[9])->strftime("%d.%m.%Y %H:%M");
+		push @systemfiles, \%filedata;
+	}
+	if (@systemfiles) {
+		my %systemelement;
+		$systemelement{PLUGINDB_FOLDER} = 'system';
+		$systemelement{PLUGINDB_TITLE} = 'LoxBerry System Logs';
+		$systemelement{FILES} = \@systemfiles;
+		$systemelement{ISSYSTEM} = 1;
+		unshift @displayplugins, \%systemelement;
+	}
+	
+	##
+	## Get Plugin logfiles
+	##
+
 	foreach my $key (keys @plugins) {
 		# print STDERR "legacylog: Plugin $plugins[$key]->{'PLUGINDB_TITLE'} \n";
 		my @files = File::Find::Rule->file()
@@ -266,10 +304,8 @@ sub form_legacylog
 		push @displayplugins, $plugins[$key];
 		
 	}
-	
-	#require Data::Dumper;
-	#print Data::Dumper->Dump(\@plugins) . "\n";
-		
+
+	# Push the displayplugins array to the template	
 	$maintemplate->param("PLUGINS", \@displayplugins);
 	
 	return;
