@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.0.3";
+our $VERSION = "1.4.0.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -1272,156 +1272,86 @@ sub notify_send_mail
 	my $message;
 	my %mcfg;
 	
+	# Don't try to send email that we cannot send emails
 	return if ($notifymailerror);
 	
+	# Read mail settings
 	require LoxBerry::JSON;
-	
 	my $sysmailobj = LoxBerry::JSON->new();
 	my $mcfg = $sysmailobj->open(filename => "$LoxBerry::System::lbsconfigdir/mail.json", readonly => 1);
 	
-	return if (! $mcfg or ! LoxBerry::System::is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
-	
+	# Don't send email if mail in general, or the specific mail type is disabled
 	return if ($p{SEVERITY} != 3 && $p{SEVERITY} != 6);
+	return if (! $mcfg or ! LoxBerry::System::is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
 	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_SYSTEM_ERRORS}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_SYSTEM_INFOS}) && $p{_ISSYSTEM} && $p{SEVERITY}  == 6);
 	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_ERRORS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_INFOS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
 	
-	my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
 	
-	my $hostname = LoxBerry::System::lbhostname();
-	my $friendlyname = LoxBerry::System::lbfriendlyname();
-	$friendlyname = defined $friendlyname ? $friendlyname : $hostname;
-	$friendlyname .= " LoxBerry";
+	# Prepare some additional fields
 	
-	my $status = $p{SEVERITY} == 3 ? $SL{'NOTIFY.SUBJECT_ERROR'} : $SL{'NOTIFY.SUBJECT_INFO'} ;
+	my $plugintitle;
 	
-	if ($p{_ISSYSTEM}) {
-		# Camel-case Package and Name
-		my $package = $p{PACKAGE};
-		$package =~  s/([^\s\w]*)(\S+)/$1\u\L$2/g;
-		my $name = $p{NAME};
-		$name =~  s/([^\s\w]*)(\S+)/$1\u\L$2/g;
-		
-		$subject = "$friendlyname $status " . $SL{'NOTIFY.SUBJECT_SYSTEM_IN'} . " $package $name";
-		$message = "$package " . $SL{'NOTIFY.MESSAGE_SYSTEM_INFO'} . "\n\n" if ($p{SEVERITY} == 6);
-		$message = "$package " . $SL{'NOTIFY.MESSAGE_SYSTEM_ERROR'} . "\n\n" if ($p{SEVERITY} == 3);
-		$message .= $p{MESSAGE} . "\n\n";
-	}
-	else 
-	{
+	if(!$p{_ISSYSTEM}) {
 		my $plugin = LoxBerry::System::plugindata($p{PACKAGE});
-		my $plugintitle = $plugin->{PLUGINDB_TITLE};
-		
-		$subject = "$friendlyname $status " . $SL{'NOTIFY.SUBJECT_PLUGIN_IN'} . " $plugintitle " . $SL{'NOTIFY.SUBJECT_PLUGIN_PLUGIN'};
-		$message = "$plugintitle " . $SL{'NOTIFY.MESSAGE_PLUGIN_INFO'} . "\n" if ($p{SEVERITY} == 6);
-		$message = "$plugintitle " . $SL{'NOTIFY.MESSAGE_PLUGIN_ERROR'} . "\n" if ($p{SEVERITY} == 3);
-		$message .= "__________________________________________\n\n\n";
-		
-		$message .= $p{MESSAGE} . "\n\n";
+		$plugintitle = defined $plugin->{PLUGINDB_TITLE} ? $plugin->{PLUGINDB_TITLE} : $p{PACKAGE};
 	}
 	
-	$message .= $SL{'NOTIFY.MESSAGE_LINK'} . " " . $p{LINK} . "\n" if $p{LINK};
+	# Add some values to the options
+	$p{SEVERITY_STR} = "INFO" if ($p{SEVERITY}  == 6);
+	$p{SEVERITY_STR} = "ERROR" if ($p{SEVERITY}  == 3);
+	$p{PLUGINTITLE} = $plugintitle;
+	
 	if ($p{LOGFILE}) {
-		my $logfilepath = $p{LOGFILE};
-		$logfilepath =~ s/^$LoxBerry::System::lbhomedir\///;
-		$logfilepath =~ s/^log\///;
-		$logfilepath = "http://$hostname:" . LoxBerry::System::lbwebserverport() . "/admin/system/tools/logfile.cgi?logfile=$logfilepath&header=html&format=template";
-		$message .= $SL{'NOTIFY.MESSAGE_LOGFILE'} . " $logfilepath\n" if $p{LOGFILE};
+		$p{LOGFILE_REL} = $p{LOGFILE};
+		$p{LOGFILE_REL} =~ s/^$LoxBerry::System::lbhomedir\///;
+		$p{LOGFILE_REL} =~ s/^log\///;
 	}
-	$message .= "\n";
-	$message .= "__________________________________________________\n\n";
-	$message .= $SL{'NOTIFY.MESSAGE_FOOTER_FROM'} . " " . LoxBerry::System::trim(LoxBerry::System::lbfriendlyname() . " LoxBerry") . " (http://$hostname:". LoxBerry::System::lbwebserverport() . "/)\n";
-	$message .= $SL{'NOTIFY.MESSAGE_SENT_AT'} . " " . LoxBerry::System::currtime() ."\n";
-	my $bins = LoxBerry::System::get_binaries(); 
-	my $mailbin = $bins->{MAIL};
-	my $email	= $mcfg->{SMTP}->{EMAIL};
 
-	require MIME::Base64;
-	require Encode;
+	## Call the email provider
 	
-	$subject = "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
-	my $headerfrom = 'From:=?utf-8?b?' . MIME::Base64::encode($friendlyname, "") . '?= <' . $email . '>';
-	my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
+	require JSON;
 	
-	$message = Encode::decode("utf8", $message);
+	my $options_json = quotemeta(JSON::to_json(\%p) ) ;
 	
-	my $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $email 2>&1);
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-		$notifymailerror = 1; # Prevents loops
-		my %notification = (
-            PACKAGE => "mailserver",
-            NAME => "mailerror",
-            MESSAGE => $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'},
-            SEVERITY => 3, # Error
-			_ISSYSTEM => 1
-    );
-	LoxBerry::Log::notify_ext( \%notification );
-	print STDERR "Error sending email notification - Error $exitcode:\n";
-	print STDERR $result . "\n";
-	} 
-   
-  # my $outer_boundary= "o".Digest::MD5::md5_hex( time . rand(100) );
-  # my $inner_boundary= "i".Digest::MD5::md5_hex( time . rand(100) );
-  
-  
-  # $message = "From: =?UTF-8?b?".MIME::Base64::encode($friendlyname, "")."?= <".$email.">
-# To: ".$email."
-# Subject: =?utf-8?b?".MIME::Base64::encode($subject, "")."?= 
-# MIME-Version: 1.0
-# Content-Type: multipart/alternative;
- # boundary=\"------------$outer_boundary\"
-
-# This is a multi-part message in MIME format.
-# --------------$outer_boundary
-# Content-Type: text/plain; charset=utf-8; format=flowed
-# Content-Transfer-Encoding: 7bit
-
-# ".$message."
-
-# --------------$outer_boundary
-# Content-Type: multipart/related;
- # boundary=\"------------$inner_boundary\"
-
-
-# --------------$inner_boundary
-# Content-Type: text/html; charset=utf-8
-# Content-Transfer-Encoding: 7bit
-
-# <html>
-  # <head>
-    # <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">
-  # </head>
-  # <body text=\"#000000\" bgcolor=\"#cfcfcf\">
-	# <div style=\"border-radius: .6em .6em .6em .6em; padding:10px; background-color: #ffffff; border-color: #8c8c8;\">".$message."<br>\n--\n<br><a href='http://$hostname:". LoxBerry::System::lbwebserverport() . "/'>".Encode::decode("utf8",$friendlyname)."</a></div>
-  # </body>
-# </html>
-
-
-# --------------$inner_boundary--
-
-# --------------$outer_boundary--\n\n";
-
-	# my ($mfh, $mfilename);
-	# ($mfh, $mfilename) = File::Temp::tempfile() or print STDERR "Cannot create temporary mailfile"; 
-	# binmode( $mfh, ":utf8" );
-	# print $mfh $message;
-	# print STDERR "--> HTML Notification eMail tempfile: $mfilename \n" if ($DEBUG);
-	# my $result = qx($mailbin -t 1>&2 < $mfilename );
+	my $output = qx { $LoxBerry::System::lbsbindir/notifyproviders/email.pl $options_json };
+	
+	# print "Returned: $output";
+	
+	
+	
+	####
+	#### Old LoxBerry Plain text implementation
+	####
+	
+	# my $bins = LoxBerry::System::get_binaries(); 
+	# my $mailbin = $bins->{MAIL};
+	
+	# require MIME::Base64;
+	# require Encode;
+	
+	# $subject = "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
+	# my $headerfrom = 'From:=?utf-8?b?' . MIME::Base64::encode($friendlyname, "") . '?= <' . $email . '>';
+	# my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
+	
+	# $message = Encode::decode("utf8", $message);
+	
+	# my $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $email 2>&1);
 	# my $exitcode  = $? >> 8;
 	# if ($exitcode != 0) {
 		# $notifymailerror = 1; # Prevents loops
-		# my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
-		# notify("mailserver", "mailerror", $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'}, "error");
-		# print STDERR "Error sending email notification - Error $exitcode:\n";
-		# print STDERR $result . "\n";
+		# my %notification = (
+            # PACKAGE => "mailserver",
+            # NAME => "mailerror",
+            # MESSAGE => $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'},
+            # SEVERITY => 3, # Error
+			# _ISSYSTEM => 1
+    # );
+	# LoxBerry::Log::notify_ext( \%notification );
+	# print STDERR "Error sending email notification - Error $exitcode:\n";
+	# print STDERR $result . "\n";
 	# } 
-	# close($mfh) or print STDERR "Cannot close temporary mailfile $mfilename";
-	# unlink ($mfilename) or print STDERR "Cannot delete temporary mailfile $mfilename"; 
-
-	
-	
 	
 }
 
