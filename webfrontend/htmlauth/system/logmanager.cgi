@@ -23,7 +23,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Version of this script
-my $version = "1.2.5.4";
+my $version = "1.4.0.1";
 
 # Remove 'only used once' warnings
 $R::showfilename if 0;
@@ -182,7 +182,7 @@ sub form_log
 		if($log->{LOGENDSTR}) {print "$log->{LOGENDSTR}";}
 		print "</td>\n";
 		print "\t\t\t<td>";
-		print "<a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=" . uri_escape($log->{FILENAME}) . "&header=html&format=template' target='_blank' data-inline='true' data-mini='true' data-icon='action'>$SL{'COMMON.BUTTON_OPEN'}</a>";
+		print "<a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=" . uri_escape($log->{FILENAME}) . "&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>$SL{'COMMON.BUTTON_OPEN'}</a>";
 		print "\t\t\t\t\t<br><span style='font-size:70%;'>$log->{FILENAME}</span>\n" if ($R::showfilename);
 		print "</td>\n";
 		my $filesize = -s $log->{FILENAME};
