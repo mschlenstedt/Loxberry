@@ -20,9 +20,6 @@ print "Sender/Receiver: $from\n";
 
 # use MIME::Lite;
 
-# # SendTo email id
-# my $email = 'fenzl@t-r-t.at';
-
 # # create a new MIME Lite based email
 # my $msg = MIME::Lite->new
 # (
@@ -79,3 +76,70 @@ print "Sender/Receiver: $from\n";
 # EMail::MIME			  
 # https://www.perlmonks.org/?node_id=1077724
 ####################################################
+
+require Email::MIME;
+require MIME::Base64;
+
+my $html = <<EOF;
+<html>
+    <head>
+        <title>Testmail</title>
+    </head>
+    <body>
+        <p>Eine Mäil müt Büdern<br/>
+			<img src="cid:logo" alt="Logo" width="158px" height="70px" />
+			<p>Das ist cool</p>
+			</p>
+		
+    </body>
+</html>
+EOF
+
+# read the file
+my $filename = "$lbshtmldir/images/icons/main_admin.png";  # take filename of a small 158x70 png
+my $image = LoxBerry::System::read_file($filename);
+my $image_encoded = MIME::Base64::encode_base64($image);
+
+my $mail_part = Email::MIME->create(
+    attributes => {
+        content_type => "text/html",
+        charset      => "UTF-8",
+        encoding     => "quoted-printable",
+    },
+    body_str => Encode::decode("UTF-8", $html),
+);
+
+my $jpeg_part = Email::MIME->create(
+    header_str => [
+        'Content-ID' => '<logo>',
+        'Content-Disposition' => 'inline',
+    ],
+    attributes => {
+        content_type => "image/png",
+        encoding     => "base64",
+    },
+    body => $image,
+);
+
+my $mail = Email::MIME->create(
+    header_str => [
+        'To' => $to,
+        'From' => $from,
+        'Subject' => Encode::decode("UTF-8", 'Testmail Österreich'),
+    ],
+    attributes => {
+        content_type => "multipart/related",
+    },
+    parts => [
+        #$mail_part,
+        $jpeg_part,
+    ],
+);
+
+print $mail->as_string;
+
+# send the message
+use Email::Sender::Simple qw(sendmail);
+sendmail($mail->as_string);
+
+
