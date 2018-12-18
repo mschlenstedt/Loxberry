@@ -40,7 +40,7 @@ my $helptemplate = "help_remote.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.3";
+my $version = "1.4.0.4";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -123,7 +123,7 @@ if ($R::saveformdata) {
 	open(F,">$cfgfilewd") || die "Cannot open $cfgfilewd";
 	flock(F,2);
 	print F "interval = 10\n";
-	print F "logtick  = 6\n";
+	print F "logtick  = 30\n";
 	print F "realtime = yes\n";
 	print F "priority = 1\n";
 	if ($R::Watchdog_Ping) { print F "ping = $R::Watchdog_Ping\n"; };
