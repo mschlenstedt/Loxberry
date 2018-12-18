@@ -361,6 +361,9 @@ fi
 if [ -L /etc/watchdog.conf ]; then
     rm /etc/watchdog.conf
 fi
+if ! cat /etc/default/watchdog | grep -q -e "watchdog_options.*-v"; then
+	/bin/sed -i 's#watchdog_options="\(.*\)"#"watchdog_options="\1 -v"#g' /etc/default/watchdog
+fi
 /bin/sed -i "s#REPLACELBHOMEDIR#"$LBHOMEDIR"#g" $LBHOME/system/watchdog/rsyslog.conf
 ln -f -s $LBHOME/system/watchdog/watchdog.conf /etc/watchdog.conf
 ln -f -s $LBHOME/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf
