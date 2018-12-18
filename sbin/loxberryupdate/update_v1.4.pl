@@ -112,8 +112,9 @@ $output = qx { systemctl disable watchdog.service };
 $output = qx { systemctl stop watchdog.service };
 
 # Installing default config: watchdog
+copy_to_loxberry("/system/watchdog");
 $output = qx { mv /etc/watchdog.conf /etc/watchdog.bkp };
-$output = qx { ln -f -s /etc/watchdog.conf $lbhomedir/system/watchdog/watchdog.conf };
+$output = qx { ln -f -s $lbhomedir/system/watchdog/watchdog.conf /etc/watchdog.conf };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	LOGERR "Error creating symlink $lbhomedir/system/watchdog/watchdog.conf - Error $exitcode";
@@ -122,9 +123,19 @@ if ($exitcode != 0) {
 } else {
 	LOGOK "Symlink $lbhomedir/system/watchdog/watchdog.conf created successfully";
 }
+system("/bin/sed -i 's:REPLACELBHOMEDIR:$lbhomedir:g' $lbhomedir/system/watchdog/rsyslog.conf");
+$output = qx { ln -f -s $lbhomedir/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error creating symlink $lbhomedir/system/watchdog/rsyslog.conf - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+	LOGOK "Symlink $lbhomedir/system/watchdog/rsyslog.conf created successfully";
+}
+system("systemctl restart rsyslog.service");
 
 LOGINF "Converting mail.cfg to mail.json";
-
 $oldmailfile = $lbsconfigdir . "/mail.cfg";
 $newmailfile = $lbsconfigdir . "/mail.json";
 
