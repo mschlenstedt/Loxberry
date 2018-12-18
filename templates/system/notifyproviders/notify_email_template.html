@@ -1,0 +1,32 @@
+<html>
+	<body>
+		<TMPL_IF severitylevel_error>
+		<!-- <img src="cid:info" alt="Error-Symbol" /> -->
+		<p style="color:red">
+		<TMPL_ELSE>
+		<!-- <img src="cid:info" alt="Info-Symbol" /> -->
+		<p style="color:blue">
+		</TMPL_IF>
+			<b><TMPL_VAR package> <TMPL_VAR severitytext></b>
+		</p>
+		<p style="font-size:120%">
+		<TMPL_VAR message>
+		</p>
+		<TMPL_IF link>
+			<TMPL_VAR NOTIFY.MESSAGE_LINK> <TMPL_VAR link>
+			<br />
+		</TMPL_IF>
+		<TMPL_IF LOGFILE_REL>
+			<p>
+			<TMPL_VAR NOTIFY.MESSAGE_LOGFILE> <a href="http://<TMPL_VAR hostname>:<TMPL_VAR serverport>/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE_REL>&header=html&format=template"><TMPL_VAR COMMON.BUTTON_LOGFILE></a> 
+			</p>
+		</TMPL_IF>
+		<hr />
+		<TMPL_VAR NOTIFY.MESSAGE_FOOTER_FROM> <a href="http://<TMPL_VAR hostname>:<TMPL_VAR serverport>"><TMPL_VAR friendlyname></a> (<TMPL_VAR hostname>)
+		<br />
+		<TMPL_VAR NOTIFY.MESSAGE_SENT_AT> <TMPL_VAR currtime> 
+		<p>
+		<!-- <img src="cid:img1" alt="Logo" width="470px" height="64px" /> -->
+		</p>
+	</body>
+</html>
