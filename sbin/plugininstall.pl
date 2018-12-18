@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.4.0.2";
+my $version = "1.4.0.5";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -433,6 +433,15 @@ $message = "Custom Log:   $pcustomlog";
 &loginfo;
 $message = "Interface:    $pinterface";
 &loginfo;
+
+# Create Logfile with lib to have it in database
+my $log = LoxBerry::Log->new(
+                package => 'Plugin Installation',
+                name => 'Installation',
+                filename => "$lbhomedir/log/system/plugininstall/$pname.log",
+                loglevel => 7,
+);
+LOGSTART "LoxBerry Plugin Installation $ptitle";
 
 # Use 0/1 for enabled/disabled from here on
 $pautoupdates = is_disabled($pautoupdates) ? 0 : 1;
@@ -1496,6 +1505,14 @@ if (-e $statusfile) {
     close (F);
   }
 }
+
+# Log errora
+if (@errors || @warnings) {
+	LOGWARN "An error or warning occurred";
+} else {
+	LOGOK "Everything seems to be OK";
+}
+LOGEND;
 
 # Saving Logfile
 $message =  "$SL{'PLUGININSTALL.INF_SAVELOG'}";
