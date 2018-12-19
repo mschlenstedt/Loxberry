@@ -215,7 +215,7 @@ close (F);
 # Update Kernel and Firmware
 if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
 	LOGINF "Preparing Guru Meditation...";
-	LOGINF "This will again take some time now. We suggest getting a second coffee or a second beer :-)";
+	LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
 	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
 	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update 3678d3dba62d8d4ad9cce5ceeab3b377e0ee059d };
@@ -230,8 +230,8 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
 }
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
-#LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-#reboot_required("LoxBerry Update requests a reboot.");
+LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
+reboot_required("LoxBerry Update requests a reboot.");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
