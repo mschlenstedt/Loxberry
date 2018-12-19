@@ -31,12 +31,14 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.4.0.5";
+my $version = "1.4.0.6";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
 	exit (1);
 }
+
+my $exitcode;
 
 ##########################################################################
 # Variables / Commandline
@@ -718,12 +720,13 @@ if (-f "$tempfolder/preroot.sh") {
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preroot.sh\" 2>&1");
   system("cd \"$tempfolder\" && \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-  if ($? eq 1) {
+  $exitcode  = $? >> 8;
+  if ($exitcode eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
     push(@errors,"PREROOT: $message");
   } 
-  elsif ($? > 1) {
+  elsif ($exitcode > 1) {
     $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
     &logfail; 
   }
@@ -745,12 +748,13 @@ if ($isupgrade) {
 
     system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preupgrade.sh\" 2>&1");
     system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-    if ($? eq 1) {
+    $exitcode  = $? >> 8;
+    if ($exitcode eq 1) {
       $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
       push(@errors,"PREUPGRADE: $message");
     } 
-    elsif ($? > 1) {
+    elsif ($exitcode > 1) {
       $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
       &logfail; 
     }
@@ -776,12 +780,13 @@ if (-f "$tempfolder/preinstall.sh") {
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preinstall.sh\" 2>&1");
   system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-  if ($? eq 1) {
+  $exitcode  = $? >> 8;
+  if ($exitcode eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
     push(@errors,"PREINSTALL: $message");
   } 
-  elsif ($? > 1) {
+  elsif ($exitcode > 1) {
     $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
     &logfail; 
   }
@@ -1323,7 +1328,8 @@ $message =  "$SL{'PLUGININSTALL.INF_LOGSKELS'}";
 &loginfo;
 $message = "Command: $lbssbindir/createskelfolders.pl";
 system("$lbssbindir/createskelfolders.pl 2>&1");
-if ($? eq 1) {
+$exitcode  = $? >> 8;
+if ($exitcode eq 1) {
   $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
   &logerr; 
   push(@errors,"SKEL FOLDERS: $message");
@@ -1343,12 +1349,13 @@ if (-f "$tempfolder/postinstall.sh") {
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postinstall.sh\" 2>&1");
   system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-  if ($? eq 1) {
+  $exitcode  = $? >> 8;
+  if ($exitcode eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
     push(@errors,"POSTINSTALL: $message");
   } 
-  elsif ($? > 1) {
+  elsif ($exitcode > 1) {
     $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
     &logfail; 
   }
@@ -1370,12 +1377,13 @@ if ($isupgrade) {
 
     system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postupgrade.sh\" 2>&1");
     system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-    if ($? eq 1) {
+    $exitcode  = $? >> 8;
+    if ($exitcode eq 1) {
       $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
       &logerr; 
       push(@errors,"POSTUPGRADE: $message");
     } 
-    elsif ($? > 1) {
+    elsif ($exitcode > 1) {
       $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
       &logfail; 
     }
@@ -1397,12 +1405,13 @@ if (-f "$tempfolder/postroot.sh") {
 
   system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postroot.sh\" 2>&1");
   system("cd \"$tempfolder\" && \"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-  if ($? eq 1) {
+  $exitcode  = $? >> 8;
+  if ($exitcode eq 1) {
     $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
     &logerr; 
     push(@errors,"POSTROOT: $message");
   } 
-  elsif ($? > 1) {
+  elsif ($exitcode > 1) {
     $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
     &logfail; 
   }
@@ -1649,12 +1658,13 @@ sub purge_installation {
         &loginfo;
 
         system("\"$lbhomedir/data/system/uninstall/$pname\" 2>&1");
-        if ($? eq 1) {
+  	my $exitcode  = $? >> 8;
+        if ($exitcode eq 1) {
           $message =  "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
           &logerr; 
           push(@errors,"UNINSTALL execution: $message");
         } 
-        elsif ($? > 1) {
+        elsif ($exitcode > 1) {
           $message =  "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
           &logfail; 
         }
@@ -1691,6 +1701,9 @@ sub logerr {
 	} else {
     		print "$currtime <ERROR> $message\n";
 	}
+	
+	# Notify
+	notify ( "plugininstall", "$pname", $SL{'PLUGININSTALL.UI_NOTIFY_INSTALL_ERROR'} . " " . $ptitle . ": " . $message);
 
 	return();
 
@@ -1724,7 +1737,12 @@ sub logfail {
 	  flock(F,8);
 	  close (F);
 	}
+	
+	# Notify
+	$message = $message . " " . $SL{'PLUGININSTALL.UI_INSTALL_LABEL_ERROR'};
+	notify ( "plugininstall", "$pname", $SL{'PLUGININSTALL.UI_NOTIFY_INSTALL_FAIL'} . " " . $ptitle . ": " . $message, 1);
 
+	# Unlock and exit
 	LoxBerry::System::unlock( lockfile => 'plugininstall' );
 	exit (1);
 
@@ -1743,6 +1761,9 @@ sub logwarn {
 	} else {
     		print "$currtime <WARNING> $message\n";
 	}
+	
+	# Notify
+	notify ( "plugininstall", "$pname", $SL{'PLUGININSTALL.UI_NOTIFY_INSTALL_WARN'} . " " . $ptitle . ": " . $message);
 
 	return();
 
