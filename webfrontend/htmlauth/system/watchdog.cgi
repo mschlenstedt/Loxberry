@@ -40,7 +40,7 @@ my $helptemplate = "help_remote.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.4";
+my $version = "1.4.0.5";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -150,14 +150,14 @@ if ($R::saveformdata) {
 }
 
 # Navbar
-my %navbar;
-$navbar{1}{Name} = "$SL{'SERVICES.TITLE_PAGE_WEBSERVER'}";
-$navbar{1}{URL} = 'services.php?load=1';
-$navbar{2}{Name} = "$SL{'SERVICES.TITLE_PAGE_WATCHDOG'}";
-$navbar{2}{URL} = 'watchdog.cgi';
-$navbar{2}{active} = 1;
-$navbar{3}{Name} = "$SL{'SERVICES.TITLE_PAGE_OPTIONS'}";
-$navbar{3}{URL} = 'services.php?load=3';
+our %navbar;
+$navbar{0}{Name} = "$SL{'SERVICES.TITLE_PAGE_WEBSERVER'}";
+$navbar{0}{URL} = 'services.php?load=1';
+$navbar{1}{Name} = "$SL{'SERVICES.TITLE_PAGE_WATCHDOG'}";
+$navbar{1}{URL} = 'watchdog.cgi';
+$navbar{1}{active} = 1;
+$navbar{2}{Name} = "$SL{'SERVICES.TITLE_PAGE_OPTIONS'}";
+$navbar{2}{URL} = 'services.php?load=3';
 
 # Print Template
 my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'SERVICES.WIDGETLABEL'} . " v" . $loxberryversion;
