@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.0.5";
+our $VERSION = "1.4.0.6";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -1315,7 +1315,7 @@ sub notify_send_mail
 	
 	my $options_json = quotemeta(JSON::to_json(\%p) ) ;
 	
-	my $output = qx { $LoxBerry::System::lbsbindir/notifyproviders/email.pl $options_json };
+	my $output = qx { $LoxBerry::System::lbssbindir/notifyproviders/email.pl $options_json };
 	
 	# print "Returned: $output";
 	
