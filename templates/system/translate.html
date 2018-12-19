@@ -1,6 +1,3 @@
-
-		<!-- ** START template/system/myloxberry.html 17:30 28.11.2017 ************************************************************************************ -->
-		
 <style>
 
 div.greenTable {
@@ -140,15 +137,15 @@ div.greenTable {
 		<TMPL_VAR pluginselection>
 		</fieldset>
 		</div>
-	
-		<div style="margin:10px 10px 10px 10px;">
-		<fieldset data-role="controlgroup" data-mini="true">
-		<TMPL_VAR TRANSLATE.LABEL_SELECT_LANGUAGEFILE> 
-		<TMPL_VAR languagefileselection>
-		</fieldset>
-		</div>
 	</TMPL_IF>
 	
+	<div style="margin:10px 10px 10px 10px;">
+	<fieldset data-role="controlgroup" data-mini="true">
+	<TMPL_VAR TRANSLATE.LABEL_SELECT_LANGUAGEFILE> 
+	<TMPL_VAR languagefileselection>
+	</fieldset>
+	</div>
+
 	<div style="margin:10px 10px 10px 10px;">
 	<fieldset data-role="controlgroup" data-mini="true">
 	<TMPL_VAR TRANSLATE.LABEL_SELECT_SOURCE_LANG> 
@@ -292,6 +289,7 @@ $(document).on('pageinit', function() {
 		$.post( url, { 	
 				action: "getlangfiles",
 				plugin: $("#plugin").val(),
+				pluginform: 1,
 			 },
 			 function(data, status) {
 			 console.log("Data:", data, "Status", status);
