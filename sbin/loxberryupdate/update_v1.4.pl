@@ -187,6 +187,7 @@ if (! -e $oldmailfile) {
 }
 
 # Some new files from ~/system
+LOGINF "Installing some new system configs...";
 copy_to_loxberry("/system/sudoers/lbdefaults");
 copy_to_loxberry("/system/supportvpn");
 copy_to_loxberry("/system/daemons/system/04-remotesupport");
@@ -194,6 +195,10 @@ copy_to_loxberry("/system/network/interfaces.eth_dhcp");
 copy_to_loxberry("/system/network/interfaces.eth_static");
 copy_to_loxberry("/system/network/interfaces.wlan_dhcp");
 copy_to_loxberry("/system/network/interfaces.wlan_static");
+
+LOGINF "Installing daily cronjob for plugin update checks...";
+$output = qx { rm -f $lbhomedir/system/cron/cron.weekly/pluginsupdate.pl };
+$output = qx { ln -f -s $lbhomedir/sbin/pluginsupdate.pl $lbhomedir/system/cron/cron.daily/02-pluginsupdate.pl };
 
 # Upgrade Raspbian on next reboot
 LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
