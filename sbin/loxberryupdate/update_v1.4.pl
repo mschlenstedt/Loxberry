@@ -95,10 +95,8 @@ if ($exitcode != 0) {
 }
 
 LOGINF "Installing watchdog...";
-
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install watchdog };
 $exitcode  = $? >> 8;
-
 if ($exitcode != 0) {
 	LOGERR "Error installing watchdog - Error $exitcode";
 	LOGDEB $output;
@@ -125,6 +123,11 @@ if ($exitcode != 0) {
 	LOGOK "Symlink $lbhomedir/system/watchdog/watchdog.conf created successfully";
 }
 system("/bin/sed -i 's:REPLACELBHOMEDIR:$lbhomedir:g' $lbhomedir/system/watchdog/rsyslog.conf");
+$output = qx ( cat /etc/default/watchdog | grep -q -e "watchdog_options" );
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	qx (echo 'watchdog_options=""' >> /etc/default/watchdog);
+}
 system("/bin/sed 's:watchdog_options=\"\\(.*\\)\":\"watchdog_options=\"\\1 -v\":g' /etc/default/watchdog");
 $output = qx { ln -f -s $lbhomedir/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf };
 $exitcode  = $? >> 8;
