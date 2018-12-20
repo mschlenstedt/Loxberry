@@ -2,7 +2,7 @@
 
 # This script will be executed on next reboot
 # It is invoked from cron (@reboot) by
-# update_v1.2.0.pl
+# update_v1.4.0.pl
 
 use LoxBerry::System;
 use LoxBerry::Log;
@@ -61,7 +61,7 @@ if (!-e "/boot/rebootupdatescript") {
 LOGINF "This script already started $starts times.";
 if ($starts >=10) {
 	LOGCRIT "We tried 10 times without success. This is the last try.";
-	qx { rm /etc/cron.d/lbupdaterebootv140 };
+	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv140 };
 	qx { rm /boot/rebootupdatescript };
 } else {
 	open(F,">/boot/rebootupdatescript");
@@ -160,7 +160,7 @@ if ($errors) {
 	$syscfg->write();
 	undef $syscfg;
 } else {
-	qx { rm /etc/cron.d/lbupdaterebootv140 };
+	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv140 };
 	qx { rm /boot/rebootupdatescript };
 }
 

@@ -203,13 +203,10 @@ $output = qx { ln -f -s $lbhomedir/sbin/pluginsupdate.pl $lbhomedir/system/cron/
 
 # Upgrade Raspbian on next reboot
 LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
-open(F,">/etc/cron.d/lbupdaterebootv140");
+open(F,">$lbhomedir/system/daemons/system/99-updaterebootv140");
 print F <<EOF;
-MAILTO=""
-PATH=/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
-
-# m h  dom mon dow   command
-\@reboot root perl $lbhomedir/sbin/loxberryupdate/updatereboot_v1.4.0.pl logfilename=$logfilename_wo_ext-reboot > /dev/null 2>&1
+#!/bin/bash
+perl $lbhomedir/sbin/loxberryupdate/updatereboot_v1.4.0.pl logfilename=$logfilename_wo_ext-reboot 2>&1
 EOF
 close (F);
 
