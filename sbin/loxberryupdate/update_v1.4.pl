@@ -112,7 +112,8 @@ $output = qx { systemctl disable watchdog.service };
 $output = qx { systemctl stop watchdog.service };
 
 # Installing default config: watchdog
-copy_to_loxberry("/system/watchdog");
+copy_to_loxberry("/system/watchdog", "root");
+copy_to_loxberry("/system/watchdog/watchdog.conf", "loxberry");
 $output = qx { mv /etc/watchdog.conf /etc/watchdog.bkp };
 $output = qx { ln -f -s $lbhomedir/system/watchdog/watchdog.conf /etc/watchdog.conf };
 $exitcode  = $? >> 8;
@@ -299,11 +300,11 @@ sub copy_to_loxberry
 	$exitcode  = $? >> 8;
 
 	if ($exitcode != 0) {
-		LOGERR "Error changing fileowner  for $destfile - Error $exitcode";
+		LOGERR "Error changing owner to $destowner for $destfile - Error $exitcode";
 		LOGINF "Message: $output";
 		$errors++;
 	} else {
-		LOGOK "$destfile fileowner changed.";
+		LOGOK "$destfile owner changedi to $destowner.";
 	}
 
 }
