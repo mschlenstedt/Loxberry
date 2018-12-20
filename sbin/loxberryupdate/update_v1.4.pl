@@ -188,13 +188,13 @@ if (! -e $oldmailfile) {
 
 # Some new files from ~/system
 LOGINF "Installing some new system configs...";
-copy_to_loxberry("/system/sudoers/lbdefaults");
-copy_to_loxberry("/system/supportvpn");
-copy_to_loxberry("/system/daemons/system/04-remotesupport");
-copy_to_loxberry("/system/network/interfaces.eth_dhcp");
-copy_to_loxberry("/system/network/interfaces.eth_static");
-copy_to_loxberry("/system/network/interfaces.wlan_dhcp");
-copy_to_loxberry("/system/network/interfaces.wlan_static");
+copy_to_loxberry("/system/sudoers/lbdefaults", "root");
+copy_to_loxberry("/system/supportvpn", "loxberry");
+copy_to_loxberry("/system/daemons/system/04-remotesupport", "root");
+copy_to_loxberry("/system/network/interfaces.eth_dhcp", "loxberry");
+copy_to_loxberry("/system/network/interfaces.eth_static", "loxberry");
+copy_to_loxberry("/system/network/interfaces.wlan_dhcp", "loxberry");
+copy_to_loxberry("/system/network/interfaces.wlan_static", "loxberry");
 
 LOGINF "Installing daily cronjob for plugin update checks...";
 $output = qx { rm -f $lbhomedir/system/cron/cron.weekly/pluginsupdate.pl };
@@ -269,14 +269,16 @@ sub delete_directory
 # Parameter:
 #	file/dir starting from ~ 
 #   (without /opt/loxberry, with leading /)
+#       owner
 ####################################################################
 sub copy_to_loxberry
 {
-	my ($destparam) = @_;
+	my ($destparam, $destowner) = @_;
 		
 	my $destfile = $lbhomedir . $destparam;
 	my $srcfile = $updatedir . $destparam;
-		
+	if (!$destowner) {$destowner = "root"};	
+
 	if (! -e $srcfile) {
 		LOGINF "$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.";
 		return;
@@ -292,5 +294,17 @@ sub copy_to_loxberry
 	} else {
 		LOGOK "$destparam installed.";
 	}
+
+	$output = qx { chown -R $destowner:$destowner $destfile 2>&1 };
+	$exitcode  = $? >> 8;
+
+	if ($exitcode != 0) {
+		LOGERR "Error changing fileowner  for $destfile - Error $exitcode";
+		LOGINF "Message: $output";
+		$errors++;
+	} else {
+		LOGOK "$destfile fileowner changed.";
+	}
+
 }
 
