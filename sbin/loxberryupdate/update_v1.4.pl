@@ -128,7 +128,7 @@ $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	qx (echo 'watchdog_options=""' >> /etc/default/watchdog);
 }
-system("/bin/sed -i 's:watchdog_options=\"\\(.*\\)\":\"watchdog_options=\"\\1 -v\":g' /etc/default/watchdog");
+system("/bin/sed -i 's:watchdog_options=\"\\(.*\\)\":watchdog_options=\"\\1 -v\":g' /etc/default/watchdog");
 $output = qx { ln -f -s $lbhomedir/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
