@@ -40,7 +40,7 @@ my $helptemplate = "help_remote.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.5";
+my $version = "1.4.0.6";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -79,8 +79,6 @@ if ( !defined($cfgjson->{Watchdog}->{Enable}) ) {
 $R::saveformdata if 0;
 %LoxBerry::Web::htmltemplate_options if 0;
 
-# CGI Vars
-
 # Template
 my $maintemplate = HTML::Template->new(
 	filename => "$lbstemplatedir/watchdog.html",
@@ -101,15 +99,8 @@ $maintemplate->param('JSONCONFIG', $cfgfilecontent);
 # Save config
 if ($R::saveformdata) {
 
-	if ($R::Watchdog_Enable) {
-		$cfgjson->{Watchdog}->{Enable} = "1";
-		system ("sudo systemctl enable watchdog.service");
-		system ("sudo systemctl start watchdog.service");
-	} else {
-		$cfgjson->{Watchdog}->{Enable} = "0";
-		system ("sudo systemctl disable watchdog.service");
-		system ("sudo systemctl stop watchdog.service");
-	}
+	system ("sudo systemctl stop watchdog.service");
+
 	$cfgjson->{Watchdog}->{Ping} = $R::Watchdog_Ping;
 	$cfgjson->{Watchdog}->{Maxload1} = $R::Watchdog_Maxload1;
 	$cfgjson->{Watchdog}->{Maxload5} = $R::Watchdog_Maxload5;
@@ -140,6 +131,15 @@ if ($R::saveformdata) {
 	};
 	flock(F,8);
 	close (F);
+
+	if ($R::Watchdog_Enable) {
+		$cfgjson->{Watchdog}->{Enable} = "1";
+		system ("sudo systemctl enable watchdog.service");
+		system ("sudo systemctl start watchdog.service");
+	} else {
+		$cfgjson->{Watchdog}->{Enable} = "0";
+		system ("sudo systemctl disable watchdog.service");
+	}
 
 	$maintemplate->param('SAVE', 1);
 
