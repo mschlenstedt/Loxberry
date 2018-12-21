@@ -217,7 +217,7 @@ close (F);
 qx { chmod +x $lbhomedir/system/daemons/system/99-updaterebootv140 };
 
 # Update Kernel and Firmware
-if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
+if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/system/is_odroidxu3xu4.cfg") {
 	LOGINF "Preparing Guru Meditation...";
 	LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
 	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
