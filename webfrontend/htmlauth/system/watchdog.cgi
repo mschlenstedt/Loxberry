@@ -101,6 +101,12 @@ if ($R::saveformdata) {
 
 	system ("sudo systemctl stop watchdog.service");
 
+	if ($R::Watchdog_Enable) {
+		$cfgjson->{Watchdog}->{Enable} = "1";
+	} else {
+		$cfgjson->{Watchdog}->{Enable} = "0";
+	}
+
 	$cfgjson->{Watchdog}->{Ping} = $R::Watchdog_Ping;
 	$cfgjson->{Watchdog}->{Maxload1} = $R::Watchdog_Maxload1;
 	$cfgjson->{Watchdog}->{Maxload5} = $R::Watchdog_Maxload5;
