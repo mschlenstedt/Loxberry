@@ -48,9 +48,11 @@
 </TMPL_IF>
 
 		</table>
-		</center>
 		<button name="btnsubmit" type="button" data-role="button" data-inline="true" data-mini="true" onClick="location.reload();">
-		<font size=\"-1\">Refresh</font></button>
+		<font size=\"-1\"><TMPL_VAR NETWORK.BUTTON_SEARCHWIFI_REFRESH></font></button>
+		<button name="btnclose" type="button" data-role="button" data-inline="true" data-mini="true" onClick="self.close();">
+		<font size=\"-1\"><TMPL_VAR NETWORK.BUTTON_SEARCHWIFI_CLOSE></font></button>
+		</center>
 
 		</p>
 
