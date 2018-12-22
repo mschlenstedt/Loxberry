@@ -171,3 +171,8 @@ LOGERR "Update script $0 finished with errors." if ($errors != 0);
 
 # End of script
 exit($errors);
+
+END
+{
+	LOGEND;
+}
