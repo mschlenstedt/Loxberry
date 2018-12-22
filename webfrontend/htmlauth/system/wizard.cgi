@@ -28,7 +28,7 @@ use File::Copy;
 use DBI;
 use URI::Escape;
 use MIME::Base64;
-
+print STDERR "Execute wizard.cgi\n#################\n";
 #use HTML::Entities;
 
 use warnings;
@@ -50,6 +50,7 @@ my $error;
 my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
 my $helptemplate = "help_myloxberry.html";
 my $template_title;
+my $quoted_adminpass1;
 
 
 ##########################################################################
@@ -57,7 +58,7 @@ my $template_title;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.2";
+my $version = "1.0.0.3";
 
 my $sversion = LoxBerry::System::lbversion();
 my $lang = lblanguage();
@@ -305,7 +306,8 @@ sub admin_save
 #	print STDERR "adminpass1: " . $s->{adminpass1} . "\n";
 	
 	if ($s->{adminpass1}) {
-		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp loxberry $s->{adminpass1});
+		$quoted_adminpass1 = quotemeta($s->{adminpass1});
+		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp "loxberry" "$s->{adminpass1}");
 		$exitcode  = $? >> 8;
 		if ($exitcode eq 1) {
 			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
@@ -316,6 +318,27 @@ sub admin_save
 		elsif ($exitcode eq 2) {
 			print STDERR "setloxberrypasswd.exp".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
 			$error .= $SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."<br>";
+			$wraperror = 1;
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode eq 3) {
+			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."<br>";
+			$wraperror = 1;
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode eq 4) {
+			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."<br>";
+			$wraperror = 1;
+			# &error;
+			# exit;
+		}
+		elsif ($exitcode eq 5) {
+			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."\n";
+			$error .= $SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."<br>";
 			$wraperror = 1;
 			# &error;
 			# exit;
@@ -335,7 +358,7 @@ sub admin_save
 			# Try to set new SAMBA passwords for user "loxberry"
 	
 			## If default password isn't valid anymore:
-			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $s->{adminpass1} );
+			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $quoted_adminpass1);
 			$exitcode  = $? >> 8;
 			if ($exitcode ne 0) {
 				print STDERR "setloxberrypasswdsmb.exp adminpassold Exitcode $exitcode\n";
@@ -346,7 +369,7 @@ sub admin_save
 			}	
 	
 			# Save Username/Password for Webarea
-			$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $s->{adminuser} $s->{adminpass1} );
+			$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $s->{adminuser} $quoted_adminpass1 );
 			$exitcode  = $? >> 8;
 			if ($exitcode != 0) {
 				$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
