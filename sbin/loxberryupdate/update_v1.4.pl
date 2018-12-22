@@ -311,8 +311,3 @@ sub copy_to_loxberry
 	}
 
 }
-
-END
-{
-	LOGEND;
-}
