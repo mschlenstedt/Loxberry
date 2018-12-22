@@ -1,4 +1,4 @@
-<!-- ** START template/system/plugininstall.html 19.01.2018 19:18:59  ************************************************************************************ -->
+<!-- ** START template/system/plugininstall.html 23.12.2018 00:05:29  ************************************************************************************ -->
 <TMPL_IF FORM>
 	<div style="display:flex; width:100%; text-align:left;" id="installationheader">
 		<div style="margin:auto; padding:10px;text-align:left;">
@@ -20,8 +20,8 @@
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
 			<div style="text-align:left; width:75%;">
-				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
 				<input readonly type="url" autocomplete="off" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
+				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
 			</div>
 		</div>
 		<div style="height:30px;">
