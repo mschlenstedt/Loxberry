@@ -44,7 +44,8 @@ LOGOK "Update script $0 started.";
 
 ## Commented, possibly re-use in 1.4? (from 1.2.5 updatescript)
 LOGINF "Clean up apt databases and update";
-my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
+my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y --fix-broken install };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
 $output = qx { rm -r /var/lib/apt/lists/* };
 $output = qx { rm -r /var/cache/apt/archives/* };
