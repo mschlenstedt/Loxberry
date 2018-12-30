@@ -79,7 +79,7 @@
 				}
 			}; 
 			function refresh_footer_icons () 
-			{
+			{	
 				$.ajax( "/admin/system/tools/ajax-footer-icons-handler.php")
 					.done(function(data) 
 					{ 
@@ -107,8 +107,8 @@
 						if (response_data.update_running == 1) 
 						{
 							$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"pointer" }); 
-							$("#update_alert").fadeTo( 2000 , 1.0); 
 							$("#update_alert").attr("title","<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+response_data.which.toString()+")"); 
+							$("#update_alert").fadeIn(); 
 							$("#update_alert").on("click", function(e)
 							{ 
 								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
@@ -118,7 +118,8 @@
 						{
 							$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"default" }); 
 							$("#update_alert").attr("title",""); 
-							$("#update_alert").fadeTo( 2000 , 0); 
+							$("#update_alert").fadeOut(); 
+							
 						}
 					})
 					.error(function(XMLHttpRequest, textStatus, errorThrown) 
