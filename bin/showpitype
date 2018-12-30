@@ -31,7 +31,7 @@ is_pitwo() {
 }
 
 is_pithree() {
-   grep -q "^Revision\s*:\s*a[0,2]20[8,d][2,3]$" /proc/cpuinfo
+   grep -q "^Revision\s*:\s*[a,9][0,2]20[8,d,e][0,2,3]$" /proc/cpuinfo
    return $?
 }
 

@@ -44,7 +44,8 @@ LOGOK "Update script $0 started.";
 
 ## Commented, possibly re-use in 1.4? (from 1.2.5 updatescript)
 LOGINF "Clean up apt databases and update";
-my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
+my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y --fix-broken install };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
 $output = qx { rm -r /var/lib/apt/lists/* };
 $output = qx { rm -r /var/cache/apt/archives/* };
@@ -95,10 +96,8 @@ if ($exitcode != 0) {
 }
 
 LOGINF "Installing watchdog...";
-
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --fix-broken --reinstall install watchdog };
 $exitcode  = $? >> 8;
-
 if ($exitcode != 0) {
 	LOGERR "Error installing watchdog - Error $exitcode";
 	LOGDEB $output;
@@ -112,7 +111,8 @@ $output = qx { systemctl disable watchdog.service };
 $output = qx { systemctl stop watchdog.service };
 
 # Installing default config: watchdog
-copy_to_loxberry("/system/watchdog");
+copy_to_loxberry("/system/watchdog", "root");
+copy_to_loxberry("/system/watchdog/watchdog.conf", "loxberry");
 $output = qx { mv /etc/watchdog.conf /etc/watchdog.bkp };
 $output = qx { ln -f -s $lbhomedir/system/watchdog/watchdog.conf /etc/watchdog.conf };
 $exitcode  = $? >> 8;
@@ -124,7 +124,12 @@ if ($exitcode != 0) {
 	LOGOK "Symlink $lbhomedir/system/watchdog/watchdog.conf created successfully";
 }
 system("/bin/sed -i 's:REPLACELBHOMEDIR:$lbhomedir:g' $lbhomedir/system/watchdog/rsyslog.conf");
-system("/bin/sed 's:watchdog_options=\"\\(.*\\)\":\"watchdog_options=\"\\1 -v\":g' /etc/default/watchdog");
+$output = qx ( cat /etc/default/watchdog | grep -q -e "watchdog_options" );
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	qx (echo 'watchdog_options=""' >> /etc/default/watchdog);
+}
+system("/bin/sed -i 's:watchdog_options=\"\\(.*\\)\":watchdog_options=\"\\1 -v\":g' /etc/default/watchdog");
 $output = qx { ln -f -s $lbhomedir/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -188,13 +193,13 @@ if (! -e $oldmailfile) {
 
 # Some new files from ~/system
 LOGINF "Installing some new system configs...";
-copy_to_loxberry("/system/sudoers/lbdefaults");
-copy_to_loxberry("/system/supportvpn");
-copy_to_loxberry("/system/daemons/system/04-remotesupport");
-copy_to_loxberry("/system/network/interfaces.eth_dhcp");
-copy_to_loxberry("/system/network/interfaces.eth_static");
-copy_to_loxberry("/system/network/interfaces.wlan_dhcp");
-copy_to_loxberry("/system/network/interfaces.wlan_static");
+copy_to_loxberry("/system/sudoers/lbdefaults", "root");
+copy_to_loxberry("/system/supportvpn", "loxberry");
+copy_to_loxberry("/system/daemons/system/04-remotesupport", "root");
+copy_to_loxberry("/system/network/interfaces.eth_dhcp", "loxberry");
+copy_to_loxberry("/system/network/interfaces.eth_static", "loxberry");
+copy_to_loxberry("/system/network/interfaces.wlan_dhcp", "loxberry");
+copy_to_loxberry("/system/network/interfaces.wlan_static", "loxberry");
 
 LOGINF "Installing daily cronjob for plugin update checks...";
 $output = qx { rm -f $lbhomedir/system/cron/cron.weekly/pluginsupdate.pl };
@@ -202,20 +207,20 @@ $output = qx { ln -f -s $lbhomedir/sbin/pluginsupdate.pl $lbhomedir/system/cron/
 
 # Upgrade Raspbian on next reboot
 LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
-open(F,">/etc/cron.d/lbupdaterebootv140");
+my $logfilename_wo_ext = $logfilename;
+$logfilename_wo_ext =~ s{\.[^.]+$}{};
+open(F,">$lbhomedir/system/daemons/system/99-updaterebootv140");
 print F <<EOF;
-MAILTO=""
-PATH=/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
-
-# m h  dom mon dow   command
-\@reboot root perl $lbhomedir/sbin/loxberryupdate/updatereboot_v1.4.0.pl logfilename=$logfilename_wo_ext-reboot > /dev/null 2>&1
+#!/bin/bash
+perl $lbhomedir/sbin/loxberryupdate/updatereboot_v1.4.0.pl logfilename=$logfilename_wo_ext-reboot 2>&1
 EOF
 close (F);
+qx { chmod +x $lbhomedir/system/daemons/system/99-updaterebootv140 };
 
 # Update Kernel and Firmware
-if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
+if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/system/is_odroidxu3xu4.cfg") {
 	LOGINF "Preparing Guru Meditation...";
-	LOGINF "This will again take some time now. We suggest getting a second coffee or a second beer :-)";
+	LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
 	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
 	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update 3678d3dba62d8d4ad9cce5ceeab3b377e0ee059d };
@@ -230,8 +235,8 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg") {
 }
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
-#LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-#reboot_required("LoxBerry Update requests a reboot.");
+LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
+reboot_required("LoxBerry Update requests a reboot.");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
@@ -269,14 +274,16 @@ sub delete_directory
 # Parameter:
 #	file/dir starting from ~ 
 #   (without /opt/loxberry, with leading /)
+#       owner
 ####################################################################
 sub copy_to_loxberry
 {
-	my ($destparam) = @_;
+	my ($destparam, $destowner) = @_;
 		
 	my $destfile = $lbhomedir . $destparam;
 	my $srcfile = $updatedir . $destparam;
-		
+	if (!$destowner) {$destowner = "root"};	
+
 	if (! -e $srcfile) {
 		LOGINF "$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.";
 		return;
@@ -292,5 +299,16 @@ sub copy_to_loxberry
 	} else {
 		LOGOK "$destparam installed.";
 	}
-}
 
+	$output = qx { chown -R $destowner:$destowner $destfile 2>&1 };
+	$exitcode  = $? >> 8;
+
+	if ($exitcode != 0) {
+		LOGERR "Error changing owner to $destowner for $destfile - Error $exitcode";
+		LOGINF "Message: $output";
+		$errors++;
+	} else {
+		LOGOK "$destfile owner changedi to $destowner.";
+	}
+
+}
