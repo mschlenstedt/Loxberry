@@ -14,6 +14,7 @@ use strict;
 
 my $template_title;
 my $helplink;
+my $helptemplate;
 my $plugin;
 our %navbar;
 
@@ -60,6 +61,7 @@ if ($R::package) {
 }
 
 $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+$helptemplate = "help_logmanager.html";
 
 # Navigation (only for full mode)
 if (!$embed and !$R::package) {
@@ -82,7 +84,7 @@ if (!$R::form or $R::form eq 'log') {
 	$navbar{2}{active} = 1;
 }
 
-LoxBerry::Web::lbheader($template_title, $helplink) if (!$embed);
+LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate) if (!$embed);
 
 if (!$R::form or $R::form eq 'log') {
 	form_log();
