@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.2.5.7";
+	public static $LBWEBVERSION = "1.4.1.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -20,12 +20,12 @@ class LBWeb
 		global $htmlhead;
 		
 		# If a global template_title is set, use it
-		if ($template_title !== "") {
+		if ( empty($pagetitle) && !empty($template_title) ) {
 			$pagetitle = $template_title;
 		}
 		$lang = LBSystem::lblanguage();
 		
-		$fulltitle = $pagetitle !== "" ? lbfriendlyname() . " " . $pagetitle : lbfriendlyname();
+		$fulltitle = !empty($pagetitle) ? lbfriendlyname() . " " . $pagetitle : lbfriendlyname();
 		$fulltitle = trim($fulltitle);
 		if ($fulltitle === "") {
 			$fulltitle = "LoxBerry";
@@ -78,9 +78,12 @@ class LBWeb
 			//error_log("Detected nopanels-option. Sidepanels will not be rendered.");
 			$nopanels = 1;
 		}
-		if ($template_title !== "") {
+		
+		# If a global template_title is set, use it
+		if ( empty($pagetitle) && !empty($template_title) ) {
 			$pagetitle = $template_title;
 		}
+		
 		if ($helplink !== "") {
 			$helpurl = $helplink;
 		}
