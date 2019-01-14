@@ -22,6 +22,37 @@ sub new
 	return $self;
 }
 
+
+sub parse
+{
+	print STDERR "LoxBerry::JSON->parse: Called\n" if ($DEBUG);
+	
+	my $self = shift;
+	my $jsonstring = shift;
+	
+	$self->{jsoncontent} = $jsonstring;
+	
+	# Check for content
+	if (!$self->{jsoncontent}) {
+		print STDERR "LoxBerry::JSON->parse: ERROR content seems to be empty -> Returning undef\n" if ($DEBUG);
+		return undef;
+	}
+	
+	print STDERR "LoxBerry::JSON->parse: Convert to json and return json object\n" if ($DEBUG);
+	eval {
+		$self->{jsonobj} = JSON::from_json($self->{jsoncontent});
+	};
+	if ($@) {
+		print STDERR "LoxBerry::JSON->open: ERROR parsing JSON file - Returning undef $@\n" if ($DEBUG);
+		return undef;
+	};
+	$self->dump($self->{jsonobj}, "Loaded object") if ($DUMP);
+	
+	return $self->{jsonobj};
+	
+}
+	
+
 sub open
 {
 	print STDERR "LoxBerry::JSON->open: Called\n" if ($DEBUG);
@@ -39,7 +70,6 @@ sub open
 	$self->{writeonclose} = $params{writeonclose};
 	$self->{readonly} = $params{readonly};
 	
-
 	print STDERR "LoxBerry::JSON->open: filename is $self->{filename}\n" if ($DEBUG);
 	print STDERR "LoxBerry::JSON->open: writeonclose is ", $self->{writeonclose} ? "ENABLED" : "DISABLED", "\n" if ($DEBUG);
 	
@@ -65,22 +95,11 @@ sub open
 
 	print STDERR "LoxBerry::JSON->open: Check if file has content\n" if ($DEBUG);
 
-	# Check for content
-	if (!$self->{jsoncontent}) {
-		print STDERR "LoxBerry::JSON->open: ERROR file seems to be empty -> Returning undef\n" if ($DEBUG);
-		return undef;
-	}
+	print STDERR "LoxBerry::JSON->open: Calling parse...\n" if ($DEBUG);
+
+	my $res = $self->parse( $self->{jsoncontent} );
 	
-	print STDERR "LoxBerry::JSON->open: Convert to json and return json object\n" if ($DEBUG);
-	eval {
-		$self->{jsonobj} = JSON::from_json($self->{jsoncontent});
-	};
-	if ($@) {
-		print STDERR "LoxBerry::JSON->open: ERROR parsing JSON file - Returning undef $@\n" if ($DEBUG);
-		return undef;
-	};
-	$self->dump($self->{jsonobj}, "Loaded object") if ($DUMP);
-	return $self->{jsonobj};
+	return $res;
 	
 }
 	
@@ -95,7 +114,8 @@ sub write
 	}
 	
 	print STDERR "No jsonobj\n" if (! defined $self->{jsonobj});
-	
+	print STDERR "No filename defined\n" if (! defined $self->{filename});
+		
 	my $jsoncontent_new;
 	eval {
 		$jsoncontent_new = JSON->new->pretty->canonical(1)->encode($self->{jsonobj});
@@ -128,6 +148,12 @@ sub write
 sub filename
 {
 	my $self = shift;
+	my $newfilename = shift;
+	
+	if($newfilename) {
+		$self->{filename} = $newfilename;
+	}
+	
 	return $self->{filename};
 }
 
