@@ -143,7 +143,7 @@ my $img_part1 = Email::MIME->create(
 my $mailobj = Email::MIME->create(
 	header_str => [
 		'To' => $email,
-		'From' => $email,
+		'From' => Encode::decode("UTF-8", $friendlyname) . " <$email>",
 		'Subject' => Encode::decode("UTF-8", $subject),
 	],
 	attributes => {
