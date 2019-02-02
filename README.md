@@ -1,9 +1,8 @@
-![](https://img.shields.io/github/release/mschlenstedt/Loxberry.svg?label=release&style=flat)
+![](https://img.shields.io/github/release/mschlenstedt/loxberry.svg?label=release&style=flat)
 ![](https://img.shields.io/github/commits-since/mschlenstedt/loxberry/latest.svg?style=flat)
-![](https://img.shields.io/github/release-pre/mschlenstedt/Loxberry.svg?label=pre-release&style=flat)
-![](https://img.shields.io/github/issues/mschlenstedt/Loxberry.svg?style=flat)
-![](https://img.shields.io/github/commit-activity/y/mschlenstedt/loxberry.svg?style=flat)
-![](https://img.shields.io/github/license/mschlenstedt/Loxberry.svg?style=flat)
+![](https://img.shields.io/github/release-pre/mschlenstedt/loxberry.svg?label=pre-release&style=flat)
+![](https://img.shields.io/github/issues/mschlenstedt/loxberry.svg?style=flat)
+![](https://img.shields.io/github/license/mschlenstedt/loxberry.svg?style=flat)
 
 Was ist "der LoxBerry"?
 -----------------------
