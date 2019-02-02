@@ -8,8 +8,8 @@
 Was ist "der LoxBerry"?
 -----------------------
 
-LoxBerry ist ein von Michael Schlenstedt initiiertes Projekt auf Open Source
-Basis. LoxBerry ist eine Toolbox, die ein Loxone Smarthome um viele smarte
+LoxBerry ist ein Projekt auf Open Source Basis für den Raspberry Pi und das Loxone
+Smart Home System. LoxBerry ist eine Toolbox, die ein Loxone Smarthome um viele smarte
 Features erweitert, die der Loxone Miniserver so nicht bietet. Zum Beispiel:
 Kostenloser Wetterserver mit Wunderground® Wetterdaten, Sprachausgabe, Schalten
 von WLAN- und Funksteckdosen, eigener Mailserver, Google-/CalDav-Kalenderan-
@@ -24,7 +24,12 @@ Oberfläche zur Verfügung zu stellen, sodass weder zur Installation noch zur
 Konfiguration Linux-, Programmier- oder Kommandozeilenkenntnisse erforderlich
 sind. 
  
-Weitere Informationen
----------------------
+Getting Started
+---------------
  
 Weitere Informationen findest Du im Wiki unter http://www.loxwiki.eu/display/LOXBERRY
+
+Das LoxBerry System steht als Image für den Raspberry Pi zum Download zur Verfügung. 
+Das Image muss auf eine freie SD-Karte geschrieben werden, anschließend kann der LoxBerry
+direkt von der SD-Karte gebootet werden. Die fertigen Images stehen hier zum Download
+zur Verfügung: https://www.loxwiki.eu/x/WISdAQ
