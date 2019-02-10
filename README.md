@@ -1,4 +1,4 @@
-<img width="152px" src="webfrontend/html/system/images/Logo_green_transparent.png" align="left"/>
+<img width="200px" src="webfrontend/html/system/images/Logo_green_transparent.png" align="left"/>
 
 # LoxBerry
 
