@@ -1,3 +1,7 @@
+<img width="152px" src="webfrontend/html/system/images/Logo_green_transparent.png" align="left"/>
+
+# LoxBerry
+
 ![](https://img.shields.io/github/release/mschlenstedt/loxberry.svg?label=release&style=flat)
 ![](https://img.shields.io/github/commits-since/mschlenstedt/loxberry/latest.svg?style=flat)
 ![](https://img.shields.io/github/release-pre/mschlenstedt/loxberry.svg?label=pre-release&style=flat)
