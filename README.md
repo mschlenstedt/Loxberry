@@ -8,6 +8,7 @@
 ![](https://img.shields.io/github/issues/mschlenstedt/loxberry.svg?style=flat)
 ![](https://img.shields.io/github/license/mschlenstedt/loxberry.svg?style=flat)
 
+
 Was ist "der LoxBerry"?
 -----------------------
 
