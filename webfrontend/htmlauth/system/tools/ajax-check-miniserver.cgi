@@ -53,22 +53,8 @@ if (is_enabled($R::useclouddns)) {
 
 	## New CloudDNS implementation (Loxone changed the handling)
 	my $checkurl = "http://$cloudaddress?getip&snr=$R::clouddns&json=true";
-	my $resp;
-	eval 
-	{
-		# Timeout 5 sec for query
-		local $SIG{ALRM} = sub 
-		{
-			$jout{error} = 1;
-			$jout{success} = 0;
-			$jout{status_line} = "Timeout when reading $checkurl";
-			print to_json(\%jout);
-			exit;
-		}; 
-		alarm 5;
-		$resp = $ua->get($checkurl);
-		alarm 0;
-	};
+	$ua->timeout(5);
+	my $resp = $ua->get($checkurl);
 	if ($resp && $resp->is_success) 
 	{
   		# success
@@ -76,6 +62,18 @@ if (is_enabled($R::useclouddns)) {
 		$hostport = $respjson->{IP};
 		$jout{isclouddns} = 1;
 	}
+	else
+	{
+		# fail
+		$jout{error} = 1;
+		$jout{success} = 0;
+		$jout{status_line} = "Timeout when reading $checkurl";
+		print to_json(\%jout);
+		exit;
+	}
+	my $respjson = decode_json($resp->content);
+	$hostport = $respjson->{IP};
+	$jout{isclouddns} = 1;
 }
 
 $jout{hostport} = $hostport;
