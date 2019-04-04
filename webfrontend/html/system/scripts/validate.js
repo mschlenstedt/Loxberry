@@ -33,8 +33,15 @@ function validate_enable ( object )
 	// Adding an event handler if someone pastes a value into the INPUT
 	$(object).on('paste', function(e)
 	{
-		// In case of pasting values, remove any formatting
-		validate_OnPaste_StripFormatting(this, event);
+		if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)
+		{
+	     	// Firefox doesn't support this
+	     	return;
+		}
+		else
+		{	// In case of pasting values, remove any formatting
+			validate_OnPaste_StripFormatting(this, event);
+		}
 	});
 
 	// Adding an event handler if someone leaves, enters the INPUT or
