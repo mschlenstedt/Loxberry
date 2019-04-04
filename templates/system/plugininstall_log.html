@@ -142,6 +142,7 @@ function updatestatus()
 				clearInterval(interval);
 				updatelog();
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight).delay(100);
+				if ( $("#LogScroll").is(':checked') ) { $("#LogScroll").trigger('click'); }
 				$("#Logfile").prop("complete",1);
 			}
 		})
