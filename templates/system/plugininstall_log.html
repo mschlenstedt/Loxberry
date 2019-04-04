@@ -141,6 +141,7 @@ function updatestatus()
 				clearInterval(interval2);
 				clearInterval(interval);
 				updatelog();
+				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight).delay(100);
 				$("#Logfile").prop("complete",1);
 			}
 		})
