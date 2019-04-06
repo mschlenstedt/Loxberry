@@ -136,12 +136,29 @@
 						<!-- <option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_2_FAILURES></option> -->
 						<option value="3"><TMPL_VAR PLUGININSTALL.UI_LOG_3_ERRORS></option>
 						<option value="4"><TMPL_VAR PLUGININSTALL.UI_LOG_4_WARNING></option>
-						<option value="5"><TMPL_VAR PLUGININSTALL.UI_LOG_5_OK></option>
+						<!-- <option value="5"><TMPL_VAR PLUGININSTALL.UI_LOG_5_OK></option> -->
 						<option value="6"><TMPL_VAR PLUGININSTALL.UI_LOG_6_INFO></option>
 						<option value="7"><TMPL_VAR PLUGININSTALL.UI_LOG_7_DEBUG></option>
 					</select>
 					</fieldset>
-				</TMPL_IF>
+					<script>
+					$(document).ready( function()
+					{
+						if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 1 )
+						{
+							$('<option value="1"><TMPL_VAR PLUGININSTALL.UI_LOG_1_ALERT></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=0]"));
+						}
+						else if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 2 )
+						{
+							$('<option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_2_FAILURES></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=0]"));
+						}
+						else if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 5 )
+						{
+							$('<option value="5"><TMPL_VAR PLUGININSTALL.UI_LOG_5_OK></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=4]"));
+						}
+					});
+					</script>
+					</TMPL_IF>
 				</td>
 			</tr>
 			
@@ -149,6 +166,7 @@
 			<script>
 			$(document).ready( function()
 				{
+					
 					$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>').change();
 				});
 			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
