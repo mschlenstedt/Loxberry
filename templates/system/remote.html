@@ -115,32 +115,38 @@
 		margin-left	:10px;
 	}
 </STYLE>
+<P><TMPL_VAR REMOTE.HINT_INTRODUCTION></P>
 
 <TMPL_IF OFFLINE>
-	<DIV style="background-color: rgba(255, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; padding:10px;">
+	<DIV style="background-color: rgba(255, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; border-spacing: 15px; padding:10px; display:table; margin:0 auto;">
 </TMPL_IF>
 <TMPL_IF ONLINE>
-	<DIV style="background-color: rgba(205, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; padding:10px;">
+	<DIV style="background-color: rgba(205, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; border-spacing: 15px; padding:10px; display:table; margin:0 auto;">
 </TMPL_IF>
-		<DIV	class="lb_flex-container" style="margin-bottom: 0px; justify-content: center;">
-			<DIV	class="lb_flex-item-label"><TMPL_VAR REMOTE.LABEL_ACTIVE_SUPPORTKEY></DIV>
-			<DIV	class="lb_flex-data"><TMPL_VAR SUPPORTKEY></DIV>
-			<DIV	class="lb_flex-item-label" style="text-align: left;">
-			<BUTTON	type=		"submit"
-				form=		"reset_form"
-				id=		"btnsubmit"
-				data-role=	"button"
-				data-inline=	"true"
-				data-mini=	"true"
-				data-icon=	"delete">
-				<TMPL_VAR REMOTE.BUTTON_RESET>
-			</BUTTON>
-			</DIV>
-			<DIV	class="lb_flex-item-label"><TMPL_VAR REMOTE.LABEL_VALID></DIV>
-			<DIV	class="lb_flex-data"><TMPL_VAR CERTDATE></DIV>
-			<DIV	class="lb_flex-item-label"><TMPL_VAR REMOTE.LABEL_STATUS></DIV>
-			<DIV	class="lb_flex-data"><TMPL_VAR STATUS></DIV>
-		</DIV>
+		<div style="display:table-row;">
+				<DIV style="text-align:right; display:table-cell;"><TMPL_VAR REMOTE.LABEL_ACTIVE_SUPPORTKEY></DIV>
+				<DIV style="text-align:center; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;"><big><TMPL_VAR SUPPORTKEY></big></DIV>
+				<DIV style="display:table-cell;"	style="text-align: left;">
+				<BUTTON	type=		"submit"
+					form=		"reset_form"
+					id=		"btnsubmit"
+					data-role=	"button"
+					data-inline=	"true"
+					data-mini=	"true"
+					data-icon=	"delete">
+					<TMPL_VAR REMOTE.BUTTON_RESET>
+				</BUTTON>
+				</DIV>
+		</div>
+		<div style="display:table-row;">
+				<DIV style="text-align:right; display:table-cell;"><TMPL_VAR REMOTE.LABEL_VALID></DIV>
+				<DIV style="text-align:center; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;"><TMPL_VAR CERTDATE></DIV>
+		</div>
+		<div style="display:table-row;">
+
+				<DIV style="text-align:right;display:table-cell;"><TMPL_VAR REMOTE.LABEL_STATUS></DIV>
+				<DIV style="text-align:center; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;"><TMPL_VAR STATUS></DIV>
+		</div>
 	</DIV>
 
 <BR>
@@ -156,7 +162,7 @@
 			data-role=	"button"
 			data-inline=	"true"
 			data-mini=	"true"
-			style=		"background-color: rgba(37, 226, 18, 0.6); margin-left:50px"
+			style=		"background-color: rgba(67, 236, 48, 0.4); margin-left:50px"
 			data-icon=	"check">
 			<TMPL_VAR REMOTE.BUTTON_CONNECT>
 		</BUTTON>
@@ -166,7 +172,7 @@
 			data-role=	"button"
 			data-inline=	"true"
 			data-mini=	"true"
-			style=		"background-color: rgba(255, 128, 128, 0.9)"
+			style=		"background-color: rgba(255, 128, 128, 0.4)"
 			data-icon=	"delete">
 			<TMPL_VAR REMOTE.BUTTON_DISCONNECT>
 		</BUTTON>
@@ -184,7 +190,7 @@
 <BR>
 <BR>
 
-<FORM id="main_form" method="post" data-ajax="false"> 
+<FORM id="main_form" method="post" data-ajax="false" style="border-radius: 11px; border: 1px solid black; padding:20px 0px 0px 0px;"> 
 <INPUT id="saveformdata" name="saveformdata" type="hidden" value="1">
 <DIV	class="lb_flex-container openvpnsettings">
 	<DIV	class="lb_flex-item-spacer"></DIV>
@@ -232,7 +238,6 @@
 </FORM>
 
 <!-- Button area 2 -->
-
 <BR>
 
 <DIV style="text-align:center;">
