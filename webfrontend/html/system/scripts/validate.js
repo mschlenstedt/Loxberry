@@ -2,9 +2,14 @@
 
 function validate_enable ( object )
 {
+	// Fix for variables with special chars
+	object = object.replace( /(\\)/g, "" );
+	object_without_escape = object;
+	object = object.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
 	// This function is called from the code to enable validation for this object
 	// Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id> (INPUT) which must exists in the HTML page
-	$( '<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object ) );
+	$( '<div style="display:none;" id="error-msg-'+object_without_escape.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object ) );
 	$(".ui-input-text").css("margin-bottom",0);
     
 	// Prevent return key
@@ -76,6 +81,11 @@ function validate_all()
 		// Get each object to validate...
 		$.each(what_to_test, function (i,v)
 		  {
+
+			// Fix for variables with special chars
+			v = v.replace( /(\\)/g, "" );
+			v = v.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
 			// Check the value...
 			if (validate_chk_value.call(this,v))
 			{
@@ -335,6 +345,10 @@ function validate_chk_value( object,evt,rule )
 	// If the event is not defined, set it to 0
 	// (This happens if called from the code itself)
 	evt = evt || 0;
+
+	// Fix for variables with special chars
+	object = object.replace( /(\\)/g, "" );
+	object = object.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
 	// If the rule is not given when calling the function, get the value
 	// in attribute data-validation-rule of the INPUT
 	var rule = rule || $(object).attr("data-validation-rule");
@@ -400,8 +414,12 @@ function validate_chk_value( object,evt,rule )
 			// Check if object still there
 			if (typeof offset === 'undefined')
 			{
-				// On page switch remove old values
-				window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+				// If what_to_test is empty, no need to remove
+				if (typeof single_object !== 'undefined') 
+				{
+					// On page switch remove old values
+					window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+				}
 			}
 			else
 			{
@@ -473,7 +491,7 @@ function validate_chk_value( object,evt,rule )
 		// Return false to the caller
 		return true
 	}
-}
+} 
 
 function validate_chk_object( obj_to_validate )
 {
@@ -481,10 +499,15 @@ function validate_chk_object( obj_to_validate )
 	// correct values to be able to submit the form
 	// Check the given variable. If not okay, create an empty array
 	var obj_to_validate = ( typeof obj_to_validate != 'undefined' && obj_to_validate instanceof Array ) ? obj_to_validate : [];
+
 	// Go through each object ...
 	$.each(obj_to_validate, function(i, obj)
 	{
-			// Put the object into the global array window.obj_to_validate
+		// Fix for variables with special chars
+		obj = obj.replace( /(\\)/g, "" );
+		obj = obj.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
+		// Put the object into the global array window.obj_to_validate
 		window.obj_to_validate.push(obj);
 	});
 	// Remove duplicates from the global array window.obj_to_validate
@@ -493,14 +516,19 @@ function validate_chk_object( obj_to_validate )
 	validate_place_tooltips ();
 }
 function validate_clean_objects( to_clean )
-{
+{ 
 	// Function to define (remove) which objects must NOT have
 	// correct values any longer to be able to submit the form
 	// Check the given variable. If not okay, create an empty array
 	var to_clean = ( typeof to_clean != 'undefined' && to_clean instanceof Array ) ? to_clean : [];
+
 	// Go through each object ...
 	$.each(to_clean, function(i, object)
 	{
+		// Fix for variables with special chars
+		object = object.replace( /(\\)/g, "" );
+		object = object.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
 		// Delete the value in the input field
 		$(object).val('');
 		// Hide the tooltip
@@ -524,6 +552,10 @@ function validate_place_tooltips ()
 	// Go through each object ...
 	$.each(window.obj_to_validate, function(i, single_object)
 	{
+		// Fix for variables with special chars
+		single_object = single_object.replace( /(\\)/g, "" );
+		single_object = single_object.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
 		// Correct the position of the tooltip after 450 ms from now
 		setTimeout( function()
 		{
