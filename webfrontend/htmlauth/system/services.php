@@ -38,7 +38,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "1.4.0.3";
+$version = "1.4.0.4";
 
 $sversion = LBSystem::lbversion();
 
@@ -81,6 +81,8 @@ $template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].": ". $SL['SERVICES.WIDGETLA
 # Menu
 if (isset($_GET['check_webport'])) {
   check_webport();
+} else if (isset($_GET['webport_success'])) {
+	webport_success();
 } else if (isset($_POST['saveformdata'])) {
   save();
 } else {
@@ -394,7 +396,6 @@ function save()
 	} else {
 		$returnurl="/admin/system/services.php?load=1";
 	}
-
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
 	if (isset($ssdpoff) && $ssdpoff != $cfg->getBool('SSDP','DISABLED',false)) {
 		$ssdpstate_changed = 1;
@@ -420,6 +421,8 @@ function save()
 			$headermsg = $SL['SERVICES.MSG_STEP1'];
 			$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
 			$waitmsg = $SL['SERVICES.WAITWEBSERVER'];
+			$sucheadermsg = $SL['SERVICES.MSG_STEP2'];
+			$sucresmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
 			$href="/admin/system/services.php?check_webport=1";
 		}
 	} else if (isset($_POST['webport'])) {
@@ -434,8 +437,8 @@ function save()
 			<table style="border:0;">
 				<tr>
 					<td align="center">
-						<h2><?=$headermsg;?></h2>
-						<p>
+						<h2 id="headermsg"><?=$headermsg;?></h2>
+						<p id="resmsg">
 							<?=$resmsg?>
 							<br/>
 							<br/>
@@ -447,7 +450,7 @@ function save()
 				<tr>
 					<td align="center">
 						<p>
-							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<?=$href;?>"><?=$SL['SERVICES.BTN_CONT'];?></a>
+							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<?=$href;?>"><?=$SL['COMMON.BUTTON_OK'];?></a>
 						</p>
 					</td>
 				</tr>
@@ -464,16 +467,42 @@ function save()
 	} else if (isset($webserver_changed) && $webserver_changed == True) {
 		$newhref = "http";
 		if ($_SERVER['HTTPS']) { $newhref .= "s"; }
-		$newhref .= "://".$_SERVER['SERVER_NAME'].":".$webport."/admin/system/services.php?check_webport=1";
+		$newhref .= "://".$_SERVER['SERVER_NAME'];
+		if ($webport != 80) {$newhref .= ":$webport"; }
+		$chkhref = $newhref."/system/servicehelper.php";
+		$cnthref = "/admin/system/services.php?check_webport=1";
+		$suchref = $newhref."/admin/system/services.php";
 		echo "
 		<script>
+			sucheadermsg = \"$sucheadermsg\";
+			sucresmsg = \"$sucresmsg\";
 			btnok = document.getElementById('btnok');
 			btnok.style.display = 'none';
-			function setHREF() {
-				btnok.style.display = '';
-				btnok.href = \"$newhref\";
-			}
-			setTimeout(setHREF,5000);
+			setTimeout(function(){
+				$.get(\"$chkhref\")
+	    		.done(function(data){
+	    		console.log('chkhref aufgerufen');
+	    			if(data.ok == -1) {
+	    			console.log('chkhref hat -1 zurückgegeben');
+    					$.get(\"$cnthref\")
+    						.done(function(data){
+    						console.log('cnthref aufgerufen');
+    							if (data.ok == -1) {
+    							console.log('cnthref hat -1 zurückgegeben');
+    								document.getElementById('headermsg').innerHTML = sucheadermsg;
+    								document.getElementById('resmsg').innerHTML = sucresmsg;
+    								setTimeout(function(){
+											btnok.style.display = '';
+											btnok.href = \"$suchref\";
+										}, 6000);
+    							}
+    					})
+    					.fail(function(){
+    						console.log('Fehler beim Laden der cnthref');
+    					});
+	    			}
+	    	});
+	    }, 6000);
 		</script>
 		";
 		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_change ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
@@ -482,6 +511,9 @@ function save()
 	exit;
 }
 
+#####################################################
+# check_webport
+#####################################################
 function check_webport() {
 	
 	global $navbar;
@@ -494,62 +526,28 @@ function check_webport() {
 	$cfg->setQuoteStrings(False);
 
 	// Print Template
-	LBWeb::lbheader($template_title, $helplink, $helptemplate);
-	if ($_SERVER['SERVER_PORT'] != $cfg['WEBSERVER']['PORT']) {
-		$headermsg = $SL['SERVICES.ERR_PORTCHANGE'];
-		$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
-		$waitmsg = "";
-	} else {
-		$headermsg = $SL['SERVICES.MSG_STEP2'];
-		$resmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
-		$waitmsg = $SL['SERVICES.WEBSERVERCLEANING'];
-		$webport = $cfg['WEBSERVER']['PORT'];
-		$weboldport = $cfg['WEBSERVER']['OLDPORT'];
-	}
-	?>
-		<div style="text-align:center;">
-			<center>
-			<table style="border:0;">
-				<tr>
-					<td align="center">
-						<h2><?=$headermsg;?></h2>
-						<p>
-							<?=$resmsg?>
-							<br/>
-							<br/>
-						</p>
-						<p>
-							<?=$waitmsg;?>
-					</td>
-				</tr>
-				<tr>
-					<td align="center">
-						<p>
-							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/services.php?load=1"><?=$SL['COMMON.BUTTON_OK'];?></a>
-						</p>
-					</td>
-				</tr>
-			</table>
-			</center>
-		</div>
-	<?php
-	if ($waitmsg != "") {
-		echo "
-		<script>
-			btnok = document.getElementById('btnok');
-			btnok.style.display = 'none';
-			function setHREF() {
-				btnok.style.display = '';
-			}
-			setTimeout(setHREF,6000);
-		</script>
-		";
-		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_success ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
-	}
-	LBWeb::lbfooter();
+	$headermsg = $SL['SERVICES.MSG_STEP2'];
+	$resmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
+	$waitmsg = $SL['SERVICES.WEBSERVERCLEANING'];
+	$webport = $cfg['WEBSERVER']['PORT'];
+	$weboldport = $cfg['WEBSERVER']['OLDPORT'];
+
+	header('Content-Type: application/json');
+	echo "{ \"ok\": \"-1\" }";
+	exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_success ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
+
 	exit;
 }
 
+#####################################################
+# webport_success
+#####################################################
+function webport_success() {
+	
+	header('Content-Type: application/json');
+	echo "{ \"ok\":\"-1\" }";
+	exit;
+}
 
 #####################################################
 # Error
