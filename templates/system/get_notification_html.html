@@ -17,12 +17,14 @@
 	}
 	$("#notifdeleteall").click(async function() 
 	{
+		$("#notifdeleteall").attr('deleting',1);
 		while ( $(".notifyrow<TMPL_VAR RAND>:visible").length > 0 ) 
 		{
 			var toclick = $(".notifdelete").first().attr('id');
 			$( "#"+toclick ).trigger('click');
 			await sleep_notifydelete(500);
 		}
+		$("#notifdeleteall").attr('deleting','');
 	});
 	$(".notifdelete").click(function() 
 	{
