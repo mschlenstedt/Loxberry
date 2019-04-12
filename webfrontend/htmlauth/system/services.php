@@ -420,7 +420,8 @@ function save()
 			$cfg->save();
 			$headermsg = $SL['SERVICES.MSG_STEP1'];
 			$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
-			$waitmsg = $SL['SERVICES.WAITWEBSERVER'];
+			$waitmsg = $SL['SERVICES.WAITWEBSERVER1'];
+			$waitmsg2 = $SL['SERVICES.WAITWEBSERVER2'];
 			$sucheadermsg = $SL['SERVICES.MSG_STEP2'];
 			$sucresmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
 			$href="/admin/system/services.php?check_webport=1";
@@ -443,14 +444,16 @@ function save()
 							<br/>
 							<br/>
 						</p>
-						<p>
+						<p id="waitmsg">
 							<?=$waitmsg;?>
+						</p>
 					</td>
 				</tr>
 				<tr>
 					<td align="center">
 						<p>
 							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<?=$href;?>"><?=$SL['COMMON.BUTTON_OK'];?></a>
+							<h2 id="moment"><?=$SL['COMMON.MSG_PLEASEWAIT'];?></h2>
 						</p>
 					</td>
 				</tr>
@@ -476,6 +479,7 @@ function save()
 		<script>
 			sucheadermsg = \"$sucheadermsg\";
 			sucresmsg = \"$sucresmsg\";
+			waitmsg2 = \"$waitmsg2\";
 			btnok = document.getElementById('btnok');
 			btnok.style.display = 'none';
 			setTimeout(function(){
@@ -491,7 +495,9 @@ function save()
     							console.log('cnthref hat -1 zurückgegeben');
     								document.getElementById('headermsg').innerHTML = sucheadermsg;
     								document.getElementById('resmsg').innerHTML = sucresmsg;
+    								document.getElementById('waitmsg').innerHTML = waitmsg2;
     								setTimeout(function(){
+    								  document.getElementById('moment').style.display='none';
 											btnok.style.display = '';
 											btnok.href = \"$suchref\";
 										}, 6000);
