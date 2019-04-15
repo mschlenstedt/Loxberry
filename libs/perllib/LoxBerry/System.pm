@@ -9,8 +9,8 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.4.0.4";
-our $DEBUG = 0;
+our $VERSION = "1.4.1.2";
+our $DEBUG;
 
 use base 'Exporter';
 
@@ -713,9 +713,29 @@ sub read_generalcfg
 sub set_clouddns
 {
 	my ($msnr, $clouddnsaddress) = @_;
+	
+	require LoxBerry::JSON;
+	my $memfile = "/run/shm/clouddns_cache.json";
+	my $jsonobj = LoxBerry::JSON->new();
+	my $cache = $jsonobj->open(filename => $memfile);
+	if(
+		defined $cache->{$msnr}->{refresh_timestamp} and 
+		$cache->{$msnr}->{refresh_timestamp} > time and
+		defined $cache->{$msnr}->{IPAddress} #and 
+		#defined $cache->{$msnr}->{Port}
+	) {
+		print STDERR "Reading data from cachefile $memfile\n" if ($DEBUG);
+		$miniservers{$msnr}{IPAddress} = $cache->{$msnr}->{IPAddress};
+		$miniservers{$msnr}{Port} = $cache->{$msnr}->{Port};
+		return;
+	}
+	
 	require LWP::UserAgent;
 	require JSON;
 	my $ua = LWP::UserAgent->new;
+	
+	print STDERR "Reading data online from CloudDNS\n" if ($DEBUG);
+		
 	$ua->timeout(5);
 	$ua->max_redirect( 0 );
 	my $checkurl = "http://$clouddnsaddress?getip&snr=" . $miniservers{$msnr}{CloudURL}."&json=true";
@@ -724,6 +744,9 @@ sub set_clouddns
 	{
 		$miniservers{$msnr}{IPAddress} = "0.0.0.0";
 		$miniservers{$msnr}{Port} = "0";
+		delete $cache->{$msnr};
+		$jsonobj->write();
+		
 		require Time::Piece;
 		my $t = Time::Piece->localtime;
 		print STDERR $t->strftime("%Y-%m-%d %H:%M:%S")." System.pm: Timeout when reading IP and Port from $checkurl \n";
@@ -732,6 +755,12 @@ sub set_clouddns
 	{
 		my $respjson = JSON::decode_json($resp->content);
 		($miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port}) = split(/:/, $respjson->{IP}, 2);
+		my %cachehash;
+		$cachehash{IPAddress} = $miniservers{$msnr}{IPAddress};
+		$cachehash{Port} = $miniservers{$msnr}{Port};
+		$cachehash{refresh_timestamp} = time + 3600 + int(rand(3600));
+		$cache->{$msnr} = \%cachehash;
+		$jsonobj->write();
 	}
 }
 
