@@ -1,8 +1,13 @@
+<img width="200px" src="webfrontend/html/system/images/Logo_green_transparent.png" align="left"/>
+
+# LoxBerry
+
 ![](https://img.shields.io/github/release/mschlenstedt/loxberry.svg?label=release&style=flat)
 ![](https://img.shields.io/github/commits-since/mschlenstedt/loxberry/latest.svg?style=flat)
 ![](https://img.shields.io/github/release-pre/mschlenstedt/loxberry.svg?label=pre-release&style=flat)
 ![](https://img.shields.io/github/issues/mschlenstedt/loxberry.svg?style=flat)
 ![](https://img.shields.io/github/license/mschlenstedt/loxberry.svg?style=flat)
+
 
 Was ist "der LoxBerry"?
 -----------------------

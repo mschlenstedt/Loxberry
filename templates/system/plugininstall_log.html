@@ -116,6 +116,7 @@ function updatestatus()
 				clearInterval(interval);
 				updatelog();
 				$("#Logfile").prop("complete",1);
+        		setTimeout( function() { $("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);}, 2500);
 			}
 			else if (pstatus === 2)
 			{
@@ -126,6 +127,7 @@ function updatestatus()
 				clearInterval(interval);
 				updatelog();
 				$("#Logfile").prop("complete",1);
+        		setTimeout( function() { $("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);}, 2500);
 			}
 			else if (pstatus === 1)
 			{
@@ -141,8 +143,10 @@ function updatestatus()
 				clearInterval(interval2);
 				clearInterval(interval);
 				updatelog();
+				if ( $("#LogScroll").is(':checked') ) { $("#LogScroll").trigger('click'); }
 				$("#Logfile").prop("complete",1);
-			}
+        		setTimeout( function() { $("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);}, 2500);
+        	}
 		})
 			.always(function() { status_in_progress = 0; });
 	}

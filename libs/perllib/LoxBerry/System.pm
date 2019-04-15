@@ -716,12 +716,23 @@ sub set_clouddns
 	require LWP::UserAgent;
 	require JSON;
 	my $ua = LWP::UserAgent->new;
-	$ua->timeout(10);
+	$ua->timeout(5);
 	$ua->max_redirect( 0 );
 	my $checkurl = "http://$clouddnsaddress?getip&snr=" . $miniservers{$msnr}{CloudURL}."&json=true";
 	my $resp 	 = $ua->get($checkurl);
-	my $respjson = JSON::decode_json($resp->content);
-	($miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port}) = split(/:/, $respjson->{IP}, 2);
+	if (! $resp->is_success ) 
+	{
+		$miniservers{$msnr}{IPAddress} = "0.0.0.0";
+		$miniservers{$msnr}{Port} = "0";
+		require Time::Piece;
+		my $t = Time::Piece->localtime;
+		print STDERR $t->strftime("%Y-%m-%d %H:%M:%S")." System.pm: Timeout when reading IP and Port from $checkurl \n";
+	}
+	else
+	{
+		my $respjson = JSON::decode_json($resp->content);
+		($miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port}) = split(/:/, $respjson->{IP}, 2);
+	}
 }
 
 =head2 get_ftpport
