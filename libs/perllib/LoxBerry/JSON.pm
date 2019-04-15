@@ -5,6 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
+our $VERSION = "1.4.1.1";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -134,6 +135,13 @@ sub write
 	print STDERR "LoxBerry::JSON->write: JSON has changed - write to $self->{filename}\n" if ($DEBUG);
 	
 	# CORE::open(my $fh, '>', $self->{filename} . ".tmp") or print STDERR "Error opening file: $!@\n";
+	
+	eval {
+		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+		chown $uid, $gid, $self->{filename};
+	};
+	
+	
 	CORE::open(my $fh, '>', $self->{filename}) or print STDERR "Error opening file: $!@\n";
 	flock($fh, 2); # EXCLUSIVE LOCK
 	print $fh $jsoncontent_new;
