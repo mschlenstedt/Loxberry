@@ -6,7 +6,7 @@ require_once "loxberry_system.php";
 $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 
-$LBIOVERSION = "1.2.6.1";
+$LBIOVERSION = "1.4.1.1";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -127,11 +127,20 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 		}
 	}
 	
+	// Section is defined by the prefix
+	if(empty($prefix)) {
+		$prefixsection = "Params";
+	} else {
+		$prefixsection = $prefix;
+	}
+	// echo "Prefixsection: $prefixsection\n";
+	
 	if(empty($mem['Main']['timestamp'])) {
+		// echo "Set new timestamp\n";
 		$mem['Main']['timestamp'] = time();
 	}
-	
 	if( $mem['Main']['timestamp'] < (time()-$mem_sendall_sec) ) {
+		// echo "timestamp requires resending\n";
 		$mem_sendall = 1;
 	}
 	
@@ -148,7 +157,9 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 	//echo "mem_sendall: $mem_sendall\n";
 	
 	if( $mem_sendall <> 0 ) {
-		$mem['Params'] = Null;
+		$mem_main_tmp = $mem['Main'];
+		$mem = Null;
+		$mem['Main'] = $mem_main_tmp;
 		$mem['Main']['timestamp'] = time();
 		$mem_sendall = 0;
 	}
@@ -156,7 +167,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 	$newparams = array();
 	
 	foreach ($params as $param => $value) {
-		if( !isset($mem['Params'][$param]) || $mem['Params'][$param] !== $value ) {
+		if( !isset($mem[$prefixsection][$param]) || $mem[$prefixsection][$param] !== $value ) {
 			// Param has changed
 			// echo "Param changed: $param = $value\n";
 			$newparams[$param] = $value;
@@ -166,10 +177,10 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 	if(!empty($newparams)) {
 		$udpres = msudp_send($msnr, $udpport, $prefix, $newparams);
 		if ($udpres != null) {
-			if(!isset($mem['Params'])) {
-				$mem['Params'] = array();
+			if(!isset($mem[$prefixsection])) {
+				$mem[$prefixsection] = array();
 			}
-			$mem['Params'] = array_merge($mem['Params'], $newparams);
+			$mem[$prefixsection] = array_merge($mem[$prefixsection], $newparams);
 			// array_push($mem['Params'], $newparams);
 			//echo "AFTER:\n";
 			//echo var_dump($mem);
@@ -179,7 +190,10 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 			chgrp($memfile, "loxberry");
 			
 		}
+	} else {
+		$udpres = "cached";
 	}
+	
 	return $udpres;
 }
 
