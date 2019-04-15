@@ -143,7 +143,7 @@ if (!$R::logfile) {
 
 
 $R::logfile_name = File::Basename::basename($R::logfile);
-$maintemplate->param('LOGFILE_NAME', $R::logfile_name);
+$maintemplate->param('LOGFILE_NAME', $R::logfile_name) if ($maintemplate);
 
 
 if (begins_with($R::logfile, $lbhomedir . "/log")) {
