@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "1.2.5.5";
+our $VERSION = "1.4.1.1";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -157,77 +157,64 @@ sub mshttp_send_mem
 	my @newparams;
 	my %response;
 
-	my $memfile = "/run/shm/mshttp_mem_${msnr}.tmp";
+	require LoxBerry::JSON;
+
+	my $memfile = "/run/shm/mshttp_mem_${msnr}.json";
 	print STDERR "mshttp_send_mem: Memory file is $memfile\n" if ($DEBUG);
 		
-	my $mem;
-	my $timestamp;
-	# Create or open memory file
-	if (! -e $memfile) {
-		$mem = new Config::Simple(syntax=>'ini');
-		$timestamp = time;
-		$mem->param('Main.timestamp', $timestamp);
-		$mem->write($memfile) or 
-		do {
-			print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";
-			return;
-			};
-		$mem_sendall = 1;
-	} else {
-		$mem = new Config::Simple($memfile) or
-		do {
-			print STDERR "mshttp_send_mem: Memory file $memfile seems to be corrupted - recreating. Error: " . Config::Simple->error() . "\n";
-			unlink $memfile;
-			$mem = new Config::Simple(syntax=>'ini') or 
-			do { 
-				print STDERR "mshttp_send_mem: Could not recreate $memfile. Error: " . Config::Simple->error() . "\n";
-				return;
-			};
-			$timestamp = time;
-			$mem->param('Main.timestamp', $timestamp);
-			$mem->write($memfile) or print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";
-			$mem_sendall = 1;
+	# Open memory file
+	my $memobj = LoxBerry::JSON->new();
+	my $memhash = $memobj->open(filename => $memfile, writeonclose => 1);
 		
-		};
-		$timestamp = $mem->param('Main.timestamp');
+	if(! defined $memhash->{Main}) {
+		$memhash->{Main} = ();
 	}
-	my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
-	chown $uid, $gid, $memfile;
+	if (! defined $memhash->{Main}->{timestamp}) {
+		# print STDERR "Setting timestamp\n";
+		$memhash->{Main}->{timestamp} = time;
+		$mem_sendall = 1;
+	}	
+	
+	my $timestamp = $memhash->{Main}->{timestamp};
 	
 	# Check if this call should be set to mem_sendall
 	if ($timestamp < (time-$mem_sendall_sec)) {
 		$mem_sendall = 1;
-		$mem->set_block('default', undef);
-		$mem->param('Main.timestamp', time);
+		$memhash->{Main}->{timestamp} = time;
 	}
 		
-	if (! $mem->param('Main.lastMSRebootCheck') or $mem->param('Main.lastMSRebootCheck') < (time-300)) {
+	if (! $memhash->{Main}->{lastMSRebootCheck} or $memhash->{Main}->{lastMSRebootCheck} < (time-300)) {
 		# Try to check if MS was restarted (in only possible with MS Admin)
-		$mem->param('Main.lastMSRebootCheck', time);
-		my $lasttxp = $mem->param('Main.MSTXP');
+		$memhash->{Main}->{lastMSRebootCheck} = time;
+		my $lasttxp = $memhash->{Main}->{MSTXP};
 		my ($newtxp, $code) = mshttp_call($msnr, "/dev/lan/txp");
 		if ($code eq "200") {
-			$mem->param('Main.MSTXP', $newtxp);
+			print STDERR "Setting newtxp $newtxp\n" if($DEBUG);
+			$memhash->{Main}->{MSTXP} = $newtxp;
 			if($newtxp < $lasttxp) {
+				print STDERR "Miniserver may have been rebooted. Flagging to clear cache.\n" if($DEBUG);
 				$mem_sendall = 1;
-				$mem->set_block('default', undef);
 			}
 		}
 	}
-	
+
+	if ($mem_sendall == 1) {
+		print STDERR "Clearing cache (mem_sendall is set)\n" if($DEBUG);
+		for(keys %$memhash) {
+			next if ($_ eq 'Main');
+			delete $memhash->{$_};
+		}
+	}
+
 	# Build new delta parameter list
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
 			
-		if ($mem->param($params[$pidx]) ne $params[$pidx+1] or $mem_sendall == 1) {
+		if ($memhash->{$params[$pidx]} ne $params[$pidx+1] or $mem_sendall == 1) {
 			push(@newparams, $params[$pidx], $params[$pidx+1]);
-			$mem->param($params[$pidx], $params[$pidx+1]);
+			$memhash->{$params[$pidx]} = $params[$pidx+1];
 		}	
 	}
 	
-	$mem->param('Main.timestamp', time);
-		$mem->save($memfile) or print STDERR "mshttp_send_mem: Could not write memory file $memfile\n";;
-		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
-		chown $uid, $gid, $memfile;
 	$mem_sendall = 0;
 	
 	if (@newparams) {
@@ -386,7 +373,9 @@ sub msudp_send_mem
 	my @params = @_;
 	my @newparams;
 	
-	my $memfile = "/run/shm/msudp_mem_${msnr}_${udpport}.tmp";
+	require LoxBerry::JSON;
+		
+	my $memfile = "/run/shm/msudp_mem_${msnr}_${udpport}.json";
 	print STDERR "msudp_send_mem: Memory file is $memfile\n" if ($DEBUG);
 	
 	if (! $udpport or $udpport > 65535) {
@@ -398,75 +387,68 @@ sub msudp_send_mem
 		return undef;
 	}
 	
-	my $mem;
-	my $timestamp;
-	# Create or open memory file
-	if (! -e $memfile) {
-		$mem = new Config::Simple(syntax=>'ini');
-		$timestamp = time;
-		$mem->param('Main.timestamp', $timestamp);
-		$mem->write($memfile) or 
-		do {
-			print STDERR "msudp_send_mem: Could not write memory file $memfile\n";
-			return;
-		};
-		$mem_sendall = 1;
+	# Open memory file
+	my $memobj = LoxBerry::JSON->new();
+	my $memhash = $memobj->open(filename => $memfile, writeonclose => 1);
+	
+	
+	# Section is defined by the prefix
+	my $prefixsection;
+	if(!$prefix) {
+		$prefixsection = "Params";
 	} else {
-		$mem = new Config::Simple($memfile) or 
-		do {
-			print STDERR "msudp_send_mem: Memory file $memfile seems to be corrupted - recreating. Error: " . Config::Simple->error() . "\n";
-			unlink $memfile;
-			$mem = new Config::Simple(syntax=>'ini') or 
-			do { 
-				print STDERR "msudp_send_mem: Could not recreate $memfile. Error: " . Config::Simple->error() . "\n";
-				return;
-			};
-			$timestamp = time;
-			$mem->param('Main.timestamp', $timestamp);
-			$mem->write($memfile) or print STDERR "msudp_send_mem: Could not write memory file $memfile\n";
-			$mem_sendall = 1;
-		
-		};
-		$timestamp = $mem->param('Main.timestamp');
+		$prefixsection = $prefix;
 	}
-	my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
-	chown $uid, $gid, $memfile;
+
+	if(! defined $memhash->{Main}) {
+		$memhash->{Main} = ();
+	}
+	if (! defined $memhash->{Main}->{timestamp}) {
+		# print STDERR "Setting timestamp\n";
+		$memhash->{Main}->{timestamp} = time;
+		$mem_sendall = 1;
+	}
+	
+	my $timestamp = $memhash->{Main}->{timestamp};
 	
 	# Check if this call should be set to mem_sendall
 	if ($timestamp < (time-$mem_sendall_sec)) {
 		$mem_sendall = 1;
-		$mem->param('Main.timestamp', time);
+		$memhash->{Main}->{timestamp} = time;
 	}
 	
-	if (! $mem->param('Main.lastMSRebootCheck') or $mem->param('Main.lastMSRebootCheck') < (time-300)) {
+	if (! $memhash->{Main}->{lastMSRebootCheck} or $memhash->{Main}->{lastMSRebootCheck} < (time-300)) {
 		# Try to check if MS was restarted (in only possible with MS Admin)
-		$mem->param('Main.lastMSRebootCheck', time);
-		my $lasttxp = $mem->param('Main.MSTXP');
-		my ($code, $newtxp) = mshttp_call($msnr, "/dev/lan/txp");
+		$memhash->{Main}->{lastMSRebootCheck} = time;
+		my $lasttxp = $memhash->{Main}->{MSTXP};
+		my ($newtxp, $code) = mshttp_call($msnr, "/dev/lan/txp");
 		if ($code eq "200") {
-			$mem->param('Main.MSTXP', $newtxp);
+			print STDERR "Setting newtxp $newtxp\n" if($DEBUG);
+			$memhash->{Main}->{MSTXP} = $newtxp;
 			if($newtxp < $lasttxp) {
+				print STDERR "Miniserver may have been rebooted. Flagging to clear cache.\n" if($DEBUG);
 				$mem_sendall = 1;
 			}
 		}
 	}
 
 	if ($mem_sendall == 1) {
-		$mem->set_block('default', undef);
+		print STDERR "Clearing cache (mem_sendall is set)\n" if($DEBUG);
+		for(keys %$memhash) {
+			next if ($_ eq 'Main');
+			delete $memhash->{$_};
+		}
 	}
 	
 	# Build new delta parameter list
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
 			
-		if ($mem->param($params[$pidx]) ne $params[$pidx+1] or $mem_sendall == 1) {
+		if ($memhash->{$prefixsection}->{$params[$pidx]} ne $params[$pidx+1] or $mem_sendall == 1) {
 			push(@newparams, $params[$pidx], $params[$pidx+1]);
-			$mem->param($params[$pidx], $params[$pidx+1]);
+			$memhash->{$prefixsection}->{$params[$pidx]} = $params[$pidx+1];
 		}	
 	}
 	
-	$mem->save($memfile) or print STDERR "msudp_send_mem: Could not write memory file $memfile\n";;
-	my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
-	chown $uid, $gid, $memfile;
 	$mem_sendall = 0;
 	
 	if (@newparams) {
