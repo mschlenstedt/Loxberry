@@ -141,10 +141,16 @@ if (!$R::logfile) {
 	}
 }
 
+
+$R::logfile_name = File::Basename::basename($R::logfile);
+$maintemplate->param('LOGFILE_NAME', $R::logfile_name);
+
+
 if (begins_with($R::logfile, $lbhomedir . "/log")) {
 	$R::logfile = substr($R::logfile, length($lbhomedir . "/log"));
 }
 $R::logfile =~ s/^\///;
+
 
 # Check if logfile exists
 if (-e "/tmp/$R::logfile") {
