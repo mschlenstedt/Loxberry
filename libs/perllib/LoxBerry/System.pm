@@ -718,20 +718,21 @@ sub set_clouddns
 	my $memfile = "/run/shm/clouddns_cache.json";
 	my $jsonobj = LoxBerry::JSON->new();
 	my $cache = $jsonobj->open(filename => $memfile);
+	my $cachekey = $miniservers{$msnr}{CloudURL};
+		
 	if(
-		defined $cache->{$msnr}->{refresh_timestamp} and 
-		$cache->{$msnr}->{refresh_timestamp} > time and
-		defined $cache->{$msnr}->{IPAddress} #and 
+		defined $cache->{$cachekey}->{refresh_timestamp} and 
+		$cache->{$cachekey}->{refresh_timestamp} > time and
+		defined $cache->{$cachekey}->{IPAddress} #and 
 		#defined $cache->{$msnr}->{Port}
 	) {
 		print STDERR "Reading data from cachefile $memfile\n" if ($DEBUG);
-		$miniservers{$msnr}{IPAddress} = $cache->{$msnr}->{IPAddress};
-		$miniservers{$msnr}{Port} = $cache->{$msnr}->{Port};
+		$miniservers{$msnr}{IPAddress} = $cache->{$cachekey}->{IPAddress};
+		$miniservers{$msnr}{Port} = $cache->{$cachekey}->{Port};
 		return;
 	}
 	
 	require LWP::UserAgent;
-	require JSON;
 	my $ua = LWP::UserAgent->new;
 	
 	print STDERR "Reading data online from CloudDNS\n" if ($DEBUG);
@@ -744,7 +745,7 @@ sub set_clouddns
 	{
 		$miniservers{$msnr}{IPAddress} = "0.0.0.0";
 		$miniservers{$msnr}{Port} = "0";
-		delete $cache->{$msnr};
+		delete $cache->{$cachekey};
 		$jsonobj->write();
 		
 		require Time::Piece;
@@ -759,7 +760,7 @@ sub set_clouddns
 		$cachehash{IPAddress} = $miniservers{$msnr}{IPAddress};
 		$cachehash{Port} = $miniservers{$msnr}{Port};
 		$cachehash{refresh_timestamp} = time + 3600 + int(rand(3600));
-		$cache->{$msnr} = \%cachehash;
+		$cache->{$cachekey} = \%cachehash;
 		$jsonobj->write();
 	}
 }
