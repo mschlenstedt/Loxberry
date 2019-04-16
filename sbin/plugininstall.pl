@@ -465,9 +465,9 @@ if ( $pinterface ne "1.0" && $pinterface ne "2.0" ) {
 }
 
 if ( $pinterface eq "1.0" ) {
-  $message =  "*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
-  &logwarn; 
-  push(@warnings,"PLUGININTERFACE: $message");
+  # $message =  "*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
+  # &logwarn; 
+  # push(@warnings,"PLUGININTERFACE: $message");
   # Always reboot with V1 plugins
   $preboot = 1;
 }
@@ -993,7 +993,7 @@ if (!&is_folder_empty("$tempfolder/log")) {
   &loginfo;
 
   if ( $pinterface ne "1.0" ) {
-    $message =  "*** DEPRECIATED *** This Plugin uses an outdated feature! Log files are stored in a RAMDISC now. The plugin has to create the logfiles at runtime! Please inform the PLUGIN Author at $pauthoremail";
+    $message =  "*** DEPRECIATED *** With plugin interface 2.0 (and above), the plugin must not ship with a log folder. Please inform the PLUGIN Author at $pauthoremail";
     &logwarn; 
     push(@warnings,"LOG files: $message");
   }
