@@ -112,7 +112,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.4.0.3";
+	public static $LBSYSTEMVERSION = "1.4.1.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -243,9 +243,6 @@ class LBSystem
 	}
 }
 
-
-	
-	
 	public static function read_language_file($langfile)
 	{
 		$langarray = file($langfile, FILE_SKIP_EMPTY_LINES) or error_log("LoxBerry System ERROR: Could not read language file $langfile");
@@ -588,7 +585,17 @@ public static function plugindb_changed_time()
 
 		//$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL']."/dev/cfg/ip";
 		$checkurl = "http://".$clouddnsaddress."/?getip&snr=".$miniservers[$msnr]['CloudURL']."&json=true";
-		$response = file_get_contents($checkurl);
+		$response = @file_get_contents($checkurl);
+		$http_status_line = $http_response_header[0];
+		preg_match('{HTTP\/\S*\s(\d{3})}', $http_status_line, $match);
+		$http_status = $match[1];
+		if ($http_status !== "200") {
+			$miniservers[$msnr]['IPAddress'] = "0.0.0.0";
+			$miniservers[$msnr]['Port'] = "0";
+			error_log("CloudDNS: Could not fetch ip address for Miniserver $msnr: $http_status_line");
+			return;
+		}
+		
 		$ip_info = json_decode($response);
 		$ip_info = explode(":",$ip_info->IP);
 		$miniservers[$msnr]['IPAddress']=$ip_info[0];
@@ -597,9 +604,6 @@ public static function plugindb_changed_time()
 		} else {
 			$miniservers[$msnr]['Port']=80;
 		}
-		//$lastUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL );
-	  //  (!parse_url($lastUrl,PHP_URL_PORT))?$miniservers[$msnr]['Port']=80:$miniservers[$msnr]['Port']=parse_url($lastUrl,PHP_URL_PORT);
-	  //  (!parse_url($lastUrl,PHP_URL_HOST))?$miniservers[$msnr]['IPAddress']='127.0.0.1':$miniservers[$msnr]['IPAddress']=parse_url($lastUrl,PHP_URL_HOST);
 	}
 
 	#####################################################
