@@ -87,6 +87,17 @@ case "$1" in
 		chmod +rw $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
 		log_action_end_msg 0
 	fi
+	
+	# Copy CloudDNS cache from SD card to RAM disk
+	if [ -e $LBHOMEDIR/data/system/clouddns_cache.bkp ]
+	then
+        log_action_begin_msg "Copy back CloudDNS cache"
+		cp -f $LBHOMEDIR/data/system/clouddns_cache.bkp /run/shm/clouddns_cache.json
+		chown loxberry:loxberry /run/shm/clouddns_cache.json
+		chmod +rw /run/shm/clouddns_cache.json
+		log_action_end_msg 0
+	fi
+		
     exit 0
 	;;
 
@@ -102,6 +113,15 @@ case "$1" in
 		 echo "VACUUM;" | sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
 		cp -f $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat $LBHOMEDIR/log/system/logs_sqlite.dat.bkp
 	fi
+	
+	if [ -e /run/shm/clouddns_cache.json ]
+	then
+        log_action_begin_msg "Backup CloudDNS cache to SD"
+		cp -f /run/shm/clouddns_cache.json $LBHOMEDIR/data/system/clouddns_cache.bkp
+		log_action_end_msg 0
+	fi
+	
+	
 	exit 0
 	;;
   
