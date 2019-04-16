@@ -48,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.2";
+my $version = "1.4.1.1";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -258,7 +258,7 @@ sub install {
 		my $allowed_filetypes = "zip";
 
 		# Max filesize (KB)
-		my $max_filesize = 50000;
+		my $max_filesize = 150000;
 
 		# Filter Backslashes
 		$uploadfile =~ s/.*[\/\\](.*)/$1/;
