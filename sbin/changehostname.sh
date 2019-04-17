@@ -57,6 +57,13 @@ sed -i "/$old.*$/d" /etc/hosts
 sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
 
 #############################################
+## /etc/apache2/apache2.conf
+#############################################
+
+cp -p -n -T /etc/apache2/apache2.conf /etc/apache2/original.apache2.conf
+sed -i "/ServerName /s/.*/ServerName=$new..home.local/" /etc/apache2/apache2.conf
+
+#############################################
 ## /opt/loxberry/config/system/minidlna.conf
 #############################################
 ## sed '/match/s/.*/replacement/' file
@@ -76,7 +83,7 @@ echo $new > /etc/mailname
 #############################################
 
 cp -p -n -T /etc/ssmtp/ssmtp.conf /etc/ssmtp/original.ssmtp.conf
-sed -i "/hostname=/s/.*/hostname=$new.local/" /etc/ssmtp/ssmtp.conf
+sed -i "/hostname=/s/.*/hostname=$new.home.local/" /etc/ssmtp/ssmtp.conf
 
 #############################################
 #############################################
