@@ -61,7 +61,7 @@ sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
 #############################################
 
 cp -p -n -T /etc/apache2/apache2.conf /etc/apache2/original.apache2.conf
-sed -i "/ServerName /s/.*/ServerName=$new..home.local/" /etc/apache2/apache2.conf
+sed -i "/ServerName /s/.*/ServerName $new.home.local/" /etc/apache2/apache2.conf
 
 #############################################
 ## /opt/loxberry/config/system/minidlna.conf
