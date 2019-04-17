@@ -51,8 +51,31 @@ $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	LOGERR "Error replacing string ServerName in $lbhomedir/system/apache2/apache2.conf - Error $exitcode";
 	LOGDEB $output;
+	$errors++;
 } else {
      	LOGOK "Replacing string ServerName successfully in $lbhomedir/system/apache2/apache2.conf.";
+}
+
+# Original apt repository
+LOGINF "Replace mirrordirector.raspbian.org with archive.raspbian.org in /etc/apt/sources.list.";
+$output = qx (awk -v s="deb http://archive.raspbian.org/raspbian stretch main contrib non-free rpi" '/^deb http://mirrordirector.raspbian.org/raspbian/ stretch main contrib non-free rpi/{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/apt/sources.list);
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error replacing string mirrordirector.raspbian.org in /etc/apt/sources.list - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+     	LOGOK "Replacing string mirrordirector.raspbian.org successfully in /etc/apt/sources.list.";
+}
+LOGINF "Getting signature for archive.raspbian.org.";
+$output = qx (wget http://archive.raspbian.org/raspbian.public.key -O - | sudo apt-key add -);
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error getting signature for archive.raspbian.org - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+     	LOGOK "Getting signature for archive.raspbian.org successfully.";
 }
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
