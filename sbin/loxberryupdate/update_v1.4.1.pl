@@ -41,7 +41,19 @@ my $release = $cgi->param('release');
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
-apt_install('bc', 'something');
+# Installing bc
+apt_install('bc');
+
+# Apache2
+LOGINF "Add ServerName to apache2.conf.";
+$output = qx (awk -v s="ServerName loxberry.home.local" '/^ServerName /{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $lbhomedir/system/apache2/apache2.conf);
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error replacing string ServerName in $lbhomedir/system/apache2/apache2.conf - Error $exitcode";
+	LOGDEB $output;
+} else {
+     	LOGOK "Replacing string ServerName successfully in $lbhomedir/system/apache2/apache2.conf.";
+}
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 # LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
@@ -117,7 +129,7 @@ sub copy_to_loxberry
 		LOGINF "Message: $output";
 		$errors++;
 	} else {
-		LOGOK "$destfile owner changedi to $destowner.";
+		LOGOK "$destfile owner changed to $destowner.";
 	}
 
 }
@@ -131,10 +143,32 @@ sub apt_install
 {
 	my @packages = @_;
 	my $packagelist = join(' ', @packages);
+
+	my $bins = LoxBerry::System::get_binaries();
+	my $aptbin = $bins->{APT};
+	
+	my $output = qx { /usr/bin/dpkg --configure -a };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
+		LOGDEB $output;
+		$errors++;
+	} else {
+		LOGOK "Configuring dpkg successfully.";
+	}
+	$output = qx { $aptbin -q -y update };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error updating apt database - Error $exitcode";
+		LOGDEB $output;
+	        $errors++;
+	} else {
+        	LOGOK "Apt database updated successfully.";
+	}
 	
 	LOGINF "Installing with apt: " . join(', ', @packages);
 	
-	my $output = `DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall install $packagelist 2>&1`;
+	my $output = `DEBIAN_FRONTEND=noninteractive $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall install $packagelist 2>&1`;
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		LOGCRIT "Error installing $packagelist - Error $exitcode";
