@@ -155,6 +155,13 @@ if ($R::saveformdata) {
 
 }
 
+# Temperature
+my $sensor = $cfgjson->{Watchdog}->{Tempsensor};
+my $temp = qx(cat $sensor);
+chomp $temp;
+$temp = sprintf("%.1f", $temp/1000);
+$maintemplate->param('TEMPERATURE', $temp);
+
 # Navbar
 our %navbar;
 $navbar{0}{Name} = "$SL{'SERVICES.TITLE_PAGE_WEBSERVER'}";
