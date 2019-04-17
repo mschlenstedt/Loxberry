@@ -78,6 +78,23 @@ if ($exitcode != 0) {
      	LOGOK "Getting signature for archive.raspbian.org successfully.";
 }
 
+# Repeat kernel update from 1.4
+if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/system/is_odroidxu3xu4.cfg") {
+	LOGINF "Preparing Guru Meditation...";
+	LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
+	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
+
+	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update 3678d3dba62d8d4ad9cce5ceeab3b377e0ee059d };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+        	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
+        	LOGDEB $output;
+                $errors++;
+	} else {
+        	LOGOK "Upgrading kernel and firmware successfully.";
+	}
+}
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 # LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 # reboot_required("LoxBerry Update requests a reboot.");
