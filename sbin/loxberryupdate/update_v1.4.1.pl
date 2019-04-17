@@ -169,7 +169,7 @@ sub apt_install
 
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
-	
+
 	my $output = qx { /usr/bin/dpkg --configure -a };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
@@ -179,6 +179,28 @@ sub apt_install
 	} else {
 		LOGOK "Configuring dpkg successfully.";
 	}
+	LOGINF "Clean up apt-databases and update";
+	$output = qx { DEBIAN_FRONTEND=noninteractive $aptbin -y autoremove };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error autoremoving apt packages - Error $exitcode";
+		LOGDEB $output;
+	        $errors++;
+	} else {
+        	LOGOK "Apt packages autoremoved successfully.";
+	}
+	$output = qx { DEBIAN_FRONTEND=noninteractive $aptbin -y clean };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error cleaning apt database - Error $exitcode";
+		LOGDEB $output;
+	        $errors++;
+	} else {
+        	LOGOK "Apt database cleaned successfully.";
+	}
+	$output = qx { rm -r /var/lib/apt/lists/* };
+	$output = qx { rm -r /var/cache/apt/archives/* };
+	
 	$output = qx { $aptbin -q -y update };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0) {
@@ -188,7 +210,7 @@ sub apt_install
 	} else {
         	LOGOK "Apt database updated successfully.";
 	}
-	
+
 	LOGINF "Installing with apt: " . join(', ', @packages);
 	
 	my $output = `DEBIAN_FRONTEND=noninteractive $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall install $packagelist 2>&1`;
