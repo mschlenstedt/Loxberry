@@ -46,6 +46,7 @@ apt_install('bc');
 
 # Apache2
 LOGINF "Add ServerName to apache2.conf.";
+$output = qx (sed -i '/# vim/d' $lbhomedir/system/apache2/apache2.conf);
 $output = qx (awk -v s="ServerName loxberry.home.local" '/^ServerName /{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $lbhomedir/system/apache2/apache2.conf);
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
