@@ -81,18 +81,22 @@ if ($exitcode != 0) {
 
 # Repeat kernel update from 1.4
 if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/system/is_odroidxu3xu4.cfg") {
-	LOGINF "Preparing Guru Meditation...";
-	LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
-	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
-
-	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update 3678d3dba62d8d4ad9cce5ceeab3b377e0ee059d };
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-        	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
-        	LOGDEB $output;
-                $errors++;
-	} else {
-        	LOGOK "Upgrading kernel and firmware successfully.";
+	my $kernel = qx {uname -r};
+	chomp $kernel;
+	if ( $kernel !~ m/4\.14\.98/) {
+		LOGINF "Preparing Guru Meditation...";
+		LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
+		LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
+		unlink ("/boot/.firmware_revision");
+		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update a08ece3d48c3c40bf1b501772af9933249c11c5b };
+		my $exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+       	 		LOGERR "Error upgrading kernel and firmware - Error $exitcode";
+       		 	LOGDEB $output;
+         	       $errors++;
+		} else {
+        		LOGOK "Upgrading kernel and firmware successfully.";
+		}
 	}
 }
 
