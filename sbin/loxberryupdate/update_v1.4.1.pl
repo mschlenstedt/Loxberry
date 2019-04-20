@@ -54,20 +54,12 @@ if ($exitcode != 0) {
 	LOGDEB $output;
 	$errors++;
 } else {
-     	LOGOK "Replacing string ServerName successfully in $lbhomedir/system/apache2/apache2.conf.";
+     	LOGOK "String ServerName successfully replaced in $lbhomedir/system/apache2/apache2.conf.";
 }
 
 # Original apt repository
-LOGINF "Replace mirrordirector.raspbian.org with archive.raspbian.org in /etc/apt/sources.list.";
-$output = qx (awk -v s="deb http://archive.raspbian.org/raspbian stretch main contrib non-free rpi" '/^deb http://mirrordirector.raspbian.org/raspbian/ stretch main contrib non-free rpi/{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/apt/sources.list);
-$exitcode  = $? >> 8;
-if ($exitcode != 0) {
-	LOGERR "Error replacing string mirrordirector.raspbian.org in /etc/apt/sources.list - Error $exitcode";
-	LOGDEB $output;
-	$errors++;
-} else {
-     	LOGOK "Replacing string mirrordirector.raspbian.org successfully in /etc/apt/sources.list.";
-}
+LOGINF "Replacing mirrordirector.raspbian.org with archive.raspbian.org in /etc/apt/sources.list.";
+system ("/bin/sed -i 's:mirrordirector.raspbian.org:archive.raspbian.org:g' /etc/apt/sources.list");
 LOGINF "Getting signature for archive.raspbian.org.";
 $output = qx (wget http://archive.raspbian.org/raspbian.public.key -O - | sudo apt-key add -);
 $exitcode  = $? >> 8;
@@ -76,7 +68,7 @@ if ($exitcode != 0) {
 	LOGDEB $output;
 	$errors++;
 } else {
-     	LOGOK "Getting signature for archive.raspbian.org successfully.";
+     	LOGOK "Got signature for archive.raspbian.org successfully.";
 }
 
 # Repeat kernel update from 1.4
@@ -95,7 +87,7 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
        		 	LOGDEB $output;
          	       $errors++;
 		} else {
-        		LOGOK "Upgrading kernel and firmware successfully.";
+        		LOGOK "Kernel and firmware upgraded successfully.";
 		}
 	}
 }
