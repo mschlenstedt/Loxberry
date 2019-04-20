@@ -32,10 +32,8 @@ use strict;
 # Variables
 ##########################################################################
 
-
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
-my $helptemplate = "help_timeserver.html";
-
+our $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+our $helptemplate ="help_timeserver.html";
 
 our $cfg;
 our $phrase;
@@ -46,9 +44,7 @@ our $lang="en";
 our $template_title;
 our $help;
 our @help;
-our $helptext;
 our $helplink;
-# our $installfolder;
 our $languagefile;
 our $error;
 our $saveformdata=0;
@@ -81,7 +77,7 @@ our $grepbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.2.3.1";
+my $version = "1.4.1.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -95,7 +91,6 @@ $ntpdate            = $cfg->param("BINARIES.NTPDATE");
 $awkbin             = $cfg->param("BINARIES.AWK");
 $grepbin            = $cfg->param("BINARIES.GREP");
 $do                 = "";
-$helptext           = "";
 
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/timeserver.html",
@@ -108,8 +103,6 @@ my $maintemplate = HTML::Template->new(
 			);
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
-$R::do if (0);
-
 
 #########################################################################
 # Parameter
@@ -217,7 +210,7 @@ sub form {
 	$maintemplate->param("SYSTEMDATETIME", $systemdatetime);
 	$maintemplate->param("NTPSERVERURL", $ntpserverurl);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
-	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
 
@@ -294,7 +287,7 @@ sub save {
 	$maintemplate->param("NEXTURL", "/admin/system/index.cgi?form=system");
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
-	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
 	exit;
@@ -328,11 +321,9 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WID
 	print STDERR "timeserver.cgi: Sub ERROR called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
 	LoxBerry::System::readlanguage($errtemplate);
-	LoxBerry::Web::head();
-	LoxBerry::Web::pagestart();
+	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $errtemplate->output();
-	LoxBerry::Web::pageend();
-	LoxBerry::Web::foot();
+	LoxBerry::Web::lbfooter();
 	exit;
 
 }

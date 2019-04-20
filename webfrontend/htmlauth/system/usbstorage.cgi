@@ -52,7 +52,7 @@ my  $param_a="";
 ##########################################################################
 
 # Version of this script
-my $version = "1.2.0.2";
+my $version = "1.4.1.1";
 
 $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 
@@ -84,7 +84,7 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 # Print Template
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'USBSTORAGE.WIDGETLABEL'};
 
-LoxBerry::Web::lbheader();
+LoxBerry::Web::lbheader($template_title, "https://www.loxwiki.eu/x/8IO3AQ", "help_usbstorage.html");
 
 $param_a=$cgi->param("a") if $cgi->param("a");
 

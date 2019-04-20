@@ -36,7 +36,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://www.loxwiki.eu/x/3IOdAQ";
 my $helptemplate = "help_admin.html";
 
 our $cfg;
@@ -48,8 +48,6 @@ our $lang;
 our $template_title;
 our $help;
 our @help;
-our $helptext;
-our $helplink;
 our $installfolder;
 our $languagefile;
 our $error;
@@ -84,13 +82,12 @@ my $quoted_adminpassold;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.3.3";
+my $version = "1.4.1.1";
 
-$cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
+$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
-
 
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/admin.html",
@@ -103,10 +100,6 @@ my $maintemplate = HTML::Template->new(
 			);
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
-
-#########################################################################
-# Parameter
-#########################################################################
 
 ##########################################################################
 # Language Settings
@@ -146,13 +139,11 @@ exit;
 
 sub form {
 	
-	
 	$maintemplate->param("ADMINUSEROLD" , $adminuserold);
 		
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
-	LoxBerry::Web::head();
-	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 
 	print $maintemplate->output();
 	undef $maintemplate;			
@@ -440,7 +431,7 @@ sub save {
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
 	print STDERR "admin.cgi: Send OUTPUT and exit\n";
-	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
 	exit;

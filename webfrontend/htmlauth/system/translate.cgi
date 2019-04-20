@@ -35,8 +35,8 @@ use strict;
 
 mes "Start";
 
-my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
-my $helptemplate = "help_myloxberry.html";
+my $helplink = "https://www.loxwiki.eu/x/QgZ7AQ";
+my $helptemplate = "help_translate.html";
 my $template_title;
 my $error;
 my $plugin;
@@ -49,7 +49,7 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.4.1.1";
 
 my $sversion = LoxBerry::System::lbversion();
 

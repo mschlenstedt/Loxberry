@@ -32,6 +32,7 @@ use strict;
 ##########################################################################
 
 my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helptemplate = "help_netshares.html";
 
 our $cfg;
 our $phrase;
@@ -42,17 +43,16 @@ our $lang;
 our $template_title;
 our $help;
 our @help;
-our $helptext;
-our $helplink;
 our $installfolder;
 our $languagefile;
 our $param_a="";
+
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.4.1.1";
 
 $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 
@@ -84,8 +84,8 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 # Print Template
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETSHARES.WIDGETLABEL'};
 
-LoxBerry::Web::lbheader();
-
+LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
+	
 # Save new server
 if ($cgi->param("saveformdata")) {
 	
