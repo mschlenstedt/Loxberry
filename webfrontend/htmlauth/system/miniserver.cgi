@@ -33,12 +33,11 @@ print STDERR "Execute miniserver.cgi\n######################\n";
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://www.loxwiki.eu/display/LOXBERRY/Erste+Schritte";
 my $helptemplate = "help_miniserver.html";
 
 my $lang;
 my $template_title;
-my $helplink;
 my $error;
 my $url;
 my $ua;
@@ -55,7 +54,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.2";
+my $version = "1.4.1.1";
 
 my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -164,7 +163,7 @@ sub form {
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MINISERVER.WIDGETLABEL'};
 	LoxBerry::Web::head();
-	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	LoxBerry::Web::pagestart($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	undef $maintemplate;			
 	LoxBerry::Web::pageend();
@@ -306,7 +305,7 @@ sub save {
 	$maintemplate->param ( "MESSAGE", $SL{'MINISERVER.SAVE_OK_MSG'});
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MINISERVER.WIDGETLABEL'};
-	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
 	undef $maintemplate;			
