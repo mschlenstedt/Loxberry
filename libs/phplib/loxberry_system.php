@@ -112,7 +112,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.4.1.1";
+	public static $LBSYSTEMVERSION = "1.4.1.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -153,12 +153,18 @@ class LBSystem
 			$genericlangfile = $template;
 			$template = NULL;
 		}
-		if ($syslang == true) {
+		if ($syslang == True and $genericlangfile != "language.ini") {
+			$genericlangfile = LBSTEMPLATEDIR . "/lang/$genericlangfile";
+			$widgetlang = True;
+		} elseif ($syslang == true) {
 			$genericlangfile = LBSTEMPLATEDIR . "/lang/language.ini";
+			$widgetlang = False;
 		} else {
 			$genericlangfile = LBPTEMPLATEDIR . "/lang/$genericlangfile";
+			$widgetlang = False;
 		}
 		
+		// error_log("readlanguage: genericlangfile $genericlangfile");
 		$lang = LBSystem::lblanguage();
 		$pos = strrpos($genericlangfile, ".");
 		if ($pos === false) {
@@ -170,7 +176,7 @@ class LBSystem
 		$langfile_en = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
 		// error_log("readlanguage: $langfile_foreign enlangfile: $langfile_en");
 		
-		if ($syslang == false || ($syslang == True && !is_array(self::$SL))) { 
+		if ($syslang == False || $widgetlang == True || ($syslang == True && !is_array(self::$SL))) { 
 
 			if (file_exists($langfile_foreign)) {
 				$currlang = LBSystem::read_language_file($langfile_foreign);
@@ -185,7 +191,7 @@ class LBSystem
 				LBSystem::parse_lang_file($enlang, $language);
 			}
 		
-			if ($syslang) {
+			if ($syslang && !$widgetlang) {
 				self::$SL = $language;
 			}
 		} elseif ($syslang == True && is_array(self::$SL)) {

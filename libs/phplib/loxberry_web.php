@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.4.1.1";
+	public static $LBWEBVERSION = "1.4.1.2";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -258,27 +258,36 @@ EOT;
 		global $lbpplugindir;
 		global $lbptemplatedir;
 		
+		if(!empty($lbptemplatedir)) {
+			$templatedir = $lbptemplatedir;
+			$syslang = False;
+		} else {
+			$templatedir = LBSTEMPLATEDIR;
+			$syslang = True;
+		}
+	
+		// error_log("gethelp: templatedir $templatedir");
 		// error_log("gethelp -> lbpplugindir: $lbpplugindir lbptemplatedir: $lbptemplatedir");
-		// error_log("   Parameters: lang: $lang helptemplate: $helptemplate");
+		// error_log("           Parameters: lang: $lang helptemplate: $helptemplate");
 		
-		if (file_exists("$lbptemplatedir/help/$helptemplate")) { 
-			$templatepath = "$lbptemplatedir/help/$helptemplate";
+		if (file_exists("$templatedir/help/$helptemplate")) { 
+			$templatepath = "$templatedir/help/$helptemplate";
 			$ismultilang = True;
 			// error_log("gethelp: Multilang template found - using templatepath $templatepath");
-		} elseif (file_exists("$lbptemplatedir/$lang/$helptemplate")) {
-			$templatepath = "$lbptemplatedir/$lang/$helptemplate";
+		} elseif (file_exists("$templatedir/$lang/$helptemplate")) {
+			$templatepath = "$templatedir/$lang/$helptemplate";
 			$ismultilang = False;
 			// error_log("gethelp: Legacy lang $lang template found - using templatepath $templatepath");
-		} elseif (file_exists("$lbptemplatedir/en/$helptemplate")) {
-			$templatepath = "$lbptemplatedir/en/$helptemplate";
+		} elseif (file_exists("$templatedir/en/$helptemplate")) {
+			$templatepath = "$templatedir/en/$helptemplate";
 			$ismultilang = False;
 			// error_log("gethelp: Legacy fallback lang en template found - using templatepath $templatepath");
-		} elseif (file_exists("$lbptemplatedir/de/$helptemplate")) {
-			$templatepath = "$lbptemplatedir/de/$helptemplate";
+		} elseif (file_exists("$templatedir/de/$helptemplate")) {
+			$templatepath = "$templatedir/de/$helptemplate";
 			$ismultilang = False;
 			// error_log("gethelp: Legacy fallback lang de template found - using templatepath $templatepath");
 		} else {
-			//error_log("gethelp: No help found. Returning default text.");
+			error_log("gethelp: No help found. Returning default text.");
 			if ($lang === "de") {
 				$helptext = "Keine weitere Hilfe verfügbar.";
 			} else {
@@ -286,6 +295,8 @@ EOT;
 			}
 			return $helptext;
 		}
+		
+		// error_log("gethelp: templatepath $templatepath ismultilang $ismultilang");
 		
 		// Multilang templates
 		if ($ismultilang) {
@@ -295,8 +306,12 @@ EOT;
 				return null;
 			}
 			$langfile = substr($helptemplate, 0, $pos) . ".ini";
+			// error_log("gethelp: langfile $langfile");
+			// error_log("gethelp: Creating template object...");
 			$helpobj = new LBTemplate($templatepath);
-			LBSystem::readlanguage($helpobj, $langfile);
+			// error_log("gethelp: Calling readlanguage...");
+			
+			LBSystem::readlanguage($helpobj, $langfile, $syslang);
 			$helptext = $helpobj->outputString();
 			return $helptext;
 		}
