@@ -32,13 +32,12 @@ $helptemplate = "help_services.html";
 $template_title;
 $error;
 
-
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-$version = "1.4.0.4";
+$version = "1.4.1.1";
 
 $sversion = LBSystem::lbversion();
 

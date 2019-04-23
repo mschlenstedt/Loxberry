@@ -33,14 +33,14 @@ use strict;
 ##########################################################################
 
 my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
-my $helptemplate = "help_remote.html";
+my $helptemplate = "help_services.html";
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.6";
+my $version = "1.4.1.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
