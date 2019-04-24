@@ -73,7 +73,7 @@ case "$1" in
 	fi
 	log_action_end_msg 0
 
-	log_action_begin_msg "Restoring Syslog and LoxBerr system log folders..."
+	log_action_begin_msg "Restoring Syslog and LoxBerry system log folders..."
 	cp -ra /opt/loxberry/log/skel_syslog/* /var/log
 	cp -ra /opt/loxberry/log/skel_system/* /opt/loxberry/log/system_tmpfs
 	log_action_end_msg 0
@@ -110,8 +110,9 @@ case "$1" in
 	# Copy logdb from RAM disk to SD card
 	if [ -e $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat ]
 	then
-		 echo "VACUUM;" | sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
-		cp -f $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat $LBHOMEDIR/log/system/logs_sqlite.dat.bkp
+		echo "VACUUM;" | sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
+		sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat ".backup '$LBHOMEDIR/log/system/logs_sqlite.dat.bkp'"
+		# cp -f $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat $LBHOMEDIR/log/system/logs_sqlite.dat.bkp
 	fi
 	
 	if [ -e /run/shm/clouddns_cache.json ]

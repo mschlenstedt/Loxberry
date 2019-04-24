@@ -376,7 +376,8 @@ sub backup_logdb
 	sleep 20;
 	if (-e "$lbhomedir/log/system_tmpfs/logs_sqlite.dat") {
 		qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
-		qx { cp -f $lbhomedir/log/system_tmpfs/logs_sqlite.dat $lbhomedir/log/system/logs_sqlite.dat.bkp };
+		# qx { cp -f $lbhomedir/log/system_tmpfs/logs_sqlite.dat $lbhomedir/log/system/logs_sqlite.dat.bkp };
+		qx { sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat ".backup '$lbhomedir/log/system/logs_sqlite.dat.bkp'" };
 		LOGOK "LogDB backed up on SDCard.";
 	} else {
 		LOGWARN "LogDB does not exist - no backup could be made.";
