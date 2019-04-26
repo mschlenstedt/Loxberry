@@ -22,8 +22,8 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
-#use strict;
-#use warnings;
+use strict;
+use warnings;
 use version;
 
 
@@ -32,7 +32,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.4.0.2";
+my $scriptversion="1.4.1.1";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -41,28 +41,21 @@ my $bins = LoxBerry::System::get_binaries();
 my @plugins = LoxBerry::System::get_plugins();
 my $endpointrelease;
 my $endpointprerelease;
-my $notify;
-my $prerelease;
 my $prereleasefile = "/tmp/pluginsupdate/prerelease.cfg";
 my $prereleasecfg;
 my $prereleasearchive;
 my $prereleaseinfo;
 my $prereleasever;
-my $release;
 my $releasefile = "/tmp/pluginsupdate/release.cfg";
 my $releasecfg;
 my $releasever;
 my $releasearchive;
 my $releaseinfo;
-my $pid;
-my $currentver;
 my $resp;
 my $installarchive;
 my $installversion;
-my $tempfile;
 my $openerr;
 my $timestamp;
-my $pluginname;
 my $message;
 my $check;
 
@@ -112,6 +105,18 @@ foreach my $arg(@ARGV) {
 ##########################################################################
 
 foreach (@plugins) {
+
+	my $notify;
+	my $currentver;
+	my $release;
+	my $prerelease;
+	my $pid;
+	my $plugintitle;
+	my $pluginname;
+	my $pluginmd5;
+	my $logfile;
+	my $tempfile;
+
 
 	$pid = $_->{PLUGINDB_MD5_CHECKSUM};
 	$currentver = $_->{PLUGINDB_VERSION};
@@ -167,7 +172,7 @@ foreach (@plugins) {
 	# Read URLs from shadowed plugindatabase for security reasons)
 	my @pluginsshadow = LoxBerry::System::get_plugins(0,1,"$lbsdatadir/plugindatabase.dat-");
 	foreach (@pluginsshadow) {
-		if ($_->{PLUGINDB_MD5_CHECKSUM} eq $pid) {
+		if ($_->{PLUGINDB_MD5_CHECKSUM} and $_->{PLUGINDB_MD5_CHECKSUM} eq $pid) {
  			$endpointrelease = $_->{PLUGINDB_RELEASECFG};
  			$endpointprerelease = $_->{PLUGINDB_PRERELEASECFG};
 		}
@@ -328,29 +333,32 @@ foreach (@plugins) {
 	if ($installarchive) {
 
 		# Randomly file naming
-        	$tempfile = &generate(10);
-		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo /tmp/pluginsupdate/$tempfile.zip $installarchive  2>&1`;
+        $tempfile = generate(10);
+		# $resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo /tmp/pluginsupdate/$tempfile.zip $installarchive  2>&1`;
+		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo /tmp/pluginsupdate/$tempfile.zip $installarchive 2>&1`;
 		if ($? ne 0) {
 			LOGCRIT "$pluginname: Could not fetch archive file. Error: $resp. Skipping this plugin...";
 			next;
 
 		} else {
 
+			$logfile = "/tmp/$tempfile.log";
+						
 			# Installation
 			LOGOK "$pluginname: Archive file fetched.";
 			LOGINF "$pluginname: Installing new RELEASE... Logs are going to the plugin's install logfile. Please be patient..." if ($installtype eq "release");
 			LOGINF "$pluginname: Installing new PRE-RELEASE... Logs are going to the plugin's install logfile. Please be patient..." if ($installtype eq "prerelease");
-
-			$logfile = "/tmp/$tempfile.log";
-			system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile > $logfile 2>&1");
-			LOGINF "$pluginname: Installation routine finished. Check plugin's logfile for details.";
-
+			LOGINF "$pluginname: Temporary logfile name is $logfile";
+			my $returnCode = system ("sudo $lbhomedir/sbin/plugininstall.pl action=autoupdate pid=$pid file=/tmp/pluginsupdate/$tempfile.zip cgi=1 tempfile=$tempfile > $logfile 2>&1");
 			# Create notification
 			if ($? eq 0 ) {
+				LOGINF "$pluginname: Installation routine finished. Check plugin's logfile for details.";
 				$message = "$pluginname - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DONE'} $installversion";
 				notify ( "plugininstall", "pluginautoupdate", $message);
 				delete_notifications('plugininstall', "lastnotified-prerel-$pluginname") if ($installtype eq "release");
 				delete_notifications('plugininstall', "lastnotified-rel-$pluginname") if ($installtype eq "prerelease" || $installtype eq "release");
+			} else {
+				LOGERR "$pluginname: Installation seems to have failed! Please try to manually install the plugin.";
 			}
 
 		}
@@ -372,7 +380,7 @@ exit;
 #####################################################
 
 sub generate {
-        local($e) = @_;
+        my ($e) = @_;
         my($zufall,@words,$more);
 
         if($e =~ /^\d+$/){
