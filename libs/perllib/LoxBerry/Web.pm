@@ -741,6 +741,19 @@ sub loglevel_select_html
 	<script>
 	\$(document).ready( function()
 	{
+		if ( '$plugin->{PLUGINDB_LOGLEVEL}' == 1 )
+		{
+			\$('<option value="1">$SL{'PLUGININSTALL.UI_LOG_1_ALERT'}</option>').insertAfter(\$("#$p{FORMID} option[value=0]"));
+		}
+		else if ( '$plugin->{PLUGINDB_LOGLEVEL}' == 2 )
+		{
+			\$('<option value="2">$SL{'PLUGININSTALL.UI_LOG_2_FAILURES'}</option>').insertAfter(\$("#$p{FORMID} option[value=0]"));
+		}
+		else if ( '$plugin->{PLUGINDB_LOGLEVEL}' == 5 )
+		{
+			\$('<option value="5">$SL{'PLUGININSTALL.UI_LOG_5_OK'}</option>').insertAfter(\$("#$p{FORMID} option[value=4]"));
+		}
+
 		\$("#$p{FORMID}").val('$plugin->{PLUGINDB_LOGLEVEL}').change();
 	});
 		
