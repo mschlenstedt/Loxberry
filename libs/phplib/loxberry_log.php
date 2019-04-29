@@ -362,6 +362,7 @@ class intLog
 		if(isset($title)) {
 			$this->params["LOGSTARTMESSAGE"] = $title;
 			if(!isset($this->params["nofile"]) && isset($this->params["dbkey"]) && isset($this->dbh) ) { 
+				$dbh = $this->dbh;
 				$dbh->exec("UPDATE logs_attr SET value = '" . $this->params["LOGSTARTMESSAGE"] . "' WHERE keyref = " . $this->params["dbkey"] . " AND attrib = 'LOGSTARTMESSAGE';");
 			}
 		}
