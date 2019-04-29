@@ -361,7 +361,7 @@ class intLog
 	{
 		if(isset($title)) {
 			$this->params["LOGSTARTMESSAGE"] = $title;
-			if( isset($this->params["nofile"]) && isset($this->params["dbkey"]) && isset($this->dbh) ) { 
+			if(!isset($this->params["nofile"]) && isset($this->params["dbkey"]) && isset($this->dbh) ) { 
 				$dbh->exec("UPDATE logs_attr SET value = '" . $this->params["LOGSTARTMESSAGE"] . "' WHERE keyref = " . $this->params["dbkey"] . " AND attrib = 'LOGSTARTMESSAGE';");
 			}
 		}
@@ -744,7 +744,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.4.0.2";
+	public static $VERSION = "1.4.1.1";
 	
 	public static function newLog($args)
 	{
