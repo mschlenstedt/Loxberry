@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.4.0.6";
+my $version = "1.4.0.7";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -240,6 +240,17 @@ if (!$zipmode) {
   if (!-e $R::file) {
     $message =  "$SL{'PLUGININSTALL.ERR_FILE_DOESNT_EXIST'}";
     &logfail;
+  }
+
+  open(F, $R::file);
+  if(read(F, $buffer, 2))
+  {
+    close(F);
+    if($buffer ne 'PK')
+    {
+      $message =  "$SL{'PLUGININSTALL.ERR_ARCHIVEFORMAT'}";
+      &logfail;
+    }
   }
   make_path("$tempfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 }
