@@ -31,8 +31,8 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
-my $helptemplate = "help_myloxberry.html";
+my $helplink = "https://www.loxwiki.eu/display/LOXBERRY/Erste+Schritte";
+my $helptemplate;
 my $template_title;
 my $error;
 
@@ -51,7 +51,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/general.json" || -z "$lb
 }
 
 # Version of this script
-my $version = "1.4.0.2";
+my $version = "1.4.1.1";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -150,9 +150,11 @@ sub mainmenu {
 		# Get Plugins from plugin database
 		@plugins = LoxBerry::System::get_plugins();
 		$maintemplate->param('PLUGINS' => \@plugins);
+		$helptemplate = "help_index_plugins.html";
+
 	} else {
+		$helptemplate = "help_index_system.html";
 		# Create SYSTEM widget list
-		
 		# Prepare System Date Time for Love Clock
 		our $systemdatetime = time()*1000;
 		(our $sec, our $min, our $hour, our $mday, our $mon, our $year, our $wday, our $yday, our $isdst) = localtime();
