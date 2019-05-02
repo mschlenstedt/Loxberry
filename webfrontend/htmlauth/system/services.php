@@ -32,6 +32,7 @@ $helptemplate = "help_services.html";
 $template_title;
 $error;
 
+
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -452,7 +453,7 @@ function save()
 					<td align="center">
 						<p>
 							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<?=$href;?>"><?=$SL['COMMON.BUTTON_OK'];?></a>
-							<h2 id="moment"><?=$SL['COMMON.MSG_PLEASEWAIT'];?></h2>
+							<h2 id="moment" style="display: none"><?=$SL['COMMON.MSG_PLEASEWAIT'];?></h2>
 						</p>
 					</td>
 				</tr>
@@ -481,6 +482,7 @@ function save()
 			waitmsg2 = \"$waitmsg2\";
 			btnok = document.getElementById('btnok');
 			btnok.style.display = 'none';
+			document.getElementById('moment').style.display='';
 			setTimeout(function(){
 				$.get(\"$chkhref\")
 	    		.done(function(data){
