@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.4.0.7";
+my $version = "1.4.1.1";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -89,6 +89,7 @@ our %SL = LoxBerry::System::readlanguage(undef);
 my $message;
 my @errors;
 my @warnings;
+my $pname = "Plugininstall"; # set dummy at this point
 if ( $R::action ne "install" && $R::action ne "uninstall" && $R::action ne "autoupdate" ) {
   $message =  "$SL{'PLUGININSTALL.ERR_ACTION'}";
   &logfail;
