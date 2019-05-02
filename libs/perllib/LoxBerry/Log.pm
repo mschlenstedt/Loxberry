@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.0.6";
+our $VERSION = "1.4.1.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -708,7 +708,7 @@ sub log_db_query_id
 	my $qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '$p{filename}' ORDER BY LOGSTART DESC LIMIT 1;"; 
 	my ($logid) = $dbh->selectrow_array($qu) or
 		do {
-				Carp::cluck "Error getting filename from logdb: $DBI::errstr\n";
+				Carp::carp "log_db_query_id: No database entry found for given filename $p{filename}. File will be created.\n";
 				return undef;
 			};
 	
