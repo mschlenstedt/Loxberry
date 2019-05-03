@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.1.1";
+our $VERSION = "1.4.1.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -605,7 +605,7 @@ sub log_db_init_database
 				print STDERR "log_init_database connect: $DBI::errstr\n";
 				return undef;
 				};
-		$dbh->{sqlite_unicode} = 1;
+		#$dbh->{sqlite_unicode} = 1;
 		$dbh->do('PRAGMA journal_mode = wal;');
 		$dbh->do('PRAGMA busy_timeout = 5000;'); 
 		$dbh->do('BEGIN;');
