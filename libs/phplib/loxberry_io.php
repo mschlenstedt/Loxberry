@@ -5,8 +5,9 @@ require_once "loxberry_system.php";
 
 $mem_sendall_sec = 3600;
 $mem_sendall = 0;
+$udp_delimiter = '=';
 
-$LBIOVERSION = "1.4.1.1";
+$LBIOVERSION = "1.4.1.2";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -56,7 +57,7 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 		// echo "Param: $param Value $value\n";
 		$parinline++;
 		$oldline = $line;
-		$line .= $param . '=' . $value . ' ';
+		$line .= $param . $udp_delimiter . $value . ' ';
 		// echo "Line: $line\n";
 		$currlen = strlen($prefix) + strlen($line);
 		if ($parinline == 1 && $currlen > 220) {
@@ -73,7 +74,7 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 			if(!empty($udpresp)) {
 				$udperror = 1;
 			}
-			$line = $param . '=' . $value . ' ';
+			$line = $param . $udp_delimiter . $value . ' ';
 			$parinline = 1;
 		}
 	}

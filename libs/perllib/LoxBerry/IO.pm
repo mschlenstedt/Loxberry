@@ -19,10 +19,11 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "1.4.1.1";
+our $VERSION = "1.4.1.2";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
+our $udp_delimiter = "=";
 
 my %udpsocket;
 
@@ -340,13 +341,13 @@ sub msudp_send
 		$parinline++;
 		my $oldline = $line;
 		if ($parinline == 1) {
-			$line = $prefix . $params[$pidx] . "=" . $params[$pidx+1] . " ";
+			$line = $prefix . $params[$pidx] . $LoxBerry::IO::udp_delimiter . $params[$pidx+1] . " ";
 			if (length($line) > 220) {
 				print STDERR "msudp_send: Line with one parameter is too long. Parameter $params[$pidx] skipped.\n";
 				next;
 			}
 		} else {
-			$line = $line . $params[$pidx] . "=" . $params[$pidx+1] . " ";
+			$line = $line . $params[$pidx] . $LoxBerry::IO::udp_delimiter . $params[$pidx+1] . " ";
 		}
 		if (length($line) > 220) {
 			print STDERR "msudp_send: Sending: $oldline\n" if ($DEBUG);
