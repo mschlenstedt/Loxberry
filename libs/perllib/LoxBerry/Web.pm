@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.2.5.8";
+our $VERSION = "1.4.1.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -272,13 +272,6 @@ sub pagestart
 			Carp::carp ("Help template \$templatepath is empty - continuing without help.\n") if ($DEBUG);
 		}
 		
-		if (! $templatetext) {
-			if ($lang eq 'de') {
-				$templatetext = "Keine Hilfe verf&uumlgbar.";
-			} else {
-				$templatetext = "No further help available.";
-			}
-		}
 		$helptext = $templatetext;
 	}
 	# Help is now in $helptext
@@ -309,6 +302,10 @@ sub pagestart
 	
 	LoxBerry::System::readlanguage($headerobj, undef, 1);
 	
+	# If help is empty, read default text from language file
+	if (! $helptext) {
+		$helptext = $LoxBerry::System::SL{'COMMON.HELP_NOT_AVAILABLE'};
+	}
 	print STDERR "template_title: $template_title\n" if ($DEBUG);
 	print STDERR "helplink:       $helplink\n" if ($DEBUG);
 	# print STDERR "helptext:       $helptext\n" if ($DEBUG);

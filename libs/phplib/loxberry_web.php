@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.4.1.2";
+	public static $LBWEBVERSION = "1.4.1.3";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -212,11 +212,17 @@ EOT;
 		$pageobj->paramArray(array(
 					'TEMPLATETITLE' => $fulltitle,
 					'HELPLINK' => $helpurl,
-					'HELPTEXT' => $helptext,
+		//			'HELPTEXT' => $helptext,
 					'PAGE' => $page,
 					'LANG' => $lang
 					));
-		LBSystem::readlanguage($pageobj, "language.ini", True);
+		
+		$syslang = LBSystem::readlanguage($pageobj, "language.ini", True);
+		
+		if($helptext == Null) {
+			$helptext = $syslang['COMMON.HELP_NOT_AVAILABLE'];
+		}
+		$pageobj->paramArray(array(	'HELPTEXT' => $helptext ));
 		
 		if ($topnavbar_haselements) {
 			$pageobj->param ( 'TOPNAVBAR', $topnavbar);
@@ -288,11 +294,12 @@ EOT;
 			// error_log("gethelp: Legacy fallback lang de template found - using templatepath $templatepath");
 		} else {
 			error_log("gethelp: No help found. Returning default text.");
-			if ($lang === "de") {
-				$helptext = "Keine weitere Hilfe verfügbar.";
-			} else {
-				$helptext = "No further help available.";
-			}
+			// if ($lang === "de") {
+				// $helptext = "Keine weitere Hilfe verfügbar.";
+			// } else {
+				// $helptext = "No further help available.";
+			// }
+			$helptext = Null;
 			return $helptext;
 		}
 		
