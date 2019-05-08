@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "1.4.1.3";
+our $VERSION = "1.4.1.4";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -132,6 +132,7 @@ sub mshttp_send
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
 		print STDERR "Param: $params[$pidx] is $params[$pidx+1]\n" if ($DEBUG);
 		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . "/" . URI::Escape::uri_escape($params[$pidx+1]));
+		print STDERR "respvalue: $respvalue | respcode: $respcode\n" if ($DEBUG);
 		if($respcode == 200) {
 			$response{$params[$pidx]} = 1;
 		} else {
@@ -295,12 +296,15 @@ sub mshttp_call
 		
 		print STDERR "Loxone Response: Code " . $xmlresp->{Code} . " Value " . $xmlresp->{value} . "\n" if ($DEBUG);
 		# return ($xmlresp->{Code}, $xmlresp->{value});
-		return ($xmlresp->{value},  $xmlresp->{Code}, $xmlresp);
+		
 	};
 	if ($@) {
 		print STDERR "mshttp_call ERROR: $@\nMiniserver Response: " . $response->content . "\n";
 		return (undef, 500, $xmlresp);
 	}
+	
+	return ($xmlresp->{value},  $xmlresp->{Code}, $xmlresp);
+	
 }
 
 
