@@ -32,7 +32,7 @@ use strict;
 # Variables
 ##########################################################################
 
-our $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+our $helpurl = "https://www.loxwiki.eu/x/RYgKAw";
 our $helptemplate ="help_timeserver.html";
 
 our $cfg;
@@ -77,7 +77,7 @@ our $grepbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.1.1";
+my $version = "1.4.2.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 

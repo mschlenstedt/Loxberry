@@ -47,7 +47,7 @@ my $sid;
 my $session;
 my $error;
 
-my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helplink = "https://www.loxwiki.eu/x/pYgKAw";
 my $helptemplate = "help_myloxberry.html";
 my $template_title;
 my $quoted_adminpass1;
@@ -58,7 +58,7 @@ my $quoted_adminpass1;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.3";
+my $version = "1.4.2.1";
 
 my $sversion = LoxBerry::System::lbversion();
 my $lang = lblanguage();

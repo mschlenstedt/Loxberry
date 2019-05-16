@@ -24,7 +24,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Version of this script
-my $version = "1.4.0.2";
+my $version = "1.4.2.1";
 
 # Remove 'only used once' warnings
 $R::showfilename if 0;
@@ -60,7 +60,7 @@ if ($R::package) {
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . "Log Manager"; #$SL{'LOGMANAGER.WIDGETLABEL'};
 }
 
-$helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+$helplink = "https://www.loxwiki.eu/x/YYgKAw";
 $helptemplate = "help_logmanager.html";
 
 # Navigation (only for full mode)

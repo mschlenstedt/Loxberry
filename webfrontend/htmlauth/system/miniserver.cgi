@@ -33,7 +33,7 @@ print STDERR "Execute miniserver.cgi\n######################\n";
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/display/LOXBERRY/Erste+Schritte";
+my $helpurl = "https://www.loxwiki.eu/x/QYgKAw";
 my $helptemplate = "help_miniserver.html";
 
 my $lang;
@@ -54,7 +54,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.1.1";
+my $version = "1.4.2.1";
 
 my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 my $bins = LoxBerry::System::get_binaries();

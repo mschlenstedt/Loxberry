@@ -29,7 +29,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://www.loxwiki.eu/x/j4gKAw";
 my $helptemplate = "help_mailserver.html";
 
 #our $cfg;
@@ -59,7 +59,7 @@ $response{message} = "Unspecified error";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.0.1";
+my $version = "1.4.2.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 

@@ -31,7 +31,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "https://www.loxwiki.eu/display/LOXBERRY/Erste+Schritte";
+my $helplink = "https://www.loxwiki.eu/x/84YKAw";
 my $helptemplate;
 my $template_title;
 my $error;
@@ -51,7 +51,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/general.json" || -z "$lb
 }
 
 # Version of this script
-my $version = "1.4.1.1";
+my $version = "1.4.2.1";
 
 my $sversion = LoxBerry::System::lbversion();
 

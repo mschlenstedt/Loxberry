@@ -35,7 +35,7 @@ use File::Path qw(make_path remove_tree);
 # Variables
 ##########################################################################
 
-my $helplink = "https://www.loxwiki.eu/x/doSxAg";
+my $helplink = "https://www.loxwiki.eu/x/UIgKAw";
 my $helptemplate = "help_plugininstall.html";
 
 my $error;
@@ -48,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.1.1";
+my $version = "1.4.2.1";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();

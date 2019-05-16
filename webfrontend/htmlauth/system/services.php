@@ -27,7 +27,7 @@ require_once "Config/Lite.php";
 # Variables
 ##########################################################################
 
-$helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+$helplink = "https://www.loxwiki.eu/x/bogKAw";
 $helptemplate = "help_services.html";
 $template_title;
 $error;
@@ -38,7 +38,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "1.4.1.1";
+$version = "1.4.2.1";
 
 $sversion = LBSystem::lbversion();
 

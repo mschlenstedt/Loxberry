@@ -38,7 +38,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://www.loxwiki.eu/x/V4gKAw";
 my $helptemplate = "help_updates.html";
 
 my $lbulogfiledir = "$lbslogdir/loxberryupdate";
@@ -75,7 +75,7 @@ our $rebootbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.2.0.1";
+my $version = "1.4.2.1";
 
 my $bins = LoxBerry::System::get_binaries();
 $sversion = LoxBerry::System::lbversion();

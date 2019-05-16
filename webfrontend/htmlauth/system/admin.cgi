@@ -36,7 +36,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/3IOdAQ";
+my $helpurl = "https://www.loxwiki.eu/x/-oYKAw";
 my $helptemplate = "help_admin.html";
 
 our $cfg;
@@ -82,7 +82,7 @@ my $quoted_adminpassold;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.1.1";
+my $version = "1.4.2.1";
 
 $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 

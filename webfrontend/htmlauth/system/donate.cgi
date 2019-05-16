@@ -31,7 +31,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://www.loxwiki.eu/x/NYkKAw";
 
 our $cfg;
 our $phrase;
@@ -52,7 +52,7 @@ our $languagefile;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "1.4.2.1";
 
 $cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");

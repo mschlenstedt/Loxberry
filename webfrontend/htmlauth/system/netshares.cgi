@@ -31,7 +31,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://www.loxwiki.eu/x/6YgKAw";
 my $helptemplate = "help_netshares.html";
 
 our $cfg;
@@ -52,7 +52,7 @@ our $param_a="";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.1.1";
+my $version = "1.4.2.1";
 
 $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 

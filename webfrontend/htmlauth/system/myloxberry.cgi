@@ -31,7 +31,7 @@ my $load="";
 # Variables
 ##########################################################################
 
-my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helplink = "https://www.loxwiki.eu/x/_oYKAw";
 my $helptemplate = "help_myloxberry.html";
 my $template_title;
 my $error;
@@ -43,7 +43,7 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.1";
+my $version = "1.4.2.1";
 
 my $sversion = LoxBerry::System::lbversion();
 

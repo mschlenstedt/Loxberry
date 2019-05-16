@@ -32,7 +32,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://www.loxwiki.eu/x/fogKAw";
 my $helptemplate = "help_power.html";
 
 our $cfg;
@@ -60,7 +60,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.3";
+my $version = "1.4.2.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 #$installfolder   = $cfg->param("BASE.INSTALLFOLDER");

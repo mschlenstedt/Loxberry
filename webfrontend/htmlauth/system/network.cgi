@@ -34,7 +34,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helplink = "https://www.loxwiki.eu/x/SogKAw";
 my $helptemplate = "help_network.html";
 
 our $cfg;
@@ -74,7 +74,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.5.2";
+my $version = "1.4.2.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");

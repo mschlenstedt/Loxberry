@@ -32,7 +32,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helplink = "https://www.loxwiki.eu/x/bogKAw";
 my $helptemplate = "help_services.html";
 
 ##########################################################################
@@ -40,7 +40,7 @@ my $helptemplate = "help_services.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.1.1";
+my $version = "1.4.2.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
