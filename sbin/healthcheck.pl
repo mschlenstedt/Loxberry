@@ -76,30 +76,29 @@ sub performchecks {
 
 # Sub: Output JSON
 sub json {
+
 	my (@results) = @_;
-	foreach (@results) {
-		#
-		# JSON erzeugen
-		#
-	}
+	print encode_json(\@results);
+
 }
 
 # Sub: Output stdout
 sub stdout {
+
 	my (@results) = @_;
-	foreach (@results) {
-		#
-		# Geht:
-		#
-		print Dumper $_;
-		#
-		# Geht nicht:
-		#
-		#my %hash = $_;
-		#while( my( $key, $value ) = each %hash ){
-		#	print "$key: $value\n";
+	foreach my $check (@results) {
+		print "Sub: $check->{sub}\n";
+		print "Title: $check->{title}\n";
+		print "Desc: $check->{desc}\n";
+		print "Result: $check->{result}\n";
+		print "Status: $check->{status}\n";
+		print "Logfile: $check->{logfile}\n";
+		print "URL: $check->{url}\n\n";
+		#foreach my $key (keys %$check){
+		#	print "$key: $check->{$key}\n";
 		#}
 	}
+
 }
 
 #############################################################
