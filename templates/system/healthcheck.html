@@ -1,0 +1,177 @@
+<style>
+th, td {
+  border-bottom: 1px solid #ddd;
+}
+</style>
+
+
+<div class="wide">Healthcheck</div>
+<div>&nbsp;</div>
+<div><button class="ui-btn ui-btn-inline" id="runallchecks" onclick="runAllChecks();" >Run all checks</button></div>
+<div id="loading" style="display:none;"></div>
+<table id="resulttable" style="font-size:80%;width:100%;">
+	<tr>
+		<th>Status</th>
+		<th>Title</th>
+		<th>Description</th>
+		<th>Result</th>
+		<th>Logfile</th>
+		<th>Link</th>
+	</tr>
+</table>
+
+<script>
+
+var requestRunning = 0;
+
+var states = { '2' : 'CRITICAL', '3' : 'ERROR', '4' : 'WARNING', '5' : 'OK', '6' : 'INFO' };
+var backgroundColor = { '0' : '#FF007F', '1' : '#990000', '2' : '#CC0000', '3' : '#FF3333', '4' : '#FFFF33', '5' : '#6DAC20', '6' : '#3333FF', '7' : '#CCE5FF' };
+var fontColor = { '0' : 'white', '1' : 'white', '2' : 'white', '3' : 'white', '4' : 'black', '5' : 'white', '6' : 'white', '7' : 'black' };
+
+
+
+$(function() {
+			
+	queryData( { action : 'titles' } ); 
+
+});
+
+function runSingleCheck(checksub)
+{
+	element = checksub+"row";
+	$("#"+element+"status").html("Check...");
+	$("#"+element+"status").css({'background-color' : 'lightgrey', 'color' : 'white'});
+	$("#"+element+"result").html("");
+
+	console.log('runSingleCheck', checksub);
+	queryData( { action : 'check', check : checksub } ); 
+}
+
+function runAllChecks()
+{
+	$("tr").each(function() {
+		console.log('runAllChecks element:', this);
+		checksub = $(this).attr('data-checksub');
+		runSingleCheck(checksub);
+	});
+
+}
+
+function Sleep(milliseconds) {
+   return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+async function queryData(requestParams) {
+
+	$("#loading").html("Loading...");
+	while( requestRunning >= 3) {
+		await Sleep(100);
+	}
+	
+	requestRunning += 1;
+	$.ajax( { 
+				type: 'POST',
+				data: requestParams
+			} )
+		.fail(function( data, error ) {
+			console.log( "Error", data );
+			$("#loading").html("Error: "+error);
+		})
+		.done(function( data ) {
+			$("#loading").empty();
+			console.log( "getcred Success", data );
+			parseResult( data );
+		})
+		
+		.always(function( data ) {
+			console.log( "Always" );
+			requestRunning -= 1;
+		});
+
+}
+
+function parseResult( data )
+{
+	var table_empty = 0;
+	console.log("resulttable length", $("#resulttable").length);
+	
+	data.forEach(function(element){ parseElement(element); });
+	
+}
+
+function parseElement ( element )
+ {
+		var rowname = element.sub+"row";
+		// rowname = rowname.replace(/ /g,'_');
+		console.log("Title:", element.title, "Status:", element.status, "Rowname", rowname);
+		
+		// Row sceleton
+		if( ! $("#"+rowname).length ) {
+			console.log("Row does not exist - Append");
+			var rowhtmlStart;
+			var rowhtmlEnd;
+			rowhtmlStart =  '<tr id="'+rowname+'">';
+			rowhtmlEnd =  '</tr>';
+			
+			var html = ''; 
+			html += '<td id="'+rowname+'status" style="padding:10px;width:50px;"></td>';
+			
+			html += '<td id="'+rowname+'title" style="padding:10px;width:150px;"></td>';
+			
+			html += '<td id="'+rowname+'desc" style="padding:10px;"></td>';
+			
+			html += '<td id="'+rowname+'result" style="padding:10px;"></td>';
+			
+			html += '<td id="'+rowname+'logfile" style="padding:10px;width:100px;"></td>';
+			
+			html += '<td id="'+rowname+'url" style="padding:10px;width:50px;"></td>';
+			
+			$("#resulttable").append(rowhtmlStart+html+rowhtmlEnd);
+			$("#"+rowname).attr('data-checksub', element.sub ); 
+			console.log("Data attribute", $("#"+rowname).attr('data-checksub' )); 
+			
+		}
+		
+		// Update content
+			if ( element.status !== undefined ) {
+				console.log("Element status", element.status);
+				$("#"+rowname+"status").html(states[element.status]);
+				$("#"+rowname+"status").css( { "background-color" : backgroundColor[element.status], "color" : fontColor[element.status] } );
+			} else {
+				console.log("Element status", element.status);
+				$("#"+rowname+"status").html('?');
+				$("#"+rowname+"status").css( { "background-color" : "white" } );
+			}
+			
+			$("#"+rowname+"title").html(element.title);
+			
+			if ( element.desc !== undefined ) {
+				$("#"+rowname+"desc").html(element.desc);
+			} else {
+				$("#"+rowname+"desc").html('');
+			}
+			
+			if ( element.result !== undefined ) {
+				$("#"+rowname+"result").html(element.result);
+			} else {
+				$("#"+rowname+"result").html('');
+			}
+			
+			if ( element.logfile !== undefined ) {
+				$("#"+rowname+"logfile").html('<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile='+element.log+'&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>');
+			} else {
+				$("#"+rowname+"logfile").html('');
+			}
+			
+			if ( element.url !== undefined && element.status !== undefined) {
+				$("#"+rowname+"url").html('<a href="'+element.url+'" target="_blank">Wiki</a>');
+			} else {
+				$("#"+rowname+"url").html('');
+			}
+			
+}
+
+
+
+
+</script>
