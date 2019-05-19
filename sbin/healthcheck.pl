@@ -29,7 +29,7 @@ if (!$R::action) {
 
 # Default output is stdout
 if (!$R::output) {
-	$R::output = 'stdout';
+	$R::output = 'text';
 }
 if (!exists &{$R::output}) {
 	print "The output method \"$R::output\" does not exist.\n";
@@ -83,7 +83,7 @@ sub json {
 }
 
 # Sub: Output stdout
-sub stdout {
+sub text {
 
 	my (@results) = @_;
 	foreach my $check (@results) {
