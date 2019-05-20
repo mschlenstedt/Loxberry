@@ -1,17 +1,25 @@
 #!/usr/bin/perl
 
-use LoxBerry::System;
-use LoxBerry::JSON;
 use CGI;
+use LoxBerry::System;
+use JSON;
+#use LoxBerry::JSON;
 use strict;
 no strict 'refs';
-use Data::Dumper;
+#use Data::Dumper;
+use Getopt::Long;
+
+my $cgi = CGI->new;
+$cgi->import_names('R');
 
 # Globals
 my @results;
 my @checks;
-my $cgi = CGI->new;
-$cgi->import_names('R');
+
+GetOptions ('action=s' => \$R::action, 'check=s' => \$R::check, 'output=s' => \$R::output);
+
+# print "GetOpt action: $R::action\n";
+
 
 #############################################################
 # Health Checks
@@ -21,6 +29,11 @@ push (@checks, "check_kernel");
 push (@checks, "check_arch");
 push (@checks, "check_readonlyrootfs");
 push (@checks, "check_logdb");
+push (@checks, "check_notifydb");
+push (@checks, "check_loglevels");
+
+# print "healthcheck.pl: Arguments @ARGV \n";
+# print "healthcheck.pl: action " . $R::action . "\n";
 
 # Default action is check
 if (!$R::action) {
@@ -172,24 +185,110 @@ sub check_logdb
 	# Perform check
 	
 	eval {
+		require DBI;
 		require LoxBerry::Log;
 		my $dbh = LoxBerry::Log::log_db_init_database();
 		if (! $dbh) {
 			$result{result} = 'Could not init logfile database.';
 			$result{status} = '3';
 		} else {
-			$result{result} = 'Init logfile database is ok.';
-			$result{status} = '5';
+			$result{result} = 'Init logfile database is ok. ';
+			#$result{status} = '5';
 		}
+		local $dbh->{RaiseError} = 1;
+		my $qu = "SELECT COUNT(*) FROM logs;"; 
+		my ($logcount) = $dbh->selectrow_array($qu);
+		my $qu = "SELECT COUNT(*) FROM logs_attr;"; 
+		my ($attrcount) = $dbh->selectrow_array($qu);
+		my $qu = "SELECT COUNT (DISTINCT FILENAME) FROM logs;";
+		my ($filecount) = $dbh->selectrow_array($qu);
+
+		$result{result} .= "$logcount log sessions with $attrcount attributes stored. $filecount logfiles are managed. ";
+		
+		my $filesize = -s $dbh->sqlite_db_filename();
+		$result{result} .= "Database size is " . LoxBerry::System::bytes_humanreadable($filesize) . ". ";
+		if ($filesize > 52428800) {
+			$result{result} .= "This is exceptionally BIG! ";
+			$result{status} = 4;
+		}
+	
 	};
 	if ($@) {
 		$result{status} = '3';
-		$result{result} = "Error executing the test: $@";
+		$result{result} .= "Error executing the test: <$@> ";
+	} 
+	
+	if(!$result{status}) {
+		$result{status} = '5';
 	}
-
 	return (\%result);
 
 }
+
+# Check if notification database is healthy
+sub check_notifydb
+{
+	
+	my %result;
+	my ($action) = @_;
+
+	$result{'sub'} = 'check_notifydb';
+	$result{'title'} = 'Notification Database';
+	$result{'desc'} = 'Checks the consistence of the Notification Database';
+	# $result{'url'} = 'https://www.loxwiki.eu/x/oIMKAw';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	# Perform check
+	
+	eval {
+		require DBI;
+		require LoxBerry::Log;
+		my $dbh = LoxBerry::Log::notify_init_database();
+		if (! $dbh) {
+			$result{result} = 'Could not init notification database.';
+			$result{status} = '3';
+		} else {
+			$result{result} = 'Init notification database is ok. ';
+			#$result{status} = '5';
+		}
+		local $dbh->{RaiseError} = 1;
+		my $qu = "SELECT COUNT(*) FROM notifications;"; 
+		my ($notcount) = $dbh->selectrow_array($qu);
+		my $qu = "SELECT COUNT(*) FROM notifications_attr;"; 
+		my ($attrcount) = $dbh->selectrow_array($qu);
+		my $qu = "SELECT COUNT (*) FROM notifications WHERE SEVERITY = 3;";
+		my ($errorcount) = $dbh->selectrow_array($qu);
+		my $qu = "SELECT COUNT (*) FROM notifications WHERE SEVERITY = 6;";
+		my ($infocount) = $dbh->selectrow_array($qu);
+
+		$result{result} .= "$notcount notifications with $attrcount attributes stored. It contains $infocount info and $errorcount error notifications.";
+		
+		my $filesize = -s $dbh->sqlite_db_filename();
+		$result{result} .= "Database size is " . LoxBerry::System::bytes_humanreadable($filesize) . ". ";
+		if ($filesize > 52428800) {
+			$result{result} .= "This is exceptionally BIG! ";
+			$result{status} = 4;
+		}
+
+		
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} .= "Error executing the test: <$@> ";
+	} 
+	
+	if(!$result{status}) {
+		$result{status} = '5';
+	}
+	
+	return (\%result);
+
+}
+
 
 # Check the Linux Kernel
 sub check_kernel
@@ -355,5 +454,51 @@ sub check_lbversion
 	}
 
 	return(\%result);
+
+}
+
+# Check loglevel of plugins
+sub check_loglevels
+{
+
+	my %result;
+	my ($action) = @_;
+
+	$result{'sub'} = 'check_loglevels';
+	$result{'title'} = 'Plugin Loglevels';
+	$result{'desc'} = 'Checks for debug loglevel';
+	#$result{'url'} = 'https://www.loxwiki.eu/x/b4WdAQ';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	eval {
+		my @debugplugins;
+		my @plugins = LoxBerry::System::get_plugins();
+		foreach my $plugin (@plugins) {
+			#print STDERR "$plugin->{PLUGINDB_NO} $plugin->{PLUGINDB_TITLE} $plugin->{PLUGINDB_VERSION}\n";
+			if( $plugin->{PLUGINDB_LOGLEVEL} eq "7" ) {
+				push( @debugplugins, $plugin->{PLUGINDB_TITLE} );
+			}
+		}
+	
+		if (@debugplugins) {
+			$result{result} .= "Plugins in DEBUG loglevel: " . join(', ', @debugplugins) . ". DEBUG loglevel leads to accessive logging/performance impact. Use only during troubleshooting.";
+			$result{status} = 4;
+		}
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} .= "Error executing the test: <$@> ";
+	} 
+	
+	if(!$result{status}) {
+		$result{result} = "No plugin is configured for loglevel DEBUG. (Some plugins may have it's own setting)";
+		$result{status} = '5';
+	}
+	
+	return (\%result);
 
 }
