@@ -91,7 +91,7 @@ sub performchecks {
 sub json {
 
 	my (@results) = @_;
-	print encode_json(\@results);
+	print JSON->new->utf8(0)->encode(\@results);
 
 }
 
