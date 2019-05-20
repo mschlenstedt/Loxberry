@@ -1,6 +1,10 @@
 <style>
 th, td {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ddd; 
+  text-align:left;
+  padding:10px;
+  text-shadow: none;
+  font-size:80%;
 }
 </style>
 
@@ -9,14 +13,14 @@ th, td {
 <div>&nbsp;</div>
 <div><button class="ui-btn ui-btn-inline" id="runallchecks" onclick="runAllChecks();" >Run all checks</button></div>
 <div id="loading" style="display:none;"></div>
-<table id="resulttable" style="font-size:80%;width:100%;">
+<table id="resulttable" style="width:100%;">
 	<tr>
-		<th>Status</th>
-		<th>Title</th>
-		<th>Description</th>
-		<th>Result</th>
-		<th>Logfile</th>
-		<th>Link</th>
+		<th style="text-align:center;width:10%;">Status</th>
+		<th style="width:13%;">Title</th>
+		<th style="width:22%;">Description</th>
+		<th style="width:55%;">Result</th>
+		<!-- <th>Logfile</th> -->
+		<!-- <th>Link</th> -->
 	</tr>
 </table>
 
@@ -114,17 +118,21 @@ function parseElement ( element )
 			rowhtmlEnd =  '</tr>';
 			
 			var html = ''; 
-			html += '<td id="'+rowname+'status" style="padding:10px;width:50px;"></td>';
+			html += '<td id="'+rowname+'status" style="text-align:center;"></td>';
 			
-			html += '<td id="'+rowname+'title" style="padding:10px;width:150px;"></td>';
+			html += '<td id="'+rowname+'title"></td>';
 			
-			html += '<td id="'+rowname+'desc" style="padding:10px;"></td>';
+			html += '<td id="'+rowname+'desc"></td>';
 			
-			html += '<td id="'+rowname+'result" style="padding:10px;"></td>';
+			html += '<td style="padding:10px;">';
 			
-			html += '<td id="'+rowname+'logfile" style="padding:10px;width:100px;"></td>';
+			html += '	<span id="'+rowname+'result"></span>';
 			
-			html += '<td id="'+rowname+'url" style="padding:10px;width:50px;"></td>';
+			html += '	<span id="'+rowname+'logfile"></span>';
+			
+			html += '	<span id="'+rowname+'url"></span>';
+			
+			html += '</td>';
 			
 			$("#resulttable").append(rowhtmlStart+html+rowhtmlEnd);
 			$("#"+rowname).attr('data-checksub', element.sub ); 
