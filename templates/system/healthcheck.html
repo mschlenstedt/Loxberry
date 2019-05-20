@@ -11,7 +11,10 @@ th, td {
 
 <div class="wide">Healthcheck</div>
 <div>&nbsp;</div>
-<div><button class="ui-btn ui-btn-inline" disabled="disabled" id="runallchecks" onclick="runAllChecks();" >Run all checks</button></div>
+<div>
+	<button class="ui-btn ui-btn-inline" disabled="disabled" id="runallchecks" onclick="runAllChecks();" >Run all checks</button>
+	<button class="ui-btn ui-btn-inline" id="downloadall" onclick="downloadAll();">Download</button>
+</div>
 <div id="loading" style="display:none;"></div>
 <table id="resulttable" style="width:100%;">
 	<tr>
@@ -163,7 +166,7 @@ function parseElement ( element )
 			}
 			
 			if ( element.logfile !== undefined && element.status !== undefined) {
-				$("#"+rowname+"logfile").html('<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile='+element.logfile+'&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>');
+				$("#"+rowname+"logfile").html('<a data-logfile="'+element.logfile+'" data-role="button" href="/admin/system/tools/logfile.cgi?logfile='+element.logfile+'&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>');
 			} else {
 				$("#"+rowname+"logfile").html('');
 			}
@@ -176,7 +179,52 @@ function parseElement ( element )
 			
 }
 
+function downloadAll()
+{
+	var resultString = new Date($.now()) + "\r\n\r\n";
+	$("tr").each(function() {
+		// console.log('runAllChecks element:', this);
+		checksub = $(this).attr('data-checksub');
+		if(checksub === undefined) 
+			return;
+		
+		element = checksub+"row";
+		
+		statusStr = $("#"+element+"status").text();
+		titleStr = $("#"+element+"title").text();
+		resultStr = $("#"+element+"result").text();
+		logfile = $("#"+element+"logfile").attr('data-logfile');
+		
+		console.log(titleStr, statusStr, resultStr, logfile);
+		
+		resultString += "<"+statusStr+"> " +titleStr.toUpperCase() + "\r\n";
+		resultString += resultStr+"\r\n";
+		resultString += "\r\n";
+		
+		// To do
+		// How to download multiple logfiles in parallel (async calls) and merge them to one string
+		
+	});
+
+	console.log(resultString);
+	download("healthcheck.txt", resultString);
 
 
+
+
+}
+
+function download(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
 
 </script>
