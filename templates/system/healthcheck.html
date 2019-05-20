@@ -11,7 +11,7 @@ th, td {
 
 <div class="wide">Healthcheck</div>
 <div>&nbsp;</div>
-<div><button class="ui-btn ui-btn-inline" id="runallchecks" onclick="runAllChecks();" >Run all checks</button></div>
+<div><button class="ui-btn ui-btn-inline" disabled="disabled" id="runallchecks" onclick="runAllChecks();" >Run all checks</button></div>
 <div id="loading" style="display:none;"></div>
 <table id="resulttable" style="width:100%;">
 	<tr>
@@ -47,14 +47,14 @@ function runSingleCheck(checksub)
 	$("#"+element+"status").css({'background-color' : 'lightgrey', 'color' : 'white'});
 	$("#"+element+"result").html("");
 
-	console.log('runSingleCheck', checksub);
+	// console.log('runSingleCheck', checksub);
 	queryData( { action : 'check', check : checksub } ); 
 }
 
 function runAllChecks()
 {
 	$("tr").each(function() {
-		console.log('runAllChecks element:', this);
+		// console.log('runAllChecks element:', this);
 		checksub = $(this).attr('data-checksub');
 		runSingleCheck(checksub);
 	});
@@ -83,22 +83,20 @@ async function queryData(requestParams) {
 		})
 		.done(function( data ) {
 			$("#loading").empty();
-			console.log( "getcred Success", data );
+			// console.log( "getcred Success", data );
 			parseResult( data );
 		})
 		
 		.always(function( data ) {
-			console.log( "Always" );
+			// console.log( "Always" );
 			requestRunning -= 1;
+			$("#runallchecks").prop("disabled", false);
 		});
 
 }
 
 function parseResult( data )
 {
-	var table_empty = 0;
-	console.log("resulttable length", $("#resulttable").length);
-	
 	data.forEach(function(element){ parseElement(element); });
 	
 }
@@ -106,12 +104,11 @@ function parseResult( data )
 function parseElement ( element )
  {
 		var rowname = element.sub+"row";
-		// rowname = rowname.replace(/ /g,'_');
-		console.log("Title:", element.title, "Status:", element.status, "Rowname", rowname);
+		// console.log("Title:", element.title, "Status:", element.status, "Rowname", rowname);
 		
 		// Row sceleton
 		if( ! $("#"+rowname).length ) {
-			console.log("Row does not exist - Append");
+			// console.log("Row does not exist - Append");
 			var rowhtmlStart;
 			var rowhtmlEnd;
 			rowhtmlStart =  '<tr id="'+rowname+'">';
@@ -136,17 +133,17 @@ function parseElement ( element )
 			
 			$("#resulttable").append(rowhtmlStart+html+rowhtmlEnd);
 			$("#"+rowname).attr('data-checksub', element.sub ); 
-			console.log("Data attribute", $("#"+rowname).attr('data-checksub' )); 
+			// console.log("Data attribute", $("#"+rowname).attr('data-checksub' )); 
 			
 		}
 		
 		// Update content
 			if ( element.status !== undefined ) {
-				console.log("Element status", element.status);
+				// console.log("Element status", element.status);
 				$("#"+rowname+"status").html(states[element.status]);
 				$("#"+rowname+"status").css( { "background-color" : backgroundColor[element.status], "color" : fontColor[element.status] } );
 			} else {
-				console.log("Element status", element.status);
+				// console.log("Element status", element.status);
 				$("#"+rowname+"status").html('?');
 				$("#"+rowname+"status").css( { "background-color" : "white" } );
 			}
