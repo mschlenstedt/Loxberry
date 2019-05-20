@@ -1,24 +1,33 @@
 #!/usr/bin/perl
 
-use CGI;
+#use CGI;
 use LoxBerry::System;
 use JSON;
-#use LoxBerry::JSON;
+# use LoxBerry::JSON;
 use strict;
 no strict 'refs';
-#use Data::Dumper;
-use Getopt::Long;
+# use Data::Dumper;
+# use Getopt::Long;
 
-my $cgi = CGI->new;
-$cgi->import_names('R');
+# my $cgi = CGI->new;
+# $cgi->import_names('R');
 
 # Globals
 my @results;
 my @checks;
 
-GetOptions ('action=s' => \$R::action, 'check=s' => \$R::check, 'output=s' => \$R::output);
+my %opts;
 
-# print "GetOpt action: $R::action\n";
+parse_options(@ARGV);
+
+## Show parsed options (debugging)
+# foreach (keys %opts) {
+	# print STDERR "Option '$_' = '$opts{$_}'\n";
+# }	
+
+#GetOptions ('action=s' => \$opts{action}, 'check=s' => \$opts{check}, 'output=s' => \$opts{output});
+
+# print "GetOpt action: $opts{action}\n";
 
 
 #############################################################
@@ -33,43 +42,43 @@ push (@checks, "check_notifydb");
 push (@checks, "check_loglevels");
 
 # print "healthcheck.pl: Arguments @ARGV \n";
-# print "healthcheck.pl: action " . $R::action . "\n";
+# print "healthcheck.pl: action " . $opts{action} . "\n";
 
 # Default action is check
-if (!$R::action) {
-	$R::action = 'check';
+if (!$opts{action}) {
+	$opts{action} = 'check';
 }
 
 # Default output is stdout
-if (!$R::output) {
-	$R::output = 'text';
+if (!$opts{output}) {
+	$opts{output} = 'text';
 }
-if (!exists &{$R::output}) {
-	print "The output method \"$R::output\" does not exist.\n";
+if (!exists &{$opts{output}}) {
+	print "The output method \"$opts{output}\" does not exist.\n";
 	exit 1;
 }
 
 # Only one check is requested
-if ($R::check) { 
-	if (!exists &{$R::check}) {
-		print "The healthcheck \"$R::check\" does not exist.\n";
+if ($opts{check}) { 
+	if (!exists &{$opts{check}}) {
+		print "The healthcheck \"$opts{check}\" does not exist.\n";
 		exit 1;
 	}
 	undef @checks;
-	push (@checks, "$R::check"); 
+	push (@checks, "$opts{check}"); 
 }
 
 # Only titles for WebIf without perfoming checks
-if ($R::action eq "titles") {
+if ($opts{action} eq "titles") {
 	@results = &performchecks('titles');
 }
 # Perform checks
-elsif ($R::action eq "check") {
+elsif ($opts{action} eq "check") {
 	@results = &performchecks;
 }
 
 # Output
-&{$R::output}(@results);
+&{$opts{output}}(@results);
 
 exit;
 
@@ -113,6 +122,23 @@ sub text {
 	}
 
 }
+
+sub parse_options
+{
+	
+	my @opts = @_;
+	foreach my $opt (@opts) {
+		my ($key, $value) = split /=/, $opt;
+		if(begins_with($key, '--')) {
+			$key = substr $key, 2;
+		} elsif (begins_with($key, '-')) {
+			$key = substr $key, 1;
+		}
+		$opts{$key} = $value;
+	}
+}
+
+
 
 #############################################################
 ## Health Checks
