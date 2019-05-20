@@ -11,7 +11,7 @@ my $helptemplate = "help_myloxberry.html";
 my $template_title;
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "1.4.2.2";
 
 
 
@@ -52,17 +52,17 @@ sub ajax
 	my $checkresponse;
 	
 	if($P::action eq "titles") {
-		push @checkparams, "--action=titles";
+		push @checkparams, "action=titles";
 	} elsif ($P::action eq "check" and defined $P::check)  {
-		push @checkparams, "--action=check";
-		push @checkparams, "--check=$P::check";
+		push @checkparams, "action=check";
+		push @checkparams, "check=$P::check";
 	} elsif ($P::action eq "check") {
-		push @checkparams, "--action=check";
+		push @checkparams, "action=check";
 	} else {
 		ajax_json_output("Invalid ajax parameters");
 	}
 	
-	push @checkparams, "--output=json";
+	push @checkparams, "output=json";
 	
 	
 	my $params = join(' ', @checkparams);
@@ -71,8 +71,6 @@ sub ajax
 	
 	eval {
 		$checkresponse = `$lbhomedir/sbin/healthcheck.pl $params`;
-		#$checkresponse = `$lbhomedir/sbin/healthcheck.pl --action titles --output json`;
-		#$checkresponse = system("$lbhomedir/sbin/healthcheck.pl",  "action=titles", "output=json");
 		print STDERR "Checkresponse: $checkresponse\n";
 	};
 	if($@) {
