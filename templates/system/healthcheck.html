@@ -165,8 +165,8 @@ function parseElement ( element )
 				$("#"+rowname+"result").html('');
 			}
 			
-			if ( element.logfile !== undefined ) {
-				$("#"+rowname+"logfile").html('<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile='+element.log+'&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>');
+			if ( element.logfile !== undefined && element.status !== undefined) {
+				$("#"+rowname+"logfile").html('<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile='+element.logfile+'&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>');
 			} else {
 				$("#"+rowname+"logfile").html('');
 			}
