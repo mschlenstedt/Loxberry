@@ -582,19 +582,17 @@ sub check_rootfssize
 
 	eval {
 
-		# Paths to check
-		my @pathtc = ("$lbhomedir");
-
-		foreach my $disk (@pathtc) {
-			my %folderinfo = LoxBerry::System::diskspaceinfo($disk);
-			next if( $folderinfo{size} eq "0" or ($folderinfo{available}/$folderinfo{size}*100) > 10 );
-			if ( $folderinfo{available}/$folderinfo{size}*100 > 5 ) {
-				$result{result} = "$folderinfo{mountpoint} is below limit of 25% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
-				$result{status} = '4';
-			} else {
-				$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
-				$result{status} = '3';
-			}
+		my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
+		if ( $folderinfo{available}/$folderinfo{size}*100 > 10 ) {
+			$result{result} = "LoxBerry's RootFS has more than 10% free discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}).";
+			$result{status} = '5';
+		}
+		elsif ( $folderinfo{available}/$folderinfo{size}*100 <= 5 ) {
+			$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+			$result{status} = '3';
+		} else {
+			$result{result} = "$folderinfo{mountpoint} is below limit of 10% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+			$result{status} = '4';
 		}
 
 	};
@@ -602,11 +600,6 @@ sub check_rootfssize
 		$result{status} = '3';
 		$result{result} .= "Error executing the test: <$@> ";
 	} 
-	
-	if(!$result{status}) {
-		$result{result} = "LoxBerry's RootFS has more than 10% free discspace.";
-		$result{status} = '5';
-	}
 	
 	return (\%result);
 
