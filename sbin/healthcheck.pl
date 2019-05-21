@@ -3,14 +3,8 @@
 #use CGI;
 use LoxBerry::System;
 use JSON;
-# use LoxBerry::JSON;
 use strict;
 no strict 'refs';
-# use Data::Dumper;
-# use Getopt::Long;
-
-# my $cgi = CGI->new;
-# $cgi->import_names('R');
 
 # Globals
 my @results;
@@ -25,11 +19,6 @@ parse_options(@ARGV);
 	# print STDERR "Option '$_' = '$opts{$_}'\n";
 # }	
 
-#GetOptions ('action=s' => \$opts{action}, 'check=s' => \$opts{check}, 'output=s' => \$opts{output});
-
-# print "GetOpt action: $opts{action}\n";
-
-
 #############################################################
 # Health Checks
 #############################################################
@@ -37,12 +26,11 @@ push (@checks, "check_lbversion");
 push (@checks, "check_kernel");
 push (@checks, "check_arch");
 push (@checks, "check_readonlyrootfs");
+push (@checks, "check_rootfssize");
+push (@checks, "check_tmpfssize");
 push (@checks, "check_logdb");
 push (@checks, "check_notifydb");
 push (@checks, "check_loglevels");
-
-# print "healthcheck.pl: Arguments @ARGV \n";
-# print "healthcheck.pl: action " . $opts{action} . "\n";
 
 # Default action is check
 if (!$opts{action}) {
@@ -116,9 +104,6 @@ sub text {
 		print "Status: $check->{status}\n";
 		print "Logfile: $check->{logfile}\n";
 		print "URL: $check->{url}\n\n";
-		#foreach my $key (keys %$check){
-		#	print "$key: $check->{$key}\n";
-		#}
 	}
 
 }
@@ -522,6 +507,104 @@ sub check_loglevels
 	
 	if(!$result{status}) {
 		$result{result} = "No plugin is configured for loglevel DEBUG. (Some plugins may have it's own setting)";
+		$result{status} = '5';
+	}
+	
+	return (\%result);
+
+}
+
+# Check tmpfs
+sub check_tmpfssize
+{
+
+	my %result;
+	my ($action) = @_;
+
+	$result{'sub'} = 'check_tmpfssize';
+	$result{'title'} = 'RAMDiscs free space';
+	$result{'desc'} = 'Checks the ramdiscs for available space';
+	$result{'url'} = 'https://www.loxwiki.eu/x/QINYAg';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	eval {
+
+		# Paths to check
+		my @pathtc = ("$lbhomedir/log/plugins", "$lbhomedir/log/system_tmpfs");
+
+		foreach my $disk (@pathtc) {
+			my %folderinfo = LoxBerry::System::diskspaceinfo($disk);
+			next if( $folderinfo{size} eq "0" or ($folderinfo{available}/$folderinfo{size}*100) > 25 );
+			if ( $folderinfo{available}/$folderinfo{size}*100 > 5 ) {
+				$result{result} = "$folderinfo{mountpoint} is below limit of 25% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+				$result{status} = '4';
+			} else {
+				$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+				$result{status} = '3';
+			}
+		}
+
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} .= "Error executing the test: <$@> ";
+	} 
+	
+	if(!$result{status}) {
+		$result{result} = "All ramdiscs have more than 25% free discspace.";
+		$result{status} = '5';
+	}
+	
+	return (\%result);
+
+}
+
+# Check rootfs
+sub check_rootfssize
+{
+
+	my %result;
+	my ($action) = @_;
+
+	$result{'sub'} = 'check_rootfssize';
+	$result{'title'} = 'RootFS free space';
+	$result{'desc'} = 'Checks the rootfs for available space';
+	#$result{'url'} = 'https://www.loxwiki.eu/x/QINYAg';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	eval {
+
+		# Paths to check
+		my @pathtc = ("$lbhomedir");
+
+		foreach my $disk (@pathtc) {
+			my %folderinfo = LoxBerry::System::diskspaceinfo($disk);
+			next if( $folderinfo{size} eq "0" or ($folderinfo{available}/$folderinfo{size}*100) > 10 );
+			if ( $folderinfo{available}/$folderinfo{size}*100 > 5 ) {
+				$result{result} = "$folderinfo{mountpoint} is below limit of 25% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+				$result{status} = '4';
+			} else {
+				$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+				$result{status} = '3';
+			}
+		}
+
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} .= "Error executing the test: <$@> ";
+	} 
+	
+	if(!$result{status}) {
+		$result{result} = "LoxBerry's RootFS has more than 10% free discspace.";
 		$result{status} = '5';
 	}
 	
