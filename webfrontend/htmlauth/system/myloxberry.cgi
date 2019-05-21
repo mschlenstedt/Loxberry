@@ -43,7 +43,7 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "1.4.2.2";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -100,13 +100,16 @@ $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'MYLOXBERRY.WIDGETLABE
 our %navbar;
 $navbar{1}{Name} = "$SL{'MYLOXBERRY.LABEL_SETTINGS'}";
 $navbar{1}{URL} = 'myloxberry.cgi?load=1';
+
+$navbar{2}{Name} = "$SL{'MYLOXBERRY.LABEL_HEALTHCHECK'}";
+$navbar{2}{URL} = 'healthcheck.cgi';
  
-$navbar{2}{Name} = "$SL{'MYLOXBERRY.LABEL_SYSINFO'}";
-$navbar{2}{URL} = 'myloxberry.cgi?load=2';
+$navbar{3}{Name} = "$SL{'MYLOXBERRY.LABEL_SYSINFO'}";
+$navbar{3}{URL} = 'myloxberry.cgi?load=2';
 
 # Menu
 if (!$R::saveformdata && $load eq "2") {
-  $navbar{2}{active} = 1;
+  $navbar{3}{active} = 1;
   &form;
 } elsif (!$R::saveformdata) {
   $navbar{1}{active} = 1;
