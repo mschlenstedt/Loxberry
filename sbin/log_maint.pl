@@ -66,7 +66,7 @@ sub reduce_notifys
 	for my $notification (@notifications) {
 		next if ( $notification->{SEVERITY} != 3 && $notification->{SEVERITY} != 6);
 		$packagecount{$notification->{PACKAGE}}++;
-		if ($packagecount{$notification->{PACKAGE}} > 20) {
+		if ($packagecount{$notification->{PACKAGE}} > 24) {
 			LOGINF "   Deleting notification $notification->{PACKAGE} / $notification->{NAME} / Severity $notification->{SEVERITY} / $notification->{DATESTR}";
 			delete_notification_key($notification->{KEY});
 			$delNotifyCount++;
@@ -337,10 +337,10 @@ sub logdb_cleanup
 			next;
 		}
 			
-		# Count and delete (more than 20 per package)
+		# Count and delete (more than 24 per package)
 		$logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
-		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 20) {
-			LOGDEB "Filename $key->{FILENAME} will be deleted, it is more than 20 in $key->{'PACKAGE'}/$key->{'NAME'}";
+		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 24) {
+			LOGDEB "Filename $key->{FILENAME} will be deleted, it is more than 24 in $key->{'PACKAGE'}/$key->{'NAME'}";
 			unlink ($key->{'FILENAME'}) or 
 			do {
 				if (-e $key->{'FILENAME'}) {
