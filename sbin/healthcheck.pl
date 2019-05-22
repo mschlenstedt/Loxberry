@@ -87,8 +87,20 @@ sub performchecks {
 # Sub: Output JSON
 sub json {
 
+	my @resultsout;
 	my (@results) = @_;
-	print JSON->new->utf8(0)->encode(\@results);
+	foreach my $check (@results) {
+		if ($check->{logfile} && -e "$check->{logfile}" && -s "$check->{logfile}") {
+			open(my $fh, '<:encoding(UTF-8)', "$check->{logfile}");
+			while (my $row = <$fh>) {
+				chomp $row;
+				$check->{logfilecontent} .= "$row\n";
+			}	
+			close ($fh);
+		}
+		push (@resultsout, $check);
+	}
+	print JSON->new->utf8(0)->encode(\@resultsout);
 
 }
 
