@@ -13,7 +13,7 @@ th, td {
 <div>&nbsp;</div>
 <div>
 	<button class="ui-btn ui-btn-inline" disabled="disabled" id="runallchecks" onclick="runAllChecks();" >Run all checks</button>
-	<button class="ui-btn ui-btn-inline" id="downloadall" onclick="downloadAll();">Download</button>
+	<button class="ui-btn ui-btn-inline" disabled="disabled" id="downloadall" onclick="downloadAll();">Download</button>
 </div>
 <div id="loading" style="display:none;"></div>
 <table id="resulttable" style="width:100%;">
@@ -98,6 +98,7 @@ async function queryData(requestParams) {
 			// console.log( "Always" );
 			requestRunning -= 1;
 			$("#runallchecks").prop("disabled", false);
+			$("#downloadall").prop("disabled", false);
 		});
 
 }
