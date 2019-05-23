@@ -59,6 +59,8 @@ function runAllChecks()
 	$("tr").each(function() {
 		// console.log('runAllChecks element:', this);
 		checksub = $(this).attr('data-checksub');
+		if(checksub === undefined) 
+			return;
 		runSingleCheck(checksub);
 	});
 
