@@ -49,6 +49,8 @@ function runSingleCheck(checksub)
 	$("#"+element+"status").html("Check...");
 	$("#"+element+"status").css({'background-color' : 'lightgrey', 'color' : 'white'});
 	$("#"+element+"result").html("");
+	$("#"+element+"logfile").html("");
+	$("#"+element+"url").html("");
 
 	// console.log('runSingleCheck', checksub);
 	queryData( { action : 'check', check : checksub } ); 
