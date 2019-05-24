@@ -148,6 +148,127 @@ sub text {
 
 }
 
+sub notification
+{
+	require LoxBerry::Log;
+	
+	my %respobj;
+	my $not_widget = "Core";
+	my $not_group = "Healthcheck";
+	my $not_helper = "Healthcheck Helper";
+	my $not_prefix = "lastnotified";
+	
+	my (@results) = @_;
+	
+	$respobj{'unknown'} = 0;
+	$respobj{'errors'} = 0;
+	$respobj{'warnings'} = 0;
+	$respobj{'ok'} = 0;
+	$respobj{'infos'} = 0;
+		
+	# Loop the checks and check if a notification exists
+	foreach my $element (@results) {
+		#print STDERR $element->{status} . "\n";
+		if(! $element->{status}) {
+			$respobj{'errors'}++;
+			$respobj{'unknown'}++;
+		} elsif ( $element->{status} eq "3" ) {
+			$respobj{'errors'}++;
+			$respobj{'errorstrings'} .= " " . $element->{result};
+		} elsif ( $element->{status} eq "4" ) {
+			$respobj{'warnings'}++;
+		} elsif ( $element->{status} eq "5" ) {
+			$respobj{'ok'}++;
+		} elsif ( $element->{status} eq "6" ) {
+			$respobj{'infos'}++;
+		} else {
+			$respobj{'errors'}++;
+			$respobj{'unknown'}++;
+		}
+	}	
+	
+	# Get last notification of the widget $not_helper
+	my %notif;
+	my @notifications = LoxBerry::Log::get_notifications( $not_helper, $not_prefix );
+	if ( $notifications[0] ) {
+		my $lastnot = $notifications[0];
+		$notif{errors} = $lastnot->{errors};
+		$notif{warnings} = $lastnot->{warnings};
+		$notif{infos} = $lastnot->{infos};
+		$notif{ok} = $lastnot->{ok};
+		$notif{unknown} = $lastnot->{unknown};
+	} else {
+		$notif{errors} = 0;
+		$notif{warnings} = 0;
+		$notif{infos} = 0;
+		$notif{ok} = 0;
+		$notif{unknown} = 0;
+	}
+	
+	## Debugging
+	#$respobj{errors} = int(rand(10));
+	
+	# Add special variables for heartbeat
+	$respobj{timeepoch} = time;
+	$respobj{warnings_and_errors} = $respobj{errors} + $respobj{warnings};
+	
+	# Write json file to ram disk
+	eval {
+		open(my $fh, '>', '/dev/shm/healthcheck.json');
+		print $fh JSON->new->utf8(0)->encode(\%respobj);
+		close $fh;
+	};
+	if ($@) {
+		eval {
+			print STDERR "healthcheck.pl: Error writing json to /dev/shm";
+			open(my $fh, '>', $lbhomedir.'/log/system/healthcheck.json');
+			print $fh JSON->new->utf8(0)->encode(\%respobj);
+			close $fh;
+		};
+	};
+	
+	
+	
+	# Compare errors with last notification for public notify
+	if ( $respobj{errors} ne $notif{errors} and $respobj{errors} != 0 ) {
+
+		print STDERR "healthcheck.pl: Detected a change of ERROR results (and not 0) - sending public notification\n";
+		
+		# Errors changed and are not 0 --> Public notify
+		my %public_not = (
+			PACKAGE => $not_widget,
+			NAME => $not_group,
+			SEVERITY => 3,
+			MESSAGE => "Healthcheck reports $respobj{errors} errors. Please run Healthcheck for details.\nCurrent errors:\n$respobj{errorstrings}",
+			LINK => 'http://' . LoxBerry::System::lbhostname() . ':' . LoxBerry::System::lbwebserverport() .'/admin/system/healthcheck.cgi',
+			timeepoch => time
+		);
+		LoxBerry::Log::notify_ext ( \%public_not );
+	}
+
+	# Compare all results for private notify
+	if ( $respobj{errors} ne $notif{errors} or
+		 $respobj{warnings} ne $notif{warnings} or
+		 $respobj{infos} ne $notif{infos} or
+		 $respobj{ok} ne $notif{ok} or
+		 $respobj{unknown} ne $notif{unknown} ) {
+		
+		# Any result has changed, create/update private helper notification
+				
+		print STDERR "healthcheck.pl: Detected a change of check results - saving to private notification\n";
+		LoxBerry::Log::delete_notifications($not_helper, $not_prefix);
+		$respobj{PACKAGE} = $not_helper;
+		$respobj{NAME} = $not_prefix;
+		$respobj{MESSAGE} = "This helper notification keeps track of last notified healthcheck errors";
+		$respobj{SEVERITY} = 7;
+		$respobj{timeepoch} = time;
+		$respobj{warnings_and_errors} = $respobj{errors} + $respobj{warnings};
+		
+		LoxBerry::Log::notify_ext( \%respobj );
+	}
+}
+
+
 sub parse_options
 {
 	
