@@ -106,14 +106,42 @@ sub json {
 
 # Sub: Output stdout
 sub text {
-
+	
+	my $colors = 0;
+	eval {
+		require Term::ANSIColor;
+		$colors = 1;
+	};
+	
 	my (@results) = @_;
 	foreach my $check (@results) {
 		print "Sub: $check->{sub}\n";
 		print "Title: $check->{title}\n";
+		print "Status: ";
+		if( ! $check->{status} ) {
+			print Term::ANSIColor::color('bold red') if ($colors);
+			print "UNKNOWN";
+			print Term::ANSIColor::color('reset') if ($colors);
+		} elsif ($check->{status} eq "3") {
+			print Term::ANSIColor::color('bold red') if ($colors);
+			print "ERROR (code 3)";
+			print Term::ANSIColor::color('reset') if ($colors);
+		} elsif ($check->{status} eq "4") {
+			print Term::ANSIColor::color('bold yellow') if ($colors);
+			print "WARNING (code 4)";
+			print Term::ANSIColor::color('reset') if ($colors);
+		} elsif ($check->{status} eq "5") {
+			print Term::ANSIColor::color('bold green') if ($colors);
+			print "OK (code 5)";
+			print Term::ANSIColor::color('reset') if ($colors);
+		} elsif ($check->{status} eq "6") {
+			print Term::ANSIColor::color('bold blue') if ($colors);
+			print "Info (code 6)";
+			print Term::ANSIColor::color('reset') if ($colors);
+		}
+		print "\n";
 		print "Desc: $check->{desc}\n";
 		print "Result: $check->{result}\n";
-		print "Status: $check->{status}\n";
 		print "Logfile: $check->{logfile}\n";
 		print "URL: $check->{url}\n\n";
 	}
