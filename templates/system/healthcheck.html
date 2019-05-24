@@ -50,6 +50,7 @@ function runSingleCheck(checksub)
 	$("#"+element+"status").css({'background-color' : 'lightgrey', 'color' : 'white'});
 	$("#"+element+"result").html("");
 	$("#"+element+"logfile").html("");
+	$("#"+element+"logfilecontent").html("");
 	$("#"+element+"url").html("");
 
 	// console.log('runSingleCheck', checksub);
@@ -85,7 +86,7 @@ async function queryData(requestParams) {
 				data: requestParams
 			} )
 		.fail(function( data, error ) {
-			console.log( "Error", data );
+			console.log( "Error", data, error );
 			$("#loading").html("Error: "+error);
 		})
 		.done(function( data ) {
@@ -137,6 +138,8 @@ function parseElement ( element )
 			
 			html += '	<span id="'+rowname+'url"></span>';
 			
+			html += '	<span style="display:none" id="'+rowname+'logfilecontent"></span>';
+						
 			html += '</td>';
 			
 			$("#resulttable").append(rowhtmlStart+html+rowhtmlEnd);
@@ -182,6 +185,12 @@ function parseElement ( element )
 				$("#"+rowname+"url").html('');
 			}
 			
+			if ( element.logfilecontent !== undefined ) {
+				$("#"+rowname+"logfilecontent").html(element.logfilecontent);
+			} else {
+				$("#"+rowname+"logfilecontent").html('');
+			}
+			
 }
 
 function downloadAll()
@@ -206,16 +215,28 @@ function downloadAll()
 		resultString += resultStr+"\r\n";
 		resultString += "\r\n";
 		
-		// To do
-		// How to download multiple logfiles in parallel (async calls) and merge them to one string
-		
 	});
 
+	resultString += "---- END of check results ----\r\n\r\n";
+	
+	// Add logfile content at the bottom
+	$("tr").each(function() {
+		checksub = $(this).attr('data-checksub');
+		if(checksub === undefined) 
+			return;
+		
+		element = checksub+"row";
+	
+		titleStr = $("#"+element+"title").text();
+		logfilecontent = $("#"+element+"logfilecontent").text().replace(/\r?\n/g, "\r\n");
+		if (logfilecontent.length) {
+			resultString += "Logfile of " +titleStr.toUpperCase() + "\r\n";
+			resultString += logfilecontent+"\r\n\r\n";
+		}
+	});
+	
 	console.log(resultString);
 	download("healthcheck.txt", resultString);
-
-
-
 
 }
 
