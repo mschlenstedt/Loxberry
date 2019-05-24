@@ -157,6 +157,7 @@ sub notification
 	my $not_group = "Healthcheck";
 	my $not_helper = "Healthcheck Helper";
 	my $not_prefix = "lastnotified";
+	my $resend_interval = 7*24*60*60; # 7 days
 	
 	my (@results) = @_;
 	
@@ -197,16 +198,19 @@ sub notification
 		$notif{infos} = $lastnot->{infos};
 		$notif{ok} = $lastnot->{ok};
 		$notif{unknown} = $lastnot->{unknown};
+		$notif{lastnotify} = $lastnot->{lastnotify};
 	} else {
 		$notif{errors} = 0;
 		$notif{warnings} = 0;
 		$notif{infos} = 0;
 		$notif{ok} = 0;
 		$notif{unknown} = 0;
+		$notif{lastnotify} = 0;
 	}
 	
 	## Debugging
-	#$respobj{errors} = int(rand(10));
+	# $respobj{errors} = int(rand(10));
+	# $respobj{errors} = 2;
 	
 	# Add special variables for heartbeat
 	$respobj{timeepoch} = time;
@@ -227,10 +231,11 @@ sub notification
 		};
 	};
 	
-	
-	
 	# Compare errors with last notification for public notify
-	if ( $respobj{errors} ne $notif{errors} and $respobj{errors} != 0 ) {
+	if ( 
+		( $respobj{errors} ne $notif{errors} or 
+		  $notif{lastnotify} < (time-$resend_interval) ) and $respobj{errors} != 0 
+		) {
 
 		print STDERR "healthcheck.pl: Detected a change of ERROR results (and not 0) - sending public notification\n";
 		
@@ -241,9 +246,11 @@ sub notification
 			SEVERITY => 3,
 			MESSAGE => "Healthcheck reports $respobj{errors} errors. Please run Healthcheck for details.\nCurrent errors:\n$respobj{errorstrings}",
 			LINK => 'http://' . LoxBerry::System::lbhostname() . ':' . LoxBerry::System::lbwebserverport() .'/admin/system/healthcheck.cgi',
-			timeepoch => time
+			timeepoch => time,
 		);
 		LoxBerry::Log::notify_ext ( \%public_not );
+		# Save the time of public notify in private notify
+		$respobj{lastnotify} = time;
 	}
 
 	# Compare all results for private notify
@@ -251,7 +258,8 @@ sub notification
 		 $respobj{warnings} ne $notif{warnings} or
 		 $respobj{infos} ne $notif{infos} or
 		 $respobj{ok} ne $notif{ok} or
-		 $respobj{unknown} ne $notif{unknown} ) {
+		 $respobj{unknown} ne $notif{unknown} or
+		 $respobj{lastnotify} ) {
 		
 		# Any result has changed, create/update private helper notification
 				
