@@ -4,14 +4,13 @@ use warnings;
 use strict;
 use CGI;
 use LoxBerry::Web;
-use JSON;
 
 my $helplink = "https://www.loxwiki.eu/x/_oYKAw";
 my $helptemplate = "help_myloxberry.html";
 my $template_title;
 
 # Version of this script
-my $version = "1.4.2.3";
+my $version = "1.4.2.4";
 
 
 
@@ -70,12 +69,13 @@ sub ajax
 		push @checkparams, "check=$P::check";
 	} elsif ($P::action eq "check") {
 		push @checkparams, "action=check";
+	} elsif ($P::action eq "summary") {
+		push @checkparams, "action=check";
 	} else {
 		ajax_json_output("Invalid ajax parameters");
 	}
 	
 	push @checkparams, "output=json";
-	
 	
 	my $params = join(' ', @checkparams);
 	
@@ -83,20 +83,19 @@ sub ajax
 	
 	eval {
 		$checkresponse = `$lbhomedir/sbin/healthcheck.pl $params`;
-		print STDERR "Checkresponse: $checkresponse\n";
+		# print STDERR "Checkresponse: $checkresponse\n";
 	};
 	if($@) {
 		ajax_json_output("Could not execute heathcheck.pl: $@");
 	}
+	
+	if ($P::action eq "summary") {
+		$checkresponse = generate_summary($checkresponse);
+	}
+	
 	if (!$checkresponse) {
 		ajax_json_output("healthcheck.pl returned empty response"); 
 	}
-	# eval {
-		# decode_json($checkresponse);
-	# };
-	# if($@) {
-		# ajax_json_output("Invalid json: $@\n$checkresponse");
-	# }
 	
 	ajax_json_output(undef, $checkresponse);	
 
@@ -123,4 +122,63 @@ sub ajax_json_output
 		print $data;
 	}
 	exit;
+}
+
+sub generate_summary
+{
+	require JSON;
+	my ($data) = @_;
+	my $dataobj;
+	my %respobj;
+	my $resp;
+	my $errorstr;
+	
+	eval {
+		
+		if(!$data) {
+			$respobj{'errors'}++;
+			$respobj{'errorstr'} = "All checks returned no results";
+		} else {
+			$dataobj = JSON::decode_json($data);
+			# $respobj{'debug'} = $data;
+			#use Data::Dumper;
+			#print STDERR Dumper($dataobj);
+			$respobj{'unknown'} = 0;
+			$respobj{'errors'} = 0;
+			$respobj{'warnings'} = 0;
+			$respobj{'ok'} = 0;
+			$respobj{'infos'} = 0;
+			
+			foreach my $element (@$dataobj) {
+				#print STDERR $element->{status} . "\n";
+				if(! $element->{status}) {
+					$respobj{'errors'}++;
+					$respobj{'unknown'}++;
+				} elsif ( $element->{status} eq "3" ) {
+					$respobj{'errors'}++;
+				} elsif ( $element->{status} eq "4" ) {
+					$respobj{'warnings'}++;
+				} elsif ( $element->{status} eq "5" ) {
+					$respobj{'ok'}++;
+				} elsif ( $element->{status} eq "6" ) {
+					$respobj{'infos'}++;
+				} else {
+					$respobj{'errors'}++;
+					$respobj{'unknown'}++;
+				}
+			}
+			
+		}
+		
+		$respobj{'warnings_and_errors'} = $respobj{'errors'} + $respobj{'warnings'};
+		$respobj{'epoch'} = time;
+		$resp = JSON::encode_json(\%respobj);
+		
+	};
+	if ($@) {
+		$resp = '{"errors":1,"errorstr":"Exception generating summary"}';
+		print STDERR "healthcheck.pl: Exception generating summary: $@\n";
+	}
+	return $resp;
+	
 }
