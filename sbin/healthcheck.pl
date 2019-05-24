@@ -217,15 +217,19 @@ sub notification
 	$respobj{warnings_and_errors} = $respobj{errors} + $respobj{warnings};
 	
 	# Write json file to ram disk
+	my $jsonfile = '/dev/shm/healthcheck.json';
+	my $jsonfile_fallback = $lbhomedir.'/log/system/healthcheck.json';
+
+	
 	eval {
-		open(my $fh, '>', '/dev/shm/healthcheck.json');
+		open(my $fh, '>', $jsonfile);
 		print $fh JSON->new->utf8(0)->encode(\%respobj);
 		close $fh;
 	};
 	if ($@) {
 		eval {
 			print STDERR "healthcheck.pl: Error writing json to /dev/shm";
-			open(my $fh, '>', $lbhomedir.'/log/system/healthcheck.json');
+			open(my $fh, '>', $jsonfile_fallback);
 			print $fh JSON->new->utf8(0)->encode(\%respobj);
 			close $fh;
 		};

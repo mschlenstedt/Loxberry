@@ -70,7 +70,10 @@ sub ajax
 	} elsif ($P::action eq "check") {
 		push @checkparams, "action=check";
 	} elsif ($P::action eq "summary") {
-		push @checkparams, "action=check";
+		$checkresponse = read_healthcheck_json();
+		ajax_json_output(undef, $checkresponse);
+		exit;
+		
 	} else {
 		ajax_json_output("Invalid ajax parameters");
 	}
@@ -89,9 +92,10 @@ sub ajax
 		ajax_json_output("Could not execute heathcheck.pl: $@");
 	}
 	
-	if ($P::action eq "summary") {
-		$checkresponse = generate_summary($checkresponse);
-	}
+	# OBSOLETE
+	# if ($P::action eq "summary") {
+		# $checkresponse = generate_summary($checkresponse);
+	# }
 	
 	if (!$checkresponse) {
 		ajax_json_output("healthcheck.pl returned empty response"); 
@@ -124,61 +128,90 @@ sub ajax_json_output
 	exit;
 }
 
-sub generate_summary
+
+# # OBSOLETE
+# sub generate_summary
+# {
+	# require JSON;
+	# my ($data) = @_;
+	# my $dataobj;
+	# my %respobj;
+	# my $resp;
+	# my $errorstr;
+	
+	# eval {
+		
+		# if(!$data) {
+			# $respobj{'errors'}++;
+			# $respobj{'errorstr'} = "All checks returned no results";
+		# } else {
+			# $dataobj = JSON::decode_json($data);
+			# # $respobj{'debug'} = $data;
+			# #use Data::Dumper;
+			# #print STDERR Dumper($dataobj);
+			# $respobj{'unknown'} = 0;
+			# $respobj{'errors'} = 0;
+			# $respobj{'warnings'} = 0;
+			# $respobj{'ok'} = 0;
+			# $respobj{'infos'} = 0;
+			
+			# foreach my $element (@$dataobj) {
+				# #print STDERR $element->{status} . "\n";
+				# if(! $element->{status}) {
+					# $respobj{'errors'}++;
+					# $respobj{'unknown'}++;
+				# } elsif ( $element->{status} eq "3" ) {
+					# $respobj{'errors'}++;
+				# } elsif ( $element->{status} eq "4" ) {
+					# $respobj{'warnings'}++;
+				# } elsif ( $element->{status} eq "5" ) {
+					# $respobj{'ok'}++;
+				# } elsif ( $element->{status} eq "6" ) {
+					# $respobj{'infos'}++;
+				# } else {
+					# $respobj{'errors'}++;
+					# $respobj{'unknown'}++;
+				# }
+			# }
+			
+		# }
+		
+		# $respobj{'warnings_and_errors'} = $respobj{'errors'} + $respobj{'warnings'};
+		# $respobj{'epoch'} = time;
+		# $resp = JSON::encode_json(\%respobj);
+		
+	# };
+	# if ($@) {
+		# $resp = '{"errors":1,"errorstr":"Exception generating summary"}';
+		# print STDERR "healthcheck.pl: Exception generating summary: $@\n";
+	# }
+	# return $resp;
+	
+# }
+
+sub read_healthcheck_json
 {
-	require JSON;
-	my ($data) = @_;
-	my $dataobj;
-	my %respobj;
-	my $resp;
-	my $errorstr;
+
+	my $output;
+	my $jsonfile = '/dev/shm/healthcheck.json';
+	my $jsonfile_fallback = $lbhomedir.'/log/system/healthcheck.json';
 	
-	eval {
-		
-		if(!$data) {
-			$respobj{'errors'}++;
-			$respobj{'errorstr'} = "All checks returned no results";
-		} else {
-			$dataobj = JSON::decode_json($data);
-			# $respobj{'debug'} = $data;
-			#use Data::Dumper;
-			#print STDERR Dumper($dataobj);
-			$respobj{'unknown'} = 0;
-			$respobj{'errors'} = 0;
-			$respobj{'warnings'} = 0;
-			$respobj{'ok'} = 0;
-			$respobj{'infos'} = 0;
-			
-			foreach my $element (@$dataobj) {
-				#print STDERR $element->{status} . "\n";
-				if(! $element->{status}) {
-					$respobj{'errors'}++;
-					$respobj{'unknown'}++;
-				} elsif ( $element->{status} eq "3" ) {
-					$respobj{'errors'}++;
-				} elsif ( $element->{status} eq "4" ) {
-					$respobj{'warnings'}++;
-				} elsif ( $element->{status} eq "5" ) {
-					$respobj{'ok'}++;
-				} elsif ( $element->{status} eq "6" ) {
-					$respobj{'infos'}++;
-				} else {
-					$respobj{'errors'}++;
-					$respobj{'unknown'}++;
-				}
-			}
-			
-		}
-		
-		$respobj{'warnings_and_errors'} = $respobj{'errors'} + $respobj{'warnings'};
-		$respobj{'epoch'} = time;
-		$resp = JSON::encode_json(\%respobj);
-		
+	eval { 
+		$output = LoxBerry::System::read_file($jsonfile);
 	};
-	if ($@) {
-		$resp = '{"errors":1,"errorstr":"Exception generating summary"}';
-		print STDERR "healthcheck.pl: Exception generating summary: $@\n";
+	if ($output) {
+		return $output;
+	} else {
+		print STDERR "healthcheck.cgi: read_healthcheck_json: Exception: $@\n";
 	}
-	return $resp;
-	
+	eval {
+		$output = LoxBerry::System::read_file($jsonfile_fallback);
+	};
+	if ($output) {
+		return $output;
+	} else {
+		print STDERR "healthcheck.cgi: read_healthcheck_json: Exception: $@\n";
+	}
+	$output = '{"errors":1,"warnings":1,"ok":0,"infos":0,"warnings_and_errors":1,"timeepoch":'.time.',"errorstr":"Could not read both healthcheck.pl json files."}';
+	return $output;
 }
