@@ -1,0 +1,2 @@
+#!/bin/bash
+$LBHOMEDIR/sbin/healthcheck.pl action=check output=notification
