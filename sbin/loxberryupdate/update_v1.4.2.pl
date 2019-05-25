@@ -41,8 +41,8 @@ my $release = $cgi->param('release');
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
-LOGINF "Installing hourly healthcheck cronjob...";
-copy_to_loxberry("/system/cron/cron.hourly/03-healthcheck", "loxberry");
+LOGINF "Installing daily healthcheck cronjob...";
+copy_to_loxberry("/system/cron/cron.daily/03-healthcheck", "loxberry");
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
