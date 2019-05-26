@@ -97,7 +97,7 @@ sub get_netshares
 				my %netshare;
 				my $state = "";
 
-				print STDERR "Check share $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share \n";
+				print STDERR "Check share $LoxBerry::System::lbhomedir/system/storage/$type/$server/$share \n" if ($DEBUG);
 
 				# Check read/write state
 				qx(ls \"$LoxBerry::System::lbhomedir/system/storage/$type/$server/$share\" 2>/dev/null);
@@ -315,7 +315,7 @@ sub get_storage
 	my @netshares = LoxBerry::Storage::get_netshares($readwriteonly);
 	foreach my $netshare (@netshares) {
 		my %storage;
-		# print STDERR "$netshare->{NETSHARE_NO} $netshare->{NETSHARE_TYPE} $netshare->{NETSHARE_SHAREPATH}\n";
+		print STDERR "$netshare->{NETSHARE_NO} $netshare->{NETSHARE_TYPE} $netshare->{NETSHARE_SHAREPATH}\n" if ($DEBUG);
 		$storage{GROUP} = 'net';
 		$storage{TYPE} = $netshare->{NETSHARE_TYPE};
 		$storage{PATH} = $netshare->{NETSHARE_SHAREPATH};
@@ -337,7 +337,7 @@ sub get_storage
 	my @usbdevices = LoxBerry::Storage::get_usbstorage(undef, $readwriteonly);
 	foreach my $usbdevice (@usbdevices) {
 		my %storage;
-		# print STDERR "$usbdevice->{USBSTORAGE_NO} $usbdevice->{USBSTORAGE_DEVICE} $usbdevice->{USBSTORAGE_DEVICEPATH}\n";
+		print STDERR "$usbdevice->{USBSTORAGE_NO} $usbdevice->{USBSTORAGE_DEVICE} $usbdevice->{USBSTORAGE_DEVICEPATH}\n" if ($DEBUG);
 		$storage{GROUP} = 'usb';
 		$storage{TYPE} = $usbdevice->{USBSTORAGE_TYPE};
 		$storage{PATH} = $usbdevice->{USBSTORAGE_DEVICEPATH};
@@ -404,7 +404,7 @@ sub get_storage_html
 	}
 	
 	foreach my $param (keys %args) {
-		#print STDERR "Storage.pm: $param --> $args{$param}\n";
+		print STDERR "Storage.pm: $param --> $args{$param}\n" if ($DEBUG);
 		$post_data .= URI::Escape::uri_escape($param) . '=' . URI::Escape::uri_escape($args{$param}) . '&'; 
 		# $post_data .= $param . '=' . $args{$param} . '&'; 
 	}
@@ -417,8 +417,8 @@ sub get_storage_html
 		return $message;
 	}
 	else {
-		print STDERR "get_storage_html: HTTP POST error code: ", $resp->code, "\n";
-		print STDERR "get_storage_html: HTTP POST error message: ", $resp->message, "\n";
+		print STDERR "get_storage_html: HTTP POST error code: ", $resp->code, "\n" if ($DEBUG);
+		print STDERR "get_storage_html: HTTP POST error message: ", $resp->message, "\n" if ($DEBUG);
 		return undef;
 	}
 
@@ -428,4 +428,3 @@ sub get_storage_html
 # Finally 1; ########################################
 #####################################################
 1;
-
