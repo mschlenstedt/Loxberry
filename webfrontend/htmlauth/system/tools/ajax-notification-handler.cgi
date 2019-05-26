@@ -115,7 +115,7 @@ sub setnotifyext
 	
 	my %params = $cgi->Vars;
 	
-	$LoxBerry::Log::DEBUG = 1;
+	#$LoxBerry::Log::DEBUG = 1;
 	LoxBerry::Log::notify_ext(\%params);
 	
 	print "{status: OK}";
