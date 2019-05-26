@@ -43,7 +43,7 @@ my $cfg;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.2";
+my $version = "1.4.2.3";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -103,6 +103,8 @@ $navbar{1}{URL} = 'myloxberry.cgi?load=1';
 
 $navbar{2}{Name} = "$SL{'MYLOXBERRY.LABEL_HEALTHCHECK'}";
 $navbar{2}{URL} = 'healthcheck.cgi';
+$navbar{2}{Notify_Package} = 'myloxberry';
+$navbar{2}{Notify_Name} = 'Healthcheck';
  
 $navbar{3}{Name} = "$SL{'MYLOXBERRY.LABEL_SYSINFO'}";
 $navbar{3}{URL} = 'myloxberry.cgi?load=2';

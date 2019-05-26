@@ -153,7 +153,7 @@ sub notification
 	require LoxBerry::Log;
 	
 	my %respobj;
-	my $not_widget = "Core";
+	my $not_widget = "myloxberry";
 	my $not_group = "Healthcheck";
 	my $not_helper = "Healthcheck Helper";
 	my $not_prefix = "lastnotified";

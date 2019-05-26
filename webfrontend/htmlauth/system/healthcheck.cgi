@@ -3,14 +3,14 @@
 use warnings;
 use strict;
 use CGI;
-use LoxBerry::Web;
+use LoxBerry::System;
 
 my $helplink = "https://www.loxwiki.eu/x/_oYKAw";
 my $helptemplate = "help_myloxberry.html";
 my $template_title;
 
 # Version of this script
-my $version = "1.4.2.4";
+my $version = "1.4.2.5";
 
 
 
@@ -23,6 +23,9 @@ if ( $P::action ) {
 	ajax();
 	exit;
 }
+
+require LoxBerry::Web;
+require LoxBerry::Log;
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -46,11 +49,14 @@ $navbar{1}{URL} = 'myloxberry.cgi?load=1';
 $navbar{2}{Name} = "$SL{'MYLOXBERRY.LABEL_HEALTHCHECK'}";
 $navbar{2}{URL} = 'healthcheck.cgi';
 $navbar{2}{active} = 1;
+$navbar{2}{Notify_Package} = 'myloxberry';
+$navbar{2}{Notify_Name} = 'Healthcheck';
  
 $navbar{3}{Name} = "$SL{'MYLOXBERRY.LABEL_SYSINFO'}";
 $navbar{3}{URL} = 'myloxberry.cgi?load=2';
 
 LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+print LoxBerry::Log::get_notifications_html('myloxberry', 'Healthcheck');
 print $maintemplate->output();
 LoxBerry::Web::lbfooter();
 
