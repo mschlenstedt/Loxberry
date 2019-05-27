@@ -669,7 +669,7 @@ sub check_loglevels
 		}
 	
 		if (@debugplugins) {
-			$result{result} .= "Plugins in DEBUG loglevel: " . join(', ', @debugplugins) . ". DEBUG loglevel leads to accessive logging/performance impact. Use only during troubleshooting.";
+			$result{result} .= "Plugins in DEBUG loglevel: " . join(', ', @debugplugins) . ". DEBUG loglevel leads to excessive logging/performance impact. Use only during troubleshooting.";
 			$result{status} = 4;
 		}
 	};
