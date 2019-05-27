@@ -344,20 +344,26 @@ sub logdb_cleanup
 			next;
 		}
 		
-		# # Delete plugin entries older than $max_age (60) days
+		next if ($key->{PACKAGE} eq "Plugin Installation");
+		next if ($key->{PACKAGE} eq "LoxBerry Update" and $key->{NAME} eq "update");
 		
-		# # if ( $key->{'_ISPLUGIN'} ) {
-			# my $starttime_epoch;
-			# eval {
-				# $starttime_epoch = Time::Piece->strptime($key->{'LOGSTARTISO'}, "%Y-%m-%dT%H:%M:%S");
-			# }; 
-			# if ( $starttime_epoch and $starttime_epoch < (time-$maxage_days*24*60*60) ) {
-				# # LOGDEB "$key->{'FILENAME'} $starttime_epoch";
-				# LOGINF "Session '$key->{'LOGSTARTMESSAGE'}' (" . $starttime_epoch->dmy(".") . ") is older than $maxage_days days - dbkey added to delete list";
-				# push @keystodelete, $key->{'KEY'};
-				# next;
-			# }
-		# # }
+		# Delete plugin entries older than $max_age (60) days
+		
+		# if ( $key->{'_ISPLUGIN'} ) {
+			my $starttime_epoch;
+			my $endtime_epoch;
+			
+			eval {
+				$starttime_epoch = Time::Piece->strptime($key->{'LOGSTARTISO'}, "%Y-%m-%dT%H:%M:%S");
+				$endtime_epoch = Time::Piece->strptime($key->{'LOGENDISO'}, "%Y-%m-%dT%H:%M:%S");
+			}; 
+			if ( $endtime_epoch != 0 and $endtime_epoch < (time-$maxage_days*24*60*60) ) {
+				# LOGDEB "$key->{'FILENAME'} $starttime_epoch";
+				LOGINF "Session $key->{PACKAGE}/$key->{NAME} '$key->{'LOGSTARTMESSAGE'}' (" . $starttime_epoch->dmy(".") . "-" . $endtime_epoch->dmy(".") . ") too old - dbkey added to delete list";
+				#push @keystodelete, $key->{'KEY'};
+				next;
+			}
+		# }
 		
 		# Count and delete (more than 24 per package)
 		$logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
