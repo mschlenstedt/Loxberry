@@ -32,6 +32,7 @@ push (@checks, "check_logdb");
 push (@checks, "check_notifydb");
 push (@checks, "check_loglevels");
 push (@checks, "check_cputemp");
+push (@checks, "check_voltage");
 
 # Default action is check
 if (!$opts{action}) {
@@ -846,6 +847,89 @@ sub check_cputemp
 		}
 
 	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} = "Error executing the test: $@";
+	}
+
+	return(\%result);
+
+}
+
+# Check Power Supply
+sub check_voltage
+{
+
+	my %result;
+	my ($action) = @_;
+
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
+	$result{'title'} = 'Check Voltage';
+	$result{'desc'} = 'Checks the voltage from power supply';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	# Perform check
+	eval {
+
+		my $message;
+		if (-e "/sys/devices/platform/soc/soc:firmware/get_throttled") {
+			my $output = qx(cat /sys/devices/platform/soc/soc:firmware/get_throttled);
+			chomp $output;
+			my @bits;
+			# See https://github.com/mschlenstedt/Loxberry/issues/952
+			$bits[0] = ($output >> 0) & 0x01;
+			$bits[1] = ($output >> 1) & 0x01;
+			$bits[2] = ($output >> 2) & 0x01;
+			$bits[3] = ($output >> 3) & 0x01;
+			$bits[16] = ($output >> 16) & 0x01;
+			$bits[17] = ($output >> 17) & 0x01;
+			$bits[18] = ($output >> 18) & 0x01;
+			$bits[19] = ($output >> 19) & 0x01;
+
+			if($bits[0]) {
+				$result{'status'} = '3';
+				$message .="Currently under-voltage detected! ";
+			}
+			if($bits[1]) {
+				$result{'status'} = '3';
+				$message .= "Currently ARM frequency is capped! ";
+			}
+			if($bits[2]) {
+				$result{'status'} = '3';
+				$message .= "Currently system is throttled! ";
+			}
+			if($bits[16]) {
+				$result{'status'} = '3';
+				$message .="Since last reboot one or more times under-voltage detected! ";
+			}
+			if($bits[17]) {
+				$result{'status'} = '3';
+				$message .= "Since last reboot one or more times ARM frequency was capped! ";
+			}
+			if($bits[18]) {
+				$result{'status'} = '3';
+				$message .= "Since last reboot one or more times system was throttled! ";
+			}
+		} else {
+			$result{'status'} = '6';
+			$message = "Cannot determine voltage status. Maybe this test is not available for your architecture.";
+		}
+
+		if (!$result{'status'}) {
+			$message = "No under-voltage nor system throttling nor capped ARM frequency detected. This is fine.";
+			$result{'status'} = '5';
+		}
+
+		$result{'result'} = $message;
+
+	};
+
 	if ($@) {
 		$result{status} = '3';
 		$result{result} = "Error executing the test: $@";
