@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.4.2.1";
+our $VERSION = "1.4.2.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1238,7 +1238,8 @@ sub epoch2lox
 		$epoche = time();
 	}
 	my $offset = "1230764400"; # 1.1.2009 00:00:00
-	my $loxepoche = $epoche - $offset;
+	my $tz_delta = tz_offset();
+	my $loxepoche = $epoche - $offset + $tz_delta - 3600;
 
 	return $loxepoche;
 
@@ -1251,19 +1252,30 @@ sub lox2epoch
 {
 	my ($loxepoche) = @_;
 	my $epoche;
-	my $offset;
-	
+		
 	if (!$loxepoche) {
 		# For compatibility reasons to epoch2lox - but makes no sense here...
 		$epoche = time();
 	} else {
-		$offset = "1230764400"; # 1.1.2009 00:00:00
-		$epoche = $loxepoche + $offset;
+		my $offset = "1230764400"; # 1.1.2009 00:00:00
+		my $tz_delta = tz_offset();
+		$epoche = $loxepoche + $offset - $tz_delta + 3600;
 	}
 	return $epoche;
 
 }
 
+# INTERNAL FUNCTION
+# Returns the delta of local time to 
+sub tz_offset
+{
+    my @l = localtime();
+    my @g = gmtime();
+
+    my $minutes = ($l[2] - $g[2] + ((($l[5]<<9)|$l[7]) <=> (($g[5]<<9)|$g[7])) * 24) * 60 + $l[1] - $g[1];
+    return $minutes*60;
+    
+}
 
 ######################################################
 # check_securepin
