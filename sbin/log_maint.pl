@@ -360,7 +360,7 @@ sub logdb_cleanup
 			if ( $endtime_epoch != 0 and $endtime_epoch < (time-$maxage_days*24*60*60) ) {
 				# LOGDEB "$key->{'FILENAME'} $starttime_epoch";
 				LOGINF "Session $key->{PACKAGE}/$key->{NAME} '$key->{'LOGSTARTMESSAGE'}' (" . $starttime_epoch->dmy(".") . "-" . $endtime_epoch->dmy(".") . ") too old - dbkey added to delete list";
-				#push @keystodelete, $key->{'KEY'};
+				push @keystodelete, $key->{'KEY'};
 				next;
 			}
 		# }
