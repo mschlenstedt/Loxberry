@@ -31,6 +31,7 @@ push (@checks, "check_tmpfssize");
 push (@checks, "check_logdb");
 push (@checks, "check_notifydb");
 push (@checks, "check_loglevels");
+push (@checks, "check_cputemp");
 
 # Default action is check
 if (!$opts{action}) {
@@ -796,5 +797,60 @@ sub check_rootfssize
 	} 
 	
 	return (\%result);
+
+}
+
+# Check CPU Temperature
+sub check_cputemp
+{
+
+	my %result;
+	my ($action) = @_;
+
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
+	$result{'title'} = 'CPU Temperature';
+	$result{'desc'} = 'Checks maximum CPU Temperature during last 24h';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	# Perform check
+	eval {
+
+		if (-e "$lbstmpfslogdir/healthcheck_temp.log") {
+			$result{'logfile'} = "$lbstmpfslogdir/healthcheck_temp.log";
+			my $i = 0;
+			my $output = qx(cat $lbstmpfslogdir/healthcheck_temp.log | grep -q "WARNING");
+			if ($? eq 0) {
+				$i++;
+				$result{'status'} = '4';
+				$result{'result'} = "There are one or more WARNINGs regarding CPU Temperature during the last 24h. This is NOT fine. Please check the Logfile!";
+			} 
+			my $output = qx(cat $lbstmpfslogdir/healthcheck_temp.log | grep -q "ERROR");
+			if ($? eq 0) {
+				$i++;
+				$result{'status'} = '3';
+				$result{'result'} = "There are one or more ERRORs regarding CPU Temperature during the last 24h. This is NOT fine (in fact this is CRITICAL)! Please check the Logfile!";
+			} 
+			if ($i eq "0") {
+				$result{'status'} = '5';
+				$result{'result'} = "No Wanrings or Errors regarding CPU Temperature during the last 24h. This is fine.";
+			}
+		} else {
+			$result{'status'} = '6';
+			$result{'result'} = "Cannot find a logfile with temperature data.";
+		}
+
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} = "Error executing the test: $@";
+	}
+
+	return(\%result);
 
 }
