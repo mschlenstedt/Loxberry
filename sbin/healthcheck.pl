@@ -713,10 +713,10 @@ sub check_tmpfssize
 			my %folderinfo = LoxBerry::System::diskspaceinfo($disk);
 			next if( $folderinfo{size} eq "0" or ($folderinfo{available}/$folderinfo{size}*100) > 25 );
 			if ( $folderinfo{available}/$folderinfo{size}*100 > 5 ) {
-				$result{result} = "$folderinfo{mountpoint} is below limit of 25% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+				$result{result} = "$folderinfo{mountpoint} is below limit of 25% discspace (AVAL " .LoxBerry::System::bytes_humanreadable($folderinfo{available})."/SIZE ".LoxBerry::System::bytes_humanreadable($folderinfo{size})."). Please reboot your LoxBerry.";
 				$result{status} = '4';
 			} else {
-				$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+				$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL ".LoxBerry::System::bytes_humanreadable($folderinfo{available})."/SIZE ".LoxBerry::System::bytes_humanreadable($folderinfo{size})."). Please reboot your LoxBerry.";
 				$result{status} = '3';
 			}
 		}
@@ -757,14 +757,14 @@ sub check_rootfssize
 
 		my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
 		if ( $folderinfo{available}/$folderinfo{size}*100 > 10 ) {
-			$result{result} = "LoxBerry's RootFS has more than 10% free discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}).";
+			$result{result} = "LoxBerry's RootFS has more than 10% free discspace (AVAL ".LoxBerry::System::bytes_humanreadable($folderinfo{available})."/SIZE ".LoxBerry::System::bytes_humanreadable($folderinfo{size}).").";
 			$result{status} = '5';
 		}
 		elsif ( $folderinfo{available}/$folderinfo{size}*100 <= 5 ) {
-			$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+			$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL ".LoxBerry::System::bytes_humanreadable($folderinfo{available})."/SIZE ".LoxBerry::System::bytes_humanreadable($folderinfo{size})."). Please reboot your LoxBerry.";
 			$result{status} = '3';
 		} else {
-			$result{result} = "$folderinfo{mountpoint} is below limit of 10% discspace (AVAL $folderinfo{available}/SIZE $folderinfo{size}). Please reboot your LoxBerry.";
+			$result{result} = "$folderinfo{mountpoint} is below limit of 10% discspace (AVAL ".LoxBerry::System::bytes_humanreadable($folderinfo{available})."/SIZE ".LoxBerry::System::bytes_humanreadable($folderinfo{size})."). Please reboot your LoxBerry.";
 			$result{status} = '4';
 		}
 
