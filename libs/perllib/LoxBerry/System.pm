@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.4.2.0";
+our $VERSION = "1.4.2.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1250,12 +1250,15 @@ sub epoch2lox
 sub lox2epoch
 {
 	my ($loxepoche) = @_;
+	my $epoche;
+	my $offset;
+	
 	if (!$loxepoche) {
 		# For compatibility reasons to epoch2lox - but makes no sense here...
 		$epoche = time();
 	} else {
-		my $offset = "1230764400"; # 1.1.2009 00:00:00
-		my $epoche = loxepoche + $offset;
+		$offset = "1230764400"; # 1.1.2009 00:00:00
+		$epoche = $loxepoche + $offset;
 	}
 	return $epoche;
 

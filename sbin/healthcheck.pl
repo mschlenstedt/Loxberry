@@ -214,6 +214,7 @@ sub notification
 	
 	# Add special variables for heartbeat
 	$respobj{timeepoch} = time;
+	$respobj{timelox} = epoch2lox($respobj{timeepoch});
 	$respobj{warnings_and_errors} = $respobj{errors} + $respobj{warnings};
 	
 	# Write json file to ram disk
@@ -251,6 +252,7 @@ sub notification
 			MESSAGE => "Healthcheck reports $respobj{errors} errors. Please run Healthcheck for details.\nCurrent errors:\n$respobj{errorstrings}",
 			LINK => 'http://' . LoxBerry::System::lbhostname() . ':' . LoxBerry::System::lbwebserverport() .'/admin/system/healthcheck.cgi',
 			timeepoch => time,
+			timelox => epoch2lox(time)
 		);
 		LoxBerry::Log::notify_ext ( \%public_not );
 		# Save the time of public notify in private notify
@@ -274,6 +276,7 @@ sub notification
 		$respobj{MESSAGE} = "This helper notification keeps track of last notified healthcheck errors";
 		$respobj{SEVERITY} = 7;
 		$respobj{timeepoch} = time;
+		$respobj{timelox} = epoch2lox($respobj{timeepoch});
 		$respobj{warnings_and_errors} = $respobj{errors} + $respobj{warnings};
 		
 		LoxBerry::Log::notify_ext( \%respobj );
