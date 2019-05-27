@@ -173,10 +173,10 @@ EOT;
 					$topnavbar_haselements = True;
 				
 					// Inject Notify JS code
-					if(isset($element['Notify_Name']) {
+					if(isset($element['Notify_Name'])) {
 						$notifyname = $element['Notify_Name'];
 					}
-					if(isset($element['Notify_Package']) {
+					if(isset($element['Notify_Package'])) {
 						$notifypackage = $element['Notify_Package'];
 					}
 					if (isset($notifyname) && ! isset($notifypackage) && isset($lbpplugindir)) {
