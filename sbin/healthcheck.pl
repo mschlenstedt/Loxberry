@@ -587,13 +587,13 @@ sub check_lbversion
 		return(\%result);
 	}
 
+	require Time::HiRes;
+	require version;
+	require LWP::UserAgent;
+	
 	# Perform check
 	eval {
-
-		use LWP::UserAgent;
-		use Time::HiRes qw(usleep);
-		use version;
-
+		
 		my $cfg      = new Config::Simple("$lbsconfigdir/general.cfg");
 		my $currversion  = $cfg->param("BASE.VERSION");
 
@@ -609,7 +609,7 @@ sub check_lbversion
 		for (my $x=1; $x<=5; $x++) {
 			$response = $ua->request($request);
 			last if ($response->is_success);
-			usleep (100*1000);
+			Time::HiRes::usleep (100*1000);
 		}
 
 		my $newrelease;
@@ -858,7 +858,7 @@ sub check_cputemp
 			$message = "Cannot determine history cpu temperature status. Maybe this test is not available for your architecture. ";
 		}
 
-		use LoxBerry::JSON;
+		require LoxBerry::JSON;
 		my $cfgfilejson = "$lbsconfigdir/general.json";
 		my $jsonobj = LoxBerry::JSON->new();
 		my $cfgjson = $jsonobj->open(filename => $cfgfilejson);
