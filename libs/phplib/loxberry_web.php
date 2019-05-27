@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.4.1.3";
+	public static $LBWEBVERSION = "1.4.2.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -173,8 +173,12 @@ EOT;
 					$topnavbar_haselements = True;
 				
 					// Inject Notify JS code
-					$notifyname = $element['Notify_Name'];
-					$notifypackage = $element['Notify_Package'];
+					if(isset($element['Notify_Name']) {
+						$notifyname = $element['Notify_Name'];
+					}
+					if(isset($element['Notify_Package']) {
+						$notifypackage = $element['Notify_Package'];
+					}
 					if (isset($notifyname) && ! isset($notifypackage) && isset($lbpplugindir)) {
 						$notifypackage = $lbpplugindir;
 					}
@@ -229,7 +233,7 @@ EOT;
 		} else {
 			$pageobj->param ( 'TOPNAVBAR', "");
 		}
-		if ($topnavbar_notify_js) {
+		if (!empty($topnavbar_notify_js)) {
 			$notify_js = 
 <<<EOT
 
