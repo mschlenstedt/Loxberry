@@ -320,7 +320,9 @@ sub check_readonlyrootfs
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_readonlyrootfs';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'RootFS';
 	$result{'desc'} = 'Checks if the RootFS is mounted correctly';
 
@@ -356,7 +358,9 @@ sub check_logdb
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_logdb';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Log Database';
 	$result{'desc'} = 'Checks the consistence of the Logfile Database';
 	$result{'url'} = 'https://www.loxwiki.eu/x/oIMKAw';
@@ -416,7 +420,9 @@ sub check_notifydb
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_notifydb';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Notification Database';
 	$result{'desc'} = 'Checks the consistence of the Notification Database';
 	# $result{'url'} = 'https://www.loxwiki.eu/x/oIMKAw';
@@ -481,7 +487,9 @@ sub check_kernel
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_kernel';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Linux Kernel';
 	$result{'desc'} = 'Checks the current installed Linux Kernel';
 
@@ -515,7 +523,9 @@ sub check_arch
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_arch';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'System Architecture';
 	$result{'desc'} = 'Checks the system architecture';
 
@@ -560,7 +570,9 @@ sub check_lbversion
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_lbversion';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'LoxBerry Version';
 	$result{'desc'} = 'Checks the LoxBerry Version';
 	$result{'url'} = 'https://www.loxwiki.eu/x/b4WdAQ';
@@ -648,7 +660,9 @@ sub check_loglevels
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_loglevels';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Plugin Loglevels';
 	$result{'desc'} = 'Checks for debug loglevel';
 	#$result{'url'} = 'https://www.loxwiki.eu/x/b4WdAQ';
@@ -694,7 +708,9 @@ sub check_tmpfssize
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_tmpfssize';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'RAMDiscs free space';
 	$result{'desc'} = 'Checks the ramdiscs for available space';
 	$result{'url'} = 'https://www.loxwiki.eu/x/QINYAg';
@@ -743,7 +759,9 @@ sub check_rootfssize
 	my %result;
 	my ($action) = @_;
 
-	$result{'sub'} = 'check_rootfssize';
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'RootFS free space';
 	$result{'desc'} = 'Checks the rootfs for available space';
 	#$result{'url'} = 'https://www.loxwiki.eu/x/QINYAg';
