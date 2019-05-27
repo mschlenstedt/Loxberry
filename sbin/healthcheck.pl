@@ -937,7 +937,9 @@ sub check_voltage
 		if (!$result{'status'}) {
 			$message = "No under-voltage nor system throttling nor capped ARM frequency detected. This is fine.";
 			$result{'status'} = '5';
-		}
+		} else {
+			$message .= "This is NOT fine. Check your power supply.";
+		}	
 
 		$result{'result'} = $message;
 
