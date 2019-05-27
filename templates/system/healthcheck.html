@@ -174,7 +174,7 @@ function parseElement ( element )
 			}
 			
 			if ( element.logfile !== undefined && element.status !== undefined) {
-				$("#"+rowname+"logfile").html('<a data-logfile="'+element.logfile+'" data-role="button" href="/admin/system/tools/logfile.cgi?logfile='+element.logfile+'&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>');
+				$("#"+rowname+"logfile").html('<a data-logfile="'+element.logfile+'" data-role="button" href="/admin/system/tools/logfile.cgi?logfile='+element.logfile+'&header=html&format=template&only=once" target="_blank" data-inline="true" data-mini="true" data-icon="action">Logfile</a>');
 			} else {
 				$("#"+rowname+"logfile").html('');
 			}
