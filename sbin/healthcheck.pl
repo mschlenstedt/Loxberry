@@ -551,9 +551,9 @@ sub check_arch
 			$architecture = "Unknown";
 		}
 		if ($architecture eq "ARM") {
-			my $output = qx($lbsbindir/showpitype);
+			my $output = qx(cat /sys/firmware/devicetree/base/model);
 			chomp $output;
-			$architecture .= " / Raspberry $output";
+			$architecture .= " / $output";
 		}
 		$result{'status'} = '6';
 		$result{'result'} = "$architecture";
