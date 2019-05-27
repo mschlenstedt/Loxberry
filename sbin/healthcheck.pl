@@ -881,40 +881,53 @@ sub check_voltage
 		if (-e "/sys/devices/platform/soc/soc:firmware/get_throttled") {
 			my $output = qx(cat /sys/devices/platform/soc/soc:firmware/get_throttled);
 			chomp $output;
+			
+			## DEBUG
+			# $output = "10005";
+			# $output = "10003";
+			# $output = "5";
+			
+			my $byte1 = substr( $output, -2 );
+			my $byte2 = substr( $output, -4, 2 );
+			my $byte3 = substr( $output, -6, 2 );
+					
+			# print STDERR "Byte3 | Byte2 | Byte1\n";
+			# print STDERR "  $byte3  |  $byte2  |  $byte1\n";
+			
 			my @bits;
 			# See https://github.com/mschlenstedt/Loxberry/issues/952
-			$bits[0] = ($output >> 0) & 0x01;
-			$bits[1] = ($output >> 1) & 0x01;
-			$bits[2] = ($output >> 2) & 0x01;
-			$bits[3] = ($output >> 3) & 0x01;
-			$bits[16] = ($output >> 16) & 0x01;
-			$bits[17] = ($output >> 17) & 0x01;
-			$bits[18] = ($output >> 18) & 0x01;
-			$bits[19] = ($output >> 19) & 0x01;
+			$bits[0] = ($byte1 >> 0) & 0x01;
+			$bits[1] = ($byte1 >> 1) & 0x01;
+			$bits[2] = ($byte1 >> 2) & 0x01;
+			$bits[3] = ($byte1 >> 3) & 0x01;
+			$bits[16] = ($byte3 >> 0) & 0x01;
+			$bits[17] = ($byte3 >> 1) & 0x01;
+			$bits[18] = ($byte3 >> 2) & 0x01;
+			$bits[19] = ($byte3 >> 3) & 0x01;
 
 			if($bits[0]) {
 				$result{'status'} = '3';
-				$message .="Currently under-voltage detected! ";
+				$message .="(0) Currently under-voltage detected! ";
 			}
 			if($bits[1]) {
 				$result{'status'} = '3';
-				$message .= "Currently ARM frequency is capped! ";
+				$message .= "(1) Currently ARM frequency is capped! ";
 			}
 			if($bits[2]) {
 				$result{'status'} = '3';
-				$message .= "Currently system is throttled! ";
+				$message .= "(2) Currently system is throttled! ";
 			}
 			if($bits[16]) {
 				$result{'status'} = '3';
-				$message .="Since last reboot one or more times under-voltage detected! ";
+				$message .="(16) Since last reboot one or more times under-voltage detected! ";
 			}
 			if($bits[17]) {
 				$result{'status'} = '3';
-				$message .= "Since last reboot one or more times ARM frequency was capped! ";
+				$message .= "(17) Since last reboot one or more times ARM frequency was capped! ";
 			}
 			if($bits[18]) {
 				$result{'status'} = '3';
-				$message .= "Since last reboot one or more times system was throttled! ";
+				$message .= "(18) Since last reboot one or more times system was throttled! ";
 			}
 		} else {
 			$result{'status'} = '6';
