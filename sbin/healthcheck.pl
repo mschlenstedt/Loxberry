@@ -812,7 +812,7 @@ sub check_cputemp
 	$sub_name =~ s/main:://;
 	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'CPU Temperature';
-	$result{'desc'} = 'Checks maximum CPU Temperature during last 24h';
+	$result{'desc'} = 'Checks maximum CPU Temperature';
 
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {
@@ -822,34 +822,84 @@ sub check_cputemp
 	# Perform check
 	eval {
 
-		if (-e "$lbstmpfslogdir/healthcheck_temp.log") {
-			$result{'logfile'} = "$lbstmpfslogdir/healthcheck_temp.log";
-			my $i = 0;
-			my $output = qx(cat $lbstmpfslogdir/healthcheck_temp.log | grep -q "WARNING");
-			if ($? eq 0) {
-				$i++;
+		my $message;
+		if (-e "/sys/devices/platform/soc/soc:firmware/get_throttled") {
+			my $output = qx(cat /sys/devices/platform/soc/soc:firmware/get_throttled);
+			chomp $output;
+			
+			## DEBUG
+			# $output = "10005";
+			# $output = "10003";
+			# $output = "5";
+			
+			my $byte1 = substr( $output, -2 );
+			my $byte2 = substr( $output, -4, 2 );
+			my $byte3 = substr( $output, -6, 2 );
+					
+			# print STDERR "Byte3 | Byte2 | Byte1\n";
+			# print STDERR "  $byte3  |  $byte2  |  $byte1\n";
+			
+			my @bits;
+			# See https://github.com/mschlenstedt/Loxberry/issues/952
+			$bits[0] = ($byte1 >> 0) & 0x01;
+			$bits[1] = ($byte1 >> 1) & 0x01;
+			$bits[2] = ($byte1 >> 2) & 0x01;
+			$bits[3] = ($byte1 >> 3) & 0x01;
+			$bits[16] = ($byte3 >> 0) & 0x01;
+			$bits[17] = ($byte3 >> 1) & 0x01;
+			$bits[18] = ($byte3 >> 2) & 0x01;
+			$bits[19] = ($byte3 >> 3) & 0x01;
+
+			if($bits[19]) {
 				$result{'status'} = '4';
-				$result{'result'} = "There are one or more WARNINGs regarding CPU Temperature during the last 24h. This is NOT fine. Please check the Logfile!";
-			} 
-			my $output = qx(cat $lbstmpfslogdir/healthcheck_temp.log | grep -q "ERROR");
-			if ($? eq 0) {
-				$i++;
-				$result{'status'} = '3';
-				$result{'result'} = "There are one or more ERRORs regarding CPU Temperature during the last 24h. This is NOT fine (in fact this is CRITICAL)! Please check the Logfile!";
-			} 
-			if ($i eq "0") {
-				$result{'status'} = '5';
-				$result{'result'} = "No Wanrings or Errors regarding CPU Temperature during the last 24h. This is fine.";
+				$message = "(19) Since last reboot one or more times the cpu reached the soft temperature limit (this normally means 60 C). ";
 			}
 		} else {
-			$result{'status'} = '6';
-			$result{'result'} = "Cannot find a logfile with temperature data.";
+			$message = "Cannot determine history cpu temperature status. Maybe this test is not available for your architecture. ";
 		}
 
+		use LoxBerry::JSON;
+		my $cfgfilejson = "$lbsconfigdir/general.json";
+		my $jsonobj = LoxBerry::JSON->new();
+		my $cfgjson = $jsonobj->open(filename => $cfgfilejson);
+
+		my $sensor = $cfgjson->{Watchdog}->{Tempsensor};
+		if (-e "$sensor") {
+			my $temp = qx(cat $sensor);
+			chomp $temp;
+			$temp = sprintf("%.1f", $temp/1000);
+			$message .= "Current CPU Temperature is $temp C. ";
+			my $errlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.90;
+			if ($temp > $errlimit) {
+				$message .= "This is NOT fine. ";
+				$result{'status'} = '3';
+			}
+		} else {
+			$message .= "Cannot determine current cpu temperature. Maybe this test is not available for your architecture. ";
+			$result{'status'} = '6';
+		}
+
+		if (!$result{'status'}) {
+			$message .= "Since last reboot the cpu never reached soft or critical temperature limit. This is fine.";
+			$result{'status'} = '5';
+		}
+
+		$result{'result'} = $message;
+
 	};
+
 	if ($@) {
 		$result{status} = '3';
 		$result{result} = "Error executing the test: $@";
+	}
+
+	# If there's a logfile from watchdog Widget and it is not older than 24h, show it here:
+	if (-e "$lbslogdir/healthcheck_temp.log") {
+		my $now = time;
+		my @stat = stat("$lbslogdir/healthcheck_temp.log");
+		if ($now < @stat[9]+86400) {
+			$result{'logfile'} = "$lbslogdir/healthcheck_temp.log";
+		}
 	}
 
 	return(\%result);

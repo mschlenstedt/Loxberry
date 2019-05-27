@@ -1,2 +1,0 @@
-#!/bin/bash
-perl $LBHOMEDIR/sbin/healthcheck_cron.pl
