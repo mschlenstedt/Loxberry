@@ -25,14 +25,14 @@ parse_options(@ARGV);
 push (@checks, "check_lbversion");
 push (@checks, "check_kernel");
 push (@checks, "check_arch");
+push (@checks, "check_cputemp");
+push (@checks, "check_voltage");
 push (@checks, "check_readonlyrootfs");
 push (@checks, "check_rootfssize");
 push (@checks, "check_tmpfssize");
 push (@checks, "check_logdb");
 push (@checks, "check_notifydb");
 push (@checks, "check_loglevels");
-push (@checks, "check_cputemp");
-push (@checks, "check_voltage");
 
 # Default action is check
 if (!$opts{action}) {
@@ -917,15 +917,15 @@ sub check_voltage
 				$result{'status'} = '3';
 				$message .= "(2) Currently system is throttled! ";
 			}
-			if($bits[16]) {
+			if($bits[16] && !$bits[0]) {
 				$result{'status'} = '3';
 				$message .="(16) Since last reboot one or more times under-voltage detected! ";
 			}
-			if($bits[17]) {
+			if($bits[17] && !$bits[1]) {
 				$result{'status'} = '3';
 				$message .= "(17) Since last reboot one or more times ARM frequency was capped! ";
 			}
-			if($bits[18]) {
+			if($bits[18] && !$bits[2]) {
 				$result{'status'} = '3';
 				$message .= "(18) Since last reboot one or more times system was throttled! ";
 			}
