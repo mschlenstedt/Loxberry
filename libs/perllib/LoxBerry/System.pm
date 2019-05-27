@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.4.1.2";
+our $VERSION = "1.4.2.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -55,6 +55,8 @@ our @EXPORT = qw (
 	ltrim
 	rtrim
 	currtime
+	epoch2lox
+	lox2epoch
 	reboot_required
 	vers_tag
 );
@@ -1225,6 +1227,44 @@ sub currtime
 	# print $iso . "\n";
 
 }
+
+######################################################
+# Converts an Epoche (Unix Timestamp, seconds from 1.1.1970 00:00:00 UTC) to Loxone Epoche (seconds from 1.1.2009 00:00:00)
+#####################################################
+sub epoch2lox
+{
+	my ($epoche) = @_;
+	if (!$epoche) {
+		$epoche = time();
+	}
+	my $offset = "1230764400"; # 1.1.2009 00:00:00
+	my $loxepoche = $epoche - $offset;
+
+	return $loxepoche;
+
+}
+
+######################################################
+# Converts an Loxone Epoche (seconds from 1.1.2009 00:00:00) to Epoche (Unix Timestamp, seconds from 1.1.1970 00:00:00 UTC)
+#####################################################
+sub lox2epoch
+{
+	my ($loxepoche) = @_;
+	my $epoche;
+	my $offset;
+	
+	if (!$loxepoche) {
+		# For compatibility reasons to epoch2lox - but makes no sense here...
+		$epoche = time();
+	} else {
+		$offset = "1230764400"; # 1.1.2009 00:00:00
+		$epoche = $loxepoche + $offset;
+	}
+	return $epoche;
+
+}
+
+
 ######################################################
 # check_securepin
 # Parameter is the entered secure pin
