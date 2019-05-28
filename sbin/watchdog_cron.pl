@@ -38,9 +38,9 @@ my $now = currtime("hr");
 ##########################################################################
 open(my $fh, '>>', "$lbslogdir/watchdogdata.log");
 	flock($fh,2);
-	print $fh "$now ";
 
 	my $sensor = $cfgjson->{Watchdog}->{Tempsensor};
+	print $fh "$now ";
 	if (-e "$sensor") {
 		my $temp = qx(cat $sensor);
 		chomp $temp;
@@ -56,10 +56,12 @@ open(my $fh, '>>', "$lbslogdir/watchdogdata.log");
 		} else {
 			print $fh "<ERROR> ";
 		}
+		print $fh "CPU Temperature is $temp C.\n";
 	} else {
 		print $fh "<INFO> No temp data available.\n";
 	}
 
+	print $fh "$now ";
 	if (-e "/sys/devices/platform/soc/soc:firmware/get_throttled") {
 
 			my $message;
@@ -71,10 +73,10 @@ open(my $fh, '>>', "$lbslogdir/watchdogdata.log");
 			# $output = "10003";
 			# $output = "5";
 	
-			my $byte1 = substr( $output, -2 );
-			my $byte2 = substr( $output, -4, 2 );
-			my $byte3 = substr( $output, -6, 2 );
-			
+			my $byte1 = length($output)>0 ? substr( $output, -2 ) : 0 ;
+			my $byte2 = length($output)>=3 ? substr( $output, -4, 2 ) : 0;
+			my $byte3 = length($output)>=5 ? substr( $output, -6, 2 ) : 0;
+
 			# print STDERR "Byte3 | Byte2 | Byte1\n";
 			# print STDERR "  $byte3  |  $byte2  |  $byte1\n";
 	
@@ -102,7 +104,7 @@ open(my $fh, '>>', "$lbslogdir/watchdogdata.log");
 				$message .= "(3) Soft temperature limit active. ";
 			}
 			if($bits[16]) {
-			$message .="(16) Under-voltage has occurred. ";
+				$message .="(16) Under-voltage has occurred. ";
 			}
 			if($bits[17]) {
 				$message .= "(17) Arm frequency capped has occurred. ";

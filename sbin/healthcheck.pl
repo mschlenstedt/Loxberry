@@ -835,9 +835,9 @@ sub check_cputemp
 			# $output = "10003";
 			# $output = "5";
 			
-			my $byte1 = substr( $output, -2 );
-			my $byte2 = substr( $output, -4, 2 );
-			my $byte3 = substr( $output, -6, 2 );
+			my $byte1 = length($output)>0 ? substr( $output, -2 ) : 0 ;
+			my $byte2 = length($output)>=3 ? substr( $output, -4, 2 ) : 0;
+			my $byte3 = length($output)>=5 ? substr( $output, -6, 2 ) : 0;
 					
 			# print STDERR "Byte3 | Byte2 | Byte1\n";
 			# print STDERR "  $byte3  |  $byte2  |  $byte1\n";
