@@ -823,7 +823,10 @@ sub check_cputemp
 	eval {
 
 		my $message;
+		my $getthrottled;
+		my $current;
 		if (-e "/sys/devices/platform/soc/soc:firmware/get_throttled") {
+			$getthrottled = 1;
 			my $output = qx(cat /sys/devices/platform/soc/soc:firmware/get_throttled);
 			chomp $output;
 			
@@ -855,7 +858,7 @@ sub check_cputemp
 				$message = "(19) Since last reboot one or more times the cpu reached the soft temperature limit (this normally means 60 C). ";
 			}
 		} else {
-			$message = "Cannot determine history cpu temperature status. Maybe this test is not available for your architecture. ";
+			$message = "No history data (only available on Raspberrys). ";
 		}
 
 		require LoxBerry::JSON;
@@ -865,6 +868,7 @@ sub check_cputemp
 
 		my $sensor = $cfgjson->{Watchdog}->{Tempsensor};
 		if (-e "$sensor") {
+			$current = 1;
 			my $temp = qx(cat $sensor);
 			chomp $temp;
 			$temp = sprintf("%.1f", $temp/1000);
@@ -875,13 +879,20 @@ sub check_cputemp
 				$result{'status'} = '3';
 			}
 		} else {
-			$message .= "Cannot determine current cpu temperature. Maybe this test is not available for your architecture. ";
-			$result{'status'} = '6';
+			$message .= "Cannot read current cpu temperature. ";
 		}
 
-		if (!$result{'status'}) {
+		if (!$result{'status'} && $getthrottled) {
 			$message .= "Since last reboot the cpu never reached soft or critical temperature limit. This is fine.";
 			$result{'status'} = '5';
+		}
+		elsif (!$result{'status'} && !$getthrottled && $current) {
+			$message .= "Current cpu temperature is fine.";
+			$result{'status'} = '5';
+		}
+		else {
+			$message .= "No data available.";
+			$result{'status'} = '6';
 		}
 
 		$result{'result'} = $message;
@@ -924,7 +935,9 @@ sub check_voltage
 	eval {
 
 		my $message;
+		my $getthrottled;
 		if (-e "/sys/devices/platform/soc/soc:firmware/get_throttled") {
+			$getthrottled = 1;
 			my $output = qx(cat /sys/devices/platform/soc/soc:firmware/get_throttled);
 			chomp $output;
 			
@@ -975,17 +988,17 @@ sub check_voltage
 				$result{'status'} = '3';
 				$message .= "(18) Since last reboot one or more times system was throttled! ";
 			}
-		} else {
-			$result{'status'} = '6';
-			$message = "Cannot determine voltage status. Maybe this test is not available for your architecture.";
 		}
 
-		if (!$result{'status'}) {
+		if (!$result{'status'} && $getthrottled) {
 			$message = "No under-voltage nor system throttling nor capped ARM frequency detected. This is fine.";
 			$result{'status'} = '5';
-		} else {
+		} elsif ($result{'status'} && $getthrottled) {
 			$message .= "This is NOT fine. Check your power supply.";
-		}	
+		} elsif (!$getthrottled) {
+			$message = "Cannot determine voltage status (only available on Raspberrys).";
+			$result{'status'} = '6';
+		}
 
 		$result{'result'} = $message;
 
