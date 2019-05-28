@@ -58,8 +58,10 @@ my @phpfiles = (
 	'/etc/php/7.0/cli/conf.d/20-loxberry.ini', 
 );
 foreach (@phpfiles) {
-	unlink "$_" or do { LOGERR "Could not delete $_"; $errors++; };
-	symlink "$_", "$lbhomedir/system/php/20-loxberry.ini" or do { LOGERR "Could not create symlink from $_ to $lbhomedir/system/php/20-loxberry.ini"; $errors++; };
+	if (-e "$_") { 
+		unlink "$_" or do { LOGERR "Could not delete $_"; $errors++; }; 
+		}
+	symlink "$lbhomedir/system/php/20-loxberry.ini", "$_" or do { LOGERR "Could not create symlink from $_ to $lbhomedir/system/php/20-loxberry.ini"; $errors++; };
 }
 LOGWARN "The changes of PHP settings require to restart your LoxBerry.";
 
