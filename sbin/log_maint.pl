@@ -318,9 +318,15 @@ sub postlogcleanup {
 	return();
 }
 
+######################################################
+# logdb_cleanup
+######################################################
+
 sub logdb_cleanup
 {
 
+	my $maxage_days = 60; # 60 days
+	
 	LOGINF "Logfile maintenance: logdb_cleanup called.";
 
 	my @logs = LoxBerry::Log::get_logs(undef, undef, 'nofilter');
@@ -328,15 +334,37 @@ sub logdb_cleanup
 	my %logcount;
 	
 	for my $key (@logs) {
-		LOGDEB "Processing key $key->{KEY} from $key->{PACKAGE}/$key->{NAME} (file $key->{FILENAME})";
+		#LOGDEB "Processing key $key->{KEY} from $key->{PACKAGE}/$key->{NAME} (file $key->{FILENAME})";
+		
 		# Delete entries that have a logstart event but no file
-		if ($key->{'LOGSTART'} and ! -e "$key->{'FILENAME'}") {
-			LOGDEB "$key->{'FILENAME'} does not exist - dbkey added to delete list";
+		if ($key->{'LOGSTARTSTR'} and ! -e "$key->{'FILENAME'}") {
+			LOGINF "$key->{'FILENAME'} does not exist - dbkey added to delete list";
 			push @keystodelete, $key->{'KEY'};
 			# log_db_delete_logkey($dbh, $key->{'LOGKEY'});
 			next;
 		}
+		
+		next if ($key->{PACKAGE} eq "Plugin Installation");
+		next if ($key->{PACKAGE} eq "LoxBerry Update" and $key->{NAME} eq "update");
+		
+		# Delete plugin entries older than $max_age (60) days
+		
+		# if ( $key->{'_ISPLUGIN'} ) {
+			my $starttime_epoch;
+			my $endtime_epoch;
 			
+			eval {
+				$starttime_epoch = Time::Piece->strptime($key->{'LOGSTARTISO'}, "%Y-%m-%dT%H:%M:%S");
+				$endtime_epoch = Time::Piece->strptime($key->{'LOGENDISO'}, "%Y-%m-%dT%H:%M:%S");
+			}; 
+			if ( $endtime_epoch != 0 and $endtime_epoch < (time-$maxage_days*24*60*60) ) {
+				# LOGDEB "$key->{'FILENAME'} $starttime_epoch";
+				LOGINF "Session $key->{PACKAGE}/$key->{NAME} '$key->{'LOGSTARTMESSAGE'}' (" . $starttime_epoch->dmy(".") . "-" . $endtime_epoch->dmy(".") . ") too old - dbkey added to delete list";
+				push @keystodelete, $key->{'KEY'};
+				next;
+			}
+		# }
+		
 		# Count and delete (more than 24 per package)
 		$logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
 		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 24) {
