@@ -44,7 +44,7 @@ $temp = sprintf("%.1f", $temp/1000);
 my $errlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.90;
 my $warnlimit = "60";
 
-open(my $fh, '>>', "$lbstmpfslogdir/watchdogdata.log");
+open(my $fh, '>>', "$lbslogdir/watchdogdata.log");
 	flock($fh,2);
 	print $fh "$now ";
 	if ($temp < $warnlimit) {
@@ -59,7 +59,6 @@ open(my $fh, '>>', "$lbstmpfslogdir/watchdogdata.log");
 close ($fh);
 
 # Clean Up: Max. 24h
-my $openerr;
 open($fh, "+<", "$lbslogdir/watchdogdata.log");
 	flock($fh,2);
 	my @data = <$fh>;
