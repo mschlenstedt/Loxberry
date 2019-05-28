@@ -48,7 +48,7 @@ LOGINF "Updating PHP 7.0 configuration";
 LOGINF "Deleting ~/system/php...";
 delete_directory("$lbhomedir/system/php");
 LOGINF "Re-creating directory ~/system/php...";
-mkdir "$lbhomedir/system/php" or do { LOGERR "Could not create dir $lbhomedir/system/php"; $error++; };
+mkdir "$lbhomedir/system/php" or do { LOGERR "Could not create dir $lbhomedir/system/php"; $errors++; };
 LOGINF "Copying LoxBerry PHP config...";
 copy_to_loxberry("/system/php/20-loxberry.ini");
 LOGINF "Deleting old LoxBerry PHP config...";
