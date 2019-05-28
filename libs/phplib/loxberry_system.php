@@ -112,7 +112,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.4.1.2";
+	public static $LBSYSTEMVERSION = "1.4.2.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -794,3 +794,41 @@ function reboot_required($message = 'A reboot was requested')
 	fclose($fh);
 }
 
+######################################################
+# Converts an Epoche (Unix Timestamp, seconds from 1.1.1970 00:00:00 UTC) to Loxone Epoche (seconds from 1.1.2009 00:00:00)
+#####################################################
+function epoch2lox($epoche=null)
+{	
+	if(empty($epoche)) {
+		$epoche = time();
+	}
+	$offset = 1230764400; # 1.1.2009 00:00:00
+	$tz_delta = tz_offset();
+	$loxepoche = $epoche - $offset + $tz_delta - 3600;
+	return ($loxepoche);
+}
+
+function lox2epoch($loxepoche=null)
+{
+	if (empty($loxepoche)) {
+		# For compatibility reasons to epoch2lox - but makes no sense here...
+		$epoche = time();
+	} else {
+		$offset = 1230764400; # 1.1.2009 00:00:00
+		$tz_delta = tz_offset();
+		$epoche = $loxepoche + $offset - $tz_delta + 3600;
+	}
+	return $epoche;
+}
+
+# INTERNAL FUNCTION
+# Returns the delta of local time to UTC
+function tz_offset() {
+    $origin_tz = date_default_timezone_get();
+    $origin_dtz = new DateTimeZone($origin_tz);
+    $remote_dtz = new DateTimeZone('UTC');
+    $origin_dt = new DateTime("now", $origin_dtz);
+    $remote_dt = new DateTime("now", $remote_dtz);
+    $offset = $origin_dtz->getOffset($origin_dt) - $remote_dtz->getOffset($remote_dt);
+    return $offset;
+}
