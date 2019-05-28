@@ -63,7 +63,8 @@ foreach (@phpfiles) {
 		}
 	symlink "$lbhomedir/system/php/20-loxberry.ini", "$_" or do { LOGERR "Could not create symlink from $_ to $lbhomedir/system/php/20-loxberry.ini"; $errors++; };
 }
-LOGWARN "The changes of PHP settings require to restart your LoxBerry.";
+
+LOGOK "The changes of PHP settings require to restart your LoxBerry.";
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
