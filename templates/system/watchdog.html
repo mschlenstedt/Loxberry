@@ -47,6 +47,19 @@
 <DIV	class="lb_flex-container">
 	<DIV	class="lb_flex-item-spacer"></DIV>
 	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label" ><TMPL_VAR SERVICES.LABEL_STARTLOGGING_SH></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<label><input type="checkbox" id="Watchdog_Logging" name="Watchdog_Logging" value="1"><TMPL_VAR SERVICES.LABEL_STARTLOGGING></label>
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_LOGGING>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Ping"><TMPL_VAR SERVICES.LABEL_PING></LABEL>
 	</DIV>

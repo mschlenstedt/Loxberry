@@ -40,7 +40,7 @@ my $helptemplate = "help_services.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "1.4.2.2";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -58,6 +58,7 @@ my $cfgjsonm = $jsonobjm->open(filename => $cfgfilemail);
 # Create default config if not exists
 if ( !defined($cfgjson->{Watchdog}->{Enable}) ) {
 	$cfgjson->{Watchdog}->{Enable} = "0";
+	$cfgjson->{Watchdog}->{Logging} = "0";
 	my $resp = `/sbin/ip route | awk '/^default/ { print \$3 }'`;
 	chomp ($resp);
 	$cfgjson->{Watchdog}->{Ping} = "$resp";
@@ -105,6 +106,15 @@ if ($R::saveformdata) {
 		$cfgjson->{Watchdog}->{Enable} = "1";
 	} else {
 		$cfgjson->{Watchdog}->{Enable} = "0";
+	}
+
+	if ($R::Watchdog_Logging) {
+		$cfgjson->{Watchdog}->{Logging} = "1";
+		system ("ln -s $lbssbindir/watchdog_cron.pl $lbhomedir/system/cron/cron.01min/01-watchdoglogging");
+	} else {
+		$cfgjson->{Watchdog}->{Logging} = "0";
+		unlink ("$lbslogdir/healthcheck_temp.log");
+		unlink ("$lbhomedir/system/cron/cron.01min/01-watchdoglogging");
 	}
 
 	$cfgjson->{Watchdog}->{Ping} = $R::Watchdog_Ping;

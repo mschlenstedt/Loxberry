@@ -893,13 +893,9 @@ sub check_cputemp
 		$result{result} = "Error executing the test: $@";
 	}
 
-	# If there's a logfile from watchdog Widget and it is not older than 24h, show it here:
-	if (-e "$lbslogdir/healthcheck_temp.log") {
-		my $now = time;
-		my @stat = stat("$lbslogdir/healthcheck_temp.log");
-		if ($now < @stat[9]+86400) {
-			$result{'logfile'} = "$lbslogdir/healthcheck_temp.log";
-		}
+	# If there's a logfile from watchdog Widget, show it here:
+	if (-e "$lbslogdir/watchdogdata.log") {
+		$result{'logfile'} = "$lbslogdir/watchdogdata.log";
 	}
 
 	return(\%result);

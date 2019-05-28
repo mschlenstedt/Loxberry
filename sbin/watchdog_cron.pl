@@ -27,7 +27,7 @@ use strict;
 # Read Settings
 ##########################################################################
 
-my $version = "1.4.2.0";
+my $version = "1.4.2.1";
 my $cfgfilejson = "$lbsconfigdir/general.json";
 my $jsonobj = LoxBerry::JSON->new();
 my $cfgjson = $jsonobj->open(filename => $cfgfilejson);
@@ -41,10 +41,10 @@ my $temp = qx(cat $sensor);
 chomp $temp;
 $temp = sprintf("%.1f", $temp/1000);
 
-my $errlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.95;
-my $warnlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.90;
+my $errlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.90;
+my $warnlimit = "60";
 
-open(my $fh, '>>', "$lbstmpfslogdir/healthcheck_temp.log");
+open(my $fh, '>>', "$lbstmpfslogdir/watchdogdata.log");
 	flock($fh,2);
 	print $fh "$now ";
 	if ($temp < $warnlimit) {
@@ -60,7 +60,7 @@ close ($fh);
 
 # Clean Up: Max. 24h
 my $openerr;
-open($fh, "+<", "$lbstmpfslogdir/healthcheck_temp.log");
+open($fh, "+<", "$lbstmpfslogdir/watchdogdata.log");
 	flock($fh,2);
 	my @data = <$fh>;
 	my $i;
@@ -70,7 +70,7 @@ open($fh, "+<", "$lbstmpfslogdir/healthcheck_temp.log");
   	seek($fh,0,0);
 	truncate($fh,0);
 	foreach (@data){
-		if ($i > 96) {
+		if ($i > 1440) {
 			$i--;
 			next;
 		}
