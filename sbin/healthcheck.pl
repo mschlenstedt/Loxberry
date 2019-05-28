@@ -916,8 +916,8 @@ sub check_voltage
 	my $sub_name = (caller(0))[3];
 	$sub_name =~ s/main:://;
 	$result{'sub'} = "$sub_name";
-	$result{'title'} = 'Check Voltage';
-	$result{'desc'} = 'Checks the voltage from power supply';
+	$result{'title'} = 'Voltage';
+	$result{'desc'} = 'Checks the voltage of the power supply';
 
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {
