@@ -60,7 +60,7 @@ close ($fh);
 
 # Clean Up: Max. 24h
 my $openerr;
-open($fh, "+<", "$lbstmpfslogdir/watchdogdata.log");
+open($fh, "+<", "$lbslogdir/watchdogdata.log");
 	flock($fh,2);
 	my @data = <$fh>;
 	my $i;
