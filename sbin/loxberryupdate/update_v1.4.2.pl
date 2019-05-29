@@ -44,10 +44,31 @@ LOGOK "Update script $0 started.";
 LOGINF "Installing daily healthcheck cronjob...";
 copy_to_loxberry("/system/cron/cron.daily/03-healthcheck", "loxberry");
 
+LOGINF "Updating PHP 7.0 configuration";
+LOGINF "Deleting ~/system/php...";
+delete_directory("$lbhomedir/system/php");
+LOGINF "Re-creating directory ~/system/php...";
+mkdir "$lbhomedir/system/php" or do { LOGERR "Could not create dir $lbhomedir/system/php"; $errors++; };
+LOGINF "Copying LoxBerry PHP config...";
+copy_to_loxberry("/system/php/20-loxberry.ini");
+LOGINF "Deleting old LoxBerry PHP config...";
+my @phpfiles = ( 
+	'/etc/php/7.0/apache2/conf.d/20-loxberry.ini', 
+	'/etc/php/7.0/cgi/conf.d/20-loxberry.ini', 
+	'/etc/php/7.0/cli/conf.d/20-loxberry.ini', 
+);
+foreach (@phpfiles) {
+	if (-e "$_") { 
+		unlink "$_" or do { LOGERR "Could not delete $_"; $errors++; }; 
+		}
+	symlink "$lbhomedir/system/php/20-loxberry.ini", "$_" or do { LOGERR "Could not create symlink from $_ to $lbhomedir/system/php/20-loxberry.ini"; $errors++; };
+}
+
+LOGOK "The changes of PHP settings require to restart your LoxBerry.";
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
-# LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-# reboot_required("LoxBerry Update requests a reboot.");
+LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
+reboot_required("LoxBerry Update requests a reboot.");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
