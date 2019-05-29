@@ -40,7 +40,7 @@ my $helptemplate = "help_services.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.2";
+my $version = "1.4.2.3";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -113,7 +113,7 @@ if ($R::saveformdata) {
 		system ("ln -s $lbssbindir/watchdog_cron.pl $lbhomedir/system/cron/cron.01min/01-watchdoglogging");
 	} else {
 		$cfgjson->{Watchdog}->{Logging} = "0";
-		unlink ("$lbslogdir/healthcheck_temp.log");
+		unlink ("$lbslogdir/watchdogdata.log");
 		unlink ("$lbhomedir/system/cron/cron.01min/01-watchdoglogging");
 	}
 
