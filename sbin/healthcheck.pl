@@ -596,7 +596,8 @@ sub check_lbversion
 		
 		my $cfg      = new Config::Simple("$lbsconfigdir/general.cfg");
 		my $currversion  = $cfg->param("BASE.VERSION");
-
+		my $failedscript = $cfg->param("UPDATE.FAILED_SCRIPT");
+		
 		my $endpoint = 'https://api.github.com';
 		my $resource = '/repos/mschlenstedt/Loxberry/releases';
 
@@ -616,7 +617,7 @@ sub check_lbversion
 		if ($response->is_error) {
 			$result{'status'} = '4';
 			$result{'result'} = "Current Version: $currversion / Could not get latest available Version.";
-    		} else {
+    	} else {
 			my $releases = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
 			foreach my $release ( @$releases ) {
 				$release_version = undef;
@@ -638,7 +639,7 @@ sub check_lbversion
 				$newrelease = $release_version;
 			}
 		}
-
+		
 		if ($newrelease) {
 			$result{'status'} = '3';
 			$result{'result'} = "Current Version: $currversion / New Release is available: $newrelease";
@@ -646,6 +647,11 @@ sub check_lbversion
 		elsif (!$result{'result'}) {
 			$result{'status'} = '5';
 			$result{'result'} = "Current Version: $currversion / No newer Release available.";
+		}
+		
+		if($failedscript) {
+			$result{'status'} = '3';
+			$result{'result'} .= " LoxBerry Update recognized a failed update script (Version $failedscript). Your LoxBerry is in an inconsistent state. Please manually retry the installation in LoxBerry Update, and check the update logfiles for errors.";
 		}
 
 	};
