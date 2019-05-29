@@ -32,6 +32,7 @@ push (@checks, "check_rootfssize");
 push (@checks, "check_tmpfssize");
 push (@checks, "check_logdb");
 push (@checks, "check_notifydb");
+push (@checks, "check_miniservers");
 push (@checks, "check_loglevels");
 
 # Default action is check
@@ -641,7 +642,7 @@ sub check_lbversion
 		}
 		
 		if ($newrelease) {
-			$result{'status'} = '3';
+			$result{'status'} = '4';
 			$result{'result'} = "Current Version: $currversion / New Release is available: $newrelease";
 		} 
 		elsif (!$result{'result'}) {
@@ -1017,4 +1018,77 @@ sub check_voltage
 
 	return(\%result);
 
+}
+
+sub check_miniservers
+{
+
+	my %result;
+	my ($action) = @_;
+		
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
+	$result{'title'} = 'Miniserver Access';
+	$result{'desc'} = 'Checks access to your Miniservers';
+	$result{'url'} = 'https://www.loxwiki.eu/x/QYgKAw';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	eval {
+		# print STDERR "get_miniservers\n";
+		my %mslist = LoxBerry::System::get_miniservers();
+  
+		if (! %mslist) {
+			# print STDERR "No Miniservers\n";
+			$result{'status'} = '4';
+			$result{'result'} = 'No Miniservers configured, or Miniserver configuration not complete.';
+			return(\%result);
+		}
+		
+		# print STDERR "Init LWP::UserAgent\n";
+		require LWP::UserAgent;
+		my $ua = LWP::UserAgent->new;
+		my $checkurl = 'http://localhost:' . lbwebserverport() . '/admin/system/tools/ajax-check-miniserver.cgi';
+		
+		$result{status} = "5";
+		my @results;
+		
+		# print STDERR "Start loop\n";
+		foreach my $ms (sort keys %mslist) {
+			
+			# print STDERR "Miniserver Nr. $ms: $mslist{$ms}{Name} IP $mslist{$ms}{IPAddress}.";
+			my %post = (
+				"ip" => $mslist{$ms}{IPAddress},
+				"port" => $mslist{$ms}{Port},
+				"user" => $mslist{$ms}{Admin_RAW},
+				"pass" => $mslist{$ms}{Pass_RAW}
+			);
+			my $response = $ua->post( $checkurl, \%post );
+			if ($response->is_error) {
+				die("Could not query data (stopped at MS $mslist{$ms}{Name}: $response->status_line");
+			}
+			my $data = decode_json($response->decoded_content);
+			if($data->{success} eq "1") {
+				push @results, "$mslist{$ms}{Name} OK";
+				push @results, "(admin user)." if ($data->{isadmin} eq "1");
+				push @results, "(no admin user)." if ($data->{isnonadmin} eq "1"); 
+			} else {
+				push @results, "Miniserver $mslist{$ms}{Name} NOT ACCESSIBLE.";
+				$result{status} = 3;
+			}
+		}
+		
+		$result{result} = join " ", @results;
+		
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} = "Error executing the test: $@";
+	}
+	
+	return(\%result); 
 }
