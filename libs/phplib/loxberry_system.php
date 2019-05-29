@@ -673,6 +673,8 @@ public static function plugindb_changed_time()
 				return;
 			}	
 			file_put_contents($memfile, $jsonstr);
+			chown($memfile , 'loxberry');
+			chgrp($memfile , 'loxberry');
 		}
 	}
 
