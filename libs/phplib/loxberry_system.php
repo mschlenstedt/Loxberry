@@ -1,4 +1,5 @@
 <?php
+	
 	# define Constants for LoxBerry directories
 	if(getenv("LBHOMEDIR")) {
 		define("LBHOMEDIR", getenv("LBHOMEDIR"));
@@ -112,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.4.2.1";
+	public static $LBSYSTEMVERSION = "1.4.2.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -589,6 +590,46 @@ public static function plugindb_changed_time()
 			return;
 		}
 
+		//error_log("set_clouddns(PHP)-->");
+
+		// CloudDNS caching
+		$memfile = "/run/shm/clouddns_cache.json";
+		
+		// Read cache file
+		// error_log("set_clouddns: Parse json");
+		
+		$cachekey = $miniservers[$msnr]['CloudURL'];
+		
+		do {		
+			
+			if(!file_exists($memfile)) break;
+						
+			$jsonstr = file_get_contents($memfile); 
+			if(empty($jsonstr)) break;
+			
+			$jsonobj = json_decode($jsonstr);
+			if(empty($jsonobj)) {
+				error_log("set_clouddns(PHP) Failed to DECODE json:" . json_last_error_msg ());
+				break;
+			}			
+			$msobj = $jsonobj->$cachekey;
+			
+			if(
+				isset($msobj->refresh_timestamp) &&
+				$msobj->refresh_timestamp > time() &&
+				isset($msobj->IPAddress)
+			) {
+				$miniservers[$msnr]['IPAddress'] = $msobj->IPAddress;
+				if(!empty($msobj->Port)) {
+					$miniservers[$msnr]['Port'] = $msobj->Port;
+				} else {
+					$miniservers[$msnr]['Port'] = 80;
+				}
+				//error_log("Reading data from cachefile $memfile: IP {$miniservers[$msnr]['IPAddress']} Port {$miniservers[$msnr]['Port']}");
+				return;
+			}
+		} while(0);
+
 		//$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL']."/dev/cfg/ip";
 		$checkurl = "http://".$clouddnsaddress."/?getip&snr=".$miniservers[$msnr]['CloudURL']."&json=true";
 		$response = @file_get_contents($checkurl);
@@ -609,6 +650,29 @@ public static function plugindb_changed_time()
 			$miniservers[$msnr]['Port']=$ip_info[1];
 		} else {
 			$miniservers[$msnr]['Port']=80;
+		}
+	
+		// Save cache information to json
+		if (!empty($miniservers[$msnr]['IPAddress'])) {
+			if(empty($jsonobj)) {
+				$jsonobj = new stdClass();
+			}
+			if(empty($jsonobj->$cachekey)) {
+				$jsonobj->$cachekey = new stdClass();
+			}
+			$msobj = $jsonobj->$cachekey;
+			
+			$msobj->IPAddress = $miniservers[$msnr]['IPAddress'];
+			$msobj->Port = $miniservers[$msnr]['Port'];
+			$msobj->refresh_timestamp = time() + 3600 + rand(1,3600);
+			
+			//error_log(print_r($jsonobj, true));
+			$jsonstr = json_encode($jsonobj);
+			if ($jsonstr == false) {
+				error_log("set_clouddns(PHP) Failed to ENCODE json:" . json_last_error_msg ());
+				return;
+			}	
+			file_put_contents($memfile, $jsonstr);
 		}
 	}
 
