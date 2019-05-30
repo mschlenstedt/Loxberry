@@ -932,6 +932,7 @@ sub check_voltage
 	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Voltage';
 	$result{'desc'} = 'Checks the voltage of the power supply';
+	$result{'url'} = 'https://www.loxwiki.eu/display/LOXBERRY/Hardware#Hardware-Netzteil';
 
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {
