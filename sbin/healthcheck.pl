@@ -217,8 +217,10 @@ sub notification
 	
 	# Add special variables for heartbeat
 	$respobj{timeepoch} = time;
+	$respobj{timestr} = localtime;
 	$respobj{timelox} = epoch2lox($respobj{timeepoch});
 	$respobj{warnings_and_errors} = $respobj{errors} + $respobj{warnings};
+	
 	
 	# Write json file to ram disk
 	my $jsonfile = '/dev/shm/healthcheck.json';
