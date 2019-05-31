@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "1.4.1.4";
+our $VERSION = "1.4.2.1";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -260,7 +260,7 @@ sub mshttp_get
 sub mshttp_call
 {
 	require LWP::UserAgent;
-	require XML::Simple;
+	# require XML::Simple;
 	require Encode;
 	
 		
@@ -290,20 +290,16 @@ sub mshttp_call
 	#require Data::Dumper;
 	# print STDERR Data::Dumper::Dumper ($response);
 	
-	my $xmlresp;
-	eval {
-		$xmlresp = XML::Simple::XMLin(Encode::encode_utf8($response->content));
+	my $xmlresp = Encode::encode_utf8($response->content);
 		
-		print STDERR "Loxone Response: Code " . $xmlresp->{Code} . " Value " . $xmlresp->{value} . "\n" if ($DEBUG);
-		# return ($xmlresp->{Code}, $xmlresp->{value});
-		
-	};
-	if ($@) {
-		print STDERR "mshttp_call ERROR: $@\nMiniserver Response: " . $response->content . "\n";
-		return (undef, 500, $xmlresp);
-	}
+	$xmlresp =~ /value\=\"(.*?)\"/;
+	my $value=$1;
+	$xmlresp =~ /Code\=\"(.*?)\"/;
+	my $code=$1;
 	
-	return ($xmlresp->{value},  $xmlresp->{Code}, $xmlresp);
+	print STDERR "mshttp_call: Response Code $code Value $value Full: $xmlresp\n" if($DEBUG);
+	
+	return ($value,  $code, $xmlresp);
 	
 }
 

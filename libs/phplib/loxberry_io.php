@@ -7,7 +7,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "1.4.1.2";
+$LBIOVERSION = "1.4.2.1";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -213,22 +213,18 @@ function mshttp_call($msnr, $command)
 	
 	$url = "http://$mscred@$msip:$msport" . $command;
 	
-	// echo "URL: $url\n";
-	
-	$xmlresp = simplexml_load_file($url);
+	$xmlresp = file_get_contents($url);
 	if ($xmlresp === false) {
 		// echo "Errors occured\n";
-		$errors = libxml_get_errors();
-		error_log("mshttp_call: An error occured loading the XML:");
-		foreach($errors as $error) {
-			error_log(display_xml_error($error, $xmlresp));
-		}
+		error_log("mshttp_call: An error occured fetching $url.");
 		return array (null, 500, null);
 	}
 	
-	$value = (string)$xmlresp->attributes()->value;
-	$code = (string)$xmlresp->attributes()->Code;
-	
+	preg_match ( '/value\=\"(.*?)\"/' , $xmlresp, $matches );
+	$value = $matches[1];
+	preg_match ( '/Code\=\"(.*?)\"/' , $xmlresp, $matches );
+	$code = $matches[1];
+			
 	return array ($value, $code, $xmlresp);
 	
 }
