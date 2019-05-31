@@ -1,12 +1,9 @@
 package Net::MQTT::Simple;
 
-# use strict;    # might not be available (e.g. on openwrt)
-# use warnings;  # same.
+use strict;
+use warnings;
 
-our $VERSION = '1.22';
-# This version of Net::MQTT::Simple is 
-# CUSTOMIZED FOR LOXBERRY (thanks to Juerd)
-# See documentation here: https://www.loxwiki.eu/x/mgPPAg
+our $VERSION = '1.23';
 
 # Please note that these are not documented and are subject to change:
 our $KEEPALIVE_INTERVAL = 60;
@@ -14,7 +11,8 @@ our $PING_TIMEOUT = 10;
 our $RECONNECT_INTERVAL = 5;
 our $MAX_LENGTH = 2097152;    # 2 MB
 our $READ_BYTES = 16 * 1024;  # 16 kB per IO::Socket::SSL recommendation
-our $PROTOCOL_NAME = "MQIsdp";  # MQIsdp in v3.1, MQTT in v3.1.1
+our $PROTOCOL_LEVEL = 0x04;   # 0x03 in v3.1, 0x04 in v3.1.1
+our $PROTOCOL_NAME = "MQTT";  # MQIsdp in v3.1, MQTT in v3.1.1
 
 my $global;
 
@@ -29,7 +27,8 @@ sub _default_port { 1883 }
 sub _socket_error { "$@" }
 sub _secure { 0 }
 
-sub _client_identifier { "Net::MQTT::Simple[$$]" }
+my $random_id = join "", map chr 65 + int rand 26, 1 .. 10;
+sub _client_identifier { "Net::MQTT::Simple[$random_id]" }
 
 # Carp might not be available either.
 sub _croak {
@@ -78,8 +77,6 @@ sub new {
 
     return bless {
         server       => $server,
-        username     => $username,
-        password     => $password,
         last_connect => 0,
         sockopts     => $sockopts // {},
     }, $class;
@@ -213,7 +210,7 @@ sub _send_connect {
             . ($flags & 0x80 ? "n/a*" : "")
             . ($flags & 0x40 ? "n/a*" : ""),
         $PROTOCOL_NAME,
-        0x03,
+        $PROTOCOL_LEVEL,
         $flags,
         $KEEPALIVE_INTERVAL,
         $self->_client_identifier,
@@ -233,8 +230,9 @@ sub _send_subscribe {
 
     utf8::encode($_) for @topics;
 
-    # Hardcoded "packet identifier" \0\0 for now.
-    $self->_send("\x82" . _prepend_variable_length("\0\0" .
+    # Hardcoded "packet identifier" \0\x01 for now (was \0\0 but the spec
+    # disallows it for subscribe packets and mosquitto started enforcing that.)
+    $self->_send("\x82" . _prepend_variable_length("\0\x01" .
         pack("(n/a* x)*", @topics)  # x = QoS 0
     ));
 }
