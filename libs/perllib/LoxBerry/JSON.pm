@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "1.4.1.1";
+our $VERSION = "1.4.3.1";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -98,9 +98,8 @@ sub open
 
 	print STDERR "LoxBerry::JSON->open: Calling parse...\n" if ($DEBUG);
 
-	my $res = $self->parse( $self->{jsoncontent} );
-	
-	return $res;
+	$self->{jsonobj} = $self->parse( $self->{jsoncontent} );
+	return $self->{jsonobj};
 	
 }
 	
@@ -213,6 +212,62 @@ sub dump
 	print STDERR "DUMP $comment\n";
 	print STDERR Data::Dumper::Dumper($obj);
 	
+}
+
+sub flatten
+{
+	my $self = shift;
+	my ($prefix) = @_;
+	
+	require Hash::Flatten;
+	my $flatterer = new Hash::Flatten({
+		HashDelimiter => '.', 
+		ArrayDelimiter => '.',
+		OnRefScalar => 'warn',
+		#DisableEscapes => 'true',
+		EscapeSequence => '#',
+		OnRefGlob => '',
+		OnRefScalar  => '',
+		OnRefRef => '',
+	});
+	return $flatterer->flatten($self->{jsonobj}) if (!$prefix);
+	return $flatterer->flatten( { "$prefix" => $self->{jsonobj} } );
+}
+
+sub param
+{
+	my $self = shift;
+	my ($query) = @_;
+	
+	if (!$query) {
+		my $flat = $self->flatten();
+		return keys %$flat;
+	}
+	
+	print STDERR "LoxBerry::JSON::Param: Query: $query\n" if ($DEBUG);
+	my @par = split('\.', $query);
+	print STDERR "LoxBerry::JSON::Param: Found " . scalar(@par) . " elements\n" if ($DEBUG);
+	my $dataref = $self->{jsonobj};
+	my @data;
+	foreach(@par) {
+		if (ref($dataref) eq 'ARRAY') {
+			print STDERR "LoxBerry::JSON::Param: Found ARRAY - not supported\n";
+			last;
+		} elsif (ref($dataref) eq 'HASH') {
+			print STDERR "LoxBerry::JSON::Param: Found HASH\n" if ($DEBUG);
+			$dataref = $dataref->{$_};
+		} elsif (ref($dataref) eq '') {
+			print STDERR "LoxBerry::JSON::Param: Found SCALAR\n" if ($DEBUG);
+			last;
+		} else {
+			print STDERR "LoxBerry::JSON::Param: Found UNKNOWN (" . ref($dataref) . ") - not supported\n";
+		}
+	}
+	print STDERR "LoxBerry::JSON::Param: Data: $dataref\n" if ($DEBUG);
+	return $dataref if (ref($dataref) eq '');
+	print STDERR "LoxBerry::JSON::Param: ERROR: Result is not SCALAR, but datatype " . ref($dataref) . " - not supported\n";
+	return undef;
+
 }
 
 sub DESTROY

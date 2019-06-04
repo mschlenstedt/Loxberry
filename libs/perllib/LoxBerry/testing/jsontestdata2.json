@@ -1,0 +1,20 @@
+{
+   "NOTIFICATION" : {
+      "MAIL_PLUGIN_ERRORS" : "true",
+      "MAIL_PLUGIN_INFOS" : "true",
+      "MAIL_SYSTEM_ERRORS" : "true",
+      "MAIL_SYSTEM_INFOS" : "true"
+   },
+   "SMTP" : {
+      "ACTIVATE_MAIL" : "1",
+      "AUTH" : "1",
+      "CRYPT" : "1",
+      "EMAIL" : "my@mail.com",
+      "ISCONFIGURED" : "1",
+      "PORT" : "587",
+      "SMTPPASS" : "Drei,zwei,eins",
+      "SMTPSERVER" : "smtp.gmail.com",
+      "SMTPUSER" : "my@mail.com"
+   },
+	"Array" : [ "green", "blue", "gray" ]  
+}
