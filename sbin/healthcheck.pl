@@ -33,6 +33,7 @@ push (@checks, "check_tmpfssize");
 push (@checks, "check_logdb");
 push (@checks, "check_notifydb");
 push (@checks, "check_miniservers");
+push (@checks, "check_reboot_required");
 push (@checks, "check_loglevels");
 
 # Default action is check
@@ -1093,5 +1094,45 @@ sub check_miniservers
 		$result{result} = "Error executing the test: $@";
 	}
 	
+	return(\%result); 
+}
+
+# Check if reboot_required is set
+sub check_reboot_required
+{
+
+	my %result;
+	my ($action) = @_;
+
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
+	$result{'title'} = 'Reboot required';
+	$result{'desc'} = 'Checks if LoxBerry or a plugin requests a reboot';
+	$result{'url'} = 'https://www.loxwiki.eu/x/fogKAw';
+	
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+	
+	$result{status} = '5';
+	$result{result} = "LoxBerry and plugins do not require a reboot of your LoxBerry.";
+	
+	eval {
+		if (-e $LoxBerry::System::reboot_required_file) {
+			$result{status} = '3';
+			$result{result} = "LoxBerry requires a reboot to finish configuration.";
+					
+			my $content = LoxBerry::System::read_file($LoxBerry::System::reboot_required_file);
+			if($content) {
+				$result{result} .= " Reboot request information: " . $content;
+			}
+		}
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} = "Error executing the test: $@";
+	}
 	return(\%result); 
 }
