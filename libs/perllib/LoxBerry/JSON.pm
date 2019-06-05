@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "1.4.3.1";
+our $VERSION = "1.4.3.2";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -269,6 +269,59 @@ sub param
 	return undef;
 
 }
+
+sub encode
+{
+	my $self = shift;
+	
+	if (@_ % 2) {
+		Carp::croak "Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
+	}
+	my %options = @_;
+	
+	$options{pretty} = $options{pretty} ? $options{pretty} : 0;
+	my $jsoncontent_new;
+	eval {
+		$jsoncontent_new = JSON->new->pretty($options{pretty})->canonical(1)->encode($self->{jsonobj});
+		}; 
+	if ($@) {
+		print STDERR "LoxBerry::JSON->encode: JSON Encoder sent an error: $@\n";
+		return;
+	}
+	return $jsoncontent_new;
+}
+
+sub jsblock
+{
+	my $self = shift;
+	
+	if (@_ % 2) {
+		Carp::croak "Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
+	}
+	my %options = @_;
+	
+	$options{varname} = $options{varname} ? $options{varname} : "jsondata";
+	
+	my $resultjs;
+	my $json = $self->encode;
+	
+	if($json) {
+		my %translations = (
+		"\r" => "\\r",
+		"\n" => "\\n",
+		"'"  => "\\'",
+		"\\" => "\\\\",
+		);
+		my $meta_chars_class = join '', map quotemeta, keys %translations;
+		my $meta_chars_re = qr/([$meta_chars_class])/;
+		$json =~ s/$meta_chars_re/$translations{$1}/g;
+		$resultjs = "$options{varname} = JSON.parse('$json');\n";
+	} else {
+		$resultjs = "// LoxBerry::JSON::jsblock: JSON Encoder failed.\n";
+	}
+	return $resultjs;
+}
+	
 
 sub DESTROY
 {
