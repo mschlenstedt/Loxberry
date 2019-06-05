@@ -59,7 +59,7 @@ $response{message} = "Unspecified error";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "1.4.3.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -203,6 +203,7 @@ sub save
 	%SL = LoxBerry::System::readlanguage();
 	
 	$mcfg->{SMTP}->{ACTIVATE_MAIL} = is_enabled($R::activate_mail) ? 1 : 0;
+	$mcfg->{SMTP}->{ISCONFIGURED} = $mcfg->{SMTP}->{ACTIVATE_MAIL};
 	$mcfg->{SMTP}->{AUTH} = is_enabled($R::smtpauth) ? 1 : 0;
 	$mcfg->{SMTP}->{CRYPT} = is_enabled($R::smtpcrypt) ? 1 : 0;
 	$mcfg->{SMTP}->{SMTPSERVER} = $R::smtpserver;
