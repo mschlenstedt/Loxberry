@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2019 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "1.4.3.1";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -324,6 +324,7 @@ sub install {
 		open STDERR, ">/dev/null";
 
 		if ($archiveurl) {
+			print "<INFO> Downloading $archiveurl ...\n";
 			$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo /tmp/$tempfile.zip $archiveurl  2>&1`;
 		} else {
 			open UPLOADFILE, ">/tmp/$tempfile.zip" or ($openerr = 1);
