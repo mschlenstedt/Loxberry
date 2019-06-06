@@ -139,7 +139,7 @@ sub logfiles_cleanup
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
 			->mtime( "<=$logmtime")
-			->nonempty
+			#->nonempty
         		->in($_);
 
 		for my $file (@files){
