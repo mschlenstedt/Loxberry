@@ -230,8 +230,18 @@ sub flatten
 		OnRefScalar  => '',
 		OnRefRef => '',
 	});
-	return $flatterer->flatten($self->{jsonobj}) if (!$prefix);
-	return $flatterer->flatten( { "$prefix" => $self->{jsonobj} } );
+	
+	my $data;
+	if( ref($self->{jsonobj}) eq "HASH" and !$prefix ) {
+		$data = $self->{jsonobj};
+	} elsif( ref($self->{jsonobj}) eq "HASH" and $prefix ) {
+		$data = { "$prefix" => $self->{jsonobj} };
+	} elsif( ref($self->{jsonobj}) eq "ARRAY" and !$prefix ) {
+		$data = { "data" => $self->{jsonobj} };
+	} elsif( ref($self->{jsonobj}) eq "ARRAY" and $prefix ) {
+		$data = { "$prefix" => $self->{jsonobj} };
+	}
+	return $flatterer->flatten( $data );
 }
 
 sub param
@@ -247,12 +257,13 @@ sub param
 	print STDERR "LoxBerry::JSON::Param: Query: $query\n" if ($DEBUG);
 	my @par = split('\.', $query);
 	print STDERR "LoxBerry::JSON::Param: Found " . scalar(@par) . " elements\n" if ($DEBUG);
+	
 	my $dataref = $self->{jsonobj};
 	my @data;
 	foreach(@par) {
 		if (ref($dataref) eq 'ARRAY') {
-			print STDERR "LoxBerry::JSON::Param: Found ARRAY - not supported\n";
-			last;
+			$dataref = $dataref->[$_];
+			print STDERR "LoxBerry::JSON::Param: Found ARRAY\n" if ($DEBUG);
 		} elsif (ref($dataref) eq 'HASH') {
 			print STDERR "LoxBerry::JSON::Param: Found HASH\n" if ($DEBUG);
 			$dataref = $dataref->{$_};
