@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.1.2";
+our $VERSION = "1.4.3.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -652,7 +652,7 @@ sub log_db_init_database
 	
 	if(!$dbok) {
 		print STDERR "log_db_init_database: FAILED TO RECOVER DATABASE (Database error $dbierr - $dbierrstr)\n";
-		LoxBerry::Log::notify( "logmanager", "Log Database", "The logfile database sends an error and cannot automatically be recovered. Please inform the LoxBerry-Core team about this error:\nError $dbierr ($dbierrstr)", 'error');
+		# LoxBerry::Log::notify( "logmanager", "Log Database", "The logfile database sends an error and cannot automatically be recovered. Please inform the LoxBerry-Core team about this error:\nError $dbierr ($dbierrstr)", 'error');
 		return undef;
 	}
 	
