@@ -79,8 +79,8 @@ if ( $currmd5 eq $oldmd5 || !-e "$lbhomedir/system/dphys-swapfile/dphys-swapfile
 	LOGINF "Creating new $lbhomedir/system/dphys-swapfile/dphys-swapfile";
 	my %folderinfo = LoxBerry::System::diskspaceinfo('/var');
 	my $free = sprintf "%.0f",$folderinfo{available}/1000;
-	my $maxswap = sprintf "%.0f",$free/2;
-	LOGINF "Free discspace on /var is $free MB. Using a maximum of 50% ($maxswap MB) for SWAP file.";
+	my $maxswap = sprintf "%.0f",$free/4;
+	LOGINF "Free discspace on /var is $free MB. Using a maximum of 25% ($maxswap MB) for SWAP file.";
 	$output = qx { awk -v s="CONF_MAXSWAP=$maxswap" '/^CONF_MAXSWAP=/{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $lbhomedir/system/dphys-swapfile/dphys-swapfile };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0) {
