@@ -103,62 +103,8 @@ if systemctl --no-pager status apache2; then
 	systemctl force-reload apache2 
 fi
 
-# LoxBerry global environment variables in Lighttpd
-ENVVARS=$LBHOME/system/lighttpd/envars.conf
-
-echo '## LoxBerry global environment variables' > $ENVVARS
-echo 'setenv.add-environment = (' >> $ENVVARS
-echo '' >> $ENVVARS
-echo \"PERL5LIB\" \=\> \"$LBHOMEDIR/libs/perllib\", >> $ENVVARS
-echo \"LBHOMEDIR\" \=\> \"$LBHOMEDIR\", >> $ENVVARS
-echo \"LBPHTMLAUTH\" \=\> \"$LBPHTMLAUTH\", >> $ENVVARS
-echo \"LBPHTML\" \=\> \"$LBPHTML\", >> $ENVVARS
-echo \"LBPTEMPL\" \=\> \"$LBPTEMPL\", >> $ENVVARS
-echo \"LBPDATA\" \=\> \"$LBPDATA\", >> $ENVVARS
-echo \"LBPLOG\" \=\> \"$LBPLOG\", >> $ENVVARS
-echo \"LBPCONFIG\" \=\> \"$LBPCONFIG\", >> $ENVVARS
-echo \"LBPBIN\" \=\> \"$LBPBIN\", >> $ENVVARS
-
-echo '' >> $ENVVARS
-echo \"LBSHTMLAUTH\" \=\> \"$LBSHTMLAUTH\", >> $ENVVARS
-echo \"LBSHTML\" \=\> \"$LBSHTML\", >> $ENVVARS
-echo \"LBSTEMPL\" \=\> \"$LBSTEMPL\", >> $ENVVARS
-echo \"LBSDATA\" \=\> \"$LBSDATA\", >> $ENVVARS
-echo \"LBSLOG\" \=\> \"$LBSLOG\", >> $ENVVARS
-echo \"LBSTMPFSLOG\" \=\> \"$LBSTMPFSLOG\", >> $ENVVARS
-echo \"LBSCONFIG\" \=\> \"$LBSCONFIG\", >> $ENVVARS
-echo \"LBSBIN\" \=\> \"$LBSBIN\", >> $ENVVARS
-echo \"LBSSBIN\" \=\> \"$LBSSBIN\", >> $ENVVARS
-
-echo '' >> $ENVVARS
-echo ')' >> $ENVVARS
-
-# LoxBerry Home Directory in Lighttpd FASTCGI PHP Environment
-awk -v s="\t\t\t\"LBHOMEDIR\" => \"$LBHOMEDIR\"," '/^\t\t\t"LBHOMEDIR" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"PERL5LIB\" => \"$LBHOMEDIR/libs/perllib\"," '/^\t\t\t"PERL5LIB" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBPHTMLAUTH\" => \"$LBPHTMLAUTH\"," '/^\t\t\t"LBPHTMLAUTH" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBPHTML\" => \"$LBPHTML\"," '/^\t\t\t"LBPHTML" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBPTEMPL\" => \"$LBPTEMPL\"," '/^\t\t\t"LBPTEMPL" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBPDATA\" => \"$LBPDATA\"," '/^\t\t\t"LBPDATA" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBPLOG\" => \"$LBPLOG\"," '/^\t\t\t"LBPLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBPCONFIG\" => \"$LBPCONFIG\"," '/^\t\t\t"LBPCONFIG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBPBIN\" => \"$LBPBIN\"," '/^\t\t\t"LBPBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSHTMLAUTH\" => \"$LBSHTMLAUTH\"," '/^\t\t\t"LBSHTMLAUTH" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSHTML\" => \"$LBSHTML\"," '/^\t\t\t"LBSHTML" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSTEMPL\" => \"$LBSTEMPL\"," '/^\t\t\t"LBSTEMPL" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSDATA\" => \"$LBSDATA\"," '/^\t\t\t"LBSDATA" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSLOG\" => \"$LBSLOG\"," '/^\t\t\t"LBSLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSTMPFSLOG\" => \"$LBSTMPFSLOG\"," '/^\t\t\t"LBSTMPFSLOG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSCONFIG\" => \"$LBSCONFIG\"," '/^\t\t\t"LBSCONFIG" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSBIN\" => \"$LBSBIN\"," '/^\t\t\t"LBSBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-awk -v s="\t\t\t\"LBSSBIN\" => \"$LBSSBIN\"," '/^\t\t\t"LBSSBIN" => /{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $LBHOME/system/lighttpd/conf-available/15-fastcgi-php.conf
-
 # Remove 127.0.1.1 from /etc/hosts
 sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
-
-if systemctl --no-pager status lighttpd; then
-	systemctl force-reload lighttpd 
-fi
 
 # sudoers.d
 if [ -d /etc/suddoers.d ]; then
@@ -214,15 +160,6 @@ if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
 	mkdir -p /etc/systemd/system/apache2.service.d
 	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
 fi
-
-# Lighttpd Config
-#if [ ! -L /etc/lighttpd ]; then
-#	mv /etc/lighttpd /etc/lighttpd.old
-#fi
-#if [ -L /etc/lighttpd ]; then  
-#	rm /etc/lighttpd
-#fi
-#ln -s $LBHOME/system/lighttpd /etc/lighttpd
 
 # Network config
 if [ ! -L /etc/network/interfaces ]; then
