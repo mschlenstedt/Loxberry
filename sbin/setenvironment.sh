@@ -114,6 +114,8 @@ if [ -L /etc/sudoers.d ]; then
     rm /etc/sudoers.d
 fi
 ln -s $LBHOME/system/sudoers /etc/sudoers.d
+# sudoers: Replace /opt/loxberry with current home path
+sed -i -e "s#/opt/loxberry/#$LBHOMEDIR/#g" $LBHOMEDIR/system/sudoers/lbdefaults
 
 # profile.d/loxberry.sh
 if [ -L /etc/profile.d/loxberry.sh ]; then
