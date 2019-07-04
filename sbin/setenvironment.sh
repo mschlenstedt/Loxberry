@@ -206,26 +206,27 @@ fi
 ln -s $LBHOME/system/ssmtp /etc/ssmtp
 
 # PHP
-#if [ ! -L /etc/php ]; then
-#	mv /etc/php /etc/php.old
-#fi
-#rm /etc/php
-#ln -s $LBHOME/system/php /etc/php
 # Set PHP include_path directive
-if [ ! -e /etc/php/7.0/apache2/conf.d/20-loxberry.ini ]; then
-        touch /etc/php/7.0/apache2/conf.d/20-loxberry.ini
+if [ -e /etc/php/7.0 && ! -e /etc/php/7.0/apache2/conf.d/20-loxberry.ini ]; then
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.0/apache2/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.0/cgi/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.0/cli/conf.d/20-loxberry.ini
 fi
-awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/apache2/conf.d/20-loxberry.ini
-if [ ! -e /etc/php/7.0/apache2/cli/20-loxberry.ini ]; then
-        touch /etc/php/7.0/cli/conf.d/20-loxberry.ini
+if [ -e /etc/php/7.1 && ! -e /etc/php/7.1/apache2/conf.d/20-loxberry.ini ]; then
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.1/apache2/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.1/cgi/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.1/cli/conf.d/20-loxberry.ini
 fi
-awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/cli/conf.d/20-loxberry.ini
-if [ ! -e /etc/php/7.0/apache2/cgi/20-loxberry.ini ]; then
-        touch /etc/php/7.0/cgi/conf.d/20-loxberry.ini
+if [ -e /etc/php/7.2 && ! -e /etc/php/7.2/apache2/conf.d/20-loxberry.ini ]; then
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.2/apache2/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.2/cgi/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.2/cli/conf.d/20-loxberry.ini
 fi
-awk -v s="include_path=\".:$LBHOME/libs/phplib\"" '/^include_path=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/php/7.0/cgi/conf.d/20-loxberry.ini
-# echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/apache2/conf.d/20-loxberry.ini
-# echo include_path=\".:$LBHOME/libs/phplib\" > /etc/php/7.0/cli/conf.d/20-loxberry.ini
+if [ -e /etc/php/7.3 && ! -e /etc/php/7.3/apache2/conf.d/20-loxberry.ini ]; then
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.3/apache2/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.3/cgi/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.3/cli/conf.d/20-loxberry.ini
+fi
 
 # Cron.d
 if [ ! -L /etc/cron.d ]; then
