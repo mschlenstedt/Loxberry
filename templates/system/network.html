@@ -163,12 +163,12 @@
 					</td>
 					<td style="width:50%;">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable(); validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);" <TMPL_VAR CHECKED_NO_IPv6> id="netzwerkadressen_no_IPv6" name="netzwerkadressen_IPv6" type="radio" value="off">
+							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_NO_IPv6> id="netzwerkadressen_no_IPv6" name="netzwerkadressen_IPv6" type="radio" value="off">
 							<label for="netzwerkadressen_no_IPv6"><TMPL_VAR NETWORK.SELECT_IP_NO_IPv6></label>
-							<input onclick="disable(); validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);" <TMPL_VAR CHECKED_DHCP_IPv6> id="netzwerkadressen_dhcp_IPv6" name="netzwerkadressen_IPv6" type="radio" value="dhcp">
+							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_DHCP_IPv6> id="netzwerkadressen_dhcp_IPv6" name="netzwerkadressen_IPv6" type="radio" value="dhcp">
 							<label for="netzwerkadressen_dhcp_IPv6"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP_IPv6></label>
 							
-							<input onclick="disable(); validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);" <TMPL_VAR CHECKED_MANUAL_IPv6> id="netzwerkadressen_manual_IPv6" name="netzwerkadressen_IPv6" type="radio" value="manual">
+							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_MANUAL_IPv6> id="netzwerkadressen_manual_IPv6" name="netzwerkadressen_IPv6" type="radio" value="manual">
 							<label for="netzwerkadressen_manual_IPv6"><TMPL_VAR NETWORK.SELECT_IP_MANUAL_IPv6></label>
 						</fieldset>
 					</td>
@@ -216,7 +216,7 @@
 					<td>
 					</td>
 				</tr>
-			
+				
 				<tr class="area-netzwerknameserver_IPv6" style="display:none">
 					<td>
 						<label id="labelnetzwerknameserver_IPv6"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
@@ -278,15 +278,17 @@
 				validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);
 				$('.area-netzwerkipadresse_IPv6').fadeOut(1);
 				$('.area-netzwerkipmaske_IPv6').fadeOut(50);
-				$('.area-netzwerkgateway_IPv6').fadeOut(150);
+				// $('.area-netzwerkgateway_IPv6').fadeOut(150);
 				$('.area-netzwerknameserver_IPv6').fadeOut(200);
 			}
 			else {
-				validate_chk_object(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);
+				/* validate_chk_object(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);
+				*/
 				$('.area-netzwerkipadresse_IPv6').fadeIn(1);
 				$('.area-netzwerkipmaske_IPv6').fadeIn(50);
-				$('.area-netzwerkgateway_IPv6').fadeIn(150);
+				// $('.area-netzwerkgateway_IPv6').fadeIn(150);
 				$('.area-netzwerknameserver_IPv6').fadeIn(200);
+				
 			}
 			
 			
