@@ -79,6 +79,10 @@ if ($exitcode != 0) {
 LOGINF "Installing Node.js and Yarn packages...";
 apt_install("nodejs yarn");
 
+LOGINF "Testing Node.js...";
+`node $lbshtmlauthdir/testing/nodejs_hello.js`;
+
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");
