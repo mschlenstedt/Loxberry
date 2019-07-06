@@ -80,7 +80,7 @@ LOGINF "Installing Node.js and Yarn packages...";
 apt_install("nodejs yarn");
 
 LOGINF "Testing Node.js...";
-`node $lbshtmlauthdir/testing/nodejs_hello.js`;
+LOGDEB `node $lbshtmlauthdir/testing/nodejs_hello.js`;
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
