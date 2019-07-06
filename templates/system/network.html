@@ -235,7 +235,24 @@
 			
 			</table>
 			
+			<!-- Warning for Non-Raspberry hardware -->
+			
+			<TMPL_UNLESS israspberry>
+			<div class="hint" id="check_hint" style="padding: 5px 5px 5px 5px;">&nbsp;</div>
+				<br>
+				<div class="path" style="background: #FF8080; font-color: black; text-shadow: none; border: black 1px solid; padding: 5px;">
+					<p style="font-weight: bold;">
+						<TMPL_VAR NETWORK.WARNING_NON_RASPBERRY_TITLE>
+					</p>
+					<hr>
+					<p>
+						<TMPL_VAR NETWORK.WARNING_NON_RASPBERRY_TEXT>
+					</p>
+				</div>
+			</TMPL_UNLESS>
+			
 			<div style="heigth:10px">&nbsp;</div>
+			
 			<!-- Button row -->
 			
 			<div style="text-align:center;">

@@ -77,7 +77,7 @@ my @errors;
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.1";
+my $version = "1.5.0.2";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
@@ -205,6 +205,8 @@ sub form {
 	  $maintemplate->param( "CHECKED_DHCP_IPv6", 'checked="checked"');
 	}
 
+	# israspberry Check
+	$maintemplate->param( 'israspberry' , 1 ) if ( -e "$lbsconfigdir/is_raspberry.cfg" );
 
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
