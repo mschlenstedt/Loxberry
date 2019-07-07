@@ -209,22 +209,22 @@ ln -s $LBHOME/system/ssmtp /etc/ssmtp
 
 # PHP
 # Set PHP include_path directive
-if [ -e /etc/php/7.0 && ! -e /etc/php/7.0/apache2/conf.d/20-loxberry.ini ]; then
+if [ -e /etc/php/7.0 ] && [ ! -e /etc/php/7.0/apache2/conf.d/20-loxberry.ini ]; then
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.0/apache2/conf.d/20-loxberry.ini
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.0/cgi/conf.d/20-loxberry.ini
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.0/cli/conf.d/20-loxberry.ini
 fi
-if [ -e /etc/php/7.1 && ! -e /etc/php/7.1/apache2/conf.d/20-loxberry.ini ]; then
+if [ -e /etc/php/7.1 ] && [ ! -e /etc/php/7.1/apache2/conf.d/20-loxberry.ini ]; then
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.1/apache2/conf.d/20-loxberry.ini
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.1/cgi/conf.d/20-loxberry.ini
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.1/cli/conf.d/20-loxberry.ini
 fi
-if [ -e /etc/php/7.2 && ! -e /etc/php/7.2/apache2/conf.d/20-loxberry.ini ]; then
+if [ -e /etc/php/7.2 ] && [ ! -e /etc/php/7.2/apache2/conf.d/20-loxberry.ini ]; then
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.2/apache2/conf.d/20-loxberry.ini
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.2/cgi/conf.d/20-loxberry.ini
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.2/cli/conf.d/20-loxberry.ini
 fi
-if [ -e /etc/php/7.3 && ! -e /etc/php/7.3/apache2/conf.d/20-loxberry.ini ]; then
+if [ -e /etc/php/7.3 ] && [ ! -e /etc/php/7.3/apache2/conf.d/20-loxberry.ini ]; then
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.3/apache2/conf.d/20-loxberry.ini
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.3/cgi/conf.d/20-loxberry.ini
 	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/7.3/cli/conf.d/20-loxberry.ini
