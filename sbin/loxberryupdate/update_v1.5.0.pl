@@ -173,7 +173,6 @@ sub apt_install
 	} else {
         	LOGOK "Apt database cleaned successfully.";
 	}
-	$output = qx { rm -r /var/lib/apt/lists/* };
 	$output = qx { rm -r /var/cache/apt/archives/* };
 	
 	$output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages update };

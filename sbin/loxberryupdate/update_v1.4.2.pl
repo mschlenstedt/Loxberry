@@ -186,7 +186,6 @@ sub apt_install
 	} else {
         	LOGOK "Apt database cleaned successfully.";
 	}
-	$output = qx { rm -r /var/lib/apt/lists/* };
 	$output = qx { rm -r /var/cache/apt/archives/* };
 	
 	$output = qx { $aptbin -q -y update };
