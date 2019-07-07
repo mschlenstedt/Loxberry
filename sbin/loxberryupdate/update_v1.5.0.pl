@@ -155,7 +155,7 @@ sub apt_install
 		LOGOK "Configuring dpkg successfully.";
 	}
 	LOGINF "Clean up apt-databases and update";
-	$output = qx { DEBIAN_FRONTEND=noninteractive $aptbin -y autoremove };
+	$output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages autoremove };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		LOGERR "Error autoremoving apt packages - Error $exitcode";
@@ -164,7 +164,7 @@ sub apt_install
 	} else {
         	LOGOK "Apt packages autoremoved successfully.";
 	}
-	$output = qx { DEBIAN_FRONTEND=noninteractive $aptbin -y clean };
+	$output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages clean };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		LOGERR "Error cleaning apt database - Error $exitcode";
@@ -176,7 +176,7 @@ sub apt_install
 	$output = qx { rm -r /var/lib/apt/lists/* };
 	$output = qx { rm -r /var/cache/apt/archives/* };
 	
-	$output = qx { $aptbin -q -y update };
+	$output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages update };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		LOGERR "Error updating apt database - Error $exitcode";
@@ -188,7 +188,7 @@ sub apt_install
 
 	LOGINF "Installing with apt: " . join(', ', @packages);
 	
-	my $output = `DEBIAN_FRONTEND=noninteractive $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall install $packagelist 2>&1`;
+	my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $packagelist 2>&1 };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		LOGCRIT "Error installing $packagelist - Error $exitcode";
