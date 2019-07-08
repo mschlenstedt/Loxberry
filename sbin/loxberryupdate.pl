@@ -269,7 +269,7 @@ if ($dryrun ne "") {
 	LOGWARN "rsync was started with dryrun. Nothing was changed.";
 }
 
-if ($lbhomedir ne "/opt/loxberry" and $dryrun ne "") {
+if ($lbhomedir ne "/opt/loxberry" and !$dryrun) {
 	LOGINF "Patching sudoers to match your $lbhomedir...";
 	LOGINF `sed -i -e "s#/opt/loxberry/#$lbhomedir/#g" $lbhomedir/system/sudoers/lbdefaults`;
 }
