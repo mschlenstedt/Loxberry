@@ -32,7 +32,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "1.2.0.4";
+my $version = "1.5.0.0";
 my $iscgi;
 my $maintemplate;
 my %SL;
