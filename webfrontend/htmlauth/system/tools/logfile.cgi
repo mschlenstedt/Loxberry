@@ -203,7 +203,7 @@ if ($R::header && $R::header eq "txt") {
 	print $header;
 } elsif ($R::header && $R::header eq "file" ) {
 	use File::Basename;
-	$header = "Content-Disposition: attachment; filename='" . basename($R::logfile) . "'\n\n";
+	$header = "Content-Disposition: attachment; filename=" . basename($R::logfile) . "\n\n";
   	print $header;
 } elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
 	if ($R::clientsize && $R::clientsize ne "0") {
