@@ -82,7 +82,7 @@ $R::saveformdata if 0;
 
 # Template
 my $maintemplate = HTML::Template->new(
-	filename => "$lbstemplatedir/watchdog.html",
+	filename => "$lbstemplatedir/services_watchdog.html",
 	global_vars => 1,
 	loop_context_vars => 1,
 	die_on_bad_params=> 0,
@@ -177,10 +177,12 @@ our %navbar;
 $navbar{0}{Name} = "$SL{'SERVICES.TITLE_PAGE_WEBSERVER'}";
 $navbar{0}{URL} = 'services.php?load=1';
 $navbar{1}{Name} = "$SL{'SERVICES.TITLE_PAGE_WATCHDOG'}";
-$navbar{1}{URL} = 'watchdog.cgi';
+$navbar{1}{URL} = 'services_watchdog.cgi';
 $navbar{1}{active} = 1;
-$navbar{2}{Name} = "$SL{'SERVICES.TITLE_PAGE_OPTIONS'}";
-$navbar{2}{URL} = 'services.php?load=3';
+$navbar{5}{Name} = "Samba (SMB)";
+$navbar{5}{URL} = 'services_samba.cgi';
+$navbar{50}{Name} = "$SL{'SERVICES.TITLE_PAGE_OPTIONS'}";
+$navbar{50}{URL} = 'services.php?load=3';
 
 # Print Template
 my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'SERVICES.WIDGETLABEL'} . " v" . $loxberryversion;
