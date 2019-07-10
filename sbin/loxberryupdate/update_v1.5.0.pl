@@ -51,11 +51,14 @@ copy_to_loxberry("/system/network/interfaces.ipv4");
 copy_to_loxberry("/system/network/interfaces.ipv6");
 
 LOGINF "Installing additional Perl modules...";
+apt_update("update");
 apt_install("libdata-validate-ip-perl");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");
+
+apt_update("clean");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
@@ -64,6 +67,12 @@ LOGERR "Update script $0 finished with errors." if ($errors != 0);
 exit($errors);
 
 
+
+####################################################################
+# Removes a folder (including subfolders)
+# Parameter:
+#	dir/folder to delete
+####################################################################
 sub delete_directory
 {
 	
@@ -132,6 +141,7 @@ sub copy_to_loxberry
 
 }
 
+
 ####################################################################
 # Install one or multiple packages with apt
 # Parameter:
@@ -144,50 +154,9 @@ sub apt_install
 
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
+	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
-	my $output = qx { /usr/bin/dpkg --configure -a };
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-		LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
-		LOGDEB $output;
-		$errors++;
-	} else {
-		LOGOK "Configuring dpkg successfully.";
-	}
-	LOGINF "Clean up apt-databases and update";
-	$output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages autoremove };
-	$exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-		LOGERR "Error autoremoving apt packages - Error $exitcode";
-		LOGDEB $output;
-	        $errors++;
-	} else {
-        	LOGOK "Apt packages autoremoved successfully.";
-	}
-	$output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages clean };
-	$exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-		LOGERR "Error cleaning apt database - Error $exitcode";
-		LOGDEB $output;
-	        $errors++;
-	} else {
-        	LOGOK "Apt database cleaned successfully.";
-	}
-	$output = qx { rm -r /var/cache/apt/archives/* };
-	
-	$output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages update };
-	$exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-		LOGERR "Error updating apt database - Error $exitcode";
-		LOGDEB $output;
-	        $errors++;
-	} else {
-        	LOGOK "Apt database updated successfully.";
-	}
-
-	LOGINF "Installing with apt: " . join(', ', @packages);
-	
-	my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $packagelist 2>&1 };
+	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $packagelist 2>&1 };
 	$exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		LOGCRIT "Error installing $packagelist - Error $exitcode";
@@ -196,4 +165,65 @@ sub apt_install
 	} else {
 		LOGOK "Packages $packagelist successfully installed";
 	}
+}
+
+
+####################################################################
+# Update and clean apt databases and caches
+# Parameter:
+# 	update or none:	Update apt database and clean cache
+# 	clean:		clean cache only
+####################################################################
+sub apt_update
+{
+	my $command = shift;
+	if (!$command) { $command = "update" };
+
+	my $bins = LoxBerry::System::get_binaries();
+	my $aptbin = $bins->{APT};
+	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
+
+	# Repair and update
+	if ( $command eq "update") {
+		my $output = qx { $export /usr/bin/dpkg --configure -a };
+		my $exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			LOGERR "Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode";
+			LOGDEB $output;
+			$errors++;
+		} else {
+			LOGOK "Configuring dpkg successfully.";
+		}
+		LOGINF "Clean up apt-databases and update";
+		$output = qx { $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove };
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			LOGERR "Error autoremoving apt packages - Error $exitcode";
+			LOGDEB $output;
+		        $errors++;
+		} else {
+       	 	LOGOK "Apt packages autoremoved successfully.";
+		}
+		$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update };
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			LOGERR "Error updating apt database - Error $exitcode";
+			LOGDEB $output;
+		        $errors++;
+		} else {
+       	 	LOGOK "Apt database updated successfully.";
+		}
+	}
+
+	# Clean cache
+	$output = qx { $export $aptbin -q -y clean };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error cleaning apt cache - Error $exitcode";
+		LOGDEB $output;
+	        $errors++;
+	} else {
+	 	LOGOK "Apt cache cleaned successfully.";
+	}
+	
 }
