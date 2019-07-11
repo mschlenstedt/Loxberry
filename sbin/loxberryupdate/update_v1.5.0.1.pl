@@ -41,10 +41,13 @@ my $release = $cgi->param('release');
 my $errors = 0;
 LOGOK "Update script $0 started.";
 
+LOGINF "Update apt Database";
+apt_update("update");
+
 LOGINF "Installing Node.js V12...";
 
 LOGINF "Adding Yarn repository key to LoxBerry...";
-my $output = qx {  curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - };
+my $output = qx { curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - };
 my $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 		LOGERR "Error adding Yarn repo key to LoxBerry - Error $exitcode";
@@ -54,16 +57,17 @@ if ($exitcode != 0) {
         	LOGOK "Yarn repo key added successfully.";
 	}
 
+unlink("/etc/apt/sources.list.d/yarn.list");
 LOGINF "Adding Yarn repository to LoxBerry...";
-my $output = qx { echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list };
+my $output = qx { echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list };
 my $exitcode  = $? >> 8;
 if ($exitcode != 0) {
-		LOGERR "Error adding Yarn repo to LoxBerry - Error $exitcode";
-		LOGDEB $output;
-	        $errors++;
-	} else {
-        	LOGOK "Yarn repo added successfully.";
-	}
+	LOGERR "Error adding Yarn repo to LoxBerry - Error $exitcode";
+	LOGDEB $output;
+        $errors++;
+} else {
+	LOGOK "Yarn repo added successfully.";
+}
 
 LOGINF "Adding Node.js repository to LoxBerry...";
 my $output = qx { curl -sL https://deb.nodesource.com/setup_12.x | bash - };
@@ -77,7 +81,6 @@ if ($exitcode != 0) {
 	}
 
 LOGINF "Installing Node.js and Yarn packages...";
-apt_update("update");
 apt_install("nodejs yarn");
 
 LOGINF "Testing Node.js...";
@@ -233,7 +236,7 @@ sub apt_update
 		} else {
        	 	LOGOK "Apt packages autoremoved successfully.";
 		}
-		$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update };
+		$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update };
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			LOGERR "Error updating apt database - Error $exitcode";
