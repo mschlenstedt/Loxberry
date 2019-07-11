@@ -38,7 +38,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "1.4.2.1";
+$version = "1.5.0.1";
 
 $sversion = LBSystem::lbversion();
 
@@ -136,23 +136,30 @@ function form() {
 	//The Navigation Bar
 	$navbar[0]['Name'] = $SL['SERVICES.TITLE_PAGE_WEBSERVER'];
 	$navbar[0]['URL'] = 'services.php?load=1';
+	
 	$navbar[1]['Name'] = $SL['SERVICES.TITLE_PAGE_WATCHDOG'];
 	$navbar[1]['URL'] = 'services_watchdog.cgi';
+	
 	$navbar[5]['Name'] = "Samba (SMB)";
 	$navbar[5]['URL'] = 'services_samba.cgi';
+	
 	$navbar[50]['Name'] = $SL['SERVICES.TITLE_PAGE_OPTIONS'];
 	$navbar[50]['URL'] = 'services.php?load=3';
+	
 	if (isset($_GET['load']) && ($_GET['load'] == 2)) {
 		$navbar[1]['active'] = True;
+		$page = 2;
 	} elseif (isset($_GET['load']) && ($_GET['load'] == 3)) {
 		$navbar[50]['active'] = True;
+		$page = 3;
 	} else {
 		$navbar[0]['active'] = True;
+		$page = 0;
 	}
 
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
-
-	if (isset($navbar[50]['active'])): ?>
+	
+	if ($page == 3): ?>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=3">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="ssdpd" value="1">
