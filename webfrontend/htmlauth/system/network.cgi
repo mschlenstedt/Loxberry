@@ -77,7 +77,7 @@ my @errors;
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.2";
+my $version = "1.5.0.3";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
@@ -364,7 +364,11 @@ sub save {
 			{ $error = "System failure: Cannot open network file $interface_file";
 			&error; };
 	
-	print $fh $part_loopback . "\n" . $part_ipv4 . "\n" . $part_ipv6;
+	my $full_interfaces = $part_loopback . $part_ipv4 . $part_ipv6;
+	$full_interfaces =~ s/\n+/\n/gs;
+	
+	
+	print $fh $full_interfaces;
 		
 	close $fh;
 	
