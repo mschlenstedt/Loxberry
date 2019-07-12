@@ -54,9 +54,21 @@ LOGINF "Installing additional Perl modules...";
 apt_update("update");
 apt_install("libdata-validate-ip-perl");
 
+# Upgrade Raspbian on next reboot
+LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
+my $logfilename_wo_ext = $logfilename;
+$logfilename_wo_ext =~ s{\.[^.]+$}{};
+open(F,">$lbhomedir/system/daemons/system/99-updaterebootv150");
+print F <<EOF;
+#!/bin/bash
+perl $lbhomedir/sbin/loxberryupdate/updatereboot_v1.5.0.pl logfilename=$logfilename_wo_ext-reboot 2>&1
+EOF
+close (F);
+qx { chmod +x $lbhomedir/system/daemons/system/99-updaterebootv150 };
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
-#LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-#reboot_required("LoxBerry Update requests a reboot.");
+LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
+reboot_required("LoxBerry Update requests a reboot.");
 
 apt_update("clean");
 

@@ -46,7 +46,7 @@ if ($cgi->param('updatedir')) {
 
 my $errors = 0;
 LOGSTART "Update Reboot script $0 started.";
-LOGINF "Message : Doing system upgrade (envoked from upgrade to V1.4.0)";
+LOGINF "Message : Doing system upgrade (envoked from upgrade to V1.5.0)";
 
 # Check how often we have tried to start. Abort if > 10 times.
 my $starts;
@@ -99,6 +99,8 @@ if (not defined $pid) {
 	LOGCRIT "Cannot fork simple update webserver.";
 }
 if (not $pid) {
+	# Stopping Apache 2
+	my $output = qx { systemctl stop apache2.service };
 	LOGINF "Starting simple update webserver...";
 	#undef $log if ($log);
 	exec("$lbhomedir/sbin/loxberryupdatewebserver.pl $logfilename </dev/null >/dev/null 2>&1 &");
@@ -274,5 +276,6 @@ END
 {
 	LOGINF "Killing simple update webserver...";
 	my $output = qx { kill -9 $pid };
+	my $output = qx { systemctl start apache2.service };
 	LOGEND;
 }
