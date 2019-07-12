@@ -12,6 +12,7 @@ init();
 
 ## THIS IS A COPY OF update_v1.5.0.pl
 
+
 LOGINF "Installing new network templates for IPv6...";
 unlink "$lbhomedir/system/network/interfaces.eth_dhcp";
 unlink "$lbhomedir/system/network/interfaces.eth_static";
