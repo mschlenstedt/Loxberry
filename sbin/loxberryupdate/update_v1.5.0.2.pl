@@ -208,7 +208,7 @@ sub apt_update
 		} else {
        	 	LOGOK "Apt packages autoremoved successfully.";
 		}
-		$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update update };
+		$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update update };
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			LOGERR "Error updating apt database - Error $exitcode";
