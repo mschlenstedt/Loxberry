@@ -63,7 +63,7 @@ LOGINF "Installing Node.js and Yarn packages...";
 apt_install("nodejs yarn");
 
 LOGINF "Testing Node.js...";
-LOGDEB `node $lbshtmlauthdir/testing/nodejs_hello.js`;
+LOGDEB `node -e "console.log('Hello LoxBerry users, this is Node.js '+process.version);"`;
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
