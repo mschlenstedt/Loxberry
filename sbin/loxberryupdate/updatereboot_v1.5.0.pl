@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 
 # This script will be executed on next reboot
-# It is invoked from cron (@reboot) by
-# update_v1.4.0.pl
+# from update_v1.5.0.pl
 
 use LoxBerry::System;
 use LoxBerry::Log;
@@ -209,7 +208,7 @@ if ($exitcode != 0) {
 	LOGOK "OK.";
 }
 
-LOGINF "Configuring PHP7.3..."
+LOGINF "Configuring PHP7.3...";
 $log->close;
 if ( -e "/etc/php/7.0" && !-e "/etc/php/7.0/apache2/conf.d/20-loxberry.ini" ) {
 	my $output = qx { ln -vs $LBHOME/system/php/20-loxberry.ini /etc/php/7.0/apache2/conf.d/20-loxberry.ini >> $logfilename 2>&1 };
