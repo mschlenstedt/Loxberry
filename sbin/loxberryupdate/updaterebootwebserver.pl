@@ -12,7 +12,7 @@ my $logfile = shift;
 while (my $c = $d->accept) {
     while (my $r = $c->get_request) {
         if ($r->method eq 'GET' && $r->uri->path eq "/logfile") {
-            $c->send_file_response("$lbslogdir/loxberryupdate/$logfile");
+            $c->send_file_response("$logfile");
         } else {
             $c->send_file_response("$lbstemplatedir/reboot_updaterunning.html");
         }

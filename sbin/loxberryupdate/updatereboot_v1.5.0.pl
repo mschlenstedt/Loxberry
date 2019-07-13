@@ -102,7 +102,7 @@ if (not $pid) {
 	my $output = qx { systemctl stop apache2.service };
 	LOGINF "Starting simple update webserver...";
 	#undef $log if ($log);
-	exec("$lbhomedir/sbin/loxberryupdatewebserver.pl $logfilename </dev/null >/dev/null 2>&1 &");
+	exec("$lbhomedir/sbin/loxberryupdate/updaterebootwebserver.pl $logfilename </dev/null >/dev/null 2>&1 &");
 	exit(0);
 }
 
@@ -172,7 +172,7 @@ if ($exitcode != 0) {
 	LOGOK "OK.";
 }
 
-LOGINF "UPdating apt databases...";
+LOGINF "Updating apt databases...";
 $log->close;
 my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages -y update >> $logfilename 2>&1 };
 $log->open;
@@ -275,6 +275,7 @@ END
 {
 	LOGINF "Killing simple update webserver...";
 	my $output = qx { kill -9 $pid };
+	sleep (2);
 	my $output = qx { systemctl start apache2.service };
 	LOGEND;
 }
