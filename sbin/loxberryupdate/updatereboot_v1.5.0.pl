@@ -160,9 +160,9 @@ if ($exitcode != 0) {
 	LOGOK "OK.";
 }
 
-LOGINF "Removing package 'listchanges'...";
+LOGINF "Removing package 'listchanges' and 'lighttpd'...";
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove apt-listchanges >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove apt-listchanges lighttpd >> $logfilename 2>&1 };
 $log->open;
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -241,7 +241,7 @@ $log->open;
 
 LOGINF "Configuring logrotate...";
 $log->close;
-my $output = qx { mv -v /etc/logrotate.conf.dpkg-dist /etc/logrotate.conf >> $logfilename 2>&1 };
+my $output = qx { mv -v /etc/logrotate.conf.dpkg-new /etc/logrotate.conf >> $logfilename 2>&1 };
 my $output = qx { sed -i 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
 $log->open;
 
@@ -274,7 +274,8 @@ exit($errors);
 END
 {
 	LOGINF "Killing simple update webserver...";
-	my $output = qx { kill -9 $pid };
+	my $output = qx { pkill -f updaterebootwebserver };
+	my $output = qx { fuser -k 80/tcp };
 	sleep (2);
 	my $output = qx { systemctl start apache2.service };
 	LOGEND;
