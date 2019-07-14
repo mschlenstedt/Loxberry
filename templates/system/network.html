@@ -229,9 +229,14 @@
 					<td>
 					</td>
 				</tr>
-			
-			
-			
+				<tr class="area-privacyext_IPv6" style="display:none">
+					<td></td>
+					<td>
+						<label>
+							<input type="checkbox" name="netzwerkprivacyext_IPv6" <TMPL_VAR netzwerkprivacyext_IPv6>><TMPL_VAR NETWORK.LABEL_PRIVACYEXT_IPV6>
+						</label>
+					</td>
+				</tr>
 			
 			</table>
 			
@@ -306,6 +311,12 @@
 				// $('.area-netzwerkgateway_IPv6').fadeIn(150);
 				$('.area-netzwerknameserver_IPv6').fadeIn(200);
 				
+			}
+			
+			if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_manual_IPv6.checked ) {
+				$('.area-privacyext_IPv6').fadeIn(50);
+			} else {
+				$('.area-privacyext_IPv6').fadeOut(50);
 			}
 			
 			
