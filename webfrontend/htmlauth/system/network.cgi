@@ -77,7 +77,7 @@ my @errors;
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.3";
+my $version = "1.5.0.4";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
@@ -198,7 +198,7 @@ sub form {
 	}
 
 	if ( !$netzwerkadressen_IPv6 or is_disabled($netzwerkadressen_IPv6) ) {
-		$maintemplate->param( "CHECKED_NO_IPv6", 'checked="checked"');
+		$maintemplate->param( "CHECKED_AUTO_IPv6", 'checked="checked"');
 	} elsif ( $netzwerkadressen_IPv6 eq "manual") {
 	  $maintemplate->param( "CHECKED_MANUAL_IPv6", 'checked="checked"');
 	} else {
@@ -273,7 +273,7 @@ sub save {
 	my $part_ipv6;
 		
 	#### Loopback device ####
-	$ethtemplate_name = "$lbhomedir/system/network/interfaces.loopback";
+	$ethtemplate_name = "$lbstemplatedir/network/interfaces.loopback";
 	$ethtmpl = HTML::Template->new(
 				filename => $ethtemplate_name,
 				global_vars => 1,
@@ -291,7 +291,7 @@ sub save {
 	$part_loopback = $ethtmpl->output();
 	
 	#### IPv4 ####
-	$ethtemplate_name = "$lbhomedir/system/network/interfaces.ipv4";
+	$ethtemplate_name = "$lbstemplatedir/network/interfaces.ipv4";
 	$ethtmpl = HTML::Template->new(
 				filename => $ethtemplate_name,
 				global_vars => 1,
@@ -323,7 +323,7 @@ sub save {
 	
 	#### IPv6 ####
 	if ( defined $netzwerkadressen_IPv6 and !is_disabled($netzwerkadressen_IPv6) ) {
-		$ethtemplate_name = "$lbhomedir/system/network/interfaces.ipv6";
+		$ethtemplate_name = "$lbstemplatedir/network/interfaces.ipv6";
 		$ethtmpl = HTML::Template->new(
 				filename => $ethtemplate_name,
 				global_vars => 1,
