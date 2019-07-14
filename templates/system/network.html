@@ -154,8 +154,12 @@
 			<div style="heigth:10px">&nbsp;</div>
 			
 			<!-- IPv6 -->
-			<div class="wide">IPv6</div>
+			<div class="wide">IPv6 (Beta)</div>
+			<div style="height:10px"></div>
 			
+			<div class="area-custom-config-hint" style="display:none;background: #FF8080; font-color: black; text-shadow: none; border: black 1px solid; padding: 5px;"><TMPL_VAR NETWORK.HINT_CUSTOM_IPV6_SETTINGS></div>
+
+
 			<table class="formtable" style="border:0;width:100%;">
 				<tr class="area-netzwerkadressen_ipV6">
 					<td style="width:25%;">
@@ -163,8 +167,8 @@
 					</td>
 					<td style="width:50%;">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_NO_IPv6> id="netzwerkadressen_no_IPv6" name="netzwerkadressen_IPv6" type="radio" value="off">
-							<label for="netzwerkadressen_no_IPv6"><TMPL_VAR NETWORK.SELECT_IP_NO_IPv6></label>
+							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_AUTO_IPv6> id="netzwerkadressen_auto_IPv6" name="netzwerkadressen_IPv6" type="radio" value="off">
+							<label for="netzwerkadressen_auto_IPv6"><TMPL_VAR NETWORK.SELECT_IP_AUTO_IPv6></label>
 							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_DHCP_IPv6> id="netzwerkadressen_dhcp_IPv6" name="netzwerkadressen_IPv6" type="radio" value="dhcp">
 							<label for="netzwerkadressen_dhcp_IPv6"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP_IPv6></label>
 							
@@ -193,10 +197,10 @@
 				
 				<tr class="area-netzwerkipmaske_IPv6" style="display:none">
 					<td>
-						<label id="labelnetzwerkipmaske_IPv6"><TMPL_VAR NETWORK.LABEL_NETMASK_IPv6></label>
+						<label id="labelnetzwerkipmaske_IPv6"><TMPL_VAR NETWORK.LABEL_PREFIXLENGTH_IPv6></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.MASK_IPv6>" id='netzwerkipmaske_IPv6' name='netzwerkipmaske_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK_IPv6>" data-validation-rule="special:netmask_IPv6">
+						<input value="<TMPL_VAR NETWORK.MASK_IPv6>" id='netzwerkipmaske_IPv6' name='netzwerkipmaske_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6>" data-validation-rule="special:prefixlength_IPv6">
 					</td>
 					<td style="vertical-align:middle;">
 					</td>
@@ -229,9 +233,14 @@
 					<td>
 					</td>
 				</tr>
-			
-			
-			
+				<tr class="area-privacyext_IPv6" style="display:none">
+					<td></td>
+					<td>
+						<label>
+							<input type="checkbox" name="netzwerkprivacyext_IPv6" <TMPL_VAR netzwerkprivacyext_IPv6>><TMPL_VAR NETWORK.LABEL_PRIVACYEXT_IPV6>
+						</label>
+					</td>
+				</tr>
 			
 			</table>
 			
@@ -291,7 +300,7 @@
 				$('.area-netzwerknameserver').fadeIn(200);
 			}
 			// DHCP or Manual (IPv6)
-			if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_no_IPv6.checked) {
+			if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_auto_IPv6.checked) {
 				validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);
 				$('.area-netzwerkipadresse_IPv6').fadeOut(1);
 				$('.area-netzwerkipmaske_IPv6').fadeOut(50);
@@ -306,6 +315,14 @@
 				// $('.area-netzwerkgateway_IPv6').fadeIn(150);
 				$('.area-netzwerknameserver_IPv6').fadeIn(200);
 				
+			}
+			
+			if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_manual_IPv6.checked == true ) {
+				$('.area-privacyext_IPv6').fadeIn(50);
+				$('.area-custom-config-hint').fadeIn(50);
+			} else {
+				$('.area-privacyext_IPv6').fadeOut(50);
+				$('.area-custom-config-hint').fadeOut(50);
 			}
 			
 			

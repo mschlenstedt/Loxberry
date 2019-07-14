@@ -33,6 +33,9 @@ use strict;
 # Variables
 ##########################################################################
 
+# Version of this script
+my $version = "1.5.0.7";
+
 my $helplink = "https://www.loxwiki.eu/x/SogKAw";
 my $helptemplate = "help_network.html";
 
@@ -66,6 +69,7 @@ my $netzwerkipadresse_IPv6;
 my $netzwerkipmaske_IPv6; 
 my $netzwerkgateway_IPv6;
 my $netzwerknameserver_IPv6;
+my $netzwerkprivacyext_IPv6;
 our @lines;
 our $do;
 our $message;
@@ -76,8 +80,6 @@ my @errors;
 # Read Settings
 ##########################################################################
 
-# Version of this script
-my $version = "1.5.0.3";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
@@ -130,7 +132,7 @@ $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 
 if ($saveformdata) 
 {
-	$netzwerkanschluss  = $cgi->param('netzwerkanschluss');
+	$netzwerkanschluss = $cgi->param('netzwerkanschluss');
 	$netzwerkadressen = $cgi->param('netzwerkadressen');
 	$netzwerkadressen_IPv6 = $cgi->param('netzwerkadressen_IPv6');
 	
@@ -198,11 +200,15 @@ sub form {
 	}
 
 	if ( !$netzwerkadressen_IPv6 or is_disabled($netzwerkadressen_IPv6) ) {
-		$maintemplate->param( "CHECKED_NO_IPv6", 'checked="checked"');
+		$maintemplate->param( "CHECKED_AUTO_IPv6", 'checked="checked"');
 	} elsif ( $netzwerkadressen_IPv6 eq "manual") {
 	  $maintemplate->param( "CHECKED_MANUAL_IPv6", 'checked="checked"');
 	} else {
 	  $maintemplate->param( "CHECKED_DHCP_IPv6", 'checked="checked"');
+	}
+
+	if ( is_enabled( $cfg->param("NETWORK.PRIVACYEXT_IPv6") ) ) {
+	  $maintemplate->param( "netzwerkprivacyext_IPv6", 'checked="checked"');
 	}
 
 	# israspberry Check
@@ -244,6 +250,7 @@ sub save {
 	$netzwerkipmaske_IPv6    = $cgi->param('netzwerkipmaske_IPv6');
 	$netzwerkgateway_IPv6    = $cgi->param('netzwerkgateway_IPv6');
 	$netzwerknameserver_IPv6 = $cgi->param('netzwerknameserver_IPv6');
+	$netzwerkprivacyext_IPv6 = is_enabled($cgi->param('netzwerkprivacyext_IPv6')) ? "ON" : "OFF";
 
 	# Write configuration file(s)
 	$cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
@@ -260,6 +267,7 @@ sub save {
 	$cfg->param("NETWORK.IPADDRESS_IPv6", "$netzwerkipadresse_IPv6");
 	$cfg->param("NETWORK.MASK_IPv6", "$netzwerkipmaske_IPv6");
 	$cfg->param("NETWORK.DNS_IPv6", "$netzwerknameserver_IPv6");
+	$cfg->param("NETWORK.PRIVACYEXT_IPv6", $netzwerkprivacyext_IPv6);
 
 	$cfg->save();
 
@@ -273,7 +281,7 @@ sub save {
 	my $part_ipv6;
 		
 	#### Loopback device ####
-	$ethtemplate_name = "$lbhomedir/system/network/interfaces.loopback";
+	$ethtemplate_name = "$lbstemplatedir/network/interfaces.loopback";
 	$ethtmpl = HTML::Template->new(
 				filename => $ethtemplate_name,
 				global_vars => 1,
@@ -290,8 +298,9 @@ sub save {
 		
 	$part_loopback = $ethtmpl->output();
 	
+	
 	#### IPv4 ####
-	$ethtemplate_name = "$lbhomedir/system/network/interfaces.ipv4";
+	$ethtemplate_name = "$lbstemplatedir/network/interfaces.ipv4";
 	$ethtmpl = HTML::Template->new(
 				filename => $ethtemplate_name,
 				global_vars => 1,
@@ -323,7 +332,7 @@ sub save {
 	
 	#### IPv6 ####
 	if ( defined $netzwerkadressen_IPv6 and !is_disabled($netzwerkadressen_IPv6) ) {
-		$ethtemplate_name = "$lbhomedir/system/network/interfaces.ipv6";
+		$ethtemplate_name = "$lbstemplatedir/network/interfaces.ipv6";
 		$ethtmpl = HTML::Template->new(
 				filename => $ethtemplate_name,
 				global_vars => 1,
@@ -349,6 +358,7 @@ sub save {
 						'netzwerkgateway_IPv6' => $netzwerkgateway_IPv6,
 						'netzwerknameserver_IPv6' => $netzwerknameserver_IPv6,
 						'netzwerkdnsdomain' => 'loxberry.local',
+						'netzwerkprivacyext_IPv6' => is_enabled($netzwerkprivacyext_IPv6) ? 2 : undef,
 			);
 			
 		$part_ipv6 = $ethtmpl->output();
@@ -367,7 +377,6 @@ sub save {
 	my $full_interfaces = $part_loopback . $part_ipv4 . $part_ipv6;
 	$full_interfaces =~ s/\n+/\n/gs;
 	
-	
 	print $fh $full_interfaces;
 		
 	close $fh;
@@ -384,6 +393,13 @@ sub save {
 		&error;
 	}
 		
+	# Make sure, dhcpcd is not running
+	`sudo systemctl disable dhcpcd`;
+	`sudo systemctl stop dhcpcd`;
+	
+	# Restart interfaces
+	# `sudo systemctl restart networking` if (! $cgi->param('norestart'));
+	
 	reboot_required($SL{'NETWORK.CHANGE_REBOOT_REQUIRED_MSG'});
 	
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
@@ -439,7 +455,7 @@ sub checkIPv6
 	
 	# Check ip's
 	if (!is_ipv6($p{ip})) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDIP_IPv6'}"; }
-	if (! defined $p{mask} or $p{mask} < 0 or $p{mask} > 128) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDNETMASK_IPv6'}"; }
+	if (! defined $p{mask} or $p{mask} < 0 or $p{mask} > 128) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6'}"; }
 	# if (!is_ipv6($p{gateway})) { push @errors, "$SL{'NETWORK.ERR_NOVALIDGATEWAYIP1_IPv6'}"; }
 	if (!is_ipv6($p{dns})) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6'}"; }
 	
