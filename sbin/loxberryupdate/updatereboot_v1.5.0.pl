@@ -91,6 +91,14 @@ if (!$success) {
 }
 
 #
+# Stopping Apache 2
+#
+LOGINF "Stopping Apache2...";
+my $output = qx { systemctl stop apache2.service };
+sleep (1);
+my $output = qx { fuser -k 80/tcp };
+
+#
 # Start simple Webserver
 #
 my $pid = fork();
@@ -101,7 +109,7 @@ if (not $pid) {
 	# Stopping Apache 2
 	my $output = qx { systemctl stop apache2.service };
 	LOGINF "Starting simple update webserver...";
-	#undef $log if ($log);
+	undef $log if ($log);
 	exec("$lbhomedir/sbin/loxberryupdate/updaterebootwebserver.pl $logfilename </dev/null >/dev/null 2>&1 &");
 	exit(0);
 }
@@ -273,10 +281,32 @@ exit($errors);
 
 END
 {
+	my $reboot;
+	# Kill simple webserver - try several times...
 	LOGINF "Killing simple update webserver...";
 	my $output = qx { pkill -f updaterebootwebserver };
+	my $output = qx { fuser 80/tcp };
+	chomp ($output);
+	LOGINF "Used Ports: $output";
 	my $output = qx { fuser -k 80/tcp };
-	sleep (2);
+	chomp ($output);
+	LOGINF "Used Ports 1. kill: $output";
+	my $output = qx { fuser -k 80/tcp };
+	chomp ($output);
+	LOGINF "Used Ports 2. kill: $output";
+	sleep (5);
 	my $output = qx { systemctl start apache2.service };
+	$exitcode = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Could not start Apache webserver - Error $exitcode";
+		LOGINF "Will reboot now...";
+		$errors++;
+		$reboot = 1;
+	} else {
+		LOGOK "OK.";
+	}
 	LOGEND;
+	if ( $reboot ) {
+		system ("reboot");
+	}
 }
