@@ -59,7 +59,18 @@ EOF
 close (F);
 qx { chmod +x $lbhomedir/system/daemons/system/99-updaterebootv150 };
 
-
+#
+# Diable Apache2 for next reboot
+#
+LOGINF "Disabling Apache2 Service for next reboot...";
+my $output = qx { systemctl disable apache2.service };
+LOGINF "$output";
+$exitcode = $? >> 8;
+if ($exitcode != 0) {
+	LOGWARN "Could not disable Apache webserver - Error $exitcode";
+} else {
+	LOGOK "OK.";
+}
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
