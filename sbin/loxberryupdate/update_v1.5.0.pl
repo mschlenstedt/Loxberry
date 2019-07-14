@@ -10,7 +10,28 @@ use LoxBerry::Update;
 
 init();
 
+#
+# Switching to rwth-aachen.de for the Rasbian Repo due to lot of connection errors with original rpo
+#
+LOGINF "Replacing archive.raspbian.org with ftp.halifax.rwth-aachen.de/raspbian/raspbian/ in /etc/apt/sources.list.";
+system ("/bin/sed -i 's:mirrordirector.raspbian.org:ftp.halifax.rwth-aachen.de/raspbian/raspbian:g' /etc/apt/sources.list");
+system ("/bin/sed -i 's:archive.raspbian.org:ftp.halifax.rwth-aachen.de/raspbian/raspbian:g' /etc/apt/sources.list");
+unlink ("/etc/apt/sources.list.d/raspi.list");
 
+LOGINF "Getting signature for ftp.halifax.rwth-aachen.de/raspbian/raspbian.";
+$output = qx ( wget http://ftp.halifax.rwth-aachen.de/raspbian/raspbian.public.key -O - | apt-key add - );
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error getting signature for ftp.halifax.rwth-aachen.de/raspbian - Error $exitcode";
+	LOGDEB $output;
+	$errors++;
+} else {
+     	LOGOK "Got signature for ftp.halifax.rwth-aachen.de/raspbian successfully.";
+}
+
+#
+# Installing new network templates
+#
 LOGINF "Installing new network templates for IPv6...";
 unlink "$lbhomedir/system/network/interfaces.eth_dhcp";
 unlink "$lbhomedir/system/network/interfaces.eth_static";
@@ -24,7 +45,9 @@ LOGINF "Installing additional Perl modules...";
 apt_update("update");
 apt_install("libdata-validate-ip-perl");
 
+#
 # Upgrade Raspbian on next reboot
+#
 LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
 my $logfilename_wo_ext = $logfilename;
 $logfilename_wo_ext =~ s{\.[^.]+$}{};
@@ -35,6 +58,8 @@ perl $lbhomedir/sbin/loxberryupdate/updatereboot_v1.5.0.pl logfilename=$logfilen
 EOF
 close (F);
 qx { chmod +x $lbhomedir/system/daemons/system/99-updaterebootv150 };
+
+
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
@@ -47,4 +72,3 @@ LOGERR "Update script $0 finished with errors." if ($errors != 0);
 
 # End of script
 exit($errors);
-
