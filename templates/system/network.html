@@ -155,7 +155,11 @@
 			
 			<!-- IPv6 -->
 			<div class="wide">IPv6 (Beta)</div>
+			<div style="height:10px"></div>
 			
+			<div class="area-custom-config-hint" style="display:none;background: #FF8080; font-color: black; text-shadow: none; border: black 1px solid; padding: 5px;"><TMPL_VAR NETWORK.HINT_CUSTOM_IPV6_SETTINGS></div>
+
+
 			<table class="formtable" style="border:0;width:100%;">
 				<tr class="area-netzwerkadressen_ipV6">
 					<td style="width:25%;">
@@ -313,10 +317,12 @@
 				
 			}
 			
-			if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_manual_IPv6.checked ) {
+			if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_manual_IPv6.checked == true ) {
 				$('.area-privacyext_IPv6').fadeIn(50);
+				$('.area-custom-config-hint').fadeIn(50);
 			} else {
 				$('.area-privacyext_IPv6').fadeOut(50);
+				$('.area-custom-config-hint').fadeOut(50);
 			}
 			
 			
