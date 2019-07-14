@@ -33,6 +33,9 @@ use strict;
 # Variables
 ##########################################################################
 
+# Version of this script
+my $version = "1.5.0.5";
+
 my $helplink = "https://www.loxwiki.eu/x/SogKAw";
 my $helptemplate = "help_network.html";
 
@@ -76,8 +79,6 @@ my @errors;
 # Read Settings
 ##########################################################################
 
-# Version of this script
-my $version = "1.5.0.4";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
@@ -439,7 +440,7 @@ sub checkIPv6
 	
 	# Check ip's
 	if (!is_ipv6($p{ip})) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDIP_IPv6'}"; }
-	if (! defined $p{mask} or $p{mask} < 0 or $p{mask} > 128) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDNETMASK_IPv6'}"; }
+	if (! defined $p{mask} or $p{mask} < 0 or $p{mask} > 128) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6'}"; }
 	# if (!is_ipv6($p{gateway})) { push @errors, "$SL{'NETWORK.ERR_NOVALIDGATEWAYIP1_IPv6'}"; }
 	if (!is_ipv6($p{dns})) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6'}"; }
 	
