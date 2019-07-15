@@ -93,10 +93,11 @@ if (!$success) {
 #
 # Stopping Apache 2
 #
+my $port = lbwebserverport();
 LOGINF "Stopping Apache2...";
 my $output = qx { systemctl stop apache2.service };
 sleep (2);
-my $output = qx { fuser -k 80/tcp };
+my $output = qx { fuser -k $port/tcp };
 sleep (2);
 
 #
@@ -307,12 +308,13 @@ exit($errors);
 
 END
 {
+	my $port = lbwebserverport();
 	my $reboot;
 	# Kill simple webserver - try several times...
 	LOGINF "Killing simple update webserver...";
 	my $output = qx { pkill -f updaterebootwebserver };
-	my $output = qx { fuser -k 80/tcp };
-	sleep (2);
+	my $output = qx { fuser -k $port/tcp };
+	sleep (5);
 	LOGINF "Restart Apache2...";
 	my $output = qx { systemctl start apache2.service };
 	$exitcode = $? >> 8;
