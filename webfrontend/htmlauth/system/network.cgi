@@ -33,7 +33,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.8";
+my $version = "1.5.0.9";
 
 my $helplink = "https://www.loxwiki.eu/x/SogKAw";
 my $helptemplate = "help_network.html";
@@ -297,7 +297,7 @@ sub save {
 		{ $error = "System failure: Cannot open network template $ethtemplate_name";
 		&error; };
 	
-	$ethtmpl->param('ipv6', 1) if (defined $netzwerkadressen_IPv6 and !is_disabled($netzwerkadressen_IPv6));
+	$ethtmpl->param('ipv6', 1) if (defined $netzwerkadressen_IPv6 and $netzwerkadressen_IPv6 ne "auto");
 		
 	$part_loopback = $ethtmpl->output();
 	
