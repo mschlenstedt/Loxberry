@@ -13,9 +13,9 @@ init();
 #
 # Switching to rwth-aachen.de for the Rasbian Repo due to lot of connection errors with original rpo
 #
-LOGINF "Replacing archive.raspbian.org with ftp.halifax.rwth-aachen.de/raspbian/raspbian/ in /etc/apt/sources.list.";
-system ("/bin/sed -i 's:mirrordirector.raspbian.org:ftp.halifax.rwth-aachen.de/raspbian/raspbian:g' /etc/apt/sources.list");
-system ("/bin/sed -i 's:archive.raspbian.org:ftp.halifax.rwth-aachen.de/raspbian/raspbian:g' /etc/apt/sources.list");
+LOGINF "Replacing archive.raspbian.org with ftp.halifax.rwth-aachen.de/raspbian in /etc/apt/sources.list.";
+system ("/bin/sed -i 's:mirrordirector.raspbian.org:ftp.halifax.rwth-aachen.de/raspbian:g' /etc/apt/sources.list");
+system ("/bin/sed -i 's:archive.raspbian.org:ftp.halifax.rwth-aachen.de/raspbian:g' /etc/apt/sources.list");
 unlink ("/etc/apt/sources.list.d/raspi.list");
 
 LOGINF "Getting signature for ftp.halifax.rwth-aachen.de/raspbian/raspbian.";
