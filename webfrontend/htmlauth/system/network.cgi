@@ -22,19 +22,18 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
-print STDERR "Execute network.cgi\n###################\n";
 use URI::Escape;
-use LWP::UserAgent;
-use Socket qw( inet_aton );
 use warnings;
 use strict;
+
+# print STDERR "Execute network.cgi\n###################\n";
 
 ##########################################################################
 # Variables
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.7";
+my $version = "1.5.0.8";
 
 my $helplink = "https://www.loxwiki.eu/x/SogKAw";
 my $helptemplate = "help_network.html";
@@ -75,6 +74,7 @@ our $do;
 our $message;
 our $nexturl;
 my @errors;
+my $is_wireless;
 
 ##########################################################################
 # Read Settings
@@ -104,7 +104,7 @@ $maintemplate->param (
 	'NETWORK.WPA' => uri_unescape($cfg->param('NETWORK.WPA')),
 );
 					
-
+my @interfaces = get_interfaces();
 
 #########################################################################
 # Parameter
@@ -136,8 +136,16 @@ if ($saveformdata)
 	$netzwerkadressen = $cgi->param('netzwerkadressen');
 	$netzwerkadressen_IPv6 = $cgi->param('netzwerkadressen_IPv6');
 	
+	# Check if $netzwerkanschluss is wireless
+	
+	foreach(@interfaces) {
+		next if($_->{name} ne $netzwerkanschluss);
+		$is_wireless = 1 if($_->{wireless});
+		last;
+	}
+		
 	# Check Wifi
-	if ( $netzwerkanschluss eq "wlan0" ) {
+	if ( $is_wireless ) {
 		checkWifi();
 	}
 	
@@ -165,18 +173,18 @@ if ($saveformdata)
 	{
 		&error;
 	}
-}
 
+    # print STDERR "Calling subfunction SAVE\n";
+    $maintemplate->param("SAVE", 1);
+    &save;
 
-if (!$saveformdata) {
-  print STDERR "Calling subfunction FORM\n";
+} else {
+
+  # print STDERR "Calling subfunction FORM\n";
   $maintemplate->param("FORM", 1);
   &form;
-} else {
-  print STDERR "Calling subfunction SAVE\n";
-  $maintemplate->param("SAVE", 1);
-  &save;
-}
+
+} 
 
 exit;
 
@@ -186,26 +194,21 @@ exit;
 
 sub form {
 
-	# Defaults for template
-	if ($netzwerkanschluss eq "eth0") {
-	  $maintemplate->param( "CHECKED1", 'checked="checked"');
-	} else {
-	  $maintemplate->param( "CHECKED2", 'checked="checked"');
+	my @interfaces_ordered;
+	# Wired
+	foreach(@interfaces) {
+		push @interfaces_ordered, $_ if (!$_->{wireless} and !$_->{loopback});
 	}
-
-	if ($netzwerkadressen eq "manual") {
-	  $maintemplate->param( "CHECKED4", 'checked="checked"');
-	} else {
-	  $maintemplate->param( "CHECKED3", 'checked="checked"');
+	# Wireless
+	foreach(@interfaces) {
+		push @interfaces_ordered, $_ if ($_->{wireless});
 	}
-
-	if ( !$netzwerkadressen_IPv6 or is_disabled($netzwerkadressen_IPv6) ) {
-		$maintemplate->param( "CHECKED_AUTO_IPv6", 'checked="checked"');
-	} elsif ( $netzwerkadressen_IPv6 eq "manual") {
-	  $maintemplate->param( "CHECKED_MANUAL_IPv6", 'checked="checked"');
-	} else {
-	  $maintemplate->param( "CHECKED_DHCP_IPv6", 'checked="checked"');
-	}
+	
+	$maintemplate->param( "INTERFACES" => \@interfaces_ordered );
+	
+	$maintemplate->param( "netzwerkanschluss", $netzwerkanschluss );
+	$maintemplate->param( "netzwerkadressen", $netzwerkadressen );
+	$maintemplate->param( "netzwerkadressen_IPv6", $netzwerkadressen_IPv6 );
 
 	if ( is_enabled( $cfg->param("NETWORK.PRIVACYEXT_IPv6") ) ) {
 	  $maintemplate->param( "netzwerkprivacyext_IPv6", 'checked="checked"');
@@ -316,8 +319,8 @@ sub save {
 	
 	$ethtmpl->param('dhcp', 1) if ($netzwerkadressen eq "dhcp");
 	$ethtmpl->param('static', 1) if ($netzwerkadressen eq "manual");
-	$ethtmpl->param('wifi', 1) if ($netzwerkanschluss eq "wlan0");
 	$ethtmpl->param( 
+					'wifi' => $is_wireless,
 					'iface' => $netzwerkanschluss,
 					'netzwerkssid' => $netzwerkssid,
 					'netzwerkschluessel' => $netzwerkschluessel,
@@ -331,7 +334,7 @@ sub save {
 	$part_ipv4 = $ethtmpl->output();
 	
 	#### IPv6 ####
-	if ( defined $netzwerkadressen_IPv6 and !is_disabled($netzwerkadressen_IPv6) ) {
+	if ( defined $netzwerkadressen_IPv6 and $netzwerkadressen_IPv6 ne "auto" ) {
 		$ethtemplate_name = "$lbstemplatedir/network/interfaces.ipv6";
 		$ethtmpl = HTML::Template->new(
 				filename => $ethtemplate_name,
@@ -348,8 +351,8 @@ sub save {
 		
 		$ethtmpl->param('dhcp', 1) if ($netzwerkadressen_IPv6 eq "dhcp");
 		$ethtmpl->param('static', 1) if ($netzwerkadressen_IPv6 eq "manual");
-		$ethtmpl->param('wifi', 1) if ($netzwerkanschluss eq "wlan0");
 		$ethtmpl->param( 
+						'wifi', $is_wireless,
 						'iface' => $netzwerkanschluss,
 						'netzwerkssid' => $netzwerkssid,
 						'netzwerkschluessel' => $netzwerkschluessel,
@@ -493,6 +496,61 @@ sub checkWifi
 
 }
 
+########################################################
+# Parse network interfaces
+#   This collects all interfaces, and determines
+#   what interfaces are loopback, wired and wireless
+#   Returns: Array with Hashref of interface properties
+########################################################
+sub get_interfaces
+{
+	my @interfacelist;
+	
+	## All interfaces
+	my @iplink = `ip link show`;
+	foreach my $linkline (@iplink) {
+		if( substr($linkline, 0, 1) ne " " ) {
+			# New interface line
+			my %if;
+			push @interfacelist, \%if;
+			
+			($if{id}, $if{name}, $if{fulloptions}) = split /:/, $linkline; 
+			$if{id} = trim($if{id});
+			$if{name} = trim($if{name});
+			$if{fulloptions} = trim($if{fulloptions});
+
+			# Collect information from line
+			$if{loopback} = $if{fulloptions} =~ /<\S*(LOOPBACK)\s*\>*/ ? 1 : 0;
+			$if{carrier} = $if{fulloptions} =~ /<\S*(NO-CARRIER)\s*\>*/ ? 0 : 1;
+			$if{state} = $if{fulloptions} =~ /\sstate\s(\S*)/ ? $1 : undef;
+		} else {
+			# Second line
+			my $if = $interfacelist[-1];
+			$if->{loopback} = $linkline =~ /link\/loopback/ ? 1 : 0;
+			$if->{mac} = $linkline =~ /link\/\S*\s(\S*)/ ? $1 : undef;
+		}
+	}
+	
+	# Find Wifi interfaces
+	my @iwconfig = `iwconfig 2>&1`;
+	foreach my $linkline (@iwconfig) {
+		next if( index($linkline, "ESSID") == -1 );
+		# WIFI found
+		my $wifiname = $1 if($linkline =~ /(^\S+)/);
+		foreach my $if (@interfacelist) {
+			# print STDERR "Search interface: $if->{name}\n";
+			next if( $if->{name} ne $wifiname );
+			$if->{wireless} = 1;
+			last;
+		}
+	}
+
+	# use Data::Dumper;
+	# print STDERR Dumper(@interfacelist);
+
+	return @interfacelist;
+
+}
 
 #####################################################
 # Error
