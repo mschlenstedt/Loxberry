@@ -437,15 +437,15 @@ function fillForm ( data )
 	
 	if(data.SMTP) {
 		if(data.SMTP.EMAIL) $("#email").val(data.SMTP.EMAIL);
-		if(data.SMTP.SMTPSERVER) $("#smtpserver").val(data.SMTP.SMTPSERVER);
+		if(data.SMTP.HOST) $("#smtpserver").val(data.SMTP.HOST);
 		if(data.SMTP.PORT) $("#smtpport").val(data.SMTP.PORT);
-		if(data.SMTP.SMTPUSER) $("#smtpuser").val(data.SMTP.SMTPUSER);
-		if(data.SMTP.SMTPPASS) $("#smtppass").val(data.SMTP.SMTPPASS);
+		if(data.SMTP.USER) $("#smtpuser").val(data.SMTP.USER);
+		if(data.SMTP.PASSWORD) $("#smtppass").val(data.SMTP.PASSWORD);
 		
 		// Checkboxes
 		if(is_enabled(data.SMTP.ACTIVATE_MAIL)) $("#activate_mail").prop('checked', true).checkboxradio("refresh");
 		if(is_enabled(data.SMTP.AUTH)) $("#smtpauth").prop('checked', true).checkboxradio("refresh");
-		if(is_enabled(data.SMTP.CRYPT)) $("#smtpcrypt").prop('checked', true).checkboxradio("refresh");
+		if(is_enabled(data.SMTP.TLS)) $("#smtpcrypt").prop('checked', true).checkboxradio("refresh");
 	}
 
 	// Notifications Area

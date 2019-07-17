@@ -59,7 +59,7 @@ $response{message} = "Unspecified error";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.3.1";
+my $version = "1.5.0.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -148,12 +148,29 @@ sub change_mailcfg
 	}
 	
 	my $mailfile = $lbsconfigdir . "/mail.json";
+	my $msmtprcfile = $lbhomedir . "/system/msmtp/msmtprc";
 	
 	# %SL = LoxBerry::System::readlanguage();
-
-	
 	$mailobj = LoxBerry::JSON->new();
 	$mcfg = $mailobj->open(filename => $mailfile);
+	
+	# Read msmtp config
+	my @msmtprckeys;
+	if (-e $msmtprcfile) {
+		open(my $fh, '<', $msmtprcfile);
+		while (<$fh>) {
+			chomp;                  # no newline
+			s/#.*//;                # no comments
+			s/^\s+//;               # no leading white
+			s/\s+$//;               # no trailing white
+			next unless length;     # anything left?
+			my ($var, $value) = split(/\s+/, $_, 2);
+			$var = uc ($var); # UPPERCASE
+			push (@msmtprckeys, $var);
+			$mcfg->{SMTP}->{$var} = $value;
+			print STDERR "Read config: $var: $mcfg->{SMTP}->{$var}\n";
+		} 
+	}
 	
 	if($key eq "getmailcfg") {
 		my $resp = checksecpin($val);
@@ -163,10 +180,9 @@ sub change_mailcfg
 			$response{output} = to_json($mcfg);
 		}
 	} 
+
 	elsif($key eq "setmailcfg") {
-		#eval {
-			save();
-		#};
+		save();
 		if ($@) {
 			$response{error} = 1;
 			$response{message} = "Error: $!";
@@ -202,34 +218,38 @@ sub save
 	
 	%SL = LoxBerry::System::readlanguage();
 	
+	# Clear hash and safe only values who should be safed in LB config
+	delete $mcfg->{SMTP};
 	$mcfg->{SMTP}->{ACTIVATE_MAIL} = is_enabled($R::activate_mail) ? 1 : 0;
 	$mcfg->{SMTP}->{ISCONFIGURED} = $mcfg->{SMTP}->{ACTIVATE_MAIL};
-	$mcfg->{SMTP}->{AUTH} = is_enabled($R::smtpauth) ? 1 : 0;
-	$mcfg->{SMTP}->{CRYPT} = is_enabled($R::smtpcrypt) ? 1 : 0;
-	$mcfg->{SMTP}->{SMTPSERVER} = $R::smtpserver;
-	$mcfg->{SMTP}->{PORT} = $R::smtpport;
+#	$mcfg->{SMTP}->{AUTH} = is_enabled($R::smtpauth) ? 1 : 0;
+#	$mcfg->{SMTP}->{CRYPT} = is_enabled($R::smtpcrypt) ? 1 : 0;
+#	$mcfg->{SMTP}->{SMTPSERVER} = $R::smtpserver;
+#	$mcfg->{SMTP}->{PORT} = $R::smtpport;
 	$mcfg->{SMTP}->{EMAIL} = $R::email;
-	$mcfg->{SMTP}->{SMTPUSER} = $R::smtpuser;
-	$mcfg->{SMTP}->{SMTPPASS} = $R::smtppass;
+#	$mcfg->{SMTP}->{SMTPUSER} = $R::smtpuser;
+#	$mcfg->{SMTP}->{SMTPPASS} = $R::smtppass;
 	
 	$mailobj->write();
 	
 	# Delete values if email is disabled
 	if (! $mcfg->{SMTP}->{ACTIVATE_MAIL}) {
+		unlink ("$lbhomedir/.msmtprc");
+		unlink ("$lbhomedir/system/msmtp/msmtprc");
 		$R::smtpserver = "";
 		$R::smptport = "";
 		$R::email = "";
 		$R::smtpuser = "";
 		$R::smtppass = "";
+	# Activate new configuration
+	} else {
+		createtmpconfig();
+		installtmpconfig();
+		sendtestmail() if (is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
+		cleanuptmpconfig();
+		system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
 	}
 
-	# Activate new configuration
-	
-	createtmpconfig();
-	installtmpconfig();
-	sendtestmail() if (is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
-	cleanuptmpconfig();
-		
 	return;
 
 }
@@ -286,55 +306,30 @@ sub checksecpin
 sub createtmpconfig
 {
 	
-	# my $flock;
-	
 	# Create temporary SSMTP Config file
-	open(F,">/tmp/tempssmtpconf.dat") || die "Cannot open /tmp/tempssmtpconf.dat";
+	open(F,">/tmp/tempmsmtprc.dat") || die "Cannot open /tmp/tempmsmtprc.dat";
 	flock(F,2);
-	print F <<ENDFILE;
-#
-# Config file for sSMTP sendmail
-#
-# The person who gets all mail for userids < 1000
-# Make this empty to disable rewriting.
-ENDFILE
-
-	print F "root=$R::email\n\n";
-
-	print F <<ENDFILE;
-# The place where the mail goes. The actual machine name is required no
-# MX records are consulted. Commonly mailhosts are named mail.domain.com
-ENDFILE
-	print F "mailhub=$R::smtpserver\:$R::smtpport\n\n";
+	#print F "root=$R::email\n\n";
+	print F "logfile /opt/loxberry/log/system_tmpfs/mail.log\n";
+	print F "from $R::email\n";
+	print F "host $R::smtpserver\n";
+	print F "port $R::smtpport\n";
 
 	if ($R::smtpauth) {
-		print F "# Authentication\n";
-		print F "AuthUser=$R::smtpuser\n";
-		print F "AuthPass=$R::smtppass\n\n";
+		print F "auth on\n";
+		print F "user $R::smtpuser\n";
+		print F "password $R::smtppass\n";
+	} else {
+		print F "auth off\n";
 	}
 
 	if ($R::smtpcrypt) {
-		print F "# Use encryption\n";
-		print F "UseTLS=YES\n";
-		print F "UseSTARTTLS=YES\n\n";
+		print F "tls on\n";
+		print F "tls_trust_file /etc/ssl/certs/ca-certificates.crt\n"
 	} else {
-		print F "# Dont use encryption\n";
-		print F "UseTLS=NO\n";
-		print F "UseSTARTTLS=NO\n\n";
+		print F "tls off\n";
 	}
-
-	print F <<ENDFILE;
-# Where will the mail seem to come from?
-#rewriteDomain=
-
-# The full hostname
-hostname=loxberry.local
-
-# Are users allowed to set their own From: address?
-# YES - Allow the user to specify their own From: address
-# NO - Use the system gen
-FromLineOverride=YES
-ENDFILE
+	flock(F,8);
 	close(F);
 
 }
@@ -347,18 +342,19 @@ sub installtmpconfig
 	# Install temporary ssmtp config file
 	#my $result = qx($lbhomedir/sbin/createssmtpconf.sh start 2>/dev/null);
 
-	if ( -e "/tmp/tempssmtpconf.dat" and -e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
+	if ( -e "/tmp/tempmsmtprc.dat" and -e "$lbhomedir/system/msmtp/msmtprc" ) {
 		# Backup old file
-		File::Copy::move ("$lbhomedir/system/ssmtp/ssmtp.conf", "$lbhomedir/system/ssmtp/ssmtp.conf.bkp");
-		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf.bkp";
+		File::Copy::move ("$lbhomedir/system/msmtp/msmtprc", "$lbhomedir/system/msmtp/msmtprc.bkp");
+		chmod 0600, "$lbhomedir/system/msmtp/msmtprc.bkp";
 	}
 	
-	if ( -e "/tmp/tempssmtpconf.dat" ) {
+	if ( -e "/tmp/tempmsmtprc.dat" ) {
 		# Copy new file
-		chmod 0600, "/tmp/tempssmtpconf.dat";
-		File::Copy::copy ("/tmp/tempssmtpconf.dat", "$lbhomedir/system/ssmtp/ssmtp.conf");
-		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf";
-		unlink "/tmp/tempssmtpconf.dat";
+		chmod 0600, "/tmp/tempmsmtprc.dat";
+		File::Copy::copy ("/tmp/tempmsmtprc.dat", "$lbhomedir/system/msmtp/msmtprc");
+		chmod 0600, "$lbhomedir/system/msmtp/msmtprc";
+		unlink "/tmp/tempmsmtprc.dat";
+		system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
 	}
 		
 }
@@ -371,11 +367,22 @@ sub restoressmtpconfig
 	# ReInstall original ssmtp config file
 	# my $result = qx($lbssbindir/createssmtpconf.sh stop 2>/dev/null);
 
-	if ( -e "$lbhomedir/system/ssmtp/ssmtp.conf.bkp" and -e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
+	if ( -e "$lbhomedir/system/msmtp/msmtprc.bkp" and -e "$lbhomedir/system/msmtp/msmtprc" ) {
 		# Re-Create old file
-		File::Copy::move ("$lbhomedir/system/ssmtp/ssmtp.conf.bkp", "$lbhomedir/system/ssmtp/ssmtp.conf");
-		chmod 0600, "$lbhomedir/system/ssmtp/ssmtp.conf";
+		File::Copy::move ("$lbhomedir/system/msmtp/msmtprc.bkp", "$lbhomedir/system/msmtp/msmtprc");
+		chmod 0600, "$lbhomedir/system/msmtp/msmtprc";
 	}
+
+	my $mailfile = $lbsconfigdir . "/mail.json";
+	
+	$mailobj = LoxBerry::JSON->new();
+	$mcfg = $mailobj->open(filename => $mailfile);
+
+	if (!$mcfg->{SMTP}->{ACTIVATE_MAIL}) {
+		unlink ( "$lbhomedir/.msmtprc" );
+		unlink ( "$lbhomedir/system/msmtp/msmtprc" );
+	}
+
 	
 }
 
@@ -413,8 +420,8 @@ sub cleanuptmpconfig
 {
 	
 	# Delete old temporary config file
-	if (-e "/tmp/tempssmtpconf.dat" && -f "/tmp/tempssmtpconf.dat" && !-l "/tmp/tempssmtpconf.dat" && -T "/tmp/tempssmtpconf.dat") {
-	  unlink ("/tmp/tempssmtpconf.dat");
+	if (-e "/tmp/tempmsmtprc.dat" && -f "/tmp/tempmsmtprc.dat" && !-l "/tmp/tempmsmtprc.dat" && -T "/tmp/tempmsmtprc.dat") {
+	  unlink ("/tmp/tempmsmtprc.dat");
 	}
 
 }
