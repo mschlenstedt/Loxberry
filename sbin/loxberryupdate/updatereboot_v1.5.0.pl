@@ -308,26 +308,26 @@ exit($errors);
 
 END
 {
-	my $port = lbwebserverport();
-	my $reboot;
+	#my $port = lbwebserverport();
+	#my $reboot;
 	# Kill simple webserver - try several times...
-	LOGINF "Killing simple update webserver...";
-	my $output = qx { pkill -f updaterebootwebserver };
-	my $output = qx { fuser -k $port/tcp };
-	sleep (5);
-	LOGINF "Restart Apache2...";
-	my $output = qx { systemctl start apache2.service };
-	$exitcode = $? >> 8;
-	if ($exitcode != 0) {
-		LOGINF "Could not start Apache webserver - Error $exitcode";
+	#LOGINF "Killing simple update webserver...";
+	#my $output = qx { pkill -f updaterebootwebserver };
+	#my $output = qx { fuser -k $port/tcp };
+	#sleep (5);
+	#LOGINF "Restart Apache2...";
+	#my $output = qx { systemctl start apache2.service };
+	#$exitcode = $? >> 8;
+	#if ($exitcode != 0) {
+	#	LOGINF "Could not start Apache webserver - Error $exitcode";
 		LOGINF "Will reboot now to restart Apache...";
-		$reboot = 1;
-	} else {
-		LOGOK "Apache2 webserver started successfully.";
-	}
+	#	$reboot = 1;
+	#} else {
+	#	LOGOK "Apache2 webserver started successfully.";
+	#}
 	LOGEND;
 
-	if ( $reboot ) {
+	#if ( $reboot ) {
 		system ("reboot");
-	}
+	#}
 }
