@@ -36,11 +36,29 @@
 						<label id="labelnetzwerkanschluss"><TMPL_VAR NETWORK.LABEL_NETWORKING></label>
 					</td>
 					<td style="width:50%;">
-						<fieldset data-role="controlgroup">
-							<input onclick="disable(); validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
+						<fieldset data-role="controlgroup" id="netzwerkanschluss">
+							<TMPL_LOOP INTERFACES>
+								<input id="netzwerkanschluss_<TMPL_VAR name>" name="netzwerkanschluss" type="radio" value="<TMPL_VAR name>"data-iswireless="<TMPL_VAR wireless>" onclick="disable(); 
+								<TMPL_UNLESS wireless>
+								validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);
+								<TMPL_ELSE>
+								validate_chk_object(['#netzwerkssid','#netzwerkschluessel']);
+								</TMPL_UNLESS>
+								">
+								<label for="netzwerkanschluss_<TMPL_VAR name>"><TMPL_VAR name>
+								<TMPL_UNLESS wireless>
+									(<TMPL_VAR NETWORK.SELECT_CABLED>)
+								<TMPL_ELSE>
+									(<TMPL_VAR NETWORK.SELECT_WIFI>)
+								</TMPL_UNLESS>
+								</label>
+							</TMPL_LOOP>
+
+<!--							<input onclick="disable(); validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
 								<label for="netzwerkanschluss_eth"><TMPL_VAR NETWORK.SELECT_CABLE></label>
 							<input onclick="disable(); validate_chk_object(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
 								<label for="netzwerkanschluss_wlan"><TMPL_VAR NETWORK.SELECT_WIRELESS></label>
+-->
 						</fieldset>
 					</td>
 					<td style="width:5%;vertical-align:middle;">&nbsp;
@@ -89,9 +107,9 @@
 					</td>
 					<td style="width:50%;">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable(); validate_clean_objects(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" <TMPL_VAR CHECKED3> id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp">
+							<input id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp" onclick="disable(); validate_clean_objects(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" >
 								<label for="netzwerkadressen_dhcp"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP></label>
-							<input onclick="disable(); validate_chk_object(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" <TMPL_VAR CHECKED4> id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual">
+							<input id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual" onclick="disable(); validate_chk_object(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" >
 								<label for="netzwerkadressen_manual"><TMPL_VAR NETWORK.SELECT_IP_MANUAL></label>
 						</fieldset>
 					</td>
@@ -167,7 +185,7 @@
 					</td>
 					<td style="width:50%;">
 						<fieldset data-role="controlgroup">
-							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_AUTO_IPv6> id="netzwerkadressen_auto_IPv6" name="netzwerkadressen_IPv6" type="radio" value="off">
+							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_AUTO_IPv6> id="netzwerkadressen_auto_IPv6" name="netzwerkadressen_IPv6" type="radio" value="auto">
 							<label for="netzwerkadressen_auto_IPv6"><TMPL_VAR NETWORK.SELECT_IP_AUTO_IPv6></label>
 							<input onclick="disable(); /*validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);*/" <TMPL_VAR CHECKED_DHCP_IPv6> id="netzwerkadressen_dhcp_IPv6" name="netzwerkadressen_IPv6" type="radio" value="dhcp">
 							<label for="netzwerkadressen_dhcp_IPv6"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP_IPv6></label>
@@ -270,77 +288,94 @@
 			</div>
 			<div id="form-error-message" class="form-error-message"></div>
 		</form>
-		<script>
-		function disable() 
-		{
-			// Ethernet or WLAN
-			if ( document.main_form3.netzwerkanschluss_eth.checked == true ) {
-				validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);
-				$('.area-netzwerkssid').fadeOut(1);
-				$('.area-netzwerkschluessel').fadeOut(50);
-			}
-			else {
-				validate_chk_object(['#netzwerkssid','#netzwerkschluessel']);
-				$('.area-netzwerkssid').fadeIn(1);
-				$('.area-netzwerkschluessel').fadeIn(50);
-			}
-			// DHCP or Manual (IPv4)
-			if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
-				validate_clean_objects(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
-				$('.area-netzwerkipadresse').fadeOut(1);
-				$('.area-netzwerkipmaske').fadeOut(50);
-				$('.area-netzwerkgateway').fadeOut(150);
-				$('.area-netzwerknameserver').fadeOut(200);
-			}
-			else {
-				validate_chk_object(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
-				$('.area-netzwerkipadresse').fadeIn(1);
-				$('.area-netzwerkipmaske').fadeIn(50);
-				$('.area-netzwerkgateway').fadeIn(150);
-				$('.area-netzwerknameserver').fadeIn(200);
-			}
-			// DHCP or Manual (IPv6)
-			if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_auto_IPv6.checked) {
-				validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);
-				$('.area-netzwerkipadresse_IPv6').fadeOut(1);
-				$('.area-netzwerkipmaske_IPv6').fadeOut(50);
-				// $('.area-netzwerkgateway_IPv6').fadeOut(150);
-				$('.area-netzwerknameserver_IPv6').fadeOut(200);
-			}
-			else {
-				/* validate_chk_object(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);
-				*/
-				$('.area-netzwerkipadresse_IPv6').fadeIn(1);
-				$('.area-netzwerkipmaske_IPv6').fadeIn(50);
-				// $('.area-netzwerkgateway_IPv6').fadeIn(150);
-				$('.area-netzwerknameserver_IPv6').fadeIn(200);
-				
-			}
-			
-			if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_manual_IPv6.checked == true ) {
-				$('.area-privacyext_IPv6').fadeIn(50);
-				$('.area-custom-config-hint').fadeIn(50);
-			} else {
-				$('.area-privacyext_IPv6').fadeOut(50);
-				$('.area-custom-config-hint').fadeOut(50);
-			}
-			
-			
-			
+<script>
+	$( document ).ready(function()
+	{
+		
+		// Set values from config file
+		$('#netzwerkanschluss_<TMPL_VAR netzwerkanschluss>').attr("checked", "checked").checkboxradio("refresh");
+		$('#netzwerkadressen_<TMPL_VAR netzwerkadressen>').attr("checked", "checked").checkboxradio("refresh");
+		
+		netzwerkadressen_IPv6 = "<TMPL_VAR netzwerkadressen_IPv6>";
+		if(netzwerkadressen_IPv6 == "") {
+			netzwerkadressen_IPv6 = "auto";
+		}
+		$('#netzwerkadressen_'+netzwerkadressen_IPv6+'_IPv6').attr("checked", "checked").checkboxradio("refresh");
+		
+		validate_enable('#netzwerkssid');
+		validate_enable('#netzwerkschluessel');
+		validate_enable('#netzwerkipadresse');
+		validate_enable('#netzwerkipmaske');
+		validate_enable('#netzwerkgateway');
+		validate_enable('#netzwerknameserver');
+		// Disable some options on Load depending on selected value
+		disable();
+	});
+	
+	function disable() 
+	{
+		// Ethernet or WLAN
+		
+		checked_netzwerkanschluss = $("[name='netzwerkanschluss']:checked");
+		
+		if ( checked_netzwerkanschluss.attr("data-iswireless") != "1") {
+			validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);
+			$('.area-netzwerkssid').fadeOut(1);
+			$('.area-netzwerkschluessel').fadeOut(50);
+		}
+		else {
+			validate_chk_object(['#netzwerkssid','#netzwerkschluessel']);
+			$('.area-netzwerkssid').fadeIn(1);
+			$('.area-netzwerkschluessel').fadeIn(50);
+		}
+		// DHCP or Manual (IPv4)
+		if ( document.main_form3.netzwerkadressen_dhcp.checked == true ) {
+			validate_clean_objects(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
+			$('.area-netzwerkipadresse').fadeOut(1);
+			$('.area-netzwerkipmaske').fadeOut(50);
+			$('.area-netzwerkgateway').fadeOut(150);
+			$('.area-netzwerknameserver').fadeOut(200);
+		}
+		else {
+			validate_chk_object(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);
+			$('.area-netzwerkipadresse').fadeIn(1);
+			$('.area-netzwerkipmaske').fadeIn(50);
+			$('.area-netzwerkgateway').fadeIn(150);
+			$('.area-netzwerknameserver').fadeIn(200);
+		}
+		// DHCP or Manual (IPv6)
+		if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_auto_IPv6.checked) {
+			validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);
+			$('.area-netzwerkipadresse_IPv6').fadeOut(1);
+			$('.area-netzwerkipmaske_IPv6').fadeOut(50);
+			// $('.area-netzwerkgateway_IPv6').fadeOut(150);
+			$('.area-netzwerknameserver_IPv6').fadeOut(200);
+		}
+		else {
+			/* validate_chk_object(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerkgateway_IPv6','#netzwerknameserver_IPv6']);
+			*/
+			$('.area-netzwerkipadresse_IPv6').fadeIn(1);
+			$('.area-netzwerkipmaske_IPv6').fadeIn(50);
+			// $('.area-netzwerkgateway_IPv6').fadeIn(150);
+			$('.area-netzwerknameserver_IPv6').fadeIn(200);
 			
 		}
-		$( document ).ready(function()
-		{
-			validate_enable('#netzwerkssid');
-			validate_enable('#netzwerkschluessel');
-			validate_enable('#netzwerkipadresse');
-			validate_enable('#netzwerkipmaske');
-			validate_enable('#netzwerkgateway');
-			validate_enable('#netzwerknameserver');
-			// Disable some options on Load depending on selected value
-			disable();
-		});
-		</script>
+		
+		if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_manual_IPv6.checked == true ) {
+			$('.area-privacyext_IPv6').fadeIn(50);
+			$('.area-custom-config-hint').fadeIn(50);
+		} else {
+			$('.area-privacyext_IPv6').fadeOut(50);
+			$('.area-custom-config-hint').fadeOut(50);
+		}
+		
+		
+		
+		
+	}
+		
+</script>
+
 </TMPL_IF>
 <TMPL_IF SAVE>
 		<center>
