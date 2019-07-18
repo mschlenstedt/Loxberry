@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "1.5.0.3";
+our $VERSION = "1.5.0.4";
 our $DEBUG;
 
 ### Exports ###
@@ -253,7 +253,7 @@ sub apt_remove
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
-	my $output = qx { $export $aptbin --purge remove $packagelist 2>&1 };
+	my $output = qx { $export $aptbin -q -y --purge remove $packagelist 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error removing $packagelist - Error $exitcode");
