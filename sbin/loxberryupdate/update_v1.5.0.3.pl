@@ -86,7 +86,7 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 }	
 
 LOGINF "Removing old ssmtp configuration...";
-delete_directory ("/system/ssmtp";
+delete_directory ("/system/ssmtp");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
