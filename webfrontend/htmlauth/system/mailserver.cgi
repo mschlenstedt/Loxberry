@@ -248,6 +248,13 @@ sub save
 		sendtestmail() if (is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
 		cleanuptmpconfig();
 		system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
+		open(F,">$lbhomedir/system/msmtp/aliases");
+		flock(F,2);
+		print F "root: $R::email\n";
+		print F "loxberry: $R::email\n";
+		print F "default: $R::email\n";
+		flock(F,8);
+		close(F);
 	}
 
 	return;

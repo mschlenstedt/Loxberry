@@ -43,6 +43,7 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 	if ( is_enabled ($mcfg->{SMTP}->{ACTIVATE_MAIL}) ) {
 		LOGINF "Migrating ssmtp configuration to msmtp...";
 		my $error;
+		# Config
 		open(F,">$msmtprcfile") || $error++;
 		flock(F,2);
 		print F "aliases $lbhomedir/system/msmtp/aliases\n";
@@ -63,6 +64,14 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 		} else {
 			print F "tls off\n";
 		}
+		flock(F,8);
+		close(F);
+		# Aliases
+		open(F,">$lbhomedir/system/msmtp/aliases");
+		flock(F,2);
+		print F "root: $mcfg->{SMTP}->{EMAIL}\n";
+		print F "loxberry: $mcfg->{SMTP}->{EMAIL}\n";
+		print F "default: $mcfg->{SMTP}->{EMAIL}\n";
 		flock(F,8);
 		close(F);
 		if ($error) {
