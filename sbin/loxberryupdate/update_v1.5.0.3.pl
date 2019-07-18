@@ -70,8 +70,8 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 			LOGWARN "Could not migrate config file from ssmtp to msmtp. Please configure the Mailserver Widget manually!";
 		} else {
 			LOGOK "Created new msmtp config successfully.";
-			my $email = $mcfg->{SMTP}->{EMAIL}
-			LOGINF "Cleaning mail.json due to previously saved credentials in that config file"
+			my $email = $mcfg->{SMTP}->{EMAIL};
+			LOGINF "Cleaning mail.json due to previously saved credentials in that config file";
 			delete $mcfg->{SMTP};
 			$mcfg->{SMTP}->{ACTIVATE_MAIL} = "1";
 			$mcfg->{SMTP}->{ISCONFIGURED} = "1";
