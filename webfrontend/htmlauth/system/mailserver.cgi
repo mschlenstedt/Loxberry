@@ -59,7 +59,7 @@ $response{message} = "Unspecified error";
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.1";
+my $version = "1.5.0.2";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -248,6 +248,13 @@ sub save
 		sendtestmail() if (is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
 		cleanuptmpconfig();
 		system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
+		open(F,">$lbhomedir/system/msmtp/aliases");
+		flock(F,2);
+		print F "root: $R::email\n";
+		print F "loxberry: $R::email\n";
+		print F "default: $R::email\n";
+		flock(F,8);
+		close(F);
 	}
 
 	return;
@@ -310,7 +317,8 @@ sub createtmpconfig
 	open(F,">/tmp/tempmsmtprc.dat") || die "Cannot open /tmp/tempmsmtprc.dat";
 	flock(F,2);
 	#print F "root=$R::email\n\n";
-	print F "logfile /opt/loxberry/log/system_tmpfs/mail.log\n";
+	print F "aliases $lbhomedir/system/msmtp/aliases\n";
+	print F "logfile $lbhomedir/log/system_tmpfs/mail.log\n";
 	print F "from $R::email\n";
 	print F "host $R::smtpserver\n";
 	print F "port $R::smtpport\n";
