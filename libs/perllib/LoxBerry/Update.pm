@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "1.5.0.2";
+our $VERSION = "1.5.0.3";
 our $DEBUG;
 
 ### Exports ###
@@ -33,6 +33,7 @@ our @EXPORT = qw (
 	copy_to_loxberry
 	apt_install
 	apt_update
+	apt_remove
 
 );
 
