@@ -27,7 +27,7 @@ if ($exitcode != 0) {
 
 LOGINF "Installing msmtp package and replacing ssmtp...";
 copy_to_loxberry("/system/msmtp");
-apt_install("msmtp bsd-mailx");
+apt_install("msmtp msmtp-mta bsd-mailx");
 
 #
 # Migrating ssmtp config to msmtp
@@ -45,6 +45,7 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 		my $error;
 		open(F,">$msmtprcfile") || $error++;
 		flock(F,2);
+		print F "aliases $lbhomedir/system/msmtp/aliases\n";
 		print F "logfile $lbhomedir/log/system_tmpfs/mail.log\n";
 		print F "from $mcfg->{SMTP}->{EMAIL}\n";
 		print F "host $mcfg->{SMTP}->{SMTPSERVER}\n";
