@@ -80,6 +80,7 @@
 			}; 
 			function refresh_footer_icons () 
 			{	
+				reboot_on();
 				$.ajax( "/admin/system/tools/ajax-footer-icons-handler.php")
 					.done(function(data) 
 					{ 
