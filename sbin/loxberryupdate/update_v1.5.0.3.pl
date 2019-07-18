@@ -15,15 +15,7 @@ init();
 apt_update("update");
 
 LOGINF "Removing obsolete ssmtp package...";
-$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --purge -q -y remove ssmtp bsd-mailx };
-$exitcode  = $? >> 8;
-if ($exitcode != 0) {
-	LOGERR "Error removing ssmtp and bsd-mailx - Error $exitcode";
-	LOGDEB $output;
-	$errors++;
-} else {
-	LOGOK "ssmtp and bsd-mailx packages successfully removed.";
-}
+apt_remove("ssmtp bsd-mailx");
 
 LOGINF "Installing msmtp package and replacing ssmtp...";
 copy_to_loxberry("/system/msmtp");
