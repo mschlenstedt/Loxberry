@@ -18,7 +18,7 @@ LOGINF "Removing obsolete ssmtp package...";
 apt_remove("ssmtp bsd-mailx");
 
 LOGINF "Installing msmtp package and replacing ssmtp...";
-copy_to_loxberry("/system/msmtp");
+copy_to_loxberry("/system/msmtp", "loxberry");
 apt_install("msmtp msmtp-mta bsd-mailx");
 
 #
@@ -26,16 +26,12 @@ apt_install("msmtp msmtp-mta bsd-mailx");
 #
 if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 
-	my $mailfile = $lbsconfigdir . "$lbhomedir/config/system/mail.json";
-	my $msmtprcfile = $lbhomedir . "$lbhomedir/system/msmtp/msmtprc";
+	my $mailfile = $lbsconfigdir . "/config/system/mail.json";
+	my $msmtprcfile = $lbhomedir . "/system/msmtp/msmtprc";
 	
 	$mailobj = LoxBerry::JSON->new();
 	$mcfg = $mailobj->open(filename => $mailfile);
 	
-	LOGINF "Status SMT Config: $mcfg->{SMTP}->{ACTIVATE_MAIL}";
-
-	exit;
-
 	if ( is_enabled ($mcfg->{SMTP}->{ACTIVATE_MAIL}) ) {
 		LOGINF "Migrating ssmtp configuration to msmtp...";
 		my $error;
