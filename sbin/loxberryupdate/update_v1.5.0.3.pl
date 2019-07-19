@@ -26,7 +26,7 @@ apt_install("msmtp msmtp-mta bsd-mailx");
 #
 if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 
-	my $mailfile = $lbsconfigdir . "/config/system/mail.json";
+	my $mailfile = $lbsconfigdir . "/mail.json";
 	my $msmtprcfile = $lbhomedir . "/system/msmtp/msmtprc";
 	
 	$mailobj = LoxBerry::JSON->new();
