@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
 <meta http-equiv="Cache-Control" content="no-cache">
-
+<script src="/system/scripts/jquery/jquery-1.12.4.min.js"></script>
 <style>
 * {
 	font-family:sans-serif;
@@ -15,6 +15,10 @@ body { margin: 0; padding: 0; }
 	width:100%;
 	height:42px;
 	text-align:center;
+}
+
+.lastlines {
+	font-family:monospace;
 }
 </style>
 
@@ -38,8 +42,55 @@ I'm serious - this really can take a <b>long</b> time - especially if you are us
 Your LoxBerry.
 </td></tr>
 </table>
-<br><br><br>
 <a href="/logfile" target="_blank">Logfile</a>
+<br><br>
+<h4>Last lines of logfile</h4>
+<table id="lastlines" class="lastlines" style="width:80%;font-family:monospace">
+</table>
+
 </center>
 </body>
 </html>
+
+<script>
+
+var requestRunning = 0;
+	
+$(function() {
+    refreshLastlines();
+	var refreshTimer = setInterval(refreshLastlines, 3000);
+	console.log( "Page loaded" );
+	
+});
+
+
+
+	
+function refreshLastlines() {
+	console.log("refreshLastlines");
+	if (requestRunning != 0) 
+		return;
+	console.log("getJSON");
+	requestRunning = 1;
+	$.getJSON( "/lastlines", function( data ) {
+		var items = [];
+		console.log(data);
+		
+		$.each( data.entries, function( key, val ) {
+			items.push( "<tr><td class='lastlines'>"+val+"</td></tr>" );
+		});
+		$( "#lastlines" ).html (items.join( "" ));
+			
+	})
+	.fail(function() { 
+		$( "#lastlines" ).html ("(Currently not available, possibly rebooting.)");
+	})
+	.always(function() {
+		requestRunning=0;
+	});
+	
+}
+
+
+
+</script>
