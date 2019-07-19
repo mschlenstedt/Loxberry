@@ -100,6 +100,9 @@
 		 e.preventDefault();
 		$("#btnsubmit").attr("disabled", true);
 		
+		// Uppercase Workgroup name
+		$("#global_workgroup").val($("#global_workgroup").val().toUpperCase());
+		
 		$.ajax( { 
 				//type: 'POST',
 				//url: 'ajax_savejson.cgi', 
