@@ -82,8 +82,14 @@ function refreshLastlines() {
 		$( "#lastlines" ).html (items.join( "" ));
 			
 	})
-	.fail(function() { 
+	.fail(function( jqxhr, textStatus, error ) { 
 		$( "#lastlines" ).html ("(Currently not available, possibly rebooting.)");
+		console.log(jqxhr.status, jqxhr.statusText);
+		if( jqxhr.status === 404 ) {
+			console.log("Status is 404");
+			window.open(location.protocol + '//' + location.host, '_top');
+		}
+	
 	})
 	.always(function() {
 		requestRunning=0;
