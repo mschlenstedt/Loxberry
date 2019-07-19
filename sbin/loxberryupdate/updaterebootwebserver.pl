@@ -4,12 +4,10 @@ use HTTP::Status;
 use LoxBerry::System;
 use JSON;
  
-my $c;
-
 my $port = lbwebserverport();
 
 # DEBUG
-# my $port = 80;
+#my $port = 81;
 
 my $d = HTTP::Daemon->new(
 	LocalPort => $port,
@@ -17,12 +15,10 @@ my $d = HTTP::Daemon->new(
 
 my $logfile = shift;
 
-
-
-while ($c = $d->accept) {
+while (my $c = $d->accept) {
     while (my $r = $c->get_request) {
         if($r->method eq 'GET' && $r->uri->path eq "/lastlines") {
-			lastlines();
+			lastlines($c);
 		} elsif ($r->method eq 'GET' && $r->uri->path eq "/logfile") {
             $c->send_file_response("$logfile");
 		} elsif ($r->method eq 'GET' && $r->uri->path eq "/system/scripts/jquery/jquery-1.12.4.min.js") {
@@ -41,7 +37,7 @@ while ($c = $d->accept) {
 
 sub lastlines
 {
-
+	my $c = shift;
 	
 	# DEBUG
 	# $logfile = "/opt/loxberry/log/system_tmpfs/apache2/error.log";
