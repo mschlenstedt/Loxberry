@@ -58,6 +58,22 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 		}
 		flock(F,8);
 		close(F);
+		$output = qx { chmod 0600 $msmtprcfile 2>&1 };
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+		        LOGERR "Error setting 0600 file permissions for $msmtprcfile - Error $exitcode";
+			$error++;
+		} else {
+			LOGOK "Changing file permissions successfully for $msmtprcfile";
+		}
+		$output = qx { chown loxberry:loxberry $msmtprcfile 2>&1 };
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+		        LOGERR "Error changing owner to loxberry for $msmtprcfile - Error $exitcode";
+			$error++;
+		} else {
+			LOGOK "Changing owner to loxberry successfully for $msmtprcfile";
+		}
 		# Aliases
 		open(F,">$lbhomedir/system/msmtp/aliases");
 		flock(F,2);
@@ -66,8 +82,26 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 		print F "default: $mcfg->{SMTP}->{EMAIL}\n";
 		flock(F,8);
 		close(F);
+		$output = qx { chmod 0600 $lbhomedir/system/msmtp/aliases 2>&1 };
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+		        LOGERR "Error setting 0600 file permissions for $lbhomedir/system/msmtp/aliases - Error $exitcode";
+			$error++;
+		} else {
+			LOGOK "Changing file permissions successfully for $lbhomedir/system/msmtp/aliases";
+		}
+		$output = qx { chown loxberry:loxberry $lbhomedir/system/msmtp/aliases 2>&1 };
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+		        LOGERR "Error changing owner to loxberry for $lbhomedir/system/msmtp/aliases - Error $exitcode";
+			$error++;
+		} else {
+			LOGOK "Changing owner to loxberry successfully for $lbhomedir/system/msmtp/aliases";
+		}
 		if ($error) {
 			LOGWARN "Could not migrate config file from ssmtp to msmtp. Please configure the Mailserver Widget manually!";
+			unlink ("$lbhomedir/system/msmtp/aliases";
+			unlink ("$msmtprcfile";
 		} else {
 			LOGOK "Created new msmtp config successfully.";
 			my $email = $mcfg->{SMTP}->{EMAIL};
