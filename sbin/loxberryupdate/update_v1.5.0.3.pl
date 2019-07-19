@@ -24,7 +24,7 @@ apt_install("msmtp msmtp-mta bsd-mailx");
 #
 # Migrating ssmtp config to msmtp
 #
-if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
+if (-e "$lbhomedir/system/ssmtp/ssmtp.config" ) {
 
 	my $mailfile = $lbsconfigdir . "$lbhomedir/config/system/mail.json";
 	my $msmtprcfile = $lbhomedir . "$lbhomedir/system/msmtp/msmtprc";
@@ -32,6 +32,10 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 	$mailobj = LoxBerry::JSON->new();
 	$mcfg = $mailobj->open(filename => $mailfile);
 	
+	LOGINF "Status SMT Config: $mcfg->{SMTP}->{ACTIVATE_MAIL}";
+
+	exit;
+
 	if ( is_enabled ($mcfg->{SMTP}->{ACTIVATE_MAIL}) ) {
 		LOGINF "Migrating ssmtp configuration to msmtp...";
 		my $error;
@@ -86,7 +90,7 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 }	
 
 LOGINF "Removing old ssmtp configuration...";
-delete_directory ("/system/ssmtp");
+#delete_directory ("$lbhomedir/system/ssmtp");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
