@@ -100,8 +100,8 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 		}
 		if ($error) {
 			LOGWARN "Could not migrate config file from ssmtp to msmtp. Please configure the Mailserver Widget manually!";
-			unlink ("$lbhomedir/system/msmtp/aliases";
-			unlink ("$msmtprcfile";
+			unlink "$lbhomedir/system/msmtp/aliases";
+			unlink "$msmtprcfile";
 		} else {
 			LOGOK "Created new msmtp config successfully.";
 			my $email = $mcfg->{SMTP}->{EMAIL};
