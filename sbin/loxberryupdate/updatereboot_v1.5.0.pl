@@ -268,10 +268,14 @@ $log->open;
 
 LOGINF "Configuring logrotate...";
 $log->close;
-my $output = qx { mv -v /etc/logrotate.conf.dpkg-new /etc/logrotate.conf >> $logfilename 2>&1 };
+if ( -e "/etc/logrotate.conf.dpkg-new" ) {
+	my $output = qx { mv -v /etc/logrotate.conf.dpkg-new /etc/logrotate.conf >> $logfilename 2>&1 };
+}
+if ( -e "/etc/logrotate.conf.dpkg-dist" ) {
+	my $output = qx { mv -v /etc/logrotate.conf.dpkg-dist /etc/logrotate.conf >> $logfilename 2>&1 };
+}
 my $output = qx { sed -i 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
 $log->open;
-
 
 
 
@@ -308,26 +312,7 @@ exit($errors);
 
 END
 {
-	#my $port = lbwebserverport();
-	#my $reboot;
-	# Kill simple webserver - try several times...
-	#LOGINF "Killing simple update webserver...";
-	#my $output = qx { pkill -f updaterebootwebserver };
-	#my $output = qx { fuser -k $port/tcp };
-	#sleep (5);
-	#LOGINF "Restart Apache2...";
-	#my $output = qx { systemctl start apache2.service };
-	#$exitcode = $? >> 8;
-	#if ($exitcode != 0) {
-	#	LOGINF "Could not start Apache webserver - Error $exitcode";
-		LOGINF "Will reboot now to restart Apache...";
-	#	$reboot = 1;
-	#} else {
-	#	LOGOK "Apache2 webserver started successfully.";
-	#}
+	LOGINF "Will reboot now to restart Apache...";
 	LOGEND;
-
-	#if ( $reboot ) {
-		system ("reboot");
-	#}
+	system ("/sbin/reboot");
 }
