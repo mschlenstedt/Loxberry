@@ -20,6 +20,17 @@ body { margin: 0; padding: 0; }
 .lastlines {
 	font-family:monospace;
 }
+
+.progress {
+	display:inline-block;
+	border:1px solid #104000;
+	background-color:#1a6600;
+	min-width:7px;
+	width:7px;
+	height:15px;
+	min-height:15px;
+
+}
 </style>
 
 
@@ -45,6 +56,12 @@ Your LoxBerry.
 <a href="/logfile" target="_blank">Logfile</a>
 <br><br>
 <h4>Last lines of logfile</h4>
+<div>
+	<div class="progress" id="progress0"></div>
+	<div class="progress" id="progress1"></div>
+	<div class="progress" id="progress2"></div>
+	<div class="progress" id="progress3"></div>
+</div>
 <table id="lastlines" class="lastlines" style="width:80%;font-family:monospace">
 </table>
 
@@ -55,6 +72,7 @@ Your LoxBerry.
 <script>
 
 var requestRunning = 0;
+var progressHighlight=3;
 	
 $(function() {
     refreshLastlines();
@@ -77,7 +95,9 @@ function refreshLastlines() {
 			items.push( "<tr><td class='lastlines'>"+escapeHtml(val)+"</td></tr>" );
 		});
 		$( "#lastlines" ).html (items.join( "" ));
-			
+		
+	
+	
 	})
 	.fail(function( jqxhr, textStatus, error ) { 
 		$( "#lastlines" ).html ("(Currently not available, possibly rebooting.)");
@@ -90,6 +110,13 @@ function refreshLastlines() {
 	})
 	.always(function() {
 		requestRunning=0;
+		
+		$("#progress"+progressHighlight).css("background-color", "#1a6600");
+		progressHighlight++;
+		if(progressHighlight>3)
+			progressHighlight=0;
+		$("#progress"+progressHighlight).css("background-color", "#40ff00");
+		
 	});
 	
 }
