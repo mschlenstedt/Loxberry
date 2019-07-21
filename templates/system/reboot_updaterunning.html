@@ -74,7 +74,7 @@ function refreshLastlines() {
 		console.log(data);
 		
 		$.each( data.entries, function( key, val ) {
-			items.push( "<tr><td class='lastlines'>"+val+"</td></tr>" );
+			items.push( "<tr><td class='lastlines'>"+escapeHtml(val)+"</td></tr>" );
 		});
 		$( "#lastlines" ).html (items.join( "" ));
 			
@@ -94,6 +94,22 @@ function refreshLastlines() {
 	
 }
 
+var entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
+
+function escapeHtml (string) {
+  return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+    return entityMap[s];
+  });
+}
 
 
 </script>

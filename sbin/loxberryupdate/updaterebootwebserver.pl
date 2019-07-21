@@ -9,9 +9,18 @@ my $port = lbwebserverport();
 # DEBUG
 #my $port = 81;
 
-my $d = HTTP::Daemon->new(
+my $d;
+
+while (!$d) {
+
+$d = HTTP::Daemon->new(
 	LocalPort => $port,
-	) || die;
+	);
+	if(!$d) {
+		print STDERR "Waiting for port $port...\n";
+		sleep 2;
+	}
+}
 
 my $logfile = shift;
 
@@ -47,6 +56,7 @@ sub lastlines
 	
 	chomp(my @lines = <$fh>);
 	close $fh;
+	shift @lines;
 	while (scalar @lines > 10) {
 		shift @lines;
 	}
