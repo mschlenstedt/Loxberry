@@ -644,7 +644,7 @@ function ftp_changemode($switch) {
 		shell_exec("sudo systemctl --quiet enable vsftpd.service");
 	} else {
 		shell_exec("sudo systemctl --quiet stop vsftpd.service");
-		shell_exec("systemctl --quiet disable vsftpd.service");
+		shell_exec("sudo systemctl --quiet disable vsftpd.service");
 	}	
 }
 
