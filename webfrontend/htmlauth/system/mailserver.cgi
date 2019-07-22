@@ -59,7 +59,7 @@ $response{message} = "Unspecified error";
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.2";
+my $version = "1.5.0.3";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -182,10 +182,12 @@ sub change_mailcfg
 	} 
 
 	elsif($key eq "setmailcfg") {
-		save();
+		eval { 
+			save();
+		};
 		if ($@) {
 			$response{error} = 1;
-			$response{message} = "Error: $!";
+			$response{message} = "Error: $@";
 		} else {
 			$response{error} = 0;
 			$response{message} = "Successfully saved.";
@@ -230,12 +232,23 @@ sub save
 #	$mcfg->{SMTP}->{SMTPUSER} = $R::smtpuser;
 #	$mcfg->{SMTP}->{SMTPPASS} = $R::smtppass;
 	
+	# Validy check
+	if($mcfg->{SMTP}->{ACTIVATE_MAIL}) {
+		die("Email address missing\n") if (!$R::email);
+		die("SMTP Server missing\n") if (!$R::smtpserver);
+		die("SMTP Port missing\n") if (!$R::smtpport);
+		if(is_enabled($R::smtpauth)) {
+			die("SMTP User missing\n") if (!$R::smtpuser);
+			die("SMTP Password missing\n") if (!$R::smtppass);
+		}
+	}
+	
 	$mailobj->write();
 	
 	# Delete values if email is disabled
 	if (! $mcfg->{SMTP}->{ACTIVATE_MAIL}) {
-		unlink ("$lbhomedir/.msmtprc");
-		unlink ("$lbhomedir/system/msmtp/msmtprc");
+		unlink ("$lbhomedir/.msmtprc") or die();
+		unlink ("$lbhomedir/system/msmtp/msmtprc") or die();
 		$R::smtpserver = "";
 		$R::smptport = "";
 		$R::email = "";
