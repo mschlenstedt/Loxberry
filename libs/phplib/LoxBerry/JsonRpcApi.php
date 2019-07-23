@@ -2,6 +2,9 @@
 
 namespace LoxBerry;
 
+// Version 1.5.0.1
+
+
 require_once "/opt/loxberry/libs/phplib/loxberry_system.php";
 // require_once "/opt/loxberry/libs/phplib/loxberry_web.php";
 
@@ -11,7 +14,7 @@ use Datto\JsonRpc\Exceptions\MethodException;
 
 
 
-class Api implements Evaluator
+class JsonRpcApi implements Evaluator
 {
     public function evaluate($method, $arguments)
     {

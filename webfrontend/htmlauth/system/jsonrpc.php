@@ -28,7 +28,7 @@ use Datto\JsonRpc\Evaluator;
 use Datto\JsonRpc\Exceptions\ArgumentException;
 use Datto\JsonRpc\Exceptions\MethodException;
 use Datto\JsonRpc\Server;
-use LoxBerry\Api;
+use LoxBerry\JsonRpcApi;
 
 $server = new Server(new Api());
 
