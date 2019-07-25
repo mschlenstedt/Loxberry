@@ -2,6 +2,11 @@
 
 namespace LoxBerry;
 
+require_once "/opt/loxberry/libs/phplib/loxberry_system.php";
+require_once "/opt/loxberry/libs/phplib/loxberry_web.php";
+require_once "/opt/loxberry/libs/phplib/loxberry_io.php";
+require_once "/opt/loxberry/libs/phplib/loxberry_storage.php";
+
 // Version 1.5.0.2
 
 // These functions are prevented by the server for security reasons
@@ -38,8 +43,6 @@ CONST PREVENTED_FUNCTIONS = [
 	"use", 
 ];
 
-require_once "/opt/loxberry/libs/phplib/loxberry_system.php";
-// require_once "/opt/loxberry/libs/phplib/loxberry_web.php";
 
 use Datto\JsonRpc\Evaluator;
 use Datto\JsonRpc\Exceptions\ArgumentException;
@@ -51,11 +54,11 @@ class JsonRpcApi implements Evaluator
 {
     public function evaluate($method, $arguments)
     {
-	/*
-        if ($method === 'add') {
-            return self::add($arguments);
+	
+        if ($method === 'getdirs') {
+            return self::getdirs($arguments);
         }
-	*/
+	
 		
 		//echo "Method: $method\n";
 		//echo "Arguments: " . join(" ", $arguments) . "\n";
@@ -74,6 +77,16 @@ class JsonRpcApi implements Evaluator
 			$func_exists=true;
 		} elseif (!empty($ns) && method_exists($ns, $function)) {
 			$func_exists=true;
+		} elseif (empty($ns) && method_exists("LBSystem", $function) ) {
+			$ns="LBSystem";
+			$func_exists=true;
+		} elseif (empty($ns) && method_exists("LBWeb", $function) ) {
+			$ns="LBWeb";
+			$func_exists=true;
+		}
+		
+		if(!empty($ns)) {
+			$method="$ns::$function";
 		}
 		
 		// Prevent non-allowed functions
@@ -83,12 +96,58 @@ class JsonRpcApi implements Evaluator
 		}
 		
 		if($func_exists) {
-			return call_user_func_array($method, $arguments);
+			$callresp = call_user_func_array($method, $arguments);
+			if($callresp === false) {
+				throw new ApplicationException(); 
+			}
+			return $callresp;
+		
 		}
 		
 		throw new MethodException();
 		
 	}
+
+	private static function getdirs($arguments)
+    {
+        @list($pluginname) = $arguments;
+
+        if (empty($pluginname)) {
+            throw new ArgumentException("Argument pluginname missing");
+        }
+		
+		$plugin = \LBSystem::plugindata($pluginname);
+		if(empty($plugin)) {
+			throw new ArgumentException("Plugin $pluginname not found");
+		}
+		
+		$plugindir = $plugin['PLUGINDB_FOLDER'];
+		$dirs['lbhomedir'] = LBHOMEDIR;
+		
+		$dirs['lbpplugindir'] = $plugindir;
+		$dirs['lbphtmlauthdir'] = LBHOMEDIR . '/webfrontend/htmlauth/plugins/' . $plugindir;
+		$dirs['lbphtmldir'] = LBHOMEDIR . '/webfrontend/html/plugins/' . $plugindir;
+		$dirs['lbptemplatedir'] = LBHOMEDIR . '/templates/plugins/' . $plugindir;
+		$dirs['lbpdatadir'] = LBHOMEDIR . '/data/plugins/' . $plugindir;
+		$dirs['lbplogdir'] = LBHOMEDIR . '/logs/plugins/' . $plugindir;
+		$dirs['lbpconfigdir'] = LBHOMEDIR . '/config/plugins/' . $plugindir;
+		$dirs['lbpbindir'] = LBHOMEDIR . '/bin/plugins/' . $plugindir;
+		
+		$dirs['lbshtmlauthdir'] = LBSHTMLAUTHDIR;
+		$dirs['lbshtmldir'] = LBSHTMLDIR;
+		$dirs['lbstemplatedir'] = LBSTEMPLATEDIR;
+		$dirs['lbsdatadir'] = LBSDATADIR;
+		$dirs['lbslogdir'] = LBSLOGDIR;
+		$dirs['lbstmpfslogdir'] = LBSTMPFSLOGDIR;
+		$dirs['lbsconfigdir'] = LBSCONFIGDIR;
+		$dirs['lbsbindir'] = LBSBINDIR;
+		$dirs['lbssbindir'] = LBSSBINDIR;
+		
+		return $dirs;
+		
+		
+        
+    }
 
     // private static function add($arguments)
     // {
