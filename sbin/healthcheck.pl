@@ -81,19 +81,28 @@ sub performchecks {
 	# Disable checks by general.cfg config variables
 	my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
 	if(is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_ALL'))) {
-		print STDERR "Healthcheck: Healthcheck is disabled (general.cfg section [HEALTHCHECK])\n";
-		return;
+		print STDERR "Healthcheck: Healthcheck is globally disabled (general.cfg section [HEALTHCHECK])\n";
 	}
 		
 	foreach (@checks) {
 		if ($action eq "titles") {
 			push (@results,	&{$_}('title') );
 		} else {
+			if(is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_ALL'))) {
+				my $result = &{$_}('title');
+				$result->{status} = '4';
+				$result->{result} = "All healthchecks are globally disabled in 
+				general.cfg (section HEALTHCHECK)";
+				delete $result->{url};
+				push (@results,	$result );
+				next;
+			}
 			if( is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_'.uc($_))) ) {
 				print STDERR "Healthcheck: Healthcheck $_ is disabled (general.cfg section [HEALTHCHECK])\n";
 				my $result = &{$_}('title');
 				$result->{status} = '4';
 				$result->{result} = "This check is disabled in general.cfg (section HEALTHCHECK)";
+				delete $result->{url};
 				push (@results,	$result );
 				next;
 			}
