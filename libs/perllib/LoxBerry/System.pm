@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.4.2.2";
+our $VERSION = "1.5.0.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -51,6 +51,7 @@ our @EXPORT = qw (
 	is_enabled 
 	is_disabled
 	begins_with
+	execute
 	trim 
 	ltrim
 	rtrim
@@ -1439,7 +1440,7 @@ sub lock
 	my $openerr;
 	open(my $fh, "<", $importantlockfilesfile) or ($openerr = 1);
 	if ($openerr) {
-		Carp::carp "Error opening important lock files file  $importantlockfilesfile";
+		Carp::carp "Error opening important lock files file $importantlockfilesfile";
 		return "Error opening important lock files list";
 		}
 	my @data = <$fh>;
@@ -1453,6 +1454,26 @@ sub lock
 	do {
 		$seemsrunning = 0;
 		print STDERR "running loop delay $delay from $p{wait}\n" if ($DEBUG);
+		
+		# Check for apt-get and dpkg updates running
+		# pgrep: Exitcode 1 -> not found. 0 -> found
+		
+		my $rc_apt;
+		my $rc_dpkg;
+		($rc_apt) = LoxBerry::System::execute( 'pgrep apt-get' );
+		($rc_dpkg) = LoxBerry::System::execute( 'pgrep dpkg' );
+		if( $rc_apt eq "0" or $rc_dpkg eq "0") {
+			$seemsrunning = 'apt-get' if ($rc_apt eq "0");
+			$seemsrunning = 'dpkg' if ($rc_dpkg eq "0");
+		
+			if ($p{wait}) {
+				print STDERR "Waiting..." if ($DEBUG);
+				sleep(5);
+				$delay += 5;
+			}
+		} 
+		
+		# Check for lock files
 		foreach my $lockfile (@data) {
 			my $pid;
 			$lockfile = LoxBerry::System::trim($lockfile);
@@ -1632,6 +1653,73 @@ sub read_file
 	close FILE;
 	return $string;
 }
+
+# Exec a shell command, return exitcode and output
+sub execute
+{
+	my ($args) = @_;
+	my $log;
+	my $command;
+	
+	# Check command parameter
+	
+	if( ref($args) eq "" ) {
+		$command = $args;
+	} elsif ( !defined $args->{command} ) {
+		Carp::croak("execute: Argument command missing");
+	} else {
+		$command = $args->{command};
+	}
+	
+	# Check log parameter
+	if( ref($args) and $args->{log}) {
+		# Test the log object
+		require LoxBerry::Log;
+		$log = $args->{log};
+		eval {
+			$log->loglevel();
+		};
+		if($@) {
+			# No log object present
+			print STDERR "LoxBerry::System::execute: Warning: Parameter log given, but log not defined.\n";
+			$log = undef;
+		}
+	}
+		
+	if($log) {
+		# Define default values
+		$args->{intro} = "Executing command '$command'..." if( !defined $args->{intro} ); 
+		$args->{ok} = "Command executed successfully." if( !defined $args->{ok} ); 
+		$args->{error} = "ERROR executing command"  if( !defined $args->{error} and !defined $args->{warn} );
+		$args->{okcode} = 0 if( !defined $args->{okcode} );
+
+		# Log intro
+		$log->INF($args->{intro});
+	}
+		
+	my $output = qx { $command };
+	my $exitcode  = $? >> 8;
+	
+	# All of the following code is only relevant if something needs to be logged
+	if($log) {
+		if( $exitcode eq $args->{okcode} ) {
+			# OK
+			$log->OK( $args->{ok} . " - Exitcode $exitcode");
+		} else {
+			# Not OK
+			if( defined $args->{warn} ) {
+				$log->WARN( $args->{warn} . " - Exitcode $exitcode" );
+			} else {
+				$log->ERR( $args->{error} . " - Exitcode $exitcode" );
+			}
+			$log->DEB ( $output );
+		}
+	}
+	
+	return ($exitcode, $output);
+
+}
+
 
 
 #####################################################
