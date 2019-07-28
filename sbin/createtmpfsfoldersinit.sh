@@ -1,7 +1,7 @@
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          createtmpfsfolder
-# Required-Start:    
+# Required-Start:    $local_fs
 # Required-Stop:     
 # Default-Start:     2 3 4 5
 # Default-Stop:      
