@@ -1,6 +1,7 @@
 <!doctype html>
 <head>
 <meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Expires" content="-1">
 <script src="/system/scripts/jquery/jquery-1.12.4.min.js"></script>
 <style>
 * {
@@ -73,10 +74,11 @@ Your LoxBerry.
 
 var requestRunning = 0;
 var progressHighlight=3;
+var refreshTimer;
 	
 $(function() {
     refreshLastlines();
-	var refreshTimer = setInterval(refreshLastlines, 3000);
+	refreshTimer = setInterval(refreshLastlines, 3000);
 	console.log( "Page loaded" );
 	
 });
@@ -103,8 +105,12 @@ function refreshLastlines() {
 		$( "#lastlines" ).html ("(Currently not available, possibly rebooting.)");
 		console.log(jqxhr.status, jqxhr.statusText);
 		if( jqxhr.status === 404 ) {
-			console.log("Status is 404");
-			window.open(location.protocol + '//' + location.host, '_top');
+			console.log("LoxBerry seems to be up and running again.");
+			// window.open(location.protocol + '//' + location.host, '_top');
+			
+			clearInterval(refreshTimer);
+			window.location.href=location.protocol + '//' + location.host + '/admin/system/updates.cgi?do=lbuhistory&sessrand=' + Math.round(new Date().getTime() + (Math.random() * 100));
+			return false;
 		}
 	
 	})
