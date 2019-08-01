@@ -5,6 +5,11 @@
 # Automagically mount CIFS shares in the network, similar to
 # what autofs -hosts does for NFS.
 
+# LOXBERRY
+# This script is a modified version for LoxBerry.
+# It auto-detects SMB1 shares and downgrades the protocol version
+# for servers supporting only SMB1.
+
 # Put a line like the following in /etc/auto.master:
 # /cifs  /etc/auto.smb --timeout=300
 # You'll be able to access Windows and Samba shares in your network
