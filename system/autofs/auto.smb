@@ -76,7 +76,7 @@ smbprotocol=`$SMBCLIENT $smbopts -d 4 -L "$key" 2>&1 |  awk 'match($0, /negotiat
 
 echo "SMB protocol: $smbprotocol" 1>&2;
 
-if [ "$smbprotocol" == "NT1" ] || [ "$smbprotocol" == "LANMAN1" ] || ["$smbprotocol" == "LANMAN2" ] ; then
+if [[ "$smbprotocol" == "NT1" ]] || [[ "$smbprotocol" == "LANMAN1" ]] || [[ "$smbprotocol" == "LANMAN2" ]] ; then
     opts="$opts,vers=1.0"
     echo "New opts: $opts" 1>&2;
 fi
