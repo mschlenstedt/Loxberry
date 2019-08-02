@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.5.0.1";
+our $VERSION = "1.5.0.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1657,15 +1657,34 @@ sub read_file
 # Exec a shell command, return exitcode and output
 sub execute
 {
-	my ($args) = @_;
+	my @params = @_;
 	my $log;
+	my $uselog;
 	my $command;
-	
+	my %arghash;
+	my $args = \%arghash;
+		
 	# Check command parameter
 	
-	if( ref($args) eq "" ) {
-		$command = $args;
-	} elsif ( !defined $args->{command} ) {
+	print STDERR "execute: Number of params: " . scalar @params . "\n" if ($DEBUG);
+	print STDERR "execute: Ref of first param: " . ref($params[0]) . "\n" if ($DEBUG);
+		
+	if( scalar @params == 1 and ref($params[0]) eq "" ) {
+		print STDERR "execute: Parameter was a string and will be used as command\n" if ($DEBUG);
+		$args->{command} = $params[0];
+	} elsif ( scalar @params == 1 and ref($params[0]) eq "HASH" ) {
+		print STDERR "execute: Parameter was a hash\n" if ($DEBUG);
+		$args = $params[0];
+	} elsif ( scalar @params > 1 and scalar(@params)%2 == 0 ) {
+		print STDERR "execute: Parameter was an array\n" if ($DEBUG);
+		%arghash = @params;
+	} elsif ( scalar @params > 1 and scalar(@params)%2 == 1 ) {
+		Carp::croak("execute: Uneven number of arguments");
+	} else {
+		Carp::croak("execute: Unknown type of arguments.");
+	}
+	
+	if ( !defined $args->{command} ) {
 		Carp::croak("execute: Argument command missing");
 	} else {
 		$command = $args->{command};
@@ -1673,6 +1692,9 @@ sub execute
 	
 	# Check log parameter
 	if( ref($args) and $args->{log}) {
+		print STDERR "execute: log argument given\n" if ($DEBUG);
+		$uselog = 1;
+		
 		# Test the log object
 		require LoxBerry::Log;
 		$log = $args->{log};
@@ -1681,12 +1703,12 @@ sub execute
 		};
 		if($@) {
 			# No log object present
-			print STDERR "LoxBerry::System::execute: Warning: Parameter log given, but log not defined.\n";
-			$log = undef;
+			print STDERR "execute: Warning: Parameter log given, but log not defined.\n";
+			$uselog = 0;
 		}
 	}
 		
-	if($log) {
+	if($uselog) {
 		# Define default values
 		$args->{intro} = "Executing command '$command'..." if( !defined $args->{intro} ); 
 		$args->{ok} = "Command executed successfully." if( !defined $args->{ok} ); 
@@ -1701,7 +1723,7 @@ sub execute
 	my $exitcode  = $? >> 8;
 	
 	# All of the following code is only relevant if something needs to be logged
-	if($log) {
+	if($uselog) {
 		if( $exitcode eq $args->{okcode} ) {
 			# OK
 			$log->OK( $args->{ok} . " - Exitcode $exitcode");
