@@ -215,27 +215,27 @@ if ($exitcode != 0) {
 	LOGOK "Dist-Upgrade successfully.";
 }
 
-LOGINF "Configuring PHP7.3...";
+LOGINF "Configuring PHP...";
 $log->close;
 if ( -e "/etc/php/7.0" ) {
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.0/apache2/conf.d/20-loxberry.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.0/cgi/conf.d/20-loxberry.ini >> $logfilename 2>&1};
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.0/cli/conf.d/20-loxberry.ini >> $logfilename 2>&1};
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.0/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.0/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1};
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.0/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1};
 };
 if ( -e "/etc/php/7.1" ) {
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.1/apache2/conf.d/20-loxberry.ini >> $logfilename 2>&1};
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.1/cgi/conf.d/20-loxberry.ini >> $logfilename 2>&1};
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.1/cli/conf.d/20-loxberry.ini >> $logfilename 2>&1};
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.1/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1};
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.1/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1};
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.1/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1};
 };
 if ( -e "/etc/php/7.2" ) {
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.2/apache2/conf.d/20-loxberry.ini>> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.2/cgi/conf.d/20-loxberry.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.2/cli/conf.d/20-loxberry.ini >> $logfilename 2>&1 };
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.2/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.2/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.2/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1 };
 };
 if ( -e "/etc/php/7.3" ) {
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.3/apache2/conf.d/20-loxberry.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.3/cgi/conf.d/20-loxberry.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/20-loxberry.ini /etc/php/7.3/cli/conf.d/20-loxberry.ini >> $logfilename 2>&1 };
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.3/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.3/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
+	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.3/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1 };
 };
 $log->open;
 
