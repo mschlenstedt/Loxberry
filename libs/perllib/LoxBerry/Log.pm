@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "2.0.0.1";
+our $VERSION = "2.0.0.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -916,7 +916,7 @@ sub log_db_recreate_session_by_id
 	
 	# Data from attribute table - loop through attributes
 	foreach my $attr ( keys @$logattrshr ) {
-		print "Attribute: @$logattrshr[$attr]->{attrib} / Value: @$logattrshr[$attr]->{value} \n";
+		print STDERR "Attribute: @$logattrshr[$attr]->{attrib} / Value: @$logattrshr[$attr]->{value} \n" if ($DEBUG);
 		$self->{@$logattrshr[$attr]->{attrib}} = @$logattrshr[$attr]->{value} if (!$self->{@$logattrshr[$attr]->{attrib}});
 	}
 
@@ -947,12 +947,12 @@ sub log_db_get_session_by_filename
 	my $qu = "SELECT PACKAGE, NAME, FILENAME, LOGSTART, LOGEND, LOGKEY FROM logs WHERE FILENAME = '$filename' ORDER BY LOGSTART DESC LIMIT 1;";
 	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
 	if (!@$logshr) {
-		print STDERR "log_db_get_session_by_filename: FILENAME has no dbkey. New key is created.\n";
+		print STDERR "log_db_get_session_by_filename: FILENAME has no dbkey. New key is created.\n" if ($DEBUG);
 		$self->{dbkey} = log_db_logstart($self->{dbh}, $self);
-		print STDERR "log_db_get_session_by_filename: New dbkey is " . $self->{dbkey} . "\n";
+		print STDERR "log_db_get_session_by_filename: New dbkey is " . $self->{dbkey} . "\n" if ($DEBUG);
 	} else {
 		$self->{dbkey} = @$logshr[0]->{LOGKEY};
-		print STDERR "log_db_get_session_by_filename: Existing dbkey is used " . $self->{dbkey} . "\n";
+		print STDERR "log_db_get_session_by_filename: Existing dbkey is used " . $self->{dbkey} . "\n" if ($DEBUG);
 	}
 	
 	# Get log attributes
@@ -965,7 +965,7 @@ sub log_db_get_session_by_filename
 	
 	# Data from attribute table - loop through attributes
 	foreach my $attr ( keys @$logattrshr ) {
-		print "Attribute: @$logattrshr[$attr]->{attrib} / Value: @$logattrshr[$attr]->{value} \n";
+		print STDERR "Attribute: @$logattrshr[$attr]->{attrib} / Value: @$logattrshr[$attr]->{value} \n" if ($DEBUG);
 		$self->{@$logattrshr[$attr]->{attrib}} = @$logattrshr[$attr]->{value} if (!$self->{@$logattrshr[$attr]->{attrib}});
 	}
 
@@ -1397,42 +1397,6 @@ sub notify_send_mail
 	my $options_json = quotemeta(JSON::to_json(\%p) ) ;
 	
 	my $output = qx { $LoxBerry::System::lbssbindir/notifyproviders/email.pl $options_json };
-	
-	# print "Returned: $output";
-	
-	
-	
-	####
-	#### Old LoxBerry Plain text implementation
-	####
-	
-	# my $bins = LoxBerry::System::get_binaries(); 
-	# my $mailbin = $bins->{MAIL};
-	
-	# require MIME::Base64;
-	# require Encode;
-	
-	# $subject = "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
-	# my $headerfrom = 'From:=?utf-8?b?' . MIME::Base64::encode($friendlyname, "") . '?= <' . $email . '>';
-	# my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
-	
-	# $message = Encode::decode("utf8", $message);
-	
-	# my $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $email 2>&1);
-	# my $exitcode  = $? >> 8;
-	# if ($exitcode != 0) {
-		# $notifymailerror = 1; # Prevents loops
-		# my %notification = (
-            # PACKAGE => "mailserver",
-            # NAME => "mailerror",
-            # MESSAGE => $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'},
-            # SEVERITY => 3, # Error
-			# _ISSYSTEM => 1
-    # );
-	# LoxBerry::Log::notify_ext( \%notification );
-	# print STDERR "Error sending email notification - Error $exitcode:\n";
-	# print STDERR $result . "\n";
-	# } 
 	
 }
 
