@@ -518,7 +518,8 @@ sub LOGSTART
 	}
 	
 	if( LoxBerry::System::is_enabled($self->{nosession})) {
-		$self->write(-2, "<INFO> " . $s);
+		# $self->write(-2, "<INFO> " . $s);
+		$self->OK($s);
 	}
 	
 	
