@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.5.0.2";
+our $VERSION = "2.0.0.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1119,6 +1119,7 @@ Keywords for is_disabled: false, no, off, disabled, disable, 0.
 sub is_enabled
 { 
 	my ($text) = @_;
+	if (!$text) { return undef;} 
 	$text =~ s/^\s+|\s+$//g;
 	$text = lc $text;
 	if ($text eq "true") { return 1;}
@@ -1140,7 +1141,7 @@ sub is_enabled
 sub is_disabled
 { 
 	my ($text) = @_;
-	if (! $text) { return 1;} 
+	if (!$text) { return 1;} 
 	$text =~ s/^\s+|\s+$//g;
 	$text = lc $text;
 	if ($text eq "false") { return 1;}

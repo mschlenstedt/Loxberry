@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.4.2.2";
+	public static $LBSYSTEMVERSION = "2.0.0.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -742,6 +742,9 @@ public static function plugindb_changed_time()
 ####################################################
 function is_enabled($text)
 { 
+	if(empty($text)) { 
+		return NULL; 
+	}
 	$text = trim($text);
 	$text = strtolower($text);
 	
@@ -758,7 +761,7 @@ function is_enabled($text)
 ####################################################
 function is_disabled($text)
 { 
-	if (! isset($text)) {
+	if (empty($text)) {
 		return 1;
 	}
 	$text = trim($text);
