@@ -129,7 +129,9 @@ sub logfiles_cleanup
 			LOGDEB "--> $file (Size is: " . sprintf("%.1f",(-s "$file")/1000/1000) . " MB) will be GZIP'd.";
 			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat("$file");
 			unlink ("$file\.gz") if (-e "$file");
-			qx{yes | $bins->\{GZIP\} --best "$file"};
+			qx{yes | $bins->\{GZIP\} --keep --best "$file"};
+			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime(); close($fh);
+			unlink($file);
 			chown $uid, $gid, "$file\.gz";
 			chmod $mode, "$file\.gz";
 		}	
@@ -146,7 +148,9 @@ sub logfiles_cleanup
 			LOGDEB "--> $file (Age is: " . sprintf("%.1f",(-M "$file")) . " days) will be GZIP'd.";
 			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat("$file");
 			unlink ("$file\.gz") if (-e "$file");
-			qx{yes | $bins->\{GZIP\} --best "$file"};
+			qx{yes | $bins->\{GZIP\} --keep --best "$file"};
+			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime(); close($fh);
+			unlink($file);
 			chown $uid, $gid, "$file\.gz";
 			chmod $mode, "$file\.gz";
 		}	
@@ -267,7 +271,8 @@ sub logfiles_cleanup
 
 		for my $file (@files){
 			LOGDEB "--> $file will be DELETED.";
-			my $delcount = unlink ("$file");
+			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " .  currtime(); close($fh);
+			my $delcount = unlink($file);
 			if($delcount) {
 				LOGDEB "$file DELETED.";
 			} else {
@@ -369,6 +374,7 @@ sub logdb_cleanup
 		$logcount{$key->{'PACKAGE'}}{$key->{'NAME'}}++;
 		if ($logcount{$key->{'PACKAGE'}}{$key->{'NAME'}} > 24) {
 			LOGDEB "Filename $key->{FILENAME} will be deleted, it is more than 24 in $key->{'PACKAGE'}/$key->{'NAME'}";
+			open( my $fh, '>', $key->{'FILENAME'}); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " .  currtime(); close($fh);
 			unlink ($key->{'FILENAME'}) or 
 			do {
 				if (-e $key->{'FILENAME'}) {
