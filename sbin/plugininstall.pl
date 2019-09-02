@@ -31,7 +31,7 @@ use version;
 #use strict;
 
 # Version of this script
-my $version = "1.4.1.1";
+my $version = "1.5.0.1";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -612,7 +612,7 @@ open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
     if (@fields[0] eq $pmd5checksum) {
       $isupgrade = 1;
       if ( is_enabled($pautoupdates) && @fields[8] > $pautoupdates ) {
-        $pautoupdates = @fields[8] 
+        $pautoupdates = @fields[8];
       };
       if ( $pcustomlog == 3 && @fields[11] > -1 ) {
         $pcustomlog = @fields[11];
@@ -677,7 +677,12 @@ open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
       $message =  "$SL{'PLUGININSTALL.ERR_DBENTRY'}";
       &logfail;
     }
-    print F "$pmd5checksum|$pauthorname|$pauthoremail|$pversion|$pname|$pfolder|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|$pcustomlog\n";
+    
+	if(is_enabled($pautoupdates)) {
+		# Set new installations to automatic release updates
+		$pautoupdates = 3;
+	}
+	print F "$pmd5checksum|$pauthorname|$pauthoremail|$pversion|$pname|$pfolder|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|$pcustomlog\n";
   }
   flock(F,8);
 close (F);
