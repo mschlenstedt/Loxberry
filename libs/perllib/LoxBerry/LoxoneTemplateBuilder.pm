@@ -7,7 +7,7 @@ use HTML::Entities;
 
 package LoxBerry::LoxoneTemplateBuilder;
 
-our $VERSION = "2.0.0.5";
+our $VERSION = "2.0.0.6";
 our $DEBUG = 0;
 
 if ($DEBUG) {
@@ -169,7 +169,7 @@ sub VirtualOut
 				Address => $params{Address} ? $params{Address} : "",
 				CmdInit => $params{CmdInit} ? $params{CmdInit} : "",
 				CloseAfterSend => ( defined $params{CloseAfterSend} and !is_enabled($params{CloseAfterSend}) ) ? "false" : "true",
-				CmdSep => $params{CmdInit} ? $params{CmdInit} : "",
+				CmdSep => $params{CmdSep} ? $params{CmdSep} : "",
 				_type => 'VirtualOut'
 	};
 	
@@ -254,9 +254,9 @@ sub output
 			$o .= 'DestValLow="'.$VIcmd->{DestValLow}.'" ';
 			$o .= 'SourceValHigh="'.$VIcmd->{SourceValHigh}.'" ';
 			$o .= 'DestValHigh="'.$VIcmd->{DestValHigh}.'" ';
-			$o .= 'DefVal="'.$VIcmd->{Signed}.'" ';
-			$o .= 'MinVal="'.$VIcmd->{Signed}.'" ';
-			$o .= 'MaxVal="'.$VIcmd->{Signed}.'"';
+			$o .= 'DefVal="'.$VIcmd->{DefVal}.'" ';
+			$o .= 'MinVal="'.$VIcmd->{MinVal}.'" ';
+			$o .= 'MaxVal="'.$VIcmd->{MaxVal}.'"';
 			$o .= '/>'.$crlf;
 		}
 		
@@ -271,7 +271,7 @@ sub output
 		$o .= 'Title="'.HTML::Entities::encode_entities($self->{Title}).'" ';
 		$o .= 'Comment="'.HTML::Entities::encode_entities($self->{Comment}).'" ';
 		$o .= 'Address="'.HTML::Entities::encode_entities($self->{Address}).'" ';
-		$o .= 'Port="'.HTML::Entities::encode_entities($self->{Address}).'" ';
+		$o .= 'Port="'.HTML::Entities::encode_entities($self->{Port}).'" ';
 		$o .= '>'.$crlf;
 		
 		foreach my $VIcmd ( @{$self->{VirtualInUdpCmd}} ) {
@@ -288,13 +288,13 @@ sub output
 			$o .= 'DestValLow="'.$VIcmd->{DestValLow}.'" ';
 			$o .= 'SourceValHigh="'.$VIcmd->{SourceValHigh}.'" ';
 			$o .= 'DestValHigh="'.$VIcmd->{DestValHigh}.'" ';
-			$o .= 'DefVal="'.$VIcmd->{Signed}.'" ';
-			$o .= 'MinVal="'.$VIcmd->{Signed}.'" ';
-			$o .= 'MaxVal="'.$VIcmd->{Signed}.'"';
+			$o .= 'DefVal="'.$VIcmd->{DefVal}.'" ';
+			$o .= 'MinVal="'.$VIcmd->{MinVal}.'" ';
+			$o .= 'MaxVal="'.$VIcmd->{MaxVal}.'"';
 			$o .= '/>'.$crlf;
 		}
 		
-		$o .= '</VirtualInUdpCmd>'.$crlf;
+		$o .= '</VirtualInUdp>'.$crlf;
 	}
 	
 		elsif($self->{_type} eq 'VirtualOut') {
@@ -318,7 +318,6 @@ sub output
 			$o .= 'ID="'.$id.'" ';
 			$o .= 'Title="'.HTML::Entities::encode_entities($VIcmd->{Title}).'" ';
 			$o .= 'Comment="'.HTML::Entities::encode_entities($VIcmd->{Comment}).'" ';
-			
 			$o .= 'CmdOnMethod="'.uc($VIcmd->{CmdOnMethod}).'" ';
 			$o .= 'CmdOn="'.HTML::Entities::encode_entities($VIcmd->{CmdOn}).'" ';
 			$o .= 'CmdOnHTTP="'.HTML::Entities::encode_entities($VIcmd->{CmdOnHTTP}).'" ';
@@ -333,7 +332,7 @@ sub output
 			$o .= '/>'.$crlf;
 		}
 		
-		$o .= '</VirtualOutCmd>'.$crlf;
+		$o .= '</VirtualOut>'.$crlf;
 	}
 	
 	return $o;
