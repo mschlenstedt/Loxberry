@@ -2,7 +2,7 @@
 
 class LoxoneTemplateBuilder 
 { 
-	public $VERSION = "2.0.0.1";
+	public $VERSION = "2.0.0.2";
 	public $DEBUG = 0;
 
 	function __construct( $params ) {
@@ -49,9 +49,7 @@ class LoxoneTemplateBuilder
 		$id = 0;
 		$o = '<?xml version="1.0" encoding="utf-8"?>'.$crlf;
 		
-		echo "Class of output is " . get_class($this) . "\n";
 		$class = get_class($this);
-		
 		
 		if ($class == "VirtualInHttp") {
 			$o .= '<VirtualInHttp ';
