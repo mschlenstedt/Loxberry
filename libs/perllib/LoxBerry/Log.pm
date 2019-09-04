@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "2.0.0.2";
+our $VERSION = "2.0.0.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -1369,7 +1369,6 @@ sub notify_send_mail
 	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_ERRORS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_INFOS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
 	
-	
 	# Prepare some additional fields
 	
 	my $plugintitle;
@@ -1396,8 +1395,22 @@ sub notify_send_mail
 	
 	my $options_json = quotemeta(JSON::to_json(\%p) ) ;
 	
-	my $output = qx { $LoxBerry::System::lbssbindir/notifyproviders/email.pl $options_json };
-	
+	my ($exitcode, $output) = LoxBerry::System::execute("$LoxBerry::System::lbssbindir/notifyproviders/email.pl $options_json");
+	if ($exitcode != 0) {
+		my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+		$notifymailerror = 1; # Prevents loops
+		my %notification = (
+            PACKAGE => "mailserver",
+            NAME => "mailerror",
+            MESSAGE => $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'},
+            SEVERITY => 3, # Error
+			_ISSYSTEM => 1
+		);
+		LoxBerry::Log::notify_ext( \%notification );
+		print STDERR "Error sending email notification - Output: $output\n";
+	}
+		
+		
 }
 
 
