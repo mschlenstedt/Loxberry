@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "2.0.0.2";
+our $VERSION = "2.0.0.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1290,7 +1290,7 @@ sub check_securepin
 {
 	my ($securepin) = shift;
 	
-	my $pinerror_file = '/dev/shm/securepin.errors';
+	my $pinerror_file = "$lbhomedir/log/system_tmpfs/securepin.errors";
 	my $pinerrobj;
 	my $pinerr;
 	
