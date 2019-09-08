@@ -17,12 +17,39 @@ ENVIRONMENT=$(cat /etc/environment)
 export $ENVIRONMENT
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin:$LBHOMEDOR/bin:$LBHOMEDIR/sbin"
+PIVERS=`$LBHOMEDIR/bin/showpitype`
+MANUALCFG=`jq -r '.Log2ram.Manualconfigured' $LBHOMEDIR/config/system/general.json`
 
-RAM_LOG=$LBHOMEDIR/log/ramlog
-SIZE=120M
-ZL2R=true
-COMP_ALG=lz4
-LOG_DISK_SIZE=250M
+if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ]; then
+	echo "No manual config found. Using defaults..."
+	RAM_LOG=$LBHOMEDIR/log/ramlog
+	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ]; then
+		SIZE=50M
+		ZL2R=false
+		COMP_ALG=lz4
+		LOG_DISK_SIZE=50M
+	else
+		SIZE=120M
+		ZL2R=true
+		COMP_ALG=lz4
+		LOG_DISK_SIZE=250M
+	fi
+	JSON=`jq ".Ram2Log.Manualconfigured = \"0\"" $LBHOMEDIR/config/system/general.json`
+	JSON=`echo $JSON | jq ".Ram2Log.Ramlog = \"$RAM_LOG\""`
+	JSON=`echo $JSON | jq ".Ram2Log.Size = \"$SIZE\""`
+	JSON=`echo $JSON | jq ".Ram2Log.Zl2r = \"$ZL2R\""`
+	JSON=`echo $JSON | jq ".Ram2Log.Compalg = \"$COMP_ALG\""`
+	JSON=`echo $JSON | jq ".Ram2Log.Logdisksize = \"$LOG_DISK_SIZE\""`
+	echo $JSON | jq "." > $LBHOMEDIR/config/system/general.json.new
+	mv $LBHOMEDIR/config/system/general.json.new $LBHOMEDIR/config/system/general.json
+else
+	echo "Using config from $LBHOMEDIR/config/system/general.json..."
+	RAM_LOG=`jq -r '.Log2ram.Ramlog' $LBHOMEDIR/config/system/general.json`
+	SIZE=`jq -r '.Log2ram.Size' $LBHOMEDIR/config/system/general.json`
+	ZL2R=`jq -r '.Log2ram.Zl2r' $LBHOMEDIR/config/system/general.json`
+	COMP_ALG=`jq -r '.Log2ram.Compalg' $LBHOMEDIR/config/system/general.json`
+	LOG_DISK_SIZE=`jq -r '.Log2ram.Logdisksize' $LBHOMEDIR/config/system/general.json`
+fi
 
 createFolders () {
 	log_action_cont_msg "Creating folders in $RAM_LOG..."
