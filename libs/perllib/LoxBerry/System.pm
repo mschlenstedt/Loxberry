@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "2.0.0.1";
+our $VERSION = "2.0.0.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -718,7 +718,7 @@ sub set_clouddns
 	my ($msnr, $clouddnsaddress) = @_;
 	
 	require LoxBerry::JSON;
-	my $memfile = "/run/shm/clouddns_cache.json";
+	my $memfile = "$lbhomedir/log/system_tmpfs/clouddns_cache.json";
 	my $jsonobj = LoxBerry::JSON->new();
 	my $cache = $jsonobj->open(filename => $memfile);
 	my $cachekey = $miniservers{$msnr}{CloudURL};
