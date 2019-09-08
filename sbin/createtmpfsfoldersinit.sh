@@ -117,11 +117,11 @@ start|"")
 	fi
 	
 	# Copy CloudDNS cache from SD card to RAM disk
-	if [ -e $LBHOMEDIR/data/system/clouddns_cache.bkp ]; then
+	if [ -e $LBHOMEDIR/log/system/clouddns_cache.bkp ]; then
 	        log_action_begin_msg "Copy back CloudDNS cache"
-		cp -f $LBHOMEDIR/data/system/clouddns_cache.bkp $RAM_LOG/clouddns_cache.json
-		chown loxberry:loxberry $RAM_LOG/clouddns_cache.json
-		chmod +rw $RAM_LOG/clouddns_cache.json
+		cp -f $LBHOMEDIR/log/system/clouddns_cache.bkp $LBHOMEDIR/log/system_tmpfs/clouddns_cache.json
+		chown loxberry:loxberry $LBHOMEDIR/log/system_tmpfs/clouddns_cache.json
+		chmod +rw $LBHOMEDIR/log/system_tmpfs/clouddns_cache.json
 		log_action_end_msg 0
 	fi
 
@@ -140,7 +140,7 @@ stop)
 	
 	if [ -e /run/shm/clouddns_cache.json ]; then
         	log_action_begin_msg "Backup CloudDNS cache to SD"
-		cp -f /$RAM_LOG/clouddns_cache.json $LBHOMEDIR/data/system/clouddns_cache.bkp
+		cp -f $LBHOMEDIR/log/system_tmpfs/clouddns_cache.json $LBHOMEDIR/log/system/clouddns_cache.bkp
 		log_action_end_msg 0
 	fi
 	
