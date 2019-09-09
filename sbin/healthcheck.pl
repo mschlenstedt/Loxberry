@@ -901,6 +901,10 @@ sub check_cputemp
 		my $cfgjson = $jsonobj->open(filename => $cfgfilejson);
 
 		my $sensor = $cfgjson->{Watchdog}->{Tempsensor};
+		if ( !$sensor ) {
+			$sensor = "/sys/class/thermal/thermal_zone0/temp";
+		}
+
 		if (-e "$sensor") {
 			$current = 1;
 			my $temp = qx(cat $sensor);
