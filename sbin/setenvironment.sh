@@ -160,14 +160,13 @@ if [ -L /etc/vsftpd.conf ]; then
 fi
 ln -s $LBHOME/system/vsftpd/vsftpd.conf /etc/vsftpd.conf
 
-# SSMTP Config
-if [ ! -L /etc/ssmtp ]; then
-	mv /etc/ssmtp /etc/ssmtp.old
-fi
-if [ -L /etc/ssmtp ]; then
-    rm /etc/ssmtp
-fi
-ln -s $LBHOME/system/ssmtp /etc/ssmtp
+# MSMTP Config
+rm $LBHOME/.msmtprc
+ln -s $LBHOME/system/msmtp/msmtprc $LBHOME/.msmtprc
+chmod 0600 $LBHOME/system/msmtp/msmtprc
+chown loxberry:loxberry $LBHOME/system/msmtp/msmtprc
+chmod 0600 $LBHOME/system/msmtp/aliases
+chown loxberry:loxberry $LBHOME/system/msmtp/aliases
 
 # PHP
 # Set PHP include_path directive
