@@ -300,3 +300,13 @@ service dphys-swapfile stop
 swapoff -a
 rm -r /var/swap
 
+# Configuring node.js for Christian :-)
+rm /etc/apt/sources.list.d/nodesource.list
+rm /etc/apt/sources.list.d/yarn.list
+curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
+curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo 'deb https://deb.nodesource.com/node_12.x buster main' > /etc/apt/sources.list.d/nodesource.list
+echo 'deb-src https://deb.nodesource.com/node_12.x buster main' >> /etc/apt/sources.list.d/nodesource.list
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+apt-get install nodejs yarn
+
