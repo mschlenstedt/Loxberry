@@ -162,9 +162,11 @@ ln -s $LBHOME/system/vsftpd/vsftpd.conf /etc/vsftpd.conf
 
 # MSMTP Config
 rm $LBHOME/.msmtprc
-ln -s $LBHOME/system/msmtp/msmtprc $LBHOME/.msmtprc
-chmod 0600 $LBHOME/system/msmtp/msmtprc
-chown loxberry:loxberry $LBHOME/system/msmtp/msmtprc
+if [ -e $LBHOME/system/msmtp/msmtprc ]; then
+	ln -s $LBHOME/system/msmtp/msmtprc $LBHOME/.msmtprc
+	chmod 0600 $LBHOME/system/msmtp/msmtprc
+	chown loxberry:loxberry $LBHOME/system/msmtp/msmtprc
+fi
 chmod 0600 $LBHOME/system/msmtp/aliases
 chown loxberry:loxberry $LBHOME/system/msmtp/aliases
 
