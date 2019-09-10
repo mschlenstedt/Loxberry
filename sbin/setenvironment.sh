@@ -22,13 +22,6 @@ awk -v s="LBPLOG=$LBHOME/log/plugins" '/^LBPLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!
 awk -v s="LBPCONFIG=$LBHOME/config/plugins" '/^LBPCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBPBIN=$LBHOME/bin/plugins" '/^LBPBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
-#echo LBPHTMLAUTH=$LBHOME/webfrontend/htmlauth/plugins >> /etc/environment
-#echo LBPHTML=$LBHOME/webfrontend/html/plugins >> /etc/environment
-#echo LBPTEMPL=$LBHOME/templates/plugins >> /etc/environment
-#echo LBPDATA=$LBHOME/data/plugins >> /etc/environment
-#echo LBPLOG=$LBHOME/log/plugins >> /etc/environment
-#echo LBPCONFIG=$LBHOME/config/plugins >> /etc/environment
-
 # Main directories for system
 awk -v s="LBSHTMLAUTH=$LBHOME/webfrontend/htmlauth/system" '/^LBSHTMLAUTH=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSHTML=$LBHOME/webfrontend/html/system" '/^LBSHTML=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
@@ -40,13 +33,6 @@ awk -v s="LBSCONFIG=$LBHOME/config/system" '/^LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} 
 awk -v s="LBSBIN=$LBHOME/bin" '/^LBSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="LBSSBIN=$LBHOME/sbin" '/^LBSSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
-# echo LBSHTMLAUTH=$LBHOME/webfrontend/htmlauth/system >> /etc/environment
-# echo LBSHTML=$LBHOME/webfrontend/html/system >> /etc/environment
-# echo LBSTEMPL=$LBHOME/templates/system >> /etc/environment
-# echo LBSDATA=$LBHOME/data/system >> /etc/environment
-# echo LBSLOG=$LBHOME/log/system >> /etc/environment
-# echo LBSCONFIG=$LBHOME/config/system >> /etc/environment
-
 # Set Perl library path for LoxBerry Modules
 awk -v s="PERL5LIB=$LBHOME/libs/perllib" '/^PERL5LIB=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 # echo PERL5LIB=$LBHOME/libs/perllib  >> /etc/environment
@@ -56,24 +42,6 @@ source /etc/environment
 
 # LoxBerry global environment variables in Apache
 ENVVARS=$LBHOME/system/apache2/envvars
-
-# echo '' >> $ENVVARS
-# echo '## LoxBerry global environment variables' >> $ENVVARS
-# echo export LBHOMEDIR=$LBHOMEDIR >> $ENVVARS
-
-# echo export LBPHTMLAUTH=$LBPHTMLAUTH >> $ENVVARS
-# echo export LBPHTML=$LBPHTML >> $ENVVARS
-# echo export LBPTEMPL=$LBPTEMPL >> $ENVVARS
-# echo export LBPDATA=$LBPDATA >> $ENVVARS
-# echo export LBPLOG=$LBPLOG >> $ENVVARS
-# echo export LBPCONFIG=$LBPCONFIG >> $ENVVARS
-# echo '' >> $ENVVARS
-# echo export LBSHTMLAUTH=$LBSHTMLAUTH >> $ENVVARS
-# echo export LBSHTML=$LBSHTML >> $ENVVARS
-# echo export LBSTEMPL=$LBSTEMPL >> $ENVVARS
-# echo export LBSDATA=$LBSDATA >> $ENVVARS
-# echo export LBSLOG=$LBSLOG >> $ENVVARS
-# echo export LBSCONFIG=$LBSCONFIG >> $ENVVARS
 
 awk -v s="## LoxBerry global environment variables" '/^## LoxBerry global environment variables/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBHOMEDIR=$LBHOMEDIR" '/^export LBHOMEDIR=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
@@ -122,12 +90,6 @@ if [ -L /etc/profile.d/loxberry.sh ]; then
     rm /etc/profile.d/loxberry.sh
 fi
 ln -s $LBHOME/system/profile/loxberry.sh /etc/profile.d/loxberry.sh
-
-# /etc/creds for autofs and smb
-if [ -e /etc/creds ]; then
-	rm /etc/creds
-fi
-ln -s $LBHOME/system/samba/credentials /etc/creds
 
 # Obsolete Apache2 logrotate config (we this by our own)
 if [ -e /etc/logrotate.d/apache2 ]; then
@@ -284,6 +246,15 @@ if [ ! -e /etc/auto.master ]; then
 fi
 mkdir -p /media/smb
 mkdir -p /media/usb
+if [ ! -L /etc/auto.smb ]; then
+	mv -f /etc/auto.smb /etc/auto.smb.backup
+fi
+if [ -L /etc/auto.smb ]; then
+	rm /etc/auto.smb
+fi
+ln -s $LBHOME/system/autofs/auto.smb /etc/auto.smb
+chmod 0755 $lbhomedir/system/autofs/auto.smb
+systemctl restart autofs
 
 # creds for AutoFS (SMB)
 if [ -L /etc/creds ]; then
