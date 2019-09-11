@@ -1,10 +1,10 @@
 #!/usr/bin/perl
-use LoxBerry::MQTT;
+use LoxBerry::IO;
 use Data::Dumper;
 use strict;
 use warnings;
 
-my $mqttcred = LoxBerry::MQTT::connectiondetails();
+my $mqttcred = LoxBerry::IO::mqtt_connectiondetails();
 
 # print Dumper($mqttcred);
 
