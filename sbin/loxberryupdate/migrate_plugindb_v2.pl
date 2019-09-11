@@ -62,7 +62,7 @@ foreach $oldplugin ( @plugins ) {
 # );
 
 # if($plugin2) {
-	# print "Plugin2 is new: " . $plugin2->{_isnew} . "\n";
+	# print "Plugin2 is new: " . $plugin2->_isnew . "\n";
 	# $plugin2->save();
 # } else { 
 	# print "Plugin not defined\n";
@@ -100,8 +100,8 @@ foreach $oldplugin ( @plugins ) {
 # print "Result 2: " . join(", ", @result2) . "\n";
 # print "Result 3: " . join(", ", @result3) . "\n";
 
-# # You may use the _operator parameter, that's faster
-# # Default _operatior is 'and'
+## You may use the _operator parameter, that's faster
+## Default _operatior is 'and'
 # print "Fast combined search with _operator\n";
 # @result = LoxBerry::System::PluginDB->search( 
 	# name => 'nukismartlock',
@@ -109,8 +109,6 @@ foreach $oldplugin ( @plugins ) {
 	# _operator => 'or'
 # );
 # print "Result: " . join(", ", @result) . "\n";
-
-
 
 
 
@@ -405,3 +403,23 @@ sub _load_db
 	# print "_load_db: " . Data::Dumper::Dumper( $plugindb ) . "\n";
 
 }
+
+# Every unknown method is an object property
+our $AUTOLOAD;
+sub AUTOLOAD {
+	my $self = shift;
+	my $propvalue = shift;
+	# Remove qualifier from original method name
+	my $called = $AUTOLOAD =~ s/.*:://r;
+	
+	if(! defined $propname) {
+		return $self->{$called};
+	} else {
+		$self->{$called} = $propvalue;
+	}
+}
+
+sub DESTROY 
+{ 
+	# Currently nothing
+} 
