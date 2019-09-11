@@ -2,9 +2,11 @@
 
 use LoxBerry::System;
 use LoxBerry::JSON;
+use LoxBerry::System::PluginDB;
+
 use Data::Dumper;
 
-$LoxBerry::System::DEBUG = 1;
+# $LoxBerry::JSON::DEBUG = 1;
 
 if(!$lbsdatadir) {
 	die("Could not read LoxBerry variables");
@@ -18,7 +20,7 @@ unlink $dbfile;
 # Read old database with old code
 my @plugins = get_plugins_V1(undef, 1);
 
-# Transform data
+## Transform data
 foreach $oldplugin ( @plugins ) {
 	print "Migrating plugin $oldplugin->{PLUGINDB_MD5_CHECKSUM} $oldplugin->{PLUGINDB_NAME} $oldplugin->{PLUGINDB_TITLE}\n";
 	
@@ -48,6 +50,7 @@ foreach $oldplugin ( @plugins ) {
 # my $plugin1 = LoxBerry::System::PluginDB->plugin( md5 => 'cbb215d37c67b25110043e95d0e2d492' );
 # if($plugin1) {
 	# print "Plugin exists - Salling save\n";
+	# print Dumper($plugin1);
 	# $plugin1->save();
 # } else {
 	# print "Plugin not defined\n";
@@ -56,7 +59,7 @@ foreach $oldplugin ( @plugins ) {
 # my $plugin2 = LoxBerry::System::PluginDB->plugin( 
 	# author_name => 'Christian Fenzl', 
 	# author_email => 'fenzl@t-r-t.at',
-	# name => 'New Test Plugin', 
+	# name => 'Very New Test Plugin 2', 
 	# folder => 'testplugin',
 	# title => 'Schönes Plugin'
 # );
@@ -68,7 +71,7 @@ foreach $oldplugin ( @plugins ) {
 	# print "Plugin not defined\n";
 # }
 
-# my $plugin_to_remove = LoxBerry::System::PluginDB->plugin( md5 => 'c5b8ba6f10b15415f8554c40064347aa' );
+# my $plugin_to_remove = LoxBerry::System::PluginDB->plugin( md5 => '92d3a07b6bf39801bcf5756a8cc2f90a' );
 # if( $plugin_to_remove ) {
 	# my $ok = $plugin_to_remove->remove;
 	# print "Removed: " . $ok ? "Removed\n" : "Failed to remove\n";
@@ -207,219 +210,3 @@ sub get_plugins_V1
 	return @plugins;
 }
 
-
-package LoxBerry::System::PluginDB;
-
-use LoxBerry::System;
-
-sub plugin
-{
-	my $class = shift;
-	
-	# if (@_ % 2) {
-		# Carp::croak "Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
-	# }
-		
-	my %params = @_;
-	my $self = \%params;
-	bless $self, $class;
-	
-	_load_db();
-	
-	# Submitted an md5 - search plugin
-	if ( $self->{md5} ) {
-		if ( defined $plugindb->{plugins}->{ $self->{md5} } ) {
-			# print STDERR "Plugin $self->{md5} exists\n";
-			$self = $plugindb->{plugins}->{ $self->{md5} } ;
-			bless $self, $class;
-			$self->{_isnew} = 0;
-		} else {
-			# print STDERR "Plugin $self->{md5} does not exist\n";
-			return undef;
-		}
-	} elsif ( $self->{md5} = $self->_calculate_md5 ) {
-		if ( defined $plugindb->{plugins}->{ $self->{md5} } ) {
-			# print STDERR "Plugin exists\n";
-			# Take the database values
-			$self = ( $plugindb->{plugins}->{ $self->{md5} } );
-			# Update the db values by the parameters
-			foreach my $paramkey ( keys %params ) {
-				$self->{$paramkey} = $params{$paramkey};
-			}
-			# Re-bless $self
-			bless $self, $class;
-			$self->{_isnew} = 0;
-		} else {
-			# print STDERR "Plugin is new: $self->{md5}\n";
-			$self->{_isnew} = 1;
-		}
-	} else {
-		print STDERR "Plugin does not exist and cannot be created without required properties\n";
-	}
-	
-	return $self;
-	
-
-}
-
-sub search
-{
-	my $self = shift;
-	my %params = @_;
-	
-	# Build an AND query
-	my @conditions;
-	my $operator;
-	
-	foreach $findkey ( keys %params ) {
-		if($findkey eq '_operator') {
-			$operator = $params{$findkey};
-			next;
-		}
-		my $needle = lc($params{$findkey});
-		my $query = "lc(\$_->{$findkey}) eq '$needle'";
-		push @conditions, $query;
-	}
-		
-	$operator = "and" if(!$operator);
-	$full_query = join(" $operator ", @conditions);
-	
-	$needle = lc($needle);
-	
-	print STDERR "Search for: $full_query\n";
-	
-	_load_db();
-	
-	my @result = $dbobj->find( $plugindb->{plugins}, $full_query );
-	return @result;
-}
-
-sub _calculate_md5 
-{
-	my $self = shift;
-	require Digest::MD5;
-	require Encode;
-	
-	my $pauthorname = $self->{author_name};
-	my $pauthoremail = $self->{author_email};
-	my $name = $self->{name};
-	my $folder = $self->{folder};
-	
-	if (! $pauthorname or !$pauthoremail or !$name or !$folder) {
-		return undef;
-	}
-	
-	my $pmd5checksum = Digest::MD5::md5_hex(Encode::encode_utf8("$pauthorname$pauthoremail$pname$pfolder"));
-
-	return $pmd5checksum;
-}
-
-sub save
-{
-	my $self = shift;
-	
-	my $isnew = $self->{_isnew};
-	delete $self->{_isnew};
-	
-	my $md5 = $self->{md5};
-	
-	if(!$md5) {
-		print STDERR "Cannot save plugin - no md5 defined\n";
-		return undef;
-	}
-		
-	# print STDERR "Save $md5 (isnew $isnew)\n";
-	
-	# print "Data of dbobj: " . Data::Dumper::Dumper($dbobj) . "\n";
-	
-	
-	my $homedir = $LoxBerry::System::lbhomedir;
-	my $plugindir = $self->{folder};
-	my $pluginname = $self->{name};
-	
-	# Save common variables
-	my %directories;
-	$directories{lbphtmlauthdir} = "$homedir/webfrontend/htmlauth/plugins/$plugindir";
-	$directories{lbphtmldir} = "$homedir/webfrontend/html/plugins/$plugindir";
-	$directories{lbptemplatedir} = "$homedir/templates/plugins/$plugindir";
-	$directories{lbpdatadir} = "$homedir/data/plugins/$plugindir";
-	$directories{lbplogdir} = "$homedir/log/plugins/$plugindir";
-	$directories{lbpconfigdir} = "$homedir/config/plugins/$plugindir";
-	$directories{lbpbindir} = "$homedir/bin/plugins/$plugindir";
-	$self->{directories} = \%directories;
-	
-	my %files;
-	$files{daemon} = "$homedir/system/daemons/plugins/$pluginname";
-	$files{uninstall} = "$homedir/data/system/uninstall/$pluginname";
-	$files{sudoers} = "$homedir/system/sudoers/$pluginname";
-	$self->{files} = \%files;
-	
-	
-	# Save data to the database object
-	$plugindb->{plugins}->{$md5} = { %$self } ;
-	
-	# Remove internal properties
-	delete $plugindb->{plugins}->{$md5}->{_isnew};
-	
-	# Save
-	$dbobj->write();
-
-}
-
-sub remove
-{
-	my $self = shift;
-	
-	my $md5 = $self->{md5};
-	
-	if(!$md5) {
-		print STDERR "Cannot remove plugin - no md5 set\n";
-		return undef;
-	}
-	
-	if( defined $plugindb->{plugins}->{$md5} ) {
-		delete $plugindb->{plugins}->{$md5};
-		$dbobj->write();
-	}
-
-	return 1;
-
-}
-
-
-sub _load_db
-{
-	# print "Loading PluginDB\n";
-	my $dbfile = $LoxBerry::System::lbsdatadir."/plugindatabase.json";
-	
-	# if (! -e $dbfile) {
-		# print STDERR "DB file not found: $dbfile\n";
-		# die;
-	# }
-	
-	our $dbobj = LoxBerry::JSON->new();
-	our $plugindb = $dbobj->open(filename => $dbfile );
-
-	# print "_load_db: " . Data::Dumper::Dumper( $plugindb ) . "\n";
-
-}
-
-# Every unknown method is an object property
-our $AUTOLOAD;
-sub AUTOLOAD {
-	my $self = shift;
-	my $propvalue = shift;
-	# Remove qualifier from original method name
-	my $called = $AUTOLOAD =~ s/.*:://r;
-	
-	if(! defined $propname) {
-		return $self->{$called};
-	} else {
-		$self->{$called} = $propvalue;
-	}
-}
-
-sub DESTROY 
-{ 
-	# Currently nothing
-} 
