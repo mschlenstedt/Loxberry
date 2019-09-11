@@ -29,6 +29,19 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
 	}
 }
 
+# Copy new ~/system/systemd to installation
+LOGINF "Install ~/system/systemd to your Loxberry...";
+&copy_to_loxberry('/system/systemd');
+
+# Link usb-mount@.service
+if ( -e "/etc/systemd/system/usb-mount@.service" ) {
+	LOGINF "Remove /etc/systemd/system/usb-mount@.service...";
+	qx {rm -f /etc/systemd/system/usb-mount@.service };
+}
+LOGINF "Install usb-mount@.service...";
+system( "ln -s $lbhomedir/system/systemd/usb-mount@.service /etc/systemd/system/usb-mount@.service" );
+
+
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";

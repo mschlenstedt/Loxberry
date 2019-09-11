@@ -218,24 +218,17 @@ rm -rf /var/cache/apt/archives/*
 
 # Systemd service for usb automount
 # (also included in 1.0.4 Update script)
-if [ ! -e /etc/systemd/system/usb-mount@.service ]; then
-(cat <<END
-[Unit]
-Description=Mount USB Drive on %i
-[Service]
-Type=oneshot
-RemainAfterExit=true
-ExecStart=$LBHOME/sbin/usb-mount.sh add %i
-ExecStop=$LBHOME/sbin/usb-mount.sh remove %i
-END
-) > /etc/systemd/system/usb-mount@.service
+if [ -e /etc/systemd/system/usb-mount@.service ]; then
+	rm /etc/systemd/system/usb-mount@.service
 fi
+ln -s $LBHOME/system/systemd/usb-mount@.service /etc/systemd/system/usb-mount@.service
+/bin/systemctl daemon-reload
 
 # Create udev rules for usbautomount
 # (also included in 1.0.4 Update script)
 if [ ! -e /etc/udev/rules.d/99-usbmount.rules ]; then
 (cat <<END
-KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/opt/loxberry/sbin/usb-mount.sh chkadd %k"
+KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="$LBHOME/sbin/usb-mount.sh chkadd %k"
 KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
 END
 ) > /etc/udev/rules.d/99-usbmount.rules
