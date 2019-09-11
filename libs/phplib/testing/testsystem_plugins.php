@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-require_once "loxberry_system.php";
+require_once "loxberry_system_v2.php";
 
 $plugins = LBSystem::get_plugins();
 foreach($plugins as $plugin) {
