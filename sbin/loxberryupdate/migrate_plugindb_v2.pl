@@ -76,6 +76,46 @@ foreach $oldplugin ( @plugins ) {
 	# print "Plugin to remove not found\n";
 # }
 
+# my (@result, @result2, @result3);
+
+# # Search for a plugin
+# @result = LoxBerry::System::PluginDB->search( folder => 'wiringpi' );
+# print "Search result: " . Dumper(\@result) . "\n";
+
+# ## Search with AND condition
+# # Example: All plugins with interface 2.0 and custom loglevel are enabled
+# @result = LoxBerry::System::PluginDB->search( 
+	# interface => '2.0',
+	# loglevels_enabled => '1',
+# );
+# print "Search result: " . Dumper(\@result) . "\n";
+
+# ## Search with OR
+# # You can do two searches, and combine the array
+# @result1 = LoxBerry::System::PluginDB->search( name => 'nukismartlock' );
+# @result2 = LoxBerry::System::PluginDB->search( folder => 'nukismartlock' );
+# my %h;
+# @result3 = map { $h{$_}++ ? () : $_ } (@result1, @result2);
+# print "Result 1: " . join(", ", @result1) . "\n";
+# print "Result 2: " . join(", ", @result2) . "\n";
+# print "Result 3: " . join(", ", @result3) . "\n";
+
+# # You may use the _operator parameter, that's faster
+# # Default _operatior is 'and'
+# print "Fast combined search with _operator\n";
+# @result = LoxBerry::System::PluginDB->search( 
+	# name => 'nukismartlock',
+	# folder => 'nukismartlock',
+	# _operator => 'or'
+# );
+# print "Result: " . join(", ", @result) . "\n";
+
+
+
+
+
+
+
 # This is the code to read the old plugindatabase.dat
 sub get_plugins_V1
 {
@@ -224,14 +264,37 @@ sub plugin
 
 }
 
-# sub _searchpluginmd5
-# {
-	# my $self = shift;
-	# print "_searchpluginmd5: " . $self->{md5} . "\n";
-	# my @result = $dbobj->find( $plugindb->{plugins}, " $_ eq '".$self->{md5}."'" );
-	# print "Result _searchpluginmd5: ".  Data::Dumper::Dumper(@result) . "\n";
-	# return @result;
-# }
+sub search
+{
+	my $self = shift;
+	my %params = @_;
+	
+	# Build an AND query
+	my @conditions;
+	my $operator;
+	
+	foreach $findkey ( keys %params ) {
+		if($findkey eq '_operator') {
+			$operator = $params{$findkey};
+			next;
+		}
+		my $needle = lc($params{$findkey});
+		my $query = "lc(\$_->{$findkey}) eq '$needle'";
+		push @conditions, $query;
+	}
+		
+	$operator = "and" if(!$operator);
+	$full_query = join(" $operator ", @conditions);
+	
+	$needle = lc($needle);
+	
+	print STDERR "Search for: $full_query\n";
+	
+	_load_db();
+	
+	my @result = $dbobj->find( $plugindb->{plugins}, $full_query );
+	return @result;
+}
 
 sub _calculate_md5 
 {
