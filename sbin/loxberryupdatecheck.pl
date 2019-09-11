@@ -53,7 +53,7 @@ my $download_path = '/tmp';
 my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
 my $min_version = "v0.3.0";
-my $max_version = "v1.99.99";
+my $max_version = "v2.99.99";
 
 my $querytype;
 my $update;
