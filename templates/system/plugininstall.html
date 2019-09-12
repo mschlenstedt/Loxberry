@@ -110,10 +110,10 @@
 					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_PRE_AND_RELEASES></label>
 				</fieldset>
 				<script>
-				$(document).on('pagecreate',function()
-				{
+				$(document).on('pagecreate',function() {
 					$( "#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option"+<TMPL_VAR PLUGINDB_AUTOUPDATE> ).prop( "checked", true ).checkboxradio( "refresh" );
 				});
+				
 				$("[id^=au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option]").change(function(){
 					var val = $(this).val();
 					console.log("Auto-Update", val);
@@ -164,11 +164,10 @@
 			
 			
 			<script>
-			$(document).ready( function()
-				{
-					
-					$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>').change();
-				});
+			$(document).ready( function() {
+				$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>').selectmenu('refresh');
+			});
+			
 			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
 					var val = $(this).val();
 					console.log("Loglevel", val);
