@@ -42,7 +42,7 @@ LOGINF "Install usb-mount@.service...";
 system( "ln -s $lbhomedir/system/systemd/usb-mount@.service /etc/systemd/system/usb-mount@.service" );
 
 LOGINF "Re-Install ssdpd service...";
-if ( -L "/etc/systemd/system/usb-mount@.service" ) {
+if ( -l "/etc/systemd/system/usb-mount@.service" ) {
 	unlink ("/etc/systemd/system/ssdpd.service");
 	system ("ln -s $lbhomedir/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service");
 	system ("/bin/systemctl daemon-reload");
