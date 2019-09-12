@@ -3,7 +3,7 @@
  # needed libio-socket-multicast-perl
 
  use strict;
- use lib "/opt/loxberry/libs/perllib";
+ use lib "$ENV{'LBHOMEDIR'}/libs/perllib";
  use IO::Socket::Multicast;
  use IO::Socket::INET;
  use DateTime;
@@ -27,7 +27,8 @@
  }
  
  my $s1 = IO::Socket::INET->new(Proto=>'udp');
- our $s2 = IO::Socket::Multicast->new(Proto=>'udp',LocalPort=>1900); 
+ our $s2 = IO::Socket::Multicast->new(Proto=>'udp',LocalPort=>1900);
+ if (!$s2) {die "Cloud not bind LocalPort";} 
  $s2->mcast_add('239.255.255.250') || die "Could not add multicast group.\n";
 
  
