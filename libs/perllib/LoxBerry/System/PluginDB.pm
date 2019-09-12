@@ -36,9 +36,15 @@ sub plugin
 	my $self = \%params;
 	bless $self, $class;
 	
+	# print STDERR "plugin: Params " . $params{_dbfile} . "\n";
+	# print STDERR "plugin: Self " . $self->{_dbfile} . "\n";
+	
 	$self->_load_db;
 	
 	my $dbfile = $self->{_dbfile};
+	
+	# print STDERR "plugin: dbfile $dbfile\n";
+	
 	my $dbobj = $plugindb_handles{$dbfile}{dbobj};
 	my $plugindb = $plugindb_handles{$dbfile}{plugindb};
 	
@@ -93,6 +99,9 @@ sub search
 	bless $self, $class;
 	my %params = @_;
 	
+	if ( $params{_dbfile} ) {
+		$self->{_dbfile} = $params{_dbfile};
+	}
 	$self->_load_db();
 	
 	my $dbfile = $self->{_dbfile};
@@ -109,6 +118,7 @@ sub search
 			$operator = $params{$findkey};
 			next;
 		}
+		next if(substr($findkey ,0 ,1) eq '_');
 		my $needle = lc($params{$findkey});
 		my $query = "lc(\$_->{$findkey}) eq '$needle'";
 		push @conditions, $query;
@@ -228,9 +238,16 @@ sub _load_db
 {
 	my $self = shift;
 	
-	my $dbfile = $dbfile_default;
+	# print STDERR "_load_db: dbfile is " . $self->{_dbfile} . "\n";
 	
-	$self->{_dbfile} = $dbfile;
+	if(!$self->{_dbfile}) {
+		$self->{_dbfile} = $dbfile_default;
+	}
+	
+	my $dbfile = $self->{_dbfile};
+	
+	# print STDERR "dbfile is " . $self->{_dbfile} . "\n";
+	
 	
 	my $dbobj = LoxBerry::JSON->new();
 	$plugindb_handles{$dbfile}{dbobj} = $dbobj;

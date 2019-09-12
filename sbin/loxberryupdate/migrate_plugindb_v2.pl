@@ -4,15 +4,11 @@ use LoxBerry::System;
 use LoxBerry::JSON;
 use LoxBerry::System::PluginDB;
 
-use Data::Dumper;
-
 # $LoxBerry::JSON::DEBUG = 1;
 
 if(!$lbsdatadir) {
 	die("Could not read LoxBerry variables");
 }
-
-$dbfile = "$lbsdatadir/plugindatabase.json";
 
 # Create new database file
 unlink $dbfile;
@@ -42,79 +38,9 @@ foreach $oldplugin ( @plugins ) {
 		print "Created database entry for $plugin->{title}\n";
 		$plugin->save;
 	} else {
-		print "ERR: Could not create entry for $oldplugin->{PLUGINDB_TITLE}\n";
+		print "ERROR: Could not create entry for $oldplugin->{PLUGINDB_TITLE}\n";
 	}
 }
-
-
-# my $plugin1 = LoxBerry::System::PluginDB->plugin( md5 => 'cbb215d37c67b25110043e95d0e2d492' );
-# if($plugin1) {
-	# print "Plugin exists - Salling save\n";
-	# print Dumper($plugin1);
-	# $plugin1->save();
-# } else {
-	# print "Plugin not defined\n";
-# }
-
-# my $plugin2 = LoxBerry::System::PluginDB->plugin( 
-	# author_name => 'Christian Fenzl', 
-	# author_email => 'fenzl@t-r-t.at',
-	# name => 'Very New Test Plugin 2', 
-	# folder => 'testplugin',
-	# title => 'Schönes Plugin'
-# );
-
-# if($plugin2) {
-	# print "Plugin2 is new: " . $plugin2->_isnew . "\n";
-	# $plugin2->save();
-# } else { 
-	# print "Plugin not defined\n";
-# }
-
-# my $plugin_to_remove = LoxBerry::System::PluginDB->plugin( md5 => '92d3a07b6bf39801bcf5756a8cc2f90a' );
-# if( $plugin_to_remove ) {
-	# my $ok = $plugin_to_remove->remove;
-	# print "Removed: " . $ok ? "Removed\n" : "Failed to remove\n";
-# } else {
-	# print "Plugin to remove not found\n";
-# }
-
-# my (@result, @result2, @result3);
-
-# # Search for a plugin
-# @result = LoxBerry::System::PluginDB->search( folder => 'wiringpi' );
-# print "Search result: " . Dumper(\@result) . "\n";
-
-# ## Search with AND condition
-# # Example: All plugins with interface 2.0 and custom loglevel are enabled
-# @result = LoxBerry::System::PluginDB->search( 
-	# interface => '2.0',
-	# loglevels_enabled => '1',
-# );
-# print "Search result: " . Dumper(\@result) . "\n";
-
-# ## Search with OR
-# # You can do two searches, and combine the array
-# @result1 = LoxBerry::System::PluginDB->search( name => 'nukismartlock' );
-# @result2 = LoxBerry::System::PluginDB->search( folder => 'nukismartlock' );
-# my %h;
-# @result3 = map { $h{$_}++ ? () : $_ } (@result1, @result2);
-# print "Result 1: " . join(", ", @result1) . "\n";
-# print "Result 2: " . join(", ", @result2) . "\n";
-# print "Result 3: " . join(", ", @result3) . "\n";
-
-## You may use the _operator parameter, that's faster
-## Default _operatior is 'and'
-# print "Fast combined search with _operator\n";
-# @result = LoxBerry::System::PluginDB->search( 
-	# name => 'nukismartlock',
-	# folder => 'nukismartlock',
-	# _operator => 'or'
-# );
-# print "Result: " . join(", ", @result) . "\n";
-
-
-
 
 
 # This is the code to read the old plugindatabase.dat
