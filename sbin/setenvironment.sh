@@ -100,8 +100,13 @@ fi
 if [ -L /etc/init.d/loxberry ]; then  
    rm /etc/init.d/loxberry
 fi
-ln -s $LBHOME/sbin/loxberryinit.sh /etc/init.d/loxberry
-update-rc.d loxberry defaults
+#ln -s $LBHOME/sbin/loxberryinit.sh /etc/init.d/loxberry
+#update-rc.d loxberry defaults
+if [ -e /etc/systemd/system/loxberry.service ]; then
+	rm /etc/systemd/system/loxberry.service
+fi
+ln -s $LBHOME/system/systemd/loxberry.service /etc/systemd/system/loxberry.service
+/bin/systemctl daemon-reload
 
 if [ -L /etc/init.d/createtmpfsfoldersinit ]; then  
    rm /etc/init.d/createtmpfsfoldersinit

@@ -49,6 +49,16 @@ if ( -l "/etc/systemd/system/usb-mount@.service" ) {
 	system ("/bin/systemctl start ssdpd");
 }
 
+# Link loxberry.service
+if ( -e "/etc/systemd/system/loxberry.service" ) {
+	LOGINF "Remove /etc/systemd/system/loxberry.service...";
+	qx {rm -f /etc/systemd/system/loxberry.service };
+}
+LOGINF "Install loxberry.service...";
+system( "ln -s $lbhomedir/system/systemd/loxberry.service /etc/systemd/system/loxberry.service" );
+
+system ("/bin/systemctl daemon-reload");
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 reboot_required("LoxBerry Update requests a reboot.");
