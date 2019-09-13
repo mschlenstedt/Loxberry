@@ -178,9 +178,19 @@ sub uninstall {
 		&logfail;
 	}
 
+	eval {
+		my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 600 );
+
+		if ($lockstate) {
+			$message = "$SL{'PLUGININSTALL.ERR_LOCKING'}";
+			&logerr;
+			$message = "$SL{'PLUGININSTALL.ERR_LOCKING_REASON'} $lockstate";
+			&logfail;
+		}
+	};
+	
 	$pname = $plugin->{name};
 	$pfolder = $plugin->{folder};
-	
 	
 	&purge_installation("all");
 
@@ -622,6 +632,9 @@ sub install {
 		$message = "$SL{'PLUGININSTALL.ERR_DATABASE'}";
 		&logfail;
 	}
+	
+	LOGINF "The unique plugin id (md5) of this plugin is: " . $plugin->{md5};
+	
 	my $isupgrade = 0;
 	
 	
