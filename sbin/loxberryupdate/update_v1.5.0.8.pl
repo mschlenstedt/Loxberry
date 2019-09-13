@@ -26,7 +26,7 @@ else {
 		ok => "Plugin database migrated successfully.",
 		error => "Migration returned an error."
 	);
-
+	LOGDEB $output;
 	if($exitcode == 0) {
 		LOGINF "The old plugin database is kept for any issues as plugindatabase.dat";
 		unlink "$lbsdatadir/plugindatabase.dat-";

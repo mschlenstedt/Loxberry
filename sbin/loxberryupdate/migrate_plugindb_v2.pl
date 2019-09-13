@@ -63,6 +63,10 @@ if($data and $data->{plugins}) {
 	$plugin_count_new = 0;
 }
 
+print "<INFO> Creating backup and shadow copy of plugindatabase\n";
+`cp -f $Loxberry::System::PLUGINDATABASE $Loxberry::System::PLUGINDATABASE-`;
+`cp -f $Loxberry::System::PLUGINDATABASE $Loxberry::System::PLUGINDATABASE.bkp`;
+
 print "<INFO> Number of plugins BEFORE: " . $plugin_count_old . "\n";
 print "<INFO> Number of plugins AFTER : " . $plugin_count_new . "\n";
 
