@@ -10,15 +10,21 @@ if(!$lbsdatadir) {
 	die("Could not read LoxBerry variables");
 }
 
+my $plugin_count_old = 0;
+my $plugin_count_new = 0;
+
 # Create new database file
-unlink $dbfile;
+print "<INFO> Deleting existing (new) plugindatabase.json\n";
+unlink $LoxBerry::System::PLUGINDATABASE;
 
 # Read old database with old code
-my @plugins = get_plugins_V1(undef, 1);
+my @plugins = get_plugins_V1();
+
+my $plugin_count_old = scalar @plugins;
 
 ## Transform data
 foreach $oldplugin ( @plugins ) {
-	print "Migrating plugin $oldplugin->{PLUGINDB_MD5_CHECKSUM} $oldplugin->{PLUGINDB_NAME} $oldplugin->{PLUGINDB_TITLE}\n";
+	print "<INFO> Migrating plugin $oldplugin->{PLUGINDB_MD5_CHECKSUM} $oldplugin->{PLUGINDB_NAME} $oldplugin->{PLUGINDB_TITLE}\n";
 	
 	my $plugin = LoxBerry::System::PluginDB->plugin(
 		author_name => $oldplugin->{PLUGINDB_AUTHOR_NAME},
@@ -34,55 +40,64 @@ foreach $oldplugin ( @plugins ) {
 		loglevel => $oldplugin->{PLUGINDB_LOGLEVEL},
 		loglevels_enabled => $oldplugin->{PLUGINDB_LOGLEVELS_ENABLED},
 	);
+	
 	if($plugin) {
-		print "Created database entry for $plugin->{title}\n";
+		if( $plugin->{md5} ne $oldplugin->{PLUGINDB_MD5_CHECKSUM} ) {
+			print "<WARN> Newly calculated pluginid does not match old pluginid\n";
+		} else {
+			print "<OK> Created database entry for $plugin->{title}\n";
+		}
 		$plugin->save;
 	} else {
-		print "ERROR: Could not create entry for $oldplugin->{PLUGINDB_TITLE}\n";
+		print "<ERROR> Could not create entry for $oldplugin->{PLUGINDB_TITLE}\n";
 	}
 }
+
+print "<INFO> Checking new database file...\n";
+eval {
+    $data = JSON::from_json( LoxBerry::System::read_file( $LoxBerry::System::PLUGINDATABASE ) );
+};
+if($data and $data->{plugins}) {
+	$plugin_count_new = scalar keys %{$data->{plugins}};
+} else {
+	$plugin_count_new = 0;
+}
+
+print "<INFO> Number of plugins BEFORE: " . $plugin_count_old . "\n";
+print "<INFO> Number of plugins AFTER : " . $plugin_count_new . "\n";
+
+if( $plugin_count_old ne $plugin_count_new ) {
+	print "<ERROR> Plugin count is not equal. Check the list above. Before trying any plugin installations, contact the LoxBerry-Core team via https://loxforum.com or https://github.com/mschlenstedt/Loxberry/issues\n";
+	exit(1);
+} else {
+	print "<OK> Plugindatabase migration finished successfully.\n";
+}
+exit(0);
 
 
 # This is the code to read the old plugindatabase.dat
 sub get_plugins_V1
 {
-	
-	my ($withcomments, $forcereload, $plugindb_file) = @_;
-	
-	# When the plugindb has changed, always force a reload of the plugindb
-	
-	$forcereload = 1;
 		
-	if (@plugins && !$forcereload && !$plugindb_file && !$plugins_delcache) {
-		print STDERR "get_plugins: Returning cached version of plugindatabase\n" if ($DEBUG);
-		return @plugins;
-	} else {
-		print STDERR "get_plugins: Re-reading plugindatabase\n" if ($DEBUG);
-	}
-	
 	if (! $plugindb_file) {
 		$plugindb_file = "$lbsdatadir/plugindatabase.dat";
-		$plugins_delcache = 0;
-	} else {
-		$plugins_delcache = 1;
 	}
-	
 	print STDERR "get_plugins: Using file $plugindb_file\n" if ($DEBUG);
 	
 	if (!-e $plugindb_file) {
 		Carp::carp "LoxBerry::System::pluginversion: Could not find $plugindb_file\n";
-		return undef;
+		return;
 	}
 	my $openerr;
 	open(my $fh, "<", $plugindb_file) or ($openerr = 1);
 	if ($openerr) {
 		Carp::carp "Error opening plugin database $plugindb_file";
 		# &error;
-		return undef;
+		return;
 		}
 	my @data = <$fh>;
 
-	@plugins = ();
+	my @plugins = ();
 	my $plugincount = 0;
 	
 	foreach (@data){
@@ -100,18 +115,6 @@ sub get_plugins_V1
 		$plugincount++;
 		my @fields = split(/\|/);
 
-		## Start Debug fields of Plugin-DB
-		# do {
-			# my $field_nr = 0;
-			# my $dbg_fields = "Plugin-DB Fields: ";
-			# foreach (@fields) {
-				# $dbg_fields .= "$field_nr: $_ | ";
-				# $field_nr++;
-			# }
-			# print STDERR "$dbg_fields\n";
-		# } ;
-		## End Debug fields of Plugin-DB
-		
 		# From Plugin-DB
 		
 		$plugin{PLUGINDB_NO} = $plugincount;
@@ -130,8 +133,7 @@ sub get_plugins_V1
 		$plugin{PLUGINDB_LOGLEVELS_ENABLED} = $plugin{PLUGINDB_LOGLEVEL} >= 0 ? 1 : 0;
 		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
 		push(@plugins, \%plugin);
-		# On changes of the plugindatabase format, please change here 
-		# and in libs/phplib/loxberry_system.php / function get_plugins
+
 	}
 	return @plugins;
 }

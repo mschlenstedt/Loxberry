@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		 http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,7 @@ use File::Path qw(make_path remove_tree);
 use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8);
 use LoxBerry::System;
-# use LoxBerry::System::PluginDB;
+use LoxBerry::System::PluginDB;
 use LoxBerry::Log;
 use CGI;
 use version;
@@ -31,7 +31,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.0.1";
+my $version = "2.0.0.2";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -44,7 +44,6 @@ if ($<) {
 
 
 my $exitcode;
-
 my $tempfile;
 my $tempfolder;
 my $is_cgi;
@@ -75,7 +74,7 @@ my $plbmin;
 my $plbmax;
 my $parch;
 
-
+my $plugin;
 
 ##########################################################################
 # Variables / Commandline
@@ -131,22 +130,22 @@ my @errors;
 my @warnings;
 $pname = "Plugininstall"; # set dummy at this point
 if ( $R::action ne "install" && $R::action ne "uninstall" && $R::action ne "autoupdate" ) {
-	$message =	"$SL{'PLUGININSTALL.ERR_ACTION'}";
+	$message = "$SL{'PLUGININSTALL.ERR_ACTION'}";
 	&logfail;
 }
 if ( $R::action eq "install" ) {
 	if ( (!$R::folder && !$R::file) || ($R::folder && $R::file) ) {
-		$message =	"$SL{'PLUGININSTALL.ERR_NOFOLDER_OR_ZIP'}";
+		$message = "$SL{'PLUGININSTALL.ERR_NOFOLDER_OR_ZIP'}";
 		&logfail;
 	}
 	if ( !$R::pin && $R::action ne "autoupdate" ) {
-		$message =	"$SL{'PLUGININSTALL.ERR_NOPIN'}";
+		$message = "$SL{'PLUGININSTALL.ERR_NOPIN'}";
 		&logfail;
 	}
 }
 if ( $R::action eq "uninstall" || $R::action eq "autoupdate" ) {
 	if ( !$R::pid ) {
-		$message =	"$SL{'PLUGININSTALL.ERR_NOPID'}";
+		$message = "$SL{'PLUGININSTALL.ERR_NOPID'}";
 		&logfail;
 	}
 }
@@ -171,33 +170,18 @@ exit (0);
 sub uninstall {
 
 	$pid = $R::pid;
-	my $found = 0;
-	open(F,"<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
-		if ($openerr) {
-			$message =	"$SL{'PLUGININSTALL.ERR_DATABASE'}";
-			&logfail;
-		}
-		my @data = <F>;
-		foreach (@data){
-			s/[\n\r]//g;
-			# Comments
-			if ($_ =~ /^\s*#.*/) {
-				next;
-			}
-			my @fields = split(/\|/);
-			if ($pid eq $fields[0]) {
-				$found = 1;
-				$pname	 = $fields[4];
-				$pfolder = $fields[5];
-			}
-		}
-	close (F);
-
-	if ( !$found ) {
-		$message =	"$SL{'PLUGININSTALL.ERR_PIDNOTEXIST'}";
+	
+	$plugin = LoxBerry::System::PluginDB->plugin( md5 => $pid );
+		
+	if ( !$plugin ) {
+		$message = "$SL{'PLUGININSTALL.ERR_PIDNOTEXIST'}";
 		&logfail;
 	}
 
+	$pname = $plugin->{name};
+	$pfolder = $plugin->{folder};
+	
+	
 	&purge_installation("all");
 
 	# Purge plugin notifications
@@ -226,11 +210,11 @@ sub install {
 	$logfile = "/tmp/$tempfile.log";
 	$statusfile = "/tmp/$tempfile.status";
 	if (-e "$statusfile") {
-		$message =	"$SL{'PLUGININSTALL.ERR_TEMPFILES_EXISTS'}";
+		$message = "$SL{'PLUGININSTALL.ERR_TEMPFILES_EXISTS'}";
 		&logfail;
 	}
 
-	$message =	"Statusfile: $statusfile";
+	$message = "Statusfile: $statusfile";
 	&loginfo;
 	open (F, ">$statusfile");
 	flock(F,2);
@@ -244,7 +228,7 @@ sub install {
 		my $pin = $R::pin;
 
 		if ( LoxBerry::System::check_securepin($pin) ) {
-			$message =	"$SL{'PLUGININSTALL.ERR_SECUREPIN_WRONG'}";
+			$message = "$SL{'PLUGININSTALL.ERR_SECUREPIN_WRONG'}";
 			&logfail;
 		}
 	}
@@ -262,7 +246,7 @@ sub install {
 			}
 		}
 		if ( !$found ) {
-			$message =	"$SL{'PLUGININSTALL.ERR_PIDNOTEXIST'}";
+			$message = "$SL{'PLUGININSTALL.ERR_PIDNOTEXIST'}";
 			&logfail;
 		}
 
@@ -271,13 +255,13 @@ sub install {
 	if (!$zipmode) { 
 		$tempfolder = $R::folder;
 		if (!-e $tempfolder) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FOLDER_DOESNT_EXIST'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FOLDER_DOESNT_EXIST'}";
 			&logfail;
 		}
 	} else {
 		$tempfolder = "/tmp/uploads/$tempfile";
 		if (!-e $R::file) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILE_DOESNT_EXIST'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILE_DOESNT_EXIST'}";
 			&logfail;
 		}
 
@@ -287,14 +271,14 @@ sub install {
 			close(F);
 			if($buffer ne 'PK')
 			{
-				$message =	"$SL{'PLUGININSTALL.ERR_ARCHIVEFORMAT'}";
+				$message = "$SL{'PLUGININSTALL.ERR_ARCHIVEFORMAT'}";
 				&logfail;
 			}
 		}
 		make_path("$tempfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	}
 	$tempfolder =~ s/(.*)\/$/$1/eg; # Clean trailing /
-	$message =	"Temp Folder: $tempfolder";
+	$message = "Temp Folder: $tempfolder";
 	&loginfo;
 
 	$message = "Logfile: $logfile";
@@ -315,7 +299,7 @@ sub install {
 		$pluginsize = $pluginsize / 1000; # kBytes
 		%folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
 		if ($folderinfo{available} < $pluginsize * 1.1) { # exstracted size + 10%
-			$message =	"$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'} " . $folderinfo{available} . " kB";
+			$message = "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'} " . $folderinfo{available} . " kB";
 			&logfail;
 		}
 	} else {
@@ -326,7 +310,7 @@ sub install {
 	# Check free space in $lbhomedir
 	%folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
 	if ($folderinfo{available} < $pluginsize * 1.1) { # exstracted size + 10%
-		$message =	"$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'} " . $folderinfo{available} . " kB";
+		$message = "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_ROOT'} " . $folderinfo{available} . " kB";
 		&logfail;
 	}
 
@@ -348,13 +332,13 @@ sub install {
 	&logok;
 
 	# Starting
-	$message =	"$SL{'PLUGININSTALL.INF_START'}";
+	$message = "$SL{'PLUGININSTALL.INF_START'}";
 	&loginfo;
 
 	# UnZipping
 	if ( $zipmode ) {
 
-		$message =	"$SL{'PLUGININSTALL.INF_EXTRACTING'}";
+		$message = "$SL{'PLUGININSTALL.INF_EXTRACTING'}";
 		&loginfo;
 
 		$message = "Command: $sudobin -n -u loxberry $unzipbin -d $tempfolder $R::file";
@@ -362,10 +346,10 @@ sub install {
 
 		system("$sudobin -n -u loxberry $unzipbin -d $tempfolder $R::file 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_EXTRACTING'}";
+			$message = "$SL{'PLUGININSTALL.ERR_EXTRACTING'}";
 			&logfail;
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_EXTRACTING'}";
+			$message = "$SL{'PLUGININSTALL.OK_EXTRACTING'}";
 			&logok;
 		}
 
@@ -385,7 +369,7 @@ sub install {
 			}
 		}
 		if (!$exists) {
-			$message =	"$SL{'PLUGININSTALL.ERR_ARCHIVEFORMAT'}";
+			$message = "$SL{'PLUGININSTALL.ERR_ARCHIVEFORMAT'}";
 			&logfail;
 		}
 	}
@@ -399,21 +383,21 @@ sub install {
 		&logfail;
 	}
 
-	$pauthorname			= $pcfg->param("AUTHOR.NAME");
-	$pauthoremail		 = $pcfg->param("AUTHOR.EMAIL");
-	$pversion				 = $pcfg->param("PLUGIN.VERSION");
-	$pname						= $pcfg->param("PLUGIN.NAME");
-	$ptitle					 = $pcfg->param("PLUGIN.TITLE");
-	$pfolder					= $pcfg->param("PLUGIN.FOLDER");
-	$pautoupdates		 = $pcfg->param("AUTOUPDATE.AUTOMATIC_UPDATES");
-	$preleasecfg			= $pcfg->param("AUTOUPDATE.RELEASECFG");
-	$pprereleasecfg	 = $pcfg->param("AUTOUPDATE.PRERELEASECFG");
-	$pinterface			 = $pcfg->param("SYSTEM.INTERFACE");
-	$preboot					= $pcfg->param("SYSTEM.REBOOT");
-	$pcustomlog			 = $pcfg->param("SYSTEM.CUSTOM_LOGLEVELS");
-	$plbmin					 = $pcfg->param("SYSTEM.LB_MINIMUM");
-	$plbmax					 = $pcfg->param("SYSTEM.LB_MAXIMUM");
-	$parch						= $pcfg->param("SYSTEM.ARCHITECTURE");
+	$pauthorname		= $pcfg->param("AUTHOR.NAME");
+	$pauthoremail		= $pcfg->param("AUTHOR.EMAIL");
+	$pversion			= $pcfg->param("PLUGIN.VERSION");
+	$pname				= $pcfg->param("PLUGIN.NAME");
+	$ptitle				= $pcfg->param("PLUGIN.TITLE");
+	$pfolder			= $pcfg->param("PLUGIN.FOLDER");
+	$pautoupdates		= $pcfg->param("AUTOUPDATE.AUTOMATIC_UPDATES");
+	$preleasecfg		= $pcfg->param("AUTOUPDATE.RELEASECFG");
+	$pprereleasecfg		= $pcfg->param("AUTOUPDATE.PRERELEASECFG");
+	$pinterface			= $pcfg->param("SYSTEM.INTERFACE");
+	$preboot			= $pcfg->param("SYSTEM.REBOOT");
+	$pcustomlog			= $pcfg->param("SYSTEM.CUSTOM_LOGLEVELS");
+	$plbmin				= $pcfg->param("SYSTEM.LB_MINIMUM");
+	$plbmax				= $pcfg->param("SYSTEM.LB_MAXIMUM");
+	$parch				= $pcfg->param("SYSTEM.ARCHITECTURE");
 
 	# Filter
 	$pname =~ tr/A-Za-z0-9_-//cd;
@@ -455,67 +439,67 @@ sub install {
 		$plbmax = "False";
 	}
 
-	$message = "Author:			 $pauthorname";
+	$message = "Author:         $pauthorname";
 	&loginfo;
-	$message = "Email:				$pauthoremail";
+	$message = "Email:          $pauthoremail";
 	&loginfo;
-	$message = "Version:			$pversion";
+	$message = "Version:        $pversion";
 	&loginfo;
-	$message = "Name:				 $pname";
+	$message = "Name:           $pname";
 	&loginfo;
-	$message = "Folder:			 $pfolder";
+	$message = "Folder:         $pfolder";
 	&loginfo;
-	$message = "Title:				$ptitle";
+	$message = "Title:          $ptitle";
 	&loginfo;
-	$message = "Autoupdate:	 $pautoupdates";
+	$message = "Autoupdate:     $pautoupdates";
 	&loginfo;
-	$message = "Release:			$preleasecfg";
+	$message = "Release:        $preleasecfg";
 	&loginfo;
-	$message = "Prerelease:	 $pprereleasecfg";
+	$message = "Prerelease:     $pprereleasecfg";
 	&loginfo;
-	$message = "Reboot:			 $preboot";
+	$message = "Reboot:         $preboot";
 	&loginfo;
-	$message = "Min LB Vers:	$plbmin";
+	$message = "Min LB Vers:    $plbmin";
 	&loginfo;
-	$message = "Max LB Vers:	$plbmax";
+	$message = "Max LB Vers:    $plbmax";
 	&loginfo;
-	$message = "Architecture: $parch";
+	$message = "Architecture:   $parch";
 	&loginfo;
-	$message = "Custom Log:	 $pcustomlog";
+	$message = "Custom Log:     $pcustomlog";
 	&loginfo;
-	$message = "Interface:		$pinterface";
+	$message = "Interface:      $pinterface";
 	&loginfo;
 
 	# Create Logfile with lib to have it in database
 	my $log = LoxBerry::Log->new(
-									package => 'Plugin Installation',
-									name => 'Installation',
-									filename => "$lbhomedir/log/system/plugininstall/$pname.log",
-									loglevel => 7,
+		package => 'Plugin Installation',
+		name => 'Installation',
+		filename => "$lbhomedir/log/system/plugininstall/$pname.log",
+		loglevel => 7,
 	);
 	LOGSTART "LoxBerry Plugin Installation $ptitle";
 
 	# Use 0/1 for enabled/disabled from here on
 	$pautoupdates = is_disabled($pautoupdates) ? 0 : 1;
 	$preboot = is_disabled($preboot) ? 0 : 1;
-	$pcustomlog = is_disabled($pcustomlog) ? -1 : 3; # -1 = disabled, 3 = Default
+	$pcustomlog = is_enabled($pcustomlog) ? 1 : 0;
 
 	# Some checks
 	if (!$pauthorname || !$pauthoremail || !$pversion || !$pname || !$ptitle || !$pfolder || !$pinterface) {
-		$message =	"$SL{'PLUGININSTALL.ERR_PLUGINCFG'}";
+		$message = "$SL{'PLUGININSTALL.ERR_PLUGINCFG'}";
 		&logfail;
 	}	else {
-		$message =	"$SL{'PLUGININSTALL.OK_PLUGINCFG'}";
+		$message = "$SL{'PLUGININSTALL.OK_PLUGINCFG'}";
 		&logok;
 	}
 
 	if ( $pinterface ne "1.0" && $pinterface ne "2.0" ) {
-		$message =	"$SL{'PLUGININSTALL.ERR_UNKNOWNINTERFACE'}";
+		$message = "$SL{'PLUGININSTALL.ERR_UNKNOWNINTERFACE'}";
 		&logfail; 
 	}
 
 	if ( $pinterface eq "1.0" ) {
-		# $message =	"*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
+		# $message = "*** DEPRECIATED *** This Plugin uses the outdated PLUGIN Interface V1.0. It will be compatible with this Version of LoxBerry but may not work with the next Major LoxBerry release! Please inform the PLUGIN Author at $pauthoremail";
 		# &logwarn; 
 		# push(@warnings,"PLUGININTERFACE: $message");
 		# Always reboot with V1 plugins
@@ -528,13 +512,13 @@ sub install {
 		foreach (split(/,/,$parch)){
 			if (-e "$lbsconfigdir/is_$_.cfg") {
 				$archcheck = 1;
-				$message =	"$SL{'PLUGININSTALL.OK_ARCH'}";
+				$message = "$SL{'PLUGININSTALL.OK_ARCH'}";
 				&logok;
 				last;
 			} 
 		}
 		if (!$archcheck) {
-			$message =	"$SL{'PLUGININSTALL.ERR_ARCH'}";
+			$message = "$SL{'PLUGININSTALL.ERR_ARCH'}";
 			&logfail;
 		}
 	}
@@ -544,7 +528,7 @@ sub install {
 	if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 		$versioncheck = 1;
 		$lbversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
-		$message =	$SL{'PLUGININSTALL.INF_LBVERSION'} . $lbversion;
+		$message = $SL{'PLUGININSTALL.INF_LBVERSION'} . $lbversion;
 		&loginfo;
 	} else {
 		$versioncheck = 0;
@@ -554,12 +538,12 @@ sub install {
 
 		if ( (version::is_lax(vers_tag($plbmin))) ) {
 			$plbmin = version->parse(vers_tag($plbmin));
-			$message =	$SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
+			$message = $SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
 			&loginfo;
 		if ($lbversion < $plbmin) {
 			my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
 			if ($generalcfg->param("UPDATE.RELEASETYPE") and $generalcfg->param("UPDATE.RELEASETYPE") eq "latest") {
-				$message =	$SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
+				$message = $SL{'PLUGININSTALL.INF_MINVERSION'} . $plbmin;
 				push(@warnings, "$message");
 				&logwarn;
 				$message = "This plugin requests a newer LoxBerry version than installed. As you have set LoxBerry Update ";
@@ -572,11 +556,11 @@ sub install {
 				push(@warnings, "$message");
 				&logwarn;
 			} else {
-				$message =	"$SL{'PLUGININSTALL.ERR_MINVERSION'}";
+				$message = "$SL{'PLUGININSTALL.ERR_MINVERSION'}";
 				&logfail;
 			}
 			} else {
-			$message =	"$SL{'PLUGININSTALL.OK_MINVERSION'}";
+			$message = "$SL{'PLUGININSTALL.OK_MINVERSION'}";
 			&logok;
 			}
 		} 
@@ -587,13 +571,13 @@ sub install {
 
 		if ( (version::is_lax(vers_tag($plbmax))) ) {
 			$plbmax = version->parse(vers_tag($plbmax));
-			$message =	$SL{'PLUGININSTALL.INF_MAXVERSION'} . $plbmax;
+			$message = $SL{'PLUGININSTALL.INF_MAXVERSION'} . $plbmax;
 			&loginfo;
 
 			if ($lbversion > $plbmax) {
 			my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
 			if ($generalcfg->param("UPDATE.RELEASETYPE") and $generalcfg->param("UPDATE.RELEASETYPE") eq "latest") {
-				$message =	$SL{'PLUGININSTALL.INF_MAXVERSION'} . $plbmin;
+				$message = $SL{'PLUGININSTALL.INF_MAXVERSION'} . $plbmin;
 				push(@warnings, "$message");
 				&logwarn;
 				$message = "This plugin requests an older LoxBerry version than installed. As you have set LoxBerry Update ";
@@ -606,137 +590,106 @@ sub install {
 				push(@warnings, "$message");
 				&logwarn;
 			} else {
-				$message =	"$SL{'PLUGININSTALL.ERR_MAXVERSION'}";
+				$message = "$SL{'PLUGININSTALL.ERR_MAXVERSION'}";
 				&logfail;
 			}
 			} else {
-			$message =	"$SL{'PLUGININSTALL.OK_MAXVERSION'}";
+			$message = "$SL{'PLUGININSTALL.OK_MAXVERSION'}";
 			&logok;
 			}
 		}
 
 	}
 
-	# Create MD5 Checksum
-	our $pmd5checksum = md5_hex(encode_utf8("$pauthorname$pauthoremail$pname$pfolder"));
-
-	# Read Plugin Database
-	my $openerr = 0;
-	if (!-e "$lbsdatadir/plugindatabase.dat") {
-		$message =	"$SL{'PLUGININSTALL.ERR_DATABASE'}";
+	## Create or update database entry ##
+	
+	$plugin = LoxBerry::System::PluginDB->plugin(
+        author_name => $pauthorname,
+        author_email => $pauthoremail,
+        name => $pname,
+        folder => $pfolder,
+        version => $pversion,
+        title => $ptitle,
+        interface => $pinterface,
+        autoupdate => $pautoupdates,
+        releasecfg => $preleasecfg,
+        prereleasecfg => $pprereleasecfg,
+        # loglevel => 
+        loglevels_enabled => $pcustomlog
+	);
+	
+	if(!$plugin) {
+		$message = "$SL{'PLUGININSTALL.ERR_DATABASE'}";
 		&logfail;
 	}
-	my @pnames;
-	my @pfolders;
 	my $isupgrade = 0;
-	open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
-		flock(F,2);
-		if ($openerr) {
-			$message =	"$SL{'PLUGININSTALL.ERR_DATABASE'}";
-			&logfail;
-		}
-		my @data = <F>;
-		seek(F,0,0);
-		truncate(F,0);
-		foreach (@data){
-			s/[\n\r]//g;
-			# Comments
-			if ($_ =~ /^\s*#.*/) {
-				print F "$_\n";
-				next;
-			}
-			my @fields = split(/\|/);
-			# If this is an upgrade use existing data
-			if ($fields[0] eq $pmd5checksum) {
-				$isupgrade = 1;
-				if ( is_enabled($pautoupdates) && $fields[8] > $pautoupdates ) {
-					$pautoupdates = $fields[8];
-				};
-				if ( $pcustomlog == 3 && $fields[11] > -1 ) {
-					$pcustomlog = $fields[11];
-				}
-				print F "$fields[0]|$fields[1]|$fields[2]|$pversion|$fields[4]|$fields[5]|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|$pcustomlog\n";
-				$pname = $fields[4];
-				$pfolder = $fields[5];
-				$message =	"$SL{'PLUGININSTALL.INF_ISUPDATE'}";
-				&loginfo;
-			} else {
-				print F "$_\n";
-				push(@pnames,$fields[4]);
-				push(@pfolders,$fields[5]);
-			}
-		}
-		# If it is a new installation, make a new databaseentry
-		if (!$isupgrade) {
-			# Find "free" folder and name
-			my $exists = 0;
-			my $i;
-			my $i1;
-			for ($i=0;$i<=100;$i++){
-				foreach (@pnames) {
-					if ( ($_ eq $pname && $i == 1) || $_ eq $pname.sprintf("%02d", $i)) {
-						$exists = 1;
-					}
-				}
-				if (!$exists) {
-					last;
-				} else {
-					$exists = 0;
-				}
-			}
-			if ($i1 > 0) {
-				$pname = $pname.sprintf("%02d", $i);
-			}
-			$exists = 0;
-			for ($i1=0;$i1<=100;$i1++){
-				foreach (@pfolders) {
-					if ( ($_ eq $pfolder && $i1 == 1) || $_ eq $pfolder.sprintf("%02d", $i1)) {
-						$exists = 1;
-					}
-				}
-				if (!$exists) {
-					last;
-				} else {
-					$exists = 0;
-				}
-			}
-			if ($i1 > 0) {
-				$pfolder = $pfolder.sprintf("%02d", $i1);
-			}
-			# Ok?
-			if ($i < 100 && $i1 < 100) {
-				$message =	"$SL{'PLUGININSTALL.OK_DBENTRY'}";
-				&logok;
-				$message = $SL{'PLUGININSTALL.INF_PNAME_IS'} . " $pname";
-				&loginfo;
-				$message = $SL{'PLUGININSTALL.INF_PFOLDER_IS'} . " $pfolder";
-				&loginfo;
-			} else {
-				$message =	"$SL{'PLUGININSTALL.ERR_DBENTRY'}";
-				&logfail;
-			}
-			
+	
+	
+	# Everything for an UPGRADE
+	if(! $plugin->{_isnew}) {
+		$message = "$SL{'PLUGININSTALL.INF_ISUPDATE'}";
+		&loginfo;
+		$isupgrade = 1;
+		$plugin->{epoch_lastupdated} = time;
+		
+		$message = "$SL{'PLUGININSTALL.OK_DBENTRY'}";
+		&logok;
+	
+		
+	} else {
+		# Everything for a NEW installation
+		$plugin->{epoch_firstinstalled} = time;
+		# Set default loglevel to 3 for new plugins
+		$plugin->{loglevel} = "3";
 		if(is_enabled($pautoupdates)) {
 			# Set new installations to automatic release updates
-			$pautoupdates = 3;
+			$plugin->{autoupdate} = 3;
 		}
-		print F "$pmd5checksum|$pauthorname|$pauthoremail|$pversion|$pname|$pfolder|$ptitle|$pinterface|$pautoupdates|$preleasecfg|$pprereleasecfg|$pcustomlog\n";
+		
+		# Check for existance of same folder or name 
+		my @searchresult = LoxBerry::System::PluginDB->search( 
+			name => $pname,
+			folder => $pfolder,
+			_condition => 'or'
+		);
+		if(@searchresult) {
+			# Add 3 chars of md5 hash to pname and folder
+			$pname = $pname.'_'.substr($plugin->{md5}, 0, 3);
+			$pfolder = $pfolder.'_'.substr($plugin->{md5}, 0, 3);
+			# Check again
+			@searchresult = LoxBerry::System::PluginDB->search( 
+				name => $pname,
+				folder => $pfolder,
+				_condition => 'or'
+			);
+			if(@searchresult) {
+				# Also in use -> stop
+				$message = "$SL{'PLUGININSTALL.ERR_DBENTRY'}";
+				&logfail;
+			} else {
+				$plugin->{name} = $pname;
+				$plugin->{folder} = $pfolder;
+			}
 		}
-		flock(F,8);
-	close (F);
+	}
+	
+	$message = $SL{'PLUGININSTALL.INF_PNAME_IS'} . " $pname";
+	&loginfo;
+	$message = $SL{'PLUGININSTALL.INF_PFOLDER_IS'} . " $pfolder";
+	&loginfo;
+	
+	$plugin->save();
+	
 
-	# Sort Plugindatabase
-	&sort_plugins;
-
-	# Create shadow plugindatabase.dat and backup of plugindatabase
+	# Create shadow plugindatabase.json- and backup of plugindatabase
 	$message = $SL{'PLUGININSTALL.INF_SHADOWDB'};
 	&loginfo;
-	system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.dat- 2>&1");
-	&setrights ("644", "0", "$lbsdatadir/plugindatabase.dat-", "PLUGIN DATABASE");
-	&setowner ("root", "0", "$lbsdatadir/plugindatabase.dat-", "PLUGIN DATABASE");
-	system("cp -v $lbsdatadir/plugindatabase.dat $lbsdatadir/plugindatabase.bkp 2>&1");
-	&setrights ("644", "0", "$lbsdatadir/plugindatabase.bkp", "PLUGIN DATABASE");
-	&setowner ("loxberry", "0", "$lbsdatadir/plugindatabase.bkp", "PLUGIN DATABASE");
+	system("cp -v $LoxBerry::System::PLUGINDATABASE $LoxBerry::System::PLUGINDATABASE- 2>&1");
+	&setrights ("644", "0", "$LoxBerry::System::PLUGINDATABASE-", "PLUGIN DATABASE");
+	&setowner ("root", "0", "$LoxBerry::System::PLUGINDATABASE-", "PLUGIN DATABASE");
+	system("cp -v $LoxBerry::System::PLUGINDATABASE $LoxBerry::System::PLUGINDATABASE.bkp 2>&1");
+	&setrights ("644", "0", "$LoxBerry::System::PLUGINDATABASE.bkp", "PLUGIN DATABASE");
+	&setowner ("loxberry", "0", "$LoxBerry::System::PLUGINDATABASE.bkp", "PLUGIN DATABASE");
 
 	# Starting installation
 
@@ -744,7 +697,7 @@ sub install {
 	if ( $pinterface ne "1.0" ) {
 		$chkhcpath = `$findbin $tempfolder -type f ! -iname '*.md' ! -iname '*.html' ! -iname '*.txt' ! -iname '*.dat' ! -iname '*.log' -exec $grepbin -li '/opt/loxberry' {} \\;`;
 		if ($chkhcpath) {
-				$message =	$SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
+				$message = $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
 				&logwarn;
 				push(@warnings,"HARDCODED PATH'S: $message");
 				print "$chkhcpath";
@@ -752,14 +705,14 @@ sub install {
 	}
 
 	# Replacing Environment strings
-	$message =	"$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
+	$message = "$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
 	&loginfo;
 	if (-e "$tempfolder" ) {
 		&replaceenv ("loxberry", "1", "$tempfolder");
 	}
 
 	# Executing DOS2UNIX for all pluginfiles
-	$message =	"$SL{'PLUGININSTALL.INF_DOS2UNIX'}";
+	$message = "$SL{'PLUGININSTALL.INF_DOS2UNIX'}";
 	&loginfo;
 	if (-e "$tempfolder" ) {
 		&dos2unix ("loxberry", "1", "$tempfolder");
@@ -767,7 +720,7 @@ sub install {
 
 	# Executing preroot script
 	if (-f "$tempfolder/preroot.sh") {
-		$message =	"$SL{'PLUGININSTALL.INF_START_PREROOT'}";
+		$message = "$SL{'PLUGININSTALL.INF_START_PREROOT'}";
 		&loginfo;
 
 		$message = "Command: cd \"$tempfolder\" && \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
@@ -777,16 +730,16 @@ sub install {
 		system("cd \"$tempfolder\" && \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
 		$exitcode	= $? >> 8;
 		if ($exitcode eq 1) {
-			$message =	"$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
 			&logerr; 
 			push(@errors,"PREROOT: $message");
 		} 
 		elsif ($exitcode > 1) {
-			$message =	"$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
 			&logfail; 
 		}
 		else {
-			$message =	"$SL{'PLUGININSTALL.OK_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
 			&logok;
 		}
 	}
@@ -795,7 +748,7 @@ sub install {
 	if ($isupgrade) {
 		if (-f "$tempfolder/preupgrade.sh") {
 
-			$message =	"$SL{'PLUGININSTALL.INF_START_PREUPGRADE'}";
+			$message = "$SL{'PLUGININSTALL.INF_START_PREUPGRADE'}";
 			&loginfo;
 
 			$message = "Command: cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
@@ -805,21 +758,21 @@ sub install {
 			system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
 			$exitcode	= $? >> 8;
 			if ($exitcode eq 1) {
-				$message =	"$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+				$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
 				&logerr; 
 				push(@errors,"PREUPGRADE: $message");
 			} 
 			elsif ($exitcode > 1) {
-				$message =	"$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+				$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
 				&logfail; 
 			}
 			else {
-				$message =	"$SL{'PLUGININSTALL.OK_SCRIPT'}";
+				$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
 				&logok;
 			}
 		}
 		# Purge old installation
-		$message =	"$SL{'PLUGININSTALL.INF_REMOVING_OLD_INSTALL'}";
+		$message = "$SL{'PLUGININSTALL.INF_REMOVING_OLD_INSTALL'}";
 		&loginfo;
 
 		&purge_installation;
@@ -827,7 +780,7 @@ sub install {
 
 	# Executing preinstall script
 	if (-f "$tempfolder/preinstall.sh") {
-		$message =	"$SL{'PLUGININSTALL.INF_START_PREINSTALL'}";
+		$message = "$SL{'PLUGININSTALL.INF_START_PREINSTALL'}";
 		&loginfo;
 
 		$message = "Command: cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
@@ -837,16 +790,16 @@ sub install {
 		system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
 		$exitcode	= $? >> 8;
 		if ($exitcode eq 1) {
-			$message =	"$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
 			&logerr; 
 			push(@errors,"PREINSTALL: $message");
 		} 
 		elsif ($exitcode > 1) {
-			$message =	"$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
 			&logfail; 
 		}
 		else {
-			$message =	"$SL{'PLUGININSTALL.OK_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
 			&logok;
 		}
 	}	
@@ -854,15 +807,15 @@ sub install {
 	# Copy Config files
 	make_path("$lbhomedir/config/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	if (!&is_folder_empty("$tempfolder/config")) {
-		$message =	"$SL{'PLUGININSTALL.INF_CONFIG'}";
+		$message = "$SL{'PLUGININSTALL.INF_CONFIG'}";
 		&loginfo;
 		system("$sudobin -n -u loxberry cp -r -v $tempfolder/config/* $lbhomedir/config/plugins/$pfolder/ 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"CONFIG files: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 		&setowner ("loxberry", "1", "$lbhomedir/config/plugins/$pfolder", "CONFIG files");
@@ -872,15 +825,15 @@ sub install {
 	# Copy bin files
 	make_path("$lbhomedir/bin/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	if (!&is_folder_empty("$tempfolder/bin")) {
-		$message =	"$SL{'PLUGININSTALL.INF_BIN'}";
+		$message = "$SL{'PLUGININSTALL.INF_BIN'}";
 		&loginfo;
 		system("$sudobin -n -u loxberry cp -r -v $tempfolder/bin/* $lbhomedir/bin/plugins/$pfolder/ 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"BIN files: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 
@@ -892,15 +845,15 @@ sub install {
 	# Copy Template files
 	make_path("$lbhomedir/templates/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	if (!&is_folder_empty("$tempfolder/templates")) {
-		$message =	"$SL{'PLUGININSTALL.INF_TEMPLATES'}";
+		$message = "$SL{'PLUGININSTALL.INF_TEMPLATES'}";
 		&loginfo;
 		system("$sudobin -n -u loxberry cp -r -v $tempfolder/templates/* $lbhomedir/templates/plugins/$pfolder/ 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"TEMPLATE files: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 
@@ -909,8 +862,23 @@ sub install {
 	}
 
 	# Copy Cron files
+	my @cronfolders = qw( 
+		cron.01min 
+		cron.03min 
+		cron.05min 
+		cron.10min 
+		cron.15min 
+		cron.30min 
+		cron.hourly 
+		cron.daily 
+		cron.weekly 
+		cron.monthly 
+		cron.yearly 
+	);
+	
+	
 	if (!&is_folder_empty("$tempfolder/cron")) {
-		$message =	"$SL{'PLUGININSTALL.INF_CRONJOB'}";
+		$message = "$SL{'PLUGININSTALL.INF_CRONJOB'}";
 		&loginfo;
 		$openerr = 0;
 		if (-e "$tempfolder/cron/crontab" && !-e "$lbhomedir/system/cron/cron.d/$pname") {
@@ -918,121 +886,43 @@ sub install {
 			if ($? ne 0) {
 				$openerr = 1;
 			}
+			&setrights ("644", "0", "$lbhomedir/system/cron/cron.d/*", "CRONTAB files");
+			&setowner	("root", "0", "$lbhomedir/system/cron/cron.d/*", "CRONTAB files");
 		} 
-		if (-e "$tempfolder/cron/cron.01min") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.01min $lbhomedir/system/cron/cron.01min/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.03min") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.03min $lbhomedir/system/cron/cron.03min/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.05min") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.05min $lbhomedir/system/cron/cron.05min/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.10min") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.10min $lbhomedir/system/cron/cron.10min/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.15min") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.15min $lbhomedir/system/cron/cron.15min/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.30min") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.30min $lbhomedir/system/cron/cron.30min/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.hourly") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.hourly $lbhomedir/system/cron/cron.hourly/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.daily") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.daily $lbhomedir/system/cron/cron.daily/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.weekly") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.weekly01 $lbhomedir/system/cron/cron.weekly/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.monthly") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.monthly $lbhomedir/system/cron/cron.monthly/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
-		if (-e "$tempfolder/cron/cron.yearly") {
-			system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/cron.yearly $lbhomedir/system/cron/cron.yearly/$pname 2>&1");
-			if ($? ne 0) {
-				$openerr = 1;
-			}
-		} 
+		
+		foreach my $cronfolder ( @cronfolders ) {
+			if (-e "$tempfolder/cron/$cronfolder") {
+				system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/$cronfolder $lbhomedir/system/cron/$cronfolder/$pname 2>&1");
+				if ($? ne 0) {
+					$openerr = 1;
+				}
+				&setrights ("755", "1", "$lbhomedir/system/cron/$cronfolder", "CRONJOB files");
+				&setowner	("loxberry", "1", "$lbhomedir/system/cron/$cronfolder", "CRONJOB files");
+			} 
+		}
+		
 		if ($openerr) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"CRONJOB files: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
-
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.01min", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.01min", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.03min", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.03min", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.05min", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.05min", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.10min", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.10min", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.15min", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.15min", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.30min", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.30min", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.hourly", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.hourly", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.daily", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.daily", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.weekly", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.weekly", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.monthly", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.monthly", "CRONJOB files");
-		&setrights ("755", "1", "$lbhomedir/system/cron/cron.yearly", "CRONJOB files");
-		&setowner	("loxberry", "1", "$lbhomedir/system/cron/cron.yearly", "CRONJOB files");
-		&setrights ("644", "0", "$lbhomedir/system/cron/cron.d/*", "CRONTAB files");
-		&setowner	("root", "0", "$lbhomedir/system/cron/cron.d/*", "CRONTAB files");
-
 	}
 
 	# Copy Data files
 	make_path("$lbhomedir/data/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	if (!&is_folder_empty("$tempfolder/data")) {
-		$message =	"$SL{'PLUGININSTALL.INF_DATAFILES'}";
+		$message = "$SL{'PLUGININSTALL.INF_DATAFILES'}";
 		&loginfo;
 		system("$sudobin -n -u loxberry cp -r -v $tempfolder/data/* $lbhomedir/data/plugins/$pfolder/ 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"DATA files: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 
@@ -1044,22 +934,22 @@ sub install {
 	make_path("$lbhomedir/log/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	if (!&is_folder_empty("$tempfolder/log")) {
 
-		$message =	"$SL{'PLUGININSTALL.INF_LOGFILES'}";
+		$message = "$SL{'PLUGININSTALL.INF_LOGFILES'}";
 		&loginfo;
 
 		if ( $pinterface ne "1.0" ) {
-			$message =	"*** DEPRECIATED *** With plugin interface 2.0 (and above), the plugin must not ship with a log folder. Please inform the PLUGIN Author at $pauthoremail";
+			$message = "*** DEPRECIATED *** With plugin interface 2.0 (and above), the plugin must not ship with a log folder. Please inform the PLUGIN Author at $pauthoremail";
 			&logwarn; 
 			push(@warnings,"LOG files: $message");
 		}
 
 		system("$sudobin -n -u loxberry cp -r -v $tempfolder/log/* $lbhomedir/log/plugins/$pfolder/ 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"LOG files: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 
@@ -1071,15 +961,15 @@ sub install {
 	if ( $pinterface eq "1.0" ) {
 		make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 		if (!&is_folder_empty("$tempfolder/webfrontend/cgi")) {
-			$message =	"$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
+			$message = "$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
 			&loginfo;
 			system("$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/cgi/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
 			if ($? ne 0) {
-				$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+				$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 				&logerr; 
 				push(@errors,"HTMLAUTH files: $message");
 			} else {
-				$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+				$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 				&logok;
 			}
 
@@ -1093,15 +983,15 @@ sub install {
 	if ( $pinterface ne "1.0" ) {
 		make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 		if (!&is_folder_empty("$tempfolder/webfrontend/htmlauth")) {
-			$message =	"$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
+			$message = "$SL{'PLUGININSTALL.INF_HTMLAUTHFILES'}";
 			&loginfo;
 			system("$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/htmlauth/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
 			if ($? ne 0) {
-				$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+				$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 				&logerr; 
 				push(@errors,"HTMLAUTH files: $message");
 			} else {
-				$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+				$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 				&logok;
 			}
 
@@ -1114,15 +1004,15 @@ sub install {
 	# Copy HTML files
 	make_path("$lbhomedir/webfrontend/html/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	if (!&is_folder_empty("$tempfolder/webfrontend/html")) {
-		$message =	"$SL{'PLUGININSTALL.INF_HTMLFILES'}";
+		$message = "$SL{'PLUGININSTALL.INF_HTMLFILES'}";
 		&loginfo;
 		system("$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/html/* $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"HTML files: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 
@@ -1133,12 +1023,12 @@ sub install {
 
 	# Copy Icon files
 	make_path("$lbhomedir/webfrontend/html/system/images/icons/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
-	$message =	"$SL{'PLUGININSTALL.INF_ICONFILES'}";
+	$message = "$SL{'PLUGININSTALL.INF_ICONFILES'}";
 	&loginfo;
 	system("$sudobin -n -u loxberry cp -r -v $tempfolder/icons/* $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
 	if ($? ne 0) {
 		system("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/* $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
-		$message =	"$SL{'PLUGININSTALL.ERR_ICONFILES'}";
+		$message = "$SL{'PLUGININSTALL.ERR_ICONFILES'}";
 		&logerr; 
 		push(@errors,"ICON files: $message");
 	} else {
@@ -1160,11 +1050,11 @@ sub install {
 			system("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_512.png $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
 		} 
 		if ($openerr) {
-			$message =	"$SL{'PLUGININSTALL.ERR_ICONFILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_ICONFILES'}";
 			&logerr;
 			push(@errors,"ICON files: $message");
 		} else { 
-			$message =	"$SL{'PLUGININSTALL.OK_ICONFILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_ICONFILES'}";
 			&logok;
 		}
 
@@ -1174,21 +1064,21 @@ sub install {
 
 	# Copy Daemon file
 	if (-f "$tempfolder/daemon/daemon") {
-		$message =	"$SL{'PLUGININSTALL.INF_DAEMON'}";
+		$message = "$SL{'PLUGININSTALL.INF_DAEMON'}";
 		&loginfo;
 		system("cp -v $tempfolder/daemon/daemon $lbhomedir/system/daemons/plugins/$pname 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"DAEMON FILE: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 
 		if ( $pinterface eq "1.0" ) {
 			setrights ("777", "1", "$lbhomedir/system/daemons/plugins", "Plugin interface V1.0 DAEMON script");
-	 }
+		}
 		
 		&setrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
 		&setowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
@@ -1197,15 +1087,15 @@ sub install {
 
 	# Copy Uninstall file
 	if (-f "$tempfolder/uninstall/uninstall") {
-		$message =	"$SL{'PLUGININSTALL.INF_UNINSTALL'}";
+		$message = "$SL{'PLUGININSTALL.INF_UNINSTALL'}";
 		&loginfo;
 		system("cp -r -v $tempfolder/uninstall/uninstall $lbhomedir/data/system/uninstall/$pname 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"UNINSTALL Script: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 
@@ -1216,15 +1106,15 @@ sub install {
 
 	# Copy Sudoers file
 	if (-f "$tempfolder/sudoers/sudoers") {
-		$message =	"$SL{'PLUGININSTALL.INF_SUDOERS'}";
+		$message = "$SL{'PLUGININSTALL.INF_SUDOERS'}";
 		&loginfo;
 		system("cp -v $tempfolder/sudoers/sudoers $lbhomedir/system/sudoers/$pname 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"SUDOERS file: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 
@@ -1242,17 +1132,13 @@ sub install {
 
 	if (-e "$aptfile") {
 
-		if (-e "$lbhomedir/data/system/lastaptupdate.dat") {
-			open(F,"<$lbhomedir/data/system/lastaptupdate.dat");
-			$lastaptupdate = <F>;
-			close(F);
-		} else {
-			$lastaptupdate = 0;
-		}
+		$lastaptupdate = LoxBerry::System::read_file("$lbhomedir/data/system/lastaptupdate.dat");
+		$lastaptupdate = 0 if(!$lastaptupdate);
+		
 		my $now = time;
 		# If last run of apt-get update is longer than 24h ago, do a refresh.
 		if ($now > $lastaptupdate+86400) {
-			$message =	"$SL{'PLUGININSTALL.INF_APTREFRESH'}";
+			$message = "$SL{'PLUGININSTALL.INF_APTREFRESH'}";
 			&loginfo;
 			$message = "Command: $dpkgbin --configure -a";
 			&loginfo;
@@ -1261,29 +1147,29 @@ sub install {
 			&loginfo;
 			system("$aptbin -q -y update 2>&1");
 			if ($? ne 0) {
-				$message =	"$SL{'PLUGININSTALL.ERR_APTREFRESH'}";
+				$message = "$SL{'PLUGININSTALL.ERR_APTREFRESH'}";
 				&logerr; 
 				push(@errors,"APT refresh: $message");
 			} else {
-				$message =	"$SL{'PLUGININSTALL.OK_APTREFRESH'}";
+				$message = "$SL{'PLUGININSTALL.OK_APTREFRESH'}";
 				&logok;
 				open(F,">$lbhomedir/data/system/lastaptupdate.dat");
-		flock(F,2);
-					print F $now;
-		flock(F,8);
+				flock(F,2);
+				print F $now;
+				flock(F,8);
 				close(F);
 			}
 		}
-		$message =	"$SL{'PLUGININSTALL.INF_APT'}";
+		$message = "$SL{'PLUGININSTALL.INF_APT'}";
 		&loginfo;
 		$openerr = 0;
 		open(F,"<$aptfile") or ($openerr = 1);
-			if ($openerr) {
-				$message =	"$SL{'PLUGININSTALL.ERR_APT'}";
-				&logerr;
-				push(@errors,"APT install: $message");
-			}
-		@data = <F>;
+		if ($openerr) {
+			$message = "$SL{'PLUGININSTALL.ERR_APT'}";
+			&logerr;
+			push(@errors,"APT install: $message");
+		}
+		my @data = <F>;
 		foreach (@data){
 			s/[\n\r]//g;
 			# Comments
@@ -1301,7 +1187,7 @@ sub install {
 		&loginfo;
 		system("$aptbin --no-install-recommends -q -y install $aptpackages 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
+			$message = "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
 			&logwarn; 
 			push(@warnings,"APT install: $message");
 			# If it failed, maybe due to an outdated apt-database... So
@@ -1309,22 +1195,22 @@ sub install {
 			$message = "Command: $dpkgbin --configure -a";
 			&loginfo;
 			system("$dpkgbin --configure -a 2>&1");
-			$message =	"$SL{'PLUGININSTALL.INF_APTREFRESH'}";
+			$message = "$SL{'PLUGININSTALL.INF_APTREFRESH'}";
 			&loginfo;
 			$message = "Command: $aptbin -q -y update";
 			&loginfo;
 			system("$aptbin -q -y update 2>&1");
 			if ($? ne 0) {
-				$message =	"$SL{'PLUGININSTALL.ERR_APTREFRESH'}";
+				$message = "$SL{'PLUGININSTALL.ERR_APTREFRESH'}";
 				&logerr; 
 				push(@errors,"APT refresh: $message");
 			} else {
-				$message =	"$SL{'PLUGININSTALL.OK_APTREFRESH'}";
+				$message = "$SL{'PLUGININSTALL.OK_APTREFRESH'}";
 				&logok;
 				open(F,">$lbhomedir/data/system/lastaptupdate.dat");
-		flock(F,2);
-					print F $now;
-		flock(F,8);
+				flock(F,2);
+				print F $now;
+				flock(F,8);
 				close(F);
 			}
 			# And try to install packages again...
@@ -1335,20 +1221,20 @@ sub install {
 			&loginfo;
 			system("$aptbin --no-install-recommends -q -y install $aptpackages 2>&1");
 			if ($? ne 0) {
-				$message =	"$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
+				$message = "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
 				&logerr; 
 				push(@errors,"APT install: $message");
 			} else {
-				$message =	"$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
+				$message = "$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
 				&logok;
 			}
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
+			$message = "$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
 			&logok;
 		}
-
 	}
 
+	# Supplied packages by architecture
 	if ( $pinterface ne "1.0" ) {
 		my $thisarch;
 		if (-e "$lbsconfigdir/is_raspberry.cfg") {
@@ -1367,11 +1253,11 @@ sub install {
 				&loginfo;
 				system("$dpkgbin -i -R $tempfolder/dpkg/$thisarch 2>&1");
 				if ($? ne 0) {
-					$message =	"$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
+					$message = "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
 					&logerr; 
 					push(@errors,"APT install: $message");
 				} else {
-					$message =	"$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
+					$message = "$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
 					&logok;
 				}
 			}
@@ -1379,24 +1265,24 @@ sub install {
 	}
 
 	# We have to recreate the skels for system log folders in tmpfs
-	$message =	"$SL{'PLUGININSTALL.INF_LOGSKELS'}";
+	$message = "$SL{'PLUGININSTALL.INF_LOGSKELS'}";
 	&loginfo;
 	$message = "Command: $lbssbindir/createskelfolders.pl";
 	system("$lbssbindir/createskelfolders.pl 2>&1");
-	$exitcode	= $? >> 8;
+	$exitcode = $? >> 8;
 	if ($exitcode eq 1) {
-		$message =	"$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+		$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
 		&logerr; 
 		push(@errors,"SKEL FOLDERS: $message");
 	} 
 	else {
-		$message =	"$SL{'PLUGININSTALL.OK_SCRIPT'}";
+		$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
 		&logok;
 	}
 
 	# Executing postinstall script
 	if (-f "$tempfolder/postinstall.sh") {
-		$message =	"$SL{'PLUGININSTALL.INF_START_POSTINSTALL'}";
+		$message = "$SL{'PLUGININSTALL.INF_START_POSTINSTALL'}";
 		&loginfo;
 
 		$message = "Command: cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
@@ -1406,16 +1292,16 @@ sub install {
 		system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
 		$exitcode	= $? >> 8;
 		if ($exitcode eq 1) {
-			$message =	"$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
 			&logerr; 
 			push(@errors,"POSTINSTALL: $message");
 		} 
 		elsif ($exitcode > 1) {
-			$message =	"$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
 			&logfail; 
 		}
 		else {
-			$message =	"$SL{'PLUGININSTALL.OK_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
 			&logok;
 		}
 
@@ -1424,7 +1310,7 @@ sub install {
 	# Executing postupgrade script
 	if ($isupgrade) {
 		if (-f "$tempfolder/postupgrade.sh") {
-			$message =	"$SL{'PLUGININSTALL.INF_START_POSTUPGRADE'}";
+			$message = "$SL{'PLUGININSTALL.INF_START_POSTUPGRADE'}";
 			&loginfo;
 
 			$message = "Command: cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
@@ -1434,16 +1320,16 @@ sub install {
 			system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
 			$exitcode	= $? >> 8;
 			if ($exitcode eq 1) {
-				$message =	"$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+				$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
 				&logerr; 
 				push(@errors,"POSTUPGRADE: $message");
 			} 
 			elsif ($exitcode > 1) {
-				$message =	"$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+				$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
 				&logfail; 
 			}
 			else {
-				$message =	"$SL{'PLUGININSTALL.OK_SCRIPT'}";
+				$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
 				&logok;
 			}
 
@@ -1452,7 +1338,7 @@ sub install {
 
 	# Executing postroot script
 	if (-f "$tempfolder/postroot.sh") {
-		$message =	"$SL{'PLUGININSTALL.INF_START_POSTROOT'}";
+		$message = "$SL{'PLUGININSTALL.INF_START_POSTROOT'}";
 		&loginfo;
 
 		$message = "Command: cd \"$tempfolder\" && \"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\"";
@@ -1462,16 +1348,16 @@ sub install {
 		system("cd \"$tempfolder\" && \"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
 		$exitcode	= $? >> 8;
 		if ($exitcode eq 1) {
-			$message =	"$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
 			&logerr; 
 			push(@errors,"POSTROOT: $message");
 		} 
 		elsif ($exitcode > 1) {
-			$message =	"$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
 			&logfail; 
 		}
 		else {
-			$message =	"$SL{'PLUGININSTALL.OK_SCRIPT'}";
+			$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
 			&logok;
 		}
 
@@ -1481,45 +1367,45 @@ sub install {
 	make_path("$lbhomedir/data/system/install/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	my @installfiles = glob("$tempfolder/*.sh");
 	if( my $cnt = @installfiles ){
-		$message =	"$SL{'PLUGININSTALL.INF_INSTALLSCRIPTS'}";
+		$message = "$SL{'PLUGININSTALL.INF_INSTALLSCRIPTS'}";
 		&loginfo;
 		system("$sudobin -n -u loxberry cp -v $tempfolder/*.sh $lbhomedir/data/system/install/$pfolder 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"INSTALL scripts: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 		&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 		&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 	}
 	if( -e "$tempfolder/apt" ){
-		$message =	"$SL{'PLUGININSTALL.INF_INSTALLAPT'}";
+		$message = "$SL{'PLUGININSTALL.INF_INSTALLAPT'}";
 		&loginfo;
 		system("$sudobin -n -u loxberry cp -rv $tempfolder/apt $lbhomedir/data/system/install/$pfolder 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"INSTALL scripts: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 		&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 		&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 	}
 	if( -e "$tempfolder/dpkg" ){
-		$message =	"$SL{'PLUGININSTALL.INF_INSTALLAPT'}";
+		$message = "$SL{'PLUGININSTALL.INF_INSTALLAPT'}";
 		&loginfo;
 		system("$sudobin -n -u loxberry cp -rv $tempfolder/dpkg $lbhomedir/data/system/install/$pfolder 2>&1");
 		if ($? ne 0) {
-			$message =	"$SL{'PLUGININSTALL.ERR_FILES'}";
+			$message = "$SL{'PLUGININSTALL.ERR_FILES'}";
 			&logerr; 
 			push(@errors,"INSTALL scripts: $message");
 		} else {
-			$message =	"$SL{'PLUGININSTALL.OK_FILES'}";
+			$message = "$SL{'PLUGININSTALL.OK_FILES'}";
 			&logok;
 		}
 		&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
@@ -1527,12 +1413,12 @@ sub install {
 	}
 
 	# Set permissions
-	#$message =	"$SL{'PLUGININSTALL.INF_PERMISSIONS'}";
+	#$message = "$SL{'PLUGININSTALL.INF_PERMISSIONS'}";
 	#&loginfo;
 	#system("$lbssbindir/resetpermissions.sh 2>&1");
 
 	# Cleaning
-	$message =	"$SL{'PLUGININSTALL.INF_END'}";
+	$message = "$SL{'PLUGININSTALL.INF_END'}";
 	&loginfo;
 	print "Tempfolder is: $tempfile\n";
 	if ( -e "/tmp/uploads/$tempfile" ) {
@@ -1543,7 +1429,7 @@ sub install {
 	} 
 
 	# Finished
-	$message =	"$SL{'PLUGININSTALL.OK_END'}";
+	$message = "$SL{'PLUGININSTALL.OK_END'}";
 	&logok;
 
 	# Check for a reboot for older plugins (V1)
@@ -1557,14 +1443,14 @@ sub install {
 		if ($preboot) {
 			open (F, ">$statusfile");
 			flock(F,2);
-				print F "3";
+			print F "3";
 			flock(F,8);
 			close (F);
 			reboot_required("$SL{'PLUGININSTALL.INF_REBOOT'} $ptitle");
 		} else {
 			open (F, ">$statusfile");
 			flock(F,2);
-				print F "0";
+			print F "0";
 			flock(F,8);
 			close (F);
 		}
@@ -1579,12 +1465,12 @@ sub install {
 	LOGEND;
 
 	# Saving Logfile
-	$message =	"$SL{'PLUGININSTALL.INF_SAVELOG'}";
+	$message = "$SL{'PLUGININSTALL.INF_SAVELOG'}";
 	&loginfo;
 	system("cp -v /tmp/$tempfile.log $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
 	&setowner ("loxberry", "0", "$lbhomedir/log/system/plugininstall/$pname.log", "LOG Save");
 
-	$message =	"$SL{'PLUGININSTALL.INF_LAST'}";
+	$message = "$SL{'PLUGININSTALL.INF_LAST'}";
 	&loginfo;
 
 	print "\n\n";
@@ -1593,7 +1479,7 @@ sub install {
 	if (@errors || @warnings) {
 		$message = "==================================================================================";
 		&loginfo;
-		$message =	"$SL{'PLUGININSTALL.INF_ERRORSUMMARIZE'}";
+		$message = "$SL{'PLUGININSTALL.INF_ERRORSUMMARIZE'}";
 		&loginfo;
 		$message = "==================================================================================";
 		&loginfo;
@@ -1629,7 +1515,8 @@ sub install {
 
 sub purge_installation {
 
-	my $option = shift; # http://wiki.selfhtml.org/wiki/Perl/Subroutinen
+	my $option = shift;
+	$option = $option ? $option : "";
 
 	if ($pfolder) {
 		# Plugin Folders
@@ -1673,32 +1560,12 @@ sub purge_installation {
 	if ($option eq "all") {
 
 		# Clean Database
-		if ($pid) {
-			open(F,"+<$lbsdatadir/plugindatabase.dat") or ($openerr = 1);
-			if ($openerr) {
-				$message =	"$SL{'PLUGININSTALL.ERR_DATABASE'}";
-				&logerr;
-			}
-			flock(F,2);
-			my @data = <F>;
-			seek(F,0,0);
-			truncate(F,0);
-			foreach (@data){
-				s/[\n\r]//g;
-				# Comments
-				if ($_ =~ /^\s*#.*/) {
-					print F "$_\n";
-					next;
-				}
-				my @fields = split(/\|/);
-				if ($fields[0] eq $pid) {
-					next;
-				} else {
-					print F "$_\n";
-				}
-			}
-			flock(F,8);
-			close (F);
+		if ($plugin) {
+			$plugin->remove();
+			undef $plugin;
+		} else {
+			$message = "$SL{'PLUGININSTALL.ERR_DATABASE'}";
+			&logerr;
 		}
 
 		if ($pfolder) {
@@ -1709,21 +1576,21 @@ sub purge_installation {
 		if ($pname) {
 			# Executing uninstall script
 			if (-f "$lbhomedir/data/system/uninstall/$pname") {
-				$message =	"$SL{'PLUGININSTALL.INF_START_UNINSTALL_EXE'}";
+				$message = "$SL{'PLUGININSTALL.INF_START_UNINSTALL_EXE'}";
 				&loginfo;
 				system("\"$lbhomedir/data/system/uninstall/$pname\" 2>&1");
 				my $exitcode = $? >> 8;
 				if ($exitcode eq 1) {
-					$message =	"$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+					$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
 					&logerr; 
 					push(@errors,"UNINSTALL execution: $message");
 				} 
 				elsif ($exitcode > 1) {
-					$message =	"$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+					$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
 					&logfail; 
 				}
 				else {
-					$message =	"$SL{'PLUGININSTALL.OK_SCRIPT'}";
+					$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
 					&logok;
 				}
 			}
@@ -1888,9 +1755,14 @@ sub generate {
 #####################################################
 
 sub is_folder_empty {
-	my $dirname = shift;
-	opendir(my $dh, $dirname); 
-	return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
+	return -1 if not -e $_[0];   # does not exist
+    return -2 if not -d $_[0];   # in not a directory
+    opendir my $dir, $_[0] or    # likely a permissions issue
+        print "is_folder_empty: Cannot opendir '".$_[0]."', because: $!\n";
+    readdir $dir;	# Skip .
+    readdir $dir;	# Skip ..
+    return 0 if( readdir $dir ); # 3rd times a charm
+    return 1;
 }
 
 #####################################################
@@ -1919,11 +1791,11 @@ sub setowner {
 	&loginfo;
 	system("$chownbin $chownoptions $owner.$group $target 2>&1");
 	if ($? ne 0) {
-		$message =	"$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
+		$message = "$SL{'PLUGININSTALL.ERR_FILE_OWNER'}";
 		&logerr; 
 		push(@errors,"$type: $message");
 	} else {
-		$message =	"$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
+		$message = "$SL{'PLUGININSTALL.OK_FILE_OWNER'}";
 		&logok;
 	}
 
@@ -1966,11 +1838,11 @@ sub setrights {
 
 	}
 	if ($? ne 0) {
-		$message =	"$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
+		$message = "$SL{'PLUGININSTALL.ERR_FILE_PERMISSIONS'}";
 		&logerr; 
 		push(@errors,"$type: $message");
 	} else {
-		$message =	"$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
+		$message = "$SL{'PLUGININSTALL.OK_FILE_PERMISSIONS'}";
 		&logok;
 	}
 
@@ -1991,62 +1863,62 @@ sub replaceenv {
 	# Folder
 	if ($recursive) {
 
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' {} \\; 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g' {} \\; 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g' {} \\; 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g' {} \\; 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g' {} \\; 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g' {} \\; 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g' {} \\; 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g' {} \\; 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g' {} \\; 2>&1");
 
 	# File
 	} else {
 
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' $target 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g' $target 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g' $target 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g' $target 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g' $target 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g' $target 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g' $target 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g' $target 2>&1");
-		$message =	$SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
+		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
 		&loginfo;
 		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g' $target 2>&1");
 
@@ -2084,36 +1956,3 @@ sub dos2unix {
 
 }
 
-
-#####################################################
-# Sorting Plugin Database
-#####################################################
-
-sub sort_plugins {
-	# Einlesen
-	my @zeilen=();
-	my $input_file="$lbhomedir/data/system/plugindatabase.dat";
-	open (F, '<', $input_file) or die "Fehler bei open($input_file) : $!";
-	while(<F>)
-	{
-		 chomp($_ );
-		 push @zeilen, [ split /\|/, $_, 9 ];
-	}
-	close (F);
-
-	# Sortieren
-	my $first_line=shift(@zeilen);
-	@zeilen=sort{$a->[6] cmp $b->[6]}@zeilen; 
-	unshift(@zeilen, $first_line);
-
-	# Ausgeben		
-	open(F,"+<$lbhomedir/data/system/plugindatabase.dat");
-	flock(F,2);
-	my @data = <F>;
-	seek(F,0,0);
-	truncate(F,0);
-	print F join('|', @{$_}), "\n" for @zeilen;	 #sortiert wieder ausgeben
-	flock(F,8);
-	close (F);
-	return();
-}

@@ -11,18 +11,13 @@ use Data::Dumper;
 
 package LoxBerry::System::PluginDB;
 
-our $VERSION = "2.0.0.2";
+our $VERSION = "2.0.0.4";
 our $DEBUG = 0;
 
 my %plugindb_handles;
 # my $dbobj;
 	# my $dbfile;
 	# my $plugindb;
-
-
-
-my $dbfile_default = $LoxBerry::System::lbsdatadir."/plugindatabase.json";
-
 
 sub plugin
 {
@@ -127,7 +122,7 @@ sub search
 	$operator = "and" if(!$operator);
 	my $full_query = join(" $operator ", @conditions);
 	
-	print STDERR "Search for: $full_query\n";
+	# print STDERR "Search for: $full_query\n";
 	
 	my @result = $dbobj->find( $plugindb->{plugins}, $full_query );
 	
@@ -193,10 +188,10 @@ sub save
 	$files{sudoers} = "$homedir/system/sudoers/$pluginname";
 	$self->{files} = \%files;
 	
-	
-	# Save data to the database object
-	# $plugindb->{plugins}->{$md5} = { %$self } ;
-	
+	if (! LoxBerry::System::is_enabled($self->{loglevels_enabled}) ) {
+		$self->{loglevel} = "-1";
+	}
+
 	delete $plugindb->{plugins}->{$md5};
 	
 	# Do not save internal variables (beginning with _)
@@ -241,7 +236,7 @@ sub _load_db
 	# print STDERR "_load_db: dbfile is " . $self->{_dbfile} . "\n";
 	
 	if(!$self->{_dbfile}) {
-		$self->{_dbfile} = $dbfile_default;
+		$self->{_dbfile} = $LoxBerry::System::PLUGINDATABASE;
 	}
 	
 	my $dbfile = $self->{_dbfile};

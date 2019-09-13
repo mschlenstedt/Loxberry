@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "2.0.0.5";
+our $VERSION = "2.0.0.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -224,7 +224,7 @@ our $lbsbindir = "$lbhomedir/bin";
 our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
 our $reboot_required_file = "$lbstmpfslogdir/reboot.required";
-our $PLUGINDATABASE = "$lbsdatadir/plugindatabase.json";
+
 
 # Variables only valid in this module
 my $lang;
@@ -512,20 +512,11 @@ sub plugindata
 ##################################################################################
 sub get_plugins
 {
-	my ($withcomments_obsolete, $forcereload, $plugindb_file_obsolete) = @_;
 	
-	# withcomments parameter is legacy for LoxBerry 1.x and not used.
-	if( defined $withcomments_obsolete ) {
-		Carp::carp "<INFO> get_plugins first parameter (withcomments) is outdated and ignored";
-	}
-	# $plugindb_file parameter is not allowed anymore
-	if (defined $plugindb_file_obsolete) {
-		Carp::croak "<ERROR> get_plugins third parameter (plugindb_file) is outdated and not allowed anymore. To read a custom plugindatabase, use LoxBerry::System::PluginDB instead.";
-	}
-	
-	my $plugindb_file = $PLUGINDATABASE;
+	my ($withcomments, $forcereload, $plugindb_file) = @_;
 	
 	# When the plugindb has changed, always force a reload of the plugindb
+	
 	if($plugindb_timestamp_last != plugindb_changed_time()) {
 			# Changed
 			my $plugindb_timestamp_new = plugindb_changed_time();
@@ -534,50 +525,81 @@ sub get_plugins
 			$plugindb_timestamp_last = $plugindb_timestamp_new;
 		}
 		
-	if (@plugins && !$forcereload && !$plugins_delcache) {
+	if (@plugins && !$forcereload && !$plugindb_file && !$plugins_delcache) {
 		print STDERR "get_plugins: Returning cached version of plugindatabase\n" if ($DEBUG);
 		return @plugins;
 	} else {
 		print STDERR "get_plugins: Re-reading plugindatabase\n" if ($DEBUG);
 	}
 	
-	print STDERR "get_plugins: Using file $plugindb_file\n" if ($DEBUG);
-	
-	require JSON;
-	my $plugindbdata;
-	eval {
-		$plugindbdata = JSON::from_json( LoxBerry::System::read_file( $LoxBerry::System::PLUGINDATABASE ) );
-	};
-	if ($@) {
-		Carp::carp "LoxBerry::System::get_plugins: Could not read $plugindb_file\n";
-		return;
+	if (! $plugindb_file) {
+		$plugindb_file = "$lbsdatadir/plugindatabase.dat";
+		$plugins_delcache = 0;
+	} else {
+		$plugins_delcache = 1;
 	}
 	
-	# my $plugindbobj = LoxBerry::JSON->new();
-	# my $plugindbdata = $plugindbobj->open(filename => $plugindb_file, readonly => 1);
-		
+	print STDERR "get_plugins: Using file $plugindb_file\n" if ($DEBUG);
+	
+	if (!-e $plugindb_file) {
+		Carp::carp "LoxBerry::System::pluginversion: Could not find $plugindb_file\n";
+		return undef;
+	}
+	my $openerr;
+	open(my $fh, "<", $plugindb_file) or ($openerr = 1);
+	if ($openerr) {
+		Carp::carp "Error opening plugin database $plugindb_file";
+		# &error;
+		return undef;
+		}
+	my @data = <$fh>;
+
 	@plugins = ();
 	my $plugincount = 0;
 	
-	foreach my $pluginkey ( sort { lc $plugindbdata->{plugins}->{$a}->{title} cmp lc $plugindbdata->{plugins}->{$b}->{title} } keys %{$plugindbdata->{plugins}} ){
-		my $plugindata = $plugindbdata->{plugins}->{$pluginkey};
+	foreach (@data){
+		s/[\n\r]//g;
 		my %plugin;
+		# Comments
+		if ($_ =~ /^\s*#.*/) {
+			if (defined $withcomments) {
+				$plugin{PLUGINDB_COMMENT} = $_;
+				push(@plugins, \%plugin);
+			}
+			next;
+		}
+		
 		$plugincount++;
+		my @fields = split(/\|/);
+
+		## Start Debug fields of Plugin-DB
+		# do {
+			# my $field_nr = 0;
+			# my $dbg_fields = "Plugin-DB Fields: ";
+			# foreach (@fields) {
+				# $dbg_fields .= "$field_nr: $_ | ";
+				# $field_nr++;
+			# }
+			# print STDERR "$dbg_fields\n";
+		# } ;
+		## End Debug fields of Plugin-DB
+		
+		# From Plugin-DB
 		
 		$plugin{PLUGINDB_NO} = $plugincount;
-		$plugin{PLUGINDB_MD5_CHECKSUM} = $plugindata->{md5};
-		$plugin{PLUGINDB_AUTHOR_NAME} = $plugindata->{author_name};
-		$plugin{PLUGINDB_AUTHOR_EMAIL} = $plugindata->{author_email};
-		$plugin{PLUGINDB_VERSION} = $plugindata->{version};
-		$plugin{PLUGINDB_NAME} = $plugindata->{name};
-		$plugin{PLUGINDB_FOLDER} = $plugindata->{folder};
-		$plugin{PLUGINDB_TITLE} = $plugindata->{title};
-		$plugin{PLUGINDB_INTERFACE} = $plugindata->{interface};
-		$plugin{PLUGINDB_AUTOUPDATE} = $plugindata->{autoupdate};
-		$plugin{PLUGINDB_RELEASECFG} = $plugindata->{releasecfg};
-		$plugin{PLUGINDB_PRERELEASECFG} = $plugindata->{prereleasecfg};
-		$plugin{PLUGINDB_LOGLEVEL} = $plugindata->{loglevel};
-		$plugin{PLUGINDB_LOGLEVELS_ENABLED} = $plugindata->{loglevel} >= 0 ? 1 : 0;
+		$plugin{PLUGINDB_MD5_CHECKSUM} = $fields[0];
+		$plugin{PLUGINDB_AUTHOR_NAME} = $fields[1];
+		$plugin{PLUGINDB_AUTHOR_EMAIL} = $fields[2];
+		$plugin{PLUGINDB_VERSION} = $fields[3];
+		$plugin{PLUGINDB_NAME} = $fields[4];
+		$plugin{PLUGINDB_FOLDER} = $fields[5];
+		$plugin{PLUGINDB_TITLE} = $fields[6];
+		$plugin{PLUGINDB_INTERFACE} = $fields[7];
+		$plugin{PLUGINDB_AUTOUPDATE} = $fields[8];
+		$plugin{PLUGINDB_RELEASECFG} = $fields[9];
+		$plugin{PLUGINDB_PRERELEASECFG} = $fields[10];
+		$plugin{PLUGINDB_LOGLEVEL} = $fields[11];
+		$plugin{PLUGINDB_LOGLEVELS_ENABLED} = $plugin{PLUGINDB_LOGLEVEL} >= 0 ? 1 : 0;
 		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
 		push(@plugins, \%plugin);
 		# On changes of the plugindatabase format, please change here 
@@ -595,9 +617,11 @@ sub get_plugins
 sub plugindb_changed_time
 {
 	
+	my $plugindb_file = "$lbsdatadir/plugindatabase.dat";
+	
 	# If it was never checked, it cannot have changed
 	if ($plugindb_timestamp == 0 or $plugindb_lastchecked+60 < time) {
-		$plugindb_timestamp = (stat $PLUGINDATABASE)[9];
+		$plugindb_timestamp = (stat $plugindb_file)[9];
 		$plugindb_lastchecked = time;
 		print STDERR "Updating plugindb timestamp variable to $plugindb_timestamp\n" if ($DEBUG);
 	}

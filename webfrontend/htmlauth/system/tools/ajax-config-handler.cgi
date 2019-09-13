@@ -6,7 +6,7 @@ use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
 use LoxBerry::JSON;
 			
-my $version = "1.4.0.4"; # Version of this script
+my $version = "2.0.0.1"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -316,61 +316,22 @@ sub reboot
 sub plugindb_update
 {
 	my ($action, $md5, $value) = @_;
-
-	my @plugin_new;
-	my $dbchanged;
-	my @plugins = LoxBerry::System::get_plugins(1);
-	foreach my $plugin (@plugins) {
-		my $pluginline;
-		if ($plugin->{PLUGINDB_COMMENT}) {
-			$pluginline = "$plugin->{PLUGINDB_COMMENT}\n";
-			push(@plugin_new, $pluginline);
-			next;
-		}
-		$plugin->{PLUGINDB_LOGLEVEL} = 0 if !$plugin->{PLUGINDB_LOGLEVEL}; 
-		if ($plugin->{PLUGINDB_MD5_CHECKSUM} eq $md5) {
-			if ($action eq 'autoupdate' && $plugin->{PLUGINDB_AUTOUPDATE} ne $value) {
-				$plugin->{PLUGINDB_AUTOUPDATE} = $value;
-				$dbchanged = 1;
-			}
-			if ($action eq 'loglevel' && $plugin->{PLUGINDB_LOGLEVEL} ne $value) {
-				$plugin->{PLUGINDB_LOGLEVEL} = $value;
-				$dbchanged = 1;
-			}
-		}
-		$pluginline = 
-			$plugin->{PLUGINDB_MD5_CHECKSUM} . "|" . 
-			$plugin->{PLUGINDB_AUTHOR_NAME} . "|" . 
-			$plugin->{PLUGINDB_AUTHOR_EMAIL} . "|" . 
-			$plugin->{PLUGINDB_VERSION} . "|" . 
-			$plugin->{PLUGINDB_NAME} . "|" . 
-			$plugin->{PLUGINDB_FOLDER} . "|" . 
-			$plugin->{PLUGINDB_TITLE} . "|" . 
-			$plugin->{PLUGINDB_INTERFACE} . "|" . 
-			$plugin->{PLUGINDB_AUTOUPDATE} . "|" . 
-			$plugin->{PLUGINDB_RELEASECFG} . "|" . 
-			$plugin->{PLUGINDB_PRERELEASECFG} . "|" . 
-			$plugin->{PLUGINDB_LOGLEVEL} . "\n";
-		push(@plugin_new, $pluginline);
+	require LoxBerry::System::PluginDB;
+	my $plugin = LoxBerry::System::PluginDB->plugin( md5 => $md5 );
+	if(!$plugin) {
+		$response{error} = 1;
+		$response{message} = "plugindatabase: Plugin not found";
+		return;
 	}
-	
-	if ($dbchanged) {
-		open(my $fh, '>', "$lbsdatadir/plugindatabase.dat");
-		flock($fh,2);
-		print $fh @plugin_new;
-		close($fh);
-		#print STDERR "plugindatabase VALUES CHANGED.\n";
-		$response{error} = 0;
-		$response{message} = "plugindatabase: updated";
-		
-		
-		
-	} else {
-		#print STDERR "plugindatabase nothing changed.\n";
-		$response{error} = 0;
-		$response{message} = "plugindatabase: no update required";
-		
+	if ($action eq 'autoupdate') {
+		$plugin->{autoupdate} = $value;
 	}
+	elsif ($action eq 'loglevel') {
+		$plugin->{loglevel} = $value;
+	}
+	$plugin->save();
+	$response{error} = 0;
+	$response{message} = "plugindatabase: $action updated";
 }
 
 ############################################
