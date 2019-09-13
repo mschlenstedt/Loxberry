@@ -118,9 +118,9 @@ start|"")
 
 	if [ "$ZL2R" = true ]; then
 		createZramLogDrive
-		mount -t ext4 -o nosuid,noexec,nodev,user=log2ram /dev/zram${RAM_DEV} ${RAM_LOG}/
+		mount -t ext4 -o nosuid,nodev,user=log2ram /dev/zram${RAM_DEV} ${RAM_LOG}/
 	else
-		mount -t tmpfs -o nosuid,noexec,nodev,mode=0755,size=${SIZE} log2ram ${RAM_LOG}/
+		mount -t tmpfs -o nosuid,nodev,mode=0755,size=${SIZE} log2ram ${RAM_LOG}/
 	fi
 
 	wait_for $RAM_LOG
