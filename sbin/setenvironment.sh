@@ -83,7 +83,7 @@ if [ -L /etc/sudoers.d ]; then
 fi
 ln -s $LBHOME/system/sudoers /etc/sudoers.d
 # sudoers: Replace /opt/loxberry with current home path
-sed -i -e "s#/opt/loxberry/#$LBHOMEDIR/#g" $LBHOMEDIR/system/sudoers/lbdefaults
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/sudoers/lbdefaults
 
 # profile.d/loxberry.sh
 if [ -L /etc/profile.d/loxberry.sh ]; then
@@ -96,23 +96,27 @@ if [ -e /etc/logrotate.d/apache2 ]; then
     rm /etc/logrotate.d/apache2
 fi
 
-# Init Script
+# LoxBerry Init Script
 if [ -L /etc/init.d/loxberry ]; then  
    rm /etc/init.d/loxberry
 fi
-#ln -s $LBHOME/sbin/loxberryinit.sh /etc/init.d/loxberry
-#update-rc.d loxberry defaults
 if [ -e /etc/systemd/system/loxberry.service ]; then
 	rm /etc/systemd/system/loxberry.service
 fi
 ln -s $LBHOME/system/systemd/loxberry.service /etc/systemd/system/loxberry.service
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/systemd/loxberry.service
 /bin/systemctl daemon-reload
 
+# Createtmpfs Init Script
 if [ -L /etc/init.d/createtmpfsfoldersinit ]; then  
    rm /etc/init.d/createtmpfsfoldersinit
 fi
-ln -s $LBHOME/sbin/createtmpfsfoldersinit.sh /etc/init.d/createtmpfsfoldersinit
-update-rc.d createtmpfsfoldersinit defaults
+if [ -e /etc/systemd/system/createtmpfs.service ]; then
+	rm /etc/systemd/system/createtmpfs.service
+fi
+ln -s $LBHOME/system/systemd/createtmpfs.service /etc/systemd/system/createtmpfs.service
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/systemd/createtmpfs.service
+/bin/systemctl daemon-reload
 
 # Apache Config
 if [ ! -L /etc/apache2 ]; then
@@ -227,6 +231,7 @@ if [ -e /etc/systemd/system/usb-mount@.service ]; then
 	rm /etc/systemd/system/usb-mount@.service
 fi
 ln -s $LBHOME/system/systemd/usb-mount@.service /etc/systemd/system/usb-mount@.service
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/systemd/usb-mount@.service
 /bin/systemctl daemon-reload
 
 # Create udev rules for usbautomount
@@ -252,7 +257,7 @@ if [ -L /etc/auto.smb ]; then
 	rm /etc/auto.smb
 fi
 ln -s $LBHOME/system/autofs/auto.smb /etc/auto.smb
-chmod 0755 $lbhomedir/system/autofs/auto.smb
+chmod 0755 $LBHOME/system/autofs/auto.smb
 systemctl restart autofs
 
 # creds for AutoFS (SMB)
@@ -274,7 +279,7 @@ fi
 if ! cat /etc/default/watchdog | grep -q -e "watchdog_options.*-v"; then
 	/bin/sed -i 's#watchdog_options="\(.*\)"#"watchdog_options="\1 -v"#g' /etc/default/watchdog
 fi
-/bin/sed -i "s#REPLACELBHOMEDIR#"$LBHOMEDIR"#g" $LBHOME/system/watchdog/rsyslog.conf
+/bin/sed -i "s#REPLACELBHOMEDIR#"$LBHOME"#g" $LBHOME/system/watchdog/rsyslog.conf
 ln -f -s $LBHOME/system/watchdog/watchdog.conf /etc/watchdog.conf
 ln -f -s $LBHOME/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf
 systemctl restart rsyslog.service
