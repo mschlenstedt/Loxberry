@@ -57,6 +57,9 @@ if ( -e "/etc/systemd/system/loxberry.service" ) {
 LOGINF "Install loxberry.service...";
 system( "ln -s $lbhomedir/system/systemd/loxberry.service /etc/systemd/system/loxberry.service" );
 
+LOGINF "Disable already deinstalled dhcpcd.service...";
+system( "systemctl disable dhcpcd" );
+
 system ("/bin/systemctl daemon-reload");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
