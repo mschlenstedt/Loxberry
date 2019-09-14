@@ -106,6 +106,7 @@ fi
 ln -s $LBHOME/system/systemd/loxberry.service /etc/systemd/system/loxberry.service
 sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/systemd/loxberry.service
 /bin/systemctl daemon-reload
+/bin/systemctl enable loxberry.service
 
 # Createtmpfs Init Script
 if [ -L /etc/init.d/createtmpfsfoldersinit ]; then  
@@ -117,6 +118,7 @@ fi
 ln -s $LBHOME/system/systemd/createtmpfs.service /etc/systemd/system/createtmpfs.service
 sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/systemd/createtmpfs.service
 /bin/systemctl daemon-reload
+/bin/systemctl enable createtmpfs.service
 
 # Apache Config
 if [ ! -L /etc/apache2 ]; then

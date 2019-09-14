@@ -77,6 +77,8 @@ LOGINF "Disable already deinstalled dhcpcd.service...";
 system( "systemctl disable dhcpcd" );
 
 system ("/bin/systemctl daemon-reload");
+system ("/bin/systemctl enable loxberry.service");
+system ("/bin/systemctl enable createtmpfs.service");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
