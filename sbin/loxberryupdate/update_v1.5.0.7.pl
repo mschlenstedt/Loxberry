@@ -36,13 +36,13 @@ LOGINF "Install ~/system/systemd to your Loxberry...";
 # Link usb-mount@.service
 if ( -e "/etc/systemd/system/usb-mount@.service" ) {
 	LOGINF "Remove /etc/systemd/system/usb-mount@.service...";
-	qx {rm -f /etc/systemd/system/usb-mount@.service };
+	unlink ("/etc/systemd/system/usb-mount@.service");
 }
 LOGINF "Install usb-mount@.service...";
 system( "ln -s $lbhomedir/system/systemd/usb-mount@.service /etc/systemd/system/usb-mount@.service" );
 
 LOGINF "Re-Install ssdpd service...";
-if ( -l "/etc/systemd/system/usb-mount@.service" ) {
+if ( -e "/etc/systemd/system/usb-mount@.service" ) {
 	unlink ("/etc/systemd/system/ssdpd.service");
 	system ("ln -s $lbhomedir/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service");
 	system ("/bin/systemctl daemon-reload");
@@ -50,12 +50,28 @@ if ( -l "/etc/systemd/system/usb-mount@.service" ) {
 }
 
 # Link loxberry.service
+if ( -e "/etc/init.d/loxberry" ) {
+	LOGINF "Remove old loxberry init script...";
+	unlink ("/etc/init.d/loxberry");
+}
 if ( -e "/etc/systemd/system/loxberry.service" ) {
 	LOGINF "Remove /etc/systemd/system/loxberry.service...";
-	qx {rm -f /etc/systemd/system/loxberry.service };
+	unlink ("/etc/systemd/system/loxberry.service");
 }
 LOGINF "Install loxberry.service...";
 system( "ln -s $lbhomedir/system/systemd/loxberry.service /etc/systemd/system/loxberry.service" );
+
+# Link createtmpfs.service
+if ( -e "/etc/init.d/createtmpfsfoldersinit" ) {
+	LOGINF "Remove old createtmpfs init script...";
+	unlink ("/etc/init.d/createtmpfsfoldersinit");
+}
+if ( -e "/etc/systemd/system/createtmpfs.service" ) {
+	LOGINF "Remove /etc/systemd/system/createtmpfs.service...";
+	unlink ("/etc/systemd/system/createtmpfs.service");
+}
+LOGINF "Install createtmpfs.service...";
+system( "ln -s $lbhomedir/system/systemd/createtmpfs.service /etc/systemd/system/createtmpfs.service" );
 
 LOGINF "Disable already deinstalled dhcpcd.service...";
 system( "systemctl disable dhcpcd" );
