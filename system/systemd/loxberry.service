@@ -1,11 +1,11 @@
 [Unit]
-Description=LoxBerry Services
-After=network.target remote-fs.target syslog.target network-online
+Description=LoxBerry Services: Preparing system for Loxberry
+After=network.target remote-fs.target syslog.target network-online.target
 
 [Service]
 Type=oneshot
 WorkingDirectory=/opt/loxberry
-EnvironmentFile=-/etc/environments
+EnvironmentFile=-/etc/environment
 RemainAfterExit=yes
 ExecStart=/opt/loxberry/sbin/loxberryinit.sh start
 ExecStart=/opt/loxberry/sbin/loxberryinit.sh stop

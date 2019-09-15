@@ -1,7 +1,7 @@
 #!/bin/sh
-# Required-Start:    $local_fs
-# X-Start-Before:    cron nmbd smbd samba-ad-dc bootlogs apache2 lighttpd
-# Short-Description: create log folders on tmpfs after mountall
+
+ENVIRONMENT=$(cat /etc/environment)
+export $ENVIRONMENT
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin:$LBHOMEDOR/bin:$LBHOMEDIR/sbin"
 PIVERS=`$LBHOMEDIR/bin/showpitype`
@@ -138,6 +138,17 @@ start)
 ;;
 
 stop)
+	# Skel for system logs, LB system logs and LB plugin logs
+	echo "Backing up Syslog and LoxBerry system log folders..."
+	if [ -d $LBHOMEDIR/log/skel_system/ ]; then
+		cp -ra $LBHOMEDIR/log/system_tmpfs/* $LBHOMEDIR/log/skel_system/
+		find $LBHOMEDIR/log/skel_system/ -type f -exec rm {} \;
+	fi
+	if [ -d $LBHOMEDIR/log/skel_syslog/ ]; then
+		cp -ra /var/log/* $LBHOMEDIR/log/skel_syslog/
+		find $LBHOMEDIR/log/skel_syslog/ -type f -exec rm {} \;
+	fi
+
 	# Copy logdb from RAM disk to SD card
 	if [ -e $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat ]; then
 		echo "VACUUM;" | sqlite3 $LBHOMEDIR/log/system_tmpfs/logs_sqlite.dat
