@@ -132,6 +132,7 @@ sub copy_to_loxberry
 	# Check if source is a file or a directory
 	if ( -d $srcfile ) { 
 		$srcfile .= '/*';
+		`mkdir --parents $destfile`;
 	}
 	
 	if (!$destowner) {$destowner = "root"};	
