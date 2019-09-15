@@ -20,7 +20,7 @@ if ( ! -l '/etc/auto.smb' ) {
 if ( ! -e "$lbhomedir/system/autofs" ) {
 	mkdir "$lbhomedir/system/autofs" or do { LOGERR "Could not create dir $lbhomedir/system/autofs"; $errors++; };
 }
-unlink "/etc/auto.smb" or do { LOGERR "Could not delete /etc/auto.smb"; $errors++; };
+unlink "/etc/auto.smb";
 symlink "$lbhomedir/system/autofs/auto.smb", "/etc/auto.smb" or do { LOGERR "Could not create symlink from /etc/auto.smb to $lbhomedir/system/autofs/auto.smb"; $errors++; };
 execute ( command => "chmod 0755 $lbhomedir/system/autofs/auto.smb", log => $log );
 execute ( command => "systemctl restart autofs", log => $log );
