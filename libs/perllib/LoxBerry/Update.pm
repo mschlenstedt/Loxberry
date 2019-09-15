@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "1.5.0.4";
+our $VERSION = "2.0.0.1";
 our $DEBUG;
 
 ### Exports ###
@@ -118,20 +118,30 @@ sub copy_to_loxberry
 		return;
 	}
 	
-	my $destfile = $LoxBerry::System::lbhomedir . $destparam;
 	my $srcfile = $main::updatedir . $destparam;
-	if (!$destowner) {$destowner = "root"};	
-
-	if (! -e $srcfile) {
+	my $destfile = $LoxBerry::System::lbhomedir . $destparam;
+	# Remove trailing slashes
+	$srcfile =~ s/\/\z//;
+	$destfile =~ s/\/\z//;
+	
+	if (! -e $srcfile ) {
 		$main::log->INF("$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.");
 		return;
 	}
+	
+	# Check if source is a file or a directory
+	if ( -d $srcfile ) { 
+		$srcfile .= '/*';
+		$destfile .= '/';
+	}
+	
+	if (!$destowner) {$destowner = "root"};	
 	
 	my $output = qx { cp -rf $srcfile $destfile 2>&1 };
 	my $exitcode  = $? >> 8;
 
 	if ($exitcode != 0) {
-		$main::log->ERR("Error copying $destparam - Error $exitcode");
+		$main::log->ERR("Error copying $srcfile to $destfile - Error $exitcode");
 		$main::log->INF("Message: $output");
 		$main::errors++;
 	} else {
