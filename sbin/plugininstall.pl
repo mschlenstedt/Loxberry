@@ -31,7 +31,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.0.2";
+my $version = "2.0.0.3";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -884,6 +884,7 @@ sub install {
 
 	# Copy Cron files
 	my @cronfolders = qw( 
+		cron.reboot
 		cron.01min 
 		cron.03min 
 		cron.05min 
