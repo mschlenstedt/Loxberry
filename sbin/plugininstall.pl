@@ -24,6 +24,7 @@ use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8);
 use LoxBerry::System;
 use LoxBerry::System::PluginDB;
+use LoxBerry::JSON;
 use LoxBerry::Log;
 use CGI;
 use version;
@@ -31,7 +32,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.0.3";
+my $version = "2.0.0.4";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -122,6 +123,14 @@ my $lang = lblanguage();
 our %SL = LoxBerry::System::readlanguage(undef);
 
 ##########################################################################
+# Plugindb State
+##########################################################################
+
+my $statefile = "$lbstmpfslogdir/plugins_state.json";
+my $stateobj = LoxBerry::JSON->new();
+my $statedata = $stateobj->open(filename => $statefile, writeonclose => 1);
+
+##########################################################################
 # Checks
 ##########################################################################
 
@@ -179,7 +188,7 @@ sub uninstall {
 	}
 
 	eval {
-		my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 600 );
+		my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 10 );
 
 		if ($lockstate) {
 			$message = "$SL{'PLUGININSTALL.ERR_LOCKING'}";
@@ -191,6 +200,9 @@ sub uninstall {
 	
 	$pname = $plugin->{name};
 	$pfolder = $plugin->{folder};
+	
+	$statedata->{db_updated} = time;
+	$statedata->{last_plugin_uninstall} = time;
 	
 	&purge_installation("all");
 
@@ -644,7 +656,8 @@ sub install {
 		&loginfo;
 		$isupgrade = 1;
 		$plugin->{epoch_lastupdated} = time;
-		
+		$statedata->{db_updated} = time;
+		$statedata->{last_plugin_update} = time;
 		$message = "$SL{'PLUGININSTALL.OK_DBENTRY'}";
 		&logok;
 	
@@ -652,6 +665,8 @@ sub install {
 	} else {
 		# Everything for a NEW installation
 		$plugin->{epoch_firstinstalled} = time;
+		$statedata->{db_updated} = time;
+		$statedata->{last_plugin_install} = time;
 		# Set default loglevel to 3 for new plugins
 		$plugin->{loglevel} = "3";
 		if(is_enabled($pautoupdates)) {
