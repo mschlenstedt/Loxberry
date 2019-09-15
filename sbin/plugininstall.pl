@@ -660,6 +660,11 @@ sub install {
 		}
 		
 		# Check for existance of same folder or name 
+		
+		# Temporary store the original name and folder
+		$plugin->{_tmp_orig_folder} = $pfolder;
+		$plugin->{_tmp_orig_name} = $pname;
+		
 		my @searchresult = LoxBerry::System::PluginDB->search( 
 			name => $pname,
 			folder => $pfolder,
@@ -680,8 +685,11 @@ sub install {
 				$message = "$SL{'PLUGININSTALL.ERR_DBENTRY'}";
 				&logfail;
 			} else {
+				# Save original and new name/folder to the plugindb
 				$plugin->{name} = $pname;
 				$plugin->{folder} = $pfolder;
+				$plugin->{orig_name} = $plugin->{_tmp_orig_name};
+				$plugin->{orig_folder} = $plugin->{_tmp_orig_folder};
 			}
 		}
 	}

@@ -11,7 +11,7 @@ use Data::Dumper;
 
 package LoxBerry::System::PluginDB;
 
-our $VERSION = "2.0.0.4";
+our $VERSION = "2.0.0.5";
 our $DEBUG = 0;
 
 my %plugindb_handles;
@@ -180,6 +180,7 @@ sub save
 	$directories{lbplogdir} = "$homedir/log/plugins/$plugindir";
 	$directories{lbpconfigdir} = "$homedir/config/plugins/$plugindir";
 	$directories{lbpbindir} = "$homedir/bin/plugins/$plugindir";
+	$directories{installfiles} = "$homedir/data/system/install/$plugindir";
 	$self->{directories} = \%directories;
 	
 	my %files;
@@ -187,7 +188,7 @@ sub save
 	$files{uninstall} = "$homedir/data/system/uninstall/$pluginname";
 	$files{sudoers} = "$homedir/system/sudoers/$pluginname";
 	$self->{files} = \%files;
-	
+		
 	if (! LoxBerry::System::is_enabled($self->{loglevels_enabled}) ) {
 		$self->{loglevel} = "-1";
 	}
