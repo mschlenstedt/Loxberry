@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "2.0.0.1";
+our $VERSION = "2.0.0.2";
 our $DEBUG;
 
 ### Exports ###
@@ -132,7 +132,6 @@ sub copy_to_loxberry
 	# Check if source is a file or a directory
 	if ( -d $srcfile ) { 
 		$srcfile .= '/*';
-		$destfile .= '/';
 	}
 	
 	if (!$destowner) {$destowner = "root"};	
