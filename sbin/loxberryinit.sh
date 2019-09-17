@@ -158,6 +158,7 @@ case "$1" in
   stop)
 	# Add "nofail" option to all mounts in /etc/fstab (needed for USB automount to work correctly)
 	awk '!/^#/ && !/^\s/ && /^[a-zA-Z0-9]/ { if(!match($4,/nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
+	sed -i 's/\(\/ ext4 .*\),nofail\(.*\)/\1\2/' /etc/fstab.new # remove nofail for /
 	cp /etc/fstab /etc/fstab.backup
 	cat /etc/fstab.new > /etc/fstab
 	rm /etc/fstab.new
