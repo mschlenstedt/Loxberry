@@ -106,6 +106,7 @@ case "$1" in
 	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
 	then
 		echo "Syncing Date/Time with Miniserver or NTP-Server"
+		systemctl disable systemd-timesyncd > /dev/null 2>&1
 		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
 	fi
 
