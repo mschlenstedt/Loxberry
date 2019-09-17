@@ -71,7 +71,7 @@ case "$1" in
 		echo "Configuring swap...."
 		$LBHOMEDIR/sbin/setswap.pl
 	else
-		echo "Deactivating swap - rottfs seems not to be resized yet...."
+		echo "Deactivating swap - rootfs seems not to be resized yet...."
 		service dphys-swapfile stop
 		swapoff -a
 		rm -rf /var/swap
@@ -106,7 +106,6 @@ case "$1" in
 	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
 	then
 		echo "Syncing Date/Time with Miniserver or NTP-Server"
-		systemctl disable systemd-timesyncd > /dev/null 2>&1
 		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
 	fi
 
@@ -158,11 +157,14 @@ case "$1" in
 	
   stop)
 	# Add "nofail" option to all mounts in /etc/fstab (needed for USB automount to work correctly)
+	echo "Configuring fstab...."
 	awk '!/^#/ && !/^\s/ && /^[a-zA-Z0-9]/ { if(!match($4,/nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
 	sed -i 's/\(\/ ext4 .*\),nofail\(.*\)/\1\2/' /etc/fstab.new # remove nofail for /
 	cp /etc/fstab /etc/fstab.backup
 	cat /etc/fstab.new > /etc/fstab
 	rm /etc/fstab.new
+	echo "Configuring NTP systemd timesync...."
+	systemctl disable systemd-timesyncd > /dev/null 2>&1
   ;;
 
   *)
