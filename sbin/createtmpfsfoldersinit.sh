@@ -39,7 +39,7 @@ else
 fi
 
 createFolders () {
-	log_action_cont_msg "Creating folders in $RAM_LOG..."
+	echo "Creating folders in $RAM_LOG..."
 	if [ $RAM_LOG ]; then
 		rm -rf $RAM_LOG/*
 	fi
@@ -59,7 +59,7 @@ createFolders () {
 	chown -R loxberry:loxberry $RAM_LOG/log/system_tmpfs
 	chmod -R 755 $RAM_LOG/log/system_tmpfs
 
-	log_action_cont_msg "Binding systemfolders to temporary folders in $RAM_LOG..."
+	echo "Binding systemfolders to temporary folders in $RAM_LOG..."
 	cp -ra /var/log/* $RAM_LOG/var/log
 	rm -rf /var/log/*
 	mount --bind $RAM_LOG/var/log /var/log
