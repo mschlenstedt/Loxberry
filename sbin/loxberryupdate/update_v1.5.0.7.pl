@@ -42,12 +42,12 @@ LOGINF "Install usb-mount@.service...";
 system( "ln -s $lbhomedir/system/systemd/usb-mount@.service /etc/systemd/system/usb-mount@.service" );
 
 LOGINF "Re-Install ssdpd service...";
-if ( -e "/etc/systemd/system/usb-mount@.service" ) {
+if ( -e "/etc/systemd/system/ssdpd.service" ) {
 	unlink ("/etc/systemd/system/ssdpd.service");
-	system ("ln -s $lbhomedir/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service");
-	system ("/bin/systemctl daemon-reload");
-	system ("/bin/systemctl start ssdpd");
 }
+unlink ("$lbhomedir/data//system/ssdpd.service");
+system ("ln -s $lbhomedir/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service");
+system ("/bin/systemctl daemon-reload");
 
 # Link loxberry.service
 if ( -e "/etc/init.d/loxberry" ) {
