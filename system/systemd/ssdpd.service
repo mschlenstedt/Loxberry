@@ -6,6 +6,7 @@ After=network.target
 Type=simple
 User=loxberry
 Group=loxberry
+EnvironmentFile=/etc/environment
 WorkingDirectory=/opt/loxberry/sbin
 ExecStart=/opt/loxberry/sbin/ssdpd
 SyslogIdentifier=ssdpd
