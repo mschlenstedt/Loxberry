@@ -312,26 +312,13 @@ LOGINF "Installing daily cronjob for plugin update checks...";
 $output = qx { rm -f $lbhomedir/system/cron/cron.daily/02-pluginsupdate.pl };
 $output = qx { ln -f -s $lbhomedir/sbin/pluginsupdate.pl $lbhomedir/system/cron/cron.daily/02-pluginsupdate };
 
-# Update Kernel and Firmware
-if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/system/is_odroidxu3xu4.cfg") {
-	LOGINF "Preparing Guru Meditation...";
-	LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
-	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
-
-	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update f8c5a8734cde51ab94e07c204c97563a65a68636 };
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-        	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
-        	LOGDEB $output;
-                $errors++;
-	} else {
-        	LOGOK "Upgrading kernel and firmware successfully.";
-	}
-}
-
 # Copy new ~/system/systemd to installation
-LOGINF "Install ~/system/systemd to your Loxberry...";
-&copy_to_loxberry('/system/systemd');
+if (!-e "$lbhomedir/system/systemd") {
+	LOGINF "Install ~/system/systemd to your Loxberry...";
+	&copy_to_loxberry('/system/systemd');
+} else {
+	LOGINF "~/system/systemd seems to exist already. Skipping...";
+}
 
 # Link usb-mount@.service
 if ( -e "/etc/systemd/system/usb-mount@.service" ) {
