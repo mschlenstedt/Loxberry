@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # This script will be executed on next reboot
-# from update_v1.5.0.pl
+# from update_v2.0.0.pl
 
 use LoxBerry::System;
 use LoxBerry::Log;
@@ -9,7 +9,7 @@ use CGI;
 
 my $cgi = CGI->new;
  
-my $version = "1.5.0";
+my $version = "2.0.0";
 
 # Initialize logfile and parameters
 my $logfilename;
@@ -60,7 +60,7 @@ if (!-e "/boot/rebootupdatescript") {
 LOGINF "This script already started $starts times.";
 if ($starts >=10) {
 	LOGCRIT "We tried 10 times without success. This is the last try.";
-	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv150 };
+	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv200 };
 	qx { rm /boot/rebootupdatescript };
 } else {
 	open(F,">/boot/rebootupdatescript");
@@ -104,7 +104,7 @@ sleep (2);
 # Start simple Webserver
 #
 LOGINF "Starting simple update webserver...";
-system ("$lbhomedir/sbin/loxberryupdate/updaterebootwebserver.pl $logfilename </dev/null >/dev/null 2>&1 &");
+system ("$lbhomedir/sbin/updaterebootwebserver.pl $logfilename </dev/null >/dev/null 2>&1 &");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	LOGERR "Error occurred - Error $exitcode";
@@ -277,8 +277,22 @@ if ( -e "/etc/logrotate.conf.dpkg-dist" ) {
 my $output = qx { sed -i 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
 $log->open;
 
+# Update Kernel and Firmware
+if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/system/is_odroidxu3xu4.cfg") {
+	LOGINF "Preparing Guru Meditation...";
+	LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
+	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
-
+	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update f8c5a8734cde51ab94e07c204c97563a65a68636 };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+        	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
+        	LOGDEB $output;
+                $errors++;
+	} else {
+        	LOGOK "Upgrading kernel and firmware successfully.";
+	}
+}
 
 # If errors occurred, mark this script as failed. If ok, never start it again.
 if ($errors) {
@@ -289,7 +303,7 @@ if ($errors) {
 	$syscfg->write();
 	undef $syscfg;
 } else {
-	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv150 };
+	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv200 };
 	qx { rm /boot/rebootupdatescript };
 	LOGINF "Re-Enabling Apache2...";
 	my $output = qx { systemctl enable apache2.service };

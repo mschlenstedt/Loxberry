@@ -103,6 +103,7 @@ do_mount()
         OPTS+=",gid=1001,uid=1001,umask=000,utf8,flush"
 	echo $OPTS
     fi
+    # vFAT
     if [[ ${ID_FS_TYPE} == "vfat" ]]; then
         OPTS+=",gid=1001,uid=1001,umask=000,shortname=mixed,utf8,flush"
     fi
@@ -114,6 +115,11 @@ do_mount()
     else
         # Track the mounted drives
         echo "${MOUNT_POINT}:${DEVBASE}" | cat >> "/var/log/usb-mount.track" 
+    fi
+
+    # ext2/3/4 
+    if [[ ${ID_FS_TYPE} == "ext2" ]] || [[ ${ID_FS_TYPE} == "ext3" ]] || [[ ${ID_FS_TYPE} == "ext4" ]]; then
+        chown loxberry:loxberry ${MOUNT_POINT}
     fi
 
     ${log} "Mounted ${DEVICE} at ${MOUNT_POINT}"
