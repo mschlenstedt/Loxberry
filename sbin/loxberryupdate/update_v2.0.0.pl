@@ -51,7 +51,7 @@ apt_install("libdata-validate-ip-perl");
 LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
 my $logfilename_wo_ext = $logfilename;
 $logfilename_wo_ext =~ s{\.[^.]+$}{};
-open(F,">$lbhomedir/system/daemons/system/99-updaterebootv150");
+open(F,">$lbhomedir/system/daemons/system/99-updaterebootv200");
 print F <<EOF;
 #!/bin/bash
 perl $lbhomedir/sbin/loxberryupdate/updatereboot_v2.0.0.pl logfilename=$logfilename_wo_ext-reboot 2>&1

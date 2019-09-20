@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # This script will be executed on next reboot
-# from update_v1.5.0.pl
+# from update_v2.0.0.pl
 
 use LoxBerry::System;
 use LoxBerry::Log;
@@ -9,7 +9,7 @@ use CGI;
 
 my $cgi = CGI->new;
  
-my $version = "1.5.0";
+my $version = "2.0.0";
 
 # Initialize logfile and parameters
 my $logfilename;
@@ -60,7 +60,7 @@ if (!-e "/boot/rebootupdatescript") {
 LOGINF "This script already started $starts times.";
 if ($starts >=10) {
 	LOGCRIT "We tried 10 times without success. This is the last try.";
-	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv150 };
+	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv200 };
 	qx { rm /boot/rebootupdatescript };
 } else {
 	open(F,">/boot/rebootupdatescript");
@@ -104,7 +104,7 @@ sleep (2);
 # Start simple Webserver
 #
 LOGINF "Starting simple update webserver...";
-system ("$lbhomedir/sbin/loxberryupdate/updaterebootwebserver.pl $logfilename </dev/null >/dev/null 2>&1 &");
+system ("$lbhomedir/sbin/updaterebootwebserver.pl $logfilename </dev/null >/dev/null 2>&1 &");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	LOGERR "Error occurred - Error $exitcode";
@@ -289,7 +289,7 @@ if ($errors) {
 	$syscfg->write();
 	undef $syscfg;
 } else {
-	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv150 };
+	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv200 };
 	qx { rm /boot/rebootupdatescript };
 	LOGINF "Re-Enabling Apache2...";
 	my $output = qx { systemctl enable apache2.service };
