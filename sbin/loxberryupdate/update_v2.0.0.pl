@@ -236,7 +236,7 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 }	
 
 LOGINF "Removing old ssmtp configuration...";
-delete_directory ("$lbhomedir/system/ssmtp");
+#delete_directory ("$lbhomedir/system/ssmtp");
 
 LOGINF "Replacing auto.smb with LoxBerry's modified auto.smb ...";
 copy_to_loxberry("/system/autofs", "root");
