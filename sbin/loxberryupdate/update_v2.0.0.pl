@@ -7,6 +7,7 @@
 #   cron: If 1, the update was triggered automatically by cron
 
 use LoxBerry::Update;
+use LoxBerry::JSON;
 
 init();
 
