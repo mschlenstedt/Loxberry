@@ -1,0 +1,17 @@
+[Unit]
+Description=LoxBerry Services: Preparing system for Loxberry
+After=network.target remote-fs.target syslog.target network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/loxberry
+EnvironmentFile=-/etc/environment
+RemainAfterExit=yes
+ExecStart=/opt/loxberry/sbin/loxberryinit.sh start
+ExecStop=/opt/loxberry/sbin/loxberryinit.sh stop
+SyslogIdentifier=loxberry
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

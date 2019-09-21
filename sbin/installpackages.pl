@@ -41,7 +41,7 @@ our $test;
 ##########################################################################
 
 # Version of this script
-$version = "0.0.3";
+$version = "2.0.0.1";
 
 $cfg             = new Config::Simple("$home/config/system/general.cfg.default");
 $aptbin          = $cfg->param("BINARIES.APT");
@@ -76,6 +76,7 @@ open(F,"$file") || die "Cannot open file: $!";
     # Pase only installed packages
     if ($_ =~ /^ii  /) {
       $_ =~ s/^ii  (\S*)(.*)$/$1/g;
+      $_ =~ s/(.*):armhf$/$1/g;
       chomp($_);
       # Print line
       if ($test) 
@@ -84,11 +85,20 @@ open(F,"$file") || die "Cannot open file: $!";
       } 
       else 
       {
-      	$packages = $packages." ".$_;
+        my $output = qx { /usr/bin/apt-cache show $_ > /dev/null 2>&1 };
+        my $exitcode  = $? >> 8;
+        if ($exitcode != 0) {
+          next;
+	} else {
+      	  $packages = $packages." ".$_;
+        }
       }
     }
   }
-  system("$sudobin $aptbin -y install $packages --no-install-recommends");
+  if (!$test)
+  {
+    system("$sudobin $aptbin -y install $packages --no-install-recommends");
+  }
 close(F);
 
 exit;

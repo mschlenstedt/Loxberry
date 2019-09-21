@@ -53,7 +53,7 @@ my $download_path = '/tmp';
 my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
 my $min_version = "v0.3.0";
-my $max_version = "v1.99.99";
+my $max_version = "v2.99.99";
 
 my $querytype;
 my $update;
@@ -665,18 +665,36 @@ sub check_commits
 			
 			# This is the place where we can hand over to the real update
 			
-			#LOGINF "Run loxberryupdate in bachground ...";
-			LOGINF "Forking loxberryupdate...";
-			my $pid = fork();
-			if (not defined $pid) {
-				LOGCRIT "Cannot fork loxberryupdate.";
-			} 
-			if (not $pid) {	
-				LOGINF "Executing LoxBerry Update forked...";
-				undef $log if ($log);
+			if (!$nofork) {
+				#LOGINF "Run loxberryupdate in bachground ...";
+				LOGINF "Forking loxberryupdate...";
+				my $pid = fork();
+				if (not defined $pid) {
+					LOGCRIT "Cannot fork loxberryupdate.";
+				} 
+				if (not $pid) {	
+					LOGINF "Executing LoxBerry Update forked...";
+					undef $log if ($log);
+					# exec never returns
+					# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
+				
+					my $releaseparam;
+					if( defined $release) {
+						LOGWARN "Version parameter '$release' was given. This will be used to process update scripts, independent of what version is installed.";
+						LOGWARN "This version '$release' will also be set to your general.cfg. Reset it after your test!";
+						$releaseparam = $release;
+					} else {
+						LOGINF "Version parameter 'config' was given";
+						$releaseparam = "config";
+					}
+					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$releaseparam $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
+					exit(0);
+				} 
+			} else {
+				LOGINF "Executing LoxBerry Update...";
 				# exec never returns
 				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				
+				undef $log if ($log);
 				my $releaseparam;
 				if( defined $release) {
 					LOGWARN "Version parameter '$release' was given. This will be used to process update scripts, independent of what version is installed.";
@@ -686,9 +704,8 @@ sub check_commits
 					LOGINF "Version parameter 'config' was given";
 					$releaseparam = "config";
 				}
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$releaseparam $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
-				exit(0);
-			} 
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$releaseparam $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
+			}
 			exit(0);
 		}
 	}

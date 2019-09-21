@@ -7,13 +7,7 @@
    },
    "SMTP" : {
       "ACTIVATE_MAIL" : 0,
-      "AUTH" : 1,
-      "CRYPT" : 1,
       "EMAIL" : "",
-      "ISCONFIGURED" : "1",
-      "PORT" : "587",
-      "SMTPPASS" : "",
-      "SMTPSERVER" : "",
-      "SMTPUSER" : ""
+      "ISCONFIGURED" : "0",
    }
 }

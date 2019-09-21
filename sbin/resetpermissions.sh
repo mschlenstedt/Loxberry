@@ -44,6 +44,7 @@ chown -Rc root:root $LBHOMEDIR/sbin
 chown -Rc root:root $LBHOMEDIR/system/logrotate
 chown -Rc root:root $LBHOMEDIR/system/php
 chown -Rc root:root $LBHOMEDIR/config/system/securepin.dat
+chown -Rc root:root $LBHOMEDIR/config/system/plugindatabase.json-
 chown -Rc root:root $LBHOMEDIR/system/php
 chown -Rc loxberry:loxberry /var/log/apache2
 chown -Rc loxberry:loxberry /var/cache/apache2
@@ -59,6 +60,7 @@ chmod -c 600 $LBHOMEDIR/system/network/interfaces
 chmod -c 600 $LBHOMEDIR/config/system/*
 chmod -c 600 $LBHOMEDIR/data/system/netshares.dat
 chmod -c 644 $LBHOMEDIR/config/system/securepin.dat
+chmod -c 644 $LBHOMEDIR/config/system/plugindatabase.json-
 chmod -c 555 $LBHOMEDIR/system/sudoers
 chmod -c 664 $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -c 755 $LBHOMEDIR/system/profile

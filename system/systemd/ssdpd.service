@@ -1,0 +1,19 @@
+[Unit]
+Description=SSDP Service Publisher
+After=network.target
+
+[Service]
+Type=simple
+User=loxberry
+Group=loxberry
+EnvironmentFile=/etc/environment
+WorkingDirectory=/opt/loxberry/sbin
+ExecStart=/opt/loxberry/sbin/ssdpd
+SyslogIdentifier=ssdpd
+StandardOutput=syslog
+StandardError=syslog
+Restart=no
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

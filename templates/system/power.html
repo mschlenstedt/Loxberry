@@ -113,11 +113,14 @@
 		</center>
 	<script>
 		var counter = 2400;
+		var was_offline = 0;
+		
 		$(document).ready(function()
 		{
 		  var xhttp = new XMLHttpRequest();
 		  xhttp.timeout = 800;
 		  xhttp.ontimeout = function() {
+			  was_offline = 1;
 			  if ( counter == 2400 ) {
 				  showprogressbar();
 			  }
@@ -127,7 +130,7 @@
 				var res = JSON.parse(this.responseText);
 				if ( counter == 2400 && res.reboot_in_progress == 1 ) {
 					showprogressbar();
-				} else if ( res.reboot_in_progress == 0 ) {
+				} else if ( res.reboot_in_progress == 0 && was_offline == 1) {
 					$('.progress-bar').hide();
 					document.location.href="/";
 				}

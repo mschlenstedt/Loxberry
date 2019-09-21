@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "1.4.3.2";
+our $VERSION = "1.5.0.1";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -317,6 +317,21 @@ sub jsblock
 	my $json = $self->encode;
 	
 	if($json) {
+		$json = LoxBerry::JSON::escape($json);
+		$resultjs = "$options{varname} = JSON.parse('$json');\n";
+	} else {
+		$resultjs = "// LoxBerry::JSON::jsblock: JSON Encoder failed.\n";
+	}
+	return $resultjs;
+}
+	
+sub escape
+{
+	my ($stringToEscape) = shift;
+		
+	my $resultjs;
+	
+	if($stringToEscape) {
 		my %translations = (
 		"\r" => "\\r",
 		"\n" => "\\n",
@@ -325,14 +340,12 @@ sub jsblock
 		);
 		my $meta_chars_class = join '', map quotemeta, keys %translations;
 		my $meta_chars_re = qr/([$meta_chars_class])/;
-		$json =~ s/$meta_chars_re/$translations{$1}/g;
-		$resultjs = "$options{varname} = JSON.parse('$json');\n";
-	} else {
-		$resultjs = "// LoxBerry::JSON::jsblock: JSON Encoder failed.\n";
+		$stringToEscape =~ s/$meta_chars_re/$translations{$1}/g;
 	}
-	return $resultjs;
+	return $stringToEscape;
 }
-	
+
+
 
 sub DESTROY
 {

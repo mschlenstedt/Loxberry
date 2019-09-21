@@ -30,7 +30,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.4.0.1';
+my $scriptversion='1.5.0.1';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -268,6 +268,12 @@ if ($exitcode != 0 ) {
 if ($dryrun ne "") {
 	LOGWARN "rsync was started with dryrun. Nothing was changed.";
 }
+
+if ($lbhomedir ne "/opt/loxberry" and !$dryrun) {
+	LOGINF "Patching sudoers to match your $lbhomedir...";
+	LOGINF `sed -i -e "s#/opt/loxberry/#$lbhomedir/#g" $lbhomedir/system/sudoers/lbdefaults`;
+}
+
 
 LOGINF "Restoring permissions of $lbhomedir of your LoxBerry...";
 $log->close;

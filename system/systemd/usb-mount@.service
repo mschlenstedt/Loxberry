@@ -1,0 +1,9 @@
+[Unit]
+Description=Mount USB Drive on %i
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/loxberry
+EnvironmentFile=-/etc/environment
+RemainAfterExit=true
+ExecStart=/opt/loxberry/sbin/usb-mount.sh add %i
+ExecStop=/opt/loxberry/sbin/usb-mount.sh remove %i

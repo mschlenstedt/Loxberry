@@ -12,7 +12,7 @@
 				<a id="btnhome" href="/admin/system/index.cgi" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>&nbsp;&nbsp;
 				<a id="btnsystem" href="/admin/system/index.cgi?form=system" data-role="button" data-icon="bars" data-iconpos="notext">Einstellungen</a>&nbsp;&nbsp;
 				<a id="btnpower" href="/admin/system/power.cgi" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
-				<div data-href="/admin/system/power.cgi"      id="btnpower_alert" style="pointer-events: none; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>
+				<div data-href="/admin/system/power.cgi"      id="btnpower_alert" style="position:absolute; top: 4px, left: 0px, pointer-events: none; visibility:hidden; width:30px; height:30px; padding:0px, border:0px, z-index:10000, background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>
 				<div data-href="/admin/system/logmanager.cgi" id="update_alert"   style="margin-left:15px; cursor:default; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
 		</div>
 		<SCRIPT>
@@ -40,8 +40,8 @@
 			// Footer icon animation for Reboot (fade in)
 			function reboot_on()
 			{ 
-				var reboot_alert_offset = $("#btnpower").offset(); 
-				$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
+				 var reboot_alert_offset = $("#btnpower").offset(); 
+				 $("#btnpower_alert").css({ "top": "4px", "pointer-events" : "none", "width" : "30px", "height" : "30px", "background-repeat" : "no-repeat", "padding": "0px", "visibility" : "visible", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left, "position":"absolute" });
 				if ( $("#btnpower").prop("animate_reboot") == 1 )
 				{ 
 					$("#btnpower_alert").fadeTo( 2000 , 1.0, function() 
@@ -58,8 +58,8 @@
 			// Footer icon animation for Reboot (fade out)
 			function reboot_off()
 			{ 
-				var reboot_alert_offset = $("#btnpower").offset(); 
-				$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
+				 var reboot_alert_offset = $("#btnpower").offset(); 
+				 $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left, "position":"absolute" }); 
 				if ( $("#btnpower").prop("animate_reboot") == 1 )
 				{ 
 					$("#btnpower_alert").fadeTo( 2000 , 0.1, function() 
@@ -80,6 +80,7 @@
 			}; 
 			function refresh_footer_icons () 
 			{	
+				reboot_on();
 				$.ajax( "/admin/system/tools/ajax-footer-icons-handler.php")
 					.done(function(data) 
 					{ 
