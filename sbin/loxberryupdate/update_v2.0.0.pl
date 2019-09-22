@@ -49,7 +49,7 @@ apt_install("libdata-validate-ip-perl");
 #
 # Upgrade Raspbian on next reboot
 #
-LOGINF "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
+LOGWARN "Upgrading system to latest Raspbian release ON NEXT REBOOT.";
 my $logfilename_wo_ext = $logfilename;
 $logfilename_wo_ext =~ s{\.[^.]+$}{};
 open(F,">$lbhomedir/system/daemons/system/99-updaterebootv200");
