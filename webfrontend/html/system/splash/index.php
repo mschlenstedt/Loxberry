@@ -1,5 +1,6 @@
 <?php 
 require_once "loxberry_system.php";
+$SL = LBSystem::readlanguage(null, null, true);
 ?>
 <!DOCTYPE html>
 <html><head><meta name="GCD" content="YTk3ODQ3ZWZhN2I4NzZmMzBkNTEwYjJl0d41f6f414ebf0b65dc10c25e54fb997"/>
@@ -14,7 +15,7 @@ require_once "loxberry_system.php";
 <body class="htmlNoPages">
   <script type="text/html" gwd-supported-sizes="">{ "supportedSizes": { "default": { "sizeRanges": [{ "minWidth": 320, "minHeight": 320, "maxWidth": 1280, "maxHeight": 1280, "presetName": "interstitial" }] } } }
   </script>
-  <div class="gwd-div-1ymk" id="DarkBack_1"></div><span class="gwd-span-1hnv gwd-span-1mhk gwd-gen-w74egwdanimation">Mach's dir einfach. Mach's mit LoxBerry.<div class="gwd-animation-event event-2-animation" data-event-name="event-2" data-event-time="5200"></div></span>
+  <div class="gwd-div-1ymk" id="DarkBack_1"></div><span class="gwd-span-1hnv gwd-span-1mhk gwd-gen-w74egwdanimation"><?=$SL['WIZARD.SLOGAN2']?><div class="gwd-animation-event event-2-animation" data-event-name="event-2" data-event-time="5200"></div></span>
   <img class="gwd-img-v8u1 gwd-gen-1ns3gwdanimation" src="LoxBerry_mit_Brille_und_Beere.svg">
     <img class="gwd-img-1hex gwd-gen-v281gwdanimation" src="loxberry_footer_loxberry_text_ws.svg">
     <img class="gwd-img-o6gm gwd-gen-1utngwdanimation" src="Beyond_the_limits_Color_1.svg" id="BTL_1"><span class="gwd-span-1gcm gwd-gen-zslsgwdanimation">Version <?=LBSystem::lbversion()?></span>
