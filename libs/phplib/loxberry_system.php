@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.0.1";
+	public static $LBSYSTEMVERSION = "2.0.0.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -154,7 +154,7 @@ class LBSystem
 			$genericlangfile = $template;
 			$template = NULL;
 		}
-		if ($syslang == True and $genericlangfile != "language.ini") {
+		if ($syslang == True and isset($genericlangfile) and $genericlangfile != "language.ini") {
 			$genericlangfile = LBSTEMPLATEDIR . "/lang/$genericlangfile";
 			$widgetlang = True;
 		} elseif ($syslang == true) {
