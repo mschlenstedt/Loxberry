@@ -237,7 +237,7 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 }	
 
 LOGINF "Removing old ssmtp configuration...";
-#delete_directory ("$lbhomedir/system/ssmtp");
+delete_directory ("$lbhomedir/system/ssmtp");
 
 LOGINF "Replacing auto.smb with LoxBerry's modified auto.smb ...";
 copy_to_loxberry("/system/autofs", "root");
@@ -314,12 +314,12 @@ $output = qx { rm -f $lbhomedir/system/cron/cron.daily/02-pluginsupdate.pl };
 $output = qx { ln -f -s $lbhomedir/sbin/pluginsupdate.pl $lbhomedir/system/cron/cron.daily/02-pluginsupdate };
 
 # Copy new ~/system/systemd to installation
-if (!-e "$lbhomedir/system/systemd") {
+#if (!-e "$lbhomedir/system/systemd") {
 	LOGINF "Install ~/system/systemd to your Loxberry...";
 	&copy_to_loxberry('/system/systemd');
-} else {
-	LOGINF "~/system/systemd seems to exist already. Skipping...";
-}
+#} else {
+#	LOGINF "~/system/systemd seems to exist already. Skipping...";
+#}
 
 # Link usb-mount@.service
 if ( -e "/etc/systemd/system/usb-mount@.service" ) {
