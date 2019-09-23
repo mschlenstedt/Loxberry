@@ -34,13 +34,16 @@ if ($exitcode != 0) {
 # Installing new network templates
 #
 LOGINF "Installing new network templates for IPv6...";
+unlink "$lbhomedir/system/network/interfaces.ipv4";
+unlink "$lbhomedir/system/network/interfaces.ipv6";
+unlink "$lbhomedir/system/network/interfaces.loopback";
+unlink "$lbhomedir/system/network/interfaces.v6auto";
+unlink "$lbhomedir/system/network/interfaces.v6dhcp";
+unlink "$lbhomedir/system/network/interfaces.v6static";
 unlink "$lbhomedir/system/network/interfaces.eth_dhcp";
 unlink "$lbhomedir/system/network/interfaces.eth_static";
 unlink "$lbhomedir/system/network/interfaces.wlan_dhcp";
 unlink "$lbhomedir/system/network/interfaces.wlan_static";
-copy_to_loxberry("/system/network/interfaces.loopback");
-copy_to_loxberry("/system/network/interfaces.ipv4");
-copy_to_loxberry("/system/network/interfaces.ipv6");
 
 LOGINF "Installing additional Perl modules...";
 apt_update("update");
@@ -328,6 +331,9 @@ if ( -e "/etc/systemd/system/usb-mount@.service" ) {
 }
 LOGINF "Install usb-mount@.service...";
 system( "ln -s $lbhomedir/system/systemd/usb-mount@.service /etc/systemd/system/usb-mount@.service" );
+
+LOGINF "Updating NTFS driver to ntfs-3g...";
+apt_install("ntfs-3g");
 
 LOGINF "Re-Install ssdpd service...";
 if ( -e "/etc/systemd/system/ssdpd.service" ) {
