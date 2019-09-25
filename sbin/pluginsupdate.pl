@@ -22,6 +22,8 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use LoxBerry::System::PluginDB;
+
 use strict;
 use warnings;
 use version;
