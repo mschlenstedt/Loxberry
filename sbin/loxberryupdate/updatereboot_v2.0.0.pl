@@ -9,7 +9,7 @@ use CGI;
 
 my $cgi = CGI->new;
  
-my $version = "2.0.0";
+my $version = "2.0.0.1";
 
 # Initialize logfile and parameters
 my $logfilename;
@@ -45,7 +45,7 @@ if ($cgi->param('updatedir')) {
 
 my $errors = 0;
 LOGSTART "Update Reboot script $0 started.";
-LOGINF "Message : Doing system upgrade (envoked from upgrade to V1.5.0)";
+LOGINF "Message : Doing system upgrade (envoked from upgrade to V2.0.0)";
 
 # Check how often we have tried to start. Abort if > 10 times.
 my $starts;
@@ -62,6 +62,16 @@ if ($starts >=10) {
 	LOGCRIT "We tried 10 times without success. This is the last try.";
 	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv200 };
 	qx { rm /boot/rebootupdatescript };
+	LOGINF "Re-Enabling Apache2...";
+	my $output = qx { systemctl enable apache2.service };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error occurred while re-enabling Apache2 - Error $exitcode";
+		$errors++;
+	} else {
+		LOGOK "Apache2 enabled successfully.";
+	}
+	exit 1;
 } else {
 	open(F,">/boot/rebootupdatescript");
 	$starts++;
