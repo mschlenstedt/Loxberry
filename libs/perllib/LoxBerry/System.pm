@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "2.0.0.5";
+our $VERSION = "2.0.0.6";
 our $DEBUG;
 
 use base 'Exporter';
@@ -224,6 +224,7 @@ our $lbsbindir = "$lbhomedir/bin";
 our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
 our $reboot_required_file = "$lbstmpfslogdir/reboot.required";
+our $reboot_force_popup_file = "$lbstmpfslogdir/reboot.force";
 our $PLUGINDATABASE = "$lbsdatadir/plugindatabase.json";
 
 # Variables only valid in this module
@@ -1339,6 +1340,25 @@ sub reboot_required
 		chown $uid, $gid, $LoxBerry::System::reboot_required_file;
 		};
 }
+
+sub reboot_force
+{
+	my ($message) = shift;
+	open(my $fh, ">>", $LoxBerry::System::reboot_force_popup_file) or Carp::carp "Cannot open/create reboot.force file $reboot_force_popup_file.";
+	flock($fh,2);
+	if (! $message) {
+		print $fh "A reboot is necessary to continue updates.";
+	} else {
+		print $fh "$message";
+	}
+	flock($fh,8);
+	close $fh;
+	eval {
+		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+		chown $uid, $gid, $LoxBerry::System::reboot_force_popup_file;
+		};
+}
+
 
 sub diskspaceinfo
 {

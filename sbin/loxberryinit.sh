@@ -101,6 +101,7 @@ case "$1" in
 	echo "Cleaning temporary files and folders..."
 	rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
+	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.force > /dev/null 2>&1
 
 	# Set Date and Time
 	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
