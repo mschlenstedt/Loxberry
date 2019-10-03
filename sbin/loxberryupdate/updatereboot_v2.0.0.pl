@@ -9,7 +9,7 @@ use CGI;
 
 my $cgi = CGI->new;
  
-my $version = "2.0.0.2";
+my $version = "2.0.0.3";
 
 # Initialize logfile and parameters
 my $logfilename;
