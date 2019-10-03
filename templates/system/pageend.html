@@ -142,7 +142,7 @@
 								$("#btnpower").prop("animate_reboot",1); 
 								reboot_on();
 							}
-						} else if (last_refresh_footer_icons_response.reboot_required != response_data.reboot_required) {
+						} else {
 							$("#btnpower").prop("animate_reboot",""); 
 							reboot_off();
 						}
