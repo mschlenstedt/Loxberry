@@ -329,7 +329,7 @@ if ($errors) {
 qx { chown loxberry:loxberry $logfilename };
 
 # Continue with update
-LOGINF "Continue with updating..."
+LOGINF "Continue with updating...";
 system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=release update=1");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
