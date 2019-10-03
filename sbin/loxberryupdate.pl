@@ -34,6 +34,7 @@ my $scriptversion='2.0.0.1';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
+my $reboot_force_popup_file = "$lbstmpfslogdir/reboot.force";
 
 my $updatedir;
 my %joutput;
@@ -387,7 +388,7 @@ foreach my $version (@updatelist)
 			if ($exitcode == 250 or $exitcode == 251) {
 				$stop_script_processing_version = version->parse(vers_tag($version));
 				$release = $version;
-				LoxBerry::System::reboot_force($SL{'POWER.FORCEREBOOT_LBUPDATE_MSG'});
+				reboot_force($SL{'POWER.FORCEREBOOT_LBUPDATE_MSG'});
 				LoxBerry::System::reboot_required("LoxBerry Update is in the middle of an update and a reboot is necessary to continue. Please reboot LoxBerry.");
 				# LOGINF "LoxBerry's config version is updated from $currversion to $release";
 				# $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
@@ -615,6 +616,24 @@ sub vers_tag
 	
 	return $vers;
 
+}
+
+sub reboot_force
+{
+	my ($message) = shift;
+	open(my $fh, ">>", $reboot_force_popup_file) or Carp::carp "Cannot open/create reboot.force file $reboot_force_popup_file.";
+	flock($fh,2);
+	if (! $message) {
+		print $fh "A reboot is necessary to continue updates.";
+	} else {
+		print $fh "$message";
+	}
+	flock($fh,8);
+	close $fh;
+	eval {
+		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+		chown $uid, $gid, $reboot_force_popup_file;
+		};
 }
 
 
