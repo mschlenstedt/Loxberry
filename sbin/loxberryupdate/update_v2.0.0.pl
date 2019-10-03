@@ -414,5 +414,8 @@ reboot_required("LoxBerry Update requests a reboot.");
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
 
+# End Skript for reboot
+exit(250); 
+
 # End of script
 exit($errors);
