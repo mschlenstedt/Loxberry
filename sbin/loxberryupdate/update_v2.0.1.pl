@@ -34,11 +34,11 @@ apt_install("python-pip python3-pip");
 #
 # Upgrade any older packages (in case this LoxBerry was upgraded and python plugins were installed before)
 #
-#LOGINF "Upgrade any manually installed python packages...";
-#system ("pip install pip --upgrade");
-#system("pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install -U");
-#system ("pip3 install pip3 --upgrade");
-#system("pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip3 install -U");
+LOGINF "Upgrade python packages...";
+system ("pip install pip --upgrade");
+system("pip list --outdated --format=freeze | cut -d = -f 1 | xargs -n1 pip install -U");
+system ("pip3 install pip --upgrade");
+system("pip3 list --outdated --format=freeze | cut -d = -f 1 | xargs -n1 pip3 install -U");
 
 # Clean apt
 apt_update("clean");
