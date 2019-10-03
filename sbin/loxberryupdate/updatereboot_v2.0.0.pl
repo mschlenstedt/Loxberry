@@ -9,7 +9,7 @@ use CGI;
 
 my $cgi = CGI->new;
  
-my $version = "2.0.0.1";
+my $version = "2.0.0.2";
 
 # Initialize logfile and parameters
 my $logfilename;
@@ -293,7 +293,7 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
 	LOGINF "This will take some time now. We suggest getting a coffee or a second beer :-)";
 	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
-	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable /usr/bin/rpi-update f8c5a8734cde51ab94e07c204c97563a65a68636 };
+	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 /usr/bin/rpi-update f8c5a8734cde51ab94e07c204c97563a65a68636 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
         	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
@@ -327,6 +327,10 @@ if ($errors) {
 }
 
 qx { chown loxberry:loxberry $logfilename };
+
+# Continue with update
+LOGINF "Continue with updating..."
+system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=release update=1");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
