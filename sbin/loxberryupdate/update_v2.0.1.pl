@@ -29,7 +29,7 @@ apt_install("rfkill");
 # Install Python (including suggested packages)
 #
 LOGINF "Install Python/pip as a standard...";
-apt_install("python-pip python-pip3");
+apt_install("python-pip python3-pip");
 
 #
 # Upgrade any older packages (in case this LoxBerry was upgraded and python plugins were installed before)
