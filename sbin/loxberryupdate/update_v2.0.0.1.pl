@@ -44,8 +44,8 @@ system("pip3 list --outdated --format=freeze | cut -d = -f 1 | xargs -n1 pip3 in
 apt_update("clean");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
-LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-reboot_required("LoxBerry Update requests a reboot.");
+#LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
+#reboot_required("LoxBerry Update requests a reboot.");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
