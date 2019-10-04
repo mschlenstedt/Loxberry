@@ -404,7 +404,7 @@ mkdir "$lbhomedir/system/cron/cron.reboot";
 `chown loxberry:loxberry $lbhomedir/system/cron/cron.reboot`;
 &copy_to_loxberry('/system/cron/cron.d/lbdefaults');
 
-LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade..."
+LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade...";
 system ("pip install pip --upgrade");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
