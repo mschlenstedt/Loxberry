@@ -15,14 +15,34 @@ init();
 # Firmware Files are not updated automatically by apt-get (why? *really* don't no!)
 #
 LOGINF "Installing newest firmware files from Debian Buster...";
-apt_update("update");
-apt_remove("firmware-atheros bluez-firmware firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek");
-apt_install("firmware-atheros bluez-firmware firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek");
+# Use apt Repo
+#apt_update("update");
+#apt_remove("firmware-atheros bluez-firmware firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek");
+#apt_install("firmware-atheros bluez-firmware firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek");
+# Use Kernel.org
+#system("rm -r /lib/firmware/*");
+#system("curl -L https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-20190923.tar.gz -o /lib/firmware/linux-firmware-20190923.tar.gz");
+#system("tar xvfz linux-firmware-20190923.tar.gz -C /lib/firmware/");
+#system("mv /lib/firmware/linux-firmware-20190923/* /lib/firmware/");
+#system("rm -r /lib/firmware/linux-firmware-20190923*");
+# Use RPi-Distro Repo
+system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/master.zip -o /lib/master.zip");
+system("cd /lib && unzip /lib/master.zip");
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGWARN "Error extracting new firmware. This is a problem for PI4 only. Wifi may not work on the Pi4 - Error $exitcode";
+} else {
+        LOGOK "Extracting of new firmware files successfully. Installing...";
+	system ("rm -r /lib/firmware");
+	system("mv /lib/firmware-nonfree-master /lib/firmware");
+}
+system ("rm -r /lib/master.zip");
 
 #
 # Install missing rfkill
 #
 LOGINF "Installing rfkill...";
+apt_update("update");
 apt_install("rfkill");
 
 #
