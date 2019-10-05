@@ -332,7 +332,7 @@ qx { chown loxberry:loxberry $logfilename };
 
 # Continue with update
 LOGINF "Continue with updating...";
-system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=latest update=1");
+system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=latest update=1 nofork=1");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
