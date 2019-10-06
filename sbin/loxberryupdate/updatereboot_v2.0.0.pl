@@ -328,6 +328,17 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
 	}
 }
 
+#
+# Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
+#
+LOGINF "Upgrade python packages...";
+if (-e $lbsdatadir/pip_list.dat) {
+	system("cat $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip install -U");
+}
+if (-e $lbsdatadir/pip3_list.dat) {
+	system("at $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip3 install -U");
+}
+
 # If errors occurred, mark this script as failed. If ok, never start it again.
 if ($errors) {
 	LOGINF "Setting update script $0 as failed in general.cfg.";
