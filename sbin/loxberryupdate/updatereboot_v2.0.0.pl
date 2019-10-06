@@ -9,7 +9,7 @@ use CGI;
 
 my $cgi = CGI->new;
  
-my $version = "2.0.0.3";
+my $scriptversion = "2.0.0.4";
 
 # Initialize logfile and parameters
 my $logfilename;
@@ -121,6 +121,27 @@ if ($exitcode != 0) {
 	$errors++;
 } else {
 	LOGOK "Started simple webserver successfully.";
+}
+
+#
+# Backing up Python packages, because rasbian's upgrade will overwrite all of them...
+#
+LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade...";
+system ("pip install pip --upgrade");
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGINF "Saving list with installed pip packages...";
+	system("pip list --format=freeze > $lbsdatadir/pip_list.dat");
+} else {
+	LOGINF "pip seems not to be installed.";
+}
+system ("pip3 install pip --upgrade");
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGINF "Saving list with installed pip3 packages...";
+	system("pip3 list --format=freeze > $lbsdatadir/pip3_list.dat");
+} else {
+	LOGINF "pip3 seems not to be installed.";
 }
 
 #
@@ -295,8 +316,9 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
 
 	qx { rm /boot/.firmware_revision };
 	qx { rm /boot/kernel*.img };
-	my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 /usr/bin/rpi-update f8c5a8734cde51ab94e07c204c97563a65a68636 };
-	LOGINF $output;
+	$log->close;
+	system (" SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 /usr/bin/rpi-update f8c5a8734cde51ab94e07c204c97563a65a68636 >> $logfilename 2>&1 ");
+	$log->close;
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
         	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
@@ -332,7 +354,9 @@ qx { chown loxberry:loxberry $logfilename };
 
 # Continue with update
 LOGINF "Continue with updating...";
-system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=latest update=1 nofork=1");
+$log->close;
+system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=latest update=1 nofork=1 >> $logfilename 2>&1");
+$log->open;
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
