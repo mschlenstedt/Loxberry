@@ -337,7 +337,7 @@ if (-e $lbsdatadir/pip_list.dat) {
 	system("mv $lbsdatadir/pip_list.dat $lbsdatadir/pip_list.dat.bkp");
 }
 if (-e $lbsdatadir/pip3_list.dat) {
-	system("at $lbsdatadir/pip3_list.dat | cut -d = -f 1 | xargs -n1 pip3 install -U");
+	system("cat $lbsdatadir/pip3_list.dat | cut -d = -f 1 | xargs -n1 pip3 install -U");
 	system("mv $lbsdatadir/pip3_list.dat $lbsdatadir/pip3_list.dat.bkp");
 }
 
