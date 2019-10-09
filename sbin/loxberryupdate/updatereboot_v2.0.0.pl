@@ -315,10 +315,10 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
 	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
 	qx { rm /boot/.firmware_revision };
-	qx { rm /boot/kernel*.img };
+	#qx { rm /boot/kernel*.img };
 	$log->close;
 	system (" SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 /usr/bin/rpi-update f8c5a8734cde51ab94e07c204c97563a65a68636 >> $logfilename 2>&1 ");
-	$log->close;
+	$log->open;
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
         	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
@@ -332,13 +332,17 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Upgrade python packages...";
-if (-e $lbsdatadir/pip_list.dat) {
-	system("cat $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip install");
+if (-e "$lbsdatadir/pip_list.dat") {
+	$log->close;
+	system("cat $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip install >> $logfilename 2>&1");
 	system("mv $lbsdatadir/pip_list.dat $lbsdatadir/pip_list.dat.bkp");
+	$log->open;
 }
-if (-e $lbsdatadir/pip3_list.dat) {
-	system("cat $lbsdatadir/pip3_list.dat | cut -d = -f 1 | xargs -n1 pip3 install");
+if (-e "$lbsdatadir/pip3_list.dat") {
+	$log->close;
+	system("cat $lbsdatadir/pip3_list.dat | cut -d = -f 1 | xargs -n1 pip3 install >> $logfilename 2>&1");
 	system("mv $lbsdatadir/pip3_list.dat $lbsdatadir/pip3_list.dat.bkp");
+	$log->open;
 }
 
 # If errors occurred, mark this script as failed. If ok, never start it again.
@@ -363,8 +367,6 @@ if ($errors) {
 	}
 }
 
-qx { chown loxberry:loxberry $logfilename };
-
 # Continue with update
 LOGINF "Continue with updating...";
 $log->close;
@@ -373,6 +375,8 @@ $log->open;
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
+
+qx { chown loxberry:loxberry $logfilename };
 
 # End of script
 exit($errors);
