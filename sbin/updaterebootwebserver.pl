@@ -36,6 +36,8 @@ while (my $c = $d->accept) {
 			$c->send_file_response("$lbshtmldir/images/updatereboot-anim-large.gif");
 		} elsif ($r->method eq 'GET' && $r->uri->path eq "/admin/system/tools/power-handler.php") {
 			$c->send_file_response("$lbstemplatedir/reboot_updaterunning_ph.html");
+		} elsif ($r->method eq 'GET' && $r->uri->path eq "/updaterunning") {
+            $c->send_file_response("/tmp/updaterunning");
         } else {
             $c->send_file_response("$lbstemplatedir/reboot_updaterunning.html");
         }
