@@ -83,20 +83,20 @@ LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken 
 system ("which pip");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
+	LOGINF "pip seems not to be installed.";
+} else {
 	LOGINF "Saving list with installed pip packages...";
 	system ("pip install pip --upgrade");
 	system("pip list --format=freeze > $lbsdatadir/pip_list.dat");
-} else {
-	LOGINF "pip seems not to be installed.";
 }
 system ("which pip3");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
+	LOGINF "pip3 seems not to be installed.";
+} else {
 	LOGINF "Saving list with installed pip3 packages...";
 	system ("pip3 install pip --upgrade");
 	system("pip3 list --format=freeze > $lbsdatadir/pip3_list.dat");
-} else {
-	LOGINF "pip3 seems not to be installed.";
 }
 
 LOGINF "Installing Node.js V12...";
