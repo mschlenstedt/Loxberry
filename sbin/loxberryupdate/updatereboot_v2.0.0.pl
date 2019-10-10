@@ -9,7 +9,7 @@ use CGI;
 
 my $cgi = CGI->new;
  
-my $scriptversion = "2.0.0.5";
+my $scriptversion = "2.0.0.6";
 
 # Initialize logfile and parameters
 my $logfilename;
@@ -121,27 +121,6 @@ if ($exitcode != 0) {
 	$errors++;
 } else {
 	LOGOK "Started simple webserver successfully.";
-}
-
-#
-# Backing up Python packages, because rasbian's upgrade will overwrite all of them...
-#
-LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade...";
-system ("pip install pip --upgrade");
-$exitcode  = $? >> 8;
-if ($exitcode != 0) {
-	LOGINF "Saving list with installed pip packages...";
-	system("pip list --format=freeze > $lbsdatadir/pip_list.dat");
-} else {
-	LOGINF "pip seems not to be installed.";
-}
-system ("pip3 install pip --upgrade");
-$exitcode  = $? >> 8;
-if ($exitcode != 0) {
-	LOGINF "Saving list with installed pip3 packages...";
-	system("pip3 list --format=freeze > $lbsdatadir/pip3_list.dat");
-} else {
-	LOGINF "pip3 seems not to be installed.";
 }
 
 #
