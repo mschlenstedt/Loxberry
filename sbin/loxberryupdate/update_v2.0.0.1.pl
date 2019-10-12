@@ -63,6 +63,14 @@ system("pip3 list --outdated --format=freeze | cut -d = -f 1 | xargs -n1 pip3 in
 # Clean apt
 apt_update("clean");
 
+#
+# Repair broken msmtp permissions from 2.0.0.0
+#
+if (-e "$lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc") {
+	LOGINF "Repair broken msmtp permissions from previous upgrade...";
+	system( "chown loxberry:loxberry $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
+}
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");
