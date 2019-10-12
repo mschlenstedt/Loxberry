@@ -355,7 +355,7 @@ $log->open;
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
 
-qx { "chown loxberry:loxberry $lbslogdir/loxberryupdate/$logfilename" };
+qx { "chown loxberry:loxberry $logfilename" };
 
 # End of script
 exit($errors);
