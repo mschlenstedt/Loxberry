@@ -68,7 +68,7 @@ apt_update("clean");
 #
 if (-e "$lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc") {
 	LOGINF "Repair broken msmtp permissions from previous upgrade...";
-	system( "chown loxberry:loxberry $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
+	system( "chown -h loxberry:loxberry $lbhomedir/.msmtprc" );
 }
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
