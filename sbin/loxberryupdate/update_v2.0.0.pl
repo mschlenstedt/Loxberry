@@ -255,7 +255,7 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 			$mailobj->write();
 			LOGINF "Activating new msmtp configuration...";
 			system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
-			system( "chown loxberry:loxberry $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
+			system( "chown -h loxberry:loxberry $lbhomedir/.msmtprc" );
 		}
 
 	}
