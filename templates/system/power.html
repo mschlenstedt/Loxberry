@@ -132,7 +132,11 @@
 					showprogressbar();
 				} else if ( res.reboot_in_progress == 0 && was_offline == 1) {
 					$('.progress-bar').hide();
-					document.location.href="/";
+					if ( res.update_in_progress == 1 ) {
+						document.location.href="/updaterunning";
+					} else {
+						document.location.href="/";
+					}
 				}
 			  }
 		  };
