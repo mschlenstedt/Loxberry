@@ -247,7 +247,7 @@ sub save
 	
 	# Delete values if email is disabled
 	if (! $mcfg->{SMTP}->{ACTIVATE_MAIL}) {
-		unlink ("$lbhomedir/.msmtprc") or die();
+		system( "sudo $lbhomedir/sbin/setmail disable > /dev/null 2>&1" );
 		unlink ("$lbhomedir/system/msmtp/msmtprc") or die();
 		$R::smtpserver = "";
 		$R::smptport = "";
@@ -260,7 +260,7 @@ sub save
 		installtmpconfig();
 		sendtestmail() if (is_enabled($mcfg->{SMTP}->{ACTIVATE_MAIL}));
 		cleanuptmpconfig();
-		system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
+		system( "sudo $lbhomedir/sbin/setmail enable > /dev/null 2>&1" );
 		open(F,">$lbhomedir/system/msmtp/aliases");
 		flock(F,2);
 		print F "root: $R::email\n";
@@ -375,7 +375,7 @@ sub installtmpconfig
 		File::Copy::copy ("/tmp/tempmsmtprc.dat", "$lbhomedir/system/msmtp/msmtprc");
 		chmod 0600, "$lbhomedir/system/msmtp/msmtprc";
 		unlink "/tmp/tempmsmtprc.dat";
-		system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
+		system( "sudo $lbhomedir/sbin/setmail enable > /dev/null 2>&1" );
 	}
 		
 }
@@ -400,7 +400,7 @@ sub restoressmtpconfig
 	$mcfg = $mailobj->open(filename => $mailfile);
 
 	if (!$mcfg->{SMTP}->{ACTIVATE_MAIL}) {
-		unlink ( "$lbhomedir/.msmtprc" );
+		system( "sudo $lbhomedir/sbin/setmail disable > /dev/null 2>&1" );
 		unlink ( "$lbhomedir/system/msmtp/msmtprc" );
 	}
 
@@ -442,7 +442,7 @@ sub cleanuptmpconfig
 	
 	# Delete old temporary config file
 	if (-e "/tmp/tempmsmtprc.dat" && -f "/tmp/tempmsmtprc.dat" && !-l "/tmp/tempmsmtprc.dat" && -T "/tmp/tempmsmtprc.dat") {
-	  unlink ("/tmp/tempmsmtprc.dat");
+		unlink ("/tmp/tempmsmtprc.dat");
 	}
 
 }

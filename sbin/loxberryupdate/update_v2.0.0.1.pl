@@ -66,10 +66,13 @@ apt_update("clean");
 #
 # Repair broken msmtp permissions from 2.0.0.0
 #
+LOGINF "Repair broken msmtp permissions from previous upgrade...";
 if (-e "$lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc") {
-	LOGINF "Repair broken msmtp permissions from previous upgrade...";
-	system( "chown -h loxberry:loxberry $lbhomedir/.msmtprc" );
+	system( "ln -s $lbhomedir/system/msmtp/msmtprc /etc/msmtprc" );
+	#system( "chown -h loxberry:loxberry $lbhomedir/.msmtprc" );
+	unlink ( "$lbhomedir/.msmtprc" );
 }
+copy_to_loxberry("/system/sudoers/lbdefaults");
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";

@@ -254,8 +254,9 @@ if (-e "$lbhomedir/system/ssmtp/ssmtp.conf" ) {
 			$mcfg->{SMTP}->{EMAIL} = "$email";
 			$mailobj->write();
 			LOGINF "Activating new msmtp configuration...";
-			system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
-			system( "chown -h loxberry:loxberry $lbhomedir/.msmtprc" );
+			system( "ln -s $lbhomedir/system/msmtp/msmtprc /etc/msmtprc" );
+			#system( "ln -s $lbhomedir/system/msmtp/msmtprc $lbhomedir/.msmtprc" );
+			#system( "chown -h loxberry:loxberry $lbhomedir/.msmtprc" );
 		}
 
 	}
