@@ -10,11 +10,11 @@ MANUALCFG=`jq -r '.Log2ram.Manualconfigured' $LBHOMEDIR/config/system/general.js
 if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ]; then
 	echo "No manual config found. Using defaults..."
 	RAM_LOG=$LBHOMEDIR/log/ramlog
-	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ]; then
-		SIZE=50M
+	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ] || [ "$PIVERS" = 'type_2' ]; then
+		SIZE=80M
 		ZL2R=false
 		COMP_ALG=lz4
-		LOG_DISK_SIZE=50M
+		LOG_DISK_SIZE=80M
 	else
 		SIZE=120M
 		ZL2R=true
