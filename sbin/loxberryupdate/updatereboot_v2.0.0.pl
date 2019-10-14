@@ -358,10 +358,15 @@ if ($errors) {
 	}
 }
 
-# Continue with update
-LOGINF "Continue with updating...";
+# Continue with LoxBerry Update
+LOGINF "Continue with updating ...";
+$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+my $querytype = $syscfg->param('UPDATE.RELEASETYPE');
+if(!$querytype) {
+	$querytype = "release";
+}
 $log->close;
-system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=latest update=1 nofork=1 >> $logfilename 2>&1");
+system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=$querytype update=1 nofork=1 >> $logfilename 2>&1");
 $log->open;
 
 LOGOK "Update script $0 finished." if ($errors == 0);
