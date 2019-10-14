@@ -44,7 +44,7 @@ chown -Rc root:root $LBHOMEDIR/sbin
 chown -Rc root:root $LBHOMEDIR/system/logrotate
 chown -Rc root:root $LBHOMEDIR/system/php
 chown -Rc root:root $LBHOMEDIR/config/system/securepin.dat
-chown -Rc root:root $LBHOMEDIR/config/system/plugindatabase.json-
+chown -Rc root:root $LBHOMEDIR/data/system/plugindatabase.json-
 chown -Rc root:root $LBHOMEDIR/system/php
 chown -Rc loxberry:loxberry /var/log/apache2
 chown -Rc loxberry:loxberry /var/cache/apache2
