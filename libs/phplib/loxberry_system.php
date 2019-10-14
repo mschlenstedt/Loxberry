@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.0.2";
+	public static $LBSYSTEMVERSION = "2.0.0.3";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -264,15 +264,17 @@ class LBSystem
 	{
 		# If config file was read already, directly return the saved hash
 		global $clouddnsaddress, $msClouddnsFetched;
-		global $miniservers;
+		global $miniservers, $cfgwasread;
 		
 		if(!empty($msClouddnsFetched)) {
 			return $miniservers;
 		}
 		
-		if (empty($miniservers)) {
-			LBSystem::read_generalcfg();
-		}
+		if (isset($cfgwasread)) {
+			return $miniservers;
+		}	
+		
+		LBSystem::read_generalcfg();
 		
 		foreach ($miniservers as $msnr => $value) {
 			# CloudDNS handling
@@ -531,8 +533,10 @@ public static function plugindb_changed_time()
 		global $webserverport;
 		global $clouddnsaddress;
 		
-	#	print ("READ miniservers FROM DISK\n");
-
+		if(isset($cfgwasread)) { return; }
+	
+		# print ("READ miniservers FROM DISK\n");
+		
 		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
 		$cfgwasread = 1;
 		// error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
@@ -556,19 +560,19 @@ public static function plugindb_changed_time()
 		
 		for ($msnr = 1; $msnr <= $miniservercount; $msnr++) {
 			 
-			$miniservers[$msnr]['Name'] = $cfg["MINISERVER$msnr"]['NAME'];
-			$miniservers[$msnr]['IPAddress'] = $cfg["MINISERVER$msnr"]['IPADDRESS'];
-			$miniservers[$msnr]['Admin'] = $cfg["MINISERVER$msnr"]['ADMIN'];
-			$miniservers[$msnr]['Pass'] = $cfg["MINISERVER$msnr"]['PASS'];
-			$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
-			$miniservers[$msnr]['Note'] = $cfg["MINISERVER$msnr"]['NOTE'];
-			$miniservers[$msnr]['Port'] = $cfg["MINISERVER$msnr"]['PORT'];
-			$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
-			$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
-			$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];
-			$miniservers[$msnr]['Admin_RAW'] = urldecode($miniservers[$msnr]['Admin']);
-			$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
-			$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
+			@$miniservers[$msnr]['Name'] = $cfg["MINISERVER$msnr"]['NAME'];
+			@$miniservers[$msnr]['IPAddress'] = $cfg["MINISERVER$msnr"]['IPADDRESS'];
+			@$miniservers[$msnr]['Admin'] = $cfg["MINISERVER$msnr"]['ADMIN'];
+			@$miniservers[$msnr]['Pass'] = $cfg["MINISERVER$msnr"]['PASS'];
+			@$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
+			@$miniservers[$msnr]['Note'] = $cfg["MINISERVER$msnr"]['NOTE'];
+			@$miniservers[$msnr]['Port'] = $cfg["MINISERVER$msnr"]['PORT'];
+			@$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
+			@$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
+			@$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];
+			@$miniservers[$msnr]['Admin_RAW'] = urldecode($miniservers[$msnr]['Admin']);
+			@$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
+			@$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
 
 			$miniservers[$msnr]['SecureGateway'] = isset($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) && is_enabled($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) ? 1 : 0;
 			$miniservers[$msnr]['EncryptResponse'] = isset ($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) && is_enabled($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) ? 1 : 0;
