@@ -6,6 +6,8 @@ use JSON;
 use strict;
 no strict 'refs';
 
+my $version = "2.0.0.1";
+
 # Globals
 my @results;
 my @checks;
@@ -889,7 +891,7 @@ sub check_cputemp
 
 			if($bits[19]) {
 				$result{'status'} = '4';
-				$message = "(19) Since last reboot one or more times the cpu reached the soft temperature limit (this normally means 60 C). ";
+				$message = "(19) Since last reboot one or more times the cpu reached Raspberry's soft temperature limit (this normally means 60 C). ";
 			}
 		} else {
 			$message = "No history data (only available on Raspberrys). ";
@@ -910,21 +912,24 @@ sub check_cputemp
 			my $temp = qx(cat $sensor);
 			chomp $temp;
 			$temp = sprintf("%.1f", $temp/1000);
-			$message .= "Current CPU Temperature is $temp C. ";
-			my $errlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.90;
-			if ($temp > $errlimit) {
-				$message .= "This is NOT fine. ";
-				$result{'status'} = '3';
+			$message .= "Current CPU Temperature is $temp°C. ";
+			
+			if($cfgjson->{Watchdog}->{Maxtemp}) {
+				my $errlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.90;
+				if ($temp > $errlimit) {
+					$message .= "This reaches or nearly reaches your configured watchdog limit of $cfgjson->{Watchdog}->{Maxtemp}°C. This is NOT fine. ";
+					$result{'status'} = '3';
+				}
 			}
 		} else {
 			$message .= "Cannot read current cpu temperature. ";
 		}
 
-		if (!$result{'status'} && $getthrottled) {
-			$message .= "Since last reboot the cpu never reached soft or critical temperature limit. This is fine.";
-			$result{'status'} = '5';
+		if ($getthrottled) {
+			$message .= "Since last reboot the cpu never reached Raspberry's soft or critical temperature limit. This is fine.";
+			$result{'status'} = '5' if (!$result{'status'});
 		}
-		elsif (!$result{'status'} && !$getthrottled && $current) {
+		elsif (!$result{'status'}) {
 			$message .= "Current cpu temperature is fine.";
 			$result{'status'} = '5';
 		}
