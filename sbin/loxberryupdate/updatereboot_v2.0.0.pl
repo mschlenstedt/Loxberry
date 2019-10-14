@@ -225,6 +225,18 @@ if ($exitcode != 0) {
 	LOGOK "Dist-Upgrade successfully.";
 }
 
+LOGINF "Removing package 'AppArmor'...";
+$log->close;
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove apparmor >> $logfilename 2>&1 };
+$log->open;
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error occurred while removing packages - Error $exitcode";
+	$errors++;
+} else {
+	LOGOK "Packages removed successfully.";
+}
+
 LOGINF "Configuring PHP...";
 $log->close;
 if ( -e "/etc/php/7.0" ) {
