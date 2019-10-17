@@ -11,10 +11,10 @@ if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ]; then
 	echo "No manual config found. Using defaults..."
 	RAM_LOG=$LBHOMEDIR/log/ramlog
 	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ] || [ "$PIVERS" = 'type_2' ]; then
-		SIZE=80M
+		SIZE=200M
 		ZL2R=false
 		COMP_ALG=lz4
-		LOG_DISK_SIZE=80M
+		LOG_DISK_SIZE=200M
 	else
 		SIZE=120M
 		ZL2R=true
