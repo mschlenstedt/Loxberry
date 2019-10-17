@@ -21,12 +21,12 @@ if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ]; then
 		COMP_ALG=lz4
 		LOG_DISK_SIZE=250M
 	fi
-	JSON=`jq ".Ram2Log.Manualconfigured = \"0\"" $LBHOMEDIR/config/system/general.json`
-	JSON=`echo $JSON | jq ".Ram2Log.Ramlog = \"$RAM_LOG\""`
-	JSON=`echo $JSON | jq ".Ram2Log.Size = \"$SIZE\""`
-	JSON=`echo $JSON | jq ".Ram2Log.Zl2r = \"$ZL2R\""`
-	JSON=`echo $JSON | jq ".Ram2Log.Compalg = \"$COMP_ALG\""`
-	JSON=`echo $JSON | jq ".Ram2Log.Logdisksize = \"$LOG_DISK_SIZE\""`
+	JSON=`jq ".Log2ram.Manualconfigured = \"0\"" $LBHOMEDIR/config/system/general.json`
+	JSON=`echo $JSON | jq ".Log2ram.Ramlog = \"$RAM_LOG\""`
+	JSON=`echo $JSON | jq ".Log2ram.Size = \"$SIZE\""`
+	JSON=`echo $JSON | jq ".Log2ram.Zl2r = \"$ZL2R\""`
+	JSON=`echo $JSON | jq ".Log2ram.Compalg = \"$COMP_ALG\""`
+	JSON=`echo $JSON | jq ".Log2ram.Logdisksize = \"$LOG_DISK_SIZE\""`
 	echo $JSON | jq "." > $LBHOMEDIR/config/system/general.json.new
 	mv $LBHOMEDIR/config/system/general.json.new $LBHOMEDIR/config/system/general.json
 else
