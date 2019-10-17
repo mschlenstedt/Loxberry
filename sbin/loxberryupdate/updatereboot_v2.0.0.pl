@@ -365,9 +365,18 @@ my $querytype = $syscfg->param('UPDATE.RELEASETYPE');
 if(!$querytype) {
 	$querytype = "release";
 }
-$log->close;
-system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=$querytype update=1 nofork=1 >> $logfilename 2>&1");
-$log->open;
+#$log->close;
+#system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=$querytype update=1 nofork=1 >> $logfilename 2>&1");
+#$log->open;
+LOGINF "Continuing with Upgrade ON NEXT REBOOT.";
+open(F,">$lbhomedir/system/daemons/system/98-updaterebootcontinue");
+print F <<EOF;
+#!/bin/bash
+$lbhomedir/sbin/loxberryupdatecheck.pl querytype=$querytype update=1");
+rm $lbhomedir/system/daemons/system/98-updaterebootcontinue
+EOF
+close (F);
+qx { chmod +x $lbhomedir/system/daemons/system/98-updaterebootcontinue };
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
