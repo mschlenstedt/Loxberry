@@ -372,7 +372,7 @@ LOGINF "Continuing with Upgrade ON NEXT REBOOT.";
 open(F,">$lbhomedir/system/daemons/system/98-updaterebootcontinue");
 print F <<EOF;
 #!/bin/bash
-$lbhomedir/sbin/loxberryupdatecheck.pl querytype=$querytype update=1");
+$lbhomedir/sbin/loxberryupdatecheck.pl querytype=$querytype update=1
 rm $lbhomedir/system/daemons/system/98-updaterebootcontinue
 EOF
 close (F);
