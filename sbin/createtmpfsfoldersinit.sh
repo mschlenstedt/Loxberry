@@ -16,10 +16,10 @@ if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ]; then
 		COMP_ALG=lz4
 		LOG_DISK_SIZE=200M
 	else
-		SIZE=120M
+		SIZE=200M
 		ZL2R=true
 		COMP_ALG=lz4
-		LOG_DISK_SIZE=250M
+		LOG_DISK_SIZE=415M
 	fi
 	JSON=`jq ".Log2ram.Manualconfigured = \"0\"" $LBHOMEDIR/config/system/general.json`
 	JSON=`echo $JSON | jq ".Log2ram.Ramlog = \"$RAM_LOG\""`
