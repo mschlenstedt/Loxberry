@@ -30,7 +30,7 @@ system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/master.zi
 system("cd /lib && unzip /lib/master.zip");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
-        LOGWARN "Error extracting new firmware. This is a problem for PI4 only. Wifi may not work on the Pi4 - Error $exitcode";
+        LOGERR "Error extracting new firmware. This is a problem for PI4 only. Wifi may not work on the Pi4 - Error $exitcode";
 } else {
         LOGOK "Extracting of new firmware files successfully. Installing...";
 	system ("rm -r /lib/firmware");
