@@ -10,7 +10,7 @@ $settings['byte_notation'] = 1024; // Either 1024 or 1000; defaults to 1024
 $settings['dates'] = 'm/d/y h:i A (T)'; // Format for dates shown. See php.net/date for syntax
 $settings['language'] = 'en'; // Refer to the lang/ folder for supported languages
 $settings['icons'] = true; // simple icons
-$settings['theme'] = 'loxberry'; // Theme file (layout/theme_$n.css). Look at the contents of the layout/ folder for other themes.
+$settings['theme'] = 'default'; // Theme file (layout/theme_$n.css). Look at the contents of the layout/ folder for other themes.
 $settings['gzip'] = false; // Manually gzip output. Unneeded if your web server already does it.
 
 

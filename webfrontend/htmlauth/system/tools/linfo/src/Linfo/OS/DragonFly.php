@@ -1,22 +1,27 @@
 <?php
 
-/*
- * This file is part of Linfo (c) 2011 Joseph Gillotti.
+/* Linfo
  *
- * Linfo is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (c) 2018 Joe Gillotti
  *
- * Linfo is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with Linfo. If not, see <http://www.gnu.org/licenses/>.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
-*/
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 namespace Linfo\OS;
 
@@ -85,16 +90,16 @@ class DragonFly extends BSDcommon
         } catch (Exception $e) {
             Errors::add('Linfo Core', 'Error running `mount` command');
 
-            return array();
+            return [];
         }
 
         // Parse it
         if (preg_match_all('/^(\S+) on (\S+) \((\w+)(?:, (.+))?\)/m', $res, $m, PREG_SET_ORDER) == 0) {
-            return array();
+            return [];
         }
 
         // Store them here
-        $mounts = array();
+        $mounts = [];
 
         // Deal with each entry
         foreach ($m as $mount) {
@@ -117,7 +122,7 @@ class DragonFly extends BSDcommon
             ) {
                 $mount_options = explode(', ', $mount[4]);
             } else {
-                $mount_options = array();
+                $mount_options = [];
             }
 
             // Might be good, go for it
@@ -148,7 +153,7 @@ class DragonFly extends BSDcommon
         }
 
         // We'll return the contents of this
-        $return = array();
+        $return = [];
 
         // Start us off at zilch
         $return['type'] = 'Virtual';
@@ -156,7 +161,7 @@ class DragonFly extends BSDcommon
         $return['free'] = 0;
         $return['swapTotal'] = 0;
         $return['swapFree'] = 0;
-        $return['swapInfo'] = array();
+        $return['swapInfo'] = [];
 
         // Get swap
 
@@ -208,15 +213,15 @@ class DragonFly extends BSDcommon
         } catch (Exception $e) {
             Errors::add('Linfo Core', 'error using netstat');
 
-            return array();
+            return [];
         }
 
         // Store nics here
-        $nets = array();
+        $nets = [];
 
         // Match that up
         if (!preg_match_all('/^([\da-z]+\*?)\s+\d+\s+<Link#\d+>(?:\s+[a-z0-9:]+)?\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/m', $netstat, $netstat_m, PREG_SET_ORDER)) {
-            return array();
+            return [];
         }
 
         // Go through each match
@@ -297,7 +302,7 @@ class DragonFly extends BSDcommon
         }
 
         // Store them here
-        $cpus = array();
+        $cpus = [];
 
         // Stuff it with identical cpus
         for ($i = 0; $i < $this->sysctl['hw.ncpu']; ++$i) {
@@ -337,7 +342,7 @@ class DragonFly extends BSDcommon
             $t = new Timer('Batteries');
         }
 
-        return array();
+        return [];
     }
 
     // Get stats on processes
