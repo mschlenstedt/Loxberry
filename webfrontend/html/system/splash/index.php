@@ -3,7 +3,7 @@ require_once "loxberry_system.php";
 $SL = LBSystem::readlanguage(null, null, true);
 ?>
 <!DOCTYPE html>
-<html><head><meta name="GCD" content="YTk3ODQ3ZWZhN2I4NzZmMzBkNTEwYjJl3566d3c74adbd69c6269c2f8497679bd"/>
+<html><head>
   <meta charset="utf-8">
   <meta name="generator" content="Google Web Designer 7.0.0.0923">
   <meta name="template" content="Banner 3.0.0">
@@ -50,7 +50,7 @@ h.goToPreviousPage=function(a,c,b,d,e){var g=this.b,f=this.a.length,k=g-1;0>k&&(
 h.getCurrentPage=function(){return this.getPage(this.b)};h.getDefaultPage=function(){var a=this.getAttribute("default-page");return a?this.getPage(this.findPageIndexByAttributeValue("id",a)):this.getPage(0)};h.getOrientationSpecificPage=function(a,c){c=this.getPage(c);var b=c.getAttribute("alt-orientation-page");if(!b)return c;var d=c.isPortrait();a=1==a;b=this.getPage(b);return a==d?c:b};h.h=function(a,c){if(c.target==document.body){var b=this.getPage(this.b);u(a,b,c.detail)}};
 h.getElementById=function(a){for(var c=this.a.length,b=0;b<c;b++){var d=this.a[b].querySelector("#"+a);if(d)return d}return null};h.getElementsBySelector=function(a){for(var c=this.a.length,b=[],d=0;d<c;d++){var e=this.a[d].querySelectorAll(a);e&&(b=b.concat(Array.prototype.slice.call(e)))}return b};h.attributeChangedCallback=function(){};document.registerElement("gwd-pagedeck",{prototype:y.prototype});}).call(this);
 </script>
-  <script data-source="https://s0.2mdn.net/ads/studio/Enabler.js" data-exports-type="gwd-google-ad" src="https://s0.2mdn.net/ads/studio/Enabler.js"></script>
+  <script data-source="Enabler.js" data-exports-type="gwd-google-ad" src="Enabler.js"></script>
   <script data-source="gwdgooglead_min.js" data-version="6" data-exports-type="gwd-google-ad">(function(){'use strict';var g;var k=function(a,b){if(a.contains&&1==b.nodeType)return a==b||a.contains(b);if("undefined"!=typeof a.compareDocumentPosition)return a==b||!!(a.compareDocumentPosition(b)&16);for(;b&&a!=b;)b=b.parentNode;return b==a},l=function(a){return"gwd-page"==a.tagName.toLowerCase()||"gwd-page"==a.getAttribute("is")},m=function(a){if(l(a))return a;for(;a&&9!=a.nodeType;)if((a=a.parentElement)&&l(a))return a;return null};function n(){this.A={}}n.prototype.add=function(a,b){a="string"==typeof a?a:a.getString();this.A[a]||(this.A[a]=[]);this.A[a].push(b)};var p=function(a){var b=[],c="object"==typeof gwd&&"GwdId"in gwd,d;for(d in a.A)b.push(c?new gwd.GwdId(d):d);return b},q=function(a,b){return b?a.A["string"==typeof b?b:b.getString()]||[]:[]};function r(a,b){this.j=a;this.ba=b;this.H=this.L.bind(this)}r.prototype.observe=function(a){if(a.nodeType==Node.ELEMENT_NODE)for(var b=p(this.j),c=0;c<b.length;c++){var d=u(b[c]);if(d&&k(a,d)){var e=q(this.j,b[c]);e&&e.forEach(function(f){d.addEventListener(f.event,this.H,!1)}.bind(this))}}};var v=function(a,b){if(b.nodeType==Node.ELEMENT_NODE)for(var c=p(a.j),d=0;d<c.length;d++){var e=u(c[d]);if(e&&k(b,e)){var f=q(a.j,c[d]);f&&f.forEach(function(h){e.removeEventListener(h.event,this.H,!1)}.bind(a))}}};
 r.prototype.L=function(a){this.ba(a)};var u=function(a){return"string"==typeof a?document.getElementById(a):a.getElement(document)};document.registerElement("gwd-exit");document.registerElement("gwd-metric-event");document.registerElement("gwd-metric-configuration");document.registerElement("gwd-timer");var w=function(a,b,c){if(c){var d=document.createEvent("CustomEvent");d.initCustomEvent(a,!0,!0,c)}else d=document.createEvent("Event"),d.initEvent(a,!0,!0);b.dispatchEvent(d);return d};var x=function(a,b,c,d){for(var e=[],f=3;f<arguments.length;++f)e[f-3]=arguments[f];f=b.split(".");for(var h=a,t=0;h&&t<f.length;t++)h=h[f[t]];f=h&&"function"===typeof h[c]?h[c]:void 0;f&&f.apply(null,e)};var y=this||self,z=Date.now||function(){return+new Date},A=function(a,b){a=a.split(".");var c=y;a[0]in c||"undefined"==typeof c.execScript||c.execScript("var "+a[0]);for(var d;a.length&&(d=a.shift());)a.length||void 0===b?c=c[d]&&c[d]!==Object.prototype[d]?c[d]:c[d]={}:c[d]=b},B=function(a,b){function c(){}c.prototype=b.prototype;a.prototype=new c;a.prototype.constructor=a};var C=function(){this.Y=""};C.prototype.toString=function(){return"SafeScript{"+this.Y+"}"};C.prototype.g=function(a){this.Y=a};(new C).g("");var D=function(){this.$=""};D.prototype.toString=function(){return"SafeStyle{"+this.$+"}"};D.prototype.g=function(a){this.$=a};(new D).g("");var E=function(){this.Z=""};E.prototype.toString=function(){return"SafeStyleSheet{"+this.Z+"}"};E.prototype.g=function(a){this.Z=a};(new E).g("");var F=function(){this.X=""};F.prototype.toString=function(){return"SafeHtml{"+this.X+"}"};F.prototype.g=function(a){this.X=a};(new F).g("<!DOCTYPE html>");(new F).g("");(new F).g("<br>");Object.freeze&&Object.freeze([]);var G=function(a,b){var c=(c=y.performance)&&c.now&&c.timing?Math.floor(c.now()+c.timing.navigationStart):z();a={label:a,type:9,value:c};b=b.google_js_reporting_queue=b.google_js_reporting_queue||[];2048>b.length&&b.push(a)};var H={},I=!1,J=!1;H.na=function(a){I||(I=!0,G("11",a))};H.oa=function(a){J||(J=!0,G("12",a))};H.pa=function(a,b,c){var d=b;d=void 0===d?y:d;if(d=(d=d.performance)&&d.now?d.now():null)a={label:a,type:void 0===c?0:c,value:d},b=b.google_js_reporting_queue=b.google_js_reporting_queue||[],2048>b.length&&b.push(a)};H.reset=function(a){J=I=!1;(a.google_js_reporting_queue=a.google_js_reporting_queue||[]).length=0};A("gwd.rumUtil",H);A("gwd.rumUtil.logContentLoading",H.na);
 A("gwd.rumUtil.logContentRendered",H.oa);A("gwd.rumUtil.logTimingEvent",H.pa);A("gwd.rumUtil.reset",H.reset);var K=function(){};B(K,HTMLElement);g=K.prototype;
@@ -93,7 +93,7 @@ b.getAttribute("src")&&b.setAttribute("src","data:image/gif;base64,R0lGODlhAQABA
 </head>
 
 <body>
-  <gwd-google-ad id="gwd-ad" polite-load="">
+  <gwd-google-ad id="lbspl" polite-load="">
     <gwd-metric-configuration></gwd-metric-configuration>
     <gwd-pagedeck class="gwd-page-container" id="pagedeck">
       <gwd-page id="page1" class="gwd-page-wrapper gwd-page-size gwd-lightbox" data-gwd-width="700px" data-gwd-height="370px">
@@ -105,7 +105,7 @@ b.getAttribute("src")&&b.setAttribute("src","data:image/gif;base64,R0lGODlhAQABA
   </gwd-google-ad>
   <script type="text/javascript" id="gwd-init-code">
     (function() {
-      var gwdAd = document.getElementById('gwd-ad');
+      var gwdAd = document.getElementById('lbspl');
 
       /**
        * Handles the DOMContentLoaded event. The DOMContentLoaded event is
@@ -143,4 +143,4 @@ b.getAttribute("src")&&b.setAttribute("src","data:image/gif;base64,R0lGODlhAQABA
 
 
 <script data-exports-type="gwd-studio-registration">function StudioExports() {
-}</script><script type="text/gwd-admetadata">{"version":1,"type":"GoogleAd","format":"","template":"Banner 3.0.0","politeload":true,"fullscreen":false,"counters":[],"timers":[],"exits":[],"creativeProperties":{"minWidth":700,"minHeight":370,"maxWidth":700,"maxHeight":370},"components":["gwd-google-ad","gwd-image","gwd-page","gwd-pagedeck"],"responsive":false}</script></body></html>
+}</script><script type="text/lbsplmetadata">{"version":1,"type":"GoogleAd","format":"","template":"Banner 3.0.0","politeload":true,"fullscreen":false,"counters":[],"timers":[],"exits":[],"creativeProperties":{"minWidth":700,"minHeight":370,"maxWidth":700,"maxHeight":370},"components":["gwd-google-ad","gwd-image","gwd-page","gwd-pagedeck"],"responsive":false}</script></body></html>
