@@ -1,5 +1,7 @@
 <?php
 
+require_once "loxberry_system.php";
+
 // If you experience timezone errors, uncomment (remove //) the following line and change the timezone to your liking
 // date_default_timezone_set('America/New_York');
 
@@ -8,7 +10,8 @@
  */
 $settings['byte_notation'] = 1024; // Either 1024 or 1000; defaults to 1024
 $settings['dates'] = 'm/d/y h:i A (T)'; // Format for dates shown. See php.net/date for syntax
-$settings['language'] = 'en'; // Refer to the lang/ folder for supported languages
+//$settings['language'] = 'en'; // Refer to the lang/ folder for supported languages
+$settings['language'] = LBSystem::lblanguage(); // Refer to the lang/ folder for supported lanugages
 $settings['icons'] = true; // simple icons
 $settings['theme'] = 'loxberry'; // Theme file (layout/theme_$n.css). Look at the contents of the layout/ folder for other themes.
 $settings['gzip'] = false; // Manually gzip output. Unneeded if your web server already does it.
@@ -29,9 +32,9 @@ $settings['show']['load'] = true;
 $settings['show']['ram'] = true;
 $settings['show']['hd'] = true;
 $settings['show']['mounts'] = true;
-$settings['show']['mounts_options'] = false; // Might be useless/confidential information; disabled by default.
-$settings['show']['webservice'] = false; // Might be dangerous/confidential information; disabled by default.
-$settings['show']['phpversion'] = false; // Might be dangerous/confidential information; disabled by default.
+$settings['show']['mounts_options'] = true; // Might be useless/confidential information; disabled by default.
+$settings['show']['webservice'] = true; // Might be dangerous/confidential information; disabled by default.
+$settings['show']['phpversion'] = true; // Might be dangerous/confidential information; disabled by default.
 $settings['show']['network'] = true;
 $settings['show']['uptime'] = true;
 $settings['show']['cpu'] = true;
@@ -46,34 +49,34 @@ $settings['show']['virtualization'] = true; # whether this is a VPS/VM and what 
 // CPU Usage on Linux (per core and overall). This requires running sleep(1) once so it slows
 // the entire page load down. Enable at your own inconvenience, especially since the load averages
 // are more useful.
-$settings['cpu_usage'] = false;
+$settings['cpu_usage'] = true;
 
 // Sometimes a filesystem mount is mounted more than once. Only list the first one I see?
 // (note, duplicates are not shown twice in the file system totals)
 $settings['show']['duplicate_mounts'] = true;
 
 // Disabled by default as they require extra config below
-$settings['show']['temps'] = false;
+$settings['show']['temps'] = true;
 $settings['show']['raid'] = false;
 
 // Following are probably only useful on laptop/desktop/workstation systems, not servers, although they work just as well
 $settings['show']['battery'] = false;
-$settings['show']['sound'] = false;
-$settings['show']['wifi'] = false; # Not finished
+$settings['show']['sound'] = true;
+$settings['show']['wifi'] = true; # Not finished
 
 // Service monitoring
-$settings['show']['services'] = false;
+$settings['show']['services'] = true;
 
 /*
  * Misc settings pertaining to the above follow below:
  */
 
 // Hide certain file systems / devices
-$settings['hide']['filesystems'] = array(
-	'tmpfs', 'ecryptfs', 'nfsd', 'rpc_pipefs', 'proc', 'sysfs',
-	'usbfs', 'devpts', 'fusectl', 'securityfs', 'fuse.truecrypt',
-  'cgroup', 'debugfs', 'mqueue', 'hugetlbfs', 'pstore');
-$settings['hide']['storage_devices'] = array('gvfs-fuse-daemon', 'none', 'systemd-1', 'udev');
+//$settings['hide']['filesystems'] = array(
+//	'tmpfs', 'ecryptfs', 'nfsd', 'rpc_pipefs', 'proc', 'sysfs',
+//	'usbfs', 'devpts', 'fusectl', 'securityfs', 'fuse.truecrypt',
+//  'cgroup', 'debugfs', 'mqueue', 'hugetlbfs', 'pstore');
+//$settings['hide']['storage_devices'] = array('gvfs-fuse-daemon', 'none', 'systemd-1', 'udev');
 
 // filter mountpoints based on PCRE regex, eg '@^/proc@', '@^/sys@', '@^/dev@'
 $settings['hide']['mountpoints_regex'] = [];
@@ -82,7 +85,7 @@ $settings['hide']['mountpoints_regex'] = [];
 $settings['hide']['fs_mount_options'] = array('ecryptfs');
 
 // Hide hard drives that begin with /dev/sg?. These are duplicates of usual ones, like /dev/sd?
-$settings['hide']['sg'] = true; # Linux only
+$settings['hide']['sg'] = false; # Linux only
 
 // Set to true to not resolve symlinks in the mountpoint device paths. Eg don't convert /dev/mapper/root to /dev/dm-0
 $settings['hide']['dont_resolve_mountpoint_symlinks'] = false; # Linux only
@@ -93,8 +96,8 @@ $settings['raid']['gmirror'] = false;  # For FreeBSD
 $settings['raid']['mdadm'] = false;  # For Linux; known to support RAID 1, 5, and 6
 
 // Various ways of getting temps/voltages/etc. Set to true to enable. Currently these are just for Linux
-$settings['temps']['hwmon'] = true; // Requires no extra config, is fast, and is in /sys :)
-$settings['temps']['thermal_zone'] = false;
+$settings['temps']['hwmon'] = false; // Requires no extra config, is fast, and is in /sys :)
+$settings['temps']['thermal_zone'] = true;
 $settings['temps']['hddtemp'] = false;
 $settings['temps']['mbmon'] = false;
 $settings['temps']['sensord'] = false; // Part of lm-sensors; logs periodically to syslog. slow
@@ -129,12 +132,15 @@ $settings['additional_paths'] = array(
 
 // Format: Label => pid file path
 $settings['services']['pidFiles'] = array(
-	// 'Apache' => '/var/run/apache2.pid', // uncomment to enable
-	// 'SSHd' => '/var/run/sshd.pid'
+	 'Apache' => '/var/run/apache2/apache2.pid', // uncomment to enable
+	 'SSHd' => '/var/run/sshd.pid',
+	 'Samba (smbd)' => '/var/run/samba/smbd.pid',
+	 'Samba (nmbd)' => '/var/run/samba/nmbd.pid'
 );
 
 // Format: Label => path to executable or array containing arguments to be checked
 $settings['services']['executables'] = array(
+	 'Vsftpd' => '/usr/sbin/vsftpd' // uncomment to enable
 	// 'MySQLd' => '/usr/sbin/mysqld' // uncomment to enable
 	// 'BuildSlave' => array('/usr/bin/python', // executable
 	//						1 => '/usr/local/bin/buildslave') // argv[1]

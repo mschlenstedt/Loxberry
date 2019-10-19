@@ -216,7 +216,7 @@ echo '
 	<h1>'.$info['HostName'].'</h1>
 	<div class="subtitle">'.$lang['header'].'</div>
 </div>-->
-<div class="col2">
+<!--<div class="col2">-->
 	<div class="col">
 		<div class="infoTable">
 			<h2>'.$lang['core'].'</h2>
@@ -598,8 +598,8 @@ echo '
     }
 
         echo '
-	</div>
-	<div class="col">';
+	<!--</div>
+	<div class="col">-->';
 
     // Show hardware?
     if (!empty($settings['show']['devices'])) {
@@ -725,7 +725,7 @@ echo '
 
         echo '
 	</div>
-</div>';
+<!--</div>-->';
 
     // Show file system mounts?
     if (!empty($settings['show']['mounts'])) {
