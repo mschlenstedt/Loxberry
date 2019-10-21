@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if test $UID -ne 0; then
+        echo "This script has to be run as root. Exiting."
+        exit 1
+fi
+
+case "$1" in
+start)
+	openvpn --rmtun --dev tun99
+	openvpn --mktun --dev tun99 --dev-type tun --user loxberry --group loxberry
+	cp $LBHOMEDIR/system/supportvpn/securepin.dat.supportvpn $LBHOMEDIR/config/system
+	chown root:root $LBHOMEDIR/config/system/securepin.dat.supportvpn
+	chmod 600 $LBHOMEDIR/config/system/securepin.dat.supportvpn
+	sed -i 's:^supportvpn.*::g' $LBHOMEDIR/config/system/htusers.dat
+	cat $LBHOMEDIR/system/supportvpn/htpasswd.dat >> $LBHOMEDIR/config/system/htusers.dat
+	mkdir -p /root/.ssh
+	cat $LBHOMEDIR/system/supportvpn/id_rsa.pub >> /root/.ssh/authorized_keys
+;;
+
+stop)
+	rm -f $LBHOMEDIR/config/system/securepin.dat.supportvpn
+	sed -i '/supportvpn/d' $LBHOMEDIR/config/system/htusers.dat
+	sed -i '/supportvpn/d' /root/.ssh/authorized_keys
+;;
+
+*)
+	echo "Usage: $0 [start|stop]" >&2
+	exit 3
+	;;
+esac
+

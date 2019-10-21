@@ -363,7 +363,7 @@ LOGINF "Re-Install ssdpd service...";
 if ( -e "/etc/systemd/system/ssdpd.service" ) {
 	unlink ("/etc/systemd/system/ssdpd.service");
 }
-unlink ("$lbhomedir/data//system/ssdpd.service");
+unlink ("$lbhomedir/data/system/ssdpd.service");
 system ("ln -s $lbhomedir/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service");
 system ("/bin/systemctl daemon-reload");
 
