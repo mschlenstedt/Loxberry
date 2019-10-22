@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "2.0.0.6";
+our $VERSION = "2.0.0.7";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1278,6 +1278,27 @@ sub check_securepin
 			};
 	my $securepinsaved = <$fh>;
 	close ($fh);
+
+	# In case we have an active SupportVPN connmection
+	my $securepinsavedsupportvpn;;
+	if (-e "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn") {
+		# Check Online Status
+		use Net::Ping;
+		for (my $i=0; $i < 3; $i++) {
+			my $p = Net::Ping->new();
+			my $hostname = '10.98.98.1';
+			my ($ret, $duration, $ip) = $p->ping($hostname);
+			if (!$ret) {
+			sleep (1);
+				next;
+			} else {
+				open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn"); 
+				$securepinsavedsupportvpn = <$fh>;
+				close ($fh);
+				last;
+			}
+		}
+	}
 	
 	if (-e $pinerror_file) {
 		require LoxBerry::JSON;
@@ -1299,26 +1320,26 @@ sub check_securepin
 		undef $pinerrobj;
 	}
 	
-	if ( crypt($securepin, $securepinsaved) ne $securepinsaved ) {
-			# Not equal
-			require LoxBerry::JSON;
-			$pinerrobj = LoxBerry::JSON->new();
-			$pinerr = $pinerrobj->open(filename => $pinerror_file, writeonclose => 1);
-			$pinerr->{failure_count} = 0 if (! $pinerr->{failure_count});
-			sleep($pinerr->{failure_count});
-			$pinerr->{failure_count} += 1;
-			
-			$pinerr->{failure_time} = time if (! $pinerr->{failure_time});
-			if( $pinerr->{failure_count} > 5) {
-				print STDERR "SecurePIN was locked";
-				$pinerr->{locked} = time;
-				return (3);
-			}
-			return (1);
-	} else {
+	if ( crypt($securepin, $securepinsaved) eq $securepinsaved || crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
 		# OK
 		unlink $pinerror_file;
 		return (undef);
+	} else {
+		# Not equal
+		require LoxBerry::JSON;
+		$pinerrobj = LoxBerry::JSON->new();
+		$pinerr = $pinerrobj->open(filename => $pinerror_file, writeonclose => 1);
+		$pinerr->{failure_count} = 0 if (! $pinerr->{failure_count});
+		sleep($pinerr->{failure_count});
+		$pinerr->{failure_count} += 1;
+		
+		$pinerr->{failure_time} = time if (! $pinerr->{failure_time});
+		if( $pinerr->{failure_count} > 5) {
+			print STDERR "SecurePIN was locked";
+			$pinerr->{locked} = time;
+			return (3);
+		}
+		return (1);
 	}
 }
 
