@@ -17,7 +17,7 @@ init();
 LOGINF "Activating Root access via ssh with key authentication (paswword auth still forbidden).";
 system ("/bin/sed -i 's:^PermitRootLogin:#PermitRootLogin:g' /etc/ssh/sshd_config");
 system ("echo 'PermitRootLogin prohibit-password' >> /etc/ssh/sshd_config");
-system ("/bin/sed -i 's:^:PubkeyAuthentication:#PubkeyAuthentication:g' /etc/ssh/sshd_config");
+system ("/bin/sed -i 's:^PubkeyAuthentication:#PubkeyAuthentication:g' /etc/ssh/sshd_config");
 system ("echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config");
 
 LOGINF "Installing new sudoers file...";
