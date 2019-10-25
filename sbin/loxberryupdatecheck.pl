@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.4.0.1";
+my $scriptversion="2.0.0.1";
 
 my $release_url;
 my $oformat;
@@ -217,6 +217,7 @@ if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 if (version::is_lax($min_version)) {
 	$min_version = version->parse($min_version);
 	LOGINF "   Updates limited from : $min_version";
+	$joutput{'min_version'} = "$min_version";
 } else {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_INVALID_MIN_VERSION_PREFIX'} . $min_version . $SL{'UPDATES.UPGRADE_ERROR_INVALID_MIN_VERSION_SUFFIX'};
 	&err;
@@ -226,6 +227,7 @@ if (version::is_lax($min_version)) {
 if (version::is_lax($max_version)) {
 	$max_version = version->parse($max_version);
 	LOGINF "   Updates limited to   : $max_version";
+	$joutput{'max_version'} = "$max_version";
 } else {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_INVALID_MAX_VERSION_PREFIX'} . $max_version . $SL{'UPDATES.UPGRADE_ERROR_INVALID_MAX_VERSION_SUFFIX'};
 	&err;
@@ -235,36 +237,165 @@ if (version::is_lax($max_version)) {
 
 if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	LOGINF "Start checking releases...";
-	my ($release_version, $release_url, $release_name, $release_body, $release_published, $release_isprerelease) = check_releases($querytype, $lbversion);
-	if (! defined $release_url || $release_url eq "") {
+	check_releases($querytype, $lbversion);
+	
+} elsif ($querytype eq 'latest') {
+	LOGINF "Start checking commits...";
+	check_commits($querytype);
+				
+} else {
+	LOGINF "Nothing to do. Exiting";
+	exit 0;
+}
+
+exit;
+
+##################################################
+# Check Releases List
+# Parameters
+#		1. querytype ('release' or 'prerelease')
+#		2. Version object of current version
+# Returns
+#		1. $release_version (version object)
+#		2. $release->{zipball_url} (URL to the ZIP)
+#		3. $release->{name} (Name of the release)
+#		4. $release->{body}) (Description of the release)
+#		Returns undef if no new version found
+##################################################
+sub check_releases
+{
+
+	my ($querytype, $currversion) = @_;
+	my $endpoint = 'https://api.github.com';
+	my $resource = '/repos/mschlenstedt/Loxberry/releases';
+	#my $resource = '/repos/christianTF/LoxBerry-Plugin-SamplePlugin-V2-PHP/releases';
+
+	LOGINF "Checking for releases from $endpoint$resource";
+	my $release_version;
+	my $blocked_version;
+	
+	my $ua = LWP::UserAgent->new;
+	my $request = HTTP::Request->new(GET => $endpoint . $resource);
+	$request->header('Accept' => 'application/vnd.github.v3+json', 'Accept-Charset' => 'utf-8');
+	# LOGINF "Request: " . $request->as_string;
+	LOGINF "Requesting release list from GitHub...";
+    my $response;
+	for (my $x=1; $x<=5; $x++) {
+		LOGINF "   Try $x: Getting release list... (" . currtime() . ")"; 
+		$response = $ua->request($request);
+		last if ($response->is_success);
+		LOGWARN "   API call try $x has failed. (" . currtime() . ") HTTP " . $response->code . " " . $response->message;
+		usleep (100*1000);
+	}
+	
+	if ($response->is_error) {
+		$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_FETCHING_RELEASE_LIST'} . $response->code . " " . $response->message;
+		&err;
+		LOGCRIT $joutput{'error'};
+		exit(1);
+	}
+	LOGOK "Release list fetched.";
+	#LOGINF $response->decoded_content;
+	LOGINF "Parsing release list...";
+	my $releases = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
+	
+	my $release_safe; # this was thought to be safe, not save!
+	my $release_to_use;
+	
+	foreach my $release ( @$releases ) {
+		$release_version = undef;
+		#LOGINF "   Checking release version tag of " . $release->{tag_name};
+		if (!version::is_lax(vers_tag($release->{tag_name}))) {
+			LOGWARN "   check_releases: " . vers_tag($release->{tag_name}) . " seems not to be a correct version number. Skipping.";
+			next;
+		} else {
+			$release_version = version->parse(vers_tag($release->{tag_name}));
+		}
+		#split_version($release->{tag_name});
+		LOGINF "   Release version : $release_version";
+		
+		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
+			{ LOGOK "   Skipping pre-release because requested release type is RELEASE";
+			  next;
+		}
+		
+		if ($release_version < $min_version) {
+			LOGWARN "   Release $release_version is smaller min version ($min_version)";
+			next;
+		}
+
+		if($release_version > $max_version) {
+			LOGWARN "   Release $release_version is greater than allowed max version ($max_version)";
+			if(! defined $blocked_version || $blocked_version < $release_version) {
+				$blocked_version = $release_version;
+			}
+			next;
+		}
+		LOGOK "   Filter check passed.";
+		
+		
+		if (! $release_safe || version->parse($release_version) > version->parse(vers_tag($release_safe->{tag_name}))) {
+			$release_safe = $release;
+		}
+		
+		# Check against current version
+		LOGINF "   Current Version: $currversion <--> Release Version: $release_version";
+		if ($currversion == $release_version) {
+			LOGOK "   Skipping - this is the same version.";  
+			next;
+		}
+		if ($release_version < $currversion) {
+			LOGOK "  Skipping  - the release is older than current version.";
+			next;
+		}
+		
+		# At this point we know that the version is newer
+		LOGOK "Release $release_version is the newest.";
+	
+		$release_url = $release->{zipball_url};
+		$joutput{'release_new'} = 1;
+		$release_to_use = $release;
+		# return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at}, $release->{prerelease});
+		# return %return_param;
+		last;
+	}
+	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name};
+	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
+	
+	# Finished loop
+	if(! defined $joutput{'release_new'} || $joutput{'release_new'} eq "") {
+		LOGOK "No new version found: Latest version is " . vers_tag($release_safe->{tag_name});
+		$release_version = vers_tag($release_safe->{tag_name});
+		# $release_url = $release->{zipball_url};
 		$joutput{'info'} = $SL{'UPDATES.INFO_NO_NEW_VERSION_FOUND'};
 		$joutput{'release_version'} = "$release_version";
 		$joutput{'release_zipurl'} = "";
-		$joutput{'release_name'} = $release_name;
-		$joutput{'release_body'} = $release_body;
-		$joutput{'published_at'} = $release_published;
-		$joutput{'releasetype'} = $release_isprerelease eq 1 ? "prerelease" : "release";
+		$joutput{'release_name'} = $release_safe->{name};
+		$joutput{'release_body'} = $release_safe->{body};
+		$joutput{'published_at'} = $release_safe->{published_at};
+		$joutput{'releasetype'} = $release_safe->{prerelease} ? "prerelease" : "release";
+		$joutput{'blocked_version'} = "$blocked_version" if ($blocked_version);
 		
 		&err;
 		LOGOK $joutput{'info'};
 		exit 0;
 	}
-
+	
+	$release = $release_to_use;
 	LOGOK  "New version found:";
 	LOGINF "   Version     : $release_version";
-	LOGINF "   Name        : $release_name";
-	LOGINF "   Published   : $release_published";
-	LOGINF "   Releasetype : " . ($release_isprerelease eq 1 ? "Pre-Release" : "Release");
+	LOGINF "   Name        : $release->{name}";
+	LOGINF "   Published   : $release->{published_at}";
+	LOGINF "   Releasetype : " . ($release->{prerelease} eq 1 ? "Pre-Release" : "Release");
 		
 	$joutput{'info'} = $SL{'UPDATES.INFO_NEW_VERSION_FOUND'};
 	$joutput{'release_version'} = "$release_version";
 	$joutput{'release_zipurl'} = $release_url;
-	$joutput{'release_name'} = $release_name;
-	$joutput{'release_body'} = $release_body;
-	$joutput{'published_at'} = $release_published;
-	$joutput{'release_new'} = 1;
-	$joutput{'releasetype'} = $release_isprerelease eq 1 ? "prerelease" : "release";
-		
+	$joutput{'release_name'} = $release->{name};
+	$joutput{'release_body'} = $release->{body};
+	$joutput{'published_at'} = $release->{published_at};
+	$joutput{'releasetype'} = $release_safe->{prerelease} ? "prerelease" : "release";
+	$joutput{'blocked_version'} = "$blocked_version" if ($blocked_version);
 	
 	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
 		my @notifications = get_notifications( 'updates', 'lastnotifiedrelease');
@@ -307,10 +438,10 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		
 		LOGSTART "Update from $lbversion to $release_version";
 		LOGINF "   Version     : $release_version";
-		LOGINF "   Name        : $release_name";
-		LOGINF "   Description : $release_body";
-		LOGINF "   Published   : $release_published";
-		LOGINF "   Releasetype : " . ($release_isprerelease eq 1 ? "Pre-Release" : "Release");
+		LOGINF "   Name        : $release->{name}";
+		LOGINF "   Description : $release->{body}";
+		LOGINF "   Published   : $release->{published_at}";
+		LOGINF "   Releasetype : " . ($release->{prerelease} eq 1 ? "Pre-Release" : "Release");
 		
 		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
@@ -385,114 +516,6 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	
 	# LOGINF "ZIP URL: $release_url";
 	
-	} elsif ($querytype eq 'latest') {
-		LOGINF "Start checking commits...";
-		check_commits($querytype);
-				
-	} else {
-		LOGINF "Nothing to do. Exiting";
-		exit 0;
-	}
-
-exit;
-
-##################################################
-# Check Releases List
-# Parameters
-#		1. querytype ('release' or 'prerelease')
-#		2. Version object of current version
-# Returns
-#		1. $release_version (version object)
-#		2. $release->{zipball_url} (URL to the ZIP)
-#		3. $release->{name} (Name of the release)
-#		4. $release->{body}) (Description of the release)
-#		Returns undef if no new version found
-##################################################
-sub check_releases
-{
-
-	my ($querytype, $currversion) = @_;
-	my $endpoint = 'https://api.github.com';
-	my $resource = '/repos/mschlenstedt/Loxberry/releases';
-	#my $resource = '/repos/christianTF/LoxBerry-Plugin-SamplePlugin-V2-PHP/releases';
-
-	LOGINF "Checking for releases from $endpoint$resource";
-	my $release_version;
-
-	my $ua = LWP::UserAgent->new;
-	my $request = HTTP::Request->new(GET => $endpoint . $resource);
-	$request->header('Accept' => 'application/vnd.github.v3+json', 'Accept-Charset' => 'utf-8');
-	# LOGINF "Request: " . $request->as_string;
-	LOGINF "Requesting release list from GitHub...";
-    my $response;
-	for (my $x=1; $x<=5; $x++) {
-		LOGINF "   Try $x: Getting release list... (" . currtime() . ")"; 
-		$response = $ua->request($request);
-		last if ($response->is_success);
-		LOGWARN "   API call try $x has failed. (" . currtime() . ") HTTP " . $response->code . " " . $response->message;
-		usleep (100*1000);
-	}
-	
-	if ($response->is_error) {
-		$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_FETCHING_RELEASE_LIST'} . $response->code . " " . $response->message;
-		&err;
-		LOGCRIT $joutput{'error'};
-		exit(1);
-	}
-	LOGOK "Release list fetched.";
-	#LOGINF $response->decoded_content;
-	LOGINF "Parsing release list...";
-	my $releases = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
-	
-	my $release_safe; # this was thought to be safe, not save!
-	
-	foreach my $release ( @$releases ) {
-		$release_version = undef;
-		#LOGINF "   Checking release version tag of " . $release->{tag_name};
-		if (!version::is_lax(vers_tag($release->{tag_name}))) {
-			LOGWARN "   check_releases: " . vers_tag($release->{tag_name}) . " seems not to be a correct version number. Skipping.";
-			next;
-		} else {
-			$release_version = version->parse(vers_tag($release->{tag_name}));
-		}
-		#split_version($release->{tag_name});
-		LOGINF "   Release version : $release_version";
-		
-		if ($release_version < $min_version || $release_version > $max_version) {
-			LOGWARN "   Release $release_version is outside min or max version ($min_version/$max_version)";
-			next;
-		}
-		LOGOK "   Filter check passed.";
-		
-		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
-			{ LOGOK "   Skipping pre-release because requested release type is RELEASE";
-			  next;
-		}
-		
-		if (! $release_safe || version->parse($release_version) > version->parse(vers_tag($release_safe->{tag_name}))) {
-			$release_safe = $release;
-		}
-		
-		# Check against current version
-		LOGINF "   Current Version: $currversion <--> Release Version: $release_version";
-		if ($currversion == $release_version) {
-			LOGOK "   Skipping - this is the same version.";  
-			next;
-		}
-		if ($release_version < $currversion) {
-			LOGOK "  Skipping  - the release is older than current version.";
-			next;
-		}
-		
-		# At this point we know that the version is newer
-		LOGOK "This release $release_version is the newest.";
-
-		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at}, $release->{prerelease});
-	}
-	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name};
-	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
-	LOGOK "No new version found: Latest version is " . vers_tag($release_safe->{tag_name});
-	return (vers_tag($release_safe->{tag_name}), undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at}, $release_safe->{prerelease});
 }
 
 
