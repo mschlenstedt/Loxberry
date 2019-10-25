@@ -27,6 +27,20 @@ copy_to_loxberry("/system/sudoers/lbdefaults", "root");
 LOGINF "Installing new daemon for remote support...";
 copy_to_loxberry("/system/daemons/system/04-remotesupport", "root");
 
+LOGINF "Updating /boot/config.txt for Pi4...";
+system (" cat /boot/config.txt | grep '\\[pi4\\]' ");
+$exitcode  = $? >> 8;
+if ($exitcode) {
+        open (F, ">>" , "/boot/config.txt");
+        print F "\n[pi4]\n";
+        print F "# Enable DRM VC4 V3D driver on top of the dispmanx display stack\n";
+        print F "dtoverlay=vc4-fkms-v3d\n";
+        print F "max_framebuffers=2\n\n";
+        print F "[all]\n";
+        print F "#dtoverlay=vc4-fkms-v3d\n";
+        close (F);
+}
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");
