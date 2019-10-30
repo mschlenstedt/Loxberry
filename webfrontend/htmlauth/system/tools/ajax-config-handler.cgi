@@ -6,7 +6,7 @@ use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
 use LoxBerry::JSON;
 			
-my $version = "2.0.0.1"; # Version of this script
+my $version = "2.0.0.2"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -42,6 +42,7 @@ elsif ($action eq 'lbupdate-installtype') { &lbupdate; }
 elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') {  &lbupdate; }
+elsif ($action eq 'lbupdate-updateself') {  &lbupdate; }
 elsif ($action eq 'lbupdate-resetver') { change_generalcfg("BASE.VERSION", $value) if ($value); }
 elsif ($action eq 'plugin-loglevel') { plugindb_update('loglevel', $R::pluginmd5, $R::value); }
 elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
@@ -255,6 +256,26 @@ sub lbupdate
 		}
 	return;
 	}
+
+	if ($action eq 'lbupdate-updateself') {
+		my $output = qx { sudo $lbhomedir/sbin/loxberryupdatecheck.pl querytype=updateself};
+		my $ret = $? >> 8;
+		if($ret != 0) {
+			require LoxBerry::Web;
+			$response{error} = 1;
+			$response{logfile_button_html} = LoxBerry::Web::logfile_button_html( PACKAGE => 'LoxBerry Update', NAME => 'check' );
+		} else {
+			$response{error} = 0;
+		}	
+		$response{customresponse} = 0;
+		$response{output} = $output;
+
+		return;
+	}
+
+
+
+
 }
 
 ############################################

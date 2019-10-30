@@ -40,7 +40,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="2.0.0.1";
+my $scriptversion="2.0.0.2";
 
 my $release_url;
 my $oformat;
@@ -999,12 +999,12 @@ sub update_loxberryupdatecheck
 {
 	
 	my $selfurl_check = "https://raw.githubusercontent.com/mschlenstedt/Loxberry/$branch/sbin/loxberryupdatecheck.pl";
-	my $selfurl_update = "https://raw.githubusercontent.com/mschlenstedt/Loxberry/$branch/sbin/loxberryupdate.pl";
+	# my $selfurl_update = "https://raw.githubusercontent.com/mschlenstedt/Loxberry/$branch/sbin/loxberryupdate.pl";
 	my $localtmpdir = "/tmp";
 	my $errors = 0;
 	
 	LOGDEB "Update-URL for loxberryupdatecheck is $selfurl_check";
-	LOGDEB "Update-URL for loxberryupdate is $selfurl_update";
+	# LOGDEB "Update-URL for loxberryupdate is $selfurl_update";
 	
 	LOGINF "Deleting old temporary files in $localtmpdir";
 	unlink "$localtmpdir/loxberryupdatecheck.pl";
@@ -1024,15 +1024,15 @@ sub update_loxberryupdatecheck
 		LOGOK "New lbupdatecheck version downloaded.";
 	}
 	
-	LOGINF "Requesting current lbupdate version of branch $branch";
+	# LOGINF "Requesting current lbupdate version of branch $branch";
 		
-	`wget $selfurl_update -P /tmp`;
-	if (! -e "$localtmpdir/loxberryupdate.pl") {
-		LOGWARN "Could not download current lbupdate version.";
-		$errors++;
-	} else {
-		LOGOK "New lbupdatecheck version downloaded.";
-	}
+	# `wget $selfurl_update -P /tmp`;
+	# if (! -e "$localtmpdir/loxberryupdate.pl") {
+		# LOGWARN "Could not download current lbupdate version.";
+		# $errors++;
+	# } else {
+		# LOGOK "New lbupdatecheck version downloaded.";
+	# }
 	
 	# Check if it compiles without errors
 	LOGINF "Checking downloaded files with Perl compiler for errors";
@@ -1070,31 +1070,33 @@ sub update_loxberryupdatecheck
 	$output = undef;
 	$ret = undef;
 	
-	$output = `perl -c $localtmpdir/loxberryupdate.pl`;
-	$ret = $? >> 8;
-	if( $ret != 0 ) {
-		LOGERR "Perl test compiler for lbupdate returned an error:";
-		LOGDEB $output;
-		LOGERR "lbupdate is not replaced with the new version, as it would fail on your LoxBerry";
-		$errors++;
-	} else { 
-		LOGOK "Perl test compiler returned no error.";
-		LOGINF "Replacing loxberryupdate.pl...";
-		if($dryrun or $keepinstallfiles) {
-			LOGWARN "Nothing is done, as dryrun or keepinstallfiles is set";
-		} else {
-			$output = `cp -f $localtmpdir/loxberryupdate.pl $lbhomedir/sbin/`;
-			$ret = $? >> 8;
-			if($ret != 0) {
-				LOGERR "Could not copy file: $output";
-				$errors++;
-			} else {
-				LOGOK "File replaced.";
-			}
-			`chown root:root $lbhomedir/sbin/loxberryupdate.pl`;
-			`chmod  755 $lbhomedir/sbin/loxberryupdate.pl`;
-		}
-	}
+	# $output = `perl -c $localtmpdir/loxberryupdate.pl`;
+	# $ret = $? >> 8;
+	# if( $ret != 0 ) {
+		# LOGERR "Perl test compiler for lbupdate returned an error:";
+		# LOGDEB $output;
+		# LOGERR "lbupdate is not replaced with the new version, as it would fail on your LoxBerry";
+		# $errors++;
+	# } else { 
+		# LOGOK "Perl test compiler returned no error.";
+		# LOGINF "Replacing loxberryupdate.pl...";
+		# if($dryrun or $keepinstallfiles) {
+			# LOGWARN "Nothing is done, as dryrun or keepinstallfiles is set";
+		# } else {
+			# $output = `cp -f $localtmpdir/loxberryupdate.pl $lbhomedir/sbin/`;
+			# $ret = $? >> 8;
+			# if($ret != 0) {
+				# LOGERR "Could not copy file: $output";
+				# $errors++;
+			# } else {
+				# LOGOK "File replaced.";
+			# }
+			# `chown root:root $lbhomedir/sbin/loxberryupdate.pl`;
+			# `chmod  755 $lbhomedir/sbin/loxberryupdate.pl`;
+		# }
+	# }
+	
+	# Debugging
 	
 	if($errors > 0) {
 		exit(1);
@@ -1102,13 +1104,6 @@ sub update_loxberryupdatecheck
 	exit(0);
 	
 }
-
-
-
-
-
-
-
 
 sub err
 {

@@ -169,8 +169,19 @@
 <div id="script_failed_block" style="border:1px solid red; background:yellow; display:none;">
 	<TMPL_VAR UPDATES.LBU_SCRIPT_FAILED>
 	<a id="script_failed_versreset" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR UPDATES.LBU_BUTTON_SCRIPT_FAILED_VERSRESET>&nbsp;<span id="failed_version"></span></a>
+</div>
+<div id="update_clearance_block" style="border:1px solid red; background:yellow; display:none;padding:20px 20px 20px 20px;">
+		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE>
+	<p>
+		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_CURRENT>:&nbsp;<span id="lbu_update_clearance_vers_current"></span><br>
+		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_MAX>:&nbsp;<span id="lbu_update_clearance_vers_max"></span><br>
+		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_BLOCKED>:&nbsp;<span id="lbu_update_clearance_vers_blocked"></span>
+	</p>
+
+	<a id="update_clearance_ok" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATE_CLEARANCE></a>
 
 </div>
+
 <div class="divTable">
 <div class="divTableBody">
 <div class="divTableRow" style="overflow:hidden; text-overflow:ellipsis; width:100%;">
@@ -324,8 +335,6 @@ $(document).ready( function () {
 			if( failed_ver.charAt( 0 ).toLowerCase() === 'v' )
 				failed_ver = failed_ver.slice( 1 );
 			var reset_ver = ver_minus_one(failed_ver);		
-	//		var val = $("input[name='option-installtime']:checked").val();
-//		var val2 = $("input[name='option-installtype']:checked").val();
 			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-resetver", value: reset_ver }})
 			.done(function() { 
 				$("#current_version").text(reset_ver);
@@ -335,7 +344,28 @@ $(document).ready( function () {
 		}
 		
 	});
-
+	
+	$("#update_clearance_ok").click(function(){
+		$("#update_clearance_block").html('<span style="color:green;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span>');
+		
+		$.getJSON(
+		"/admin/system/tools/ajax-config-handler.cgi", 
+		{ action: "lbupdate-updateself", value: 1 })
+		.done(function(data){
+			if (data.error) {
+				err_str = "Error updating LoxBerry Update scripts";
+				if(data.output) 
+					err_str += "<br>"+data.output;
+				if(data.logfile_button_html)
+					err_str += "<p>"+data.logfile_button_html+"</p>";
+				$("#update_clearance_block").html(err_str);
+ 			} else {
+				$("#update_clearance_block").html("LoxBerry Update updated successfully - refreshing");
+				location.reload();
+ 			}
+		});
+	});
+	
  });
  
  function ver_minus_one(vers) 
@@ -371,6 +401,16 @@ $(document).ready( function () {
 			if (data.failed_script) {
 				$("#failed_version").text(data.failed_script);
 				$("#script_failed_block").fadeIn();
+				$("#update_clearance_block").fadeOut();
+			} else if(data.blocked_version) {
+				$("#script_failed_block").fadeOut();
+				$("#failed_version").text("");
+				$("#lbu_update_clearance_vers_current").text($("#current_version").text());
+				$("#lbu_update_clearance_vers_max").text(data.max_version);
+				$("#lbu_update_clearance_vers_blocked").text(data.blocked_version);
+				$("#update_clearance_block").fadeIn();
+				
+			
 			} else {
 				$("#script_failed_block").fadeOut();
 				$("#failed_version").text("");
