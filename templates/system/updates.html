@@ -177,7 +177,9 @@
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_MAX>:&nbsp;<span id="lbu_update_clearance_vers_max"></span><br>
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_BLOCKED>:&nbsp;<span id="lbu_update_clearance_vers_blocked"></span>
 	</p>
-
+	<p>
+		<h3 id="first_blocked_name"></h3>
+		<p id="first_blocked_body"></p>
 	<a id="update_clearance_ok" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATE_CLEARANCE></a>
 
 </div>
@@ -408,6 +410,9 @@ $(document).ready( function () {
 				$("#lbu_update_clearance_vers_current").text($("#current_version").text());
 				$("#lbu_update_clearance_vers_max").text(data.max_version);
 				$("#lbu_update_clearance_vers_blocked").text(data.blocked_version);
+				$("#first_blocked_name").text(data.first_blocked_name);
+				$("#first_blocked_body").html(urlify(data.first_blocked_body).replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
+				
 				$("#update_clearance_block").fadeIn();
 				
 			
@@ -450,7 +455,9 @@ $(document).ready( function () {
 					release_name_details = release_name_details + "<hr>";
 					$('#lbu_release_name').html(release_name_details.replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
 				}
-				if (data.release_body) $('#lbu_release_body').html(data.release_body);
+				if (data.release_body) {
+					$('#lbu_release_body').html(urlify(data.release_body).replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
+				}
 				if (data.published_at) {
 					publishdate = new Date(data.published_at);
 					$('#lbu_published_at').html("<TMPL_VAR UPDATES.LBU_LABEL_PUBLISHED_AT> " + publishdate.toLocaleString());
@@ -526,7 +533,21 @@ $(document).ready( function () {
 		});
 }
 
+
+// Create a link from a http link string
+// https://stackoverflow.com/a/1500501/3466839
+function urlify(text) {
+    var urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, function(url) {
+        return '<a href="' + url + '">' + url + '</a>';
+    })
+    // or alternatively
+    // return text.replace(urlRegex, '<a href="$1">$1</a>')
+}
+
+
 </script>
+
 </TMPL_IF>
 
 <TMPL_IF lbuhistory>

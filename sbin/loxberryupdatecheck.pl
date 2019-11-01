@@ -327,12 +327,15 @@ sub check_releases
 			LOGWARN "   Release $release_version is smaller min version ($min_version)";
 			next;
 		}
-
+		
 		if($release_version > $max_version) {
 			LOGWARN "   Release $release_version is greater than allowed max version ($max_version)";
 			if(! defined $blocked_version || $blocked_version < $release_version) {
 				$blocked_version = $release_version;
 			}
+			$joutput{'first_blocked_version'} = vers_tag($release->{tag_name});
+			$joutput{'first_blocked_name'} = $release->{name};
+			$joutput{'first_blocked_body'} = $release->{body};
 			next;
 		}
 		LOGOK "   Filter check passed.";
