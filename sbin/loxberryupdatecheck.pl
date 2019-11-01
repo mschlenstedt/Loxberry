@@ -26,6 +26,7 @@
 use LoxBerry::System;
 #use LoxBerry::Web;
 use LoxBerry::Log;
+use LoxBerry::JSON;
 use strict;
 use warnings;
 use CGI;
@@ -40,7 +41,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="2.0.0.2";
+my $scriptversion="2.0.0.3";
 
 my $release_url;
 my $oformat;
@@ -53,7 +54,7 @@ my $download_path = '/tmp';
 my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
 my $min_version = "v0.3.0";
-my $max_version = "v2.99.99";
+# my $max_version = "v2.99.99";
 
 my $querytype;
 my $update;
@@ -203,9 +204,34 @@ LOGINF "   output: " . $formatjson;
 LOGINF "   release param: " . $release if ($release);
 
 my $lbversion;
+my $max_version;
+my $major_version;
+my $jsonobj;
+my $generaljson;
+
 if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 	$lbversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
 	LOGINF "   Current LoxBerry version: $lbversion";
+	
+	# Get or calculate max_version
+	#
+	
+	eval {
+		$jsonobj = LoxBerry::JSON->new();
+		$generaljson = $jsonobj->open(filename => $lbsconfigdir."/general.json");
+		$max_version = vers_tag($generaljson->{Update}->{max_version}) if($generaljson->{Update}->{max_version});
+		LOGINF "   max_version $max_version read from general.json" if($max_version);
+	};
+	if($@) {
+		LOGWARN "Failed to read max_version from general.json: $@";
+	} 
+	$major_version = int $lbversion->numify();
+	if (! $max_version) {
+		# Get the major version of current version
+		# LOGDEB "Current major is $major_version";
+		$max_version = "v$major_version.99.99" if ($major_version);
+		LOGINF "   max_version $max_version calculated from current version" if ($max_version);
+	}
 
 } else {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_CANNOT_READ_CURRENT_VERSION'};
@@ -228,6 +254,7 @@ if (version::is_lax($max_version)) {
 	$max_version = version->parse($max_version);
 	LOGINF "   Updates limited to   : $max_version";
 	$joutput{'max_version'} = "$max_version";
+	$joutput{'max_version_next'} = "v".($major_version+1).".99.99";
 } else {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_INVALID_MAX_VERSION_PREFIX'} . $max_version . $SL{'UPDATES.UPGRADE_ERROR_INVALID_MAX_VERSION_SUFFIX'};
 	&err;

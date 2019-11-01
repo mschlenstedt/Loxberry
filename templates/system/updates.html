@@ -176,6 +176,7 @@
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_CURRENT>:&nbsp;<span id="lbu_update_clearance_vers_current"></span><br>
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_MAX>:&nbsp;<span id="lbu_update_clearance_vers_max"></span><br>
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_BLOCKED>:&nbsp;<span id="lbu_update_clearance_vers_blocked"></span>
+		<span style="display:none;" id="lbu_update_clearance_max_version_next"></span>
 	</p>
 	<p>
 		<h3 id="first_blocked_name"></h3>
@@ -347,6 +348,9 @@ $(document).ready( function () {
 		
 	});
 	
+
+/*
+	// Old function, that triggered to update lbupdatecheck.pl from master
 	$("#update_clearance_ok").click(function(){
 		$("#update_clearance_block").html('<span style="color:green;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span>');
 		
@@ -369,6 +373,35 @@ $(document).ready( function () {
 	});
 	
  });
+ 
+ */
+ 
+	$("#update_clearance_ok").click(function(){
+		lbu_update_clearance_max_version_next = $("#lbu_update_clearance_max_version_next").text();
+				
+		$("#update_clearance_block").html('<span style="color:green;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span>');
+		
+		console.log("#lbu_update_clearance_max_version_next", lbu_update_clearance_max_version_next);
+		$.getJSON(
+		"/admin/system/tools/ajax-config-handler.cgi", 
+		{ action: "lbupdate-setmaxversion", value: lbu_update_clearance_max_version_next })
+		.done(function(data){
+			if (data.error) {
+				err_str = "Error updating LoxBerry Update scripts";
+				if(data.output) 
+					err_str += "<br>"+data.output;
+				$("#update_clearance_block").html(err_str);
+ 			} else {
+				$("#update_clearance_block").html("LoxBerry Update updated successfully - refreshing");
+				location.reload();
+ 			}
+		});
+	});
+	
+ });
+
+
+
  
  function ver_minus_one(vers) 
  {
@@ -409,6 +442,7 @@ $(document).ready( function () {
 				$("#failed_version").text("");
 				$("#lbu_update_clearance_vers_current").text($("#current_version").text());
 				$("#lbu_update_clearance_vers_max").text(data.max_version);
+				$("#lbu_update_clearance_max_version_next").text(data.max_version_next);
 				$("#lbu_update_clearance_vers_blocked").text(data.blocked_version);
 				$("#first_blocked_name").text(data.first_blocked_name);
 				$("#first_blocked_body").html(urlify(data.first_blocked_body).replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
@@ -488,10 +522,7 @@ $(document).ready( function () {
 				$("#GitHub").prop("href","https://github.com/mschlenstedt/Loxberry/commits/master"); 
 			}
 			
-			
-			
-			
-			});
+		});
  }
  
  function clearVersion()
@@ -510,6 +541,9 @@ $(document).ready( function () {
 	$("#keepupdatefiles").text("");
 	$("#keepinstallfiles").text("");
 	$("#branch").text("");
+	$("#update_clearance_block").fadeOut();
+	$("#script_failed_block").fadeOut();
+	
  }
  
  function installUpdate()
