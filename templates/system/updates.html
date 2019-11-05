@@ -387,12 +387,12 @@ $(document).ready( function () {
 		{ action: "lbupdate-setmaxversion", value: lbu_update_clearance_max_version_next })
 		.done(function(data){
 			if (data.error) {
-				err_str = "Error updating LoxBerry Update scripts";
+				err_str = "Error updating the allowed maximum version.";
 				if(data.output) 
 					err_str += "<br>"+data.output;
 				$("#update_clearance_block").html(err_str);
  			} else {
-				$("#update_clearance_block").html("LoxBerry Update updated successfully - refreshing");
+				$("#update_clearance_block").html("Allowed maximum version updated successfully - refreshing");
 				location.reload();
  			}
 		});
