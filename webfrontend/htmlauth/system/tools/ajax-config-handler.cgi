@@ -6,7 +6,7 @@ use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
 use LoxBerry::JSON;
 			
-my $version = "1.4.0.4"; # Version of this script
+my $version = "1.4.3.1"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -43,6 +43,7 @@ elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') {  &lbupdate; }
 elsif ($action eq 'lbupdate-resetver') { change_generalcfg("BASE.VERSION", $value) if ($value); }
+elsif ($action eq 'lbupdate-setmaxversion') { change_generaljson("Update->max_version", $value) ; }
 elsif ($action eq 'plugin-loglevel') { plugindb_update('loglevel', $R::pluginmd5, $R::value); }
 elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
 elsif ($action eq 'testenvironment') {  &testenvironment; }
@@ -499,6 +500,47 @@ sub change_generalcfg
 	return 1;
 }
 
+###################################################################
+# change general.json (internal function)
+###################################################################
+sub change_generaljson
+{
+	require LoxBerry::JSON;
+	$LoxBerry::JSON::DEBUG = 1;
+	my ($key, $val) = @_;
+	if (!$key) {
+		return undef;
+	}
+	my $jsonobj = LoxBerry::JSON->new();
+	my $cfg = $jsonobj->open(filename => "$lbsconfigdir/general.json") or return undef;
+
+	my @keytree = split /->/, $key;
+	my $currelem = $cfg;
+
+	for my $elem ( 0 ... (scalar @keytree)-2 ) {
+		if(! $currelem->{$keytree[$elem]}) {
+			# print STDERR "Tree element $keytree[$elem] not existing -> creating\n";
+			my %newtree = ();
+			$currelem->{$keytree[$elem]} = \%newtree;
+			$currelem = $currelem->{$keytree[$elem]};
+		} else {
+			$currelem = $currelem->{$keytree[$elem]};
+		}
+	}
+	
+	if (!$val) {
+		# print STDERR "Deleting value\n";
+		# $currelem->{$keytree[-1]} = undef;
+		delete $currelem->{$keytree[-1]};
+	} else {
+		$currelem->{$keytree[-1]} = $val;
+	}
+	
+	$jsonobj->write();
+	$response{error} = 0;
+	$response{message} = "OK";
+	return 1;
+}
 
 END {
 
