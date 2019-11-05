@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "1.4.1.1";
+our $VERSION = "2.0.0.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -635,6 +635,7 @@ sub mslist_select_html
 	
 	my $datamini;
 	my $selected;
+	my $html;
 	
 	if($p{DATA_MINI} eq "0" ) {
 		$datamini = "false";
@@ -647,16 +648,24 @@ sub mslist_select_html
 	
 	my %miniservers;
 	%miniservers = LoxBerry::System::get_miniservers();
-	if (! %miniservers) {
-		return ('<div>No Miniservers defined</div>');
-	}
-	if (! $miniservers{$p{SELECTED}}) {
+	
+	if (%miniservers and ! $miniservers{$p{SELECTED}}) {
 		$p{SELECTED} = '1';
 	}
 	
-	$miniservers{$p{SELECTED}}{_selected} = 'selected="selected"';
+	$miniservers{$p{SELECTED}}{_selected} = 'selected="selected"' if(%miniservers);
 	
-	my $html = <<EOF;
+	if (! %miniservers) {
+		$html = '<div class="ui-field-contain">';
+		if($p{LABEL}) {
+			$html .= '<label style="margin:auto;" for="'.$p{FORMID}.'">'.$p{LABEL}.'</label>';
+		}	
+		$html .= '<div id="'.$p{FORMID}.'" style="color:red;font-weight:bold;margin: auto;">No Miniservers defined</div>';
+		$html .= '</div>';
+		return $html;
+	}
+	
+	$html = <<EOF;
 	<div class="ui-field-contain">
 EOF
 	if ($p{LABEL}) {
@@ -664,6 +673,7 @@ EOF
 	<label for="$p{FORMID}">$p{LABEL}</label>
 EOF
 	}
+	
 	$html .= <<EOF;
 	<select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
 EOF

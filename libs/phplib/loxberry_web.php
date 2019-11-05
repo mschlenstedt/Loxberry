@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.5.0.1";
+	public static $LBWEBVERSION = "2.0.0.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -487,7 +487,12 @@ EOT;
 		
 		$miniservers = LBSystem::get_miniservers();
 		if (! is_array($miniservers)) {
-			return ('<div>No Miniservers defined</div>');
+			if(isset($p['LABEL'])) {
+				$html = '<label style="margin:auto;" for="'.$p['FORMID'].'">'.$p['LABEL'].'</label>';
+			}	
+			$html .= '<div id="'.$p['FORMID'].'" style="color:red;font-weight:bold;margin: auto;">No Miniservers defined</div>';
+			$html .= '</div>';
+			return $html;
 		}
 		if (! isset($miniservers[$p['SELECTED']])) {
 			$p['SELECTED'] = 1;
