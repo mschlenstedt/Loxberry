@@ -1,4 +1,7 @@
 <?php
+
+header('Content-Type: application/json');
+
 // Currently known types are: lbupdate, plugininstall
 $lockfile_definitions = $_SERVER['LBHOMEDIR']."/config/system/lockfiles.default";
 $which = array();
