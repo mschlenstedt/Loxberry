@@ -128,6 +128,7 @@
 		  xhttp.onreadystatechange = function() {
 			  if (this.readyState == 4 && this.status == 200) {
 				var res = JSON.parse(this.responseText);
+				  console.log(res.reboot_in_progress);
 				if ( counter == 2400 && res.reboot_in_progress == 1 ) {
 					showprogressbar();
 				} else if ( res.reboot_in_progress == 0 && was_offline == 1) {
