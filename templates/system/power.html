@@ -143,6 +143,10 @@
 						document.location.href="/";
 					}
 				}
+			  } else if ( this.readyState == 4 && this.status != 200) {
+				  if ( counter == 2400 ) {
+					  showprogressbar();
+				  }
 			  }
 		  };
 		  var maini = setInterval(function() {
