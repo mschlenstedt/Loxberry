@@ -58,7 +58,7 @@ sub notifydelete
 	
 	print $cgi->header(-type => 'application/json;charset=utf-8',
 					-status => "200 OK");
-	print "{status: 'OK'}";
+	print '{"status": "OK"}';
 	exit;
 	
 }
@@ -118,7 +118,7 @@ sub setnotifyext
 	#$LoxBerry::Log::DEBUG = 1;
 	LoxBerry::Log::notify_ext(\%params);
 	
-	print "{status: OK}";
+	print '{"status": "OK"}';
 	
 	exit;
 
