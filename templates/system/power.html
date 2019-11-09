@@ -119,6 +119,11 @@
 		{
 		  var xhttp = new XMLHttpRequest();
 		  xhttp.timeout = 800;
+		  xhttp.setRequestHeader('cache-control', 'no-cache, must-revalidate, post-check=0, pre-check=0');
+		  xhttp.setRequestHeader('cache-control', 'max-age=0');
+		  xhttp.setRequestHeader('expires', '0');
+		  xhttp.setRequestHeader('expires', 'Tue, 01 Jan 1980 1:00:00 GMT');
+		  xhttp.setRequestHeader('pragma', 'no-cache');
 		  xhttp.ontimeout = function() {
 			  was_offline = 1;
 			  if ( counter == 2400 ) {
