@@ -33,7 +33,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.9";
+my $version = "2.0.0.1";
 
 my $helplink = "https://www.loxwiki.eu/x/SogKAw";
 my $helptemplate = "help_network.html";
@@ -534,7 +534,7 @@ sub get_interfaces
 	# Find Wifi interfaces
 	my @iwconfig = `iwconfig 2>&1`;
 	foreach my $linkline (@iwconfig) {
-		next if( index($linkline, "ESSID") == -1 );
+		next if( index($linkline, "no wireless extensions") != -1 );
 		# WIFI found
 		my $wifiname = $1 if($linkline =~ /(^\S+)/);
 		foreach my $if (@interfacelist) {
