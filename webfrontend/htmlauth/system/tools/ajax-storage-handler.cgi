@@ -75,20 +75,34 @@ sub init_html
 	if ($R::data_mini eq "1") {
 		$R::jqm_data_mini = 'data-mini="true"';
 	}
+	
+	if ($R::show_browse eq "1") {
+		$R::show_browse = "display:block;";
+	} else {
+		$R::show_browse = "display:none;";
+	}
+	
 	print $cgi->header(-type => 'text/html',
 					-status => "200 OK",
 	);
 	
 	my $html = <<EOF;
-	<div data-role="fieldcontain">
-		<label for="$R::formid-select">$R::label</label>
-		<select name="$R::formid-select" id="$R::formid-select" disabled $R::jqm_data_mini>
-			<option value="">$SL{'COMMON.MSG_PLEASEWAIT'}</option>
-		</select>	
-	</div>
-	<div data-role="fieldcontain" id="$R::formid-foldercontain" style="display:none">
-		<label for="$R::formid-folder">$SL{'STORAGE.GET_STORAGE_HTML_FOLDER'}</label>
-		<input name="$R::formid-folder" id="$R::formid-folder" type="text" name="folder" disabled $R::jqm_data_mini>
+	<div style="display:flex;">
+		<div style="width:95%">
+			<div data-role="fieldcontain">
+				<label for="$R::formid-select">$R::label</label>
+				<select name="$R::formid-select" id="$R::formid-select" disabled $R::jqm_data_mini>
+					<option value="">$SL{'COMMON.MSG_PLEASEWAIT'}</option>
+				</select>	
+			</div>
+			<div data-role="fieldcontain" id="$R::formid-foldercontain" style="display:none">
+				<label for="$R::formid-folder">$SL{'STORAGE.GET_STORAGE_HTML_FOLDER'}</label>
+				<input name="$R::formid-folder" id="$R::formid-folder" type="text" name="folder" disabled $R::jqm_data_mini>
+			</div>
+		</div>
+		<div id="$R::formid-browse" style="width:30px;position:relative;top:-18px;margin:10px;$R::show_browse">
+	    	<a href="#" id="$R::formid-browse-button" class="ui-btn ui-icon-eye ui-btn-icon-notext ui-corner-all ui-state-disabled"></a>
+		</div>
 	</div>
 	<input type="hidden" name="$R::formid" id="$R::formid" value="$R::currentpath">
 	
@@ -164,6 +178,12 @@ var ${R::formid}_storage = [""];
 		select.selectmenu('refresh', true);
 		\$("#$R::formid-folder").textinput({ disabled: false });
 		
+		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
+			\$("#$R::formid-browse-button").removeClass("ui-state-disabled");
+		else
+			\$("#$R::formid-browse-button").addClass("ui-state-disabled");
+		
+		
 	})
 	
 	.always(function(data) {
@@ -183,6 +203,11 @@ var ${R::formid}_storage = [""];
 		else 
 			\$("#$R::formid").val("");
 		
+		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
+			\$("#$R::formid-browse-button").removeClass("ui-state-disabled");
+		else
+			\$("#$R::formid-browse-button").addClass("ui-state-disabled");
+		
 		\$("#$R::formid").trigger("change");
 		
 	});
@@ -200,8 +225,31 @@ var ${R::formid}_storage = [""];
 		}
 		
 		\$("#$R::formid").val(${R::formid}_storage[select.val()] + folder);
+		
+		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
+			\$("#$R::formid-browse-button").removeClass("ui-state-disabled");
+		else
+			\$("#$R::formid-browse-button").addClass("ui-state-disabled");
+		
 		\$("#$R::formid").trigger("change");
 	});
+	
+	\$("#$R::formid-browse-button").click(function() {
+		console.log("Browse Button clicked");
+		/* /admin/system/tools/filemanager/filemanager.php?p=system/storage/smb/homeserver/Raspberry-Backups */
+		
+		if( \$("#$R::formid").val().startsWith('$lbhomedir') ) {
+			shortpath = \$("#$R::formid").val().substr( '$lbhomedir'.length );
+			// console.log("Shortpath:", shortpath);
+		} else {
+			return;
+		}
+		
+		window.open('/admin/system/tools/filemanager/filemanager.php?p='+shortpath, '_blank', 'menubar=no,status=no,toolbar=no');
+		
+	});
+	
+	
 });
 
 </script>
