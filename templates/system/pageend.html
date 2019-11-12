@@ -105,7 +105,8 @@
 				$.ajax( "/admin/system/tools/ajax-footer-icons-handler.php")
 					.done(function(data) 
 					{ 
-						var response_data = JSON.parse(data);
+						//var response_data = JSON.parse(data);
+						var response_data = data;
 						
 						var update_alert_offset = $("#btnpower").offset(); 
 						//console.log("ajax-reboot-required-handler.php executed",response_data);
