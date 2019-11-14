@@ -32,7 +32,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.0.4";
+my $version = "2.0.0.5";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1207,6 +1207,9 @@ sub install {
 			push(@errors,"APT install: $message");
 		}
 		my @data = <F>;
+		
+		$aptpackages = "";
+		
 		foreach (@data){
 			s/[\n\r]//g;
 			# Comments
