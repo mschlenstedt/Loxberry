@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "2.0.0.3";
+our $VERSION = "2.0.0.4";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -346,6 +346,16 @@ sub write
 	my $self = shift;
 	my $severity = shift;
 	my ($s)=@_;
+	
+	# Check if the database entry is still present
+	if (!$self->{_next_db_check} or time > $self->{_next_db_check}) {
+		print STDERR "write: DB session check called\n" if ($DEBUG);
+		if(!$self->{dbh}) {
+			$self->{dbh} = log_db_init_database();
+		}
+		log_db_recreate_session($self->{dbh}, $self);
+		$self->{_next_db_check} = time+120;
+	}
 	
 	# print STDERR "Severity: $severity / Loglevel: " . $self->{loglevel} . "\n";
 	# print STDERR "Log: $s\n";
@@ -1015,8 +1025,6 @@ sub log_db_delete_logkey
 		return undef;
 	}
 	
-		
-	
 	# SQLite interface
 	require DBI;
 	# my $dbh = log_db_init_database();
@@ -1031,6 +1039,36 @@ sub log_db_delete_logkey
 	
 	print STDERR "<--- log_db_delete_logkey\n" if ($DEBUG);
 	
+}
+
+sub log_db_recreate_session
+{
+
+	my $dbh = shift;
+	my $self = shift;
+	my $key = $self->{dbkey};
+	
+	if(!$dbh) { 
+		print STDERR "log_db_recreate_session: dbh not defined - Abort\n" if($DEBUG);
+		return;
+	}
+	
+	if(!$key) {
+		print STDERR "log_db_recreate_session: dbkey not defined - Abort\n" if($DEBUG);
+		return;
+	}
+	
+	
+	my $qu = "SELECT PACKAGE, NAME, FILENAME, LOGSTART, LOGEND FROM logs WHERE LOGKEY = $key LIMIT 1;";
+	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
+	if (@$logshr) {
+		print STDERR "log_db_recreate_session: logkey exists, nothing to do\n" if($DEBUG);
+		return;
+	}
+	
+	print STDERR "log_db_recreate_session: Session does not exist in DB - creating a new session\n";
+	$self->{dbkey} = log_db_logstart($self->{dbh}, $self);
+
 }
 
 
