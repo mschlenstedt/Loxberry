@@ -7,7 +7,7 @@ use LoxBerry::System;
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "2.0.0.3"; # Version of this script
+my $version = "2.0.0.4"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -489,7 +489,7 @@ sub change_generalcfg
 sub change_generaljson
 {
 	require LoxBerry::JSON;
-	$LoxBerry::JSON::DEBUG = 1;
+	# $LoxBerry::JSON::DEBUG = 1;
 	my ($key, $val) = @_;
 	if (!$key) {
 		return undef;
