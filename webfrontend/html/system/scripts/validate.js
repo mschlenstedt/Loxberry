@@ -260,18 +260,22 @@ function validate_convert_rule (object, rule)
 				break;
 			case 'number-exact-value':
 				// Check if exact number is given 
+				rule_array[2] = rule_array[2].replace(  /,/g, "." );
 				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseFloat(rule_array[2])) ) ? parseFloat(rule_array[2]) : '(?=x)y';
 				rule = '^'+rule_array[2]+'$';
 				break;
 			case 'number-min-value':
 				// Check if number is minumum 
+				rule_array[2] = rule_array[2].replace(  /,/g, "." );
 				rule = ( parseFloat($(object).val())  >= parseFloat(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
 				break;
 			case 'number-max-value':
 				// Check if number is maximum
+				rule_array[2] = rule_array[2].replace(  /,/g, "." );
 				rule = ( parseFloat($(object).val())  <= parseFloat(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
 				break;
 			case 'number-min-max-value':
+				rule_array[2] = rule_array[2].replace(  /,/g, "." );
 				// Check if min + max digits values are given otherwise default to 1
 				rule = ( parseFloat($(object).val())  >= parseFloat(rule_array[2]) && parseFloat($(object).val())  <= parseFloat(rule_array[3])  ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
 				break;
