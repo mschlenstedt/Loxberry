@@ -275,8 +275,8 @@ function validate_convert_rule (object, rule)
 				rule = ( parseFloat($(object).val())  <= parseFloat(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
 				break;
 			case 'number-min-max-value':
-				rule_array[2] = rule_array[2].replace(  /,/g, "." );
 				// Check if min + max digits values are given otherwise default to 1
+				rule_array[2] = rule_array[2].replace(  /,/g, "." );
 				rule = ( parseFloat($(object).val())  >= parseFloat(rule_array[2]) && parseFloat($(object).val())  <= parseFloat(rule_array[3])  ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
 				break;
 			case 'email':
