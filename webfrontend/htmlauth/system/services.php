@@ -1,5 +1,6 @@
 <?php
 
+
 # Copyright 2017 Svethi for LoxBerry, info@sd-thierfelder.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +39,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "1.5.0.2";
+$version = "2.0.0.4";
 
 $sversion = LBSystem::lbversion();
 
@@ -77,6 +78,12 @@ $template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].": ". $SL['SERVICES.WIDGETLA
 #########################################################################
 # What should we do
 #########################################################################
+
+header("Expires; 0");
+header("Expires: Tue, 01 Jan 1980 1:00:00 GMT");
+header("Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0"); 
+header("Cache-Control: max-age=0");
+header("Pragma: no-cache");
 
 # Menu
 if (isset($_GET['check_webport'])) {
