@@ -11,7 +11,7 @@ use Data::Dumper;
 
 package LoxBerry::System::PluginDB;
 
-our $VERSION = "2.0.0.5";
+our $VERSION = "2.0.0.6";
 our $DEBUG = 0;
 
 my %plugindb_handles;
@@ -66,7 +66,34 @@ sub plugin
 			$self = ( $plugindb->{plugins}->{ $self->{md5} } );
 			# Update the db values by the parameters
 			foreach my $paramkey ( keys %params ) {
-				$self->{$paramkey} = $params{$paramkey};
+				
+				# print STDERR "paramkey $paramkey value $params{'autoupdate'}\n";
+				
+				### Special treatment for autoupdate
+				if ( $paramkey eq 'autoupdate' ) {
+					if ( $params{'autoupdate'} eq "0" ) {
+						# If the update sets autoupdate to false, change the current db value to 0
+						# print STDERR "Plugin autoupdate is 0 -> disable autoupdate\n";
+						$self->{'autoupdate'} = "0";
+					} elsif ( $params{'autoupdate'} eq "1" ) {
+						# If the plugin enables autoupdate 
+						# print STDERR "Plugin autoupdate is 1. Current setting is $self->{autoupdate}\n";
+						# In the case that autoupdate before already had NO value -> set 3
+						if (!defined $self->{autoupdate} or $self->{autoupdate} eq "0") {
+							# print STDERR "Setting autoupdate to 3\n";
+							# autoupdate 3 = Releases
+							$self->{'autoupdate'} = 3;
+						}
+						# If autoupdate already is set, don't touch the current value
+					}
+				}
+				
+				else {
+				
+					# Set all other values
+					$self->{$paramkey} = $params{$paramkey};
+				}
+				
 			}
 			# Re-bless $self
 			bless $self, $class;
