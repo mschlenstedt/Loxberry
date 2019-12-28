@@ -1,4 +1,24 @@
 <!-- ** START template/system/donate.html 23:15 26.11.2017 ************************************************************************************ -->
+
+<style>
+#header {
+	float: left;
+	width: 100%;
+	text-align: center;
+}
+
+.container {
+	display:inline-block;
+	margin: 0 9%;
+	vertical-align: middle;
+	width:200px;
+}
+
+.big {
+	font-size: 5em
+}
+</style>
+
 <h2><TMPL_VAR DONATE.HEADING></h2>
 <TMPL_VAR DONATE.TEXT1>
 <TMPL_VAR DONATE.TEXT2>
@@ -13,8 +33,17 @@
 	&nbsp;
 </p>
 <p>
-	<a href="<TMPL_VAR DONATE.LINK_URL1>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT1>
-</a>
+<div id="header">
+	<div class="container">
+		<a href="<TMPL_VAR DONATE.LINK_URL1>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT1>
+		</a>
+	</div>
+	<div class="container">
+		<TMPL_VAR DONATE.DONATIONS><br>
+		<span id="counter" class="big"></span> EUR
+	</div>
+</div>
+<div style="clear:left"></div>
 </p>
 <p>
 	&nbsp;
@@ -48,4 +77,15 @@
 </TMPL_LOOP>
 </p>
 </center>
+
+<script>
+var i = 0;
+
+var inv = setInterval(function() {
+if(i < <TMPL_VAR NAME="COUNTER">)
+	document.getElementById("counter").innerHTML = ++i;
+else
+	clearInterval(inv);
+}, 3000 / 100);
+</script>
 <!-- ** END template/system/donate.html ************************************************************************************ -->
