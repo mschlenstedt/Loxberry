@@ -52,9 +52,9 @@ our $languagefile;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.0.1";
 
-$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
+$cfg             = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 
@@ -94,6 +94,25 @@ my $maintemplate = HTML::Template->new(
 		);
 	
 my %SL = LoxBerry::System::readlanguage($maintemplate);
+
+# Read Donators and create Template Loop
+my $file = "$lbsdatadir/donors.dat";
+my @lines;
+my @donorlist;
+
+open (FH, '<', $file);
+@lines = reverse <FH>;
+close(FH);
+
+foreach (@lines) {
+	my %donor;
+	my ($name,$money) = split(/,/,$_);
+	$money =~ s/^\s+//;
+	$donor{NAME} = $name;
+	$donor{MONEY} = $money;
+	push(@donorlist, \%donor);
+}
+$maintemplate->param(DONORLIST => \@donorlist);
 
 # Print Template
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'DONATE.WIDGETLABEL'};

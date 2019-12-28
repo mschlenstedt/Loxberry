@@ -43,7 +43,9 @@
 <TMPL_VAR DONATE.DONORS>
 </p>
 <p>
-<TMPL_VAR DONORLIST>
+<TMPL_LOOP NAME="DONORLIST">
+<b><TMPL_VAR NAME="NAME"></b>, <TMPL_VAR NAME="MONEY"><br>
+</TMPL_LOOP>
 </p>
 </center>
 <!-- ** END template/system/donate.html ************************************************************************************ -->
