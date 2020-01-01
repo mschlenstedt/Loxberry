@@ -164,7 +164,7 @@ if ($errors) {
 	qx { rm /boot/rebootupdatescript };
 }
 
-qx { chown loxberry:loxberry $logfilename };
+qx { "chown loxberry:loxberry $logfilename" };
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);

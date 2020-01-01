@@ -1,0 +1,278 @@
+<!-- ********************* FORM ******************** -->
+<TMPL_IF FORM>
+
+<P><TMPL_VAR SERVICES.HINT_WATCHDOG></P>
+
+<BR>
+
+<STYLE>
+	.lb_flex-item 
+	{	
+		min-width	:350px;
+		width		:350px;
+		max-width	:350px;
+		flex-wrap	:nowrap;
+		margin-top	:-10px;  
+	}
+	.lb_flex-item-label
+	{
+		min-width	:150px;
+		position	:relative;
+		margin-left	:10px;
+	}
+	.lb_flex-item-help 
+	{
+		min-width	:100px;
+		width		:100%;
+		position	:relative;
+		margin-left	:10px;
+		margin-top	:-10px;  
+	}
+</STYLE>
+
+<FORM id="main_form" method="post" data-ajax="false"> 
+<INPUT id="saveformdata" name="saveformdata" type="hidden" value="1">
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label" ><TMPL_VAR SERVICES.LABEL_STARTWATCHDOG_SH></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<label><input type="checkbox" id="Watchdog_Enable" name="Watchdog_Enable" value="1"><TMPL_VAR SERVICES.LABEL_STARTWATCHDOG></label>
+	</DIV>
+	<DIV	class="lb_flex-item-help">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label" ><TMPL_VAR SERVICES.LABEL_STARTLOGGING_SH></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<label><input type="checkbox" id="Watchdog_Logging" name="Watchdog_Logging" value="1"><TMPL_VAR SERVICES.LABEL_STARTLOGGING></label>
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_LOGGING>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="Watchdog_Ping"><TMPL_VAR SERVICES.LABEL_PING></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="100%" value="" id="Watchdog_Ping" name="Watchdog_Ping" type="text" class="textfield" 
+		data-validation-rule="special:hostname_or_ipaddr" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_PING>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_PING>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="Watchdog_Maxload1"><TMPL_VAR SERVICES.LABEL_MAXLOAD1></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="100%" value="" id="Watchdog_Maxload1" name="Watchdog_Maxload1" type="text" class="textfield" 
+		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_MAXLOAD1>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="Watchdog_Maxload5"><TMPL_VAR SERVICES.LABEL_MAXLOAD5></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="100%" value="" id="Watchdog_Maxload5" name="Watchdog_Maxload5" type="text" class="textfield" 
+		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_MAXLOAD5>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="Watchdog_Maxload15"><TMPL_VAR SERVICES.LABEL_MAXLOAD15></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="100%" value="" id="Watchdog_Maxload15" name="Watchdog_Maxload15" type="text" class="textfield" 
+		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_MAXLOAD15>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="Watchdog_Minmem"><TMPL_VAR SERVICES.LABEL_MINMEM></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="30%" value="" id="Watchdog_Minmem" name="Watchdog_Minmem" type="text" class="textfield"
+		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MINMEM>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_MINMEM>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="Watchdog_Maxtemp"><TMPL_VAR SERVICES.LABEL_MAXTEMP></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="30%" value="" id="Watchdog_Maxtemp" name="Watchdog_Maxtemp" type="text" class="textfield"
+		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXTEMP>">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_MAXTEMP>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="Watchdog_Tempsensor"><TMPL_VAR SERVICES.LABEL_TEMPSENSOR></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<input width="100%" value="" id="Watchdog_Tempsensor" name="Watchdog_Tempsensor" type="text" class="textfield">
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+		<TMPL_VAR SERVICES.HINT_TEMPSENSOR>
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+<DIV	class="lb_flex-container">
+	<DIV	class="lb_flex-item-spacer"></DIV>
+	<DIV	class="lb_flex-item-label">
+		<LABEL	class=	"control-label"
+			for="Watchdog_Temperature"><TMPL_VAR SERVICES.LABEL_TEMPERATURE></LABEL>
+	</DIV>
+	<DIV	class="lb_flex-item">
+		<TMPL_VAR TEMPERATURE> &deg;C
+	</DIV>
+	<DIV	class="lb_flex-item-help hint">
+	</DIV>
+	<DIV	class="lb_flex-item-spacer"></DIV>
+</DIV>
+
+</FORM>
+
+<!-- Button area -->
+
+<BR>
+
+<DIV style="text-align:center;">
+		<!-- Buttons for widget -->
+		<A	id=		"btncancel"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"delete"
+			href=		"/admin/system/index.cgi?form=system">
+			<TMPL_VAR COMMON.BUTTON_CANCEL></A>
+		<BUTTON	type=		"submit"
+			form=		"main_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"check">
+			<TMPL_VAR COMMON.BUTTON_SAVE>
+		</BUTTON>
+		<A	id=		"btnlogfile"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"grid"
+			href=		"/admin/system/tools/logfile.cgi?logfile=system%2Fwatchdog.log&header=html&format=template"
+			target=		"blank">
+			<TMPL_VAR SERVICES.BUTTON_LOGFILE></A>
+</DIV>
+
+<script>
+
+	// Validation
+	validate_enable('#Watchdog_Ping');
+	validate_enable('#Watchdog_Maxload1');
+	validate_enable('#Watchdog_Maxload5');
+	validate_enable('#Watchdog_Maxload15');
+	validate_enable('#Watchdog_Minmem');
+	validate_enable('#Watchdog_Maxtemp');
+
+	var cfg;
+	
+	$(function() {
+      	
+      	// Parse config
+		cfg = JSON.parse('<TMPL_VAR JSONCONFIG>');
+		//console.log("Config", cfg, cfg.Watchdog, cfg.subscriptions);
+
+      	// Elements in Remote
+		for(var elemname in cfg.Watchdog) {
+			var inputType = $("#Watchdog_"+elemname).attr('type');
+			//console.log("Element", elemname, cfg.Watchdog[elemname], inputType);
+			if(inputType == "checkbox") {
+				if( cfg.Watchdog[elemname] == 1) 
+					$("#Watchdog_"+elemname).prop('checked', true);
+				else
+					$("#Watchdog_"+elemname).prop('checked', false);
+			} else {
+					$("#Watchdog_"+elemname).val(cfg.Watchdog[elemname]);
+			}
+		}
+
+		$('select').selectmenu('refresh', true);
+		$('input:checkbox').checkboxradio('refresh');
+
+	});
+
+</script>
+
+</TMPL_IF>
+
+<!-- ********************* SAVE ******************** -->
+<TMPL_IF SAVE>
+		<div style="text-align:center;">
+		<center>
+			<table style="border:0;">
+				<tr>
+					<td align="center">
+						<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+						<p>
+							<TMPL_VAR SERVICES.WATCHDOGCHANGE_SUCCESS>
+							<br/>
+							<br/>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td align="center">
+						<p>
+							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="./services_watchdog.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</center>
+		</div>
+</TMPL_IF>

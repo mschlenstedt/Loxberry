@@ -1,37 +1,91 @@
 <!-- ** START template/system/donate.html 23:15 26.11.2017 ************************************************************************************ -->
+
+<style>
+#header {
+	float: left;
+	width: 100%;
+	text-align: center;
+}
+
+.container {
+	display:inline-block;
+	margin: 0 9%;
+	vertical-align: middle;
+	width:200px;
+}
+
+.big {
+	font-size: 5em
+}
+</style>
+
 <h2><TMPL_VAR DONATE.HEADING></h2>
 <TMPL_VAR DONATE.TEXT1>
 <TMPL_VAR DONATE.TEXT2>
 <TMPL_VAR DONATE.TEXT3>
 <TMPL_VAR DONATE.TEXT4>
 <TMPL_VAR DONATE.TEXT5>
+<center>
 <p>
-<TMPL_VAR DONATE.DONATE>
-</p>
-<p>
-	<a href="<TMPL_VAR DONATE.LINK_URL1>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT1>
-</a>
-<p>
-	<a href="<TMPL_VAR DONATE.LINK_URL2>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT2>
-</a>
-<p>
-	<a href="<TMPL_VAR DONATE.LINK_URL3>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT3>
-</a>
-<p>
-	<a href="<TMPL_VAR DONATE.LINK_URL4>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT4>
-</a>
-<p>
-	<a href="<TMPL_VAR DONATE.LINK_URL5>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT5>
-</a>
-<p>
-	<a href="<TMPL_VAR DONATE.LINK_URL6>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT6>
-</a>
-<p>
-	<a href="<TMPL_VAR DONATE.LINK_URL7>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT7>
-</a>
-
+<TMPL_VAR DONATE.DONATE1>
 </p>
 <p>
 	&nbsp;
 </p>
+<p>
+<div id="header">
+	<div class="container">
+		<a href="<TMPL_VAR DONATE.LINK_URL1>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT1>
+		</a>
+	</div>
+	<div class="container">
+		<TMPL_VAR DONATE.DONATIONS><br>
+		<span id="counter" class="big"></span> EUR
+	</div>
+</div>
+<div style="clear:left"></div>
+</p>
+<p>
+	&nbsp;
+</p>
+<p>
+<TMPL_VAR DONATE.DONATE2>
+</p>
+<p>
+	<a href="<TMPL_VAR DONATE.LINK_URL2>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT2>
+</a>&nbsp;&nbsp;
+	<a href="<TMPL_VAR DONATE.LINK_URL3>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT3>
+</a>&nbsp;&nbsp;
+	<a href="<TMPL_VAR DONATE.LINK_URL4>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT4>
+</a>&nbsp;&nbsp;
+	<a href="<TMPL_VAR DONATE.LINK_URL5>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT5>
+</a>&nbsp;&nbsp;
+	<a href="<TMPL_VAR DONATE.LINK_URL6>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT6>
+</a>&nbsp;&nbsp;
+	<a href="<TMPL_VAR DONATE.LINK_URL7>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT7>
+</a>
+</p>
+<p>
+	&nbsp;
+</p>
+<p>
+<TMPL_VAR DONATE.DONORS>
+</p>
+<p>
+<TMPL_LOOP NAME="DONORLIST">
+<b><TMPL_VAR NAME="NAME"></b>, <TMPL_VAR NAME="MONEY"><br>
+</TMPL_LOOP>
+</p>
+</center>
+
+<script>
+var i = 0;
+
+var inv = setInterval(function() {
+if(i < <TMPL_VAR NAME="COUNTER">)
+	document.getElementById("counter").innerHTML = ++i;
+else
+	clearInterval(inv);
+}, 3000 / 100);
+</script>
 <!-- ** END template/system/donate.html ************************************************************************************ -->

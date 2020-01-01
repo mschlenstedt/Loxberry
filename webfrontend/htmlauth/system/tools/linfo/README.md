@@ -1,6 +1,6 @@
 # Linfo - Server stats UI/library
 
-![Travis tests](https://api.travis-ci.org/jrgp/linfo.svg)
+[![Build Status](https://travis-ci.org/jrgp/linfo.svg?branch=master)](https://travis-ci.org/jrgp/linfo)
 
 
 ### Linfo is a:
@@ -132,7 +132,7 @@ Set ``$settings['show_errors'] = true;`` in ``config.inc.php`` to yield useful e
 
 ## Meta
  - By Joe Gillotti <joe@u13.net>
- - Licensed under GPL
+ - Licensed under MIT
  - Pull requests! [Linfo on Github](http://github.com/jrgp/linfo)
  - [Commit stats from OpenHub/Ohloh](https://www.openhub.net/p/linfo)
 

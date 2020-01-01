@@ -107,13 +107,13 @@
 
 	
 	$reboot_required_file = "$lbstmpfslogdir/reboot.required";
-
+	define ("PLUGINDATABASE", "$lbsdatadir/plugindatabase.json");
 
 // Functions in class LBSystem
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.4.2.2";
+	public static $LBSYSTEMVERSION = "2.0.0.3";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -154,7 +154,7 @@ class LBSystem
 			$genericlangfile = $template;
 			$template = NULL;
 		}
-		if ($syslang == True and $genericlangfile != "language.ini") {
+		if ($syslang == True and isset($genericlangfile) and $genericlangfile != "language.ini") {
 			$genericlangfile = LBSTEMPLATEDIR . "/lang/$genericlangfile";
 			$widgetlang = True;
 		} elseif ($syslang == true) {
@@ -264,15 +264,17 @@ class LBSystem
 	{
 		# If config file was read already, directly return the saved hash
 		global $clouddnsaddress, $msClouddnsFetched;
-		global $miniservers;
+		global $miniservers, $cfgwasread;
 		
 		if(!empty($msClouddnsFetched)) {
 			return $miniservers;
 		}
 		
-		if (empty($miniservers)) {
-			LBSystem::read_generalcfg();
-		}
+		if (isset($cfgwasread)) {
+			return $miniservers;
+		}	
+		
+		LBSystem::read_generalcfg();
 		
 		foreach ($miniservers as $msnr => $value) {
 			# CloudDNS handling
@@ -417,6 +419,7 @@ class LBSystem
 	##################################################################################
 	# Get Plugins
 	# Returns an array of all plugins without comments
+	# $withcomments is legacy and unused
 	##################################################################################
 	public static function get_plugins($withcomments = 0, $force = 0)
 	{
@@ -442,36 +445,32 @@ class LBSystem
 			
 		$plugins = Array();
 		# Read Plugin database copied from plugininstall.pl
-		$filestr = file(LBHOMEDIR . "/data/system/plugindatabase.dat", FILE_IGNORE_NEW_LINES);
-		#$filestr = file_get_contents(LBHOMEDIR . "/data/system/plugindatabase.dat");
-		if (! $filestr) {
-				error_log("LoxBerry System ERROR: Could not read Plugin Database " . LBSDATADIR . "plugindatabase.dat");
+		#$filestr = file(PLUGINDATABASE, FILE_IGNORE_NEW_LINES);
+		$plugindb = json_decode(file_get_contents(PLUGINDATABASE));
+		if (! $plugindb) {
+				error_log("LoxBerry System ERROR: Could not read Plugin Database " . PLUGINDATABASE);
 				return;
 		}
 		
 		$plugincount=0;
-		foreach ($filestr as $line) {
-			$fields = explode('|', trim($line));
-			if (substr($fields[0], 0, 1)=="#") {
-				continue;
-			}
+		foreach ($plugindb->plugins as $plugindata) {
 			$plugincount++;
 			$plugin = array (
 				'PLUGINDB_NO' => $plugincount,
-				'PLUGINDB_MD5_CHECKSUM' => $fields[0],
-				'PLUGINDB_AUTHOR_NAME' => $fields[1],
-				'PLUGINDB_AUTHOR_EMAIL' => $fields[2],
-				'PLUGINDB_VERSION' => $fields[3],
-				'PLUGINDB_NAME' => $fields[4],
-				'PLUGINDB_FOLDER' => $fields[5],
-				'PLUGINDB_TITLE' => $fields[6],
-				'PLUGINDB_INTERFACE' => isset($fields[7]) ? $fields[7] : null,
-				'PLUGINDB_AUTOUPDATE' => isset($fields[8]) ? $fields[8] : null,
-				'PLUGINDB_RELEASECFG' => isset($fields[9]) ? $fields[9] : null,
-				'PLUGINDB_PRERELEASECFG' => isset($fields[10]) ? $fields[10] : null,
-				'PLUGINDB_LOGLEVEL' => isset($fields[11]) ? $fields[11] : null,
-				'PLUGINDB_LOGLEVELS_ENABLED' => isset($fields[11]) && $fields[11] >= 0 ? 1 : 0,
-				'PLUGINDB_ICONURI' => "/system/images/icons/$fields[5]/icon_64.png"
+				'PLUGINDB_MD5_CHECKSUM' => $plugindata->md5,
+				'PLUGINDB_AUTHOR_NAME' => $plugindata->author_name,
+				'PLUGINDB_AUTHOR_EMAIL' => $plugindata->author_email,
+				'PLUGINDB_VERSION' => $plugindata->version,
+				'PLUGINDB_NAME' => $plugindata->name,
+				'PLUGINDB_FOLDER' => $plugindata->folder,
+				'PLUGINDB_TITLE' => $plugindata->title,
+				'PLUGINDB_INTERFACE' => isset($plugindata->interface) ? $plugindata->interface : null,
+				'PLUGINDB_AUTOUPDATE' => isset($plugindata->autoupdate) ? $plugindata->autoupdate : null,
+				'PLUGINDB_RELEASECFG' => isset($plugindata->releasecfg) ? $plugindata->releasecfg : null,
+				'PLUGINDB_PRERELEASECFG' => isset($plugindata->prereleasecfg) ? $plugindata->prereleasecfg : null,
+				'PLUGINDB_LOGLEVEL' => isset($plugindata->loglevel) ? $plugindata->loglevel : null,
+				'PLUGINDB_LOGLEVELS_ENABLED' => isset($plugindata->loglevels_enabled) && $plugindata->loglevels_enabled >= 0 ? 1 : 0,
+				'PLUGINDB_ICONURI' => "/system/images/icons/$plugindata->name/icon_64.png"
 				);
 				# On changes of the plugindatabase format, please change here
 				# and in libs/perllib/LoxBerry/System.pm, sub get_plugins 
@@ -489,12 +488,12 @@ public static function plugindb_changed_time()
 {
 	global $plugindb_timestamp, $plugindb_lastchecked;
 	
-	$plugindb_file = LBSDATADIR . "/plugindatabase.dat";
+	$plugindb_file = PLUGINDATABASE;
 	
 	# If it was never checked, it cannot have changed
 	if ($plugindb_timestamp == 0 || ($plugindb_lastchecked+60) < time()) {
-		clearstatcache(TRUE, $plugindb_file);
-		$plugindb_timestamp = filemtime($plugindb_file);
+		clearstatcache(TRUE, PLUGINDATABASE);
+		$plugindb_timestamp = filemtime(PLUGINDATABASE);
 		$plugindb_lastchecked = time();
 		// error_log("Updating plugindb timestamp variable to $plugindb_timestamp ($plugindb_file)");
 	}
@@ -534,8 +533,10 @@ public static function plugindb_changed_time()
 		global $webserverport;
 		global $clouddnsaddress;
 		
-	#	print ("READ miniservers FROM DISK\n");
-
+		if(isset($cfgwasread)) { return; }
+	
+		# print ("READ miniservers FROM DISK\n");
+		
 		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
 		$cfgwasread = 1;
 		// error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
@@ -559,19 +560,19 @@ public static function plugindb_changed_time()
 		
 		for ($msnr = 1; $msnr <= $miniservercount; $msnr++) {
 			 
-			$miniservers[$msnr]['Name'] = $cfg["MINISERVER$msnr"]['NAME'];
-			$miniservers[$msnr]['IPAddress'] = $cfg["MINISERVER$msnr"]['IPADDRESS'];
-			$miniservers[$msnr]['Admin'] = $cfg["MINISERVER$msnr"]['ADMIN'];
-			$miniservers[$msnr]['Pass'] = $cfg["MINISERVER$msnr"]['PASS'];
-			$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
-			$miniservers[$msnr]['Note'] = $cfg["MINISERVER$msnr"]['NOTE'];
-			$miniservers[$msnr]['Port'] = $cfg["MINISERVER$msnr"]['PORT'];
-			$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
-			$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
-			$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];
-			$miniservers[$msnr]['Admin_RAW'] = urldecode($miniservers[$msnr]['Admin']);
-			$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
-			$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
+			@$miniservers[$msnr]['Name'] = $cfg["MINISERVER$msnr"]['NAME'];
+			@$miniservers[$msnr]['IPAddress'] = $cfg["MINISERVER$msnr"]['IPADDRESS'];
+			@$miniservers[$msnr]['Admin'] = $cfg["MINISERVER$msnr"]['ADMIN'];
+			@$miniservers[$msnr]['Pass'] = $cfg["MINISERVER$msnr"]['PASS'];
+			@$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
+			@$miniservers[$msnr]['Note'] = $cfg["MINISERVER$msnr"]['NOTE'];
+			@$miniservers[$msnr]['Port'] = $cfg["MINISERVER$msnr"]['PORT'];
+			@$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
+			@$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
+			@$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];
+			@$miniservers[$msnr]['Admin_RAW'] = urldecode($miniservers[$msnr]['Admin']);
+			@$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
+			@$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
 
 			$miniservers[$msnr]['SecureGateway'] = isset($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) && is_enabled($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) ? 1 : 0;
 			$miniservers[$msnr]['EncryptResponse'] = isset ($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) && is_enabled($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) ? 1 : 0;
@@ -742,6 +743,9 @@ public static function plugindb_changed_time()
 ####################################################
 function is_enabled($text)
 { 
+	if(empty($text)) { 
+		return NULL; 
+	}
 	$text = trim($text);
 	$text = strtolower($text);
 	
@@ -758,7 +762,7 @@ function is_enabled($text)
 ####################################################
 function is_disabled($text)
 { 
-	if (! isset($text)) {
+	if (empty($text)) {
 		return 1;
 	}
 	$text = trim($text);

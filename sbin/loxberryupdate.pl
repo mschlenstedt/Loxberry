@@ -30,10 +30,11 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='1.4.0.1';
+my $scriptversion='2.0.0.1';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
+my $reboot_force_popup_file = "$lbstmpfslogdir/reboot.force";
 
 my $updatedir;
 my %joutput;
@@ -47,6 +48,7 @@ my $keepinstallfiles;
 my $sha;
 my $syscfg;
 my $failed_script;
+my $stop_script_processing_version;
 
 my $cgi = CGI->new;
 
@@ -269,6 +271,12 @@ if ($dryrun ne "") {
 	LOGWARN "rsync was started with dryrun. Nothing was changed.";
 }
 
+if ($lbhomedir ne "/opt/loxberry" and !$dryrun) {
+	LOGINF "Patching sudoers to match your $lbhomedir...";
+	LOGINF `sed -i -e "s#/opt/loxberry/#$lbhomedir/#g" $lbhomedir/system/sudoers/lbdefaults`;
+}
+
+
 LOGINF "Restoring permissions of $lbhomedir of your LoxBerry...";
 $log->close;
 # Restoring permissions
@@ -316,6 +324,7 @@ undef $syscfg;
 LOGINF "Running update scripts...";
 
 my $scripterrskipped=0;
+
 foreach my $version (@updatelist)
 { 
 	my $exitcode;
@@ -348,11 +357,48 @@ foreach my $version (@updatelist)
 			$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
 		}
 		$exitcode  = $? >> 8;
+		
 		if ($exitcode != 0 || $lowdiskspace) {
-			LOGERR "Update-Script update_$version returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue." if ($exitcode != 0);
-			LOGERR "Update-Script update_$version did not execute because of low disk space condition. Further update scripts are prevented from run. You can re-apply the updates from within LoxBerry Update when enough disk space is available (> 100MB). Continuing without update scripts." if ($lowdiskspace);
+			if($lowdiskspace) {
+				LOGERR "Update-Script update_$version did not execute because of low disk space condition. Further update scripts are prevented from run. You can re-apply the updates from within LoxBerry Update when enough disk space is available (> 100MB). Continuing without update scripts.";
+				$errskipped++;
+				$scripterrskipped++;
+			}
 			
-			if (!$failed_script) {
+			# Stop script processing and error
+			if($exitcode == 251) {
+				LOGERR "Update-Script update_$version returned an error (errorcode $exitcode).";
+				$errskipped++;
+				$scripterrskipped++;
+			}
+			
+			# Stop script processing, no error
+			if($exitcode == 250) {
+				LOGWARN "Updatescript update_$version requests a reboot before LoxBerry can continue the update. Please reboot your LoxBerry, and check for updates again.";
+			}
+			
+			# Script error
+			if ($exitcode != 250 and $exitcode != 251) {
+				LOGERR "Update-Script update_$version returned errorcode $exitcode. Despite errors loxberryupdate.pl will continue.";
+				$errskipped++;
+				$scripterrskipped++;
+			} 
+			
+			# Stop script processing, set version in general.cfg
+			if ($exitcode == 250 or $exitcode == 251) {
+				$stop_script_processing_version = version->parse(vers_tag($version));
+				$release = $version;
+				reboot_force($SL{'POWER.FORCEREBOOT_LBUPDATE_MSG'});
+				LoxBerry::System::reboot_required("LoxBerry Update is in the middle of an update and a reboot is necessary to continue. Please reboot LoxBerry.");
+				# LOGINF "LoxBerry's config version is updated from $currversion to $release";
+				# $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+				# $syscfg->param('BASE.VERSION', "$stop_script_processing_version");
+				# $syscfg->write();
+				# undef $syscfg;
+			}
+			
+			# Set failed_script because of script error
+			if (!$failed_script and $exitcode != 250) {
 				LOGINF "Setting update script update_$version as failed in general.cfg.";
 				$failed_script = version->parse(vers_tag($version));
 				$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
@@ -360,10 +406,8 @@ foreach my $version (@updatelist)
 				$syscfg->write();
 				undef $syscfg;
 			}
-			$errskipped++;
-			$scripterrskipped++;
 			
-			if ($lowdiskspace) {
+			if ($lowdiskspace or $stop_script_processing_version) {
 				last;
 			}
 		} elsif ($failed_script && version->parse($version) eq "$failed_script") {
@@ -403,6 +447,7 @@ if ($exitcode != 0 ) {
 # LOGINF "Deleting template cache...";
 # delete_directory('/tmp/templatecache');
 
+
 # We have to recreate the legacy templates.
 LOGINF "Updating LoxBerry legacy templates...";
 system("su - loxberry -c '$lbshtmlauthdir/tools/generatelegacytemplates.pl --force'  >/dev/null");
@@ -415,7 +460,6 @@ if ($exitcode != 0 ) {
 }
 
 
-
 # We have to recreate the skels for system log folders in tmpfs
 LOGINF "Updating Skels for Logfolders...";
 system("$lbssbindir/createskelfolders.pl >/dev/null");
@@ -426,6 +470,7 @@ if ($exitcode != 0 ) {
 } else {
 	LOGOK "Skels for Logfolders successfully updated.";
 }
+
 
 LOGINF "LoxBerry's config version is updated from $currversion to $release";
 LOGINF "Commit SHA is updated to $sha" if ($sha);
@@ -446,6 +491,7 @@ if (! $cgi->param('dryrun') ) {
 	}
 
 # Finished. 
+
 LOGINF "Cleaning up temporary download folder";
 delete_directory($update_path) if(!$keepinstallfiles);
 LOGWARN "Unzipped install files are kept in $update_path" if($keepinstallfiles);
@@ -570,6 +616,24 @@ sub vers_tag
 	
 	return $vers;
 
+}
+
+sub reboot_force
+{
+	my ($message) = shift;
+	open(my $fh, ">>", $reboot_force_popup_file) or Carp::carp "Cannot open/create reboot.force file $reboot_force_popup_file.";
+	flock($fh,2);
+	if (! $message) {
+		print $fh "A reboot is necessary to continue updates.";
+	} else {
+		print $fh "$message";
+	}
+	flock($fh,8);
+	close $fh;
+	eval {
+		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+		chown $uid, $gid, $reboot_force_popup_file;
+		};
 }
 
 

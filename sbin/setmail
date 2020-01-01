@@ -1,0 +1,24 @@
+#!/bin/sh
+
+ID=$(id -u)
+if [ "$ID" != "0" ] ; then
+	echo "This script has to be run as root. Exiting."
+	exit 1
+fi
+
+case "$1" in
+enable)
+	ln -s $LBHOMEDIR/system/msmtp/msmtprc /etc/msmtprc
+;;
+
+disable)
+	rm /etc/msmtprc
+;;
+
+*)
+
+	echo "Usage: $0 [enable|disable]" >&2
+	exit 3
+	;;
+
+esac

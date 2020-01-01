@@ -6,6 +6,8 @@ use JSON;
 use strict;
 no strict 'refs';
 
+my $version = "2.0.0.1";
+
 # Globals
 my @results;
 my @checks;
@@ -74,14 +76,38 @@ elsif ($opts{action} eq "check") {
 
 exit;
 
-
 # Sub: Perform check
 sub performchecks {
 	my ($action) = @_;
+	
+	# Disable checks by general.cfg config variables
+	my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
+	if(is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_ALL'))) {
+		print STDERR "Healthcheck: Healthcheck is globally disabled (general.cfg section [HEALTHCHECK])\n";
+	}
+		
 	foreach (@checks) {
 		if ($action eq "titles") {
 			push (@results,	&{$_}('title') );
 		} else {
+			if(is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_ALL'))) {
+				my $result = &{$_}('title');
+				$result->{status} = '4';
+				$result->{result} = "All healthchecks are globally disabled in 
+				general.cfg (section HEALTHCHECK)";
+				delete $result->{url};
+				push (@results,	$result );
+				next;
+			}
+			if( is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_'.uc($_))) ) {
+				print STDERR "Healthcheck: Healthcheck $_ is disabled (general.cfg section [HEALTHCHECK])\n";
+				my $result = &{$_}('title');
+				$result->{status} = '4';
+				$result->{result} = "This check is disabled in general.cfg (section HEALTHCHECK)";
+				delete $result->{url};
+				push (@results,	$result );
+				next;
+			}
 			push (@results,	&{$_}() );
 		}
 	}
@@ -865,7 +891,7 @@ sub check_cputemp
 
 			if($bits[19]) {
 				$result{'status'} = '4';
-				$message = "(19) Since last reboot one or more times the cpu reached the soft temperature limit (this normally means 60 C). ";
+				$message = "(19) Since last reboot one or more times the cpu reached Raspberry's soft temperature limit (this normally means 60 C). ";
 			}
 		} else {
 			$message = "No history data (only available on Raspberrys). ";
@@ -877,26 +903,33 @@ sub check_cputemp
 		my $cfgjson = $jsonobj->open(filename => $cfgfilejson);
 
 		my $sensor = $cfgjson->{Watchdog}->{Tempsensor};
+		if ( !$sensor ) {
+			$sensor = "/sys/class/thermal/thermal_zone0/temp";
+		}
+
 		if (-e "$sensor") {
 			$current = 1;
 			my $temp = qx(cat $sensor);
 			chomp $temp;
 			$temp = sprintf("%.1f", $temp/1000);
-			$message .= "Current CPU Temperature is $temp C. ";
-			my $errlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.90;
-			if ($temp > $errlimit) {
-				$message .= "This is NOT fine. ";
-				$result{'status'} = '3';
+			$message .= "Current CPU Temperature is $temp°C. ";
+			
+			if($cfgjson->{Watchdog}->{Maxtemp}) {
+				my $errlimit = $cfgjson->{Watchdog}->{Maxtemp} * 0.90;
+				if ($temp > $errlimit) {
+					$message .= "This reaches or nearly reaches your configured watchdog limit of $cfgjson->{Watchdog}->{Maxtemp}°C. This is NOT fine. ";
+					$result{'status'} = '3';
+				}
 			}
 		} else {
 			$message .= "Cannot read current cpu temperature. ";
 		}
 
-		if (!$result{'status'} && $getthrottled) {
-			$message .= "Since last reboot the cpu never reached soft or critical temperature limit. This is fine.";
-			$result{'status'} = '5';
+		if ($getthrottled) {
+			$message .= "Since last reboot the cpu never reached Raspberry's soft or critical temperature limit. This is fine.";
+			$result{'status'} = '5' if (!$result{'status'});
 		}
-		elsif (!$result{'status'} && !$getthrottled && $current) {
+		elsif (!$result{'status'}) {
 			$message .= "Current cpu temperature is fine.";
 			$result{'status'} = '5';
 		}

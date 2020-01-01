@@ -46,15 +46,16 @@ our $helptext;
 our $helplink;
 our $installfolder;
 our $languagefile;
+our $bins = LoxBerry::System::get_binaries();
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.0.2";
 
-$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
+$cfg             = new Config::Simple("$lbhomedir/config/system/general.cfg");
 $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
 $lang            = $cfg->param("BASE.LANG");
 
@@ -94,6 +95,39 @@ my $maintemplate = HTML::Template->new(
 		);
 	
 my %SL = LoxBerry::System::readlanguage($maintemplate);
+
+# Read Donors and create Template Loop
+my $file = "$lbsdatadir/donors.dat";
+my $url = "https://raw.githubusercontent.com/mschlenstedt/Loxberry/master/data/system/donors.dat";
+my @lines;
+my @donorlist;
+my $counter = 0;
+
+# Download newest donors list if older than 3 days
+my $mtime = ( stat($file) )[9];
+my $now = time();
+if ($now > $mtime+259200 || !-e $file) {
+	my $resp = `$bins->{CURL} -q --connect-timeout 2 --max-time 5 --retry 2 -LfksSo $file $url 2>&1`;
+}
+
+# Read list in reverse order
+open (FH, '<', $file);
+@lines = reverse <FH>;
+close(FH);
+
+foreach (@lines) {
+	my %donor;
+	my ($name,$money) = split(/,/,$_);
+	$money =~ s/^\s+//;
+	my $moneyvalue = $money;
+	$moneyvalue =~ s/\D+$//;
+	$counter = $counter + $moneyvalue;
+	$donor{NAME} = $name;
+	$donor{MONEY} = $money;
+	push(@donorlist, \%donor);
+}
+$maintemplate->param(DONORLIST => \@donorlist);
+$maintemplate->param(COUNTER => $counter);
 
 # Print Template
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'DONATE.WIDGETLABEL'};

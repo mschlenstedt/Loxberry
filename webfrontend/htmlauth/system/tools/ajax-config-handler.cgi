@@ -4,9 +4,10 @@ use warnings;
 use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
-use LoxBerry::JSON;
+# use LoxBerry::JSON;
+use JSON;
 			
-my $version = "1.4.0.4"; # Version of this script
+my $version = "2.0.0.4"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -42,7 +43,9 @@ elsif ($action eq 'lbupdate-installtype') { &lbupdate; }
 elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') {  &lbupdate; }
+elsif ($action eq 'lbupdate-updateself') {  &lbupdate; }
 elsif ($action eq 'lbupdate-resetver') { change_generalcfg("BASE.VERSION", $value) if ($value); }
+elsif ($action eq 'lbupdate-setmaxversion') { change_generaljson("Update->max_version", $value) ; }
 elsif ($action eq 'plugin-loglevel') { plugindb_update('loglevel', $R::pluginmd5, $R::value); }
 elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
 elsif ($action eq 'testenvironment') {  &testenvironment; }
@@ -255,6 +258,26 @@ sub lbupdate
 		}
 	return;
 	}
+
+	if ($action eq 'lbupdate-updateself') {
+		my $output = qx { sudo $lbhomedir/sbin/loxberryupdatecheck.pl querytype=updateself};
+		my $ret = $? >> 8;
+		if($ret != 0) {
+			require LoxBerry::Web;
+			$response{error} = 1;
+			$response{logfile_button_html} = LoxBerry::Web::logfile_button_html( PACKAGE => 'LoxBerry Update', NAME => 'check' );
+		} else {
+			$response{error} = 0;
+		}	
+		$response{customresponse} = 0;
+		$response{output} = $output;
+
+		return;
+	}
+
+
+
+
 }
 
 ############################################
@@ -316,61 +339,22 @@ sub reboot
 sub plugindb_update
 {
 	my ($action, $md5, $value) = @_;
-
-	my @plugin_new;
-	my $dbchanged;
-	my @plugins = LoxBerry::System::get_plugins(1);
-	foreach my $plugin (@plugins) {
-		my $pluginline;
-		if ($plugin->{PLUGINDB_COMMENT}) {
-			$pluginline = "$plugin->{PLUGINDB_COMMENT}\n";
-			push(@plugin_new, $pluginline);
-			next;
-		}
-		$plugin->{PLUGINDB_LOGLEVEL} = 0 if !$plugin->{PLUGINDB_LOGLEVEL}; 
-		if ($plugin->{PLUGINDB_MD5_CHECKSUM} eq $md5) {
-			if ($action eq 'autoupdate' && $plugin->{PLUGINDB_AUTOUPDATE} ne $value) {
-				$plugin->{PLUGINDB_AUTOUPDATE} = $value;
-				$dbchanged = 1;
-			}
-			if ($action eq 'loglevel' && $plugin->{PLUGINDB_LOGLEVEL} ne $value) {
-				$plugin->{PLUGINDB_LOGLEVEL} = $value;
-				$dbchanged = 1;
-			}
-		}
-		$pluginline = 
-			$plugin->{PLUGINDB_MD5_CHECKSUM} . "|" . 
-			$plugin->{PLUGINDB_AUTHOR_NAME} . "|" . 
-			$plugin->{PLUGINDB_AUTHOR_EMAIL} . "|" . 
-			$plugin->{PLUGINDB_VERSION} . "|" . 
-			$plugin->{PLUGINDB_NAME} . "|" . 
-			$plugin->{PLUGINDB_FOLDER} . "|" . 
-			$plugin->{PLUGINDB_TITLE} . "|" . 
-			$plugin->{PLUGINDB_INTERFACE} . "|" . 
-			$plugin->{PLUGINDB_AUTOUPDATE} . "|" . 
-			$plugin->{PLUGINDB_RELEASECFG} . "|" . 
-			$plugin->{PLUGINDB_PRERELEASECFG} . "|" . 
-			$plugin->{PLUGINDB_LOGLEVEL} . "\n";
-		push(@plugin_new, $pluginline);
+	require LoxBerry::System::PluginDB;
+	my $plugin = LoxBerry::System::PluginDB->plugin( md5 => $md5 );
+	if(!$plugin) {
+		$response{error} = 1;
+		$response{message} = "plugindatabase: Plugin not found";
+		return;
 	}
-	
-	if ($dbchanged) {
-		open(my $fh, '>', "$lbsdatadir/plugindatabase.dat");
-		flock($fh,2);
-		print $fh @plugin_new;
-		close($fh);
-		#print STDERR "plugindatabase VALUES CHANGED.\n";
-		$response{error} = 0;
-		$response{message} = "plugindatabase: updated";
-		
-		
-		
-	} else {
-		#print STDERR "plugindatabase nothing changed.\n";
-		$response{error} = 0;
-		$response{message} = "plugindatabase: no update required";
-		
+	if ($action eq 'autoupdate') {
+		$plugin->{autoupdate} = $value;
 	}
+	elsif ($action eq 'loglevel') {
+		$plugin->{loglevel} = $value;
+	}
+	$plugin->save();
+	$response{error} = 0;
+	$response{message} = "plugindatabase: $action updated";
 }
 
 ############################################
@@ -499,6 +483,47 @@ sub change_generalcfg
 	return 1;
 }
 
+###################################################################
+# change general.json (internal function)
+###################################################################
+sub change_generaljson
+{
+	require LoxBerry::JSON;
+	# $LoxBerry::JSON::DEBUG = 1;
+	my ($key, $val) = @_;
+	if (!$key) {
+		return undef;
+	}
+	my $jsonobj = LoxBerry::JSON->new();
+	my $cfg = $jsonobj->open(filename => "$lbsconfigdir/general.json") or return undef;
+
+	my @keytree = split /->/, $key;
+	my $currelem = $cfg;
+
+	for my $elem ( 0 ... (scalar @keytree)-2 ) {
+		if(! $currelem->{$keytree[$elem]}) {
+			# print STDERR "Tree element $keytree[$elem] not existing -> creating\n";
+			my %newtree = ();
+			$currelem->{$keytree[$elem]} = \%newtree;
+			$currelem = $currelem->{$keytree[$elem]};
+		} else {
+			$currelem = $currelem->{$keytree[$elem]};
+		}
+	}
+	
+	if (!$val) {
+		# print STDERR "Deleting value\n";
+		# $currelem->{$keytree[-1]} = undef;
+		delete $currelem->{$keytree[-1]};
+	} else {
+		$currelem->{$keytree[-1]} = $val;
+	}
+	
+	$jsonobj->write();
+	$response{error} = 0;
+	$response{message} = "OK";
+	return 1;
+}
 
 END {
 

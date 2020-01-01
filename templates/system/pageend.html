@@ -3,6 +3,25 @@
 			</div>
 		</div>
 		<!-- /content -->
+		
+		<!-- Popup: reboot.force -->
+		<div data-role="popup" id="popupRebootForce" data-overlay-theme="a" data-dismissible="true" style="min-width:600px;min-height:300px;" data-theme="a" class="ui-corner-all">
+			<div data-role="header" >
+				<h1 class="ui-title" style="text-align: center;"><TMPL_VAR POWER.FORCEREBOOT_HEADER></h1>
+			</div>
+			<div role="main" id="popupRebootForceContent" style="padding: 20px 20px;text-align:center;">
+				<!-- <div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; background-image: url('../../system/images/reboot_required_big.svg');"></div> -->
+				<img  src="/system/images/reboot_required_big.svg">
+				<p><b><TMPL_VAR POWER.FORCEREBOOT_CONTENT></b></p>
+				<p id="popupRebootForceReason"></p>
+				<p><TMPL_VAR POWER.FORCEREBOOT_APOLOGY></p>
+				<a href="/admin/system/power.cgi" data-role="button" data-iconpos="left" data-icon="power" data-corners="true" data-inline="true"><TMPL_VAR HEADER.PANEL_REBOOT></a>
+				
+			</div>
+		</div>
+		
+		
+		
 		<!-- footer -->
 		<div data-role="footer" style="border:0px; text-align:center; overflow: hidden;" data-position="fixed" data-tap-toggle="false">
 			<div style="display:none;" class="footeralignmentIE"><div class="footeralignmentIE_l_outer"><img src="/system/images/loxberry_footer_logo_only.svg" alt=""><div class="footerlogotextIE"><img src="/system/images/loxberry_footer_loxberry_text_ws.svg" alt=""></div><div class="footeralignmentIE_l"></div></div><div class="footeralignmentIE_r_outer"><div class="footeralignmentIE_r"><div class="footersloganIE_r"><img src="/system/images/BTL.svg" alt=""></div></div></div></div>
@@ -12,10 +31,11 @@
 				<a id="btnhome" href="/admin/system/index.cgi" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>&nbsp;&nbsp;
 				<a id="btnsystem" href="/admin/system/index.cgi?form=system" data-role="button" data-icon="bars" data-iconpos="notext">Einstellungen</a>&nbsp;&nbsp;
 				<a id="btnpower" href="/admin/system/power.cgi" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
-				<div data-href="/admin/system/power.cgi"      id="btnpower_alert" style="pointer-events: none; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>
+				<div data-href="/admin/system/power.cgi"      id="btnpower_alert" style="position:absolute; top: 4px, left: 0px, pointer-events: none; visibility:hidden; width:30px; height:30px; padding:0px, border:0px, z-index:10000, background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>
 				<div data-href="/admin/system/logmanager.cgi" id="update_alert"   style="margin-left:15px; cursor:default; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
 		</div>
 		<SCRIPT>
+		
 		$( document ).ready(function() 
 		{
 			if ( $(document.body).hasClass("chrome") ) { $( '.display_chome_only' ).show(); } else { $( '.display_chome_only' ).hide(); }
@@ -40,8 +60,8 @@
 			// Footer icon animation for Reboot (fade in)
 			function reboot_on()
 			{ 
-				var reboot_alert_offset = $("#btnpower").offset(); 
-				$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
+				 var reboot_alert_offset = $("#btnpower").offset(); 
+				 $("#btnpower_alert").css({ "top": "4px", "pointer-events" : "none", "width" : "30px", "height" : "30px", "background-repeat" : "no-repeat", "padding": "0px", "visibility" : "visible", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left, "position":"absolute" });
 				if ( $("#btnpower").prop("animate_reboot") == 1 )
 				{ 
 					$("#btnpower_alert").fadeTo( 2000 , 1.0, function() 
@@ -58,8 +78,8 @@
 			// Footer icon animation for Reboot (fade out)
 			function reboot_off()
 			{ 
-				var reboot_alert_offset = $("#btnpower").offset(); 
-				$("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); 
+				 var reboot_alert_offset = $("#btnpower").offset(); 
+				 $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left, "position":"absolute" }); 
 				if ( $("#btnpower").prop("animate_reboot") == 1 )
 				{ 
 					$("#btnpower_alert").fadeTo( 2000 , 0.1, function() 
@@ -80,30 +100,18 @@
 			}; 
 			function refresh_footer_icons () 
 			{	
+				reboot_on();
+				
 				$.ajax( "/admin/system/tools/ajax-footer-icons-handler.php")
 					.done(function(data) 
 					{ 
-						var response_data = JSON.parse(data);
+						//var response_data = JSON.parse(data);
+						var response_data = data;
+						
 						var update_alert_offset = $("#btnpower").offset(); 
 						//console.log("ajax-reboot-required-handler.php executed",response_data);
-						if (response_data.reboot_required != 0) 
-						{
-							$("#btnpower").attr("title","<TMPL_VAR POWER.MSG_REBOOT_REQUIRED_SHORT>"); 
-							$("#btnpower_alert").on("click", function(e)
-							{ 
-								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
-							}); 
-							if ( $("#btnpower").prop("animate_reboot") != 1 )
-							{
-								$("#btnpower").prop("animate_reboot",1); 
-								reboot_on();
-							}
-						}
-						else 
-						{
-							$("#btnpower").prop("animate_reboot",""); 
-							reboot_off();
-						}
+						
+						// Update running
 						if (response_data.update_running == 1) 
 						{
 							$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"pointer" }); 
@@ -121,6 +129,44 @@
 							$("#update_alert").fadeOut(); 
 							
 						}
+						
+						// Reboot required
+						if (response_data.reboot_required != 0 && response_data.update_running == 0) 
+						{
+							$("#btnpower").attr("title","<TMPL_VAR POWER.MSG_REBOOT_REQUIRED_SHORT>"); 
+							$("#btnpower_alert").on("click", function(e)
+							{ 
+								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
+							}); 
+							if ( $("#btnpower").prop("animate_reboot") != 1 )
+							{
+								$("#btnpower").prop("animate_reboot",1); 
+								reboot_on();
+							}
+						} else {
+							$("#btnpower").prop("animate_reboot",""); 
+							reboot_off();
+						}
+						
+					
+						// Reboot.force forces popup
+						if (response_data.reboot_force == 1 && response_data.update_running == 0) 
+						{
+							if(response_data.reboot_force_reason.length > 0) {
+								$("#popupRebootForceReason").html(response_data.reboot_force_reason);
+							}
+							
+							next_reboot_force_popup_time = sessionStorage.getItem("loxberry_reboot_force");
+
+							if(next_reboot_force_popup_time === "null") 
+								next_reboot_force_popup_time = 0;
+							
+							if( next_reboot_force_popup_time < Date.now()) {
+								$("#popupRebootForce").popup("open");
+								sessionStorage.setItem("loxberry_reboot_force", Date.now()+2*60*1000);
+							}
+						}
+						
 					})
 					.error(function(XMLHttpRequest, textStatus, errorThrown) 
 					{

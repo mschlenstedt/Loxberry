@@ -24,7 +24,7 @@ ini_parser() {
 
  if [ ! -h /etc/systemd/system/ssdpd.service ]
  then
-   ln -s /opt/loxberry/data/system/ssdpd.service /etc/systemd/system/ssdpd.service
+   ln -s $LBHOMEDIR/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service
    /bin/systemctl daemon-reload
    #/bin/systemctl disable ssdpd
  fi;

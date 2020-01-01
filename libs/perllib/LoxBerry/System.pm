@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "1.4.2.2";
+our $VERSION = "2.0.0.7";
 our $DEBUG;
 
 use base 'Exporter';
@@ -51,6 +51,7 @@ our @EXPORT = qw (
 	is_enabled 
 	is_disabled
 	begins_with
+	execute
 	trim 
 	ltrim
 	rtrim
@@ -223,7 +224,8 @@ our $lbsbindir = "$lbhomedir/bin";
 our %SL; # Shortcut for System language phrases
 our %L;  # Shortcut for Plugin language phrases
 our $reboot_required_file = "$lbstmpfslogdir/reboot.required";
-
+our $reboot_force_popup_file = "$lbstmpfslogdir/reboot.force";
+our $PLUGINDATABASE = "$lbsdatadir/plugindatabase.json";
 
 # Variables only valid in this module
 my $lang;
@@ -511,11 +513,20 @@ sub plugindata
 ##################################################################################
 sub get_plugins
 {
+	my ($withcomments_obsolete, $forcereload, $plugindb_file_obsolete) = @_;
 	
-	my ($withcomments, $forcereload, $plugindb_file) = @_;
+	# withcomments parameter is legacy for LoxBerry 1.x and not used.
+	if( defined $withcomments_obsolete ) {
+		Carp::carp "<INFO> get_plugins first parameter (withcomments) is outdated and ignored";
+	}
+	# $plugindb_file parameter is not allowed anymore
+	if (defined $plugindb_file_obsolete) {
+		Carp::croak "<ERROR> get_plugins third parameter (plugindb_file) is outdated and not allowed anymore. To read a custom plugindatabase, use LoxBerry::System::PluginDB instead.";
+	}
+	
+	my $plugindb_file = $PLUGINDATABASE;
 	
 	# When the plugindb has changed, always force a reload of the plugindb
-	
 	if($plugindb_timestamp_last != plugindb_changed_time()) {
 			# Changed
 			my $plugindb_timestamp_new = plugindb_changed_time();
@@ -524,81 +535,50 @@ sub get_plugins
 			$plugindb_timestamp_last = $plugindb_timestamp_new;
 		}
 		
-	if (@plugins && !$forcereload && !$plugindb_file && !$plugins_delcache) {
+	if (@plugins && !$forcereload && !$plugins_delcache) {
 		print STDERR "get_plugins: Returning cached version of plugindatabase\n" if ($DEBUG);
 		return @plugins;
 	} else {
 		print STDERR "get_plugins: Re-reading plugindatabase\n" if ($DEBUG);
 	}
 	
-	if (! $plugindb_file) {
-		$plugindb_file = "$lbsdatadir/plugindatabase.dat";
-		$plugins_delcache = 0;
-	} else {
-		$plugins_delcache = 1;
-	}
-	
 	print STDERR "get_plugins: Using file $plugindb_file\n" if ($DEBUG);
 	
-	if (!-e $plugindb_file) {
-		Carp::carp "LoxBerry::System::pluginversion: Could not find $plugindb_file\n";
-		return undef;
+	require JSON;
+	my $plugindbdata;
+	eval {
+		$plugindbdata = JSON::from_json( LoxBerry::System::read_file( $LoxBerry::System::PLUGINDATABASE ) );
+	};
+	if ($@) {
+		Carp::carp "LoxBerry::System::get_plugins: Could not read $plugindb_file\n";
+		return;
 	}
-	my $openerr;
-	open(my $fh, "<", $plugindb_file) or ($openerr = 1);
-	if ($openerr) {
-		Carp::carp "Error opening plugin database $plugindb_file";
-		# &error;
-		return undef;
-		}
-	my @data = <$fh>;
-
+	
+	# my $plugindbobj = LoxBerry::JSON->new();
+	# my $plugindbdata = $plugindbobj->open(filename => $plugindb_file, readonly => 1);
+		
 	@plugins = ();
 	my $plugincount = 0;
 	
-	foreach (@data){
-		s/[\n\r]//g;
+	foreach my $pluginkey ( sort { lc $plugindbdata->{plugins}->{$a}->{title} cmp lc $plugindbdata->{plugins}->{$b}->{title} } keys %{$plugindbdata->{plugins}} ){
+		my $plugindata = $plugindbdata->{plugins}->{$pluginkey};
 		my %plugin;
-		# Comments
-		if ($_ =~ /^\s*#.*/) {
-			if (defined $withcomments) {
-				$plugin{PLUGINDB_COMMENT} = $_;
-				push(@plugins, \%plugin);
-			}
-			next;
-		}
-		
 		$plugincount++;
-		my @fields = split(/\|/);
-
-		## Start Debug fields of Plugin-DB
-		# do {
-			# my $field_nr = 0;
-			# my $dbg_fields = "Plugin-DB Fields: ";
-			# foreach (@fields) {
-				# $dbg_fields .= "$field_nr: $_ | ";
-				# $field_nr++;
-			# }
-			# print STDERR "$dbg_fields\n";
-		# } ;
-		## End Debug fields of Plugin-DB
-		
-		# From Plugin-DB
 		
 		$plugin{PLUGINDB_NO} = $plugincount;
-		$plugin{PLUGINDB_MD5_CHECKSUM} = $fields[0];
-		$plugin{PLUGINDB_AUTHOR_NAME} = $fields[1];
-		$plugin{PLUGINDB_AUTHOR_EMAIL} = $fields[2];
-		$plugin{PLUGINDB_VERSION} = $fields[3];
-		$plugin{PLUGINDB_NAME} = $fields[4];
-		$plugin{PLUGINDB_FOLDER} = $fields[5];
-		$plugin{PLUGINDB_TITLE} = $fields[6];
-		$plugin{PLUGINDB_INTERFACE} = $fields[7];
-		$plugin{PLUGINDB_AUTOUPDATE} = $fields[8];
-		$plugin{PLUGINDB_RELEASECFG} = $fields[9];
-		$plugin{PLUGINDB_PRERELEASECFG} = $fields[10];
-		$plugin{PLUGINDB_LOGLEVEL} = $fields[11];
-		$plugin{PLUGINDB_LOGLEVELS_ENABLED} = $plugin{PLUGINDB_LOGLEVEL} >= 0 ? 1 : 0;
+		$plugin{PLUGINDB_MD5_CHECKSUM} = $plugindata->{md5};
+		$plugin{PLUGINDB_AUTHOR_NAME} = $plugindata->{author_name};
+		$plugin{PLUGINDB_AUTHOR_EMAIL} = $plugindata->{author_email};
+		$plugin{PLUGINDB_VERSION} = $plugindata->{version};
+		$plugin{PLUGINDB_NAME} = $plugindata->{name};
+		$plugin{PLUGINDB_FOLDER} = $plugindata->{folder};
+		$plugin{PLUGINDB_TITLE} = $plugindata->{title};
+		$plugin{PLUGINDB_INTERFACE} = $plugindata->{interface};
+		$plugin{PLUGINDB_AUTOUPDATE} = $plugindata->{autoupdate};
+		$plugin{PLUGINDB_RELEASECFG} = $plugindata->{releasecfg};
+		$plugin{PLUGINDB_PRERELEASECFG} = $plugindata->{prereleasecfg};
+		$plugin{PLUGINDB_LOGLEVEL} = $plugindata->{loglevel};
+		$plugin{PLUGINDB_LOGLEVELS_ENABLED} = $plugindata->{loglevel} >= 0 ? 1 : 0;
 		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
 		push(@plugins, \%plugin);
 		# On changes of the plugindatabase format, please change here 
@@ -616,11 +596,9 @@ sub get_plugins
 sub plugindb_changed_time
 {
 	
-	my $plugindb_file = "$lbsdatadir/plugindatabase.dat";
-	
 	# If it was never checked, it cannot have changed
 	if ($plugindb_timestamp == 0 or $plugindb_lastchecked+60 < time) {
-		$plugindb_timestamp = (stat $plugindb_file)[9];
+		$plugindb_timestamp = (stat $PLUGINDATABASE)[9];
 		$plugindb_lastchecked = time;
 		print STDERR "Updating plugindb timestamp variable to $plugindb_timestamp\n" if ($DEBUG);
 	}
@@ -717,7 +695,7 @@ sub set_clouddns
 	my ($msnr, $clouddnsaddress) = @_;
 	
 	require LoxBerry::JSON;
-	my $memfile = "/run/shm/clouddns_cache.json";
+	my $memfile = "$lbhomedir/log/system_tmpfs/clouddns_cache.json";
 	my $jsonobj = LoxBerry::JSON->new();
 	my $cache = $jsonobj->open(filename => $memfile);
 	my $cachekey = $miniservers{$msnr}{CloudURL};
@@ -1118,6 +1096,7 @@ Keywords for is_disabled: false, no, off, disabled, disable, 0.
 sub is_enabled
 { 
 	my ($text) = @_;
+	if (!$text) { return undef;} 
 	$text =~ s/^\s+|\s+$//g;
 	$text = lc $text;
 	if ($text eq "true") { return 1;}
@@ -1139,7 +1118,7 @@ sub is_enabled
 sub is_disabled
 { 
 	my ($text) = @_;
-	if (! $text) { return 1;} 
+	if (!$text) { return 1;} 
 	$text =~ s/^\s+|\s+$//g;
 	$text = lc $text;
 	if ($text eq "false") { return 1;}
@@ -1288,7 +1267,7 @@ sub check_securepin
 {
 	my ($securepin) = shift;
 	
-	my $pinerror_file = '/dev/shm/securepin.errors';
+	my $pinerror_file = "$lbhomedir/log/system_tmpfs/securepin.errors";
 	my $pinerrobj;
 	my $pinerr;
 	
@@ -1299,6 +1278,27 @@ sub check_securepin
 			};
 	my $securepinsaved = <$fh>;
 	close ($fh);
+
+	# In case we have an active SupportVPN connmection
+	my $securepinsavedsupportvpn;;
+	if (-e "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn") {
+		# Check Online Status
+		use Net::Ping;
+		for (my $i=0; $i < 3; $i++) {
+			my $p = Net::Ping->new();
+			my $hostname = '10.98.98.1';
+			my ($ret, $duration, $ip) = $p->ping($hostname);
+			if (!$ret) {
+			sleep (1);
+				next;
+			} else {
+				open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn"); 
+				$securepinsavedsupportvpn = <$fh>;
+				close ($fh);
+				last;
+			}
+		}
+	}
 	
 	if (-e $pinerror_file) {
 		require LoxBerry::JSON;
@@ -1320,26 +1320,26 @@ sub check_securepin
 		undef $pinerrobj;
 	}
 	
-	if ( crypt($securepin, $securepinsaved) ne $securepinsaved ) {
-			# Not equal
-			require LoxBerry::JSON;
-			$pinerrobj = LoxBerry::JSON->new();
-			$pinerr = $pinerrobj->open(filename => $pinerror_file, writeonclose => 1);
-			$pinerr->{failure_count} = 0 if (! $pinerr->{failure_count});
-			sleep($pinerr->{failure_count});
-			$pinerr->{failure_count} += 1;
-			
-			$pinerr->{failure_time} = time if (! $pinerr->{failure_time});
-			if( $pinerr->{failure_count} > 5) {
-				print STDERR "SecurePIN was locked";
-				$pinerr->{locked} = time;
-				return (3);
-			}
-			return (1);
-	} else {
+	if ( crypt($securepin, $securepinsaved) eq $securepinsaved || crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
 		# OK
 		unlink $pinerror_file;
 		return (undef);
+	} else {
+		# Not equal
+		require LoxBerry::JSON;
+		$pinerrobj = LoxBerry::JSON->new();
+		$pinerr = $pinerrobj->open(filename => $pinerror_file, writeonclose => 1);
+		$pinerr->{failure_count} = 0 if (! $pinerr->{failure_count});
+		sleep($pinerr->{failure_count});
+		$pinerr->{failure_count} += 1;
+		
+		$pinerr->{failure_time} = time if (! $pinerr->{failure_time});
+		if( $pinerr->{failure_count} > 5) {
+			print STDERR "SecurePIN was locked";
+			$pinerr->{locked} = time;
+			return (3);
+		}
+		return (1);
 	}
 }
 
@@ -1361,6 +1361,25 @@ sub reboot_required
 		chown $uid, $gid, $LoxBerry::System::reboot_required_file;
 		};
 }
+
+sub reboot_force
+{
+	my ($message) = shift;
+	open(my $fh, ">>", $LoxBerry::System::reboot_force_popup_file) or Carp::carp "Cannot open/create reboot.force file $reboot_force_popup_file.";
+	flock($fh,2);
+	if (! $message) {
+		print $fh "A reboot is necessary to continue updates.";
+	} else {
+		print $fh "$message";
+	}
+	flock($fh,8);
+	close $fh;
+	eval {
+		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+		chown $uid, $gid, $LoxBerry::System::reboot_force_popup_file;
+		};
+}
+
 
 sub diskspaceinfo
 {
@@ -1439,7 +1458,7 @@ sub lock
 	my $openerr;
 	open(my $fh, "<", $importantlockfilesfile) or ($openerr = 1);
 	if ($openerr) {
-		Carp::carp "Error opening important lock files file  $importantlockfilesfile";
+		Carp::carp "Error opening important lock files file $importantlockfilesfile";
 		return "Error opening important lock files list";
 		}
 	my @data = <$fh>;
@@ -1453,6 +1472,26 @@ sub lock
 	do {
 		$seemsrunning = 0;
 		print STDERR "running loop delay $delay from $p{wait}\n" if ($DEBUG);
+		
+		# Check for apt-get and dpkg updates running
+		# pgrep: Exitcode 1 -> not found. 0 -> found
+		
+		my $rc_apt;
+		my $rc_dpkg;
+		($rc_apt) = LoxBerry::System::execute( 'pgrep apt-get' );
+		($rc_dpkg) = LoxBerry::System::execute( 'pgrep dpkg' );
+		if( $rc_apt eq "0" or $rc_dpkg eq "0") {
+			$seemsrunning = 'apt-get' if ($rc_apt eq "0");
+			$seemsrunning = 'dpkg' if ($rc_dpkg eq "0");
+		
+			if ($p{wait}) {
+				print STDERR "Waiting..." if ($DEBUG);
+				sleep(5);
+				$delay += 5;
+			}
+		} 
+		
+		# Check for lock files
 		foreach my $lockfile (@data) {
 			my $pid;
 			$lockfile = LoxBerry::System::trim($lockfile);
@@ -1632,6 +1671,95 @@ sub read_file
 	close FILE;
 	return $string;
 }
+
+# Exec a shell command, return exitcode and output
+sub execute
+{
+	my @params = @_;
+	my $log;
+	my $uselog;
+	my $command;
+	my %arghash;
+	my $args = \%arghash;
+		
+	# Check command parameter
+	
+	print STDERR "execute: Number of params: " . scalar @params . "\n" if ($DEBUG);
+	print STDERR "execute: Ref of first param: " . ref($params[0]) . "\n" if ($DEBUG);
+		
+	if( scalar @params == 1 and ref($params[0]) eq "" ) {
+		print STDERR "execute: Parameter was a string and will be used as command\n" if ($DEBUG);
+		$args->{command} = $params[0];
+	} elsif ( scalar @params == 1 and ref($params[0]) eq "HASH" ) {
+		print STDERR "execute: Parameter was a hash\n" if ($DEBUG);
+		$args = $params[0];
+	} elsif ( scalar @params > 1 and scalar(@params)%2 == 0 ) {
+		print STDERR "execute: Parameter was an array\n" if ($DEBUG);
+		%arghash = @params;
+	} elsif ( scalar @params > 1 and scalar(@params)%2 == 1 ) {
+		Carp::croak("execute: Uneven number of arguments");
+	} else {
+		Carp::croak("execute: Unknown type of arguments.");
+	}
+	
+	if ( !defined $args->{command} ) {
+		Carp::croak("execute: Argument command missing");
+	} else {
+		$command = $args->{command};
+	}
+	
+	# Check log parameter
+	if( ref($args) and $args->{log}) {
+		print STDERR "execute: log argument given\n" if ($DEBUG);
+		$uselog = 1;
+		
+		# Test the log object
+		require LoxBerry::Log;
+		$log = $args->{log};
+		eval {
+			$log->loglevel();
+		};
+		if($@) {
+			# No log object present
+			print STDERR "execute: Warning: Parameter log given, but log not defined.\n";
+			$uselog = 0;
+		}
+	}
+		
+	if($uselog) {
+		# Define default values
+		$args->{intro} = "Executing command '$command'..." if( !defined $args->{intro} ); 
+		$args->{ok} = "Command executed successfully." if( !defined $args->{ok} ); 
+		$args->{error} = "ERROR executing command"  if( !defined $args->{error} and !defined $args->{warn} );
+		$args->{okcode} = 0 if( !defined $args->{okcode} );
+
+		# Log intro
+		$log->INF($args->{intro});
+	}
+		
+	my $output = qx { $command };
+	my $exitcode  = $? >> 8;
+	
+	# All of the following code is only relevant if something needs to be logged
+	if($uselog) {
+		if( $exitcode eq $args->{okcode} ) {
+			# OK
+			$log->OK( $args->{ok} . " - Exitcode $exitcode");
+		} else {
+			# Not OK
+			if( defined $args->{warn} ) {
+				$log->WARN( $args->{warn} . " - Exitcode $exitcode" );
+			} else {
+				$log->ERR( $args->{error} . " - Exitcode $exitcode" );
+			}
+			$log->DEB ( $output );
+		}
+	}
+	
+	return ($exitcode, $output);
+
+}
+
 
 
 #####################################################

@@ -3,6 +3,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 MAILTO=""
 #
 # m h dom mon dow user  command
+@reboot loxberry cd / && run-parts --arg=cron=reboot /opt/loxberry/system/cron/cron.reboot > /dev/null 2>&1
 *    * * * * loxberry cd / && run-parts --arg=cron=01min /opt/loxberry/system/cron/cron.01min > /dev/null 2>&1
 */3  * * * * loxberry cd / && run-parts --arg=cron=03min /opt/loxberry/system/cron/cron.03min > /dev/null 2>&1
 */5  * * * * loxberry cd / && run-parts --arg=cron=05min /opt/loxberry/system/cron/cron.05min > /dev/null 2>&1

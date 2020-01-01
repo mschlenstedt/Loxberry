@@ -1,0 +1,140 @@
+<!-- ********************* FORM ******************** -->
+<P><TMPL_VAR SERVICES_SAMBA.INTRO></P>
+
+<BR>
+
+<STYLE>
+	
+	.lb_flex-item-label
+	{
+		min-width	:220px;
+		position	:relative;
+		margin-left	:10px;
+		flex-grow	:2;
+	}
+	.lb_flex-item 
+	{	
+		//min-width	:150px;
+		//width		:250px;
+		//max-width	:250px;
+		flex-wrap	:nowrap;
+		margin-top	:-10px;  
+		flex-grow   :1;
+	}
+	.lb_flex-item-help 
+	{
+		//min-width	:100px;
+		position	:relative;
+		margin-left	:10px;
+		margin-top	:-10px;  
+		flex-grow   :1;
+	}
+</STYLE>
+
+<TMPL_UNLESS ERROR>
+
+<FORM id="main_form" method="post" data-ajax="false"> 
+	<INPUT id="saveformdata" name="saveformdata" type="hidden" value="1">
+	<DIV	class="lb_flex-container">
+		<DIV	class="lb_flex-item-spacer"></DIV>
+		<DIV	class="lb_flex-item-label">
+			<LABEL	class=	"control-label"
+				for="global_workgroup"><TMPL_VAR SERVICES_SAMBA.WORKGROUP_LABEL></LABEL>
+		</DIV>
+		<DIV	class="lb_flex-item">
+			<input width="100%" value="" id="global_workgroup" name="global_workgroup" type="text" class="textfield global">
+		</DIV>
+		<DIV	class="lb_flex-item-help hint">
+			<TMPL_VAR SERVICES_SAMBA.WORKGROUP_HINT>
+		</DIV>
+		<DIV	class="lb_flex-item-spacer"></DIV>
+	</DIV>
+
+</FORM>
+
+<!-- Button area -->
+
+<DIV style="text-align:center;">
+<div id="save_result" style="height:15px;font-size:12px"></div>
+		<!-- Buttons for widget -->
+		<A	id=		"btncancel"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"delete"
+			href=		"/admin/system/index.cgi?form=system">
+			<TMPL_VAR COMMON.BUTTON_CANCEL></A>
+		<BUTTON	type=		"submit"
+			form=		"main_form"
+			id=		"btnsubmit"
+			data-role=	"button"
+			data-inline=	"true"
+			data-mini=	"true"
+			data-icon=	"check">
+			<TMPL_VAR COMMON.BUTTON_SAVE>
+		</BUTTON>
+</DIV>
+
+<script>
+
+	// Validation
+	// validate_enable('#Samba_Workgroup');
+
+	smbGlobal = JSON.parse('<TMPL_VAR SMBGLOBAL>');
+	
+
+	$(function() {
+		// Loop all global input fields (class global)
+		$( ".global" ).each( function() {
+			// The name of the input field is prefixed with 'global_', therefore 
+			// we strip the first 7 chars, and if then the name matches with the json 
+			// result, the value is set to the form
+			elementName = $(this).attr('name').substr(7);
+			if (typeof smbGlobal[elementName] !== 'undefined') {
+				$(this).val( smbGlobal[elementName] );
+			}
+		});
+	});
+
+	$("#btnsubmit").click(function(e){
+		 e.preventDefault();
+		$("#btnsubmit").attr("disabled", true);
+		
+		// Uppercase Workgroup name
+		$("#global_workgroup").val($("#global_workgroup").val().toUpperCase());
+		
+		$.ajax( { 
+				//type: 'POST',
+				//url: 'ajax_savejson.cgi', 
+				// dataType: 'json',
+				//contentType: 'text/plain; charset=UTF-8',
+				data: $('#main_form').serialize()
+			} )
+		.done(function( data ) {
+			console.log( "Success" );
+			if ( typeof data.error !== 'undefined' ) {
+				$("#save_result").attr("style", "color:red;font-size:12px").html("Error: "+data.error);
+			} else {
+				$("#save_result").attr("style", "color:green;font-size:12px").html(data.statusText);
+			}
+			
+		})
+		.fail(function( jqXHR ) {
+			console.log(jqXHR);
+			$("#save_result").attr("style", "color:red;font-size:12px").html("Error saving: HTTP " + jqXHR.status + " " + jqXHR.statusText);
+		})
+		.always(function() {
+			console.log( "Finished" );
+			$("#btnsubmit").attr("disabled", false);
+		
+		});
+	});
+
+</script>
+
+</TMPL_UNLESS>
+
+<TMPL_IF ERROR>
+<h1><TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR></h1>
+<p><TMPL_VAR ERROR></p>
+</TMPL_IF>

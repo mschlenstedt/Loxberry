@@ -3,7 +3,7 @@
 
 require_once "loxberry_log.php";
 
-$initlog_version = "1.2.5.3";
+$initlog_version = "2.0.0.1";
 
 $INITLOG_DEBUG = 0;
 
@@ -100,6 +100,11 @@ function do_logend()
 	
 	do_status();
 	do_attentionmessages();
+	
+	if(!isset($opt["message"])) { 
+		$opt["message"]="";
+	}
+	
 	$log->LOGEND($opt["message"]);
 }
 

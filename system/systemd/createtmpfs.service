@@ -1,0 +1,19 @@
+[Unit]
+Description=Createtmpfs for Loxberry: create and move log folders on tmpfs
+Before=rsyslog.service syslog.target shutdown.target zram-swap-conf.service apache2.service ssh.service loxberry.service smbd.service cron.service shutdown.target reboot.target halt.target
+After=local-fs.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/loxberry
+EnvironmentFile=-/etc/environment
+RemainAfterExit=yes
+ExecStart=/opt/loxberry/sbin/createtmpfsfoldersinit.sh start
+ExecStop=/opt/loxberry/sbin/createtmpfsfoldersinit.sh stop
+SyslogIdentifier=createtmpfs
+StandardOutput=syslog
+StandardError=syslog
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

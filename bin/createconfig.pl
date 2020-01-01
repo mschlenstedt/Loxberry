@@ -79,6 +79,32 @@ sub update_generaljson
 	if (copydefault( $defgeneraljson_file , $sysgeneraljson_file )) 
 		{ return 1; }
 	
+	my $defcfgobj = LoxBerry::JSON->new();
+	my $syscfgobj = LoxBerry::JSON->new();
+	
+	my $defcfg = $defcfgobj->open(filename => $defgeneraljson_file, readonly => 1);
+	my $syscfg = $syscfgobj->open(filename => $sysgeneraljson_file, writeonclose => 1);
+	
+	# This definitely will fail if the json holds an array instead of an object
+	foreach my $firstkey (keys %$defcfg) {
+		print "$firstkey: $defcfg->{$firstkey}\n";
+		eval {
+			foreach my $secondkey (keys %{$defcfg->{$firstkey}}) {
+				#print "firstkey|secondkey $firstkey|$secondkey: " . $defcfg->{$firstkey}->{$secondkey} . "\n";
+				if ( ! defined $syscfg->{$firstkey}->{$secondkey} ) {
+					print "Setting $firstkey|$secondkey to $defcfg->{$firstkey}->{$secondkey}\n";
+					$syscfg->{$firstkey}->{$secondkey} = $defcfg->{$firstkey}->{$secondkey};
+				}
+			}
+		};
+		
+		if (! defined $syscfg->{$firstkey}) {
+			print "Setting $firstkey to $defcfg->{$firstkey}\n";
+			$syscfg->{$firstkey} = $defcfg->{$firstkey};
+		}
+		
+	}	
+	
 }
 
 

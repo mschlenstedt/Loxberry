@@ -396,6 +396,15 @@ class intLog
 	
 	public function writelog($msg) {
 		
+		// Check if the database entry is still present
+		if (!isset($this->params["_next_db_check"]) or time() > $this->params["_next_db_check"]) {
+			// error_log("writelog: DB session check called");
+			if(!isset($this->dbh)) {
+				$this->dbh = intLog::log_db_init_database();
+			}
+			intLog::log_db_recreate_session($this->dbh, $this);
+			$this->params["_next_db_check"] = time()+60;
+		}
 		
 		if (isset($this->params["stdout"])) {fwrite(STDOUT,$msg . PHP_EOL);}
 		if (isset($this->params["stderr"])) {fwrite(STDERR,$msg . PHP_EOL);}
@@ -721,6 +730,30 @@ class intLog
 
 	}
 	
+	private function log_db_recreate_session($dbh, $p) 
+	{
+		if(!isset($dbh)) {
+			// error_log("log_db_recreate_session: dbh not defined - Abort.");
+			return;
+		}
+		if(!isset($p->params["dbkey"])) {
+			// error_log("log_db_recreate_session: dbkey not defined. Abort.");
+			return;
+		}
+		
+		# Search filename
+		$qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '{$p->params["filename"]}' LIMIT 1;"; 
+		$res = $dbh->QUERY($qu);
+		$row = $res->fetchArray(SQLITE3_ASSOC);
+		if (!empty($row["LOGKEY"])) {
+			// error_log("log_db_recreate_session: logkey exists, nothing to do");
+			return;
+		} 
+		// logkey not existing - recreate
+		error_log("log_db_recreate_session: Session does not exist in DB - creating a new session");
+		$p->params["dbkey"] = intLog::log_db_logstart($p->dbh, $p);
+	}
+	
 	public function __destruct() 
 	{
 		// echo "__descruct called\n";
@@ -745,7 +778,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "1.4.1.1";
+	public static $VERSION = "2.0.0.1";
 	
 	public static function newLog($args)
 	{

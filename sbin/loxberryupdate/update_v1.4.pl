@@ -47,7 +47,6 @@ LOGINF "Clean up apt databases and update";
 my $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y --fix-broken install };
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y autoremove };
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y clean };
-$output = qx { rm -r /var/lib/apt/lists/* };
 $output = qx { rm -r /var/cache/apt/archives/* };
 
 $output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/dpkg --configure -a };

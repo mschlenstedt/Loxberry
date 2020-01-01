@@ -36,6 +36,8 @@ if (!$lbstemplatedir) {
 	exit (1);
 }
 
+print STDERR "We are running as $ENV{USERNAME}.\n";
+
 # We need to backup the reboot state because we do not want it in the template
 my $reboot_required_file = $LoxBerry::System::reboot_required_file;
 if (-e $reboot_required_file) {

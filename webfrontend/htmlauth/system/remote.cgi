@@ -40,7 +40,7 @@ my $helptemplate = "help_remote.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.0.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -97,10 +97,11 @@ if (-e "$lbhomedir/system/supportvpn/loxberry.crt" ) {
 			my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
 			chomp ($pid);
 			$resp = `kill $pid`;
+			$resp = `sudo $lbhomedir/sbin/openvpn stop 2>&1`;
 		}
 
 		notify( "remote", "supportkey", $SL{'REMOTE.LABEL_SUPPORTKEY'} . " " . $supportkey . " - " . $SL{'REMOTE.MSGERROR_KEY_EXPIRED'}, 1);
-		$resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
+		$resp = `rm -rf $lbhomedir/system/supportvpn/* 2>&1`;
 	}
 
 }
@@ -115,8 +116,9 @@ if ($reset) {
 		my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
 		chomp ($pid);
 		$resp = `kill $pid`;
+		$resp = `sudo $lbhomedir/sbin/openvpn stop 2>&1`;
 	}
-	$resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
+	$resp = `rm -rf $lbhomedir/system/supportvpn/* 2>&1`;
 
 }
 
@@ -137,7 +139,7 @@ if ($connect && -e "$lbhomedir/system/supportvpn/loxberry.cfg" && -e "$lbhomedir
 			chomp ($pid);
 			$resp = `kill $pid`;
 		}
-		$resp = `sudo $lbhomedir/sbin/openvpn-startup 2>&1`;
+		$resp = `sudo $lbhomedir/sbin/openvpn start 2>&1`;
 		$resp = `cd $lbhomedir/system/supportvpn && openvpn --daemon --writepid $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid --log $lbhomedir/log/system_tmpfs/openvpn.log --config $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
 	}
 	
@@ -166,6 +168,7 @@ if ($disconnect && -e "$lbhomedir/system/supportvpn/loxberry.crt" ) {
 		my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
 		chomp ($pid);
 		$resp = `kill $pid`;
+		$resp = `sudo $lbhomedir/sbin/openvpn stop 2>&1`;
 	}
 
 }
@@ -210,6 +213,7 @@ if ($supportkey) {
 		my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
 		chomp ($pid);
 		$resp = `kill $pid`;
+		$resp = `sudo $lbhomedir/sbin/openvpn stop 2>&1`;
 	}
 
 	$resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;

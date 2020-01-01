@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "1.4.3.1";
+our $VERSION = "2.0.0.4";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -78,6 +78,7 @@ sub new
 				autoraise => $params{nofile},
 				addtime => $params{addtime},
 				dbkey => $params{dbkey},
+				nosession => $params{nosession},
 	};
 	
 	bless $self, $class;
@@ -85,6 +86,11 @@ sub new
 	if ($self->{autoraise} eq "") {
 		$self->{autoraise} = 1;
 	}
+	
+	if ( LoxBerry::System::is_enabled($self->{nosession}) ) {
+		$self->{append} = 1;
+	}
+	
 	
 	
 	# If nofile is given, we don't need to do any smart things
@@ -163,11 +169,18 @@ sub new
 	}
 	
 	# SQLite init
-	if($self->{append} && !$self->{nofile}) {
+
+	if( LoxBerry::System::is_enabled($params{nosession}) ) {
+		$self->{dbh} = log_db_init_database();
+		$self->{dbkey} = $self->log_db_get_session_by_filename();
+	} elsif($self->{append} && !$self->{nofile}) {
 		$self->{dbh} = log_db_init_database();
 		$self->{dbkey} = log_db_query_id($self->{dbh}, $self);
 		# print STDERR "Appending to file $self->{filename} with key $self->{dbkey}\n";
 	}
+	
+
+	
 	
 	return $self;
 }
@@ -334,6 +347,16 @@ sub write
 	my $severity = shift;
 	my ($s)=@_;
 	
+	# Check if the database entry is still present
+	if (!$self->{_next_db_check} or time > $self->{_next_db_check}) {
+		print STDERR "write: DB session check called\n" if ($DEBUG);
+		if(!$self->{dbh}) {
+			$self->{dbh} = log_db_init_database();
+		}
+		log_db_recreate_session($self->{dbh}, $self);
+		$self->{_next_db_check} = time+120;
+	}
+	
 	# print STDERR "Severity: $severity / Loglevel: " . $self->{loglevel} . "\n";
 	# print STDERR "Log: $s\n";
 	# Do not log if loglevel is lower than severity
@@ -472,12 +495,17 @@ sub LOGSTART
 {
 	my $self = shift;
 	my ($s)=@_;
-	# print STDERR "Logstart -->\n";
-	$self->{LOGSTARTBYTE} = -e $self->{filename} ? -s $self->{filename} : 0;
-	$self->write(-2, "================================================================================");
-	$self->write(-2, "<LOGSTART> " . LoxBerry::System::currtime . " TASK STARTED");
-	$self->write(-2, "<LOGSTART> " . $s);
-	$self->{LOGSTARTMESSAGE} = $s if ($s);
+	
+	# If nosession is given, only an initial header is written
+	if( !LoxBerry::System::is_enabled($self->{nosession}) ) {
+		
+		# print STDERR "Logstart -->\n";
+		$self->{LOGSTARTBYTE} = -e $self->{filename} ? -s $self->{filename} : 0;
+		$self->write(-2, "================================================================================");
+		$self->write(-2, "<LOGSTART> " . LoxBerry::System::currtime . " TASK STARTED");
+		$self->write(-2, "<LOGSTART> " . $s);
+	}
+	$self->{LOGSTARTMESSAGE} = $s if ($s);	
 	
 	opendir(my $DIR, "$LoxBerry::System::lbsconfigdir/");
 	my @is_files = grep(/is\_.*\.cfg/,readdir($DIR));
@@ -493,15 +521,27 @@ sub LOGSTART
 	
 	my $plugin = LoxBerry::System::plugindata($self->{package});
 	
-	$self->write(-1, "<INFO> LoxBerry Version " . LoxBerry::System::lbversion() . " " . $is_file_str);
-	$self->write(-1, "<INFO> " . $plugin->{PLUGINDB_TITLE} . " Version " . $plugin->{PLUGINDB_VERSION} ) if ($plugin);
-	$self->write(-1, "<INFO> Loglevel: " . $self->{loglevel});
+	if( !LoxBerry::System::is_enabled($self->{nosession}) or ! -e $self->{filename} ) {
+		$self->write(-1, "<INFO> LoxBerry Version " . LoxBerry::System::lbversion() . " " . $is_file_str);
+		$self->write(-1, "<INFO> " . $plugin->{PLUGINDB_TITLE} . " Version " . $plugin->{PLUGINDB_VERSION} ) if ($plugin);
+		$self->write(-1, "<INFO> Loglevel: " . $self->{loglevel});
+	}
+	
+	if( LoxBerry::System::is_enabled($self->{nosession})) {
+		# $self->write(-2, "<INFO> " . $s);
+		$self->OK($s);
+	}
+	
 	
 	if(! $self->{nofile}) {
 		if(!$self->{dbh}) {
 			$self->{dbh} = log_db_init_database();
 		}
-		$self->{dbkey} = log_db_logstart($self->{dbh}, $self);	
+		
+		if ( !LoxBerry::System::is_enabled($self->{nosession}) ) {
+			$self->{dbkey} = log_db_logstart($self->{dbh}, $self);
+		}
+		
 	}
 	$self->close();
 }
@@ -510,9 +550,11 @@ sub LOGEND
 {
 	my $self = shift;
 	my ($s)=@_;
-	$self->write(-2, "<LOGEND> " . $s) if $s;
-	$self->write(-2, "<LOGEND> " . LoxBerry::System::currtime . " TASK FINISHED");
 	
+	if( !LoxBerry::System::is_enabled($self->{nosession}) ) {
+		$self->write(-2, "<LOGEND> " . $s) if $s;
+		$self->write(-2, "<LOGEND> " . LoxBerry::System::currtime . " TASK FINISHED");
+	}
 	$self->{LOGENDMESSAGE} = $s if ($s);
 	
 	if(!defined($self->{STATUS})) {
@@ -884,11 +926,60 @@ sub log_db_recreate_session_by_id
 	
 	# Data from attribute table - loop through attributes
 	foreach my $attr ( keys @$logattrshr ) {
-		print "Attribute: @$logattrshr[$attr]->{attrib} / Value: @$logattrshr[$attr]->{value} \n";
+		print STDERR "Attribute: @$logattrshr[$attr]->{attrib} / Value: @$logattrshr[$attr]->{value} \n" if ($DEBUG);
 		$self->{@$logattrshr[$attr]->{attrib}} = @$logattrshr[$attr]->{value} if (!$self->{@$logattrshr[$attr]->{attrib}});
 	}
 
 	return $key;
+
+}
+
+sub log_db_get_session_by_filename
+{
+	my $self = shift;
+	
+	my $filename = $self->{filename};
+	my $dbh = log_db_init_database();
+		
+	if(!$dbh) {
+		print STDERR "   dbh not defined. Return undef\n<-- log_db_get_session_by_filename\n";
+		return undef;
+	}
+	
+	if(!$filename) {
+		print STDERR "   No logdb key defined. Return undef\n<-- log_db_get_session_by_filename\n";
+		return undef;
+	}
+
+	require DBI;
+	
+	# Get log object
+	my $qu = "SELECT PACKAGE, NAME, FILENAME, LOGSTART, LOGEND, LOGKEY FROM logs WHERE FILENAME = '$filename' ORDER BY LOGSTART DESC LIMIT 1;";
+	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
+	if (!@$logshr) {
+		print STDERR "log_db_get_session_by_filename: FILENAME has no dbkey. New key is created.\n" if ($DEBUG);
+		$self->{dbkey} = log_db_logstart($self->{dbh}, $self);
+		print STDERR "log_db_get_session_by_filename: New dbkey is " . $self->{dbkey} . "\n" if ($DEBUG);
+	} else {
+		$self->{dbkey} = @$logshr[0]->{LOGKEY};
+		print STDERR "log_db_get_session_by_filename: Existing dbkey is used " . $self->{dbkey} . "\n" if ($DEBUG);
+	}
+	
+	# Get log attributes
+	my $qu2 = "SELECT attrib, value FROM logs_attr WHERE keyref = '" . $self->{dbkey} . "';";
+	my $logattrshr = $dbh->selectall_arrayref($qu2, { Slice => {} });
+	
+	## Recreate log object with data
+	
+	# Data from log table
+	
+	# Data from attribute table - loop through attributes
+	foreach my $attr ( keys @$logattrshr ) {
+		print STDERR "Attribute: @$logattrshr[$attr]->{attrib} / Value: @$logattrshr[$attr]->{value} \n" if ($DEBUG);
+		$self->{@$logattrshr[$attr]->{attrib}} = @$logattrshr[$attr]->{value} if (!$self->{@$logattrshr[$attr]->{attrib}});
+	}
+
+	return $self->{dbkey};
 
 }
 
@@ -934,8 +1025,6 @@ sub log_db_delete_logkey
 		return undef;
 	}
 	
-		
-	
 	# SQLite interface
 	require DBI;
 	# my $dbh = log_db_init_database();
@@ -950,6 +1039,36 @@ sub log_db_delete_logkey
 	
 	print STDERR "<--- log_db_delete_logkey\n" if ($DEBUG);
 	
+}
+
+sub log_db_recreate_session
+{
+
+	my $dbh = shift;
+	my $self = shift;
+	my $key = $self->{dbkey};
+	
+	if(!$dbh) { 
+		print STDERR "log_db_recreate_session: dbh not defined - Abort\n" if($DEBUG);
+		return;
+	}
+	
+	if(!$key) {
+		print STDERR "log_db_recreate_session: dbkey not defined - Abort\n" if($DEBUG);
+		return;
+	}
+	
+	
+	my $qu = "SELECT PACKAGE, NAME, FILENAME, LOGSTART, LOGEND FROM logs WHERE LOGKEY = $key LIMIT 1;";
+	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
+	if (@$logshr) {
+		print STDERR "log_db_recreate_session: logkey exists, nothing to do\n" if($DEBUG);
+		return;
+	}
+	
+	print STDERR "log_db_recreate_session: Session does not exist in DB - creating a new session\n";
+	$self->{dbkey} = log_db_logstart($self->{dbh}, $self);
+
 }
 
 
@@ -1288,7 +1407,6 @@ sub notify_send_mail
 	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_ERRORS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 3);
 	return if (! LoxBerry::System::is_enabled($mcfg->{NOTIFICATION}->{MAIL_PLUGIN_INFOS}) && $p{_ISPLUGIN} && $p{SEVERITY}  == 6);
 	
-	
 	# Prepare some additional fields
 	
 	my $plugintitle;
@@ -1315,44 +1433,22 @@ sub notify_send_mail
 	
 	my $options_json = quotemeta(JSON::to_json(\%p) ) ;
 	
-	my $output = qx { $LoxBerry::System::lbssbindir/notifyproviders/email.pl $options_json };
-	
-	# print "Returned: $output";
-	
-	
-	
-	####
-	#### Old LoxBerry Plain text implementation
-	####
-	
-	# my $bins = LoxBerry::System::get_binaries(); 
-	# my $mailbin = $bins->{MAIL};
-	
-	# require MIME::Base64;
-	# require Encode;
-	
-	# $subject = "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
-	# my $headerfrom = 'From:=?utf-8?b?' . MIME::Base64::encode($friendlyname, "") . '?= <' . $email . '>';
-	# my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
-	
-	# $message = Encode::decode("utf8", $message);
-	
-	# my $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$subject" -v $email 2>&1);
-	# my $exitcode  = $? >> 8;
-	# if ($exitcode != 0) {
-		# $notifymailerror = 1; # Prevents loops
-		# my %notification = (
-            # PACKAGE => "mailserver",
-            # NAME => "mailerror",
-            # MESSAGE => $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'},
-            # SEVERITY => 3, # Error
-			# _ISSYSTEM => 1
-    # );
-	# LoxBerry::Log::notify_ext( \%notification );
-	# print STDERR "Error sending email notification - Error $exitcode:\n";
-	# print STDERR $result . "\n";
-	# } 
-	
+	my ($exitcode, $output) = LoxBerry::System::execute("$LoxBerry::System::lbssbindir/notifyproviders/email.pl $options_json");
+	if ($exitcode != 0) {
+		my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
+		$notifymailerror = 1; # Prevents loops
+		my %notification = (
+            PACKAGE => "mailserver",
+            NAME => "mailerror",
+            MESSAGE => $SL{'MAILSERVER.NOTIFY_MAIL_ERROR'},
+            SEVERITY => 3, # Error
+			_ISSYSTEM => 1
+		);
+		LoxBerry::Log::notify_ext( \%notification );
+		print STDERR "Error sending email notification - Output: $output\n";
+	}
+		
+		
 }
 
 

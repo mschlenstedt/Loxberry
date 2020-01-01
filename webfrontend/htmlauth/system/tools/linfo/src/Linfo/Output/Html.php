@@ -147,7 +147,8 @@ class Html implements Output
 
         // Start compressed output buffering. Try to not do this if we've had errors or otherwise already outputted stuff
         if ((!function_exists('error_get_last') || !error_get_last()) && (!isset($settings['compress_content']) || $settings['compress_content'])) {
-            ob_start(function_exists('ob_gzhandler') ? 'ob_gzhandler' : null);
+            ob_end_clean();
+            ob_start(isset($settings['gzip']) && $settings['gzip'] && function_exists('ob_gzhandler') ? 'ob_gzhandler' : null);
         }
 
         // If we're allowed to change themes client-side, generate a list of custom ones to use as a white list
@@ -196,20 +197,33 @@ class Html implements Output
 	<![endif]-->
 	<link rel="stylesheet" type="text/css" href="./layout/mobile.css" media="screen and (max-width: 640px)">
 </head>
-<body id="info">';
+<body id="info">
+<!--<div id="header">';
+
+  if ($settings['allow_changing_themes']) {
+  echo '
+  <div id="themeChanger">Theme: <select id="themeChangerSelect">';
+
+    foreach ($allowed_themes as $theme_option)
+      echo '<option'.($theme_option == $chosen_theme ? ' selected' : '').'>'.$theme_option.'</option>';
+
+  echo '</select>
+  </div>
+  ';
+  }
 
 echo '
-<p align="right">
-<a href="/admin/system/tools/linfo/index.php?out=xml" download="loxberry_sysinfo.xml">XML Export</a>
-</p>
-<div class="col1">
+	<h1>'.$info['HostName'].'</h1>
+	<div class="subtitle">'.$lang['header'].'</div>
+</div>-->
+<!--<div class="col2">-->
 	<div class="col">
 		<div class="infoTable">
 			<h2>'.$lang['core'].'</h2>
 			<table>';
 
     // Linfo Core. Decide what to show.
-    $core = array();
+    $core = [];
 
     // OS? (with icon, if we have it)
     if (!empty($settings['show']['os'])) {
@@ -275,7 +289,7 @@ echo '
 
     // The CPUs
     if (!empty($settings['show']['cpu'])) {
-        $cpus = array();
+        $cpus = [];
 
         foreach ((array) $info['CPU'] as $cpu) {
             $cpu_html =
@@ -315,7 +329,7 @@ echo '
     if (!empty($settings['show']['process_stats']) && $info['processStats']['exists']) {
 
         // Different os' have different keys of info
-        $proc_stats = array();
+        $proc_stats = [];
 
         // Load the keys
         if (array_key_exists('totals', $info['processStats']) && is_array($info['processStats']['totals'])) {
@@ -552,6 +566,19 @@ echo '
         // Show them
         foreach ($info['services'] as $service => $state) {
             $state_parts = explode(' ', $state['state'], 2);
+            // set as empty if is not set
+            if(!isset($state['pid'])){
+                $state['pid'] = '';
+                if(isset($state['name'])){
+                    $state['pid'] = $state['name'];
+                }
+            }
+            if(!isset($state['threads'])){
+                $state['threads'] = '';
+            }
+            if(!isset($state['memory_usage'])){
+                $state['memory_usage'] = '';
+            }
             echo '
 				<tr>
 					<td>'.$service.'</td>
@@ -570,9 +597,9 @@ echo '
 		</div>';
     }
 
-        echo '';
-	//</div>
-	//<div class="col">';
+        echo '
+	<!--</div>
+	<div class="col">-->';
 
     // Show hardware?
     if (!empty($settings['show']['devices'])) {
@@ -698,7 +725,7 @@ echo '
 
         echo '
 	</div>
-</div>';
+<!--</div>-->';
 
     // Show file system mounts?
     if (!empty($settings['show']['mounts'])) {
@@ -760,7 +787,7 @@ echo '
         $total_free = 0;
 
         // Don't add totals for duplicates. (same filesystem mount twice in different places)
-        $done_devices = array();
+        $done_devices = [];
 
         // Are there any?
         if (count($info['Mounts']) > 0) {
@@ -1005,6 +1032,16 @@ echo '
     }
 
         echo '
+<div id="foot">
+	'.sprintf($lang['footer_app'], '<a href="https://github.com/jrgp/linfo"><em>'.$appName.'</em></a> ('.$version.')', round(microtime(true) - $this->linfo->getTimeStart(), 2)).'<br>
+	<em>'.$appName.'</em> &copy; 2010 &ndash; '.(date('Y') > 2011 ? date('Y') : 2011).'
+	Joseph Gillotti '.(date('m/d') == '06/03' ? ' (who turns '.(date('Y') - 1993).' today!)' : '').'&amp; friends. Source code licensed under MIT.
+</div>
+<div id="foot_time">
+	<br />
+	Generated on '.date($settings['dates']).'
+</div>
+<script>Linfo.init()</script>
 </body>
 </html>';
     }

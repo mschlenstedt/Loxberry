@@ -159,7 +159,15 @@ my $mailobj = Email::MIME->create(
 my $mailstr = $mailobj->as_string;
 
 # send the message
+my $sendmail_result;
+eval {
+	$sendmail_result = sendmail($mailstr);
+};
+if ($@) {
+	# Sendmail exception
+	print "notifyprovider email: sendmail failed:" . $@ . "\n";
+	exit(1);
+}
+exit(0);
 
-sendmail($mailstr);
-
-print $htmlbody;
+# print $htmlbody;

@@ -33,7 +33,7 @@ echo "LoxBerry home directory is $LBHOMEDIR"
 #find $LBHOMEDIR -type d -print | grep -z -v /tmp/excludelist.txt | while read line ; do chown -c loxberry:loxberry $line ; chown -c loxberry:loxberry $line/* ; done
 
 
-find $LBHOMEDIR ! -path "*skel_syslog*" ! -path "*/system/sudoers*" ! -path "*/system/daemons/system*" -print0 | perl -e '@pipe = split(/\0/, <>); (undef,undef,$uid,$gid) = getpwnam("loxberry");$count=chown $uid, $gid, @pipe;print "chmod loxberry:loxberry: $count files changed\n";'
+find $LBHOMEDIR ! -path "*ramlog*" ! -path "*skel_syslog*" ! -path "*/system/sudoers*" ! -path "*/system/daemons/system*" -print0 | perl -e '@pipe = split(/\0/, <>); (undef,undef,$uid,$gid) = getpwnam("loxberry");$count=chown $uid, $gid, @pipe;print "chmod loxberry:loxberry: $count files changed\n";'
  
  
 chown -Rc root:root $LBHOMEDIR/system/dphys-swapfile
@@ -44,6 +44,7 @@ chown -Rc root:root $LBHOMEDIR/sbin
 chown -Rc root:root $LBHOMEDIR/system/logrotate
 chown -Rc root:root $LBHOMEDIR/system/php
 chown -Rc root:root $LBHOMEDIR/config/system/securepin.dat
+chown -Rc root:root $LBHOMEDIR/data/system/plugindatabase.json-
 chown -Rc root:root $LBHOMEDIR/system/php
 chown -Rc loxberry:loxberry /var/log/apache2
 chown -Rc loxberry:loxberry /var/cache/apache2
@@ -59,6 +60,7 @@ chmod -c 600 $LBHOMEDIR/system/network/interfaces
 chmod -c 600 $LBHOMEDIR/config/system/*
 chmod -c 600 $LBHOMEDIR/data/system/netshares.dat
 chmod -c 644 $LBHOMEDIR/config/system/securepin.dat
+chmod -c 644 $LBHOMEDIR/data/system/plugindatabase.json-
 chmod -c 555 $LBHOMEDIR/system/sudoers
 chmod -c 664 $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -c 755 $LBHOMEDIR/system/profile

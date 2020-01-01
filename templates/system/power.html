@@ -113,11 +113,15 @@
 		</center>
 	<script>
 		var counter = 2400;
+		var was_offline = 0;
+		
 		$(document).ready(function()
 		{
 		  var xhttp = new XMLHttpRequest();
 		  xhttp.timeout = 800;
 		  xhttp.ontimeout = function() {
+			  console.log("Reboot in progress - apache is not responding.");
+			  was_offline = 1;
 			  if ( counter == 2400 ) {
 				  showprogressbar();
 			  }
@@ -125,16 +129,27 @@
 		  xhttp.onreadystatechange = function() {
 			  if (this.readyState == 4 && this.status == 200) {
 				var res = JSON.parse(this.responseText);
+				  console.log("Reboot in progress: " + res.reboot_in_progress);
 				if ( counter == 2400 && res.reboot_in_progress == 1 ) {
+					console.log("Reboot in progress but apache still responding - starting progressbar.");
 					showprogressbar();
-				} else if ( res.reboot_in_progress == 0 ) {
+				} else if ( res.reboot_in_progress == 0 && was_offline == 1) {
 					$('.progress-bar').hide();
-					document.location.href="/";
+					if ( res.update_in_progress == 1 ) {
+						document.location.href="/updaterunning";
+					} else {
+						document.location.href="/";
+					}
 				}
 			  }
 		  };
 		  var maini = setInterval(function() {
 			  xhttp.open("GET","/admin/system/tools/power-handler.php",true);
+			  xhttp.setRequestHeader('cache-control', 'no-cache, must-revalidate, post-check=0, pre-check=0');
+			  xhttp.setRequestHeader('cache-control', 'max-age=0');
+			  xhttp.setRequestHeader('expires', '0');
+			  xhttp.setRequestHeader('expires', 'Tue, 01 Jan 1980 1:00:00 GMT');
+			  xhttp.setRequestHeader('pragma', 'no-cache');
 			  xhttp.send();},1000);
 		});
 		function showprogressbar() {

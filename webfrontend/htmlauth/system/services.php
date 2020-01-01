@@ -1,5 +1,6 @@
 <?php
 
+
 # Copyright 2017 Svethi for LoxBerry, info@sd-thierfelder.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +39,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "1.4.2.1";
+$version = "2.0.0.4";
 
 $sversion = LBSystem::lbversion();
 
@@ -78,6 +79,12 @@ $template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].": ". $SL['SERVICES.WIDGETLA
 # What should we do
 #########################################################################
 
+header("Expires; 0");
+header("Expires: Tue, 01 Jan 1980 1:00:00 GMT");
+header("Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0"); 
+header("Cache-Control: max-age=0");
+header("Pragma: no-cache");
+
 # Menu
 if (isset($_GET['check_webport'])) {
   check_webport();
@@ -106,6 +113,9 @@ function form() {
 	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
 	$cfg->setQuoteStrings(False);
 	
+	
+	/* SSDP */
+	
 	//set default if doesn't exist
 	if (!$cfg->has("SSDP","DISABLED")) {
 		$cfg->set("SSDP","DISABLED", 0);
@@ -117,7 +127,16 @@ function form() {
 	} else {
 		$checkedssdp = "";
 	}
-		
+	
+	/* FTP Server */
+	$ftpstate = ftp_state();
+	if($ftpstate['ActiveState'] == "active" || $ftpstate['UnitFileState'] == "enabled") {
+		$checkedftp = "checked=\"checked\"";
+	} else {
+		$checkedftp = "";
+	}
+	
+	/* UART /Serial console */ 
 	$output = exec('grep -E "console=(serial0|ttyAMA0|ttyS0)" /boot/cmdline.txt'); 
 	if ($output) {
 		$checkedconsole = "checked=\"checked\"";
@@ -136,21 +155,30 @@ function form() {
 	//The Navigation Bar
 	$navbar[0]['Name'] = $SL['SERVICES.TITLE_PAGE_WEBSERVER'];
 	$navbar[0]['URL'] = 'services.php?load=1';
+	
 	$navbar[1]['Name'] = $SL['SERVICES.TITLE_PAGE_WATCHDOG'];
-	$navbar[1]['URL'] = 'watchdog.cgi';
-	$navbar[2]['Name'] = $SL['SERVICES.TITLE_PAGE_OPTIONS'];
-	$navbar[2]['URL'] = 'services.php?load=3';
+	$navbar[1]['URL'] = 'services_watchdog.cgi';
+	
+	$navbar[5]['Name'] = "Samba (SMB)";
+	$navbar[5]['URL'] = 'services_samba.cgi';
+	
+	$navbar[50]['Name'] = $SL['SERVICES.TITLE_PAGE_OPTIONS'];
+	$navbar[50]['URL'] = 'services.php?load=3';
+	
 	if (isset($_GET['load']) && ($_GET['load'] == 2)) {
 		$navbar[1]['active'] = True;
+		$page = 2;
 	} elseif (isset($_GET['load']) && ($_GET['load'] == 3)) {
-		$navbar[2]['active'] = True;
+		$navbar[50]['active'] = True;
+		$page = 3;
 	} else {
 		$navbar[0]['active'] = True;
+		$page = 0;
 	}
 
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
-
-	if (isset($navbar[2]['active'])): ?>
+	
+	if ($page == 3): ?>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=3">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="ssdpd" value="1">
@@ -165,7 +193,7 @@ function form() {
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td width="20%">
-				<input data-role="flipswitch" type="checkbox" id="ssdpenabled" name="ssdpenabled" <?=$checkedssdp;?> value="enabled"/>
+				<input data-role="flipswitch" type="checkbox" id="ssdpenabled" name="ssdpenabled" <?=$checkedssdp;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td  class="hint">
@@ -173,15 +201,34 @@ function form() {
 			</td>
 		</tr>
 	</table>
-	<script>
-	$( "#ssdpenabled" ).flipswitch({
-		onText: "<?=$SL['COMMON.BUTTON_ON'];?>"
-	});
-	$( "#ssdpenabled" ).flipswitch({
-		offText: "<?=$SL['COMMON.BUTTON_OFF'];?>"
-	});
-	</script>
-	<br><br><br>
+	<br><br>
+	
+	<?php 
+	/* FTP form part */
+	?>
+	<div class="wide"><?=$SL['SERVICES.HEADING_FTP'];?></div>
+	<br>
+	<table class="formtable">
+		<tr>
+			<td width="20%">
+				<label for ="ftpenabled"><?=$SL['SERVICES.LABEL_FTP'];?></label>
+			</td>
+			<td width="2%">&nbsp;</td>
+			<td width="20%">
+				<input data-role="flipswitch" type="checkbox" id="ftpenabled" name="ftpenabled" <?=$checkedftp;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+				
+			</td>
+			<td width="2%">&nbsp;</td>
+			<td  class="hint">
+				<?=$SL['SERVICES.HINT_FTP'];?>
+			</td>
+		</tr>
+	</table>
+	<br><br>
+	
+	<?php 
+	/* Serial form part */
+	?>
 	<div class="wide"><?=$SL['SERVICES.HEADING_SERIAL'];?></div>
 	<br>
 
@@ -205,7 +252,7 @@ function form() {
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td width="20%">
-				<input data-role="flipswitch" type="checkbox" id="serialenabled" name="serialenabled" <?=$checkedserial;?> value="enabled"/>
+				<input data-role="flipswitch" type="checkbox" id="serialenabled" name="serialenabled" <?=$checkedserial;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td  class="hint">
@@ -221,7 +268,7 @@ function form() {
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td width="20%">
-				<input data-role="flipswitch" type="checkbox" id="consoleenabled" name="consoleenabled" <?=$checkedconsole;?> value="enabled"/>
+				<input data-role="flipswitch" type="checkbox" id="consoleenabled" name="consoleenabled" <?=$checkedconsole;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td  class="hint">
@@ -229,20 +276,7 @@ function form() {
 			</td>
 		</tr>
 	</table>
-	<script>
-	$( "#serialenabled" ).flipswitch({
-		onText: "<?=$SL['COMMON.BUTTON_ON'];?>"
-	});
-	$( "#serialenabled" ).flipswitch({
-		offText: "<?=$SL['COMMON.BUTTON_OFF'];?>"
-	});
-	$( "#consoleenabled" ).flipswitch({
-		onText: "<?=$SL['COMMON.BUTTON_ON'];?>"
-	});
-	$( "#consoleenabled" ).flipswitch({
-		offText: "<?=$SL['COMMON.BUTTON_OFF'];?>"
-	});
-	</script>
+	
 	</form>
 	<br><br><br>
 	<div style="text-align:center;">
@@ -321,6 +355,8 @@ function save()
 	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
 	$cfg->setQuoteStrings(False);
 	
+	/* SSDP */
+	
 	if (isset($_POST['ssdpenabled'])) {
 		if ($_POST['ssdpenabled'] === "enabled") {
 			$ssdpoff = false;
@@ -331,6 +367,39 @@ function save()
 			$ssdpoff = true;
 	}
 
+	/* FTP Server */
+	$ftpstate = ftp_state();
+	if($ftpstate['ActiveState'] == "active" || $ftpstate['UnitFileState'] == "enabled") {
+		$ftpactive = true;
+	} else {
+		$ftpactive = false;
+	}
+	if( !empty($_POST['ftpenabled']) and $_POST['ftpenabled'] == "enabled" ) {
+		$ftp_switch = true;
+	} else {
+		$ftp_switch = false;
+	}
+	
+	if( $ftpactive != $ftp_switch ) {
+		error_log("ftp_changemode()");
+		ftp_changemode($ftp_switch);
+	}
+	
+	// Check if mode has changed and generate an error
+	$ftpstate = ftp_state();
+	if($ftpstate['ActiveState'] == "active" || $ftpstate['UnitFileState'] == "enabled") {
+		$ftpactive = true;
+	} else {
+		$ftpactive = false;
+	}
+	if( $ftpactive != $ftp_switch ) {
+		error_log("ftp check: ERROR Switch and State not equal");
+		$error = $SL['SERVICES.ERR_FTP_SWITCH'];
+		// Errors are handled nowhere....?
+	}
+
+	/* Serial */
+	
 	$output = exec('grep -E "^enable_uart=1" /boot/config.txt'); 
 	if ($output) {
 		$serialstatus = "1";
@@ -554,6 +623,36 @@ function webport_success() {
 	header('Content-Type: application/json');
 	echo "{ \"ok\":\"-1\" }";
 	exit;
+}
+
+#####################################################
+# check ftp state
+#####################################################
+function ftp_state() {
+	$vsftpoutput = trim (shell_exec("sudo systemctl show -p UnitFileState -p ActiveState vsftpd.service") );
+	// error_log("vsftpoutput: ".$vsftpoutput);
+	if(!empty($vsftpoutput)) {
+		$ftplines = explode( "\n", $vsftpoutput, 10 );
+		foreach($ftplines as $line) {
+			// error_log("ftpline: ".$line);
+			$linearr = explode ( '=', $line, 2 );
+			$ftpstate[$linearr[0]] = $linearr[1];
+		}
+	} 
+	return($ftpstate);
+}
+
+#####################################################
+# change ftp mode
+#####################################################
+function ftp_changemode($switch) {
+	if($switch == true) {
+		shell_exec("sudo systemctl --quiet start vsftpd.service");
+		shell_exec("sudo systemctl --quiet enable vsftpd.service");
+	} else {
+		shell_exec("sudo systemctl --quiet stop vsftpd.service");
+		shell_exec("sudo systemctl --quiet disable vsftpd.service");
+	}	
 }
 
 #####################################################

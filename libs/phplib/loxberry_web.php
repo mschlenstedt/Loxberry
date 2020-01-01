@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.4.2.1";
+	public static $LBWEBVERSION = "2.0.0.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -13,11 +13,20 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	// prints the head
 	///////////////////////////////////////////////////////////////////
+	
 	public static function head($pagetitle = "")
+	{
+		echo get_head($pagetitle);
+		
+	}
+	
+	public static function get_head($pagetitle = "")
 	{
 		// error_log("loxberry_web: Head function called -->");
 		global $template_title;
 		global $htmlhead;
+		
+		$html = "";
 		
 		# If a global template_title is set, use it
 		if ( empty($pagetitle) && !empty($template_title) ) {
@@ -35,28 +44,16 @@ class LBWeb
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/head.html";
 		if (!file_exists($templatepath)) {
 			error_log("   Could not locate head template $templatepath");
-			echo "<p style=\"color:red;\">Could not find head template $templatepath</p>";
-			exit(1);
+			$html .= "<p style=\"color:red;\">Could not find head template $templatepath</p>";
+			return($html);
 		}
-		// $headobj = new Template( array ( 
-								// 'filename' => $templatepath,
-								// 'die_on_bad_params' => 0,
-								// 'case_sensitive' => 0,
-								// 'debug' => 1,
-								// //'global_vars' => 1,
-								// ));
-		// $headobj->AddParam('TEMPLATETITLE', $fulltitle);
-		// $headobj->AddParam('LANG', $lang);
-		// //$headobj->AddParam('templatetitle', $fulltitle);
-		// //$headobj->AddParam('lang', $lang);
-		// $headobj->EchoOutput();
 
 		$headobj = new LBTemplate($templatepath);
 		$headobj->param('TEMPLATETITLE', $fulltitle);
 		$headobj->param('LANG', $lang);
 		$headobj->param('HTMLHEAD', $htmlhead);
 		LBSystem::readlanguage($headobj, "language.ini", True);
-		$headobj->output();
+		return $headobj->outputString();
 
 		// error_log("<-- loxberry_web: Head function finished");
 	}
@@ -64,7 +61,13 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	// pagestart - Prints the page
 	///////////////////////////////////////////////////////////////////
+	
 	public static function pagestart($pagetitle = "", $helpurl = "", $helptemplate = "", $page = "main1")
+	{
+		echo get_pagestart($pagetitle, $helpurl, $helptemplate, $page);
+	}
+
+	public static function get_pagestart($pagetitle = "", $helpurl = "", $helptemplate = "", $page = "main1")
 	{
 		// error_log("loxberry_web: pagestart function called -->");
 
@@ -72,6 +75,9 @@ class LBWeb
 		global $helplink;
 		global $navbar;
 		global $lbpplugindir;
+		
+		$html = "";
+		
 		$nopanels = 0;
 		
 		if ($helpurl === "nopanels") {
@@ -102,36 +108,18 @@ class LBWeb
 			$templatepath = LBSTEMPLATEDIR . "/pagestart_nopanels.html";
 			if (!file_exists($templatepath)) {
 				error_log("   Could not locate pagestart template $templatepath");
-				echo "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
-				exit(1);
+				$html .= "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
+				return($html);
 			}
 		} else {
 			$templatepath = LBSTEMPLATEDIR . "/pagestart.html";
 			if (!file_exists($templatepath)) {
 				error_log("   Could not locate pagestart template $templatepath");
-				echo "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
-				exit(1);
+				$html .= "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
+				return($html);
 			}
 		}
 
-
-		// $pageobj = new Template( array ( 
-								// 'filename' => $templatepath,
-								// 'die_on_bad_params' => 0,
-								// //'debug' => 1,
-								// 'global_vars' => 1,
-								// ));
-		// #$pageobj->AddParam('TEMPLATETITLE', $fulltitle);
-		// #$pageobj->AddParam('LANG', $lang);
-		// $pageobj->AddParam(array(
-					// 'TEMPLATETITLE' => $fulltitle,
-					// 'HELPLINK' => $helpurl,
-					// 'HELPTEXT' => $helptext,
-					// 'PAGE' => $page,
-					// 'LANG' => $lang
-					// ));
-		// $pageobj->EchoOutput();
-		
 		// NavBar Start
 		
 		if (is_array($navbar)) {
@@ -149,14 +137,6 @@ class LBWeb
 				} else {
 					$btntarget = "";
 				}
-				
-				// // NavBar Notify Old
-				// $notify = "";
-				// if (isset($element['notifyRed'])) {
-					// $notify = ' <span class="notifyRedNavBar">' . $element['notifyRed'] . '</span>';
-				// } elseif (isset($element['notifyBlue'])) {
-					// $notify = ' <span class="notifyBlueNavBar">' . $element['notifyBlue'] . '</span>';
-				// }
 				
 				$notify = <<<EOT
 				<div class="notifyBlueNavBar" id="notifyBlueNavBar$key" style="display: none">0</div>
@@ -210,7 +190,6 @@ EOT;
 			$topnavbar_haselements = True;
 		} 
 		// NavBar End
-			
 		
 		$pageobj = new LBTemplate($templatepath);
 		$pageobj->paramArray(array(
@@ -250,11 +229,7 @@ EOT;
 			$pageobj->param ( 'NAVBARJS', "");
 		}	
 		
-		
-		
-		
-		
-		$pageobj->output();
+		return $pageobj->outputString();
 		
 		// error_log("<-- loxberry_web: Pagestart function finished");
 	}
@@ -276,10 +251,6 @@ EOT;
 			$syslang = True;
 		}
 	
-		// error_log("gethelp: templatedir $templatedir");
-		// error_log("gethelp -> lbpplugindir: $lbpplugindir lbptemplatedir: $lbptemplatedir");
-		// error_log("           Parameters: lang: $lang helptemplate: $helptemplate");
-		
 		if (file_exists("$templatedir/help/$helptemplate")) { 
 			$templatepath = "$templatedir/help/$helptemplate";
 			$ismultilang = True;
@@ -298,11 +269,6 @@ EOT;
 			// error_log("gethelp: Legacy fallback lang de template found - using templatepath $templatepath");
 		} else {
 			error_log("gethelp: No help found. Returning default text.");
-			// if ($lang === "de") {
-				// $helptext = "Keine weitere Hilfe verfügbar.";
-			// } else {
-				// $helptext = "No further help available.";
-			// }
 			$helptext = Null;
 			return $helptext;
 		}
@@ -336,54 +302,68 @@ EOT;
 	///////////////////////////////////////////////////////////////////
 	// pageend - Prints the page end
 	///////////////////////////////////////////////////////////////////
+	
 	public static function pageend()
 	{
-#		global $reboot_required_file;
+		echo get_pageend();
+	}
+	
+	public static function get_pageend()
+	{
 		$lang = LBSystem::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pageend.html";
 		$pageobj = new LBTemplate($templatepath);
 		$SL = LBSystem::readlanguage($pageobj, "language.ini", True);
 		$pageobj->param('LANG', $lang);
 		
-#		// Reboot required button
-#		if (file_exists("$reboot_required_file")) {
-#			$reboot_req_string='<div data-href="/admin/system/power.cgi" id="btnpower_alert" style="pointer-events: none; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url(\'/system/images/reboot_required.svg\');"></div><script>$(document).ready( function(){ $("#btnpower").attr("title","'.$SL['POWER.MSG_REBOOT_REQUIRED_SHORT'].'");  $("#btnpower_alert").on("click", function(e){ var ele = e.target; window.location.replace(ele.getAttribute("data-href"));}); function reboot_on(){ var reboot_alert_offset = $("#btnpower").offset(); $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); $("#btnpower_alert").fadeTo( 2000 , 1.0, function() { setTimeout(function(){ reboot_off(); }, 2700); }); }; function reboot_off(){ var reboot_alert_offset = $("#btnpower").offset(); $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); $("#btnpower_alert").fadeTo( 2000 , 0.1, function() { setTimeout(function(){ reboot_on(); }, 100); });   }; reboot_on(); });</script>';
-#			$pageobj->param('REBOOT_REQUIRED', $reboot_req_string);
-#		} else {
-#			$pageobj->param('REBOOT_REQUIRED', null);
-#		}
-
-		echo $pageobj->output();
+		return $pageobj->outputString();
 	}
 	
 	///////////////////////////////////////////////////////////////////
 	// foot - Prints the footer
 	///////////////////////////////////////////////////////////////////
+	
 	public static function foot()
+	{
+		echo get_foot();
+	}
+	
+	public static function get_foot()
 	{
 		$lang = LBSystem::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/foot.html";
 		$footobj = new LBTemplate($templatepath);
 		$footobj->param('LANG', $lang);
-		echo $footobj->output();
+		return $footobj->outputString();
 	}
 	
 	///////////////////////////////////////////////////////////////////
 	// lbheader - Prints head and pagestart
 	///////////////////////////////////////////////////////////////////
+	
+	public static function get_lbheader($pagetitle = "", $helpurl = "", $helptemplate = "")
+	{
+		return LBWeb::get_head($pagetitle) . LBWeb::get_pagestart($pagetitle, $helpurl, $helptemplate);
+	}
+	
 	public static function lbheader($pagetitle = "", $helpurl = "", $helptemplate = "")
 	{
-		LBWeb::head($pagetitle);
-		LBWeb::pagestart($pagetitle, $helpurl, $helptemplate);
+		echo LBWeb::get_head($pagetitle);
+		echo LBWeb::get_pagestart($pagetitle, $helpurl, $helptemplate);
 	}
 	
 	///////////////////////////////////////////////////////////////////
 	// lbfooter - Prints pageend and footer
 	///////////////////////////////////////////////////////////////////
+	public static function get_lbfooter()
+	{
+		return LBWeb::get_pageend() . LBWeb::get_foot();
+	}
+	
 	public static function lbfooter()
 	{
-		LBWeb::pageend();
-		LBWeb::foot();
+		echo LBWeb::get_pageend();
+		echo LBWeb::get_foot();
 	}
 	
 	
@@ -507,7 +487,12 @@ EOT;
 		
 		$miniservers = LBSystem::get_miniservers();
 		if (! is_array($miniservers)) {
-			return ('<div>No Miniservers defined</div>');
+			if(isset($p['LABEL'])) {
+				$html = '<label style="margin:auto;" for="'.$p['FORMID'].'">'.$p['LABEL'].'</label>';
+			}	
+			$html .= '<div id="'.$p['FORMID'].'" style="color:red;font-weight:bold;margin: auto;">No Miniservers defined</div>';
+			$html .= '</div>';
+			return $html;
 		}
 		if (! isset($miniservers[$p['SELECTED']])) {
 			$p['SELECTED'] = 1;
@@ -628,21 +613,6 @@ EOF;
 
 }
 
-	
-	
-	
-	
-	
-	
-	// loglevel_select_html finish
-	
-	
-	
-	
-	
-	
-	
-	
 	public static function loglist_html($p)
 	{
 		global $lbpplugindir;

@@ -52,7 +52,7 @@ our $param_a="";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "1.5.0.1";
 
 $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 
@@ -215,6 +215,21 @@ if ( !$param_a && !$cgi->param("saveformdata") ) {
 	if (-e "$lbhomedir/log/system_tmpfs/netshare_debug.log" ) {
 		$maintemplate->param("DEBUGLOGEXISTS", 1);
 	}
+	
+	# Get SMB version of SMB servers
+	my %smbvers;
+		foreach my $share ( @netshares ) {
+			next if ( $share->{NETSHARE_TYPE} ne "smb" );
+			if ( defined $smbvers{$share->{NETSHARE_SERVER}} ) {
+				$share->{NETSHARE_TYPE} = $smbvers{$share->{NETSHARE_SERVER}};
+				next;
+			}
+			my ($exitcode, $output) = execute( "smbclient -L '$share->{NETSHARE_SERVER}' -d 4 -N 2>&1" );
+			$output =~ /negotiated dialect\[(\w*?)\]/;
+			$share->{NETSHARE_TYPE} = $1 if($1);
+			$smbvers{$share->{NETSHARE_SERVER}} = $1;
+		}
+		
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param("NETSHARES", \@netshares);
 	$maintemplate->param("NETSERVERS", \@netservers);

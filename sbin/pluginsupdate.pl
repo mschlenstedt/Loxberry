@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2018 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2018-2019 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use LoxBerry::System::PluginDB;
+
 use strict;
 use warnings;
 use version;
@@ -32,7 +34,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="1.4.1.1";
+my $scriptversion="2.0.0.1";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -170,14 +172,17 @@ foreach (@plugins) {
 	}
 	
 	# Read URLs from shadowed plugindatabase for security reasons)
-	my @pluginsshadow = LoxBerry::System::get_plugins(0,1,"$lbsdatadir/plugindatabase.dat-");
-	foreach (@pluginsshadow) {
-		if ($_->{PLUGINDB_MD5_CHECKSUM} and $_->{PLUGINDB_MD5_CHECKSUM} eq $pid) {
- 			$endpointrelease = $_->{PLUGINDB_RELEASECFG};
- 			$endpointprerelease = $_->{PLUGINDB_PRERELEASECFG};
-		}
+	my $pluginshadow = LoxBerry::System::PluginDB->plugin( 
+		md5 => $pid,
+		_dbfile => "$lbsdatadir/plugindatabase.json-"
+	);
+	if(!$pluginshadow) {
+		LOGCRIT "$pluginname: Plugin $pid not found in shadow copy. Skipping...";
+		next;
 	}
-
+	$endpointrelease = $pluginshadow->{releasecfg};
+	$endpointprerelease = $pluginshadow->{prereleasecfg};
+	
 	if ( !$endpointrelease && !$endpointprerelease ) {
 		LOGCRIT "$pluginname: No RELEASE or PRERELEASE URL in plugin configuration. Skipping...";
 		next;
@@ -334,7 +339,6 @@ foreach (@plugins) {
 
 		# Randomly file naming
         $tempfile = generate(10);
-		# $resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo /tmp/pluginsupdate/$tempfile.zip $installarchive  2>&1`;
 		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo /tmp/pluginsupdate/$tempfile.zip $installarchive 2>&1`;
 		if ($? ne 0) {
 			LOGCRIT "$pluginname: Could not fetch archive file. Error: $resp. Skipping this plugin...";

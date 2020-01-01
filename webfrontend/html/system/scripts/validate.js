@@ -260,20 +260,28 @@ function validate_convert_rule (object, rule)
 				break;
 			case 'number-exact-value':
 				// Check if exact number is given 
-				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseInt(rule_array[2])) ) ? parseInt(rule_array[2]) : '(?=x)y';
+				rule_array[2] = rule_array[2].replace(  /,/g, "." );
+				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseFloat(rule_array[2])) ) ? parseFloat(rule_array[2]) : '(?=x)y';
 				rule = '^'+rule_array[2]+'$';
 				break;
 			case 'number-min-value':
 				// Check if number is minumum 
-				rule = ( parseInt($(object).val())  >= parseInt(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				var object_value = Math.fround( parseFloat( $(object).val().replace(  /,/g, "." ) ) );
+				var rule_value	 = Math.fround( parseFloat( rule_array[2].replace(  /,/g, "." ) ) );
+				rule = ( object_value >= rule_value ) ? '^[\\+\\-]?\\d+([\\.\\,]\\d+)?$' : '(?=x)y';
 				break;
 			case 'number-max-value':
 				// Check if number is maximum
-				rule = ( parseInt($(object).val())  <= parseInt(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				var object_value = Math.fround( parseFloat( $(object).val().replace(  /,/g, "." ) ) );
+				var rule_value	 = Math.fround( parseFloat( rule_array[2].replace(  /,/g, "." ) ) );
+				rule = ( object_value <= rule_value ) ? '^[\\+\\-]?\\d+([\\.\\,]\\d+)?$' : '(?=x)y';
 				break;
 			case 'number-min-max-value':
 				// Check if min + max digits values are given otherwise default to 1
-				rule = ( parseInt($(object).val())  >= parseInt(rule_array[2]) && parseInt($(object).val())  <= parseInt(rule_array[3])  ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				var object_value = Math.fround( parseFloat( $(object).val().replace(  /,/g, "." ) ) );
+				var rule_value1	 = Math.fround( parseFloat( rule_array[2].replace(  /,/g, "." ) ) );
+				var rule_value2	 = Math.fround( parseFloat( rule_array[3].replace(  /,/g, "." ) ) );
+				rule = ( ( object_value >= rule_value1 ) &&  ( object_value <= rule_value2 ) ) ? '^[\\+\\-]?\\d+([\\.\\,]\\d+)?$' : '(?=x)y';
 				break;
 			case 'email':
 				// Check if email 

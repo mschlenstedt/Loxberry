@@ -1,21 +1,28 @@
 <?php
 
-/**
- * This file is part of Linfo (c) 2010 Joseph Gillotti.
+/* Linfo
  *
- * Linfo is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (c) 2018 Joe Gillotti
  *
- * Linfo is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with Linfo. If not, see <http://www.gnu.org/licenses/>.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
+
 namespace Linfo\OS;
 
 use Linfo\Meta\Timer;
@@ -40,7 +47,7 @@ class Linux extends Unixcommon
     protected $settings;
 
     // Generally disabled as it's slowww
-    protected $cpu_percent = array('overall' => false, 'cpus' => array());
+    protected $cpu_percent = array('overall' => false, 'cpus' => []);
 
     /**
      * Constructor. Localizes settings.
@@ -148,7 +155,7 @@ class Linux extends Unixcommon
         }
 
         // We'll return the contents of this
-        $return = array();
+        $return = [];
 
         // Files containing juicy info
         $procFileSwap = '/proc/swaps';
@@ -158,12 +165,12 @@ class Linux extends Unixcommon
         if (!is_readable($procFileSwap) || !is_readable($procFileMem)) {
             Errors::add('Linfo Core', '/proc/swaps and/or /proc/meminfo are not readable');
 
-            return array();
+            return [];
         }
 
         // To hold their values
-        $memVals = array();
-        $swapVals = array();
+        $memVals = [];
+        $swapVals = [];
 
         // Get memContents
         @preg_match_all('/^([^:]+)\:\s+(\d+)\s*(?:k[bB])?\s*/m', Common::getContents($procFileMem), $matches, PREG_SET_ORDER);
@@ -219,7 +226,7 @@ class Linux extends Unixcommon
         if (!is_file($file) || !is_readable($file)) {
             Errors::add('Linfo Core', '/proc/cpuinfo not readable');
 
-            return array();
+            return [];
         }
 
         /*
@@ -233,10 +240,10 @@ class Linux extends Unixcommon
         $lines = explode("\n", $contents);
 
         // Store CPUs here
-        $cpus = array();
+        $cpus = [];
 
         // Holder for current CPU info
-        $cur_cpu = array();
+        $cur_cpu = [];
 
         // Go through lines in file
         $num_lines = count($lines);
@@ -249,7 +256,7 @@ class Linux extends Unixcommon
             // Approaching new CPU? Save current and start new info for this
             if (strpos($lines[$i], $first_line) === 0 && count($cur_cpu) > 0) {
                 $cpus[] = $cur_cpu;
-                $cur_cpu = array();
+                $cur_cpu = [];
 
                 // Default to unknown
                 $cur_cpu['Model'] = 'Unknown';
@@ -368,7 +375,7 @@ class Linux extends Unixcommon
         }
 
         // Get partitions
-        $partitions = array();
+        $partitions = [];
         $partitions_contents = Common::getContents('/proc/partitions');
         if (@preg_match_all('/(\d+)\s+([a-z]{3})(\d+)$/m', $partitions_contents, $partitions_match, PREG_SET_ORDER) > 0) {
             // Go through each match
@@ -381,7 +388,7 @@ class Linux extends Unixcommon
         }
 
         // Store drives here
-        $drives = array();
+        $drives = [];
 
         // Get actual drives
         foreach ((array) @glob('/sys/block/*/device/model', GLOB_NOSORT) as $path) {
@@ -390,7 +397,7 @@ class Linux extends Unixcommon
             $parts = explode('/', $path);
 
             // Attempt getting read/write stats
-            if (preg_match('/^(\d+)\s+\d+\s+\d+\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+$/', Common::getContents(dirname(dirname($path)).'/stat'), $statMatches) !== 1) {
+            if (preg_match('/^(\d+)\s+\d+\s+\d+\s+\d+\s+(\d+)/', Common::getContents(dirname(dirname($path)).'/stat'), $statMatches) !== 1) {
                 // Didn't get it
                 $reads = false;
                 $writes = false;
@@ -429,7 +436,7 @@ class Linux extends Unixcommon
         }
 
         // Hold them here
-        $return = array();
+        $return = [];
 
         // hddtemp?
         if (array_key_exists('hddtemp', (array) $this->settings['temps']) && !empty($this->settings['temps']['hddtemp']) && isset($this->settings['hddtemp'])) {
@@ -511,7 +518,7 @@ class Linux extends Unixcommon
         if (array_key_exists('hwmon', (array) $this->settings['temps']) && !empty($this->settings['temps']['hwmon'])) {
 
             // Store them here
-            $hwmon_vals = array();
+            $hwmon_vals = [];
 
             // Wacky location
             foreach ((array) @glob('/sys/class/hwmon/hwmon*/{,device/}*_input', GLOB_NOSORT | GLOB_BRACE) as $path) {
@@ -567,7 +574,7 @@ class Linux extends Unixcommon
         if (array_key_exists('thermal_zone', (array) $this->settings['temps']) && !empty($this->settings['temps']['thermal_zone'])) {
 
             // Store them here
-            $thermal_zone_vals = array();
+            $thermal_zone_vals = [];
 
             // Wacky location
             foreach ((array) @glob('/sys/class/thermal/thermal_zone*', GLOB_NOSORT | GLOB_BRACE) as $path) {
@@ -649,7 +656,7 @@ class Linux extends Unixcommon
         }
 
         // Return these
-        $mounts = array();
+        $mounts = [];
 
         // Populate
         foreach ($match as $mount) {
@@ -688,7 +695,7 @@ class Linux extends Unixcommon
             if ($this->settings['show']['mounts_options'] && !in_array($mount[3], (array) $this->settings['hide']['fs_mount_options'])) {
                 $mount_options = explode(',', $mount[4]);
             } else {
-                $mount_options = array();
+                $mount_options = [];
             }
 
             // Might be good, go for it
@@ -759,7 +766,7 @@ class Linux extends Unixcommon
         }
 
         // Store it here
-        $raidinfo = array();
+        $raidinfo = [];
 
         // mdadm?
         if (array_key_exists('mdadm', (array) $this->settings['raid']) && !empty($this->settings['raid']['mdadm'])) {
@@ -776,13 +783,13 @@ class Linux extends Unixcommon
             @preg_match_all('/(\S+)\s*:\s*(\w+)\s*raid(\d+)\s*([\w+\[\d+\] (\(\w\))?]+)\n\s+(\d+) blocks[^[]+\[(\d\/\d)\] \[([U\_]+)\]/mi', (string) $mdadm_contents, $match, PREG_SET_ORDER);
 
             // Store them here
-            $mdadm_arrays = array();
+            $mdadm_arrays = [];
 
             // Deal with entries
             foreach ((array) $match as $array) {
 
                 // Temporarily store drives here
-                $drives = array();
+                $drives = [];
 
                 // Parse drives
                 foreach (explode(' ', $array[4]) as $drive) {
@@ -864,14 +871,14 @@ class Linux extends Unixcommon
         // ugh
         if ($contents === false) {
             Errors::add('Linfo Core', '/proc/loadavg unreadable');
-            return array();
+            return [];
         }
 
         // Parts
         $parts = array_slice(explode(' ', $contents), 0, 3);
 
         if (!$parts) {
-            return array();
+            return [];
         }
 
         return array_combine(array('now', '5min', '15min'), $parts);
@@ -891,7 +898,7 @@ class Linux extends Unixcommon
         }
 
         // Hold our return values
-        $return = array();
+        $return = [];
 
         // Get values for each device
         foreach ((array) @glob('/sys/class/net/*', GLOB_NOSORT) as $path) {
@@ -911,7 +918,7 @@ class Linux extends Unixcommon
                 break;
             }
 
-            if ($state = 'unknown' && file_exists($path.'/carrier')) {
+            if ($state === 'unknown' && file_exists($path.'/carrier')) {
                 $carrier = Common::getContents($path.'/carrier', false);
                 if (!empty($carrier)) {
                     $state = 'up';
@@ -1000,7 +1007,7 @@ class Linux extends Unixcommon
         }
 
         // Return values
-        $return = array();
+        $return = [];
 
         // Here they should be
         $bats = (array) @glob('/sys/class/power_supply/BAT*', GLOB_NOSORT);
@@ -1014,18 +1021,16 @@ class Linux extends Unixcommon
             }
 
             // Get these from the simple text files
-            switch (true) {
-                case is_file($b.'/energy_full'):
-                    $charge_full = Common::getIntFromFile($b.'/energy_full');
-                    $charge_now = Common::getIntFromFile($b.'/energy_now');
-                    break;
-                case is_file($b.'/charge_full'):
-                    $charge_full = Common::getIntFromFile($b.'/charge_full');
-                    $charge_now = Common::getIntFromFile($b.'/charge_now');
-                    break;
-                default:
-                    continue;
-                    break;
+            if (is_file($b.'/energy_full')) {
+                $charge_full = Common::getIntFromFile($b.'/energy_full');
+                $charge_now = Common::getIntFromFile($b.'/energy_now');
+            }
+            else if (is_file($b.'/charge_full')) {
+                $charge_full = Common::getIntFromFile($b.'/charge_full');
+                $charge_now = Common::getIntFromFile($b.'/charge_now');
+            }
+            else {
+                continue;
             }
 
             // Alleged percentage
@@ -1059,7 +1064,7 @@ class Linux extends Unixcommon
         }
 
         // Return these
-        $return = array();
+        $return = [];
 
         // In here
         $contents = Common::getContents('/proc/net/wireless');
@@ -1121,11 +1126,11 @@ class Linux extends Unixcommon
 
         // Parse
         if (preg_match_all('/^\s*(\d+)\s\[[\s\w]+\]:\s(.+)$/m', $contents, $matches, PREG_SET_ORDER) == 0) {
-            return array();
+            return [];
         }
 
         // eh?
-        $cards = array();
+        $cards = [];
 
         // Deal with results
         foreach ($matches as $card) {
@@ -1235,17 +1240,17 @@ class Linux extends Unixcommon
 
         // We allowed?
         if (empty($this->settings['show']['services']) || !is_array($this->settings['services']) || count($this->settings['services']) == 0) {
-            return array();
+            return [];
         }
 
         // Temporarily keep statuses here
-        $statuses = array();
+        $statuses = [];
 
         $this->settings['services']['executables'] = (array) $this->settings['services']['executables'];
         $this->settings['services']['pidFiles'] = (array) $this->settings['services']['pidFiles'];
 
         // Convert paths of executables to PID files
-        $pids = array();
+        $pids = [];
         $do_process_search = false;
         if (count($this->settings['services']['executables']) > 0) {
             $potential_paths = @glob('/proc/*/cmdline');
@@ -1325,7 +1330,7 @@ class Linux extends Unixcommon
                     // State section
                     case 'State':
                         switch ($status_matches[$i][2]) {
-                            case 'D': // disk sleep? wtf?
+                            case 'D': // blocked on disk IO
                             case 'S':
                                 $state = 'Up (Sleeping)';
                             break;
@@ -1339,9 +1344,6 @@ class Linux extends Unixcommon
                             // stopped
                             case 'T':
                                 $state = 'Up (Stopped)';
-                            break;
-                            default:
-                                continue;
                             break;
                         }
                     break;
@@ -1389,7 +1391,7 @@ class Linux extends Unixcommon
 
         // Time?
         if (!empty($this->settings['timer'])) {
-            $t = new Timer('Determining Distrobution');
+            $t = new Timer('Determining Distribution');
         }
 
         // Seems the best way of doing it, as opposed to calling 'lsb_release -a', parsing /etc/issue, or
@@ -1531,7 +1533,7 @@ class Linux extends Unixcommon
         $procs = glob('/proc/*/cmdline', GLOB_NOSORT);
 
         // Store unqiue users here
-        $users = array();
+        $users = [];
 
         // Each process
         foreach ($procs as $proc) {
@@ -1598,7 +1600,7 @@ class Linux extends Unixcommon
         }
 
         // Try getting kernel modules
-        $modules = array();
+        $modules = [];
          if (preg_match_all('/^(\S+)/m', Common::getContents('/proc/modules', ''), $matches, PREG_SET_ORDER)) {
              foreach ($matches as $match) {
                  $modules[] = $match[1];
@@ -1679,7 +1681,7 @@ class Linux extends Unixcommon
 
          // With each iteration we compare what we got to last time's version
          // as the file changes every milisecond or something
-         static $prev = array();
+         static $prev = [];
 
          // Using regex/explode is excessive here, not unlike rest of linfo :/
          $ret = sscanf($line, '%Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu');
@@ -1769,7 +1771,7 @@ class Linux extends Unixcommon
       */
      public function getModel()
      {
-         $info = array();
+         $info = [];
          $vendor = Common::getContents('/sys/devices/virtual/dmi/id/board_vendor', false);
          $name = Common::getContents('/sys/devices/virtual/dmi/id/board_name', false);
          $product = Common::getContents('/sys/devices/virtual/dmi/id/product_name', false);

@@ -139,6 +139,67 @@ $("#LogScroll").click(function() {
 		}
 });
 
+$(document).keydown(function(e) {
+    // console.log("Key", e, "pressed");
+	switch(e.which) {
+		case 13: // Enter Key
+		case 83: // s key
+		case 65: // a key
+			// Trigger Auto-Scroll
+			$("#LogScroll").trigger("click");
+		break;
+		
+		case 81: // q key
+			// Close window
+			window.close();
+		break;
+
+		case 36: // Pos1
+			$("#Logfile").trigger("click");
+			$("#Logfile").scrollTop( 1 );
+		break;
+
+		case 35: // End
+			$("#Logfile").trigger("click");
+			$("#Logfile").scrollTop( 100000000 );
+		break;
+
+		case 37: // left
+			// $("#Logfile").trigger("click");
+			$("#Logfile").scrollLeft( $("#Logfile").scrollLeft() - 20 );
+		break;
+
+		case 33: // page-up
+			$("#Logfile").trigger("click");
+			$("#Logfile").scrollTop( $("#Logfile").scrollTop() - 500 );
+		break;
+
+		case 38: // up
+			$("#Logfile").trigger("click");
+			$("#Logfile").scrollTop( $("#Logfile").scrollTop() - 20 );
+		break;
+
+		case 39: // right
+			// $("#Logfile").trigger("click");
+			$("#Logfile").scrollLeft( $("#Logfile").scrollLeft() + 20 );
+		break;
+
+		case 34: // page-down
+			$("#Logfile").trigger("click");
+			$("#Logfile").scrollTop( $("#Logfile").scrollTop() + 500 );
+		break;
+
+		case 32: // Spacebar
+		case 40: // down
+			$("#Logfile").trigger("click");
+			$("#Logfile").scrollTop( $("#Logfile").scrollTop() + 20 );
+		break;
+
+		default: return; // exit this handler for other keys
+	}
+	e.preventDefault(); // prevent the default action (scroll / move caret)
+});
+
 
 /*
 var fileName =  'logfile.txt';

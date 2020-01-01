@@ -3,5 +3,8 @@
       "Httpproxy" : "",
       "Httpport" : "",
       "Autoconnect" : "true"
-   }
+   },
+    "Watchdog": {
+	    "Maxtemp": "85"
+	}
 }

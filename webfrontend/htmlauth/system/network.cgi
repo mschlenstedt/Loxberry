@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2017-2019 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,18 +21,19 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute network.cgi\n###################\n";
+use Data::Validate::IP qw(is_ipv4 is_ipv6);
 use URI::Escape;
-use CGI qw/:standard/;
-use LWP::UserAgent;
-use Socket qw( inet_aton );
 use warnings;
 use strict;
-# no strict "refs"; # we need it for template system
+
+# print STDERR "Execute network.cgi\n###################\n";
 
 ##########################################################################
 # Variables
 ##########################################################################
+
+# Version of this script
+my $version = "2.0.0.1";
 
 my $helplink = "https://www.loxwiki.eu/x/SogKAw";
 my $helptemplate = "help_network.html";
@@ -47,7 +48,6 @@ our $template_title;
 our $help;
 our @help;
 our $helptext;
-#our $installfolder;
 our $languagefile;
 our $error;
 our $saveformdata;
@@ -63,22 +63,28 @@ our $netzwerkipadresse;
 our $netzwerkipmaske;
 our $netzwerkgateway;
 our $netzwerknameserver;
+my $netzwerkadressen_IPv6;
+my $netzwerkipadresse_IPv6;
+my $netzwerkipmaske_IPv6; 
+my $netzwerkgateway_IPv6;
+my $netzwerknameserver_IPv6;
+my $netzwerkprivacyext_IPv6;
 our @lines;
 our $do;
 our $message;
 our $nexturl;
-# our $lbhostname = lbhostname();
+my @errors;
+my $is_wireless;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
-# Version of this script
-my $version = "1.4.2.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 $netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
 $netzwerkadressen   = $cfg->param("NETWORK.TYPE");
+$netzwerkadressen_IPv6   = $cfg->param("NETWORK.TYPE_IPv6");
 
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/network.html",
@@ -98,28 +104,18 @@ $maintemplate->param (
 	'NETWORK.WPA' => uri_unescape($cfg->param('NETWORK.WPA')),
 );
 					
-
+my @interfaces = get_interfaces();
 
 #########################################################################
 # Parameter
 #########################################################################
 
-# Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
-
-# And this one we really want to use
-$do           = $query{'do'};
+# Get CGI
+our  $cgi = CGI->new;
 
 # Everything we got from forms
-$saveformdata         = param('saveformdata');
-defined $saveformdata ? $saveformdata =~ tr/0-1//cd : undef;
+$do = $cgi->param('do');
+$saveformdata = $cgi->param('saveformdata');
 
 ##########################################################################
 # Language Settings
@@ -134,144 +130,61 @@ $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 # Main program
 ##########################################################################
 
-#########################################################################
-# What should we do
-#########################################################################
-
-# Step 1 or beginning
-
-# $ipno = Regex pattern to validate IP Addresses
-my $ipno = qr/
-    2(?:5[0-5] | [0-4]\d)
-    |
-    1\d\d
-    |
-    [1-9]?\d
-/x;
-
 if ($saveformdata) 
 {
-	$netzwerkanschluss  = param('netzwerkanschluss');
-	if ( $netzwerkanschluss eq "eth0" )
-	{
-		print STDERR "Validation for LAN on eth0\n";
-		$netzwerkadressen = param('netzwerkadressen');
-		if ( $netzwerkadressen eq "dhcp" )
-		{
-			print STDERR "DHCP => No validation\n";
-		}
-		else
-		{
-			print STDERR "Server side validation for static IP to prevent corrupted datas in the configuration filesDHCP => No validation\n";
-			$netzwerkipadresse  = param('netzwerkipadresse');
-			$netzwerkipmaske    = param('netzwerkipmaske');
-			$netzwerkgateway    = param('netzwerkgateway');
-			$netzwerknameserver = param('netzwerknameserver');
-			
-			if ( $netzwerkipadresse =~ /^($ipno\.){3}$ipno$/ && $saveformdata != "")
-			{
-				#print STDERR "IP-Address $netzwerkipadresse matches the IP Address pattern!\n";
-				if (  $netzwerkipmaske =~ /^(((128|192|224|240|248|252|254)\.0\.0\.0)|(255\.(0|128|192|224|240|248|252|254)\.0\.0)|(255\.255\.(0|128|192|224|240|248|252|254)\.0)|(255\.255\.255\.(0|128|192|224|240|248|252|254)))$/i )
-				{
-				  #print STDERR "NetMask $netzwerkipmaske matches the NetMask pattern!\n";
-					if (  $netzwerkgateway =~ /^($ipno\.){3}$ipno$/ )
-					{
-					  #print STDERR "Gateway $netzwerkgateway matches the Gateway pattern!\n";
-						if ( $netzwerknameserver =~ /^($ipno\.){3}$ipno$/ )
-						{
-							#print STDERR "Nameserver $netzwerknameserver matches the Nameserver pattern!\n";
-						  my $subnetaddress = join '.', unpack 'C4', pack 'N', oct("0b" . (ip2bin($netzwerkipadresse, '') & ip2bin($netzwerkipmaske, '')));
-						  #print STDERR "Calculated subnet is: ", $subnetaddress, "\n";
-						  my $subnet = "$subnetaddress/$netzwerkipmaske";
-							if( in_subnet( $netzwerkipadresse, $subnet ) )
-							{
-								#print STDERR "IP-Address $netzwerkipadresse is in the subnet $subnet\n";
-							}
-							else
-							{
-								$error = " $SL{'NETWORK.ERR_NOVALIDIP2'} $netzwerkipadresse $SL{'NETWORK.ERR_DOESNT_MATCH'} $subnet";
-								#print STDERR $error;
-							#	&error;
-							}
-							if( in_subnet( $netzwerkgateway, $subnet ) )
-							{
-								#print STDERR "Gateway $netzwerkgateway is in the subnet $subnet\n";
-							}
-							else
-							{
-								$error = " $SL{'NETWORK.ERR_NOVALIDGATEWAYIP2'} $netzwerkgateway $SL{'NETWORK.ERR_DOESNT_MATCH'} $subnet";
-								#print STDERR $error;
-						#		&error;
-							}
-						}
-						else
-						{
-							$error = "$SL{'NETWORK.ERR_NOVALIDNAMESERVERIP1'}";
-							#print STDERR $error;
-					#		&error;
-						}
-					}
-					else
-					{
-						$error = "$SL{'NETWORK.ERR_NOVALIDGATEWAYIP1'}";
-						#print STDERR $error;
-				#		&error;
-					}
-				}
-				else
-				{
-					$error = "$SL{'NETWORK.ERR_NOVALIDNETMASK'}";
-					#print STDERR $error;
-			#		&error;
-				}
-			}
-			else
-			{
-					$error = "$SL{'NETWORK.ERR_NOVALIDIP1'}";
-					#print STDERR $error;
-			}
-		}
+	$netzwerkanschluss = $cgi->param('netzwerkanschluss');
+	$netzwerkadressen = $cgi->param('netzwerkadressen');
+	$netzwerkadressen_IPv6 = $cgi->param('netzwerkadressen_IPv6');
+	
+	# Check if $netzwerkanschluss is wireless
+	
+	foreach(@interfaces) {
+		next if($_->{name} ne $netzwerkanschluss);
+		$is_wireless = 1 if($_->{wireless});
+		last;
 	}
-	else
-	{
-		print STDERR "Validation for WLAN\n";
-		$netzwerkssid       = param('netzwerkssid');
-		$netzwerkschluessel = param('netzwerkschluessel');
-		if ( $netzwerkssid ne "" && length($netzwerkssid) <= 32 && length($netzwerkssid) >= 1 )
-		{
-			#print STDERR "SSID OK\n";
-		}
-		else
-		{
-			$error = "$SL{'NETWORK.ERR_NOVALIDSSID'}";
-			print STDERR $error;
-		}
-		if ( $netzwerkschluessel ne "" && length($netzwerkschluessel) <= 63 && length($netzwerkschluessel) >= 8 )
-		{
-			#print STDERR "WPA KEY OK\n";
-		}
-		else
-		{
-			$error = "$SL{'NETWORK.ERR_NOVALIDWPA'}";
-			print STDERR $error;
-		} 
+		
+	# Check Wifi
+	if ( $is_wireless ) {
+		checkWifi();
 	}
+	
+	# IPv4
+	if ( $netzwerkadressen eq "manual" ) {
+		checkIPv4( 
+			ip => $cgi->param('netzwerkipadresse'),
+			mask => $cgi->param('netzwerkipmaske'),
+			gateway => $cgi->param('netzwerkgateway'),
+			dns => $cgi->param('netzwerknameserver')
+		);
+	}
+	
+	# IPv6
+	if ( $netzwerkadressen_IPv6 eq "manual" ) {
+		checkIPv6(
+			ip => $cgi->param('netzwerkipadresse_IPv6'),
+			mask => $cgi->param('netzwerkipmaske_IPv6'),
+			# gateway => $cgi->param('netzwerkgateway_IPv6'),
+			dns => $cgi->param('netzwerknameserver_IPv6')
+		);
+	}
+		
 	if ($error)
 	{
 		&error;
 	}
-}
 
+    # print STDERR "Calling subfunction SAVE\n";
+    $maintemplate->param("SAVE", 1);
+    &save;
 
-if (!$saveformdata) {
-  print STDERR "Calling subfunction FORM\n";
+} else {
+
+  # print STDERR "Calling subfunction FORM\n";
   $maintemplate->param("FORM", 1);
   &form;
-} else {
-  print STDERR "Calling subfunction SAVE\n";
-  $maintemplate->param("SAVE", 1);
-  &save;
-}
+
+} 
 
 exit;
 
@@ -281,18 +194,28 @@ exit;
 
 sub form {
 
-	# Defaults for template
-	if ($netzwerkanschluss eq "eth0") {
-	  $maintemplate->param( "CHECKED1", 'checked="checked"');
-	} else {
-	  $maintemplate->param( "CHECKED2", 'checked="checked"');
+	my @interfaces_ordered;
+	# Wired
+	foreach(@interfaces) {
+		push @interfaces_ordered, $_ if (!$_->{wireless} and !$_->{loopback});
+	}
+	# Wireless
+	foreach(@interfaces) {
+		push @interfaces_ordered, $_ if ($_->{wireless});
+	}
+	
+	$maintemplate->param( "INTERFACES" => \@interfaces_ordered );
+	
+	$maintemplate->param( "netzwerkanschluss", $netzwerkanschluss );
+	$maintemplate->param( "netzwerkadressen", $netzwerkadressen );
+	$maintemplate->param( "netzwerkadressen_IPv6", $netzwerkadressen_IPv6 );
+
+	if ( is_enabled( $cfg->param("NETWORK.PRIVACYEXT_IPv6") ) ) {
+	  $maintemplate->param( "netzwerkprivacyext_IPv6", 'checked="checked"');
 	}
 
-	if ($netzwerkadressen eq "manual") {
-	  $maintemplate->param( "CHECKED4", 'checked="checked"');
-	} else {
-	  $maintemplate->param( "CHECKED3", 'checked="checked"');
-	}
+	# israspberry Check
+	$maintemplate->param( 'israspberry' , 1 ) if ( -e "$lbsconfigdir/is_raspberry.cfg" );
 
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
@@ -314,52 +237,55 @@ sub form {
 sub save {
 
 	# Everything from Forms
-	$netzwerkanschluss  = param('netzwerkanschluss');
-	$netzwerkssid       = param('netzwerkssid');
-	$netzwerkschluessel = param('netzwerkschluessel');
-	$netzwerkadressen   = param('netzwerkadressen');
-	$netzwerkipadresse  = param('netzwerkipadresse');
-	$netzwerkipmaske    = param('netzwerkipmaske');
-	$netzwerkgateway    = param('netzwerkgateway');
-	$netzwerknameserver = param('netzwerknameserver');
+	# Adapter
+	$netzwerkanschluss  = $cgi->param('netzwerkanschluss');
+	$netzwerkssid       = $cgi->param('netzwerkssid');
+	$netzwerkschluessel = $cgi->param('netzwerkschluessel');
+	# IPv4
+	$netzwerkadressen   = $cgi->param('netzwerkadressen');
+	$netzwerkipadresse  = $cgi->param('netzwerkipadresse');
+	$netzwerkipmaske    = $cgi->param('netzwerkipmaske');
+	$netzwerkgateway    = $cgi->param('netzwerkgateway');
+	$netzwerknameserver = $cgi->param('netzwerknameserver');
+	# IPv6
+	$netzwerkadressen_IPv6   = $cgi->param('netzwerkadressen_IPv6');
+	$netzwerkipadresse_IPv6  = $cgi->param('netzwerkipadresse_IPv6');
+	$netzwerkipmaske_IPv6    = $cgi->param('netzwerkipmaske_IPv6');
+	$netzwerkgateway_IPv6    = $cgi->param('netzwerkgateway_IPv6');
+	$netzwerknameserver_IPv6 = $cgi->param('netzwerknameserver_IPv6');
+	$netzwerkprivacyext_IPv6 = is_enabled($cgi->param('netzwerkprivacyext_IPv6')) ? "ON" : "OFF";
 
 	# Write configuration file(s)
 	$cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
 	$cfg->param("NETWORK.SSID", uri_escape($netzwerkssid));
 	$cfg->param("NETWORK.WPA", uri_escape($netzwerkschluessel));
+
 	$cfg->param("NETWORK.TYPE", "$netzwerkadressen");
 	$cfg->param("NETWORK.IPADDRESS", "$netzwerkipadresse");
 	$cfg->param("NETWORK.MASK", "$netzwerkipmaske");
 	$cfg->param("NETWORK.GATEWAY", "$netzwerkgateway");
 	$cfg->param("NETWORK.DNS", "$netzwerknameserver");
 
+	$cfg->param("NETWORK.TYPE_IPv6", "$netzwerkadressen_IPv6");
+	$cfg->param("NETWORK.IPADDRESS_IPv6", "$netzwerkipadresse_IPv6");
+	$cfg->param("NETWORK.MASK_IPv6", "$netzwerkipmaske_IPv6");
+	$cfg->param("NETWORK.DNS_IPv6", "$netzwerknameserver_IPv6");
+	$cfg->param("NETWORK.PRIVACYEXT_IPv6", $netzwerkprivacyext_IPv6);
+
 	$cfg->save();
 
 	# Set network options
 	my $interface_file = "$lbhomedir/system/network/interfaces";
 	my $ethtemplate_name = undef;
-
-	# Wireless
-	if ($netzwerkanschluss eq "wlan0") {
-		if ($netzwerkadressen eq "manual") {
-			# Manual / Static
-			$ethtemplate_name = "$lbhomedir/system/network/interfaces.wlan_static";
-		} else {
-			# DHCP
-			$ethtemplate_name = "$lbhomedir/system/network/interfaces.wlan_dhcp";
-		}
-	# Ethernet
-	} else {
-		if ($netzwerkadressen eq "manual") {
-			# Manual / Static
-			$ethtemplate_name = "$lbhomedir/system/network/interfaces.eth_static";
-		} else {
-			# DHCP	
-			$ethtemplate_name = "$lbhomedir/system/network/interfaces.eth_dhcp";
-		}
-	}
-
-	my $ethtmpl = HTML::Template->new(
+	my $ethtmpl;
+	
+	my $part_loopback;
+	my $part_ipv4;
+	my $part_ipv6;
+		
+	#### Loopback device ####
+	$ethtemplate_name = "$lbstemplatedir/network/interfaces.loopback";
+	$ethtmpl = HTML::Template->new(
 				filename => $ethtemplate_name,
 				global_vars => 1,
 				loop_context_vars => 1,
@@ -367,11 +293,35 @@ sub save {
 				%htmltemplate_options,
 				#associate => $cfg,
 				# debug => 1,
-			) or do 
-			{ $error = "System failure: Cannot open network template $ethtemplate_name";
-			&error; };
-			
+	) or do 
+		{ $error = "System failure: Cannot open network template $ethtemplate_name";
+		&error; };
+	
+	$ethtmpl->param('ipv6', 1) if (defined $netzwerkadressen_IPv6 and $netzwerkadressen_IPv6 ne "auto");
+		
+	$part_loopback = $ethtmpl->output();
+	
+	
+	#### IPv4 ####
+	$ethtemplate_name = "$lbstemplatedir/network/interfaces.ipv4";
+	$ethtmpl = HTML::Template->new(
+				filename => $ethtemplate_name,
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				%htmltemplate_options,
+				#associate => $cfg,
+				# debug => 1,
+	) or do 
+		{ $error = "System failure: Cannot open network template $ethtemplate_name";
+		&error; 
+	};
+	
+	$ethtmpl->param('dhcp', 1) if ($netzwerkadressen eq "dhcp");
+	$ethtmpl->param('static', 1) if ($netzwerkadressen eq "manual");
 	$ethtmpl->param( 
+					'wifi' => $is_wireless,
+					'iface' => $netzwerkanschluss,
 					'netzwerkssid' => $netzwerkssid,
 					'netzwerkschluessel' => $netzwerkschluessel,
 					'netzwerkipadresse' => $netzwerkipadresse,
@@ -379,13 +329,80 @@ sub save {
 					'netzwerkgateway' => $netzwerkgateway,
 					'netzwerknameserver' => $netzwerknameserver,
 					'netzwerkdnsdomain' => 'loxberry.local',
-				);
+		);
+		
+	$part_ipv4 = $ethtmpl->output();
+	
+	#### IPv6 ####
+	if ( defined $netzwerkadressen_IPv6 and $netzwerkadressen_IPv6 ne "auto" ) {
+		$ethtemplate_name = "$lbstemplatedir/network/interfaces.ipv6";
+		$ethtmpl = HTML::Template->new(
+				filename => $ethtemplate_name,
+				global_vars => 1,
+				loop_context_vars => 1,
+				die_on_bad_params=> 0,
+				%htmltemplate_options,
+				#associate => $cfg,
+				# debug => 1,
+		) or do 
+			{ $error = "System failure: Cannot open network template $ethtemplate_name";
+			&error; 
+		};
+		
+		$ethtmpl->param('dhcp', 1) if ($netzwerkadressen_IPv6 eq "dhcp");
+		$ethtmpl->param('static', 1) if ($netzwerkadressen_IPv6 eq "manual");
+		$ethtmpl->param( 
+						'wifi', $is_wireless,
+						'iface' => $netzwerkanschluss,
+						'netzwerkssid' => $netzwerkssid,
+						'netzwerkschluessel' => $netzwerkschluessel,
+						'netzwerkipadresse_IPv6' => $netzwerkipadresse_IPv6,
+						'netzwerkipmaske_IPv6' => $netzwerkipmaske_IPv6,
+						'netzwerkgateway_IPv6' => $netzwerkgateway_IPv6,
+						'netzwerknameserver_IPv6' => $netzwerknameserver_IPv6,
+						'netzwerkdnsdomain' => 'loxberry.local',
+						'netzwerkprivacyext_IPv6' => is_enabled($netzwerkprivacyext_IPv6) ? 2 : undef,
+			);
+			
+		$part_ipv6 = $ethtmpl->output();
+	
+	}	
+	
+	## Backup old interfaces
+	`cp $interface_file $interface_file.backup`;
+	
+	## Write new interfaces file
+	
 	open(my $fh, ">" , $interface_file) or do 
 			{ $error = "System failure: Cannot open network file $interface_file";
 			&error; };
-	$ethtmpl->output(print_to => $fh);
+	
+	my $full_interfaces = $part_loopback . $part_ipv4 . $part_ipv6;
+	$full_interfaces =~ s/\n+/\n/gs;
+	
+	print $fh $full_interfaces;
+		
 	close $fh;
-	$ethtmpl = undef;
+	
+	## Test interfaces file
+	my $returncode = `ifup --no-act lo`;
+	$returncode = $? >> 8;
+	
+	if ( $returncode != 0 ) {
+		
+		$error = "System failure: The new interfaces file seems to have an error and the original configuration was recovered. Check $interface_file.error file manually.";
+		`cp $interface_file $interface_file.error`;
+		`cp $interface_file.backup $interface_file`;
+		&error;
+	}
+		
+	# Make sure, dhcpcd is not running
+	`sudo systemctl disable dhcpcd`;
+	`sudo systemctl stop dhcpcd`;
+	
+	# Restart interfaces
+	# `sudo systemctl restart networking` if (! $cgi->param('norestart'));
+	
 	reboot_required($SL{'NETWORK.CHANGE_REBOOT_REQUIRED_MSG'});
 	
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
@@ -410,78 +427,129 @@ exit;
 #####################################################
 
 #####################################################
-# IP and subnet checking subs 
+# Check IPv4
 #####################################################
-
-sub ip2bin
+sub checkIPv4
 {
-	# Convert IP address like 192.168.178.50 to binary like 11000000 10101000 10110010 00110010
-  my ($ip, $delimiter) = @_;
-  return join($delimiter,  map 
-        substr(unpack("B32",pack("N",$_)),-8), 
-        split(/\./,$ip));
+	my %p = @_;
+	
+	# Check ip's
+	if (!is_ipv4($p{ip})) { push @errors, "IPv4: $SL{'NETWORK.ERR_NOVALIDIP1'}"; }
+	if (!is_ipv4($p{mask})) { push @errors, "IPv4: $SL{'NETWORK.ERR_NOVALIDNETMASK'}"; }
+	if (!is_ipv4($p{gateway})) { push @errors, "IPv4: $SL{'NETWORK.ERR_NOVALIDGATEWAYIP1'}"; }
+	if (!is_ipv4($p{dns})) { push @errors, "IPv4: $SL{'NETWORK.ERR_NOVALIDNAMESERVERIP1'}"; }
+	
+	# Check subnet
+	my $network = NetAddr::IP->new($p{ip}, $p{mask})->network(); 
+	if (!Data::Validate::IP::is_innet_ipv4($p{gateway}, $network)) {  push @errors, "IPv4: $SL{'NETWORK.ERR_NOVALIDGATEWAYIP2'}"; }
+	
+	$error .= join "<br>\n", @errors;
+	
 }
 
-sub ip2long
+#####################################################
+# Check IPv6
+#####################################################
+sub checkIPv6
 {
-	return( unpack( 'N', inet_aton($_) ) );
+	my %p = @_;
+	
+	print STDERR "checkIPv6: IP $p{ip} / MASK $p{mask} / GW $p{gateway} / DNS $p{dns}\n";
+	
+	# Check ip's
+	if (!is_ipv6($p{ip})) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDIP_IPv6'}"; }
+	if (! defined $p{mask} or $p{mask} < 0 or $p{mask} > 128) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6'}"; }
+	# if (!is_ipv6($p{gateway})) { push @errors, "$SL{'NETWORK.ERR_NOVALIDGATEWAYIP1_IPv6'}"; }
+	if (!is_ipv6($p{dns})) { push @errors, "IPv6: $SL{'NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6'}"; }
+	
+	$error .= join "<br>\n", @errors;
+	
 }
 
-sub in_subnet
+#####################################################
+# Check Wifi settings
+#####################################################
+sub checkWifi
 {
-	my ($ip, $subnet) = @_;
+	print STDERR "Validation for WLAN\n";
+	$netzwerkssid = $cgi->param('netzwerkssid');
+	$netzwerkschluessel = $cgi->param('netzwerkschluessel');
+	if ( $netzwerkssid ne "" && length($netzwerkssid) <= 32 && length($netzwerkssid) >= 1 )
+	{
+		#print STDERR "SSID OK\n";
+	}
+	else
+	{
+		$error .= "$SL{'NETWORK.ERR_NOVALIDSSID'}<br>\n";
+		print STDERR $error;
+	}
 	
-	print STDERR "Validating $ip with $subnet\n";
+	if ( $netzwerkschluessel ne "" && length($netzwerkschluessel) <= 63 && length($netzwerkschluessel) >= 8 )
+	{
+		#print STDERR "WPA KEY OK\n";
+	}
+	else
+	{
+		$error .= "$SL{'NETWORK.ERR_NOVALIDWPA'}<br>\n";
+		print STDERR $error;
+	} 
+
+}
+
+########################################################
+# Parse network interfaces
+#   This collects all interfaces, and determines
+#   what interfaces are loopback, wired and wireless
+#   Returns: Array with Hashref of interface properties
+########################################################
+sub get_interfaces
+{
+	my @interfacelist;
 	
-	my $ip_long = ip2long( $ip );
+	## All interfaces
+	my @iplink = `ip link show`;
+	foreach my $linkline (@iplink) {
+		if( substr($linkline, 0, 1) ne " " ) {
+			# New interface line
+			my %if;
+			push @interfacelist, \%if;
+			
+			($if{id}, $if{name}, $if{fulloptions}) = split /:/, $linkline; 
+			$if{id} = trim($if{id});
+			$if{name} = trim($if{name});
+			$if{fulloptions} = trim($if{fulloptions});
 
-	if( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$| )
-	{
-		my $subnet = ip2long( $1 );
-		my $mask = ip2long( $2 );
-
-		if( ($ip_long & $mask)==$subnet )
-		{
-			return( 1 );
+			# Collect information from line
+			$if{loopback} = $if{fulloptions} =~ /<\S*(LOOPBACK)\s*\>*/ ? 1 : 0;
+			$if{carrier} = $if{fulloptions} =~ /<\S*(NO-CARRIER)\s*\>*/ ? 0 : 1;
+			$if{state} = $if{fulloptions} =~ /\sstate\s(\S*)/ ? $1 : undef;
+		} else {
+			# Second line
+			my $if = $interfacelist[-1];
+			$if->{loopback} = $linkline =~ /link\/loopback/ ? 1 : 0;
+			$if->{mac} = $linkline =~ /link\/\S*\s(\S*)/ ? $1 : undef;
 		}
 	}
-	elsif( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})$| )
-	{
-		my $subnet = ip2long( $1 );
-		my $bits = $2;
-		my $mask = -1<<(32-$bits);
-
-		$subnet&= $mask;
-
-		if( ($ip_long & $mask)==$subnet )
-		{
-			return( 1 );
-		}
-	}
-	elsif( $subnet=~m|(^\d{1,3}\.\d{1,3}\.\d{1,3}\.)(\d{1,3})-(\d{1,3})$| )
-	{
-		my $start_ip = ip2long( $1.$2 );
-		my $end_ip = ip2long( $1.$3 );
-
-		if( $start_ip<=$ip_long and $end_ip>=$ip_long )
-		{
-			return( 1 );
-		}
-	}
-	elsif( $subnet=~m|^[\d\*]{1,3}\.[\d\*]{1,3}\.[\d\*]{1,3}\.[\d\*]{1,3}$| )
-	{
-		my $search_string = $subnet;
-
-		$search_string=~s/\./\\\./g;
-		$search_string=~s/\*/\.\*/g;
-
-		if( $ip=~/^$search_string$/ )
-		{
-			return( 1 );
+	
+	# Find Wifi interfaces
+	my @iwconfig = `iwconfig 2>&1`;
+	foreach my $linkline (@iwconfig) {
+		next if( index($linkline, "no wireless extensions") != -1 );
+		# WIFI found
+		my $wifiname = $1 if($linkline =~ /(^\S+)/);
+		foreach my $if (@interfacelist) {
+			# print STDERR "Search interface: $if->{name}\n";
+			next if( $if->{name} ne $wifiname );
+			$if->{wireless} = 1;
+			last;
 		}
 	}
 
-	return( 0 );
+	# use Data::Dumper;
+	# print STDERR Dumper(@interfacelist);
+
+	return @interfacelist;
+
 }
 
 #####################################################

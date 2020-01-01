@@ -1,44 +1,53 @@
 <?php
-#Currently known types are: lbupdate, plugininstall
+
+header('Content-Type: application/json');
+
+// Currently known types are: lbupdate, plugininstall
 $lockfile_definitions = $_SERVER['LBHOMEDIR']."/config/system/lockfiles.default";
-$at_least_one_running = 0;
+$which = array();
+
 if (file_exists($lockfile_definitions))
 {
 	$lockfiles = file($lockfile_definitions);
-	$which = ', "which": [ ';
 	foreach ($lockfiles as $lockfilename) 
 	{
 		$lockfilename = trim($lockfilename, " \t\n\r\0\x0B");
 		if (file_exists("/var/lock/".$lockfilename.".lock")) 
 		{
-			$which .= '"'.$lockfilename.'",';
-			$at_least_one_running = 1;
+			array_push($which, $lockfilename);
 		} 
 	}
-	if ($at_least_one_running)
-	{
-		
-		$which = rtrim($which,",").' ]'; 
-	}
-	else
-	{
-		$which = "";
-	}
 }
 
-if (file_exists($_SERVER['LBHOMEDIR']."/log/system_tmpfs/reboot.required")) 
+// List what locks are set
+if (!empty($which))
 {
-	$reboot_required='"reboot_required": "1",';
-} else {
-	$reboot_required='"reboot_required": "0",';
-}
-
-if ($at_least_one_running)
-{
-	echo '{'.$reboot_required.'"update_running": "1"'.$which.'}';
+	$response['update_running'] = 1;
+	$response['which'] = $which;
 }
 else
 {
-	echo '{'.$reboot_required.'"update_running": "0"}';
+	$response['update_running'] = 0;
 }
+
+// reboot.required
+if (file_exists($_SERVER['LBHOMEDIR']."/log/system_tmpfs/reboot.required")) 
+{
+	$response['reboot_required'] = 1;
+} else {
+	$response['reboot_required'] = 0;
+}
+
+// reboot.force. Do not send force if a lock is set.
+if (empty($which) and file_exists($_SERVER['LBHOMEDIR']."/log/system_tmpfs/reboot.force")) 
+{
+	$response['reboot_force'] = 1;
+	$response['reboot_force_reason'] = file_get_contents($_SERVER['LBHOMEDIR']."/log/system_tmpfs/reboot.force");
+	
+} else {
+	$response['reboot_force'] = 0;
+}
+
+echo json_encode($response);
+
 ?>

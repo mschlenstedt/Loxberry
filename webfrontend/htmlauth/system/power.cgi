@@ -60,7 +60,7 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.0.0";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 #$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
@@ -111,6 +111,11 @@ $maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
 ##########################################################################
 # Main program
 ##########################################################################
+
+# Remove reboot.force
+if (-e "$lbstmpfslogdir/reboot.force") {
+	unlink ("$lbstmpfslogdir/reboot.force");
+}
 
 #########################################################################
 # What should we do

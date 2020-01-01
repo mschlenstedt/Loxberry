@@ -1,21 +1,28 @@
 <?php
 
-/**
- * This file is part of Linfo (c) 2014, 2015 Joseph Gillotti.
+/* Linfo
  *
- * Linfo is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (c) 2018 Joe Gillotti
  *
- * Linfo is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with Linfo. If not, see <http://www.gnu.org/licenses/>.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
+
 namespace Linfo;
 
 use Linfo\Parsers\CallExt;
@@ -34,9 +41,9 @@ use ReflectionException;
  */
 class Linfo
 {
-    protected $settings = array(),
-        $lang = array(),
-        $info = array(),
+    protected $settings = [],
+        $lang = [],
+        $info = [],
         $parser = null,
 
         $app_name = 'Linfo',
@@ -45,7 +52,7 @@ class Linfo
         $linfo_testdir = null,
         $linfo_localdir = null;
 
-    public function __construct($settings = array())
+    public function __construct($settings = [])
     {
 
         // Time us
@@ -56,7 +63,7 @@ class Linfo
         $this->linfo_localdir = dirname(dirname(__DIR__)).'/';
 
         // Get our version from git setattribs
-        $scm = '2018-02-18 15:01:37 -0800';
+        $scm = '2019-10-09 09:10:15 -0700';
         list($this->version) = strpos($scm, '$') !== false ? array('git') : explode(' ', $scm);
 
         // Run through dependencies / sanity checking
@@ -137,25 +144,25 @@ class Linfo
 
             'RAM' => array(
                 'show' => !empty($this->settings['show']['ram']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getRam',
             ),
 
             'HD' => array(
                 'show' => !empty($this->settings['show']['hd']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getHD',
             ),
 
             'Mounts' => array(
                 'show' => !empty($this->settings['show']['mounts']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getMounts',
             ),
 
             'Load' => array(
                 'show' => !empty($this->settings['show']['load']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getLoad',
             ),
 
@@ -167,19 +174,19 @@ class Linfo
 
             'UpTime' => array(
                 'show' => !empty($this->settings['show']['uptime']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getUpTime',
             ),
 
             'CPU' => array(
                 'show' => !empty($this->settings['show']['cpu']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getCPU',
             ),
 
             'Model' => array(
                 'show' => !empty($this->settings['show']['model']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getModel',
             ),
 
@@ -191,55 +198,55 @@ class Linfo
 
             'Network Devices' => array(
                 'show' => !empty($this->settings['show']['network']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getNet',
             ),
 
             'Devices' => array(
                 'show' => !empty($this->settings['show']['devices']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getDevs',
             ),
 
             'Temps' => array(
                 'show' => !empty($this->settings['show']['temps']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getTemps',
             ),
 
             'Battery' => array(
                 'show' => !empty($this->settings['show']['battery']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getBattery',
             ),
 
             'Raid' => array(
                 'show' => !empty($this->settings['show']['raid']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getRAID',
             ),
 
             'Wifi' => array(
                 'show' => !empty($this->settings['show']['wifi']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getWifi',
             ),
 
             'SoundCards' => array(
                 'show' => !empty($this->settings['show']['sound']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getSoundCards',
             ),
 
             'processStats' => array(
                 'show' => !empty($this->settings['show']['process_stats']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getProcessStats',
             ),
 
             'services' => array(
                 'show' => !empty($this->settings['show']['services']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getServices',
             ),
 
@@ -251,7 +258,7 @@ class Linfo
 
             'virtualization' => array(
                 'show' => !empty($this->settings['show']['virtualization']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getVirtualization',
             ),
 
@@ -276,7 +283,7 @@ class Linfo
             // Extra info such as which fields to not show
             'contains' => array(
                 'show' => true,
-                'default' => array(),
+                'default' => [],
                 'method' => 'getContains',
             ),
         );
@@ -302,7 +309,7 @@ class Linfo
         $this->runExtensions();
     }
 
-    protected function loadSettings($settings = array())
+    protected function loadSettings($settings = [])
     {
 
         // Running unit tests?
@@ -322,14 +329,14 @@ class Linfo
 
         if (!isset($settings['hide'])) {
             $settings['hide'] = array(
-                'filesystems' => array(),
-                'storage_devices' => array(),
+                'filesystems' => [],
+                'storage_devices' => [],
             );
         }
 
         // Make sure these are arrays
-        $settings['hide']['filesystems'] = is_array($settings['hide']['filesystems']) ? $settings['hide']['filesystems'] : array();
-        $settings['hide']['storage_devices'] = is_array($settings['hide']['storage_devices']) ? $settings['hide']['storage_devices'] : array();
+        $settings['hide']['filesystems'] = is_array($settings['hide']['filesystems']) ? $settings['hide']['filesystems'] : [];
+        $settings['hide']['storage_devices'] = is_array($settings['hide']['storage_devices']) ? $settings['hide']['storage_devices'] : [];
 
         // Make sure these are always hidden
         $settings['hide']['filesystems'][] = 'rootfs';
@@ -416,7 +423,7 @@ class Linfo
 
     protected function runExtensions()
     {
-        $this->info['extensions'] = array();
+        $this->info['extensions'] = [];
 
         if (!array_key_exists('extensions', $this->settings) || count($this->settings['extensions']) == 0) {
             return;
