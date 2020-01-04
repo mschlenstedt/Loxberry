@@ -26,7 +26,6 @@ use LoxBerry::System;
 use LoxBerry::System::PluginDB;
 use LoxBerry::JSON;
 use LoxBerry::Log;
-use LoxBerry::Update;
 use CGI;
 use version;
 use warnings;
