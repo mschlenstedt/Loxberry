@@ -6,7 +6,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.0.1";
+my $version = "2.0.1.0";
 
 # Globals
 my @results;
@@ -1106,7 +1106,7 @@ sub check_miniservers
 			);
 			my $response = $ua->post( $checkurl, \%post );
 			if ($response->is_error) {
-				die("Could not query data (stopped at MS $mslist{$ms}{Name}: $response->status_line");
+				die("Could not query data (stopped at MS $mslist{$ms}{Name}: " . $response->status_line);
 			}
 			my $data = decode_json($response->decoded_content);
 			if($data->{success} eq "1") {
