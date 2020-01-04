@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "2.0.0.7";
+our $VERSION = "2.0.1.0";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1277,10 +1277,11 @@ sub check_securepin
 			return (2);
 			};
 	my $securepinsaved = <$fh>;
+	chomp($securepinsaved);
 	close ($fh);
 
 	# In case we have an active SupportVPN connmection
-	my $securepinsavedsupportvpn;;
+	my $securepinsavedsupportvpn;
 	if (-e "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn") {
 		# Check Online Status
 		use Net::Ping;
@@ -1294,6 +1295,7 @@ sub check_securepin
 			} else {
 				open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn"); 
 				$securepinsavedsupportvpn = <$fh>;
+				chomp($securepinsavedsupportvpn);
 				close ($fh);
 				last;
 			}
@@ -1320,7 +1322,11 @@ sub check_securepin
 		undef $pinerrobj;
 	}
 	
-	if ( crypt($securepin, $securepinsaved) eq $securepinsaved || crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
+	if ( crypt($securepin, $securepinsaved) eq $securepinsaved) {
+		# OK
+		unlink $pinerror_file;
+		return (undef);
+	} elsif ( crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
 		# OK
 		unlink $pinerror_file;
 		return (undef);

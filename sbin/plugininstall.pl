@@ -32,7 +32,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.0.6";
+my $version = "2.0.0.7";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -223,7 +223,7 @@ sub uninstall {
 sub install {
 
 	# Create tmp dir
-	if (!-e "$lbsdatadir/tmp") {
+	if (!-e "$lbsdatadir/tmp/uploads") {
 		make_path("$lbsdatadir/tmp/uploads" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	}
 	# Choose random temp filename
