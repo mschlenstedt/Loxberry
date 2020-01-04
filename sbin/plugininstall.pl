@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2019 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.0.5";
+my $version = "2.0.0.6";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -105,13 +105,13 @@ my $bins = LoxBerry::System::get_binaries();
 my $bashbin		= $bins->{BASH};
 my $aptbin		= $bins->{APT};
 my $sudobin		= $bins->{SUDO};
-my $chmodbin	= $bins->{CHMOD};
-my $chownbin	= $bins->{CHOWN};
-my $unzipbin	= $bins->{UNZIP};
+my $chmodbin		= $bins->{CHMOD};
+my $chownbin		= $bins->{CHOWN};
+my $unzipbin		= $bins->{UNZIP};
 my $findbin		= $bins->{FIND};
 my $grepbin		= $bins->{GREP};
 my $dpkgbin		= $bins->{DPKG};
-my $dos2unix	= $bins->{DOS2UNIX};
+my $dos2unix		= $bins->{DOS2UNIX};
 
 ##########################################################################
 # Language Settings
@@ -222,6 +222,10 @@ sub uninstall {
 
 sub install {
 
+	# Create tmp dir
+	if (!-e "$lbsdatadir/tmp") {
+		make_path("$lbsdatadir/tmp/uploads" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
+	}
 	# Choose random temp filename
 	if ( !$R::tempfile ) {;
 		$tempfile = &generate(10);
@@ -243,7 +247,6 @@ sub install {
 		print F "1";
 	flock(F,8);
 	close (F);
-
 
 	# Check secure PIN
 	if ( $R::action ne "autoupdate" ) {
@@ -281,7 +284,7 @@ sub install {
 			&logfail;
 		}
 	} else {
-		$tempfolder = "/tmp/uploads/$tempfile";
+		$tempfolder = "$lbsdatadir/tmp/uploads/$tempfile";
 		if (!-e $R::file) {
 			$message = "$SL{'PLUGININSTALL.ERR_FILE_DOESNT_EXIST'}";
 			&logfail;
@@ -319,7 +322,7 @@ sub install {
 	if ( $zipmode ) {
 		$pluginsize = `$unzipbin -l $R::file | tail -1 | xargs | cut -d' ' -f1`;
 		$pluginsize = $pluginsize / 1000; # kBytes
-		%folderinfo = LoxBerry::System::diskspaceinfo("/tmp");
+		%folderinfo = LoxBerry::System::diskspaceinfo("$lbsdatadir/tmp/uploads");
 		if ($folderinfo{available} < $pluginsize * 1.1) { # exstracted size + 10%
 			$message = "$SL{'PLUGININSTALL.ERR_NO_SPACE_IN_TMP'} " . $folderinfo{available} . " kB";
 			&logfail;
@@ -407,19 +410,19 @@ sub install {
 
 	$pauthorname		= $pcfg->param("AUTHOR.NAME");
 	$pauthoremail		= $pcfg->param("AUTHOR.EMAIL");
-	$pversion			= $pcfg->param("PLUGIN.VERSION");
-	$pname				= $pcfg->param("PLUGIN.NAME");
-	$ptitle				= $pcfg->param("PLUGIN.TITLE");
-	$pfolder			= $pcfg->param("PLUGIN.FOLDER");
+	$pversion		= $pcfg->param("PLUGIN.VERSION");
+	$pname			= $pcfg->param("PLUGIN.NAME");
+	$ptitle			= $pcfg->param("PLUGIN.TITLE");
+	$pfolder		= $pcfg->param("PLUGIN.FOLDER");
 	$pautoupdates		= $pcfg->param("AUTOUPDATE.AUTOMATIC_UPDATES");
 	$preleasecfg		= $pcfg->param("AUTOUPDATE.RELEASECFG");
 	$pprereleasecfg		= $pcfg->param("AUTOUPDATE.PRERELEASECFG");
-	$pinterface			= $pcfg->param("SYSTEM.INTERFACE");
-	$preboot			= $pcfg->param("SYSTEM.REBOOT");
-	$pcustomlog			= $pcfg->param("SYSTEM.CUSTOM_LOGLEVELS");
-	$plbmin				= $pcfg->param("SYSTEM.LB_MINIMUM");
-	$plbmax				= $pcfg->param("SYSTEM.LB_MAXIMUM");
-	$parch				= $pcfg->param("SYSTEM.ARCHITECTURE");
+	$pinterface		= $pcfg->param("SYSTEM.INTERFACE");
+	$preboot		= $pcfg->param("SYSTEM.REBOOT");
+	$pcustomlog		= $pcfg->param("SYSTEM.CUSTOM_LOGLEVELS");
+	$plbmin			= $pcfg->param("SYSTEM.LB_MINIMUM");
+	$plbmax			= $pcfg->param("SYSTEM.LB_MAXIMUM");
+	$parch			= $pcfg->param("SYSTEM.ARCHITECTURE");
 
 	# Filter
 	$pname =~ tr/A-Za-z0-9_-//cd;
@@ -582,8 +585,8 @@ sub install {
 				&logfail;
 			}
 			} else {
-			$message = "$SL{'PLUGININSTALL.OK_MINVERSION'}";
-			&logok;
+				$message = "$SL{'PLUGININSTALL.OK_MINVERSION'}";
+				&logok;
 			}
 		} 
 
@@ -616,8 +619,8 @@ sub install {
 				&logfail;
 			}
 			} else {
-			$message = "$SL{'PLUGININSTALL.OK_MAXVERSION'}";
-			&logok;
+				$message = "$SL{'PLUGININSTALL.OK_MAXVERSION'}";
+				&logok;
 			}
 		}
 
@@ -1452,31 +1455,20 @@ sub install {
 		&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 	}
 
-	# Set permissions
-	#$message = "$SL{'PLUGININSTALL.INF_PERMISSIONS'}";
-	#&loginfo;
-	#system("$lbssbindir/resetpermissions.sh 2>&1");
-
 	# Cleaning
 	$message = "$SL{'PLUGININSTALL.INF_END'}";
 	&loginfo;
 	print "Tempfolder is: $tempfile\n";
-	if ( -e "/tmp/uploads/$tempfile" ) {
-		system("$sudobin -n -u loxberry rm -vrf /tmp/uploads/$tempfile 2>&1");
+	if ( -e "$lbsdatadir/tmp/uploads/$tempfile" ) {
+		system("$sudobin -n -u loxberry rm -vrf $lbsdatadir/tmp/uploads/$tempfile 2>&1");
 	}
 	if ( $R::tempfile ) {
-		system("$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1");
+		system("$sudobin -n -u loxberry rm -vf $lbsdatadir/tmp/uploads/$tempfile.zip 2>&1");
 	} 
 
 	# Finished
 	$message = "$SL{'PLUGININSTALL.OK_END'}";
 	&logok;
-
-	# Check for a reboot for older plugins (V1)
-	#system ("cat /tmp/$tempfile.log | grep -E -iq 'reboot|restart|neustart|neu starten' 2>&1");
-	#if ($? eq 0) {
-	#	$preboot = 1;
-	#}
 
 	# Set Status
 	if (-e $statusfile) {
