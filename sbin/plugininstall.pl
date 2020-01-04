@@ -26,6 +26,7 @@ use LoxBerry::System;
 use LoxBerry::System::PluginDB;
 use LoxBerry::JSON;
 use LoxBerry::Log;
+use LoxBerry::Update;
 use CGI;
 use version;
 use warnings;
@@ -1174,6 +1175,7 @@ sub install {
 
 		$lastaptupdate = LoxBerry::System::read_file("$lbhomedir/data/system/lastaptupdate.dat");
 		$lastaptupdate = 0 if(!$lastaptupdate);
+		my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 		
 		my $now = time;
 		# If last run of apt-get update is longer than 24h ago, do a refresh.
@@ -1183,9 +1185,12 @@ sub install {
 			$message = "Command: $dpkgbin --configure -a";
 			&loginfo;
 			system("$dpkgbin --configure -a 2>&1");
-			$message = "Command: $aptbin -q -y update";
+			$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 			&loginfo;
-			system("$aptbin -q -y update 2>&1");
+			system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
+			$message = "Command: $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update";
+			&loginfo;
+			system("$export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update 2>&1");
 			if ($? ne 0) {
 				$message = "$SL{'PLUGININSTALL.ERR_APTREFRESH'}";
 				&logerr; 
@@ -1226,23 +1231,26 @@ sub install {
 		$message = "Command: $dpkgbin --configure -a";
 		&loginfo;
 		system("$dpkgbin --configure -a 2>&1");
-		$message = "Command: $aptbin --no-install-recommends -q -y install $aptpackages";
+		$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 		&loginfo;
-		system("$aptbin --no-install-recommends -q -y install $aptpackages 2>&1");
+		system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
+		$message = "Command: $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $aptpackages";
+		&loginfo;
+		system("$export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $aptpackages 2>&1");
 		if ($? ne 0) {
 			$message = "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
 			&logwarn; 
-			push(@warnings,"APT install: $message");
 			# If it failed, maybe due to an outdated apt-database... So
 			# do a apt-get update once more
 			$message = "Command: $dpkgbin --configure -a";
 			&loginfo;
 			system("$dpkgbin --configure -a 2>&1");
-			$message = "$SL{'PLUGININSTALL.INF_APTREFRESH'}";
+			$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 			&loginfo;
-			$message = "Command: $aptbin -q -y update";
+			system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
+			$message = "Command: $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update";
 			&loginfo;
-			system("$aptbin -q -y update 2>&1");
+			system("$export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update 2>&1");
 			if ($? ne 0) {
 				$message = "$SL{'PLUGININSTALL.ERR_APTREFRESH'}";
 				&logerr; 
@@ -1257,15 +1265,15 @@ sub install {
 				close(F);
 			}
 			# And try to install packages again...
-			$message = "Command: $dpkgbin --configure -a";
+			$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 			&loginfo;
-			system("$dpkgbin --configure -a 2>&1");
-			$message = "Command: $aptbin --no-install-recommends -q -y install $aptpackages";
+			system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
+			$message = "Command: $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $aptpackages";
 			&loginfo;
-			system("$aptbin --no-install-recommends -q -y install $aptpackages 2>&1");
+			system("$export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $aptpackages 2>&1");
 			if ($? ne 0) {
 				$message = "$SL{'PLUGININSTALL.ERR_PACKAGESINSTALL'}";
-				&logerr; 
+				&logwarn; 
 				push(@errors,"APT install: $message");
 			} else {
 				$message = "$SL{'PLUGININSTALL.OK_PACKAGESINSTALL'}";
