@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "1.5.0.1";
+our $VERSION = "2.0.1.1";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -35,8 +35,8 @@ sub parse
 	
 	# Check for content
 	if (!$self->{jsoncontent}) {
-		print STDERR "LoxBerry::JSON->parse: ERROR content seems to be empty -> Returning undef\n" if ($DEBUG);
-		return undef;
+		print STDERR "LoxBerry::JSON->parse: WARNING content seems to be empty -> write will create it\n" if ($DEBUG);
+		$self->{jsoncontent} = '{}';
 	}
 	
 	print STDERR "LoxBerry::JSON->parse: Convert to json and return json object\n" if ($DEBUG);
