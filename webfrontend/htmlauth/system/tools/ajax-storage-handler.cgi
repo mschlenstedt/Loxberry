@@ -10,7 +10,7 @@ use JSON;
 
 my $cgi = CGI->new;
 
-$LoxBerry::Storage::DEBUG = 1;
+# $LoxBerry::Storage::DEBUG = 1;
 
 # DEBUG parameters from POST
 my @names = $cgi->param;
@@ -65,13 +65,19 @@ sub init_html
 	if (! $R::type_all && ! $R::type_usb && ! $R::type_net && ! $R::type_local && ! $R::type_custom) {
 		$R::type_all = 1;
 	}
+	$R::type_all = defined $R::type_all ? $R::type_all : "";
 	if ($R::type_all eq "1") {
 		$R::type_usb = "1";
 		$R::type_net = "1";
 		$R::type_local = "1";
 		$R::type_custom = "1";
 	}
+	$R::type_usb = defined $R::type_usb ? $R::type_usb : "";
+	$R::type_net = defined $R::type_net ? $R::type_net : "";
+	$R::type_local = defined $R::type_local ? $R::type_local : "";
+	$R::type_custom = defined $R::type_custom ? $R::type_custom : "";
 
+	$R::data_mini = defined $R::data_mini ? $R::data_mini : "";
 	if ($R::data_mini eq "1") {
 		$R::jqm_data_mini = 'data-mini="true"';
 	}
@@ -150,6 +156,10 @@ var ${R::formid}_storage = [""];
 			if (stor[i].GROUP == "local" && "$R::type_local" != "1") continue;
 			${R::formid}_storage[i+1] = stor[i].PATH;
 			option = \$('<option></option>').attr("value", i+1).text(stor[i].NAME);
+			if("$R::readwriteonly" == "1" && stor[i].WRITABLE == 0) {
+				option.append(' (readonly)');
+				option.attr("disabled", "disabled");
+			}
 			select.append(option);
 			if(currentpath.startsWith(stor[i].PATH)) {
 				select.val(i+1);
@@ -263,7 +273,7 @@ EOF
 sub get_storage
 {
 	print $cgi->header(-type => 'application/json;charset=utf-8', -status => "200 OK");
-	my @storage = LoxBerry::Storage::get_storage($R::readwriteonly, $R::localdir);
+	my @storage = LoxBerry::Storage::get_storage(undef, $R::localdir);
 	print to_json(\@storage);
 	exit;
 }
