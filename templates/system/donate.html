@@ -73,7 +73,7 @@
 </p>
 <p>
 <TMPL_LOOP NAME="DONORLIST">
-<b><TMPL_VAR NAME="NAME"></b>, <TMPL_VAR NAME="MONEY"><br>
+	<TMPL_VAR NAME="DATE"> <b><TMPL_VAR NAME="NAME"></b><br>
 </TMPL_LOOP>
 </p>
 </center>
@@ -86,6 +86,6 @@ if(i < <TMPL_VAR NAME="COUNTER">)
 	document.getElementById("counter").innerHTML = ++i;
 else
 	clearInterval(inv);
-}, 1);
+}, 300);
 </script>
 <!-- ** END template/system/donate.html ************************************************************************************ -->
