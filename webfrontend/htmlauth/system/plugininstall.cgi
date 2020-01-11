@@ -48,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.0.1";
+my $version = "2.0.1.1";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -154,7 +154,7 @@ sub form {
 	
 	# Create tmp dirs
 	if (!-e "$lbsdatadir/tmp/uploads") {
-		make_path("$lbsdatadir/tmp" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
+		make_path("$lbsdatadir/tmp/uploads" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	}
 
 	# Check for running autoupdates/installations...
