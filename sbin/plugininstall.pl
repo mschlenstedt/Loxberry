@@ -32,7 +32,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.0.7";
+my $version = "2.0.1.1";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -54,6 +54,7 @@ my $aptfile;
 my $openerr;
 my $lastaptupdate;
 my $aptpackages;
+my $log;
 my $logfile;
 my $statusfile;
 my $chkhcpath;
@@ -177,7 +178,7 @@ exit (0);
 #####################################################
 
 sub uninstall {
-
+	
 	$pid = $R::pid;
 	
 	$plugin = LoxBerry::System::PluginDB->plugin( md5 => $pid );
@@ -187,6 +188,26 @@ sub uninstall {
 		&logfail;
 	}
 
+	$pname = $plugin->{name};
+	$pfolder = $plugin->{folder};
+	$ptitle = $plugin->{title};
+	$pversion = $plugin->{version};
+	
+	# Create Logfile with lib to have it in database
+	$log = LoxBerry::Log->new(
+		package => 'Plugin Installation',
+		name => 'Uninstall',
+		filename => "$lbhomedir/log/system/plugininstall/".$pname."_uninstall.log",
+		loglevel => 7,
+		addtime => 1
+	);
+	LOGSTART "Plugin Uninstallation $ptitle";
+
+	# Set logfile
+	$logfile = $log->filename();
+	LOGINF "Logfile name is $logfile";
+	
+	LOGINF "Requesting lock";
 	eval {
 		my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 10 );
 
@@ -198,20 +219,31 @@ sub uninstall {
 		}
 	};
 	
-	$pname = $plugin->{name};
-	$pfolder = $plugin->{folder};
-	
+	LOGINF "Setting systemwide information about plugin uninstall";
 	$statedata->{db_updated} = time;
 	$statedata->{last_plugin_uninstall} = time;
 	
 	&purge_installation("all");
-
+	
 	# Purge plugin notifications
-	LoxBerry::Log::delete_notifications($pfolder) if ($pfolder);
+	if($pfolder) {
+		LOGINF "Deleting notifications of plugin $pfolder";
+		LoxBerry::Log::delete_notifications($pfolder);
+	}
 
 	# Remove Lock
+	LOGINF "Removing lock";
 	LoxBerry::System::unlock( lockfile => 'plugininstall' );
-
+	
+	## No idea what this is for
+	## Saving Logfile
+	# $message = "$SL{'PLUGININSTALL.INF_SAVELOG'}";
+	# &loginfo;
+	# system("cp -v /tmp/$tempfile.log $lbhomedir/log/system/plugininstall/".$pname."_uninstall.log 2>&1");
+	# &setowner ("loxberry", "0", "$lbhomedir/log/system/plugininstall/".$pname."_uninstall.log", "LOG Save");
+	
+	LOGEND();
+	
 	exit (0);
 
 }
@@ -496,7 +528,7 @@ sub install {
 	&loginfo;
 
 	# Create Logfile with lib to have it in database
-	my $log = LoxBerry::Log->new(
+	$log = LoxBerry::Log->new(
 		package => 'Plugin Installation',
 		name => 'Installation',
 		filename => "$lbhomedir/log/system/plugininstall/$pname.log",
@@ -732,29 +764,50 @@ sub install {
 
 	# Starting installation
 
+	# Getting text file list
+	my @textfilelist = getTextFiles($tempfolder);
+	
 	# Checking for hardcoded /opt/loxberry strings
 	if ( $pinterface ne "1.0" ) {
-		$chkhcpath = `$findbin $tempfolder -type f ! -iname '*.md' ! -iname '*.html' ! -iname '*.txt' ! -iname '*.dat' ! -iname '*.log' -exec $grepbin -li '/opt/loxberry' {} \\;`;
+		$message = "Checking for hardcoded paths to /opt/loxberry";
+		&loginfo;
+		my @extensionExcludeList = ( ".md", ".html", ".txt", ".dat", ".log" );
+		my @searchfilelist;
+		foreach my $filename ( @textfilelist ) {
+			my $slashpos = rindex($filename, '/');
+			my $dotpos = rindex($filename, '.');
+			next if($dotpos == -1 or $slashpos > $dotpos);
+			my $ext = substr( $filename, $dotpos );
+			# print "Filename: $filename Extension: $ext\n";
+			next if ( !$ext or grep { /$ext/ } @extensionExcludeList );
+			push @searchfilelist, $filename;
+		}
+		
+		if(@searchfilelist) {
+			my $searchfilestring = join(' ', @searchfilelist);
+			$chkhcpath = `$grepbin -li '/opt/loxberry' $searchfilestring`;
+		}
+
 		if ($chkhcpath) {
-				$message = $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
-				&logwarn;
-				push(@warnings,"HARDCODED PATH'S: $message");
-				print "$chkhcpath";
+			$message = $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
+			&logwarn;
+			print $chkhcpath;
+			push(@warnings,"HARDCODED PATH'S: $message");
+			
+			
+		} else {
+			$message = "No hardcoded paths to /opt/loxberry found";
+			&logok;
 		}
 	}
 
+		
 	# Replacing Environment strings
-	$message = "$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
-	&loginfo;
+	replaceenv("loxberry", \@textfilelist);
+	
+	# Executing DOS2UNIX for all textfiles
 	if (-e "$tempfolder" ) {
-		&replaceenv ("loxberry", "1", "$tempfolder");
-	}
-
-	# Executing DOS2UNIX for all pluginfiles
-	$message = "$SL{'PLUGININSTALL.INF_DOS2UNIX'}";
-	&loginfo;
-	if (-e "$tempfolder" ) {
-		&dos2unix ("loxberry", "1", "$tempfolder");
+		dos2unix("loxberry", \@textfilelist);
 	}
 
 	# Executing preroot script
@@ -1557,87 +1610,129 @@ sub purge_installation {
 	my $option = shift;
 	$option = $option ? $option : "";
 
+	my $exitcode;
+	my $output;
+
+	# 1. Delete cron jobs
+	if($pname) {
+		# Cron jobs
+		$message = "Removing cron jobs";
+		&loginfo;
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.01min/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.03min/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.05min/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.10min/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.15min/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.30min/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.hourly/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.daily/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.weekly/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.monthly/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.yearly/$pname 2>&1" );
+	
+		# 2. Delete individual crontab file (only on uninstall)
+		if ($option eq "all") {
+			# Crontab
+			$message = "Removing crontab";
+			&loginfo;
+			execute( command => "rm -vf $lbhomedir/system/cron/cron.d/$pname 2>&1" );
+		}
+	}
+
+	# 3. Run uninstall script (only on uninstall)
+	if( $pname and $option eq "all" ) {
+			# Executing uninstall script
+		if (-f "$lbhomedir/data/system/uninstall/$pname") {
+			$message = "$SL{'PLUGININSTALL.INF_START_UNINSTALL_EXE'}";
+			&loginfo;
+			my $commandline = qq(cd /tmp && "$lbhomedir/data/system/uninstall/$pname" "/tmp" "$pname" "$pfolder" "$pversion" "$lbhomedir" 2>&1);
+			($exitcode, $output) = execute( command => $commandline );
+			if ($exitcode eq 1) {
+				$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
+				&logerr;
+				$message = "Script output:";
+				&loginfo;
+				$message = $output;
+				&loginfo;
+				push(@errors,"UNINSTALL execution: $SL{'PLUGININSTALL.ERR_SCRIPT'}");
+			} 
+			elsif ($exitcode > 1) {
+				$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
+				&logfail;
+				$message = "Script output:";
+				&loginfo;
+				$message = $output;
+				&loginfo;
+			}
+			else {
+				$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
+				&logok;
+				$message = "Script output:";
+				&loginfo;
+				$message = $output;
+				&loginfo;
+			}
+		} else {
+			$message = "No uninstall script provided.";
+			&loginfo;
+		}
+	}
+	
+	if ($pname) {
+		# 4. Delete uninstall file
+		if (-f "$lbhomedir/data/system/uninstall/$pname") {
+			$message = "Deleting uninstall file";
+			&loginfo;
+			execute( command => "rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1");
+		}
+		# 5. Delete daemon
+		$message =  "Deleting daemon";
+		&loginfo;
+		execute( command => "rm -fv $lbhomedir/system/daemons/plugins/$pname 2>&1");
+		# 6. Delete Sudoers
+		$message = "Deleting sudoers file";
+		&loginfo;
+		execute( command => "rm -fv $lbhomedir/system/sudoers/$pname 2>&1");
+		
+		# DON NOT DELETE the install Log anymore
+		# system("rm -fv $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
+	}
+	
+	# 7. Delete plugin folders
 	if ($pfolder) {
 		# Plugin Folders
-		system("$sudobin -n -u loxberry rm -rfv $lbhomedir/config/plugins/$pfolder/ 2>&1");
-		system("$sudobin -n -u loxberry rm -rfv $lbhomedir/bin/plugins/$pfolder/ 2>&1");
-		system("$sudobin -n -u loxberry rm -rfv $lbhomedir/data/plugins/$pfolder/ 2>&1");
-		system("$sudobin -n -u loxberry rm -rfv $lbhomedir/templates/plugins/$pfolder/ 2>&1");
-		system("$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
-		system("$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
-		system("$sudobin -n -u loxberry rm -rfv $lbhomedir/data/system/install/$pfolder 2>&1");
+		$message = "Deleting plugin folders";
+		&loginfo;
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/config/plugins/$pfolder/ 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/bin/plugins/$pfolder/ 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/data/plugins/$pfolder/ 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/templates/plugins/$pfolder/ 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/data/system/install/$pfolder 2>&1");
 		# Icons for Main Menu
-		system("$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
+		$message = "Deleting plugin icons";
+		&loginfo;
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
 	}
 
-	if ($pname) {
-		# Daemon file
-		system("rm -fv $lbhomedir/system/daemons/plugins/$pname 2>&1");
-		# Uninstall file
-		if ($option ne "all") {
-			system("rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1");
-		}
-		# Cron jobs
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.01min/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.03min/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.05min/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.10min/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.15min/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.30min/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.hourly/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.daily/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.weekly/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.monthly/$pname 2>&1");
-		system("$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.yearly/$pname 2>&1");
-		# Sudoers
-		system("rm -fv $lbhomedir/system/sudoers/$pname 2>&1");
-		# Install Log
-		system("rm -fv $lbhomedir/log/system/plugininstall/$pname.log 2>&1");
-	}
-
-	# This will only be purged if we do an uninstallation
+	# 8. Remove Plugin from plugin database
 	if ($option eq "all") {
-
-		# Clean Database
 		if ($plugin) {
+			$message = "Removing plugin from plugin database";
+			&loginfo;
 			$plugin->remove();
 			undef $plugin;
 		} else {
 			$message = "$SL{'PLUGININSTALL.ERR_DATABASE'}";
 			&logerr;
 		}
-
-		if ($pfolder) {
-			# Log
-			system("$sudobin -n -u loxberry rm -rfv $lbhomedir/log/plugins/$pfolder/ 2>&1");
-		}
-
-		if ($pname) {
-			# Executing uninstall script
-			if (-f "$lbhomedir/data/system/uninstall/$pname") {
-				$message = "$SL{'PLUGININSTALL.INF_START_UNINSTALL_EXE'}";
-				&loginfo;
-				system("\"$lbhomedir/data/system/uninstall/$pname\" 2>&1");
-				my $exitcode = $? >> 8;
-				if ($exitcode eq 1) {
-					$message = "$SL{'PLUGININSTALL.ERR_SCRIPT'}";
-					&logerr; 
-					push(@errors,"UNINSTALL execution: $message");
-				} 
-				elsif ($exitcode > 1) {
-					$message = "$SL{'PLUGININSTALL.FAIL_SCRIPT'}";
-					&logfail; 
-				}
-				else {
-					$message = "$SL{'PLUGININSTALL.OK_SCRIPT'}";
-					&logok;
-				}
-			}
-			system("rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1");
-
-			# Crontab
-			system("rm -vf $lbhomedir/system/cron/cron.d/$pname 2>&1");
-		}
+	}
+	
+	# 9. Delete Log folder
+	if ($option eq "all" and $pfolder) {
+		$message = "Deleting plugins log folder";
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/log/plugins/$pfolder/ 2>&1");
 	}
 
 	return;
@@ -1890,80 +1985,56 @@ sub setrights {
 #####################################################
 # Replace strings in pluginfiles
 #####################################################
-
-# &replaceenv ("loxberry", "1", "path/to/folder");
+# replaceenv ($user, @filelist);
+# &replaceenv ("loxberry", @arrayOfFiles);
 
 sub replaceenv {
 
+	$message = "$SL{'PLUGININSTALL.INF_REPLACEENVIRONMENT'}";
+	&loginfo;
+	
 	my $user = shift;
-	my $recursive = shift;
-	my $target = shift;
+	my $replacefiles = shift;
 
-	# Folder
-	if ($recursive) {
-
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' {} \\; 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g' {} \\; 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g' {} \\; 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g' {} \\; 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g' {} \\; 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g' {} \\; 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g' {} \\; 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g' {} \\; 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g' {} \\; 2>&1");
-
-	# File
-	} else {
-
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBHOMEDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' $target 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPPLUGINDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPPLUGINDIR#$pfolder#g' $target 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLAUTHDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g' $target 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPHTMLDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g' $target 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPTEMPLATEDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g' $target 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPDATADIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g' $target 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPLOGDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g' $target 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPCONFIGDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g' $target 2>&1");
-		$message = $SL{'PLUGININSTALL.INF_REPLACEING'} . " REPLACELBPBINDIR in $target";
-		&loginfo;
-		system("$sudobin -n -u $user /bin/sed -i 's#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g' $target 2>&1");
-
+	if( ref($replacefiles) eq "" ) {
+		$replacefiles = ( $replacefiles );
+	}
+	if( ref($replacefiles) ne "ARRAY" ) {
+		$message = "replaceenv: Incoming filelist is not an ARRAY.";
+		&logerr;
+		return;
 	}
 
-	return();
+	my $sed_replace_query =  
+			"s#REPLACELBHOMEDIR#$lbhomedir#g; " .
+			"s#REPLACELBPPLUGINDIR#$pfolder#g; " .
+			"s#REPLACELBPHTMLAUTHDIR#$lbhomedir/webfrontend/htmlauth/plugins/$pfolder#g; " .
+			"s#REPLACELBPHTMLDIR#$lbhomedir/webfrontend/html/plugins/$pfolder#g; " .
+			"s#REPLACELBPTEMPLATEDIR#$lbhomedir/templates/plugins/$pfolder#g; " .
+			"s#REPLACELBPDATADIR#$lbhomedir/data/plugins/$pfolder#g; " .
+			"s#REPLACELBPLOGDIR#$lbhomedir/log/plugins/$pfolder#g; " . 
+			"s#REPLACELBPCONFIGDIR#$lbhomedir/config/plugins/$pfolder#g; " .
+			"s#REPLACELBPBINDIR#$lbhomedir/bin/plugins/$pfolder#g;";
+
+	$message = "Running replacement for " . scalar @$replacefiles . " files";
+	&loginfo;
+	my $counter = 0;
+	foreach(@$replacefiles) {
+		$counter++;
+		if($counter%20 == 0) {
+			$message = "  $counter of " . scalar @$replacefiles . " finished ...";
+			&loginfo;
+		}
+		# # Debug
+		# $message="File: $_";
+		# &loginfo;
+		
+		`$sudobin -n -u $user /bin/sed -i '$sed_replace_query' $_ 2>&1`;
+	}
+	$message = "Replace of $counter files finished";
+	&logok;
+		
+	return;
 
 }
 
@@ -1976,22 +2047,63 @@ sub replaceenv {
 sub dos2unix {
 
 	my $user = shift;
-	my $recursive = shift;
-	my $target = shift;
+	my ($filelist) = @_;
 
-	# Folder
-	if ($recursive) {
-
-		system("$sudobin -n -u $user $findbin $target -type f -iregex '.*' -exec $dos2unix {} \\; 2>&1");
-
-	# File
-	} else {
-
-		system("$sudobin -n -u $user $dos2unix $target 2>&1");
-
+	if( ref($filelist) eq "" ) {
+		$filelist = ( $filelist );
+	}
+	if( ref($filelist) ne "ARRAY" ) {
+		$message = "dos2unix: Incoming filelist is not an ARRAY.";
+		&logerr;
+		return;
 	}
 
-	return();
+	$message = "$SL{'PLUGININSTALL.INF_DOS2UNIX'}";
+	&loginfo;
+	
+	system("$sudobin -n -u $user $dos2unix -- " . join(" ", @$filelist) . " 2>&1");
+
+	return;
 
 }
 
+#####################################################
+# Querying all files from a $target to be text files
+#####################################################
+
+# @textfiles = getTextFiles("/path/to/folder");
+
+sub getTextFiles 
+{
+	my ($target) = @_;
+
+	$message = "Getting file list from $target";
+	&loginfo;
+
+	require File::Find::Rule;
+	my @files = File::Find::Rule
+		->file()
+		->name( '*' )
+		->nonempty
+		->in($target);
+
+	$message = "Found " . scalar @files . " files";
+	&loginfo;
+
+	$message = "Filtering out binary files";
+	&loginfo;
+	my @textfiles;
+	my $counter = 0;
+	foreach(@files) {
+		$counter++;
+		my $bin_text = `file -b $_`;
+		push @textfiles, $_ if ( index( $bin_text, 'text' ) != -1 );
+		if( $counter%20 == 0 ) {
+			$message = "  " . scalar @textfiles . " found out of $counter ...";
+			&loginfo;
+		}
+	}
+	$message = "Found " . scalar @textfiles . " files to be text files";
+	&logok;
+	return @textfiles;
+}
