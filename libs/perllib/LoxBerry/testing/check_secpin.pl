@@ -1,8 +1,7 @@
 #!/usr/bin/perl
-
 use LoxBerry::System;
 
-my $entered_pin = $ARGV[1];
+my $entered_pin = $ARGV[0];
 
 print "Checking pin '$entered_pin'...\n";
   
