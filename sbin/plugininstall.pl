@@ -32,7 +32,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.1.1";
+my $version = "2.0.1.2";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -776,7 +776,10 @@ sub install {
 		foreach my $filename ( @textfilelist ) {
 			my $slashpos = rindex($filename, '/');
 			my $dotpos = rindex($filename, '.');
-			next if($dotpos == -1 or $slashpos > $dotpos);
+			if($dotpos == -1 or $slashpos > $dotpos) {
+				push @searchfilelist, $filename;
+				next;
+			}
 			my $ext = substr( $filename, $dotpos );
 			# print "Filename: $filename Extension: $ext\n";
 			next if ( !$ext or grep { /$ext/ } @extensionExcludeList );
