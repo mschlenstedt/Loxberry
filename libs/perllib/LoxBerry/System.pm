@@ -6,10 +6,9 @@ use Config::Simple;
 use URI::Escape;
 use Cwd 'abs_path';
 use Carp;
-use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "2.0.1.0";
+our $VERSION = "2.0.1.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1029,6 +1028,7 @@ This exported function returns the current system hostname
 ####################################################
 sub lbhostname
 {
+	require Sys::Hostname;
 	return Sys::Hostname::hostname();
 }
 
@@ -1266,7 +1266,6 @@ sub tz_offset
 sub check_securepin
 {
 	my ($securepin) = shift;
-	
 	my $pinerror_file = "$lbhomedir/log/system_tmpfs/securepin.errors";
 	my $pinerrobj;
 	my $pinerr;
@@ -1284,7 +1283,7 @@ sub check_securepin
 	my $securepinsavedsupportvpn;
 	if (-e "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn") {
 		# Check Online Status
-		use Net::Ping;
+		require Net::Ping;
 		for (my $i=0; $i < 3; $i++) {
 			my $p = Net::Ping->new();
 			my $hostname = '10.98.98.1';
@@ -1326,7 +1325,7 @@ sub check_securepin
 		# OK
 		unlink $pinerror_file;
 		return (undef);
-	} elsif ( crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
+	} elsif ( defined $securepinsavedsupportvpn and crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
 		# OK
 		unlink $pinerror_file;
 		return (undef);
