@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.1.1";
+our $VERSION = "2.0.1.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1418,7 +1418,7 @@ sub diskspaceinfo
 		# Remove other blanks
 		$line =~ s/ +/ /g;
 		# print STDERR "Line: '$line'\n";
-		my ($size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line);
+		my ($size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line, 5);
 		$diskhash{filesystem} = $fs;
 		$diskhash{size} = $size;
 		$diskhash{used} = $used;
