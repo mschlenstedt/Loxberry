@@ -24,7 +24,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.1.1";
 
 # Remove 'only used once' warnings
 $R::showfilename if 0;
@@ -160,10 +160,13 @@ sub form_log
 		
 		# Show info symbol for attention messages
 		if(defined $log->{STATUS} and $log->{STATUS} <= 4 and defined $log->{ATTENTIONMESSAGES} and $log->{ATTENTIONMESSAGES} ne "") {
+			my @attmsg_lines = split(/\n/, $log->{ATTENTIONMESSAGES});
+			$log->{ATTENTIONMESSAGES} = join("\n", @attmsg_lines[-40..-1]);
 			# Strip other html tags
 			$log->{ATTENTIONMESSAGES} =~ s|<.+?>||g;
-			# Replace <br> with \n
+			# Replace \n with <br>\n
 			$log->{ATTENTIONMESSAGES} =~ s/\n/<br>\n/g;
+			
 			print "&nbsp;<a href='#attmsg_$log->{KEY}' data-rel='popup' data-transition='fade'><img alt='Info' src='/system/images/notification_info_small.svg' height='15' width='15'></a>\n";
 			print "\t\t\t\t<div data-role='popup' id='attmsg_$log->{KEY}' class='ui-content' data-arrow='true' >\n";
 			print "\t\t\t\t\t<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left'>Close</a>\n";
