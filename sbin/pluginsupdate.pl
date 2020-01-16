@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2018-2019 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2018-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="2.0.0.1";
+my $scriptversion="2.0.1.1";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -203,7 +203,13 @@ foreach (@plugins) {
 			next;
 		} else {
 			LOGOK "$pluginname: Release file fetched.";
-			$releasecfg = new Config::Simple("$releasefile");
+			eval {
+				$releasecfg = new Config::Simple("$releasefile");
+			};
+			if ($@) {
+				LOGCRIT "$pluginname: Fetched release.cfg is not a valid release file. Please report to the plugin author.";
+				next;
+			}
 			$releasever = $releasecfg->param("AUTOUPDATE.VERSION");
 			$releasearchive = $releasecfg->param("AUTOUPDATE.ARCHIVEURL");
 			$releaseinfo = $releasecfg->param("AUTOUPDATE.INFOURL");
@@ -275,7 +281,13 @@ foreach (@plugins) {
 			next;
 		} else {
 			LOGOK "$pluginname: Prerelease file fetched.";
-			$prereleasecfg = new Config::Simple("$releasefile");
+			eval {
+				$prereleasecfg = new Config::Simple("$releasefile");
+			};
+			if ($@) {
+				LOGCRIT "$pluginname: Fetched prerelease.cfg is not a valid release file. Please report to the plugin author.";
+				next;
+			}
 			$prereleasever = $prereleasecfg->param("AUTOUPDATE.VERSION");
 			$prereleasearchive = $prereleasecfg->param("AUTOUPDATE.ARCHIVEURL");
 			$prereleaseinfo = $prereleasecfg->param("AUTOUPDATE.INFOURL");
@@ -371,12 +383,18 @@ foreach (@plugins) {
 
 }
 
-# Clean up
-LOGINF "Deleting temporary files.";
-system ("rm -rf $update_path");
-
-LOGEND "$0 finished.";
+LOGINF "Exiting.";
 exit;
+
+# Final executions
+END 
+{
+	# Clean up
+	LOGINF "Deleting temporary files.";
+	system ("rm -rf $update_path");
+	LOGEND "$0 finished.";
+}
+
 
 
 #####################################################
