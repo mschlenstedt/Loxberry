@@ -24,7 +24,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Version of this script
-my $version = "2.0.1.1";
+my $version = "2.0.1.2";
 
 # Remove 'only used once' warnings
 $R::showfilename if 0;
@@ -161,7 +161,9 @@ sub form_log
 		# Show info symbol for attention messages
 		if(defined $log->{STATUS} and $log->{STATUS} <= 4 and defined $log->{ATTENTIONMESSAGES} and $log->{ATTENTIONMESSAGES} ne "") {
 			my @attmsg_lines = split(/\n/, $log->{ATTENTIONMESSAGES});
-			$log->{ATTENTIONMESSAGES} = join("\n", @attmsg_lines[-40..-1]);
+			my $linecount = scalar @attmsg_lines;
+			my $linelimit = $linecount < 35 ? $linecount : 35;
+			$log->{ATTENTIONMESSAGES} = join("\n", @attmsg_lines[-$linelimit..-1]);
 			# Strip other html tags
 			$log->{ATTENTIONMESSAGES} =~ s|<.+?>||g;
 			# Replace \n with <br>\n
