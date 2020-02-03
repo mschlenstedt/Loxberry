@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017-2018 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2017-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 use LoxBerry::Log;
 use Getopt::Long;
+use LWP::UserAgent;
 
 my $logfilename = "$lbhomedir/log/system_tmpfs/loxberryid.log";
 my $log = LoxBerry::Log->new ( package => "core", name => "loxberryid", filename => $logfilename, append => 1, addtime => 1 );
@@ -31,6 +32,7 @@ my $curlbin  = $cfg->param("BINARIES.CURL");
 
 my ($ver_major, $ver_minor, $ver_sub) = split (/\./, trim($version));
 
+## Delete invalid lbid's (VMs not having deleted the lbid)
 if (-e "$lbsconfigdir/loxberryid.cfg") {
 	open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
 		do {
@@ -42,21 +44,12 @@ if (-e "$lbsconfigdir/loxberryid.cfg") {
 	unlink "$lbsconfigdir/loxberryid.cfg" if ($epoch_timestamp == "1517978534");
 	unlink "$lbsconfigdir/loxberryid.cfg" if ($epoch_timestamp == "1521542625");
 }
-		
+	
 # Create new ID if no exists
 if (!-e "$lbsconfigdir/loxberryid.cfg" && $sendstat) {
 
-	LOGINF "Creating new random ID";
-
-	open($fh, ">", "$lbsconfigdir/loxberryid.cfg") or 
-		do {
-			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
-			exit(1);
-		};
-    flock($fh,2);
-    print $fh generate(128);
-    flock($fh,8);
-	close($fh);
+	create_loxberryid();
+	
 }
 
 # Send ID to loxberry.de for usage statistics. Nothing more than Date/Time (in Unixformat) and
@@ -79,33 +72,51 @@ if ($sendstat) {
 		sleep($random);
 		LOGINF "Continuing.";
 	}
-	open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
-		do {
-			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
-			exit(1);
-		};
-	flock($fh,2);
-	my $lbid = <$fh>;
-	flock($fh,8);
-	close($fh);
 	
-	# Architecture
-	my $architecture;
-	$architecture = "ARM" if (-e "$lbsconfigdir/is_raspberry.cfg");
-	$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
-	$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
-	$architecture = "Virtuozzo" if (-e "$lbsconfigdir/is_virtuozzo.cfg");
-	$architecture = "Odroid" if (-e "$lbsconfigdir/is_odroidxu3xu4.cfg");
+	# Init LWP::UserAgent
+	my $ua = new LWP::UserAgent;
+	$ua->timeout(15);
+	$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 	
+	# Two tries
+	for( my $try = 1; $try <= 2; $try++ ) {
 	
-	# Send LoxBerry version info
-	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture";
-	my $output = qx { $curlbin -f -k -s -S --stderr - --show-error -o /dev/null "$url" };
-	$exitcode  = $? >> 8;
-	if ($exitcode != 0 ) {
-		LOGCRIT "ERROR $exitcode sending statistics to $url\n$output\n";
-	} else {
-	LOGOK "Sent request successfully: $url\n";
+		LOGOK "Try $try...";
+		
+		open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
+			do {
+				LOGCRIT "Cannot read $lbsconfigdir/loxberryid.cfg: $!";
+				exit(1);
+			};
+		flock($fh,2);
+		my $lbid = <$fh>;
+		flock($fh,8);
+		close($fh);
+		
+		# Architecture
+		my $architecture;
+		$architecture = "ARM" if (-e "$lbsconfigdir/is_raspberry.cfg");
+		$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
+		$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
+		$architecture = "Virtuozzo" if (-e "$lbsconfigdir/is_virtuozzo.cfg");
+		$architecture = "Odroid" if (-e "$lbsconfigdir/is_odroidxu3xu4.cfg");
+		
+		# Send LoxBerry version info
+		my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture";
+		
+		my $response = $ua->get($url);
+		
+		if ( !$response->is_success ) {
+			LOGERR "ERROR sending statistics: HTTP ".$response->code." ".$response->message."\n$url\n".$response->decoded_content;
+			if ( $response->code eq "409" ) {
+				LOGWARN "The used LoxBerry ID is blacklisted. That means, your LoxBerry ID is not unique. To fix this, we re-create a new LoxBerry ID for you.";
+				create_loxberryid();
+			}
+		} else {
+			LOGOK "Sent request successfully: HTTP ".$response->code." ".$response->message."\n$url";
+			last;
+		}
+		
 	}
 	
 	# Send Plugin version info
@@ -126,12 +137,13 @@ if ($sendstat) {
 			"&ver_sub=" . uri_escape($ver_sub) . 
 			"&version=" . uri_escape($plugin->{PLUGINDB_VERSION}); 
 		
-		my $output = qx { $curlbin -f -k -s -S --stderr - --show-error "$url" };
-		$exitcode  = $? >> 8;
-		if ($exitcode != 0 ) {
-			LOGCRIT "ERROR $exitcode sending statistics to $url\n$output\n";	
+		
+		my $response = $ua->get($url);
+				
+		if ( !$response->is_success ) {
+			LOGCRIT "Error sending plugin statistics: HTTP ".$response->code." ".$response->message."\n$url\n".$response->decoded_content;	
 		} else {
-		LOGOK "Successfully sent plugin request for $plugin->{PLUGINDB_TITLE}: $url\n$output\n";
+			LOGOK "Successfully sent plugin request for $plugin->{PLUGINDB_TITLE}: HTTP ".$response->code." ".$response->message."\n$url";
 		}
 	}
 	
@@ -143,6 +155,23 @@ exit;
 #
 # Subs
 #
+
+# Write new id to file
+sub create_loxberryid {
+
+LOGINF "Creating new random ID";
+
+	open($fh, ">", "$lbsconfigdir/loxberryid.cfg") or 
+		do {
+			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
+			exit(1);
+		};
+    flock($fh,2);
+    print $fh generate(128);
+    flock($fh,8);
+	close($fh);
+
+}
 
 # Create Random ID
 sub generate {
