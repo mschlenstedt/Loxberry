@@ -540,3 +540,20 @@ a:link.nolinkstyle
 */
 /* PANEL END */
 }
+
+.ui-slider-track,
+.ui-flipswitch.ui-bar-inherit {
+	background-color: #EEEEEE !important;
+	color:black !important;
+	text-shadow: none !important;
+}
+
+.ui-slider-track {
+	z-index:2;
+}
+
+.ui-slider-bg.ui-btn-active,
+.ui-flipswitch-active.ui-bar-inherit {
+	background-color: #6dac20 !important;
+	color:white !important;
+}
