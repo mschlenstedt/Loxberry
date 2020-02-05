@@ -22,7 +22,7 @@
 								<TMPL_IF MSNAME>(<TMPL_VAR MSNAME>)</TMPL_IF></p>
 									<a id="miniserverweb<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="grid" onclick="open_ms_web('<TMPL_VAR MSNO>');"><TMPL_VAR MINISERVER.BUTTON_OPEN_WEBIF></a>
 									<a id="miniserverlog<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="star" onclick="open_ms_log('<TMPL_VAR MSNO>');" target="miniserver_log"><TMPL_VAR MINISERVER.BUTTON_OPEN_LOG></a>
-									<a id="miniservercheck<TMPL_VAR MSNO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_CHECKMS></a>
+									<a id="miniservercheck<TMPL_VAR MSNO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#" class="button_checkms" data-msno="<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.BUTTON_CHECKMS></a>
 									<div id="miniservercheck<TMPL_VAR MSNO>_result"></div>
 							</td>
 						</tr>
@@ -179,7 +179,11 @@
 							</td>
 						</tr>
 						<SCRIPT>
+							
+							/* JavaScript code in TMPL_LOOP */
+							
 							$("#useclouddns<TMPL_VAR MSNO>").prop("checked", "<TMPL_VAR MSUSECLOUDDNS>");
+							
 							function open_ms_log ( ms_id )
 							{
 								if ( (validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id))  )
@@ -235,49 +239,7 @@
 							$(document).ready( function()
 							{
 								
-								$("#miniservercheck<TMPL_VAR MSNO>").click(function() {
-										$('#scan_result').html('');
-									var url = "/admin/system/tools/ajax-check-miniserver.cgi";
-									var resultdiv = $("#miniservercheck<TMPL_VAR MSNO>_result");
-									resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
-									var checkresult = $.post( url, 
-														{	ip: $("#miniserverip<TMPL_VAR MSNO>").val(),
-															port: $("#miniserverport<TMPL_VAR MSNO>").val(),
-															user: $("#miniserveruser<TMPL_VAR MSNO>").val(),
-															pass: $("#miniserverkennwort<TMPL_VAR MSNO>").val(),
-															useclouddns: $("#useclouddns<TMPL_VAR MSNO>").is(':checked'),
-															clouddns: $("#miniservercloudurl<TMPL_VAR MSNO>").val(),
-											} );
-									checkresult.done(function( data ) {
-										//resultdiv.html("<span style='color:blue;'>Call successful</span>");
-										/* This would parse XML response, but later prefered JSON
-										var entry = $(data).find('LL');
-										console.log ("Entry", entry.attr('value'));
-										*/
-										// console.log ("Output:", data);
-										var html;
-										if (data.success) {
-											html = "<span style='color:green;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
-											if (data.isadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_ADMIN>";
-											if (data.isnonadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_NONADMIN>";
-											$("#miniserverlog<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
-											$("#miniserverweb<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
-										} else {
-											html = "<span style='color:red;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
-											html+= "<br>" + data.status_line;
-											$("#miniserverlog<TMPL_VAR MSNO>").addClass( "ui-disabled" );
-											$("#miniserverweb<TMPL_VAR MSNO>").addClass( "ui-disabled" );
-										}
-										resultdiv.html(html);
-
-
-											});
-									checkresult.fail(function( status, data ) {
-										resultdiv.html("<span style='color:red;'>Internal server error on call of ajax-check-miniserver.cgi</span> (HTTP "+status.status + " "+ status.statusText + ")");
-										console.log("Internal server error on call of ajax-check-miniserver.cgi", status.status, status.statusText);
-									});
 								
-								});
 								
 								note_link ("miniservernote<TMPL_VAR MSNO>");
 								validate_enable('#miniserverfoldername<TMPL_VAR MSNO>'); 
@@ -374,7 +336,83 @@
 	
 	</div>
 </form>
+
 <script>
+/* Javascript code for the full page */
+$(document).ready( function() {
+	
+	$(".button_checkms").click(function() {
+		$('#scan_result').html('');
+		msno = $(this).data("msno");
+		console.log("Miniserver No.", msno);
+		
+		var url = "/admin/system/tools/ajax-check-miniserver.cgi";
+		var resultdiv = $("#miniservercheck"+msno+"_result");
+		resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
+		var checkresult = $.post( url, 
+							{	ip: $("#miniserverip"+msno).val(),
+								port: $("#miniserverport"+msno).val(),
+								preferssl: $("#miniserverpreferssl"+msno).is(':checked'),
+								sslport: $("#miniserversslport"+msno).val(),
+								user: $("#miniserveruser"+msno).val(),
+								pass: $("#miniserverkennwort"+msno).val(),
+								useclouddns: $("#useclouddns"+msno).is(':checked'),
+								clouddns: $("#miniservercloudurl"+msno).val(),
+				} );
+		checkresult.done(function( data ) {
+			console.log ("Output:", data);
+			var isadmin;
+			var html = "";
+			if (data.http.success) {
+				html += "<span style='color:green;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
+				$("#miniserverlog"+msno).removeClass( "ui-disabled" );
+				$("#miniserverweb"+msno).removeClass( "ui-disabled" );
+				if( is_enabled( data.http.isadmin ) ) 
+					isadmin = true;
+				else 
+					isadmin = false;
+				
+			} else {
+				html += "<span style='color:red;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
+				html += " " + data.http.status_line;
+				$("#miniserverlog"+msno).addClass( "ui-disabled" );
+				$("#miniserverweb"+msno).addClass( "ui-disabled" );
+			}
+			if (typeof data.https != 'undefined') {
+				if (data.https.success) {
+					html += "<br><span style='color:green;'>HTTPS: <TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
+					$("#miniserverlog"+msno).removeClass( "ui-disabled" );
+					$("#miniserverweb"+msno).removeClass( "ui-disabled" );
+					if( is_enabled( data.http.isadmin ) ) 
+						isadmin = true;
+					else 
+						isadmin = false;
+					
+				} else {
+					html += "<br><span style='color:red;'>HTTPS: <TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
+					html += " " + data.https.status_line;
+					$("#miniserverlog"+msno).addClass( "ui-disabled" );
+					$("#miniserverweb"+msno).addClass( "ui-disabled" );
+				}
+			}
+			
+			if ( isadmin == true ) 
+				html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_ADMIN>";
+			else if ( isadmin == false ) 
+				html += "<br><TMPL_VAR MINISERVER.CHECKMS_IS_NONADMIN>";
+			
+			resultdiv.html(html);
+
+		});
+		checkresult.fail(function( status, data ) {
+			resultdiv.html("<span style='color:red;'>Internal server error on call of ajax-check-miniserver.cgi</span> (HTTP "+status.status + " "+ status.statusText + ")");
+			console.log("Internal server error on call of ajax-check-miniserver.cgi", status.status, status.statusText);
+		});
+
+	});
+});
+
+
 
 	// Diable Del-Button if needed at onLoad
 	DisableDelButton();
@@ -495,11 +533,11 @@ $('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
 /* A simple is_enabled function as known from LoxBerry's Perl and PHP SDK */
 function is_enabled( checkVal ) 
 {
-	// console.log("is_enabled", checkVal);
 	if( typeof checkVal === 'undefined' ) return false;
 	if( typeof checkVal === 'boolean' ) return checkVal;
+	
 	enabled = [ true, "true", 1, "1", "on", "yes", "enable", "enabled", "select", "selected", "checked" ];
-	checkVal = checkVal.trim().toLowerCase();
+	checkVal = checkVal.toString().trim().toLowerCase();
 	return enabled.includes(checkVal);
 }
 
