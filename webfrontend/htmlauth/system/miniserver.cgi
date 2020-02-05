@@ -154,6 +154,8 @@ sub form {
 		$ms{MSCLOUDURLFTPPORT} = $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
 		$ms{MSNOTE} = $cfg->param("MINISERVER$msno.NOTE");
 		$ms{MSNAME} = $cfg->param("MINISERVER$msno.NAME");
+		$ms{MSPREFERSSL} = is_enabled($cfg->param("MINISERVER$msno.PREFERSSL")) ? "true" : "false";
+		$ms{MSSSLPORT} = $cfg->param("MINISERVER$msno.SSLPORT");
 		
 		push(@msdata, \%ms);
 	}
