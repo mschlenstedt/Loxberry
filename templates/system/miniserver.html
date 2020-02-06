@@ -383,7 +383,7 @@ $(document).ready( function() {
 					html += "<br><span style='color:green;'>HTTPS: <TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
 					$("#miniserverlog"+msno).removeClass( "ui-disabled" );
 					$("#miniserverweb"+msno).removeClass( "ui-disabled" );
-					if( is_enabled( data.http.isadmin ) ) 
+					if( is_enabled( data.https.isadmin ) ) 
 						isadmin = true;
 					else 
 						isadmin = false;
@@ -536,7 +536,7 @@ function is_enabled( checkVal )
 	if( typeof checkVal === 'undefined' ) return false;
 	if( typeof checkVal === 'boolean' ) return checkVal;
 	
-	enabled = [ true, "true", 1, "1", "on", "yes", "enable", "enabled", "select", "selected", "checked" ];
+	enabled = [ "true", "1", "on", "yes", "enable", "enabled", "select", "selected", "checked" ];
 	checkVal = checkVal.toString().trim().toLowerCase();
 	return enabled.includes(checkVal);
 }
