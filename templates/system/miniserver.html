@@ -376,6 +376,16 @@ $(document).ready( function() {
 			else if ( isadmin == false ) 
 				html += "<br><TMPL_VAR MINISERVER.CHECKMS_IS_NONADMIN>";
 			
+			/* CloudDNS infos in UI */
+			if( typeof data.clouddns != 'undefined' ) {
+				html += '<br><span style="font-size:70%">';
+				html += 'Loxone CloudDNS: ';
+				html += 'HTTP: ' + data.clouddns.IP + ' (Port Open ' + is_enabled(data.clouddns.PortOpen) + ') ';
+				html += 'HTTPS: ' + data.clouddns.IPHTTPS + ' (Port Open ' + is_enabled(data.clouddns.PortOpenHTTPS) + '), ';
+				html += 'updated ' + data.clouddns.LastUpdated;
+				html += '</span>';
+			}
+			
 			resultdiv.html(html);
 
 		});

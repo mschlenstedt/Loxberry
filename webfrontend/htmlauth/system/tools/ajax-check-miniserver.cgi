@@ -53,7 +53,6 @@ if (is_enabled($R::useclouddns)) {
 	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 	my $cloudaddress = $cfg->param('BASE.CLOUDDNS');
 	
-	## New CloudDNS implementation (Loxone changed the handling)
 	my $checkurl = "http://$cloudaddress?getip&snr=$R::clouddns&json=true";
 	$ua->timeout(5);
 	my $resp = $ua->get($checkurl);
@@ -74,17 +73,23 @@ if (is_enabled($R::useclouddns)) {
 		exit;
 	}
 	my $respjson = decode_json($resp->content);
-	$hostport = $respjson->{IP};
+	$hostport = $respjson->{IP} if (defined $respjson->{IP});
+	$sslhostport = $respjson->{IPHTTPS} if (defined $respjson->{IPHTTPS});
 	$jout{http}{isclouddns} = 1;
+	$jout{clouddns} = $respjson;
+	if($preferssl) {
+		$jout{https}{isclouddns} = 1;
+	}
+	
 }
 
-$jout{hostport} = $hostport;
-	
 # Who is requesting this?
-if ($R::get_hostport) {
-	print to_json(\%jout);
-	exit;
-}
+# Commented out - very old code from v0.3.5.7
+# if ($R::get_hostport) {
+	# $jout{hostport} = $hostport;
+	# print to_json(\%jout);
+	# exit;
+# }
 
 
 my @url_nonadmin;
@@ -99,7 +104,6 @@ if( $preferssl ) {
 my $nonadmin;
 my $admin;
 require HTTP::Status;
-
 
 check_admin( $url_admin[0], "http" );
 
