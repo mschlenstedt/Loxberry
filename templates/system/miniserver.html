@@ -266,13 +266,28 @@
 								$("#miniservercloudurlftpport<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("original-background-color")); 
 
 								/* UPDATE 2.0.2: As Miniserver webif/log urls are evaluated on the fly, buttons wouldn't need to be disabled anymore */
-								 
-								$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								$("#miniservercloudurl<TMPL_VAR MSNO>").on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								
+								/* 
+								$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+								});
+								$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+								});
+								$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+								});
+								$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled
+								"); });
+								$("#miniservercloudurl<TMPL_VAR MSNO>").on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+								});
+								*/
 							});
 						</SCRIPT>
 					</table>
@@ -330,8 +345,10 @@ $(document).ready( function() {
 				} else {
 					html += "<span style='color:red;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
 					html += " " + data.http.status_line;
+					/*
 					$("#miniserverlog"+msno).addClass( "ui-disabled" );
 					$("#miniserverweb"+msno).addClass( "ui-disabled" );
+					*/
 				}
 			} 			
 			if (typeof data.https != 'undefined') {
@@ -347,8 +364,10 @@ $(document).ready( function() {
 				} else {
 					html += "<br><span style='color:red;'>HTTPS: <TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
 					html += " " + data.https.status_line;
+					/*
 					$("#miniserverlog"+msno).addClass( "ui-disabled" );
 					$("#miniserverweb"+msno).addClass( "ui-disabled" );
+					*/
 				}
 			}
 			
