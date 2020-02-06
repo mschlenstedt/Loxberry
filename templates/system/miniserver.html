@@ -239,8 +239,6 @@
 							$(document).ready( function()
 							{
 								
-								
-								
 								note_link ("miniservernote<TMPL_VAR MSNO>");
 								validate_enable('#miniserverfoldername<TMPL_VAR MSNO>'); 
 								validate_enable('#miniserveruser<TMPL_VAR MSNO>'); 
@@ -256,13 +254,13 @@
 								console.log("preferssl", $("#miniserverpreferssl<TMPL_VAR MSNO>").data("preferssl"));
 								preferssl = is_enabled( $("#miniserverpreferssl<TMPL_VAR MSNO>").data("preferssl") ) ? true : false;  
 								$("#miniserverpreferssl<TMPL_VAR MSNO>").attr('checked', preferssl ).checkboxradio('refresh');
-								if( preferssl ) 
+								if( preferssl && !$("#useclouddns<TMPL_VAR MSNO>").is(":checked") ) 
 									$("#miniserversslportrow<TMPL_VAR MSNO>").show();
 								else 
 									$("#miniserversslportrow<TMPL_VAR MSNO>").hide();
 								$("#miniserversslportrow<TMPL_VAR MSNO>").data( "sslportaddr", $("#miniserversslport<TMPL_VAR MSNO>").val());
 								$("#miniserverpreferssl<TMPL_VAR MSNO>").click(function() {
-									if ( $(this).is(":checked") )
+									if ( $(this).is(":checked") && !$("#useclouddns<TMPL_VAR MSNO>").is(":checked") )
 										$("#miniserversslportrow<TMPL_VAR MSNO>").fadeIn();
 									else 
 										$("#miniserversslportrow<TMPL_VAR MSNO>").fadeOut();
@@ -285,6 +283,7 @@
 										$("#miniserverportrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
 										$(".noclouddns<TMPL_VAR MSNO>").hide();
 										$(".clouddns<TMPL_VAR MSNO>").show();
+										$("#miniserversslportrow<TMPL_VAR MSNO>").hide();
 										$("#miniservercloudurl<TMPL_VAR MSNO>").trigger( "keyup" );
 										$("#miniservercloudurlftpport<TMPL_VAR MSNO>").trigger( "keyup" );
 										$(this).prev().removeClass( "ui-checkbox-off" ).addClass( "ui-checkbox-on" );
@@ -303,6 +302,10 @@
 										$("#miniserverportrow<TMPL_VAR MSNO>" ).fadeTo( "fast", 1 );
 										$(".noclouddns<TMPL_VAR MSNO>").show();
 										$(".clouddns<TMPL_VAR MSNO>").hide();
+										preferssl = is_enabled( $("#miniserverpreferssl<TMPL_VAR MSNO>").data("preferssl") ) ? true : false; 
+										if( preferssl ) {
+											$("#miniserversslportrow<TMPL_VAR MSNO>").show();
+										}
 										$("#miniserverip<TMPL_VAR MSNO>").trigger( "keyup" );
 										$("#miniserverport<TMPL_VAR MSNO>").trigger( "keyup" );
 										$(this).prev().removeClass( "ui-checkbox-on" ).addClass( "ui-checkbox-off" );
@@ -410,61 +413,15 @@ $(document).ready( function() {
 		});
 
 	});
+
+	// Show passwords
+	$('#showpass').click(function() {
+		$('.textfield').prop('type', 'text');
+	});
+
 });
 
-
-
-	// Diable Del-Button if needed at onLoad
-	DisableDelButton();
-	
-	function DelMiniserver()
-	{
-		// Total number of miniservers
-		var iteration = document.getElementById('miniservers').value;
-		iteration = iteration-1;
-		document.getElementById("miniservers").value = iteration;
-
-		// Del 1. row
-		var tbl = document.getElementById('miniservertbl');
-		var lastRow = tbl.rows.length;
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-
-		// Disable Delete-Button if needed
-		DisableDelButton();
-
-		// Recreate JQUERY styles
-		$("#main").trigger('create');
-
-
-	}
-
-	function DisableDelButton()
-	{
-		var iteration = document.getElementById('miniservers').value;
-		if (iteration < 2)
-		{
-			$('#delmsbtn').addClass('ui-disabled');
-		}
-		else
-		{
-			$('#delmsbtn').removeClass('ui-disabled');
-		}
-	}
-// Show passwords
 $(document).ready(function() {
-  $('#showpass').click(function() {
-	$('.textfield').prop('type', 'text');
-  });
 	
 	
 	////////////////// Some logic to prevent garbage in MS config /////////////
@@ -501,36 +458,36 @@ $(document).ready(function() {
 
 // Scan for Miniserver
 $('#scan').click( function(e) {
-$('#miniservercheck<TMPL_VAR MSNO>_result').html('');
-$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
-  e.preventDefault();
-  $.ajax({
-    contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
-    type: "GET",
-    url: "/admin/system/tools/netscan.cgi",
-    data: "data",
-    dataType: "json",
-    success: function(data){
-      //data.replace(/\r|\n/g, "");
-      $('#miniserverip1').empty();
-      if (data.IP.length < 3) 
-      {
-		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
-      } 
-      else 
-      {
-		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
-		$("#miniserveriprow1").attr( "data-ipaddr" , data.IP );
-		$("#miniserverportrow1").attr( "data-portaddr" , data.Port);
-		$("#miniserverfoldername1").val(data.Name);
-		$("#useclouddns1").prop("checked", false);
-		$("#useclouddns1").trigger( "change" );
-      }
-    }
-  });
+	$('#miniservercheck<TMPL_VAR MSNO>_result').html('');
+	$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
+	e.preventDefault();
+	$.ajax({
+		contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
+		type: "GET",
+		url: "/admin/system/tools/netscan.cgi",
+		data: "data",
+		dataType: "json",
+		success: function(data){
+		  //data.replace(/\r|\n/g, "");
+		  $('#miniserverip1').empty();
+		  if (data.IP.length < 3) 
+		  {
+			$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
+		  } 
+		  else 
+		  {
+			$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
+			$("#miniserveriprow1").attr( "data-ipaddr" , data.IP );
+			$("#miniserverportrow1").attr( "data-portaddr" , data.Port);
+			$("#miniserverfoldername1").val(data.Name);
+			$("#useclouddns1").prop("checked", false);
+			$("#useclouddns1").trigger( "change" );
+		  }
+		}
+	});
 });
 
-/* A simple is_enabled function as known from LoxBerry's Perl and PHP SDK */
+/* A simple is_enabled js function as known from LoxBerry's Perl and PHP SDK */
 function is_enabled( checkVal ) 
 {
 	if( typeof checkVal === 'undefined' ) return false;
