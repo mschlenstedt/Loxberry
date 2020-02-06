@@ -7,7 +7,6 @@ use LWP::UserAgent;
 use JSON;
 use URI::Escape;
 
-my @checks;
 my %jout;
 
 my $cgi = CGI->new;
@@ -26,6 +25,8 @@ $ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 
 $R::useclouddns if (0);
 $R::ip if (0);
+$R::get_hostport if(0);
+$R::preferssl if (0);
 
 my $hostport = "$R::ip" if ($R::ip);
 $hostport .= ":$R::port" if ($R::port);
@@ -42,9 +43,9 @@ if ( $preferssl ) {
 # Cloud DNS handling
 if (is_enabled($R::useclouddns)) {
 	if (! $R::clouddns) {
-		$jout{error} = 1;
-		$jout{success} = 0;
-		$jout{status_line} = "Cloud DNS not set";
+		$jout{http}{error} = 1;
+		$jout{http}{success} = 0;
+		$jout{http}{status_line} = "Cloud DNS not set";
 		print to_json(\%jout);
 		exit;
 	}
@@ -61,20 +62,20 @@ if (is_enabled($R::useclouddns)) {
   		# success
 		my $respjson = decode_json($resp->content);
 		$hostport = $respjson->{IP};
-		$jout{isclouddns} = 1;
+		$jout{http}{isclouddns} = 1;
 	}
 	else
 	{
 		# fail
-		$jout{error} = 1;
-		$jout{success} = 0;
-		$jout{status_line} = "Timeout when reading $checkurl";
+		$jout{http}{error} = 1;
+		$jout{http}{success} = 0;
+		$jout{http}{status_line} = "Timeout when reading $checkurl";
 		print to_json(\%jout);
 		exit;
 	}
 	my $respjson = decode_json($resp->content);
 	$hostport = $respjson->{IP};
-	$jout{isclouddns} = 1;
+	$jout{http}{isclouddns} = 1;
 }
 
 $jout{hostport} = $hostport;
@@ -141,7 +142,7 @@ sub check_admin
 		# Cloud redirect ?
 		if ( $resp->code == &HTTP::Status::RC_MOVED_PERMANENTLY or $resp->code == &HTTP::Status::RC_MOVED_TEMPORARILY or $resp->code == &HTTP::Status::RC_FOUND or $resp->code == &HTTP::Status::RC_SEE_OTHER or $resp->code == &HTTP::Status::RC_TEMPORARY_REDIRECT )
 		{ 
-			use URI;
+			require URI;
 			my $uri = URI->new($resp->header('location'));
 			my $redirect = $uri->scheme."://$R::user:$R::pass\@".$uri->host.":".$uri->port.$uri->path;
 			$resp = $ua->get($redirect);
@@ -194,7 +195,7 @@ sub check_nonadmin
 			# Cloud redirect ?
 		if ( $resp->code == &HTTP::Status::RC_MOVED_PERMANENTLY or $resp->code == &HTTP::Status::RC_MOVED_TEMPORARILY or $resp->code == &HTTP::Status::RC_FOUND or $resp->code == &HTTP::Status::RC_SEE_OTHER or $resp->code == &HTTP::Status::RC_TEMPORARY_REDIRECT )
 		{ 
-			use URI;
+			require URI;
 			my $uri = URI->new($resp->header('location'));
 			my $redirect = $uri->scheme."://$R::user:$R::pass\@".$uri->host.":".$uri->port.$uri->path;
 			$resp = $ua->get($redirect);

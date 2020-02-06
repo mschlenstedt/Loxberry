@@ -184,58 +184,6 @@
 							
 							$("#useclouddns<TMPL_VAR MSNO>").prop("checked", "<TMPL_VAR MSUSECLOUDDNS>");
 							
-							function open_ms_log ( ms_id )
-							{
-								if ( (validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id))  )
-								{
-									open('http://'+encodeURIComponent($("#miniserveruser"+ms_id).val())+':'+encodeURIComponent($("#miniserverkennwort"+ms_id).val())+'@'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val()+'/dev/fsget/log/def.log', '_blank');				
-								}
-								if ( validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniservercloudurl'+ms_id) )
-								{
-								  $.ajax({
-									contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-									type: "GET",
-									url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+ms_id).val(),
-									success: function(data)
-									{
-										if (typeof(data['error']) != "undefined") 
-										{
-											$("#miniservercheck"+ms_id+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
-										}
-										else
-										{
-											open('http://'+encodeURIComponent($("#miniserveruser"+ms_id).val())+':'+encodeURIComponent($("#miniserverkennwort"+ms_id).val())+'@'+data['IPAddress']+':'+data['Port']+'/dev/fsget/log/def.log', '_blank');				
-										}
-									}
-								  });
-								}
-							}
-							function open_ms_web ( ms_id )
-							{
-								if ( validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id)) 
-								{
-									open('http://'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val(), '_blank');				
-								}
-								if ( validate_chk_value('#miniservercloudurl'+ms_id) )
-								{
-								  $.ajax({
-									contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-									type: "GET",
-									url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+ms_id).val(),
-									success: function(data)
-									{
-										if (typeof(data['error']) != "undefined") 
-										{
-											$("#miniservercheck"+ms_id+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
-										}
-										else
-										{
-											open('http://'+data['IPAddress']+':'+data['Port'], '_blank');				
-										}
-									}
-								  });
-								}
-							}
 							$(document).ready( function()
 							{
 								
@@ -251,7 +199,7 @@
 								$("#miniserverportrow<TMPL_VAR MSNO>").attr( "data-portaddr",$("#miniserverport<TMPL_VAR MSNO>").val());
 								$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "data-dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>").val());
 								$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "data-dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val());
-								console.log("preferssl", $("#miniserverpreferssl<TMPL_VAR MSNO>").data("preferssl"));
+								// console.log("preferssl", $("#miniserverpreferssl<TMPL_VAR MSNO>").data("preferssl"));
 								preferssl = is_enabled( $("#miniserverpreferssl<TMPL_VAR MSNO>").data("preferssl") ) ? true : false;  
 								$("#miniserverpreferssl<TMPL_VAR MSNO>").attr('checked', preferssl ).checkboxradio('refresh');
 								if( preferssl && !$("#useclouddns<TMPL_VAR MSNO>").is(":checked") ) 
@@ -317,11 +265,14 @@
 								$("#miniservercloudurl<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurl<TMPL_VAR MSNO>").attr("original-background-color")); 
 								$("#miniservercloudurlftpport<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("original-background-color")); 
 
+								/* UPDATE 2.0.2: As Miniserver webif/log urls are evaluated on the fly, buttons wouldn't need to be disabled anymore */
+								 
 								$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
 								$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
 								$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
 								$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
 								$("#miniservercloudurl<TMPL_VAR MSNO>").on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+								
 							});
 						</SCRIPT>
 					</table>
@@ -366,21 +317,23 @@ $(document).ready( function() {
 			console.log ("Output:", data);
 			var isadmin;
 			var html = "";
-			if (data.http.success) {
-				html += "<span style='color:green;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
-				$("#miniserverlog"+msno).removeClass( "ui-disabled" );
-				$("#miniserverweb"+msno).removeClass( "ui-disabled" );
-				if( is_enabled( data.http.isadmin ) ) 
-					isadmin = true;
-				else 
-					isadmin = false;
-				
-			} else {
-				html += "<span style='color:red;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
-				html += " " + data.http.status_line;
-				$("#miniserverlog"+msno).addClass( "ui-disabled" );
-				$("#miniserverweb"+msno).addClass( "ui-disabled" );
-			}
+			if (typeof data.http != 'undefined') {
+				if (data.http.success) {
+					html += "<span style='color:green;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
+					$("#miniserverlog"+msno).removeClass( "ui-disabled" );
+					$("#miniserverweb"+msno).removeClass( "ui-disabled" );
+					if( is_enabled( data.http.isadmin ) ) 
+						isadmin = true;
+					else 
+						isadmin = false;
+					
+				} else {
+					html += "<span style='color:red;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
+					html += " " + data.http.status_line;
+					$("#miniserverlog"+msno).addClass( "ui-disabled" );
+					$("#miniserverweb"+msno).addClass( "ui-disabled" );
+				}
+			} 			
 			if (typeof data.https != 'undefined') {
 				if (data.https.success) {
 					html += "<br><span style='color:green;'>HTTPS: <TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
@@ -456,6 +409,7 @@ $(document).ready(function() {
 
 });
 
+
 // Scan for Miniserver
 $('#scan').click( function(e) {
 	$('#miniservercheck<TMPL_VAR MSNO>_result').html('');
@@ -486,6 +440,119 @@ $('#scan').click( function(e) {
 		}
 	});
 });
+
+
+function open_ms_web ( msno ) {
+	
+	// Query preferssl and clouddns
+	preferssl = $("#miniserverpreferssl"+msno).is(':checked');
+	clouddns = $("#useclouddns"+msno).is(':checked');
+	transport = preferssl ? "https" : "http";
+		
+	var url;
+	
+	errormsg = '<span style="color:red;"><TMPL_VAR MINISERVER.MSG_ERR_MS_SETTINGS_INVALID></span>';
+	
+	if( preferssl && !clouddns ) {
+	
+		if ( !validate_chk_value('#miniserverip'+msno) || !validate_chk_value('#miniserversslport'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		ip = $('#miniserverip'+msno).val();
+		port = $('#miniserversslport'+msno).val();
+		
+	} else if( !preferssl && !clouddns) {
+		if ( !validate_chk_value('#miniserverip'+msno) || !validate_chk_value('#miniserverport'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		ip = $('#miniserverip'+msno).val();
+		port = $('#miniserverport'+msno).val();
+	} else {
+		$("#miniservercheck"+msno+"_result").html(errormsg);
+		return;
+	}
+		
+	open( transport + '://' + ip +':' + port, '_blank');
+	
+	/* CloudDNS missing */
+	
+	
+	/* THIS FUNCTION IS BUGGY AS IT RETURNS ONLY ON SAVED MINISERVERS 
+		SHOULD BE REPLACED BY ajax-check-miniserver.cgi using the form data to get CloudDNS
+	*/
+	/*
+	$.ajax({
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		type: "GET",
+		url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+msno).val(),
+		success: function(data)
+		{
+			if (typeof(data['error']) != "undefined") 
+			{
+				$("#miniservercheck"+msno+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
+			}
+			else
+			{
+				open('http://'+data['IPAddress']+':'+data['Port'], '_blank');				
+			}
+		}
+	  });
+	*/
+}
+
+/* Open Miniserver logfile */ 
+function open_ms_log ( msno ) {
+	
+	// Query preferssl, clouddns
+	preferssl = $("#miniserverpreferssl"+msno).is(':checked');
+	clouddns = $("#useclouddns"+msno).is(':checked');
+	transport = preferssl ? "https" : "http";
+
+	var url;
+	
+	errormsg = '<span style="color:red;"><TMPL_VAR MINISERVER.MSG_ERR_MS_SETTINGS_INVALID></span>';
+	
+	/* validate and get user and pass */
+	if ( !validate_chk_value('#miniserveruser'+msno) || !validate_chk_value('#miniserverkennwort'+msno) ) {
+		$("#miniservercheck"+msno+"_result").html(errormsg);
+		return;
+	}
+	
+	user = encodeURIComponent( $('#miniserveruser'+msno).val() );
+	pass = encodeURIComponent( $('#miniserverkennwort'+msno).val() );
+	
+	if( preferssl && !clouddns ) {
+	
+		if ( !validate_chk_value('#miniserverip'+msno) || !validate_chk_value('#miniserversslport'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		ip = $('#miniserverip'+msno).val();
+		port = $('#miniserversslport'+msno).val();
+		
+	} else if( !preferssl && !clouddns) {
+		if ( !validate_chk_value('#miniserverip'+msno) || !validate_chk_value('#miniserverport'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		ip = $('#miniserverip'+msno).val();
+		port = $('#miniserverport'+msno).val();
+	} else {
+		$("#miniservercheck"+msno+"_result").html(errormsg);
+		return;
+	}
+		
+	
+	open( transport + '://' + user + ':' + pass + '@' + ip +':' + port + '/dev/fsget/log/def.log', '_blank');
+	
+	/* CloudDNS missing */
+	
+}
+
+
+
 
 /* A simple is_enabled js function as known from LoxBerry's Perl and PHP SDK */
 function is_enabled( checkVal ) 
