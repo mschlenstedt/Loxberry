@@ -7,7 +7,7 @@ use LoxBerry::System;
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "2.0.0.4"; # Version of this script
+my $version = "2.0.2.1"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -52,7 +52,6 @@ elsif ($action eq 'testenvironment') {  &testenvironment; }
 elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
-elsif ($action eq 'get-clouddnsdata') { get_clouddnsdata($value); }
 
 else   { 
 	$response{error} = 1; 
@@ -419,46 +418,6 @@ sub plugininstall_status
 	print $status;
 	exit;
 }
-
-################################################
-# get_clouddnsdata
-# Returns first matching miniserver data as json 
-# for a # provided MAC address 
-# Example see miniserver.html
-# /admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value=504f90123456
-# Will return on success
-# {"Name":"miniservername","Note":"MSnote","UseCloudDNS":"on","IPAddress":"79.194.49.50","Admin_uri":"loginname_uri","Port":80,"CloudURLFTPPort":"21","Credentials_RAW":"loginname:pass","CloudURL":"504f90123456","Credentials":"loginname_uri:pass_uri","Pass_RAW":"pass","Pass":"pass_uri","Admin_RAW":"dev"}
-# and on error
-# {"error":"Miniserver not found: 504F90123456. Please check and save your config."}
-################################################
-sub get_clouddnsdata
-{
-	my $mac = uc $R::value;
-	#print STDERR "ajax-config-handler: ajax get_clouddnsdata for ${mac}";
-	my %miniservers = LoxBerry::System::get_miniservers();
-  	
-	if (! %miniservers) 
-	{
-	    exit 1;
-		
-	}
-	foreach my $ms (sort keys %miniservers) 
-	{
-		if ( uc "$miniservers{$ms}{CloudURL}" eq "$mac" )
-		{
-			#my $j = new JSON;
-   			$response{error} = 0;
-			$response{customresponse} = 1;
-			$response{output} = encode_json($miniservers{$ms});
-		    exit;
-		}
-	}
-	$response{error} = $mac;
-	$response{message} = "Miniserver with mac $mac not found";
-	
-	exit;
-}
-
 
 ###################################################################
 # change general.cfg (internal function)

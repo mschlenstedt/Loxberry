@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2017 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.2.1";
 
 my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
