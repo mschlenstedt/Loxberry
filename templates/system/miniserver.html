@@ -469,6 +469,15 @@ function open_ms_web ( msno ) {
 		}
 		ip = $('#miniserverip'+msno).val();
 		port = $('#miniserverport'+msno).val();
+	} else if ( clouddns ) {
+		if ( !validate_chk_value('#miniservercloudurl'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		mac = $('#miniservercloudurl'+msno).val();
+		/* CloudDNS does not obey Preferssl setting, as CloudDNS knows itself if SSL is used or not */
+		open( "http://dns.loxonecloud.com/"+mac, '_blank' );
+		return;
 	} else {
 		$("#miniservercheck"+msno+"_result").html(errormsg);
 		return;
@@ -476,30 +485,6 @@ function open_ms_web ( msno ) {
 		
 	open( transport + '://' + ip +':' + port, '_blank');
 	
-	/* CloudDNS missing */
-	
-	
-	/* THIS FUNCTION IS BUGGY AS IT RETURNS ONLY ON SAVED MINISERVERS 
-		SHOULD BE REPLACED BY ajax-check-miniserver.cgi using the form data to get CloudDNS
-	*/
-	/*
-	$.ajax({
-		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-		type: "GET",
-		url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+msno).val(),
-		success: function(data)
-		{
-			if (typeof(data['error']) != "undefined") 
-			{
-				$("#miniservercheck"+msno+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
-			}
-			else
-			{
-				open('http://'+data['IPAddress']+':'+data['Port'], '_blank');				
-			}
-		}
-	  });
-	*/
 }
 
 /* Open Miniserver logfile */ 
@@ -539,20 +524,24 @@ function open_ms_log ( msno ) {
 		}
 		ip = $('#miniserverip'+msno).val();
 		port = $('#miniserverport'+msno).val();
+	} else if ( clouddns ) {
+		if ( !validate_chk_value('#miniservercloudurl'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		mac = $('#miniservercloudurl'+msno).val();
+		/* CloudDNS does not obey Preferssl setting, as CloudDNS knows itself if SSL is used or not */
+		open( "http://dns.loxonecloud.com/"+mac+'/dev/fsget/log/def.log', '_blank' );
+		return;
+	
 	} else {
 		$("#miniservercheck"+msno+"_result").html(errormsg);
 		return;
 	}
-		
 	
 	open( transport + '://' + user + ':' + pass + '@' + ip +':' + port + '/dev/fsget/log/def.log', '_blank');
 	
-	/* CloudDNS missing */
-	
 }
-
-
-
 
 /* A simple is_enabled js function as known from LoxBerry's Perl and PHP SDK */
 function is_enabled( checkVal ) 
