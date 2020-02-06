@@ -54,7 +54,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.1";
+my $version = "2.0.2.2";
 
 my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -204,7 +204,7 @@ sub save {
 		$ms{"useclouddns.$msno"}        				= param("useclouddns$msno");
 		$ms{"miniservercloudurl.$msno"} 				= param("miniservercloudurl$msno");
 		$ms{"miniservercloudurlftpport.$msno"} 	= param("miniservercloudurlftpport$msno");
-		$ms{"useclouddns.$msno"} = defined $ms{"useclouddns.$msno"} ? $ms{"useclouddns.$msno"} : "0";
+		$ms{"useclouddns.$msno"} = is_enabled( $ms{"useclouddns.$msno"} ) ? "1" : "0";
 		$ms{"miniserverpreferssl.$msno"} = is_enabled( param("miniserverpreferssl$msno") ) ? "1" : "0";
 		$ms{"miniserversslport.$msno"} = defined param("miniserversslport$msno") ? param("miniserversslport$msno") : 443;
  
