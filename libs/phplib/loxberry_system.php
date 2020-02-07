@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.2.1";
+	public static $LBSYSTEMVERSION = "2.0.2.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -295,6 +295,7 @@ class LBSystem
 				$transport = 'http';
 				$port = $miniservers[$msnr]['Port'];
 			}
+			$miniservers[$msnr]['Transport'] = $transport;
 			$miniservers[$msnr]['FullURI'] = $transport.'://'.$miniservers[$msnr]['Credentials'].'@'.$miniservers[$msnr]['IPAddress'].':'.$port;
 			$miniservers[$msnr]['FullURI_RAW'] = $transport.'://'.$miniservers[$msnr]['Credentials_RAW'].'@'.$miniservers[$msnr]['IPAddress'].':'.$port;
 			
@@ -755,6 +756,7 @@ public static function plugindb_changed_time()
 				error_log("Cannot query FTP port because Loxone Miniserver is not reachable.");
 				return;
 			} 
+			
 			$xml = new \SimpleXMLElement($response);
 			$port = $xml[0]['value'];
 			$miniservers[$msnr]['FTPPort'] = $port;
