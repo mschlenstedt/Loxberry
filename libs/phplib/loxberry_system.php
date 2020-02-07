@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.0.3";
+	public static $LBSYSTEMVERSION = "2.0.2.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -284,10 +284,23 @@ class LBSystem
 			if (! $miniservers[$msnr]['Port']) {
 				$miniservers[$msnr]['Port'] = 80;
 			}
-
+			if (! $miniservers[$msnr]['PortHttps']) {
+				$miniservers[$msnr]['PortHttps'] = 443;
+			}
+			
+			if( is_enabled( $miniservers[$msnr]['PreferHttps'] ) ) {
+				$transport = 'https';
+				$port = $miniservers[$msnr]['PortHttps'];
+			} else {
+				$transport = 'http';
+				$port = $miniservers[$msnr]['Port'];
+			}
+			$miniservers[$msnr]['FullURI'] = $transport.'://'.$miniservers[$msnr]['Credentials'].'@'.$miniservers[$msnr]['IPAddress'].':'.$port;
+			$miniservers[$msnr]['FullURI_RAW'] = $transport.'://'.$miniservers[$msnr]['Credentials_RAW'].'@'.$miniservers[$msnr]['IPAddress'].':'.$port;
+			
 			// Miniserver values consistency check
 			// If a Miniserver entry is not plausible, the full Miniserver entry is deleted
-			if(empty($miniservers[$msnr]['Name']) || empty($miniservers[$msnr]['IPAddress']) || empty($miniservers[$msnr]['Admin']) || empty($miniservers[$msnr]['Pass']) || empty($miniservers[$msnr]['Port'])) {
+			if( empty($miniservers[$msnr]['Name']) || empty($miniservers[$msnr]['IPAddress']) || empty($miniservers[$msnr]['Admin']) || empty($miniservers[$msnr]['Pass']) ) {
 				unset($miniservers[$msnr]);
 			}
 		}
@@ -557,7 +570,6 @@ public static function plugindb_changed_time()
 			return;
 		}
 		
-		
 		for ($msnr = 1; $msnr <= $miniservercount; $msnr++) {
 			 
 			@$miniservers[$msnr]['Name'] = $cfg["MINISERVER$msnr"]['NAME'];
@@ -567,15 +579,16 @@ public static function plugindb_changed_time()
 			@$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
 			@$miniservers[$msnr]['Note'] = $cfg["MINISERVER$msnr"]['NOTE'];
 			@$miniservers[$msnr]['Port'] = $cfg["MINISERVER$msnr"]['PORT'];
+			@$miniservers[$msnr]['PortHttps'] = $cfg["MINISERVER$msnr"]['PORTSSL'];
+			@$miniservers[$msnr]['PreferHttps'] = $cfg["MINISERVER$msnr"]['PREFERSSL'];
 			@$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
 			@$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
 			@$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];
 			@$miniservers[$msnr]['Admin_RAW'] = urldecode($miniservers[$msnr]['Admin']);
 			@$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
 			@$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
-
-			$miniservers[$msnr]['SecureGateway'] = isset($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) && is_enabled($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) ? 1 : 0;
-			$miniservers[$msnr]['EncryptResponse'] = isset ($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) && is_enabled($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) ? 1 : 0;
+			@$miniservers[$msnr]['SecureGateway'] = isset($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) && is_enabled($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) ? 1 : 0;
+			@$miniservers[$msnr]['EncryptResponse'] = isset ($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) && is_enabled($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) ? 1 : 0;
 		}
 	}
 
@@ -594,7 +607,7 @@ public static function plugindb_changed_time()
 		//error_log("set_clouddns(PHP)-->");
 
 		// CloudDNS caching
-		$memfile = "/run/shm/clouddns_cache.json";
+		$memfile = LBHOMEDIR."/log/system_tmpfs/clouddns_cache.json";
 		
 		// Read cache file
 		// error_log("set_clouddns: Parse json");
@@ -626,12 +639,17 @@ public static function plugindb_changed_time()
 				} else {
 					$miniservers[$msnr]['Port'] = 80;
 				}
+				if(!empty($msobj->PortHttps)) {
+					$miniservers[$msnr]['PortHttps'] = $msobj->PortHttps;
+				} else {
+					$miniservers[$msnr]['PortHttps'] = 443;
+				}
+				
 				//error_log("Reading data from cachefile $memfile: IP {$miniservers[$msnr]['IPAddress']} Port {$miniservers[$msnr]['Port']}");
 				return;
 			}
 		} while(0);
 
-		//$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL']."/dev/cfg/ip";
 		$checkurl = "http://".$clouddnsaddress."/?getip&snr=".$miniservers[$msnr]['CloudURL']."&json=true";
 		$response = @file_get_contents($checkurl);
 		$http_status_line = $http_response_header[0];
@@ -640,17 +658,24 @@ public static function plugindb_changed_time()
 		if ($http_status !== "200") {
 			$miniservers[$msnr]['IPAddress'] = "0.0.0.0";
 			$miniservers[$msnr]['Port'] = "0";
+			$miniservers[$msnr]['PortHttps'] = "0";
 			error_log("CloudDNS: Could not fetch ip address for Miniserver $msnr: $http_status_line");
 			return;
 		}
 		
-		$ip_info = json_decode($response);
-		$ip_info = explode(":",$ip_info->IP);
+		$respjson = json_decode($response);
+		$ip_info = explode(":",$respjson->IP);
 		$miniservers[$msnr]['IPAddress']=$ip_info[0];
 		if (count($ip_info) == 2) {
 			$miniservers[$msnr]['Port']=$ip_info[1];
 		} else {
 			$miniservers[$msnr]['Port']=80;
+		}
+		$ip_info = explode(":",$respjson->IPHTTPS);
+		if (count($ip_info) == 2) {
+			$miniservers[$msnr]['PortHttps']=$ip_info[1];
+		} else {
+			$miniservers[$msnr]['Port']=443;
 		}
 	
 		// Save cache information to json
@@ -665,6 +690,7 @@ public static function plugindb_changed_time()
 			
 			$msobj->IPAddress = $miniservers[$msnr]['IPAddress'];
 			$msobj->Port = $miniservers[$msnr]['Port'];
+			$msobj->PortHttps = $miniservers[$msnr]['PortHttps'];
 			$msobj->refresh_timestamp = time() + 3600 + rand(1,3600);
 			
 			//error_log(print_r($jsonobj, true));
@@ -689,10 +715,11 @@ public static function plugindb_changed_time()
 	{
 		global $miniservers;
 		global $miniservercount;
+		global $msClouddnsFetched;
 		
 		# If we have no MS list, read the config
-		if (!$miniservers) {
-			LBSystem::read_generalcfg();
+		if (!$msClouddnsFetched) {
+			LBSystem::get_miniservers();
 		}
 		
 		if ($miniservercount < 1) {
@@ -707,8 +734,22 @@ public static function plugindb_changed_time()
 		# If $miniservers does not have FTP set, read FTP from Miniserver and save it in FTPPort
 		if (! isset($miniservers[$msnr]['FTPPort'])) {
 			# Get FTP Port from Miniserver
-			$url = "http://{$miniservers[$msnr]['Credentials']}@{$miniservers[$msnr]['IPAddress']}:{$miniservers[$msnr]['Port']}/dev/cfg/ftp";
-			$response = file_get_contents($url);
+			$url = $miniservers[$msnr]['FullURI'].'/dev/cfg/ftp';
+			
+			/* SSL options */
+			$stream_context = stream_context_create([ 
+			'https' => [
+				'timeout'			=> 5,
+				'verify_peer'       => false,
+				'verify_peer_name'  => false,
+				'allow_self_signed' => true,
+				'verify_depth'      => 0 
+			], 
+			'http' => [
+				'timeout'			=> 5
+			]]);
+
+			$response = file_get_contents($url, false, $stream_context);
 			
 			if (! $response) {
 				error_log("Cannot query FTP port because Loxone Miniserver is not reachable.");
