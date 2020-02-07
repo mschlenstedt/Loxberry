@@ -60,8 +60,13 @@ if (is_enabled($R::useclouddns)) {
 	{
   		# success
 		my $respjson = decode_json($resp->content);
-		$hostport = $respjson->{IP};
 		$jout{http}{isclouddns} = 1;
+		$hostport = $respjson->{IP} if (defined $respjson->{IP});
+		$sslhostport = $respjson->{IPHTTPS} if (defined $respjson->{IPHTTPS});
+		$jout{clouddns} = $respjson;
+		if($preferssl) {
+			$jout{https}{isclouddns} = 1;
+		}
 	}
 	else
 	{
@@ -71,14 +76,6 @@ if (is_enabled($R::useclouddns)) {
 		$jout{http}{status_line} = "Timeout when reading $checkurl";
 		print to_json(\%jout);
 		exit;
-	}
-	my $respjson = decode_json($resp->content);
-	$hostport = $respjson->{IP} if (defined $respjson->{IP});
-	$sslhostport = $respjson->{IPHTTPS} if (defined $respjson->{IPHTTPS});
-	$jout{http}{isclouddns} = 1;
-	$jout{clouddns} = $respjson;
-	if($preferssl) {
-		$jout{https}{isclouddns} = 1;
 	}
 	
 }
@@ -143,22 +140,22 @@ sub check_admin
 		{
 			$checkerror = 1;
 		}
-		# Cloud redirect ?
-		if ( $resp->code == &HTTP::Status::RC_MOVED_PERMANENTLY or $resp->code == &HTTP::Status::RC_MOVED_TEMPORARILY or $resp->code == &HTTP::Status::RC_FOUND or $resp->code == &HTTP::Status::RC_SEE_OTHER or $resp->code == &HTTP::Status::RC_TEMPORARY_REDIRECT )
-		{ 
-			require URI;
-			my $uri = URI->new($resp->header('location'));
-			my $redirect = $uri->scheme."://$R::user:$R::pass\@".$uri->host.":".$uri->port.$uri->path;
-			$resp = $ua->get($redirect);
-			if ($resp->content =~ m/<LL control="dev\/cfg\/ip" value=".*" Code="200"\/>/) 
-			{
-				$checkerror = 0;
-			}
-			else
-			{
-				$checkerror = 1;
-			}
-		}
+		# # Cloud redirect ?
+		# if ( $resp->code == &HTTP::Status::RC_MOVED_PERMANENTLY or $resp->code == &HTTP::Status::RC_MOVED_TEMPORARILY or $resp->code == &HTTP::Status::RC_FOUND or $resp->code == &HTTP::Status::RC_SEE_OTHER or $resp->code == &HTTP::Status::RC_TEMPORARY_REDIRECT )
+		# { 
+			# require URI;
+			# my $uri = URI->new($resp->header('location'));
+			# my $redirect = $uri->scheme."://$R::user:$R::pass\@".$uri->host.":".$uri->port.$uri->path;
+			# $resp = $ua->get($redirect);
+			# if ($resp->content =~ m/<LL control="dev\/cfg\/ip" value=".*" Code="200"\/>/) 
+			# {
+				# $checkerror = 0;
+			# }
+			# else
+			# {
+				# $checkerror = 1;
+			# }
+		# }
 		$jout{$label}{code} = $resp->code;
 		$jout{$label}{message} = $resp->message;
 		$jout{$label}{status_line} = $resp->status_line;
@@ -196,22 +193,22 @@ sub check_nonadmin
 		{
 			$checkerror = 1;
 		}
-			# Cloud redirect ?
-		if ( $resp->code == &HTTP::Status::RC_MOVED_PERMANENTLY or $resp->code == &HTTP::Status::RC_MOVED_TEMPORARILY or $resp->code == &HTTP::Status::RC_FOUND or $resp->code == &HTTP::Status::RC_SEE_OTHER or $resp->code == &HTTP::Status::RC_TEMPORARY_REDIRECT )
-		{ 
-			require URI;
-			my $uri = URI->new($resp->header('location'));
-			my $redirect = $uri->scheme."://$R::user:$R::pass\@".$uri->host.":".$uri->port.$uri->path;
-			$resp = $ua->get($redirect);
-			if ($resp->content =~ m/<LL control="dev\/cfg\/version" value=".*" Code="200"\/>/) 
-			{
-				$checkerror = 0;
-			}
-			else
-			{
-				$checkerror = 1;
-			}
-		}
+			# # Cloud redirect ?
+		# if ( $resp->code == &HTTP::Status::RC_MOVED_PERMANENTLY or $resp->code == &HTTP::Status::RC_MOVED_TEMPORARILY or $resp->code == &HTTP::Status::RC_FOUND or $resp->code == &HTTP::Status::RC_SEE_OTHER or $resp->code == &HTTP::Status::RC_TEMPORARY_REDIRECT )
+		# { 
+			# require URI;
+			# my $uri = URI->new($resp->header('location'));
+			# my $redirect = $uri->scheme."://$R::user:$R::pass\@".$uri->host.":".$uri->port.$uri->path;
+			# $resp = $ua->get($redirect);
+			# if ($resp->content =~ m/<LL control="dev\/cfg\/version" value=".*" Code="200"\/>/) 
+			# {
+				# $checkerror = 0;
+			# }
+			# else
+			# {
+				# $checkerror = 1;
+			# }
+		# }
 		$jout{$label}{code} = $resp->code;
 		$jout{$label}{message} = $resp->message;
 		$jout{$label}{status_line} = $resp->status_line;
