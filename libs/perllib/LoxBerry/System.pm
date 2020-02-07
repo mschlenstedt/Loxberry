@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.2.4";
+our $VERSION = "2.0.2.5";
 our $DEBUG;
 
 use base 'Exporter';
@@ -220,7 +220,7 @@ sub get_miniservers
 			$transport = 'http';
 			$port = $miniservers{$msnr}{Port};
 		}
-		$miniservery{$msnr}{Transport} = $transport;
+		$miniservers{$msnr}{Transport} = $transport;
 		$miniservers{$msnr}{FullURI} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
 		$miniservers{$msnr}{FullURI_RAW} = $transport.'://'.$miniservers{$msnr}{Credentials_RAW}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
 
