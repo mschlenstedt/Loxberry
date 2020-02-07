@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.2.2";
+our $VERSION = "2.0.2.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -220,7 +220,8 @@ sub get_miniservers
 			$transport = 'http';
 			$port = $miniservers{$msnr}{Port};
 		}
-		$miniservers{$msnr}{PreferredUrlFull} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
+		$miniservers{$msnr}{FullURI} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
+		$miniservers{$msnr}{FullURI_RAW} = $transport.'://'.$miniservers{$msnr}{Credentials_RAW}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
 
 		# Miniserver values consistency check
 		# If a Miniserver entry is not plausible, the full Miniserver hash entry is deleted
@@ -621,7 +622,7 @@ sub get_ftpport
 	if (! $miniservers{$msnr}{FTPPort}) {
 		# print STDERR "get_ftpport: Read FTP Port from MS\n";
 		# Get FTP Port from Miniserver
-		my $url = $miniservers{$msnr}{PreferredUrlFull}.'/dev/cfg/ftp';
+		my $url = $miniservers{$msnr}{FullURI}.'/dev/cfg/ftp';
 		my $ua = LWP::UserAgent->new;
 		$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 		$ua->timeout(5);
