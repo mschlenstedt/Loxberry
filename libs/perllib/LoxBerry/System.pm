@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.2.1";
+our $VERSION = "2.0.2.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -207,11 +207,24 @@ sub get_miniservers
 		if (! $miniservers{$msnr}{Port}) {
 			$miniservers{$msnr}{Port} = 80;
 		}
+		if (! $miniservers{$msnr}{PortHttps}) {
+			$miniservers{$msnr}{PortHttps} = 443;
+		}
+
+		my $transport;
+		my $port;
+		if( is_enabled( $miniservers{$msnr}{PreferHttps} ) ) {
+			$transport = 'https';
+			$port = $miniservers{$msnr}{PortHttps};
+		} else {
+			$transport = 'http';
+			$port = $miniservers{$msnr}{Port};
+		}
+		$miniservers{$msnr}{PreferredUrlFull} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
 
 		# Miniserver values consistency check
 		# If a Miniserver entry is not plausible, the full Miniserver hash entry is deleted
-		if($miniservers{$msnr}{Name} eq '' or $miniservers{$msnr}{IPAddress} eq '' or $miniservers{$msnr}{Admin} eq '' or $miniservers{$msnr}{Pass} eq ''
-			or $miniservers{$msnr}{Port} eq '') {
+		if($miniservers{$msnr}{Name} eq '' or $miniservers{$msnr}{IPAddress} eq '' or $miniservers{$msnr}{Admin} eq '' or $miniservers{$msnr}{Pass} eq '' ) {
 			delete @miniservers{$msnr};
 		}
 	}
@@ -334,8 +347,6 @@ sub plugindata
 	}
 }
 
-
-
 ##################################################################################
 # Get Plugins
 # Returns all plugins in a hash
@@ -438,7 +449,6 @@ sub plugindb_changed_time
 
 }
 
-
 ##################################################################################
 # Get System Version
 # Returns LoxBerry version
@@ -504,13 +514,14 @@ sub read_generalcfg
 		$miniservers{$msnr}{Credentials} = $miniservers{$msnr}{Admin} . ':' . $miniservers{$msnr}{Pass};
 		$miniservers{$msnr}{Note} = $cfg->param("MINISERVER$msnr.NOTE");
 		$miniservers{$msnr}{Port} = $cfg->param("MINISERVER$msnr.PORT");
+		$miniservers{$msnr}{PortHttps} = $cfg->param("MINISERVER$msnr.PORTSSL");
+		$miniservers{$msnr}{PreferHttps} = $cfg->param("MINISERVER$msnr.PREFERSSL");
 		$miniservers{$msnr}{UseCloudDNS} = $cfg->param("MINISERVER$msnr.USECLOUDDNS");
 		$miniservers{$msnr}{CloudURLFTPPort} = $cfg->param("MINISERVER$msnr.CLOUDURLFTPPORT");
 		$miniservers{$msnr}{CloudURL} = $cfg->param("MINISERVER$msnr.CLOUDURL");
 		$miniservers{$msnr}{Admin_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Admin});
 		$miniservers{$msnr}{Pass_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Pass});
 		$miniservers{$msnr}{Credentials_RAW} = $miniservers{$msnr}{Admin_RAW} . ':' . $miniservers{$msnr}{Pass_RAW};
-		
 		$miniservers{$msnr}{SecureGateway} = $cfg->param("MINISERVER$msnr.SECUREGATEWAY");
 		$miniservers{$msnr}{EncryptResponse} = $cfg->param("MINISERVER$msnr.ENCRYPTRESPONSE");
 		
@@ -540,6 +551,7 @@ sub set_clouddns
 		print STDERR "Reading data from cachefile $memfile\n" if ($DEBUG);
 		$miniservers{$msnr}{IPAddress} = $cache->{$cachekey}->{IPAddress};
 		$miniservers{$msnr}{Port} = $cache->{$cachekey}->{Port};
+		$miniservers{$msnr}{PortHttps} = $cache->{$cachekey}->{PortHttps};
 		return;
 	}
 	
@@ -551,11 +563,12 @@ sub set_clouddns
 	$ua->timeout(5);
 	$ua->max_redirect( 0 );
 	my $checkurl = "http://$clouddnsaddress?getip&snr=" . $miniservers{$msnr}{CloudURL}."&json=true";
-	my $resp 	 = $ua->get($checkurl);
+	my $resp = $ua->get($checkurl);
 	if (! $resp->is_success ) 
 	{
 		$miniservers{$msnr}{IPAddress} = "0.0.0.0";
 		$miniservers{$msnr}{Port} = "0";
+		$miniservers{$msnr}{PortHttps} = "0";
 		delete $cache->{$cachekey};
 		$jsonobj->write();
 		
@@ -567,9 +580,12 @@ sub set_clouddns
 	{
 		my $respjson = JSON::decode_json($resp->content);
 		($miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port}) = split(/:/, $respjson->{IP}, 2);
+		(undef, $miniservers{$msnr}{PortHttps}) = split(/:/, $respjson->{IPHTTPS}, 2);
+		
 		my %cachehash;
 		$cachehash{IPAddress} = $miniservers{$msnr}{IPAddress};
 		$cachehash{Port} = $miniservers{$msnr}{Port};
+		$cachehash{PortHttps} = $miniservers{$msnr}{PortHttps};
 		$cachehash{refresh_timestamp} = time + 3600 + int(rand(3600));
 		$cache->{$cachekey} = \%cachehash;
 		$jsonobj->write();
@@ -591,10 +607,8 @@ sub get_ftpport
 	
 	$msnr = defined $msnr ? $msnr : 1;
 	
-	# If we have no MS list, read the config
-	if (! %miniservers) {
-		# print STDERR "get_ftpport: Readconfig\n";
-		read_generalcfg();
+	if(!$msClouddnsFetched) {
+		LoxBerry::System::get_miniservers();
 	}
 	
 	# If CloudDNS is enabled, return the CloudDNS FTP port
@@ -607,8 +621,9 @@ sub get_ftpport
 	if (! $miniservers{$msnr}{FTPPort}) {
 		# print STDERR "get_ftpport: Read FTP Port from MS\n";
 		# Get FTP Port from Miniserver
-		my $url = "http://$miniservers{$msnr}{Credentials}\@$miniservers{$msnr}{IPAddress}\:$miniservers{$msnr}{Port}/dev/cfg/ftp";
+		my $url = $miniservers{$msnr}{PreferredUrlFull}.'/dev/cfg/ftp';
 		my $ua = LWP::UserAgent->new;
+		$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 		$ua->timeout(5);
 		my $response = $ua->get($url);
 		if (!$response->is_success) {
