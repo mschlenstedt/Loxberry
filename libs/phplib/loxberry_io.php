@@ -7,7 +7,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.0.0.1";
+$LBIOVERSION = "2.0.2.1";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -207,13 +207,24 @@ function mshttp_call($msnr, $command)
 		return array (null, 601, null);
 	}
 	
-	$mscred = $ms[$msnr]['Credentials'];
-	$msip = $ms[$msnr]['IPAddress'];
-	$msport = $ms[$msnr]['Port'];
+	$FullURI = $ms[$msnr]['FullURI'];
 	
-	$url = "http://$mscred@$msip:$msport" . $command;
+	$url = $FullURI . $command;
 	
-	$xmlresp = file_get_contents($url);
+	/* SSL options */
+	$stream_context = stream_context_create([ 
+	'https' => [
+		'timeout'			=> 5,
+		'verify_peer'       => false,
+		'verify_peer_name'  => false,
+		'allow_self_signed' => true,
+		'verify_depth'      => 0 
+	], 
+	'http' => [
+		'timeout'			=> 5
+	]]);
+
+	$xmlresp = file_get_contents($url, false, $stream_context);
 	if ($xmlresp === false) {
 		// echo "Errors occured\n";
 		error_log("mshttp_call: An error occured fetching $url.");
