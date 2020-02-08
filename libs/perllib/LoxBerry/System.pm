@@ -220,6 +220,17 @@ sub get_miniservers
 			$transport = 'http';
 			$port = $miniservers{$msnr}{Port};
 		}
+		# Check if ip format is IPv6
+		my $IPv6Format = '0';
+		my $ipaddress = $miniservers{$msnr}{IPAddress};
+		if( index( $ipaddress, ':' ) != -1 ) {
+			$IPv6Format = '1';
+		}
+		my $FullURI;
+		$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
+		my $port = is_enabled($miniservers{$msnr}{PreferHttps}) ? $miniservers{$msnr}{PortHttps} : $miniservers{$msnr}{Port};
+		$FullURI = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$ipaddress.':'.$port;
+		
 		$miniservers{$msnr}{Transport} = $transport;
 		$miniservers{$msnr}{FullURI} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
 		$miniservers{$msnr}{FullURI_RAW} = $transport.'://'.$miniservers{$msnr}{Credentials_RAW}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
@@ -581,8 +592,37 @@ sub set_clouddns
 	else
 	{
 		my $respjson = JSON::decode_json($resp->content);
-		($miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port}) = split(/:/, $respjson->{IP}, 2);
-		(undef, $miniservers{$msnr}{PortHttps}) = split(/:/, $respjson->{IPHTTPS}, 2);
+		# Check if response is IPv4 or IPv6
+		my $resp_ip;
+		my $sq1;
+		my $sq2;
+		
+		# http port
+		$resp_ip = $respjson->{IP};
+		$sq1 = index( $resp_ip, '[' );
+		if( $sq1 != -1 ) {
+			$sq2 = index( $resp_ip, ']' );
+			if( $sq2 != -1 ) {
+				$miniservers{$msnr}{IPAddress} = substr( $resp_ip, $sq1+1, $sq2-1 );
+				$miniservers{$msnr}{Port} = substr( $resp_ip, $sq2+2 );
+			}
+		} else {
+			( $miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port} ) = split( ':', $resp_ip, 2);
+		}	
+		# https port
+		if( is_enabled($miniservers{$msnr}{PreferHttps} ) ) {
+			$resp_ip = $respjson->{IPHTTPS};
+			$sq1 = index( $resp_ip, '[' );
+			if( $sq1 != -1 ) {
+				$sq2 = index( $resp_ip, ']' );
+				if( $sq2 != -1 ) {
+					$miniservers{$msnr}{IPAddress} = substr( $resp_ip, $sq1+1, $sq2-1 );
+					$miniservers{$msnr}{PortHttps} = substr( $resp_ip, $sq2+2 );
+				}
+			} else {
+				( $miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port} ) = split( ':', $resp_ip, 2);
+			}	
+		}
 		
 		my %cachehash;
 		$cachehash{IPAddress} = $miniservers{$msnr}{IPAddress};
