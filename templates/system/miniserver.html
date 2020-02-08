@@ -64,7 +64,7 @@
 								&nbsp;
 							</td>
 							<td style="width:30%;">
-								<label><input type="checkbox" id="useclouddns<TMPL_VAR MSNO>" name="useclouddns<TMPL_VAR MSNO>" <TMPL_VAR USECLOUDDNS>><TMPL_VAR MINISERVER.LABEL_USE_CLOUD_DNS></label>
+								<label><input type="checkbox" id="useclouddns<TMPL_VAR MSNO>" name="useclouddns<TMPL_VAR MSNO>" data-useclouddns="<TMPL_VAR MSUSECLOUDDNS>"><TMPL_VAR MINISERVER.LABEL_USE_CLOUD_DNS></label>
 							</td>
 							<td style="width:40%;" class="hint">
 								<TMPL_VAR MINISERVER.HINT_USE_CLOUD_DNS>
@@ -75,7 +75,8 @@
 								<label class="control-label" for="miniserverip<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSIP></label>
 							</td>
 							<td style="width:30%;">
-								<input value="<TMPL_VAR MSIP>" id='miniserverip<TMPL_VAR MSNO>' name='miniserverip<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr">
+								<input value="<TMPL_VAR MSIP>" id='miniserverip<TMPL_VAR MSNO>' name='miniserverip<TMPL_VAR MSNO>' type='text'>
+								<!-- data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr" -->
 							</td>
 							<td style="width:40%;" class="hint">
 							</td>
@@ -181,9 +182,6 @@
 						<SCRIPT>
 							
 							/* JavaScript code in TMPL_LOOP */
-							
-							$("#useclouddns<TMPL_VAR MSNO>").prop("checked", "<TMPL_VAR MSUSECLOUDDNS>");
-							
 							$(document).ready( function()
 							{
 								
@@ -200,6 +198,10 @@
 								$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "data-dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>").val());
 								$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "data-dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val());
 								// console.log("preferssl", $("#miniserverpreferssl<TMPL_VAR MSNO>").data("preferssl"));
+								
+								useclouddns = is_enabled( $("#useclouddns<TMPL_VAR MSNO>").data("useclouddns") ) ? true : false;  
+								$("#useclouddns<TMPL_VAR MSNO>").attr('checked', useclouddns ).checkboxradio('refresh');
+								
 								preferssl = is_enabled( $("#miniserverpreferssl<TMPL_VAR MSNO>").data("preferssl") ) ? true : false;  
 								$("#miniserverpreferssl<TMPL_VAR MSNO>").attr('checked', preferssl ).checkboxradio('refresh');
 								if( preferssl && !$("#useclouddns<TMPL_VAR MSNO>").is(":checked") ) 
