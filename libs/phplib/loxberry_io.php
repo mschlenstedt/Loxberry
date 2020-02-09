@@ -7,7 +7,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.0.2.1";
+$LBIOVERSION = "2.0.2.2";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -32,9 +32,41 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 	
 	// Handle socket
 	if (!isset($udpsocket)) {
-		$udpsocket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		// check if this is IPv4 or IPv6 address, or unknown
+		$is_v6 = is_enabled( $ms[$msnr]['IPv6Format'] );
+		if( !$is_v6 ) {
+			$is_v4 = filter_var( $ms[$msnr]['IPAddress'] );
+		}
+		// error_log("Is V6: $is_v6 Is V4: $is_v4");
+		
+		// Try IPv4
+		if( !$is_v6 ) {
+			$udpsocket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+			if( $udpsocket === FALSE ) {
+				$ipv4_failed = socket_last_error($udpsocket);
+				socket_clear_error($udpsocket); 
+				if (!$is_v4) {
+					$is_v6 = true;
+				}
+			}
+		}
+		if( $is_v6 ) {
+			$udpsocket = socket_create(AF_INET6, SOCK_DGRAM, SOL_UDP);
+			if( $udpsocket === FALSE ) {
+				$ipv6_failed = socket_last_error($udpsocket);
+				socket_clear_error($udpsocket); 
+			}
+		}
+		
 		if($udpsocket == NULL) {
-			error_log("Could not create udp socket: " . socket_last_error($udpsocket));
+			$error = "Could not create udp socket: ";
+			if($ipv4_failed) {
+				$error .= "IPv4: $ipv4_failed ";
+			}
+			if($ipv6_failed) {
+				$error .= "IPv6: $ipv6_failed ";
+			}
+			error_log($error);
 			return 0;
 		}
 	}
@@ -102,7 +134,7 @@ function _udp_send($udpsocket, $message, $ip, $udpport)
 	// echo "Send message: $message\n";
 	$udperror = Null;
 	$udpsent = socket_sendto($udpsocket, $message, strlen($message), 0, $ip, $udpport);	
-	if ($udpsent == null) {
+	if ($udpsent == NULL) {
 		$udperror = "socket_sentto returned an error. ";
 	}
 	return $udperror;
