@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.0.2.1";
+our $VERSION = "2.0.2.2";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -356,8 +356,14 @@ sub msudp_send
 			$line = $line . $params[$pidx] . $LoxBerry::IO::udp_delimiter . $params[$pidx+1] . " ";
 		}
 		if (length($line) > 220) {
-			print STDERR "msudp_send: Sending: $oldline\n" if ($DEBUG);
-			$udpsocket{$msnr}{$udpport}->send($oldline);
+			eval {
+				print STDERR "msudp_send: Sending: $oldline\n" if ($DEBUG);
+				$udpsocket{$msnr}{$udpport}->send($oldline);
+			};
+			if($@) {
+				print STDERR "msudp_send: ERROR could not send to MS No. $msnr / Port $udpport:\n$@";
+				return;
+			}
 			$parinline = 0;
 			$line = "";
 			redo;
@@ -366,8 +372,14 @@ sub msudp_send
 	}
 	
 	if($line ne "") {
-		print STDERR "msudp_send: Sending: $line\n" if ($DEBUG);
-		$udpsocket{$msnr}{$udpport}->send($line);
+		eval {
+			print STDERR "msudp_send: Sending: $line\n" if ($DEBUG);
+			$udpsocket{$msnr}{$udpport}->send($line);
+		};
+		if($@) {
+			print STDERR "msudp_send: ERROR could not send to MS No. $msnr / Port $udpport:\n$@";
+			return;
+		}
 	}
 	return 1;
 }
