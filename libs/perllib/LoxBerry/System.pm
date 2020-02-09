@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.2.5";
+our $VERSION = "2.0.2.6";
 our $DEBUG;
 
 use base 'Exporter';
@@ -226,14 +226,16 @@ sub get_miniservers
 		if( index( $ipaddress, ':' ) != -1 ) {
 			$IPv6Format = '1';
 		}
+
 		my $FullURI;
 		$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
+		
 		my $port = is_enabled($miniservers{$msnr}{PreferHttps}) ? $miniservers{$msnr}{PortHttps} : $miniservers{$msnr}{Port};
 		$FullURI = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$ipaddress.':'.$port;
 		
 		$miniservers{$msnr}{Transport} = $transport;
-		$miniservers{$msnr}{FullURI} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
-		$miniservers{$msnr}{FullURI_RAW} = $transport.'://'.$miniservers{$msnr}{Credentials_RAW}.'@'.$miniservers{$msnr}{IPAddress}.':'.$port;
+		$miniservers{$msnr}{FullURI} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$ipaddress.':'.$port;
+		$miniservers{$msnr}{FullURI_RAW} = $transport.'://'.$miniservers{$msnr}{Credentials_RAW}.'@'.$ipaddress.':'.$port;
 
 		# Miniserver values consistency check
 		# If a Miniserver entry is not plausible, the full Miniserver hash entry is deleted
@@ -591,7 +593,12 @@ sub set_clouddns
 	}
 	else
 	{
+		
 		my $respjson = JSON::decode_json($resp->content);
+		
+		# DEBUGGING
+		#my $respjson = decode_json('{"cmd":"getip","Code":200,"IP":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpen":true,"LastUpdated":"2020-02-04 11:43:50","DNS-Status":"registered","IPHTTPS":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpenHTTPS":true}');
+			
 		# Check if response is IPv4 or IPv6
 		my $resp_ip;
 		my $sq1;
