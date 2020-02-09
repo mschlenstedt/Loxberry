@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.2.6";
+our $VERSION = "2.0.2.7";
 our $DEBUG;
 
 use base 'Exporter';
@@ -226,12 +226,10 @@ sub get_miniservers
 		if( index( $ipaddress, ':' ) != -1 ) {
 			$IPv6Format = '1';
 		}
-
-		my $FullURI;
-		$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
+		$miniservers{$msnr}{IPv6Format} = $IPv6Format;
 		
+		$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
 		my $port = is_enabled($miniservers{$msnr}{PreferHttps}) ? $miniservers{$msnr}{PortHttps} : $miniservers{$msnr}{Port};
-		$FullURI = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$ipaddress.':'.$port;
 		
 		$miniservers{$msnr}{Transport} = $transport;
 		$miniservers{$msnr}{FullURI} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$ipaddress.':'.$port;
@@ -627,7 +625,7 @@ sub set_clouddns
 					$miniservers{$msnr}{PortHttps} = substr( $resp_ip, $sq2+2 );
 				}
 			} else {
-				( $miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port} ) = split( ':', $resp_ip, 2);
+				( $miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{PortHttps} ) = split( ':', $resp_ip, 2);
 			}	
 		}
 		

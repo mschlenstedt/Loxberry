@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.2.2";
+	public static $LBSYSTEMVERSION = "2.0.2.3";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -295,9 +295,20 @@ class LBSystem
 				$transport = 'http';
 				$port = $miniservers[$msnr]['Port'];
 			}
+			// Check if ip format is IPv6
+			$IPv6Format = '0';
+			$ipaddress = $miniservers[$msnr]['IPAddress'];
+			if( strpos( $ipaddress, ':' ) !== FALSE ) {
+				$IPv6Format = '1';
+			}
+			$miniservers[$msnr]['IPv6Format'] = $IPv6Format;
+			
+			$ipaddress = $IPv6Format == '1' ? '['.$ipaddress.']' : $ipaddress;
+			$port = is_enabled( $miniservers[$msnr]['PreferHttps'] ) ? $miniservers[$msnr]['PortHttps'] : $miniservers[$msnr]['Port'];
+						
 			$miniservers[$msnr]['Transport'] = $transport;
-			$miniservers[$msnr]['FullURI'] = $transport.'://'.$miniservers[$msnr]['Credentials'].'@'.$miniservers[$msnr]['IPAddress'].':'.$port;
-			$miniservers[$msnr]['FullURI_RAW'] = $transport.'://'.$miniservers[$msnr]['Credentials_RAW'].'@'.$miniservers[$msnr]['IPAddress'].':'.$port;
+			$miniservers[$msnr]['FullURI'] = $transport.'://'.$miniservers[$msnr]['Credentials'].'@'.$ipaddress.':'.$port;
+			$miniservers[$msnr]['FullURI_RAW'] = $transport.'://'.$miniservers[$msnr]['Credentials_RAW'].'@'.$ipaddress.':'.$port;
 			
 			// Miniserver values consistency check
 			// If a Miniserver entry is not plausible, the full Miniserver entry is deleted
@@ -665,20 +676,37 @@ public static function plugindb_changed_time()
 		}
 		
 		$respjson = json_decode($response);
-		$ip_info = explode(":",$respjson->IP);
-		$miniservers[$msnr]['IPAddress']=$ip_info[0];
-		if (count($ip_info) == 2) {
-			$miniservers[$msnr]['Port']=$ip_info[1];
+		
+		// DEBUGGING 
+		// $respjson = json_decode('{"cmd":"getip","Code":200,"IP":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpen":true,"LastUpdated":"2020-02-04 11:43:50","DNS-Status":"registered","IPHTTPS":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpenHTTPS":true}');
+		
+		// http port
+		$resp_ip = $respjson->IP;
+		$sq1 = strpos( $resp_ip, '[' );
+		if( $sq1 !== FALSE ) {
+			$sq2 = strpos( $resp_ip, ']' );
+			if ( $sq2 !== FALSE ) {
+				$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
+				$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
+			}
 		} else {
-			$miniservers[$msnr]['Port']=80;
+			list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['Port'] ) =  explode(":",$resp_ip, 2);
 		}
-		$ip_info = explode(":",$respjson->IPHTTPS);
-		if (count($ip_info) == 2) {
-			$miniservers[$msnr]['PortHttps']=$ip_info[1];
-		} else {
-			$miniservers[$msnr]['Port']=443;
+		// https port
+		if( is_enabled($miniservers[$msnr]['PreferHttps']) ) {
+			$resp_ip = $respjson->IPHTTPS;
+			$sq1 = strpos( $resp_ip, '[' );
+			if( $sq1 !== FALSE ) {
+				$sq2 = strpos( $resp_ip, ']' );
+				if ( $sq2 !== FALSE ) {
+					$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
+					$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
+				}
+			} else {
+				list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['PortHttps'] ) =  explode(":",$resp_ip, 2);
+			}
 		}
-	
+		
 		// Save cache information to json
 		if (!empty($miniservers[$msnr]['IPAddress'])) {
 			if(empty($jsonobj)) {
