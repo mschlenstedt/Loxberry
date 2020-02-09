@@ -1101,6 +1101,8 @@ sub check_miniservers
 			my %post = (
 				"ip" => $mslist{$ms}{IPAddress},
 				"port" => $mslist{$ms}{Port},
+				"preferssl" => $mslist{$ms}{PreferHttps},
+				"sslport" => $mslist{$ms}{PortHttps},
 				"user" => $mslist{$ms}{Admin_RAW},
 				"pass" => $mslist{$ms}{Pass_RAW}
 			);
@@ -1109,10 +1111,11 @@ sub check_miniservers
 				die("Could not query data (stopped at MS $mslist{$ms}{Name}: " . $response->status_line);
 			}
 			my $data = decode_json($response->decoded_content);
-			if($data->{success} eq "1") {
+			my $label = is_enabled( $mslist{$ms}{PreferHttps} ) ? "https" : "http";
+			if($data->{$label}->{success} eq "1") {
 				push @results, "$mslist{$ms}{Name} OK";
-				push @results, "(admin user)." if ($data->{isadmin} eq "1");
-				push @results, "(no admin user)." if ($data->{isnonadmin} eq "1"); 
+				push @results, "(admin user)." if ($data->{$label}->{isadmin} eq "1");
+				push @results, "(no admin user)." if ($data->{$label}->{isadmin} ne "1"); 
 			} else {
 				push @results, "Miniserver $mslist{$ms}{Name} NOT ACCESSIBLE.";
 				$result{status} = 3;

@@ -28,7 +28,17 @@ $R::ip if (0);
 $R::get_hostport if(0);
 $R::preferssl if (0);
 
-my $hostport = "$R::ip" if ($R::ip);
+# Check if ip format is IPv6
+my $ipaddress = $R::ip;
+my $IPv6Format = 0;
+if( index( $ipaddress, ':' ) != -1 ) {
+	$IPv6Format = 1;
+}
+if ( $IPv6Format == 1 ) {
+	$ipaddress = '['.$ipaddress.']';
+}
+
+my $hostport = $ipaddress;
 $hostport .= ":$R::port" if ($R::port);
 
 my $preferssl = is_enabled($R::preferssl);
@@ -36,7 +46,7 @@ my $sslhostport;
 
 if ( $preferssl ) {
 	$R::sslport = defined $R::sslport ? $R::sslport : 443;
-	$sslhostport = "$R::ip" if ( $R::ip );
+	$sslhostport = $ipaddress;
 	$sslhostport .= ":$R::sslport";
 }
 
