@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.2.7";
+our $VERSION = "2.0.2.8";
 our $DEBUG;
 
 use base 'Exporter';
@@ -527,8 +527,8 @@ sub read_generalcfg
 		$miniservers{$msnr}{Credentials} = $miniservers{$msnr}{Admin} . ':' . $miniservers{$msnr}{Pass};
 		$miniservers{$msnr}{Note} = $cfg->param("MINISERVER$msnr.NOTE");
 		$miniservers{$msnr}{Port} = $cfg->param("MINISERVER$msnr.PORT");
-		$miniservers{$msnr}{PortHttps} = $cfg->param("MINISERVER$msnr.PORTSSL");
-		$miniservers{$msnr}{PreferHttps} = $cfg->param("MINISERVER$msnr.PREFERSSL");
+		$miniservers{$msnr}{PortHttps} = $cfg->param("MINISERVER$msnr.PORTHTTPS");
+		$miniservers{$msnr}{PreferHttps} = $cfg->param("MINISERVER$msnr.PREFERHTTPS");
 		$miniservers{$msnr}{UseCloudDNS} = $cfg->param("MINISERVER$msnr.USECLOUDDNS");
 		$miniservers{$msnr}{CloudURLFTPPort} = $cfg->param("MINISERVER$msnr.CLOUDURLFTPPORT");
 		$miniservers{$msnr}{CloudURL} = $cfg->param("MINISERVER$msnr.CLOUDURL");

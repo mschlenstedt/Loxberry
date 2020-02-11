@@ -26,7 +26,7 @@ $ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 $R::useclouddns if (0);
 $R::ip if (0);
 $R::get_hostport if(0);
-$R::preferssl if (0);
+$R::preferhttps if (0);
 
 # Check if ip format is IPv6
 my $ipaddress = $R::ip;
@@ -41,13 +41,13 @@ if ( $IPv6Format == 1 ) {
 my $hostport = $ipaddress;
 $hostport .= ":$R::port" if ($R::port);
 
-my $preferssl = is_enabled($R::preferssl);
+my $preferhttps = is_enabled($R::preferhttps);
 my $sslhostport;
 
-if ( $preferssl ) {
-	$R::sslport = defined $R::sslport ? $R::sslport : 443;
+if ( $preferhttps ) {
+	$R::porthttps = defined $R::porthttps ? $R::porthttps : 443;
 	$sslhostport = $ipaddress;
-	$sslhostport .= ":$R::sslport";
+	$sslhostport .= ":$R::porthttps";
 }
 
 # Cloud DNS handling
@@ -74,7 +74,7 @@ if (is_enabled($R::useclouddns)) {
 		$hostport = $respjson->{IP} if (defined $respjson->{IP});
 		$sslhostport = $respjson->{IPHTTPS} if (defined $respjson->{IPHTTPS});
 		$jout{clouddns} = $respjson;
-		if($preferssl) {
+		if($preferhttps) {
 			$jout{https}{isclouddns} = 1;
 		}
 	}
@@ -103,7 +103,7 @@ my @url_nonadmin;
 my @url_admin;
 $url_nonadmin[0] = "http://$R::user:$R::pass\@$hostport/dev/cfg/version";
 $url_admin[0] = "http://$R::user:$R::pass\@$hostport/dev/cfg/ip";
-if( $preferssl ) {
+if( $preferhttps ) {
 	$url_nonadmin[1] = "https://$R::user:$R::pass\@$sslhostport/dev/cfg/version";
 	$url_admin[1] = "https://$R::user:$R::pass\@$sslhostport/dev/cfg/ip";
 }
@@ -118,7 +118,7 @@ if( $jout{http}{error} ) {
 	check_nonadmin( $url_nonadmin[0], "http" );
 }
 
-if ( $preferssl ) {
+if ( $preferhttps ) {
 	check_admin( $url_admin[1], "https" );
 	if( $jout{https}{error} ) {
 		check_nonadmin( $url_nonadmin[1], "https" );

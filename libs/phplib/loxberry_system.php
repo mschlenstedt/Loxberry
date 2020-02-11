@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.2.3";
+	public static $LBSYSTEMVERSION = "2.0.2.4";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -591,8 +591,8 @@ public static function plugindb_changed_time()
 			@$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
 			@$miniservers[$msnr]['Note'] = $cfg["MINISERVER$msnr"]['NOTE'];
 			@$miniservers[$msnr]['Port'] = $cfg["MINISERVER$msnr"]['PORT'];
-			@$miniservers[$msnr]['PortHttps'] = $cfg["MINISERVER$msnr"]['PORTSSL'];
-			@$miniservers[$msnr]['PreferHttps'] = $cfg["MINISERVER$msnr"]['PREFERSSL'];
+			@$miniservers[$msnr]['PortHttps'] = $cfg["MINISERVER$msnr"]['PORTHTTPS'];
+			@$miniservers[$msnr]['PreferHttps'] = $cfg["MINISERVER$msnr"]['PREFERHTTPS'];
 			@$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
 			@$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
 			@$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];

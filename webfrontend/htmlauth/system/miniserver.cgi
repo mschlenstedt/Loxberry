@@ -54,7 +54,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.4";
+my $version = "2.0.2.5";
 
 my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -154,8 +154,8 @@ sub form {
 		$ms{MSCLOUDURLFTPPORT} = $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
 		$ms{MSNOTE} = $cfg->param("MINISERVER$msno.NOTE");
 		$ms{MSNAME} = $cfg->param("MINISERVER$msno.NAME");
-		$ms{MSPREFERSSL} = is_enabled($cfg->param("MINISERVER$msno.PREFERSSL")) ? "true" : "false";
-		$ms{MSSSLPORT} = $cfg->param("MINISERVER$msno.SSLPORT");
+		$ms{MSPREFERHTTPS} = is_enabled($cfg->param("MINISERVER$msno.PREFERHTTPS")) ? "true" : "false";
+		$ms{MSPORTHTTPS} = $cfg->param("MINISERVER$msno.PORTHTTPS");
 		
 		push(@msdata, \%ms);
 	}
@@ -200,8 +200,8 @@ sub save {
 		$cfg->param("MINISERVER$msno.USECLOUDDNS", is_enabled( param("useclouddns$msno") ) ? '1' : '0' );
 		$cfg->param("MINISERVER$msno.CLOUDURL", param("miniservercloudurl$msno") );
 		$cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", param("miniservercloudurlftpport$msno") );
-		$cfg->param("MINISERVER$msno.PREFERSSL", is_enabled( param("miniserverpreferssl$msno") ) ? "1" : "0" );
-		$cfg->param("MINISERVER$msno.SSLPORT", defined param("miniserversslport$msno") ? param("miniserversslport$msno") : 443 );
+		$cfg->param("MINISERVER$msno.PREFERHTTPS", is_enabled( param("miniserverpreferhttps$msno") ) ? "1" : "0" );
+		$cfg->param("MINISERVER$msno.PORTHTTPS", defined param("miniserverporthttps$msno") ? param("miniserverporthttps$msno") : 443 );
 		$cfg->param("MINISERVER$msno.NAME", param("miniserverfoldername$msno") );
 		# Credentials are RAW and URI-encoded
 		$cfg->param("MINISERVER$msno.ADMIN", uri_escape( param("miniserveruser$msno") ) );
@@ -209,7 +209,7 @@ sub save {
 		
 		# Save calculated values
 		my $transport;
-		$transport = $cfg->param("MINISERVER$msno.PREFERSSL") ? 'https' : 'http';
+		$transport = $cfg->param("MINISERVER$msno.PREFERHTTPS") ? 'https' : 'http';
 		$cfg->param("MINISERVER$msno.TRANSPORT", $transport );
 		
 		# Check if ip format is IPv6
@@ -224,7 +224,7 @@ sub save {
 		my $FullURI;
 		if ( $cfg->param("MINISERVER$msno.USECLOUDDNS") eq '0' ) {
 			$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
-			my $port = $cfg->param("MINISERVER$msno.PREFERSSL") eq '1' ? $cfg->param("MINISERVER$msno.SSLPORT") : $cfg->param("MINISERVER$msno.PORT");
+			my $port = $cfg->param("MINISERVER$msno.PREFERHTTPS") eq '1' ? $cfg->param("MINISERVER$msno.PORTHTTPS") : $cfg->param("MINISERVER$msno.PORT");
 			$FullURI = $transport.'://'.$cfg->param("MINISERVER$msno.ADMIN").':'.$cfg->param("MINISERVER$msno.PASS").'@'.$ipaddress.':'.$port;
 		} else {
 			$FullURI = "";

@@ -6,7 +6,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.1.0";
+my $version = "2.0.2.2";
 
 # Globals
 my @results;
@@ -1101,8 +1101,8 @@ sub check_miniservers
 			my %post = (
 				"ip" => $mslist{$ms}{IPAddress},
 				"port" => $mslist{$ms}{Port},
-				"preferssl" => $mslist{$ms}{PreferHttps},
-				"sslport" => $mslist{$ms}{PortHttps},
+				"preferhttps" => $mslist{$ms}{PreferHttps},
+				"porthttps" => $mslist{$ms}{PortHttps},
 				"user" => $mslist{$ms}{Admin_RAW},
 				"pass" => $mslist{$ms}{Pass_RAW}
 			);
