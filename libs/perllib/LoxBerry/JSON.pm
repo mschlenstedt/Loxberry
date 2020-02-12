@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "2.0.1.1";
+our $VERSION = "2.0.2.1";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -110,12 +110,12 @@ sub write
 	
 	if ($self->{readonly}) {
 		print STDERR "LoxBerry::JSON->write: Opened with READONLY - Leaving write\n" if ($DEBUG);
-		return;		
+		return;
 	}
 	
 	print STDERR "No jsonobj\n" if (! defined $self->{jsonobj});
 	print STDERR "No filename defined\n" if (! defined $self->{filename});
-		
+	
 	my $jsoncontent_new;
 	eval {
 		$jsoncontent_new = JSON->new->pretty->canonical(1)->encode($self->{jsonobj});
@@ -149,6 +149,7 @@ sub write
 	# rename $self->{filename}, $self->{filename} . ".bkp";
 	# rename $self->{filename} . ".tmp", $self->{filename};
 	$self->{jsoncontent} = $jsoncontent_new;
+	return 1;
 	
 }
 
