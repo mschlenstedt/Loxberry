@@ -32,7 +32,7 @@ my $log = LoxBerry::Log->new (
 LOGSTART "Sync time";
 
 # Version of this script
-my $version = "2.0.2.1";
+my $version = "2.0.2.2";
 LOGINF "Version of setdatetime: $version";
 
 my $cfgfile = $lbsconfigdir."/general.json";
@@ -51,8 +51,8 @@ my $ts = $cfg->{Timeserver};
 
 $method = $ts->{Method};
 $timezone = $ts->{Timezone};
-$timeserver = $ts->{NTPServer};
-$timemsno = $ts->{TimeMSNo};
+$timeserver = $ts->{Ntpserver};
+$timemsno = $ts->{Timemsno};
 
 LOGWARN "Method not defined - using default" if( ! defined $method );
 LOGWARN "Timezone not defined - using default" if( ! defined $timezone );
