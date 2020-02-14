@@ -7,7 +7,7 @@ use strict;
 package LoxBerry::System::General;
 use parent 'LoxBerry::JSON';
 
-our $VERSION = "2.0.2.2";
+our $VERSION = "2.0.2.3";
 our $DEBUG;
 
 
@@ -165,7 +165,7 @@ POWEROFF=/sbin/poweroff
 
 EOF
 
-	open( my $fh, '>', $self->{_generalcfg} );
+	CORE::open( my $fh, '>', $self->{_generalcfg} );
 	flock( $fh, 2 ); # Exclusive lock
 	print $fh "# This file is generated automatically by changes of general.json\n";
 	print $fh "# Manual changes will be overwritten.\n\n";
