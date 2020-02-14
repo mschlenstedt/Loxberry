@@ -7,7 +7,7 @@ use LoxBerry::System;
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "2.0.2.1"; # Version of this script
+my $version = "2.0.2.2"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -31,7 +31,10 @@ $R::value if 0;
 my $action = $R::action;
 my $value = $R::value;
 
-print STDERR "Action: $action // Value: $value\n";
+
+print STDERR "Action: $action";
+print STDERR "| Value: $value" if $value;
+print STDERR "\n";
 
 if    ($action eq 'secupdates') { &secupdates; }
 elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
@@ -52,6 +55,7 @@ elsif ($action eq 'testenvironment') {  &testenvironment; }
 elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
+elsif ($action eq 'recreate-generalcfg') { recreate_generalcfg(); }
 
 else   { 
 	$response{error} = 1; 
@@ -483,6 +487,22 @@ sub change_generaljson
 	$response{message} = "OK";
 	return 1;
 }
+
+###################################################################
+# Function to force the generation of general.cfg from general.json
+# Used for non-Perl languages (PHP, Bash) changing the general.json
+###################################################################
+sub recreate_generalcfg
+{
+	require LoxBerry::System::General;
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open( readonly => 1 );
+	$jsonobj->_json2cfg();
+	$response{error} = 0;
+	$response{message} = "OK";
+	return 1;
+}
+
 
 END {
 
