@@ -74,6 +74,10 @@ sub open
 	print STDERR "LoxBerry::JSON->open: filename is $self->{filename}\n" if ($DEBUG);
 	print STDERR "LoxBerry::JSON->open: writeonclose is ", $self->{writeonclose} ? "ENABLED" : "DISABLED", "\n" if ($DEBUG);
 	
+	if (!defined $self->{filename}) {
+		print STDERR "LoxBerry::JSON->open: Parameter filename is empty. Terminating.\n";
+		Carp::croak "LoxBerry::JSON->open: Parameter filename is empty.";
+	}
 	if (! -e $self->{filename}) {
 		print STDERR "LoxBerry::JSON->open: WARNING $self->{filename} does not exist - write will create it\n" if ($DEBUG);
 		my $objref = undef;
@@ -359,7 +363,7 @@ sub DESTROY
 	}	
 	if ($self->{writeonclose}) {
 		print STDERR "LoxBerry::JSON->DESTROY: writeonclose is enabled, calling write\n" if ($DEBUG);
-		$self->write();
+		return $self->write();
 	} else {
 		print STDERR "LoxBerry::JSON->DESTROY: Do nothing\n" if ($DEBUG);
 	}
