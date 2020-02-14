@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 #use Carp;
-use warnings;
+# use warnings;
 use strict;
 
 package LoxBerry::System::General;
