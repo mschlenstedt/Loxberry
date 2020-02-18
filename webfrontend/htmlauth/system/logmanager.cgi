@@ -24,7 +24,7 @@ my $cgi = CGI->new;
 $cgi->import_names('R');
 
 # Version of this script
-my $version = "2.0.1.2";
+my $version = "2.0.2.1";
 
 # Remove 'only used once' warnings
 $R::showfilename if 0;
@@ -76,6 +76,12 @@ if (!$embed and !$R::package) {
 	$navbar{3}{Name} = "Apache Log";
 	$navbar{3}{URL} = 'tools/logfile.cgi?logfile=system_tmpfs/apache2/error.log&header=html&format=template';
 	$navbar{3}{target} = '_blank';
+
+	$navbar{4}{Name} = "PHP Log";
+	$navbar{4}{URL} = 'tools/logfile.cgi?logfile=system_tmpfs/apache2/php.log&header=html&format=template';
+	$navbar{4}{target} = '_blank';
+
+
 }
 
 if (!$R::form or $R::form eq 'log') {
