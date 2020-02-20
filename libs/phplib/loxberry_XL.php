@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 require_once "loxberry_io.php";
 require_once "phpMQTT/phpMQTT.php";
 
-$LBMSVERSION = "2.0.2.3";
+$LBMSVERSION = "2.0.2.4";
 $LBMSDEBUG = 0;
 
 error_log("LoxBerry XL Version $LBMSVERSION");
@@ -202,6 +202,7 @@ class lbxl
 	public $days_numerus = array();
 	public $months_numerus = array();
 	public $years_numerus = array();
+	public $common_words = array();
 	
 	public function __construct()
 	{
@@ -213,6 +214,8 @@ class lbxl
 		$this->days_numerus['de'] = array ( 0 => 'Tage', 1 => 'Tag', 2 => 'Tage' );
 		$this->months_numerus['de'] = array ( 0 => 'Monate', 1 => 'Monat', 2 => 'Monate' );
 		$this->years_numerus['de'] = array ( 0 => 'Jahre', 1 => 'Jahr', 2 => 'Jahre' );
+		$this->common_words['de'] = array ( 'and' => 'und', 'or' => 'oder', 'from' => 'von', 'to' => 'bis' );
+		
 		
 		/* English */
 		$this->weekdays['en'] = array ( "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" );
@@ -222,7 +225,7 @@ class lbxl
 		$this->days_numerus['en'] = array ( 0 => 'days', 1 => 'day', 2 => 'days' );
 		$this->months_numerus['en'] = array ( 0 => 'months', 1 => 'month', 2 => 'months' );
 		$this->years_numerus['en'] = array ( 0 => 'years', 1 => 'year', 2 => 'years' );
-		
+		$this->common_words['en'] = array ( 'and' => 'and', 'or' => 'or', 'from' => 'from', 'to' => 'to' );
 	}
 	
 	
@@ -293,17 +296,58 @@ class lbxl
 		error_log("timediff: Not yet implemented");
 	}
 	
+	public function dtdiff($time1, $time2) {
+		if( $time1 == (int)$time1 ) {
+			$dt1 = new DateTime("@$time1");
+		} else {
+			$dt1 = DateTime::createFromFormat('d.m.Y H:i', $time1);
+		}
+		
+		if( $time2 == (int)$time2 ) {
+			$dt2 = new DateTime("@$time2");
+		} else {
+			$dt2 = DateTime::createFromFormat('d.m.Y H:i', $time2);
+		}
+		return date_diff($dt1, $dt2);
+	}
 	
-	public function daystoxmas($epoch = null) {
+	public function toxmasdays($epoch = null) {
+		return $this->toxmasdt($epoch)->days;
+	}
+	public function toxmastext($epoch = null) {
+		$lang = LBSystem::lblanguage();
+		$dtdiff = $this->toxmasdt($epoch);
+		$textarr = array();
+		
+		if($dtdiff->m > 0) {
+			array_push( $textarr, $dtdiff->m . ' ' . $this->_getnumerus("months_numerus", $dtdiff->m) );
+		}
+		if($dtdiff->d > 0) {
+			array_push( $textarr, $dtdiff->d . ' ' . $this->_getnumerus("days_numerus", $dtdiff->d) );
+		}
+		if($dtdiff->h > 0) {
+			array_push( $textarr, $dtdiff->h . ' ' . $this->_getnumerus("hours_numerus", $dtdiff->h) );
+		}
+		
+		$text = implode( ', ', $textarr );
+		$commapos = strrpos( $text, ', ');
+		if( $commapos !== FALSE ) {
+			$text = substr( $text, 0, $commapos ) . ' ' . $this->common_words[$lang]['and'] . ' ' . substr( $text, $commapos+2 );
+		}
+		return $text;
+		
+	}
+
+
+	public function toxmasdt($epoch = null) {
 		if( $epoch == null ) {
 			$epoch = time();
 		}
-		$xmas = mktime(0, 0, 0, 12, 24);
-		$secs = $xmas - $epoch;
-		$days = $secs/60/60/24;
-		return (int)$days;
+		$dtnow = new DateTime("@$epoch");
+		$dtxmas = DateTime::createFromFormat('m-d H:i', '12-24 0:00');
+		$dtdiff = date_diff($dtnow, $dtxmas);
+		return $dtdiff;
 	}
-	
 	
 	public function _getnumerus($numerus, $numvalue) {
 		$lang = LBSystem::lblanguage();
