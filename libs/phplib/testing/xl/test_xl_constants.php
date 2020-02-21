@@ -29,9 +29,14 @@ require_once "loxberry_XL.php";
 	echo "time: ". $xl->time . "\n";
 	echo "weekdaytext: " . $xl->weekdaytext . "\n";
 	echo "monthtext: " . $xl->monthtext . "\n";
+	echo "season: " . $xl->season . "\n";
+	echo "season Winter: " . $xl->season('05.02.2020 12:00') . "\n";
+	echo "season Spring: " . $xl->season('05.04.2020 12:00') . "\n";
+	echo "season Summer: " . $xl->season('05.07.2020 12:00') . "\n";
+	echo "season Autumn: " . $xl->season('05.10.2020 12:00') . "\n";
+	echo "season Winter again: " . $xl->season('24.12.2020 12:00') . "\n";
 	echo "toxmasdays: " . $xl->toxmasdays . "\n";
 	echo "toxmastext: " . $xl->toxmastext . "\n";
-	
 
 exit;
 

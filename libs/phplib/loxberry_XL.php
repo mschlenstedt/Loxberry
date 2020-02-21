@@ -298,6 +298,43 @@ class lbxl
 		$lang = LBSystem::lblanguage();
 		return $this->months["$lang"][$month];
 	}
+
+	public function season($epoch = null) {
+		$epoch = $this->_evaldate($epoch);
+		$dt = new DateTime("@$epoch");
+		/*
+				1 Spring
+				2 Summer
+				3 Autumn
+				4 Winter
+		*/
+		$refDate[1] = new \DateTime( '20.03.2005 11:33:19 UTC' );
+		$refDate[2] = new \DateTime( '21.06.2005 06:39:11 UTC' );
+		$refDate[3] = new \DateTime( '22.09.2005 22:16:34 UTC' );
+		$refDate[4] = new \DateTime( '21.12.2005 18:34:51 UTC' );
+		$year = $dt->format('Y');
+		foreach( $refDate as $season => $date ) {
+			$yeardiff = $year - (int) $date->format('Y');
+			$interval = new \DateInterval( 'PT' . ( $yeardiff * 31556877 ) . 'S' );
+			if( $yeardiff > 0 ) {
+				$date->add( $interval );
+			} elseif ( $yeardiff < 0 ) {
+				$date->sub( $interval );
+			}
+			if( $dt < $date ) {
+				echo "Season ist $season\n";
+				$actseason = $season-1;
+				if( $actseason == 0 ) {
+					$actseason = 4;
+				}
+				return $actseason;
+			}
+		}
+		return $season;
+		
+		
+		
+	}
 	
 	public function dtdiff($time1, $time2) {
 		$time1 = self::_evaldate($time1);
