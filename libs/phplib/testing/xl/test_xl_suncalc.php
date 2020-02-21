@@ -2,6 +2,8 @@
 <?php
 require_once "loxberry_XL.php";
 echo "\nMinOfDay: " . $xl->minofday;
+echo "\nMinOfDay: " . $xl->minofday(time()-60);
+echo "\nMinOfDay: " . $xl->minofday("24.03.2020 23:59");
 
 
 // https://github.com/gregseth/suncalc-php

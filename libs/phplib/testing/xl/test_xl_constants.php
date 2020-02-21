@@ -14,18 +14,29 @@ require_once "loxberry_XL.php";
 */
 
 	
-/*
-	echo "Available constants:\n";
+	echo "Available date/time functions:\n";
 	echo "hour: " . $xl->hour . "\n";
 	echo "minute: " . $xl->minute . "\n";
-	echo "Week of year: " . $xl->week . "\n";
-	echo "Date: ". $xl->date . "\n";
-	echo "Datetext: ". $xl->datetext . "\n";
+	echo "minofday: " . $xl->minofday . "\n";
+	echo "day: " . $xl->day . "\n";
+	echo "month: " . $xl->month . "\n";
+	echo "year: " . $xl->year . "\n";
+	echo "dayofyear: " . $xl->dayofyear . "\n";
+	echo "weekday: " . $xl->weekday . "\n";
+	echo "week: " . $xl->week . "\n";
+	echo "date: ". $xl->date . "\n";
+	echo "datetext: ". $xl->datetext . "\n";
+	echo "time: ". $xl->time . "\n";
+	echo "weekdaytext: " . $xl->weekdaytext . "\n";
+	echo "monthtext: " . $xl->monthtext . "\n";
+	echo "toxmasdays: " . $xl->toxmasdays . "\n";
+	echo "toxmastext: " . $xl->toxmastext . "\n";
 	
-	echo "Weekday Text: " . $xl->weekdaytext . "\n";
-	echo "Time: ". $xl->time . "\n";
-*/
 
+exit;
+
+	
+	
 	// echo "Day Numerus -4: " . $xl->_getnumerus("days_numerus", -4) . "\n";
 	// echo "Day Numerus 0: " . $xl->_getnumerus("days_numerus", 0) . "\n";
 	// echo "Day Numerus 1: " . $xl->_getnumerus("days_numerus", 1) . "\n";
@@ -33,10 +44,9 @@ require_once "loxberry_XL.php";
 	// echo "Day Numerus 3: " . $xl->_getnumerus("days_numerus", 3) . "\n";
 	// echo "Days to X-Mas: " . $xl->daystoxmas . "\n";
 	
-	echo "Days: " . $xl->toxmasdays() . "\n";
+	echo $dtdiff = $xl->dtdiff(time(), '24.03.'.$xl->year.'0:00');
 	echo "Text to XMas: " . $xl->toxmastext() . "\n";
 	echo "Birthday: ";
-	$dtdiff = $xl->dtdiff(time(), '24.03.'.$xl->year.'0:00');
 	echo "Mein Geburtstag ist in $dtdiff->m Monaten und $dtdiff->d Tagen.\n";
 ?>
 
