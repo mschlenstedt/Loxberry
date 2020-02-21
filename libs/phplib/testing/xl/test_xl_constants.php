@@ -31,6 +31,12 @@ require_once "loxberry_XL.php";
 	// echo "Day Numerus 1: " . $xl->_getnumerus("days_numerus", 1) . "\n";
 	// echo "Day Numerus 2: " . $xl->_getnumerus("days_numerus", 2) . "\n";
 	// echo "Day Numerus 3: " . $xl->_getnumerus("days_numerus", 3) . "\n";
-	echo "Days to X-Mas: " . $xl->daystoxmas . "\n";
+	// echo "Days to X-Mas: " . $xl->daystoxmas . "\n";
+	
+	echo "Days: " . $xl->toxmasdays() . "\n";
+	echo "Text to XMas: " . $xl->toxmastext() . "\n";
+	echo "Birthday: ";
+	$dtdiff = $xl->dtdiff(time(), '24.03.'.$xl->year.'0:00');
+	echo "Mein Geburtstag ist in $dtdiff->m Monaten und $dtdiff->d Tagen.\n";
 ?>
 

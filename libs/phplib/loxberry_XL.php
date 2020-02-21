@@ -1,15 +1,17 @@
 <?php
+if( php_sapi_name() !== 'cli' ) {
+	header('Content-Type: text/html; charset=utf-8');
+}
 
 /* Executed on include */
 require_once "loxberry_system.php";
 require_once "loxberry_io.php";
-require_once "phpMQTT/phpMQTT.php";
 
-$LBMSVERSION = "2.0.2.4";
+$LBMSVERSION = "2.0.2.6";
 $LBMSDEBUG = 0;
 
-error_log("LoxBerry XL Version $LBMSVERSION");
-
+error_log("\e[1mLoxBerry XL Version $LBMSVERSION\e[0m");
+// fwrite(STDERR, "\e[1mLoxBerry XL Version $LBMSVERSION\e[0m\n");
 
 
 $ms = LBSystem::get_miniservers();
@@ -18,27 +20,31 @@ if (!is_array($ms))
 {
     error_log("No Miniservers defined, so no Miniserver objects created.");
 } else {
-
-	// Auto-create Miniserver objects
+	// Init Miniserver objects
 	foreach ($ms as $msno => $miniserver)
 	{
 		$objectname = "ms$msno";
 		$$objectname = new miniserver($msno);
-		error_log("Miniserver $msno ({$miniserver['Name']}) accessible by \${$objectname}");
+		error_log("Miniserver $msno ({$miniserver['Name']}) accessible by \e[92m\${$objectname}\e[0m");
 	}
 }
 
+// Init MQTT
 $mqttcreds = mqtt_connectiondetails();
 if( !is_array($mqttcreds) ) 
 {
 	error_log("MQTT Gateway not installed");
 } else {
+	require_once "phpMQTT/phpMQTT.php";
 	$mqtt = new lbmqtt($mqttcreds);
 }
 
+// Init XL class
 $xl = new lbxl();	
-	
 
+	
+// Init sun
+$sun = new lbsun();
 
 
 function clean($inputval) {
@@ -141,7 +147,7 @@ class lbmqtt
 	{
 		$this->mqtt = new Bluerhinos\phpMQTT($this->mqttcreds['brokerhost'],  $this->mqttcreds['brokerport'],$this->_client_id);
 		if( $this->mqtt->connect(true, NULL, $this->mqttcreds['brokeruser'], $this->mqttcreds['brokerpass'] ) ) {
-			error_log("MQTT ({$this->mqttcreds['brokerhost']}) accessible by \$mqtt");
+			error_log("MQTT ({$this->mqttcreds['brokerhost']}) accessible by \e[94m\$mqtt\e[0m");
 		}
 	}
 	
@@ -229,9 +235,6 @@ class lbxl
 	}
 	
 	
-	
-	
-	
 	public function __get($name) { 
         if( method_exists( $this, $name ) ) {
 			return $this->$name();
@@ -242,81 +245,74 @@ class lbxl
 	
 	private function _date($format, $epoch=null)
 	{
-		if( $epoch == null ) {
-			$epoch = time();
-		}
-		return strftime( $format, $epoch );
+		return strftime( $format, self::_evaldate($epoch) );
 	}
-		
 	
 	public function hour($epoch = null) {
-		return (int)$this->_date( '%H', $epoch );
+		return (int)self::_date( '%H', self::_evaldate($epoch) );
 	}
 	public function minute($epoch = null) {
-		return (int)$this->_date( '%M', $epoch );
+		return (int)self::_date( '%M', self::_evaldate($epoch) );
 	}
+	public function minofday($epoch = null) {
+		$epoch = self::_evaldate($epoch);
+		$hour = self::hour($epoch);
+		$min = self::minute($epoch);
+		return (int)($hour*60+$min);
+	}
+		
 	public function day($epoch = null) {
-		return (int)$this->_date( '%e', $epoch );
+		return (int)self::_date( '%e', self::_evaldate($epoch) );
 	}
 	public function month($epoch = null) {
-		return (int)$this->_date( '%m', $epoch );
+		return (int)self::_date( '%m', self::_evaldate($epoch) );
 	}
 	public function year($epoch = null) {
-		return (int)$this->_date( '%Y', $epoch );
+		return (int)self::_date( '%Y', self::_evaldate($epoch) );
 	}
 	public function dayofyear($epoch = null) {
-		return (int)$this->_date( '%j', $epoch );
+		return (int)self::_date( '%j', self::_evaldate($epoch) );
 	}
 	public function weekday($epoch = null) {
-		return (int)$this->_date( '%u', $epoch );
+		return (int)self::_date( '%u', self::_evaldate($epoch) );
 	}
 	public function week($epoch = null) {
-		return (int)$this->_date( '%V', $epoch );
+		return (int)self::_date( '%V', self::_evaldate($epoch) );
 	}
 	public function date($epoch = null) {
-		return $this->_date( '%e.%m.', $epoch );
+		return self::_date( '%e.%m.', self::_evaldate($epoch) );
 	}
 	public function datetext($epoch = null) {
-		return $this->_date( '%e.', $epoch ) . ' ' . $this->monthtext;
+		return self::_date( '%e.', $epoch ) . ' ' . self::monthtext;
 	}
 	public function time($epoch = null) {
-		return $this->_date( '%H:%M', $epoch );
+		return self::_date( '%H:%M', self::_evaldate($epoch) );
 	}
 	public function weekdaytext($epoch = null) {
-		$weekday = $this->weekday($epoch);
+		$weekday = self::weekday(self::_evaldate($epoch));
 		$lang = LBSystem::lblanguage();
-		return $this->weekdays["$lang"][$weekday];
+		return self::weekdays["$lang"][$weekday];
 	}
 	public function monthtext($epoch = null) {
-		$month = $this->month($epoch);
+		$month = self::month(self::_evaldate($epoch));
 		$lang = LBSystem::lblanguage();
-		return $this->months["$lang"][$month];
-	}
-	public function timediff($time1, $time2) {
-		error_log("timediff: Not yet implemented");
+		return self::months["$lang"][$month];
 	}
 	
 	public function dtdiff($time1, $time2) {
-		if( $time1 == (int)$time1 ) {
-			$dt1 = new DateTime("@$time1");
-		} else {
-			$dt1 = DateTime::createFromFormat('d.m.Y H:i', $time1);
-		}
-		
-		if( $time2 == (int)$time2 ) {
-			$dt2 = new DateTime("@$time2");
-		} else {
-			$dt2 = DateTime::createFromFormat('d.m.Y H:i', $time2);
-		}
+		$time1 = self::_evaldate($time1);
+		$time2 = self::_evaldate($time2);
+		$dt1 = new DateTime("@$time1");
+		$dt2 = new DateTime("@$time2");
 		return date_diff($dt1, $dt2);
 	}
 	
 	public function toxmasdays($epoch = null) {
-		return $this->toxmasdt($epoch)->days;
+		return self::toxmasdt(self::_evaldate($epoch))::days;
 	}
 	public function toxmastext($epoch = null) {
 		$lang = LBSystem::lblanguage();
-		$dtdiff = $this->toxmasdt($epoch);
+		$dtdiff = self::toxmasdt(self::_evaldate($epoch));
 		$textarr = array();
 		
 		if($dtdiff->m > 0) {
@@ -338,11 +334,8 @@ class lbxl
 		
 	}
 
-
 	public function toxmasdt($epoch = null) {
-		if( $epoch == null ) {
-			$epoch = time();
-		}
+		$epoch = $this->_evaldate($epoch);
 		$dtnow = new DateTime("@$epoch");
 		$dtxmas = DateTime::createFromFormat('m-d H:i', '12-24 0:00');
 		$dtdiff = date_diff($dtnow, $dtxmas);
@@ -358,9 +351,106 @@ class lbxl
 				break;
 			}
 		}
-		echo "Final key: $key\n";
 		return $this->$numerus[$lang][$key];
 		
 	}
-		
+	 	
+	// Evaluates format of incoming time, and returns an epoch timestamp
+	public function _evaldate($epoch = null) {
+		if( $epoch == null or strtolower($epoch)=='now') {
+			// if empty return current time
+			return time();
+		} elseif( $epoch == (int)$epoch ) {
+			// if input is epoch, return epoch
+			return $epoch;
+		} else {
+			// if input is d.m.y H:i convert to epoch
+			$dt = DateTime::createFromFormat('d.m.Y H:i', $epoch);
+			return $dt->getTimestamp();
+		}
+	}
 }
+
+class lbsun {
+
+	public $sc;
+	public $sunTimes;
+
+	// Init suncalc
+	public function __construct() 
+	{
+		// Nothing to do here
+	}
+
+	public function gps($epoch, $lat = null, $lng = null) {
+		$epoch = lbxl::_evaldate($epoch);
+		require_once("suncalc/suncalc.php");
+		
+		$this->date = new DateTime("@$epoch");
+		if( $lat != null) {
+			$this->lat = $lat;
+		}
+		if( $lng != null) {
+			$this->lng = $lng;
+		}
+		if( $this->lat == null or $this->lng == null ) {
+			error_log( "You need to set GPS coordinates at least once" );
+			exit(0);
+		}
+		
+		$this->sc = new AurorasLive\SunCalc($this->date, $this->lat, $this->lng);
+		$this->sunTimes = null;
+		$this->sunPosition = null;
+	}
+	public function timeformat($format) {
+		$this->format = $format;
+	}
+	
+	// Sun times
+	public function sunTimes($property, $format = null ) {
+		if( !isset($this->sc) ) {
+			error_log( "You first need to set your GPS coordinates with \$sun->gps" );
+			return "No GPS";
+		}
+		if( !isset( $this->sunTimes ) ) {
+			$this->sunTimes = $this->sc->getSunTimes(); 
+		}
+		
+		$epoch = $this->sunTimes[$property]->format('U');
+		return $this->_formattime( $epoch, $format );
+	}
+
+	// Sun position
+	public function sunPosition($property) {
+		if( !isset($this->sc) ) {
+			error_log( "You first need to set your GPS coordinates with \$sun->gps" );
+			return "No GPS";
+		}
+		if( !isset( $this->sunPosition ) ) {
+			$this->sunPosition = $this->sc->getSunPosition($this->date); 
+		}
+		
+		$posrad = $this->sunPosition->$property;
+		$posgrad = rad2deg($posrad);
+		if($property == 'azimuth') {
+			$posgrad+=180;
+		}
+		return $posgrad;
+		
+	}
+
+	private function _formattime($epoch, $format = null) {
+		if( $format == null and isset( $this->format) ) {
+			$format = $this->format;
+		}
+		switch($format) {
+			case 'epoch':
+				return $epoch;
+			case 'time':
+				return lbxl::time($epoch);
+			default:
+				return lbxl::minofday($epoch);
+		}
+	}
+}
+
