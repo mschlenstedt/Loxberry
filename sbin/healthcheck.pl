@@ -1091,7 +1091,6 @@ sub check_miniservers
 			return(\%result);
 		}
 		
-		require Encode;
 		require LWP::UserAgent;
 		my $ua = LWP::UserAgent->new;
 		my $checkurl = 'http://localhost:' . lbwebserverport() . '/admin/system/tools/ajax-check-miniserver.cgi';
@@ -1100,14 +1099,19 @@ sub check_miniservers
 		my @results;
 		
 		foreach my $ms (sort keys %mslist) {
-			print STDERR "check_miniservers: Miniserver Nr. $ms: $mslist{$ms}{Name} IP $mslist{$ms}{IPAddress}.\n";
+			utf8::downgrade( $mslist{$ms}{Admin_RAW} );
+			utf8::downgrade( $mslist{$ms}{Pass_RAW} );
+			
+			# print STDERR "check_miniservers: Miniserver Nr. $ms: $mslist{$ms}{Name} IP $mslist{$ms}{IPAddress}.\n";
+			# print STDERR "check_miniservers:                     $mslist{$ms}{Admin_RAW} $mslist{$ms}{Pass_RAW}.\n";
+			
 			my %post = (
 				"ip" => $mslist{$ms}{IPAddress},
 				"port" => $mslist{$ms}{Port},
 				"preferhttps" => $mslist{$ms}{PreferHttps},
 				"porthttps" => $mslist{$ms}{PortHttps},
-				"user" => Encode::decode_utf8($mslist{$ms}{Admin_RAW}),
-				"pass" => Encode::decode_utf8($mslist{$ms}{Pass_RAW}),
+				"user" => $mslist{$ms}{Admin_RAW},
+				"pass" => $mslist{$ms}{Pass_RAW},
 				"useclouddns" => $mslist{$ms}{UseCloudDNS},
 				"clouddns" => $mslist{$ms}{CloudURL}
 			);
