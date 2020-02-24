@@ -2,6 +2,7 @@
 
 #use CGI;
 use LoxBerry::System;
+use LoxBerry::System::General;
 use JSON;
 use strict;
 no strict 'refs';
@@ -81,29 +82,32 @@ sub performchecks {
 	my ($action) = @_;
 	
 	# Disable checks by general.cfg config variables
-	my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
-	if(is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_ALL'))) {
-		print STDERR "Healthcheck: Healthcheck is globally disabled (general.cfg section [HEALTHCHECK])\n";
+	#my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open( readonly => 1 );
+
+	if( is_enabled($cfg->{Healthcheck}->{Disable_all}) ) {
+		print STDERR "Healthcheck: Healthcheck is globally disabled (general.json section [Healthcheck])\n";
 	}
 		
 	foreach (@checks) {
 		if ($action eq "titles") {
 			push (@results,	&{$_}('title') );
 		} else {
-			if(is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_ALL'))) {
+			if( is_enabled( $cfg->{Healthcheck}->{Disable_all}) ) {
 				my $result = &{$_}('title');
 				$result->{status} = '4';
 				$result->{result} = "All healthchecks are globally disabled in 
-				general.cfg (section HEALTHCHECK)";
+				general.json (section [Healthcheck])";
 				delete $result->{url};
 				push (@results,	$result );
 				next;
 			}
-			if( is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_'.uc($_))) ) {
-				print STDERR "Healthcheck: Healthcheck $_ is disabled (general.cfg section [HEALTHCHECK])\n";
+			if( is_enabled($cfg->{Healthcheck}->{'Disable_'.lc($_)} ) ) {
+				print STDERR "Healthcheck: Healthcheck $_ is disabled (general.json section [Healthcheck])\n";
 				my $result = &{$_}('title');
 				$result->{status} = '4';
-				$result->{result} = "This check is disabled in general.cfg (section HEALTHCHECK)";
+				$result->{result} = "This check is disabled in general.json (section [Healthcheck])";
 				delete $result->{url};
 				push (@results,	$result );
 				next;
@@ -1076,6 +1080,7 @@ sub check_miniservers
 	}
 
 	eval {
+	
 		# print STDERR "get_miniservers\n";
 		my %mslist = LoxBerry::System::get_miniservers();
   
@@ -1086,7 +1091,7 @@ sub check_miniservers
 			return(\%result);
 		}
 		
-		# print STDERR "Init LWP::UserAgent\n";
+		require Encode;
 		require LWP::UserAgent;
 		my $ua = LWP::UserAgent->new;
 		my $checkurl = 'http://localhost:' . lbwebserverport() . '/admin/system/tools/ajax-check-miniserver.cgi';
@@ -1094,23 +1099,26 @@ sub check_miniservers
 		$result{status} = "5";
 		my @results;
 		
-		# print STDERR "Start loop\n";
 		foreach my $ms (sort keys %mslist) {
-			
-			# print STDERR "Miniserver Nr. $ms: $mslist{$ms}{Name} IP $mslist{$ms}{IPAddress}.";
+			print STDERR "check_miniservers: Miniserver Nr. $ms: $mslist{$ms}{Name} IP $mslist{$ms}{IPAddress}.\n";
 			my %post = (
 				"ip" => $mslist{$ms}{IPAddress},
 				"port" => $mslist{$ms}{Port},
 				"preferhttps" => $mslist{$ms}{PreferHttps},
 				"porthttps" => $mslist{$ms}{PortHttps},
-				"user" => $mslist{$ms}{Admin_RAW},
-				"pass" => $mslist{$ms}{Pass_RAW}
+				"user" => Encode::decode_utf8($mslist{$ms}{Admin_RAW}),
+				"pass" => Encode::decode_utf8($mslist{$ms}{Pass_RAW}),
+				"useclouddns" => $mslist{$ms}{UseCloudDNS},
+				"clouddns" => $mslist{$ms}{CloudURL}
 			);
-			my $response = $ua->post( $checkurl, \%post );
+			
+			my $response = $ua->post( $checkurl, Content => \%post );
+			
 			if ($response->is_error) {
 				die("Could not query data (stopped at MS $mslist{$ms}{Name}: " . $response->status_line);
 			}
 			my $data = decode_json($response->decoded_content);
+			
 			my $label = is_enabled( $mslist{$ms}{PreferHttps} ) ? "https" : "http";
 			if($data->{$label}->{success} eq "1") {
 				push @results, "$mslist{$ms}{Name} OK";

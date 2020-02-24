@@ -12,6 +12,17 @@ my %jout;
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
+# my %headers = map { $_ => $cgi->http($_) } $cgi->http();
+# print STDERR "ajax-check-miniserver.cgi RECEIVING HEADERS:\n";
+# for my $header ( keys %headers ) {
+    # print STDERR "$header: $headers{$header}\n";
+# }
+# print STDERR "Received POSTDATA:\n";
+# my @postdata = $cgi->param;
+# for my $param ( @postdata ) {
+    # print STDERR "$param: " . $cgi->param($param) . "\n";
+# }
+
 $R::user = uri_escape($R::user);
 $R::pass = uri_escape($R::pass);
 
