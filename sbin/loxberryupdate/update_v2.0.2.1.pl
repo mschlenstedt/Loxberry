@@ -14,6 +14,7 @@ LOGINF "Updating yarn public key...";
 `wget -O /tmp/yarnpkg.gpg.pub https://dl.yarnpkg.com/debian/pubkey.gpg`;
 `apt-key add /tmp/yarnpkg.gpg.pub`;
 
+apt_install("libhash-merge-perl");
 
 
 
