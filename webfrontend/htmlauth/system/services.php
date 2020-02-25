@@ -39,7 +39,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "2.0.0.4";
+$version = "2.0.2.1";
 
 $sversion = LBSystem::lbversion();
 
@@ -158,6 +158,9 @@ function form() {
 	
 	$navbar[1]['Name'] = $SL['SERVICES.TITLE_PAGE_WATCHDOG'];
 	$navbar[1]['URL'] = 'services_watchdog.cgi';
+	
+	$navbar[4]['Name'] = $SL['HEADER.PANEL_TIMESERVER'];
+	$navbar[4]['URL'] = 'services_timeserver.cgi';
 	
 	$navbar[5]['Name'] = "Samba (SMB)";
 	$navbar[5]['URL'] = 'services_samba.cgi';

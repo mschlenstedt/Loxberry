@@ -77,7 +77,7 @@ our $grepbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.2.1";
 
 $cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -103,6 +103,23 @@ my $maintemplate = HTML::Template->new(
 			);
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
+
+# Navbar
+our %navbar;
+$navbar{0}{Name} = "$SL{'SERVICES.TITLE_PAGE_WEBSERVER'}";
+$navbar{0}{URL} = 'services.php?load=1';
+$navbar{1}{Name} = "$SL{'SERVICES.TITLE_PAGE_WATCHDOG'}";
+$navbar{1}{URL} = 'services_watchdog.cgi';
+$navbar{4}{Name} = "$SL{'HEADER.PANEL_TIMESERVER'}";
+$navbar{4}{URL} = 'services_timeserver.cgi';
+$navbar{5}{Name} = "Samba (SMB)";
+$navbar{5}{URL} = 'services_samba.cgi';
+$navbar{4}{active} = 1;
+
+$navbar{50}{Name} = "$SL{'SERVICES.TITLE_PAGE_OPTIONS'}";
+$navbar{50}{URL} = 'services.php?load=3';
+
+
 
 #########################################################################
 # Parameter

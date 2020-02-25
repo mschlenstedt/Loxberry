@@ -19,11 +19,8 @@
 # Modules
 ##########################################################################
 use LoxBerry::Web;
-# use LoxBerry::Log;
 
 use CGI qw/:standard/;
-# use LWP::UserAgent;
-# use CGI::Session;
 use warnings;
 use strict;
 
@@ -51,12 +48,10 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/general.json" || -z "$lb
 }
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.2.1";
 
 my $sversion = LoxBerry::System::lbversion();
 
-my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
-my %Config = $cfg->vars();
 my $bins = LoxBerry::System::get_binaries();
 my $sudobin = $bins->{SUDO};
 
@@ -101,7 +96,6 @@ our $maintemplate = HTML::Template->new(
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
-				associate => $cfg,
 				%htmltemplate_options,
 				#debug => 1,
 				#stack_debug => 1,
@@ -140,12 +134,6 @@ sub mainmenu {
 	$navbar{2}{Name} = $SL{'HEADER.TITLE_PAGE_SYSTEM'};
 	$navbar{2}{URL} = "/admin/system/index.cgi?form=system";
 
-	# $navbar{2}{notifyBlue} = 2;
-	# $navbar{2}{notifyRed} = 3;
-	
-#	$navbar{2}{notifyBlue} = $notification_allerrors == 0 && $notification_alloks != 0 ? $notification_alloks : undef;
-#	$navbar{2}{notifyRed} = $notification_allerrors != 0 ? ($notification_allerrors+$notification_alloks)  : undef;
-
 	if (!$R::form || $R::form ne "system") {
 		# Get Plugins from plugin database
 		@plugins = LoxBerry::System::get_plugins();
@@ -154,20 +142,16 @@ sub mainmenu {
 
 	} else {
 		$helptemplate = "help_index_system.html";
+
 		# Create SYSTEM widget list
 		# Prepare System Date Time for Love Clock
-		our $systemdatetime = time()*1000;
-		(our $sec, our $min, our $hour, our $mday, our $mon, our $year, our $wday, our $yday, our $isdst) = localtime();
-		our $systemdate = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
-		$maintemplate->param( 	'SEC' => $sec,
-								'MIN' => $min,
-								'HOUR' => $hour
-							);
-		
-		
-		# print STDERR "Index: Update Errors: $notification_errors{'updates'} \n";
-		# print STDERR "Index: Update Infos: $notification_oks{'updates'} \n";
-		
+		# our $systemdatetime = time()*1000;
+		# (our $sec, our $min, our $hour, our $mday, our $mon, our $year, our $wday, our $yday, our $isdst) = localtime();
+		# our $systemdate = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
+		# $maintemplate->param( 	'SEC' => $sec,
+								# 'MIN' => $min,
+								# 'HOUR' => $hour
+		# );
 		
 		$maintemplate->param('WIDGETS' => [
 			{ 
@@ -188,13 +172,13 @@ sub mainmenu {
 				WIDGET_CGI => "/admin/system/miniserver.cgi",
 				NOTIFY_PACKAGE => "miniserver",
 			},
-			{
-				WIDGET_TITLE => $SL{'HEADER.PANEL_TIMESERVER'},
-				WIDGET_ICON => "/system/images/icons/blank_64.png",
-				WIDGET_CGI => "/admin/system/timeserver.cgi",
-				NOTIFY_PACKAGE => "timeserver",
-				WIDGET_CLOCK => 1
-			},
+			# {
+				# WIDGET_TITLE => $SL{'HEADER.PANEL_TIMESERVER'},
+				# WIDGET_ICON => "/system/images/icons/blank_64.png",
+				# WIDGET_CGI => "/admin/system/timeserver.cgi",
+				# NOTIFY_PACKAGE => "timeserver",
+				# WIDGET_CLOCK => 1
+			# },
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_NETWORK'},
 				WIDGET_ICON => "/system/images/icons/main_network.png",
@@ -290,7 +274,6 @@ sub mainmenu {
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'};
 	LoxBerry::Web::head($template_title);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . " <span class='hint'>V$sversion</span>";
-	
 
 	if (!$R::form || $R::form ne "system") {
 		$navbar{1}{active} = 1;
