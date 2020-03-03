@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2017-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 ##########################################################################
 
 use LoxBerry::System;
+use LoxBerry::System::General;
 use LoxBerry::Web;
 use LoxBerry::Log;
 use Time::Piece;
@@ -28,9 +29,9 @@ use Time::Piece;
 use CGI::Carp qw(fatalsToBrowser);
 #use CGI qw/:standard/;
 use CGI;
-use Config::Simple;
-use File::HomeDir;
-use File::Path qw(make_path remove_tree);
+# use Config::Simple;
+# use File::HomeDir;
+# use File::Path qw(make_path remove_tree);
 use warnings;
 use strict;
 
@@ -40,7 +41,6 @@ use strict;
 
 my $helpurl = "https://www.loxwiki.eu/x/V4gKAw";
 my $helptemplate = "help_updates.html";
-
 my $lbulogfiledir = "$lbslogdir/loxberryupdate";
 my $lbuchecklogfiledir = "$lbhomedir/log/system_tmpfs/loxberryupdate";
 
@@ -75,12 +75,14 @@ our $rebootbin;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.2.1";
 
 my $bins = LoxBerry::System::get_binaries();
 $sversion = LoxBerry::System::lbversion();
 
-$cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
+# $cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
+my $jsonobj = LoxBerry::System::General->new();
+my $cfg = $jsonobj->open();
 
 $unzipbin        = $bins->{UNZIP};
 $chmodbin        = $bins->{CHMOD};
@@ -125,7 +127,7 @@ our $maintemplate = HTML::Template->new(
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
-				associate => $cfg,
+				associate => $jsonobj,
 				%htmltemplate_options,
 				);
 
@@ -462,21 +464,9 @@ exit;
 
 sub lbupdates
 {
-	# our $maintemplate = HTML::Template->new(
-				# filename => "$lbstemplatedir/updates.html",
-				# global_vars => 1,
-				# loop_context_vars => 1,
-				# die_on_bad_params=> 0,
-				# associate => $cfg,
-				# #debug => 1,
-				# #stack_debug => 1,
-				# %htmltemplate_options,
-				# );
-
 
 	# TMPL_IF use "lbupdate"
 	$maintemplate->param( "lbupdate", 1);
-	# my %SL = LoxBerry::System::readlanguage($maintemplate);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
 	# Releasetype
@@ -489,7 +479,7 @@ sub lbupdates
 			-name      => 'option-releasetype',
 			-values  => ['release', 'prerelease', 'latest'],
 			-labels  => \%labels,
-			-default => $cfg->param('UPDATE.RELEASETYPE')
+			-default => $cfg->{Update}->{Releasetype}
 		);
 	$maintemplate->param("RELEASETYPE_RADIO", $releasetype_radio);
 	
@@ -502,7 +492,7 @@ sub lbupdates
 			-name    => 'option-installtype',
 			-values  => ['install', 'notify', 'disable'],
 			-labels  => \%labels,
-			-default => $cfg->param('UPDATE.INSTALLTYPE'),
+			-default => $cfg->{Update}->{Installtype}
 		);
 	$maintemplate->param("INSTALLTYPE_RADIO", $installtype_radio);
 	
@@ -514,7 +504,7 @@ sub lbupdates
 			-name    => 'option-installtime',
 			-values  => ['1', '7', '30'],
 			-labels  => \%labels,
-			-default => $cfg->param('UPDATE.INTERVAL')
+			-default => $cfg->{Update}->{Interval}
 		);
 	$maintemplate->param("INSTALLTIME_RADIO", $installtime_radio);
 	

@@ -5,7 +5,7 @@ use LoxBerry::JSON;
 use Config::Simple;
 use URI::Escape;
 
-my $version = "2.0.2.1";
+my $version = "2.0.2.2";
 
 my $lbsconfigdir = $ENV{'LBSCONFIG'};	
 if (! $lbsconfigdir ) {
@@ -78,11 +78,11 @@ sub migrate_update
 	$u->{Releasetype} = $cfg{'UPDATE.RELEASETYPE'};
 	$u->{Installtype} = $cfg{'UPDATE.INSTALLTYPE'};
 	$u->{Latestsha} = $cfg{'UPDATE.LATESTSHA'};
-	$u->{Failedscript} = $cfg{'UPDATE.FAILED_SCRIPT'};
-	$u->{Branch} = $cfg{'UPDATE.BRANCH'};
-	$u->{Dryrun} = $cfg{'UPDATE.DRYRUN'};
-	$u->{Keepupdatefiles} = $cfg{'UPDATE.KEEPUPDATEFILES'};
-	$u->{Keepinstallfiles} = $cfg{'UPDATE.KEEPINSTALLFILES'};
+	$u->{Failedscript} = $cfg{'UPDATE.FAILED_SCRIPT'} if( !defined $u->{Failedscript} );
+	$u->{Branch} = $cfg{'UPDATE.BRANCH'} if( !defined $u->{Branch} );
+	$u->{Dryrun} = $cfg{'UPDATE.DRYRUN'} if( !defined $u->{Dryrun} );
+	$u->{Keepupdatefiles} = $cfg{'UPDATE.KEEPUPDATEFILES'} if( !defined $u->{Keepupdatefiles} );
+	$u->{Keepinstallfiles} = $cfg{'UPDATE.KEEPINSTALLFILES'} if( !defined $u->{Keepinstallfiles} );
 	$json->{Update} = $u;
 }
 
@@ -129,17 +129,18 @@ sub migrate_ssdp
 
 sub migrate_timeserver
 {
-	## Migrating Timeserver
+	## Migrating [TIMESERVER]
 	my $ts;
 	$ts->{Method} = $cfg{'TIMESERVER.METHOD'};
     $ts->{Ntpserver} = $cfg{'TIMESERVER.SERVER'};
     $ts->{Timemsno} = 1;
     $ts->{Timezone} = $cfg{'TIMESERVER.ZONE'};
+	$json->{Timeserver} = $ts;
 }
 
 sub migrate_miniserver
 {
-	## Migrating Miniserver
+	## Migrating [MINISERVER]
 	# We duplicate code from LoxBerry::System::read_generalcfg
 	my $miniservercount = $cfg{'BASE.MINISERVERS'};
 	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
@@ -151,7 +152,7 @@ sub migrate_miniserver
 		$ms->{Pass} = $cfg{"MINISERVER$msnr.PASS"};
 		$ms->{Pass_raw} = URI::Escape::uri_unescape($ms->{Pass});
 		$ms->{Credentials} = $ms->{Admin} . ':' . $ms->{Pass};
-		$ms->{Credentials_raw} = $ms->{Admin_RAW} . ':' . $ms->{Pass_RAW};
+		$ms->{Credentials_raw} = $ms->{Admin_raw} . ':' . $ms->{Pass_raw};
 		$ms->{Note} = $cfg{"MINISERVER$msnr.NOTE"};
 		$ms->{Port} = $cfg{"MINISERVER$msnr.PORT"};
 		$ms->{Porthttps} = $cfg{"MINISERVER$msnr.PORTHTTPS"};

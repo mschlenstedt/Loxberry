@@ -8,7 +8,7 @@ use LoxBerry::System;
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "2.0.2.3"; # Version of this script
+my $version = "2.0.2.4"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -207,7 +207,7 @@ sub lbupdate
 	
 	if ($action eq 'lbupdate-reltype') {
 		if ($value eq 'release' || $value eq 'prerelease' || $value eq 'latest') { 
-			change_generalcfg('UPDATE.RELEASETYPE', $value);
+			change_generaljson('Update->Releasetype', $value);
 			$response{error} = 0;
 			$response{message} = "Changed release type to $value";
 		}
@@ -228,7 +228,7 @@ sub lbupdate
 			}
 		}
 		if ($value eq 'disable' || $value eq 'notify' || $value eq 'install') { 
-			my $ret = change_generalcfg('UPDATE.INSTALLTYPE', $value);
+			my $ret = change_generaljson('Update->Installtype', $value);
 			if (!$ret) {
 				$response{error} = 1;
 				$response{message} = "Error changing lbupdate-installtype";
@@ -252,7 +252,7 @@ sub lbupdate
 			} elsif ($value eq '30') {
 				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/loxberryupdate_cron";
 			}
-			my $ret = change_generalcfg('UPDATE.INTERVAL', $value);
+			my $ret = change_generaljson('Update->Interval', $value);
 			if (!$ret) {
 				$response{error} = 1;
 				$response{message} = "Error changing lbupdate-installtime";

@@ -4,7 +4,7 @@
 # Parameters
 #	release		
 #		{version} This is the destination version number, e.g. 0.3.2
-#		config 	  Reads the version from the destination general.cfg
+#		config 	  Reads the version from the destination general.json
 #
 #	updatedir		
 #		{path}   This is the location of the extracted update. Don't use a training slash. 
@@ -30,7 +30,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='2.0.0.1';
+my $scriptversion='2.0.2.1';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -49,6 +49,8 @@ my $sha;
 my $syscfg;
 my $failed_script;
 my $stop_script_processing_version;
+my $jsonobj;
+my $jsoncfg;
 
 my $cgi = CGI->new;
 
@@ -149,8 +151,8 @@ if (!$updatedir) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
-if (! -e "$updatedir/config/system/general.cfg.default" && ! -e "$updatedir/config/system/general.cfg") {
-	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg or general.cfg.default in correct path).";
+if (! -e "$updatedir/config/system/general.cfg" && ! -e "$updatedir/config/system/general.json") {
+	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg or general.json in correct path).";
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit (1);
@@ -172,9 +174,14 @@ if (!$release) {
 }
 
 if ($release eq "config") {
-	my $newcfg = new Config::Simple("$updatedir/config/system/general.cfg.default");
-	$release = $newcfg->param('BASE.VERSION');
-	LOGINF "Version parameter 'config' was given, destination version is read from new general.cfg.default (version $release).";
+	
+	# general.json.default
+	$jsonobj = LoxBerry::JSON->new();
+	$jsoncfg = $jsonobj->open(filename => "$updatedir/config/system/general.json.default");
+	$release = $jsoncfg->{Base}->{Version};
+	LOGINF "Version parameter 'config' was given, destination version is read from new general.json.default (version $release).";
+	undef $jsonobj;
+	
 } else {
 	LOGINF "Version parameter '$release' was given, destination version is $release.";
 }
@@ -311,14 +318,25 @@ while (my $file = readdir(DIR)) {
 closedir DIR;
 @updatelist = sort { version->parse($a) <=> version->parse($b) } @updatelist;
 
-LOGINF "Reading current update script fail state from general.cfg...";
-$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
-if (! $syscfg->param('UPDATE.FAILED_SCRIPT')) {
-	LOGOK "All previously executed update scripts were successful.";
+LOGINF "Reading current update script fail state from general configuration...";
+$jsonobj = LoxBerry::JSON->new();
+$jsoncfg = $jsonobj->open(filename => "$lbsconfigdir/general.json", readonly => 1);
+if( defined $jsoncfg->{Update}->{Failedscript} ) {
+	$failed_script = $jsoncfg->{Update}->{Failedscript};
 } else {
-	$failed_script = version->parse(vers_tag($syscfg->param('UPDATE.FAILED_SCRIPT')));
-	LOGWARN "In a previous run of LoxBerry Update this update script failed: $failed_script. LoxBerry Update will continue. Please check the logfiles of previous updates for errors.";
+	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+	if (defined $syscfg->param('UPDATE.FAILED_SCRIPT')) {
+		$failed_script = $syscfg->param('UPDATE.FAILED_SCRIPT');
+	}
 }
+
+if( $failed_script ) {
+	$failed_script = version->parse(vers_tag($failed_script));
+	LOGWARN "In a previous run of LoxBerry Update this update script failed: $failed_script. LoxBerry Update will continue. Please check the logfiles of previous updates for errors.";
+} else {
+	LOGOK "All previously executed update scripts were successful.";
+}
+undef $jsonobj;
 undef $syscfg;
 
 LOGINF "Running update scripts...";
@@ -384,7 +402,7 @@ foreach my $version (@updatelist)
 				$scripterrskipped++;
 			} 
 			
-			# Stop script processing, set version in general.cfg
+			# Stop script processing, set version in general.json
 			if ($exitcode == 250 or $exitcode == 251) {
 				$stop_script_processing_version = version->parse(vers_tag($version));
 				$release = $version;
@@ -399,24 +417,37 @@ foreach my $version (@updatelist)
 			
 			# Set failed_script because of script error
 			if (!$failed_script and $exitcode != 250) {
-				LOGINF "Setting update script update_$version as failed in general.cfg.";
+				LOGINF "Setting update script update_$version as failed in general configuration.";
 				$failed_script = version->parse(vers_tag($version));
-				$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
-				$syscfg->param('UPDATE.FAILED_SCRIPT', "$failed_script");
-				$syscfg->write();
-				undef $syscfg;
+				$jsonobj = LoxBerry::JSON->new();
+				$jsoncfg = $jsonobj->open(filename => "$lbsconfigdir/general.json");
+				$jsoncfg->{Update}->{Failedscript} = "$failed_script";
+				$jsonobj->write();
+				undef $jsonobj;
+				# $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+				# $syscfg->param('UPDATE.FAILED_SCRIPT', "$failed_script");
+				# $syscfg->write();
+				# undef $syscfg;
 			}
 			
 			if ($lowdiskspace or $stop_script_processing_version) {
 				last;
 			}
 		} elsif ($failed_script && version->parse($version) eq "$failed_script") {
-			LOGOK "Previously failed script now finished successfully. Removing failed script version from general.cfg";
+			LOGOK "Previously failed script now finished successfully. Removing failed script version from general configuration";
 			undef $failed_script;
+			
 			$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
 			$syscfg->delete('UPDATE.FAILED_SCRIPT');
 			$syscfg->write();
 			undef $syscfg;
+			
+			$jsonobj = LoxBerry::JSON->new();
+			$jsoncfg = $jsonobj->open(filename => "$lbsconfigdir/general.json");
+			delete $jsoncfg->{Update}->{Failedscript} if (defined $jsoncfg->{Update}->{Failedscript});
+			$jsonobj->write();
+			undef $jsonobj;
+			
 		}
 		# Should we remember, if exec failed? I think no.
 	} else {
@@ -474,21 +505,33 @@ if ($exitcode != 0 ) {
 
 LOGINF "LoxBerry's config version is updated from $currversion to $release";
 LOGINF "Commit SHA is updated to $sha" if ($sha);
-# Last but not least set the general.cfg to the new version.
+# Last but not least set the general.json to the new version.
 if (! $cgi->param('dryrun') ) {
-	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
-		do {
-			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error(); 
-			$errskipped++;
-			};
-	$syscfg->param('BASE.VERSION', vers_tag("$release", 1));
-	$syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
-	$syscfg->save() or 
-		do {
-			LOGERR "Cannot write to general.cfg. Error: " . $syscfg->error(); 
-			$errskipped++;
-			};
+	
+	# $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
+		# do {
+			# LOGERR "Cannot open general.cfg. Error: " . $syscfg->error(); 
+			# $errskipped++;
+			# };
+	# $syscfg->param('BASE.VERSION', vers_tag("$release", 1));
+	# $syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
+	# $syscfg->save() or 
+		# do {
+			# LOGERR "Cannot write to general.cfg. Error: " . $syscfg->error(); 
+			# $errskipped++;
+			# };
+	$jsonobj = LoxBerry::JSON->new();
+	$jsoncfg = $jsonobj->open(filename => "$lbsconfigdir/general.json");
+	if(!defined $jsoncfg) {
+		LOGERR "Cannot open general.json.";
+		$errskipped++;
+	} else {
+		$jsoncfg->{Base}->{Version} = vers_tag("$release", 1);
+		$jsoncfg->{Update}->{Latestsha} = "$sha" if ($sha);
+		$jsonobj->write();
 	}
+
+}
 
 # Finished. 
 
