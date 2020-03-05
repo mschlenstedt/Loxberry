@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.2.4";
+my $version = "2.0.2.5";
 
 # Globals
 my @results;
@@ -463,7 +463,6 @@ sub exec_plugincheck
 	
 	# Extract pluginfolder from checkname
 	my $pluginfolder = substr( $checkname, 12);
-	# print STDERR "Pluginfolder: $pluginfolder\n";
 	
 	# Get Plugin name
 	my $plugin = LoxBerry::System::plugindata($pluginfolder);
@@ -480,14 +479,22 @@ sub exec_plugincheck
 	} else {
 		$check_filename .= " check";
 	}
-	
-	# print STDERR "Execute $check_filename\n";
-	
+		
 	my ($exitcode, $output) = execute( $check_filename );
 	
-	# print STDERR "Exitcode: $exitcode Output: $output\n";
-	
-	($result{desc}, $result{status}, $result{result}) = split( /\n/, $output );
+	my $json;
+	eval {
+		$json = from_json( $output );
+	}; 
+	if ($@) {
+		# Is plain
+		($result{desc}, $result{status}, $result{result}) = split( /\n/, $output );
+	} else {
+		# Is json
+		$result{desc} = $json->{desc};
+		$result{status} = $json->{status};
+		$result{result} = $json->{result};
+	}
 	
 	if( $action eq 'title' ) {
 		delete $result{status};
