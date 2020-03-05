@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.2.3";
+my $version = "2.0.2.4";
 
 # Globals
 my @results;
@@ -40,6 +40,14 @@ push (@checks, "check_miniservers");
 push (@checks, "check_reboot_required");
 push (@checks, "check_loglevels");
 
+# Get plugin healthchecks
+my @plugins = LoxBerry::System::get_plugins();
+foreach( @plugins ) {
+	if( -x "$lbhomedir/bin/plugins/$_->{PLUGINDB_FOLDER}/healthcheck" ) {
+		push( @checks, "plugincheck_".$_->{PLUGINDB_FOLDER} );
+	}
+}
+
 # Default action is check
 if (!$opts{action}) {
 	$opts{action} = 'check';
@@ -56,7 +64,7 @@ if (!exists &{$opts{output}}) {
 
 # Only one check is requested
 if ($opts{check}) { 
-	if (!exists &{$opts{check}}) {
+	if ( ! grep { /$opts{check}/ } @checks ) {
 		print "The healthcheck \"$opts{check}\" does not exist.\n";
 		exit 1;
 	}
@@ -97,11 +105,24 @@ sub performchecks {
 	}
 		
 	foreach (@checks) {
+		# Eval if internal or plugin check
+		my $_isplugin;
+		if( begins_with( $_, 'plugincheck_' ) ) {
+			
+			$_isplugin = 1;
+		}
+		
 		if ($action eq "titles") {
-			push (@results,	&{$_}('title') );
+			if( $_isplugin ) {
+				push (@results, exec_plugincheck( $_, 'title' ));
+			} else {
+				push (@results,	&{$_}('title') );
+			}
+		
 		} else {
 			if( is_enabled( $cfg->{Healthcheck}->{Disable_all}) ) {
-				my $result = &{$_}('title');
+				my $result = &{$_}('title') if( !$_isplugin );
+				my $result = exec_plugincheck( $_, 'title' ) if( $_isplugin );
 				$result->{status} = '4';
 				$result->{result} = "All healthchecks are globally disabled in 
 				general.json (section [Healthcheck])";
@@ -111,14 +132,16 @@ sub performchecks {
 			}
 			if( is_enabled($cfg->{Healthcheck}->{'Disable_'.lc($_)} ) ) {
 				print STDERR "Healthcheck: Healthcheck $_ is disabled (general.json section [Healthcheck])\n";
-				my $result = &{$_}('title');
+				my $result = &{$_}('title') if( !$_isplugin );
+				my $result = exec_plugincheck( $_, 'title' ) if( $_isplugin );
 				$result->{status} = '4';
 				$result->{result} = "This check is disabled in general.json (section [Healthcheck])";
 				delete $result->{url};
 				push (@results,	$result );
 				next;
 			}
-			push (@results,	&{$_}() );
+			push (@results,	&{$_}() ) if( !$_isplugin );
+			push (@results,	exec_plugincheck( $_ )) if( $_isplugin );
 		}
 	}
 	return(@results);
@@ -429,6 +452,55 @@ sub parse_options
 		}
 		$opts{$key} = $value;
 	}
+}
+
+sub exec_plugincheck
+{
+	my %result;
+	my ($checkname, $action) = @_;
+	
+	$result{'sub'} = $checkname;
+	
+	# Extract pluginfolder from checkname
+	my $pluginfolder = substr( $checkname, 12);
+	# print STDERR "Pluginfolder: $pluginfolder\n";
+	
+	# Get Plugin name
+	my $plugin = LoxBerry::System::plugindata($pluginfolder);
+	my $pluginname = $plugin->{PLUGINDB_TITLE};
+	$result{'title'} = 'Plugin ' . $pluginname;
+	my $check_filename = "$lbhomedir/bin/plugins/$pluginfolder/healthcheck";
+	
+	if( ! -x $check_filename ) {
+		return \%result;
+	}
+	
+	if( $action eq 'title' ) {
+		$check_filename .= " title";
+	} else {
+		$check_filename .= " check";
+	}
+	
+	# print STDERR "Execute $check_filename\n";
+	
+	my ($exitcode, $output) = execute( $check_filename );
+	
+	# print STDERR "Exitcode: $exitcode Output: $output\n";
+	
+	($result{desc}, $result{status}, $result{result}) = split( /\n/, $output );
+	
+	if( $action eq 'title' ) {
+		delete $result{status};
+		delete $result{result};
+	} else {
+		my @allowed = ( '0', '3', '4', '5', '6' );
+		if ( ! grep { /$result{status}/ } @allowed ) {
+			$result{status} = 0;
+		}
+	}
+	
+	return (\%result);
+
 }
 
 
