@@ -3,11 +3,12 @@
 #use CGI;
 use LoxBerry::System;
 use LoxBerry::System::General;
+use LoxBerry::IO;
 use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.2.2";
+my $version = "2.0.2.3";
 
 # Globals
 my @results;
@@ -74,6 +75,11 @@ elsif ($opts{action} eq "check") {
 
 # Output
 &{$opts{output}}(@results);
+
+# Send to MQTT broker if MQTT Gateway is installed
+if( $opts{action} eq 'check' ) {
+	outputmqtt(@results);
+}
 
 exit;
 
@@ -182,6 +188,85 @@ sub text {
 
 }
 
+# Sub: Output to mqtt
+sub outputmqtt
+{
+	my (@results) = @_;
+	
+	# First check if MQTT Gateway plugin is installed
+	my $mqttcred = LoxBerry::IO::mqtt_connectiondetails();
+	if( ! defined $mqttcred ) {
+		return;
+	}
+	
+	my %respobj;
+	$respobj{'unknown'} = 0;
+	$respobj{'errors'} = 0;
+	$respobj{'warnings'} = 0;
+	$respobj{'ok'} = 0;
+	$respobj{'infos'} = 0;
+	
+	
+	
+	my $hostname = LoxBerry::System::lbhostname();
+	# Truncate to short name (not FQDN)
+	my $dotpos = index( $hostname, '.' ); 
+	if( $dotpos != -1 ) {
+		$hostname = substr( $hostname, 0, $dotpos );
+	}
+	my $basetopic = "$hostname/healthcheck/";
+
+	require Net::MQTT::Simple;
+	# Allow unencrypted connection with credentials
+	$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
+	 
+	# Connect to broker
+	my $mqtt = Net::MQTT::Simple->new($mqttcred->{brokeraddress});
+	if(! $mqtt) {
+		return;
+	}
+	
+	# Depending if authentication is required, login to the broker
+	if($mqttcred->{brokeruser}) {
+		$mqtt->login($mqttcred->{brokeruser}, $mqttcred->{brokerpass});
+	}
+	
+	# Publish healthcheck as json
+	foreach my $check (@results) {
+		my %output;
+		# print "Sub: $check->{sub}\n";
+		# print "Title: $check->{title}\n";
+		# print "Status: ";
+		
+		$output{status} = $check->{status};
+		
+		if( ! $check->{status} ) {
+			$output{statustext} = "UNKNOWN";
+		} elsif ($check->{status} eq "3") {
+			$output{statustext} = "ERROR";
+		} elsif ($check->{status} eq "4") {
+			$output{statustext} = "WARNING";
+		} elsif ($check->{status} eq "5") {
+			$output{statustext} = "OK";
+		} elsif ($check->{status} eq "6") {
+			$output{statustext} = "Info";
+		}
+		$output{result} = $check->{result};
+		
+		# publish retained
+		my $fulltopic = "$basetopic"."$check->{title}";
+		my $data = encode_json(\%output);
+		# print STDERR "MQTT publish: $fulltopic\n$data\n";
+		$mqtt->retain( $fulltopic, $data );
+	}
+	
+	# Publish summary
+	my %summary = get_summary(@results);
+	$mqtt->retain( $basetopic."summary", encode_json( \%summary ) );
+	$mqtt->disconnect();
+}
+
+
 sub notification
 {
 	require LoxBerry::Log;
@@ -195,32 +280,7 @@ sub notification
 	
 	my (@results) = @_;
 	
-	$respobj{'unknown'} = 0;
-	$respobj{'errors'} = 0;
-	$respobj{'warnings'} = 0;
-	$respobj{'ok'} = 0;
-	$respobj{'infos'} = 0;
-		
-	# Loop the checks and check if a notification exists
-	foreach my $element (@results) {
-		#print STDERR $element->{status} . "\n";
-		if(! $element->{status}) {
-			$respobj{'errors'}++;
-			$respobj{'unknown'}++;
-		} elsif ( $element->{status} eq "3" ) {
-			$respobj{'errors'}++;
-			$respobj{'errorstrings'} .= " " . $element->{result};
-		} elsif ( $element->{status} eq "4" ) {
-			$respobj{'warnings'}++;
-		} elsif ( $element->{status} eq "5" ) {
-			$respobj{'ok'}++;
-		} elsif ( $element->{status} eq "6" ) {
-			$respobj{'infos'}++;
-		} else {
-			$respobj{'errors'}++;
-			$respobj{'unknown'}++;
-		}
-	}	
+	%respobj = get_summary(@results);
 	
 	# Get last notification of the widget $not_helper
 	my %notif;
@@ -319,6 +379,42 @@ sub notification
 	}
 }
 
+sub get_summary
+{
+	my (@results) = @_;
+	my %respobj;
+	$respobj{'unknown'} = 0;
+	$respobj{'errors'} = 0;
+	$respobj{'warnings'} = 0;
+	$respobj{'ok'} = 0;
+	$respobj{'infos'} = 0;
+		
+	# Loop the checks and check if a notification exists
+	foreach my $element (@results) {
+		#print STDERR $element->{status} . "\n";
+		if(! $element->{status}) {
+			$respobj{'errors'}++;
+			$respobj{'unknown'}++;
+		} elsif ( $element->{status} eq "3" ) {
+			$respobj{'errors'}++;
+			$respobj{'errorstrings'} .= " " . $element->{result};
+		} elsif ( $element->{status} eq "4" ) {
+			$respobj{'warnings'}++;
+		} elsif ( $element->{status} eq "5" ) {
+			$respobj{'ok'}++;
+		} elsif ( $element->{status} eq "6" ) {
+			$respobj{'infos'}++;
+		} else {
+			$respobj{'errors'}++;
+			$respobj{'unknown'}++;
+		}
+	}	
+	$respobj{'lastupdateepoch'} = time;
+	$respobj{'lastupdate'} = LoxBerry::System::currtime('hr');
+	
+	return %respobj;
+
+}
 
 sub parse_options
 {
