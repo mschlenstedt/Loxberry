@@ -135,12 +135,12 @@ if (!$nodiscspacecheck) {
 		exit (1);
 	}
 }
-
+LOGINF "1";
 if ($cgi->param('sha')) {
 	$sha = $cgi->param('sha');
 	LOGINF "SHA $sha was sent. This is an update to latest commit.";
 }
-
+LOGINF "2";
 if ($cgi->param('updatedir')) {
 	$updatedir = $cgi->param('updatedir');
 }
