@@ -146,29 +146,17 @@ if ($cgi->param('updatedir')) {
 $updatedir = $cgi->param('updatedir');
 }
 
-LOGINF "4";
 if (!$updatedir) {
-LOGINF "41";
 	$joutput{'error'} = "No updatedir sent.";
-LOGINF "42";
 	&err;
-LOGINF "43";
 	LOGCRIT $joutput{'error'};
-LOGINF "44";
 	exit (1);
-LOGINF "45";
 }
-LOGINF "46";
 if (! -e "$updatedir/config/system/general.cfg.default" && ! -e "$updatedir/config/system/general.json.default") {
-LOGINF "47";
 	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg or general.json in correct path).";
-LOGINF "48";
 	&err;
-LOGINF "49";
 	LOGCRIT $joutput{'error'};
-LOGINF "410";
 	exit (1);
-LOGINF "411";
 }
 
 if (!$lbhomedir) {
