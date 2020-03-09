@@ -142,9 +142,10 @@ if ($cgi->param('sha')) {
 }
 LOGINF "2";
 if ($cgi->param('updatedir')) {
+LOGINF "2a";
 	$updatedir = $cgi->param('updatedir');
 }
-
+LOGINF "3";
 if (!$updatedir) {
 	$joutput{'error'} = "No updatedir sent.";
 	&err;
