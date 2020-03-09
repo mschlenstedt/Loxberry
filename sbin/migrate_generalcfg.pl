@@ -5,7 +5,7 @@ use LoxBerry::JSON;
 use Config::Simple;
 use URI::Escape;
 
-my $version = "2.0.2.2";
+my $version = "2.0.2.3";
 
 my $lbsconfigdir = $ENV{'LBSCONFIG'};	
 if (! $lbsconfigdir ) {
@@ -46,6 +46,7 @@ migrate_network();
 migrate_ssdp();
 migrate_timeserver();
 migrate_miniserver();
+migrate_healthcheck();
 
 $jsonobj->write();
 
@@ -196,3 +197,19 @@ sub migrate_miniserver
 	}
 }	
 
+sub migrate_healthcheck 
+{
+	## Migrating [HEALTHCHECK]
+	my $b;
+	
+	foreach my $key ( keys %cfg ) {
+		my $pos = index( $key, 'HEALTHCHECK.' );
+		if( $pos == -1 ) {
+			next;
+		}
+		my $checkname = ucfirst( lc( substr( $key, 12 ) ) );
+		print "checkname: $checkname | Pos $pos\n";
+		$b->{$checkname} = $cfg{$key};
+	}
+	$json->{Healthcheck} = $b;
+}
