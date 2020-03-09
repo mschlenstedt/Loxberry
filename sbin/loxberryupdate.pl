@@ -143,7 +143,8 @@ if ($cgi->param('sha')) {
 }
 
 if ($cgi->param('updatedir')) {
-	$updatedir = $cgi->param('updatedir');
+
+$updatedir = $cgi->param('updatedir');
 }
 
 if (!$updatedir) {
