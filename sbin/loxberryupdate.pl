@@ -20,6 +20,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use LoxBerry::JSON;
 use strict;
 use warnings;
 use CGI;
@@ -30,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='2.0.2.2';
+my $scriptversion='2.0.2.3';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
