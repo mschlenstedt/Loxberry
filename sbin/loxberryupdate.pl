@@ -30,7 +30,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='2.0.2.1';
+my $scriptversion='2.0.2.2';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -151,7 +151,7 @@ if (!$updatedir) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
-if (! -e "$updatedir/config/system/general.cfg" && ! -e "$updatedir/config/system/general.json") {
+if (! -e "$updatedir/config/system/general.cfg.default" && ! -e "$updatedir/config/system/general.json.default") {
 	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg or general.json in correct path).";
 	&err;
 	LOGCRIT $joutput{'error'};

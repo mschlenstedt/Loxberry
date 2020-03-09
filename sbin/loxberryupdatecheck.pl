@@ -41,7 +41,7 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="2.0.2.1";
+my $scriptversion="2.0.2.2";
 
 my $release_url;
 my $oformat;
