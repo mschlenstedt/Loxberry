@@ -58,12 +58,10 @@ my $quoted_adminpass1;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.1.1";
+my $version = "2.0.2.1";
 
 my $sversion = LoxBerry::System::lbversion();
 my $lang = lblanguage();
-
-# $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
 ##########################################################################
 # Create file to indicate that wizard was executed
