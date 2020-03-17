@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017 CF for LoxBerry, christiantf@gmx.at
+# Copyright 2017-2020 CF for LoxBerry, christiantf@gmx.at
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,18 +42,16 @@ my $error;
 my $plugin;
 my $system;
 my $form="";
-my $cfg;
+# my $cfg;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.2.1";
 
 my $sversion = LoxBerry::System::lbversion();
-
-$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
 #########################################################################
 # Parameter
@@ -109,7 +107,7 @@ our $maintemplate = HTML::Template->new(
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
-				associate => $cfg,
+				# associate => $cfg,
 				%htmltemplate_options,
 				#debug => 1,
 				#stack_debug => 1,
