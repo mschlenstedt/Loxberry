@@ -93,7 +93,7 @@ $grepbin            = $cfg->param("BINARIES.GREP");
 $do                 = "";
 
 my $maintemplate = HTML::Template->new(
-			filename => "$lbstemplatedir/timeserver.html",
+			filename => "$lbstemplatedir/services_timeserver.html",
 			global_vars => 1,
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
