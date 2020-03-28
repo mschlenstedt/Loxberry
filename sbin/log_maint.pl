@@ -107,7 +107,8 @@ sub logfiles_cleanup
 	# Paths to check
 	my @paths = ("$lbhomedir/log/plugins",
 		"$lbhomedir/log/system",
-		"$lbhomedir/log/system_tmpfs");
+		"$lbhomedir/log/system_tmpfs",
+		"$lbhomedir/log/ramlog");
 
 	# Check which disks must be cleaned
 	LOGDEB "*** STAGE 1: Scanning for tmpfs disks... ***";
