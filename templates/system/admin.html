@@ -299,12 +299,17 @@
 	<BR>
 	<DIV style="background-color: rgba(255, 192, 192, 0.7); border-radius: 11px; border: 1px solid black; padding:10px;">
 		<P style="color:red"><B><TMPL_VAR ADMIN.SAVE_OK_HINT_RED></B></P>
-		<A	download=	"credentials.txt"
-			title=		"credentials.txt"
-			data-role=	"button"
-			data-mini=	"true"
-			data-icon=	"arrow-r"
-			href=		"data:text/plain;charset=utf-8;base64,<TMPL_VAR CREDENTIALSTXT>"><TMPL_VAR ADMIN.BUTTON_SAVE_OK_DOWNLOAD_CREDENTIALS></A>
+		<div id="download_credentials_content" style="display:none">
+			<TMPL_VAR CREDENTIALSTXT>
+		</div>
+		<a id="download_credentials_button" data-role="button" data-mini="true" data-icon="arrow-r" target='_blank'>
+			<TMPL_VAR ADMIN.BUTTON_SAVE_OK_DOWNLOAD_CREDENTIALS>
+		</a>
+		<script>
+			$(function(){
+				$("#download_credentials_button").attr( "href", "/admin/system/tools/ajax-download-handler.cgi?action=download-admin-credentials&credentialstxt="+$("#download_credentials_content").text() );
+			});
+		</script>
 	</DIV>
 	<DIV style="text-align:right;">
 		<TMPL_IF WIZARD>

@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "2.0.0.4";
+our $VERSION = "2.0.1.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -839,7 +839,7 @@ sub log_db_logend
 	
 	# Check mandatory fields
 	Carp::cluck "log_db_logend: Create DB log entry: DBH not defined\n" if (!$dbh);
-	Carp::cluck "log_db_logend: No dbkey defined\n" if (!$p{dbkey});
+	Carp::carp "log_db_logend: No dbkey defined. Possibly LOGSTART event is missing?\n" if (!$p{dbkey});
 	if (!$dbh or !$p{dbkey}) {
 		return;
 	}

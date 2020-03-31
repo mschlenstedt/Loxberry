@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2017 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.2.5";
 
 my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -149,11 +149,13 @@ sub form {
 		$ms{MSPORT} = $cfg->param("MINISERVER$msno.PORT");
 		$ms{MSUSER} = uri_unescape($cfg->param("MINISERVER$msno.ADMIN"));
 		$ms{MSPASS} = uri_unescape($cfg->param("MINISERVER$msno.PASS"));
-		$ms{MSUSECLOUDDNS} = is_enabled ($cfg->param("MINISERVER$msno.USECLOUDDNS")) ? "checked" : "";
+		$ms{MSUSECLOUDDNS} = is_enabled( $cfg->param("MINISERVER$msno.USECLOUDDNS") ) ? "true" : "false";
 		$ms{MSCLOUDURL} = $cfg->param("MINISERVER$msno.CLOUDURL");
 		$ms{MSCLOUDURLFTPPORT} = $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
 		$ms{MSNOTE} = $cfg->param("MINISERVER$msno.NOTE");
 		$ms{MSNAME} = $cfg->param("MINISERVER$msno.NAME");
+		$ms{MSPREFERHTTPS} = is_enabled($cfg->param("MINISERVER$msno.PREFERHTTPS")) ? "true" : "false";
+		$ms{MSPORTHTTPS} = $cfg->param("MINISERVER$msno.PORTHTTPS");
 		
 		push(@msdata, \%ms);
 	}
@@ -183,7 +185,6 @@ sub save {
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 	
 	# Everything from Forms
-	# Not conform with use strict;, but no idea for a better solution...
 	$miniservers =  !defined param('miniservers') || param('miniservers') lt 1 ? 1 : param('miniservers');
 	
 	$cfg->param("BASE.MINISERVERS", $miniservers);
@@ -192,85 +193,45 @@ sub save {
 	my %ms;
 	
 	while ($msno <= $miniservers) {
-		# Data from form
-		$ms{"miniserverip.$msno"}       				= param("miniserverip$msno");
-		$ms{"miniserverport.$msno"}     				= param("miniserverport$msno");
-		$ms{"miniserveruser.$msno"}     				= param("miniserveruser$msno");
-		$ms{"miniserverkennwort.$msno"} 				= param("miniserverkennwort$msno");
-		$ms{"miniservernote.$msno"}     				= param("miniservernote$msno");
-		$ms{"miniserverfoldername.$msno"}  		   	= param("miniserverfoldername$msno");
-		$ms{"useclouddns.$msno"}        				= param("useclouddns$msno");
-		$ms{"miniservercloudurl.$msno"} 				= param("miniservercloudurl$msno");
-		$ms{"miniservercloudurlftpport.$msno"} 	= param("miniservercloudurlftpport$msno");
-
-		$ms{"useclouddns.$msno"} = defined $ms{"useclouddns.$msno"} ? $ms{"useclouddns.$msno"} : "0";
-  
-		# URL-Encode form data before they are used to test the connection
-		$ms{"miniserveruser.$msno"} = uri_escape($ms{"miniserveruser.$msno"});
-		$ms{"miniserverkennwort.$msno"} = uri_escape($ms{"miniserverkennwort.$msno"});
+		
+		$cfg->param("MINISERVER$msno.IPADDRESS", param("miniserverip$msno") );
+		$cfg->param("MINISERVER$msno.PORT", defined param("miniserverport$msno") ? param("miniserverport$msno") : 80 );
+		$cfg->param("MINISERVER$msno.NOTE", param("miniservernote$msno"));
+		$cfg->param("MINISERVER$msno.USECLOUDDNS", is_enabled( param("useclouddns$msno") ) ? '1' : '0' );
+		$cfg->param("MINISERVER$msno.CLOUDURL", param("miniservercloudurl$msno") );
+		$cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", param("miniservercloudurlftpport$msno") );
+		$cfg->param("MINISERVER$msno.PREFERHTTPS", is_enabled( param("miniserverpreferhttps$msno") ) ? "1" : "0" );
+		$cfg->param("MINISERVER$msno.PORTHTTPS", defined param("miniserverporthttps$msno") ? param("miniserverporthttps$msno") : 443 );
+		$cfg->param("MINISERVER$msno.NAME", param("miniserverfoldername$msno") );
+		# Credentials are RAW and URI-encoded
+		$cfg->param("MINISERVER$msno.ADMIN", uri_escape( param("miniserveruser$msno") ) );
+		$cfg->param("MINISERVER$msno.PASS", uri_escape( param("miniserverkennwort$msno") ) );
+		
+		# Save calculated values
+		my $transport;
+		$transport = $cfg->param("MINISERVER$msno.PREFERHTTPS") ? 'https' : 'http';
+		$cfg->param("MINISERVER$msno.TRANSPORT", $transport );
+		
+		# Check if ip format is IPv6
+		my $IPv6Format = '0';
+		my $ipaddress = $cfg->param("MINISERVER$msno.IPADDRESS");
+		if( $cfg->param("MINISERVER$msno.USECLOUDDNS") eq '1' or index( $ipaddress, ':' ) != -1 ) {
+			$IPv6Format = '1';
+		}
+		$cfg->param("MINISERVER$msno.IPV6FORMAT", $IPv6Format );
+		
+		# Build FullURI from Credentials
+		my $FullURI;
+		if ( $cfg->param("MINISERVER$msno.USECLOUDDNS") eq '0' ) {
+			$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
+			my $port = $cfg->param("MINISERVER$msno.PREFERHTTPS") eq '1' ? $cfg->param("MINISERVER$msno.PORTHTTPS") : $cfg->param("MINISERVER$msno.PORT");
+			$FullURI = $transport.'://'.$cfg->param("MINISERVER$msno.ADMIN").':'.$cfg->param("MINISERVER$msno.PASS").'@'.$ipaddress.':'.$port;
+		} else {
+			$FullURI = "";
+		}
+		$cfg->param("MINISERVER$msno.FULLURI", $FullURI );
 		
 		
-### Removed as saving should not check MS anymote		
-##		
-##<<'COMMENTED_OUT';
-##		
-##		# Test if Miniserver is reachable
-##		if ( is_enabled($ms{"useclouddns.$msno"})) {
-##			# With Cloud DNS
-##			$ms{"useclouddns.$msno"} = "1";
-##			our $dns_info = `$bins->{'CURL'} -I http://$clouddnsaddress/$ms{"miniservercloudurl.$msno"} --connect-timeout 5 -m 5 2>/dev/null |$bins->{'GREP'} Location |$bins->{'AWK'} -F/ '{print \$3}'`;
-##			my @dns_info_pieces = split /:/, $dns_info;
-##			if ($dns_info_pieces[1]) {
-##				$dns_info_pieces[1] =~ s/^\s+|\s+$//g;
-##			} else {
-##				$dns_info_pieces[1] = 80;
-##			}
-##			if ($dns_info_pieces[0]) {
-##				$dns_info_pieces[0] =~ s/^\s+|\s+$//g;
-##			} else {
-##				$dns_info_pieces[0] = "[DNS-Error]"; 
-##			}
-##			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
-##		} else {
-##			# With local access
-##			$ms{"useclouddns.$msno"} = "0";
-##			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$ms{\"miniserverip.$msno\"}\:$ms{\"miniserverport.$msno\"}/dev/cfg/version";
-##		}
-##		$ua = LWP::UserAgent->new;
-##		$ua->timeout(5);
-###		local $SIG{ALRM} = sub { die };
-###		eval {
-###			alarm(1);
-##			$response = $ua->get($url);
-##			$urlstatus = $response->status_line;
-###		};
-###		alarm(0);
-##
-##		# Error if we can't login
-##		$urlstatuscode = substr($urlstatus,0,3);
-##		if ($urlstatuscode ne "200") {
-##			$error = $SL{'MINISERVER.SAVE_ERR_CANNOT_LOGIN'} . " <b>$msno. Miniserver</b>. " . $SL{'MINISERVER.SAVE_ERR_MS_UNREACHABLE'};
-##			$maintemplate->param ( "ERROR", $error );
-##			my $errordetails =  "<p>Request:<br>$url<p>" .
-##				"<p>Response: HTTP $urlstatus</p>" . 
-##				"<p>" . $response->content . "</p>";
-##			
-##			$maintemplate->param( "ERRORDETAILS", $errordetails );
-##			&error;
-##		}
-##
-##COMMENTED_OUT
-		
-		# Write configuration file(s)
-		$cfg->param("MINISERVER$msno.PORT", $ms{"miniserverport.$msno"});
-		$cfg->param("MINISERVER$msno.PASS", $ms{"miniserverkennwort.$msno"});
-		$cfg->param("MINISERVER$msno.ADMIN", $ms{"miniserveruser.$msno"});
-		$cfg->param("MINISERVER$msno.IPADDRESS", $ms{"miniserverip.$msno"});
-		$cfg->param("MINISERVER$msno.USECLOUDDNS", $ms{"useclouddns.$msno"});
-		$cfg->param("MINISERVER$msno.CLOUDURL", $ms{"miniservercloudurl.$msno"});
-		$cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", $ms{"miniservercloudurlftpport.$msno"});
-		$cfg->param("MINISERVER$msno.NOTE", $ms{"miniservernote.$msno"});
-		$cfg->param("MINISERVER$msno.NAME", $ms{"miniserverfoldername.$msno"});
 		# Next
 		$msno++;
 	}

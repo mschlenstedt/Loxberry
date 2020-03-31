@@ -22,7 +22,7 @@
 								<TMPL_IF MSNAME>(<TMPL_VAR MSNAME>)</TMPL_IF></p>
 									<a id="miniserverweb<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="grid" onclick="open_ms_web('<TMPL_VAR MSNO>');"><TMPL_VAR MINISERVER.BUTTON_OPEN_WEBIF></a>
 									<a id="miniserverlog<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="star" onclick="open_ms_log('<TMPL_VAR MSNO>');" target="miniserver_log"><TMPL_VAR MINISERVER.BUTTON_OPEN_LOG></a>
-									<a id="miniservercheck<TMPL_VAR MSNO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_CHECKMS></a>
+									<a id="miniservercheck<TMPL_VAR MSNO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#" class="button_checkms" data-msno="<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.BUTTON_CHECKMS></a>
 									<div id="miniservercheck<TMPL_VAR MSNO>_result"></div>
 							</td>
 						</tr>
@@ -64,7 +64,7 @@
 								&nbsp;
 							</td>
 							<td style="width:30%;">
-								<label><input type="checkbox" id="useclouddns<TMPL_VAR MSNO>" name="useclouddns<TMPL_VAR MSNO>" <TMPL_VAR USECLOUDDNS>><TMPL_VAR MINISERVER.LABEL_USE_CLOUD_DNS></label>
+								<label><input type="checkbox" id="useclouddns<TMPL_VAR MSNO>" name="useclouddns<TMPL_VAR MSNO>" data-useclouddns="<TMPL_VAR MSUSECLOUDDNS>"><TMPL_VAR MINISERVER.LABEL_USE_CLOUD_DNS></label>
 							</td>
 							<td style="width:40%;" class="hint">
 								<TMPL_VAR MINISERVER.HINT_USE_CLOUD_DNS>
@@ -113,6 +113,35 @@
 								<TMPL_VAR MINISERVER.HINT_CLOUDDNS_FTPPORT>
 							</td>
 						</tr>
+						
+						<!-- HTTPS -->
+						<tr id="miniserverpreferhttpsrow<TMPL_VAR MSNO>">
+							<td>
+							</td>
+							<td>
+								<label>
+									<input id="miniserverpreferhttps<TMPL_VAR MSNO>" name="miniserverpreferhttps<TMPL_VAR MSNO>" data-preferhttps="<TMPL_VAR MSPREFERHTTPS>" type="checkbox"><TMPL_VAR MINISERVER.LABEL_PREFERHTTPS>
+								</label>
+							</td>
+							<td class="hint">
+								<TMPL_VAR MINISERVER.HINT_PREFERHTTPS>
+							</td>
+						</tr>
+						<tr id="miniserverporthttpsrow<TMPL_VAR MSNO>" data-porthttpsaddr="<TMPL_VAR MSPORTHTTPS>" class="nohttps<TMPL_VAR MSNO>" style="display:none">
+							<td>
+								<label for="miniserverporthttps<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSPORTHTTPS></label>
+							</td>
+							<td>
+								<input value="<TMPL_VAR MSPORTHTTPS>" id='miniserverporthttps<TMPL_VAR MSNO>' name='miniserverporthttps<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_PORT>" data-validation-rule="^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$">
+							</td>
+							<td class="hint">
+								<TMPL_VAR MINISERVER.HINT_MSPORTHTTPS>
+							</td>
+						</tr>
+						
+						<!-- HTTPS End -->
+						
+						
 						<tr>
 							<td>
 								<label for="miniservernote<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSNOTE></label>
@@ -150,105 +179,10 @@
 							</td>
 						</tr>
 						<SCRIPT>
-							$("#useclouddns<TMPL_VAR MSNO>").prop("checked", "<TMPL_VAR MSUSECLOUDDNS>");
-							function open_ms_log ( ms_id )
-							{
-								if ( (validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id))  )
-								{
-									open('http://'+encodeURIComponent($("#miniserveruser"+ms_id).val())+':'+encodeURIComponent($("#miniserverkennwort"+ms_id).val())+'@'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val()+'/dev/fsget/log/def.log', '_blank');				
-								}
-								if ( validate_chk_value('#miniserveruser'+ms_id) && validate_chk_value('#miniserverkennwort'+ms_id) && validate_chk_value('#miniservercloudurl'+ms_id) )
-								{
-								  $.ajax({
-									contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-									type: "GET",
-									url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+ms_id).val(),
-									success: function(data)
-									{
-										if (typeof(data['error']) != "undefined") 
-										{
-											$("#miniservercheck"+ms_id+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
-										}
-										else
-										{
-											open('http://'+encodeURIComponent($("#miniserveruser"+ms_id).val())+':'+encodeURIComponent($("#miniserverkennwort"+ms_id).val())+'@'+data['IPAddress']+':'+data['Port']+'/dev/fsget/log/def.log', '_blank');				
-										}
-									}
-								  });
-								}
-							}
-							function open_ms_web ( ms_id )
-							{
-								if ( validate_chk_value('#miniserverip'+ms_id) && validate_chk_value('#miniserverport'+ms_id)) 
-								{
-									open('http://'+$("#miniserverip"+ms_id).val()+':'+$("#miniserverport"+ms_id).val(), '_blank');				
-								}
-								if ( validate_chk_value('#miniservercloudurl'+ms_id) )
-								{
-								  $.ajax({
-									contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-									type: "GET",
-									url: "/admin/system/tools/ajax-config-handler.cgi?action=get-clouddnsdata&value="+$("#miniservercloudurl"+ms_id).val(),
-									success: function(data)
-									{
-										if (typeof(data['error']) != "undefined") 
-										{
-											$("#miniservercheck"+ms_id+"_result").html("<TMPL_VAR MINISERVER.MSG_CLOUD_NOTFOUND> "+data['error']);
-										}
-										else
-										{
-											open('http://'+data['IPAddress']+':'+data['Port'], '_blank');				
-										}
-									}
-								  });
-								}
-							}
+							
+							/* JavaScript code in TMPL_LOOP */
 							$(document).ready( function()
 							{
-								
-								$("#miniservercheck<TMPL_VAR MSNO>").click(function() {
-										$('#scan_result').html('');
-									var url = "/admin/system/tools/ajax-check-miniserver.cgi";
-									var resultdiv = $("#miniservercheck<TMPL_VAR MSNO>_result");
-									resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
-									var checkresult = $.post( url, 
-														{	ip: $("#miniserverip<TMPL_VAR MSNO>").val(),
-															port: $("#miniserverport<TMPL_VAR MSNO>").val(),
-															user: $("#miniserveruser<TMPL_VAR MSNO>").val(),
-															pass: $("#miniserverkennwort<TMPL_VAR MSNO>").val(),
-															useclouddns: $("#useclouddns<TMPL_VAR MSNO>").is(':checked'),
-															clouddns: $("#miniservercloudurl<TMPL_VAR MSNO>").val(),
-											} );
-									checkresult.done(function( data ) {
-										//resultdiv.html("<span style='color:blue;'>Call successful</span>");
-										/* This would parse XML response, but later prefered JSON
-										var entry = $(data).find('LL');
-										console.log ("Entry", entry.attr('value'));
-										*/
-										// console.log ("Output:", data);
-										var html;
-										if (data.success) {
-											html = "<span style='color:green;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
-											if (data.isadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_ADMIN>";
-											if (data.isnonadmin) html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_NONADMIN>";
-											$("#miniserverlog<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
-											$("#miniserverweb<TMPL_VAR MSNO>").removeClass( "ui-disabled" );
-										} else {
-											html = "<span style='color:red;'><TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
-											html+= "<br>" + data.status_line;
-											$("#miniserverlog<TMPL_VAR MSNO>").addClass( "ui-disabled" );
-											$("#miniserverweb<TMPL_VAR MSNO>").addClass( "ui-disabled" );
-										}
-										resultdiv.html(html);
-
-
-											});
-									checkresult.fail(function( status, data ) {
-										resultdiv.html("<span style='color:red;'>Internal server error on call of ajax-check-miniserver.cgi</span> (HTTP "+status.status + " "+ status.statusText + ")");
-										console.log("Internal server error on call of ajax-check-miniserver.cgi", status.status, status.statusText);
-									});
-								
-								});
 								
 								note_link ("miniservernote<TMPL_VAR MSNO>");
 								validate_enable('#miniserverfoldername<TMPL_VAR MSNO>'); 
@@ -262,7 +196,26 @@
 								$("#miniserverportrow<TMPL_VAR MSNO>").attr( "data-portaddr",$("#miniserverport<TMPL_VAR MSNO>").val());
 								$("#miniservercloudurlrow<TMPL_VAR MSNO>").attr( "data-dnsurl",$("#miniservercloudurl<TMPL_VAR MSNO>").val());
 								$("#miniservercloudurlftpportrow<TMPL_VAR MSNO>").attr( "data-dnsurlftpport",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").val());
-
+								// console.log("preferhttps", $("#miniserverpreferhttps<TMPL_VAR MSNO>").data("preferhttps"));
+								
+								useclouddns = is_enabled( $("#useclouddns<TMPL_VAR MSNO>").data("useclouddns") ) ? true : false;  
+								$("#useclouddns<TMPL_VAR MSNO>").attr('checked', useclouddns ).checkboxradio('refresh');
+								
+								preferhttps = is_enabled( $("#miniserverpreferhttps<TMPL_VAR MSNO>").data("preferhttps") ) ? true : false;  
+								$("#miniserverpreferhttps<TMPL_VAR MSNO>").attr('checked', preferhttps ).checkboxradio('refresh');
+								if( preferhttps && !$("#useclouddns<TMPL_VAR MSNO>").is(":checked") ) 
+									$("#miniserverporthttpsrow<TMPL_VAR MSNO>").show();
+								else 
+									$("#miniserverporthttpsrow<TMPL_VAR MSNO>").hide();
+								$("#miniserverporthttpsrow<TMPL_VAR MSNO>").data( "porthttpsaddr", $("#miniserverporthttps<TMPL_VAR MSNO>").val());
+								$("#miniserverpreferhttps<TMPL_VAR MSNO>").click(function() {
+									if ( $(this).is(":checked") && !$("#useclouddns<TMPL_VAR MSNO>").is(":checked") )
+										$("#miniserverporthttpsrow<TMPL_VAR MSNO>").fadeIn();
+									else 
+										$("#miniserverporthttpsrow<TMPL_VAR MSNO>").fadeOut();
+								});
+								
+								
 								$("#useclouddns<TMPL_VAR MSNO>").change(function()
 								{
 									if($(this).is(":checked"))
@@ -279,6 +232,7 @@
 										$("#miniserverportrow<TMPL_VAR MSNO>").fadeTo( "fast", 0.3 );
 										$(".noclouddns<TMPL_VAR MSNO>").hide();
 										$(".clouddns<TMPL_VAR MSNO>").show();
+										$("#miniserverporthttpsrow<TMPL_VAR MSNO>").hide();
 										$("#miniservercloudurl<TMPL_VAR MSNO>").trigger( "keyup" );
 										$("#miniservercloudurlftpport<TMPL_VAR MSNO>").trigger( "keyup" );
 										$(this).prev().removeClass( "ui-checkbox-off" ).addClass( "ui-checkbox-on" );
@@ -297,6 +251,10 @@
 										$("#miniserverportrow<TMPL_VAR MSNO>" ).fadeTo( "fast", 1 );
 										$(".noclouddns<TMPL_VAR MSNO>").show();
 										$(".clouddns<TMPL_VAR MSNO>").hide();
+										preferhttps = is_enabled( $("#miniserverpreferhttps<TMPL_VAR MSNO>").data("preferhttps") ) ? true : false; 
+										if( preferhttps ) {
+											$("#miniserverporthttpsrow<TMPL_VAR MSNO>").show();
+										}
 										$("#miniserverip<TMPL_VAR MSNO>").trigger( "keyup" );
 										$("#miniserverport<TMPL_VAR MSNO>").trigger( "keyup" );
 										$(this).prev().removeClass( "ui-checkbox-on" ).addClass( "ui-checkbox-off" );
@@ -308,11 +266,29 @@
 								$("#miniservercloudurl<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurl<TMPL_VAR MSNO>").attr("original-background-color")); 
 								$("#miniservercloudurlftpport<TMPL_VAR MSNO>").css("background-color",$("#miniservercloudurlftpport<TMPL_VAR MSNO>").attr("original-background-color")); 
 
-								$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
-								$("#miniservercloudurl<TMPL_VAR MSNO>").on('keyup', function(e) { $("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); $("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); });
+								/* UPDATE 2.0.2: As Miniserver webif/log urls are evaluated on the fly, buttons wouldn't need to be disabled anymore */
+								/* 
+								$('#miniserveruser<TMPL_VAR MSNO>').on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+								});
+								$('#miniserverkennwort<TMPL_VAR MSNO>').on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+								});
+								$('#miniserverip<TMPL_VAR MSNO>').on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+								});
+								$('#miniserverport<TMPL_VAR MSNO>').on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled
+								"); });
+								$("#miniservercloudurl<TMPL_VAR MSNO>").on('keyup', function(e) { 
+									$("#miniserverlog<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+									$("#miniserverweb<TMPL_VAR MSNO>").addClass("ui-disabled"); 
+								});
+								*/
 							});
 						</SCRIPT>
 					</table>
@@ -330,383 +306,105 @@
 	
 	</div>
 </form>
+
 <script>
-
-	// Diable Del-Button if needed at onLoad
-	DisableDelButton();
-	// Add one more miniserver
-	function AddMiniserver()
-	{
-
-		/*
-		// This is the code from Michael - it is well done, but you have to create the full
-		// table layout again and create the validation stuff. Therefore it's tricky to change the layout.
-		// That's the reason I "un-AJAX" it and buttons write to config.
-
-		// Below is code to copy the complete MS-Table. If works a bit (most IDs are canged), but
-		// it leaves some IDs (e.g. checkbox) and the validation unchanged, so this needs to be investigated.
-
-
-		// Total number of miniservers
-		var iteration = document.getElementById('miniservers').value;
-		iteration = parseInt(iteration)
-		iteration += 1;
-		document.getElementById("miniservers").value = iteration;
-
-		// Add 1. row
-		var tbl = document.getElementById('miniservertbl');
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<h2>' + iteration + '. Miniserver:</h2>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		// Add 2. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '&nbsp;'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '<label><input type="checkbox" id="useclouddns' + iteration + '" name="useclouddns' + iteration + '">Use Cloud DNS</label>';
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		// Add 3. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-		row.setAttribute('id','miniserveriprow' + iteration);
-		row.setAttribute('ipaddr','');
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<label class="control-label" for="miniserverip' + iteration + '">IP-Address or Hostname:</label> </td>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '<input id="miniserverip' + iteration + '" name="miniserverip' + iteration + '" type="text" class="textfield" data-validation="custom" value="" data-validation-regexp="(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)|(^[a-z0-9A-Z\.]+$)" data-validation-error-msg="* The entered IP-Address or Hostname is not valid. An IP-Address has the format xxx.xxx.xxx.xxx, e. g. 192.168.1.100">'
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		// Add 4. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-		row.setAttribute('id','miniserverportrow' + iteration);
-		row.setAttribute('portaddr','');
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<label>Portnumber:</label>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '<input id="miniserverport' + iteration + '" name="miniserverport' + iteration + '" type="text" data-validation="number" data-validation-allowing="range[1;65535]" class="textfield" value="" data-validation-error-msg="* The Portnumber must be in the range of 1 and 65535. The default Miniserver-Port is 80.">'
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		// Add 5. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-		row.setAttribute('id','miniservercloudurlrow' + iteration);
-		row.setAttribute('dnsurl','');
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<label>MAC-Address:</label>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '  <input id="miniservercloudurl' + iteration + '" name="miniservercloudurl' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="custom" data-suggestions="EEE000xxxxxx" data-validation-regexp="(^EEE000([a-zA-Z0-9]{6})$)|(^504F([a-zA-Z0-9]{8})$)" data-validation-error-msg="* Please enter a valid MAC-Address. Example: EEE000xxxxxx oder 504Fxxxxxxxx" value="">';
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		// Add 6. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-		row.setAttribute('id','miniservercloudurlftpportrow' + iteration);
-		row.setAttribute('dnsurlftpport','');
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<label>Public FTP-Port:</label>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '  <input id="miniservercloudurlftpport' + iteration + '" name="miniservercloudurlftpport' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation-depends-on="useclouddns' + iteration + '" data-validation-depends-on-value="1" data-validation="custom length" data-validation-length="1-5" data-validation-regexp="([0-9]$)" data-suggestions="21" data-validation-error-msg="* Please enter a valid public FTP-Port of the Miniservers. (See Router Port Forwarding) The local Miniserver FTP-Port should be 21." value="">';
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		$("#useclouddns" + iteration).change(function()
-		{
-			if($(this).is(":checked"))
-			{
-				$("#miniservercloudurl" + iteration).val($("#miniservercloudurlrow" + iteration).attr( "dnsurl" ));
-				$("#miniservercloudurl" + iteration).attr("data-validation-optional","false");
-				$("#miniservercloudurlrow" + iteration).fadeTo( "fast", 1 );
-				$("#miniservercloudurl" + iteration).prop("readOnly", false);
-
-				$("#miniservercloudurlftpport" + iteration).val($("#miniservercloudurlftpportrow" + iteration).attr( "dnsurlftpport" ));
-				$("#miniservercloudurlftpport" + iteration).attr("data-validation-optional","false");
-				$("#miniservercloudurlftpportrow" + iteration).fadeTo( "fast", 1 );
-				$("#miniservercloudurlftpport" + iteration).prop("readOnly", false);
-
-				$("#miniserverip" + iteration).attr("data-validation-optional","true");
-				$("#miniserverip" + iteration).val("");
-				$("#miniserverip" + iteration).trigger( "focus" );
-				$("#miniserveriprow" + iteration).fadeTo( "fast", 0.3 );
-				$("#miniserverip" + iteration).prop("readOnly", true);
-
-				$("#miniserverport" + iteration).attr("data-validation-optional","true");
-				$("#miniserverport" + iteration).val("");
-				$("#miniserverport" + iteration).trigger( "focus" );
-				$("#miniserverportrow" + iteration).fadeTo( "fast", 0.3 );
-				$("#miniserverport" + iteration).prop("readOnly", true);
+/* Javascript code for the full page */
+$(document).ready( function() {
+	
+	$(".button_checkms").click(function() {
+		$('#scan_result').html('');
+		msno = $(this).data("msno");
+		console.log("Miniserver No.", msno);
+		
+		var url = "/admin/system/tools/ajax-check-miniserver.cgi";
+		var resultdiv = $("#miniservercheck"+msno+"_result");
+		resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
+		var checkresult = $.post( url, 
+							{	ip: $("#miniserverip"+msno).val(),
+								port: $("#miniserverport"+msno).val(),
+								preferhttps: $("#miniserverpreferhttps"+msno).is(':checked'),
+								porthttps: $("#miniserverporthttps"+msno).val(),
+								user: $("#miniserveruser"+msno).val(),
+								pass: $("#miniserverkennwort"+msno).val(),
+								useclouddns: $("#useclouddns"+msno).is(':checked'),
+								clouddns: $("#miniservercloudurl"+msno).val(),
+				} );
+		checkresult.done(function( data ) {
+			console.log ("Output:", data);
+			var isadmin;
+			var html = "";
+			if (typeof data.http != 'undefined') {
+				if (data.http.success) {
+					html += "<span style='color:green;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
+					$("#miniserverlog"+msno).removeClass( "ui-disabled" );
+					$("#miniserverweb"+msno).removeClass( "ui-disabled" );
+					if( is_enabled( data.http.isadmin ) ) 
+						isadmin = true;
+					else 
+						isadmin = false;
+					
+				} else {
+					html += "<span style='color:red;'>HTTP: <TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
+					html += " " + data.http.status_line;
+					/*
+					$("#miniserverlog"+msno).addClass( "ui-disabled" );
+					$("#miniserverweb"+msno).addClass( "ui-disabled" );
+					*/
+				}
+			} 			
+			if (typeof data.https != 'undefined') {
+				if (data.https.success) {
+					html += "<br><span style='color:green;'>HTTPS: <TMPL_VAR MINISERVER.CHECKMS_AUTH_OK></span>";
+					$("#miniserverlog"+msno).removeClass( "ui-disabled" );
+					$("#miniserverweb"+msno).removeClass( "ui-disabled" );
+					if( is_enabled( data.https.isadmin ) ) 
+						isadmin = true;
+					else 
+						isadmin = false;
+					
+				} else {
+					html += "<br><span style='color:red;'>HTTPS: <TMPL_VAR MINISERVER.CHECKMS_AUTH_ERROR></span>";
+					html += " " + data.https.status_line;
+					/*
+					$("#miniserverlog"+msno).addClass( "ui-disabled" );
+					$("#miniserverweb"+msno).addClass( "ui-disabled" );
+					*/
+				}
 			}
-			else
-			{
-				$("#miniservercloudurl" + iteration).attr("data-validation-optional","true");
-				$("#miniservercloudurlrow" + iteration).fadeTo( "fast", 0.3 );
-				$("#miniservercloudurl" + iteration).prop("readOnly", true);
-				$("#miniservercloudurl" + iteration).val("");
-				$("#miniservercloudurl" + iteration).trigger( "focus" );
-
-				$("#miniservercloudurlftpport" + iteration).attr("data-validation-optional","true");
-				$("#miniservercloudurlftpportrow" + iteration).fadeTo( "fast", 0.3 );
-				$("#miniservercloudurlftpport" + iteration).prop("readOnly", true);
-				$("#miniservercloudurlftpport" + iteration).val("");
-				$("#miniservercloudurlftpport" + iteration).trigger( "focus" );
-
-				$("#miniserverip" + iteration).val($("#miniserveriprow" + iteration).attr( "ipaddr" ));
-				$("#miniserverip" + iteration).attr("data-validation-optional","false");
-				$("#miniserveriprow" + iteration ).fadeTo( "fast", 1 );
-				$("#miniserverip" + iteration).prop("readOnly", false);
-
-				$("#miniserverport" + iteration).val($("#miniserverportrow" + iteration).attr( "portaddr" ));
-				$("#miniserverport" + iteration).attr("data-validation-optional","false");
-				$("#miniserverportrow" + iteration ).fadeTo( "fast", 1 );
-				$("#miniserverport" + iteration).prop("readOnly", false);
-			 }
-		});
-
-		$("#miniservercloudurl"+ iteration).change(function()
-		{
-			if ($("#useclouddns"+ iteration).is(":checked"))
-			{
-				$("#miniservercloudurlrow"+ iteration).attr( "dnsurl",$("#miniservercloudurl"+ iteration).val());
+			
+			if ( isadmin == true ) 
+				html+= "<br><TMPL_VAR MINISERVER.CHECKMS_IS_ADMIN>";
+			else if ( isadmin == false ) 
+				html += "<br><TMPL_VAR MINISERVER.CHECKMS_IS_NONADMIN>";
+			
+			/* CloudDNS infos in UI */
+			if( typeof data.clouddns != 'undefined' ) {
+				html += '<br><span style="font-size:70%">';
+				html += 'Loxone CloudDNS: ';
+				html += 'HTTP: ' + data.clouddns.IP + ' (Port Open ' + is_enabled(data.clouddns.PortOpen) + ') ';
+				html += 'HTTPS: ' + data.clouddns.IPHTTPS + ' (Port Open ' + is_enabled(data.clouddns.PortOpenHTTPS) + '), ';
+				html += 'updated ' + data.clouddns.LastUpdated;
+				html += '</span>';
 			}
+			
+			resultdiv.html(html);
+
 		});
-		$("#miniservercloudurlftpport1").change(function()
-		{
-			if ($("#useclouddns" + iteration).is(":checked"))
-			{
-				$("#miniservercloudurlftpportrow" + iteration).attr( "dnsurlftpport",$("#miniservercloudurlftpport" + iteration).val());
-			}
-		});
-		$("#miniserverip"+ iteration).change(function()
-		{
-			if (!$("#useclouddns"+ iteration).is(":checked"))
-			{
-				$("#miniserveriprow"+ iteration).attr( "ipaddr",$("#miniserverip"+ iteration).val());
-			}
-		});
-		$("#miniserverport"+ iteration).change(function()
-		{
-			if (!$("#useclouddns"+ iteration).is(":checked"))
-			{
-				$("#miniserverportrow"+ iteration).attr( "portaddr",$("#miniserverport"+ iteration).val());
-			}
+		checkresult.fail(function( status, data ) {
+			resultdiv.html("<span style='color:red;'>Internal server error on call of ajax-check-miniserver.cgi</span> (HTTP "+status.status + " "+ status.statusText + ")");
+			console.log("Internal server error on call of ajax-check-miniserver.cgi", status.status, status.statusText);
 		});
 
-	 $("#useclouddns"+ iteration).prop("checked", "");
-	 $("#useclouddns"+ iteration).trigger( "change" );
-
-
-		// Add 7. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<label>Miniserver Username:</label>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '<input id="miniserveruser' + iteration + '" name="miniserveruser' + iteration + '" type="text" data-validation="length alphanumeric" data-validation-allowing="-_" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the username of a Miniserver Administrator account.">'
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = '<font size="-1">Allowed characters: A-Z a-z 0-9 -_</font>'
-
-		// Add 8. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<label>Miniserver Password:</label>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '<input id="miniserverkennwort' + iteration + '" name="miniserverkennwort' + iteration + '" type="password" data-validation="length" data-validation-length="Min1" class="textfield" value="" data-validation-error-msg="* Please enter the password for the above Miniserver Administrator account.">'
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		// Add 9. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<label>Note / Link:</label>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '<textarea id="miniservernote' + iteration + '" name="miniservernote' + iteration + '" type="textarea" class="textfield" data-validation-optional="true" data-validation="length letternumeric" data-validation-allowing=" ()@{}&:/?=#_+!-À-ÖØ-öø-ÿ" data-validation-error-msg="* Allowed characters: a-z A-Z 0-9 &#x7B;&#x28;&#x40;&#x3A;&#x2F;&#x3F;&#x3D;&#x23;&#x5F;&#x2B;&#x21;&#x2D;&#x26;&#x29;&#x7D; (Maximum length 512 characters)" data-validation-length="Max512"></textarea>';
-
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = '<a id="miniservernote' + iteration + '_url" data-role="button" data-inline="true" data-mini="true" data-icon="star" href="#" target="miniserver_note">Open</a>'
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		$("#miniservernote" + iteration).focusout(function()
-		{
-				note_link($(this).attr("id"));
-		})
-		.blur(function()
-		{
-				note_link($(this).attr("id"));
-		});
-		$("#miniservernote" + iteration).trigger('focusout');
-
-		// Add 10. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '<label>Name:</label>'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = '<input value="" id="miniserverfoldername' + iteration + '" name="miniserverfoldername' + iteration + '" type="text" class="textfield" data-validation-optional="false" data-validation="length letternumeric" data-validation-allowing="-_" data-validation-error-msg="* Only the following characters are allowed: a-z A-Z 0-9 _- (Maximum length is 64)" data-validation-length="Max64">';
-
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		// Add 11. row
-		var lastRow = tbl.rows.length;
-		var row = tbl.insertRow(lastRow);
-
-		// Add cells
-		var cellRight = row.insertCell(0);
-		cellRight.innerHTML = '&nbsp;'
-		var cellRight = row.insertCell(1);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(2);
-		cellRight.innerHTML = ''
-		var cellRight = row.insertCell(3);
-		cellRight.innerHTML = ''
-
-		// Disable Delete-Button if needed
-		DisableDelButton();
-
-		// Reinit Validator
-		 var $messages = $('#form-error-message');
-			$.validate({
-				modules : 'security',
-				errorMessagePosition : $messages,
-			});
-
-		// Recreate JQUERY styles
-		$("#main_form2").trigger('create');
-
-
-		// END OF MICHAELS AddMiniserver
-		*/
-
-
-/*  // CF: This code copies the full first table and adds it below.
-	// I did not finish as it has troubles correcting all ID's and validate, so it works only "a little bit".
-
-	 // Get current count of miniservertbl's and use that value for IDs
-	var quantity = jQuery("table[id^=miniservertbl]").length + 1;
-
-	// clone the table
-	var clone = jQuery("#miniservertbl1").clone(true);
-
-	// use native DOM methods to update the ID
-	clone[0].setAttribute('id', clone[0].getAttribute('id').substring(0, clone[0].getAttribute('id').length-1) + quantity);
-
-	// find any text or file inputs, and iterate over them
-	clone.find(':text,:file').each(function() {
-		  // use native DOM methods to update the ID
-		this.setAttribute('id', this.getAttribute('id').substring(0, this.getAttribute('id').length-1) + quantity);
-		  // set the value to ""
-		this.value = "";
-		$("h2", clone).text(quantity + ". Miniserver <TMPL_VAR MINISERVER.MSG_UNSAVED>:");
 	});
-	 // append to the <td>
-	clone.appendTo('#maintable');
 
-*/
+	// Show passwords
+	$('#showpass').click(function() {
+		$('.textfield').prop('type', 'text');
+	});
 
+});
 
-	}
-
-	function DelMiniserver()
-	{
-		// Total number of miniservers
-		var iteration = document.getElementById('miniservers').value;
-		iteration = iteration-1;
-		document.getElementById("miniservers").value = iteration;
-
-		// Del 1. row
-		var tbl = document.getElementById('miniservertbl');
-		var lastRow = tbl.rows.length;
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-		var row = tbl.deleteRow(-1);
-
-		// Disable Delete-Button if needed
-		DisableDelButton();
-
-		// Recreate JQUERY styles
-		$("#main").trigger('create');
-
-
-	}
-
-	function DisableDelButton()
-	{
-		var iteration = document.getElementById('miniservers').value;
-		if (iteration < 2)
-		{
-			$('#delmsbtn').addClass('ui-disabled');
-		}
-		else
-		{
-			$('#delmsbtn').removeClass('ui-disabled');
-		}
-	}
-// Show passwords
 $(document).ready(function() {
-  $('#showpass').click(function() {
-	$('.textfield').prop('type', 'text');
-  });
 	
 	
 	////////////////// Some logic to prevent garbage in MS config /////////////
@@ -741,36 +439,151 @@ $(document).ready(function() {
 
 });
 
+
 // Scan for Miniserver
 $('#scan').click( function(e) {
-$('#miniservercheck<TMPL_VAR MSNO>_result').html('');
-$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
-  e.preventDefault();
-  $.ajax({
-    contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
-    type: "GET",
-    url: "/admin/system/tools/netscan.cgi",
-    data: "data",
-    dataType: "json",
-    success: function(data){
-      //data.replace(/\r|\n/g, "");
-      $('#miniserverip1').empty();
-      if (data.IP.length < 3) 
-      {
-		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
-      } 
-      else 
-      {
-		$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
-		$("#miniserveriprow1").attr( "data-ipaddr" , data.IP );
-		$("#miniserverportrow1").attr( "data-portaddr" , data.Port);
-		$("#miniserverfoldername1").val(data.Name);
-		$("#useclouddns1").prop("checked", false);
-		$("#useclouddns1").trigger( "change" );
-      }
-    }
-  });
+	$('#miniservercheck<TMPL_VAR MSNO>_result').html('');
+	$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_SCANNING>');
+	e.preventDefault();
+	$.ajax({
+		contentType: "application/x-www-form-urlencoded; charset=iso-8859-15",
+		type: "GET",
+		url: "/admin/system/tools/netscan.cgi",
+		data: "data",
+		dataType: "json",
+		success: function(data){
+		  //data.replace(/\r|\n/g, "");
+		  $('#miniserverip1').empty();
+		  if (data.IP.length < 3) 
+		  {
+			$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_NOTFOUND>');
+		  } 
+		  else 
+		  {
+			$('#scan_result').html('<TMPL_VAR MINISERVER.MSG_FOUND>');
+			$("#miniserveriprow1").attr( "data-ipaddr" , data.IP );
+			$("#miniserverportrow1").attr( "data-portaddr" , data.Port);
+			$("#miniserverfoldername1").val(data.Name);
+			$("#useclouddns1").prop("checked", false);
+			$("#useclouddns1").trigger( "change" );
+		  }
+		}
+	});
 });
+
+
+function open_ms_web ( msno ) {
+	
+	// Query preferhttps and clouddns
+	preferhttps = $("#miniserverpreferhttps"+msno).is(':checked');
+	clouddns = $("#useclouddns"+msno).is(':checked');
+	transport = preferhttps ? "https" : "http";
+		
+	var url;
+	
+	errormsg = '<span style="color:red;"><TMPL_VAR MINISERVER.MSG_ERR_MS_SETTINGS_INVALID></span>';
+	
+	if( preferhttps && !clouddns ) {
+	
+		if ( !validate_chk_value('#miniserverip'+msno) || !validate_chk_value('#miniserverporthttps'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		ip = $('#miniserverip'+msno).val();
+		port = $('#miniserverporthttps'+msno).val();
+		
+	} else if( !preferhttps && !clouddns) {
+		if ( !validate_chk_value('#miniserverip'+msno) || !validate_chk_value('#miniserverport'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		ip = $('#miniserverip'+msno).val();
+		port = $('#miniserverport'+msno).val();
+	} else if ( clouddns ) {
+		if ( !validate_chk_value('#miniservercloudurl'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		mac = $('#miniservercloudurl'+msno).val();
+		/* CloudDNS does not obey Preferhttps setting, as CloudDNS knows itself if HTTPS is used or not */
+		open( "http://dns.loxonecloud.com/"+mac, '_blank' );
+		return;
+	} else {
+		$("#miniservercheck"+msno+"_result").html(errormsg);
+		return;
+	}
+		
+	open( transport + '://' + ip +':' + port, '_blank');
+	
+}
+
+/* Open Miniserver logfile */ 
+function open_ms_log ( msno ) {
+	
+	// Query preferhttps, clouddns
+	preferhttps = $("#miniserverpreferhttps"+msno).is(':checked');
+	clouddns = $("#useclouddns"+msno).is(':checked');
+	transport = preferhttps ? "https" : "http";
+
+	var url;
+	
+	errormsg = '<span style="color:red;"><TMPL_VAR MINISERVER.MSG_ERR_MS_SETTINGS_INVALID></span>';
+	
+	/* validate and get user and pass */
+	if ( !validate_chk_value('#miniserveruser'+msno) || !validate_chk_value('#miniserverkennwort'+msno) ) {
+		$("#miniservercheck"+msno+"_result").html(errormsg);
+		return;
+	}
+	
+	user = encodeURIComponent( $('#miniserveruser'+msno).val() );
+	pass = encodeURIComponent( $('#miniserverkennwort'+msno).val() );
+	
+	if( preferhttps && !clouddns ) {
+	
+		if ( !validate_chk_value('#miniserverip'+msno) || !validate_chk_value('#miniserverporthttps'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		ip = $('#miniserverip'+msno).val();
+		port = $('#miniserverporthttps'+msno).val();
+		
+	} else if( !preferhttps && !clouddns) {
+		if ( !validate_chk_value('#miniserverip'+msno) || !validate_chk_value('#miniserverport'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		ip = $('#miniserverip'+msno).val();
+		port = $('#miniserverport'+msno).val();
+	} else if ( clouddns ) {
+		if ( !validate_chk_value('#miniservercloudurl'+msno) ) {
+			$("#miniservercheck"+msno+"_result").html(errormsg);
+			return;
+		}
+		mac = $('#miniservercloudurl'+msno).val();
+		/* CloudDNS does not obey Preferhttps setting, as CloudDNS knows itself if HTTPS is used or not */
+		open( "http://dns.loxonecloud.com/"+mac+'/dev/fsget/log/def.log', '_blank' );
+		return;
+	
+	} else {
+		$("#miniservercheck"+msno+"_result").html(errormsg);
+		return;
+	}
+	
+	open( transport + '://' + user + ':' + pass + '@' + ip +':' + port + '/dev/fsget/log/def.log', '_blank');
+	
+}
+
+/* A simple is_enabled js function as known from LoxBerry's Perl and PHP SDK */
+function is_enabled( checkVal ) 
+{
+	if( typeof checkVal === 'undefined' ) return false;
+	if( typeof checkVal === 'boolean' ) return checkVal;
+	
+	enabled = [ "true", "1", "on", "yes", "enable", "enabled", "select", "selected", "checked" ];
+	checkVal = checkVal.toString().trim().toLowerCase();
+	return enabled.includes(checkVal);
+}
+
 
 </SCRIPT>
 </TMPL_IF>

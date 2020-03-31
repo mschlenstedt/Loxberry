@@ -207,10 +207,10 @@ if ($supportkey) {
 	my $keyurl = "https://supportvpn.loxberry.de/keys/$supportkey/key.tgz";
 	
 	# Kill an existing connection
-	my $supportkey = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Subject: CN" | cut -d= -f2 | cut -d" " -f2`;
-	chomp ($supportkey);
-	if (-e "$lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid") {
-		my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkey.pid`;
+	my $supportkeyold = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Subject: CN" | cut -d= -f2 | cut -d" " -f2`;
+	chomp ($supportkeyold);
+	if (-e "$lbhomedir/log/system_tmpfs/openvpn_$supportkeyold.pid") {
+		my $pid = `cat $lbhomedir/log/system_tmpfs/openvpn_$supportkeyold.pid`;
 		chomp ($pid);
 		$resp = `kill $pid`;
 		$resp = `sudo $lbhomedir/sbin/openvpn stop 2>&1`;
@@ -224,7 +224,14 @@ if ($supportkey) {
 		$resp = `rm -rf /$lbhomedir/system/supportvpn/* 2>&1`;
 	}
 	if (!$maintemplate->param("ERROR")) {
+		# Register Webport
+		my $port = lbwebserverport();
+		my $porturl = "https://supportvpn.loxberry.de/keys/registerport.cgi?key=$supportkey&port=$port";
+		print STDERR "Supportkey is: $supportkey\n";
+		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksS "$porturl" 2>&1`;
+		# Extract Key archive
 		$resp = `cd /$lbhomedir/system/supportvpn && $bins->{TAR} xvfz $lbhomedir/system/supportvpn/$supportkey.tgz 2>&1`;
+		print STDERR "Supportkey is: $supportkey\n";
 		if ($? ne "0") {
 			$maintemplate->param("FORM1", 0);
 			$maintemplate->param("ERROR", 1);
@@ -233,6 +240,7 @@ if ($supportkey) {
 		}
 	}
 	if (!$maintemplate->param("ERROR")) {
+		# Create config
 		$resp = `/bin/sed -i 's#REPLACELBHOMEDIR#$lbhomedir#g' $lbhomedir/system/supportvpn/loxberry.cfg 2>&1`;
 		my $certdate = `openssl x509 -noout -text -in $lbhomedir/system/supportvpn/loxberry.crt | grep "Not After" | cut -d: -f2-10 | cut -d" " -f2-10`;
 		$certdate = `date --date '$certdate'`;

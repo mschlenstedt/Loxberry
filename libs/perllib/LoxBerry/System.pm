@@ -6,10 +6,9 @@ use Config::Simple;
 use URI::Escape;
 use Cwd 'abs_path';
 use Carp;
-use Sys::Hostname;
 
 package LoxBerry::System;
-our $VERSION = "2.0.0.7";
+our $VERSION = "2.0.2.8";
 our $DEBUG;
 
 use base 'Exporter';
@@ -61,73 +60,6 @@ our @EXPORT = qw (
 	reboot_required
 	vers_tag
 );
-
-=head1 NAME
-
-LoxBerry::System - LoxBerry platform system module to ease writing plugins for LoxBerry. See http://www.loxwiki.eu:80/x/o4CO
-
-=head1 SYNOPSIS
-
-	use LoxBerry::System;
-	
-	# LoxBerry::System defines globals for plugin directory
-	print "Config Directory: $lbpconfigdir";
-	print "HTMLAUTH directory:    $lbphtmlauthdir";
-	print "HTML directory:   $lbphtmldir";
-	# See more below
-	
-	# Get all data of configured Miniservers
-	my %miniservers = LoxBerry::System::get_miniservers();
-	print "Miniserver no. 1 is called $miniservers{1}{Name} and has IP $miniservers{1}{IPAddress}.";
-	# See below for all available variables
-	
-	# Binary paths from the config can be accessed by
-	my %bins = LoxBerry::System::get_binaries();
-	system("ps aux | $bins->{GREP} perl";
-	
-	# LoxBerry::System supports  using Loxone CloudDNS
-	my $ftpport = LoxBerry::System::get_ftpport($msno);
-	# returns the FTP port, either  local or CloudDNS one
-
-=head1 DESCRIPTION
-
-Goal of LoxBerry::System (and LoxBerry::Web) is to simplify creating plugins for the LoxBerry platform. Many time-consuming steps are encapsulated to easy call-able functions.
-
-=head2 Global Variables
-
-LoxBerry::System defines a dozen of variables for easier access to the plugin directories. They are accessable directly after the use LoxBerry::System command.
-
-	$lbhomedir		# Home directory of LoxBerry, usually /opt/loxberry
-	$lbpplugindir	# The unique directory name of the plugin, e.g. squeezelite
-	$lbcgidir		# Legacy variable, points to the HTMLAUTH dir . e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
-	$lbphtmlauthdir	# Full path to the HTMLAUTH directory of the current plugin. e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
-	$lbphtmldir		# Full path to the HTML directory of the current plugin, e.g. /opt/loxberry/webfrontend/html/plugins/squeezelite
-	$lbptemplatedir	# Full path to the Template directory of the current plugin, e.g. /opt/loxberry/templates/plugins/squeezelite
-	$lbpdatadir		# Full path to the Data directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
-	$lbplogdir		# Full path to the Log directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
-	$lbpconfigdir	# Full path to the Config directory of the current plugin, e.g. /opt/loxberry/config/plugins/squeezelite
-
-	$lbshtmlauthdir	# Full path to the SYSTEM CGI directory /opt/loxberry/webfrontend/htmlauth/system
-	$lbshtmldir		# Full path to the SYSTEM HTML directory /opt/loxberry/webfrontend/html/system
-	$lbstemplatedir	# Full path to the SYSTEM Template directory /opt/loxberry/templates/system
-	$lbsdatadir		# Full path to the SYSTEM Data directory /opt/loxberry/data/system
-	$lbslogdir		# Full path to the SYSTEM Log directory /opt/loxberry/data/system
-	$lbsconfigdir	# Full path to the SYSTEM Config directory /opt/loxberry/config/system
-
-	
-$lbhomedir is detected in the following order:
-
-=over 12
-
-=item 1. System environment variable -> $LBHOMEDIR
-
-=item 2. If username is loxberry -> HomeDir
-
-=item 3. Static -> /opt/loxberry
-
-=back
-
-=cut
 
 ##################################################################
 # This code is executed on every use
@@ -253,45 +185,6 @@ my $sysloglevel;
 # Finished everytime code execution
 ##################################################################
 
-=head2 get_miniservers
-
-This function reads all the configuration variables of all configured Miniservers, including credentials. 
-The result is a two-dimensional hash. The first key is the Miniserver number (starting from 1), the second keys are 
-configuration settings.
-
-	use LoxBerry::System;
-	my %miniservers = LoxBerry::System::get_miniservers();
-	
-	if (! %miniservers) {
-		exit(1); # No Miniservers found
-	}
-	
-	print "Number of Miniservers: " . keys(%miniservers);
-	
-	print "Miniserver no. 1's name is $miniservers{1}{Name} and has IP $miniservers{1}{IPAddress}.";
-	
-	foreach my $ms (sort keys %miniservers) {
-		print "Miniserver no. $ms is called $miniservers{$ms}{Name} and has IP $miniservers{$ms}{IPAddress}.";
-	}
-
-Available keys are:
-
-	Name			# Name of the Miniserver
-	IPAddress		# IP address of the Miniserver
-	Port			# Web port of the Miniserver
-	Admin			# Administrative user (URL-encoded)
-	Pass			# Password of administrative user (URL-encoded)
-	Credentials		# Admin:Pass (URL-encoded)
-	Admin_RAW		# Administrative user (NOT URL-encoded)
-	Pass_RAW		# Password of administrative user (NOT URL-encoded)
-	Credentials_RAW	# Admin:Pass (NOT URL-encoded)
-	Note			# Note to the MS
-	UseCloudDNS	 	# CloudDNS enabled
-	CloudURL	 	# External URL 
-	CloudURLFTPPort	# External FTP port - use get_ftpport instead!
-
-=cut
-
 ####### Get Miniserver hash #######
 sub get_miniservers
 {
@@ -314,31 +207,43 @@ sub get_miniservers
 		if (! $miniservers{$msnr}{Port}) {
 			$miniservers{$msnr}{Port} = 80;
 		}
+		if (! $miniservers{$msnr}{PortHttps}) {
+			$miniservers{$msnr}{PortHttps} = 443;
+		}
+
+		my $transport;
+		my $port;
+		if( is_enabled( $miniservers{$msnr}{PreferHttps} ) ) {
+			$transport = 'https';
+			$port = $miniservers{$msnr}{PortHttps};
+		} else {
+			$transport = 'http';
+			$port = $miniservers{$msnr}{Port};
+		}
+		# Check if ip format is IPv6
+		my $IPv6Format = '0';
+		my $ipaddress = $miniservers{$msnr}{IPAddress};
+		if( index( $ipaddress, ':' ) != -1 ) {
+			$IPv6Format = '1';
+		}
+		$miniservers{$msnr}{IPv6Format} = $IPv6Format;
+		
+		$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
+		my $port = is_enabled($miniservers{$msnr}{PreferHttps}) ? $miniservers{$msnr}{PortHttps} : $miniservers{$msnr}{Port};
+		
+		$miniservers{$msnr}{Transport} = $transport;
+		$miniservers{$msnr}{FullURI} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$ipaddress.':'.$port;
+		$miniservers{$msnr}{FullURI_RAW} = $transport.'://'.$miniservers{$msnr}{Credentials_RAW}.'@'.$ipaddress.':'.$port;
 
 		# Miniserver values consistency check
 		# If a Miniserver entry is not plausible, the full Miniserver hash entry is deleted
-		if($miniservers{$msnr}{Name} eq '' or $miniservers{$msnr}{IPAddress} eq '' or $miniservers{$msnr}{Admin} eq '' or $miniservers{$msnr}{Pass} eq ''
-			or $miniservers{$msnr}{Port} eq '') {
+		if($miniservers{$msnr}{Name} eq '' or $miniservers{$msnr}{IPAddress} eq '' or $miniservers{$msnr}{Admin} eq '' or $miniservers{$msnr}{Pass} eq '' ) {
 			delete @miniservers{$msnr};
 		}
 	}
 	$msClouddnsFetched = 1;
 	return %miniservers;
 }
-
-=head2 get_miniserver_by_ip
-
-Returns the Miniserver number using the provided IP address. 
-
-	my $ip = '192.168.0.77';
-	my %miniservers = LoxBerry::System::get_miniservers();
-	my $msno = LoxBerry::System::get_miniserver_by_ip($ip);
-	
-	if ($msno) {
-		print "Miniserver with address $ip is called $miniservers{$msno}{Name}.";
-	}
-
-=cut
 
 ####### Get Miniserver key by IP Address #######
 sub get_miniserver_by_ip
@@ -358,20 +263,6 @@ sub get_miniserver_by_ip
 	return undef;
 }
 
-=head2 get_miniserver_by_name
-
-Returns the number of the Miniserver using the provided Name. This could be useful to get the number of a name selection in a form. The name comparison is case-insensitive.
-
-	my $name = 'MyMiniserver';
-	my %miniservers = LoxBerry::System::get_miniservers();
-	my $msno = LoxBerry::System::get_miniserver_by_name($name);
-	
-	if ($msno) {
-		print "Miniserver with name $name is called $miniservers{$msno}{Name}.";
-	}
-
-=cut
-
 ####### Get Miniserver key by Name #######
 sub get_miniserver_by_name
 {
@@ -389,40 +280,6 @@ sub get_miniserver_by_name
 	}
 	return undef;
 }
-
-=head2 get_binaries
-
-Although LoxBerry in its fundamental characteristic comes as a ready-to-use Raspberry image, it should be as platform-independent as possible. 
-Therefore, system binaries should not be executed with static paths but from variables to these binaries. 
-
-	my $bins = LoxBerry::System::get_binaries();
-	print STDERR "The binary of Grep is $bins->{GREP}.";
-	system("$bins->{ZIP} myarchive.zip *");
-
-Available binaries:
-	APT
-	AWK
-	BASH
-	BZIP2
-	CHMOD
-	CURL
-	DATE
-	GREP
-	GZIP
-	MAIL
-	NTPDATE
-	POWEROFF
-	REBOOT
-	SENDMAIL
-	SUDO
-	TAR
-	UNZIP
-	WGET
-	ZIP
-
-If your plugin needs additional system binaries, it is best practise to read the binary path from your own plugin config file.
-
-=cut
 
 ####### Get Binaries #######
 sub get_binaries
@@ -502,8 +359,6 @@ sub plugindata
 		}
 	}
 }
-
-
 
 ##################################################################################
 # Get Plugins
@@ -607,7 +462,6 @@ sub plugindb_changed_time
 
 }
 
-
 ##################################################################################
 # Get System Version
 # Returns LoxBerry version
@@ -673,13 +527,14 @@ sub read_generalcfg
 		$miniservers{$msnr}{Credentials} = $miniservers{$msnr}{Admin} . ':' . $miniservers{$msnr}{Pass};
 		$miniservers{$msnr}{Note} = $cfg->param("MINISERVER$msnr.NOTE");
 		$miniservers{$msnr}{Port} = $cfg->param("MINISERVER$msnr.PORT");
+		$miniservers{$msnr}{PortHttps} = $cfg->param("MINISERVER$msnr.PORTHTTPS");
+		$miniservers{$msnr}{PreferHttps} = $cfg->param("MINISERVER$msnr.PREFERHTTPS");
 		$miniservers{$msnr}{UseCloudDNS} = $cfg->param("MINISERVER$msnr.USECLOUDDNS");
 		$miniservers{$msnr}{CloudURLFTPPort} = $cfg->param("MINISERVER$msnr.CLOUDURLFTPPORT");
 		$miniservers{$msnr}{CloudURL} = $cfg->param("MINISERVER$msnr.CLOUDURL");
 		$miniservers{$msnr}{Admin_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Admin});
 		$miniservers{$msnr}{Pass_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Pass});
 		$miniservers{$msnr}{Credentials_RAW} = $miniservers{$msnr}{Admin_RAW} . ':' . $miniservers{$msnr}{Pass_RAW};
-		
 		$miniservers{$msnr}{SecureGateway} = $cfg->param("MINISERVER$msnr.SECUREGATEWAY");
 		$miniservers{$msnr}{EncryptResponse} = $cfg->param("MINISERVER$msnr.ENCRYPTRESPONSE");
 		
@@ -709,6 +564,7 @@ sub set_clouddns
 		print STDERR "Reading data from cachefile $memfile\n" if ($DEBUG);
 		$miniservers{$msnr}{IPAddress} = $cache->{$cachekey}->{IPAddress};
 		$miniservers{$msnr}{Port} = $cache->{$cachekey}->{Port};
+		$miniservers{$msnr}{PortHttps} = $cache->{$cachekey}->{PortHttps};
 		return;
 	}
 	
@@ -720,11 +576,12 @@ sub set_clouddns
 	$ua->timeout(5);
 	$ua->max_redirect( 0 );
 	my $checkurl = "http://$clouddnsaddress?getip&snr=" . $miniservers{$msnr}{CloudURL}."&json=true";
-	my $resp 	 = $ua->get($checkurl);
+	my $resp = $ua->get($checkurl);
 	if (! $resp->is_success ) 
 	{
 		$miniservers{$msnr}{IPAddress} = "0.0.0.0";
 		$miniservers{$msnr}{Port} = "0";
+		$miniservers{$msnr}{PortHttps} = "0";
 		delete $cache->{$cachekey};
 		$jsonobj->write();
 		
@@ -734,29 +591,53 @@ sub set_clouddns
 	}
 	else
 	{
+		
 		my $respjson = JSON::decode_json($resp->content);
-		($miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port}) = split(/:/, $respjson->{IP}, 2);
+		
+		# DEBUGGING
+		#my $respjson = decode_json('{"cmd":"getip","Code":200,"IP":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpen":true,"LastUpdated":"2020-02-04 11:43:50","DNS-Status":"registered","IPHTTPS":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpenHTTPS":true}');
+			
+		# Check if response is IPv4 or IPv6
+		my $resp_ip;
+		my $sq1;
+		my $sq2;
+		
+		# http port
+		$resp_ip = $respjson->{IP};
+		$sq1 = index( $resp_ip, '[' );
+		if( $sq1 != -1 ) {
+			$sq2 = index( $resp_ip, ']' );
+			if( $sq2 != -1 ) {
+				$miniservers{$msnr}{IPAddress} = substr( $resp_ip, $sq1+1, $sq2-1 );
+				$miniservers{$msnr}{Port} = substr( $resp_ip, $sq2+2 );
+			}
+		} else {
+			( $miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port} ) = split( ':', $resp_ip, 2);
+		}	
+		# https port
+		if( is_enabled($miniservers{$msnr}{PreferHttps} ) ) {
+			$resp_ip = $respjson->{IPHTTPS};
+			$sq1 = index( $resp_ip, '[' );
+			if( $sq1 != -1 ) {
+				$sq2 = index( $resp_ip, ']' );
+				if( $sq2 != -1 ) {
+					$miniservers{$msnr}{IPAddress} = substr( $resp_ip, $sq1+1, $sq2-1 );
+					$miniservers{$msnr}{PortHttps} = substr( $resp_ip, $sq2+2 );
+				}
+			} else {
+				( $miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{PortHttps} ) = split( ':', $resp_ip, 2);
+			}	
+		}
+		
 		my %cachehash;
 		$cachehash{IPAddress} = $miniservers{$msnr}{IPAddress};
 		$cachehash{Port} = $miniservers{$msnr}{Port};
+		$cachehash{PortHttps} = $miniservers{$msnr}{PortHttps};
 		$cachehash{refresh_timestamp} = time + 3600 + int(rand(3600));
 		$cache->{$cachekey} = \%cachehash;
 		$jsonobj->write();
 	}
 }
-
-=head2 get_ftpport
-
-The internal FTP port of the Miniserver is not configured in the LoxBerry configuration but can be queried by this function.
-It supports CloudDNS FTP port (which IS defined in the LoxBerry config), therefore using this functions returns either the
-internal or the CloudDNS FTP port, so you do not need to spy yourself.
-
-	my $ftpport = LoxBerry::System::get_ftpport($msnr);
-	# Returns the FTP port of Miniserver $msnr.
-	my $ftpport = LoxBerry::System::get_ftpport();
-	# Returns the FTP port of the first Miniserver.
-
-=cut
 
 #####################################################
 # get_ftpport
@@ -773,10 +654,8 @@ sub get_ftpport
 	
 	$msnr = defined $msnr ? $msnr : 1;
 	
-	# If we have no MS list, read the config
-	if (! %miniservers) {
-		# print STDERR "get_ftpport: Readconfig\n";
-		read_generalcfg();
+	if(!$msClouddnsFetched) {
+		LoxBerry::System::get_miniservers();
 	}
 	
 	# If CloudDNS is enabled, return the CloudDNS FTP port
@@ -789,8 +668,9 @@ sub get_ftpport
 	if (! $miniservers{$msnr}{FTPPort}) {
 		# print STDERR "get_ftpport: Read FTP Port from MS\n";
 		# Get FTP Port from Miniserver
-		my $url = "http://$miniservers{$msnr}{Credentials}\@$miniservers{$msnr}{IPAddress}\:$miniservers{$msnr}{Port}/dev/cfg/ftp";
+		my $url = $miniservers{$msnr}{FullURI}.'/dev/cfg/ftp';
 		my $ua = LWP::UserAgent->new;
+		$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 		$ua->timeout(5);
 		my $response = $ua->get($url);
 		if (!$response->is_success) {
@@ -803,15 +683,6 @@ sub get_ftpport
 	}
 	return $miniservers{$msnr}{FTPPort};
 }
-
-=head2 get_localip
-
-Returns the current LoxBerry IP address as string.
-
-	my $ip = LoxBerry::System::get_localip();
-	print "Current LoxBerry IP is $ip.";
-
-=cut
 
 ####################################################
 # get_localip - Get local ip address
@@ -828,7 +699,6 @@ sub get_localip
 	# return $localip;
 
 }
-
 
 ##################################################################
 # Get LoxBerry URL parameter or System language
@@ -862,7 +732,6 @@ sub lblanguage
 	print STDERR "\$lang from general.cfg: $LoxBerry::System::lang" if ($DEBUG);
 	return $LoxBerry::System::lang;
 }
-
 	
 #####################################################
 # readlanguage
@@ -1016,27 +885,14 @@ sub _parse_lang_file
 	}
 }
 
-
-
-=head2 lbhostname
-
-This exported function returns the current system hostname
-
-=cut
-
 ####################################################
 # lbhostname - Returns the current system hostname
 ####################################################
 sub lbhostname
 {
+	require Sys::Hostname;
 	return Sys::Hostname::hostname();
 }
-
-=head2 lbfriendlyname
-
-This exported function returns the friendly (user defined) name
-
-=cut
 
 ####################################################
 # lbfriendlyname - Returns the friendly name
@@ -1052,12 +908,6 @@ sub lbfriendlyname
 	
 }
 
-=head2 lbwebserverport
-
-This exported function returns the webserver port 
-
-=cut
-
 ####################################################
 # lbwebserverport - Returns the friendly name
 ####################################################
@@ -1071,24 +921,6 @@ sub lbwebserverport
 	}
 	return $webserverport;
 }
-
-
-=head2 is_enabled and is_disabled
-
-This function "guesses" is a string variable is enabled/true (disabled/false) by a couple of usual keywords. This is useful when parsing configuration files. 
-The check is case-insensitive. It returns 1 if the check is successful,  or undef if the keyword does not match.
-
-Keywords for is_enabled: true, yes, on, enabled, enable, 1.
-
-Keywords for is_disabled: false, no, off, disabled, disable, 0.
-
-	my $configstring = "enable_plugin = True";
-	my ($plugin_enabled, $value) = split /=/, $configstring;
-	if (is_enabled($value)) {
-		print "Plugin is enabled.";
-	}
-
-=cut
 
 ####################################################
 # is_enabled - tries to detect if a string says 'True'
@@ -1129,19 +961,6 @@ sub is_disabled
 	if ($text eq "0") { return 1;}
 	return undef;
 }
-
-=head2 trim, ltrim, rtrim
-
-Developers from other languages feel inconvenient using RegEx for simple string operations. LoxBerry::System adopts the familiar ltrim, rtrim and trim to remove leading, trailing or both whitespaces.
-
-trim, ltrim and rtrim are exported (you don't have to prefix the command with LoxBerry::System::).
-
-	my $dirty_string = "    What a mess!        ";
-	print ltrim($dirty_string); 	# Shows 'What a mess!        '
-	print rtrim($dirty_string); 	# Shows '    What a mess!'
-	print trim($dirty_string); 		# Shows 'What a mess!'
-
-=cut
 
 #####################################################
 # Strings trimmen
@@ -1266,7 +1085,6 @@ sub tz_offset
 sub check_securepin
 {
 	my ($securepin) = shift;
-	
 	my $pinerror_file = "$lbhomedir/log/system_tmpfs/securepin.errors";
 	my $pinerrobj;
 	my $pinerr;
@@ -1277,13 +1095,14 @@ sub check_securepin
 			return (2);
 			};
 	my $securepinsaved = <$fh>;
+	chomp($securepinsaved);
 	close ($fh);
 
 	# In case we have an active SupportVPN connmection
-	my $securepinsavedsupportvpn;;
+	my $securepinsavedsupportvpn;
 	if (-e "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn") {
 		# Check Online Status
-		use Net::Ping;
+		require Net::Ping;
 		for (my $i=0; $i < 3; $i++) {
 			my $p = Net::Ping->new();
 			my $hostname = '10.98.98.1';
@@ -1294,6 +1113,7 @@ sub check_securepin
 			} else {
 				open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn"); 
 				$securepinsavedsupportvpn = <$fh>;
+				chomp($securepinsavedsupportvpn);
 				close ($fh);
 				last;
 			}
@@ -1320,7 +1140,11 @@ sub check_securepin
 		undef $pinerrobj;
 	}
 	
-	if ( crypt($securepin, $securepinsaved) eq $securepinsaved || crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
+	if ( crypt($securepin, $securepinsaved) eq $securepinsaved) {
+		# OK
+		unlink $pinerror_file;
+		return (undef);
+	} elsif ( defined $securepinsavedsupportvpn and crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
 		# OK
 		unlink $pinerror_file;
 		return (undef);
@@ -1413,7 +1237,7 @@ sub diskspaceinfo
 		# Remove other blanks
 		$line =~ s/ +/ /g;
 		# print STDERR "Line: '$line'\n";
-		my ($size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line);
+		my ($size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line, 5);
 		$diskhash{filesystem} = $fs;
 		$diskhash{size} = $size;
 		$diskhash{used} = $used;
@@ -1760,19 +1584,7 @@ sub execute
 
 }
 
-
-
 #####################################################
 # Finally 1; ########################################
 #####################################################
 1;
-
-=head1 EXCEPTION HANDLING
-
-All functions usually return undef if an error occurs, nothing was found or the input parameters are out of scope. You have to handle this is your plugin. Functions may inform in STDERR about warnings and errors.
-
-=head1 SEE ALSO
-
-Further features especially for language and HTML support are found in LoxBerry::Web.
-
-=cut

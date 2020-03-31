@@ -6,7 +6,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.0.1";
+my $version = "2.0.2.2";
 
 # Globals
 my @results;
@@ -1101,18 +1101,21 @@ sub check_miniservers
 			my %post = (
 				"ip" => $mslist{$ms}{IPAddress},
 				"port" => $mslist{$ms}{Port},
+				"preferhttps" => $mslist{$ms}{PreferHttps},
+				"porthttps" => $mslist{$ms}{PortHttps},
 				"user" => $mslist{$ms}{Admin_RAW},
 				"pass" => $mslist{$ms}{Pass_RAW}
 			);
 			my $response = $ua->post( $checkurl, \%post );
 			if ($response->is_error) {
-				die("Could not query data (stopped at MS $mslist{$ms}{Name}: $response->status_line");
+				die("Could not query data (stopped at MS $mslist{$ms}{Name}: " . $response->status_line);
 			}
 			my $data = decode_json($response->decoded_content);
-			if($data->{success} eq "1") {
+			my $label = is_enabled( $mslist{$ms}{PreferHttps} ) ? "https" : "http";
+			if($data->{$label}->{success} eq "1") {
 				push @results, "$mslist{$ms}{Name} OK";
-				push @results, "(admin user)." if ($data->{isadmin} eq "1");
-				push @results, "(no admin user)." if ($data->{isnonadmin} eq "1"); 
+				push @results, "(admin user)." if ($data->{$label}->{isadmin} eq "1");
+				push @results, "(no admin user)." if ($data->{$label}->{isadmin} ne "1"); 
 			} else {
 				push @results, "Miniserver $mslist{$ms}{Name} NOT ACCESSIBLE.";
 				$result{status} = 3;

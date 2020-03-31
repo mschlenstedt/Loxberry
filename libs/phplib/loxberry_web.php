@@ -5,7 +5,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "2.0.0.1";
+	public static $LBWEBVERSION = "2.0.1.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -207,7 +207,7 @@ EOT;
 		}
 		$pageobj->paramArray(array(	'HELPTEXT' => $helptext ));
 		
-		if ($topnavbar_haselements) {
+		if (isset($topnavbar_haselements)) {
 			$pageobj->param ( 'TOPNAVBAR', $topnavbar);
 		} else {
 			$pageobj->param ( 'TOPNAVBAR', "");

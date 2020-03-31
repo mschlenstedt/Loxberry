@@ -22,7 +22,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
-print STDERR "Execute plugininstall.cgi\n#########################\n";
+#print STDERR "Execute plugininstall.cgi\n#########################\n";
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
@@ -48,7 +48,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.3.1";
+my $version = "2.0.1.1";
 
 my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
 my $bins = LoxBerry::System::get_binaries();
@@ -121,24 +121,24 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.
 
 # Menu
 if (!$do || $do eq "form") {
-  print STDERR "Calling subfunction FORM\n";
+  #print STDERR "Calling subfunction FORM\n";
   &form;
 }
 
 # Installation
 elsif ($do eq "install") {
-  print STDERR "Calling subfunction INSTALL\n";
+  #print STDERR "Calling subfunction INSTALL\n";
   &install;
 }
 
 # UnInstallation
 elsif ($do eq "uninstall") {
-  print STDERR "Calling subfunction UNINSTALL\n";
+  #print STDERR "Calling subfunction UNINSTALL\n";
   &uninstall;
 }
 
 else {
-  print STDERR "Calling subfunction FORM (default)\n";
+  #print STDERR "Calling subfunction FORM (default)\n";
   $maintemplate->param("FORM", 1);
   &form;
 }
@@ -151,15 +151,20 @@ exit;
 #####################################################
 
 sub form {
+	
+	# Create tmp dirs
+	if (!-e "$lbsdatadir/tmp/uploads") {
+		make_path("$lbsdatadir/tmp/uploads" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
+	}
 
 	# Check for running autoupdates/installations...
 	my $status = LoxBerry::System::lock();
 	if ($status) {
-		print STDERR "Running Autoupdates/Installations: $status\n";
+		#print STDERR "Running Autoupdates/Installations: $status\n";
 		$maintemplate->param("LOCK", 1);
 	} else {
 		# Clean up old files
-		system("rm -r -f /tmp/uploads/*");
+		system("rm -r -f $lbsdatadir/tmp/uploads/*");
   		$maintemplate->param("FORM", 1);
 	}
 
@@ -192,7 +197,7 @@ sub form {
 sub uninstall {
 
 	if (!$answer) {
-		print STDERR "Asking for uninstallation.";
+		#print STDERR "Asking for uninstallation.";
 		$maintemplate->param("QUESTION", 1);
 		foreach my $plugin (@plugins) {
 			if ($plugin->{PLUGINDB_MD5_CHECKSUM} eq $pid) {
@@ -202,9 +207,9 @@ sub uninstall {
 		}
 	} else {
 		# Clean up old files
-		system("rm -r -f /tmp/uploads/* > /dev/null 2>&1");
+		system("rm -r -f $lbsdatadir/tmp/uploads/* > /dev/null 2>&1");
 		# Uninstallation
-		print STDERR "Doing uninstallation of $pid.";
+		#print STDERR "Doing uninstallation of $pid.";
 		$maintemplate->param("UNINSTALL", 1);
 		system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid > /dev/null 2>&1");
 	}
@@ -230,19 +235,19 @@ sub uninstall {
 
 sub install {
 	
-	system("rm -r -f /tmp/uploads/*");
+	system("rm -r -f $lbsdatadir/tmp/uploads/*");
 
 	# Check if SecurePIN is correct
 	if ( LoxBerry::System::check_securepin($securepin) ) {
-		print STDERR "The entered securepin is wrong.";
+		#print STDERR "The entered securepin is wrong.";
 		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_SECUREPIN_WRONG'};
 		&error;
 	}
 
 	my $archiveurl = param('archiveurl');
-	print STDERR "The archive url is $archiveurl.\n";
+	#print STDERR "The archive url is $archiveurl.\n";
 	my $uploadfile = param('uploadfile');
-	print STDERR "The upload file is $uploadfile.\n";
+	#print STDERR "The upload file is $uploadfile.\n";
 
 	# Randomly file naming
 	my $tempfile = &generate(10);
@@ -266,7 +271,7 @@ sub install {
 		# Filesize
 		my $filesize = -s $uploadfile;
 		$filesize /= 1000;
-		print STDERR "The upload file is $filesize.\n";
+		#print STDERR "The upload file is $filesize.\n";
 
 		# If it's larger than allowed...
 		if ($filesize > $max_filesize) {
@@ -325,9 +330,9 @@ sub install {
 
 		if ($archiveurl) {
 			print "<INFO> Downloading $archiveurl ...\n";
-			$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo /tmp/$tempfile.zip $archiveurl  2>&1`;
+			$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo $lbsdatadir/tmp/uploads/$tempfile.zip $archiveurl  2>&1`;
 		} else {
-			open UPLOADFILE, ">/tmp/$tempfile.zip" or ($openerr = 1);
+			open UPLOADFILE, ">$lbsdatadir/tmp/uploads/$tempfile.zip" or ($openerr = 1);
 			binmode $uploadfile;
 			while ( <$uploadfile> ) {
 				print UPLOADFILE;
@@ -336,7 +341,7 @@ sub install {
 		}
 
 		# Do the installation
-		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=/tmp/$tempfile.zip pin=$securepin tempfile=$tempfile cgi=1 >> $logfile 2>&1");
+		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=$lbsdatadir/tmp/uploads/$tempfile.zip pin=$securepin tempfile=$tempfile cgi=1 >> $logfile 2>&1");
 
 	} # End Child process
 

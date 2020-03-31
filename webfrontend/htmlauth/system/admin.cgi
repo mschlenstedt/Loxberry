@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2017 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ my $quoted_adminpassold;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.1.1";
 
 $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -421,8 +421,9 @@ sub save {
 		$creditconsole .
 		$creditsecurepin;
 
-	$credentialstxt=encode_base64($credentialstxt);
-
+	# $credentialstxt=encode_base64($credentialstxt);
+	$credentialstxt=URI::Escape::uri_escape($credentialstxt);
+	
 	$maintemplate->param( "ADMINUSER", $adminuser );
 	$maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
 	

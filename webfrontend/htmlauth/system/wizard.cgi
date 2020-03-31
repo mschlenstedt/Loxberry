@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2018 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ my $quoted_adminpass1;
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.1";
+my $version = "2.0.1.1";
 
 my $sversion = LoxBerry::System::lbversion();
 my $lang = lblanguage();
@@ -441,7 +441,8 @@ sub admin_save
 		$creditsecurepin . 
 		$creditroot;
 
-	$credentialstxt=encode_base64($credentialstxt);
+	# $credentialstxt=encode_base64($credentialstxt);
+	$credentialstxt=URI::Escape::uri_escape($credentialstxt);
 
 	$maintemplate->param( "ADMINUSER", $s->{adminuser} );
 	$maintemplate->param( "CREDENTIALSTXT", $credentialstxt);

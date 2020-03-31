@@ -11,7 +11,7 @@
 	display:inline-block;
 	margin: 0 9%;
 	vertical-align: middle;
-	width:200px;
+	width:300px;
 }
 
 .big {
@@ -40,7 +40,7 @@
 	</div>
 	<div class="container">
 		<TMPL_VAR DONATE.DONATIONS><br>
-		<span id="counter" class="big"></span> EUR
+		# <span id="counter" class="big"></span>
 	</div>
 </div>
 <div style="clear:left"></div>
@@ -69,13 +69,34 @@
 	&nbsp;
 </p>
 <p>
-<TMPL_VAR DONATE.DONORS>
+<b><TMPL_VAR DONATE.DONORS></b>
 </p>
-<p>
+<style>
+.donator_table {
+	width:50%;
+	min-width:500px;
+	background:white;
+}
+.donator_table tr {
+	height:30px;
+}
+.donator_table tr:nth-child(odd) {
+	background: #FFFFFF;
+}
+.donator_table tr:nth-child(even) {
+	background: #EEEEEE;
+}
+
+</style>
+<table class="donator_table">
 <TMPL_LOOP NAME="DONORLIST">
-<b><TMPL_VAR NAME="NAME"></b>, <TMPL_VAR NAME="MONEY"><br>
+	<tr>
+		<td style="width:100px;"><TMPL_VAR NAME="DATE"></td>
+		<td style="width:200px;"><b><TMPL_VAR NAME="NAME"></b></td>
+		<td style="font-size:80%;"><i><TMPL_VAR NAME="COMMENT"></i></td>
+	</tr>
 </TMPL_LOOP>
-</p>
+</table>
 </center>
 
 <script>
@@ -86,6 +107,6 @@ if(i < <TMPL_VAR NAME="COUNTER">)
 	document.getElementById("counter").innerHTML = ++i;
 else
 	clearInterval(inv);
-}, 3000 / 100);
+}, 30);
 </script>
 <!-- ** END template/system/donate.html ************************************************************************************ -->

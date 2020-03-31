@@ -298,7 +298,7 @@
 			var inputType = $("#Remote_"+elemname).attr('type');
 			console.log("Element", elemname, cfg.Remote[elemname], inputType);
 			if(inputType == "checkbox") {
-				if( cfg.Remote[elemname] == 1) 
+				if( is_enabled(cfg.Remote[elemname]) ) 
 					$("#Remote_"+elemname).prop('checked', true);
 				else
 					$("#Remote_"+elemname).prop('checked', false);

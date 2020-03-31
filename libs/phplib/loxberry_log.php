@@ -3,6 +3,10 @@
 require_once "loxberry_system.php";
 // require_once "phphtmltemplate_loxberry/template040.php";
 
+if(!defined('STDIN'))  define('STDIN',  fopen('php://stdin',  'rb'));
+if(!defined('STDOUT')) define('STDOUT', fopen('php://stdout', 'wb'));
+if(!defined('STDERR')) define('STDERR', fopen('php://stderr', 'wb'));
+
 class intLog
 {
 	private $params;
@@ -778,7 +782,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "2.0.0.1";
+	public static $VERSION = "2.0.1.1";
 	
 	public static function newLog($args)
 	{

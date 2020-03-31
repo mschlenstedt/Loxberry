@@ -117,13 +117,11 @@ close(FH);
 
 foreach (@lines) {
 	my %donor;
-	my ($name,$money) = split(/,/,$_);
-	$money =~ s/^\s+//;
-	my $moneyvalue = $money;
-	$moneyvalue =~ s/\D+$//;
-	$counter = $counter + $moneyvalue;
+	my ($date,$name,$comment) = split(/;/,$_);
+	$counter++;
 	$donor{NAME} = $name;
-	$donor{MONEY} = $money;
+	$donor{DATE} = $date;
+	$donor{COMMENT} = $comment;
 	push(@donorlist, \%donor);
 }
 $maintemplate->param(DONORLIST => \@donorlist);

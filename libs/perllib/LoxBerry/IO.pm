@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.0.0.1";
+our $VERSION = "2.0.2.2";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -271,20 +271,19 @@ sub mshttp_call
 		print STDERR "No Miniservers configured\n";
 		return (undef, 601, undef);
 	}
-	my $mscred = $ms{$msnr}{Credentials};
-	my $msip = $ms{$msnr}{IPAddress};
-	my $msport = $ms{$msnr}{Port};
-		
-	#my $virtinenc = URI::Escape::uri_escape( $command );
-		
-	my $url = "http://$mscred\@$msip\:$msport" . $command;
+	
+	my $FullURI = $ms{$msnr}{FullURI};
+	
+	# my $url = "http://$mscred\@$msip\:$msport" . $command; (Pre-2.0.2)
+	my $url = $FullURI . $command;
 	# $url_nopass = "http://$miniserveradmin:*****\@$miniserverip\:$miniserverport/dev/sps/io/$player_label/$textenc";
 	my $ua = LWP::UserAgent->new;
 	$ua->timeout(1);
+	$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 	my $response = $ua->get($url);
 	# If the request completely fails
 	if ($response->is_error) {
-		print STDERR "mshttp_call: http\://$msip\:$msport" . $command . " FAILED - Error " . $response->status_line . "\n" if ($DEBUG);
+		print STDERR "mshttp_call: $url FAILED - Error " . $response->status_line . "\n" if ($DEBUG);
 		return (undef, $response->code, undef);
 	}
 	#require Data::Dumper;
@@ -299,7 +298,7 @@ sub mshttp_call
 	
 	print STDERR "mshttp_call: Response Code $code Value $value Full: $xmlresp\n" if($DEBUG);
 	
-	return ($value,  $code, $xmlresp);
+	return ($value, $code, $xmlresp);
 	
 }
 
@@ -357,8 +356,14 @@ sub msudp_send
 			$line = $line . $params[$pidx] . $LoxBerry::IO::udp_delimiter . $params[$pidx+1] . " ";
 		}
 		if (length($line) > 220) {
-			print STDERR "msudp_send: Sending: $oldline\n" if ($DEBUG);
-			$udpsocket{$msnr}{$udpport}->send($oldline);
+			eval {
+				print STDERR "msudp_send: Sending: $oldline\n" if ($DEBUG);
+				$udpsocket{$msnr}{$udpport}->send($oldline);
+			};
+			if($@) {
+				print STDERR "msudp_send: ERROR could not send to MS No. $msnr / Port $udpport:\n$@";
+				return;
+			}
 			$parinline = 0;
 			$line = "";
 			redo;
@@ -367,8 +372,14 @@ sub msudp_send
 	}
 	
 	if($line ne "") {
-		print STDERR "msudp_send: Sending: $line\n" if ($DEBUG);
-		$udpsocket{$msnr}{$udpport}->send($line);
+		eval {
+			print STDERR "msudp_send: Sending: $line\n" if ($DEBUG);
+			$udpsocket{$msnr}{$udpport}->send($line);
+		};
+		if($@) {
+			print STDERR "msudp_send: ERROR could not send to MS No. $msnr / Port $udpport:\n$@";
+			return;
+		}
 	}
 	return 1;
 }
