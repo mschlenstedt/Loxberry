@@ -266,6 +266,7 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
       $_ =~ s/<\/DEBUG>//g;
 	  $_ =~ s/^(.*?)\s*<LOGSTART>\s*(.*?)$/<div class='logstart'>$1 $2<\/div>/g;
       $_ =~ s/^(.*?)\s*<LOGEND>\s*(.*?)$/<div class='logend'>$1 $2<\/div>/g;
+	  $_ =~ s/\&/\&amp;/g; # Change all &s to &amp;
   
       if ($_ !~ /<\/div>\n$/) { # New Line
         $_ =~ s/\n/<br>/g;
