@@ -7,6 +7,9 @@ use LWP::UserAgent;
 use JSON;
 use URI::Escape;
 
+# Version of this script
+my $version = "2.0.2.1";
+
 my %jout;
 
 my $cgi = CGI->new;
@@ -71,8 +74,10 @@ if (is_enabled($R::useclouddns)) {
 		exit;
 	}
 	
-	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
-	my $cloudaddress = $cfg->param('BASE.CLOUDDNS');
+	require LoxBerry::System::General;
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open( readonly => 1 );
+	my $cloudaddress = $cfg->{Base}->{Clouddnsuri};
 	
 	my $checkurl = "http://$cloudaddress?getip&snr=$R::clouddns&json=true";
 	$ua->timeout(5);
@@ -100,15 +105,6 @@ if (is_enabled($R::useclouddns)) {
 	}
 	
 }
-
-# Who is requesting this?
-# Commented out - very old code from v0.3.5.7
-# if ($R::get_hostport) {
-	# $jout{hostport} = $hostport;
-	# print to_json(\%jout);
-	# exit;
-# }
-
 
 my @url_nonadmin;
 my @url_admin;
