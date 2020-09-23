@@ -38,7 +38,7 @@
 					<td style="width:50%;">
 						<fieldset data-role="controlgroup" id="netzwerkanschluss">
 							<TMPL_LOOP INTERFACES>
-								<input id="netzwerkanschluss_<TMPL_VAR name>" name="netzwerkanschluss" type="radio" value="<TMPL_VAR name>"data-iswireless="<TMPL_VAR wireless>" onclick="disable(); 
+								<input id="netzwerkanschluss_<TMPL_VAR name>" name="netzwerkanschluss" type="radio" value="<TMPL_VAR name>" data-iswireless="<TMPL_VAR wireless>" onclick="disable(); 
 								<TMPL_UNLESS wireless>
 								validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);
 								<TMPL_ELSE>
@@ -123,7 +123,7 @@
 						<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.IPADDRESS>" id='netzwerkipadresse' name='netzwerkipadresse' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='special:ipaddr'>
+						<input value="<TMPL_VAR NETWORK.IPV4.IPADDRESS>" id='netzwerkipadresse' name='netzwerkipadresse' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='special:ipaddr'>
 					</td>
 					<td style="vertical-align:middle;">
 					</td>
@@ -135,7 +135,7 @@
 						<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.MASK>" id='netzwerkipmaske' name='netzwerkipmaske' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="special:netmask">
+						<input value="<TMPL_VAR NETWORK.IPV4.MASK>" id='netzwerkipmaske' name='netzwerkipmaske' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="special:netmask">
 					</td>
 					<td style="vertical-align:middle;">
 					</td>
@@ -147,7 +147,7 @@
 						<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.GATEWAY>" id='netzwerkgateway' name='netzwerkgateway' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="special:ipaddr">
+						<input value="<TMPL_VAR NETWORK.IPV4.GATEWAY>" id='netzwerkgateway' name='netzwerkgateway' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="special:ipaddr">
 					</td>
 					<td style="vertical-align:middle;">
 					</td>
@@ -159,7 +159,7 @@
 						<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.DNS>" id='netzwerknameserver' name='netzwerknameserver' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="special:ipaddr">
+						<input value="<TMPL_VAR NETWORK.IPV4.DNS>" id='netzwerknameserver' name='netzwerknameserver' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="special:ipaddr">
 					</td>
 					<td style="vertical-align:middle;">
 					</td>
@@ -205,7 +205,7 @@
 						<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.IPADDRESS_IPv6>" id='netzwerkipadresse_IPv6' name='netzwerkipadresse_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIPv6>" data-validation-rule='special:ipaddr_IPv6'>
+						<input value="<TMPL_VAR NETWORK.IPv6.IPADDRESS>" id='netzwerkipadresse_IPv6' name='netzwerkipadresse_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIPv6>" data-validation-rule='special:ipaddr_IPv6'>
 					</td>
 					<td style="vertical-align:middle;">
 					</td>
@@ -218,7 +218,7 @@
 						<label id="labelnetzwerkipmaske_IPv6"><TMPL_VAR NETWORK.LABEL_PREFIXLENGTH_IPv6></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.MASK_IPv6>" id='netzwerkipmaske_IPv6' name='netzwerkipmaske_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6>" data-validation-rule="special:number-min-max-value:0:128">
+						<input value="<TMPL_VAR NETWORK.IPV6.MASK>" id='netzwerkipmaske_IPv6' name='netzwerkipmaske_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6>" data-validation-rule="special:number-min-max-value:0:128">
 					</td>
 					<td style="vertical-align:middle;">
 					</td>
@@ -231,7 +231,7 @@
 						<label id="labelnetzwerknameserver_IPv6"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
 					</td>
 					<td>
-						<input value="<TMPL_VAR NETWORK.DNS_IPv6>" id='netzwerknameserver_IPv6' name='netzwerknameserver_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6>" data-validation-rule="special:ipaddr_IPv6">
+						<input value="<TMPL_VAR NETWORK.IPV6.DNS>" id='netzwerknameserver_IPv6' name='netzwerknameserver_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6>" data-validation-rule="special:ipaddr_IPv6">
 					</td>
 					<td style="vertical-align:middle;">
 					</td>
