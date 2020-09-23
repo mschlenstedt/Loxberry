@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.2.5";
+my $version = "2.0.2.6";
 
 # Globals
 my @results;
@@ -121,19 +121,20 @@ sub performchecks {
 		
 		} else {
 			if( is_enabled( $cfg->{Healthcheck}->{Disable_all}) ) {
-				my $result = &{$_}('title') if( !$_isplugin );
-				my $result = exec_plugincheck( $_, 'title' ) if( $_isplugin );
+				my $result;
+				$result = &{$_}('title') if( !$_isplugin );
+				$result = exec_plugincheck( $_, 'title' ) if( $_isplugin );
 				$result->{status} = '4';
-				$result->{result} = "All healthchecks are globally disabled in 
-				general.json (section [Healthcheck])";
+				$result->{result} = "All healthchecks are globally disabled in general.json (section [Healthcheck])";
 				delete $result->{url};
 				push (@results,	$result );
 				next;
 			}
 			if( is_enabled($cfg->{Healthcheck}->{'Disable_'.lc($_)} ) ) {
 				print STDERR "Healthcheck: Healthcheck $_ is disabled (general.json section [Healthcheck])\n";
-				my $result = &{$_}('title') if( !$_isplugin );
-				my $result = exec_plugincheck( $_, 'title' ) if( $_isplugin );
+				my $result;
+				$result = &{$_}('title') if( !$_isplugin );
+				$result = exec_plugincheck( $_, 'title' ) if( $_isplugin );
 				$result->{status} = '4';
 				$result->{result} = "This check is disabled in general.json (section [Healthcheck])";
 				delete $result->{url};
