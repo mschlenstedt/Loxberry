@@ -8,7 +8,7 @@ use LoxBerry::System;
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "2.0.2.4"; # Version of this script
+my $version = "2.0.2.5"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -48,12 +48,11 @@ elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') {  &lbupdate; }
 elsif ($action eq 'lbupdate-updateself') {  &lbupdate; }
-elsif ($action eq 'lbupdate-resetver') { change_generalcfg("BASE.VERSION", $value) if ($value); }
+elsif ($action eq 'lbupdate-resetver') { change_generaljson("Base->Version", $value) if ($value); }
 elsif ($action eq 'lbupdate-setmaxversion') { change_generaljson("Update->max_version", $value) ; }
 elsif ($action eq 'plugin-loglevel') { plugindb_update('loglevel', $R::pluginmd5, $R::value); }
 elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
 elsif ($action eq 'testenvironment') {  &testenvironment; }
-# elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
 elsif ($action eq 'changelanguage') { change_generaljson("Base->Lang", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
@@ -430,6 +429,7 @@ sub plugininstall_status
 ###################################################################
 sub change_generalcfg
 {
+	print STDERR "LBDEV info: ajax-config-handler.cgi called with change_generalcfg. This is deprecated.";
 	my ($key, $val) = @_;
 	if (!$key) {
 		return undef;
