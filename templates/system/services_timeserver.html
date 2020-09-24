@@ -10,7 +10,7 @@
 					<TMPL_VAR SYSTEMDATETIME>
 					<a href="javascript:location.reload()" data-mini="true" data-inline="true" data-role="button" data-icon="refresh" data-iconpos="notext"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
 					&nbsp;
-					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system/datetime.log&header=html&format=template" target="_blank"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/setdatetime.log&header=html&format=template" target="_blank"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 				</td>
 				<td>
 				</td>
@@ -37,7 +37,9 @@
 					&nbsp;
 				</td>
 			</tr>
-			<tr>
+			
+			<!-- NTP Server Column -->
+			<tr class="col_ntpserver">
 				<td>
 					<label id="labelntpserverurl"><TMPL_VAR TIMESERVER.LABEL_NTP_SERVER></label>
 				</td>
@@ -51,6 +53,23 @@
 					<a id="linkntpurls" href="http://www.pool.ntp.org/de/use.html" target="_blank" class="hint"><TMPL_VAR TIMESERVER.LINK_OTHER_TIMESERVERS></a>
 				</td>
 			</tr>
+			
+			<!-- Miniserver Column -->
+			<tr class="col_miniserver">
+				<td>
+					<label id="labelminiserverno">Miniserver<!-- <TMPL_VAR TIMESERVER.LABEL_MINISERVER> --></label>
+				</td>
+				<td>
+					<TMPL_VAR MSSELECTLIST>
+				</td>
+				<td>
+					&nbsp;
+				</td>
+				<td style="vertical-align:middle;">
+					&nbsp;
+				</td>
+			</tr>
+			
 			<tr>
 				<td style="width:25%;">
 					<label id="labelzeitzone"><TMPL_VAR TIMESERVER.LABEL_TIMEZONE></label>
@@ -100,15 +119,13 @@
 			if ( $('#zeitserver_miniserver').is(':checked') ) 
 			{
 				validate_clean_objects(['#ntpserverurl']);
-				$('#labelntpserverurl').addClass('ui-disabled');
-				$('#ntpserverurl').addClass('ui-disabled');
-				$('#linkntpurls').addClass('ui-disabled');
+				$('.col_ntpserver').hide();
+				$('.col_miniserver').fadeIn();
 			}
 			else 
 			{
-				$('#labelntpserverurl').removeClass('ui-disabled');
-				$('#ntpserverurl').removeClass('ui-disabled');
-				$('#linkntpurls').removeClass('ui-disabled');
+				$('.col_ntpserver').fadeIn();
+				$('.col_miniserver').hide();
 				validate_chk_object(['#ntpserverurl']);
 			}
 		}

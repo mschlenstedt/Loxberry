@@ -22,7 +22,6 @@ use LoxBerry::System;
 use LoxBerry::System::General;
 use LoxBerry::Web;
 use CGI;
-print STDERR "Execute services_timeserver.cgi\n######################\n";
 use CGI::Carp qw(fatalsToBrowser);
 use LWP::UserAgent;
 use warnings;
@@ -61,7 +60,7 @@ our $grepbin;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.2";
+my $version = "2.0.2.3";
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
@@ -183,6 +182,8 @@ sub form {
 	  $maintemplate->param("CHECKED1", $checked1);
 	}
 
+	$maintemplate->param("MSSELECTLIST", mslist_select_html( FORMID => 'msno', SELECTED => $cfg->{Timeserver}->{Timemsno} ) );
+	
 	# Prepare Timezones
 	$timezones = qx( timedatectl  list-timezones|grep Europe/; timedatectl  list-timezones|grep -v  Europe/) || die "Problem reading timezones";
     @lines = split(/\n/,$timezones);
@@ -224,6 +225,7 @@ sub save {
 	$zeitserver   = $R::zeitserver;
 	$ntpserverurl = $R::ntpserverurl;
 	$zeitzone     = $R::zeitzone;
+	my $msno 	  = $R::msno;
 
 	# Test if NTP-Server is reachable
 	our $ntp_check="0"; 
@@ -247,10 +249,17 @@ sub save {
 	$cfg->{Timeserver}->{Ntpserver} = trim($ntpserverurl);
 	$cfg->{Timeserver}->{Method} = trim($zeitserver);
 	$cfg->{Timeserver}->{Timezone} = trim($zeitzone);
+	$cfg->{Timeserver}->{Timemsno} = $msno;
 	$jsonobj->write();
 	
 	# Trigger timesync
-	$output = qx($lbhomedir/sbin/setdatetime.pl);
+	my ($exitcode, $datetime_res) = LoxBerry::System::execute( "$lbhomedir/sbin/setdatetime.pl" );
+	if ($exitcode != 0) {
+		$error = LoxBerry::Web::logfile_button_html( LOGFILE => $lbstmpfslogdir."/setdatetime.log" );
+		&error;
+		exit;
+	}
+
 	$output = qx($datebin);
 
 	my $maintemplate = HTML::Template->new(
