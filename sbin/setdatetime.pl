@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,221 +18,145 @@
 # Modules
 ##########################################################################
 
-use LWP::UserAgent;
-use XML::Simple qw(:strict);
-use Config::Simple;
-use File::Copy;
-use File::HomeDir;
-use LoxBerry::System;
-#use strict;
-#use warnings;
+use LoxBerry::Log;
+use LoxBerry::IO;
+use LoxBerry::JSON;
 
-##########################################################################
-# Variables
-##########################################################################
-
-my $verbose = 1;
-
-my $cfg;
-my $miniserverip;
-my $miniserverport;
-my $miniserveradmin;
-my $miniserverpass;
-my $miniserverclouddns;
-my $miniservermac;
-my $timemethod;
-my $url;
-my $ua;
-my $response;
-our $error;
-my $rawxml;
-my $xml;
-my @fields;
-my $hour;
-my $min;
-my $sec;
-my $day;
-my $mon;
-my $year;
-my $success;
-my $output;
-my $timeserver;
-my $timezone;
-my $timezoneresult;
-our $logmessage;
-our $errormessage;
-my $ntpbin;
-my $datebin;
-my $sudobin;
-my $installdir;
-
-##########################################################################
-# Read Configuration
-##########################################################################
+my $log = LoxBerry::Log->new ( 
+	name => 'setdatetime', 
+	package => 'core', 
+	addtime => 1, 
+	stdout => 1, 
+	filename => $lbstmpfslogdir."/setdatetime.log",
+	append => 1,
+	loglevel => 7);
+LOGSTART "Sync time";
 
 # Version of this script
-my $version = "0.0.4";
+my $version = "2.0.2.2";
+LOGINF "Version of setdatetime: $version";
 
-$cfg                 = new Config::Simple("$lbhomedir/config/system/general.cfg");
-$miniserverip        = $cfg->param("MINISERVER1.IPADDRESS");
-$miniserverport      = $cfg->param("MINISERVER1.PORT");
-$miniserveradmin     = $cfg->param("MINISERVER1.ADMIN");
-$miniserverpass      = $cfg->param("MINISERVER1.PASS");
-$miniserverclouddns  = $cfg->param("MINISERVER1.USECLOUDDNS");
-$miniservermac       = $cfg->param("MINISERVER1.CLOUDURL");
-$timemethod          = $cfg->param("TIMESERVER.METHOD");
-$timeserver          = $cfg->param("TIMESERVER.SERVER");
-$timezone            = $cfg->param("TIMESERVER.ZONE");
-$ntpbin              = $cfg->param("BINARIES.NTPDATE");
-$datebin             = $cfg->param("BINARIES.DATE");
-$sudobin             = $cfg->param("BINARIES.SUDO");
-$installdir          = $cfg->param("BASE.INSTALLFOLDER");
+my $cfgfile = $lbsconfigdir."/general.json";
 
-##########################################################################
-# Main program
-##########################################################################
+LOGINF "Opening general.json ($cfgfile)";
+my $jsonobj = LoxBerry::JSON->new();
+my $cfg = $jsonobj->open( filename => $cfgfile, readonly => 1 );
+if (!$cfg) {
+    LOGWARN "Could not load config. Using fallback defaults.";
+} else {
+    LOGOK "Configuration loaded";
+}
 
-# Set timezone
-$timezoneresult = qx(sudo /usr/bin/timedatectl set-timezone "$timezone");
-$logmessage = "Setting Timezone to '$timezone'\n $timezoneresult\n";
-&log;
+LOGINF "Reading config to local variables...";
+my $ts = $cfg->{Timeserver};
+
+$method = $ts->{Method};
+$timezone = $ts->{Timezone};
+$timeserver = $ts->{Ntpserver};
+$timemsno = $ts->{Timemsno};
+
+LOGWARN "Method not defined - using default" if( ! defined $method );
+LOGWARN "Timezone not defined - using default" if( ! defined $timezone );
+LOGWARN "Timeserver not defined - using default" if( ! defined $timeserver and $method eq 'ntp' );
+LOGWARN "Miniserver not defined - using MS 1" if( ! defined $timemsno and $method eq 'miniserver' );
+
+# Default values:
+$method = defined $method ? $method : "ntp";
+$timezone = defined $timezone ? $timezone : "Europe/Berlin";
+$timeserver = defined $timeserver ? $timeserver : "0.pool.ntp.org";
+$timemsno = defined $timemsno ? $timemsno : 1;
+
+my %miniservers;
+if( $method eq 'miniserver' ) {
+	# Check if configured Miniserver exists
+	%miniservers = LoxBerry::System::get_miniservers();
+	if( ! defined %miniservers{$timemsno} and $timemsno != 1) {
+		$timemsno = 1;
+	}
+	if( ! defined %miniservers{$timemsno} ) {
+			LOGCRIT "Cannot aquire Miniserver - Miniserver configuration completed?";
+			exit(1);
+	}
+}
+
+LOGDEB "Current values used:";
+LOGDEB "Timezone:    $timezone";
+LOGDEB "Time method: $method";
+LOGDEB "Miniserver:  $miniservers{$timemsno}{Name}" if( $method eq 'miniserver' );
+LOGDEB "NTP Server:  $timeserver" if( $method eq 'ntp' );
+
+LOGINF "Setting timezone";
+
+my $timezoneresult = qx(sudo /usr/bin/timedatectl set-timezone "$timezone");
+LOGINF "Setting Timezone to '$timezone'";
+LOGDEB "Result: $timezoneresult" if( $timezoneresult );
+
 $timezoneresult = qx(/usr/bin/timedatectl status);
-$logmessage = "Timezone status: \n $timezoneresult \n";
-&log;
+LOGINF "Timezone status:\n$timezoneresult";
 
-# If Method is Miniserver
-if ($timemethod eq "miniserver") {
-
-  # Use Cloud DNS?
-  if ($miniserverclouddns) {
-    $output = qx($lbhomedir/bin/showclouddns.pl $miniservermac);
-    @fields = split(/:/,$output);
-    $miniserverip   =  @fields[0];
-    $miniserverport = @fields[1];
-  }
-
-  # Get Time from Miniserver
-  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/sys/time";
-  $ua = LWP::UserAgent->new;
-  $ua->timeout(1);
-  local $SIG{ALRM} = sub { die };
-  eval {
-    alarm(1);
-    $response = $ua->get($url);
-    if (!$response->is_success) {
-      $errormessage = "Unable to fetch Time from Miniserver. Giving up.";
-      &error;
-      exit;
-    } else {
-      $success = 1;
-    }
-  };
-  alarm(0);
-
-  if (!$success) {
-      $errormessage = "Unable to fetch Time from Miniserver. Giving up.";
-      &error;
-      exit;
-  }
-  $success = 0;
- 
-  $rawxml = $response->decoded_content();
-  $xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
-  #print Dumper($xml);
-
-  @fields = split(/:/,$xml->{value});
-  $hour = $fields[0];
-  $min  = $fields[1];
-  $sec  = $fields[2];
-
-  # Get Date from Miniserver
-  $url = "http://$miniserveradmin:$miniserverpass\@$miniserverip\:$miniserverport/dev/sys/date";
-  $ua = LWP::UserAgent->new;
-  $ua->timeout(1);
-  local $SIG{ALRM} = sub { die };
-  eval {
-    alarm(1);
-    $response = $ua->get($url);
-    if (!$response->is_success) {
-      $errormessage = "Unable to fetch Date from Miniserver. Giving up.";
-      &error;
-      exit;
-    } else {
-      $success = 1;
-    }
-  };
-  alarm(0);
-
-  if (!$success) {
-      $errormessage = "Unable to fetch Time from Miniserver. Giving up.";
-      &error;
-      exit;
-  }
-  $success = 0;
-
-  $rawxml = $response->decoded_content();
-  $xml = XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
-  #print Dumper($xml);
-
-  @fields = split(/-/,$xml->{value});
-  $year = $fields[0];
-  $mon  = $fields[1];
-  $day  = $fields[2];
-
-  # Set system date and time
-  $output = qx($sudobin $datebin -s '$year-$mon-$day $hour:$min:$sec');
-  $logmessage = "Sync Date/Time with Miniserver: $output";
-  &log;
-  exit;
-
+if( $method eq 'miniserver') {
+	my $value;
+	my $status;
+	my $code;
+	my $year;
+	my $mon;
+	my $day;
+	my $hour;
+	my $min;
+	my $sec;
+	
+	eval {
+		LOGTITLE "Time sync with Miniserver $miniservers{$timemsno}{Name}";
+		
+		# Getting time
+		LOGINF "Getting time from Miniserver $timemsno ($miniservers{$timemsno}{Name})...";
+		($value, $status, $resp) = LoxBerry::IO::mshttp_call($timemsno, "/dev/sys/time");
+		LOGDEB "Response $resp";
+		if($status < 200 or $status >= 300) {
+			LOGCRIT "Could not get time from Miniserver - possibly your configured user is not member of an administrative group in Loxone Config?";
+			LOGDEB "Status $status - $resp";
+			exit(1);
+		}
+		( $hour, $min, $sec ) = split(':', $value);
+		
+		# Getting date
+		LOGINF "Getting date from Miniserver $timemsno ($miniservers{$timemsno}{Name})...";
+		($value, $status, $resp) = LoxBerry::IO::mshttp_call($timemsno, "/dev/sys/date");
+		LOGDEB "Response $resp";
+		if($status < 200 or $status >= 300) {
+			LOGCRIT "Could not get date from Miniserver";
+			LOGDEB "Status $status";
+			exit(1);
+		}
+		( $year, $mon, $day ) = split('-', $value);
+		
+		LOGINF "Setting LoxBerry time to Miniserver time: $year-$mon-$day $hour:$min:$sec";
+		my $output = qx(sudo date -s '$year-$mon-$day $hour:$min:$sec');
+		LOGINF "Response: $output";
+	};
+	if($@) {
+		LOGCRIT "Updating time from Miniserver failed: $@";
+		exit(1);
+	}
+	exit(0);
 }
 
-# If Method is NTP
-if ($timemethod eq "ntp" && $timeserver) {
-
-  # Set system date and time via NTP
-  $output = qx($sudobin $ntpbin -u $timeserver);
-  $logmessage = "Sync Date/Time with NTP Server: $output";
-  &log;
-  exit;
-
+if ( $method eq 'ntp' ) {
+	LOGTITLE "Time sync with NTP server $timeserver";
+	LOGINF "Updating time with NTP server $timeserver ...";
+	my $output = qx(sudo ntpdate -u $timeserver);
+	LOGINF "Response: $output";
+	exit(0);
 }
 
-# Neither Miniserver nor NTP Server? Error!
-$errormessage = "You haven't choose neither Miniserver nor NTP Server or no NTP-Server given. Giving up.";
-&error;
-exit;
+LOGTITLE "Unknown time sync method";
+LOGCRIT "Unknown time sync method. Check your Timeserver configuration";
+exit(1);
 
-##########################################################################
-# Subroutinen
-##########################################################################
 
-# Logfile
-sub log {
-# Today's date for logfile
-  (my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst) = localtime();
-  $year = $year+1900;
-  $mon = $mon+1;
-  $mon = sprintf("%02d", $mon);
-  $mday = sprintf("%02d", $mday);
-  $hour = sprintf("%02d", $hour);
-  $min = sprintf("%02d", $min);
-  $sec = sprintf("%02d", $sec);
-
-  if ($verbose || $error) {print "$logmessage";}
-
-  # Logfile
-  open(F,">>$installdir/log/system/datetime.log");
-    print F "$year-$mon-$mday $hour:$min:$sec $logmessage";
-  close (F);
-
-  return ();
-}
-
-# Error Message
-sub error {
-  $error = "1";
-  $logmessage = "ERROR: $errormessage\n";
-  &log;
-  exit;
+END 
+{
+	if (defined $log) {
+		LOGEND "Execution end";
+	}
 }

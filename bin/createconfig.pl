@@ -2,12 +2,12 @@
 
 use strict;
 use LoxBerry::System;
+use LoxBerry::System::General;
 use LoxBerry::JSON;
-use Config::Simple;
 use File::Copy qw(copy);
 
 # Version of this script
-my $version = "1.4.0.2";
+my $version = "2.0.2.1";
 
 # Functions to copy or update config files
 # This is called in the index.cgi and on every LoxBerry Update.
@@ -35,8 +35,8 @@ my $syssecurepin_file = "$lbsconfigdir/securepin.dat";
 
 
 # Call all routines for different config files
-	update_generalcfg();
 	update_generaljson();
+	update_generalcfg();
 	update_mailcfg();
 	update_htusers();
 	update_securepin();
@@ -46,27 +46,30 @@ my $syssecurepin_file = "$lbsconfigdir/securepin.dat";
 ########################################################
 sub update_generalcfg
 {
+	# --> LoxBerry 2.0.2 - with general.json not required anymore
 
-	if (copydefault( $defgeneralcfg_file , $sysgeneralcfg_file )) 
-		{ return 1; }
-	
-	tie my %Default, "Config::Simple", $defgeneralcfg_file;
-	tie my %Config, "Config::Simple", $sysgeneralcfg_file;
-	
-	print STDERR "<INFO> Base Version is $Config{'BASE.VERSION'}\n"; 
 
-	# Copy all missing keys from default to config
-	foreach my $setting (keys %Default) {
-		if (! $Config{$setting} ) {
-			print STDERR "<INFO> Setting missing or empty key $setting to $Default{$setting}\n";
-			$Config{$setting} = $Default{$setting};
-		}
-	}
+	# if (copydefault( $defgeneralcfg_file , $sysgeneralcfg_file )) 
+		# { return 1; }
 	
-	# Setting or changing other keys
-	# ....
+	
+	# tie my %Default, "Config::Simple", $defgeneralcfg_file;
+	# tie my %Config, "Config::Simple", $sysgeneralcfg_file;
+	
+	# print STDERR "<INFO> Base Version is $Config{'BASE.VERSION'}\n"; 
 
-	tied(%Config)->write();
+	# # Copy all missing keys from default to config
+	# foreach my $setting (keys %Default) {
+		# if (! $Config{$setting} ) {
+			# print STDERR "<INFO> Setting missing or empty key $setting to $Default{$setting}\n";
+			# $Config{$setting} = $Default{$setting};
+		# }
+	# }
+	
+	# # Setting or changing other keys
+	# # ....
+
+	# tied(%Config)->write();
 
 }
 
@@ -77,34 +80,24 @@ sub update_generaljson
 {
 
 	if (copydefault( $defgeneraljson_file , $sysgeneraljson_file )) 
-		{ return 1; }
+	{ 
+		my $syscfgobj = LoxBerry::System::General->new();
+		my $syscfgobj->_json2cfg();
+		return 1; 
+	}
 	
 	my $defcfgobj = LoxBerry::JSON->new();
-	my $syscfgobj = LoxBerry::JSON->new();
+	my $syscfgobj = LoxBerry::System::General->new();
 	
 	my $defcfg = $defcfgobj->open(filename => $defgeneraljson_file, readonly => 1);
-	my $syscfg = $syscfgobj->open(filename => $sysgeneraljson_file, writeonclose => 1);
+	my $syscfg = $syscfgobj->open(writeonclose => 0);
 	
-	# This definitely will fail if the json holds an array instead of an object
-	foreach my $firstkey (keys %$defcfg) {
-		print "$firstkey: $defcfg->{$firstkey}\n";
-		eval {
-			foreach my $secondkey (keys %{$defcfg->{$firstkey}}) {
-				#print "firstkey|secondkey $firstkey|$secondkey: " . $defcfg->{$firstkey}->{$secondkey} . "\n";
-				if ( ! defined $syscfg->{$firstkey}->{$secondkey} ) {
-					print "Setting $firstkey|$secondkey to $defcfg->{$firstkey}->{$secondkey}\n";
-					$syscfg->{$firstkey}->{$secondkey} = $defcfg->{$firstkey}->{$secondkey};
-				}
-			}
-		};
-		
-		if (! defined $syscfg->{$firstkey}) {
-			print "Setting $firstkey to $defcfg->{$firstkey}\n";
-			$syscfg->{$firstkey} = $defcfg->{$firstkey};
-		}
-		
-	}	
-	
+	# Merging default config to general.json
+	use Hash::Merge;
+	my $merger = Hash::Merge->new('LEFT_PRECEDENT');
+	$merger->set_clone_behavior(0);
+	$syscfgobj->{jsonobj} = $merger->merge( $syscfg, $defcfg );
+	$syscfgobj->write();
 }
 
 

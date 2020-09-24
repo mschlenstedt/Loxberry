@@ -20,9 +20,9 @@
 ##########################################################################
 
 use LoxBerry::Web;
+use LoxBerry::System::General;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
-use LWP::UserAgent;
 use URI::Escape;
 use warnings;
 use strict;
@@ -54,21 +54,22 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.5";
+my $version = "2.0.2.6";
 
-my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
+my $jsonobj = LoxBerry::System::General->new();
+my $cfg = $jsonobj->open();
 my $bins = LoxBerry::System::get_binaries();
 
-$miniservers        = $cfg->param("BASE.MINISERVERS");
-$clouddnsaddress    = $cfg->param("BASE.CLOUDDNS");
-$miniserversprev    = $miniservers;
+# Miniserver count from json
+$miniservers        = scalar keys %{$cfg->{Miniserver}};
+#$clouddnsaddress    = $cfg->{Base}->{Clouddnsuri};
+#$miniserversprev    = $miniservers;
 
 my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/miniserver.html",
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
 		%htmltemplate_options,
 		# debug => 1,
 		);
@@ -96,30 +97,37 @@ $lang = lblanguage();
 # What should we do
 #########################################################################
 
-my $form_mscount = $cgi->param("miniservers");
 $R::saveformdata if (0);
 $R::do if (0);
+
 if ($cgi->param("addbtn")) {
-	$miniservers = $form_mscount + 1;
-	$cfg->param("BASE.MINISERVERS", $miniservers);
-	param('miniservers', $miniservers);
-#	$cfg->save();
-	&save;
+	# Add button
+	# Figure out the highest number of Miniserver id's 
+	my $max = 0;
+	$_ > $max and $max = $_ for keys %{$cfg->{Miniserver}};
+	my $newid = int($max) + 1;
+	$cfg->{Miniserver}->{$newid}->{Name} = "";
+	$jsonobj->write();
+	$miniservers = scalar keys %{$cfg->{Miniserver}};
 	&form;
 	exit;
-} elsif ($cgi->param("delbtn") && $form_mscount gt 1) {
-	$cfg->set_block("MINISERVER$form_mscount", {});
-	$miniservers = $form_mscount - 1;
-	$cfg->param("BASE.MINISERVERS", $miniservers);
-	param('miniservers', $miniservers);
-	# $cfg->save();
-	&save;
+} elsif ( $cgi->param("delbtn") ) {
+	# Delete button
+	# POST value 'delbtn' sends the id of the last element in list to delete
+	if ( keys %{$cfg->{Miniserver}} > 1 ) {
+		delete $cfg->{Miniserver}->{ $cgi->param("delbtn") };
+		$jsonobj->write();
+		$miniservers = scalar keys %{$cfg->{Miniserver}};	
+	}
+	
 	&form;
 	exit;
 } elsif (!$R::saveformdata || $R::do eq "form") {
+  # Show form
   &form;
   exit;
 } else {
+  # Save form data
   &save;
   exit;
 }
@@ -140,28 +148,31 @@ sub form {
 	$maintemplate->param ( "MINISERVERS", $miniservers);
 	
 	my @msdata = ();
+	my $lastkey;
 	
-	for ($msno = 1; $msno<=$miniservers; $msno++) {	
-	
+	foreach my $msno (sort keys %{$cfg->{Miniserver}} ) {	
+		$lastkey = $msno;
 		my %ms;
+		my $curms = $cfg->{Miniserver}->{$msno};
 		$ms{MSNO} = $msno;
-		$ms{MSIP} = $cfg->param("MINISERVER$msno.IPADDRESS");
-		$ms{MSPORT} = $cfg->param("MINISERVER$msno.PORT");
-		$ms{MSUSER} = uri_unescape($cfg->param("MINISERVER$msno.ADMIN"));
-		$ms{MSPASS} = uri_unescape($cfg->param("MINISERVER$msno.PASS"));
-		$ms{MSUSECLOUDDNS} = is_enabled( $cfg->param("MINISERVER$msno.USECLOUDDNS") ) ? "true" : "false";
-		$ms{MSCLOUDURL} = $cfg->param("MINISERVER$msno.CLOUDURL");
-		$ms{MSCLOUDURLFTPPORT} = $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
-		$ms{MSNOTE} = $cfg->param("MINISERVER$msno.NOTE");
-		$ms{MSNAME} = $cfg->param("MINISERVER$msno.NAME");
-		$ms{MSPREFERHTTPS} = is_enabled($cfg->param("MINISERVER$msno.PREFERHTTPS")) ? "true" : "false";
-		$ms{MSPORTHTTPS} = $cfg->param("MINISERVER$msno.PORTHTTPS");
+		$ms{MSIP} = $curms->{Ipaddress};
+		$ms{MSPORT} = $curms->{Port};
+		$ms{MSUSER} = uri_unescape($curms->{Admin});
+		$ms{MSPASS} = uri_unescape($curms->{Pass});
+		$ms{MSUSECLOUDDNS} = is_enabled( $curms->{Useclouddns} ) ? "true" : "false";
+		$ms{MSCLOUDURL} = $curms->{Cloudurl};
+		$ms{MSCLOUDURLFTPPORT} = $curms->{Cloudurlftpport};
+		$ms{MSNOTE} = $curms->{Note};
+		$ms{MSNAME} = $curms->{Name};
+		$ms{MSPREFERHTTPS} = is_enabled( $curms->{Preferhttps} ) ? "true" : "false";
+		$ms{MSPORTHTTPS} = $curms->{Porthttps};
 		
 		push(@msdata, \%ms);
 	}
 		
 	$maintemplate->param(MSDATA => \@msdata);
-		
+	$maintemplate->param(LASTKEY => $lastkey);
+	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MINISERVER.WIDGETLABEL'};
 	LoxBerry::Web::head();
@@ -187,64 +198,61 @@ sub save {
 	# Everything from Forms
 	$miniservers =  !defined param('miniservers') || param('miniservers') lt 1 ? 1 : param('miniservers');
 	
-	$cfg->param("BASE.MINISERVERS", $miniservers);
-
 	$msno = 1;
 	my %ms;
 	
 	while ($msno <= $miniservers) {
-		
-		$cfg->param("MINISERVER$msno.IPADDRESS", param("miniserverip$msno") );
-		$cfg->param("MINISERVER$msno.PORT", defined param("miniserverport$msno") ? param("miniserverport$msno") : 80 );
-		$cfg->param("MINISERVER$msno.NOTE", param("miniservernote$msno"));
-		$cfg->param("MINISERVER$msno.USECLOUDDNS", is_enabled( param("useclouddns$msno") ) ? '1' : '0' );
-		$cfg->param("MINISERVER$msno.CLOUDURL", param("miniservercloudurl$msno") );
-		$cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", param("miniservercloudurlftpport$msno") );
-		$cfg->param("MINISERVER$msno.PREFERHTTPS", is_enabled( param("miniserverpreferhttps$msno") ) ? "1" : "0" );
-		$cfg->param("MINISERVER$msno.PORTHTTPS", defined param("miniserverporthttps$msno") ? param("miniserverporthttps$msno") : 443 );
-		$cfg->param("MINISERVER$msno.NAME", param("miniserverfoldername$msno") );
+		my %ms;
+		my $curms = $cfg->{Miniserver}->{$msno};
+		$curms->{Ipaddress} = param("miniserverip$msno");
+		$curms->{Port} = defined param("miniserverport$msno") ? param("miniserverport$msno") : 80 ;
+		$curms->{Note} = param("miniservernote$msno");
+		$curms->{Useclouddns} = is_enabled( scalar param("useclouddns$msno") ) ? '1' : '0' ;
+		$curms->{Cloudurl} = param("miniservercloudurl$msno");
+		$curms->{Cloudurlftpport} = param("miniservercloudurlftpport$msno");
+		$curms->{Preferhttps} = is_enabled( scalar param("miniserverpreferhttps$msno") ) ? "1" : "0" ;
+		$curms->{Porthttps} = defined param("miniserverporthttps$msno") ? param("miniserverporthttps$msno") : 443 ;
+		$curms->{Name} = param("miniserverfoldername$msno");
 		# Credentials are RAW and URI-encoded
-		$cfg->param("MINISERVER$msno.ADMIN", uri_escape( param("miniserveruser$msno") ) );
-		$cfg->param("MINISERVER$msno.PASS", uri_escape( param("miniserverkennwort$msno") ) );
+		$curms->{Admin_raw} = param("miniserveruser$msno");
+		$curms->{Pass_raw} = param("miniserverkennwort$msno");
+		$curms->{Admin} = uri_escape( scalar param("miniserveruser$msno") );
+		$curms->{Pass} = uri_escape( scalar param("miniserverkennwort$msno") );
 		
 		# Save calculated values
 		my $transport;
-		$transport = $cfg->param("MINISERVER$msno.PREFERHTTPS") ? 'https' : 'http';
-		$cfg->param("MINISERVER$msno.TRANSPORT", $transport );
+		$transport = $curms->{Preferhttps} eq '1' ? 'https' : 'http';
+		$curms->{Transport} = $transport;
 		
 		# Check if ip format is IPv6
 		my $IPv6Format = '0';
-		my $ipaddress = $cfg->param("MINISERVER$msno.IPADDRESS");
-		if( $cfg->param("MINISERVER$msno.USECLOUDDNS") eq '1' or index( $ipaddress, ':' ) != -1 ) {
+		my $ipaddress = $curms->{Ipaddress};
+		if( $curms->{Preferhttps} eq '1' or index( $ipaddress, ':' ) != -1 ) {
 			$IPv6Format = '1';
 		}
-		$cfg->param("MINISERVER$msno.IPV6FORMAT", $IPv6Format );
+		$curms->{Ipv6format} = $IPv6Format;
 		
 		# Build FullURI from Credentials
-		my $FullURI;
-		if ( $cfg->param("MINISERVER$msno.USECLOUDDNS") eq '0' ) {
+		my ($FullURI, $FullURI_RAW);
+		if ( $curms->{Useclouddns} eq '0' ) {
 			$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
-			my $port = $cfg->param("MINISERVER$msno.PREFERHTTPS") eq '1' ? $cfg->param("MINISERVER$msno.PORTHTTPS") : $cfg->param("MINISERVER$msno.PORT");
-			$FullURI = $transport.'://'.$cfg->param("MINISERVER$msno.ADMIN").':'.$cfg->param("MINISERVER$msno.PASS").'@'.$ipaddress.':'.$port;
+			my $port = $curms->{Preferhttps} eq '1' ? $curms->{Porthttps} : $curms->{Port};
+			$FullURI = $transport.'://'.$curms->{Admin}.':'.$curms->{Pass}.'@'.$ipaddress.':'.$port;
+			$FullURI_RAW = $transport.'://'.$curms->{Admin_raw}.':'.$curms->{Pass_raw}.'@'.$ipaddress.':'.$port;
 		} else {
 			$FullURI = "";
+			$FullURI_RAW = "";
 		}
-		$cfg->param("MINISERVER$msno.FULLURI", $FullURI );
+		$curms->{Fulluri} = $FullURI;
+		$curms->{Fulluri_raw} = $FullURI_RAW;
 		
 		
 		# Next
 		$msno++;
 	}
 
-	# Deleting old Miniserver if any (TODO: How to delete the BLOCKs?!?)
-	
-	while ($miniserversprev > $miniservers) {
-		$cfg->set_block("MINISERVER$miniserversprev", {});
-		$miniserversprev--;
-	}
-
 	# Save Config
-	$cfg->save();
+	$jsonobj->write();
 
 	if ($cgi->param("delbtn") || $cgi->param("addbtn")) { 
 		return;
@@ -255,9 +263,7 @@ sub save {
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
 		%htmltemplate_options,
-		# debug => 1,
 	);
 	
 	my %SL = LoxBerry::System::readlanguage($maintemplate);

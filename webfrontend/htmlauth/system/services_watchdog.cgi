@@ -40,7 +40,7 @@ my $helptemplate = "help_services.html";
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.3";
+my $version = "2.0.2.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -179,6 +179,8 @@ $navbar{0}{URL} = 'services.php?load=1';
 $navbar{1}{Name} = "$SL{'SERVICES.TITLE_PAGE_WATCHDOG'}";
 $navbar{1}{URL} = 'services_watchdog.cgi';
 $navbar{1}{active} = 1;
+$navbar{4}{Name} = "$SL{'HEADER.PANEL_TIMESERVER'}";
+$navbar{4}{URL} = 'services_timeserver.cgi';
 $navbar{5}{Name} = "Samba (SMB)";
 $navbar{5}{URL} = 'services_samba.cgi';
 $navbar{50}{Name} = "$SL{'SERVICES.TITLE_PAGE_OPTIONS'}";

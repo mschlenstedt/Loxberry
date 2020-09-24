@@ -2,11 +2,13 @@
 
 #use CGI;
 use LoxBerry::System;
+use LoxBerry::System::General;
+use LoxBerry::IO;
 use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.2.2";
+my $version = "2.0.2.6";
 
 # Globals
 my @results;
@@ -38,6 +40,14 @@ push (@checks, "check_miniservers");
 push (@checks, "check_reboot_required");
 push (@checks, "check_loglevels");
 
+# Get plugin healthchecks
+my @plugins = LoxBerry::System::get_plugins();
+foreach( @plugins ) {
+	if( -x "$lbhomedir/bin/plugins/$_->{PLUGINDB_FOLDER}/healthcheck" ) {
+		push( @checks, "plugincheck_".$_->{PLUGINDB_FOLDER} );
+	}
+}
+
 # Default action is check
 if (!$opts{action}) {
 	$opts{action} = 'check';
@@ -54,7 +64,7 @@ if (!exists &{$opts{output}}) {
 
 # Only one check is requested
 if ($opts{check}) { 
-	if (!exists &{$opts{check}}) {
+	if ( ! grep { /$opts{check}/ } @checks ) {
 		print "The healthcheck \"$opts{check}\" does not exist.\n";
 		exit 1;
 	}
@@ -74,6 +84,11 @@ elsif ($opts{action} eq "check") {
 # Output
 &{$opts{output}}(@results);
 
+# Send to MQTT broker if MQTT Gateway is installed
+if( $opts{action} eq 'check' ) {
+	outputmqtt(@results);
+}
+
 exit;
 
 # Sub: Perform check
@@ -81,34 +96,53 @@ sub performchecks {
 	my ($action) = @_;
 	
 	# Disable checks by general.cfg config variables
-	my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
-	if(is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_ALL'))) {
-		print STDERR "Healthcheck: Healthcheck is globally disabled (general.cfg section [HEALTHCHECK])\n";
+	#my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open( readonly => 1 );
+
+	if( is_enabled($cfg->{Healthcheck}->{Disable_all}) ) {
+		print STDERR "Healthcheck: Healthcheck is globally disabled (general.json section [Healthcheck])\n";
 	}
 		
 	foreach (@checks) {
+		# Eval if internal or plugin check
+		my $_isplugin;
+		if( begins_with( $_, 'plugincheck_' ) ) {
+			
+			$_isplugin = 1;
+		}
+		
 		if ($action eq "titles") {
-			push (@results,	&{$_}('title') );
+			if( $_isplugin ) {
+				push (@results, exec_plugincheck( $_, 'title' ));
+			} else {
+				push (@results,	&{$_}('title') );
+			}
+		
 		} else {
-			if(is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_ALL'))) {
-				my $result = &{$_}('title');
+			if( is_enabled( $cfg->{Healthcheck}->{Disable_all}) ) {
+				my $result;
+				$result = &{$_}('title') if( !$_isplugin );
+				$result = exec_plugincheck( $_, 'title' ) if( $_isplugin );
 				$result->{status} = '4';
-				$result->{result} = "All healthchecks are globally disabled in 
-				general.cfg (section HEALTHCHECK)";
+				$result->{result} = "All healthchecks are globally disabled in general.json (section [Healthcheck])";
 				delete $result->{url};
 				push (@results,	$result );
 				next;
 			}
-			if( is_enabled($generalcfg->param('HEALTHCHECK.DISABLE_'.uc($_))) ) {
-				print STDERR "Healthcheck: Healthcheck $_ is disabled (general.cfg section [HEALTHCHECK])\n";
-				my $result = &{$_}('title');
+			if( is_enabled($cfg->{Healthcheck}->{'Disable_'.lc($_)} ) ) {
+				print STDERR "Healthcheck: Healthcheck $_ is disabled (general.json section [Healthcheck])\n";
+				my $result;
+				$result = &{$_}('title') if( !$_isplugin );
+				$result = exec_plugincheck( $_, 'title' ) if( $_isplugin );
 				$result->{status} = '4';
-				$result->{result} = "This check is disabled in general.cfg (section HEALTHCHECK)";
+				$result->{result} = "This check is disabled in general.json (section [Healthcheck])";
 				delete $result->{url};
 				push (@results,	$result );
 				next;
 			}
-			push (@results,	&{$_}() );
+			push (@results,	&{$_}() ) if( !$_isplugin );
+			push (@results,	exec_plugincheck( $_ )) if( $_isplugin );
 		}
 	}
 	return(@results);
@@ -178,6 +212,85 @@ sub text {
 
 }
 
+# Sub: Output to mqtt
+sub outputmqtt
+{
+	my (@results) = @_;
+	
+	# First check if MQTT Gateway plugin is installed
+	my $mqttcred = LoxBerry::IO::mqtt_connectiondetails();
+	if( ! defined $mqttcred ) {
+		return;
+	}
+	
+	my %respobj;
+	$respobj{'unknown'} = 0;
+	$respobj{'errors'} = 0;
+	$respobj{'warnings'} = 0;
+	$respobj{'ok'} = 0;
+	$respobj{'infos'} = 0;
+	
+	
+	
+	my $hostname = LoxBerry::System::lbhostname();
+	# Truncate to short name (not FQDN)
+	my $dotpos = index( $hostname, '.' ); 
+	if( $dotpos != -1 ) {
+		$hostname = substr( $hostname, 0, $dotpos );
+	}
+	my $basetopic = "$hostname/healthcheck/";
+
+	require Net::MQTT::Simple;
+	# Allow unencrypted connection with credentials
+	$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
+	 
+	# Connect to broker
+	my $mqtt = Net::MQTT::Simple->new($mqttcred->{brokeraddress});
+	if(! $mqtt) {
+		return;
+	}
+	
+	# Depending if authentication is required, login to the broker
+	if($mqttcred->{brokeruser}) {
+		$mqtt->login($mqttcred->{brokeruser}, $mqttcred->{brokerpass});
+	}
+	
+	# Publish healthcheck as json
+	foreach my $check (@results) {
+		my %output;
+		# print "Sub: $check->{sub}\n";
+		# print "Title: $check->{title}\n";
+		# print "Status: ";
+		
+		$output{status} = $check->{status};
+		
+		if( ! $check->{status} ) {
+			$output{statustext} = "UNKNOWN";
+		} elsif ($check->{status} eq "3") {
+			$output{statustext} = "ERROR";
+		} elsif ($check->{status} eq "4") {
+			$output{statustext} = "WARNING";
+		} elsif ($check->{status} eq "5") {
+			$output{statustext} = "OK";
+		} elsif ($check->{status} eq "6") {
+			$output{statustext} = "Info";
+		}
+		$output{result} = $check->{result};
+		
+		# publish retained
+		my $fulltopic = "$basetopic"."$check->{title}";
+		my $data = encode_json(\%output);
+		# print STDERR "MQTT publish: $fulltopic\n$data\n";
+		$mqtt->retain( $fulltopic, $data );
+	}
+	
+	# Publish summary
+	my %summary = get_summary(@results);
+	$mqtt->retain( $basetopic."summary", encode_json( \%summary ) );
+	$mqtt->disconnect();
+}
+
+
 sub notification
 {
 	require LoxBerry::Log;
@@ -191,32 +304,7 @@ sub notification
 	
 	my (@results) = @_;
 	
-	$respobj{'unknown'} = 0;
-	$respobj{'errors'} = 0;
-	$respobj{'warnings'} = 0;
-	$respobj{'ok'} = 0;
-	$respobj{'infos'} = 0;
-		
-	# Loop the checks and check if a notification exists
-	foreach my $element (@results) {
-		#print STDERR $element->{status} . "\n";
-		if(! $element->{status}) {
-			$respobj{'errors'}++;
-			$respobj{'unknown'}++;
-		} elsif ( $element->{status} eq "3" ) {
-			$respobj{'errors'}++;
-			$respobj{'errorstrings'} .= " " . $element->{result};
-		} elsif ( $element->{status} eq "4" ) {
-			$respobj{'warnings'}++;
-		} elsif ( $element->{status} eq "5" ) {
-			$respobj{'ok'}++;
-		} elsif ( $element->{status} eq "6" ) {
-			$respobj{'infos'}++;
-		} else {
-			$respobj{'errors'}++;
-			$respobj{'unknown'}++;
-		}
-	}	
+	%respobj = get_summary(@results);
 	
 	# Get last notification of the widget $not_helper
 	my %notif;
@@ -315,6 +403,42 @@ sub notification
 	}
 }
 
+sub get_summary
+{
+	my (@results) = @_;
+	my %respobj;
+	$respobj{'unknown'} = 0;
+	$respobj{'errors'} = 0;
+	$respobj{'warnings'} = 0;
+	$respobj{'ok'} = 0;
+	$respobj{'infos'} = 0;
+		
+	# Loop the checks and check if a notification exists
+	foreach my $element (@results) {
+		#print STDERR $element->{status} . "\n";
+		if(! $element->{status}) {
+			$respobj{'errors'}++;
+			$respobj{'unknown'}++;
+		} elsif ( $element->{status} eq "3" ) {
+			$respobj{'errors'}++;
+			$respobj{'errorstrings'} .= " " . $element->{result};
+		} elsif ( $element->{status} eq "4" ) {
+			$respobj{'warnings'}++;
+		} elsif ( $element->{status} eq "5" ) {
+			$respobj{'ok'}++;
+		} elsif ( $element->{status} eq "6" ) {
+			$respobj{'infos'}++;
+		} else {
+			$respobj{'errors'}++;
+			$respobj{'unknown'}++;
+		}
+	}	
+	$respobj{'lastupdateepoch'} = time;
+	$respobj{'lastupdate'} = LoxBerry::System::currtime('hr');
+	
+	return %respobj;
+
+}
 
 sub parse_options
 {
@@ -329,6 +453,62 @@ sub parse_options
 		}
 		$opts{$key} = $value;
 	}
+}
+
+sub exec_plugincheck
+{
+	my %result;
+	my ($checkname, $action) = @_;
+	
+	$result{'sub'} = $checkname;
+	
+	# Extract pluginfolder from checkname
+	my $pluginfolder = substr( $checkname, 12);
+	
+	# Get Plugin name
+	my $plugin = LoxBerry::System::plugindata($pluginfolder);
+	my $pluginname = $plugin->{PLUGINDB_TITLE};
+	$result{'title'} = 'Plugin ' . $pluginname;
+	my $check_filename = "$lbhomedir/bin/plugins/$pluginfolder/healthcheck";
+	
+	if( ! -x $check_filename ) {
+		return \%result;
+	}
+	
+	if( $action eq 'title' ) {
+		$check_filename .= " title";
+	} else {
+		$check_filename .= " check";
+	}
+		
+	my ($exitcode, $output) = execute( $check_filename );
+	
+	my $json;
+	eval {
+		$json = from_json( $output );
+	}; 
+	if ($@) {
+		# Is plain
+		($result{desc}, $result{status}, $result{result}) = split( /\n/, $output );
+	} else {
+		# Is json
+		$result{desc} = $json->{desc};
+		$result{status} = $json->{status};
+		$result{result} = $json->{result};
+	}
+	
+	if( $action eq 'title' ) {
+		delete $result{status};
+		delete $result{result};
+	} else {
+		my @allowed = ( '0', '3', '4', '5', '6' );
+		if ( ! grep { /$result{status}/ } @allowed ) {
+			$result{status} = 0;
+		}
+	}
+	
+	return (\%result);
+
 }
 
 
@@ -1076,6 +1256,7 @@ sub check_miniservers
 	}
 
 	eval {
+	
 		# print STDERR "get_miniservers\n";
 		my %mslist = LoxBerry::System::get_miniservers();
   
@@ -1086,7 +1267,6 @@ sub check_miniservers
 			return(\%result);
 		}
 		
-		# print STDERR "Init LWP::UserAgent\n";
 		require LWP::UserAgent;
 		my $ua = LWP::UserAgent->new;
 		my $checkurl = 'http://localhost:' . lbwebserverport() . '/admin/system/tools/ajax-check-miniserver.cgi';
@@ -1094,23 +1274,31 @@ sub check_miniservers
 		$result{status} = "5";
 		my @results;
 		
-		# print STDERR "Start loop\n";
 		foreach my $ms (sort keys %mslist) {
+			utf8::downgrade( $mslist{$ms}{Admin_RAW} );
+			utf8::downgrade( $mslist{$ms}{Pass_RAW} );
 			
-			# print STDERR "Miniserver Nr. $ms: $mslist{$ms}{Name} IP $mslist{$ms}{IPAddress}.";
+			# print STDERR "check_miniservers: Miniserver Nr. $ms: $mslist{$ms}{Name} IP $mslist{$ms}{IPAddress}.\n";
+			# print STDERR "check_miniservers:                     $mslist{$ms}{Admin_RAW} $mslist{$ms}{Pass_RAW}.\n";
+			
 			my %post = (
 				"ip" => $mslist{$ms}{IPAddress},
 				"port" => $mslist{$ms}{Port},
 				"preferhttps" => $mslist{$ms}{PreferHttps},
 				"porthttps" => $mslist{$ms}{PortHttps},
 				"user" => $mslist{$ms}{Admin_RAW},
-				"pass" => $mslist{$ms}{Pass_RAW}
+				"pass" => $mslist{$ms}{Pass_RAW},
+				"useclouddns" => $mslist{$ms}{UseCloudDNS},
+				"clouddns" => $mslist{$ms}{CloudURL}
 			);
-			my $response = $ua->post( $checkurl, \%post );
+			
+			my $response = $ua->post( $checkurl, Content => \%post );
+			
 			if ($response->is_error) {
 				die("Could not query data (stopped at MS $mslist{$ms}{Name}: " . $response->status_line);
 			}
 			my $data = decode_json($response->decoded_content);
+			
 			my $label = is_enabled( $mslist{$ms}{PreferHttps} ) ? "https" : "http";
 			if($data->{$label}->{success} eq "1") {
 				push @results, "$mslist{$ms}{Name} OK";

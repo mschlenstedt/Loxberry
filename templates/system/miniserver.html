@@ -5,7 +5,7 @@
 	<input id="miniservers" type="hidden" name="miniservers" value="<TMPL_VAR MINISERVERS>">
 	<div style="text-align:center;">
 		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="addbtn" value="add" id="addmsbtn" data-role="button" data-icon="plus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_ADD_MS></button>
-		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="delbtn" value="delete" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
+		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="delbtn" value="<TMPL_VAR LASTKEY>" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
 	   <a id="scan" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_SCAN></a>
 	   <div id="scan_result"></div>
 	</div>

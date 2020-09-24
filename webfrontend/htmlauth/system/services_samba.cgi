@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2018 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ our $SMB = "$LoxBerry::System::lbhomedir/system/samba/smb.conf";
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.1";
+my $version = "2.0.2.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -88,15 +88,14 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 $maintemplate->param("ERROR", $error);
 $maintemplate->param("SMBGLOBAL", LoxBerry::JSON::escape(encode_json($smbcfg->{_global})));
 
-
-
-
 # Navbar
 our %navbar;
 $navbar{0}{Name} = "$SL{'SERVICES.TITLE_PAGE_WEBSERVER'}";
 $navbar{0}{URL} = 'services.php?load=1';
 $navbar{1}{Name} = "$SL{'SERVICES.TITLE_PAGE_WATCHDOG'}";
 $navbar{1}{URL} = 'services_watchdog.cgi';
+$navbar{4}{Name} = "$SL{'HEADER.PANEL_TIMESERVER'}";
+$navbar{4}{URL} = 'services_timeserver.cgi';
 $navbar{5}{Name} = "Samba (SMB)";
 $navbar{5}{URL} = 'services_samba.cgi';
 $navbar{5}{active} = 1;

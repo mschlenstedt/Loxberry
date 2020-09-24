@@ -5,7 +5,7 @@ use LoxBerry::JSON;
 use Config::Simple;
 use URI::Escape;
 
-my $version = "2.0.2.1";
+my $version = "2.0.2.3";
 
 my $lbsconfigdir = $ENV{'LBSCONFIG'};	
 if (! $lbsconfigdir ) {
@@ -24,123 +24,151 @@ my $generalcfg = $lbsconfigdir.'/general.cfg';
 use File::Copy;
 copy $generaljson, $generaljson.".".time.".old";
 
-migrate_generalcfg();
+# Open general.json
+# We do not use LoxBerry::System::General here, as it immedately would overwrite the old general.cfg
+# with the legacy file creation
+my $jsonobj = LoxBerry::JSON->new();
+my $json = $jsonobj->open( filename => $generaljson);
+if( !$json) {
+	die "CRITICAL: general.json could not be loaded. Terminating.\n";
+}
+
+# Open general.cfg
+my %cfg;
+print STDERR "general.cfg: $lbsconfigdir\n";
+Config::Simple->import_from( $generalcfg, \%cfg ) or die "CRITICAL: $generalcfg could not be loaded. Terminating.\n";
+
+
+migrate_base();
+migrate_update();
+migrate_webserver();
+migrate_network();
+migrate_ssdp();
+migrate_timeserver();
+migrate_miniserver();
+migrate_healthcheck();
+
+$jsonobj->write();
+
+
 exit(0);
 
 # =========================================================
 # migrate_generalcfg 
 # =========================================================
-sub migrate_generalcfg 
+sub migrate_base 
 {
-	# Open general.json
-	# We do not use LoxBerry::System::General here, as it immedately would overwrite the old general.cfg
-	# with the legacy file creation
-	my $jsonobj = LoxBerry::JSON->new();
-	
-	my $json = $jsonobj->open( filename => $generaljson);
-	
-	if( !$json) {
-		die "CRITICAL: general.json could not be loaded. Terminating.\n";
-	}
-	
-	# Open general.cfg
-	my %cfg;
-	print STDERR "general.cfg: $lbsconfigdir\n";
-	Config::Simple->import_from( $generalcfg, \%cfg ) or die "CRITICAL: $generalcfg could not be loaded. Terminating.\n";
-		
-	
 	## Migrating [BASE]
 	my $b;
 	$b->{Version} = $cfg{'BASE.VERSION'};
-	$b->{SendStatistic} = LoxBerry::System::is_enabled( $cfg{'BASE.SENDSTATISTIC'} ) ? 1 : 0;
-	$b->{SystemLoglevel} = $cfg{'BASE.SYSTEMLOGLEVEL'};
-	$b->{StartSetup} = $cfg{'BASE.STARTSETUP'};
+	$b->{Sendstatistic} = LoxBerry::System::is_enabled( $cfg{'BASE.SENDSTATISTIC'} ) ? 1 : 0;
+	$b->{Systemloglevel} = $cfg{'BASE.SYSTEMLOGLEVEL'};
+	$b->{Startsetup} = $cfg{'BASE.STARTSETUP'};
 	$b->{Lang} = $cfg{'BASE.LANG'};
-	$b->{CloudDNSURI} = $cfg{'BASE.CLOUDDNS'};
+	$b->{Clouddnsuri} = $cfg{'BASE.CLOUDDNS'};
 	$json->{Base} = $b;
 	# Miniserver count MINISERVERS not migrated
 	# Installation folder INSTALLFOLDER not migrated
-	
+}
+
+sub migrate_update
+{
 	## Migrating [UPDATE]
 	my $u;
 	$u->{Interval} = $cfg{'UPDATE.INTERVAL'};
-	$u->{ReleaseType} = $cfg{'UPDATE.RELEASETYPE'};
-	$u->{InstallType} = $cfg{'UPDATE.INSTALLTYPE'};
-	$u->{LatestSHA} = $cfg{'UPDATE.LATESTSHA'};
-	$u->{FailedScript} = $cfg{'UPDATE.FAILED_SCRIPT'};
-	$u->{Branch} = $cfg{'UPDATE.BRANCH'};
-	$u->{DryRun} = $cfg{'UPDATE.DRYRUN'};
-	$u->{KeepUpdateFiles} = $cfg{'UPDATE.KEEPUPDATEFILES'};
-	$u->{KeepInstallFiles} = $cfg{'UPDATE.KEEPINSTALLFILES'};
+	$u->{Releasetype} = $cfg{'UPDATE.RELEASETYPE'};
+	$u->{Installtype} = $cfg{'UPDATE.INSTALLTYPE'};
+	$u->{Latestsha} = $cfg{'UPDATE.LATESTSHA'};
+	$u->{Failedscript} = $cfg{'UPDATE.FAILED_SCRIPT'} if( !defined $u->{Failedscript} );
+	$u->{Branch} = $cfg{'UPDATE.BRANCH'} if( !defined $u->{Branch} );
+	$u->{Dryrun} = $cfg{'UPDATE.DRYRUN'} if( !defined $u->{Dryrun} );
+	$u->{Keepupdatefiles} = $cfg{'UPDATE.KEEPUPDATEFILES'} if( !defined $u->{Keepupdatefiles} );
+	$u->{Keepinstallfiles} = $cfg{'UPDATE.KEEPINSTALLFILES'} if( !defined $u->{Keepinstallfiles} );
 	$json->{Update} = $u;
-	
+}
+
+sub migrate_webserver
+{
 	## Migrating [WEBSERVER]
 	my $w;
 	$w->{Port} = $cfg{'WEBSERVER.PORT'};
-	$w->{PortHttps} = 443;
+	$w->{Porthttps} = 443;
 	$json->{Webserver} = $w;
-	
+}
+
+sub migrate_network
+{
 	## Migrating [NETWORK]
 	my $n;
-	$n->{IPv4}->{Type} = $cfg{'NETWORK.TYPE'};
-	$n->{IPv4}->{IPAddress} = $cfg{'NETWORK.IPADDRESS'};
-	$n->{IPv4}->{Mask} = $cfg{'NETWORK.MASK'};
-	$n->{IPv4}->{DNS} = $cfg{'NETWORK.DNS'};
-	$n->{IPv4}->{Gateway} = $cfg{'NETWORK.GATEWAY'};
+	$n->{Ipv4}->{Type} = $cfg{'NETWORK.TYPE'};
+	$n->{Ipv4}->{Ipaddress} = $cfg{'NETWORK.IPADDRESS'};
+	$n->{Ipv4}->{Mask} = $cfg{'NETWORK.MASK'};
+	$n->{Ipv4}->{Dns} = $cfg{'NETWORK.DNS'};
+	$n->{Ipv4}->{Gateway} = $cfg{'NETWORK.GATEWAY'};
 		
-	$n->{IPv6}->{Type} = $cfg{'NETWORK.TYPE_IPv6'};
-	$n->{IPv6}->{IPAddress} = $cfg{'NETWORK.IPADDRESS_IPv6'};
-	$n->{IPv6}->{Mask} = $cfg{'NETWORK.MASK_IPv6'};
-	$n->{IPv6}->{DNS} = $cfg{'NETWORK.DNS_IPv6'};
-	$n->{IPv6}->{PrivacyExt} = $cfg{'NETWORK.PRIVACYEXT_IPv6'};
+	$n->{Ipv6}->{Type} = $cfg{'NETWORK.TYPE_IPv6'};
+	$n->{Ipv6}->{Ipaddress} = $cfg{'NETWORK.IPADDRESS_IPv6'};
+	$n->{Ipv6}->{Mask} = $cfg{'NETWORK.MASK_IPv6'};
+	$n->{Ipv6}->{Dns} = $cfg{'NETWORK.DNS_IPv6'};
+	$n->{Ipv6}->{Privacyext} = $cfg{'NETWORK.PRIVACYEXT_IPv6'};
 	
 	$n->{Interface} = $cfg{'NETWORK.INTERFACE'};
-	$n->{FriendlyName} = $cfg{'NETWORK.FRIENDLYNAME'};
-	$n->{SSID} = $cfg{'NETWORK.SSID'};
-	$n->{WPA} = $cfg{'NETWORK.WPA'};
+	$n->{Friendlyname} = $cfg{'NETWORK.FRIENDLYNAME'};
+	$n->{Ssid} = $cfg{'NETWORK.SSID'};
+	$n->{Wpa} = $cfg{'NETWORK.WPA'};
 	$json->{Network} = $n;
-	
+}
+
+sub migrate_ssdp
+{
 	## Migrating SSDP
 	my $ssdp;
 	$ssdp->{Disabled} = $cfg{'SSDP.DISABLED'};
-	$ssdp->{UUID} = $cfg{'SSDP.UUID'};
-	$json->{SSDP} = $ssdp;
-	
-	## Migrating Timeserver
+	$ssdp->{Uuid} = $cfg{'SSDP.UUID'};
+	$json->{Ssdp} = $ssdp;
+}
+
+sub migrate_timeserver
+{
+	## Migrating [TIMESERVER]
 	my $ts;
 	$ts->{Method} = $cfg{'TIMESERVER.METHOD'};
-    $ts->{NTPServer} = $cfg{'TIMESERVER.SERVER'};
-    $ts->{TimeMSNo} = 1;
+    $ts->{Ntpserver} = $cfg{'TIMESERVER.SERVER'};
+    $ts->{Timemsno} = 1;
     $ts->{Timezone} = $cfg{'TIMESERVER.ZONE'};
+	$json->{Timeserver} = $ts;
+}
 
-	## Migrating Miniserver
+sub migrate_miniserver
+{
+	## Migrating [MINISERVER]
 	# We duplicate code from LoxBerry::System::read_generalcfg
 	my $miniservercount = $cfg{'BASE.MINISERVERS'};
 	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
 		my $ms;
 		$ms->{Name} = $cfg{"MINISERVER$msnr.NAME"};
-		$ms->{IPAddress} = $cfg{"MINISERVER$msnr.IPADDRESS"};
+		$ms->{Ipaddress} = $cfg{"MINISERVER$msnr.IPADDRESS"};
 		$ms->{Admin} = $cfg{"MINISERVER$msnr.ADMIN"};
-		$ms->{Admin_RAW} = URI::Escape::uri_unescape($ms->{Admin});
+		$ms->{Admin_raw} = URI::Escape::uri_unescape($ms->{Admin});
 		$ms->{Pass} = $cfg{"MINISERVER$msnr.PASS"};
-		$ms->{Pass_RAW} = URI::Escape::uri_unescape($ms->{Pass});
+		$ms->{Pass_raw} = URI::Escape::uri_unescape($ms->{Pass});
 		$ms->{Credentials} = $ms->{Admin} . ':' . $ms->{Pass};
-		$ms->{Credentials_RAW} = $ms->{Admin_RAW} . ':' . $ms->{Pass_RAW};
+		$ms->{Credentials_raw} = $ms->{Admin_raw} . ':' . $ms->{Pass_raw};
 		$ms->{Note} = $cfg{"MINISERVER$msnr.NOTE"};
 		$ms->{Port} = $cfg{"MINISERVER$msnr.PORT"};
-		$ms->{PortHttps} = $cfg{"MINISERVER$msnr.PORTHTTPS"};
-		$ms->{PreferHttps} = $cfg{"MINISERVER$msnr.PREFERHTTPS"};
-		$ms->{UseCloudDNS} = $cfg{"MINISERVER$msnr.USECLOUDDNS"};
-		$ms->{CloudURLFTPPort} = $cfg{"MINISERVER$msnr.CLOUDURLFTPPORT"};
-		$ms->{CloudURL} = $cfg{"MINISERVER$msnr.CLOUDURL"};
-		$ms->{SecureGateway} = $cfg{"MINISERVER$msnr.SECUREGATEWAY"};
-		$ms->{EncryptResponse} = $cfg{"MINISERVER$msnr.ENCRYPTRESPONSE"};
+		$ms->{Porthttps} = $cfg{"MINISERVER$msnr.PORTHTTPS"};
+		$ms->{Preferhttps} = $cfg{"MINISERVER$msnr.PREFERHTTPS"};
+		$ms->{Useclouddns} = $cfg{"MINISERVER$msnr.USECLOUDDNS"};
+		$ms->{Cloudurlftpport} = $cfg{"MINISERVER$msnr.CLOUDURLFTPPORT"};
+		$ms->{Cloudurl} = $cfg{"MINISERVER$msnr.CLOUDURL"};
+		$ms->{Securegateway} = $cfg{"MINISERVER$msnr.SECUREGATEWAY"};
+		$ms->{Encryptresponse} = $cfg{"MINISERVER$msnr.ENCRYPTRESPONSE"};
 		
 		my $transport;
 		my $port;
-		if( is_enabled( $ms->{PreferHttps} ) ) {
+		if( is_enabled( $ms->{Preferhttps} ) ) {
 			$transport = 'https';
-			$port = $ms->{PortHttps};
+			$port = $ms->{Porthttps};
 		} else {
 			$transport = 'http';
 			$port = $ms->{Port};
@@ -149,25 +177,39 @@ sub migrate_generalcfg
 		
 		# Check if ip format is IPv6
 		my $IPv6Format = '0';
-		my $ipaddress = $ms->{IPAddress};
-		if( is_enabled($ms->{UseCloudDNS}) or index( $ipaddress, ':' ) != -1 ) {
+		my $ipaddress = $ms->{Ipaddress};
+		if( is_enabled($ms->{Useclouddns}) or index( $ipaddress, ':' ) != -1 ) {
 			$IPv6Format = '1';
 		}
 		
-		$ms->{IPv6Format} = $IPv6Format;
-		if( !is_enabled($ms->{UseCloudDNS}) ) {
+		$ms->{Ipv6format} = $IPv6Format;
+		if( !is_enabled($ms->{Useclouddns}) ) {
 			$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
-			my $port = is_enabled($ms->{PreferHttps}) ? $ms->{PortHttps} : $ms->{Port};
-			$ms->{FullURI} = $transport.'://'.$ms->{Credentials}.'@'.$ipaddress.':'.$port;
-			$ms->{FullURI_RAW} = $transport.'://'.$ms->{Credentials_RAW}.'@'.$ipaddress.':'.$port;
+			my $port = is_enabled($ms->{Preferhttps}) ? $ms->{Porthttps} : $ms->{Port};
+			$ms->{Fulluri} = $transport.'://'.$ms->{Credentials}.'@'.$ipaddress.':'.$port;
+			$ms->{Fulluri_raw} = $transport.'://'.$ms->{Credentials_raw}.'@'.$ipaddress.':'.$port;
 		} else {
-			$ms->{FullURI} = "";
-			$ms->{FullURI_RAW} = "";
+			$ms->{Fulluri} = "";
+			$ms->{Fulluri_raw} = "";
 		}
 		# Save hash in msno
 		$json->{Miniserver}->{$msnr} = $ms;
 	}
-
-	$jsonobj->write();
 }	
 
+sub migrate_healthcheck 
+{
+	## Migrating [HEALTHCHECK]
+	my $b;
+	
+	foreach my $key ( keys %cfg ) {
+		my $pos = index( $key, 'HEALTHCHECK.' );
+		if( $pos == -1 ) {
+			next;
+		}
+		my $checkname = ucfirst( lc( substr( $key, 12 ) ) );
+		print "checkname: $checkname | Pos $pos\n";
+		$b->{$checkname} = $cfg{$key};
+	}
+	$json->{Healthcheck} = $b;
+}

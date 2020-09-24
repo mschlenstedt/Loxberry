@@ -1,0 +1,16 @@
+{
+	"name": "auroras-live/suncalc-php",
+	"description": "Sun and moon calculations for PHP",
+	"type": "library",
+	"license": "GPLv2",
+	"autoload": {
+		"files": [
+			"suncalc.php"
+		]
+	},
+	"authors": [{
+		"name": "David Gray and Greg Seth",
+		"email": "david@auroras.live"
+	}],
+	"require": {}
+}

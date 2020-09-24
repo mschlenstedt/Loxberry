@@ -24,7 +24,7 @@
 #######################################################
 
 use LoxBerry::System;
-#use LoxBerry::Web;
+use LoxBerry::System::General;
 use LoxBerry::Log;
 use LoxBerry::JSON;
 use strict;
@@ -41,19 +41,16 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="2.0.0.3";
+my $scriptversion="2.0.2.2";
 
 my $release_url;
 my $oformat;
 my %joutput;
-my %updhistory;
-my $updhistoryfile = "$lbslogdir/loxberryupdate/history.json";
-my %thisupd;
 my $cfg;
 my $download_path = '/tmp';
 my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
-my $min_version = "v0.3.0";
+my $min_version = "v1.0.0";
 # my $max_version = "v2.99.99";
 
 my $querytype;
@@ -88,7 +85,8 @@ $joutput{'logfile'} = $log->filename;
 LOGSTART "LoxBerry Update Check";
 LOGINF "Version of loxberryupdatecheck.pl is $scriptversion";
 
-$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+my $jsonobj = LoxBerry::System::General->new();
+$cfg = $jsonobj->open();
 
 # Read system language
 my %SL = LoxBerry::System::readlanguage();
@@ -101,11 +99,11 @@ if (!$cgi->param) {
 	exit (1);
 }
 
-# If general.cfg's UPDATE.DRYRUN is defined, do nothing
-if ( is_enabled($cfg->param('UPDATE.DRYRUN')) ) {
+# If general.json's Update.Dryrun is defined, do nothing
+if ( is_enabled($cfg->{Update}->{Dryrun}) ) {
 	$cgi->param('dryrun', 1)
 }
-if ( is_enabled($cfg->param('UPDATE.KEEPUPDATEFILES')) ){
+if ( is_enabled($cfg->{Update}->{Keepupdatefiles}) ){
 	$cgi->param('keepupdatefiles', 1);
 }
 
@@ -131,7 +129,7 @@ if ($cgi->param('release')) {
 	$release=$cgi->param('release');
 }
 
-if ( is_enabled($cfg->param('UPDATE.KEEPINSTALLFILES')) ) {
+if ( is_enabled($cfg->{Update}->{Keepinstallfiles}) ) {
 	$cgi->param('keepinstallfiles', 1);
 }
 if ($cgi->param('keepinstallfiles')) {
@@ -139,8 +137,8 @@ if ($cgi->param('keepinstallfiles')) {
 }
 
 # Commit branch
-if ($cfg->param('UPDATE.BRANCH')) {
-	$branch = $cfg->param('UPDATE.BRANCH');
+if ($cfg->{Update}->{Branch}) {
+	$branch = $cfg->{Update}->{Branch};
 }
 if ($cgi->param('branch')) {
 	$branch = $cgi->param('branch');
@@ -155,15 +153,15 @@ $querytype = $cgi->param('querytype');
 
 $formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
 
-my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.LATESTSHA') : "0";
+my $latest_sha = defined $cfg->{Update}->{Latestsha} ? $cfg->{Update}->{Latestsha} : "0";
 
 
 if (($formatjson || $cron) and !$querytype ) {
-	$querytype = $cfg->param('UPDATE.RELEASETYPE');
+	$querytype = $cfg->{Update}->{Releasetype};
 }
 
-if ($cfg->param('UPDATE.FAILED_SCRIPT')) {
-	$failed_script = version->parse(vers_tag($cfg->param('UPDATE.FAILED_SCRIPT')));
+if ($cfg->{Update}->{Failedscript}) {
+	$failed_script = version->parse(vers_tag($cfg->{Update}->{Failedscript}));
 	LOGWARN "In a previous run of LoxBerry Update this update script failed: $failed_script";
 	$joutput{'failed_script'} = "$failed_script";
 }
@@ -206,7 +204,6 @@ LOGINF "   release param: " . $release if ($release);
 my $lbversion;
 my $max_version;
 my $major_version;
-my $jsonobj;
 my $generaljson;
 
 if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
@@ -216,15 +213,9 @@ if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 	# Get or calculate max_version
 	#
 	
-	eval {
-		$jsonobj = LoxBerry::JSON->new();
-		$generaljson = $jsonobj->open(filename => $lbsconfigdir."/general.json");
-		$max_version = vers_tag($generaljson->{Update}->{max_version}) if($generaljson->{Update}->{max_version});
-		LOGINF "   max_version $max_version read from general.json" if($max_version);
-	};
-	if($@) {
-		LOGWARN "Failed to read max_version from general.json: $@";
-	} 
+	$max_version = vers_tag($cfg->{Update}->{max_version}) if($cfg->{Update}->{max_version});
+	LOGINF "   max_version $max_version read from general.json" if($max_version);
+	
 	$major_version = int $lbversion->numify();
 	if (! $max_version) {
 		# Get the major version of current version
@@ -299,8 +290,7 @@ sub check_releases
 	my ($querytype, $currversion) = @_;
 	my $endpoint = 'https://api.github.com';
 	my $resource = '/repos/mschlenstedt/Loxberry/releases';
-	#my $resource = '/repos/christianTF/LoxBerry-Plugin-SamplePlugin-V2-PHP/releases';
-
+	
 	LOGINF "Checking for releases from $endpoint$resource";
 	my $release_version;
 	my $blocked_version;
@@ -342,7 +332,6 @@ sub check_releases
 		} else {
 			$release_version = version->parse(vers_tag($release->{tag_name}));
 		}
-		#split_version($release->{tag_name});
 		LOGINF "   Release version : $release_version";
 		
 		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
@@ -367,7 +356,6 @@ sub check_releases
 		}
 		LOGOK "   Filter check passed.";
 		
-		
 		if (! $release_safe || version->parse($release_version) > version->parse(vers_tag($release_safe->{tag_name}))) {
 			$release_safe = $release;
 		}
@@ -389,18 +377,13 @@ sub check_releases
 		$release_url = $release->{zipball_url};
 		$joutput{'release_new'} = 1;
 		$release_to_use = $release;
-		# return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at}, $release->{prerelease});
-		# return %return_param;
 		last;
 	}
-	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name};
-	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
 	
 	# Finished loop
 	if(! defined $joutput{'release_new'} || $joutput{'release_new'} eq "") {
 		LOGOK "No new version found: Latest version is " . vers_tag($release_safe->{tag_name});
 		$release_version = vers_tag($release_safe->{tag_name});
-		# $release_url = $release->{zipball_url};
 		$joutput{'info'} = $SL{'UPDATES.INFO_NO_NEW_VERSION_FOUND'};
 		$joutput{'release_version'} = "$release_version";
 		$joutput{'release_zipurl'} = "";
@@ -431,7 +414,7 @@ sub check_releases
 	$joutput{'releasetype'} = $release_safe->{prerelease} ? "prerelease" : "release";
 	$joutput{'blocked_version'} = "$blocked_version" if ($blocked_version);
 	
-	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
+	if ($cron && $cfg->{Update}->{Installtype} eq 'notify') {
 		my @notifications = get_notifications( 'updates', 'lastnotifiedrelease');
 		if ($notifications[0] && $notifications[0]->{version} eq "$release_version") {
 			LOGOK "Skipping notification because version has already been notified.";
@@ -455,7 +438,7 @@ sub check_releases
 		}
 	}
 	
-	if ( $cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron ) ) {
+	if ( $cgi->param('update') || ( $cfg->{Update}->{Installtype} eq 'install' && $cron ) ) {
 		LOGEND "Installing new update - see the update log for update status!";
 		undef $log if ($log);
 		$log = LoxBerry::Log->new(
@@ -526,8 +509,6 @@ sub check_releases
 				} 
 				if (not $pid) {	
 					LOGINF "Executing LoxBerry Update forked...";
-					# exec never returns
-					# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
 					undef $log if ($log);
 					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck </dev/null >/dev/null 2>&1 &");
 					exit(0);
@@ -535,8 +516,6 @@ sub check_releases
 				exit(0);
 			} else {
 				LOGINF "Executing LoxBerry Update...";
-				# exec never returns
-				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
 				undef $log if ($log);
 				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
 			}
@@ -545,10 +524,7 @@ sub check_releases
 	
 	my $jsntext = to_json(\%joutput);
 	LOGINF "JSON: " . $jsntext;
-	#print $cgi->header('application/json');
 	print $jsntext;
-	
-	# LOGINF "ZIP URL: $release_url";
 	
 }
 
@@ -563,7 +539,7 @@ sub check_commits
 	my ($querytype, $currversion) = @_;
 	my $endpoint = 'https://api.github.com';
 	my $resource = '/repos/mschlenstedt/Loxberry/commits';
-	# $branch is taken from UPDATE.BRANCH or commandline parameter
+	# $branch is taken from {Update}->{Branch} or commandline parameter
 	
 	# Download URL of latest commit 
 	my $release_url = "https://github.com/mschlenstedt/Loxberry/archive/" . uri_escape($branch) . ".zip";
@@ -636,7 +612,7 @@ sub check_commits
 	$joutput{'releasetype'} = "commit";
 	
 	
-	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
+	if ($cron && $cfg->{Update}->{Installtype} eq 'notify') {
 		
 		my @notifications = get_notifications( 'updates', 'lastnotifiedcommit');
 		if ($notifications[0] && $notifications[0]->{commitsha} eq "$commit_sha") {
@@ -661,7 +637,7 @@ sub check_commits
 	}
 	
 	# If an update was requested
-	if ($cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron && $commit_new )) {
+	if ($cgi->param('update') || ( $cfg->{Update}->{Installtype} eq 'install' && $cron && $commit_new )) {
 		LOGEND "Installing new commit - see the update log for update status!";
 		undef $log if ($log);
 		my $log = LoxBerry::Log->new(
@@ -681,7 +657,6 @@ sub check_commits
 		LOGINF "   Release no. : $release" if ($release);    
 		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
-		# LOGINF "PIDOF LENGTH: " . length($pids);
 		if (length($pids) > 0) {
 			$joutput{'info'} = $SL{'UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING'};
 			&err;
@@ -723,7 +698,6 @@ sub check_commits
 			# This is the place where we can hand over to the real update
 			
 			if (!$nofork) {
-				#LOGINF "Run loxberryupdate in bachground ...";
 				LOGINF "Forking loxberryupdate...";
 				my $pid = fork();
 				if (not defined $pid) {
@@ -732,13 +706,10 @@ sub check_commits
 				if (not $pid) {	
 					LOGINF "Executing LoxBerry Update forked...";
 					undef $log if ($log);
-					# exec never returns
-					# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				
 					my $releaseparam;
 					if( defined $release) {
 						LOGWARN "Version parameter '$release' was given. This will be used to process update scripts, independent of what version is installed.";
-						LOGWARN "This version '$release' will also be set to your general.cfg. Reset it after your test!";
+						LOGWARN "This version '$release' will also be set to your general.json. Reset it after your test!";
 						$releaseparam = $release;
 					} else {
 						LOGINF "Version parameter 'config' was given";
@@ -749,13 +720,11 @@ sub check_commits
 				} 
 			} else {
 				LOGINF "Executing LoxBerry Update...";
-				# exec never returns
-				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
 				undef $log if ($log);
 				my $releaseparam;
 				if( defined $release) {
 					LOGWARN "Version parameter '$release' was given. This will be used to process update scripts, independent of what version is installed.";
-					LOGWARN "This version '$release' will also be set to your general.cfg. Reset it after your test!";
+					LOGWARN "This version '$release' will also be set to your general.json. Reset it after your test!";
 					$releaseparam = $release;
 				} else {
 					LOGINF "Version parameter 'config' was given";
@@ -768,7 +737,6 @@ sub check_commits
 	}
 	my $jsntext = to_json(\%joutput);
 	LOGINF "JSON: " . $jsntext;
-	#print $cgi->header('application/json');
 	print $jsntext;
 	
 }
@@ -783,22 +751,6 @@ sub download
 	
 	my ($url, $filename) = @_;
 	LOGINF "   Download preparing. URL: $url Filename: $filename";
-	
-	# my $download_size;
-	# my $rel_header;
-	# for (my $x=1; $x<=5; $x++) {
-		# LOGINF "   Try $x: Checking file size of download...";
-		# $rel_header = GetFileSize($url);
-		# $download_size = $rel_header->content_length;
-		# LOGINF "   Returned file size: $download_size";
-		# last if (defined $download_size && $download_size > 0);
-		# usleep (100*1000);
-	# }
-	# return undef if (!defined $download_size || $download_size == 0); 
-	# LOGINF "   Expected download size: $download_size";
-	
-	# LOGINF "    Header check passed.";
-	
 	my $ua = LWP::UserAgent->new;
 	my $res;
 	for (my $x=1; $x<=5; $x++) { 
@@ -809,12 +761,6 @@ sub download
 			usleep (300*1000);
 	}
 	return undef if (!$res->is_success);
-	# LOGOK "   Download successful. Comparing filesize...";
-	# my $file_size = -s $filename;
-	# if ($file_size != $download_size) { 
-		# LOGCRIT "Filesize does not match";
-		# return undef;
-	# }
 	LOGOK "Download saved successfully in $filename";
 	return $filename;
 
@@ -888,6 +834,7 @@ sub unzip
 	return $unzipfolder;
 }
 
+# A list of all error codes that unzip returns
 sub unziperror
 {
 	my $errorcode = shift;
@@ -960,13 +907,6 @@ sub prepare_update
 		LOGCRIT "Found unclear number of directories ($dircount) in update directory.";
 		return undef;
 	}
-	
-	# system("chown -R loxberry:loxberry $updatedir");
-	# my $exitcode  = $? >> 8;
-	# if ($exitcode != 0) {
-	# LOGINF "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.";
-	# return undef;
-	# }
 
 	$updatedir = "$updatedir/$direntry";
 	LOGOK "Update directory is $updatedir";
@@ -1029,12 +969,10 @@ sub update_loxberryupdatecheck
 {
 	
 	my $selfurl_check = "https://raw.githubusercontent.com/mschlenstedt/Loxberry/$branch/sbin/loxberryupdatecheck.pl";
-	# my $selfurl_update = "https://raw.githubusercontent.com/mschlenstedt/Loxberry/$branch/sbin/loxberryupdate.pl";
 	my $localtmpdir = "/tmp";
 	my $errors = 0;
 	
 	LOGDEB "Update-URL for loxberryupdatecheck is $selfurl_check";
-	# LOGDEB "Update-URL for loxberryupdate is $selfurl_update";
 	
 	LOGINF "Deleting old temporary files in $localtmpdir";
 	unlink "$localtmpdir/loxberryupdatecheck.pl";
@@ -1053,16 +991,6 @@ sub update_loxberryupdatecheck
 	} else {
 		LOGOK "New lbupdatecheck version downloaded.";
 	}
-	
-	# LOGINF "Requesting current lbupdate version of branch $branch";
-		
-	# `wget $selfurl_update -P /tmp`;
-	# if (! -e "$localtmpdir/loxberryupdate.pl") {
-		# LOGWARN "Could not download current lbupdate version.";
-		# $errors++;
-	# } else {
-		# LOGOK "New lbupdatecheck version downloaded.";
-	# }
 	
 	# Check if it compiles without errors
 	LOGINF "Checking downloaded files with Perl compiler for errors";

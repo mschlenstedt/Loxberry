@@ -7,10 +7,24 @@ use LWP::UserAgent;
 use JSON;
 use URI::Escape;
 
+# Version of this script
+my $version = "2.0.2.1";
+
 my %jout;
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
+
+# my %headers = map { $_ => $cgi->http($_) } $cgi->http();
+# print STDERR "ajax-check-miniserver.cgi RECEIVING HEADERS:\n";
+# for my $header ( keys %headers ) {
+    # print STDERR "$header: $headers{$header}\n";
+# }
+# print STDERR "Received POSTDATA:\n";
+# my @postdata = $cgi->param;
+# for my $param ( @postdata ) {
+    # print STDERR "$param: " . $cgi->param($param) . "\n";
+# }
 
 $R::user = uri_escape($R::user);
 $R::pass = uri_escape($R::pass);
@@ -60,8 +74,10 @@ if (is_enabled($R::useclouddns)) {
 		exit;
 	}
 	
-	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
-	my $cloudaddress = $cfg->param('BASE.CLOUDDNS');
+	require LoxBerry::System::General;
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open( readonly => 1 );
+	my $cloudaddress = $cfg->{Base}->{Clouddnsuri};
 	
 	my $checkurl = "http://$cloudaddress?getip&snr=$R::clouddns&json=true";
 	$ua->timeout(5);
@@ -89,15 +105,6 @@ if (is_enabled($R::useclouddns)) {
 	}
 	
 }
-
-# Who is requesting this?
-# Commented out - very old code from v0.3.5.7
-# if ($R::get_hostport) {
-	# $jout{hostport} = $hostport;
-	# print to_json(\%jout);
-	# exit;
-# }
-
 
 my @url_nonadmin;
 my @url_admin;

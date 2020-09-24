@@ -7,7 +7,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.0.2.2";
+$LBIOVERSION = "2.0.2.4";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -244,13 +244,15 @@ function mshttp_call($msnr, $command)
 	$url = $FullURI . $command;
 	
 	/* SSL options */
+
 	$stream_context = stream_context_create([ 
-	'https' => [
+	'ssl' => [
 		'timeout'			=> 5,
 		'verify_peer'       => false,
 		'verify_peer_name'  => false,
 		'allow_self_signed' => true,
-		'verify_depth'      => 0 
+		'verify_depth'      => 0,
+		// 'ciphers' 			=> 'HIGH:TLSv1.2:TLSv1.1:TLSv1.0:!SSLv3:!SSLv2'
 	], 
 	'http' => [
 		'timeout'			=> 5
@@ -259,7 +261,11 @@ function mshttp_call($msnr, $command)
 	$xmlresp = file_get_contents($url, false, $stream_context);
 	if ($xmlresp === false) {
 		// echo "Errors occured\n";
-		error_log("mshttp_call: An error occured fetching $url.");
+		if(isset($http_response_header)) {
+			error_log("mshttp_call: Error fetching $url: $http_response_header[0]");
+		} else {
+			error_log("mshttp_call: Error fetching $url: unknown");
+		}
 		return array (null, 500, null);
 	}
 	
@@ -289,7 +295,7 @@ function mshttp_get($msnr, $inputs)
 	
 	foreach ($inputs as $input) {
 		// echo "Querying param: $input\n";
-		list($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input)); 
+		list($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) . '/all'); 
 		// echo "Responseval: $respvalue Respcode: $respcode\n";
 		if($respcode == 200) {
 			$response[$input] = $respvalue;

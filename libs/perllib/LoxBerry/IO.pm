@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.0.2.2";
+our $VERSION = "2.0.2.3";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -241,7 +241,7 @@ sub mshttp_get
 	
 	for (my $pidx = 0; $pidx < @params; $pidx++) {
 		print STDERR "Querying param: $params[$pidx]\n" if ($DEBUG);
-		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx])); 
+		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . '/all'); 
 		if($respcode == 200) {
 			$response{$params[$pidx]} = $respvalue;
 		} else {
