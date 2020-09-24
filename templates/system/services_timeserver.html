@@ -1,5 +1,5 @@
 <!-- ** START template/system/timeserver.html 13:51 24.11.2017 ************************************************************************************ -->
-<form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<p style=&quot;color:blue&quot;><TMPL_VAR TIMESERVER.SAVE_ASYNC_QUERY_NTP></p>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="/admin/system/timeserver.cgi">
+<form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<p style=&quot;color:blue&quot;><TMPL_VAR TIMESERVER.SAVE_ASYNC_QUERY_NTP></p>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="<TMPL_VAR SELFURL>">
 	<input type="hidden" name="saveformdata" value="1">
 		<table class="formtable" style="border:0; width:100%;">
 			<tr>
