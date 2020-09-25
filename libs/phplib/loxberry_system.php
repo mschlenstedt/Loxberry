@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.2.5";
+	public static $LBSYSTEMVERSION = "2.0.2.6";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -580,8 +580,8 @@ public static function plugindb_changed_time()
 		
 		$cfg = json_decode( file_get_contents( LBHOMEDIR . "/config/system/general.json"), FALSE);
 		if ( $cfg == NULL ) {
-			error_log( "loxberry_system.php: Cannot read general.json." );
-			throw new Exception("Cannot read general.json");
+			error_log( "loxberry_system.php: Cannot read general.json: " . json_last_error_msg () . " (" . json_last_error() . ")");
+			throw new Exception("Cannot read general.json: " . json_last_error_msg () . " (" . json_last_error() . ")");
 			exit(1);
 		}
 		$cfgwasread = 1;
