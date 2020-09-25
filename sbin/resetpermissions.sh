@@ -76,4 +76,9 @@ chmod -Rc 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.cgi
 chmod -Rc 755 $LBHOMEDIR/webfrontend/htmlauth/system/*.pl
 chmod -Rc 755 $LBHOMEDIR/webfrontend/htmlauth/system/*/*.pl
 
+chmod -c 500 $LBHOMEDIR/webfrontend/html/XL
+chmod -c 500 $LBHOMEDIR/webfrontend/html/XL/*
+chmod -Rc 700 $LBHOMEDIR/webfrontend/html/XL/user/*
+chmod -Rc 700 $LBHOMEDIR/webfrontend/html/XL/examples/*
+
 exit 0
