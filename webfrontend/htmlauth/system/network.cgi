@@ -100,7 +100,7 @@ my $maintemplate = HTML::Template->new(
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
 
-# SSID and WPA-Key are URI-Encoded in general.cfg, therefore send it unencoded
+# SSID and WPA-Key are URI-Encoded in general.json, therefore send it unencoded
 # to the template
 $maintemplate->param ( 
 	'NETWORK.SSID' => uri_unescape($jsonobj->param('Network.Ssid')),
