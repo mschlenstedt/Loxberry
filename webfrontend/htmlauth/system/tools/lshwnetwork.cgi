@@ -28,7 +28,6 @@ use strict;
 # Variables
 ##########################################################################
 
-my $cfg;
 my $template_title;
 my @fields;
 my $table;
@@ -41,9 +40,7 @@ my $version;
 ##########################################################################
 
 # Version of this script
-$version = "0.3.2.2";
-
-$cfg             = new Config::Simple('$lbsconfigdir/general.cfg');
+$version = "2.0.2.1";
 
 #########################################################################
 # Parameter
@@ -61,7 +58,6 @@ our $maintemplate = HTML::Template->new(
 				global_vars => 0,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
-				# associate => $cfg,
 				#debug => 1,
 				#stack_debug => 1,
 				);
