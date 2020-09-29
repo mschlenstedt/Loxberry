@@ -1,0 +1,2 @@
+ISO 3166-1 countries in different languages
+Source: https://stefangabos.github.io/world_countries/

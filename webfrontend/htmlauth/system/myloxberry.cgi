@@ -43,7 +43,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.1";
+my $version = "2.0.2.2";
 my $sversion = LoxBerry::System::lbversion();
 my $jsonobj = LoxBerry::System::General->new();
 my $cfg = $jsonobj->open();
@@ -140,6 +140,8 @@ sub form {
 
 	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
+	# Language Selector
+	# 
 	my @values = LoxBerry::Web::iso_languages(1, 'values');
 	my %labels = LoxBerry::Web::iso_languages(1, 'labels');
 	my $langselector_popup = $cgi->popup_menu( 
@@ -151,6 +153,54 @@ sub form {
 			-default => $lang,
 		);
 	$maintemplate->param('LANGSELECTOR', $langselector_popup);
+	
+	# Country selector
+	#
+	my $countryfile = "$lbsconfigdir/countries/" . $lang . "/world.json";
+	if( ! -e $countryfile ) {
+		$countryfile = "$lbsconfigdir/countries/en/world.json";
+	}
+	my $countryobj = LoxBerry::System::General->new();
+	my $countrydata = $countryobj->open( filename => $countryfile, readonly => 1 );
+	my @countries;
+	my %countrylabels;
+	
+	push @countries, 'undef';
+	$countrylabels{ 'undef' } = $SL{'MYLOXBERRY.DROPDOWN_SELECTCOUNTRY'}.'...';
+	
+	foreach( sort {$a->{alpha2} cmp $b->{alpha2}} @$countrydata ) {
+		push @countries, $_->{alpha2};
+		$countrylabels{ $_->{alpha2} } = uc($_->{alpha2}). ' ' . $_->{name}  ;
+	}
+	
+	my $countrydefault;
+	if( $cfg->{Base}->{Country} eq "" ) {
+		if( grep( /^$lang$/, @countries ) ) {
+			$countrydefault = $lang;
+		} else {
+			$countrydefault = "de";
+		}
+		$cfg->{Base}->{Country} = $countrydefault;
+		$jsonobj->write();
+	} else {
+		$countrydefault = $cfg->{Base}->{Country};
+	}
+	
+	my $countryselector_popup = $cgi->popup_menu( 
+			-name => 'countryselector',
+			id => 'countryselector',
+			-labels => \%countrylabels,
+			#-attributes => \%labels,
+			-values => \@countries,
+			-default => $countrydefault,
+		);
+	$maintemplate->param('COUNTRYSELECTOR', $countryselector_popup);
+	
+	
+	
+	
+	
+	
 	
 	our $sendstatistic_checkbox = $cgi->checkbox( -name => 'sendstatistic',
 			  -checked => is_enabled($cfg->{Base}->{Sendstatistic}),
