@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.2.6";
+my $version = "2.0.2.7";
 
 # Globals
 my @results;
@@ -95,8 +95,7 @@ exit;
 sub performchecks {
 	my ($action) = @_;
 	
-	# Disable checks by general.cfg config variables
-	#my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
+	# Disable checks by general.json config variables
 	my $jsonobj = LoxBerry::System::General->new();
 	my $cfg = $jsonobj->open( readonly => 1 );
 
@@ -804,9 +803,12 @@ sub check_lbversion
 	# Perform check
 	eval {
 		
-		my $cfg      = new Config::Simple("$lbsconfigdir/general.cfg");
-		my $currversion  = $cfg->param("BASE.VERSION");
-		my $failedscript = $cfg->param("UPDATE.FAILED_SCRIPT");
+		require LoxBerry::JSON;
+		my $cfgfilejson = "$lbsconfigdir/general.json";
+		my $jsonobj = LoxBerry::JSON->new();
+		my $cfgjson = $jsonobj->open(filename => $cfgfilejson,  readonly => 1);
+		my $currversion  = $cfgjson->{Base}->{Version};
+		my $failedscript = $cfgjson->{Update}->{Failedscript};
 		
 		my $endpoint = 'https://api.github.com';
 		my $resource = '/repos/mschlenstedt/Loxberry/releases';
