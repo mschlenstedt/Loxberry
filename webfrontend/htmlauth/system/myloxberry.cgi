@@ -43,7 +43,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.2";
+my $version = "2.0.2.3";
 my $sversion = LoxBerry::System::lbversion();
 my $jsonobj = LoxBerry::System::General->new();
 my $cfg = $jsonobj->open();
@@ -156,9 +156,9 @@ sub form {
 	
 	# Country selector
 	#
-	my $countryfile = "$lbsconfigdir/countries/" . $lang . "/world.json";
+	my $countryfile = "$lbstemplatedir/countries/" . $lang . "/world.json";
 	if( ! -e $countryfile ) {
-		$countryfile = "$lbsconfigdir/countries/en/world.json";
+		$countryfile = "$lbstemplatedir/countries/en/world.json";
 	}
 	my $countryobj = LoxBerry::System::General->new();
 	my $countrydata = $countryobj->open( filename => $countryfile, readonly => 1 );
