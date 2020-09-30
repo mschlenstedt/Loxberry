@@ -61,7 +61,7 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
 		# Check for complete boot partition
 		my $md5 = qx { find /boot.tmp -type f -exec md5sum {} \; | sort -k 2 | cut -d" " -f1 | md5sum -z |  cut -d" " -f1 };
 		my $md5_size = qx { du -b /boot.tmp/* | sort -k 2 | md5sum -z | cut -d" " -f1 };
-		if ( $md5 eq "c44a8e0e55362369513914b584aaf8bd" && $md5_size eq "cce0a64557286af7dc9bfd30e4c4c431" ) {
+		if ( $md5 eq "1f6dd052388c138333047bc6ebd376c2" && $md5_size eq "cce0a64557286af7dc9bfd30e4c4c431" ) {
 			unlink "/boot/kernel*.img";
 			qx ( cp -r /boot.tmp/* /boot );
 			qx ( rm -r /boot.tmp );
