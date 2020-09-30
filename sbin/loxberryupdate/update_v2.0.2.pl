@@ -47,20 +47,27 @@ if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/sys
 	LOGINF "Upgrading system kernel and firmware. Takes up to 10 minutes or longer! Be patient and do NOT reboot!";
 
 	unlink "/boot/.firmware_revision";
+	if ( -d '/boot.tmp' ) {
+		qx ( rm -r /boot.tmp ); 
+	}
 	qx { mkdir /boot.tmp };
-	$log->close;
-	system (" SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update 2d76ecb08cbf7a4656ac102df32a5fe448c930b1 >> $logfilename 2>&1 ");
-	$log->open;
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-        	LOGERR "Error upgrading kernel and firmware - Error $exitcode";
+	# print STDERR "Logfilename: ".$logfilename."\n";
+	my $rpiupdate_rc;
+	($rpiupdate_rc) = execute(" SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update 2d76ecb08cbf7a4656ac102df32a5fe448c930b1 >> $logfilename 2>&1 ");
+	if ($rpiupdate_rc != 0) {
+        	LOGERR "Error upgrading kernel and firmware - Error $rpiupdate_rc";
         	$errors++;
 	} else {
 		# Delete beta 64Bit kernel (we have not enough space on /boot...)
 		unlink "/boot.tmp/kernel8.img";
 		# Check for complete boot partition
-		my $md5 = qx { find /boot.tmp -type f -exec md5sum {} \; | sort -k 2 | cut -d" " -f1 | md5sum -z |  cut -d" " -f1 };
-		my $md5_size = qx { du -b /boot.tmp/* | sort -k 2 | md5sum -z | cut -d" " -f1 };
+		LOGDEB "Running MD5 on files...";
+		my ($fmd5_rc, $md5) = execute( 'find /boot.tmp -type f -exec md5sum {} \; | sort -k 2 | cut -d" " -f1 | md5sum -z |  cut -d" " -f1' );
+		$md5 = trim($md5);
+		LOGDEB "Running MD5 on directories...";
+		my ($md5_size) = trim( qx { du -b /boot.tmp/* | sort -k 2 | md5sum -z | cut -d" " -f1 } );
+		LOGDEB "File-MD5: $md5 (expected 1f6dd052388c138333047bc6ebd376c2)";
+		LOGDEB "Dir-MD5 : $md5_size (expected cce0a64557286af7dc9bfd30e4c4c431)";
 		if ( $md5 eq "1f6dd052388c138333047bc6ebd376c2" && $md5_size eq "cce0a64557286af7dc9bfd30e4c4c431" ) {
 			unlink "/boot/kernel*.img";
 			qx ( cp -r /boot.tmp/* /boot );
