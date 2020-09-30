@@ -20,6 +20,19 @@ print FH "deb http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/ buster main
 print FH "deb http://ftp.agdsn.de/pub/mirrors/raspbian/raspbian/ buster main contrib non-free rpi\n";
 close(FH);
 
+LOGINF "Uniquify sources.list...";
+my @sourceslist = split( /\n/, LoxBerry::System::read_file( "/etc/apt/sources.list" ) );
+
+if ( scalar @sourceslist == 0 ) {
+	LOGINF "/etc/apt/sources.list could not be uniquified.";
+} else {
+	my @unique_sourceslist = do { my %seen; grep { !$seen{$_}++ } @sourceslist };
+	open(my $fh, ">", "/etc/apt/sources.list");
+	print $fh join( "\n", @unique_sourceslist );
+	close($fh);
+	LOGOK "sources.list uniquified.";
+}
+
 LOGINF "We are migrating general.cfg to general.json ...";
 LOGINF "Create backup of your general.cfg";
 my ($exitcode, $output);
