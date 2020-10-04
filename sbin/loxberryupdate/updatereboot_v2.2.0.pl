@@ -82,7 +82,7 @@ if ($starts >=10) {
 # Sleep waiting network to be up after boot
 use Net::Ping;
 my $p = Net::Ping->new();
-my $hostname = 'google.com';
+my $hostname = 'www.google.com';
 my $success = 0;
 foreach my $c (1 .. 5) {
 	LOGINF "Try to reach $hostname";
