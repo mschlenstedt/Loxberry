@@ -509,18 +509,18 @@ LOGINF "Commit SHA is updated to $sha" if ($sha);
 # Last but not least set the general.json to the new version.
 if (! $cgi->param('dryrun') ) {
 	
-	# $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
-		# do {
-			# LOGERR "Cannot open general.cfg. Error: " . $syscfg->error(); 
-			# $errskipped++;
-			# };
-	# $syscfg->param('BASE.VERSION', vers_tag("$release", 1));
-	# $syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
-	# $syscfg->save() or 
-		# do {
-			# LOGERR "Cannot write to general.cfg. Error: " . $syscfg->error(); 
-			# $errskipped++;
-			# };
+	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
+		do {
+			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error(); 
+			$errskipped++;
+			};
+	$syscfg->param('BASE.VERSION', vers_tag("$release", 1));
+	$syscfg->param('UPDATE.LATESTSHA', "$sha") if ($sha);
+	$syscfg->save() or 
+		do {
+			LOGERR "Cannot write to general.cfg. Error: " . $syscfg->error(); 
+			$errskipped++;
+			};
 	$jsonobj = LoxBerry::JSON->new();
 	$jsoncfg = $jsonobj->open(filename => "$lbsconfigdir/general.json");
 	if(!defined $jsoncfg) {
