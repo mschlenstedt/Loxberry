@@ -161,9 +161,16 @@ case "$1" in
 	echo "Configuring fstab...."
 	awk '!/^#/ && !/^\s/ && /^[a-zA-Z0-9]/ { if(!match($4,/nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
 	sed -i 's/\(\/ ext4 .*\),nofail\(.*\)/\1\2/' /etc/fstab.new # remove nofail for /
-	cp /etc/fstab /etc/fstab.backup
-	cat /etc/fstab.new > /etc/fstab
-	rm /etc/fstab.new
+	
+	# Checking fstab.new
+	findmnt -F /etc/fstab.new / > /dev/null
+	if [ $? -eq 0 ]; then
+		cp /etc/fstab /etc/fstab.backup
+		cat /etc/fstab.new > /etc/fstab
+		rm /etc/fstab.new
+	else
+		echo "ERROR patching /etc/fstab - Skipping..."
+	fi
 	echo "Configuring NTP systemd timesync...."
 	systemctl disable systemd-timesyncd > /dev/null 2>&1
   ;;
