@@ -2,7 +2,7 @@
 
 class LBJSON 
 { 
-	public $VERSION = "2.0.2.1";
+	public $VERSION = "2.0.2.2";
 	public $DEBUG = 0;
 
 	public $slave;
@@ -38,7 +38,7 @@ class LBJSON
 			return;
 		} else {
 			// echo "  Something changed.\n";
-			$writeerror = file_put_contents($this->filename, json_encode($this->slave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
+			$writeerror = file_put_contents($this->filename, json_encode($this->slave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), LOCK_EX);
 			if ($writeerror === FALSE) {
 				error_log("loxberry_json: write: ERROR writing file " . $this->filename );
 			}
