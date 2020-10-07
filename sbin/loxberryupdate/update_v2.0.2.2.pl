@@ -35,13 +35,16 @@ if ( -e $lbhomedir.'/webfrontend/html/XL/user' ) {
 } else {
 	mkdir($lbhomedir.'/webfrontend/html/XL/user', 0700);
 	`chown loxberry $lbhomedir/webfrontend/html/XL/user`;
+	`chmod -c 700 $lbhomedir/webfrontend/html/XL/user`;
+	`chmod -Rc 700 $lbhomedir/webfrontend/html/XL/user/*`;
+	
 	if ( ! -e $lbhomedir.'/webfrontend/html/XL/user' ) {
 		LOGWARN "Could not create user directory.";
 	} else {
 		LOGOK "User directory created.";
 	}
 }
-	
+
 if ( $create_flag == 1 ) {
 	my $tmp_filename = '/tmp/lb_smb_conf_' . int(rand(10000)) . '.tmp';
 	LOGINF "Preparing share...";
