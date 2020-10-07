@@ -33,7 +33,7 @@ LOGINF "Creating XL user directory...";
 if ( -e $lbhomedir.'/webfrontend/html/XL/user' ) {
 	LOGOK "User directory already exists. No need to create.";
 } else {
-	mkdir($lbhomedir.'/webfrontend/html/XL/user');
+	mkdir($lbhomedir.'/webfrontend/html/XL/user',0700);
 	if ( ! -e $lbhomedir.'/webfrontend/html/XL/user' ) {
 		LOGWARN "Could not create user directory.";
 	} else {
