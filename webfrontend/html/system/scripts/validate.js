@@ -1,5 +1,5 @@
 /* Loxberry webfrontend/html/system/scripts/validate.js */
-/* Version: 2.0.2.2 */
+/* Version: 2.2.0.1 */
 
 function validate_enable ( object )
 {
@@ -315,6 +315,13 @@ function validate_convert_rule (object, rule)
 				// Check if IP Port 1-65535
 				rule ='^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$';
 				break;
+			case 'ipaddr_IPv6':
+				// Check if is IPv6 address
+				rule = '(([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4})';
+				break;
+			
+			
+			
 			case 'ssid':
 				// Check if WLAN SSID 
 				rule ='^([\\w\\u0020\\u0024\\u0040\\u005e\\u0060\\u002c\\u007c\\u0025\\u003b\\u002e\\u007e\\u0028\\u0029\\u002f\\u005c\\u007b\\u007d\\u003a\\u003f\\u005b\\u005d\\u003d\\u002d\\u002b\\u00f5\\u0023\\u0021]{1,32})$';
