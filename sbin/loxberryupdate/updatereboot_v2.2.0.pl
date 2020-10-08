@@ -6,10 +6,12 @@
 use LoxBerry::System;
 use LoxBerry::Log;
 use CGI;
+use LoxBerry::JSON;
+use version;
 
 my $cgi = CGI->new;
  
-my $scriptversion = "2.2.0.0";
+my $version = "2.2.0";
 
 # Initialize logfile and parameters
 my $logfilename;
@@ -198,12 +200,13 @@ if ($exitcode != 0) {
 
 # If errors occurred, mark this script as failed. If ok, never start it again.
 if ($errors) {
-	LOGINF "Setting update script $0 as failed in general.cfg.";
+	LOGINF "Setting update script $0 as failed in general configuration.";
 	$failed_script = version->parse(vers_tag($version));
-	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
-	$syscfg->param('UPDATE.FAILED_SCRIPT', "$failed_script");
-	$syscfg->write();
-	undef $syscfg;
+	$jsonobj = LoxBerry::JSON->new();
+	$jsoncfg = $jsonobj->open(filename => "$lbsconfigdir/general.json");
+	$jsoncfg->{Update}->{Failedscript} = "$failed_script";
+	$jsonobj->write();
+	undef $jsonobj;
 } else {
 	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv220 };
 	qx { rm /boot/rebootupdatescript };
