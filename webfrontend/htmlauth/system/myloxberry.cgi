@@ -20,6 +20,7 @@
 ##########################################################################
 
 use LoxBerry::System;
+use LoxBerry::JSON;
 use LoxBerry::Web;
 use LoxBerry::System::General;
 
@@ -43,7 +44,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.3";
+my $version = "2.0.2.4";
 my $sversion = LoxBerry::System::lbversion();
 my $jsonobj = LoxBerry::System::General->new();
 my $cfg = $jsonobj->open();
@@ -160,7 +161,7 @@ sub form {
 	if( ! -e $countryfile ) {
 		$countryfile = "$lbstemplatedir/countries/en/world.json";
 	}
-	my $countryobj = LoxBerry::System::General->new();
+	my $countryobj = LoxBerry::JSON->new();
 	my $countrydata = $countryobj->open( filename => $countryfile, readonly => 1 );
 	my @countries;
 	my %countrylabels;
@@ -262,9 +263,7 @@ sub save
 	LoxBerry::Web::foot();
 	exit;
 	
-	
 }
-
 
 #####################################################
 # Error
