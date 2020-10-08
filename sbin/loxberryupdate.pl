@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='2.0.2.3';
+my $scriptversion='2.0.2.4';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -128,11 +128,11 @@ LOGOK "Lock successfully set.";
 
 if (!$nodiscspacecheck) {
 	my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-	if ($folderinfo{available} < 102400) {
-		$joutput{'error'} = "Available diskspace is below 100MB. Update is skipped.";
+	if ($folderinfo{available} < 204800) {
+		$joutput{'error'} = "Available diskspace is below 200 MB. Update is skipped.";
 		&err;
 		LOGCRIT $joutput{'error'};
-		notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update was prevented.", 'Error');
+		notify('updates', 'update', "LoxBerry Update: Free diskspace is below 200 MB (available: $folderinfo{available}). Update was prevented.", 'Error');
 		exit (1);
 	}
 }
@@ -362,11 +362,11 @@ foreach my $version (@updatelist)
 		my $lowdiskspace;
 		if (! $nodiscspacecheck) {
 			my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-			if ($folderinfo{available} < 102400) {
+			if ($folderinfo{available} < 204800) {
 				$lowdiskspace = 1;
-				$joutput{'error'} = "Available diskspace is below 100MB. Execution of this and further update scripts will be canceled.";
+				$joutput{'error'} = "Available diskspace is below 200 MB. Execution of this and further update scripts will be canceled.";
 				LOGCRIT $joutput{'error'};
-				notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update script processing was canceled.", 'Error');
+				notify('updates', 'update', "LoxBerry Update: Free diskspace is below 200 MB (available: $folderinfo{available}). Update script processing was canceled.", 'Error');
 			} else {
 				$lowdiskspace = 0;
 			}	
@@ -379,7 +379,7 @@ foreach my $version (@updatelist)
 		
 		if ($exitcode != 0 || $lowdiskspace) {
 			if($lowdiskspace) {
-				LOGERR "Update-Script update_$version did not execute because of low disk space condition. Further update scripts are prevented from run. You can re-apply the updates from within LoxBerry Update when enough disk space is available (> 100MB). Continuing without update scripts.";
+				LOGERR "Update-Script update_$version did not execute because of low disk space condition. Further update scripts are prevented from run. You can re-apply the updates from within LoxBerry Update when enough disk space is available (> 200 MB). Continuing without update scripts.";
 				$errskipped++;
 				$scripterrskipped++;
 			}
