@@ -118,6 +118,11 @@ start)
 	cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
 	cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
 
+	echo "Restoring DHCP leases..."
+	if ls $LBHOMEDIR/system/dhcp/*.leases 2>/dev/null 1>&2; then
+		cp -a $LBHOMEDIR/system/dhcp/*.leases /var/lib/dhcp/
+	fi
+
 	# Copy logdb from SD card to RAM disk
 	if [ -e $LBHOMEDIR/log/system/logs_sqlite.dat.bkp ]; then
 	        echo "Copy back Backup of Logs SQLite Database..."
@@ -147,6 +152,13 @@ stop)
 	if [ -d $LBHOMEDIR/log/skel_syslog/ ]; then
 		cp -ra /var/log/* $LBHOMEDIR/log/skel_syslog/
 		find $LBHOMEDIR/log/skel_syslog/ -type f -exec rm {} \;
+	fi
+	echo "Backing up DCHP leases..."
+	if [ ! -d $LBHOMEDIR/system/dhcp ]; then
+		mkdir $LBHOMEDIR/system/dhcp
+	fi
+	if ls /var/lib/dhcp/*.leases 2>/dev/null 1>&2; then
+		cp -a /var/lib/dhcp/*.leases $LBHOMEDIR/system/dhcp/
 	fi
 
 	# Copy logdb from RAM disk to SD card
