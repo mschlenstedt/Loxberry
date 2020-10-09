@@ -113,7 +113,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.2.6";
+	public static $LBSYSTEMVERSION = "2.2.0.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -699,33 +699,37 @@ public static function plugindb_changed_time()
 		// DEBUGGING 
 		// $respjson = json_decode('{"cmd":"getip","Code":200,"IP":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpen":true,"LastUpdated":"2020-02-04 11:43:50","DNS-Status":"registered","IPHTTPS":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpenHTTPS":true}');
 		
-		// http port
-		$resp_ip = $respjson->IP;
-		$sq1 = strpos( $resp_ip, '[' );
-		if( $sq1 !== FALSE ) {
-			$sq2 = strpos( $resp_ip, ']' );
-			if ( $sq2 !== FALSE ) {
-				$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
-				$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
-			}
-		} else {
-			list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['Port'] ) =  explode(":",$resp_ip, 2);
-		}
-		// https port
-		if( is_enabled($miniservers[$msnr]['PreferHttps']) ) {
-			$resp_ip = $respjson->IPHTTPS;
-			$sq1 = strpos( $resp_ip, '[' );
-			if( $sq1 !== FALSE ) {
-				$sq2 = strpos( $resp_ip, ']' );
-				if ( $sq2 !== FALSE ) {
-					$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
-					$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
-				}
-			} else {
-				list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['PortHttps'] ) =  explode(":",$resp_ip, 2);
-			}
-		}
+		if(!empty($respjson) ) {
 		
+			// http port
+			if( property_exists($respjson, 'IP') ) {
+				$resp_ip = $respjson->IP;
+				$sq1 = strpos( $resp_ip, '[' );
+				if( $sq1 !== FALSE ) {
+					$sq2 = strpos( $resp_ip, ']' );
+					if ( $sq2 !== FALSE ) {
+						$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
+						$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
+					}
+				} else {
+					list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['Port'] ) =  explode(":",$resp_ip, 2);
+				}
+			}
+			// https port
+			if( property_exists($respjson, 'IPHTTPS') && is_enabled($miniservers[$msnr]['PreferHttps']) ) {
+				$resp_ip = $respjson->IPHTTPS;
+				$sq1 = strpos( $resp_ip, '[' );
+				if( $sq1 !== FALSE ) {
+					$sq2 = strpos( $resp_ip, ']' );
+					if ( $sq2 !== FALSE ) {
+						$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
+						$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
+					}
+				} else {
+					list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['PortHttps'] ) =  explode(":",$resp_ip, 2);
+				}
+			}
+		}		
 		// Save cache information to json
 		if (!empty($miniservers[$msnr]['IPAddress'])) {
 			if(empty($jsonobj)) {

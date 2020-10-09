@@ -7,8 +7,12 @@ if( php_sapi_name() !== 'cli' ) {
 require_once "loxberry_system.php";
 require_once "loxberry_io.php";
 
-$LBMSVERSION = "2.0.2.7";
+$LBMSVERSION = "2.2.0.1";
 $LBMSDEBUG = 0;
+
+if(!file_exists('/dev/shm/loxberryxl.tmp')) {
+	file_put_contents('/dev/shm/loxberryxl.tmp', $LBMSVERSION);
+}
 
 error_log("\e[1mLoxBerry XL Version $LBMSVERSION\e[0m");
 // fwrite(STDERR, "\e[1mLoxBerry XL Version $LBMSVERSION\e[0m\n");
