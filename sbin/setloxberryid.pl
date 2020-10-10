@@ -78,6 +78,8 @@ if ($sendstat) {
 	$ua->timeout(15);
 	$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 	
+	my $lbid;
+
 	# Two tries
 	for( my $try = 1; $try <= 2; $try++ ) {
 	
@@ -89,7 +91,7 @@ if ($sendstat) {
 				exit(1);
 			};
 		flock($fh,2);
-		my $lbid = <$fh>;
+		$lbid = <$fh>;
 		flock($fh,8);
 		close($fh);
 		
@@ -137,7 +139,6 @@ if ($sendstat) {
 			"&ver_sub=" . uri_escape($ver_sub) . 
 			"&version=" . uri_escape($plugin->{PLUGINDB_VERSION}); 
 		
-		
 		my $response = $ua->get($url);
 				
 		if ( !$response->is_success ) {
@@ -145,6 +146,31 @@ if ($sendstat) {
 		} else {
 			LOGOK "Successfully sent plugin request for $plugin->{PLUGINDB_TITLE}: HTTP ".$response->code." ".$response->message."\n$url";
 		}
+	}
+	
+	# Send LoxBerry XL usage 
+	if( -e '/dev/shm/loxberryxl.tmp' ) {
+		my ($ver_major, $ver_minor, $ver_sub, $ver_sub2) = split (/\./, trim(LoxBerry::System::read_file('/dev/shm/loxberryxl.tmp')));
+		LOGINF "LoxBerry XL version used is $ver_major.$ver_minor.$ver_sub.$ver_sub2";
+		my $url = "https://stats.loxberry.de/collectplugin.php" .
+			"?uid=$lbid" .
+			"&pluginmd5=60dec737f394cd77cf6d79613d8a7247" .  
+			"&plugintitle=" . uri_escape('LoxBerry XL') . 
+			"&pluginname=loxberry_xl" . 
+			"&plugindir=loxberry_xl" . 
+			"&pluginauthor=". uri_escape('LoxBerry-Team') . 
+			"&pluginemail=" . uri_escape('info@loxberry.de') . 
+			"&ver_major=" . uri_escape($ver_major) . 
+			"&ver_minor=" . uri_escape($ver_minor) . 
+			"&ver_sub=" . uri_escape($ver_sub) . 
+			"&version=" . uri_escape("$ver_major.$ver_minor.$ver_sub.$ver_sub2"); 
+		my $response = $ua->get($url);
+		if ( !$response->is_success ) {
+			LOGCRIT "Error sending LoxBerry XL statistics: HTTP ".$response->code." ".$response->message."\n$url\n".$response->decoded_content;	
+		} else {
+			LOGOK "Successfully sent LoxBerry XL request: HTTP ".$response->code." ".$response->message."\n$url";
+		}
+		unlink '/dev/shm/loxberryxl.tmp';
 	}
 	
 	
