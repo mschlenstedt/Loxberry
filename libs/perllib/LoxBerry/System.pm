@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.2.9";
+our $VERSION = "2.2.0.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -32,6 +32,7 @@ our @EXPORT = qw (
 	$lbpbindir
 	
 	lblanguage
+	lbcountry
 	readlanguage
 	lbhostname
 	lbfriendlyname
@@ -161,6 +162,7 @@ our $PLUGINDATABASE = "$lbsdatadir/plugindatabase.json";
 
 # Variables only valid in this module
 my $lang;
+my $country;
 my $cfgwasread;
 my %miniservers;
 my %binaries;
@@ -527,6 +529,7 @@ sub read_generaljson
 	
 	$cfgwasread = 1;
 	$LoxBerry::System::lang = $cfg->{Base}->{Lang} or Carp::carp ("Base.Lang is not defined in general.json\n");
+	$country = defined $cfg->{Base}->{Country} && $cfg->{Base}->{Country} ne 'undef' ? $cfg->{Base}->{Country} : undef;
 	$clouddnsaddress = $cfg->{Base}->{Clouddnsuri};
 	$sysloglevel	= $cfg->{Base}->{Systemloglevel};
 	$lbversion		= $cfg->{Base}->{Version} or Carp::carp ("BASE.VERSION not defined in general.json\n");
@@ -743,6 +746,18 @@ sub lblanguage
 	
 	print STDERR "\$lang from general.json: $LoxBerry::System::lang" if ($DEBUG);
 	return $LoxBerry::System::lang;
+}
+
+######################################
+# Get users country from general.json
+######################################
+sub lbcountry
+{
+	if ($cfgwasread) {
+		return $country;
+	}
+	read_generaljson();
+	return $country;
 }
 	
 #####################################################

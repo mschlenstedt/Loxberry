@@ -100,6 +100,7 @@
 	$miniservercount=NULL;
 	$plugins=NULL;
 	$lblang=NULL;
+	$lbcountry=NULL;
 	$cfgwasread=NULL;
 	$plugindb_timestamp = 0;
 	$plugindb_lastchecked = 0;
@@ -113,10 +114,22 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.2.0.1";
+	public static $LBSYSTEMVERSION = "2.2.0.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
+	///////////////////////////////////////////////////////////////////
+	// Get the selected country from general.json
+	///////////////////////////////////////////////////////////////////
+	public static function lbcountry()
+	{
+		global $lbcountry;
+		if (! isset($cfgwasread)) {
+			LBSystem::read_generaljson();
+		}	
+		return $lbcountry;
+	}
+	
 	///////////////////////////////////////////////////////////////////
 	// Detects the language from query, post or general.json
 	///////////////////////////////////////////////////////////////////
@@ -570,6 +583,7 @@ public static function plugindb_changed_time()
 		global $lbversion;
 		global $lbfriendlyname;
 		global $lblang;
+		global $lbcountry;
 		global $cfgwasread;
 		global $webserverport;
 		global $clouddnsaddress;
@@ -593,6 +607,7 @@ public static function plugindb_changed_time()
 		$lbfriendlyname = isset($cfg->Network->Friendlyname) ? $cfg->Network->Friendlyname : NULL;
 		$webserverport = isset($cfg->Webserver->Port) ? $cfg->Webserver->Port : NULL;
 		$lblang = isset($cfg->Base->Lang) ? $cfg->Base->Lang : NULL;
+		$lbcountry = isset($cfg->Base->Country) && $cfg->Base->Country != 'undef' ? $cfg->Base->Country : NULL;
 		
 		# If no miniservers are defined, return NULL
 		$miniservercount = count( get_object_vars($cfg->Miniserver) );
