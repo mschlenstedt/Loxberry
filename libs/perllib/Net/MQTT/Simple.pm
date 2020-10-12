@@ -9,7 +9,8 @@ use strict;
 use warnings;
 use Time::HiRes;
 
-our $VERSION = '1.24-2LB';
+our $VERSION = '1.24-3LB';
+our $SENDDELAY = 0.017;
 
 # Please note that these are not documented and are subject to change:
 our $KEEPALIVE_INTERVAL = 60;
@@ -194,8 +195,8 @@ sub _prepend_variable_length {
 sub _send {
     my ($self, $data) = @_;
 	
-	if( $self->{last_send} and (Time::HiRes::time()+0.01) > $self->{last_send} ) {
-		Time::HiRes::sleep(0.01);
+	if( $self->{last_send} and $self->{last_send}+$SENDDELAY > Time::HiRes::time() ) {
+		Time::HiRes::sleep($SENDDELAY);
 	}
 	
     $self->_connect unless exists $self->{skip_connect};
