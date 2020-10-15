@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "1.4.0.1";
+our $VERSION = "2.2.0.1";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -218,8 +218,10 @@ sub get_netservers
 ##################################################################################
 sub get_usbstorage
 {
-	my ($size, $readwriteonly) = @_;
-
+	my ($sizeunit, $readwriteonly) = @_;
+	
+	$sizeunit = lc($sizeunit);
+	
 	my $openerr = 0;
 	opendir(my $fh1, "$LoxBerry::System::lbhomedir/system/storage/usb") or ($openerr = 1);
 	if ($openerr) {
@@ -231,37 +233,29 @@ sub get_usbstorage
 
 	my @usbstorages = ();
 	my $usbstoragecount = 0;
-	my $device;
-	my $output;
-	my @df;
-	my $used;
-	my $type;
-	my $available;
-	my $opt;
+	
 	foreach (@usbdevices){
 		s/[\n\r]//g;
 		if($_ eq "." || $_ eq "..") {
 			next;
 		}
 		my $device = $_;	
+		my $used;
+		my $size;
+		my $available;
+	
 		my %usbstorage;
-		# if ( $size eq "H" | $size eq "h" ) {
-			# $opt = "-h";
-		# }
-		# $output = qx { df -P -l -T $opt | grep /media/usb/$device | sed 's/[[:space:]]\\+/|/g' };
-		# @df = split(/\|/,$output);	
-
 		my %disk = LoxBerry::System::diskspaceinfo("$LoxBerry::System::lbhomedir/system/storage/usb/$device");
 
-		if (lc($size) eq "h") {
+		if ($sizeunit eq "h") {
 			$used = LoxBerry::System::bytes_humanreadable($disk{used}, "k");
 			$size = LoxBerry::System::bytes_humanreadable($disk{size}, "k");
 			$available = LoxBerry::System::bytes_humanreadable($disk{available}, "k");
-		} elsif (lc($size) eq "mb" ) {
+		} elsif ($sizeunit eq "mb" ) {
 			$used = sprintf "%.1f", $disk{used} / 1024;
 			$available = sprintf "%.1f", $disk{available} / 1024;
 			$size = sprintf "%.1f", $disk{size} / 1024;
-		} elsif (lc($size) eq "gb" ) {
+		} elsif ($sizeunit eq "gb" ) {
 			$used = sprintf "%.1f", $disk{used} / 1024 / 1024;
 			$available = sprintf "%.1f", $disk{available} / 1024 / 1024;
 			$size = sprintf "%.1f", $disk{size} / 1024 /1024;
@@ -270,7 +264,7 @@ sub get_usbstorage
 			$available = $disk{available};
 			$size = $disk{size};
 		}
-		$type = qx ( blkid -o udev $disk{filesystem} | grep ID_FS_TYPE | awk -F "=" '{ print \$2 }' );
+		my $type = qx ( blkid -o udev $disk{filesystem} | grep ID_FS_TYPE | awk -F "=" '{ print \$2 }' );
 		my $state = "";
 		# Check read/write state
 		qx(ls \"$LoxBerry::System::lbhomedir/system/storage/usb/$device\");
