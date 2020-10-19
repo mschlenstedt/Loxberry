@@ -18,7 +18,11 @@ my $dest_bootpart_size = 256; # /boot partition in MB
 # $devicedata{otherdevices} = \%otherdevices;
 
 # Create a logging object
-my $log = LoxBerry::Log->new ( package => 'core', name => 'daemon', logdir => $lbslogdir, stdout => 1 );
+my $log = LoxBerry::Log->new ( 
+	package => 'core', 
+	name => 'Clone_SD', 
+	logdir => $lbslogdir, 
+	stdout => 1 );
 
 LOGSTART "Clone SD card";
 LOGINF "Version of this script: $version";
@@ -166,7 +170,7 @@ sleep(5);
 print "Too late - let the game begin!\n\n";
 
 # Stop autofs
-execute( "systemctl stop autofs" );
+execute( command => "systemctl stop autofs", log => $log );
 
 # Unmount mounted destination partitions
 
@@ -174,7 +178,7 @@ for my $i ( 1..3) {
 	LOGINF "Unmount Try $i";
 	foreach my $partition ( @{$destdevice->{children}} ) {
 		LOGDEB "umount ".$partition->{path};
-		my ($rc) = execute( "umount -q -A ".$partition->{path} );
+		my ($rc) = execute( command => "umount -q -A ".$partition->{path} );
 	}
 	sleep 1;
 }
@@ -188,7 +192,7 @@ my @helperdirs = (
 
 foreach my $helperdir ( @helperdirs ) {
 	# Unmount helper directories
-	execute( "umount -q $helperdir");
+	execute( command => "umount -q $helperdir" );
 
 	# Create helper directories
 	mkdir($helperdir);
@@ -205,7 +209,7 @@ foreach my $helperdir ( @helperdirs ) {
 }
 
 LOGINF "Deleting old partitions on your destination";
-execute ( "wipefs -a $destpath");
+execute( command => "wipefs -a $destpath", log => $log );
 sleep(1);
 
 # Re-read lsblk
@@ -232,12 +236,12 @@ if ( defined $checklsblk->{blockdevices}[$destdevice_index]->{children} and scal
 }
 
 LOGINF "Creating partiton table";
-execute( "parted -s $destpath mklabel msdos" );
+execute( command => "parted -s $destpath mklabel msdos", log => $log );
 
 LOGINF "Creating new /boot partition";
-execute( "parted -s $destpath mkpart primary fat32 4MiB ". $dest_bootpart_size . "MiB" );
+execute( command => "parted -s $destpath mkpart primary fat32 4MiB ". $dest_bootpart_size . "MiB", log => $log );
 LOGINF "Creating new / partition";
-execute( "parted -s $destpath mkpart primary ext4 ". $dest_bootpart_size . "MiB 100%" );
+execute( command => "parted -s $destpath mkpart primary ext4 ". $dest_bootpart_size . "MiB 100%", log => $log );
 
 sleep (1);
 
@@ -251,15 +255,15 @@ for my $i ( 1..3 ) {
 	LOGINF "Unmount Try $i";
 	foreach my $partition ( @{$destdevice->{children}} ) {
 		LOGDEB "umount ".$partition->{path};
-		my ($rc) = execute( "umount -q -A ".$partition->{path} );
+		my ($rc) = execute( command => "umount -q -A ".$partition->{path} );
 	}
 	sleep 1;
 }
 
 LOGINF "Formatting fat32 boot partition (takes a second)";
-execute( "mkfs.vfat -F 32 ".$destpath1 );
+execute( command => "mkfs.vfat -F 32 ".$destpath1, log => $log );
 LOGINF "Formatting ext4 data partition (takes a minute or two)";
-execute( "mkfs.ext4 ".$destpath2 );
+execute( command => "mkfs.ext4 ".$destpath2, log => $log );
 
 # If partitions got re-mounted, unmount again
 # Unmount mounted destination partitions
@@ -268,7 +272,7 @@ for my $i ( 1..3) {
 	LOGINF "Unmount Try $i";
 	foreach my $partition ( @{$destdevice->{children}} ) {
 		LOGDEB "umount ".$partition->{path};
-		my ($rc) = execute( "umount -q -A ".$partition->{path} );
+		my ($rc) = execute( command => "umount -q -A ".$partition->{path} );
 	}
 	sleep 1;
 }
@@ -288,7 +292,7 @@ for my $i ( 1..10 ) {
 	LOGINF "Checking mounts (try $i)";
 	foreach my $mountpoint ( keys %chk_mounts ) {
 		LOGINF "Mounting $mountpoint to $chk_mounts{$mountpoint}";
-		execute( "mount $chk_mounts{$mountpoint} $mountpoint" );
+		execute( command => "mount $chk_mounts{$mountpoint} $mountpoint", log => $log );
 		LOGDEB "Find mountpoint $mountpoint";
 		my $mnt = findmnt($mountpoint);
 		if ( !defined $mnt or $mnt->{filesystems}[0]->{target} ne $mountpoint ) {
@@ -310,9 +314,9 @@ if (!$mountsok) {
 
 
 LOGINF "Copy data of /boot partition (this will take some seconds)";
-execute( "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /media/dst1 && tar xSpvf - )" );
+execute( command => "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /media/dst1 && tar xSpvf - )", log => $log );
 LOGINF "Copy data of / partition (this may take an hour...)";
-execute( "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /media/dst2 && tar xSpvf - )" );
+execute( command => "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /media/dst2 && tar xSpvf - )", log => $log );
 
 
 LOGINF "Change the PTUUID of destination card to $src_ptuuid";
@@ -346,6 +350,17 @@ if (!$destpath_found) {
 	exit(1);
 }
 
+foreach my $mountpoint ( keys %chk_mounts ) {
+	LOGINF "Mounting $mountpoint to $chk_mounts{$mountpoint}";
+	execute( command => "mount $chk_mounts{$mountpoint} $mountpoint", log => $log );
+	LOGDEB "Find mountpoint $mountpoint";
+	my $mnt = findmnt($mountpoint);
+	if ( !defined $mnt or $mnt->{filesystems}[0]->{target} ne $mountpoint ) {
+		LOGDEB "Mount $mountpoint not ready at mountpoint " . $chk_mounts{$mountpoint};
+		$mountsok = 0;
+	}
+}
+
 if (!$newdst_ptuuid or $newdst_ptuuid ne $src_ptuuid) {
 	LOGERR "Source PTUUID is $src_ptuuid, Dest PTUUID is $newdst_ptuuid - They are not equal. The new SD may fail to boot!";
 } else {
@@ -354,6 +369,18 @@ if (!$newdst_ptuuid or $newdst_ptuuid ne $src_ptuuid) {
 LOGWARN "Shutdown LoxBerry, put the new card into the Raspberry SD slot and start over!";
 LOGWARN "If it fails to boot, connect a display to Raspberry to check what happens.";
 LOGEND "Finished";
+
+# Cleaning up
+reboot_required("After clone_sd.pl usage you need to reboot LoxBerry.");
+foreach my $mountpoint ( keys %chk_mounts ) {
+	rmdir "$destpath2".$mountpoint;
+}
+use File::Copy;
+copy( $log->filename(), "$destpath2".$log->filename() );
+foreach my $mountpoint ( keys %chk_mounts ) {
+	execute( command => "umount $mountpoint" );
+	rmdir "$mountpoint";
+}
 
 
 	
@@ -365,7 +392,7 @@ LOGEND "Finished";
 sub lsblk
 {
 	# Read lsblk 
-	my ($rc, $output) = execute("lsblk -b -O -J");
+	my ($rc, $output) = execute( command => "lsblk -b -O -J", log => $log );
 	my $lsblk = decode_json( $output );
 	if( $rc != 0 or ! $lsblk ) {
 		exception("Could not read lsblk");
@@ -380,7 +407,7 @@ sub findmnt
 {
 	my $dev = shift;
 	# Read lsblk 
-	my ($rc, $output) = execute("findmnt $dev -b -J");
+	my ($rc, $output) = execute( command => "findmnt $dev -b -J", log => $log );
 	my $findmnt;
 	eval {
 		$findmnt = decode_json( $output );
