@@ -6,7 +6,9 @@ use LoxBerry::System;
 use LoxBerry::Log;
 use Data::Dumper;
 
-my $version = "2.2.0.2";
+my $version = "2.2.0.3";
+
+my $dest_bootpart_size = 256; # /boot partition in MB
 
 # my %devicedata;
 # my %bootdevice;
@@ -149,8 +151,8 @@ my $destdevice = $lsblk->{blockdevices}[$destdevice_index];
 
 print "Destination device is $destdevice->{name} ($destdevice->{path}) size " . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . "\n";
 
-# Size check (used size + 128 MB plus 20%)
-my $required_space = ($src1_used + 128*1024*1024)*1.2;
+# Size check (used size + $dest_bootpart_size plus 20%)
+my $required_space = ($src1_used + $dest_bootpart_size*1024*1024)*1.2;
 if( $destdevice->{size} < $required_space ) {
 	LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller that required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
 	exit(1);
@@ -233,9 +235,9 @@ LOGINF "Creating partiton table";
 execute( "parted -s $destpath mklabel msdos" );
 
 LOGINF "Creating new /boot partition";
-execute( "parted -s $destpath mkpart primary fat32 4MiB 128MiB" );
+execute( "parted -s $destpath mkpart primary fat32 4MiB ". $dest_bootpart_size . "MiB" );
 LOGINF "Creating new / partition";
-execute( "parted -s $destpath mkpart primary ext4 128MiB 100%" );
+execute( "parted -s $destpath mkpart primary ext4 ". $dest_bootpart_size . "MiB 100%" );
 
 sleep (1);
 
