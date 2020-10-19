@@ -6,7 +6,7 @@ use LoxBerry::System;
 use LoxBerry::Log;
 use Data::Dumper;
 
-my $version = "2.2.0.1";
+my $version = "2.2.0.2";
 
 # my %devicedata;
 # my %bootdevice;
@@ -108,12 +108,15 @@ if (!$destpath) {
 			# next if ( $partition->{type} ne "part" );
 			print "   -> Partition $partition->{name} Size " . LoxBerry::System::bytes_humanreadable($partition->{size}) ." " . uc($partition->{fstype}) . "\n";;
 		}
-	print "\nThe process will COMPLETELY DELETE your selected destination device. Mind your step.\n";
 	}
-
+	print "\nThe process will COMPLETELY DELETE your selected destination device. Mind your step.\n";
 	print "\n";
 	print "To start the clone, use the DESTINATION device as parameter.\n";
 	print "Example: $0 /dev/sdc\n";
+	if ( ! -e "$lbsconfigdir/is_raspberry.cfg" ) {
+		print " DANGER!! This not the original LoxBerry image (not on a Raspberry).\n";
+		print "          No idea what happens on a Non-Raspberry installation.\n";
+	}
 	exit(0);
 }
 
