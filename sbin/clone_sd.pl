@@ -310,9 +310,9 @@ if (!$mountsok) {
 
 
 LOGINF "Copy data of /boot partition (this will take some seconds)";
-execute( "cd /media/src1 && tar cSp --numeric-owner -f - . | (cd /media/dst1 && tar xSpvf - )" );
+execute( "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /media/dst1 && tar xSpvf - )" );
 LOGINF "Copy data of / partition (this may take an hour...)";
-execute( "cd /media/src2 && tar cSp --numeric-owner -f - . | (cd /media/dst2 && tar xSpvf - )" );
+execute( "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /media/dst2 && tar xSpvf - )" );
 
 
 LOGINF "Change the PTUUID of destination card to $src_ptuuid";
