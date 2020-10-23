@@ -24,7 +24,6 @@
 #######################################################
 
 use LoxBerry::System;
-use LoxBerry::System::General;
 use LoxBerry::Log;
 use LoxBerry::JSON;
 use strict;
@@ -41,12 +40,13 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="2.0.2.2";
+my $scriptversion="2.0.2.3";
 
 my $release_url;
 my $oformat;
 my %joutput;
 my $cfg;
+my $generalcfg;
 my $download_path = '/tmp';
 my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
@@ -85,8 +85,34 @@ $joutput{'logfile'} = $log->filename;
 LOGSTART "LoxBerry Update Check";
 LOGINF "Version of loxberryupdatecheck.pl is $scriptversion";
 
-my $jsonobj = LoxBerry::System::General->new();
-$cfg = $jsonobj->open();
+# We don't know if LoxBerry::System::General already exists
+eval { 
+	require LoxBerry::System::General;
+	my $jsonobj = LoxBerry::System::General->new();
+	$cfg = $jsonobj->open();
+	
+	if ( ! defined $cfg->{Base}->{Version} ) {
+		die; # Raise exception to fall into exception handler
+	}
+};
+if( $@ ) {
+	LOGINF "LoxBerry::System::General does not exist - run in general.cfg legacy mode";
+	require Config::Simple;
+	LOGINF "Reading general.cfg";
+	$generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
+	undef $cfg;
+	$cfg->{Base}->{Version} = $generalcfg->param('BASE.VERSION');
+	$cfg->{Update}->{Dryrun} = $generalcfg->param('UPDATE.DRYRUN');
+	$cfg->{Update}->{Keepupdatefiles} = $generalcfg->param('UPDATE.KEEPUPDATEFILES');
+	$cfg->{Update}->{Keepinstallfiles} = $generalcfg->param('UPDATE.KEEPINSTALLFILES');
+	$cfg->{Update}->{Branch} = $generalcfg->param('UPDATE.BRANCH');
+	$cfg->{Update}->{Latestsha} = $generalcfg->param('UPDATE.LATESTSHA');
+	$cfg->{Update}->{Releasetype} = $generalcfg->param('UPDATE.RELEASETYPE');
+	$cfg->{Update}->{Installtype} = $generalcfg->param('UPDATE.INSTALLTYPE');
+	$cfg->{Update}->{Failedscript} = $generalcfg->param('UPDATE.FAILED_SCRIPT');
+}
+
+
 
 # Read system language
 my %SL = LoxBerry::System::readlanguage();

@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='2.0.2.4';
+my $scriptversion='2.0.2.5';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -425,10 +425,10 @@ foreach my $version (@updatelist)
 				$jsoncfg->{Update}->{Failedscript} = "$failed_script";
 				$jsonobj->write();
 				undef $jsonobj;
-				# $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
-				# $syscfg->param('UPDATE.FAILED_SCRIPT', "$failed_script");
-				# $syscfg->write();
-				# undef $syscfg;
+				$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+				$syscfg->param('UPDATE.FAILED_SCRIPT', "$failed_script");
+				$syscfg->write();
+				undef $syscfg;
 			}
 			
 			if ($lowdiskspace or $stop_script_processing_version) {
