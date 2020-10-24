@@ -54,7 +54,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.6";
+my $version = "2.2.0.1";
 
 my $jsonobj = LoxBerry::System::General->new();
 my $cfg = $jsonobj->open();
@@ -218,6 +218,8 @@ sub save {
 		$curms->{Pass_raw} = param("miniserverkennwort$msno");
 		$curms->{Admin} = uri_escape( scalar param("miniserveruser$msno") );
 		$curms->{Pass} = uri_escape( scalar param("miniserverkennwort$msno") );
+		$curms->{Credentials} = $curms->{Admin}.':'.$curms->{Pass};
+		$curms->{Credentials_raw} = $curms->{Admin_raw}.':'.$curms->{Pass_raw};
 		
 		# Save calculated values
 		my $transport;
