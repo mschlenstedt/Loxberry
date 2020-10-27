@@ -6,8 +6,9 @@ if( php_sapi_name() !== 'cli' ) {
 /* Executed on include */
 require_once "loxberry_system.php";
 require_once "loxberry_io.php";
+require_once "XL/waze.php";
 
-$LBMSVERSION = "2.2.0.1";
+$LBMSVERSION = "2.2.0.2";
 $LBMSDEBUG = 0;
 
 if(!file_exists('/dev/shm/loxberryxl.tmp')) {
