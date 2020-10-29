@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.0.2.7";
+my $version = "2.2.0.1";
 
 # Globals
 my @results;
@@ -480,6 +480,9 @@ sub exec_plugincheck
 		$check_filename .= " check";
 	}
 		
+	# Unset this envvar if coming from Apache
+	$ENV{SCRIPT_FILENAME} = undef;
+	
 	my ($exitcode, $output) = execute( $check_filename );
 	
 	my $json;
