@@ -7,7 +7,7 @@ use strict;
 package LoxBerry::System::General;
 use parent 'LoxBerry::JSON';
 
-our $VERSION = "2.0.2.3";
+our $VERSION = "2.2.0.4";
 our $DEBUG;
 
 
@@ -182,6 +182,7 @@ EOF
 	print $fh join( "\n", @timeserver );
 	print $fh "\n\n";
 	print $fh join( "\n", @miniservers );
+	print $fh $binaries;
 	close $fh;
 
 }
