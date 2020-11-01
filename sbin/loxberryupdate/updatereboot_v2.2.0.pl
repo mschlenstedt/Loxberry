@@ -130,7 +130,7 @@ if ($exitcode != 0) {
 #
 LOGINF "Preparing Guru Meditation...";
 LOGINF "This will take some time now. We suggest getting a coffee or a beer.";
-LOGINF "We are now moving the Debian Distribution from Stretch to Buster.";
+LOGINF "We are now upgrading the Raspbian Distribution.";
 
 LOGINF "Cleaning up apt databases...";
 $log->close;
