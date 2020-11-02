@@ -1,6 +1,5 @@
 
 use strict;
-use Config::Simple;
 use LoxBerry::Log;
 
 # use IO::Select;
@@ -19,7 +18,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.0.2.3";
+our $VERSION = "2.2.0.1";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -241,8 +240,21 @@ sub mshttp_get
 	
 	for (my $pidx = 0; $pidx < @params; $pidx++) {
 		print STDERR "Querying param: $params[$pidx]\n" if ($DEBUG);
-		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . '/all'); 
+		my ($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . '/all'); 
 		if($respcode == 200) {
+			# We got a valid response
+			# Workaround for analogue outputs always return 0
+			my $respvalue_filtered = $respvalue;
+			$respvalue_filtered =~ s/\D//g;;
+			# print STDERR "respvalue         : $respvalue\n"; 
+			# print STDERR "respvalue_filtered: $respvalue_filtered\n"; 
+			if($respvalue_filtered eq "0") {
+				# Search for outputs - if present, value is ok
+				if( index( $rawdata, '<output name="' ) == -1 ) {
+					# Not found - we require to request the value without /all
+					($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) ); 
+				} 
+			}
 			$response{$params[$pidx]} = $respvalue;
 		} else {
 			$response{$params[$pidx]} = undef;
@@ -260,23 +272,19 @@ sub mshttp_get
 sub mshttp_call
 {
 	require LWP::UserAgent;
-	# require XML::Simple;
 	require Encode;
-	
 		
 	my ($msnr, $command) = @_;
 	
 	my %ms = LoxBerry::System::get_miniservers();
 	if (! %ms{$msnr}) {
-		print STDERR "No Miniservers configured\n";
+		print STDERR "Miniserver $msnr not found or configuration not finished\n";
 		return (undef, 601, undef);
 	}
 	
 	my $FullURI = $ms{$msnr}{FullURI};
 	
-	# my $url = "http://$mscred\@$msip\:$msport" . $command; (Pre-2.0.2)
 	my $url = $FullURI . $command;
-	# $url_nopass = "http://$miniserveradmin:*****\@$miniserverip\:$miniserverport/dev/sps/io/$player_label/$textenc";
 	my $ua = LWP::UserAgent->new;
 	$ua->timeout(1);
 	$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
@@ -289,16 +297,16 @@ sub mshttp_call
 	#require Data::Dumper;
 	# print STDERR Data::Dumper::Dumper ($response);
 	
-	my $xmlresp = Encode::encode_utf8($response->content);
+	my $resp = Encode::encode_utf8($response->content);
 		
-	$xmlresp =~ /value\=\"(.*?)\"/;
+	$resp =~ /value\=\"(.*?)\"/;
 	my $value=$1;
-	$xmlresp =~ /Code\=\"(.*?)\"/;
+	$resp =~ /Code\=\"(.*?)\"/;
 	my $code=$1;
 	
-	print STDERR "mshttp_call: Response Code $code Value $value Full: $xmlresp\n" if($DEBUG);
+	print STDERR "mshttp_call: Response Code $code Value $value Full: $resp\n" if($DEBUG);
 	
-	return ($value, $code, $xmlresp);
+	return ($value, $code, $resp);
 	
 }
 
