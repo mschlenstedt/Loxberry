@@ -18,7 +18,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.2.0.1";
+our $VERSION = "2.2.0.2";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -244,11 +244,12 @@ sub mshttp_get
 		if($respcode == 200) {
 			# We got a valid response
 			# Workaround for analogue outputs always return 0
-			my $respvalue_filtered = $respvalue;
-			$respvalue_filtered =~ s/\D//g;;
+			my $respvalue_filtered = $respvalue =~ /(\d+(?:\.\d+)?)/;
+			$respvalue_filtered = $1;
 			# print STDERR "respvalue         : $respvalue\n"; 
 			# print STDERR "respvalue_filtered: $respvalue_filtered\n"; 
-			if($respvalue_filtered eq "0") {
+			no warnings "numeric";
+			if($respvalue_filtered ne "" and $respvalue_filtered == 0) {
 				# Search for outputs - if present, value is ok
 				if( index( $rawdata, '<output name="' ) == -1 ) {
 					# Not found - we require to request the value without /all
