@@ -7,7 +7,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.0.2.4";
+$LBIOVERSION = "2.2.0.1";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -258,8 +258,8 @@ function mshttp_call($msnr, $command)
 		'timeout'			=> 5
 	]]);
 
-	$xmlresp = file_get_contents($url, false, $stream_context);
-	if ($xmlresp === false) {
+	$resp = file_get_contents($url, false, $stream_context);
+	if ($resp === false) {
 		// echo "Errors occured\n";
 		if(isset($http_response_header)) {
 			error_log("mshttp_call: Error fetching $url: $http_response_header[0]");
@@ -269,12 +269,12 @@ function mshttp_call($msnr, $command)
 		return array (null, 500, null);
 	}
 	
-	preg_match ( '/value\=\"(.*?)\"/' , $xmlresp, $matches );
+	preg_match ( '/value\=\"(.*?)\"/' , $resp, $matches );
 	$value = $matches[1];
-	preg_match ( '/Code\=\"(.*?)\"/' , $xmlresp, $matches );
+	preg_match ( '/Code\=\"(.*?)\"/' , $resp, $matches );
 	$code = $matches[1];
 			
-	return array ($value, $code, $xmlresp);
+	return array ($value, $code, $resp);
 	
 }
 
@@ -283,7 +283,7 @@ function mshttp_get($msnr, $inputs)
 {
 	$ms = LBSystem::get_miniservers();
 	if (!isset($ms[$msnr])) {
-		error_log("Miniserver $msnr not defined\n");
+		error_log("Miniserver $msnr not defined or configuration not finished\n");
 		return;
 	}
 	
@@ -292,12 +292,20 @@ function mshttp_get($msnr, $inputs)
 		$input_was_string = true;
 	}
 	
-	
 	foreach ($inputs as $input) {
 		// echo "Querying param: $input\n";
-		list($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) . '/all'); 
-		// echo "Responseval: $respvalue Respcode: $respcode\n";
+		list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) . '/all'); 
+		echo "Responseval: $respvalue Respcode: $respcode\n";
 		if($respcode == 200) {
+			// Workaround for analogue outputs always return 0
+			$respvalue_filtered = filter_var( $respvalue, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION );
+			// echo "respvalue_filtered: $respvalue_filtered\n";
+			if( $respvalue_filtered != "" && $respvalue_filtered == 0) {
+				if( strpos( $rawdata, '<output name="' ) == FALSE ) {
+					# Not found - we require to request the value without /all
+					list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) ); 
+				}
+			}
 			$response[$input] = $respvalue;
 		} else {
 			$response[$input] = null;
@@ -318,7 +326,7 @@ function mshttp_send($msnr, $inputs, $value = null)
 	
 	$ms = LBSystem::get_miniservers();
 	if (!isset($ms[$msnr])) {
-		error_log("Miniserver $msnr not defined\n");
+		error_log("Miniserver $msnr not defined or configuration not finished\n");
 		return;
 	}
 	
