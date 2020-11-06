@@ -44,6 +44,7 @@ for( $i = count($data)-1; $i > 0; $i-- ) {
 }
 
 if(isset($current)) {
+	
 	$header = $data[0];
 	$nameddata = new stdClass();
 	foreach( $current as $key => $value ) {
@@ -52,7 +53,7 @@ if(isset($current)) {
 	
 	$GKZ_topic = $topic.$GKZ;
 	$mqtt->retain( $GKZ_topic, json_encode($nameddata) );
-	print_r($nameddata);
+	echo print_r($nameddata, true);
 
 
 } else {
