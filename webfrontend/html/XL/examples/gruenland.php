@@ -33,8 +33,6 @@ $outtemp = clean($outtemp);
 // Check if we have a new day, and make calculations
 if( !empty($cache->dailyavgtimestamp->dayofyear) && $cache->dailyavgtimestamp->dayofyear != $xl->dayofyear ) {
 	calculate_gts();
-	// Send data
-	$mqtt->retain( $topic, json_encode($cache) );
 }
 
 // Cleanup if we have a new year!
@@ -47,11 +45,15 @@ if( !empty($cache->dailyavgtimestamp->year) && $cache->dailyavgtimestamp->year !
 // Make Daily Avg. calculation
 daily_average();
 
-print_r($cache);
+// Send data
+$mqtt->retain( $topic, json_encode($cache) );
 
-
+// print_r($cache);
 
 file_put_contents($cachefile, json_encode($cache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+// End
+
 
 // Calculate the daily temperature average
 function daily_average() {
