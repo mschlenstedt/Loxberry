@@ -6,13 +6,11 @@ require_once "loxberry_json.php";
 /* 
 	LOXBERRY XL
 	EXtended Logic
-
-	This is the empty template you can start with.
 	 
 */
 
 $outtemp = $ms1->Außentemperatursensor;
-$topic = "gts/";
+$topic = "gts";
 $cachefile = "/opt/loxberry/webfrontend/html/XL/user/gruenland.cache";
 $historyfile = "/opt/loxberry/webfrontend/html/XL/user/gruenland.history";
 
