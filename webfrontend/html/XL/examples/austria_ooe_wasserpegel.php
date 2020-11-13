@@ -6,7 +6,7 @@ require_once "loxberry_XL.php";
 	LOXBERRY XL
 	EXtended Logic
 	
-	Wasserstand OÖ (V1)
+	Wasserstand OÖ (V2)
 	Stationsnamen ausgeben lassen mit folgendem Aufruf:
 	./austria_ooe_wasserpegel.php list
 	Die gewünschten Namen ins $station_names Array übernehmen und danach ohne list-Parameter aufrufen
