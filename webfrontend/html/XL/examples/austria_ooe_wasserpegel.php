@@ -7,7 +7,9 @@ require_once "loxberry_XL.php";
 	EXtended Logic
 	
 	Wasserstand OÖ (V1)
-	Stationsnummer suchen auf https://hydro.ooe.gv.at/#Pegel
+	Stationsnamen ausgeben lassen mit folgendem Aufruf:
+	./austria_ooe_wasserpegel.php list
+	Die gewünschten Namen ins $station_names Array übernehmen und danach ohne list-Parameter aufrufen
 
 */
 
@@ -17,11 +19,9 @@ $station_names= array(
 );
 $topic="ooe/pegel";
 
+// START
+
 $url = "https://hydro.ooe.gv.at/internet/layers/1/index.json";
-
-
-// error_log("Wasserstand: Station $stationno Topic $topic aufgerufen");
-
 $filename = "/tmp/pegel_ooe.tmp";
 
 // Get data
