@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ENVIRONMENT=$(cat /etc/environment)
 export $ENVIRONMENT
