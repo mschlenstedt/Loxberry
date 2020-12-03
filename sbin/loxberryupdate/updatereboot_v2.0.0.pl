@@ -132,7 +132,8 @@ LOGINF "We are now moving the Debian Distribution from Stretch to Buster.";
 
 LOGINF "Update apt sources from stretch to buster...";
 $log->close;
-my $output = qx { find /etc/apt -name "*.list" | xargs sed -i '/^deb/s/stretch/buster/g' >> $logfilename 2>&1 };
+#my $output = qx { find /etc/apt -name "*.list" | xargs sed -i '/^deb/s/stretch/buster/g' >> $logfilename 2>&1 };
+my $output = qx { find /etc/apt -name "sources.list" | xargs sed -i '/^deb/s/stretch/buster/g' >> $logfilename 2>&1 };
 $log->open;
 
 LOGINF "Cleaning up apt databases...";
