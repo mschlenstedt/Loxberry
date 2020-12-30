@@ -598,9 +598,10 @@ sub check_systemload
 		chomp $output;
 		$result{'result'} = "The system load is: $output. Your system has $cpui CPUs installed.";
 		my ($five, $ten, $fifteen) = split (/ /,$output);
-		if ($five > $cpui || $ten > $cpui || $fifteen > $cpui) {
+		#if ($five > $cpui || $ten > $cpui || $fifteen > $cpui) {
+		if ($fifteen > $cpui) {
 			$result{'status'} = '4';
-			$result{'result'} .= " The load is/was higher than your installed CPUs. Normally this is NOT fine.";
+			$result{'result'} .= " The load is/was higher than your installed CPUs. Normally this is NOT fine (although on a Pi1/Zero this may be not unusual).";
 		} else {
 			$result{'status'} = '5';
 			$result{'result'} .= " The load is fine - maybe LoxBerry is even bored :-)";
