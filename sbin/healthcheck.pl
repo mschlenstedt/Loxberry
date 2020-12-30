@@ -34,6 +34,7 @@ push (@checks, "check_voltage");
 push (@checks, "check_readonlyrootfs");
 push (@checks, "check_rootfssize");
 push (@checks, "check_tmpfssize");
+push (@checks, "check_systemload");
 push (@checks, "check_logdb");
 push (@checks, "check_notifydb");
 push (@checks, "check_miniservers");
@@ -558,6 +559,53 @@ sub check_readonlyrootfs
 			$result{'status'} = '3';
 			$result{'result'} = 'RootFS is not mounted ReadWrite. This is NOT fine.';
 		}
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} = "Error executing the test: $@";
+	}
+
+	return(\%result);
+
+}
+
+# Check sstem load
+sub check_systemload
+{
+
+	my %result;
+	my ($action) = @_;
+
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
+	$result{'title'} = 'System Load';
+	$result{'desc'} = 'Checks the system load';
+	$result{'url'} = 'http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+	
+	# Perform check
+	eval {
+
+		my $cpui = qx(cat /sys/devices/system/cpu/kernel_max);
+		chomp $cpui;
+		$cpui++; # Number of available CPUs
+		my $output = qx(cat /proc/loadavg);
+		chomp $output;
+		$result{'result'} = "The system load is: $output. Your system has $cpui CPUs installed.";
+		my ($five, $ten, $fifteen) = split (/ /,$output);
+		if ($five > $cpui || $ten > $cpui || $fifteen > $cpui) {
+			$result{'status'} = '4';
+			$result{'result'} .= " The load is/was higher than your installed CPUs. Normally this is NOT fine.";
+		} else {
+			$result{'status'} = '5';
+			$result{'result'} .= " The load is fine - maybe LoxBerry is even bored :-)";
+		}
+
 	};
 	if ($@) {
 		$result{status} = '3';
