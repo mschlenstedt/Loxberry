@@ -177,6 +177,7 @@
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_MAX>:&nbsp;<span id="lbu_update_clearance_vers_max"></span><br>
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_BLOCKED>:&nbsp;<span id="lbu_update_clearance_vers_blocked"></span>
 		<span style="display:none;" id="lbu_update_clearance_max_version_next"></span>
+		<span style="display:none;" id="lbu_update_clearance_first_blocked_version"></span>
 	</p>
 	<p>
 		<h3 id="first_blocked_name"></h3>
@@ -378,13 +379,17 @@ $(document).ready( function () {
  
 	$("#update_clearance_ok").click(function(){
 		lbu_update_clearance_max_version_next = $("#lbu_update_clearance_max_version_next").text();
+		lbu_update_clearance_first_blocked_version = $("#lbu_update_clearance_first_blocked_version").text();
+		
 				
 		$("#update_clearance_block").html('<span style="color:green;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span>');
 		
 		console.log("#lbu_update_clearance_max_version_next", lbu_update_clearance_max_version_next);
+		console.log("#lbu_update_clearance_first_blocked_version", lbu_update_clearance_first_blocked_version);
+		
 		$.getJSON(
 		"/admin/system/tools/ajax-config-handler.cgi", 
-		{ action: "lbupdate-setmaxversion", value: lbu_update_clearance_max_version_next })
+		{ action: "lbupdate-setmaxversion", value: lbu_update_clearance_first_blocked_version })
 		.done(function(data){
 			if (data.error) {
 				err_str = "Error updating the allowed maximum version.";
@@ -432,17 +437,19 @@ $(document).ready( function () {
 			//console.log("Hallo");
 			//resp = JSON.parse(data);
 			//console.log("release_version", data.info);
-			
+			// console.log("release_new", data.release_new);
+			// console.log("hasOwnProperty('release_new')", data.hasOwnProperty('release_new'));
 			if (data.failed_script) {
 				$("#failed_version").text(data.failed_script);
 				$("#script_failed_block").fadeIn();
 				$("#update_clearance_block").fadeOut();
-			} else if(data.blocked_version) {
+			} else if(data.blocked_version && !data.hasOwnProperty('release_new')) {
 				$("#script_failed_block").fadeOut();
 				$("#failed_version").text("");
 				$("#lbu_update_clearance_vers_current").text($("#current_version").text());
 				$("#lbu_update_clearance_vers_max").text(data.max_version);
 				$("#lbu_update_clearance_max_version_next").text(data.max_version_next);
+				$("#lbu_update_clearance_first_blocked_version").text(data.first_blocked_version);
 				$("#lbu_update_clearance_vers_blocked").text(data.blocked_version);
 				$("#first_blocked_name").text(data.first_blocked_name);
 				$("#first_blocked_body").html(urlify(data.first_blocked_body).replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
