@@ -7,7 +7,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.2.0.1";
+$LBIOVERSION = "2.2.1.1";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -243,29 +243,18 @@ function mshttp_call($msnr, $command)
 	
 	$url = $FullURI . $command;
 	
-	/* SSL options */
-
-	$stream_context = stream_context_create([ 
-	'ssl' => [
-		'timeout'			=> 5,
-		'verify_peer'       => false,
-		'verify_peer_name'  => false,
-		'allow_self_signed' => true,
-		'verify_depth'      => 0,
-		// 'ciphers' 			=> 'HIGH:TLSv1.2:TLSv1.1:TLSv1.0:!SSLv3:!SSLv2'
-	], 
-	'http' => [
-		'timeout'			=> 5
-	]]);
-
-	$resp = file_get_contents($url, false, $stream_context);
-	if ($resp === false) {
-		// echo "Errors occured\n";
-		if(isset($http_response_header)) {
-			error_log("mshttp_call: Error fetching $url: $http_response_header[0]");
-		} else {
-			error_log("mshttp_call: Error fetching $url: unknown");
-		}
+	$ch = curl_init($url); 
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+	$resp = curl_exec($ch);
+	$curl_code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+	curl_close($ch);
+	
+	if($curl_code != 200) {	
+   // echo "Errors occured\n";
+		error_log("mshttp_call: Error fetching $url: HTTP $curl_code");
 		return array (null, 500, null);
 	}
 	
