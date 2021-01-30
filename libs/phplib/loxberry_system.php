@@ -114,7 +114,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.2.0.2";
+	public static $LBSYSTEMVERSION = "2.2.1.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -282,11 +282,7 @@ class LBSystem
 		if(!empty($msClouddnsFetched)) {
 			return $miniservers;
 		}
-		
-		if (isset($cfgwasread)) {
-			return $miniservers;
-		}	
-		
+				
 		LBSystem::read_generaljson();
 		
 		foreach ($miniservers as $msnr => $value) {
