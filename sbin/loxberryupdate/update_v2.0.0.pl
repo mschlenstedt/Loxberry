@@ -18,7 +18,7 @@ LOGINF "Welcome 2.0 Branch :-) Increasing LoxBerry's Max_Version to 2.99.99.";
 my $generaljson = $lbsconfigdir . "/general.json";
 $gcfgobj = LoxBerry::JSON->new();
 $gcfg = $gcfgobj->open(filename => $generaljson);
-$gcfg->{Update}->{max_version} = "v2.99.99"
+$gcfg->{Update}->{max_version} = "v2.99.99";
 $gcfgobj->write();
 
 #
