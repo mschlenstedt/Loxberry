@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "2.0.2.1";
+our $VERSION = "2.2.1.1";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -44,8 +44,8 @@ sub parse
 		$self->{jsonobj} = JSON::from_json($self->{jsoncontent});
 	};
 	if ($@) {
-		print STDERR "LoxBerry::JSON->open: ERROR parsing JSON file - Returning undef $@\n" if ($DEBUG);
-		return undef;
+		print STDERR "LoxBerry::JSON->open: EXCEPTION parsing JSON file:\n$@\n";
+		die "LoxBerry::JSON->open: EXCEPTION parsing JSON file\n$@\n";
 	};
 	$self->dump($self->{jsonobj}, "Loaded object") if ($DUMP);
 	
