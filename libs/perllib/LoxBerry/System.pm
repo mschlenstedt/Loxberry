@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.2.0.1";
+our $VERSION = "2.2.1.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1511,6 +1511,17 @@ sub read_file
 	my $string = <FILE>;
 	close FILE;
 	return $string;
+}
+
+sub write_file
+{
+	my ($filename, $content) = @_;
+	eval {
+		open my $fh, $filename;
+		print $fh $content;
+		close $fh;
+	};
+	return $@;
 }
 
 # Exec a shell command, return exitcode and output
