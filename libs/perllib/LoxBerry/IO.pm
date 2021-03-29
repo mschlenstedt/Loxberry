@@ -11,6 +11,7 @@ our @EXPORT = qw (
 	mshttp_send_mem
 	mshttp_get
 	mshttp_call
+	mshttp_call2
 	msudp_send
 	msudp_send_mem
 );
@@ -18,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.2.1.1";
+our $VERSION = "2.2.1.2";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -332,7 +333,7 @@ sub mshttp_call2
 	my $ssl_verify_hostname = defined $options{ssl_verify_hostname} ? $options{ssl_verify_hostname} : 0;
 	my $filename = defined $options{filename} ? $options{filename} : undef;
 	
-	
+	print STDERR "mshttp_call2: timeout=$timeout\n" if ($DEBUG);
 	
 	my %ms = LoxBerry::System::get_miniservers();
 	if (! %ms{$msnr}) {
@@ -355,8 +356,8 @@ sub mshttp_call2
 	$responseinfo{error} = 1;
 	# If the request completely fails
 	if ($response->is_error) {
-		print STDERR "mshttp_call: $url FAILED - Error $response->code: $response->status_line\n" if ($DEBUG);
-		$responseinfo{message} = "$url FAILED - Error $response->code: $response->status_line";
+		print STDERR "mshttp_call2: $url FAILED - Error " . $response->code . ": " . $response->status_line . "\n" if ($DEBUG);
+		$responseinfo{message} = "$url FAILED - Error " . $response->code . ": " . $response->status_line;
 		return (undef, \%responseinfo);
 	}
 	
@@ -364,7 +365,7 @@ sub mshttp_call2
 	
 	# my $resp = Encode::encode_utf8($response->content);
 		
-	print STDERR "mshttp_call: HTTP $responseinfo{code}: $responseinfo{status}\n" if($DEBUG);
+	print STDERR "mshttp_call2: HTTP $responseinfo{code}: $responseinfo{status}\n" if($DEBUG);
 	
 	
 	if( defined $filename ) {
