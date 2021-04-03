@@ -8,11 +8,12 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.2.0.1";
+my $version = "2.2.0.4";
 
 # Globals
 my @results;
 my @checks;
+my $nocolors = 0;
 
 my %opts;
 
@@ -47,6 +48,11 @@ foreach( @plugins ) {
 	if( -x "$lbhomedir/bin/plugins/$_->{PLUGINDB_FOLDER}/healthcheck" ) {
 		push( @checks, "plugincheck_".$_->{PLUGINDB_FOLDER} );
 	}
+}
+
+# Check for no color
+if ($opts{nocolors}) {
+	$nocolors = 1;
 }
 
 # Default action is check
@@ -176,6 +182,10 @@ sub text {
 		require Term::ANSIColor;
 		$colors = 1;
 	};
+
+	if ($nocolors) {
+		$colors = 0;
+	}
 	
 	my (@results) = @_;
 	foreach my $check (@results) {
@@ -813,7 +823,7 @@ sub check_arch
 			$architecture = "Unknown";
 		}
 		if ($architecture eq "ARM") {
-			my $output = qx(cat /sys/firmware/devicetree/base/model);
+			my $output = qx(cat -v /sys/firmware/devicetree/base/model);
 			chomp $output;
 			$architecture .= " / $output";
 		}
