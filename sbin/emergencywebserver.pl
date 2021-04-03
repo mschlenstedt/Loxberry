@@ -85,12 +85,9 @@ sub healthcheck_live {
 sub checkpin {
 	my $pin = $r->uri->query;
 	$pin =~ s/securepin=(\d+).*/$1/;
-	open (F, "<$lbsconfigdir/securepin.dat");
-		my $pinsaved = <F>;
-	close (F);
-	if (crypt($pin,$pinsaved) eq $pinsaved) {
-		return (1);
-	} else {
+	if ( LoxBerry::System::check_securepin($pin) ) {
 		return (0);
+	} else {
+		return (1);
 	}
 }
