@@ -1,13 +1,12 @@
 <?php
 
 require_once "loxberry_system.php";
-// require_once "phphtmltemplate_loxberry/template040.php";
 
 $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.2.1.1";
+$LBIOVERSION = "2.2.1.2";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)

@@ -11,6 +11,7 @@ our @EXPORT = qw (
 	mshttp_send_mem
 	mshttp_get
 	mshttp_call
+	mshttp_call2
 	msudp_send
 	msudp_send_mem
 );
@@ -18,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.2.0.2";
+our $VERSION = "2.2.1.2";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -310,6 +311,84 @@ sub mshttp_call
 	return ($value, $code, $resp);
 	
 }
+
+
+#####################################################
+# Miniserver REST Call
+# Param 1: Miniserver number
+# Param 2: Full URL without hostname (e.g. '/dev/sps/io/...'
+# Param 3: Hash with options
+#####################################################
+sub mshttp_call2
+{
+	require LWP::UserAgent;
+	# require Encode;
+		
+	my ($msnr, $command, %options) = @_;
+	
+	my %responseinfo;
+	
+	my $timeout = defined $options{timeout} ? $options{timeout} : 5;
+	my $ssl_verify_mode = defined $options{ssl_verify_mode} ? $options{ssl_verify_mode} : 0;
+	my $ssl_verify_hostname = defined $options{ssl_verify_hostname} ? $options{ssl_verify_hostname} : 0;
+	my $filename = defined $options{filename} ? $options{filename} : undef;
+	
+	print STDERR "mshttp_call2: timeout=$timeout\n" if ($DEBUG);
+	
+	my %ms = LoxBerry::System::get_miniservers();
+	if (! %ms{$msnr}) {
+		print STDERR "Miniserver $msnr not found or configuration not finished\n";
+		$responseinfo{code} = 601;
+		$responseinfo{error} = 1;
+		$responseinfo{message} = "Miniserver $msnr not found or configuration not finished";
+		return (undef, \%responseinfo);
+	}
+	
+	my $FullURI = $ms{$msnr}{FullURI};
+	
+	my $url = $FullURI . $command;
+	my $ua = LWP::UserAgent->new;
+	$ua->timeout($timeout);
+	$ua->ssl_opts( SSL_verify_mode => $ssl_verify_mode, verify_hostname => $ssl_verify_hostname );
+	my $response = $ua->get($url);
+	$responseinfo{code} = $response->code;
+	$responseinfo{status} = $response->status_line;
+	$responseinfo{error} = 1;
+	# If the request completely fails
+	if ($response->is_error) {
+		print STDERR "mshttp_call2: $url FAILED - Error " . $response->code . ": " . $response->status_line . "\n" if ($DEBUG);
+		$responseinfo{message} = "$url FAILED - Error " . $response->code . ": " . $response->status_line;
+		return (undef, \%responseinfo);
+	}
+	
+	$responseinfo{message} = "Request ok";
+	
+	# my $resp = Encode::encode_utf8($response->content);
+		
+	print STDERR "mshttp_call2: HTTP $responseinfo{code}: $responseinfo{status}\n" if($DEBUG);
+	
+	
+	if( defined $filename ) {
+		# my $file = $response->decoded_content( charset => 'none' );
+		my $write_resp;
+		eval {
+			open my $fh, $filename;
+			print $fh $response->decoded_content;
+			close $fh;
+		};
+		if($@) {
+			$responseinfo{error} = 1;
+			$responseinfo{message} = "Could not write file $filename: $@";
+		} else {
+			$responseinfo{filename} = $filename;
+		}
+			
+	}
+	
+	return ($response->decoded_content, \%responseinfo);
+	
+}
+
 
 
 #####################################################
