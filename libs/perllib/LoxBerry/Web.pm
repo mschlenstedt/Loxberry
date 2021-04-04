@@ -40,9 +40,11 @@ our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
 
 # Performance optimizations
+# Disable cache if Apache check see problems with tmpfs:/system/cron/cron.hourly/03-apachestate
 my $cache = 1;
-my $response = LoxBerry::System::write_file("/tmp/writetest.txt", "Hello World");
-$cache = 0 if $response; # Disable cache if /tmp isn't writable anymore
+if ( -e "/tmp/no_template_cache" || -e "$lbslogdir/no_template_cache" ) {
+	$cache = 0;
+}
 our %htmltemplate_options = ( 
 		'shared_cache' => 0,
 		'file_cache' => $cache,
