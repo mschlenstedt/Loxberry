@@ -11,7 +11,8 @@ use LoxBerry::Update;
 init();
 
 LOGINF "Enabling Emergency Webserver...";
-&copy_to_loxberry('/system/daemons/system/05-emergencywebserver');	
+&copy_to_loxberry('/system/daemons/system/05-emergencywebserver');
+&copy_to_loxberry('/system/cron/cron.hourly $ vi 03-apachestate');
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
