@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "2.2.1.1";
+our $VERSION = "2.2.1.2";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -70,6 +70,11 @@ sub open
 	$self->{filename} = $params{filename};
 	$self->{writeonclose} = $params{writeonclose};
 	$self->{readonly} = $params{readonly};
+	$self->{lockexclusive} = $params{lockexclusive};
+	
+	if( defined $params{locktimeout} ) {
+		$self->{locktimeout} = $params{locktimeout};
+	}
 	
 	print STDERR "LoxBerry::JSON->open: filename is $self->{filename}\n" if ($DEBUG);
 	print STDERR "LoxBerry::JSON->open: writeonclose is ", $self->{writeonclose} ? "ENABLED" : "DISABLED", "\n" if ($DEBUG);
@@ -78,25 +83,50 @@ sub open
 		print STDERR "LoxBerry::JSON->open: Parameter filename is empty. Terminating.\n";
 		Carp::croak "LoxBerry::JSON->open: Parameter filename is empty.";
 	}
+	
+	my $opentype = '+<';
 	if (! -e $self->{filename}) {
-		print STDERR "LoxBerry::JSON->open: WARNING $self->{filename} does not exist - write will create it\n" if ($DEBUG);
+		print STDERR "LoxBerry::JSON->open: WARNING $self->{filename} does not exist - will be created\n" if ($DEBUG);
 		my $objref = undef;
 		$self->{createfile} = 1;
 		$self->{jsoncontent} = "";
 		$self->{jsonobj} = JSON::from_json('{}');
 		$self->dump($self->{jsonobj}, "Empty object") if ($DUMP);
-		return $self->{jsonobj};
+		$opentype = '+>';
+		# return $self->{jsonobj};
 	}
 	
 	print STDERR "LoxBerry::JSON->open: Reading file $self->{filename}\n" if ($DEBUG);
-	CORE::open my $fh, '<', $self->{filename} or do { 
+	CORE::open my $fh, $opentype, $self->{filename} or do { 
 		print STDERR "LoxBerry::JSON->open: ERROR Can't open $self->{filename} -> returning undef : $!\n" if ($DEBUG);
 		return undef; 
 	};
-	flock($fh, 1); # SHARED LOCK
+	
+	$self->{lockmode} = $self->{lockexclusive} ? 2 : 1; # LOCK_EX / LOCK_SH
+	if( defined $self->{locktimeout} ) {
+		$self->{lockmode} += 4; # Add LOCK_NB
+	}
+	my $locktime = time();
+	my $is_locked=0;
+	do {
+		$is_locked = flock($fh, $self->{lockmode});
+	} while( !$is_locked and ($locktime+$self->{locktimeout}) > time() );
+		
+	if( !$is_locked ) {
+		print STDERR "LoxBerry::JSON->open: ERROR Could not get lock after $self->{locktimeout} seconds\n";
+		close($fh);
+		return undef;
+	}
+	
 	local $/;
 	$self->{jsoncontent} = <$fh>;
-	close $fh;
+
+	if( $self->{lockexclusive} ) {
+		$self->{fh} = $fh;
+	}
+	else {
+		close $fh;
+	}
 
 	print STDERR "LoxBerry::JSON->open: Check if file has content\n" if ($DEBUG);
 
@@ -144,14 +174,39 @@ sub write
 		chown $uid, $gid, $self->{filename};
 	};
 	
-	
-	CORE::open(my $fh, '>', $self->{filename}) or print STDERR "Error opening file: $!@\n";
-	flock($fh, 2); # EXCLUSIVE LOCK
+	my $fh;
+	if( $self->{lockexclusive} ) {
+		print STDERR "LoxBerry::JSON->write: lockexclusive - seek to begin\n" if ($DEBUG);
+		$fh = $self->{fh};
+		seek($fh, 0, 0);
+	} 
+	else {
+		print STDERR "LoxBerry::JSON->write: No exklusive lock - re-open file\n" if ($DEBUG);
+		CORE::open($fh, '>', $self->{filename}) or print STDERR "Error opening file: $!@\n";
+		my $locktime = time();
+		my $is_locked=0;
+		do {
+			$is_locked = flock($fh, 2+4); # LOCK_EX+LOCK_NB
+		} while( !$is_locked and ($locktime+$self->{locktimeout})*2 > time() );
+		if( !$is_locked ) {
+			print STDERR "LoxBerry::JSON->write: ERROR Could not get exclusive lock after $self->{locktimeout} seconds\n";
+			close($fh);
+			return undef;
+		}
+	}
+	print STDERR "LoxBerry::JSON->write: Writing\n" if ($DEBUG);
 	print $fh $jsoncontent_new;
-	close($fh);
+	truncate($fh, tell($fh));
+	
+	if( ! $self->{lockexclusive} ) {
+		
+		close($fh);
+	}
+	
 	## Backup of old json
 	# rename $self->{filename}, $self->{filename} . ".bkp";
 	# rename $self->{filename} . ".tmp", $self->{filename};
+	
 	$self->{jsoncontent} = $jsoncontent_new;
 	return 1;
 	
