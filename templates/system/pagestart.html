@@ -52,6 +52,12 @@
 		<div role="main" class="ui-content">
 			<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
 				<!-- text -->
+				<TMPL_IF HTMLTEMPLATE_CACHE_DEAD>
+					<div style="background-color:red;color:white;width:95%;padding:10px;margin:10px;">
+					<p><TMPL_VAR HEADER.MSG_HTMLTEMPLATE_CACHE_DEAD>&nbsp;<a href="/admin/system/healthcheck.cgi"><TMPL_VAR MYLOXBERRY.LABEL_HEALTHCHECK></a></p>
+					<p><TMPL_VAR HTMLTEMPLATE_CACHE_DEAD></p>
+					</div>
+				</TMPL_IF>
 				<TMPL_VAR TOPNAVBAR>
 				<TMPL_VAR NAVBARJS>
 				<div id="page_content" class="page_content" style="margin: 4%">
