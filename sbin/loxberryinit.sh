@@ -102,6 +102,7 @@ case "$1" in
 	rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.force > /dev/null 2>&1
+	rm -f $LBHOMEDIR/log/system/no_template_cache > /dev/null 2>&1
 
 	# Set Date and Time
 	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
@@ -113,6 +114,13 @@ case "$1" in
 	# Create log folders for all plugins if not existing
 	echo "Create log folders for all installed plugins"
 	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
+
+	# Start LoxBerrys Emergency Webserver
+	if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]
+	then
+		echo "Start Emergency Webserver"
+		perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
+	fi
 		
 	# Run Daemons from Plugins and from System
 	echo "Running System Daemons..."

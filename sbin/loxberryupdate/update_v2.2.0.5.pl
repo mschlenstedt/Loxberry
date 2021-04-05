@@ -95,7 +95,6 @@ EOF
 	LOGINF "Files exist. Fine. Nothing to do.";
 }
 
-
 ## If this script needs a reboot, a reboot.required file will be created or appended
 #LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 #reboot_required("LoxBerry Update requests a reboot.");
