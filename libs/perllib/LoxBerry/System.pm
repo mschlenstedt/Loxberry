@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.2.1.2";
+our $VERSION = "2.2.1.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1507,10 +1507,9 @@ sub read_file
 {
 	my ($filename) = @_;
 	local $/=undef;
-	open my $fh, $filename or return undef;
-	flock( $fh, 1 ); # Shared
-	my $string = $fh;
-	close $fh;
+	open FILE, $filename or return undef;
+	my $string = <FILE>;
+	close FILE;
 	return $string;
 }
 
@@ -1518,8 +1517,7 @@ sub write_file
 {
 	my ($filename, $content) = @_;
 	eval {
-		open my $fh, $filename or die "Cannot open $filename: $!";
-		flock( $fh, 2 ); # Exclusive
+		open my $fh, $filename;
 		print $fh $content;
 		close $fh;
 	};
