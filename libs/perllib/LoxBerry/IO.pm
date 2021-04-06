@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.2.1.2";
+our $VERSION = "2.2.1.3";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -575,7 +575,10 @@ sub mqtt_connectiondetails {
 
 	# Check if MQTT Gateway plugin is installed
 	my $mqttplugindata = LoxBerry::System::plugindata("mqttgateway");
-	my $pluginfolder = $mqttplugindata->{PLUGINDB_FOLDER};
+	my $pluginfolder;
+	if( $mqttplugindata ) {
+		$pluginfolder = $mqttplugindata->{PLUGINDB_FOLDER};
+	}
 	return undef if(!$pluginfolder);
 
 	my $mqttconf;
