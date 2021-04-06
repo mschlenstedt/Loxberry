@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "2.2.1.2";
+our $VERSION = "2.2.1.3";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -92,11 +92,11 @@ sub open
 		$self->{jsoncontent} = "";
 		$self->{jsonobj} = JSON::from_json('{}');
 		$self->dump($self->{jsonobj}, "Empty object") if ($DUMP);
-		$opentype = '+>';
+		$opentype = '>';
 		# return $self->{jsonobj};
 	}
 	
-	print STDERR "LoxBerry::JSON->open: Reading file $self->{filename}\n" if ($DEBUG);
+	print STDERR "LoxBerry::JSON->open: Opening with mode $opentype file $self->{filename}\n" if ($DEBUG);
 	CORE::open my $fh, $opentype, $self->{filename} or do { 
 		print STDERR "LoxBerry::JSON->open: ERROR Can't open $self->{filename} -> returning undef : $!\n" if ($DEBUG);
 		return undef; 
@@ -118,9 +118,13 @@ sub open
 		return undef;
 	}
 	
-	local $/;
-	$self->{jsoncontent} = <$fh>;
-
+	# Only read if the file exists
+	if( !$self->{createfile} ) {
+		local $/;
+		$self->{jsoncontent} = <$fh>;
+	}
+	
+	# Keep the lock in exclusive mode
 	if( $self->{lockexclusive} ) {
 		$self->{fh} = $fh;
 	}
