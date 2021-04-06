@@ -19,20 +19,18 @@
 ##########################################################################
 # Modules
 ##########################################################################
-use LoxBerry::System;
-
-# use LoxBerry::Web;
-use CGI;
-use Getopt::Long;
 use warnings;
 use strict;
+use CGI;
+use LoxBerry::System;
+use File::Basename;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.0";
+my $version = "2.2.1.1";
 my $iscgi;
 my $maintemplate;
 my %SL;
@@ -48,22 +46,12 @@ if ($R::lang) {
 }
 my $lang = LoxBerry::System::lblanguage();
 
-# $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-# $lang            = $cfg->param("BASE.LANG");
-
-# Read translations
-# $languagefile = "$installfolder/templates/system/$lang/language.dat";
-# $phrase = new Config::Simple($languagefile);
-
 #########################################################################
 # Parameter
 #########################################################################
 # Are we called from a browser/web enviroment?
 if ($ENV{'HTTP_HOST'}) {
 
- # use CGI::Carp qw(fatalsToBrowser);
-  # use CGI qw/:standard/;
-	  
 	$iscgi = 1;
 	
 	
@@ -74,7 +62,7 @@ if ($ENV{'HTTP_HOST'}) {
 						global_vars => 1,
 						loop_context_vars => 1,
 						die_on_bad_params=> 0,
-						associate => $cfg,
+						# associate => $cfg,
 					);
 		%SL = LoxBerry::System::readlanguage($maintemplate);
 		
@@ -89,8 +77,9 @@ if ($ENV{'HTTP_HOST'}) {
  
 # Or from a terminal?
 } else {
-  
-  GetOptions ('header=s'  => \$R::header,
+  require Getopt::Long;
+
+  Getopt::Long::GetOptions ('header=s'  => \$R::header,
               'logfile=s' => \$R::logfile,
               'format=s'  => \$R::format,
               'offset=i'  => \$R::offset,
@@ -149,17 +138,27 @@ $maintemplate->param('LOGFILE_NAME', $R::logfile_name) if ($maintemplate);
 if (begins_with($R::logfile, $lbhomedir . "/log")) {
 	$R::logfile = substr($R::logfile, length($lbhomedir . "/log"));
 }
+if (begins_with($R::logfile, $lbhomedir . "/data")) {
+	$R::logfile = substr($R::logfile, length($lbhomedir . "/data"));
+}
+
 $R::logfile =~ s/^\///;
 
 
 # Check if logfile exists
 if (-e "/tmp/$R::logfile") {
   $R::logfilepath = "/tmp";
-} elsif (-e "$lbhomedir/log/$R::logfile") {
+} 
+elsif (-e "$lbhomedir/log/$R::logfile") {
   $R::logfilepath = "$lbhomedir/log";
-} elsif (-e "$lbhomedir/webfrontend/html/tmp/$R::logfile") {
+} 
+elsif (-e "$lbhomedir/webfrontend/html/tmp/$R::logfile") {
   $R::logfilepath = "$lbhomedir/webfrontend/html/tmp";
-} else {
+} 
+elsif (-e "$lbhomedir/data/$R::logfile") {
+  $R::logfilepath = "$lbhomedir/data";
+} 
+else {
 	# File does not exist
 	if ($iscgi && $maintemplate) {
 		$maintemplate->param('NOLOGFILE', 1);
@@ -202,7 +201,6 @@ if ($R::header && $R::header eq "txt") {
 	$header = "Content-Type: text/plain;charset=utf-8\n\n";
 	print $header;
 } elsif ($R::header && $R::header eq "file" ) {
-	use File::Basename;
 	$header = "Content-Disposition: attachment; filename=" . basename($R::logfile) . "\n\n";
   	print $header;
 } elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
