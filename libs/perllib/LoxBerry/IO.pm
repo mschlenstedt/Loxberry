@@ -19,7 +19,7 @@ our @EXPORT = qw (
 
 
 package LoxBerry::IO;
-our $VERSION = "2.2.1.3";
+our $VERSION = "2.2.1.4";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -356,8 +356,9 @@ sub mshttp_call2
 	$responseinfo{error} = 1;
 	# If the request completely fails
 	if ($response->is_error) {
-		print STDERR "mshttp_call2: $url FAILED - Error " . $response->code . ": " . $response->status_line . "\n" if ($DEBUG);
-		$responseinfo{message} = "$url FAILED - Error " . $response->code . ": " . $response->status_line;
+		
+		print STDERR "mshttp_call2: $command FAILED - Error " . $response->code . ": " . $response->status_line . "\n" if ($DEBUG);
+		$responseinfo{message} = "$command FAILED - Error " . $response->code . ": " . $response->status_line;
 		return (undef, \%responseinfo);
 	}
 	
@@ -365,8 +366,14 @@ sub mshttp_call2
 	
 	# my $resp = Encode::encode_utf8($response->content);
 		
-	print STDERR "mshttp_call2: HTTP $responseinfo{code}: $responseinfo{status}\n" if($DEBUG);
-	
+	if($DEBUG) {
+		print STDERR "mshttp_call2: HTTP $responseinfo{code}: $responseinfo{status}\n";
+		if( !$filename ) {
+			require HTML::Entities;
+			print STDERR "mshttp_call2:Some lines of the response:\n";
+			print STDERR HTML::Entities::encode_entities( substr( $response->decoded_content, 0, 500 ), '<>&"') . " [...]\n";
+		}
+	}
 	
 	if( defined $filename ) {
 		# my $file = $response->decoded_content( charset => 'none' );
