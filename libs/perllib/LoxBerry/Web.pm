@@ -39,16 +39,10 @@ my $lang;
 our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
 
-# Performance optimizations
-# Disable cache if Apache check see problems with tmpfs:/system/cron/cron.hourly/03-apachestate
-my $cache = 1;
-if ( -e "/tmp/no_template_cache" || -e "$lbslogdir/no_template_cache" ) {
-	$cache = 0;
-}
 our %htmltemplate_options = ( 
 		'shared_cache' => 0,
-		'file_cache' => $cache,
-		'file_cache_dir' => '/tmp/templatecache',
+		# 'file_cache' => 0,
+		# 'file_cache_dir' => '/tmp/templatecache',
 		# 'debug' => 1,
 	);
 
