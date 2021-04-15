@@ -39,14 +39,19 @@ my $lang;
 our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
 
+# Performance optimizations
+# Disable cache if Apache check see problems with tmpfs:/system/cron/cron.hourly/03-apachestate
+my $cache = 1;
+if ( -e "/tmp/no_template_cache" || -e "$lbslogdir/no_template_cache" ) {
+	$cache = 0;
+}
 our %htmltemplate_options = ( 
 		'shared_cache' => 0,
-		'file_cache' => 1,
+		'file_cache' => $cache,
 		'file_cache_dir' => '/tmp/templatecache',
 		# 'debug' => 1,
 	);
 
-my $htmltemplate_cache_dead;
 
 # Finished everytime code execution
 ##################################################################
@@ -119,29 +124,14 @@ sub head
 	}
 	
 	# Get the HTML::Template object for the header
+	$headobj = HTML::Template->new(
+		filename => $templatepath,
+		global_vars => 1,
+		loop_context_vars => 1,
+		die_on_bad_params => 0,
+		%htmltemplate_options,
+	);
 	
-	eval {
-		$headobj = HTML::Template->new(
-			filename => $templatepath,
-			global_vars => 1,
-			loop_context_vars => 1,
-			die_on_bad_params => 0,
-			%htmltemplate_options,
-		);
-	};
-	if( $@ ) {
-		$htmltemplate_cache_dead = $@;
-		print STDERR "HTML::Template error, retry without cache. Error\n$htmltemplate_cache_dead\n" if ($DEBUG);
-		delete $htmltemplate_options{file_cache};
-		$headobj = HTML::Template->new(
-			filename => $templatepath,
-			global_vars => 1,
-			loop_context_vars => 1,
-			die_on_bad_params => 0,
-			%htmltemplate_options,
-		);
-	}
-		
 	LoxBerry::System::readlanguage($headobj, undef, 1);
 	
 	$headobj->param( TEMPLATETITLE => $template_title);
@@ -255,7 +245,7 @@ sub pagestart
 			die_on_bad_params=> 0,
 			%htmltemplate_options,
 			);
-	
+		
 		# Insert LangPhrases
 		while (my ($name, $value) = each %HelpPhrases){
 			$helpobj->param("$name" => $value);
@@ -330,9 +320,7 @@ sub pagestart
 						HELPLINK => $helplink, 
 						HELPTEXT => $helptext, 
 						PAGE => $page,
-						LANG => $lang,
-						HTMLTEMPLATE_CACHE_DEAD => $htmltemplate_cache_dead # Insert message if template cache is dead
-					);
+						LANG => $lang );
 
 	# If a navigation bar is defined
 	if (%main::navbar) {
