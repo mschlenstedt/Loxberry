@@ -126,9 +126,13 @@ case "$1" in
 	echo "Running System Daemons..."
 	run-parts -v $LBHOMEDIR/system/daemons/system > /dev/null 
 		
-	echo "Running Plugin Daemons..."
-	run-parts -v --new-session $LBHOMEDIR/system/daemons/plugins > /dev/null 
-		
+	echo "Preparing Plugin Daemons..."
+	run-parts -v --new-session --test $LBHOMEDIR/system/daemons/plugins |while read PLUGINDAEMONS; do
+	echo "Running $PLUGINDAEMONS..."
+	$PLUGINDAEMONS > /dev/null &
+	sleep 1
+	done
+
 	# Check LoxBerry Update cronjobs
 	# Recreate them, if config has enabled them, but do not exist
 	ini_parser "$LBSCONFIG/general.cfg" "UPDATE"
