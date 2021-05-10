@@ -1227,43 +1227,62 @@ sub diskspaceinfo
 	my ($folder) = shift;
 	
 	my $output;
-	$output = qx ( df -P "$folder" ) if ($folder);
-	$output = qx ( df -P ) if (!$folder);
-	
-	# my $output = qx ( df -P );
+	$output = qx ( df --output=size,used,avail,pcent "$folder" ) if ($folder);
+	$output = qx ( df --output=size,used,avail,pcent ) if (!$folder);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
 		return undef;
 	}
 	my @outarr = split(/\n/, $output);
+
+	## Workaround for df output issues - get mount points as single values
+	my $output_mp;
+	$output_mp = qx ( df --output=target "$folder" ) if ($folder);
+	$output_mp = qx ( df --output=target ) if (!$folder);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
+		return undef;
+	}
+	my @outarr_mp = split(/\n/, $output_mp);
+
+    ## Workaround for df output issues - get sources as single values
+	my $output_src;
+	$output_src = qx ( df --output=source "$folder" ) if ($folder);
+	$output_src = qx ( df --output=source ) if (!$folder);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
+		return undef;
+	}
+    my @outarr_src = split(/\n/, $output_src);
+
 	my %disklist;
 	
 	my $linenr = 0;
+	my $mp_and_src_index = 1;
 	foreach my $line (@outarr) {
 		my %diskhash;
 		$linenr++;
 		next if ($linenr == 1);
-		
-		# Find first double-blank
-		my $dblblanc = index($line, '  ');
-		my $fs = substr($line, 0, 	$dblblanc);
-		# print STDERR "FS: $fs\n";
-		# Remove fs from line
-		$line = trim(substr($line, $dblblanc));
-		# Remove other blanks
+		my $fs = @outarr_src[$mp_and_src_index];
+		my $mountpoint = @outarr_mp[$mp_and_src_index];
+		# Remove leading spaces from line
+		$line = trim($line);
+		# Replace more than one space by one
 		$line =~ s/ +/ /g;
-		# print STDERR "Line: '$line'\n";
-		my ($size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line, 5);
+		my ($size, $used, $available, $usedpercent) = split (/ /, $line, 4);
 		$diskhash{filesystem} = $fs;
 		$diskhash{size} = $size;
 		$diskhash{used} = $used;
 		$diskhash{available} = $available;
 		$diskhash{usedpercent} = $usedpercent;
 		$diskhash{mountpoint} = $mountpoint;
+		print STDERR "diskspaceinfo: Folder: $folder => filesystem: $diskhash{filesystem}, size: $size, used: $used, available: $available, usedpercent: $usedpercent, mountpoint: $diskhash{mountpoint}\n" if ($DEBUG);
 		return %diskhash if ($folder);
 		$disklist{$mountpoint} = \%diskhash;
-		
+		$mp_and_src_index++;
 	}
 	return %disklist;
 	}
