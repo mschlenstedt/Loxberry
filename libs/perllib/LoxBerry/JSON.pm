@@ -44,7 +44,11 @@ sub parse
 		$self->{jsonobj} = JSON::from_json($self->{jsoncontent});
 	};
 	if ($@) {
-		print STDERR "LoxBerry::JSON->open: EXCEPTION parsing JSON file:\n$@\n";
+		print STDERR "LoxBerry::JSON->open: EXCEPTION parsing JSON file:\n";
+		if( $self->{filename} ) {
+			print STDERR "$self->{filename}\n";
+		}
+		print STDERR "$@\n";
 		die "LoxBerry::JSON->open: EXCEPTION parsing JSON file\n$@\n";
 	};
 	$self->dump($self->{jsonobj}, "Loaded object") if ($DUMP);
