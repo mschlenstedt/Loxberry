@@ -22,6 +22,17 @@ ini_parser() {
 
 case "$1" in
   start)
+	# Test if / is writable
+	echo -n "Testing root filesystem: "
+	touch /readonlycheck
+	if [ $? -eq 0 ]; then
+	 rm -f /readonlycheck
+	 echo "OK"
+	else
+	 echo "Not OK, try to restore /etc/fstab and reboot in 10s"
+	 sleep 10
+	 $0 fsrestore
+	fi 
 
 	# Remove old mountpoints from AutoFS and USB automount (in case they were not
 	# unmounted correctly and di not exist anymore)
@@ -198,8 +209,23 @@ case "$1" in
 	systemctl disable systemd-timesyncd > /dev/null 2>&1
   ;;
 
+  fsrestore)
+	echo "Try to restore /etc/fstab from /etc/fstab.backup ...."
+	/bin/mount -o remount,rw /
+	stamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
+	echo "Current /etc/fstab is saved to /etc/fstab.restored_$stamp"
+	cp /etc/fstab /etc/fstab.restored_$stamp
+	cp /etc/fstab.backup /etc/fstab 
+	if [ $? -eq 0 ]; then
+	 echo "Restore done. Rebooting...."
+	 reboot
+	else
+	 echo "Restore failed."
+	fi
+  ;;
+
   *)
-        echo "Usage: $0 [start|stop]" >&2
+        echo "Usage: $0 [start|stop|fsrestore]" >&2
         exit 3
   ;;
 
