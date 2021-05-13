@@ -113,6 +113,7 @@ my $findbin		= $bins->{FIND};
 my $grepbin		= $bins->{GREP};
 my $dpkgbin		= $bins->{DPKG};
 my $dos2unix		= $bins->{DOS2UNIX};
+my $wgetbin		= $bins->{WGET};
 
 ##########################################################################
 # Language Settings
@@ -1236,6 +1237,14 @@ sub install {
 		my $now = time;
 		# If last run of apt-get update is longer than 24h ago, do a refresh.
 		if ($now > $lastaptupdate+86400) {
+			system("$wgetbin -q --timeout 5 -O /tmp/yarnpkg.gpg.pub https://dl.yarnpkg.com/debian/pubkey.gpg 2>&1");
+			if ( -r "/tmp/yarnpkg.gpg.pub" )
+			{
+				system(substr($aptbin,0,-3)."key add /tmp/yarnpkg.gpg.pub >/dev/null 2>&1");
+				unlink "/tmp/yarnpkg.gpg.pub";
+				$message = "$LL{'INF_FIXYARN'}";
+				&loginfo;
+			}
 			$message = "$LL{'INF_APTREFRESH'}";
 			&loginfo;
 			$message = "Command: $dpkgbin --configure -a";
@@ -2215,6 +2224,7 @@ sub localphrases {
 	INF_LOGSKELS => "Updating skels for Logfiles in tmpfs.",
 	INF_SHADOWDB => "Creating shadow version of plugindatabase.",
 	ERR_UNKNOWN_FORMAT_PLUGINCFG => "Could not parse plugin.cfg. Maybe it has a wrong format.",
+	INF_FIXYARN => "Updating Yarn Key if internet connection is available.",
 
 	);
 
