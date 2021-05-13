@@ -32,7 +32,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.1.2";
+my $version = "2.0.1.3";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -783,7 +783,7 @@ sub install {
 			}
 			my $ext = substr( $filename, $dotpos );
 			# print "Filename: $filename Extension: $ext\n";
-			next if ( !$ext or grep { /$ext/ } @extensionExcludeList );
+			next if ( !$ext or grep { "/$ext/" } @extensionExcludeList );
 			push @searchfilelist, $filename;
 		}
 		
@@ -2033,7 +2033,7 @@ sub replaceenv {
 		# $message="File: $_";
 		# &loginfo;
 		
-		`$sudobin -n -u $user /bin/sed -i '$sed_replace_query' $_ 2>&1`;
+		`$sudobin -n -u $user /bin/sed -i '$sed_replace_query' "$_" 2>&1`;
 	}
 	$message = "Replace of $counter files finished";
 	&logok;
@@ -2064,8 +2064,11 @@ sub dos2unix {
 
 	$message = "$LL{'INF_DOS2UNIX'}";
 	&loginfo;
-	
-	system("$sudobin -n -u $user $dos2unix -- " . join(" ", @$filelist) . " 2>&1");
+
+	foreach(@$filelist) 
+	{
+		system("$sudobin -n -u $user $dos2unix -- '" . $_ . "' 2>&1");
+	}
 
 	return;
 
@@ -2098,15 +2101,19 @@ sub getTextFiles
 	&loginfo;
 	my @textfiles;
 	my $counter = 0;
-	foreach(@files) {
+	foreach(@files) 
+	{
 		$counter++;
-		my $bin_text = `file -b $_`;
-		push @textfiles, $_ if ( index( $bin_text, 'text' ) != -1 );
-		if( $counter%20 == 0 ) {
-			$message = "  " . scalar @textfiles . " found out of $counter ...";
+		my $bin_text = `file -b "$_"`;
+		push @textfiles, "$_" if ( index( "$bin_text", 'text' ) != -1 );
+		if( $counter%20 == 0 ) 
+		{
+			$message = "  " . scalar @textfiles . " textfiles found out of $counter files scanned...";
 			&loginfo;
 		}
 	}
+	$message = "  " . scalar @textfiles . " textfiles found out of $counter files scanned...";
+	&loginfo;
 	$message = "Found " . scalar @textfiles . " files to be text files";
 	&logok;
 	return @textfiles;
