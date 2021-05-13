@@ -172,13 +172,13 @@ case "$1" in
 	# Add "nofail" option to all mounts in /etc/fstab (needed for USB automount to work correctly)
 	echo "Checking fstab...."
 	# Check if there are any missing "nofail"'s...
-	COUNT=$(grep "^[^#]" /etc/fstab | grep -v "nofail" | grep -v "/ ext4" | wc -l)
+	COUNT=$(grep -a "^[^#]" /etc/fstab | grep -a -v "nofail" | grep -a -v "/ ext4" | wc -l)
 	if [ ${COUNT} -gt 0 ]; then
 		echo "Found lines with missing nofail option."
 		awk '!/^#/ && !/^\s/ && /^[a-zA-Z0-9]/ { if(!match($4,/nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
 		sed -i 's/\(\/ ext4 .*\),nofail\(.*\)/\1\2/' /etc/fstab.new # remove nofail for /
 		FILESIZE=$(wc -c < /etc/fstab.new)
-		ISASCII=$(file /etc/fstab.new | grep "ASCII text" | wc -l)
+		ISASCII=$(file /etc/fstab.new | grep -a "ASCII text" | wc -l)
 		if [ "$FILESIZE" -gt 50 ] && [ "$ISASCII" -ne 0 ]]; then
 			findmnt -F /etc/fstab.new / > /dev/null
 			if [ $? -eq 0 ]; then
