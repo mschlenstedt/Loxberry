@@ -176,7 +176,15 @@ case "$1" in
 		if [ -e "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.weekly/loxberryupdate_cron"; fi
 		if [ -e "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron" ]; then rm "$LBHOMEDIR/system/cron/cron.monthly/loxberryupdate_cron"; fi
 	fi
-	exit 0
+
+	# Run Healthcheck once after reboot
+	echo -n "Starting healthchecks:"
+	grep run_at_start $LBHOMEDIR/sbin/healthcheck.pl|cut -d\" -f2|while read check; do
+		echo -n " $check"
+		$LBHOMEDIR/webfrontend/htmlauth/system/healthcheck.cgi action=check check=$check >/dev/null 2>&1 &
+	done 
+	echo " Done."
+ exit 0
   ;;
 	
   stop)
