@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.2.1.2";
+our $VERSION = "2.2.1.4";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1338,12 +1338,16 @@ sub lock
 		
 		my $rc_apt;
 		my $rc_dpkg;
+				my $rc_unattended_upgrade;
 		($rc_apt) = LoxBerry::System::execute( 'pgrep apt-get' );
 		($rc_dpkg) = LoxBerry::System::execute( 'pgrep dpkg' );
-		if( $rc_apt eq "0" or $rc_dpkg eq "0") {
+		($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
+
+		if( $rc_apt eq "0" or $rc_dpkg eq "0" or $rc_unattended_upgrade eq "0" ) {
 			$seemsrunning = 'apt-get' if ($rc_apt eq "0");
 			$seemsrunning = 'dpkg' if ($rc_dpkg eq "0");
-		
+			$seemsrunning = 'unattended-upgrade' if ($rc_unattended_upgrade eq "0");
+			
 			if ($p{wait}) {
 				print STDERR "Waiting..." if ($DEBUG);
 				sleep(5);
