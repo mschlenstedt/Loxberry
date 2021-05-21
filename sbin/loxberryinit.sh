@@ -62,16 +62,6 @@ case "$1" in
 	# Let fsck run only every 10th boot (only for clean devices)
 	tune2fs -c 10 /dev/mmcblk0p2 
 
-	# Resize rootfs to maximum if not yet done
-	# This is done by index.cgi now
-	# if [ ! -f /boot/rootfsresized ]
-	# then
-	#   echo "Resizing Rootfs to maximum on next reboot"
-	#   $LBHOMEDIR/sbin/resize_rootfs > /dev/null 2>&1
-	#   touch /boot/rootfsresized
-	#   log_action_end_msg 0
-	# fi
-
 	# Create Default config
 	echo "Updating general.cfg etc...."
 	$LBHOMEDIR/bin/createconfig.pl
@@ -113,7 +103,6 @@ case "$1" in
 	rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.force > /dev/null 2>&1
-	rm -f $LBHOMEDIR/log/system/no_template_cache > /dev/null 2>&1
 
 	# Set Date and Time
 	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
@@ -121,10 +110,6 @@ case "$1" in
 		echo "Syncing Date/Time with Miniserver or NTP-Server"
 		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
 	fi
-
-	# Create log folders for all plugins if not existing
-	echo "Create log folders for all installed plugins"
-	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
 
 	# Start LoxBerrys Emergency Webserver
 	if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]

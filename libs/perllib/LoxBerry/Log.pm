@@ -161,6 +161,14 @@ sub new
 		if (! -d $dir) {
 			require File::Path;
 			File::Path::make_path($dir);
+			eval {
+				if(!$self->{loxberry_uid}) {
+					my (undef,undef,$uid,$gid) = getpwnam('loxberry');
+					$self->{loxberry_uid} = $uid;
+					$self->{loxberry_uid} = $gid;
+				}
+				chown $self->{loxberry_uid}, $self->{loxberry_uid}, $dir;
+			};
 		}
 	}
 	
