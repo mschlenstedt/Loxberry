@@ -2,7 +2,7 @@
 use strict;
 use LoxBerry::Log;
 
-# use IO::Select;
+package LoxBerry::IO;
 
 use base 'Exporter';
 
@@ -14,16 +14,20 @@ our @EXPORT = qw (
 	mshttp_call2
 	msudp_send
 	msudp_send_mem
+	mqtt_connect
+	mqtt_publish
+	mqtt_retain
+	mqtt_get
 );
 
-
-
-package LoxBerry::IO;
-our $VERSION = "2.2.1.4";
+our $VERSION = "2.2.1.5";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
 our $udp_delimiter = "=";
+
+our $mqtt;
+my %mqtt_received;
 
 my %udpsocket;
 
@@ -617,6 +621,143 @@ sub mqtt_connectiondetails {
 	return \%cred;
 
 }
+
+sub mqtt_connect
+{
+	require Net::MQTT::Simple;
+	
+	if( $LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_connect-> MQTT already connected\n" if($DEBUG);
+		return $LoxBerry::IO::mqtt;
+	}
+	
+	print STDERR "mqtt_connect-> Requesting MQTT connection details\n" if($DEBUG);
+	my $mqttcred = LoxBerry::IO::mqtt_connectiondetails();
+	if( ! $mqttcred ) {
+		print STDERR "mqtt_connect-> Error: Could not get MQTT connection details.\n" if($DEBUG);
+		return undef;
+	}
+	
+	print STDERR "mqtt_connect-> Connecting to broker $mqttcred->{brokeraddress}\n" if($DEBUG);
+	eval {
+		
+		$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
+		$LoxBerry::IO::mqtt = Net::MQTT::Simple->new($mqttcred->{brokeraddress});
+		if($mqttcred->{brokeruser} or $mqttcred->{brokerpass}) {
+			my $pass_blurred = $mqttcred->{brokerpass} ne "" ? substr( $mqttcred->{brokerpass}, 0, 1) . "*****" : "(empty)";
+			print STDERR "mqtt_connect-> Login to broker with user $mqttcred->{brokeruser} and pass $pass_blurred\n" if($DEBUG);
+			$LoxBerry::IO::mqtt->login($mqttcred->{brokeruser}, $mqttcred->{brokerpass});
+		}
+	};
+	if( $@ ) {
+		print STDERR "mqtt_connect-> Could not connect to  MQTT broker: $@\n";
+		return undef;
+	}
+
+	print STDERR "mqtt_connect-> Connected successfully\n" if($DEBUG);
+	return $LoxBerry::IO::mqtt;
+	
+}
+
+sub mqtt_set
+{
+	my ($topic, $value, $retain) = @_;
+	
+	print STDERR "mqtt_set-> Called\n" if($DEBUG);
+	if( !$LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_set-> mqtt not connected - connecting\n" if($DEBUG);
+		LoxBerry::IO::mqtt_connect();
+	}
+	if( !$LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_set-> Error: mqtt (still) not connected - failed\n";
+		return undef;
+	}
+	
+	eval {
+		if( !$retain ) {
+			print STDERR "mqtt_set-> Publishing $topic -> $value\n" if($DEBUG);
+			$LoxBerry::IO::mqtt->publish($topic, $value);
+		}
+		else {
+			print STDERR "mqtt_set-> Retaining $topic -> $value\n" if($DEBUG);
+			$LoxBerry::IO::mqtt->retain($topic, $value);
+		}
+	};
+	if($@) {
+		print STDERR "mqtt_set-> Error: Exception on publishing: $!\n";
+	} else {
+		print STDERR "mqtt_set-> Successfully sent $topic -> $value\n" if($DEBUG);
+		return $topic;
+	}
+	
+}
+
+sub mqtt_retain
+{
+	my ($topic, $value) = @_;
+	return LoxBerry::IO::mqtt_set( $topic, $value, 1 );
+}
+sub mqtt_publish
+{
+	my ($topic, $value) = @_;
+	return LoxBerry::IO::mqtt_set( $topic, $value, undef );
+}
+
+sub mqtt_get
+{
+	
+	print STDERR "mqtt_get-> Called\n" if($DEBUG);
+	
+	require Time::HiRes;
+	
+	my( $topic, $timeout_msecs ) = @_;
+	
+	if( !$LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_get-> mqtt not connected - connecting\n" if($DEBUG);
+		LoxBerry::IO::mqtt_connect();
+	}
+	if( !$LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_get-> Error: mqtt (still) not connected - failed\n";
+		return undef;
+	}
+	
+	if( !$timeout_msecs ) {
+		$timeout_msecs = 250;
+	}
+	
+	undef %mqtt_received;
+	my $starttime = Time::HiRes::time();
+	my $endtime = $starttime + $timeout_msecs/1000;
+	print STDERR "mqtt_get-> Subscribing $topic, waiting for first result or $timeout_msecs msecs\n" if($DEBUG);
+	eval{ 
+		$LoxBerry::IO::mqtt->subscribe($topic, \&mqtt_received);
+	};
+	while ( scalar keys %mqtt_received == 0 and Time::HiRes::time()<$endtime ) {
+		$LoxBerry::IO::mqtt->tick();
+		Time::HiRes::sleep(0.05);
+	}
+	eval{ 
+		$LoxBerry::IO::mqtt->unsubscribe($topic);
+	};
+	
+	if(%mqtt_received) {
+		my $result = $mqtt_received{ (sort keys %mqtt_received)[0] };
+		print STDERR "mqtt_get-> Returning value $result\n" if($DEBUG);
+		return( $result );
+	} 
+	else {
+		print STDERR "mqtt_get-> Nothing received, returning undef\n" if($DEBUG);
+		return;
+	}
+}
+
+sub mqtt_received
+{
+	my ($topic, $msg) = @_;
+	print STDERR "mqtt_received-> Received: $topic->$msg\n" if($DEBUG);
+	$mqtt_received{$topic} = $msg;
+}	
+
 
 #####################################################
 # Finally 1; ########################################
