@@ -17,7 +17,9 @@ our @EXPORT = qw (
 	mqtt_connect
 	mqtt_publish
 	mqtt_retain
+	mqtt_set
 	mqtt_get
+	
 );
 
 our $VERSION = "2.2.1.5";
