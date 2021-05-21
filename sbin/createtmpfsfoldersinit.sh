@@ -153,6 +153,10 @@ start)
 		chmod +rw $LBHOMEDIR/log/system_tmpfs/clouddns_cache.json
 	fi
 
+	# Create log folders for all plugins if not existing
+	echo "Create log folders for all installed plugins"
+	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
+
 	exit 0
 ;;
 
