@@ -120,13 +120,20 @@ case "$1" in
 		
 	# Run Daemons from Plugins and from System
 	echo "Running System Daemons..."
-	run-parts -v $LBHOMEDIR/system/daemons/system > /dev/null 
+	#run-parts -v $LBHOMEDIR/system/daemons/system > /dev/null 
+	for SYSTEMDAEMONS in $LBHOMEDIR/system/daemons/system/*
+	do
+		echo "Running $SYSTEMDAEMONS..."
+	       	$SYSTEMDAEMONS > /dev/null
+	done
 		
 	echo "Preparing Plugin Daemons..."
-	run-parts -v --new-session --test $LBHOMEDIR/system/daemons/plugins |while read PLUGINDAEMONS; do
-	echo "Running $PLUGINDAEMONS..."
-	$PLUGINDAEMONS > /dev/null &
-	sleep 1
+	#run-parts -v --new-session --test $LBHOMEDIR/system/daemons/plugins |while read PLUGINDAEMONS; do
+	for PLUGINDAEMONS in $LBHOMEDIR/system/daemons/plugins/*
+	do
+		echo "Running $PLUGINDAEMONS..."
+		$PLUGINDAEMONS > /dev/null &
+		sleep 1
 	done
 
 	# Check LoxBerry Update cronjobs
