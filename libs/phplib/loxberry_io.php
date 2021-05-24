@@ -6,7 +6,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.2.1.2";
+$LBIOVERSION = "2.2.1.3";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -479,8 +479,148 @@ function mqtt_connectiondetails() {
 
 }
 
+function mqtt_connect()
+{
+	global $iomqtt_object;
 
 
+	if( is_object($iomqtt_object) ) {
+		return $iomqtt_object;
+	}
+	
+	$mqttcreds = mqtt_connectiondetails();
+	if( !is_array($mqttcreds) ) 
+	{
+		error_log("MQTT Gateway not installed");
+		return;
+	} else {
+		require_once "phpMQTT/phpMQTT.php";
+		$iomqtt_object = new lbmqtt($mqttcreds);
+		return $iomqtt_object->mqtt;
+	}
+}	
+
+function lbmqtt_createobject()
+{
+	global $lbmqtt_object;
+	$mqttcreds = mqtt_connectiondetails();
+	if( !is_array($mqttcreds) ) 
+	{
+		error_log("MQTT Gateway not installed");
+		return;
+	} else {
+		require_once "phpMQTT/phpMQTT.php";
+		$lbmqtt_object = new lbmqtt($mqttcreds);
+	}
+	
+}
+
+function mqtt_set($topic, $content, $retain=false) 
+{
+	global $lbmqtt_object;
+	
+	if( !is_object($lbmqtt_object) ) {
+		lbmqtt_createobject();
+	}
+	if( !is_object($lbmqtt_object) ) {
+		error_log("mqtt_set-> Error establishing mqtt connection - MQTT Gateway installed?");
+		return;
+	}
+	error_log("mqtt_set-> $topic -> $content (retain " . (!empty($retain) ? "true" : "false") . ")");
+	$lbmqtt_object->set($topic, $content, $retain);
+	return $topic;
+}
+
+function mqtt_publish($topic, $value) {
+	return mqtt_set( $topic, $value, false );
+}
+
+function mqtt_retain($topic, $value) {
+	return mqtt_set( $topic, $value, true );
+}
+
+function mqtt_get(...$args) 
+{
+	global $lbmqtt_object;
+	
+	if( !is_object($lbmqtt_object) ) {
+		lbmqtt_createobject();
+	}
+	if( !is_object($lbmqtt_object) ) {
+		error_log("mqtt_set-> Error establishing mqtt connection - MQTT Gateway installed?");
+		return;
+	}
+	
+	return $lbmqtt_object->get(...$args);
+}
+
+
+//////////////////////
+/* Class lbmqtt     */
+//////////////////////
+class lbmqtt
+{
+	private $topicvalues = array();
+	
+	public function __construct($mqttcreds)
+	{
+		$this->mqttcreds = $mqttcreds;
+		$this->_client_id = uniqid(gethostname()."_LoxBerry");
+		$this->_mqttconn = $this->_connect();
+	}
+
+	private function _connect()
+	{
+		$this->mqtt = new Bluerhinos\phpMQTT($this->mqttcreds['brokerhost'],  $this->mqttcreds['brokerport'],$this->_client_id);
+		if( $this->mqtt->connect(true, NULL, $this->mqttcreds['brokeruser'], $this->mqttcreds['brokerpass'] ) ) {
+			error_log("MQTT ({$this->mqttcreds['brokerhost']}) accessible by \e[94m\$mqtt\e[0m");
+		}
+	}
+	
+	private function _send($topic, $content, $retain=false) 
+	{
+		$this->mqtt->publish( $topic, $content, 0, $retain);
+	}
+	public function set($topic, $content, $retain=false) 
+	{
+		$this->_send($topic, $content, $retain);
+	}
+	public function publish($topic, $content) 
+	{
+		$this->_send($topic, $content, false);
+	}
+	public function retain($topic, $content) 
+	{
+		$this->_send($topic, $content, true);
+	}
+	
+	public function get($topic, $timeout_msecs = 250) {
+		// $topics[$topic] = array("qos" => 0, "function" => '_procmsg');
+		$topics[$topic] = array("qos" => 0, "function" => array( $this, '_procmsg') );
+		$this->mqtt->subscribe( $topics, 0 );
+		
+		$time = microtime(1);
+		unset($this->topicvalues[$topic]);
+		while($this->mqtt->proc(0) and microtime(1) < ($time+$timeout_msecs/1000) ) {
+			if( isset($this->topicvalues[$topic]) ) {
+				break;
+			}
+		}
+		if( isset($this->topicvalues[$topic]) ) {
+			return $this->topicvalues[$topic];
+		} else {
+			return null;
+		}
+	}
+	
+	public function _procmsg( $topic, $msg)
+	{
+	// error_log("Reveived $topic: $msg");	
+	$this->topicvalues[$topic] = $msg;
+	return $msg;
+	}
+	
+}
 
 
 ?>
