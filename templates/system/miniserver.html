@@ -8,6 +8,14 @@
 		<button onclick="window.validate_override=1;" type="submit" form="main_form2" name="delbtn" value="<TMPL_VAR LASTKEY>" id="delmsbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR MINISERVER.BUTTON_DELETE_MS></button>
 	   <a id="scan" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="#"><TMPL_VAR MINISERVER.BUTTON_SCAN></a>
 	   <div id="scan_result"></div>
+	   <div id="miniserver_anchors" style="display:none">
+		<TMPL_LOOP NAME="MSDATA">
+			<a href="#miniservertbl<TMPL_VAR MSNO>" data-ajax="false"><TMPL_VAR MSNO>. <TMPL_VAR COMMON.PROPERNOUN_MINISERVER>
+								<TMPL_IF MSNAME>(<TMPL_VAR MSNAME>)</TMPL_IF></a><br>
+	   
+	   
+	    </TMPL_LOOP>
+	   </div>
 	</div>
 	<table id="maintable">
 		<tbody>
@@ -406,6 +414,11 @@ $(document).ready( function() {
 
 $(document).ready(function() {
 	
+	ms_count = $("#miniservers").val();
+	if( ms_count > 2 ) {
+	// Show anchors for Miniservers
+		$("#miniserver_anchors").show();
+	}
 	
 	////////////////// Some logic to prevent garbage in MS config /////////////
 	$("#main_form2 input[type=text]").on('keyup paste input', function(e) 
