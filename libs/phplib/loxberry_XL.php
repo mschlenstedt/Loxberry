@@ -131,75 +131,8 @@ class miniserver
 			error_log("MS{$this->msno} $text");
 		}
 	}
-		
 }
 
-//////////////////////
-/* Class lbmqtt     */
-//////////////////////
-class lbmqtt
-{
-	private $topicvalues = array();
-	
-	public function __construct($mqttcreds)
-	{
-		$this->mqttcreds = $mqttcreds;
-		$this->_client_id = uniqid(gethostname()."_LoxBerry_XL");
-		$this->_mqttconn = $this->_connect();
-	}
-
-	private function _connect()
-	{
-		$this->mqtt = new Bluerhinos\phpMQTT($this->mqttcreds['brokerhost'],  $this->mqttcreds['brokerport'],$this->_client_id);
-		if( $this->mqtt->connect(true, NULL, $this->mqttcreds['brokeruser'], $this->mqttcreds['brokerpass'] ) ) {
-			error_log("MQTT ({$this->mqttcreds['brokerhost']}) accessible by \e[94m\$mqtt\e[0m");
-		}
-	}
-	
-	private function _send($topic, $content, $retain=false) 
-	{
-		$this->mqtt->publish( $topic, $content, 0, $retain);
-	}
-	public function set($topic, $content, $retain=false) 
-	{
-		$this->_send($topic, $content, $retain);
-	}
-	public function publish($topic, $content) 
-	{
-		$this->_send($topic, $content, false);
-	}
-	public function retain($topic, $content) 
-	{
-		$this->_send($topic, $content, true);
-	}
-	
-	public function get($topic) {
-		// $topics[$topic] = array("qos" => 0, "function" => '_procmsg');
-		$topics[$topic] = array("qos" => 0, "function" => array( $this, '_procmsg') );
-		$this->mqtt->subscribe( $topics, 0 );
-		
-		$time = microtime(1);
-		unset($this->topicvalues[$topic]);
-		while($this->mqtt->proc(0) and microtime(1) < ($time+1) ) {
-			if( isset($this->topicvalues[$topic]) ) {
-				break;
-			}
-		}
-		if( isset($this->topicvalues[$topic]) ) {
-			return $this->topicvalues[$topic];
-		} else {
-			return null;
-		}
-	}
-	
-	public function _procmsg( $topic, $msg)
-	{
-	// error_log("Reveived $topic: $msg");	
-	$this->topicvalues[$topic] = $msg;
-	return $msg;
-	}
-	
-}
 
 //////////////////////
 /* Class lbxl       */
