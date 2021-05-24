@@ -62,7 +62,7 @@ h3.lbtitle {
 		<button type="button" name="btnsubmit" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" onClick="location.reload();"><font size=\"-1\"><TMPL_VAR COMMON.BUTTON_REFRESH></font></button>
 	</form>
 
-	<h3 class="lbtitle">Configured Servers</h3>
+	<h3 class="lbtitle"><TMPL_VAR NETSHARES.HEADING_CONF_SERVERS></h3>
 	<div id="serverlist_container" style="display:flex;flex-wrap:wrap;align-items:center;">
 	<div class="flexbreak"></div>
 	<TMPL_LOOP NETSERVERS>
@@ -86,7 +86,7 @@ h3.lbtitle {
 	</div>
 	
 	<p></p>
-	<h3>Available Shares</h3>
+	<h3><TMPL_VAR NETSHARES.HEADING_AVAIL_SHARES></h3>
 	</center>
 	<!-- START Plugin container -->
 	<table data-role="table" data-mode="columntoggle" data-filter="true" data-input="#filterTable-input" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-text="<TMPL_VAR NETSHARES.BUTTON_SHOWCOLS>">
