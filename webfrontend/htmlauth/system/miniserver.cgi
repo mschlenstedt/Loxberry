@@ -54,7 +54,7 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "2.2.0.1";
+my $version = "2.2.1.1";
 
 my $jsonobj = LoxBerry::System::General->new();
 my $cfg = $jsonobj->open();
@@ -150,7 +150,7 @@ sub form {
 	my @msdata = ();
 	my $lastkey;
 	
-	foreach my $msno (sort keys %{$cfg->{Miniserver}} ) {	
+	foreach my $msno (sort {$a <=> $b} keys %{$cfg->{Miniserver}} ) {	
 		$lastkey = $msno;
 		my %ms;
 		my $curms = $cfg->{Miniserver}->{$msno};
