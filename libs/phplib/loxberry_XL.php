@@ -8,7 +8,7 @@ require_once "loxberry_system.php";
 require_once "loxberry_io.php";
 require_once "XL/waze.php";
 
-$LBMSVERSION = "2.2.0.2";
+$LBMSVERSION = "2.2.1.1";
 $LBMSDEBUG = 0;
 
 if(!file_exists('/dev/shm/loxberryxl.tmp')) {
@@ -162,15 +162,15 @@ class lbmqtt
 	}
 	public function set($topic, $content, $retain=false) 
 	{
-		$this->_send($topic, $content, 0, $retain);
+		$this->_send($topic, $content, $retain);
 	}
 	public function publish($topic, $content) 
 	{
-		$this->_send($topic, $content, 0, false);
+		$this->_send($topic, $content, false);
 	}
 	public function retain($topic, $content) 
 	{
-		$this->_send($topic, $content, 0, true);
+		$this->_send($topic, $content, true);
 	}
 	
 	public function get($topic) {
