@@ -8,7 +8,7 @@ require_once "loxberry_system.php";
 require_once "loxberry_io.php";
 require_once "XL/waze.php";
 
-$LBMSVERSION = "2.2.1.1";
+$LBMSVERSION = "2.2.1.2";
 $LBMSDEBUG = 0;
 
 if(!file_exists('/dev/shm/loxberryxl.tmp')) {
@@ -260,7 +260,7 @@ class lbxl
 				$date->sub( $interval );
 			}
 			if( $dt < $date ) {
-				echo "Season ist $season\n";
+				// echo "Season ist $season\n";
 				$actseason = $season-1;
 				if( $actseason == 0 ) {
 					$actseason = 4;
