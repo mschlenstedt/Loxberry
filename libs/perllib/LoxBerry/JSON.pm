@@ -5,7 +5,7 @@ use strict;
 
 package LoxBerry::JSON;
 
-our $VERSION = "2.2.1.3";
+our $VERSION = "2.2.1.4";
 our $DEBUG = 0;
 our $DUMP = 0;
 
@@ -44,12 +44,11 @@ sub parse
 		$self->{jsonobj} = JSON::from_json($self->{jsoncontent});
 	};
 	if ($@) {
-		print STDERR "LoxBerry::JSON->open: EXCEPTION parsing JSON file:\n";
-		if( $self->{filename} ) {
-			print STDERR "$self->{filename}\n";
-		}
-		print STDERR "$@\n";
-		die "LoxBerry::JSON->open: EXCEPTION parsing JSON file\n$@\n";
+		my $error = "LoxBerry::JSON->open: EXCEPTION parsing JSON: $@";
+		$error .= "(".$self->{filename}.")" if( $self->{filename} );
+		$error .= "\n";
+		print STDERR $error;
+		die $error;
 	};
 	$self->dump($self->{jsonobj}, "Loaded object") if ($DUMP);
 	
@@ -89,6 +88,9 @@ sub open
 	}
 	
 	my $opentype = '+<';
+	$opentype = '<' if( $self->{readonly} );
+	$opentype = '<' if( -e $self->{filename} and ! -w $self->{filename} );
+	
 	if (! -e $self->{filename}) {
 		print STDERR "LoxBerry::JSON->open: WARNING $self->{filename} does not exist - will be created\n" if ($DEBUG);
 		my $objref = undef;
@@ -157,6 +159,13 @@ sub write
 	
 	print STDERR "No jsonobj\n" if (! defined $self->{jsonobj});
 	print STDERR "No filename defined\n" if (! defined $self->{filename});
+
+	if( ! -w $self->{filename} ) {
+		print STDERR "LoxBerry::JSON->write: File $self->{filename} is not WRITABLE - Leaving write\n";
+		return;
+	}
+	
+	# print STDERR "CONTENT:\n$self->{jsoncontent}\n";
 	
 	my $jsoncontent_new;
 	eval {
@@ -166,7 +175,9 @@ sub write
 		print STDERR "LoxBerry::JSON->write: JSON Encoder sent an error\n$@" if ($DEBUG);
 		return;
 	}
-		
+	
+	# print STDERR "CONTENT WRITE:\n$jsoncontent_new\n";
+	
 	# Compare if json was changed
 	if ($jsoncontent_new eq $self->{jsoncontent}) {
 		print STDERR "LoxBerry::JSON->write: JSON are equal - nothing to do\n" if ($DEBUG);
