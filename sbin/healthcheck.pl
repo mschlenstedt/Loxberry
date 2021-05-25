@@ -27,20 +27,20 @@ parse_options(@ARGV);
 #############################################################
 # Health Checks
 #############################################################
-push (@checks, "check_lbversion");         #run_at_start
-push (@checks, "check_kernel");            #run_at_start
-push (@checks, "check_arch");              #run_at_start
-push (@checks, "check_cputemp");           #run_at_start
-push (@checks, "check_voltage");           #run_at_start
-push (@checks, "check_readonlyrootfs");    #run_at_start
-push (@checks, "check_rootfssize");        #run_at_start
-push (@checks, "check_tmpfssize");         #run_at_start
-push (@checks, "check_systemload");        #run_at_start
-push (@checks, "check_logdb");             #run_at_start
-push (@checks, "check_notifydb");          #run_at_start
-push (@checks, "check_miniservers");       
-push (@checks, "check_reboot_required");   
-push (@checks, "check_loglevels");         #run_at_start
+push (@checks, "check_lbversion");
+push (@checks, "check_kernel");
+push (@checks, "check_arch");
+push (@checks, "check_cputemp");
+push (@checks, "check_voltage");
+push (@checks, "check_readonlyrootfs");
+push (@checks, "check_rootfssize");
+push (@checks, "check_tmpfssize");
+push (@checks, "check_systemload");
+push (@checks, "check_logdb");
+push (@checks, "check_notifydb");
+push (@checks, "check_miniservers");
+push (@checks, "check_reboot_required");
+push (@checks, "check_loglevels");
 
 # Get plugin healthchecks
 my @plugins = LoxBerry::System::get_plugins();
