@@ -207,13 +207,43 @@ case "$1" in
 	stamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
 	echo "Current /etc/fstab is saved to /etc/fstab.restored_$stamp"
 	cp /etc/fstab /etc/fstab.restored_$stamp
-	cp /etc/fstab.backup /etc/fstab 
-	if [ $? -eq 0 ]; then
-	 echo "Restore done. Rebooting...."
-	 reboot
+	FILESIZE=$(wc -c < /etc/fstab.backup)
+	ISASCII=$(file /etc/fstab.backup | grep -a "ASCII text" | wc -l)
+	if [ "$FILESIZE" -gt 50 ] && [ "$ISASCII" -ne 0 ]; then
+		findmnt -F /etc/fstab.backup / > /dev/null
+		if [ $? -eq 0 ]; then
+			echo "/etc/fstab.backup seems to be valid. Using it for restoring."
+			COPY=1
+		else
+			echo "/etc/fstab.backup isn't valid (findmnt). Will not use it."
+			COPY=0
+		fi
 	else
-	 echo "Restore failed."
+		echo "/etc/fstab.backup isn't valid (filesize/filetype). Will not use it."
+		COPY=0
 	fi
+	if [ "$COPY" -ne 0 ]; then
+		cp /etc/fstab.backup /etc/fstab 
+		if [ $? -eq 0 ]; then
+	 		echo "Restore done. Rebooting...."
+			echo "Your fstab was broken. We tried to restore it. You have to reboot your LoxBerry now." >> $LBHOMEDIR/log/system_tmpfs/reboot.force
+			echo "Your fstab was broken. We tried to restore it. You have to reboot your LoxBerry now." >> $LBHOMEDIR/log/system_tmpfs/reboot.required
+		else
+	 		echo "Restore failed."
+			COPY=0
+		fi
+	fi
+
+	if [ "$COPY" -eq 0 ] && [ -f "$LBHOMEDIR/config/system/is_raspberry.cfg" ]; then
+		echo "Last chance: I will create a default /etc/fstab."
+		touch /etc/fstab
+		echo "proc /proc proc defaults,nofail 0 0" > /etc/fstab
+		echo "PARTUUID=4bd27daf-01 /boot vfat defaults,nofail 0 2" >> /etc/fstab
+		echo "PARTUUID=4bd27daf-02 / ext4 defaults,noatime 0 1" >> /etc/fstab
+		echo "Your fstab was broken. We tried to restore it. You have to reboot your LoxBerry now." >> $LBHOMEDIR/log/system_tmpfs/reboot.force
+		echo "Your fstab was broken. We tried to restore it. You have to reboot your LoxBerry now." >> $LBHOMEDIR/log/system_tmpfs/reboot.required
+	fi
+
   ;;
 
   *)
