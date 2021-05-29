@@ -47,7 +47,7 @@ my @plugins = LoxBerry::System::get_plugins();
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.1";
+my $version = "2.2.1.1";
 my $bins = LoxBerry::System::get_binaries();
 
 #########################################################################
@@ -69,7 +69,7 @@ my $url = $cgi->param('url');
 my $saveformdata = $cgi->param('saveformdata');
 my $securepin = $cgi->param('securepin');
 
-if ( $saveformdata eq "1" ) {
+if ( defined $saveformdata and $saveformdata eq "1" ) {
 	$do = "install";
 }
 
@@ -224,14 +224,14 @@ sub install {
 
 	# Check if SecurePIN is correct
 	my $checkresult = LoxBerry::System::check_securepin($securepin);
-	if ( $checkresult == 3 ) {
+	if ( defined $checkresult and $checkresult == 3 ) {
 		#print STDERR "The securepin currently is locked.";
 		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_SECUREPIN_LOCKED'};
 		&error;
-	} elsif ( $checkresult == 2 ) {
+	} elsif ( defined $checkresult and $checkresult == 2 ) {
 		$error = "Internal error. Could not open securepin data file.";
 		&error;
-	} elsif ( $checkresult == 1 ) {
+	} elsif ( defined $checkresult and $checkresult == 1 ) {
 		#print STDERR "The entered securepin is wrong.";
 		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_SECUREPIN_WRONG'};
 		&error;

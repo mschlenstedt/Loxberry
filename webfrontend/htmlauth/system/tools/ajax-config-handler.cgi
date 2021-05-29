@@ -8,7 +8,7 @@ use LoxBerry::System;
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "2.0.2.5"; # Version of this script
+my $version = "2.2.1.1"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -33,9 +33,9 @@ my $action = $R::action;
 my $value = $R::value;
 
 
-print STDERR "Action: $action";
-print STDERR "| Value: $value" if $value;
-print STDERR "\n";
+# print STDERR "Action: $action";
+# print STDERR "| Value: $value" if $value;
+# print STDERR "\n";
 
 if    ($action eq 'secupdates') { &secupdates; }
 elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
@@ -71,8 +71,8 @@ exit;
 ################################
 sub secupdates
 {
-	print STDERR "ajax-config-handler: ajax secupdates\n";
-	print STDERR "Value is: $value\n";
+	# print STDERR "ajax-config-handler: ajax secupdates\n";
+	# print STDERR "Value is: $value\n";
 	
 	if (!looks_like_number($value) && $value ne 'query') 
 		{ $response{message} = "<red>Value $value not supported.</red>"; 
@@ -130,8 +130,8 @@ sub secupdates
 ############################################
 sub secupdatesautoreboot
 {
-	print STDERR "ajax-config-handler: secupdates-autoreboot\n";
-	print STDERR "Value is: $value\n";
+	# print STDERR "ajax-config-handler: secupdates-autoreboot\n";
+	# print STDERR "Value is: $value\n";
 	
 	if ($value ne "true" && $value ne "false" && $value ne "query") { 
 		$response{message} = "<red>Value not supported.</red>"; 
@@ -185,7 +185,7 @@ sub secupdatesautoreboot
 ############################################
 sub lbupdate
 {
-	print STDERR "ajax-config-handler: lbupdate\n";
+	# print STDERR "ajax-config-handler: lbupdate\n";
 	
 	if ($action eq 'lbupdate-runcheck') {
 		my $output = qx { sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json };
@@ -290,7 +290,7 @@ sub lbupdate
 ############################################
 sub poweroff
 {
-	print STDERR "ajax-config-handler: ajax poweroff - Forking poweroff\n";
+	# print STDERR "ajax-config-handler: ajax poweroff - Forking poweroff\n";
 	# LOGINF "Forking poweroff ...";
 	$response{error} = 0;
 	$response{message} = "ajax-config-handler: Executing poweroff forked...";
@@ -317,7 +317,7 @@ sub poweroff
 ############################################
 sub reboot
 {
-	print STDERR "ajax-config-handler: ajax reboot\n";
+	# print STDERR "ajax-config-handler: ajax reboot\n";
 	# LOGINF "Forking reboot ...";
 	$response{error} = 0;
 	$response{message} = "ajax-config-handler: Executing reboot forked...";
@@ -367,7 +367,7 @@ sub plugindb_update
 ############################################
 sub pluginsupdate_check
 {
-	print STDERR "ajax-config-handler: ajax pluginsupdate_check\n";
+	# print STDERR "ajax-config-handler: ajax pluginsupdate_check\n";
 	# LOGINF "Forking reboot ...";
 	qx($lbhomedir/sbin/pluginsupdate.pl --checkonly >/dev/null 2>&1);
 	if ($? ne 0) {
@@ -403,7 +403,7 @@ print "ajax-config-handler: Finished.<br>";
 
 sub plugininstall_status
 {
-	print STDERR "plugininstall-status: $R::value\n";
+	# print STDERR "plugininstall-status: $R::value\n";
 	# Quick safety check
 	if (index($R::value, '/') ne -1) {
 		$response{error} = -1;

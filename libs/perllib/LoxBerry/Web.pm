@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "2.2.1.0";
+our $VERSION = "2.2.1.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -706,7 +706,7 @@ sub loglevel_select_html
 		return "";
 	}
 	if (!$plugin->{'PLUGINDB_LOGLEVELS_ENABLED'}) {
-		Carp::carp "loglevel_select_html called, but CUSTOM_LOGLEVELS not enabled in plugin.cfg (plugin " . $pluginfolder . ")";
+		# Carp::carp "loglevel_select_html called, but CUSTOM_LOGLEVELS not enabled in plugin.cfg (plugin " . $pluginfolder . ")";
 		return "";
 	}
 	
