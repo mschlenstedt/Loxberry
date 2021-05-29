@@ -6,7 +6,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.2.1.3";
+$LBIOVERSION = "2.2.1.4";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -468,10 +468,11 @@ function mqtt_connectiondetails() {
 	$cred = array ();
 	
 	@list($brokerhost, $brokerport) = explode(':', $mqttconf->{'Main'}->{'brokeraddress'}, 2);
-	$brokerport = $brokerport ? $brokerport : 1883;
+	$brokerport = $brokerport ? $brokerport : "1883";
 	$cred['brokeraddress'] = $brokerhost.":".$brokerport;
 	$cred['brokerhost'] = $brokerhost;
 	$cred['brokerport'] = $brokerport;
+	$cred['websocketport'] = !empty($mqttconf->Main->websocketport) ? $mqttconf->Main->websocketport : "9001";
 	$cred['brokeruser'] = $mqttcred->Credentials->brokeruser;
 	$cred['brokerpass'] = $mqttcred->Credentials->brokerpass;
 	$cred['udpinport'] = $mqttconf->Main->udpinport;

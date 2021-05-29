@@ -22,7 +22,7 @@ our @EXPORT = qw (
 	
 );
 
-our $VERSION = "2.2.1.5";
+our $VERSION = "2.2.1.6";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
@@ -612,14 +612,14 @@ sub mqtt_connectiondetails {
 	my %cred;
 	
 	my ($brokerhost, $brokerport) = split(':', $mqttconf->{Main}->{brokeraddress}, 2);
-	$brokerport = $brokerport ? $brokerport : 1883;
+	$brokerport = $brokerport ? $brokerport : "1883";
 	$cred{brokeraddress} = $brokerhost.":".$brokerport;
 	$cred{brokerhost} = $brokerhost;
 	$cred{brokerport} = $brokerport;
+	$cred{websocketport} = defined $mqttconf->{Main}->{websocketport} ? $mqttconf->{Main}->{websocketport} : "9001";
 	$cred{brokeruser} = $mqttcred->{Credentials}->{brokeruser};
 	$cred{brokerpass} = $mqttcred->{Credentials}->{brokerpass};
 	$cred{udpinport} = $mqttconf->{Main}->{udpinport};
-
 	return \%cred;
 
 }
