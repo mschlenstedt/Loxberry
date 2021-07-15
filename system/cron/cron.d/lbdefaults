@@ -3,15 +3,15 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 MAILTO=""
 #
 # m h dom mon dow user  command
-@reboot loxberry cd / && for f in /opt/loxberry/system/cron/cron.reboot/*; do $f cron=reboot > /dev/null 2>&1 &; done
-*    * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.01min/*; do $f cron=01min > /dev/null 2>&1 &; done
-*/3  * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.03min/*; do $f cron=03min > /dev/null 2>&1 &; done
-*/5  * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.05min/*; do $f cron=05min > /dev/null 2>&1 &; done
-*/10 * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.10min/*; do $f cron=10min > /dev/null 2>&1 &; done
-*/15 * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.15min/*; do $f cron=15min > /dev/null 2>&1 &; done
-*/30 * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.30min/*; do $f cron=30min > /dev/null 2>&1 &; done
-13   * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.hourly/*; do $f cron=hourly > /dev/null 2>&1 &; done
-23   4 * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.daily/*; do $f cron=daily > /dev/null 2>&1 &; done
-33   4 * * 1 loxberry cd / && for f in /opt/loxberry/system/cron/cron.weekly/*; do $f cron=weekly > /dev/null 2>&1 &; done
-43   4 1 * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.monthly/*; do $f cron=monthly > /dev/null 2>&1 &; done
-53   4 1 1 * loxberry cd / && for f in /opt/loxberry/system/cron/cron.yearly/*; do $f cron=yearly > /dev/null 2>&1 &; done
+@reboot loxberry cd / && for f in /opt/loxberry/system/cron/cron.reboot/*; do ($f cron=reboot > /dev/null 2>&1 &); done
+*    * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.01min/*; do ($f cron=01min > /dev/null 2>&1 &); done
+*/3  * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.03min/*; do ($f cron=03min > /dev/null 2>&1 &); done
+*/5  * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.05min/*; do ($f cron=05min > /dev/null 2>&1 &); done
+*/10 * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.10min/*; do ($f cron=10min > /dev/null 2>&1 &); done
+*/15 * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.15min/*; do ($f cron=15min > /dev/null 2>&1 &); done
+*/30 * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.30min/*; do ($f cron=30min > /dev/null 2>&1 &); done
+13   * * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.hourly/*; do ($f cron=hourly > /dev/null 2>&1 &); done
+23   4 * * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.daily/*; do ($f cron=daily > /dev/null 2>&1 &); done
+33   4 * * 1 loxberry cd / && for f in /opt/loxberry/system/cron/cron.weekly/*; do ($f cron=weekly > /dev/null 2>&1 &); done
+43   4 1 * * loxberry cd / && for f in /opt/loxberry/system/cron/cron.monthly/*; do ($f cron=monthly > /dev/null 2>&1 &); done
+53   4 1 1 * loxberry cd / && for f in /opt/loxberry/system/cron/cron.yearly/*; do ($f cron=yearly > /dev/null 2>&1 &); done
