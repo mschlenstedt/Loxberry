@@ -11,7 +11,7 @@ use LoxBerry::Update;
 init();
 
 LOGINF "Updating f*cking changed YARN key. What the f*ck they are doing?!...";
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -");
 
 LOGINF "Enabling Emergency Webserver...";
 &copy_to_loxberry('/system/daemons/system/05-emergencywebserver');
