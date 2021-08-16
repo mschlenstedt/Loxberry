@@ -11,7 +11,7 @@ use LoxBerry::System;
 
 init();
 
-LOGINF "Repairing apt sources - one of the rasbian mirrors are not active anymore..."
+LOGINF "Repairing apt sources - one of the rasbian mirrors are not active anymore...";
 system("sed -e -i '/^deb http:\\/\\/raspbian.raspberrypi.org\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
 system("sed -e -i '/^deb http:\\/\\/ftp.gwdg.de\\/pub\\/linux\\/debian\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
 system("sed -e -i '/^deb http:\\/\\/ftp.agdsn.de\\/pub\\/mirrors\\/raspbian\\/raspbian\\ buster/s/^/#/g' /etc/apt/sources.list");
