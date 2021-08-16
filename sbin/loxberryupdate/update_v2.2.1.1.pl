@@ -7,8 +7,19 @@
 #   cron: If 1, the update was triggered automatically by cron
 
 use LoxBerry::Update;
+use LoxBerry::System;
 
 init();
+
+LOGINF "Repairing apt sources - one of the rasbian mirrors are not active anymore..."
+system("sed -e -i '/^deb http:\\/\\/raspbian.raspberrypi.org\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
+system("sed -e -i '/^deb http:\\/\\/ftp.gwdg.de\\/pub\\/linux\\/debian\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
+system("sed -e -i '/^deb http:\\/\\/ftp.agdsn.de\\/pub\\/mirrors\\/raspbian\\/raspbian\\ buster/s/^/#/g' /etc/apt/sources.list");
+system("sed -e -i '/^deb http:\\/\\/ftp.halifax.rwth-aachen.de\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
+&copy_to_loxberry('/system/apt/loxberry.list');
+system("chown root:root $lbhomedir/system/apt/loxberry.list");
+system("ln -s $lbhomedir/system/apt/loxberry.list /etc/apt/sources.list.d/loxberry.list");
+apt_update("update");
 
 LOGINF "Updating f*cking changed YARN key. What the f*ck they are doing?!...";
 system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -");
@@ -26,7 +37,6 @@ LOGINF "Updating LoxBerry cron folders execution behaviour...";
 #reboot_required("LoxBerry Update requests a reboot.");
 
 LOGINF "Installing pre-requisites for LoxBerry RAMDISK File Analyzer...";
-apt_update("update");
 apt_install("libsys-filesystem-perl libipc-run3-perl libhash-merge-perl");
 
 
