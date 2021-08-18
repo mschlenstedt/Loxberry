@@ -19,6 +19,7 @@ system("sed -e -i '/^deb http:\\/\\/ftp.halifax.rwth-aachen.de\\/raspbian\\/rasp
 &copy_to_loxberry('/system/apt/loxberry.list');
 system("chown root:root $lbhomedir/system/apt/loxberry.list");
 system("ln -s $lbhomedir/system/apt/loxberry.list /etc/apt/sources.list.d/loxberry.list");
+system ("rm /etc/apt/sources.list.d/pilight.list");
 apt_update("update");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
