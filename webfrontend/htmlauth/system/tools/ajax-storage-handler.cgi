@@ -126,7 +126,60 @@ DEBUG
 var ${R::formid}_storage = [""];
 
 \$(function() {
+	
+	refresh_storage_$R::formid("$R::currentpath");
+	
+	var select = \$("#$R::formid-select");
+	
+	\$("#$R::formid-folder").change(function() {
+		console.log("FOLDER changed");
+		var folder = \$("#$R::formid-folder").val();
+		if (folder.charAt(0) != "/") {
+			folder = "/" + folder;
+			\$("#$R::formid-folder").val(folder);
+		}
+		if (folder.charAt(folder.length-1) == "/") {
+			folder = folder.substr(0, (folder.length-1));
+			\$("#$R::formid-folder").val(folder);
+		}
+		
+		\$("#$R::formid").val(${R::formid}_storage[select.val()] + folder);
+		
+		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
+			\$("#$R::formid-browse-button").removeClass("ui-state-disabled");
+		else
+			\$("#$R::formid-browse-button").addClass("ui-state-disabled");
+		
+		\$("#$R::formid").trigger("change");
+	});
+	
+	\$("#$R::formid-browse-button").click(function() {
+		console.log("Browse Button clicked");
+		/* /admin/system/tools/filemanager/filemanager.php?p=system/storage/smb/homeserver/Raspberry-Backups */
+		
+		if( \$("#$R::formid").val().startsWith('$lbhomedir') ) {
+			shortpath = \$("#$R::formid").val().substr( '$lbhomedir'.length );
+			// console.log("Shortpath:", shortpath);
+		} else {
+			return;
+		}
+		
+		window.open('/admin/system/tools/filemanager/filemanager.php?p='+shortpath, '_blank', 'menubar=no,status=no,toolbar=no');
+		
+	});
+	
+	
+});
+
+
+function refresh_storage_$R::formid(currentpath) {
+	
 	// Init things to display
+	
+	if(currentpath == undefined) 
+		currentpath = '';
+	
+	\$("#$R::formid").val(currentpath);
 	
 	var select = \$("#$R::formid-select");
 	if ("$R::custom_folder" > 0) 
@@ -145,7 +198,7 @@ var ${R::formid}_storage = [""];
 					})
 	.done(function(stor) {
 		console.log("AJAX done");
-		var currentpath = "$R::currentpath";
+		// var currentpath = "$R::currentpath";
 		var option = \$('<option></option>').attr("value", "").text("$SL{'STORAGE.GET_STORAGE_HTML_SELECT'}");
 		select.empty().append(option);
 		
@@ -221,46 +274,7 @@ var ${R::formid}_storage = [""];
 		\$("#$R::formid").trigger("change");
 		
 	});
-	
-	\$("#$R::formid-folder").change(function() {
-		console.log("FOLDER changed");
-		var folder = \$("#$R::formid-folder").val();
-		if (folder.charAt(0) != "/") {
-			folder = "/" + folder;
-			\$("#$R::formid-folder").val(folder);
-		}
-		if (folder.charAt(folder.length-1) == "/") {
-			folder = folder.substr(0, (folder.length-1));
-			\$("#$R::formid-folder").val(folder);
-		}
-		
-		\$("#$R::formid").val(${R::formid}_storage[select.val()] + folder);
-		
-		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
-			\$("#$R::formid-browse-button").removeClass("ui-state-disabled");
-		else
-			\$("#$R::formid-browse-button").addClass("ui-state-disabled");
-		
-		\$("#$R::formid").trigger("change");
-	});
-	
-	\$("#$R::formid-browse-button").click(function() {
-		console.log("Browse Button clicked");
-		/* /admin/system/tools/filemanager/filemanager.php?p=system/storage/smb/homeserver/Raspberry-Backups */
-		
-		if( \$("#$R::formid").val().startsWith('$lbhomedir') ) {
-			shortpath = \$("#$R::formid").val().substr( '$lbhomedir'.length );
-			// console.log("Shortpath:", shortpath);
-		} else {
-			return;
-		}
-		
-		window.open('/admin/system/tools/filemanager/filemanager.php?p='+shortpath, '_blank', 'menubar=no,status=no,toolbar=no');
-		
-	});
-	
-	
-});
+}
 
 </script>
 EOF
