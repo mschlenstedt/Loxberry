@@ -1255,7 +1255,7 @@ sub install {
 			system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
 			$message = "Command: $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update";
 			&loginfo;
-			system("$export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update 2>&1");
+			system("$export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update 2>&1");
 			if ($? ne 0) {
 				$message = "$LL{'ERR_APTREFRESH'}";
 				&logerr; 
