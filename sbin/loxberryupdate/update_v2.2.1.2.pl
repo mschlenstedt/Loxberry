@@ -16,6 +16,7 @@ system("sed -e -i '/^deb http:\\/\\/raspbian.raspberrypi.org\\/raspbian\\/ buste
 system("sed -e -i '/^deb http:\\/\\/ftp.gwdg.de\\/pub\\/linux\\/debian\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
 system("sed -e -i '/^deb http:\\/\\/ftp.agdsn.de\\/pub\\/mirrors\\/raspbian\\/raspbian\\ buster/s/^/#/g' /etc/apt/sources.list");
 system("sed -e -i '/^deb http:\\/\\/ftp.halifax.rwth-aachen.de\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
+mkdir("$lbhomedir/system/apt");
 &copy_to_loxberry('/system/apt/loxberry.list');
 system("chown root:root $lbhomedir/system/apt/loxberry.list");
 system("ln -s $lbhomedir/system/apt/loxberry.list /etc/apt/sources.list.d/loxberry.list");
