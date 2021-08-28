@@ -12,10 +12,10 @@ use LoxBerry::System;
 init();
 
 LOGINF "Repairing apt sources - one of the rasbian mirrors are not active anymore...";
-system("sed -e -i '/^deb http:\\/\\/raspbian.raspberrypi.org\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
-system("sed -e -i '/^deb http:\\/\\/ftp.gwdg.de\\/pub\\/linux\\/debian\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
-system("sed -e -i '/^deb http:\\/\\/ftp.agdsn.de\\/pub\\/mirrors\\/raspbian\\/raspbian\\ buster/s/^/#/g' /etc/apt/sources.list");
-system("sed -e -i '/^deb http:\\/\\/ftp.halifax.rwth-aachen.de\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
+system("sed -i -e '/^deb http:\\/\\/raspbian.raspberrypi.org\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
+system("sed -i -e '/^deb http:\\/\\/ftp.gwdg.de\\/pub\\/linux\\/debian\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
+system("sed -i -e '/^deb http:\\/\\/ftp.agdsn.de\\/pub\\/mirrors\\/raspbian\\/raspbian\\ buster/s/^/#/g' /etc/apt/sources.list");
+system("sed -i -e '/^deb http:\\/\\/ftp.halifax.rwth-aachen.de\\/raspbian\\/raspbian\\/ buster/s/^/#/g' /etc/apt/sources.list");
 mkdir("$lbhomedir/system/apt");
 &copy_to_loxberry('/system/apt/loxberry.list');
 system("chown root:root $lbhomedir/system/apt/loxberry.list");
