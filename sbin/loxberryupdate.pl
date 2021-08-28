@@ -237,6 +237,12 @@ if ($exitcode != 0) {
 }
 LOGOK "Pre-Changing owner was successful.";
 
+LOGINF "Updating apt-keys...";
+system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -");
+LOGOK "Keys updated";
+
+
+
 # Set up rsync command line
 
 my $dryrun = $cgi->param('dryrun') ? "--dry-run" : "";
