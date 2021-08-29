@@ -1247,9 +1247,9 @@ sub install {
 			}
 			$message = "$LL{'INF_APTREFRESH'}";
 			&loginfo;
-			$message = "Command: $dpkgbin --configure -a";
+			$message = "Command: $dpkgbin --configure -a --force-confdef";
 			&loginfo;
-			system("$dpkgbin --configure -a 2>&1");
+			system("$dpkgbin --configure -a --force-confdef 2>&1");
 			$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 			&loginfo;
 			system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
@@ -1293,9 +1293,9 @@ sub install {
 		}
 		close (F);
 
-		$message = "Command: $dpkgbin --configure -a";
+		$message = "Command: $dpkgbin --configure -a --force-confdef";
 		&loginfo;
-		system("$dpkgbin --configure -a 2>&1");
+		system("$dpkgbin --configure -a --force-confdef 2>&1");
 		$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 		&loginfo;
 		system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
@@ -1307,9 +1307,9 @@ sub install {
 			&logwarn; 
 			# If it failed, maybe due to an outdated apt-database... So
 			# do a apt-get update once more
-			$message = "Command: $dpkgbin --configure -a";
+			$message = "Command: $dpkgbin --configure -a --force-confdef";
 			&loginfo;
-			system("$dpkgbin --configure -a 2>&1");
+			system("$dpkgbin --configure -a --force-confdef 2>&1");
 			$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 			&loginfo;
 			system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");

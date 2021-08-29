@@ -206,7 +206,7 @@ sub apt_update
 
 	# Repair and update
 	if ( $command eq "update") {
-		my $output = qx { $export /usr/bin/dpkg --configure -a };
+		my $output = qx { $export /usr/bin/dpkg --configure -a --force-confdef};
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$main::log->ERR("Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode");
