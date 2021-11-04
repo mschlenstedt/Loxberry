@@ -13,6 +13,23 @@
 	font-style: italic;
 }
 
+
+.filter-highlight {
+	background-color:#ffff99 !important;
+}
+
+.countContainer {
+	heigth:10px;
+	width:100%;
+	background-color:#ececfb;
+}
+
+#dataContainer {
+	// overflow: scroll;
+	// height:60vh;
+}
+
+
 </style>
 
 
@@ -21,8 +38,9 @@
 	<input type="search" name="filter_search" id="filter_search" value="" data-mini="true" data-clear-btn="true">
 </div>
 
-<div id="dataContainer">
+<div id="countContainer" class="countContainer">Getting data...</div>
 
+<div id="dataContainer">
 </div>
 
 <script>
@@ -31,12 +49,42 @@ let timer_interval = 3000;
 let getmqttdata_running = false;
 let mqttData;
 let msg_maxlen = 80;
+let filterSearchDelay;
+var filterSearchString = "";
 
 $(function() {
 	
 	setTimer();
 	getMqttData();
 	updateTables();
+
+	// Text search bindings
+	
+	$("#filter_search").on( "input", function(event, ui){
+		console.log("Textsearch on input");
+		window.clearTimeout(filterSearchDelay); 
+		filterSearchString = $(event.target).val();
+		filterSearchDelay = window.setTimeout(function() { updateTables(); }, 500);
+	});
+	
+	$("#filter_search").on( "change", function(event, ui){
+		console.log("Textsearch on change");
+		if( $(event.target).val() == "" ) {
+			// $('#filter_search').css({'backgroundColor':'white'});
+			$('#filter_search').removeClass('filter-highlight');
+			$('#filter_search').attr("data-clear-btn", false);
+			window.clearTimeout(filterSearchDelay); 
+			filterSearchString = $(event.target).val();
+			updateTables();
+		} else {
+			// $('#filter_search').css({'backgroundColor':'#FFFF99'});
+			$('#filter_search').addClass('filter-highlight');
+			$('#filter_search').attr("data-clear-btn", true);
+		}
+
+	});
+
+
 
 
 });
@@ -89,10 +137,30 @@ function getMqttData() {
 function updateTables() {
 	// console.log("mqttData", mqttData, typeof(mqttData) );
 	html = "";
+	console.log("Current text filter", filterSearchString);
+	
 	if( mqttData ) {
-		for ( topic of Object.entries(mqttData) ) {
+		
+		var filterSearchStr_lc = filterSearchString.toLowerCase();
+		
+		var fullCount = 0;
+		var filteredCount = 0;
+		
+		
+		for ( topicarr of Object.entries(mqttData) ) {
 		// mqttData.forEach(function(topic){
-			var msg = topic[1].msg;
+			
+			fullCount++;
+			
+			var topic = topicarr[0];
+			
+			// Text filter (filterSearchString)
+			if( filterSearchStr_lc != "" ) {
+				if( topic.toLowerCase().indexOf(filterSearchStr_lc) == -1 ) 
+					continue;
+			}
+			
+			var msg = topicarr[1].msg;
 			var msg_full = msg;
 			var msg_too_long = false;
 			if( msg.length > msg_maxlen ) {
@@ -100,10 +168,10 @@ function updateTables() {
 				msg_too_long = true;
 			}
 			
-			// console.log("topic", topic);
+			// console.log("topicarr", topicarr);
 			html += `<div class="topic_line">`;
-			var localtime = new Date(topic[1].time*1000).toLocaleString();
-			var timedelta = (Date.now() - topic[1].time*1000) / 1000;
+			var localtime = new Date(topicarr[1].time*1000).toLocaleString();
+			var timedelta = (Date.now() - topicarr[1].time*1000) / 1000;
 			var timedelta_color;
 			if( timedelta < 62 ) {
 				timedelta_color = "green";
@@ -112,16 +180,20 @@ function updateTables() {
 			}
 			// console.log("Timedelta", timedelta, timedelta_color);
 			html += `<div class="topic_time">${localtime}</div>`;
-			html += `<div class="topic" style="color:${timedelta_color}">${topic[0]}</div>`;
+			html += `<div class="topic" style="color:${timedelta_color}">${topic}</div>`;
 			html += `<div class="topic_payload">${msg}`;
 			if( msg_too_long ) 
 				html += `... <span style="font-style:italic;font-size:80%;"> (truncated)</span>`;
 			
 			html += `</div>`;
 			html += `</div>`;
+			filteredCount++;
+			
 		}
 	}
 	$("#dataContainer").html(html);
+	$("#countContainer").html(filteredCount + "/"+fullCount+" elements shown");
+	
 
 
 }
