@@ -181,7 +181,7 @@ sub save_data
 	# LOGINF "Relayed topics are saved on RAMDISK for UI";
 	unlink $datafile;
 	my $relayjsonobj = LoxBerry::JSON->new();
-	my $relayjson = $relayjsonobj->open(filename => $datafile);
+	my $relayjson = $relayjsonobj->open(filename => $datafile, lockexclusive => 1);
 
 	
 	$relayjson->{incoming} = \%sendhash;

@@ -1,0 +1,141 @@
+<style>
+
+.topic, .topic_payload, .topic_time {
+	display:inline;
+	padding: 5px;
+	font-size:90%
+}
+.topic {
+	font-weight: bold;
+}
+.topic_time {
+	font-size: 70%;
+	font-style: italic;
+}
+
+</style>
+
+
+
+<div>
+	<input type="search" name="filter_search" id="filter_search" value="" data-mini="true" data-clear-btn="true">
+</div>
+
+<div id="dataContainer">
+
+</div>
+
+<script>
+let timer = false;
+let timer_interval = 3000;
+let getmqttdata_running = false;
+let mqttData;
+let msg_maxlen = 80;
+
+$(function() {
+	
+	setTimer();
+	getMqttData();
+	updateTables();
+
+
+});
+
+function getMqttData() {
+	
+	if( getmqttdata_running ) 
+		return;
+	
+	getmqttdata_running = true;
+	$.post( "ajax-mqttfinder.php", { 
+			action : "getmqttdata",  
+	})
+	.done(function(data){
+		// console.log("mqtt data done", data);
+		/*
+		if( data.topics ) {
+			mqttlivedata = Object.keys(data.topics)
+			.map(key => ({topic: key, data: data.topics[key]}));
+			mqttlivedata.sort( dynamicSortMultiple("topic"));
+			
+		} else {
+			mqttlivedata = undefined;
+		}
+		
+		
+		if( data.state ) {
+			mqttlivestate = data.state;
+		} else {
+			mqttlivestate = undefined;
+		}
+		*/
+		
+		if( data.incoming ) {
+			// console.log( "Setting mqttData" );
+			mqttData = data.incoming;
+		}
+			
+		updateTables();
+	})
+	.fail(function(data){
+		console.log("getMqttData fail", data);
+		$("#dataContainer").html(`<p style="color:red">Could not get mqtt data from mqttfinder backend<p>`);
+	})
+	.always(function(data){
+		getmqttdata_running = false;
+	});
+}
+
+function updateTables() {
+	// console.log("mqttData", mqttData, typeof(mqttData) );
+	html = "";
+	if( mqttData ) {
+		for ( topic of Object.entries(mqttData) ) {
+		// mqttData.forEach(function(topic){
+			var msg = topic[1].msg;
+			var msg_full = msg;
+			var msg_too_long = false;
+			if( msg.length > msg_maxlen ) {
+				msg = msg.substr(0,msg_maxlen);
+				msg_too_long = true;
+			}
+			
+			// console.log("topic", topic);
+			html += `<div class="topic_line">`;
+			var localtime = new Date(topic[1].time*1000).toLocaleString();
+			var timedelta = (Date.now() - topic[1].time*1000) / 1000;
+			var timedelta_color;
+			if( timedelta < 62 ) {
+				timedelta_color = "green";
+			} else { 
+				timedelta_color = "black";
+			}
+			// console.log("Timedelta", timedelta, timedelta_color);
+			html += `<div class="topic_time">${localtime}</div>`;
+			html += `<div class="topic" style="color:${timedelta_color}">${topic[0]}</div>`;
+			html += `<div class="topic_payload">${msg}`;
+			if( msg_too_long ) 
+				html += `... <span style="font-style:italic;font-size:80%;"> (truncated)</span>`;
+			
+			html += `</div>`;
+			html += `</div>`;
+		}
+	}
+	$("#dataContainer").html(html);
+
+
+}
+
+function clearTimer() {
+	console.log("Timer cleared");
+	window.clearInterval(timer);
+	timer = false;
+}
+
+function setTimer() {
+	console.log("Timer set");
+	timer = window.setInterval(getMqttData, timer_interval);
+}
+
+
+</script>
