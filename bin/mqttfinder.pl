@@ -32,11 +32,11 @@ my $cfg;
 
 my %sendhash;
 
-my $nextconfigpoll;
+my $nextconfigpoll = 0;
 my $nextsavedatafile;
 my $mqtt;
 
-my $pollms = 20;
+my $pollms = 50;
 my $mqtt_data_received = 0;
 
 my $log = LoxBerry::Log->new (
@@ -58,21 +58,26 @@ read_config();
 	
 # Capture messages
 while(1) {
+	
+	# Check mqtt connection and read config
 	if(time>$nextconfigpoll) {
 		if(!$mqtt->{socket}) {
 			LOGWARN "No connection to MQTT broker $cfg->{Main}{brokeraddress} - Check host/port/user/pass and your connection.";
-			
 		} 
-		
+		# LOGINF("Read_config");
 		read_config();
 	}
+
+	# Query MQTT socket
 	eval {
 		$mqtt->tick();
 	};
 	
-	
+	# If no data where received, sleep some time
 	if( $mqtt_data_received == 0 ) {
 		Time::HiRes::sleep( $pollms/1000 );
+	} else {
+		$mqtt_data_received = 0;
 	}
 	
 	if( time>$nextsavedatafile ) {
@@ -82,7 +87,6 @@ while(1) {
 	
 	
 }
-
 
 sub received
 {
