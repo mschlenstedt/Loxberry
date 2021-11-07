@@ -54,6 +54,12 @@ var filterSearchString = "";
 
 $(function() {
 	
+	let searchParams = new URLSearchParams(window.location.search);
+	if( searchParams.has('q') ) {
+		filterSearchString = searchParams.get('q');
+		$("#filter_search").val( filterSearchString ); 
+	}
+	
 	setTimer();
 	getMqttData();
 	updateTables();
