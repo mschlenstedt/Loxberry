@@ -153,6 +153,8 @@ function updateTables() {
 			fullCount++;
 			
 			var topic = topicarr[0];
+			var msg = topicarr[1].p;
+			var time = topicarr[1].t;
 			
 			// Text filter (filterSearchString)
 			if( filterSearchStr_lc != "" ) {
@@ -160,7 +162,6 @@ function updateTables() {
 					continue;
 			}
 			
-			var msg = topicarr[1].msg;
 			var msg_full = msg;
 			var msg_too_long = false;
 			if( msg.length > msg_maxlen ) {
@@ -170,8 +171,8 @@ function updateTables() {
 			
 			// console.log("topicarr", topicarr);
 			html += `<div class="topic_line">`;
-			var localtime = new Date(topicarr[1].time*1000).toLocaleString();
-			var timedelta = (Date.now() - topicarr[1].time*1000) / 1000;
+			var localtime = new Date(time*1000).toLocaleString();
+			var timedelta = (Date.now() - time*1000) / 1000;
 			var timedelta_color;
 			if( timedelta < 62 ) {
 				timedelta_color = "green";

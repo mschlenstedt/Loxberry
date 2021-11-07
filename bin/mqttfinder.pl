@@ -4,6 +4,7 @@ use Time::HiRes;
 use LoxBerry::IO;
 use LoxBerry::Log;
 use LoxBerry::JSON;
+use IO::Socket::UNIX;
 use warnings;
 use strict;
 
@@ -27,16 +28,25 @@ $SIG{TERM} = sub {
 
 my $datafile = "/dev/shm/mqttfinder.json";
 my $cfgfile = "$lbsconfigdir/general.json";
+my $unixsocketpath = "/dev/shm/mqttfinder.sock";
 my $json;
 my $cfg; 
 
 my %sendhash;
 
 my $nextconfigpoll = 0;
-my $nextsavedatafile;
+my $nextsavedatafile = 0;
+my $nextdatacleanup = 0;
 my $mqtt;
 
 my $pollms = 50;
+my $datacleanup_olderthan_secs = 7*24*60*60;
+my $datacleanup_interval_secs = 60*60;
+
+# Debug
+# my $datacleanup_olderthan_secs = 30;
+# my $datacleanup_interval_secs = 10;
+
 my $mqtt_data_received = 0;
 
 my $log = LoxBerry::Log->new (
@@ -54,6 +64,9 @@ LOGSTART "MQTT Finder started";
 # Create monitor to handle config file changes
 my $monitor = File::Monitor->new();
 
+# Open Unix socket
+my $unixsock = open_unix_socket( $unixsocketpath );
+
 read_config();
 	
 # Capture messages
@@ -66,6 +79,9 @@ while(1) {
 		} 
 		# LOGINF("Read_config");
 		read_config();
+		if(time>$nextdatacleanup) {
+			data_cleanup();
+		}
 	}
 
 	# Query MQTT socket
@@ -82,6 +98,15 @@ while(1) {
 	
 	if( time>$nextsavedatafile ) {
 		save_data();
+		
+		if( my $connection = $unixsock->accept ) {
+			my $line = <$connection>;
+			chomp($line);
+			LOGDEB "Unixsock: $line";
+			process_unixsock($line);
+		}
+		
+		
 		$nextsavedatafile = Time::HiRes::time()+1;
 	}
 	
@@ -99,8 +124,8 @@ sub received
 	# Remember that we have currently have received data
 	$mqtt_data_received = 1;
 	
-	$sendhash{$topic}{msg} = $message;
-	$sendhash{$topic}{time} = Time::HiRes::time();
+	$sendhash{$topic}{p} = $message;
+	$sendhash{$topic}{t} = Time::HiRes::time();
 	
 }
 
@@ -197,6 +222,42 @@ sub save_data
 	
 }
 
+sub data_cleanup
+{
+	LOGOK "data_cleanup started: " . scalar(keys %sendhash) . " topics";
+	my $deltime = time - $datacleanup_olderthan_secs;
+	foreach( keys %sendhash ) {
+		if( $sendhash{$_}->{t} < $deltime ) {
+			delete $sendhash{$_};
+		}
+	}
+	$nextdatacleanup = time + $datacleanup_interval_secs;
+	LOGOK "data_cleanup finished: " . scalar(keys %sendhash) . " topics";
+	
+}
+
+
+
+sub open_unix_socket {
+	my $path = shift;
+	
+	unlink $path if -e $path;
+	
+	my $socket = IO::Socket::UNIX->new(
+		Type => SOCK_STREAM(),
+		Local => $path,
+		Listen => 1,
+	);
+	$socket->blocking(0);
+	return $socket;
+	
+}
+
+sub process_unixsock {
+	my $line = shift;
+	
+	
+}
 
 END
 {
