@@ -51,6 +51,7 @@ let mqttData;
 let msg_maxlen = 80;
 let filterSearchDelay;
 var filterSearchString = "";
+let expandTopicList = {};
 
 $(function() {
 	
@@ -90,6 +91,20 @@ $(function() {
 
 	});
 
+	// Expand / Collaps binding
+	
+	jQuery(document).on('click', '.topicExpand', function(event, ui){
+		var target = $(this).data('topic');
+		console.log("Expand target", target);
+		if( expandTopicList[target] ) {
+			delete expandTopicList[target];
+		}
+		else {
+			expandTopicList[target] = true;
+		}
+		updateTables();
+	});
+	
 
 
 
@@ -188,10 +203,17 @@ function updateTables() {
 			// console.log("Timedelta", timedelta, timedelta_color);
 			html += `<div class="topic_time">${localtime}</div>`;
 			html += `<div class="topic" style="color:${timedelta_color}">${topic}</div>`;
-			html += `<div class="topic_payload">${msg}`;
-			if( msg_too_long ) 
-				html += `... <span style="font-style:italic;font-size:80%;"> (truncated)</span>`;
-			
+			if( !msg_too_long ) {
+				html += `<div class="topic_payload">${msg}`;
+			}
+			else if( msg_too_long && expandTopicList[topic] !== true ) {
+				html += `<div class="topic_payload">${msg}`;
+				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">...</a>`;
+			}
+			else if ( msg_too_long ) {
+				html += `<div class="topic_payload">${msg_full}`;
+				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">^</a>`;
+			}
 			html += `</div>`;
 			html += `</div>`;
 			filteredCount++;
