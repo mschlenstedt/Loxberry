@@ -164,6 +164,7 @@ sub read_config
 	# Setting default values
 	if( !defined $cfg->{Mqtt}->{Brokerhost} and !defined $cfg->{Mqtt}->{Brokerport} ) { 
 		LOGCRIT "general.json: Brokerhost or Brokerport not defined. MQTT Gateway too old?";
+		return;
 	}
 	if(! defined $pollms ) {
 		$pollms = 50; 
@@ -183,15 +184,15 @@ sub read_config
 	undef $mqtt;
 	
 	# Reconnect MQTT broker
-	LOGINF "Connecting broker $cfg->{Mqtt}->{Brokerhost}:$cfg->{Mqtt}->{Brokerport}";
+	LOGINF "Connecting broker " . $cfg->{Mqtt}->{Brokerhost} . ":" . $cfg->{Mqtt}->{Brokerport};
 	eval {
 		
 		$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
 		
-		$mqtt = Net::MQTT::Simple->new($cfg->{Mqtt}->{brokerhost}.":".$cfg->{Mqtt}->{Brokerport});
+		$mqtt = Net::MQTT::Simple->new($cfg->{Mqtt}->{Brokerhost}.":".$cfg->{Mqtt}->{Brokerport});
 		
 		if($cfg->{Mqtt}->{Brokeruser} or $cfg->{Mqtt}->{Brokerpass}) {
-			LOGINF "Login at broker";
+			LOGINF "Login at broker with user $cfg->{Mqtt}->{Brokeruser}";
 			$mqtt->login($cfg->{Mqtt}->{Brokeruser}, $cfg->{Mqtt}->{Brokerpass});
 		}
 		
@@ -201,6 +202,7 @@ sub read_config
 	if ($@) {
 		LOGERR "Exception catched on reconnecting and subscribing: $@";
 	}
+	
 }
 
 
