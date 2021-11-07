@@ -161,7 +161,14 @@ sub read_config
 		return;
 	}
 
-	# Setting default values
+	# Checking, if mqttfinder is disabled
+	if( defined $cfg->{Mqtt}->{Finderdisabled} and is_enabled( $cfg->{Mqtt}->{Finderdisabled} ) ) {
+		LOGOK "LoxBerry MQTT Finder is disabled in general.json. Exiting...";
+		unlink $datafile;
+		exit(0);
+	}
+
+	# Checking broker settings
 	if( !defined $cfg->{Mqtt}->{Brokerhost} and !defined $cfg->{Mqtt}->{Brokerport} ) { 
 		LOGCRIT "general.json: Brokerhost or Brokerport not defined. MQTT Gateway too old?";
 		return;
