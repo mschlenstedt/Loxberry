@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.4.0.1";
+our $VERSION = "2.4.0.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -346,7 +346,7 @@ sub pluginloglevel
 	my $query = $queryname ? $queryname : $lbpplugindir;
 	
 	my $plugin = LoxBerry::System::plugindata($query);
-	return defined $plugin and $plugin->{PLUGINDB_LOGLEVEL} ? $plugin->{PLUGINDB_LOGLEVEL} : 0;
+	return (defined $plugin and $plugin->{PLUGINDB_LOGLEVEL}) ? $plugin->{PLUGINDB_LOGLEVEL} : 0;
 }
 
 ##################################################################################
