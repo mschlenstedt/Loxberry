@@ -163,6 +163,13 @@ function updateTables() {
 	if( mqttData ) {
 		
 		var filterSearchStr_lc = filterSearchString.toLowerCase();
+		filterSearchStr_lc = filterSearchStr_lc.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+		// console.log("Escaped", filterSearchStr_lc);
+		filterSearchStr_lc = filterSearchStr_lc.replace('#', '.*');
+		filterSearchStr_lc = filterSearchStr_lc.replace('\\+', '[^/]+');
+		
+		// console.log("Regex filter", filterSearchStr_lc);
+		
 		
 		var fullCount = 0;
 		var filteredCount = 0;
@@ -179,8 +186,15 @@ function updateTables() {
 			
 			// Text filter (filterSearchString)
 			if( filterSearchStr_lc != "" ) {
-				if( topic.toLowerCase().indexOf(filterSearchStr_lc) == -1 ) 
+				var noMatch = false;
+				// if( topic.toLowerCase().indexOf(filterSearchStr_lc) == -1 ) 
+				if( ! topic.toLowerCase().match(filterSearchStr_lc) )
+					noMatch = true;
+		
+				// If no filter matches, skip this element
+				if( noMatch ) {
 					continue;
+				}
 			}
 			
 			var msg_full = msg;
