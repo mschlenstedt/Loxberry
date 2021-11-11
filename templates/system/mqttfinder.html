@@ -174,7 +174,7 @@ function updateTables() {
 		filterSearchStr_lc = filterSearchStr_lc.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 		// console.log("Escaped", filterSearchStr_lc);
 		filterSearchStr_lc = filterSearchStr_lc.replace('#', '[^/].*');
-		filterSearchStr_lc = filterSearchStr_lc.replace('\\+', '[^/]+');
+		filterSearchStr_lc = filterSearchStr_lc.replaceAll('\\+', '[^/]+');
 		
 		// console.log("Regex filter", filterSearchStr_lc);
 		
