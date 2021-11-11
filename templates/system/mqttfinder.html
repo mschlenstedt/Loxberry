@@ -173,7 +173,7 @@ function updateTables() {
 		var filterSearchStr_lc = filterSearchString.toLowerCase();
 		filterSearchStr_lc = filterSearchStr_lc.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 		// console.log("Escaped", filterSearchStr_lc);
-		filterSearchStr_lc = filterSearchStr_lc.replace('#', '.*');
+		filterSearchStr_lc = filterSearchStr_lc.replace('#', '[^/].*');
 		filterSearchStr_lc = filterSearchStr_lc.replace('\\+', '[^/]+');
 		
 		// console.log("Regex filter", filterSearchStr_lc);
