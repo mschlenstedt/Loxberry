@@ -36,6 +36,8 @@
 
 <div>
 	<input type="search" name="filter_search" id="filter_search" value="" data-mini="true" data-clear-btn="true">
+	<input type="checkbox" name="checkboxSubscription" id="checkboxSubscription" data-mini="true">
+	<label for="checkboxSubscription">Use Subscription syntax for filter</label>
 </div>
 
 <div id="countContainer" class="countContainer">Getting data...</div>
@@ -51,6 +53,7 @@ let mqttData;
 let msg_maxlen = 80;
 let filterSearchDelay;
 var filterSearchString = "";
+var filterExactMatch = false;
 let expandTopicList = {};
 
 $(function() {
@@ -59,6 +62,9 @@ $(function() {
 	if( searchParams.has('q') ) {
 		filterSearchString = searchParams.get('q');
 		$("#filter_search").val( filterSearchString ); 
+	}
+	if( searchParams.has('e') ) {
+		$("#checkboxSubscription").prop('checked', true).checkboxradio("refresh");
 	}
 	
 	setTimer();
@@ -90,6 +96,9 @@ $(function() {
 		}
 
 	});
+
+	$("#checkboxSubscription").on( "click", function() { updateTables() } );
+
 
 	// Expand / Collaps binding
 	
@@ -170,6 +179,8 @@ function updateTables() {
 		
 		// console.log("Regex filter", filterSearchStr_lc);
 		
+		if( $("#checkboxSubscription").is(":checked") )
+			filterSearchStr_lc = '^' + filterSearchStr_lc + '$';
 		
 		var fullCount = 0;
 		var filteredCount = 0;
