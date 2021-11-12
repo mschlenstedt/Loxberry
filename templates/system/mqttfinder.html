@@ -116,11 +116,11 @@ $(function() {
 	
 	// Copy topic to clipboard binding
 	
-	jQuery(document).on('click', '.topicdata', function(event){
+	jQuery(document).on('click', '.topic', function(event){
 		clearTimer();
-		console.log("Copy", event.target.innerText);
 		$(this).shake({ direction: "up", distance:3, times:2, speed:50 });
-		var target = event.target;
+		var target = $(this).find('.topicdata')[0];
+		console.log("Copy", target);
 		copyToClipboard(target);
 		setTimer();
 	});
@@ -247,7 +247,9 @@ function updateTables() {
 			}
 			// console.log("Timedelta", timedelta, timedelta_color);
 			html += `<div class="topic_time">${localtime}</div>`;
-			html += `<div class="topic topicdata" style="color:${timedelta_color}">${topic}</div>`;
+			html += `<div class="topic" style="color:${timedelta_color}">${topic}`;
+			html += `<TEXTAREA class="topicdata" style="display:none">${topic}</TEXTAREA>`;
+			html += `</div>`;
 			
 			if( !msg_too_long ) {
 				html += `<div class="topic_payload">${msg}`;
