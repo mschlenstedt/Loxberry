@@ -29,7 +29,6 @@
 	// height:60vh;
 }
 
-
 </style>
 
 
@@ -44,6 +43,8 @@
 
 <div id="dataContainer">
 </div>
+
+
 
 <script>
 let timer = false;
@@ -113,8 +114,28 @@ $(function() {
 		updateTables();
 	});
 	
-
-
+	// Copy topic to clipboard binding
+	
+	jQuery(document).on('click', '.topicdata', function(event){
+		clearTimer();
+		console.log("Copy", event.target.innerText);
+		$(this).shake({ direction: "up", distance:3, times:2, speed:50 });
+		var target = event.target;
+		copyToClipboard(target);
+		setTimer();
+	});
+	
+	
+	
+	jQuery(document).on('click', '.topic_payload', function(event){
+		clearTimer();
+		$(this).shake({ direction: "up", distance:3, times:2, speed:50 });
+		var target = $(this).find('.payloaddata')[0];
+		console.log("Copy and shake", target );
+		copyToClipboard(target);
+		setTimer();
+	});
+	
 
 });
 
@@ -226,19 +247,27 @@ function updateTables() {
 			}
 			// console.log("Timedelta", timedelta, timedelta_color);
 			html += `<div class="topic_time">${localtime}</div>`;
-			html += `<div class="topic" style="color:${timedelta_color}">${topic}</div>`;
+			html += `<div class="topic topicdata" style="color:${timedelta_color}">${topic}</div>`;
+			
 			if( !msg_too_long ) {
 				html += `<div class="topic_payload">${msg}`;
+				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
+				html += `</div>`;
 			}
 			else if( msg_too_long && expandTopicList[topic] !== true ) {
 				html += `<div class="topic_payload">${msg}`;
 				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">...</a>`;
+				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
+				html += `</div>`;
+				
 			}
 			else if ( msg_too_long ) {
 				html += `<div class="topic_payload">${msg_full}`;
 				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">^</a>`;
+				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
+				html += `</div>`;
+				
 			}
-			html += `</div>`;
 			html += `</div>`;
 			filteredCount++;
 			
@@ -262,5 +291,125 @@ function setTimer() {
 	timer = window.setInterval(getMqttData, timer_interval);
 }
 
+
+// https://stackoverflow.com/a/22581382/3466839
+function copyToClipboard(elem) {
+	  // create hidden text element, if it doesn't already exist
+    var targetId = "_hiddenCopyText_";
+    var isInput = elem.tagName === "INPUT" || elem.tagName === "TEXTAREA";
+    var origSelectionStart, origSelectionEnd;
+    if (isInput) {
+        // can just use the original source element for the selection and copy
+        var isVisible = elem.style.display == "none" ? false : true;
+		if( !isVisible )
+			elem.style.display = "";
+		target = elem;
+        origSelectionStart = elem.selectionStart;
+        origSelectionEnd = elem.selectionEnd;
+		
+    } else {
+        // must use a temporary form element for the selection and copy
+        target = document.getElementById(targetId);
+        if (!target) {
+            var target = document.createElement("textarea");
+            target.style.position = "absolute";
+            target.style.left = "-9999px";
+            target.style.top = "0";
+            target.id = targetId;
+            document.body.appendChild(target);
+        }
+        target.textContent = elem.textContent;
+    }
+    // select the content
+    var currentFocus = document.activeElement;
+    target.focus();
+    target.setSelectionRange(0, target.value.length);
+    
+    // copy the selection
+    var succeed;
+    try {
+    	  succeed = document.execCommand("copy");
+    } catch(e) {
+        succeed = false;
+    }
+    // restore original focus
+    if( !isVisible )
+		elem.style.display = "none";
+	if (currentFocus && typeof currentFocus.focus === "function") {
+        currentFocus.focus();
+    }
+    
+    if (isInput) {
+        // restore prior selection
+        elem.setSelectionRange(origSelectionStart, origSelectionEnd);
+    } else {
+        // clear temporary content
+        target.textContent = "";
+    }
+    return succeed;
+}
+
+function getSelectedText() {
+	var text = "";
+		if (typeof window.getSelection != "undefined") {
+			text = window.getSelection().toString();
+		} else if (typeof document.selection != "undefined" && document.selection.type == "Text") {
+		text = document.selection.createRange().text;
+	}
+	return text;
+}
+
+
+// Shake!!! 
+// https://github.com/ninty9notout/jquery-shake
+(function($) {
+	$.fn.shake = function(o) {
+		if (typeof o === 'function')
+			o = {callback: o};
+		// Set options
+		var o = $.extend({
+			direction: "left",
+			distance: 20,
+			times: 3,
+			speed: 140,
+			easing: "swing"
+		}, o);
+
+		return this.each(function() {
+
+			// Create element
+			var el = $(this), props = {
+				position: el.css("position"),
+				top: el.css("top"),
+				bottom: el.css("bottom"),
+				left: el.css("left"),
+				right: el.css("right")
+			};
+
+			el.css("position", "relative");
+
+			// Adjust
+			var ref = (o.direction == "up" || o.direction == "down") ? "top" : "left";
+			var motion = (o.direction == "up" || o.direction == "left") ? "pos" : "neg";
+
+			// Animation
+			var animation = {}, animation1 = {}, animation2 = {};
+			animation[ref] = (motion == "pos" ? "-=" : "+=")  + o.distance;
+			animation1[ref] = (motion == "pos" ? "+=" : "-=")  + o.distance * 2;
+			animation2[ref] = (motion == "pos" ? "-=" : "+=")  + o.distance * 2;
+
+			// Animate
+			el.animate(animation, o.speed, o.easing);
+			for (var i = 1; i < o.times; i++) { // Shakes
+				el.animate(animation1, o.speed, o.easing).animate(animation2, o.speed, o.easing);
+			};
+			el.animate(animation1, o.speed, o.easing).
+			animate(animation, o.speed / 2, o.easing, function(){ // Last shake
+				el.css(props); // Restore
+				if(o.callback) o.callback.apply(this, arguments); // Callback
+			});
+		});
+	};
+})(jQuery);
 
 </script>
