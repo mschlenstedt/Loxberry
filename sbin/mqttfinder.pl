@@ -75,7 +75,7 @@ while(1) {
 	# Check mqtt connection and read config
 	if(time>$nextconfigpoll) {
 		if(!$mqtt->{socket}) {
-			LOGWARN "No connection to MQTT broker $cfg->{Main}{brokeraddress} - Check host/port/user/pass and your connection.";
+			LOGWARN "No connection to MQTT broker $cfg->{Mqtt}->{Brokerhost} - Check host/port/user/pass and your connection.";
 		} 
 		# LOGINF("Read_config");
 		read_config();
