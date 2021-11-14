@@ -313,3 +313,15 @@ echo 'deb-src https://deb.nodesource.com/node_12.x buster main' >> /etc/apt/sour
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 apt-get install nodejs yarn
 
+# Configure listchanges to have no output - for apt beeing non-interactive
+if [ -e /etc/apt/listchanges.conf ]; then
+  sed -i 's/frontend=pager/frontend=none/' /etc/apt/listchanges.conf
+fi
+
+# Aktivating Root access via ssh with Key (password still forbidden)
+/bin/sed -i 's:^PermitRootLogin:#PermitRootLogin:g' /etc/ssh/sshd_config
+echo 'PermitRootLogin prohibit-password' >> /etc/ssh/sshd_config
+/bin/sed -i 's:^PubkeyAuthentication:#PubkeyAuthentication:g' /etc/ssh/sshd_config
+echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
+system ssh restart
+
