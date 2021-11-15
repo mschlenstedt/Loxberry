@@ -278,7 +278,7 @@ sub rpi_update
 	my $githash = shift;
 	if (!$githash) { $githash = "" };
 
-	if (-e "$lbhomedir/config/system/is_raspberry.cfg" && !-e "$lbhomedir/config/system/is_odroidxu3xu4.cfg") {
+	if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg") {
 		unlink "/boot/.firmware_revision";
 		if ( -d '/boot.tmp' ) {
 			qx ( rm -rf /boot.tmp ); 
@@ -295,7 +295,7 @@ sub rpi_update
 			return undef;
 		} else {
 			my $md5_rc = 255;
-			$md5_rc = qx { $lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
+			$md5_rc = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
 			if ( $md5_rc == 0 ) {
 			# Delete beta 64Bit kernel (we have not enough space on /boot...)
 				unlink "/boot.tmp/kernel8.img";
