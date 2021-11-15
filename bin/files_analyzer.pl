@@ -68,12 +68,35 @@ sub get_open_files
 		print "lsof: $nodev\n";
 		my @lsof_arguments = ( $nodev );
 		my ($res, $error) = lsof ( @lsof_arguments, \%options );
-		%fullres = %{ $merger->merge( \%fullres, $res ) };
+		%fullresult = %{ $merger->merge( \%fullresult, $res ) };
 		use Data::Dumper;
 		# print Dumper( $res );
 		# print Dumper( \%fullres );
-		print "Number of elements: " . scalar (keys %fullres) . "\n";
+		print "Number of elements: " . scalar (keys %fullresult) . "\n";
 		
 	}
-	# print Dumper( \%fullres );
+	print Dumper( \%fullresult );
+}
+
+sub get_large_files
+{
+	use File::Find::Rule;
+		
+	# #!/usr/local/bin/perl -w
+
+	# ($#ARGV == 0) or die "Usage: $0 [directory]\n"; 
+
+	# use File::Find;
+		
+	# find(sub {$size{$File::Find::name} = -s if -f;}, @ARGV);
+	# @sorted = sort {$size{$b} <=> $size{$a}} keys %size;
+		
+	# splice @sorted, 20 if @sorted > 20;
+		
+	# foreach (@sorted) 
+	# {
+		# printf "%10d %s\n", $size{$_}, $_;
+	# }	
+	
+	
 }
