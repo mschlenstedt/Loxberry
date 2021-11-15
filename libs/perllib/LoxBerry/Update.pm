@@ -190,6 +190,132 @@ sub apt_install
 
 
 ####################################################################
+# Performaing apt upgrade
+# Parameter:
+#	None
+####################################################################
+sub apt_upgrade
+{
+	my $bins = LoxBerry::System::get_binaries();
+	my $aptbin = $bins->{APT};
+	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
+
+	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade 2>&1 };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$main::log->CRIT("Error upgrading - Error $exitcode");
+		$main::log->DEB($output);
+		$main::errors++;
+	} else {
+		$main::log->OK("System upgrade successfully installed");
+	}
+}
+
+
+
+####################################################################
+# Performaing apt dist-upgrade
+# Parameter:
+#	None
+####################################################################
+sub apt_distupgrade
+{
+	my $bins = LoxBerry::System::get_binaries();
+	my $aptbin = $bins->{APT};
+	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
+
+	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" dist-upgrade 2>&1 };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$main::log->CRIT("Error dist-upgrading - Error $exitcode");
+		$main::log->DEB($output);
+		$main::errors++;
+	} else {
+		$main::log->OK("System dist-upgrade successfully installed");
+	}
+}
+
+
+
+####################################################################
+# Performaing apt full-upgrade
+# Parameter:
+#	None
+####################################################################
+sub apt_fullupgrade
+{
+	my $bins = LoxBerry::System::get_binaries();
+	my $aptbin = $bins->{APT};
+	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
+
+	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" full-upgrade 2>&1 };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		$main::log->CRIT("Error full-upgrading - Error $exitcode");
+		$main::log->DEB($output);
+		$main::errors++;
+	} else {
+		$main::log->OK("System full-upgrade successfully installed");
+	}
+}
+
+
+
+####################################################################
+# rpi-update (use "~/sbin/prepare_rpi-update" to get hashes and checksums
+# Parameter:
+# 	dirtreei_md5 checksum: of boot folder
+# 	Git hash or none: update to this firmware version from https://github.com/raspberrypi/rpi-firmware
+####################################################################
+sub rpi_update
+{
+	my $checksum = shift;
+	if (!$checksum) { 
+		$main::log->ERR("Checksum to check integritiy of /boot is needed.");
+		$main::errors++;
+		return undef;
+	};
+	my $githash = shift;
+	if (!$githash) { $githash = "" };
+
+	if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg") {
+		unlink "/boot/.firmware_revision";
+		if ( -d '/boot.tmp' ) {
+			qx ( rm -rf /boot.tmp ); 
+		}
+		qx { mkdir -p /boot.tmp };
+
+		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash 2>&1 };
+		my $exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$main::log->ERR("Error upgrading kernel and firmware- Error $exitcode");
+			$main::log->DEB($output);
+			$main::errors++;
+			qx ( rm -rf /boot.tmp ); 
+			return undef;
+		} else {
+			my $md5_rc = 255;
+			$md5_rc = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
+			if ( $md5_rc == 0 ) {
+			# Delete beta 64Bit kernel (we have not enough space on /boot...)
+				unlink "/boot.tmp/kernel8.img";
+				unlink "/boot/kernel*.img";
+				qx ( cp -r /boot.tmp/* /boot );
+				qx ( rm -r /boot.tmp );
+				$main::log->OK ("Upgrading kernel and firmware successfully.");
+			} else {
+				$main::log->ERR("Error upgrading kernel and firmware - /boot.tmp seems to be broken.");
+				$main::errors++;
+				qx ( rm -rf /boot.tmp ); 
+				return undef;
+			}
+		}
+	} else {
+		$main::log->OK("This seems not to be a Raspberry. Do not upgrading Kernel and Firmware.");
+	}
+}
+
+####################################################################
 # Update and clean apt databases and caches
 # Parameter:
 # 	update or none:	Update apt database and clean cache
@@ -216,6 +342,15 @@ sub apt_update
 			$main::log->OK("Configuring dpkg successfully.");
 		}
 		$main::log->INF("Clean up apt-databases and update");
+		$output = qx { $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install };
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			$main::log->ERR("Error installing broken apt packages - Error $exitcode");
+			$main::log->DEB($output);
+		        $main::errors++;
+		} else {
+       	 	$main::log->OK("Eventually broken Apt packages installed successfully.");
+		}
 		$output = qx { $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove };
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0) {
