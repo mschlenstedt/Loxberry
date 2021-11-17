@@ -58,7 +58,7 @@ createFolders () {
 		rm -rf $RAM_LOG/*
 	fi
 	mkdir -p $RAM_LOG/var/log
-	chown -R daemon:daemon $RAM_LOG/var/log
+	chown -R root:root $RAM_LOG/var/log
 	chmod -R 755 $RAM_LOG/var/log
 	mkdir -p $RAM_LOG/tmp
 	chown -R root:root $RAM_LOG/tmp

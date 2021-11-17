@@ -4,12 +4,13 @@
 # from update_v2.0.0.pl
 
 use LoxBerry::System;
+use LoxBerry::Update;
 use LoxBerry::Log;
 use CGI;
 
 my $cgi = CGI->new;
  
-my $scriptversion = "3.0.1";
+my $version = "3.0.0";
 
 # Initialize logfile and parameters
 my $logfilename;
@@ -24,7 +25,7 @@ if ($cgi->param('logfilename')) {
 	}
 } 
 
-my $log = LoxBerry::Log->new(
+our $log = LoxBerry::Log->new(
 		package => 'LoxBerry Update',
 		name => 'update',
 		filename => "$logfilename$ext.log",
@@ -43,7 +44,7 @@ if ($cgi->param('updatedir')) {
 # Start program here
 ########################################################################
 
-my $errors = 0;
+our $errors = 0;
 LOGSTART "Update Reboot script $0 started.";
 LOGINF "Message : Doing system upgrade (envoked from upgrade to V3.0.0)";
 
@@ -122,6 +123,12 @@ if ($exitcode != 0) {
 } else {
 	LOGOK "Started simple webserver successfully.";
 }
+
+#
+# Fix owner of /var/log
+#
+LOGINF "Change owner of /var/log to root:root...";
+qx { "chown root:root /var/log" };
 
 #
 # Make dist-upgrade from Stretch to Buster
@@ -280,7 +287,6 @@ if ($errors) {
 }
 
 # Continue with LoxBerry Update
-LOGINF "Continue with updating ...";
 $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
 my $querytype = $syscfg->param('UPDATE.RELEASETYPE');
 if(!$querytype) {
@@ -309,7 +315,7 @@ exit($errors);
 
 END
 {
-	LOGINF "Will reboot now to restart Apache...";
-	LOGEND;
-	system ("/sbin/reboot");
+	#	LOGINF "Will reboot now to restart Apache...";
+	#LOGEND;
+	#system ("/sbin/reboot");
 }
