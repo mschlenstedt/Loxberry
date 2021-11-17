@@ -265,6 +265,7 @@ sub get_usbstorage
 			$size = $disk{size};
 		}
 		my $type = qx ( blkid -o udev $disk{filesystem} | grep ID_FS_TYPE | awk -F "=" '{ print \$2 }' );
+		chomp($type);
 		my $state = "";
 		# Check read/write state
 		qx(ls \"$LoxBerry::System::lbhomedir/system/storage/usb/$device\");
