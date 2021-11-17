@@ -7,7 +7,7 @@ use LoxBerry::Log;
 use Data::Dumper;
 use LoxBerry::Storage;
 
-my $version = "2.2.0.3";
+my $version = "3.0.0";
 
 my $dest_bootpart_size = 256; # /boot partition in MB
 
@@ -182,19 +182,26 @@ if ( $desttype eq "device" ) {
 }
 
 # Check if $destpath exists and is not local
+my $now;
 if ( $desttype eq "path" ) {
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+	$now = sprintf("%04d%02d%02d_%02d%02d%02d", $year+1900, $mon+1, $mday, $hour, $min, $sec);
+
 	my $destpath_found = 0;
 	my $destdevice_index = 0;
 	my @storages = LoxBerry::Storage::get_storage(1);
 	foreach my $path ( @storages ) {
 		$destdevice_index++;
 		next if $path->{TYPE} eq "local";
-		if ( $destpath eq $path->{PATH} ) { 
+		if ( $destpath =~ /^$path->{PATH}/ ) { 
 			$destpath_found = 1;
 			$destdevice_index--;
 			last;
 		}
 	}
+	execute ( command => "mkdir -p $destpath");
+	execute ( command => "chown loxberry:loxberry $destpath");
+	$destpath_found = 0 if ( !-e $destpath);
 
 	if (!$destpath_found) {
 		LOGCRIT "Your entered DESTINATION path $destpath does not exist or isn't writeable.";
@@ -209,7 +216,7 @@ if ( $desttype eq "path" ) {
 	# Size check (used size + $dest_bootpart_size plus 20%)
 	$required_space = ($src1_used + $dest_bootpart_size*1024*1024)*1.2;
 	if( $destdevice->{AVAILABLE}*1024 < $required_space ) {
-		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . ") is smaller that required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
+		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . ") is smaller than required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
 		exit(1);
 	}
 }
@@ -294,10 +301,15 @@ if ($desttype eq "device") {
 
 if ($desttype eq "path") {
 	LOGINF "Creating destination image file, size " . LoxBerry::System::bytes_humanreadable($required_space);
-	$destpath = $destpath . "/" . LoxBerry::System::lbhostname() . "_image.img";
+	$destpath = $destpath . "/" . LoxBerry::System::lbhostname() . "_image_$now.img";
+	if ( -e $destpath ) {
+		LOGCRIT "$destpath already exists.";
+		exit (1);
+	}
 	my $targetsize_mb = int( ($required_space / 1024 / 1024) + 0.5 ); # rounded
 	print "Targetsize is: $targetsize_mb\n";
 	execute ( command => "dd if=/dev/zero of=$destpath bs=1 count=0 seek=" . $targetsize_mb . "MB", log => $log );
+	execute ( command => "chown loxberry:loxberry $destpath");
 }
 
 LOGINF "Creating partiton table";
