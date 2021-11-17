@@ -223,6 +223,7 @@ sleep(5);
 print "Too late - let the game begin!\n\n";
 
 # Stop autofs
+LOGINF "Stopping autofs service";
 execute( command => "systemctl stop autofs", log => $log );
 
 # Unmount mounted destination partitions
@@ -474,12 +475,8 @@ if (!$newdst_ptuuid or $newdst_ptuuid ne $src_ptuuid) {
 } else {
 	LOGOK "Possibly it worked! ;-)";
 }
-LOGWARN "Shutdown LoxBerry, put the new card into the Raspberry SD slot and start over!";
-LOGWARN "If it fails to boot, connect a display to Raspberry to check what happens.";
-LOGEND "Finished";
 
-# Cleaning up
-#reboot_required("After clone_sd.pl usage you need to reboot LoxBerry.");
+# Additional hints and cleaning up
 foreach my $mountpoint ( keys %chk_mounts ) {
 	rmdir "$destpath2".$mountpoint;
 }
@@ -489,7 +486,21 @@ foreach my $mountpoint ( keys %chk_mounts ) {
 	execute( command => "umount $mountpoint" );
 	rmdir "$mountpoint";
 }
-execute ( command => "losetup -d $loop" ) if ($desttype eq "path");
+if ($desttype eq "device") {
+	LOGWARN "Shutdown LoxBerry, put the new card into the Raspberry SD slot and start over!";
+	LOGWARN "If it fails to boot, connect a display to Raspberry to check what happens.";
+	LOGEND "Finished";
+	reboot_required("After clone_sd.pl usage you need to reboot LoxBerry.");
+}
+
+if ($desttype eq "path") {
+	LOGINF "Starting autofs service";
+	execute( command => "systemctl start autofs", log => $log );
+	LOGINF "You have to flash the created image onto an empty SDcard!";
+	LOGINF "If it fails to boot, connect a display to Raspberry to check what happens.";
+	LOGEND "Finished";
+	execute ( command => "losetup -d $loop" );
+}
 
 exit (0);
 	
