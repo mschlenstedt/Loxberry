@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "2.0.0.2";
+our $VERSION = "3.0.0.0";
 our $DEBUG;
 
 ### Exports ###
@@ -33,6 +33,10 @@ our @EXPORT = qw (
 	copy_to_loxberry
 	apt_install
 	apt_update
+	apt_upgrade
+	apt_distupgrade
+	apt_fullupgrade
+	rpi_update
 	apt_remove
 
 );
@@ -294,9 +298,9 @@ sub rpi_update
 			qx ( rm -rf /boot.tmp ); 
 			return undef;
 		} else {
-			my $md5_rc = 255;
-			$md5_rc = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
-			if ( $md5_rc == 0 ) {
+			my $outout = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
+			my $exitcode  = $? >> 8;
+			if ($exitcode != 0) {
 			# Delete beta 64Bit kernel (we have not enough space on /boot...)
 				unlink "/boot.tmp/kernel8.img";
 				unlink "/boot/kernel*.img";
@@ -305,6 +309,7 @@ sub rpi_update
 				$main::log->OK ("Upgrading kernel and firmware successfully.");
 			} else {
 				$main::log->ERR("Error upgrading kernel and firmware - /boot.tmp seems to be broken.");
+				$main::log->DEB($output);
 				$main::errors++;
 				qx ( rm -rf /boot.tmp ); 
 				return undef;
