@@ -128,7 +128,7 @@ if ($exitcode != 0) {
 # Fix owner of /var/log
 #
 LOGINF "Change owner of /var/log to root:root...";
-qx { "chown root:root /var/log" };
+qx { chown root:root /var/log };
 
 #
 # Make dist-upgrade from Stretch to Buster
@@ -308,7 +308,7 @@ qx { chmod +x $lbhomedir/system/daemons/system/98-updaterebootcontinue };
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
 
-qx { "chown loxberry:loxberry $logfilename" };
+qx { chown loxberry:loxberry $logfilename };
 
 # End of script
 exit($errors);
