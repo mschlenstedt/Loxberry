@@ -248,6 +248,23 @@ $log->open;
 rpi_update("7d32024a09eac34dfe5e511ebbc01af7", "d5edc6af1ef48f97b525da88ff6c510c2d4231c3");
 
 #
+# Firmware Files are not updated automatically by apt-get (why? *really* don't no!)
+#
+LOGINF "Installing newest firmware files (from Debian Buster because Bullseye sin't currently available)...";
+# Use RPi-Distro Repo
+system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/buster.zip -o /lib/master.zip");
+system("cd /lib && unzip /lib/master.zip");
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error extracting new firmware. This is a problem for Zero2 only. Wifi may not work on the Zero2 - Error $exitcode";
+} else {
+        LOGOK "Extracting of new firmware files successfully. Installing...";
+	system ("rm -r /lib/firmware");
+	system("mv /lib/firmware-nonfree-master /lib/firmware");
+}
+system ("rm -r /lib/master.zip");
+
+#
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Upgrade python packages...";
