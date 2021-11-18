@@ -261,6 +261,18 @@ sub mainmenu {
 				NOTIFY_PACKAGE => "remote",
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_MQTT'}, 
+				WIDGET_ICON => "/system/images/icons/main_mqtt.svg",
+				WIDGET_CGI => "/admin/system/mqtt.cgi",
+				NOTIFY_PACKAGE => "mqtt",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_BACKUP'}, 
+				WIDGET_ICON => "/system/images/icons/main_backup.svg",
+				WIDGET_CGI => "/admin/system/backup.cgi",
+				NOTIFY_PACKAGE => "backup",
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",
