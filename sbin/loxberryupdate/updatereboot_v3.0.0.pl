@@ -315,7 +315,7 @@ exit($errors);
 
 END
 {
-	#	LOGINF "Will reboot now to restart Apache...";
-	#LOGEND;
-	#system ("/sbin/reboot");
+	LOGINF "Will reboot now to restart Apache...";
+	LOGEND;
+	system ("/sbin/reboot");
 }
