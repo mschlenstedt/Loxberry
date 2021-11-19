@@ -6,15 +6,28 @@ use LoxBerry::JSON;
 use Sys::Filesystem;
 use Unix::Lsof;
 use Hash::Merge;
+# use CGI::Simple qw(-debug1);
+use CGI;
+
 
 # Mountpoint list of "nodev" devices
 my @nodev_mounts;
 my %lsof_result;
+my @large_files;
 
+# my $q = CGI::Simple->new;
+my $q = CGI->new;
+my $action = $q->param('action');
 
-get_nodev_devices();
-get_open_files();
+if( $action eq "getopenfiledata" ) {
+	get_nodev_devices();
+	get_open_files();
+}
 
+if( $action eq "getlargefiledata" ) {
+	get_nodev_devices();
+	get_large_files();
+}
 
 
 print_result();
@@ -32,7 +45,7 @@ sub get_nodev_devices
 	my $fs = Sys::Filesystem->new();
 	my @filesystems = $fs->filesystems( mounted => 1 );
 	
-	@nodev_mounts = undef;
+	undef @nodev_mounts;
 	
 	for (@filesystems)
 	{
@@ -47,6 +60,7 @@ sub get_nodev_devices
 			# $fs->options($_)
 	   # );
 		push @nodev_mounts, $fs->mount_point($_);
+		print STDERR "Mountpoint: " . $fs->mount_point($_) . "\n";
 	}
  
 	return @nodev_mounts;
@@ -61,7 +75,7 @@ sub get_open_files
 	
 	my %options;
 	
-	%lsof_result = undef;
+	undef %lsof_result;
 	
 	my $merger = Hash::Merge->new('LEFT_PRECEDENT');
 	
@@ -84,7 +98,6 @@ sub get_open_files
 		# if( !defined $lsof_result{$process}->{'process id'} ) {
 			# delete $lsof_result{$process};
 		# }
-		my %seen;
 		if( !defined $lsof_result{$process}->{files} ) {
 			delete $lsof_result{$process};
 			next;
@@ -92,17 +105,7 @@ sub get_open_files
 		my @files = @{$lsof_result{$process}->{files}};
 		
 		my %seen;
-		print STDERR "PROCESS: " . Dumper($lsof_result{$process}->{files});
-			# @{$lsof_result{$process}->{files}}
-		# foreach( @files ) {
-			# print "FILE: " . Dumper($_);
-			
-			# print "File: " . $_->{'file name'} . "\n";
-			# # $seen{$_{'file name'}}++;
-		# }
-		# exit();
 		
-		print STDERR Dumper(@files);
 		my @unique = grep { ! $seen{$_->{'file name'} }++ } @files;
 		$lsof_result{$process}->{files} = \@unique;
 		# print STDERR Dumper( @unique ) . "\n";
@@ -120,8 +123,41 @@ sub get_open_files
 
 sub get_large_files
 {
-	use File::Find::Rule;
+	# require File::Find::Rule;
+	
+	require File::Find;
+	
+	my %size;
+	
+	foreach my $nodev ( @nodev_mounts ) {
+		print STDERR "nodev: $nodev\n";
+		File::Find::find(sub {$size{$File::Find::name} = -s if -f;}, $nodev);
 		
+	}
+	
+	my @sorted = sort {$size{$b} <=> $size{$a}} keys %size;
+
+	# Try to remove duplicates on different mount points
+	my $i = -1;
+	my @sorted_filtered;
+	foreach ( @sorted ) {
+		$i++;
+		next if( $i==0);
+		next if( m/[^\/]+$/ eq $sorted[$i-1]=~m/[^\/]+$/ and $size{$_} == $size{ $sorted[$i-1] } );
+		push @sorted_filtered, $_;
+	}
+	
+	
+	splice @sorted_filtered, 30 if @sorted_filtered > 30;
+	
+	foreach( @sorted_filtered ) {
+		push @large_files, { name => $_, size => $size{$_} };
+	}	
+	
+	
+	
+	
+	
 	# #!/usr/local/bin/perl -w
 
 	# ($#ARGV == 0) or die "Usage: $0 [directory]\n"; 
@@ -148,7 +184,7 @@ sub print_result
 	
 	$returndata{nodev_mounts} = \@nodev_mounts;
 	$returndata{lsof_result} = \%lsof_result;
-	
+	$returndata{large_files} = \@large_files;
 	
 	# print quotemeta( encode_json( \%returndata ) );
 	print encode_json( \%returndata );

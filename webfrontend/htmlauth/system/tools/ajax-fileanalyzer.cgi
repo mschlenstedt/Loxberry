@@ -16,12 +16,21 @@ my $action = defined $R::action ? $R::action : "";
 my %response;
 $response{error} = -1;
 
-if($action eq "getfiledata" ) {
+if($action eq "getopenfiledata" ) {
 	
-	$response{filedata} = `$lbssbindir/files_analyzer.pl`;
+	$response{filedata} = `$lbssbindir/files_analyzer.pl action=getopenfiledata`;
 	$response{error} = 0;
 	
 }
+
+elsif($action eq "getlargefiledata" ) {
+	
+	$response{filedata} = `$lbssbindir/files_analyzer.pl action=getlargefiledata`;
+	$response{error} = 0;
+	
+}
+
+
 
 else { 
 	$response{error} = -1; 
