@@ -9,12 +9,15 @@ use Hash::Merge;
 
 # Mountpoint list of "nodev" devices
 my @nodev_mounts;
-my %fullresult;
+my %lsof_result;
 
 
 get_nodev_devices();
 get_open_files();
 
+
+
+print_result();
 
 # print "===============\n";
 # foreach( @nodev_mounts ) 
@@ -58,24 +61,61 @@ sub get_open_files
 	
 	my %options;
 	
-	%fullresult = undef;
+	%lsof_result = undef;
 	
 	my $merger = Hash::Merge->new('LEFT_PRECEDENT');
 	
 	foreach my $nodev ( @nodev_mounts )
 	{
 		next if (!$nodev);
-		print "lsof: $nodev\n";
+		print STDERR "lsof: $nodev\n";
 		my @lsof_arguments = ( $nodev );
 		my ($res, $error) = lsof ( @lsof_arguments, \%options );
-		%fullresult = %{ $merger->merge( \%fullresult, $res ) };
+		%lsof_result = %{ $merger->merge( \%lsof_result, $res ) };
 		use Data::Dumper;
-		# print Dumper( $res );
-		# print Dumper( \%fullres );
-		print "Number of elements: " . scalar (keys %fullresult) . "\n";
+		# print STDERR Dumper( $res );
+		# print STDERR Dumper( \%fullres );
+		print STDERR "Number of elements: " . scalar (keys %lsof_result) . "\n";
 		
 	}
-	print Dumper( \%fullresult );
+	
+	# Uniquify files arrays
+	foreach my $process ( keys %lsof_result ) {
+		# if( !defined $lsof_result{$process}->{'process id'} ) {
+			# delete $lsof_result{$process};
+		# }
+		my %seen;
+		if( !defined $lsof_result{$process}->{files} ) {
+			delete $lsof_result{$process};
+			next;
+		}
+		my @files = @{$lsof_result{$process}->{files}};
+		
+		my %seen;
+		print STDERR "PROCESS: " . Dumper($lsof_result{$process}->{files});
+			# @{$lsof_result{$process}->{files}}
+		# foreach( @files ) {
+			# print "FILE: " . Dumper($_);
+			
+			# print "File: " . $_->{'file name'} . "\n";
+			# # $seen{$_{'file name'}}++;
+		# }
+		# exit();
+		
+		print STDERR Dumper(@files);
+		my @unique = grep { ! $seen{$_->{'file name'} }++ } @files;
+		$lsof_result{$process}->{files} = \@unique;
+		# print STDERR Dumper( @unique ) . "\n";
+		# exit;
+		
+	
+		
+	}
+	
+	
+	
+	
+	print STDERR Dumper( \%lsof_result );
 }
 
 sub get_large_files
@@ -97,6 +137,23 @@ sub get_large_files
 	# {
 		# printf "%10d %s\n", $size{$_}, $_;
 	# }	
+	
+	
+}
+
+
+sub print_result
+{
+	my %returndata;
+	
+	$returndata{nodev_mounts} = \@nodev_mounts;
+	$returndata{lsof_result} = \%lsof_result;
+	
+	
+	# print quotemeta( encode_json( \%returndata ) );
+	print encode_json( \%returndata );
+	# print STDERR "\n\n";
+	# print STDERR encode_json( \%lsof_result );
 	
 	
 }
