@@ -63,6 +63,7 @@ my $mqtt;
 
 # Plugin directories to load config files
 my %plugindirs;
+my $plugincount;
 
 # Subscriptions
 my @subscriptions;
@@ -718,43 +719,20 @@ sub received
 		} else {
 			LOGERR "  HTTP: Cannot send: No Miniserver defined";
 		}
-		# if (!$httpresp) {
-			# LOGDEB "  HTTP: Virtual input not available?";
-		# } elsif ($httpresp eq "1") {
-			# LOGDEB "  HTTP: Values are equal to cache";
-		# } else {
-			# foreach my $sendtopic (keys %$httpresp) {
-				# if (!$httpresp->{$sendtopic}) {
-					# LOGDEB "  Virtual Input $sendtopic failed to send - Virtual Input not available?";
-					# $relayed_topics_http{$sendtopic}{error} = 1;
-					# $health_state{httpsend}{message} = "There were errors sending values via HTTP to the Miniserver";
-					# $health_state{jsonexpansion}{error} = 1;
-					# $health_state{jsonexpansion}{count} += 1;
-				# }
-			# }
-		# }
+		
 	}
 }
+
 
 sub read_config
 {
 	my $configs_changed = 0;
 	$nextconfigpoll = time+5;
 	
-	if(!%plugindirs) {
+	if(!defined $plugincount) {
 		$configs_changed = 1;
-		my @plugins = LoxBerry::System::get_plugins(0, 1);
-		foreach my $plugin (@plugins) {
-			next if (!$plugin->{PLUGINDB_FOLDER});
-			my $ext_plugindir = "$lbhomedir/config/plugins/$plugin->{PLUGINDB_FOLDER}/";
-			$plugindirs{$plugin->{PLUGINDB_TITLE}}{configfolder} = $ext_plugindir;
-			
-			#push @plugindirs, $ext_plugindir;
-			$monitor->watch( $ext_plugindir.'mqtt_subscriptions.cfg' );
-			$monitor->watch( $ext_plugindir.'mqtt_conversions.cfg' );
-			$monitor->watch( $ext_plugindir.'mqtt_resetaftersend.cfg' );
-		}
-		# Also watch own config files
+		
+		# Watch own config files
 		$monitor->watch( $generaljsonfile );
 		$monitor->watch( $cfgfile );
 		
@@ -763,8 +741,27 @@ sub read_config
 			# It requires to re-read the plugin database
 			LOGINF "Forcing re-read config because of plugin database change  (install/update/uninstall)";
 			undef %plugindirs;
+			undef $plugincount;
 			$nextconfigpoll = 0;
 		} );
+		
+		LOGDEB "Reading plugin configs";
+		my @plugins = LoxBerry::System::get_plugins(undef, 1);
+		$plugincount = scalar @plugins;
+		undef %plugindirs;
+		
+		foreach my $plugin (@plugins) {
+			next if (!$plugin->{PLUGINDB_FOLDER});
+			my $ext_plugindir = "$lbhomedir/config/plugins/$plugin->{PLUGINDB_FOLDER}/";
+			LOGDEB "Watching plugindir $ext_plugindir";
+			$plugindirs{$plugin->{PLUGINDB_TITLE}}{configfolder} = $ext_plugindir;
+			
+			#push @plugindirs, $ext_plugindir;
+			$monitor->watch( $ext_plugindir.'mqtt_subscriptions.cfg' );
+			$monitor->watch( $ext_plugindir.'mqtt_conversions.cfg' );
+			$monitor->watch( $ext_plugindir.'mqtt_resetaftersend.cfg' );
+		}
+	
 		
 		# Monitor transformer files
 		$trans_monitor->watch( {
@@ -804,7 +801,7 @@ sub read_config
 	
 	LOGOK "Reading config changes";
 	# $LoxBerry::JSON::DEBUG = 1;
-
+	
 	# Own topic
 	$gw_topicbase = lbhostname() . "/mqttgateway/";
 	LOGOK "MQTT Gateway topic base is $gw_topicbase";
@@ -883,7 +880,7 @@ sub read_config
 		undef $mqtt;
 		
 		# Reconnect MQTT broker
-		LOGINF "Connecting broker $generaljson->{Mqtt}{Brokerhost}";
+		LOGINF "Connecting broker ". $generaljson->{Mqtt}{Brokerhost}.":".$generaljson->{Mqtt}{Brokerport};
 		eval {
 			
 			$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
@@ -1335,16 +1332,6 @@ sub save_relayed_states
 	
 	$relayjsonobj->write();
 	undef $relayjsonobj;
-
-	# # Publish current health state
-	# foreach my $okey ( keys %health_state ) { 
-		# my $inner = $health_state{$okey};
-		# foreach my $ikey ( keys %$inner ) { 
-			# LOGDEB $okey . " " . $ikey . " " . $inner->{$ikey};
-		# }
-	# }
-	
-	
 	
 }
 
@@ -1367,16 +1354,6 @@ sub eval_pollms {
 		}
 	}
 
-	# if( $usage > $cpu_max*1.2 ) {
-		# $pollms += 15;
-	# } elsif( $usage > $cpu_max*1.1 ) {
-		# $pollms += 5;
-	# } elsif( $usage < $cpu_max*0.8 ) {
-		# $pollms -= 10;
-	# } elsif( $usage < $cpu_max*0.9 ) {
-		# $pollms -= 5;
-	# }
-	
 	if( $pollms < 0.1 ) {
 		$pollms = 0.1;
 	} elsif( $pollms > 150 ) {
