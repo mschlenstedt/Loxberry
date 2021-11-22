@@ -6,7 +6,8 @@
 /.*
 
 /bin/plugins
-/bin/mqtt/custom
+/bin/mqtt/transform/custom
+/bin/mqtt/datastore
 
 /config/plugins
 /config/system/*.cfg

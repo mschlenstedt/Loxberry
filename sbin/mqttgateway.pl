@@ -765,15 +765,15 @@ sub read_config
 		
 		# Monitor transformer files
 		$trans_monitor->watch( {
-			name 		=> $lbpdatadir.'/transform',
+			name 		=> $lbsbindir.'/mqtt/transform',
 			recurse 	=> 1,
 			callback 	=> {
 				change => sub { 
 					LOGDEB "TRANSFORM FILE CHANGED";
-					trans_reread_directories($lbpdatadir.'/transform'); }
+					trans_reread_directories($lbsbindir.'/mqtt/transform'); }
 			}
 		} );
-		trans_reread_directories($lbpdatadir.'/transform');
+		trans_reread_directories($lbsbindir.'/mqtt/transform');
 		$trans_monitor->scan;
 
 	}
@@ -1530,15 +1530,7 @@ sub trans_skills
 	
 	chmod 0774, $filename;
 	
-	my ($exitcode, $output);
-	
-	eval {
-		($exitcode, $output) = execute( quotemeta($filename). " skills" );
-	};
-	if ( $@ ) {
-		LOGWARN "Transformers are only supported starting with LoxBerry 2.0";
-		return;
-	}
+	my ($exitcode, $output) = execute( quotemeta($filename). " skills" );
 	
 	my %subresponse; 
 	
