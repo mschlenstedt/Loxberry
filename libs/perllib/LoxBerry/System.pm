@@ -347,7 +347,7 @@ sub pluginloglevel
 	
 	my $plugin = LoxBerry::System::plugindata($query);
 	
-	return ( $plugin and $plugin->{PLUGINDB_LOGLEVEL} ) ? $plugin->{PLUGINDB_LOGLEVEL} : 0;;
+	return ( $plugin and $plugin->{PLUGINDB_LOGLEVEL} ) ? $plugin->{PLUGINDB_LOGLEVEL} : 0;
 }
 
 ##################################################################################
