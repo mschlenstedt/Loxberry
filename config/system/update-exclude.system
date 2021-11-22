@@ -6,6 +6,7 @@
 /.*
 
 /bin/plugins
+/bin/mqtt/custom
 
 /config/plugins
 /config/system/*.cfg
