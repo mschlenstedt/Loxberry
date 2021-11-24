@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.4.0.3";
+our $VERSION = "3.0.0.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1623,7 +1623,7 @@ sub execute
 	
 	# All of the following code is only relevant if something needs to be logged
 	if($uselog) {
-		if( $exitcode eq $args->{okcode} ) {
+		if( $exitcode eq $args->{okcode} or $args->{ignoreerrors} ) {
 			# OK
 			$log->OK( $args->{ok} . " - Exitcode $exitcode");
 		} else {
