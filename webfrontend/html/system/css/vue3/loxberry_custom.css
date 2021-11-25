@@ -1,0 +1,8 @@
+body {
+  background-color: #eff3f6;
+  font-family: var(--font-family);
+  color: var(--text-color);
+}
+.p-overlay-badge .p-badge {
+	z-index:1000;
+}
