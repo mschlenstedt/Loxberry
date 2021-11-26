@@ -1,31 +1,26 @@
 #!/usr/bin/perl
 use utf8;
 
-
-# use FindBin qw($Bin);
-# use lib "$Bin/libs";
-
-
-
-# use open ':std', ':encoding(UTF-8)';
-use Time::HiRes;
-use LoxBerry::IO;
-use LoxBerry::Log;
 use warnings;
 use strict;
+
+use LoxBerry::IO;
+use LoxBerry::Log;
+use LoxBerry::JSON;
+use LoxBerry::MQTTGateway::IO;
+
 use IO::Socket;
-use Scalar::Util qw(looks_like_number);
-
-
 use Net::MQTT::Simple;
+
+use Time::HiRes;
+use Scalar::Util qw(looks_like_number);
 use Hash::Flatten;
+
 use File::Monitor;
 use File::Find::Rule;
 
 use Proc::CPUUsage;
 use LoxBerry::PIDController;
-use LoxBerry::JSON;
-use LoxBerry::MQTTGateway::IO;
 
 use Data::Dumper;
 
@@ -838,7 +833,7 @@ sub read_config
 		# Values from mqttgateway.json
 		if(! defined $cfg->{Main}{msno}) { $cfg->{Main}{msno} = 1; }
 		if(! defined $cfg->{Main}{udpport}) { $cfg->{Main}{udpport} = 11883; }
-		if(! defined $cfg->{Main}{resetaftersendms}) { $cfg->{Main}{resetaftersendms} = 10; }
+		if(! defined $cfg->{Main}{resetaftersendms}) { $cfg->{Main}{resetaftersendms} = 13; }
 		if(! defined $pollms ) {
 			$pollms = defined $cfg->{Main}{pollms} ? $cfg->{Main}{pollms} : 50; 
 		}
