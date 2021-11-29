@@ -338,6 +338,7 @@ sub apt_update
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
 	# Repair and update
+	qx { chmod 1777 /tmp };
 	if ( $command eq "update") {
 		my $output = qx { $export /usr/bin/dpkg --configure -a --force-confdef};
 		my $exitcode  = $? >> 8;
