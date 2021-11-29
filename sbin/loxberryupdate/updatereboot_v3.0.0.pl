@@ -131,6 +131,12 @@ LOGINF "Change owner of /var/log to root:root...";
 qx { chown root:root /var/log };
 
 #
+# Fix rights of /tmp
+#
+LOGINF "Change permissions of /tmp to 1777...";
+qx { chmod 1777 /tmp };
+
+#
 # Make dist-upgrade from Stretch to Buster
 #
 LOGINF "Preparing Guru Meditation...";
@@ -161,7 +167,7 @@ apt_update();
 
 LOGINF "Update apt sources from buster to bullseye...";
 $log->close;
-my $output = qx { find /etc/apt -name "sources.list" | xargs sed -i '/^deb/s/buster/bullseye/g' >> $logfilename 2>&1 };
+my $output = qx { find /etc/apt -name "*.list" | xargs sed -i '/^deb/s/buster/bullseye/g' >> $logfilename 2>&1 };
 $log->open;
 
 LOGINF "Cleaning up and updating apt databases...";
@@ -250,7 +256,7 @@ rpi_update("7d32024a09eac34dfe5e511ebbc01af7", "d5edc6af1ef48f97b525da88ff6c510c
 #
 # Firmware Files are not updated automatically by apt-get (why? *really* don't no!)
 #
-LOGINF "Installing newest firmware files (from Debian Buster because Bullseye sin't currently available)...";
+LOGINF "Installing newest firmware files (from Debian Buster because Bullseye isn't currently available)...";
 # Use RPi-Distro Repo
 system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/buster.zip -o /lib/master.zip");
 system("cd /lib && unzip /lib/master.zip");
@@ -260,7 +266,7 @@ if ($exitcode != 0) {
 } else {
         LOGOK "Extracting of new firmware files successfully. Installing...";
 	system ("rm -r /lib/firmware");
-	system("mv /lib/firmware-nonfree-master /lib/firmware");
+	system("mv /lib/firmware-nonfree-buster /lib/firmware");
 }
 system ("rm -r /lib/master.zip");
 
