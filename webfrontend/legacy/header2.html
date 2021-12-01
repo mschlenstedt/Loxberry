@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+
+        <!-- CSS PrimeVue / Flex -->
+        <link href="/system/css/vue3/primevue.min.css" rel="stylesheet" />
+        <link href="/system/css/vue3/primeflex.min.css" rel="stylesheet" />
+        <link href="/system/css/vue3/primeicons.css" rel="stylesheet" />
+        <link href="/system/css/vue3/loxberry_theme.css" rel="stylesheet" />
+        <link href="/system/css/vue3/loxberry_custom.css" rel="stylesheet" />
+
+        <!-- Dependencies -->
+        <script src="/system/scripts/vue3/vue3.js"></script>
+        <script src="/system/scripts/vue3/vue-router.js"></script>
+        <script src="/system/scripts/vue3/primevue/core.min.js"></script>
+
+        <!-- PrimeVue -->
+        <script src="/system/scripts/vue3/primevue/sidebar.min.js"></script>
+        <script src="/system/scripts/vue3/primevue/tabmenu.min.js"></script>
+        <script src="/system/scripts/vue3/primevue/badge.min.js"></script>
+        <script src="/system/scripts/vue3/primevue/badgedirective.min.js"></script>
+
+    </head>
+
+    <body>
+        <div id="app">
+
+			<p-sidebar v-model:visible="hVisibleHelp" :base-z-index="1000" position="right">
+				<h3>Hilfe</h3>
+				<p>quisquam repellat libero asperiores earum nam nobis, culpa ratione quam
+				perferendis esse, cupiditate neque quas!  At vero eos et accusam et justo
+				duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus
+				est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+				sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore
+				magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
+				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est
+				Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+				sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod
+				eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et
+				gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua.
+				est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+				sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore
+				magna aliquyam erat.</p>
+			</p-sidebar>
+
+			<div class="card fixed top-0 left-0 z-5 w-full">
+				<div class="w-full overflow-hidden bg-green-500 border-noround border-0 m-0" style="height: 54px">
+					<div class="relative top-0 left-0 w-full">
+						<div class="flex overflow-hidden">
+							<div class="flex-none flex align-items-center justify-content-center text-white mt-2">
+								<p-button icon="pi pi-bars" class="bg-green-600 ml-2 mr-2"></p-button>
+							</div>
+							<div class="flex-grow-1 flex align-items-center justify-content-center text-white mb-0 text-overflow-ellipsis" style="width:20%">
+								<div class="text-sm lg:text-2xl md:text-xl white-space-nowrap overflow-hidden text-overflow-ellipsis">
+									Loxberry with very long title in the middle of the menu bar. This is damn too long!
+								</div>
+							</div>
+							<div class="flex-none flex align-items-center justify-content-center text-white mt-2">
+								<i @click="hOpenUrl('/admin/system/tools/showallnotifications.cgi','_self')" class="cursor-pointer pi pi-bell hidden md:inline bg-green-600 mr-2 p-2 text-xl border-round" v-badge.warning="2"></i>
+								<i class="cursor-pointer pi pi-sync hidden md:inline bg-green-600 mr-2 p-2 text-xl border-round" v-badge.danger="2"></i>
+								<i @click="hVisibleHelp = true" class="cursor-pointer pi pi-question hidden md:inline bg-green-600 mr-2 p-2 text-xl border-round"></i>
+								<i @click="hOpenUrl('/admin/system/power.cgi','_self')" class="cursor-pointer pi pi-power-off hidden md:inline bg-green-600 mr-2 p-2 text-xl border-round" v-badge.danger="'!'"></i>
+
+								<i @click="" class="cursor-pointer pi pi-ellipsis-h inline md:hidden bg-green-600 mr-2 p-2 text-xl border-round" v-badge.danger="'!'"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="w-full overflow-hidden bg-gray-900 border-noround border-0 m-0" style="height: 60px;">
+					<div class="relative top-0 left-0 px-2 py-2 w-full font-bold">
+						<p-tabmenu :model="items"></p-tabmenu>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		
+		<div class="surface-0 border-round border-1 mx-3 " style="margin-top: 120px;">
+			<p>quisquam repellat libero asperiores earum nam nobis, culpa ratione quam perferendis esse, cupiditate neque quas!yam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et
+				<script>
+					var a=1;
+				</script>
+			</p>
+		</div>
+		
+
+<script type="module">
+	const { createApp, ref } = Vue;
+	const BadgeDirective = primevue.badgedirective;
+
+	const App = {
+		setup() {
+			const hVisibleHelp = ref(false);
+
+			const items = ref([
+                    {
+                        label: 'Home',
+                        icon: 'pi pi-fw pi-home',
+                        to: '/'
+                    },
+                    {
+                        label: 'Calendar',
+                        icon: 'pi pi-fw pi-calendar',
+                        to: '/calendar'
+                    },
+                    {
+                        label: 'Edit',
+                        icon: 'pi pi-fw pi-pencil',
+                        to: '/edit'
+                    },
+                    {
+                        label: 'Documentation',
+                        icon: 'pi pi-fw pi-file',
+                        to: '/documentation'
+                    },
+                    {
+                        label: 'Settings',
+                        icon: 'pi pi-fw pi-cog',
+                        to: '/settings'
+                    }
+                ]);
+
+			return { hVisibleHelp, items }
+		},
+		components: {
+			"p-card": primevue.card,
+			"p-panel": primevue.panel,
+			"p-sidebar": primevue.sidebar,
+			"p-splitbutton": primevue.splitbutton,
+			"p-button": primevue.button,
+			"p-badge": primevue.badge,
+			"p-tabmenu": primevue.tabmenu
+		},
+		methods: {
+			hOpenUrl(url, target) {
+				console.log("Open URL: ", url);
+				window.open(url, target);
+			}
+		}
+	};
+
+	const Home = {
+            template: `<div class="tabmenudemo-content">
+                <h5>Home Component Content</h5>
+            </div>`
+        };
+
+        const Calendar = {
+            template: `<div class="tabmenudemo-content">
+                <h5>Calendar Component Content</h5>
+            </div>`
+        };
+
+        const Edit = {
+            template: `<div class="tabmenudemo-content">
+                <h5>Edit Component Content</h5>
+            </div>`
+        };
+
+        const Documentation = {
+            template: `<div class="tabmenudemo-content">
+                <h5>Documentation Component Content</h5>
+            </div>`
+        };
+
+        const Settings = {
+            template: `<div class="tabmenudemo-content">
+                <h5>Settings Component Content</h5>
+            </div>`
+        };
+
+        const routes = [
+            { path: "/", component: Home },
+            { path: "/home", component: Home },
+            { path: "/calendar", component: Calendar },
+            { path: "/edit", component: Edit },
+            { path: "/documentation", component: Documentation },
+            { path: "/settings", component: Settings }
+        ];
+
+        const router = VueRouter.createRouter({
+            history: VueRouter.createWebHashHistory(),
+            routes
+        });
+
+	const app = createApp(App)
+	app.use(router)
+	app.use(primevue.config.default)
+	app.directive('badge', BadgeDirective);
+	app.mount("#app");
+</script>
+
+	</body>
+</html>
