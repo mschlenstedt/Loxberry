@@ -1,8 +1,36 @@
 body {
-  background-color: #eff3f6;
-  font-family: var(--font-family);
-  color: var(--text-color);
+	background-color: #eff3f6;
+	font-family: var(--font-family);
+	color: var(--text-color);
 }
+
+.lb-button-background {
+	background: #5A8E1C;
+}
+
 .p-overlay-badge .p-badge {
 	z-index:1000;
 }
+
+.p-menuitem-link {
+	background: #212121 !important;
+	color: white !important;
+	height: 20px;
+	font-size: 12px;
+	border: solid #212121;
+	border-color: transparent transparent #212121 transparent;
+}
+
+.p-menuitem-link {
+	background: #212121 !important;
+	color: white !important;
+	height: 20px;
+	font-size: 12px;
+	border: solid #212121;
+}
+
+.p-tabmenu-nav {
+	background: #212121 !important;
+	border: solid #212121 !important;
+}
+
