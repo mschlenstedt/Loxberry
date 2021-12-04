@@ -21,6 +21,29 @@ $gcfg = $gcfgobj->open(filename => $generaljson);
 $gcfg->{Update}->{max_version} = "v3.99.99";
 $gcfgobj->write();
 
+# Add Raspbian Mirrors to general.json
+LOGINF "Adding Apt Servers to general.json";
+if (!$gcfg->{'apt'}->{'servers'} {
+	my @servers = ( "http://ftp.agdsn.de/pub/mirrors/raspbian/raspbian/",
+			"http://packages.hs-regensburg.de/raspbian/",
+			"http://ftp.halifax.rwth-aachen.de/raspbian/raspbian/",
+			"http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/",
+			"https://dist-mirror.fem.tu-ilmenau.de/raspbian/raspbian/"
+	);
+	$gcfg->{'apt'}->{'servers'} = \@servers;
+	$gcfgobj->write();
+	LOGOK "Apt Servers added to general.json successfully.";
+} else {
+	LOGOK "Apt Servers already in general.json -> skipping.";
+}
+
+# Repair apt sources
+LOGINF "Repairing apt sources...";
+unlink ("/etc/apt/sources.list.d/loxberry.list");
+system("chown root:root $lbhomedir/system/apt/loxberry.list");
+system("ln -s $lbhomedir/system/apt/loxberry.list /etc/apt/sources.list.d/loxberry.list");
+system("sed \"s/^\\([^#]*raspbian\\/raspbian.*\\)/#\\1/\" /etc/apt/sources.list");
+
 #
 # Upgrade Raspbian on next reboot
 #

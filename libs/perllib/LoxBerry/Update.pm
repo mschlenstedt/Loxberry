@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.0";
+our $VERSION = "3.0.0.1";
 our $DEBUG;
 
 ### Exports ###
@@ -368,14 +368,34 @@ sub apt_update
 		} else {
        	 	$main::log->OK("Apt packages autoremoved successfully.");
 		}
-		$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update };
-		$exitcode  = $? >> 8;
-		if ($exitcode != 0) {
-			$main::log->ERR("Error updating apt database - Error $exitcode");
-			$main::log->DEB($output);
-		        $main::errors++;
-		} else {
-       	 	$main::log->OK("Apt database updated successfully.");
+
+		# Try apt-get update 3 times befor giving up, choose another mirror if command failed
+		my $success = 0;
+		for (my $i;$i<4;$i++) {
+			$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update };
+			$exitcode  = $? >> 8;
+			if ($exitcode != 0) {
+				$main::log->ERR("Error updating apt database - Error $exitcode");
+				$main::log->DEB($output);
+				require LoxBerry::JSON;
+				my $cfgfile = $LoxBerry::System::lbsconfigdir . "/general.json";
+				my $jsonobj = LoxBerry::JSON->new();
+				my $cfg = $jsonobj->open(filename => $cfgfile);
+				if ($cfg->{'apt'}->{'servers'} && -e $LoxBerry::System::lbsconfigdir . "/is_raspberry.cfg" && -e "/etc/apt/sources.list.d/loxberry.list") {
+					my $aptserver = $cfg->{'apt'}->{'servers'}[ rand @{ $cfg->{'apt'}->{'servers'} } ];
+					$main::log->ERR("Changing Rasbian mirror to $aptserver");
+					qx ( sed -i --follow-symlinks "s#^\\([^#]*\\)http[^ ]*#\\1$aptserver#" /etc/apt/sources.list.d/loxberry.list );
+				}
+				$i++;
+			} else {
+	       	 		$main::log->OK("Apt database updated successfully.");
+				$success++;
+				last;
+			}
+		}
+		if (!$success) {
+			$main::log->ERR("Error updating apt database. All servers give an error. Internet connection available? Giving up.");
+			$main::errors++;
 		}
 	}
 

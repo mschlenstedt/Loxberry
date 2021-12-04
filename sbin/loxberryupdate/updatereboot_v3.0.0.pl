@@ -150,7 +150,7 @@ LOGINF "Removing package 'listchanges' - just in case it is still on the system.
 apt_remove("apt-listchanges");
 LOGINF "Deactivating output of 'listchanges' - just in case it is still on the system...";
 if (-e "/etc/apt/listchanges.conf") {
-      my $output = qx { sed -i 's/frontend=pager/frontend=none/' /etc/apt/listchanges.conf };
+      my $output = qx { sed -i --follow-symlinks 's/frontend=pager/frontend=none/' /etc/apt/listchanges.conf };
 }
 
 LOGINF "Removing package 'libc6-dev' - we will reinstall it in V8 later on. But V6 will break the upgrade...";
@@ -167,7 +167,7 @@ apt_update();
 
 LOGINF "Update apt sources from buster to bullseye...";
 $log->close;
-my $output = qx { find /etc/apt -name "*.list" | xargs sed -i '/^deb/s/buster/bullseye/g' >> $logfilename 2>&1 };
+my $output = qx { find /etc/apt -name "*.list" | xargs sed -i --follow-symlinks '/^deb/s/buster/bullseye/g' >> $logfilename 2>&1 };
 $log->open;
 
 LOGINF "Cleaning up and updating apt databases...";
@@ -245,7 +245,7 @@ if ( -e "/etc/logrotate.conf.dpkg-new" ) {
 if ( -e "/etc/logrotate.conf.dpkg-dist" ) {
 	my $output = qx { mv -v /etc/logrotate.conf.dpkg-dist /etc/logrotate.conf >> $logfilename 2>&1 };
 }
-my $output = qx { sed -i 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
+my $output = qx { sed -i --follow-symlinks 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
 $log->open;
 
 # Update Kernel and Firmware
