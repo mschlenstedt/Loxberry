@@ -39,6 +39,7 @@ if (!$gcfg->{'apt'}->{'servers'} {
 
 # Repair apt sources
 LOGINF "Repairing apt sources...";
+&copy_to_loxberry('/system/apt/loxberry.list');
 unlink ("/etc/apt/sources.list.d/loxberry.list");
 system("chown root:root $lbhomedir/system/apt/loxberry.list");
 system("ln -s $lbhomedir/system/apt/loxberry.list /etc/apt/sources.list.d/loxberry.list");
