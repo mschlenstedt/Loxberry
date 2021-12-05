@@ -381,9 +381,13 @@ sub apt_update
 				my $cfgfile = $LoxBerry::System::lbsconfigdir . "/general.json";
 				my $jsonobj = LoxBerry::JSON->new();
 				my $cfg = $jsonobj->open(filename => $cfgfile);
+				LOGINF "Updating YARN key...";
+				system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -");
+				LOGINF "Updating NodeJS key...";
+				system ("curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -");
 				if ($cfg->{'apt'}->{'servers'} && -e $LoxBerry::System::lbsconfigdir . "/is_raspberry.cfg" && -e "/etc/apt/sources.list.d/loxberry.list") {
+					$main::log->INF("Changing Rasbian mirror to $aptserver");
 					my $aptserver = $cfg->{'apt'}->{'servers'}[ rand @{ $cfg->{'apt'}->{'servers'} } ];
-					$main::log->ERR("Changing Rasbian mirror to $aptserver");
 					qx ( sed -i --follow-symlinks "s#^\\([^#]*\\)http[^ ]*#\\1$aptserver#" /etc/apt/sources.list.d/loxberry.list );
 				}
 				$i++;
