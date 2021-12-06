@@ -33,7 +33,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.0";
+my $version = "3.0.0.1";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -43,7 +43,6 @@ if ($<) {
 ##########################################################################
 # Variable declarations
 ##########################################################################
-
 
 my $exitcode;
 my $tempfile;
@@ -64,8 +63,8 @@ my $pid;
 my $pauthorname;
 my $pauthoremail;
 my $pversion;
-my $pname = "Plugininstall"; # set dummy at this point
-my $ptitle;
+my $pname = "unknown"; # set dummy at this point
+my $ptitle = "Unknown Plugin"; # set dummy at this point;
 my $pfolder;
 my $pautoupdates;
 my $preleasecfg;
@@ -1558,23 +1557,23 @@ sub purge_installation {
 	if($pname) {
 		# Cron jobs
 		LOGINF "Removing cron jobs...";
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.01min/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.03min/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.05min/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.10min/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.15min/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.30min/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.hourly/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.daily/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.weekly/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.monthly/$pname 2>&1" );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.yearly/$pname 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.01min/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.03min/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.05min/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.10min/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.15min/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.30min/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.hourly/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.daily/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.weekly/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.monthly/$pname 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.yearly/$pname 2>&1", log => $log );
 	
 		# 2. Delete individual crontab file (only on uninstall)
 		if ($option eq "all") {
 			# Crontab
 			LOGINF "Removing crontab";
-			execute( command => "rm -vf $lbhomedir/system/cron/cron.d/$pname 2>&1" );
+			execute( command => "rm -vf $lbhomedir/system/cron/cron.d/$pname 2>&1", log => $log );
 		}
 	}
 
@@ -1584,19 +1583,14 @@ sub purge_installation {
 		if (-f "$lbhomedir/data/system/uninstall/$pname") {
 			LOGINF "$LL{'INF_START_UNINSTALL_EXE'}";
 			my $commandline = qq(cd /tmp && "$lbhomedir/data/system/uninstall/$pname" "/tmp" "$pname" "$pfolder" "$pversion" "$lbhomedir" 2>&1);
-			($exitcode, $output) = execute( command => $commandline );
+			($exitcode, $output) = execute( command => $commandline, log => $log );
 			if ($exitcode eq 1) {
 				$message = "$LL{'ERR_SCRIPT'}";
 				LOGERR $message;
-				LOGINF "Script output:";
-				LOGINF $output;
 				push(@errors,"UNINSTALL execution: $LL{'ERR_SCRIPT'}");
 			} 
 			elsif ($exitcode > 1) {
 				$message = "$LL{'FAIL_SCRIPT'}";
-				LOGCRIT $message;
-				LOGCRIT "Script output:";
-				LOGCRIT $output;
 				LOGCRIT $message;
 				&fail($message);
 			}
@@ -1612,30 +1606,30 @@ sub purge_installation {
 		# 4. Delete uninstall file
 		if (-f "$lbhomedir/data/system/uninstall/$pname") {
 			LOGINF "Deleting uninstall file...";
-			execute( command => "rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1");
+			execute( command => "rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1", log => $log );
 		}
 		# 5. Delete daemon
 		LOGINF "Deleting daemon...";
-		execute( command => "rm -fv $lbhomedir/system/daemons/plugins/$pname 2>&1");
+		execute( command => "rm -fv $lbhomedir/system/daemons/plugins/$pname 2>&1", log => $log );
 		# 6. Delete Sudoers
 		LOGINF "Deleting sudoers file";
-		execute( command => "rm -fv $lbhomedir/system/sudoers/$pname 2>&1");
+		execute( command => "rm -fv $lbhomedir/system/sudoers/$pname 2>&1", log => $log );
 	}
 	
 	# 7. Delete plugin folders
 	if ($pfolder) {
 		# Plugin Folders
 		LOGINF "Deleting plugin folders";
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/config/plugins/$pfolder/ 2>&1");
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/bin/plugins/$pfolder/ 2>&1");
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/data/plugins/$pfolder/ 2>&1");
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/templates/plugins/$pfolder/ 2>&1");
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1");
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/data/system/install/$pfolder 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/config/plugins/$pfolder/ 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/bin/plugins/$pfolder/ 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/data/plugins/$pfolder/ 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/templates/plugins/$pfolder/ 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/plugins/$pfolder/ 2>&1", log => $log );
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/data/system/install/$pfolder 2>&1", log => $log );
 		# Icons for Main Menu
 		LOGINF "Deleting plugin icons";
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1", log => $log );
 	}
 
 	# 8. Remove Plugin from plugin database
@@ -1652,7 +1646,7 @@ sub purge_installation {
 	# 9. Delete Log folder
 	if ($option eq "all" and $pfolder) {
 		LOGINF "Deleting plugins log folder...";
-		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/log/plugins/$pfolder/ 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rfv $lbhomedir/log/plugins/$pfolder/ 2>&1", log => $log );
 	}
 
 	return;
@@ -1668,10 +1662,10 @@ sub fail {
 	my $failmessage = shift;
 
 	if ( -e "/tmp/uploads/$tempfile" ) {
-		system("$sudobin -n -u loxberry rm -rf /tmp/uploads/$tempfile 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -rf /tmp/uploads/$tempfile 2>&1", log => $log );
 	}
 	if ( $R::tempfile ) {
-		system("$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1");
+		execute( command => "$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip 2>&1", log => $log );
 	} 
 
 	# Status file
@@ -1681,7 +1675,6 @@ sub fail {
 	
 	# Notify
 	if ($failmessage) {
-		$ptitle = "Unknown Plugin" if !$ptitle;
 		notify ( "plugininstall", "$pname", $LL{'FAIL_NOTIFY'} . " " . $ptitle . ": " . $failmessage, 1);
 	}
 
@@ -2032,3 +2025,10 @@ sub localphrases {
 	return %local_lang;
 
 }
+
+END {
+	if ($log) {
+		LOGEND;
+	}
+}
+
