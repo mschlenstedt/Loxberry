@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "3.0.0.1";
+our $VERSION = "3.0.0.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1633,8 +1633,9 @@ sub execute
 			} else {
 				$log->ERR( $args->{error} . " - Exitcode $exitcode" );
 			}
-			$log->DEB ( $output );
 		}
+		chomp ($output);
+		$log->DEB ( $output );
 	}
 	
 	return ($exitcode, $output);
