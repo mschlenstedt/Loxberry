@@ -1,19 +1,41 @@
-<script src="https://unpkg.com/primevue@^3/radiobutton/radiobutton.min.js"></script>
+
 
 
 
 <div id="App">
 	<h1>{{sl.heading}}</h1>
 	<p v-html="sl.intro"></p>
-	<RadioButton name="uselocalbroker" value="true" v-model="uselocalbroker" />
-	<RadioButton name="uselocalbroker" value="false" v-model="uselocalbroker" />
+	<div>
+		<p-radiobutton id="uselocalbroker_true" name="uselocalbroker" value="true" v-model="uselocalbroker"></p-radiobutton>
+		<label for="uselocalbroker_true">{{sl.uselocalbroker_true}}</label>
+	</div>
+	<div>
+		<p-radiobutton id="uselocalbroker_false" name="uselocalbroker" value="false" v-model="uselocalbroker"></p-radiobutton>
+		<label for="uselocalbroker_false">{{sl.uselocalbroker_false}}</label>
+	</div>
+	
+	<h1 v-show="uselocalbroker=='true'">LoxBerry Managed MQTT broker</h1>
+	<h1 v-show="uselocalbroker!='true'">Own MQTT broker</h1>
+	
+
+
+
+
+
+
+
+
+
+
 </div>
 
 
 
 
-<script>
+<script type="module">
+	const { createApp, ref } = Vue;
 	const App = {
+	  
 	  data() {
 		return {
 			sl: { 
@@ -23,13 +45,21 @@
 					   "LoxBerry automatically installs and manages the Mosquitto MQTT broker on your LoxBerry. But you are also able to configure another "+
 					   "broker that should be used.<br>"+
 					   "LoxBerry's MQTT Gateway and plugins use the MQTT settings of the below configuration.",
-				uselocalbroker: true
+				uselocalbroker_true: "Use and automatically configure local MQTT Broker",
+				uselocalbroker_false: "Use custom MQTT broker and manage broker myself"
 				
-			}
+			},
+			uselocalbroker: "false"
 		}
-	  }
+	  },
+	  components: {
+                "p-radiobutton": primevue.radiobutton
+            }
 	}
 
-	Vue.createApp(App).mount('#App')
+	createApp(App)
+		.use(primevue.config.default)
+        .mount("#App");
+	
 
 </script>
