@@ -1,0 +1,35 @@
+<script src="https://unpkg.com/primevue@^3/radiobutton/radiobutton.min.js"></script>
+
+
+
+<div id="App">
+	<h1>{{sl.heading}}</h1>
+	<p v-html="sl.intro"></p>
+	<RadioButton name="uselocalbroker" value="true" v-model="uselocalbroker" />
+	<RadioButton name="uselocalbroker" value="false" v-model="uselocalbroker" />
+</div>
+
+
+
+
+<script>
+	const App = {
+	  data() {
+		return {
+			sl: { 
+				heading: "MQTT Broker Settings",
+				intro: "MQTT is a slim, internationally standardised data transfer protocol using an 'MQTT broker', that is a central program that transfers "+
+					   "data from and to all directions. LoxBerry's MQTT Gateway and many plugins use the MQTT standard for data transfer. By default, "+
+					   "LoxBerry automatically installs and manages the Mosquitto MQTT broker on your LoxBerry. But you are also able to configure another "+
+					   "broker that should be used.<br>"+
+					   "LoxBerry's MQTT Gateway and plugins use the MQTT settings of the below configuration.",
+				uselocalbroker: true
+				
+			}
+		}
+	  }
+	}
+
+	Vue.createApp(App).mount('#App')
+
+</script>
