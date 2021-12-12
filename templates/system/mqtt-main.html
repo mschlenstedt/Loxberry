@@ -1,31 +1,93 @@
+<style>
 
 
 
+</style>
 
-<div id="App">
+
+
+<div id="mqttapp">
 	<h1>{{sl.heading}}</h1>
 	<p v-html="sl.intro"></p>
-	<div>
-		<p-radiobutton id="uselocalbroker_true" name="uselocalbroker" value="true" v-model="uselocalbroker"></p-radiobutton>
-		<label for="uselocalbroker_true">{{sl.uselocalbroker_true}}</label>
-	</div>
-	<div>
-		<p-radiobutton id="uselocalbroker_false" name="uselocalbroker" value="false" v-model="uselocalbroker"></p-radiobutton>
-		<label for="uselocalbroker_false">{{sl.uselocalbroker_false}}</label>
+	
+	<!-- 
+		jQm updates the dom for radios, therefore we pre-render its markup.
+		jQm changes the class ui-radio-on and ui-radio-off to show the bullet or not, so we need to Vue-bind these classes to the input value
+	-->
+		
+	<div class="ui-radio">
+		<label for="uselocalbroker_true" class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left" :class="{ 'ui-radio-on': uselocalbroker=='true', 'ui-radio-off': uselocalbroker!='true' }">
+			{{sl.uselocalbroker_true}}</label>
+		<input type="radio" 
+			data-role="none" 
+			id="uselocalbroker_true" 
+			name="uselocalbroker" 
+			value="true" 
+			v-model="uselocalbroker" 
+			v-on:change="Mqtt.Brokerhost='localhost';update_showbrokerhost()"
+		></input>
+	</div>	
+	<div class="ui-radio">
+		<label for="uselocalbroker_false" class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left" :class="{ 'ui-radio-on': uselocalbroker!='true', 'ui-radio-off': uselocalbroker=='true' }">
+			{{sl.uselocalbroker_false}}</label>
+		<input type="radio" 
+			data-role="none" 
+			id="uselocalbroker_false" 
+			name="uselocalbroker" 
+			value="false" 
+			v-model="uselocalbroker"
+			v-on:change="update_showbrokerhost()"
+		></input>
 	</div>
 	
-	<h1 v-show="uselocalbroker=='true'">LoxBerry Managed MQTT broker</h1>
-	<h1 v-show="uselocalbroker!='true'">Own MQTT broker</h1>
 	
+	<div v-if="uselocalbroker=='true'">
+			<h2>LoxBerry Managed MQTT broker</h2>
+		</div>
+		
+		<div v-else>
+			<h2>Own MQTT broker</h2>
+		</div>
+	
+	<h3>Basic Settings</h3>
+	<div class="ui-field-contain">
+		<label for="Mqtt.Brokerhost" style="min-width:15%">Broker hostname</label>
+		<input type="text" 
+			id="Mqtt.Brokerhost" 
+			style="width:50%" 
+			v-model.trim="Mqtt.Brokerhost" 
+			:class="{ 'ui-disabled': uselocalbroker=='true' }" 
+			v-on:input="update_showbrokerhost"
+			
+		>
+	</div>
+	
+	<div class="ui-field-contain">
+		<label for="Mqtt.Brokerport" class="col-fixed" style="min-width:15%">Broker Brokerport<br><small id="Mqtt-Brokerport-help">Default is 1883</small></label>
+		<input type="number" id="Mqtt.Brokerport" style="width:50%" v-model.number="Mqtt.Brokerport" aria-describedby="Mqtt-Brokerport-help">
+	</div>
+	
+	<div class="ui-field-contain">
+		<label for="Mqtt.Brokeruser" style="min-width:15%">Broker Brokeruser</label>
+		<input type="text" id="Mqtt.Brokeruser" v-model.trim="Mqtt.Brokeruser">
+	</div>
+	
+	<div class="ui-field-contain">
+		<label for="Mqtt.Brokerpass" style="min-width:15%">Broker Brokerpass</label>
+		<input type="text" id="Mqtt.Brokerpass" v-model.trim="Mqtt.Brokerpass">
+	</div>
+	
+	<div class="ui-field-contain">
+		<label for="Mqtt.Websocketport" style="min-width:15%">Broker Websocketport</label>
+		<input type="number" id="Mqtt.Websocketport" v-model.number="Mqtt.Websocketport">
+	</div>
 
-
-
-
-
-
-
-
-
+	<div class="ui-body ui-body-a ui-corner-all" style="background-color:#6dac20;color:white;text-shadow:none">
+		To configure MQTT devices, use the following MQTT connection string:<br>
+		<b>mqtt://{{show_brokerhost}}:{{Mqtt.Brokerport}}</b><br>
+		<small>Possibly the mqtt prefix might not be required, an/or host and port are separated input fields.</small>
+	</div>
+	<div style="height:15px"></div>
 
 </div>
 
@@ -33,9 +95,8 @@
 
 
 <script type="module">
-	const { createApp, ref } = Vue;
-	const App = {
-	  
+	
+	const mqttapp = {
 	  data() {
 		return {
 			sl: { 
@@ -49,17 +110,32 @@
 				uselocalbroker_false: "Use custom MQTT broker and manage broker myself"
 				
 			},
-			uselocalbroker: "false"
+			uselocalbroker: "false",
+			Mqtt: { Brokerhost: "",
+					Brokerport: "",
+					Brokeruser: "",
+					Brokerpass: "",
+					Websocketport: ""
+				},
+			show_brokerhost: "",
+			value: 0
 		}
 	  },
-	  components: {
-                "p-radiobutton": primevue.radiobutton
-            }
+	  methods: {
+			update_showbrokerhost() {
+				if(this.Mqtt.Brokerhost.toLowerCase() == 'localhost') {
+					this.show_brokerhost = window.location.host;
+				} else {
+					this.show_brokerhost = this.Mqtt.Brokerhost;
+				}
+			}
+	  }
 	}
 
-	createApp(App)
-		.use(primevue.config.default)
-        .mount("#App");
+
+	Vue.createApp(mqttapp)
+		.mount('#mqttapp')
+
 	
 
 </script>
