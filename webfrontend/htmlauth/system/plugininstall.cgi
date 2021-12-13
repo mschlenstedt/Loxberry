@@ -220,7 +220,7 @@ sub install {
 	my $uploadpath = "$lbsdatadir/tmp/uploads";
 	
 	
-	system("rm -r -f $uploadpath/*");
+	system("rm -r -f $uploadpath/* > /dev/null 2>&1");
 
 	# Check if SecurePIN is correct
 	my $checkresult = LoxBerry::System::check_securepin($securepin);
