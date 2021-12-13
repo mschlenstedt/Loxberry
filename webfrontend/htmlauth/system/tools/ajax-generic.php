@@ -2,16 +2,34 @@
 	require_once "loxberry_system.php";
 	require_once "loxberry_log.php";
 	
-/*
-   On copying the script:
-   You may need to adjust the logging "filename" parameter if you 
-   encounter errors of the loxberry_log API
-*/
+// Try to evaluate the plugin
+
+$referrer_path = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH);
+
+if( $referrer_path != null ) {
+	if( startsWith( $referrer_path, '/admin/system/' ) or startsWith( $referrer_path, '/system/' ) ) {
+		$package = 'core';
+		$log_filename = LBSTMPFSLOGDIR."/ajax-generic.log";
+	}
+	elseif( startsWith( $referrer_path, '/admin/plugins/' ) ) {
+		list( , , $package ) = explode('/', $referrer_path, 4);
+		$log_filename = LBHOMEDIR."/log/plugins/".$package."/ajax-generic.log";
+	}
+	elseif( 
+		startsWith( $referrer_path, '/plugins/' ) ) {
+		list( , $package ) = explode('/', $referrer_path, 3);
+		$log_filename = LBHOMEDIR."/log/plugins/".$package."/ajax-generic.log";
+	}
+}
+if( empty($package) ) {
+	$package = 'core';
+	$log_filename = LBSTMPFSLOGDIR."/ajax-generic.log";
+}
 
 $params = [
-		"package" => "system",
+		"package" => $package,
 		"name" => "Ajax-Generic",
-		"filename" => LBSTMPFSLOGDIR."/ajax-generic.log",
+		"filename" => $log_filename,
 		"append" => 1,
 		"stderr" => 1,
 		"addtime" => 1,
@@ -28,6 +46,8 @@ if( $argc > 0 ) {
 } 
 else {
 	LOGSTART("HTTP Request");
+	LOGINF("HTTP Referrer: " . $referrer_path);
+	# LOGDEB("_SERVER:" . print_r ($_SERVER, true) );
 }
 
 $errorstr = null;
@@ -41,7 +61,6 @@ if( empty($configfile) ) {
 	echo "$errorstr";
 	exit(1);
 }
-
 
 // What should we do: read or write
 if( isset( $_GET['read'] ) ) {
@@ -69,23 +88,24 @@ if( $section ) {
 	LOGINF("Using section $section");
 }
 
-// $data = array ();
 
+if( $action == 'write' ) {
 
-// Get data from input
-LOGINF("Getting data from request");
-$input = file_get_contents('php://input');
-LOGDEB("Request Input: $input");
-LOGINF("Checking if content is a json");
-$datajson = json_decode($input, true);
-if(!empty($datajson)) {
-	$querytype = 'JSON';
-	LOGOK("Request is json - can directly be used");
-} 
-else {
-	$querytype = 'POST';
-	LOGOK("Request is no json");
-	$datajson = $_POST;
+	// Get data from input
+	LOGINF("Getting data from request");
+	$input = file_get_contents('php://input');
+	LOGDEB("Request Input: $input");
+	LOGINF("Checking if content is a json");
+	$datajson = json_decode($input, true);
+	if(!empty($datajson)) {
+		$querytype = 'JSON';
+		LOGOK("Request is json - can directly be used");
+	} 
+	else {
+		$querytype = 'POST';
+		LOGOK("Request is no json");
+		$datajson = $_POST;
+	}
 }
 
 // Open file and create exclusive lock
@@ -100,9 +120,8 @@ else {
 	$config = array();
 }
 
-LOGDEB("Configfile content");
-LOGDEB(print_r( $config, true) );
-
+// LOGDEB("Configfile content");
+// LOGDEB(print_r( $config, true) );
 
 if( $action == 'write' ) {
 	
@@ -126,8 +145,8 @@ if( $action == 'write' ) {
 		$config = $newconfig;
 	}
 	
-	LOGDEB("Configfile after merge:");
-	LOGDEB(print_r( $config, true) );
+	// LOGDEB("Configfile after merge:");
+	// LOGDEB(print_r( $config, true) );
 
 
 	file_put_contents( $configfile, json_encode( $config , JSON_INVALID_UTF8_IGNORE | JSON_PRETTY_PRINT | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
@@ -170,6 +189,8 @@ LOGEND();
 	
 function checkPath( $path ) {
 	global $errorstr;
+	global $package;
+	
 	LOGDEB("checkPath $path");
 	if( !isset( $path) ) {
 		$errorstr = "file parameter missing. Exiting.";
