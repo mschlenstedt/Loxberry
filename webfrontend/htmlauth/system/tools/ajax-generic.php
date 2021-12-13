@@ -210,8 +210,8 @@ function checkPath( $path ) {
 	
 	//Replace variables
 	$path = str_replace( 
-		[ '$lbhomedir', 'LBHOMEDIR', 'LBPCONFIG', '$lbsconfigdir', 'LBSCONFIG' ], 
-		[ LBHOMEDIR,    LBHOMEDIR,   LBHOMEDIR.'/config/plugins', LBSCONFIGDIR, LBSCONFIGDIR ],
+		[ '$lbhomedir', 'LBHOMEDIR', 'LBPCONFIG', '$lbsconfigdir', 'LBSCONFIG', 'LEGACY' ], 
+		[ LBHOMEDIR,    LBHOMEDIR,   LBHOMEDIR.'/config/plugins', LBSCONFIGDIR, LBSCONFIGDIR, LBHOMEDIR.'/webfrontend/legacy' ],
 		$path
 	);
 	
@@ -227,7 +227,7 @@ function checkPath( $path ) {
 		return;
 	}
 	
-	if( !startsWith( $realpath, getEnv('LBSCONFIG') ) and !startsWith( $realpath, getEnv('LBPCONFIG' ) ) ) {
+	if( !startsWith( $realpath, getEnv('LBSCONFIG') ) and !startsWith( $realpath, getEnv('LBPCONFIG') ) and !startsWith( $realpath, getEnv('LBHOMEDIR').'/webfrontend/legacy' ) ) {
 		$errorstr = "file parameter path is not in a config directory ($realpath)";
 		LOGERR($errorstr);
 		return;
