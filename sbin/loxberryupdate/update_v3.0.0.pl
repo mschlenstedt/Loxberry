@@ -46,19 +46,6 @@ system("ln -s $lbhomedir/system/apt/loxberry.list /etc/apt/sources.list.d/loxber
 system("sed \"s/^\\([^#]*raspbian\\/raspbian.*\\)/#\\1/\" /etc/apt/sources.list");
 
 #
-# Installing new dependencies
-#
-
-apt_install("libcgi-simple-perl");
-
-#
-# MQTT Gateway migration
-#
-
-# LoxBerry::System::execute( command => '$lbhomedir/sbin/loxberryupdate/mqtt_migration.pl', log => $log );
-
-
-#
 # Upgrade Raspbian on next reboot
 #
 LOGWARN "Upgrading system to latest Raspbian release ON NEXT REBOOT.";

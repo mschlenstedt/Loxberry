@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # This script will be executed on next reboot
-# from update_v2.0.0.pl
+# from update_v3.0.0.pl
 
 use LoxBerry::System;
 use LoxBerry::Update;
@@ -327,6 +327,21 @@ rm $lbhomedir/system/daemons/system/98-updaterebootcontinue
 EOF
 close (F);
 qx { chmod +x $lbhomedir/system/daemons/system/98-updaterebootcontinue };
+
+#
+# Installing new dependencies
+#
+
+LOGINF "Installing new packages";
+apt_install("libcgi-simple-perl");
+
+#
+# MQTT Gateway migration
+#
+
+#LOGINF "MQTT Gateway migration";
+# LoxBerry::System::execute( command => '$lbhomedir/sbin/loxberryupdate/mqtt_migration.pl', log => $log );
+
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
