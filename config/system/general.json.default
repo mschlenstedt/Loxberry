@@ -33,6 +33,15 @@
          "Useclouddns" : "0"
       }
    },
+   "Mqtt" : {
+		"Brokerhost" : "localhost",
+		"Brokerport" : "1883",
+		"Brokeruser" : "loxberry",
+		"Udpinport" : "11884",
+		"Uselocalbroker" : "1",
+		"Websocketport" : "9001",
+		"Finderdisabled" : false
+   },
    "Network" : {
       "Friendlyname" : null,
       "Interface" : "eth0",
