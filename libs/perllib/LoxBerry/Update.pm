@@ -386,8 +386,8 @@ sub apt_update
 				$main::log->INF("Updating NodeJS key...");
 				system ("curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -");
 				if ($cfg->{'apt'}->{'servers'} && -e $LoxBerry::System::lbsconfigdir . "/is_raspberry.cfg" && -e "/etc/apt/sources.list.d/loxberry.list") {
-					$main::log->INF("Changing Rasbian mirror to $aptserver");
 					my $aptserver = $cfg->{'apt'}->{'servers'}[ rand @{ $cfg->{'apt'}->{'servers'} } ];
+					$main::log->INF("Changing Rasbian mirror to $aptserver");
 					qx ( sed -i --follow-symlinks "s#^\\([^#]*\\)http[^ ]*#\\1$aptserver#" /etc/apt/sources.list.d/loxberry.list );
 				}
 				$i++;
