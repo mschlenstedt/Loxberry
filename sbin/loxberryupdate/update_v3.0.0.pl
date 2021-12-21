@@ -23,7 +23,7 @@ $gcfgobj->write();
 
 # Add Raspbian Mirrors to general.json
 LOGINF "Adding Apt Servers to general.json";
-if (!$gcfg->{'apt'}->{'servers'} {
+if (!$gcfg->{'apt'}->{'servers'}) {
 	my @servers = ( "http://ftp.agdsn.de/pub/mirrors/raspbian/raspbian/",
 			"http://packages.hs-regensburg.de/raspbian/",
 			"http://ftp.halifax.rwth-aachen.de/raspbian/raspbian/",
