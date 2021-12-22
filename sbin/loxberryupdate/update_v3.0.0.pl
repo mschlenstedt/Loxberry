@@ -106,6 +106,8 @@ LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
 
 # End Skript for reboot
+# Just to remeber for the next Major update: Exit this script with 250 or 250 will popup a "reboot.force" messages,
+# because update process will continue after reboot the loxberry
 if ($errors) {
 	exit(251); 
 } else {
