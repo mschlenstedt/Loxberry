@@ -182,6 +182,9 @@ apt_upgrade();
 LOGINF "Installing packages 'gcc-8-base' and 'libgcc-8-dev'...";
 apt_install("libgcc-8-dev gcc-8-base");
 
+LOGINF "Cleaning up and updating apt databases...";
+apt_update();
+
 LOGINF "Executing dist-upgrade...";
 apt_distupgrade();
 
