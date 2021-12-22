@@ -173,7 +173,7 @@ $log->close;
 my $output = qx { find /etc/apt -name "*.list" | xargs sed -i --follow-symlinks '/^deb/s/buster/bullseye/g' >> $logfilename 2>&1 };
 # Repair broken security mirror on VMs
 my $output = qx { sed -i 's#^deb http://security.debian.org/debian-security bullseye/updates.*\$#deb http://security.debian.org/debian-security bullseye-security main contrib non-free#' /etc/apt/sources.list };
-my $output = qx { sed -i 's#^src-deb http://security.debian.org/debian-security bullseye/updates.*\$#src-deb http://security.debian.org/debian-security bullseye-security main contrib non-free#' /etc/apt/sources.list };
+my $output = qx { sed -i 's#^deb-src http://security.debian.org/debian-security bullseye/updates.*\$#deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free#' /etc/apt/sources.list };
 $log->open;
 
 LOGINF "Cleaning up and updating apt databases...";
