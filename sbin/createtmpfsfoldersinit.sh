@@ -112,6 +112,13 @@ wait_for () {
 case "$1" in
 
 start)
+
+	# Check if we are on a Rapsberry
+	if (!-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg") {
+		echo "This seems not to be a Raspberry. Will do nothing..."
+		exit 0
+	}
+	
 	if [ ! -d $RAM_LOG ]; then
 		mkdir -p ${RAM_LOG}
 	fi
@@ -161,6 +168,13 @@ start)
 ;;
 
 stop)
+
+	# Check if we are on a Rapsberry
+	if (!-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg") {
+		echo "This seems not to be a Raspberry. Will do nothing..."
+		exit 0
+	}
+	
 	# Skel for system logs, LB system logs and LB plugin logs
 	echo "Backing up Syslog and LoxBerry system log folders..."
 	if [ -d $LBHOMEDIR/log/skel_system/ ]; then
