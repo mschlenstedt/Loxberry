@@ -136,6 +136,9 @@ qx { chown root:root /var/log };
 LOGINF "Change permissions of /tmp to 1777...";
 qx { chmod 1777 /tmp };
 
+LOGINF "(Re-)Set current date/time to make sure communication with apt-servers will be ok - seems to be a problem on VMs sometimes...";
+my $output = qx { su loxberry -c "$lbhomedir/sbin/setdatetime.pl" };
+
 #
 # Make dist-upgrade from Stretch to Buster
 #
