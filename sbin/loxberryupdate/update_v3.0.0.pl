@@ -43,7 +43,7 @@ LOGINF "Repairing apt sources...";
 unlink ("/etc/apt/sources.list.d/loxberry.list");
 system("chown root:root $lbhomedir/system/apt/loxberry.list");
 system("ln -s $lbhomedir/system/apt/loxberry.list /etc/apt/sources.list.d/loxberry.list");
-system("sed \"s/^\\([^#]*raspbian\\/raspbian.*\\)/#\\1/\" /etc/apt/sources.list");
+system("sed -i \"s/^\\([^#]*raspbian\\/raspbian.*\\)/#\\1/\" /etc/apt/sources.list");
 
 #
 # Upgrade Raspbian on next reboot
