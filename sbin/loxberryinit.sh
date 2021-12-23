@@ -72,10 +72,10 @@ case "$1" in
 		echo "Configuring swap...."
 		$LBHOMEDIR/sbin/setswap.pl
 	else
-		echo "Deactivating swap - rootfs seems not to be resized yet...."
-		service dphys-swapfile stop
-		swapoff -a
-		rm -rf /var/swap
+		echo "Resizing rootfs..."
+		$LBHOMEDIR/sbin/resize_rootfs > $LBHOMEDIR/log/system/rootfsresized.log 2>&1
+		echo "Rebooting to enable rootfs adjustments..."
+		/sbin/reboot > /dev/null 2>&1
 	fi
 
 	# Copy manual network configuration if any exists
@@ -87,7 +87,7 @@ case "$1" in
 		dos2unix $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
 		chown loxberry:loxberry $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
 		mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
-		echo "Rebooting"
+		echo "Rebooting to enable network settings..."
 		/sbin/reboot > /dev/null 2>&1
 	fi
 

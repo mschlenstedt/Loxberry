@@ -38,7 +38,6 @@ if( $curruser ne "root" ) {
 	exit(1);
 }
 
-
 my $lsblk = lsblk();
 my $mount_root = findmnt('/');
 my $mount_boot = findmnt('/boot');
@@ -221,8 +220,8 @@ if ( $desttype eq "path" ) {
 	}
 }
 
-print "\n\033[1mPress Ctrl-C now, if you have changed your mind\033[0m (I will wait 5sec and then continue automatically).\n";
-sleep(5);
+print "\n\033[1mPress Ctrl-C now, if you have changed your mind\033[0m (I will wait 15 sec and then continue automatically).\n";
+sleep(15);
 
 ##################################
 # Start
@@ -423,15 +422,6 @@ if (-e "/media/dst2/var/swap") {
 if ($desttype eq "path") {
 	LOGINF "Resize SDcard after first boot again";
 	unlink ("/media/dst1/rootfsresized");
-	open(F,">/media/dst2$lbhomedir/system/daemons/system/98-resizerootfs");
-	print F <<EOF;
-#!/bin/bash
-$lbssbindir/resize_rootfs > $lbslogdir/rootfsresized.log 2>&1
-rm $lbhomedir/system/daemons/system/98-resizerootfs
-reboot
-EOF
-	close (F);
-	execute ( command => "chmod +x /media/dst2$lbhomedir/system/daemons/system/98-resizerootfs" );
 }
 
 LOGINF "Change the PTUUID of destination card to $src_ptuuid";
