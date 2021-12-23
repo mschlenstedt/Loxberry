@@ -115,7 +115,9 @@ start)
 
 	# Check if we are on a Rapsberry
 	if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
-		echo "This seems not to be a Raspberry. Will do nothing..."
+		echo "This seems not to be a Raspberry. Will only copy skel folders, but will not create any ramdiscs..."
+		cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
+		cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
 		exit 0
 	fi
 	
