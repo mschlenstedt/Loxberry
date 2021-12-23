@@ -16,7 +16,7 @@ my $bins = LoxBerry::System::get_binaries();
 
 my $log = LoxBerry::Log->new (
     package => 'core',
-	name => 'Log Maintenance',
+	name => 'Log_Maintenance',
 	logdir => "$lbhomedir/log/system_tmpfs",
 	loglevel => LoxBerry::System::systemloglevel(),
 	addtime => 1,
