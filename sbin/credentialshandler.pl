@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
-# Script for setting a new Secure PIN
+# Handle Loxberry's credentials
+# Script for setting a new Secure PIN and System/WebUI 
+# users and passwords
 
 use LoxBerry::System;
 
@@ -12,17 +14,41 @@ if ($<) {
 my $command = $ARGV[0];
 
 if ($command eq 'changesecurepin') {
-	changesecurepin($ARGV[1], $ARGV[2]);
+
+	&changesecurepin($ARGV[1], $ARGV[2]);
+
+} elsif ($command eq 'changepasswd') {
+
+	&change_current_passwd ($ARGV[1], $ARGV[2], $ARGV[3]);
+
 } elsif ($command eq 'checkpasswd') {
-	exit(check_current_passwd($ARGV[1], $ARGV[2]));
+
+	exit ( &check_current_passwd($ARGV[1], $ARGV[2]) );
+
+} elsif ($command eq 'changewebuipasswd') {
+
+	&change_webui_passwd ($ARGV[1], $ARGV[2]);
+
 } else {
+
 	print "Usage: $0 command parameters\n";
 	print "Commands:\n";
-	print "	 checkpasswd user pass -> Returns 0 if ok, 1 to 3 on error\n";
+	print "  checkpasswd user pass -> Returns 0 if ok, 1 to 3 on error\n";
 	print "  changesecurepin oldpin newpin -> Returns 0 if ok, else if error\n";
+	print "  changepasswd user oldpassword newpassword -> Returns 0 if ok, else if error\n";
+	print "  changewebuipasswd user password -> Returns 0 if ok, else if error\n";
+
 }
 
 exit (1);
+
+#####################################################
+# Change SecurePIN
+# Parameter: old pin, new pin
+# Returns: 
+#	0 pin set successfully
+#	1 Old PIN is wrong or old/new pin empty
+#####################################################
 
 sub changesecurepin
 {
@@ -71,53 +97,86 @@ sub changesecurepin
 # Returns: 
 #	0 user and pw ok
 #	1 password incorrect
-#	2 user not found
-#	3 on error reading shadow file
-#####################################################
-
-# Only works as root (loxberry cannot access shadow file)
+#	2 user unknown
+######################################################
 
 sub check_current_passwd 
 {
 	my ($user, $pass) = @_;
-	my @shadow;
-	eval {
-		open (my $fh, "<", "/etc/shadow");
-			  @shadow = <$fh>;
-		close ($fh);
-	}; 
-	return(3) if $@;
-	
 
-	my $founduser;
-	my $foundencpass;
-
-	foreach my $userline (@shadow) {
-		my @fields = split /:/, $userline;
-		if ($fields[0] eq $user) {
-			$founduser = $fields[0];
-			$foundencpass = $fields[1];
-			last;
-		}
-	}
-
-	if (!$founduser) {
+	my ($name, $passwd, $uid, $gid, $quota, $comment, $gcos, $dir, $shell) = getpwnam ($user);
+	if (!$passwd) {
 		print "User not found\n";
-		return(2);
+		return (2);
 	}
 
-	my ($empty, $algo, $salt, $hashedpw) = split /\$/, $foundencpass;
-
-	my $crypt_test = crypt($pass, $foundencpass);
-
-	# print STDERR "Shadow : $foundencpass\n";
-	# print STDERR "Entered: $crypt_test\n";
-
-	if ($foundencpass ne $crypt_test) {
+	if ( crypt($pass, $passwd) ne $passwd ) {
 		print "Wrong password\n";
 		return(1);
+	} else {
+		return(0);
 	}
-	return(0);
+}	
+
+#####################################################
+# Change User Password
+# Parameter: user, old password, new password
+# Returns: 
+#	0 new password ok
+#	1 old password incorrect
+#	2 user unknown
+#	3 Other error
+######################################################
+
+sub change_current_passwd 
+{
+	my ($user, $oldpass, $newpass) = @_;
+
+	# Check old Password
+	my $checkoldpass = &check_current_passwd ($user, $oldpass);
+	return(2) if ($checkoldpass eq "2");
+	return(1) if ($checkoldpass eq "1");
+
+	# Set new system password
+	if ($checkoldpass eq "0") {
+		system ("echo \"$user:$newpass\" | /usr/sbin/chpasswd -c SHA512");
+	} else {
+		return(3);
+	}
+	return(3) if $@;
+
+	# Set new samba password if not root
+	if ($user ne "root") {
+		system ("(echo \"$newpass\"; echo \"$newpass\") | smbpasswd -a -s $user");
+	} else {
+		return(0);
+	}
+	if ($@) {
+		# Something went wrong, try to reset old password
+		system ("echo \"$user:$oldpass\" | /usr/sbin/chpasswd -c SHA512");
+		return (3);
+	}
+
+	# All seems to be ok.
+	return (0);
+}	
+
+#####################################################
+# Change User Password WebUI
+# Parameter: user, new password
+# Returns: 
+#	0 new password ok
+#	1 error
+######################################################
+
+sub change_webui_passwd 
+{
+	my ($user, $newpass) = @_;
+
+	system ("/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat \"$user\" \"$newpass\"");
+	return(1) if $@;
+
+	return (0);
 }	
 
 #####################################################
