@@ -181,8 +181,6 @@ sub create_interface_symlinks
 	execute( command => "mkdir --parents $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
 	execute( command => "ln -f -s $lbhomedir/webfrontend/htmlauth/system/tools/mqtt.php $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway/mqtt.php", log => $log, ignoreerorrs => 1 );
 	
-	
-	
 }
 
 sub remove_plugindb_entry
@@ -213,8 +211,9 @@ sub set_file_permissions
 
 sub start_mqttgateway
 {
-
-	`su loxberry -c "$lbhomedir/system/cron/cron.reboot/mqttgateway.pl  > /dev/null 2>&1 &`;
+	
+	LOGINF "Starting MQTT Gateway";
+	`su loxberry -c "$lbhomedir/sbin/mqttgateway.pl  > /dev/null 2>&1 &"`;
 
 	
 }
