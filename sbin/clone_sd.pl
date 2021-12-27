@@ -229,8 +229,10 @@ sleep(15);
 print "Too late - let the game begin!\n\n";
 
 # Stop autofs
-LOGINF "Stopping autofs service";
-execute( command => "systemctl stop autofs", log => $log );
+if ( $desttype eq "device" ) {
+	LOGINF "Stopping autofs service";
+	execute( command => "systemctl stop autofs", log => $log );
+}
 
 # Unmount mounted destination partitions
 if ($desttype eq "device") {
@@ -496,8 +498,6 @@ if ($desttype eq "device") {
 }
 
 if ($desttype eq "path") {
-	LOGINF "Starting autofs service";
-	execute( command => "systemctl start autofs", log => $log );
 	LOGINF "You have to flash the created image onto an empty SDcard!";
 	LOGINF "If it fails to boot, connect a display to Raspberry to check what happens.";
 	LOGEND "Finished";
