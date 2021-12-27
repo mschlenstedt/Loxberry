@@ -415,7 +415,7 @@ sub received
 		eval {
 			$contjson = from_json($message);
 		};
-		if($@) {
+		if($@ or !ref($contjson)) {
 			# LOGDEB "  Not a valid json message";
 			$is_json = 0;
 			$sendhash{$topic} = $message;
