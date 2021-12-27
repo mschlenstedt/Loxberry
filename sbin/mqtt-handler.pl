@@ -22,7 +22,8 @@ my $action = $q->param('action');
 
 my $log = LoxBerry::Log->new (
     package => 'mqtt',
-	name => 'Update Configuration',
+	name => 'mqtt-handler',
+	filename => $lbstmpfslogdir."/mqtt-handler.log",
 	stderr => 1 ,
 	loglevel => 7,
 );
@@ -32,6 +33,7 @@ LOGSTART "Updating configuration during plugin installation";
 if( $action eq "updateconfig" ) { 
 	open_configs();
 	update_config(); 
+	mosquitto_set();
 }
 elsif( $action eq "mosquitto_set" ) { 
 	open_configs();
@@ -51,6 +53,8 @@ sub open_configs
 sub update_config
 {
 
+	## Setting default values if not existing
+	
 	my $changed = 0;
 	if(! defined $cfg->{Main}->{msno}) { 
 		$cfg->{Main}->{msno} = 1;
@@ -107,7 +111,7 @@ sub update_config
 		}
 	
 	
-	# Create Mosquitto config and password
+	## Create Mosquitto config and password
 	
 	if( !defined $generalcfg->{Mqtt}->{Brokeruser} ) {
 		$generalcfg->{Mqtt}->{Brokeruser} = 'loxberry';

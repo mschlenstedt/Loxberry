@@ -188,14 +188,10 @@
 						self.data_save_error = true;
 					}
 					else {
+						fetch('/admin/system/mqtt-main.cgi?action=mosquitto_set');
 						self.data_save_error = false;
 						self.data_saved = true;
 						self.data_changed = false;
-						
-						
-						
-						
-						
 					}
 				});
 				// Update legacy mqtt.json

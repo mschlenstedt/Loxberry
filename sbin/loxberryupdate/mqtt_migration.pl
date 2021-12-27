@@ -12,12 +12,15 @@ my $oldcredfile = "$lbhomedir/config/plugins/mqttgateway/cred.json";
 
 LoxBerry::Update::init();
 
-# install_packages();
+install_packages();
+stop_mqttgateway();
+update_config();
+
+
 
 
 # Migration steps
 if( -e $oldconfigfile ) {
-	stop_mqttgateway();
 	config_migration();
 	transformers_migration();
 	# remove_plugin_folders();
@@ -38,11 +41,18 @@ sub install_packages
 		libfile-monitor-perl
 		libfile-find-rule-perl
 		libbsd-resource-perl
+		libcgi-simple-perl
 	/);
 	
 	
 }
 
+sub update_config
+{
+	
+	execute( command => $lbhomedir."/mqtt-handler.pl action=updateconfig", log => $log, ignoreerrors => 1 );
+	
+}
 
 
 sub stop_mqttgateway
