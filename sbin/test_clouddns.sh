@@ -31,7 +31,7 @@ do
 	do
 		DATE=`date +"%d.%m.%Y %T.%3N"`
 		echo -n "$DATE Call $INT: "
-		DATA=`curl "http://dns.loxonecloud.com/?getip&snr=504F94A00FB9&json=true" 2>/dev/null`
+		DATA=`curl "http://dns.loxonecloud.com/?getip&snr=$SERIAL&json=true" 2>/dev/null`
 		echo $DATA
 		echo -n $DATE >> $LOGFILE
 		echo -n "|" >> $LOGFILE
