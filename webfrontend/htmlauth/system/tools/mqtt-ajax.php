@@ -1,11 +1,17 @@
 <?php
-// require_once "loxberry_system.php";
+require_once "loxberry_system.php";
 // $cfgfile = "$lbpconfigdir/mqtt.json";
 // $jsoncontent = file_get_contents($cfgfile); 
 // $json = json_decode($jsoncontent, True); 
 // $udpinport = $json['Main']['udpinport'];
 
 header('Content-Type: application/json; charset=UTF-8');
+
+/* If started from the command line, wrap parameters to $_POST and $_GET */
+if (!isset($_SERVER["HTTP_HOST"])) {
+  parse_str($argv[1], $_POST);
+}
+
 
 $cfgfile = "mqttgateway.json";
 $datafile = "/dev/shm/mqttgateway_topics.json";
@@ -26,7 +32,8 @@ if( $ajax == 'relayed_topics' ) {
 	if( file_exists( $datafile ) ) {
 		readfile( $datafile );
 	}
-} 
+}
+
 elseif ( $ajax == 'retain' ) {
 		
 		if ( !empty($_POST['udpinport']) and $_POST['udpinport'] != "0") {
@@ -46,6 +53,7 @@ elseif ( $ajax == 'retain' ) {
 			readfile( $datafile );
 		}
 }
+
 elseif ( $ajax == 'disablecache' ) {
 	
 	require_once "loxberry_system.php";
@@ -75,7 +83,8 @@ elseif ( $ajax == 'disablecache' ) {
 	flock($fp, LOCK_UN);
 	fclose($fp);
 	readfile( $fullcfgfile );
-}	
+}
+
 elseif ( $ajax == 'resetAfterSend' ) {
 	
 	require_once "loxberry_system.php";
@@ -105,7 +114,8 @@ elseif ( $ajax == 'resetAfterSend' ) {
 	flock($fp, LOCK_UN);
 	fclose($fp);
 	readfile( $fullcfgfile );
-}	
+}
+
 elseif ( $ajax == 'doNotForward' ) {
 	
 	require_once "loxberry_system.php";
@@ -135,7 +145,8 @@ elseif ( $ajax == 'doNotForward' ) {
 	flock($fp, LOCK_UN);
 	fclose($fp);
 	readfile( $fullcfgfile );
-}	
+}
+
 elseif ( $ajax == 'getpids' ) {
 	$pids['mqttgateway'] = trim(`pgrep mqttgateway.pl`) ;
 	$pids['mosquitto'] = trim(`pgrep mosquitto`) ;
@@ -146,6 +157,7 @@ elseif ( $ajax == 'getpids' ) {
 	echo json_encode( array ('pids' => $pids ) );
 	
 }
+
 elseif ( $ajax == 'mosquitto_purgedb' ) {
 	// Purge Mosquitto DB
 	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=mosquitto_purgedb" );
@@ -193,6 +205,20 @@ elseif( $ajax == 'publish_json' ) {
 	exit(0);
 
 }
-	
+
+elseif( $ajax == 'restartgateway' ) {
+	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway" );
+
+}	
+
+// Unknown request
+else {
+	http_response_code(500);
+	if( empty($ajax) ) {
+		error_log("mqtt-ajax.php: ERRROR: ajax not set.");
+	} else {
+		error_log("mqtt-ajax.php: ERRROR: ajax=$ajax is unknown.");
+	}
+}
 
 

@@ -52,23 +52,33 @@ elsif( $action eq "mosquitto_restart" ) {
 	restart_gateway();
 }
 
+elsif( $action eq "restartgateway" ) {
+	open_configs();
+	my $uselocalbroker = $generalcfg->{Mqtt}->{Uselocalbroker};
+	undef $generaljsonobj;
+	undef $mqttobj;
+	if( is_enabled( $uselocalbroker ) ) {
+		mosquitto_restart();
+	}
+	restart_gateway();
+}
 
 exit;
 
 sub restart_gateway
 {
 	# Restart Gateway
-	pkill('mqttgateway.pl');
-	`cd $lbpbindir ; $lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &`;
+	`pkill mqttgateway.pl`;
+	`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;
 	
 }
 
 sub open_configs
 {
 	$generaljsonobj = LoxBerry::JSON->new();
-	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive=> 1, writeonclose=>1);
+	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive => 1, writeonclose => 1);
 	$mqttobj = LoxBerry::JSON->new();
-	$cfg = $mqttobj->open(filename => $cfgfile, lockexclusive=> 1, writeonclose=>1);
+	$cfg = $mqttobj->open(filename => $cfgfile, lockexclusive => 1, writeonclose => 1);
 }
 
 sub update_config
