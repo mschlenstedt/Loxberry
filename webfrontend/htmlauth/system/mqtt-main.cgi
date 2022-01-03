@@ -21,8 +21,12 @@ our $htmlhead = <<'EOF';
   <script src="/system/scripts/vue3/vue3.js"></script> 
 EOF
 
-
 LoxBerry::Web::lbheader();
+
+print '<div id="jsonmenu" style="display:none">';
+print LoxBerry::System::read_file("$lbstemplatedir/menu_mqtt.json");
+print '</div>';
+print LoxBerry::System::read_file("$lbstemplatedir/vuenavbar.html");
 
 print LoxBerry::System::read_file($lb_body);
 

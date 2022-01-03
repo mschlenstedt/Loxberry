@@ -40,7 +40,28 @@ elsif( $action eq "mosquitto_set" ) {
 	mosquitto_set(); 
 }
 
+elsif( $action eq "mosquitto_purgedb" ) {
+	qx(systemctl stop mosquitto);
+	qx(rm /var/lib/mosquitto/mosquitto.db);
+	qx(systemctl start mosquitto);
+	restart_gateway();
+}
+
+elsif( $action eq "mosquitto_restart" ) {
+	mosquitto_restart();
+	restart_gateway();
+}
+
+
 exit;
+
+sub restart_gateway
+{
+	# Restart Gateway
+	pkill('mqttgateway.pl');
+	`cd $lbpbindir ; $lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &`;
+	
+}
 
 sub open_configs
 {
@@ -150,6 +171,12 @@ sub mosquitto_disable
 	`systemctl disable mosquitto`;
 	`systemctl stop mosquitto`;
 }
+
+sub mosquitto_restart
+{
+	`systemctl restart mosquitto`;
+}
+
 
 
 sub mosquitto_setcred

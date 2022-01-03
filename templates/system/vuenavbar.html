@@ -1,0 +1,190 @@
+<style>
+.vuenavbarcontainer {
+	display:flex;
+	flex-direction:row;
+	flex-wrap:nowrap;
+	justify-content: center;
+	align-items: center;
+	
+	background-color:#3d3d3d;
+	
+}
+.vuenavbarelement {
+	flex:1;
+	text-shadow:none;
+	padding: 10px 20px 10px 20px;
+	color: white;
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;	
+	
+}
+.vuenavbarelement:hover {
+	background-color: #a0df53;
+}
+.vuenavbarelement_active {
+	background-color: #6dac20;
+}
+
+
+.vuenavbarsubcontainer {
+	display:flex;
+	flex-direction:row;
+	flex-wrap:nowrap;
+	justify-content: flex-start;
+	align-items: stretch;
+	//background-color:#e6e6e6;
+	
+}
+.vuenavbarsubelement {
+	flex:1;
+	text-shadow:none;
+	padding: 5px 10px 5px 10px;
+	border:1px solid #cccccc;
+	border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;	
+	background-color:#e6e6e6;
+	
+}
+.vuenavbarsubelement:hover {
+	background-color: #a0df53;
+	color: white;
+}
+.vuenavbarsubelement_active {
+	background-color: #6dac20;
+	color: white;
+}
+
+
+
+
+</style>
+
+
+
+
+
+<div id="vuenavbar">
+	<div class="vuenavbarcontainer">
+		<template v-for="(element, index) in menu" :key="index">
+			<div class="vuenavbarelement" @mouseover="hover(index, true)" @click="menuclick(index, false, $event)" :class="{ vuenavbarelement_active: element.active }">{{element.Name}}</div>
+		</template>
+	</div>
+	<div class="vuenavbarsubcontainer">
+		<template  v-for="(element, index) in menu" :key="index">
+			<div v-for="(subelement, subindex) in element.Submenu" @click="menuclick(index, subindex, $event)" :key="subindex" class="vuenavbarsubelement" :class="{ vuenavbarsubelement_active: subelement.active }" v-show="menu[index]?.show">
+				{{subelement.Name}}
+			</div>
+		</template>
+	</div>
+	
+</div>
+
+
+<script>
+
+const vuenavbar = {
+	data() {
+		var menu = this.getMenuData();
+		return { menu };
+	},
+	
+	
+	methods: {
+		getMenuData() {
+			var menuelement = document.getElementById('jsonmenu');
+			var menuobj = JSON.parse(menuelement.textContent);
+			console.log("pathname", window.location.pathname+window.location.search);
+			var response = this.elementSetActive( menuobj );
+			menuobj = response[0];
+			var isActive = response[1];
+			return menuobj;
+		
+		},
+		
+		elementSetActive( menuobj ) {
+			console.log(menuobj);
+			var vm = this;
+			currentUrl = window.location.pathname+window.location.search;
+			var elementsActive = 0;
+			// menuobj.forEach(function (element, index) {
+			for( let index in menuobj ) {
+				element = menuobj[index];
+				menuobj[index].show=false;
+				console.log(element); // logs "3", "5", "7"
+				console.log(index);   // logs "0", "1", "2"
+				console.log(element.Name);
+				if( element.Submenu ) {
+					var response = vm.elementSetActive( element );
+					menuobj[index] = response[0];
+					elementsActive = response[1];
+				}
+				
+				if( element.URL && element.URL == currentUrl ) {
+					menuobj[index].active = 1;
+					elementsActive = 1;
+					console.log(element.Name, "is active");
+				}
+				else {
+					menuobj[index].active = 0;
+				
+				}
+			};
+			return [ menuobj, elementsActive ];
+		},
+		
+		hover( index, active ) {
+			for( let i in this.menu ) {
+				this.menu[i].show = false;
+			}
+			this.menu[index].show = true;
+		},
+		
+		menuclick( mainindex, subindex=false, event=false ) {
+			console.log("menuclick", event);
+			if( event != false ) {
+				var pointertype = event.pointerType;
+			}
+			
+			if( subindex == false ) {
+				if( !this.menu[mainindex].Submenu ) {
+					this.callUrl(mainindex);
+					return;
+				}
+				this.hover( mainindex, true );
+				return;
+				
+			}
+			else {
+				this.callUrl(mainindex, subindex);
+			}
+		},
+		
+		callUrl( mainindex, subindex=false ) {
+			var url;
+			var target;
+			
+			if( subindex != false ) {
+				url = this.menu[mainindex].Submenu[subindex].URL;
+				target = typeof this.menu[mainindex].Submenu[subindex].target !== 'undefined' ? this.menu[mainindex].Submenu[subindex].target : '_self';
+			}
+			else {
+				url = this.menu[mainindex].URL;
+				target = typeof this.menu[mainindex].target !== 'undefined' ? this.menu[mainindex].target : '_self';
+			}
+			
+			console.log("Calling url in target", target, ": ", url);
+		}
+	}
+
+}
+
+	Vue.createApp(vuenavbar).mount('#vuenavbar');
+	
+
+
+
+</script>
