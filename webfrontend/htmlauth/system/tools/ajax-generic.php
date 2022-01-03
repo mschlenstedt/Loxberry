@@ -73,6 +73,7 @@ elseif( isset( $_GET['write'] ) ) {
 
 if( isset( $_GET['replace'] ) ) {
 	$replace = true;
+	$action = 'write';
 }
 
 if( empty($action) ) {
