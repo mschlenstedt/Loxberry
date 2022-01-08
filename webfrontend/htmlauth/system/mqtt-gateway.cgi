@@ -147,7 +147,7 @@ sub subscriptions_form
 
 	# Send external plugin settings to template
 	my $extpluginfilecontent = LoxBerry::System::read_file($extplugindatafile);
-	$extpluginfilecontent = jsescape($extpluginfilecontent);
+	# $extpluginfilecontent = jsescape($extpluginfilecontent);
 	$template->param('EXTPLUGINSETTINGS', $extpluginfilecontent);
 
 }
@@ -160,7 +160,7 @@ sub conversions_form
 
 	# Send external plugin settings to template
 	my $extpluginfilecontent = LoxBerry::System::read_file($extplugindatafile);
-	$extpluginfilecontent = jsescape($extpluginfilecontent);
+	# $extpluginfilecontent = jsescape($extpluginfilecontent);
 	$template->param('EXTPLUGINSETTINGS', $extpluginfilecontent);
 
 }
