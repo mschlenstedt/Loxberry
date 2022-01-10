@@ -52,7 +52,7 @@
 			<div id="vuenavbar">
 				<div class="vuenavbarcontainer">
 					<template v-for="(element, index) in menu" :key="index">
-						<div class="vuenavbarelement" @mouseover="hover(index, true)" @click="menuclick(index, false, $event)" :class="{ vuenavbarelement_active: element.active }">{{element.Name}}</div>
+						<div class="vuenavbarelement" @mouseover="hover(index, true)" @click="menuclick(index, null, $event)" :class="{ vuenavbarelement_active: element.active }">{{element.Name}}</div>
 					</template>
 				</div>
 				<div class="vuenavbarsubcontainer">
@@ -204,13 +204,14 @@ if( document.getElementById('jsonmenu') ) {
 				this.menu[index].show = true;
 			},
 			
-			menuclick( mainindex, subindex=false, event=false ) {
-				console.log("menuclick", event);
+			menuclick( mainindex, subindex=null, event=null ) {
+				console.log("menuclick", mainindex, subindex, event);
 				if( event != false ) {
 					var pointertype = event.pointerType;
 				}
 				
-				if( subindex == false ) {
+				if( subindex == null ) {
+					console.log("subindex is null");
 					if( !this.menu[mainindex].Submenu ) {
 						this.callUrl(mainindex);
 						return;
@@ -224,11 +225,11 @@ if( document.getElementById('jsonmenu') ) {
 				}
 			},
 			
-			callUrl( mainindex, subindex=false ) {
+			callUrl( mainindex, subindex=null ) {
 				var url;
 				var target;
 				
-				if( subindex != false ) {
+				if( subindex != null ) {
 					url = this.menu[mainindex].Submenu[subindex].URL;
 					target = typeof this.menu[mainindex].Submenu[subindex].target !== 'undefined' ? this.menu[mainindex].Submenu[subindex].target : '_self';
 				}
