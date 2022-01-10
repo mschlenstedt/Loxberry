@@ -6,6 +6,7 @@ use LoxBerry::System;
 # use CGI;
 use HTML::Template;
 use Time::Piece;
+use JSON;
 
 
 # Potentially, this does something strange when using LoxBerry::Web without Webinterface (printing errors in HTML instead of plain text)
@@ -14,7 +15,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "2.2.1.2";
+our $VERSION = "3.0.0.1";
 our $DEBUG;
 
 use base 'Exporter';
@@ -316,104 +317,40 @@ sub pagestart
 						PAGE => $page,
 						LANG => $lang );
 
+	
 	# If a navigation bar is defined
-	if (%main::navbar) {
-		# navbar is defined as HASH
-		my $topnavbar = '<div data-role="navbar">' . 
-			'	<ul>';
-		my $topnavbar_haselements = undef;
-		my $topnavbar_notify_js;
-		
-		foreach my $element (sort keys %main::navbar) {
-			my $btnactive;
-			my $btntarget;
-			my $notify;
-			if ($main::navbar{$element}{active} eq 1) {
-				$btnactive = ' class="ui-btn-active"';
-			} else { $btnactive = undef; 
-			}
-			if ($main::navbar{$element}{target}) {
-				$btntarget = ' target="' . $main::navbar{$element}{target} . '"';
-			}
+	
+	if(@main::navbar) {
+		# navbar is a ready array (LB 3.0+)
+		$headerobj->param ( JSONMENU => 
+			'<div id="jsonmenu" style="display:none">' .
+			JSON::encode_json(\@main::navbar) .
+			'</div>'
+		);
 
-			# # NavBar Notify old
-			# if ($main::navbar{$element}{notifyRed}) {
-				# $notify = ' <span class="notifyRedNavBar">' . $main::navbar{$element}{notifyRed} . '</span>';
-			# } elsif ($main::navbar{$element}{notifyBlue}) {
-				# $notify = ' <span class="notifyBlueNavBar">' . $main::navbar{$element}{notifyBlue} . '</span>';
-			# }
-
-			
-			$notify .= qq(<div class="notifyBlueNavBar" id="notifyBlueNavBar$element" style="display: none">0</div>);
-			$notify .= qq(<div class="notifyRedNavBar" id="notifyRedNavBar$element" style="display: none">0</div>);
-			
-			
-			if ($main::navbar{$element}{Name}) {
-				$topnavbar .= qq( <li><div style="position:relative">$notify<a href="$main::navbar{$element}{URL}"$btntarget$btnactive>$main::navbar{$element}{Name}</a></div></li>);
-				$topnavbar_haselements = 1;
-				
-				# Inject Notify JS code
-				my $notifyname = $main::navbar{$element}{Notify_Name};
-				my $notifypackage = $main::navbar{$element}{Notify_Package};
-				if ($notifyname && ! $notifypackage && $LoxBerry::System::lbpplugindir) {
-					$notifypackage = $LoxBerry::System::lbpplugindir;
-				}
-				if ($notifypackage) {
-				$topnavbar_notify_js .=
-<<"EOT";
-
-\$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notification_count', package: '$notifypackage', name: '$notifyname' })
-	.done(function(data) { 
-		console.log("get_notification_count executed successfully");
-		console.log("$main::navbar{$element}{Name}", data[0], data[1], data[2]);
-		if (data[0] != 0) \$("#notifyRedNavBar$element").text(data[2]).fadeIn('slow');
-		else \$("#notifyRedNavBar$element").text('0').fadeOut('slow');
-		if (data[1] != 0) \$("#notifyBlueNavBar$element").text(data[1]).fadeIn('slow');
-		else \$("#notifyBlueNavBar$element").text('0').fadeOut('slow');
-		
-	});
-EOT
-
-				}				
-				
-			}
-		}
-		$topnavbar .=  '	</ul>' .
-			'</div>';	
-		if ($topnavbar_haselements) {
-			$headerobj->param ( TOPNAVBAR => $topnavbar);
-		}
-		if ($topnavbar_notify_js) {
-			my $notify_js;
-			$notify_js = 
-<<"EOT";
-
-<SCRIPT>
-\$(document).on('pageshow',function(){ updatenavbar(); });
-function updatenavbar() {
-	console.log("updatenavbar called");
-	$topnavbar_notify_js
-};
-</SCRIPT>
-EOT
-			$headerobj->param ( NAVBARJS => $notify_js);
-		}
-		%main::navbar = undef;
-	} elsif ($main::navbar) {
-		# navbar is defined as plain STRING
-		$headerobj->param ( TOPNAVBAR => $main::navbar);
-		$main::navbar = undef;
-	} else {
-		$headerobj->param ( TOPNAVBAR => "");
 	}
 	
-	# <div data-role="navbar">
-	# <ul>
-		# <li><a href="#">First</a></li>
-		# <li><a href="#">Second</a></li>
-		# <li><a href="#">Third</a></li>
-	# </ul>
-	# </div>
+	elsif ($main::navbar) {
+		# navbar is defined as plain STRING
+		$headerobj->param ( NAVBAR_PLAIN => $main::navbar);
+		$main::navbar = undef;
+	} 
+
+	elsif (%main::navbar) {
+		# navbar is defined as HASH
+		
+		my @navbar_object;
+		foreach my $element (sort {$a <=> $b} (keys %main::navbar) ) {
+			push( @navbar_object, $main::navbar{$element} );
+		}
+		
+		$headerobj->param ( JSONMENU => 
+			'<div id="jsonmenu" style="display:none">' .
+			JSON::encode_json(\@navbar_object) .
+			'</div>'
+		);
+	} 
+
 				
 	print $headerobj->output();
 	undef $headerobj;

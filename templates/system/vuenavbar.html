@@ -26,7 +26,6 @@
 	background-color: #6dac20;
 }
 
-
 .vuenavbarsubcontainer {
 	display:flex;
 	flex-direction:row;
@@ -57,15 +56,7 @@
 	background-color: #6dac20;
 	color: white;
 }
-
-
-
-
 </style>
-
-
-
-
 
 <div id="vuenavbar">
 	<div class="vuenavbarcontainer">
@@ -83,108 +74,124 @@
 	
 </div>
 
-
 <script>
 
-const vuenavbar = {
-	data() {
-		var menu = this.getMenuData();
-		return { menu };
-	},
-	
-	
-	methods: {
-		getMenuData() {
-			var menuelement = document.getElementById('jsonmenu');
-			var menuobj = JSON.parse(menuelement.textContent);
-			console.log("pathname", window.location.pathname+window.location.search);
-			var response = this.elementSetActive( menuobj );
-			menuobj = response[0];
-			var isActive = response[1];
-			return menuobj;
-		
+if( document.getElementById('jsonmenu') ) {
+
+	const vuenavbar = {
+		data() {
+			var menu = this.getMenuData();
+			return { menu };
 		},
 		
-		elementSetActive( menuobj ) {
-			console.log(menuobj);
-			var vm = this;
-			currentUrl = window.location.pathname+window.location.search;
-			var elementsActive = 0;
-			// menuobj.forEach(function (element, index) {
-			for( let index in menuobj ) {
-				element = menuobj[index];
-				menuobj[index].show=false;
-				console.log(element); // logs "3", "5", "7"
-				console.log(index);   // logs "0", "1", "2"
-				console.log(element.Name);
-				if( element.Submenu ) {
-					var response = vm.elementSetActive( element );
-					menuobj[index] = response[0];
-					elementsActive = response[1];
+		
+		methods: {
+			getMenuData() {
+				var menuelement = document.getElementById('jsonmenu');
+				var menuobj = JSON.parse(menuelement.textContent);
+				console.log("pathname", window.location.pathname+window.location.search);
+				var response = this.elementSetActive( menuobj );
+				menuobj = response[0];
+				// var isActive = response[1];
+				console.log("Final menuobj", menuobj);
+				return menuobj;
+			
+			},
+			
+			elementSetActive( menuobj ) {
+				console.log(menuobj);
+				var vm = this;
+				var currentUrl = window.location.pathname+window.location.search;
+				var elementsActive = 0;
+				// menuobj.forEach(function (element, index) {
+				
+				for( let index in menuobj ) {
+					element = menuobj[index];
+					menuobj[index].show=false;
+					//console.log(element); // logs "3", "5", "7"
+					// console.log("index", index);   // logs "0", "1", "2"
+					// console.log(element.Name);
+					if( element.Submenu ) {
+						console.log("CALLING RECURSION");
+						var response = vm.elementSetActive( element.Submenu );
+						console.log("RETURNED RECURSION");
+						menuobj[index].Submenu = response[0];
+						if( !menuobj[index].active ) {
+							// Only set active if not activated manually
+							menuobj[index].active = response[1];
+						}
+						if( menuobj[index].active == 1 ) { 
+							menuobj[index].show = true;
+						}
+						console.log("response from recursion", response);
+					}
+					else if( element.URL && element.URL == currentUrl ) {
+						if( !menuobj[index].active ) {
+							menuobj[index].active = 1;
+							elementsActive = 1;
+						}
+						console.log(element.Name, "is active");
+					}
+					else {
+						// console.log(element.Name, "is not active");
+						if( !menuobj[index].active ) {
+							menuobj[index].active = 0;
+						}
+					
+					}
+				};
+				console.log("Final active", elementsActive);
+				return [ menuobj, elementsActive ];
+			},
+			
+			hover( index, active ) {
+				for( let i in this.menu ) {
+					this.menu[i].show = false;
+				}
+				this.menu[index].show = true;
+			},
+			
+			menuclick( mainindex, subindex=false, event=false ) {
+				console.log("menuclick", event);
+				if( event != false ) {
+					var pointertype = event.pointerType;
 				}
 				
-				if( element.URL && element.URL == currentUrl ) {
-					menuobj[index].active = 1;
-					elementsActive = 1;
-					console.log(element.Name, "is active");
+				if( subindex == false ) {
+					if( !this.menu[mainindex].Submenu ) {
+						this.callUrl(mainindex);
+						return;
+					}
+					this.hover( mainindex, true );
+					return;
+					
 				}
 				else {
-					menuobj[index].active = 0;
-				
+					this.callUrl(mainindex, subindex);
 				}
-			};
-			return [ menuobj, elementsActive ];
-		},
-		
-		hover( index, active ) {
-			for( let i in this.menu ) {
-				this.menu[i].show = false;
-			}
-			this.menu[index].show = true;
-		},
-		
-		menuclick( mainindex, subindex=false, event=false ) {
-			console.log("menuclick", event);
-			if( event != false ) {
-				var pointertype = event.pointerType;
-			}
+			},
 			
-			if( subindex == false ) {
-				if( !this.menu[mainindex].Submenu ) {
-					this.callUrl(mainindex);
-					return;
-				}
-				this.hover( mainindex, true );
-				return;
+			callUrl( mainindex, subindex=false ) {
+				var url;
+				var target;
 				
+				if( subindex != false ) {
+					url = this.menu[mainindex].Submenu[subindex].URL;
+					target = typeof this.menu[mainindex].Submenu[subindex].target !== 'undefined' ? this.menu[mainindex].Submenu[subindex].target : '_self';
+				}
+				else {
+					url = this.menu[mainindex].URL;
+					target = typeof this.menu[mainindex].target !== 'undefined' ? this.menu[mainindex].target : '_self';
+				}
+				
+				console.log("Calling url in target", target, ": ", url);
+				window.open(url, target);
 			}
-			else {
-				this.callUrl(mainindex, subindex);
-			}
-		},
-		
-		callUrl( mainindex, subindex=false ) {
-			var url;
-			var target;
-			
-			if( subindex != false ) {
-				url = this.menu[mainindex].Submenu[subindex].URL;
-				target = typeof this.menu[mainindex].Submenu[subindex].target !== 'undefined' ? this.menu[mainindex].Submenu[subindex].target : '_self';
-			}
-			else {
-				url = this.menu[mainindex].URL;
-				target = typeof this.menu[mainindex].target !== 'undefined' ? this.menu[mainindex].target : '_self';
-			}
-			
-			console.log("Calling url in target", target, ": ", url);
 		}
+
 	}
 
+		Vue.createApp(vuenavbar).mount('#vuenavbar');
 }
-
-	Vue.createApp(vuenavbar).mount('#vuenavbar');
 	
-
-
-
 </script>
