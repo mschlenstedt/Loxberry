@@ -8,7 +8,7 @@ my $plugintitle = "MQTT (V" . LoxBerry::System::lbversion() . ")";
 my $helplink = "https://www.loxwiki.eu/x/S4ZYAg";
 my $helptemplate = "help.html";
 
-our @navbar = (
+	our @navbar = (
 		{
 			"Name" => "MQTT Basics",
 			"URL" => "/admin/system/mqtt.cgi"
@@ -44,10 +44,10 @@ our @navbar = (
 		},
 		{
 			"Name" => "Log Files",
-			"URL" => "/admin/system/tools/showalllogs.cgi?package=mqtt"
+			"URL" => "/admin/system/mqtt-gateway.cgi?form=logs"
 		}
 	);
-
+	
 my $template = HTML::Template->new(
 	filename => "$lbstemplatedir/mqtt.html",
 	global_vars => 1,

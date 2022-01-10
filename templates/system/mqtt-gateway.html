@@ -1055,12 +1055,8 @@ $(function(){
 	<!-- /Form TOPICS -->
 </TMPL_IF>
 
-
-
-
-<TMPL_IF FORM_LOGS>
-	<!-- Form LOGS -->
-	<style>
+<TMPL_IF FORM_TRANSFORMERS>
+<style>
 	.trans_table {
 		width: 100%;
 		padding: 5px;
@@ -1074,7 +1070,7 @@ $(function(){
 		padding: 3px 7px 3px 7px;
 	}
 	</style>
-
+	
 	<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
 	
 	<div class="wide">Transformers</div>
@@ -1099,26 +1095,6 @@ $(function(){
 		</div>
 		</div>
 	
-	</div>
-	
-	<div class="wide">Logfiles</div>
-	<TMPL_VAR loglist_html>
-	
-	<div data-role='collapsible' id='coll_package_mosquitto' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_mqttgateway_mosquitto'>Mosquitto Log</h2>
-		<table class="trans_table" style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
-			<tr>
-				<td>mosquitto.log</td>
-				<td>The Mosquitto log cannot be accessed by the LoxBerry Logviewer. It is located in
-				<span class="mono">/var/log/mosquitto/mosquitto.log				
-				</span>
-				
-				</td>
-<!--				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fplugins%2Fmqttgateway%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
--->
-				<td></td>
-			</tr>
-		</table>
 	</div>
 
 	
@@ -1162,6 +1138,34 @@ $(function() {
 });
 </script>	
 	
+
+</TMPL_IF>
+
+
+<TMPL_IF FORM_LOGS>
+	<!-- Form LOGS -->
+
+	<div class="wide">Logfiles</div>
+	<TMPL_VAR loglist_html>
+	
+	<div data-role='collapsible' id='coll_package_mosquitto' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
+		<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_mqttgateway_mosquitto'>Mosquitto Log</h2>
+		<table class="trans_table" style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
+			<tr>
+				<td>mosquitto.log</td>
+				<td>The Mosquitto log cannot be accessed by the LoxBerry Logviewer. It is located in
+				<span class="mono">/var/log/mosquitto/mosquitto.log				
+				</span>
+				
+				</td>
+<!--				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fplugins%2Fmqttgateway%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
+-->
+				<td></td>
+			</tr>
+		</table>
+	</div>
+
+
 	
 	<!-- /Form LOGS -->
 </TMPL_IF>

@@ -80,6 +80,13 @@ if( $q->{ajax} ) {
 		# $template->param("FORM_DISABLE_JS", 1);
 		topics_form();
 	}
+	elsif ( $q->{form} eq "transformers" ) {
+		$navbar{90}{active} = 1;
+		$template->param("FORM_TRANSFORMERS", 1);
+		$template->param("FORM_DISABLE_BUTTONS", 1);
+		# $template->param("FORM_DISABLE_JS", 1);
+		transformers_form();
+	}
 	elsif ( $q->{form} eq "logs" ) {
 		$navbar{90}{active} = 1;
 		$template->param("FORM_LOGS", 1);
@@ -138,7 +145,7 @@ sub print_form
 		},
 		{
 			"Name" => "Log Files",
-			"URL" => "/admin/system/tools/showalllogs.cgi?package=mqtt"
+			"URL" => "/admin/system/mqtt-gateway.cgi?form=logs"
 		}
 	);
 	
@@ -206,13 +213,22 @@ sub topics_form
 
 
 ########################################################################
+# Transformers Form 
+########################################################################
+sub transformers_form
+{
+
+	$template->param('transformers', LoxBerry::System::read_file($transformerdatafile) );
+
+}
+
+########################################################################
 # Logs Form 
 ########################################################################
 sub logs_form
 {
 
-	$template->param('transformers', LoxBerry::System::read_file($transformerdatafile) );
-	$template->param('loglist_html', LoxBerry::Web::loglist_html());
+	$template->param('loglist_html', LoxBerry::Web::loglist_html( PACKAGE => 'MQTT' ));
 
 }
 
