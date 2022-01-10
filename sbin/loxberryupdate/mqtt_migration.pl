@@ -12,29 +12,33 @@ my $oldcredfile = "$lbhomedir/config/plugins/mqttgateway/cred.json";
 
 LoxBerry::Update::init();
 
+execute( command => "mkdir --parents $lbhomedir/bin/mqtt/transform/custom", log => $log, ignoreerrors => 1 );
+execute( command => "mkdir --parents $lbhomedir/bin/mqtt/datastore", log => $log, ignoreerrors => 1 );
 install_packages();
 stop_mqttgateway();
 update_config();
-
-
 
 
 # Migration steps
 if( -e $oldconfigfile ) {
 	config_migration();
 	transformers_migration();
-	# remove_plugin_folders();
-	create_interface_symlinks();
+	remove_plugin_folders();
 	remove_plugindb_entry();
 	set_file_permissions();
 }
 
+create_interface_symlinks();
+
+start_mqttgateway();
 
 
 sub install_packages
 {
-	## Installation of required packages and Perl modules
-	apt_install( qw/ 
+
+LOGINF "Installing new packages";
+
+apt_install( qw/ 
 		mosquitto
 		mosquitto-clients
 		libhash-flatten-perl
@@ -45,7 +49,9 @@ sub install_packages
 	/);
 	
 	
+	
 }
+
 
 sub update_config
 {
@@ -133,9 +139,6 @@ sub transformers_migration
 	
 	LOGINF "Migrating MQTT Gateway user transformers";
 	
-	execute( command => "mkdir --parents $lbhomedir/bin/mqtt/transform/custom", log => $log );
-	execute( command => "mkdir --parents $lbhomedir/bin/mqtt/datastore", log => $log );
-	
 	if( -d "$lbhomedir/data/plugins/mqttgateway/transform/custom" ) {
 		execute( command => "cp -f -R $lbhomedir/data/plugins/mqttgateway/transform/custom/* $lbhomedir/bin/mqtt/transform/custom", log => $log );
 	}
@@ -153,13 +156,13 @@ sub remove_plugin_folders
 	### Removing plugin folders
 	###
 	
-	execute( command => 'rm -R -f $lbhomedir/bin/plugins/mqttgateway', log => $log );
-	execute( command => 'rm -R -f $lbhomedir/config/plugins/mqttgateway', log => $log );
-	execute( command => 'rm -R -f $lbhomedir/data/plugins/mqttgateway', log => $log );
-	execute( command => 'rm -R -f $lbhomedir/log/plugins/mqttgateway', log => $log );
-	execute( command => 'rm -R -f $lbhomedir/templates/plugins/mqttgateway', log => $log );
-	execute( command => 'rm -R -f $lbhomedir/webfrontend/html/plugins/mqttgateway', log => $log );
-	execute( command => 'rm -R -f $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway', log => $log );
+	execute( command => "rm -R -f $lbhomedir/bin/plugins/mqttgateway", log => $log );
+	execute( command => "rm -R -f $lbhomedir/config/plugins/mqttgateway", log => $log );
+	execute( command => "rm -R -f $lbhomedir/data/plugins/mqttgateway", log => $log );
+	execute( command => "rm -R -f $lbhomedir/log/plugins/mqttgateway", log => $log );
+	execute( command => "rm -R -f $lbhomedir/templates/plugins/mqttgateway", log => $log );
+	execute( command => "rm -R -f $lbhomedir/webfrontend/html/plugins/mqttgateway", log => $log );
+	execute( command => "rm -R -f $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway", log => $log );
 	
 }
 
@@ -169,7 +172,14 @@ sub create_interface_symlinks
 	### Creating symlinks for legacy interfaces
 	###
 	
-
+	# Generic GET/POST/JSON receiver
+	execute( command => "mkdir --parents $lbhomedir/webfrontend/html/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
+	execute( command => "ln -f -s $lbhomedir/webfrontend/html/mqtt/receive.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive.php", log => $log, ignoreerorrs => 1 );
+	execute( command => "ln -f -s $lbhomedir/webfrontend/html/mqtt/receive_pub.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive_pub.php", log => $log, ignoreerorrs => 1 );
+	
+	# HTTP interface
+	execute( command => "mkdir --parents $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
+	execute( command => "ln -f -s $lbhomedir/webfrontend/htmlauth/system/tools/mqtt.php $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway/mqtt.php", log => $log, ignoreerorrs => 1 );
 	
 }
 
@@ -196,5 +206,14 @@ sub set_file_permissions
 	### Set file permissions
 	###
 	
+	
+}
+
+sub start_mqttgateway
+{
+	
+	LOGINF "Starting MQTT Gateway";
+	`su loxberry -c "$lbhomedir/sbin/mqttgateway.pl  > /dev/null 2>&1 &"`;
+
 	
 }

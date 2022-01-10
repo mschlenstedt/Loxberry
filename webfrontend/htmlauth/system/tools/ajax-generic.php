@@ -52,6 +52,7 @@ else {
 
 $errorstr = null;
 $querytype = null;
+$replace = false;
 
 // Reading config file from url
 $configfile = checkPath($_GET['file']);
@@ -70,6 +71,11 @@ elseif( isset( $_GET['write'] ) ) {
 		$action = 'write';
 }
 
+if( isset( $_GET['replace'] ) ) {
+	$replace = true;
+	$action = 'write';
+}
+
 if( empty($action) ) {
 	$action = 'read';
 }
@@ -77,6 +83,7 @@ if( empty($action) ) {
 LOGTITLE("$action request for $configfile");
 
 LOGINF("Action is $action");
+LOGINF("Replace is $replace");
 
 // Read or write a specific section?
 if( isset( $_GET['section'] ) ) {
@@ -125,24 +132,42 @@ else {
 
 if( $action == 'write' ) {
 	
+	// Section given
 	if( $section ) {
-		$newconfig = array_replace_recursive($config["$section"], $datajson);
-		if( $newconfig == null ) {
-			LOGINF("Existing config was empty. Sent config gets new config.");
-			$config["$section"] = $datajson;
+		if( $replace != true ) {
+			// Merge
+			$newconfig = array_replace_recursive($config["$section"], $datajson);
+			if( $newconfig == null ) {
+				LOGINF("Existing config was empty. Sent config gets new config.");
+				$config["$section"] = $datajson;
+			}
+			else {
+				LOGINF("Existing config merged with new config.");
+				$config["$section"] = $newconfig;
+			}
 		}
 		else {
-			LOGINF("Existing config merged with new config.");
-			$config["$section"] = $newconfig;
+			// Replace
+			$config["$section"] = $datajson;
 		}
 	}
+	
+	
+	// No section - full file
 	else {
-		$newconfig = array_replace_recursive($config, $datajson);
-		if( $newconfig == null ) {
-			LOGINF("Existing config was empty. Sent config gets new config.");
-			$newconfig = $datajson;
+		if( $replace != true ) {
+			// Merge
+			$newconfig = array_replace_recursive($config, $datajson);
+			if( $newconfig == null ) {
+				LOGINF("Existing config was empty. Sent config gets new config.");
+				$newconfig = $datajson;
+			}
+			$config = $newconfig;
 		}
-		$config = $newconfig;
+		else {
+			// Replace
+			$config = $datajson;
+		}
 	}
 	
 	// LOGDEB("Configfile after merge:");
