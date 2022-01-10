@@ -73,7 +73,7 @@ if( $q->{ajax} ) {
 		$template->param("FORM_CONVERSIONS", 1);
 		conversions_form();
 	}
-	elsif ( $q->{form} eq "topics" ) {
+	elsif ( $q->{form} eq "incoming" ) {
 		$navbar{40}{active} = 1;
 		$template->param("FORM_TOPICS", 1);
 		$template->param("FORM_DISABLE_BUTTONS", 1);
@@ -102,21 +102,46 @@ sub print_form
 	my $helplink = "https://www.loxwiki.eu/x/S4ZYAg";
 	my $helptemplate = "help.html";
 	
-	our %navbar;
-	$navbar{10}{Name} = "Settings";
-	$navbar{10}{URL} = 'mqtt-gateway.cgi';
- 
- 	$navbar{20}{Name} = "Subscriptions";
-	$navbar{20}{URL} = 'mqtt-gateway.cgi?form=subscriptions';
- 
-	$navbar{30}{Name} = "Conversions";
-	$navbar{30}{URL} = 'mqtt-gateway.cgi?form=conversions';
- 
- 	$navbar{40}{Name} = "Incoming overview";
-	$navbar{40}{URL} = 'mqtt-gateway.cgi?form=topics';
- 
-	$navbar{90}{Name} = "Transformers & Logs";
-	$navbar{90}{URL} = 'mqtt-gateway.cgi?form=logs';
+	our @navbar = (
+		{
+			"Name" => "MQTT Basics",
+			"URL" => "/admin/system/mqtt.cgi"
+		},
+		{
+			"Name" => "MQTT Gateway",
+			"Submenu" => [
+				{
+					"Name" => "Gateway Settings",
+					"URL" => "/admin/system/mqtt-gateway.cgi"
+				},
+				{
+					"Name" => "Gateway Subscriptions",
+					"URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions"
+				},
+				{
+					"Name" => "Gateway Conversions",
+					"URL" => "/admin/system/mqtt-gateway.cgi?form=conversions"
+				},
+				{
+					"Name" => "Incoming Overview",
+					"URL" => "/admin/system/mqtt-gateway.cgi?form=incoming"
+				},
+				{
+					"Name" => "Gateway Transformers",
+					"URL" => "/admin/system/mqtt-gateway.cgi?form=transformers"
+				}
+			]
+		},
+		{
+			"Name" => "MQTT Finder",
+			"URL" => "/admin/system/tools/mqttfinder.cgi"
+		},
+		{
+			"Name" => "Log Files",
+			"URL" => "/admin/system/tools/showalllogs.cgi?package=mqtt"
+		}
+	);
+	
 		
 	LoxBerry::Web::lbheader($plugintitle, $helplink, $helptemplate);
 

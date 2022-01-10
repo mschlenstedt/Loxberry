@@ -1,11 +1,3 @@
-<style>
-
-
-
-</style>
-
-
-
 <div id="mqttapp">
 	<h1>{{sl.heading}}</h1>
 	<p v-html="sl.intro"></p>
@@ -120,6 +112,9 @@
 
 <script>
 	
+	const mqtt_generic = '/admin/system/tools/ajax-generic.php';
+	
+	
 	const mqttapp = {
 	  
 	  setup() {
@@ -181,14 +176,14 @@
 				};
 				var self=this;
 				// Update general.json
-				fetch('/admin/system/tools/ajax-generic.php?file=$lbsconfigdir/general.json&section=Mqtt&write', requestOptions)
+				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&write', requestOptions)
 				.then( function(response) {
 					console.log(response);
 					if( response.ok != true ) {
 						self.data_save_error = true;
 					}
 					else {
-						fetch('/admin/system/mqtt-main.cgi?action=mosquitto_set');
+						fetch('/admin/system/tools/mqtt-ajax.php?ajax=mosquitto_set');
 						self.data_save_error = false;
 						self.data_saved = true;
 						self.data_changed = false;
@@ -202,7 +197,7 @@
 						"brokeraddress" : this.$data.Mqtt.Brokerhost+':'+this.$data.Mqtt.Brokerport
 					} )
 				};
-				fetch('/admin/system/tools/ajax-generic.php?file=LBPCONFIG/mqttgateway/mqtt.json&section=Main&write', legacyMqttjsonOptions );
+				fetch(mqtt_generic+'?file=LBPCONFIG/mqttgateway/mqtt.json&section=Main&write', legacyMqttjsonOptions );
 				// Update legacy mqtt cred.json
 				const legacyMqttcredjsonOptions = {
 					method: "POST",
@@ -212,14 +207,14 @@
 						"brokerpass" : this.$data.Mqtt.Brokerpass
 					} )
 				};
-				fetch('/admin/system/tools/ajax-generic.php?file=LBPCONFIG/mqttgateway/cred.json&section=Credentials&write', legacyMqttcredjsonOptions );
+				fetch(mqtt_generic+'?file=LBPCONFIG/mqttgateway/cred.json&section=Credentials&write', legacyMqttcredjsonOptions );
 				
 			},
 			
 			getData() {
 				console.log("Called getData");
 				// fetch('/admin/system/tools/ajax-generic.php?file=$lbsconfigdir/general.json&section=Mqtt&read')
-				fetch('/admin/system/tools/ajax-generic.php?file=$lbsconfigdir/general.json&section=Mqtt&read')
+				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&read')
 					.then( response => response.json() )
 					.then( data => { 
 						if( !data?.Brokerhost ) data.Brokerhost = 'localhost';

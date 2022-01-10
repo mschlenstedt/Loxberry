@@ -16,6 +16,7 @@ if (!isset($_SERVER["HTTP_HOST"])) {
 $cfgfile = "mqttgateway.json";
 $datafile = "/dev/shm/mqttgateway_topics.json";
 $ajax = !empty( $_POST['ajax'] ) ? $_POST['ajax'] : "";
+$ajax = empty($ajax) ? $_GET['ajax'] : $ajax;
 
 if( $ajax == 'relayed_topics' ) {
 	if( !empty($_POST['udpinport'] ) ) {
@@ -180,6 +181,10 @@ elseif( $ajax == "reconnect" ) {
 	} else {
 		error_log("MQTT index.cgi: Ajax reconnect FAILED\n");
 	}
+}
+
+elseif( $ajax == "mosquitto_set" ) {
+	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=mosquitto_set" );
 }
 
 elseif( $ajax == 'publish_json' ) {
