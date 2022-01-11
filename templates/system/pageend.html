@@ -5,7 +5,7 @@
 		<!-- /content -->
 		
 		<!-- Popup: reboot.force -->
-		<div data-role="popup" id="popupRebootForce" data-overlay-theme="a" data-dismissible="true" style="min-width:600px;min-height:300px;" data-theme="a" class="ui-corner-all" data-position-to="#pagetitle">
+		<div data-role="popup" id="popupRebootForce" data-overlay-theme="a" data-dismissible="true" style="min-width:600px;min-height:300px;" data-theme="a" class="ui-corner-all">
 			<div data-role="header" >
 				<h1 class="ui-title" style="text-align: center;"><TMPL_VAR POWER.FORCEREBOOT_HEADER></h1>
 			</div>
@@ -30,7 +30,8 @@
 			</div>
 				<a id="btnhome" href="/admin/system/index.cgi" data-role="button" data-icon="home" data-iconpos="notext">Hauptmen&uuml;</a>&nbsp;&nbsp;
 				<a id="btnsystem" href="/admin/system/index.cgi?form=system" data-role="button" data-icon="bars" data-iconpos="notext">Einstellungen</a>&nbsp;&nbsp;
-				<a id="btnpower" href="/admin/system/power.cgi" data-role="button" data-icon="power" data-iconpos="notext">Power</a>
+				<a id="btnpower" href="/admin/system/power.cgi" data-role="button" data-icon="power" data-iconpos="notext">Power</a>&nbsp;&nbsp;
+				<a style="display:none" id="btnnotifications" href="/admin/system/tools/showallnotifications.cgi" data-role="button" data-icon="alert" data-iconpos="notext">Notifications</a>&nbsp;&nbsp;
 				<div data-href="/admin/system/power.cgi"      id="btnpower_alert" style="position:absolute; top: 4px, left: 0px, pointer-events: none; visibility:hidden; width:30px; height:30px; padding:0px, border:0px, z-index:10000, background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>
 				<div data-href="/admin/system/logmanager.cgi" id="update_alert"   style="margin-left:15px; cursor:default; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
 		</div>

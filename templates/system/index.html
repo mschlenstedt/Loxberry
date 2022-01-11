@@ -147,6 +147,30 @@ function updatenotify() {
 		
 		// NavBar injection
 		console.log ("System Infos/Errors:", systeminfos, systemerrors, "Plugin Infos/Errors:", plugininfos, pluginerrors);
+
+		if( pluginerrors > 0 ) 
+			navbarglobal.$data.menu[0].errorCount=pluginerrors+plugininfos;
+		else { 
+			navbarglobal.$data.menu[0].errorCount=0;
+			navbarglobal.$data.menu[0].infoCount=plugininfos;
+		}
+		if( systemerrors > 0 )
+			navbarglobal.$data.menu[1].errorCount=systemerrors+systeminfos;
+		else {
+			navbarglobal.$data.menu[1].errorCount=0;
+			navbarglobal.$data.menu[1].errorCount=systeminfos;
+		}
+		
+		if( plugininfos+pluginerrors+systeminfos+systemerrors > 0 ) {
+			if( pluginerrors+systemerrors > 0 ) $("#btnnotifications").css("background-color", "red");
+			else $("#btnnotifications").css("background-color", "blue");
+			$("#btnnotifications").fadeIn();
+			
+		} else {
+			$("#btnnotifications").fadeOut();
+		}
+			
+		/*
 		if (pluginerrors != 0) $("#notifyRedNavBar1").text(pluginerrors).fadeIn('slow');
 		else $("#notifyRedNavBar1").text('0').fadeOut('slow');
 		if (plugininfos != 0) $("#notifyBlueNavBar1").text(plugininfos).fadeIn('slow');
@@ -155,7 +179,7 @@ function updatenotify() {
 		else $("#notifyRedNavBar2").text('0').fadeOut('slow');
 		if (systeminfos != 0) $("#notifyBlueNavBar2").text(systeminfos).fadeIn('slow');
 		else $("#notifyBlueNavBar2").text('0').fadeOut('slow');
-		
+		*/
 	});
 };
 
