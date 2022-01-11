@@ -148,17 +148,21 @@ function updatenotify() {
 		// NavBar injection
 		console.log ("System Infos/Errors:", systeminfos, systemerrors, "Plugin Infos/Errors:", plugininfos, pluginerrors);
 
-		if( pluginerrors > 0 ) 
+		if( pluginerrors > 0 ) {
 			navbarglobal.$data.menu[0].errorCount=pluginerrors+plugininfos;
+			navbarglobal.$data.menu[0].infoCount=0;
+		}
 		else { 
 			navbarglobal.$data.menu[0].errorCount=0;
 			navbarglobal.$data.menu[0].infoCount=plugininfos;
 		}
-		if( systemerrors > 0 )
+		if( systemerrors > 0 ) {
 			navbarglobal.$data.menu[1].errorCount=systemerrors+systeminfos;
+			navbarglobal.$data.menu[1].infoCount = 0;
+		}
 		else {
 			navbarglobal.$data.menu[1].errorCount=0;
-			navbarglobal.$data.menu[1].errorCount=systeminfos;
+			navbarglobal.$data.menu[1].infoCount=systeminfos;
 		}
 		
 		if( plugininfos+pluginerrors+systeminfos+systemerrors > 0 ) {
