@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "3.0.0.1";
+our $VERSION = "3.0.0.2";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -1711,7 +1711,9 @@ sub get_notifications_html
 		%LoxBerry::System::htmltemplate_options,
 	);
 	
-	$maintemplate->param( 'SHOW_HEADER' => 1 );
+	if( !$p{package} ) {
+		$maintemplate->param( 'SHOW_HEADER' => 1 );
+	}
 	
 	my @plugins = LoxBerry::System::get_plugins();
 		
@@ -1747,7 +1749,7 @@ sub get_notifications_html
 		}
 		else {
 			$notification{ICONURI} = '/system/images/LB_64.png';
-			$notification{TITLE} = $not->{PACKAGE};
+			$notification{TITLE} = ucfirst($not->{PACKAGE}) . ' / ' . ucfirst($not->{NAME});
 		}
 		
 		my $logfilepath;
@@ -1804,7 +1806,7 @@ sub get_notifications_html
 	
 	$maintemplate->param( 'NOTIFICATIONS' => \@notify_html);
 	$maintemplate->param( 'RAND' => int(rand(30000)) );
-	$maintemplate->param( 'HAS_NOTIFICATIONS' => scalar @notify_html);
+	$maintemplate->param( 'NOTIFICATIONCOUNT' => scalar @notify_html);
 	my %SL = LoxBerry::System::readlanguage($maintemplate, undef, 1);
 	#print STDERR 
 	return $maintemplate->output();

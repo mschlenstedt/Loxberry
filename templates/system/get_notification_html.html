@@ -26,9 +26,11 @@
 					<img src="/system/images/notification_error_small.svg">
 					</TMPL_IF>
 				</div>
-				<div style="vertical-align: middle; width:20%; display: table-cell; padding:7px;font-size:130%;">
-					<TMPL_VAR TITLE>
-				</div>
+				<TMPL_IF SHOW_HEADER>
+					<div style="vertical-align: middle; width:20%; display: table-cell; padding:7px;font-size:130%;">
+						<TMPL_VAR TITLE>
+					</div>
+				</TMPL_IF>
 				<div style='vertical-align: middle; width:75%; display: table-cell; padding: 7px;'>
 					<b><TMPL_VAR DATESTR>:</b> <TMPL_VAR CONTENTHTML>
 				</div>
