@@ -57,10 +57,10 @@
 						{{get_notification_count( element )}}
 						</div>
 						<transition name="fade">
-						<div style="position:relative; right:25px" class="notifyBlueNavBar" v-show="menu[index]?.infoCount>0">{{element.infoCount}}</div>
+						<div style="position:relative; right:25px" class="notifyBlueNavBar" v-show="element?.infoCount>0">{{element.infoCount}}</div>
 						</transition>
 						<transition name="fade">
-						<div style="position:relative; right:25px" class="notifyRedNavBar" v-show="menu[index]?.errorCount>0">{{element.errorCount}}</div>
+						<div style="position:relative; right:25px" class="notifyRedNavBar" v-show="element?.errorCount>0">{{element.errorCount}}</div>
 						</transition>
 					</template>
 				</div>
@@ -70,10 +70,10 @@
 							{{subelement.Name}}
 							{{get_notification_count( subelement )}}
 						<transition name="fade">
-						<div style="position:relative;right:-5px;" class="notifyBlueNavBar">{{element.infoCount}}</div>
+						<div style="position:relative;right:-5px;" class="notifyBlueNavBar" v-show="subelement?.infoCount>0">{{element.infoCount}}</div>
 						</transition>
 						<transition name="fade">
-						<div style="position:relative;right:-5px;" class="notifyRedNavBar">{{element.errorCount}}</div>
+						<div style="position:relative;right:-5px;" class="notifyRedNavBar" v-show="subelement?.errorCount>0">{{element.errorCount}}</div>
 						</transition>
 						</div>
 						
