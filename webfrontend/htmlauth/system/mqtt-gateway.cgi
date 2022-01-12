@@ -141,7 +141,7 @@ sub print_form
 		},
 		{
 			"Name" => "MQTT Finder",
-			"URL" => "/admin/system/tools/mqttfinder.cgi"
+			"URL" => "/admin/system/mqtt-finder.cgi"
 		},
 		{
 			"Name" => "Log Files",

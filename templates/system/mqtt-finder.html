@@ -145,29 +145,10 @@ function getMqttData() {
 		return;
 	
 	getmqttdata_running = true;
-	$.post( "ajax-mqttfinder.php", { 
-			action : "getmqttdata",  
+	$.post( "tools/mqtt-ajax.php", { 
+			ajax : "getmqttfinderdata",  
 	})
 	.done(function(data){
-		// console.log("mqtt data done", data);
-		/*
-		if( data.topics ) {
-			mqttlivedata = Object.keys(data.topics)
-			.map(key => ({topic: key, data: data.topics[key]}));
-			mqttlivedata.sort( dynamicSortMultiple("topic"));
-			
-		} else {
-			mqttlivedata = undefined;
-		}
-		
-		
-		if( data.state ) {
-			mqttlivestate = data.state;
-		} else {
-			mqttlivestate = undefined;
-		}
-		*/
-		
 		if( data.incoming ) {
 			// console.log( "Setting mqttData" );
 			mqttData = data.incoming;

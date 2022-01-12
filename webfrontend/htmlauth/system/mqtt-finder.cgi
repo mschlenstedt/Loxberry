@@ -1,14 +1,28 @@
 #!/usr/bin/perl
-use warnings;
-use strict;
+
+##########################################################################
+# Modules
+##########################################################################
+
 use LoxBerry::System;
 use LoxBerry::Web;
+use CGI::Simple;
 
-my $plugintitle = "MQTT (V" . LoxBerry::System::lbversion() . ")";
-my $helplink = "https://www.loxwiki.eu/x/S4ZYAg";
-my $helptemplate = "help.html";
+use warnings;
+use strict;
 
-	our @navbar = (
+my $q = CGI::Simple->new;
+my $params = $q->Vars; 
+my $nopanels = defined $params->{'nopanels'};
+
+our $template_title = "MQTT Finder";
+our $helplink = "https://loxwiki.atlassian.net/l/c/t11H5aez";
+$helplink = "nopanels" if( $nopanels );
+
+# Version of this script
+my $version = "3.0.0.1";
+
+our @navbar = (
 		{
 			"Name" => "MQTT Basics",
 			"URL" => "/admin/system/mqtt.cgi"
@@ -47,16 +61,23 @@ my $helptemplate = "help.html";
 			"URL" => "/admin/system/mqtt-gateway.cgi?form=logs"
 		}
 	);
-	
-my $template = HTML::Template->new(
-	filename => "$lbstemplatedir/mqtt.html",
+
+
+my $maintemplate = HTML::Template->new(
+	filename => "$lbstemplatedir/mqtt-finder.html",
 	global_vars => 1,
 	loop_context_vars => 1,
-	die_on_bad_params => 0,
+	die_on_bad_params=> 0,
+# 	associate => $cgi,
+#	%htmltemplate_options,
+	#debug => 1,
 );
-	
-LoxBerry::Web::lbheader($plugintitle, $helplink, $helptemplate);
 
-print $template->output();
+my %SL = LoxBerry::System::readlanguage($maintemplate);
+
+LoxBerry::Web::lbheader($template_title, $helplink);
+
+print $maintemplate->output();
 
 LoxBerry::Web::lbfooter();
+

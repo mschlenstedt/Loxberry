@@ -12,9 +12,10 @@ if (!isset($_SERVER["HTTP_HOST"])) {
   parse_str($argv[1], $_POST);
 }
 
-
 $cfgfile = "mqttgateway.json";
 $datafile = "/dev/shm/mqttgateway_topics.json";
+$finderdatafile = "/dev/shm/mqttfinder.json";
+
 $ajax = !empty( $_POST['ajax'] ) ? $_POST['ajax'] : "";
 $ajax = empty($ajax) ? $_GET['ajax'] : $ajax;
 
@@ -215,6 +216,17 @@ elseif( $ajax == 'restartgateway' ) {
 	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway" );
 
 }	
+
+elseif( $ajax == 'getmqttfinderdata' ) {
+	$fp = fopen($finderdatafile, "r");
+	if( flock($fp, LOCK_SH) ) {
+		echo fread($fp, 5*1024*1024);
+		fclose($fp);
+	}
+	else {
+		header("HTTP/1.0 404 Not Found");
+	}
+}
 
 // Unknown request
 else {
