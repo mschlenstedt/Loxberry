@@ -93,6 +93,7 @@
 	justify-content: center;
 	align-items: center;
 	background-color:#3d3d3d;
+	/* min-height:35px; */
 }
 .vuenavbarelement {
 	flex:1;
@@ -115,7 +116,7 @@
 	flex-wrap:nowrap;
 	justify-content: flex-start;
 	align-items: stretch;
-	//background-color:#e6e6e6;
+	/* background-color:#e6e6e6; */
 	
 }
 .vuenavbarsubelement {
@@ -155,8 +156,8 @@
 <script src="/system/scripts/vue3/vue3.js"></script>
 <script>
 
-if( document.getElementById('jsonmenu') ) {
-
+function createnavbar() {
+	console.log("jsonmenu init");
 	const vuenavbar = {
 		data() {
 			var menu = this.getMenuData();
@@ -304,7 +305,11 @@ if( document.getElementById('jsonmenu') ) {
 		navbarglobal = Vue.createApp(vuenavbar).mount('#vuenavbar');
 		// Navbar Refresh by navbarglobal.$forceUpdate();
 }
-	
+
+if( document.getElementById('jsonmenu') ) {
+	createnavbar();
+}
+
 </script>
 		
 		
