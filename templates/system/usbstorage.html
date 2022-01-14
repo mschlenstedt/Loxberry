@@ -1,8 +1,11 @@
 <!-- ** START template/system/usbstorage.html ************************************************************************************ -->
 
-<TMPL_IF FORM>
+<TMPL_IF OVERVIEW>
 
 	<center>
+		<a href="#" data-role="button" id="btnformat" data-inline="true" data-mini="true" data-icon="delete"
+                                        onClick="window.open('/admin/system/tools/format_device.cgi',
+                                        'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')"><TMPL_VAR USBSTORAGE.BUTTON_FORMAT></a>
 		<a id="debug" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/usbstorage.cgi?a=debuglog"><TMPL_VAR USBSTORAGE.BUTTON_ADD_DEBUGLOG></a>
 		<TMPL_IF DEBUGLOGEXISTS>
 		<a id="log" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/usbstorage_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR USBSTORAGE.BUTTON_SHOW_DEBUGLOG></a>
@@ -40,6 +43,8 @@
 				<td><TMPL_VAR USBSTORAGE_CAPACITY></td>
 				<td><TMPL_VAR USBSTORAGE_STATE></td>
 				<td><a id="browse<TMPL_VAR USBSTORAGE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/usb/<TMPL_VAR USBSTORAGE_DEVICE>" target="_self"><TMPL_VAR USBSTORAGE.BUTTON_BROWSE></a>
+				<a id="format<TMPL_VAR USBSTORAGE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="#"
+                                        onClick="window.open('/admin/system/tools/format_device.cgi?d=<TMPL_VAR USBSTORAGE_BLOCKDEVICE>', 'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')"><TMPL_VAR USBSTORAGE.BUTTON_FORMAT></a>
 				</td>
 			</tr>
 			</TMPL_LOOP>

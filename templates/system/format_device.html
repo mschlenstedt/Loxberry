@@ -1,0 +1,173 @@
+<!-- SecurePIN --> 
+<div id="securepin_block" style="margin: 0 auto; width:350px; display:none">
+	<TMPL_VAR SECUREPIN.ENTER_SECUREPIN>
+	<input name="securepin" id="securepin" type="text" onkeypress="return AddKeyPress(event, $('#check_securepin'));">
+	<button class="ui-btn ui-btn-icon-right ui-corner-all" id="check_securepin" data-inline="true"><TMPL_VAR COMMON.BUTTON_OK></button>
+	
+	<div class="hint" id="check_hint" style="padding: 5px 5px 5px 5px;">&nbsp;</div>
+	<br>
+	<div class="path" style="background: #FF8080; font-color: black; text-shadow: none; border: black 1px solid; padding: 5px;">
+		<p style="font-weight: bold;">
+			<TMPL_VAR SECUREPIN.WARNING_TITLE>
+		</p>
+		<hr>
+		<p>
+			<TMPL_VAR SECUREPIN.PREVENT_SPY>
+		</p>
+	</div>
+</div>
+
+<!-- Main Form --> 
+<div id="main_form" style="display:none;">
+<p><TMPL_VAR USBSTORAGE.HINT_INTRODUCTION></p>
+<br>
+
+		<TMPL_VAR DROPDOWN>
+
+		<button	id="btnformat" data-role="button" data-inline="true" data-mini="false" data-icon="check" style="background: #FF6339" onclick="format();">
+		<TMPL_VAR USBSTORAGE.BUTTON_FORMAT_NOW>
+		</button>
+		<button	id="btncancel" data-role="button" data-inline="true" data-mini="false" data-icon="delete" onclick="self.close()">
+		<TMPL_VAR COMMON.BUTTON_CANCEL>
+		</button>
+		<button	id="btnlogfile" data-role="button" data-inline="true" data-mini="false" data-icon="arrow-d" 
+			onClick="window.open('/admin/system/tools/logfile.cgi?header=html&format=template&logfile=' + $('#logfile').html() )">
+		<TMPL_VAR COMMON.BUTTON_LOGFILE>
+		</button>
+		<div id="logfile" style="display:none;"></div>
+		<div id="logfilerefresh" style="display:none;"></div>
+</div>
+
+<script>
+
+// Set language
+$(function() {
+
+	$('select[name=devices]').attr('data-mini','true');
+	$('#btnformat').addClass('ui-disabled');
+	$('#devices').addClass('ui-disabled');
+	$('#devices').selectmenu('refresh');
+	$('#btnlogfile').addClass('ui-disabled');
+
+	// Check SecurePIN by ajax and load form data
+	$("#check_securepin").click(function(){
+		console.log("Check securepin called");
+		checkSecurePIN();
+	});
+	
+	// Set SecurePIN from session storage
+	$('#securepin').val(sessionStorage.getItem("securePIN"));
+	if( $('#securepin').val() ) {
+		$('#check_securepin').trigger("click");
+	} else {
+		$("#securepin_block").css( 'display', 'block');
+	}
+
+	interval = window.setInterval(function(){ checkformatstatus(); }, 3000);
+	checkformatstatus();
+
+});
+	
+function checkSecurePIN() {
+
+	console.log("Checking secure pin");
+	$("#check_securepin").attr("disabled", true);
+	$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR SECUREPIN.CHECK_WAIT>");
+	$.ajax( { 
+			type: 'POST',
+			url: '/admin/system/ajax/ajax-format_devices.cgi', 
+			data: { action: 'checksecpin', secpin: $('#securepin').val() }
+		} )
+	.fail(function( data ) {
+		console.log( "Error", data );
+		$("#securepin_block").css( 'display', 'block');
+		$("#main_form").css( 'display', 'none');
+		$("#check_hint").attr("style", "color:red").html("<TMPL_VAR SECUREPIN.ERROR_GENERIC>: "+data.statusText);
+	})
+	.done(function( data ) {
+		console.log( "getsecpin Success", data );
+		if( data.response && data.response != "" ) {
+			$("#securepin_block").css( 'display', 'block');
+			$("#main_form").css( 'display', 'none');
+			$("#check_hint").attr("style", "color:red").html('<TMPL_VAR SECUREPIN.ERROR_WRONG>');
+			return;
+		}
+		
+		// Save PIN to session storage
+		sessionStorage.setItem("securePIN", $('#securepin').val());
+		$("#securepin_block").css( 'display', 'none');
+		$("#main_form").css( 'display', 'block');
+		
+	})
+	.always(function( data ) {
+		console.log( "Finished" );
+		$("#check_securepin").attr("disabled", false);
+	});
+	
+};
+
+function checkformatstatus() {
+
+	console.log("Checking format status");
+	$.ajax( { 
+			type: 'POST',
+			url: '/admin/system/ajax/ajax-format_devices.cgi', 
+			data: { action: 'checkformatstatus' }
+		} )
+	.fail(function( data ) {
+		console.log( "Error", data );
+		$('#btnlogfile').addClass('ui-disabled');
+	})
+	.done(function( data ) {
+		console.log( "checkformatstatus Success", data );
+		if( data.response && data.response != "" ) {
+			$('#btnformat').removeClass('ui-disabled');
+			$('#devices').removeClass('ui-disabled');
+			$('#devices').selectmenu('refresh');
+		} else {
+			$('#btnformat').addClass('ui-disabled');
+			$('#devices').addClass('ui-disabled');
+			$('#devices').selectmenu('refresh');
+		}
+		if( data.logfile && data.logfile != "" && $("#logfilerefresh").html() == "1" ) {
+			$("#logfile").html(data.logfile);
+			$('#btnlogfile').removeClass('ui-disabled');
+		} else {
+			$('#btnlogfile').addClass('ui-disabled');
+		}
+	})
+	.always(function( data ) {
+		console.log( "Finished" );
+	});
+	
+};
+
+function format() {
+
+	console.log("Starting formating");
+	$('#btnformat').addClass('ui-disabled');
+	$('#devices').addClass('ui-disabled');
+	$('#devices').selectmenu('refresh');
+	$("#logfilerefresh").html('1');
+	$.ajax( { 
+			type: 'POST',
+			url: '/admin/system/ajax/ajax-format_devices.cgi', 
+			data: { action: 'format',
+				secpin: $('#securepin').val(),
+				device: $('#devices').val() 
+			}
+		} )
+	.fail(function( data ) {
+		console.log( "Error", data );
+	})
+	.done(function( data ) {
+		console.log( "format Success", data );
+		checkformatstatus();
+	})
+	.always(function( data ) {
+		console.log( "Finished" );
+	});
+	
+};
+
+</script>
