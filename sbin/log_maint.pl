@@ -102,7 +102,7 @@ sub logfiles_cleanup
 	$deletefactor2 = 5; # in %
 	$minfreespace1 = 200; # in MB
 	$minfreespace2 = 50; # in MB
-	my $size = 1; # in MB
+	my $size = 3; # in MB
 	my $logdays = 30; # in days
 	my $gzdays = 60; # in days
 
