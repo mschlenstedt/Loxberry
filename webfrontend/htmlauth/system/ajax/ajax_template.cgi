@@ -18,6 +18,8 @@ my $q = $cgi->Vars;
 
 my $log = LoxBerry::Log->new (
     name => 'AJAX Template',
+	package => 'core',
+	logdir => $lbstmpfslogdir,
 	stderr => 1,
 	loglevel => 7
 );

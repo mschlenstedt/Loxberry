@@ -12,7 +12,7 @@ my $version = "3.0.0";
 # Create a logging object
 my $log = LoxBerry::Log->new ( 
 	package => 'core', 
-	name => 'Format_Device', 
+	name => 'Format Device', 
 	logdir => $lbslogdir, 
 	stdout => 1 );
 
@@ -69,6 +69,7 @@ foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
 			LOGDEB "This is the target partition.";
 			$targetdevice->{target} = $partition->{name};
 			$targetdevice->{block} = $blockdevice->{name};
+			$targetdevice->{oldmountpoint} = $partition->{mountpoint};
 			$targetdevice->{isblock} = 0;
 		}
 		if( "/dev/".$partition->{name} eq $part_boot ) {
@@ -104,9 +105,8 @@ if( scalar @{$lsblk->{blockdevices}} <= 1 ) {
 	exit(1);
 }
 
-print "\n";
 if ( !$destpath  ) {
-	print "You can format a whole device (like an USB stick): in this case all\n";
+	print "\n\nYou can format a whole device (like an USB stick): in this case all\n";
 	print "existing partitions on this device will be deleted and one partition\n";
 	print "with the size of the whole device will be created. You will loose all\n";
 	print "data on this device!\n\n";
@@ -125,7 +125,7 @@ if ( !$destpath  ) {
 	}
 	print "\nWARNING! The process will \033[1mCOMPLETELY DELETE\033[0m your selected target device\n";
 	print "or partition. Double check before starting!\n";
-	print "\n";
+	print "\n\n";
 
 	exit(0);
 }
@@ -155,18 +155,21 @@ LOGINF "This is a block device. All partitions on this device will be deleted!" 
 LOGINF "/dev/$targetdevice->{block} Type $targetdevice->{blocktype} Size " . LoxBerry::System::bytes_humanreadable($targetdevice->{blocksize});
 LOGINF "-> Partition /dev/$targetdevice->{partname} Size " . LoxBerry::System::bytes_humanreadable($targetdevice->{partsize}) ." " . uc($targetdevice->{parttype}) if !$targetdevice->{isblock};
 
-print "\n\033[1mPress Ctrl-C now, if you have changed your mind\033[0m (I will wait 15 sec and then\n";
-print "continue automatically).\n";
-sleep(15);
+LOGINF "Press Ctrl-C now, if you have changed your mind (I will wait 5 sec and then continue automatically).";
+sleep(5);
 
 ##################################
 # Start
 ##################################
-print "Too late - let the game begin!\n\n";
+LOGINF "Too late - let the game begin!";
 
 # Stop autofs
 LOGINF "Stopping autofs service";
 execute( command => "/bin/systemctl stop autofs", log => $log );
+
+LOGINF "Syncing all filesystems";
+execute( command => "/bin/sync", log => $log );
+sleep 1;
 
 # Unmount mounted destination partitions
 for my $i (1..3) {
@@ -174,11 +177,17 @@ for my $i (1..3) {
 	if ($targetdevice->{isblock}) {
 		foreach my $partition ( @{$targetdevice->{blockchildren}} ) {
 			LOGDEB "umount ".$partition->{path};
-			my ($rc) = execute( command => "/bin/umount -q -f -A ".$partition->{path} );
+			my ($rc) = execute( command => "/bin/umount -q -f -A ".$partition->{path}, log => $log );
+			if ($rc eq "0" && -e $partition->{mountpoint}) {
+				execute ( command => "rm -rf $partition->{mountpoint}" );
+			}
 		}
 	} else {
 		LOGDEB "umount /dev/".$targetdevice->{target};
-		my ($rc) = execute( command => "/bin/umount -q -f -A /dev/".$targetdevice->{target} );
+		my ($rc) = execute( command => "/bin/umount -q -f -A /dev/".$targetdevice->{target}, log => $log );
+		if ($rc eq "0" && -e $targetdevice->{oldmountpoint}) {
+			execute ( command => "rm -rf $targetdevice->{oldmountpoint}" );
+		}
 	}
 	sleep 1;
 }
@@ -290,12 +299,36 @@ EOF
 `;
 };
 
+# Unmount mounted destination partitions
+for my $i (1..3) {
+	LOGINF "Unmount Try $i";
+	if ($targetdevice->{isblock}) {
+		foreach my $partition ( @{$targetdevice->{blockchildren}} ) {
+			LOGDEB "umount ".$partition->{path};
+			my ($rc) = execute( command => "/bin/umount -q -f -A ".$partition->{path}, log => $log );
+			if ($rc eq "0" && -e $partition->{mountpoint}) {
+				execute ( command => "rm -rf $partition->{mountpoint}" );
+			}
+		}
+	} else {
+		LOGDEB "umount /dev/".$targetdevice->{target};
+		my ($rc) = execute( command => "/bin/umount -q -f -A /dev/".$targetdevice->{target}, log => $log );
+		if ($rc eq "0" && -e $targetdevice->{oldmountpoint}) {
+			execute ( command => "rm -rf $targetdevice->{oldmountpoint}" );
+		}
+	}
+	sleep 1;
+}
+
 LOGINF "Formatting ext4 data partition $destpath (takes a minute or two)";
-execute( command => "mkfs.ext4 ".$destpath, log => $log );
+execute( command => "/sbin/mkfs.ext4 ".$destpath, log => $log );
 
 # Re-Stop autofs
 LOGINF "Starting autofs service";
 execute( command => "/bin/systemctl start autofs", log => $log );
+
+LOGINF "Running partprobe to re-read the new partition table";
+execute( command => "/sbin/partprobe", log => $log );
 
 LOGOK "We are finished. Hopefully everything went fine. You may have to dis- and reconnect your external device so that LoxBerry can detect it cleanly.";
 
