@@ -25,11 +25,9 @@ LOGINF "Starting MQTT Gateway migration";
 
 execute( command => "$lbhomedir/sbin/loxberryupdate/mqtt_migration.pl", log => $log, ignoreerrors => 1 );
 
-
-
 ## If this script needs a reboot, a reboot.required file will be created or appended
 # LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
-# reboot_required("LoxBerry Update requests a reboot.");
+reboot_required("LoxBerry Update requests a reboot.");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
