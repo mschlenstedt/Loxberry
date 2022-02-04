@@ -239,6 +239,7 @@ function createnavbar() {
 			},
 			
 			menuclick( mainindex, subindex=null, event=null ) {
+				event.preventDefault();
 				console.log("menuclick", mainindex, subindex, event);
 				if( event != false ) {
 					var pointertype = event.pointerType;
