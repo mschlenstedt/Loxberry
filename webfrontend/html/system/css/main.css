@@ -557,3 +557,31 @@ a:link.nolinkstyle
 	background-color: #6dac20 !important;
 	color:white !important;
 }
+
+/*  Left system navigation menu START */
+ul.lb-systemmenu li
+{
+	text-shadow:none;
+	padding: 7px 20px 7px 20px !important;
+	color: white !important;
+	font-size: 13px;
+	font-weight: bold;
+	
+}
+ul.lb-systemmenu a
+{
+	color: #e6e6e6 !important;
+	text-decoration:none;
+}
+ul.lb-systemmenu li:hover {
+	background-color: #a0df53;
+	color: black !important;
+}
+ul.lb-systemmenu li:hover a {
+	color: black !important;
+}
+
+ul.lb-systemmenu li.lb-nonhover {
+	pointer-events: none !important;
+}
+/*  Left system navigation menu END */
