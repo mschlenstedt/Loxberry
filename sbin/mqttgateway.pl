@@ -439,6 +439,7 @@ sub received
 					OnRefGlob => '',
 					OnRefScalar  => '',
 					OnRefRef => '',
+					# DisableEscapes => 1
 				});
 				my $flat_hash = $flatterer->flatten($contjson);
 				for my $record ( keys %$flat_hash ) {
@@ -833,7 +834,7 @@ sub read_config
 		# Values from mqttgateway.json
 		if(! defined $cfg->{Main}{msno}) { $cfg->{Main}{msno} = 1; }
 		if(! defined $cfg->{Main}{udpport}) { $cfg->{Main}{udpport} = 11883; }
-		if(! defined $cfg->{Main}{resetaftersendms}) { $cfg->{Main}{resetaftersendms} = 13; }
+		if(! defined $cfg->{Main}{resetaftersendms} or $cfg->{Main}{resetaftersendms} < 1 ) { $cfg->{Main}{resetaftersendms} = 13; }
 		if(! defined $pollms ) {
 			$pollms = defined $cfg->{Main}{pollms} ? $cfg->{Main}{pollms} : 50; 
 		}

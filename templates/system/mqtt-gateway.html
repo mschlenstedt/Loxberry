@@ -79,21 +79,25 @@
 		<h2>Still more settings</h2>
 		
 		<div>
-		<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-        	<legend>Data Transfer Performance</legend>
-			<input type="radio" name="Main.cpuperf" id="Main.cpuperf-50" value="50">
-			<label for="Main.cpuperf-50">NO LIMIT!</label>
-			<input type="radio" name="Main.cpuperf" id="Main.cpuperf-010" value="10">
-			<label for="Main.cpuperf-010">Really fast</label>
-			<input type="radio" name="Main.cpuperf" id="Main.cpuperf-005" value="5">
-			<label for="Main.cpuperf-005">Fast (Default)</label>
-			<input type="radio" name="Main.cpuperf" id="Main.cpuperf-002" value="2.5">
-			<label for="Main.cpuperf-002">Moderate</label>
-			<input type="radio" name="Main.cpuperf" id="Main.cpuperf-001" value="1">
-			<label for="Main.cpuperf-001">Energy Saver</label>
-			<p><br>This influences the routing performance of the MQTT Gateway. Compared, the old behaviour (before this setting exists) was between <i>Moderate</i> and <i>Energy Saver</i>. Changing the setting takes some minutes to adjust.</p>
-		</fieldset>
-	
+			<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+	        	<legend>Data Transfer Performance</legend>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-50" value="50">
+				<label for="Main.cpuperf-50">NO LIMIT!</label>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-010" value="10">
+				<label for="Main.cpuperf-010">Really fast</label>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-005" value="5">
+				<label for="Main.cpuperf-005">Fast (Default)</label>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-002" value="2.5">
+				<label for="Main.cpuperf-002">Moderate</label>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-001" value="1">
+				<label for="Main.cpuperf-001">Energy Saver</label>
+				<p><br>This influences the routing performance of the MQTT Gateway. Compared, the old behaviour (before this setting exists) was between <i>Moderate</i> and <i>Energy Saver</i>. Changing the setting takes some minutes to adjust.</p>
+			</fieldset>
+		</div>
+		<div>
+			<label for="resetaftersendms">Reset After Send Time (ms)</label>
+			<input type="number" data-clear-btn="false" name="Main.resetaftersendms" id="Main.resetaftersendms">
+			<p class="hint">Default is <span class="mono">13</span>. Topics with Reset-After-Send enabled, will wait for x milliseconds before the value is resetted. Raise this value, if your virtual inputs are not correctly resetted on your Miniserver.
 		</div>
 	</div>	
 	
