@@ -44,10 +44,22 @@
 		<!-- /info panel -->
 		<!-- header -->
 		<div style="text-align:center" data-role="header" data-position="fixed" data-tap-toggle="false">
-			<h1><TMPL_VAR TEMPLATETITLE></h1>
-			<a id="btnmainmenu" href="#mainmenupanel" data-icon="bars" data-iconpos="notext"><TMPL_VAR HEADER.TITLE_MENU></a>
-			<a id="btninfo" href="#infopanel" data-icon="info" data-iconpos="notext"><TMPL_VAR HEADER.TITLE_INFO></a>
-
+			<div class="container">
+				<div class="column" style="text-align: left">
+				<a id="btnmainmenu" href="#mainmenupanel" class="headerbutton pi pi-bars ui-btn ui-corner-all"></a>
+				</div>
+				<div class="column">
+				<TMPL_VAR TEMPLATETITLE>
+				</div>
+				<div class="column" style="text-align: right">
+				<div data-href="/admin/system/logmanager.cgi" id="update_alert" style="margin-left:15px; cursor:default; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
+				<a id="btnhome" href="/admin/system/index.cgi" class="headerbutton pi pi-home ui-btn ui-corner-all"></a>
+				<a id="btnnotifies" href="/admin/system/tools/showallnotifications.cgi" class="headerbutton pi pi-bell ui-btn ui-corner-all"></a>
+				<a id="btninfo" href="#infopanel" class="headerbutton pi pi-question-circle ui-btn ui-corner-all"></a>
+				<a id="btnpower" href="/admin/system/power.cgi" class="headerbutton pi pi-power-off ui-btn ui-corner-all"></a>
+				<div data-href="/admin/system/power.cgi" id="btnpower_alert" style="position:relative; right:-25px; pointer-events: none; visibility:hidden; width:30px; height:30px; padding:0px, border:0px, z-index:10000, background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>
+				</div>
+			</div>
 			<!-- VUE Navbar HTML -->
 			<div id="vuenavbar" :key="componentKey">
 				<div class="vuenavbarcontainer">
@@ -83,8 +95,31 @@
 			<!-- /VUE Navbar HTML -->
 		</div>
 		
-		<!-- VUE Navbar CSS and JS -->
+		<!-- HEADER, VUE Navbar CSS and JS -->
 		<style>
+.container {
+    display: flex;
+    align-items: center !important;
+}
+
+.column {
+    flex: 1;
+    /*for demo purposes only
+    //background: #f2f2f2;
+    border: 1px solid #e6e6e6;
+    box-sizing: border-box; */
+}
+
+.headerbutton {
+	background: #5A8E1C !important;
+	color: #ffffff !important;
+	text-shadow:0 0 0 !important;
+	font-size: 0.95rem !important;
+	font-weight: normal !important;
+	border-style: none !important;
+	margin: 4px 4px 4px 4px !important;
+}
+
 .vuenavbarcontainer {
 	border-top: 1px solid #3d3d3d;
 	display:flex;
@@ -106,7 +141,7 @@
 	text-decoration: none;
 }
 .vuenavbarelement:hover {
-	background-color: #a0df53;
+	background-color: #5A8E1C;
 }
 .vuenavbarelement_active {
 	background-color: #6dac20;
