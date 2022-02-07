@@ -48,15 +48,15 @@
 				<div class="column" style="text-align: left">
 				<a id="btnmainmenu" href="#mainmenupanel" class="headerbutton pi pi-bars ui-btn ui-corner-all"></a>
 				</div>
-				<div class="column">
+				<div class="column" style="font-weight: normal">
 				<TMPL_VAR TEMPLATETITLE>
 				</div>
 				<div class="column" style="text-align: right">
 				<div data-href="/admin/system/logmanager.cgi" id="update_alert" style="margin-left:15px; cursor:default; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
-				<a id="btnhome" href="/admin/system/index.cgi" class="headerbutton pi pi-home ui-btn ui-corner-all"></a>
-				<a id="btnnotifies" href="/admin/system/tools/showallnotifications.cgi" class="headerbutton pi pi-bell ui-btn ui-corner-all"></a>
-				<a id="btninfo" href="#infopanel" class="headerbutton pi pi-question-circle ui-btn ui-corner-all"></a>
-				<a id="btnpower" href="/admin/system/power.cgi" class="headerbutton pi pi-power-off ui-btn ui-corner-all"></a>
+				<a id="btnhome" href="/admin/system/index.cgi" class="headerbutton pi pi-home"></a>
+				<a id="btnnotifies" href="/admin/system/tools/showallnotifications.cgi" class="headerbutton pi pi-bell"></a>
+				<a id="btninfo" href="#infopanel" class="headerbutton pi pi-question-circle"></a>
+				<a id="btnpower" href="/admin/system/power.cgi" class="headerbutton pi pi-power-off"></a>
 				<div data-href="/admin/system/power.cgi" id="btnpower_alert" style="position:relative; right:-25px; pointer-events: none; visibility:hidden; width:30px; height:30px; padding:0px, border:0px, z-index:10000, background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>
 				</div>
 			</div>
@@ -113,11 +113,18 @@
 .headerbutton {
 	background: #5A8E1C !important;
 	color: #ffffff !important;
-	text-shadow:0 0 0 !important;
-	font-size: 0.95rem !important;
+	font-size: 1.25rem !important;
 	font-weight: normal !important;
+    	font-style: normal !important;
+    	font-variant: normal !important;
 	border-style: none !important;
-	margin: 4px 4px 4px 4px !important;
+	margin: 0.5rem !important;
+	border-radius: 5px !important;
+	padding: 0.5rem !important;
+	text-transform: none !important;
+	text-decoration: none !important;
+	line-height: 1 !important;
+	-webkit-font-smoothing: antialiased;
 }
 
 .vuenavbarcontainer {
