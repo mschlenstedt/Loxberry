@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "3.0.0.2";
+our $VERSION = "3.0.0.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -1558,14 +1558,13 @@ sub get_notification_count
 	my @resinf;
 	my @reserr;
 	
-	$qu = "SELECT count(*) FROM notifications ";
-	$qu .= "WHERE " if ($package);
-	$qu .= "PACKAGE = '$package' AND NAME = '$name' AND " if ($package && $name);
-	$qu .= "PACKAGE = '$package' AND " if ($package && !$name);
+	$qu  = "SELECT count(*) FROM notifications WHERE ";
+	$qu .= "PACKAGE = '$package' AND " if ($package);
+	$qu .= "NAME = '$name' AND " if ($name);
 	my $querr = $qu . "SEVERITY = 3;";
 	my $quinf = $qu . "SEVERITY = 6;";
-	# print STDERR "Error Query: $querr\n" if ($DEBUG);
-	# print STDERR "Info Query: $quinf\n" if ($DEBUG);
+	print STDERR "Error Query: $querr\n" if ($DEBUG);
+	print STDERR "Info Query: $quinf\n" if ($DEBUG);
 	my ($notification_error) = $dbh->selectrow_array($querr);
 	my ($notification_ok) = $dbh->selectrow_array($quinf);
 		
