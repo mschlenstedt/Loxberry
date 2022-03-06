@@ -258,28 +258,28 @@ my $output = qx { sed -i --follow-symlinks 's/^#compress/compress/g' /etc/logrot
 $log->open;
 
 # Update Kernel and Firmware on Raspberry
-# GIT Firmware Hash:   d5edc6af1ef48f97b525da88ff6c510c2d4231c3
-# dirtree Checksum is: 7d32024a09eac34dfe5e511ebbc01af7
-rpi_update("7d32024a09eac34dfe5e511ebbc01af7", "d5edc6af1ef48f97b525da88ff6c510c2d4231c3");
+# GIT Firmware Hash:   ea9e10e531a301b3df568dccb3c931d52a469106
+# dirtree Checksum is: 17badb449407528b418e79f7fa0bf761
+rpi_update("17badb449407528b418e79f7fa0bf761", "ea9e10e531a301b3df568dccb3c931d52a469106");
 
 #
 # Firmware Files are not updated automatically by apt-get (why? *really* don't know!) - only on Raspberry
 #
-if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg") {
-	LOGINF "Installing newest firmware files (from Debian Buster because Bullseye isn't currently available)...";
-	# Use RPi-Distro Repo
-	system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/buster.zip -o /lib/master.zip");
-	system("cd /lib && unzip /lib/master.zip");
-	$exitcode  = $? >> 8;
-	if ($exitcode != 0) {
-        LOGERR "Error extracting new firmware. This is a problem for Zero2 only. Wifi may not work on the Zero2 - Error $exitcode";
-	} else {
-        LOGOK "Extracting of new firmware files successfully. Installing...";
-		system ("rm -r /lib/firmware");
-		system("mv /lib/firmware-nonfree-buster /lib/firmware");
-	}
-	system ("rm -r /lib/master.zip");
-}
+#if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg") {
+#	LOGINF "Installing newest firmware files (from Debian Buster because Bullseye isn't currently available)...";
+#	# Use RPi-Distro Repo
+#	system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/buster.zip -o /lib/master.zip");
+#	system("cd /lib && unzip /lib/master.zip");
+#	$exitcode  = $? >> 8;
+#	if ($exitcode != 0) {
+#       LOGERR "Error extracting new firmware. This is a problem for Zero2 only. Wifi may not work on the Zero2 - Error $exitcode";
+#	} else {
+#        LOGOK "Extracting of new firmware files successfully. Installing...";
+#		system ("rm -r /lib/firmware");
+#		system("mv /lib/firmware-nonfree-buster /lib/firmware");
+#	}
+#	system ("rm -r /lib/master.zip");
+#}
 
 #
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
