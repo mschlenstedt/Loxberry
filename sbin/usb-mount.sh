@@ -32,25 +32,25 @@ ACTION=$1
 DEVBASE=$2
 DEVICE="/dev/${DEVBASE}"
 
-# Get info for this drive: $ID_FS_LABEL, $ID_FS_UUID, $ID_FS_TYPE $ID_FS_PARTUUID
-eval $(blkid -o udev ${DEVICE})
+# Get info for this drive: $LABEL, $UUID, $TYPE $PARTUUID
+eval $(blkid -o export ${DEVICE})
 
 # See if this drive is already mounted, and if so where
 MOUNT_POINT=$(mount | grep ${DEVICE} | awk '{ print $3 }')
 if [[ ! -n ${MOUNT_POINT} ]]; then
-        MOUNT_POINT=$(mount | grep ${ID_FS_PARTUUID} | awk '{ print $3 }')
+        MOUNT_POINT=$(mount | grep ${PARTUUID} | awk '{ print $3 }')
 fi
 if [[ ! -n ${MOUNT_POINT} ]]; then
-        MOUNT_POINT=$(mount | grep ${ID_FS_UUID} | awk '{ print $3 }')
+        MOUNT_POINT=$(mount | grep ${UUID} | awk '{ print $3 }')
 fi
 
 # See if device is mentioned in /etc/fstab
 MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${DEVICE} | awk '{ print $2 }')
 if [[ ! -n ${MOUNT_POINT_FSTAB} ]]; then
-        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${ID_FS_PARTUUID} | awk '{ print $2 }')
+        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${PARTUUID} | awk '{ print $2 }')
 fi
 if [[ ! -n ${MOUNT_POINT_FSTAB} ]]; then
-        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${ID_FS_UUID} | awk '{ print $2 }')
+        MOUNT_POINT_FSTAB=$(cat /etc/fstab | grep ${UUID} | awk '{ print $2 }')
 fi
 
 DEV_LABEL=""
@@ -72,16 +72,16 @@ check_add()
 do_mount()
 {
     # Figure out a mount point to use
-    LABEL=${ID_FS_LABEL}
+    LABEL=${LABEL}
     if grep -q " /media/usb/${LABEL} " /etc/mtab; then
         # Already in use, make a unique one
-        LABEL+="-${ID_FS_PARTUUID}"
+        LABEL+="-${PARTUUID}"
     fi
     DEV_LABEL="${LABEL}"
 
     # Use the PARTUUID in case the drive doesn't have label
     if [ -z ${DEV_LABEL} ]; then
-        DEV_LABEL="${ID_FS_PARTUUID}"
+        DEV_LABEL="${PARTUUID}"
     fi
 
     MOUNT_POINT="/media/usb/${DEV_LABEL}"
@@ -95,16 +95,16 @@ do_mount()
 
     # File system type specific mount options
     # NTFS
-    if [[ ${ID_FS_TYPE} == "ntfs" ]]; then
+    if [[ ${TYPE} == "ntfs" ]]; then
         OPTS+=",gid=1001,uid=1001,umask=000,nls=utf8"
     fi
     # extFAT
-    if [[ ${ID_FS_TYPE} == "exfat" ]]; then
+    if [[ ${TYPE} == "exfat" ]]; then
         OPTS+=",gid=1001,uid=1001,umask=000,utf8,flush"
 	echo $OPTS
     fi
     # vFAT
-    if [[ ${ID_FS_TYPE} == "vfat" ]]; then
+    if [[ ${TYPE} == "vfat" ]]; then
         OPTS+=",gid=1001,uid=1001,umask=000,shortname=mixed,utf8,flush"
     fi
 
@@ -118,7 +118,7 @@ do_mount()
     fi
 
     # ext2/3/4 
-    if [[ ${ID_FS_TYPE} == "ext2" ]] || [[ ${ID_FS_TYPE} == "ext3" ]] || [[ ${ID_FS_TYPE} == "ext4" ]]; then
+    if [[ ${TYPE} == "ext2" ]] || [[ ${TYPE} == "ext3" ]] || [[ ${TYPE} == "ext4" ]]; then
         chown loxberry:loxberry ${MOUNT_POINT}
     fi
 
