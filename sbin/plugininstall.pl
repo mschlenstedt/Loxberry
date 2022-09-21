@@ -24,6 +24,7 @@ use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8);
 use LoxBerry::System;
 use LoxBerry::Update;
+use File::Basename;
 use LoxBerry::System::PluginDB;
 use LoxBerry::JSON;
 use LoxBerry::Log;
@@ -332,7 +333,8 @@ sub install {
 	}
 
 	if (!$zipmode) { 
-		$tempfolder = $R::folder;
+		use Cwd qw(abs_path);
+		$tempfolder = abs_path($R::folder);
 		if (!-e $tempfolder) {
 			$message = "$LL{'ERR_FOLDER_DOESNT_EXIST'}";
 			LOGCRIT $message;
@@ -782,8 +784,8 @@ sub install {
 		if ($chkhcpath) {
 			$message = $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
 			LOGWARN $message;
-			print $chkhcpath;
-			push(@warnings,"HARDCODED PATH'S: $message");
+			LOGWARN $chkhcpath;
+			push(@warnings,"HARDCODED PATH'S: $message: $chkhcpath");
 			
 			
 		} else {
@@ -800,60 +802,57 @@ sub install {
 	}
 
 	# Executing preroot script
-	if (-f "$tempfolder/preroot.sh" || -f "$tempfolder/preroot" ) {
+	if (my @files = glob("$tempfolder/preroot*")) {
 		LOGINF "$LL{'INF_START_PREROOT'}";
-		$script = "preroot";
-		$script = "preroot.sh" if (-e "$tempfolder/preroot.sh");
-		&setrights ("a+x", "0", "$tempfolder/$script", "$script file");
-		($exitcode) = execute( {
-			command => "cd \"$tempfolder\" && \"$tempfolder/$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
-			log => $log,
-		} );
-		#system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preroot.sh\" 2>&1");
-		#system("cd \"$tempfolder\" && \"$tempfolder/preroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-		#$exitcode = $? >> 8;
-		if ($exitcode eq 1) {
-			$message = "$LL{'ERR_SCRIPT'}";
-			LOGERR $message; 
-			push(@errors,"PREROOT: $message");
-		} 
-		elsif ($exitcode > 1) {
-			$message = "$LL{'FAIL_SCRIPT'}";
-			LOGCRIT $message;
-			&fail($message);
-		}
-		else {
-			LOGOK "$LL{'OK_SCRIPT'}";
-			&logok;
+		foreach my $script ( @files ) {
+			if (-f "$script") {
+				&setrights ("a+x", "0", "$script", "$script file");
+				($exitcode) = execute( {
+					command => "cd \"$tempfolder\" && \"$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
+					log => $log,
+				} );
+				if ($exitcode eq 1) {
+					$message = "$LL{'ERR_SCRIPT'}";
+					LOGERR $message; 
+					push(@errors,"PREROOT: $message");
+				} 
+				elsif ($exitcode > 1) {
+					$message = "$LL{'FAIL_SCRIPT'}";
+					LOGCRIT $message;
+					&fail($message);
+				}
+				else {
+					LOGOK "$LL{'OK_SCRIPT'}";
+				}
+			}
 		}
 	}
 
 	# Executing preupgrade script
 	if ($isupgrade) {
-		if (-f "$tempfolder/preupgrade.sh" || -f "$tempfolder/preupgrade") {
+		if (my @files = glob("$tempfolder/preupgrade*")) {
 			LOGINF "$LL{'INF_START_PREUPGRADE'}";
-			$script = "preupgrade";
-			$script = "preupgrade.sh" if (-e "$tempfolder/preupgrade.sh");
-			&setrights ("a+x", "0", "$tempfolder/$script", "$script file");
-			($exitcode) = execute( {
-				command => "cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
-				log => $log,
-			} );
-			#system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preupgrade.sh\" 2>&1");
-			#system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-			#$exitcode	= $? >> 8;
-			if ($exitcode eq 1) {
-				$message = "$LL{'ERR_SCRIPT'}";
-				LOGERR $message;
-				push(@errors,"PREUPGRADE: $message");
-			} 
-			elsif ($exitcode > 1) {
-				$message = "$LL{'FAIL_SCRIPT'}";
-				LOGCRIT $message;
-				&fail($message);
-			}
-			else {
-				LOGOK "$LL{'OK_SCRIPT'}";
+			foreach my $script ( @files ) {
+				if (-f "$script" ) {
+					&setrights ("a+x", "0", "$script", "$script file");
+					($exitcode) = execute( {
+						command => "cd \"$tempfolder\" && $sudobin -n -u loxberry \"$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
+						log => $log,
+					} );
+					if ($exitcode eq 1) {
+						$message = "$LL{'ERR_SCRIPT'}";
+						LOGERR $message;
+						push(@errors,"PREUPGRADE: $message");
+					} 
+					elsif ($exitcode > 1) {
+						$message = "$LL{'FAIL_SCRIPT'}";
+						LOGCRIT $message;
+						&fail($message);
+					}
+					else {
+						LOGOK "$LL{'OK_SCRIPT'}";
+					}
+				}
 			}
 		}
 		
@@ -863,32 +862,31 @@ sub install {
 	}
 
 	# Executing preinstall script
-	if (-f "$tempfolder/preinstall.sh" || -f "$tempfolder/preinstall") {
+	if (my @files = glob("$tempfolder/preinstall*")) {
 		LOGINF "$LL{'INF_START_PREINSTALL'}";
-		$script = "preinstall";
-		$script = "preinstall.sh" if (-e "$tempfolder/preinstall.sh");
-		&setrights ("a+x", "0", "$tempfolder/$script", "$script file");
-		($exitcode) = execute( {
-			command => "cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
-			log => $log,
-		} );
-		#system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/preinstall.sh\" 2>&1");
-		#system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/preinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-		#$exitcode	= $? >> 8;
-		if ($exitcode eq 1) {
-			$message = "$LL{'ERR_SCRIPT'}";
-			LOGERR $message;
-			push(@errors,"PREINSTALL: $message");
-		} 
-		elsif ($exitcode > 1) {
-			$message = "$LL{'FAIL_SCRIPT'}";
-			LOGCRIT $message;
-			&fail($message);
+		foreach my $script ( @files ) {
+			if (-f $script ) {
+				&setrights ("a+x", "0", "$script", "$script file");
+				($exitcode) = execute( {
+					command => "cd \"$tempfolder\" && $sudobin -n -u loxberry \"$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
+					log => $log,
+				} );
+				if ($exitcode eq 1) {
+					$message = "$LL{'ERR_SCRIPT'}";
+					LOGERR $message;
+					push(@errors,"PREINSTALL: $message");
+				} 
+				elsif ($exitcode > 1) {
+					$message = "$LL{'FAIL_SCRIPT'}";
+					LOGCRIT $message;
+					&fail($message);
+				}
+				else {
+					LOGOK "$LL{'OK_SCRIPT'}";
+				}
+			}
 		}
-		else {
-			LOGOK "$LL{'OK_SCRIPT'}";
-		}
-	}	
+	}
 
 	# Copy Config files
 	make_path("$lbhomedir/config/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
@@ -918,7 +916,6 @@ sub install {
 			command => "$sudobin -n -u loxberry cp -r -v $tempfolder/bin/* $lbhomedir/bin/plugins/$pfolder/ 2>&1",
 			log => $log,
 		} );
-		#system("$sudobin -n -u loxberry cp -r -v $tempfolder/bin/* $lbhomedir/bin/plugins/$pfolder/ 2>&1");
 		if ($exitcode > 0) {
 			$message = "$LL{'ERR_FILES'}";
 			LOGERR $message;
@@ -939,7 +936,6 @@ sub install {
 			command => "$sudobin -n -u loxberry cp -r -v $tempfolder/templates/* $lbhomedir/templates/plugins/$pfolder/ 2>&1",
 			log => $log,
 		} );
-		#system("$sudobin -n -u loxberry cp -r -v $tempfolder/templates/* $lbhomedir/templates/plugins/$pfolder/ 2>&1");
 		if ($exitcode > 0) {
 			$message = "$LL{'ERR_FILES'}";
 			LOGERR $message; 
@@ -975,7 +971,6 @@ sub install {
 				command => "cp -r -v $tempfolder/cron/crontab $lbhomedir/system/cron/cron.d/$pname 2>&1",
 				log => $log,
 			} );
-			#system("cp -r -v $tempfolder/cron/crontab $lbhomedir/system/cron/cron.d/$pname 2>&1");
 			if ($exitcode > 0) {
 				$openerr = 1;
 			}
@@ -988,7 +983,6 @@ sub install {
 					command => "$sudobin -n -u loxberry cp -r -v $tempfolder/cron/$cronfolder $lbhomedir/system/cron/$cronfolder/$pname 2>&1",
 					log => $log,
 				} );
-				#system("$sudobin -n -u loxberry cp -r -v $tempfolder/cron/$cronfolder $lbhomedir/system/cron/$cronfolder/$pname 2>&1");
 				if ($exitcode > 0) {
 					$openerr = 1;
 				}
@@ -1041,7 +1035,6 @@ sub install {
 			command => "$sudobin -n -u loxberry cp -r -v $tempfolder/log/* $lbhomedir/log/plugins/$pfolder/ 2>&1",
 			log => $log,
 		} );
-		#system("$sudobin -n -u loxberry cp -r -v $tempfolder/log/* $lbhomedir/log/plugins/$pfolder/ 2>&1");
 		if ($exitcode > 0) {
 			LOGERR "$LL{'ERR_FILES'}";
 			push(@errors,"LOG files: $message");
@@ -1056,11 +1049,10 @@ sub install {
 		make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 		if (!&is_folder_empty("$tempfolder/webfrontend/cgi")) {
 			LOGINF "$LL{'INF_HTMLAUTHFILES'}";
-				($exitcode) = execute( {
-					command => "$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/cgi/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1",
-					log => $log,
+			($exitcode) = execute( {
+				command => "$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/cgi/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1",
+				log => $log,
 			} );
-			#system("$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/cgi/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
 			if ($exitcode > 0) {
 				$message = "$LL{'ERR_FILES'}";
 				LOGERR $message; 
@@ -1082,7 +1074,6 @@ sub install {
 				command => "$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/htmlauth/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1",
 				log => $log,
 			} );
-			#system("$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/htmlauth/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1");
 			if ($exitcode > 0) {
 				$message = "$LL{'ERR_FILES'}";
 				LOGERR $message; 
@@ -1121,7 +1112,6 @@ sub install {
 		command => "$sudobin -n -u loxberry cp -r -v $tempfolder/icons/* $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1",
 		log => $log,
 	} );
-	#system("$sudobin -n -u loxberry cp -r -v $tempfolder/icons/* $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
 	if ($exitcode > 0) {
 		execute ("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/* $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ 2>&1");
 		$message = "$LL{'ERR_ICONFILES'}";
@@ -1156,46 +1146,54 @@ sub install {
 	}
 
 	# Copy Daemon file
-	if (-f "$tempfolder/daemon/daemon") {
+	if (my @files = glob("$tempfolder/daemon/daemon*")) {
 		LOGINF "$LL{'INF_DAEMON'}";
-		($exitcode) = execute( {
-			command => "cp -v $tempfolder/daemon/daemon $lbhomedir/system/daemons/plugins/$pname 2>&1",
-			log => $log,
-		} );
-		#system("cp -v $tempfolder/daemon/daemon $lbhomedir/system/daemons/plugins/$pname 2>&1");
-		if ($exitcode > 0) {
-			$message = "$LL{'ERR_FILES'}";
-			LOGERR $message;
-			push(@errors,"DAEMON FILE: $message");
-		} else {
-			LOGOK "$LL{'OK_FILES'}";
+		my $i = "";
+		foreach my $script ( @files ) {
+			if (-f "$script" ) {
+				($exitcode) = execute( {
+					command => "cp -v $script $lbhomedir/system/daemons/plugins/$pname$i 2>&1",
+					log => $log,
+				} );
+				if ($exitcode > 0) {
+					$message = "$LL{'ERR_FILES'}";
+					LOGERR $message;
+					push(@errors,"DAEMON FILE: $message");
+				} else {
+					LOGOK "$LL{'OK_FILES'}";
+				}
+				&setrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname$i", "DAEMON script");
+				&setowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname$i", "DAEMON script");
+				$i = 0 if ($i eq "");
+				$i++;
+			}
 		}
 
-		#if ( $pinterface eq "1.0" ) {
-		#	setrights ("777", "1", "$lbhomedir/system/daemons/plugins", "Plugin interface V1.0 DAEMON script");
-		#}
-		
-		&setrights ("755", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
-		&setowner ("root", "0", "$lbhomedir/system/daemons/plugins/$pname", "DAEMON script");
 	}
 
 	# Copy Uninstall file
-	if (-f "$tempfolder/uninstall/uninstall") {
+	if (my @files = glob("$tempfolder/uninstall/uninstall*")) {
 		LOGINF "$LL{'INF_UNINSTALL'}";
-		($exitcode) = execute( {
-			command => "cp -r -v $tempfolder/uninstall/uninstall $lbhomedir/data/system/uninstall/$pname 2>&1",
-			log => $log,
-		} );
-		#system("cp -r -v $tempfolder/uninstall/uninstall $lbhomedir/data/system/uninstall/$pname 2>&1");
-		if ($exitcode > 0) {
-			$message = "$LL{'ERR_FILES'}";
-			LOGERR $message; 
-			push(@errors,"UNINSTALL Script: $message");
-		} else {
-			LOGOK "$LL{'OK_FILES'}";
+		my $i = "";
+		foreach my $script ( @files ) {
+			if (-f "$script" ) {
+				($exitcode) = execute( {
+					command => "cp -r -v $script $lbhomedir/data/system/uninstall/$pname$i 2>&1",
+					log => $log,
+				} );
+				if ($exitcode > 0) {
+					$message = "$LL{'ERR_FILES'}";
+					LOGERR $message; 
+					push(@errors,"UNINSTALL Script: $message");
+				} else {
+					LOGOK "$LL{'OK_FILES'}";
+				}
+				&setrights ("755", "0", "$lbhomedir/data/system/uninstall/$pname$i", "UNINSTALL script");
+				&setowner ("root", "0", "$lbhomedir/data/system/uninstall/$pname$i", "UNINSTALL script");
+				$i = 0 if ($i eq "");
+				$i++;
+			}
 		}
-		&setrights ("755", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
-		&setowner ("root", "0", "$lbhomedir/data/system/uninstall/$pname", "UNINSTALL script");
 	}
 
 	# Copy Sudoers file
@@ -1302,7 +1300,6 @@ sub install {
 		command => "$lbssbindir/createskelfolders.pl 2>&1",
 		log => $log,
 	} );
-	#system("$lbssbindir/createskelfolders.pl 2>&1");
 	if ($exitcode > 0) {
 		$message = "$LL{'ERR_SCRIPT'}";
 		LOGERR $message; 
@@ -1312,90 +1309,85 @@ sub install {
 	}
 
 	# Executing postinstall script
-	if (-f "$tempfolder/postinstall.sh" || -f "$tempfolder/postinstall") {
+	if (my @files = glob("$tempfolder/postinstall*")) {
 		LOGINF "$LL{'INF_START_POSTINSTALL'}";
-
-		$script = "postinstall";
-		$script = "postinstall.sh" if (-e "$tempfolder/postinstall.sh");
-		&setrights ("a+x", "0", "$tempfolder/$script", "$script file");
-		($exitcode) = execute( {
-			command => "cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
-			log => $log,
-		} );
-		#system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postinstall.sh\" 2>&1");
-		#system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postinstall.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-		if ($exitcode eq 1) {
-			LOGERR "$LL{'ERR_SCRIPT'}";
-			push(@errors,"POSTINSTALL: $message");
-		} 
-		elsif ($exitcode > 1) {
-			$message = "$LL{'FAIL_SCRIPT'}";
-			LOGCRIT $message;
-			&fail($message);
+		foreach my $script ( @files ) {
+			if (-f "$script" ) {
+				&setrights ("a+x", "0", "$script", "$script file");
+				($exitcode) = execute( {
+					command => "cd \"$tempfolder\" && $sudobin -n -u loxberry \"$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
+					log => $log,
+				} );
+				if ($exitcode eq 1) {
+					LOGERR "$LL{'ERR_SCRIPT'}";
+					push(@errors,"POSTINSTALL: $message");
+				} 
+				elsif ($exitcode > 1) {
+					$message = "$LL{'FAIL_SCRIPT'}";
+					LOGCRIT $message;
+					&fail($message);
+				}
+				else {
+					LOGOK "$LL{'OK_SCRIPT'}";
+				}
+			}
 		}
-		else {
-			LOGOK "$LL{'OK_SCRIPT'}";
-		}
-
 	}
 
 	# Executing postupgrade script
 	if ($isupgrade) {
-		if (-f "$tempfolder/postupgrade.sh" || -f "$tempfolder/postupgrade") {
+		if (my @files = glob("$tempfolder/postupgrade*")) {
 			LOGINF "$LL{'INF_START_POSTUPGRADE'}";
-
-			$script = "postupgrade";
-			$script = "postupgrade.sh" if (-e "$tempfolder/postupgrade.sh");
-			&setrights ("a+x", "0", "$tempfolder/$script", "$script file");
-			($exitcode) = execute( {
-				command => "cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
-				log => $log,
-			} );
-			#system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postupgrade.sh\" 2>&1");
-			#system("cd \"$tempfolder\" && $sudobin -n -u loxberry \"$tempfolder/postupgrade.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-			if ($exitcode eq 1) {
-				$message = "$LL{'ERR_SCRIPT'}";
-				LOGERR $message;
-				push(@errors,"POSTUPGRADE: $message");
-			} 
-			elsif ($exitcode > 1) {
-				$message = "$LL{'FAIL_SCRIPT'}";
-				LOGCRIT $message;
-				&fail($message);
-			}
-			else {
-				LOGOK "$LL{'OK_SCRIPT'}";
+			foreach my $script ( @files ) {
+				if (-f "$script" ) {
+					&setrights ("a+x", "0", "$script", "$script file");
+					($exitcode) = execute( {
+						command => "cd \"$tempfolder\" && $sudobin -n -u loxberry \"$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
+						log => $log,
+					} );
+					if ($exitcode eq 1) {
+						$message = "$LL{'ERR_SCRIPT'}";
+						LOGERR $message;
+						push(@errors,"POSTUPGRADE: $message");
+					} 
+					elsif ($exitcode > 1) {
+						$message = "$LL{'FAIL_SCRIPT'}";
+						LOGCRIT $message;
+						&fail($message);
+					}
+					else {
+						LOGOK "$LL{'OK_SCRIPT'}";
+					}
+				}
 			}
 		}
 	}
 
 	# Executing postroot script
-	if (-f "$tempfolder/postroot.sh" || -f "$tempfolder/postroot") {
+	if (my @files = glob("$tempfolder/postroot*")) {
 		LOGINF "$LL{'INF_START_POSTROOT'}";
-
-		$script = "postroot";
-		$script = "postroot.sh" if (-e "$tempfolder/postroot.sh");
-		&setrights ("a+x", "0", "$tempfolder/$script", "$script file");
-		($exitcode) = execute( {
-			command => "cd \"$tempfolder\" && \"$tempfolder/$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
-			log => $log,
-		} );
-		#system("$sudobin -n -u loxberry $chmodbin -v a+x \"$tempfolder/postroot.sh\" 2>&1");
-		#system("cd \"$tempfolder\" && \"$tempfolder/postroot.sh\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1");
-		if ($exitcode eq 1) {
-			$message = "$LL{'ERR_SCRIPT'}";
-			LOGERR $message; 
-			push(@errors,"POSTROOT: $message");
-		} 
-		elsif ($exitcode > 1) {
-			$message = "$LL{'FAIL_SCRIPT'}";
-			LOGCRIT $message;
-			&fail($message);
+		foreach my $script ( @files ) {
+			if (-f "$script" ) {
+				&setrights ("a+x", "0", "$script", "$script file");
+				($exitcode) = execute( {
+					command => "cd \"$tempfolder\" && \"$script\" \"$tempfile\" \"$pname\" \"$pfolder\" \"$pversion\" \"$lbhomedir\" \"$tempfolder\" 2>&1",
+					log => $log,
+				} );
+				if ($exitcode eq 1) {
+					$message = "$LL{'ERR_SCRIPT'}";
+					LOGERR $message; 
+					push(@errors,"POSTROOT: $message");
+				} 
+				elsif ($exitcode > 1) {
+					$message = "$LL{'FAIL_SCRIPT'}";
+					LOGCRIT $message;
+					&fail($message);
+				}
+				else {
+					LOGOK "$LL{'OK_SCRIPT'}";
+				}
+			}
 		}
-		else {
-			LOGOK "$LL{'OK_SCRIPT'}";
-		}
-
 	}
 
 	# Copy installation files
@@ -1436,7 +1428,6 @@ sub install {
 			command => "$sudobin -n -u loxberry cp -rv $tempfolder/apt $lbhomedir/data/system/install/$pfolder 2>&1",
 			log => $log,
 		} );
-		#system("$sudobin -n -u loxberry cp -rv $tempfolder/apt $lbhomedir/data/system/install/$pfolder 2>&1");
 		if ($exitcode) {
 			$message = "$LL{'ERR_FILES'}";
 			LOGERR $message; 
@@ -1453,7 +1444,6 @@ sub install {
 			command => "$sudobin -n -u loxberry cp -rv $tempfolder/dpkg $lbhomedir/data/system/install/$pfolder 2>&1",
 			log => $log,
 		} );
-		#system("$sudobin -n -u loxberry cp -rv $tempfolder/dpkg $lbhomedir/data/system/install/$pfolder 2>&1");
 		if ($exitcode) {
 			$message = "$LL{'ERR_FILES'}";
 			LOGERR $message; 
@@ -1559,17 +1549,25 @@ sub purge_installation {
 	if($pname) {
 		# Cron jobs
 		LOGINF "Removing cron jobs...";
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.01min/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.03min/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.05min/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.10min/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.15min/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.30min/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.hourly/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.daily/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.weekly/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.monthly/$pname 2>&1", log => $log );
-		execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/cron.yearly/$pname 2>&1", log => $log );
+		my @cronfolders = qw( 
+			cron.reboot
+			cron.01min 
+			cron.03min 
+			cron.05min 
+			cron.10min 
+			cron.15min 
+			cron.30min 
+			cron.hourly 
+			cron.daily 
+			cron.weekly 
+			cron.monthly 
+			cron.yearly 
+		);
+		foreach my $cronfolder ( @cronfolders ) {
+			if (-e "$lbhomedir/system/cron/$cronfolder/$pname") {
+				execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/$cronfolder/$pname 2>&1", log => $log );
+			}
+		}
 	
 		# 2. Delete individual crontab file (only on uninstall)
 		if ($option eq "all") {
@@ -1582,22 +1580,26 @@ sub purge_installation {
 	# 3. Run uninstall script (only on uninstall)
 	if( $pname and $option eq "all" ) {
 		# Executing uninstall script
-		if (-f "$lbhomedir/data/system/uninstall/$pname") {
+		if (my @files = glob("$lbhomedir/data/system/uninstall/$pname*")) {
 			LOGINF "$LL{'INF_START_UNINSTALL_EXE'}";
-			my $commandline = qq(cd /tmp && "$lbhomedir/data/system/uninstall/$pname" "/tmp" "$pname" "$pfolder" "$pversion" "$lbhomedir" 2>&1);
-			($exitcode, $output) = execute( command => $commandline, log => $log );
-			if ($exitcode eq 1) {
-				$message = "$LL{'ERR_SCRIPT'}";
-				LOGERR $message;
-				push(@errors,"UNINSTALL execution: $LL{'ERR_SCRIPT'}");
-			} 
-			elsif ($exitcode > 1) {
-				$message = "$LL{'FAIL_SCRIPT'}";
-				LOGCRIT $message;
-				&fail($message);
-			}
-			else {
-				LOGOK "$LL{'OK_SCRIPT'}";
+			foreach my $file ( @files ) {
+				if (-f "$script" ) {
+					my $commandline = qq(cd /tmp && "$script" "/tmp" "$pname" "$pfolder" "$pversion" "$lbhomedir" 2>&1);
+					($exitcode, $output) = execute( command => $commandline, log => $log );
+					if ($exitcode eq 1) {
+						$message = "$LL{'ERR_SCRIPT'}";
+						LOGERR $message;
+						push(@errors,"UNINSTALL execution: $LL{'ERR_SCRIPT'}");
+					} 
+					elsif ($exitcode > 1) {
+						$message = "$LL{'FAIL_SCRIPT'}";
+						LOGCRIT $message;
+						&fail($message);
+					}
+					else {
+						LOGOK "$LL{'OK_SCRIPT'}";
+					}
+				}
 			}
 		} else {
 			LOGINF "No uninstall script provided.";
@@ -1608,11 +1610,11 @@ sub purge_installation {
 		# 4. Delete uninstall file
 		if (-f "$lbhomedir/data/system/uninstall/$pname") {
 			LOGINF "Deleting uninstall file...";
-			execute( command => "rm -fv $lbhomedir/data/system/uninstall/$pname 2>&1", log => $log );
+			execute( command => "rm -fv $lbhomedir/data/system/uninstall/$pname* 2>&1", log => $log );
 		}
 		# 5. Delete daemon
 		LOGINF "Deleting daemon...";
-		execute( command => "rm -fv $lbhomedir/system/daemons/plugins/$pname 2>&1", log => $log );
+		execute( command => "rm -fv $lbhomedir/system/daemons/plugins/$pname* 2>&1", log => $log );
 		# 6. Delete Sudoers
 		LOGINF "Deleting sudoers file";
 		execute( command => "rm -fv $lbhomedir/system/sudoers/$pname 2>&1", log => $log );
@@ -1718,7 +1720,7 @@ sub is_folder_empty {
 	return -1 if not -e $_[0];   # does not exist
 	return -2 if not -d $_[0];   # in not a directory
 	opendir my $dir, $_[0] or    # likely a permissions issue
-		LOGERR "is_folder_empty: Cannot opendir '".$_[0]."', because: $!\n";
+		LOGERR "is_folder_empty: Cannot opendir '".$_[0]."', because: $!";
 		readdir $dir;	# Skip .
 		readdir $dir;	# Skip ..
 		return 0 if( readdir $dir ); # 3rd times a charm
