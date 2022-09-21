@@ -72,15 +72,16 @@ check_add()
 do_mount()
 {
     # Figure out a mount point to use
-    LABEL=${LABEL}
-    if grep -q " /media/usb/${LABEL} " /etc/mtab; then
+    LABEL=$(echo ${LABEL} | sed -e 's/[^A-Za-z0-9._-]/_/g')
+
+    if grep -q " \"/media/usb/${LABEL}\" " /etc/mtab; then
         # Already in use, make a unique one
         LABEL+="-${PARTUUID}"
     fi
     DEV_LABEL="${LABEL}"
 
     # Use the PARTUUID in case the drive doesn't have label
-    if [ -z ${DEV_LABEL} ]; then
+    if [ -z "${DEV_LABEL}" ]; then
         DEV_LABEL="${PARTUUID}"
     fi
 
@@ -88,7 +89,7 @@ do_mount()
 
     ${log} "Mount point: ${MOUNT_POINT}"
 
-    mkdir -p ${MOUNT_POINT}
+    mkdir -p "${MOUNT_POINT}"
 
     # Global mount options
     OPTS="users,rw,relatime"
@@ -127,7 +128,7 @@ do_mount()
 
 do_unmount()
 {
-    if [[ -z ${MOUNT_POINT} ]]; then
+    if [[ -z "${MOUNT_POINT}" ]]; then
         ${log} "Warning: ${DEVICE} is not mounted"
     else
         umount -l ${DEVICE}
