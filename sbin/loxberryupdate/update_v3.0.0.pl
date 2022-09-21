@@ -98,6 +98,32 @@ if ($exitcode != 0) {
 }
 
 
+# MQTT Gateway migration
+LOGINF "The next steps will prepare the Mosquitto MQTT server and MQTT Gateway.";
+
+copy_to_loxberry('/system/sudoers/lbdefaults');
+copy_to_loxberry('/system/cron.reboot/02-mqttfinder');
+copy_to_loxberry('/system/cron.reboot/04-mqttgateway');
+
+LOGINF "Starting MQTT Gateway migration";
+
+execute( command => "$lbhomedir/sbin/loxberryupdate/mqtt_migration.pl", log => $log, ignoreerrors => 1 );
+
+#
+# Upgrading usb-mount
+#
+LOGINF "Upgrading usb-mount";
+
+if ( -e "/etc/udev/rules.d/99-usbmount.rules" ) {
+	qx {rm -f /etc/udev/rules.d/99-usbmount.rules };
+}
+open(F,">/etc/udev/rules.d/99-usbmount.rules");
+print F <<EOF;
+KERNEL=="sd[a-z]*[0-9]*", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/opt/loxberry/sbin/usb-mount.sh chkadd %k"
+KERNEL=="sd[a-z]*[0-9]*", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
+EOF
+close(F);
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 reboot_required("LoxBerry Update requests a reboot.");
