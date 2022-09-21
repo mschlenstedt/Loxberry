@@ -33,7 +33,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.1";
+my $version = "3.0.0.2";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -674,7 +674,7 @@ sub install {
 	
 	
 	# Everything for an UPGRADE
-	if(! $plugin->{_isnew}) {
+	if(!$plugin->{_isnew}) {
 		LOGINF "$LL{'INF_ISUPDATE'}";
 		$isupgrade = 1;
 		$plugin->{epoch_lastupdated} = time;
@@ -1401,29 +1401,31 @@ sub install {
 	# Copy installation files
 	make_path("$lbhomedir/data/system/install/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	LOGINF "$LL{'INF_INSTALLSCRIPTS'}";
-	($exitcode) = execute( {
-		command => "$sudobin -n -u loxberry cp -v $tempfolder/pre* $lbhomedir/data/system/install/$pfolder 2>&1",
-		log => $log,
-	} );
-	#system("$sudobin -n -u loxberry cp -v $tempfolder/*.sh $lbhomedir/data/system/install/$pfolder 2>&1");
-	if ($exitcode) {
-		$message = "$LL{'ERR_FILES'}";
-		LOGERR $message; 
-		push(@errors,"INSTALL scripts: $message");
-	} else {
-		LOGOK "$LL{'OK_FILES'}";
+	if (my @files = glob("$tempfolder/pre*")) {
+		($exitcode) = execute( {
+			command => "$sudobin -n -u loxberry cp -v $tempfolder/pre* $lbhomedir/data/system/install/$pfolder 2>&1",
+			log => $log,
+		} );
+		if ($exitcode) {
+			$message = "$LL{'ERR_FILES'}";
+			LOGERR $message; 
+			push(@errors,"INSTALL scripts: $message");
+		} else {
+			LOGOK "$LL{'OK_FILES'}";
+		}
 	}
-	($exitcode) = execute( {
-		command => "$sudobin -n -u loxberry cp -v $tempfolder/post* $lbhomedir/data/system/install/$pfolder 2>&1",
-		log => $log,
-	} );
-	#system("$sudobin -n -u loxberry cp -v $tempfolder/*.sh $lbhomedir/data/system/install/$pfolder 2>&1");
-	if ($exitcode) {
-		$message = "$LL{'ERR_FILES'}";
-		LOGERR $message; 
-		push(@errors,"INSTALL scripts: $message");
-	} else {
-		LOGOK "$LL{'OK_FILES'}";
+	if (my @files = glob("$tempfolder/post*")) {
+		($exitcode) = execute( {
+			command => "$sudobin -n -u loxberry cp -v $tempfolder/post* $lbhomedir/data/system/install/$pfolder 2>&1",
+			log => $log,
+		} );
+		if ($exitcode) {
+			$message = "$LL{'ERR_FILES'}";
+			LOGERR $message; 
+			push(@errors,"INSTALL scripts: $message");
+		} else {
+			LOGOK "$LL{'OK_FILES'}";
+		}
 	}
 	&setowner ("loxberry", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
 	&setrights ("755", "1", "$lbhomedir/data/system/install/$pfolder", "INSTALL scripts");
