@@ -119,8 +119,8 @@ if ( -e "/etc/udev/rules.d/99-usbmount.rules" ) {
 }
 open(F,">/etc/udev/rules.d/99-usbmount.rules");
 print F <<EOF;
-KERNEL=="sd[a-z]*[0-9]*", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/opt/loxberry/sbin/usb-mount.sh chkadd %k"
-KERNEL=="sd[a-z]*[0-9]*", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
+KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/opt/loxberry/sbin/usb-mount.sh chkadd %k"
+KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
 EOF
 close(F);
 
