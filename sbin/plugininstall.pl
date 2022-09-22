@@ -34,7 +34,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.3";
+my $version = "3.0.0.4";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -326,7 +326,7 @@ sub install {
 	}
 
 	if (!$zipmode) { 
-		use Cwd qw(abs_path);
+		require Cwd qw(abs_path);
 		$tempfolder = abs_path($R::folder);
 		if (!-e $tempfolder) {
 			$message = "$LL{'ERR_FOLDER_DOESNT_EXIST'}";
@@ -545,7 +545,9 @@ sub install {
 	}
 
 	if ( $pinterface eq "1.0" ) {
-		$preboot = 1;
+		$message = "$LL{'ERR_INTERFACENOTSUPPORTED'}";
+		LOGCRIT $message;
+		&fail($message);
 	}
 
 	# Arch check
@@ -667,7 +669,6 @@ sub install {
 	
 	my $isupgrade = 0;
 	
-	
 	# Everything for an UPGRADE
 	if(!$plugin->{_isnew}) {
 		LOGINF "$LL{'INF_ISUPDATE'}";
@@ -752,38 +753,36 @@ sub install {
 	my @textfilelist = getTextFiles($tempfolder);
 	
 	# Checking for hardcoded /opt/loxberry strings
-	if ( $pinterface ne "1.0" ) {
-		LOGINF "Checking for hardcoded paths to /opt/loxberry";
-		my @extensionExcludeList = ( ".md", ".html", ".txt", ".dat", ".log" );
-		my @searchfilelist;
-		foreach my $filename ( @textfilelist ) {
-			my $slashpos = rindex($filename, '/');
-			my $dotpos = rindex($filename, '.');
-			if($dotpos == -1 or $slashpos > $dotpos) {
-				push @searchfilelist, $filename;
-				next;
-			}
-			my $ext = substr( $filename, $dotpos );
-			# print "Filename: $filename Extension: $ext\n";
-			next if ( !$ext or grep { "/$ext/" } @extensionExcludeList );
+	LOGINF "Checking for hardcoded paths to /opt/loxberry";
+	my @extensionExcludeList = ( ".md", ".html", ".txt", ".dat", ".log" );
+	my @searchfilelist;
+	foreach my $filename ( @textfilelist ) {
+		my $slashpos = rindex($filename, '/');
+		my $dotpos = rindex($filename, '.');
+		if($dotpos == -1 or $slashpos > $dotpos) {
 			push @searchfilelist, $filename;
+			next;
 		}
-		
-		if(@searchfilelist) {
-			my $searchfilestring = join(' ', @searchfilelist);
-			$chkhcpath = `$grepbin -li '/opt/loxberry' $searchfilestring`;
-		}
+		my $ext = substr( $filename, $dotpos );
+		# print "Filename: $filename Extension: $ext\n";
+		next if ( !$ext or grep { "/$ext/" } @extensionExcludeList );
+		push @searchfilelist, $filename;
+	}
+	
+	if(@searchfilelist) {
+		my $searchfilestring = join(' ', @searchfilelist);
+		$chkhcpath = `$grepbin -li '/opt/loxberry' $searchfilestring`;
+	}
 
-		if ($chkhcpath) {
-			$message = $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
-			LOGWARN $message;
-			LOGWARN $chkhcpath;
-			push(@warnings,"HARDCODED PATH'S: $message: $chkhcpath");
-			
-			
-		} else {
-			LOGOK "No hardcoded paths to /opt/loxberry found";
-		}
+	if ($chkhcpath) {
+		$message = $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
+		LOGWARN $message;
+		LOGWARN $chkhcpath;
+		push(@warnings,"HARDCODED PATH'S: $message: $chkhcpath");
+		
+		
+	} else {
+		LOGOK "No hardcoded paths to /opt/loxberry found";
 	}
 		
 	# Replacing Environment strings
@@ -937,7 +936,6 @@ sub install {
 			LOGOK "$LL{'OK_FILES'}";
 		}
 		&setowner ("loxberry", "1", "$lbhomedir/templates/plugins/$pfolder", "TEMPLATE files");
-		
 	}
 
 	# Copy Cron files
@@ -983,7 +981,6 @@ sub install {
 				&setowner ("loxberry", "1", "$lbhomedir/system/cron/$cronfolder", "CRONJOB files");
 			} 
 		}
-		
 		if ($openerr) {
 			$message = "$LL{'ERR_FILES'}";
 			LOGERR $message; 
@@ -1001,7 +998,6 @@ sub install {
 			command => "$sudobin -n -u loxberry cp -r -v $tempfolder/data/* $lbhomedir/data/plugins/$pfolder/ 2>&1",
 			log => $log,
 		} );
-		#system("$sudobin -n -u loxberry cp -r -v $tempfolder/data/* $lbhomedir/data/plugins/$pfolder/ 2>&1");
 		if ($exitcode > 0) {
 			$message = "$LL{'ERR_FILES'}";
 			LOGERR $message; 
@@ -1017,13 +1013,9 @@ sub install {
 	make_path("$lbhomedir/log/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	if (!&is_folder_empty("$tempfolder/log")) {
 		LOGINF "$LL{'INF_LOGFILES'}";
-
-		if ( $pinterface ne "1.0" ) {
-			$message = "*** DEPRECIATED *** With plugin interface 2.0 (and above), the plugin must not ship with a log folder. Please inform the PLUGIN Author at $pauthoremail";
-			LOGWARN $message; 
-			push(@warnings,"LOG files: $message");
-		}
-
+		$message = "*** DEPRECIATED *** With plugin interface 2.0 (and above), the plugin must not ship with a log folder. Please inform the PLUGIN Author at $pauthoremail";
+		LOGWARN $message; 
+		push(@warnings,"LOG files: $message");
 		($exitcode) = execute( {
 			command => "$sudobin -n -u loxberry cp -r -v $tempfolder/log/* $lbhomedir/log/plugins/$pfolder/ 2>&1",
 			log => $log,
@@ -1037,46 +1029,23 @@ sub install {
 		&setowner ("loxberry", "1", "$lbhomedir/log/plugins/$pfolder", "LOG files");
 	}
 
-	# Copy CGI files - DEPRECIATED!!!
-	if ( $pinterface eq "1.0" ) {
-		make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
-		if (!&is_folder_empty("$tempfolder/webfrontend/cgi")) {
-			LOGINF "$LL{'INF_HTMLAUTHFILES'}";
-			($exitcode) = execute( {
-				command => "$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/cgi/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1",
-				log => $log,
-			} );
-			if ($exitcode > 0) {
-				$message = "$LL{'ERR_FILES'}";
-				LOGERR $message; 
-				push(@errors,"HTMLAUTH files: $message");
-			} else {
-				LOGOK "$LL{'OK_FILES'}";
-			}
-			&setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
-			&setrights ("755", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
-		}
-	}
-
 	# Copy HTMLAUTH files
-	if ( $pinterface ne "1.0" ) {
-		make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
-		if (!&is_folder_empty("$tempfolder/webfrontend/htmlauth")) {
-			LOGINF "$LL{'INF_HTMLAUTHFILES'}";
-			($exitcode) = execute( {
-				command => "$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/htmlauth/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1",
-				log => $log,
-			} );
-			if ($exitcode > 0) {
-				$message = "$LL{'ERR_FILES'}";
-				LOGERR $message; 
-				push(@errors,"HTMLAUTH files: $message");
-			} else {
-				LOGOK "$LL{'OK_FILES'}";
-			}
-			&setrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl\\|.*\\.sh");
-			&setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
+	make_path("$lbhomedir/webfrontend/htmlauth/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
+	if (!&is_folder_empty("$tempfolder/webfrontend/htmlauth")) {
+		LOGINF "$LL{'INF_HTMLAUTHFILES'}";
+		($exitcode) = execute( {
+			command => "$sudobin -n -u loxberry cp -r -v $tempfolder/webfrontend/htmlauth/* $lbhomedir/webfrontend/htmlauth/plugins/$pfolder/ 2>&1",
+			log => $log,
+		} );
+		if ($exitcode > 0) {
+			$message = "$LL{'ERR_FILES'}";
+			LOGERR $message; 
+			push(@errors,"HTMLAUTH files: $message");
+		} else {
+			LOGOK "$LL{'OK_FILES'}";
 		}
+		&setrights ("755", "0", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files", ".*\\.cgi\\|.*\\.pl\\|.*\\.sh");
+		&setowner ("loxberry", "1", "$lbhomedir/webfrontend/htmlauth/plugins/$pfolder", "HTMLAUTH files");
 	}
 
 	# Copy HTML files
@@ -1209,13 +1178,9 @@ sub install {
 	}
 
 	# Installing additional packages
-	if ( $pinterface eq "1.0" ) {
-		$aptfile="$tempfolder/apt";
-	} else {
-		$aptfile="$tempfolder/dpkg/apt";
-		if ( $lbversionmajor && -e "$tempfolder/dpkg/apt$lbversionmajor" ) {
-			$aptfile="$tempfolder/dpkg/apt$lbversionmajor";
-		}
+	$aptfile="$tempfolder/dpkg/apt";
+	if ( $lbversionmajor && -e "$tempfolder/dpkg/apt$lbversionmajor" ) {
+		$aptfile="$tempfolder/dpkg/apt$lbversionmajor";
 	}
 
 	if (-e "$aptfile") {
@@ -1254,35 +1219,34 @@ sub install {
 		} else {
 			LOGOK "$LL{'OK_PACKAGESINSTALL'}";
 		}
+
 	}
 
 	# Supplied packages by architecture
-	if ( $pinterface ne "1.0" ) {
-		my $thisarch;
-		if (-e "$lbsconfigdir/is_raspberry.cfg") {
-			$thisarch = "raspberry";
-		}
-		elsif (-e "$lbsconfigdir/is_x86.cfg") {
-			$thisarch = "x86";
-		}
-		elsif (-e "$lbsconfigdir/is_x64.cfg") {
-			$thisarch = "x64";
-		}
-		if ( $thisarch ) {
-			my @debfiles = glob("$tempfolder/dpkg/$thisarch/*.deb");
-			if( my $cnt = @debfiles ){
-				($exitcode) = execute( {
-					command => "$dpkgbin -i -R $tempfolder/dpkg/$thisarch 2>&1",
-					log => $log,
-				} );
-				#system("$dpkgbin -i -R $tempfolder/dpkg/$thisarch 2>&1");
-				if ($exitcode > 0) {
-					$message = "$LL{'ERR_PACKAGESINSTALL'}";
-					LOGERR $message; 
-					push(@errors,"APT install: $message");
-				} else {
-					LOGOK "$LL{'OK_PACKAGESINSTALL'}";
-				}
+	my $thisarch;
+	if (-e "$lbsconfigdir/is_raspberry.cfg") {
+		$thisarch = "raspberry";
+	}
+	elsif (-e "$lbsconfigdir/is_x86.cfg") {
+		$thisarch = "x86";
+	}
+	elsif (-e "$lbsconfigdir/is_x64.cfg") {
+		$thisarch = "x64";
+	}
+	if ( $thisarch ) {
+		my @debfiles = glob("$tempfolder/dpkg/$thisarch/*.deb");
+		if( my $cnt = @debfiles ){
+			($exitcode) = execute( {
+				command => "$dpkgbin -i -R $tempfolder/dpkg/$thisarch 2>&1",
+				log => $log,
+			} );
+			#system("$dpkgbin -i -R $tempfolder/dpkg/$thisarch 2>&1");
+			if ($exitcode > 0) {
+				$message = "$LL{'ERR_PACKAGESINSTALL'}";
+				LOGERR $message; 
+				push(@errors,"APT install: $message");
+			} else {
+				LOGOK "$LL{'OK_PACKAGESINSTALL'}";
 			}
 		}
 	}
@@ -1455,14 +1419,12 @@ sub install {
 			command => "$sudobin -n -u loxberry rm -vrf $lbsdatadir/tmp/uploads/$tempfile 2>&1",
 			log => $log,
 		} );
-		#system("$sudobin -n -u loxberry rm -vrf $lbsdatadir/tmp/uploads/$tempfile 2>&1");
 	}
 	if ( $R::tempfile ) {
 		($exitcode) = execute( {
 			command => "$sudobin -n -u loxberry rm -vf $lbsdatadir/tmp/uploads/$tempfile.zip 2>&1",
 			log => $log,
 		} );
-		#system("$sudobin -n -u loxberry rm -vf $lbsdatadir/tmp/uploads/$tempfile.zip 2>&1");
 	} 
 
 	# Finished
@@ -1835,10 +1797,6 @@ sub replaceenv {
 		if($counter%20 == 0) {
 			LOGINF "$counter of " . scalar @$replacefiles . " finished ...";
 		}
-		# # Debug
-		# $message="File: $_";
-		# &loginfo;
-		
 		`$sudobin -n -u $user /bin/sed -i '$sed_replace_query' "$_" 2>&1`;
 	}
 	LOGOK "Replace of $counter files finished";
@@ -2011,6 +1969,7 @@ sub localphrases {
 	ERR_LOCKING_REASON => "The reason is:",
 	OK_LOCKING => "Lock successfully set.",
 	ERR_UNKNOWNINTERFACE => "The Plugin Interface is unknown. I cannot proceed with the installation.",
+	ERR_INTERFACENOTSUPPORTED => "The Plugin Interface is not supported by this LoxBerry Version. I cannot proceed with the installation.",
 	INF_DOS2UNIX => "Converting all plugin files (ASCII) to Unix fileformat.",
 	INF_LOGSKELS => "Updating skels for Logfiles in tmpfs.",
 	INF_SHADOWDB => "Creating shadow version of plugindatabase.",
