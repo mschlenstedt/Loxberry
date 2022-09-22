@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "3.0.0.4";
+our $VERSION = "3.0.0.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -261,7 +261,7 @@ sub open
 	};
 	eval {
 		open($fh, $writetype, $self->{filename});
-		flock($fh, LOCK_EX);
+		flock($fh, 2);
 		$self->{'_FH'} = $fh if($fh);
 	};
 	if ($@) {
@@ -274,7 +274,7 @@ sub close
 {
 	my $self = shift;
 	close $self->{'_FH'} if $self->{'_FH'};
-	flock($fh, LOCK_UN);
+	flock(_FH, 8);
 	undef $self->{'_FH'};
 	return $self->{filename};
 }
