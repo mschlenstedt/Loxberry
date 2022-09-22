@@ -279,7 +279,6 @@ sub install {
 		$log->stdout(1);
 	}
 	LOGSTART "Plugin Installation";
-	LOGOK "Test";
 
 	if (-e "$statusfile") {
 		$message = "$LL{'ERR_TEMPFILES_EXISTS'}";

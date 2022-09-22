@@ -105,7 +105,8 @@ function updatestatus()
 		status_in_progress = 1;
 		$.get('/admin/system/tools/ajax-config-handler.cgi?action=plugininstall-status&value=<TMPL_VAR STATUSFILE>', function (response)
 		{
-			var pstatus = parseInt(response);
+			console.log( "getstatus Success", response );
+			var pstatus = parseInt(response.message);
 			if (pstatus === 3)
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED>";
