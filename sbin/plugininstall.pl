@@ -34,7 +34,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.2";
+my $version = "3.0.0.3";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -240,13 +240,6 @@ sub uninstall {
 	LOGINF ("Removing lock");
 	LoxBerry::System::unlock( lockfile => 'plugininstall' );
 	
-	## No idea what this is for
-	## Saving Logfile
-	# $message = "$LL{'INF_SAVELOG'}";
-	# &loginfo;
-	# system("cp -v /tmp/$tempfile.log $lbhomedir/log/system/plugininstall/".$pname."_uninstall.log 2>&1");
-	# &setowner ("loxberry", "0", "$lbhomedir/log/system/plugininstall/".$pname."_uninstall.log", "LOG Save");
-	
 	LOGEND;
 	
 	exit (0);
@@ -276,7 +269,7 @@ sub install {
 	# Create Logfile with lib to have it in database
 	$log = LoxBerry::Log->new(
 		package => 'Plugin Installation',
-		name => 'Uninstall',
+		name => 'Install',
 		filename => $logfile,
 		loglevel => 7,
 		addtime => 1
@@ -286,6 +279,7 @@ sub install {
 		$log->stdout(1);
 	}
 	LOGSTART "Plugin Installation";
+	LOGOK "Test";
 
 	if (-e "$statusfile") {
 		$message = "$LL{'ERR_TEMPFILES_EXISTS'}";
