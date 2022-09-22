@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "3.0.0.3";
+our $VERSION = "3.0.0.4";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -251,14 +251,6 @@ sub open
 	my $fh;
 
 	eval {
-		open($fh, $writetype, $self->{filename});
-		$self->{'_FH'} = $fh if($fh);
-	};
-	if ($@) {
-		print STDERR "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . "): $@";
-		return;
-	}
-	eval {
 		if(!$self->{loxberry_uid}) {
 			my (undef,undef,$uid,$gid) = getpwnam('loxberry');
 			$self->{loxberry_uid} = $uid;
@@ -267,12 +259,22 @@ sub open
 		chown $self->{loxberry_uid}, $self->{loxberry_uid}, $fh;
 		chmod 0666, $fh;
 	};
+	eval {
+		open($fh, $writetype, $self->{filename});
+		flock($fh, LOCK_EX);
+		$self->{'_FH'} = $fh if($fh);
+	};
+	if ($@) {
+		print STDERR "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . "): $@";
+		return;
+	}
 }
 
 sub close
 {
 	my $self = shift;
 	close $self->{'_FH'} if $self->{'_FH'};
+	flock($fh, LOCK_UN);
 	undef $self->{'_FH'};
 	return $self->{filename};
 }
