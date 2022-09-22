@@ -261,7 +261,7 @@ sub open
 	};
 	eval {
 		open($fh, $writetype, $self->{filename});
-		flock($fh, 2);
+		#flock($fh, 2);
 		$self->{'_FH'} = $fh if($fh);
 	};
 	if ($@) {
@@ -274,7 +274,7 @@ sub close
 {
 	my $self = shift;
 	close $self->{'_FH'} if $self->{'_FH'};
-	flock(_FH, 8);
+	#flock(_FH, 8);
 	undef $self->{'_FH'};
 	return $self->{filename};
 }
