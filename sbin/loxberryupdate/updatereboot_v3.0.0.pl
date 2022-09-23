@@ -267,7 +267,7 @@ LOGINF "Updating /boot/config.txt for Pi4...";
 system (" cat /boot/config.txt | grep 'arm_boost' ");
 $exitcode  = $? >> 8;
 if ($exitcode) {
-	system("sed -i -e 's:^\\[pi4\\]:\\[pi4\\]\\narm_boost=1:g' /boot/config.txt");
+	system("sed -i -e 's:^\\[pi4\\]:\\[pi4\\]\\n# Run as fast as firmware / board allows\\narm_boost=1:g' /boot/config.txt");
 }
 
 #
