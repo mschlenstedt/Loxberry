@@ -75,6 +75,10 @@ case "$1" in
 		echo "Configuring swap...."
 		$LBHOMEDIR/sbin/setswap.pl
 	else
+		echo "Stopping unattended updates until rootfs is resized"
+		systemctl stop unattended-upgrades
+		pkill --signal SIGKILL unattended-upgrades
+
 		echo "Resizing rootfs..."
 		$LBHOMEDIR/sbin/resize_rootfs > $LBHOMEDIR/log/system/rootfsresized.log 2>&1
 		echo "Rebooting to enable rootfs adjustments..."
