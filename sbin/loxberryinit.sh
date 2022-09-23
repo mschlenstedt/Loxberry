@@ -47,7 +47,6 @@ case "$1" in
 			fi
 		fi
 	done
-
 	for folder in /media/smb/*
 	do
 		if [ -d ${folder} ]
@@ -65,6 +64,10 @@ case "$1" in
 	# Create Default config
 	echo "Updating general.cfg etc...."
 	$LBHOMEDIR/bin/createconfig.pl
+	if [ ! -f $LBHOMEDIR/data/system/plugindatabase.json ]
+	then
+		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
+	fi
 
 	# Create swap config
 	if [ -f /boot/rootfsresized ]
