@@ -124,6 +124,18 @@ KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemc
 EOF
 close(F);
 
+LOGINF "Add missing Environments in Apache Config";
+system ("cat $lbhomedir/system/apache2/sites-available/000-default.conf | grep 'LBPHTMLAUTH'");
+$exitcode  = $? >> 8;
+if ($exitcode) {
+	system("sed -i -e 's:PassEnv LBPHTML:PassEnv LBPHTML\\n\\tPassEnv LBPHTMLAUTH:g' $lbhomedir/system/apache2/sites-available/000-default.conf");
+}
+system ("cat $lbhomedir/system/apache2/sites-available/000-default.conf | grep 'LBSHTMLAUTH'");
+$exitcode  = $? >> 8;
+if ($exitcode) {
+	system("sed -i -e 's:PassEnv LBSHTML:PassEnv LBSHTML\\n\\tPassEnv LBSHTMLAUTH:g' $lbhomedir/system/apache2/sites-available/000-default.conf");
+}
+
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
 reboot_required("LoxBerry Update requests a reboot.");
