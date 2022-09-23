@@ -262,6 +262,14 @@ $log->open;
 # dirtree Checksum is: 17badb449407528b418e79f7fa0bf761
 rpi_update("17badb449407528b418e79f7fa0bf761", "ea9e10e531a301b3df568dccb3c931d52a469106");
 
+# Updating /boot/config.txt for Debian Bullseye
+LOGINF "Updating /boot/config.txt for Pi4...";
+system (" cat /boot/config.txt | grep 'arm_boost' ");
+$exitcode  = $? >> 8;
+if ($exitcode) {
+	system("sed -i -e 's:^\\[pi4\\]:\\[pi4\\]\\narm_boost=1:g' /boot/config.txt");
+}
+
 #
 # Firmware Files are not updated automatically by apt-get (why? *really* don't know!) - only on Raspberry
 #
