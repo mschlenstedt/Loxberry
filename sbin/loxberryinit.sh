@@ -69,7 +69,7 @@ case "$1" in
 		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
 	fi
 
-	# Create swap config
+	# Create swap config and resize rootfs
 	if [ -f /boot/rootfsresized ]
 	then
 		echo "Configuring swap...."
@@ -78,6 +78,9 @@ case "$1" in
 		echo "Stopping unattended updates until rootfs is resized"
 		systemctl stop unattended-upgrades
 		pkill --signal SIGKILL unattended-upgrades
+
+		# Remove loxberryid on a fresh loxberry
+		rm -f $lbsconfigdir/loxberryid.cfg > /dev/null 2>&1
 
 		echo "Resizing rootfs..."
 		$LBHOMEDIR/sbin/resize_rootfs > $LBHOMEDIR/log/system/rootfsresized.log 2>&1
