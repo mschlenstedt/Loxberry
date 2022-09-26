@@ -98,13 +98,6 @@ case "$1" in
 		/sbin/reboot > /dev/null 2>&1
 	fi
 
-	# Copy new HTACCESS User/Password Database
-	if [ -f $LBHOMEDIR/config/system/htusers.dat.new ]
-	then
-		echo "Found new htaccess password database. Activating..."
-		mv $LBHOMEDIR/config/system/htusers.dat.new $LBHOMEDIR/config/system/htusers.dat > /dev/null 2>&1
-	fi
-
 	# Cleaning Temporary folders
 	echo "Cleaning temporary files and folders..."
 	rm -rf $LBHOMEDIR/webfrontend/html/tmp/* > /dev/null 2>&1
