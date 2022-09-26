@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "3.0.0.2";
+our $VERSION = "3.0.0.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1107,36 +1107,36 @@ sub check_securepin
 	my $pinerrobj;
 	my $pinerr;
 	
-	open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat") or 
-		do {
-			Carp::carp("check_securepin: Cannot open $LoxBerry::System::lbsconfigdir/securepin.dat\n");
-			return (2);
-			};
-	my $securepinsaved = <$fh>;
-	chomp($securepinsaved);
-	close ($fh);
+	#open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat") or 
+	#	do {
+	#		Carp::carp("check_securepin: Cannot open $LoxBerry::System::lbsconfigdir/securepin.dat\n");
+	#		return (2);
+	#		};
+	#my $securepinsaved = <$fh>;
+	#chomp($securepinsaved);
+	#close ($fh);
 
 	# In case we have an active SupportVPN connmection
-	my $securepinsavedsupportvpn;
-	if (-e "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn") {
-		# Check Online Status
-		require Net::Ping;
-		for (my $i=0; $i < 3; $i++) {
-			my $p = Net::Ping->new();
-			my $hostname = '10.98.98.1';
-			my ($ret, $duration, $ip) = $p->ping($hostname);
-			if (!$ret) {
-			sleep (1);
-				next;
-			} else {
-				open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn"); 
-				$securepinsavedsupportvpn = <$fh>;
-				chomp($securepinsavedsupportvpn);
-				close ($fh);
-				last;
-			}
-		}
-	}
+	#my $securepinsavedsupportvpn;
+	#if (-e "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn") {
+	#	# Check Online Status
+	#	require Net::Ping;
+	#	for (my $i=0; $i < 3; $i++) {
+	#		my $p = Net::Ping->new();
+	#		my $hostname = '10.98.98.1';
+	#		my ($ret, $duration, $ip) = $p->ping($hostname);
+	#		if (!$ret) {
+	#		sleep (1);
+	#			next;
+	#		} else {
+	#			open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn"); 
+	#			$securepinsavedsupportvpn = <$fh>;
+	#			chomp($securepinsavedsupportvpn);
+	#			close ($fh);
+	#			last;
+	#		}
+	#	}
+	#}
 	
 	if (-e $pinerror_file) {
 		require LoxBerry::JSON;
@@ -1158,14 +1158,15 @@ sub check_securepin
 		undef $pinerrobj;
 	}
 	
-	if ( crypt($securepin, $securepinsaved) eq $securepinsaved) {
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '$securepin');
+	if (!$?) {
 		# OK
 		unlink $pinerror_file;
 		return (undef);
-	} elsif ( defined $securepinsavedsupportvpn and crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
-		# OK
-		unlink $pinerror_file;
-		return (undef);
+	#} elsif ( defined $securepinsavedsupportvpn and crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
+	#	# OK
+	#	unlink $pinerror_file;
+	#	return (undef);
 	} else {
 		# Not equal
 		require LoxBerry::JSON;
