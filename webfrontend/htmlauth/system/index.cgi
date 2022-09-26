@@ -28,7 +28,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "https://www.loxwiki.eu/x/84YKAw";
+my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/start";
 my $helptemplate;
 my $template_title;
 my $error;
@@ -48,7 +48,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/general.json" || -z "$lb
 }
 
 # Version of this script
-my $version = "2.0.2.1";
+my $version = "3.0.0.0";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -63,23 +63,6 @@ my $sudobin = $bins->{SUDO};
 my $cgi = CGI->new;
 $cgi->import_names('R');
 # Example: Parameter lang is now $R::lang
-
-##########################################################################
-# Check for first start and setup assistent
-##########################################################################
-
-my $wizardfile = "$lbsdatadir/wizard.dat";
-if (! -e $wizardfile) {
-	# Delete LoxBerryID
-	system ("rm -f $lbsconfigdir/loxberryid.cfg > /dev/null 2>&1");
-	# Resize SDCard
-	system ("$sudobin -n $lbssbindir/resize_rootfs > $lbslogdir/rootfsresized.log 2>&1");
-	reboot_required("Setup Wizard");
-	# Start Wizard
-	print $cgi->redirect('/admin/system/wizard.cgi');
-	exit;
-}
-
 
 ##########################################################################
 # Language Settings
@@ -314,21 +297,4 @@ sub mainmenu {
 }
 
 exit;
-
-
-#####################################################
-# Debugging: ERR INFO
-#####################################################
-
-sub ERR 
-{
-	my ($message) = @_;
-	print STDERR "index.cgi ERROR: $message\n";
-}
-sub INFO
-{
-	my ($message) = @_;
-	print STDERR "index.cgi INFO: $message\n";
-}
-
 
