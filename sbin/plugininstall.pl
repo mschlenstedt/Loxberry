@@ -326,7 +326,7 @@ sub install {
 	}
 
 	if (!$zipmode) { 
-		require Cwd qw(abs_path);
+		require Cwd;
 		$tempfolder = abs_path($R::folder);
 		if (!-e $tempfolder) {
 			$message = "$LL{'ERR_FOLDER_DOESNT_EXIST'}";
