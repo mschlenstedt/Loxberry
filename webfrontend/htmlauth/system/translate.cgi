@@ -133,7 +133,7 @@ $navbar{20}{Name} = $SL{'TRANSLATE.WIDGETLABEL_PLUGIN'};
 $navbar{20}{URL} = 'translate.cgi?form=plugin';
  
 $navbar{99}{Name} = $SL{'TRANSLATE.WIDGETLABEL_TRANSLATIONGUIDE'};
-$navbar{99}{URL} = 'http://www.loxwiki.eu:80/x/QgZ7AQ';
+$navbar{99}{URL} = 'https://wiki.loxberry.de/howtos_knowledge_base/translation_guide_for_loxberry/start';
 $navbar{99}{target} = '_blank'; 
 
 if ($plugin) {
