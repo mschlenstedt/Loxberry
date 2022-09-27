@@ -1,5 +1,23 @@
 <!-- ** START template/system/mainplugins.html 03.12.2017 ************************************************************************************ -->
 <!-- <div style="font-size: 0.6em; text-align: right; vertical-align: middle;">LoxBerry Version <TMPL_VAR SVERSION></div> -->
+
+<!-- Popup: Wizard -->
+<TMPL_IF WIZARD>
+<div data-role="popup" id="popupFirstBoot" data-overlay-theme="a" data-dismissible="false" style="min-width:600px;min-height:300px;" data-theme="a" class="ui-corner-all">
+	<div data-role="header" >
+		<h1 class="ui-title" style="text-align: center;"><TMPL_VAR WIZARD.WELCOME></h1>
+	</div>
+	<div role="main" id="popupRebootForceContent" style="padding: 20px 20px;text-align:center;">
+		<img src="/system/images/Logo_green_transparent.png" width="250px">
+		<p><b><TMPL_VAR WIZARD.INTRO1></b></p>
+		<p><TMPL_VAR WIZARD.INTRO2> <a href="<TMPL_VAR WIZARD.WIKIURL_CONFIGHELP>" target="_blank"><TMPL_VAR WIZARD.WIKIURL_CONFIGHELP></a></p>
+		<p>&nbsp;</p>
+		<a style="background-color: lightgreen;"href="/admin/system/admin.cgi?do=random" data-role="button" data-iconpos="left" data-icon="power" data-corners="true" data-inline="true"><TMPL_VAR WIZARD.BUTTON_RDM_PASSWORDS></a>
+		<a style="background-color: lightyellow;" href="/admin/system/admin.cgi" data-role="button" data-iconpos="left" data-icon="power" data-corners="true" data-inline="true"><TMPL_VAR WIZARD.BUTTON_STD_PASSWORDS></a>
+	</div>
+</div>
+</TMPL_IF>
+
 <TMPL_IF PAGE_PLUGIN>
 <p class="wide">
 	<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg" alt="">
@@ -94,6 +112,7 @@ $(function() {
     //console.log( "Calling updatenotify" );
 	updatenotify();
 	setInterval(function(){ updatenotify(); }, <TMPL_VAR NOTIFY_POLLTIME>);
+        $("#popupFirstBoot").popup("open");
 });
 	
 function updatenotify() {

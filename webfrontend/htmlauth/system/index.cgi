@@ -28,7 +28,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/start";
+my $helplink = "https://www.loxwiki.eu/x/84YKAw";
 my $helptemplate;
 my $template_title;
 my $error;
@@ -85,12 +85,39 @@ our $maintemplate = HTML::Template->new(
 				);
 
 our %SL = LoxBerry::System::readlanguage($maintemplate);
-
 $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}";
 
 ##########################################################################
-# Main program
+# Check for first start and setup assistent
 ##########################################################################
+
+# If we were started the very first time, create random passwords
+if (!-e "$lbsdatadir/wizard.dat") {
+	
+	# Check if the original passwords still set
+	my $wizardchk = 0;
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'loxberry' 'loxberry');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+		$wizardchk++;
+	}
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'root' 'loxberry');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+			$wizardchk++;
+	}
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '0000');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+		$wizardchk++;
+	}
+	
+	# Set random passwords
+	if ($wizardchk eq 0) {
+		$maintemplate->param('WIZARD' => 1);
+	}
+
+}
 
 #########################################################################
 # What should we do
@@ -297,4 +324,21 @@ sub mainmenu {
 }
 
 exit;
+
+
+#####################################################
+# Debugging: ERR INFO
+#####################################################
+
+sub ERR 
+{
+	my ($message) = @_;
+	print STDERR "index.cgi ERROR: $message\n";
+}
+sub INFO
+{
+	my ($message) = @_;
+	print STDERR "index.cgi INFO: $message\n";
+}
+
 

@@ -155,10 +155,10 @@ sub check_current_passwd
 {
 	my ($user, $pass) = @_;
 
-	if ($user eq "root" || $user eq "0") {
-		print "Root password cannot be set or checked by this tool\n";
-		exit (1);
-	}
+	#if ($user eq "root" || $user eq "0") {
+	#	print "Root password cannot be set or checked by this tool\n";
+	#	exit (1);
+	#}
 
 	my ($name, $passwd, $uid, $gid, $quota, $comment, $gcos, $dir, $shell) = getpwnam ($user);
 	if (!$passwd) {

@@ -191,6 +191,13 @@
 	</SCRIPT>
 </TMPL_IF>
 <TMPL_IF SAVE>
+<DIV style="padding: 0em 5em 5em 0em;">
+	<TMPL_IF WIZARD>
+		<TMPL_VAR ADMIN.WIZARD_INTRO>
+		<BR><BR>
+		<TMPL_VAR ADMIN.WIZARD_HINT>
+		<BR><BR>
+	</TMPL_IF>
 	<DIV style="background-color: rgba(255, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; padding:10px;">
 		<TMPL_IF ERRORS>
 			<DIV style="background-color: rgba(255, 128, 128, 0.4); border-radius: 11px; border: 1px solid red; padding:10px;">
@@ -211,6 +218,14 @@
 		<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;">loxberry</b>
 		<BR>
 		<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;"><TMPL_VAR ADMINPASS></b>
+		<TMPL_IF WIZARD>
+			<BR><BR>
+			<B><TMPL_VAR ADMIN.SAVE_OK_ROOT_USER></B>
+			<BR>
+			<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;">root</b>
+			<BR>
+			<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;"><TMPL_VAR ROOTPASS></b>
+		</TMPL_IF>
 		<BR><BR>
 		<B><TMPL_VAR ADMIN.SAVE_OK_COL_SECUREPIN></B> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;"><TMPL_VAR SECUREPIN></b>
 	</DIV>
@@ -239,5 +254,6 @@
 				href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></A>
 		</CENTER></P>
 	</DIV>
+</DIV>
 </TMPL_IF>
 <!-- ** END template/system/admin.html ************************************************************************************ -->
