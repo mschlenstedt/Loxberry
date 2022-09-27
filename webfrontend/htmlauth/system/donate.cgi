@@ -30,7 +30,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/NYkKAw";
+my $helpurl = "https://wiki.loxberry.de/spenden/start";
 
 our $lang;
 our $phrase;
@@ -110,8 +110,7 @@ $maintemplate->param(COUNTER => $counter);
 
 # Print Template
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'DONATE.WIDGETLABEL'};
-LoxBerry::Web::head();
-LoxBerry::Web::pagestart($template_title, $helplink);
+LoxBerry::Web::lbheader($template_title, $helpurl);
 print $maintemplate->output();
 undef $maintemplate;			
 LoxBerry::Web::pageend();
