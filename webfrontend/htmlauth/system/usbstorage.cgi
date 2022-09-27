@@ -31,7 +31,7 @@ use strict;
 # Variables
 ##########################################################################
 
-our $helpurl = "https://www.loxwiki.eu/x/AYkKAw";
+our $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_usb_storages";
 
 ##########################################################################
 # Read Settings

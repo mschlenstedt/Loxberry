@@ -36,7 +36,7 @@ use strict;
 # Version of this script
 my $version = "2.0.2.1";
 
-my $helplink = "https://www.loxwiki.eu/x/SogKAw";
+my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_network";
 my $helptemplate = "help_network.html";
 
 our $cfg;

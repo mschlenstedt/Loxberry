@@ -21,7 +21,6 @@
 use Config::Simple '-strict';
 # use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute translate.cgi\n#####################\n";
 use LoxBerry::TimeMes;
 use HTML::Entities;
 use CGI;
@@ -35,7 +34,7 @@ use strict;
 
 mes "Start";
 
-my $helplink = "https://www.loxwiki.eu/x/uogKAw";
+my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_translate";
 my $helptemplate = "help_translate.html";
 my $template_title;
 my $error;

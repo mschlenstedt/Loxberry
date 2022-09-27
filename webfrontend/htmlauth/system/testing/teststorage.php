@@ -4,7 +4,7 @@ require_once "loxberry_web.php";
 require_once "loxberry_storage.php";
 
 $template_title = "Top Plugin";
-$helplink = "http://www.loxwiki.eu:80/x/2wzL";
+$helplink = "https://wiki.loxberry.de/";
 $helptemplate = "help.html";
 
 LBWeb::lbheader($template_title, $helplink, $helptemplate);

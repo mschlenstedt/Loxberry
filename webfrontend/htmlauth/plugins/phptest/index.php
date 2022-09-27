@@ -6,7 +6,7 @@ require_once "loxberry_web.php";
 $L = LBWeb::readlanguage("language.ini");
 
 $template_title = "Hello PHP! Plugin";
-$helplink = "http://www.loxwiki.eu:80/x/_wFmAQ";
+$helplink = "https://wiki.loxberry.de/";
 $helptemplate = "pluginhelp.html";
 
 $navbar[1]['Name'] = $L['NAVBAR.FIRST'];

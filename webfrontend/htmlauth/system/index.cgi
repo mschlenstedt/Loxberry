@@ -28,7 +28,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "https://www.loxwiki.eu/x/84YKAw";
+my $helplink = "https://wiki.loxberry.de/";
 my $helptemplate;
 my $template_title;
 my $error;

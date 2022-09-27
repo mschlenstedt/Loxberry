@@ -5,7 +5,7 @@ use LoxBerry::System;
 use LoxBerry::Web;
 
 my $plugintitle = "MQTT (V" . LoxBerry::System::lbversion() . ")";
-my $helplink = "https://www.loxwiki.eu/x/S4ZYAg";
+my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt";
 my $helptemplate = "help.html";
 
 	our @navbar = (

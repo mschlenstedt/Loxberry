@@ -7,7 +7,7 @@ require_once "Config/Lite.php";
 ## Variables
 ###########################################################################
 #
-$helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+$helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_loxberry_services/start";
 $helptemplate = "help_services.html";
 $template_title;
 $error;

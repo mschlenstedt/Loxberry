@@ -16,7 +16,7 @@ my $params = $q->Vars;
 my $nopanels = defined $params->{'nopanels'};
 
 our $template_title = "MQTT Finder";
-our $helplink = "https://loxwiki.atlassian.net/l/c/t11H5aez";
+our $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt";
 $helplink = "nopanels" if( $nopanels );
 
 # Version of this script
