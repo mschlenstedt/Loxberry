@@ -20,7 +20,6 @@
 ##########################################################################
 use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute donate.cgi\n##################\n";
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
@@ -33,18 +32,16 @@ use strict;
 
 my $helpurl = "https://www.loxwiki.eu/x/NYkKAw";
 
-our $cfg;
+our $lang;
 our $phrase;
 our $namef;
 our $value;
 our %query;
-our $lang;
 our $template_title;
 our $help;
 our @help;
 our $helptext;
 our $helplink;
-our $installfolder;
 our $languagefile;
 our $bins = LoxBerry::System::get_binaries();
 
@@ -53,26 +50,11 @@ our $bins = LoxBerry::System::get_binaries();
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.0.2";
-
-$cfg             = new Config::Simple("$lbhomedir/config/system/general.cfg");
-$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
+my $version = "3.0.0.0";
 
 #########################################################################
 # Parameter
 #########################################################################
-
-# Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
-
 
 ##########################################################################
 # Language Settings
@@ -89,7 +71,6 @@ my $maintemplate = HTML::Template->new(
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
 		%htmltemplate_options,
 		# debug => 1,
 		);

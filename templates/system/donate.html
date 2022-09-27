@@ -1,13 +1,13 @@
 <!-- ** START template/system/donate.html 23:15 26.11.2017 ************************************************************************************ -->
 
 <style>
-#header {
+#headerdonate {
 	float: left;
 	width: 100%;
 	text-align: center;
 }
 
-.container {
+.containerdonate {
 	display:inline-block;
 	margin: 0 9%;
 	vertical-align: middle;
@@ -33,20 +33,20 @@
 	&nbsp;
 </p>
 <p>
-<div id="header">
-	<div class="container">
-		<a href="<TMPL_VAR DONATE.LINK_URL1>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT1>
-		</a>
+<div id="headerdonate">
+	<div class="containerdonate">
+		<a href="<TMPL_VAR DONATE.LINK_URL1>" target="_blank"><TMPL_VAR DONATE.LINK_TEXT1></a>
 	</div>
-	<div class="container">
+	<div class="containerdonate">
 		<TMPL_VAR DONATE.DONATIONS><br>
 		# <span id="counter" class="big"></span>
 	</div>
 </div>
+
 <div style="clear:left"></div>
-</p>
+
 <p>
-	&nbsp;
+&nbsp;
 </p>
 <p>
 <TMPL_VAR DONATE.DONATE2>
@@ -66,11 +66,12 @@
 </a>
 </p>
 <p>
-	&nbsp;
+&nbsp;
 </p>
 <p>
 <b><TMPL_VAR DONATE.DONORS></b>
 </p>
+
 <style>
 .donator_table {
 	width:50%;
@@ -86,8 +87,9 @@
 .donator_table tr:nth-child(even) {
 	background: #EEEEEE;
 }
-
 </style>
+
+<center>
 <table class="donator_table">
 <TMPL_LOOP NAME="DONORLIST">
 	<tr>
