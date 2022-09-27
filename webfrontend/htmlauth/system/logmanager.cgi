@@ -60,7 +60,7 @@ if ($R::package) {
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . "Log Manager"; #$SL{'LOGMANAGER.WIDGETLABEL'};
 }
 
-$helplink = "https://www.loxwiki.eu/x/YYgKAw";
+$helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_log_manager";
 $helptemplate = "help_logmanager.html";
 
 # Navigation (only for full mode)

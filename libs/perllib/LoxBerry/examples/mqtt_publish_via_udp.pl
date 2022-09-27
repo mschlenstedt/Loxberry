@@ -20,7 +20,7 @@ my $udpport = $mqttcred->{udpinport};
 my $socket;
 $socket = LoxBerry::IO::create_out_socket($socket, $udpport, 'udp', '127.0.0.1');
 
-# See https://www.loxwiki.eu/display/LOXBERRY/MQTT+Gateway+-+HTTP-+und+UDP-Interface
+# See https://wiki.loxberry.de/plugins/mqtt_gateway/mqtt_gateway_http_und_udp_interface
 my %udpsendpackage = (
 	'topic' => $basetopic,
 	'value' => encode_json( \%data),

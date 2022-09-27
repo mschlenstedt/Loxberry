@@ -16,7 +16,7 @@ my %udpsocket;
 
 #####################################################
 # mshttp_send
-# https://www.loxwiki.eu/x/RAE_Ag
+# https://wiki.loxberry.de/entwickler/perl_develop_plugins_with_perl/perl_loxberry_sdk_dokumentation/perlmodul_loxberryio/loxberryiomshttp_send
 # THIS IS THE MQTT GATEWAY VARIANT
 #####################################################
 

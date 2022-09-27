@@ -639,7 +639,7 @@ sub check_logdb
 	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Log Database';
 	$result{'desc'} = 'Checks the consistence of the Logfile Database';
-	$result{'url'} = 'https://www.loxwiki.eu/x/oIMKAw';
+	$result{'url'} = 'https://wiki.loxberry.de/konfiguration/widget_help/widget_log_manager';
 
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {
@@ -851,7 +851,7 @@ sub check_lbversion
 	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'LoxBerry Version';
 	$result{'desc'} = 'Checks the LoxBerry Version';
-	$result{'url'} = 'https://www.loxwiki.eu/x/b4WdAQ';
+	$result{'url'} = 'https://wiki.loxberry.de/konfiguration/widget_help/widget_updates';
 
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {
@@ -998,7 +998,7 @@ sub check_tmpfssize
 	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'RAMDiscs free space';
 	$result{'desc'} = 'Checks the ramdiscs for available space';
-	$result{'url'} = 'https://www.loxwiki.eu/x/QINYAg';
+	$result{'url'} = 'https://wiki.loxberry.de/haufig_gestellte_fragen_faq/system_tmpfs_is_below_limit_of_5_discspace_please_reboot_your_loxberry';
 
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {
@@ -1212,7 +1212,7 @@ sub check_voltage
 	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Voltage';
 	$result{'desc'} = 'Checks the voltage of the power supply';
-	$result{'url'} = 'https://www.loxwiki.eu/display/LOXBERRY/Hardware#Hardware-Netzteil';
+	$result{'url'} = 'https://wiki.loxberry.de/installation_von_loxberry/hardware#netzteil';
 
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {
@@ -1312,7 +1312,7 @@ sub check_miniservers
 	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Miniserver Access';
 	$result{'desc'} = 'Checks access to your Miniservers';
-	$result{'url'} = 'https://www.loxwiki.eu/x/QYgKAw';
+	$result{'url'} = 'https://wiki.loxberry.de/konfiguration/widget_help/widget_miniserver';
 
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {
@@ -1397,7 +1397,7 @@ sub check_reboot_required
 	$result{'sub'} = "$sub_name";
 	$result{'title'} = 'Reboot required';
 	$result{'desc'} = 'Checks if LoxBerry or a plugin requests a reboot';
-	$result{'url'} = 'https://www.loxwiki.eu/x/fogKAw';
+	$result{'url'} = 'https://wiki.loxberry.de/konfiguration/widget_help/widget_reboot_power';
 	
 	# Only return Title/Desc for Webif without check
 	if ($action eq "title") {

@@ -39,7 +39,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/V4gKAw";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_updates";
 my $helptemplate = "help_updates.html";
 my $lbulogfiledir = "$lbslogdir/loxberryupdate";
 my $lbuchecklogfiledir = "$lbhomedir/log/system_tmpfs/loxberryupdate";

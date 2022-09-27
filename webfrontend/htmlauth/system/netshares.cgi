@@ -32,7 +32,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/6YgKAw";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_netshares";
 my $helptemplate = "help_netshares.html";
 
 our $phrase;

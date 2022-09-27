@@ -5,7 +5,7 @@ use warnings;
 
 print "\nTest Notification\n";
 print "=================\n";
-print "Documentation of notify for Perl: http://www.loxwiki.eu:80/x/eQd7AQ\n\n";
+print "Documentation of notify for Perl: https://wiki.loxberry.de/entwickler/perl_develop_plugins_with_perl/perl_loxberry_sdk_dokumentation/perlmodul_loxberrylog/loxberrylognotify\n\n";
 print "All tests are using package 'test' and groupname 'testing'\n\n";
 print "Notification directory is: " . $LoxBerry::Log::notification_dir . "\n\n";
 

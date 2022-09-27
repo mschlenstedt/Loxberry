@@ -27,7 +27,7 @@ require_once "loxberry_json.php";
 # Variables
 ##########################################################################
 
-$helplink = "https://www.loxwiki.eu/x/bogKAw";
+$helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_loxberry_services/start";
 $helptemplate = "help_services.html";
 $template_title;
 $error;

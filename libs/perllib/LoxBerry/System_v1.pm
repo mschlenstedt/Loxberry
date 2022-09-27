@@ -64,7 +64,7 @@ our @EXPORT = qw (
 
 =head1 NAME
 
-LoxBerry::System - LoxBerry platform system module to ease writing plugins for LoxBerry. See http://www.loxwiki.eu:80/x/o4CO
+LoxBerry::System - LoxBerry platform system module to ease writing plugins for LoxBerry. See https://wiki.loxberry.de/entwickler/perl_develop_plugins_with_perl/perl_loxberry_sdk_dokumentation/perlmodul_loxberrysystem/start
 
 =head1 SYNOPSIS
 

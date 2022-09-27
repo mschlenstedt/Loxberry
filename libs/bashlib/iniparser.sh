@@ -8,8 +8,6 @@
 # Example:
 # iniparser $LBSCONFIG/general.cfg "BASE"
 
-# http://www.loxwiki.eu/x/cA7L
-
 # Version: 1.2.6.0
 
 iniparser() {

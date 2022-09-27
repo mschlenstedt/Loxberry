@@ -52,7 +52,7 @@ my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED f
 ################################################################
 ## Constructor
 ## 	Params [square brackets mean optional]
-## See https://www.loxwiki.eu/x/pQHgAQ
+## See https://wiki.loxberry.de/entwickler/perl_develop_plugins_with_perl/perl_loxberry_sdk_dokumentation/perlmodul_loxberrylog/start
 ##################################################################
 
 sub new 

@@ -31,9 +31,11 @@ sind.
 Getting Started
 ---------------
  
-Weitere Informationen findest Du im Wiki unter http://www.loxwiki.eu/display/LOXBERRY
+Weitere Informationen findest Du im Wiki unter https://wiki.loxberry.de/
 
 Das LoxBerry System steht als Image für den Raspberry Pi zum Download zur Verfügung. 
 Das Image muss auf eine freie SD-Karte geschrieben werden, anschließend kann der LoxBerry
 direkt von der SD-Karte gebootet werden. Die fertigen Images stehen hier zum Download
-zur Verfügung: https://www.loxwiki.eu/x/WISdAQ
+zur Verfügung: 
+
+https://wiki.loxberry.de/installation_von_loxberry/download_und_spiegelsites/start
