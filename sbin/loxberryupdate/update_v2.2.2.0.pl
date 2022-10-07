@@ -8,6 +8,7 @@
 
 use LoxBerry::Update;
 use LoxBerry::System;
+use LoxBerry::JSON;
 
 init();
 
