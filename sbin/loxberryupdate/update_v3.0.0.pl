@@ -21,23 +21,27 @@ $gcfg = $gcfgobj->open(filename => $generaljson);
 $gcfg->{Update}->{max_version} = "v3.99.99";
 $gcfgobj->write();
 
+#
 # Add Raspbian Mirrors to general.json
+#
 LOGINF "Adding Apt Servers to general.json";
-if (!$gcfg->{'apt'}->{'servers'}) {
+if (!$gcfg->{'Apt'}->{'Servers'}) {
 	my @servers = ( "http://ftp.agdsn.de/pub/mirrors/raspbian/raspbian/",
 			"http://packages.hs-regensburg.de/raspbian/",
 			"http://ftp.halifax.rwth-aachen.de/raspbian/raspbian/",
 			"http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/",
 			"https://dist-mirror.fem.tu-ilmenau.de/raspbian/raspbian/"
 	);
-	$gcfg->{'apt'}->{'servers'} = \@servers;
+	$gcfg->{'Apt'}->{'Servers'} = \@servers;
 	$gcfgobj->write();
 	LOGOK "Apt Servers added to general.json successfully.";
 } else {
 	LOGOK "Apt Servers already in general.json -> skipping.";
 }
 
+#
 # Repair apt sources
+# 
 LOGINF "Repairing apt sources...";
 &copy_to_loxberry('/system/apt/loxberry.list');
 unlink ("/etc/apt/sources.list.d/loxberry.list");
@@ -97,8 +101,9 @@ if ($exitcode != 0) {
 	system("pip3 list --format=freeze > $lbsdatadir/pip3_list.dat");
 }
 
-
+#
 # MQTT Gateway migration
+#
 LOGINF "The next steps will prepare the Mosquitto MQTT server and MQTT Gateway.";
 
 copy_to_loxberry('/system/sudoers/lbdefaults');
@@ -124,6 +129,9 @@ KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemc
 EOF
 close(F);
 
+#
+# Repair missing environments in Apache
+#
 LOGINF "Add missing Environments in Apache Config";
 system ("cat $lbhomedir/system/apache2/sites-available/000-default.conf | grep 'LBPHTMLAUTH'");
 $exitcode  = $? >> 8;
@@ -135,6 +143,11 @@ $exitcode  = $? >> 8;
 if ($exitcode) {
 	system("sed -i -e 's:PassEnv LBSHTML:PassEnv LBSHTML\\n\\tPassEnv LBSHTMLAUTH:g' $lbhomedir/system/apache2/sites-available/000-default.conf");
 }
+
+
+
+
+
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
