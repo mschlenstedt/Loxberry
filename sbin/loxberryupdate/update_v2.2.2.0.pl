@@ -31,6 +31,9 @@ if (!$gcfg->{'Backup'}) {
 	LOGOK "Backup parameters already in general.json -> skipping.";
 }
 
+LOGINF "Installing new sudoers file...";
+copy_to_loxberry("/system/sudoers/lbdefaults", "root");
+
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
 
