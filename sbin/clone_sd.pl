@@ -11,6 +11,9 @@ my $version = "3.0.0";
 
 my $dest_bootpart_size = 256; # /boot partition in MB
 
+my $notify = "";
+my $error = undef;
+
 # my %devicedata;
 # my %bootdevice;
 # my %otherdevices;
@@ -18,12 +21,23 @@ my $dest_bootpart_size = 256; # /boot partition in MB
 # $devicedata{bootdevice} = \%bootdevice;
 # $devicedata{otherdevices} = \%otherdevices;
 
+# Lock
+my $status = LoxBerry::System::lock(lockfile => 'backup');
+if ($status) {
+    print "Could not lock, prevented by $status\n";
+    $error++;
+    $notify .= " Could not lock, prevented by $status";
+    exit(1);
+} 
+
 # Create a logging object
 my $log = LoxBerry::Log->new ( 
-	package => 'core', 
+	package => 'LoxBerry Backup', 
 	name => 'Clone_SD', 
 	logdir => $lbslogdir, 
-	stdout => 1 );
+	loglevel => LoxBerry::System::systemloglevel(),
+	stdout => 1,
+);
 
 LOGSTART "Clone SD card";
 LOGINF "Version of this script: $version";
@@ -35,6 +49,8 @@ LOGINF "Executing user is $curruser";
 if( $curruser ne "root" ) {
 	LOGCRIT "This script needs to be run as root.";
 	LOGCRIT "Use su and root password to login as root.";
+    	$error++;
+    	$notify .= " This script needs to be run as root.";
 	exit(1);
 }
 
@@ -44,10 +60,14 @@ my $mount_boot = findmnt('/boot');
 
 if (!$mount_root) {
 	LOGCRIT "Could not get / mount point";
+    	$error++;
+    	$notify .= " Could not get / mount point";
 	exit(1);
 }
 if (!$mount_boot) {
 	LOGCRIT "Could not get /boot mount point";
+    	$error++;
+    	$notify .= " Could not get /boot mount point";
 	exit(1);
 }
 
@@ -76,6 +96,8 @@ foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
 
 if( !$bootdevice) {
 		LOGCRIT "Could not determine your boot device.";
+    		$error++;
+    		$notify .= " Could not determine your boot device.";
 		exit(1);
 }
 	
@@ -83,6 +105,8 @@ LOGINF "Boot device is $bootdevice";
 
 if( scalar @{$lsblk->{blockdevices}} <= 1 ) {
 	LOGCRIT "No other device found. Insert SD card and connect card reader.";
+    	$error++;
+    	$notify .= " No other device found. Insert SD card and connect card reader.";
 	exit(1);
 }
 
@@ -156,6 +180,8 @@ if ( $desttype eq "device" ) {
 		
 			if( $blockdevice->{isboot} ) {
 				LOGCRIT "Your entered DESTINATION path $destpath is the boot device!";
+    				$error++;
+    				$notify .= " Your entered DESTINATION path $destpath is the boot device!";
 				exit(1);
 			}
 			last;
@@ -164,6 +190,8 @@ if ( $desttype eq "device" ) {
 	}
 	if (!$destpath_found) {
 		LOGCRIT "Your entered DESTINATION path $destpath does not exist.";
+    		$error++;
+    		$notify .= " Your entered DESTINATION path $destpath does not exist.";
 		exit(1);
 	}
 
@@ -176,6 +204,8 @@ if ( $desttype eq "device" ) {
 	$required_space = ($src1_used + $dest_bootpart_size*1024*1024)*1.2;
 	if( $destdevice->{size} < $required_space ) {
 		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller that required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
+    		$error++;
+    		$notify .= " $destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller that required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
 		exit(1);
 	}
 }
@@ -204,6 +234,8 @@ if ( $desttype eq "path" ) {
 
 	if (!$destpath_found) {
 		LOGCRIT "Your entered DESTINATION path $destpath does not exist or isn't writeable.";
+    		$error++;
+    		$notify .= " Your entered DESTINATION path $destpath does not exist or isn't writeable.";
 		exit(1);
 	}
 
@@ -216,10 +248,13 @@ if ( $desttype eq "path" ) {
 	$required_space = ($src1_used + $dest_bootpart_size*1024*1024)*1.2;
 	if( $destdevice->{AVAILABLE}*1024 < $required_space ) {
 		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . ") is smaller than required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
+    		$error++;
+    		$notify .= " $destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . ") is smaller than required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
 		exit(1);
 	}
 }
 
+LOGINF "Waiting 15s in case you changed your mind...";
 print "\n\033[1mPress Ctrl-C now, if you have changed your mind\033[0m (I will wait 15 sec and then continue automatically).\n";
 sleep(15);
 
@@ -262,11 +297,15 @@ foreach my $helperdir ( @helperdirs ) {
 
 	if( ! -e $helperdir ) {
 		LOGCRIT "Directory $helperdir could not be created.";
+    		$error++;
+    		$notify .= " Directory $helperdir could not be created.";
 		exit(1);
 	}
 	
 	if( !is_folder_empty($helperdir) ) {
 		LOGCRIT "Directory $helperdir is not empty.";
+    		$error++;
+    		$notify .= " Directory $helperdir is not empty.";
 		exit(1);
 	}
 }
@@ -291,11 +330,15 @@ if ($desttype eq "device") {
 	}
 	if ( !$destpath_found ) {
 		LOGCRIT "Could not find $destpath anymore after wiping partitions.";
+    		$error++;
+    		$notify .= " Could not find $destpath anymore after wiping partitions.";
 		exit(1);
 	}
 
 	if ( defined $checklsblk->{blockdevices}[$destdevice_index]->{children} and scalar @{$checklsblk->{blockdevices}[$destdevice_index]->{children}} != 0 ) {
 		LOGCRIT "Not all partitons could be deleted on destination $destpath.";
+    		$error++;
+    		$notify .= " Not all partitons could be deleted on destination $destpath.";
 		exit(1);
 	}
 }
@@ -305,6 +348,8 @@ if ($desttype eq "path") {
 	$destpath = $destpath . "/" . LoxBerry::System::lbhostname() . "_image_$now.img";
 	if ( -e $destpath ) {
 		LOGCRIT "$destpath already exists.";
+    		$error++;
+    		$notify .= " $destpath already exists.";
 		exit (1);
 	}
 	my $targetsize_mb = int( ($required_space / 1024 / 1024) + 0.5 ); # rounded
@@ -350,6 +395,8 @@ if ($desttype eq "path") {
 	chomp ($loop);
 	if ( $loop !~ /^\/dev\/loop\d+/ ) {
 		LOGCRIT "Could not create loop device.";
+    		$error++;
+    		$notify .= " Could not create loop device.";
 		exit (1);
 	}
 	$destpath1 = $loop."p1";
@@ -407,15 +454,17 @@ for my $i ( 1..10 ) {
 
 if (!$mountsok) {
 	LOGCRIT "Not all of source and destination mounts are available.";
+    	$error++;
+    	$notify .= " Not all of source and destination mounts are available.";
 	exit(1);
 }
 
 LOGINF "Copy data of /boot partition (this will take some seconds)";
-execute( command => "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /media/dst1 && tar xSpvf - )", log => $log );
+execute( command => "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSpf - )", log => $log );
 LOGINF "Copy data of / partition (this may take an hour...)";
-execute( command => "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /media/dst2 && tar xSpvf - )", log => $log );
+execute( command => "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSpf - )", log => $log );
 
-# Delete not needed swap file - this is normally quite big
+# Delete not needed swap file - this is normally quite big. Wa excluded above, just in case...
 if (-e "/media/dst2/var/swap") {
 	unlink ("/media/dst2/var/swap");
 }
@@ -454,16 +503,20 @@ foreach my $blockdevice ( @{$newlsblk->{blockdevices}} ) {
 }
 if (!$destpath_found) {
 	LOGCRIT "Your DESTINATION device $destpath does not exist (anymore?).";
+	$error++;
+	$notify .= " Your DESTINATION device $destpath does not exist (anymore?).";
 	exit(1);
 }
 
 foreach my $mountpoint ( keys %chk_mounts ) {
-	LOGINF "Mounting $mountpoint to $chk_mounts{$mountpoint}";
-	execute( command => "mount $chk_mounts{$mountpoint} $mountpoint", log => $log );
-	LOGDEB "Find mountpoint $mountpoint";
+	#LOGINF "Mounting $mountpoint to $chk_mounts{$mountpoint}";
+	#execute( command => "mount $chk_mounts{$mountpoint} $mountpoint", log => $log );
+	LOGINF "Find mountpoint $mountpoint";
 	my $mnt = findmnt($mountpoint);
 	if ( !defined $mnt or $mnt->{filesystems}[0]->{target} ne $mountpoint ) {
-		LOGDEB "Mount $mountpoint not ready at mountpoint " . $chk_mounts{$mountpoint};
+		LOGERR "Mount $mountpoint not ready at mountpoint " . $chk_mounts{$mountpoint};
+		$error++;
+		$notify .= " Mount $mountpoint not ready at mountpoint " . $chk_mounts{$mountpoint};
 		$mountsok = 0;
 	}
 }
@@ -476,8 +529,11 @@ if ($desttype eq "path") {
 
 if (!$newdst_ptuuid or $newdst_ptuuid ne $src_ptuuid) {
 	LOGERR "Source PTUUID is $src_ptuuid, Dest PTUUID is $newdst_ptuuid - They are not equal. The new SD may fail to boot!";
+	$error++;
+	$notify .= " Source PTUUID is $src_ptuuid, Dest PTUUID is $newdst_ptuuid - They are not equal. The new SD may fail to boot!";
 } else {
-	LOGOK "Possibly it worked! ;-)";
+	LOGOK "Maybe it worked ;-)";
+	$notify .= " Successfully created your backup. Maybe it worked! ;-)";
 }
 
 # Additional hints and cleaning up
@@ -493,14 +549,12 @@ foreach my $mountpoint ( keys %chk_mounts ) {
 if ($desttype eq "device") {
 	LOGWARN "Shutdown LoxBerry, put the new card into the Raspberry SD slot and start over!";
 	LOGWARN "If it fails to boot, connect a display to Raspberry to check what happens.";
-	LOGEND "Finished";
 	reboot_required("After clone_sd.pl usage you need to reboot LoxBerry.");
 }
 
 if ($desttype eq "path") {
 	LOGINF "You have to flash the created image onto an empty SDcard!";
 	LOGINF "If it fails to boot, connect a display to Raspberry to check what happens.";
-	LOGEND "Finished";
 	execute ( command => "losetup -d $loop" );
 }
 
@@ -535,7 +589,7 @@ sub findmnt
 		$findmnt = decode_json( $output );
 	};
 	if( $rc != 0 or ! $findmnt ) {
-		LOGERR "Could not read mountlist (findmnt $dev)";
+		LOGINF "Could not read mountlist (findmnt $dev)";
 	}
 #	print STDERR $output . "\n";
 
@@ -549,15 +603,8 @@ sub is_folder_empty {
     return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
 }
 
-
-
-sub exception
-{
-	print STDERR "$_\n";
-	exit(1);
-}
-
-sub log
-{ 
-	print STDERR "$_\n";
+# Always execute
+END {
+	notify('backup', 'clone_sd', $notify, $error) if ($notify);
+	LOGEND "Finished" if $log;
 }
