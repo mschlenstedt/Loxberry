@@ -15,6 +15,9 @@ init();
 # Add Backup to general.json
 #
 LOGINF "Adding Backup options to general.json";
+my $generaljson = $lbsconfigdir . "/general.json";
+my $gcfgobj = LoxBerry::JSON->new();
+my $gcfg = $gcfgobj->open(filename => $generaljson);
 if (!$gcfg->{'Backup'}) {
 	$gcfg->{'Backup'}->{'Keep_archives'} = "1";
 	$gcfg->{'Backup'}->{'Storagepath'} = "";
