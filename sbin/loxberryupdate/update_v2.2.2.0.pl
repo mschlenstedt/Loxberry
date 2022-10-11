@@ -8,6 +8,7 @@
 
 use LoxBerry::Update;
 use LoxBerry::System;
+use LoxBerry::JSON;
 
 init();
 
@@ -15,6 +16,9 @@ init();
 # Add Backup to general.json
 #
 LOGINF "Adding Backup options to general.json";
+my $generaljson = $lbsconfigdir . "/general.json";
+my $gcfgobj = LoxBerry::JSON->new();
+my $gcfg = $gcfgobj->open(filename => $generaljson);
 if (!$gcfg->{'Backup'}) {
 	$gcfg->{'Backup'}->{'Keep_archives'} = "1";
 	$gcfg->{'Backup'}->{'Storagepath'} = "";
@@ -26,6 +30,9 @@ if (!$gcfg->{'Backup'}) {
 } else {
 	LOGOK "Backup parameters already in general.json -> skipping.";
 }
+
+LOGINF "Installing new sudoers file...";
+copy_to_loxberry("/system/sudoers/lbdefaults", "root");
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
