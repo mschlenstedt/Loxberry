@@ -16,8 +16,8 @@ init();
 #
 LOGINF "Welcome 3.0 Branch :-) Increasing LoxBerry's Max_Version to 3.99.99.";
 my $generaljson = $lbsconfigdir . "/general.json";
-$gcfgobj = LoxBerry::JSON->new();
-$gcfg = $gcfgobj->open(filename => $generaljson);
+my $gcfgobj = LoxBerry::JSON->new();
+my $gcfg = $gcfgobj->open(filename => $generaljson);
 $gcfg->{Update}->{max_version} = "v3.99.99";
 $gcfgobj->write();
 
@@ -144,7 +144,11 @@ if ($exitcode) {
 	system("sed -i -e 's:PassEnv LBSHTML:PassEnv LBSHTML\\n\\tPassEnv LBSHTMLAUTH:g' $lbhomedir/system/apache2/sites-available/000-default.conf");
 }
 
-
+#
+# Install new sudoers
+#
+LOGINF "Installing new sudoers file...";
+copy_to_loxberry("/system/sudoers/lbdefaults", "root");
 
 
 
