@@ -103,7 +103,7 @@ if( !$bootdevice) {
 	
 LOGINF "Boot device is $bootdevice";
 
-if( scalar @{$lsblk->{blockdevices}} <= 1 ) {
+if( $destpath eq "device" && scalar @{$lsblk->{blockdevices}} <= 1 ) {
 	LOGCRIT "No other device found. Insert SD card and connect card reader.";
     	$error++;
     	$notify .= " No other device found. Insert SD card and connect card reader.";
