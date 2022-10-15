@@ -4,10 +4,11 @@ use warnings;
 use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
+
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "2.0.2.1"; # Version of this script
+my $version = "2.2.1.1"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -31,7 +32,10 @@ $R::value if 0;
 my $action = $R::action;
 my $value = $R::value;
 
-print STDERR "Action: $action // Value: $value\n";
+
+# print STDERR "Action: $action";
+# print STDERR "| Value: $value" if $value;
+# print STDERR "\n";
 
 if    ($action eq 'secupdates') { &secupdates; }
 elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
@@ -44,14 +48,16 @@ elsif ($action eq 'lbupdate-installtime') { &lbupdate; }
 elsif ($action eq 'lbupdate-runcheck') { &lbupdate; }
 elsif ($action eq 'lbupdate-runinstall') {  &lbupdate; }
 elsif ($action eq 'lbupdate-updateself') {  &lbupdate; }
-elsif ($action eq 'lbupdate-resetver') { change_generalcfg("BASE.VERSION", $value) if ($value); }
+elsif ($action eq 'lbupdate-resetver') { change_generaljson("Base->Version", $value) if ($value); }
 elsif ($action eq 'lbupdate-setmaxversion') { change_generaljson("Update->max_version", $value) ; }
 elsif ($action eq 'plugin-loglevel') { plugindb_update('loglevel', $R::pluginmd5, $R::value); }
 elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::pluginmd5, $R::value) if ($R::value); }
 elsif ($action eq 'testenvironment') {  &testenvironment; }
-elsif ($action eq 'changelanguage') { change_generalcfg("BASE.LANG", $value);}
+elsif ($action eq 'changelanguage') { change_generaljson("Base->Lang", $value);}
+elsif ($action eq 'changecountry') { change_generaljson("Base->Country", $value);}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
+elsif ($action eq 'recreate-generalcfg') { recreate_generalcfg(); }
 
 else   { 
 	$response{error} = 1; 
@@ -65,8 +71,8 @@ exit;
 ################################
 sub secupdates
 {
-	print STDERR "ajax-config-handler: ajax secupdates\n";
-	print STDERR "Value is: $value\n";
+	# print STDERR "ajax-config-handler: ajax secupdates\n";
+	# print STDERR "Value is: $value\n";
 	
 	if (!looks_like_number($value) && $value ne 'query') 
 		{ $response{message} = "<red>Value $value not supported.</red>"; 
@@ -124,8 +130,8 @@ sub secupdates
 ############################################
 sub secupdatesautoreboot
 {
-	print STDERR "ajax-config-handler: secupdates-autoreboot\n";
-	print STDERR "Value is: $value\n";
+	# print STDERR "ajax-config-handler: secupdates-autoreboot\n";
+	# print STDERR "Value is: $value\n";
 	
 	if ($value ne "true" && $value ne "false" && $value ne "query") { 
 		$response{message} = "<red>Value not supported.</red>"; 
@@ -179,7 +185,7 @@ sub secupdatesautoreboot
 ############################################
 sub lbupdate
 {
-	print STDERR "ajax-config-handler: lbupdate\n";
+	# print STDERR "ajax-config-handler: lbupdate\n";
 	
 	if ($action eq 'lbupdate-runcheck') {
 		my $output = qx { sudo $lbhomedir/sbin/loxberryupdatecheck.pl output=json };
@@ -201,7 +207,7 @@ sub lbupdate
 	
 	if ($action eq 'lbupdate-reltype') {
 		if ($value eq 'release' || $value eq 'prerelease' || $value eq 'latest') { 
-			change_generalcfg('UPDATE.RELEASETYPE', $value);
+			change_generaljson('Update->Releasetype', $value);
 			$response{error} = 0;
 			$response{message} = "Changed release type to $value";
 		}
@@ -222,7 +228,7 @@ sub lbupdate
 			}
 		}
 		if ($value eq 'disable' || $value eq 'notify' || $value eq 'install') { 
-			my $ret = change_generalcfg('UPDATE.INSTALLTYPE', $value);
+			my $ret = change_generaljson('Update->Installtype', $value);
 			if (!$ret) {
 				$response{error} = 1;
 				$response{message} = "Error changing lbupdate-installtype";
@@ -246,7 +252,7 @@ sub lbupdate
 			} elsif ($value eq '30') {
 				symlink "$lbssbindir/loxberryupdate_cron.sh", "$lbhomedir/system/cron/cron.monthly/loxberryupdate_cron" or print STDERR "Error linking $lbhomedir/system/cron/cron.monthly/loxberryupdate_cron";
 			}
-			my $ret = change_generalcfg('UPDATE.INTERVAL', $value);
+			my $ret = change_generaljson('Update->Interval', $value);
 			if (!$ret) {
 				$response{error} = 1;
 				$response{message} = "Error changing lbupdate-installtime";
@@ -284,7 +290,7 @@ sub lbupdate
 ############################################
 sub poweroff
 {
-	print STDERR "ajax-config-handler: ajax poweroff - Forking poweroff\n";
+	# print STDERR "ajax-config-handler: ajax poweroff - Forking poweroff\n";
 	# LOGINF "Forking poweroff ...";
 	$response{error} = 0;
 	$response{message} = "ajax-config-handler: Executing poweroff forked...";
@@ -311,7 +317,7 @@ sub poweroff
 ############################################
 sub reboot
 {
-	print STDERR "ajax-config-handler: ajax reboot\n";
+	# print STDERR "ajax-config-handler: ajax reboot\n";
 	# LOGINF "Forking reboot ...";
 	$response{error} = 0;
 	$response{message} = "ajax-config-handler: Executing reboot forked...";
@@ -361,7 +367,7 @@ sub plugindb_update
 ############################################
 sub pluginsupdate_check
 {
-	print STDERR "ajax-config-handler: ajax pluginsupdate_check\n";
+	# print STDERR "ajax-config-handler: ajax pluginsupdate_check\n";
 	# LOGINF "Forking reboot ...";
 	qx($lbhomedir/sbin/pluginsupdate.pl --checkonly >/dev/null 2>&1);
 	if ($? ne 0) {
@@ -397,7 +403,7 @@ print "ajax-config-handler: Finished.<br>";
 
 sub plugininstall_status
 {
-	print STDERR "plugininstall-status: $R::value\n";
+	# print STDERR "plugininstall-status: $R::value\n";
 	# Quick safety check
 	if (index($R::value, '/') ne -1) {
 		$response{error} = -1;
@@ -424,6 +430,7 @@ sub plugininstall_status
 ###################################################################
 sub change_generalcfg
 {
+	print STDERR "LBDEV info: ajax-config-handler.cgi called with change_generalcfg. This is deprecated.";
 	my ($key, $val) = @_;
 	if (!$key) {
 		return undef;
@@ -447,14 +454,15 @@ sub change_generalcfg
 ###################################################################
 sub change_generaljson
 {
-	require LoxBerry::JSON;
+	require LoxBerry::System::General;
 	# $LoxBerry::JSON::DEBUG = 1;
 	my ($key, $val) = @_;
 	if (!$key) {
 		return undef;
 	}
-	my $jsonobj = LoxBerry::JSON->new();
-	my $cfg = $jsonobj->open(filename => "$lbsconfigdir/general.json") or return undef;
+	
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open() or return undef;
 
 	my @keytree = split /->/, $key;
 	my $currelem = $cfg;
@@ -483,6 +491,22 @@ sub change_generaljson
 	$response{message} = "OK";
 	return 1;
 }
+
+###################################################################
+# Function to force the generation of general.cfg from general.json
+# Used for non-Perl languages (PHP, Bash) changing the general.json
+###################################################################
+sub recreate_generalcfg
+{
+	require LoxBerry::System::General;
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open( readonly => 1 );
+	$jsonobj->_json2cfg();
+	$response{error} = 0;
+	$response{message} = "OK";
+	return 1;
+}
+
 
 END {
 

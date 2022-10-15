@@ -1,9 +1,8 @@
 
 use strict;
-use Config::Simple;
 use LoxBerry::Log;
 
-# use IO::Select;
+package LoxBerry::IO;
 
 use base 'Exporter';
 
@@ -12,18 +11,25 @@ our @EXPORT = qw (
 	mshttp_send_mem
 	mshttp_get
 	mshttp_call
+	mshttp_call2
 	msudp_send
 	msudp_send_mem
+	mqtt_connect
+	mqtt_publish
+	mqtt_retain
+	mqtt_set
+	mqtt_get
+	
 );
 
-
-
-package LoxBerry::IO;
-our $VERSION = "2.0.2.2";
+our $VERSION = "2.2.1.6";
 our $DEBUG = 0;
 our $mem_sendall = 0;
 our $mem_sendall_sec = 3600;
 our $udp_delimiter = "=";
+
+our $mqtt;
+my %mqtt_received;
 
 my %udpsocket;
 
@@ -241,8 +247,22 @@ sub mshttp_get
 	
 	for (my $pidx = 0; $pidx < @params; $pidx++) {
 		print STDERR "Querying param: $params[$pidx]\n" if ($DEBUG);
-		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx])); 
+		my ($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . '/all'); 
 		if($respcode == 200) {
+			# We got a valid response
+			# Workaround for analogue outputs always return 0
+			my $respvalue_filtered = $respvalue =~ /(\d+(?:\.\d+)?)/;
+			$respvalue_filtered = $1;
+			# print STDERR "respvalue         : $respvalue\n"; 
+			# print STDERR "respvalue_filtered: $respvalue_filtered\n"; 
+			no warnings "numeric";
+			if($respvalue_filtered ne "" and $respvalue_filtered == 0) {
+				# Search for outputs - if present, value is ok
+				if( index( $rawdata, '<output name="' ) == -1 ) {
+					# Not found - we require to request the value without /all
+					($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) ); 
+				} 
+			}
 			$response{$params[$pidx]} = $respvalue;
 		} else {
 			$response{$params[$pidx]} = undef;
@@ -260,23 +280,19 @@ sub mshttp_get
 sub mshttp_call
 {
 	require LWP::UserAgent;
-	# require XML::Simple;
 	require Encode;
-	
 		
 	my ($msnr, $command) = @_;
 	
 	my %ms = LoxBerry::System::get_miniservers();
 	if (! %ms{$msnr}) {
-		print STDERR "No Miniservers configured\n";
+		print STDERR "Miniserver $msnr not found or configuration not finished\n";
 		return (undef, 601, undef);
 	}
 	
 	my $FullURI = $ms{$msnr}{FullURI};
 	
-	# my $url = "http://$mscred\@$msip\:$msport" . $command; (Pre-2.0.2)
 	my $url = $FullURI . $command;
-	# $url_nopass = "http://$miniserveradmin:*****\@$miniserverip\:$miniserverport/dev/sps/io/$player_label/$textenc";
 	my $ua = LWP::UserAgent->new;
 	$ua->timeout(1);
 	$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
@@ -289,18 +305,103 @@ sub mshttp_call
 	#require Data::Dumper;
 	# print STDERR Data::Dumper::Dumper ($response);
 	
-	my $xmlresp = Encode::encode_utf8($response->content);
+	my $resp = Encode::encode_utf8($response->content);
 		
-	$xmlresp =~ /value\=\"(.*?)\"/;
+	$resp =~ /value\=\"(.*?)\"/;
 	my $value=$1;
-	$xmlresp =~ /Code\=\"(.*?)\"/;
+	$resp =~ /Code\=\"(.*?)\"/;
 	my $code=$1;
 	
-	print STDERR "mshttp_call: Response Code $code Value $value Full: $xmlresp\n" if($DEBUG);
+	print STDERR "mshttp_call: Response Code $code Value $value Full: $resp\n" if($DEBUG);
 	
-	return ($value, $code, $xmlresp);
+	return ($value, $code, $resp);
 	
 }
+
+
+#####################################################
+# Miniserver REST Call
+# Param 1: Miniserver number
+# Param 2: Full URL without hostname (e.g. '/dev/sps/io/...'
+# Param 3: Hash with options
+#####################################################
+sub mshttp_call2
+{
+	require LWP::UserAgent;
+	# require Encode;
+		
+	my ($msnr, $command, %options) = @_;
+	
+	my %responseinfo;
+	
+	my $timeout = defined $options{timeout} ? $options{timeout} : 5;
+	my $ssl_verify_mode = defined $options{ssl_verify_mode} ? $options{ssl_verify_mode} : 0;
+	my $ssl_verify_hostname = defined $options{ssl_verify_hostname} ? $options{ssl_verify_hostname} : 0;
+	my $filename = defined $options{filename} ? $options{filename} : undef;
+	
+	print STDERR "mshttp_call2: timeout=$timeout\n" if ($DEBUG);
+	
+	my %ms = LoxBerry::System::get_miniservers();
+	if (! %ms{$msnr}) {
+		print STDERR "Miniserver $msnr not found or configuration not finished\n";
+		$responseinfo{code} = 601;
+		$responseinfo{error} = 1;
+		$responseinfo{message} = "Miniserver $msnr not found or configuration not finished";
+		return (undef, \%responseinfo);
+	}
+	
+	my $FullURI = $ms{$msnr}{FullURI};
+	
+	my $url = $FullURI . $command;
+	my $ua = LWP::UserAgent->new;
+	$ua->timeout($timeout);
+	$ua->ssl_opts( SSL_verify_mode => $ssl_verify_mode, verify_hostname => $ssl_verify_hostname );
+	my $response = $ua->get($url);
+	$responseinfo{code} = $response->code;
+	$responseinfo{status} = $response->status_line;
+	$responseinfo{error} = 1;
+	# If the request completely fails
+	if ($response->is_error) {
+		
+		print STDERR "mshttp_call2: $command FAILED - Error " . $response->code . ": " . $response->status_line . "\n" if ($DEBUG);
+		$responseinfo{message} = "$command FAILED - Error " . $response->code . ": " . $response->status_line;
+		return (undef, \%responseinfo);
+	}
+	
+	$responseinfo{message} = "Request ok";
+	
+	# my $resp = Encode::encode_utf8($response->content);
+		
+	if($DEBUG) {
+		print STDERR "mshttp_call2: HTTP $responseinfo{code}: $responseinfo{status}\n";
+		if( !$filename ) {
+			require HTML::Entities;
+			print STDERR "mshttp_call2:Some lines of the response:\n";
+			print STDERR HTML::Entities::encode_entities( substr( $response->decoded_content, 0, 500 ), '<>&"') . " [...]\n";
+		}
+	}
+	
+	if( defined $filename ) {
+		# my $file = $response->decoded_content( charset => 'none' );
+		my $write_resp;
+		eval {
+			open my $fh, $filename;
+			print $fh $response->decoded_content;
+			close $fh;
+		};
+		if($@) {
+			$responseinfo{error} = 1;
+			$responseinfo{message} = "Could not write file $filename: $@";
+		} else {
+			$responseinfo{filename} = $filename;
+		}
+			
+	}
+	
+	return ($response->decoded_content, \%responseinfo);
+	
+}
+
 
 
 #####################################################
@@ -487,7 +588,10 @@ sub mqtt_connectiondetails {
 
 	# Check if MQTT Gateway plugin is installed
 	my $mqttplugindata = LoxBerry::System::plugindata("mqttgateway");
-	my $pluginfolder = $mqttplugindata->{PLUGINDB_FOLDER};
+	my $pluginfolder;
+	if( $mqttplugindata ) {
+		$pluginfolder = $mqttplugindata->{PLUGINDB_FOLDER};
+	}
 	return undef if(!$pluginfolder);
 
 	my $mqttconf;
@@ -508,17 +612,154 @@ sub mqtt_connectiondetails {
 	my %cred;
 	
 	my ($brokerhost, $brokerport) = split(':', $mqttconf->{Main}->{brokeraddress}, 2);
-	$brokerport = $brokerport ? $brokerport : 1883;
+	$brokerport = $brokerport ? $brokerport : "1883";
 	$cred{brokeraddress} = $brokerhost.":".$brokerport;
 	$cred{brokerhost} = $brokerhost;
 	$cred{brokerport} = $brokerport;
+	$cred{websocketport} = defined $mqttconf->{Main}->{websocketport} ? $mqttconf->{Main}->{websocketport} : "9001";
 	$cred{brokeruser} = $mqttcred->{Credentials}->{brokeruser};
 	$cred{brokerpass} = $mqttcred->{Credentials}->{brokerpass};
 	$cred{udpinport} = $mqttconf->{Main}->{udpinport};
-
 	return \%cred;
 
 }
+
+sub mqtt_connect
+{
+	require Net::MQTT::Simple;
+	
+	if( $LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_connect-> MQTT already connected\n" if($DEBUG);
+		return $LoxBerry::IO::mqtt;
+	}
+	
+	print STDERR "mqtt_connect-> Requesting MQTT connection details\n" if($DEBUG);
+	my $mqttcred = LoxBerry::IO::mqtt_connectiondetails();
+	if( ! $mqttcred ) {
+		print STDERR "mqtt_connect-> Error: Could not get MQTT connection details.\n" if($DEBUG);
+		return undef;
+	}
+	
+	print STDERR "mqtt_connect-> Connecting to broker $mqttcred->{brokeraddress}\n" if($DEBUG);
+	eval {
+		
+		$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
+		$LoxBerry::IO::mqtt = Net::MQTT::Simple->new($mqttcred->{brokeraddress});
+		if($mqttcred->{brokeruser} or $mqttcred->{brokerpass}) {
+			my $pass_blurred = $mqttcred->{brokerpass} ne "" ? substr( $mqttcred->{brokerpass}, 0, 1) . "*****" : "(empty)";
+			print STDERR "mqtt_connect-> Login to broker with user $mqttcred->{brokeruser} and pass $pass_blurred\n" if($DEBUG);
+			$LoxBerry::IO::mqtt->login($mqttcred->{brokeruser}, $mqttcred->{brokerpass});
+		}
+	};
+	if( $@ ) {
+		print STDERR "mqtt_connect-> Could not connect to  MQTT broker: $@\n";
+		return undef;
+	}
+
+	print STDERR "mqtt_connect-> Connected successfully\n" if($DEBUG);
+	return $LoxBerry::IO::mqtt;
+	
+}
+
+sub mqtt_set
+{
+	my ($topic, $value, $retain) = @_;
+	
+	print STDERR "mqtt_set-> Called\n" if($DEBUG);
+	if( !$LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_set-> mqtt not connected - connecting\n" if($DEBUG);
+		LoxBerry::IO::mqtt_connect();
+	}
+	if( !$LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_set-> Error: mqtt (still) not connected - failed\n";
+		return undef;
+	}
+	
+	eval {
+		if( !$retain ) {
+			print STDERR "mqtt_set-> Publishing $topic -> $value\n" if($DEBUG);
+			$LoxBerry::IO::mqtt->publish($topic, $value);
+		}
+		else {
+			print STDERR "mqtt_set-> Retaining $topic -> $value\n" if($DEBUG);
+			$LoxBerry::IO::mqtt->retain($topic, $value);
+		}
+	};
+	if($@) {
+		print STDERR "mqtt_set-> Error: Exception on publishing: $!\n";
+	} else {
+		print STDERR "mqtt_set-> Successfully sent $topic -> $value\n" if($DEBUG);
+		return $topic;
+	}
+	
+}
+
+sub mqtt_retain
+{
+	my ($topic, $value) = @_;
+	return LoxBerry::IO::mqtt_set( $topic, $value, 1 );
+}
+sub mqtt_publish
+{
+	my ($topic, $value) = @_;
+	return LoxBerry::IO::mqtt_set( $topic, $value, undef );
+}
+
+sub mqtt_get
+{
+	
+	print STDERR "mqtt_get-> Called\n" if($DEBUG);
+	
+	require Time::HiRes;
+	
+	my( $topic, $timeout_msecs ) = @_;
+	
+	if( !$LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_get-> mqtt not connected - connecting\n" if($DEBUG);
+		LoxBerry::IO::mqtt_connect();
+	}
+	if( !$LoxBerry::IO::mqtt ) {
+		print STDERR "mqtt_get-> Error: mqtt (still) not connected - failed\n";
+		return undef;
+	}
+	
+	if( !$timeout_msecs ) {
+		$timeout_msecs = 250;
+	}
+	
+	undef %mqtt_received;
+	my $starttime = Time::HiRes::time();
+	my $endtime = $starttime + $timeout_msecs/1000;
+	print STDERR "mqtt_get-> Subscribing $topic, waiting for first result or $timeout_msecs msecs\n" if($DEBUG);
+	eval{ 
+		$LoxBerry::IO::mqtt->subscribe($topic, \&mqtt_received);
+	};
+	while ( scalar keys %mqtt_received == 0 and Time::HiRes::time()<$endtime ) {
+		$LoxBerry::IO::mqtt->tick();
+		Time::HiRes::sleep(0.05);
+	}
+	eval{ 
+		$LoxBerry::IO::mqtt->unsubscribe($topic);
+	};
+	
+	if(%mqtt_received) {
+		my $result = $mqtt_received{ (sort keys %mqtt_received)[0] };
+		print STDERR "mqtt_get-> Returning value $result\n" if($DEBUG);
+		return( $result );
+	} 
+	else {
+		print STDERR "mqtt_get-> Nothing received, returning undef\n" if($DEBUG);
+		return;
+	}
+}
+
+sub mqtt_received
+{
+	my ($topic, $msg) = @_;
+	print STDERR "mqtt_received-> Received: $topic->$msg\n" if($DEBUG);
+	$mqtt_received{$topic} = $msg;
+}	
+
 
 #####################################################
 # Finally 1; ########################################

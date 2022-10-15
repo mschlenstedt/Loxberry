@@ -12,6 +12,16 @@ use LoxBerry::JSON;
 init();
 
 #
+# we are now in the 2.0 Branch. Increase LoxBerry's max_version for LBUpdate
+#
+LOGINF "Welcome 2.0 Branch :-) Increasing LoxBerry's Max_Version to 2.99.99.";
+my $generaljson = $lbsconfigdir . "/general.json";
+$gcfgobj = LoxBerry::JSON->new();
+$gcfg = $gcfgobj->open(filename => $generaljson);
+$gcfg->{Update}->{max_version} = "v2.99.99";
+$gcfgobj->write();
+
+#
 # Switching to rwth-aachen.de for the Rasbian Repo due to lot of connection errors with original rpo
 #
 LOGINF "Replacing archive.raspbian.org with ftp.halifax.rwth-aachen.de/raspbian in /etc/apt/sources.list.";

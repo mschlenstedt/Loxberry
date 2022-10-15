@@ -6,10 +6,10 @@ require_once "loxberry_io.php";
 //udp_singlearray();
 //udp_multi();
 
-// test_mshttp_call();
+test_mshttp_call();
 // test_mshttp_get();
 // test_mshttp_send();
-test_mshttp_send_mem();
+// test_mshttp_send_mem();
 
 function test_mshttp_call()
 {
@@ -17,11 +17,8 @@ function test_mshttp_call()
 	$call = '/dev/sps/io/' . rawurlencode('Verbrauch Luftentfeuchter') . '/all';
 	list($value, $code, $resp) = mshttp_call(2, $call);
 	echo "Code: $code Value: $value\n";
-	// echo var_dump($resp);
-	
-	foreach($resp->output as $output) {
-		echo $output->attributes()->name . ": " . $output->attributes()->value . "\n";
-	}
+	echo var_dump($resp);
+
 }
 
 function test_mshttp_get()

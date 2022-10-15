@@ -1,11 +1,10 @@
 <?php
 
 require_once "loxberry_system.php";
-// require_once "phphtmltemplate_loxberry/template040.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "2.0.1.1";
+	public static $LBWEBVERSION = "2.2.1.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";

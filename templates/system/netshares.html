@@ -1,27 +1,93 @@
 <!-- ** START template/system/netshares.html ************************************************************************************ -->
+<style>
+.datahidden {
+	display:none;
+}
+
+.small {
+	font-size:70%;
+}
+
+.bitsmall {
+	font-size:86%;
+}
+
+.grayed {
+	color: gray;
+}
+
+.center {
+	text-align: center;
+}
+
+.mono {
+	font-family: 'Courier New', monospace;
+	font-size: 85%;
+}
+
+.flexbox {
+	padding: 6px;
+}
+
+.flexbreak {
+  flex-basis: 100%;
+  height: 0;
+  border-top:1px solid gray;
+}
+
+/*
+h3.lbtitle {
+	color: white;
+	background-color: #6dac20;
+	text-shadow: 0 0 black;
+}
+*/
+
+
+</style>
+
 
 <TMPL_IF FORM>
 
 	<center>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/netshares.cgi">
 		<input type="hidden" name="a" id="a" value="del">
-		<a id="add" data-role="button" data-inline="true" data-mini="true" data-icon="plus" href="/admin/system/netshares.cgi?a=add"><TMPL_VAR NETSHARES.BUTTON_ADD_SERVER></a>
-		<button type="submit" form="main_form" name="submitbtn" value="submit" id="submitbtn" data-role="button" data-icon="minus" data-mini="true" data-inline="true"><TMPL_VAR NETSHARES.BUTTON_DEL_SERVER></button>
-		<select onclick="disable();" name="server" id="server" data-mini="true" data-inline="true">
-			<option value=""><TMPL_VAR NETSHARES.LABEL_SELECT></option>
-			<TMPL_LOOP NETSERVERS>
-			<option value="<TMPL_VAR NETSERVER_SERVER>|<TMPL_VAR NETSERVER_TYPE>"><TMPL_VAR NETSERVER_SERVER> (<TMPL_VAR NETSERVER_USERNAME>)</option>
-			</TMPL_LOOP>
-		</select>
-		<a id="debug" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/netshares.cgi?a=debuglog"><TMPL_VAR NETSHARES.BUTTON_ADD_DEBUGLOG></a>
+		<input type="hidden" name="server" id="server">
+
+	<h3 class="lbtitle"><TMPL_VAR NETSHARES.HEADING_CONF_SERVERS></h3>
+	<div id="serverlist_container" style="display:flex;flex-wrap:wrap;align-items:center;">
+	<div class="flexbreak"></div>
+	<TMPL_LOOP NETSERVERS>
+		<div class="flexbox" style="flex-basis:25%">
+			<b><TMPL_VAR NETSERVER_SERVER></b>
+		</div>
+		<div class="flexbox" style="flex-basis:5%">
+			<TMPL_VAR NETSERVER_TYPE>
+		</div>
+		<div class="flexbox" style="flex-basis:20%">
+			<TMPL_VAR NETSERVER_USERNAME>
+		</div>
+		<div class="flexbox" style="flex-basis:10%">
+			*****
+		</div>
+		<div class="flexbox" style="flex-basis:20%">
+			<button type="submit" form="main_form" value="submit" data-server="<TMPL_VAR NETSERVER_SERVER>|<TMPL_VAR NETSERVER_TYPE>" data-role="button" data-icon="minus" data-mini="true" data-inline="true" class="deleteserver ui-btn ui-icon-minus ui-btn-icon-left ui-btn-inline ui-shadow ui-corner-all ui-mini"><TMPL_VAR NETSHARES.BUTTON_DEL_SERVER></button>
+		</div>
+		<div class="flexbreak"></div>
+	</TMPL_LOOP>
+	</div>
+	<a id="add" data-role="button" data-inline="true" data-mini="true" data-icon="plus" href="/admin/system/netshares.cgi?a=add"><TMPL_VAR NETSHARES.BUTTON_ADD_SERVER></a>
+
+	<a id="debug" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/netshares.cgi?a=debuglog"><TMPL_VAR NETSHARES.BUTTON_ADD_DEBUGLOG></a>
 		<TMPL_IF DEBUGLOGEXISTS>
-		<a id="log" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/netshare_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR NETSHARES.BUTTON_SHOW_DEBUGLOG></a>
+	<a id="log" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/netshare_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR NETSHARES.BUTTON_SHOW_DEBUGLOG></a>
 		</TMPL_IF>
-		<button type="button" name="btnsubmit" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" onClick="location.reload();"><font size=\"-1\"><TMPL_VAR COMMON.BUTTON_REFRESH></font></button>
+	<button type="button" name="btnsubmit" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" onClick="location.reload();"><font size=\"-1\"><TMPL_VAR COMMON.BUTTON_REFRESH></font></button>
+
 	</form>
-
-
-	<hr>
+	
+	<p></p>
+	<h3><TMPL_VAR NETSHARES.HEADING_AVAIL_SHARES></h3>
 	</center>
 	<!-- START Plugin container -->
 	<table data-role="table" data-mode="columntoggle" data-filter="true" data-input="#filterTable-input" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-text="<TMPL_VAR NETSHARES.BUTTON_SHOWCOLS>">
@@ -44,7 +110,7 @@
 			<tr>
 				<td><TMPL_VAR NETSHARE_NO></td>
 				<td><TMPL_VAR NETSHARE_SERVER></td>
-				<td><TMPL_VAR NETSHARE_TYPE></td>
+				<td><TMPL_VAR NETSHARE_TYPE> <TMPL_IF NETSHARE_DIALECT>(<TMPL_VAR NETSHARE_DIALECT>)</TMPL_IF></td>
 				<td><TMPL_VAR NETSHARE_SHARENAME></td>
 				<td><TMPL_VAR NETSHARE_SIZE_HR></td>
 				<td><TMPL_VAR NETSHARE_USED_HR></td>
@@ -63,18 +129,16 @@
 		</tbody>
 		</table>
 <SCRIPT>
-function disable()
-{
-        if ( $('#server').val().length != 0 ) {
-			$('#submitbtn').removeClass( "ui-disabled" );
-        }
-        else {
-			$('#submitbtn').addClass( "ui-disabled" );
-        }
-}
-$(document).ready(function() {
-	disable();
+$(function() {
+	
+	$(".deleteserver").click(function( event ) {
+		// event.preventDefault();
+		var server = $(this).data("server");
+		// console.log("Clicked", server, $(this));
+		$("#server").val(server);
+	});
 });
+
 </SCRIPT>
 
 </TMPL_IF>

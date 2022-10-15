@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2018 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ my $helptemplate = "help_remote.html";
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.0.1";
+my $version = "2.0.2.1";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 

@@ -4,7 +4,7 @@
 # Parameters
 #	release		
 #		{version} This is the destination version number, e.g. 0.3.2
-#		config 	  Reads the version from the destination general.cfg
+#		config 	  Reads the version from the destination general.json
 #
 #	updatedir		
 #		{path}   This is the location of the extracted update. Don't use a training slash. 
@@ -20,6 +20,7 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use LoxBerry::JSON;
 use strict;
 use warnings;
 use CGI;
@@ -30,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='2.0.0.1';
+my $scriptversion='2.0.2.5';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -49,6 +50,8 @@ my $sha;
 my $syscfg;
 my $failed_script;
 my $stop_script_processing_version;
+my $jsonobj;
+my $jsoncfg;
 
 my $cgi = CGI->new;
 
@@ -125,11 +128,11 @@ LOGOK "Lock successfully set.";
 
 if (!$nodiscspacecheck) {
 	my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-	if ($folderinfo{available} < 102400) {
-		$joutput{'error'} = "Available diskspace is below 100MB. Update is skipped.";
+	if ($folderinfo{available} < 204800) {
+		$joutput{'error'} = "Available diskspace is below 200 MB. Update is skipped.";
 		&err;
 		LOGCRIT $joutput{'error'};
-		notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update was prevented.", 'Error');
+		notify('updates', 'update', "LoxBerry Update: Free diskspace is below 200 MB (available: $folderinfo{available}). Update was prevented.", 'Error');
 		exit (1);
 	}
 }
@@ -149,8 +152,8 @@ if (!$updatedir) {
 	LOGCRIT $joutput{'error'};
 	exit (1);
 }
-if (! -e "$updatedir/config/system/general.cfg.default" && ! -e "$updatedir/config/system/general.cfg") {
-	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg or general.cfg.default in correct path).";
+if (! -e "$updatedir/config/system/general.cfg.default" && ! -e "$updatedir/config/system/general.json.default") {
+	$joutput{'error'} = "Update directory is invalid (cannot find general.cfg or general.json in correct path).";
 	&err;
 	LOGCRIT $joutput{'error'};
 	exit (1);
@@ -172,9 +175,14 @@ if (!$release) {
 }
 
 if ($release eq "config") {
-	my $newcfg = new Config::Simple("$updatedir/config/system/general.cfg.default");
-	$release = $newcfg->param('BASE.VERSION');
-	LOGINF "Version parameter 'config' was given, destination version is read from new general.cfg.default (version $release).";
+	
+	# general.json.default
+	$jsonobj = LoxBerry::JSON->new();
+	$jsoncfg = $jsonobj->open(filename => "$updatedir/config/system/general.json.default");
+	$release = $jsoncfg->{Base}->{Version};
+	LOGINF "Version parameter 'config' was given, destination version is read from new general.json.default (version $release).";
+	undef $jsonobj;
+	
 } else {
 	LOGINF "Version parameter '$release' was given, destination version is $release.";
 }
@@ -228,6 +236,12 @@ if ($exitcode != 0) {
 	$errskipped++;
 }
 LOGOK "Pre-Changing owner was successful.";
+
+LOGINF "Updating apt-keys...";
+system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -");
+LOGOK "Keys updated";
+
+
 
 # Set up rsync command line
 
@@ -311,14 +325,15 @@ while (my $file = readdir(DIR)) {
 closedir DIR;
 @updatelist = sort { version->parse($a) <=> version->parse($b) } @updatelist;
 
-LOGINF "Reading current update script fail state from general.cfg...";
-$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
-if (! $syscfg->param('UPDATE.FAILED_SCRIPT')) {
-	LOGOK "All previously executed update scripts were successful.";
-} else {
-	$failed_script = version->parse(vers_tag($syscfg->param('UPDATE.FAILED_SCRIPT')));
+$failed_script = read_failedscript();
+
+if( $failed_script ) {
+	$failed_script = version->parse(vers_tag($failed_script));
 	LOGWARN "In a previous run of LoxBerry Update this update script failed: $failed_script. LoxBerry Update will continue. Please check the logfiles of previous updates for errors.";
+} else {
+	LOGOK "All previously executed update scripts were successful.";
 }
+undef $jsonobj;
 undef $syscfg;
 
 LOGINF "Running update scripts...";
@@ -343,27 +358,31 @@ foreach my $version (@updatelist)
 		my $lowdiskspace;
 		if (! $nodiscspacecheck) {
 			my %folderinfo = LoxBerry::System::diskspaceinfo($lbhomedir);
-			if ($folderinfo{available} < 102400) {
+			if ($folderinfo{available} < 204800) {
 				$lowdiskspace = 1;
-				$joutput{'error'} = "Available diskspace is below 100MB. Execution of this and further update scripts will be canceled.";
+				$joutput{'error'} = "Available diskspace is below 200 MB. Execution of this and further update scripts will be canceled.";
 				LOGCRIT $joutput{'error'};
-				notify('updates', 'update', "LoxBerry Update: Free diskspace is below 100MB (available: $folderinfo{available}). Update script processing was canceled.", 'Error');
+				notify('updates', 'update', "LoxBerry Update: Free diskspace is below 200 MB (available: $folderinfo{available}). Update script processing was canceled.", 'Error');
+				LOGERR "Update-Script update_$version will not be executed because of low disk space condition. Further update scripts are prevented from run. You can re-apply the updates from within LoxBerry Update when enough disk space is available (> 200 MB). Continuing without update scripts.";
+				$errskipped++;
+				$scripterrskipped++;
+				$scripterrskipped++;
+				if(! $failed_script) {
+					$failed_script = $version;
+					write_failedscript($failed_script);
+				}
+				last;
 			} else {
 				$lowdiskspace = 0;
 			}	
 		}
 		
-		if (! $lowdiskspace) {
-			$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
-		}
+		$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
 		$exitcode  = $? >> 8;
 		
-		if ($exitcode != 0 || $lowdiskspace) {
-			if($lowdiskspace) {
-				LOGERR "Update-Script update_$version did not execute because of low disk space condition. Further update scripts are prevented from run. You can re-apply the updates from within LoxBerry Update when enough disk space is available (> 100MB). Continuing without update scripts.";
-				$errskipped++;
-				$scripterrskipped++;
-			}
+		my $current_had_errors = $exitcode != 0 && $exitcode != 251 ? 1 : 0;
+		
+		if ($exitcode != 0) {
 			
 			# Stop script processing and error
 			if($exitcode == 251) {
@@ -384,39 +403,31 @@ foreach my $version (@updatelist)
 				$scripterrskipped++;
 			} 
 			
-			# Stop script processing, set version in general.cfg
+			# Stop script processing, set $release to version of this script
 			if ($exitcode == 250 or $exitcode == 251) {
 				$stop_script_processing_version = version->parse(vers_tag($version));
 				$release = $version;
 				reboot_force($SL{'POWER.FORCEREBOOT_LBUPDATE_MSG'});
 				LoxBerry::System::reboot_required("LoxBerry Update is in the middle of an update and a reboot is necessary to continue. Please reboot LoxBerry.");
-				# LOGINF "LoxBerry's config version is updated from $currversion to $release";
-				# $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
-				# $syscfg->param('BASE.VERSION', "$stop_script_processing_version");
-				# $syscfg->write();
-				# undef $syscfg;
 			}
 			
 			# Set failed_script because of script error
 			if (!$failed_script and $exitcode != 250) {
-				LOGINF "Setting update script update_$version as failed in general.cfg.";
+				LOGINF "Setting update script update_$version as failed in general configuration.";
 				$failed_script = version->parse(vers_tag($version));
-				$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
-				$syscfg->param('UPDATE.FAILED_SCRIPT', "$failed_script");
-				$syscfg->write();
-				undef $syscfg;
+				write_failedscript($failed_script);
+			} elsif(!$failed_script and $exitcode == 250) {
+				# In case that script needs to stop and had no failure
+				write_failedscript();
 			}
 			
 			if ($lowdiskspace or $stop_script_processing_version) {
 				last;
 			}
 		} elsif ($failed_script && version->parse($version) eq "$failed_script") {
-			LOGOK "Previously failed script now finished successfully. Removing failed script version from general.cfg";
+			LOGOK "Previously failed script now finished successfully. Removing failed script version from general configuration";
 			undef $failed_script;
-			$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
-			$syscfg->delete('UPDATE.FAILED_SCRIPT');
-			$syscfg->write();
-			undef $syscfg;
+			write_failedscript();
 		}
 		# Should we remember, if exec failed? I think no.
 	} else {
@@ -474,8 +485,9 @@ if ($exitcode != 0 ) {
 
 LOGINF "LoxBerry's config version is updated from $currversion to $release";
 LOGINF "Commit SHA is updated to $sha" if ($sha);
-# Last but not least set the general.cfg to the new version.
+# Last but not least set the general.json to the new version.
 if (! $cgi->param('dryrun') ) {
+	
 	$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or 
 		do {
 			LOGERR "Cannot open general.cfg. Error: " . $syscfg->error(); 
@@ -488,7 +500,18 @@ if (! $cgi->param('dryrun') ) {
 			LOGERR "Cannot write to general.cfg. Error: " . $syscfg->error(); 
 			$errskipped++;
 			};
+	$jsonobj = LoxBerry::JSON->new();
+	$jsoncfg = $jsonobj->open(filename => "$lbsconfigdir/general.json");
+	if(!defined $jsoncfg) {
+		LOGERR "Cannot open general.json.";
+		$errskipped++;
+	} else {
+		$jsoncfg->{Base}->{Version} = vers_tag("$release", 1);
+		$jsoncfg->{Update}->{Latestsha} = "$sha" if ($sha);
+		$jsonobj->write();
 	}
+
+}
 
 # Finished. 
 
@@ -635,6 +658,51 @@ sub reboot_force
 		chown $uid, $gid, $reboot_force_popup_file;
 		};
 }
+
+sub read_failedscript {
+	LOGINF "Reading current update script fail state from general configuration...";
+	$jsonobj = LoxBerry::JSON->new();
+	$jsoncfg = $jsonobj->open(filename => "$lbsconfigdir/general.json", readonly => 1);
+	if( defined $jsoncfg->{Update}->{Failedscript} ) {
+		$failed_script = $jsoncfg->{Update}->{Failedscript};
+	} else {
+		$syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+		if (defined $syscfg->param('UPDATE.FAILED_SCRIPT')) {
+			$failed_script = $syscfg->param('UPDATE.FAILED_SCRIPT');
+		}
+	}
+	return $failed_script;
+}
+
+sub write_failedscript {
+	my $vers_failed = shift;
+	
+	my $jsonobj;
+	my $syscfg;
+	
+	LOGINF "Updating update script fail state in general configuration...";
+	my $failedscript_jsonobj = LoxBerry::JSON->new();
+	my $failedscript_jsoncfg = $failedscript_jsonobj->open(filename => "$lbsconfigdir/general.json");
+	if( defined $failedscript_jsoncfg ) {
+		if( $vers_failed ne "" ) {
+			$failedscript_jsoncfg->{Update}->{Failedscript} = $vers_failed;
+		} else {
+			delete $failedscript_jsoncfg->{Update}->{Failedscript};
+		}
+		$failedscript_jsonobj->write();
+	} else {
+		my $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
+		if ( $vers_failed ne "" ) {
+			$syscfg->param('UPDATE.FAILED_SCRIPT', $vers_failed);
+		} else {
+			$syscfg->delete('UPDATE.FAILED_SCRIPT');
+		}
+		$syscfg->write();
+	}
+	
+	return $failed_script;
+}	
+	
 
 
 # This routine is called at every end

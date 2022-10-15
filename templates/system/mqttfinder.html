@@ -1,0 +1,417 @@
+<style>
+
+.topic, .topic_payload, .topic_time {
+	display:inline;
+	padding: 5px;
+	font-size:90%
+}
+.topic {
+	font-weight: bold;
+}
+.topic_time {
+	font-size: 70%;
+	font-style: italic;
+}
+
+
+.filter-highlight {
+	background-color:#ffff99 !important;
+}
+
+.countContainer {
+	heigth:10px;
+	width:100%;
+	background-color:#ececfb;
+}
+
+#dataContainer {
+	// overflow: scroll;
+	// height:60vh;
+}
+
+</style>
+
+
+
+<div>
+	<input type="search" name="filter_search" id="filter_search" value="" data-mini="true" data-clear-btn="true">
+	<input type="checkbox" name="checkboxSubscription" id="checkboxSubscription" data-mini="true">
+	<label for="checkboxSubscription">Use Subscription syntax for filter</label>
+</div>
+
+<div id="countContainer" class="countContainer">Getting data...</div>
+
+<div id="dataContainer">
+</div>
+
+
+
+<script>
+let timer = false;
+let timer_interval = 3000;
+let getmqttdata_running = false;
+let mqttData;
+let msg_maxlen = 80;
+let filterSearchDelay;
+var filterSearchString = "";
+let expandTopicList = {};
+
+$(function() {
+	
+	let searchParams = new URLSearchParams(window.location.search);
+	if( searchParams.has('q') ) {
+		filterSearchString = searchParams.get('q');
+		$("#filter_search").val( filterSearchString ); 
+	}
+	if( searchParams.has('e') ) {
+		$("#checkboxSubscription").prop('checked', true).checkboxradio("refresh");
+	}
+	
+	setTimer();
+	getMqttData();
+	updateTables();
+
+	// Text search bindings
+	
+	$("#filter_search").on( "input", function(event, ui){
+		console.log("Textsearch on input");
+		window.clearTimeout(filterSearchDelay); 
+		filterSearchString = $(event.target).val();
+		filterSearchDelay = window.setTimeout(function() { updateTables(); }, 500);
+	});
+	
+	$("#filter_search").on( "change", function(event, ui){
+		console.log("Textsearch on change");
+		if( $(event.target).val() == "" ) {
+			// $('#filter_search').css({'backgroundColor':'white'});
+			$('#filter_search').removeClass('filter-highlight');
+			$('#filter_search').attr("data-clear-btn", false);
+			window.clearTimeout(filterSearchDelay); 
+			filterSearchString = $(event.target).val();
+			updateTables();
+		} else {
+			// $('#filter_search').css({'backgroundColor':'#FFFF99'});
+			$('#filter_search').addClass('filter-highlight');
+			$('#filter_search').attr("data-clear-btn", true);
+		}
+
+	});
+
+	$("#checkboxSubscription").on( "click", function() { updateTables() } );
+
+
+	// Expand / Collaps binding
+	
+	jQuery(document).on('click', '.topicExpand', function(event, ui){
+		var target = $(this).data('topic');
+		console.log("Expand target", target);
+		if( expandTopicList[target] ) {
+			delete expandTopicList[target];
+		}
+		else {
+			expandTopicList[target] = true;
+		}
+		updateTables();
+	});
+	
+	// Copy topic to clipboard binding
+	
+	jQuery(document).on('click', '.topic', function(event){
+		clearTimer();
+		$(this).shake({ direction: "up", distance:3, times:2, speed:50 });
+		var target = $(this).find('.topicdata')[0];
+		console.log("Copy", target);
+		copyToClipboard(target);
+		setTimer();
+	});
+	
+	
+	
+	jQuery(document).on('click', '.topic_payload', function(event){
+		clearTimer();
+		$(this).shake({ direction: "up", distance:3, times:2, speed:50 });
+		var target = $(this).find('.payloaddata')[0];
+		console.log("Copy and shake", target );
+		copyToClipboard(target);
+		setTimer();
+	});
+	
+
+});
+
+function getMqttData() {
+	
+	if( getmqttdata_running ) 
+		return;
+	
+	getmqttdata_running = true;
+	$.post( "ajax-mqttfinder.php", { 
+			action : "getmqttdata",  
+	})
+	.done(function(data){
+		// console.log("mqtt data done", data);
+		/*
+		if( data.topics ) {
+			mqttlivedata = Object.keys(data.topics)
+			.map(key => ({topic: key, data: data.topics[key]}));
+			mqttlivedata.sort( dynamicSortMultiple("topic"));
+			
+		} else {
+			mqttlivedata = undefined;
+		}
+		
+		
+		if( data.state ) {
+			mqttlivestate = data.state;
+		} else {
+			mqttlivestate = undefined;
+		}
+		*/
+		
+		if( data.incoming ) {
+			// console.log( "Setting mqttData" );
+			mqttData = data.incoming;
+		}
+			
+		updateTables();
+	})
+	.fail(function(data){
+		console.log("getMqttData fail", data);
+		$("#dataContainer").html(`<p style="color:red">Could not get mqtt data from mqttfinder backend<p>`);
+	})
+	.always(function(data){
+		getmqttdata_running = false;
+	});
+}
+
+function updateTables() {
+	// console.log("mqttData", mqttData, typeof(mqttData) );
+	html = "";
+	console.log("Current text filter", filterSearchString);
+	
+	if( mqttData ) {
+		
+		var filterSearchStr_lc = filterSearchString.toLowerCase();
+		filterSearchStr_lc = filterSearchStr_lc.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+		// console.log("Escaped", filterSearchStr_lc);
+		filterSearchStr_lc = filterSearchStr_lc.replace('#', '[^/].*');
+		filterSearchStr_lc = filterSearchStr_lc.replaceAll('\\+', '[^/]+');
+		
+		// console.log("Regex filter", filterSearchStr_lc);
+		
+		if( $("#checkboxSubscription").is(":checked") )
+			filterSearchStr_lc = '^' + filterSearchStr_lc + '$';
+		
+		var fullCount = 0;
+		var filteredCount = 0;
+		
+		
+		for ( topicarr of Object.entries(mqttData) ) {
+		// mqttData.forEach(function(topic){
+			
+			fullCount++;
+			
+			var topic = topicarr[0];
+			var msg = topicarr[1].p;
+			var time = topicarr[1].t;
+			
+			// Text filter (filterSearchString)
+			if( filterSearchStr_lc != "" ) {
+				var noMatch = false;
+				// if( topic.toLowerCase().indexOf(filterSearchStr_lc) == -1 ) 
+				if( ! topic.toLowerCase().match(filterSearchStr_lc) )
+					noMatch = true;
+		
+				// If no filter matches, skip this element
+				if( noMatch ) {
+					continue;
+				}
+			}
+			
+			var msg_full = msg;
+			var msg_too_long = false;
+			if( msg.length > msg_maxlen ) {
+				msg = msg.substr(0,msg_maxlen);
+				msg_too_long = true;
+			}
+			
+			// console.log("topicarr", topicarr);
+			html += `<div class="topic_line">`;
+			var localtime = new Date(time*1000).toLocaleString();
+			var timedelta = (Date.now() - time*1000) / 1000;
+			var timedelta_color;
+			if( timedelta < 62 ) {
+				timedelta_color = "green";
+			} else { 
+				timedelta_color = "black";
+			}
+			// console.log("Timedelta", timedelta, timedelta_color);
+			html += `<div class="topic_time">${localtime}</div>`;
+			html += `<div class="topic" style="color:${timedelta_color}">${topic}`;
+			html += `<TEXTAREA class="topicdata" style="display:none">${topic}</TEXTAREA>`;
+			html += `</div>`;
+			
+			if( !msg_too_long ) {
+				html += `<div class="topic_payload">${msg}`;
+				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
+				html += `</div>`;
+			}
+			else if( msg_too_long && expandTopicList[topic] !== true ) {
+				html += `<div class="topic_payload">${msg}`;
+				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">...</a>`;
+				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
+				html += `</div>`;
+				
+			}
+			else if ( msg_too_long ) {
+				html += `<div class="topic_payload">${msg_full}`;
+				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">^</a>`;
+				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
+				html += `</div>`;
+				
+			}
+			html += `</div>`;
+			filteredCount++;
+			
+		}
+	}
+	$("#dataContainer").html(html);
+	$("#countContainer").html(filteredCount + "/"+fullCount+" elements shown");
+	
+
+
+}
+
+function clearTimer() {
+	console.log("Timer cleared");
+	window.clearInterval(timer);
+	timer = false;
+}
+
+function setTimer() {
+	console.log("Timer set");
+	timer = window.setInterval(getMqttData, timer_interval);
+}
+
+
+// https://stackoverflow.com/a/22581382/3466839
+function copyToClipboard(elem) {
+	  // create hidden text element, if it doesn't already exist
+    var targetId = "_hiddenCopyText_";
+    var isInput = elem.tagName === "INPUT" || elem.tagName === "TEXTAREA";
+    var origSelectionStart, origSelectionEnd;
+    if (isInput) {
+        // can just use the original source element for the selection and copy
+        var isVisible = elem.style.display == "none" ? false : true;
+		if( !isVisible )
+			elem.style.display = "";
+		target = elem;
+        origSelectionStart = elem.selectionStart;
+        origSelectionEnd = elem.selectionEnd;
+		
+    } else {
+        // must use a temporary form element for the selection and copy
+        target = document.getElementById(targetId);
+        if (!target) {
+            var target = document.createElement("textarea");
+            target.style.position = "absolute";
+            target.style.left = "-9999px";
+            target.style.top = "0";
+            target.id = targetId;
+            document.body.appendChild(target);
+        }
+        target.textContent = elem.textContent;
+    }
+    // select the content
+    var currentFocus = document.activeElement;
+    target.focus();
+    target.setSelectionRange(0, target.value.length);
+    
+    // copy the selection
+    var succeed;
+    try {
+    	  succeed = document.execCommand("copy");
+    } catch(e) {
+        succeed = false;
+    }
+    // restore original focus
+    if( !isVisible )
+		elem.style.display = "none";
+	if (currentFocus && typeof currentFocus.focus === "function") {
+        currentFocus.focus();
+    }
+    
+    if (isInput) {
+        // restore prior selection
+        elem.setSelectionRange(origSelectionStart, origSelectionEnd);
+    } else {
+        // clear temporary content
+        target.textContent = "";
+    }
+    return succeed;
+}
+
+function getSelectedText() {
+	var text = "";
+		if (typeof window.getSelection != "undefined") {
+			text = window.getSelection().toString();
+		} else if (typeof document.selection != "undefined" && document.selection.type == "Text") {
+		text = document.selection.createRange().text;
+	}
+	return text;
+}
+
+
+// Shake!!! 
+// https://github.com/ninty9notout/jquery-shake
+(function($) {
+	$.fn.shake = function(o) {
+		if (typeof o === 'function')
+			o = {callback: o};
+		// Set options
+		var o = $.extend({
+			direction: "left",
+			distance: 20,
+			times: 3,
+			speed: 140,
+			easing: "swing"
+		}, o);
+
+		return this.each(function() {
+
+			// Create element
+			var el = $(this), props = {
+				position: el.css("position"),
+				top: el.css("top"),
+				bottom: el.css("bottom"),
+				left: el.css("left"),
+				right: el.css("right")
+			};
+
+			el.css("position", "relative");
+
+			// Adjust
+			var ref = (o.direction == "up" || o.direction == "down") ? "top" : "left";
+			var motion = (o.direction == "up" || o.direction == "left") ? "pos" : "neg";
+
+			// Animation
+			var animation = {}, animation1 = {}, animation2 = {};
+			animation[ref] = (motion == "pos" ? "-=" : "+=")  + o.distance;
+			animation1[ref] = (motion == "pos" ? "+=" : "-=")  + o.distance * 2;
+			animation2[ref] = (motion == "pos" ? "-=" : "+=")  + o.distance * 2;
+
+			// Animate
+			el.animate(animation, o.speed, o.easing);
+			for (var i = 1; i < o.times; i++) { // Shakes
+				el.animate(animation1, o.speed, o.easing).animate(animation2, o.speed, o.easing);
+			};
+			el.animate(animation1, o.speed, o.easing).
+			animate(animation, o.speed / 2, o.easing, function(){ // Last shake
+				el.css(props); // Restore
+				if(o.callback) o.callback.apply(this, arguments); // Callback
+			});
+		});
+	};
+})(jQuery);
+
+</script>

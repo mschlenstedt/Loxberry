@@ -457,6 +457,7 @@ $(document).ready( function () {
 			
 			if (data.error) {
 				$('#lbu_error').html("Error: "+data.error);
+				$('#lbu_release_version ').html("");
 			} else {
 				
 				switch(data.releasetype) {

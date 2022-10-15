@@ -132,7 +132,8 @@ LOGINF "We are now moving the Debian Distribution from Stretch to Buster.";
 
 LOGINF "Update apt sources from stretch to buster...";
 $log->close;
-my $output = qx { find /etc/apt -name "*.list" | xargs sed -i '/^deb/s/stretch/buster/g' >> $logfilename 2>&1 };
+#my $output = qx { find /etc/apt -name "*.list" | xargs sed -i '/^deb/s/stretch/buster/g' >> $logfilename 2>&1 };
+my $output = qx { find /etc/apt -name "sources.list" | xargs sed -i '/^deb/s/stretch/buster/g' >> $logfilename 2>&1 };
 $log->open;
 
 LOGINF "Cleaning up apt databases...";
@@ -147,7 +148,7 @@ if ($exitcode != 0) {
 	LOGOK "Installed broken packages successfully.";
 }
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages -y autoremove >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages -y autoremove >> $logfilename 2>&1 };
 $log->open;
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -157,7 +158,7 @@ if ($exitcode != 0) {
 	LOGOK "Autoremoved packages successfully.";
 }
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages -y clean >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages -y clean >> $logfilename 2>&1 };
 $log->open;
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -179,7 +180,7 @@ if ($exitcode != 0) {
 
 LOGINF "Removing package 'listchanges' and 'lighttpd'...";
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove apt-listchanges lighttpd >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove apt-listchanges lighttpd >> $logfilename 2>&1 };
 $log->open;
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -191,7 +192,7 @@ if ($exitcode != 0) {
 
 LOGINF "Updating apt databases...";
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages -y update >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages -y update >> $logfilename 2>&1 };
 $log->open;
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -203,7 +204,7 @@ if ($exitcode != 0) {
 
 LOGINF "Executing upgrade...";
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --fix-broken -y -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --fix-broken -y -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade >> $logfilename 2>&1 };
 $log->open;
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -215,7 +216,7 @@ if ($exitcode != 0) {
 
 LOGINF "Executing dist-upgrade...";
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --fix-broken -y -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" dist-upgrade >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --fix-broken -y -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" dist-upgrade >> $logfilename 2>&1 };
 $log->open;
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -227,7 +228,7 @@ if ($exitcode != 0) {
 
 LOGINF "Removing package 'AppArmor'...";
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove apparmor >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove apparmor >> $logfilename 2>&1 };
 $log->open;
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -263,14 +264,14 @@ $log->open;
 
 LOGINF "Activating PHP7.3...";
 $log->close;
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove php7.0-common >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall remove php7.0-common >> $logfilename 2>&1 };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	LOGWARN "Error occurred while removing PHP 7.0 - Error $exitcode";
 } else {
 	LOGOK "PHP7.0 removed successfully.";
 }
-my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall install php7.3-bz2 php7.3-curl php7.3-json php7.3-mbstring php7.3-mysql php7.3-opcache php7.3-readline php7.3-soap php7.3-sqlite3 php7.3-xml php7.3-zip php7.3-cgi >> $logfilename 2>&1 };
+my $output = qx { APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends -y --fix-broken --reinstall install php7.3-bz2 php7.3-curl php7.3-json php7.3-mbstring php7.3-mysql php7.3-opcache php7.3-readline php7.3-soap php7.3-sqlite3 php7.3-xml php7.3-zip php7.3-cgi >> $logfilename 2>&1 };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 	LOGERR "Error occurred while installing PHP 7.3 modules - Error $exitcode";

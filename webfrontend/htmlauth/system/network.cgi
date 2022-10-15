@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017-2019 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2017-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 ##########################################################################
 
 use LoxBerry::System;
+use LoxBerry::System::General;
 use LoxBerry::Web;
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
 use URI::Escape;
@@ -33,7 +34,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.0.1";
+my $version = "2.0.2.1";
 
 my $helplink = "https://www.loxwiki.eu/x/SogKAw";
 my $helptemplate = "help_network.html";
@@ -81,27 +82,29 @@ my $is_wireless;
 ##########################################################################
 
 
-$cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
-$netzwerkanschluss  = $cfg->param("NETWORK.INTERFACE");
-$netzwerkadressen   = $cfg->param("NETWORK.TYPE");
-$netzwerkadressen_IPv6   = $cfg->param("NETWORK.TYPE_IPv6");
+my $jsonobj = LoxBerry::System::General->new();
+my $cfg = $jsonobj->open();
+
+$netzwerkanschluss  = $jsonobj->param("Network.Interface");
+$netzwerkadressen   = $jsonobj->param("Network.Ipv4.Type");
+$netzwerkadressen_IPv6   = $jsonobj->param("Network.Ipv6.Type");
 
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/network.html",
 			global_vars => 1,
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
-			associate => $cfg,
+			associate => $jsonobj,
 			%htmltemplate_options,
 			);
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
 
-# SSID and WPA-Key are URI-Encoded in general.cfg, therefore send it unencoded
+# SSID and WPA-Key are URI-Encoded in general.json, therefore send it unencoded
 # to the template
 $maintemplate->param ( 
-	'NETWORK.SSID' => uri_unescape($cfg->param('NETWORK.SSID')),
-	'NETWORK.WPA' => uri_unescape($cfg->param('NETWORK.WPA')),
+	'NETWORK.SSID' => uri_unescape($jsonobj->param('Network.Ssid')),
+	'NETWORK.WPA' => uri_unescape($jsonobj->param('Network.Wpa')),
 );
 					
 my @interfaces = get_interfaces();
@@ -210,7 +213,7 @@ sub form {
 	$maintemplate->param( "netzwerkadressen", $netzwerkadressen );
 	$maintemplate->param( "netzwerkadressen_IPv6", $netzwerkadressen_IPv6 );
 
-	if ( is_enabled( $cfg->param("NETWORK.PRIVACYEXT_IPv6") ) ) {
+	if ( is_enabled( $jsonobj->param("Network.Ipv6.Privacyext") ) ) {
 	  $maintemplate->param( "netzwerkprivacyext_IPv6", 'checked="checked"');
 	}
 
@@ -255,24 +258,40 @@ sub save {
 	$netzwerknameserver_IPv6 = $cgi->param('netzwerknameserver_IPv6');
 	$netzwerkprivacyext_IPv6 = is_enabled($cgi->param('netzwerkprivacyext_IPv6')) ? "ON" : "OFF";
 
-	# Write configuration file(s)
-	$cfg->param("NETWORK.INTERFACE", "$netzwerkanschluss");
-	$cfg->param("NETWORK.SSID", uri_escape($netzwerkssid));
-	$cfg->param("NETWORK.WPA", uri_escape($netzwerkschluessel));
+	# Write configuration
+	
+	# $cfg->param("NETWORK.SSID", uri_escape($netzwerkssid));
+	# $cfg->param("NETWORK.WPA", uri_escape($netzwerkschluessel));
+	# $cfg->param("NETWORK.TYPE", "$netzwerkadressen");
+	# $cfg->param("NETWORK.IPADDRESS", "$netzwerkipadresse");
+	# $cfg->param("NETWORK.MASK", "$netzwerkipmaske");
+	# $cfg->param("NETWORK.GATEWAY", "$netzwerkgateway");
+	# $cfg->param("NETWORK.DNS", "$netzwerknameserver");
+	# $cfg->param("NETWORK.TYPE_IPv6", "$netzwerkadressen_IPv6");
+	# $cfg->param("NETWORK.IPADDRESS_IPv6", "$netzwerkipadresse_IPv6");
+	# $cfg->param("NETWORK.MASK_IPv6", "$netzwerkipmaske_IPv6");
+	# $cfg->param("NETWORK.DNS_IPv6", "$netzwerknameserver_IPv6");
+	# $cfg->param("NETWORK.PRIVACYEXT_IPv6", $netzwerkprivacyext_IPv6);
+	
+	my $network = $cfg->{Network};
 
-	$cfg->param("NETWORK.TYPE", "$netzwerkadressen");
-	$cfg->param("NETWORK.IPADDRESS", "$netzwerkipadresse");
-	$cfg->param("NETWORK.MASK", "$netzwerkipmaske");
-	$cfg->param("NETWORK.GATEWAY", "$netzwerkgateway");
-	$cfg->param("NETWORK.DNS", "$netzwerknameserver");
+	$network->{Interface} = $netzwerkanschluss;
+	$network->{Ssid} = uri_escape($netzwerkssid);
+	$network->{Wpa} = uri_escape($netzwerkschluessel);
 
-	$cfg->param("NETWORK.TYPE_IPv6", "$netzwerkadressen_IPv6");
-	$cfg->param("NETWORK.IPADDRESS_IPv6", "$netzwerkipadresse_IPv6");
-	$cfg->param("NETWORK.MASK_IPv6", "$netzwerkipmaske_IPv6");
-	$cfg->param("NETWORK.DNS_IPv6", "$netzwerknameserver_IPv6");
-	$cfg->param("NETWORK.PRIVACYEXT_IPv6", $netzwerkprivacyext_IPv6);
+	$network->{Ipv4}->{Type} = $netzwerkadressen;
+	$network->{Ipv4}->{Ipaddress} = $netzwerkipadresse;
+	$network->{Ipv4}->{Mask} = $netzwerkipmaske;
+	$network->{Ipv4}->{Gateway} = $netzwerkgateway;
+	$network->{Ipv4}->{Dns} = $netzwerknameserver;
 
-	$cfg->save();
+	$network->{Ipv6}->{Type} = $netzwerkadressen_IPv6;
+	$network->{Ipv6}->{Ipaddress} = $netzwerkipadresse_IPv6;
+	$network->{Ipv6}->{Mask} = $netzwerkipmaske_IPv6;
+	$network->{Ipv6}->{Dns} = $netzwerknameserver_IPv6;
+	$network->{Ipv6}->{Privacyext} = $netzwerkprivacyext_IPv6;
+	
+	$jsonobj->write();
 
 	# Set network options
 	my $interface_file = "$lbhomedir/system/network/interfaces";
@@ -291,8 +310,6 @@ sub save {
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				%htmltemplate_options,
-				#associate => $cfg,
-				# debug => 1,
 	) or do 
 		{ $error = "System failure: Cannot open network template $ethtemplate_name";
 		&error; };
@@ -300,7 +317,6 @@ sub save {
 	$ethtmpl->param('ipv6', 1) if (defined $netzwerkadressen_IPv6 and $netzwerkadressen_IPv6 ne "auto");
 		
 	$part_loopback = $ethtmpl->output();
-	
 	
 	#### IPv4 ####
 	$ethtemplate_name = "$lbstemplatedir/network/interfaces.ipv4";
@@ -310,8 +326,6 @@ sub save {
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				%htmltemplate_options,
-				#associate => $cfg,
-				# debug => 1,
 	) or do 
 		{ $error = "System failure: Cannot open network template $ethtemplate_name";
 		&error; 
@@ -342,8 +356,6 @@ sub save {
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				%htmltemplate_options,
-				#associate => $cfg,
-				# debug => 1,
 		) or do 
 			{ $error = "System failure: Cannot open network template $ethtemplate_name";
 			&error; 
@@ -566,7 +578,6 @@ sub error {
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				%htmltemplate_options,
-				# associate => $cfg,
 				);
 	$maintemplate->param('ERROR' => $error);
 	

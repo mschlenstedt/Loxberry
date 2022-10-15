@@ -22,6 +22,17 @@ ini_parser() {
 
 case "$1" in
   start)
+	# Test if / is writable
+	echo -n "Testing root filesystem: "
+	touch /readonlycheck
+	if [ $? -eq 0 ]; then
+	 rm -f /readonlycheck
+	 echo "OK"
+	else
+	 echo "Not OK, try to restore /etc/fstab and reboot in 10s"
+	 sleep 10
+	 $0 fsrestore
+	fi 
 
 	# Remove old mountpoints from AutoFS and USB automount (in case they were not
 	# unmounted correctly and di not exist anymore)
@@ -50,16 +61,6 @@ case "$1" in
 
 	# Let fsck run only every 10th boot (only for clean devices)
 	tune2fs -c 10 /dev/mmcblk0p2 
-
-	# Resize rootfs to maximum if not yet done
-	# This is done by index.cgi now
-	# if [ ! -f /boot/rootfsresized ]
-	# then
-	#   echo "Resizing Rootfs to maximum on next reboot"
-	#   $LBHOMEDIR/sbin/resize_rootfs > /dev/null 2>&1
-	#   touch /boot/rootfsresized
-	#   log_action_end_msg 0
-	# fi
 
 	# Create Default config
 	echo "Updating general.cfg etc...."
@@ -110,17 +111,31 @@ case "$1" in
 		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
 	fi
 
-	# Create log folders for all plugins if not existing
-	echo "Create log folders for all installed plugins"
-	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
+	# Start LoxBerrys Emergency Webserver
+	if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]
+	then
+		echo "Start Emergency Webserver"
+		perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
+	fi
 		
 	# Run Daemons from Plugins and from System
 	echo "Running System Daemons..."
-	run-parts -v $LBHOMEDIR/system/daemons/system > /dev/null 
+	#run-parts -v $LBHOMEDIR/system/daemons/system > /dev/null 
+	for SYSTEMDAEMONS in $LBHOMEDIR/system/daemons/system/*
+	do
+		echo "Running $SYSTEMDAEMONS..."
+	       	$SYSTEMDAEMONS > /dev/null
+	done
 		
-	echo "Running Plugin Daemons..."
-	run-parts -v --new-session $LBHOMEDIR/system/daemons/plugins > /dev/null 
-		
+	echo "Preparing Plugin Daemons..."
+	#run-parts -v --new-session --test $LBHOMEDIR/system/daemons/plugins |while read PLUGINDAEMONS; do
+	for PLUGINDAEMONS in $LBHOMEDIR/system/daemons/plugins/*
+	do
+		echo "Running $PLUGINDAEMONS..."
+		$PLUGINDAEMONS > /dev/null &
+		sleep 1
+	done
+
 	# Check LoxBerry Update cronjobs
 	# Recreate them, if config has enabled them, but do not exist
 	ini_parser "$LBSCONFIG/general.cfg" "UPDATE"
@@ -158,18 +173,81 @@ case "$1" in
 	
   stop)
 	# Add "nofail" option to all mounts in /etc/fstab (needed for USB automount to work correctly)
-	echo "Configuring fstab...."
-	awk '!/^#/ && !/^\s/ && /^[a-zA-Z0-9]/ { if(!match($4,/nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
-	sed -i 's/\(\/ ext4 .*\),nofail\(.*\)/\1\2/' /etc/fstab.new # remove nofail for /
-	cp /etc/fstab /etc/fstab.backup
-	cat /etc/fstab.new > /etc/fstab
-	rm /etc/fstab.new
+	echo "Checking fstab...."
+	# Check if there are any missing "nofail"'s...
+	COUNT=$(grep -a "^[^#]" /etc/fstab | grep -a -v "nofail" | grep -a -v "/ ext4" | wc -l)
+	if [ ${COUNT} -gt 0 ]; then
+		echo "Found lines with missing nofail option."
+		awk '!/^#/ && !/^\s/ && /^[a-zA-Z0-9]/ { if(!match($4,/nofail/)) $4=$4",nofail" } 1' /etc/fstab > /etc/fstab.new
+		sed -i 's/\(\/ ext4 .*\),nofail\(.*\)/\1\2/' /etc/fstab.new # remove nofail for /
+		FILESIZE=$(wc -c < /etc/fstab.new)
+		ISASCII=$(file /etc/fstab.new | grep -a "ASCII text" | wc -l)
+		if [ "$FILESIZE" -gt 50 ] && [ "$ISASCII" -ne 0 ]]; then
+			findmnt -F /etc/fstab.new / > /dev/null
+			if [ $? -eq 0 ]; then
+				echo "New fstab seems to be valid. Deleting original and copy new file."
+				cp /etc/fstab /etc/fstab.backup
+				mv /etc/fstab.new /etc/fstab
+			else
+				echo "ERROR patching /etc/fstab (findmnt) - Skipping..."
+			fi
+		else
+			echo "ERROR patching /etc/fstab (filesize/filetype) - Skipping..."
+		fi
+	else
+		echo "Everything OK, nothing to do."
+	fi
 	echo "Configuring NTP systemd timesync...."
 	systemctl disable systemd-timesyncd > /dev/null 2>&1
   ;;
 
+  fsrestore)
+	echo "Try to restore /etc/fstab from /etc/fstab.backup ...."
+	/bin/mount -o remount,rw /
+	stamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
+	echo "Current /etc/fstab is saved to /etc/fstab.restored_$stamp"
+	cp /etc/fstab /etc/fstab.restored_$stamp
+	FILESIZE=$(wc -c < /etc/fstab.backup)
+	ISASCII=$(file /etc/fstab.backup | grep -a "ASCII text" | wc -l)
+	if [ "$FILESIZE" -gt 50 ] && [ "$ISASCII" -ne 0 ]; then
+		findmnt -F /etc/fstab.backup / > /dev/null
+		if [ $? -eq 0 ]; then
+			echo "/etc/fstab.backup seems to be valid. Using it for restoring."
+			COPY=1
+		else
+			echo "/etc/fstab.backup isn't valid (findmnt). Will not use it."
+			COPY=0
+		fi
+	else
+		echo "/etc/fstab.backup isn't valid (filesize/filetype). Will not use it."
+		COPY=0
+	fi
+	if [ "$COPY" -ne 0 ]; then
+		cp /etc/fstab.backup /etc/fstab 
+		if [ $? -eq 0 ]; then
+	 		echo "Restore done. Rebooting...."
+			echo "Your fstab was broken. We tried to restore it. You have to reboot your LoxBerry now." >> $LBHOMEDIR/log/system_tmpfs/reboot.force
+			echo "Your fstab was broken. We tried to restore it. You have to reboot your LoxBerry now." >> $LBHOMEDIR/log/system_tmpfs/reboot.required
+		else
+	 		echo "Restore failed."
+			COPY=0
+		fi
+	fi
+
+	if [ "$COPY" -eq 0 ] && [ -f "$LBHOMEDIR/config/system/is_raspberry.cfg" ]; then
+		echo "Last chance: I will create a default /etc/fstab."
+		touch /etc/fstab
+		echo "proc /proc proc defaults,nofail 0 0" > /etc/fstab
+		echo "PARTUUID=4bd27daf-01 /boot vfat defaults,nofail 0 2" >> /etc/fstab
+		echo "PARTUUID=4bd27daf-02 / ext4 defaults,noatime 0 1" >> /etc/fstab
+		echo "Your fstab was broken. We tried to restore it. You have to reboot your LoxBerry now." >> $LBHOMEDIR/log/system_tmpfs/reboot.force
+		echo "Your fstab was broken. We tried to restore it. You have to reboot your LoxBerry now." >> $LBHOMEDIR/log/system_tmpfs/reboot.required
+	fi
+
+  ;;
+
   *)
-        echo "Usage: $0 [start|stop]" >&2
+        echo "Usage: $0 [start|stop|fsrestore]" >&2
         exit 3
   ;;
 

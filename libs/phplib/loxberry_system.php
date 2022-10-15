@@ -100,6 +100,7 @@
 	$miniservercount=NULL;
 	$plugins=NULL;
 	$lblang=NULL;
+	$lbcountry=NULL;
 	$cfgwasread=NULL;
 	$plugindb_timestamp = 0;
 	$plugindb_lastchecked = 0;
@@ -113,12 +114,24 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.0.2.4";
+	public static $LBSYSTEMVERSION = "2.2.1.1";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
 	///////////////////////////////////////////////////////////////////
-	// Detects the language from query, post or general.cfg
+	// Get the selected country from general.json
+	///////////////////////////////////////////////////////////////////
+	public static function lbcountry()
+	{
+		global $lbcountry;
+		if (! isset($cfgwasread)) {
+			LBSystem::read_generaljson();
+		}	
+		return $lbcountry;
+	}
+	
+	///////////////////////////////////////////////////////////////////
+	// Detects the language from query, post or general.json
 	///////////////////////////////////////////////////////////////////
 	public static function lblanguage() 
 	{
@@ -138,10 +151,10 @@ class LBSystem
 			// error_log("Language " . LBSystem::$lang . " detected from post data");
 			return LBSystem::$lang;
 		}
-		LBSystem::read_generalcfg();
+		LBSystem::read_generaljson();
 		if (isset($lblang)) {
 			LBSystem::$lang = $lblang;
-			// error_log("Language " . LBSystem::$lang . " used from general.cfg");
+			// error_log("Language " . LBSystem::$lang . " used from general.json");
 			return LBSystem::$lang;
 		}
 		// Finally we default to en
@@ -269,12 +282,8 @@ class LBSystem
 		if(!empty($msClouddnsFetched)) {
 			return $miniservers;
 		}
-		
-		if (isset($cfgwasread)) {
-			return $miniservers;
-		}	
-		
-		LBSystem::read_generalcfg();
+				
+		LBSystem::read_generaljson();
 		
 		foreach ($miniservers as $msnr => $value) {
 			# CloudDNS handling
@@ -327,7 +336,7 @@ class LBSystem
 		$ip = trim(strtolower($ip));
 		
 		if (! $miniservers) {
-			LBSystem::read_generalcfg();
+			LBSystem::read_generaljson();
 		}
 		
 		foreach ($miniservers as $key => $ms) {
@@ -345,7 +354,7 @@ class LBSystem
 		$myname = trim(strtolower($myname));
 		
 		if (! $miniservers) {
-			LBSystem::read_generalcfg();
+			LBSystem::read_generaljson();
 		}
 		
 		foreach ($miniservers as $key => $ms) {
@@ -360,17 +369,33 @@ class LBSystem
 	public static function get_binaries()
 	{
 		global $binaries;
-		if ($binaries) {
-			return $binaries;
-		} 
-
-		if (! isset($miniservers)) {
-				LBSystem::read_generalcfg();
-				return $binaries;
-		}
-		return;
+		$binaries = array (
+		'FIND'		=> '/usr/bin/find',
+		'GREP'		=> '/bin/grep',
+		'TAR'		=> '/bin/tar',
+		'NTPDATE'	=> '/usr/sbin/ntpdate',
+		'UNZIP'		=> '/usr/bin/unzip',
+		'MAIL'		=> '/usr/bin/mailx',
+		'BASH'		=> '/bin/bash',
+		'APT'		=> '/usr/bin/apt-get',
+		'ZIP'		=> '/usr/bin/zip',
+		'GZIP'		=> '/bin/gzip',
+		'CHOWN'		=> '/bin/chown',
+		'SUDO'		=> '/usr/bin/sudo',
+		'DPKG'		=> '/usr/bin/dpkg',
+		'REBOOT'	=> '/sbin/reboot',
+		'WGET'		=> '/usr/bin/wget',
+		'CURL'		=> '/usr/bin/curl',
+		'CHMOD'		=> '/bin/chmod',
+		'SENDMAIL'	=> '/usr/sbin/sendmail',
+		'AWK'		=> '/usr/bin/awk',
+		'DOS2UNIX'	=> '/usr/bin/dos2unix',
+		'BZIP2'		=> '/bin/bzip2',
+		'DATE'		=> '/bin/date',
+		'POWEROFF'	=> '/sbin/poweroff'
+		);
+		return $binaries;
 	}
-
 	##################################################################################
 	# Get Plugin Version
 	# Returns plugin version from plugindatabase
@@ -538,14 +563,14 @@ public static function plugindb_changed_time()
 		if ($lbversion) {
 			return $lbversion;
 		} 
-		LBSystem::read_generalcfg();
+		LBSystem::read_generaljson();
 		return $lbversion;
 	}
 
 	#########################################################################
 	# INTERNAL function read_generalcfg
 	#########################################################################
-	public static function read_generalcfg()
+	public static function read_generaljson()
 	{
 		global $miniservers;
 		global $miniservercount;
@@ -554,6 +579,7 @@ public static function plugindb_changed_time()
 		global $lbversion;
 		global $lbfriendlyname;
 		global $lblang;
+		global $lbcountry;
 		global $cfgwasread;
 		global $webserverport;
 		global $clouddnsaddress;
@@ -562,45 +588,49 @@ public static function plugindb_changed_time()
 	
 		# print ("READ miniservers FROM DISK\n");
 		
-		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
+		$cfg = json_decode( file_get_contents( LBHOMEDIR . "/config/system/general.json"), FALSE);
+		if ( $cfg == NULL ) {
+			error_log( "loxberry_system.php: Cannot read general.json: " . json_last_error_msg () . " (" . json_last_error() . ")");
+			throw new Exception("Cannot read general.json: " . json_last_error_msg () . " (" . json_last_error() . ")");
+			exit(1);
+		}
 		$cfgwasread = 1;
-		// error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
 		
 		# Get CloudDNS and Timezones, System language
-		$clouddnsaddress = $cfg['BASE']['CLOUDDNS'] or error_log("LoxBerry System Warning: BASE.CLOUDDNS not defined.");
-		$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or error_log("LoxBerry System Warning: TIMESERVER.ZONE not defined.");
-		$lbversion = $cfg['BASE']['VERSION'] or error_log("LoxBerry System Warning: BASE.VERSION not defined.");
-		$lbfriendlyname = isset($cfg['NETWORK']['FRIENDLYNAME']) ? $cfg['NETWORK']['FRIENDLYNAME'] : NULL;
-		$webserverport = isset($cfg['WEBSERVER']['PORT']) ? $cfg['WEBSERVER']['PORT'] : NULL;
-		$lblang = isset($cfg['BASE']['LANG']) ? $cfg['BASE']['LANG'] : NULL;
-		// error_log("read_generalcfg: Language is $lblang");
-		$binaries = $cfg['BINARIES'];
+		$clouddnsaddress = $cfg->Base->Clouddnsuri or error_log("LoxBerry System Warning: Base.Clouddnsuri not defined.");
+		$lbtimezone	= $cfg->Timeserver->Timezone or error_log("LoxBerry System Warning: Timeserver.Timezone not defined.");
+		$lbversion = $cfg->Base->Version or error_log("LoxBerry System Warning: Base.Version not defined.");
+		$lbfriendlyname = isset($cfg->Network->Friendlyname) ? $cfg->Network->Friendlyname : NULL;
+		$webserverport = isset($cfg->Webserver->Port) ? $cfg->Webserver->Port : NULL;
+		$lblang = isset($cfg->Base->Lang) ? $cfg->Base->Lang : NULL;
+		$lbcountry = isset($cfg->Base->Country) && $cfg->Base->Country != 'undef' ? $cfg->Base->Country : NULL;
 		
 		# If no miniservers are defined, return NULL
-		$miniservercount = $cfg['BASE']['MINISERVERS'];
+		$miniservercount = count( get_object_vars($cfg->Miniserver) );
 		if (!$miniservercount || $miniservercount < 1) {
 			return;
 		}
 		
-		for ($msnr = 1; $msnr <= $miniservercount; $msnr++) {
-			 
-			@$miniservers[$msnr]['Name'] = $cfg["MINISERVER$msnr"]['NAME'];
-			@$miniservers[$msnr]['IPAddress'] = $cfg["MINISERVER$msnr"]['IPADDRESS'];
-			@$miniservers[$msnr]['Admin'] = $cfg["MINISERVER$msnr"]['ADMIN'];
-			@$miniservers[$msnr]['Pass'] = $cfg["MINISERVER$msnr"]['PASS'];
+		foreach ( $cfg->Miniserver as $msnr => $ms ) {
+			// error_log("$msnr is $ms->Name");
+			@$miniservers[$msnr]['Name'] = $ms->Name;
+			@$miniservers[$msnr]['IPAddress'] = $ms->Ipaddress;
+			@$miniservers[$msnr]['Admin'] = $ms->Admin;
+			@$miniservers[$msnr]['Pass'] = $ms->Pass;
 			@$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
-			@$miniservers[$msnr]['Note'] = $cfg["MINISERVER$msnr"]['NOTE'];
-			@$miniservers[$msnr]['Port'] = $cfg["MINISERVER$msnr"]['PORT'];
-			@$miniservers[$msnr]['PortHttps'] = $cfg["MINISERVER$msnr"]['PORTHTTPS'];
-			@$miniservers[$msnr]['PreferHttps'] = $cfg["MINISERVER$msnr"]['PREFERHTTPS'];
-			@$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
-			@$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
-			@$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];
+			@$miniservers[$msnr]['Note'] = $ms->Note;
+			@$miniservers[$msnr]['Port'] = $ms->Port;
+			@$miniservers[$msnr]['PortHttps'] = $ms->Porthttps;
+			@$miniservers[$msnr]['PreferHttps'] = $ms->Preferhttps;
+			@$miniservers[$msnr]['UseCloudDNS'] = $ms->Useclouddns;
+			@$miniservers[$msnr]['CloudURLFTPPort'] = $ms->Cloudurlftpport;
+			@$miniservers[$msnr]['CloudURL'] = $ms->Cloudurl;
 			@$miniservers[$msnr]['Admin_RAW'] = urldecode($miniservers[$msnr]['Admin']);
 			@$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
 			@$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
-			@$miniservers[$msnr]['SecureGateway'] = isset($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) && is_enabled($cfg["MINISERVER$msnr"]['SECUREGATEWAY']) ? 1 : 0;
-			@$miniservers[$msnr]['EncryptResponse'] = isset ($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) && is_enabled($cfg["MINISERVER$msnr"]['ENCRYPTRESPONSE']) ? 1 : 0;
+			@$miniservers[$msnr]['SecureGateway'] = isset($ms->Securegateway) && is_enabled($ms->Securegateway) ? 1 : 0;
+			@$miniservers[$msnr]['EncryptResponse'] = isset($ms->Encryptresponse) && is_enabled($ms->Encryptresponse) ? 1 : 0;
+
 		}
 	}
 
@@ -610,7 +640,7 @@ public static function plugindb_changed_time()
 	####################################################
 	public static function set_clouddns($msnr, $clouddnsaddress)
 	{
-		global $binaries, $miniservers, $miniservercount;
+		global $miniservers, $miniservercount;
 		
 		if (!$miniservercount || $miniservercount < 1) {
 			return;
@@ -680,33 +710,37 @@ public static function plugindb_changed_time()
 		// DEBUGGING 
 		// $respjson = json_decode('{"cmd":"getip","Code":200,"IP":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpen":true,"LastUpdated":"2020-02-04 11:43:50","DNS-Status":"registered","IPHTTPS":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpenHTTPS":true}');
 		
-		// http port
-		$resp_ip = $respjson->IP;
-		$sq1 = strpos( $resp_ip, '[' );
-		if( $sq1 !== FALSE ) {
-			$sq2 = strpos( $resp_ip, ']' );
-			if ( $sq2 !== FALSE ) {
-				$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
-				$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
-			}
-		} else {
-			list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['Port'] ) =  explode(":",$resp_ip, 2);
-		}
-		// https port
-		if( is_enabled($miniservers[$msnr]['PreferHttps']) ) {
-			$resp_ip = $respjson->IPHTTPS;
-			$sq1 = strpos( $resp_ip, '[' );
-			if( $sq1 !== FALSE ) {
-				$sq2 = strpos( $resp_ip, ']' );
-				if ( $sq2 !== FALSE ) {
-					$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
-					$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
-				}
-			} else {
-				list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['PortHttps'] ) =  explode(":",$resp_ip, 2);
-			}
-		}
+		if(!empty($respjson) ) {
 		
+			// http port
+			if( property_exists($respjson, 'IP') ) {
+				$resp_ip = $respjson->IP;
+				$sq1 = strpos( $resp_ip, '[' );
+				if( $sq1 !== FALSE ) {
+					$sq2 = strpos( $resp_ip, ']' );
+					if ( $sq2 !== FALSE ) {
+						$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
+						$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
+					}
+				} else {
+					list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['Port'] ) =  explode(":",$resp_ip, 2);
+				}
+			}
+			// https port
+			if( property_exists($respjson, 'IPHTTPS') && is_enabled($miniservers[$msnr]['PreferHttps']) ) {
+				$resp_ip = $respjson->IPHTTPS;
+				$sq1 = strpos( $resp_ip, '[' );
+				if( $sq1 !== FALSE ) {
+					$sq2 = strpos( $resp_ip, ']' );
+					if ( $sq2 !== FALSE ) {
+						$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
+						$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
+					}
+				} else {
+					list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['PortHttps'] ) =  explode(":",$resp_ip, 2);
+				}
+			}
+		}		
 		// Save cache information to json
 		if (!empty($miniservers[$msnr]['IPAddress'])) {
 			if(empty($jsonobj)) {
@@ -763,31 +797,13 @@ public static function plugindb_changed_time()
 		# If $miniservers does not have FTP set, read FTP from Miniserver and save it in FTPPort
 		if (! isset($miniservers[$msnr]['FTPPort'])) {
 			# Get FTP Port from Miniserver
-			$url = $miniservers[$msnr]['FullURI'].'/dev/cfg/ftp';
-			
-			/* SSL options */
-			$stream_context = stream_context_create([ 
-			'https' => [
-				'timeout'			=> 5,
-				'verify_peer'       => false,
-				'verify_peer_name'  => false,
-				'allow_self_signed' => true,
-				'verify_depth'      => 0 
-			], 
-			'http' => [
-				'timeout'			=> 5
-			]]);
-
-			$response = file_get_contents($url, false, $stream_context);
-			
-			if (! $response) {
-				error_log("Cannot query FTP port because Loxone Miniserver is not reachable.");
+			require_once "loxberry_io.php";
+			list( $value, $status) = mshttp_call($msnr, '/dev/cfg/ftp' );
+			if( $status < 200 or $status >=300 ) {
+				error_log("get_ftpport: Cannot query FTP port from Miniserver. Possibly, your MS account has no admin permissions?");
 				return;
-			} 
-			
-			$xml = new \SimpleXMLElement($response);
-			$port = $xml[0]['value'];
-			$miniservers[$msnr]['FTPPort'] = $port;
+			}
+			$miniservers[$msnr]['FTPPort'] = $value;
 		}
 		return $miniservers[$msnr]['FTPPort'];
 	}
@@ -804,6 +820,15 @@ public static function plugindb_changed_time()
 		return $localip;
 	}
 
+	
+	####################################################
+	# execute - execute shell command and return response
+	####################################################
+	public static function execute($cmd)
+	{
+		exec($cmd, $output, $result_code);
+		return $output;	
+	}
 }
 
 // END of class LBSystem
@@ -855,7 +880,7 @@ function lbfriendlyname()
 	global $lbfriendlyname;
 	
 	if (! $cfgwasread) {
-		LBSystem::read_generalcfg(); 
+		LBSystem::read_generaljson(); 
 	}
 	
 	# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
@@ -880,7 +905,7 @@ function lbwebserverport()
 	global $webserverport;
 	
 	if (! $cfgwasread) {
-		LBSystem::read_generalcfg(); 
+		LBSystem::read_generaljson(); 
 	}
 	if (! $webserverport) {
 		$webserverport = 80;

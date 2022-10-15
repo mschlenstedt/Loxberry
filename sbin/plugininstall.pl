@@ -32,7 +32,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "2.0.1.2";
+my $version = "2.0.1.3";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -113,6 +113,7 @@ my $findbin		= $bins->{FIND};
 my $grepbin		= $bins->{GREP};
 my $dpkgbin		= $bins->{DPKG};
 my $dos2unix		= $bins->{DOS2UNIX};
+my $wgetbin		= $bins->{WGET};
 
 ##########################################################################
 # Language Settings
@@ -783,7 +784,7 @@ sub install {
 			}
 			my $ext = substr( $filename, $dotpos );
 			# print "Filename: $filename Extension: $ext\n";
-			next if ( !$ext or grep { /$ext/ } @extensionExcludeList );
+			next if ( !$ext or grep { "/$ext/" } @extensionExcludeList );
 			push @searchfilelist, $filename;
 		}
 		
@@ -1236,17 +1237,25 @@ sub install {
 		my $now = time;
 		# If last run of apt-get update is longer than 24h ago, do a refresh.
 		if ($now > $lastaptupdate+86400) {
+			system("$wgetbin -q --timeout 5 -O /tmp/yarnpkg.gpg.pub https://dl.yarnpkg.com/debian/pubkey.gpg 2>&1");
+			if ( -r "/tmp/yarnpkg.gpg.pub" )
+			{
+				system(substr($aptbin,0,-3)."key add /tmp/yarnpkg.gpg.pub >/dev/null 2>&1");
+				unlink "/tmp/yarnpkg.gpg.pub";
+				$message = "$LL{'INF_FIXYARN'}";
+				&loginfo;
+			}
 			$message = "$LL{'INF_APTREFRESH'}";
 			&loginfo;
-			$message = "Command: $dpkgbin --configure -a";
+			$message = "Command: $dpkgbin --configure -a --force-confdef";
 			&loginfo;
-			system("$dpkgbin --configure -a 2>&1");
+			system("$dpkgbin --configure -a --force-confdef 2>&1");
 			$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 			&loginfo;
 			system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
-			$message = "Command: $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update";
+			$message = "Command: $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update";
 			&loginfo;
-			system("$export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages update 2>&1");
+			system("$export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update 2>&1");
 			if ($? ne 0) {
 				$message = "$LL{'ERR_APTREFRESH'}";
 				&logerr; 
@@ -1284,9 +1293,9 @@ sub install {
 		}
 		close (F);
 
-		$message = "Command: $dpkgbin --configure -a";
+		$message = "Command: $dpkgbin --configure -a --force-confdef";
 		&loginfo;
-		system("$dpkgbin --configure -a 2>&1");
+		system("$dpkgbin --configure -a --force-confdef 2>&1");
 		$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 		&loginfo;
 		system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
@@ -1298,9 +1307,9 @@ sub install {
 			&logwarn; 
 			# If it failed, maybe due to an outdated apt-database... So
 			# do a apt-get update once more
-			$message = "Command: $dpkgbin --configure -a";
+			$message = "Command: $dpkgbin --configure -a --force-confdef";
 			&loginfo;
-			system("$dpkgbin --configure -a 2>&1");
+			system("$dpkgbin --configure -a --force-confdef 2>&1");
 			$message = "Command: $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove";
 			&loginfo;
 			system("$export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove 2>&1");
@@ -2033,7 +2042,7 @@ sub replaceenv {
 		# $message="File: $_";
 		# &loginfo;
 		
-		`$sudobin -n -u $user /bin/sed -i '$sed_replace_query' $_ 2>&1`;
+		`$sudobin -n -u $user /bin/sed -i '$sed_replace_query' "$_" 2>&1`;
 	}
 	$message = "Replace of $counter files finished";
 	&logok;
@@ -2064,8 +2073,11 @@ sub dos2unix {
 
 	$message = "$LL{'INF_DOS2UNIX'}";
 	&loginfo;
-	
-	system("$sudobin -n -u $user $dos2unix -- " . join(" ", @$filelist) . " 2>&1");
+
+	foreach(@$filelist) 
+	{
+		system("$sudobin -n -u $user $dos2unix -- '" . $_ . "' 2>&1");
+	}
 
 	return;
 
@@ -2098,15 +2110,19 @@ sub getTextFiles
 	&loginfo;
 	my @textfiles;
 	my $counter = 0;
-	foreach(@files) {
+	foreach(@files) 
+	{
 		$counter++;
-		my $bin_text = `file -b $_`;
-		push @textfiles, $_ if ( index( $bin_text, 'text' ) != -1 );
-		if( $counter%20 == 0 ) {
-			$message = "  " . scalar @textfiles . " found out of $counter ...";
+		my $bin_text = `file -b "$_"`;
+		push @textfiles, "$_" if ( index( "$bin_text", 'text' ) != -1 );
+		if( $counter%20 == 0 ) 
+		{
+			$message = "  " . scalar @textfiles . " textfiles found out of $counter files scanned...";
 			&loginfo;
 		}
 	}
+	$message = "  " . scalar @textfiles . " textfiles found out of $counter files scanned...";
+	&loginfo;
 	$message = "Found " . scalar @textfiles . " files to be text files";
 	&logok;
 	return @textfiles;
@@ -2208,6 +2224,7 @@ sub localphrases {
 	INF_LOGSKELS => "Updating skels for Logfiles in tmpfs.",
 	INF_SHADOWDB => "Creating shadow version of plugindatabase.",
 	ERR_UNKNOWN_FORMAT_PLUGINCFG => "Could not parse plugin.cfg. Maybe it has a wrong format.",
+	INF_FIXYARN => "Updating Yarn Key if internet connection is available.",
 
 	);
 

@@ -1,7 +1,6 @@
 <?php
 
 require_once "loxberry_system.php";
-// require_once "phphtmltemplate_loxberry/template040.php";
 
 if(!defined('STDIN'))  define('STDIN',  fopen('php://stdin',  'rb'));
 if(!defined('STDOUT')) define('STDOUT', fopen('php://stdout', 'wb'));
@@ -230,13 +229,7 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		if (isset($this->params{'ATTENTIONMESSAGES'})) {
-		$this->params{'ATTENTIONMESSAGES'} .= "\n";
-		} else {
-			$this->params{'ATTENTIONMESSAGES'} = "";
-		}
-		$this->params{'ATTENTIONMESSAGES'} .= "<WARNING> $msg";
-		
+		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<WARNING>", $msg);
 		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 4) {
 			$this->params{"STATUS"} = 4;
@@ -253,13 +246,8 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		if (isset($this->params{'ATTENTIONMESSAGES'})) {
-		$this->params{'ATTENTIONMESSAGES'} .= "\n";
-		} else {
-			$this->params{'ATTENTIONMESSAGES'} = "";
-		}
-		$this->params{'ATTENTIONMESSAGES'} .= "<ERROR> $msg";
-		
+		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<ERROR>", $msg);
+			
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 3) {
 			$this->params{"STATUS"} = 3;
 		}
@@ -275,12 +263,7 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		if (isset($this->params{'ATTENTIONMESSAGES'})) {
-		$this->params{'ATTENTIONMESSAGES'} .= "\n";
-		} else {
-			$this->params{'ATTENTIONMESSAGES'} = "";
-		}
-		$this->params{'ATTENTIONMESSAGES'} .= "<CRITICAL> $msg";
+		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<CRITICAL>", $msg);
 		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 2) {
 			$this->params{"STATUS"} = 2;
@@ -299,12 +282,7 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		if (isset($this->params{'ATTENTIONMESSAGES'})) {
-		$this->params{'ATTENTIONMESSAGES'} .= "\n";
-		} else {
-			$this->params{'ATTENTIONMESSAGES'} = "";
-		}
-		$this->params{'ATTENTIONMESSAGES'} .= "<ALERT> $msg";
+		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<ALERT>", $msg);
 		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 1) {
 			$this->params{"STATUS"} = 1;
@@ -323,12 +301,7 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		if (isset($this->params{'ATTENTIONMESSAGES'})) {
-		$this->params{'ATTENTIONMESSAGES'} .= "\n";
-		} else {
-			$this->params{'ATTENTIONMESSAGES'} = "";
-		}
-		$this->params{'ATTENTIONMESSAGES'} .= "<EMERG> $msg";
+		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<EMERG>", $msg);
 		
 		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 0) {
 			$this->params{"STATUS"} = "0";
@@ -758,6 +731,25 @@ class intLog
 		$p->params["dbkey"] = intLog::log_db_logstart($p->dbh, $p);
 	}
 	
+	// Collect all messages from severity warning and above
+	private function collectAttentionmessages($severity, $msg)
+	{
+		if (isset($this->params{'ATTENTIONMESSAGES'})) {
+		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		} else {
+			$this->params{'ATTENTIONMESSAGES'} = "";
+		}
+		$this->params{'ATTENTIONMESSAGES'} .= "$severity $msg";
+		
+		// Truncate attention message
+		$strmaxlen = 6000;
+		if( strlen($this->params{'ATTENTIONMESSAGES'}) > $strmaxlen ) {
+			$this->params{'ATTENTIONMESSAGES'} = substr( $this->params{'ATTENTIONMESSAGES'}, -$strmaxlen+200 );
+			$this->params{'ATTENTIONMESSAGES'} = substr( $this->params{'ATTENTIONMESSAGES'}, strpos( $this->params{'ATTENTIONMESSAGES'}, "\n" )+1 );
+		}
+		return $this->params{'ATTENTIONMESSAGES'};
+	}
+	
 	public function __destruct() 
 	{
 		// echo "__descruct called\n";
@@ -782,7 +774,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "2.0.1.1";
+	public static $VERSION = "2.4.0.1";
 	
 	public static function newLog($args)
 	{

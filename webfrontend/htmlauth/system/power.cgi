@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ use strict;
 my $helpurl = "https://www.loxwiki.eu/x/fogKAw";
 my $helptemplate = "help_power.html";
 
-our $cfg;
+# our $cfg;
 our $phrase;
 our $namef;
 our $value;
@@ -60,20 +60,18 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.0.0";
+my $version = "2.0.2.1";
 
-$cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
-#$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-#$lang            = $cfg->param("BASE.LANG");
-$rebootbin       = $cfg->param("BINARIES.REBOOT");
-$poweroffbin     = $cfg->param("BINARIES.POWEROFF");
+my $bins = LoxBerry::System::get_binaries();
+$rebootbin = $bins->{REBOOT};
+$poweroffbin = $bins->{POWEROFF};
 
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/power.html",
 			global_vars => 1,
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
-			associate => $cfg,
+# 			associate => $cfg,
 			%htmltemplate_options,
 			# debug => 1,
 			);

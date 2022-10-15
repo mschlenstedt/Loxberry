@@ -1,0 +1,8 @@
+LoxBerry XL - EXTENDED LOGIC
+----------------------------
+
+Place your own scripts into the 'user' folder - they are NOT touched by LoxBerry Update.
+
+DO NOT place or change scripts in the examples folder or this main folder, 
+as these folders are resetted by LoxBerry Update.
+Copy examples to the 'user' folder to change and experiment.

@@ -1,9 +1,16 @@
 package Net::MQTT::Simple;
 
+# This version is modified for LoxBerry. The _send function contains a
+# Time::HiRes::sleep(0.01) as Mosquitto drops connection on rapid publish
+# https://github.com/Juerd/Net-MQTT-Simple/issues/11
+
+
 use strict;
 use warnings;
+use Time::HiRes;
 
-our $VERSION = '1.23';
+our $VERSION = '1.24-3LB';
+our $SENDDELAY = 0.017;
 
 # Please note that these are not documented and are subject to change:
 our $KEEPALIVE_INTERVAL = 60;
@@ -21,6 +28,11 @@ BEGIN {
       eval { require IO::Socket::IP; 1 }   ? sub { "IO::Socket::IP" }
     : eval { require IO::Socket::INET; 1 } ? sub { "IO::Socket::INET" }
     : die "Neither IO::Socket::IP nor IO::Socket::INET found";
+
+	# require IO::Socket::IP; *_socket_class = sub { "IO::Socket::IP" };
+	# require IO::Socket::INET; *_socket_class = sub { "IO::Socket::INET" };
+
+
 }
 
 sub _default_port { 1883 }
@@ -59,6 +71,7 @@ sub import {
 
     $global = $class->new($server);
 
+    no strict 'refs';
     *{ (caller)[0] . "::publish" } = \&publish;
     *{ (caller)[0] . "::retain"  } = \&retain;
 }
@@ -181,16 +194,22 @@ sub _prepend_variable_length {
 
 sub _send {
     my ($self, $data) = @_;
-
+	
+	if( $self->{last_send} and $self->{last_send}+$SENDDELAY > Time::HiRes::time() ) {
+		Time::HiRes::sleep($SENDDELAY);
+	}
+	
     $self->_connect unless exists $self->{skip_connect};
     delete $self->{skip_connect};
 
     my $socket = $self->{socket} or return;
 
     syswrite $socket, $data
-        or $self->_drop_connection;  # reconnect on next message
-
-    $self->{last_send} = time;
+		or $self->_drop_connection;  # reconnect on next message
+	#print STDERR "syswrite: sent $result bytes: $!\n";
+	$self->{last_send} = Time::HiRes::time;
+	
+    
 }
 
 sub _send_connect {
@@ -244,8 +263,8 @@ sub _send_unsubscribe {
 
     utf8::encode($_) for @topics;
 
-    # Hardcoded "packet identifier" \0\0 for now.
-    $self->_send("\xa2" . _prepend_variable_length("\0\0" .
+    # Hardcoded "packet identifier" \0\0x01 for now; see above.
+    $self->_send("\xa2" . _prepend_variable_length("\0\x01" .
         pack("(n/a*)*", @topics)
     ));
 }

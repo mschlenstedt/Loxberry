@@ -11,7 +11,7 @@ use Data::Dumper;
 
 package LoxBerry::System::PluginDB;
 
-our $VERSION = "2.0.0.6";
+our $VERSION = "2.2.0.1";
 our $DEBUG = 0;
 
 my %plugindb_handles;
@@ -216,10 +216,15 @@ sub save
 	$files{sudoers} = "$homedir/system/sudoers/$pluginname";
 	$self->{files} = \%files;
 		
-	if (! LoxBerry::System::is_enabled($self->{loglevels_enabled}) ) {
+	
+	if( LoxBerry::System::is_enabled($self->{loglevels_enabled}) ) {
+		if( !defined $self->{loglevel} or $self->{loglevel} eq "-1" ) {
+			$self->{loglevel} = "3";
+		}
+	} else {
 		$self->{loglevel} = "-1";
 	}
-
+	
 	delete $plugindb->{plugins}->{$md5};
 	
 	# Do not save internal variables (beginning with _)

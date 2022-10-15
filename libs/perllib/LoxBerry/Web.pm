@@ -14,7 +14,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "2.0.0.1";
+our $VERSION = "2.2.1.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -39,11 +39,10 @@ my $lang;
 our $lbpluginpage = "/admin/system/index.cgi";
 our $lbsystempage = "/admin/system/index.cgi?form=system";
 
-# Performance optimizations
 our %htmltemplate_options = ( 
 		'shared_cache' => 0,
-		'file_cache' => 1,
-		'file_cache_dir' => '/tmp/templatecache',
+		# 'file_cache' => 0,
+		# 'file_cache_dir' => '/tmp/templatecache',
 		# 'debug' => 1,
 	);
 
@@ -707,7 +706,7 @@ sub loglevel_select_html
 		return "";
 	}
 	if (!$plugin->{'PLUGINDB_LOGLEVELS_ENABLED'}) {
-		Carp::carp "loglevel_select_html called, but CUSTOM_LOGLEVELS not enabled in plugin.cfg (plugin " . $pluginfolder . ")";
+		# Carp::carp "loglevel_select_html called, but CUSTOM_LOGLEVELS not enabled in plugin.cfg (plugin " . $pluginfolder . ")";
 		return "";
 	}
 	

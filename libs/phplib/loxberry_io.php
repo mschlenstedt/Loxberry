@@ -1,13 +1,12 @@
 <?php
 
 require_once "loxberry_system.php";
-// require_once "phphtmltemplate_loxberry/template040.php";
 
 $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "2.0.2.2";
+$LBIOVERSION = "2.2.1.4";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -243,32 +242,27 @@ function mshttp_call($msnr, $command)
 	
 	$url = $FullURI . $command;
 	
-	/* SSL options */
-	$stream_context = stream_context_create([ 
-	'https' => [
-		'timeout'			=> 5,
-		'verify_peer'       => false,
-		'verify_peer_name'  => false,
-		'allow_self_signed' => true,
-		'verify_depth'      => 0 
-	], 
-	'http' => [
-		'timeout'			=> 5
-	]]);
-
-	$xmlresp = file_get_contents($url, false, $stream_context);
-	if ($xmlresp === false) {
-		// echo "Errors occured\n";
-		error_log("mshttp_call: An error occured fetching $url.");
+	$ch = curl_init($url); 
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+	$resp = curl_exec($ch);
+	$curl_code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+	curl_close($ch);
+	
+	if($curl_code != 200) {	
+   // echo "Errors occured\n";
+		error_log("mshttp_call: Error fetching $url: HTTP $curl_code");
 		return array (null, 500, null);
 	}
 	
-	preg_match ( '/value\=\"(.*?)\"/' , $xmlresp, $matches );
+	preg_match ( '/value\=\"(.*?)\"/' , $resp, $matches );
 	$value = $matches[1];
-	preg_match ( '/Code\=\"(.*?)\"/' , $xmlresp, $matches );
+	preg_match ( '/Code\=\"(.*?)\"/' , $resp, $matches );
 	$code = $matches[1];
 			
-	return array ($value, $code, $xmlresp);
+	return array ($value, $code, $resp);
 	
 }
 
@@ -277,7 +271,7 @@ function mshttp_get($msnr, $inputs)
 {
 	$ms = LBSystem::get_miniservers();
 	if (!isset($ms[$msnr])) {
-		error_log("Miniserver $msnr not defined\n");
+		error_log("Miniserver $msnr not defined or configuration not finished\n");
 		return;
 	}
 	
@@ -286,12 +280,20 @@ function mshttp_get($msnr, $inputs)
 		$input_was_string = true;
 	}
 	
-	
 	foreach ($inputs as $input) {
 		// echo "Querying param: $input\n";
-		list($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input)); 
-		// echo "Responseval: $respvalue Respcode: $respcode\n";
+		list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) . '/all'); 
+		echo "Responseval: $respvalue Respcode: $respcode\n";
 		if($respcode == 200) {
+			// Workaround for analogue outputs always return 0
+			$respvalue_filtered = filter_var( $respvalue, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION );
+			// echo "respvalue_filtered: $respvalue_filtered\n";
+			if( $respvalue_filtered != "" && $respvalue_filtered == 0) {
+				if( strpos( $rawdata, '<output name="' ) == FALSE ) {
+					# Not found - we require to request the value without /all
+					list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) ); 
+				}
+			}
 			$response[$input] = $respvalue;
 		} else {
 			$response[$input] = null;
@@ -312,7 +314,7 @@ function mshttp_send($msnr, $inputs, $value = null)
 	
 	$ms = LBSystem::get_miniservers();
 	if (!isset($ms[$msnr])) {
-		error_log("Miniserver $msnr not defined\n");
+		error_log("Miniserver $msnr not defined or configuration not finished\n");
 		return;
 	}
 	
@@ -466,10 +468,11 @@ function mqtt_connectiondetails() {
 	$cred = array ();
 	
 	@list($brokerhost, $brokerport) = explode(':', $mqttconf->{'Main'}->{'brokeraddress'}, 2);
-	$brokerport = $brokerport ? $brokerport : 1883;
+	$brokerport = $brokerport ? $brokerport : "1883";
 	$cred['brokeraddress'] = $brokerhost.":".$brokerport;
 	$cred['brokerhost'] = $brokerhost;
 	$cred['brokerport'] = $brokerport;
+	$cred['websocketport'] = !empty($mqttconf->Main->websocketport) ? $mqttconf->Main->websocketport : "9001";
 	$cred['brokeruser'] = $mqttcred->Credentials->brokeruser;
 	$cred['brokerpass'] = $mqttcred->Credentials->brokerpass;
 	$cred['udpinport'] = $mqttconf->Main->udpinport;
@@ -477,8 +480,148 @@ function mqtt_connectiondetails() {
 
 }
 
+function mqtt_connect()
+{
+	global $iomqtt_object;
 
 
+	if( is_object($iomqtt_object) ) {
+		return $iomqtt_object;
+	}
+	
+	$mqttcreds = mqtt_connectiondetails();
+	if( !is_array($mqttcreds) ) 
+	{
+		error_log("MQTT Gateway not installed");
+		return;
+	} else {
+		require_once "phpMQTT/phpMQTT.php";
+		$iomqtt_object = new lbmqtt($mqttcreds);
+		return $iomqtt_object->mqtt;
+	}
+}	
+
+function lbmqtt_createobject()
+{
+	global $lbmqtt_object;
+	$mqttcreds = mqtt_connectiondetails();
+	if( !is_array($mqttcreds) ) 
+	{
+		error_log("MQTT Gateway not installed");
+		return;
+	} else {
+		require_once "phpMQTT/phpMQTT.php";
+		$lbmqtt_object = new lbmqtt($mqttcreds);
+	}
+	
+}
+
+function mqtt_set($topic, $content, $retain=false) 
+{
+	global $lbmqtt_object;
+	
+	if( !is_object($lbmqtt_object) ) {
+		lbmqtt_createobject();
+	}
+	if( !is_object($lbmqtt_object) ) {
+		error_log("mqtt_set-> Error establishing mqtt connection - MQTT Gateway installed?");
+		return;
+	}
+	error_log("mqtt_set-> $topic -> $content (retain " . (!empty($retain) ? "true" : "false") . ")");
+	$lbmqtt_object->set($topic, $content, $retain);
+	return $topic;
+}
+
+function mqtt_publish($topic, $value) {
+	return mqtt_set( $topic, $value, false );
+}
+
+function mqtt_retain($topic, $value) {
+	return mqtt_set( $topic, $value, true );
+}
+
+function mqtt_get(...$args) 
+{
+	global $lbmqtt_object;
+	
+	if( !is_object($lbmqtt_object) ) {
+		lbmqtt_createobject();
+	}
+	if( !is_object($lbmqtt_object) ) {
+		error_log("mqtt_set-> Error establishing mqtt connection - MQTT Gateway installed?");
+		return;
+	}
+	
+	return $lbmqtt_object->get(...$args);
+}
+
+
+//////////////////////
+/* Class lbmqtt     */
+//////////////////////
+class lbmqtt
+{
+	private $topicvalues = array();
+	
+	public function __construct($mqttcreds)
+	{
+		$this->mqttcreds = $mqttcreds;
+		$this->_client_id = uniqid(gethostname()."_LoxBerry");
+		$this->_mqttconn = $this->_connect();
+	}
+
+	private function _connect()
+	{
+		$this->mqtt = new Bluerhinos\phpMQTT($this->mqttcreds['brokerhost'],  $this->mqttcreds['brokerport'],$this->_client_id);
+		if( $this->mqtt->connect(true, NULL, $this->mqttcreds['brokeruser'], $this->mqttcreds['brokerpass'] ) ) {
+			error_log("MQTT ({$this->mqttcreds['brokerhost']}) accessible by \e[94m\$mqtt\e[0m");
+		}
+	}
+	
+	private function _send($topic, $content, $retain=false) 
+	{
+		$this->mqtt->publish( $topic, $content, 0, $retain);
+	}
+	public function set($topic, $content, $retain=false) 
+	{
+		$this->_send($topic, $content, $retain);
+	}
+	public function publish($topic, $content) 
+	{
+		$this->_send($topic, $content, false);
+	}
+	public function retain($topic, $content) 
+	{
+		$this->_send($topic, $content, true);
+	}
+	
+	public function get($topic, $timeout_msecs = 250) {
+		// $topics[$topic] = array("qos" => 0, "function" => '_procmsg');
+		$topics[$topic] = array("qos" => 0, "function" => array( $this, '_procmsg') );
+		$this->mqtt->subscribe( $topics, 0 );
+		
+		$time = microtime(1);
+		unset($this->topicvalues[$topic]);
+		while($this->mqtt->proc(0) and microtime(1) < ($time+$timeout_msecs/1000) ) {
+			if( isset($this->topicvalues[$topic]) ) {
+				break;
+			}
+		}
+		if( isset($this->topicvalues[$topic]) ) {
+			return $this->topicvalues[$topic];
+		} else {
+			return null;
+		}
+	}
+	
+	public function _procmsg( $topic, $msg)
+	{
+	// error_log("Reveived $topic: $msg");	
+	$this->topicvalues[$topic] = $msg;
+	return $msg;
+	}
+	
+}
 
 
 ?>

@@ -1,0 +1,311 @@
+<TMPL_IF FORM_SETTINGS>
+
+	<!-- Form SETTINGS -->
+
+	<style>
+		.flex-container {
+			display: flex;
+	 		align-items: center;
+			flex-wrap: wrap;
+			gap: 20px;
+		}
+	</style>
+
+	<form id="configform">
+
+	<div style="text-align: center">
+		<a href="#" id="btn_backupnow" style="width: 70%" onclick="backupnow(); return false;" class="ui-btn ui-btn-inline ui-corner-all"><TMPL_VAR BACKUP.BUTTON_BACKUPNOW></a>
+		<a href="#" id="btn_logfile" style="width: 20%" onclick="openlastlog(); return false;" class="ui-btn ui-btn-inline ui-corner-all"><TMPL_VAR BACKUP.BUTTON_LOGFILE></a>
+		<input type="hidden" name="lastlog" id="lastlog" value="">
+	</div>
+	
+	<br>
+
+	<p>
+	<i><TMPL_VAR BACKUP.HINT_INTRODUCTION></i>
+	</p>
+
+	<br>
+
+	<div class="wide"><TMPL_VAR BACKUP.LABEL_STORAGELOCATION></div>
+	<br>
+	<TMPL_VAR STORAGES_HTML>
+
+	<br>
+
+	<div style="display:flex;">
+		<div style="width:95%">
+			<div data-role="fieldcontain" class="ui-field-contain">
+				<label for="archive"><TMPL_VAR BACKUP.LABEL_ARCHIVE></label>
+				<select name="archive" id="archive" data-mini="true">
+					<option value="1"><TMPL_VAR BACKUP.LABEL_ONEBACKUP></option>
+					<option value="2"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 2 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+					<option value="3"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 3 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+					<option value="4"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 4 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+					<option value="5"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 5 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+					<option value="6"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 6 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+					<option value="7"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 7 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+					<option value="8"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 8 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+					<option value="9"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 9 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+					<option value="10"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 10 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
+				</select>
+			</div>
+		</div>
+	</div>
+
+	<br><br>
+
+	<div class="wide"><TMPL_VAR BACKUP.LABEL_SCHEDULE></div>
+
+	<br>
+
+	<div style="display:flex;">
+		<div style="width:95%">
+			<div data-role="fieldcontain" class="ui-field-contain">
+				<label for="scheduleactive"><TMPL_VAR BACKUP.LABEL_ACTIVATE></label>
+				<input type="checkbox" id="scheduleactive" data-role="flipswitch" data-mini="true">
+			</div>
+		</div>
+	</div>
+
+	<br>
+
+	<div style="display:flex;">
+		<div style="width: 95%">
+			<div data-role="fieldcontain" class="ui-field-contain">
+				<label for="wochentag"><TMPL_VAR BACKUP.LABEL_TIME></label>
+				<table border=0>
+				<tr>
+					<td style="width: 28em">
+					<fieldset id="wochentag" data-role="controlgroup" data-type="horizontal" data-mini="true">
+						<input type="checkbox" name="mon" id="mon">
+						<label for="mon"><TMPL_VAR BACKUP.LABEL_MONDAY></label>
+						<input type="checkbox" name="tue" id="tue">
+						<label for="tue"><TMPL_VAR BACKUP.LABEL_TUESDAY></label>
+						<input type="checkbox" name="wed" id="wed">
+						<label for="wed"><TMPL_VAR BACKUP.LABEL_WEDNESDAY></label>
+						<input type="checkbox" name="thu" id="thu">
+						<label for="thu"><TMPL_VAR BACKUP.LABEL_THURSDAY></label>
+						<input type="checkbox" name="fre" id="fre">
+						<label for="fre"><TMPL_VAR BACKUP.LABEL_FRIDAY></label>
+						<input type="checkbox" name="sat" id="sat">
+						<label for="sat"><TMPL_VAR BACKUP.LABEL_SATURDAY></label>
+						<input type="checkbox" name="sun" id="sun">
+						<label for="sun"><TMPL_VAR BACKUP.LABEL_SUNDAY></label>
+					</fieldset>
+					</td>
+					<td style="width: 5em">
+					<input type="time" data-clear-btn="false" name="timef" id="timef" value="" data-mini="true">
+					</td>
+				</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<br>
+
+	<div style="display:flex;">
+		<div style="width: 95%">
+			<div data-role="fieldcontain" class="ui-field-contain">
+				<label for="repeat"><TMPL_VAR BACKUP.LABEL_REPEAT></label>
+				<select name="repeat" id="repeat" data-mini="true">
+					<option value="1"><TMPL_VAR BACKUP.LABEL_ONEWEEK></option>
+					<option value="2"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 2. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+					<option value="3"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 3. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+					<option value="4"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 4. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+					<option value="5"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 5. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+					<option value="6"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 6. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+					<option value="7"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 7. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+					<option value="8"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 8. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+				</select>
+			</div>
+		</div>
+	</div>
+
+	<br><br><br>
+
+	<div style="text-align: center">
+		<a href="/admin/system/index.cgi?form=system" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all"><TMPL_VAR "COMMON.BUTTON_CANCEL"></a>
+		<a href="#" onclick="saveForm(); return false;" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-check ui-corner-all"><TMPL_VAR "COMMON.BUTTON_SAVE"></a>
+	</div>
+
+	<br>
+
+	<div style="text-align: center">
+		<span id="savinghint">&nbsp;</span>
+	</div>
+
+	</form>
+
+	<br>
+
+	<script>
+		// Listen to input or change events to save form
+		// Might want to throttle your callback here
+		//$('#configform :input').on('change', saveForm);
+
+		// Load config and defaults
+		$(function() {
+			//$("#configform").addClass('ui-disabled');
+			$("#btn_logfile").addClass('ui-disabled');
+			backupstatus();
+			getconfig();
+			interval = window.setInterval(function(){ backupstatus(); }, 5000);
+		});
+
+		// Save the form
+		function saveForm() {
+			$("#savinghint").attr("style", "color:blue").html("<TMPL_VAR "COMMON.MSG_PLEASEWAIT">");
+			$.ajax( {
+				url:  './ajax/ajax-backup.cgi',
+				type: 'POST',
+				data: {
+					action: 'saveconfig',
+					storagepath: $("#storagepath").val(),
+					archive: $('#archive').val(),
+					scheduleactive: $('#scheduleactive').prop('checked'),
+					mon: $('#mon').prop('checked'),
+					tue: $('#tue').prop('checked'),
+					wed: $('#wed').prop('checked'),
+					thu: $('#thu').prop('checked'),
+					fre: $('#fre').prop('checked'),
+					sat: $('#sat').prop('checked'),
+					sun: $('#sun').prop('checked'),
+					timef: $('#timef').val(),
+					repeat: $('#repeat').val(),
+				}
+			} )
+			.fail(function( data ) {
+				console.log( "saveconfig Fail", data );
+				$("#savinghint").attr("style", "color:red").html("<TMPL_VAR "COMMON.MESSAGE_GENERIC_ERROR">");
+			})
+			.done(function( data ) {
+				console.log( "saveconfig Success", data );
+				$("#savinghint").attr("style", "color:green").html("<TMPL_VAR "COMMON.MSG_SAVEOK">");
+			})
+			.always(function( data ) {
+				console.log( "saveconfig Finished", data );
+			});
+		}
+
+		// Load config
+		function getconfig() {
+			$.ajax({ 
+				url:  './ajax/ajax-backup.cgi',
+				type: 'POST',
+				data: {
+					action: 'getconfig'
+				}
+			})
+			.fail(function( data ) {
+				console.log( "getconfig Fail", data );
+			})
+			.done(function( data ) {
+				console.log( "getconfig Success", data );
+				$("#archive").val(data.Backup.Keep_archives).selectmenu('refresh',true);
+				$("#repeat").val(data.Backup.Schedule.Repeat).selectmenu('refresh',true);
+				$("#timef").val(data.Backup.Schedule.Time);
+				$("#scheduleactive").prop( "checked", JSON.parse(data.Backup.Schedule.Active) ).flipswitch('refresh');
+				$("#mon").prop( "checked", JSON.parse(data.Backup.Schedule.Mon) ).checkboxradio('refresh');
+				$("#tue").prop( "checked", JSON.parse(data.Backup.Schedule.Tue) ).checkboxradio('refresh');
+				$("#wed").prop( "checked", JSON.parse(data.Backup.Schedule.Wed) ).checkboxradio('refresh');
+				$("#thu").prop( "checked", JSON.parse(data.Backup.Schedule.Thu) ).checkboxradio('refresh');
+				$("#fre").prop( "checked", JSON.parse(data.Backup.Schedule.Fre) ).checkboxradio('refresh');
+				$("#sat").prop( "checked", JSON.parse(data.Backup.Schedule.Sat) ).checkboxradio('refresh');
+				$("#sun").prop( "checked", JSON.parse(data.Backup.Schedule.Sun) ).checkboxradio('refresh');
+				refresh_storage_storagepath(data.Backup.Storagepath);
+				//$("#configform").removeClass('ui-disabled');
+			});
+		}
+
+		// Start manual backup
+		function backupnow() {
+			$("#btn_backupnow").css('background-color', 'rgba(230, 230, 230, 1)');
+			$("#btn_backupnow").addClass('ui-disabled');
+			$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_RUNNING>');
+			$.ajax({ 
+				url:  './ajax/ajax-backup.cgi',
+				type: 'POST',
+				data: {
+					action: 'startbackup',
+					storagepath: $("#storagepath").val(),
+				}
+			})
+			.fail(function( data ) {
+				console.log( "backupnow Fail", data );
+				$("#btn_logfile").removeClass('ui-disabled');
+				$("#btn_backupnow").removeClass('ui-disabled');
+				$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_FAILED>');
+				$("#btn_backupnow").css('background-color', 'rgba(255, 128, 128, 0.4)');
+			})
+			.done(function( data ) {
+				console.log( "backupnow Success", data );
+				backupstatus();
+				$("#btn_logfile").removeClass('ui-disabled');
+			});
+		}
+
+		// Open current / last logfile
+		function openlastlog() {
+			logfile = $("#lastlog").val();
+			window.open('/admin/system/tools/logfile.cgi?logfile=' + logfile + '&header=html&format=template', '_blank');
+		}
+
+		// Backup status
+		function backupstatus() {
+			$.ajax({ 
+				url:  './ajax/ajax-backup.cgi',
+				type: 'POST',
+				data: {
+					action: 'status'
+				}
+			})
+			.fail(function( data ) {
+				console.log( "status Fail", data );
+			})
+			.done(function( data ) {
+				console.log( "status Success", data );
+				if (data.logfile) {
+					$("#lastlog").val(data.logfile);
+				};
+				if (data.notrunning * 1 == 0) {
+					$("#btn_logfile").removeClass('ui-disabled');
+					$("#btn_backupnow").addClass('ui-disabled');
+					$("#btn_backupnow").css('background-color', 'rgba(230, 230, 230, 1)');
+					$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_RUNNING>');
+				} else if (data.notrunning * 1 == 1 && $("#btn_backupnow").hasClass("ui-disabled") && data.logstatus) {
+					if (data.logstatus * 1 < '5') { // Convert to number
+						$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_FAILED>');
+						$("#btn_backupnow").css('background-color', 'rgba(255, 128, 128, 0.4)');
+					} else {
+						$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_OK>');
+						$("#btn_backupnow").css('background-color', 'rgba(67, 236, 48, 0.4)');
+					}
+					$("#btn_logfile").removeClass('ui-disabled');
+					$("#btn_backupnow").removeClass('ui-disabled');
+				} else if (data.notrunning * 1 == 1 && $("#btn_backupnow").hasClass("ui-disabled") && !data.logstatus) {
+					$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>');
+					$("#btn_backupnow").css('background-color', 'rgba(230, 230, 230, 1)');
+					$("#btn_logfile").removeClass('ui-disabled');
+					$("#btn_backupnow").removeClass('ui-disabled');
+				}
+			});
+		}
+
+	</script>
+
+	<!-- /Form SETTINGS -->
+
+
+</TMPL_IF>
+
+<TMPL_IF FORM_LOGS>
+	<!-- Form LOGS -->
+
+	<div class="wide">Logfiles</div>
+		<TMPL_VAR loglist_html>
+	</div>
+	
+	<!-- /Form LOGS -->
+</TMPL_IF>

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2018 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2018-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@
 # Modules
 ##########################################################################
 use LoxBerry::System;
+# use LoxBerry::System::General;
 use LoxBerry::Storage;
 use LoxBerry::Web;
 use LoxBerry::Log;
 print STDERR "Execute netshares.cgi\n#####################\n";
-use Config::Simple;
+# use Config::Simple;
 use warnings;
 use strict;
 
@@ -34,7 +35,6 @@ use strict;
 my $helpurl = "https://www.loxwiki.eu/x/6YgKAw";
 my $helptemplate = "help_netshares.html";
 
-our $cfg;
 our $phrase;
 our $namef;
 our $value;
@@ -52,9 +52,10 @@ our $param_a="";
 ##########################################################################
 
 # Version of this script
-my $version = "1.5.0.1";
+my $version = "2.0.2.1";
 
-$cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
+# my $jsonobj = LoxBerry::System::General->new();
+# our $cfg = $jsonobj->open();
 
 ##########################################################################
 # Language Settings
@@ -74,7 +75,7 @@ my $maintemplate = HTML::Template->new(
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
+#		associate => $jsonobj,
 		%htmltemplate_options,
 		# debug => 1,
 		);
@@ -218,18 +219,18 @@ if ( !$param_a && !$cgi->param("saveformdata") ) {
 	
 	# Get SMB version of SMB servers
 	my %smbvers;
-		foreach my $share ( @netshares ) {
-			next if ( $share->{NETSHARE_TYPE} ne "smb" );
-			if ( defined $smbvers{$share->{NETSHARE_SERVER}} ) {
-				$share->{NETSHARE_TYPE} = $smbvers{$share->{NETSHARE_SERVER}};
-				next;
-			}
-			my ($exitcode, $output) = execute( "smbclient -L '$share->{NETSHARE_SERVER}' -d 4 -N 2>&1" );
-			$output =~ /negotiated dialect\[(\w*?)\]/;
-			$share->{NETSHARE_TYPE} = $1 if($1);
-			$smbvers{$share->{NETSHARE_SERVER}} = $1;
+	foreach my $share ( @netshares ) {
+		next if ( $share->{NETSHARE_TYPE} ne "smb" );
+		if ( defined $smbvers{$share->{NETSHARE_SERVER}} ) {
+			$share->{NETSHARE_DIALECT} = $smbvers{$share->{NETSHARE_SERVER}};
+			next;
 		}
-		
+		my ($exitcode, $output) = execute( "smbclient -L '$share->{NETSHARE_SERVER}' -d 4 -N 2>&1" );
+		$output =~ /negotiated dialect\[(\w*?)\]/;
+		$share->{NETSHARE_DIALECT} = $1 if($1);
+		$smbvers{$share->{NETSHARE_SERVER}} = $1;
+	}
+	
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param("NETSHARES", \@netshares);
 	$maintemplate->param("NETSERVERS", \@netservers);

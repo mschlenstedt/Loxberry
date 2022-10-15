@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017 CF for LoxBerry, christiantf@gmx.at
+# Copyright 2017-2020 CF for LoxBerry, christiantf@gmx.at
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@
 ##########################################################################
 
 use LoxBerry::System;
+use LoxBerry::JSON;
 use LoxBerry::Web;
+use LoxBerry::System::General;
+
 print STDERR "Execute myloxberry.cgi\n######################\n";
 
 use CGI;
@@ -36,18 +39,16 @@ my $helptemplate = "help_myloxberry.html";
 my $template_title;
 my $error;
 
-my $cfg;
-
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.4.2.3";
-
+my $version = "2.0.2.4";
 my $sversion = LoxBerry::System::lbversion();
+my $jsonobj = LoxBerry::System::General->new();
+my $cfg = $jsonobj->open();
 
-$cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
 #########################################################################
 # Parameter
 #########################################################################
@@ -59,9 +60,9 @@ $cgi->import_names('R');
 $load = $R::load if $R::load;
 
 # Set default if not available
-if (!$cfg->param("BASE.SENDSTATISTIC")) {
-	$cfg->param("BASE.SENDSTATISTIC", "on");
-	$cfg->save();
+if (!$cfg->{Base}->{Sendstatistic}) {
+	$cfg->{Base}->{Sendstatistic} ="on";
+	$jsonobj->write();
 }
 
 ##########################################################################
@@ -80,7 +81,7 @@ our $maintemplate = HTML::Template->new(
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
-				associate => $cfg,
+				# associate => $cfg,
 				#debug => 1,
 				#stack_debug => 1,
 				);
@@ -140,6 +141,8 @@ sub form {
 
 	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
+	# Language Selector
+	# 
 	my @values = LoxBerry::Web::iso_languages(1, 'values');
 	my %labels = LoxBerry::Web::iso_languages(1, 'labels');
 	my $langselector_popup = $cgi->popup_menu( 
@@ -152,12 +155,62 @@ sub form {
 		);
 	$maintemplate->param('LANGSELECTOR', $langselector_popup);
 	
+	# Country selector
+	#
+	my $countryfile = "$lbstemplatedir/countries/" . $lang . "/world.json";
+	if( ! -e $countryfile ) {
+		$countryfile = "$lbstemplatedir/countries/en/world.json";
+	}
+	my $countryobj = LoxBerry::JSON->new();
+	my $countrydata = $countryobj->open( filename => $countryfile, readonly => 1 );
+	my @countries;
+	my %countrylabels;
+	
+	push @countries, 'undef';
+	$countrylabels{ 'undef' } = $SL{'MYLOXBERRY.DROPDOWN_SELECTCOUNTRY'}.'...';
+	
+	foreach( sort {$a->{alpha2} cmp $b->{alpha2}} @$countrydata ) {
+		push @countries, $_->{alpha2};
+		$countrylabels{ $_->{alpha2} } = uc($_->{alpha2}). ' ' . $_->{name}  ;
+	}
+	
+	my $countrydefault;
+	if( $cfg->{Base}->{Country} eq "" ) {
+		if( grep( /^$lang$/, @countries ) ) {
+			$countrydefault = $lang;
+		} else {
+			$countrydefault = "de";
+		}
+		$cfg->{Base}->{Country} = $countrydefault;
+		$jsonobj->write();
+	} else {
+		$countrydefault = $cfg->{Base}->{Country};
+	}
+	
+	my $countryselector_popup = $cgi->popup_menu( 
+			-name => 'countryselector',
+			id => 'countryselector',
+			-labels => \%countrylabels,
+			#-attributes => \%labels,
+			-values => \@countries,
+			-default => $countrydefault,
+		);
+	$maintemplate->param('COUNTRYSELECTOR', $countryselector_popup);
+	
+	
+	
+	
+	
+	
+	
 	our $sendstatistic_checkbox = $cgi->checkbox( -name => 'sendstatistic',
-			  -checked => is_enabled($cfg->param("BASE.SENDSTATISTIC")),
+			  -checked => is_enabled($cfg->{Base}->{Sendstatistic}),
 			  -label => $SL{'MYLOXBERRY.LABEL_SENDSTATISTIC'}
 	);
 	$maintemplate->param('SENDSTATISTIC_CHECKBOX', $sendstatistic_checkbox);
-		
+	
+	$maintemplate->param('NETWORK.FRIENDLYNAME', $cfg->{Network}->{Friendlyname});
+	
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();
@@ -183,14 +236,14 @@ sub save
 	$maintemplate->param("SELFURL", $ENV{REQUEST_URI});
 	$maintemplate->param("NEXTURL", "/admin/system/index.cgi?form=system");
 
-	if ($R::lbfriendlyname ne $cfg->param("NETWORK.FRIENDLYNAME")) {
+	if ($R::lbfriendlyname ne $cfg->{Network}->{Friendlyname}) {
 		$friendlyname_changed = 1;
 	}
-	$cfg->param("NETWORK.FRIENDLYNAME", $R::lbfriendlyname);
+	$cfg->{Network}->{Friendlyname} = $R::lbfriendlyname;
 	$R::sendstatistic if (0);
 	my $sendstatistic = is_enabled($R::sendstatistic) ? "on" : "off";
-	$cfg->param("BASE.SENDSTATISTIC", $sendstatistic);
-	$cfg->save();
+	$cfg->{Base}->{Sendstatistic} = $sendstatistic;
+	$jsonobj->write();
 	
 	if ($friendlyname_changed)
 	{ 
@@ -210,9 +263,7 @@ sub save
 	LoxBerry::Web::foot();
 	exit;
 	
-	
 }
-
 
 #####################################################
 # Error

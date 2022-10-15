@@ -11,7 +11,8 @@ print "#1 Test with non-existant file\n";
 print "   Expected result: File with content {}\n";
 unlink "/tmp/json_non-existant.json";
 my $jsonobj = LoxBerry::JSON->new();
-$jsonobj->open(filename => "/tmp/json_non-existant.json");
+my $json = $jsonobj->open(filename => "/tmp/json_non-existant.json");
+$json->{test} = "Funny";
 $jsonobj->write();
 
 print "---------------------------------------------\n";
@@ -20,7 +21,8 @@ print "   Expected result: File with content {} ?\n";
 unlink "/tmp/json_empty.json";
 `touch /tmp/json_empty.json`;
 my $jsonobj = LoxBerry::JSON->new();
-$jsonobj->open(filename => "/tmp/json_empty.json");
+my $json = $jsonobj->open(filename => "/tmp/json_empty.json");
+$json->{test} = "Funny2";
 $jsonobj->write();
 
 

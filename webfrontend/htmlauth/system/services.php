@@ -1,7 +1,6 @@
 <?php
 
-
-# Copyright 2017 Svethi for LoxBerry, info@sd-thierfelder.de
+# Copyright 2017-2020 Svethi for LoxBerry, info@sd-thierfelder.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +21,7 @@
 
 require_once "loxberry_web.php";
 require_once "loxberry_system.php";
-require_once "Config/Lite.php";
+require_once "loxberry_json.php";
 
 ##########################################################################
 # Variables
@@ -39,22 +38,11 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "2.0.0.4";
+$version = "2.0.2.2";
 
 $sversion = LBSystem::lbversion();
 
-//$cfg	  = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
-//$cfg->setQuoteStrings(False);
-
-#########################################################################
-# Parameter
-#########################################################################
-
-# Set default if not available
-//if (!$cfg->has("SSDP","DISABLED")) {
-//	$cfg->set("SSDP","DISABLED", 0);
-//	$cfg->save();
-//}
+$cfg = new LBJSON(LBSCONFIGDIR."/general.json");
 
 ##########################################################################
 # Language Settings
@@ -109,20 +97,16 @@ function form() {
 	global $template_title;
 	global $helplink;
 	global $helptemplate;
-	
-	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
-	$cfg->setQuoteStrings(False);
-	
+	global $cfg;
 	
 	/* SSDP */
-	
-	//set default if doesn't exist
-	if (!$cfg->has("SSDP","DISABLED")) {
-		$cfg->set("SSDP","DISABLED", 0);
-		$cfg->save();
+	if( empty($cfg->Ssdp->Disabled) ) {
+		$cfg->Ssdp->Disabled = false;
+		$cfg->write();
+		recreate_generalcfg();
 	}
-
-	if ($cfg->getBool('SSDP','DISABLED',false)==false) {
+	
+	if ( is_disabled( $cfg->Ssdp->Disabled ) ) {
 		$checkedssdp = "checked=\"checked\"";
 	} else {
 		$checkedssdp = "";
@@ -158,6 +142,9 @@ function form() {
 	
 	$navbar[1]['Name'] = $SL['SERVICES.TITLE_PAGE_WATCHDOG'];
 	$navbar[1]['URL'] = 'services_watchdog.cgi';
+	
+	$navbar[4]['Name'] = $SL['HEADER.PANEL_TIMESERVER'];
+	$navbar[4]['URL'] = 'services_timeserver.cgi';
 	
 	$navbar[5]['Name'] = "Samba (SMB)";
 	$navbar[5]['URL'] = 'services_samba.cgi';
@@ -294,7 +281,7 @@ function form() {
 		<tr>
 			<td>
 			<label for="webport"><?=$SL['SERVICES.LABEL_WEBPORT'];?></label>
-			<input placeholder="<?=$SL['SERVICES.HINT_INNER_WEBPORT'];?>" id="webport" name="webport" type="text" style="min-width:15em" class="textfield" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_PORT'];?>" data-validation-rule="special:port" value="<?=$cfg['WEBSERVER']['PORT'];?>">
+			<input placeholder="<?=$SL['SERVICES.HINT_INNER_WEBPORT'];?>" id="webport" name="webport" type="text" style="min-width:15em" class="textfield" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_PORT'];?>" data-validation-rule="special:port" value="<?=$cfg->Webserver->Port;?>">
 			<script>
 				$(document).ready( function ()
 				{
@@ -348,15 +335,12 @@ function save()
 	global $template_title;
 	global $helplink;
 	global $helptemplate;
+	global $cfg;
 	
 	$ssdpstate_changed;
 	$webserver_changed;
 
-	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
-	$cfg->setQuoteStrings(False);
-	
 	/* SSDP */
-	
 	if (isset($_POST['ssdpenabled'])) {
 		if ($_POST['ssdpenabled'] === "enabled") {
 			$ssdpoff = false;
@@ -445,9 +429,9 @@ function save()
 			$tmp = exec("netstat -tnap | egrep ':".$_POST['webport']." .*LISTEN'");
 			if ( $tmp === "" ) {
 				$webport = $_POST['webport'];
-				if ($webport != $cfg['WEBSERVER']['PORT']) {
+				if ( $webport != $cfg->Webserver->Port ) {
 					$webserver_changed = True;
-					$weboldport = $cfg['WEBSERVER']['PORT'];
+					$weboldport = $cfg->Webserver->Port;
 				}
 			} else {
 				$webport = 'inuse';
@@ -466,13 +450,14 @@ function save()
 		$returnurl="/admin/system/services.php?load=1";
 	}
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
-	if (isset($ssdpoff) && $ssdpoff != $cfg->getBool('SSDP','DISABLED',false)) {
+	if ( isset($ssdpoff) && $ssdpoff != is_disabled( $cfg->Ssdp->Disabled ) ) {
 		$ssdpstate_changed = 1;
 	}
 	
 	if (isset($ssdpoff)){
-		$cfg->set("SSDP","DISABLED", $ssdpoff);
-		$cfg->save();
+		$cfg->Ssdp->Disabled = $ssdpoff;
+		$cfg->write();
+		recreate_generalcfg();
 		$headermsg = $SL['COMMON.MSG_ALLOK'];
 		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
 		$waitmsg = "";
@@ -484,9 +469,10 @@ function save()
 			$waitmsg = "";
 			$href=$returnurl;
 		} else {
-			$cfg->set("WEBSERVER","PORT",$webport);
-			$cfg->set("WEBSERVER","OLDPORT",$weboldport);
-			$cfg->save();
+			$cfg->Webserver->Port = $webport;
+			$cfg->Webserver->Oldport = $weboldport;
+			$cfg->write();
+			recreate_generalcfg();
 			$headermsg = $SL['SERVICES.MSG_STEP1'];
 			$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
 			$waitmsg = $SL['SERVICES.WAITWEBSERVER1'];
@@ -597,16 +583,14 @@ function check_webport() {
 	global $template_title;
 	global $helplink;
 	global $helptemplate;
-
-	$cfg      = new Config_Lite(LBSCONFIGDIR."/general.cfg",LOCK_EX,INI_SCANNER_RAW);
-	$cfg->setQuoteStrings(False);
+	global $cfg;
 
 	// Print Template
 	$headermsg = $SL['SERVICES.MSG_STEP2'];
 	$resmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
 	$waitmsg = $SL['SERVICES.WEBSERVERCLEANING'];
-	$webport = $cfg['WEBSERVER']['PORT'];
-	$weboldport = $cfg['WEBSERVER']['OLDPORT'];
+	$webport = $cfg->Webserver->Port;
+	$weboldport = $cfg->Webserver->Oldport;
 
 	header('Content-Type: application/json');
 	echo "{ \"ok\": \"-1\" }";
@@ -669,5 +653,15 @@ function error() {
 	exit;
 
 }
+
+#####################################################
+# Recreate general.cfg from general.json
+#####################################################
+function recreate_generalcfg() 
+	{
+		// If the general.json is changed, we require to manually 
+		// trigger the recreation of the new general.cfg
+		exec( LBSHTMLAUTHDIR."/tools/ajax-config-handler.cgi action=recreate-generalcfg");
+	}
 
 ?>

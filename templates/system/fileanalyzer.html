@@ -1,0 +1,211 @@
+<style>
+.flexitem {
+	padding: 3px;
+}
+.procid {
+	font-style: italic;
+	font-size: 75%;
+	color: darkgray;
+}
+.processcontainer {
+	border: solid gray 1px;
+	padding: 3px;
+	
+}
+.filename {
+	font-size: 85%;
+}
+
+@bw: 3px;
+
+
+.filetable {
+  display: flex;
+  flex-wrap: wrap;
+  /* margin: 0 0 3em 0; */
+  padding: 0;
+}
+.filetable-cell {
+  box-sizing: border-box;
+  flex-grow: 1;
+  width: 100%;  
+  /* padding: 0.8em 1.2em; */
+  overflow: hidden; 
+  list-style: none;
+  border: solid @bw white;
+  /* background: fade(slategrey,20%); */
+  > h1, > h2, > h3, > h4, > h5, > h6 { margin: 0; }
+}
+
+/*
+.Rtable--2cols > .Rtable-cell  { width: 50%; }
+.Rtable--3cols > .Rtable-cell  { width: 33.33%; }
+.Rtable--4cols > .Rtable-cell  { width: 25%; }
+.Rtable--5cols > .Rtable-cell  { width: 20%; }
+.Rtable--6cols > .Rtable-cell  { width: 16.6%; }
+*/
+
+.vspacer {
+	height: 30px;
+}
+
+</style>
+
+
+<div id="VueContainer" style="vertical-align: middle;">
+
+	<div class="wide">
+		RAM Disk Deleted open files
+	</div>
+	
+	<div data-role="fieldcontain">
+		<label for="minSize" style="color:darkgray;font-size:80%">Only show files larger than (MB)</label>
+		<input name="minSize" v-model="lsof_minsize" placeholder="Min Size" @update:lsof_minsize="lsof_minsize = $event" data-mini="true" />
+	</div>
+	
+	<div v-show="loadingMessage">Loading...</div>
+	
+	<div v-for="process in lsof_result">
+		<div class="processcontainer">
+			<div style="display:flex; background-color:#fbfbfb;">
+				<div class="flexitem commandname">{{ process["command name"] }}</div>
+				<div class="flexitem procid">PID {{ process["process id"] }}</div>
+			</div>
+			<div v-for="file in process.files" class="filename">
+				<div v-if="file['file size']>=lsof_minsize*1024*1024">
+					<div class="filetable">
+						<div class="filetable-cell" style="width:90%">{{ file["file name"] }}</div>
+						<div class="filetable-cell" style="width:10%;text-align:end;">{{ Math.round(file["file size"]/1024/1024*1000)/1000 }} MB</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="vspacer"></div>
+	
+	<div class="wide">
+		RAM Disk Largest files
+	</div>
+	
+	<div v-for="largefile in large_files">
+		<div class="filetable filename">
+			<div class="filetable-cell" style="width:90%">{{ largefile.name }}</div>
+			<div class="filetable-cell" style="width:10%;text-align:end;">{{ Math.round(largefile.size/1024/1024*10)/10 }} MB</div>
+		</div>
+	</div>
+	<div class="vspacer"></div>
+	
+	<div class="wide">
+		NoDev devices
+	</div>
+	
+	<div v-for="mount in nodev_mounts">
+		<div class="filetable filename">
+		{{ mount }}
+		</div>
+	</div>
+
+</div>
+
+
+
+<script>
+
+
+
+var container;
+
+$(function() {
+	
+	
+	container = {
+		data() {
+			return {
+				nodev_mounts : [],
+				lsof_result : {},
+				large_files: [],
+				loadingMessage : true,
+				lsof_minsize : 0
+			}
+		},
+		
+		methods: {
+		
+			getFileanalyzerData() {
+				fetch('ajax-fileanalyzer.cgi?action=getopenfiledata')
+					.then( response => response.json() )
+					.then( filedata => JSON.parse(filedata.filedata) )
+					.then( data => { 
+						console.log("RAW", data);
+						this.nodev_mounts = data?.nodev_mounts ? data?.nodev_mounts : [];
+						this.lsof_result = data?.lsof_result ? data?.lsof_result : {};
+						this.prepareData();
+						this.loadingMessage = false;
+					});
+				fetch('ajax-fileanalyzer.cgi?action=getlargefiledata')
+					.then( response => response.json() )
+					.then( filedata => JSON.parse(filedata.filedata) )
+					.then( data => {
+						console.log("RAW", data);
+						this.large_files = data?.large_files ? data.large_files : [];
+					});
+				
+					
+			},
+			
+			prepareData() {
+				// Define processes that should be filtered out of the list
+				const filterProcesses = [ 'lsof', 'ajax-fileanalyz' ];
+				
+				// Iterate processes
+				for (var key in this.lsof_result) {
+					var obj = this.lsof_result[key];
+					if( obj == null) {
+						delete this.lsof_result[key];
+						continue;
+					}
+					
+					// Processes may not contain a "command name"
+					if( "command name" in obj) {
+						var included = filterProcesses.includes( obj["command name"] );
+						// If the command name is in the filterProcesses list, delete the process
+						if(included) 
+							delete this.lsof_result[key];
+					}
+					
+					// Filter all files that are not deleted
+					obj.files = obj.files.filter( file => file["file name"].endsWith("(deleted)") );
+					
+					// If this process contains no deleted files at all, delete the whole process
+					if( obj.files.length == 0 ) {
+						delete this.lsof_result[key];
+					}
+				
+				}
+				
+				// This is the final lsof result to show
+				console.log("Prepared lsof result", this.lsof_result);
+				
+				
+				
+			}
+		},
+		
+		mounted() { 
+			this.getFileanalyzerData();
+			
+		}
+	};
+	
+	
+	
+	Vue.createApp(container).mount('#VueContainer');
+	
+
+
+
+});
+
+
+
+</script>

@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "2.0.2.8";
+our $VERSION = "2.4.0.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -32,6 +32,7 @@ our @EXPORT = qw (
 	$lbpbindir
 	
 	lblanguage
+	lbcountry
 	readlanguage
 	lbhostname
 	lbfriendlyname
@@ -161,6 +162,7 @@ our $PLUGINDATABASE = "$lbsdatadir/plugindatabase.json";
 
 # Variables only valid in this module
 my $lang;
+my $country;
 my $cfgwasread;
 my %miniservers;
 my %binaries;
@@ -195,7 +197,7 @@ sub get_miniservers
 	}
 
 	if (!%miniservers) {
-		read_generalcfg();
+		read_generaljson();
 	}
 	
 	# CloudDNS handling
@@ -284,18 +286,32 @@ sub get_miniserver_by_name
 ####### Get Binaries #######
 sub get_binaries
 {
-
-	if ($LoxBerry::System::binaries) {
-		# print STDERR "Returning existing hashref\n";
-		return $LoxBerry::System::binaries;
-	} 
-
-	if (read_generalcfg()) {
-			# print STDERR "Reading config and returning hashref\n";
-			#%LoxBerry::System::binaries ? print STDERR "Hash is defined\n" : print STDERR "Hash NOT defined\n";
-			return $LoxBerry::System::binaries;
-	}
-	return undef;
+	my %bins = (
+		FIND		=> '/usr/bin/find',
+		GREP		=> '/bin/grep',
+		TAR			=> '/bin/tar',
+		NTPDATE		=> '/usr/sbin/ntpdate',
+		UNZIP		=> '/usr/bin/unzip',
+		MAIL		=> '/usr/bin/mailx',
+		BASH		=> '/bin/bash',
+		APT			=> '/usr/bin/apt-get',
+		ZIP			=> '/usr/bin/zip',
+		GZIP		=> '/bin/gzip',
+		CHOWN		=> '/bin/chown',
+		SUDO		=> '/usr/bin/sudo',
+		DPKG		=> '/usr/bin/dpkg',
+		REBOOT		=> '/sbin/reboot',
+		WGET		=> '/usr/bin/wget',
+		CURL		=> '/usr/bin/curl',
+		CHMOD		=> '/bin/chmod',
+		SENDMAIL	=> '/usr/sbin/sendmail',
+		AWK			=> '/usr/bin/awk',
+		DOS2UNIX	=> '/usr/bin/dos2unix',
+		BZIP2		=> '/bin/bzip2',
+		DATE		=> '/bin/date',
+		POWEROFF	=> '/sbin/poweroff'
+	);
+	return \%bins;
 }
 
 ##################################################################################
@@ -330,7 +346,7 @@ sub pluginloglevel
 	my $query = $queryname ? $queryname : $lbpplugindir;
 	
 	my $plugin = LoxBerry::System::plugindata($query);
-	return $plugin->{PLUGINDB_LOGLEVEL} ? $plugin->{PLUGINDB_LOGLEVEL} : 0;
+	return (defined $plugin and $plugin->{PLUGINDB_LOGLEVEL}) ? $plugin->{PLUGINDB_LOGLEVEL} : 0;
 }
 
 ##################################################################################
@@ -472,7 +488,7 @@ sub lbversion
 	if ($lbversion ne "") {
 		return $lbversion;
 	} 
-	read_generalcfg();
+	read_generaljson();
 	return $lbversion;
 }
 
@@ -484,16 +500,16 @@ sub lbversion
 sub systemloglevel
 {
 	return $sysloglevel if ($sysloglevel);
-	read_generalcfg();
+	read_generaljson();
 	return $sysloglevel if ($sysloglevel);
 	return 6;
 }
 
 ##################################################################
-# Read general.cfg
+# Read general.json
 # This INTERNAL is called from several functions and not exported
 ##################################################################
-sub read_generalcfg
+sub read_generaljson
 {
 	my $miniservercount;
 	
@@ -501,42 +517,51 @@ sub read_generalcfg
 		return 1;
 	}
 	
-	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
-	$cfgwasread = 1;
-	$LoxBerry::System::lang = $cfg->param("BASE.LANG") or Carp::carp ("BASE.LANG is not defined in general.cfg\n");
-	$miniservercount = $cfg->param("BASE.MINISERVERS") or Carp::carp ("BASE.MINISERVERS is 0 or not defined in general.cfg\n");
-	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS"); # or Carp::carp ("BASE.CLOUDDNS not defined in general.cfg\n");
-	$lbtimezone		= $cfg->param("TIMESERVER.ZONE"); # or Carp::carp ("TIMESERVER.ZONE not defined in general.cfg\n");
-	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME"); # or Carp::carp ("NETWORK.FRIENDLYNAME not defined in general.cfg\n");
-	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined in general.cfg\n");
-	$webserverport  = $cfg->param("WEBSERVER.PORT"); # or Carp::carp ("WEBSERVER.PORT not defined in general.cfg\n");
-	$sysloglevel	= $cfg->param("BASE.SYSTEMLOGLEVEL");
-	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
-	# Binaries
-	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
-
-	if (($miniservercount) && ($miniservercount < 1)) {
-		return undef;
+	# my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
+	require JSON;
+	my $cfg;
+	eval {
+		$cfg = JSON::from_json( LoxBerry::System::read_file ( "$lbsconfigdir/general.json" ) );
+	};
+	if($@ or !$cfg) {
+		Carp::croak "Could not read general.json. $@";
 	}
 	
-	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
-		$miniservers{$msnr}{Name} = $cfg->param("MINISERVER$msnr.NAME");
-		$miniservers{$msnr}{IPAddress} = $cfg->param("MINISERVER$msnr.IPADDRESS");
-		$miniservers{$msnr}{Admin} = $cfg->param("MINISERVER$msnr.ADMIN");
-		$miniservers{$msnr}{Pass} = $cfg->param("MINISERVER$msnr.PASS");
-		$miniservers{$msnr}{Credentials} = $miniservers{$msnr}{Admin} . ':' . $miniservers{$msnr}{Pass};
-		$miniservers{$msnr}{Note} = $cfg->param("MINISERVER$msnr.NOTE");
-		$miniservers{$msnr}{Port} = $cfg->param("MINISERVER$msnr.PORT");
-		$miniservers{$msnr}{PortHttps} = $cfg->param("MINISERVER$msnr.PORTHTTPS");
-		$miniservers{$msnr}{PreferHttps} = $cfg->param("MINISERVER$msnr.PREFERHTTPS");
-		$miniservers{$msnr}{UseCloudDNS} = $cfg->param("MINISERVER$msnr.USECLOUDDNS");
-		$miniservers{$msnr}{CloudURLFTPPort} = $cfg->param("MINISERVER$msnr.CLOUDURLFTPPORT");
-		$miniservers{$msnr}{CloudURL} = $cfg->param("MINISERVER$msnr.CLOUDURL");
-		$miniservers{$msnr}{Admin_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Admin});
-		$miniservers{$msnr}{Pass_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Pass});
-		$miniservers{$msnr}{Credentials_RAW} = $miniservers{$msnr}{Admin_RAW} . ':' . $miniservers{$msnr}{Pass_RAW};
-		$miniservers{$msnr}{SecureGateway} = $cfg->param("MINISERVER$msnr.SECUREGATEWAY");
-		$miniservers{$msnr}{EncryptResponse} = $cfg->param("MINISERVER$msnr.ENCRYPTRESPONSE");
+	$cfgwasread = 1;
+	$LoxBerry::System::lang = $cfg->{Base}->{Lang} or Carp::carp ("Base.Lang is not defined in general.json\n");
+	$country = defined $cfg->{Base}->{Country} && $cfg->{Base}->{Country} ne 'undef' ? $cfg->{Base}->{Country} : undef;
+	$clouddnsaddress = $cfg->{Base}->{Clouddnsuri};
+	$sysloglevel	= $cfg->{Base}->{Systemloglevel};
+	$lbversion		= $cfg->{Base}->{Version} or Carp::carp ("BASE.VERSION not defined in general.json\n");
+	$lbfriendlyname = $cfg->{Network}->{Friendlyname};
+	$lbtimezone		= $cfg->{Timeserver}->{Timezone};
+	$webserverport  = $cfg->{Webserver}->{Port};
+	
+	if ( ! defined $cfg->{Miniserver} or keys(%{$cfg->{Miniserver}}) < 1) {
+		return undef;
+	}
+	$miniservercount = 0;
+	# Read Miniservers
+	foreach my $msnr ( sort keys %{$cfg->{Miniserver}} ) {
+		my $ms = $cfg->{Miniserver}->{$msnr};
+		$miniservercount++;
+		$miniservers{$msnr}{Name} = $ms->{Name};
+		$miniservers{$msnr}{IPAddress} = $ms->{Ipaddress};
+		$miniservers{$msnr}{Admin} = $ms->{Admin};
+		$miniservers{$msnr}{Pass} = $ms->{Pass};
+		$miniservers{$msnr}{Credentials} = $ms->{Credentials};
+		$miniservers{$msnr}{Note} = $ms->{Note};
+		$miniservers{$msnr}{Port} = $ms->{Port};
+		$miniservers{$msnr}{PortHttps} = $ms->{Porthttps};
+		$miniservers{$msnr}{PreferHttps} = $ms->{Preferhttps};
+		$miniservers{$msnr}{UseCloudDNS} = $ms->{Useclouddns};
+		$miniservers{$msnr}{CloudURLFTPPort} = $ms->{Cloudurlftpport};
+		$miniservers{$msnr}{CloudURL} = $ms->{Cloudurl};
+		$miniservers{$msnr}{Admin_RAW} = $ms->{Admin_raw};
+		$miniservers{$msnr}{Pass_RAW} = $ms->{Pass_raw};
+		$miniservers{$msnr}{Credentials_RAW} = $ms->{Credentials_raw};
+		$miniservers{$msnr}{SecureGateway} = $ms->{Securegateway};
+		$miniservers{$msnr}{EncryptResponse} = $ms->{Encryptresponse};
 		
 	}
 	return 1;
@@ -647,9 +672,6 @@ sub set_clouddns
 #####################################################
 sub get_ftpport
 {
-	require XML::Simple;
-	require LWP::UserAgent;
-	
 	my ($msnr) = @_;
 	
 	$msnr = defined $msnr ? $msnr : 1;
@@ -666,20 +688,15 @@ sub get_ftpport
 	
 	# If MS hash does not have FTP set, read FTP from Miniserver and save it in FTPPort
 	if (! $miniservers{$msnr}{FTPPort}) {
-		# print STDERR "get_ftpport: Read FTP Port from MS\n";
+		
 		# Get FTP Port from Miniserver
-		my $url = $miniservers{$msnr}{FullURI}.'/dev/cfg/ftp';
-		my $ua = LWP::UserAgent->new;
-		$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
-		$ua->timeout(5);
-		my $response = $ua->get($url);
-		if (!$response->is_success) {
+		require LoxBerry::IO;
+		my ($value, $status) = LoxBerry::IO::mshttp_call(1, '/dev/cfg/ftp');
+		if ($status < 200 or $status >= 300) {
 			Carp::carp("Cannot query FTP port because Loxone Miniserver is not reachable.");
 			return undef;
 		} 
-		my $rawxml = $response->decoded_content();
-		my $xml = XML::Simple::XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
-		$miniservers{$msnr}{FTPPort} = $xml->{value};
+		$miniservers{$msnr}{FTPPort} = $value;
 	}
 	return $miniservers{$msnr}{FTPPort};
 }
@@ -725,12 +742,22 @@ sub lblanguage
 		  return $LoxBerry::System::lang;
 	}
 	# If nothing found, get language from system settings
-	read_generalcfg();
+	read_generaljson();
 	
-	#my  $syscfg = new Config::Simple("$LoxBerry::System::lbhomedir/config/system/general.cfg");
-	#$LoxBerry::System::lang = $syscfg->param("BASE.LANG");
-	print STDERR "\$lang from general.cfg: $LoxBerry::System::lang" if ($DEBUG);
+	print STDERR "\$lang from general.json: $LoxBerry::System::lang" if ($DEBUG);
 	return $LoxBerry::System::lang;
+}
+
+######################################
+# Get users country from general.json
+######################################
+sub lbcountry
+{
+	if ($cfgwasread) {
+		return $country;
+	}
+	read_generaljson();
+	return $country;
 }
 	
 #####################################################
@@ -776,13 +803,11 @@ sub readlanguage
 			my $langfile_foreign = $langfile . "_" . $lang . ".ini";
 			
 			if ( $lang ne 'en' and (-e $langfile_foreign)) {
-				# Config::Simple->import_from($langfile_foreign, \%SL) or Carp::carp(Config::Simple->error());
 				my $cont_foreign = LoxBerry::System::read_file($langfile_foreign);
 				LoxBerry::System::_parse_lang_file($cont_foreign, \%SL);
 				undef $cont_foreign;
 			}
 			
-			# Config::Simple->import_from($langfile_en, \%SL) or Carp::carp(Config::Simple->error());
 			my $cont_en = LoxBerry::System::read_file($langfile_en);
 			LoxBerry::System::_parse_lang_file($cont_en, \%SL);
 			undef $cont_en;
@@ -795,9 +820,6 @@ sub readlanguage
 		}
 		
 		if ($template and $template->isa("HTML::Template")) {
-			#while (my ($name, $value) = each %SL) {
-			#	$template->param("$name" => $value);
-			#}
 			$template->param(%SL);
 		}
 		return %SL;
@@ -817,14 +839,12 @@ sub readlanguage
 			my $langfile_foreign = $langfile . "_" . $lang . ".ini";
 			
 			if ( $lang ne 'en' and (-e $langfile_foreign)) {
-				# Config::Simple->import_from($langfile_foreign, \%L) or Carp::carp(Config::Simple->error());
 				my $cont_foreign = LoxBerry::System::read_file($langfile_foreign);
 				LoxBerry::System::_parse_lang_file($cont_foreign, \%L);
 				undef $cont_foreign;
 			}
 			
 			if (-e $langfile_en) {
-				# Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
 				my $cont_en = LoxBerry::System::read_file($langfile_en);
 				LoxBerry::System::_parse_lang_file($cont_en, \%L);
 				undef $cont_en;
@@ -836,9 +856,6 @@ sub readlanguage
 			}
 		}
 		if ($template and $template->isa("HTML::Template")) {
-			#while (my ($name, $value) = each %L) {
-			#	$template->param("$name" => $value);
-			#}
 			$template->param(%L);
 		}
 		return %L;
@@ -900,7 +917,7 @@ sub lbhostname
 sub lbfriendlyname
 {
 	if (! $cfgwasread) 
-		{ read_generalcfg(); 
+		{ read_generaljson(); 
 	}
 	
 	# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
@@ -914,7 +931,7 @@ sub lbfriendlyname
 sub lbwebserverport
 {
 	if (! $cfgwasread) 
-		{ read_generalcfg(); 
+		{ read_generaljson(); 
 	}
 	if (! $webserverport) {
 		$webserverport = 80;
@@ -1210,43 +1227,62 @@ sub diskspaceinfo
 	my ($folder) = shift;
 	
 	my $output;
-	$output = qx ( df -P "$folder" ) if ($folder);
-	$output = qx ( df -P ) if (!$folder);
-	
-	# my $output = qx ( df -P );
+	$output = qx ( df --output=size,used,avail,pcent "$folder" ) if ($folder);
+	$output = qx ( df --output=size,used,avail,pcent ) if (!$folder);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
 		return undef;
 	}
 	my @outarr = split(/\n/, $output);
+
+	## Workaround for df output issues - get mount points as single values
+	my $output_mp;
+	$output_mp = qx ( df --output=target "$folder" ) if ($folder);
+	$output_mp = qx ( df --output=target ) if (!$folder);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
+		return undef;
+	}
+	my @outarr_mp = split(/\n/, $output_mp);
+
+    ## Workaround for df output issues - get sources as single values
+	my $output_src;
+	$output_src = qx ( df --output=source "$folder" ) if ($folder);
+	$output_src = qx ( df --output=source ) if (!$folder);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
+		return undef;
+	}
+    my @outarr_src = split(/\n/, $output_src);
+
 	my %disklist;
 	
 	my $linenr = 0;
+	my $mp_and_src_index = 1;
 	foreach my $line (@outarr) {
 		my %diskhash;
 		$linenr++;
 		next if ($linenr == 1);
-		
-		# Find first double-blank
-		my $dblblanc = index($line, '  ');
-		my $fs = substr($line, 0, 	$dblblanc);
-		# print STDERR "FS: $fs\n";
-		# Remove fs from line
-		$line = trim(substr($line, $dblblanc));
-		# Remove other blanks
+		my $fs = @outarr_src[$mp_and_src_index];
+		my $mountpoint = @outarr_mp[$mp_and_src_index];
+		# Remove leading spaces from line
+		$line = trim($line);
+		# Replace more than one space by one
 		$line =~ s/ +/ /g;
-		# print STDERR "Line: '$line'\n";
-		my ($size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line, 5);
+		my ($size, $used, $available, $usedpercent) = split (/ /, $line, 4);
 		$diskhash{filesystem} = $fs;
 		$diskhash{size} = $size;
 		$diskhash{used} = $used;
 		$diskhash{available} = $available;
 		$diskhash{usedpercent} = $usedpercent;
 		$diskhash{mountpoint} = $mountpoint;
+		print STDERR "diskspaceinfo: Folder: $folder => filesystem: $diskhash{filesystem}, size: $size, used: $used, available: $available, usedpercent: $usedpercent, mountpoint: $diskhash{mountpoint}\n" if ($DEBUG);
 		return %diskhash if ($folder);
 		$disklist{$mountpoint} = \%diskhash;
-		
+		$mp_and_src_index++;
 	}
 	return %disklist;
 	}
@@ -1302,12 +1338,16 @@ sub lock
 		
 		my $rc_apt;
 		my $rc_dpkg;
+				my $rc_unattended_upgrade;
 		($rc_apt) = LoxBerry::System::execute( 'pgrep apt-get' );
 		($rc_dpkg) = LoxBerry::System::execute( 'pgrep dpkg' );
-		if( $rc_apt eq "0" or $rc_dpkg eq "0") {
+		($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
+
+		if( $rc_apt eq "0" or $rc_dpkg eq "0" or $rc_unattended_upgrade eq "0" ) {
 			$seemsrunning = 'apt-get' if ($rc_apt eq "0");
 			$seemsrunning = 'dpkg' if ($rc_dpkg eq "0");
-		
+			$seemsrunning = 'unattended-upgrade' if ($rc_unattended_upgrade eq "0");
+			
 			if ($p{wait}) {
 				print STDERR "Waiting..." if ($DEBUG);
 				sleep(5);
@@ -1489,11 +1529,27 @@ sub bytes_humanreadable
 sub read_file
 {
 	my ($filename) = @_;
-	local $/=undef;
-	open FILE, $filename or return undef;
-	my $string = <FILE>;
-	close FILE;
+	open(my $fh, '<', $filename) or return undef;
+	flock( $fh, 1 ); # Shared
+	my $string;
+	{
+		local $/;
+		$string = <$fh>;	
+	}
+	close $fh;
 	return $string;
+}
+
+sub write_file
+{
+	my ($filename, $content) = @_;
+	eval {
+		open(my $fh, '>', $filename) or die "Cannot open $filename: $!";
+		flock( $fh, 2 ); # Exclusive
+		print $fh $content;
+		close $fh;
+	};
+	return $@;
 }
 
 # Exec a shell command, return exitcode and output

@@ -8,6 +8,6 @@
    "SMTP" : {
       "ACTIVATE_MAIL" : 0,
       "EMAIL" : "",
-      "ISCONFIGURED" : "0",
+      "ISCONFIGURED" : "0"
    }
 }

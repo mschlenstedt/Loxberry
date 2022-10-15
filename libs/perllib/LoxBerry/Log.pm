@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "2.0.1.1";
+our $VERSION = "2.4.0.1";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -161,6 +161,14 @@ sub new
 		if (! -d $dir) {
 			require File::Path;
 			File::Path::make_path($dir);
+			eval {
+				if(!$self->{loxberry_uid}) {
+					my (undef,undef,$uid,$gid) = getpwnam('loxberry');
+					$self->{loxberry_uid} = $uid;
+					$self->{loxberry_uid} = $gid;
+				}
+				chown $self->{loxberry_uid}, $self->{loxberry_uid}, $dir;
+			};
 		}
 	}
 	
@@ -390,6 +398,13 @@ sub write
 		# Store all warnings, errors, etc. in a string
 		$self->{ATTENTIONMESSAGES} .= "\n" if ($self->{ATTENTIONMESSAGES});
 		$self->{ATTENTIONMESSAGES} .= '<' . $severitylist{$severity} . '> ' . $s;
+		# Truncate ATTENTIONMESSAGES
+		my $strmaxlen = 6000;
+		if( length($self->{ATTENTIONMESSAGES}) > $strmaxlen ) {
+			$self->{ATTENTIONMESSAGES} = substr( $self->{ATTENTIONMESSAGES}, -$strmaxlen+200 );
+			$self->{ATTENTIONMESSAGES} = substr( $self->{ATTENTIONMESSAGES}, index( $self->{ATTENTIONMESSAGES}, "\n" )+1 );
+		}
+		
 	}
 	
 	if ($self->{loglevel} != 0 and $severity <= $self->{loglevel} or $severity < 0) {

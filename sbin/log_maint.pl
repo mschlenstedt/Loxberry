@@ -132,7 +132,7 @@ sub logfiles_cleanup
 			unlink ("$file\.gz") if (-e "$file");
 			qx{yes | $bins->\{GZIP\} --keep --best "$file"};
 			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime(); close($fh);
-			unlink($file);
+			# unlink($file);
 			chown $uid, $gid, "$file\.gz";
 			chmod $mode, "$file\.gz";
 		}	
@@ -273,12 +273,13 @@ sub logfiles_cleanup
 		for my $file (@files){
 			LOGDEB "--> $file will be DELETED.";
 			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " .  currtime(); close($fh);
-			my $delcount = unlink($file);
-			if($delcount) {
-				LOGDEB "$file DELETED.";
-			} else {
-				LOGDEB "$file COULD NOT BE DELETED.";
-			}
+			LOGDEB "$file SHRINKED.";
+			# my $delcount = unlink($file);
+			# if($delcount) {
+				# LOGDEB "$file DELETED.";
+			# } else {
+				# LOGDEB "$file COULD NOT BE DELETED.";
+			# }
 		}	
 	}
 	undef(@emergpaths);

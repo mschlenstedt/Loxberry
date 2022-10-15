@@ -1,7 +1,9 @@
+#!/usr/bin/env php
 <?php
 
 require_once "loxberry_system.php";
- 
+
+echo "LoxBerry is in " . LBSystem::lbcountry() . "\n";
 $ms = LBSystem::get_miniservers();
 if (!is_array($ms))
 {

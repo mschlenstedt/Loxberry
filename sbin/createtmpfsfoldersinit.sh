@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ENVIRONMENT=$(cat /etc/environment)
 export $ENVIRONMENT
@@ -6,8 +6,9 @@ export $ENVIRONMENT
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin:$LBHOMEDOR/bin:$LBHOMEDIR/sbin"
 PIVERS=`$LBHOMEDIR/bin/showpitype`
 MANUALCFG=`jq -r '.Log2ram.Manualconfigured' $LBHOMEDIR/config/system/general.json`
+MEM=`cat /proc/meminfo | awk '/MemTotal:/ { print $2 }'`
 
-if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ]; then
+if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ] || [ "$MANUALCFG" = 'false' ] || [ "$MANUALCFG" = '0' ]; then
 	echo "No manual config found. Using defaults..."
 	RAM_LOG=$LBHOMEDIR/log/ramlog
 	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ] || [ "$PIVERS" = 'type_2' ]; then
@@ -21,6 +22,19 @@ if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ]; then
 		COMP_ALG=lz4
 		LOG_DISK_SIZE=415M
 	fi
+	#
+	# Start Workaround for Pi4 with 8 GB. zram driver does not work here at the moment...
+	# https://github.com/foundObjects/zram-swap/issues/3
+	#
+	if [ "$PIVERS" = 'type_4' ] && [ "$MEM" -gt 4000257 ] ; then
+		SIZE=415M
+		ZL2R=false
+		COMP_ALG=lz4
+		LOG_DISK_SIZE=415M
+	fi
+	#
+	# End: Workaround
+	#
 	JSON=`jq ".Log2ram.Manualconfigured = \"0\"" $LBHOMEDIR/config/system/general.json`
 	JSON=`echo $JSON | jq ".Log2ram.Ramlog = \"$RAM_LOG\""`
 	JSON=`echo $JSON | jq ".Log2ram.Size = \"$SIZE\""`
@@ -44,7 +58,7 @@ createFolders () {
 		rm -rf $RAM_LOG/*
 	fi
 	mkdir -p $RAM_LOG/var/log
-	chown -R daemon:daemon $RAM_LOG/var/log
+	chown -R root:root $RAM_LOG/var/log
 	chmod -R 755 $RAM_LOG/var/log
 	mkdir -p $RAM_LOG/tmp
 	chown -R root:root $RAM_LOG/tmp
@@ -118,6 +132,11 @@ start)
 	cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
 	cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
 
+	echo "Restoring DHCP leases..."
+	if ls $LBHOMEDIR/system/dhcp/*.leases 2>/dev/null 1>&2; then
+		cp -a $LBHOMEDIR/system/dhcp/*.leases /var/lib/dhcp/
+	fi
+
 	# Copy logdb from SD card to RAM disk
 	if [ -e $LBHOMEDIR/log/system/logs_sqlite.dat.bkp ]; then
 	        echo "Copy back Backup of Logs SQLite Database..."
@@ -134,6 +153,10 @@ start)
 		chmod +rw $LBHOMEDIR/log/system_tmpfs/clouddns_cache.json
 	fi
 
+	# Create log folders for all plugins if not existing
+	echo "Create log folders for all installed plugins"
+	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
+
 	exit 0
 ;;
 
@@ -147,6 +170,13 @@ stop)
 	if [ -d $LBHOMEDIR/log/skel_syslog/ ]; then
 		cp -ra /var/log/* $LBHOMEDIR/log/skel_syslog/
 		find $LBHOMEDIR/log/skel_syslog/ -type f -exec rm {} \;
+	fi
+	echo "Backing up DCHP leases..."
+	if [ ! -d $LBHOMEDIR/system/dhcp ]; then
+		mkdir $LBHOMEDIR/system/dhcp
+	fi
+	if ls /var/lib/dhcp/*.leases 2>/dev/null 1>&2; then
+		cp -a /var/lib/dhcp/*.leases $LBHOMEDIR/system/dhcp/
 	fi
 
 	# Copy logdb from RAM disk to SD card
