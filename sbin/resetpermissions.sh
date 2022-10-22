@@ -29,11 +29,9 @@ echo "LoxBerry home directory is $LBHOMEDIR"
 
 #chown -Rv loxberry:loxberry $LBHOMEDIR
 #find $LBHOMEDIR -not -path "*skel_syslog*" -exec chown -Rc loxberry:loxberry {} \;
-
 #find $LBHOMEDIR -type d -print | grep -z -v /tmp/excludelist.txt | while read line ; do chown -c loxberry:loxberry $line ; chown -c loxberry:loxberry $line/* ; done
-
-
-find $LBHOMEDIR ! -path "*ramlog*" ! -path "*skel_syslog*" ! -path "*/system/sudoers*" ! -path "*/system/daemons/system*" -print0 | perl -e '@pipe = split(/\0/, <>); (undef,undef,$uid,$gid) = getpwnam("loxberry");$count=chown $uid, $gid, @pipe;print "chmod loxberry:loxberry: $count files changed\n";'
+#find $LBHOMEDIR ! -path "*ramlog*" ! -path "*skel_syslog*" ! -path "*/system/sudoers*" ! -path "*/system/daemons/system*" -print0 | perl -e '@pipe = split(/\0/, <>); (undef,undef,$uid,$gid) = getpwnam("loxberry");$count=chown $uid, $gid, @pipe;print "chmod loxberry:loxberry: $count files changed\n";'
+find $LBHOMEDIR ! -path "*ramlog*" ! -path "*skel_syslog*" ! -path "*/system/sudoers*" ! -path "*/system/daemons/system*" ! -path "*/config/plugins/*" ! -path "*/data/plugins/*" ! -path "*/bin/plugins/*" ! -path "*/webfrontend/html/plugins/*" ! -path "*/webfrontend/htmlauth/plugins/*" -print0 | perl -e '@pipe = split(/\0/, <>); (undef,undef,$uid,$gid) = getpwnam("loxberry");$count=chown $uid, $gid, @pipe;print "chmod loxberry:loxberry: $count files changed\n";'
  
  
 chown -Rc root:root $LBHOMEDIR/system/dphys-swapfile
