@@ -364,10 +364,10 @@ if ($desttype eq "path") {
 LOGINF "Creating partiton table";
 execute( command => "parted -s $destpath mklabel msdos", log => $log );
 
-LOGINF "Creating new /boot partition";
+LOGINF "Creating new boot partition";
 execute( command => "parted -s $destpath mkpart primary fat32 4MiB ". $dest_bootpart_size . "MiB", log => $log );
 
-LOGINF "Creating new / partition";
+LOGINF "Creating new root partition";
 execute( command => "parted -s $destpath mkpart primary ext4 ". $dest_bootpart_size . "MiB 100%", log => $log );
 
 sleep (1);
@@ -462,7 +462,7 @@ if (!$mountsok) {
 	exit(1);
 }
 
-LOGINF "Copy data of /boot partition (this will take some seconds only)";
+LOGINF "Copy data of boot partition (this will take some seconds only)";
 ($rc) = execute( command => "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSpf - )", log => $log );
 if ($rc ne "0") {
 	LOGERR "Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
@@ -470,7 +470,7 @@ if ($rc ne "0") {
 	$notify .= " Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
 }
 
-LOGINF "Copy data of / partition (this may take a long time... Please be patient.)";
+LOGINF "Copy data of root partition (this may take a long time... Please be patient.)";
 ($rc) = execute( command => "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSpf - )", log => $log );
 if ($rc ne "0") {
 	LOGERR "Copying the files from your root partition seems to failed. Your image/backup may be broken!";
