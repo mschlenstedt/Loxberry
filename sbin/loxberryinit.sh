@@ -66,16 +66,23 @@ case "$1" in
 	echo "Updating general.cfg etc...."
 	$LBHOMEDIR/bin/createconfig.pl
 
-	# Create swap config
+	# Create swap config and resize rootfs
 	if [ -f /boot/rootfsresized ]
 	then
 		echo "Configuring swap...."
 		$LBHOMEDIR/sbin/setswap.pl
 	else
-		echo "Deactivating swap - rootfs seems not to be resized yet...."
-		service dphys-swapfile stop
-		swapoff -a
-		rm -rf /var/swap
+		echo "Stopping unattended updates until rootfs is resized"
+		systemctl stop unattended-upgrades
+		pkill --signal SIGKILL unattended-upgrades
+
+		# Remove loxberryid on a fresh loxberry
+		rm -f $lbsconfigdir/loxberryid.cfg > /dev/null 2>&1
+
+		echo "Resizing rootfs..."
+		$LBHOMEDIR/sbin/resize_rootfs > $LBHOMEDIR/log/system/rootfsresized.log 2>&1
+		echo "Rebooting to enable rootfs adjustments..."
+		/sbin/reboot > /dev/null 2>&1
 	fi
 
 	# Copy manual network configuration if any exists

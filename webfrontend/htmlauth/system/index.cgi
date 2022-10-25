@@ -48,7 +48,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/general.json" || -z "$lb
 }
 
 # Version of this script
-my $version = "2.0.2.1";
+my $version = "2.2.2.0";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -71,9 +71,9 @@ $cgi->import_names('R');
 my $wizardfile = "$lbsdatadir/wizard.dat";
 if (! -e $wizardfile) {
 	# Delete LoxBerryID
-	system ("rm -f $lbsconfigdir/loxberryid.cfg > /dev/null 2>&1");
+	#system ("rm -f $lbsconfigdir/loxberryid.cfg > /dev/null 2>&1");
 	# Resize SDCard
-	system ("$sudobin -n $lbssbindir/resize_rootfs > $lbslogdir/rootfsresized.log 2>&1");
+	#system ("$sudobin -n $lbssbindir/resize_rootfs > $lbslogdir/rootfsresized.log 2>&1");
 	reboot_required("Setup Wizard");
 	# Start Wizard
 	print $cgi->redirect('/admin/system/wizard.cgi');

@@ -7,12 +7,13 @@ use LoxBerry::Log;
 use Data::Dumper;
 use LoxBerry::Storage;
 
-my $version = "3.0.0";
+my $version = "3.0.1";
 
 my $dest_bootpart_size = 256; # /boot partition in MB
 
 my $notify = "";
 my $error = undef;
+my $rc = undef;
 
 # my %devicedata;
 # my %bootdevice;
@@ -77,8 +78,10 @@ my $part_boot = $mount_boot->{filesystems}[0]->{source};
 LOGINF "/     is on partition " . $part_root;
 LOGINF "/boot is on partition " . $part_boot;
 
-# Find partitions in lsblk
+# Cleaning apt cache
+execute ( command => "apt-get clean" );
 
+# Find partitions in lsblk
 my $bootdevice;
 
 foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
@@ -200,8 +203,10 @@ if ( $desttype eq "device" ) {
 
 	print "Destination device is $destdevice->{name} ($destdevice->{path}) size " . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . "\n";
 
-	# Size check (used size + $dest_bootpart_size plus 20%)
-	$required_space = ($src1_used + $dest_bootpart_size*1024*1024)*1.2;
+	# Size check (used size - swap + $dest_bootpart_size plus 5%)
+	my $swapsize = 0;
+	$swapsize = -s "/var/swap" if -e "/var/swap";
+	$required_space = ($src1_used - $swapsize + $dest_bootpart_size*1024*1024)*1.10;
 	if( $destdevice->{size} < $required_space ) {
 		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller that required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
     		$error++;
@@ -244,8 +249,10 @@ if ( $desttype eq "path" ) {
 
 	print "Destination device is $destdevice->{NAME} ($destdevice->{PATH}) available space " . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . "\n";
 
-	# Size check (used size + $dest_bootpart_size plus 20%)
-	$required_space = ($src1_used + $dest_bootpart_size*1024*1024)*1.2;
+	# Size check (used size - swap + $dest_bootpart_size plus 5%)
+	my $swapsize = 0;
+	$swapsize = -s "/var/swap" if -e "/var/swap";
+	$required_space = ($src1_used - $swapsize + $dest_bootpart_size*1024*1024)*1.10;
 	if( $destdevice->{AVAILABLE}*1024 < $required_space ) {
 		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . ") is smaller than required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
     		$error++;
@@ -264,18 +271,15 @@ sleep(15);
 print "Too late - let the game begin!\n\n";
 
 # Stop autofs
+# Unmount mounted destination partitions
 if ( $desttype eq "device" ) {
 	LOGINF "Stopping autofs service";
 	execute( command => "systemctl stop autofs", log => $log );
-}
-
-# Unmount mounted destination partitions
-if ($desttype eq "device") {
 	for my $i ( 1..3) {
 		LOGINF "Unmount Try $i";
 		foreach my $partition ( @{$destdevice->{children}} ) {
 			LOGDEB "umount ".$partition->{path};
-			my ($rc) = execute( command => "umount -q -A ".$partition->{path} );
+			execute( command => "umount -q -A ".$partition->{path} );
 		}
 		sleep 1;
 	}
@@ -343,6 +347,8 @@ if ($desttype eq "device") {
 	}
 }
 
+my $targetsize_mb;
+my $targetsize_b;
 if ($desttype eq "path") {
 	LOGINF "Creating destination image file, size " . LoxBerry::System::bytes_humanreadable($required_space);
 	$destpath = $destpath . "/" . LoxBerry::System::lbhostname() . "_image_$now.img";
@@ -352,9 +358,16 @@ if ($desttype eq "path") {
     		$notify .= " $destpath already exists.";
 		exit (1);
 	}
-	my $targetsize_mb = int( ($required_space / 1024 / 1024) + 0.5 ); # rounded
-	print "Targetsize is: $targetsize_mb\n";
-	execute ( command => "dd if=/dev/zero of=$destpath bs=1 count=0 seek=" . $targetsize_mb . "MB", log => $log );
+	$targetsize_mb = int( ($required_space / 1024 / 1024) + 0.5 ); # rounded
+	$targetsize_b = int( ($required_space / 512) + 0.5 ) * 512; # rounded minus 1 byte and multiple of 512
+	#execute ( command => "dd if=/dev/zero of=$destpath bs=1 count=0 seek=" . $targetsize_mb . "MB", log => $log );
+	($rc) = execute ( command => "dd if=/dev/zero of=$destpath bs=1 count=0 seek=" . $targetsize_b, log => $log );
+	if ($rc ne "0") {
+		LOGCRIT "Could not create Imagefile.";
+    		$error++;
+		$notify .= " Could not create Imagefile.";
+		exit (1);
+	}
 	execute ( command => "chown loxberry:loxberry $destpath");
 }
 
@@ -363,6 +376,7 @@ execute( command => "parted -s $destpath mklabel msdos", log => $log );
 
 LOGINF "Creating new /boot partition";
 execute( command => "parted -s $destpath mkpart primary fat32 4MiB ". $dest_bootpart_size . "MiB", log => $log );
+
 LOGINF "Creating new / partition";
 execute( command => "parted -s $destpath mkpart primary ext4 ". $dest_bootpart_size . "MiB 100%", log => $log );
 
@@ -381,7 +395,7 @@ if ($desttype eq "device") {
 		LOGINF "Unmount Try $i";
 		foreach my $partition ( @{$destdevice->{children}} ) {
 			LOGDEB "umount ".$partition->{path};
-			my ($rc) = execute( command => "umount -q -A ".$partition->{path} );
+			execute( command => "umount -q -A ".$partition->{path} );
 		}
 		sleep 1;
 	}
@@ -416,7 +430,7 @@ if ($desttype eq "device") {
 		LOGINF "Unmount Try $i";
 		foreach my $partition ( @{$destdevice->{children}} ) {
 			LOGDEB "umount ".$partition->{path};
-			my ($rc) = execute( command => "umount -q -A ".$partition->{path} );
+			execute( command => "umount -q -A ".$partition->{path} );
 		}
 		sleep 1;
 	}
@@ -460,9 +474,20 @@ if (!$mountsok) {
 }
 
 LOGINF "Copy data of /boot partition (this will take some seconds)";
-execute( command => "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSpf - )", log => $log );
+($rc) = execute( command => "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSpf - )", log => $log );
+if ($rc ne "0") {
+	LOGERR "Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
+    	$error++;
+	$notify .= " Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
+}
+
 LOGINF "Copy data of / partition (this may take an hour...)";
-execute( command => "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSpf - )", log => $log );
+($rc) = execute( command => "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSpf - )", log => $log );
+if ($rc ne "0") {
+	LOGERR "Copying the files from your root partition seems to failed. Your image/backup may be broken!";
+    	$error++;
+	$notify .= " Copying the files from your root partition seems to failed. Your image/backup may be broken!";
+}
 
 # Delete not needed swap file - this is normally quite big. Wa excluded above, just in case...
 if (-e "/media/dst2/var/swap") {
@@ -487,9 +512,11 @@ w
 EOF
 `;
 
-LOGINF "Checking the clone";
-my $newlsblk = lsblk();
+LOGINF "Checking the clone...";
 
+# Check destination device
+LOGINF "Checking if your destination device/path still exists.";
+my $newlsblk = lsblk();
 my $newdestpath_found = 0;
 my $newdestdevice_index = 0;
 my $newdst_ptuuid;
@@ -502,12 +529,15 @@ foreach my $blockdevice ( @{$newlsblk->{blockdevices}} ) {
 	$destdevice_index++;
 }
 if (!$destpath_found) {
-	LOGCRIT "Your DESTINATION device $destpath does not exist (anymore?).";
+	LOGERR "Your DESTINATION device $destpath does not exist (anymore?).";
 	$error++;
 	$notify .= " Your DESTINATION device $destpath does not exist (anymore?).";
-	exit(1);
+} else {
+	LOGOK "That looks good.";
 }
 
+# Check mountpoints
+LOGINF "Checking if all destination mountpoints still exist.";
 foreach my $mountpoint ( keys %chk_mounts ) {
 	#LOGINF "Mounting $mountpoint to $chk_mounts{$mountpoint}";
 	#execute( command => "mount $chk_mounts{$mountpoint} $mountpoint", log => $log );
@@ -520,38 +550,90 @@ foreach my $mountpoint ( keys %chk_mounts ) {
 		$mountsok = 0;
 	}
 }
+if ($mountsok) {
+	LOGOK "That looks good.";
+}
 
-# Loop devices gives not back correct partuuid - so overwrite here
+# Check size of image file
 if ($desttype eq "path") {
+        my $imagefilesize = -s $destpath;
+        LOGINF "Checking image size: $imagefilesize Bytes, target was $targetsize_b Bytes.";
+        # Check size and use tolerance of +/- 5 bytes
+        if ($imagefilesize < $targetsize_b - 5 || $imagefilesize > $targetsize_b + 5) {
+		LOGERR "The created image file has a strange size. Maybe something went wrong. Target was: " . \
+		LoxBerry::System::bytes_humanreadable($targetsize_b) . " Current is: " . \
+		LoxBerry::System::bytes_humanreadable($imagefilesize);
+		$error++;
+		$notify .= " The created image file has a strange size. Maybe something went wrong. Target was: " . \
+		LoxBerry::System::bytes_humanreadable($targetsize_b) . " Current is: " . \
+		LoxBerry::System::bytes_humanreadable($imagefilesize);
+	} else {
+		LOGOK "That looks good.";
+	}
+}
+
+
+# Check correct PartUUID
+LOGINF "Checking correct PTUUID.";
+if ($desttype eq "path") { # Loop devices gives not back correct partuuid - so overwrite here
 	$newdst_ptuuid = execute ( command => "fdisk -l $destpath | grep 'Disk identifier' | cut -d: -f2 | cut -dx -f2");
 	chomp ($newdst_ptuuid);
 }
-
 if (!$newdst_ptuuid or $newdst_ptuuid ne $src_ptuuid) {
 	LOGERR "Source PTUUID is $src_ptuuid, Dest PTUUID is $newdst_ptuuid - They are not equal. The new SD may fail to boot!";
 	$error++;
 	$notify .= " Source PTUUID is $src_ptuuid, Dest PTUUID is $newdst_ptuuid - They are not equal. The new SD may fail to boot!";
 } else {
-	LOGOK "Maybe it worked ;-)";
-	$notify .= " Successfully created your backup. Maybe it worked! ;-)";
+		LOGOK "That looks good.";
 }
 
-# Additional hints and cleaning up
-foreach my $mountpoint ( keys %chk_mounts ) {
-	rmdir "$destpath2".$mountpoint;
-}
+# Clean up
 use File::Copy;
 copy( $log->filename(), "$destpath2".$log->filename() );
 foreach my $mountpoint ( keys %chk_mounts ) {
 	execute( command => "umount $mountpoint" );
 	rmdir "$mountpoint";
 }
+foreach my $mountpoint ( keys %chk_mounts ) {
+	rmdir "$destpath2".$mountpoint;
+}
+
+# Try to remount partitions in image file
+if ($desttype eq "path") { 
+	LOGINF "Try to remount boot partition in image.";
+	execute( command => "mkdir -p /media/test_loxberrybackup", log => $log );
+	($rc) = execute( command => "mount $destpath1 /media/test_loxberrybackup", log => $log );
+	if ($rc ne "0"){
+		LOGERR "Could not remount boot partition in image. Maybe the image is broken.";
+		$error++;
+		$notify .= " Could not remount boot partition in image. Maybe the image is broken.";
+	} else {
+		LOGOK "That looks good.";
+	}
+	execute( command => "umount -f /media/test_loxberrybackup", log => $log );
+	LOGINF "Try to remount root partition in image.";
+	($rc) = execute( command => "mount $destpath2 /media/test_loxberrybackup", log => $log );
+	if ($rc ne "0"){
+		LOGERR "Could not remount root partition in image. Maybe the image is broken.";
+		$error++;
+		$notify .= " Could not remount root partition in image. Maybe the image is broken.";
+	} else {
+		LOGOK "That looks good.";
+	}
+	execute( command => "umount -f /media/test_loxberrybackup", log => $log );
+	rmdir "/media/test_loxberrybackup";
+}
+
+# Additional hints
+if (!$error) {
+	LOGOK "Successfully created your backup - I haven't found any errors. Maybe it worked ;-)";
+	$notify .= " Successfully created your backup - I haven't found any errors. Maybe it worked! ;-)";
+}
 if ($desttype eq "device") {
 	LOGWARN "Shutdown LoxBerry, put the new card into the Raspberry SD slot and start over!";
 	LOGWARN "If it fails to boot, connect a display to Raspberry to check what happens.";
 	reboot_required("After clone_sd.pl usage you need to reboot LoxBerry.");
 }
-
 if ($desttype eq "path") {
 	LOGINF "You have to flash the created image onto an empty SDcard!";
 	LOGINF "If it fails to boot, connect a display to Raspberry to check what happens.";
