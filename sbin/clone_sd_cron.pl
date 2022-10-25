@@ -35,7 +35,7 @@ if (!$cfg->{'Backup'}->{'Storagepath'}) {
 # Create new backup
 LOGINF "Starting Backup. Please be patient.";
 my $storagepath = $cfg->{'Backup'}->{'Storagepath'};
-my ($exitcode) = execute { command => "sudo $lbhomedir/sbin/clone_sd.pl $storagepath path > /dev/null 2>&1" };
+my ($exitcode) = execute { command => "sudo $lbhomedir/sbin/clone_sd.pl $storagepath path 7z > /dev/null 2>&1" };
 
 if ($exitcode < 1) {
 	LOGOK "Backup successfully created.";
