@@ -15,13 +15,6 @@ my $notify = "";
 my $error = undef;
 my $rc = undef;
 
-# my %devicedata;
-# my %bootdevice;
-# my %otherdevices;
-
-# $devicedata{bootdevice} = \%bootdevice;
-# $devicedata{otherdevices} = \%otherdevices;
-
 # Lock
 my $status = LoxBerry::System::lock(lockfile => 'backup');
 if ($status) {
@@ -44,6 +37,7 @@ LOGSTART "Clone SD card";
 LOGINF "Version of this script: $version";
 my $destpath = $ARGV[0];
 my $desttype = $ARGV[1];
+my $compress = $ARGV[2];
 
 my $curruser = getpwuid($<);
 LOGINF "Executing user is $curruser";
@@ -155,10 +149,10 @@ if ( !$destpath || !$desttype || ($desttype ne "device" && $desttype ne "path") 
 		print "$path->{NAME}: $path->{PATH} Type $path->{GROUP}/$path->{TYPE} Available space " . LoxBerry::System::bytes_humanreadable($path->{AVAILABLE}*1024) . "\n";
 	}
 	print "\nIf you use type path as destination, the storage path must have enough free disc space (\033[1mtwice\033[0m as the size of your SDcard!).\n";
-
 	print "\nTo start the clone, use the DESTINATION device/path as first parameter and the device type [device|path] as second parameter.\n";
+	print "\nIf you would like to compress your image (when using path), use compression method [7z|gzip] as third parameter.\n\n";
 	print "Examples: $0 /dev/sdc device\n";
-	print "          $0 /opt/loxberry/system/storage/usb/31816dac-01 path\n";
+	print "          $0 /opt/loxberry/system/storage/usb/31816dac-01 path 7z\n";
 	if ( ! -e "$lbsconfigdir/is_raspberry.cfg" ) {
 		print "\n \033[1mDANGER!!\033[0m This not the original LoxBerry image (not on a Raspberry).\n";
 		print "          No idea what happens on a Non-Raspberry installation.\n";
@@ -180,7 +174,6 @@ if ( $desttype eq "device" ) {
 	foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
 		if ( $destpath eq $blockdevice->{path} ) {
 			$destpath_found = 1;
-		
 			if( $blockdevice->{isboot} ) {
 				LOGCRIT "Your entered DESTINATION path $destpath is the boot device!";
     				$error++;
@@ -203,14 +196,14 @@ if ( $desttype eq "device" ) {
 
 	print "Destination device is $destdevice->{name} ($destdevice->{path}) size " . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . "\n";
 
-	# Size check (used size - swap + $dest_bootpart_size plus 5%)
+	# Size check (used size - swap + $dest_bootpart_size plus 10%)
 	my $swapsize = 0;
 	$swapsize = -s "/var/swap" if -e "/var/swap";
 	$required_space = ($src1_used - $swapsize + $dest_bootpart_size*1024*1024)*1.10;
 	if( $destdevice->{size} < $required_space ) {
-		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller that required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
+		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller than required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
     		$error++;
-    		$notify .= " $destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller that required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
+    		$notify .= " $destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller than required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
 		exit(1);
 	}
 }
@@ -220,7 +213,6 @@ my $now;
 if ( $desttype eq "path" ) {
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 	$now = sprintf("%04d%02d%02d_%02d%02d%02d", $year+1900, $mon+1, $mday, $hour, $min, $sec);
-
 	my $destpath_found = 0;
 	my $destdevice_index = 0;
 	my @storages = LoxBerry::Storage::get_storage(1);
@@ -249,7 +241,7 @@ if ( $desttype eq "path" ) {
 
 	print "Destination device is $destdevice->{NAME} ($destdevice->{PATH}) available space " . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . "\n";
 
-	# Size check (used size - swap + $dest_bootpart_size plus 5%)
+	# Size check (used size - swap + $dest_bootpart_size plus 10%)
 	my $swapsize = 0;
 	$swapsize = -s "/var/swap" if -e "/var/swap";
 	$required_space = ($src1_used - $swapsize + $dest_bootpart_size*1024*1024)*1.10;
@@ -298,14 +290,12 @@ foreach my $helperdir ( @helperdirs ) {
 
 	# Create helper directories
 	mkdir($helperdir);
-
 	if( ! -e $helperdir ) {
 		LOGCRIT "Directory $helperdir could not be created.";
     		$error++;
     		$notify .= " Directory $helperdir could not be created.";
 		exit(1);
 	}
-	
 	if( !is_folder_empty($helperdir) ) {
 		LOGCRIT "Directory $helperdir is not empty.";
     		$error++;
@@ -424,7 +414,6 @@ execute( command => "mkfs.ext4 ".$destpath2, log => $log );
 
 # If partitions got re-mounted, unmount again
 # Unmount mounted destination partitions
-
 if ($desttype eq "device") {
 	for my $i ( 1..3) {
 		LOGINF "Unmount Try $i";
@@ -473,7 +462,7 @@ if (!$mountsok) {
 	exit(1);
 }
 
-LOGINF "Copy data of /boot partition (this will take some seconds)";
+LOGINF "Copy data of /boot partition (this will take some seconds only)";
 ($rc) = execute( command => "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSpf - )", log => $log );
 if ($rc ne "0") {
 	LOGERR "Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
@@ -481,7 +470,7 @@ if ($rc ne "0") {
 	$notify .= " Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
 }
 
-LOGINF "Copy data of / partition (this may take an hour...)";
+LOGINF "Copy data of / partition (this may take a long time... Please be patient.)";
 ($rc) = execute( command => "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSpf - )", log => $log );
 if ($rc ne "0") {
 	LOGERR "Copying the files from your root partition seems to failed. Your image/backup may be broken!";
@@ -622,6 +611,34 @@ if ($desttype eq "path") {
 	}
 	execute( command => "umount -f /media/test_loxberrybackup", log => $log );
 	rmdir "/media/test_loxberrybackup";
+}
+
+# Compress image
+if ( $desttype eq "path" && ($compress eq "7z" || $compress eq "gzip") ) { 
+	my %imagedisk = LoxBerry::System::diskspaceinfo($destpath);
+	my $required_compress = -s $destpath * 0.4; # Asuming 60% compression
+	if ($imagedisk{available}*1024 < $required_compress) {
+		LOGERR "Available space is too small for compressing the image. Skipping the compression.";
+		$error++;
+		$notify .= " Available space is too small for compressing the image. Skipping the compression.";
+	} else {
+		LOGINF "Compressing your image. This may take a long time... Please be patient.";
+		if ($compress eq "7z") {
+			($rc) = execute( command => "7z a " . $destpath . ".7z $destpath -mx3", log => $log );
+		} elsif ($compress eq "gzip") {
+			($rc) = execute( command => "gzip $destpath", log => $log );
+		}
+		if ($rc eq "0") {
+			LOGOK "Compressed your image successfully.";
+			unlink ($destpath);
+		} else {
+			LOGERR "Something went wrong while compressing the image. I keep the uncompressed image.";
+			$notify .= " Something went wrong while compressing the image. I keep the uncompressed image.";
+			$error++;
+			unlink ($destpath . ".7z");
+			unlink ($destpath . ".gz");
+		}
+	}
 }
 
 # Additional hints
