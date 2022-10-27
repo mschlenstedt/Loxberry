@@ -7,6 +7,9 @@
  *
  */
 
+// For very big files we need more execution time
+ini_set('max_execution_time', '0'); // for infinite time of execution
+
 // LoxBerry Moduls
 require_once "loxberry_system.php";
 require_once "loxberry_web.php";
