@@ -95,8 +95,8 @@
       "Port" : "80",
       "Porthttps" : 443
    },
-   "apt" : {
-      "servers" : [
+   "Apt" : {
+      "Servers" : [
          "http://ftp.agdsn.de/pub/mirrors/raspbian/raspbian/",
          "http://packages.hs-regensburg.de/raspbian/",
          "http://ftp.halifax.rwth-aachen.de/raspbian/raspbian/",
