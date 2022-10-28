@@ -13,19 +13,19 @@ init();
 
 #
 # Add Backup to general.json
-#
+# --> general.json is done by ~/sbin/createconfig
 LOGINF "Adding Backup options to general.json";
-if (!$gcfg->{'Backup'}) {
-	$gcfg->{'Backup'}->{'Keep_archives'} = "1";
-	$gcfg->{'Backup'}->{'Storagepath'} = "";
-	$gcfg->{'Backup'}->{'Schedule'}->{'Active'} = "false";
-	$gcfg->{'Backup'}->{'Schedule'}->{'Repeat'} = "1";
-	$gcfgobj->write();
-	system ("touch $lbhomedir/system/cron/cron.d/lbclonesd");
+#if (!$gcfg->{'Backup'}) {
+#	$gcfg->{'Backup'}->{'Keep_archives'} = "1";
+#	$gcfg->{'Backup'}->{'Storagepath'} = "";
+#	$gcfg->{'Backup'}->{'Schedule'}->{'Active'} = "false";
+#	$gcfg->{'Backup'}->{'Schedule'}->{'Repeat'} = "1";
+#	$gcfgobj->write();
+system ("touch $lbhomedir/system/cron/cron.d/lbclonesd");
 	LOGOK "Backup parameters added to general.json successfully.";
-} else {
-	LOGOK "Backup parameters already in general.json -> skipping.";
-}
+#} else {
+	#LOGOK "Backup parameters already in general.json -> skipping.";
+#}
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
