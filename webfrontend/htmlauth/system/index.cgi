@@ -283,6 +283,13 @@ sub mainmenu {
 				NOTIFY_PACKAGE => "backup",
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_TERMINAL'}, 
+				WIDGET_ICON => "/system/images/icons/main_terminal.svg",
+				WIDGET_CGI => "/admin/system/tools/terminal.cgi",
+				WIDGET_TARGET => "_blank",
+				NOTIFY_PACKAGE => "terminal",
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
 				WIDGET_ICON => "/system/images/icons/main_donate.png",
 				WIDGET_CGI => "/admin/system/donate.cgi",

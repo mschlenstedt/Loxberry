@@ -65,7 +65,11 @@
 <TMPL_LOOP WIDGETS>
 <div class="widget">
 	<!-- <TMPL_VAR WIDGET_NOTIFY> -->
-	<a href="<TMPL_VAR WIDGET_CGI>">
+	<TMPL_IF WIDGET_TARGET>
+		<a href="<TMPL_VAR WIDGET_CGI>" target="<TMPL_VAR WIDGET_TARGET>">
+	<TMPL_ELSE>
+		<a href="<TMPL_VAR WIDGET_CGI>">
+	</TMPL_IF>
 			<TMPL_IF WIDGET_CLOCK>
 			<div class="menutableicon" style="width:100%; height:80px; padding:1px 0 10px 0;">
 				<div class="clock" style="text-align:center;  margin:10px 0 0 43px" >
@@ -91,7 +95,11 @@
 			</TMPL_IF>
 	</a>
 	<div>
-		<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
+		<TMPL_IF WIDGET_TARGET>
+			<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle" target="<TMPL_VAR WIDGET_TARGET>"><TMPL_VAR WIDGET_TITLE></a>
+		<TMPL_ELSE>
+			<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
+		</TMPL_IF>
 	</div>
 </div>
 </TMPL_LOOP>
