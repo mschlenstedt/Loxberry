@@ -33,21 +33,21 @@ $gcfgobj->write();
 
 #
 # Add Raspbian Mirrors to general.json
-#
-LOGINF "Adding Apt Servers to general.json";
-if (!$gcfg->{'Apt'}->{'Servers'}) {
-	my @servers = ( "http://ftp.agdsn.de/pub/mirrors/raspbian/raspbian/",
-			"http://packages.hs-regensburg.de/raspbian/",
-			"http://ftp.halifax.rwth-aachen.de/raspbian/raspbian/",
-			"http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/",
-			"https://dist-mirror.fem.tu-ilmenau.de/raspbian/raspbian/"
-	);
-	$gcfg->{'Apt'}->{'Servers'} = \@servers;
-	$gcfgobj->write();
-	LOGOK "Apt Servers added to general.json successfully.";
-} else {
-	LOGOK "Apt Servers already in general.json -> skipping.";
-}
+# -> done be ~/bin/createconfig.pl
+#LOGINF "Adding Apt Servers to general.json";
+#if (!$gcfg->{'Apt'}->{'Servers'}) {
+#	my @servers = ( "http://ftp.agdsn.de/pub/mirrors/raspbian/raspbian/",
+#			"http://packages.hs-regensburg.de/raspbian/",
+#			"http://ftp.halifax.rwth-aachen.de/raspbian/raspbian/",
+#			"http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/",
+#			"https://dist-mirror.fem.tu-ilmenau.de/raspbian/raspbian/"
+#	);
+#	$gcfg->{'Apt'}->{'Servers'} = \@servers;
+#	$gcfgobj->write();
+#	LOGOK "Apt Servers added to general.json successfully.";
+#} else {
+#	LOGOK "Apt Servers already in general.json -> skipping.";
+#}
 
 #
 # Repair apt sources
