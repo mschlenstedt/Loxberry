@@ -115,11 +115,11 @@ case "$1" in
 	fi
 
 	# Start LoxBerrys Emergency Webserver
-	if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]
-	then
-		echo "Start Emergency Webserver"
-		perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
-	fi
+	#if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]
+	#then
+	#	echo "Start Emergency Webserver"
+	#	perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
+	#fi
 		
 	# Run Daemons from Plugins and from System
 	echo "Running System Daemons..."
