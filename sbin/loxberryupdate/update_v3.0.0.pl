@@ -160,6 +160,13 @@ if ($exitcode) {
 LOGINF "Installing new sudoers file...";
 copy_to_loxberry("/system/sudoers/lbdefaults", "root");
 
+#
+# Install shellinabox and disable shellinabox daemon
+#
+LOGINF "Installing Shell-In-A-Box...";
+apt_update();
+apt_install("shellinabox");
+my $output = qx { sed -i 's#^SHELLINABOX_DAEMON_START.*\$#SHELLINABOX_DAEMON_START=0#' /etc/default/shellinabox };
 
 
 
