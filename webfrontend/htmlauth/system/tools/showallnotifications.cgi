@@ -14,11 +14,11 @@ use strict;
 
 $LoxBerry::Log::DEBUG = 1;
 
-our $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
-our $template_title = "Show all notifications";
+our $helplink = "https://wiki.loxberry.de/";
+our $template_title = "Notifications";
 
 # Version of this script
-my $version = "0.3.5.1";
+my $version = "3.0.0.1";
 
 LoxBerry::Web::lbheader($template_title, $helplink);
 

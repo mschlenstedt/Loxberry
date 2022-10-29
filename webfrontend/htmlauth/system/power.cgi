@@ -22,7 +22,6 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use HTML::Entities;
-print STDERR "Execute power.cgi\n#################\n";
 use CGI qw/:standard/;
 use Config::Simple;
 use warnings;
@@ -32,7 +31,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/fogKAw";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_reboot_power";
 my $helptemplate = "help_power.html";
 
 # our $cfg;

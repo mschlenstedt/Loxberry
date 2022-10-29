@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # This script will be executed on next reboot
-# from update_v2.0.0.pl
+# from update_v3.0.0.pl
 
 use LoxBerry::System;
 use LoxBerry::Update;
@@ -131,6 +131,15 @@ LOGINF "Change owner of /var/log to root:root...";
 qx { chown root:root /var/log };
 
 #
+# Fix rights of /tmp
+#
+LOGINF "Change permissions of /tmp to 1777...";
+qx { chmod 1777 /tmp };
+
+LOGINF "(Re-)Set current date/time to make sure communication with apt-servers will be ok - seems to be a problem on VMs sometimes...";
+my $output = qx { su loxberry -c "$lbhomedir/sbin/setdatetime.pl" };
+
+#
 # Make dist-upgrade from Stretch to Buster
 #
 LOGINF "Preparing Guru Meditation...";
@@ -144,7 +153,7 @@ LOGINF "Removing package 'listchanges' - just in case it is still on the system.
 apt_remove("apt-listchanges");
 LOGINF "Deactivating output of 'listchanges' - just in case it is still on the system...";
 if (-e "/etc/apt/listchanges.conf") {
-      my $output = qx { sed -i 's/frontend=pager/frontend=none/' /etc/apt/listchanges.conf };
+      my $output = qx { sed -i --follow-symlinks 's/frontend=pager/frontend=none/' /etc/apt/listchanges.conf };
 }
 
 LOGINF "Removing package 'libc6-dev' - we will reinstall it in V8 later on. But V6 will break the upgrade...";
@@ -161,7 +170,10 @@ apt_update();
 
 LOGINF "Update apt sources from buster to bullseye...";
 $log->close;
-my $output = qx { find /etc/apt -name "sources.list" | xargs sed -i '/^deb/s/buster/bullseye/g' >> $logfilename 2>&1 };
+my $output = qx { find /etc/apt -name "*.list" | xargs sed -i --follow-symlinks '/^deb/s/buster/bullseye/g' >> $logfilename 2>&1 };
+# Repair broken security mirror on VMs
+my $output = qx { sed -i 's#^deb http://security.debian.org/debian-security bullseye/updates.*\$#deb http://security.debian.org/debian-security bullseye-security main contrib non-free#' /etc/apt/sources.list };
+my $output = qx { sed -i 's#^deb-src http://security.debian.org/debian-security bullseye/updates.*\$#deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free#' /etc/apt/sources.list };
 $log->open;
 
 LOGINF "Cleaning up and updating apt databases...";
@@ -172,6 +184,9 @@ apt_upgrade();
 
 LOGINF "Installing packages 'gcc-8-base' and 'libgcc-8-dev'...";
 apt_install("libgcc-8-dev gcc-8-base");
+
+LOGINF "Cleaning up and updating apt databases...";
+apt_update();
 
 LOGINF "Executing dist-upgrade...";
 apt_distupgrade();
@@ -239,32 +254,50 @@ if ( -e "/etc/logrotate.conf.dpkg-new" ) {
 if ( -e "/etc/logrotate.conf.dpkg-dist" ) {
 	my $output = qx { mv -v /etc/logrotate.conf.dpkg-dist /etc/logrotate.conf >> $logfilename 2>&1 };
 }
-my $output = qx { sed -i 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
+my $output = qx { sed -i --follow-symlinks 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
 $log->open;
 
-# Update Kernel and Firmware
-# GIT Firmware Hash:   d5edc6af1ef48f97b525da88ff6c510c2d4231c3
-# dirtree Checksum is: 7d32024a09eac34dfe5e511ebbc01af7
-rpi_update("7d32024a09eac34dfe5e511ebbc01af7", "d5edc6af1ef48f97b525da88ff6c510c2d4231c3");
+# Update Kernel and Firmware on Raspberry
+# GIT Firmware Hash:   ea9e10e531a301b3df568dccb3c931d52a469106
+# dirtree Checksum is: 17badb449407528b418e79f7fa0bf761
+rpi_update("17badb449407528b418e79f7fa0bf761", "ea9e10e531a301b3df568dccb3c931d52a469106");
+
+# Updating /boot/config.txt for Debian Bullseye
+LOGINF "Updating /boot/config.txt...";
+# Add arm_boost mode for Pi4
+system ("cat /boot/config.txt | grep 'arm_boost'");
+$exitcode  = $? >> 8;
+if ($exitcode) {
+	system("sed -i -e 's:^\\[pi4\\]:\\[pi4\\]\\n# Run as fast as firmware / board allows\\narm_boost=1:g' /boot/config.txt");
+}
+# Remove dtoverlay=vc4-fkms-v3d
+system("sed -i -e 's:^dtoverlay=vc4-fkms-v3d:#dtoverlay=vc4-fkms-v3d:g' /boot/config.txt");
+# Add dtoverlay=vc4-kms-v3d for all
+system ("cat /boot/config.txt | grep 'vc4-kms-v3d'");
+$exitcode  = $? >> 8;
+if ($exitcode) {
+	system("sed -i -e 's:^max_framebuffers=2:#max_framebuffers=2:g' /boot/config.txt");
+	system("sed -i -e 's:^\\[all\\]:\\[all\\]\\n# Enable DRM VC4 V3D driver\\ndtoverlay=vc4-kms-v3d\\nmax_framebuffers=2:g' /boot/config.txt");
+}
 
 #
-# Firmware Files are not updated automatically by apt-get (why? *really* don't no!)
+# Firmware Files are not updated automatically by apt-get (why? *really* don't know!) - only on Raspberry
 #
-# Should be updated in bullseye via apt (again) - so no need to update manually
-#
-#LOGINF "Installing newest firmware files (from Debian Buster because Bullseye sin't currently available)...";
-# Use RPi-Distro Repo
-#system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/buster.zip -o /lib/master.zip");
-#system("cd /lib && unzip /lib/master.zip");
-#$exitcode  = $? >> 8;
-#if ($exitcode != 0) {
-#        LOGERR "Error extracting new firmware. This is a problem for Zero2 only. Wifi may not work on the Zero2 - Error $exitcode";
-#} else {
+#if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg") {
+#	LOGINF "Installing newest firmware files (from Debian Buster because Bullseye isn't currently available)...";
+#	# Use RPi-Distro Repo
+#	system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/buster.zip -o /lib/master.zip");
+#	system("cd /lib && unzip /lib/master.zip");
+#	$exitcode  = $? >> 8;
+#	if ($exitcode != 0) {
+#       LOGERR "Error extracting new firmware. This is a problem for Zero2 only. Wifi may not work on the Zero2 - Error $exitcode";
+#	} else {
 #        LOGOK "Extracting of new firmware files successfully. Installing...";
-	#system ("rm -r /lib/firmware");
-	#system("mv /lib/firmware-nonfree-master /lib/firmware");
+#		system ("rm -r /lib/firmware");
+#		system("mv /lib/firmware-nonfree-buster /lib/firmware");
+#	}
+#	system ("rm -r /lib/master.zip");
 #}
-#system ("rm -r /lib/master.zip");
 
 #
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
@@ -323,6 +356,23 @@ rm $lbhomedir/system/daemons/system/98-updaterebootcontinue
 EOF
 close (F);
 qx { chmod +x $lbhomedir/system/daemons/system/98-updaterebootcontinue };
+
+#
+# Installing new dependencies
+#
+LOGINF "Installing new packages for LoxBerry 3.0...";
+apt_install("libcgi-simple-perl");
+
+#
+# MQTT Gateway migration
+#
+
+#LOGINF "MQTT Gateway migration";
+#LoxBerry::System::execute( command => '$lbhomedir/sbin/loxberryupdate/mqtt_migration.pl', log => $log );
+
+
+
+
 
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);

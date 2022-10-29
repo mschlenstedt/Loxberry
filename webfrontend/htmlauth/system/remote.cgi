@@ -32,7 +32,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "https://www.loxwiki.eu/x/GokKAw";
+my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_remote_support";
 my $helptemplate = "help_remote.html";
 
 ##########################################################################

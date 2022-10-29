@@ -22,11 +22,11 @@ if ( lbfriendlyname() === "") {
     <deviceType>urn:schemas-upnp-org:device:HVAC_System:1</deviceType>
     <friendlyName><?php echo $lbname; ?></friendlyName>
     <manufacturer>M.Schlenstedt</manufacturer>
-    <manufacturerURL>http://www.loxwiki.eu/</manufacturerURL>
+    <manufacturerURL>https://wiki.loxberry.de</manufacturerURL>
     <modelDescription>Loxberry</modelDescription>
     <modelName>Loxberry</modelName>
     <modelNumber><?php echo $ini['BASE']['VERSION']; ?></modelNumber>
-    <modelURL>http://www.loxwiki.eu</modelURL>
+    <modelURL>https://wiki.loxberry.de</modelURL>
     <UDN>uuid:<?php echo $ini['SSDP']['UUID']; ?></UDN>
     <iconList>
       <icon>

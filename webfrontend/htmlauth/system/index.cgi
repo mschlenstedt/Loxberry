@@ -28,7 +28,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "https://www.loxwiki.eu/x/84YKAw";
+my $helplink = "https://wiki.loxberry.de/";
 my $helptemplate;
 my $template_title;
 my $error;
@@ -48,7 +48,7 @@ if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/general.json" || -z "$lb
 }
 
 # Version of this script
-my $version = "2.2.2.0";
+my $version = "3.0.0.0";
 
 my $sversion = LoxBerry::System::lbversion();
 
@@ -63,23 +63,6 @@ my $sudobin = $bins->{SUDO};
 my $cgi = CGI->new;
 $cgi->import_names('R');
 # Example: Parameter lang is now $R::lang
-
-##########################################################################
-# Check for first start and setup assistent
-##########################################################################
-
-my $wizardfile = "$lbsdatadir/wizard.dat";
-if (! -e $wizardfile) {
-	# Delete LoxBerryID
-	#system ("rm -f $lbsconfigdir/loxberryid.cfg > /dev/null 2>&1");
-	# Resize SDCard
-	#system ("$sudobin -n $lbssbindir/resize_rootfs > $lbslogdir/rootfsresized.log 2>&1");
-	reboot_required("Setup Wizard");
-	# Start Wizard
-	print $cgi->redirect('/admin/system/wizard.cgi');
-	exit;
-}
-
 
 ##########################################################################
 # Language Settings
@@ -102,12 +85,39 @@ our $maintemplate = HTML::Template->new(
 				);
 
 our %SL = LoxBerry::System::readlanguage($maintemplate);
-
 $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}";
 
 ##########################################################################
-# Main program
+# Check for first start and setup assistent
 ##########################################################################
+
+# If we were started the very first time, create random passwords
+if (!-e "$lbsdatadir/wizard.dat") {
+	
+	# Check if the original passwords still set
+	my $wizardchk = 0;
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'loxberry' 'loxberry');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+		$wizardchk++;
+	}
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'root' 'loxberry');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+			$wizardchk++;
+	}
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '0000');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+		$wizardchk++;
+	}
+	
+	# Set random passwords
+	if ($wizardchk eq 0) {
+		$maintemplate->param('WIZARD' => 1);
+	}
+
+}
 
 #########################################################################
 # What should we do
@@ -271,6 +281,13 @@ sub mainmenu {
 				WIDGET_ICON => "/system/images/icons/main_backup.svg",
 				WIDGET_CGI => "/admin/system/backup.cgi",
 				NOTIFY_PACKAGE => "backup",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_TERMINAL'}, 
+				WIDGET_ICON => "/system/images/icons/main_terminal.svg",
+				WIDGET_CGI => "/admin/system/tools/terminal.cgi",
+				WIDGET_TARGET => "_blank",
+				NOTIFY_PACKAGE => "terminal",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},

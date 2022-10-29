@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "2.4.0.1";
+our $VERSION = "3.0.0.3";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -52,7 +52,7 @@ my @db_attribute_exclude_list = qw ( package name LOGSTART LOGEND LASTMODIFIED f
 ################################################################
 ## Constructor
 ## 	Params [square brackets mean optional]
-## See https://www.loxwiki.eu/x/pQHgAQ
+## See https://wiki.loxberry.de/entwickler/perl_develop_plugins_with_perl/perl_loxberry_sdk_dokumentation/perlmodul_loxberrylog/start
 ##################################################################
 
 sub new 
@@ -251,14 +251,6 @@ sub open
 	my $fh;
 
 	eval {
-		open($fh, $writetype, $self->{filename});
-		$self->{'_FH'} = $fh if($fh);
-	};
-	if ($@) {
-		print STDERR "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . "): $@";
-		return;
-	}
-	eval {
 		if(!$self->{loxberry_uid}) {
 			my (undef,undef,$uid,$gid) = getpwnam('loxberry');
 			$self->{loxberry_uid} = $uid;
@@ -267,12 +259,22 @@ sub open
 		chown $self->{loxberry_uid}, $self->{loxberry_uid}, $fh;
 		chmod 0666, $fh;
 	};
+	eval {
+		open($fh, $writetype, $self->{filename});
+		#flock($fh, 2);
+		$self->{'_FH'} = $fh if($fh);
+	};
+	if ($@) {
+		print STDERR "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . "): $@";
+		return;
+	}
 }
 
 sub close
 {
 	my $self = shift;
 	close $self->{'_FH'} if $self->{'_FH'};
+	#flock(_FH, 8);
 	undef $self->{'_FH'};
 	return $self->{filename};
 }
@@ -1558,14 +1560,13 @@ sub get_notification_count
 	my @resinf;
 	my @reserr;
 	
-	$qu = "SELECT count(*) FROM notifications ";
-	$qu .= "WHERE " if ($package);
-	$qu .= "PACKAGE = '$package' AND NAME = '$name' AND " if ($package && $name);
-	$qu .= "PACKAGE = '$package' AND " if ($package && !$name);
+	$qu  = "SELECT count(*) FROM notifications WHERE ";
+	$qu .= "PACKAGE = '$package' AND " if ($package);
+	$qu .= "NAME = '$name' AND " if ($name);
 	my $querr = $qu . "SEVERITY = 3;";
 	my $quinf = $qu . "SEVERITY = 6;";
-	# print STDERR "Error Query: $querr\n" if ($DEBUG);
-	# print STDERR "Info Query: $quinf\n" if ($DEBUG);
+	print STDERR "Error Query: $querr\n" if ($DEBUG);
+	print STDERR "Info Query: $quinf\n" if ($DEBUG);
 	my ($notification_error) = $dbh->selectrow_array($querr);
 	my ($notification_ok) = $dbh->selectrow_array($quinf);
 		
@@ -1698,17 +1699,32 @@ sub get_notifications_html
 		print STDERR "      info: $p{info}\n";
 	}
 		
-	if (! @notifs) {
+	if ( $p{package} and !@notifs) {
 		print STDERR "<--- No notifications found. Returning nothing.\n" if ($DEBUG);
 		return;
 	}
 	
-	my @notify_html;
-	my $all_notifys;
+	our $maintemplate = HTML::Template->new(
+		filename => "$LoxBerry::System::lbstemplatedir/get_notification_html.html",
+		global_vars => 1,
+		loop_context_vars => 1,
+		die_on_bad_params=> 0,
+		%LoxBerry::System::htmltemplate_options,
+	);
 	
-	my $randval = int(rand(30000));
+	if( !$p{package} ) {
+		$maintemplate->param( 'SHOW_HEADER' => 1 );
+	}
+	
+	my @plugins = LoxBerry::System::get_plugins();
+		
+	my @notify_html;
 	
 	foreach my $not (@notifs) {
+		
+		my %notification;
+		
+		
 		# Don't show info when errors are requested
 		print STDERR "Notification: $not->{SEVERITY} $not->{DATESTR} $not->{PACKAGE} $not->{NAME} $not->{CONTENTRAW}\n" if ($DEBUG);
 		
@@ -1723,13 +1739,26 @@ sub get_notifications_html
 			print STDERR "Skipping notification - is info but error requested\n" if ($DEBUG);
 			next;
 		}
+
+		my $randval = int(rand(30000));
+		$notification{RANDVAL} = $randval;
+
+		if( $not->{_ISPLUGIN} ) {
+			my ($plugin) = grep { $not->{PACKAGE} eq $_->{PLUGINDB_NAME} } @plugins;
+			$notification{ICONURI} = $plugin->{PLUGINDB_ICONURI};
+			$notification{TITLE} = $plugin->{PLUGINDB_TITLE};
+		}
+		else {
+			$notification{ICONURI} = '/system/images/LB_64.png';
+			$notification{TITLE} = ucfirst($not->{PACKAGE}) . ' / ' . ucfirst($not->{NAME});
+		}
 		
 		my $logfilepath;
 		if ( $not->{LOGFILE} ) {
 			$logfilepath = $not->{LOGFILE};
 			$logfilepath =~ s/^$LoxBerry::System::lbhomedir\///;
 			$logfilepath =~ s/^log\///;
-		
+			$notification{LOGFILEPATH} = $logfilepath;
 		}
 		
 		my $link;
@@ -1737,42 +1766,48 @@ sub get_notifications_html
 		if ( $not->{LINK} ) {
 			$link = $not->{LINK};
 			$linktarget = ( LoxBerry::System::begins_with($link, "http://") or LoxBerry::System::begins_with($link, "https://") ) ? "_blank" : "_self";
+			$notification{LINK} = $link;
+			$notification{LINKTARGET} = $linktarget;
 		}
 		
-		my $notif_line;
-		$notif_line = 	qq(<div style='display:table-row;' class='notifyrow$randval' id='notifyrow$not->{KEY}'>\n);
-		$notif_line .= 	qq(   <div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">\n);
 		if ($not->{SEVERITY} == 6) {
-			$notif_line .= qq(      <img src="/system/images/notification_info_small.svg">\n);
-		} elsif ($not->{SEVERITY} == 3) {
-			$notif_line .= qq(      <img src="/system/images/notification_error_small.svg">\n);
+			$notification{ISINFO} = 1;
 		}
-		$notif_line .= qq(   </div>\n);
-		$notif_line .= qq(   <div style='vertical-align: middle; width:75%; display: table-cell; padding: 7px;'><b>$not->{DATESTR}:</b> $not->{CONTENTHTML}</div>\n);
-		$notif_line .= qq(   <div style='vertical-align: middle; width:25%; display: table-cell; align:right; text-align: right;'>\n);
-		$notif_line .= qq(      <a class="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=$logfilepath&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>\n) if ($logfilepath);
-		$notif_line .= qq(      <a class="btnlink" data-role="button" href="$link" target="$linktarget" data-inline="true" data-mini="true" data-icon="action">Details</a>\n) if ($link);
-		$notif_line .= qq(      <a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>(X)</a>\n);
-		$notif_line .= qq(   </div>\n);
+		
+		$notification{KEY} = $not->{KEY};
+		$notification{DATESTR} = $not->{DATESTR};
+		$notification{CONTENTHTML} = $not->{CONTENTHTML};
+		
+		# my $notif_line;
+		# $notif_line = 	qq(<div style='display:table-row;' class='notifyrow$randval' id='notifyrow$not->{KEY}'>\n);
+		# $notif_line .= 	qq(   <div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">\n);
+		# if ($not->{SEVERITY} == 6) {
+			# $notif_line .= qq(      <img src="/system/images/notification_info_small.svg">\n);
+		# } elsif ($not->{SEVERITY} == 3) {
+			# $notif_line .= qq(      <img src="/system/images/notification_error_small.svg">\n);
+		# }
+		# $notif_line .= qq(   </div>\n);
+		# $notif_line .= qq(   <div style='vertical-align: middle; width:75%; display: table-cell; padding: 7px;'><b>$not->{DATESTR}:</b> $not->{CONTENTHTML}</div>\n);
+		# $notif_line .= qq(   <div style='vertical-align: middle; width:25%; display: table-cell; align:right; text-align: right;'>\n);
+		# $notif_line .= qq(      <a class="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=$logfilepath&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>\n) if ($logfilepath);
+		# $notif_line .= qq(      <a class="btnlink" data-role="button" href="$link" target="$linktarget" data-inline="true" data-mini="true" data-icon="action">Details</a>\n) if ($link);
+		# $notif_line .= qq(      <a href='#' class='notifdelete' id='notifdelete$not->{KEY}' data-delid='$not->{KEY}' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>(X)</a>\n);
+		# $notif_line .= qq(   </div>\n);
 		# print STDERR $notif_line if ($DEBUG);
-		$notif_line .= qq(</div>\n);
-		$all_notifys .= $notif_line;
-		push (@notify_html, $notif_line);
+		# $notif_line .= qq(</div>\n);
+		# $all_notifys .= $notif_line;
+		
+		push (@notify_html, \%notification);
 	}
 	
-	return if (! $all_notifys);
+	# return if (! $all_notifys);
 	
 	require HTML::Template;
 	
-	our $maintemplate = HTML::Template->new(
-				filename => "$LoxBerry::System::lbstemplatedir/get_notification_html.html",
-				global_vars => 1,
-				loop_context_vars => 1,
-				die_on_bad_params=> 0,
-				%LoxBerry::System::htmltemplate_options,
-				);
-	$maintemplate->param( 'NOTIFICATIONS' => $all_notifys);
-	$maintemplate->param( 'RAND' => $randval );
+	
+	$maintemplate->param( 'NOTIFICATIONS' => \@notify_html);
+	$maintemplate->param( 'RAND' => int(rand(30000)) );
+	$maintemplate->param( 'NOTIFICATIONCOUNT' => scalar @notify_html);
 	my %SL = LoxBerry::System::readlanguage($maintemplate, undef, 1);
 	#print STDERR 
 	return $maintemplate->output();

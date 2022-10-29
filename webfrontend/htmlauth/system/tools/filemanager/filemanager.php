@@ -133,7 +133,7 @@ if ($use_auth) {
         //fm_show_header();
         //fm_show_message();
 	$template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].": ". $SL['FILEMANAGER.WIDGETLABEL'];
-	$helplink = "http://www.loxwiki.eu/x/o4CO";
+	$helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_filemanager";
 	$helptemplate = "";
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
         ?>

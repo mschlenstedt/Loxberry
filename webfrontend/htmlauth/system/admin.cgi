@@ -21,7 +21,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
-print STDERR "Execute admin.cgi\n#################\n";
+#print STDERR "Execute admin.cgi\n#################\n";
 use MIME::Base64;
 
 use CGI::Carp qw(fatalsToBrowser);
@@ -29,14 +29,14 @@ use CGI qw/:standard/;
 use Config::Simple;
 use DBI;
 use warnings;
-use strict;
+#use strict;
 # no strict "refs"; # we need it for template system
 
 ##########################################################################
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/-oYKAw";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_admin_access";
 my $helptemplate = "help_admin.html";
 
 our $cfg;
@@ -74,15 +74,15 @@ our $creditwebadmin;
 our $creditconsole;
 our $creditsecurepin;
 our $wraperror = 0;
-my $quoted_adminpass1;
-my $quoted_adminpassold;
+my $rootpass;
+my $nexturl = "/admin/system/index.cgi?form=system";
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.1.1";
+my $version = "3.0.0.0";
 
 $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
@@ -113,20 +113,82 @@ $maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 # Main program
 ##########################################################################
 
-#########################################################################
-# What should we do
-#########################################################################
-
 # Step 1 or beginning
 $R::saveformdata if (0);
 $R::do if (0);
+$R::adminuserold if (0);
+$R::adminuser if (0);
+$R::adminpass1 if (0);
+$R::adminpass2 if (0);
+$R::adminpassold if (0);
+$R::securepin1 if (0);
+$R::securepin2 if (0);
+$R::securepinold if (0);
 
+#########################################################################
+# New Wizard for setting default passwords
+#########################################################################
+
+# If we were started the very first time, create random passwords
+if (!-e "$lbsdatadir/wizard.dat") {
+	
+	# Write Wizard file
+	require Time::Piece;
+	my $t = localtime;
+	$output = LoxBerry::System::write_file( "$lbsdatadir/wizard.dat", "Wizard started at " . $t->strftime() );
+
+	# Check if the original passwords still set
+	my $wizardchk = 0;
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'loxberry' 'loxberry');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+		$wizardchk++;
+	}
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'root' 'loxberry');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+			$wizardchk++;
+	}
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '0000');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+		$wizardchk++;
+	}
+	
+	# Set random passwords
+	if ($wizardchk eq 0) {
+		$R::adminuserold = "loxberry";
+		$R::adminpassold = "loxberry";
+		$R::adminuser = "loxberry";
+		$R::securepinold = "0000";
+		if ($R::do eq "random") {
+			$R::adminpass1 = generate(6);
+			$R::securepin1 = generatedigit(4);
+		} else {
+			$R::adminpass1 = "loxberry";
+			$R::securepin1 = "0000";
+		}
+		$R::adminpass2 = $R::adminpass1;
+		$R::securepin2 = $R::securepin1;
+		$rootpass = generate(8);
+
+		$maintemplate->param("WIZARD", 1);
+		$maintemplate->param("SAVE", 1);
+		$nexturl = "/admin/system/index.cgi?form=system";
+		&save;
+	}
+
+}
+
+#########################################################################
+# What to do if not in Wizard mode?
+#########################################################################
+
+# Form
 if (!$R::saveformdata || $R::do eq "form") {
-  print STDERR "Calling subfunction FORM\n";
   $maintemplate->param("FORM", 1);
   &form;
 } else {
-  print STDERR "Calling subfunction SAVE\n";
   $maintemplate->param("SAVE", 1);
   &save;
 }
@@ -163,26 +225,17 @@ sub save {
 
 	my $exitcode;
 	
-	$R::adminuserold if (0);
-	$R::adminuser if (0);
-	$R::adminpass1 if (0);
-	$R::adminpass2 if (0);
-	$R::adminpassold if (0);
-	$R::securepin1 if (0);
-	$R::securepin2 if (0);
-	$R::securepinold if (0);
-	
 	$adminuserold         = $R::adminuserold;
-	$adminuser            = trim($R::adminuser);
-	$adminpass1           = $R::adminpass1;
-	$adminpass2           = $R::adminpass2;
 	$adminpassold         = $R::adminpassold;
-	$securepin1           = $R::securepin1;
-	$securepin2           = $R::securepin2;
 	$securepinold         = $R::securepinold;
+	$adminuser            = trim($R::adminuser);
+	$adminpass1           = trim($R::adminpass1);
+	$adminpass2           = trim($R::adminpass2);
+	$securepin1           = trim($R::securepin1);
+	$securepin2           = trim($R::securepin2);
 
 	##################################
-	#  server-side form validation
+	# Server-side Form Validation
 	##################################
 	
 	# Check password and PIN
@@ -194,16 +247,14 @@ sub save {
 	}
 
 	# IMMED: Check Password
-	$quoted_adminpassold = quotemeta($R::adminpassold);
-	$quoted_adminpass1 = quotemeta($R::adminpass1);
-	$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl checkpasswd loxberry $quoted_adminpassold);
+	$output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'loxberry' '$adminpassold');
+	chomp ($output);
 	$exitcode  = $? >> 8;
-	print STDERR "credentialshandler.pl Exitcode ".$exitcode."\n";
 	if ($exitcode == 1) {
 		$error = $SL{'ADMIN.SAVE_OK_WRONG_PASSWORD'};
 		&error;
 	} elsif ($exitcode != 0) {	
-		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "credentialshandler.pl checkpasswd Errorcode $exitcode";
+		$error = $SL{'ADMIN.SAVE_ERR_GENERAL'} . "credentialshandler.pl checkpasswd Error: $output Errorcode $exitcode";
 		&error;
 	}
 	
@@ -215,7 +266,7 @@ sub save {
 	if ($adminuser ne $adminuserold) {
 		# Username changed
 		$_ = $adminuser;
-		if (! m/^([A-Za-z0-9]|_-){3,20}$/) {
+		if (! m/^([A-Za-z0-9\_\-]){3,20}$/) {
 			$error = $SL{'ADMIN.MSG_VAL_USERNAME_ERROR'};
 			&error;
 		}
@@ -224,7 +275,7 @@ sub save {
 	# Validate passwords
 	if ($adminpass1 || $adminpass2) {
 		$_ = $adminpass1;
-		if (! m/^(?=loxberry$)|^(((?=.*[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=])(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=]{4,64}$)|^(){0})$/ ) {
+		if (m/\"\'\@\:/ ) {
 			$error = $SL{'ADMIN.MSG_VAL_PASSWORD_ERROR'};
 			&error;
 		}
@@ -247,136 +298,69 @@ sub save {
 		}
 	}
 
-	# Validate if anything was changed
-	if (!$securepin1 && !$adminpass1 && $adminuserold eq $adminuser) {
-		$error = $SL{'ADMIN.SAVE_ERR_NOTHING_TO_CHANGE'};
-		&error;
-	}
-	
 	##
 	## AT THIS STAGE, ALL REQUIRED FIELDS ARE VALIDATED
 	##
-	
+	my $secpinerror = 0;
+	my $wraperror = 0;
+	my $rooterror = 0;
+
 	##
 	## User wants to change the username but NOT the password
 	##
 	if ($adminuser && !$adminpass1) {
-	
 		# Save Username/Password for Webarea
-		$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $quoted_adminpassold);
+		#$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $quoted_adminpassold);
+		$output = qx(sudo $lbssbindir/credentialshandler.pl changewebuipasswd '$adminuser' '$adminpassold');
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
-			$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
-			# &error;
+			chomp ($output);
+			$error .= "credentialshandler.pl changewebuipasswd adminuser adminpass1 Error: $output Exitcode: $exitcode<br>";
+			$wraperror = 1;
 		} else {
 			$maintemplate->param("WEBOK", 1);
 		} 
-
 	}
 	
 	##
 	## User wants to change the password (and maybe also the username):
 	##
 	if ($adminpass1) {
-		$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswd.exp "$adminpassold" "$adminpass1");
+		# Save Username/Password for System
+		$output = qx(sudo $lbssbindir/credentialshandler.pl changepasswd 'loxberry' '$adminpassold' '$adminpass1');
 		$exitcode  = $? >> 8;
-		print STDERR "setloxberrypasswd.exp Exitcode ".$exitcode."\n";
-		if ($exitcode eq 1) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_IDENTICAL'}."<br>";
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode eq 2) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_WRAPPED'}."<br>";
+		if ($exitcode != 0) {
+			chomp ($output);
+			$error .= "credentialshandler.pl changepasswd loxberry adminpassold adminpass1 Error: $output Exitcode: $exitcode<br>";
 			$wraperror = 1;
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode eq 3) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SIMILAR'}."<br>";
-			$wraperror = 1;
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode eq 4) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_TOO_SHORT'}."<br>";
-			$wraperror = 1;
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode eq 5) {
-			print STDERR "setloxberrypasswd.exp: ".$SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."\n";
-			$error .= $SL{'ADMIN.SAVE_ERR_PASS_GENERAL_ERROR'}."<br>";
-			$wraperror = 1;
-			# &error;
-			# exit;
-		}
-		elsif ($exitcode ne 0) {
-			print STDERR "setloxberrypasswd.exp: adminpassold Exitcode $exitcode\n";
-			$error .= " setloxberrypasswd.exp: adminpassold Exitcode $exitcode<br>";
-			# &error;
-			# exit;
 		} else {
 			$maintemplate->param("ADMINOK", 1);
-		}	
-		if ($wraperror ne 1) {
-			
-			# Try to set new SAMBA passwords for user "loxberry"
-	
-			## First try if default password is still valid:
-			# $output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp loxberry $adminpass1);
-			## If default password isn't valid anymore:
-			$output = qx(LANG="en_GB.UTF-8" $lbhomedir/sbin/setloxberrypasswdsmb.exp $quoted_adminpassold $quoted_adminpass1);
-			$exitcode  = $? >> 8;
-			if ($exitcode ne 0) {
-				print STDERR "setloxberrypasswdsmb.exp: adminpassold Exitcode $exitcode\n";
-				$error .= " setloxberrypasswdsmb.exp: adminpassold Exitcode $exitcode<br>";
-				# &error;
-				# exit;
-			} else {
-				$maintemplate->param("SAMBAOK", 1);
-			}	
-	
-			# Set MYSQL Password
-			# This only works if the initial password is still valid
-			# (password: "loxberry")
-			# Use eval {} here in case somthing went wrong
-			#$sqlerr = 0;
-			#$dsn = "DBI:mysql:database=mysql";
-			#eval {$dbh = DBI->connect($dsn, 'root', $adminpassold )};
-			#$sqlerr = 1 if $@;
-			#eval {$sth = $dbh->prepare("UPDATE mysql.user SET password=Password('$adminpass1') WHERE User='root' AND Host='localhost'")};
-			#$sqlerr = 1 if $@;
-			#eval {$sth->execute()};
-			#$sqlerr = 1 if $@;
-			#eval {$sth = $dbh->prepare("FLUSH PRIVILEGES")};
-			#$sqlerr = 1 if $@;
-			#eval {$sth->execute()};
-			#$sqlerr = 1 if $@;
-			#eval {$sth->finish()};
-			#$sqlerr = 1 if $@;
-			#eval {$dbh->{AutoCommit} = 0};
-			#$sqlerr = 1 if $@;
-			#eval {$dbh->commit};
-			#$sqlerr = 1 if $@;
-			#if ($sqlerr eq 0) {
-			#  $maintemplate->param("SQLOK", 1);
-			#  print STDERR "sqlerr eq 0 - OK\n";
-			#}
-	
 			# Save Username/Password for Webarea
-			$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $quoted_adminpass1);
+			$output = qx(sudo $lbssbindir/credentialshandler.pl changewebuipasswd '$adminuser' '$adminpass1');
 			my $exitcode  = $? >> 8;
 			if ($exitcode != 0) {
-				$error .= "htpasswd htusers.dat adminuser adminpass1 Exitcode $exitcode<br>";
-				# &error;
+				chomp ($output);
+				$error .= "credentialshandler.pl changewebuipasswd adminuser adminpass1 Error: $output Exitcode: $exitcode<br>";
+				$wraperror = 1;
 			} else {
 				$maintemplate->param("WEBOK", 1);
-			} 
+			}	
+		}
+	}
+	
+	##
+	## User wants to change the password (and maybe also the username):
+	##
+	if ($rootpass) {
+		# Save Username/Password for System
+		$output = qx(sudo $lbssbindir/credentialshandler.pl changepasswd 'root' 'loxberry' '$rootpass');
+		$exitcode  = $? >> 8;
+		if ($exitcode != 0) {
+			chomp ($output);
+			$error .= "credentialshandler.pl changepasswd root rootpassold rootpass Error: $output Exitcode: $exitcode<br>";
+			$rooterror = 1;
+		} else {
+			$maintemplate->param("ROOTOK", 1);
 		}
 	}
 
@@ -384,14 +368,14 @@ sub save {
 	## User wants to change the SecurePIN:
 	##
 	if ($securepin1) {
-		$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl changesecurepin $securepinold $securepin1);
+		$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl changesecurepin '$securepinold' '$securepin1');
 		my $exitcode  = $? >> 8;
 		if ($exitcode ne 0) {
-			$error .= "credentialshandler.pl changesecurepin Errorcode $exitcode<br>";
-			#&error;
+			chomp ($output);
+			$error .= "credentialshandler.pl changesecurepin Error: $output Errorcode: $exitcode<br>";
+			$secpinerror = 1;
 		} else {
 			$maintemplate->param("SECUREPINOK", 1);
-			print STDERR "credentialshandler.pl: changesecurepin securepin1 = 0 - OK\n";
 		}
 	}
 	
@@ -399,26 +383,35 @@ sub save {
 	## Overview of new passwords:
 	##
 	if ($adminpass1 && $wraperror ne 1) {
-		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpass1\r\n";
+		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t\t\t$adminuser / $adminpass1\r\n";
 		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $adminpass1\r\n";
 		$maintemplate->param( "ADMINPASS", $adminpass1 );
 	} else {
-		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t$adminuser / $adminpassold\r\n";
+		$creditwebadmin = "$SL{'ADMIN.SAVE_OK_WEB_ADMIN_AREA'}\t\t\t$adminuser / $adminpassold\r\n";
 		$creditconsole = "$SL{'ADMIN.SAVE_OK_COL_SSH'}\tloxberry / $adminpassold\r\n";
 		$maintemplate->param( "ADMINPASS", $adminpassold );
 	}
-	if ($securepin1) {
-		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t$securepin1\r\n";
+	if ($securepin1 && $secpinerror ne 1) {
+		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t\t\t\t$securepin1\r\n";
 		$maintemplate->param( "SECUREPIN", $securepin1 );
 	} else {
-		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t$securepinold\r\n";
+		$creditsecurepin = "$SL{'ADMIN.SAVE_OK_COL_SECUREPIN'}\t\t\t\t$securepinold\r\n";
 		$maintemplate->param( "SECUREPIN", $securepinold );
+	}
+	if ($rootpass && $rooterror ne 1) {
+		$creditroot = "$SL{'ADMIN.SAVE_OK_ROOT_USER'}\t\t\troot / $rootpass\r\n";
+		$maintemplate->param( "ROOTPASS", $rootpass );
+	} 
+	if ($rootpass && $rooterror eq 1) {
+		$creditroot = "$SL{'ADMIN.SAVE_OK_ROOT_USER'}\t\t\troot / loxberry\r\n";
+		$maintemplate->param( "ROOTPASS", "loxberry" );
 	}
 
 	my $credentialstxt = "$SL{'ADMIN.SAVE_OK_INFO'}\r\n" .  
 		"\r\n" .
 		$creditwebadmin .
 		$creditconsole .
+		$creditroot .
 		$creditsecurepin;
 
 	# $credentialstxt=encode_base64($credentialstxt);
@@ -428,7 +421,7 @@ sub save {
 	$maintemplate->param( "CREDENTIALSTXT", $credentialstxt);
 	
 	$maintemplate->param( "ERRORS", $error);
-	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system");
+	$maintemplate->param( "NEXTURL", "$nexturl");
 
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
 	print STDERR "admin.cgi: Send OUTPUT and exit\n";
@@ -451,7 +444,6 @@ exit;
 #####################################################
 # Error
 #####################################################
-
 sub error {
 
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLABEL'};
@@ -473,4 +465,45 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLA
 	LoxBerry::Web::pageend();
 	LoxBerry::Web::foot();
 	exit;
+}
+
+#####################################################
+# Random Sub
+#####################################################
+sub generate {
+        local($e) = @_;
+        my($zufall,@words,$more);
+
+        if($e =~ /^\d+$/){
+                $more = $e;
+        }else{
+                $more = "10";
+        }
+
+        @words = qw(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9);
+
+        foreach (1..$more){
+                $zufall .= $words[int rand($#words+1)];
+        }
+
+        return($zufall);
+}
+
+sub generatedigit {
+        local($e) = @_;
+        my($zufall,@words,$more);
+
+        if($e =~ /^\d+$/){
+                $more = $e;
+        }else{
+                $more = "10";
+        }
+
+        @words = qw(0 1 2 3 4 5 6 7 8 9);
+
+        foreach (1..$more){
+                $zufall .= $words[int rand($#words+1)];
+        }
+
+        return($zufall);
 }

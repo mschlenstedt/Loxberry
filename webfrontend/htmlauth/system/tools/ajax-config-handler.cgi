@@ -8,7 +8,7 @@ use LoxBerry::System;
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "2.2.1.1"; # Version of this script
+my $version = "3.0.0.0"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -420,8 +420,8 @@ sub plugininstall_status
 	my $status = <$fh>;
 	close ($fh);
 	chomp $status;
-	print $cgi->header;
-	print $status;
+	$response{error} = "0";
+	$response{message} = "$status";
 	exit;
 }
 

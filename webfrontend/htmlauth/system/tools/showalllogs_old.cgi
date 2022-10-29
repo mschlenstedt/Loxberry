@@ -46,7 +46,7 @@ if ($R::package) {
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . "Log Manager"; #$SL{'LOGMANAGER.WIDGETLABEL'};
 }
 
-$helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+$helplink = "https://wiki.loxberry.de/";
 
 LoxBerry::Web::lbheader($template_title, $helplink) if (!$embed);
 print $cgi->header(-charset=>'utf-8') if ($embed);

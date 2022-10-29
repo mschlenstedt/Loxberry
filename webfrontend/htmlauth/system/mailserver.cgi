@@ -29,7 +29,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/j4gKAw";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mail_server";
 my $helptemplate = "help_mailserver.html";
 
 #our $cfg;

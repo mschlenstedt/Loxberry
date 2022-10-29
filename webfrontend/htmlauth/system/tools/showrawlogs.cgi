@@ -14,7 +14,7 @@ use strict;
 
 $LoxBerry::Log::DEBUG = 1;
 
-our $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+our $helplink = "https://wiki.loxberry.de/";
 our $template_title = "Show raw logs";
 
 # Version of this script

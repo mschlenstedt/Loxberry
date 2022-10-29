@@ -371,7 +371,7 @@ sub get_storage
 }
 
 # EXTERNAL function to query storage form HTML
-# Returns a HTML to select storage (see http://www.loxwiki.eu/x/BgHgAQ)
+# Returns a HTML to select storage (see https://wiki.loxberry.de/entwickler/perl_develop_plugins_with_perl/perl_loxberry_sdk_dokumentation/perlmodul_loxberrystorage/loxberrystorageget_storage_html/start)
 # This function creates a POST request to the ajax-storage-handler, that by itself calls LoxBerry::Storage::get_storage
 # This kind of processing simplifies AJAX requests and scripting language independency
 

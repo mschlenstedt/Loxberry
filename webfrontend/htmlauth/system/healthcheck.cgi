@@ -5,7 +5,7 @@ use strict;
 use CGI;
 use LoxBerry::System;
 
-my $helplink = "https://www.loxwiki.eu/x/_oYKAw";
+my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_my_loxberry/healthcheck";
 my $helptemplate = "help_myloxberry.html";
 my $template_title;
 

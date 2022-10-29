@@ -1,5 +1,23 @@
 <!-- ** START template/system/mainplugins.html 03.12.2017 ************************************************************************************ -->
 <!-- <div style="font-size: 0.6em; text-align: right; vertical-align: middle;">LoxBerry Version <TMPL_VAR SVERSION></div> -->
+
+<!-- Popup: Wizard -->
+<TMPL_IF WIZARD>
+<div data-role="popup" id="popupFirstBoot" data-overlay-theme="a" data-dismissible="false" style="min-width:600px;min-height:300px;" data-theme="a" class="ui-corner-all">
+	<div data-role="header" >
+		<h1 class="ui-title" style="text-align: center;"><TMPL_VAR WIZARD.WELCOME></h1>
+	</div>
+	<div role="main" id="popupRebootForceContent" style="padding: 20px 20px;text-align:center;">
+		<img src="/system/images/Logo_green_transparent.png" width="250px">
+		<p><b><TMPL_VAR WIZARD.INTRO1></b></p>
+		<p><TMPL_VAR WIZARD.INTRO2> <a href="<TMPL_VAR WIZARD.WIKIURL_CONFIGHELP>" target="_blank"><TMPL_VAR WIZARD.WIKIURL_CONFIGHELP></a></p>
+		<p>&nbsp;</p>
+		<a style="background-color: lightgreen;"href="/admin/system/admin.cgi?do=random" data-role="button" data-iconpos="left" data-icon="power" data-corners="true" data-inline="true"><TMPL_VAR WIZARD.BUTTON_RDM_PASSWORDS></a>
+		<a style="background-color: lightyellow;" href="/admin/system/admin.cgi" data-role="button" data-iconpos="left" data-icon="power" data-corners="true" data-inline="true"><TMPL_VAR WIZARD.BUTTON_STD_PASSWORDS></a>
+	</div>
+</div>
+</TMPL_IF>
+
 <TMPL_IF PAGE_PLUGIN>
 <p class="wide">
 	<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg" alt="">
@@ -32,7 +50,7 @@
 <!-- END Plugin container -->
 <p>
 	<a href="/admin/system/plugininstall.cgi" data-role="button" data-inline="true" data-mini="true" data-icon="grid"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></a>
-	<a href="http://www.loxwiki.eu/display/LOXBERRY/Plugins/" target="_blank" data-role="button" data-inline="true" data-mini="true" data-icon="search"><TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
+	<a href="https://wiki.loxberry.de/plugins/start" target="_blank" data-role="button" data-inline="true" data-mini="true" data-icon="search"><TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
 </p>
 </TMPL_IF>
 
@@ -47,7 +65,11 @@
 <TMPL_LOOP WIDGETS>
 <div class="widget">
 	<!-- <TMPL_VAR WIDGET_NOTIFY> -->
-	<a href="<TMPL_VAR WIDGET_CGI>">
+	<TMPL_IF WIDGET_TARGET>
+		<a href="<TMPL_VAR WIDGET_CGI>" target="<TMPL_VAR WIDGET_TARGET>">
+	<TMPL_ELSE>
+		<a href="<TMPL_VAR WIDGET_CGI>">
+	</TMPL_IF>
 			<TMPL_IF WIDGET_CLOCK>
 			<div class="menutableicon" style="width:100%; height:80px; padding:1px 0 10px 0;">
 				<div class="clock" style="text-align:center;  margin:10px 0 0 43px" >
@@ -73,7 +95,11 @@
 			</TMPL_IF>
 	</a>
 	<div>
-		<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
+		<TMPL_IF WIDGET_TARGET>
+			<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle" target="<TMPL_VAR WIDGET_TARGET>"><TMPL_VAR WIDGET_TITLE></a>
+		<TMPL_ELSE>
+			<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
+		</TMPL_IF>
 	</div>
 </div>
 </TMPL_LOOP>
@@ -94,6 +120,7 @@ $(function() {
     //console.log( "Calling updatenotify" );
 	updatenotify();
 	setInterval(function(){ updatenotify(); }, <TMPL_VAR NOTIFY_POLLTIME>);
+        $("#popupFirstBoot").popup("open");
 });
 	
 function updatenotify() {
@@ -147,6 +174,34 @@ function updatenotify() {
 		
 		// NavBar injection
 		console.log ("System Infos/Errors:", systeminfos, systemerrors, "Plugin Infos/Errors:", plugininfos, pluginerrors);
+
+		if( pluginerrors > 0 ) {
+			navbarglobal.$data.menu[0].errorCount=pluginerrors+plugininfos;
+			navbarglobal.$data.menu[0].infoCount=0;
+		}
+		else { 
+			navbarglobal.$data.menu[0].errorCount=0;
+			navbarglobal.$data.menu[0].infoCount=plugininfos;
+		}
+		if( systemerrors > 0 ) {
+			navbarglobal.$data.menu[1].errorCount=systemerrors+systeminfos;
+			navbarglobal.$data.menu[1].infoCount = 0;
+		}
+		else {
+			navbarglobal.$data.menu[1].errorCount=0;
+			navbarglobal.$data.menu[1].infoCount=systeminfos;
+		}
+		
+		if( plugininfos+pluginerrors+systeminfos+systemerrors > 0 ) {
+			if( pluginerrors+systemerrors > 0 ) $("#btnnotifications").css("background-color", "red");
+			else $("#btnnotifications").css("background-color", "blue");
+			$("#btnnotifications").fadeIn();
+			
+		} else {
+			$("#btnnotifications").fadeOut();
+		}
+			
+		/*
 		if (pluginerrors != 0) $("#notifyRedNavBar1").text(pluginerrors).fadeIn('slow');
 		else $("#notifyRedNavBar1").text('0').fadeOut('slow');
 		if (plugininfos != 0) $("#notifyBlueNavBar1").text(plugininfos).fadeIn('slow');
@@ -155,7 +210,7 @@ function updatenotify() {
 		else $("#notifyRedNavBar2").text('0').fadeOut('slow');
 		if (systeminfos != 0) $("#notifyBlueNavBar2").text(systeminfos).fadeIn('slow');
 		else $("#notifyBlueNavBar2").text('0').fadeOut('slow');
-		
+		*/
 	});
 };
 

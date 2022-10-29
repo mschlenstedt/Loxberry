@@ -1,65 +1,132 @@
 <!-- ** START template/system/get_notification_html.html ************************************************************************************ -->
-	<div class="notify_block<TMPL_VAR RAND>" style="min-width:100%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
-		<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; display: block; margin-left: auto; margin-right: auto;">
-			<img src="/system/images/notification_info_big.svg" >
+	<TMPL_IF SHOW_HEADER>
+	<h1 class="wide">Notifications</h1>
+	</TMPL_IF>
+	
+	<div id="notificationBlock">
+		<TMPL_IF NOTIFICATIONCOUNT>
+		<div style="min-width:100%; height:4px; background-color:#888888;">
+			<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:3px; background-repeat: no-repeat; display: block; margin-left: auto; margin-right: auto;">
+				<img src="/system/images/notification_info_big.svg" >
+			</div>
 		</div>
-		<div style="text-align:right; margin-top:-18px;"><a href="#" id="notifdeleteall" data-role="button" data-icon="delete" data-iconpos="right"  data-inline="true" data-mini="true" role="button"><TMPL_VAR NOTIFY.DELETE_ALL_MESSAGES></a></div>
-		<script>$("#notifdeleteall").fadeOut(0);</script>
+		<div style="height:15px"></div>
+		</TMPL_IF>
+		
+		<div style="display:none" id="notificationCount"><TMPL_VAR NOTIFICATIONCOUNT></div>
+		
 		<div style="display:table; padding: 5px;">
-			<TMPL_VAR NOTIFICATIONS>
+			<TMPL_LOOP NAME="NOTIFICATIONS">
+			<div style="display:table-row;" id="notifyrow<TMPL_VAR KEY>" class="notifyrow" data-notifykey="<TMPL_VAR KEY>">
+				<img src="<TMPL_VARICONURI>">
+				<div style="display:table-cell; vertical-align: middle; width:30px; padding:10px;">
+					<TMPL_IF ISINFO>
+					<img src="/system/images/notification_info_small.svg">
+					<TMPL_ELSE>
+					<img src="/system/images/notification_error_small.svg">
+					</TMPL_IF>
+				</div>
+				<TMPL_IF SHOW_HEADER>
+					<div style="vertical-align: middle; width:20%; display: table-cell; padding:7px;font-size:130%;">
+						<TMPL_VAR TITLE>
+					</div>
+				</TMPL_IF>
+				<div style='vertical-align: middle; width:75%; display: table-cell; padding: 7px;'>
+					<b><TMPL_VAR DATESTR>:</b> <TMPL_VAR CONTENTHTML>
+				</div>
+				<div style='vertical-align: middle; width:25%; display: table-cell; align:right; text-align: right;'>
+					<TMPL_IF LOGFILEPATH>
+					<a class="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILEPATH>&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Logfile</a>
+					</TMPL_IF>
+					<TMPL_IF LINK>
+					<a class="btnlink" data-role="button" href="<TMPL_VAR LINK>" target="<TMPL_VAR LINKTARGET>" data-inline="true" data-mini="true" data-icon="action">Details</a>
+					</TMPL_IF>
+					<a href='#' class='notifdelete' id='notifdelete<TMPL_VAR KEY>' data-notifykey='<TMPL_VAR KEY>' data-role='button' data-icon='delete' data-iconpos='notext' data-inline='true' data-mini='true'>(X)</a>
+				</div>
+			</div>
+			</TMPL_LOOP>
 		</div>
-	</div>
-	<div style="height:40px" class="spacer<TMPL_VAR RAND>"></div>
+		<TMPL_IF NOTIFICATIONCOUNT>
+		<div style="display:flex;justify-content:flex-end">
+			<div>
+			<a href="#" id="notifdeleteall" style="display:none;" data-role="button" data-icon="delete" data-iconpos="right" data-inline="true" data-mini="true" role="button"><TMPL_VAR NOTIFY.DELETE_ALL_MESSAGES></a>
+			</div>
+		</div>
+		<div style="width:100%; height:4px; background-color:#888888;">
+		</div>
+		<div style="width:100%;height:40px">
+		</div>
+		</TMPL_IF>
+	</div>	
+	<TMPL_IF SHOW_HEADER>
+		<div id="notificationNoNotifications" style="display:none">
+		No notifications.
+		</div>
+	</TMPL_IF>
+	
 <script>
-	function sleep_notifydelete(ms) 
-	{
-  		return new Promise(resolve => setTimeout(resolve, ms));
-	}
+	
+	var notificationCount;
+	
+	updateNotificationCount();
+	
 	$("#notifdeleteall").click(async function() 
 	{
-		$("#notifdeleteall").attr('deleting',1);
-		while ( $(".notifyrow<TMPL_VAR RAND>:visible").length > 0 ) 
-		{
-			var toclick = $(".notifdelete").first().attr('id');
-			$( "#"+toclick ).trigger('click');
-			await sleep_notifydelete(500);
-		}
-		$("#notifdeleteall").attr('deleting','');
+		console.log("Delete all");
+		$('.notifyrow').each(function(){
+			delid = $(this).data('notifykey');
+			console.log("deleteall", delid);
+			deleteKey(delid);
+		});
+		
 	});
 	$(".notifdelete").click(function() 
 	{
-		var delid = $(this).attr('data-delid');
-		var delid_encoded = delid.replace(".", "\\.");
-		console.log("Delete key", delid);
-		if ( $(".notifyrow<TMPL_VAR RAND>:visible").length <= 1 ) { $(".notify_block<TMPL_VAR RAND>").fadeOut(); $(".spacer<TMPL_VAR RAND>").fadeOut();}
-		$("#notifyrow"+delid_encoded).fadeOut().remove();
-		
+		var delid = $(this).data('notifykey');
+		deleteKey( delid );
+	});
+
+function deleteKey( delid ) {
+	
+	console.log("Delete key", delid);
+	$("#notifyrow"+delid).fadeOut().remove();
+	
 	$.post ( '/admin/system/tools/ajax-notification-handler.cgi', 
-					{ 	action: 'notify-deletekey',
-						value: delid,
-					})
+		{ 	action: 'notify-deletekey',
+			value: delid,
+	})
+	.done(function() {
+		updateNotificationCount(1);
+	})
 	.always(function(data) {
-		if (typeof updatenavbar !== 'undefined' && $.isFunction(updatenavbar)) {
-			console.log("Done");
-			updatenavbar();
-		}
+		if( typeof navbarglobal !== 'undefined' )
+		navbarglobal.$forceUpdate();
 	});
-	show_delete_all_button();
-	});
-	function show_delete_all_button()
-	{
-		if ( $(".notifyrow<TMPL_VAR RAND>:visible").length <= 1 )  
-		{
-			$("#notifdeleteall").fadeOut(); 
-		}
-		else
-		{
-			$("#notifdeleteall").fadeIn(); 
-		}
+
+}
+
+function updateNotificationCount( reduce = 0 ) {
+	
+	notificationCount = $("#notificationCount").text();
+	if( reduce > 0 ) {
+		notificationCount -= reduce;
+		$("#notificationCount").text(notificationCount);
 	}
-	$( document ).ready(function()
-	{
-		show_delete_all_button();
-	});
+	
+	if(notificationCount > 1) {
+		$("#notifdeleteall").fadeIn();
+	} 
+	else {
+		$("#notifdeleteall").fadeOut();
+	}
+	
+	if(notificationCount == 0) {
+		$("#notificationBlock").fadeOut();
+	}
+	if( $("#notificationNoNotifications") && notificationCount == 0) {
+		$("#notificationNoNotifications").show();
+	}
+}
+
 </script>
 <!-- ** END template/system/get_notification_html.html ************************************************************************************ -->

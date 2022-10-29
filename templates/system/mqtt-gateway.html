@@ -1,0 +1,1670 @@
+<style>
+.mono {
+	font-family:monospace;
+	font-size:110%;
+	font-weight:bold;
+	color:green;
+
+}
+#overlay 
+{
+  display: none !important;
+}
+
+.datahidden {
+	display:none;
+}
+</style>
+
+<!-- RAW Config -->
+<div style="display:none">
+	<div id="mqttconfig"><TMPL_VAR JSONCONFIG></div>
+	<div id="udpinportconfig"><TMPL_VAR UDPINPORT></div>
+	<div id="extpluginsettings"><TMPL_VAR EXTPLUGINSETTINGS></div>
+</div>
+
+<TMPL_IF FORM_SETTINGS>
+	<!-- Form SETTINGS -->
+	<form id="form" onsubmit="return false;">
+
+	<div class="wide">MQTT to Miniserver</div>
+	<br>
+
+	<div data-role="fieldcontain">
+		<fieldset data-role="controlgroup">
+			<legend>Type sending the data to Miniserver</legend>
+			<input type="checkbox" name="Main.use_http" id="Main.use_http">
+			<label for="Main.use_http">Set virtual inputs via HTTP webservice (recommended)</label>
+			<input type="checkbox" name="Main.use_udp" id="Main.use_udp">
+			<label for="Main.use_udp">Send data via UDP</label>
+			<p class="hint">See the Wiki for details how to configure your inputs on your Miniserver.</p>
+		</fieldset>
+		
+	<div>
+
+	<div data-role="fieldcontain">
+		<!-- <label for="Main.msno">Miniserver to relay to</label> -->
+		<TMPL_VAR mslist_select_html>
+	</div>
+
+	<div data-role="fieldcontain" class="main_udpport_block">
+		<label for="Main.udpport">Miniserver UDP port</label>
+		<input name="Main.udpport" id="Main.udpport" type="text" />
+		<p class="hint">Default UDP port is <span class="mono">11883</span>. If UDP is enabled, data <i>from the broker</i> are sent to this udp port on the Miniserver.</p>
+	</div>
+
+	<div data-role="fieldcontain">
+		<fieldset data-role="controlgroup">
+			<legend>Data transformations</legend>
+			<input type="checkbox" name="Main.convert_booleans" id="Main.convert_booleans">
+			<label for="Main.convert_booleans">Convert booleans to 1 and 0</label>
+			<input type="checkbox" name="Main.expand_json" id="Main.expand_json">
+			<label for="Main.expand_json">Expand JSON data</label>
+		</fieldset>
+	</div>
+
+	<br>
+	<div class="wide">Miniserver to MQTT</div>
+	<br>
+
+	<div data-role="fieldcontain">
+		<label for="udpinport">Gateway UDP in-port</label>
+		<input name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" />
+		<p class="hint">Default UDP IN-port on LoxBerry is <span class="mono">11884</span>. Publish data <i>from the Miniserver</i> to this udp port.</p>
+	</div>
+
+	<br>
+
+	<div data-role='collapsible' id='coll_mqtthttp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
+		<h2>Still more settings</h2>
+		
+		<div>
+			<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+	        	<legend>Data Transfer Performance</legend>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-50" value="50">
+				<label for="Main.cpuperf-50">NO LIMIT!</label>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-010" value="10">
+				<label for="Main.cpuperf-010">Really fast</label>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-005" value="5">
+				<label for="Main.cpuperf-005">Fast (Default)</label>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-002" value="2.5">
+				<label for="Main.cpuperf-002">Moderate</label>
+				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-001" value="1">
+				<label for="Main.cpuperf-001">Energy Saver</label>
+				<p><br>This influences the routing performance of the MQTT Gateway. Compared, the old behaviour (before this setting exists) was between <i>Moderate</i> and <i>Energy Saver</i>. Changing the setting takes some minutes to adjust.</p>
+			</fieldset>
+		</div>
+		<div>
+			<label for="resetaftersendms">Reset After Send Time (ms)</label>
+			<input type="number" data-clear-btn="false" name="Main.resetaftersendms" id="Main.resetaftersendms">
+			<p class="hint">Default is <span class="mono">13</span>. Topics with Reset-After-Send enabled, will wait for x milliseconds before the value is resetted. Raise this value, if your virtual inputs are not correctly resetted on your Miniserver.
+		</div>
+	</div>	
+	
+	
+	</form>
+	<!-- /Form SETTINGS -->
+</TMPL_IF>
+
+<TMPL_IF FORM_SUBSCRIPTIONS>
+	<!-- Form SUBSCRIPTIONS -->
+	<form id="form" onsubmit="return false;">
+
+	<div class="wide">MQTT Subscriptions</div>
+	<p>Subscriptions are the topics of MQTT devices that are relayed to the Miniserver. A # sign symbols a joker in MQTT. Use exactly the topic(s) provided by the device vendor.</p> 
+	<p style="font-size:80%"><i>Advanced feature:</i> Send specific subscriptions to specific Miniservers - after the subscription, use a pipe | symbol followed by a list of Miniserver numbers (from the Miniserver widget), e.g. <span class="mono">shellies/#|2</span> or <span class="mono">shellies/#|2,3</span>. Without pipe, the default Miniserver from the <i>Settings</i> page is used.</p>
+<!-- 	<div data-role="fieldcontain"> -->
+<!--		<label for="subscriptions">MQTT subscriptions <p class="hint">One subscription topic per line. For Shelly devices, use <span class="mono">shellies/#</span></p>
+		<p id="invalidTopics" class="hint" style="color:red"></p>
+		
+		</label> -->
+	<style>
+	.notes {
+    background-attachment: local;
+    background-image:
+        linear-gradient(to right, white 8px, transparent 10px),
+        linear-gradient(to left, white 8px, transparent 10px),
+        repeating-linear-gradient(white, white 23px, #ddd 23px, #ddd 24px, white 24px);
+    line-height: 24px !important;
+    padding: 4px 10px !important; 
+	}
+	</style>
+
+
+	<div class="ui-grid-b">
+	<div class="ui-block-a" style="width:20%;min-width:200px;max-width:35%">
+		<p class="hint">One subscription topic per line. For Shelly devices, use <span class="mono">shellies/#</span></p>
+		<p id="invalidTopics" class="hint" style="color:red"></p>
+	</div>
+	<div class="ui-block-b" style="width:50%;min-width:20%;">
+		<textarea name="subscriptions" id="subscriptions" rows="10" data-autogrow="false" class="notes"></textarea>
+	</div>
+	</div>
+<!--	</div> -->
+	
+	
+	
+	<div data-role='collapsible' id='coll_extsubscriptions' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right' style="display:none">
+		<h2 class='ui-bar ui-bar-a ui-corner-all'>Subscriptions defined by other plugins</h2>
+		<div id="extplugin_subscriptions" style="display:flex;flex-wrap:wrap;justify-content:space-evenly;align-items:flex-start;align-content:flex-start;background-color:lightgray;">
+		</div>
+	</div>
+	<br>
+	<div class="wide">Subscription Filter Expressions (RegEx)</div>
+	
+	<p>Subscriptions may route a lot of data to the Miniserver, some of them are never required for your logic. Filter expressions are Regular Expressions (RegEx) that filter the <u>JSON expanded</u> data. A filter <b>match</b> is <b>not forwarded</b> to the Miniserver (it's a &laquo;catch-all&raquo; of the <i>Do not forward</i> checkbox). At the stage of the filter, all topic delimiters (<span class="mono">/</span>) are <i>underscores</i> (<span class="mono">_</span>), even with UDP transmission.
+	</p>
+	
+	<div class="ui-grid-b">
+		<div class="ui-block-a" style="width:20%;min-width:200px;max-width:35%">
+			<p class="hint">One RegEx per line.</p>
+			<p id="invalidRegexs" class="hint" style="color:red;"></p>
+		</div>
+		<div class="ui-block-b" style="width:50%;min-width:20%;">
+			<textarea name="subscriptionfilters" id="subscriptionfilters" rows="5" data-autogrow="false" class="notes"></textarea>
+		</div>
+	</div>
+	
+	</form>
+	
+	<!-- /Form SUBSCRIPTIONS -->
+
+<script>
+
+$(function(){
+
+
+	
+
+
+});
+
+</script>
+
+
+
+
+	
+</TMPL_IF>
+
+<TMPL_IF FORM_CONVERSIONS>
+	<!-- Form CONVERSIONS -->
+	<form id="form" onsubmit="return false;">
+
+	<div class="wide">Text-to-Value conversions</div>
+	<p>MQTT devices often are sending strings that Loxone unfortunately cannot handle. In this field you can create text-to-value conversions. You can assign values to incoming strings, that values are sent to the Miniserver, and can be evaluated e.g. with a Status block.</p> 
+	<p>Booleans (on, off etc.) are already converted, if you have 'Boolean conversion' enabled.</p>
+	<div data-role="fieldcontain">
+		<label for="conversions">Text-to-Value conversion <p class="hint">One conversion per line. Use <span class="mono">Text=Value</span></p></label>
+		<textarea name="conversions" id="conversions" rows="20" data-autogrow="false"></textarea>
+	</div>
+	</form>
+
+	<div data-role='collapsible' id='coll_extconversions' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right' style="display:none">
+		<h2 class='ui-bar ui-bar-a ui-corner-all'>Conversions defined by other plugins</h2>
+		<div id="extplugin_conversions" style="display:flex;flex-wrap:wrap;justify-content:space-evenly;align-items:flex-start;align-content:flex-start;background-color:lightgray;">
+		</div>
+	</div>
+	
+	
+	<!-- /Form CONVERSIONS -->
+</TMPL_IF>
+
+
+<TMPL_IF FORM_TOPICS>
+	<!-- Form TOPICS (Incoming Overview) -->
+	<style>
+	.topics_table {
+		/* font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; */
+		border-collapse: collapse;
+		width: 100%;
+	}
+
+	.topics_table td, .topics_table th {
+		border: 1px solid #ddd;
+		padding: 8px;
+	}
+
+	.topics_table tr:nth-child(even){background-color: #f2f2f2;}
+
+	.topics_table tr:hover {background-color: #ddd;}
+
+	.topics_table th {
+		padding-top: 12px;
+		padding-bottom: 12px;
+		text-align: left;
+		background-color: #6dac20;
+		color: white;
+		text-shadow: 1px 1px #333333;
+		
+	}
+	.topics_table_data {
+		word-break: break-all;
+		width: 35%;
+	}
+	
+	.topics_table_udp_data {
+		word-break: break-all;
+		width: 50%;
+	}
+	
+	.topics_table_udp_commandrec {
+		word-break: break-all;
+		/* width: 35%; */
+	}
+	
+	
+	
+	.topics_table_status {
+		min-width: 150px;
+	}
+	
+	
+	.subscriptionfiltered {
+		color: #777777;
+	}
+	
+	</style>
+	
+	<div class="wide">Last transmissions to Miniserver</div>
+	<p>This page lists the transmissions via the MQTT Gateway to the Miniserver in the last 24 hours. It is refreshed <i>automatically on-the-fly</i> (as long as you have text selected, updating stops).<p>
+	<p>You can copy and paste the 'Virtual Input' names for HTTP transmissions, or create command recognitions from the UDP messages.</p>
+	
+	<input type="checkbox" name="topics_show_advanced" id="topics_show_advanced" data-mini="true">
+	<label for="topics_show_advanced">Show details and advanced settings</label>
+	
+	<div data-role='collapsible' id='coll_mqtthttp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
+		<h2 class='ui-bar ui-bar-a ui-corner-all' id='head_mqtthttp'>HTTP Virtual Inputs <span style='font-size:80%;'>(<span id="http_count">0</span> entries)<span id='head_mqtthttp_permissionErrors' style='display:none;font-size:80%;'>&nbsp;&nbsp;<img style="position:relative;left:15px;top:3px;" src="../../system/images/icon-locked.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;There are entries with access denied</span></h2>
+		<div id="generated_http_table">
+		</div>
+		<!-- <TMPL_VAR http_table> -->
+	</div>
+	
+	<div data-role='collapsible' id='coll_mqttudp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
+		<h2 class='ui-bar ui-bar-a ui-corner-all' id='head_mqttudp'>UDP Transmissions <span style='font-size:80%;'>(<span id="udp_count">0</span> entries)</span></h2>
+		<div id="generated_udp_table">
+		</div>
+		<!-- <TMPL_VAR udp_table> -->
+	</div>
+	<br>
+	
+	<!-- Donation -->
+	<div data-role='collapsible' id='coll_donate' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
+		<h2 class='ui-bar ui-bar-a ui-corner-all' id='head_donate'>Donate for test equipment</h2>
+		<TMPL_VAR donate>
+		<div style="margin:auto;text-align:center;">
+		<br>
+		<a href="https://paypal.me/christianfenzl" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" alt="Donate with PayPal.me" /></a>
+			
+		</div>
+		<br>
+		<div style="display:flex;justify-content:center;align-content:space-around;">
+			<div style="padding: 10px 10px 10px 10px;">
+				<fieldset data-role="controlgroup">
+					<input type="checkbox" name="Main.donation_remove" id="Main.donation_remove">
+					<label for="Main.donation_remove"><TMPL_VAR donate_done_remove></label>
+				</fieldset>
+			</div>
+			<div style="padding: 10px 10px 10px 10px;">
+				<button class="ui-btn ui-btn-icon-right ui-corner-all" id="saveapply" data-inline="true">Save</button>
+			</div>
+		</div>
+		<!-- <button id="Main.remove_donate" data-mini="true"><TMPL_VAR donate_done_remove></button> -->
+	</div>
+	<br>
+	
+	<div style="display:flex;align-items:center;justify-content:center;">
+		<!-- Clear broker database -->
+		<button class="ui-btn ui-btn-icon-right" id="purgemosquittodb" data-inline="true" style="display:none">Clear broker database</button>
+		<button class="ui-btn ui-btn-icon-right" id="reconnect" data-inline="true">Delete cache (for testing)</button>
+	</div>
+	
+	<script>
+		
+		var updateTopicsRunning = 0;
+		var currentElementCount = 0;
+		var refreshInterval = 1000;
+		var intervalID;
+		
+		$( document ).ready(function() {
+			
+			// Update date from http and udp table
+			http_table_skel();
+			udp_table_skel();
+			restoreWindow();
+			
+			if( is_enabled( sessionStorage.getItem("topics_show_advanced")) )
+				$("#topics_show_advanced").prop( "checked", true).checkboxradio("refresh");
+			
+			$("#topics_show_advanced").on( "change", function(){
+				sessionStorage.setItem("topics_show_advanced", $(this).prop("checked"));
+				
+			});
+			
+			$(".ui-collapsible").on("collapsiblecollapse", function(event, ui) {
+				// console.log("Collaps", $(this).attr('id'));
+				storeWindow($(this).attr('id'), "collapse");
+			});
+			$(".ui-collapsible").on("collapsibleexpand", function(event, ui) {
+				// console.log("Expand", $(this).attr('id'));
+				curr_coll = this;
+				storeWindow($(this).attr('id'), "expand");
+				$.each( $(".ui-collapsible"), function ( index, value ) {
+					if( this !== curr_coll ) {
+						// console.log("Close ", $(this).attr('id'));
+						$(this).collapsible( "collapse" );
+					}
+				});
+			});
+			
+			$(".topics_table").on( "filterablebeforefilter", function( event, ui ) {
+				// On any search, save the term to SessionStorage
+				$(':input[data-type="search"]').each(function(index, element){
+					sessionStorage.setItem($(this).attr('id'), $(this).val());
+				});
+			});
+			
+			// Click handler for the Submit state filter
+			$('.http_filters').bind( "change", function(event, ui){
+				http_filter_0 = $("#http_filter_0").prop('checked');
+				http_filter_200 = $("#http_filter_200").prop('checked');
+				http_filter_404 = $("#http_filter_404").prop('checked');
+				http_filter_500 = $("#http_filter_500").prop('checked');
+				http_filter_filtered = $("#http_filter_filtered").prop('checked');
+				http_filter_all = $("#http_filter_all").prop('checked');
+				// jQm sometimes hides the table...?
+				$("#topics_table_head").removeClass('ui-screen-hidden');
+				$("#topics_table_body").removeClass('ui-screen-hidden');
+
+				target = event.target.id;
+				if ( !http_filter_0 &&
+				     !http_filter_200 &&
+				     !http_filter_404 &&
+				     !http_filter_500 &&
+					 !http_filter_filtered &&
+				     !http_filter_all ) {
+					 $("#http_filter_all").prop('checked', true).checkboxradio("refresh");
+				}
+				else if( target == "http_filter_all" && http_filter_all ) {
+					$("#http_filter_0").prop('checked', false).checkboxradio("refresh");
+					$("#http_filter_200").prop('checked', false).checkboxradio("refresh");
+					$("#http_filter_404").prop('checked', false).checkboxradio("refresh");
+					$("#http_filter_500").prop('checked', false).checkboxradio("refresh");
+					$("#http_filter_filtered").prop('checked', false).checkboxradio("refresh");
+				} 
+				else {
+					$("#http_filter_all").attr('checked', false).checkboxradio("refresh");
+				}
+			});
+			
+			// Bind Copy Clipboard button
+			jQuery(document).on('click', '.copyClipboard', function(event, ui){
+				var target = $(this).next('input');
+				$(target).removeClass("datahidden");
+				target[0].select();
+				document.execCommand("copy");
+				$(target).addClass("datahidden");
+				
+				return;
+				console.log("Copy target", target[0]);
+				copyToClipboard(target[0]);
+			});
+			
+			
+			updateTopics();
+		});
+
+		function storeWindow (name, pos) 
+		{
+			sessionStorage.setItem("coll_"+name, pos);
+		}
+
+		function restoreWindow() 
+		{
+			$.each( $(".ui-collapsible"), function ( index, value ) {
+				var pos = sessionStorage.getItem("coll_"+$(value).attr('id'));
+				if(pos === "expand" || pos === "collapse") {
+					$(value).collapsible( pos );
+				} else {
+					sessionStorage.removeItem("coll_"+$(value).attr('id'));
+				}
+				// console.log($(value).attr('id'), pos);	
+			});
+			
+		}
+	
+		function updateTopics() {
+			
+			// console.log("Update topics");
+			// Serialize requests
+			if (getSelectedText()) {
+				// console.log("Text is selected");
+				return; }
+			if (updateTopicsRunning) return;
+			
+			updateTopicsRunning = 1;
+			
+			// The refresh interval is dependent to the number of elements
+			newRefreshInterval = calcInterval();
+			// console.log("CalcInterval:", newRefreshInterval, "intervalID:", intervalID);
+			if ( intervalID === undefined ) {
+				// console.log("Refresh interval set to", refreshInterval);
+				intervalID = setInterval(updateTopics, refreshInterval);
+			} else if ( newRefreshInterval != refreshInterval ) {
+				// console.log("Old refreshInterval", refreshInterval, "New refreshInterval", newRefreshInterval);
+				// console.log("Refreh interval updated to", newRefreshInterval);
+				refreshInterval = newRefreshInterval;
+				clearInterval(intervalID);
+				intervalID = setInterval(updateTopics, refreshInterval);
+			}
+			
+			// console.log(logtime(), "RELAYED_TOPICS START Request");
+			$.post( 'tools/mqtt-ajax.php', {
+				ajax: 'relayed_topics',
+				udpinport: udpinport })
+			.done(function(resp) {
+				// console.log(logtime(), "RELAYED_TOPICS DONE Request");
+			
+				// console.log( "ajax_post", "success", resp );
+				if (getSelectedText()) {
+					// console.log("Text is selected");
+					return; 
+				}
+				
+				// Prefill non-existing elements in config
+				if ( !("resetAfterSend" in resp ) )
+					resp[ "resetAfterSend" ] = null;
+				if ( !("Noncached" in resp ) )
+					resp[ "Noncached" ] = null;
+				if ( !("doNotForward" in resp ) )
+					resp[ "doNotForward" ] = null;
+				
+				
+				// console.log(logtime(), "RELAYED_TOPICS Generate_http_table");
+				generate_http_table(resp);
+				// console.log(logtime(), "RELAYED_TOPICS Generate_udp_table");
+				generate_udp_table(resp);
+				// console.log(logtime(), "RELAYED_TOPICS Bind buttons");
+				
+				$(".disablecache").bind( "change", function(event, ui) {
+					checkbox_disablecache(event);
+				});
+				$(".resetAfterSend").bind( "change", function(event, ui) {
+					checkbox_resetAfterSend(event);
+				});
+				$(".doNotForward").bind( "change", function(event, ui) {
+					checkbox_doNotForward(event);
+				});
+				
+				// console.log(logtime(), "RELAYED_TOPICS FINISHED");
+				
+		  })
+		  .fail(function(resp) {
+				console.log( "ajax_post", "failed", resp );
+		  })
+		  .always(function(resp) {
+				// console.log( "ajax_post", "finished", resp );
+				updateTopicsRunning = 0;
+		  });
+		}
+		
+		function http_table_skel() {
+			var http_table = "";
+			http_table+= '<fieldset data-role="controlgroup" data-type="horizontal" class="http_filters">';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_all" class="http_filter_checkbox" checked>Show All</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_200" class="http_filter_checkbox"><img src="../../system/images/icon-check.png" height="12">&nbsp;OK</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_404" class="http_filter_checkbox"><img src="../../system/images/icon-notfound.png" height="12">&nbsp;Not found</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_500" class="http_filter_checkbox"><img src="../../system/images/icon-locked.png" height="12">&nbsp;Access denied</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_filtered" class="http_filter_checkbox"><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Filtered</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_0" class="http_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
+			// http_table+= '</div>';
+			http_table+= '</fieldset>';
+			http_table+= '<form><input id="http_table_search" data-type="search" data-mini="true"></form>';
+			
+			http_table+= '<table class="topics_table" id="http_table" data-filter="true" data-input="#http_table_search">\n';
+			http_table+= '<thead id="topics_table_head">\n';
+			http_table+= '<tr>\n';
+			http_table+= '<th>Miniserver Virtual Input</th>\n';
+			http_table+= '<th>Last value</th>\n';
+			http_table+= '<th>Last arrived</th>\n';
+			http_table+= '</tr>\n';
+			http_table+= '</thead>\n';
+			
+			http_table+= '<tbody id="topics_table_body">\n';
+			http_table+= '</tbody>\n';
+			http_table+= '</table>\n';
+			$('#generated_http_table').html(http_table).trigger('create');
+			$('#http_table_search').val( sessionStorage.getItem('http_table_search') );
+		}
+		
+		function udp_table_skel() {
+			var udp_table = "";
+			udp_table+= '<fieldset data-role="controlgroup" data-type="horizontal" class="udp_filters">';
+			udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_unfiltered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Not filtered</label>';
+			udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_filtered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Filtered</label>';
+			// udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_0" class="udp_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
+			udp_table+= '</fieldset>';
+			
+			udp_table+= '<form><input id="udp_table_search" data-type="search" data-mini="true"></form>';
+			
+			udp_table += '<table class="topics_table" id="udp_table" data-filter="true" data-input="#udp_table_search">\n';
+			udp_table+= '<thead>\n';
+			udp_table+= '<tr>\n';
+			udp_table+= '<th>Data</th>\n';
+			udp_table+= '<th>Command Recognition</th>\n';
+			udp_table+= '<th>Last arrived</th>\n';
+			udp_table+= '</tr>\n';
+			udp_table+= '</thead>\n';
+			udp_table+= '<tbody>\n';
+			udp_table+= '</tbody>\n';
+			udp_table+= '</table>\n';
+			$('#generated_udp_table').html(udp_table).trigger('create');
+			$('#udp_table_search').val( sessionStorage.getItem('udp_table_search') );
+		}
+		
+		function generate_http_table(resp) {
+			
+			$("#http_count").text(resp.health_state.stats.http_relayedcount);
+			//console.log( get( resp, 'health_state.stats.httpresp') );
+			// $("#http_count_noaccess").text(" "+resp.health_state.stats.httpresp[500]);
+			var http_noaccess = get( resp, 'health_state.stats.httpresp');
+			var http_noaccess_count=0;
+			if( typeof http_noaccess != 'undefined' ) {
+				http_noaccess_401 = typeof http_noaccess[401] != 'undefined' ? http_noaccess[401] : 0 ; 
+				http_noaccess_403 = typeof http_noaccess[403] != 'undefined' ? http_noaccess[403] : 0; 
+				http_noaccess_500 = typeof http_noaccess[500] != 'undefined' ? http_noaccess[500] : 0; 
+				http_noaccess_count = http_noaccess_401+http_noaccess_403+http_noaccess_500;
+			}
+			if( http_noaccess_count > 0 ) 
+				$("#head_mqtthttp_permissionErrors").show();
+			else
+				$("#head_mqtthttp_permissionErrors").hide();
+			
+			if ( $("#coll_mqtthttp").hasClass('ui-collapsible-collapsed') ) {
+				return;
+			}
+			
+			currentElementCount = http_count;
+			
+			var date_options = { day: '2-digit', month: '2-digit' };
+			$("#http_table > tbody").empty();
+			
+			var http_row = "";
+			
+			// Get Filter flags
+			topics_show_advanced = $("#topics_show_advanced").prop('checked');
+			http_filter_0 = $("#http_filter_0").prop('checked');
+			http_filter_200 = $("#http_filter_200").prop('checked');
+			http_filter_404 = $("#http_filter_404").prop('checked');
+			http_filter_500 = $("#http_filter_500").prop('checked');
+			http_filter_filtered = $("#http_filter_filtered").prop('checked');
+			http_filter_all = $("#http_filter_all").prop('checked');
+
+			// Loop through data (HTTP)
+			Object.entries(resp.http).map(([topic, content]) => {
+				//console.log(resp);
+				
+				var d = new Date(content.timestamp*1000); 
+				var toMShighest = 0;
+				
+				if( typeof resp.http[topic].toMS != 'undefined' && typeof resp.http[topic].regexfilterline == 'undefined' && typeof resp.doNotForward[topic] == 'undefined' ) {
+					toMSarr = resp.http[topic].toMS;
+					var httpSubmitAdvTabInfRow = "";
+					for( i in toMSarr ) {
+						// console.log( topic, i, toMSarr[i].code );
+						if( toMSarr[i].code > toMShighest )
+							toMShighest = toMSarr[i].code;
+					
+						switch( toMSarr[i].code ) {
+							case '404': 
+								httpSubmitIcon = 'icon-notfound.png'; httpSubmitText = 'MS'+i+': HTTP 404 Input not available';
+								break;
+							case '401':
+							case '403':
+							case '500': 
+								httpSubmitIcon = 'icon-locked.png'; httpSubmitText = 'MS'+i+': HTTP '+toMSarr[i].code+' Possibly permission denied'; 
+								toMShighest='500';
+								break;
+							case '200':
+								httpSubmitIcon = 'icon-check.png'; httpSubmitText = 'MS'+i+': HTTP 200 Value submitted'; 
+								break;
+							default: 
+								httpSubmitIcon = 'icon-question.png'; httpSubmitText = 'Not sent so far (cache)'; 
+						}
+						
+						httpSubmitTime = new Date(toMSarr[i].lastsent*1000);
+						httpSubmitAdvTabInfRow += '<img src="../../system/images/'+httpSubmitIcon+'">&nbsp;'+httpSubmitText+' at '+httpSubmitTime.toLocaleString('de-DE', { hour:'numeric', minute:'numeric', hour12:false } )+'<br>';
+					}
+				switch( toMShighest ) {
+						case '404': 
+							httpSubmitIcon = 'icon-notfound.png'; httpSubmitText = 'HTTP 404 Input not available'; 
+							break;
+						case '500': 
+							httpSubmitIcon = 'icon-locked.png'; httpSubmitText = 'HTTP 500 Possibly permission denied'; 
+							break;
+						case '200':
+							httpSubmitIcon = 'icon-check.png'; httpSubmitText = 'HTTP 200 Value submitted'; 
+							break;
+						default: 
+							httpSubmitIcon = 'icon-question.png'; httpSubmitText = 'Not sent so far (cache)'; 
+					}
+						
+				} else if ( typeof resp.http[topic].regexfilterline != 'undefined' || typeof resp.doNotForward[topic] != 'undefined' ) {
+					httpSubmitIcon = 'icon-filtered.png'; httpSubmitText = 'Filtered'; 
+					httpSubmitAdvTabInfRow = '<img src="../../system/images/'+httpSubmitIcon+'">&nbsp;'+httpSubmitText+'<br>';
+					toMShighest = -1;
+				}
+				else {
+					httpSubmitIcon = 'icon-question.png'; httpSubmitText = 'Not sent so far (cache)'; 
+					httpSubmitAdvTabInfRow = '<img src="../../system/images/'+httpSubmitIcon+'">&nbsp;'+httpSubmitText+'<br>';
+				}
+				
+				// Filter 
+				var http_filter_show_entry;
+				if( http_filter_all ) http_filter_show_entry = 1;
+				if ( http_filter_filtered && ( typeof resp.http[topic].regexfilterline != 'undefined' || typeof resp.doNotForward[topic] != 'undefined') ) http_filter_show_entry = 1;
+				if ( http_filter_500 && toMShighest == '500' ) http_filter_show_entry = 1;
+				if ( http_filter_404 && toMShighest == '404' ) http_filter_show_entry = 1;
+				if ( http_filter_200 && toMShighest == '200' ) http_filter_show_entry = 1;
+				if ( http_filter_0 && toMShighest == '0' ) http_filter_show_entry = 1;
+				
+				if ( !http_filter_show_entry ) return;
+				
+				var subscriptionfiltered = 0;
+				var tdClass = '';
+				if( typeof resp.http[topic].regexfilterline != 'undefined' ) {
+					subscriptionfiltered = resp.http[topic].regexfilterline;
+					tdClass = 'subscriptionfiltered';
+				}
+				
+				var doNotForward = "";
+				if( typeof cfg.doNotForward !== 'undefined' && topic.replace(/\//g, "_") in cfg.doNotForward ) {
+					doNotForward = "checked";
+					tdClass = 'subscriptionfiltered';
+					// console.log(topic, "is set to Do-Not-Forward");
+				}
+				
+				// Begin creation of html
+				http_row+= '<tr id='+topic.replace(/\s+/g, '_')+'>\n';
+				http_row+= '<td class="'+tdClass+'">';
+								
+				http_row+= '<img src="../../system/images/'+httpSubmitIcon+'" style="user-select: none;padding-right:6px;">';
+
+				http_row+= topic;
+				http_row+=` <a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline copyClipboard" style="padding:1px;font-size:60%;height:12px;width:26px;">Copy</a>`;
+				http_row+= `<input type="text" value="${topic}" class="datahidden">`;
+				
+				
+				if( topics_show_advanced == true ) {
+					http_row+= '<br><span style="font-size: 75%">(Topic <i>' + content.originaltopic + '</i>)</span>';
+					
+					
+					// http_row+= '<fieldset data-role="controlgroup" data-enhanced="true" data-type="horizontal">';
+					http_row+= '<div>';
+					
+					// Do not cache
+					var uncached = "";
+					if( typeof cfg.Noncached !== 'undefined' && topic.replace(/\//g, "_") in cfg.Noncached ) {
+						uncached = "checked";
+						// console.log(topic, "is uncached");
+					}
+					// http_row+= '<label><input type="checkbox" name="http_cache_disabled_'+topic+'" id="http_cache_disabled_'+topic+'"data-mini="true" class="disablecache" ' + uncached +'>Disable cache</label>';
+					
+					http_row+= '<input type="checkbox" name="http_cache_disabled_'+topic+'" id="http_cache_disabled_'+topic+'" data-mini="true" class="disablecache" ' + uncached +' style="display:inline;">';
+					http_row+= '<label for="http_cache_disabled_'+topic+'" style="display:inline;">Disable cache</label>';
+				
+				
+					// Reset after send
+					var resetAfterSend = "";
+					if( typeof cfg.resetAfterSend !== 'undefined' && topic.replace(/\//g, "_") in cfg.resetAfterSend ) {
+						resetAfterSend = "checked";
+					// console.log(topic, "is reset after send");
+					}
+					// http_row+= '<label><input type="checkbox" name="http_reset_after_send_'+topic+'" id="http_reset_after_send_'+topic+'"data-mini="true" class="resetAfterSend" ' + resetAfterSend +'>Reset after send</label>';
+					http_row+= '&nbsp;<input type="checkbox" name="http_reset_after_send_'+topic+'" id="http_reset_after_send_'+topic+'" data-mini="true" class="resetAfterSend" '+resetAfterSend+' style="display:inline;">';
+					http_row+= '<label for="http_reset_after_send_'+topic+'" style="display:inline;">Reset after send</label>';
+								
+					// Do not forward
+					//http_row+= '<label><input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
+					http_row+= '&nbsp;<input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'" data-mini="true" class="doNotForward" '+doNotForward +' style="display:inline;">';
+					http_row+= '<label for="http_do_not_forward_'+topic+'" style="display:inline;">Do not forward</label>';
+					
+					// http_row+= '</fieldset>';
+					http_row+= '</div>';
+				
+				}
+				
+				http_row+= '</td>\n';
+								
+				http_row+= '<td class="'+tdClass+' topics_table_data">';
+				if( doNotForward || subscriptionfiltered != 0 ) 
+					http_row+= '<i><s style="text-shadow:none">';
+				http_row+= content.message; 
+				if( doNotForward ) 
+					http_row+= '</s></i>';
+				
+				http_row+= '</td>\n';
+				
+				http_row+= '<td class="'+tdClass+' topics_table_status">' + d.toLocaleDateString('hc', date_options) + ' ' + d.toLocaleTimeString();
+				// http_row+= ' <a href="#" class="ui-btn ui-icon-delete ui-btn-icon-notext ui-corner-all ui-mini" data-topic="' + content.originaltopic +'" onclick="deleteTopic(\''+content.originaltopic+'\');"></a>';
+				
+				http_row+= '&nbsp;<a href="#" data-topic="' + content.originaltopic + '" onclick="deleteTopic(\''+content.originaltopic+'\');"><img src="../../system/images/icon-trash.png"></a>';
+				
+				
+				if ( topics_show_advanced == true ) {
+					http_row+= '<br><span style="font-size:70%;">';
+					if( subscriptionfiltered != 0 )
+						http_row+= 'Subscription filtered by RegEx line '+subscriptionfiltered+'<br>';
+					if( doNotForward )
+						http_row+= '<i>Do not forward</i> is active<br>';
+					else if( subscriptionfiltered == 0 && httpSubmitAdvTabInfRow) {
+						http_row+= httpSubmitAdvTabInfRow;
+					}
+					http_row+='</span>';
+				}
+				http_row+= '</div></td>\n';
+				http_row+= '</tr>\n';
+				
+				
+			});
+			$("#http_table tbody").append(http_row);
+			$("#http_table").filterable('refresh');
+		}
+		
+		function generate_udp_table(resp) {
+			
+			$("#udp_count").text(resp.health_state.stats.udp_relayedcount);
+
+			if ( $("#coll_mqttudp").hasClass('ui-collapsible-collapsed') ) {
+				return;
+			}
+			
+			currentElementCount = udp_count;
+			
+			var date_options = { day: '2-digit', month: '2-digit' };
+			
+			$("#udp_table > tbody").empty();
+			
+			var udp_row = "";
+			
+			// Get filter flags
+			topics_show_advanced = $("#topics_show_advanced").prop('checked');
+			udp_filter_filtered = $("#udp_filter_filtered").prop('checked');
+			udp_filter_unfiltered = $("#udp_filter_unfiltered").prop('checked');
+			
+			
+			// Loop through data (UDP)
+			Object.entries(resp.udp).map(([topic, content]) => {
+				var d = new Date(content.timestamp*1000); 
+				
+				var doNotForward = "";
+				if( typeof cfg.doNotForward !== 'undefined' && topic.replace(/\//g, "_") in cfg.doNotForward ) {
+					doNotForward = "checked";
+				}
+				
+				var subscriptionfiltered = 0;
+				var tdClass = '';
+				if( typeof resp.udp[topic].regexfilterline != 'undefined' ) {
+					subscriptionfiltered = resp.udp[topic].regexfilterline;
+					tdClass = 'subscriptionfiltered';
+				}
+				if( doNotForward ) {
+					tdClass = 'subscriptionfiltered';
+				}
+				
+				var entry_notforwarded = typeof resp.udp[topic].regexfilterline != 'undefined' || doNotForward != "" ? true : false;
+
+				
+				// Filter
+				var udp_filter_show_entry;
+				if( udp_filter_filtered == true && entry_notforwarded == true ) {
+					udp_filter_show_entry = true;
+				}
+				if ( udp_filter_unfiltered == true && entry_notforwarded != true ) {
+					udp_filter_show_entry = true;
+				}
+				if ( !udp_filter_show_entry ) return;
+				
+				udp_row+= '<tr>\n';
+				udp_row+= '<td class="'+tdClass+' topics_table_udp_data">' + topic + '=' + content.message;
+				
+				if( topics_show_advanced == true ) {
+					udp_row+= '<br><span style="font-size: 75%">(Topic <i>' + content.originaltopic + '</i>)</span>';
+					
+					var uncached = "";
+					if( typeof cfg.Noncached !== 'undefined' && topic.replace(/\//g, "_") in cfg.Noncached ) {
+						uncached = "checked";
+					// console.log(topic, "is uncached");
+					}
+					
+					udp_row+= '<div><label style="display:inline;"><input type="checkbox" name="udp_cache_disabled_'+topic+'" id="udp_cache_disabled_'+topic+'"data-mini="true" class="disablecache" ' + uncached + '>Disable cache</label>';
+				
+					var resetAfterSend = "";
+					if( typeof cfg.resetAfterSend !== 'undefined' && topic.replace(/\//g, "_") in cfg.resetAfterSend ) {
+						resetAfterSend = "checked";
+					// console.log(topic, "is reset after send");
+					}
+					udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_reset_after_send_'+topic+'" id="udp_reset_after_send_'+topic+'"data-mini="true" class="resetAfterSend" ' + resetAfterSend +'>Reset after send</label></fieldset>';
+					
+					
+					// console.log(topic, "is reset after send");
+					
+					udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_do_not_forward_'+topic+'" id="udp_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label></div>';
+					
+				}
+				
+				udp_row+= '</td>\n';
+				
+				udp_row+= '<td style="font-size:80%;" class="'+tdClass+' topics_table_udp_commandrec">';
+				if( subscriptionfiltered != 0 )
+					udp_row+= 'Subscription filtered by RegEx line '+subscriptionfiltered+'<br>';
+				if( doNotForward ) 
+					udp_row+= '<i>Do not forward</i> is active';
+				else if ( !doNotForward && !subscriptionfiltered ) {
+					topic_tmp = 'MQTT:\\i' + topic.replace("\\", "\\\\") + '=\\i\\v';
+					udp_row+= topic_tmp;
+					
+					udp_row+=`<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline copyClipboard" style="padding:1px;font-size:75%;height:12px;width:26px;">Copy</a>`;
+					udp_row+= `<input type="text" value="${topic_tmp}" class="datahidden">`;
+					
+					
+				}
+				
+				udp_row+= '</td>'
+				
+				
+				udp_row+= '<td class="topics_table_status">' + d.toLocaleDateString('hc', date_options) + ' ' + d.toLocaleTimeString();
+				
+				udp_row+= '&nbsp;<a href="#" data-topic="' + topic + '" onclick="deleteTopic(\''+topic+'\');"><img src="../../system/images/icon-trash.png"></a>';
+				
+				udp_row+= '</div></td>\n';
+				udp_row+= '</tr>\n';
+				
+			});
+						
+			// $("#udp_table").trigger('create');
+			$("#udp_table tbody").append(udp_row);
+			$("#udp_table").filterable('refresh');
+		}
+		
+		// https://stackoverflow.com/a/22581382/3466839
+		function copyToClipboard(elem) {
+			  // create hidden text element, if it doesn't already exist
+			var targetId = "_hiddenCopyText_";
+			var isInput = elem.tagName === "INPUT" || elem.tagName === "TEXTAREA";
+			var origSelectionStart, origSelectionEnd;
+			if (isInput) {
+				// can just use the original source element for the selection and copy
+				target = elem;
+				origSelectionStart = elem.selectionStart;
+				origSelectionEnd = elem.selectionEnd;
+			} else {
+				// must use a temporary form element for the selection and copy
+				target = document.getElementById(targetId);
+				if (!target) {
+					var target = document.createElement("textarea");
+					target.style.position = "absolute";
+					target.style.left = "-9999px";
+					target.style.top = "0";
+					target.id = targetId;
+					document.body.appendChild(target);
+				}
+				target.textContent = elem.textContent;
+			}
+			// select the content
+			var currentFocus = document.activeElement;
+			target.focus();
+			target.setSelectionRange(0, target.value.length);
+			
+			// copy the selection
+			var succeed;
+			try {
+				  succeed = document.execCommand("copy");
+			} catch(e) {
+				succeed = false;
+			}
+			// restore original focus
+			if (currentFocus && typeof currentFocus.focus === "function") {
+				currentFocus.focus();
+			}
+			
+			if (isInput) {
+				// restore prior selection
+				elem.setSelectionRange(origSelectionStart, origSelectionEnd);
+			} else {
+				// clear temporary content
+				target.textContent = "";
+			}
+			return succeed;
+		}
+		
+		function getSelectedText() {
+			var text = "";
+				if (typeof window.getSelection != "undefined") {
+					text = window.getSelection().toString();
+				} else if (typeof document.selection != "undefined" && document.selection.type == "Text") {
+				text = document.selection.createRange().text;
+			}
+        return text;
+		}
+    
+		function deleteTopic(topic) {
+			// console.log("Delete", topic);
+			// console.log(event.toElement.dataset.topic);
+			
+			$.post( 'tools/mqtt-ajax.php', {
+				ajax: 'retain',
+				udpinport: udpinport,
+				topic: topic })
+			.done(function(resp) {
+				console.log( "ajax_post", "success", resp );
+				return; });
+		
+		
+		} 
+		
+		function checkbox_disablecache(event) {
+			var cachetarget;
+			if (event.currentTarget.id.startsWith("http_cache_disabled_") == true)
+				cachetarget = event.currentTarget.id.slice(20).replace(/\//g, '\_');
+			else if (event.currentTarget.id.startsWith("udp_cache_disabled_") == true)
+				cachetarget = event.currentTarget.id.slice(19).replace(/\//g, '\_');
+			else
+				return;
+			
+			// var cachetarget = event.currentTarget.id.replace(/\//g, '\_');
+			var is_checked = event.currentTarget.checked;
+			// console.log("checkbox_disablecache", cachetarget, "Checked", is_checked);
+			
+			$.post( 'tools/mqtt-ajax.php', {
+				ajax: 'disablecache',
+				disablecache: is_checked,
+				topic: cachetarget })
+			.done(function(resp) {
+				// console.log( "ajax_post", "success", resp );
+				if( resp ) cfg = resp;
+				return; 
+			});
+		};
+		
+		function checkbox_resetAfterSend(event) {
+			var checkboxtarget;
+			if (event.currentTarget.id.startsWith("http_reset_after_send_") == true)
+				checkboxtarget = event.currentTarget.id.slice(22).replace(/\//g, '\_');
+			else if (event.currentTarget.id.startsWith("udp_reset_after_send_") == true)
+				checkboxtarget = event.currentTarget.id.slice(21).replace(/\//g, '\_');
+			else
+				return;
+			
+			// var checkboxtarget = event.currentTarget.id.replace(/\//g, '\_');
+			var is_checked = event.currentTarget.checked;
+			// console.log("checkbox_reset_after_send", checkboxtarget, "Checked", is_checked);
+			
+			$.post( 'tools/mqtt-ajax.php', {
+				ajax: 'resetAfterSend',
+				resetAfterSend: is_checked,
+				topic: checkboxtarget })
+			.done(function(resp) {
+				if( resp ) cfg = resp;
+				// console.log( "ajax_post", "success", resp );
+				return; 
+			});
+		};
+		
+		function checkbox_doNotForward(event) {
+			var checkboxtarget;
+			if (event.currentTarget.id.startsWith("http_do_not_forward_") == true)
+				checkboxtarget = event.currentTarget.id.slice(20).replace(/\//g, '\_');
+			else if (event.currentTarget.id.startsWith("udp_do_not_forward_") == true)
+				checkboxtarget = event.currentTarget.id.slice(19).replace(/\//g, '\_');
+			else
+				return;
+			
+			// var checkboxtarget = event.currentTarget.id.replace(/\//g, '\_');
+			var is_checked = event.currentTarget.checked;
+			// console.log("checkbox_reset_after_send", checkboxtarget, "Checked", is_checked);
+			
+			$.post( 'tools/mqtt-ajax.php', {
+				ajax: 'doNotForward',
+				doNotForward: is_checked,
+				topic: checkboxtarget })
+			.done(function(resp) {
+				if( resp ) cfg = resp;
+				// console.log( "ajax_post donotforward", "success", resp );
+				return; 
+			});
+		};
+		
+		function calcInterval() {
+			interval = 1000;
+			if ( currentElementCount > 0 ) {
+				interval = currentElementCount/200*1000;
+				if ( interval < 1000 ) 
+					interval = 1000;
+				else if ( interval > 10000 ) 
+					interval = 10000;
+			}
+			return interval;
+		}
+	
+		function logtime() {
+		  var d = new Date();
+		  var sec = d.getSeconds();
+		  var ms = d.getMilliseconds();
+		  return(sec+"."+ms);
+		}
+	
+	</script>
+
+	<!-- /Form TOPICS -->
+</TMPL_IF>
+
+<TMPL_IF FORM_TRANSFORMERS>
+<style>
+	.trans_table {
+		width: 100%;
+		padding: 5px;
+	}
+	
+	.trans_table td, .trans_table th {
+		padding: 5px;
+		border-top: 1px solid #ccc;
+	}
+	.trans_table div {
+		padding: 3px 7px 3px 7px;
+	}
+	</style>
+	
+	<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
+	
+	<div class="wide">Transformers</div>
+	<p>Transformers are scripts of any programming language provided by <i>YOURSELF</i> (or shipped with the MQTT Gateway), that stands in the middle of the data transfer, and can transform incoming values to other outgoing values. Currently only <b>UDP Transformers</b> are supported, that modify data from the Miniserver before sending to MQTT.
+	</p>
+	<p class="hint">Example: Loxone sends RGB colors as combined 0-100% value, but devices require three seperate 0-255 values. An UDP Transformer can archive this.</p> 
+	<p>Use MQTT Gateway's <a href="pub_popup.cgi" target="_blank">Quick Publisher</a> to test publishes to the broker.</p>
+	
+	<div data-role='collapsible' id='coll_package_transformers_udp' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
+	
+		<h2 class='ui-bar ui-bar-a ui-corner-all' id='transformers_udp_head'>Available UDP Transformers</h2>
+		<div>
+		<p>An UDP Transformer acts <b>Miniserver&rarr;Transformer&rarr;MQTT</b> and is called from a Virtual Output Command like <i>publish</i> or <i>retain</i> but with added Transformer name in the parameters:<br>
+		Syntax: <span class="mono"><span style="color:black">publish </span>transformername <span style="color:black">to/my/topic</span> <span style="color:blue">data1 data2 ...</span></span>
+		<br>
+		Example: <span class="mono"><span style="color:black">publish </span>shelly_rgb&amp;w <span style="color:black">shellies/shelly-12345/color/0/set</span> <span style="color:blue">rgb &lt;v&gt;</span></span>
+		<span class="hint"><br>(The <span class="mono">publish</span>/<span class="mono">retain</span> keyword is mandatory with transformers.)</span>
+		
+		<p>See full documentation how to use and create a <a href="https://wiki.loxberry.de/plugins/mqtt_gateway/mqtt_gateway_udp_transformers/start" target="_blank">UDP Transformer</a> including example scripts.</p>
+		
+		<div id="transformers_udp_tablediv">
+		</div>
+		</div>
+	
+	</div>
+
+	
+<script>
+$(function() {
+	
+	var tuhtml = '<table class="trans_table">';
+	var transformers = null;
+	var udp_transformers = null;
+	try {
+		transformers = JSON.parse( $("#transformers_json").text() );
+		udp_transformers = get( transformers, 'udpin' );
+	}
+	catch(err) {
+		tuhtml+= '<tr><td><i>No UDP Transformers available.</i></td></tr>';
+	}
+	if( udp_transformers ) {
+		console.log("UDP Transformers", udp_transformers);
+		for( transname in udp_transformers ) {
+			trans = udp_transformers[transname];
+			console.log(trans);
+			tuhtml+= '<tr><td>';
+			tuhtml+= '<div style="display:flex;">';
+			tuhtml+= '<div class="mono" style="font-size:120%"><b>'+transname+'</b></div>';
+			var type_color = trans.type === 'shipped' ? '#8e256b' : 'blue';
+			tuhtml+= '<div style="color:'+type_color+';">('+trans.type+')</div>';
+			tuhtml+= '<div>'+trans.description+'</div>';
+			tuhtml+= '<div>';
+			if( trans.link )
+				tuhtml+= '<a href="'+trans.link+'" target="_blank">See details...</a>';
+			tuhtml+= '</div>';
+			tuhtml+= '</div>';
+			// tuhtml+= '<div style="display:flex;" class="hint">Example Virtual Output Command:&nbsp;&nbsp;<span class="mono"><span style="color:black">publish </span>'+transname+' <span style="color:black">to/my/topic</span> <span style="color:blue">&lt;v.1&gt;</span></span></div>';
+			tuhtml+= '<div style="display:flex;"><div style="font-size:65%;">'+trans.filename+'</div></div>';
+			tuhtml+= '</td></tr>';
+		}
+	}
+	tuhtml += '</table>';
+	$('#transformers_udp_tablediv').html( tuhtml );
+	
+});
+</script>	
+	
+
+</TMPL_IF>
+
+
+<TMPL_IF FORM_LOGS>
+	<!-- Form LOGS -->
+
+	<div class="wide">Logfiles</div>
+	<TMPL_VAR loglist_html>
+	
+	<div data-role='collapsible' id='coll_package_mosquitto' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
+		<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_mqttgateway_mosquitto'>Mosquitto Log</h2>
+		<table class="trans_table" style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
+			<tr>
+				<td>mosquitto.log</td>
+				<td>The Mosquitto log cannot be accessed by the LoxBerry Logviewer. It is located in
+				<span class="mono">/var/log/mosquitto/mosquitto.log				
+				</span>
+				
+				</td>
+<!--				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fplugins%2Fmqttgateway%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
+-->
+				<td></td>
+			</tr>
+		</table>
+	</div>
+
+
+	
+	<!-- /Form LOGS -->
+</TMPL_IF>
+
+<TMPL_UNLESS FORM_DISABLE_BUTTONS>
+
+	<div style="display:flex;align-items:center;justify-content:center;">
+	<button class="ui-btn ui-btn-icon-right" id="saveapply" data-inline="true">Save and Apply</button>
+	<button class="ui-btn ui-btn-icon-right" id="restartmqttgateway" data-inline="true">Restart</button>
+	</div>
+
+</TMPL_UNLESS>
+
+	
+<TMPL_UNLESS FORM_DISABLE_JS>
+
+	<script>
+
+	var cfg;
+	var creds = { };
+	var creds_changed = false;
+	var udpinport;
+
+	$(function() {
+		
+		setInterval(function(){ update_pids(); }, 5000);
+		update_pids();
+		
+		// Parse config
+		cfgstr = $("#mqttconfig").text();
+		if( cfgstr ) cfg = JSON.parse(cfgstr);
+		extpluginsettingsstr = $("#extpluginsettings").text();
+		if( extpluginsettingsstr ) extpluginsettings = JSON.parse(extpluginsettingsstr);
+		udpinport = $("#udpinportconfig").text();
+		// console.log("Config", cfg, cfg.Main, cfg.subscriptions);
+		
+		// Hide donation
+		if( cfg.Main.donation_remove === true )
+			$("#coll_donate").hide();
+		
+		// View PurgeDB button if Mosquitto is managed by plugin
+		if( is_enabled (cfg.Main.enable_mosquitto)  )
+			$("#purgemosquittodb").show();
+		
+		// Elements in subscriptions
+		if( cfg.subscriptions ) {
+			var subscriptions = cfg.subscriptions;
+			var subText = "";
+			var toMS_delimiter = cfg.Main.toMS_delimiter;
+			if ( toMS_delimiter == "" ) toMS_delimiter = "|";
+			subscriptions.forEach( function(subObj){
+				subText += subObj.id;
+				if( subObj.toMS !== "undefined" && subObj.toMS.length > 0 ) {
+					subText += toMS_delimiter + subObj.toMS.join(',');
+				}
+				subText += "\n";
+			});
+			
+			// $("#subscriptions").text( cfg.subscriptions.join("\n") );
+			$("#subscriptions").text( subText );
+			validateTopics();
+		}
+		
+		// Elemens in subscriptionfilters expressions
+		if( cfg.subscriptionfilters ) {
+			// Elements in subscriptionfilters
+			var subscriptionfilters = cfg.subscriptionfilters;
+			var subText = "";
+			
+			$("#subscriptionfilters").text( cfg.subscriptionfilters.join("\n") );
+			validateRegexs();
+		}
+
+		// Elements in conversions
+		if( cfg.conversions )
+			$("#conversions").text( cfg.conversions.join("\n") );
+		
+		// Elements in Main
+		for(var elemname in cfg.Main) {
+			var inputType = $("#Main\\."+elemname).attr('type');
+			if ( !inputType ) 
+				inputType = $("[name='Main\\."+elemname+"']").attr('type');
+			
+			// console.log("Element", elemname, cfg.Main[elemname], inputType);
+			if(inputType == "checkbox") {
+				if( cfg.Main[elemname] == 1) 
+					$("#Main\\."+elemname).prop('checked', true);
+			} 
+			else if (inputType == "radio") {
+				$('input:radio[name="Main.'+elemname+'"]').filter('[value="'+cfg.Main[elemname]+'"]').attr("checked",true).checkboxradio("refresh");
+			}
+			else {
+				$("#Main\\."+elemname).val(cfg.Main[elemname]);
+			}
+			
+		
+		}
+		$('select').selectmenu('refresh', true);
+		$('input:checkbox').checkboxradio('refresh');
+		
+		// Hide UDP block if UDP is disabled
+		if( ! $("#Main\\.use_udp").is(":checked") )
+			$(".main_udpport_block").hide();
+		
+		
+		// Parse external plugin settings
+		/* External Subscriptions and Conversions */
+		extSubscriptionsHtml = "";
+		extConversionsHtml = "";
+		if( typeof extpluginsettings !== 'undefined' ) {
+			$.each(extpluginsettings.plugins, function(pluginname, pluginobj) {
+					// console.log("Plugin", pluginname, pluginobj);
+					if(typeof pluginobj.subscriptions !== 'undefined' && pluginobj.subscriptions.length > 0) {
+						extSubscriptionsHtml += '<div style="padding:10px 10px 10px 10px;">';
+						extSubscriptionsHtml += '<b>'+pluginname+'</b>';
+						extSubscriptionsHtml += '<div>'+pluginobj.subscriptions.join('</div><div>')+'</div>';
+						extSubscriptionsHtml += '</div>';
+					}
+					if(typeof pluginobj.conversions !== 'undefined' && pluginobj.conversions.length > 0) {
+						extConversionsHtml += '<div style="padding:10px 10px 10px 10px;">';
+						extConversionsHtml += '<b>'+pluginname+'</b>';
+						extConversionsHtml += '<div>'+pluginobj.conversions.join('</div><div>')+'</div>';
+						extConversionsHtml += '</div>';
+					}
+			});
+		}
+		if(extSubscriptionsHtml) {
+			// $("#extplugin_subscriptions_heading").html('<h4>Subscriptions defined by other plugins</h4>');
+			// extSubscriptionsHtml = extSubscriptionsHtml;
+			$("#extplugin_subscriptions").html(extSubscriptionsHtml);
+			$("#coll_extsubscriptions").show();
+		}
+		if(extConversionsHtml) {
+			// $("#extplugin_subscriptions_heading").html('<h4>Subscriptions defined by other plugins</h4>');
+			// extSubscriptionsHtml = extSubscriptionsHtml;
+			$("#extplugin_conversions").html(extConversionsHtml);
+			$("#coll_extconversions").show();
+		}
+		
+		
+	});
+
+	$('input, textarea, select').change(function(event) {
+		$("#savemessages").attr("style", "color:blue").html("Unsaved changes |");
+
+		var id = $(this).attr('id');
+		var inputType = $(this).attr('type');
+		// console.log(id, inputType, event);
+			
+		if (id == "subscriptions") {
+			// Split lines by \n
+			var subs = $.trim($("#"+id).val()).split("\n");
+			
+			var subscriptions = [];
+			// Loop array, split every line by delimer
+			subs.forEach( function(line){
+				var toMS_delimiter = cfg.Main.toMS_delimiter;
+				if( toMS_delimiter == "" ) toMS_delimiter = "|"; 
+				var [topic, toMS] = line.split( toMS_delimiter, 2 );
+				// Convert toMS string to array
+				if( toMS ) {
+					toMS = toMS.split(',');
+				} else {
+					toMS = [];
+				}
+				var subscription = { "id": topic, "toMS": toMS };
+				subscriptions.push(subscription);
+			});
+			
+			cfg.subscriptions = subscriptions;
+			// console.log("Subscriptions Array", cfg.subscriptions);
+		} 
+		else if (id == "subscriptionfilters") {
+			var subs = $.trim($("#"+id).val()).split("\n");
+			var subscriptionfilters = [];
+			subs.forEach( function(line){
+				subscriptionfilters.push(line);
+			});
+			cfg.subscriptionfilters = subscriptionfilters;
+		}
+		else if (id == "conversions") {
+			// console.log("conversions content",  $("#"+id).val());
+			cfg.conversions = $.trim($("#"+id).val()).split("\n");
+			// console.log("Conversions Array", cfg.conversions);
+		} 
+		else if (id.startsWith("Main.")) {
+			var idarray = id.split(".");
+			if(inputType === "checkbox") {
+				cfg.Main[idarray[1]] = $(this).is(":checked");
+				
+				// console.log("idarray", idarray[1]);
+				
+				if(id == "Main.enable_mosquitto") 
+					creds_changed = true;
+					if($(this).is(":checked")) {
+						$("#brokerpsk_block").fadeIn();
+						$("#brokerwebsocket_block").fadeIn();
+					}
+					else {
+						$("#brokerpsk_block").fadeOut();
+						$("#brokerwebsocket_block").fadeOut();
+					}
+				
+				if(id == "Main.use_udp") {
+					if( $(this).is(":checked") )
+						$(".main_udpport_block").fadeIn();
+					else
+						$(".main_udpport_block").fadeOut();
+				}
+
+					
+			} 
+			else if( inputType === "radio" ) {
+				// cfg.Main[idarray[1]] = $(this).is(":checked");
+				var namearray = $(this)[0].name.split(".");
+				cfg.Main[namearray[1]] = $(this).val();
+				
+			}
+			else if ( idarray[1] == "websocketport" ) {
+				creds_changed = true;
+				cfg.Main[idarray[1]] = $(this).val();
+			}	
+			else {
+				// console.log(idarray[0], idarray[1], $("#Main\\."+idarray[1]).val());
+			
+				cfg.Main[idarray[1]] = $(this).val();
+			}
+		}
+		else if (id.startsWith("Credentials.")) {
+			creds_changed = true;
+			var idarray = id.split(".");
+			if (!creds.Credentials) 
+				creds.Credentials = [];
+			creds.Credentials[idarray[1]] = $(this).val();
+		}
+	});
+
+
+	$("#saveapply").click(function(){
+
+		// var data = $('form').serialize() + "&save=true";
+		// console.log("Submitting form", cfg);
+		$("#saveapply").attr("disabled", true);
+		$.ajax( { 
+				type: 'POST',
+				url: '/admin/system/tools/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace', 
+				dataType: 'json',
+				contentType: 'application/json; charset=UTF-8',
+				data: JSON.stringify(cfg)
+			} )
+		.done(function() {
+			// console.log( "Success" );
+			$("#savemessages").attr("style", "color:green").html("Saved successfully |");
+		})
+		.fail(function() {
+			// console.log( "Error" );
+			$("#savemessages").attr("style", "color:red").html("Error saving |");
+		})
+		.always(function() {
+			// console.log( "Finished" );
+			$("#saveapply").attr("disabled", false);
+		
+		});
+		var newudpinport = $("#udpinport").val();
+		if( newudpinport != "" && newudpinport != udpinport ) {
+			console.log("udpinport changed from ", udpinport, " to ", $("#udpinport").val() );
+			$.ajax( { 
+					type: 'POST',
+					url: '/admin/system/tools/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write', 
+					dataType: 'json',
+					contentType: 'application/json; charset=UTF-8',
+					data: JSON.stringify( { Udpinport : $("#udpinport").val() } )
+				} )
+			.done(function() {
+				// console.log( "Success" );
+				$("#savemessages").attr("style", "color:green").html("Saved successfully |");
+			})
+			.fail(function() {
+				// console.log( "Error" );
+				$("#savemessages").attr("style", "color:red").html("Error saving |");
+			})
+			.always(function() {
+				// console.log( "Finished" );
+				$("#saveapply").attr("disabled", false);
+			
+			});
+		}
+		
+	});
+
+	$("#restartmqttgateway").click(function(){
+		// console.log("Restart pressed");
+		$("#restartmqttgateway").attr("disabled", true);
+		
+		$.post( 'tools/mqtt-ajax.php', {
+			ajax: 'restartgateway' })
+		.done(function(resp) {
+			// console.log( "ajax_post", "success", resp );
+	  })
+	  .fail(function(resp) {
+			console.log( "ajax_post", "failed", resp );
+	  })
+	  .always(function(resp) {
+			// console.log( "ajax_post", "finished", resp );
+		$("#restartmqttgateway").attr("disabled", false);
+		update_pids();
+			
+	  });
+	});
+	
+	$("#purgemosquittodb").click(function(){
+		// console.log("Restart Mosquitto database");
+		$("#purgemosquittodb").attr("disabled", true);
+		$.post( 'tools/mqtt-ajax.php', {
+			ajax: 'mosquitto_purgedb' })
+		.done(function(resp) {
+			// console.log( "ajax_post", "success", resp );
+	  })
+	  .fail(function(resp) {
+			console.log( "ajax_post", "failed", resp );
+	  })
+	  .always(function(resp) {
+			// console.log( "ajax_post", "finished", resp );
+		$("#purgemosquittodb").attr("disabled", false);
+		update_pids();
+			
+	  });
+	});
+
+$("#reconnect").click(function(){
+		// console.log("Reconnect and retransmit all values");
+		$("#reconnect").attr("disabled", true);
+		$.post( 'tools/mqtt-ajax.php', {
+			ajax: 'reconnect',
+			udpinport: udpinport })
+		.done(function(resp) {
+			// console.log( "ajax_post", "success", resp );
+	  })
+	  .fail(function(resp) {
+			console.log( "ajax_post", "failed", resp );
+	  })
+	  .always(function(resp) {
+			// console.log( "ajax_post", "finished", resp );
+		$("#reconnect").attr("disabled", false);
+		update_pids();
+			
+	  });
+	});
+	
+	function update_pids() 
+	{
+
+		$.post( 'tools/mqtt-ajax.php', {
+			ajax: 'getpids' })
+		.done(function(resp) {
+			// console.log( "ajax_post", "success", resp );
+			if(resp.pids.mqttgateway != null) {
+				$("#gatewaystate").attr("style", "color:green").html("MQTT Gateway running (PID"+resp.pids.mqttgateway+")");
+			} else {
+				$("#gatewaystate").attr("style", "color:red").html("MQTT Gateway not running");
+			}
+			if(resp.pids.mosquitto != null) {
+				$("#mosquittostate").attr("style", "color:green").html("Mosquitto running (PID"+resp.pids.mosquitto+")");
+			} else {
+				$("#mosquittostate").attr("style", "color:red").html("Mosquitto not running");
+			}
+			
+	  })
+	  .fail(function(resp) {
+			$("#gatewaystate").attr("style", "color:red").html("Failed to query PIDs");
+			$("#mosquittostate").attr("style", "color:red").html("Failed to query PIDs");
+			
+	  })
+	  .always(function(resp) {
+			// console.log( "ajax_post", "finished", resp );
+
+		});
+	}
+
+	function pwRandomize()
+	{
+		// to implement
+	
+	}
+
+	function validateTopic (topic) {
+		// First remove the toMS part of the subscription
+		var toMS_delimiter = cfg.Main.toMS_delimiter;
+		if( toMS_delimiter == "" ) toMS_delimiter = "|"; 
+		var [topic, toMS] = topic.split( toMS_delimiter, 2 );
+
+		// Now check the topic only
+		var parts = topic.split('/'),
+		i = 0;
+
+		for (i = 0; i < parts.length; i++) {
+			if ('+' === parts[i]) {
+				continue;
+			}
+			if ('#' === parts[i] ) {
+				// for Rule #2
+				return i === parts.length - 1;
+			}
+
+			if ( -1 !== parts[i].indexOf('+') || -1 !== parts[i].indexOf('#')) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+	
+	/*
+		* Validate an array of topics to see if any of them is valid or not
+		* @param {Array} topics - Array of topics
+		* @returns {array} If all topics are valid, returns null. Otherwise, returns an array of all invalid ones
+	*/
+	function validateTopics (topics) {
+		if ( $('#subscriptions').val() == null) return;
+		var arrayOfTopics = $('#subscriptions').val().split('\n');
+		var invalidTopics = [];
+		for (var i = 0; i < arrayOfTopics.length; i++) {
+			if ( !validateTopic(arrayOfTopics[i]) ) {
+				invalidTopics.push(arrayOfTopics[i]);
+			}
+		}
+		if(invalidTopics.length > 0) 
+			$('#invalidTopics').html( 'The following topics have syntax errors:<br><b>'+invalidTopics.join('<br>')+'</b>' );
+		else 
+			$('#invalidTopics').html("");
+		
+	}
+	
+	/* Directly validate the topics during input */
+	$('#subscriptions').on('input', function() { 
+		validateTopics();
+	});
+
+	function validateRegexs(regexes) {
+		if ( $('#subscriptionfilters').val() == null) return;
+		var arrayOfRegexs = $('#subscriptionfilters').val().split('\n');
+		// console.log("validateRegexs", arrayOfRegexs );
+		var invalidRegexs = [];
+		for (var i = 0; i < arrayOfRegexs.length; i++) {
+			var isValid = true;
+			try {
+				new RegExp(arrayOfRegexs[i]);
+			} catch(e) {
+				isValid = false;
+				invalidRegexs.push(arrayOfRegexs[i]);
+			}
+			// if(!isValid) console.log("Invalid regular expression", arrayOfRegexs[i]);
+		}
+		
+		if(invalidRegexs.length > 0) 
+			$('#invalidRegexs').html( 'The following Regular Expressions are not valid:<br><b>'+invalidRegexs.join('<br>')+'</b>' );
+		else 
+			$('#invalidRegexs').html("");
+		
+	}
+	
+	/* Directly validate the subscriptionfilter expressions during input */
+	$('#subscriptionfilters').on('input', function() { 
+		validateRegexs();
+	});
+
+	
+	/* A simple is_enabled function as known from LoxBerry's Perl and PHP SDK */
+	function is_enabled( checkVal ) 
+	{
+		// console.log("is_enabled", checkVal);
+		if( typeof checkVal === 'undefined' || checkVal === null ) return false;
+		
+		checkVal = checkVal.toString();
+		
+		enabled = [ true, "true", 1, "1", "on", "yes", "enable", "enabled", "select", "selected", "checked" ];
+		checkVal = checkVal.trim().toLowerCase();
+		return enabled.includes(checkVal);
+	}
+
+	/*	Returns a value from a nested object without exception if undefined
+		get( response, 'health_state.httpresp' */
+	get = function(obj, key) {
+    return key.split(".").reduce(function(o, x) {
+        return (typeof o == "undefined" || o === null) ? o : o[x];
+    }, obj);
+}
+	
+	</script>
+
+</TMPL_UNLESS>
+
+<div style="display:flex;align-items:center;justify-content:center;font-size:70%;padding:5px 20px 5px 20px">
+	<span id="savemessages"></span>&nbsp;
+	<span id="savebrokerpass"></span>&nbsp;
+	&nbsp;<span id="gatewaystate"></span>&nbsp;| 
+	&nbsp;<span id="mosquittostate"></span>
+</div>

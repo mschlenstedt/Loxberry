@@ -31,7 +31,7 @@ use strict;
 # Variables
 ##########################################################################
 
-our $helpurl = "https://www.loxwiki.eu/x/RYgKAw";
+our $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_loxberry_services/system_time";
 our $helptemplate ="help_timeserver.html";
 
 our $lang="en";

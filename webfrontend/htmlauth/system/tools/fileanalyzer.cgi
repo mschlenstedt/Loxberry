@@ -5,7 +5,7 @@ use LoxBerry::System;
 use LoxBerry::Web;
 
 our $template_title = "LoxBerry File Analyzer";
-our $helplink = "https://loxwiki.eu";
+our $helplink = "https://wiki.loxberry.de/";
 
 our $htmlhead = '<script type="application/javascript" src="/system/scripts/vue3/vue.global.js"></script>';
 

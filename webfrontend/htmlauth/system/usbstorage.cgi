@@ -22,8 +22,8 @@ use LoxBerry::System;
 use LoxBerry::Storage;
 use LoxBerry::Web;
 use LoxBerry::Log;
-print STDERR "Execute usbstorage.cgi\n######################\n";
-use Config::Simple;
+use LoxBerry::JSON;
+use Data::Dumper;
 use warnings;
 use strict;
 
@@ -31,22 +31,8 @@ use strict;
 # Variables
 ##########################################################################
 
-our $helpurl = "https://www.loxwiki.eu/x/AYkKAw";
+our $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_usb_storages";
 
-# our $cfg;
-our $phrase;
-our $namef;
-our $value;
-our %query;
-our $lang;
-our $template_title;
-our $help;
-our @help;
-our $helptext;
-our $helplink;
-our $installfolder;
-our $languagefile;
-my  $param_a="";
 ##########################################################################
 # Read Settings
 ##########################################################################
@@ -58,14 +44,14 @@ my $version = "2.0.2.1";
 # Language Settings
 ##########################################################################
 
-$lang = lblanguage();
+my $lang = lblanguage();
 
 ##########################################################################
 # Main program
 ##########################################################################
 
 # Get CGI
-our  $cgi = CGI->new;
+my  $cgi = CGI->new;
 
 my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/usbstorage.html",
@@ -80,11 +66,11 @@ my $maintemplate = HTML::Template->new(
 my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 # Print Template
-$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'USBSTORAGE.WIDGETLABEL'};
+my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'USBSTORAGE.WIDGETLABEL'};
 
 LoxBerry::Web::lbheader($template_title, $helpurl, "help_usbstorage.html");
 
-$param_a=$cgi->param("a") if $cgi->param("a");
+my $param_a=$cgi->param("a") if $cgi->param("a");
 
 # Create debuglog?
 if ($param_a eq "debuglog") {
@@ -95,8 +81,8 @@ if ($param_a eq "debuglog") {
 	my $log = LoxBerry::Log->new (	
 			name => 'daemon',
        			filename => "$lbhomedir/log/system_tmpfs/usbstorage_debug.log",
-			package => 'LoxBerry USB Storage',
-			name => 'usbstorage.cgi',
+			package => 'core',
+			name => 'USB Storage',
 			loglevel => 7,
 			stderr => 1,
 	);
@@ -136,18 +122,16 @@ if ($param_a eq "debuglog") {
 		LOGINF "PATH: $usbstorage->{USBSTORAGE_DEVICEPATH}";
 	}
 
-}
-
-# Show overview?
-if ( !$param_a ) {
-
-	# Get all Network shares
+} else {
+	
+	# Show overview
+	# Get all USB shares
 	my @usbstorages = LoxBerry::Storage::get_usbstorage("H");
 	if (-e "$lbhomedir/log/system_tmpfs/usbstorage_debug.log" ) {
 		$maintemplate->param("DEBUGLOGEXISTS", 1);
 	}
-	$maintemplate->param("FORM", 1);
 	$maintemplate->param("USBSTORAGES", \@usbstorages);
+	$maintemplate->param("OVERVIEW", 1);
 
 }
 

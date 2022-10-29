@@ -10,7 +10,7 @@ const client = jayson.client.http('http://localhost:80/admin/system/jsonrpc.php'
 // Using Promises in batch mode from jayson to get all JsonRpc requests done before writing the user interface
 
 const batch = [
-	client.request('LBWeb::get_lbheader', [ "Squeezelite Plugin", "https://loxwiki.eu", "helptemplate.html" ], undefined, false),
+	client.request('LBWeb::get_lbheader', [ "Squeezelite Plugin", "https://wiki.loxberry.de/", "helptemplate.html" ], undefined, false),
 	client.request('LBWeb::get_lbfooter', [], undefined, false),
 	client.request('LBWeb::mslist_select_html', [ { LABEL: 'Select your Miniserver', FORMID: 'MSNR', SELECTED: '1' }], undefined, false),
 	client.request('getdirs', [ "squeezelite" ], undefined, false),

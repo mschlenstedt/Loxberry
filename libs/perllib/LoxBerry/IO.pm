@@ -119,7 +119,7 @@ sub create_in_socket
 
 #####################################################
 # mshttp_send
-# https://www.loxwiki.eu/x/RAE_Ag
+# https://wiki.loxberry.de/entwickler/perl_develop_plugins_with_perl/perl_loxberry_sdk_dokumentation/perlmodul_loxberryio/loxberryiomshttp_send
 #####################################################
 
 sub mshttp_send

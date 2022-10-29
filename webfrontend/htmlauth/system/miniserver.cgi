@@ -33,7 +33,7 @@ print STDERR "Execute miniserver.cgi\n######################\n";
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/QYgKAw";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_miniserver";
 my $helptemplate = "help_miniserver.html";
 
 my $lang;

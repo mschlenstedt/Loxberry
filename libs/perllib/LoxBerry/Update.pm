@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.0";
+our $VERSION = "3.0.0.1";
 our $DEBUG;
 
 ### Exports ###
@@ -338,6 +338,7 @@ sub apt_update
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
 	# Repair and update
+	qx { chmod 1777 /tmp };
 	if ( $command eq "update") {
 		my $output = qx { $export /usr/bin/dpkg --configure -a --force-confdef};
 		my $exitcode  = $? >> 8;
@@ -367,14 +368,38 @@ sub apt_update
 		} else {
        	 	$main::log->OK("Apt packages autoremoved successfully.");
 		}
-		$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update };
-		$exitcode  = $? >> 8;
-		if ($exitcode != 0) {
-			$main::log->ERR("Error updating apt database - Error $exitcode");
-			$main::log->DEB($output);
-		        $main::errors++;
-		} else {
-       	 	$main::log->OK("Apt database updated successfully.");
+
+		# Try apt-get update 3 times befor giving up, choose another mirror if command failed
+		my $success = 0;
+		for (my $i;$i<4;$i++) {
+			$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update };
+			$exitcode  = $? >> 8;
+			if ($exitcode != 0) {
+				$main::log->ERR("Error updating apt database - Error $exitcode");
+				$main::log->DEB($output);
+				require LoxBerry::JSON;
+				my $cfgfile = $LoxBerry::System::lbsconfigdir . "/general.json";
+				my $jsonobj = LoxBerry::JSON->new();
+				my $cfg = $jsonobj->open(filename => $cfgfile);
+				$main::log->INF("Updating YARN key...");
+				system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -");
+				$main::log->INF("Updating NodeJS key...");
+				system ("curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -");
+				if ($cfg->{'Apt'}->{'Servers'} && -e $LoxBerry::System::lbsconfigdir . "/is_raspberry.cfg" && -e "/etc/apt/sources.list.d/loxberry.list") {
+					my $aptserver = $cfg->{'Apt'}->{'Servers'}{ int(rand keys %{ $cfg->{'Apt'}->{'Servers'} }) + 1 };
+					$main::log->INF("Changing Rasbian mirror to $aptserver");
+					qx ( sed -i --follow-symlinks "s#^\\([^#]*\\)http[^ ]*#\\1$aptserver#" /etc/apt/sources.list.d/loxberry.list );
+				}
+				$i++;
+			} else {
+	       	 		$main::log->OK("Apt database updated successfully.");
+				$success++;
+				last;
+			}
+		}
+		if (!$success) {
+			$main::log->ERR("Error updating apt database. All servers give an error. Internet connection available? Giving up.");
+			$main::errors++;
 		}
 	}
 

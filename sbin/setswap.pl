@@ -53,6 +53,13 @@ if ($exitcode != 0) {
         LOGWARN "Could not turn off all swap files.";
 }
 
+# Disable dphys-swapfile here - we start it below manually
+$output = qx { systemctl disable dphys-swapfile };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGWARN "Could not disable service dphys-swapfile.";
+}
+
 $output = qx { rm -r /var/swap };
 $output = qx { rm -r /etc/dphys-swapfile };
 $output = qx { rm -r /etc/sysctl.d/97-swappiness.conf };

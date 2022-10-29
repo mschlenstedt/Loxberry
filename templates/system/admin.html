@@ -1,40 +1,4 @@
 <!-- ** START template/system/admin.html 10.12.2018 19:19:03 ************************************************************************************ -->
-<TMPL_IF WIZARD_SKIPADMIN>
-	<DIV	style="text-align:center;">
-	<TMPL_VAR WIZARD.ADMIN_MSG_SKIPPED>
-	<BR>
-	<BR>
-		<FORM	method=		"post"
-			data-ajax=	"false"
-			name=		"main_form1"
-			id=		"main_form1"
-			action=		"<TMPL_VAR SELFURL>">
-			<A	id=		"btncancel"
-				data-role=	"button"
-				data-inline=	"true"
-				data-mini=	"true"
-				data-icon=	"delete"
-				href=		"/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></A>
-			<INPUT	type=		"hidden"
-				name=		"currentstep"
-				id=		"currentstep"
-				value=		"<TMPL_VAR STEP>">
-			<INPUT	type=		"hidden"
-				name=		"sid"
-				id=		"sid"
-				value=		"<TMPL_VAR SID>">
-			<BUTTON	type=		"submit"
-				form=		"main_form1"
-				id=		"btnsubmit"
-				name=		"btnsubmit"
-				value=		"1"
-				data-role=	"button"
-				data-inline=	"true"
-				data-mini=	"true"
-				data-icon=	"arrow-r"><TMPL_VAR WIZARD.BUTTON_NEXT_STEP>&nbsp;<TMPL_VAR NEXTSTEPNR></BUTTON>
-		</FORM>
-	</DIV>
-</TMPL_IF>
 <TMPL_IF FORM>
 	<FORM	method=		"post"
 		data-ajax=	"false"
@@ -47,12 +11,8 @@
 		<INPUT	type=		"hidden"
 			name=		"adminuserold"
 			value=		"<TMPL_VAR ADMINUSEROLD>">
-		<TMPL_IF WIZARD>
-			<P><TMPL_VAR WIZARD.ADMIN_LABEL_INTRO></P>
-			<P style="color:red"><TMPL_VAR ERROR></P>
-		<TMPL_ELSE>
-			<P><TMPL_VAR ADMIN.LABEL_INTRO></P>
-		</TMPL_IF>
+		<P><TMPL_VAR ADMIN.LABEL_INTRO></P>
+		<BR>
 		<HR>
 		<BR>
 		<DIV	class="lb_flex-container">
@@ -67,7 +27,7 @@
 					name=				"adminuser"
 					type=				"text"
 					data-validation-error-msg=	"<TMPL_VAR ADMIN.MSG_VAL_USERNAME_ERROR>"
-					data-validation-rule=		"^([A-Za-z0-9]|_-){3,20}$">
+					data-validation-rule=		"^([A-Za-z0-9\_\-]){3,20}$">
 			</DIV>
 			<DIV	class="lb_flex-item-help">
 				<DIV	class="hint"><TMPL_VAR ADMIN.HINT_USERNAME_ALLOWED_CHARS></DIV>
@@ -88,7 +48,7 @@
 					autocomplete=			"off"
 					type=				"password"
 					data-validation-error-msg=	"<TMPL_VAR ADMIN.MSG_VAL_PASSWORD_ERROR>"
-					data-validation-rule=		"^(?=loxberry$)|^(((?=.*[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=])(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[a-zA-Z0-9\-\_\,\.\;\:\!\?\&\(\)\?\+\%\=]{6,64}$)|^(){0})$">
+					data-validation-rule=		"^([^\:\ &quot;&apos;&commat;\\])*$">
 			</DIV>
 			<DIV	class="lb_flex-item-help">
 				<DIV	class="hint"><TMPL_VAR ADMIN.HINT_PASSWORD_ALLOWED_CHARS></DIV>
@@ -116,130 +76,100 @@
 		</DIV>
 		<HR>
 		<BR>
-		<TMPL_IF WIZARD>
-			<!-- fields removed for wizard -->
-		<TMPL_ELSE>
-			<DIV class="lb_flex-container">
-				<DIV	class="lb_flex-item-spacer"></DIV>
-				<DIV	class="lb_flex-item-label">
-					<LABEL	class=	"control-label"
-						for=	"securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></LABEL>
-				</DIV>
-				<DIV	class="lb_flex-item">
-					<INPUT	id=				"securepin1"
-						name=				"securepin1"
-						autocomplete=			"off"
-						type=				"password"
-						data-validation-error-msg=	"<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>"
-						data-validation-rule=		"^((([A-Za-z0-9]){4,10})|(){0})$">
-				</DIV>
-				<DIV	class="lb_flex-item-help">
-					<DIV	class=	"hint"><TMPL_VAR ADMIN.HINT_SECUREPIN_ALLOWED_CHARS></DIV>
-				</DIV>
-				<DIV	class="lb_flex-item-spacer"></DIV>
+		<DIV class="lb_flex-container">
+			<DIV	class="lb_flex-item-spacer"></DIV>
+			<DIV	class="lb_flex-item-label">
+				<LABEL	class=	"control-label"
+					for=	"securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></LABEL>
 			</DIV>
-			<DIV	class="lb_flex-container">
-				<DIV	class="lb_flex-item-spacer"></DIV>
-				<DIV	class="lb_flex-item-label">
-					<LABEL	class=	"control-label"
-						for=	"securepin2"><TMPL_VAR ADMIN.LABEL_RETYPE_SECUREPIN></LABEL>
-				</DIV>
-				<DIV	class="lb_flex-item">
-					<INPUT	id=				"securepin2"
-						name=				"securepin2"
-						autocomplete=			"off"
-						type=				"password"
-						data-validation-error-msg=	"<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>"
-						data-validation-rule=		"special:compare-with:#securepin1">
-				</DIV>
-				<DIV	class="lb_flex-item-help">
-					<DIV	class="hint"><TMPL_VAR ADMIN.HINT_SECUREPIN_RETYPE></DIV>
-				</DIV>
-				<DIV	class="lb_flex-item-spacer"></DIV>
+			<DIV	class="lb_flex-item">
+				<INPUT	id=				"securepin1"
+					name=				"securepin1"
+					autocomplete=			"off"
+					type=				"password"
+					data-validation-error-msg=	"<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_ERROR>"
+					data-validation-rule=		"^((([A-Za-z0-9]){4,10})|(){0})$">
 			</DIV>
-			<HR>
-			<TMPL_VAR ADMIN.LABEL_SECURITY_HINT>
-			<BR>
-			<BR>
-			<DIV class="lb_flex-container">
-				<DIV class="lb_flex-item-spacer"></DIV>
-				<DIV class="lb_flex-item-label">
-					<LABEL	class=	"control-label"
-						for=	"adminpassold"><TMPL_VAR ADMIN.LABEL_CURRENT_PASSWORD></LABEL>
-				</DIV>
-				<DIV	class="lb_flex-item">
-					<INPUT	id=				"adminpassold"
-						name=				"adminpassold"
-						autocomplete=			"off"
-						type=				"password"
-						data-validation-coloring=	"off"
-						data-validation-error-msg=	"<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_PASS>"
-						data-validation-rule=		"^(.){1,64}$">
-				</DIV>
-				<DIV	class="lb_flex-item-help"></DIV>
-				<DIV	class="lb_flex-item-spacer"></DIV>
+			<DIV	class="lb_flex-item-help">
+				<DIV	class=	"hint"><TMPL_VAR ADMIN.HINT_SECUREPIN_ALLOWED_CHARS></DIV>
 			</DIV>
-			<DIV	class="lb_flex-container">
-				<DIV class="lb_flex-item-spacer"></DIV>
-				<DIV class="lb_flex-item-label">
-					<LABEL	class=	"control-label"
-						for=	"securepinold"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></LABEL>
-				</DIV>
-				<DIV	class="lb_flex-item">
-					<INPUT	id=				"securepinold"
-						name=				"securepinold"
-						autocomplete=			"off"
-						type=				"password"
-						data-validation-coloring=	"off"
-						data-validation-error-msg=	"<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_SECUREPIN>"
-						data-validation-rule=		"^([A-Za-z0-9]){4,10}$">
-				</DIV>
-				<DIV	class="lb_flex-item-help"></DIV>
-				<DIV	class="lb_flex-item-spacer"></DIV>
+			<DIV	class="lb_flex-item-spacer"></DIV>
+		</DIV>
+		<DIV	class="lb_flex-container">
+			<DIV	class="lb_flex-item-spacer"></DIV>
+			<DIV	class="lb_flex-item-label">
+				<LABEL	class=	"control-label"
+					for=	"securepin2"><TMPL_VAR ADMIN.LABEL_RETYPE_SECUREPIN></LABEL>
 			</DIV>
-		</TMPL_IF>
-		<DIV style="text-align:right;">
-			<TMPL_IF WIZARD>
-				<!-- Buttons for wizard -->
-				<A	id=		"btncancel"
-					data-role=	"button"
-					data-inline=	"true"
-					data-mini=	"true"
-					data-icon=	"delete"
-					href=		"/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></A>
-				<INPUT	type=		"hidden"
-					name=		"currentstep"
-					id=		"currentstep"
-					value=		"<TMPL_VAR STEP>">
-				<INPUT	type=		"hidden"
-					name=		"sid"
-					id=		"sid"
-					value=		"<TMPL_VAR SID>">
-				<BUTTON	type=		"submit"
-					form=		"main_form1"
-					id=		"btnsubmit"
-					name=		"btnsubmit"
-					value=		"1"
-					data-role=	"button"
-					data-inline=	"true"
-					data-mini=	"true"
-					data-icon=	"arrow-r"><TMPL_VAR WIZARD.BUTTON_NEXT_STEP>&nbsp;<TMPL_VAR NEXTSTEPNR></BUTTON>
-			<TMPL_ELSE>
-				<!-- Buttons for widget -->
-				<A	id=		"btncancel"
-					data-role=	"button"
-					data-inline=	"true"
-					data-mini=	"true"
-					data-icon=	"delete"
-					href=		"/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></A>
-				<BUTTON	type=		"submit"
-					form=		"main_form1"
-					id=		"btnsubmit"
-					data-role=	"button"
-					data-inline=	"true"
-					data-mini=	"true"
-					data-icon=	"check"><TMPL_VAR COMMON.BUTTON_SAVE></BUTTON>
-			</TMPL_IF>
+			<DIV	class="lb_flex-item">
+				<INPUT	id=				"securepin2"
+					name=				"securepin2"
+					autocomplete=			"off"
+					type=				"password"
+					data-validation-error-msg=	"<TMPL_VAR ADMIN.MSG_VAL_SECUREPIN_DIFFERENT>"
+					data-validation-rule=		"special:compare-with:#securepin1">
+			</DIV>
+			<DIV	class="lb_flex-item-help">
+				<DIV	class="hint"><TMPL_VAR ADMIN.HINT_SECUREPIN_RETYPE></DIV>
+			</DIV>
+			<DIV	class="lb_flex-item-spacer"></DIV>
+		</DIV>
+		<HR>
+		<TMPL_VAR ADMIN.LABEL_SECURITY_HINT>
+		<BR>
+		<BR>
+		<DIV class="lb_flex-container">
+			<DIV class="lb_flex-item-spacer"></DIV>
+			<DIV class="lb_flex-item-label">
+				<LABEL	class=	"control-label"
+					for=	"adminpassold"><TMPL_VAR ADMIN.LABEL_CURRENT_PASSWORD></LABEL>
+			</DIV>
+			<DIV	class="lb_flex-item">
+				<INPUT	id=				"adminpassold"
+					name=				"adminpassold"
+					autocomplete=			"off"
+					type=				"password"
+					data-validation-coloring=	"off"
+					data-validation-error-msg=	"<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_PASS>"
+					data-validation-rule=		"^(.){1,64}$">
+			</DIV>
+			<DIV	class="lb_flex-item-help"></DIV>
+			<DIV	class="lb_flex-item-spacer"></DIV>
+		</DIV>
+		<DIV	class="lb_flex-container">
+			<DIV class="lb_flex-item-spacer"></DIV>
+			<DIV class="lb_flex-item-label">
+				<LABEL	class=	"control-label"
+					for=	"securepinold"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></LABEL>
+			</DIV>
+			<DIV	class="lb_flex-item">
+				<INPUT	id=				"securepinold"
+					name=				"securepinold"
+					autocomplete=			"off"
+					type=				"password"
+					data-validation-coloring=	"off"
+					data-validation-error-msg=	"<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_SECUREPIN>"
+					data-validation-rule=		"^([A-Za-z0-9]){4,10}$">
+			</DIV>
+			<DIV	class="lb_flex-item-help"></DIV>
+			<DIV	class="lb_flex-item-spacer"></DIV>
+		</DIV>
+		<br><br>
+		<DIV style="text-align:center;">
+			<!-- Buttons for widget -->
+			<A	id=		"btncancel"
+				data-role=	"button"
+				data-inline=	"true"
+				data-mini=	"true"
+				data-icon=	"delete"
+				href=		"/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></A>
+			<BUTTON	type=		"submit"
+				form=		"main_form1"
+				id=		"btnsubmit"
+				data-role=	"button"
+				data-inline=	"true"
+				data-mini=	"true"
+				data-icon=	"check"><TMPL_VAR COMMON.BUTTON_SAVE></BUTTON>
 		</DIV>
 	</FORM>
 	<SCRIPT>
@@ -261,41 +191,44 @@
 	</SCRIPT>
 </TMPL_IF>
 <TMPL_IF SAVE>
-	<DIV style="background-color: rgba(255, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; padding:10px;">
-	<TMPL_IF ERRORS>
-		<DIV style="background-color: rgba(255, 128, 128, 0.4); border-radius: 11px; border: 1px solid red; padding:10px;">
-			<TMPL_VAR ADMIN.SAVE_ERR_GENERAL>
-			<P style="color:red;"><TMPL_VAR ERRORS></P>
-		</DIV><BR>
-	<TMPL_ELSE>
-		<b><TMPL_VAR ADMIN.SAVE_OK_INFO></b><br><br>
+<DIV style="padding: 0em 5em 5em 0em;">
+	<TMPL_IF WIZARD>
+		<TMPL_VAR ADMIN.WIZARD_INTRO>
+		<BR><BR>
+		<TMPL_VAR ADMIN.WIZARD_HINT>
+		<BR><BR>
 	</TMPL_IF>
+	<DIV style="background-color: rgba(255, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; padding:10px;">
+		<TMPL_IF ERRORS>
+			<DIV style="background-color: rgba(255, 128, 128, 0.4); border-radius: 11px; border: 1px solid red; padding:10px;">
+				<TMPL_VAR ADMIN.SAVE_ERR_GENERAL>
+				<P style="color:red;"><TMPL_VAR ERRORS></P>
+			</DIV><BR>
+		<TMPL_ELSE>
+			<b><TMPL_VAR ADMIN.SAVE_OK_INFO></b><br><br>
+		</TMPL_IF>
 		<B><TMPL_VAR ADMIN.SAVE_OK_WEB_ADMIN_AREA></B>
 		<BR>
 		<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;"><TMPL_VAR ADMINUSER></b>
 		<BR>
 		<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;"><TMPL_VAR ADMINPASS></b>
-
-	<BR><BR>
-
+		<BR><BR>
 		<B><TMPL_VAR ADMIN.SAVE_OK_COL_SSH></B>
 		<BR>
 		<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;">loxberry</b>
 		<BR>
 		<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;"><TMPL_VAR ADMINPASS></b>
-
-	<TMPL_IF WIZARD>
-	<BR><BR>
+		<TMPL_IF WIZARD>
+			<BR><BR>
 			<B><TMPL_VAR ADMIN.SAVE_OK_ROOT_USER></B>
 			<BR>
 			<TMPL_VAR ADMIN.SAVE_OK_COL_USER> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;">root</b>
 			<BR>
 			<TMPL_VAR ADMIN.SAVE_OK_COL_PASSWORD> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;"><TMPL_VAR ROOTPASS></b>
-	</TMPL_IF>
-	<BR><BR>
+		</TMPL_IF>
+		<BR><BR>
 		<B><TMPL_VAR ADMIN.SAVE_OK_COL_SECUREPIN></B> <b style="font-size: 1.1em; font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;"><TMPL_VAR SECUREPIN></b>
 	</DIV>
-	
 	<BR>
 	<DIV style="background-color: rgba(255, 192, 192, 0.7); border-radius: 11px; border: 1px solid black; padding:10px;">
 		<P style="color:red"><B><TMPL_VAR ADMIN.SAVE_OK_HINT_RED></B></P>
@@ -311,47 +244,16 @@
 			});
 		</script>
 	</DIV>
+	<BR><BR>
 	<DIV style="text-align:right;">
-		<TMPL_IF WIZARD>
-			<BR>
-			<FORM	method=		"post"
-				data-ajax=	"false"
-				name=		"main_form1"
-				id=		"main_form1"
-				action=		"<TMPL_VAR SELFURL>">
-			<A	id=		"btncancel"
-				data-role=	"button"
-				data-inline=	"true"
-				data-mini=	"true"
-				data-icon=	"delete"
-				href=		"/admin/index.cgi?lang=<TMPL_VAR LANG>"><TMPL_VAR COMMON.BUTTON_CANCEL></A>
-			<INPUT	type=		"hidden"
-				name=		"currentstep"
-				id=		"currentstep"
-				value=		"<TMPL_VAR STEP>">
-			<INPUT	type=		"hidden"
-				name=		"sid"
-				id=		"sid"
-				value=		"<TMPL_VAR SID>">
-			<BUTTON	type=		"submit"
-				form=		"main_form1"
-				id=		"btnsubmit"
-				name=		"btnsubmit"
-				value=		"1"
-				data-role=	"button"
-				data-inline=	"true"
-				data-mini=	"true"
-				data-icon=	"arrow-r"><TMPL_VAR WIZARD.BUTTON_NEXT_STEP>&nbsp;<TMPL_VAR NEXTSTEPNR></BUTTON>
-			</form>
-		<TMPL_ELSE>
-			<P><A	id=		"btnok"
+		<P><CENTER><A	id=		"btnok"
 				data-role=	"button"
 				data-inline=	"true"
 				data-mini=	"true"
 				data-icon=	"check"
 				href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></A>
-			</P>
-		</TMPL_IF>
+		</CENTER></P>
 	</DIV>
+</DIV>
 </TMPL_IF>
 <!-- ** END template/system/admin.html ************************************************************************************ -->

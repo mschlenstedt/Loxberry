@@ -4,7 +4,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "2.2.1.1";
+	public static $LBWEBVERSION = "3.0.0.1";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -124,69 +124,15 @@ class LBWeb
 		if (is_array($navbar)) {
 			# navbar is defined as ARRAY
 			sort($navbar, SORT_NUMERIC);
-			$topnavbar = '<div data-role="navbar">' . 
-				'	<ul>';
-			foreach ($navbar as $key => $element) {
-				if (isset($element['active'])) {
-					$btnactive = ' class="ui-btn-active"';
-				} else { $btnactive = NULL; 
-				}
-				if (isset($element['target'])) {
-					$btntarget = ' target="' . $element['target'] . '"';
-				} else {
-					$btntarget = "";
-				}
-				
-				$notify = <<<EOT
-				<div class="notifyBlueNavBar" id="notifyBlueNavBar$key" style="display: none">0</div>
-				<div class="notifyRedNavBar" id="notifyRedNavBar$key" style="display: none">0</div>
-EOT;
-				
-				if (isset($element['Name'])) {
-					$topnavbar .= <<<EOT
-				<li>
-					<div style="position:relative">$notify<a href="{$element['URL']}"{$btntarget}{$btnactive}>{$element['Name']}</a>
-					</div>
-				</li>
-EOT;
-					$topnavbar_haselements = True;
-				
-					// Inject Notify JS code
-					if(isset($element['Notify_Name'])) {
-						$notifyname = $element['Notify_Name'];
-					}
-					if(isset($element['Notify_Package'])) {
-						$notifypackage = $element['Notify_Package'];
-					}
-					if (isset($notifyname) && ! isset($notifypackage) && isset($lbpplugindir)) {
-						$notifypackage = $lbpplugindir;
-					}
-					if (isset($notifypackage)) {
-						$topnavbar_notify_js .= <<<EOT
-
-		$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notification_count', package: '$notifypackage', name: '$notifyname' })
-			.done(function(data) { 
-				console.log("get_notification_count executed successfully");
-				console.log("{$element['Name']}", data[0], data[1], data[2]);
-				if (data[0] != 0) \$("#notifyRedNavBar{$key}").text(data[2]).fadeIn('slow');
-				else \$("#notifyRedNavBar{$key}").text('0').fadeOut('slow');
-				if (data[1] != 0) \$("#notifyBlueNavBar{$key}").text(data[1]).fadeIn('slow');
-				else \$("#notifyBlueNavBar{$key}").text('0').fadeOut('slow');
-				
-			});
-EOT;
-
-					}
-				}
-			}
 			
-			$topnavbar .=  '	</ul>' .
-				'</div>';	
-		
+			$jsonmenu = 
+				'<div id="jsonmenu" style="display:none">' .
+				json_encode($navbar, JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) .
+				'</div>';
+			
 		} elseif (is_string($navbar)) {
 			# navbar is defined as plain STRING
 			$topnavbar = $navbar;
-			$topnavbar_haselements = True;
 		} 
 		// NavBar End
 		
@@ -206,11 +152,13 @@ EOT;
 		}
 		$pageobj->paramArray(array(	'HELPTEXT' => $helptext ));
 		
-		if (isset($topnavbar_haselements)) {
-			$pageobj->param ( 'TOPNAVBAR', $topnavbar);
-		} else {
-			$pageobj->param ( 'TOPNAVBAR', "");
+		if( isset($jsonmenu) ) {
+			$pageobj->paramArray(array(	'JSONMENU' => $jsonmenu ));
 		}
+		elseif (isset($topnavbar)) {
+			$pageobj->param ( 'NAVBAR_PLAIN', $topnavbar);
+		} 
+		
 		if (!empty($topnavbar_notify_js)) {
 			$notify_js = 
 <<<EOT

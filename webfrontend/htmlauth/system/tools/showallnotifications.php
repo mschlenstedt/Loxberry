@@ -3,7 +3,7 @@
 require_once "loxberry_web.php";
 require_once "loxberry_log.php";
 
-$helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+$helplink = "https://wiki.loxberry.de/";
 $template_title = "Show all notifications";
 
 LBWeb::lbheader($template_title, $helplink, $helptemplate);

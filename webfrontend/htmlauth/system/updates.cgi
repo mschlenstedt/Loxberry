@@ -39,7 +39,7 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "https://www.loxwiki.eu/x/V4gKAw";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_updates";
 my $helptemplate = "help_updates.html";
 my $lbulogfiledir = "$lbslogdir/loxberryupdate";
 my $lbuchecklogfiledir = "$lbhomedir/log/system_tmpfs/loxberryupdate";
@@ -75,7 +75,7 @@ our $rebootbin;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.1";
+my $version = "3.0.0.0";
 
 my $bins = LoxBerry::System::get_binaries();
 $sversion = LoxBerry::System::lbversion();
@@ -133,26 +133,12 @@ our $maintemplate = HTML::Template->new(
 
 our %SL = LoxBerry::System::readlanguage($maintemplate);
 
-# my @notif = get_notifications('updates', 'update');
-# my ($check_err, $check_ok, $check_sum) = get_notification_count('updates', 'check');
-# my ($update_err, $update_ok, $update_sum) = get_notification_count('updates', 'update');
-
-
-# print STDERR "Notifications:\n";
-# print STDERR "Update count: " . scalar(@notif) . "\n";
-# print STDERR "Check: $check_err / $check_ok / $check_sum\n";
-# print STDERR "Update: $update_err / $update_ok / $check_sum\n";
-
-				
 our %navbar;
  
 $navbar{1}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATE'};
 $navbar{1}{URL} = $cgi->url(-relative=>1) . "?do=lbupdate";
 $navbar{1}{Notify_Package} = 'updates';
 $navbar{1}{Notify_Name} = 'check';
-
-#$navbar{1}{notifyBlue} = $check_err == 0 ? $check_sum : undef;
-#$navbar{1}{notifyRed} = $check_err != 0 ? $check_sum : undef;
 
 $navbar{2}{Name} = $SL{'UPDATES.WIDGETLABEL_UPDATES'};
 $navbar{2}{URL} = $cgi->url(-relative=>1) . "?do=form";
@@ -161,9 +147,6 @@ $navbar{3}{Name} = $SL{'UPDATES.WIDGETLABEL_LOXBERRYUPDATEHISTORY'};
 $navbar{3}{URL} = $cgi->url(-relative=>1) . "?do=lbuhistory";
 $navbar{3}{Notify_Package} = 'updates';
 $navbar{3}{Notify_Name} = 'update';
-
-#$navbar{3}{notifyBlue} = $update_err == 0 ? $update_sum : undef;
-#$navbar{3}{notifyRed} = $update_err != 0 ? $update_sum : undef;
 
 # And this one we really want to use
 $do = $R::do;
@@ -182,13 +165,6 @@ if ($do eq "form") {
   print STDERR "updates.cgi: FORM is called\n";
   $navbar{2}{active} = 1;
   &form;
-}
-
-# Installation
-elsif ($do eq "install") {
-  $navbar{2}{active} = 1;
-  print STDERR "updates.cgi: INSTALL is called\n";
-  &install;
 }
 
 elsif (!$do || $do eq "lbupdate") {
@@ -260,203 +236,6 @@ sub form {
 
 }
 
-#####################################################
-# Install
-#####################################################
-
-sub install 
-{
-
-	# Should we proceed the upgrade?
-	if ($answer eq "yes") {
-		# Check for needed upgrade files
-		if (!-f "/tmp/upgrade/upgrade.sh" || !-f "/tmp/upgrade/VERSION") {
-			$error = $SL{'UPDATES.UPGRADE_ERROR_FILES_MISSING'};
-			&error;
-			exit;
-		}
-
-	my $maintemplate = HTML::Template->new(
-				filename => "$lbstemplatedir/success.html",
-				global_vars => 1,
-				loop_context_vars => 1,
-				die_on_bad_params=> 0,
-				associate => $cfg,
-				%htmltemplate_options,
-				);
-	
-	
-	my %SL = LoxBerry::System::readlanguage($maintemplate);
-
-	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
-	  
-	# Copy and clean
-	$output = qx(rm -rf $lbhomedir/data/system/upgrade/*);
-	$output = qx(cp -r /tmp/upgrade/* $lbhomedir/data/system/upgrade);
-	$output = qx(rm -rf /tmp/upgrade);
-	$output = qx($chmodbin 755 $lbhomedir/data/system/upgrade/upgrade.sh);
-
-	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
-
-	$maintemplate->param( "MESSAGE" , $SL{'UPDATES.UPGRADE_REBOOT_INFORMATION'} );
-	$maintemplate->param( "NEXTURL", "/admin/system/index.cgi?form=system" );
-	
-	# Print Template
-	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
-	print $maintemplate->output();
-	LoxBerry::Web::lbfooter();
-	
-	# Reboot
-	# Without the following workaround
-	# the script cannot be executed as
-	# background process via CGI
-	my $pid = fork();
-	die "Fork failed: $!" if !defined $pid;
-	if ($pid == 0) {
-		# do this in the child
-		open STDIN, "</dev/null";
-		open STDOUT, ">/dev/null";
-		open STDERR, ">/dev/null";
-		system("sleep 5 && sudo $rebootbin &");
-	}
-	exit;
-}
-
-	# Prepare Upgrade
-	$uploadfile = param('uploadfile');
-	my $origname = $uploadfile;
-
-	# Choose time() as new temp. filename (to avoid overwriting)
-	$tempfile = &generate(10);
-	$tempfolder = $tempfile;
-
-	# allowed file endings (use | to seperate more than one)
-	$allowed_filetypes = "zip";
-
-	# Max filesize (KB)
-	$max_filesize = 100000;
-
-	# Filter Backslashes
-	$uploadfile =~ s/.*[\/\\](.*)/$1/;
-
-	# Filesize
-	$filesize = -s $uploadfile;
-	$filesize /= 1000;
-
-	# If it's larger than allowed...
-	if ($filesize > $max_filesize) {
-	  $error = $SL{'UPDATES.UPDRADE_ERROR_FILESIZE_EXCEEDED'};
-	  &error;
-	  exit;
-	}
-
-	# Test if filetype is allowed
-	if($uploadfile !~ /^.+\.($allowed_filetypes)/) {
-	  $error = $SL{'UPDATES.UPGRADE_ERROR_FILETYPE_ONLY_ZIP'};
-	  &error;
-	  exit;
-	}
-
-	# Remove old files and Create upload folder
-	$output = qx(rm -rf /tmp/upgrade);
-	make_path("/tmp/upgrade" , {chmod => 0777});
-
-	# We are careful, so test if file and/or dir already exists
-	if (-e "/tmp/upgrade/$tempfile.zip") {
-	  $error = $SL{'UPDATES.UPDRADE_ERROR_TEMPFILES_EXIST'};
-	  &error;
-	  exit;
-	} else {
-	  # Write Uploadfile
-	  my $openerr = 0;
-	  open UPLOADFILE, ">/tmp/upgrade/$tempfile.zip" or ($openerr = 1);
-	  binmode $uploadfile;
-	  while ( <$uploadfile> ) {
-		print UPLOADFILE;
-	  }
-	  close UPLOADFILE;
-	  if ($openerr) {
-		$error = $SL{'UPDATES.UPDRADE_ERROR_TEMPFILES_EXIST'};
-		&error;
-		exit;
-	  } 
-	}
-
-	# UnZipping
-	$output = qx($unzipbin -d /tmp/upgrade /tmp/upgrade/$tempfile.zip);
-	if ($? ne 0) {
-		$error = $SL{'UPDATES.UPGRADE_ERROR_EXTRACT_ERROR'};
-	  &error;
-	  exit;
-	} 
-
-	# Check for needed upgrade files
-	if (!-f "/tmp/upgrade/upgrade.sh" || !-f "/tmp/upgrade/VERSION") {
-	  $error = $SL{'UPDATES.UPGRADE_ERROR_FILES_MISSING'};
-	  &error;
-	  exit;
-	}
-
-	# Read Version of upgrade
-	open(F,"</tmp/upgrade/VERSION");
-	$uversion = <F>;
-	chomp ($uversion);
-	close(F);
-
-	# Check if upgrade is newer than system
-	@uvfields = split /\./, $uversion;
-	@svfields = split /\./, $sversion;
-
-	# Older
-	if ($uvfields[0] < $svfields[0]) {
-	  $error = $SL{'UPDATES.UPGRADE_ERROR_VERSION_INVALID'};
-	  &error;
-	  exit;
-	}
-
-	# Older
-	if ($uvfields[1] < $svfields[1] && $uvfields[0] == $svfields[0]) {
-	  $error = $SL{'UPDATES.UPGRADE_ERROR_VERSION_INVALID'};
-	  &error;
-	  exit;
-	}
-
-	# Older or equal
-	if ($uvfields[2] <= $svfields[2] && $uvfields[1] == $svfields[1] && $uvfields[0] == $svfields[0]) {
-	  $error = $SL{'UPDATES.UPGRADE_ERROR_VERSION_INVALID'};
-	  &error;
-	  exit;
-	}
-
-	# Print template
-	
-	my $maintemplate = HTML::Template->new(
-				filename => "$lbstemplatedir/updates.html",
-				global_vars => 1,
-				loop_context_vars => 1,
-				die_on_bad_params=> 0,
-				associate => $cfg,
-				%htmltemplate_options,
-				);
-
-	my %SL = LoxBerry::System::readlanguage($maintemplate);
-	# TMPL_IF use "sec_question"
-	$maintemplate->param( "sec_question", 1 );
-	$maintemplate->param( "SVERSION", $sversion );
-	$maintemplate->param( "UVERSION", $uversion );
-	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
-	$maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
-	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
-
-	LoxBerry::Web::lbheader($maintemplate, $helpurl, $helptemplate);
-	$maintemplate->output();
-	LoxBerry::Web::lbfooter();
-
-	exit;
-    # End sub
-}
-
-exit;
 
 #####################################################
 # LoxBerry Update Page

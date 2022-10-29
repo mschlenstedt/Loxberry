@@ -8,28 +8,24 @@
 
 use LoxBerry::Update;
 use LoxBerry::System;
-use LoxBerry::JSON;
 
 init();
 
 #
 # Add Backup to general.json
-#
+# --> general.json is done by ~/sbin/createconfig
 LOGINF "Adding Backup options to general.json";
-my $generaljson = $lbsconfigdir . "/general.json";
-my $gcfgobj = LoxBerry::JSON->new();
-my $gcfg = $gcfgobj->open(filename => $generaljson);
-if (!$gcfg->{'Backup'}) {
-	$gcfg->{'Backup'}->{'Keep_archives'} = "1";
-	$gcfg->{'Backup'}->{'Storagepath'} = "";
-	$gcfg->{'Backup'}->{'Schedule'}->{'Active'} = "false";
-	$gcfg->{'Backup'}->{'Schedule'}->{'Repeat'} = "1";
-	$gcfgobj->write();
-	system ("touch $lbhomedir/system/cron/cron.d/lbclonesd");
+#if (!$gcfg->{'Backup'}) {
+#	$gcfg->{'Backup'}->{'Keep_archives'} = "1";
+#	$gcfg->{'Backup'}->{'Storagepath'} = "";
+#	$gcfg->{'Backup'}->{'Schedule'}->{'Active'} = "false";
+#	$gcfg->{'Backup'}->{'Schedule'}->{'Repeat'} = "1";
+#	$gcfgobj->write();
+  system ("touch $lbhomedir/system/cron/cron.d/lbclonesd");
 	LOGOK "Backup parameters added to general.json successfully.";
-} else {
-	LOGOK "Backup parameters already in general.json -> skipping.";
-}
+#} else {
+	#LOGOK "Backup parameters already in general.json -> skipping.";
+#}
 
 LOGINF "Installing new sudoers file...";
 copy_to_loxberry("/system/sudoers/lbdefaults", "root");

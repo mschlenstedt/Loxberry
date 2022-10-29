@@ -112,6 +112,15 @@ wait_for () {
 case "$1" in
 
 start)
+
+	# Check if we are on a Rapsberry
+	if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
+		echo "This seems not to be a Raspberry. Will only copy skel folders, but will not create any ramdiscs..."
+		cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
+		cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
+		exit 0
+	fi
+	
 	if [ ! -d $RAM_LOG ]; then
 		mkdir -p ${RAM_LOG}
 	fi
@@ -161,6 +170,13 @@ start)
 ;;
 
 stop)
+
+	# Check if we are on a Rapsberry
+	if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
+		echo "This seems not to be a Raspberry. Will do nothing..."
+		exit 0
+	fi
+	
 	# Skel for system logs, LB system logs and LB plugin logs
 	echo "Backing up Syslog and LoxBerry system log folders..."
 	if [ -d $LBHOMEDIR/log/skel_system/ ]; then

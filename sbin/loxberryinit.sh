@@ -47,7 +47,6 @@ case "$1" in
 			fi
 		fi
 	done
-
 	for folder in /media/smb/*
 	do
 		if [ -d ${folder} ]
@@ -65,6 +64,10 @@ case "$1" in
 	# Create Default config
 	echo "Updating general.cfg etc...."
 	$LBHOMEDIR/bin/createconfig.pl
+	if [ ! -f $LBHOMEDIR/data/system/plugindatabase.json ]
+	then
+		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
+	fi
 
 	# Create swap config and resize rootfs
 	if [ -f /boot/rootfsresized ]
@@ -94,15 +97,8 @@ case "$1" in
 		dos2unix $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
 		chown loxberry:loxberry $LBHOMEDIR/system/network/interfaces > /dev/null 2>&1
 		mv /boot/network.txt /boot/network.bkp > /dev/null 2>&1
-		echo "Rebooting"
+		echo "Rebooting to enable network settings..."
 		/sbin/reboot > /dev/null 2>&1
-	fi
-
-	# Copy new HTACCESS User/Password Database
-	if [ -f $LBHOMEDIR/config/system/htusers.dat.new ]
-	then
-		echo "Found new htaccess password database. Activating..."
-		mv $LBHOMEDIR/config/system/htusers.dat.new $LBHOMEDIR/config/system/htusers.dat > /dev/null 2>&1
 	fi
 
 	# Cleaning Temporary folders
@@ -119,11 +115,11 @@ case "$1" in
 	fi
 
 	# Start LoxBerrys Emergency Webserver
-	if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]
-	then
-		echo "Start Emergency Webserver"
-		perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
-	fi
+	#if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]
+	#then
+	#	echo "Start Emergency Webserver"
+	#	perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
+	#fi
 		
 	# Run Daemons from Plugins and from System
 	echo "Running System Daemons..."
