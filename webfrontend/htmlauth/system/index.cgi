@@ -270,12 +270,12 @@ sub mainmenu {
 				WIDGET_CGI => "/admin/system/remote.cgi",
 				NOTIFY_PACKAGE => "remote",
 			},
-			{
-				WIDGET_TITLE => $SL{'HEADER.PANEL_MQTT'}, 
-				WIDGET_ICON => "/system/images/icons/main_mqtt.svg",
-				WIDGET_CGI => "/admin/system/mqtt.cgi",
-				NOTIFY_PACKAGE => "mqtt",
-			},
+			#{
+			#	WIDGET_TITLE => $SL{'HEADER.PANEL_MQTT'}, 
+			#	WIDGET_ICON => "/system/images/icons/main_mqtt.svg",
+			#	WIDGET_CGI => "/admin/system/mqtt.cgi",
+			#	NOTIFY_PACKAGE => "mqtt",
+			#},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_BACKUP'}, 
 				WIDGET_ICON => "/system/images/icons/main_backup.svg",

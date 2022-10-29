@@ -820,6 +820,15 @@ public static function plugindb_changed_time()
 		return $localip;
 	}
 
+	
+	####################################################
+	# execute - execute shell command and return response
+	####################################################
+	public static function execute($cmd)
+	{
+		exec($cmd, $output, $result_code);
+		return $output;	
+	}
 }
 
 // END of class LBSystem
