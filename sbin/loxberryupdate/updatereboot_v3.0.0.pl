@@ -258,9 +258,9 @@ my $output = qx { sed -i --follow-symlinks 's/^#compress/compress/g' /etc/logrot
 $log->open;
 
 # Update Kernel and Firmware on Raspberry
-# GIT Firmware Hash:   ea9e10e531a301b3df568dccb3c931d52a469106
-# dirtree Checksum is: 17badb449407528b418e79f7fa0bf761
-rpi_update("17badb449407528b418e79f7fa0bf761", "ea9e10e531a301b3df568dccb3c931d52a469106");
+# GIT Firmware Hash:   224cd2fe45becbb44fea386399254a1f84227218
+# dirtree Checksum is: XXXXXXXXXXXXXXX
+rpi_update("XXXXXXXXXXXXXX", "224cd2fe45becbb44fea386399254a1f84227218");
 
 # Updating /boot/config.txt for Debian Bullseye
 LOGINF "Updating /boot/config.txt...";
