@@ -15,7 +15,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "3.0.0.1";
+our $VERSION = "3.0.0.2";
 our $DEBUG;
 
 use base 'Exporter';
@@ -324,7 +324,7 @@ sub pagestart
 		# navbar is a ready array (LB 3.0+)
 		$headerobj->param ( JSONMENU => 
 			'<div id="jsonmenu" style="display:none">' .
-			JSON::encode_json(\@main::navbar) .
+			JSON::to_json(\@main::navbar) .
 			'</div>'
 		);
 
@@ -346,7 +346,7 @@ sub pagestart
 		
 		$headerobj->param ( JSONMENU => 
 			'<div id="jsonmenu" style="display:none">' .
-			JSON::encode_json(\@navbar_object) .
+			JSON::to_json(\@navbar_object) .
 			'</div>'
 		);
 	} 
