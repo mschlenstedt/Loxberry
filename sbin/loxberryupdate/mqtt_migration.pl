@@ -58,7 +58,7 @@ apt_install( qw/
 sub update_config
 {
 	
-	execute( command => $lbhomedir."/mqtt-handler.pl action=updateconfig", log => $log, ignoreerrors => 1 );
+	execute( command => $lbhomedir."/sbin/mqtt-handler.pl action=updateconfig", log => $log, ignoreerrors => 1 );
 	
 }
 
