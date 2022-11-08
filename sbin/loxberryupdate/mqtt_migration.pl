@@ -14,6 +14,8 @@ LoxBerry::Update::init();
 
 execute( command => "mkdir --parents $lbhomedir/bin/mqtt/transform/custom", log => $log, ignoreerrors => 1 );
 execute( command => "mkdir --parents $lbhomedir/bin/mqtt/datastore", log => $log, ignoreerrors => 1 );
+execute( command => "mkdir --parents $lbhomedir/config/system/mosquitto", log => $log, ignoreerrors => 1 );
+
 install_packages();
 stop_mqttgateway();
 update_config();
@@ -127,6 +129,15 @@ sub config_migration
 	delete $newcfg->{Main}->{udpinport};
 	delete $newcfg->{Main}->{websocketport};
 	
+	LOGINF "Moving Mosquitto plugin configuration to $lbhomedir/config/system/mosquitto...";
+	
+	execute( command => "cp -f $lbhomedir/config/plugins/mqttgateway/mosquitto.conf $lbhomedir/config/system/mosquitto/", log => $log, ignoreerrors => 1 );
+	execute( command => "cp -f $lbhomedir/config/plugins/mqttgateway/mosq_passwd $lbhomedir/config/system/mosquitto/", log => $log, ignoreerrors => 1 );
+
+	LOGINF "Recreating Mosquitto configuration symlink...";
+	
+	execute( command => "unlink /etc/mosquitto/conf.d/mqttgateway.conf", log => $log, ignoreerrors => 1 );
+	execute( command => "ln -f -s $lbhomedir/config/system/mosquitto/mqttgateway.conf /etc/mosquitto/conf.d/mqttgateway.conf", log => $log, ignoreerrors => 1 );
 	
 }
 
