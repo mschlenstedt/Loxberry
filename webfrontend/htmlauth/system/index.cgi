@@ -234,12 +234,12 @@ sub mainmenu {
 				WIDGET_CGI => "/admin/system/mailserver.cgi",
 				NOTIFY_PACKAGE => "mailserver",
 			},
-			{
-				WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
-				WIDGET_ICON => "/system/images/icons/main_setupassistent.png",
-				WIDGET_CGI => "/admin/system/wizard.cgi",
-				NOTIFY_PACKAGE => "wizard",
-			},
+			#{
+				#WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
+				#WIDGET_ICON => "/system/images/icons/main_setupassistent.png",
+				#WIDGET_CGI => "/admin/system/wizard.cgi",
+				#NOTIFY_PACKAGE => "wizard",
+			#},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TRANSLATE'},
 				WIDGET_ICON => "/system/images/icons/main_translate.png",
