@@ -168,6 +168,14 @@ apt_update();
 apt_install("shellinabox");
 my $output = qx { sed -i 's#^SHELLINABOX_DAEMON_START.*\$#SHELLINABOX_DAEMON_START=0#' /etc/default/shellinabox };
 
+#
+# Add loxberry to i2c group
+#
+LOGINF "Adding user loxberry to group i2c...";
+usermod -a -G i2c loxberry
+
+
+
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
