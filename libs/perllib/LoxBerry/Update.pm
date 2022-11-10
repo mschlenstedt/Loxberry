@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.1";
+our $VERSION = "3.0.0.2";
 our $DEBUG;
 
 ### Exports ###
@@ -298,7 +298,7 @@ sub rpi_update
 			qx ( rm -rf /boot.tmp ); 
 			return undef;
 		} else {
-			my $outout = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
+			my $out_chksum = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
 			my $exitcode  = $? >> 8;
 			if ($exitcode eq "0") {
 			# Delete beta 64Bit kernel (we have not enough space on /boot...)
@@ -311,7 +311,9 @@ sub rpi_update
 				$main::log->OK ("Upgrading kernel and firmware successfully.");
 			} else {
 				$main::log->ERR("Error upgrading kernel and firmware - /boot.tmp seems to be broken.");
-				$main::log->DEB($output);
+				$main::log->DEB("Requested checksum: $checksum");
+				$main::log->DEB("Output of checksum test:");
+				$main::log->DEB($out_chksum);
 				$main::errors++;
 				qx ( rm -rf /boot.tmp ); 
 				return undef;
