@@ -172,10 +172,7 @@ my $output = qx { sed -i 's#^SHELLINABOX_DAEMON_START.*\$#SHELLINABOX_DAEMON_STA
 # Add loxberry to i2c group
 #
 LOGINF "Adding user loxberry to group i2c...";
-usermod -a -G i2c loxberry
-
-
-
+execute( command => "usermod -a -G i2c loxberry", log => $log );
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
