@@ -117,8 +117,8 @@ if ($exitcode != 0) {
 LOGINF "The next steps will prepare the Mosquitto MQTT server and MQTT Gateway.";
 
 copy_to_loxberry('/system/sudoers/lbdefaults');
-copy_to_loxberry('/system/cron.reboot/02-mqttfinder');
-copy_to_loxberry('/system/cron.reboot/04-mqttgateway');
+copy_to_loxberry('/system/cron/cron.reboot/02-mqttfinder');
+copy_to_loxberry('/system/cron/cron.reboot/04-mqttgateway');
 
 LOGINF "Starting MQTT Gateway migration";
 
@@ -168,6 +168,11 @@ apt_update();
 apt_install("shellinabox");
 my $output = qx { sed -i 's#^SHELLINABOX_DAEMON_START.*\$#SHELLINABOX_DAEMON_START=0#' /etc/default/shellinabox };
 
+#
+# Add loxberry to i2c group
+#
+LOGINF "Adding user loxberry to group i2c...";
+execute( command => "usermod -a -G i2c loxberry", log => $log );
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended

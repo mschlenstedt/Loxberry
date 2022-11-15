@@ -294,6 +294,7 @@ if ($lbhomedir ne "/opt/loxberry" and !$dryrun) {
 LOGINF "Restoring permissions of $lbhomedir of your LoxBerry...";
 $log->close;
 # Restoring permissions
+system("chmod +x $lbhomedir/sbin/resetpermissions.sh");
 system("$lbhomedir/sbin/resetpermissions.sh 1>&2 >>$logfilename");
 $exitcode  = $? >> 8;
 $log->open;

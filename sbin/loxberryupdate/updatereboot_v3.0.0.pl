@@ -259,8 +259,8 @@ $log->open;
 
 # Update Kernel and Firmware on Raspberry
 # GIT Firmware Hash:   224cd2fe45becbb44fea386399254a1f84227218
-# dirtree Checksum is: XXXXXXXXXXXXXXX
-rpi_update("XXXXXXXXXXXXXX", "224cd2fe45becbb44fea386399254a1f84227218");
+# dirtree Checksum is: b2e16db3b432e4a3720b23091c5d6843
+rpi_update("b2e16db3b432e4a3720b23091c5d6843", "224cd2fe45becbb44fea386399254a1f84227218");
 
 # Updating /boot/config.txt for Debian Bullseye
 LOGINF "Updating /boot/config.txt...";
