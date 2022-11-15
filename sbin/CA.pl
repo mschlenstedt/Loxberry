@@ -40,6 +40,8 @@ if ( $FQDN eq "" ) {
 $ENV{'MY_IP'} = $IP;
 $ENV{'MY_CN'} = $CN;
 $ENV{'MY_FQDN'} = $FQDN;
+chomp($ENV{'OPASS'} = `[ -f "$ENV{'LBHOMEDIR'}/data/system/LoxBerryCA/randb64" ] && cat $ENV{'LBHOMEDIR'}/data/system/LoxBerryCA/randb64`);
+#system("export OPASS=${RAND}");
 my $REQ = "$openssl req $CA_CONFIG -subj='/C=/ST=/L=/O=/OU=/CN=$CN' -passout env:OPASS";
 my $REQCA = "$openssl req $CA_CONFIG -subj='/C=DE/ST=Saxony/L=Dresden/O=LoxBerry/OU=CA/CN=LoxBerry CA' -passout env:OPASS";
 my $REQCL = "$openssl req $CA_CONFIG -subj='/C=/ST=/L=/O=/OU=/CN=LoxBerry Client' -passout env:OPASS";
@@ -161,6 +163,10 @@ if ($WHAT eq '-newcert' ) {
     open OUT, ">${CATOP}/crlnumber";
     print OUT "01\n";
     close OUT;
+    open OUT, ">${CATOP}/randb64";
+    print OUT `$openssl rand -base64 16`;
+    close OUT;
+    chomp($ENV{'OPASS'} = `cat ${CATOP}/randb64`);
     # ask user for existing CA certificate
     ## print "CA certificate filename (or enter to create)\n";
     $FILE = ""; ## unless defined($FILE = <STDIN>);

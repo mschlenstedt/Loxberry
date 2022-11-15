@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CATOP = "$LBHOMEDIR/data/system/LoxBerryCA"
-cd "$CATOP/newcerts
+CATOP="$LBHOMEDIR/data/system/LoxBerryCA"
+cd "$CATOP/newcerts"
 $LBHOMEDIR/sbin/CA.pl -newreq
 $LBHOMEDIR/sbin/CA.pl -sign
 mv newcert.pem $CATOP/certs/wwwcert.pem
