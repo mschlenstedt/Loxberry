@@ -285,7 +285,7 @@ sub mainmenu {
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TERMINAL'}, 
 				WIDGET_ICON => "/system/images/icons/main_terminal.svg",
-				WIDGET_CGI => "/admin/system/tools/terminal.cgi",
+				WIDGET_CGI => "/admin/system/tools/terminal",
 				WIDGET_TARGET => "_blank",
 				NOTIFY_PACKAGE => "terminal",
 			},

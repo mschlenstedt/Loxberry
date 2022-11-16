@@ -167,6 +167,10 @@ LOGINF "Installing Shell-In-A-Box...";
 apt_update();
 apt_install("shellinabox");
 my $output = qx { sed -i 's#^SHELLINABOX_DAEMON_START.*\$#SHELLINABOX_DAEMON_START=0#' /etc/default/shellinabox };
+copy_to_loxberry('/system/daemons/system/07-shellinabox');
+copy_to_loxberry('/system/apache2/conf-available/shellinabox.conf');
+execute( command => "a2enmod proxy proxy_http", log => $log );
+execute( command => "a2enconf shellinabox", log => $log );
 
 #
 # Add loxberry to i2c group
@@ -180,10 +184,11 @@ execute( command => "usermod -a -G i2c loxberry", log => $log );
 LOGINF "Installing new SSL / HTTPS Option for Apache2 Webserver.";
 
 copy_to_loxberry('/system/apache2/sites-available/001-default-ssl.conf');
+copy_to_loxberry('/system/apache2/sites-available/001-default.conf');
 copy_to_loxberry('/system/cron/cron.daily/04-checkcerts');
 copy_to_loxberry('/system/daemons/system/06-checkcerts');
 #copy_to_loxberry('/system/apache2/sites-enabled/001-default-ssl.conf');
-execute( command => "a2ensite 001-default-ssl", log => $log );
+#execute( command => "a2ensite 001-default-ssl", log => $log );
 execute( command => "a2enmod ssl", log => $log );
 
 LOGINF "Creating certificates if not already exist."
