@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ -f /usr/bin/shellinaboxd ]
+then
+	echo "Start ShellinaBox Terminal"
+	/usr/bin/shellinaboxd -b --no-beep -t -n -p 64994 -s '/:AUTH:HOME:/bin/bash' --user-css 'Normal:-/etc/shellinabox/options-available/00+Black on White.css,Reverse:+/etc/shellinabox/options-available/00_White On Black.css' --user-css 'Color:+/etc/shellinabox/options-available/01+Color Terminal.css,Monochrome:-/etc/shellinabox/options-available/01_Monochrome.css' > /dev/null 2>&1 &
+fi
