@@ -80,7 +80,7 @@ qx { chmod +x $lbhomedir/system/daemons/system/99-updaterebootv300 };
 #
 LOGINF "Disabling Apache2 Service for next reboot...";
 my $output = qx { systemctl disable apache2.service };
-$exitcode = $? >> 8;
+my $exitcode = $? >> 8;
 if ($exitcode != 0) {
 	LOGWARN "Could not disable Apache webserver - Error $exitcode";
 	LOGWARN "Maybe your LoxBerry does not respond during system upgrade after reboot. Please be patient when rebooting!";
@@ -180,10 +180,25 @@ execute( command => "usermod -a -G i2c loxberry", log => $log );
 LOGINF "Installing new SSL / HTTPS Option for Apache2 Webserver.";
 
 copy_to_loxberry('/system/apache2/sites-available/001-default-ssl.conf');
-#copy_to_loxberry('/system/apache2/sites-enabled/001-default-ssl.conf');
 copy_to_loxberry('/system/cron/cron.daily/04-checkcerts');
 copy_to_loxberry('/system/daemons/system/06-checkcerts');
+#copy_to_loxberry('/system/apache2/sites-enabled/001-default-ssl.conf');
 execute( command => "a2ensite 001-default-ssl", log => $log );
+execute( command => "a2enmod ssl", log => $log );
+
+LOGINF "Creating certificates if not already exist."
+execute( command => "$LBHOMEDIR/sbin/checkcerts.sh", log => $log );
+
+LOGINF "Checking new Apapche2 configuration."
+($exitcode) = execute( command => "apachectl -t", log => $log );
+if ($exitcode != 0) {
+	LOGERR "There's a problem with the Apache Configuration. Disabling SSL option."
+	execute( command => "a2dissite 001-default-ssl", log => $log );
+	$errors++;
+} else {
+	LOGOK "Apache Configuration seems to be OK.";
+}
+
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
