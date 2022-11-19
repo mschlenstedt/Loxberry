@@ -121,6 +121,13 @@ case "$1" in
 	#	perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
 	#fi
 
+	# Check Apache SSL certificates
+	if [ -f $LBHOMEDIR/sbin/checkcerts.sh ]
+	then
+		echo "Checking SSL Certificates"
+		$LBHOMEDIR/sbin/checkcerts.sh > /dev/null 2>&1
+	fi
+
 	# Run Daemons from Plugins and from System
 	echo "Running System Daemons..."
 	#run-parts -v $LBHOMEDIR/system/daemons/system > /dev/null 
