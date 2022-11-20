@@ -131,13 +131,13 @@ sub config_migration
 	
 	LOGINF "Moving Mosquitto plugin configuration to $lbhomedir/config/system/mosquitto...";
 	
-	execute( command => "cp -f $lbhomedir/config/plugins/mqttgateway/mosquitto.conf $lbhomedir/config/system/mosquitto/", log => $log, ignoreerrors => 1 );
+	execute( command => "cp -f $lbhomedir/config/plugins/mqttgateway/mosquitto.conf $lbhomedir/config/system/mosquitto/mosq_mqttgateway.conf", log => $log, ignoreerrors => 1 );
 	execute( command => "cp -f $lbhomedir/config/plugins/mqttgateway/mosq_passwd $lbhomedir/config/system/mosquitto/", log => $log, ignoreerrors => 1 );
 
 	LOGINF "Recreating Mosquitto configuration symlink...";
 	
 	execute( command => "unlink /etc/mosquitto/conf.d/mqttgateway.conf", log => $log, ignoreerrors => 1 );
-	execute( command => "ln -f -s $lbhomedir/config/system/mosquitto/mqttgateway.conf /etc/mosquitto/conf.d/mqttgateway.conf", log => $log, ignoreerrors => 1 );
+	execute( command => "ln -f -s $lbhomedir/config/system/mosquitto/mosq_mqttgateway.conf /etc/mosquitto/conf.d/mosq_mqttgateway.conf", log => $log, ignoreerrors => 1 );
 	
 }
 

@@ -9,7 +9,7 @@ use LoxBerry::JSON;
 my $generaljsonfile = "$lbsconfigdir/general.json";
 my $cfgfile = "$lbsconfigdir/mqttgateway.json";
 my $mosq_configdir = "$lbsconfigdir/mosquitto";
-my $mosq_cfgfile = "$mosq_configdir/mosquitto.conf";
+my $mosq_cfgfile = "$mosq_configdir/mosq_mqttgateway.conf";
 my $mosq_passwdfile = "$mosq_configdir/mosq_passwd";
 
 my $generaljsonobj;
