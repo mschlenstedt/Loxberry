@@ -28,7 +28,7 @@ my $log = LoxBerry::Log->new (
 	loglevel => 7,
 );
 
-LOGSTART "Updating configuration during plugin installation";
+LOGSTART "Updating MQTT configuration";
 
 if( $action eq "updateconfig" ) { 
 	open_configs();
@@ -67,6 +67,7 @@ exit;
 
 sub restart_gateway
 {
+	LOGDEB "restart_gateway";
 	# Restart Gateway
 	`pkill mqttgateway.pl`;
 	`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;
@@ -75,6 +76,7 @@ sub restart_gateway
 
 sub open_configs
 {
+	LOGDEB "open_configs";
 	$generaljsonobj = LoxBerry::JSON->new();
 	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive => 1, writeonclose => 1);
 	$mqttobj = LoxBerry::JSON->new();
@@ -83,7 +85,7 @@ sub open_configs
 
 sub update_config
 {
-
+	LOGDEB "update_config";
 	## Setting default values if not existing
 	
 	my $changed = 0;
@@ -151,16 +153,16 @@ sub update_config
 	
 	`chown loxberry:loxberry $cfgfile`;
 	`mkdir $mosq_configdir`;
-	`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mqttgateway.conf`;
+	`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 
 }
 
 sub mosquitto_set
 {
-	
+	LOGDEB "mosquitto_set";
 	if( is_enabled($generalcfg->{Mqtt}->{Uselocalbroker}) ) { 
 		`mkdir $mosq_configdir`;
-		`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mqttgateway.conf`;
+		`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 		mosquitto_setcred();
 		mosquitto_enable();
 		mosquitto_readconfig();
@@ -173,17 +175,20 @@ sub mosquitto_set
 
 sub mosquitto_enable
 {
+	LOGDEB "mosquitto_enable";
 	`systemctl enable mosquitto`;
 }
 
 sub mosquitto_disable
 {
+	LOGDEB "mosquitto_disable";
 	`systemctl disable mosquitto`;
 	`systemctl stop mosquitto`;
 }
 
 sub mosquitto_restart
 {
+	LOGDEB "mosquitto_restart";
 	`systemctl restart mosquitto`;
 }
 
@@ -191,7 +196,7 @@ sub mosquitto_restart
 
 sub mosquitto_setcred
 {
-
+	LOGDEB "mosquitto_setcred";
 	my $brokeruser = $generalcfg->{Mqtt}->{Brokeruser};
 	my $brokerpass = $generalcfg->{Mqtt}->{Brokerpass};
 	my $brokerport = $generalcfg->{Mqtt}->{Brokerport};
@@ -208,8 +213,8 @@ sub mosquitto_setcred
 	$mosq_config .= "autosave_interval 86400\n\n";
 
 	## Not working because of permissions (user mosquitto has no access)
-	# $mosq_config .= "# Use LoxBerry's Plugin logging directory for Mosquitto logfile\n";
-	# $mosq_config .= "log_dest file $lbplogdir/mosquitto.log\n\n";
+	# $mosq_config .= "# Use LoxBerry's logging directory for Mosquitto logfile\n";
+	# $mosq_config .= "log_dest file $lbstmpfslogdir/mosquitto.log\n\n";
 		
 	# User and pass, or anonymous
 	if(!$brokeruser and !$brokerpass) {
@@ -251,6 +256,7 @@ sub mosquitto_setcred
 
 sub mosquitto_readconfig
 {
+	LOGDEB "mosquitto_readconfig";
 	my ($exitcode, undef) = LoxBerry::System::execute('pgrep mosquitto');
 	if( $exitcode != 0 ) {
 		LoxBerry::System::execute('systemctl restart mosquitto');
@@ -265,7 +271,8 @@ sub mosquitto_readconfig
 # Random Sub
 #####################################################
 sub generate {
-        my ($count) = @_;
+        LOGDEB "generate";
+		my ($count) = @_;
         my($zufall,@words,$more);
 
         if($count =~ /^\d+$/){
@@ -291,6 +298,7 @@ sub generate {
 sub generate_hexkey
 {
 
+	LOGDEB "generate_hexkey";
 	my ($keybits) = @_;
 	
 	if (! $keybits or $keybits < 40) {
@@ -313,10 +321,6 @@ sub generate_hexkey
 	return $hexstr;
 
 }
-
-
-
-
 
 
 
