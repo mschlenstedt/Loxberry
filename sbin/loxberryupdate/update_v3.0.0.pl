@@ -119,6 +119,8 @@ LOGINF "The next steps will prepare the Mosquitto MQTT server and MQTT Gateway."
 copy_to_loxberry('/system/sudoers/lbdefaults');
 copy_to_loxberry('/system/cron/cron.reboot/02-mqttfinder');
 copy_to_loxberry('/system/cron/cron.reboot/04-mqttgateway');
+execute("chmod +x $lbhomedir/system/cron/cron.reboot/02-mqttfinder");
+execute("chmod +x $lbhomedir/system/cron/cron.reboot/04-mqttgateway");
 
 LOGINF "Starting MQTT Gateway migration";
 

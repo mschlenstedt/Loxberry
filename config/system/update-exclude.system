@@ -15,6 +15,7 @@
 /config/system/*.dat
 /config/system/*.
 /config/system/update-exclude.userdefined
+/config/system/mosquitto/
 
 /data/
 /data/plugins
