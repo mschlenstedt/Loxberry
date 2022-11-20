@@ -189,19 +189,18 @@ copy_to_loxberry('/system/cron/cron.daily/04-checkcerts');
 #execute( command => "a2ensite 001-default-ssl", log => $log );
 execute( command => "a2enmod ssl", log => $log );
 
-LOGINF "Creating certificates if not already exist."
+LOGINF "Creating certificates if not already exist.";
 execute( command => "$LBHOMEDIR/sbin/checkcerts.sh", log => $log );
 
-LOGINF "Checking new Apapche2 configuration."
+LOGINF "Checking new Apapche2 configuration.";
 ($exitcode) = execute( command => "apachectl -t", log => $log );
 if ($exitcode != 0) {
-	LOGERR "There's a problem with the Apache Configuration. Disabling SSL option."
+	LOGERR "There's a problem with the Apache Configuration. Disabling SSL option.";
 	execute( command => "a2dissite 001-default-ssl", log => $log );
 	$errors++;
 } else {
 	LOGOK "Apache Configuration seems to be OK.";
 }
-
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
