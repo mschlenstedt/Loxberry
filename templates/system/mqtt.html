@@ -85,9 +85,9 @@
 	</div>
 
 	<div class="ui-body ui-body-a" style="background-color:#6dac20;color:white;text-shadow:none">
-		To configure MQTT devices, use the following MQTT connection string:<br>
-		<b>mqtt://{{Mqtt.Brokeruser}}:{{Mqtt.Brokerpass}}@{{show_brokerhost}}:{{Mqtt.Brokerport}}</b><br>
-		<small>Possibly the mqtt prefix might not be required, an/or host and port are separated input fields ({{show_brokerhost}}:{{Mqtt.Brokerport}}).</small>
+		To configure MQTT devices, use the following MQTT connection information:<br>
+		Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Brokerport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b><br>
+		<small>Possibly host and port needs to be combined: <b>{{show_brokerhost}}:{{Mqtt.Brokerport}}</b></small>
 	</div>
 	<div style="height:15px"></div>
 
@@ -160,7 +160,7 @@
 			
 			update_showbrokerhost() {
 				if(this.Mqtt.Brokerhost.toLowerCase() == 'localhost') {
-					this.show_brokerhost = window.location.host;
+					this.show_brokerhost = window.location.hostname;
 				} else {
 					this.show_brokerhost = this.Mqtt.Brokerhost;
 				}
