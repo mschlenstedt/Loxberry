@@ -40,11 +40,11 @@
 	
 	
 	<div v-if="Mqtt.Uselocalbroker=='true'">
-			<h2>LoxBerry Managed MQTT broker</h2>
+			<h2>LoxBerry Managed MQTT Server</h2>
 		</div>
 		
 		<div v-else>
-			<h2>Own MQTT broker</h2>
+			<h2>Own MQTT Server</h2>
 		</div>
 	
 	<h3>Basic Settings</h3>
@@ -52,7 +52,7 @@
 	<!-- jQm does not use the disabled property, but sets a class ui-disabled instead. Therefore it needs a Vue :class binding. -->
 	
 	<div class="ui-field-contain">
-		<label for="Mqtt.Brokerhost" style="min-width:15%">Broker hostname</label>
+		<label for="Mqtt.Brokerhost" style="min-width:15%">MQTT Server hostname</label>
 		<input type="text" 
 			id="Mqtt.Brokerhost" 
 			style="width:50%" 
@@ -65,22 +65,22 @@
 	</div>
 	
 	<div class="ui-field-contain">
-		<label for="Mqtt.Brokerport" class="col-fixed" style="min-width:15%">Broker Brokerport<br><small id="Mqtt-Brokerport-help">Default is 1883</small></label>
+		<label for="Mqtt.Brokerport" class="col-fixed" style="min-width:15%">MQTT Server Port<br><small id="Mqtt-Brokerport-help">Default is 1883</small></label>
 		<input type="number" id="Mqtt.Brokerport" style="width:50%" v-model.number="Mqtt.Brokerport" aria-describedby="Mqtt-Brokerport-help" v-on:change="formadata_changed()">
 	</div>
 	
 	<div class="ui-field-contain">
-		<label for="Mqtt.Brokeruser" style="min-width:15%">Broker Brokeruser</label>
+		<label for="Mqtt.Brokeruser" style="min-width:15%">MQTT Server User</label>
 		<input type="text" id="Mqtt.Brokeruser" v-model.trim="Mqtt.Brokeruser" v-on:change="formadata_changed()">
 	</div>
 	
 	<div class="ui-field-contain">
-		<label for="Mqtt.Brokerpass" style="min-width:15%">Broker Brokerpass</label>
+		<label for="Mqtt.Brokerpass" style="min-width:15%">MQTT Server Password</label>
 		<input type="text" id="Mqtt.Brokerpass" v-model.trim="Mqtt.Brokerpass" v-on:change="formadata_changed()">
 	</div>
 	
 	<div class="ui-field-contain">
-		<label for="Mqtt.Websocketport" style="min-width:15%">Broker Websocketport</label>
+		<label for="Mqtt.Websocketport" style="min-width:15%">MQTT Server Websocket Port</label>
 		<input type="number" id="Mqtt.Websocketport" v-model.number="Mqtt.Websocketport" v-on:change="formadata_changed()">
 	</div>
 
@@ -97,7 +97,7 @@
 	</div>
 
 	<div v-show="data_changed" style="color:blue">
-		Unsaved changes.<br>Keep in mind, that changing the broker settings might need to change these on all your MQTT devices. Plugins possibly need to be restarted.
+		Unsaved changes.<br>Keep in mind, that changing the MQTT Server settings might need to change these on all your MQTT devices. Plugins possibly need to be restarted.
 	</div>
 	<div v-show="data_saved" style="color:green">
 		Changes saved successfully.
@@ -125,14 +125,14 @@
 		var Mqtt = this.getData();
 		return {
 			sl: { 
-				heading: "MQTT Broker Settings",
-				intro: "MQTT is a slim, internationally standardised data transfer protocol using an 'MQTT broker', that is a central program that transfers "+
+				heading: "MQTT Server Settings",
+				intro: "MQTT is a slim, internationally standardised data transfer protocol using an MQTT Server (formerly called 'MQTT Broker'), that is a central program that transfers "+
 					   "data from and to all directions. LoxBerry's MQTT Gateway and many plugins use the MQTT standard for data transfer. By default, "+
-					   "LoxBerry automatically installs and manages the Mosquitto MQTT broker on your LoxBerry. But you are also able to configure another "+
-					   "broker that should be used.<br>"+
+					   "LoxBerry automatically installs and manages the Mosquitto MQTT Server on your LoxBerry. But you are also able to configure another "+
+					   "MQTT Server that should be used.<br>"+
 					   "LoxBerry's MQTT Gateway and plugins use the MQTT settings of the below configuration.",
-				uselocalbroker_true: "Use and automatically configure local MQTT Broker",
-				uselocalbroker_false: "Use custom MQTT broker and manage broker myself"
+				uselocalbroker_true: "Use and automatically configure local MQTT Server",
+				uselocalbroker_false: "Use custom MQTT Server and manage Server myself"
 				
 			},
 			Mqtt: { 

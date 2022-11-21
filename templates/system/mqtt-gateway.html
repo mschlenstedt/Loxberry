@@ -50,7 +50,7 @@
 	<div data-role="fieldcontain" class="main_udpport_block">
 		<label for="Main.udpport">Miniserver UDP port</label>
 		<input name="Main.udpport" id="Main.udpport" type="text" />
-		<p class="hint">Default UDP port is <span class="mono">11883</span>. If UDP is enabled, data <i>from the broker</i> are sent to this udp port on the Miniserver.</p>
+		<p class="hint">Default UDP port is <span class="mono">11883</span>. If UDP is enabled, data <i>from the MQTT Server</i> are sent to this udp port on the Miniserver.</p>
 	</div>
 
 	<div data-role="fieldcontain">
@@ -315,7 +315,7 @@ $(function(){
 	
 	<div style="display:flex;align-items:center;justify-content:center;">
 		<!-- Clear broker database -->
-		<button class="ui-btn ui-btn-icon-right" id="purgemosquittodb" data-inline="true" style="display:none">Clear broker database</button>
+		<button class="ui-btn ui-btn-icon-right" id="purgemosquittodb" data-inline="true" style="display:none">Clear MQTT database</button>
 		<button class="ui-btn ui-btn-icon-right" id="reconnect" data-inline="true">Delete cache (for testing)</button>
 	</div>
 	
@@ -1081,7 +1081,7 @@ $(function(){
 	<p>Transformers are scripts of any programming language provided by <i>YOURSELF</i> (or shipped with the MQTT Gateway), that stands in the middle of the data transfer, and can transform incoming values to other outgoing values. Currently only <b>UDP Transformers</b> are supported, that modify data from the Miniserver before sending to MQTT.
 	</p>
 	<p class="hint">Example: Loxone sends RGB colors as combined 0-100% value, but devices require three seperate 0-255 values. An UDP Transformer can archive this.</p> 
-	<p>Use MQTT Gateway's <a href="pub_popup.cgi" target="_blank">Quick Publisher</a> to test publishes to the broker.</p>
+	<p>Use MQTT Gateway's <a href="pub_popup.cgi" target="_blank">Quick Publisher</a> to test publishes to the MQTT Server.</p>
 	
 	<div data-role='collapsible' id='coll_package_transformers_udp' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
 	

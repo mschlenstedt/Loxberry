@@ -157,12 +157,12 @@ while(1) {
 	$pollmsloopcount++;
 	if(time>$nextconfigpoll) {
 		if(!$mqtt->{socket}) {
-			LOGWARN "No connection to MQTT broker $generaljson->{Mqtt}{Brokerhost} - Check host/port/user/pass and your connection.";
-			$health_state{broker}{message} = "No connection to MQTT broker $generaljson->{Mqtt}{Brokerhost} - Check host/port/user/pass and your connection.";
+			LOGWARN "No connection to MQTT Server $generaljson->{Mqtt}{Brokerhost} - Check host/port/user/pass and your connection.";
+			$health_state{broker}{message} = "No connection to MQTT Server $generaljson->{Mqtt}{Brokerhost} - Check host/port/user/pass and your connection.";
 			$health_state{broker}{error} = 1;
 			$health_state{broker}{count} += 1;
 		} else {
-			$health_state{broker}{message} = "Connected and subscribed to broker";
+			$health_state{broker}{message} = "Connected and subscribed to MQTT Server";
 			$health_state{broker}{error} = 0;
 			$health_state{broker}{count} = 0;
 		}
@@ -876,7 +876,7 @@ sub read_config
 		undef $mqtt;
 		
 		# Reconnect MQTT broker
-		LOGINF "Connecting broker ". $generaljson->{Mqtt}{Brokerhost}.":".$generaljson->{Mqtt}{Brokerport};
+		LOGINF "Connecting MQTT Server ". $generaljson->{Mqtt}{Brokerhost}.":".$generaljson->{Mqtt}{Brokerport};
 		eval {
 			
 			$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
@@ -884,7 +884,7 @@ sub read_config
 			$mqtt = Net::MQTT::Simple->new($generaljson->{Mqtt}{Brokerhost}.":".$generaljson->{Mqtt}{Brokerport});
 			
 			if($generaljson->{Mqtt}{Brokeruser} or $generaljson->{Mqtt}{Brokerpass}) {
-				LOGINF "Login at broker";
+				LOGINF "Login at MQTT Server";
 				$mqtt->login($generaljson->{Mqtt}{Brokeruser}, $generaljson->{Mqtt}{Brokerpass});
 			}
 			

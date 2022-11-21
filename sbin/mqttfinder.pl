@@ -75,7 +75,7 @@ while(1) {
 	# Check mqtt connection and read config
 	if(time>$nextconfigpoll) {
 		if(!$mqtt->{socket}) {
-			LOGWARN "No connection to MQTT broker $cfg->{Mqtt}->{Brokerhost} - Check host/port/user/pass and your connection.";
+			LOGWARN "No connection to MQTT Server $cfg->{Mqtt}->{Brokerhost} - Check host/port/user/pass and your connection.";
 		} 
 		# LOGINF("Read_config");
 		read_config();
@@ -191,7 +191,7 @@ sub read_config
 	undef $mqtt;
 	
 	# Reconnect MQTT broker
-	LOGINF "Connecting broker " . $cfg->{Mqtt}->{Brokerhost} . ":" . $cfg->{Mqtt}->{Brokerport};
+	LOGINF "Connecting MQTT Server " . $cfg->{Mqtt}->{Brokerhost} . ":" . $cfg->{Mqtt}->{Brokerport};
 	eval {
 		
 		$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
@@ -199,7 +199,7 @@ sub read_config
 		$mqtt = Net::MQTT::Simple->new($cfg->{Mqtt}->{Brokerhost}.":".$cfg->{Mqtt}->{Brokerport});
 		
 		if($cfg->{Mqtt}->{Brokeruser} or $cfg->{Mqtt}->{Brokerpass}) {
-			LOGINF "Login at broker with user $cfg->{Mqtt}->{Brokeruser}";
+			LOGINF "Login at MQTT Server with user $cfg->{Mqtt}->{Brokeruser}";
 			$mqtt->login($cfg->{Mqtt}->{Brokeruser}, $cfg->{Mqtt}->{Brokerpass});
 		}
 		
