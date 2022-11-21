@@ -78,9 +78,9 @@ sub open_configs
 {
 	LOGDEB "open_configs";
 	$generaljsonobj = LoxBerry::JSON->new();
-	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive => 1, writeonclose => 1);
+	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive => 1);
 	$mqttobj = LoxBerry::JSON->new();
-	$cfg = $mqttobj->open(filename => $cfgfile, lockexclusive => 1, writeonclose => 1);
+	$cfg = $mqttobj->open(filename => $cfgfile, lockexclusive => 1);
 }
 
 sub update_config
@@ -99,7 +99,7 @@ sub update_config
 		}
 	if(! defined $generalcfg->{Mqtt}->{Uselocalbroker}) { 
 		$generalcfg->{Mqtt}->{Uselocalbroker} = 'true'; 
-		LOGINF "Setting 'Enable local Mosquitto broker' to " . $cfg->{Mqtt}->{Uselocalbroker};
+		LOGINF "Setting 'Enable local Mosquitto broker' to " . $generalcfg->{Mqtt}->{Uselocalbroker};
 		}
 	if(! defined $generalcfg->{Mqtt}->{Brokerhost}) { 
 		$generalcfg->{Mqtt}->{Brokerhost} = 'localhost';
@@ -197,6 +197,7 @@ sub mosquitto_restart
 sub mosquitto_setcred
 {
 	LOGDEB "mosquitto_setcred";
+
 	my $brokeruser = $generalcfg->{Mqtt}->{Brokeruser};
 	my $brokerpass = $generalcfg->{Mqtt}->{Brokerpass};
 	my $brokerport = $generalcfg->{Mqtt}->{Brokerport};
@@ -331,6 +332,9 @@ END
 	# Return http response here
 	# Check for $errorstr
 	
+	$mqttobj->write();
+	$generaljsonobj->write();
+
 	if ($log) {
 		$log->LOGEND();
 	}

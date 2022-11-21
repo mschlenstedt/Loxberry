@@ -19,8 +19,6 @@ execute( command => "mkdir --parents $lbhomedir/config/system/mosquitto", log =>
 install_packages();
 stop_mqttgateway();
 
-update_config();
-
 # Migration steps
 if( -e $oldconfigfile ) {
 	config_migration();
