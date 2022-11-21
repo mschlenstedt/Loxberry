@@ -225,7 +225,8 @@ sub save_data
 	$relayjson->{incoming} = \%sendhash;
 
 	
-	$relayjsonobj->write();
+	my $saved = $relayjsonobj->write();
+	# if($saved) { LOGINF("Changes written to $datafile"); };
 	undef $relayjsonobj;
 
 	

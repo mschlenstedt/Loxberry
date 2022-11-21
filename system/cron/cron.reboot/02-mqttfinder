@@ -1,3 +1,5 @@
 #!/bin/bash
-sleep 5
+echo "MQTT Finder Wating 30 seconds to start"
+sleep 30
+echo "MQTT Finder Now starting"
 $LBHOMEDIR/sbin/mqttfinder.pl & >/dev/null
