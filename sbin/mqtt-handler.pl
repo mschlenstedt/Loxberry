@@ -10,7 +10,7 @@ my $generaljsonfile = "$lbsconfigdir/general.json";
 my $cfgfile = "$lbsconfigdir/mqttgateway.json";
 my $mosq_configdir = "$lbsconfigdir/mosquitto";
 my $mosq_cfgfile = "$mosq_configdir/mosq_mqttgateway.conf";
-my $mosq_passwdfile = "$mosq_configdir/mosq_passwd";
+my $mosq_passwdfile = "/etc/mosquitto/conf.d/mosq_passwd";
 
 my $generaljsonobj;
 my $generalcfg;
@@ -208,7 +208,7 @@ sub mosquitto_setcred
 	$mosq_config  = "# This file is directly managed by LoxBerry.\n";
 	$mosq_config .= "# Do not change this file, as your changes will be lost on saving in the MQTT Gateway webinterface.\n\n";
 	
-	$mosq_config .= "port $brokerport\n\n";
+	$mosq_config .= "listener $brokerport\n\n";
 	$mosq_config .= "# To reduce SD writes, save Mosquitto DB only once a day\n";
 	$mosq_config .= "autosave_interval 86400\n\n";
 

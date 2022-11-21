@@ -132,7 +132,7 @@ sub config_migration
 	LOGINF "Moving Mosquitto plugin configuration to $lbhomedir/config/system/mosquitto...";
 	
 	execute( command => "cp -f $lbhomedir/config/plugins/mqttgateway/mosquitto.conf $lbhomedir/config/system/mosquitto/mosq_mqttgateway.conf", log => $log, ignoreerrors => 1 );
-	execute( command => "cp -f $lbhomedir/config/plugins/mqttgateway/mosq_passwd $lbhomedir/config/system/mosquitto/", log => $log, ignoreerrors => 1 );
+	execute( command => "cp -f $lbhomedir/config/plugins/mqttgateway/mosq_passwd /etc/mosquitto/conf.d/", log => $log, ignoreerrors => 1 );
 
 	LOGINF "Recreating Mosquitto configuration symlink...";
 	
