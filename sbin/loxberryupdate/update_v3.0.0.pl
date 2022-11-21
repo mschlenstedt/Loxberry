@@ -124,7 +124,7 @@ execute("chmod +x $lbhomedir/system/cron/cron.reboot/04-mqttgateway");
 
 LOGINF "Starting MQTT Gateway migration";
 
-execute( command => "$lbhomedir/sbin/loxberryupdate/mqtt_migration.pl", log => $log, ignoreerrors => 1 );
+execute( command => "$lbhomedir/sbin/loxberryupdate/mqtt_migration.pl logfilename=$logfilename", log => $log, ignoreerrors => 1 );
 
 #
 # Upgrading usb-mount
