@@ -117,10 +117,10 @@ if ($exitcode != 0) {
 LOGINF "The next steps will prepare the Mosquitto MQTT server and MQTT Gateway.";
 
 copy_to_loxberry('/system/sudoers/lbdefaults');
-copy_to_loxberry('/system/cron/cron.reboot/02-mqttfinder');
-copy_to_loxberry('/system/cron/cron.reboot/04-mqttgateway');
-execute("chmod +x $lbhomedir/system/cron/cron.reboot/02-mqttfinder");
-execute("chmod +x $lbhomedir/system/cron/cron.reboot/04-mqttgateway");
+copy_to_loxberry('/system/daemons/system/50-mqttgateway');
+copy_to_loxberry('/system/daemons/system/51-mqttfinder');
+execute("chmod +x $lbhomedir/system/daemons/system/50-mqttgateway");
+execute("chmod +x $lbhomedir/system/daemons/system/51-mqttfinder");
 
 LOGINF "Starting MQTT Gateway migration";
 

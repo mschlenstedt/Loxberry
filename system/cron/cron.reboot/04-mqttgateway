@@ -1,3 +1,0 @@
-#!/bin/bash
-sleep 30
-$LBHOMEDIR/sbin/mqttgateway.pl > /dev/null 2>&1 &
