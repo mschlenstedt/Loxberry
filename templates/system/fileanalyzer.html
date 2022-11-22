@@ -132,7 +132,7 @@ $(function() {
 		methods: {
 		
 			getFileanalyzerData() {
-				fetch('ajax-fileanalyzer.cgi?action=getopenfiledata')
+				fetch('../ajax/ajax-fileanalyzer.cgi?action=getopenfiledata')
 					.then( response => response.json() )
 					.then( filedata => JSON.parse(filedata.filedata) )
 					.then( data => { 
@@ -142,7 +142,7 @@ $(function() {
 						this.prepareData();
 						this.loadingMessage = false;
 					});
-				fetch('ajax-fileanalyzer.cgi?action=getlargefiledata')
+				fetch('../ajax/ajax-fileanalyzer.cgi?action=getlargefiledata')
 					.then( response => response.json() )
 					.then( filedata => JSON.parse(filedata.filedata) )
 					.then( data => {
