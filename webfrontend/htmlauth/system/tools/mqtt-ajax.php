@@ -193,7 +193,7 @@ elseif( $ajax == 'publish_json' ) {
 	require_once "loxberry_io.php";
 	$mqttcred = mqtt_connectiondetails();
 	$udpinport=$mqttcred['udpinport'];
-	
+		
 	$pub_data = (object) array ( 
 		'topic' => $_POST['topic'], 
 		'value' => $_POST['value'], 
@@ -205,9 +205,13 @@ elseif( $ajax == 'publish_json' ) {
 	}
 	$pubdata_json = json_encode($pub_data);
 	$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-	socket_sendto($sock, $pubdata_json, strlen($pubdata_json), 0, 'localhost', $udpinport);
+	$sentbytes = socket_sendto($sock, $pubdata_json, strlen($pubdata_json), 0, 'localhost', $udpinport);
 	socket_close($sock);
-	print $pubdata_json;
+	if( $sentbytes != false ) {	
+		print $pubdata_json;
+	} else {
+		print '{ "error" : "Socket no data sent" }';
+	}
 	exit(0);
 
 }
@@ -237,5 +241,3 @@ else {
 		error_log("mqtt-ajax.php: ERRROR: ajax=$ajax is unknown.");
 	}
 }
-
-

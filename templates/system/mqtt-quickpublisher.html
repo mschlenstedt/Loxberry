@@ -1,0 +1,263 @@
+<style>
+.mono {
+	font-family:monospace;
+	font-size:110%;
+	font-weight:bold;
+	color:green;
+
+}
+#overlay 
+{
+  display: none !important;
+}
+
+.table {
+	display:table;
+}
+
+.table-row {
+	display:table-row;
+}
+
+.table-cell {
+	display:table-cell;
+}
+
+</style>
+
+<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
+
+<form>
+	<div>
+		Use <b>Topic</b> and <b>Value</b> input fields, and select <b>Retain</b> if required.
+	</div>
+	
+	<div class="table">
+		<!-- Table head -->
+		<div class="table-row">
+			<div class="table-cell">
+				<b>Topic</b>
+			</div>
+			<div class="table-cell">
+				<b>Transformer</b>
+			</div>
+			<div class="table-cell">
+				<b>Value</b>
+			</div>
+			<div class="table-cell">
+				<b>Retain</b>
+			</div>
+			<div class="table-cell">
+				&nbsp;
+			</div>
+		</div>
+
+		<!-- Some lines -->
+		<div class="table-row">
+			<div class="table-cell">
+				<input type="text" name="pub_topic1" id="pub_topic1" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<select name="pub_transform1" id="pub_transform1" data-iconpos="left" data-mini="true">
+					<option value="">-- none --</option>
+				</select>
+			</div>
+			<div class="table-cell">
+				<input type="text" name="pub_value1" id="pub_value1" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<input type="checkbox" name="pub_retain1" id="pub_retain1" data-mini="true">
+		   		<label for="pub_retain1">Retain</label>
+			</div>
+			<div class="table-cell">
+				<button type="submit" name="publish" data-lineno="1" class="ui-btn ui-corner-all ui-mini">Publish</button>
+			</div>
+		</div>
+
+		<div class="table-row">
+			<div class="table-cell">
+				<input type="text" name="pub_topic2" id="pub_topic2" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<select name="pub_transform2" id="pub_transform2" data-iconpos="left" data-mini="true">
+					<option value="">-- none --</option>
+				</select>
+			</div>
+			<div class="table-cell">
+				<input type="text" name="pub_value2" id="pub_value2" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<input type="checkbox" name="pub_retain2" id="pub_retain2" data-mini="true">
+		   		<label for="pub_retain2">Retain</label>
+			</div>
+			<div class="table-cell">
+				<button type="submit" name="publish" data-lineno="2" class="ui-btn ui-corner-all ui-mini">Publish</button>
+			</div>
+		</div>
+
+		<div class="table-row">
+			<div class="table-cell">
+				<input type="text" name="pub_topic3" id="pub_topic3" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<select name="pub_transform3" id="pub_transform3" data-iconpos="left" data-mini="true">
+					<option value="">-- none --</option>
+				</select>
+			</div>
+			<div class="table-cell">
+				<input type="text" name="pub_value3" id="pub_value3" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<input type="checkbox" name="pub_retain3" id="pub_retain3" data-mini="true">
+		   		<label for="pub_retain3">Retain</label>
+			</div>
+			<div class="table-cell">
+				<button type="submit" name="publish" data-lineno="3" class="ui-btn ui-corner-all ui-mini">Publish</button>
+			</div>
+		</div>
+
+		<div class="table-row">
+			<div class="table-cell">
+				<input type="text" name="pub_topic4" id="pub_topic4" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<select name="pub_transform4" id="pub_transform4" data-iconpos="left" data-mini="true">
+					<option value="">-- none --</option>
+				</select>
+			</div>
+			<div class="table-cell">
+				<input type="text" name="pub_value4" id="pub_value4" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<input type="checkbox" name="pub_retain4" id="pub_retain4" data-mini="true">
+		   		<label for="pub_retain4">Retain</label>
+			</div>
+			<div class="table-cell">
+				<button type="submit" name="publish" data-lineno="4" class="ui-btn ui-corner-all ui-mini">Publish</button>
+			</div>
+		</div>
+
+		<div class="table-row">
+			<div class="table-cell">
+				<input type="text" name="pub_topic5" id="pub_topic5" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<select name="pub_transform5" id="pub_transform5" data-iconpos="left" data-mini="true">
+					<option value="">-- none --</option>
+				</select>
+			</div>
+			<div class="table-cell">
+				<input type="text" name="pub_value5" id="pub_value5" data-mini="true">
+			</div>
+			<div class="table-cell">
+				<input type="checkbox" name="pub_retain5" id="pub_retain5" data-mini="true">
+		   		<label for="pub_retain5">Retain</label>
+			</div>
+			<div class="table-cell">
+				<button type="submit" name="publish" data-lineno="5" class="ui-btn ui-corner-all ui-mini">Publish</button>
+			</div>
+		</div>
+
+	</div>
+</form>
+<div id="response"></div>
+
+<script>
+
+var transformers;
+
+$( document ).ready(function() {
+	
+	// Build transformer dropdown
+	transformers = JSON.parse( $("#transformers_json").text() );
+	var transformer_html = "";
+	if( typeof transformers != 'undefined' && typeof transformers.udpin != 'undefined' ) {
+		for (var transformerName in transformers.udpin ) {
+			var transformer = transformers.udpin[transformerName];
+			// console.log( "Transformer", transformerName, transformer);
+			transformer_html += '<option value="'+transformerName+'">'+transformerName+'</option>';
+		}
+		$("#pub_transform1").append( transformer_html );
+		$("#pub_transform2").append( transformer_html );
+		$("#pub_transform3").append( transformer_html );
+		$("#pub_transform4").append( transformer_html );
+		$("#pub_transform5").append( transformer_html );
+	}
+	
+	// Restore localStorage
+	$.each( $(":input"), function ( index, value ) {
+				var savedVal = localStorage.getItem("mqttpub_"+$(value).attr('id'));
+				// console.log(index, $(value).attr('type'), savedVal);
+				if( $(value).attr('type') == 'checkbox' && savedVal == 'true' ) {
+					$(value).attr('checked', true).checkboxradio("refresh");
+				}
+				else if( $(value).attr('type') == 'text' && savedVal ) {
+					$(value).val(savedVal);
+				} 
+				else if( $(value).is('select') && savedVal ) {
+					console.log( "Matching select", savedVal);
+					$(value).val(savedVal).selectmenu("refresh");
+				}
+				<!-- if(pos === "expand" || pos === "collapse") { -->
+					<!-- $(value).collapsible( pos ); -->
+				<!-- } else { -->
+					<!-- sessionStorage.removeItem("coll_"+$(value).attr('id')); -->
+				<!-- } -->
+				<!-- // console.log($(value).attr('id'), pos);	 -->
+			}
+			);
+	
+	
+	// $('#pub_topic').val( sessionStorage.getItem("mqttpub_topic") );
+	// $('#pub_value').val( sessionStorage.getItem("mqttpub_value") );
+	//if (sessionStorage.getItem("mqttpub_retain") == 'true')
+	//	$('#pub_retain').attr('checked', true ).checkboxradio("refresh");
+
+	$("#pub_topic1").focus();
+
+
+
+	$(":submit").click(function(event){
+		event.preventDefault();
+		line = $(this).data('lineno');
+		topic = $('#pub_topic'+line).val();
+		transform = $('#pub_transform'+line).val();
+		value = $('#pub_value'+line).val();
+		retain = $('#pub_retain'+line).is(':checked');
+		localStorage.setItem("mqttpub_pub_topic"+line, topic);
+		localStorage.setItem("mqttpub_pub_transform"+line, transform);
+		localStorage.setItem("mqttpub_pub_value"+line, value);
+		localStorage.setItem("mqttpub_pub_retain"+line, retain);
+		console.log("Publish line", line, topic, transform, value, retain);
+		
+		
+		$.post( 'tools/mqtt-ajax.php', {
+			ajax: 'publish_json',
+			topic: topic,
+			value: value,
+			retain: retain,
+			transform: transform
+		})
+		.done(function(resp) {
+			console.log( "ajax_post", "success", resp );
+			html = 'Published to <span class="mono">'+resp.topic+'</span>, Value <span class="mono">\''+resp.value+'\'</span>';
+			html+= resp.retain === 'true' ? ' with <span class="mono">retain</span>' : '';
+			html+= typeof resp.transform != 'undefined' ? ' Transformer <span class="mono">'+resp.transform+'</span>' : '';
+			$('#response').html(html);
+			return; 
+		});
+		
+		
+	
+	});
+
+
+
+});
+
+
+
+
+
+</script>
+
