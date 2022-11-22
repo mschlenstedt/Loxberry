@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "3.0.0.3";
+our $VERSION = "3.0.0.4";
 our $DEBUG;
 
 use base 'Exporter';
@@ -159,6 +159,7 @@ our %L;  # Shortcut for Plugin language phrases
 our $reboot_required_file = "$lbstmpfslogdir/reboot.required";
 our $reboot_force_popup_file = "$lbstmpfslogdir/reboot.force";
 our $PLUGINDATABASE = "$lbsdatadir/plugindatabase.json";
+our $mqttcfg;
 
 # Variables only valid in this module
 my $lang;
@@ -537,6 +538,7 @@ sub read_generaljson
 	$lbfriendlyname = $cfg->{Network}->{Friendlyname};
 	$lbtimezone		= $cfg->{Timeserver}->{Timezone};
 	$webserverport  = $cfg->{Webserver}->{Port};
+	$mqttcfg 	    = $cfg->{Mqtt};
 	
 	if ( ! defined $cfg->{Miniserver} or keys(%{$cfg->{Miniserver}}) < 1) {
 		return undef;
