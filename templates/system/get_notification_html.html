@@ -95,8 +95,9 @@ function deleteKey( delid ) {
 		{ 	action: 'notify-deletekey',
 			value: delid,
 	})
-	.done(function() {
+	.done(function(data) {
 		updateNotificationCount(1);
+		btnnotifies_setStorage(data[0], data[1]);
 	})
 	.always(function(data) {
 		if( typeof navbarglobal !== 'undefined' )

@@ -112,7 +112,7 @@
 }
 
 .headerbutton {
-	background: #5A8E1C !important;
+	background: #5A8E1C ;
 	color: #ffffff !important;
 	font-size: 1rem !important;
 	font-weight: normal !important;
@@ -127,6 +127,15 @@
 	line-height: 1 !important;
 	-webkit-font-smoothing: antialiased;
 }
+
+.headerbutton_red {
+	background: #ed1d24;
+}
+
+.headerbutton_blue {
+	background: #0A4586;
+}
+
 
 .vuenavbarcontainer {
 	border-top: 1px solid #3d3d3d;
@@ -354,6 +363,77 @@ function createnavbar() {
 if( document.getElementById('jsonmenu') ) {
 	createnavbar();
 }
+
+// Code for updating the notification bell
+//
+
+const notifyCachetimeSec = 30; // Cache lifetime in seconds
+btnnotifies_get();
+setInterval(function(){ btnnotifies_get(); }, notifyCachetimeSec*1000);
+
+// Collects the notification counts from server or SessionStorage
+function btnnotifies_get(force) {
+
+	let notifyCount;
+	let notifyTimestamp = 0;
+	
+	
+	try {
+		let notifStore = sessionStorage.getItem("notifyCount");
+		notifyCount = JSON.parse(notifStore);
+		// console.log("notifyCount SessionStorage", notifyCount, notifyCount.errorCount);
+		notifyTimestamp = notifyCount.ts;
+	} catch(error) {
+		notifyCount = new Object();
+		// console.log(error);
+	}
+	
+	if( (notifyTimestamp+notifyCachetimeSec*1000) < Date.now() || force == true) {
+		// console.log("Fetch data");
+	
+		fetch('/admin/system/tools/ajax-notification-handler.cgi', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: 'action=get_notification_count'
+		})
+		.then( response => response.json())
+		.then( data => { 
+			// console.log("Fetch", data);
+			btnnotifies_setStorage(data[0], data[1]);
+		});
+
+	} else {
+		// console.log("Use cache", notifyCount);
+		btnnotifies_setcss( notifyCount );
+	}
+}
+
+// Saves the notification count in SessionStorage
+function btnnotifies_setStorage(errorCount, infoCount) {
+	let notifyCount = new Object();
+	notifyCount.errorCount = errorCount;
+	notifyCount.infoCount = infoCount;
+	notifyCount.ts = Date.now();
+	sessionStorage.setItem("notifyCount", JSON.stringify(notifyCount));
+	btnnotifies_setcss(notifyCount);
+}
+
+
+// Sets and revoves the red/blue css classes
+function btnnotifies_setcss(data) {
+	// console.log("btnnotifies_setcss", data, typeof(data), data.errorCount);
+	
+	if( data.errorCount > 0 ) {
+		
+		$("#btnnotifies").addClass("headerbutton_red").removeClass("headerbutton_blue");
+	} else if(data.infoCount > 0 ) {
+		$("#btnnotifies").removeClass("headerbutton_red").addClass("headerbutton_blue");
+	} else {
+		$("#btnnotifies").removeClass("headerbutton_red").removeClass("headerbutton_blue");
+	}
+
+}
+
 
 </script>
 		

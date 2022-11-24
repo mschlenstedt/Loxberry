@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "3.0.0.3";
+our $VERSION = "3.0.0.4";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use

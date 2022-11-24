@@ -56,9 +56,7 @@ sub notifydelete
 	
 	LoxBerry::Log::delete_notification_key($R::value);
 	
-	print $cgi->header(-type => 'application/json;charset=utf-8',
-					-status => "200 OK");
-	print '{"status": "OK"}';
+	getnotificationcount();
 	exit;
 	
 }

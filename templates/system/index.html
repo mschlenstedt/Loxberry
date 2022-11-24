@@ -192,25 +192,7 @@ function updatenotify() {
 			navbarglobal.$data.menu[1].infoCount=systeminfos;
 		}
 		
-		if( plugininfos+pluginerrors+systeminfos+systemerrors > 0 ) {
-			if( pluginerrors+systemerrors > 0 ) $("#btnnotifications").css("background-color", "red");
-			else $("#btnnotifications").css("background-color", "blue");
-			$("#btnnotifications").fadeIn();
-			
-		} else {
-			$("#btnnotifications").fadeOut();
-		}
-			
-		/*
-		if (pluginerrors != 0) $("#notifyRedNavBar1").text(pluginerrors).fadeIn('slow');
-		else $("#notifyRedNavBar1").text('0').fadeOut('slow');
-		if (plugininfos != 0) $("#notifyBlueNavBar1").text(plugininfos).fadeIn('slow');
-		else $("#notifyBlueNavBar1").text('0').fadeOut('slow');
-		if (systemerrors != 0) $("#notifyRedNavBar2").text(systemerrors).fadeIn('slow');
-		else $("#notifyRedNavBar2").text('0').fadeOut('slow');
-		if (systeminfos != 0) $("#notifyBlueNavBar2").text(systeminfos).fadeIn('slow');
-		else $("#notifyBlueNavBar2").text('0').fadeOut('slow');
-		*/
+		
 	});
 };
 
