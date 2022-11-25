@@ -132,7 +132,7 @@ class intLog
 		
 		$plugin = LBSystem::plugindata($this->params["package"]);
 		
-		if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+		if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 		
 		$this->writelog("$currtime<INFO> LoxBerry Version " . LBSystem::lbversion() . " " . $is_file_str);
 		if (isset($plugin)) {
@@ -204,7 +204,7 @@ class intLog
 		}
 		if ($this->loglevel > 5)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 		$this->writelog("$currtime<INFO> $msg");
 		}
 	}
@@ -218,7 +218,7 @@ class intLog
 		}
 		if ($this->loglevel > 4)
 		{
-			if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+			if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 			$this->writelog("$currtime<OK> $msg");
 		}
 	}
@@ -236,7 +236,7 @@ class intLog
 		}
 		if ($this->loglevel > 3)
 		{
-			if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+			if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 			$this->writelog("$currtime<WARNING> $msg");
 		}
 	}
@@ -253,7 +253,7 @@ class intLog
 		}
 		if ($this->loglevel > 2)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 			$this->writelog("$currtime<ERROR> $msg");
 		}
 	}
@@ -271,7 +271,7 @@ class intLog
 
 		if ($this->loglevel > 1)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 			$this->writelog("$currtime<CRITICAL> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
@@ -290,7 +290,7 @@ class intLog
 
 		if ($this->loglevel > 0)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 			$this->writelog("$currtime<ALERT> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
@@ -309,7 +309,7 @@ class intLog
 
 		if ($this->loglevel >= 0)
 		{
-	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+	  	if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 			$this->writelog("$currtime<EMERG> $msg");
 			if ($this->params["loglevel"] < 6) {$this->params["loglevel"] = 6;}
 		}
@@ -364,7 +364,7 @@ class intLog
 				$oldloglevel = $this->params["loglevel"];
 				$this->params["loglevel"] = $newloglevel;
 				// error_log("<INFO> User changed loglevel from $oldloglevel to $newloglevel");
-				if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires');} else {$currtime="";}
+				if (isset($this->params["addtime"])) {$currtime=currtime('hrtimehires') . ' ';} else {$currtime="";}
 				$this->writelog("$currtime<INFO> User changed loglevel from $oldloglevel to $newloglevel");
 			}
 		}
@@ -774,7 +774,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "3.0.0.1";
+	public static $VERSION = "3.0.0.2";
 	
 	public static function newLog($args)
 	{
