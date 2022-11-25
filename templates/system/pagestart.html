@@ -68,13 +68,14 @@
 						<a class="vuenavbarelement" :href="element.URL" @mouseover="hover(index, true)" @click="menuclick(index, null, $event)" :class="{ vuenavbarelement_active: element.active }">
 						{{element.Name}}
 						{{get_notification_count( element )}}
+						<transition name="fade">
+						<div style="position:relative;" class="notifyNavBar notifyNavBarBlue" v-show="element?.infoCount>0">{{element.infoCount}}</div>
+						</transition>
+						<transition name="fade">
+						<div style="position:relative;" class="notifyNavBar notifyNavBarRed" v-show="element?.errorCount>0">{{element.errorCount}}</div>
+						</transition>
+
 						</a>
-						<transition name="fade">
-						<div style="position:relative; right:25px" class="notifyBlueNavBar" v-show="element?.infoCount>0">{{element.infoCount}}</div>
-						</transition>
-						<transition name="fade">
-						<div style="position:relative; right:25px" class="notifyRedNavBar" v-show="element?.errorCount>0">{{element.errorCount}}</div>
-						</transition>
 					</template>
 				</div>
 				<div class="vuenavbarsubcontainer">
@@ -83,10 +84,10 @@
 							{{subelement.Name}}
 							{{get_notification_count( subelement )}}
 						<transition name="fade">
-						<div style="position:relative;right:-5px;" class="notifyBlueNavBar" v-show="subelement?.infoCount>0">{{element.infoCount}}</div>
+						<div style="position:relative;right:-5px;" class="notifyNavBar notifyNavBarBlue" v-show="subelement?.infoCount>0">{{element.infoCount}}</div>
 						</transition>
 						<transition name="fade">
-						<div style="position:relative;right:-5px;" class="notifyRedNavBar" v-show="subelement?.errorCount>0">{{element.errorCount}}</div>
+						<div style="position:relative;right:-5px;" class="notifyNavBar notifyNavBarRed" v-show="subelement?.errorCount>0">{{element.errorCount}}</div>
 						</transition>
 						</a>
 						
@@ -156,7 +157,9 @@
 	font-weight: bold;
 	text-align: center;	
 	text-decoration: none;
+	min-height:18px;
 }
+
 .vuenavbarelement:hover {
 	background-color: #5A8E1C;
 }

@@ -315,46 +315,38 @@ a:link.nolinkstyle
   min-width: 9px;
 }
 
-.notifyRedNavBar {
+.notifyNavBar {
   z-index: 10;
   position: absolute;
-  right:5px;
-  top: -5px;
+  /* right:5px; */
+  /* top: -5px; */
   float: right;
-  background:#ed1d24;
-  color:#fff;
-  padding: 6px;
+  /* padding: 6px; */
+  /* padding: 0px 3x 0px 3px; */
+  padding: 1px;
   border-radius: 11px;
   font-size: 12px;
-  line-height: 0.8;
-  min-width: 9px;
+  /* line-height: 0.8; */
+  /* min-width: 9px; */
+  min-width: 17px;
   text-align: center;
   vertical-align: middle;
 }
 
-.notifyBlueNavBar {
-  z-index: 10;
-  position: absolute;
-  right:5px;
-  top: -5px;
-  float: right;
+.notifyNavBarRed {
+  background:#ed1d24;
+  color:#fff;
+}
+
+.notifyNavBarBlue {
   background:#0A4586;
   color:#fff;
-  padding: 6px;
-  border-radius: 11px;
-  font-size: 12px;
-  line-height: 0.8;
-  min-width: 9px;
-  text-align: center;
-  vertical-align: middle;
 }
 
 @keyframes rotateua {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-
-
 
 #update_alert {
 	-webkit-animation: 1s ease 0s infinite reverse rotateua;
