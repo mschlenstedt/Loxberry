@@ -230,7 +230,7 @@
 			
 			
 			
-			$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notifications', package: 'plugininstall' } )
+			$.post( "/admin/system/ajax/ajax-notification-handler.cgi", { action: 'get_notifications', package: 'plugininstall' } )
 			.done(function(notifications) {
 				console.log("get_notifications executed successfully");
 				for (i = 0; i < notifications.length; i++) {

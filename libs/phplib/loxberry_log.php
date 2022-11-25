@@ -774,7 +774,7 @@ class intLog
 
 class LBLog
 {
-	public static $VERSION = "2.4.0.1";
+	public static $VERSION = "3.0.0.1";
 	
 	public static function newLog($args)
 	{
@@ -790,7 +790,7 @@ class LBLog
 		
 		global $lbpplugindir;
 
-		$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
+		$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/ajax/ajax-notification-handler.cgi";	
 	
 		$fields = array(
 			'action' => 'get_notifications',
@@ -828,7 +828,7 @@ class LBLog
 		
 		global $lbpplugindir;
 
-		$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
+		$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/ajax/ajax-notification-handler.cgi";	
 	
 		$fields = array(
 			'action' => 'get_notifications_html',
@@ -873,7 +873,7 @@ function notify ($package, $name, $message, $error = false)
 {
 	global $lbpplugindir;
 
-	$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
+	$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/ajax/ajax-notification-handler.cgi";	
 	// error_log "Notifdir: " . LBLog::$notification_dir . "\n";
 	if (! $package || ! $name || ! $message) {
 		error_log("Notification: Missing parameters\n");
@@ -917,7 +917,7 @@ function notify_ext ($fields)
 {
 	global $lbpplugindir;
 
-	$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-notification-handler.cgi";	
+	$NOTIFHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/ajax/ajax-notification-handler.cgi";	
 	// error_log "Notifdir: " . LBLog::$notification_dir . "\n";
 	if ( ! isset($fields['PACKAGE']) || ! isset($fields['NAME']) || ! isset($fields['MESSAGE']) ) {
 		error_log("Notification: Missing parameters\n");

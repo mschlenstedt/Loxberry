@@ -91,7 +91,7 @@ function deleteKey( delid ) {
 	console.log("Delete key", delid);
 	$("#notifyrow"+delid).fadeOut().remove();
 	
-	$.post ( '/admin/system/tools/ajax-notification-handler.cgi', 
+	$.post ( '/admin/system/ajax/ajax-notification-handler.cgi', 
 		{ 	action: 'notify-deletekey',
 			value: delid,
 	})

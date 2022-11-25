@@ -70,7 +70,7 @@ border: 0.5px solid lightgray; border-collapse: collapse; padding:5px; vertical-
 		var delid = \$(this).attr('data-delid');
 		var delid_encoded = delid.replace(".", "\\.");
 		console.log("Delete key", delid);
-		\$.post ( '/admin/system/tools/ajax-notification-handler.cgi', 
+		\$.post ( '/admin/system/ajax/ajax-notification-handler.cgi', 
 					{ 	action: 'notify-deletekey',
 						value: delid,
 					});

@@ -125,7 +125,7 @@ $(function() {
 	
 function updatenotify() {
     console.log ("Started updatenotify");
-	$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notifications' } )
+	$.post( "/admin/system/ajax/ajax-notification-handler.cgi", { action: 'get_notifications' } )
 	.done(function(data) {
 		  // console.log("get_notifications executed successfully");
 		pluginerrors = 0;

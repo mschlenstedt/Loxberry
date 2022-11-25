@@ -333,7 +333,7 @@ function createnavbar() {
 				// console.log( "get_notification_count", element );
 				if( !element.Notify_Package ) return;
 
-				fetch('/admin/system/tools/ajax-notification-handler.cgi', {
+				fetch('/admin/system/ajax/ajax-notification-handler.cgi', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 					body: 'action=get_notification_count&package='+encodeURIComponent(element.Notify_Package)+'&name='+encodeURIComponent(element?.Notify_Name)
@@ -391,7 +391,7 @@ function btnnotifies_get(force) {
 	if( (notifyTimestamp+notifyCachetimeSec*1000) < Date.now() || force == true) {
 		// console.log("Fetch data");
 	
-		fetch('/admin/system/tools/ajax-notification-handler.cgi', {
+		fetch('/admin/system/ajax/ajax-notification-handler.cgi', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 			body: 'action=get_notification_count'
