@@ -614,18 +614,18 @@ $(function(){
 						// console.log( topic, i, toMSarr[i].code );
 						if( toMSarr[i].code > toMShighest )
 							toMShighest = toMSarr[i].code;
-					
+						
 						switch( toMSarr[i].code ) {
-							case '404': 
+							case 404: 
 								httpSubmitIcon = 'icon-notfound.png'; httpSubmitText = 'MS'+i+': HTTP 404 Input not available';
 								break;
-							case '401':
-							case '403':
-							case '500': 
+							case 401:
+							case 403:
+							case 500: 
 								httpSubmitIcon = 'icon-locked.png'; httpSubmitText = 'MS'+i+': HTTP '+toMSarr[i].code+' Possibly permission denied'; 
-								toMShighest='500';
+								toMShighest=500;
 								break;
-							case '200':
+							case 200:
 								httpSubmitIcon = 'icon-check.png'; httpSubmitText = 'MS'+i+': HTTP 200 Value submitted'; 
 								break;
 							default: 
@@ -636,13 +636,13 @@ $(function(){
 						httpSubmitAdvTabInfRow += '<img src="../../system/images/'+httpSubmitIcon+'">&nbsp;'+httpSubmitText+' at '+httpSubmitTime.toLocaleString('de-DE', { hour:'numeric', minute:'numeric', hour12:false } )+'<br>';
 					}
 				switch( toMShighest ) {
-						case '404': 
+						case 404: 
 							httpSubmitIcon = 'icon-notfound.png'; httpSubmitText = 'HTTP 404 Input not available'; 
 							break;
-						case '500': 
+						case 500: 
 							httpSubmitIcon = 'icon-locked.png'; httpSubmitText = 'HTTP 500 Possibly permission denied'; 
 							break;
-						case '200':
+						case 200:
 							httpSubmitIcon = 'icon-check.png'; httpSubmitText = 'HTTP 200 Value submitted'; 
 							break;
 						default: 
@@ -663,10 +663,10 @@ $(function(){
 				var http_filter_show_entry;
 				if( http_filter_all ) http_filter_show_entry = 1;
 				if ( http_filter_filtered && ( typeof resp.http[topic].regexfilterline != 'undefined' || typeof resp.doNotForward[topic] != 'undefined') ) http_filter_show_entry = 1;
-				if ( http_filter_500 && toMShighest == '500' ) http_filter_show_entry = 1;
-				if ( http_filter_404 && toMShighest == '404' ) http_filter_show_entry = 1;
-				if ( http_filter_200 && toMShighest == '200' ) http_filter_show_entry = 1;
-				if ( http_filter_0 && toMShighest == '0' ) http_filter_show_entry = 1;
+				if ( http_filter_500 && toMShighest == 500 ) http_filter_show_entry = 1;
+				if ( http_filter_404 && toMShighest == 404 ) http_filter_show_entry = 1;
+				if ( http_filter_200 && toMShighest == 200 ) http_filter_show_entry = 1;
+				if ( http_filter_0 && toMShighest == 0 ) http_filter_show_entry = 1;
 				
 				if ( !http_filter_show_entry ) return;
 				
