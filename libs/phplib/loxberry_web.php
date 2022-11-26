@@ -4,7 +4,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "3.0.0.1";
+	public static $LBWEBVERSION = "3.0.0.2";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -560,15 +560,24 @@ EOF;
 
 }
 
-	public static function loglist_html($p)
+	public static function loglist_html($p = array())
 	{
 		global $lbpplugindir;
+		$urlparams = array();
+		
+		$urlparams[] = 'header=none';
 		
 		if (!isset($p['PACKAGE']) && isset($lbpplugindir)) {
 			$p['PACKAGE'] = $lbpplugindir;
 		}
+		if( isset($p['PACKAGE']) ) {
+			$urlparams[] = "package=" . urlencode($p['PACKAGE']);
+		}
+		if( isset($p['NAME']) ) {
+			$urlparams[] = "name=" .  urlencode($p['NAME']);
+		}
 		
-		$url = "http://localhost:" . lbwebserverport() . "/admin/system/logmanager.cgi?package=" .  urlencode(${p['PACKAGE']}) . "&name=" .  urlencode(${p['NAME']}) . "&header=none";
+		$url = "http://localhost:" . lbwebserverport() . "/admin/system/logmanager.cgi?" . implode('&', $urlparams);
 		$html = file_get_contents($url);
 		
 		return $html;
