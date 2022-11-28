@@ -2,7 +2,7 @@
 
 class LoxoneTemplateBuilder 
 { 
-	public $VERSION = "2.0.0.2";
+	public $VERSION = "3.0.0.1";
 	public $DEBUG = 0;
 
 	function __construct( $params ) {
@@ -156,7 +156,7 @@ class IOCmd
 			$o .= '/>'.$crlf;	
 		}
 		
-		elseif ($this->_type == "VirtualInUdpCmd") {
+		elseif ($this->_type == "VirtualInUdp") {
 			$o .= "\t".'<VirtualInUdpCmd ';
 			$o .= 'Title="'.@htmlspecialchars($this->Title, $encflags).'" ';
 			$o .= 'Comment="'.@htmlspecialchars ($this->Comment, $encflags).'" ';

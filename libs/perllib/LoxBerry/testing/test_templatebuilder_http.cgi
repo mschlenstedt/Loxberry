@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 
-require "/opt/loxberry/bin/plugins/nukismartlock/libs/LoxBerry/LoxoneTemplateBuilder.pm";
-
+use LoxBerry::LoxoneTemplateBuilder;
 
 my $VI = LoxBerry::LoxoneTemplateBuilder->VirtualInHttp(
 	Title => "Hallo",
