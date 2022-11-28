@@ -249,7 +249,8 @@ sub mosquitto_setcred
 	unlink $mosq_passwdfile;
 	if ($brokeruser or $brokerpass) {
 		`touch $mosq_passwdfile`;
-		my $res = qx { mosquitto_passwd -b $mosq_passwdfile $brokeruser $brokerpass };
+		my $passwdcommand = 'mosquitto_passwd -b ' . quotemeta($mosq_passwdfile) .' ' . quotemeta($brokeruser) . ' ' . quotemeta($brokerpass);
+		my $res = qx { $passwdcommand };
 	}
 	`chown loxberry:loxberry $mosq_passwdfile`;
 	
