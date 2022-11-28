@@ -8,7 +8,15 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "2.2.0.4";
+my $version = "3.0.0.1";
+
+## Check {status}
+# EMPTY --> "UNKNOWN" (grey)
+# 3 --> "ERROR" (red)
+# 4 --> "WARNING" (yellow)
+# 5 --> "OK" (green)
+# 6 --> "Info" (blue)
+
 
 # Globals
 my @results;
@@ -40,6 +48,7 @@ push (@checks, "check_logdb");
 push (@checks, "check_notifydb");
 push (@checks, "check_miniservers");
 push (@checks, "check_reboot_required");
+push (@checks, "check_mqtt");
 push (@checks, "check_loglevels");
 
 # Get plugin healthchecks
@@ -1423,4 +1432,103 @@ sub check_reboot_required
 		$result{result} = "Error executing the test: $@";
 	}
 	return(\%result); 
+}
+
+# Check MQTT
+sub check_mqtt
+{
+	my %result;
+	my ($action) = @_;
+
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
+	$result{'title'} = 'MQTT';
+	$result{'desc'} = 'Checks LoxBerry\'s MQTT Server and MQTT Gateway';
+	$result{'url'} = 'https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt';
+	
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	require LoxBerry::JSON;
+	require LoxBerry::IO;
+	
+	my @text;
+	my $gw_topicbase = lbhostname() . "/mqttgateway/";
+	my $datafile = "/dev/shm/mqttgateway_topics.json";
+	
+	# Check binary running
+	my $mqttpid = trim(`pgrep mqttgateway.pl`) ;
+
+	# Read healthstate from mqttgateway
+	my $relayjsonobj = LoxBerry::JSON->new();
+	my $relayjson = $relayjsonobj->open( filename => $datafile, readonly => 1 );
+
+	# Generate state and text
+	if ( $mqttpid eq "" ) {
+		$result{status} = setstatus(3, $result{status});
+		push @text, "MQTT Gateway not running (no PID). Last known status:";
+	} else {
+		$result{status} = setstatus(5, $result{status});
+		push @text, "MQTT Gateway running (PID $mqttpid). Current status:";
+	}
+
+	if( $relayjson->{health_state} ) {
+		# Broker state
+		if( $relayjson->{health_state}->{broker}->{error} > 0 ) {
+			$result{status} = setstatus(3, $result{status});
+		} else {
+			$result{status} = setstatus(5, $result{status});
+		}
+		push @text, "MQTT Server state: " . $relayjson->{health_state}->{broker}->{message} . ".";
+		
+		# Config state
+		if( $relayjson->{health_state}->{configfile}->{error} > 0 ) {
+			$result{status} = setstatus(3, $result{status});
+		} else {
+			$result{status} = setstatus(5, $result{status});
+		}
+		push @text, "Config state: " . $relayjson->{health_state}->{configfile}->{message} . ".";
+		
+		# UDPIN state
+		if( $relayjson->{health_state}->{udpinsocket}->{error} > 0 ) {
+			$result{status} = setstatus(3, $result{status});
+		} else {
+			$result{status} = setstatus(5, $result{status});
+		}
+		push @text, "UDP-IN state: " . $relayjson->{health_state}->{udpinsocket}->{message} . ".";
+		
+	}
+
+	# Check keepaliveepoch
+	my $keepaliveepoch = LoxBerry::IO::mqtt_get( $gw_topicbase . "keepaliveepoch", 5000);
+	if(!$keepaliveepoch) {
+		$result{status} = setstatus(3, $result{status});
+		push @text, "Could not connect to your configured MQTT Server.";
+	} elsif( $keepaliveepoch < (time-300) ) {
+		$result{status} = setstatus(3, $result{status});
+		push @text, "Your keepaliveepoch is older than 5 minutes and seems not to be refreshed.";
+	} else {
+		$result{status} = setstatus(5, $result{status});
+	push @text, "Your keepaliveepoch is current.";
+	}
+
+	$result{result} = join ' ', @text;
+	
+	return(\%result);
+}
+
+# Params 1. New status, 2. Current status
+# The return is the higher severity
+# Usage: $result{status} = setstatus(5, $result{status});
+sub setstatus
+{
+	my $new_status = shift;
+	my $current_status = shift;
+	if( !$current_status or $new_status < $current_status ) {
+		return $new_status;
+	}
+	return $current_status;
 }
