@@ -1,6 +1,7 @@
 <!-- pageend.html START -->
 				</div>
 			</div>
+			<div id="footerLBIcon" style="width:100%;height:90px; padding:0px; background-image: url('/system/images/icons/main_myloxberry.svg'); background-repeat: no-repeat; background-position: center center;"></div>
 		</div>
 		<!-- /content -->
 		
@@ -20,159 +21,78 @@
 			</div>
 		</div>
 		
-		
-		
 		<!-- footer -->
-		<div style="width:100%; height:90px; padding:0px; background-image: url('/system/images/icons/main_myloxberry.svg'); background-repeat: no-repeat; background-position: center center;"></div>
+		<div id="footerLBStatusbar" style="display:none;z-index:1000;overflow:hidden;background-color:#6dac20;position:fixed;bottom:0;height:30px;width:100%;padding:6px;text-align:center;color:white;" class="ui-bar-a"></div>
 
-
-		<SCRIPT>
-		$( document ).ready(function() 
-		{
-			if ( $(document.body).hasClass("chrome") ) { $( '.display_chome_only' ).show(); } else { $( '.display_chome_only' ).hide(); }
-			if ( $(document.body).hasClass("ie11") || $(document.body).hasClass("ie10") ) 
-			{ 
-				 $(".footeralignmentIE").css('display','inline-block');
-			     $(".footeralignmentIE_l").css('display','inline-block');	
-			     $(".footeralignmentIE_r_outer").css('display','inline-block');	
-			     $(".footeralignmentIE_l_outer").css('display','inline-block');	
-			     $(".footeralignmentIE_r").css('display','inline-block');	
-			     $(".footersloganIE_r").css('display','inline-block');	
-			     $(".footerlogotextIE").css('display','inline-block');	
- 			} 
- 			else 
- 			{ 
-				$(".footeralignment").css('display','flex');	 
- 			}
-
-			var refresh_footer_icons_interval_timer = setInterval(refresh_footer_icons, 30000);
-			$( window ).resize(function() { refresh_footer_icons(); });
-		
-			// Footer icon animation for Reboot (fade in)
-			function reboot_on()
-			{ 
-				 var reboot_alert_offset = $("#btnpower").offset(); 
-				 $("#btnpower_alert").css({ "top": "4px", "pointer-events" : "none", "width" : "30px", "height" : "30px", "background-repeat" : "no-repeat", "padding": "0px", "visibility" : "visible", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left, "position":"absolute" });
-				if ( $("#btnpower").prop("animate_reboot") == 1 )
-				{ 
-					$("#btnpower_alert").fadeTo( 2000 , 1.0, function() 
-					{ 
-						setTimeout(function(){ reboot_off(); }, 2700); 
-					}); 
-				}
-				else
-				{
-					$("#btnpower_alert").css("display", "none"); 
-				}
-			}; 
-
-			// Footer icon animation for Reboot (fade out)
-			function reboot_off()
-			{ 
-				 var reboot_alert_offset = $("#btnpower").offset(); 
-				 $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left, "position":"absolute" }); 
-				if ( $("#btnpower").prop("animate_reboot") == 1 )
-				{ 
-					$("#btnpower_alert").fadeTo( 2000 , 0.1, function() 
-					{ 
-						setTimeout(function(){ reboot_on(); }, 100); 
-					});   
-				}
-				else
-				{
-					$("#btnpower_alert").fadeTo( 2000 , 0);
-					setTimeout(function()
-					{ 
-						$("#btnpower_alert").css("display", "none"); 
-						$("#btnpower").attr("title",""); 
-						$("#btnpower_alert").on("click", ""); 
-					}, 2000); 
-				}
-			}; 
-			function refresh_footer_icons () 
-			{	
-				reboot_on();
-				
-				$.ajax( "/admin/system/tools/ajax-footer-icons-handler.php")
-					.done(function(data) 
-					{ 
-						//var response_data = JSON.parse(data);
-						var response_data = data;
-						
-						var update_alert_offset = $("#btnpower").offset(); 
-						//console.log("ajax-reboot-required-handler.php executed",response_data);
-						
-						// Update running
-						if (response_data.update_running == 1) 
-						{
-							$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"pointer" }); 
-							$("#update_alert").attr("title","<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+response_data.which.toString()+")"); 
-							$("#update_alert").fadeIn(); 
-							$("#update_alert").on("click", function(e)
-							{ 
-								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
-							}); 
-						}
-						else 
-						{
-							$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"default" }); 
-							$("#update_alert").attr("title",""); 
-							$("#update_alert").fadeOut(); 
-							
-						}
-						
-						// Reboot required
-						if (response_data.reboot_required != 0 && response_data.update_running == 0) 
-						{
-							$("#btnpower").attr("title","<TMPL_VAR POWER.MSG_REBOOT_REQUIRED_SHORT>"); 
-							$("#btnpower_alert").on("click", function(e)
-							{ 
-								var ele = e.target; window.location.replace(ele.getAttribute("data-href"));
-							}); 
-							if ( $("#btnpower").prop("animate_reboot") != 1 )
-							{
-								$("#btnpower").prop("animate_reboot",1); 
-								reboot_on();
-							}
-						} else {
-							$("#btnpower").prop("animate_reboot",""); 
-							reboot_off();
-						}
-						
-					
-						// Reboot.force forces popup
-						if (response_data.reboot_force == 1 && response_data.update_running == 0) 
-						{
-							if(response_data.reboot_force_reason.length > 0) {
-								$("#popupRebootForceReason").html(response_data.reboot_force_reason);
-							}
-							
-							next_reboot_force_popup_time = sessionStorage.getItem("loxberry_reboot_force");
-
-							if(next_reboot_force_popup_time === "null") 
-								next_reboot_force_popup_time = 0;
-							
-							if( next_reboot_force_popup_time < Date.now()) {
-								$("#popupRebootForce").popup("open");
-								sessionStorage.setItem("loxberry_reboot_force", Date.now()+2*60*1000);
-							}
-						}
-						
-					})
-					.error(function(XMLHttpRequest, textStatus, errorThrown) 
-					{
-	  					//console.log( "ajax-reboot-required-handler.php Call failed: " + textStatus + "=" + errorThrown);
-						$("#btnpower").prop("animate_reboot",""); 
-						reboot_off();
-						$("#update_alert").css({"padding": "0px", "border": "0px", "z-index": 19999, "top": "8px" ,"left" : update_alert_offset.left + 40, "position":"absolute", "cursor":"default" }); 
-						$("#update_alert").attr("title",""); 
-						$("#update_alert").fadeTo( 2000 , 0); 
-	  				});
-	  		}
-			setTimeout(function(){ refresh_footer_icons(); }, 500); 
-		});
+<SCRIPT>
+$( document ).ready(function() {
+	const mainiconsRefreshSec = 13; // Cache lifetime in seconds
+	mainicons_get();
+	var refresh_main_icons_interval_timer = setInterval(mainicons_get, mainiconsRefreshSec*1000);
 	
-  	</SCRIPT>
+	function mainicons_get() 
+	{	
+		let mainiconsTimestamp = 0;
+		
+		try {
+			let mainiconsStore = sessionStorage.getItem("mainicons");
+			data = JSON.parse(mainiconsStore);
+			mainiconsTimestamp = data.ts;
+		} catch(error) {
+			data = new Object();
+		}
+		
+		if( (mainiconsTimestamp+mainiconsRefreshSec*1000) < Date.now() ) {
+			fetch('/admin/system/ajax/ajax-main-icons-handler.php')
+			.then( response => response.json())
+			.then( data => { 
+				console.log("data", data); 
+				mainicons_setStorage(data);
+			});
+		} else {
+			mainicons_setcss(data);
+		}
+	}
+	
+	function mainicons_setStorage(data) {
+		data.ts = Date.now();
+		sessionStorage.setItem("mainicons", JSON.stringify(data));
+		mainicons_setcss(data);
+	}
+	
+	function mainicons_setcss(data) {
+		// Reboot required
+		if( data.reboot_required == 1 ) {
+			$("#btnpower").addClass("headerbutton_red");
+		} else {
+			$("#btnpower").removeClass("headerbutton_red");
+		}
+		// Reboot forced
+		if (data.reboot_force == 1 && data.update_running == 0) {
+			if(data.reboot_force_reason.length > 0) {
+				$("#popupRebootForceReason").html(data.reboot_force_reason);
+			}
+			next_reboot_force_popup_time = sessionStorage.getItem("loxberry_reboot_force");
+			if(next_reboot_force_popup_time === "null") 
+				next_reboot_force_popup_time = 0;
+			if( next_reboot_force_popup_time < Date.now()) {
+				$("#popupRebootForce").popup("open");
+				sessionStorage.setItem("loxberry_reboot_force", Date.now()+2*60*1000);
+			}
+		}
+		// Update running
+		if( data.update_running == 1) {
+			// $("#footerLBIcon").hide();
+			$("#footerLBStatusbar").fadeIn().text("<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+data.which.toString()+")");
+		} else {
+			// $("#footerLBIcon").show();
+			$("#footerLBStatusbar").fadeOut();
+		}
+	}
+});
+
+
+</SCRIPT>
 		<!-- /footer -->
 	</div>
 <!-- /page -->
