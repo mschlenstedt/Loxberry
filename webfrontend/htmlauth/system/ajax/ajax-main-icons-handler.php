@@ -19,6 +19,16 @@ if (file_exists($lockfile_definitions))
 	}
 }
 
+// Check package install processes
+exec('ps ahxwwo pid:1,command:1', $running_processes);
+$searchlist[] = preg_quote('apt-get', '/');
+$searchlist[] = preg_quote('dpkg', '/');
+$searchlist[] = preg_quote('/usr/bin/unattended-upgrade', '/');
+
+$matches = preg_grep('/'.implode('|', $searchlist).'/', $running_processes);
+$which = array_merge($which, $matches);
+
+
 // List what locks are set
 if (!empty($which))
 {
