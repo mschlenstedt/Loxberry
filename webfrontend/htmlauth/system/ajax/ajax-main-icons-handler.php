@@ -20,14 +20,18 @@ if (file_exists($lockfile_definitions))
 }
 
 // Check package install processes
-exec('ps ahxwwo pid:1,command:1', $running_processes);
-$searchlist[] = preg_quote('apt-get', '/');
-$searchlist[] = preg_quote('dpkg', '/');
-$searchlist[] = preg_quote('/usr/bin/unattended-upgrade', '/');
+$commandlist[] = 'pgrep -l apt-get';
+$commandlist[] = 'pgrep -l dpkg';
+$commandlist[] = 'pgrep -l /usr/bin/unattended-upgrade';
 
-$matches = preg_grep('/'.implode('|', $searchlist).'/', $running_processes);
-$which = array_merge($which, $matches);
-
+foreach($commandlist as $command) {
+	$pgrep_result = exec($command);
+	echo "$command: " . $pgrep_result . "\n";
+	if($pgrep_result != "") {
+		$which[] = $pgrep_result;
+	}
+	unset($pgrep_result);
+}	
 
 // List what locks are set
 if (!empty($which))
