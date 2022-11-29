@@ -121,6 +121,8 @@ copy_to_loxberry('/system/daemons/system/50-mqttgateway');
 copy_to_loxberry('/system/daemons/system/51-mqttfinder');
 execute("chmod +x $lbhomedir/system/daemons/system/50-mqttgateway");
 execute("chmod +x $lbhomedir/system/daemons/system/51-mqttfinder");
+# Delete Alpha files in cron.reboot
+unlink "$lbhomedir/system/cron/cron.reboot/02-mqttfinder", "$lbhomedir/system/cron/cron.reboot/04-mqttgateway";
 
 LOGINF "Starting MQTT Gateway migration";
 
