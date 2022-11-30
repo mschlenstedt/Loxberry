@@ -26,7 +26,6 @@ $commandlist[] = 'pgrep -l /usr/bin/unattended-upgrade';
 
 foreach($commandlist as $command) {
 	$pgrep_result = exec($command);
-	echo "$command: " . $pgrep_result . "\n";
 	if($pgrep_result != "") {
 		$which[] = $pgrep_result;
 	}
