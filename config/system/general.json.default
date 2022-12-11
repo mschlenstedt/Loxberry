@@ -92,7 +92,8 @@
    },
    "Webserver" : {
       "Port" : "80",
-      "Porthttps" : 443
+      "Sslport" : "443",
+      "Sslenabled" : "false"
    },
    "Apt" : {
       "Servers" : {

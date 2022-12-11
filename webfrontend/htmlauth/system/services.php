@@ -38,7 +38,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "2.0.2.2";
+$version = "3.0.0.0";
 
 $sversion = LBSystem::lbversion();
 
@@ -75,9 +75,13 @@ header("Pragma: no-cache");
 
 # Menu
 if (isset($_GET['check_webport'])) {
-  check_webport();
+	check_webport();
 } else if (isset($_GET['webport_success'])) {
 	webport_success();
+} else if (isset($_GET['check_sslport'])) {
+	check_sslport();
+} else if (isset($_GET['sslport_success'])) {
+	sslport_success();
 } else if (isset($_POST['saveformdata'])) {
   save();
 } else {
@@ -98,6 +102,24 @@ function form() {
 	global $helplink;
 	global $helptemplate;
 	global $cfg;
+
+	/* SSL */
+        if( empty($cfg->Webserver->Sslenabled) ) {
+                $cfg->Webserver->Sslenabled = false;
+                $cfg->write();
+                recreate_generalcfg();
+        }
+        if( empty($cfg->Webserver->Sslport) ) {
+                $cfg->Webserver->Sslport = "443";
+                $cfg->write();
+                recreate_generalcfg();
+        }
+
+	if ( is_enabled( $cfg->Webserver->Sslenabled ) ) {
+		$checkedssl = "checked=\"checked\"";
+	} else {
+		$checkedssl = "";
+	}
 	
 	/* SSDP */
 	if( empty($cfg->Ssdp->Disabled) ) {
@@ -274,7 +296,7 @@ function form() {
 
 	<?php else: ?>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=1">
-	<input type="hidden" name="saveformdata" value="1">
+	<input type="hidden" name="saveformdata" value="1"><input type="hidden" id="web" name="web" value="0">
 	<div class="wide"><?=$SL['SERVICES.HEADING_APACHE'];?></div>
 	<br>
 	<table class="formtable" style="border:0; width:100%;">
@@ -288,12 +310,61 @@ function form() {
 					validate_enable('#webport');
 					validate_chk_object(['#webport']);
 				});
+				$('#webport').on("change", function ()
+				{
+					$('#sslport').prop("disabled",true).textinput("refresh");
+					$('#web').val("webport");
+				});
 			</script>
 			</td>
 			<td>&nbsp;
 			</td>
 			<td class="hint">
 			<?=$SL['SERVICES.HINT_WEBPORT'];?>
+			</td>
+		</tr>
+                <tr>
+                        <td></br>
+                        <label for ="sslenabled"><?=$SL['SERVICES.LABEL_SSLENABLED'];?></label>
+			<?php if ($_SERVER['HTTPS']): ?>
+                        <input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="disabled" disabled="disabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+			<?php else: ?>
+			<input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+			<?php endif; ?>
+			</td>
+                        <td>&nbsp;
+			</td>
+                        <td class="hint">
+                        <?=$SL['SERVICES.HINT_SSL'];?>
+                        </td>
+                </tr>
+		<tr>
+			<td>
+			<label for="sslport"><?=$SL['SERVICES.LABEL_SSLPORT'];?></label>
+			<input placeholder="<?=$SL['SERVICES.HINT_INNER_SSLPORT'];?>" id="sslport" name="sslport" type="text" style="min-width:15em" class="textfield" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_SSLPORT'];?>" data-validation-rule="special:port" value="<?=$cfg->Webserver->Sslport;?>">
+			<script>
+				$(document).ready( function ()
+				{
+					validate_enable('#sslport');
+					validate_chk_object(['#sslport']);
+				});
+				$('#sslport').on('change', function ()
+				{
+					$('#webport').prop("disabled",true).textinput("refresh");
+					$('#web').val("sslport");
+				});
+			</script>
+			</td>
+			<td>&nbsp;
+			</td>
+			<td class="hint">
+			<?=$SL['SERVICES.HINT_SSLPORT'];?>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=3>
+				</br>&nbsp;
+				<a mimetype="application/x-x509-ca-cert" href="/system/cacert.pem"><?=$SL['SERVICES.DOWNLOAD_CACERT'];?></a>
 			</td>
 		</tr>
 	</table>
@@ -339,6 +410,7 @@ function save()
 	
 	$ssdpstate_changed;
 	$webserver_changed;
+	$ssl_changed;
 
 	/* SSDP */
 	if (isset($_POST['ssdpenabled'])) {
@@ -423,8 +495,21 @@ function save()
 			exec("sudo ".LBHOMEDIR."/sbin/setserial dis_console");
 		}
 	}
-	
-	if (isset($_POST['webport'])) {
+
+	/* Apache */
+
+	if (isset($_POST['web'])) {
+		if (isset($_POST['sslenabled'])) {
+			$sslon = true;
+		} else {
+			$sslon = false;
+		}
+		if (is_enabled($cfg->Webserver->Sslenabled) != $sslon) {
+			$ssl_changed = true;
+		}
+	}
+	if (isset($_POST['web']) && ($_POST['web'] === "webport")) {
+		error_log("webport changed");
 		if ($_POST['webport'] > 0 && $_POST['webport'] < 65535) {
 			$tmp = exec("netstat -tnap | egrep ':".$_POST['webport']." .*LISTEN'");
 			if ( $tmp === "" ) {
@@ -438,8 +523,22 @@ function save()
 			}
  		}
 	}
-	
-	
+        if (isset($_POST['web']) && ($_POST['web'] === "sslport")) {
+		error_log("SSL Port changed");
+                if ($_POST['sslport'] > 0 && $_POST['sslport'] < 65535) {
+                        $tmp = exec("netstat -tnap | egrep ':".$_POST['sslport']." .*LISTEN'");
+                        if ( $tmp === "" ) {
+                                $sslport = $_POST['sslport'];
+                                if ( $sslport != $cfg->Webserver->Sslport ) {
+                                        $webserver_changed = True;
+                                        $weboldsslport = $cfg->Webserver->Sslport;
+                                }
+                        } else {
+                                $sslport = 'inuse';
+                        }
+                }
+        }
+
 	// Print Template
 	# Return URL
 	if (isset($_GET['load']) && ($_GET['load'] == 2)) {
@@ -454,6 +553,15 @@ function save()
 		$ssdpstate_changed = 1;
 	}
 	
+	if ($ssl_changed) {
+		$cfg->Webserver->Sslenabled = $sslon;
+		$cfg->write();
+		recreate_generalcfg();
+		$headermsg = $SL['COMMON.MSG_ALLOK'];
+		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
+		$waitmsg = "";
+		$href=$returnurl;
+	}
 	if (isset($ssdpoff)){
 		$cfg->Ssdp->Disabled = $ssdpoff;
 		$cfg->write();
@@ -481,7 +589,26 @@ function save()
 			$sucresmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
 			$href="/admin/system/services.php?check_webport=1";
 		}
-	} else if (isset($_POST['webport'])) {
+	} else if (isset($sslport)) {
+		if ($sslport === "inuse") {
+			$headermsg = $SL['SERVICES.ERR_PORT_IN_USE'];
+			$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
+			$waitmsg = "";
+			$href=$returnurl;
+		} else {
+			$cfg->Webserver->Sslport = $sslport;
+			$cfg->Webserver->Oldsslport = $weboldsslport;
+			$cfg->write();
+			recreate_generalcfg();
+			$headermsg = $SL['SERVICES.MSG_STEP1'];
+                        $resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
+                        $waitmsg = $SL['SERVICES.WAITWEBSERVER1'];
+                        $waitmsg2 = $SL['SERVICES.WAITWEBSERVER2'];
+                        $sucheadermsg = $SL['SERVICES.MSG_STEP2'];
+                        $sucresmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
+                        $href="/admin/system/services.php?check_sslport=1";
+                }
+	} else if (isset($sslport) || isset($webport)) {
 		$headermsg = $SL['SERVICES.ERR_WRONG_PORT'];
 		$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
 		$waitmsg = "";
@@ -516,6 +643,13 @@ function save()
 			</center>
 		</div>
 	<?php
+	if ($ssl_changed) {
+		if ($sslon) {
+			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper enable_ssl");
+		} else {
+			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper disable_ssl");
+		}
+	}
 	if (isset($ssdpstate_changed) && $ssdpstate_changed == 1) {
 		if ($ssdpoff) {
 			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper ssdpd stop");
@@ -526,9 +660,11 @@ function save()
 		$newhref = "http";
 		if ($_SERVER['HTTPS']) { $newhref .= "s"; }
 		$newhref .= "://".$_SERVER['SERVER_NAME'];
-		if ($webport != 80) {$newhref .= ":$webport"; }
+		if (!$_SERVER['HTTPS'] && $cfg->Webserver->Port != 80) {$newhref .= ":".$cfg->Webserver->Port; }
+		if ($_SERVER ['HTTPS'] && $cfg->Webserver->Sslport != 443) {$newhref .= ":".$cfg->Webserver->Sslport; }
 		$chkhref = $newhref."/system/servicehelper.php";
-		$cnthref = "/admin/system/services.php?check_webport=1";
+		if (isset($webport)) $cnthref = "/admin/system/services.php?check_webport=1";
+		if (isset($sslport)) $cnthref = "/admin/system/services.php?check_sslport=1";
 		$suchref = $newhref."/admin/system/services.php";
 		echo "
 		<script>
@@ -567,7 +703,8 @@ function save()
 	    }, 6000);
 		</script>
 		";
-		exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_change ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
+		if (isset($webport)) exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_change ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
+		if (isset($sslport)) exec("sudo ".LBHOMEDIR."/sbin/serviceshelper sslport_change ".$sslport." ".$weboldsslport." 2>/dev/null >/dev/null &");
 	}
 	LBWeb::lbfooter();
 	exit;
@@ -600,6 +737,33 @@ function check_webport() {
 }
 
 #####################################################
+# check_sslport
+#####################################################
+function check_sslport() {
+
+        global $navbar;
+        global $SL;
+        global $template_title;
+        global $helplink;
+        global $helptemplate;
+        global $cfg;
+
+        // Print Template
+        $headermsg = $SL['SERVICES.MSG_STEP2'];
+        $resmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
+        $waitmsg = $SL['SERVICES.WEBSERVERCLEANING'];
+        $sslport = $cfg->Webserver->Sslport;
+        $weboldsslport = $cfg->Webserver->Oldsslport;
+
+        header('Content-Type: application/json');
+        echo "{ \"ok\": \"-1\" }";
+        exec("sudo ".LBHOMEDIR."/sbin/serviceshelper sslport_success ".$sslport." ".$weboldsslport." 2>/dev/null >/dev/null &");
+
+        exit;
+}
+
+
+#####################################################
 # webport_success
 #####################################################
 function webport_success() {
@@ -607,6 +771,16 @@ function webport_success() {
 	header('Content-Type: application/json');
 	echo "{ \"ok\":\"-1\" }";
 	exit;
+}
+
+#####################################################
+# sslport_success
+#####################################################
+function sslport_success() {
+
+        header('Content-Type: application/json');
+        echo "{ \"ok\":\"-1\" }";
+        exit;
 }
 
 #####################################################

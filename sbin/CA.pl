@@ -31,15 +31,20 @@ my $CADAYS = "-days 1095";	# 3 years
 chomp(my $CN = `hostname`);
 chomp(my $IP = `hostname -i`);
 my $FQDN = "";
-$FQDN = `dig -x $IP +short`;
-if ( $FQDN eq "" ) {
- $FQDN = "loxberry";
-} else {
- $FQDN =~ s/\.\s*$//;
-}
+#$FQDN = `dig -x $IP +short`;
+open F, "dig -x $IP +short |";
+my @DOMAINS = <F>;
+close F;
+if ( @DOMAINS == 0 )  {push @DOMAINS, 'loxberry';}
+#if ( $FQDN eq "" ) {
+# $FQDN = "loxberry";
+#} else {
+# $FQDN =~ s/\.\s*$//;
+#}
+$DOMAINS[0] =~ s/\.\s*$//;
 $ENV{'MY_IP'} = $IP;
 $ENV{'MY_CN'} = $CN;
-$ENV{'MY_FQDN'} = $FQDN;
+$ENV{'MY_FQDN'} = $DOMAINS[0];
 chomp($ENV{'OPASS'} = `[ -f "$ENV{'LBHOMEDIR'}/data/system/LoxBerryCA/randb64" ] && cat $ENV{'LBHOMEDIR'}/data/system/LoxBerryCA/randb64`);
 #system("export OPASS=${RAND}");
 my $REQ = "$openssl req $CA_CONFIG -subj='/C=/ST=/L=/O=/OU=/CN=$CN' -passout env:OPASS";

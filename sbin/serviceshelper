@@ -2,8 +2,11 @@
 
 APC=${LBHOMEDIR}/system/apache2/ports.conf
 AWC=${LBHOMEDIR}/system/apache2/sites-available/000-default.conf
+SSLAWC=${LBHOMEDIR}/system/apache2/sites-available/001-default-ssl.conf
 AWCN=${LBHOMEDIR}/system/apache2/sites-available/000-default_${2}.conf
+SSLAWCN=${LBHOMEDIR}/system/apache2/sites-available/001-default-ssl_${2}.conf
 AWCL=${LBHOMEDIR}/system/apache2/sites-enabled/000-default_${2}.conf
+SSLAWCL=${LBHOMEDIR}/system/apache2/sites-enabled/001-default-ssl_${2}.conf
 HF=${LBHOMEDIR}/webfrontend/html/system/servicehelper.php
 ABF=${APC}_$(date +%Y%m%d%H%M%S)
 LPC=${LBHOMEDIR}/system/lighttpd/port.conf
@@ -51,6 +54,36 @@ EOF
 			systemctl restart lighttpd
 		fi
 		;;
+	sslport_change)
+		cp $APC $ABF
+                sed -i -e "0,/ssl_module>$/ s//&\n\tListen NEW/" $APC
+		sed -i -e "0,/mod_gnutls.c>$/ s//&\n\tListen NEW/" $APC
+                sed -i -e "/^\tListen[ \t]*$2$/,+0d" $APC
+                sed -i -e "s/^\tListen.*NEW/\tListen $2/" $APC
+                cp $SSLAWC $SSLAWCN
+                cat > $HF << EOF
+<?php
+        header("Access-Control-Allow-Origin: *");
+        header("Expires; 0");
+        header("Expires: Tue, 01 Jan 1980 1:00:00 GMT");
+        header("Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0");
+        header("Cache-Control: max-age=0");
+        header("Pragma: no-cache");
+        header('Content-Type: application/json');
+        echo "{ \"ok\":\"-1\" }";
+?>
+EOF
+                sed -i -e "s/<VirtualHost.*/<VirtualHost *:$2>/" $SSLAWCN
+                ln -s $SSLAWCN $SSLAWCL
+                systemctl stop ssdpd
+                sleep 2
+                if [ -n "$APACHE" ]
+                then
+                        a2enmod headers
+                        systemctl restart apache2
+                fi
+                ;;
+
 	webport_success)
 		if [ -f "$AWCN" ]
 		then
@@ -74,6 +107,34 @@ EOF
    				systemctl restart lighttpd
    			fi
 		fi
+		;;
+	sslport_success)
+		if [ -f "$SSLAWCN" ]
+                then
+                        sed -i -e "0,/ssl_module>$/ s//&\n\tListen NEW/" $APC
+			sed -i -e "0,/mod_gnutls.c>$/ s//&\n\tListen NEW/" $APC
+                        sed -i -e "/^\tListen[ \t]*$2$/,+0d" $APC
+                        sed -i -e "/^\tListen[ \t]*$3$/,+0d" $APC
+                        sed -i -e "s/^\tListen.*NEW/\tListen $2/" $APC
+                        unlink $SSLAWCL
+                        rm -f $SSLAWC
+                        rm -f $HF
+                        mv $SSLAWCN $SSLAWC
+                        systemctl start ssdpd
+                        sleep 2
+                        if [ -n "$APACHE" ]
+                        then
+                                systemctl restart apache2
+                        fi
+                fi
+                ;;
+	enable_ssl)
+		a2ensite 001-default-ssl
+		systemctl reload apache2
+		;;
+	disable_ssl)
+		a2dissite 001-default-ssl
+		systemctl reload apache2
 		;;
 esac
 
