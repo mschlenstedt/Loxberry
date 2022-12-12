@@ -21,7 +21,7 @@ else
   exit 0
 fi
 
-IP=`hostname -i`
+IP=`perl -e "require LoxBerry::System; print LoxBerry::System::get_localip();"`
 CERT=`openssl x509 -noout -in $LBHOMEDIR/data/system/LoxBerryCA/wwwcert.pem | grep "$IP"`
 if [ -z "$CERT" ]
 then

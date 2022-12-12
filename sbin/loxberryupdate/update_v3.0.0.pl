@@ -187,6 +187,7 @@ execute( command => "usermod -a -G i2c loxberry", log => $log );
 #
 LOGINF "Installing new SSL / HTTPS Option for Apache2 Webserver.";
 
+apt_install("dnsutils");
 copy_to_loxberry('/system/apache2/sites-available/001-default-ssl.conf');
 copy_to_loxberry('/system/cron/cron.daily/04-checkcerts');
 #copy_to_loxberry('/system/apache2/sites-enabled/001-default-ssl.conf');

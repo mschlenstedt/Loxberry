@@ -15,6 +15,7 @@
 
 use strict;
 use warnings;
+require LoxBerry::System;
 
 my $openssl = "openssl";
 if(defined $ENV{'OPENSSL'}) {
@@ -29,7 +30,7 @@ my $CA_CONFIG = "-config $ENV{'LBHOMEDIR'}/config/system/ca.cnf" || "";
 my $DAYS = "-days 365";
 my $CADAYS = "-days 1095";	# 3 years
 chomp(my $CN = `hostname`);
-chomp(my $IP = `hostname -i`);
+chomp(my $IP = LoxBerry::System::get_localip());
 my $FQDN = "";
 #$FQDN = `dig -x $IP +short`;
 open F, "dig -x $IP +short |";

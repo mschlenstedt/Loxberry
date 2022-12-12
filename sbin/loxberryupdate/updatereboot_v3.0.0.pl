@@ -243,6 +243,19 @@ LOGDEB `node -e "console.log('Hello LoxBerry users, this is Node.js '+process.ve
 # PHP
 #
 
+LOGINF "Activating PHP7.4...";
+apt_remove("php7.0-common php7.3-common");
+apt_install("php7.4-bz2 php7.4-curl php7.4-json php7.4-mbstring php7.4-mysql php7.4-opcache php7.4-readline php7.4-soap php7.4-sqlite3 php7.4-xml php7.4-zip php7.4-cgi");
+$log->close;
+my $output = qx { a2enmod php7.4 >> $logfilename 2>&1 };
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGERR "Error occurred while activating PHP7.4 Apache Module - Error $exitcode";
+	$errors++;
+} else {
+	LOGOK "PHP7.4 Apache module activated successfully.";
+}
+$log->open;
 
 LOGINF "Configuring PHP...";
 $log->close;
@@ -271,20 +284,6 @@ if ( -e "/etc/php/7.4" ) {
 	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.4/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
 	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.4/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1 };
 };
-$log->open;
-
-LOGINF "Activating PHP7.4...";
-apt_remove("php7.0-common php7.3-common");
-apt_install("php7.4-bz2 php7.4-curl php7.4-json php7.4-mbstring php7.4-mysql php7.4-opcache php7.4-readline php7.4-soap php7.4-sqlite3 php7.4-xml php7.4-zip php7.4-cgi");
-$log->close;
-my $output = qx { a2enmod php7.4 >> $logfilename 2>&1 };
-$exitcode  = $? >> 8;
-if ($exitcode != 0) {
-	LOGERR "Error occurred while activating PHP7.4 Apache Module - Error $exitcode";
-	$errors++;
-} else {
-	LOGOK "PHP7.4 Apache module activated successfully.";
-}
 $log->open;
 
 LOGINF "Configuring logrotate...";
