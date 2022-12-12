@@ -195,7 +195,7 @@ copy_to_loxberry('/system/cron/cron.daily/04-checkcerts');
 execute( command => "a2enmod ssl", log => $log );
 
 LOGINF "Creating certificates if not already exist.";
-execute( command => "$LBHOMEDIR/sbin/checkcerts.sh", log => $log );
+execute( command => "$lbhomedir/sbin/checkcerts.sh", log => $log );
 
 LOGINF "Checking new Apapche2 configuration.";
 ($exitcode) = execute( command => "apachectl -t", log => $log );
