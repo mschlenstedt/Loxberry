@@ -203,11 +203,9 @@ apt_update();
 LOGINF "Removing package 'AppArmor'...";
 apt_remove("apparmor");
 
-
 #
 # Node.js V18
 #
-
 LOGINF "Installing Node.js V18...";
 LOGINF "Adding Node.js repository key to LoxBerry keyring...";
 my $output = qx { curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - };
@@ -242,9 +240,8 @@ LOGDEB `node -e "console.log('Hello LoxBerry users, this is Node.js '+process.ve
 #
 # PHP
 #
-
 LOGINF "Activating PHP7.4...";
-apt_remove("php7.0-common php7.3-common");
+apt_remove("php7.0-common php7.1-common php7.2-common php7.3-common");
 apt_install("php7.4-bz2 php7.4-curl php7.4-json php7.4-mbstring php7.4-mysql php7.4-opcache php7.4-readline php7.4-soap php7.4-sqlite3 php7.4-xml php7.4-zip php7.4-cgi");
 $log->close;
 my $output = qx { a2enmod php7.4 >> $logfilename 2>&1 };
@@ -257,28 +254,8 @@ if ($exitcode != 0) {
 }
 $log->open;
 
-LOGINF "Configuring PHP...";
+LOGINF "Configuring PHP7.4...";
 $log->close;
-if ( -e "/etc/php/7.0" ) {
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.0/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.0/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1};
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.0/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1};
-};
-if ( -e "/etc/php/7.1" ) {
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.1/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1};
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.1/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1};
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.1/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1};
-};
-if ( -e "/etc/php/7.2" ) {
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.2/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.2/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.2/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1 };
-};
-if ( -e "/etc/php/7.3" ) {
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.3/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.3/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
-	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.3/cli/conf.d/20-loxberry-cli.ini >> $logfilename 2>&1 };
-};
 if ( -e "/etc/php/7.4" ) {
 	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.4/apache2/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
 	my $output = qx { ln -vsfn $lbhomedir/system/php/loxberry-apache.ini /etc/php/7.4/cgi/conf.d/20-loxberry-apache.ini >> $logfilename 2>&1 };
@@ -321,31 +298,12 @@ if ($exitcode) {
 }
 
 #
-# Firmware Files are not updated automatically by apt-get (why? *really* don't know!) - only on Raspberry
-#
-#if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg") {
-#	LOGINF "Installing newest firmware files (from Debian Buster because Bullseye isn't currently available)...";
-#	# Use RPi-Distro Repo
-#	system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/buster.zip -o /lib/master.zip");
-#	system("cd /lib && unzip /lib/master.zip");
-#	$exitcode  = $? >> 8;
-#	if ($exitcode != 0) {
-#       LOGERR "Error extracting new firmware. This is a problem for Zero2 only. Wifi may not work on the Zero2 - Error $exitcode";
-#	} else {
-#        LOGOK "Extracting of new firmware files successfully. Installing...";
-#		system ("rm -r /lib/firmware");
-#		system("mv /lib/firmware-nonfree-buster /lib/firmware");
-#	}
-#	system ("rm -r /lib/master.zip");
-#}
-
-#
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Upgrade python packages...";
 if (-e "$lbsdatadir/pip_list.dat") {
 	$log->close;
-	system("cat $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip install >> $logfilename 2>&1");
+	system("cat $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip2 install >> $logfilename 2>&1");
 	system("mv $lbsdatadir/pip_list.dat $lbsdatadir/pip_list.dat.bkp");
 	$log->open;
 }
@@ -378,15 +336,18 @@ if ($errors) {
 	}
 }
 
-# Continue with LoxBerry Update
+#
+# Installing new dependencies
+#
+LOGINF "Installing new packages for LoxBerry 3.0...";
+apt_install("libcgi-simple-perl");
+
+# Continue with LoxBerry Update on next reboot
 $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
 my $querytype = $syscfg->param('UPDATE.RELEASETYPE');
 if(!$querytype) {
 	$querytype = "release";
 }
-#$log->close;
-#system (". /etc/environment && /opt/loxberry/sbin/loxberryupdatecheck.pl querytype=$querytype update=1 nofork=1 >> $logfilename 2>&1");
-#$log->open;
 LOGINF "Continuing with Upgrade ON NEXT REBOOT.";
 open(F,">$lbhomedir/system/daemons/system/98-updaterebootcontinue");
 print F <<EOF;
@@ -398,22 +359,8 @@ close (F);
 qx { chmod +x $lbhomedir/system/daemons/system/98-updaterebootcontinue };
 
 #
-# Installing new dependencies
+# End
 #
-LOGINF "Installing new packages for LoxBerry 3.0...";
-apt_install("libcgi-simple-perl");
-
-#
-# MQTT Gateway migration
-#
-
-#LOGINF "MQTT Gateway migration";
-#LoxBerry::System::execute( command => '$lbhomedir/sbin/loxberryupdate/mqtt_migration.pl', log => $log );
-
-
-
-
-
 LOGOK "Update script $0 finished." if ($errors == 0);
 LOGERR "Update script $0 finished with errors." if ($errors != 0);
 
