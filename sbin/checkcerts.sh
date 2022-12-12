@@ -22,10 +22,11 @@ else
 fi
 
 IP=`perl -e "require LoxBerry::System; print LoxBerry::System::get_localip();"`
-CERT=`openssl x509 -noout -in $LBHOMEDIR/data/system/LoxBerryCA/wwwcert.pem | grep "$IP"`
+CERT=`openssl x509 -noout -text -in $LBHOMEDIR/data/system/LoxBerryCA/certs/wwwcert.pem | egrep -i "$IP$"`
 if [ -z "$CERT" ]
 then
   $LBHOMEDIR/sbin/revokewwwcert.sh
   $LBHOMEDIR/sbin/makewwwcert.sh
   exit 0
 fi
+exit 0
