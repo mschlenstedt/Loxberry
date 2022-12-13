@@ -83,7 +83,7 @@ if ($starts >=10) {
 # Sleep waiting network to be up after boot
 use Net::Ping;
 my $p = Net::Ping->new();
-my $hostname = 'download.loxberry.de';
+my $hostname = 'google.com';
 my $success = 0;
 foreach my $c (1 .. 5) {
 	LOGINF "Try to reach $hostname";
@@ -301,18 +301,24 @@ if ($exitcode) {
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Upgrade python packages...";
-if (-e "$lbsdatadir/pip_list.dat") {
-	$log->close;
-	system("cat $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip2 install >> $logfilename 2>&1");
-	system("mv $lbsdatadir/pip_list.dat $lbsdatadir/pip_list.dat.bkp");
-	$log->open;
-}
+#if (-e "$lbsdatadir/pip_list.dat") {
+#	$log->close;
+#	system("cat $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip2 install >> $logfilename 2>&1");
+#	system("mv $lbsdatadir/pip_list.dat $lbsdatadir/pip_list.dat.bkp");
+#	$log->open;
+#}
 if (-e "$lbsdatadir/pip3_list.dat") {
 	$log->close;
 	system("cat $lbsdatadir/pip3_list.dat | cut -d = -f 1 | xargs -n1 pip3 install >> $logfilename 2>&1");
 	system("mv $lbsdatadir/pip3_list.dat $lbsdatadir/pip3_list.dat.bkp");
 	$log->open;
 }
+
+#
+# Installing new dependencies
+#
+LOGINF "Installing new packages for LoxBerry 3.0...";
+apt_install("libcgi-simple-perl");
 
 # If errors occurred, mark this script as failed. If ok, never start it again.
 if ($errors) {
@@ -335,12 +341,6 @@ if ($errors) {
 		LOGOK "Apache2 enabled successfully.";
 	}
 }
-
-#
-# Installing new dependencies
-#
-LOGINF "Installing new packages for LoxBerry 3.0...";
-apt_install("libcgi-simple-perl");
 
 # Continue with LoxBerry Update on next reboot
 $syscfg = new Config::Simple("$lbsconfigdir/general.cfg") or LOGERR "Cannot read general.cfg";
