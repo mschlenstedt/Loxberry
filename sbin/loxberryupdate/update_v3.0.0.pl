@@ -89,18 +89,18 @@ if ($exitcode != 0) {
 }
 
 #
-# Backing up Python packages, because rasbian's upgrade will overwrite all of them...
+# Backing up Python packages, because Rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade...";
-system ("which pip");
-$exitcode  = $? >> 8;
-if ($exitcode != 0) {
-	LOGINF "pip seems not to be installed.";
-} else {
-	LOGINF "Saving list with installed pip packages...";
-	system ("pip install pip --upgrade");
-	system("pip list --format=freeze > $lbsdatadir/pip_list.dat");
-}
+#system ("which pip");
+#$exitcode  = $? >> 8;
+#if ($exitcode != 0) {
+#	LOGINF "pip seems not to be installed.";
+#} else {
+#	LOGINF "Saving list with installed pip packages...";
+#	system ("pip install pip --upgrade");
+#	system("pip list --format=freeze > $lbsdatadir/pip_list.dat");
+#}
 system ("which pip3");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
