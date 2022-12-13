@@ -302,7 +302,7 @@ sub rpi_update
 			my $exitcode  = $? >> 8;
 			if ($exitcode eq "0") {
 			# Delete beta 64Bit kernel (we have not enough space on /boot...)
-				unlink "/boot.tmp/kernel8.img";
+				#unlink "/boot.tmp/kernel8.img";
 				#unlink "/boot/kernel*.img";
 				qx ( rm -rf /boot.bkp ); 
 				qx ( cp -r /boot /boot.bkp );
