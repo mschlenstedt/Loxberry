@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.2";
+our $VERSION = "3.0.0.3";
 our $DEBUG;
 
 ### Exports ###
