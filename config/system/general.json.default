@@ -36,7 +36,7 @@
    "Backup" : {
       "Keep_archives" : "1",
       "Storagepath" : "",
-      "Compression" : "7zip",
+      "Compression" : "7z",
       "Schedule" : {
          "Active" : "false",
       }
