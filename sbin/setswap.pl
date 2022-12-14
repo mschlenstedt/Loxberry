@@ -68,5 +68,29 @@ if ($exitcode != 0) {
 	LOGOK "Setup dphys-swapfile successfully.";
 }
 
+# Enable Swap
+LOGINF "Enable dphys-swapfile...";
+$output = qx { systemctl enable dphys-swapfile };
+chomp $output;
+LOGINF "$output";
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGWARN "Cannot enable dphys-swapfile.";
+} else {
+	LOGOK "Enabling dphys-swapfile successfully.";
+}
+
+# Start Swap
+LOGINF "Start dphys-swapfile...";
+$output = qx { systemctl restart dphys-swapfile };
+chomp $output;
+LOGINF "$output";
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGWARN "Cannot start dphys-swapfile.";
+} else {
+	LOGOK "Starting dphys-swapfile successfully.";
+}
+
 LOGEND "Finished successfully.";
 exit 0;
