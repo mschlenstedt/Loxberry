@@ -289,7 +289,7 @@ sub rpi_update
 		}
 		qx { mkdir -p /boot.tmp };
 
-		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash 2>&1 };
+		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 WANT_32BIT=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash 2>&1 };
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$main::log->ERR("Error upgrading kernel and firmware- Error $exitcode");
