@@ -3,5 +3,7 @@
 if [ -f /usr/bin/shellinaboxd ]
 then
 	echo "Start ShellinaBox Terminal"
-	/usr/bin/shellinaboxd -b --no-beep --localhost-only -t -n -p 64994 -s '/:AUTH:HOME:/bin/bash' --user-css 'Normal:-/etc/shellinabox/options-available/00+Black on White.css,Reverse:+/etc/shellinabox/options-available/00_White On Black.css' --user-css 'Color:+/etc/shellinabox/options-available/01+Color Terminal.css,Monochrome:-/etc/shellinabox/options-available/01_Monochrome.css' > /dev/null 2>&1 &
+	pkill -f shellinaboxd
+	sleep 1
+	/usr/bin/shellinaboxd -b --no-beep --localhost-only -t -n -p 64994 -s "/:loxberry:loxberry:$LBHOMEDIR:/usr/bin/ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' loxberry@localhost" --user-css "Normal:-/etc/shellinabox/options-available/00+Black on White.css,Reverse:+/etc/shellinabox/options-available/00_White On Black.css" --user-css "Color:+/etc/shellinabox/options-available/01+Color Terminal.css,Monochrome:-/etc/shellinabox/options-available/01_Monochrome.css" > /dev/null 2>&1 &
 fi
