@@ -33,6 +33,14 @@
          "Useclouddns" : "0"
       }
    },
+   "Backup" : {
+      "Keep_archives" : "1",
+      "Storagepath" : "",
+      "Compression" : "7zip",
+      "Schedule" : {
+         "Active" : "false",
+      }
+   },
    "Mqtt" : {
 		"Brokerhost" : "localhost",
 		"Brokerport" : "1883",
