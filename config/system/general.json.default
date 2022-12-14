@@ -38,7 +38,7 @@
       "Storagepath" : "",
       "Compression" : "7z",
       "Schedule" : {
-         "Active" : "false",
+         "Active" : "false"
       }
    },
    "Mqtt" : {
