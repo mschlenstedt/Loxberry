@@ -67,6 +67,7 @@ if( $q->{action} eq "saveconfig" ) {
 	my $jsonobj = LoxBerry::JSON->new();
 	my $cfg = $jsonobj->open(filename => $configfile);
 	$cfg->{'Backup'}->{'Storagepath'} = $q->{'storagepath'};
+	$cfg->{'Backup'}->{'Compression'} = $q->{'compression'};
 	$cfg->{'Backup'}->{'Keep_archives'} = $q->{'archive'};
 	$cfg->{'Backup'}->{'Schedule'}->{'Active'} = $q->{'scheduleactive'};
 	$cfg->{'Backup'}->{'Schedule'}->{'Repeat'} = $q->{'repeat'};
@@ -137,6 +138,7 @@ if( $q->{action} eq "saveconfig" ) {
 # Backup
 if( $q->{action} eq "startbackup" ) {
 	my $storagepath = $q->{'storagepath'};
+	my $compression = $q->{'compression'};
 	my $exitcode;
 	# Without the following workaround
 	# the script cannot be executed as
@@ -149,7 +151,7 @@ if( $q->{action} eq "startbackup" ) {
 		open STDOUT, "> /dev/null";
 		open STDERR, "> /dev/null";
 		# Format
-		($exitcode) = execute { command => "sudo $lbhomedir/sbin/clone_sd.pl $storagepath path" };
+		($exitcode) = execute { command => "sudo $lbhomedir/sbin/clone_sd.pl $storagepath path $compression" };
 	} # End Child process
 
 	my %response = (

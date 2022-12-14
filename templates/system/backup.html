@@ -53,6 +53,23 @@
 		</div>
 	</div>
 
+	<br>
+
+	<div style="display:flex;">
+		<div style="width:95%">
+			<div data-role="fieldcontain" class="ui-field-contain">
+				<label for="compression"><TMPL_VAR BACKUP.LABEL_COMPRESSION></label>
+				<select name="compression" id="compression" data-mini="true">
+					<option value="none"><TMPL_VAR BACKUP.LABEL_NONE></option>
+					<option value="7z">7-Zip</option>
+					<option value="zip">Zip</option>
+					<option value="gzip">Gzip</option>
+					<option value="xz">xz</option>
+				</select>
+			</div>
+		</div>
+	</div>
+
 	<br><br>
 
 	<div class="wide"><TMPL_VAR BACKUP.LABEL_SCHEDULE></div>
@@ -164,6 +181,7 @@
 					action: 'saveconfig',
 					storagepath: $("#storagepath").val(),
 					archive: $('#archive').val(),
+					compression: $('#compression').val(),
 					scheduleactive: $('#scheduleactive').prop('checked'),
 					mon: $('#mon').prop('checked'),
 					tue: $('#tue').prop('checked'),
@@ -204,6 +222,7 @@
 			.done(function( data ) {
 				console.log( "getconfig Success", data );
 				$("#archive").val(data.Backup.Keep_archives).selectmenu('refresh',true);
+				$("#compression").val(data.Backup.Compression).selectmenu('refresh',true);
 				$("#repeat").val(data.Backup.Schedule.Repeat).selectmenu('refresh',true);
 				$("#timef").val(data.Backup.Schedule.Time);
 				$("#scheduleactive").prop( "checked", JSON.parse(data.Backup.Schedule.Active) ).flipswitch('refresh');
@@ -230,6 +249,7 @@
 				data: {
 					action: 'startbackup',
 					storagepath: $("#storagepath").val(),
+					compression: $("#compression").val(),
 				}
 			})
 			.fail(function( data ) {

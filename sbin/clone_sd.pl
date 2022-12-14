@@ -220,6 +220,12 @@ if ( $desttype eq "path" ) {
 		$destdevice_index++;
 		next if $path->{TYPE} eq "local";
 		if ( $destpath =~ /^$path->{PATH}/ ) { 
+			if ($path->{TYPE} eq "vfat") {
+				LOGCRIT "$destpath is stored on a vfat filesystem. This is not supported because vfat does not support files larger than 2 GB. Format your device with EXT4, exFAT or NTFS.";
+		    		$error++;
+    				$notify .= "$destpath is stored on a vfat filesystem. This is not supported because vfat does not support files larger than 2 GB. Format your device with EXT4, exFAT or NTFS.";
+				exit(1);
+			}
 			$destpath_found = 1;
 			$destdevice_index--;
 			last;
@@ -626,7 +632,11 @@ if ( $desttype eq "path" && ($compress eq "7z" || $compress eq "gzip") ) {
 		if ($compress eq "7z") {
 			($rc) = execute( command => "7z a " . $destpath . ".7z $destpath -mx3", log => $log );
 		} elsif ($compress eq "gzip") {
-			($rc) = execute( command => "gzip $destpath", log => $log );
+			($rc) = execute( command => "gzip -3 " . $destpath, log => $log );
+		} elsif ($compress eq "xz") {
+			($rc) = execute( command => "xz -z -3 " . $destpath, log => $log );
+		} elsif ($compress eq "zip") {
+			($rc) = execute( command => "zip -m -3 " . $destpath . ".zip " . $destpath, log => $log );
 		}
 		if ($rc eq "0") {
 			LOGOK "Compressed your image successfully.";
@@ -637,6 +647,8 @@ if ( $desttype eq "path" && ($compress eq "7z" || $compress eq "gzip") ) {
 			$error++;
 			unlink ($destpath . ".7z");
 			unlink ($destpath . ".gz");
+			unlink ($destpath . ".xz");
+			unlink ($destpath . ".zip");
 		}
 	}
 }

@@ -1,0 +1,115 @@
+{
+   "Base" : {
+      "Clouddnsuri" : "dns.loxonecloud.com",
+      "Lang" : "en",
+      "Sendstatistic" : 1,
+      "Startsetup" : "1",
+      "Systemloglevel" : "6",
+      "Version" : "3.0.0.0"
+   },
+   "Healthcheck" : null,
+   "Miniserver" : {
+      "1" : {
+         "Admin" : "",
+         "Admin_raw" : "",
+         "Cloudurl" : "",
+         "Cloudurlftpport" : "",
+         "Credentials" : ":",
+         "Credentials_raw" : ":",
+         "Encryptresponse" : "",
+         "Fulluri" : "http://:@:80",
+         "Fulluri_raw" : "http://:@:80",
+         "Ipaddress" : "",
+         "Ipv6format" : "0",
+         "Name" : "",
+         "Note" : "",
+         "Pass" : "",
+         "Pass_raw" : "",
+         "Port" : "80",
+         "Porthttps" : null,
+         "Preferhttps" : null,
+         "Securegateway" : "",
+         "Transport" : "http",
+         "Useclouddns" : "0"
+      }
+   },
+   "Backup" : {
+      "Keep_archives" : "1",
+      "Storagepath" : "",
+      "Compression" : "7z",
+      "Schedule" : {
+         "Active" : "false",
+      }
+   },
+   "Mqtt" : {
+		"Brokerhost" : "localhost",
+		"Brokerport" : "1883",
+		"Udpinport" : "11884",
+		"Uselocalbroker" : "1",
+		"Websocketport" : "9001",
+		"Finderdisabled" : false
+   },
+   "Network" : {
+      "Friendlyname" : null,
+      "Interface" : "eth0",
+      "Ipv4" : {
+         "Dns" : "",
+         "Gateway" : "",
+         "Ipaddress" : "",
+         "Mask" : "",
+         "Type" : "dhcp"
+      },
+      "Ipv6" : {
+         "Dns" : null,
+         "Ipaddress" : null,
+         "Mask" : null,
+         "Privacyext" : null,
+         "Type" : null
+      },
+      "Ssid" : "",
+      "Wpa" : null
+   },
+   "Remote" : {
+      "Autoconnect" : "true",
+      "Httpport" : "",
+      "Httpproxy" : ""
+   },
+   "Ssdp" : {
+      "Disabled" : null,
+      "Uuid" : null
+   },
+   "Timeserver" : {
+      "Method" : "ntp",
+      "Ntpserver" : "0.europe.pool.ntp.org",
+      "Timemsno" : 1,
+      "Timezone" : "Europe/Berlin"
+   },
+   "Update" : {
+      "Branch" : null,
+      "Dryrun" : null,
+      "Failedscript" : null,
+      "Installtype" : "notify",
+      "Interval" : "1",
+      "Keepinstallfiles" : null,
+      "Keepupdatefiles" : null,
+      "Latestsha" : null,
+      "Releasetype" : "release"
+   },
+   "Watchdog" : {
+      "Maxtemp" : "85"
+   },
+   "Webserver" : {
+      "Port" : "80",
+      "Sslport" : "443",
+      "Sslenabled" : "false"
+   },
+   "Apt" : {
+      "Servers" : {
+         "1" : "http://ftp.agdsn.de/pub/mirrors/raspbian/raspbian/",
+         "2" : "http://packages.hs-regensburg.de/raspbian/",
+         "3" : "http://ftp.halifax.rwth-aachen.de/raspbian/raspbian/",
+         "4" : "http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/",
+         "5" : "https://dist-mirror.fem.tu-ilmenau.de/raspbian/raspbian/"
+      }
+   }
+}
