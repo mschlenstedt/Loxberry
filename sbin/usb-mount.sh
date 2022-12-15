@@ -101,12 +101,12 @@ do_mount()
     fi
     # extFAT
     if [[ ${TYPE} == "exfat" ]]; then
-        OPTS+=",gid=1001,uid=1001,umask=000,utf8,flush"
+        OPTS+=",gid=1001,uid=1001,umask=000,iocharset=utf8"
 	echo $OPTS
     fi
     # vFAT
     if [[ ${TYPE} == "vfat" ]]; then
-        OPTS+=",gid=1001,uid=1001,umask=000,shortname=mixed,utf8,flush"
+        OPTS+=",gid=1001,uid=1001,umask=000,shortname=mixed,iocharset=utf8,flush"
     fi
 
     if ! mount -o ${OPTS} ${DEVICE} ${MOUNT_POINT}; then
