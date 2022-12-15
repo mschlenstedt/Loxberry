@@ -39,6 +39,8 @@ my $destpath = $ARGV[0];
 my $desttype = $ARGV[1];
 my $compress = $ARGV[2];
 
+LOGINF "Parameters: $destpath   $desttype   $compress";
+
 my $curruser = getpwuid($<);
 LOGINF "Executing user is $curruser";
 if( $curruser ne "root" ) {
@@ -620,7 +622,7 @@ if ($desttype eq "path") {
 }
 
 # Compress image
-if ( $desttype eq "path" && ($compress eq "7z" || $compress eq "gzip") ) { 
+if ( $desttype eq "path" && ($compress ne "none" || $compress ne "") ) { 
 	my %imagedisk = LoxBerry::System::diskspaceinfo($destpath);
 	my $required_compress = -s $destpath * 0.4; # Asuming 60% compression
 	if ($imagedisk{available}*1024 < $required_compress) {
@@ -636,7 +638,10 @@ if ( $desttype eq "path" && ($compress eq "7z" || $compress eq "gzip") ) {
 		} elsif ($compress eq "xz") {
 			($rc) = execute( command => "xz -z -3 " . $destpath, log => $log );
 		} elsif ($compress eq "zip") {
-			($rc) = execute( command => "zip -m -3 " . $destpath . ".zip " . $destpath, log => $log );
+			($rc) = execute( command => "zip -j -m -3 " . $destpath . ".zip " . $destpath, log => $log );
+		} else {
+			LOGWARN "Unknown compression method. Compression may fail.";
+			$rc = 1;
 		}
 		if ($rc eq "0") {
 			LOGOK "Compressed your image successfully.";
