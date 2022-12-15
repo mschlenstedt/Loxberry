@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='3.0.0.0';
+my $scriptversion='3.0.0.1';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -241,7 +241,57 @@ LOGOK "Pre-Changing owner was successful.";
 #system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -");
 #LOGOK "Keys updated";
 
+LOGINF "Searching and preparing Update Pre-Check script...";
 
+my @updateprechecklist;
+my $updateprecheckprefix = 'updateprecheck_'; 
+
+opendir (DIR, "$lbhomedir/sbin/loxberryupdate");
+while (my $file = readdir(DIR)) {
+	next if (!begins_with($file, $updateprecheckprefix));
+	# LOGDEB "Filename: $file";
+	my $lastdotpos = rindex($file, '.');
+	my $nameversion = lc(substr($file, length($updateprecheckprefix), length($file)-length($updateprecheckprefix)-(length($file)-$lastdotpos)));
+	# LOGINF "Parsed Update Pre-Check version: $nameversion";
+	if (version::is_lax(vers_tag($nameversion))) {
+		push @updateprechecklist, version->parse(vers_tag($nameversion));
+	} else {
+		LOGWARN "Ignoring $nameversion as this does not look like a version number.";
+		$errskipped++;
+		next;
+	}
+}
+closedir DIR;
+# Sort prechecklist descending
+@updateprechecklist = sort { version->parse($b) <=> version->parse($a) } @updateprechecklist;
+
+foreach my $version (@updateprechecklist)
+{ 
+	my $exitcode;
+	if ( $version > $release ) {
+		LOGINF "      Skipping Update Pre-Check $version - too new version.";
+		next;
+	}
+	LOGINF "      Running Update Pre-Check script for $version...";
+	undef $exitcode; 
+	
+	$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/$updateprecheckprefix$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
+	$exitcode  = $? >> 8;
+	
+	my $current_had_errors = $exitcode != 0 ? 1 : 0;
+	
+	if ($exitcode != 0) {
+		# Script error
+		$joutput{'error'} = "The Pre-Check $version returned errorcode $exitcode. LoxBerry Update cannot continue and will quit. See details above.";
+		&err;
+		LOGCRIT $joutput{'error'};
+		exit(1);
+	}
+	
+	last;
+}
+
+LOGOK "Update Pre-Check passed.";
 
 # Set up rsync command line
 
