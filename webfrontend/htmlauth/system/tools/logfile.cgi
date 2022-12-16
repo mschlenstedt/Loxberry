@@ -30,13 +30,11 @@ use File::Basename;
 ##########################################################################
 
 # Version of this script
-my $version = "2.2.1.1";
+my $version = "3.0.0.0";
 my $iscgi;
 my $maintemplate;
 my %SL;
 my $template_title;
-
-my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
@@ -62,7 +60,6 @@ if ($ENV{'HTTP_HOST'}) {
 						global_vars => 1,
 						loop_context_vars => 1,
 						die_on_bad_params=> 0,
-						# associate => $cfg,
 					);
 		%SL = LoxBerry::System::readlanguage($maintemplate);
 		
