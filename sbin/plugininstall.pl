@@ -34,7 +34,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.4";
+my $version = "3.0.0.5";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -569,6 +569,9 @@ sub install {
 
 	# Version check
 	my $versioncheck = 0;
+	my $jsonparser = LoxBerry::JSON->new();
+	my $generalcfg = $jsonparser->open(filename => "$lbsconfigdir/general.json", readonly => 1);
+
 	if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 		$versioncheck = 1;
 		$lbversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
@@ -584,8 +587,7 @@ sub install {
 			$plbmin = version->parse(vers_tag($plbmin));
 			LOGINF $LL{'INF_MINVERSION'} . $plbmin;
 		if ($lbversion < $plbmin) {
-			my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
-			if ($generalcfg->param("UPDATE.RELEASETYPE") and $generalcfg->param("UPDATE.RELEASETYPE") eq "latest") {
+			if ($generalcfg->{"Update"}->{"Releasetype"} and $generalcfg->{"Update"}->{"Releasetype"} eq "latest") {
 				$message = $LL{'INF_MINVERSION'} . $plbmin;
 				push(@warnings, "$message");
 				LOGWARN $message;
@@ -617,8 +619,7 @@ sub install {
 			LOGINF $LL{'INF_MAXVERSION'} . $plbmax;
 
 			if ($lbversion > $plbmax) {
-				my $generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
-				if ($generalcfg->param("UPDATE.RELEASETYPE") and $generalcfg->param("UPDATE.RELEASETYPE") eq "latest") {
+				if ($generalcfg->{"Update"}->{"Releasetype"} and $generalcfg->{"Update"}->{"Releasetype"} eq "latest") {
 					$message = $LL{'INF_MAXVERSION'} . $plbmin;
 					push(@warnings, "$message");
 					LOGWARN $message;
