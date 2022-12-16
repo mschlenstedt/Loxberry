@@ -92,8 +92,7 @@ if ($cgi->param('cron')) {
 if ($cron) {
 	LOGINF "Locking lbupdate - delaying up to 10 minutes...";
 	eval {
-			my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate', wait => 600 );
-		
+		my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate', wait => 600 );
 		if ($lockstate) {
 			LOGCRIT "Could not get lock for lbupdate. Skipping this update.";
 			LOGINF "Locking error reason is: $lockstate";
@@ -246,7 +245,7 @@ LOGINF "Searching and preparing Update Pre-Check script...";
 my @updateprechecklist;
 my $updateprecheckprefix = 'updateprecheck_'; 
 
-opendir (DIR, "$lbhomedir/sbin/loxberryupdate");
+opendir (DIR, "$updatedir/sbin/loxberryupdate");
 while (my $file = readdir(DIR)) {
 	next if (!begins_with($file, $updateprecheckprefix));
 	# LOGDEB "Filename: $file";
@@ -275,7 +274,7 @@ foreach my $version (@updateprechecklist)
 	LOGINF "      Running Update Pre-Check script for $version...";
 	undef $exitcode; 
 	
-	$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/$updateprecheckprefix$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
+	$exitcode = exec_perl_script("$updatedir/sbin/loxberryupdate/$updateprecheckprefix$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
 	$exitcode  = $? >> 8;
 	
 	my $current_had_errors = $exitcode != 0 ? 1 : 0;
