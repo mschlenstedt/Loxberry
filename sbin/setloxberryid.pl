@@ -17,6 +17,7 @@
 use LoxBerry::Log;
 use Getopt::Long;
 use LWP::UserAgent;
+use LoxBerry::JSON;
 
 my $logfilename = "$lbhomedir/log/system_tmpfs/loxberryid.log";
 my $log = LoxBerry::Log->new ( package => "core", name => "loxberryid", filename => $logfilename, append => 1, addtime => 1 );
@@ -25,10 +26,11 @@ $log->loglevel(6);
 LOGSTART "LogBerry setloxberryid";
 $log->stdout(1);
 
-my $cfg      = new Config::Simple("$lbsconfigdir/general.cfg");
-my $sendstat = is_enabled( $cfg->param("BASE.SENDSTATISTIC") );
-my $version  = $cfg->param("BASE.VERSION");
-my $curlbin  = $cfg->param("BINARIES.CURL");
+my $jsonparser = LoxBerry::JSON->new();
+my $cfg = $jsonparser->open(filename => "$lbsconfigdir/general.json", readonly => 1);
+my $sendstat = is_enabled( $cfg->{"Base"}->{"Sendstatistic"} );
+my $version = $cfg->{"Base"}->{"Version"};
+my $curlbin = `which curl`;
 
 my ($ver_major, $ver_minor, $ver_sub) = split (/\./, trim($version));
 
