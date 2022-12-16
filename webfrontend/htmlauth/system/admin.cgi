@@ -39,7 +39,6 @@ use warnings;
 my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_admin_access";
 my $helptemplate = "help_admin.html";
 
-our $cfg;
 our $phrase;
 our $namef;
 our $value;
@@ -82,9 +81,7 @@ my $nexturl = "/admin/system/index.cgi?form=system";
 ##########################################################################
 
 # Version of this script
-my $version = "3.0.0.0";
-
-$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+my $version = "3.0.0.1";
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
@@ -454,7 +451,6 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'ADMIN.WIDGETLA
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
 				%htmltemplate_options,
-				# associate => $cfg,
 				);
 	print STDERR "admin.cgi: Sub ERROR called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
