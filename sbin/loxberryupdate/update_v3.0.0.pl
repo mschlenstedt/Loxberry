@@ -161,8 +161,15 @@ if ($exitcode) {
 #
 # Install new sudoers
 #
-LOGINF "Installing new sudoers file...";
-copy_to_loxberry("/system/sudoers/lbdefaults", "root");
+# Done during MQTT migration
+#LOGINF "Installing new sudoers file...";
+#copy_to_loxberry("/system/sudoers/lbdefaults", "root");
+
+#
+# Install new 03-loxberryupdate Daemon
+#
+LOGINF "Installing new 03-loxberryupdate file...";
+copy_to_loxberry("/system/daemons/system/03-loxberryupdate", "root");
 
 #
 # Install shellinabox and disable shellinabox daemon
