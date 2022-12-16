@@ -2,9 +2,7 @@
 
 notify_ext() {
 
-	. $LBHOMEDIR/libs/bashlib/iniparser.sh
-
-	iniparser $LBSCONFIG/general.cfg "WEBSERVER"
+	WEBSERVERPORT=$(jq -r '.Webserver.Port' $LBSCONFIG/general.json)
 	
 	# echo "Webserver port is $WEBSERVERPORT";
 	
@@ -14,9 +12,7 @@ notify_ext() {
 
 notify() {
 
-	. $LBHOMEDIR/libs/bashlib/iniparser.sh
-
-	iniparser $LBSCONFIG/general.cfg "WEBSERVER"
+	WEBSERVERPORT=$(jq -r '.Webserver.Port' $LBSCONFIG/general.json)
 	
 	errorparam=$4
 	
