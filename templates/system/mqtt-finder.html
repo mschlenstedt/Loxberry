@@ -146,7 +146,7 @@ function getMqttData() {
 		return;
 	
 	getmqttdata_running = true;
-	$.post( "tools/mqtt-ajax.php", { 
+	$.post( "ajax/ajax-mqtt.php", { 
 			ajax : "getmqttfinderdata",  
 	})
 	.done(function(data){

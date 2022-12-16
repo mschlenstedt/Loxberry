@@ -459,7 +459,7 @@ $(function(){
 			}
 			
 			// console.log(logtime(), "RELAYED_TOPICS START Request");
-			$.post( 'tools/mqtt-ajax.php', {
+			$.post( 'ajaxs/ajax-mqtt.php', {
 				ajax: 'relayed_topics',
 				udpinport: udpinport })
 			.done(function(resp) {
@@ -952,7 +952,7 @@ $(function(){
 			// console.log("Delete", topic);
 			// console.log(event.toElement.dataset.topic);
 			
-			$.post( 'tools/mqtt-ajax.php', {
+			$.post( 'ajax/ajax-mqtt.php', {
 				ajax: 'retain',
 				udpinport: udpinport,
 				topic: topic })
@@ -976,7 +976,7 @@ $(function(){
 			var is_checked = event.currentTarget.checked;
 			// console.log("checkbox_disablecache", cachetarget, "Checked", is_checked);
 			
-			$.post( 'tools/mqtt-ajax.php', {
+			$.post( 'ajax/ajax-mqtt.php', {
 				ajax: 'disablecache',
 				disablecache: is_checked,
 				topic: cachetarget })
@@ -1000,7 +1000,7 @@ $(function(){
 			var is_checked = event.currentTarget.checked;
 			// console.log("checkbox_reset_after_send", checkboxtarget, "Checked", is_checked);
 			
-			$.post( 'tools/mqtt-ajax.php', {
+			$.post( 'ajax/ajax-mqtt.php', {
 				ajax: 'resetAfterSend',
 				resetAfterSend: is_checked,
 				topic: checkboxtarget })
@@ -1024,7 +1024,7 @@ $(function(){
 			var is_checked = event.currentTarget.checked;
 			// console.log("checkbox_reset_after_send", checkboxtarget, "Checked", is_checked);
 			
-			$.post( 'tools/mqtt-ajax.php', {
+			$.post( 'ajax/ajax-mqtt.php', {
 				ajax: 'doNotForward',
 				doNotForward: is_checked,
 				topic: checkboxtarget })
@@ -1464,7 +1464,7 @@ $(function() {
 		// console.log("Restart pressed");
 		$("#restartmqttgateway").attr("disabled", true);
 		
-		$.post( 'tools/mqtt-ajax.php', {
+		$.post( 'ajax/ajax-mqtt.php', {
 			ajax: 'restartgateway' })
 		.done(function(resp) {
 			// console.log( "ajax_post", "success", resp );
@@ -1483,7 +1483,7 @@ $(function() {
 	$("#purgemosquittodb").click(function(){
 		// console.log("Restart Mosquitto database");
 		$("#purgemosquittodb").attr("disabled", true);
-		$.post( 'tools/mqtt-ajax.php', {
+		$.post( 'ajax/ajax-mqtt.php', {
 			ajax: 'mosquitto_purgedb' })
 		.done(function(resp) {
 			// console.log( "ajax_post", "success", resp );
@@ -1502,7 +1502,7 @@ $(function() {
 $("#reconnect").click(function(){
 		// console.log("Reconnect and retransmit all values");
 		$("#reconnect").attr("disabled", true);
-		$.post( 'tools/mqtt-ajax.php', {
+		$.post( 'ajax/ajax-mqtt.php', {
 			ajax: 'reconnect',
 			udpinport: udpinport })
 		.done(function(resp) {
@@ -1522,7 +1522,7 @@ $("#reconnect").click(function(){
 	function update_pids() 
 	{
 
-		$.post( 'tools/mqtt-ajax.php', {
+		$.post( 'ajax/ajax-mqtt.php', {
 			ajax: 'getpids' })
 		.done(function(resp) {
 			// console.log( "ajax_post", "success", resp );

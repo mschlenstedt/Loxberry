@@ -231,7 +231,7 @@ $( document ).ready(function() {
 		console.log("Publish line", line, topic, transform, value, retain);
 		
 		
-		$.post( 'tools/mqtt-ajax.php', {
+		$.post( 'ajax/ajax-mqtt.php', {
 			ajax: 'publish_json',
 			topic: topic,
 			value: value,

@@ -183,7 +183,7 @@
 						self.data_save_error = true;
 					}
 					else {
-						fetch('/admin/system/tools/mqtt-ajax.php?ajax=mosquitto_set');
+						fetch('/admin/system/ajax/ajax-mqtt.php?ajax=mosquitto_set');
 						self.data_save_error = false;
 						self.data_saved = true;
 						self.data_changed = false;
