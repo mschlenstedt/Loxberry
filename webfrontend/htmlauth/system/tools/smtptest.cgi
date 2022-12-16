@@ -16,7 +16,7 @@
 
 
 # Version of this script
-$version = "1.0.0.2";
+$version = "3.0.0.0";
 
 
 ##
@@ -41,16 +41,15 @@ use strict;
 # Variables
 ##########################################################################
 
-my $email 		= param('email');
-my $smtpserver 	= param('smtpserver');
-my $smtpport 		= param('smtpport');
+my $email = param('email');
+my $smtpserver = param('smtpserver');
+my $smtpport = param('smtpport');
 my $smtpcrypt = is_enabled(param('smtpcrypt')) ? 1 : undef;
 my $smtpauth = is_enabled(param('smtpauth')) ? 1 : undef;
-my $smtpuser 		= param('smtpuser');
-my $smtppass 		= param('smtppass');
-my  $lf             = param('lf'); # Linefeed in output
-my $sudobin;
-my $mailbin;
+my $smtpuser = param('smtpuser');
+my $smtppass = param('smtppass');
+my $lf = param('lf'); # Linefeed in output
+my $mailbin = `which mailx`;
 my $result;
 
 if (!$smtpport) {
@@ -58,15 +57,6 @@ if (!$smtpport) {
 }
 
 print STDERR "SMTPCRYPT: " . $smtpcrypt . "\n";
-
-##########################################################################
-# Read Settings
-##########################################################################
-
-
-my $cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
-$sudobin         = $cfg->param("BINARIES.SUDO");
-$mailbin         = $cfg->param("BINARIES.MAIL");
 
 ##########################################################################
 # Language Settings
