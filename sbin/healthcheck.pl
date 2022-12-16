@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "3.0.0.1";
+my $version = "3.0.0.2";
 
 ## Check {status}
 # EMPTY --> "UNKNOWN" (grey)
@@ -1342,7 +1342,7 @@ sub check_miniservers
 		
 		require LWP::UserAgent;
 		my $ua = LWP::UserAgent->new;
-		my $checkurl = 'http://localhost:' . lbwebserverport() . '/admin/system/tools/ajax-check-miniserver.cgi';
+		my $checkurl = 'http://localhost:' . lbwebserverport() . '/admin/system/ajax/ajax-check-miniserver.cgi';
 		
 		$result{status} = "5";
 		my @results;

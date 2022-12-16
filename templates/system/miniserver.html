@@ -324,7 +324,7 @@ $(document).ready( function() {
 		msno = $(this).data("msno");
 		console.log("Miniserver No.", msno);
 		
-		var url = "/admin/system/tools/ajax-check-miniserver.cgi";
+		var url = "/admin/system/ajax/ajax-check-miniserver.cgi";
 		var resultdiv = $("#miniservercheck"+msno+"_result");
 		resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
 		var checkresult = $.post( url, 
