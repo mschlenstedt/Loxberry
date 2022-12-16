@@ -61,6 +61,8 @@ my $cfg = $jsonparser->open(filename => "$lbsconfigdir/general.json", readonly =
  $SIG{TERM} = \&signal_handler;
  $SIG{SIGTERM} = \&signal_handler;
 
+ undef $cfg;
+
  while(1) {
  	$s2->recv($buf,1024);
  	$from = $s2->peerhost();
