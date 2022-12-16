@@ -295,79 +295,113 @@ function form() {
 
 
 	<?php else: ?>
+	<STYLE>
+	.lb_flex-item-label 
+	{
+		min-width	:250px;
+		width		:250px;
+	}
+	.lb_flex-item 
+	{	
+		min-width	:250px;
+		width		:250px;
+		max-width	:450px;
+		flex-wrap	:nowrap;
+		margin-top: -10px;  
+	}
+	.lb_flex-item-help 
+	{
+		min-width	:100px;
+		width		:100%;
+		position	:relative;
+		margin-left	:10px;
+	}
+	
+	</STYLE>
+
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=1">
-	<input type="hidden" name="saveformdata" value="1"><input type="hidden" id="web" name="web" value="0">
+	<input type="hidden" name="saveformdata" value="1">
+	<input type="hidden" id="web" name="web" value="0">
 	<div class="wide"><?=$SL['SERVICES.HEADING_APACHE'];?></div>
 	<br>
-	<table class="formtable" style="border:0; width:100%;">
-		<tr>
-			<td>
+	<div class="lb_flex-container">
+		<div class="lb_flex-item-spacer">
+		</div>
+		<div class="lb_flex-item-label">
 			<label for="webport"><?=$SL['SERVICES.LABEL_WEBPORT'];?></label>
+		</div>
+		<div class="lb_flex-item">
 			<input placeholder="<?=$SL['SERVICES.HINT_INNER_WEBPORT'];?>" id="webport" name="webport" type="text" style="min-width:15em" class="textfield" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_PORT'];?>" data-validation-rule="special:port" value="<?=$cfg->Webserver->Port;?>">
-			<script>
-				$(document).ready( function ()
-				{
-					validate_enable('#webport');
-					validate_chk_object(['#webport']);
-				});
-				$('#webport').on("change", function ()
-				{
-					$('#sslport').prop("disabled",true).textinput("refresh");
-					$('#web').val("webport");
-				});
-			</script>
-			</td>
-			<td>&nbsp;
-			</td>
-			<td class="hint">
-			<?=$SL['SERVICES.HINT_WEBPORT'];?>
-			</td>
-		</tr>
-                <tr>
-                        <td></br>
-                        <label for ="sslenabled"><?=$SL['SERVICES.LABEL_SSLENABLED'];?></label>
+				
+		</div>
+		<div class="lb_flex-item-help">
+			<div class="hint"><?=$SL['SERVICES.HINT_WEBPORT'];?></div>
+		</div>
+		<div class="lb_flex-item-spacer">
+		</div>
+	</div>
+	
+	<div class="lb_flex-container">
+		<div class="lb_flex-item-spacer">
+		</div>
+		<div class="lb_flex-item-label">
+			<label for ="sslenabled"><?=$SL['SERVICES.LABEL_SSLENABLED'];?></label>
+		</div>
+		<div class="lb_flex-item">
 			<?php if ($_SERVER['HTTPS']): ?>
-                        <input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="disabled" disabled="disabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+				<input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="disabled" disabled="disabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
 			<?php else: ?>
 			<input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
 			<?php endif; ?>
-			</td>
-                        <td>&nbsp;
-			</td>
-                        <td class="hint">
-                        <?=$SL['SERVICES.HINT_SSL'];?>
-                        </td>
-                </tr>
-		<tr>
-			<td>
+		</div>
+		<div class="lb_flex-item-help">
+			<div class="hint"><?=$SL['SERVICES.HINT_SSL'];?>
+			<?php if ($_SERVER['HTTPS']): ?>
+			<?=$SL['SERVICES.HINT_SSL_ENABLED'];?>
+			<?php endif; ?>
+			</div>
+		</div>
+		<div class="lb_flex-item-spacer">
+		</div>
+	</div>
+	
+	<div class="lb_flex-container">
+		<div class="lb_flex-item-spacer">
+		</div>
+		<div class="lb_flex-item-label">
 			<label for="sslport"><?=$SL['SERVICES.LABEL_SSLPORT'];?></label>
+		</div>
+		<div class="lb_flex-item">
 			<input placeholder="<?=$SL['SERVICES.HINT_INNER_SSLPORT'];?>" id="sslport" name="sslport" type="text" style="min-width:15em" class="textfield" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_SSLPORT'];?>" data-validation-rule="special:port" value="<?=$cfg->Webserver->Sslport;?>">
-			<script>
-				$(document).ready( function ()
-				{
-					validate_enable('#sslport');
-					validate_chk_object(['#sslport']);
-				});
-				$('#sslport').on('change', function ()
-				{
-					$('#webport').prop("disabled",true).textinput("refresh");
-					$('#web').val("sslport");
-				});
-			</script>
-			</td>
-			<td>&nbsp;
-			</td>
-			<td class="hint">
-			<?=$SL['SERVICES.HINT_SSLPORT'];?>
-			</td>
-		</tr>
-		<tr>
-			<td colspan=3>
-				</br>&nbsp;
-				<a mimetype="application/x-x509-ca-cert" href="/system/cacert.pem"><?=$SL['SERVICES.DOWNLOAD_CACERT'];?></a>
-			</td>
-		</tr>
-	</table>
+			
+		</div>
+		<div class="lb_flex-item-help">
+			<div class="hint"><?=$SL['SERVICES.HINT_SSLPORT'];?></div>
+		</div>
+			<div class="lb_flex-item-spacer">
+		</div>
+	</div>
+	
+	<div class="lb_flex-container">
+		<div class="lb_flex-item-spacer">
+		</div>
+		<div class="lb_flex-item-label">
+			<?=$SL['SERVICES.DOWNLOAD_CACERT'];?>
+		</div>
+		<div class="lb_flex-item">
+			<a data-role="button" data-mini="true" mimetype="application/x-x509-ca-cert" href="/system/cacert.pem">cacert.pem</a>
+		</div>
+		<div class="lb_flex-item-help hint">
+			<?=$SL['SERVICES.HINT_DOWNLOAD_CACERT'];?>
+		</div>
+		<div class="lb_flex-item-spacer">
+		</div>
+	</div>
+
+	<div id="changed_hint" class="hint" style="display:none;color:green;text-align:center;">
+		<b><?=$SL['SERVICES.HINT_PORT_CHANGED'];?></b>
+	</div>
+
 	</form>
 	<br>
 	<div style="text-align:center;">
@@ -383,6 +417,59 @@ function form() {
 			-->
 		
 	</div>
+	
+	
+<script>
+
+var Webport;
+var SslPort;
+
+$(document).ready( function () {
+
+	Webport = $('#webport').val();
+	Sslport = $('#sslport').val();	
+
+	validate_enable('#sslport');
+	validate_chk_object(['#sslport']);
+	validate_enable('#webport');
+	validate_chk_object(['#webport']);
+	
+});
+
+$('#webport').on("input", function ()
+{
+	if( $('#webport').val() !== Webport ) {
+		$('#sslport').addClass("ui-state-disabled");
+		$('#web').val("webport");
+		$('#changed_hint').show();
+	} else {
+		console.log("Webport Else");
+		$('#sslport').removeClass("ui-state-disabled");
+		$('#web').val("0");
+		$('#changed_hint').hide();
+	}
+});
+
+$('#sslport').on('input', function ()
+{
+	if( $('#sslport').val() !== Sslport ) {
+		$('#webport').addClass("ui-state-disabled");
+		$('#web').val("sslport");
+		$('#changed_hint').show();
+	} else {
+		console.log("SSLPort Else");
+		$('#webport').removeClass("ui-state-disabled");
+		$('#web').val("0");
+		$('#changed_hint').hide();
+	}
+});
+
+</script>
+	
+	
+	
+	
+	
 	<?php endif;
 
 	LBWeb::lbfooter();
