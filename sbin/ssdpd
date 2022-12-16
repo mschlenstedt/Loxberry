@@ -17,6 +17,7 @@ my $cfg = $jsonparser->open(filename => "$lbsconfigdir/general.json", readonly =
 
  if ( is_enabled($cfg->{"Ssdp"}->{"Disabled"}) ) { 
 	 print "SSDPD is disabled\n";
+	 undef $cfg;
 	 while (1) {
 		 sleep 1;
 	}
