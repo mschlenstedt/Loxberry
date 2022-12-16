@@ -112,7 +112,7 @@
 
 <script>
 	
-	const mqtt_generic = '/admin/system/tools/ajax-generic.php';
+	const mqtt_generic = '/admin/system/ajax/ajax-generic.php';
 	
 	
 	const mqttapp = {
@@ -213,7 +213,7 @@
 			
 			getData() {
 				console.log("Called getData");
-				// fetch('/admin/system/tools/ajax-generic.php?file=$lbsconfigdir/general.json&section=Mqtt&read')
+				// fetch('/admin/system/ajax/ajax-generic.php?file=$lbsconfigdir/general.json&section=Mqtt&read')
 				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&read')
 					.then( response => response.json() )
 					.then( data => { 
