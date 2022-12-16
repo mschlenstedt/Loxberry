@@ -103,7 +103,7 @@ function updatestatus()
 	// Load Status
 	if (status_in_progress == 0) {
 		status_in_progress = 1;
-		$.get('/admin/system/tools/ajax-config-handler.cgi?action=plugininstall-status&value=<TMPL_VAR STATUSFILE>', function (response)
+		$.get('/admin/system/ajax/ajax-config-handler.cgi?action=plugininstall-status&value=<TMPL_VAR STATUSFILE>', function (response)
 		{
 			console.log( "getstatus Success", response );
 			var pstatus = parseInt(response.message);

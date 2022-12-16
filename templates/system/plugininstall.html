@@ -295,7 +295,7 @@
 			$("#recheckstatus").attr("style", "color:green");
 			$("#recheckstatus").text("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
 			$("#btnrecheck").prop( "disabled", true );
-			$.post ( '/admin/system/tools/ajax-config-handler.cgi', {action: 'pluginsupdate-check'})
+			$.post ( '/admin/system/ajax/ajax-config-handler.cgi', {action: 'pluginsupdate-check'})
 			.done(function() {
 				$("#recheckstatus").text("");
 				update_notifications();
@@ -315,7 +315,7 @@
 		function post_value (action, pluginmd5, value)
 		{
 			console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
-			$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+			$.post ( '/admin/system/ajax/ajax-config-handler.cgi', 
 						{ 	action: action,
 							value: value,
 							pluginmd5: pluginmd5

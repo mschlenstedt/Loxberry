@@ -835,7 +835,7 @@ function recreate_generalcfg()
 	{
 		// If the general.json is changed, we require to manually 
 		// trigger the recreation of the new general.cfg
-		exec( LBSHTMLAUTHDIR."/tools/ajax-config-handler.cgi action=recreate-generalcfg");
+		exec( LBSHTMLAUTHDIR."/ajax/ajax-config-handler.cgi action=recreate-generalcfg");
 	}
 
 ?>

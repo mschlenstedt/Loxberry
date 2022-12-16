@@ -182,7 +182,7 @@ if( $action == 'write' ) {
 	
 	if( $configfile == LBSCONFIGDIR."/general.json" ) {
 		LOGINF("This is a general.json update. Calling the legacy general.cfg update");
-		$generalcfg_update = exec(LBHOMEDIR."/webfrontend/htmlauth/system/tools/ajax-config-handler.cgi action=recreate-generalcfg");
+		$generalcfg_update = exec(LBHOMEDIR."/webfrontend/htmlauth/system/ajax/ajax-config-handler.cgi action=recreate-generalcfg");
 		if( $generalcfg_update == false ) {
 			LOGWARN("recreate-generalcfg returned an error. The general.cfg possibly was not updated.");
 		} else {

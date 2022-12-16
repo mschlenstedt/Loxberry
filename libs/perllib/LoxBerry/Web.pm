@@ -15,7 +15,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "3.0.0.2";
+our $VERSION = "3.0.0.3";
 our $DEBUG;
 
 use base 'Exporter';
@@ -709,7 +709,7 @@ sub loglevel_select_html
 	function post_value (action, pluginmd5, value)
 	{
 	console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
-	\$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+	\$.post ( '/admin/system/ajax/ajax-config-handler.cgi', 
 		{ 	action: action,
 			value: value,
 			pluginmd5: pluginmd5

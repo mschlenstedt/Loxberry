@@ -68,7 +68,7 @@
 			{
 				var val = $("#languageselector").val();
 				//console.log("Lang", val);
-				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 					{
 						action: "changelanguage",
 						value: val
@@ -81,7 +81,7 @@
 			{
 				var val = $("#countryselector").val();
 				console.log("Country", val);
-				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 					{
 						action: "changecountry",
 						value: val

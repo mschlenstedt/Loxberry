@@ -4,7 +4,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "3.0.0.2";
+	public static $LBWEBVERSION = "3.0.0.3";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -546,7 +546,7 @@ EOF;
 	function post_value (action, pluginmd5, value)
 	{
 	console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
-	\$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+	\$.post ( '/admin/system/ajax/ajax-config-handler.cgi', 
 		{ 	action: action,
 			value: value,
 			pluginmd5: pluginmd5

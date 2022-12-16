@@ -76,7 +76,7 @@
 	// AJAX Handler for Updates setting
 	$(document).ready(function(){
 		// Request option for Automatic Updates
-		//$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: 'query'} , success: function(result){
+		//$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: 'query'} , success: function(result){
 		//alert(result);
 		// The ajax request returns the name of the radion button, e.g. option-secupdates-7
 		//$('input:radio[id="option-secupdates-30"]').attr("checked", true);
@@ -88,12 +88,12 @@
 		// Radiobutton Timetable
 		$("input[name='option-secupdates']").change(function(){
 			var val = $("input[name='option-secupdates']:checked").val();
-			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: val}});
+			$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: val}});
 		});
 		// Checkbox Auto-Reboot
 		$("input[name='updates-autoreboot']").change(function(){
 			var val = $("input[name='updates-autoreboot']").prop("checked");
-			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: val}});
+			$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: val}});
 		});
 	});
 </script>
@@ -286,7 +286,7 @@ $(document).ready( function () {
 	// Radiobutton Releasetype
 	$("input[name='option-releasetype']").change(function(){
 		var val = $("input[name='option-releasetype']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-reltype", value: val}})
+		$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-reltype", value: val}})
 		.done(function() {
 			clearVersion();
 			checkUpdates();
@@ -296,13 +296,13 @@ $(document).ready( function () {
 	$("input[name='option-installtype']").change(function(){
 		var val = $("input[name='option-installtype']:checked").val();
 		var val2 = $("input[name='option-installtime']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val, installtime: val2}});
+		$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val, installtime: val2}});
 	});
 	// Radiobutton Installtime
 	$("input[name='option-installtime']").change(function(){
 		var val = $("input[name='option-installtime']:checked").val();
 		var val2 = $("input[name='option-installtype']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val, installtype: val2}});
+		$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val, installtype: val2}});
 	});
 	// Re-Check Updates button
 	$("#lbu_button_recheck").click(function(){
@@ -338,7 +338,7 @@ $(document).ready( function () {
 			if( failed_ver.charAt( 0 ).toLowerCase() === 'v' )
 				failed_ver = failed_ver.slice( 1 );
 			var reset_ver = ver_minus_one(failed_ver);		
-			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-resetver", value: reset_ver }})
+			$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-resetver", value: reset_ver }})
 			.done(function() { 
 				$("#current_version").text(reset_ver);
 				clearVersion();
@@ -355,7 +355,7 @@ $(document).ready( function () {
 		$("#update_clearance_block").html('<span style="color:green;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span>');
 		
 		$.getJSON(
-		"/admin/system/tools/ajax-config-handler.cgi", 
+		"/admin/system/ajax/ajax-config-handler.cgi", 
 		{ action: "lbupdate-updateself", value: 1 })
 		.done(function(data){
 			if (data.error) {
@@ -383,7 +383,7 @@ $(document).ready( function () {
 		
 		console.log("#lbu_update_clearance_max_version_next", lbu_update_clearance_max_version_next);
 		$.getJSON(
-		"/admin/system/tools/ajax-config-handler.cgi", 
+		"/admin/system/ajax/ajax-config-handler.cgi", 
 		{ action: "lbupdate-setmaxversion", value: lbu_update_clearance_max_version_next })
 		.done(function(data){
 			if (data.error) {
@@ -424,9 +424,9 @@ $(document).ready( function () {
 
  function checkUpdates()
  {
-	//$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-runcheck"}});
+	//$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-runcheck"}});
 	$.getJSON(
-		"/admin/system/tools/ajax-config-handler.cgi", 
+		"/admin/system/ajax/ajax-config-handler.cgi", 
 		{ action: "lbupdate-runcheck", value: 1 })
 		.done(function(data){
 			//console.log("Hallo");
@@ -550,7 +550,7 @@ $(document).ready( function () {
  function installUpdate()
  {
 	$.getJSON(
-		"/admin/system/tools/ajax-config-handler.cgi", 
+		"/admin/system/ajax/ajax-config-handler.cgi", 
 		{ action: "lbupdate-runinstall", value: 1 })
 		.done(function(data){
 			if (data.error) {

@@ -42,7 +42,7 @@
 		$(document).ready(function(){
 			$("#btnreboot_alert").hide();
 			$("#btnreboot").click(function(){
-				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 				{
 				  action: "reboot",
 				},
@@ -51,7 +51,7 @@
 				});
 			});
 			$("#btnpoweroff").click(function(){
-				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 				{
 				  action: "poweroff",
 				},

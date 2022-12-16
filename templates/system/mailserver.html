@@ -385,7 +385,7 @@ function checkSecurePIN() {
 	$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR SECUREPIN.CHECK_WAIT>");
 	$.ajax( { 
 			type: 'POST',
-			//url: '/admin/system/tools/ajax-config-handler.cgi', 
+			//url: '/admin/system/ajax/ajax-config-handler.cgi', 
 			data: { action: 'getmailcfg', secpin: $('#securepin').val() }
 		} )
 	.fail(function( data ) {
