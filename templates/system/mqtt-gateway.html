@@ -1415,7 +1415,7 @@ $(function() {
 		$("#saveapply").attr("disabled", true);
 		$.ajax( { 
 				type: 'POST',
-				url: '/admin/system/tools/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace', 
+				url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace', 
 				dataType: 'json',
 				contentType: 'application/json; charset=UTF-8',
 				data: JSON.stringify(cfg)
@@ -1438,7 +1438,7 @@ $(function() {
 			console.log("udpinport changed from ", udpinport, " to ", $("#udpinport").val() );
 			$.ajax( { 
 					type: 'POST',
-					url: '/admin/system/tools/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write', 
+					url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write', 
 					dataType: 'json',
 					contentType: 'application/json; charset=UTF-8',
 					data: JSON.stringify( { Udpinport : $("#udpinport").val() } )
