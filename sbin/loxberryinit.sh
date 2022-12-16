@@ -4,22 +4,6 @@ PATH="/sbin:/bin:/usr/sbin:/usr/bin:$LBHOMEDIR/bin:$LBHOMEDIR/sbin"
 ENVIRONMENT=$(cat /etc/environment)
 export $ENVIRONMENT
 
-# ini_parser
-# Usage:
-# ini_parser <filename> "[SECTION]"
-# gives variables $SECTIONsetting
-ini_parser() {
-    INI_FILE=$1
-    INI_SECTION=$2
-    eval `sed -e 's/[[:space:]]*\=[[:space:]]*/=/g' \
-        -e 's/;.*$//' \
-        -e 's/[[:space:]]*$//' \
-        -e 's/^[[:space:]]*//' \
-        -e "s/^\(.*\)=\([^\"']*\)$/$INI_SECTION\1=\"\2\"/" \
-        < $INI_FILE \
-        | sed -n -e "/^\[$INI_SECTION\]/,/^\s*\[/{/^[^;].*\=.*/p;}"`
-}
-
 case "$1" in
   start)
 	# Test if / is writable
@@ -59,7 +43,10 @@ case "$1" in
 	done
 
 	# Let fsck run only every 10th boot (only for clean devices)
-	tune2fs -c 10 /dev/mmcblk0p2 
+	if [ -b /dev/mmcblk0p2 ]
+	then
+		tune2fs -c 10 /dev/mmcblk0p2 
+	fi
 
 	# Create Default config
 	echo "Updating general.cfg etc...."
@@ -85,6 +72,7 @@ case "$1" in
 		echo "Resizing rootfs..."
 		$LBHOMEDIR/sbin/resize_rootfs > $LBHOMEDIR/log/system/rootfsresized.log 2>&1
 		echo "Rebooting to enable rootfs adjustments..."
+		touch /boot/rootfsresized
 		/sbin/reboot > /dev/null 2>&1
 	fi
 
@@ -137,7 +125,7 @@ case "$1" in
 	       	$SYSTEMDAEMONS > /dev/null
 	done
 		
-	echo "Preparing Plugin Daemons..."
+	echo "Running Plugin Daemons..."
 	#run-parts -v --new-session --test $LBHOMEDIR/system/daemons/plugins |while read PLUGINDAEMONS; do
 	for PLUGINDAEMONS in $LBHOMEDIR/system/daemons/plugins/*
 	do
@@ -148,7 +136,8 @@ case "$1" in
 
 	# Check LoxBerry Update cronjobs
 	# Recreate them, if config has enabled them, but do not exist
-	ini_parser "$LBSCONFIG/general.cfg" "UPDATE"
+	UPDATEINSTALLTYPE=$(jq -r '.Update.Installtype' $LBSCONFIG/general.json)
+	UPDATEINTERVAL=$(jq -r '.Update.Interval' $LBSCONFIG/general.json)
 	echo "Checking consistence of LoxBerry Update settings..."
 	echo "Update-Settings: INSTALLTYPE is $UPDATEINSTALLTYPE, INTERVAL is $UPDATEINTERVAL"
 	if [ "$UPDATEINSTALLTYPE" = "notify" ] ||  [ "$UPDATEINSTALLTYPE" = "install" ]; then
