@@ -8,18 +8,14 @@
  use IO::Socket::INET;
  use DateTime;
  use LoxBerry::System;
- use Config::Simple;
+ use LoxBerry::JSON;
  use Data::UUID;
  use Thread;
 
- my $cfg;
- if (-e "$lbsconfigdir/general.cfg") {
-	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
- } elsif (-e "$lbsconfigdir/general.cfg.default") {
-	$cfg = new Config::Simple("$lbsconfigdir/general.cfg.default");
- }
+my $jsonparser = LoxBerry::JSON->new();
+my $cfg = $jsonparser->open(filename => "$lbsconfigdir/general.json", readonly => 0);
 
- if (is_enabled($cfg->param("SSDP.DISABLED"))) { 
+ if ( is_enabled($cfg->{"Ssdp"}->{"Disabled"}) ) { 
 	 print "SSDPD is disabled\n";
 	 while (1) {
 		 sleep 1;
@@ -35,14 +31,15 @@
  my $from = '';
  my $port = 0;
  my $UUID = '';
- if ($cfg->param("SSDP.UUID")) {
-	 $UUID = $cfg->param("SSDP.UUID");
+ if ($cfg->{"Ssdp"}->{"Uuid"}) {
+	 $UUID = $cfg->{"Ssdp"}->{"Uuid"};
  } else {
 	 my $u = Data::UUID->new;
 	 $UUID = $u->create_str();
-	 $cfg->param("SSDP.UUID",$UUID);
-	 $cfg->save();
+	 $cfg->{"Ssdp"}->{"Uuid"} = $UUID;
+	 $jsonparser->write();
  }
+
  my $IP = LoxBerry::System::get_localip();
  if (LoxBerry::System::lbwebserverport() != 80) {$IP .= ":".LoxBerry::System::lbwebserverport();}
  my $LBName = LoxBerry::System::lbfriendlyname() . " (" . LoxBerry::System::lbhostname() . ")";
