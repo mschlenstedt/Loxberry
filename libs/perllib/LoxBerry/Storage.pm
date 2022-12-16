@@ -5,7 +5,7 @@ use strict;
 use LoxBerry::System;
 
 package LoxBerry::Storage;
-our $VERSION = "2.2.0.1";
+our $VERSION = "3.0.0.1";
 our $DEBUG;
 
 #use base 'Exporter';
@@ -384,7 +384,7 @@ sub get_storage_html
 	require LWP::UserAgent;
 	my $ua = LWP::UserAgent->new;
 	 
-	my $server_endpoint = "http://localhost:" . LoxBerry::System::lbwebserverport() . "/admin/system/tools/ajax-storage-handler.cgi";
+	my $server_endpoint = "http://localhost:" . LoxBerry::System::lbwebserverport() . "/admin/system/ajax/ajax-storage-handler.cgi";
 	 
 	# set custom HTTP request header fields
 	my $req = HTTP::Request->new(POST => $server_endpoint);

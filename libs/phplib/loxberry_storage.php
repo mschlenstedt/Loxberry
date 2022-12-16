@@ -8,7 +8,7 @@ function get_storage_html ($args)
 
 	global $lbpdatadir;
 
-	$STORAGEHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/tools/ajax-storage-handler.cgi";	
+	$STORAGEHANDLERURL = "http://localhost:" . lbwebserverport() . "/admin/system/ajax/ajax-storage-handler.cgi";	
 
 	$args['action'] = 'init';
 	

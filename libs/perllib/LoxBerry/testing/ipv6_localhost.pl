@@ -3,7 +3,7 @@ require LWP::UserAgent;
 my $ua = LWP::UserAgent->new;
 my $host;
 
-# my $server_endpoint = "http://localhost:" . LoxBerry::System::lbwebserverport() . "/admin/system/tools/ajax-storage-handler.cgi";
+# my $server_endpoint = "http://localhost:" . LoxBerry::System::lbwebserverport() . "/admin/system/ajax/ajax-storage-handler.cgi";
 $host = "http://localhost:" . LoxBerry::System::lbwebserverport();
 callrequest($host);
 $host = "http://[::1]:" . LoxBerry::System::lbwebserverport();

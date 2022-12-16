@@ -191,7 +191,7 @@ function refresh_storage_$R::formid(currentpath) {
 		\$('select[name=$R::formid-select] > option:first-child').text(optiontext);
 		select.selectmenu('refresh', true);
 		}, 2000); 
-	\$.post ( '/admin/system/tools/ajax-storage-handler.cgi', 
+	\$.post ( '/admin/system/ajax/ajax-storage-handler.cgi', 
 					{ 	action: 'get-storage',
 						readwriteonly: '$R::readwriteonly',
 						localdir: '$R::localdir',
