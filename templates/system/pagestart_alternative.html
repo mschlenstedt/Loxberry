@@ -1,0 +1,468 @@
+<!-- pagestart.html START -->
+	<div data-role="page" id="<TMPL_VAR PAGE>" data-dom-cache="false" class="ui-responsive-panel">
+		<!-- main menu panel -->
+		<div data-role="panel" id="mainmenupanel" data-position="left" data-position-fixed="true" data-theme="c">
+			<ul class="lb-systemmenu ui-listview ui-listview-inset ui-shadow ui-corner-all">
+				<li class="lb-nonhover ui-li-divider ui-bar-inherit ui-first-child"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></li>
+				<li><a href="/admin/system/index.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_HOME></a></li>
+				<li><a href="/admin/system/myloxberry.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_MYLOXBERRY></a></li>
+				<li><a href="/admin/system/admin.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_ADMIN></a></li>
+				<li><a href="/admin/system/miniserver.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_MINISERVER></a></li>
+				<li><a href="/admin/system/network.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_NETWORK></a></li>
+				<li><a href="/admin/system/plugininstall.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></a></li>
+				<li><a href="/admin/system/updates.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_UPDATES></a></li>
+				<li><a href="/admin/system/logmanager.cgi" style="display:block;">Log Manager</a></li>
+				<li><a href="/admin/system/services.php" style="display:block;"><TMPL_VAR HEADER.PANEL_SERVICES></a></li>
+				<li><a href="/admin/system/power.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_REBOOT></a></li>
+				<li><a href="/admin/system/mailserver.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_MAILSERVER></a></li>
+				<!-- <li><a href="/admin/system/wizard.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_SETUPASSISTENT></a></li> -->
+				<li><a href="/admin/system/translate.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_TRANSLATE></a></li>
+				<li><a href="/admin/system/tools/filemanager/filemanager.php" style="display:block;"><TMPL_VAR HEADER.PANEL_FILEMANAGER></a></li>
+				<li><a href="/admin/system/netshares.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_NETSHARES></a></li>
+				<li><a href="/admin/system/usbstorage.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_USBSTORAGE></a></li>
+				<!-- <li><a href="/admin/system/remote.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_REMOTE></a></li> -->
+				<li><a href="/admin/system/mqtt.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_MQTT></a></li>
+				<li><a href="/admin/system/backup.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_BACKUP></a></li>
+				<li><a href="/admin/system/tools/terminal" target="_blank" style="display:block;"><TMPL_VAR HEADER.PANEL_TERMINAL></a></li>
+				<li><a href="/admin/system/donate.cgi" style="display:block;"><TMPL_VAR HEADER.PANEL_DONATE></a></li>
+			</ul>
+		</div>
+		<!-- /main menu panel -->
+		<!-- info panel -->
+		<div data-role="panel" id="infopanel" data-position="right" data-position-fixed="true" data-theme="c">
+			<div data-role="header" class="ui-corner-all">
+			<h2><TMPL_VAR HEADER.TITLE_HELP></h2>
+			</div>
+			<div class="ui-body-a ui-corner-all" style="padding:10px;">
+			<p><a href="<TMPL_VAR HELPLINK>" target="blank"><TMPL_VAR HEADER.TITLE_HELPLINK></a></p>
+			<TMPL_VAR HELPTEXT>
+			</div>
+		</div>
+		<!-- /info panel -->
+		<!-- header -->
+		<div style="text-align:center" data-role="header" data-position="fixed" data-tap-toggle="false">
+			<div class="container">
+				<div class="column" style="text-align: left">
+				<a id="btnhome" href="/admin/system/index.cgi" class="headerbutton pi pi-home"></a>
+				<a id="btnmainmenu" href="#mainmenupanel" class="headerbutton pi pi-bars"></a>
+				</div>
+				<div class="column" style="font-weight: normal">
+				<TMPL_VAR TEMPLATETITLE>
+				</div>
+				<div class="column" style="text-align: right">
+				<div data-href="/admin/system/logmanager.cgi" id="update_alert" style="margin-left:15px; cursor:default; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
+				<a id="btnnotifies" href="/admin/system/tools/showallnotifications.cgi" class="headerbutton pi pi-bell"></a>
+				<a id="btninfo" href="#infopanel" class="headerbutton pi pi-question-circle"></a>
+				<a id="btnpower" href="/admin/system/power.cgi" class="headerbutton pi pi-power-off"></a>
+				<!--<div data-href="/admin/system/power.cgi" id="btnpower_alert" style="position:relative; right:-25px; pointer-events: none; visibility:hidden; width:30px; height:30px; padding:0px, border:0px, z-index:10000, background-repeat: no-repeat; background-image: url('/system/images/reboot_required.svg');"></div>-->
+				</div>
+			</div>
+			<!-- VUE Navbar HTML -->
+			<div id="vuenavbar" :key="componentKey">
+				<div @mouseleave="mouseleave()">
+					<div class="vuenavbarcontainer">
+						<template v-for="(element, index) in menu" :key="index">
+							<a class="vuenavbarelement" :href="element.URL" @mouseover="hover(index, true)" @click="menuclick(index, null, $event)" :class="{ vuenavbarelement_active: element.active }">
+							{{element.Name}}
+							{{get_notification_count( element )}}
+							<transition name="fade">
+							<div style="position:relative;" class="notifyNavBar notifyNavBarBlue" v-show="element?.infoCount>0">{{element.infoCount}}</div>
+							</transition>
+							<transition name="fade">
+							<div style="position:relative;" class="notifyNavBar notifyNavBarRed" v-show="element?.errorCount>0">{{element.errorCount}}</div>
+							</transition>
+
+							</a>
+						</template>
+					</div>
+					<div class="vuenavbarsubcontainer">
+						<template v-for="(element, index) in menu" :key="index">
+							<a v-for="(subelement, subindex) in element.Submenu" :href="subelement.URL" @click="menuclick(index, subindex, $event)" :key="subindex" class="vuenavbarsubelement" :class="{ vuenavbarsubelement_active: subelement.active }" v-show="menu[index]?.show">
+								{{subelement.Name}}
+								{{get_notification_count( subelement )}}
+							<transition name="fade">
+							<div style="position:relative;right:-5px;" class="notifyNavBar notifyNavBarBlue" v-show="subelement?.infoCount>0">{{element.infoCount}}</div>
+							</transition>
+							<transition name="fade">
+							<div style="position:relative;right:-5px;" class="notifyNavBar notifyNavBarRed" v-show="subelement?.errorCount>0">{{element.errorCount}}</div>
+							</transition>
+							</a>
+							
+						</template>
+					</div>
+				</div>
+			</div>
+			<!-- /VUE Navbar HTML -->
+		</div>
+		
+		<!-- HEADER, VUE Navbar CSS and JS -->
+		<style>
+.container {
+    display: flex;
+    align-items: center !important;
+}
+
+.column {
+    flex: 1;
+    /*for demo purposes only
+    //background: #f2f2f2;
+    border: 1px solid #e6e6e6;
+    box-sizing: border-box; */
+}
+
+.headerbutton {
+	background: #5A8E1C ;
+	color: #ffffff !important;
+	font-size: 1rem !important;
+	font-weight: normal !important;
+    	font-style: normal !important;
+    	font-variant: normal !important;
+	border-style: none !important;
+	margin: 0.2rem 0.1rem 0.2rem 0.1rem !important;
+	border-radius: 5px !important;
+	padding: 0.5rem !important;
+	text-transform: none !important;
+	text-decoration: none !important;
+	line-height: 1 !important;
+	-webkit-font-smoothing: antialiased;
+}
+
+.headerbutton_red {
+	background: #ed1d24;
+}
+
+.headerbutton_blue {
+	background: #0A4586;
+}
+
+
+.vuenavbarcontainer {
+	border-top: 1px solid #3d3d3d;
+	display:flex;
+	flex-direction:row;
+	flex-wrap:nowrap;
+	justify-content: center;
+	align-items: center;
+	background-color:#3d3d3d;
+	/* min-height:35px; */
+}
+.vuenavbarelement {
+	flex:1;
+	text-shadow:none;
+	padding: 10px 20px 10px 20px;
+	color: white !important;
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;	
+	text-decoration: none;
+	min-height:18px;
+}
+
+.vuenavbarelement:hover {
+	background-color: #5A8E1C;
+}
+.vuenavbarelement_active {
+	background-color: #6dac20;
+}
+.vuenavbarsubcontainer {
+	display:flex;
+	flex-direction:row;
+	flex-wrap:nowrap;
+	justify-content: flex-start;
+	align-items: stretch;
+	background-color: #3d3d3d;
+}
+.vuenavbarsubelement {
+	flex:1;
+	text-shadow:none;
+	padding: 5px 10px 5px 10px;
+	border:1px solid #cccccc;
+	/*border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;*/
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;	
+	background-color:#e6e6e6;
+	color: black !important;
+	text-decoration: none;
+}
+.vuenavbarsubelement:hover {
+	background-color: #5A8E1C;
+	border:1px solid #5A8E1C;
+	/*background-color: #C1FB7B;*/
+	color: white !important;
+}
+.vuenavbarsubelement_active {
+	background-color: #6dac20;
+	color: white !important;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.8s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
+
+<TMPL_VAR JSONMENU>
+
+<script src="/system/scripts/vue3/vue3.js"></script>
+<script>
+
+var initiallyMenu; 
+
+function createnavbar() {
+	console.log("jsonmenu init");
+	const vuenavbar = {
+		data() {
+			var menu = this.getMenuData();
+			console.log("Menu", menu);
+			componentKey = 0;
+			return { menu, componentKey };
+		},
+		
+		
+		methods: {
+			getMenuData() {
+				var menuelement = document.getElementById('jsonmenu');
+				var menuobj = JSON.parse(menuelement.textContent);
+				console.log("pathname", window.location.pathname+window.location.search);
+				var response = this.elementSetActive( menuobj );
+				menuobj = response[0];
+				// var isActive = response[1];
+				console.log("Final menuobj", menuobj);
+				return menuobj;
+			
+			},
+			
+			elementSetActive( menuobj ) {
+				console.log(menuobj);
+				var vm = this;
+				var currentUrl = window.location.pathname+window.location.search;
+				var elementsActive = 0;
+				// menuobj.forEach(function (element, index) {
+				
+				for( let index in menuobj ) {
+					element = menuobj[index];
+					menuobj[index].show=false;
+					menuobj[index].infoCount = 0;
+					menuobj[index].errorCount = 0;
+					
+					// this.get_notification_count( menuobj[index] );
+					
+					//console.log(element); // logs "3", "5", "7"
+					// console.log("index", index);   // logs "0", "1", "2"
+					// console.log(element.Name);
+					if( element.Submenu ) {
+						console.log("CALLING RECURSION");
+						var response = vm.elementSetActive( element.Submenu );
+						console.log("RETURNED RECURSION");
+						menuobj[index].Submenu = response[0];
+						if( !menuobj[index].active ) {
+							// Only set active if not activated manually
+							menuobj[index].active = response[1];
+						}
+						if( menuobj[index].active == 1 ) { 
+							menuobj[index].show = true;
+						}
+						console.log("response from recursion", response);
+					}
+					else if( element.URL && element.URL == currentUrl ) {
+						if( !menuobj[index].active ) {
+							menuobj[index].active = 1;
+							elementsActive = 1;
+						}
+						console.log(element.Name, "is active");
+					}
+					else {
+						// console.log(element.Name, "is not active");
+						if( !menuobj[index].active ) {
+							menuobj[index].active = 0;
+						}
+					
+					}
+				};
+				console.log("Final active", elementsActive);
+				return [ menuobj, elementsActive ];
+			},
+			
+			hover( index, active ) {
+				for( let i in this.menu ) {
+					this.menu[i].show = false;
+				}
+				this.menu[index].show = true;
+			},
+			
+			mouseleave() {
+				var vm = this;
+				console.log('mouseleave', vm.menu);
+				vm.elementSetActive( vm.menu );
+			},
+			
+			menuclick( mainindex, subindex=null, event=null ) {
+				event.preventDefault();
+				console.log("menuclick", mainindex, subindex, event);
+				if( event != false ) {
+					var pointertype = event.pointerType;
+				}
+				
+				if( subindex == null ) {
+					console.log("subindex is null");
+					if( !this.menu[mainindex].Submenu ) {
+						this.callUrl(mainindex);
+						return;
+					}
+					this.hover( mainindex, true );
+					return;
+					
+				}
+				else {
+					this.callUrl(mainindex, subindex);
+				}
+			},
+			
+			callUrl( mainindex, subindex=null ) {
+				var url;
+				var target;
+				
+				if( subindex != null ) {
+					url = this.menu[mainindex].Submenu[subindex].URL;
+					target = typeof this.menu[mainindex].Submenu[subindex].target !== 'undefined' ? this.menu[mainindex].Submenu[subindex].target : '_self';
+				}
+				else {
+					url = this.menu[mainindex].URL;
+					target = typeof this.menu[mainindex].target !== 'undefined' ? this.menu[mainindex].target : '_self';
+				}
+				
+				console.log("Calling url in target", target, ": ", url);
+				window.open(url, target);
+			},
+			
+			get_notification_count( element ) {
+				// console.log( "get_notification_count", element );
+				if( !element.Notify_Package ) return;
+
+				fetch('/admin/system/ajax/ajax-notification-handler.cgi', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: 'action=get_notification_count&package='+encodeURIComponent(element.Notify_Package)+'&name='+encodeURIComponent(element?.Notify_Name)
+					}
+				)
+				.then( response => response.json())
+				.then( data => { 
+					if( data[0] > 0 ) element.errorCount = data[2];
+					else if( data[1] > 0 ) element.infoCount = data[2];
+					else {
+						element.errorCount = 0;
+						element.infoCount = 0;
+					}
+					
+					console.log("after update", element);
+					
+				});
+			}
+		}
+
+	}
+
+		navbarglobal = Vue.createApp(vuenavbar).mount('#vuenavbar');
+		// Navbar Refresh by navbarglobal.$forceUpdate();
+}
+
+if( document.getElementById('jsonmenu') ) {
+	createnavbar();
+}
+
+// Code for updating the notification bell
+//
+
+const notifyCachetimeSec = 30; // Cache lifetime in seconds
+btnnotifies_get();
+setInterval(function(){ btnnotifies_get(); }, notifyCachetimeSec*1000);
+
+// Collects the notification counts from server or SessionStorage
+function btnnotifies_get(force) {
+
+	let notifyCount;
+	let notifyTimestamp = 0;
+	
+	
+	try {
+		let notifStore = sessionStorage.getItem("notifyCount");
+		notifyCount = JSON.parse(notifStore);
+		// console.log("notifyCount SessionStorage", notifyCount, notifyCount.errorCount);
+		notifyTimestamp = notifyCount.ts;
+	} catch(error) {
+		notifyCount = new Object();
+		// console.log(error);
+	}
+	
+	if( (notifyTimestamp+notifyCachetimeSec*1000) < Date.now() || force == true) {
+		// console.log("Fetch data");
+	
+		fetch('/admin/system/ajax/ajax-notification-handler.cgi', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: 'action=get_notification_count'
+		})
+		.then( response => response.json())
+		.then( data => { 
+			// console.log("Fetch", data);
+			btnnotifies_setStorage(data[0], data[1]);
+		});
+
+	} else {
+		// console.log("Use cache", notifyCount);
+		btnnotifies_setcss( notifyCount );
+	}
+}
+
+// Saves the notification count in SessionStorage
+function btnnotifies_setStorage(errorCount, infoCount) {
+	let notifyCount = new Object();
+	notifyCount.errorCount = errorCount;
+	notifyCount.infoCount = infoCount;
+	notifyCount.ts = Date.now();
+	sessionStorage.setItem("notifyCount", JSON.stringify(notifyCount));
+	btnnotifies_setcss(notifyCount);
+}
+
+
+// Sets and revoves the red/blue css classes
+function btnnotifies_setcss(data) {
+	// console.log("btnnotifies_setcss", data, typeof(data), data.errorCount);
+	
+	if( data.errorCount > 0 ) {
+		
+		$("#btnnotifies").addClass("headerbutton_red").removeClass("headerbutton_blue");
+	} else if(data.infoCount > 0 ) {
+		$("#btnnotifies").removeClass("headerbutton_red").addClass("headerbutton_blue");
+	} else {
+		$("#btnnotifies").removeClass("headerbutton_red").removeClass("headerbutton_blue");
+	}
+
+}
+
+
+</script>
+		
+		
+		<!-- /VUE Navbar -->
+
+
+
+		<!-- /header -->
+		<!-- content -->
+		<div role="main" class="ui-content">
+			<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
+				<!-- text -->
+				
+					<TMPL_VAR NAVBAR_PLAIN>
+				<!-- 
+					<TMPL_VAR NAVBARJS>
+				-->
+				<div id="page_content" class="page_content" style="margin: 4%">
+<!-- pagestart.html END -->
