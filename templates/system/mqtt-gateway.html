@@ -459,7 +459,7 @@ $(function(){
 			}
 			
 			// console.log(logtime(), "RELAYED_TOPICS START Request");
-			$.post( 'ajaxs/ajax-mqtt.php', {
+			$.post( 'ajax/ajax-mqtt.php', {
 				ajax: 'relayed_topics',
 				udpinport: udpinport })
 			.done(function(resp) {
