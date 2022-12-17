@@ -231,6 +231,7 @@ if ($folderinfo{size} eq "6657428" && -e "$lbsconfigdir/is_raspberry.cfg" && $bo
 	}
 	if ($repairerror < 1) {
 		LOGOK "Repairing of /boot seems to be successfull. Good!";
+		execute( command => "sync", log => $log );
 		execute( command => "rm -rf /boot.repair", log => $log );
 	} else {
 		$errors++;
