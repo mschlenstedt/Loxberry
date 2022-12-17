@@ -276,6 +276,7 @@ $log->open;
 
 # Update Kernel and Firmware on Raspberry
 # GIT Firmware Hash:   224cd2fe45becbb44fea386399254a1f84227218
+LOGINF "Upgrading Linux Kernel if we are running on a Raspberry...";
 rpi_update("224cd2fe45becbb44fea386399254a1f84227218");
 
 # Updating /boot/config.txt for Debian Bullseye
