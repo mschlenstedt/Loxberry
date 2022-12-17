@@ -296,6 +296,7 @@ sub rpi_update
 		} else {
 			qx ( cp -r /boot.tmp/* /boot );
 			qx ( rm -rf /boot.tmp );
+			qx ( rm -rf /boot/boot.bkp );
 			my $output = qx ( cp -r /boot.bkp /boot 2>&1 );
 			my $exitcode  = $? >> 8;
 			if ($exitcode eq "0") {
