@@ -217,13 +217,16 @@
 				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&read')
 					.then( response => response.json() )
 					.then( data => { 
+						/* 
 						if( !data?.Brokerhost ) data.Brokerhost = 'localhost';
 						if( !data?.Brokerport ) data.Brokerport = '1883';
 						if( !data?.Brokeruser ) data.Brokeruser = 'loxberry';
 						if( !data?.Brokerpass ) data.Brokerpass = '';
 						if( !data?.Websocketport ) data.Websocketport = '9001';
 						if( !data?.Uselocalbroker ) data.Uselocalbroker = 'true';
+						*/
 						if ( data.Uselocalbroker == 1 ) data.Uselocalbroker = 'true';
+						
 						this.Mqtt = data } );
 			}
 	  },
