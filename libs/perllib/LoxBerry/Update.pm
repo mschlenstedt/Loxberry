@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.3";
+our $VERSION = "3.0.0.4";
 our $DEBUG;
 
 ### Exports ###
@@ -268,26 +268,20 @@ sub apt_fullupgrade
 ####################################################################
 # rpi-update (use "~/sbin/prepare_rpi-update" to get hashes and checksums
 # Parameter:
-# 	dirtreei_md5 checksum: of boot folder
 # 	Git hash or none: update to this firmware version from https://github.com/raspberrypi/rpi-firmware
 ####################################################################
 sub rpi_update
 {
-	my $checksum = shift;
-	if (!$checksum) { 
-		$main::log->ERR("Checksum to check integritiy of /boot is needed.");
-		$main::errors++;
-		return undef;
-	};
 	my $githash = shift;
 	if (!$githash) { $githash = "" };
 
 	if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg") {
 		unlink "/boot/.firmware_revision";
-		if ( -d '/boot.tmp' ) {
-			qx ( rm -rf /boot.tmp ); 
+		if ( -d '/boot.bkp' ) {
+			qx ( rm -rf /boot.bkp ); 
 		}
-		qx { mkdir -p /boot.tmp };
+		qx { mkdir -p /boot.bkp };
+		qx ( cp -r /boot /boot.bkp );
 
 		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 WANT_32BIT=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash 2>&1 };
 		my $exitcode  = $? >> 8;
@@ -296,25 +290,34 @@ sub rpi_update
 			$main::log->DEB($output);
 			$main::errors++;
 			qx ( rm -rf /boot.tmp ); 
+			qx ( rm -rf /boot.bkp ); 
 			return undef;
 		} else {
-			my $out_chksum = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
+			qx ( cp -r /boot.tmp/* /boot );
+			qx ( rm -r /boot.tmp );
+			qx ( cp -r /boot.bko /boot );
 			my $exitcode  = $? >> 8;
 			if ($exitcode eq "0") {
-				qx ( rm -rf /boot.bkp ); 
-				qx ( cp -r /boot /boot.bkp );
-				qx ( cp -r /boot.tmp/* /boot );
-				qx ( rm -r /boot.tmp );
-				$main::log->OK ("Upgrading kernel and firmware successfully.");
-			} else {
-				$main::log->ERR("Error upgrading kernel and firmware - /boot.tmp seems to be broken.");
-				$main::log->DEB("Requested checksum: $checksum");
-				$main::log->DEB("Output of checksum test:");
-				$main::log->DEB($out_chksum);
-				$main::errors++;
-				qx ( rm -rf /boot.tmp ); 
-				return undef;
+				qx ( rm -r /boot.bkp );
 			}
+			$main::log->OK ("Upgrading kernel and firmware successfully.");
+			#my $out_chksum = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
+			#my $exitcode  = $? >> 8;
+			#if ($exitcode eq "0") {
+			#	qx ( rm -rf /boot.bkp ); 
+			#	qx ( cp -r /boot /boot.bkp );
+			#	qx ( cp -r /boot.tmp/* /boot );
+			#	qx ( rm -r /boot.tmp );
+			#	$main::log->OK ("Upgrading kernel and firmware successfully.");
+			#} else {
+				#$main::log->ERR("Error upgrading kernel and firmware - /boot.tmp seems to be broken.");
+				#$main::log->DEB("Requested checksum: $checksum");
+				#$main::log->DEB("Output of checksum test:");
+				#$main::log->DEB($out_chksum);
+				#$main::errors++;
+				#qx ( rm -rf /boot.tmp ); 
+				#return undef;
+			#}
 		}
 	} else {
 		$main::log->OK("This seems not to be a Raspberry. Do not upgrading Kernel and Firmware.");
