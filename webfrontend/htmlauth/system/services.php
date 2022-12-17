@@ -422,7 +422,7 @@ function form() {
 <script>
 
 var Webport;
-var SslPort;
+var Sslport;
 
 $(document).ready( function () {
 
@@ -443,7 +443,6 @@ $('#webport').on("input", function ()
 		$('#web').val("webport");
 		$('#changed_hint').show();
 	} else {
-		console.log("Webport Else");
 		$('#sslport').removeClass("ui-state-disabled");
 		$('#web').val("0");
 		$('#changed_hint').hide();
@@ -457,7 +456,6 @@ $('#sslport').on('input', function ()
 		$('#web').val("sslport");
 		$('#changed_hint').show();
 	} else {
-		console.log("SSLPort Else");
 		$('#webport').removeClass("ui-state-disabled");
 		$('#web').val("0");
 		$('#changed_hint').hide();
