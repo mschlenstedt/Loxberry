@@ -159,7 +159,7 @@ if( $rc != 0 or ! $findmnt ) {
 			$bootfound = 1;
 	}
 }
-if ($folderinfo{size} eq "6657428" && -e "$lbsconfigdir/is_raspberry.cfg" && $bootfoundeq "1") {
+if ($folderinfo{size} eq "6657428" && -e "$lbsconfigdir/is_raspberry.cfg" && $bootfound eq "1") {
 	LOGINF "The filesystem of your boot partition seems to be broken. We will repair it now.";
 	execute( command => "rm -rf /boot.repair", log => $log );
 	execute( command => "mkdir -p /boot.repair", log => $log );
