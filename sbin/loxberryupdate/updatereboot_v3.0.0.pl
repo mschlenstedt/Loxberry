@@ -141,23 +141,27 @@ LOGINF "(Re-)Set current date/time to make sure communication with apt-servers w
 my $output = qx { su loxberry -c "$lbhomedir/sbin/setdatetime.pl" };
 
 #
-# Fix broken /boot filesystem fromn previous Image
+# Fix broken /boot filesystem from previous Image
 #
 LOGINF "Checking Boot Partition...";
 my %folderinfo = LoxBerry::System::diskspaceinfo('/boot');
 my $repairerror;;
 my $findmnt;
 my $bootfound;
-my ($rc, $output) = execute( command => "findmnt /boot -b -J", log => $log );
-eval {
-	$findmnt = decode_json( $output );
-};
-if( $rc != 0 or ! $findmnt ) {
-	LOGERR "Could not read mountlist (findmnt /boot)";
-} else {
-	if ($findmnt->{filesystems}[0]->{"source"} eq "/dev/mmcblk0p1" || $findmnt->{filesystems}[0]->{"fstype"} eq "vfat") {
+if (-e "$lbsconfigdir/is_raspberry.cfg") {
+	my ($rc, $output) = execute( command => "findmnt /boot -b -J", log => $log );
+	eval {
+		$findmnt = decode_json( $output );
+	};
+	if( $rc != 0 or ! $findmnt ) {
+		LOGERR "Could not read mountlist (findmnt /boot)";
+	} else {
+		if ($findmnt->{filesystems}[0]->{"source"} eq "/dev/mmcblk0p1" || $findmnt->{filesystems}[0]->{"fstype"} eq "vfat") {
 			$bootfound = 1;
+		}
 	}
+} else {
+	LOGINF "Seems this is not a Raspberry - fine, everything should be fine.";
 }
 if ($folderinfo{size} eq "6657428" && -e "$lbsconfigdir/is_raspberry.cfg" && $bootfound eq "1") {
 	LOGINF "The filesystem of your boot partition seems to be broken. We will repair it now.";
