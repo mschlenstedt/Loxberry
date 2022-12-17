@@ -6,6 +6,7 @@
 use LoxBerry::System;
 use LoxBerry::Update;
 use LoxBerry::Log;
+use LoxBerry::JSON;
 use CGI;
 
 my $cgi = CGI->new;
@@ -138,6 +139,103 @@ qx { chmod 1777 /tmp };
 
 LOGINF "(Re-)Set current date/time to make sure communication with apt-servers will be ok - seems to be a problem on VMs sometimes...";
 my $output = qx { su loxberry -c "$lbhomedir/sbin/setdatetime.pl" };
+
+#
+# Fix broken /boot filesystem fromn previous Image
+#
+LOGINF "Checking Boot Partition...";
+my %folderinfo = LoxBerry::System::diskspaceinfo('/boot');
+my $repairerror;;
+my $findmnt;
+my $bootfound;
+my ($rc, $output) = execute( command => "findmnt /boot -b -J", log => $log );
+eval {
+	$findmnt = decode_json( $output );
+};
+if( $rc != 0 or ! $findmnt ) {
+	LOGERR "Could not read mountlist (findmnt /boot)";
+} else {
+	if ($findmnt->{filesystems}[0]->{"source"} eq "/dev/mmcblk0p1" || $findmnt->{filesystems}[0]->{"fstype"} eq "vfat") {
+			$bootfound = 1;
+	}
+}
+if ($folderinfo{size} eq "6657428" && -e "$lbsconfigdir/is_raspberry.cfg" && $bootfoundeq "1") {
+	LOGINF "The filesystem of your boot partition seems to be broken. We will repair it now.";
+	execute( command => "rm -rf /boot.repair", log => $log );
+	execute( command => "mkdir -p /boot.repair", log => $log );
+	$exitcode  = $? >> 8;
+	if ( $? >> 8 > 0) {
+		LOGERR "Could not create temporary folder /boot.repair. Repairing of /boot failed.";
+		$repairerror++;
+	}
+	if ($repairerror < 1) {
+		execute( command => "cd /boot && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /boot.repair && tar xSpvf - )", log => $log );
+		if ( $? >> 8 > 0) {
+			LOGERR "Could not backup /boot into /boot.repair. Repairing of /boot failed.";
+			execute( command => "rm -rf /boot.repair", log => $log );
+			$repairerror++;
+		}
+	}
+	if ($repairerror < 1) {
+		my ($rc, $output) = execute( command => "findmnt /boot -b -J", log => $log );
+		eval {
+			$findmnt = decode_json( $output );
+		};
+		if( $rc != 0 or ! $findmnt ) {
+			LOGERR "Could not read mountlist (findmnt /boot)";
+			$repairerror++;
+		}
+	}
+	if ($repairerror < 1 ) {
+		if ($findmnt->{filesystems}[0]->{"source"} ne "/dev/mmcblk0p1" || $findmnt->{filesystems}[0]->{"fstype"} ne "vfat") {
+			LOGERR "Cannot find a valid boot partition at /boot. Repairing of /boot failed.";
+			$repairerror++;
+		} else {
+			execute( command => "umount /boot", log => $log );
+			execute( command => "mkfs.vfat /dev/mmcblk0p1", log => $log );
+			if ( $? >> 8 > 0) {
+				LOGERR "Could not create new Filesystem on /dev/mmcblk0p1. Repairing of /boot failed.";
+				$repairerror++;
+			}
+		}
+	}
+	if ($repairerror < 1 ) {
+		execute( command => "mount /boot", log => $log );
+		if ( $? >> 8 > 0) {
+			LOGERR "Could not remount /boot. Repairing of /boot failed.";
+			$repairerror++;
+		}
+	}
+	if ($repairerror < 1) {
+		my ($rc, $output) = execute( command => "findmnt /boot -b -J", log => $log );
+		eval {
+			$findmnt = decode_json( $output );
+		};
+		if( $rc != 0 or ! $findmnt ) {
+			LOGERR "Could not read mountlist (findmnt /boot)";
+			$repairerror++;
+		}
+	}
+	if ($repairerror < 1 ) {
+		if ($findmnt->{filesystems}[0]->{"source"} ne "/dev/mmcblk0p1" || $findmnt->{filesystems}[0]->{"fstype"} ne "vfat") {
+			LOGERR "Cannot find a valid boot partition at /boot. Repairing of /boot failed.";
+			$repairerror++;
+		}
+	}
+	if ($repairerror < 1) {
+		execute( command => "cd /boot.repair && tar cSp --numeric-owner --warning='no-file-ignored' -f - . | (cd /boot && tar xSpvf - )", log => $log );
+		if ( $? >> 8 > 0) {
+			LOGERR "Could not restore backup from /boot.repair to /boot. Repairing of /boot failed.";
+			$repairerror++;
+		}
+	}
+	if ($repairerror < 1) {
+		LOGOK "Repairing of /boot seems to be successfull. Good!";
+		execute( command => "rm -rf /boot.repair", log => $log );
+	} else {
+		$errors++;
+	}
+}
 
 #
 # Make dist-upgrade from Stretch to Buster
