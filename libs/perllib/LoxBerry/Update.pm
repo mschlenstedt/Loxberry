@@ -281,7 +281,7 @@ sub rpi_update
 			qx ( rm -rf /boot.bkp ); 
 		}
 		qx { mkdir -p /boot.bkp };
-		qx ( cp -r /boot /boot.bkp );
+		qx ( cp -r /boot/* /boot.bkp );
 
 		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 WANT_32BIT=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash 2>&1 };
 		my $exitcode  = $? >> 8;
@@ -294,11 +294,11 @@ sub rpi_update
 			return undef;
 		} else {
 			qx ( cp -r /boot.tmp/* /boot );
-			qx ( rm -r /boot.tmp );
-			qx ( cp -r /boot.bko /boot );
+			qx ( rm -rf /boot.tmp );
+			my $output = qx ( cp -r /boot.bkp /boot 2>&1 );
 			my $exitcode  = $? >> 8;
 			if ($exitcode eq "0") {
-				qx ( rm -r /boot.bkp );
+				qx ( rm -rf /boot.bkp );
 			}
 			$main::log->OK ("Upgrading kernel and firmware successfully.");
 			#my $out_chksum = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
