@@ -389,7 +389,7 @@ function form() {
 			<?=$SL['SERVICES.DOWNLOAD_CACERT'];?>
 		</div>
 		<div class="lb_flex-item">
-			<a data-role="button" data-mini="true" mimetype="application/x-x509-ca-cert" href="/system/cacert.pem">cacert.pem</a>
+			<a data-role="button" data-mini="true" mimetype="application/x-x509-ca-cert" href="/system/cacert.cer">cacert.cer</a>
 		</div>
 		<div class="lb_flex-item-help hint">
 			<?=$SL['SERVICES.HINT_DOWNLOAD_CACERT'];?>
