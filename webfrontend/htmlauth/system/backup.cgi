@@ -97,7 +97,7 @@ sub backup_form
 sub logs_form
 {
 
-	$template->param('loglist_html', LoxBerry::Web::loglist_html( PACKAGE => 'LoxBerry Backup', NAME => 'Clone_SD' ));
+	$template->param('loglist_html', LoxBerry::Web::loglist_html( PACKAGE => 'LoxBerry Backup' ));
 
 }
 
