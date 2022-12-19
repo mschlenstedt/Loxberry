@@ -389,16 +389,16 @@ rpi_update("224cd2fe45becbb44fea386399254a1f84227218");
 #
 LOGINF "Installing newest firmware files from Debian Buillseye...";
 system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/bullseye.zip -o /lib/master.zip");
-system("cd /lib && unzip /lib/master.zip");
+system("cd /lib && yes | unzip -o /lib/master.zip");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error extracting new firmware. This is a problem for PI ZeroW2 only. Wifi may not work on the Zero2 - Error $exitcode";
+		system ("rm -r /lib/master.zip");
 } else {
         LOGOK "Extracting of new firmware files successfully. Installing...";
-	system ("rm -r /lib/master.zip");
-	system("cp -r /lib/firmware-nonfree-bullseye/debian/config/* /lib/firmware");
+		system ("rm -r /lib/master.zip");
+		system("cp -vr /lib/firmware-nonfree-bullseye/debian/config/* /lib/firmware");
 }
-system ("rm -r /lib/master.zip");
 system ("rm -r /lib/firmware-nonfree-bullseye");
 	
 # Updating /boot/config.txt for Debian Bullseye
