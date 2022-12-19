@@ -289,31 +289,6 @@ $(function(){
 	</div>
 	<br>
 	
-	<!-- Donation -->
-	<div data-role='collapsible' id='coll_donate' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2 class='ui-bar ui-bar-a ui-corner-all' id='head_donate'>Donate for test equipment</h2>
-		<TMPL_VAR donate>
-		<div style="margin:auto;text-align:center;">
-		<br>
-		<a href="https://paypal.me/christianfenzl" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" alt="Donate with PayPal.me" /></a>
-			
-		</div>
-		<br>
-		<div style="display:flex;justify-content:center;align-content:space-around;">
-			<div style="padding: 10px 10px 10px 10px;">
-				<fieldset data-role="controlgroup">
-					<input type="checkbox" name="Main.donation_remove" id="Main.donation_remove">
-					<label for="Main.donation_remove"><TMPL_VAR donate_done_remove></label>
-				</fieldset>
-			</div>
-			<div style="padding: 10px 10px 10px 10px;">
-				<button class="ui-btn ui-btn-icon-right ui-corner-all" id="saveapply" data-inline="true">Save</button>
-			</div>
-		</div>
-		<!-- <button id="Main.remove_donate" data-mini="true"><TMPL_VAR donate_done_remove></button> -->
-	</div>
-	<br>
-	
 	<div style="display:flex;align-items:center;justify-content:center;">
 		<!-- Clear broker database -->
 		<button class="ui-btn ui-btn-icon-right" id="purgemosquittodb" data-inline="true" style="display:none">Clear MQTT database</button>
@@ -1206,10 +1181,6 @@ $(function() {
 		if( extpluginsettingsstr ) extpluginsettings = JSON.parse(extpluginsettingsstr);
 		udpinport = $("#udpinportconfig").text();
 		// console.log("Config", cfg, cfg.Main, cfg.subscriptions);
-		
-		// Hide donation
-		if( cfg.Main.donation_remove === true )
-			$("#coll_donate").hide();
 		
 		// View PurgeDB button if Mosquitto is managed by plugin
 		if( is_enabled ($("#Uselocalbroker").text())  )
