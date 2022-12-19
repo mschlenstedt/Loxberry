@@ -377,11 +377,30 @@ if ( -e "/etc/logrotate.conf.dpkg-dist" ) {
 my $output = qx { sed -i --follow-symlinks 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
 $log->open;
 
+#
 # Update Kernel and Firmware on Raspberry
 # GIT Firmware Hash:   224cd2fe45becbb44fea386399254a1f84227218
+#
 LOGINF "Upgrading Linux Kernel if we are running on a Raspberry...";
 rpi_update("224cd2fe45becbb44fea386399254a1f84227218");
 
+#
+# Firmware Files are not updated automatically by apt-get (why? *really* don't no!)
+#
+LOGINF "Installing newest firmware files from Debian Buillseye...";
+system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/bullseye.zip -o /lib/master.zip");
+system("cd /lib && unzip /lib/master.zip");
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error extracting new firmware. This is a problem for PI ZeroW2 only. Wifi may not work on the Zero2 - Error $exitcode";
+} else {
+        LOGOK "Extracting of new firmware files successfully. Installing...";
+	system ("rm -r /lib/master.zip");
+	system("cp -r /lib/firmware-nonfree-bullseye/debian/config/* /lib/firmware");
+}
+system ("rm -r /lib/master.zip");
+system ("rm -r /lib/firmware-nonfree-bullseye");
+	
 # Updating /boot/config.txt for Debian Bullseye
 LOGINF "Updating /boot/config.txt...";
 # Add arm_boost mode for Pi4
