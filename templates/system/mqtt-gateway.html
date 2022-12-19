@@ -21,6 +21,7 @@
 	<div id="mqttconfig"><TMPL_VAR JSONCONFIG></div>
 	<div id="udpinportconfig"><TMPL_VAR UDPINPORT></div>
 	<div id="extpluginsettings"><TMPL_VAR EXTPLUGINSETTINGS></div>
+	<div id="Uselocalbroker"><TMPL_VAR USELOCALBROKER></div>
 </div>
 
 <TMPL_IF FORM_SETTINGS>
@@ -1211,7 +1212,7 @@ $(function() {
 			$("#coll_donate").hide();
 		
 		// View PurgeDB button if Mosquitto is managed by plugin
-		if( is_enabled (cfg.Main.enable_mosquitto)  )
+		if( is_enabled ($("#Uselocalbroker").text())  )
 			$("#purgemosquittodb").show();
 		
 		// Elements in subscriptions

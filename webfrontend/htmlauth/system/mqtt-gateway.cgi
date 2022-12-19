@@ -55,6 +55,7 @@ if( $q->{ajax} ) {
 	my $generaljson = decode_json( $generaljsoncontent );
 	my $udpinport = $generaljson->{Mqtt}->{Udpinport};
 	$template->param('UDPINPORT', $udpinport);
+	$template->param('USELOCALBROKER', is_enabled( $generaljson->{Mqtt}->{Uselocalbroker}) );
 	
 	# Switch between forms
 	
