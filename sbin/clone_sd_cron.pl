@@ -6,7 +6,7 @@ use LoxBerry::JSON;
 use LoxBerry::Log;
 use File::Find::Rule;
 
-my $version = "3.0.1";
+my $version = "3.0.2";
 
 # Create a logging object
 my $log = LoxBerry::Log->new ( 
@@ -49,7 +49,7 @@ if ($cfg->{'Backup'}->{'Keep_archives'}) {
 	LOGINF "Cleaning. Keep in total " . $cfg->{'Backup'}->{'Keep_archives'} . " archives.";
 	my $lbhostname = LoxBerry::System::lbhostname();
 	my @files = File::Find::Rule->file()
-		->name( $lbhostname . '_image_*.img' )
+		->name( $lbhostname . '_image_*.img*' )
 		->nonempty
         	->in( $storagepath );
 
