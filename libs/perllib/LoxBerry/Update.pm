@@ -64,7 +64,7 @@ sub init
 			stderr => 1,
 			append => 1,
 	);
-	$main::logfilename = $main::log->filename;
+	$main::logfilename = $main::log->filename();
 
 	if ($main::cgi->param('updatedir') and -d $main::cgi->param('updatedir')) {
 		$main::updatedir = $main::cgi->param('updatedir');
@@ -252,7 +252,7 @@ sub apt_fullupgrade
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
-	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" full-upgrade >> $main::logfilename 2>&1 };
+	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" full-upgrade >> ${main::logfilename} 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error full-upgrading - Error $exitcode");
