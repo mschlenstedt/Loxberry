@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.5";
+our $VERSION = "3.0.0.6";
 our $DEBUG;
 
 ### Exports ###
@@ -203,7 +203,7 @@ sub apt_upgrade
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
-	my $logfilename = $main::logfilename;
+	my $logfilename = $main::log->filename();
 	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
@@ -227,10 +227,8 @@ sub apt_distupgrade
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
-	my $logfilename = $main::logfilename;
-	my $command = qq { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" dist-upgrade >> $logfilename 2>&1 };
-	$main::log->DEB("Command:\n" . $command);
-	my $output = qx { $command };
+	my $logfilename = $main::log->filename();
+	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" dist-upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error dist-upgrading - Error $exitcode");
@@ -253,10 +251,8 @@ sub apt_fullupgrade
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
-	my $logfilename = $main::logfilename;
-	my $command = qq { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" full-upgrade >> $logfilename 2>&1 };
-	$main::log->DEB("Command:\n" . $command);
-	my $output = qx { $command };
+	my $logfilename = $main::log->filename();
+	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" full-upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error full-upgrading - Error $exitcode");
@@ -266,7 +262,6 @@ sub apt_fullupgrade
 		$main::log->OK("System full-upgrade successfully installed");
 	}
 }
-
 
 
 ####################################################################
@@ -287,7 +282,8 @@ sub rpi_update
 		qx { mkdir -p /boot.bkp };
 		qx ( cp -r /boot/* /boot.bkp );
 
-		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 WANT_32BIT=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash 2>&1 };
+		my $logfilename = $main::log->filename();
+		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 WANT_32BIT=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash >> $logfilename 2>&1 };
 		my $exitcode  = $? >> 8;
 		$main::log->DEB($output);
 		if ($exitcode != 0) {
