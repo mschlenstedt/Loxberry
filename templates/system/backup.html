@@ -158,6 +158,10 @@
 	<br>
 
 	<script>
+		
+		var backupstatus_running = false;
+		
+		
 		// Listen to input or change events to save form
 		// Might want to throttle your callback here
 		//$('#configform :input').on('change', saveForm);
@@ -168,7 +172,7 @@
 			$("#btn_logfile").addClass('ui-disabled');
 			backupstatus();
 			getconfig();
-			interval = window.setInterval(function(){ backupstatus(); }, 5000);
+			interval = window.setInterval(function(){ backupstatus(); }, 3000);
 		});
 
 		// Save the form
@@ -274,6 +278,11 @@
 
 		// Backup status
 		function backupstatus() {
+			
+			if( backupstatus_running == true ) return;
+			
+			backupstatus_running = true;
+			
 			$.ajax({ 
 				url:  './ajax/ajax-backup.cgi',
 				type: 'POST',
@@ -310,6 +319,9 @@
 					$("#btn_logfile").removeClass('ui-disabled');
 					$("#btn_backupnow").removeClass('ui-disabled');
 				}
+			})
+			.always(function() {
+				backupstatus_running = false;
 			});
 		}
 
