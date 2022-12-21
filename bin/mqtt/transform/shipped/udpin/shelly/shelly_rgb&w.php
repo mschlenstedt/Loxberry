@@ -2,7 +2,7 @@
 <?php
 	if( $argv[1] == 'skills' ) {
 		echo "description=Shelly RGB and WHITE control for RGB/W devices\n";
-		echo "link=https://www.loxwiki.eu/x/_QBABQ\n";
+		echo "link=https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/udp_transformer_shelly_rgbw_shipped\n";
 		echo "input=text\n";
 		echo "output=text\n";
 		exit();

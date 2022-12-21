@@ -2,7 +2,7 @@
 <?php
 	if( $argv[1] == 'skills' ) {
 		echo "description=Do very flexible http and https requests\n";
-		echo "link=https://www.loxwiki.eu/x/GoFWBQ\n";
+		echo "link=https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/udp_transformer_http2mqtt\n";
 		echo "input=json\n";
 		echo "output=json\n";
 		exit();
@@ -107,7 +107,6 @@
 	
 	// Thank you and good bye
 	exit;
-
 
 function isJson($string) {
 	$string = trim($string);

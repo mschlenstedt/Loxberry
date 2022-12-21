@@ -2,7 +2,7 @@
 <?php
 	if( $argv[1] == 'skills' ) {
 		echo "description=Developer example of incoming json and outgoing json data\n";
-		echo "link=https://www.loxwiki.eu/x/mQBABQ\n";
+		echo "link=https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/\n";
 		echo "input=json\n";
 		echo "output=json\n";
 		exit();

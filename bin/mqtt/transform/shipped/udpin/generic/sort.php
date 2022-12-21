@@ -2,7 +2,7 @@
 <?php
 	if( $argv[1] == 'skills' ) {
 		echo "description=Sorts incoming data and responds with sorted values and index\n";
-		echo "link=https://www.loxwiki.eu/x/kYRWBQ\n";
+		echo "link=https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/udp_transformer_sort\n";
 		echo "input=json\n";
 		echo "output=json\n";
 		exit();
