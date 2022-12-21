@@ -419,6 +419,12 @@ if ($exitcode) {
 	system("sed -i -e 's:^\\[all\\]:\\[all\\]\\n# Enable DRM VC4 V3D driver\\ndtoverlay=vc4-kms-v3d\\nmax_framebuffers=2:g' /boot/config.txt");
 }
 
+# Update /boot/cmdline.txt for Bullseye - do not use predictable network device names
+sed -i /boot/cmdline.txt -e "s/net.ifnames=0 *//"
+sed -i /boot/cmdline.txt -e "s/rootwait/net.ifnames=0 rootwait/"
+ln -sf /dev/null /etc/systemd/network/99-default.link
+ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link
+
 #
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
 #
