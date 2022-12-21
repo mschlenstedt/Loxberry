@@ -143,8 +143,14 @@ sub form {
 
 	# Language Selector
 	# 
-	my @values = LoxBerry::Web::iso_languages(1, 'values');
-	my %labels = LoxBerry::Web::iso_languages(1, 'labels');
+	my @values;
+	push( @values, "=== Available System Languages ===" );
+	push( @values, LoxBerry::Web::iso_languages(1, 'values') );
+	push( @values, "=== All languages ===" );
+	push( @values, LoxBerry::Web::iso_languages(0, 'values') );
+	my %labels = LoxBerry::Web::iso_languages(0, 'labels');
+	
+	
 	my $langselector_popup = $cgi->popup_menu( 
 			-name => 'languageselector',
 			id => 'languageselector',
