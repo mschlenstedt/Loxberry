@@ -445,6 +445,14 @@ if (-e "$lbsdatadir/pip3_list.dat") {
 }
 
 #
+# Installing new raspi-config
+#
+LOGINF "Installing newest raspi-config (Release from 20221214)...";
+system("rm /usr/bin/raspi-config");
+system("curl -L https://raw.githubusercontent.com/RPi-Distro/raspi-config/0fc1f9552fc99332d57e3b6df20c64576466913a/raspi-config -o /usr/bin/raspi-config");
+system("chmod +x /usr/bin/raspi-config");
+
+#
 # Installing new dependencies
 #
 LOGINF "Installing new packages for LoxBerry 3.0...";
