@@ -420,6 +420,7 @@ if ($exitcode) {
 }
 
 # Update /boot/cmdline.txt for Bullseye - do not use predictable network device names
+LOGINF "Updating /boot/cmdline.txt...";
 system("sed -i /boot/cmdline.txt -e 's/net.ifnames=0 *//'");
 system("sed -i /boot/cmdline.txt -e 's/rootwait/net.ifnames=0 rootwait/'");
 system("rm -f /etc/systemd/network/99-default.link");
