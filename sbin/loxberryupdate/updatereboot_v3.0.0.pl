@@ -419,6 +419,15 @@ if ($exitcode) {
 	system("sed -i -e 's:^\\[all\\]:\\[all\\]\\n# Enable DRM VC4 V3D driver\\ndtoverlay=vc4-kms-v3d\\nmax_framebuffers=2:g' /boot/config.txt");
 }
 
+# Update /boot/cmdline.txt for Bullseye - do not use predictable network device names
+LOGINF "Updating /boot/cmdline.txt...";
+system("sed -i /boot/cmdline.txt -e 's/net.ifnames=0 *//'");
+system("sed -i /boot/cmdline.txt -e 's/rootwait/net.ifnames=0 rootwait/'");
+system("rm -f /etc/systemd/network/99-default.link");
+system("rm -f /etc/systemd/network/73-usb-net-by-mac.link");
+system("ln -sf /dev/null /etc/systemd/network/99-default.link");
+system("ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link");
+
 #
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
 #
@@ -435,6 +444,14 @@ if (-e "$lbsdatadir/pip3_list.dat") {
 	system("mv $lbsdatadir/pip3_list.dat $lbsdatadir/pip3_list.dat.bkp");
 	$log->open;
 }
+
+#
+# Installing new raspi-config
+#
+LOGINF "Installing newest raspi-config (Release from 20221214)...";
+system("rm /usr/bin/raspi-config");
+system("curl -L https://raw.githubusercontent.com/RPi-Distro/raspi-config/0fc1f9552fc99332d57e3b6df20c64576466913a/raspi-config -o /usr/bin/raspi-config");
+system("chmod +x /usr/bin/raspi-config");
 
 #
 # Installing new dependencies
