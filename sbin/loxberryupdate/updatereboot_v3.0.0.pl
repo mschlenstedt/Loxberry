@@ -420,10 +420,12 @@ if ($exitcode) {
 }
 
 # Update /boot/cmdline.txt for Bullseye - do not use predictable network device names
-sed -i /boot/cmdline.txt -e "s/net.ifnames=0 *//"
-sed -i /boot/cmdline.txt -e "s/rootwait/net.ifnames=0 rootwait/"
-ln -sf /dev/null /etc/systemd/network/99-default.link
-ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link
+system("sed -i /boot/cmdline.txt -e 's/net.ifnames=0 *//'");
+system("sed -i /boot/cmdline.txt -e 's/rootwait/net.ifnames=0 rootwait/'");
+system("rm -f /etc/systemd/network/99-default.link");
+system("rm -f /etc/systemd/network/73-usb-net-by-mac.link");
+system("ln -sf /dev/null /etc/systemd/network/99-default.link");
+system("ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link");
 
 #
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
