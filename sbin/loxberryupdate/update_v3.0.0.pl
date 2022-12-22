@@ -89,6 +89,18 @@ if ($exitcode != 0) {
 }
 
 #
+# Disable unattended-upgrades for next reboot
+#
+LOGINF "Disabling Unattended Upgrades Service for next reboot...";
+my $output = qx { systemctl disable unattended-upgrades };
+my $exitcode = $? >> 8;
+if ($exitcode != 0) {
+	LOGWARN "Could not disable Unattended Upgrades - Error $exitcode";
+} else {
+	LOGOK "Unattended Upgrades  Service disabled successfully.";
+}
+
+#
 # Backing up Python packages, because Rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade...";

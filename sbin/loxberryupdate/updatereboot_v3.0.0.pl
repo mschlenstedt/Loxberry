@@ -73,6 +73,15 @@ if ($starts >=10) {
 	} else {
 		LOGOK "Apache2 enabled successfully.";
 	}
+	LOGINF "Re-Enabling Unattended Upgrades...";
+	my $output = qx { systemctl enable unattended-upgrades };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error occurred while re-enabling Unattended Upgrades - Error $exitcode";
+		$errors++;
+	} else {
+		LOGOK "Unattended Upgrades enabled successfully.";
+	}
 	exit 1;
 } else {
 	open(F,">/boot/rebootupdatescript");
@@ -478,6 +487,15 @@ if ($errors) {
 		$errors++;
 	} else {
 		LOGOK "Apache2 enabled successfully.";
+	}
+	LOGINF "Re-Enabling Unattended Upgrades...";
+	my $output = qx { systemctl enable unattended-upgrades };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error occurred while re-enabling Unattended Upgrades - Error $exitcode";
+		$errors++;
+	} else {
+		LOGOK "Unattended Upgrades enabled successfully.";
 	}
 }
 
