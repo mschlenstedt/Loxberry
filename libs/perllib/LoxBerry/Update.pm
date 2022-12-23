@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.7";
+our $VERSION = "3.0.0.8";
 our $DEBUG;
 
 ### Exports ###
@@ -176,6 +176,13 @@ sub apt_install
 	my @packages = @_;
 	my $packagelist = join(' ', @packages);
 
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::errors++;
+		return undef;
+	}
+
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
@@ -200,6 +207,13 @@ sub apt_install
 ####################################################################
 sub apt_upgrade
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::errors++;
+		return undef;
+	}
+
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
@@ -224,6 +238,13 @@ sub apt_upgrade
 ####################################################################
 sub apt_distupgrade
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::errors++;
+		return undef;
+	}
+
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
@@ -247,6 +268,13 @@ sub apt_distupgrade
 ####################################################################
 sub apt_fullupgrade
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::errors++;
+		return undef;
+	}
+
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
@@ -313,6 +341,13 @@ sub rpi_update
 ####################################################################
 sub apt_update
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::errors++;
+		return undef;
+	}
+
 	my $command = shift;
 	if (!$command) { $command = "update" };
 
@@ -403,6 +438,13 @@ sub apt_update
 ####################################################################
 sub apt_remove
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::errors++;
+		return undef;
+	}
+
 	my @packages = @_;
 	my $packagelist = join(' ', @packages);
 
@@ -419,6 +461,36 @@ sub apt_remove
 	} else {
 		$main::log->OK("Packages $packagelist successfully removed");
 	}
+}
+
+##################################################################################
+# INTERNAL function test_dpkg_apt
+# Returns 0 if no apt or dpkg process is running or 1 if apt/dpkg runs for more than
+# 10 minutes...
+##################################################################################
+
+sub test_dpkg_apt
+{
+	
+	my $i;
+	my $output;
+	my $rc = 1;
+	for ($i=0; $i<600; $i++) {
+		$output = qx ( pgrep -d "," "apt|dpkg" );
+		if ($? >> 8 ne 0) { # no process is running
+			$output = qx ( fuser /var/lib/dpkg/lock );
+			if ($? >> 8 ne 0) { # dpkg db is not in use by any process
+				$rc = 0;
+				$main::log->OK("No process is locking apt or dpkg. Fine."); 
+				last;
+			}
+		}
+		chomp ($output);
+		$main::log->INF("Try $i: Another install process (PID $output) is running or using dpkg database - waiting..."); 
+		sleep(1);
+	}
+	return $rc
+
 }
 
 #####################################################
