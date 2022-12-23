@@ -481,7 +481,7 @@ sub test_dpkg_apt
 			$output = qx ( fuser /var/lib/dpkg/lock );
 			if ($? >> 8 ne 0) { # dpkg db is not in use by any process
 				$rc = 0;
-				$main::log->OK("No process is locking apt or dpkg. Fine."); 
+				$main::log->INF("No process is locking apt or dpkg. Fine."); 
 				last;
 			}
 		}
