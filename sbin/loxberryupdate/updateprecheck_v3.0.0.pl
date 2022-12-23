@@ -22,6 +22,13 @@ if ($folderinfo{size} < 200000) {
 	$errors++;
 }
 
+my $output = qx { pgrep -f /usr/sbin/watchdog };
+my $exitcode = $? >> 8;
+if ($exitcode eq 0) {
+	LOGWARN "Watchdog is running - it must be disabled before upgrading. Disable it in LoxBerryi Services -> Watchdog and then reboot. After reboot, try Update again.";
+	$errors++;
+}
+
 #
 # Check if everything is ok with apt - we definetely need it working after reboot
 #
