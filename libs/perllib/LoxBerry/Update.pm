@@ -178,7 +178,7 @@ sub apt_install
 
 	my $chk = test_dpkg_apt();
 	if ($chk ne 0) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
 	}
@@ -209,7 +209,7 @@ sub apt_upgrade
 {
 	my $chk = test_dpkg_apt();
 	if ($chk ne 0) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
 	}
@@ -240,7 +240,7 @@ sub apt_distupgrade
 {
 	my $chk = test_dpkg_apt();
 	if ($chk ne 0) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
 	}
@@ -270,7 +270,7 @@ sub apt_fullupgrade
 {
 	my $chk = test_dpkg_apt();
 	if ($chk ne 0) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
 	}
@@ -343,7 +343,7 @@ sub apt_update
 {
 	my $chk = test_dpkg_apt();
 	if ($chk ne 0) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
 	}
@@ -440,7 +440,7 @@ sub apt_remove
 {
 	my $chk = test_dpkg_apt();
 	if ($chk ne 0) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $exitcode");
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
 	}
