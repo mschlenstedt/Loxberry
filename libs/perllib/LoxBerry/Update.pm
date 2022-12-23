@@ -188,6 +188,7 @@ sub apt_install
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
 	my $logfilename = $main::log->filename();
+	$main::log->INF("Installing apt packages $packagelist...");
 	my $output = qx { $export $aptbin --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $packagelist >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
@@ -218,6 +219,7 @@ sub apt_upgrade
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 	my $logfilename = $main::log->filename();
+	$main::log->INF("Starting apt upgrade...");
 	my $output = qx { $export $aptbin --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
@@ -249,6 +251,7 @@ sub apt_distupgrade
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 	my $logfilename = $main::log->filename();
+	$main::log->INF("Starting apt dist-upgrade...");
 	my $output = qx { $export $aptbin --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" dist-upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
@@ -279,6 +282,7 @@ sub apt_fullupgrade
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 	my $logfilename = $main::log->filename();
+	$main::log->INF("Starting apt full-upgrade...");
 	my $output = qx { $export $aptbin --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" full-upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
@@ -359,6 +363,7 @@ sub apt_update
 	# Repair and update
 	qx { chmod 1777 /tmp };
 	if ( $command eq "update") {
+		$main::log->INF("Starting dpkg --configure...");
 		my $output = qx { $export /usr/bin/dpkg --configure -a --force-confdef >> $logfilename 2>&1 };
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
@@ -368,7 +373,6 @@ sub apt_update
 			$main::log->OK("Configuring dpkg successfully.");
 		}
 		$main::log->INF("Clean up apt-databases and update");
-		my $logfilename = $main::log->filename();
 		$output = qx { $export $aptbin -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install >> $logfilename 2>&1 };
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0) {
@@ -453,6 +457,7 @@ sub apt_remove
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
 	my $logfilename = $main::log->filename();
+	$main::log->INF("Removing apt packages $packagelist...");
 	my $output = qx { $export $aptbin -y --purge remove $packagelist >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
