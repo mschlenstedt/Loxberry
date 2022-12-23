@@ -18,14 +18,18 @@ my $errors;
 use LoxBerry::System;
 my %folderinfo = LoxBerry::System::diskspaceinfo('/boot');
 if ($folderinfo{size} < 200000) {
-	LOGCRIT "Your boot partition is too small for LoxBerry 3.0 (needed: 256 MB). Current size is: " . LoxBerry::System::bytes_humanreadable($folderinfo{size}, "K") . " Create a backup with the new LoxBerry Backup Widget. The backups will include a bigger boot partition, which is sufficient for LB3.0";
+	my $message = "Your boot partition is too small for LoxBerry 3.0 (needed: 256 MB). Current size is: " . LoxBerry::System::bytes_humanreadable($folderinfo{size}, "K") . " Create a backup with the new LoxBerry Backup Widget. The backups will include a bigger boot partition, which is sufficient for LB3.0";
+	LOGCRIT $message;
+	notify('updates', 'update', $message, 'Error');
 	$errors++;
 }
 
 my $output = qx { pgrep -f /usr/sbin/watchdog };
 my $exitcode = $? >> 8;
 if ($exitcode eq 0) {
-	LOGWARN "Watchdog is running - it must be disabled before upgrading. Disable it in LoxBerryi Services -> Watchdog and then reboot. After reboot, try Update again.";
+	my $message = "Watchdog is running - it must be disabled before upgrading. Disable it in LoxBerry Services -> Watchdog and then reboot. After reboot, try LoxBerry Update again.";
+	LOGCRIT $message;
+	notify('updates', 'update', $message, 'Error');
 	$errors++;
 }
 
