@@ -115,6 +115,20 @@ if (-e "/etc/init.d/rpimonitor") {
 }
 
 #
+# Disable watchdog for next reboot
+#
+if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
+	LOGINF "Disabling Watchdog Service for next reboot...";
+	my $output = qx { systemctl disable watchdog };
+	my $exitcode = $? >> 8;
+	if ($exitcode != 0) {
+		LOGWARN "Could not disable Watchdog - Error $exitcode";
+	} else {
+		LOGOK "Watchdog Service disabled successfully.";
+	}
+}
+
+#
 # Backing up Python packages, because Rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade...";

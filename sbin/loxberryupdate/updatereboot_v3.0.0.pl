@@ -61,7 +61,7 @@ if (!-e "/boot/rebootupdatescript") {
 }
 LOGINF "This script already started $starts times.";
 if ($starts >=10) {
-	LOGCRIT "We tried 10 times without success. This is the last try.";
+	LOGCRIT "We tried 10 times without success. This is the last try we will do.";
 	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv300 };
 	qx { rm /boot/rebootupdatescript };
 	LOGINF "Re-Enabling Apache2...";
@@ -90,6 +90,19 @@ if ($starts >=10) {
 			LOGERR "Error occurred while re-enabling RPI Monitor. Ignoring this error... - Error $exitcode";
 		} else {
 			LOGOK "RPI Monitor enabled successfully.";
+		}
+	}
+	my $generaljson = $lbsconfigdir . "/general.json";
+	my $gcfgobj = LoxBerry::JSON->new();
+	my $gcfg = $gcfgobj->open(filename => $generaljson);
+	if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
+		LOGINF "Re-Enabling Watchdog Service...";
+		my $output = qx { systemctl enable watchdog };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGWARN "Error occurred while re-enabling Watchdog. Ignoring this error...  - Error $exitcode";
+		} else {
+			LOGOK "Watchdog Service enabled successfully.";
 		}
 	}
 	exit 1;
@@ -520,6 +533,19 @@ if ($errors) {
 			LOGERR "Error occurred while re-enabling RPI Monitor. Ignoring this error... - Error $exitcode";
 		} else {
 			LOGOK "RPI Monitor enabled successfully.";
+		}
+	}
+	my $generaljson = $lbsconfigdir . "/general.json";
+	my $gcfgobj = LoxBerry::JSON->new();
+	my $gcfg = $gcfgobj->open(filename => $generaljson);
+	if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
+		LOGINF "Re-Enabling Watchdog Service...";
+		my $output = qx { systemctl enable watchdog };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGWARN "Error occurred while re-enabling Watchdog. Ignoring this error...  - Error $exitcode";
+		} else {
+			LOGOK "Watchdog Service enabled successfully.";
 		}
 	}
 }
