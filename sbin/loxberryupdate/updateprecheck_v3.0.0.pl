@@ -22,6 +22,12 @@ if ($folderinfo{size} < 200000) {
 	$errors++;
 }
 
+#
+# Check if everything is ok with apt - we definetely need it working after reboot
+#
+LOGINF "Cleaning up and updating apt databases...";
+apt_update();
+
 # Exit with 1 if errors occurrred and stop installation
 if ($errors) {
 	exit (1);
