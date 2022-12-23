@@ -97,7 +97,21 @@ my $exitcode = $? >> 8;
 if ($exitcode != 0) {
 	LOGWARN "Could not disable Unattended Upgrades - Error $exitcode";
 } else {
-	LOGOK "Unattended Upgrades  Service disabled successfully.";
+	LOGOK "Unattended Upgrades Service disabled successfully.";
+}
+
+#
+# Disable rpimonitor for next reboot - if installed (plugin)
+#
+if (-e "/etc/init.d/rpimonitor") {
+	LOGINF "Disabling RPI Monitor Service for next reboot...";
+	my $output = qx { systemctl disable rpimonitor };
+	my $exitcode = $? >> 8;
+	if ($exitcode != 0) {
+		LOGWARN "Could not disable RPI Monitor - Error $exitcode";
+	} else {
+		LOGOK "RPI Monitor Service disabled successfully.";
+	}
 }
 
 #

@@ -82,6 +82,16 @@ if ($starts >=10) {
 	} else {
 		LOGOK "Unattended Upgrades enabled successfully.";
 	}
+	if (-e "/etc/init.d/rpimonitor") {
+		LOGINF "Re-Enabling RPI Monitor Service...";
+		my $output = qx { systemctl enable rpimonitor };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGERR "Error occurred while re-enabling RPI Monitor. Ignoring this error... - Error $exitcode";
+		} else {
+			LOGOK "RPI Monitor enabled successfully.";
+		}
+	}
 	exit 1;
 } else {
 	open(F,">/boot/rebootupdatescript");
@@ -120,6 +130,11 @@ my $output = qx { systemctl stop apache2.service };
 sleep (2);
 my $output = qx { fuser -k $port/tcp };
 sleep (2);
+
+LOGINF "Stopping unattended-upgrades...";
+my $output = qx { systemctl stop unattended-upgrades };
+LOGINF "Stopping rpimonitor...";
+my $output = qx { systemctl stop rpimonitor };
 
 #
 # Start simple Webserver
@@ -496,6 +511,16 @@ if ($errors) {
 		$errors++;
 	} else {
 		LOGOK "Unattended Upgrades enabled successfully.";
+	}
+	if (-e "/etc/init.d/rpimonitor") {
+		LOGINF "Re-Enabling RPI Monitor Service...";
+		my $output = qx { systemctl enable rpimonitor };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGERR "Error occurred while re-enabling RPI Monitor. Ignoring this error... - Error $exitcode";
+		} else {
+			LOGOK "RPI Monitor enabled successfully.";
+		}
 	}
 }
 
