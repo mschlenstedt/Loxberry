@@ -40,7 +40,7 @@ my $helptemplate = "help_services.html";
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.1";
+my $version = "3.0.0.0";
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
@@ -100,7 +100,7 @@ $maintemplate->param('JSONCONFIG', $cfgfilecontent);
 # Save config
 if ($R::saveformdata) {
 
-	system ("sudo systemctl stop watchdog.service");
+	system ("sudo systemctl stop watchdog.service > /dev/null 2>&1");
 
 	if ($R::Watchdog_Enable) {
 		$cfgjson->{Watchdog}->{Enable} = "1";
@@ -110,7 +110,7 @@ if ($R::saveformdata) {
 
 	if ($R::Watchdog_Logging) {
 		$cfgjson->{Watchdog}->{Logging} = "1";
-		system ("ln -s $lbssbindir/watchdog_cron.pl $lbhomedir/system/cron/cron.01min/01-watchdoglogging");
+		system ("ln -s $lbssbindir/watchdog_cron.pl $lbhomedir/system/cron/cron.01min/01-watchdoglogging > /dev/null 2>&1");
 	} else {
 		$cfgjson->{Watchdog}->{Logging} = "0";
 		unlink ("$lbslogdir/watchdogdata.log");
@@ -150,11 +150,13 @@ if ($R::saveformdata) {
 
 	if ($R::Watchdog_Enable) {
 		$cfgjson->{Watchdog}->{Enable} = "1";
-		system ("sudo systemctl enable watchdog.service");
-		system ("sudo systemctl start watchdog.service");
+		system ("sudo systemctl enable watchdog.service > /dev/null 2>&1");
+		system ("sudo systemctl start watchdog.service > /dev/null 2>&1");
 	} else {
 		$cfgjson->{Watchdog}->{Enable} = "0";
-		system ("sudo systemctl disable watchdog.service");
+		system ("sudo systemctl disable watchdog.service > /dev/null 2>&1");
+		reboot_required("Reboot is required to deactivate the Watchdog Service.");
+
 	}
 
 	$maintemplate->param('SAVE', 1);
