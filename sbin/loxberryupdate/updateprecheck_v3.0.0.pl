@@ -13,6 +13,12 @@ init();
 my $errors;
 
 #
+# Check if everything is ok with apt - we definetely need it working after reboot
+#
+LOGINF "Cleaning up and updating apt databases...";
+apt_update();
+
+#
 # Stop the update if the boot partition is too small
 #
 use LoxBerry::System;
@@ -32,12 +38,6 @@ if ($exitcode eq 0) {
 	notify('updates', 'update', $message, 'Error');
 	$errors++;
 }
-
-#
-# Check if everything is ok with apt - we definetely need it working after reboot
-#
-LOGINF "Cleaning up and updating apt databases...";
-apt_update();
 
 # Exit with 1 if errors occurrred and stop installation
 if ($errors) {
