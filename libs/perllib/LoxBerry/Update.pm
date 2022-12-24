@@ -173,14 +173,11 @@ sub copy_to_loxberry
 ####################################################################
 sub apt_install
 {
-	$main::log->INF("Check if another process is running apt, apt-get or dpkg - I will wait up to 5 minutes - please be patient!"); 
-	my $chk = LoxBerry::System::lock(lockfile => 'apt_loxberry_update_lib', wait => 300);
-	if ($chk) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 5 minutes now. Giving up - Process $chk");
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
-	} else {
-		$main::log->INF("No process is locking apt or dpkg. Fine."); 
 	}
 
 	my @packages = @_;
@@ -248,14 +245,11 @@ sub apt_upgrade
 ####################################################################
 sub apt_distupgrade
 {
-	$main::log->INF("Check if another process is running apt, apt-get or dpkg - I will wait up to 5 minutes - please be patient!"); 
-	my $chk = LoxBerry::System::lock(lockfile => 'apt_loxberry_update_lib', wait => 300);
-	if ($chk) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 5 minutes now. Giving up - Process $chk");
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
-	} else {
-		$main::log->INF("No process is locking apt or dpkg. Fine."); 
 	}
 
 	my $bins = LoxBerry::System::get_binaries();
@@ -283,14 +277,11 @@ sub apt_distupgrade
 ####################################################################
 sub apt_fullupgrade
 {
-	$main::log->INF("Check if another process is running apt, apt-get or dpkg - I will wait up to 5 minutes - please be patient!"); 
-	my $chk = LoxBerry::System::lock(lockfile => 'apt_loxberry_update_lib', wait => 300);
-	if ($chk) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 5 minutes now. Giving up - Process $chk");
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
-	} else {
-		$main::log->INF("No process is locking apt or dpkg. Fine."); 
 	}
 
 	my $bins = LoxBerry::System::get_binaries();
@@ -317,14 +308,11 @@ sub apt_fullupgrade
 ####################################################################
 sub rpi_update
 {
-	$main::log->INF("Check if another process is running apt, apt-get or dpkg - I will wait up to 5 minutes - please be patient!"); 
-	my $chk = LoxBerry::System::lock(lockfile => 'apt_loxberry_update_lib', wait => 300);
-	if ($chk) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 5 minutes now. Giving up - Process $chk");
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
-	} else {
-		$main::log->INF("No process is locking apt or dpkg. Fine."); 
 	}
 
 	my $githash = shift;
@@ -372,14 +360,11 @@ sub rpi_update
 ####################################################################
 sub apt_update
 {
-	$main::log->INF("Check if another process is running apt, apt-get or dpkg - I will wait up to 5 minutes - please be patient!"); 
-	my $chk = LoxBerry::System::lock(lockfile => 'apt_loxberry_update_lib', wait => 300);
-	if ($chk) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 5 minutes now. Giving up - Process $chk");
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
-	} else {
-		$main::log->INF("No process is locking apt or dpkg. Fine."); 
 	}
 
 	my $command = shift;
@@ -473,14 +458,11 @@ sub apt_update
 ####################################################################
 sub apt_remove
 {
-	$main::log->INF("Check if another process is running apt, apt-get or dpkg - I will wait up to 5 minutes - please be patient!"); 
-	my $chk = LoxBerry::System::lock(lockfile => 'apt_loxberry_update_lib', wait => 300);
-	if ($chk) {
-		$main::log->CRIT("Apt or dpkg is locked for more than 5 minutes now. Giving up - Process $chk");
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
 		$main::errors++;
 		return undef;
-	} else {
-		$main::log->INF("No process is locking apt or dpkg. Fine."); 
 	}
 
 	my @packages = @_;
@@ -501,6 +483,39 @@ sub apt_remove
 		$main::log->OK("Packages $packagelist successfully removed");
 	}
 	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
+}
+
+##################################################################################
+# INTERNAL function test_dpkg_apt
+# Returns 0 if no apt or dpkg process is running or 1 if apt/dpkg runs for more than
+# 10 minutes...
+##################################################################################
+
+sub test_dpkg_apt
+{
+
+	my $i;
+	my $output;
+	my $rc = 1;
+
+	for ($i=0; $i<600; $i++) {
+		my ($rc_apt) = LoxBerry::System::execute( 'pgrep "apt-get|apt|dpkg"' );
+		my ($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
+		my ($rc_dpkg_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock' );
+		my ($rc_dpkg_frontend_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock-frontend' );
+		my ($rc_apt_archives_lock) = LoxBerry::System::execute( 'fuser /var/cache/apt/archives/lock' );
+
+		if( $rc_apt eq "0" or $rc_unattended_upgrade eq "0" or $rc_dpkg_lock eq "0" or $rc_dpkg_frontend_lock eq "0" or $rc_apt_archives_lock eq "0" ) {
+			$main::log->INF("Try $i: Another install process (using apt, apt-get or dpkg) is running or using the dpkg database - waiting...");
+			sleep(1);
+		} else {
+			$rc = 0;
+			$main::log->INF("No process is locking apt or dpkg. Fine.");
+			last;
+		}
+	}
+	return $rc
+
 }
 
 #####################################################
