@@ -106,6 +106,10 @@ elseif ( $ajax == 'resetAfterSend' ) {
 		exit();
 	}
 	
+	if( is_array($cfg->{'resetAfterSend'}) ) {
+		$cfg->{'resetAfterSend'} = new stdClass();
+	}
+	
 	if( !is_enabled( $_POST['resetAfterSend'] ) ) {
 		unset($cfg->{'resetAfterSend'}->{$topic});
 	} else {

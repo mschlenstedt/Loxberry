@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+# Script version V3.0.0.2
+
 use utf8;
 
 use warnings;
@@ -1098,7 +1101,7 @@ sub read_config
 		# User defined settings
 		LOGINF "Processing Reset After Send";
 		undef %resetAfterSend;
-		if (exists $cfg->{resetAfterSend}) {
+		if (exists $cfg->{resetAfterSend} and ref($cfg->{resetAfterSend}) eq "HASH" ) {
 			LOGINF "Adding user defined Reset After Send";
 			foreach my $topic ( keys %{$cfg->{resetAfterSend}}) {
 				if (LoxBerry::System::is_enabled($cfg->{resetAfterSend}->{$topic}) ) {
