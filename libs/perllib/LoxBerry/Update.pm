@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.9";
+our $VERSION = "3.0.0.10";
 our $DEBUG;
 
 ### Exports ###
@@ -325,6 +325,7 @@ sub rpi_update
 		}
 		qx { mkdir -p /boot.bkp };
 		qx ( cp -r /boot/* /boot.bkp );
+		qx ( rm -rf /boot.bkp/boot.bkp ); 
 
 		my $logfilename = $main::log->filename();
 		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 WANT_32BIT=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash >> $logfilename 2>&1 };
