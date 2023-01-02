@@ -13,7 +13,7 @@ init();
 
 
 LOGINF "This is only for testing";
-# $errors+=1;
+$errors++;
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
