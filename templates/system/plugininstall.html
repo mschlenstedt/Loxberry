@@ -1,5 +1,27 @@
 <!-- ** START template/system/plugininstall.html 23.12.2018 00:05:29  ************************************************************************************ -->
 <TMPL_IF FORM>
+	<style>
+	.small {
+		font-size:70%;
+	}
+	
+	.releaseverslabel, a.releaseverslabel:link, a.releaseverslabel:hover, a.releaseverslabel:visited, a.releaseverslabel:active {
+		color:#6dac20 !important;;
+	}
+	
+	.prereleaseverslabel, a.prereleaseverslabel, a.prereleaseverslabel:link, a prereleaseverslabel:hover, a prereleaseverslabel:visited, a.prereleaseverslabel:active {
+		color:#9a6700 !important;;
+	}
+	
+	.nonewreleaselabel, a.nonewreleaselabel:link, a.nonewreleaselabel:hover, a.nonewreleaselabel:visited {
+		color:#0040ff !important;;
+	}
+	
+	.noautoupdatelabel, a.noautoupdatelabel:link, a.noautoupdatelabel:hover, a.noautoupdatelabel:visited {
+		color:#888888 !important;;
+	}
+	</style>
+	
 	<div style="display:flex; width:100%; text-align:left;" id="installationheader">
 		<div style="margin:auto; padding:10px;text-align:left;">
 			<img width="80" height="80" src="/system/images/icons/main_plugins_install.svg" alt="">
@@ -69,7 +91,7 @@
 					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_64.png); }
 				}
 			</style>
-			<tr>
+			<tr class="pluginrow" data-md5="<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">
 				<td rowspan="2">
 					<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
 				</td>
@@ -80,8 +102,13 @@
 							<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
 						</div>
 						<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b>
-							<div style="color:green; font-size:70%" class="releaseverslabel" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-							<div style="color:#e53734; font-size:70%" class="prereleaseverslabel" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
+							<TMPL_IF PLUGINDB_AUTOUPDATE>
+							<div class="releaseverslabel small" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
+							<div class="prereleaseverslabel small" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
+							<div class="nonewreleaselabel small" style="display:none" data-version="" id="labelnonewrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Up-To-Date</div>
+							<TMPL_ELSE>
+							<div class="noautoupdatelabel small" data-version="" id="labelnoautoupdate-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">No AutoUpdate</div>
+							</TMPL_IF>
 						</div>
 					</div>
 				</td>
@@ -221,22 +248,29 @@
 		
 		
 		function update_notifications() {
-			console.log ("Started update_notify");
+			// console.log ("Started update_notify");
 			
 			$(".btnrelease").hide();
 			$(".btnprerelease").hide();
 			$(".releaseverslabel").hide();
 			$(".prereleaseverslabel").hide();
-			
-			
+			$(".nonewreleaselabel").hide();
 			
 			$.post( "/admin/system/ajax/ajax-notification-handler.cgi", { action: 'get_notifications', package: 'plugininstall' } )
 			.done(function(notifications) {
-				console.log("get_notifications executed successfully");
-				for (i = 0; i < notifications.length; i++) {
-					var not = notifications[i];
-					// console.log("Data unfiltered", not.CONTENTRAW, not.SEVERITY);
-					if (not.SEVERITY != 7) continue;
+				// console.log("get_notifications executed successfully", notifications);
+				
+				// Get all plugins from plugin list
+				$(".pluginrow").each( function( index, plugin ) {
+					var md5 = $(plugin).data("md5");
+					// Search in notifications for plugin md5 with severity 7
+					var not = notifications.find( item => item.pluginmd5 === md5 && item.SEVERITY == 7);
+					// console.log(md5, not);
+					
+					if (not === undefined) {
+						$("#labelnonewrel-"+md5).show();
+						return true;
+					}
 					
 					// strip v from version tag
 					var version = not.version;
@@ -247,16 +281,17 @@
 					if( curver.charAt( 0 ).toLowerCase() === 'v' )
 						curver = curver.slice( 1 );
 					
-					
-					
 					var newer = versionCompare(version, curver);
 					console.log("Notification:", version, "Current version:", curver);
 					console.log("Is newer?", newer);
-					if (newer != true) continue;
+					if (newer != true) {
+						$("#labelnonewrel-"+md5).show();
+						return true;
+					}
 					if (not.type == "prerelease") {
 						//$("#prever-" + not.pluginmd5).text(version);
 						var vertext = "New Pre-Release " + version;
-						if(not.releaseinfo != null) vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:#ef6558;font-weight: normal;" >' + vertext + '</a>';
+						if(not.releaseinfo != null) vertext = '<a class="prereleaseverslabel" href="' + not.releaseinfo + '" target="_blank">' + vertext + '</a>';
 						$("#labelpre-" + not.pluginmd5).html(vertext);
 						$("#labelpre-" + not.pluginmd5).show();
 						//$("#prebtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
@@ -265,14 +300,15 @@
 					}
 					if (not.type == "release") {
 						var vertext = "New Release " + version;
-						if(not.releaseinfo != null) vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:green;font-weight: normal;">' + vertext + '</a>';
+						if(not.releaseinfo != null) vertext = '<a class="releaseverslabel" href="' + not.releaseinfo + '" target="_blank">' + vertext + '</a>';
 						$("#labelrel-" + not.pluginmd5).html(vertext);
 						$("#labelrel-" + not.pluginmd5).show();
 						//$("#relbtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
 						$("#relbtn-" + not.pluginmd5).attr("data-updatelink", not.installarchive);
 						$("#relbtn-" + not.pluginmd5).show();
 					}
-				}
+					$("#labelnonewrel-"+md5).hide();
+				});
 			});
 		
 		}
@@ -306,9 +342,6 @@
 				$("#recheckstatus").text("<TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>");
 				$("#btnrecheck").prop( "disabled", false );
 			});
-		
-		
-		
 		});
 		
 		
