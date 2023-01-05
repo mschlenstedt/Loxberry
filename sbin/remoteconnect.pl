@@ -84,8 +84,9 @@ if ($command eq "start") {
 		LOGOK "Connected to Cloudflare. Remote URL is: $remoteurl";
 		# Register connection
 		my $loxberryid = LoxBerry::System::read_file("$lbsconfigdir/loxberryid.cfg");
-		my $remoteurl = url_encode($remoteurl);
-		my ($exitcode) = execute { command => "curl -connect-timeout 5 --max-time 5 --retry 2 -s -L https://supportvpn.loxberry.de/register.cgi?remoteurl=$remoteurl&id=$loxberryid&do=register", log => $log };
+		require URI::Escape;
+		my $remoteurl = uri_escape($remoteurl);
+		my ($exitcode) = execute { command => "curl -k --connect-timeout 5 --max-time 5 --retry 2 -s -L \"https://www.loxberry.de/supportvpn/register.cgi?remoteurl=$remoteurl&id=$loxberryid&do=register\"" };
 		# Set Autoconnect if enabled
 		if ( is_enabled($cfg->{'Remote'}->{'Autoconnect'}) ) {
 			LOGINF "Activate Autoconnect after a reboot.";
@@ -119,7 +120,7 @@ if ($command eq "stop") {
 	LOGINF "Disconnect from Cloudflare Service...";
 	&killcfd;
 	my $loxberryid = LoxBerry::System::read_file("$lbsconfigdir/loxberryid.cfg");
-	my ($exitcode) = execute { command => "curl -connect-timeout 5 --max-time 5 --retry 2 -s -L https://supportvpn.loxberry.de/register.cgi?id=$loxberryid&do=unregister", log => $log };
+	my ($exitcode) = execute { command => "curl -k --connect-timeout 5 --max-time 5 --retry 2 -s -L \"https://www.loxberry.de/supportvpn/register.cgi?id=$loxberryid&do=unregister\"" };
 	exit (0);
 
 }
@@ -132,7 +133,7 @@ if ($command eq "check") {
 	my $remoteurl = &remoteurl();
 
 	if ($remoteurl) {
-		my ($exitcode,$output) = execute { command => "curl -connect-timeout 5 --max-time 5 --retry 2 -s -I $remoteurl" };
+		my ($exitcode,$output) = execute { command => "curl --connect-timeout 5 --max-time 5 --retry 2 -s -I $remoteurl" };
 		if ($exitcode eq 0 && $output =~ /HTTP.*200/) {
 			print "$remoteurl";
 			exit (0);
