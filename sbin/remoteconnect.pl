@@ -58,7 +58,7 @@ if ($command eq "start") {
 			LOGERR "Cannot determine your architecture: Seems not to be Raspberry, x64 or x86. Cannot continue.";
 			exit (1);
 		}
-		my ($exitcode) = execute { command => "curl -connect-timeout 10 --max-time 300 --retry 2 -s -L https://github.com/cloudflare/cloudflared/releases/latest/download/$cloudflaredbin -o $lbsbindir/cloudflared", log => $log };
+		my ($exitcode) = execute { command => "curl --connect-timeout 10 --max-time 300 --retry 2 -s -L https://github.com/cloudflare/cloudflared/releases/latest/download/$cloudflaredbin -o $lbsbindir/cloudflared", log => $log };
 		if ($exitcode != 0) {
 			LOGERR "Something went wrong while downloading $cloudflaredbin. Exitcode: $exitcode";
 			exit (1);
