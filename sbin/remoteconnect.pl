@@ -13,8 +13,8 @@ my $log;
 my $command = $ARGV[0];
 $command = "none" if !$ARGV[0];
 
-if ($command ne "start" && $command ne "stop" && $command ne "check") {
-	print "Command missing. Use $0 [start|stop|check]\n";
+if ($command ne "start" && $command ne "stop" && $command ne "status") {
+	print "Command missing. Use $0 [start|stop|status]\n";
 	exit (1);
 }
 
@@ -69,6 +69,7 @@ if ($command eq "start") {
 	# Connect
 	LOGINF "Connect to Cloudflare Service...";
 	&killcfd;
+	unlink('/tmp/remoteconnect.log');
 	my ($exitcode) = execute { command => "$lbsbindir/cloudflared --url http://" . LoxBerry::System::get_localip() . ":" . LoxBerry::System::lbwebserverport() . " > /tmp/remoteconnect.log 2>&1 &" };
 	if ($exitcode != 0) {
 		LOGERR "Could not start Cloudflare Daemon. Exitcode: $exitcode";
@@ -121,6 +122,7 @@ if ($command eq "stop") {
 	&killcfd;
 	my $loxberryid = LoxBerry::System::read_file("$lbsconfigdir/loxberryid.cfg");
 	my ($exitcode) = execute { command => "curl -k --connect-timeout 5 --max-time 5 --retry 2 -s -L \"https://www.loxberry.de/supportvpn/register.cgi?id=$loxberryid&do=unregister\"" };
+	unlink('/tmp/remoteconnect.log');
 	exit (0);
 
 }
@@ -128,16 +130,17 @@ if ($command eq "stop") {
 #
 # Check connection
 #
-if ($command eq "check") {
+if ($command eq "status") {
 
 	my $remoteurl = &remoteurl();
+	my ($exitcode,$output) = execute { command => "pgrep cloudflared" };
 
-	if ($remoteurl) {
-		my ($exitcode,$output) = execute { command => "curl --connect-timeout 5 --max-time 5 --retry 2 -s -I $remoteurl" };
-		if ($exitcode eq 0 && $output =~ /HTTP.*200/) {
+	if ($remoteurl && $exitcode eq 0) {
+		# my ($exitcode,$output) = execute { command => "curl --connect-timeout 5 --max-time 5 --retry 2 -s -I $remoteurl" };
+		# if ($exitcode eq 0 && $output =~ /HTTP.*200/) {
 			print "$remoteurl";
 			exit (0);
-		} 
+		# } 
 	}
 	print "ERROR";
 	exit(1);
@@ -151,6 +154,9 @@ exit;
 #
 sub remoteurl {
 	my $remoteurl;
+	if (!-e "/tmp/remoteconnect.log") {
+		return;
+	}
 	for(my $i = 1;$i <= 120;$i++) {
 		$remoteurl = `cat /tmp/remoteconnect.log | awk '/.*https.*trycloudflare\\.com.*/ {print \$4}'`;
 		chomp ($remoteurl);
