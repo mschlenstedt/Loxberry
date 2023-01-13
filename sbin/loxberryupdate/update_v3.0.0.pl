@@ -210,6 +210,7 @@ if ($exitcode) {
 #copy_to_loxberry("/system/sudoers/lbdefaults", "root");
 
 LOGINF "Update mosquitto service...";
+copy_to_loxberry('/system/systemd/mosquitto.service');
 if ( -e "/etc/systemd/system/mosquitto.service" ) {
 	unlink ("/etc/systemd/system/mosquitto.service");
 }
