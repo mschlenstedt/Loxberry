@@ -7,22 +7,13 @@ use LoxBerry::Log;
 use Data::Dumper;
 use LoxBerry::Storage;
 
-my $version = "3.0.1";
+my $version = "3.0.0.2";
 
 my $dest_bootpart_size = 256; # /boot partition in MB
 
 my $notify = "";
 my $error = undef;
 my $rc = undef;
-
-# Lock
-my $status = LoxBerry::System::lock(lockfile => 'backup');
-if ($status) {
-    print "Could not lock, prevented by $status\n";
-    $error++;
-    $notify .= " Could not lock, prevented by $status";
-    exit(1);
-} 
 
 # Create a logging object
 my $log = LoxBerry::Log->new ( 
@@ -39,7 +30,17 @@ my $destpath = $ARGV[0];
 my $desttype = $ARGV[1];
 my $compress = $ARGV[2];
 
-LOGINF "Parameters: $destpath   $desttype   $compress";
+LOGINF "Parameters: $destpath $desttype $compress";
+
+# Lock
+my $status = LoxBerry::System::lock(lockfile => 'backup');
+if ($status) {
+    LOGINF "Could not lock, prevented by $status";
+    $error++;
+    $notify .= " Could not lock, prevented by $status";
+    exit(1);
+} 
+
 
 my $curruser = getpwuid($<);
 LOGINF "Executing user is $curruser";
@@ -113,8 +114,8 @@ my $src_size;
 my $src1_used;
 my $src_ptuuid;
 
-print "================================================================================\n";
-print "Your boot device (SOURCE of clone):\n";
+print "\n================================================================================\n\n";
+LOGINF "Your boot device (SOURCE of clone):";
 foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
 	next if (!$blockdevice->{isboot});
 	$src_size = $blockdevice->{size};
@@ -122,7 +123,7 @@ foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
 	print "/dev/$blockdevice->{name} Type $blockdevice->{type} Size " . LoxBerry::System::bytes_humanreadable($blockdevice->{size}) ."\n";
 	foreach my $partition ( @{$blockdevice->{children}} ) {
 		# next if ( $partition->{type} ne "part" );
-		print "   -> Partition $partition->{name} Size " . LoxBerry::System::bytes_humanreadable($partition->{size}) ." " . uc($partition->{fstype}) . "\n";
+		LOGINF "   -> Partition $partition->{name} Size " . LoxBerry::System::bytes_humanreadable($partition->{size}) ." " . uc($partition->{fstype});
 		if ($partition->{fstype} ne 'vfat') {
 			$src1_used = $partition->{fsused};
 		}
@@ -130,34 +131,41 @@ foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
 }
 print "\n";
 if ( !$destpath || !$desttype || ($desttype ne "device" && $desttype ne "path") ) {
-	print "You can clone directly onto a new device (like a SDCard) or into an imagefile saved into an external path (usb or netshare), which then has do be flashed onto a SDcard.\n\n";
-	print "Your possible clone \033[1mdevices\033[0m (DESTINATION of clone, type device):\n";
+	LOGINF "You can clone directly onto a new device (like a SDCard) or into an imagefile saved into an external path (usb or netshare), which then has do be flashed onto a SDcard.";
+	print "\n";
+	LOGINF "Your possible clone \033[1mdevices\033[0m (DESTINATION of clone, type device):";
 	foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
 		next if ($blockdevice->{isboot});
-		print "/dev/$blockdevice->{name} Type $blockdevice->{type} Size " . LoxBerry::System::bytes_humanreadable($blockdevice->{size}) ."\n";
+		LOGINF "/dev/$blockdevice->{name} Type $blockdevice->{type} Size " . LoxBerry::System::bytes_humanreadable($blockdevice->{size});
 		foreach my $partition ( @{$blockdevice->{children}} ) {
 			# next if ( $partition->{type} ne "part" );
-			print "   -> Partition $partition->{name} Size " . LoxBerry::System::bytes_humanreadable($partition->{size}) ." " . uc($partition->{fstype}) . "\n";;
+			LOGINF "   -> Partition $partition->{name} Size " . LoxBerry::System::bytes_humanreadable($partition->{size}) ." " . uc($partition->{fstype});
 		}
 	}
-	print "\nIf you use type device as destination, the process will \033[1mCOMPLETELY DELETE\033[0m your selected destination device. Double check before starting!\n";
+	print "\n";
+	LOGINF "If you use type device as destination, the process will \033[1mCOMPLETELY DELETE\033[0m your selected destination device. Double check before starting!";
 	print "\n";
 
-	print "Your possible clone \033[1mpathes\033[0m (DESTINATION of clone, type path):\n";
+	LOGINF "Your possible clone \033[1mpathes\033[0m (DESTINATION of clone, type path):";
 
 	my @storages = LoxBerry::Storage::get_storage(1);
 	foreach my $path ( @storages ) {
 		next if $path->{TYPE} eq "local";
-		print "$path->{NAME}: $path->{PATH} Type $path->{GROUP}/$path->{TYPE} Available space " . LoxBerry::System::bytes_humanreadable($path->{AVAILABLE}*1024) . "\n";
+		LOGINF "$path->{NAME}: $path->{PATH} Type $path->{GROUP}/$path->{TYPE} Available space " . LoxBerry::System::bytes_humanreadable($path->{AVAILABLE}*1024);
 	}
-	print "\nIf you use type path as destination, the storage path must have enough free disc space (\033[1mtwice\033[0m as the size of your SDcard!).\n";
-	print "\nTo start the clone, use the DESTINATION device/path as first parameter and the device type [device|path] as second parameter.\n";
-	print "\nIf you would like to compress your image (when using path), use compression method [7z|gzip] as third parameter.\n\n";
-	print "Examples: $0 /dev/sdc device\n";
-	print "          $0 /opt/loxberry/system/storage/usb/31816dac-01 path 7z\n";
+	print "\n";
+	LOGINF "If you use type path as destination, the storage path must have enough free disc space (\033[1mtwice\033[0m as the size of your SDcard!).";
+	print "\n";
+	LOGINF "To start the clone, use the DESTINATION device/path as first parameter and the device type [device|path] as second parameter.";
+	print "\n";
+	LOGINF "If you would like to compress your image (when using path), use compression method [7z|gzip|zip|xz] as third parameter.";
+	print "\n";
+	LOGINF "Examples: $0 /dev/sdc device";
+	LOGINF "          $0 /opt/loxberry/system/storage/usb/31816dac-01 path 7z";
 	if ( ! -e "$lbsconfigdir/is_raspberry.cfg" ) {
-		print "\n \033[1mDANGER!!\033[0m This not the original LoxBerry image (not on a Raspberry).\n";
-		print "          No idea what happens on a Non-Raspberry installation.\n";
+		print "\n";
+		LOGINF " \033[1mDANGER!!\033[0m This not the original LoxBerry image (not on a Raspberry).";
+		LOGINF "          No idea what happens on a Non-Raspberry installation.";
 	}
 	exit(0);
 }
@@ -196,7 +204,7 @@ if ( $desttype eq "device" ) {
 	# For easiness, set $destdevice to the destination sevice of the lsblk array
 	$destdevice = $lsblk->{blockdevices}[$destdevice_index];
 
-	print "Destination device is $destdevice->{name} ($destdevice->{path}) size " . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . "\n";
+	LOGINF "Destination device is $destdevice->{name} ($destdevice->{path}) size " . LoxBerry::System::bytes_humanreadable($destdevice->{size});
 
 	# Size check (used size - swap + $dest_bootpart_size plus 10%)
 	my $swapsize = 0;
@@ -233,8 +241,8 @@ if ( $desttype eq "path" ) {
 			last;
 		}
 	}
-	execute ( command => "mkdir -p $destpath");
-	execute ( command => "chown loxberry:loxberry $destpath");
+	execute ( command => "sudo -u loxberry mkdir -p $destpath");
+	#execute ( command => "chown loxberry:loxberry $destpath");
 	$destpath_found = 0 if ( !-e $destpath);
 
 	if (!$destpath_found) {
@@ -247,7 +255,7 @@ if ( $desttype eq "path" ) {
 	# For easiness, set $destdevice to the destination sevice of the lsblk array
 	$destdevice = $storages[$destdevice_index];
 
-	print "Destination device is $destdevice->{NAME} ($destdevice->{PATH}) available space " . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . "\n";
+	LOGINF "Destination device is $destdevice->{NAME} ($destdevice->{PATH}) available space " . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024);
 
 	# Size check (used size - swap + $dest_bootpart_size plus 10%)
 	my $swapsize = 0;
@@ -261,6 +269,8 @@ if ( $desttype eq "path" ) {
 	}
 }
 
+print "\n================================================================================\n\n";
+
 LOGINF "Waiting 15s in case you changed your mind...";
 print "\n\033[1mPress Ctrl-C now, if you have changed your mind\033[0m (I will wait 15 sec and then continue automatically).\n";
 sleep(15);
@@ -268,7 +278,9 @@ sleep(15);
 ##################################
 # Start
 ##################################
-print "Too late - let the game begin!\n\n";
+print "\n";
+LOGINF "Too late - let the game begin!";
+print "\n";
 
 # Stop autofs
 # Unmount mounted destination partitions
@@ -359,14 +371,14 @@ if ($desttype eq "path") {
 	$targetsize_mb = int( ($required_space / 1024 / 1024) + 0.5 ); # rounded
 	$targetsize_b = int( ($required_space / 512) + 0.5 ) * 512; # rounded minus 1 byte and multiple of 512
 	#execute ( command => "dd if=/dev/zero of=$destpath bs=1 count=0 seek=" . $targetsize_mb . "MB", log => $log );
-	($rc) = execute ( command => "dd if=/dev/zero of=$destpath bs=1 count=0 seek=" . $targetsize_b, log => $log );
+	($rc) = execute ( command => "sudo -u loxberry dd if=/dev/zero of=$destpath bs=1 count=0 seek=" . $targetsize_b, log => $log );
 	if ($rc ne "0") {
 		LOGCRIT "Could not create Imagefile.";
     		$error++;
 		$notify .= " Could not create Imagefile.";
 		exit (1);
 	}
-	execute ( command => "chown loxberry:loxberry $destpath");
+	#execute ( command => "chown loxberry:loxberry $destpath");
 }
 
 LOGINF "Creating partiton table";
@@ -622,7 +634,7 @@ if ($desttype eq "path") {
 }
 
 # Compress image
-if ( $desttype eq "path" && ($compress ne "none" || $compress ne "") ) { 
+if ( $desttype eq "path" && $compress ne "none" && $compress ne "" ) { 
 	my %imagedisk = LoxBerry::System::diskspaceinfo($destpath);
 	my $required_compress = -s $destpath * 0.4; # Asuming 60% compression
 	if ($imagedisk{available}*1024 < $required_compress) {
@@ -632,13 +644,13 @@ if ( $desttype eq "path" && ($compress ne "none" || $compress ne "") ) {
 	} else {
 		LOGINF "Compressing your image. This may take a long time... Please be patient.";
 		if ($compress eq "7z") {
-			($rc) = execute( command => "7z a " . $destpath . ".7z $destpath -mx3", log => $log );
+			($rc) = execute( command => "sudo -u loxberry 7z a " . $destpath . ".7z $destpath -mx3", log => $log );
 		} elsif ($compress eq "gzip") {
-			($rc) = execute( command => "gzip -3 " . $destpath, log => $log );
+			($rc) = execute( command => "sudo -u loxberry gzip -3 " . $destpath, log => $log );
 		} elsif ($compress eq "xz") {
-			($rc) = execute( command => "xz -z -3 " . $destpath, log => $log );
+			($rc) = execute( command => "sudo -u loxberry xz -z -3 " . $destpath, log => $log );
 		} elsif ($compress eq "zip") {
-			($rc) = execute( command => "zip -j -m -3 " . $destpath . ".zip " . $destpath, log => $log );
+			($rc) = execute( command => "sudo -u loxberry zip -j -m -3 " . $destpath . ".zip " . $destpath, log => $log );
 		} else {
 			LOGWARN "Unknown compression method. Compression may fail.";
 			$rc = 1;

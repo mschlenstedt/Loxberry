@@ -55,6 +55,7 @@ if( $q->{ajax} ) {
 	my $generaljson = decode_json( $generaljsoncontent );
 	my $udpinport = $generaljson->{Mqtt}->{Udpinport};
 	$template->param('UDPINPORT', $udpinport);
+	$template->param('USELOCALBROKER', is_enabled( $generaljson->{Mqtt}->{Uselocalbroker}) );
 	
 	# Switch between forms
 	
@@ -203,11 +204,6 @@ sub conversions_form
 sub topics_form
 {
 	
-	# Donate
-	my $donate = "Thanks to all that have already donated for my special Test-Miniserver, making things much more easier than testing on the \"production\" house! Also, I'm buying (not <i>really</i> needed) hardware devices (e.g. Shelly's and other equipment) to test it with LoxBerry and plugins. As I'm spending my time, hopefully you support my expenses for my test environment. About a donation of about 5 or 10 Euros, or whatever amount it is worth for you, I will be very happy!";
-	my $donate_done_remove = "Done! Remove this!";
-	$template->param("donate", $donate);
-	$template->param("donate_done_remove", $donate_done_remove);
 	
 }
 

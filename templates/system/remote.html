@@ -1,345 +1,258 @@
-<!-- ********************* FORM 1 ******************** -->
+<TMPL_IF FORM_SETTINGS>
 
-<TMPL_IF FORM1>
+	<!-- Form SETTINGS -->
 
-<P><TMPL_VAR REMOTE.HINT_INTRODUCTION></P>
+	<style>
+		.flex-container {
+			display: flex;
+	 		align-items: center;
+			flex-wrap: wrap;
+			gap: 20px;
+		}
+	</style>
 
-<BR>
+	<form id="configform">
 
-<STYLE>
-	.lb_flex-item 
-	{	
-		min-width	:450px;
-		width		:450px;
-		max-width	:450px;
-		flex-wrap	:nowrap;
-		margin-top: -10px;  
-	}
-	.lb_flex-item-help 
-	{
-		min-width	:100px;
-		width		:100%;
-		position	:relative;
-		margin-left	:10px;
-	}
-</STYLE>
+	<div style="text-align: center">
+		<a href="#" id="btn_connect" style="width: 20%; background-color: rgba(67, 236, 48, 0.4)" onclick="connect(); return false;" class="ui-btn ui-icon-check ui-btn-icon-left ui-btn-inline ui-corner-all ui-disabled"><TMPL_VAR REMOTE.BUTTON_CONNECT></a>
+		<a href="#" id="btn_disconnect" style="width: 20%; background-color: rgba(255, 128, 128, 0.4)" onclick="disconnect(); return false;" class="ui-btn ui-icon-delete ui-btn-icon-left ui-btn-inline ui-corner-all ui-disabled"><TMPL_VAR REMOTE.BUTTON_DISCONNECT></a>
+	</div>
 
-<FORM id="main_form" method="post" data-ajax="false"> 
-
-<DIV	class="lb_flex-container remote">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
-		<LABEL	class=	"control-label"
-			for="supportkey"><TMPL_VAR REMOTE.LABEL_SUPPORTKEY></LABEL>
-	</DIV>
-	<DIV	class="lb_flex-item">
-		<INPUT width="100%" value="<TMPL_VAR SUPPORTKEY>" id="supportkey" name="supportkey" type="text" class="textfield" 
-		data-validation-rule="^([A-Za-z0-9]){25,25}$" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_SUPPORTKEY>" maxlength="25">
-	</DIV>
-	<DIV	class="lb_flex-item-help hint">
-	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
-</DIV>
-<DIV	class="lb_flex-container remote">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
-	</DIV>
-	<DIV	class="lb_flex-item">
-		<A	id=		"btncancel"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"delete"
-			href=		"/admin/system/index.cgi?form=system">
-			<TMPL_VAR COMMON.BUTTON_CANCEL></A>
-		<BUTTON	type=		"submit"
-			form=		"main_form"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"check">
-			<TMPL_VAR REMOTE.BUTTON_ACTIVATE>
-		</BUTTON>
-	</DIV>
-	<DIV	class="lb_flex-item-help hint">
-	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
-</DIV>
-</FORM>
-
-<script>
-	// Validation
-	validate_enable('#supportkey');
-	validate_chk_object(['#supportkey']);
-</script>
-
-
-</TMPL_IF>
-
-<!-- ********************* FORM 2 ******************** -->
-
-<TMPL_IF FORM2>
-
-<STYLE>
-	.lb_flex-item 
-	{	
-		min-width	:450px;
-		width		:450px;
-		max-width	:450px;
-		flex-wrap	:nowrap;
-		margin-top	:-10px;  
-	}
-	.lb_flex-item-label
-	{
-		min-width	:100px;
-		position	:relative;
-		margin-left	:10px;
-	}
-	.lb_flex-data
-	{
-		min-width	:100px;
-		position	:relative;
-		margin-left	:10px;
-		text-align	:left;
-		font-weight	:bold;
-		font-size	:1.0em;
-	       	font-family	:Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;
-		text-align	:center;
-	}
-	.lb_flex-item-help 
-	{
-		min-width	:100px;
-		width		:100%;
-		position	:relative;
-		margin-left	:10px;
-	}
-</STYLE>
-<P><TMPL_VAR REMOTE.HINT_INTRODUCTION></P>
-
-<TMPL_IF OFFLINE>
-	<DIV style="background-color: rgba(255, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; border-spacing: 15px; padding:10px; display:table; margin:0 auto;">
-</TMPL_IF>
-<TMPL_IF ONLINE>
-	<DIV style="background-color: rgba(205, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; border-spacing: 15px; padding:10px; display:table; margin:0 auto;">
-</TMPL_IF>
-		<div style="display:table-row;">
-				<DIV style="text-align:right; display:table-cell;"><TMPL_VAR REMOTE.LABEL_ACTIVE_SUPPORTKEY></DIV>
-				<DIV style="text-align:center; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;"><big><TMPL_VAR SUPPORTKEY></big></DIV>
-				<DIV style="display:table-cell;"	style="text-align: left;">
-				<BUTTON	type=		"submit"
-					form=		"reset_form"
-					id=		"btnsubmit"
-					data-role=	"button"
-					data-inline=	"true"
-					data-mini=	"true"
-					data-icon=	"delete">
-					<TMPL_VAR REMOTE.BUTTON_RESET>
-				</BUTTON>
-				</DIV>
-		</div>
-		<div style="display:table-row;">
-				<DIV style="text-align:right; display:table-cell;"><TMPL_VAR REMOTE.LABEL_VALID></DIV>
-				<DIV style="text-align:center; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;"><TMPL_VAR CERTDATE></DIV>
-		</div>
-		<div style="display:table-row;">
-
-				<DIV style="text-align:right;display:table-cell;"><TMPL_VAR REMOTE.LABEL_STATUS></DIV>
-				<DIV style="text-align:center; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;"><TMPL_VAR STATUS></DIV>
-		</div>
-	</DIV>
-
-<BR>
-<BR>
-
-<!-- Button area 1 -->
-
-<DIV style="text-align:center;">
-		<!-- Buttons for widget -->
-		<BUTTON	type=		"submit"
-			form=		"connect_form"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			style=		"background-color: rgba(67, 236, 48, 0.4); margin-left:50px"
-			data-icon=	"check">
-			<TMPL_VAR REMOTE.BUTTON_CONNECT>
-		</BUTTON>
-		<BUTTON	type=		"submit"
-			form=		"disconnect_form"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			style=		"background-color: rgba(255, 128, 128, 0.4)"
-			data-icon=	"delete">
-			<TMPL_VAR REMOTE.BUTTON_DISCONNECT>
-		</BUTTON>
-		<A	id=		"btnlogfile"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"info"
-			href=		"/admin/system/tools/logfile.cgi?logfile=system_tmpfs%2Fopenvpn.log&header=html&format=template"
-			target=		"_blank">
-			<TMPL_VAR COMMON.BUTTON_LOGFILE></A>
-</DIV>
-
-<BR>
-<BR>
-<BR>
-
-<FORM id="main_form" method="post" data-ajax="false" style="border-radius: 11px; border: 1px solid black; padding:20px 0px 0px 0px;"> 
-<INPUT id="saveformdata" name="saveformdata" type="hidden" value="1">
-<DIV	class="lb_flex-container openvpnsettings">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
-		<LABEL	class=	"control-label" ><TMPL_VAR REMOTE.LABEL_AUTOCONNECT></LABEL>
-	</DIV>
-	<DIV	class="lb_flex-item">
-		<label><input type="checkbox" id="Remote_Autoconnect" name="Remote_Autoconnect" value="1"><TMPL_VAR REMOTE.LABEL_AUTOCONNECT2></label>
-	</DIV>
-	<DIV	class="lb_flex-item-help">
-	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
-</DIV>
-<DIV	class="lb_flex-container openvpnsettings">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
-		<LABEL	class=	"control-label"
-			for="httpproxy"><TMPL_VAR REMOTE.LABEL_HTTPPROXY></LABEL>
-	</DIV>
-	<DIV	class="lb_flex-item">
-		<input width="100%" value="" id="Remote_Httpproxy" name="Remote_Httpproxy" type="text" class="textfield" 
-		data-validation-rule="special:url" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_URL>">
-	</DIV>
-	<DIV	class="lb_flex-item-help hint">
-		<TMPL_VAR REMOTE.HINT_HTTPPROXY>
-	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
-</DIV>
-
-<DIV	class="lb_flex-container openvpnsettings">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
-		<LABEL	class=	"control-label"
-			for="httpport"><TMPL_VAR REMOTE.LABEL_HTTPPORT></LABEL>
-	</DIV>
-	<DIV	class="lb_flex-item">
-		<input id="Remote_Httpport" name="Remote_Httpport" type="text" class="textfield" value=""  
-		data-validation-rule="special:number-min-max-value:1:65000" data-validation-error-msg="<TMPL_VAR REMOTE.MSG_VALINVALID_PORT>">
-	</DIV>
-	<DIV	class="lb_flex-item-help hint">
-		<TMPL_VAR REMOTE.HINT_HTTPPORT>
-	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
-</DIV>
-</FORM>
-
-<!-- Button area 2 -->
-<BR>
-
-<DIV style="text-align:center;">
-		<!-- Buttons for widget -->
-		<A	id=		"btncancel"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"delete"
-			href=		"/admin/system/index.cgi?form=system">
-			<TMPL_VAR COMMON.BUTTON_CANCEL></A>
-		<BUTTON	type=		"submit"
-			form=		"main_form"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"check">
-			<TMPL_VAR COMMON.BUTTON_SAVE>
-		</BUTTON>
-</DIV>
-
-<FORM id="connect_form" method="post" data-ajax="false"> 
-<INPUT value="1" id="connect" name="connect" type="hidden">
-</FORM>
-
-<FORM id="disconnect_form" method="post" data-ajax="false"> 
-<INPUT value="1" id="disconnect" name="disconnect" type="hidden">
-</FORM>
-
-<FORM id="reset_form" method="post" data-ajax="false"> 
-<INPUT value="1" id="reset" name="reset" type="hidden">
-</FORM>
-
-<script>
-
-	function is_enabled( val ) 
-	{
-		// Returns true if val is in one of the possibilities 
-		var enabled_values = [ true, "true", 1, "1", "checked", "selected", "enabled", "enable", "on" ];
-		return (enabled_values.indexOf(val) > -1);
-	}
-
-	// Validation
-	validate_enable('#Remote_Httpproxy');
-	validate_enable('#Remote_Httpport');
-
-	var cfg;
+	<div style="text-align: center">
+		<span id="connecthint">&nbsp;</span>
+	</div>
 	
-	$(function() {
-		
-		// Parse config
-		cfg = JSON.parse('<TMPL_VAR JSONCONFIG>');
-		console.log("Config", cfg, cfg.Remote, cfg.subscriptions);
+	<br>
 
-		// Elements in Remote
-		for(var elemname in cfg.Remote) {
-			var inputType = $("#Remote_"+elemname).attr('type');
-			console.log("Element", elemname, cfg.Remote[elemname], inputType);
-			if(inputType == "checkbox") {
-				if( is_enabled(cfg.Remote[elemname]) ) 
-					$("#Remote_"+elemname).prop('checked', true);
-				else
-					$("#Remote_"+elemname).prop('checked', false);
-			} else {
-					$("#Remote_"+elemname).val(cfg.Remote[elemname]);
-			}
+	<p>
+	<TMPL_VAR REMOTE.HINT_INTRODUCTION>
+	</p>
+
+	<br>
+
+	<div style="background-color: rgba(240, 240, 240, 0.4); border-radius: 11px; border: 1px solid black; border-spacing: 15px; padding:10px; display:table; margin:0 auto; width:50%" id="statuswindow">
+	<!-- <div style="background-color: rgba(205, 255, 200, 0.4); border-radius: 11px; border: 1px solid black; border-spacing: 15px; padding:10px; display:table; margin:0 auto; width:50%"> -->
+		<div style="display:table-row;">
+			<div style="text-align:right; width: 20%; display:table-cell;"><TMPL_VAR REMOTE.LABEL_LOXBERRYID></div>
+			<div style="text-align:left; width: 80%; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;"><TMPL_VAR LOXBERRYID></div>
+		</div>
+		<div style="display:table-row;">
+			<div style="text-align:right; display:table-cell;"><TMPL_VAR REMOTE.LABEL_REMOTEURL></div>
+			<div style="text-align:left; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;" id="remoteurl"></div>
+		</div>
+		<div style="display:table-row;">
+			<div style="text-align:right;display:table-cell;"><TMPL_VAR REMOTE.LABEL_STATUS></div>
+			<div style="text-align:left; display:table-cell; font-family:'Courier New', Arial; font-weight: bold;" id="status"></div>
+		</div>
+	</div>
+
+	<br>
+	<br>
+
+	<div class="wide"><TMPL_VAR REMOTE.LABEL_SETTINGS></div>
+
+	<br>
+
+	<div style="display:flex;">
+		<div style="vertical-align: middle; line-height: 4.0; width: 20%">
+			<TMPL_VAR REMOTE.LABEL_AUTOCONNECT>
+		</div>
+		<div style="width: 20%">
+			<div data-role="fieldcontain" class="ui-field-contain">
+				<input type="checkbox" id="autoconnect" data-role="flipswitch" data-mini="true">
+			</div>
+		</div>
+		<div style="vertical-align: middle; line-height: 4.0; width: 60%">
+			<TMPL_VAR REMOTE.LABEL_AUTOCONNECT2>
+		</div>
+	</div>
+
+	<br><br><br>
+
+	<div style="text-align: center">
+		<a href="/admin/system/index.cgi?form=system" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all"><TMPL_VAR "COMMON.BUTTON_CANCEL"></a>
+		<a href="#" onclick="saveForm(); return false;" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-check ui-corner-all"><TMPL_VAR "COMMON.BUTTON_SAVE"></a>
+	</div>
+
+	<br>
+
+	<div style="text-align: center">
+		<span id="savinghint">&nbsp;</span>
+	</div>
+
+	</form>
+
+	<br>
+
+	<script>
+		
+		var connectionstatus_running = false;
+		var startstop_running = false;
+		
+		
+		// Listen to input or change events to save form
+		// Might want to throttle your callback here
+		//$('#configform :input').on('change', saveForm);
+
+		// Load config and defaults
+		$(function() {
+			//$("#configform").addClass('ui-disabled');
+			connectionstatus();
+			getconfig();
+			interval = window.setInterval(function(){ connectionstatus(); }, 3000);
+		});
+
+		// Save the form
+		function saveForm() {
+			$("#savinghint").attr("style", "color:blue").html("<TMPL_VAR "COMMON.MSG_PLEASEWAIT">");
+			$.ajax( {
+				url:  './ajax/ajax-remote.cgi',
+				type: 'POST',
+				data: {
+					action: 'saveconfig',
+					autoconnect: $('#autoconnect').prop('checked'),
+				}
+			} )
+			.fail(function( data ) {
+				console.log( "saveconfig Fail", data );
+				$("#savinghint").attr("style", "color:red").html("<TMPL_VAR "COMMON.MESSAGE_GENERIC_ERROR">");
+			})
+			.done(function( data ) {
+				console.log( "saveconfig Success", data );
+				$("#savinghint").attr("style", "color:green").html("<TMPL_VAR "COMMON.MSG_SAVEOK">");
+			})
+			.always(function( data ) {
+				console.log( "saveconfig Finished", data );
+			});
 		}
 
-		$('select').selectmenu('refresh', true);
-		$('input:checkbox').checkboxradio('refresh');
+		// Load config
+		function getconfig() {
+			$.ajax({ 
+				url:  './ajax/ajax-remote.cgi',
+				type: 'POST',
+				data: {
+					action: 'getconfig'
+				}
+			})
+			.fail(function( data ) {
+				console.log( "getconfig Fail", data );
+			})
+			.done(function( data ) {
+				console.log( "getconfig Success", data );
+				$("#autoconnect").prop( "checked", JSON.parse(data.Remote.Autoconnect) ).flipswitch('refresh');
+				//$("#configform").removeClass('ui-disabled');
+			});
+		}
 
-	});
+		// Start Connection
+		function connect() {
+			startstop_running = true;
+			$("#btn_disconnect").addClass('ui-disabled');
+			$("#btn_connect").addClass('ui-disabled');
+			$("#connecthint").attr("style", "color:blue").html("<TMPL_VAR "COMMON.MSG_PLEASEWAIT">");
+			$.ajax({ 
+				url:  './ajax/ajax-remote.cgi',
+				type: 'POST',
+				data: {
+					action: 'start',
+				}
+			})
+			.fail(function( data ) {
+				console.log( "connect Fail", data );
+				$("#connecthint").attr("style", "color:red").html("<TMPL_VAR "REMOTE.MSG_ERROR">");
+				startstop_running = false;
+				connectionstatus();
+			})
+			.done(function( data ) {
+				console.log( "connect Success", data );
+				$("#connecthint").attr("style", "color:blue").html("&nbsp;");
+				startstop_running = false;
+				connectionstatus();
+			});
+		}
 
-</script>
+		// Stop Connection
+		function disconnect() {
+			startstop_running = true;
+			$("#btn_disconnect").addClass('ui-disabled');
+			$("#btn_connect").addClass('ui-disabled');
+			$("#connecthint").attr("style", "color:blue").html("<TMPL_VAR "COMMON.MSG_PLEASEWAIT">");
+			$.ajax({ 
+				url:  './ajax/ajax-remote.cgi',
+				type: 'POST',
+				data: {
+					action: 'stop',
+				}
+			})
+			.fail(function( data ) {
+				console.log( "disconnect Fail", data );
+				$("#connecthint").attr("style", "color:red").html("<TMPL_VAR "REMOTE.MSG_ERROR">");
+				startstop_running = false;
+				connectionstatus();
+			})
+			.done(function( data ) {
+				console.log( "connect Success", data );
+				$("#connecthint").attr("style", "color:blue").html("&nbsp;");
+				startstop_running = false;
+				connectionstatus();
+			});
+		}
+
+		// Backup status
+		function connectionstatus() {
+			
+			if( connectionstatus_running == true ) return;
+			if( startstop_running == true ) return;
+			
+			connectionstatus_running = true;
+			
+			$.ajax({ 
+				url:  './ajax/ajax-remote.cgi',
+				type: 'POST',
+				data: {
+					action: 'status'
+				}
+			})
+			.fail(function( data ) {
+				console.log( "status Fail", data );
+			})
+			.done(function( data ) {
+				console.log( "status Success", data );
+				if( startstop_running == true ) return;
+				if (data.online * 1 == 0) {
+					$("#statuswindow").css('background-color', 'rgba(240, 240, 240, 0.4)'); // green
+					$("#btn_connect").removeClass('ui-disabled');
+					$("#btn_disconnect").addClass('ui-disabled');
+					$("#remoteurl").html('');
+					$("#status").html('<TMPL_VAR REMOTE.MSG_OFFLINE>');
+				} else {
+					$("#statuswindow").css('background-color', 'rgba(205, 255, 200, 0.4)'); // green
+					$("#btn_connect").addClass('ui-disabled');
+					$("#btn_disconnect").removeClass('ui-disabled');
+					$("#remoteurl").html(data.remoteurl);
+					$("#status").html('<TMPL_VAR REMOTE.MSG_ONLINE>');
+					}
+			})
+			.always(function() {
+				 connectionstatus_running = false;
+			});
+
+		}
+
+	</script>
+
+	<!-- /Form SETTINGS -->
+
 
 </TMPL_IF>
 
+<TMPL_IF FORM_LOGS>
+	<!-- Form LOGS -->
 
-<!-- ********************* ERROR ******************** -->
-
-
-<TMPL_IF ERROR>
-	<center>
-	<table border=0>
-	<tr>
-		<td align="center">
-			<h2><TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR></h2>
-			<p>
-			<TMPL_VAR ERRORMSG>
-			<br/>
-			<br/>
-			</p>
-		</td>
-	</tr>
-	<tr>
-		<td align="center">
-			<p>
-			 <a id="btnback" href="javascript:history.back();" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR COMMON.BUTTON_BACK></a>
-			</p>
-		</td>
-	</tr>
-	</table>
-	</center>
+	<div class="wide">Logfiles</div>
+		<TMPL_VAR loglist_html>
+	</div>
+	
+	<!-- /Form LOGS -->
 </TMPL_IF>

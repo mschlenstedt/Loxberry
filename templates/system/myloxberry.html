@@ -67,7 +67,9 @@
 			$("#languageselector").bind( "change", function(event, ui)
 			{
 				var val = $("#languageselector").val();
-				//console.log("Lang", val);
+				console.log("Lang", val);
+				if( val.startsWith('-') || val.startsWith('=') || val == 0 ) return;
+				
 				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 					{
 						action: "changelanguage",

@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.4";
+our $VERSION = "3.0.0.10";
 our $DEBUG;
 
 ### Exports ###
@@ -64,7 +64,7 @@ sub init
 			stderr => 1,
 			append => 1,
 	);
-	$main::logfilename = $main::log->filename;
+	$main::logfilename = $logfilename;
 
 	if ($main::cgi->param('updatedir') and -d $main::cgi->param('updatedir')) {
 		$main::updatedir = $main::cgi->param('updatedir');
@@ -173,6 +173,13 @@ sub copy_to_loxberry
 ####################################################################
 sub apt_install
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
+		$main::errors++;
+		return undef;
+	}
+
 	my @packages = @_;
 	my $packagelist = join(' ', @packages);
 
@@ -180,15 +187,17 @@ sub apt_install
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
-	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $packagelist 2>&1 };
+	my $logfilename = $main::log->filename();
+	$main::log->INF("Installing apt packages $packagelist...");
+	my $output = qx { $export $aptbin --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install $packagelist >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error installing $packagelist - Error $exitcode");
-		$main::log->DEB($output);
 		$main::errors++;
 	} else {
 		$main::log->OK("Packages $packagelist successfully installed");
 	}
+	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
 }
 
 
@@ -200,11 +209,22 @@ sub apt_install
 ####################################################################
 sub apt_upgrade
 {
+	$main::log->INF("Check if another process is running apt, apt-get or dpkg - I will wait up to 5 minutes - please be patient!"); 
+	my $chk = LoxBerry::System::lock(lockfile => 'apt_loxberry_update_lib', wait => 300);
+	if ($chk) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 5 minutes now. Giving up - Process $chk");
+		$main::errors++;
+		return undef;
+	} else {
+		$main::log->INF("No process is locking apt or dpkg. Fine."); 
+	}
+
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
-
-	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade 2>&1 };
+	my $logfilename = $main::log->filename();
+	$main::log->INF("Starting apt upgrade...");
+	my $output = qx { $export $aptbin --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error upgrading - Error $exitcode");
@@ -213,6 +233,7 @@ sub apt_upgrade
 	} else {
 		$main::log->OK("System upgrade successfully installed");
 	}
+	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
 }
 
 
@@ -224,19 +245,27 @@ sub apt_upgrade
 ####################################################################
 sub apt_distupgrade
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
+		$main::errors++;
+		return undef;
+	}
+
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
-
-	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" dist-upgrade 2>&1 };
+	my $logfilename = $main::log->filename();
+	$main::log->INF("Starting apt dist-upgrade...");
+	my $output = qx { $export $aptbin --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" dist-upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error dist-upgrading - Error $exitcode");
-		$main::log->DEB($output);
 		$main::errors++;
 	} else {
 		$main::log->OK("System dist-upgrade successfully installed");
 	}
+	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
 }
 
 
@@ -248,21 +277,28 @@ sub apt_distupgrade
 ####################################################################
 sub apt_fullupgrade
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
+		$main::errors++;
+		return undef;
+	}
+
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
-
-	my $output = qx { $export $aptbin --no-install-recommends -q -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" full-upgrade 2>&1 };
+	my $logfilename = $main::log->filename();
+	$main::log->INF("Starting apt full-upgrade...");
+	my $output = qx { $export $aptbin --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" full-upgrade >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error full-upgrading - Error $exitcode");
-		$main::log->DEB($output);
 		$main::errors++;
 	} else {
 		$main::log->OK("System full-upgrade successfully installed");
 	}
+	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
 }
-
 
 
 ####################################################################
@@ -272,6 +308,13 @@ sub apt_fullupgrade
 ####################################################################
 sub rpi_update
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
+		$main::errors++;
+		return undef;
+	}
+
 	my $githash = shift;
 	if (!$githash) { $githash = "" };
 
@@ -282,13 +325,13 @@ sub rpi_update
 		}
 		qx { mkdir -p /boot.bkp };
 		qx ( cp -r /boot/* /boot.bkp );
+		qx ( rm -rf /boot.bkp/boot.bkp ); 
 
-		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 WANT_32BIT=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash 2>&1 };
+		my $logfilename = $main::log->filename();
+		my $output = qx { SKIP_WARNING=1 SKIP_BACKUP=1 BRANCH=stable WANT_PI4=1 WANT_32BIT=1 SKIP_CHECK_PARTITION=1 BOOT_PATH=/boot.tmp ROOT_PATH=/ /usr/bin/rpi-update $githash >> $logfilename 2>&1 };
 		my $exitcode  = $? >> 8;
-		$main::log->DEB($output);
 		if ($exitcode != 0) {
 			$main::log->ERR("Error upgrading kernel and firmware- Error $exitcode");
-			$main::log->DEB($output);
 			$main::errors++;
 			qx ( rm -rf /boot.tmp ); 
 			qx ( rm -rf /boot.bkp ); 
@@ -303,27 +346,11 @@ sub rpi_update
 				qx ( rm -rf /boot.bkp );
 			}
 			$main::log->OK ("Upgrading kernel and firmware successfully.");
-			#my $out_chksum = qx { $LoxBerry::System::lbsbindir/dirtree_md5.pl -path /boot.tmp/ -compare $checksum };
-			#my $exitcode  = $? >> 8;
-			#if ($exitcode eq "0") {
-			#	qx ( rm -rf /boot.bkp ); 
-			#	qx ( cp -r /boot /boot.bkp );
-			#	qx ( cp -r /boot.tmp/* /boot );
-			#	qx ( rm -r /boot.tmp );
-			#	$main::log->OK ("Upgrading kernel and firmware successfully.");
-			#} else {
-				#$main::log->ERR("Error upgrading kernel and firmware - /boot.tmp seems to be broken.");
-				#$main::log->DEB("Requested checksum: $checksum");
-				#$main::log->DEB("Output of checksum test:");
-				#$main::log->DEB($out_chksum);
-				#$main::errors++;
-				#qx ( rm -rf /boot.tmp ); 
-				#return undef;
-			#}
 		}
 	} else {
 		$main::log->OK("This seems not to be a Raspberry. Do not upgrading Kernel and Firmware.");
 	}
+	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
 }
 
 ####################################################################
@@ -334,53 +361,58 @@ sub rpi_update
 ####################################################################
 sub apt_update
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
+		$main::errors++;
+		return undef;
+	}
+
 	my $command = shift;
 	if (!$command) { $command = "update" };
 
 	my $bins = LoxBerry::System::get_binaries();
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
+	my $logfilename = $main::log->filename();
 
 	# Repair and update
 	qx { chmod 1777 /tmp };
 	if ( $command eq "update") {
-		my $output = qx { $export /usr/bin/dpkg --configure -a --force-confdef};
+		$main::log->INF("Starting dpkg --configure...");
+		my $output = qx { $export /usr/bin/dpkg --configure -a --force-confdef >> $logfilename 2>&1 };
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$main::log->ERR("Error configuring dkpg with /usr/bin/dpkg --configure -a - Error $exitcode");
-			$main::log->DEB($output);
 			$main::errors++;
 		} else {
 			$main::log->OK("Configuring dpkg successfully.");
 		}
 		$main::log->INF("Clean up apt-databases and update");
-		$output = qx { $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install };
+		$output = qx { $export $aptbin -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages install >> $logfilename 2>&1 };
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$main::log->ERR("Error installing broken apt packages - Error $exitcode");
-			$main::log->DEB($output);
 		        $main::errors++;
 		} else {
-       	 	$main::log->OK("Eventually broken Apt packages installed successfully.");
+       	 		$main::log->OK("Eventually broken Apt packages installed successfully.");
 		}
-		$output = qx { $export $aptbin -y -q --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove };
+		$output = qx { $export $aptbin -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --purge autoremove >> $logfilename 2>&1 };
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			$main::log->ERR("Error autoremoving apt packages - Error $exitcode");
-			$main::log->DEB($output);
 		        $main::errors++;
 		} else {
-       	 	$main::log->OK("Apt packages autoremoved successfully.");
+       	 		$main::log->OK("Apt packages autoremoved successfully.");
 		}
 
 		# Try apt-get update 3 times befor giving up, choose another mirror if command failed
 		my $success = 0;
 		for (my $i;$i<4;$i++) {
-			$output = qx { $export $aptbin -q -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update };
+			$output = qx { $export $aptbin -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update >> $logfilename 2>&1 };
 			$exitcode  = $? >> 8;
 			if ($exitcode != 0) {
 				$main::log->ERR("Error updating apt database - Error $exitcode");
-				$main::log->DEB($output);
 				require LoxBerry::JSON;
 				my $cfgfile = $LoxBerry::System::lbsconfigdir . "/general.json";
 				my $jsonobj = LoxBerry::JSON->new();
@@ -408,15 +440,15 @@ sub apt_update
 	}
 
 	# Clean cache
-	my $output = qx { $export $aptbin -q -y clean };
+	my $output = qx { $export $aptbin -y clean >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->ERR("Error cleaning apt cache - Error $exitcode");
-		$main::log->DEB($output);
 	        $main::errors++;
 	} else {
 	 	$main::log->OK("Apt cache cleaned successfully.");
 	}
+	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
 	
 }
 
@@ -427,6 +459,13 @@ sub apt_update
 ####################################################################
 sub apt_remove
 {
+	my $chk = test_dpkg_apt();
+	if ($chk ne 0) {
+		$main::log->CRIT("Apt or dpkg is locked for more than 10 minutes now. Giving up - Error $chk");
+		$main::errors++;
+		return undef;
+	}
+
 	my @packages = @_;
 	my $packagelist = join(' ', @packages);
 
@@ -434,15 +473,50 @@ sub apt_remove
 	my $aptbin = $bins->{APT};
 	my $export = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive";
 
-	my $output = qx { $export $aptbin -q -y --purge remove $packagelist 2>&1 };
+	my $logfilename = $main::log->filename();
+	$main::log->INF("Removing apt packages $packagelist...");
+	my $output = qx { $export $aptbin -y --purge remove $packagelist >> $logfilename 2>&1 };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		$main::log->CRIT("Error removing $packagelist - Error $exitcode");
-		$main::log->DEB($output);
 		$main::errors++;
 	} else {
 		$main::log->OK("Packages $packagelist successfully removed");
 	}
+	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
+}
+
+##################################################################################
+# INTERNAL function test_dpkg_apt
+# Returns 0 if no apt or dpkg process is running or 1 if apt/dpkg runs for more than
+# 10 minutes...
+##################################################################################
+
+sub test_dpkg_apt
+{
+
+	my $i;
+	my $output;
+	my $rc = 1;
+
+	for ($i=0; $i<600; $i++) {
+		my ($rc_apt) = LoxBerry::System::execute( 'pgrep "apt-get|apt|dpkg"' );
+		my ($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
+		my ($rc_dpkg_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock' );
+		my ($rc_dpkg_frontend_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock-frontend' );
+		my ($rc_apt_archives_lock) = LoxBerry::System::execute( 'fuser /var/cache/apt/archives/lock' );
+
+		if( $rc_apt eq "0" or $rc_unattended_upgrade eq "0" or $rc_dpkg_lock eq "0" or $rc_dpkg_frontend_lock eq "0" or $rc_apt_archives_lock eq "0" ) {
+			$main::log->INF("Try $i: Another install process (using apt, apt-get or dpkg) is running or using the dpkg database - waiting...");
+			sleep(1);
+		} else {
+			$rc = 0;
+			$main::log->INF("No process is locking apt or dpkg. Fine.");
+			last;
+		}
+	}
+	return $rc
+
 }
 
 #####################################################

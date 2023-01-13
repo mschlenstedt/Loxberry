@@ -28,7 +28,7 @@ use strict;
 ##########################################################################
 
 # Version of this script
-my $version = "2.2.0.1";
+my $version = "3.0.0.0";
 
 my $cfgfile = "$lbsconfigdir/general.json";
 my $jsonobj = LoxBerry::JSON->new();
@@ -40,8 +40,12 @@ if ( is_enabled($cfg->{Webserver}->{Disableemergencywebserver}) ) {
 
 } else {
 
-	system ("pkill -f emergencywebserver.pl > /dev/null 2>&1");
-	system ("$lbhomedir/sbin/emergencywebserver.pl > /dev/null 2>&1 &");
+	#
+	# Deactivated since LoxBerry 3.0
+	#
+	#system ("pkill -f emergencywebserver.pl > /dev/null 2>&1");
+	#system ("$lbhomedir/sbin/emergencywebserver.pl > /dev/null 2>&1 &");
+	exit;
 
 }
 

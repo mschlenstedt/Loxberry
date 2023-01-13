@@ -61,7 +61,7 @@ if (!-e "/boot/rebootupdatescript") {
 }
 LOGINF "This script already started $starts times.";
 if ($starts >=10) {
-	LOGCRIT "We tried 10 times without success. This is the last try.";
+	LOGCRIT "We tried 10 times without success. This is the last try we will do.";
 	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv300 };
 	qx { rm /boot/rebootupdatescript };
 	LOGINF "Re-Enabling Apache2...";
@@ -72,6 +72,38 @@ if ($starts >=10) {
 		$errors++;
 	} else {
 		LOGOK "Apache2 enabled successfully.";
+	}
+	LOGINF "Re-Enabling Unattended Upgrades...";
+	my $output = qx { systemctl enable unattended-upgrades };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error occurred while re-enabling Unattended Upgrades - Error $exitcode";
+		$errors++;
+	} else {
+		LOGOK "Unattended Upgrades enabled successfully.";
+	}
+	if (-e "/etc/init.d/rpimonitor") {
+		LOGINF "Re-Enabling RPI Monitor Service...";
+		my $output = qx { systemctl enable rpimonitor };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGERR "Error occurred while re-enabling RPI Monitor. Ignoring this error... - Error $exitcode";
+		} else {
+			LOGOK "RPI Monitor enabled successfully.";
+		}
+	}
+	my $generaljson = $lbsconfigdir . "/general.json";
+	my $gcfgobj = LoxBerry::JSON->new();
+	my $gcfg = $gcfgobj->open(filename => $generaljson);
+	if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
+		LOGINF "Re-Enabling Watchdog Service...";
+		my $output = qx { systemctl enable watchdog };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGWARN "Error occurred while re-enabling Watchdog. Ignoring this error...  - Error $exitcode";
+		} else {
+			LOGOK "Watchdog Service enabled successfully.";
+		}
 	}
 	exit 1;
 } else {
@@ -111,6 +143,11 @@ my $output = qx { systemctl stop apache2.service };
 sleep (2);
 my $output = qx { fuser -k $port/tcp };
 sleep (2);
+
+LOGINF "Stopping unattended-upgrades...";
+my $output = qx { systemctl stop unattended-upgrades };
+LOGINF "Stopping rpimonitor...";
+my $output = qx { systemctl stop rpimonitor };
 
 #
 # Start simple Webserver
@@ -377,11 +414,30 @@ if ( -e "/etc/logrotate.conf.dpkg-dist" ) {
 my $output = qx { sed -i --follow-symlinks 's/^#compress/compress/g' /etc/logrotate.conf >> $logfilename 2>&1 };
 $log->open;
 
+#
 # Update Kernel and Firmware on Raspberry
 # GIT Firmware Hash:   224cd2fe45becbb44fea386399254a1f84227218
+#
 LOGINF "Upgrading Linux Kernel if we are running on a Raspberry...";
 rpi_update("224cd2fe45becbb44fea386399254a1f84227218");
 
+#
+# Firmware Files are not updated automatically by apt-get (why? *really* don't no!)
+#
+LOGINF "Installing newest firmware files from Debian Buillseye...";
+system("curl -L https://github.com/RPi-Distro/firmware-nonfree/archive/refs/heads/bullseye.zip -o /lib/master.zip");
+system("cd /lib && yes | unzip -o /lib/master.zip");
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+        LOGERR "Error extracting new firmware. This is a problem for PI ZeroW2 only. Wifi may not work on the Zero2 - Error $exitcode";
+		system ("rm -r /lib/master.zip");
+} else {
+        LOGOK "Extracting of new firmware files successfully. Installing...";
+		system ("rm -r /lib/master.zip");
+		system("cp -vr /lib/firmware-nonfree-bullseye/debian/config/* /lib/firmware");
+}
+system ("rm -r /lib/firmware-nonfree-bullseye");
+	
 # Updating /boot/config.txt for Debian Bullseye
 LOGINF "Updating /boot/config.txt...";
 # Add arm_boost mode for Pi4
@@ -400,6 +456,15 @@ if ($exitcode) {
 	system("sed -i -e 's:^\\[all\\]:\\[all\\]\\n# Enable DRM VC4 V3D driver\\ndtoverlay=vc4-kms-v3d\\nmax_framebuffers=2:g' /boot/config.txt");
 }
 
+# Update /boot/cmdline.txt for Bullseye - do not use predictable network device names
+LOGINF "Updating /boot/cmdline.txt...";
+system("sed -i /boot/cmdline.txt -e 's/net.ifnames=0 *//'");
+system("sed -i /boot/cmdline.txt -e 's/rootwait/net.ifnames=0 rootwait/'");
+system("rm -f /etc/systemd/network/99-default.link");
+system("rm -f /etc/systemd/network/73-usb-net-by-mac.link");
+system("ln -sf /dev/null /etc/systemd/network/99-default.link");
+system("ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link");
+
 #
 # Reinstall Python packages, because rasbian's upgrade will overwrite all of them...
 #
@@ -416,6 +481,14 @@ if (-e "$lbsdatadir/pip3_list.dat") {
 	system("mv $lbsdatadir/pip3_list.dat $lbsdatadir/pip3_list.dat.bkp");
 	$log->open;
 }
+
+#
+# Installing new raspi-config
+#
+LOGINF "Installing newest raspi-config (Release from 20221214)...";
+system("rm /usr/bin/raspi-config");
+system("curl -L https://raw.githubusercontent.com/RPi-Distro/raspi-config/0fc1f9552fc99332d57e3b6df20c64576466913a/raspi-config -o /usr/bin/raspi-config");
+system("chmod +x /usr/bin/raspi-config");
 
 #
 # Installing new dependencies
@@ -442,6 +515,38 @@ if ($errors) {
 		$errors++;
 	} else {
 		LOGOK "Apache2 enabled successfully.";
+	}
+	LOGINF "Re-Enabling Unattended Upgrades...";
+	my $output = qx { systemctl enable unattended-upgrades };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		LOGERR "Error occurred while re-enabling Unattended Upgrades - Error $exitcode";
+		$errors++;
+	} else {
+		LOGOK "Unattended Upgrades enabled successfully.";
+	}
+	if (-e "/etc/init.d/rpimonitor") {
+		LOGINF "Re-Enabling RPI Monitor Service...";
+		my $output = qx { systemctl enable rpimonitor };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGERR "Error occurred while re-enabling RPI Monitor. Ignoring this error... - Error $exitcode";
+		} else {
+			LOGOK "RPI Monitor enabled successfully.";
+		}
+	}
+	my $generaljson = $lbsconfigdir . "/general.json";
+	my $gcfgobj = LoxBerry::JSON->new();
+	my $gcfg = $gcfgobj->open(filename => $generaljson);
+	if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
+		LOGINF "Re-Enabling Watchdog Service...";
+		my $output = qx { systemctl enable watchdog };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGWARN "Error occurred while re-enabling Watchdog. Ignoring this error...  - Error $exitcode";
+		} else {
+			LOGOK "Watchdog Service enabled successfully.";
+		}
 	}
 }
 

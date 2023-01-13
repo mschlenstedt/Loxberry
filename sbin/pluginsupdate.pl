@@ -34,7 +34,7 @@ use version;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="2.0.1.1";
+my $scriptversion="3.0.0.1";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -145,8 +145,8 @@ foreach (@plugins) {
 		next;
 	}
 	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
-		LOGINF "$pluginname: Automatic updates are disabled. Skipping.";
-		next;
+		LOGINF "$pluginname: Automatic updates are disabled. Check only.";
+		$notify = 1;
 	}
 	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "2") {
 		LOGINF "$pluginname: NOTIFY about new versions is enabled.";
@@ -250,13 +250,14 @@ foreach (@plugins) {
 						LOGOK "$pluginname: Skipping notification because version has already been notified.";
 					} elsif ($checkonly) {
 						LOGINF "$pluginname: Skipping notification because of --checkonly parameter. This is an interactive call.";
+					} elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
+						LOGINF "$pluginname: Skipping notification because automatic updates and notifys are disabled.";
 					} else {
 						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RELEASE_AVAILABLE'} $installversion\n";
 						$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};
 						notify ( "plugininstall", "$pluginname", $message);
 						LOGINF "$pluginname: Notification saved.";
 					}
-				
 				}
 
 			} else {
@@ -328,6 +329,8 @@ foreach (@plugins) {
 						LOGOK "$pluginname: Skipping notification because version has already been notified.";
 					} elsif ($checkonly) {
 						LOGINF "$pluginname: Skipping notification because of --checkonly parameter. This is an interactive call.";
+					} elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
+						LOGINF "$pluginname: Skipping notification because automatic updates and notifys are disabled.";
 					} else {
 						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_PRERELEASE_AVAILABLE'} $installversion\n";
 						$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};

@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+# Script version V3.0.0.3
+
 use utf8;
 
 use warnings;
@@ -238,9 +241,12 @@ sub udpin
 	}
 	else {
 		my $dnsstarttime = Time::HiRes::time();
-		$udpremhost = gethostbyaddr($ipaddr, AF_INET);
 		LOGINF "Executing DNS reverse lookup";
+		$udpremhost = gethostbyaddr($ipaddr, AF_INET);
+		$udpremhost = inet_ntoa($ipaddr) if (!$udpremhost);
+		
 		$dns_loopupcache{ $ipaddr } = $udpremhost;
+			
 		if( (Time::HiRes::time()-$dnsstarttime) > 0.05 ) {
 			LOGWARN "DNS lookup time is high: " . int((Time::HiRes::time()-$dnsstarttime)*1000) . " msecs. Normally this is around 2-10 msecs.";
 		}
@@ -405,7 +411,7 @@ sub received
 	my $contjson;
 	
 	utf8::encode($topic);
-	LOGOK "MQTT received: $topic: $message";
+	LOGOK "MQTT IN: $topic: $message";
 	
 	# Remember that we have currently have received data
 	$mqtt_data_received = 1;
@@ -1098,7 +1104,7 @@ sub read_config
 		# User defined settings
 		LOGINF "Processing Reset After Send";
 		undef %resetAfterSend;
-		if (exists $cfg->{resetAfterSend}) {
+		if (exists $cfg->{resetAfterSend} and ref($cfg->{resetAfterSend}) eq "HASH" ) {
 			LOGINF "Adding user defined Reset After Send";
 			foreach my $topic ( keys %{$cfg->{resetAfterSend}}) {
 				if (LoxBerry::System::is_enabled($cfg->{resetAfterSend}->{$topic}) ) {

@@ -89,6 +89,46 @@ if ($exitcode != 0) {
 }
 
 #
+# Disable unattended-upgrades for next reboot
+#
+LOGINF "Disabling Unattended Upgrades Service for next reboot...";
+my $output = qx { systemctl disable unattended-upgrades };
+my $exitcode = $? >> 8;
+if ($exitcode != 0) {
+	LOGWARN "Could not disable Unattended Upgrades - Error $exitcode";
+} else {
+	LOGOK "Unattended Upgrades Service disabled successfully.";
+}
+
+#
+# Disable rpimonitor for next reboot - if installed (plugin)
+#
+if (-e "/etc/init.d/rpimonitor") {
+	LOGINF "Disabling RPI Monitor Service for next reboot...";
+	my $output = qx { systemctl disable rpimonitor };
+	my $exitcode = $? >> 8;
+	if ($exitcode != 0) {
+		LOGWARN "Could not disable RPI Monitor - Error $exitcode";
+	} else {
+		LOGOK "RPI Monitor Service disabled successfully.";
+	}
+}
+
+#
+# Disable watchdog for next reboot
+#
+if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
+	LOGINF "Disabling Watchdog Service for next reboot...";
+	my $output = qx { systemctl disable watchdog };
+	my $exitcode = $? >> 8;
+	if ($exitcode != 0) {
+		LOGWARN "Could not disable Watchdog - Error $exitcode";
+	} else {
+		LOGOK "Watchdog Service disabled successfully.";
+	}
+}
+
+#
 # Backing up Python packages, because Rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade...";
@@ -110,6 +150,10 @@ if ($exitcode != 0) {
 	system ("pip3 install pip --upgrade");
 	system("pip3 list --format=freeze > $lbsdatadir/pip3_list.dat");
 }
+
+LOGINF "Installing Python Dev Package...";
+apt_update();
+apt_install("python3-dev");
 
 #
 # MQTT Gateway migration
@@ -183,7 +227,6 @@ copy_to_loxberry("/system/daemons/system/03-loxberryupdate", "root");
 # Install shellinabox and disable shellinabox daemon
 #
 LOGINF "Installing Shell-In-A-Box...";
-apt_update();
 apt_install("shellinabox");
 my $output = qx { sed -i 's#^SHELLINABOX_DAEMON_START.*\$#SHELLINABOX_DAEMON_START=0#' /etc/default/shellinabox };
 copy_to_loxberry('/system/daemons/system/06-shellinabox');

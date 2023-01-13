@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='3.0.0.1';
+my $scriptversion='3.0.0.2';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -427,6 +427,12 @@ foreach my $version (@updatelist)
 			}	
 		}
 		
+		# Pre-Set failed script. If everything is fine, we later remove it again after the execution.
+		if( !$failed_script ) {
+			write_failedscript(version->parse(vers_tag($version)));
+		}
+		
+		# Execute update script
 		$exitcode = exec_perl_script("$lbhomedir/sbin/loxberryupdate/update_$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
 		$exitcode  = $? >> 8;
 		
@@ -442,8 +448,9 @@ foreach my $version (@updatelist)
 			}
 			
 			# Stop script processing, no error
-			if($exitcode == 250) {
+			elsif($exitcode == 250) {
 				LOGWARN "Updatescript update_$version requests a reboot before LoxBerry can continue the update. Please reboot your LoxBerry, and check for updates again.";
+				write_failedscript($failed_script);
 			}
 			
 			# Script error
@@ -465,10 +472,10 @@ foreach my $version (@updatelist)
 			if (!$failed_script and $exitcode != 250) {
 				LOGINF "Setting update script update_$version as failed in general configuration.";
 				$failed_script = version->parse(vers_tag($version));
-				write_failedscript($failed_script);
+				
 			} elsif(!$failed_script and $exitcode == 250) {
 				# In case that script needs to stop and had no failure
-				write_failedscript();
+				write_failedscript($failed_script);
 			}
 			
 			if ($lowdiskspace or $stop_script_processing_version) {
@@ -478,8 +485,9 @@ foreach my $version (@updatelist)
 			LOGOK "Previously failed script now finished successfully. Removing failed script version from general configuration";
 			undef $failed_script;
 			write_failedscript();
+		} else {
+			write_failedscript($failed_script);
 		}
-		# Should we remember, if exec failed? I think no.
 	} else {
 		LOGWARN "   Dry-run. Skipping $version script.";
 	}
@@ -727,10 +735,14 @@ sub read_failedscript {
 sub write_failedscript {
 	my $vers_failed = shift;
 	
+	if( $vers_failed and ref($vers_failed) eq "version") {
+		$vers_failed = $vers_failed->normal();
+	}
+	
 	my $jsonobj;
 	my $syscfg;
 	
-	LOGINF "Updating update script fail state in general configuration...";
+	# LOGINF "Updating update script fail state in general configuration to $vers_failed...";
 	my $failedscript_jsonobj = LoxBerry::JSON->new();
 	my $failedscript_jsoncfg = $failedscript_jsonobj->open(filename => "$lbsconfigdir/general.json");
 	if( defined $failedscript_jsoncfg ) {
@@ -752,8 +764,6 @@ sub write_failedscript {
 	
 	return $failed_script;
 }	
-	
-
 
 # This routine is called at every end
 END 

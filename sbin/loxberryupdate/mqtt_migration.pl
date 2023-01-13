@@ -16,6 +16,11 @@ execute( command => "mkdir --parents $lbhomedir/bin/mqtt/transform/custom", log 
 execute( command => "mkdir --parents $lbhomedir/bin/mqtt/datastore", log => $log, ignoreerrors => 1 );
 execute( command => "mkdir --parents $lbhomedir/config/system/mosquitto", log => $log, ignoreerrors => 1 );
 
+# Clean broken Mosquitto config (could be left from very old Gateway installation)
+if( -l "/etc/mosquitto/conf.d/mqttgateway.conf" and not -e "/etc/mosquitto/conf.d/mqttgateway.conf" ) {
+	execute( command => "unlink /etc/mosquitto/conf.d/mqttgateway.conf", log => $log, ignoreerrors => 1 );
+}
+
 install_packages();
 stop_mqttgateway();
 

@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "3.0.0.4";
+our $VERSION = "3.0.0.5";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1341,15 +1341,18 @@ sub lock
 		# pgrep: Exitcode 1 -> not found. 0 -> found
 		
 		my $rc_apt;
-		my $rc_dpkg;
-				my $rc_unattended_upgrade;
-		($rc_apt) = LoxBerry::System::execute( 'pgrep apt-get' );
-		($rc_dpkg) = LoxBerry::System::execute( 'pgrep dpkg' );
+		my $rc_unattended_upgrade;
+		my $rc_dpkg_lock;
+		my $rc_dpkg_frontend_lock;
+		my $rc_apt_archives_lock;
+		($rc_apt) = LoxBerry::System::execute( 'pgrep "apt-get|apt|dpkg"' );
 		($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
+		($rc_dpkg_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock' );
+		($rc_dpkg_frontend_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock-frontend' );
+		($rc_apt_archives_lock) = LoxBerry::System::execute( 'fuser /var/cache/apt/archives/lock' );
 
-		if( $rc_apt eq "0" or $rc_dpkg eq "0" or $rc_unattended_upgrade eq "0" ) {
-			$seemsrunning = 'apt-get' if ($rc_apt eq "0");
-			$seemsrunning = 'dpkg' if ($rc_dpkg eq "0");
+		if( $rc_apt eq "0" or $rc_unattended_upgrade eq "0" or $rc_dpkg_lock eq "0" or $rc_dpkg_frontend_lock eq "0" or $rc_apt_archives_lock eq "0" ) {
+			$seemsrunning = 'apt, apt-get or dpkg' if ($rc_apt eq "0" or $rc_dpkg_lock eq "0" or $rc_dpkg_frontend_lock eq "0" or $rc_apt_archives_lock eq "0");
 			$seemsrunning = 'unattended-upgrade' if ($rc_unattended_upgrade eq "0");
 			
 			if ($p{wait}) {
@@ -1411,7 +1414,7 @@ sub lock
 			}
 			
 		}
-	print STDERR "seemsrunning: $seemsrunning\n" if ($DEBUG);
+		print STDERR "seemsrunning: $seemsrunning\n" if ($DEBUG);
 	} while ($seemsrunning && $p{wait} && $delay < $p{wait});
 	return $seemsrunning if ($seemsrunning);
 	

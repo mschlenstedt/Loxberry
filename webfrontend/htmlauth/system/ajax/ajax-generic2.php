@@ -106,20 +106,17 @@ if( $action == 'write' ) {
 		LOGINF("Getting data from request");
 		$input = file_get_contents('php://input');
 	}
-	
 	LOGDEB("Request Input: $input");
 	LOGINF("Checking if content is a json");
-	$datajson = json_decode($input, true);
+	$datajson = json_decode($input, false, 512, JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 	if(!empty($datajson)) {
 		$querytype = 'JSON';
 		LOGOK("Request is json - can directly be used");
-		$datajsonObj = json_decode( $input, false, 512, JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 	} 
 	else {
 		$querytype = 'POST';
 		LOGOK("Request is no json");
 		$datajson = $_POST;
-		$datajsonObj = $_POST;
 	}
 }
 
@@ -128,14 +125,11 @@ if( file_exists( $configfile ) ) {
 	LOGINF("Opening file $configfile");
 	$fp = fopen($configfile, 'r+');
 	flock( $fp, LOCK_EX );
-	$config_content = file_get_contents( $configfile );
-	$config = json_decode( $config_content, true );
-	$configObj = json_decode( $config_content, false, 512, JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+	$config = json_decode( file_get_contents( $configfile ), false, 512, JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 }
 else {
 	LOGINF("File $configfile does not exist, fallback to empty config");
-	$config = array();
-	$configObj = new StdClass();
+	$config = new stdClass();
 }
 
 // LOGDEB("Configfile content");
@@ -145,7 +139,6 @@ if( $action == 'write' ) {
 	
 	// Section given
 	if( $section ) {
-		$datajsonObj->$section = $datajsonObj;
 		if( $replace != true ) {
 			// Merge
 			$newconfig = array_replace_recursive($config["$section"], $datajson);
@@ -185,12 +178,10 @@ if( $action == 'write' ) {
 	// LOGDEB("Configfile after merge:");
 	// LOGDEB(print_r( $config, true) );
 
-	$config=check_empty_array($config, $configObj, $datajsonObj);
 
 	file_put_contents( $configfile, json_encode( $config , JSON_INVALID_UTF8_IGNORE | JSON_PRETTY_PRINT | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
 
-	if( !empty($fp) ) {
-		flock( $fp, LOCK_UN );
+	if( $fp ) {
 		fclose($fp);
 	}
 	
@@ -277,33 +268,7 @@ function checkPath( $path ) {
 	return $realpath;
 	
 }
-
-function check_empty_array( $cmpsection, $origsection, $newsection ) {
-	// error_log("check_empty_array");
-	global $querytype;
 	
-	// var_dump($origsection);
-	
-	// Check if empty array and original is object
-	if( is_array($cmpsection) && empty($cmpsection) ) {
-		if( is_object($origsection) || is_object($newsection) ) {
-			$cmpsection = new StdClass();
-			// error_log("  Section empty");
-			return $cmpsection;
-		}
-	}	
-	elseif (is_array($cmpsection) && ( is_object($origsection) || is_object($newsection) ) ) {
-		foreach ($cmpsection as $key => $value) {
-			if( is_array($value) ) {
-				//error_log("   Section $key");
-				$cmpsection[$key]=check_empty_array($value, $origsection->$key ?? null, $newsection->$key ?? null);
-			} else {
-				// error_log("   $key => $value");
-			}
-		}
-	}
-	return $cmpsection;
-}
 	
 function startsWith( $haystack, $needle ) {
 	$length = strlen( $needle );
