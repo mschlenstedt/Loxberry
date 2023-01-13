@@ -165,6 +165,14 @@ if ($exitcode) {
 #LOGINF "Installing new sudoers file...";
 #copy_to_loxberry("/system/sudoers/lbdefaults", "root");
 
+LOGINF "Update mosquitto service...";
+if ( -e "/etc/systemd/system/mosquitto.service" ) {
+	unlink ("/etc/systemd/system/mosquitto.service");
+}
+unlink ("$lbhomedir/data/system/mosquitto.service");
+system ("ln -s $lbhomedir/system/systemd/mosquitto.service /etc/systemd/system/mosquitto.service");
+system ("/bin/systemctl daemon-reload");
+
 #
 # Install new 03-loxberryupdate Daemon
 #

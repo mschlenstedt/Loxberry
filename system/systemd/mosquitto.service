@@ -1,0 +1,26 @@
+[Unit]
+Description=Mosquitto MQTT Broker
+Documentation=man:mosquitto.conf(5) man:mosquitto(8)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+EnvironmentFile=/etc/environment
+ExecStart=/usr/sbin/mosquitto -c /etc/mosquitto/mosquitto.conf
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+ExecStartPre=/bin/mkdir -m 740 -p /var/log/mosquitto
+ExecStartPre=/bin/chown mosquitto /var/log/mosquitto
+ExecStartPre=/bin/touch ${LBSLOG}/mosquitto.log
+ExecStartPre=/bin/chown mosquitto:loxberry ${LBSLOG}/mosquitto.log
+ExecStartPre=/bin/chmod 640 ${LBSLOG}/mosquitto.log
+ExecStartPre=/bin/ln -sf ${LBSLOG}/mosquitto.log /var/log/mosquitto/mosquitto.log
+ExecStartPre=/bin/mkdir -m 740 -p /run/mosquitto
+ExecStartPre=/bin/chown mosquitto /run/mosquitto
+ExecStartPost=/bin/chgrp loxberry /var/log/mosquitto/mosquitto.log
+ExecStartPost=/bin/chmod 640 /var/log/mosquitto/mosquitto.log
+
+[Install]
+WantedBy=multi-user.target

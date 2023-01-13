@@ -216,6 +216,8 @@ sub mosquitto_setcred
 	## Not working because of permissions (user mosquitto has no access)
 	# $mosq_config .= "# Use LoxBerry's logging directory for Mosquitto logfile\n";
 	# $mosq_config .= "log_dest file $lbstmpfslogdir/mosquitto.log\n\n";
+	$mosq_config .= "log_dest file /var/log/mosquitto/mosquitto.log\n";
+	$mosq_config .= "log_timestamp_format %Y-%m-%dT%H:%M:%S\n\n";
 		
 	# User and pass, or anonymous
 	if(!$brokeruser and !$brokerpass) {
