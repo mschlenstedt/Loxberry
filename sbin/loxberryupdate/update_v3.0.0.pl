@@ -151,6 +151,10 @@ if ($exitcode != 0) {
 	system("pip3 list --format=freeze > $lbsdatadir/pip3_list.dat");
 }
 
+LOGINF "Installing Python Dev Package...";
+apt_update();
+apt_install("python3-dev");
+
 #
 # MQTT Gateway migration
 #
@@ -215,7 +219,6 @@ copy_to_loxberry("/system/daemons/system/03-loxberryupdate", "root");
 # Install shellinabox and disable shellinabox daemon
 #
 LOGINF "Installing Shell-In-A-Box...";
-apt_update();
 apt_install("shellinabox");
 my $output = qx { sed -i 's#^SHELLINABOX_DAEMON_START.*\$#SHELLINABOX_DAEMON_START=0#' /etc/default/shellinabox };
 copy_to_loxberry('/system/daemons/system/06-shellinabox');
