@@ -3,7 +3,7 @@ Description=Mount USB Drive on %i
 [Service]
 Type=oneshot
 EnvironmentFile=/etc/environment
-WorkingDirectory=${LBHOMEDIR}
+WorkingDirectory=/opt/loxberry
 RemainAfterExit=true
-ExecStart=${LBHOMEDIR}/sbin/usb-mount.sh add %i
-ExecStop=${LBHOMEDIR}/sbin/usb-mount.sh remove %i
+ExecStart=/opt/loxberry/sbin/usb-mount.sh add %i
+ExecStop=/opt/loxberry/sbin/usb-mount.sh remove %i
