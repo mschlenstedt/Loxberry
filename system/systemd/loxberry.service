@@ -4,11 +4,11 @@ After=network.target remote-fs.target syslog.target network-online.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=/opt/loxberry
-EnvironmentFile=-/etc/environment
+EnvironmentFile=/etc/environment
+WorkingDirectory=${LBHOMEDIR}
 RemainAfterExit=yes
-ExecStart=/opt/loxberry/sbin/loxberryinit.sh start
-ExecStop=/opt/loxberry/sbin/loxberryinit.sh stop
+ExecStart=${LBHOMEDIR}/sbin/loxberryinit.sh start
+ExecStop=${LBHOMEDIR}/sbin/loxberryinit.sh stop
 SyslogIdentifier=loxberry
 StandardOutput=syslog
 StandardError=syslog

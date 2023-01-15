@@ -209,6 +209,12 @@ if ($exitcode) {
 #LOGINF "Installing new sudoers file...";
 #copy_to_loxberry("/system/sudoers/lbdefaults", "root");
 
+LOGINF "Update service files";
+copy_to_loxberry('/system/systemd/createtmpfs.service');
+copy_to_loxberry('/system/systemd/loxberry.service');
+copy_to_loxberry('/system/systemd/ssdpd.service');
+copy_to_loxberry('/system/systemd/usb-mount@.service');
+
 LOGINF "Update mosquitto service...";
 copy_to_loxberry('/system/systemd/mosquitto.service');
 if ( -e "/etc/systemd/system/mosquitto.service" ) {
