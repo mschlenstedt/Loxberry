@@ -30,7 +30,10 @@ my $jsonparser = LoxBerry::JSON->new();
 my $cfg = $jsonparser->open(filename => "$lbsconfigdir/general.json", readonly => 1);
 my $sendstat = is_enabled( $cfg->{"Base"}->{"Sendstatistic"} );
 my $version = $cfg->{"Base"}->{"Version"};
+my $lang = $cfg->{"Base"}->{"Lang"};
+my $country = $cfg->{"Base"}->{"Country"};
 my $curlbin = `which curl`;
+undef $jsonparser;
 
 my ($ver_major, $ver_minor, $ver_sub) = split (/\./, trim($version));
 
@@ -106,7 +109,7 @@ if ($sendstat) {
 		$architecture = "Odroid" if (-e "$lbsconfigdir/is_odroidxu3xu4.cfg");
 		
 		# Send LoxBerry version info
-		my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture";
+		my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture&lang=$lang&country=$country";
 		
 		my $response = $ua->get($url);
 		
