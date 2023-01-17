@@ -6,10 +6,10 @@ After=local-fs.target
 [Service]
 Type=oneshot
 EnvironmentFile=/etc/environment
-WorkingDirectory=/opt/loxberry
+#WorkingDirectory=/opt/loxberry
 RemainAfterExit=yes
-ExecStart=/opt/loxberry/sbin/createtmpfsfoldersinit.sh start
-ExecStop=/opt/loxberry/sbin/createtmpfsfoldersinit.sh stop
+ExecStart=/bin/bash -c "${LBHOMEDIR}/sbin/createtmpfsfoldersinit.sh start"
+ExecStop=/bin/bash -c "${LBHOMEDIR}/sbin/createtmpfsfoldersinit.sh stop"
 SyslogIdentifier=createtmpfs
 StandardOutput=syslog
 StandardError=syslog

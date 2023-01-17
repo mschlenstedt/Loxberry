@@ -3,7 +3,7 @@
 ENVIRONMENT=$(cat /etc/environment)
 export $ENVIRONMENT
 
-PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/loxberry/bin:/opt/loxberry/sbin:$LBHOMEDOR/bin:$LBHOMEDIR/sbin"
+PATH="/sbin:/bin:/usr/sbin:/usr/bin::$LBHOMEDIR/bin:$LBHOMEDIR/sbin"
 PIVERS=`$LBHOMEDIR/bin/showpitype`
 MANUALCFG=`jq -r '.Log2ram.Manualconfigured' $LBHOMEDIR/config/system/general.json`
 MEM=`cat /proc/meminfo | awk '/MemTotal:/ { print $2 }'`
