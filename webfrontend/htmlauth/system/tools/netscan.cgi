@@ -27,6 +27,7 @@ $version = "0.0.2";
 require LWP::UserAgent;
 use CGI::Carp qw(fatalsToBrowser);
 use Socket;
+use IO::Socket;
 
 ##########################################################################
 #
@@ -34,7 +35,7 @@ use Socket;
 #
 ##########################################################################
 
-
+sub scanoverssdp {
 # Scan MiniServers over ssdp
 
 my $IP             = "239.255.255.250";
@@ -84,4 +85,25 @@ close(S);
 print "Content-type: text/html; charset=iso-8859-15\n\n";
 print "{\"Name\" : \"$miniservername\",\n\"IP\" : \"$miniserverip\",\n\"Port\" : \"$miniserverport\"}\n";
 
+}
+
+sub scanoverudpbc {
+
+$ssock = IO::Socket::INET->new(PeerPort => 7070, PeerAddr => "255.255.255.255", Broadcast => 1, Proto => 'udp') or die "send socket: $!";
+
+$ssock->send("\x00");
+$lsock = IO::Socket::INET->new(LocalPort => 7071, Proto => 'udp', Broadcast => 1, Reuse => 1) or die "socket: $@";
+$lsock->autoflush;
+
+$lsock->recv($resp, 4096);
+
+my ($MSName, $IP, $Port) = ($resp =~ m/LoxLIVE: (.*) ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):([0-9]{1,5})/);
+
+print "Content-type: text/html; charset=iso-8859-15\n\n";
+print "{\"Name\" : \"$MSName\",\n\"IP\" : \"$IP\",\n\"Port\" : \"$Port\"}\n";
+
+}
+
+#scanoverssdp();
+scanoverudpbc();
 exit;
