@@ -472,17 +472,17 @@ system("ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link");
 # Reinstall packages, because rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Reinstall some python packages - we will need them for compiling the python modules...";
-apt_remove("python3-dev dh-python python-dev-is-python2");
+apt_install("python3-dev dh-python python-dev-is-python2");
 
-LOGIN "Reinstall pip2 for compatibility reasons - it is not included in Debian anymore...";
-system("curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py");
-system("python2 get-pip.py");
+#LOGIN "Reinstall pip2 for compatibility reasons - it is not included in Debian anymore...";
+#system("curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py");
+#system("python2 get-pip.py");
 
-LOGINF "Upgrade python packages...";
-if (-e "$lbsdatadir/pip_list.dat") {
+LOGINF "Upgrade python2 packages...";
+if (-e "$lbsdatadir/pip2_list.dat") {
 	$log->close;
-	system("cat $lbsdatadir/pip_list.dat | cut -d = -f 1 | xargs -n1 pip2 install >> $logfilename 2>&1");
-	system("mv $lbsdatadir/pip_list.dat $lbsdatadir/pip_list.dat.bkp");
+	system("cat $lbsdatadir/pip2_list.dat | cut -d = -f 1 | xargs -n1 pip2 install >> $logfilename 2>&1");
+	system("mv $lbsdatadir/pip2_list.dat $lbsdatadir/pip2_list.dat.bkp");
 	$log->open;
 }
 if (-e "$lbsdatadir/pip3_list.dat") {
