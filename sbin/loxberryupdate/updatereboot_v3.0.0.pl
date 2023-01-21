@@ -472,11 +472,11 @@ system("ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link");
 # Reinstall packages, because rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Reinstall some python packages - we will need them for compiling the python modules...";
-apt_install("python3-dev dh-python python-dev-is-python2");
+apt_install("python3 python2 python3-dev python-dev-is-python2 dh-python");
 
 #LOGIN "Reinstall pip2 for compatibility reasons - it is not included in Debian anymore...";
-#system("curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py");
-#system("python2 get-pip.py");
+system("curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py");
+system("python2 get-pip.py");
 
 LOGINF "Upgrade python2 packages...";
 if (-e "$lbsdatadir/pip2_list.dat") {
