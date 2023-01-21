@@ -97,10 +97,11 @@ $lsock->autoflush;
 
 $lsock->recv($resp, 4096);
 
-my ($MSName, $IP, $Port) = ($resp =~ m/LoxLIVE: (.*) ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):([0-9]{1,5})/);
+my ($MSName, $IP, $Port, $IPv6) = ($resp =~ m/LoxLIVE: (.*) ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):([0-9]{1,5}).*IPv6:([:0-9a-fA-F]*),/);
 
+print "$resp\n";
 print "Content-type: text/html; charset=iso-8859-15\n\n";
-print "{\"Name\" : \"$MSName\",\n\"IP\" : \"$IP\",\n\"Port\" : \"$Port\"}\n";
+print "{\"Name\" : \"$MSName\",\n\"IP\" : \"$IP\",\n\"Port\" : \"$Port\",\n\"IPv6\" : \"$IPv6\"}\n";
 
 }
 
