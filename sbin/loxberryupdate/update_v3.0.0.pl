@@ -132,15 +132,15 @@ if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
 # Backing up Python packages, because Rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Backing up all Python Modules - Will be overwritten by f***cking broken Rasbian upgrade...";
-#system ("which pip");
-#$exitcode  = $? >> 8;
-#if ($exitcode != 0) {
-#	LOGINF "pip seems not to be installed.";
-#} else {
-#	LOGINF "Saving list with installed pip packages...";
-#	system ("pip install pip --upgrade");
-#	system("pip list --format=freeze > $lbsdatadir/pip_list.dat");
-#}
+system ("which pip2");
+$exitcode  = $? >> 8;
+if ($exitcode != 0) {
+	LOGINF "pip2 seems not to be installed.";
+} else {
+	LOGINF "Saving list with installed pip2 packages...";
+	system ("pip2 install pip --upgrade");
+	system("pip2 list --format=freeze > $lbsdatadir/pip_list.dat");
+}
 system ("which pip3");
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -150,10 +150,6 @@ if ($exitcode != 0) {
 	system ("pip3 install pip --upgrade");
 	system("pip3 list --format=freeze > $lbsdatadir/pip3_list.dat");
 }
-
-LOGINF "Installing Python Dev Package...";
-apt_update();
-apt_install("python3-dev");
 
 #
 # MQTT Gateway migration
