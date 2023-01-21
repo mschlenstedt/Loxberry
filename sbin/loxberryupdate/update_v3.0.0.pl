@@ -29,6 +29,9 @@ my $generaljson = $lbsconfigdir . "/general.json";
 my $gcfgobj = LoxBerry::JSON->new();
 my $gcfg = $gcfgobj->open(filename => $generaljson);
 $gcfg->{Update}->{max_version} = "v3.99.99";
+$gcfg->{Update}->{Installtype} = "install";
+$gcfg->{Update}->{Interval} = "7";
+$gcfg->{Update}->{Releasetype} = "release";
 $gcfgobj->write();
 
 #
