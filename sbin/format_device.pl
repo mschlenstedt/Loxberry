@@ -12,7 +12,7 @@ my $version = "3.0.0";
 # Create a logging object
 my $log = LoxBerry::Log->new ( 
 	package => 'core', 
-	name => 'Format Device', 
+	name => 'Format_Device', 
 	logdir => $lbslogdir, 
 	stdout => 1 );
 
