@@ -139,7 +139,7 @@ if ($exitcode != 0) {
 } else {
 	LOGINF "Saving list with installed pip2 packages...";
 	system ("pip2 install pip --upgrade");
-	system("pip2 list --format=freeze > $lbsdatadir/pip_list.dat");
+	system("pip2 list --format=freeze > $lbsdatadir/pip2_list.dat");
 }
 system ("which pip3");
 $exitcode  = $? >> 8;
