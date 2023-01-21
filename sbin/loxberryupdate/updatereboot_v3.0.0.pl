@@ -476,7 +476,7 @@ apt_install("python3 python2 python3-dev python-dev-is-python2 dh-python");
 
 #LOGIN "Reinstall pip2 for compatibility reasons - it is not included in Debian anymore...";
 system("curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py");
-system("python2 get-pip.py");
+system("python2 /tmp/get-pip.py");
 
 LOGINF "Upgrade python2 packages...";
 if (-e "$lbsdatadir/pip2_list.dat") {
