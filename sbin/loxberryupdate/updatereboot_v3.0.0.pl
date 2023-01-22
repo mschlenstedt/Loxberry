@@ -482,13 +482,13 @@ system("python2 /tmp/get-pip.py");
 LOGINF "Upgrade python2 packages...";
 if (-e "$lbsdatadir/pip2_list.dat") {
 	$log->close;
-	system("cat $lbsdatadir/pip2_list.dat | cut -d = -f 1 | xargs -n1 pip2 install >> $logfilename 2>&1");
+	system("cat $lbsdatadir/pip2_list.dat | cut -d = -f 1 | xargs -n1 python2 -m pip install >> $logfilename 2>&1");
 	system("mv $lbsdatadir/pip2_list.dat $lbsdatadir/pip2_list.dat.bkp");
 	$log->open;
 }
 if (-e "$lbsdatadir/pip3_list.dat") {
 	$log->close;
-	system("cat $lbsdatadir/pip3_list.dat | cut -d = -f 1 | xargs -n1 pip3 install >> $logfilename 2>&1");
+	system("cat $lbsdatadir/pip3_list.dat | cut -d = -f 1 | xargs -n1 python3 -m pip install >> $logfilename 2>&1");
 	system("mv $lbsdatadir/pip3_list.dat $lbsdatadir/pip3_list.dat.bkp");
 	$log->open;
 }
