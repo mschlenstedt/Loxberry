@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:$LBHOMEDIR/bin:$LBHOMEDIR/sbin"
 
 ENVIRONMENT=$(cat /etc/environment)
@@ -60,7 +60,7 @@ case "$1" in
 	if [ -f /boot/rootfsresized ]
 	then
 		echo "Configuring swap...."
-		$LBHOMEDIR/sbin/setswap.pl
+		$LBHOMEDIR/sbin/setswap.pl > /dev/null 2>&1
 	else
 		echo "Stopping unattended updates until rootfs is resized"
 		systemctl stop unattended-upgrades
@@ -108,6 +108,25 @@ case "$1" in
 	#	echo "Start Emergency Webserver"
 	#	perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
 	#fi
+
+	# Start Remote Connection if connfigured
+	if [ $(jq -r '.Remote.Autoconnect' $LBHOMEDIR/config/system/general.json) = 'true' ] && [ -e $LBHOMEDIR/log/system/remote.autoconnect ]
+	then
+		echo "Seems there was a Remote Connection before rebooting. Checking..."
+		NOW=$(date +%s)
+		LAST=$(cat $LBHOMEDIR/log/system/remote.autoconnect)
+		let LAST+=259200
+		if [ $NOW -lt $LAST ]
+		then
+			echo "Last connection was less then 3 days ago - reconnecting..."
+			$LBHOMEDIR/sbin/remoteconnect.pl start > /dev/null 2>&1
+		else
+			echo "Last connection was more then 3 days ago - ignoring..."
+			rm $LBHOMEDIR/log/system/remote.autoconnect > /dev/null 2>&1
+		fi
+	else
+		rm $LBHOMEDIR/log/system/remote.autoconnect > /dev/null 2>&1
+	fi
 
 	# Check Apache SSL certificates
 	if [ -f $LBHOMEDIR/sbin/checkcerts.sh ]
@@ -196,6 +215,7 @@ case "$1" in
 	else
 		echo "Everything OK, nothing to do."
 	fi
+
 	echo "Configuring NTP systemd timesync...."
 	systemctl disable systemd-timesyncd > /dev/null 2>&1
   ;;
@@ -251,6 +271,3 @@ case "$1" in
   ;;
 
 esac
-
-
-

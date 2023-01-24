@@ -123,6 +123,7 @@ if ($command eq "stop") {
 	my $loxberryid = LoxBerry::System::read_file("$lbsconfigdir/loxberryid.cfg");
 	my ($exitcode) = execute { command => "curl -k --connect-timeout 5 --max-time 5 --retry 2 -s -L \"https://www.loxberry.de/supportvpn/register.cgi?id=$loxberryid&do=unregister\"" };
 	unlink('/tmp/remoteconnect.log');
+	unlink("$lbslogdir/remote.autoconnect");
 	exit (0);
 
 }

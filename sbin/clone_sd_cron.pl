@@ -11,7 +11,7 @@ my $version = "3.0.2";
 # Create a logging object
 my $log = LoxBerry::Log->new ( 
 	package => 'LoxBerry Backup', 
-	name => 'Clone_SD Cronjob', 
+	name => 'Clone_SD_Cronjob', 
 	logdir => $lbslogdir, 
 	stdout => 1,
 );
