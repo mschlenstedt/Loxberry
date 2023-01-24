@@ -10,8 +10,8 @@ RemainAfterExit=yes
 ExecStart=/bin/sh -c "${LBHOMEDIR}/sbin/loxberryinit.sh start"
 ExecStop=/bin/sh -c "${LBHOMEDIR}/sbin/loxberryinit.sh stop"
 SyslogIdentifier=loxberry
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
