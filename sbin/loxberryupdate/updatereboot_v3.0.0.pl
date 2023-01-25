@@ -559,6 +559,18 @@ if ($errors) {
 			LOGOK "Watchdog Service enabled successfully.";
 		}
 	}
+	# create plugin logfolders if we are not on Raspberry 
+	# Check if we are on a Rapsberry
+	if ( ! -e "$bhomedir/config/system/is_raspberry.cfg" ) {
+		LOGINF "This seems not to be a Raspberry. Will have to create the plugin log folders ...";
+		qx { $lbhomedir/sbin/createpluginfolders.pl };
+		my $exitcode = $? >> 8;
+		if ($exitcode != 0) {
+			LOGWARN "Error occurred while creating plugin log folders ... - Error $exitcode";
+		} else {
+			LOGOK "Plugin log folders created successfully.";
+		} 
+	}
 }
 
 # Continue with LoxBerry Update on next reboot
