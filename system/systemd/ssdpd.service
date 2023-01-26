@@ -10,8 +10,8 @@ EnvironmentFile=/etc/environment
 #WorkingDirectory=/opt/loxberry/sbin
 ExecStart=/usr/bin/perl "${LBHOMEDIR}/sbin/ssdpd"
 SyslogIdentifier=ssdpd
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 Restart=no
 RestartSec=3
 
