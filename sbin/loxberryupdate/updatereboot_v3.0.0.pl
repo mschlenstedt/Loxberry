@@ -473,7 +473,7 @@ system("ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link");
 #
 LOGINF "Reinstall some python packages - we will need them for compiling the python modules...";
 apt_install("python-is-python2");
-apt_install("python3 python2 python3-dev python2-dev dh-python");
+apt_install("python3 python2 python3-dev python2-dev");
 
 #LOGIN "Reinstall pip2 for compatibility reasons - it is not included in Debian anymore...";
 system("curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py");
