@@ -118,6 +118,10 @@ start)
 		echo "This seems not to be a Raspberry. Will only copy skel folders, but will not create any ramdiscs..."
 		cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
 		cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
+		# Create log folders for all plugins if not existing
+		# Normally not needed for VMs, but "it doesn't hurt" - so doing it here as well
+		echo "Create log folders for all installed plugins"
+		perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
 		exit 0
 	fi
 	
