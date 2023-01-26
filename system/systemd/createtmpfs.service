@@ -13,7 +13,6 @@ ExecStop=/bin/bash -c "${LBHOMEDIR}/sbin/createtmpfsfoldersinit.sh stop"
 SyslogIdentifier=createtmpfs
 StandardOutput=journal
 StandardError=journal
-TimeoutStartSec=120
 
 [Install]
 WantedBy=multi-user.target
