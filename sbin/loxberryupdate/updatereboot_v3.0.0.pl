@@ -485,12 +485,12 @@ system("python2 /tmp/get-pip.py");
 LOGINF "Upgrade python2 packages...";
 if (-e "$lbsdatadir/pip2_list.dat") {
 	$log->close;
-	system("$lbssbin/pythonmoduleupgrade.sh python2 restore $lbsdatadir/pip2_list.dat >> $logfilename 2>&1");
+	system("$lbssbindir/pythonmoduleupgrade.sh python2 restore $lbsdatadir/pip2_list.dat >> $logfilename 2>&1");
 	$log->open;
 }
 if (-e "$lbsdatadir/pip3_list.dat") {
 	$log->close;
-	system("$lbssbin/pythonmoduleupgrade.sh python3 restore $lbsdatadir/pip3_list.dat >> $logfilename 2>&1");
+	system("$lbssbindir/pythonmoduleupgrade.sh python3 restore $lbsdatadir/pip3_list.dat >> $logfilename 2>&1");
 	$log->open;
 }
 
