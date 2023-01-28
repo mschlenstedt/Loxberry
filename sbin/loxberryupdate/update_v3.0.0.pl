@@ -141,7 +141,7 @@ if ($exitcode != 0) {
 	LOGINF "pip2 seems not to be installed.";
 } else {
 	LOGINF "Saving list with installed pip2 packages...";
-	system("$lbssbin/pythonmoduleupgrade.sh python2 backup $lbsdatadir/pip2_list.dat");
+	system("$lbssbindir/pythonmoduleupgrade.sh python2 backup $lbsdatadir/pip2_list.dat");
 }
 system ("which pip3");
 $exitcode  = $? >> 8;
@@ -149,7 +149,7 @@ if ($exitcode != 0) {
 	LOGINF "pip3 seems not to be installed.";
 } else {
 	LOGINF "Saving list with installed pip3 packages...";
-	system("$lbssbin/pythonmoduleupgrade.sh python3 backup $lbsdatadir/pip3_list.dat");
+	system("$lbssbindir/pythonmoduleupgrade.sh python3 backup $lbsdatadir/pip3_list.dat");
 }
 
 #
