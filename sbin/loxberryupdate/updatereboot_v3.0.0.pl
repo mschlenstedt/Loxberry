@@ -300,7 +300,7 @@ LOGINF "Removing package 'libc6-dev' - we will reinstall it in V8 later on. But 
 apt_remove("libc6-dev");
 
 LOGINF "Removing some python packages - we will reinstall them later on. But they will break the upgrade...";
-apt_remove("python-dev dh-python");
+apt_remove("dh-python");
 
 LOGINF "Executing upgrade...";
 apt_upgrade();
@@ -321,6 +321,9 @@ $log->open;
 
 LOGINF "Cleaning up and updating apt databases...";
 apt_update();
+
+LOGINF "Convert Python Package to Python2 Package...";
+apt_install("python-is-python2");
 
 LOGINF "Executing upgrade...";
 apt_upgrade();
@@ -472,8 +475,8 @@ system("ln -sf /dev/null /etc/systemd/network/73-usb-net-by-mac.link");
 # Reinstall packages, because Rasbian's upgrade will overwrite all of them...
 #
 LOGINF "Reinstall some python packages - we will need them for compiling the python modules...";
-apt_install("python-is-python2");
-apt_install("python3 python2 python3-dev python2-dev");
+apt_install("python3-dev python2-dev swig libgpgme-dev libcairo2-dev libjpeg-dev libgif-dev");
+apt_install("dh-python");
 
 #LOGIN "Reinstall pip2 for compatibility reasons - it is not included in Debian anymore...";
 system("curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py");
