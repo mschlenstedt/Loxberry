@@ -315,7 +315,7 @@ sub mainmenu {
 	# Slow down Notitfys for PI1 (needs too much CPU)
 	my $output = qx ($lbsbindir/showpitype);
 	chomp ($output);
-	if ($output eq "type_1") {
+	if ($output eq "type_1" | $output eq "type_0") {
 		$maintemplate->param('NOTIFY_POLLTIME', 30000);
 	} else {
 		$maintemplate->param('NOTIFY_POLLTIME', 5000);
