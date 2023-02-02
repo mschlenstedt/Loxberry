@@ -35,14 +35,14 @@ shift $((OPTIND-1))
 apt-get -y install jq git
 
 # Stop loxberry Service
-killall -u loxberry
+if /bin/systemctl --no-pager status apache2.service; then
+	/bin/systemctl stop apache2.service
+fi
 if /bin/systemctl --no-pager status loxberry.service; then
 	/bin/systemctl disable loxberry.service
 	/bin/systemctl stop loxberry.service
 fi
-if /bin/systemctl --no-pager status apache2.service; then
-	/bin/systemctl stop apache2.service
-fi
+killall -u loxberry
 if /bin/systemctl --no-pager status createtmpfs.service; then
 	/bin/systemctl disable createtmpfs.service
 	/bin/systemctl stop createtmpfs.service
@@ -527,16 +527,16 @@ if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
 	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
 fi
 
-if systemctl --no-pager status apache2; then
-	/bin/systemctl restart apache2
-fi
+#if systemctl --no-pager status apache2; then
+#	/bin/systemctl restart apache2
+#fi
 
-if ! /bin/systemctl --no-pager status apache2; then
-	FAIL "Could not reconfigure Apache2.\n"
-	exit 1
-else
-	OK "Successfully reconfigured Apache2."
-fi
+#if ! /bin/systemctl --no-pager status apache2; then
+#	FAIL "Could not reconfigure Apache2.\n"
+#	exit 1
+#else
+#	OK "Successfully reconfigured Apache2."
+#fi
 
 # Configuring Network Interfaces
 TITLE "Configuring Network..."
@@ -622,6 +622,7 @@ fi
 TITLE "Configuring MSMTP..."
 
 if [ -d $LBHOME/system/msmtp ]; then
+	rm /etc/msmtprc
 	ln -s $LBHOME/system/msmtp/msmtprc /etc/msmtprc
 	chmod 0600 $LBHOME/system/msmtp/msmtprc
 fi
@@ -634,91 +635,120 @@ else
 	OK "Successfully set up MSMTP Config."
 fi
 
-
-exit 0
-
-
 # Cron.d
+TITLE "Configuring Cron.d..."
+
 if [ ! -L /etc/cron.d ]; then
-	mv /etc/cron.d /etc/cron.d.old
+	mv /etc/cron.d /etc/cron.d.orig
 fi
 if [ -L /etc/cron.d ]; then
     rm /etc/cron.d
 fi
 ln -s $LBHOME/system/cron/cron.d /etc/cron.d
 
-# Skel for system logs, LB system logs and LB plugin logs
-if [ -d $LBHOME/log/skel_system/ ]; then
-    find $LBHOME/log/skel_system/ -type f -exec rm {} \;
+if [ ! -L /etc/cron.d ]; then
+	FAIL "Could not set up Cron.d.\n"
+	exit 1
+else
+	OK "Successfully set up Cron.d."
 fi
-if [ -d $LBHOME/log/skel_syslog/ ]; then
-    find $LBHOME/log/skel_syslog/ -type f -exec rm {} \;
-fi
+cp /etc/cron.d.orig/* /etc/cron.d
 
-# Clean apt cache
-rm -rf /var/cache/apt/archives/*
+# Skel for system logs, LB system logs and LB plugin logs
+#if [ -d $LBHOME/log/skel_system/ ]; then
+#    find $LBHOME/log/skel_system/ -type f -exec rm {} \;
+#fi
+#if [ -d $LBHOME/log/skel_syslog/ ]; then
+#    find $LBHOME/log/skel_syslog/ -type f -exec rm {} \;
+#fi
+
+# USB MOunts
+TITLE "Configuring automatic USB Mounts..."
 
 # Systemd service for usb automount
-# (also included in 1.0.4 Update script)
+mkdir -p /media/usb
 if [ -e /etc/systemd/system/usb-mount@.service ]; then
 	rm /etc/systemd/system/usb-mount@.service
 fi
 ln -s $LBHOME/system/systemd/usb-mount@.service /etc/systemd/system/usb-mount@.service
-sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/systemd/usb-mount@.service
-/bin/systemctl daemon-reload
 
 # Create udev rules for usbautomount
-# (also included in 1.0.4 Update script)
-if [ ! -e /etc/udev/rules.d/99-usbmount.rules ]; then
-(cat <<END
-KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="$LBHOME/sbin/usb-mount.sh chkadd %k"
-KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
-END
-) > /etc/udev/rules.d/99-usbmount.rules
+if [ -e /etc/udev/rules.d/99-usbmount.rules ]; then
+	rm /etc/udev/rules.d/99-usbmount.rules
+fi
+ln -s $LBHOME/system/udev/usbmount.rules /etc/udev/rules.d/99-usbmount.rules
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/udev/usbmount.rules 
+
+/bin/systemctl daemon-reload
+
+if [ ! -L /etc/systemd/system/usb-mount@.service ]; then
+	FAIL "Could not set up Service for USB-Mount.\n"
+	exit 1
+else
+	OK "Successfully set up service for USB-Mount."
+fi
+if [ ! -L /etc/udev/rules.d/99-usbmount.rules ]; then
+	FAIL "Could not set up udev Rules for USB-Mount.\n"
+	exit 1
+else
+	OK "Successfully set up udev Rules for USB-Mount."
 fi
 
 # Configure autofs
-if [ ! -e /etc/auto.master ]; then
-	awk -v s='/media/smb /etc/auto.smb --timeout=300 --ghost' '/^\/media\/smb/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/auto.master
-fi
-mkdir -p /media/smb
-mkdir -p /media/usb
-if [ ! -L /etc/auto.smb ]; then
-	mv -f /etc/auto.smb /etc/auto.smb.backup
-fi
-if [ -L /etc/auto.smb ]; then
-	rm /etc/auto.smb
-fi
-ln -s $LBHOME/system/autofs/auto.smb /etc/auto.smb
-chmod 0755 $LBHOME/system/autofs/auto.smb
-systemctl restart autofs
+TITLE "Configuring AutoFS for Samba Netshares..."
 
-# creds for AutoFS (SMB)
+mkdir -p /media/smb
 if [ -L /etc/creds ]; then
     rm /etc/creds
 fi
 ln -s $LBHOME/system/samba/credentials /etc/creds
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/autofs/loxberry_smb.autofs
+ln -s $LBHOME/system/autofs/loxberry_smb.autofs /etc/auto.master.d/loxberry_smb.autofs
+chmod 0755 $LBHOME/system/autofs/loxberry_smb.autofs
+/bin/systemctl restart autofs
+
+if ! /bin/systemctl --no-pager status autofs; then
+	FAIL "Could not reconfigure AutoFS.\n"
+	exit 1
+else
+	OK "Successfully reconfigured AutoFS."
+fi
 
 # Config for watchdog
-systemctl disable watchdog.service
-systemctl stop watchdog.service
+TITLE "Configuring Watchdog..."
+
+/bin/systemctl disable watchdog.service
+/bin/systemctl stop watchdog.service
 
 if [ ! -L /etc/watchdog.conf ]; then
-	mv /etc/watchdog.conf /etc/watchdog.bkp
+	mv /etc/watchdog.conf /etc/watchdog.orig
 fi
 if [ -L /etc/watchdog.conf ]; then
     rm /etc/watchdog.conf
 fi
-if ! cat /etc/default/watchdog | grep -q -e "watchdog_options.*-v"; then
-	/bin/sed -i 's#watchdog_options="\(.*\)"#"watchdog_options="\1 -v"#g' /etc/default/watchdog
+if ! cat /etc/default/watchdog | grep -q -e "watchdog_options"; then
+	echo 'watchdog_options="-v"' >> /etc/default/watchdog
 fi
-/bin/sed -i "s#REPLACELBHOMEDIR#"$LBHOME"#g" $LBHOME/system/watchdog/rsyslog.conf
+if ! cat /etc/default/watchdog | grep -q -e "watchdog_options.*-v"; then
+	/bin/sed -i 's#watchdog_options="\(.*\)"#watchdog_options="\1 -v"#' /etc/default/watchdog
+fi
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/watchdog/rsyslog.conf
 ln -f -s $LBHOME/system/watchdog/watchdog.conf /etc/watchdog.conf
 ln -f -s $LBHOME/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf
-systemctl restart rsyslog.service
+/bin/systemctl restart rsyslog.service
+
+if [ ! -L /etc/watchdog.conf ]; then
+	FAIL "Could not reconfigure WatchdogS.\n"
+	exit 1
+else
+	OK "Successfully reconfigured Watchdog."
+fi
+
+exit 0
 
 # Activating i2c
 # (also included in 1.0.3 Update script)
+TITLE "Configuring Watchdog..."
 $LBHOME/sbin/activate_i2c.sh
 
 # Mount all from /etc/fstab
