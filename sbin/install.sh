@@ -36,18 +36,17 @@ apt-get -y install jq git
 
 # Stop loxberry Service
 killall -u loxberry
-if /bin/systemctl is-enabled loxberry.service; then
+if /bin/systemctl --no-pager status loxberry.service; then
 	/bin/systemctl disable loxberry.service
 	/bin/systemctl stop loxberry.service
 fi
-if /bin/systemctl is-enabled apache2.service; then
-	/bin/systemctl disable apache2.service
+if /bin/systemctl --no-pager status apache2.service; then
 	/bin/systemctl stop apache2.service
 fi
-if /bin/systemctl is-enabled createtmpfs.service; then
+if /bin/systemctl --no-pager status createtmpfs.service; then
 	/bin/systemctl disable createtmpfs.service
 	/bin/systemctl stop createtmpfs.service
-	echo "There are some old mounts of tmpfs filesystems. Please reboot and start installation again.\n"
+	echo -e "\nThere are some old mounts of tmpfs filesystems. Please reboot and start installation again.\n"
 	exit 1
 fi
 
@@ -474,20 +473,40 @@ else
 	OK "Successfully set up service for Createtmpfs."
 fi
 
+# PHP
+PHPVER=$(apt-cache show php | grep "Depends: " | sed "s/Depends: php//")
+TITLE "Configuring PHP $PHPVER..."
+
+if [ -e /etc/php/$PHPVER ] && [ ! -e /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini ]; then
+	mkdir -p /etc/php/$PHPVER/apache2/conf.d
+	mkdir -p /etc/php/$PHPVER/cgi/conf.d
+	mkdir -p /etc/php/$PHPVER/cli/conf.d
+	rm /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini
+	rm /etc/php/$PHPVER/cgi/conf.d/20-loxberry.ini
+	rm /etc/php/$PHPVER/cli/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/cgi/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/cli/conf.d/20-loxberry.ini
+fi
+
+if [ ! -L  /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini ]; then
+	FAIL "Could not set up PHP $PHPVER.\n"
+	exit 1
+else
+	OK "Successfully set up PHP $PHPVER."
+fi
+
 # Configuring Apache2
 TITLE "Configuring Apache2..."
 
 # Apache Config
 if [ ! -L /etc/apache2 ]; then
-	mv /etc/apache2 /etc/apache2.old
+	mv /etc/apache2 /etc/apache2.orig
 fi
 if [ -L /etc/apache2 ]; then  
     rm /etc/apache2
 fi
 ln -s $LBHOME/system/apache2 /etc/apache2
-a2dismod php*
-a2dissite 001-default-ssl
-
 if [ ! -L /etc/apache2 ]; then
 	FAIL "Could not set up Apache2 Config.\n"
 	exit 1
@@ -495,22 +514,29 @@ else
 	OK "Successfully set up Apache2 Config."
 fi
 
+a2dismod php*
+a2dissite 001-default-ssl
+rm $LBHOME/system/apache2/mods-available/php*
+rm $LBHOME/system/apache2/mods-enabled/php*
+cp /etc/apache2.orig/mods-available/php* /etc/apache2/mods-available
+a2enmod php*
+
 # Disable PrivateTmp for Apache2 on systemd
 if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
 	mkdir -p /etc/systemd/system/apache2.service.d
 	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
 fi
 
-#if systemctl --no-pager status apache2; then
-#	/bin/systemctl restart apache2
-#fi
+if systemctl --no-pager status apache2; then
+	/bin/systemctl restart apache2
+fi
 
-#if ! /bin/systemctl --no-pager status apache2; then
-#	FAIL "Could not reconfigure Apache2.\n"
-#	exit 1
-#else
-#	OK "Successfully reconfigured Apache2."
-#fi
+if ! /bin/systemctl --no-pager status apache2; then
+	FAIL "Could not reconfigure Apache2.\n"
+	exit 1
+else
+	OK "Successfully reconfigured Apache2."
+fi
 
 # Configuring Network Interfaces
 TITLE "Configuring Network..."
@@ -542,10 +568,6 @@ if [ -L /etc/samba ]; then
 fi
 ln -s $LBHOME/system/samba /etc/samba
 
-if systemctl --no-pager status samba-ad-dc; then
-	/bin/systemctl restart samba-ad-dc
-fi
-
 if [ ! -L /etc/samba ]; then
 	FAIL "Could not set up Samba Config.\n"
 	exit 1
@@ -553,13 +575,19 @@ else
 	OK "Successfully set up Samba Config."
 fi
 
-if ! /bin/systemctl --no-pager status samba-ad-dc; then
+if systemctl --no-pager status smbd; then
+	/bin/systemctl restart smbd
+fi
+if systemctl --no-pager status nmbd; then
+	/bin/systemctl restart nmbd
+fi
+
+if ! /bin/systemctl --no-pager status smbd; then
 	FAIL "Could not reconfigure Samba.\n"
 	exit 1
 else
 	OK "Successfully reconfigured Samba."
 fi
-
 
 # Configuring VSFTP
 TITLE "Configuring VSFTP..."
@@ -572,15 +600,15 @@ if [ -L /etc/vsftpd.conf ]; then
 fi
 ln -s $LBHOME/system/vsftpd/vsftpd.conf /etc/vsftpd.conf
 
-if systemctl --no-pager status vsftpd; then
-	/bin/systemctl restart vsftpd
-fi
-
 if [ ! -L /etc/vsftpd.conf ]; then
 	FAIL "Could not set up VSFTPD Config.\n"
 	exit 1
 else
 	OK "Successfully set up VSFTPD Config."
+fi
+
+if systemctl --no-pager status vsftpd; then
+	/bin/systemctl restart vsftpd
 fi
 
 if ! /bin/systemctl --no-pager status vsftpd; then
@@ -593,38 +621,19 @@ fi
 # Configuring MSMTP
 TITLE "Configuring MSMTP..."
 
-rm $LBHOME/.msmtprc
-if [ -e $LBHOME/system/msmtp/msmtprc ]; then
-	ln -s $LBHOME/system/msmtp/msmtprc $LBHOME/.msmtprc
+if [ -d $LBHOME/system/msmtp ]; then
+	ln -s $LBHOME/system/msmtp/msmtprc /etc/msmtprc
 	chmod 0600 $LBHOME/system/msmtp/msmtprc
-	chown loxberry:loxberry $LBHOME/system/msmtp/msmtprc
 fi
 chmod 0600 $LBHOME/system/msmtp/aliases
-chown loxberry:loxberry $LBHOME/system/msmtp/aliases
 
-if [ ! -e $LBHOME/.msmtprc ]; then
+if [ ! -e /etc/msmtprc ]; then
 	FAIL "Could not set up MSMTP Config.\n"
 	exit 1
 else
 	OK "Successfully set up MSMTP Config."
 fi
 
-# PHP
-PHPVER=$(apt-cache show php | grep "Depends: " | sed "s/Depends: php//")
-TITLE "Configuring PHP $PHPVER..."
-
-if [ -e /etc/php/$PHPVER ] && [ ! -e /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini ]; then
-	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini
-	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/cgi/conf.d/20-loxberry.ini
-	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/cli/conf.d/20-loxberry.ini
-fi
-
-if [ ! -e /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini ]; then
-	FAIL "Could not set up PHP $PHPVER.\n"
-	exit 1
-else
-	OK "Successfully set up PHP $PHPVER."
-fi
 
 exit 0
 
