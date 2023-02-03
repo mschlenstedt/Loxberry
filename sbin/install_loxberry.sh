@@ -16,6 +16,10 @@ if (( $EUID != 0 )); then
     exit 1
 fi
 
+echo -e "\n\nNote! If you were logged in as user 'loxberry' and used 'su' to switch to the root account, your connection may be lost now...\n\n"
+killall -u loxberry
+sleep 3
+
 # Commandline options
 while getopts "t:b:" o; do
     case "${o}" in
@@ -42,7 +46,6 @@ if /bin/systemctl --no-pager status loxberry.service; then
 	/bin/systemctl disable loxberry.service
 	/bin/systemctl stop loxberry.service
 fi
-killall -u loxberry
 if /bin/systemctl --no-pager status createtmpfs.service; then
 	/bin/systemctl disable createtmpfs.service
 	/bin/systemctl stop createtmpfs.service
@@ -189,7 +192,7 @@ echo -e "DietPi Version:     $G_DIETPI_VERSION_CORE.$G_DIETPI_VERSION_SUB"
 echo -e "Hardware Model:     $G_HW_MODEL_NAME"
 echo -e "Architecture:       $G_HW_ARCH_NAME"
 echo -e "\n\nHit ${BOLD}<CTRL>+C${RESET} now to stop, any other input will continue.\n"
-read -p "Press any key..."
+read -n 1 -s -r -p "Press any key to continue"
 tput clear
 
 # Download Release
@@ -232,6 +235,9 @@ fi
 
 # Adding User loxberry
 TITLE "Adding user 'loxberry', setting default passwd, removing user 'dietpi'..."
+
+killall -u loxberry
+sleep 3
 
 deluser --quiet loxberry > /dev/null 2>&1
 adduser --no-create-home --home $LBHOME --disabled-password --gecos "" loxberry
@@ -281,6 +287,10 @@ else
 	OK "Successfully set architecture of your system."
 fi
 
+# Installing OpenSSH Server
+TITLE "Installing OpenSSH server..."
+/boot/dietpi/dietpi-software install 105
+
 # Configuring hardware architecture
 TITLE "Installing additional software packages from apt repository..."
 
@@ -288,18 +298,18 @@ echo 'Acquire::GzipIndexes "false";' > /etc/apt/apt.conf.d/98dietpi-uncompressed
 /boot/dietpi/func/dietpi-set_software apt-cache clean
 apt update
 
-#if [ -e $LBHOME/packages.txt ]; then
+#if [ -e $LBHOME/packages_x64.txt ]; then
 #	PACKAGES=""
 #	while read entry
 #	do
 #		if echo $entry | grep -Eq "^ii "; then
-#			VAR=$(echo $entry | cut -d " " -f 2 | sed "s/:.*\$//")
+#			VAR=$(echo $entry | sed "s/  / /g" | cut -d " " -f 2 | sed "s/:.*\$//")
 #			PINFO=$(apt-cache show $VAR 2>&1)
 #			if echo $PINFO | grep -Eq "N: Unable to locate"; then
 #				continue
 #			fi
 #			PACKAGE=$(echo $PINFO | grep "Package: " | cut -d " " -f 2)
-#			if dpkg -l $PACKAGE > /dev/null 2>&1; then
+#			if dpkg -s $PACKAGE > /dev/null 2>&1; then
 #				continue
 #			fi
 #			apt-get -y install $PACKAGE
@@ -579,7 +589,7 @@ if ! /bin/systemctl --no-pager status smbd; then
 else
 	OK "Successfully reconfigured Samba."
 fi
-echo ('loxberry'; echo 'loxberry') | smbpasswd -a -s loxberry
+(echo 'loxberry'; echo 'loxberry') | smbpasswd -a -s loxberry
 
 # Configuring VSFTP
 TITLE "Configuring VSFTP..."
@@ -881,7 +891,10 @@ TITLE "Disable root login via ssh and password..."
 # Create Config
 TITLE "Create LoxBerry Config from Defaults..."
 
-sudo -u loxberry PERL5LIB=/opt/loxberry/libs/perllib && perl $LBHOME/bin/createconfig.pl
+#su loxberry -c "PERL5LIB=/opt/loxberry/libs/perllib && perl $LBHOME/bin/createconfig.pl"
+export PERL5LIB=$LBHOME/libs/perllib
+$LBHOME/bin/createconfig.pl
+$LBHOME/bin/createconfig.pl # Run twice
 
 if [ ! -e $LBHOME/config/system/general.json ]; then
 	FAIL "Could not create default config files.\n"
@@ -889,6 +902,7 @@ if [ ! -e $LBHOME/config/system/general.json ]; then
 else
 	OK "Successfully created default config files."
 fi
+
 
 # Set correct File Permissions
 TITLE "Setting File Permissions..."
@@ -902,3 +916,14 @@ else
 	OK "Successfully set File Permissions for LoxBerry."
 fi
 
+# The end
+export PERL5LIB=$LBHOME/libs/perllib
+IP=$(perl -e 'use LoxBerry::System; $ip = LoxBerry::System::get_localip(); print $ip; exit;')
+echo -e "\n\n\n${RED}${ULINE}${BOLD}WE ARE DONE! :-)${RESET}"
+echo -e "\n\n${RED}You have to reboot your LoxBerry now. Then please open your webbrowser"
+echo -e "and point it to http://$IP or http://loxberry"
+echo -e "\nIf you would like to login via SSH, use user 'loxberry' and password 'loxberry'."
+echo -e "Root's password is also 'loxberry' by default (you cannot login directly via SSH)."
+echo -e "\nGood Bye.\n\n${RESET}"
+
+exit 0
