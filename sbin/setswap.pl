@@ -27,6 +27,11 @@ my $log = LoxBerry::Log->new ( package => "core", name => "setswap", filename =>
 LOGSTART "LogBerry Setswap";
 $log->stdout(1);
 
+if (-e "/boot/dietpi/.hw_model") {
+        LOGiOK "This is a DietPi system. Swap is handled by DietPi. Nothing to do.";
+	exit 0;
+}
+
 my $output = qx { which dphys-swapfile };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
