@@ -323,7 +323,6 @@ apt update
 TITLE "Adding user LoxBerry to some additional groups..."
 
 # Group membership
-/usr/sbin/usermod -a -G sudo loxberry
 /usr/sbin/usermod -a -G dialout loxberry
 /usr/sbin/usermod -a -G audio loxberry
 /usr/sbin/usermod -a -G gpio loxberry
@@ -393,14 +392,6 @@ if [ ! -Z $LBSSBIN ]; then
 else
 	OK "Successfully set systemwide environments."
 fi
-
-# Configuring /etc/hosts
-TITLE "Setting up /etc/hosts..."
-
-# Remove 127.0.1.1 from /etc/hosts
-sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
-
-OK "Successfully set up /etc/hosts."
 
 # Configuring sudoers
 TITLE "Setting up sudoers..."
@@ -588,6 +579,7 @@ if ! /bin/systemctl --no-pager status smbd; then
 else
 	OK "Successfully reconfigured Samba."
 fi
+smbpasswd -a loxberry
 
 # Configuring VSFTP
 TITLE "Configuring VSFTP..."
@@ -738,54 +730,173 @@ ln -f -s $LBHOME/system/watchdog/rsyslog.conf /etc/rsyslog.d/10-watchdog.conf
 /bin/systemctl restart rsyslog.service
 
 if [ ! -L /etc/watchdog.conf ]; then
-	FAIL "Could not reconfigure WatchdogS.\n"
+	FAIL "Could not reconfigure Watchdog.\n"
 	exit 1
 else
 	OK "Successfully reconfigured Watchdog."
 fi
 
-exit 0
-
 # Activating i2c
-# (also included in 1.0.3 Update script)
-TITLE "Configuring Watchdog..."
-$LBHOME/sbin/activate_i2c.sh
+TITLE "Enabling I2C (if supported)..."
+
+/boot/dietpi/func/dietpi-set_hardware i2c enable
 
 # Mount all from /etc/fstab
+TITLE "Enabling mount -a during boot time..."
+
 if ! grep -q -e "^mount -a" /etc/rc.local; then
 	sed -i 's/^exit 0/mount -a\n\nexit 0/g' /etc/rc.local
 fi
 
+if ! grep -q -e "^mount -a" /etc/rc.local; then
+	FAIL "Could not enabling mount -a during boottime.\n"
+	exit 1
+else
+	OK "Successfully enabled mount -a during boottime."
+fi
+
 # Set hosts environment
+TITLE "Setting hosts environment..."
+
 rm /etc/network/if-up.d/001hosts
 rm /etc/dhcp/dhclient-exit-hooks.d/sethosts
 ln -f -s $LBHOME/sbin/sethosts.sh /etc/network/if-up.d/001host
 ln -f -s $LBHOME/sbin/sethosts.sh /etc/dhcp/dhclient-exit-hooks.d/sethosts 
 
-# Configure swap
-service dphys-swapfile stop
-swapoff -a
-rm -r /var/swap
-
-# Configuring node.js for Christian :-)
-rm /etc/apt/sources.list.d/nodesource.list
-rm /etc/apt/sources.list.d/yarn.list
-curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
-curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo 'deb https://deb.nodesource.com/node_12.x buster main' > /etc/apt/sources.list.d/nodesource.list
-echo 'deb-src https://deb.nodesource.com/node_12.x buster main' >> /etc/apt/sources.list.d/nodesource.list
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-apt-get install nodejs yarn
-
-# Configure listchanges to have no output - for apt beeing non-interactive
-if [ -e /etc/apt/listchanges.conf ]; then
-  sed -i 's/frontend=pager/frontend=none/' /etc/apt/listchanges.conf
+if [ ! -L /etc/network/if-up.d/001host ]; then
+	FAIL "Could not set host environment.\n"
+	exit 1
+else
+	OK "Successfully set host environment."
 fi
 
-# Aktivating Root access via ssh with Key (password still forbidden)
-/bin/sed -i 's:^PermitRootLogin:#PermitRootLogin:g' /etc/ssh/sshd_config
-echo 'PermitRootLogin prohibit-password' >> /etc/ssh/sshd_config
-/bin/sed -i 's:^PubkeyAuthentication:#PubkeyAuthentication:g' /etc/ssh/sshd_config
-echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
-system ssh restart
+# Configuring /etc/hosts
+TITLE "Setting up /etc/hosts and /etc/hostname..."
 
+# Remove 127.0.1.1 from /etc/hosts
+sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
+
+echo "loxberry" > /etc/hostname
+
+OK "Successfully set up /etc/hosts."
+
+# Configure swap
+#service dphys-swapfile stop
+#swapoff -a
+#rm -r /var/swap
+
+# Configuring node.js for Christian :-)
+
+
+# Configure listchanges to have no output - for apt beeing non-interactive
+TITLE "Configuring listchanges to be quit..."
+
+if [ -e /etc/apt/listchanges.conf ]; then
+	sed -i 's/frontend=pager/frontend=none/' /etc/apt/listchanges.conf
+fi
+
+OK "Successfully configured listchanges."
+
+# Reconfigure PAM
+TITLE "Reconfigure PAM to allow shorter (weaker) passwords..."
+
+sed -i 's/obscure/minlen=1/' /etc/pam.d/common-password
+
+if ! cat /etc/pam.d/common-password | grep -q "minlen="; then
+	FAIL "Could not reconfigure PAM.\n"
+	exit 1
+else
+	OK "Successfully reconfigured PAM."
+fi
+
+# Reconfigure Unattended Updates
+TITLE "Reconfigure Unattended Updates for LoxBerry..."
+
+if [ -e /etc/apt/apt.conf.d/02periodic ]; then
+    rm /etc/apt/apt.conf.d/02periodic
+fi
+if [ -e /etc/apt/apt.conf.d/50unattended-upgrades ]; then
+    rm /etc/apt/apt.conf.d/50unattended-upgrades
+fi
+ln -f -s $LBHOME/system/unattended-upgrades/periodic.conf /etc/apt/apt.conf.d/02periodic
+ln -f -s $LBHOME/system/unattended-upgrades/unattended-upgrades.conf /etc/apt/apt.conf.d/50unattended-upgrades
+
+if [ ! -L /etc/apt/apt.conf.d/50unattended-upgrades ]; then
+	FAIL "Could not reconfigure Unattended Updates.\n"
+	exit 1
+else
+	OK "Successfully reconfigured Unattended Updates."
+fi
+
+/bin/systemctl enable unattended-upgrades
+
+if ! /bin/systemctl is-enabled unattended-upgrades then
+	FAIL "Could not enable  Unattended Updates.\n"
+	exit 1
+else
+	OK "Successfully enabled Unattended Updates."
+fi
+
+# Enable LoxBerry Update after next reboot
+TITLE "Enable LoxBerry update after next reboot..."
+
+touch /boot/do_lbupdate
+
+if [ ! -e /boot/do_lbupdate ]; then
+	FAIL "Could not enable LoxBerry Update.\n"
+	exit 1
+else
+	OK "Successfully enabled LoxBerry Update."
+fi
+
+# Automatically repair filesystem errors on boot
+TITLE "Automatically repair filesystem errors on boot..."
+
+if [ ! -f /etc/default/rcS ]; then
+	echo "FSCKFIX=yes" > /etc/default/rcS
+else
+	if ! cat /etc/default/rcS | grep -q "FSCKFIX"; then
+	echo "FSCKFIX=yes" >> /etc/default/rcS
+fi
+
+if [ ! -f /etc/default/rcS ]; then
+	FAIL "Could not configure FSCK / rcS.\n"
+	exit 1
+else
+	OK "Successfully configured FSCK / rcS."
+fi
+
+# Disable SSH Root password access
+TITLE "Disable root login via ssh and password..."
+
+# Aktivating Root access via ssh with Key (password still forbidden)
+#/bin/sed -i 's:^PermitRootLogin:#PermitRootLogin:g' /etc/ssh/sshd_config
+#echo 'PermitRootLogin prohibit-password' >> /etc/ssh/sshd_config
+#/bin/sed -i 's:^PubkeyAuthentication:#PubkeyAuthentication:g' /etc/ssh/sshd_config
+#echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
+#system ssh restart
+/boot/dietpi/func/dietpi-set_software disable_ssh_password_logins root
+
+# Set correct File Permissions
+TITLE "Setting File Permissions..."
+
+$LBHOME/sbin/resetpermissions.sh
+
+if [ $? != 0 ]; then
+	FAIL "Could not set File Permissions for LoxBerry.\n"
+	exit 1
+else
+	OK "Successfully set File Permissions for LoxBerry."
+fi
+
+# Create Config
+TITLE "Create LoxBerry Config from Defaults..."
+
+sudo -u loxberry $LBHOME/bin/createconfig.pl
+
+if [ ! -e $LBHOME/config/system/general.json ]; then
+	FAIL "Could not create default config files.\n"
+	exit 1
+else
+	OK "Successfully created default config files."
+fi
