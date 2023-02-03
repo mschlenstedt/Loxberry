@@ -919,7 +919,7 @@ fi
 # The end
 export PERL5LIB=$LBHOME/libs/perllib
 IP=$(perl -e 'use LoxBerry::System; $ip = LoxBerry::System::get_localip(); print $ip; exit;')
-echo -e "\n\n\n${RED}${ULINE}${BOLD}WE ARE DONE! :-)${RESET}"
+echo -e "\n\n\n${GREEN}WE ARE DONE! :-)${RESET}"
 echo -e "\n\n${RED}You have to reboot your LoxBerry now. Then please open your webbrowser"
 echo -e "and point it to http://$IP or http://loxberry"
 echo -e "\nIf you would like to login via SSH, use user 'loxberry' and password 'loxberry'."
