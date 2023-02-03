@@ -56,6 +56,11 @@ case "$1" in
 		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
 	fi
 
+	# Check if we are on DietPi
+	if [ -e /boot/dietpi/.hw_model ]; then
+		touch /boot/rootfsresized
+	fi
+
 	# Create swap config and resize rootfs
 	if [ -f /boot/rootfsresized ]
 	then
