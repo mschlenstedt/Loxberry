@@ -152,8 +152,8 @@ start)
 	echo "Creating temporary system folders..."
 	createFolders
 
+	echo "Restoring Syslog and LoxBerry system log folders..."
 	if [ ! -e /boot/dietpi/.hw_model ]; then # Only legacy / pure old Raspbian Image
-		echo "Restoring Syslog and LoxBerry system log folders..."
 		cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
 		cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
 
@@ -161,6 +161,9 @@ start)
 		if ls $LBHOMEDIR/system/dhcp/*.leases 2>/dev/null 1>&2; then
 			cp -a $LBHOMEDIR/system/dhcp/*.leases /var/lib/dhcp/
 		fi
+	else
+		# For compatibility create Symlink for Apache logs
+		ln -s /var/log/apache2 $LBHOMEDIR/log/system_tmpfs/apache2
 	fi
 
 	# Copy logdb from SD card to RAM disk
