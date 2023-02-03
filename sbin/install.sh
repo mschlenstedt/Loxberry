@@ -579,7 +579,7 @@ if ! /bin/systemctl --no-pager status smbd; then
 else
 	OK "Successfully reconfigured Samba."
 fi
-smbpasswd -a loxberry
+echo ('loxberry'; echo 'loxberry') | smbpasswd -a -s loxberry
 
 # Configuring VSFTP
 TITLE "Configuring VSFTP..."
@@ -744,16 +744,16 @@ TITLE "Enabling I2C (if supported)..."
 # Mount all from /etc/fstab
 TITLE "Enabling mount -a during boot time..."
 
-if ! grep -q -e "^mount -a" /etc/rc.local; then
-	sed -i 's/^exit 0/mount -a\n\nexit 0/g' /etc/rc.local
-fi
+#if ! grep -q -e "^mount -a" /etc/rc.local; then
+#	sed -i 's/^exit 0/mount -a\n\nexit 0/g' /etc/rc.local
+#fi
 
-if ! grep -q -e "^mount -a" /etc/rc.local; then
-	FAIL "Could not enabling mount -a during boottime.\n"
-	exit 1
-else
-	OK "Successfully enabled mount -a during boottime."
-fi
+#if ! grep -q -e "^mount -a" /etc/rc.local; then
+#	FAIL "Could not enabling mount -a during boottime.\n"
+#	exit 1
+#else
+#	OK "Successfully enabled mount -a during boottime."
+#fi
 
 # Set hosts environment
 TITLE "Setting hosts environment..."
@@ -830,7 +830,7 @@ fi
 
 /bin/systemctl enable unattended-upgrades
 
-if ! /bin/systemctl is-enabled unattended-upgrades then
+if ! /bin/systemctl is-enabled unattended-upgrades; then
 	FAIL "Could not enable  Unattended Updates.\n"
 	exit 1
 else
@@ -856,7 +856,8 @@ if [ ! -f /etc/default/rcS ]; then
 	echo "FSCKFIX=yes" > /etc/default/rcS
 else
 	if ! cat /etc/default/rcS | grep -q "FSCKFIX"; then
-	echo "FSCKFIX=yes" >> /etc/default/rcS
+		echo "FSCKFIX=yes" >> /etc/default/rcS
+	fi
 fi
 
 if [ ! -f /etc/default/rcS ]; then
@@ -877,6 +878,18 @@ TITLE "Disable root login via ssh and password..."
 #system ssh restart
 /boot/dietpi/func/dietpi-set_software disable_ssh_password_logins root
 
+# Create Config
+TITLE "Create LoxBerry Config from Defaults..."
+
+sudo -u loxberry PERL5LIB=/opt/loxberry/libs/perllib && perl $LBHOME/bin/createconfig.pl
+
+if [ ! -e $LBHOME/config/system/general.json ]; then
+	FAIL "Could not create default config files.\n"
+	exit 1
+else
+	OK "Successfully created default config files."
+fi
+
 # Set correct File Permissions
 TITLE "Setting File Permissions..."
 
@@ -889,14 +902,3 @@ else
 	OK "Successfully set File Permissions for LoxBerry."
 fi
 
-# Create Config
-TITLE "Create LoxBerry Config from Defaults..."
-
-sudo -u loxberry $LBHOME/bin/createconfig.pl
-
-if [ ! -e $LBHOME/config/system/general.json ]; then
-	FAIL "Could not create default config files.\n"
-	exit 1
-else
-	OK "Successfully created default config files."
-fi
