@@ -16,7 +16,7 @@ MEM=`cat /proc/meminfo | awk '/MemTotal:/ { print $2 }'`
 if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ] || [ "$MANUALCFG" = 'false' ] || [ "$MANUALCFG" = '0' ]; then
 	echo "No manual config found. Using defaults..."
 	RAM_LOG=$LBHOMEDIR/log/ramlog
-	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ] || [ "$PIVERS" = 'type_2' ] || [ "$PIVERS" < 3 ]; then
+	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ] || [ "$PIVERS" = 'type_2' ] || [ "$PIVERS" -lt '3' ]; then
 		SIZE=200M
 		ZL2R=false
 		COMP_ALG=lz4
