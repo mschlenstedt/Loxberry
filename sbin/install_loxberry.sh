@@ -366,7 +366,7 @@ awk -v s="LBSBIN=$LBHOME/bin" '/^LBSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]
 awk -v s="LBSSBIN=$LBHOME/sbin" '/^LBSSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="PERL5LIB=$LBHOME/libs/perllib" '/^PERL5LIB=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
-#Environment Variablen laden
+# Environment Variablen laden
 source /etc/environment
 
 # LoxBerry global environment variables in Apache
@@ -391,10 +391,6 @@ awk -v s="export LBSCONFIG=$LBSCONFIG" '/^export LBSCONFIG=/{$0=s;f=1} {a[++n]=$
 awk -v s="export LBSBIN=$LBSBIN" '/^export LBSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export LBSSBIN=$LBSSBIN" '/^export LBSSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 awk -v s="export PERL5LIB=$PERL5LIB" '/^export PERL5LIB=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-
-if /bin/systemctl --no-pager status apache2; then
-	/bin/systemctl force-reload apache2 
-fi
 
 if [ ! -Z $LBSSBIN ]; then
 	FAIL "Could not set systemwide environments.\n"
@@ -527,17 +523,6 @@ if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
 	mkdir -p /etc/systemd/system/apache2.service.d
 	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
 fi
-
-#if systemctl --no-pager status apache2; then
-#	/bin/systemctl restart apache2
-#fi
-
-#if ! /bin/systemctl --no-pager status apache2; then
-#	FAIL "Could not reconfigure Apache2.\n"
-#	exit 1
-#else
-#	OK "Successfully reconfigured Apache2."
-#fi
 
 # Configuring Network Interfaces
 TITLE "Configuring Network..."
@@ -914,6 +899,17 @@ if [ $? != 0 ]; then
 	exit 1
 else
 	OK "Successfully set File Permissions for LoxBerry."
+fi
+
+# Start Apache
+/bin/systemctl restart apache2
+
+TITLE "Start Apache2 Webserver..."
+if ! /bin/systemctl --no-pager status apache2; then
+       FAIL "Could not reconfigure Apache2.\n"
+       exit 1
+else
+       OK "Successfully reconfigured Apache2."
 fi
 
 # The end
