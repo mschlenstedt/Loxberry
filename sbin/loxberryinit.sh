@@ -6,6 +6,7 @@ export $ENVIRONMENT
 
 case "$1" in
   start)
+	mount -a
 	# Test if / is writable
 	echo -n "Testing root filesystem: "
 	touch /readonlycheck
@@ -101,10 +102,10 @@ case "$1" in
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.force > /dev/null 2>&1
 
-	# Set Date and Time
-	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
+	# Set Date and Time - not on DietPi
+	if [ -f $LBHOMEDIR/sbin/setdatetime.pl && ! -e /boot/dietpi/.hw_model ]
 	then
-		echo "Syncing Date/Time with Miniserver or NTP-Server"
+		echo "Syncing Date/Time with NTP-Server"
 		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
 	fi
 
