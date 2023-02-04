@@ -920,8 +920,8 @@ fi
 export PERL5LIB=$LBHOME/libs/perllib
 IP=$(perl -e 'use LoxBerry::System; $ip = LoxBerry::System::get_localip(); print $ip; exit;')
 echo -e "\n\n\n${GREEN}WE ARE DONE! :-)${RESET}"
-echo -e "\n\n${RED}You have to reboot your LoxBerry now. Then please open your webbrowser"
-echo -e "and point it to http://$IP or http://loxberry"
+echo -e "\n\n${RED}You have to reboot your LoxBerry now!"
+echo -e "\nThen please open your webbrowser and point it to http://$IP or http://loxberry"
 echo -e "\nIf you would like to login via SSH, use user 'loxberry' and password 'loxberry'."
 echo -e "Root's password is also 'loxberry' by default (you cannot login directly via SSH)."
 echo -e "\nGood Bye.\n\n${RESET}"
