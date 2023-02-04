@@ -298,32 +298,32 @@ echo 'Acquire::GzipIndexes "false";' > /etc/apt/apt.conf.d/98dietpi-uncompressed
 /boot/dietpi/func/dietpi-set_software apt-cache clean
 apt update
 
-#if [ -e $LBHOME/packages_x64.txt ]; then
-#	PACKAGES=""
-#	while read entry
-#	do
-#		if echo $entry | grep -Eq "^ii "; then
-#			VAR=$(echo $entry | sed "s/  / /g" | cut -d " " -f 2 | sed "s/:.*\$//")
-#			PINFO=$(apt-cache show $VAR 2>&1)
-#			if echo $PINFO | grep -Eq "N: Unable to locate"; then
-#				continue
-#			fi
-#			PACKAGE=$(echo $PINFO | grep "Package: " | cut -d " " -f 2)
-#			if dpkg -s $PACKAGE > /dev/null 2>&1; then
-#				continue
-#			fi
-#			apt-get -y install $PACKAGE
-#			if [ $? != 0 ]; then
-#				FAIL "Could not install $PACKAGE.\n"
-#			else
-#				OK "Successfully installed $PACKAGE.\n"
-#			fi
-#		fi
-#	done < $LBHOME/packages.txt
-#else
-#	FAIL "Could not find packages list: $LBHOME/packages.txt.\n"
-#	exit 1
-#fi
+if [ -e $LBHOME/packages.txt ]; then
+	PACKAGES=""
+	while read entry
+	do
+		if echo $entry | grep -Eq "^ii "; then
+			VAR=$(echo $entry | sed "s/  / /g" | cut -d " " -f 2 | sed "s/:.*\$//")
+			PINFO=$(apt-cache show $VAR 2>&1)
+			if echo $PINFO | grep -Eq "N: Unable to locate"; then
+				continue
+			fi
+			PACKAGE=$(echo $PINFO | grep "Package: " | cut -d " " -f 2)
+			if dpkg -s $PACKAGE > /dev/null 2>&1; then
+				continue
+			fi
+			apt-get -y install $PACKAGE
+			if [ $? != 0 ]; then
+				FAIL "Could not install $PACKAGE.\n"
+			else
+				OK "Successfully installed $PACKAGE.\n"
+			fi
+		fi
+	done < $LBHOME/packages.txt
+else
+	FAIL "Could not find packages list: $LBHOME/packages.txt.\n"
+	exit 1
+fi
 
 rm /etc/apt/apt.conf.d/98dietpi-uncompressed
 /boot/dietpi/func/dietpi-set_software apt-cache clean
@@ -485,12 +485,12 @@ if [ -e /etc/php/$PHPVER ] && [ ! -e /etc/php/$PHPVER/apache2/conf.d/20-loxberry
 	rm /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini
 	rm /etc/php/$PHPVER/cgi/conf.d/20-loxberry.ini
 	rm /etc/php/$PHPVER/cli/conf.d/20-loxberry.ini
-	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini
-	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/cgi/conf.d/20-loxberry.ini
-	ln -s $LBHOME/system/php/20-loxberry.ini /etc/php/$PHPVER/cli/conf.d/20-loxberry.ini
+	ln -s $LBHOME/system/php/loxberry-apache.ini /etc/php/$PHPVER/apache2/conf.d/20-loxberry-apache.ini
+	ln -s $LBHOME/system/php/loxberry-apache.ini /etc/php/$PHPVER/cgi/conf.d/20-loxberry-apache.ini
+	ln -s $LBHOME/system/php/20-loxberry-cli.ini /etc/php/$PHPVER/cli/conf.d/20-loxberry-cli.ini
 fi
 
-if [ ! -L  /etc/php/$PHPVER/apache2/conf.d/20-loxberry.ini ]; then
+if [ ! -L  /etc/php/$PHPVER/apache2/conf.d/20-loxberry-apache.ini ]; then
 	FAIL "Could not set up PHP $PHPVER.\n"
 	exit 1
 else
