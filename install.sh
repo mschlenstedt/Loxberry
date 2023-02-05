@@ -17,6 +17,12 @@ if (( $EUID != 0 )); then
     exit 1
 fi
 
+if [ -e /boot/rootfsresized ]; then
+	echo "This script was already executed on this LoxBerry. You cannot reinstall LoxBerry."
+	echo "If you are sure what you are doing, rm /boot/rootfsresized and restart again."
+	exit 1
+fi
+
 echo -e "\n\nNote! If you were logged in as user 'loxberry' and used 'su' to switch to the root account, your connection may be lost now...\n\n"
 killall -u loxberry
 sleep 3
@@ -980,5 +986,7 @@ echo -e "\nThen point your browser to http://$IP or http://loxberry"
 echo -e "\nIf you would like to login via SSH, use user 'loxberry' and pass 'loxberry'."
 echo -e "Root's password is 'loxberry', too (you cannot login directly via SSH)."
 echo -e "\nGood Bye.\n\n${RESET}"
+
+touch /boot/rootfsresized
 
 exit 0
