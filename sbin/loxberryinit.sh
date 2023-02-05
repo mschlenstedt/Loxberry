@@ -6,6 +6,7 @@ export $ENVIRONMENT
 
 case "$1" in
   start)
+	mount -a
 	# Test if / is writable
 	echo -n "Testing root filesystem: "
 	touch /readonlycheck
@@ -51,9 +52,15 @@ case "$1" in
 	# Create Default config
 	echo "Updating general.cfg etc...."
 	$LBHOMEDIR/bin/createconfig.pl
+	$LBHOMEDIR/sbin/resetpermissions.sh
 	if [ ! -f $LBHOMEDIR/data/system/plugindatabase.json ]
 	then
 		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
+	fi
+
+	# Check if we are on DietPi
+	if [ -e /boot/dietpi/.hw_model ]; then
+		touch /boot/rootfsresized
 	fi
 
 	# Create swap config and resize rootfs
@@ -95,10 +102,10 @@ case "$1" in
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.force > /dev/null 2>&1
 
-	# Set Date and Time
-	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
+	# Set Date and Time - not on DietPi
+	if [ -f $LBHOMEDIR/sbin/setdatetime.pl && ! -e /boot/dietpi/.hw_model ]
 	then
-		echo "Syncing Date/Time with Miniserver or NTP-Server"
+		echo "Syncing Date/Time with NTP-Server"
 		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
 	fi
 
@@ -119,7 +126,7 @@ case "$1" in
 		if [ $NOW -lt $LAST ]
 		then
 			echo "Last connection was less then 3 days ago - reconnecting..."
-			$LBHOMEDIR/sbin/remoteconnect.pl start > /dev/null 2>&1
+			su loxberry -c "$LBHOMEDIR/sbin/remoteconnect.pl start > /dev/null 2>&1"
 		else
 			echo "Last connection was more then 3 days ago - ignoring..."
 			rm $LBHOMEDIR/log/system/remote.autoconnect > /dev/null 2>&1

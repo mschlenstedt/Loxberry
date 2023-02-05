@@ -419,8 +419,11 @@ sub apt_update
 				my $cfg = $jsonobj->open(filename => $cfgfile);
 				$main::log->INF("Updating YARN key...");
 				system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -");
+				system ("curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null");
 				$main::log->INF("Updating NodeJS key...");
 				system ("curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -");
+				system ("curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor | tee /usr/share/keyrings/nodesource.gpg >/dev/null");
+
 				if ($cfg->{'Apt'}->{'Servers'} && -e $LoxBerry::System::lbsconfigdir . "/is_raspberry.cfg" && -e "/etc/apt/sources.list.d/loxberry.list") {
 					my $aptserver = $cfg->{'Apt'}->{'Servers'}{ int(rand keys %{ $cfg->{'Apt'}->{'Servers'} }) + 1 };
 					$main::log->INF("Changing Rasbian mirror to $aptserver");

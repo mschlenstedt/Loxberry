@@ -4,14 +4,19 @@ ENVIRONMENT=$(cat /etc/environment)
 export $ENVIRONMENT
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin::$LBHOMEDIR/bin:$LBHOMEDIR/sbin"
-PIVERS=`$LBHOMEDIR/bin/showpitype`
+if [ -e /boot/dietpi/.hw_model ]; then
+	. /boot/dietpi/.hw_model
+	PIVERS=$G_HW_MODEL
+else
+	PIVERS=`$LBHOMEDIR/bin/showpitype`
+fi
 MANUALCFG=`jq -r '.Log2ram.Manualconfigured' $LBHOMEDIR/config/system/general.json`
 MEM=`cat /proc/meminfo | awk '/MemTotal:/ { print $2 }'`
 
 if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ] || [ "$MANUALCFG" = 'false' ] || [ "$MANUALCFG" = '0' ]; then
 	echo "No manual config found. Using defaults..."
 	RAM_LOG=$LBHOMEDIR/log/ramlog
-	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ] || [ "$PIVERS" = 'type_2' ]; then
+	if [ "$PIVERS" = 'type_0' ] || [ "$PIVERS" = 'type_1' ] || [ "$PIVERS" = 'type_2' ] || [ "$PIVERS" -lt '3' ]; then
 		SIZE=200M
 		ZL2R=false
 		COMP_ALG=lz4
@@ -26,7 +31,7 @@ if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ] || [ "$MANUALCFG" = 'false' ]
 	# Start Workaround for Pi4 with 8 GB. zram driver does not work here at the moment...
 	# https://github.com/foundObjects/zram-swap/issues/3
 	#
-	if [ "$PIVERS" = 'type_4' ] && [ "$MEM" -gt 4000257 ] ; then
+	if [[ ( "$PIVERS" = 'type_4' || "$PIVERS" = '4' ) && "$MEM" -gt 4000257 ]]; then
 		SIZE=415M
 		ZL2R=false
 		COMP_ALG=lz4
@@ -57,15 +62,17 @@ createFolders () {
 	if [ $RAM_LOG ]; then
 		rm -rf $RAM_LOG/*
 	fi
-	mkdir -p $RAM_LOG/var/log
-	chown -R root:root $RAM_LOG/var/log
-	chmod -R 755 $RAM_LOG/var/log
-	mkdir -p $RAM_LOG/tmp
-	chown -R root:root $RAM_LOG/tmp
-	chmod -R 777 $RAM_LOG/tmp
-	mkdir -p $RAM_LOG/var/tmp
-	chown -R root:root $RAM_LOG/var/tmp
-	chmod -R 777 $RAM_LOG/var/tmp
+	if [ ! -e /boot/dietpi/.hw_model ]; then # Only legacy / pure old Raspbian Image
+		mkdir -p $RAM_LOG/var/log
+		chown -R root:root $RAM_LOG/var/log
+		chmod -R 755 $RAM_LOG/var/log
+		mkdir -p $RAM_LOG/tmp
+		chown -R root:root $RAM_LOG/tmp
+		chmod -R 777 $RAM_LOG/tmp
+		mkdir -p $RAM_LOG/var/tmp
+		chown -R root:root $RAM_LOG/var/tmp
+		chmod -R 777 $RAM_LOG/var/tmp
+	fi
 	mkdir -p $RAM_LOG/log/plugins
 	chown -R loxberry:loxberry $RAM_LOG/log/plugins
 	chmod -R 755 $RAM_LOG/log/plugins
@@ -74,11 +81,13 @@ createFolders () {
 	chmod -R 755 $RAM_LOG/log/system_tmpfs
 
 	echo "Binding systemfolders to temporary folders in $RAM_LOG..."
-	cp -ra /var/log/* $RAM_LOG/var/log
-	rm -rf /var/log/*
-	mount --bind $RAM_LOG/var/log /var/log
-	mount --bind $RAM_LOG/tmp /tmp
-	mount --bind $RAM_LOG/var/tmp /var/tmp
+	if [ ! -e /boot/dietpi/.hw_model ]; then # Only legacy / pure old Raspbian Image
+		cp -ra /var/log/* $RAM_LOG/var/log
+		rm -rf /var/log/*
+		mount --bind $RAM_LOG/var/log /var/log
+		mount --bind $RAM_LOG/tmp /tmp
+		mount --bind $RAM_LOG/var/tmp /var/tmp
+	fi
 	mount --bind $RAM_LOG/log/plugins $LBHOMEDIR/log/plugins
 	mount --bind $RAM_LOG/log/system_tmpfs $LBHOMEDIR/log/system_tmpfs
 }
@@ -114,16 +123,18 @@ case "$1" in
 start)
 
 	# Check if we are on a Rapsberry
-	if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
-		echo "This seems not to be a Raspberry. Will only copy skel folders, but will not create any ramdiscs..."
-		cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
-		cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
-		# Create log folders for all plugins if not existing
-		# Normally not needed for VMs, but "it doesn't hurt" - so doing it here as well
-		echo "Create log folders for all installed plugins"
-		perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
-		exit 0
-	fi
+	#if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
+	#	echo "This seems not to be a Raspberry. Will only copy skel folders, but will not create any ramdiscs..."
+	#	if [ ! -e /boot/dietpi/.hw_model ]; then # Only legacy / pure old Raspbian Image
+	#		cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
+	#		cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
+	#	fi
+	#	# Create log folders for all plugins if not existing
+	#	# Normally not needed for VMs, but "it doesn't hurt" - so doing it here as well
+	#	echo "Create log folders for all installed plugins"
+	#	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
+	#	exit 0
+	#fi
 	
 	if [ ! -d $RAM_LOG ]; then
 		mkdir -p ${RAM_LOG}
@@ -142,12 +153,17 @@ start)
 	createFolders
 
 	echo "Restoring Syslog and LoxBerry system log folders..."
-	cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
-	cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
+	if [ ! -e /boot/dietpi/.hw_model ]; then # Only legacy / pure old Raspbian Image
+		cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
+		cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
 
-	echo "Restoring DHCP leases..."
-	if ls $LBHOMEDIR/system/dhcp/*.leases 2>/dev/null 1>&2; then
-		cp -a $LBHOMEDIR/system/dhcp/*.leases /var/lib/dhcp/
+		echo "Restoring DHCP leases..."
+		if ls $LBHOMEDIR/system/dhcp/*.leases 2>/dev/null 1>&2; then
+			cp -a $LBHOMEDIR/system/dhcp/*.leases /var/lib/dhcp/
+		fi
+	else
+		# For compatibility create Symlink for Apache logs
+		ln -s /var/log/apache2 $LBHOMEDIR/log/system_tmpfs/apache2
 	fi
 
 	# Copy logdb from SD card to RAM disk
@@ -176,10 +192,10 @@ start)
 stop)
 
 	# Check if we are on a Rapsberry
-	if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
-		echo "This seems not to be a Raspberry. Will do nothing..."
-		exit 0
-	fi
+	#if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
+	#	echo "This seems not to be a Raspberry. Will do nothing..."
+	#	exit 0
+	#fi
 	
 	# Skel for system logs, LB system logs and LB plugin logs
 	echo "Backing up Syslog and LoxBerry system log folders..."
@@ -187,16 +203,18 @@ stop)
 		cp -ra $LBHOMEDIR/log/system_tmpfs/* $LBHOMEDIR/log/skel_system/
 		find $LBHOMEDIR/log/skel_system/ -type f -exec rm {} \;
 	fi
-	if [ -d $LBHOMEDIR/log/skel_syslog/ ]; then
-		cp -ra /var/log/* $LBHOMEDIR/log/skel_syslog/
-		find $LBHOMEDIR/log/skel_syslog/ -type f -exec rm {} \;
-	fi
-	echo "Backing up DCHP leases..."
-	if [ ! -d $LBHOMEDIR/system/dhcp ]; then
-		mkdir $LBHOMEDIR/system/dhcp
-	fi
-	if ls /var/lib/dhcp/*.leases 2>/dev/null 1>&2; then
-		cp -a /var/lib/dhcp/*.leases $LBHOMEDIR/system/dhcp/
+	if [ ! -e /boot/dietpi/.hw_model ]; then # Only legacy / pure old Raspbian Image
+		if [ -d $LBHOMEDIR/log/skel_syslog/ ]; then
+			cp -ra /var/log/* $LBHOMEDIR/log/skel_syslog/
+			find $LBHOMEDIR/log/skel_syslog/ -type f -exec rm {} \;
+		fi
+		echo "Backing up DCHP leases..."
+		if [ ! -d $LBHOMEDIR/system/dhcp ]; then
+			mkdir $LBHOMEDIR/system/dhcp
+		fi
+		if ls /var/lib/dhcp/*.leases 2>/dev/null 1>&2; then
+			cp -a /var/lib/dhcp/*.leases $LBHOMEDIR/system/dhcp/
+		fi
 	fi
 
 	# Copy logdb from RAM disk to SD card

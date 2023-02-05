@@ -1,1 +1,2 @@
-/opt/loxberry/sbin/pluginsupdate.pl
+#!/bin/bash
+$LBHOMEDIR/sbin/pluginsupdate.pl

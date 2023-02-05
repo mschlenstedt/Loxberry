@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# Not used on DietPi
+if [ -e /boot/dietpi/.hw_model ]
+then
+  exit 0
+fi
+
 # Update Date/Time every hour
 if [ -x $LBHOMEDIR/sbin/setdatetime.pl ]
 then
