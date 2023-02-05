@@ -807,16 +807,6 @@ else
 	OK "Successfully set host environment."
 fi
 
-# Configuring /etc/hosts
-TITLE "Setting up /etc/hosts and /etc/hostname..."
-
-# Remove 127.0.1.1 from /etc/hosts
-#sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
-#echo "loxberry" > /etc/hostname
-/boot/dietpi/func/change_hostname loxberry
-
-OK "Successfully set up /etc/hosts."
-
 # Configure swap
 #service dphys-swapfile stop
 #swapoff -a
@@ -939,6 +929,13 @@ if echo $HWMODELFILENAME | grep -q "raspberry"; then
 	chmod +x /usr/bin/raspi-config
 fi
 
+# Configuring /etc/hosts
+TITLE "Setting up /etc/hosts and /etc/hostname..."
+
+$LBHOME/sbin/changehostname.sh loxberry
+
+OK "Successfully set up /etc/hosts."
+
 # Create Config
 TITLE "Create LoxBerry Config from Defaults..."
 
@@ -952,7 +949,6 @@ if [ ! -e $LBHOME/config/system/general.json ]; then
 else
 	OK "Successfully created default config files."
 fi
-
 
 # Set correct File Permissions
 TITLE "Setting File Permissions..."
