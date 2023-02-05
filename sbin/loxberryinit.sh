@@ -126,7 +126,7 @@ case "$1" in
 		if [ $NOW -lt $LAST ]
 		then
 			echo "Last connection was less then 3 days ago - reconnecting..."
-			$LBHOMEDIR/sbin/remoteconnect.pl start > /dev/null 2>&1
+			su loxberry -c "$LBHOMEDIR/sbin/remoteconnect.pl start > /dev/null 2>&1"
 		else
 			echo "Last connection was more then 3 days ago - ignoring..."
 			rm $LBHOMEDIR/log/system/remote.autoconnect > /dev/null 2>&1
