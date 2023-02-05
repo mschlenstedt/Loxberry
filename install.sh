@@ -811,9 +811,9 @@ fi
 TITLE "Setting up /etc/hosts and /etc/hostname..."
 
 # Remove 127.0.1.1 from /etc/hosts
-sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
-
-echo "loxberry" > /etc/hostname
+#sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
+#echo "loxberry" > /etc/hostname
+/boot/dietpi/func/change_hostname loxberry
 
 OK "Successfully set up /etc/hosts."
 
