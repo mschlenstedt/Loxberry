@@ -6,6 +6,7 @@
 TARGET_VERSION_ID="11"
 TARGET_PRETTY_NAME="Debian GNU/Linux 11 (bullseye)"
 LBHOME="/opt/loxberry"
+NODEJS_VERSION="18"
 
 #
 ########################################################################
@@ -45,6 +46,14 @@ fi
 if /bin/systemctl --no-pager status loxberry.service; then
 	/bin/systemctl disable loxberry.service
 	/bin/systemctl stop loxberry.service
+fi
+if /bin/systemctl --no-pager status ssdpd.service; then
+        /bin/systemctl disable ssdpd.service
+        /bin/systemctl stop ssdpd.service
+fi
+if /bin/systemctl --no-pager status mosquitto.service; then
+        /bin/systemctl disable mosquitto.service
+        /bin/systemctl stop mosquitto.service
 fi
 if /bin/systemctl --no-pager status createtmpfs.service; then
 	/bin/systemctl disable createtmpfs.service
@@ -366,31 +375,13 @@ awk -v s="LBSBIN=$LBHOME/bin" '/^LBSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]
 awk -v s="LBSSBIN=$LBHOME/sbin" '/^LBSSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 awk -v s="PERL5LIB=$LBHOME/libs/perllib" '/^PERL5LIB=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/environment
 
+# Set environments for Apache
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/apache2/envvars 
+
 # Environment Variablen laden
 source /etc/environment
 
 # LoxBerry global environment variables in Apache
-ENVVARS=$LBHOME/system/apache2/envvars
-
-awk -v s="## LoxBerry global environment variables" '/^## LoxBerry global environment variables/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBHOMEDIR=$LBHOMEDIR" '/^export LBHOMEDIR=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBPHTMLAUTH=$LBPHTMLAUTH" '/^export LBPHTMLAUTH=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBPHTML=$LBPHTML" '/^export LBPHTML=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBPTEMPL=$LBPTEMPL" '/^export LBPTEMPL=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBPDATA=$LBPDATA" '/^export LBPDATA=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBPLOG=$LBPLOG" '/^export LBPLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBPCONFIG=$LBPCONFIG" '/^export LBPCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBPBIN=$LBPBIN" '/^export LBPBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSHTMLAUTH=$LBSHTMLAUTH" '/^export LBSHTMLAUTH=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSHTML=$LBSHTML" '/^export LBSHTML=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSTEMPL=$LBSTEMPL" '/^export LBSTEMPL=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSDATA=$LBSDATA" '/^export LBSDATA=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSLOG=$LBSLOG" '/^export LBSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSTMPFSLOG=$LBSTMPFSLOG" '/^export LBSTMPFSLOG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSCONFIG=$LBSCONFIG" '/^export LBSCONFIG=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSBIN=$LBSBIN" '/^export LBSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export LBSSBIN=$LBSSBIN" '/^export LBSSBIN=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
-awk -v s="export PERL5LIB=$PERL5LIB" '/^export PERL5LIB=/{$0=s;f=1} {a[++n]=$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' $ENVVARS
 
 if [ ! -Z $LBSSBIN ]; then
 	FAIL "Could not set systemwide environments.\n"
@@ -470,6 +461,36 @@ else
 	OK "Successfully set up service for Createtmpfs."
 fi
 
+# LoxBerry SSDPD Service
+if [ -e /etc/systemd/system/ssdpd.service ]; then
+	rm /etc/systemd/system/ssdpd.service
+fi
+ln -s $LBHOME/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service
+/bin/systemctl daemon-reload
+/bin/systemctl enable ssdpd.service
+
+if ! /bin/systemctl is-enabled ssdpd.service; then
+	FAIL "Could not set up Service for SSDPD.\n"
+	exit 1
+else
+	OK "Successfully set up service for SSDPD."
+fi
+
+# LoxBerry Mosquitto Service
+if [ -e /etc/systemd/system/mosquitto.service ]; then
+	rm /etc/systemd/system/mosquitto.service
+fi
+ln -s $LBHOME/system/systemd/mosquitto.service /etc/systemd/system/mosquitto.service
+/bin/systemctl daemon-reload
+/bin/systemctl enable mosquitto.service
+
+if ! /bin/systemctl is-enabled mosquitto.service; then
+	FAIL "Could not set up Service for Mosquitto.\n"
+	exit 1
+else
+	OK "Successfully set up service for Mosquitto."
+fi
+
 # PHP
 PHPVER=$(apt-cache show php | grep "Depends: " | sed "s/Depends: php//")
 TITLE "Configuring PHP $PHPVER..."
@@ -521,7 +542,14 @@ a2enmod php*
 # Disable PrivateTmp for Apache2 on systemd
 if [ ! -e /etc/systemd/system/apache2.service.d/privatetmp.conf ]; then
 	mkdir -p /etc/systemd/system/apache2.service.d
-	echo -e "[Service]\nPrivateTmp=no" > /etc/systemd/system/apache2.service.d/privatetmp.conf 
+	ln -s $LBHOME/system/systemd/apache-privatetmp.conf /etc/systemd/system/apache2.service.d/privatetmp.conf
+fi
+
+if [ ! -L  /etc/systemd/system/apache2.service.d/privatetmp.conf]; then
+	FAIL "Could not set up Apache2 Private Temp Config.\n"
+	exit 1
+else
+	OK "Successfully set up Apache2 Private Temp Config."
 fi
 
 # Configuring Network Interfaces
@@ -553,8 +581,14 @@ if [ -L /etc/samba ]; then
     rm /etc/samba
 fi
 ln -s $LBHOME/system/samba /etc/samba
+sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/samba/smb.conf
 
 if [ ! -L /etc/samba ]; then
+	FAIL "Could not set up Samba Config.\n"
+	exit 1
+fi
+
+if ! testparm -s --debuglevel=1 $LBHOME/system/samba/smb.conf; then
 	FAIL "Could not set up Samba Config.\n"
 	exit 1
 else
@@ -574,6 +608,8 @@ if ! /bin/systemctl --no-pager status smbd; then
 else
 	OK "Successfully reconfigured Samba."
 fi
+
+# Add Samba default user
 (echo 'loxberry'; echo 'loxberry') | smbpasswd -a -s loxberry
 
 # Configuring VSFTP
@@ -873,10 +909,33 @@ TITLE "Disable root login via ssh and password..."
 #system ssh restart
 /boot/dietpi/func/dietpi-set_software disable_ssh_password_logins root
 
+# Installing NodeJS
+TITLE "Installing NodeJS V$NODEJS_VERSION"
+curl -fsSL https://deb.nodesource.com/setup_$NODEJS_VERSION.x | bash - && apt install -y nodejs
+
+# Installing YARN
+TITLE "Installing YARN"
+curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+apt update && apt install yarn
+
+# Installing PIP2
+TITLE "Installing PIP2"
+
+curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py
+python2 /tmp/get-pip.py
+
+# Installing raspi-config if we are on a raspberry
+if echo $HWMODELFILENAME | grep -q "raspberry"; then
+	TITLE "Installing raspi-config"
+	rm /usr/bin/raspi-config
+	curl -L https://raw.githubusercontent.com/RPi-Distro/raspi-config/master/raspi-config -o /usr/bin/raspi-config
+	chmod +x /usr/bin/raspi-config
+fi
+
 # Create Config
 TITLE "Create LoxBerry Config from Defaults..."
 
-#su loxberry -c "PERL5LIB=/opt/loxberry/libs/perllib && perl $LBHOME/bin/createconfig.pl"
 export PERL5LIB=$LBHOME/libs/perllib
 $LBHOME/bin/createconfig.pl
 $LBHOME/bin/createconfig.pl # Run twice
