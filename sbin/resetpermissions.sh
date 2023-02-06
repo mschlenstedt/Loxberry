@@ -61,7 +61,8 @@ chmod -c 664 $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -c 755 $LBHOMEDIR/system/profile
 chmod -c 700 $LBHOMEDIR/system/samba/credentials
 chmod -c 644 $LBHOMEDIR/system/profile/loxberry.sh
-chmod -Rc 644 $LBHOMEDIR/system/logrotate/*
+chmod -c 644 $LBHOMEDIR/system/logrotate/*
+chmod -c 644 $LBHOMEDIR/config/system/general.*
 
 chmod -Rc 755 $LBHOMEDIR/libs
 chmod -Rc 755 $LBHOMEDIR/sbin
