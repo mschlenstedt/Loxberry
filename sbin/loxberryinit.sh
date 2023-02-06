@@ -51,7 +51,7 @@ case "$1" in
 
 	# Create Default config
 	echo "Updating general.cfg etc...."
-	$LBHOMEDIR/bin/createconfig.pl
+	su loxberry -c $LBHOMEDIR/bin/createconfig.pl
 	$LBHOMEDIR/sbin/resetpermissions.sh
 	if [ ! -f $LBHOMEDIR/data/system/plugindatabase.json ]
 	then
