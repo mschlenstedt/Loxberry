@@ -962,10 +962,17 @@ else
 	OK "Successfully set File Permissions for LoxBerry."
 fi
 
+# Restart Apache
+TITLE "Correct Systemd Login Service..."
+
+/bin/systemctl unmask systemd-logind.service
+/bin/systemctl start systemd-logind.service
+
 # Start Apache
+TITLE "Start Apache2 Webserver..."
+
 /bin/systemctl restart apache2
 
-TITLE "Start Apache2 Webserver..."
 if ! /bin/systemctl --no-pager status apache2; then
        FAIL "Could not reconfigure Apache2.\n"
        exit 1
