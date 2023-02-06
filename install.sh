@@ -344,6 +344,11 @@ rm /etc/apt/apt.conf.d/98dietpi-uncompressed
 /boot/dietpi/func/dietpi-set_software apt-cache clean
 apt update
 
+# Remove dhcpd - See issue 135
+TITLE "Removing dhcpd..."
+
+ apt purge dhcpcd
+
 # Adding user loxberry to different additional groups
 TITLE "Adding user LoxBerry to some additional groups..."
 
@@ -897,12 +902,6 @@ fi
 # Disable SSH Root password access
 TITLE "Disable root login via ssh and password..."
 
-# Aktivating Root access via ssh with Key (password still forbidden)
-#/bin/sed -i 's:^PermitRootLogin:#PermitRootLogin:g' /etc/ssh/sshd_config
-#echo 'PermitRootLogin prohibit-password' >> /etc/ssh/sshd_config
-#/bin/sed -i 's:^PubkeyAuthentication:#PubkeyAuthentication:g' /etc/ssh/sshd_config
-#echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
-#system ssh restart
 /boot/dietpi/func/dietpi-set_software disable_ssh_password_logins root
 
 # Installing NodeJS
@@ -962,7 +961,7 @@ else
 	OK "Successfully set File Permissions for LoxBerry."
 fi
 
-# Restart Apache
+# Restart Systemd Login Service
 TITLE "Correct Systemd Login Service..."
 
 /bin/systemctl unmask systemd-logind.service
