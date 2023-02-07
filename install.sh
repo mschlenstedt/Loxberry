@@ -332,6 +332,9 @@ if [ -e $LBHOME/packages.txt ]; then
                                 continue
                         fi
                         PACKAGE=$(echo $PINFO | grep "Package: " | cut -d " " -f 2)
+						if [ -z $PACKAGE ] || [ $PACKAGE = "" ]; then
+								continue
+						fi
                         if dpkg -s $PACKAGE > /dev/null 2>&1; then
                         	INFO "$PACKAGE seems to be already installed. Skipping..."
                                 continue
