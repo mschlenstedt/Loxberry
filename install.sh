@@ -363,7 +363,7 @@ apt update
 # Remove dhcpd - See issue 135
 TITLE "Removing dhcpd..."
 
- apt purge dhcpcd
+apt purge dhcpcd
 
 # Adding user loxberry to different additional groups
 TITLE "Adding user LoxBerry to some additional groups..."
@@ -463,6 +463,7 @@ if [ -e /etc/systemd/system/loxberry.service ]; then
 	rm /etc/systemd/system/loxberry.service
 fi
 ln -s $LBHOME/system/systemd/loxberry.service /etc/systemd/system/loxberry.service
+echo ""
 /bin/systemctl daemon-reload
 /bin/systemctl enable loxberry.service
 
@@ -478,6 +479,7 @@ if [ -e /etc/systemd/system/createtmpfs.service ]; then
 	rm /etc/systemd/system/createtmpfs.service
 fi
 ln -s $LBHOME/system/systemd/createtmpfs.service /etc/systemd/system/createtmpfs.service
+echo ""
 /bin/systemctl daemon-reload
 /bin/systemctl enable createtmpfs.service
 
@@ -493,6 +495,7 @@ if [ -e /etc/systemd/system/ssdpd.service ]; then
 	rm /etc/systemd/system/ssdpd.service
 fi
 ln -s $LBHOME/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service
+echo ""
 /bin/systemctl daemon-reload
 /bin/systemctl enable ssdpd.service
 
@@ -508,6 +511,7 @@ if [ -e /etc/systemd/system/mosquitto.service ]; then
 	rm /etc/systemd/system/mosquitto.service
 fi
 ln -s $LBHOME/system/systemd/mosquitto.service /etc/systemd/system/mosquitto.service
+echo ""
 /bin/systemctl daemon-reload
 /bin/systemctl enable mosquitto.service
 
