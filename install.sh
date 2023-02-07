@@ -54,12 +54,12 @@ if /bin/systemctl --no-pager status loxberry.service; then
 	/bin/systemctl stop loxberry.service
 fi
 if /bin/systemctl --no-pager status ssdpd.service; then
-        /bin/systemctl disable ssdpd.service
-        /bin/systemctl stop ssdpd.service
+    /bin/systemctl disable ssdpd.service
+    /bin/systemctl stop ssdpd.service
 fi
 if /bin/systemctl --no-pager status mosquitto.service; then
-        /bin/systemctl disable mosquitto.service
-        /bin/systemctl stop mosquitto.service
+    /bin/systemctl disable mosquitto.service
+    /bin/systemctl stop mosquitto.service
 fi
 if /bin/systemctl --no-pager status createtmpfs.service; then
 	/bin/systemctl disable createtmpfs.service
@@ -167,15 +167,15 @@ fi
 if [ ! -e /boot/dietpi/.version ]; then
 	echo -e "\n${RED}This seems not to be a DietPi Image. LoxBerry can only be installed on DietPi.\n"
 	echo -e "We expect $TARGET_PRETTY_NAME as distribution."
-        echo -e "Please download the correct image from ${ULINE}https://dietpi.com\n${RESET}"
+    echo -e "Please download the correct image from ${ULINE}https://dietpi.com\n${RESET}"
 	exit 1
 fi
 
 if [ $VERSION_ID -ne $TARGET_VERSION_ID ]; then
 	echo -e "\n${RED}You are running $PRETTY_NAME. This distribution"
-        echo -e "is not supported by LoxBerry.\n"
+    echo -e "is not supported by LoxBerry.\n"
 	echo -e "We expect $TARGET_PRETTY_NAME as distribution."
-        echo -e "Please download the correct image from ${ULINE}https://dietpi.com\n${RESET}"
+    echo -e "Please download the correct image from ${ULINE}https://dietpi.com\n${RESET}"
 	exit 1
 fi
 
@@ -937,6 +937,8 @@ fi
 # Configuring /etc/hosts
 TITLE "Setting up /etc/hosts and /etc/hostname..."
 
+export LBHOMEDIR=$LBHOME
+touch /etc/mailname
 $LBHOME/sbin/changehostname.sh loxberry
 
 OK "Successfully set up /etc/hosts."
