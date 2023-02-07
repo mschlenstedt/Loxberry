@@ -410,7 +410,7 @@ source /etc/environment
 
 # LoxBerry global environment variables in Apache
 
-if [ ! -Z $LBSSBIN ]; then
+if [ ! -z $LBSSBIN ]; then
 	FAIL "Could not set systemwide environments.\n"
 	exit 1
 else
