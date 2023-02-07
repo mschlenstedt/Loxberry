@@ -11,6 +11,10 @@ NODEJS_VERSION="18"
 #
 ########################################################################
 
+# Needed for some LoxBerry scripts
+export LBHOMEDIR=$LBHOME
+export PERL5LIB=$LBHOME/libs/perllib
+
 # Run as root
 if (( $EUID != 0 )); then
     echo "This script has to be run as root."
@@ -818,14 +822,6 @@ else
 	OK "Successfully set host environment."
 fi
 
-# Configure swap
-#service dphys-swapfile stop
-#swapoff -a
-#rm -r /var/swap
-
-# Configuring node.js for Christian :-)
-
-
 # Configure listchanges to have no output - for apt beeing non-interactive
 TITLE "Configuring listchanges to be quit..."
 
@@ -937,7 +933,6 @@ fi
 # Configuring /etc/hosts
 TITLE "Setting up /etc/hosts and /etc/hostname..."
 
-export LBHOMEDIR=$LBHOME
 touch /etc/mailname
 $LBHOME/sbin/changehostname.sh loxberry
 
@@ -946,7 +941,6 @@ OK "Successfully set up /etc/hosts."
 # Create Config
 TITLE "Create LoxBerry Config from Defaults..."
 
-export PERL5LIB=$LBHOME/libs/perllib
 $LBHOME/bin/createconfig.pl
 $LBHOME/bin/createconfig.pl # Run twice
 
