@@ -50,9 +50,9 @@ case "$1" in
 	fi
 
 	# Create Default config
+	$LBHOMEDIR/sbin/resetpermissions.sh > /dev/null 2>&1
 	echo "Updating general.cfg etc...."
-	su loxberry -c $LBHOMEDIR/bin/createconfig.pl
-	$LBHOMEDIR/sbin/resetpermissions.sh
+	su loxberry -c $LBHOMEDIR/bin/createconfig.pl > /dev/null 2>&1
 	if [ ! -f $LBHOMEDIR/data/system/plugindatabase.json ]
 	then
 		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
