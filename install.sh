@@ -105,10 +105,16 @@ TITLE () {
 
 # Messages
 OK () {
-	echo -e "\n${GREEN}[  OK  ]${RESET} .... $1"
+	echo -e "\n${GREEN}[  OK   ]${RESET} .... $1"
 }
 FAIL () {
-	echo -e "\n${RED}[FAILED]${RESET} .... $1"
+	echo -e "\n${RED}[FAILED ]${RESET} .... $1"
+}
+WARNING () {
+	echo -e "\n${MAGENTA}[WARNING]${RESET} .... $1"
+}
+INFO () {
+	echo -e "\n${YELLOW}[ INFO  ]${RESET} .... $1"
 }
 
 #
@@ -314,30 +320,37 @@ echo 'Acquire::GzipIndexes "false";' > /etc/apt/apt.conf.d/98dietpi-uncompressed
 apt update
 
 if [ -e $LBHOME/packages.txt ]; then
-	PACKAGES=""
-	while read entry
-	do
-		if echo $entry | grep -Eq "^ii "; then
-			VAR=$(echo $entry | sed "s/  / /g" | cut -d " " -f 2 | sed "s/:.*\$//")
-			PINFO=$(apt-cache show $VAR 2>&1)
-			if echo $PINFO | grep -Eq "N: Unable to locate"; then
-				continue
-			fi
-			PACKAGE=$(echo $PINFO | grep "Package: " | cut -d " " -f 2)
-			if dpkg -s $PACKAGE > /dev/null 2>&1; then
-				continue
-			fi
-			apt-get -y install $PACKAGE
-			if [ $? != 0 ]; then
-				FAIL "Could not install $PACKAGE.\n"
-			else
-				OK "Successfully installed $PACKAGE.\n"
-			fi
-		fi
-	done < $LBHOME/packages.txt
+        PACKAGES=""
+        echo ""
+        while read entry
+        do
+                if echo $entry | grep -Eq "^ii "; then
+                        VAR=$(echo $entry | sed "s/  / /g" | cut -d " " -f 2 | sed "s/:.*\$//")
+                        PINFO=$(apt-cache show $VAR 2>&1)
+                        if echo $PINFO | grep -Eq "N: Unable to locate"; then
+                        	WARNING "Unable to locate package $PACKAGE. Skipping..."
+                                continue
+                        fi
+                        PACKAGE=$(echo $PINFO | grep "Package: " | cut -d " " -f 2)
+                        if dpkg -s $PACKAGE > /dev/null 2>&1; then
+                        	INFO "$PACKAGE seems to be already installed. Skipping..."
+                                continue
+                        fi
+                        OK "Add package $PACKAGE to the installation queue..."
+                        PACKAGES+="$PACKAGE "
+                fi
+        done < $LBHOME/packages.txt
 else
-	FAIL "Could not find packages list: $LBHOME/packages.txt.\n"
-	exit 1
+        FAIL "Could not find packages list: $LBHOME/packages.txt.\n"
+        exit 1
+fi
+
+echo ""
+apt-get -y install $PACKAGES
+if [ $? != 0 ]; then
+        WARNING "Could not install (at least some) queued packages.\n"
+else
+        OK "Successfully installed all queued packages.\n"
 fi
 
 rm /etc/apt/apt.conf.d/98dietpi-uncompressed
@@ -782,20 +795,6 @@ fi
 TITLE "Enabling I2C (if supported)..."
 
 /boot/dietpi/func/dietpi-set_hardware i2c enable
-
-# Mount all from /etc/fstab
-TITLE "Enabling mount -a during boot time..."
-
-#if ! grep -q -e "^mount -a" /etc/rc.local; then
-#	sed -i 's/^exit 0/mount -a\n\nexit 0/g' /etc/rc.local
-#fi
-
-#if ! grep -q -e "^mount -a" /etc/rc.local; then
-#	FAIL "Could not enabling mount -a during boottime.\n"
-#	exit 1
-#else
-#	OK "Successfully enabled mount -a during boottime."
-#fi
 
 # Set hosts environment
 TITLE "Setting hosts environment..."
