@@ -22,6 +22,7 @@ then
 		mv /tmp/general.json $LBSCONFIG
 		jq '.Update.Interval = "7"' $LBSCONFIG/general.json > /tmp/general.json
 		mv /tmp/general.json $LBSCONFIG
+		$LBHOMEDIR/sbin/resetpermissions.sh > /dev/null 2>&1
         else
                 echo "Giving up. Please perform update manually."
                 rm /boot/do_lbupdate
@@ -29,6 +30,7 @@ then
 		mv /tmp/general.json $LBSCONFIG
 		jq '.Update.Interval = "7"' $LBSCONFIG/general.json > /tmp/general.json
 		mv /tmp/general.json $LBSCONFIG
+		$LBHOMEDIR/sbin/resetpermissions.sh > /dev/null 2>&1
 		. $LBHOMEDIR/libs/bashlib/notify.sh
                 notify updates check "Your Image is outdated! Please update your LoxBerry to the latest RELEASE version!" err > /dev/null 2>&1
         fi

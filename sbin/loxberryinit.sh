@@ -50,7 +50,7 @@ case "$1" in
 	fi
 
 	# Create Default config
-	$LBHOMEDIR/sbin/resetpermissions.sh > /dev/null 2>&1
+	#$LBHOMEDIR/sbin/resetpermissions.sh > /dev/null 2>&1
 	echo "Updating general.cfg etc...."
 	su loxberry -c $LBHOMEDIR/bin/createconfig.pl > /dev/null 2>&1
 	if [ ! -f $LBHOMEDIR/data/system/plugindatabase.json ]
@@ -109,13 +109,6 @@ case "$1" in
 		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
 	fi
 
-	# Start LoxBerrys Emergency Webserver
-	#if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]
-	#then
-	#	echo "Start Emergency Webserver"
-	#	perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
-	#fi
-
 	# Start Remote Connection if connfigured
 	if [ $(jq -r '.Remote.Autoconnect' $LBHOMEDIR/config/system/general.json) = 'true' ] && [ -e $LBHOMEDIR/log/system/remote.autoconnect ]
 	then
@@ -149,6 +142,7 @@ case "$1" in
 	do
 		echo "Running $SYSTEMDAEMONS..."
 	       	$SYSTEMDAEMONS > /dev/null
+		sleep 1
 	done
 		
 	echo "Running Plugin Daemons..."
@@ -207,7 +201,7 @@ case "$1" in
 		sed -i 's/\(\/ ext4 .*\),nofail\(.*\)/\1\2/' /etc/fstab.new # remove nofail for /
 		FILESIZE=$(wc -c < /etc/fstab.new)
 		ISASCII=$(file /etc/fstab.new | grep -a "ASCII text" | wc -l)
-		if [ "$FILESIZE" -gt 50 ] && [ "$ISASCII" -ne 0 ]]; then
+		if [ "$FILESIZE" -gt 50 ] && [ "$ISASCII" -ne 0 ]; then
 			findmnt -F /etc/fstab.new / > /dev/null
 			if [ $? -eq 0 ]; then
 				echo "New fstab seems to be valid. Deleting original and copy new file."
@@ -223,8 +217,12 @@ case "$1" in
 		echo "Everything OK, nothing to do."
 	fi
 
-	echo "Configuring NTP systemd timesync...."
-	systemctl disable systemd-timesyncd > /dev/null 2>&1
+	if [ ! -e /boot/dietpi/.hw_model ] # Only on Raspbian
+	then
+		echo "Configuring NTP systemd timesync...."
+		systemctl disable systemd-timesyncd > /dev/null 2>&1
+	fi
+	exit 0
   ;;
 
   fsrestore)
