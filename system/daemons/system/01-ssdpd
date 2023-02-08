@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# ini parser from https://www.joedog.org/2015/02/13/sh-script-ini-parser/
+# and http://mark.aufflick.com/blog/2007/11/08/parsing-ini-files-with-sed
+ini_parser() {
+	INI_FILE=$1
+	INI_SECTION=$2
+	eval `sed -e 's/[[:space:]]*\=[[:space:]]*/=/g' \
+		-e 's/;.*$//' \
+		-e 's/[[:space:]]*$//' \
+		-e 's/^[[:space:]]*//' \
+		-e "s/^\(.*\)=\([^\"']*\)$/$INI_SECTION\1=\"\2\"/" \
+		< $INI_FILE \
+		| sed -n -e "/^\[$INI_SECTION\]/,/^\s*\[/{/^[^;].*\=.*/p;}"`
+}
+ ini_parser $LBSCONFIG/general.cfg "SSDP"
+
+ if [ -z $SSDPDISABLED ]
+ then
+	 SSDPDISABLED=0
+ fi
+
+
+ if [ ! -h /etc/systemd/system/ssdpd.service ]
+ then
+   ln -s $LBHOMEDIR/system/systemd/ssdpd.service /etc/systemd/system/ssdpd.service
+   /bin/systemctl daemon-reload
+   #/bin/systemctl disable ssdpd
+ fi;
+
+ if [ $SSDPDISABLED = 1 ]
+ then
+	echo "SSDP disabled"
+	/bin/systemctl stop ssdpd
+ else
+	 /bin/systemctl start ssdpd
+ fi
