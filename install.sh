@@ -938,11 +938,23 @@ $LBHOME/sbin/changehostname.sh loxberry
 
 OK "Successfully set up /etc/hosts."
 
+# Set correct File Permissions
+TITLE "Setting File Permissions..."
+
+$LBHOME/sbin/resetpermissions.sh
+
+if [ $? != 0 ]; then
+	FAIL "Could not set File Permissions for LoxBerry.\n"
+	exit 1
+else
+	OK "Successfully set File Permissions for LoxBerry."
+fi
+
 # Create Config
 TITLE "Create LoxBerry Config from Defaults..."
 
-$LBHOME/bin/createconfig.pl
-$LBHOME/bin/createconfig.pl # Run twice
+su loxberry -c "export PERL5LIB=$LBHOME/libs/perllib && $LBHOME/bin/createconfig.pl"
+su loxberry -c "export PERL5LIB=$LBHOME/libs/perllib && $LBHOME/bin/createconfig.pl" # Run twice
 
 if [ ! -e $LBHOME/config/system/general.json ]; then
 	FAIL "Could not create default config files.\n"
@@ -952,7 +964,7 @@ else
 fi
 
 # Set correct File Permissions
-TITLE "Setting File Permissions..."
+TITLE "Re-Setting File Permissions..."
 
 $LBHOME/sbin/resetpermissions.sh
 
