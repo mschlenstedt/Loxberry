@@ -221,6 +221,11 @@ unlink ("$lbhomedir/data/system/mosquitto.service");
 system ("ln -s $lbhomedir/system/systemd/mosquitto.service /etc/systemd/system/mosquitto.service");
 system ("/bin/systemctl daemon-reload");
 
+if ( -e "/etc/logrotate.conf" ) {
+	LOGINF "Disable gzipping of Logs...";
+	my $output = qx { sed -i 's/^compress/#compress/g' /etc/logrotate.conf };
+}
+
 #
 # Install new 03-loxberryupdate Daemon
 #
