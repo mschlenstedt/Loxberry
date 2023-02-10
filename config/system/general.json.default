@@ -42,12 +42,12 @@
       }
    },
    "Mqtt" : {
-		"Brokerhost" : "localhost",
-		"Brokerport" : "1883",
-		"Udpinport" : "11884",
-		"Uselocalbroker" : "1",
-		"Websocketport" : "9001",
-		"Finderdisabled" : false
+      "Brokerhost" : "localhost",
+      "Brokerport" : "1883",
+      "Udpinport" : "11884",
+      "Uselocalbroker" : "1",
+      "Websocketport" : "9001",
+      "Finderdisabled" : false
    },
    "Network" : {
       "Friendlyname" : null,
