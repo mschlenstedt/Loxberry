@@ -353,32 +353,40 @@ apt_remove("apparmor");
 # Node.js V18
 #
 LOGINF "Installing Node.js V18...";
-LOGINF "Adding Node.js repository key to LoxBerry keyring...";
-my $output = qx { curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - };
+my $output = qx { curl -fsSL https://deb.nodesource.com/setup_18.x | bash - };
 my $exitcode  = $? >> 8;
 if ($exitcode != 0) {
-		LOGERR "Error adding Node.js repo key to LoxBerry - Error $exitcode";
+		LOGERR "Error adding Node.js repo to LoxBerry - Error $exitcode";
 		LOGDEB $output;
 	        $errors++;
 	} else {
-        	LOGOK "Node.js repo key added successfully.";
+        	LOGOK "Node.js repo added successfully.";
 	}
 
-LOGINF "Adding/Updating Node.js V18.x repository to LoxBerry...";
-qx { echo 'deb https://deb.nodesource.com/node_18.x bullseye main' > /etc/apt/sources.list.d/nodesource.list };
-qx { echo 'deb-src https://deb.nodesource.com/node_18.x bullseye main' >> /etc/apt/sources.list.d/nodesource.list };
+LOGINF "Installing Yarn...";
+my $output = qx { curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null };
+my $exitcode  = $? >> 8;
+if ($exitcode != 0) {
+		LOGERR "Error adding Yarn key to LoxBerry - Error $exitcode";
+		LOGDEB $output;
+	        $errors++;
+	} else {
+        	LOGOK "Yarn key added successfully.";
+	}
+my $output = qx { echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list };
+if ( ↑-e "/etc/apt/sources.list.d/yarn.list" ) {
+		LOGERR "Error adding Yarn repo to LoxBerry - Error $exitcode";
+		LOGDEB $output;
+	        $errors++;
+	} else {
+        	LOGOK "Yarn repo added successfully.";
+	}
 
-if ( ! -e '/etc/apt/sources.list.d/nodesource.list' ) {
-	LOGERR "Error adding Node.js repo to LoxBerry - Repo file missing";
-        $errors++;
-} else {
-	LOGOK "Node.js repo added successfully.";
-}
 LOGINF "Update apt database";
 apt_update();
 
 LOGINF "Installing/updating Node.js V18...";
-apt_install("nodejs");
+apt_install("nodejs yarn");
 
 LOGINF "Testing Node.js...";
 LOGDEB `node -e "console.log('Hello LoxBerry users, this is Node.js '+process.version);"`;
