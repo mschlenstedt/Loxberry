@@ -227,7 +227,7 @@ LOGOK "Changing owner was successful.";
 
 LOGINF "Pre-Changing the owner of special files in updatedir to root:root...";
 $log->close;
-system("chown -R root:root $updatedir/system/cron/cron.d $updatedir/system/daemons/system $updatedir/system/sudoers $updatedir/system/logrotate  >>$logfilename");
+system("chown -R root:root $updatedir/system/cron/cron.d $updatedir/system/daemons/system $updatedir/system/sudoers >>$logfilename");
 $exitcode  = $? >> 8;
 $log->open;
 if ($exitcode != 0) {
