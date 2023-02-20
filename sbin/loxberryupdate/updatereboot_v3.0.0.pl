@@ -369,18 +369,18 @@ my $exitcode  = $? >> 8;
 if ($exitcode != 0) {
 		LOGERR "Error adding Yarn key to LoxBerry - Error $exitcode";
 		LOGDEB $output;
-	        $errors++;
-	} else {
-        	LOGOK "Yarn key added successfully.";
-	}
+		$errors++;
+} else {
+		LOGOK "Yarn key added successfully.";
+}
 my $output = qx { echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list };
-if ( ↑-e "/etc/apt/sources.list.d/yarn.list" ) {
+if ( ! -e "/etc/apt/sources.list.d/yarn.list" ) {
 		LOGERR "Error adding Yarn repo to LoxBerry - Error $exitcode";
 		LOGDEB $output;
-	        $errors++;
-	} else {
-        	LOGOK "Yarn repo added successfully.";
-	}
+		$errors++;
+} else {
+		LOGOK "Yarn repo added successfully.";
+}
 
 LOGINF "Update apt database";
 apt_update();
