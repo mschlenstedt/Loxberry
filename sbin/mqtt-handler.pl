@@ -152,6 +152,7 @@ sub update_config
 	}
 	
 	`chown loxberry:loxberry $cfgfile`;
+	`chown loxberry:loxberry $generaljsonfile`;
 	`mkdir $mosq_configdir`;
 	`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 
