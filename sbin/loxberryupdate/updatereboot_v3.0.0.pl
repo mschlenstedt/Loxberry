@@ -524,6 +524,7 @@ if ($errors) {
 	$syscfg->param('UPDATE.FAILED_SCRIPT', "$failed_script");
 	$syscfg->write();
 	undef $syscfg;
+	execute("chown loxberry:loxberry $lbhomedir/config/system/general.*");
 } else {
 	qx { rm $lbhomedir/system/daemons/system/99-updaterebootv300 };
 	qx { rm /boot/rebootupdatescript };
