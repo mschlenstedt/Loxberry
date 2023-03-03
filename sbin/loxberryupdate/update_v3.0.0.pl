@@ -217,6 +217,9 @@ if ( -e "$lbhomedir/system/daemons/system/01-ssdpd" ) {
 if ( -e "$lbhomedir/system/daemons/system/04-remotesupport" ) {
 	unlink ("$lbhomedir/system/daemons/system/04-remotesupport");
 }
+if ( -e "$lbhomedir/system/daemons/system/05-emergencywebserver" ) {
+	unlink ("$lbhomedir/system/daemons/system/05-emergencywebserver");
+}
 
 LOGINF "Update mosquitto service...";
 copy_to_loxberry('/system/systemd/mosquitto.service');
