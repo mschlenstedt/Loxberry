@@ -214,6 +214,9 @@ copy_to_loxberry('/system/systemd/usb-mount@.service');
 if ( -e "$lbhomedir/system/daemons/system/01-ssdpd" ) {
 	unlink ("$lbhomedir/system/daemons/system/01-ssdpd");
 }
+if ( -e "$lbhomedir/system/daemons/system/04-remotesupport" ) {
+	unlink ("$lbhomedir/system/daemons/system/04-remotesupport");
+}
 
 LOGINF "Update mosquitto service...";
 copy_to_loxberry('/system/systemd/mosquitto.service');
