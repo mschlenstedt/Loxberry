@@ -211,6 +211,9 @@ copy_to_loxberry('/system/systemd/createtmpfs.service');
 copy_to_loxberry('/system/systemd/loxberry.service');
 copy_to_loxberry('/system/systemd/ssdpd.service');
 copy_to_loxberry('/system/systemd/usb-mount@.service');
+if ( -e "$lbhomedir/system/daemons/system/01-ssdpd" ) {
+	unlink ("$lbhomedir/system/daemons/system/01-ssdpd");
+}
 
 LOGINF "Update mosquitto service...";
 copy_to_loxberry('/system/systemd/mosquitto.service');
