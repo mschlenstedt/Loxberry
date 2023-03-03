@@ -350,42 +350,46 @@ LOGINF "Removing package 'AppArmor'...";
 apt_remove("apparmor");
 
 #
-# Node.js V18
+# Node.js V18 and Yarn
 #
-LOGINF "Installing Node.js V18...";
-my $output = qx { curl -fsSL https://deb.nodesource.com/setup_18.x | bash - };
-my $exitcode  = $? >> 8;
-if ($exitcode != 0) {
+my $pivers = qx { $lbhomedir/bin/showpitype };
+chomp $pivers;
+if ( $pivers != "type_1" && $pivers != "type_0") {
+	LOGINF "Installing Node.js V18...";
+	my $output = qx { curl -fsSL https://deb.nodesource.com/setup_18.x | bash - };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
 		LOGERR "Error adding Node.js repo to LoxBerry - Error $exitcode";
 		LOGDEB $output;
-	        $errors++;
+		$errors++;
 	} else {
-        	LOGOK "Node.js repo added successfully.";
+	       	LOGOK "Node.js repo added successfully.";
 	}
 
-LOGINF "Installing Yarn...";
-my $output = qx { curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null };
-my $exitcode  = $? >> 8;
-if ($exitcode != 0) {
+	LOGINF "Installing Yarn Key...";
+	my $output = qx { curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null };
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
 		LOGERR "Error adding Yarn key to LoxBerry - Error $exitcode";
 		LOGDEB $output;
 		$errors++;
-} else {
+	} else {
 		LOGOK "Yarn key added successfully.";
-}
-my $output = qx { echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list };
-if ( ! -e "/etc/apt/sources.list.d/yarn.list" ) {
+	}
+	my $output = qx { echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list };
+	if ( ! -e "/etc/apt/sources.list.d/yarn.list" ) {
 		LOGERR "Error adding Yarn repo to LoxBerry - Error $exitcode";
 		LOGDEB $output;
 		$errors++;
-} else {
+	} else {
 		LOGOK "Yarn repo added successfully.";
+	}
 }
 
 LOGINF "Update apt database";
 apt_update();
 
-LOGINF "Installing/updating Node.js V18...";
+LOGINF "Installing/updating Node.js...";
 apt_install("nodejs yarn");
 
 LOGINF "Testing Node.js...";
