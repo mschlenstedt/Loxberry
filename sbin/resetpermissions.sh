@@ -50,6 +50,7 @@ chown -Rc loxberry:loxberry /var/cache/apache2
 chown -Rc loxberry:loxberry /var/lib/apache2
 chown -c loxberry:loxberry /etc/timezone
 chown -c loxberry:loxberry /etc/localtime
+chown -Rc loxberry:loxberry $LBHOMEDIR/config/system/general.*
 
 chmod -c 600 $LBHOMEDIR/system/network/interfaces
 chmod -c 600 $LBHOMEDIR/config/system/*
