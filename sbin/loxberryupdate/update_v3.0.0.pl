@@ -33,6 +33,7 @@ $gcfg->{Update}->{Installtype} = "install";
 $gcfg->{Update}->{Interval} = "7";
 $gcfg->{Update}->{Releasetype} = "release";
 $gcfgobj->write();
+execute("chown loxberry:loxberry $lbhomedir/config/system/general.*");
 
 #
 # Add Raspbian Mirrors to general.json
