@@ -222,8 +222,7 @@ sub set_file_permissions
 	###
 	### Set file permissions
 	###
-	execute( command => "chown -R loxberry:loxberry $lbhomedir/bin/mqtt/transform/custom", log => $log, ignoreerrors => 1 );
-	execute( command => "chown -R loxberry:loxberry $lbhomedir/bin/mqtt/datastore", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry $lbhomedir/bin/mqtt", log => $log, ignoreerrors => 1 );
 	execute( command => "chown -R loxberry:loxberry $lbhomedir/config/system/mosquitto", log => $log, ignoreerrors => 1 );
 	execute( command => "chown -R loxberry:loxberry $lbsconfigdir/mqttgateway.json", log => $log, ignoreerrors => 1 );
 	execute( command => "chown -R loxberry:loxberry /opt/backup.mqttgateway", log => $log, ignoreerrors => 1 );
