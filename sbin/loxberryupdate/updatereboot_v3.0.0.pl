@@ -618,5 +618,5 @@ END
 {
 	LOGINF "Will reboot now to restart Apache...";
 	LOGEND;
-	#system ("/sbin/reboot");
+	system ("/sbin/reboot");
 }
