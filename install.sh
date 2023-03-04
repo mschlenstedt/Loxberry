@@ -171,15 +171,15 @@ fi
 if [ ! -e /boot/dietpi/.version ]; then
 	echo -e "\n${RED}This seems not to be a DietPi Image. LoxBerry can only be installed on DietPi.\n"
 	echo -e "We expect $TARGET_PRETTY_NAME as distribution."
-    echo -e "Please download the correct image from ${ULINE}https://dietpi.com\n${RESET}"
+	echo -e "Please download the correct image from ${ULINE}https://dietpi.com\n${RESET}"
 	exit 1
 fi
 
 if [ $VERSION_ID -ne $TARGET_VERSION_ID ]; then
 	echo -e "\n${RED}You are running $PRETTY_NAME. This distribution"
-    echo -e "is not supported by LoxBerry.\n"
+	echo -e "is not supported by LoxBerry.\n"
 	echo -e "We expect $TARGET_PRETTY_NAME as distribution."
-    echo -e "Please download the correct image from ${ULINE}https://dietpi.com\n${RESET}"
+	echo -e "Please download the correct image from ${ULINE}https://dietpi.com\n${RESET}"
 	exit 1
 fi
 
@@ -413,7 +413,6 @@ sed -i -e "s#/opt/loxberry/#$LBHOME/#g" $LBHOME/system/apache2/envvars
 source /etc/environment
 
 # LoxBerry global environment variables in Apache
-
 if [ -z $LBSSBIN ]; then
 	FAIL "Could not set systemwide environments.\n"
 	exit 1
@@ -720,7 +719,7 @@ cp /etc/cron.d.orig/* /etc/cron.d
 #    find $LBHOME/log/skel_syslog/ -type f -exec rm {} \;
 #fi
 
-# USB MOunts
+# USB Mounts
 TITLE "Configuring automatic USB Mounts..."
 
 # Systemd service for usb automount
