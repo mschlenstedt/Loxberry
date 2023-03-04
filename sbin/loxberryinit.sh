@@ -59,7 +59,7 @@ case "$1" in
 	fi
 
 	# Check if we are on DietPi
-	if [ -e /boot/dietpi/.hw_model ]; then
+	if [ -e /boot/dietpi/.hw_model ] && [ !-e /boot/rootfsresized ]; then
 		touch /boot/rootfsresized
 	fi
 
@@ -106,7 +106,7 @@ case "$1" in
 	if [ -f $LBHOMEDIR/sbin/setdatetime.pl && ! -e /boot/dietpi/.hw_model ]
 	then
 		echo "Syncing Date/Time with NTP-Server"
-		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
+		su loxberry -c "$lbhomedir/sbin/setdatetime.pl > /dev/null 2>&1"
 	fi
 
 	# Start Remote Connection if connfigured

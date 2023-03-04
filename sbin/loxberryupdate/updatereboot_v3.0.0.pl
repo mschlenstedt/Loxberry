@@ -94,7 +94,7 @@ if ($starts >=10) {
 	}
 	my $generaljson = $lbsconfigdir . "/general.json";
 	my $gcfgobj = LoxBerry::JSON->new();
-	my $gcfg = $gcfgobj->open(filename => $generaljson);
+	my $gcfg = $gcfgobj->open(filename => $generaljson, readonly => 1);
 	if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
 		LOGINF "Re-Enabling Watchdog Service...";
 		my $output = qx { systemctl enable watchdog };
@@ -354,7 +354,7 @@ apt_remove("apparmor");
 #
 my $pivers = qx { $lbhomedir/bin/showpitype };
 chomp $pivers;
-if ( $pivers != "type_1" && $pivers != "type_0") {
+if ( $pivers ne "type_1" && $pivers ne "type_0") {
 	LOGINF "Installing Node.js V18...";
 	my $output = qx { curl -fsSL https://deb.nodesource.com/setup_18.x | bash - };
 	my $exitcode  = $? >> 8;
@@ -562,7 +562,7 @@ if ($errors) {
 	}
 	my $generaljson = $lbsconfigdir . "/general.json";
 	my $gcfgobj = LoxBerry::JSON->new();
-	my $gcfg = $gcfgobj->open(filename => $generaljson);
+	my $gcfg = $gcfgobj->open(filename => $generaljson, readonly => 1);
 	if ( is_enabled($gcfg->{'Watchdog'}->{'Enable'}) ) {
 		LOGINF "Re-Enabling Watchdog Service...";
 		my $output = qx { systemctl enable watchdog };
@@ -575,7 +575,7 @@ if ($errors) {
 	}
 	# create plugin logfolders if we are not on Raspberry 
 	# Check if we are on a Rapsberry
-	if ( ! -e "$bhomedir/config/system/is_raspberry.cfg" ) {
+	if ( ! -e "$lbhomedir/config/system/is_raspberry.cfg" ) {
 		LOGINF "This seems not to be a Raspberry. Will have to create the plugin log folders ...";
 		qx { $lbhomedir/sbin/createpluginfolders.pl };
 		my $exitcode = $? >> 8;
@@ -618,5 +618,5 @@ END
 {
 	LOGINF "Will reboot now to restart Apache...";
 	LOGEND;
-	system ("/sbin/reboot");
+	#system ("/sbin/reboot");
 }

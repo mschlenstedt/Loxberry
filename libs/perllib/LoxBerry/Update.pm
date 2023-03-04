@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.10";
+our $VERSION = "3.0.0.11";
 our $DEBUG;
 
 ### Exports ###
@@ -416,7 +416,7 @@ sub apt_update
 				require LoxBerry::JSON;
 				my $cfgfile = $LoxBerry::System::lbsconfigdir . "/general.json";
 				my $jsonobj = LoxBerry::JSON->new();
-				my $cfg = $jsonobj->open(filename => $cfgfile);
+				my $cfg = $jsonobj->open(filename => $cfgfile, readonly => 1);
 				$main::log->INF("Updating YARN key...");
 				system ("curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null");
 				$main::log->INF("Updating NodeJS key...");
