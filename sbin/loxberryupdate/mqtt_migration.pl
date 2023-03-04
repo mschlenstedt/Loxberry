@@ -71,6 +71,7 @@ sub update_config
 
 sub stop_mqttgateway
 {
+
 	###
 	### Stop MQTT Gateway
 	###
@@ -169,6 +170,7 @@ sub transformers_migration
 
 sub remove_plugin_folders
 {
+
 	###
 	### Removing plugin folders
 	###
@@ -185,6 +187,7 @@ sub remove_plugin_folders
 
 sub create_interface_symlinks
 {
+
 	###
 	### Creating symlinks for legacy interfaces
 	###
@@ -202,6 +205,7 @@ sub create_interface_symlinks
 
 sub remove_plugindb_entry
 {
+
 	###
 	### Remove plugin from plugin database
 	###
@@ -219,6 +223,7 @@ sub remove_plugindb_entry
 
 sub set_file_permissions
 {
+
 	###
 	### Set file permissions
 	###
@@ -229,6 +234,7 @@ sub set_file_permissions
 	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
 	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/html/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
 	execute( command => "chown -R loxberry:loxberry $lbsconfigdir/general.json", log => $log, ignoreerrors => 1 );
+
 }
 
 sub start_mqttgateway
@@ -236,6 +242,5 @@ sub start_mqttgateway
 	
 	LOGINF "Starting MQTT Gateway";
 	`su loxberry -c "$lbhomedir/sbin/mqttgateway.pl  > /dev/null 2>&1 &"`;
-
 	
 }
