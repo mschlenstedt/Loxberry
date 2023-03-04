@@ -992,6 +992,18 @@ else
        OK "Successfully reconfigured Apache2."
 fi
 
+# Set correct File Permissions - again
+TITLE "Setting File Permissions (again)..."
+
+$LBHOME/sbin/resetpermissions.sh
+
+if [ $? != 0 ]; then
+	FAIL "Could not set File Permissions for LoxBerry.\n"
+	exit 1
+else
+	OK "Successfully set File Permissions for LoxBerry."
+fi
+
 # The end
 export PERL5LIB=$LBHOME/libs/perllib
 IP=$(perl -e 'use LoxBerry::System; $ip = LoxBerry::System::get_localip(); print $ip; exit;')
