@@ -48,6 +48,7 @@ if [ ! "$MANUALCFG" ] || [ "$MANUALCFG" = 'null' ] || [ "$MANUALCFG" = 'false' ]
 	JSON=`echo $JSON | jq ".Log2ram.Logdisksize = \"$LOG_DISK_SIZE\""`
 	echo $JSON | jq "." > $LBHOMEDIR/config/system/general.json.new
 	mv $LBHOMEDIR/config/system/general.json.new $LBHOMEDIR/config/system/general.json
+	chown loxberry:loxberry $LBHOMEDIR/config/system/general.json
 else
 	echo "Using config from $LBHOMEDIR/config/system/general.json..."
 	RAM_LOG=`jq -r '.Log2ram.Ramlog' $LBHOMEDIR/config/system/general.json`
