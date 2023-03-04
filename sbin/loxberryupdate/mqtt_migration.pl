@@ -30,12 +30,13 @@ if( -e $oldconfigfile ) {
 	transformers_migration();
 	remove_plugin_folders();
 	remove_plugindb_entry();
-	set_file_permissions();
 }
 
 create_interface_symlinks();
 
 update_config();
+
+set_file_permissions();
 
 start_mqttgateway();
 
