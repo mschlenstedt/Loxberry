@@ -605,7 +605,7 @@ else
 	OK "Successfully configured Network Interfaces."
 fi
 
-# Configuring Apache2
+# Configuring Samba
 TITLE "Configuring Samba..."
 
 if [ ! -L /etc/samba ]; then
