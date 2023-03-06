@@ -34,7 +34,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.5";
+my $version = "3.0.0.6";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1225,14 +1225,19 @@ sub install {
 
 	# Supplied packages by architecture
 	my $thisarch;
-	if (-e "$lbsconfigdir/is_raspberry.cfg") {
+	if (-e "$lbsconfigdir/is_raspberry.cfg") { # Old arch file from LB < 3.0
 		$thisarch = "raspberry";
 	}
-	elsif (-e "$lbsconfigdir/is_x86.cfg") {
+	elsif (-e "$lbsconfigdir/is_x86.cfg") { # Old arch file from LB < 3.0
 		$thisarch = "x86";
 	}
-	elsif (-e "$lbsconfigdir/is_x64.cfg") {
+	elsif (-e "$lbsconfigdir/is_x64.cfg") { # Old arch file from LB < 3.0
 		$thisarch = "x64";
+	}
+	else {
+		my ($exitcode, $arch) = execute( command => "uname -m" );
+		chomp($arch);
+		$thisarch = "$arch";
 	}
 	if ( $thisarch ) {
 		my @debfiles = glob("$tempfolder/dpkg/$thisarch/*.deb");
