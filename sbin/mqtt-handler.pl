@@ -101,12 +101,12 @@ sub update_config
 		LOGINF "Setting Miniserver UDP Out-Port to " . $cfg->{Main}->{udpport};
 	}
 	if(! defined $cfg->{Main}->{use_http}) { 
-		$cfg->{Main}->{use_http} = "true"; 
-		LOGINF "Setting Use HTTP to " . $cfg->{Main}->{use_http};
+		$cfg->{Main}->{use_http} = \1; 
+		LOGINF "Setting Use HTTP to true";
 	}
 	if(! defined $cfg->{Main}->{use_udp}) { 
-		$cfg->{Main}->{use_udp} = "false"; 
-		LOGINF "Setting Use UDP to " . $cfg->{Main}->{use_udp};
+		$cfg->{Main}->{use_udp} = \0; 
+		LOGINF "Setting Use UDP to false";
 	}
 	if(! defined $cfg->{Main}->{convert_booleans}) { 
 		$cfg->{Main}->{convert_booleans} = 1; 
