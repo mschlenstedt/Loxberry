@@ -46,7 +46,7 @@ if ($command eq "start") {
 	if (!-e "$lbsbindir/cloudflared") {
 		LOGINF "Downloading cloudflare daemon...";
 		my $cloudflaredbin;
-		if (-e $lbsconfigdir . "/is_raspberry.cfg" || -e $lbsconfigdir . "/is_arch_armv7l.cfg") {
+		if (-e $lbsconfigdir . "/is_raspberry.cfg" || -e $lbsconfigdir . "/is_arch_armv7l.cfg" || -e $lbsconfigdir . "/is_arch_aarch64.cfg") {
                         $cloudflaredbin = "cloudflared-linux-arm";
                 }
                 elsif (-e $lbsconfigdir . "/is_x64.cfg" || -e $lbsconfigdir . "is_arch_x86_64.cfg") {
