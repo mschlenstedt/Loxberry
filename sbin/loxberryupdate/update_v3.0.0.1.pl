@@ -16,6 +16,10 @@ init();
 LOGINF "Creating MQTT Default Config";
 execute( command => "$lbhomedir/sbin/mqtt-handler.pl action=updateconfig", log => $log );
 
+LOGINF "Creating new Arch File in Config"
+my ($exitcode, $arch) = execute( command => "uname -m" );
+chomp($arch);
+LoxBerry::System::write_file( $lbsconfigdir . "/is_arch_" . $arch . ".cfg", $arch);
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
 # LOGWARN "Update file $0 requests a reboot of LoxBerry. Please reboot your LoxBerry after the installation has finished.";
