@@ -89,59 +89,72 @@ sub update_config
 	## Setting default values if not existing
 	
 	my $changed = 0;
+	
+	# mqttgateway.json
+
 	if(! defined $cfg->{Main}->{msno}) { 
 		$cfg->{Main}->{msno} = 1;
 		LOGINF "Setting Miniserver to " . $cfg->{Main}->{msno};
-		}
+	}
 	if(! defined $cfg->{Main}->{udpport}) { 
 		$cfg->{Main}->{udpport} = 11883; 
 		LOGINF "Setting Miniserver UDP Out-Port to " . $cfg->{Main}->{udpport};
-		}
-	if(! defined $generalcfg->{Mqtt}->{Uselocalbroker}) { 
-		$generalcfg->{Mqtt}->{Uselocalbroker} = 'true'; 
-		LOGINF "Setting 'Enable local Mosquitto broker' to " . $generalcfg->{Mqtt}->{Uselocalbroker};
-		}
-	if(! defined $generalcfg->{Mqtt}->{Brokerhost}) { 
-		$generalcfg->{Mqtt}->{Brokerhost} = 'localhost';
-		LOGINF "Setting MQTT brokerhost to " . $generalcfg->{Main}->{Brokerhost};
-		}
-	if(! defined $generalcfg->{Mqtt}->{Brokerport}) { 
-		$generalcfg->{Mqtt}->{Brokerport} = '1883';
-		LOGINF "Setting MQTT brokerport to " . $generalcfg->{Main}->{Brokerport};
-		}
+	}
+	if(! defined $cfg->{Main}->{use_http}) { 
+		$cfg->{Main}->{use_http} = "true"; 
+		LOGINF "Setting Use HTTP to " . $cfg->{Main}->{use_http};
+	}
+	if(! defined $cfg->{Main}->{use_udp}) { 
+		$cfg->{Main}->{use_udp} = "false"; 
+		LOGINF "Setting Use UDP to " . $cfg->{Main}->{use_udp};
+	}
 	if(! defined $cfg->{Main}->{convert_booleans}) { 
 		$cfg->{Main}->{convert_booleans} = 1; 
 		LOGINF "Setting 'Convert booleans' to " . $cfg->{Main}->{convert_booleans};
-		}
+	}
 	if(! defined $cfg->{Main}->{expand_json}) { 
 		$cfg->{Main}->{expand_json} = 1; 
 		LOGINF "Setting 'Expand JSON' to " . $cfg->{Main}->{expand_json};
-		}
-	if(! defined $generalcfg->{Mqtt}->{Udpinport}) { 
-		$generalcfg->{Mqtt}->{Udpinport} = 11884; 
-		LOGINF "Setting MQTT gateway UDP In-Port to " . $generalcfg->{Mqtt}->{Udpinport};
-		}
-	
+	}
 	if(! defined $cfg->{Main}->{pollms}) { 
 		$cfg->{Main}->{pollms} = 50; 
 		LOGINF "Setting poll time for MQTT and UDP connection to " . $cfg->{Main}->{pollms} . " milliseconds";
-		}
+	}
 	if(! defined $cfg->{Main}->{resetaftersendms}) { 
 		$cfg->{Main}->{resetaftersendms} = 13; 
 		LOGINF "Setting Reset-After-Send delay to " . $cfg->{Main}->{resetaftersendms} . " milliseconds";
-		}
+	}
 	if(! defined $cfg->{Main}->{toMS_delimiter}) { 
 		$cfg->{Main}->{toMS_delimiter} = '|'; 
 		LOGINF "Setting delimiter for subscription miniserver list to " . $cfg->{Main}->{toMS_delimiter};
-		}
+	}
 	if(! defined $cfg->{Main}->{cpuperf}) { 
 		$cfg->{Main}->{cpuperf} = "5"; 
 		LOGINF "Setting Performance Profile to " . $cfg->{Main}->{cpuperf};
-		}
+	}
+	
+	# general.json
+	
+	if(! defined $generalcfg->{Mqtt}->{Uselocalbroker}) { 
+		$generalcfg->{Mqtt}->{Uselocalbroker} = 'true'; 
+		LOGINF "Setting 'Enable local Mosquitto broker' to " . $generalcfg->{Mqtt}->{Uselocalbroker};
+	}
+	if(! defined $generalcfg->{Mqtt}->{Brokerhost}) { 
+		$generalcfg->{Mqtt}->{Brokerhost} = 'localhost';
+		LOGINF "Setting MQTT brokerhost to " . $generalcfg->{Main}->{Brokerhost};
+	}
+	if(! defined $generalcfg->{Mqtt}->{Brokerport}) { 
+		$generalcfg->{Mqtt}->{Brokerport} = '1883';
+		LOGINF "Setting MQTT brokerport to " . $generalcfg->{Main}->{Brokerport};
+	}
+	if(! defined $generalcfg->{Mqtt}->{Udpinport}) { 
+		$generalcfg->{Mqtt}->{Udpinport} = 11884; 
+		LOGINF "Setting MQTT gateway UDP In-Port to " . $generalcfg->{Mqtt}->{Udpinport};
+	}
 	if(! defined $generalcfg->{Mqtt}->{Websocketport}) { 
 		$generalcfg->{Mqtt}->{Websocketport} = "9001"; 
 		LOGINF "Setting Mosquitto WebSocket port to " . $generalcfg->{Mqtt}->{Websocketport};
-		}
+	}
 	
 	
 	## Create Mosquitto config and password
