@@ -63,6 +63,7 @@ chmod -c 755 $LBHOMEDIR/system/profile
 chmod -c 700 $LBHOMEDIR/system/samba/credentials
 chmod -c 644 $LBHOMEDIR/system/profile/loxberry.sh
 chmod -c 644 $LBHOMEDIR/system/logrotate/*
+chmod -c 644 $LBHOMEDIR/system/cron/cron.d/*
 chmod -c 644 $LBHOMEDIR/config/system/general.*
 
 chmod -Rc 755 $LBHOMEDIR/libs
