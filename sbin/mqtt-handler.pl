@@ -164,8 +164,6 @@ sub update_config
 		$generalcfg->{Mqtt}->{Brokerpass} = generate(16);
 	}
 	
-	`chown loxberry:loxberry $cfgfile`;
-	`chown loxberry:loxberry $generaljsonfile`;
 	`mkdir $mosq_configdir`;
 	`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 
@@ -345,6 +343,9 @@ sub generate_hexkey
 
 END
 {
+	# Reset file ownership
+	`chown loxberry:loxberry $cfgfile`;
+	`chown loxberry:loxberry $generaljsonfile`;
 	
 	# Return http response here
 	# Check for $errorstr
