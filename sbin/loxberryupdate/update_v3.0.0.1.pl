@@ -17,7 +17,7 @@ LOGINF "Creating MQTT Default Config";
 execute( command => "$lbhomedir/sbin/mqtt-handler.pl action=updateconfig", log => $log );
 
 if ( !-e "/boot/dietpi/.hw_model" ) {
-	LOGINF "Creating new Arch File in Config"
+	LOGINF "Creating new Arch File in Config";
 	my ($exitcode, $arch) = execute( command => "uname -m" );
 	chomp($arch);
 	LoxBerry::System::write_file( $lbsconfigdir . "/is_arch_" . $arch . ".cfg", $arch);
