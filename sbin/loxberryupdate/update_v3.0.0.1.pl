@@ -8,12 +8,13 @@
 
 use LoxBerry::Update;
 use LoxBerry::JSON;
+use LoxBerry::System;
 
 init();
 
 
-LOGINF "This is only for testing";
-$errors++;
+LOGINF "Creating MQTT Default Config";
+execute( command => "$lbhomedir/sbin/mqtt-handler.pl action=updateconfig", log => $log );
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
