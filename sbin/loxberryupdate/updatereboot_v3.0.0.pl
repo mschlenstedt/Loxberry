@@ -356,6 +356,7 @@ my $pivers = qx { $lbhomedir/bin/showpitype };
 chomp $pivers;
 if ( $pivers ne "type_1" && $pivers ne "type_0") {
 	LOGINF "Installing Node.js V18...";
+	unlink ("/etc/apt/sources.list.d/nodesource.list");
 	my $output = qx { curl -fsSL https://deb.nodesource.com/setup_18.x | bash - };
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
