@@ -13,7 +13,7 @@ use LoxBerry::System;
 init();
 
 LOGINF "Repairing broken PHP Installation";
-unlink ("$lbhomedir/system/php/loxberry-cli.ini");
+unlink ("/etc/php/7.4/cli/conf.d/20-loxberry-cli.ini");
 execute( command => "ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.4/cli/conf.d/20-loxberry-cli.ini", log => $log );
 
 LOGOK "Done.";
