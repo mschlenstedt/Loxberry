@@ -5,7 +5,7 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 HN=$(hostname)
-IF=$(route | grep '^default' | grep -o '[^ ]*$')
+IF=$(route | grep -m 1 '^default' | grep -o '[^ ]*$')
 IP=$(ip -4 -o addr show dev $IF |grep -v $IF: |awk '{split($4,a,"/") ;print a[1]}')
 
 sed -i /$HN/d /etc/hosts
