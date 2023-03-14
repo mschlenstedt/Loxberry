@@ -21,7 +21,7 @@ unlink ("$lbhomedir/system/storage/usb");
 execute( command => "ln -vsfn /media/usb $lbhomedir/system/storage/usb", log => $log );
 execute( command => "chown -h loxberry:loxberry $lbhomedir/system/storage/usb", log => $log );
 
-LOGINF "Removing dhcpd5";
+LOGINF "Removing dhcpcd5";
 apt_remove("dhcpcd5");
 
 LOGOK "Done.";
