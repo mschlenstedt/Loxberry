@@ -16,6 +16,10 @@ LOGINF "Repairing broken PHP Installation";
 unlink ("/etc/php/7.4/cli/conf.d/20-loxberry-cli.ini");
 execute( command => "ln -vsfn $lbhomedir/system/php/loxberry-cli.ini /etc/php/7.4/cli/conf.d/20-loxberry-cli.ini", log => $log );
 
+LOGINF "Repairing broken Symlink for USB mount";
+unlink ("$lbhomedir/system/storage/usb");
+execute( command => "ln -vsfn /media/usb $lbhomedir/system/storage/usb", log => $log );
+
 LOGOK "Done.";
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
