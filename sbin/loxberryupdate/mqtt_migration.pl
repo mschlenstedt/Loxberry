@@ -47,7 +47,6 @@ sub install_packages
 LOGINF "Installing new packages";
 
 apt_install( qw/ 
-		mosquitto
 		mosquitto-clients
 		libhash-flatten-perl
 		libfile-monitor-perl
@@ -55,8 +54,9 @@ apt_install( qw/
 		libbsd-resource-perl
 		libcgi-simple-perl
 	/);
-	
-	
+
+# Install Mosquitto and keep the original config file shipped with the package
+execute( command => "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::='--force-confask,confnew,confmiss' install mosquitto", log => $log, ignoreerrors => 1 );
 	
 }
 
@@ -93,6 +93,11 @@ sub config_migration
 	execute( command => "mkdir --parents /opt/backup.mqttgateway", log => $log, ignoreerrors => 1);
 	execute( command => "cp $lbhomedir/config/plugins/mqttgateway/* /opt/backup.mqttgateway/", log => $log );
 
+	if( -e "/etc/mosquitto/mosquitto.conf.dpkg-dist" ) {
+		execute( command => "cp /etc/mosquitto/mosquitto.conf /opt/backup.mqttgateway/", log => $log );
+		unlink ("/etc/mosquitto/mosquitto.conf");
+		execute( command => "mv /etc/mosquitto/mosquitto.conf.dpkg-dist /etc/mosquitto/mosquitto.conf", log => $log );
+	}
 	
 	LOGOK "Starting migration of MQTT Gateway plugin settings to general.json and mqttgateway.json";
 
@@ -115,7 +120,6 @@ sub config_migration
 	my ($brokerhost, $brokerport) = split(':', $newcfg->{Main}->{brokeraddress}, 2);
 	$brokerport = defined $brokerport ? $brokerport : "1883";
 		
-	
 	$generaljson->{Mqtt}->{Udpinport} = $newcfg->{Main}->{udpinport};
 	$generaljson->{Mqtt}->{Brokerhost} = $brokerhost;
 	$generaljson->{Mqtt}->{Brokerport} = $brokerport;
