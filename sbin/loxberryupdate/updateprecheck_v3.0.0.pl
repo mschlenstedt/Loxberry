@@ -23,8 +23,8 @@ apt_update();
 #
 use LoxBerry::System;
 my %folderinfo = LoxBerry::System::diskspaceinfo('/boot');
-if ($folderinfo{size} < 200000) {
-	my $message = "Your boot partition is too small for LoxBerry 3.0 (needed: 256 MB). Current size is: " . LoxBerry::System::bytes_humanreadable($folderinfo{size}, "K") . " Create a backup with the new LoxBerry Backup Widget. The backups will include a bigger boot partition, which is sufficient for LB3.0";
+if ($folderinfo{size} < 120000) {
+	my $message = "Your boot partition is too small for LoxBerry 3.0 (needed: 126 MB). Current size is: " . LoxBerry::System::bytes_humanreadable($folderinfo{size}, "K") . " Create a backup with the new LoxBerry Backup Widget. The backups will include a bigger boot partition, which is sufficient for LB3.0";
 	LOGCRIT $message;
 	notify('updates', 'update', $message, 'Error');
 	$errors++;
