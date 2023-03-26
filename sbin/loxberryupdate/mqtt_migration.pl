@@ -54,8 +54,8 @@ sub install_packages
 		libcgi-simple-perl
 	/);
 
-  # Install Mosquitto and keep the original config file shipped with the package
-  execute( command => "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::='--force-confask,confnew,confmiss' install mosquitto", log => $log, ignoreerrors => 1 );
+	# Install Mosquitto and keep the original config file shipped with the package
+	execute( command => "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::='--force-confask,confnew,confmiss' install mosquitto", log => $log, ignoreerrors => 1 );
 
 }
 
@@ -96,7 +96,7 @@ sub config_migration
 		unlink ("/etc/mosquitto/mosquitto.conf");
 		execute( command => "mv /etc/mosquitto/mosquitto.conf.dpkg-dist /etc/mosquitto/mosquitto.conf", log => $log );
 	}
-	
+
 	LOGOK "Starting migration of MQTT Gateway plugin settings to general.json and mqttgateway.json";
 
 	execute( command => "cp -f $oldconfigfile $newconfigfile", log => $log );
