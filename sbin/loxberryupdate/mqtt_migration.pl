@@ -29,12 +29,13 @@ if( -e $oldconfigfile ) {
 	transformers_migration();
 	remove_plugin_folders();
 	remove_plugindb_entry();
-	set_file_permissions();
 }
 
 create_interface_symlinks();
 
 update_config();
+
+set_file_permissions();
 
 start_mqttgateway();
 
@@ -52,6 +53,10 @@ sub install_packages
 		libbsd-resource-perl
 		libcgi-simple-perl
 	/);
+
+  # Install Mosquitto and keep the original config file shipped with the package
+  execute( command => "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::='--force-confask,confnew,confmiss' install mosquitto", log => $log, ignoreerrors => 1 );
+
 }
 
 
@@ -65,6 +70,7 @@ sub update_config
 
 sub stop_mqttgateway
 {
+
 	###
 	### Stop MQTT Gateway
 	###
@@ -85,6 +91,12 @@ sub config_migration
 	execute( command => "mkdir --parents /opt/backup.mqttgateway", log => $log, ignoreerrors => 1);
 	execute( command => "cp $lbhomedir/config/plugins/mqttgateway/* /opt/backup.mqttgateway/", log => $log );
 
+	if( -e "/etc/mosquitto/mosquitto.conf.dpkg-dist" ) {
+		execute( command => "cp /etc/mosquitto/mosquitto.conf /opt/backup.mqttgateway/", log => $log );
+		unlink ("/etc/mosquitto/mosquitto.conf");
+		execute( command => "mv /etc/mosquitto/mosquitto.conf.dpkg-dist /etc/mosquitto/mosquitto.conf", log => $log );
+	}
+	
 	LOGOK "Starting migration of MQTT Gateway plugin settings to general.json and mqttgateway.json";
 
 	execute( command => "cp -f $oldconfigfile $newconfigfile", log => $log );
@@ -163,6 +175,7 @@ sub transformers_migration
 
 sub remove_plugin_folders
 {
+
 	###
 	### Removing plugin folders
 	###
@@ -179,6 +192,7 @@ sub remove_plugin_folders
 
 sub create_interface_symlinks
 {
+
 	###
 	### Creating symlinks for legacy interfaces
 	###
@@ -196,6 +210,7 @@ sub create_interface_symlinks
 
 sub remove_plugindb_entry
 {
+
 	###
 	### Remove plugin from plugin database
 	###
@@ -213,10 +228,18 @@ sub remove_plugindb_entry
 
 sub set_file_permissions
 {
+
 	###
 	### Set file permissions
 	###
 
+	execute( command => "chown -R loxberry:loxberry $lbhomedir/bin/mqtt", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry $lbhomedir/config/system/mosquitto", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry $lbsconfigdir/mqttgateway.json", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry /opt/backup.mqttgateway", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/html/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry $lbsconfigdir/general.json", log => $log, ignoreerrors => 1 );
 
 }
 
@@ -225,6 +248,4 @@ sub start_mqttgateway
 
 	LOGINF "Starting MQTT Gateway";
 	`su loxberry -c "$lbhomedir/sbin/mqttgateway.pl  > /dev/null 2>&1 &"`;
-
-
 }

@@ -79,13 +79,6 @@ cp -p -n -T /etc/mailname /etc/original.mailname
 echo $new > /etc/mailname
 
 #############################################
-## /etc/ssmtp/ssmtp.conf
-#############################################
-
-cp -p -n -T /etc/ssmtp/ssmtp.conf /etc/ssmtp/original.ssmtp.conf
-sed -i "/hostname=/s/.*/hostname=$new.home.local/" /etc/ssmtp/ssmtp.conf
-
-#############################################
 #############################################
 ## Plugin Hostnames
 #############################################

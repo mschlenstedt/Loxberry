@@ -127,11 +127,11 @@ if ( $do eq "query" )
   if ( $zeitserver eq "ntp" )
   {
   	print `$ntpdate -q $ntpserverurl 2>&1| $grepbin ntp | $awkbin '{for (I=1;I<=NF;I++) if (\$I == "offset") {print \$(I+1)};}'`;
-	}
-	else
-	{
-		print "Miniserver configured. No NTP-Query done.";
-	}
+  }
+  else
+  {
+	print "Miniserver configured. No NTP-Query done.";
+  }
   exit;
 }
 

@@ -5,5 +5,5 @@ Type=oneshot
 EnvironmentFile=/etc/environment
 #WorkingDirectory=/opt/loxberry
 RemainAfterExit=true
-ExecStart=/bin/bash "${LBHOMEDIR}/sbin/usb-mount.sh add %i"
-ExecStop=/bin/bash "${LBHOMEDIR}/sbin/usb-mount.sh remove %i"
+ExecStart=/bin/bash -c "${LBHOMEDIR}/sbin/usb-mount.sh add %i"
+ExecStop=/bin/bash -c "${LBHOMEDIR}/sbin/usb-mount.sh remove %i"

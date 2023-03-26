@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2023 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.5";
+my $version = "3.0.0.7";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -554,7 +554,7 @@ sub install {
 	if ( is_enabled($parch) ) {
 		my $archcheck = 0;
 		foreach (split(/,/,$parch)){
-			if (-e "$lbsconfigdir/is_$_.cfg") {
+			if (-e "$lbsconfigdir/is_$_.cfg" || -e "$lbsconfigdir/is_arch_$_.cfg" ) {
 				$archcheck = 1;
 				LOGOK "$LL{'OK_ARCH'}";
 				last;
@@ -1225,14 +1225,19 @@ sub install {
 
 	# Supplied packages by architecture
 	my $thisarch;
-	if (-e "$lbsconfigdir/is_raspberry.cfg") {
+	if (-e "$lbsconfigdir/is_raspberry.cfg" && -d "$tempfolder/dpkg/raspberry") { # Old arch file from LB < 3.0
 		$thisarch = "raspberry";
 	}
-	elsif (-e "$lbsconfigdir/is_x86.cfg") {
+	elsif (-e "$lbsconfigdir/is_x86.cfg" && -d "$tempfolder/dpkg/x86") { # Old arch file from LB < 3.0
 		$thisarch = "x86";
 	}
-	elsif (-e "$lbsconfigdir/is_x64.cfg") {
+	elsif (-e "$lbsconfigdir/is_x64.cfg" && -d "$tempfolder/dpkg/x64") { # Old arch file from LB < 3.0
 		$thisarch = "x64";
+	}
+	else {
+		my ($exitcode, $arch) = execute( command => "uname -m" );
+		chomp($arch);
+		$thisarch = "$arch";
 	}
 	if ( $thisarch ) {
 		my @debfiles = glob("$tempfolder/dpkg/$thisarch/*.deb");

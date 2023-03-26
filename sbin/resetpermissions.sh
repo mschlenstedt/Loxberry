@@ -7,7 +7,7 @@ fi
 
 # set environment
 if [ -f /etc/environment ]; then
-	        . /etc/environment
+	. /etc/environment
 fi
 
 if [ ! -d $LBHOMEDIR ]; then
@@ -20,8 +20,8 @@ if [ "$LBHOMEDIR" == "" ]; then
 	exit 1
 fi
 
-if [ ! -e "$LBHOMEDIR/config/system/general.cfg" ] && [ ! -e "$LBHOMEDIR/config/system/general.cfg.default" ]; then
-	echo "Cannot find general.cfg or general.cfg.default. Something is strange here. Exiting."
+if [ ! -e "$LBHOMEDIR/config/system/general.json" ] && [ ! -e "$LBHOMEDIR/config/system/general.json.default" ]; then
+	echo "Cannot find general.json or general.json.default. Something is strange here. Exiting."
 	exit 1
 fi
 
@@ -43,15 +43,14 @@ chown -Rc root:root $LBHOMEDIR/system/php
 chown -Rc root:root $LBHOMEDIR/config/system/securepin.dat
 chown -Rc root:root $LBHOMEDIR/data/system/plugindatabase.json-
 chown -Rc root:root $LBHOMEDIR/system/php
+chown -Rc root:root $LBHOMEDIR/system/profile/loxberry.sh
+chown -c root:root $LBHOMEDIR/system/vsftpd/vsftpd.conf
 chown -Rc loxberry:loxberry /var/log/apache2
 chown -Rc loxberry:loxberry /var/cache/apache2
 chown -Rc loxberry:loxberry /var/lib/apache2
-chown -Rc loxberry:loxberry /var/log/lighttpd
-chown -Rc loxberry:loxberry /var/cache/lighttpd
-chown -Rc root:root $LBHOMEDIR/system/profile/loxberry.sh
-chown -c root:root $LBHOMEDIR/system/vsftpd/vsftpd.conf
 chown -c loxberry:loxberry /etc/timezone
 chown -c loxberry:loxberry /etc/localtime
+chown -c loxberry:loxberry $LBHOMEDIR/config/system/general.*
 
 chmod -c 600 $LBHOMEDIR/system/network/interfaces
 chmod -c 600 $LBHOMEDIR/config/system/*
@@ -63,7 +62,9 @@ chmod -c 664 $LBHOMEDIR/system/sudoers/lbdefaults
 chmod -c 755 $LBHOMEDIR/system/profile
 chmod -c 700 $LBHOMEDIR/system/samba/credentials
 chmod -c 644 $LBHOMEDIR/system/profile/loxberry.sh
-chmod -Rc 644 $LBHOMEDIR/system/logrotate/*
+chmod -c 644 $LBHOMEDIR/system/logrotate/*
+chmod -c 644 $LBHOMEDIR/system/cron/cron.d/*
+chmod -c 644 $LBHOMEDIR/config/system/general.*
 
 chmod -Rc 755 $LBHOMEDIR/libs
 chmod -Rc 755 $LBHOMEDIR/sbin

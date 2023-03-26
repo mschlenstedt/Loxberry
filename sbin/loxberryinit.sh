@@ -6,6 +6,7 @@ export $ENVIRONMENT
 
 case "$1" in
   start)
+	mount -a
 	# Test if / is writable
 	echo -n "Testing root filesystem: "
 	touch /readonlycheck
@@ -49,11 +50,17 @@ case "$1" in
 	fi
 
 	# Create Default config
+	#$LBHOMEDIR/sbin/resetpermissions.sh > /dev/null 2>&1
 	echo "Updating general.cfg etc...."
-	$LBHOMEDIR/bin/createconfig.pl
+	su loxberry -c $LBHOMEDIR/bin/createconfig.pl > /dev/null 2>&1
 	if [ ! -f $LBHOMEDIR/data/system/plugindatabase.json ]
 	then
 		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
+	fi
+
+	# Check if we are on DietPi
+	if [ -e /boot/dietpi/.hw_model ] && [ !-e /boot/rootfsresized ]; then
+		touch /boot/rootfsresized
 	fi
 
 	# Create swap config and resize rootfs
@@ -95,19 +102,12 @@ case "$1" in
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.required > /dev/null 2>&1
 	rm -f $LBHOMEDIR/log/system_tmpfs/reboot.force > /dev/null 2>&1
 
-	# Set Date and Time
-	if [ -f $LBHOMEDIR/sbin/setdatetime.pl ]
+	# Set Date and Time - not on DietPi
+	if [ -f $LBHOMEDIR/sbin/setdatetime.pl && ! -e /boot/dietpi/.hw_model ]
 	then
-		echo "Syncing Date/Time with Miniserver or NTP-Server"
-		$LBHOMEDIR/sbin/setdatetime.pl > /dev/null 2>&1
+		echo "Syncing Date/Time with NTP-Server"
+		su loxberry -c "$lbhomedir/sbin/setdatetime.pl > /dev/null 2>&1"
 	fi
-
-	# Start LoxBerrys Emergency Webserver
-	#if [ ! jq -r '.Webserver.Disableemergencywebserver' $LBHOMEDIR/config/system/general.json ]
-	#then
-	#	echo "Start Emergency Webserver"
-	#	perl $LBHOMEDIR/sbin/emergencywebserver.pl > /dev/null 2>&1 &
-	#fi
 
 	# Start Remote Connection if connfigured
 	if [ $(jq -r '.Remote.Autoconnect' $LBHOMEDIR/config/system/general.json) = 'true' ] && [ -e $LBHOMEDIR/log/system/remote.autoconnect ]
@@ -119,7 +119,7 @@ case "$1" in
 		if [ $NOW -lt $LAST ]
 		then
 			echo "Last connection was less then 3 days ago - reconnecting..."
-			$LBHOMEDIR/sbin/remoteconnect.pl start > /dev/null 2>&1
+			su loxberry -c "$LBHOMEDIR/sbin/remoteconnect.pl start > /dev/null 2>&1"
 		else
 			echo "Last connection was more then 3 days ago - ignoring..."
 			rm $LBHOMEDIR/log/system/remote.autoconnect > /dev/null 2>&1
@@ -142,6 +142,7 @@ case "$1" in
 	do
 		echo "Running $SYSTEMDAEMONS..."
 	       	$SYSTEMDAEMONS > /dev/null
+		sleep 1
 	done
 		
 	echo "Running Plugin Daemons..."
@@ -200,7 +201,7 @@ case "$1" in
 		sed -i 's/\(\/ ext4 .*\),nofail\(.*\)/\1\2/' /etc/fstab.new # remove nofail for /
 		FILESIZE=$(wc -c < /etc/fstab.new)
 		ISASCII=$(file /etc/fstab.new | grep -a "ASCII text" | wc -l)
-		if [ "$FILESIZE" -gt 50 ] && [ "$ISASCII" -ne 0 ]]; then
+		if [ "$FILESIZE" -gt 50 ] && [ "$ISASCII" -ne 0 ]; then
 			findmnt -F /etc/fstab.new / > /dev/null
 			if [ $? -eq 0 ]; then
 				echo "New fstab seems to be valid. Deleting original and copy new file."
@@ -216,8 +217,12 @@ case "$1" in
 		echo "Everything OK, nothing to do."
 	fi
 
-	echo "Configuring NTP systemd timesync...."
-	systemctl disable systemd-timesyncd > /dev/null 2>&1
+	if [ ! -e /boot/dietpi/.hw_model ] # Only on Raspbian
+	then
+		echo "Configuring NTP systemd timesync...."
+		systemctl disable systemd-timesyncd > /dev/null 2>&1
+	fi
+	exit 0
   ;;
 
   fsrestore)

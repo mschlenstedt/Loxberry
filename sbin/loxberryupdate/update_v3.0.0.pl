@@ -33,6 +33,7 @@ $gcfg->{Update}->{Installtype} = "install";
 $gcfg->{Update}->{Interval} = "7";
 $gcfg->{Update}->{Releasetype} = "release";
 $gcfgobj->write();
+execute("chown loxberry:loxberry $lbhomedir/config/system/general.*");
 
 #
 # Add Raspbian Mirrors to general.json
@@ -211,6 +212,15 @@ copy_to_loxberry('/system/systemd/createtmpfs.service');
 copy_to_loxberry('/system/systemd/loxberry.service');
 copy_to_loxberry('/system/systemd/ssdpd.service');
 copy_to_loxberry('/system/systemd/usb-mount@.service');
+if ( -e "$lbhomedir/system/daemons/system/01-ssdpd" ) {
+	unlink ("$lbhomedir/system/daemons/system/01-ssdpd");
+}
+if ( -e "$lbhomedir/system/daemons/system/04-remotesupport" ) {
+	unlink ("$lbhomedir/system/daemons/system/04-remotesupport");
+}
+if ( -e "$lbhomedir/system/daemons/system/05-emergencywebserver" ) {
+	unlink ("$lbhomedir/system/daemons/system/05-emergencywebserver");
+}
 
 LOGINF "Update mosquitto service...";
 copy_to_loxberry('/system/systemd/mosquitto.service');
@@ -220,6 +230,11 @@ if ( -e "/etc/systemd/system/mosquitto.service" ) {
 unlink ("$lbhomedir/data/system/mosquitto.service");
 system ("ln -s $lbhomedir/system/systemd/mosquitto.service /etc/systemd/system/mosquitto.service");
 system ("/bin/systemctl daemon-reload");
+
+if ( -e "/etc/logrotate.conf" ) {
+	LOGINF "Disable gzipping of Logs...";
+	my $output = qx { sed -i 's/^compress/#compress/g' /etc/logrotate.conf };
+}
 
 #
 # Install new 03-loxberryupdate Daemon

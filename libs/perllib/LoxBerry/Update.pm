@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.10";
+our $VERSION = "3.0.0.11";
 our $DEBUG;
 
 ### Exports ###
@@ -318,7 +318,7 @@ sub rpi_update
 	my $githash = shift;
 	if (!$githash) { $githash = "" };
 
-	if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg") {
+	if (-e "$LoxBerry::System::lbhomedir/config/system/is_raspberry.cfg" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg" && !-e "/boot/dietpi/.version" ) {
 		unlink "/boot/.firmware_revision";
 		if ( -d '/boot.bkp' ) {
 			qx ( rm -rf /boot.bkp ); 
@@ -348,7 +348,7 @@ sub rpi_update
 			$main::log->OK ("Upgrading kernel and firmware successfully.");
 		}
 	} else {
-		$main::log->OK("This seems not to be a Raspberry. Do not upgrading Kernel and Firmware.");
+		$main::log->OK("This seems not to be a Raspberry with Raspbian as OS. Do not upgrading Kernel and Firmware.");
 	}
 	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
 }
@@ -416,12 +416,12 @@ sub apt_update
 				require LoxBerry::JSON;
 				my $cfgfile = $LoxBerry::System::lbsconfigdir . "/general.json";
 				my $jsonobj = LoxBerry::JSON->new();
-				my $cfg = $jsonobj->open(filename => $cfgfile);
+				my $cfg = $jsonobj->open(filename => $cfgfile, readonly => 1);
 				$main::log->INF("Updating YARN key...");
-				system ("curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -");
+				system ("curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null");
 				$main::log->INF("Updating NodeJS key...");
-				system ("curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -");
-				if ($cfg->{'Apt'}->{'Servers'} && -e $LoxBerry::System::lbsconfigdir . "/is_raspberry.cfg" && -e "/etc/apt/sources.list.d/loxberry.list") {
+				system ("curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor | tee /usr/share/keyrings/nodesource.gpg >/dev/null");
+				if ($cfg->{'Apt'}->{'Servers'} && -e $LoxBerry::System::lbsconfigdir . "/is_raspberry.cfg" && -e "/etc/apt/sources.list.d/loxberry.list" && !-e "$LoxBerry::System::lbhomedir/config/system/is_odroidxu3xu4.cfg" && !-e "/boot/dietpi/.version") {
 					my $aptserver = $cfg->{'Apt'}->{'Servers'}{ int(rand keys %{ $cfg->{'Apt'}->{'Servers'} }) + 1 };
 					$main::log->INF("Changing Rasbian mirror to $aptserver");
 					qx ( sed -i --follow-symlinks "s#^\\([^#]*\\)http[^ ]*#\\1$aptserver#" /etc/apt/sources.list.d/loxberry.list );

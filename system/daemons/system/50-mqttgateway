@@ -1,1 +1,2 @@
+#!/bin/bash
 su loxberry -c "$LBHOMEDIR/sbin/mqttgateway.pl > /dev/null 2>&1 &"
