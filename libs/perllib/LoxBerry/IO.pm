@@ -20,7 +20,6 @@ our @EXPORT = qw (
 	mqtt_retain
 	mqtt_set
 	mqtt_get
-	
 );
 
 our $VERSION = "3.0.0.1";
@@ -40,24 +39,22 @@ my %udpsocket;
 # Returns: $socket
 #################################################################################
 
-sub create_out_socket 
+sub create_out_socket
 {
-	
+
 	require IO::Socket;
 	require IO::Socket::IP;
 	require IO::Socket::Timeout;
 
-
-	
 	my ($socket, $port, $proto, $remotehost) = @_;
-	
+
 	my %params = (
 		PeerHost  => $remotehost,
 		PeerPort  => $port,
 		Proto     => $proto,
 		Blocking  => 0
 	);
-	
+
 	if ($proto eq 'tcp') {
 		$params{'Type'} = SOCK_STREAM();
 	} elsif ($proto eq 'udp') {
@@ -66,7 +63,7 @@ sub create_out_socket
 	# if($socket) {
 		# close($socket);
 	# }
-		
+
 	$socket = IO::Socket::IP->new( %params );
 	if(! $socket) {
 		print STDERR "Couldn't connect to $remotehost:$port : $@\n";
@@ -91,13 +88,13 @@ sub create_out_socket
 # Returns: $socket
 #################################################################################
 
-sub create_in_socket 
+sub create_in_socket
 {
 
 	require IO::Socket;
-	
+
 	my ($socket, $port, $proto) = @_;
-	
+
 	my %params = (
 		LocalHost  => '0.0.0.0',
 		LocalPort  => $port,
@@ -126,16 +123,16 @@ sub create_in_socket
 sub mshttp_send
 {
 	my $msnr = shift;
-	
+
 	if (@_ % 2) {
 		Carp::croak "mshttp_send: Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
 	}
-	
+
 	require URI::Escape;
-	
+
 	my @params = @_;
 	my %response;
-	
+
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
 		print STDERR "Param: $params[$pidx] is $params[$pidx+1]\n" if ($DEBUG);
 		my ($respvalue, $respcode) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . "/" . URI::Escape::uri_escape($params[$pidx+1]));
@@ -153,12 +150,12 @@ sub mshttp_send
 sub mshttp_send_mem
 {
 	my $msnr = shift;
-	
+
 	if (! $msnr) {
 		print STDERR "Miniserver must be specified\n";
 		return undef;
 	}
-	
+
 	if (@_ % 2) {
 		Carp::croak "mshttp_send: Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
 	}
@@ -170,11 +167,11 @@ sub mshttp_send_mem
 
 	my $memfile = "/run/shm/mshttp_mem_${msnr}.json";
 	print STDERR "mshttp_send_mem: Memory file is $memfile\n" if ($DEBUG);
-		
+
 	# Open memory file
 	my $memobj = LoxBerry::JSON->new();
 	my $memhash = $memobj->open(filename => $memfile, writeonclose => 1);
-		
+
 	if(! defined $memhash->{Main}) {
 		$memhash->{Main} = ();
 	}
@@ -182,16 +179,16 @@ sub mshttp_send_mem
 		# print STDERR "Setting timestamp\n";
 		$memhash->{Main}->{timestamp} = time;
 		$mem_sendall = 1;
-	}	
-	
+	}
+
 	my $timestamp = $memhash->{Main}->{timestamp};
-	
+
 	# Check if this call should be set to mem_sendall
 	if ($timestamp < (time-$mem_sendall_sec)) {
 		$mem_sendall = 1;
 		$memhash->{Main}->{timestamp} = time;
 	}
-		
+
 	if (! $memhash->{Main}->{lastMSRebootCheck} or $memhash->{Main}->{lastMSRebootCheck} < (time-300)) {
 		# Try to check if MS was restarted (in only possible with MS Admin)
 		$memhash->{Main}->{lastMSRebootCheck} = time;
@@ -217,15 +214,15 @@ sub mshttp_send_mem
 
 	# Build new delta parameter list
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
-			
+
 		if ($memhash->{$params[$pidx]} ne $params[$pidx+1] or $mem_sendall == 1) {
 			push(@newparams, $params[$pidx], $params[$pidx+1]);
 			$memhash->{$params[$pidx]} = $params[$pidx+1];
-		}	
+		}
 	}
-	
+
 	$mem_sendall = 0;
-	
+
 	if (@newparams) {
 		return mshttp_send($msnr, @newparams);
 	} else {
@@ -240,29 +237,29 @@ sub mshttp_send_mem
 sub mshttp_get
 {
 	my $msnr = shift;
-	
+
 	my @params = @_;
 	my %response;
-	
+
 	require URI::Escape;
-	
+
 	for (my $pidx = 0; $pidx < @params; $pidx++) {
 		print STDERR "Querying param: $params[$pidx]\n" if ($DEBUG);
-		my ($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . '/all'); 
+		my ($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) . '/all');
 		if($respcode == 200) {
 			# We got a valid response
 			# Workaround for analogue outputs always return 0
 			my $respvalue_filtered = $respvalue =~ /(\d+(?:\.\d+)?)/;
 			$respvalue_filtered = $1;
-			# print STDERR "respvalue         : $respvalue\n"; 
-			# print STDERR "respvalue_filtered: $respvalue_filtered\n"; 
+			# print STDERR "respvalue         : $respvalue\n";
+			# print STDERR "respvalue_filtered: $respvalue_filtered\n";
 			no warnings "numeric";
 			if($respvalue_filtered ne "" and $respvalue_filtered == 0) {
 				# Search for outputs - if present, value is ok
 				if( index( $rawdata, '<output name="' ) == -1 ) {
 					# Not found - we require to request the value without /all
-					($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) ); 
-				} 
+					($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . URI::Escape::uri_escape($params[$pidx]) );
+				}
 			}
 			$response{$params[$pidx]} = $respvalue;
 		} else {
@@ -282,17 +279,17 @@ sub mshttp_call
 {
 	require LWP::UserAgent;
 	require Encode;
-		
+
 	my ($msnr, $command) = @_;
-	
+
 	my %ms = LoxBerry::System::get_miniservers();
 	if (! %ms{$msnr}) {
 		print STDERR "Miniserver $msnr not found or configuration not finished\n";
 		return (undef, 601, undef);
 	}
-	
+
 	my $FullURI = $ms{$msnr}{FullURI};
-	
+
 	my $url = $FullURI . $command;
 	my $ua = LWP::UserAgent->new;
 	$ua->timeout(1);
@@ -305,18 +302,18 @@ sub mshttp_call
 	}
 	#require Data::Dumper;
 	# print STDERR Data::Dumper::Dumper ($response);
-	
+
 	my $resp = Encode::encode_utf8($response->content);
-		
+
 	$resp =~ /value\=\"(.*?)\"/;
 	my $value=$1;
 	$resp =~ /Code\=\"(.*?)\"/;
 	my $code=$1;
-	
+
 	print STDERR "mshttp_call: Response Code $code Value $value Full: $resp\n" if($DEBUG);
-	
+
 	return ($value, $code, $resp);
-	
+
 }
 
 
@@ -330,18 +327,18 @@ sub mshttp_call2
 {
 	require LWP::UserAgent;
 	# require Encode;
-		
+
 	my ($msnr, $command, %options) = @_;
-	
+
 	my %responseinfo;
-	
+
 	my $timeout = defined $options{timeout} ? $options{timeout} : 5;
 	my $ssl_verify_mode = defined $options{ssl_verify_mode} ? $options{ssl_verify_mode} : 0;
 	my $ssl_verify_hostname = defined $options{ssl_verify_hostname} ? $options{ssl_verify_hostname} : 0;
 	my $filename = defined $options{filename} ? $options{filename} : undef;
-	
+
 	print STDERR "mshttp_call2: timeout=$timeout\n" if ($DEBUG);
-	
+
 	my %ms = LoxBerry::System::get_miniservers();
 	if (! %ms{$msnr}) {
 		print STDERR "Miniserver $msnr not found or configuration not finished\n";
@@ -350,9 +347,9 @@ sub mshttp_call2
 		$responseinfo{message} = "Miniserver $msnr not found or configuration not finished";
 		return (undef, \%responseinfo);
 	}
-	
+
 	my $FullURI = $ms{$msnr}{FullURI};
-	
+
 	my $url = $FullURI . $command;
 	my $ua = LWP::UserAgent->new;
 	$ua->timeout($timeout);
@@ -363,16 +360,16 @@ sub mshttp_call2
 	$responseinfo{error} = 1;
 	# If the request completely fails
 	if ($response->is_error) {
-		
+
 		print STDERR "mshttp_call2: $command FAILED - Error " . $response->code . ": " . $response->status_line . "\n" if ($DEBUG);
 		$responseinfo{message} = "$command FAILED - Error " . $response->code . ": " . $response->status_line;
 		return (undef, \%responseinfo);
 	}
-	
+
 	$responseinfo{message} = "Request ok";
-	
+
 	# my $resp = Encode::encode_utf8($response->content);
-		
+
 	if($DEBUG) {
 		print STDERR "mshttp_call2: HTTP $responseinfo{code}: $responseinfo{status}\n";
 		if( !$filename ) {
@@ -381,7 +378,7 @@ sub mshttp_call2
 			print STDERR HTML::Entities::encode_entities( substr( $response->decoded_content, 0, 500 ), '<>&"') . " [...]\n";
 		}
 	}
-	
+
 	if( defined $filename ) {
 		# my $file = $response->decoded_content( charset => 'none' );
 		my $write_resp;
@@ -396,11 +393,11 @@ sub mshttp_call2
 		} else {
 			$responseinfo{filename} = $filename;
 		}
-			
+
 	}
-	
+
 	return ($response->decoded_content, \%responseinfo);
-	
+
 }
 
 
@@ -416,7 +413,7 @@ sub msudp_send
 	my $udpport = shift;
 	my $prefix = shift;
 	my @params = @_;
-	
+
 	my %ms = LoxBerry::System::get_miniservers();
 	if (! $udpport or $udpport > 65535) {
 		print STDERR "UDP port $udpport invalid or not defined\n";
@@ -429,11 +426,11 @@ sub msudp_send
 	if ($prefix) {
 		$prefix = "$prefix: ";
 	}
-	
+
 	if (@params > 1 and @params % 2) {
 		Carp::croak "msudp_send: Illegal parameter list has odd number of values\n" . join("\n", @_) . "\n";
 	}
-	
+
 	if (! $udpsocket{$msnr}{$udpport}) {
 		# Open UDP socket
 		$udpsocket{$msnr}{$udpport} = create_out_socket($udpsocket{$msnr}{$udpport}, $udpport, 'udp', $ms{$msnr}{'IPAddress'});
@@ -441,10 +438,10 @@ sub msudp_send
 			return undef;
 		}
 	}
-	
+
 	my $line;
 	my $parinline = 0;
-	
+
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
 		$parinline++;
 		my $oldline = $line;
@@ -470,9 +467,9 @@ sub msudp_send
 			$line = "";
 			redo;
 		}
-		
+
 	}
-	
+
 	if($line ne "") {
 		eval {
 			print STDERR "msudp_send: Sending: $line\n" if ($DEBUG);
@@ -493,12 +490,12 @@ sub msudp_send_mem
 	my $prefix = shift;
 	my @params = @_;
 	my @newparams;
-	
+
 	require LoxBerry::JSON;
-		
+
 	my $memfile = "/run/shm/msudp_mem_${msnr}_${udpport}.json";
 	print STDERR "msudp_send_mem: Memory file is $memfile\n" if ($DEBUG);
-	
+
 	if (! $udpport or $udpport > 65535) {
 		print STDERR "UDP port $udpport invalid or not defined\n";
 		return undef;
@@ -507,12 +504,12 @@ sub msudp_send_mem
 		print STDERR "Miniserver must be specified\n";
 		return undef;
 	}
-	
+
 	# Open memory file
 	my $memobj = LoxBerry::JSON->new();
 	my $memhash = $memobj->open(filename => $memfile, writeonclose => 1);
-	
-	
+
+
 	# Section is defined by the prefix
 	my $prefixsection;
 	if(!$prefix) {
@@ -529,15 +526,15 @@ sub msudp_send_mem
 		$memhash->{Main}->{timestamp} = time;
 		$mem_sendall = 1;
 	}
-	
+
 	my $timestamp = $memhash->{Main}->{timestamp};
-	
+
 	# Check if this call should be set to mem_sendall
 	if ($timestamp < (time-$mem_sendall_sec)) {
 		$mem_sendall = 1;
 		$memhash->{Main}->{timestamp} = time;
 	}
-	
+
 	if (! $memhash->{Main}->{lastMSRebootCheck} or $memhash->{Main}->{lastMSRebootCheck} < (time-300)) {
 		# Try to check if MS was restarted (in only possible with MS Admin)
 		$memhash->{Main}->{lastMSRebootCheck} = time;
@@ -560,18 +557,18 @@ sub msudp_send_mem
 			delete $memhash->{$_};
 		}
 	}
-	
+
 	# Build new delta parameter list
 	for (my $pidx = 0; $pidx < @params; $pidx+=2) {
-			
+
 		if ($memhash->{$prefixsection}->{$params[$pidx]} ne $params[$pidx+1] or $mem_sendall == 1) {
 			push(@newparams, $params[$pidx], $params[$pidx+1]);
 			$memhash->{$prefixsection}->{$params[$pidx]} = $params[$pidx+1];
-		}	
+		}
 	}
-	
+
 	$mem_sendall = 0;
-	
+
 	if (@newparams) {
 		return msudp_send($msnr, $udpport, $prefix, @newparams);
 	} else {
@@ -588,13 +585,15 @@ sub msudp_send_mem
 sub mqtt_connectiondetails {
 
 	LoxBerry::System::read_generaljson();
-	
+
 	my %cred;
-	
+
 	$cred{brokeraddress} = $LoxBerry::System::mqttcfg->{Brokerhost}.":".$LoxBerry::System::mqttcfg->{Brokerport};
 	$cred{brokerhost} = $LoxBerry::System::mqttcfg->{Brokerhost};
 	$cred{brokerport} = $LoxBerry::System::mqttcfg->{Brokerport};
 	$cred{websocketport} = defined $LoxBerry::System::mqttcfg->{Websocketport} ? $LoxBerry::System::mqttcfg->{Websocketport} : "9001";
+	$cred{tlswebsocketport} = defined $LoxBerry::System::mqttcfg->{TLSWebsocketport} ? $LoxBerry::System::mqttcfg->{TLSWebsocketport} : "9083";
+	$cred{tlsport} = defined $LoxBerry::System::mqttcfg->{TLSport} ? $LoxBerry::System::mqttcfg->{TLSport} : "8883";
 	$cred{brokeruser} = $LoxBerry::System::mqttcfg->{Brokeruser};
 	$cred{brokerpass} = $LoxBerry::System::mqttcfg->{Brokerpass};
 	$cred{udpinport} = $LoxBerry::System::mqttcfg->{Udpinport};
@@ -605,22 +604,22 @@ sub mqtt_connectiondetails {
 sub mqtt_connect
 {
 	require Net::MQTT::Simple;
-	
+
 	if( $LoxBerry::IO::mqtt ) {
 		print STDERR "mqtt_connect-> MQTT already connected\n" if($DEBUG);
 		return $LoxBerry::IO::mqtt;
 	}
-	
+
 	print STDERR "mqtt_connect-> Requesting MQTT connection details\n" if($DEBUG);
 	my $mqttcred = LoxBerry::IO::mqtt_connectiondetails();
 	if( ! $mqttcred ) {
 		print STDERR "mqtt_connect-> Error: Could not get MQTT connection details.\n" if($DEBUG);
 		return undef;
 	}
-	
+
 	print STDERR "mqtt_connect-> Connecting to broker $mqttcred->{brokeraddress}\n" if($DEBUG);
 	eval {
-		
+
 		$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
 		$LoxBerry::IO::mqtt = Net::MQTT::Simple->new($mqttcred->{brokeraddress});
 		if($mqttcred->{brokeruser} or $mqttcred->{brokerpass}) {
@@ -636,13 +635,13 @@ sub mqtt_connect
 
 	print STDERR "mqtt_connect-> Connected successfully\n" if($DEBUG);
 	return $LoxBerry::IO::mqtt;
-	
+
 }
 
 sub mqtt_set
 {
 	my ($topic, $value, $retain) = @_;
-	
+
 	print STDERR "mqtt_set-> Called\n" if($DEBUG);
 	if( !$LoxBerry::IO::mqtt ) {
 		print STDERR "mqtt_set-> mqtt not connected - connecting\n" if($DEBUG);
@@ -652,7 +651,7 @@ sub mqtt_set
 		print STDERR "mqtt_set-> Error: mqtt (still) not connected - failed\n";
 		return undef;
 	}
-	
+
 	eval {
 		if( !$retain ) {
 			print STDERR "mqtt_set-> Publishing $topic -> $value\n" if($DEBUG);
@@ -669,7 +668,7 @@ sub mqtt_set
 		print STDERR "mqtt_set-> Successfully sent $topic -> $value\n" if($DEBUG);
 		return $topic;
 	}
-	
+
 }
 
 sub mqtt_retain
@@ -685,13 +684,13 @@ sub mqtt_publish
 
 sub mqtt_get
 {
-	
+
 	print STDERR "mqtt_get-> Called\n" if($DEBUG);
-	
+
 	require Time::HiRes;
-	
+
 	my( $topic, $timeout_msecs ) = @_;
-	
+
 	if( !$LoxBerry::IO::mqtt ) {
 		print STDERR "mqtt_get-> mqtt not connected - connecting\n" if($DEBUG);
 		LoxBerry::IO::mqtt_connect();
@@ -700,31 +699,31 @@ sub mqtt_get
 		print STDERR "mqtt_get-> Error: mqtt (still) not connected - failed\n";
 		return undef;
 	}
-	
+
 	if( !$timeout_msecs ) {
 		$timeout_msecs = 250;
 	}
-	
+
 	undef %mqtt_received;
 	my $starttime = Time::HiRes::time();
 	my $endtime = $starttime + $timeout_msecs/1000;
 	print STDERR "mqtt_get-> Subscribing $topic, waiting for first result or $timeout_msecs msecs\n" if($DEBUG);
-	eval{ 
+	eval{
 		$LoxBerry::IO::mqtt->subscribe($topic, \&mqtt_received);
 	};
 	while ( scalar keys %mqtt_received == 0 and Time::HiRes::time()<$endtime ) {
 		$LoxBerry::IO::mqtt->tick();
 		Time::HiRes::sleep(0.05);
 	}
-	eval{ 
+	eval{
 		$LoxBerry::IO::mqtt->unsubscribe($topic);
 	};
-	
+
 	if(%mqtt_received) {
 		my $result = $mqtt_received{ (sort keys %mqtt_received)[0] };
 		print STDERR "mqtt_get-> Returning value $result\n" if($DEBUG);
 		return( $result );
-	} 
+	}
 	else {
 		print STDERR "mqtt_get-> Nothing received, returning undef\n" if($DEBUG);
 		return;
@@ -736,7 +735,7 @@ sub mqtt_received
 	my ($topic, $msg) = @_;
 	print STDERR "mqtt_received-> Received: $topic->$msg\n" if($DEBUG);
 	$mqtt_received{$topic} = $msg;
-}	
+}
 
 
 #####################################################
