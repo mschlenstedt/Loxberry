@@ -241,7 +241,7 @@ sub mosquitto_setcred
 		$mosq_config .= "password_file $mosq_passwdfile\n";
 	}
 
-	# TLS listener over MQTT port
+	# TLS listener over MQTT protocol
 	if($tlsport) {
 		$mosq_config .= "\n# TLS listener over MQTT port\n";
 		$mosq_config .= "listener $tlsport\n";
@@ -252,7 +252,8 @@ sub mosquitto_setcred
 		$mosq_config .= "allow_anonymous false\n";
 		$mosq_config .= "require_certificate false\n";
 	}
-	# TLS listener over websocket
+
+	# TLS listener over websocket protocol
 	if($tlswebsocketport) {
 		$mosq_config .= "\n# TLS listener over websocket\n";
 		$mosq_config .= "listener $tlswebsocketport\n";
