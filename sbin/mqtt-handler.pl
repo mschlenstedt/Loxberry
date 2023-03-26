@@ -93,80 +93,88 @@ sub update_config
 	## Setting default values if not existing
 
 	my $changed = 0;
-	
+
 	# mqttgateway.json
 
-	if(! defined $cfg->{Main}->{msno}) { 
+	if(! defined $cfg->{Main}->{msno}) {
 		$cfg->{Main}->{msno} = 1;
 		LOGINF "Setting Miniserver to " . $cfg->{Main}->{msno};
 	}
-	if(! defined $cfg->{Main}->{udpport}) { 
-		$cfg->{Main}->{udpport} = 11883; 
+	if(! defined $cfg->{Main}->{udpport}) {
+		$cfg->{Main}->{udpport} = 11883;
 		LOGINF "Setting Miniserver UDP Out-Port to " . $cfg->{Main}->{udpport};
 	}
-	if(! defined $cfg->{Main}->{use_http}) { 
-		$cfg->{Main}->{use_http} = \1; 
+	if(! defined $cfg->{Main}->{use_http}) {
+		$cfg->{Main}->{use_http} = \1;
 		LOGINF "Setting Use HTTP to true";
 	}
-	if(! defined $cfg->{Main}->{use_udp}) { 
-		$cfg->{Main}->{use_udp} = \0; 
+	if(! defined $cfg->{Main}->{use_udp}) {
+		$cfg->{Main}->{use_udp} = \0;
 		LOGINF "Setting Use UDP to false";
 	}
-	if(! defined $cfg->{Main}->{convert_booleans}) { 
-		$cfg->{Main}->{convert_booleans} = 1; 
+	if(! defined $cfg->{Main}->{convert_booleans}) {
+		$cfg->{Main}->{convert_booleans} = 1;
 		LOGINF "Setting 'Convert booleans' to " . $cfg->{Main}->{convert_booleans};
 	}
-	if(! defined $cfg->{Main}->{expand_json}) { 
-		$cfg->{Main}->{expand_json} = 1; 
+	if(! defined $cfg->{Main}->{expand_json}) {
+		$cfg->{Main}->{expand_json} = 1;
 		LOGINF "Setting 'Expand JSON' to " . $cfg->{Main}->{expand_json};
 	}
-	if(! defined $cfg->{Main}->{pollms}) { 
-		$cfg->{Main}->{pollms} = 50; 
+	if(! defined $cfg->{Main}->{pollms}) {
+		$cfg->{Main}->{pollms} = 50;
 		LOGINF "Setting poll time for MQTT and UDP connection to " . $cfg->{Main}->{pollms} . " milliseconds";
 	}
-	if(! defined $cfg->{Main}->{resetaftersendms}) { 
-		$cfg->{Main}->{resetaftersendms} = 13; 
+	if(! defined $cfg->{Main}->{resetaftersendms}) {
+		$cfg->{Main}->{resetaftersendms} = 13;
 		LOGINF "Setting Reset-After-Send delay to " . $cfg->{Main}->{resetaftersendms} . " milliseconds";
 	}
-	if(! defined $cfg->{Main}->{toMS_delimiter}) { 
-		$cfg->{Main}->{toMS_delimiter} = '|'; 
+	if(! defined $cfg->{Main}->{toMS_delimiter}) {
+		$cfg->{Main}->{toMS_delimiter} = '|';
 		LOGINF "Setting delimiter for subscription miniserver list to " . $cfg->{Main}->{toMS_delimiter};
 	}
-	if(! defined $cfg->{Main}->{cpuperf}) { 
-		$cfg->{Main}->{cpuperf} = "5"; 
+	if(! defined $cfg->{Main}->{cpuperf}) {
+		$cfg->{Main}->{cpuperf} = "5";
 		LOGINF "Setting Performance Profile to " . $cfg->{Main}->{cpuperf};
 	}
-	
+
 	# general.json
-	
-	if(! defined $generalcfg->{Mqtt}->{Uselocalbroker}) { 
-		$generalcfg->{Mqtt}->{Uselocalbroker} = 'true'; 
+
+	if(! defined $generalcfg->{Mqtt}->{Uselocalbroker}) {
+		$generalcfg->{Mqtt}->{Uselocalbroker} = 'true';
 		LOGINF "Setting 'Enable local Mosquitto broker' to " . $generalcfg->{Mqtt}->{Uselocalbroker};
 	}
-	if(! defined $generalcfg->{Mqtt}->{Brokerhost}) { 
+	if(! defined $generalcfg->{Mqtt}->{Brokerhost}) {
 		$generalcfg->{Mqtt}->{Brokerhost} = 'localhost';
 		LOGINF "Setting MQTT brokerhost to " . $generalcfg->{Main}->{Brokerhost};
 	}
-	if(! defined $generalcfg->{Mqtt}->{Brokerport}) { 
+	if(! defined $generalcfg->{Mqtt}->{Brokerport}) {
 		$generalcfg->{Mqtt}->{Brokerport} = '1883';
 		LOGINF "Setting MQTT brokerport to " . $generalcfg->{Main}->{Brokerport};
 	}
-	if(! defined $generalcfg->{Mqtt}->{Udpinport}) { 
-		$generalcfg->{Mqtt}->{Udpinport} = 11884; 
+	if(! defined $generalcfg->{Mqtt}->{Udpinport}) {
+		$generalcfg->{Mqtt}->{Udpinport} = 11884;
 		LOGINF "Setting MQTT gateway UDP In-Port to " . $generalcfg->{Mqtt}->{Udpinport};
 	}
-	if(! defined $generalcfg->{Mqtt}->{Websocketport}) { 
-		$generalcfg->{Mqtt}->{Websocketport} = "9001"; 
+	if(! defined $generalcfg->{Mqtt}->{Websocketport}) {
+		$generalcfg->{Mqtt}->{Websocketport} = "9001";
 		LOGINF "Setting Mosquitto WebSocket port to " . $generalcfg->{Mqtt}->{Websocketport};
 	}
-	
+	if(! defined $generalcfg->{Mqtt}->{TLSport}) {
+		$generalcfg->{Mqtt}->{TLSport} = "8883";
+		LOGINF "Setting Mosquitto TLS port to " . $generalcfg->{Mqtt}->{TLSport};
+		}
+	if(! defined $generalcfg->{Mqtt}->{TLSWebsocketport}) {
+		$generalcfg->{Mqtt}->{TLSWebsocketport} = "9083";
+		LOGINF "Setting Mosquitto TLS WebSocket port to " . $generalcfg->{Mqtt}->{TLSWebsocketport};
+		}
+
 	## Create Mosquitto config and password
 
 	if( !defined $generalcfg->{Mqtt}->{Brokeruser} ) {
 		$generalcfg->{Mqtt}->{Brokeruser} = 'loxberry';
 		$generalcfg->{Mqtt}->{Brokerpass} = generate(16);
 	}
-	
+
 	`mkdir $mosq_configdir`;
 	`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 }
@@ -363,7 +371,7 @@ END
 	# Reset file ownership
 	`chown loxberry:loxberry $cfgfile`;
 	`chown loxberry:loxberry $generaljsonfile`;
-	
+
 	# Return http response here
 	# Check for $errorstr
 
