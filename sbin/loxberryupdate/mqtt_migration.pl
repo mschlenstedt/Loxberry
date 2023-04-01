@@ -94,7 +94,7 @@ sub config_migration
 	execute( command => "cp $lbhomedir/config/plugins/mqttgateway/* /opt/backup.mqttgateway/", log => $log );
 
 	if( -e "/etc/mosquitto/mosquitto.conf.dpkg-dist" ) {
-		execute( command => "cp /etc/mosquitto/mosquitto.conf /opt/backup.mqttgateway/", log => $log );
+		execute( command => "cp /etc/mosquitto/mosquitto.conf /opt/backup.mqttgateway/etc_mosquitto.conf", log => $log );
 		unlink ("/etc/mosquitto/mosquitto.conf");
 		execute( command => "mv /etc/mosquitto/mosquitto.conf.dpkg-dist /etc/mosquitto/mosquitto.conf", log => $log );
 	}
