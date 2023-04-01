@@ -55,7 +55,7 @@ apt_install( qw/
 		libcgi-simple-perl
 	/);
 
-# Install Mosquitto and keep the original config file shipped with the package
+# Install Mosquitto and overwrite modified conf files with original configuration
 execute( command => "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::='--force-confask,confnew,confmiss' install mosquitto", log => $log, ignoreerrors => 1 );
 	
 }
@@ -93,10 +93,14 @@ sub config_migration
 	execute( command => "mkdir --parents /opt/backup.mqttgateway", log => $log, ignoreerrors => 1);
 	execute( command => "cp $lbhomedir/config/plugins/mqttgateway/* /opt/backup.mqttgateway/", log => $log );
 
-	if( -e "/etc/mosquitto/mosquitto.conf.dpkg-dist" ) {
+	if ( -e "/etc/mosquitto/mosquitto.conf.dpkg-dist" ) {
 		execute( command => "cp /etc/mosquitto/mosquitto.conf /opt/backup.mqttgateway/etc_mosquitto.conf", log => $log );
 		unlink ("/etc/mosquitto/mosquitto.conf");
 		execute( command => "mv /etc/mosquitto/mosquitto.conf.dpkg-dist /etc/mosquitto/mosquitto.conf", log => $log );
+	}
+	
+	if ( -e "/etc/mosquitto/mosquitto.conf.dpkg-old" ) {
+		execute( command => "cp /etc/mosquitto/mosquitto.conf.dpkg-old /opt/backup.mqttgateway/etc_mosquitto.conf", log => $log );
 	}
 	
 	LOGOK "Starting migration of MQTT Gateway plugin settings to general.json and mqttgateway.json";
