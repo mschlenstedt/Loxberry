@@ -12,23 +12,27 @@ use LoxBerry::System;
 
 init();
 
-LOGINF "Repairing broken Mosquitto Installation";
+$lbversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
+$lbversionmajor = $lbversion =~ s/^v(\d+)\..*/$1/r; # Major Version, e. g. "2"
 
-# Install Mosquitto and overwrite modified conf files with original configuration
-execute( command => "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::='--force-confask,confnew,confmiss' install mosquitto", log => $log, ignoreerrors => 1 );
+if ($lbversionmajor eq "3") {
+	LOGINF "Repairing broken Mosquitto Installation";
+
+	# Install Mosquitto and overwrite modified conf files with original configuration
+	execute( command => "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y --allow-unauthenticated --fix-broken --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::='--force-confask,confnew,confmiss' install mosquitto", log => $log, ignoreerrors => 1 );
 	
-execute( command => "mkdir --parents /opt/backup.mqttgateway", log => $log, ignoreerrors => 1);
+	execute( command => "mkdir --parents /opt/backup.mqttgateway", log => $log, ignoreerrors => 1);
 
-if ( -e "/etc/mosquitto/mosquitto.conf.dpkg-dist" ) {
-	execute( command => "cp /etc/mosquitto/mosquitto.conf /opt/backup.mqttgateway/etc_mosquitto.conf", log => $log );
-	unlink ("/etc/mosquitto/mosquitto.conf");
-	execute( command => "mv /etc/mosquitto/mosquitto.conf.dpkg-dist /etc/mosquitto/mosquitto.conf", log => $log );
+	if ( -e "/etc/mosquitto/mosquitto.conf.dpkg-dist" ) {
+		execute( command => "cp /etc/mosquitto/mosquitto.conf /opt/backup.mqttgateway/etc_mosquitto.conf", log => $log );
+		unlink ("/etc/mosquitto/mosquitto.conf");
+		execute( command => "mv /etc/mosquitto/mosquitto.conf.dpkg-dist /etc/mosquitto/mosquitto.conf", log => $log );
+	}
+
+	if ( -e "/etc/mosquitto/mosquitto.conf.dpkg-old" ) {
+		execute( command => "cp /etc/mosquitto/mosquitto.conf.dpkg-old /opt/backup.mqttgateway/etc_mosquitto.conf", log => $log );
+	}
 }
-
-if ( -e "/etc/mosquitto/mosquitto.conf.dpkg-old" ) {
-	execute( command => "cp /etc/mosquitto/mosquitto.conf.dpkg-old /opt/backup.mqttgateway/etc_mosquitto.conf", log => $log );
-}
-
 
 LOGOK "Done.";
 
