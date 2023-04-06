@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Script version V3.0.0.3
+# Script version V3.0.0.4
 
 use utf8;
 
@@ -421,7 +421,7 @@ sub received
 		eval {
 			$contjson = from_json($message);
 		};
-		if($@ or !ref($contjson)) {
+		if($@ or !ref($contjson) or ref($contjson) eq "JSON::PP::Boolean") {
 			# LOGDEB "  Not a valid json message";
 			$is_json = 0;
 			$sendhash{$topic} = $message;
