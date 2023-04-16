@@ -21,6 +21,9 @@ unlink ("$lbhomedir/webfrontend/html/plugins/mqttgateway/receive.php");
 unlink ("$lbhomedir/webfrontend/html/plugins/mqttgateway/receive_pub.php");
 execute( command => "ln -f -s $lbhomedir/webfrontend/html/system/tools/mqtt/receive.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive.php", log => $log, ignoreerorrs => 1 );
 execute( command => "ln -f -s $lbhomedir/webfrontend/html/system/tools/mqtt/receive_pub.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive_pub.php", log => $log, ignoreerorrs => 1 );
+execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
+execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/html/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
+execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/html/system/tools/mqtt", log => $log, ignoreerrors => 1 );
 
 LOGINF "Restarting MQTT Gateway (Exitcode 255 is fine here)...";
 execute( command => "sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway", log => $log, ignoreerrors => 1 );
