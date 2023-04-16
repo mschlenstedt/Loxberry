@@ -34,7 +34,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.7";
+my $version = "3.0.0.8";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
