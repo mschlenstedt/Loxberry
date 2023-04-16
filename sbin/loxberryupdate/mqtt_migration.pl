@@ -15,6 +15,7 @@ LoxBerry::Update::init();
 execute( command => "mkdir --parents $lbhomedir/bin/mqtt/transform/custom", log => $log, ignoreerrors => 1 );
 execute( command => "mkdir --parents $lbhomedir/bin/mqtt/datastore", log => $log, ignoreerrors => 1 );
 execute( command => "mkdir --parents $lbhomedir/config/system/mosquitto", log => $log, ignoreerrors => 1 );
+execute( command => "mkdir --parents $lbhomedir/webfrontend/html/system/tools/mqtt", log => $log, ignoreerrors => 1 );
 
 # Clean broken Mosquitto config (could be left from very old Gateway installation)
 if( -l "/etc/mosquitto/conf.d/mqttgateway.conf" and not -e "/etc/mosquitto/conf.d/mqttgateway.conf" ) {
@@ -202,8 +203,8 @@ sub create_interface_symlinks
 	
 	# Generic GET/POST/JSON receiver
 	execute( command => "mkdir --parents $lbhomedir/webfrontend/html/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
-	execute( command => "ln -f -s $lbhomedir/webfrontend/html/mqtt/receive.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive.php", log => $log, ignoreerorrs => 1 );
-	execute( command => "ln -f -s $lbhomedir/webfrontend/html/mqtt/receive_pub.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive_pub.php", log => $log, ignoreerorrs => 1 );
+	execute( command => "ln -f -s $lbhomedir/webfrontend/html/system/tools/mqtt/receive.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive.php", log => $log, ignoreerorrs => 1 );
+	execute( command => "ln -f -s $lbhomedir/webfrontend/html/system/tools/mqtt/receive_pub.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive_pub.php", log => $log, ignoreerorrs => 1 );
 	
 	# HTTP interface
 	execute( command => "mkdir --parents $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
@@ -242,6 +243,8 @@ sub set_file_permissions
 	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/htmlauth/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
 	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/html/plugins/mqttgateway", log => $log, ignoreerrors => 1 );
 	execute( command => "chown -R loxberry:loxberry $lbsconfigdir/general.json", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/html/system/tools/mqtt", log => $log, ignoreerrors => 1 );
+	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/htmlauth/system/tools", log => $log, ignoreerrors => 1 );
 
 }
 
