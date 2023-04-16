@@ -12,16 +12,17 @@ use LoxBerry::System;
 
 init();
 
+LOGINF "Moving MQTT scripts to $lbhomedir/webfrontend/html/system/tools/mqtt...";
 if ( -d "$lbhomedir/webfrontend/html/mqtt") {
-	LOGINF "Moving MQTT scripts to $lbhomedir/webfrontend/html/system/tools/mqtt...";
-
 	execute( command => "mv $lbhomedir/webfrontend/html/mqtt $lbhomedir/webfrontend/html/system/tools/mqtt", log => $log, ignoreerrors => 1 );
 	execute( command => "chown -R loxberry:loxberry $lbhomedir/webfrontend/html/system/tools/mqtt", log => $log, ignoreerrors => 1 );
-
 }
+unlink ("$lbhomedir/webfrontend/html/plugins/mqttgateway/receive.php");
+unlink ("$lbhomedir/webfrontend/html/plugins/mqttgateway/receive_pub.php");
+execute( command => "ln -f -s $lbhomedir/webfrontend/html/system/tools/mqtt/receive.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive.php", log => $log, ignoreerorrs => 1 );
+execute( command => "ln -f -s $lbhomedir/webfrontend/html/system/tools/mqtt/receive_pub.php $lbhomedir/webfrontend/html/plugins/mqttgateway/receive_pub.php", log => $log, ignoreerorrs => 1 );
 
-
-LOGINF "Restarting MQTT Gateway...";
+LOGINF "Restarting MQTT Gateway (Exitcode 255 is fine here)...";
 execute( command => "sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway", log => $log, ignoreerrors => 1 );
 
 LOGOK "Done.";
