@@ -360,6 +360,8 @@ if ($desttype eq "device") {
 my $targetsize_mb;
 my $targetsize_b;
 if ($desttype eq "path") {
+	execute ( command => "ls -l $destpath" ); # Wake up network shares...
+	sleep 1;
 	LOGINF "Creating destination image file, size " . LoxBerry::System::bytes_humanreadable($required_space);
 	$destpath = $destpath . "/" . LoxBerry::System::lbhostname() . "_image_$now.img";
 	if ( -e $destpath ) {
