@@ -7,7 +7,7 @@ use LoxBerry::Log;
 use Data::Dumper;
 use LoxBerry::Storage;
 
-my $version = "3.0.0.2";
+my $version = "3.0.0.3";
 
 my $dest_bootpart_size = 256; # /boot partition in MB
 
@@ -362,12 +362,28 @@ my $targetsize_b;
 if ($desttype eq "path") {
 	execute ( command => "ls -l $destpath" ); # Wake up network shares...
 	sleep 1;
+	LOGINF ("Wating for Destination $destpath... (in case a netshare must be woken up)";
+	for (my $i = 0; $i < 60; $i++) {
+		if (-d $destpath) {
+			last;
+		} else {
+			LOGDEB "Wait one more second...";
+			sleep 1;
+		}
+	}
+	if (!-d $destpath) {
+		LOGCRIT "The Destination $destpath does not exist. Maybe netshare not available anymore?)."
+		$error++;
+		$notify .= " The Destination $destpath does not exist. Maybe netshare not available anymore?).";
+		exit (1);
+	}
+
 	LOGINF "Creating destination image file, size " . LoxBerry::System::bytes_humanreadable($required_space);
 	$destpath = $destpath . "/" . LoxBerry::System::lbhostname() . "_image_$now.img";
 	if ( -e $destpath ) {
 		LOGCRIT "$destpath already exists.";
-    		$error++;
-    		$notify .= " $destpath already exists.";
+		$error++;
+		$notify .= " $destpath already exists.";
 		exit (1);
 	}
 	$targetsize_mb = int( ($required_space / 1024 / 1024) + 0.5 ); # rounded
