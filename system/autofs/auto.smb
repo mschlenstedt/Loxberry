@@ -43,7 +43,7 @@ get_krb5_cache() {
 }
 
 key="$1"
-opts="-fstype=cifs,file_mode=0664,dir_mode=0775"
+opts="-fstype=cifs,file_mode=0666,dir_mode=0777"
 
 for P in /bin /sbin /usr/bin /usr/sbin
 do

@@ -6,7 +6,7 @@ use LoxBerry::JSON;
 use LoxBerry::Log;
 use File::Find::Rule;
 
-my $version = "3.0.2";
+my $version = "3.0.0.3";
 
 # Create a logging object
 my $log = LoxBerry::Log->new ( 
@@ -33,6 +33,23 @@ if (!$cfg->{'Backup'}->{'Storagepath'}) {
 
 
 # Create new backup
+LOGINF "Waking up any netshares...";
+execute ( command => "sudo -u loxberry ls -l $destpath" ); # Wake up network shares...
+sleep 1;
+LOGINF "Wating for Destination $destpath... (in case a netshare must be woken up)";
+for (my $i = 0; $i < 60; $i++) {
+	if (-d $destpath) {
+		last;
+	} else {
+		LOGDEB "Wait one more second...";
+		sleep 1;
+	}
+}
+if (!-d $destpath) {
+	LOGCRIT "The Destination $destpath does not exist. Maybe netshare not available anymore?).";
+	exit (1);
+}
+
 LOGINF "Starting Backup. Please be patient.";
 my $storagepath = $cfg->{'Backup'}->{'Storagepath'};
 my $compression = $cfg->{'Backup'}->{'Compression'};

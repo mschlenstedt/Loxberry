@@ -360,9 +360,9 @@ if ($desttype eq "device") {
 my $targetsize_mb;
 my $targetsize_b;
 if ($desttype eq "path") {
-	execute ( command => "ls -l $destpath" ); # Wake up network shares...
+	execute ( command => "sudo -u loxberry ls -l $destpath" ); # Wake up network shares...
 	sleep 1;
-	LOGINF ("Wating for Destination $destpath... (in case a netshare must be woken up)";
+	LOGINF "Wating for Destination $destpath... (in case a netshare must be woken up)";
 	for (my $i = 0; $i < 60; $i++) {
 		if (-d $destpath) {
 			last;
@@ -372,7 +372,7 @@ if ($desttype eq "path") {
 		}
 	}
 	if (!-d $destpath) {
-		LOGCRIT "The Destination $destpath does not exist. Maybe netshare not available anymore?)."
+		LOGCRIT "The Destination $destpath does not exist. Maybe netshare not available anymore?).";
 		$error++;
 		$notify .= " The Destination $destpath does not exist. Maybe netshare not available anymore?).";
 		exit (1);
