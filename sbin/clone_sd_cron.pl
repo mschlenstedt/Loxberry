@@ -30,29 +30,27 @@ if (!$cfg->{'Backup'}->{'Storagepath'}) {
 	LOGCRIT "Could not find storage path.";
 	exit(1);
 }
-
+my $storagepath = $cfg->{'Backup'}->{'Storagepath'};
+my $compression = $cfg->{'Backup'}->{'Compression'};
 
 # Create new backup
-LOGINF "Waking up any netshares...";
-execute ( command => "sudo -u loxberry ls -l $destpath" ); # Wake up network shares...
+LOGINF "Wating for Destination $storagepath... (in case a netshare must be woken up)";
+execute ( command => "ls -l $storagepath" ); # Wake up network shares...
 sleep 1;
-LOGINF "Wating for Destination $destpath... (in case a netshare must be woken up)";
 for (my $i = 0; $i < 60; $i++) {
-	if (-d $destpath) {
+	if (-d $storagepath) {
 		last;
 	} else {
 		LOGDEB "Wait one more second...";
 		sleep 1;
 	}
 }
-if (!-d $destpath) {
-	LOGCRIT "The Destination $destpath does not exist. Maybe netshare not available anymore?).";
+if (!-d $storagepath) {
+	LOGCRIT "The Destination $storagepath does not exist. Maybe netshare not available anymore?).";
 	exit (1);
 }
 
 LOGINF "Starting Backup. Please be patient.";
-my $storagepath = $cfg->{'Backup'}->{'Storagepath'};
-my $compression = $cfg->{'Backup'}->{'Compression'};
 my ($exitcode) = execute { command => "sudo $lbhomedir/sbin/clone_sd.pl $storagepath path $compression > /dev/null 2>&1" };
 
 if ($exitcode < 1) {
