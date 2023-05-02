@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "3.0.0.2";
+my $version = "3.0.0.3";
 
 ## Check {status}
 # EMPTY --> "UNKNOWN" (grey)
@@ -610,9 +610,10 @@ sub check_systemload
 	# Perform check
 	eval {
 
-		my $cpui = qx(cat /sys/devices/system/cpu/kernel_max);
+		#my $cpui = qx(cat /sys/devices/system/cpu/kernel_max);
+		my $cpui = execute("nproc --all");
 		chomp $cpui;
-		$cpui++; # Number of available CPUs
+		#$cpui++; # Number of available CPUs
 		my $output = qx(cat /proc/loadavg);
 		chomp $output;
 		$result{'result'} = "The system load is: $output. Your system has $cpui CPUs installed.";
@@ -823,18 +824,30 @@ sub check_arch
 	eval {
 
 	        my $architecture;
-		$architecture = "ARM" if (-e "$lbsconfigdir/is_raspberry.cfg");
-		$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
-		$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
-		$architecture = "Virtuozzo" if (-e "$lbsconfigdir/is_virtuozzo.cfg");
-		$architecture = "Odroid" if (-e "$lbsconfigdir/is_odroidxu3xu4.cfg");	
+		my $hwmodel;
+
+		# On DietPi's
+		if (-e "/boot/dietpi/.hw_model") {
+
+			$architecture = execute(". /boot/dietpi/.hw_model && echo -n \$G_HW_ARCH_NAME" );
+			$hwmodel = execute(". /boot/dietpi/.hw_model && echo -n \$G_HW_MODEL_NAME" );
+		# On Raspbians's
+		} else {
+			$architecture = "ARM" if (-e "$lbsconfigdir/is_raspberry.cfg");
+			$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
+			$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
+			$architecture = "Virtuozzo" if (-e "$lbsconfigdir/is_virtuozzo.cfg");
+			$architecture = "Odroid" if (-e "$lbsconfigdir/is_odroidxu3xu4.cfg");	
+			if ($architecture eq "ARM") {
+				$hwmodel = qx(cat -v /sys/firmware/devicetree/base/model);
+				chomp $hwmodel;
+			}
+		}
 		if (!$architecture) {
 			$architecture = "Unknown";
 		}
-		if ($architecture eq "ARM") {
-			my $output = qx(cat -v /sys/firmware/devicetree/base/model);
-			chomp $output;
-			$architecture .= " / $output";
+		if ($hwmodel) {
+			$architecture .= " / $hwmodel";
 		}
 		$result{'status'} = '6';
 		$result{'result'} = "$architecture";
@@ -1113,6 +1126,7 @@ sub check_cputemp
 
 		my $message;
 		my $getthrottled;
+		my $notemp = 0;
 		my $current;
 		if (-e "/sys/devices/platform/soc/soc:firmware/get_throttled") {
 			$getthrottled = 1;
@@ -1176,13 +1190,14 @@ sub check_cputemp
 			}
 		} else {
 			$message .= "Cannot read current cpu temperature. ";
+			$notemp = 1;
 		}
 
 		if ($getthrottled) {
 			$message .= "Since last reboot the cpu never reached Raspberry's soft or critical temperature limit. This is fine.";
 			$result{'status'} = '5' if (!$result{'status'});
 		}
-		elsif (!$result{'status'}) {
+		elsif (!$result{'status'} && !$notemp) {
 			$message .= "Current cpu temperature is fine.";
 			$result{'status'} = '5';
 		}
