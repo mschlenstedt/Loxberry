@@ -21,6 +21,11 @@ if ( -e "/boot/dietpi/.hw_model" ) {
 LOGINF "Copying new autofs config for netshares...";
 copy_to_loxberry("/system/autofs/auto.smb", "loxberry");
 
+if ( -e "$lbhomedir/system/storage/smb/.dummy" ) {
+	LOGINF "Cleaning dummy file from $lbhomedir/system/storage/smb...";
+	unlink ( "$lbhomedir/system/storage/smb/.dummy" );
+}
+
 LOGOK "Done.";
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
