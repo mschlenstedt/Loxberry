@@ -1,87 +1,97 @@
 <div id="mqttapp">
 	<p class="wide">{{sl.heading}}</p>
 	<p v-html="sl.intro"></p>
-	
-	<!-- 
+
+	<!--
 		jQm updates the dom for radios, therefore we pre-render its markup.
 		jQm changes the class ui-radio-on and ui-radio-off to show the bullet or not, so we need to Vue-bind these classes to the input value
 	-->
-		
+
 	<div class="ui-radio">
-		<label for="uselocalbroker_true" 
-			class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left" 
+		<label for="uselocalbroker_true"
+			class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left"
 			:class="{ 'ui-radio-on': Mqtt.Uselocalbroker=='true', 'ui-radio-off': Mqtt.Uselocalbroker!='true' }"
 		>
 			{{sl.uselocalbroker_true}}</label>
-		<input type="radio" 
-			data-role="none" 
-			id="uselocalbroker_true" 
-			name="uselocalbroker" 
-			value="true" 
-			v-model="Mqtt.Uselocalbroker" 
+		<input type="radio"
+			data-role="none"
+			id="uselocalbroker_true"
+			name="uselocalbroker"
+			value="true"
+			v-model="Mqtt.Uselocalbroker"
 			v-on:change="Mqtt.Brokerhost='localhost';update_showbrokerhost();formadata_changed()"
 		></input>
-	</div>	
+	</div>
 	<div class="ui-radio">
-		<label for="uselocalbroker_false" 
-			class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left" 
+		<label for="uselocalbroker_false"
+			class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left"
 			:class="{ 'ui-radio-on': Mqtt.Uselocalbroker!='true', 'ui-radio-off': Mqtt.Uselocalbroker=='true' }"
 		>
 			{{sl.uselocalbroker_false}}</label>
-		<input type="radio" 
-			data-role="none" 
-			id="uselocalbroker_false" 
-			name="uselocalbroker" 
-			value="false" 
+		<input type="radio"
+			data-role="none"
+			id="uselocalbroker_false"
+			name="uselocalbroker"
+			value="false"
 			v-model="Mqtt.Uselocalbroker"
 			v-on:change="update_showbrokerhost();formadata_changed()"
 		></input>
 	</div>
-	
-	
+
+
 	<div v-if="Mqtt.Uselocalbroker=='true'">
 			<h2>LoxBerry Managed MQTT Server</h2>
 		</div>
-		
+
 		<div v-else>
 			<h2>Own MQTT Server</h2>
 		</div>
-	
+
 	<h3>Basic Settings</h3>
-	
+
 	<!-- jQm does not use the disabled property, but sets a class ui-disabled instead. Therefore it needs a Vue :class binding. -->
-	
+
 	<div class="ui-field-contain">
 		<label for="Mqtt.Brokerhost" style="min-width:15%">MQTT Server hostname</label>
-		<input type="text" 
-			id="Mqtt.Brokerhost" 
-			style="width:50%" 
-			v-model.trim="Mqtt.Brokerhost" 
-			:class="{ 'ui-disabled': Mqtt.Uselocalbroker=='true' }" 
+		<input type="text"
+			id="Mqtt.Brokerhost"
+			style="width:50%"
+			v-model.trim="Mqtt.Brokerhost"
+			:class="{ 'ui-disabled': Mqtt.Uselocalbroker=='true' }"
 			v-on:input="update_showbrokerhost"
 			v-on:change="formadata_changed()"
-			
+
 		>
 	</div>
-	
+
 	<div class="ui-field-contain">
 		<label for="Mqtt.Brokerport" class="col-fixed" style="min-width:15%">MQTT Server Port<br><small id="Mqtt-Brokerport-help">Default is 1883</small></label>
 		<input type="number" id="Mqtt.Brokerport" style="width:50%" v-model.number="Mqtt.Brokerport" aria-describedby="Mqtt-Brokerport-help" v-on:change="formadata_changed()">
 	</div>
-	
+
 	<div class="ui-field-contain">
 		<label for="Mqtt.Brokeruser" style="min-width:15%">MQTT Server User</label>
 		<input type="text" id="Mqtt.Brokeruser" v-model.trim="Mqtt.Brokeruser" v-on:change="formadata_changed()">
 	</div>
-	
+
 	<div class="ui-field-contain">
 		<label for="Mqtt.Brokerpass" style="min-width:15%">MQTT Server Password</label>
 		<input type="text" id="Mqtt.Brokerpass" v-model.trim="Mqtt.Brokerpass" v-on:change="formadata_changed()">
 	</div>
-	
+
 	<div class="ui-field-contain">
-		<label for="Mqtt.Websocketport" style="min-width:15%">MQTT Server Websocket Port</label>
+		<label for="Mqtt.TLSport" style="min-width:15%">MQTT Server TLS Port<br><small id="Mqtt-Brokerport-help">Default is 8883</small></label>
+		<input type="number" id="Mqtt.TLSport" v-model.number="Mqtt.TLSport" v-on:change="formadata_changed()">
+	</div>
+
+	<div class="ui-field-contain">
+		<label for="Mqtt.Websocketport" style="min-width:15%">MQTT Server Websocket Port<br><small id="Mqtt-Brokerport-help">Default is 9001</small></label>
 		<input type="number" id="Mqtt.Websocketport" v-model.number="Mqtt.Websocketport" v-on:change="formadata_changed()">
+	</div>
+
+	<div class="ui-field-contain">
+		<label for="Mqtt.TLSWebsocketport" style="min-width:15%">MQTT Server TLS Websocket Port<br><small id="Mqtt-Brokerport-help">Default is 9083</small></label>
+		<input type="number" id="Mqtt.TLSWebsocketport" v-model.number="Mqtt.TLSWebsocketport" v-on:change="formadata_changed()">
 	</div>
 
 	<div class="ui-body ui-body-a" style="background-color:#6dac20;color:white;text-shadow:none">
@@ -105,26 +115,23 @@
 	<div v-show="data_save_error" style="color:red">
 		Error saving data.
 	</div>
-	
 
 </div>
 
 
 <script>
-	
+
 	const mqtt_generic = '/admin/system/ajax/ajax-generic.php';
-	
-	
 	const mqttapp = {
-	  
+
 	  setup() {
 		console.log("Setup called");
 	  },
-	  
+
 	  data() {
 		var Mqtt = this.getData();
 		return {
-			sl: { 
+			sl: {
 				heading: "MQTT Server Settings",
 				intro: "MQTT is a slim, internationally standardised data transfer protocol using an MQTT Server (formerly called 'MQTT Broker'), that is a central program that transfers "+
 					   "data from and to all directions. LoxBerry's MQTT Gateway and many plugins use the MQTT standard for data transfer. By default, "+
@@ -133,31 +140,33 @@
 					   "LoxBerry's MQTT Gateway and plugins use the MQTT settings of the below configuration.",
 				uselocalbroker_true: "Use and automatically configure local MQTT Server",
 				uselocalbroker_false: "Use custom MQTT Server and manage Server myself"
-				
+
 			},
-			Mqtt: { 
+			Mqtt: {
 				Uselocalbroker: "false",
 				Brokerhost: "",
 				Brokerport: "",
 				Brokeruser: "",
 				Brokerpass: "",
+				TLSport: "",
 				Websocketport: "",
+				TLSWebsocketport: "",
 			},
-			
+
 			show_brokerhost: "",
 			data_changed: false,
 			data_saved: false,
 			data_save_error: false
-			
+
 		};
 	  },
 	  methods: {
-			
+
 			formadata_changed() {
 				this.data_changed = true;
 				this.data_saved = false;
 			},
-			
+
 			update_showbrokerhost() {
 				if(this.Mqtt.Brokerhost.toLowerCase() == 'localhost') {
 					this.show_brokerhost = window.location.hostname;
@@ -165,10 +174,10 @@
 					this.show_brokerhost = this.Mqtt.Brokerhost;
 				}
 			},
-			
+
 			saveApply() {
 				console.log("Called Save and Apply");
-				
+
 				const requestOptions = {
 					method: "POST",
 					headers: { "Content-Type" : "application/json" },
@@ -193,7 +202,7 @@
 				const legacyMqttjsonOptions = {
 					method: "POST",
 					headers: { "Content-Type" : "application/json" },
-					body: JSON.stringify( { 
+					body: JSON.stringify( {
 						"brokeraddress" : this.$data.Mqtt.Brokerhost+':'+this.$data.Mqtt.Brokerport
 					} )
 				};
@@ -202,31 +211,33 @@
 				const legacyMqttcredjsonOptions = {
 					method: "POST",
 					headers: { "Content-Type" : "application/json" },
-					body: JSON.stringify( { 
+					body: JSON.stringify( {
 						"brokeruser" : this.$data.Mqtt.Brokeruser,
 						"brokerpass" : this.$data.Mqtt.Brokerpass
 					} )
 				};
 				fetch(mqtt_generic+'?file=LBPCONFIG/mqttgateway/cred.json&section=Credentials&write', legacyMqttcredjsonOptions );
-				
+
 			},
-			
+
 			getData() {
 				console.log("Called getData");
 				// fetch('/admin/system/ajax/ajax-generic.php?file=$lbsconfigdir/general.json&section=Mqtt&read')
 				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&read')
 					.then( response => response.json() )
-					.then( data => { 
-						/* 
+					.then( data => {
+						/*
 						if( !data?.Brokerhost ) data.Brokerhost = 'localhost';
 						if( !data?.Brokerport ) data.Brokerport = '1883';
 						if( !data?.Brokeruser ) data.Brokeruser = 'loxberry';
 						if( !data?.Brokerpass ) data.Brokerpass = '';
+						if( !data?.TLSport ) data.TLSport = '8883';
 						if( !data?.Websocketport ) data.Websocketport = '9001';
+						if( !data?.TLSWebsocketport ) data.TLSWebsocketport = '9083';
 						if( !data?.Uselocalbroker ) data.Uselocalbroker = 'true';
 						*/
 						if ( data.Uselocalbroker == 1 ) data.Uselocalbroker = 'true';
-						
+
 						this.Mqtt = data } );
 			}
 	  },
@@ -235,12 +246,7 @@
 	  }
 	}
 
-
 	Vue.createApp(mqttapp)
 		.mount('#mqttapp')
-
-
-
-
 
 </script>
