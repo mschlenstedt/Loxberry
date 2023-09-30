@@ -12,6 +12,10 @@ my $mosq_configdir = "$lbsconfigdir/mosquitto";
 my $mosq_cfgfile = "$mosq_configdir/mosq_mqttgateway.conf";
 my $mosq_passwdfile = "/etc/mosquitto/conf.d/mosq_passwd";
 
+my $sslcertificatefile = "$lbhomedir/data/system/LoxBerryCA/certs/wwwcert.pem";
+my $sslcertificatekeyfile = "$lbhomedir/data/system/LoxBerryCA/private/wwwkeywp.pem";
+my $sslcacertificatefile = "$lbhomedir/data/system/LoxBerryCA/cacert.pem";
+
 my $generaljsonobj;
 my $generalcfg;
 my $mqttobj;
@@ -155,7 +159,14 @@ sub update_config
 		$generalcfg->{Mqtt}->{Websocketport} = "9001"; 
 		LOGINF "Setting Mosquitto WebSocket port to " . $generalcfg->{Mqtt}->{Websocketport};
 	}
-	
+	if(! defined $generalcfg->{Mqtt}->{Tlsport}) {
+		$generalcfg->{Mqtt}->{Tlsport} = "8883";
+		LOGINF "Setting Mosquitto TLS port to " . $generalcfg->{Mqtt}->{Tlsport};
+		}
+	if(! defined $generalcfg->{Mqtt}->{Tlswebsocketport}) {
+		$generalcfg->{Mqtt}->{Tlswebsocketport} = "9083";
+		LOGINF "Setting Mosquitto TLS WebSocket port to " . $generalcfg->{Mqtt}->{Tlswebsocketport};
+		}
 	
 	## Create Mosquitto config and password
 	
@@ -214,6 +225,8 @@ sub mosquitto_setcred
 	my $brokerpass = $generalcfg->{Mqtt}->{Brokerpass};
 	my $brokerport = $generalcfg->{Mqtt}->{Brokerport};
 	my $websocketport = $generalcfg->{Mqtt}->{Websocketport};
+	my $tlswebsocketport = $generalcfg->{Mqtt}->{Tlswebsocketport};
+	my $tlsport = $generalcfg->{Mqtt}->{Tlsport};
 	
 	# Create and write config file
 	my $mosq_config;
@@ -221,7 +234,8 @@ sub mosquitto_setcred
 	$mosq_config  = "# This file is directly managed by LoxBerry.\n";
 	$mosq_config .= "# Do not change this file, as your changes will be lost on saving in the MQTT Gateway webinterface.\n\n";
 	
-	$mosq_config .= "listener $brokerport\n\n";
+	$mosq_config .= "\n# Default port\n";
+	$mosq_config .= "port $brokerport\n\n";
 	$mosq_config .= "# To reduce SD writes, save Mosquitto DB only once a day\n";
 	$mosq_config .= "autosave_interval 86400\n\n";
 
@@ -241,18 +255,32 @@ sub mosquitto_setcred
 		$mosq_config .= "password_file $mosq_passwdfile\n";
 	}
 	
-	# # TLS listener
-	# if ($Credentials{brokerpsk}) {
-		# $mosq_config .= "# TLS-PSK listener\n";
-		# $mosq_config .= "listener 8883\n";
-		# $mosq_config .= "use_identity_as_username true\n";
-		# $mosq_config .= "tls_version tlsv1.2\n";
-		# $mosq_config .= "psk_hint mqttgateway_psk\n";
-		# $mosq_config .= "psk_file $mosq_pskfile\n";
-	# }
-	
-	# Websocket listener (currently without TLS)
-	$mosq_config .= "\n# Websockets listener\n";
+	# TLS listener over MQTT protocol
+	if($tlsport) {
+		$mosq_config .= "\n# TLS listener over MQTT port\n";
+		$mosq_config .= "listener $tlsport\n";
+		$mosq_config .= "protocol mqtt\n";
+		$mosq_config .= "cafile $sslcacertificatefile\n";
+		$mosq_config .= "certfile $sslcertificatefile\n";
+		$mosq_config .= "keyfile $sslcertificatekeyfile\n";
+		$mosq_config .= "allow_anonymous false\n";
+		$mosq_config .= "require_certificate false\n";
+	}
+
+	# TLS listener over websocket protocol
+	if($tlswebsocketport) {
+		$mosq_config .= "\n# TLS listener over websocket\n";
+		$mosq_config .= "listener $tlswebsocketport\n";
+		$mosq_config .= "protocol websockets\n";
+		$mosq_config .= "cafile $sslcacertificatefile\n";
+		$mosq_config .= "certfile $sslcertificatefile\n";
+		$mosq_config .= "keyfile $sslcertificatekeyfile\n";
+		$mosq_config .= "allow_anonymous false\n";
+		$mosq_config .= "require_certificate false\n";
+	}
+
+	# Websocket listener without TLS
+	$mosq_config .= "\n# non-secure websocket listener\n";
 	$mosq_config .= "listener $websocketport\n";
 	$mosq_config .= "protocol websockets\n";
 	

@@ -47,7 +47,9 @@
       "Udpinport" : "11884",
       "Uselocalbroker" : "1",
       "Websocketport" : "9001",
-      "Finderdisabled" : false
+      "Finderdisabled" : false,
+      "Tlsport" : "8883",
+      "Tlswebsocketport" : "9083"
    },
    "Network" : {
       "Friendlyname" : null,
