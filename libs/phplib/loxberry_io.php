@@ -12,12 +12,12 @@ $LBIOVERSION = "3.0.0.1";
 function msudp_send($msnr, $udpport, $prefix, $params)
 {
 	global $udpsocket;
-
+	
 	if(empty($udpport) || $udpport > 65535) {
 		error_log("UDP port $udpport invalid or not defined\n");
 		return 0;
 	}
-
+	
 	$ms = LBSystem::get_miniservers();
 	if (!isset($ms[$msnr])) {
 		error_log("Miniserver $msnr not defined\n");
@@ -28,7 +28,7 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 	} else {
 		$prefix = "";
 	}
-
+	
 	// Handle socket
 	if (!isset($udpsocket)) {
 		// check if this is IPv4 or IPv6 address, or unknown
@@ -37,13 +37,13 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 			$is_v4 = filter_var( $ms[$msnr]['IPAddress'] );
 		}
 		// error_log("Is V6: $is_v6 Is V4: $is_v4");
-
+		
 		// Try IPv4
 		if( !$is_v6 ) {
 			$udpsocket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 			if( $udpsocket === FALSE ) {
 				$ipv4_failed = socket_last_error($udpsocket);
-				socket_clear_error($udpsocket);
+				socket_clear_error($udpsocket); 
 				if (!$is_v4) {
 					$is_v6 = true;
 				}
@@ -53,10 +53,10 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 			$udpsocket = socket_create(AF_INET6, SOCK_DGRAM, SOL_UDP);
 			if( $udpsocket === FALSE ) {
 				$ipv6_failed = socket_last_error($udpsocket);
-				socket_clear_error($udpsocket);
+				socket_clear_error($udpsocket); 
 			}
 		}
-
+		
 		if($udpsocket == NULL) {
 			$error = "Could not create udp socket: ";
 			if($ipv4_failed) {
@@ -69,7 +69,7 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 			return 0;
 		}
 	}
-
+	
 	// Handle sending a raw string
 	if(!is_array($params)) {
 		$message = substr($prefix.$params, 0, 250);
@@ -118,7 +118,7 @@ function msudp_send($msnr, $udpport, $prefix, $params)
 			$udperror = 1;
 		}
 	}
-
+	
 	// Return
 	if($udperror != 0) {
 		return Null;
@@ -132,7 +132,7 @@ function _udp_send($udpsocket, $message, $ip, $udpport)
 {
 	// echo "Send message: $message\n";
 	$udperror = Null;
-	$udpsent = socket_sendto($udpsocket, $message, strlen($message), 0, $ip, $udpport);
+	$udpsent = socket_sendto($udpsocket, $message, strlen($message), 0, $ip, $udpport);	
 	if ($udpsent == NULL) {
 		$udperror = "socket_sentto returned an error. ";
 	}
@@ -143,14 +143,14 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 {
 	global $mem_sendall_sec;
 	global $mem_sendall;
-
+	
 	$memfile = "/run/shm/msudp_mem_${msnr}_${udpport}.json";
-
+	
 	if(empty($udpport) || $udpport > 65535) {
 		error_log("UDP port $udpport invalid or not defined\n");
 		return 0;
 	}
-
+	
 	if(file_exists($memfile)) {
 		// echo "Read file\n";
 		$jsonstr = file_get_contents($memfile);
@@ -158,7 +158,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 			$mem = json_decode($jsonstr, true);
 		}
 	}
-
+	
 	// Section is defined by the prefix
 	if(empty($prefix)) {
 		$prefixsection = "Params";
@@ -166,7 +166,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 		$prefixsection = $prefix;
 	}
 	// echo "Prefixsection: $prefixsection\n";
-
+	
 	if(empty($mem['Main']['timestamp'])) {
 		// echo "Set new timestamp\n";
 		$mem['Main']['timestamp'] = time();
@@ -175,7 +175,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 		// echo "timestamp requires resending\n";
 		$mem_sendall = 1;
 	}
-
+	
 	if ( empty($mem['Main']['lastMSRebootCheck']) || $mem['Main']['lastMSRebootCheck'] < (time()-300)) {
 		// Check if Miniserver was rebooted after 5 minutes
 		$mem['Main']['lastMSRebootCheck'] = time();
@@ -187,7 +187,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 		}
 	}
 	//echo "mem_sendall: $mem_sendall\n";
-
+	
 	if( $mem_sendall <> 0 ) {
 		$mem_main_tmp = $mem['Main'];
 		$mem = Null;
@@ -195,9 +195,9 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 		$mem['Main']['timestamp'] = time();
 		$mem_sendall = 0;
 	}
-
+	
 	$newparams = array();
-
+	
 	foreach ($params as $param => $value) {
 		if( !isset($mem[$prefixsection][$param]) || $mem[$prefixsection][$param] !== $value ) {
 			// Param has changed
@@ -205,7 +205,7 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 			$newparams[$param] = $value;
 		}
 	}
-
+	
 	if(!empty($newparams)) {
 		$udpres = msudp_send($msnr, $udpport, $prefix, $newparams);
 		if ($udpres != null) {
@@ -220,29 +220,29 @@ function msudp_send_mem($msnr, $udpport, $prefix, $params)
 			file_put_contents($memfile, $jsonstr);
 			chown($memfile, "loxberry");
 			chgrp($memfile, "loxberry");
-
+			
 		}
 	} else {
 		$udpres = "cached";
 	}
-
+	
 	return $udpres;
 }
 
 // mshttp_call
-function mshttp_call($msnr, $command)
+function mshttp_call($msnr, $command) 
 {
 	$ms = LBSystem::get_miniservers();
 	if (!isset($ms[$msnr])) {
 		error_log("Miniserver $msnr not defined\n");
 		return array (null, 601, null);
 	}
-
+	
 	$FullURI = $ms[$msnr]['FullURI'];
-
+	
 	$url = $FullURI . $command;
-
-	$ch = curl_init($url);
+	
+	$ch = curl_init($url); 
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_HEADER, false);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -250,20 +250,20 @@ function mshttp_call($msnr, $command)
 	$resp = curl_exec($ch);
 	$curl_code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
 	curl_close($ch);
-
-	if($curl_code != 200) {
+	
+	if($curl_code != 200) {	
    // echo "Errors occured\n";
 		error_log("mshttp_call: Error fetching $url: HTTP $curl_code");
 		return array (null, 500, null);
 	}
-
+	
 	preg_match ( '/value\=\"(.*?)\"/' , $resp, $matches );
 	$value = $matches[1];
 	preg_match ( '/Code\=\"(.*?)\"/' , $resp, $matches );
 	$code = $matches[1];
-
+			
 	return array ($value, $code, $resp);
-
+	
 }
 
 // mshttp_get
@@ -274,15 +274,15 @@ function mshttp_get($msnr, $inputs)
 		error_log("Miniserver $msnr not defined or configuration not finished\n");
 		return;
 	}
-
+	
 	if(!is_array($inputs)) {
 		$inputs = array ( $inputs );
 		$input_was_string = true;
 	}
-
+	
 	foreach ($inputs as $input) {
 		// echo "Querying param: $input\n";
-		list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) . '/all');
+		list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) . '/all'); 
 		echo "Responseval: $respvalue Respcode: $respcode\n";
 		if($respcode == 200) {
 			// Workaround for analogue outputs always return 0
@@ -291,7 +291,7 @@ function mshttp_get($msnr, $inputs)
 			if( $respvalue_filtered != "" && $respvalue_filtered == 0) {
 				if( strpos( $rawdata, '<output name="' ) == FALSE ) {
 					# Not found - we require to request the value without /all
-					list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) );
+					list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) ); 
 				}
 			}
 			$response[$input] = $respvalue;
@@ -299,9 +299,9 @@ function mshttp_get($msnr, $inputs)
 			$response[$input] = null;
 		}
 	}
-
+	
 	if (isset($input_was_string)) {
-
+		
 		return array_values($response)[0];
 	} else {
 		return $response;
@@ -311,13 +311,13 @@ function mshttp_get($msnr, $inputs)
 // mshttp_send
 function mshttp_send($msnr, $inputs, $value = null)
 {
-
+	
 	$ms = LBSystem::get_miniservers();
 	if (!isset($ms[$msnr])) {
 		error_log("Miniserver $msnr not defined or configuration not finished\n");
 		return;
 	}
-
+	
 	if(!is_array($inputs)) {
 		if($value === null) {
 			error_log("mshttp_send: Input string provided, but value missing");
@@ -327,10 +327,10 @@ function mshttp_send($msnr, $inputs, $value = null)
 		$inputs = [ $inputs => $value ];
 		$input_was_string = true;
 	}
-
+	
 	foreach ($inputs as $input => $val) {
 		// echo "Sending param: $input = $val \n";
-		list($respvalue, $respcode) = mshttp_call($msnr, '/dev/sps/io/' . rawurlencode($input) . '/' . rawurlencode($val));
+		list($respvalue, $respcode) = mshttp_call($msnr, '/dev/sps/io/' . rawurlencode($input) . '/' . rawurlencode($val)); 
 		// echo "Responseval: $respvalue Respcode: $respcode\n";
 		if($respcode == 200) {
 			$response[$input] = $respvalue;
@@ -338,9 +338,9 @@ function mshttp_send($msnr, $inputs, $value = null)
 			$response[$input] = null;
 		}
 	}
-
+	
 	if (isset($input_was_string)) {
-
+		
 		return array_values($response)[0];
 	} else {
 		return $response;
@@ -352,9 +352,9 @@ function mshttp_send_mem($msnr, $params, $value = null)
 {
 	global $mem_sendall_sec;
 	global $mem_sendall;
-
+	
 	$memfile = "/run/shm/mshttp_mem_${msnr}.json";
-
+	
 	if(file_exists($memfile)) {
 		// echo "Read file\n";
 		$jsonstr = file_get_contents($memfile);
@@ -362,15 +362,15 @@ function mshttp_send_mem($msnr, $params, $value = null)
 			$mem = json_decode($jsonstr, true);
 		}
 	}
-
+	
 	if(empty($mem['Main']['timestamp'])) {
 		$mem['Main']['timestamp'] = time();
 	}
-
+	
 	if( $mem['Main']['timestamp'] < (time()-$mem_sendall_sec) ) {
 		$mem_sendall = 1;
 	}
-
+	
 	if ( empty($mem['Main']['lastMSRebootCheck']) || $mem['Main']['lastMSRebootCheck'] < (time()-300)) {
 		// Check if Miniserver was rebooted after 5 minutes
 		$mem['Main']['lastMSRebootCheck'] = time();
@@ -382,13 +382,13 @@ function mshttp_send_mem($msnr, $params, $value = null)
 		}
 	}
 	//echo "mem_sendall: $mem_sendall\n";
-
+	
 	if( $mem_sendall <> 0 ) {
 		$mem['Params'] = Null;
 		$mem['Main']['timestamp'] = time();
 		$mem_sendall = 0;
 	}
-
+	
 	if(!is_array($params)) {
 		if($value === null) {
 			error_log("mshttp_send_mem: Input string provided, but value missing");
@@ -398,10 +398,10 @@ function mshttp_send_mem($msnr, $params, $value = null)
 		$params = [ $params => $value ];
 		$input_was_string = true;
 	}
-
-
+	
+	
 	$newparams = array();
-
+	
 	foreach ($params as $param => $value) {
 		if( !isset($mem['Params'][$param]) || $mem['Params'][$param] !== $value ) {
 			// Param has changed
@@ -409,7 +409,7 @@ function mshttp_send_mem($msnr, $params, $value = null)
 			$newparams[$param] = $value;
 		}
 	}
-
+	
 	if(!empty($newparams)) {
 		$httpres = mshttp_send($msnr, $newparams);
 		if ($httpres != null) {
@@ -423,14 +423,14 @@ function mshttp_send_mem($msnr, $params, $value = null)
 			chgrp($memfile, "loxberry");
 		}
 	}
-
+	
 	// We need to generate a response for all values if it came from ram
 	foreach ($params as $param => $value) {
 		if(isset($mem['Params'][$param])) {
 			$httpres[$param] = $value;
 		}
 	}
-
+	
 	if (isset($input_was_string)) {
 		return array_values($httpres)[0];
 	} else {
@@ -445,22 +445,20 @@ function mshttp_send_mem($msnr, $params, $value = null)
 
 // Read MQTT connection details and credentials from MQTT plugin
 function mqtt_connectiondetails() {
-
+	
 	global $cfgwasread;
 	global $cfg;
-
+	
 	if (! isset($cfgwasread)) {
 			LBSystem::read_generaljson();
-	}
-
+	}	
+	
 	$cred = array ();
-
+	
 	$cred['brokeraddress'] = $cfg->Mqtt->Brokerhost.":".$cfg->Mqtt->Brokerport;
 	$cred['brokerhost'] = $cfg->Mqtt->Brokerhost;
 	$cred['brokerport'] = $cfg->Mqtt->Brokerport;
 	$cred['websocketport'] = !empty($cfg->Mqtt->Websocketport) ? $cfg->Mqtt->Websocketport : "9001";
-	$cred['tlswebsocketport'] = !empty($cfg->Mqtt->TLSWebsocketport) ? $cfg->Mqtt->TLSWebsocketport : "9083";
-	$cred['tlsport'] = !empty($cfg->Mqtt->TLSport) ? $cfg->Mqtt->TLSport : "8883";
 	$cred['brokeruser'] = $cfg->Mqtt->Brokeruser;
 	$cred['brokerpass'] = $cfg->Mqtt->Brokerpass;
 	$cred['udpinport'] = $cfg->Mqtt->Udpinport;
@@ -476,9 +474,9 @@ function mqtt_connect()
 	if( is_object($iomqtt_object) ) {
 		return $iomqtt_object;
 	}
-
+	
 	$mqttcreds = mqtt_connectiondetails();
-	if( !is_array($mqttcreds) )
+	if( !is_array($mqttcreds) ) 
 	{
 		error_log("MQTT Gateway not installed");
 		return;
@@ -487,13 +485,13 @@ function mqtt_connect()
 		$iomqtt_object = new lbmqtt($mqttcreds);
 		return $iomqtt_object->mqtt;
 	}
-}
+}	
 
 function lbmqtt_createobject()
 {
 	global $lbmqtt_object;
 	$mqttcreds = mqtt_connectiondetails();
-	if( !is_array($mqttcreds) )
+	if( !is_array($mqttcreds) ) 
 	{
 		error_log("MQTT Gateway not installed");
 		return;
@@ -501,13 +499,13 @@ function lbmqtt_createobject()
 		require_once "phpMQTT/phpMQTT.php";
 		$lbmqtt_object = new lbmqtt($mqttcreds);
 	}
-
+	
 }
 
-function mqtt_set($topic, $content, $retain=false)
+function mqtt_set($topic, $content, $retain=false) 
 {
 	global $lbmqtt_object;
-
+	
 	if( !is_object($lbmqtt_object) ) {
 		lbmqtt_createobject();
 	}
@@ -528,10 +526,10 @@ function mqtt_retain($topic, $value) {
 	return mqtt_set( $topic, $value, true );
 }
 
-function mqtt_get(...$args)
+function mqtt_get(...$args) 
 {
 	global $lbmqtt_object;
-
+	
 	if( !is_object($lbmqtt_object) ) {
 		lbmqtt_createobject();
 	}
@@ -539,7 +537,7 @@ function mqtt_get(...$args)
 		error_log("mqtt_set-> Error establishing mqtt connection - MQTT Gateway installed?");
 		return;
 	}
-
+	
 	return $lbmqtt_object->get(...$args);
 }
 
@@ -550,7 +548,7 @@ function mqtt_get(...$args)
 class lbmqtt
 {
 	private $topicvalues = array();
-
+	
 	public function __construct($mqttcreds)
 	{
 		$this->mqttcreds = $mqttcreds;
@@ -565,29 +563,29 @@ class lbmqtt
 			error_log("MQTT ({$this->mqttcreds['brokerhost']}) accessible by \e[94m\$mqtt\e[0m");
 		}
 	}
-
-	private function _send($topic, $content, $retain=false)
+	
+	private function _send($topic, $content, $retain=false) 
 	{
 		$this->mqtt->publish( $topic, $content, 0, $retain);
 	}
-	public function set($topic, $content, $retain=false)
+	public function set($topic, $content, $retain=false) 
 	{
 		$this->_send($topic, $content, $retain);
 	}
-	public function publish($topic, $content)
+	public function publish($topic, $content) 
 	{
 		$this->_send($topic, $content, false);
 	}
-	public function retain($topic, $content)
+	public function retain($topic, $content) 
 	{
 		$this->_send($topic, $content, true);
 	}
-
+	
 	public function get($topic, $timeout_msecs = 250) {
 		// $topics[$topic] = array("qos" => 0, "function" => '_procmsg');
 		$topics[$topic] = array("qos" => 0, "function" => array( $this, '_procmsg') );
 		$this->mqtt->subscribe( $topics, 0 );
-
+		
 		$time = microtime(1);
 		unset($this->topicvalues[$topic]);
 		while($this->mqtt->proc(0) and microtime(1) < ($time+$timeout_msecs/1000) ) {
@@ -601,14 +599,14 @@ class lbmqtt
 			return null;
 		}
 	}
-
+	
 	public function _procmsg( $topic, $msg)
 	{
-	// error_log("Reveived $topic: $msg");
+	// error_log("Reveived $topic: $msg");	
 	$this->topicvalues[$topic] = $msg;
 	return $msg;
 	}
-
+	
 }
 
 
