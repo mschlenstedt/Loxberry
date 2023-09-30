@@ -13,7 +13,7 @@ use LoxBerry::System;
 init();
 
 LOGINF "Add TLS support to MQTT Widget...";
-execute( command => "sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway", log => $log, ignoreerrors => 1 );
+execute( command => "sudo $lbhomedir/sbin/mqtt-handler.pl action=updateconfig", log => $log, ignoreerrors => 1 );
 
 LOGOK "Done.";
 
