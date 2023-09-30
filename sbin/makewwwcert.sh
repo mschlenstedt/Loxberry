@@ -7,6 +7,8 @@ $LBHOMEDIR/sbin/CA.pl -sign
 mv newcert.pem $CATOP/certs/wwwcert.pem
 mv newkeywp.pem $CATOP/private/wwwkeywp.pem
 mv newkey.pem $CATOP/private/wwwkey.pem
+chmod g+r $CATOP/private/wwwkeywp.pem
+chmod g+r $CATOP/private/wwwkey.pem
 rm newreq.pem
 systemctl is-enabled apache2
 if [ $? -eq 0 ]
