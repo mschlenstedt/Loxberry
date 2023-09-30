@@ -459,6 +459,8 @@ function mqtt_connectiondetails() {
 	$cred['brokerhost'] = $cfg->Mqtt->Brokerhost;
 	$cred['brokerport'] = $cfg->Mqtt->Brokerport;
 	$cred['websocketport'] = !empty($cfg->Mqtt->Websocketport) ? $cfg->Mqtt->Websocketport : "9001";
+	$cred['tlswebsocketport'] = !empty($cfg->Mqtt->Tlswebsocketport) ? $cfg->Mqtt->Tlswebsocketport : "9083";
+	$cred['tlsport'] = !empty($cfg->Mqtt->Tlsport) ? $cfg->Mqtt->Tlsport : "8883";
 	$cred['brokeruser'] = $cfg->Mqtt->Brokeruser;
 	$cred['brokerpass'] = $cfg->Mqtt->Brokerpass;
 	$cred['udpinport'] = $cfg->Mqtt->Udpinport;
