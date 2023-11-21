@@ -184,8 +184,8 @@ class intLog
 		
 		$this->checkloglevel();
 		
-		if(!isset($this->params{"STATUS"})) {
-			$this->params{"STATUS"} = 7;
+		if(!isset($this->params["STATUS"])) {
+			$this->params["STATUS"] = 7;
 		}
 		
 		if ($this->loglevel > 6)
@@ -199,8 +199,8 @@ class intLog
 	{
 		$this->checkloglevel();
 			
-		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 6) {
-			$this->params{"STATUS"} = 6;
+		if(!isset($this->params["STATUS"]) || $this->params["STATUS"] > 6) {
+			$this->params["STATUS"] = 6;
 		}
 		if ($this->loglevel > 5)
 		{
@@ -213,8 +213,8 @@ class intLog
 	{
 		$this->checkloglevel();
 		
-		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 5) {
-			$this->params{"STATUS"} = 5;
+		if(!isset($this->params["STATUS"]) || $this->params["STATUS"] > 5) {
+			$this->params["STATUS"] = 5;
 		}
 		if ($this->loglevel > 4)
 		{
@@ -229,10 +229,10 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<WARNING>", $msg);
+		$this->params["ATTENTIONMESSAGES"] = $this->collectAttentionmessages("<WARNING>", $msg);
 		
-		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 4) {
-			$this->params{"STATUS"} = 4;
+		if(!isset($this->params["STATUS"]) || $this->params["STATUS"] > 4) {
+			$this->params["STATUS"] = 4;
 		}
 		if ($this->loglevel > 3)
 		{
@@ -246,10 +246,10 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<ERROR>", $msg);
+		$this->params["ATTENTIONMESSAGES"] = $this->collectAttentionmessages("<ERROR>", $msg);
 			
-		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 3) {
-			$this->params{"STATUS"} = 3;
+		if(!isset($this->params["STATUS"]) || $this->params["STATUS"] > 3) {
+			$this->params["STATUS"] = 3;
 		}
 		if ($this->loglevel > 2)
 		{
@@ -263,10 +263,10 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<CRITICAL>", $msg);
+		$this->params["ATTENTIONMESSAGES"] = $this->collectAttentionmessages("<CRITICAL>", $msg);
 		
-		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 2) {
-			$this->params{"STATUS"} = 2;
+		if(!isset($this->params["STATUS"]) || $this->params["STATUS"] > 2) {
+			$this->params["STATUS"] = 2;
 		}
 
 		if ($this->loglevel > 1)
@@ -282,10 +282,10 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<ALERT>", $msg);
+		$this->params["ATTENTIONMESSAGES"] = $this->collectAttentionmessages("<ALERT>", $msg);
 		
-		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 1) {
-			$this->params{"STATUS"} = 1;
+		if(!isset($this->params["STATUS"]) || $this->params["STATUS"] > 1) {
+			$this->params["STATUS"] = 1;
 		}
 
 		if ($this->loglevel > 0)
@@ -301,10 +301,10 @@ class intLog
 		$this->checkloglevel();
 		
 		// Collect all messages from severity warning and above
-		$this->params{"ATTENTIONMESSAGES"} = $this->collectAttentionmessages("<EMERG>", $msg);
+		$this->params["ATTENTIONMESSAGES"] = $this->collectAttentionmessages("<EMERG>", $msg);
 		
-		if(!isset($this->params{"STATUS"}) || $this->params{"STATUS"} > 0) {
-			$this->params{"STATUS"} = "0";
+		if(!isset($this->params["STATUS"]) || $this->params["STATUS"] > 0) {
+			$this->params["STATUS"] = "0";
 		}
 
 		if ($this->loglevel >= 0)
@@ -317,19 +317,19 @@ class intLog
 	
 	public function STATUS($severity = null)
 	{
-		if($severity >= 0 and $severity <=7 and ( empty($this->params{"STATUS"}) or $severity < $this->params{"STATUS"})) {
-			$this->params{"STATUS"} = $severity;
+		if($severity >= 0 and $severity <=7 and ( empty($this->params["STATUS"]) or $severity < $this->params["STATUS"])) {
+			$this->params["STATUS"] = $severity;
 		}
-		return $this->params{"STATUS"};
+		return $this->params["STATUS"];
 		
 	}
 
 	public function ATTENTIONMESSAGES($messages = null)
 	{
 		if(!empty($messages)) {
-			$this->params{"ATTENTIONMESSAGES"} = $messages;
+			$this->params["ATTENTIONMESSAGES"] = $messages;
 		}
-		return $this->params{"ATTENTIONMESSAGES"};
+		return $this->params["ATTENTIONMESSAGES"];
 
 	}
 
@@ -734,20 +734,20 @@ class intLog
 	// Collect all messages from severity warning and above
 	private function collectAttentionmessages($severity, $msg)
 	{
-		if (isset($this->params{'ATTENTIONMESSAGES'})) {
-		$this->params{'ATTENTIONMESSAGES'} .= "\n";
+		if (isset($this->params['ATTENTIONMESSAGES'])) {
+		$this->params['ATTENTIONMESSAGES'] .= "\n";
 		} else {
-			$this->params{'ATTENTIONMESSAGES'} = "";
+			$this->params['ATTENTIONMESSAGES'] = "";
 		}
-		$this->params{'ATTENTIONMESSAGES'} .= "$severity $msg";
+		$this->params['ATTENTIONMESSAGES'] .= "$severity $msg";
 		
 		// Truncate attention message
 		$strmaxlen = 6000;
-		if( strlen($this->params{'ATTENTIONMESSAGES'}) > $strmaxlen ) {
-			$this->params{'ATTENTIONMESSAGES'} = substr( $this->params{'ATTENTIONMESSAGES'}, -$strmaxlen+200 );
-			$this->params{'ATTENTIONMESSAGES'} = substr( $this->params{'ATTENTIONMESSAGES'}, strpos( $this->params{'ATTENTIONMESSAGES'}, "\n" )+1 );
+		if( strlen($this->params['ATTENTIONMESSAGES']) > $strmaxlen ) {
+			$this->params['ATTENTIONMESSAGES'] = substr( $this->params['ATTENTIONMESSAGES'], -$strmaxlen+200 );
+			$this->params['ATTENTIONMESSAGES'] = substr( $this->params['ATTENTIONMESSAGES'], strpos( $this->params['ATTENTIONMESSAGES'], "\n" )+1 );
 		}
-		return $this->params{'ATTENTIONMESSAGES'};
+		return $this->params['ATTENTIONMESSAGES'];
 	}
 	
 	public function __destruct() 
