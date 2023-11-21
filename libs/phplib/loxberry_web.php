@@ -185,7 +185,7 @@ EOT;
 	// gethelp - Collects the help text
 	// Currently, only plugin help is supported (no system help)
 	///////////////////////////////////////////////////////////////////
-	function gethelp($lang, $helptemplate)
+	public static function gethelp($lang, $helptemplate)
 	{
 		global $lbpplugindir;
 		global $lbptemplatedir;
