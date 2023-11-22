@@ -14,4 +14,4 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 # Path
-export PATH=$PATH:$LBHOMEDIR/bin:$LBHOMEDIR/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
+export PATH=$PATH:$LBHOMEDIR/bin:$LBHOMEDIR/.local/bin:$LBHOMEDIR/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
