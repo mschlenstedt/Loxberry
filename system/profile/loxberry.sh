@@ -3,6 +3,14 @@ if [ -f /etc/environment ]; then
 	    . /etc/environment
 fi
 
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+	. "$HOME/.bashrc"
+    fi
+fi
+
 # Bash colors
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
