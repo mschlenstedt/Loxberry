@@ -1195,12 +1195,6 @@ ii  nfs-common                           1:2.6.2-4                              
 ii  nftables                             1.0.6-2+deb12u2                                                            amd64        Program to control packet filtering rules by Netfilter project
 ii  nmap                                 7.93+dfsg1-1                                                               amd64        The Network Mapper
 ii  nmap-common                          7.93+dfsg1-1                                                               all          Architecture independent files for nmap
-ii  node-acorn                           8.8.1+ds+~cs25.17.7-2                                                      all          ECMAScript parser for Node.js
-ii  node-busboy                          1.6.0+~cs2.6.0-2                                                           all          Node.js module for parsing incoming HTML form data
-ii  node-cjs-module-lexer                1.2.2+dfsg-5                                                               all          Fast lexer to extract named exports from CommonJS modules
-ii  node-undici                          5.15.0+dfsg1+~cs20.10.9.3-1+deb12u1                                        all          Node.js HTTP/1.1 client
-ii  node-xtend                           4.0.2-3                                                                    all          Node.js library to easily extend an object
-ii  nodejs                               18.13.0+dfsg1-1                                                            amd64        evented I/O for V8 javascript - runtime executable
 ii  notification-daemon                  3.20.0-4+b1                                                                amd64        daemon for displaying passive pop-up notifications
 ii  ntfs-3g                              1:2022.10.3-1+b1                                                           amd64        read/write NTFS driver for FUSE
 ii  ntpdate                              1:4.2.8p15+dfsg-2~1.2.2+dfsg1-1+deb12u1                                    all          Network Time Protocol client (transitional package)
