@@ -12,10 +12,9 @@ use LoxBerry::System;
 
 init();
 
-# Make certificates readable for users in group loxberry
-execute( command => "adduser mosquitto loxberry", log => $log, ignoreerrors => 1 );
+# Make private certificates readable mosquitto
+execute( command => "chgrp mosquitto $lbhomedir/data/system/LoxBerryCA/private/wwwkeywp.pem", log => $log, ignoreerrors => 1 );
 execute( command => "chmod g+r $lbhomedir/data/system/LoxBerryCA/private/wwwkeywp.pem", log => $log, ignoreerrors => 1 );
-execute( command => "chmod g+r $lbhomedir/data/system/LoxBerryCA/private/wwwkey.pem", log => $log, ignoreerrors => 1 );
 
 # Add MQTT TLS support
 LOGINF "Add TLS support to MQTT Widget...";
