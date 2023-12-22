@@ -12,13 +12,12 @@ use LoxBerry::System;
 
 init();
 
-# Make private certificates readable mosquitto
-execute( command => "chgrp mosquitto $lbhomedir/data/system/LoxBerryCA/private/wwwkeywp.pem", log => $log, ignoreerrors => 1 );
-execute( command => "chmod g+r $lbhomedir/data/system/LoxBerryCA/private/wwwkeywp.pem", log => $log, ignoreerrors => 1 );
+# Make TLS certificates for mosquitto/mqtt
+execute( command => "$lbhomedir/sbin/make_mqtt_cert.sh", log => $log );
 
 # Add MQTT TLS support
 LOGINF "Add TLS support to MQTT Widget...";
-execute( command => "sudo $lbhomedir/sbin/mqtt-handler.pl action=updateconfig", log => $log, ignoreerrors => 1 );
+execute( command => "$lbhomedir/sbin/mqtt-handler.pl action=updateconfig", log => $log, ignoreerrors => 1 );
 
 LOGOK "Done.";
 

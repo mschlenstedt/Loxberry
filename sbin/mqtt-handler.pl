@@ -12,9 +12,9 @@ my $mosq_configdir = "$lbsconfigdir/mosquitto";
 my $mosq_cfgfile = "$mosq_configdir/mosq_mqttgateway.conf";
 my $mosq_passwdfile = "/etc/mosquitto/conf.d/mosq_passwd";
 
-my $sslcertificatefile = "$lbhomedir/data/system/LoxBerryCA/certs/wwwcert.pem";
-my $sslcertificatekeyfile = "$lbhomedir/data/system/LoxBerryCA/private/wwwkeywp.pem";
-my $sslcacertificatefile = "$lbhomedir/data/system/LoxBerryCA/cacert.pem";
+my $sslcertificatefile = "$lbhomedir/data/system/mosquitto/certs/mqtt_server.pem";
+my $sslcertificatekeyfile = "$lbhomedir/data/system/mosquitto/certs/private/mqtt_server_key.pem";
+my $sslcacertificatefile = "$lbhomedir/data/system/mosquitto/certs/cacert.pem";
 
 my $generaljsonobj;
 my $generalcfg;
