@@ -178,6 +178,10 @@ sub update_config
 	`mkdir $mosq_configdir`;
 	`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 
+	## create TLS certificates if they do not exist
+	if (! -x "$lbhomedir/data/system/mosquitto/certs/cacert.pem") {
+		system("$lbhomedir/sbin/make_mqtt_cert.sh");
+	}
 }
 
 sub mosquitto_set

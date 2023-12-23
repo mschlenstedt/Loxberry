@@ -12,9 +12,6 @@ use LoxBerry::System;
 
 init();
 
-# Make TLS certificates for mosquitto/mqtt
-execute( command => "$lbhomedir/sbin/make_mqtt_cert.sh", log => $log );
-
 # Add MQTT TLS support
 LOGINF "Add TLS support to MQTT Widget...";
 execute( command => "$lbhomedir/sbin/mqtt-handler.pl action=updateconfig", log => $log, ignoreerrors => 1 );
