@@ -180,6 +180,10 @@ sub update_config
 
 	## create TLS certificates if they do not exist
 	if (! -x "$lbhomedir/data/system/mosquitto/certs/cacert.pem") {
+		# first, check if Apache SSL certificates are available...
+		if (! -x "$lbhomedir/data/system/LoxBerryCA/cacert.pem") {
+			system("$lbhomedir/sbin/checkcerts.sh");
+		}
 		system("$lbhomedir/sbin/make_mqtt_cert.sh");
 	}
 }
