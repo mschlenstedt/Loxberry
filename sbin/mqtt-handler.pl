@@ -12,9 +12,9 @@ my $mosq_configdir = "$lbsconfigdir/mosquitto";
 my $mosq_cfgfile = "$mosq_configdir/mosq_mqttgateway.conf";
 my $mosq_passwdfile = "/etc/mosquitto/conf.d/mosq_passwd";
 
-my $sslcertificatefile = "$lbhomedir/data/system/mosquitto/certs/mqtt_server.pem";
-my $sslcertificatekeyfile = "$lbhomedir/data/system/mosquitto/certs/private/mqtt_server_key.pem";
-my $sslcacertificatefile = "$lbhomedir/data/system/mosquitto/certs/cacert.pem";
+my $sslcertificatefile = "$lbhomedir/data/system/mosquitto/certs/mosq_server.pemm";
+my $sslcertificatekeyfile = "$lbhomedir/data/system/mosquitto/private/mosq_server_pkey.pem";
+my $sslcacertificatefile = "$lbhomedir/data/system/mosquitto/cacert.pem";
 
 my $generaljsonobj;
 my $generalcfg;
@@ -178,14 +178,8 @@ sub update_config
 	`mkdir $mosq_configdir`;
 	`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 
-	## create TLS certificates if they do not exist
-	if (! -x "$lbhomedir/data/system/mosquitto/certs/cacert.pem") {
-		# first, check if Apache SSL certificates are available...
-		if (! -x "$lbhomedir/data/system/LoxBerryCA/cacert.pem") {
-			system("$lbhomedir/sbin/checkcerts.sh");
-		}
-		system("$lbhomedir/sbin/make_mqtt_cert.sh");
-	}
+	# check availability and validitiy of TLS certificates
+	`$lbhomedir/sbin/checkcerts.sh > /dev/null 2>&1`;
 }
 
 sub mosquitto_set
