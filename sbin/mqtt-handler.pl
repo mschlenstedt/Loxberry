@@ -14,7 +14,7 @@ my $mosq_passwdfile = "/etc/mosquitto/conf.d/mosq_passwd";
 
 my $sslcertificatefile = "$lbhomedir/data/system/mosquitto/certs/mosq_server.pemm";
 my $sslcertificatekeyfile = "$lbhomedir/data/system/mosquitto/private/mosq_server_pkey.pem";
-my $sslcacertificatefile = "$lbhomedir/data/system/mosquitto/cacert.pem";
+my $sslcacertificatefile = "$lbhomedir/data/system/LoxBerryCA/cacert.pem";
 
 my $generaljsonobj;
 my $generalcfg;
