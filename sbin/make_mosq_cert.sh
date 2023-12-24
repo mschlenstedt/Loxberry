@@ -2,7 +2,7 @@
 
 MOSQ_DIR="$LBHOMEDIR/data/system/mosquitto"
 mkdir -p $MOSQ_DIR
-mkdir newcerts certs private
+mkdir $MOSQ_DIR/newcerts $MOSQ_DIR/certs $MOSQ_DIR/private
 cd $MOSQ_DIR/newcerts
 $LBHOMEDIR/sbin/CA.pl -newreq
 $LBHOMEDIR/sbin/CA.pl -sign
