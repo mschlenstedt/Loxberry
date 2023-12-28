@@ -31,7 +31,7 @@ then
   exit 0
 fi
 
-if openssl x509 -checkend 86400 -noout -in $LBHOMEDIR/data/system/mosquitto/certs/mosq_server.pem
+if openssl x509 -checkend 86400 -noout -in $LBHOMEDIR/data/system/mosquitto/certs/mosqcert.pem
 then
   echo "Mosquitto Certificate is good for another 1 day!"
 else
@@ -43,7 +43,7 @@ else
 fi
 
 IP=`perl -e "require LoxBerry::System; print LoxBerry::System::get_localip();"`
-CERT=`openssl x509 -noout -text -in $LBHOMEDIR/data/system/mosquitto/certs/mosq_server.pem | egrep -i "$IP$"`
+CERT=`openssl x509 -noout -text -in $LBHOMEDIR/data/system/mosquitto/certs/mosqcert.pem | egrep -i "$IP$"`
 if [ -z "$CERT" ]
 then
   $LBHOMEDIR/sbin/revoke_mosq_cert.sh
