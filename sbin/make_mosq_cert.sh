@@ -9,6 +9,5 @@ openssl req -new -subj='/C=/ST=/L=/O=/OU=/CN=loxberrymqtt' -keyout newkey.pem -o
 $LBHOMEDIR/sbin/CA.pl -sign
 mv newcert.pem $MOSQ_DIR/certs/mosqcert.pem
 mv newkeywp.pem $MOSQ_DIR/private/mosqkeywp.pem
-chown mosquitto $MOSQ_DIR/private/mosqkeywp.pem
 rm newkey.pem
 rm newreq.pem
