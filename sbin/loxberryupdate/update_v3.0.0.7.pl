@@ -14,8 +14,9 @@ init();
 
 # Add MQTT TLS support
 LOGINF "Add TLS support to MQTT Widget...";
+execute( command => "$lbhomedir/sbin/checkcerts.sh", log => $log );
+execute( command => "chown mosquitto:root $lbhomedir/data/system/mosquitto/private/*", log => $log );
 execute( command => "$lbhomedir/sbin/mqtt-handler.pl action=updateconfig", log => $log, ignoreerrors => 1 );
-
 LOGOK "Done.";
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
