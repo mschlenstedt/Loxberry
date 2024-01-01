@@ -7,6 +7,7 @@ else
   rm -rf $LBHOMEDIR/data/system/LoxBerryCA
   $LBHOMEDIR/sbin/CA.pl -newca
   $LBHOMEDIR/sbin/makewwwcert.sh
+  $LBHOMEDIR/sbin/make_mosq_cert.sh
   exit 0
 fi
 
@@ -29,4 +30,25 @@ then
   $LBHOMEDIR/sbin/makewwwcert.sh
   exit 0
 fi
+
+if openssl x509 -checkend 86400 -noout -in $LBHOMEDIR/data/system/mosquitto/certs/mosqcert.pem
+then
+  echo "Mosquitto Certificate is good for another 1 day!"
+else
+  echo "Mosquitto Certificate has expired or will do so within 1 day!"
+  echo "Create a new one"
+  $LBHOMEDIR/sbin/revoke_mosq_cert.sh
+  $LBHOMEDIR/sbin/make_mosq_cert.sh
+  exit 0
+fi
+
+IP=`perl -e "require LoxBerry::System; print LoxBerry::System::get_localip();"`
+CERT=`openssl x509 -noout -text -in $LBHOMEDIR/data/system/mosquitto/certs/mosqcert.pem | egrep -i "$IP$"`
+if [ -z "$CERT" ]
+then
+  $LBHOMEDIR/sbin/revoke_mosq_cert.sh
+  $LBHOMEDIR/sbin/make_mosq_cert.sh
+  exit 0
+fi
+
 exit 0
