@@ -167,10 +167,6 @@ sub update_config
 		$generalcfg->{Mqtt}->{Tlswebsocketport} = "9083";
 		LOGINF "Setting Mosquitto TLS WebSocket port to " . $generalcfg->{Mqtt}->{Tlswebsocketport};
 	}
-	if(! defined $generalcfg->{Mqtt}->{MaxInflightMessages}) {
-		$generalcfg->{Mqtt}->{MaxInflightMessages} = "200";
-		LOGINF "Setting Mosquitto Maximum Inflight Messages to " . $generalcfg->{Mqtt}->{MaxInflightMessages};
-	}
 	
 	## Create Mosquitto config and password
 	
@@ -259,12 +255,6 @@ sub mosquitto_setcred
 		# User/Pass and password file when credentials are provided
 		$mosq_config .= "allow_anonymous false\n";
 		$mosq_config .= "password_file $mosq_passwdfile\n";
-	}
-
-	# Specificy maximum number of messages transmitted simultaneously
-	my $max_inflight_messages = $generalcfg->{Mqtt}->{MaxInflightMessages};
-	if($max_inflight_messages) {
-		$mosq_config .= "\nmax_inflight_messages $max_inflight_messages\n";
 	}
 
 	# TLS listener over MQTT protocol

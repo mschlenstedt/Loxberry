@@ -94,11 +94,6 @@
 		<input type="number" id="Mqtt.Tlswebsocketport" v-model.number="Mqtt.Tlswebsocketport" v-on:change="formadata_changed()">
 	</div>
 
-	<div class="ui-field-contain">
-		<label for="Mqtt.MaxInflightMessages" style="min-width:15%">MQTT Maximum Inflight Messages<br><small id="Mqtt-MaxInflightMessages-help">Default is 200</small></label>
-		<input type="number" id="Mqtt.MaxInflightMessages" v-model.number="Mqtt.MaxInflightMessages" v-on:change="formadata_changed()">
-	</div>
-
 	<div class="ui-body ui-body-a" style="background-color:#6dac20;color:white;text-shadow:none">
 		To configure MQTT devices, use the following MQTT connection information:<br>
 		Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Brokerport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b><br>
@@ -241,7 +236,6 @@
 						if( !data?.Uselocalbroker ) data.Uselocalbroker = 'true';
 						if( !data?.Tlsport ) data.Tlsport = '8883';
 						if( !data?.Tlswebsocketport ) data.Tlswebsocketport = '9083';
-						if( !data?.MaxInflightMessages ) data.MaxInflightMessages = '200';
 						*/
 						if ( data.Uselocalbroker == 1 ) data.Uselocalbroker = 'true';
 						
