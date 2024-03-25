@@ -34,7 +34,7 @@ use warnings;
 use strict;
 
 # Version of this script
-my $version = "3.0.0.8";
+my $version = "3.0.0.7.0";
 
 if ($<) {
 	print "This script has to be run as root or with sudo.\n";
@@ -1162,8 +1162,19 @@ sub install {
 
 	# Installing additional packages
 	$aptfile="$tempfolder/dpkg/apt";
+
+	# Apt file depending on LoxBerry Version number - from Versions prior to 3.0 where each
+	# major LoxBerry version stands for a Raspbian Release - now obsolete!
+	# Will be removed in future releases!
 	if ( $lbversionmajor && -e "$tempfolder/dpkg/apt$lbversionmajor" ) {
 		$aptfile="$tempfolder/dpkg/apt$lbversionmajor";
+	}
+
+	# Special apt file for different Debian major versions (e.g. bullseye, bookworm)
+	my $debian_version=`cat /etc/debian_version | cut -d '.' -f 1`;
+	chomp ($debian_version);
+	if ( $debian_version != "" && -e "$tempfolder/dpkg/apt$debian_version" ) {
+		$aptfile="$tempfolder/dpkg/apt$debian_version";
 	}
 
 	if (-e "$aptfile") {
@@ -1191,6 +1202,15 @@ sub install {
 				next;
 			}
 			$aptpackages = $aptpackages . " " . $_;
+		}
+
+		# Convert dummy PHP pakcages (like php-gettext)  to our real installed PHP Version
+		# (like php7.4-gettext) - we need that since we do not use PHP 8.x in Bookworm so far!
+		# So php-gettext will install the wrong version!
+		my $phpversion = `cat /etc/apache2/mods-enabled/php*.load | grep LoadModule | sed -e 's/^.*libphp\\(.*\\)\\.so\$/\\1/g'`;
+		chomp($phpversion);
+		if ($phpversion != "" && -e "/etc/php/$phpversion/apache2/php.ini") {
+			$aptpackages =~ s/(^|\s)php-(\S+)/\1php$phpversion-\2/g;
 		}
 
 		$errors = 0;
