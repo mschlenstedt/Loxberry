@@ -348,7 +348,7 @@ function form() {
 			<label for ="sslenabled"><?=$SL['SERVICES.LABEL_SSLENABLED'];?></label>
 		</div>
 		<div class="lb_flex-item">
-			<?php if ($_SERVER['HTTPS']): ?>
+			<?php if (isset($_SERVER['HTTPS'])): ?>
 				<input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="disabled" disabled="disabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
 			<?php else: ?>
 			<input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
@@ -356,7 +356,7 @@ function form() {
 		</div>
 		<div class="lb_flex-item-help">
 			<div class="hint"><?=$SL['SERVICES.HINT_SSL'];?>
-			<?php if ($_SERVER['HTTPS']): ?>
+			<?php if (isset($_SERVER['HTTPS'])): ?>
 			<?=$SL['SERVICES.HINT_SSL_ENABLED'];?>
 			<?php endif; ?>
 			</div>
@@ -764,12 +764,12 @@ function save()
 	    		.done(function(data){
 	    		console.log('chkhref aufgerufen');
 	    			if(data.ok == -1) {
-	    			console.log('chkhref hat -1 zurückgegeben');
+	    			console.log('chkhref hat -1 zurÃ¼ckgegeben');
     					$.get(\"$cnthref\")
     						.done(function(data){
     						console.log('cnthref aufgerufen');
     							if (data.ok == -1) {
-    							console.log('cnthref hat -1 zurückgegeben');
+    							console.log('cnthref hat -1 zurÃ¼ckgegeben');
     								document.getElementById('headermsg').innerHTML = sucheadermsg;
     								document.getElementById('resmsg').innerHTML = sucresmsg;
     								document.getElementById('waitmsg').innerHTML = waitmsg2;
