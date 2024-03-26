@@ -38,7 +38,7 @@ $error;
 ##########################################################################
 
 # Version of this script
-$version = "3.0.0.0";
+$version = "3.0.0.7";
 
 $sversion = LBSystem::lbversion();
 
