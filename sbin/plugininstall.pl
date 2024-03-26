@@ -1517,7 +1517,7 @@ sub purge_installation {
 		);
 		foreach my $cronfolder ( @cronfolders ) {
 			if (-e "$lbhomedir/system/cron/$cronfolder/$pname") {
-				execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/$cronfolder/$pname >> $logfile 2>&1" );
+				execute( command => "$sudobin -n -u loxberry rm -fv $lbhomedir/system/cron/$cronfolder/$pname >> $logfile 2>&1" );
 			}
 		}
 
