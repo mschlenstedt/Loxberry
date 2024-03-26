@@ -51,6 +51,7 @@ chown -Rc loxberry:loxberry /var/lib/apache2
 chown -c loxberry:loxberry /etc/timezone
 chown -c loxberry:loxberry /etc/localtime
 chown -c loxberry:loxberry $LBHOMEDIR/config/system/general.*
+chown -c mosquitto:root $LBHOMEDIR/data/system/mosquitto/private/*
 
 chmod -c 600 $LBHOMEDIR/system/network/interfaces
 chmod -c 600 $LBHOMEDIR/config/system/*

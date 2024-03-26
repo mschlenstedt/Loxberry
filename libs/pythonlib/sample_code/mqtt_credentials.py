@@ -32,4 +32,6 @@ sys.stderr.write( "Brokeruser: " + mqttcred['Brokeruser'] + "\n" )
 sys.stderr.write( "Brokerpass: " + mqttcred['Brokerpass'] + "\n" )
 sys.stderr.write( "Udpinport: " + mqttcred['Udpinport'] + "\n" )
 sys.stderr.write( "Websocketport: " + mqttcred['Websocketport'] + "\n" )
+sys.stderr.write( "Tlsport: " + mqttcred['Tlsport'] + "\n" )
+sys.stderr.write( "Tlswebsocketport: " + mqttcred['Tlswebsocketport'] + "\n" )
 

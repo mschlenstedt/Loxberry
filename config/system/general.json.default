@@ -5,7 +5,7 @@
       "Sendstatistic" : 1,
       "Startsetup" : "1",
       "Systemloglevel" : "6",
-      "Version" : "3.0.0.6"
+      "Version" : "3.0.0.7"
    },
    "Healthcheck" : null,
    "Miniserver" : {
@@ -47,7 +47,9 @@
       "Udpinport" : "11884",
       "Uselocalbroker" : "1",
       "Websocketport" : "9001",
-      "Finderdisabled" : false
+      "Finderdisabled" : false,
+      "Tlsport" : "8883",
+      "Tlswebsocketport" : "9083"
    },
    "Network" : {
       "Friendlyname" : null,

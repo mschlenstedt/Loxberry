@@ -595,6 +595,8 @@ sub mqtt_connectiondetails {
 	$cred{brokerhost} = $LoxBerry::System::mqttcfg->{Brokerhost};
 	$cred{brokerport} = $LoxBerry::System::mqttcfg->{Brokerport};
 	$cred{websocketport} = defined $LoxBerry::System::mqttcfg->{Websocketport} ? $LoxBerry::System::mqttcfg->{Websocketport} : "9001";
+	$cred{tlswebsocketport} = defined $LoxBerry::System::mqttcfg->{Tlswebsocketport} ? $LoxBerry::System::mqttcfg->{Tlswebsocketport} : "9083";
+	$cred{tlsport} = defined $LoxBerry::System::mqttcfg->{Tlsport} ? $LoxBerry::System::mqttcfg->{Tlsport} : "8883";
 	$cred{brokeruser} = $LoxBerry::System::mqttcfg->{Brokeruser};
 	$cred{brokerpass} = $LoxBerry::System::mqttcfg->{Brokerpass};
 	$cred{udpinport} = $LoxBerry::System::mqttcfg->{Udpinport};

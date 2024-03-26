@@ -80,8 +80,18 @@
 	</div>
 	
 	<div class="ui-field-contain">
-		<label for="Mqtt.Websocketport" style="min-width:15%">MQTT Server Websocket Port</label>
+		<label for="Mqtt.Websocketport" style="min-width:15%">MQTT Server Websocket Port<br><small id="Mqtt-Websocketport-help">Default is 9001</small></label>
 		<input type="number" id="Mqtt.Websocketport" v-model.number="Mqtt.Websocketport" v-on:change="formadata_changed()">
+	</div>
+
+	<div class="ui-field-contain">
+		<label for="Mqtt.Tlsport" style="min-width:15%">MQTT Server TLS Port<br><small id="Mqtt-Tlsport-help">Default is 8883</small></label>
+		<input type="number" id="Mqtt.Tlsport" v-model.number="Mqtt.Tlsport" v-on:change="formadata_changed()">
+	</div>
+
+	<div class="ui-field-contain">
+		<label for="Mqtt.Tlswebsocketport" style="min-width:15%">MQTT Server TLS Websocket Port<br><small id="Mqtt-Tlswebsocketport-help">Default is 9083</small></label>
+		<input type="number" id="Mqtt.Tlswebsocketport" v-model.number="Mqtt.Tlswebsocketport" v-on:change="formadata_changed()">
 	</div>
 
 	<div class="ui-body ui-body-a" style="background-color:#6dac20;color:white;text-shadow:none">
@@ -224,6 +234,8 @@
 						if( !data?.Brokerpass ) data.Brokerpass = '';
 						if( !data?.Websocketport ) data.Websocketport = '9001';
 						if( !data?.Uselocalbroker ) data.Uselocalbroker = 'true';
+						if( !data?.Tlsport ) data.Tlsport = '8883';
+						if( !data?.Tlswebsocketport ) data.Tlswebsocketport = '9083';
 						*/
 						if ( data.Uselocalbroker == 1 ) data.Uselocalbroker = 'true';
 						
