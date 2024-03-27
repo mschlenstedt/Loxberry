@@ -5,7 +5,7 @@
       "Sendstatistic" : 1,
       "Startsetup" : "1",
       "Systemloglevel" : "6",
-      "Version" : "3.0.0.7"
+      "Version" : "3.0.1.0"
    },
    "Healthcheck" : null,
    "Miniserver" : {
