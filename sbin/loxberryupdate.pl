@@ -31,7 +31,7 @@ use LWP::UserAgent;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion='3.0.0.2';
+my $scriptversion='3.0.1.0';
 
 my $backupdir="/opt/backup.loxberry";
 my $update_path = '/tmp/loxberryupdate';
@@ -271,9 +271,11 @@ foreach my $version (@updateprechecklist)
 		LOGINF "      Skipping Update Pre-Check $version - too new version.";
 		next;
 	}
-	LOGINF "      Running Update Pre-Check script for $version...";
-	undef $exitcode; 
-	
+	if ( $version <= $currversion ) {
+		LOGINF "      Skipping Update Pre-Check $version - too old version.";
+		next;
+	}
+
 	$exitcode = exec_perl_script("$updatedir/sbin/loxberryupdate/$updateprecheckprefix$version.pl release=$release logfilename=$logfilename cron=$cron updatedir=$updatedir");
 	$exitcode  = $? >> 8;
 	
