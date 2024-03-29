@@ -123,20 +123,12 @@ case "$1" in
 
 start)
 
-	# Check if we are on a Rapsberry
-	#if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
-	#	echo "This seems not to be a Raspberry. Will only copy skel folders, but will not create any ramdiscs..."
-	#	if [ ! -e /boot/dietpi/.hw_model ]; then # Only legacy / pure old Raspbian Image
-	#		cp -ra $LBHOMEDIR/log/skel_syslog/* /var/log
-	#		cp -ra $LBHOMEDIR/log/skel_system/* $LBHOMEDIR/log/system_tmpfs
-	#	fi
-	#	# Create log folders for all plugins if not existing
-	#	# Normally not needed for VMs, but "it doesn't hurt" - so doing it here as well
-	#	echo "Create log folders for all installed plugins"
-	#	perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
-	#	exit 0
-	#fi
-	
+	# No tmpfs on Virtual Machines and natice PCs
+	if  [ "$G_HW_MODEL" = '20' ] || [ "$G_HW_MODEL" = '21' ]; then
+		echo "This is a virtual machine or PC - no tmpfs needed. Good Bye."
+		exit 0
+	fi
+
 	if [ ! -d $RAM_LOG ]; then
 		mkdir -p ${RAM_LOG}
 	fi
@@ -192,12 +184,12 @@ start)
 
 stop)
 
-	# Check if we are on a Rapsberry
-	#if [ ! -e $LBHOMEDIR/config/system/is_raspberry.cfg ]; then
-	#	echo "This seems not to be a Raspberry. Will do nothing..."
-	#	exit 0
-	#fi
-	
+	# No tmpfs on Virtual Machines
+	if  [ "$G_HW_MODEL" = '20' ] || [ "$G_HW_MODEL" = '21' ]; then
+		echo "This is a virtual machine or PC - no tmpfs needed. Good Bye."
+		exit 0
+	fi
+
 	# Skel for system logs, LB system logs and LB plugin logs
 	echo "Backing up Syslog and LoxBerry system log folders..."
 	if [ -d $LBHOMEDIR/log/skel_system/ ]; then
