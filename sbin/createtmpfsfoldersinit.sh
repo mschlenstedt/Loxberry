@@ -125,7 +125,10 @@ start)
 
 	# No tmpfs on Virtual Machines and natice PCs
 	if  [ "$G_HW_MODEL" = '20' ] || [ "$G_HW_MODEL" = '21' ]; then
-		echo "This is a virtual machine or PC - no tmpfs needed. Good Bye."
+		echo "This is a virtual machine or PC - no tmpfs needed."
+		# Create log folders for all plugins if not existing
+		echo "Create log folders for all installed plugins"
+		perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
 		exit 0
 	fi
 
