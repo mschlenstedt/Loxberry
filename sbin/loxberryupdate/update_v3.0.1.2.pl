@@ -18,6 +18,7 @@ if ( $debver == "12" ) {
 	LOGINF "Configure PHP and install missing php packages...";
 	($exitcode)=execute("curl -sL https://packages.sury.org/php/apt.gpg | gpg --dearmor | tee /usr/share/keyrings/deb.sury.org-php.gpg >/dev/null");
 	($exitcode)=execute("echo \"deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main\" > /etc/apt/sources.list.d/php.list");
+	apt_update();
 	apt_install("php7.4-bz2 php7.4-cgi  php7.4-cli php7.4-curl php7.4-json php7.4-mbstring php7.4-mysql php7.4-opcache php7.4-readline php7.4-soap php7.4-sqlite3 php7.4-xml php7.4-zip php8.2-bz2 php8.2-cgi php8.2-cli php8.2-curl php8.2-mbstring php8.2-mysql php8.2-opcache php8.2-readline php8.2-soap php8.2-sqlite3 php8.2-xml php8.2-zip ");
 }
 
