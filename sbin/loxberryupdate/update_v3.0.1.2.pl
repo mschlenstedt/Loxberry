@@ -14,7 +14,7 @@ init();
 
 my ($exitcode, $debver)=execute("cat /etc/os-release | grep VERSION_ID= | cut -d '=' -f 2 | cut -d '\"' -f 2");
 chomp($debver)
-if ($debver -eq "12") {
+if ($debver == "12") {
 	LOGINF "COnfigure PHP and install missing php püackages...";
 	($exitcode)=execute("curl -sL https://packages.sury.org/php/apt.gpg | gpg --dearmor | tee /usr/share/keyrings/deb.sury.org-php.gpg >/dev/null");
 	($exitcode)=execute("echo \"deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main\" > /etc/apt/sources.list.d/php.list");
