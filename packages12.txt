@@ -1244,7 +1244,6 @@ ii  php8.2-opcache                       8.2.18-1+0~20240411.52+debian12~1.gbp91
 ii  php8.2-readline                      8.2.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        readline module for PHP
 ii  php8.2-soap                          8.2.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        SOAP module for PHP
 ii  php8.2-sqlite3                       8.2.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        SQLite3 module for PHP
-ii  php8.2-sqlite3-dbgsym                8.2.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        debug symbols for php8.2-sqlite3
 ii  php8.2-xml                           8.2.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        DOM, SimpleXML, XML, and XSL module for PHP
 ii  php8.2-zip                           8.2.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        Zip module for PHP
 ii  pinentry-curses                      1.2.1-1                                       arm64        curses-based PIN or pass-phrase entry dialog for GnuPG
