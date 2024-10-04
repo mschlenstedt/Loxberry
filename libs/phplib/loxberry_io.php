@@ -6,7 +6,7 @@ $mem_sendall_sec = 3600;
 $mem_sendall = 0;
 $udp_delimiter = '=';
 
-$LBIOVERSION = "3.0.0.1";
+$LBIOVERSION = "3.0.1.1";
 
 // msudp_send
 function msudp_send($msnr, $udpport, $prefix, $params)
@@ -283,7 +283,7 @@ function mshttp_get($msnr, $inputs)
 	foreach ($inputs as $input) {
 		// echo "Querying param: $input\n";
 		list($respvalue, $respcode, $rawdata) = mshttp_call($msnr, "/dev/sps/io/" . rawurlencode($input) . '/all'); 
-		echo "Responseval: $respvalue Respcode: $respcode\n";
+		// echo "Responseval: $respvalue Respcode: $respcode\n";
 		if($respcode == 200) {
 			// Workaround for analogue outputs always return 0
 			$respvalue_filtered = filter_var( $respvalue, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION );
