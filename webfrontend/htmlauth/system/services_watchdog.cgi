@@ -65,7 +65,7 @@ if ( !defined($cfgjson->{Watchdog}->{Enable}) ) {
 	$cfgjson->{Watchdog}->{Maxload1} = "24";
 	$cfgjson->{Watchdog}->{Maxload5} = "18";
 	$cfgjson->{Watchdog}->{Maxload15} = "12";
-	$cfgjson->{Watchdog}->{Minmem} = "10000";
+	$cfgjson->{Watchdog}->{Minmem} = "1";
 	$cfgjson->{Watchdog}->{Maxtemp} = "85";
 	$cfgjson->{Watchdog}->{Tempsensor} = "/sys/class/thermal/thermal_zone0/temp";
 
