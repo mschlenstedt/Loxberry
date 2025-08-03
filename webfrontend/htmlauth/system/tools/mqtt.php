@@ -4,37 +4,48 @@ $cfgfile = "$lbsconfigdir/general.json";
 $jsoncontent = file_get_contents($cfgfile); 
 
 $json = json_decode($jsoncontent, True); 
-// var_dump($json);
 
 $udpinport = $json['Mqtt']['Udpinport'];
 
-@$topic = $_GET['topic'];
-@$value = $_GET['value'];
-@$retain = $_GET['retain'];
-@$transform = $_GET['transform'];
+// Check if are in GET or json POST mode
+if (count($_GET) != 0) {
+	// GET Mode (Query Parameters)
+	print "<p>GET mode</p>";
+	@$dataarray = [ 
+		[ 
+			'topic' => $_GET['topic'],
+			'value' => $_GET['value'],
+			'retain' => is_enabled($_GET['retain']),
+			'transform' => $_GET['transform']
+		]
+	];
 
-echo "topic: $topic\n";
-echo "value: $value\n";
-echo "retain: $retain\n";
-echo "transform: $transform\n";
+} else {
+	// POST Mode (JSON input in body)
+	// Expected format is an Array
+	print "<p>POST Mode</p>\n";
+	@$dataarray = json_decode(file_get_contents('php://input'), true);
+	// print print_r($dataarray);
+}
 
-if(empty($topic)) 
+if(empty($dataarray[0]['topic'])) { 
 	syntaxhelp();
+}
 
 $address = "udp://127.0.0.1:$udpinport";
 $socket = fsockopen($address);
-if (is_enabled($retain)) {
-	$written = fwrite($socket, json_encode( array ( "topic" => $topic, "value" => $value, "retain" => true, "transform" => $transform ) ) );
-} else {
-	$written = fwrite($socket, json_encode( array ( "topic" => $topic, "value" => $value, "transform" => $transform ) ) );
-}
 
-print "<p>$topic $transform $value</p>";
-if($written == 0) {
-	print "<p style='color:red'>Could not write to udp address $address</p>\n";
-}
-else {
-	print "<p style='color:green'>$written bytes written to udp address $address</p>\n";
+foreach( $dataarray as $record ) {
+
+	$written = fwrite($socket, json_encode( $record ));
+	print "<p>" . $record['topic'] . " " . $record['transform'] . " " . $record['value'] . "</p>";
+	if($written == 0) {
+		print "<p style='color:red'>Could not write to udp address $address</p>\n";
+	}
+	else {
+		print "<p style='color:green'>$written bytes written to udp address $address</p>\n";
+	}
+
 }
 
 exit(0);
