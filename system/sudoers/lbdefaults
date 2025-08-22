@@ -11,6 +11,7 @@ loxberry ALL = NOPASSWD: /bin/systemctl
 loxberry ALL = NOPASSWD: /etc/init.d/apache2
 loxberry ALL = NOPASSWD: /etc/init.d/autofs
 loxberry ALL = NOPASSWD: /usr/bin/apt-get
+loxberry ALL = NOPASSWD: /usr/bin/apt
 loxberry ALL = NOPASSWD: /usr/bin/dpkg
 loxberry ALL = NOPASSWD: /usr/bin/lshw
 loxberry ALL = NOPASSWD: /usr/bin/timedatectl
