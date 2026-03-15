@@ -41,6 +41,8 @@ LoxBerry muss zuverlässig und für alle Nutzer — vom Bastler bis zum Endanwen
 - [ ] jQuery/jQuery Mobile Migration auf moderne Frontend-Libs (Vue 3 bereits teilweise vorhanden)
 - [ ] Test-Infrastruktur für Core-Module aufbauen
 - [ ] SSL/TLS-Verifizierung optional aktivierbar machen
+- [ ] Debian 13 (Trixie) Kompatibilität: Pakete, PHP 8.3, Kernel-Anpassungen
+- [ ] Install-Script Modernisierung: Optimierter Installer mit Debian 12/13 Dual-Support, Sicherheitshärtung
 
 ### Out of Scope
 
@@ -54,6 +56,8 @@ LoxBerry muss zuverlässig und für alle Nutzer — vom Bastler bis zum Endanwen
 - **Codebase-Zustand:** ~1264 Dateien, primär Perl 5.36 + PHP 7.4/8.2, Bash, etwas Python. jQuery 1.12.4 (EOL) als Frontend-Basis. Kein Test-Framework im Einsatz.
 - **Bekannte Probleme:** Shell Injection in admin.cgi, kein CSRF-Schutz, SSL-Verifizierung deaktiviert, doppelte AJAX-Handler, 60+ veraltete Migrationsscripts, monolithischer MQTT Gateway (1592 Zeilen).
 - **Bestehende Optimierung:** `mqttgateway_optimized.pl` liegt vor mit 7 Performance-Fixes (Early-Filtering, Connection-Pooling, Caching, vorkompilierte Regexes).
+- **Bestehender Installer:** `install_fast.sh` — optimiertes Install-Script (1x apt-update, batch-Paketinstallation, 1x daemon-reload). Zielt auf Debian 12/DietPi. Muss auf Debian 13 Trixie erweitert werden.
+- **Debian-Stand:** Debian 13 Trixie seit August 2025 stable, DietPi unterstützt Trixie seit v9.16. PHP 8.3 ist Standard in Trixie.
 - **Ziel:** Professionelles Proposal für Core-Entwickler mit priorisierter Roadmap. Die Entwickler entscheiden, welche Phasen umgesetzt werden.
 - **Fork:** strike1988/Loxberry (Fork von mschlenstedt/Loxberry), aktuell synchron mit upstream master.
 
@@ -73,6 +77,7 @@ LoxBerry muss zuverlässig und für alle Nutzer — vom Bastler bis zum Endanwen
 | Theme-System mit vordefinierten Themes | Wartbar, konsistent, deckt Nutzerwünsche ab ohne Komplexität eines Theme-Editors | — Pending |
 | Backup als neue Core-Funktion statt Plugin | Miniserver-Backup und System-Backup sind fundamental genug für Core-Integration | — Pending |
 | PR-basierter Workflow | Jede Phase wird als eigenständiger Pull Request eingereicht und diskutiert | — Pending |
+| Debian 13 Trixie als primäres Ziel | Bookworm wird Debian oldstable im Juni 2026, Trixie ist Zukunft | — Pending |
 
 ---
-*Last updated: 2026-03-15 after initialization*
+*Last updated: 2026-03-15 after adding Debian 13 Trixie + Installer requirements*
