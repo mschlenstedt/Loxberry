@@ -85,40 +85,40 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | — | Pending |
-| SEC-02 | — | Pending |
-| SEC-03 | — | Pending |
-| SEC-04 | — | Pending |
-| SEC-05 | — | Pending |
-| SEC-06 | — | Pending |
-| SEC-07 | — | Pending |
-| UI-01 | — | Pending |
-| UI-02 | — | Pending |
-| UI-03 | — | Pending |
-| UI-04 | — | Pending |
-| UI-05 | — | Pending |
-| BAK-01 | — | Pending |
-| BAK-02 | — | Pending |
-| BAK-03 | — | Pending |
-| BAK-04 | — | Pending |
-| BAK-05 | — | Pending |
-| BAK-06 | — | Pending |
-| PERF-01 | — | Pending |
-| PERF-02 | — | Pending |
-| PERF-03 | — | Pending |
-| INF-01 | — | Pending |
-| INF-02 | — | Pending |
-| INF-03 | — | Pending |
-| INF-04 | — | Pending |
-| INF-05 | — | Pending |
-| DX-01 | — | Pending |
-| DX-02 | — | Pending |
+| SEC-01 | Phase 1 | Pending |
+| SEC-02 | Phase 1 | Pending |
+| SEC-03 | Phase 1 | Pending |
+| SEC-04 | Phase 1 | Pending |
+| SEC-05 | Phase 1 | Pending |
+| SEC-06 | Phase 1 | Pending |
+| SEC-07 | Phase 1 | Pending |
+| PERF-01 | Phase 2 | Pending |
+| PERF-03 | Phase 2 | Pending |
+| UI-01 | Phase 3 | Pending |
+| UI-02 | Phase 3 | Pending |
+| UI-03 | Phase 3 | Pending |
+| UI-05 | Phase 3 | Pending |
+| INF-04 | Phase 4 | Pending |
+| PERF-02 | Phase 4 | Pending |
+| INF-03 | Phase 5 | Pending |
+| BAK-01 | Phase 6 | Pending |
+| BAK-02 | Phase 6 | Pending |
+| BAK-03 | Phase 6 | Pending |
+| BAK-04 | Phase 6 | Pending |
+| BAK-05 | Phase 6 | Pending |
+| BAK-06 | Phase 6 | Pending |
+| UI-04 | Phase 7 | Pending |
+| INF-01 | Phase 8 | Pending |
+| INF-02 | Phase 8 | Pending |
+| INF-05 | Phase 8 | Pending |
+| DX-01 | Phase 8 | Pending |
+| DX-02 | Phase 8 | Pending |
 
 **Coverage:**
 - v1 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28 ⚠️
+- Mapped to phases: 28
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 after initial definition*
+*Last updated: 2026-03-15 — traceability mapped after roadmap creation*
