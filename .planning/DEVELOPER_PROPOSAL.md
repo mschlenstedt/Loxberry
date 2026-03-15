@@ -54,6 +54,15 @@ Diese Änderungen sind klein, risikoarm und sofort als PRs einreichbar.
 
 ---
 
+### 🟢 Install-Script Optimierung (1-2 PRs)
+**Aufwand:** Gering — optimiertes Script liegt bereits vor (`install_fast.sh`)
+**Was:** apt-get update nur 1x statt 3-4x, Paketprüfung per dpkg-query statt Einzel-Forks, systemctl daemon-reload nur 1x, Repos vor dem Update einrichten, Services gesammelt enablen
+**Effekt:** Deutlich schnellere Installation (~50% weniger apt-Aufrufe)
+**Risiko:** Niedrig — gleiche Schritte, gleiche Reihenfolge, nur effizienter
+**TODO:** Debian 13 Trixie Dual-Support ergänzen, kryptographisch sichere Passwort-Generierung, doppelten createconfig.pl-Aufruf fixen
+
+---
+
 ## Mittlerer Aufwand (gut planbar, klarer Scope)
 
 ### 🟡 CSRF-Schutz (2-3 PRs)
@@ -154,8 +163,9 @@ Shell-Injection Fix     CSRF-Schutz                Vue 3 Migration
 fatalsToBrowser weg     JsonRPC Allowlist           Python SDK
 Debug-Noise gaten       general.cfg abschaffen
 MQTT Gateway Optim.     Theme-System
-AJAX-Handler mergen     SSL/TLS optional
-jsonrpc Logging fix     Debian 13 Support
+Install-Script Optim.   SSL/TLS optional
+AJAX-Handler mergen     Debian 13 Support
+jsonrpc Logging fix
                         Responsive UI
                         Python API Layer
                         Backup-System
