@@ -75,32 +75,38 @@
 **Frage 9:** Debian 13 Trixie — plant ihr das sowieso? Oder ist Bookworm noch das Ziel?
 - _Notizen:_
 
+**Frage 10:** LoxBerry Statistik-Seite — die war ja mal online. Wäre es sinnvoll, die mit frischem Design wieder aufzubauen? Welche Daten wären für euch und die Community am wertvollsten? (z.B. aktive Installationen, Plugin-Nutzung, Debian-Versionen, Hardware-Verteilung)
+- _Notizen:_
+
+**Frage 11:** Ticketsystem für Bug-Reports — nutzt ihr aktuell GitHub Issues oder gibt es was anderes? Wäre ein eigenes, integriertes Ticketsystem sinnvoll, z.B. direkt aus dem LoxBerry Admin-UI heraus Bugs melden mit automatischem System-Info-Anhang?
+- _Notizen:_
+
 ---
 
 ### 5. Plugin-Ökosystem (5 Min)
 
 > "Plugin-Kompatibilität ist mir wichtig. Dazu ein paar Fragen."
 
-**Frage 10:** Wie viele aktive Plugins gibt es ungefähr? Welche sind die wichtigsten?
+**Frage 12:** Wie viele aktive Plugins gibt es ungefähr? Welche sind die wichtigsten?
 - _Notizen:_
 
-**Frage 11:** Nutzen Plugins `LoxBerry::System_v1.pm` oder den localhost-Bypass (`Satisfy Any`)?
+**Frage 13:** Nutzen Plugins `LoxBerry::System_v1.pm` oder den localhost-Bypass (`Satisfy Any`)?
 - _Notizen:_
 
-**Frage 12:** Welche Plugin-API-Funktionen dürfen auf keinen Fall geändert werden?
+**Frage 14:** Welche Plugin-API-Funktionen dürfen auf keinen Fall geändert werden?
 - _Notizen:_
 
 ---
 
 ### 6. Zusammenarbeit & Prozess (3 Min)
 
-**Frage 13:** Wie soll ich PRs einreichen — einzeln pro Fix, oder gesammelt?
+**Frage 15:** Wie soll ich PRs einreichen — einzeln pro Fix, oder gesammelt?
 - _Notizen:_
 
-**Frage 14:** Gibt es einen Review-Prozess? Wer reviewed und merged?
+**Frage 16:** Gibt es einen Review-Prozess? Wer reviewed und merged?
 - _Notizen:_
 
-**Frage 15:** Gibt es ein Test-System oder eine Staging-Umgebung zum Testen?
+**Frage 17:** Gibt es ein Test-System oder eine Staging-Umgebung zum Testen?
 - _Notizen:_
 
 ---
@@ -109,10 +115,10 @@
 
 > "Danke! Ich arbeite das ein und schicke euch einen aktualisierten Fahrplan. Welcher Kommunikationskanal ist am besten für Rückfragen?"
 
-**Frage 16:** Wie erreiche ich euch am besten? (GitHub Issues, Forum, Telegram, Discord?)
+**Frage 18:** Wie erreiche ich euch am besten? (GitHub Issues, Forum, Telegram, Discord?)
 - _Notizen:_
 
-**Frage 17:** Wann wäre ein Follow-up sinnvoll?
+**Frage 19:** Wann wäre ein Follow-up sinnvoll?
 - _Notizen:_
 
 ---

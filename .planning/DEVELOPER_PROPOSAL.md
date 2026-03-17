@@ -102,6 +102,20 @@ Diese Änderungen sind klein, risikoarm und sofort als PRs einreichbar.
 **Effekt:** Zukunftssicher — Bookworm wird Juni 2026 oldstable
 **Risiko:** Niedrig — additiv, Debian 12 bleibt unterstützt
 
+### 🟡 LoxBerry Statistik-Dashboard (2-3 PRs)
+**Aufwand:** Mittel — Backend für anonymisierte Datenerfassung, modernes Web-Dashboard
+**Was:** Statistik-Seite mit frischem Design wieder online bringen — aktive Installationen, Plugin-Nutzung, Debian-/Hardware-Verteilung, LoxBerry-Versionen
+**Effekt:** Community bekommt Transparenz über das Ökosystem, hilft bei Priorisierung (z.B. welche Debian-Version noch unterstützen)
+**Risiko:** Niedrig — opt-in Datenerfassung, keine personenbezogenen Daten
+**Voraussetzung:** Datenschutz-konformes Opt-in, anonymisierte Übermittlung
+
+### 🟡 Integriertes Ticketsystem für Bug-Reports (2-3 PRs)
+**Aufwand:** Mittel — UI-Integration im Admin-Panel, Backend-Anbindung an GitHub Issues oder eigenes System
+**Was:** Bug-Reports direkt aus dem LoxBerry Admin-UI melden — automatisch System-Info (Version, Plugins, Hardware, Logs) anhängen, Kategorie wählen, Status verfolgen
+**Effekt:** Niedrigere Hürde für Bug-Reports, bessere Qualität der Reports durch automatische System-Infos, Community muss nicht erst ins Forum/GitHub
+**Risiko:** Niedrig — additiv, optional
+**Abhängigkeit:** Klärung ob GitHub Issues als Backend reicht oder eigenes System nötig
+
 ---
 
 ## Größere Vorhaben (mehrere PRs, braucht Planung)
@@ -165,7 +179,8 @@ Debug-Noise gaten       general.cfg abschaffen
 MQTT Gateway Optim.     Theme-System
 Install-Script Optim.   SSL/TLS optional
 AJAX-Handler mergen     Debian 13 Support
-jsonrpc Logging fix
+jsonrpc Logging fix     Statistik-Dashboard
+                        Ticketsystem (Bug-Reports)
                         Responsive UI
                         Python API Layer
                         Backup-System
