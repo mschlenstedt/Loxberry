@@ -109,6 +109,18 @@ Diese Änderungen sind klein, risikoarm und sofort als PRs einreichbar.
 **Risiko:** Niedrig — opt-in Datenerfassung, keine personenbezogenen Daten
 **Voraussetzung:** Datenschutz-konformes Opt-in, anonymisierte Übermittlung
 
+### 🟡 Benchmark-Plugin — Installation Health Score (3-4 PRs)
+**Aufwand:** Mittel — Plugin mit Test-Suite, Scoring-Engine, Dashboard-UI
+**Was:** Ein Plugin das die gesamte LoxBerry-Installation durchmisst und bewertet:
+- **MQTT-Performance:** Nachrichten-Durchsatz, Latenz, Broker-Verbindungsstabilität
+- **Plugin-Health:** Antwortzeiten, Speicherverbrauch, CPU-Last pro Plugin, Crash-Häufigkeit
+- **System-Ressourcen:** RAM-Auslastung, Disk I/O, Swap-Nutzung, SD-Karten-Gesundheit
+- **Netzwerk:** Miniserver-Erreichbarkeit, DNS-Auflösung, HTTP-Antwortzeiten
+- **Ergebnis:** Gesamt-Score (A-F oder 0-100) + Detailübersicht pro Kategorie mit klaren Empfehlungen ("Plugin X verbraucht 45% RAM — Neustart empfohlen")
+**Effekt:** Benutzer und Support sehen sofort wo Probleme liegen, statt manuell Log-Dateien zu durchsuchen. Perfekt als Diagnose-Tool bei Support-Anfragen
+**Risiko:** Niedrig — rein lesend, verändert nichts am System
+**Abhängigkeit:** Keine — kann unabhängig entwickelt werden
+
 ### 🟡 Integriertes Ticketsystem für Bug-Reports (2-3 PRs)
 **Aufwand:** Mittel — UI-Integration im Admin-Panel, Backend-Anbindung an GitHub Issues oder eigenes System
 **Was:** Bug-Reports direkt aus dem LoxBerry Admin-UI melden — automatisch System-Info (Version, Plugins, Hardware, Logs) anhängen, Kategorie wählen, Status verfolgen
@@ -168,6 +180,31 @@ Diese Änderungen sind klein, risikoarm und sofort als PRs einreichbar.
 
 ---
 
+## Querschnittsthemen (betreffen alle Bereiche)
+
+### 🟢 KI-Standards für Plugin-Entwicklung (1-2 PRs)
+**Aufwand:** Gering — Templates und Dokumentation erstellen
+**Was:** Empfohlene Standards und Templates für KI-gestützte Plugin-Entwicklung bereitstellen:
+- **PLUGIN_SPEC.md Template:** Standardisiertes Kontext-Dokument das KI-Tools (Claude, Copilot) als Input nutzen können — beschreibt Plugin-Zweck, API-Nutzung, Dateisstruktur, LoxBerry-Konventionen
+- **Empfohlene Projektstruktur:** Referenz-Layout für neue Plugins mit Beispiel-Tests
+- **CLAUDE.md / .cursorrules Vorlagen:** Projektspezifische KI-Kontextdateien mit LoxBerry-Regeln (API-Aufrufe, Config-Zugriff, Logging-Konventionen)
+- **Beispiel-Plugin:** Ein vollständig dokumentiertes Referenz-Plugin das als KI-Vorlage dient
+**Effekt:** Neue Plugins folgen von Anfang an den LoxBerry-Konventionen, auch wenn sie KI-generiert sind. Weniger Review-Aufwand, weniger "works on my machine"-Probleme
+**Risiko:** Keins — rein empfehlend, nicht verpflichtend
+**Wichtig:** Kein Zwang — die Standards sind eine Hilfestellung, kein Gate
+
+### 💰 Sponsoring & Community-Finanzierung
+**Was:** Ein transparentes Sponsoring-Modell einführen um die Weiterentwicklung nachhaltig zu finanzieren:
+- **KI-Tool-Kosten:** Claude Code, Copilot und andere KI-Tools kosten Geld — das Projekt profitiert davon, aber irgendwer muss es bezahlen
+- **Wertschätzung für Core-Entwickler:** Ein kleiner Betrag als Zeichen dass die Community die ehrenamtliche Arbeit anerkennt
+- **Mögliche Plattformen:** GitHub Sponsors, Open Collective, Buy Me a Coffee
+- **Transparenz:** Öffentlich machen wofür das Geld verwendet wird (KI-Tools, Hosting, Hardware zum Testen)
+**Effekt:** Motivation für bestehende Entwickler, Signal an neue Contributor dass das Projekt aktiv und unterstützt ist
+**Risiko:** Keins — komplett freiwillig, kleine Beträge
+**Wichtig:** Kein Paywall — alles bleibt Open Source, Sponsoring ist reine Wertschätzung
+
+---
+
 ## Empfohlene Reihenfolge
 
 ```
@@ -180,11 +217,14 @@ MQTT Gateway Optim.     Theme-System
 Install-Script Optim.   SSL/TLS optional
 AJAX-Handler mergen     Debian 13 Support
 jsonrpc Logging fix     Statistik-Dashboard
+KI-Plugin-Standards     Benchmark-Plugin (Health Score)
                         Ticketsystem (Bug-Reports)
                         Responsive UI
                         Python API Layer
                         Backup-System
                         Test-Infrastruktur
+
+QUERSCHNITT: Sponsoring-Modell einführen (GitHub Sponsors / Open Collective)
 ```
 
 ## Grundprinzipien
@@ -204,6 +244,8 @@ jsonrpc Logging fix     Statistik-Dashboard
 - Community-Präferenz für NAS-Backup: SMB vs NFS vs WebDAV?
 - Flask vs FastAPI für Python-Layer — RAM-Messung auf echtem Pi nötig
 - Minimale Browser-Version für Admin-UI? → Entscheidet Tailwind v3.4 vs v4
+- Sponsoring-Plattform: GitHub Sponsors vs Open Collective vs Buy Me a Coffee?
+- KI-Plugin-Standards: Welche LoxBerry-Konventionen sind am wichtigsten für Templates?
 
 ---
 
