@@ -9,13 +9,10 @@
   text-shadow: none !important;
 }
 
-.theme-dark .loxberry-logo {
-  opacity: 0.03;
-}
-
-/* Hintergrund-Logo auch im Panel-Wrapper abdunkeln */
+/* Hintergrund-Logos komplett ausblenden */
+.theme-dark .loxberry-logo,
 .theme-dark .ui-panel-wrapper {
-  background-image: none;
+  background-image: none !important;
 }
 
 .theme-dark .ui-header .ui-bar-a {
@@ -202,6 +199,34 @@
 .theme-dark .ui-checkbox label,
 .theme-dark .ui-radio label {
   color: #d0d0d0;
+}
+
+/* Dropdown-Selects im Dark Mode */
+.theme-dark .ui-select .ui-btn span {
+  color: #e0e0e0 !important;
+}
+
+.theme-dark select option {
+  background: #2a2a3e;
+  color: #e0e0e0;
+}
+
+/* Navbar Tabs */
+.theme-dark [data-role="navbar"] .ui-btn {
+  background: #2a2a3e !important;
+  color: #d0d0d0 !important;
+  border-color: #333350 !important;
+}
+
+.theme-dark [data-role="navbar"] .ui-btn-active {
+  background: #6dac20 !important;
+  color: white !important;
+}
+
+/* Kleine Labels neben Dropdowns (z.B. "Waehle deine Sprache") */
+.theme-dark small,
+.theme-dark .small {
+  color: #a0a0a0;
 }
 
 .theme-dark .ui-controlgroup .ui-btn {
