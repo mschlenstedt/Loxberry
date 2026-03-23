@@ -52,12 +52,14 @@
 }
 
 .theme-classic .ui-panel {
-  background: #e8e8e8 !important;
+  background: #3d3d3d !important;
   box-shadow: 2px 0 8px rgba(0,0,0,0.15);
 }
 
 .theme-classic .ui-panel-inner {
   background: #e8e8e8 !important;
+  border-radius: 6px;
+  margin: 6px;
 }
 
 .theme-classic ul.lb-systemmenu li {
