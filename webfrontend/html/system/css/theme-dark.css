@@ -97,7 +97,15 @@
 }
 
 .theme-dark #securepin {
-  background-color: #3a3a20 !important;
+  background-color: #4a4a28 !important;
+  border-color: #666688 !important;
+}
+
+/* URL-Eingabefeld */
+.theme-dark #archiveurl {
+  background: #353550 !important;
+  color: #f0f0f0 !important;
+  border-color: #666688 !important;
 }
 
 .theme-dark .ui-content {
@@ -273,12 +281,12 @@
 
 /* Dropzone dark styling */
 .theme-dark #dropzone {
-  border-color: #444466;
-  background: rgba(42, 42, 62, 0.5);
+  border-color: #666688 !important;
+  background: #353550 !important;
 }
-.theme-dark #dropzone-text { color: #888; }
-.theme-dark #dropzone-text span { color: #6dac20; }
-.theme-dark #dropzone-filename { color: #e0e0e0; }
+.theme-dark #dropzone-text { color: #b0b0b0 !important; }
+.theme-dark #dropzone-text span { color: #6dac20 !important; }
+.theme-dark #dropzone-filename { color: #f0f0f0 !important; }
 
 .theme-dark ::-webkit-scrollbar { width: 6px; }
 .theme-dark ::-webkit-scrollbar-track { background: #1e1e2e; }
