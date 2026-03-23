@@ -58,8 +58,8 @@
 
 .theme-classic .ui-panel-inner {
   background: #e8e8e8 !important;
-  border-radius: 6px;
-  margin: 6px;
+  margin: 0;
+  padding: 8px 0;
 }
 
 .theme-classic ul.lb-systemmenu li {
