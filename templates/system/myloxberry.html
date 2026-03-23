@@ -27,27 +27,36 @@
 		</div>
 		<p>&nbsp;</p>
 
-		<div data-role="collapsible" data-collapsed="true" data-mini="true" data-theme="a" data-content-theme="a">
-			<h4><TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME>: <span id="theme-current-label"></span></h4>
-			<div style="display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:20px; padding:15px 10px;">
-				<div id="theme-btn-classic" class="theme-preview-btn" data-theme="classic" style="cursor:pointer; border:2px solid #ccc; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#f8f9fa; color:#333; transition:all 0.2s ease;">
-					<div style="font-size:24px; margin-bottom:8px;">&#9728;</div>
-					<div style="font-weight:600; font-size:1.1em;">Classic</div>
-					<div style="font-size:0.75em; color:#888; margin-top:4px;">Aufgefrischt &amp; vertraut</div>
-				</div>
-				<div id="theme-btn-modern" class="theme-preview-btn" data-theme="modern" style="cursor:pointer; border:2px solid #ccc; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#ffffff; color:#374151; transition:all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-					<div style="font-size:24px; margin-bottom:8px;">&#10024;</div>
-					<div style="font-weight:600; font-size:1.1em;">Modern Flat</div>
-					<div style="font-size:0.75em; color:#888; margin-top:4px;">Hell, luftig &amp; modern</div>
-				</div>
-				<div id="theme-btn-dark" class="theme-preview-btn" data-theme="dark" style="cursor:pointer; border:2px solid #555; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#1e1e2e; color:#e0e0e0; transition:all 0.2s ease;">
-					<div style="font-size:24px; margin-bottom:8px;">&#127769;</div>
-					<div style="font-weight:600; font-size:1.1em;">Dark Mode</div>
-					<div style="font-size:0.75em; color:#999; margin-top:4px;">Augenschonend &amp; elegant</div>
-				</div>
+		<div class="wide"><TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME></div>
+		<div style="display:flex; justify-content:flex-start; align-items:center; flex-wrap:wrap; padding:10px;">
+			<div style="margin:10px; padding:10px; text-align:left;">
+				<TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME>
+			</div>
+			<div style="margin:10px; padding:10px; position:relative;">
+				<select name="themeselector" id="themeselector" data-mini="true">
+					<option value="classic">Classic</option>
+					<option value="modern">Modern Flat</option>
+					<option value="dark">Dark Mode</option>
+				</select>
 			</div>
 		</div>
-		<input type="hidden" name="themeselector" id="themeselector" value="">
+		<div id="theme-cards" style="display:none; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:20px; padding:15px 10px;">
+			<div id="theme-btn-classic" class="theme-preview-btn" data-theme="classic" style="cursor:pointer; border:2px solid #ccc; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#f8f9fa; color:#333; transition:all 0.2s ease;">
+				<div style="font-size:24px; margin-bottom:8px;">&#9728;</div>
+				<div style="font-weight:600; font-size:1.1em;">Classic</div>
+				<div style="font-size:0.75em; color:#888; margin-top:4px;">Aufgefrischt &amp; vertraut</div>
+			</div>
+			<div id="theme-btn-modern" class="theme-preview-btn" data-theme="modern" style="cursor:pointer; border:2px solid #ccc; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#ffffff; color:#374151; transition:all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+				<div style="font-size:24px; margin-bottom:8px;">&#10024;</div>
+				<div style="font-weight:600; font-size:1.1em;">Modern Flat</div>
+				<div style="font-size:0.75em; color:#888; margin-top:4px;">Hell, luftig &amp; modern</div>
+			</div>
+			<div id="theme-btn-dark" class="theme-preview-btn" data-theme="dark" style="cursor:pointer; border:2px solid #555; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#1e1e2e; color:#e0e0e0; transition:all 0.2s ease;">
+				<div style="font-size:24px; margin-bottom:8px;">&#127769;</div>
+				<div style="font-weight:600; font-size:1.1em;">Dark Mode</div>
+				<div style="font-size:0.75em; color:#999; margin-top:4px;">Augenschonend &amp; elegant</div>
+			</div>
+		</div>
 		<p>&nbsp;</p>
 
 		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
@@ -113,24 +122,29 @@
 					});
 			});
 
-			// Theme-Buttons: aktives Theme hervorheben
+			// Theme: Dropdown setzt Wert, Karten ein-/ausblenden
 			var currentTheme = "<TMPL_VAR CURRENTTHEME>" || "classic";
-			$("#themeselector").val(currentTheme);
-			var themeNames = {"classic": "Classic", "modern": "Modern Flat", "dark": "Dark Mode"};
-			$("#theme-current-label").text(themeNames[currentTheme] || "Classic");
+			$("#themeselector").val(currentTheme).selectmenu('refresh');
+
+			// Aktives Theme auf Karte hervorheben
 			$(".theme-preview-btn").each(function() {
 				if ($(this).data("theme") === currentTheme) {
 					$(this).css({"border-color": "#6dac20", "border-width": "3px", "box-shadow": "0 0 8px rgba(109,172,32,0.4)"});
 				}
 			});
 
+			// Dropdown oeffnet/schliesst Karten
+			$("#themeselector").bind("change", function() {
+				$("#theme-cards").css("display", "flex");
+			});
+
+			// Klick auf Karte wechselt Theme
 			$(".theme-preview-btn").click(function() {
 				var val = $(this).data("theme");
 				console.log("Theme", val);
-				// Alle Buttons zuruecksetzen
 				$(".theme-preview-btn").css({"border-color": "#ccc", "border-width": "2px", "box-shadow": "none"});
-				// Aktiven hervorheben
 				$(this).css({"border-color": "#6dac20", "border-width": "3px", "box-shadow": "0 0 8px rgba(109,172,32,0.4)"});
+				$("#themeselector").val(val).selectmenu('refresh');
 				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 					{
 						action: "changetheme",
