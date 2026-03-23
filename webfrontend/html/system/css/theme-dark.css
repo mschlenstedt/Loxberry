@@ -278,7 +278,30 @@
 .theme-dark .logerr { background-color: #3a1a1a; color: #e0a0a0; }
 .theme-dark .logcrit { background-color: #4a1a1a; color: #f0b0b0; }
 
-.theme-dark .form-error, .theme-dark .form-error-message { color: #ff6b6b; }
+.theme-dark .form-error, .theme-dark .form-error-message {
+  color: #ff6b6b;
+  background: transparent !important;
+  border-color: #ff6b6b !important;
+}
+
+/* Validierungsmeldungen nicht das Feld aufblaehen */
+.theme-dark .form-error-message {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-top: 2px;
+  font-size: 0.75em;
+  background: #3a1a1a !important;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ff6b6b !important;
+  z-index: 10;
+}
+
+/* Input-Wrapper relativ positionieren fuer absolute Fehlermeldung */
+.theme-dark .ui-input-text {
+  position: relative;
+}
 
 /* Dropzone dark styling */
 .theme-dark #dropzone {
