@@ -11,6 +11,9 @@
 	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css" />
 	<link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css" />
 	<link rel="stylesheet" href="/system/css/main.css" />
+	<TMPL_IF THEME_CLASSIC><link rel="stylesheet" href="/system/css/theme-classic.css" /></TMPL_IF>
+	<TMPL_IF THEME_MODERN><link rel="stylesheet" href="/system/css/theme-modern.css" /></TMPL_IF>
+	<TMPL_IF THEME_DARK><link rel="stylesheet" href="/system/css/theme-dark.css" /></TMPL_IF>
 	<link rel="shortcut icon" href="/system/images/favicon.ico" />
 	<link rel="icon" type="image/png" href="/system/images/favicon-96x96.png" sizes="96x96" />
 	<link rel="icon" type="image/png" href="/system/images/favicon-32x32.png" sizes="32x32" />
@@ -32,10 +35,19 @@
 		});
 		// Disable caching of AJAX responses
 		$.ajaxSetup ({ cache: false });
+		// Reduce unnecessary JQM input enhancements
+		$.mobile.degradeInputs.date = true;
+		$.mobile.degradeInputs.datetime = true;
+		$.mobile.degradeInputs["datetime-local"] = true;
+		$.mobile.degradeInputs.month = true;
+		$.mobile.degradeInputs.week = true;
+		$.mobile.degradeInputs.time = true;
+		$.mobile.degradeInputs.number = true;
+		$.mobile.degradeInputs.range = false; // keep sliders
 	</script>
 	<script src="/system/scripts/browser.js"></script>
 	<!-- HTMLHEAD sent by the plugin author: -->
 	<TMPL_VAR HTMLHEAD>
 </head>
-<body>
+<body class="<TMPL_VAR THEME_CLASS>">
 <!-- head.html END -->
