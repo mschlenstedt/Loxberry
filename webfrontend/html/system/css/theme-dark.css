@@ -37,7 +37,7 @@
   border-radius: 6px;
   text-shadow: none;
   box-shadow: none;
-  border: 1px solid #333350;
+  border: 1px solid #555577;
   background: #2a2a3e;
   color: #d0d0d0;
   font-weight: 500;
@@ -121,8 +121,8 @@
 
 .theme-dark .ui-select .ui-btn {
   border-radius: 6px;
-  border: 1px solid #333350;
-  background: #2a2a3e;
+  border: 1px solid #555577 !important;
+  background: #2a2a3e !important;
   color: #e0e0e0;
 }
 
