@@ -115,7 +115,31 @@
 .theme-modern ul.lb-systemmenu li {
   font-family: inherit;
   font-size: 13px;
+  color: #1a1a1a !important;
   transition: background-color 0.15s ease;
+}
+
+.theme-modern ul.lb-systemmenu a {
+  color: #374151 !important;
+}
+
+.theme-modern ul.lb-systemmenu li:hover {
+  background-color: #6dac20;
+  color: white !important;
+}
+
+.theme-modern ul.lb-systemmenu li:hover a {
+  color: white !important;
+}
+
+/* Panel-Inhalt und Listview dunkler Text */
+.theme-modern .ui-panel-inner {
+  color: #1a1a1a;
+}
+
+.theme-modern .ui-listview > li,
+.theme-modern .ui-listview > li a {
+  color: #374151;
 }
 
 .theme-modern table {
