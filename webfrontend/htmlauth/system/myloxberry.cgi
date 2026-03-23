@@ -216,7 +216,10 @@ sub form {
 	$maintemplate->param('SENDSTATISTIC_CHECKBOX', $sendstatistic_checkbox);
 	
 	$maintemplate->param('NETWORK.FRIENDLYNAME', $cfg->{Network}->{Friendlyname});
-	
+
+	my $currenttheme = $cfg->{Base}->{Theme} // 'classic';
+	$maintemplate->param( CURRENTTHEME => $currenttheme );
+
 	# Print Template
 	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
 	print $maintemplate->output();

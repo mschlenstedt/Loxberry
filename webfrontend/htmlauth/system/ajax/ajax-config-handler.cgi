@@ -55,6 +55,11 @@ elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::plugi
 elsif ($action eq 'testenvironment') {  &testenvironment; }
 elsif ($action eq 'changelanguage') { change_generaljson("Base->Lang", $value);}
 elsif ($action eq 'changecountry') { change_generaljson("Base->Country", $value);}
+elsif ($action eq 'changetheme') {
+	if ($value =~ /^(classic|modern|dark)$/) {
+		change_generaljson("Base->Theme", $value);
+	}
+}
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
 elsif ($action eq 'pluginsupdate-check') { pluginsupdate_check(); }
 elsif ($action eq 'recreate-generalcfg') { recreate_generalcfg(); }
