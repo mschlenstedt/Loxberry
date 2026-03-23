@@ -51,8 +51,27 @@
   border-radius: 4px;
 }
 
+/* Seitenmenue hellgrau */
 .theme-classic .ui-panel {
+  background: #e8e8e8;
   box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+}
+
+.theme-classic ul.lb-systemmenu li {
+  color: #333 !important;
+}
+
+.theme-classic ul.lb-systemmenu a {
+  color: #333 !important;
+}
+
+.theme-classic ul.lb-systemmenu li:hover {
+  background-color: #6dac20;
+  color: white !important;
+}
+
+.theme-classic ul.lb-systemmenu li:hover a {
+  color: white !important;
 }
 
 .theme-classic table td {
