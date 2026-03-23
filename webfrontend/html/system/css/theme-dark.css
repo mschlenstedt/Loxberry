@@ -10,7 +10,12 @@
 }
 
 .theme-dark .loxberry-logo {
-  opacity: 0.08;
+  opacity: 0.03;
+}
+
+/* Hintergrund-Logo auch im Panel-Wrapper abdunkeln */
+.theme-dark .ui-panel-wrapper {
+  background-image: none;
 }
 
 .theme-dark .ui-header .ui-bar-a {
@@ -165,15 +170,38 @@
   border-top: 1px solid #333350;
 }
 
+/* Ueberschriften heller und besser lesbar */
 .theme-dark .wide {
-  color: #e0e0e0;
+  color: #f0f0f0;
   border-bottom: 2px solid #6dac20;
   padding-bottom: 8px;
   margin-bottom: 16px;
 }
 
+.theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4 {
+  color: #f0f0f0;
+}
+
+/* Labels und Beschriftungen */
+.theme-dark label,
+.theme-dark .ui-controlgroup label {
+  color: #d0d0d0;
+}
+
+/* Hilfetext besser lesbar */
 .theme-dark .hint {
-  color: #999;
+  color: #b0b0b0;
+}
+
+/* Allgemeine Texte im Content-Bereich */
+.theme-dark p, .theme-dark span, .theme-dark div {
+  color: inherit;
+}
+
+/* Checkbox- und Radio-Labels */
+.theme-dark .ui-checkbox label,
+.theme-dark .ui-radio label {
+  color: #d0d0d0;
 }
 
 .theme-dark .ui-controlgroup .ui-btn {
