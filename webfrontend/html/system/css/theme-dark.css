@@ -75,10 +75,10 @@
 .theme-dark textarea,
 .theme-dark select {
   border-radius: 6px;
-  border: 1px solid #333350;
+  border: 1px solid #666688 !important;
   padding: 10px 12px;
-  background: #2a2a3e !important;
-  color: #e0e0e0 !important;
+  background: #353550 !important;
+  color: #f0f0f0 !important;
   transition: all 0.15s ease;
 }
 
@@ -121,9 +121,9 @@
 
 .theme-dark .ui-select .ui-btn {
   border-radius: 6px;
-  border: 1px solid #555577 !important;
-  background: #2a2a3e !important;
-  color: #e0e0e0;
+  border: 1px solid #666688 !important;
+  background: #353550 !important;
+  color: #f0f0f0;
 }
 
 .theme-dark .ui-panel {
