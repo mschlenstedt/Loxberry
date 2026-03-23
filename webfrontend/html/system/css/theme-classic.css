@@ -52,7 +52,12 @@
 }
 
 .theme-classic .ui-panel {
+  background: #3d3d3d !important;
   box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+}
+
+.theme-classic .ui-panel-inner {
+  background: #3d3d3d !important;
 }
 
 .theme-classic table td {
