@@ -65,9 +65,10 @@
 
 .theme-dark .ui-input-text,
 .theme-dark .ui-input-search {
-  border: none;
-  box-shadow: none;
-  background: transparent;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 6px;
 }
 
 .theme-dark .ui-input-text input,
