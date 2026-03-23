@@ -22,12 +22,27 @@
   height: 25px;
 }
 
+table.menutable {
+  width: 100%;
+}
+
 table.menutable td {
-  padding: 10px 10px 10px 10px;
-  width: 120px;
+  padding: 8px 5px;
+  width: auto;
   text-align: center;
   font-size: 0.8em;
   vertical-align: middle;
+}
+
+table.menutable tr {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+table.menutable td {
+  flex: 0 0 calc(33.3% - 10px);
+  min-width: 90px;
 }
 
 .caption {
@@ -76,12 +91,8 @@ table.menutable td {
 
 			.lb_flex-container
 			{
-				display: -webkit-box;
-				display: -moz-box;
-				display: -ms-flexbox;
-				display: -webkit-flex;
 				display: flex;
-				-webkit-flex-flow: row  nowrap;
+				flex-wrap: wrap;
 				margin-bottom: 20px;
 				justify-content: flex-start;
 				align-items: center;
@@ -95,7 +106,7 @@ table.menutable td {
 			}
 			.lb_flex-item-label
 			{
-				min-width	:200px;
+				min-width	:150px;
 		  		width		:200px;
 				max-width	:200px;
 	      		text-align	:right;
@@ -103,15 +114,15 @@ table.menutable td {
 	      	}
 			.lb_flex-item
 			{
-				min-width	:250px;
+				min-width	:200px;
 				width		:250px;
-				max-width	:250px;
+				max-width	:100%;
 				flex-wrap	:nowrap;
 				margin-top: -10px;
 			}
 			.lb_flex-item-help
 			{
-		  		min-width	:300px;
+		  		min-width	:150px;
 		  		width		:100%;
 				position	:relative;
 				margin-left	:10px;
@@ -140,35 +151,44 @@ table.menutable td {
 
 
 	.lb_flex-container {
-			  -webkit-flex-flow: column wrap;
+			  flex-flow: column wrap;
 			  justify-content: center;
-			  align-items: center;
+			  align-items: stretch;
 			  align-content: center;
 			  flex-direction: column;
-			  text-align:center;
+			  text-align:left;
 			}
 			.lb_flex-item-spacer
 			{
 	  			width:0%;
+				display: none;
 			}
 			.lb_flex-item-label
 			{
-	    		text-align	:center;
-	    		white-space	:nowrap;
+	    		text-align	:left;
+	    		white-space	:normal;
+				min-width	:auto;
+				width		:auto;
+				max-width	:none;
+				margin-right:0;
+				margin-bottom:4px;
+				font-weight: bold;
 	      	}
 			.lb_flex-item
 			{
-	    		text-align	:center;
-				min-width	:250px;
-				width		:250px;
-				max-width	:250px;
+	    		text-align	:left;
+				min-width	:0;
+				width		:100%;
+				max-width	:100%;
 			}
 			.lb_flex-item-help
 			{
-	    		text-align	:center;
+	    		text-align	:left;
 		  		width		:100%;
+				min-width	:0;
 				position	:relative;
 				margin-top	:5px;
+				margin-left :0;
 			}
 
 }
@@ -273,14 +293,17 @@ a:link.nolinkstyle
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 5px;
 }
 
 .widget {
-
-  width: 150px;
-  min-width: 150px;
-  height: 140px;
+  width: 130px;
+  min-width: 100px;
+  max-width: 160px;
+  height: 130px;
   text-align: center;
+  font-size: 0.8em;
 }
 
 .notifyRed {
@@ -516,3 +539,111 @@ ul.lb-systemmenu li.lb-nonhover {
 	pointer-events: none !important;
 }
 /*  Left system navigation menu END */
+
+/* === Mobile Optimierung === */
+/* Overflow global verhindern */
+.ui-content,
+.page_content,
+.ui-body {
+	overflow-x: hidden;
+}
+
+/* Bessere Innenabstände */
+.ui-content {
+	padding: 15px !important;
+}
+
+.page_content {
+	margin: 3% !important;
+}
+
+/* Tabellen-Optimierung nur für Content-Tabellen */
+.page_content table:not(.ui-controlgroup-controls):not([data-role="table"]) {
+	table-layout: fixed;
+	width: 100%;
+}
+
+.page_content table:not(.ui-controlgroup-controls) td,
+.page_content table:not(.ui-controlgroup-controls) th {
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+/* Formular-Tabellen: Hints unterhalb anzeigen */
+table.formtable,
+table.formtable tbody {
+	display: block !important;
+	width: 100% !important;
+}
+
+table.formtable tr {
+	display: flex !important;
+	flex-wrap: wrap !important;
+	align-items: center;
+	padding: 4px 0;
+	border-bottom: 1px solid rgba(128,128,128,0.15);
+	margin-bottom: 4px;
+}
+
+table.formtable td {
+	display: block !important;
+	padding: 4px 5px;
+}
+
+table.formtable td:first-child {
+	min-width: 140px;
+	width: 25%;
+}
+
+table.formtable td:nth-child(2) {
+	flex: 1;
+	min-width: 200px;
+}
+
+table.formtable td.hint {
+	width: 100% !important;
+	flex-basis: 100% !important;
+	font-size: 75%;
+	opacity: 0.7;
+	padding: 2px 5px 8px 5px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+@media (max-width: 600px) {
+	.wide {
+		font-size: calc(12px + 1vw);
+		letter-spacing: 0.05em;
+		word-break: break-word;
+	}
+
+	.page_content {
+		margin: 3% !important;
+	}
+
+	.ui-content {
+		padding: 12px !important;
+	}
+
+	.widget {
+		width: 120px;
+		min-width: 120px;
+		height: 120px;
+	}
+
+	.caption {
+		width: auto;
+		font-size: 2em;
+	}
+
+	table {
+		word-break: break-word;
+	}
+}
+
+@media (max-width: 480px) {
+	.ui-btn-inline {
+		display: block;
+		margin: 5px 0 !important;
+	}
+}

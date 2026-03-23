@@ -4,6 +4,37 @@
 	.small {
 		font-size:70%;
 	}
+
+	/* Mobile Optimierung Plugin-Verwaltung */
+	@media (max-width: 768px) {
+		table.ui-responsive,
+		table.ui-responsive tbody,
+		table.ui-responsive tr,
+		table.ui-responsive td {
+			display: block !important;
+			width: auto !important;
+		}
+
+		table.ui-responsive td[rowspan] {
+			display: inline-block !important;
+			width: auto !important;
+			vertical-align: top;
+		}
+
+		table.ui-responsive .pluginrow td {
+			padding: 4px 5px;
+		}
+
+		table.ui-responsive a[data-role="button"] {
+			white-space: normal !important;
+		}
+
+		fieldset[data-type="horizontal"] .ui-controlgroup-controls .ui-radio .ui-btn {
+			font-size: 0.85em !important;
+			padding-left: 0.5em !important;
+			padding-right: 0.5em !important;
+		}
+	}
 	
 	.releaseverslabel, a.releaseverslabel:link, a.releaseverslabel:hover, a.releaseverslabel:visited, a.releaseverslabel:active {
 		color:#6dac20 !important;;
@@ -22,26 +53,23 @@
 	}
 	</style>
 	
-	<div style="display:flex; width:100%; text-align:left;" id="installationheader">
-		<div style="margin:auto; padding:10px;text-align:left;">
-			<img width="80" height="80" src="/system/images/icons/main_plugins_install.svg" alt="">
+	<div style="display:flex; width:100%; text-align:left; align-items:center;" id="installationheader">
+		<div style="padding:5px 10px 5px 0;">
+			<img width="48" height="48" src="/system/images/icons/main_plugins_install.svg" alt="">
 		</div>
-		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
+		<div style="width:100%; text-align:left;">
 			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
 			<a target="pluginarchive" href="https://wiki.loxberry.de/plugins/start" data-role="button" data-inline="true" data-icon="search" data-mini="true" id="btnarchive"><TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
 		</div>
 	</div>
 
-	<div style="height:15px;">
-	</div>
-
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data">
 		<input type="hidden" name="saveformdata" value="1">
-		<div style="margin:auto; padding:10px 10px 0px 10px; display:flex; text-align:left; white-space: nowrap; flex-wrap:wrap;">
-			<div style="text-align:left; margin-top:15px;">
+		<div style="padding:10px;">
+			<div style="text-align:left; margin-bottom:5px;">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
 			</div>
-			<div style="text-align:left; width:75%;">
+			<div style="text-align:left; width:100%;">
 				<input readonly type="url" autocomplete="off" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="^([hH][tT][tT][pP][sS]?|[sS]\?[fF][tT][pP])\:\/\/(((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|\:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)+(\/(([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|\/|\?)*)?(\.[zZ][iI][pP]$)|(\.[zZ][iI][pP][\?][a-zA-Z0-9\_\-\&][a-zA-Z0-9\=\&\_\-\%\/]*)$" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
 				<div id="dropzone" style="border:2px dashed #ccc; border-radius:8px; padding:20px; text-align:center; cursor:pointer; transition:all 0.2s ease; background:rgba(255,255,255,0.5); margin-top:8px;">
 				<div id="dropzone-icon" style="font-size:32px; margin-bottom:6px;">&#128230;</div>
@@ -51,37 +79,32 @@
 			<input type="file" id="uploadfile" name="uploadfile" class="textfield" style="display:none;" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
 			</div>
 		</div>
-		<div style="height:30px;">
-		</div>
-		<div style="margin:auto; display:flex; flex-wrap: wrap; justify-content:flex-end; text-align:center">
-			<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap;">
+		<div style="height:10px;"></div>
+		<div style="padding:10px;">
+			<div style="margin-bottom:5px;">
 				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
 			</div>
-			<div>
-				<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$" size="10">
-			</div>
-			<div style="text-align:left; margin-top:3px;  padding-left:20px;">
-				<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+			<div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+				<div style="flex:1; min-width:120px;">
+					<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
+				</div>
+				<div>
+					<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+				</div>
 			</div>
 		</div>
 	</form>
 
-	<div style="height:60px;">
-	</div>
+	<div style="height:20px;"></div>
 
-	<div style="display:flex; width:100%; text-align:left;">
-		<div style="margin:auto; padding:10px;text-align:left;">
-			<img width="80" height="80" src="/system/images/icons/main_plugins_title.svg" alt="">
+	<div style="display:flex; width:100%; text-align:left; align-items:center;">
+		<div style="padding:5px 10px 5px 0;">
+			<img width="48" height="48" src="/system/images/icons/main_plugins_title.svg" alt="">
 		</div>
-		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
-			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS>
-			</div>
-			<div>
-			<a href="#" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" id="btnrecheck"><TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a>&nbsp;<span id="recheckstatus" style=""></span>
-			</div>
+		<div style="width:100%; text-align:left;">
+			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
+			<a href="#" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" id="btnrecheck"><TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
 		</div>
-	</div>
-	<div style="height:15px;">
 	</div>
 	<table data-role="table" data-mode="table" class="ui-responsive" data-enhance="false">
 		<tbody>

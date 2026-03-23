@@ -1,4 +1,12 @@
 <!-- ** START template/system/miniserver.html 27.01.2018 14:39:31 ************************************************************************************ -->
+<style>
+table.formtable, table.formtable tbody { display: block !important; width: 100% !important; }
+table.formtable tr { display: flex !important; flex-wrap: wrap !important; align-items: center; padding: 4px 0; }
+table.formtable td { display: block !important; padding: 4px 5px; }
+table.formtable td:first-child { min-width: 140px; width: 25%; }
+table.formtable td:nth-child(2) { flex: 1; min-width: 200px; }
+table.formtable td.hint { width: 100% !important; flex-basis: 100% !important; font-size: 75%; opacity: 0.7; padding: 2px 5px 8px 5px; }
+</style>
 <TMPL_IF FORM>
 <form method="post" data-ajax="false" name="main_form2" id="main_form2" action="/admin/system/miniserver.cgi">
 	<input type="hidden" name="saveformdata" value="1">
@@ -68,24 +76,24 @@
 							</td>
 						</tr>
 						<tr>
-							<td style="width:25%;">
+							<td>
 								&nbsp;
 							</td>
-							<td style="width:30%;">
+							<td>
 								<label><input type="checkbox" id="useclouddns<TMPL_VAR MSNO>" name="useclouddns<TMPL_VAR MSNO>" data-useclouddns="<TMPL_VAR MSUSECLOUDDNS>"><TMPL_VAR MINISERVER.LABEL_USE_CLOUD_DNS></label>
 							</td>
-							<td style="width:40%;" class="hint">
+							<td class="hint">
 								<TMPL_VAR MINISERVER.HINT_USE_CLOUD_DNS>
 							</td>
 						</tr>
 						<tr id="miniserveriprow<TMPL_VAR MSNO>" data-ipaddr="<TMPL_VAR MSIP>" class="noclouddns<TMPL_VAR MSNO>">
-							<td style="width:25%;">
+							<td>
 								<label class="control-label" for="miniserverip<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSIP></label>
 							</td>
-							<td style="width:30%;">
+							<td>
 								<input value="<TMPL_VAR MSIP>" id='miniserverip<TMPL_VAR MSNO>' name='miniserverip<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr">
 							</td>
-							<td style="width:40%;" class="hint">
+							<td class="hint">
 							</td>
 						</tr>
 						<tr id="miniserverportrow<TMPL_VAR MSNO>" data-portaddr="<TMPL_VAR MSPORT>" class="noclouddns<TMPL_VAR MSNO>">
@@ -100,24 +108,24 @@
 							</td>
 						</tr>
 						<tr id="miniservercloudurlrow<TMPL_VAR MSNO>" data-dnsurl="<TMPL_VAR MSCLOUDURL>" class="clouddns<TMPL_VAR MSNO>">
-							<td style="width:25%;">
+							<td>
 								<label class="control-label" for="miniservercloudurl<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_CLOUDURL></label>
 							</td>
-							<td style="width:30%;">
+							<td>
 								<input value="<TMPL_VAR MSCLOUDURL>" id='miniservercloudurl<TMPL_VAR MSNO>' name='miniservercloudurl<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_CLOUDURL>" data-validation-rule="(^[Ee][Ee][Ee]000([a-zA-Z0-9]{6})$)|(^504[Ff]([a-fA-F0-9]{8})$)">
 							</td>
-							<td style="width:40%;" class="hint">
+							<td class="hint">
 								<TMPL_VAR MINISERVER.HINT_MSCLOUDURL>
 							</td>
 						</tr>
 						<tr id="miniservercloudurlftpportrow<TMPL_VAR MSNO>" data-dnsurlftpport="<TMPL_VAR MSCLOUDURLFTPPORT>" class="clouddns<TMPL_VAR MSNO>">
-							<td style="width:25%;">
+							<td>
 								<label class="control-label" for="miniservercloudurlftpport<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSCLOUDURL_FTPPORT></label>
 							</td>
-							<td style="width:30%;">
+							<td>
 								<input value="<TMPL_VAR MSCLOUDURLFTPPORT>" id='miniservercloudurlftpport<TMPL_VAR MSNO>' name='miniservercloudurlftpport<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_CLOUDDNS_FTPPORT>" data-validation-rule="^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$">
 							</td>
-							<td style="width:40%;" class="hint">
+							<td class="hint">
 								<TMPL_VAR MINISERVER.HINT_CLOUDDNS_FTPPORT>
 							</td>
 						</tr>

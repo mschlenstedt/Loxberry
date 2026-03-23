@@ -112,15 +112,42 @@
   box-shadow: 4px 0 12px rgba(0,0,0,0.08);
 }
 
+/* Header "System Settings" - grüner Balken */
+.theme-modern ul.lb-systemmenu li.lb-nonhover {
+  background-color: #6dac20;
+  color: white !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 15px !important;
+  font-family: inherit;
+}
+
+/* Menüeinträge - weiß, saubere Trennlinien */
 .theme-modern ul.lb-systemmenu li {
   font-family: inherit;
   font-size: 13px;
   color: #1a1a1a !important;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  padding-right: 30px !important;
   transition: background-color 0.15s ease;
 }
 
 .theme-modern ul.lb-systemmenu a {
   color: #374151 !important;
+}
+
+/* Chevron rechts */
+.theme-modern ul.lb-systemmenu li:not(.lb-nonhover)::after {
+  content: "\276F";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #d1d5db;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .theme-modern ul.lb-systemmenu li:hover {
@@ -130,6 +157,10 @@
 
 .theme-modern ul.lb-systemmenu li:hover a {
   color: white !important;
+}
+
+.theme-modern ul.lb-systemmenu li:hover:not(.lb-nonhover)::after {
+  color: white;
 }
 
 /* Panel-Inhalt und Listview dunkler Text */
