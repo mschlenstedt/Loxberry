@@ -1,0 +1,78 @@
+/* LoxBerry Classic Theme - Refreshed */
+
+.theme-classic .ui-page {
+  background-color: #f8f9fa;
+}
+
+.theme-classic .ui-header .ui-bar-a {
+  background: linear-gradient(135deg, #6dac20, #5a9418);
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.theme-classic .ui-btn {
+  border-radius: 4px;
+  text-shadow: none;
+  box-shadow: none;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+}
+
+.theme-classic .ui-btn:hover {
+  background: #e8e8e8;
+}
+
+.theme-classic .ui-btn-active,
+.theme-classic .ui-btn.ui-btn-active {
+  background: #6dac20;
+  color: white;
+  border-color: #5a9418;
+}
+
+.theme-classic .ui-input-text input,
+.theme-classic .ui-input-search input,
+.theme-classic textarea {
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  transition: border-color 0.15s ease;
+}
+
+.theme-classic .ui-input-text input:focus,
+.theme-classic .ui-input-search input:focus {
+  border-color: #6dac20;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(109, 172, 32, 0.2);
+}
+
+.theme-classic .ui-select .ui-btn {
+  border-radius: 4px;
+}
+
+.theme-classic .ui-panel {
+  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+}
+
+.theme-classic table td {
+  padding: 8px 10px;
+}
+
+.theme-classic .ui-flipswitch-active {
+  background-color: #6dac20 !important;
+}
+
+.theme-classic [data-role="footer"] {
+  box-shadow: 0 -1px 3px rgba(0,0,0,0.08);
+}
+
+.theme-classic .wide {
+  border-bottom: 2px solid #6dac20;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+.theme-classic .ui-collapsible-heading .ui-btn {
+  border-radius: 4px;
+}
