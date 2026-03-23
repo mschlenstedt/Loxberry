@@ -40,47 +40,30 @@
 				</select>
 			</div>
 		</div>
-		<div id="theme-cards" style="display:none; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:20px; padding:15px 10px;">
-			<div id="theme-btn-classic" class="theme-preview-btn" data-theme="classic" style="cursor:pointer; border:2px solid #ccc; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#f8f9fa; color:#333; transition:all 0.2s ease;">
-				<div style="font-size:24px; margin-bottom:8px;">&#9728;</div>
-				<div style="font-weight:600; font-size:1.1em;">Classic</div>
-				<div style="font-size:0.75em; color:#888; margin-top:4px;">Aufgefrischt &amp; vertraut</div>
-			</div>
-			<div id="theme-btn-modern" class="theme-preview-btn" data-theme="modern" style="cursor:pointer; border:2px solid #ccc; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#ffffff; color:#374151; transition:all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-				<div style="font-size:24px; margin-bottom:8px;">&#10024;</div>
-				<div style="font-weight:600; font-size:1.1em;">Modern Flat</div>
-				<div style="font-size:0.75em; color:#888; margin-top:4px;">Hell, luftig &amp; modern</div>
-			</div>
-			<div id="theme-btn-dark" class="theme-preview-btn" data-theme="dark" style="cursor:pointer; border:2px solid #555; border-radius:10px; padding:20px 24px; text-align:center; width:180px; background:#1e1e2e; color:#e0e0e0; transition:all 0.2s ease;">
-				<div style="font-size:24px; margin-bottom:8px;">&#127769;</div>
-				<div style="font-weight:600; font-size:1.1em;">Dark Mode</div>
-				<div style="font-size:0.75em; color:#999; margin-top:4px;">Augenschonend &amp; elegant</div>
-			</div>
-		</div>
 		<p>&nbsp;</p>
 
 		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
-		<div style="display:flex; width:100%; text-align:left;">
-			<div style="margin:auto; padding:10px; width:20%; text-align:left;">
+		<div style="display:flex; flex-wrap:wrap; width:100%; text-align:left; align-items:center; gap:5px;">
+			<div style="padding:10px; min-width:150px;">
 				<TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME>
 			</div>
-			<div style="margin:auto; padding:10px; width:30%">
-				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>" data-validation-error-msg="<TMPL_VAR MYLOXBERRY.ERR_FRIENDLYNAME>"  data-validation-rule="^([a-zA-Z0-9\#\&\{\}\:\*\[\]\(\)\?\!\_\-\.\|\s\u00C0-\u017F])*$">
+			<div style="padding:10px; flex:1; min-width:200px;">
+				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>" data-validation-error-msg="<TMPL_VAR MYLOXBERRY.ERR_FRIENDLYNAME>"  data-validation-rule="^([a-zA-Z0-9\#\&\{\}\:\*\[\]\(\)\?\!\_\-\.\|\s\u00C0-\u017F])*$">
 			</div>
-			<div class="hint" style="margin:auto; padding:10px; width:50%;">
+			<div class="hint" style="padding:10px; flex:1; min-width:200px;">
 				<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
 			</div>
 		</div>
 		<p>&nbsp;</p>
 		<p>
 		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
-		<div style="display:flex; width:100%; text-align:left;">
-			<div style="flex-grow:1;margin:auto; padding:10px; text-align:left;">
-				<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
+		<div style="display:flex; flex-wrap:wrap; width:100%; text-align:left; align-items:center; gap:5px;">
+			<div style="padding:10px; flex:1; min-width:200px;">
+				<fieldset data-role="controlgroup" data-mini="true">
 					<TMPL_VAR SENDSTATISTIC_CHECKBOX>
 				</fieldset>
 			</div>
-			<div class="hint" style="flex-grow:2;margin:auto; padding:10px;">
+			<div class="hint" style="padding:10px; flex:1; min-width:200px;">
 				<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
 			</div>
 		</div>
@@ -122,29 +105,13 @@
 					});
 			});
 
-			// Theme: Dropdown setzt Wert, Karten ein-/ausblenden
+			// Theme: Dropdown setzt Wert und wechselt direkt
 			var currentTheme = "<TMPL_VAR CURRENTTHEME>" || "classic";
 			$("#themeselector").val(currentTheme).selectmenu('refresh');
 
-			// Aktives Theme auf Karte hervorheben
-			$(".theme-preview-btn").each(function() {
-				if ($(this).data("theme") === currentTheme) {
-					$(this).css({"border-color": "#6dac20", "border-width": "3px", "box-shadow": "0 0 8px rgba(109,172,32,0.4)"});
-				}
-			});
-
-			// Dropdown oeffnet/schliesst Karten
 			$("#themeselector").bind("change", function() {
-				$("#theme-cards").css("display", "flex");
-			});
-
-			// Klick auf Karte wechselt Theme
-			$(".theme-preview-btn").click(function() {
-				var val = $(this).data("theme");
+				var val = $(this).val();
 				console.log("Theme", val);
-				$(".theme-preview-btn").css({"border-color": "#ccc", "border-width": "2px", "box-shadow": "none"});
-				$(this).css({"border-color": "#6dac20", "border-width": "3px", "box-shadow": "0 0 8px rgba(109,172,32,0.4)"});
-				$("#themeselector").val(val).selectmenu('refresh');
 				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 					{
 						action: "changetheme",

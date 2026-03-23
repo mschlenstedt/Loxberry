@@ -98,25 +98,35 @@
 .container {
     display: flex;
     align-items: center !important;
+    padding: 4px 10px;
+    gap: 6px;
 }
 
 .column {
     flex: 1;
-    /*for demo purposes only
-    //background: #f2f2f2;
-    border: 1px solid #e6e6e6;
-    box-sizing: border-box; */
+    display: flex;
+    align-items: center;
+}
+
+.column:first-child {
+    justify-content: flex-start;
+    gap: 6px;
+}
+
+.column:last-child {
+    justify-content: flex-end;
+    gap: 6px;
 }
 
 .headerbutton {
-	background: #5A8E1C ;
+	background: #5A8E1C;
 	color: #ffffff !important;
 	font-size: 1rem !important;
 	font-weight: normal !important;
-    	font-style: normal !important;
-    	font-variant: normal !important;
+	font-style: normal !important;
+	font-variant: normal !important;
 	border-style: none !important;
-	margin: 0.2rem 0.1rem 0.2rem 0.1rem !important;
+	margin: 0 !important;
 	border-radius: 5px !important;
 	padding: 0.5rem !important;
 	text-transform: none !important;
@@ -454,5 +464,5 @@ function btnnotifies_setcss(data) {
 				<!-- 
 					<TMPL_VAR NAVBARJS>
 				-->
-				<div id="page_content" class="page_content" style="margin: 4%">
+				<div id="page_content" class="page_content" style="margin: 4%; padding: 0 10px;">
 <!-- pagestart.html END -->

@@ -144,8 +144,38 @@
   color: #e0e0e0;
 }
 
+/* Header "System Settings" - grüner Balken */
+.theme-dark ul.lb-systemmenu li.lb-nonhover {
+  background-color: #6dac20;
+  color: white !important;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 10px 15px !important;
+}
+
+/* Menüeinträge - dunkler Hintergrund, helle Schrift */
 .theme-dark ul.lb-systemmenu li {
   color: #d0d0d0 !important;
+  background-color: #2a2a3e;
+  border-bottom: 1px solid #333350;
+  position: relative;
+  padding-right: 30px !important;
+}
+
+.theme-dark ul.lb-systemmenu a {
+  color: #c0c0c0 !important;
+}
+
+/* Chevron rechts */
+.theme-dark ul.lb-systemmenu li:not(.lb-nonhover)::after {
+  content: "\276F";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #555577;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .theme-dark ul.lb-systemmenu li:hover {
@@ -153,8 +183,12 @@
   color: black !important;
 }
 
-.theme-dark ul.lb-systemmenu a {
-  color: #c0c0c0 !important;
+.theme-dark ul.lb-systemmenu li:hover a {
+  color: black !important;
+}
+
+.theme-dark ul.lb-systemmenu li:hover:not(.lb-nonhover)::after {
+  color: #333;
 }
 
 .theme-dark table td {
