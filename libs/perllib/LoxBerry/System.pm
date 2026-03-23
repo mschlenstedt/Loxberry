@@ -160,6 +160,7 @@ our $reboot_required_file = "$lbstmpfslogdir/reboot.required";
 our $reboot_force_popup_file = "$lbstmpfslogdir/reboot.force";
 our $PLUGINDATABASE = "$lbsdatadir/plugindatabase.json";
 our $mqttcfg;
+our $lbtheme;
 
 # Variables only valid in this module
 my $lang;
@@ -539,7 +540,9 @@ sub read_generaljson
 	$lbtimezone		= $cfg->{Timeserver}->{Timezone};
 	$webserverport  = $cfg->{Webserver}->{Port};
 	$mqttcfg 	    = $cfg->{Mqtt};
-	
+	$lbtheme        = $cfg->{Base}->{Theme} // 'classic';
+	$lbtheme        = 'classic' unless $lbtheme =~ /^(classic|modern|dark)$/;
+
 	if ( ! defined $cfg->{Miniserver} or keys(%{$cfg->{Miniserver}}) < 1) {
 		return undef;
 	}
