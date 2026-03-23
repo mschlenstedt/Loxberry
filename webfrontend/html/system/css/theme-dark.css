@@ -77,9 +77,15 @@
   border-radius: 6px;
   border: 1px solid #333350;
   padding: 10px 12px;
-  background: #2a2a3e;
-  color: #e0e0e0;
+  background: #2a2a3e !important;
+  color: #e0e0e0 !important;
   transition: all 0.15s ease;
+}
+
+/* Placeholder-Text im Dark Mode */
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder {
+  color: #666 !important;
 }
 
 .theme-dark .ui-input-text input:focus,
@@ -187,7 +193,7 @@
 
 /* Hilfetext besser lesbar */
 .theme-dark .hint {
-  color: #b0b0b0;
+  color: #c0c0c0;
 }
 
 /* Allgemeine Texte im Content-Bereich */
@@ -198,7 +204,22 @@
 /* Checkbox- und Radio-Labels */
 .theme-dark .ui-checkbox label,
 .theme-dark .ui-radio label {
-  color: #d0d0d0;
+  color: #e0e0e0 !important;
+  background: #2a2a3e !important;
+  border-color: #333350 !important;
+}
+
+/* Checkbox-Icon im Dark Mode */
+.theme-dark .ui-checkbox .ui-btn.ui-icon-checkbox-off,
+.theme-dark .ui-checkbox .ui-btn.ui-icon-checkbox-on {
+  background: #2a2a3e !important;
+  color: #e0e0e0 !important;
+  border-color: #333350 !important;
+}
+
+/* Fieldset-Rahmen */
+.theme-dark fieldset {
+  border-color: #333350;
 }
 
 /* Dropdown-Selects im Dark Mode */
