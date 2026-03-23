@@ -43,7 +43,12 @@
 			</div>
 			<div style="text-align:left; width:75%;">
 				<input readonly type="url" autocomplete="off" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="^([hH][tT][tT][pP][sS]?|[sS]\?[fF][tT][pP])\:\/\/(((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|\:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)+(\/(([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|\/|\?)*)?(\.[zZ][iI][pP]$)|(\.[zZ][iI][pP][\?][a-zA-Z0-9\_\-\&][a-zA-Z0-9\=\&\_\-\%\/]*)$" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
-				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
+				<div id="dropzone" style="border:2px dashed #ccc; border-radius:8px; padding:20px; text-align:center; cursor:pointer; transition:all 0.2s ease; background:rgba(255,255,255,0.5); margin-top:8px;">
+				<div id="dropzone-icon" style="font-size:32px; margin-bottom:6px;">&#128230;</div>
+				<div id="dropzone-text" style="font-size:0.85em; color:#666;">.zip <TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_OR> <span style="color:#6dac20; text-decoration:underline;"><TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_BROWSE></span></div>
+				<div id="dropzone-filename" style="display:none; font-size:0.9em; color:#333; font-weight:bold; margin-top:6px;"></div>
+			</div>
+			<input type="file" id="uploadfile" name="uploadfile" class="textfield" style="display:none;" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
 			</div>
 		</div>
 		<div style="height:30px;">
@@ -78,7 +83,7 @@
 	</div>
 	<div style="height:15px;">
 	</div>
-	<table data-role="table" data-mode="table" class="ui-responsive">
+	<table data-role="table" data-mode="table" class="ui-responsive" data-enhance="false">
 		<tbody>
 
 		<!-- START Plugin container -->
@@ -239,6 +244,99 @@
        				}
      			});
   			});
+
+		// Drag & Drop support
+		var dropzone = document.getElementById('dropzone');
+		var fileInput = document.getElementById('uploadfile');
+		var dropzoneZipOnlyMsg = "<TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_ZIPONLY>";
+		var dropzoneDefaultHtml = '.zip <TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_OR> <span style="color:#6dac20; text-decoration:underline;"><TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_BROWSE></span>';
+
+		dropzone.addEventListener('click', function() {
+			fileInput.click();
+		});
+
+		['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(eventName) {
+			document.addEventListener(eventName, function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+			});
+		});
+
+		['dragenter', 'dragover'].forEach(function(eventName) {
+			dropzone.addEventListener(eventName, function() {
+				dropzone.style.borderColor = '#6dac20';
+				dropzone.style.background = 'rgba(109, 172, 32, 0.08)';
+			});
+		});
+
+		['dragleave', 'drop'].forEach(function(eventName) {
+			dropzone.addEventListener(eventName, function() {
+				dropzone.style.borderColor = '#ccc';
+				dropzone.style.background = 'rgba(255,255,255,0.5)';
+			});
+		});
+
+		dropzone.addEventListener('drop', function(e) {
+			var files = e.dataTransfer.files;
+			if (files.length === 0) return;
+			var file = files[0];
+
+			if (!file.name.toLowerCase().endsWith('.zip')) {
+				dropzone.style.borderColor = '#e74c3c';
+				dropzone.style.background = 'rgba(231, 76, 60, 0.08)';
+				$('#dropzone-text').text(dropzoneZipOnlyMsg);
+				setTimeout(function() {
+					dropzone.style.borderColor = '#ccc';
+					dropzone.style.background = 'rgba(255,255,255,0.5)';
+					$('#dropzone-text').html(dropzoneDefaultHtml);
+				}, 2000);
+				return;
+			}
+
+			try {
+				var dt = new DataTransfer();
+				dt.items.add(file);
+				fileInput.files = dt.files;
+			} catch(err) {
+				window._dropzoneFile = file;
+			}
+
+			$('#dropzone-filename').text(file.name).show();
+			$('#dropzone-icon').hide();
+			$('#dropzone-text').hide();
+			$('#archiveurl').fadeOut();
+			$('#archiveurl').val('');
+			$('#error-msg-archiveurl').fadeOut(10);
+			$(fileInput).trigger('change').trigger('blur');
+		});
+
+		$(fileInput).on('change', function() {
+			if (this.files && this.files.length > 0) {
+				$('#dropzone-filename').text(this.files[0].name).show();
+				$('#dropzone-icon').hide();
+				$('#dropzone-text').hide();
+			} else {
+				$('#dropzone-filename').hide();
+				$('#dropzone-icon').show();
+				$('#dropzone-text').show();
+			}
+		});
+
+		$('#main_form').on('submit', function(e) {
+			if (window._dropzoneFile) {
+				e.preventDefault();
+				var formData = new FormData(this);
+				formData.set('uploadfile', window._dropzoneFile);
+				var xhr = new XMLHttpRequest();
+				xhr.open('POST', this.action);
+				xhr.onload = function() {
+					document.open();
+					document.write(xhr.responseText);
+					document.close();
+				};
+				xhr.send(formData);
+			}
+		});
 
 			$( '#securepin' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
 			if ( $('#archiveurl').length > 0 ) $('#archiveurl').trigger('keyup');
