@@ -6,9 +6,9 @@
 # Each of the 7 fixes can be toggled via $ENV{BENCH_*} flags:
 #
 #   BENCH_EARLY_FILTER   - FIX 1: Early filtering before JSON expansion
-#   BENCH_CONN_POOL      - FIX 2: HTTP connection pooling
+#   BENCH_CONNECTION_POOL      - FIX 2: HTTP connection pooling
 #   BENCH_MS_CACHE        - FIX 3: Miniserver config cache
-#   BENCH_PRECOMPILED_RE  - FIX 4: Precompiled subscription regexes
+#   BENCH_PRECOMPILED_REGEX  - FIX 4: Precompiled subscription regexes
 #   BENCH_OWN_TOPIC_FILTER - FIX 5: Own gateway topic filter
 #   BENCH_FLATTEN_SINGLETON - FIX 6: Reuse Hash::Flatten instance
 #   BENCH_JSON_XS         - FIX 7: Prefer JSON::XS over JSON::PP
@@ -348,7 +348,7 @@ my $log = LoxBerry::Log->new (
 	addtime => 1
 );
 
-LOGSTART "MQTT Gateway started (OPTIMIZED)";
+LOGSTART "MQTT Gateway started (BENCHMARKABLE)";
 
 LOGINF "KEEP IN MIND: LoxBerry MQTT only sends CHANGED values to the Miniserver.";
 LOGINF "If you use UDP Monitor, you have to take actions that changes are pushed.";
@@ -658,7 +658,15 @@ sub received
 				# BENCH_FLATTEN_SINGLETON: on = reuse singleton, off = new instance per call
 				my $flat_hash = $ENV{BENCH_FLATTEN_SINGLETON}
 					? $flatterer->flatten($contjson)
-					: Hash::Flatten->new({OnRefScalar => 'warn'})->flatten($contjson);
+					: Hash::Flatten->new({
+						HashDelimiter => '_',
+						ArrayDelimiter => '_',
+						OnRefScalar => 'warn',
+						EscapeSequence => '#',
+						OnRefGlob => '',
+						OnRefScalar  => '',
+						OnRefRef => '',
+					})->flatten($contjson);
 				for my $record ( keys %$flat_hash ) {
 					my $val = $flat_hash->{$record};
 					$sendhash{"$topic/$record"} = $val;
@@ -729,10 +737,10 @@ sub received
 		}
 		
 		# Run Subscription Filter Expressions
-		# BENCH_PRECOMPILED_RE: on = precompiled qr//, off = compile at runtime
+		# BENCH_PRECOMPILED_REGEX: on = precompiled qr//, off = compile at runtime
 		my $regexcounter = 0;
 		my $regexmatch = 0;
-		if ($ENV{BENCH_PRECOMPILED_RE}) {
+		if ($ENV{BENCH_PRECOMPILED_REGEX}) {
 			# FIX 4: Nutze vorkompilierte Regexes
 			foreach my $filter_re (@subscriptionfilters_compiled) {
 				$regexcounter++;
@@ -814,8 +822,8 @@ sub received
 	my $idx=0;
 	
 	# FIX 4: Subscription-Regex matching
-	# BENCH_PRECOMPILED_RE: on = precompiled qr//, off = compile at runtime
-	if ($ENV{BENCH_PRECOMPILED_RE}) {
+	# BENCH_PRECOMPILED_REGEX: on = precompiled qr//, off = compile at runtime
+	if ($ENV{BENCH_PRECOMPILED_REGEX}) {
 		foreach my $sub_re (@subscriptions_compiled) {
 			if( $topic =~ $sub_re ) {
 				@toMS = @{$subscriptions_toms[$idx]};
@@ -935,8 +943,8 @@ sub received
 			foreach ( @toMS ) {
 				my $httpresp;
 				# FIX 2: HTTP call sites
-				# BENCH_CONN_POOL: on = fast pooled functions, off = original LoxBerry::MQTTGateway::IO
-				if ($ENV{BENCH_CONN_POOL}) {
+				# BENCH_CONNECTION_POOL: on = fast pooled functions, off = original LoxBerry::MQTTGateway::IO
+				if ($ENV{BENCH_CONNECTION_POOL}) {
 					$httpresp = mshttp_send_fast($_,  %sendhash_noncached);
 					validate_http_response( $_, \%sendhash_noncached, $httpresp ) if $httpresp;
 					$httpresp = mshttp_send_mem_fast($_,  %sendhash_cached);
