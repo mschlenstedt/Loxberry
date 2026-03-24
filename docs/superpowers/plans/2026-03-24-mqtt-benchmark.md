@@ -259,7 +259,7 @@ my $bench_latency_log = '/dev/shm/bench_latency.log';
 # In the HTTP send path (inside mshttp_send_fast and mshttp_send_mem_fast):
 sub bench_count_http {
     # Atomic counter: read current value, increment, write back
-    use Fcntl qw(:flock);
+    use Fcntl qw(:flock O_RDWR O_CREAT);
     if (sysopen(my $fh, $bench_http_counter_file, O_RDWR|O_CREAT)) {
         flock($fh, LOCK_EX);
         my $count = <$fh> || 0;
@@ -1067,17 +1067,27 @@ collect_run_results() {
     # Parse metric CSV for averages
     local csv="$run_dir/samples_${gw_pid}.csv"
     if [[ -f "$csv" ]]; then
-        # Calculate averages using awk (skip header)
+        # Calculate averages for CPU/RSS/temp, and rate (delta/duration) for HTTP counter
         local stats
         stats=$(awk -F, 'NR>1 {
-            cpu += $3; rss += $4; temp += $5; http += $6; n++
+            cpu += $3; rss += $4; temp += $5; n++
+            if (NR==2) first_http = $6
+            last_http = $6
+            duration = $2  # elapsed_s column
         } END {
-            if (n>0) printf "%.1f,%.1f,%.1f,%d", cpu/n, rss/n, temp/n, http
+            if (n>0) {
+                http_rate = (duration > 0) ? (last_http - first_http) / duration : 0
+                printf "%.1f,%.1f,%.1f,%.1f", cpu/n, rss/n, temp/n, http_rate
+            }
         }' "$csv")
         RUN_RESULTS[$run_id,cpu]=$(echo "$stats" | cut -d, -f1)
         RUN_RESULTS[$run_id,rss]=$(echo "$stats" | cut -d, -f2)
         RUN_RESULTS[$run_id,temp]=$(echo "$stats" | cut -d, -f3)
         RUN_RESULTS[$run_id,http]=$(echo "$stats" | cut -d, -f4)
+
+        # Gateway throughput = HTTP calls (processed messages), not loadgen send rate
+        # This is the meaningful throughput metric — different runs process at different rates
+        RUN_RESULTS[$run_id,throughput]="${RUN_RESULTS[$run_id,http]}"
     fi
 
     # Parse loadgen stats
@@ -1134,8 +1144,8 @@ generate_report() {
         # Overall comparison: Run 0 (baseline) vs Run 9 (all optimized)
         local base_cpu="${RUN_RESULTS[0,cpu]:-0}"
         local opt_cpu="${RUN_RESULTS[9,cpu]:-0}"
-        local base_rate="${RUN_RESULTS[0,msg_rate]:-0}"
-        local opt_rate="${RUN_RESULTS[9,msg_rate]:-0}"
+        local base_rate="${RUN_RESULTS[0,throughput]:-${RUN_RESULTS[0,http]:-0}}"
+        local opt_rate="${RUN_RESULTS[9,throughput]:-${RUN_RESULTS[9,http]:-0}}"
         local base_lat="${RUN_RESULTS[0,lat_avg]:-0}"
         local opt_lat="${RUN_RESULTS[9,lat_avg]:-0}"
         local base_rss="${RUN_RESULTS[0,rss]:-0}"
@@ -1168,7 +1178,7 @@ generate_report() {
             local fix_idx=$((i - 2))
             local fix_cpu="${RUN_RESULTS[$i,cpu]:-0}"
             local fix_lat="${RUN_RESULTS[$i,lat_avg]:-0}"
-            local fix_rate="${RUN_RESULTS[$i,msg_rate]:-0}"
+            local fix_rate="${RUN_RESULTS[$i,throughput]:-${RUN_RESULTS[$i,http]:-0}}"
             local fix_score=$(calc_score "$base_cpu" "$fix_cpu" "$base_rate" "$fix_rate" "$base_lat" "$fix_lat" "0" "0")
             local stars=$(score_to_stars "$fix_score")
             local cpu_diff=$(echo "scale=0; ($base_cpu - $fix_cpu) * 100 / $base_cpu" | bc 2>/dev/null || echo "0")
@@ -1177,13 +1187,30 @@ generate_report() {
 
         echo "══════════════════════════════════════════════════════════════"
 
-        # Stresstest results (runs 10-11)
-        if [[ -n "${RUN_RESULTS[10,msg_rate]:-}" ]]; then
+        # Stresstest results — iterate all stress run pairs (IDs 10+)
+        local orig_max_noloss=0 opt_max_noloss=0
+        local orig_breakpoint=0 opt_breakpoint=0
+        local stress_id=10
+        while [[ -n "${RUN_RESULTS[$stress_id,name]:-}" ]]; do
+            local opt_id=$((stress_id + 1))
+            local rate_label="${RUN_RESULTS[$stress_id,name]##*Stress }"
+            # TODO: compute loss rate per run and track max_noloss/breakpoint
+            # For now, track the highest rate where runs completed
+            if [[ -n "${RUN_RESULTS[$stress_id,msg_rate]:-}" ]]; then
+                orig_max_noloss="${RUN_RESULTS[$stress_id,msg_rate]}"
+            fi
+            if [[ -n "${RUN_RESULTS[$opt_id,msg_rate]:-}" ]]; then
+                opt_max_noloss="${RUN_RESULTS[$opt_id,msg_rate]}"
+            fi
+            stress_id=$((stress_id + 2))
+        done
+
+        if [[ $orig_max_noloss -gt 0 ]] || [[ $opt_max_noloss -gt 0 ]]; then
             echo ""
             echo "  STRESSTEST-ERGEBNIS"
             echo "──────────────────────────────────────────────────────────────"
-            echo "  Original max:   ${RUN_RESULTS[10,msg_rate]:-?} msg/s"
-            echo "  Optimized max:  ${RUN_RESULTS[11,msg_rate]:-?} msg/s"
+            echo "  Max msg/s (Original):   $orig_max_noloss msg/s"
+            echo "  Max msg/s (Optimized):  $opt_max_noloss msg/s"
             echo "══════════════════════════════════════════════════════════════"
         fi
 
