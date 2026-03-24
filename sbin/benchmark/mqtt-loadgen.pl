@@ -130,7 +130,7 @@ exit 0;
 # ===========================================================================
 
 sub run_realistic {
-    LOGINF "Starting realistic mode — 7 device profiles — duration=${duration}s";
+    LOGINF "Starting realistic mode — 7 device profiles — expected ~17.4 msg/s — duration=${duration}s";
 
     # --- Device profiles ---------------------------------------------------
     # Each profile: name, topic, interval (s), payload_sub
@@ -138,7 +138,7 @@ sub run_realistic {
         {
             name     => 'tasmota1',
             topic    => 'benchmark/loadgen/tasmota/sensor1/SENSOR',
-            interval => 0.5,
+            interval => 0.25,
             payload  => sub {
                 return encode_json({
                     Time   => _iso_time(),
@@ -155,7 +155,7 @@ sub run_realistic {
         {
             name     => 'tasmota2',
             topic    => 'benchmark/loadgen/tasmota/sensor2/SENSOR',
-            interval => 0.5,
+            interval => 0.25,
             payload  => sub {
                 return encode_json({
                     Time    => _iso_time(),
@@ -167,7 +167,7 @@ sub run_realistic {
         {
             name     => 'tasmota3',
             topic    => 'benchmark/loadgen/tasmota/sensor3/SENSOR',
-            interval => 0.5,
+            interval => 0.25,
             payload  => sub {
                 return encode_json({
                     Time   => _iso_time(),
@@ -183,7 +183,7 @@ sub run_realistic {
         {
             name     => 'zigbee2mqtt',
             topic    => 'benchmark/loadgen/zigbee2mqtt/lamp1',
-            interval => 2.0,
+            interval => 1.0,
             payload  => sub {
                 return encode_json({
                     state       => (int(rand(2)) ? 'ON' : 'OFF'),
@@ -196,7 +196,7 @@ sub run_realistic {
         {
             name     => 'venus1',
             topic    => 'benchmark/loadgen/venus/battery/Soc',
-            interval => 1.0,
+            interval => 0.5,
             payload  => sub {
                 return encode_json({
                     value     => _rand_f(20, 100, 1),
@@ -207,7 +207,7 @@ sub run_realistic {
         {
             name     => 'venus2',
             topic    => 'benchmark/loadgen/venus/system/Ac/ConsumptionOnInput/L1/Power',
-            interval => 1.0,
+            interval => 0.5,
             payload  => sub {
                 return encode_json({
                     value     => _rand_f(0, 5000, 1),
@@ -218,7 +218,7 @@ sub run_realistic {
         {
             name     => 'shelly1',
             topic    => 'benchmark/loadgen/shelly/relay1/status',
-            interval => 5.0,
+            interval => 2.5,
             payload  => sub {
                 return encode_json({
                     ison   => \1,
