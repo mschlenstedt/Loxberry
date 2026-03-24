@@ -16,9 +16,15 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LBHOMEDIR="${LBHOMEDIR:-/opt/loxberry}"
+
+# Source LoxBerry env if available
+if [[ -f "${LBHOMEDIR}/libs/bash/loxberry_system.sh" ]]; then
+    source "${LBHOMEDIR}/libs/bash/loxberry_system.sh"
+fi
+
 BENCHMARK_DIR="${LBHOMEDIR}/log/plugins/benchmark"
 RESULTS_DIR="${BENCHMARK_DIR}/results"
-DATA_DIR="${LBHOMEDIR}/data/plugins/benchmark/results"
+DATA_DIR="${LBPDATA:-${LBHOMEDIR}/data/plugins/benchmark}/benchmark/results"
 TIMESTAMP=$(date +%Y%m%d_%H%M)
 DURATION=60
 DRY_RUN=0
@@ -705,12 +711,21 @@ generate_report() {
 # Cleanup on exit
 # ---------------------------------------------------------------------------
 
+ORIGINAL_GW_RESTORED=0
+
 cleanup() {
     log_info "Cleaning up..."
     # Kill background processes if still running
     [[ -n "$COLLECTOR_PID" ]] && kill "$COLLECTOR_PID" 2>/dev/null || true
     [[ -n "$LOADGEN_PID" ]] && kill "$LOADGEN_PID" 2>/dev/null || true
-    stop_gateway
+    # Only stop the benchmarkable gateway; skip if original has already been restored
+    if [[ "$ORIGINAL_GW_RESTORED" -eq 0 ]]; then
+        stop_gateway
+    else
+        # Just clean up shared memory; original gateway is already running
+        rm -f /dev/shm/bench_* 2>/dev/null || true
+        GW_PID=""
+    fi
     log_info "Cleanup complete."
 }
 
@@ -871,5 +886,13 @@ done
 # ---------------------------------------------------------------------------
 
 generate_report
+
+# Restore original gateway
+echo ""
+echo "  Restoring original gateway..."
+stop_gateway
+perl "$ORIGINAL_GW" &
+ORIGINAL_GW_RESTORED=1
+echo "  Original gateway restarted (PID $!)"
 
 log_info "Benchmark complete. Results: ${RESULTS_DIR}/${TIMESTAMP}/"
