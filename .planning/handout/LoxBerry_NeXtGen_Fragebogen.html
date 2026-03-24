@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>LoxBerry NeXtGen — Fragebogen</title>
+<style>
+  @page { margin: 18mm 15mm; size: A4; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: #1a1a1a; padding: 0; }
+
+  .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #2563eb; }
+  .header h1 { font-size: 20pt; color: #1e3a5f; margin-bottom: 4px; }
+  .header .subtitle { font-size: 11pt; color: #555; }
+  .header .meta { font-size: 9pt; color: #888; margin-top: 8px; }
+
+  .intro { background: #f0f4ff; border-left: 4px solid #2563eb; padding: 10px 14px; margin-bottom: 20px; font-size: 10pt; }
+
+  .section { margin-bottom: 18px; page-break-inside: avoid; }
+  .section-header { background: #1e3a5f; color: white; padding: 6px 12px; font-size: 11pt; font-weight: 600; margin-bottom: 10px; border-radius: 3px; }
+  .section-header span.badge { background: #2563eb; padding: 2px 8px; border-radius: 10px; font-size: 9pt; margin-left: 8px; }
+
+  .question { margin-bottom: 14px; padding-left: 8px; }
+  .question-label { font-weight: 600; font-size: 10.5pt; margin-bottom: 5px; color: #1e3a5f; }
+  .question-context { font-size: 9pt; color: #666; margin-bottom: 5px; font-style: italic; }
+
+  .options { list-style: none; padding: 0; }
+  .options li { padding: 2px 0 2px 0; font-size: 10pt; }
+  .options li::before { content: "\2610"; margin-right: 8px; font-size: 12pt; }
+
+  .scale { display: flex; gap: 15px; margin-top: 3px; }
+  .scale span { font-size: 10pt; }
+  .scale span::before { content: "\2610"; margin-right: 4px; font-size: 12pt; }
+
+  .answer-box { border: 1.5px solid #ccc; border-radius: 4px; min-height: 45px; margin-top: 4px; padding: 5px; }
+  .answer-box.large { min-height: 65px; }
+
+  .quick-win-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-top: 5px; }
+  .quick-win-table th { background: #e8eef5; padding: 5px 8px; text-align: left; border: 1px solid #ccc; font-size: 9pt; }
+  .quick-win-table td { padding: 5px 8px; border: 1px solid #ccc; vertical-align: top; }
+  .quick-win-table td:nth-child(3) { width: 80px; text-align: center; font-size: 9pt; }
+  .quick-win-table td:nth-child(4) { width: 130px; }
+
+  .inline-option { display: inline-block; margin-right: 12px; font-size: 10pt; }
+  .inline-option::before { content: "\2610"; margin-right: 4px; font-size: 12pt; }
+
+  .footer { margin-top: 25px; padding-top: 12px; border-top: 2px solid #2563eb; text-align: center; font-size: 9pt; color: #888; }
+
+  .page-break { page-break-before: always; }
+
+  .tip { background: #fff8e6; border-left: 4px solid #f59e0b; padding: 6px 12px; font-size: 9pt; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>LoxBerry NeXtGen</h1>
+  <div class="subtitle">Fragebogen fuer Core-Entwickler</div>
+  <div class="meta">Von: Strike1988 &nbsp;|&nbsp; Datum: ____________ &nbsp;|&nbsp; Zeitaufwand: ca. 15 Min.</div>
+</div>
+
+<div class="intro">
+  Ich habe ein ausfuehrliches Codebase-Audit (1264 Dateien) durchgefuehrt und einen Modernisierungs-Fahrplan erstellt. Bevor ich PRs einreiche, moechte ich eure Einschaetzung dazu einholen. Ihr muesst nicht jede Frage beantworten — jede Rueckmeldung hilft!
+</div>
+
+<!-- BLOCK A -->
+<div class="section">
+  <div class="section-header">A &mdash; Allgemein <span class="badge">3 Fragen</span></div>
+
+  <div class="question">
+    <div class="question-label">A1. Was sind aktuell eure groessten Schmerzpunkte mit der LoxBerry-Codebase?</div>
+    <div class="answer-box large"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">A2. Gibt es laufende Arbeiten oder geplante Aenderungen, die ich kennen sollte?</div>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">A3. Wie viele aktive Entwickler arbeiten an LoxBerry Core?</div>
+    <span class="inline-option">1</span>
+    <span class="inline-option">2-3</span>
+    <span class="inline-option">4+</span>
+    <br><span style="font-size:9.5pt;color:#666;">Wer macht was? </span>
+    <div class="answer-box"></div>
+  </div>
+</div>
+
+<!-- BLOCK B -->
+<div class="section">
+  <div class="section-header">B &mdash; Quick Wins bewerten <span class="badge">Tabelle</span></div>
+
+  <div class="question-context">Folgende kleine Verbesserungen liegen vor. Bitte bewertet, welche ihr annehmen wuerdet:</div>
+
+  <table class="quick-win-table">
+    <thead>
+      <tr><th>#</th><th>Quick Win</th><th>Annehmen?</th><th>Kommentar</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td><b>MQTT Gateway Performance</b> — 7 Optimierungen (Connection-Pooling, Early-Filtering, Caching). Rueckwaertskompatibel.</td><td>&#9744; Ja<br>&#9744; Nein<br>&#9744; Vllt</td><td></td></tr>
+      <tr><td>2</td><td><b>Shell-Injection Fix</b> — admin.cgi: Passwoerter via STDIN statt Kommandozeile</td><td>&#9744; Ja<br>&#9744; Nein<br>&#9744; Vllt</td><td></td></tr>
+      <tr><td>3</td><td><b>fatalsToBrowser entfernen</b> — 13 CGI-Scripts zeigen keine Stack Traces mehr</td><td>&#9744; Ja<br>&#9744; Nein<br>&#9744; Vllt</td><td></td></tr>
+      <tr><td>4</td><td><b>Debug-Noise gaten</b> — 63 print STDERR hinter $DEBUG-Flag</td><td>&#9744; Ja<br>&#9744; Nein<br>&#9744; Vllt</td><td></td></tr>
+      <tr><td>5</td><td><b>AJAX-Handler mergen</b> — ajax-generic2.php zusammenfuehren</td><td>&#9744; Ja<br>&#9744; Nein<br>&#9744; Vllt</td><td></td></tr>
+      <tr><td>6</td><td><b>jsonrpc Logging</b> — Request/Response nicht mehr ins Error Log</td><td>&#9744; Ja<br>&#9744; Nein<br>&#9744; Vllt</td><td></td></tr>
+      <tr><td>7</td><td><b>Install-Script</b> — 50% weniger apt-Aufrufe, gleiche Schritte</td><td>&#9744; Ja<br>&#9744; Nein<br>&#9744; Vllt</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="question" style="margin-top:10px;">
+    <div class="question-label">B1. Gibt es Quick Wins die ihr auf keinen Fall wollt? Warum?</div>
+    <div class="answer-box"></div>
+  </div>
+</div>
+
+<!-- BLOCK C -->
+<div class="page-break"></div>
+<div class="section">
+  <div class="section-header">C &mdash; Sicherheit <span class="badge">3 Fragen</span></div>
+
+  <div class="tip">Das Audit hat gefunden: Shell Injection in admin.cgi, kein CSRF-Schutz, JsonRPC Denylist statt Allowlist, SSL-Verifizierung deaktiviert, Stack Traces im Browser, Credentials im Error Log.</div>
+
+  <div class="question">
+    <div class="question-label">C1. Wie wichtig ist euch Sicherheitshaertung?</div>
+    <div class="scale">
+      <span>1 (unwichtig)</span>
+      <span>2</span>
+      <span>3</span>
+      <span>4</span>
+      <span>5 (kritisch)</span>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">C2. CSRF-Schutz wuerde einen Plugin-Bypass brauchen (localhost-Aufrufe weiter erlaubt). Akzeptabel?</div>
+    <ul class="options">
+      <li>Ja, mit Bypass-Mechanismus fuer Plugins</li>
+      <li>Nein, zu riskant fuer Plugin-Kompatibilitaet</li>
+      <li>Muesste ich mir genauer anschauen</li>
+    </ul>
+  </div>
+
+  <div class="question">
+    <div class="question-label">C3. SSL/TLS-Verifizierung fuer Miniserver — optional anbieten?</div>
+    <ul class="options">
+      <li>Ja, optional pro Miniserver einstellbar</li>
+      <li>Nein, LAN-intern reicht</li>
+      <li>Sonstiges: _________________________</li>
+    </ul>
+  </div>
+</div>
+
+<!-- BLOCK D -->
+<div class="section">
+  <div class="section-header">D &mdash; UI und Design <span class="badge">4 Fragen</span></div>
+
+  <div class="question">
+    <div class="question-label">D1. Wie wichtig ist euch ein moderneres UI?</div>
+    <div class="scale">
+      <span>1 (unwichtig)</span>
+      <span>2</span>
+      <span>3</span>
+      <span>4</span>
+      <span>5 (kritisch)</span>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">D2. Theme-System (hell, dunkel, klassisch, auto via CSS) — Interesse?</div>
+    <ul class="options">
+      <li>Ja, gute Idee</li>
+      <li>Nice-to-have, nicht prioritaer</li>
+      <li>Nein, unnoetig</li>
+    </ul>
+  </div>
+
+  <div class="question">
+    <div class="question-label">D3. Fordert die Community ein moderneres Design?</div>
+    <ul class="options">
+      <li>Ja, regelmaessig</li>
+      <li>Manchmal</li>
+      <li>Kaum/nie</li>
+    </ul>
+  </div>
+
+  <div class="question">
+    <div class="question-label">D4. jQuery 1.12.4 + jQuery Mobile 1.4.0 sind End-of-Life. Schrittweise Migration auf Vue 3?</div>
+    <ul class="options">
+      <li>Sinnvoll, aber langfristiges Ziel</li>
+      <li>Zu aufwaendig, lieber jQuery updaten</li>
+      <li>Offen — muesste ich mir anschauen</li>
+      <li>Sonstiges: _________________________</li>
+    </ul>
+  </div>
+</div>
+
+<!-- BLOCK E -->
+<div class="section">
+  <div class="section-header">E &mdash; Neue Features + Technische Richtung <span class="badge">5 Fragen</span></div>
+
+  <div class="question">
+    <div class="question-label">E1. Backup-System (Miniserver-Config + Full-Backup, zeitgesteuert, NAS/Cloud) — Nachfrage?</div>
+    <ul class="options">
+      <li>Wird oft gefragt</li>
+      <li>Waere willkommen</li>
+      <li>Braucht niemand</li>
+    </ul>
+    <span style="font-size:9.5pt;color:#666;">Kommentar: </span>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">E2. Gibt es bestehende Backup-Workarounds in der Community?</div>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">E3. Miniserver HTTP API fuer Config-Export — welche Endpoints? Kennt ihr die Doku?</div>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">E4. Python als Backend-Sprache neben Perl/PHP (schrittweise, nicht als Ersatz)?</div>
+    <ul class="options">
+      <li>Gut, Python ist besser wartbar</li>
+      <li>Lieber bei Perl/PHP bleiben</li>
+      <li>Offen, aber muesste gut begruendet sein</li>
+      <li>Sonstiges: _________________________</li>
+    </ul>
+  </div>
+
+  <div class="question">
+    <div class="question-label">E5. Debian 13 Trixie — plant ihr das bereits?</div>
+    <ul class="options">
+      <li>Ja, aktiv</li>
+      <li>Geplant, aber noch nicht begonnen</li>
+      <li>Nein, Bookworm reicht erstmal</li>
+    </ul>
+  </div>
+</div>
+
+<!-- BLOCK F -->
+<div class="page-break"></div>
+<div class="section">
+  <div class="section-header">F &mdash; Plugin-Oekosystem <span class="badge">5 Fragen</span></div>
+
+  <div class="question">
+    <div class="question-label">F1. Ungefaehr wie viele aktive Plugins gibt es?</div>
+    <span class="inline-option">&lt; 20</span>
+    <span class="inline-option">20-50</span>
+    <span class="inline-option">50-100</span>
+    <span class="inline-option">100+</span>
+  </div>
+
+  <div class="question">
+    <div class="question-label">F2. Welche Plugins sind die wichtigsten / meistgenutzten?</div>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">F3. Nutzen Plugins aktiv LoxBerry::System_v1.pm?</div>
+    <span class="inline-option">Ja, einige</span>
+    <span class="inline-option">Nein / Weiss nicht</span>
+    <br><span style="font-size:9.5pt;color:#666;">Welche? </span>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">F4. Nutzen Plugins den localhost-Bypass (Satisfy Any in .htaccess)?</div>
+    <span class="inline-option">Ja</span>
+    <span class="inline-option">Nein / Weiss nicht</span>
+    <br><span style="font-size:9.5pt;color:#666;">Welche? </span>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">F5. Welche Plugin-API-Funktionen duerfen auf KEINEN FALL geaendert werden?</div>
+    <div class="answer-box large"></div>
+  </div>
+</div>
+
+<!-- BLOCK G -->
+<div class="section">
+  <div class="section-header">G &mdash; Zusammenarbeit <span class="badge">4 Fragen</span></div>
+
+  <div class="question">
+    <div class="question-label">G1. Wie soll ich PRs einreichen?</div>
+    <ul class="options">
+      <li>Einzeln pro Fix (1 PR = 1 Thema)</li>
+      <li>Gesammelt nach Kategorie</li>
+      <li>Sonstiges: _________________________</li>
+    </ul>
+  </div>
+
+  <div class="question">
+    <div class="question-label">G2. Wer reviewed und merged PRs?</div>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">G3. Gibt es ein Test-/Staging-System?</div>
+    <span class="inline-option">Ja</span>
+    <span class="inline-option">Nein, lokal getestet</span>
+    <br><span style="font-size:9.5pt;color:#666;">Falls ja, welches? </span>
+    <div class="answer-box"></div>
+  </div>
+
+  <div class="question">
+    <div class="question-label">G4. Bester Kommunikationskanal fuer Rueckfragen?</div>
+    <span class="inline-option">GitHub Issues</span>
+    <span class="inline-option">Forum</span>
+    <span class="inline-option">Telegram</span>
+    <span class="inline-option">Discord</span>
+    <span class="inline-option">Sonstiges: ______</span>
+  </div>
+</div>
+
+<!-- BLOCK H -->
+<div class="section">
+  <div class="section-header">H &mdash; Freie Anmerkungen</div>
+
+  <div class="question">
+    <div class="question-label">Gibt es noch etwas, das ich wissen sollte? Ideen, Bedenken, Wuensche?</div>
+    <div class="answer-box large"></div>
+  </div>
+</div>
+
+<div class="footer">
+  LoxBerry NeXtGen &mdash; Modernisierung Proposal &nbsp;|&nbsp; Strike1988 &nbsp;|&nbsp; Basierend auf Codebase-Audit (1264 Dateien)
+  <br>Vielen Dank fuer eure Zeit!
+</div>
+
+</body>
+</html>

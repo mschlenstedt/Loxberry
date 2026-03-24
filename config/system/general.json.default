@@ -5,6 +5,7 @@
       "Sendstatistic" : 1,
       "Startsetup" : "1",
       "Systemloglevel" : "6",
+      "Theme" : "classic",
       "Version" : "3.0.1.3"
    },
    "Healthcheck" : null,
