@@ -8,6 +8,78 @@
 
 Die mqttgateway.pl verbraucht 11,3% CPU dauerhaft auf einer typischen LoxBerry-Installation. Eine optimierte Variante (`mqttgateway_optimized.pl`) existiert mit 7 Fixes. Dieses Benchmark-Tool misst den Impact jeder einzelnen Optimierung isoliert und liefert reproduzierbare Zahlen für das Interview mit den Core-Entwicklern am 08.04.2026.
 
+## LoxBerry-Konformität
+
+Das Benchmark-Tool folgt den LoxBerry-Entwicklungskonventionen (Wissensdatenbank: `D:\Claude_Projekte\LoxberryPlugin_Entwicklung`):
+
+### Logging via LoxBerry::Log
+
+Alle Perl-Scripts nutzen `LoxBerry::Log` statt eigenes Logging:
+
+```perl
+use LoxBerry::Log;
+my $log = LoxBerry::Log->new(
+    name     => 'MQTT Benchmark',
+    filename => "$lbplogdir/mqtt-benchmark.log",
+    append   => 1,
+);
+LOGSTART "Benchmark Run $run_id";
+LOGINF "Starting loadgen at $rate msg/s";
+LOGOK "Run completed: CPU $cpu_avg%, Throughput $throughput msg/s";
+LOGEND;
+```
+
+Log-Levels: 3=Errors+Warnings (Default), 6=Informational, 7=Debug. Konfigurierbar via `--loglevel`.
+
+### Pfade & Datenspeicherung
+
+LoxBerry-konforme Verzeichnisstruktur:
+
+| Zweck | Pfad | Grund |
+|-------|------|-------|
+| Scripts | `$LBHOMEDIR/sbin/benchmark/` | System-Tools unter sbin |
+| Laufzeit-Metriken | `$LBPLOG` (RAM-Disk, tmpfs) | Häufige Writes (500ms), kein SD-Karten-Verschleiß |
+| Ergebnis-CSVs | `$LBPLOG/benchmark/results/` | RAM-Disk, nach Benchmark auf `$LBPDATA` sichern |
+| Archiv | `$LBPDATA/benchmark/results/` | Persistente Kopie auf SD-Karte |
+| Shared-Memory | `/dev/shm/bench_*` | Atomare Counter, Latenz-Log (wie Gateway selbst) |
+
+### Atomic Writes
+
+Alle Dateischreibvorgänge nutzen das LoxBerry-Pattern `.tmp` → `move()`:
+
+```perl
+use File::Copy qw(move);
+open(my $fh, ">", "$file.tmp") or die;
+print $fh $data;
+close $fh;
+move("$file.tmp", $file);
+```
+
+Dies gilt für: Metriken-CSV-Samples, Ergebnis-Dateien, Summary-Reports.
+
+### MQTT-Verbindung
+
+Der Loadgen nutzt `LoxBerry::IO::mqtt_connectiondetails()` für Broker-Credentials statt hardcoded `localhost:1883`:
+
+```perl
+use LoxBerry::IO;
+my $creds = LoxBerry::IO::mqtt_connectiondetails();
+# $creds->{brokerhost}, $creds->{brokerport}, $creds->{brokeruser}, $creds->{brokerpass}
+```
+
+Topic-Konvention für Benchmark-Messages: `benchmark/loadgen/<client>/<sensor>` (eigener Namespace, kollidiert nicht mit echten Geräten).
+
+### Miniserver-Konfiguration auslesen
+
+System-Info Block nutzt die LoxBerry-API statt direktes JSON-Parsing:
+
+```perl
+use LoxBerry::System;
+my %miniservers = LoxBerry::System::get_miniservers();
+my $lbversion   = LoxBerry::System::lbversion();
+my $plugins     = LoxBerry::System::get_plugins();
+```
+
 ## Architektur
 
 ### Ansatz: Hybrid (Shell-Orchestrierung + Perl-Lastgenerator)
@@ -17,12 +89,17 @@ Trennung von Concerns: Bash orchestriert die Testruns (leichtgewichtig), Perl er
 ### Dateien
 
 ```
-/opt/loxberry/sbin/benchmark/
+$LBHOMEDIR/sbin/benchmark/
 ├── mqtt-benchmark.sh              # Orchestrierung: Testruns steuern, Metriken sammeln, Report erzeugen
 ├── mqtt-loadgen.pl                # Lastgenerator: MQTT-Messages mit konfigurierbarer Rate publishen
 ├── mqtt-metric-collector.pl       # Leichtgewichtiger Metriken-Sammler (Perl, nicht Bash)
-├── mqttgateway_benchmarkable.pl   # Optimierte Gateway mit Feature-Flag-Conditionals
-└── /tmp/mqtt-benchmark/results/   # CSV-Output pro Testlauf (beschreibbares Verzeichnis)
+└── mqttgateway_benchmarkable.pl   # Optimierte Gateway mit Feature-Flag-Conditionals
+
+Laufzeit-Daten:
+├── $LBPLOG/benchmark/metrics/     # 500ms-Samples pro Run (RAM-Disk)
+├── $LBPLOG/benchmark/results/     # CSV-Output + Summary (RAM-Disk)
+├── $LBPDATA/benchmark/results/    # Persistente Kopie nach Benchmark-Ende
+└── /dev/shm/bench_*               # Shared-Memory für Counter + Latenz-Log
 ```
 
 ### Ablauf eines Benchmarks
@@ -113,15 +190,16 @@ Vor dem eigentlichen Benchmark führt der Loadgen einen Selbsttest durch: maxima
 
 ### Messung
 
-- Published direkt an lokalen Mosquitto-Broker (`localhost:1883`)
+- Verbindet via `LoxBerry::IO::mqtt_connectiondetails()` zum lokalen Broker
 - Nutzt `Net::MQTT::Simple` (bereits auf LoxBerry vorhanden)
+- Topic-Namespace: `benchmark/loadgen/` (isoliert von echten Geräten)
 - Jede Message bekommt Timestamp im Payload für Latenz-Messung
 
 ## Metriken
 
 ### Metriken-Sammler (`mqtt-metric-collector.pl`)
 
-Ein leichtgewichtiger Perl-Prozess (nicht Bash-Subshells!) der alle 500ms `/proc/[pid]/stat` direkt liest. Erwarteter Overhead: <0,5% CPU auf dem RPi 4. Schreibt Samples in eine temporäre CSV.
+Ein leichtgewichtiger Perl-Prozess (nicht Bash-Subshells!) der alle 500ms `/proc/[pid]/stat` direkt liest. Erwarteter Overhead: <0,5% CPU auf dem RPi 4. Schreibt Samples via Atomic Write (.tmp → move) nach `$LBPLOG/benchmark/metrics/`. Nutzt `LoxBerry::Log` für eigenes Logging.
 
 ### Prozess-Metriken (alle 500ms)
 
@@ -227,25 +305,28 @@ GESAMTSCORE = score_cpu + score_throughput + score_latency + score_loss
 | Info | Quelle |
 |------|--------|
 | Hardware | `/proc/cpuinfo`, `/proc/meminfo` |
-| LoxBerry-Version | `general.json` |
+| LoxBerry-Version | `LoxBerry::System::lbversion()` |
 | Mosquitto | `mosquitto -v` |
-| Miniserver-Config | `general.json` → Miniserver-Sektion |
-| Plugins | `/opt/loxberry/data/system/plugindatabase.json` |
+| Miniserver-Config | `LoxBerry::System::get_miniservers()` |
+| Plugins | `LoxBerry::System::get_plugins()` |
 | System-Last | `uptime`, `free` |
 
 ### CSV-Export
 
-- `/tmp/mqtt-benchmark/results/benchmark_YYYYMMDD_HHMM.csv` — Alle Rohdaten (500ms Samples pro Run)
-- `/tmp/mqtt-benchmark/results/summary_YYYYMMDD_HHMM.csv` — Aggregierte Zusammenfassung aller Runs
+- `$LBPLOG/benchmark/results/benchmark_YYYYMMDD_HHMM.csv` — Alle Rohdaten (500ms Samples pro Run)
+- `$LBPLOG/benchmark/results/summary_YYYYMMDD_HHMM.csv` — Aggregierte Zusammenfassung aller Runs
 
 Jede CSV enthält im Header: Git-Commit-Hash der getesteten Gateway, Kommandozeilen-Flags, CPU-Temperatur Start/Ende.
+
+Nach Benchmark-Ende: automatische Kopie nach `$LBPDATA/benchmark/results/` (persistent, überlebt Reboot).
 
 ## Voraussetzungen
 
 - Perl mit `Net::MQTT::Simple` (bereits auf LoxBerry vorhanden)
+- LoxBerry Perl-Module: `LoxBerry::System`, `LoxBerry::Log`, `LoxBerry::IO`
 - Mosquitto-Broker lokal laufend
 - Zugriff auf `/proc/[pid]/stat` (Standard auf Linux)
-- Schreibzugriff auf `/tmp/mqtt-benchmark/` und `/dev/shm/`
+- Schreibzugriff auf `$LBPLOG`, `$LBPDATA` und `/dev/shm/`
 
 ## Implementierungsvoraussetzung
 
