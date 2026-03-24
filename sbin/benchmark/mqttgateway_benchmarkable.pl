@@ -358,8 +358,8 @@ my %miniservers;
 %miniservers = LoxBerry::System::get_miniservers();
 
 # FIX 2+3: HTTP-Agent und Cache initialisieren
-init_http_ua();
-refresh_ms_cache();
+init_http_ua() if $ENV{BENCH_CONNECTION_POOL};
+refresh_ms_cache() if $ENV{BENCH_MS_CACHE};
 
 # Create monitor to handle config file changes
 my $monitor = File::Monitor->new();
@@ -586,7 +586,7 @@ sub received
 	$mqtt_data_received = 1;
 
 	# Benchmark instrumentation: latency logging
-	bench_log_latency($message);
+	bench_log_latency($message) if index($message, '_bench_ts') >= 0;
 
 	# ================================================================
 	# FIX 1+5: EARLY FILTERING - vor der teuren JSON-Expansion pruefen
@@ -1110,7 +1110,7 @@ sub read_config
 		
 		# FIX 3: Miniserver-Cache aktualisieren bei Config-Reload
 		%miniservers = LoxBerry::System::get_miniservers();
-		refresh_ms_cache();
+		refresh_ms_cache() if $ENV{BENCH_MS_CACHE};
 		
 		# Unsubscribe old topics
 		if($mqtt) {
