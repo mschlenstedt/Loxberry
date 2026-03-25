@@ -13,6 +13,7 @@ Einführung eines CSS-Variable-basierten Design-Systems als Schicht über jQuery
 - Mobile-optimierte Navigation (scrollbare Tabs)
 - Responsive Layouts für alle Bildschirmgrößen
 - Cleaner/moderner Look — mehr Weißraum, feinere Borders, dezentere Schatten
+- Einfach erweiterbare Themes — neues Theme = nur CSS Variables überschreiben, keine eigene Datei mit hunderten Selektoren
 - Rückwärtskompatibilität: bestehende Plugins funktionieren ohne Änderung
 
 ## Constraints
