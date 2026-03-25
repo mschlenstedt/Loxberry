@@ -40,3 +40,15 @@
   --lb-border-color: var(--lb-gray-200);
   --lb-border: 1px solid var(--lb-border-color);
 }
+
+/* === Dark Theme Token Overrides === */
+body.theme-dark {
+  --lb-gray-50: #1e1e2e;
+  --lb-gray-100: #252536;
+  --lb-gray-200: #333350;
+  --lb-gray-300: #444466;
+  --lb-gray-500: #888888;
+  --lb-gray-700: #c0c0c0;
+  --lb-gray-900: #f0f0f0;
+  --lb-border-color: var(--lb-gray-200);
+}
