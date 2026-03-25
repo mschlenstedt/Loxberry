@@ -152,7 +152,12 @@
 	justify-content: center;
 	align-items: center;
 	background-color:#3d3d3d;
-	/* min-height:35px; */
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+}
+.vuenavbarcontainer::-webkit-scrollbar {
+	display: none;
 }
 .vuenavbarelement {
 	flex:1;
@@ -161,9 +166,12 @@
 	color: white !important;
 	font-size: 13px;
 	font-weight: bold;
-	text-align: center;	
+	text-align: center;
 	text-decoration: none;
 	min-height:18px;
+	white-space: nowrap;
+	flex-shrink: 0;
+	min-width: fit-content;
 }
 
 .vuenavbarelement:hover {
