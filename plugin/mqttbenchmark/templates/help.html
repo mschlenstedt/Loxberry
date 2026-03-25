@@ -1,0 +1,25 @@
+<p>The MQTT Gateway Benchmark Plugin measures the performance impact of 7 optimizations
+in the LoxBerry MQTT Gateway (mqttgateway.pl).</p>
+
+<h4>Benchmark Tab</h4>
+<p>Configure test duration, log level, and which test runs to execute.
+Click "Start Benchmark" to begin. The progress bar shows the current run and estimated time remaining.
+A benchmark run takes approximately 20-40 minutes depending on settings.</p>
+
+<h4>Results Tab</h4>
+<p>View results from completed benchmark runs. The overview table shows the overall
+improvement from Original to Optimized. The individual optimizations table shows
+the impact of each fix sorted by score. Use "Download CSV" for raw data.</p>
+
+<h4>Compare Tab</h4>
+<p>Compare two benchmark runs side by side. Useful for measuring improvement
+over time or comparing different configurations.</p>
+
+<h4>Logfiles Tab</h4>
+<p>Standard LoxBerry log viewer for all benchmark-related log files.</p>
+
+<h4>Scoring</h4>
+<p>The score is calculated from CPU usage (30%), HTTP throughput (30%),
+latency (20%), and message loss (20%). A score of 100 = no change,
+higher = better. Star ratings: 5 stars >= 140, 4 stars >= 125,
+3 stars >= 115, 2 stars >= 108.</p>

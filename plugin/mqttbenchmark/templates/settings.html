@@ -1,0 +1,635 @@
+<!-- =====================================================================
+     MQTT Gateway Benchmark Plugin - Main Template
+     Tabs: Benchmark | Results | Compare | Logs
+     ===================================================================== -->
+
+<!-- =====================================================================
+     TAB 1: BENCHMARK
+     ===================================================================== -->
+<TMPL_IF FORM1>
+
+<!-- Settings form -->
+<form method="post" data-ajax="false" name="main_form" id="main_form"
+      action="./index.cgi?form=1">
+    <input type="hidden" name="saveformdata" value="1">
+
+    <TMPL_IF SAVE_OK>
+    <div class="ui-body ui-body-confirm ui-corner-all">
+        <p><TMPL_VAR BENCHMARK.OK_SETTINGS_SAVED></p>
+    </div>
+    </TMPL_IF>
+
+    <div data-role="fieldcontain">
+        <label for="duration"><TMPL_VAR BENCHMARK.LABEL_DURATION></label>
+        <select name="duration" id="duration" data-mini="true">
+            <option value="30" <TMPL_VAR DURATION_30_SEL>><TMPL_VAR BENCHMARK.DURATION_30></option>
+            <option value="60" <TMPL_VAR DURATION_60_SEL>><TMPL_VAR BENCHMARK.DURATION_60></option>
+            <option value="120" <TMPL_VAR DURATION_120_SEL>><TMPL_VAR BENCHMARK.DURATION_120></option>
+        </select>
+    </div>
+
+    <div data-role="fieldcontain">
+        <label for="loglevel"><TMPL_VAR BENCHMARK.LABEL_LOGLEVEL></label>
+        <select name="loglevel" id="loglevel" data-mini="true">
+            <option value="3" <TMPL_VAR LOGLEVEL_3_SEL>><TMPL_VAR BENCHMARK.LOGLEVEL_3></option>
+            <option value="6" <TMPL_VAR LOGLEVEL_6_SEL>><TMPL_VAR BENCHMARK.LOGLEVEL_6></option>
+            <option value="7" <TMPL_VAR LOGLEVEL_7_SEL>><TMPL_VAR BENCHMARK.LOGLEVEL_7></option>
+        </select>
+    </div>
+
+    <div data-role="fieldcontain">
+        <fieldset data-role="controlgroup">
+            <legend><TMPL_VAR BENCHMARK.LABEL_RUNS></legend>
+            <label for="run_realistic">
+                <input type="checkbox" name="run_realistic" id="run_realistic"
+                       <TMPL_VAR RUN_REALISTIC_CHK>>
+                <TMPL_VAR BENCHMARK.CB_REALISTIC>
+            </label>
+            <label for="run_stress">
+                <input type="checkbox" name="run_stress" id="run_stress"
+                       <TMPL_VAR RUN_STRESS_CHK>>
+                <TMPL_VAR BENCHMARK.CB_STRESS>
+            </label>
+        </fieldset>
+    </div>
+
+    <div data-role="fieldcontain">
+        <fieldset data-role="controlgroup">
+            <legend><TMPL_VAR BENCHMARK.LABEL_FIXES></legend>
+            <label for="fix_1">
+                <input type="checkbox" name="fix_1" id="fix_1" <TMPL_VAR FIX_1_CHK>>
+                <TMPL_VAR BENCHMARK.FIX_1>
+            </label>
+            <label for="fix_2">
+                <input type="checkbox" name="fix_2" id="fix_2" <TMPL_VAR FIX_2_CHK>>
+                <TMPL_VAR BENCHMARK.FIX_2>
+            </label>
+            <label for="fix_3">
+                <input type="checkbox" name="fix_3" id="fix_3" <TMPL_VAR FIX_3_CHK>>
+                <TMPL_VAR BENCHMARK.FIX_3>
+            </label>
+            <label for="fix_4">
+                <input type="checkbox" name="fix_4" id="fix_4" <TMPL_VAR FIX_4_CHK>>
+                <TMPL_VAR BENCHMARK.FIX_4>
+            </label>
+            <label for="fix_5">
+                <input type="checkbox" name="fix_5" id="fix_5" <TMPL_VAR FIX_5_CHK>>
+                <TMPL_VAR BENCHMARK.FIX_5>
+            </label>
+            <label for="fix_6">
+                <input type="checkbox" name="fix_6" id="fix_6" <TMPL_VAR FIX_6_CHK>>
+                <TMPL_VAR BENCHMARK.FIX_6>
+            </label>
+            <label for="fix_7">
+                <input type="checkbox" name="fix_7" id="fix_7" <TMPL_VAR FIX_7_CHK>>
+                <TMPL_VAR BENCHMARK.FIX_7>
+            </label>
+        </fieldset>
+    </div>
+
+    <div data-role="fieldcontain">
+        <a id="btn_save" data-role="button" data-inline="true" data-mini="true"
+           data-icon="check" onclick="$('#main_form').submit();">
+            <TMPL_VAR BENCHMARK.BTN_SAVE>
+        </a>
+    </div>
+</form>
+
+<hr>
+
+<!-- Action buttons -->
+<div data-role="fieldcontain">
+    <a id="btn_start" data-role="button" data-inline="true" data-mini="true"
+       data-icon="arrow-r" data-theme="b" href="javascript:startBenchmark();">
+        <TMPL_VAR BENCHMARK.BTN_START>
+    </a>
+    <a id="btn_dryrun" data-role="button" data-inline="true" data-mini="true"
+       data-icon="info" href="javascript:startBenchmark(true);">
+        <TMPL_VAR BENCHMARK.BTN_DRYRUN>
+    </a>
+</div>
+
+<!-- Progress area (hidden by default) -->
+<div id="benchmark_progress" style="display:none;">
+    <h3 id="progress_status"><TMPL_VAR BENCHMARK.STATUS_RUNNING></h3>
+    <div id="progress_run"></div>
+    <div style="background:#eee; border-radius:4px; height:20px; margin:10px 0;">
+        <div id="progress_bar" style="background:#4CAF50; height:100%; border-radius:4px; width:0%; transition:width 0.5s;"></div>
+    </div>
+    <div id="progress_eta"></div>
+    <a id="btn_cancel" data-role="button" data-inline="true" data-mini="true"
+       data-icon="delete" data-theme="e" href="javascript:stopBenchmark();">
+        <TMPL_VAR BENCHMARK.BTN_CANCEL>
+    </a>
+</div>
+
+<script>
+var pollTimer = null;
+
+function startBenchmark(dryrun) {
+    var data = {
+        action: 'start',
+        duration: $('#duration').val(),
+        loglevel: $('#loglevel').val(),
+        runs: '',
+        fixes: ''
+    };
+
+    // Collect runs
+    var runs = [];
+    if ($('#run_realistic').is(':checked')) runs.push('realistic');
+    if ($('#run_stress').is(':checked')) runs.push('stress');
+    data.runs = runs.join(',') || 'realistic,stress';
+
+    // Collect fixes
+    var fixes = [];
+    for (var i = 1; i <= 7; i++) {
+        if ($('#fix_' + i).is(':checked')) fixes.push(i);
+    }
+    data.fixes = fixes.join(',') || '1,2,3,4,5,6,7';
+
+    if (dryrun) {
+        data.action = 'dryrun';
+    }
+
+    $.ajax({
+        url: 'ajax.cgi',
+        type: 'POST',
+        data: data,
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.error) {
+                alert(resp.message);
+                return;
+            }
+            if (!dryrun) {
+                $('#benchmark_progress').show();
+                $('#btn_start').hide();
+                $('#btn_dryrun').hide();
+                pollStatus();
+                pollTimer = setInterval(pollStatus, 2000);
+            }
+        },
+        error: function(xhr, status, err) {
+            alert('Error: ' + err);
+        }
+    });
+}
+
+function stopBenchmark() {
+    $.ajax({
+        url: 'ajax.cgi',
+        type: 'POST',
+        data: { action: 'stop' },
+        dataType: 'json',
+        success: function(resp) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+            $('#benchmark_progress').hide();
+            $('#btn_start').show();
+            $('#btn_dryrun').show();
+        }
+    });
+}
+
+function pollStatus() {
+    $.ajax({
+        url: 'ajax.cgi',
+        type: 'GET',
+        data: { action: 'status' },
+        dataType: 'json',
+        success: function(resp) {
+            if (!resp.running) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+                $('#benchmark_progress').hide();
+                $('#btn_start').show();
+                $('#btn_dryrun').show();
+                return;
+            }
+
+            var pct = 0;
+            if (resp.total_runs > 0) {
+                pct = Math.round((resp.completed_runs.length / resp.total_runs) * 100);
+            }
+            $('#progress_bar').css('width', pct + '%');
+            $('#progress_run').text(
+                'Run ' + (resp.completed_runs.length + 1) + '/' + resp.total_runs + ': ' + resp.run_name
+            );
+
+            // ETA calculation
+            if (resp.started_at && resp.completed_runs.length > 0) {
+                var elapsed = Math.floor(Date.now() / 1000) - resp.started_at;
+                var perRun = elapsed / resp.completed_runs.length;
+                var remaining = Math.round(perRun * (resp.total_runs - resp.completed_runs.length));
+                var mins = Math.floor(remaining / 60);
+                var secs = remaining % 60;
+                $('#progress_eta').text('~' + mins + 'm ' + secs + 's remaining');
+            }
+        }
+    });
+}
+
+// Check status on page load (in case benchmark is already running)
+$(document).ready(function() {
+    $.ajax({
+        url: 'ajax.cgi',
+        type: 'GET',
+        data: { action: 'status' },
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.running) {
+                $('#benchmark_progress').show();
+                $('#btn_start').hide();
+                $('#btn_dryrun').hide();
+                pollStatus();
+                pollTimer = setInterval(pollStatus, 2000);
+            }
+        }
+    });
+});
+</script>
+
+</TMPL_IF>
+
+<!-- =====================================================================
+     TAB 2: RESULTS
+     ===================================================================== -->
+<TMPL_IF FORM2>
+
+<div id="results_container">
+    <div data-role="fieldcontain">
+        <label for="result_select"><TMPL_VAR RESULTS.LABEL_SELECT></label>
+        <select name="result_select" id="result_select" data-mini="true">
+            <option value="">--</option>
+        </select>
+    </div>
+
+    <div id="results_content" style="display:none;">
+
+        <!-- Overall comparison table -->
+        <h3><TMPL_VAR RESULTS.LABEL_OVERVIEW></h3>
+        <table data-role="table" class="ui-responsive" id="tbl_overview">
+            <thead>
+                <tr>
+                    <th><TMPL_VAR RESULTS.TH_METRIC></th>
+                    <th><TMPL_VAR RESULTS.TH_ORIGINAL></th>
+                    <th><TMPL_VAR RESULTS.TH_OPTIMIZED></th>
+                    <th><TMPL_VAR RESULTS.TH_CHANGE></th>
+                </tr>
+            </thead>
+            <tbody id="overview_body">
+            </tbody>
+        </table>
+
+        <!-- Individual optimizations table -->
+        <h3><TMPL_VAR RESULTS.LABEL_INDIVIDUAL></h3>
+        <table data-role="table" class="ui-responsive" id="tbl_individual">
+            <thead>
+                <tr>
+                    <th><TMPL_VAR RESULTS.TH_FIX></th>
+                    <th><TMPL_VAR RESULTS.TH_CPU></th>
+                    <th><TMPL_VAR RESULTS.TH_HTTPRATE></th>
+                    <th><TMPL_VAR RESULTS.TH_SCORE></th>
+                    <th><TMPL_VAR RESULTS.TH_STARS></th>
+                </tr>
+            </thead>
+            <tbody id="individual_body">
+            </tbody>
+        </table>
+
+        <!-- Stress test results -->
+        <div id="stress_section" style="display:none;">
+            <h3><TMPL_VAR RESULTS.LABEL_STRESS></h3>
+            <table data-role="table" class="ui-responsive" id="tbl_stress">
+                <thead>
+                    <tr>
+                        <th>Rate (msg/s)</th>
+                        <th>Original Loss %</th>
+                        <th>Optimized Loss %</th>
+                    </tr>
+                </thead>
+                <tbody id="stress_body">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- System info (collapsible) -->
+        <div data-role="collapsible" data-collapsed="true">
+            <h3><TMPL_VAR RESULTS.LABEL_SYSINFO></h3>
+            <div id="sysinfo_content"></div>
+        </div>
+
+        <!-- CSV download -->
+        <a id="btn_csv" data-role="button" data-inline="true" data-mini="true"
+           data-icon="arrow-d" href="javascript:downloadCSV();">
+            <TMPL_VAR RESULTS.BTN_CSV>
+        </a>
+    </div>
+
+    <div id="results_nodata">
+        <p><TMPL_VAR RESULTS.LABEL_NODATA></p>
+    </div>
+</div>
+
+<script>
+// Load results list on page load
+$(document).ready(function() {
+    $.ajax({
+        url: 'ajax.cgi',
+        type: 'GET',
+        data: { action: 'results' },
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.error) return;
+            var runs = resp.data || [];
+            if (runs.length === 0) {
+                $('#results_nodata').show();
+                return;
+            }
+            $('#results_nodata').hide();
+            var sel = $('#result_select');
+            for (var i = 0; i < runs.length; i++) {
+                // Format timestamp: 20260325_1432 -> 25.03.2026 14:32
+                var ts = runs[i];
+                var label = ts.substring(6,8) + '.' + ts.substring(4,6) + '.'
+                          + ts.substring(0,4) + ' ' + ts.substring(9,11) + ':'
+                          + ts.substring(11,13);
+                sel.append('<option value="' + ts + '">' + label + '</option>');
+            }
+            sel.selectmenu('refresh');
+        }
+    });
+
+    $('#result_select').on('change', function() {
+        var ts = $(this).val();
+        if (!ts) {
+            $('#results_content').hide();
+            return;
+        }
+        loadResult(ts);
+    });
+});
+
+function loadResult(timestamp) {
+    $.ajax({
+        url: 'ajax.cgi',
+        type: 'GET',
+        data: { action: 'result', timestamp: timestamp },
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.error) {
+                alert(resp.message);
+                return;
+            }
+            var d = resp.data;
+            renderOverview(d);
+            renderIndividual(d);
+            renderStress(d);
+            renderSysinfo(d);
+            $('#results_content').show();
+        }
+    });
+}
+
+function renderOverview(d) {
+    var b = d.baseline;
+    var o = d.optimized;
+    var rows = '';
+
+    // CPU
+    var cpuChange = b.cpu > 0 ? ((1 - o.cpu / b.cpu) * 100).toFixed(1) : 0;
+    rows += '<tr><td><TMPL_VAR RESULTS.ROW_CPU></td><td>' + b.cpu + '%</td><td>'
+          + o.cpu + '%</td><td style="color:green">-' + cpuChange + '%</td></tr>';
+
+    // HTTP Rate
+    var tpChange = b.http_rate > 0 ? ((o.http_rate / b.http_rate - 1) * 100).toFixed(1) : 0;
+    rows += '<tr><td><TMPL_VAR RESULTS.ROW_HTTPRATE></td><td>' + b.http_rate + '/s</td><td>'
+          + o.http_rate + '/s</td><td style="color:green">+' + tpChange + '%</td></tr>';
+
+    // Latency p95
+    var latChange = b.latency_p95 > 0 ? ((1 - o.latency_p95 / b.latency_p95) * 100).toFixed(1) : 0;
+    rows += '<tr><td><TMPL_VAR RESULTS.ROW_LATENCY></td><td>' + b.latency_p95 + 'ms</td><td>'
+          + o.latency_p95 + 'ms</td><td style="color:green">-' + latChange + '%</td></tr>';
+
+    // Loss
+    rows += '<tr><td><TMPL_VAR RESULTS.ROW_LOSS></td><td>' + b.loss_pct + '%</td><td>'
+          + o.loss_pct + '%</td><td></td></tr>';
+
+    // Score
+    rows += '<tr><td><strong><TMPL_VAR RESULTS.ROW_SCORE></strong></td><td></td><td></td><td><strong>'
+          + d.score + '</strong></td></tr>';
+
+    $('#overview_body').html(rows);
+}
+
+function renderIndividual(d) {
+    var rows = '';
+    var fixes = d.fixes || [];
+    // Sort by score descending
+    fixes.sort(function(a, b) { return b.score - a.score; });
+
+    for (var i = 0; i < fixes.length; i++) {
+        var f = fixes[i];
+        var stars = '';
+        for (var s = 0; s < f.stars; s++) stars += '\u2605';
+        for (var s = f.stars; s < 5; s++) stars += '\u2606';
+        rows += '<tr><td>' + f.name + '</td><td>' + f.cpu + '%</td><td>'
+              + f.http_rate + '/s</td><td>' + f.score + '</td><td>' + stars + '</td></tr>';
+    }
+    $('#individual_body').html(rows);
+}
+
+function renderStress(d) {
+    if (!d.stress || !d.stress.rates || d.stress.rates.length === 0) {
+        $('#stress_section').hide();
+        return;
+    }
+    var rows = '';
+    var rates = d.stress.rates;
+    for (var i = 0; i < rates.length; i++) {
+        var r = rates[i];
+        rows += '<tr><td>' + r.rate + '</td><td>' + r.original_loss + '%</td><td>'
+              + r.optimized_loss + '%</td></tr>';
+    }
+    rows += '<tr><td><strong>Max HTTP/s</strong></td><td>' + d.stress.original_max
+          + '</td><td>' + d.stress.optimized_max + '</td></tr>';
+    $('#stress_body').html(rows);
+    $('#stress_section').show();
+}
+
+function renderSysinfo(d) {
+    if (!d.system_info) return;
+    var s = d.system_info;
+    var html = '<table>';
+    html += '<tr><td>Hardware</td><td>' + s.hardware + '</td></tr>';
+    html += '<tr><td>OS</td><td>' + s.os + '</td></tr>';
+    html += '<tr><td>LoxBerry</td><td>' + s.loxberry + '</td></tr>';
+    html += '<tr><td>Perl</td><td>' + s.perl + '</td></tr>';
+    html += '<tr><td>Mosquitto</td><td>' + s.mosquitto + '</td></tr>';
+    html += '<tr><td>Miniservers</td><td>' + s.miniservers + '</td></tr>';
+    html += '<tr><td>Plugins</td><td>' + s.plugins + '</td></tr>';
+    html += '</table>';
+    $('#sysinfo_content').html(html);
+}
+
+function downloadCSV() {
+    var ts = $('#result_select').val();
+    if (!ts) return;
+    window.location = 'ajax.cgi?action=csv&timestamp=' + ts;
+}
+</script>
+
+</TMPL_IF>
+
+<!-- =====================================================================
+     TAB 3: COMPARE
+     ===================================================================== -->
+<TMPL_IF FORM3>
+
+<div id="compare_container">
+    <div data-role="fieldcontain">
+        <label for="compare_a"><TMPL_VAR COMPARE.LABEL_RUN_A></label>
+        <select name="compare_a" id="compare_a" data-mini="true">
+            <option value="">--</option>
+        </select>
+    </div>
+
+    <div data-role="fieldcontain">
+        <label for="compare_b"><TMPL_VAR COMPARE.LABEL_RUN_B></label>
+        <select name="compare_b" id="compare_b" data-mini="true">
+            <option value="">--</option>
+        </select>
+    </div>
+
+    <a id="btn_compare" data-role="button" data-inline="true" data-mini="true"
+       data-icon="grid" data-theme="b" href="javascript:runCompare();">
+        <TMPL_VAR COMPARE.BTN_COMPARE>
+    </a>
+
+    <div id="compare_result" style="display:none;">
+        <table data-role="table" class="ui-responsive" id="tbl_compare">
+            <thead>
+                <tr>
+                    <th><TMPL_VAR RESULTS.TH_METRIC></th>
+                    <th id="compare_header_a">A</th>
+                    <th id="compare_header_b">B</th>
+                    <th><TMPL_VAR RESULTS.TH_CHANGE></th>
+                </tr>
+            </thead>
+            <tbody id="compare_body">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: 'ajax.cgi',
+        type: 'GET',
+        data: { action: 'results' },
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.error) return;
+            var runs = resp.data || [];
+            var selA = $('#compare_a');
+            var selB = $('#compare_b');
+            for (var i = 0; i < runs.length; i++) {
+                var ts = runs[i];
+                var label = ts.substring(6,8) + '.' + ts.substring(4,6) + '.'
+                          + ts.substring(0,4) + ' ' + ts.substring(9,11) + ':'
+                          + ts.substring(11,13);
+                selA.append('<option value="' + ts + '">' + label + '</option>');
+                selB.append('<option value="' + ts + '">' + label + '</option>');
+            }
+            selA.selectmenu('refresh');
+            selB.selectmenu('refresh');
+        }
+    });
+});
+
+function runCompare() {
+    var a = $('#compare_a').val();
+    var b = $('#compare_b').val();
+    if (!a || !b) {
+        alert('<TMPL_VAR COMPARE.LABEL_NOSELECTION>');
+        return;
+    }
+
+    $.ajax({
+        url: 'ajax.cgi',
+        type: 'GET',
+        data: { action: 'compare', timestamp_a: a, timestamp_b: b },
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.error) {
+                alert(resp.message);
+                return;
+            }
+            var d = resp.data;
+            renderCompare(d);
+            $('#compare_result').show();
+        }
+    });
+}
+
+function renderCompare(d) {
+    var a = d.a;
+    var b = d.b;
+
+    // Update headers with timestamps
+    var tsA = d.timestamp_a || 'A';
+    var tsB = d.timestamp_b || 'B';
+    $('#compare_header_a').text(tsA.substring(6,8) + '.' + tsA.substring(4,6) + '.' + tsA.substring(0,4));
+    $('#compare_header_b').text(tsB.substring(6,8) + '.' + tsB.substring(4,6) + '.' + tsB.substring(0,4));
+
+    var rows = '';
+
+    // CPU (lower is better)
+    rows += compareRow('<TMPL_VAR RESULTS.ROW_CPU>', a.optimized.cpu, b.optimized.cpu, '%', true);
+
+    // HTTP Rate (higher is better)
+    rows += compareRow('<TMPL_VAR RESULTS.ROW_HTTPRATE>', a.optimized.http_rate, b.optimized.http_rate, '/s', false);
+
+    // Latency (lower is better)
+    rows += compareRow('<TMPL_VAR RESULTS.ROW_LATENCY>', a.optimized.latency_p95, b.optimized.latency_p95, 'ms', true);
+
+    // Score (higher is better)
+    rows += compareRow('<TMPL_VAR RESULTS.ROW_SCORE>', a.score, b.score, '', false);
+
+    $('#compare_body').html(rows);
+}
+
+function compareRow(label, valA, valB, unit, lowerIsBetter) {
+    var diff = valB - valA;
+    var color = '';
+    var diffText = '';
+
+    if (diff !== 0) {
+        var isBetter;
+        if (lowerIsBetter) {
+            isBetter = diff < 0;
+        } else {
+            isBetter = diff > 0;
+        }
+        color = isBetter ? 'color:green' : 'color:red';
+        diffText = (diff > 0 ? '+' : '') + diff.toFixed(1) + unit;
+        diffText += ' (' + (isBetter
+            ? '<TMPL_VAR COMPARE.BETTER>'
+            : '<TMPL_VAR COMPARE.WORSE>') + ')';
+    }
+
+    return '<tr><td>' + label + '</td><td>' + valA + unit + '</td><td>'
+         + valB + unit + '</td><td style="' + color + '">' + diffText + '</td></tr>';
+}
+</script>
+
+</TMPL_IF>
+
+<!-- =====================================================================
+     TAB 99: LOGFILES
+     ===================================================================== -->
+<TMPL_IF FORM99>
+<TMPL_VAR LOGLIST_HTML>
+</TMPL_IF>
