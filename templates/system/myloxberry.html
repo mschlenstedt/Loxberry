@@ -2,37 +2,33 @@
 <TMPL_IF form1>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
 		<input type="hidden" name="saveformdata" value="1">
-		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
-		<div style="display:flex; justify-content: flex-start; align-items: center; flex-wrap:wrap;">
-			<div style="display:flex; justify-content: flex-start; align-items: center; flex-wrap:nowrap;">
-			
-				<div style="margin:10px; padding:10px; text-align:left; ">
-					<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
-					<TMPL_IF ISNOTENGLISH>
-					<br>(Select your language)
-					</TMPL_IF>
-				</div>
-				<div style="margin:10px; padding:10px; ">
-					<TMPL_VAR LANGSELECTOR>
-				</div>
+		<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
+		<div class="lb-form-row">
+			<div class="lb-form-label">
+				<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
+				<TMPL_IF ISNOTENGLISH>
+				<br><small>(Select your language)</small>
+				</TMPL_IF>
 			</div>
-			<div style="display:flex; justify-content: flex-start; align-items: center; flex-wrap:nowrap;">
-				<div style="margin:10px; padding:10px; text-align:left; ">
-					<TMPL_VAR MYLOXBERRY.LABEL_SELECTCOUNTRY>
-				</div>
-				<div style="margin:10px; padding:10px; ">
-					<TMPL_VAR COUNTRYSELECTOR>
-				</div>
+			<div class="lb-form-field">
+				<TMPL_VAR LANGSELECTOR>
 			</div>
 		</div>
-		<p>&nbsp;</p>
+		<div class="lb-form-row">
+			<div class="lb-form-label">
+				<TMPL_VAR MYLOXBERRY.LABEL_SELECTCOUNTRY>
+			</div>
+			<div class="lb-form-field">
+				<TMPL_VAR COUNTRYSELECTOR>
+			</div>
+		</div>
 
-		<div class="wide"><TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME></div>
-		<div style="display:flex; justify-content:flex-start; align-items:center; flex-wrap:wrap; padding:10px;">
-			<div style="margin:10px; padding:10px; text-align:left;">
+		<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME></div>
+		<div class="lb-form-row">
+			<div class="lb-form-label">
 				<TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME>
 			</div>
-			<div style="margin:10px; padding:10px; position:relative;">
+			<div class="lb-form-field">
 				<select name="themeselector" id="themeselector" data-mini="true">
 					<option value="classic">Classic</option>
 					<option value="modern">Modern Flat</option>
@@ -40,40 +36,35 @@
 				</select>
 			</div>
 		</div>
-		<p>&nbsp;</p>
 
-		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
-		<div style="display:flex; flex-wrap:wrap; width:100%; text-align:left; align-items:center; gap:5px;">
-			<div style="padding:10px; min-width:150px;">
+		<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
+		<div class="lb-form-row">
+			<div class="lb-form-label">
 				<TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME>
 			</div>
-			<div style="padding:10px; flex:1; min-width:200px;">
+			<div class="lb-form-field">
 				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>" data-validation-error-msg="<TMPL_VAR MYLOXBERRY.ERR_FRIENDLYNAME>"  data-validation-rule="^([a-zA-Z0-9\#\&\{\}\:\*\[\]\(\)\?\!\_\-\.\|\s\u00C0-\u017F])*$">
 			</div>
-			<div class="hint" style="padding:10px; flex:1; min-width:200px;">
+			<div class="lb-form-help">
 				<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
 			</div>
 		</div>
-		<p>&nbsp;</p>
-		<p>
-		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
-		<div style="display:flex; flex-wrap:wrap; width:100%; text-align:left; align-items:center; gap:5px;">
-			<div style="padding:10px; flex:1; min-width:200px;">
+
+		<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
+		<div class="lb-form-row">
+			<div class="lb-form-field">
 				<fieldset data-role="controlgroup" data-mini="true">
 					<TMPL_VAR SENDSTATISTIC_CHECKBOX>
 				</fieldset>
 			</div>
-			<div class="hint" style="padding:10px; flex:1; min-width:200px;">
+			<div class="lb-form-help">
 				<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
 			</div>
 		</div>
-		<p>&nbsp;</p>
 	</form>
-	<div style="text-align:center;">
-		<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-		</p>
+	<div style="text-align:center; margin-top: var(--lb-space-lg);">
+		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
 	</div>
 	<script>
 		$(document).ready( function ()
