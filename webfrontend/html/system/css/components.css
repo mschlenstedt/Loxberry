@@ -1,0 +1,117 @@
+/* LoxBerry Component Classes (lb-*)
+   New design-system components using CSS Variables.
+   Use these on migrated Core pages. Plugins keep jQuery Mobile. */
+
+/* === Buttons === */
+.lb-btn {
+  display: inline-block;
+  padding: var(--lb-space-sm) var(--lb-space-md);
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  font-family: var(--lb-font);
+  font-size: var(--lb-font-base);
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+.lb-btn:hover {
+  background: var(--lb-gray-200);
+}
+.lb-btn-primary {
+  background: var(--lb-primary);
+  color: white;
+  border-color: var(--lb-primary-hover);
+}
+.lb-btn-primary:hover {
+  background: var(--lb-primary-hover);
+}
+.lb-btn-danger {
+  background: var(--lb-danger);
+  color: white;
+  border-color: var(--lb-danger);
+}
+
+/* === Inputs === */
+.lb-input,
+.lb-select,
+.lb-textarea {
+  width: 100%;
+  padding: var(--lb-space-sm) var(--lb-space-md);
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  font-family: var(--lb-font);
+  font-size: var(--lb-font-base);
+  background: var(--lb-gray-50);
+  color: var(--lb-gray-900);
+  box-sizing: border-box;
+}
+.lb-input:focus,
+.lb-select:focus,
+.lb-textarea:focus {
+  border-color: var(--lb-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+
+/* === Cards === */
+.lb-card {
+  background: var(--lb-gray-50);
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  padding: var(--lb-space-lg);
+}
+
+/* === Section Title === */
+.lb-section-title {
+  font-size: var(--lb-font-lg);
+  font-weight: 600;
+  font-family: var(--lb-font);
+  border-bottom: 2px solid var(--lb-primary);
+  padding-bottom: var(--lb-space-sm);
+  margin-bottom: var(--lb-space-md);
+  color: var(--lb-gray-900);
+}
+
+/* === Form Layout === */
+.lb-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lb-space-md);
+  margin-bottom: var(--lb-space-md);
+}
+.lb-form-label {
+  min-width: 150px;
+  width: 200px;
+  text-align: right;
+  font-weight: 500;
+  color: var(--lb-gray-700);
+}
+.lb-form-field {
+  flex: 1;
+  min-width: 200px;
+}
+.lb-form-help {
+  flex-basis: 100%;
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
+  margin-top: calc(-1 * var(--lb-space-sm));
+}
+
+@media (max-width: 875px) {
+  .lb-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .lb-form-label {
+    text-align: left;
+    width: auto;
+    min-width: auto;
+    font-weight: 600;
+  }
+  .lb-form-field {
+    width: 100%;
+  }
+}
