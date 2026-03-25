@@ -196,9 +196,6 @@
   color: #e0e0e0;
 }
 
-.theme-dark table tr {
-  border-bottom: 1px solid #333350;
-}
 
 .theme-dark .ui-flipswitch {
   background-color: #333350 !important;
