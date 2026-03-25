@@ -1,11 +1,11 @@
 /* LoxBerry Modern Flat Theme
-   Principle: Only override colors/fonts — never touch jQuery Mobile structure
-   (border-radius, padding, margins, display, position) */
+   Colors via CSS Variables from design-tokens.css
+   Only override colors — never touch jQuery Mobile structure */
 
 /* === Global === */
 .theme-modern .ui-page {
-  background-color: #fafafa;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--lb-gray-50);
+  font-family: var(--lb-font);
 }
 
 .theme-modern * {
@@ -15,18 +15,18 @@
 /* === Header === */
 .theme-modern .ui-header .ui-bar-a {
   background: #ffffff;
-  color: #1a1a1a;
-  border-bottom-color: #e5e7eb;
+  color: var(--lb-gray-900);
+  border-bottom-color: var(--lb-gray-200);
 }
 
 .theme-modern .ui-header .ui-bar-a .ui-btn,
 .theme-modern .ui-header .ui-bar-a h1 {
-  color: #1a1a1a;
+  color: var(--lb-gray-900);
   text-shadow: none;
 }
 
 .theme-modern .ui-header .ui-bar-a .ui-btn:hover {
-  color: #6dac20;
+  color: var(--lb-primary);
 }
 
 /* === Buttons — colors only === */
@@ -39,30 +39,30 @@
 
 .theme-modern .ui-btn-active,
 .theme-modern .ui-btn.ui-btn-active {
-  background: #6dac20;
+  background: var(--lb-primary);
   color: white;
-  border-color: #6dac20;
+  border-color: var(--lb-primary);
 }
 
 .theme-modern button[type="submit"],
 .theme-modern .ui-btn-icon-left[data-icon="check"] {
-  background: #6dac20;
+  background: var(--lb-primary);
   color: white;
-  border-color: #5a9418;
+  border-color: var(--lb-primary-hover);
 }
 
 /* === Inputs — colors only === */
 .theme-modern .ui-input-text input:focus,
 .theme-modern .ui-input-search input:focus,
 .theme-modern textarea:focus {
-  border-color: #6dac20;
+  border-color: var(--lb-primary);
   outline: none;
   box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
 }
 
 /* === Content === */
 .theme-modern .ui-content {
-  background: #fafafa;
+  background: var(--lb-gray-50);
 }
 
 .theme-modern .ui-body-a,
@@ -81,12 +81,12 @@
 }
 
 .theme-modern .ui-panel-inner {
-  color: #1a1a1a;
+  color: var(--lb-gray-900);
 }
 
 /* === Side Menu === */
 .theme-modern ul.lb-systemmenu li.lb-nonhover {
-  background-color: #6dac20;
+  background-color: var(--lb-primary);
   color: white !important;
   font-weight: 600;
   font-family: inherit;
@@ -94,17 +94,17 @@
 
 .theme-modern ul.lb-systemmenu li {
   font-family: inherit;
-  color: #1a1a1a !important;
+  color: var(--lb-gray-900) !important;
   background-color: #ffffff;
-  border-bottom-color: #e5e7eb;
+  border-bottom-color: var(--lb-gray-200);
 }
 
 .theme-modern ul.lb-systemmenu a {
-  color: #374151 !important;
+  color: var(--lb-gray-700) !important;
 }
 
 .theme-modern ul.lb-systemmenu li:hover {
-  background-color: #6dac20;
+  background-color: var(--lb-primary);
   color: white !important;
 }
 
@@ -114,27 +114,27 @@
 
 /* === Flipswitch === */
 .theme-modern .ui-flipswitch-active {
-  background-color: #6dac20 !important;
+  background-color: var(--lb-primary) !important;
 }
 
 /* === Section Headers === */
 .theme-modern .wide {
   font-family: inherit;
   font-weight: 600;
-  border-bottom-color: #6dac20;
+  border-bottom-color: var(--lb-primary);
 }
 
 /* === Footer === */
 .theme-modern [data-role="footer"] {
-  border-top-color: #e5e7eb;
+  border-top-color: var(--lb-gray-200);
 }
 
 /* === Text colors === */
 .theme-modern .ui-listview > li,
 .theme-modern .ui-listview > li a {
-  color: #374151;
+  color: var(--lb-gray-700);
 }
 
 .theme-modern table td {
-  color: #374151;
+  color: var(--lb-gray-700);
 }

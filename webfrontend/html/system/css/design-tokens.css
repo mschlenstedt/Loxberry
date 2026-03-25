@@ -52,3 +52,8 @@ body.theme-dark {
   --lb-gray-900: #f0f0f0;
   --lb-border-color: var(--lb-gray-200);
 }
+
+/* === Modern Theme Token Overrides === */
+body.theme-modern {
+  --lb-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
