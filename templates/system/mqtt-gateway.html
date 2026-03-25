@@ -28,7 +28,7 @@
 	<!-- Form SETTINGS -->
 	<form id="form" onsubmit="return false;">
 
-		<div class="wide">MQTT to Miniserver</div>
+		<div class="lb-section-title">MQTT to Miniserver</div>
 		<br>
 
 	<div data-role="fieldcontain">
@@ -65,7 +65,7 @@
 	</div>
 
 	<br>
-	<div class="wide">Miniserver to MQTT</div>
+	<div class="lb-section-title">Miniserver to MQTT</div>
 	<br>
 
 	<div data-role="fieldcontain">
@@ -111,7 +111,7 @@
 	<!-- Form SUBSCRIPTIONS -->
 	<form id="form" onsubmit="return false;">
 
-	<div class="wide">MQTT Subscriptions</div>
+	<div class="lb-section-title">MQTT Subscriptions</div>
 	<p>Subscriptions are the topics of MQTT devices that are relayed to the Miniserver. A # sign symbols a joker in MQTT. Use exactly the topic(s) provided by the device vendor.</p> 
 	<p style="font-size:80%"><i>Advanced feature:</i> Send specific subscriptions to specific Miniservers - after the subscription, use a pipe | symbol followed by a list of Miniserver numbers (from the Miniserver widget), e.g. <span class="mono">shellies/#|2</span> or <span class="mono">shellies/#|2,3</span>. Without pipe, the default Miniserver from the <i>Settings</i> page is used.</p>
 <!-- 	<div data-role="fieldcontain"> -->
@@ -151,7 +151,7 @@
 		</div>
 	</div>
 	<br>
-	<div class="wide">Subscription Filter Expressions (RegEx)</div>
+	<div class="lb-section-title">Subscription Filter Expressions (RegEx)</div>
 	
 	<p>Subscriptions may route a lot of data to the Miniserver, some of them are never required for your logic. Filter expressions are Regular Expressions (RegEx) that filter the <u>JSON expanded</u> data. A filter <b>match</b> is <b>not forwarded</b> to the Miniserver (it's a &laquo;catch-all&raquo; of the <i>Do not forward</i> checkbox). At the stage of the filter, all topic delimiters (<span class="mono">/</span>) are <i>underscores</i> (<span class="mono">_</span>), even with UDP transmission.
 	</p>
@@ -192,7 +192,7 @@ $(function(){
 	<!-- Form CONVERSIONS -->
 	<form id="form" onsubmit="return false;">
 
-	<div class="wide">Text-to-Value conversions</div>
+	<div class="lb-section-title">Text-to-Value conversions</div>
 	<p>MQTT devices often are sending strings that Loxone unfortunately cannot handle. In this field you can create text-to-value conversions. You can assign values to incoming strings, that values are sent to the Miniserver, and can be evaluated e.g. with a Status block.</p> 
 	<p>Booleans (on, off etc.) are already converted, if you have 'Boolean conversion' enabled.</p>
 	<div data-role="fieldcontain">
@@ -267,7 +267,7 @@ $(function(){
 	
 	</style>
 	
-	<div class="wide">Last transmissions to Miniserver</div>
+	<div class="lb-section-title">Last transmissions to Miniserver</div>
 	<p>This page lists the transmissions via the MQTT Gateway to the Miniserver in the last 24 hours. It is refreshed <i>automatically on-the-fly</i> (as long as you have text selected, updating stops).<p>
 	<p>You can copy and paste the 'Virtual Input' names for HTTP transmissions, or create command recognitions from the UDP messages.</p>
 	
@@ -1053,7 +1053,7 @@ $(function(){
 	
 	<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
 	
-	<div class="wide">Transformers</div>
+	<div class="lb-section-title">Transformers</div>
 	<p>Transformers are scripts of any programming language provided by <i>YOURSELF</i> (or shipped with the MQTT Gateway), that stands in the middle of the data transfer, and can transform incoming values to other outgoing values. Currently only <b>UDP Transformers</b> are supported, that modify data from the Miniserver before sending to MQTT.
 	</p>
 	<p class="hint">Example: Loxone sends RGB colors as combined 0-100% value, but devices require three seperate 0-255 values. An UDP Transformer can archive this.</p> 
@@ -1125,7 +1125,7 @@ $(function() {
 <TMPL_IF FORM_LOGS>
 	<!-- Form LOGS -->
 
-	<div class="wide">Logfiles</div>
+	<div class="lb-section-title">Logfiles</div>
 	<TMPL_VAR loglist_html>
 	
 	<div data-role='collapsible' id='coll_package_mosquitto' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>

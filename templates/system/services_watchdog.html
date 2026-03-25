@@ -6,173 +6,153 @@
 <BR>
 
 <STYLE>
-	.lb_flex-item 
-	{	
+	.lb-form-field
+	{
 		min-width	:350px;
 		width		:350px;
 		max-width	:350px;
 		flex-wrap	:nowrap;
-		margin-top	:-10px;  
+		margin-top	:-10px;
 	}
-	.lb_flex-item-label
+	.lb-form-label
 	{
 		min-width	:150px;
 		position	:relative;
 		margin-left	:10px;
 	}
-	.lb_flex-item-help 
+	.lb-form-help
 	{
 		min-width	:100px;
 		width		:100%;
 		position	:relative;
 		margin-left	:10px;
-		margin-top	:-10px;  
+		margin-top	:-10px;
 	}
 </STYLE>
 
 <FORM id="main_form" method="post" data-ajax="false"> 
 <INPUT id="saveformdata" name="saveformdata" type="hidden" value="1">
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label" ><TMPL_VAR SERVICES.LABEL_STARTWATCHDOG_SH></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<label><input type="checkbox" id="Watchdog_Enable" name="Watchdog_Enable" value="1"><TMPL_VAR SERVICES.LABEL_STARTWATCHDOG></label>
 	</DIV>
-	<DIV	class="lb_flex-item-help">
+	<DIV	class="lb-form-help">
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label" ><TMPL_VAR SERVICES.LABEL_STARTLOGGING_SH></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<label><input type="checkbox" id="Watchdog_Logging" name="Watchdog_Logging" value="1"><TMPL_VAR SERVICES.LABEL_STARTLOGGING></label>
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_LOGGING>
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Ping"><TMPL_VAR SERVICES.LABEL_PING></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<input width="100%" value="" id="Watchdog_Ping" name="Watchdog_Ping" type="text" class="textfield" 
 		data-validation-rule="special:hostname_or_ipaddr" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_PING>">
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_PING>
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Maxload1"><TMPL_VAR SERVICES.LABEL_MAXLOAD1></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<input width="100%" value="" id="Watchdog_Maxload1" name="Watchdog_Maxload1" type="text" class="textfield" 
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_MAXLOAD1>
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Maxload5"><TMPL_VAR SERVICES.LABEL_MAXLOAD5></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<input width="100%" value="" id="Watchdog_Maxload5" name="Watchdog_Maxload5" type="text" class="textfield" 
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_MAXLOAD5>
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Maxload15"><TMPL_VAR SERVICES.LABEL_MAXLOAD15></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<input width="100%" value="" id="Watchdog_Maxload15" name="Watchdog_Maxload15" type="text" class="textfield" 
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_MAXLOAD15>
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Minmem"><TMPL_VAR SERVICES.LABEL_MINMEM></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<input width="30%" value="" id="Watchdog_Minmem" name="Watchdog_Minmem" type="text" class="textfield"
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MINMEM>">
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_MINMEM>
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Maxtemp"><TMPL_VAR SERVICES.LABEL_MAXTEMP></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<input width="30%" value="" id="Watchdog_Maxtemp" name="Watchdog_Maxtemp" type="text" class="textfield"
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXTEMP>">
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_MAXTEMP>
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Tempsensor"><TMPL_VAR SERVICES.LABEL_TEMPSENSOR></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<input width="100%" value="" id="Watchdog_Tempsensor" name="Watchdog_Tempsensor" type="text" class="textfield">
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_TEMPSENSOR>
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
-<DIV	class="lb_flex-container">
-	<DIV	class="lb_flex-item-spacer"></DIV>
-	<DIV	class="lb_flex-item-label">
+<DIV	class="lb-form-row">
+	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
 			for="Watchdog_Temperature"><TMPL_VAR SERVICES.LABEL_TEMPERATURE></LABEL>
 	</DIV>
-	<DIV	class="lb_flex-item">
+	<DIV	class="lb-form-field">
 		<TMPL_VAR TEMPERATURE> &deg;C
 	</DIV>
-	<DIV	class="lb_flex-item-help hint">
+	<DIV	class="lb-form-help hint">
 	</DIV>
-	<DIV	class="lb_flex-item-spacer"></DIV>
 </DIV>
 
 </FORM>

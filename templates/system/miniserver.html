@@ -34,7 +34,7 @@ table.formtable td.hint { width: 100% !important; flex-basis: 100% !important; f
 					<table id="miniservertbl<TMPL_VAR MSNO>" class="formtable" style="border:0; border-spacing:5px; width:100%;">
 						<tr>
 							<td style="width:100%;" colspan="3">
-								<p class="wide"><TMPL_VAR MSNO>. <TMPL_VAR COMMON.PROPERNOUN_MINISERVER>
+								<p class="lb-section-title"><TMPL_VAR MSNO>. <TMPL_VAR COMMON.PROPERNOUN_MINISERVER>
 								<TMPL_IF MSNAME>(<TMPL_VAR MSNAME>)</TMPL_IF></p>
 									<a id="miniserverweb<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="grid" onclick="open_ms_web('<TMPL_VAR MSNO>');"><TMPL_VAR MINISERVER.BUTTON_OPEN_WEBIF></a>
 									<a id="miniserverlog<TMPL_VAR MSNO>" data-role="button" data-mini="true" data-inline="true" data-icon="star" onclick="open_ms_log('<TMPL_VAR MSNO>');" target="miniserver_log"><TMPL_VAR MINISERVER.BUTTON_OPEN_LOG></a>
