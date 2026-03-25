@@ -2,22 +2,36 @@
    New design-system components using CSS Variables.
    Use these on migrated Core pages. Plugins keep jQuery Mobile. */
 
+/* === Global Modern Font === */
+.lb-section-title,
+.lb-form-label,
+.lb-form-help,
+.lb-btn,
+.lb-input,
+.lb-select,
+.lb-textarea {
+  font-family: var(--lb-font);
+  -webkit-font-smoothing: antialiased;
+}
+
 /* === Buttons === */
 .lb-btn {
   display: inline-block;
-  padding: var(--lb-space-sm) var(--lb-space-md);
+  padding: 10px 20px;
   background: var(--lb-gray-100);
   color: var(--lb-gray-900);
   border: var(--lb-border);
   border-radius: var(--lb-radius);
-  font-family: var(--lb-font);
   font-size: var(--lb-font-base);
+  font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   text-align: center;
+  transition: all 0.15s ease;
 }
 .lb-btn:hover {
   background: var(--lb-gray-200);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 .lb-btn-primary {
   background: var(--lb-primary);
@@ -26,6 +40,7 @@
 }
 .lb-btn-primary:hover {
   background: var(--lb-primary-hover);
+  box-shadow: 0 2px 6px rgba(109, 172, 32, 0.3);
 }
 .lb-btn-danger {
   background: var(--lb-danger);
@@ -38,14 +53,14 @@
 .lb-select,
 .lb-textarea {
   width: 100%;
-  padding: var(--lb-space-sm) var(--lb-space-md);
+  padding: 10px 14px;
   border: var(--lb-border);
   border-radius: var(--lb-radius);
-  font-family: var(--lb-font);
   font-size: var(--lb-font-base);
-  background: var(--lb-gray-50);
+  background: white;
   color: var(--lb-gray-900);
   box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .lb-input:focus,
 .lb-select:focus,
@@ -57,20 +72,22 @@
 
 /* === Cards === */
 .lb-card {
-  background: var(--lb-gray-50);
+  background: white;
   border: var(--lb-border);
-  border-radius: var(--lb-radius);
+  border-radius: 8px;
   padding: var(--lb-space-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
 /* === Section Title === */
 .lb-section-title {
-  font-size: var(--lb-font-lg);
+  font-size: 1.15rem;
   font-weight: 600;
-  font-family: var(--lb-font);
+  letter-spacing: 0.01em;
   border-bottom: 2px solid var(--lb-primary);
-  padding-bottom: var(--lb-space-sm);
-  margin-bottom: var(--lb-space-md);
+  padding-bottom: 10px;
+  margin-top: var(--lb-space-lg);
+  margin-bottom: var(--lb-space-lg);
   color: var(--lb-gray-900);
 }
 
@@ -80,14 +97,17 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--lb-space-md);
-  margin-bottom: var(--lb-space-md);
+  margin-bottom: var(--lb-space-lg);
+  padding: var(--lb-space-sm) 0;
 }
 .lb-form-label {
   min-width: 150px;
   width: 200px;
   text-align: right;
   font-weight: 500;
+  font-size: var(--lb-font-sm);
   color: var(--lb-gray-700);
+  line-height: 1.4;
 }
 .lb-form-field {
   flex: 1;
@@ -95,9 +115,11 @@
 }
 .lb-form-help {
   flex-basis: 100%;
-  font-size: var(--lb-font-sm);
+  font-size: 0.8rem;
   color: var(--lb-gray-500);
   margin-top: calc(-1 * var(--lb-space-sm));
+  line-height: 1.5;
+  padding-left: 216px;
 }
 
 @media (max-width: 875px) {
@@ -110,8 +132,12 @@
     width: auto;
     min-width: auto;
     font-weight: 600;
+    margin-bottom: 2px;
   }
   .lb-form-field {
     width: 100%;
+  }
+  .lb-form-help {
+    padding-left: 0;
   }
 }
