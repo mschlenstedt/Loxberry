@@ -4,6 +4,14 @@ config/system/general.json
 config/system/mail.cfg
 config/system/mail.json
 
+# Planning and project files
+.planning/
+vorarbeit/
+Beispiel plugins/
+DECISIONS.md
+docs/superpowers/
+.superpowers/
+
 # Plugins at all
 config/plugins/**
 data/plugins/**
