@@ -1,25 +1,125 @@
-<p>The MQTT Gateway Benchmark Plugin measures the performance impact of 7 optimizations
-in the LoxBerry MQTT Gateway (mqttgateway.pl).</p>
+<h2>MQTT Gateway Benchmark Plugin</h2>
 
-<h4>Benchmark Tab</h4>
-<p>Configure test duration, log level, and which test runs to execute.
-Click "Start Benchmark" to begin. The progress bar shows the current run and estimated time remaining.
-A benchmark run takes approximately 20-40 minutes depending on settings.</p>
+<p>Dieses Plugin misst die Performance der LoxBerry MQTT Gateway (<code>mqttgateway.pl</code>) und zeigt,
+welche der 7 Optimierungen wie viel bringen. Die Ergebnisse helfen bei der Entscheidung,
+welche Verbesserungen in die offizielle Gateway einfliessen sollten.</p>
 
-<h4>Results Tab</h4>
-<p>View results from completed benchmark runs. The overview table shows the overall
-improvement from Original to Optimized. The individual optimizations table shows
-the impact of each fix sorted by score. Use "Download CSV" for raw data.</p>
+<hr>
 
-<h4>Compare Tab</h4>
-<p>Compare two benchmark runs side by side. Useful for measuring improvement
-over time or comparing different configurations.</p>
+<h3>Was wird gemessen?</h3>
 
-<h4>Logfiles Tab</h4>
-<p>Standard LoxBerry log viewer for all benchmark-related log files.</p>
+<p>Der Benchmark vergleicht die <b>Original-Gateway</b> mit einer <b>optimierten Variante</b>,
+die 7 einzeln schaltbare Verbesserungen enthaelt:</p>
 
-<h4>Scoring</h4>
-<p>The score is calculated from CPU usage (30%), HTTP throughput (30%),
-latency (20%), and message loss (20%). A score of 100 = no change,
-higher = better. Star ratings: 5 stars >= 140, 4 stars >= 125,
-3 stars >= 115, 2 stars >= 108.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>#</th><th>Optimierung</th><th>Was sie macht</th><th>Erwarteter Impact</th></tr>
+<tr><td>1</td><td><b>Early Filter</b></td><td>Filtert unerwuenschte Topics <i>bevor</i> die teure JSON-Expansion stattfindet</td><td>Hoch (CPU -30-40%)</td></tr>
+<tr><td>2</td><td><b>Connection Pool</b></td><td>HTTP-Verbindungen zum Miniserver werden wiederverwendet statt pro Nachricht neu aufgebaut</td><td>Hoch (Latenz -50%)</td></tr>
+<tr><td>3</td><td><b>Miniserver Cache</b></td><td>Miniserver-Konfiguration wird gecacht statt bei jedem HTTP-Call neu gelesen</td><td>Hoch (CPU -10-15%)</td></tr>
+<tr><td>4</td><td><b>Precompiled Regex</b></td><td>Regulaere Ausdruecke fuer Subscription-Matching werden einmal kompiliert statt bei jeder Nachricht</td><td>Mittel (CPU -5-10%)</td></tr>
+<tr><td>5</td><td><b>Own Topic Filter</b></td><td>Gateway-eigene Monitoring-Topics (pollms, keepalive etc.) werden frueh erkannt und uebersprungen</td><td>Mittel (verhindert 404-Kaskaden)</td></tr>
+<tr><td>6</td><td><b>Flatten Singleton</b></td><td>Das Hash::Flatten-Objekt fuer JSON-Expansion wird einmal erstellt statt pro Nachricht</td><td>Niedrig (CPU -1-2%)</td></tr>
+<tr><td>7</td><td><b>JSON::XS</b></td><td>Verwendet die schnelle C-basierte JSON-Bibliothek statt der langsamen Pure-Perl-Variante</td><td>Niedrig (CPU -2-3%)</td></tr>
+</table>
+
+<hr>
+
+<h3>Tab: Benchmark</h3>
+
+<h4>Einstellungen</h4>
+<ul>
+<li><b>Testdauer:</b> Wie lange jeder einzelne Run dauert (30s/60s/120s). Laengere Dauer = genauere Ergebnisse, aber laengere Gesamtlaufzeit. Empfehlung: <b>60 Sekunden</b>.</li>
+<li><b>Log-Level:</b> Detailgrad der Protokollierung. <b>6 (Info)</b> fuer normale Nutzung, <b>7 (Debug)</b> bei Problemen.</li>
+<li><b>Testreihen:</b>
+  <ul>
+  <li><b>Realistische Last:</b> Simuliert 7 typische MQTT-Geraete (Tasmota, Zigbee2MQTT, Venus, Shelly) mit ~17 Nachrichten/Sekunde. Testet die Gateway unter realen Bedingungen.</li>
+  <li><b>Stresstest:</b> Erhoehte Nachrichtenraten (10 bis 500 msg/s) um die Belastungsgrenze zu finden.</li>
+  </ul>
+</li>
+<li><b>Optimierungen:</b> Standardmaessig werden alle 7 Optimierungen getestet. Sie koennen einzelne abwaehlen, um den Benchmark zu verkuerzen.</li>
+</ul>
+
+<h4>Benchmark starten</h4>
+<ol>
+<li>Einstellungen konfigurieren und <b>"Einstellungen speichern"</b> klicken</li>
+<li>Auf <b>"Benchmark starten"</b> klicken</li>
+<li>Der Fortschrittsbalken zeigt den aktuellen Run und die geschaetzte Restzeit</li>
+<li>Ein voller Benchmark (alle Runs, 60s Dauer) dauert ca. <b>20-25 Minuten</b></li>
+<li>Der Benchmark kann jederzeit mit <b>"Abbrechen"</b> gestoppt werden</li>
+</ol>
+
+<p><b>Wichtig:</b> Waehrend des Benchmarks wird die produktive MQTT Gateway gestoppt und durch die Benchmark-Variante ersetzt.
+MQTT-Nachrichten werden in dieser Zeit nicht an den Miniserver weitergeleitet.
+Nach Abschluss wird die Original-Gateway automatisch wieder gestartet.</p>
+
+<h4>Dry Run</h4>
+<p>Klicken Sie auf <b>"Dry Run"</b> um die geplante Testmatrix und die geschaetzte Laufzeit anzuzeigen,
+ohne den Benchmark tatsaechlich zu starten. Nuetzlich um die Konfiguration zu pruefen.</p>
+
+<hr>
+
+<h3>Tab: Ergebnisse</h3>
+
+<ol>
+<li>Waehlen Sie einen abgeschlossenen Benchmark-Lauf aus dem Dropdown</li>
+<li><b>Gesamtvergleich:</b> Zeigt Original vs. Optimiert fuer CPU, HTTP-Durchsatz, Latenz und Nachrichtenverlust</li>
+<li><b>Einzelne Optimierungen:</b> Tabelle mit jeder Optimierung, sortiert nach Wirksamkeit (Sterne-Bewertung)</li>
+<li><b>Stresstest-Ergebnis:</b> Maximale Nachrichtenrate ohne Verlust (nur wenn Stresstest ausgefuehrt wurde)</li>
+<li><b>Systemkonfiguration:</b> Aufklappbarer Bereich mit Hardware- und Software-Details zur Reproduzierbarkeit</li>
+<li><b>CSV herunterladen:</b> Exportiert die Rohdaten als CSV-Datei fuer weitere Analyse</li>
+</ol>
+
+<h4>Scoring-System</h4>
+<p>Der <b>Gesamtscore</b> berechnet sich aus vier gewichteten Metriken:</p>
+<ul>
+<li><b>CPU-Auslastung</b> — 30% Gewicht (weniger = besser)</li>
+<li><b>HTTP-Durchsatz</b> — 30% Gewicht (mehr = besser)</li>
+<li><b>Latenz</b> — 20% Gewicht (weniger = besser)</li>
+<li><b>Nachrichtenverlust</b> — 20% Gewicht (weniger = besser)</li>
+</ul>
+<p>Die Original-Gateway hat immer Score = 100. Hoehere Werte = besser.</p>
+
+<table border="1" cellpadding="3" cellspacing="0">
+<tr><th>Sterne</th><th>Score</th><th>Bedeutung</th></tr>
+<tr><td>&#9733;&#9733;&#9733;&#9733;&#9733;</td><td>&ge; 140</td><td>Herausragende Verbesserung</td></tr>
+<tr><td>&#9733;&#9733;&#9733;&#9733;&#9734;</td><td>&ge; 125</td><td>Sehr gute Verbesserung</td></tr>
+<tr><td>&#9733;&#9733;&#9733;&#9734;&#9734;</td><td>&ge; 115</td><td>Gute Verbesserung</td></tr>
+<tr><td>&#9733;&#9733;&#9734;&#9734;&#9734;</td><td>&ge; 108</td><td>Moderate Verbesserung</td></tr>
+<tr><td>&#9733;&#9734;&#9734;&#9734;&#9734;</td><td>&lt; 108</td><td>Geringe Verbesserung</td></tr>
+</table>
+
+<hr>
+
+<h3>Tab: Vergleich</h3>
+
+<p>Vergleichen Sie zwei Benchmark-Laeufe nebeneinander:</p>
+<ol>
+<li>Waehlen Sie <b>Lauf A</b> und <b>Lauf B</b> aus den Dropdowns</li>
+<li>Klicken Sie auf <b>"Vergleichen"</b></li>
+<li><span style="color:green"><b>Gruene</b></span> Werte = Verbesserung, <span style="color:red"><b>Rote</b></span> Werte = Verschlechterung</li>
+</ol>
+<p>Nuetzlich um die Auswirkung von System-Aenderungen zu messen (z.B. LoxBerry-Update, neue Plugins, geaenderte MQTT-Subscriptions).</p>
+
+<hr>
+
+<h3>Tab: Logfiles</h3>
+<p>Standard LoxBerry Log-Viewer. Zeigt alle Benchmark-bezogenen Logdateien.
+Bei Problemen hier den Log-Level auf <b>7 (Debug)</b> stellen und den Benchmark wiederholen.</p>
+
+<hr>
+
+<h3>Voraussetzungen</h3>
+<ul>
+<li>LoxBerry 3.0 oder neuer</li>
+<li>Mosquitto MQTT Broker muss lokal laufen</li>
+<li>Mindestens ein konfigurierter Miniserver</li>
+<li><code>gawk</code> wird automatisch bei der Plugin-Installation installiert</li>
+</ul>
+
+<h3>Hinweise</h3>
+<ul>
+<li>Der Benchmark stoppt die produktive Gateway — fuehren Sie ihn nicht waehrend kritischer Automationen aus</li>
+<li>Auf einem Raspberry Pi 4 dauert ein voller Benchmark ca. 20-25 Minuten</li>
+<li>Ergebnisse werden persistent gespeichert und ueberleben Reboots und Plugin-Updates</li>
+<li>Bei hoher CPU-Temperatur (&gt;75&deg;C) pausiert der Benchmark automatisch bis zur Abkuehlung</li>
+</ul>

@@ -8,6 +8,13 @@
      ===================================================================== -->
 <TMPL_IF FORM1>
 
+<!-- Introduction -->
+<div class="ui-body ui-body-a ui-corner-all" style="margin-bottom:15px;">
+    <p><b><TMPL_VAR BENCHMARK.INTRO_TITLE></b></p>
+    <p><TMPL_VAR BENCHMARK.INTRO_TEXT></p>
+    <p style="color:#c00;"><b><TMPL_VAR BENCHMARK.INTRO_WARNING></b></p>
+</div>
+
 <!-- Settings form -->
 <form method="post" data-ajax="false" name="main_form" id="main_form"
       action="./index.cgi?form=1">
@@ -257,6 +264,11 @@ $(document).ready(function() {
      ===================================================================== -->
 <TMPL_IF FORM2>
 
+<!-- Introduction -->
+<div class="ui-body ui-body-a ui-corner-all" style="margin-bottom:15px;">
+    <p><TMPL_VAR RESULTS.INTRO_TEXT></p>
+</div>
+
 <div id="results_container">
     <div data-role="fieldcontain">
         <label for="result_select"><TMPL_VAR RESULTS.LABEL_SELECT></label>
@@ -486,6 +498,11 @@ function downloadCSV() {
      TAB 3: COMPARE
      ===================================================================== -->
 <TMPL_IF FORM3>
+
+<!-- Introduction -->
+<div class="ui-body ui-body-a ui-corner-all" style="margin-bottom:15px;">
+    <p><TMPL_VAR COMPARE.INTRO_TEXT></p>
+</div>
 
 <div id="compare_container">
     <div data-role="fieldcontain">
