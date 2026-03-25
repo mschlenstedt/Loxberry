@@ -9,12 +9,20 @@ set -euo pipefail
 #
 # Usage:
 #   mqtt-benchmark.sh [--dry-run] [--duration N] [--loglevel N]
+#                     [--status-file PATH] [--json-output]
+#                     [--runs realistic,stress] [--fixes 1,2,3,4,5,6,7]
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Plugin-mode path resolution: use LoxBerry plugin env vars if available
+if [[ -n "${LBPBIN:-}" ]]; then
+    SCRIPT_DIR="$LBPBIN"
+else
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+fi
+
 LBHOMEDIR="${LBHOMEDIR:-/opt/loxberry}"
 
 # Source LoxBerry env if available
@@ -22,9 +30,19 @@ if [[ -f "${LBHOMEDIR}/libs/bash/loxberry_system.sh" ]]; then
     source "${LBHOMEDIR}/libs/bash/loxberry_system.sh"
 fi
 
-BENCHMARK_DIR="${LBHOMEDIR}/log/plugins/benchmark"
-RESULTS_DIR="${BENCHMARK_DIR}/results"
-DATA_DIR="${LBPDATA:-${LBHOMEDIR}/data/plugins/benchmark}/benchmark/results"
+# Results directory: prefer plugin data dir, fall back to log dir
+if [[ -n "${LBPDATA:-}" ]]; then
+    RESULTS_DIR="${LBPDATA}/results"
+elif [[ -n "${LBPLOG:-}" ]]; then
+    RESULTS_DIR="${LBPLOG}/results"
+else
+    BENCHMARK_DIR="${LBHOMEDIR}/log/plugins/benchmark"
+    RESULTS_DIR="${BENCHMARK_DIR}/results"
+fi
+
+# Log directory
+LOG_DIR="${LBPLOG:-${LBHOMEDIR}/log/plugins/benchmark}"
+
 TIMESTAMP=$(date +%Y%m%d_%H%M)
 DURATION=60
 DRY_RUN=0
@@ -40,6 +58,12 @@ LOADGEN_PID=""
 declare -A RUN_RESULTS
 declare -a RUN_ORDER=()
 declare -a STRESS_RUN_IDS=()
+
+# --- New plugin-mode options ---
+STATUS_FILE=""
+JSON_OUTPUT=0
+RUNS_FILTER=""           # e.g. "realistic,stress" or "realistic" or "stress"
+FIXES_FILTER=""          # e.g. "1,2,3" -- which fixes to test
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -59,13 +83,42 @@ while [[ $# -gt 0 ]]; do
             LOGLEVEL="$2"
             shift 2
             ;;
+        --status-file)
+            STATUS_FILE="$2"
+            shift 2
+            ;;
+        --json-output)
+            JSON_OUTPUT=1
+            shift
+            ;;
+        --runs)
+            RUNS_FILTER="$2"
+            shift 2
+            ;;
+        --fixes)
+            FIXES_FILTER="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown option: $1"
             echo "Usage: $0 [--dry-run] [--duration N] [--loglevel N]"
+            echo "       [--status-file PATH] [--json-output]"
+            echo "       [--runs realistic,stress] [--fixes 1,2,3,4,5,6,7]"
             exit 1
             ;;
     esac
 done
+
+# ---------------------------------------------------------------------------
+# Status tracking variables
+# ---------------------------------------------------------------------------
+
+declare -a COMPLETED_RUN_NAMES=()
+CURRENT_RUN_ID=0
+CURRENT_RUN_NAME=""
+CURRENT_RUN_START=0
+BENCHMARK_START_TIME=$(date +%s)
+ACTUAL_TOTAL_RUNS=0
 
 # ---------------------------------------------------------------------------
 # Feature flag definitions
@@ -109,6 +162,88 @@ log_info()  { echo "[$(date '+%H:%M:%S')] INFO  $*"; }
 log_warn()  { echo "[$(date '+%H:%M:%S')] WARN  $*" >&2; }
 log_error() { echo "[$(date '+%H:%M:%S')] ERROR $*" >&2; }
 log_debug() { [[ "$LOGLEVEL" -ge 7 ]] && echo "[$(date '+%H:%M:%S')] DEBUG $*" || true; }
+
+# ---------------------------------------------------------------------------
+# Status file writing (plugin mode)
+# ---------------------------------------------------------------------------
+
+write_status_file() {
+    local is_running="$1"
+    [[ -z "$STATUS_FILE" ]] && return
+
+    local completed_json="["
+    local first=1
+    for name in "${COMPLETED_RUN_NAMES[@]}"; do
+        if [[ $first -eq 0 ]]; then
+            completed_json+=","
+        fi
+        completed_json+="\"${name}\""
+        first=0
+    done
+    completed_json+="]"
+
+    local now
+    now=$(date +%s)
+
+    if [[ "$is_running" == "true" ]]; then
+        cat > "${STATUS_FILE}.tmp" << STATUSEOF
+{
+  "running": true,
+  "pid": $$,
+  "run_id": ${CURRENT_RUN_ID:-0},
+  "run_name": "${CURRENT_RUN_NAME:-}",
+  "total_runs": ${ACTUAL_TOTAL_RUNS:-0},
+  "started_at": ${BENCHMARK_START_TIME:-$now},
+  "current_run_start": ${CURRENT_RUN_START:-$now},
+  "completed_runs": ${completed_json}
+}
+STATUSEOF
+    else
+        cat > "${STATUS_FILE}.tmp" << STATUSEOF
+{
+  "running": false,
+  "pid": $$,
+  "total_runs": ${ACTUAL_TOTAL_RUNS:-0},
+  "started_at": ${BENCHMARK_START_TIME:-$now},
+  "finished_at": $now,
+  "completed_runs": ${completed_json}
+}
+STATUSEOF
+    fi
+
+    mv -f "${STATUS_FILE}.tmp" "$STATUS_FILE" 2>/dev/null || true
+}
+
+# ---------------------------------------------------------------------------
+# Fix filtering (plugin mode)
+# ---------------------------------------------------------------------------
+
+# --fixes filter: determine if a specific fix run should execute
+# Baseline runs 0, 1, and 9 always run. Runs 2-8 are filtered by --fixes.
+# Fix mapping: run 2 = fix 1, run 3 = fix 2, ..., run 8 = fix 7
+should_run_fix() {
+    local run_id="$1"
+
+    # Baseline runs always execute
+    if [[ "$run_id" -le 1 ]] || [[ "$run_id" -eq 9 ]]; then
+        return 0  # true
+    fi
+
+    # If no filter set, run everything
+    if [[ -z "$FIXES_FILTER" ]]; then
+        return 0
+    fi
+
+    # Map run_id to fix_id: run 2 -> fix 1, run 3 -> fix 2, etc.
+    local fix_id=$((run_id - 1))
+
+    # Check if fix_id is in the comma-separated FIXES_FILTER
+    if echo ",$FIXES_FILTER," | grep -q ",$fix_id,"; then
+        return 0  # true
+    fi
+
+    return 1  # false, skip this run
+}
 
 # ---------------------------------------------------------------------------
 # System info collection
@@ -300,6 +435,12 @@ run_benchmark() {
     local run_dir="${RESULTS_DIR}/${TIMESTAMP}/run_${run_id}"
     mkdir -p "$run_dir"
 
+    # Update status tracking
+    CURRENT_RUN_ID="$run_id"
+    CURRENT_RUN_NAME="$run_name"
+    CURRENT_RUN_START=$(date +%s)
+    write_status_file true
+
     log_info "================================================================"
     log_info "RUN $run_id: $run_name"
     log_info "  Gateway:  $(basename "$gw_script")"
@@ -362,6 +503,9 @@ run_benchmark() {
 
     # Step 8: Stop gateway
     stop_gateway
+
+    COMPLETED_RUN_NAMES+=("$run_name")
+    write_status_file true
 
     RUN_ORDER+=("$run_id")
     log_info "Run $run_id complete."
@@ -537,8 +681,8 @@ score_to_stars() {
 # ---------------------------------------------------------------------------
 
 generate_report() {
-    local report_file="${RESULTS_DIR}/${TIMESTAMP}/benchmark_report.txt"
-    local csv_file="${RESULTS_DIR}/${TIMESTAMP}/summary_${TIMESTAMP}.csv"
+    local report_file="${RESULTS_DIR}/${TIMESTAMP}/report.txt"
+    local csv_file="${RESULTS_DIR}/${TIMESTAMP}/summary.csv"
     local git_hash
     git_hash=$(git -C "$SCRIPT_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
@@ -700,11 +844,156 @@ generate_report() {
     } > "$csv_file"
 
     log_info "Summary CSV: $csv_file"
+}
 
-    # Copy results to DATA_DIR for persistence
-    mkdir -p "$DATA_DIR"
-    cp -r "${RESULTS_DIR}/${TIMESTAMP}" "$DATA_DIR/" 2>/dev/null || true
-    log_info "Results copied to $DATA_DIR/${TIMESTAMP}/"
+# ---------------------------------------------------------------------------
+# JSON summary generation (plugin mode)
+# ---------------------------------------------------------------------------
+
+generate_summary_json() {
+    [[ "$JSON_OUTPUT" -eq 0 ]] && return
+
+    local json_file="${RESULTS_DIR}/${TIMESTAMP}/summary.json"
+    log_info "Generating summary.json..."
+
+    local base_cpu="${RUN_RESULTS[0_cpu]:-0}"
+    local base_rss="${RUN_RESULTS[0_rss]:-0}"
+    local base_tp="${RUN_RESULTS[0_http_rate]:-0}"
+    local base_p50="${RUN_RESULTS[0_p50]:-0}"
+    local base_p95="${RUN_RESULTS[0_p95]:-0}"
+    local base_loss="${RUN_RESULTS[0_loss_pct]:-0}"
+
+    local opt_cpu="${RUN_RESULTS[9_cpu]:-0}"
+    local opt_rss="${RUN_RESULTS[9_rss]:-0}"
+    local opt_tp="${RUN_RESULTS[9_http_rate]:-0}"
+    local opt_p50="${RUN_RESULTS[9_p50]:-0}"
+    local opt_p95="${RUN_RESULTS[9_p95]:-0}"
+    local opt_loss="${RUN_RESULTS[9_loss_pct]:-0}"
+
+    local overall_score
+    overall_score=$(calc_score "$base_cpu" "$opt_cpu" "$base_tp" "$opt_tp" "$base_p95" "$opt_p95" "$base_loss" "$opt_loss")
+
+    # Collect system info fields
+    local hw_model os_name lb_version perl_version mosquitto_version ms_count plugin_count
+    hw_model=$( [[ -r /proc/device-tree/model ]] && tr -d '\0' < /proc/device-tree/model || echo "unknown" )
+    os_name=$( [[ -r /etc/os-release ]] && (. /etc/os-release && echo "$PRETTY_NAME") || echo "unknown" )
+    lb_version=$(perl -e 'use LoxBerry::System; print LoxBerry::System::lbversion();' 2>/dev/null || echo "unknown")
+    perl_version=$(perl -e 'print $^V;' 2>/dev/null || echo "unknown")
+    mosquitto_version=$(mosquitto -h 2>&1 | head -1 | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
+    ms_count=$(perl -e 'use LoxBerry::System; my %ms = LoxBerry::System::get_miniservers(); print scalar keys %ms;' 2>/dev/null || echo "0")
+    plugin_count=$(perl -e 'use LoxBerry::System; my @p = LoxBerry::System::get_plugins(); print scalar @p;' 2>/dev/null || echo "0")
+    local mem_total
+    mem_total=$( [[ -r /proc/meminfo ]] && awk '/MemTotal/{printf "%.0f MB", $2/1024}' /proc/meminfo || echo "unknown" )
+
+    # Build fixes array JSON
+    local fixes_json="["
+    local fixes_first=1
+    local ind_base_cpu="${RUN_RESULTS[1_cpu]:-$base_cpu}"
+    local ind_base_tp="${RUN_RESULTS[1_http_rate]:-$base_tp}"
+    local ind_base_p95="${RUN_RESULTS[1_p95]:-$base_p95}"
+    local ind_base_loss="${RUN_RESULTS[1_loss_pct]:-$base_loss}"
+
+    for i in "${!FLAG_NAMES[@]}"; do
+        local rid=$((i + 2))
+        local fix_id=$((i + 1))
+        # Only include if this run was executed
+        [[ -z "${RUN_RESULTS[${rid}_name]:-}" ]] && continue
+
+        local r_cpu="${RUN_RESULTS[${rid}_cpu]:-0}"
+        local r_tp="${RUN_RESULTS[${rid}_http_rate]:-0}"
+        local r_p50="${RUN_RESULTS[${rid}_p50]:-0}"
+        local r_p95="${RUN_RESULTS[${rid}_p95]:-0}"
+        local r_loss="${RUN_RESULTS[${rid}_loss_pct]:-0}"
+
+        local r_score
+        r_score=$(calc_score "$ind_base_cpu" "$r_cpu" "$ind_base_tp" "$r_tp" "$ind_base_p95" "$r_p95" "$ind_base_loss" "$r_loss")
+
+        local r_stars_num
+        r_stars_num=$(perl -e '
+            my $s = $ARGV[0];
+            if    ($s >= 140) { print 5 }
+            elsif ($s >= 125) { print 4 }
+            elsif ($s >= 115) { print 3 }
+            elsif ($s >= 108) { print 2 }
+            else              { print 1 }
+        ' "$r_score")
+
+        if [[ $fixes_first -eq 0 ]]; then
+            fixes_json+=","
+        fi
+        fixes_json+="{\"id\":${fix_id},\"name\":\"${FLAG_NAMES[$i]}\",\"flag\":\"${FLAG_VALUES[$i]%%=*}\",\"cpu\":${r_cpu},\"http_rate\":${r_tp},\"latency_p50\":${r_p50},\"score\":${r_score},\"stars\":${r_stars_num}}"
+        fixes_first=0
+    done
+    fixes_json+="]"
+
+    # Build stress JSON
+    local stress_json="{}"
+    if [[ ${#STRESS_RUN_IDS[@]} -gt 0 ]]; then
+        # Find max rates for original (even IDs) and optimized (odd IDs)
+        local orig_max=0
+        local opt_max=0
+        local rates_json="["
+        local rates_first=1
+
+        # Process stress pairs
+        local prev_sid=""
+        for sid in "${STRESS_RUN_IDS[@]}"; do
+            local s_tp="${RUN_RESULTS[${sid}_http_rate]:-0}"
+            local s_loss="${RUN_RESULTS[${sid}_loss_pct]:-0}"
+            local s_name="${RUN_RESULTS[${sid}_name]:-}"
+
+            if echo "$s_name" | grep -q "(original)"; then
+                local s_rate
+                s_rate=$(echo "$s_name" | grep -oP '\d+(?=msg/s)' || echo "0")
+                orig_max=$(perl -e "print $s_tp > $orig_max ? $s_tp : $orig_max")
+                prev_sid="$sid"
+            elif echo "$s_name" | grep -q "(optimized)" && [[ -n "$prev_sid" ]]; then
+                local orig_loss="${RUN_RESULTS[${prev_sid}_loss_pct]:-0}"
+                s_rate=$(echo "$s_name" | grep -oP '\d+(?=msg/s)' || echo "0")
+                opt_max=$(perl -e "print $s_tp > $opt_max ? $s_tp : $opt_max")
+
+                if [[ $rates_first -eq 0 ]]; then
+                    rates_json+=","
+                fi
+                rates_json+="{\"rate\":${s_rate},\"original_loss\":${orig_loss},\"optimized_loss\":${s_loss}}"
+                rates_first=0
+                prev_sid=""
+            fi
+        done
+        rates_json+="]"
+
+        stress_json="{\"original_max\":${orig_max},\"optimized_max\":${opt_max},\"rates\":${rates_json}}"
+    fi
+
+    # Write the JSON file
+    cat > "${json_file}.tmp" << JSONEOF
+{
+  "timestamp": "${TIMESTAMP}",
+  "duration": ${DURATION},
+  "system_info": {
+    "hardware": "${hw_model}",
+    "os": "${os_name}",
+    "loxberry": "${lb_version}",
+    "perl": "${perl_version}",
+    "mosquitto": "${mosquitto_version}",
+    "miniservers": ${ms_count},
+    "plugins": ${plugin_count}
+  },
+  "baseline": {
+    "cpu": ${base_cpu}, "rss_mb": ${base_rss}, "http_rate": ${base_tp},
+    "latency_p50": ${base_p50}, "latency_p95": ${base_p95}, "loss_pct": ${base_loss}
+  },
+  "optimized": {
+    "cpu": ${opt_cpu}, "rss_mb": ${opt_rss}, "http_rate": ${opt_tp},
+    "latency_p50": ${opt_p50}, "latency_p95": ${opt_p95}, "loss_pct": ${opt_loss}
+  },
+  "score": ${overall_score},
+  "fixes": ${fixes_json},
+  "stress": ${stress_json}
+}
+JSONEOF
+    mv -f "${json_file}.tmp" "$json_file" 2>/dev/null || true
+    log_info "summary.json written to $json_file"
 }
 
 # ---------------------------------------------------------------------------
@@ -725,6 +1014,12 @@ cleanup() {
         # Just clean up shared memory; original gateway is already running
         rm -f /dev/shm/bench_* 2>/dev/null || true
         GW_PID=""
+    fi
+    # Remove PID file
+    rm -f /dev/shm/mqttbenchmark_pid 2>/dev/null || true
+    # Write final status
+    if [[ -n "$STATUS_FILE" ]]; then
+        write_status_file false
     fi
     log_info "Cleanup complete."
 }
@@ -754,9 +1049,12 @@ if [[ ! -f "${SCRIPT_DIR}/mqtt-loadgen.pl" ]]; then
     exit 1
 fi
 
+# Write PID file for plugin management
+echo $$ > /dev/shm/mqttbenchmark_pid
+log_info "PID $$ written to /dev/shm/mqttbenchmark_pid"
+
 # Create output directories
 mkdir -p "${RESULTS_DIR}/${TIMESTAMP}"
-mkdir -p "$DATA_DIR"
 
 # ---------------------------------------------------------------------------
 # Define the test matrix
@@ -768,10 +1066,39 @@ EST_PER_RUN=$((DURATION + 30))
 # Stress test rates
 STRESS_RATES=(50 100 200 500)
 
-# Total runs: 0 + 1 + 7 individual + 1 all-opt + stress pairs
-TOTAL_REALISTIC_RUNS=10  # runs 0-9
-TOTAL_STRESS_PAIRS=$(( ${#STRESS_RATES[@]} * 2 ))
-TOTAL_RUNS=$(( TOTAL_REALISTIC_RUNS + TOTAL_STRESS_PAIRS ))
+# Determine which run groups to execute
+RUN_REALISTIC=1
+RUN_STRESS=1
+
+if [[ -n "$RUNS_FILTER" ]]; then
+    RUN_REALISTIC=0
+    RUN_STRESS=0
+    if echo "$RUNS_FILTER" | grep -q "realistic"; then
+        RUN_REALISTIC=1
+    fi
+    if echo "$RUNS_FILTER" | grep -q "stress"; then
+        RUN_STRESS=1
+    fi
+fi
+
+# Calculate actual number of runs based on filters
+ACTUAL_TOTAL_RUNS=0
+if [[ "$RUN_REALISTIC" -eq 1 ]]; then
+    ACTUAL_TOTAL_RUNS=2  # runs 0 and 1 always
+    for i in "${!FLAG_NAMES[@]}"; do
+        rid=$((i + 2))
+        if should_run_fix "$rid"; then
+            ACTUAL_TOTAL_RUNS=$((ACTUAL_TOTAL_RUNS + 1))
+        fi
+    done
+    ACTUAL_TOTAL_RUNS=$((ACTUAL_TOTAL_RUNS + 1))  # run 9
+fi
+if [[ "$RUN_STRESS" -eq 1 ]]; then
+    ACTUAL_TOTAL_RUNS=$((ACTUAL_TOTAL_RUNS + ${#STRESS_RATES[@]} * 2))
+fi
+
+# Legacy totals for display
+TOTAL_RUNS=$ACTUAL_TOTAL_RUNS
 EST_TOTAL_TIME=$(( TOTAL_RUNS * EST_PER_RUN / 60 ))
 
 log_info "Test matrix: $TOTAL_RUNS runs, estimated ${EST_TOTAL_TIME} minutes"
@@ -846,46 +1173,54 @@ fi
 # Execute test matrix
 # ---------------------------------------------------------------------------
 
-# Run 0: Original gateway, realistic load
-run_benchmark 0 "Original Gateway" "$ORIGINAL_GW" "realistic" "0"
+if [[ "$RUN_REALISTIC" -eq 1 ]]; then
+    # Run 0: Original gateway, realistic load
+    run_benchmark 0 "Original Gateway" "$ORIGINAL_GW" "realistic" "0"
 
-# Run 1: Benchmarkable gateway, all flags OFF, realistic load
-run_benchmark 1 "Benchmarkable (no flags)" "$BENCH_GW" "realistic" "0"
+    # Run 1: Benchmarkable gateway, all flags OFF, realistic load
+    run_benchmark 1 "Benchmarkable (no flags)" "$BENCH_GW" "realistic" "0"
 
-# Runs 2-8: Benchmarkable, one flag at a time
-for i in "${!FLAG_NAMES[@]}"; do
-    rid=$((i + 2))
-    run_benchmark "$rid" "${FLAG_NAMES[$i]}" "$BENCH_GW" "realistic" "0" "${FLAG_VALUES[$i]}"
-done
+    # Runs 2-8: Benchmarkable, one flag at a time (filtered by --fixes)
+    for i in "${!FLAG_NAMES[@]}"; do
+        rid=$((i + 2))
+        if should_run_fix "$rid"; then
+            run_benchmark "$rid" "${FLAG_NAMES[$i]}" "$BENCH_GW" "realistic" "0" "${FLAG_VALUES[$i]}"
+        else
+            log_info "Skipping run $rid (${FLAG_NAMES[$i]}) -- not in --fixes filter"
+        fi
+    done
 
-# Run 9: Benchmarkable, all flags ON, realistic load
-run_benchmark 9 "All Optimizations" "$BENCH_GW" "realistic" "0" $ALL_FLAGS
+    # Run 9: Benchmarkable, all flags ON, realistic load
+    run_benchmark 9 "All Optimizations" "$BENCH_GW" "realistic" "0" $ALL_FLAGS
+fi
 
-# Stress tests: pairs of (original, optimized) at increasing rates
-stress_id=10
-for rate in "${STRESS_RATES[@]}"; do
-    # Skip rates beyond loadgen capability
-    if [[ $(perl -e "print $rate > $MAX_RATE ? 1 : 0") -eq 1 ]]; then
-        log_warn "Skipping stress rate ${rate} msg/s (exceeds max loadgen rate ${MAX_RATE})"
-        continue
-    fi
+if [[ "$RUN_STRESS" -eq 1 ]]; then
+    stress_id=10
+    for rate in "${STRESS_RATES[@]}"; do
+        # Skip rates beyond loadgen capability
+        if [[ $(perl -e "print $rate > $MAX_RATE ? 1 : 0") -eq 1 ]]; then
+            log_warn "Skipping stress rate ${rate} msg/s (exceeds max loadgen rate ${MAX_RATE})"
+            continue
+        fi
 
-    # Original at stress rate
-    run_benchmark "$stress_id" "Stress ${rate}msg/s (original)" "$ORIGINAL_GW" "stress" "$rate"
-    STRESS_RUN_IDS+=("$stress_id")
+        # Original at stress rate
+        run_benchmark "$stress_id" "Stress ${rate}msg/s (original)" "$ORIGINAL_GW" "stress" "$rate"
+        STRESS_RUN_IDS+=("$stress_id")
 
-    # Optimized at stress rate
-    run_benchmark "$((stress_id + 1))" "Stress ${rate}msg/s (optimized)" "$BENCH_GW" "stress" "$rate" $ALL_FLAGS
-    STRESS_RUN_IDS+=("$((stress_id + 1))")
+        # Optimized at stress rate
+        run_benchmark "$((stress_id + 1))" "Stress ${rate}msg/s (optimized)" "$BENCH_GW" "stress" "$rate" $ALL_FLAGS
+        STRESS_RUN_IDS+=("$((stress_id + 1))")
 
-    stress_id=$((stress_id + 2))
-done
+        stress_id=$((stress_id + 2))
+    done
+fi
 
 # ---------------------------------------------------------------------------
 # Generate report
 # ---------------------------------------------------------------------------
 
 generate_report
+generate_summary_json
 
 # Restore original gateway
 echo ""
