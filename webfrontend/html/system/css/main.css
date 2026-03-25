@@ -89,44 +89,41 @@ table.menutable td {
 .footerslogan           { display:flex; flex-grow:1; width: 316px;    background-image: url("../images/BTL.svg");  background-color:#6dac20;   background-repeat: no-repeat; }
 
 
-			.lb_flex-container
-			{
-				display: flex;
-				flex-wrap: wrap;
-				margin-bottom: 20px;
-				justify-content: flex-start;
-				align-items: center;
-				align-content: center;
-				text-align: left;
-				flex-direction: row;
-			}
-			.lb_flex-item-spacer
-			{
-	  			width:25%;
-			}
-			.lb_flex-item-label
-			{
-				min-width	:150px;
-		  		width		:200px;
-				max-width	:200px;
-	      		text-align	:right;
-		  		margin-right:10px;
-	      	}
-			.lb_flex-item
-			{
-				min-width	:200px;
-				width		:250px;
-				max-width	:100%;
-				flex-wrap	:nowrap;
-				margin-top: -10px;
-			}
-			.lb_flex-item-help
-			{
-		  		min-width	:150px;
-		  		width		:100%;
-				position	:relative;
-				margin-left	:10px;
-			}
+/* === LEGACY: lb_flex-* classes — kept for plugin backward compatibility === */
+.lb_flex-container {
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 20px;
+	justify-content: flex-start;
+	align-items: center;
+	align-content: center;
+	text-align: left;
+	flex-direction: row;
+}
+.lb_flex-item-spacer {
+	width: 25%;
+}
+.lb_flex-item-label {
+	min-width: 150px;
+	width: 200px;
+	max-width: 200px;
+	text-align: right;
+	margin-right: 10px;
+}
+.lb_flex-item {
+	min-width: 200px;
+	width: 250px;
+	max-width: 100%;
+	flex-wrap: nowrap;
+	margin-top: -10px;
+}
+.lb_flex-item-help {
+	min-width: 150px;
+	width: 100%;
+	position: relative;
+	margin-left: 10px;
+}
+/* === END LEGACY lb_flex-* === */
 
 
 
@@ -150,46 +147,18 @@ table.menutable td {
 	}
 
 
+	/* LEGACY lb_flex-* responsive overrides (for plugins) */
 	.lb_flex-container {
-			  flex-flow: column wrap;
-			  justify-content: center;
-			  align-items: stretch;
-			  align-content: center;
-			  flex-direction: column;
-			  text-align:left;
-			}
-			.lb_flex-item-spacer
-			{
-	  			width:0%;
-				display: none;
-			}
-			.lb_flex-item-label
-			{
-	    		text-align	:left;
-	    		white-space	:normal;
-				min-width	:auto;
-				width		:auto;
-				max-width	:none;
-				margin-right:0;
-				margin-bottom:4px;
-				font-weight: bold;
-	      	}
-			.lb_flex-item
-			{
-	    		text-align	:left;
-				min-width	:0;
-				width		:100%;
-				max-width	:100%;
-			}
-			.lb_flex-item-help
-			{
-	    		text-align	:left;
-		  		width		:100%;
-				min-width	:0;
-				position	:relative;
-				margin-top	:5px;
-				margin-left :0;
-			}
+		flex-flow: column wrap;
+		justify-content: center;
+		align-items: stretch;
+		flex-direction: column;
+		text-align: left;
+	}
+	.lb_flex-item-spacer { width: 0%; display: none; }
+	.lb_flex-item-label { text-align: left; white-space: normal; min-width: auto; width: auto; max-width: none; margin-right: 0; margin-bottom: 4px; font-weight: bold; }
+	.lb_flex-item { text-align: left; min-width: 0; width: 100%; max-width: 100%; }
+	.lb_flex-item-help { text-align: left; width: 100%; min-width: 0; position: relative; margin-top: 5px; margin-left: 0; }
 
 }
 @media ( min-width: 875px )
@@ -271,17 +240,18 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 .monospace * {font-size:80%!important;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;
 }
 
-.wide { 
-	font-size:calc(14px + 1.3vw); 
-	letter-spacing: 0.10em; 
-	text-align: left; 
-	vertical-align: middle; 
-	border-bottom: 2px ridge #cdcdcd; 
-	padding: 7px; 
-	padding-top: 1px; 
+/* LEGACY: .wide class — kept for plugin backward compatibility.
+   Core templates now use .lb-section-title from components.css */
+.wide {
+	font-size: calc(14px + 1.3vw);
+	letter-spacing: 0.10em;
+	text-align: left;
+	vertical-align: middle;
+	border-bottom: 2px ridge #cdcdcd;
+	padding: 7px;
+	padding-top: 1px;
 	margin-top: 0px;
 	font-weight: bold;
-	
 }
 
 a:link.nolinkstyle
