@@ -567,7 +567,7 @@ generate_summary_json() {
         if [[ $fixes_first -eq 0 ]]; then
             fixes_json+=","
         fi
-        fixes_json+="{\"id\":${fix_id},\"name\":\"${FLAG_NAMES[$i]}\",\"flag\":\"${FLAG_VALUES[$i]%%=*}\",\"cpu\":${r_cpu},\"http_rate\":${r_tp},\"latency_avg\":${r_p50},\"score\":${r_score},\"stars\":${r_stars_num}}"
+        fixes_json+="{\"id\":${fix_id},\"name\":\"${FLAG_NAMES[$i]}\",\"flag\":\"${FLAG_VALUES[$i]%%=*}\",\"cpu\":${r_cpu},\"http_rate\":${r_tp},\"latency_p50\":${r_p50},\"score\":${r_score},\"stars\":${r_stars_num}}"
         fixes_first=0
     done
     fixes_json+="]"
@@ -627,11 +627,11 @@ generate_summary_json() {
   },
   "baseline": {
     "cpu": ${base_cpu}, "rss_mb": ${base_rss}, "http_rate": ${base_tp},
-    "latency_avg": ${base_p50}, "latency_p95": ${base_p95}, "loss_pct": ${base_loss}
+    "latency_p50": ${base_p50}, "latency_p95": ${base_p95}, "loss_pct": ${base_loss}
   },
   "optimized": {
     "cpu": ${opt_cpu}, "rss_mb": ${opt_rss}, "http_rate": ${opt_tp},
-    "latency_avg": ${opt_p50}, "latency_p95": ${opt_p95}, "loss_pct": ${opt_loss}
+    "latency_p50": ${opt_p50}, "latency_p95": ${opt_p95}, "loss_pct": ${opt_loss}
   },
   "score": ${overall_score},
   "fixes": ${fixes_json},
@@ -1762,6 +1762,8 @@ if ($action eq 'start') {
     handle_compare();
 } elsif ($action eq 'csv') {
     handle_csv();
+} elsif ($action eq 'dryrun') {
+    handle_dryrun();
 } else {
     send_json({ error => 1, message => "Unknown action: $action" });
 }
@@ -1832,6 +1834,26 @@ sub handle_stop {
     unlink $STATUS_FILE;
 
     send_json({ error => 0, message => "Benchmark stopped" });
+}
+
+##########################################################################
+# Action: dryrun
+##########################################################################
+
+sub handle_dryrun {
+    my $duration = ($q->{duration} && $q->{duration} =~ /^(30|60|120)$/) ? $1 : 60;
+    my $runs     = ($q->{runs}     && $q->{runs}     =~ /^([a-z,]+)$/)  ? $1 : "realistic,stress";
+    my $fixes    = ($q->{fixes}    && $q->{fixes}    =~ /^([\d,]+)$/)   ? $1 : "1,2,3,4,5,6,7";
+
+    my $cmd = "$lbpbindir/mqtt-benchmark.sh"
+        . " --dry-run"
+        . " --duration $duration"
+        . " --runs $runs"
+        . " --fixes $fixes"
+        . " 2>&1";
+
+    my $output = `$cmd`;
+    send_json({ error => 0, output => $output });
 }
 
 ##########################################################################
