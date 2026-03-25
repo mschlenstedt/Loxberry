@@ -2,7 +2,7 @@
 		<!-- ** START template/system/de/updates_menu.html 07.12.2018 21:13:12 ************************************************************************************ -->
 		<!-- START Form for unattended-upgrades -->
 		
-		<div class="wide"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
+		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
 		<table class="formtable" style="border:0; width:100%;">
 		<tr>
 			<td>
@@ -28,7 +28,7 @@
 		<p></p>
 		<!-- END Form for unattended-upgrades -->
 		<!-- START Form for system upgrade -->
-<!--		<div class="wide"><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></div>
+<!--		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></div>
 		<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/updates.cgi?do=install" enctype="multipart/form-data">
 			<input type="hidden" name="saveformdata" value="1">
 					<table class="formtable" border="0" width="100%">
@@ -64,8 +64,7 @@
 		</form>
 		--> 
 		<!-- END Form for system upgrade -->
-		<br />
-<script>
+	<script>
 	var $messages = $('#form-error-message');
 	$.validate(
 		{
@@ -165,7 +164,7 @@
 	display: table-row-group;
 }
 </style>
-<div class="wide" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
+<div class="lb-section-title" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
 <div id="script_failed_block" style="border:1px solid red; background:yellow; display:none;">
 	<TMPL_VAR UPDATES.LBU_SCRIPT_FAILED>
 	<a id="script_failed_versreset" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR UPDATES.LBU_BUTTON_SCRIPT_FAILED_VERSRESET>&nbsp;<span id="failed_version"></span></a>
@@ -586,9 +585,8 @@ function urlify(text) {
 </TMPL_IF>
 
 <TMPL_IF lbuhistory>
-<p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATELOGS></p>
+<p class="lb-section-title"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATELOGS></p>
 <TMPL_VAR UPDATELOGS_HTML>
-<br>
-<p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
+<p class="lb-section-title"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
 <TMPL_VAR UPDATECHECKLOGS_HTML>
 </TMPL_IF>
