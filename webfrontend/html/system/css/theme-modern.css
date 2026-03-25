@@ -1,5 +1,8 @@
-/* LoxBerry Modern Flat Theme */
+/* LoxBerry Modern Flat Theme
+   Principle: Only override colors/fonts — never touch jQuery Mobile structure
+   (border-radius, padding, margins, display, position) */
 
+/* === Global === */
 .theme-modern .ui-page {
   background-color: #fafafa;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -9,12 +12,11 @@
   text-shadow: none !important;
 }
 
+/* === Header === */
 .theme-modern .ui-header .ui-bar-a {
   background: #ffffff;
   color: #1a1a1a;
-  border: none;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border-bottom-color: #e5e7eb;
 }
 
 .theme-modern .ui-header .ui-bar-a .ui-btn,
@@ -27,21 +29,12 @@
   color: #6dac20;
 }
 
+/* === Buttons — colors only === */
 .theme-modern .ui-btn {
-  border-radius: 6px;
   text-shadow: none;
   box-shadow: none;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #374151;
   font-weight: 500;
   font-family: inherit;
-  transition: all 0.15s ease;
-}
-
-.theme-modern .ui-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
 }
 
 .theme-modern .ui-btn-active,
@@ -58,31 +51,7 @@
   border-color: #5a9418;
 }
 
-.theme-modern button[type="submit"]:hover,
-.theme-modern .ui-btn-icon-left[data-icon="check"]:hover {
-  background: #5a9418;
-}
-
-.theme-modern .ui-input-text,
-.theme-modern .ui-input-search {
-  border: none;
-  box-shadow: none;
-  background: transparent;
-}
-
-.theme-modern .ui-input-text input,
-.theme-modern .ui-input-search input,
-.theme-modern textarea,
-.theme-modern select {
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  padding: 10px 12px;
-  font-family: inherit;
-  font-size: 14px;
-  background: #ffffff;
-  transition: all 0.15s ease;
-}
-
+/* === Inputs — colors only === */
 .theme-modern .ui-input-text input:focus,
 .theme-modern .ui-input-search input:focus,
 .theme-modern textarea:focus {
@@ -91,6 +60,7 @@
   box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
 }
 
+/* === Content === */
 .theme-modern .ui-content {
   background: #fafafa;
 }
@@ -98,25 +68,35 @@
 .theme-modern .ui-body-a,
 .theme-modern .ui-body-inherit {
   background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
 }
 
+/* === Selects — colors only === */
 .theme-modern .ui-select .ui-btn {
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
   background: #ffffff;
 }
 
+/* === Panel === */
 .theme-modern .ui-panel {
   background: #ffffff;
-  box-shadow: 4px 0 12px rgba(0,0,0,0.08);
+}
+
+.theme-modern .ui-panel-inner {
+  color: #1a1a1a;
+}
+
+/* === Side Menu === */
+.theme-modern ul.lb-systemmenu li.lb-nonhover {
+  background-color: #6dac20;
+  color: white !important;
+  font-weight: 600;
+  font-family: inherit;
 }
 
 .theme-modern ul.lb-systemmenu li {
   font-family: inherit;
-  font-size: 13px;
   color: #1a1a1a !important;
-  transition: background-color 0.15s ease;
+  background-color: #ffffff;
+  border-bottom-color: #e5e7eb;
 }
 
 .theme-modern ul.lb-systemmenu a {
@@ -132,77 +112,29 @@
   color: white !important;
 }
 
-/* Panel-Inhalt und Listview dunkler Text */
-.theme-modern .ui-panel-inner {
-  color: #1a1a1a;
+/* === Flipswitch === */
+.theme-modern .ui-flipswitch-active {
+  background-color: #6dac20 !important;
 }
 
+/* === Section Headers === */
+.theme-modern .wide {
+  font-family: inherit;
+  font-weight: 600;
+  border-bottom-color: #6dac20;
+}
+
+/* === Footer === */
+.theme-modern [data-role="footer"] {
+  border-top-color: #e5e7eb;
+}
+
+/* === Text colors === */
 .theme-modern .ui-listview > li,
 .theme-modern .ui-listview > li a {
   color: #374151;
 }
 
-.theme-modern table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
 .theme-modern table td {
-  padding: 10px 12px;
-}
-
-.theme-modern table tr {
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.theme-modern .ui-flipswitch {
-  border-radius: 16px;
-}
-
-.theme-modern .ui-flipswitch-active {
-  background-color: #6dac20 !important;
-}
-
-.theme-modern .ui-slider-track {
-  border-radius: 8px;
-}
-
-.theme-modern [data-role="footer"] {
-  border-top: 1px solid #e5e7eb;
-}
-
-.theme-modern .wide {
-  font-family: inherit;
-  font-weight: 600;
-  border-bottom: 2px solid #6dac20;
-  padding-bottom: 8px;
-  margin-bottom: 16px;
-  letter-spacing: 0.02em;
-}
-
-.theme-modern .ui-controlgroup .ui-btn {
-  border-radius: 0;
-}
-
-.theme-modern .ui-controlgroup .ui-btn:first-child {
-  border-radius: 6px 0 0 6px;
-}
-
-.theme-modern .ui-controlgroup .ui-btn:last-child {
-  border-radius: 0 6px 6px 0;
-}
-
-.theme-modern .ui-collapsible-heading .ui-btn {
-  border-radius: 6px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-}
-
-.theme-modern ::-webkit-scrollbar {
-  width: 6px;
-}
-
-.theme-modern ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
+  color: #374151;
 }
