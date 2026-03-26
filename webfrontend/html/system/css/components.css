@@ -17,36 +17,42 @@
 /* === Buttons === */
 .lb-btn {
   display: inline-block;
-  padding: 10px 20px;
-  background: linear-gradient(to bottom, #f6f6f6, #e0e0e0);
-  color: var(--lb-gray-900);
-  border: 1px solid #ccc;
-  border-radius: var(--lb-radius);
+  padding: 0.7em 1em;
+  background-color: #e6e6e6;
+  color: #000;
+  border: 1px solid #7e7e7e;
+  border-radius: 0.3125em;
   font-size: var(--lb-font-base);
-  font-weight: 600;
+  font-weight: bold;
+  font-family: sans-serif;
   cursor: pointer;
-  text-decoration: none;
+  text-decoration: none !important;
   text-align: center;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  text-shadow: 0 1px 0 #eee;
 }
 .lb-btn:hover {
-  background: linear-gradient(to bottom, #e8e8e8, #d0d0d0);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+  background-color: #fff;
+  border-color: #8c8c8c;
+  color: #111;
+  text-shadow: 0 1px 0 #f3f3f3;
+}
+.lb-btn:active {
+  background-color: #e6e6e6;
 }
 .lb-btn-primary {
-  background: var(--lb-primary);
+  background-color: var(--lb-primary);
   color: white;
   border-color: var(--lb-primary-hover);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
 }
 .lb-btn-primary:hover {
-  background: var(--lb-primary-hover);
-  box-shadow: 0 2px 6px rgba(109, 172, 32, 0.3);
+  background-color: var(--lb-primary-hover);
 }
 .lb-btn-danger {
-  background: var(--lb-danger);
+  background-color: var(--lb-danger);
   color: white;
   border-color: var(--lb-danger);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
 }
 
 /* === Inputs === */
@@ -150,8 +156,8 @@
 
 /* === Button Variants === */
 .lb-btn-sm {
-  padding: 6px 12px;
-  font-size: var(--lb-font-sm);
+  padding: 0.5em 0.8em;
+  font-size: 0.8125em;
 }
 .lb-btn-icon {
   display: inline-flex;
