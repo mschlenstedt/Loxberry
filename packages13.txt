@@ -3,6 +3,7 @@ Desired=Unknown/Install/Remove/Purge/Hold
 |/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
 ||/ Name                                 Version                                       Architecture Description
 +++-====================================-=============================================-============-================================================================================
+ii python3-fissix                 3.11.2-1             all        2to3 binary using python3
 ii acl                            2.3.1-3              arm64      access control list - utilities
 ii adduser                        3.134                all        add and remove users and groups
 ii adwaita-icon-theme             43-1                 all        default icon theme of GNOME
@@ -205,6 +206,7 @@ ii liba52-0.7.4:arm64             0.7.4-20             arm64      library for de
 ii libaacs0:arm64                 0.11.1-2             arm64      free-and-libre implementation of AACS
 ii libabsl20240722:arm64          20220623.1-1         arm64      extensions to the C++ standard library
 ii libacl1:arm64                  2.3.1-3              arm64      access control list - shared library
+ii libaio1t64:arm64               0.3.113-4            arm64      Linux kernel AIO access library - shared library
 ii libalgorithm-c3-perl           0.11-2               all        Perl module for merging hierarchies using the C3 algorithm
 ii libalgorithm-diff-perl         1.201-1              all        module to find differences between files
 ii libalgorithm-diff-xs-perl:arm64 0.04-8+b1            arm64      module to find differences between files (XS accelerated)
@@ -499,6 +501,7 @@ ii libgl1:arm64                   1.6.0-1              arm64      Vendor neutral
 ii libgl1-mesa-dri:arm64          23.2.1-1~bpo12+rpt2  arm64      free implementation of the OpenGL API -- DRI modules
 ii libglapi-mesa:arm64            23.2.1-1~bpo12+rpt2  arm64      free implementation of the GL API -- shared library
 ii libgles2:arm64                 1.6.0-1              arm64      Vendor neutral GL dispatch library -- GLESv2 support
+ii libgles2-mesa-dev:arm64        22.3.6-1+rpt2+deb12u1 arm64      transitional dummy package
 ii libglib2.0-0:arm64             2.74.6-2             arm64      GLib library of C routines
 ii libglib2.0-bin                 2.74.6-2             arm64      Programs for the GLib library
 ii libglib2.0-data                2.74.6-2             all        Common files for GLib library
@@ -777,11 +780,16 @@ ii libpath-tiny-perl              0.144-1              all        file path util
 ii libpcap0.8:arm64               1.10.3-1             arm64      system interface for user-level packet capture
 ii libpci3:arm64                  1:3.9.0-4            arm64      PCI utilities (shared library)
 ii libpciaccess0:arm64            0.17-2               arm64      Generic PCI access library for X
+ii libpcre16-3:arm64              2:8.45-1+0~20230620.10+debian12~1.gbp8792c4 arm64      Perl 5 Compatible Regular Expression Library - 16 bit runtime files
 ii libpcre2-32-0:arm64            10.42-1              arm64      New Perl Compatible Regular Expression Library - 16 bit runtime files
 ii libpcre2-32-0:arm64            10.42-1              arm64      New Perl Compatible Regular Expression Library - 32 bit runtime files
 ii libpcre2-16-0:arm64            10.42-1              arm64      New Perl Compatible Regular Expression Library- 8 bit runtime files
 ii libpcre2-dev:arm64             10.42-1              arm64      New Perl Compatible Regular Expression Library - development files
 ii libpcre2-posix3:arm64          10.42-1              arm64      New Perl Compatible Regular Expression Library - posix-compatible runtime files
+ii libpcre3:arm64                 2:8.45-1+0~20230620.10+debian12~1.gbp8792c4 arm64      Perl 5 Compatible Regular Expression Library - runtime files
+ii libpcre3-dev:arm64             2:8.45-1+0~20230620.10+debian12~1.gbp8792c4 arm64      Perl 5 Compatible Regular Expression Library - development files
+ii libpcre32-3:arm64              2:8.45-1+0~20230620.10+debian12~1.gbp8792c4 arm64      Perl 5 Compatible Regular Expression Library - 32 bit runtime files
+ii libpcrecpp0v5:arm64            2:8.45-1+0~20230620.10+debian12~1.gbp8792c4 arm64      Perl 5 Compatible Regular Expression Library - C++ runtime files
 ii libpcsclite1:arm64             1.9.9-2              arm64      Middleware to access a smart card using PC/SC (library)
 ii libperl4-corelibs-perl         0.004-3              all        libraries historically supplied with Perl 4
 ii libperl5.40:arm64              5.36.0-7             arm64      shared Perl library
@@ -1121,6 +1129,7 @@ ii luajit                         2.1.0~beta3+git20220320+dfsg-4.1 arm64      Ju
 ii m4                             1.4.19-3             arm64      macro processing language
 ii mailcap                        3.70+nmu1            all        Debian's mailcap system, and support programs
 ii make                           4.3-4.1              arm64      utility for directing compilation
+ii libunix-mknod-perl             2.3.1-97             all        creates device files in /dev
 ii man-db                         2.11.2-2             arm64      tools for reading manual pages
 ii manpages                       6.03-2               all        Manual pages about using a GNU/Linux system
 ii manpages-dev                   6.03-2               all        Manual pages about using GNU/Linux for development
@@ -1163,6 +1172,7 @@ ii node-undici                    5.15.0+dfsg1+~cs20.10.9.3-1+deb12u1 all       
 ii node-xtend                     4.0.2-3              all        Node.js library to easily extend an object
 ii notification-daemon            3.20.0-4+b1          arm64      daemon for displaying passive pop-up notifications
 ii ntfs-3g                        1:2022.10.3-1+b1     arm64      read/write NTFS driver for FUSE
+ii ntpsec-ntpdate                 1:4.2.8p15+dfsg-2~1.2.2+dfsg1-1+deb12u1 all        Network Time Protocol client (transitional package)
 ii ntpsec-ntpdate                 1.2.2+dfsg1-1+deb12u1 arm64      client for setting system time from NTP servers
 ii ntpsec-ntpdig                  1.2.2+dfsg1-1+deb12u1 arm64      ntpdig SNTP client
 ii ocl-icd-libopencl1:arm64       2.3.1-1              arm64      Generic OpenCL ICD Loader
@@ -1197,6 +1207,7 @@ ii php8.4-opcache                 1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef
 ii php8.4-readline                1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64      readline module for PHP
 ii php8.4-soap                    1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64      SOAP module for PHP
 ii php8.4-sqlite3                 1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64      SQLite3 module for PHP
+ii php7.4-sqlite3-dbgsym          1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64      debug symbols for php7.4-sqlite3
 ii php8.4-xml                     1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64      DOM, SimpleXML, XML, and XSL module for PHP
 ii php8.4-zip                     1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64      Zip module for PHP
 ii php8.4-bz2                     8.2.18-1+0~20240411.52+debian12~1.gbp91aa2d arm64      bzip2 module for PHP
@@ -1219,6 +1230,7 @@ ii pkg-config:arm64               1.8.1-1              arm64      manage compile
 ii pkgconf:arm64                  1.8.1-1              arm64      manage compile and link flags for libraries
 ii pkgconf-bin                    1.8.1-1              arm64      manage compile and link flags for libraries (binaries)
 ii plymouth                       22.02.122-3+rpt1     arm64      boot animation, logger and I/O multiplexer
+ii mate-polkit                    122-3                arm64      transitional package for polkitd and pkexec
 ii polkitd                        122-3                arm64      framework for managing administrative policies and privileges
 ii poppler-data                   0.4.12-1             all        encoding data for the poppler PDF rendering library
 ii procps                         2:4.0.2-3            arm64      /proc file system utilities
@@ -1234,6 +1246,7 @@ ii python3-colorama               0.4.6-2              all        Cross-platform
 ii python3-dbus                   1.3.2-4+b1           arm64      simple interprocess messaging system (Python 3 interface)
 ii python3-dev                    3.11.2-1+b1          arm64      header files and a static library for Python (default)
 ii python3-distro-info            1.5                  all        information about distributions' releases (Python 3 module)
+ii python3-distutils-extra        3.11.2-3             all        distutils package for Python 3.x
 ii python3-dnspython              2.3.0-1              all        DNS toolkit for Python 3
 ii python3-full                   3.11.2-1+b1          arm64      Default Python Interpreter with complete class library
 ii python3-gdbm:arm64             3.11.2-3             arm64      GNU dbm database support for Python 3.x
@@ -1294,6 +1307,7 @@ ii shellinabox                    2.21+b1              arm64      publish comman
 ii smbclient                      2:4.17.12+dfsg-0+deb12u1 arm64      command-line SMB/CIFS clients for Unix
 ii socat                          1.7.4.4-2            arm64      multipurpose relay for bidirectional data transfer
 ii spawn-fcgi                     1.6.4-2              arm64      FastCGI process spawner
+ii acpi                           0.9.5.2-14+b1        arm64      Sound player for MPEG-1,2 layer 1,2,3
 ii sqlite3                        3.40.1-2             arm64      Command line interface for SQLite 3
 ii ssh                            1:9.2p1-2+deb12u1    all        secure shell client and server (metapackage)
 ii ssl-cert                       1.1.2                all        simple debconf wrapper for OpenSSL
@@ -1361,23 +1375,9 @@ ii xterm                          379-1                arm64      X terminal emu
 ii xtrans-dev                     1.4.0-1              all        X transport library (development files)
 ii xxd                            2:9.0.1378-2         arm64      tool to make (or reverse) a hex dump
 ii xz-utils                       5.4.1-0.2            arm64      XZ-format compression utilities
+ii yarn                           1.22.19-1            all        Fast, reliable, and secure dependency management.
 ii yt-dlp                         2023.03.04-1         all        downloader of videos from YouTube and other sites
 ii zip                            3.0-13               arm64      Archiver for .zip files
 ii zlib1g:arm64                   1:1.2.13.dfsg-1      arm64      compression library - runtime
 ii zlib1g-dev:arm64               1:1.2.13.dfsg-1      arm64      compression library - development
-ii libaio1t64
-ii libgdk-pixbuf-2.0-0
-ii libgles2-mesa-dev
-ii libgs-common
-ii libldap-common
-ii libmagickcore-7.q16-10
-ii libmagickcore-7.q16-10-extra
-ii libmagickwand-7.q16-10
-ii libpcre16-3
-ii libpcre3
-ii libpcre3-dev
-ii libpcre32-3
-ii libpcrecpp0v5
-ii libwebrtc-audio-processing-1-3
-ii ntpsec-ntpdate
-ii yarn
+
