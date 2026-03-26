@@ -151,7 +151,7 @@
 
 /* === Page Content min-height === */
 .ui-content {
-  min-height: 60vh;
+  min-height: max(60vh, 500px);
 }
 
 /* === Button Variants === */
