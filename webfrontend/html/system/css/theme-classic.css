@@ -1,28 +1,23 @@
-/* LoxBerry Classic Theme - Refreshed */
+/* LoxBerry Classic Theme - Original Look */
 
+/* === Page Background === */
 .theme-classic .ui-page {
-  background-color: #f8f9fa;
+  background-color: #f0f0f0;
 }
 
+/* === Header Bar === */
 .theme-classic .ui-header .ui-bar-a {
-  background: linear-gradient(135deg, #6dac20, #5a9418);
+  background: #6dac20;
   border: none;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* === Buttons === */
 .theme-classic .ui-btn {
-  border-radius: 4px;
   text-shadow: none;
   box-shadow: none;
-  border: 1px solid #ccc;
-  background: #f5f5f5;
   font-weight: 500;
-  transition: background-color 0.15s ease;
 }
 
-.theme-classic .ui-btn:hover {
-  background: #e8e8e8;
-}
 
 .theme-classic .ui-btn-active,
 .theme-classic .ui-btn.ui-btn-active {
@@ -31,48 +26,135 @@
   border-color: #5a9418;
 }
 
+/* === Input Fields === */
 .theme-classic .ui-input-text input,
 .theme-classic .ui-input-search input,
 .theme-classic textarea {
-  border-radius: 4px;
   border: 1px solid #ccc;
   padding: 8px 10px;
-  transition: border-color 0.15s ease;
 }
 
 .theme-classic .ui-input-text input:focus,
 .theme-classic .ui-input-search input:focus {
   border-color: #6dac20;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(109, 172, 32, 0.2);
-}
-
-.theme-classic .ui-select .ui-btn {
-  border-radius: 4px;
-}
-
-.theme-classic .ui-panel {
-  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
-}
-
-.theme-classic table td {
-  padding: 8px 10px;
 }
 
 .theme-classic .ui-flipswitch-active {
   background-color: #6dac20 !important;
 }
 
-.theme-classic [data-role="footer"] {
-  box-shadow: 0 -1px 3px rgba(0,0,0,0.08);
+/* === Side Panel - Original Light Style === */
+.theme-classic .ui-panel {
+  background: #f0f0f0;
 }
 
+/* === Left Menu - Original LoxBerry Styling === */
+/* Header "System Settings" - grüner Balken */
+.theme-classic ul.lb-systemmenu li.lb-nonhover {
+  background-color: #6dac20;
+  color: white !important;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 10px 15px !important;
+}
+
+/* Menüeinträge - heller Hintergrund, schwarze Schrift */
+.theme-classic ul.lb-systemmenu li {
+  background-color: #ffffff;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+  padding-right: 30px !important;
+}
+
+.theme-classic ul.lb-systemmenu a {
+  color: #333 !important;
+}
+
+/* Chevron rechts */
+.theme-classic ul.lb-systemmenu li:not(.lb-nonhover)::after {
+  content: "\276F";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Hover - grüner Hintergrund */
+.theme-classic ul.lb-systemmenu li:hover {
+  background-color: #a0df53;
+}
+
+.theme-classic ul.lb-systemmenu li:hover a {
+  color: #333 !important;
+}
+
+.theme-classic ul.lb-systemmenu li:hover:not(.lb-nonhover)::after {
+  color: #333;
+}
+
+/* === Navbar Tabs - Green like Original === */
+.theme-classic .vuenavbarcontainer {
+  background-color: #6dac20;
+  border-top: 1px solid #5a9418;
+}
+
+.theme-classic .vuenavbarelement {
+  color: white !important;
+  border-right: 1px solid #5a9418;
+}
+
+.theme-classic .vuenavbarelement:last-child {
+  border-right: none;
+}
+
+.theme-classic .vuenavbarelement:hover {
+  background-color: #5a9418;
+}
+
+.theme-classic .vuenavbarelement_active {
+  background-color: #4a7a12;
+}
+
+/* === Sub-Navbar - Light background like original tabs === */
+.theme-classic .vuenavbarsubcontainer {
+  background-color: #e6e6e6;
+}
+
+.theme-classic .vuenavbarsubelement {
+  background-color: #e6e6e6;
+  border: 1px solid #ccc;
+  color: black !important;
+}
+
+.theme-classic .vuenavbarsubelement:hover {
+  background-color: #6dac20;
+  border-color: #6dac20;
+  color: white !important;
+}
+
+.theme-classic .vuenavbarsubelement_active {
+  background-color: #6dac20;
+  color: white !important;
+}
+
+/* === Section Headers (.wide) - Original ridge border === */
 .theme-classic .wide {
-  border-bottom: 2px solid #6dac20;
-  padding-bottom: 6px;
-  margin-bottom: 12px;
+  border-bottom: 2px ridge #cdcdcd;
+  padding: 7px;
+  padding-top: 1px;
+  margin-top: 0px;
 }
 
+/* === Table === */
+.theme-classic table td {
+  padding: 8px 10px;
+}
+
+/* === Collapsible === */
 .theme-classic .ui-collapsible-heading .ui-btn {
-  border-radius: 4px;
+  border: 1px solid #ccc;
 }

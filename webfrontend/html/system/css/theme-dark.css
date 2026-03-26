@@ -1,5 +1,8 @@
-/* LoxBerry Dark Mode Theme */
+/* LoxBerry Dark Mode Theme
+   Principle: Only override colors/fonts — never touch jQuery Mobile structure
+   (border-radius, padding, margins, display, position) */
 
+/* === Global === */
 .theme-dark .ui-page {
   background-color: #1e1e2e;
   color: #e0e0e0;
@@ -9,18 +12,17 @@
   text-shadow: none !important;
 }
 
-/* Hintergrund-Logos komplett ausblenden */
+/* Hide background logos */
 .theme-dark .loxberry-logo,
 .theme-dark .ui-panel-wrapper {
   background-image: none !important;
 }
 
+/* === Header === */
 .theme-dark .ui-header .ui-bar-a {
   background: #252536;
   color: #e0e0e0;
-  border: none;
-  border-bottom: 1px solid #333350;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  border-bottom-color: #333350;
 }
 
 .theme-dark .ui-header .ui-bar-a .ui-btn,
@@ -33,15 +35,14 @@
   color: #6dac20;
 }
 
+/* === Buttons — colors only === */
 .theme-dark .ui-btn {
-  border-radius: 6px;
   text-shadow: none;
   box-shadow: none;
-  border: 1px solid #555577;
   background: #2a2a3e;
   color: #d0d0d0;
+  border-color: #555577;
   font-weight: 500;
-  transition: all 0.15s ease;
 }
 
 .theme-dark .ui-btn:hover {
@@ -50,10 +51,13 @@
 }
 
 .theme-dark .ui-btn-active,
-.theme-dark .ui-btn.ui-btn-active {
-  background: #6dac20;
-  color: white;
-  border-color: #6dac20;
+.theme-dark .ui-btn.ui-btn-active,
+.theme-dark .ui-radio-on .ui-btn,
+.theme-dark .ui-checkbox-on .ui-btn,
+.theme-dark .ui-controlgroup .ui-btn-active {
+  background: #6dac20 !important;
+  color: white !important;
+  border-color: #6dac20 !important;
 }
 
 .theme-dark button[type="submit"],
@@ -63,27 +67,23 @@
   border-color: #5a9418;
 }
 
+/* === Inputs — colors only === */
 .theme-dark .ui-input-text,
 .theme-dark .ui-input-search {
-  border: none !important;
+  border-color: transparent !important;
   box-shadow: none !important;
   background: transparent !important;
-  border-radius: 6px;
 }
 
 .theme-dark .ui-input-text input,
 .theme-dark .ui-input-search input,
 .theme-dark textarea,
 .theme-dark select {
-  border-radius: 6px;
-  border: 1px solid #666688 !important;
-  padding: 10px 12px;
+  border-color: #666688 !important;
   background: #353550 !important;
   color: #f0f0f0 !important;
-  transition: all 0.15s ease;
 }
 
-/* Placeholder-Text im Dark Mode */
 .theme-dark input::placeholder,
 .theme-dark textarea::placeholder {
   color: #666 !important;
@@ -92,7 +92,7 @@
 .theme-dark .ui-input-text input:focus,
 .theme-dark .ui-input-search input:focus,
 .theme-dark textarea:focus {
-  border-color: #6dac20;
+  border-color: #6dac20 !important;
   outline: none;
   box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.25);
 }
@@ -102,13 +102,13 @@
   border-color: #666688 !important;
 }
 
-/* URL-Eingabefeld */
 .theme-dark #archiveurl {
   background: #353550 !important;
   color: #f0f0f0 !important;
   border-color: #666688 !important;
 }
 
+/* === Content === */
 .theme-dark .ui-content {
   background: #1e1e2e;
   color: #e0e0e0;
@@ -120,6 +120,7 @@
   color: #e0e0e0;
 }
 
+/* === Links === */
 .theme-dark a {
   color: #8bc34a;
 }
@@ -128,24 +129,45 @@
   color: #7cb342;
 }
 
+/* === Selects — colors only === */
 .theme-dark .ui-select .ui-btn {
-  border-radius: 6px;
-  border: 1px solid #666688 !important;
+  border-color: #666688 !important;
   background: #353550 !important;
   color: #f0f0f0;
 }
 
+.theme-dark .ui-select .ui-btn span {
+  color: #e0e0e0 !important;
+}
+
+.theme-dark select option {
+  background: #2a2a3e;
+  color: #e0e0e0;
+}
+
+/* === Panel === */
 .theme-dark .ui-panel {
   background: #252536;
-  box-shadow: 4px 0 12px rgba(0,0,0,0.4);
 }
 
 .theme-dark .ui-panel-inner {
   color: #e0e0e0;
 }
 
+/* === Side Menu === */
+.theme-dark ul.lb-systemmenu li.lb-nonhover {
+  background-color: #6dac20;
+  color: white !important;
+}
+
 .theme-dark ul.lb-systemmenu li {
   color: #d0d0d0 !important;
+  background-color: #2a2a3e;
+  border-bottom-color: #333350;
+}
+
+.theme-dark ul.lb-systemmenu a {
+  color: #c0c0c0 !important;
 }
 
 .theme-dark ul.lb-systemmenu li:hover {
@@ -153,19 +175,16 @@
   color: black !important;
 }
 
-.theme-dark ul.lb-systemmenu a {
-  color: #c0c0c0 !important;
+.theme-dark ul.lb-systemmenu li:hover a {
+  color: black !important;
 }
 
+/* === Tables — colors only === */
 .theme-dark table td {
-  padding: 10px 12px;
   color: #e0e0e0;
 }
 
-.theme-dark table tr {
-  border-bottom: 1px solid #333350;
-}
-
+/* === Flipswitch === */
 .theme-dark .ui-flipswitch {
   background-color: #333350 !important;
 }
@@ -178,39 +197,35 @@
   background-color: #333350 !important;
 }
 
-.theme-dark [data-role="footer"] {
-  border-top: 1px solid #333350;
-}
-
-/* Ueberschriften heller und besser lesbar */
+/* === Section Headers === */
 .theme-dark .wide {
   color: #f0f0f0;
-  border-bottom: 2px solid #6dac20;
-  padding-bottom: 8px;
-  margin-bottom: 16px;
+  border-bottom-color: #6dac20;
 }
 
 .theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4 {
   color: #f0f0f0;
 }
 
-/* Labels und Beschriftungen */
+/* === Text colors === */
 .theme-dark label,
 .theme-dark .ui-controlgroup label {
   color: #d0d0d0;
 }
 
-/* Hilfetext besser lesbar */
 .theme-dark .hint {
   color: #c0c0c0;
 }
 
-/* Allgemeine Texte im Content-Bereich */
 .theme-dark p, .theme-dark span, .theme-dark div {
   color: inherit;
 }
 
-/* Checkbox- und Radio-Labels */
+.theme-dark small, .theme-dark .small {
+  color: #a0a0a0;
+}
+
+/* === Checkboxes & Radios — colors only === */
 .theme-dark .ui-checkbox label,
 .theme-dark .ui-radio label {
   color: #e0e0e0 !important;
@@ -218,7 +233,6 @@
   border-color: #333350 !important;
 }
 
-/* Checkbox-Icon im Dark Mode */
 .theme-dark .ui-checkbox .ui-btn.ui-icon-checkbox-off,
 .theme-dark .ui-checkbox .ui-btn.ui-icon-checkbox-on {
   background: #2a2a3e !important;
@@ -226,22 +240,19 @@
   border-color: #333350 !important;
 }
 
-/* Fieldset-Rahmen */
+/* === Fieldset === */
 .theme-dark fieldset {
   border-color: #333350;
 }
 
-/* Dropdown-Selects im Dark Mode */
-.theme-dark .ui-select .ui-btn span {
-  color: #e0e0e0 !important;
-}
-
-.theme-dark select option {
+/* === Controlgroup — colors only === */
+.theme-dark .ui-controlgroup .ui-btn {
+  border-color: #333350;
   background: #2a2a3e;
-  color: #e0e0e0;
+  color: #d0d0d0;
 }
 
-/* Navbar Tabs */
+/* === Navbar — colors only === */
 .theme-dark [data-role="navbar"] .ui-btn {
   background: #2a2a3e !important;
   color: #d0d0d0 !important;
@@ -253,24 +264,19 @@
   color: white !important;
 }
 
-/* Kleine Labels neben Dropdowns (z.B. "Waehle deine Sprache") */
-.theme-dark small,
-.theme-dark .small {
-  color: #a0a0a0;
-}
-
-.theme-dark .ui-controlgroup .ui-btn {
-  border-color: #333350;
-  background: #2a2a3e;
-  color: #d0d0d0;
-}
-
+/* === Collapsible — colors only === */
 .theme-dark .ui-collapsible-heading .ui-btn {
   background: #2a2a3e;
-  border: 1px solid #333350;
+  border-color: #333350;
   color: #e0e0e0;
 }
 
+/* === Footer === */
+.theme-dark [data-role="footer"] {
+  border-top-color: #333350;
+}
+
+/* === Log colors === */
 .theme-dark .logstart { background-color: #6dac20; }
 .theme-dark .loginf, .theme-dark .logdeb { background-color: #1a2a40; color: #c0d8f0; }
 .theme-dark .logok { background-color: #1a3a1e; color: #a0d8a8; }
@@ -278,32 +284,12 @@
 .theme-dark .logerr { background-color: #3a1a1a; color: #e0a0a0; }
 .theme-dark .logcrit { background-color: #4a1a1a; color: #f0b0b0; }
 
+/* === Form errors === */
 .theme-dark .form-error, .theme-dark .form-error-message {
   color: #ff6b6b;
-  background: transparent !important;
-  border-color: #ff6b6b !important;
 }
 
-/* Validierungsmeldungen nicht das Feld aufblaehen */
-.theme-dark .form-error-message {
-  position: absolute;
-  left: 0;
-  right: 0;
-  margin-top: 2px;
-  font-size: 0.75em;
-  background: #3a1a1a !important;
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #ff6b6b !important;
-  z-index: 10;
-}
-
-/* Input-Wrapper relativ positionieren fuer absolute Fehlermeldung */
-.theme-dark .ui-input-text {
-  position: relative;
-}
-
-/* Dropzone dark styling */
+/* === Dropzone === */
 .theme-dark #dropzone {
   border-color: #666688 !important;
   background: #353550 !important;
@@ -311,7 +297,3 @@
 .theme-dark #dropzone-text { color: #b0b0b0 !important; }
 .theme-dark #dropzone-text span { color: #6dac20 !important; }
 .theme-dark #dropzone-filename { color: #f0f0f0 !important; }
-
-.theme-dark ::-webkit-scrollbar { width: 6px; }
-.theme-dark ::-webkit-scrollbar-track { background: #1e1e2e; }
-.theme-dark ::-webkit-scrollbar-thumb { background: #444466; border-radius: 3px; }

@@ -251,17 +251,28 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 .monospace * {font-size:80%!important;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;
 }
 
-.wide { 
-	font-size:calc(14px + 1.3vw); 
-	letter-spacing: 0.10em; 
-	text-align: left; 
-	vertical-align: middle; 
-	border-bottom: 2px ridge #cdcdcd; 
-	padding: 7px; 
-	padding-top: 1px; 
+.wide {
+	font-size:calc(14px + 1.3vw);
+	letter-spacing: 0.10em;
+	text-align: left;
+	vertical-align: middle;
+	border-bottom: 2px ridge #cdcdcd;
+	padding: 7px;
+	padding-top: 1px;
 	margin-top: 0px;
 	font-weight: bold;
-	
+	width: 100%;
+}
+
+/* Formular-Tabellen und Trennlinien über volle Breite */
+table.formtable {
+	width: 100% !important;
+	table-layout: auto;
+}
+
+hr {
+	width: 100% !important;
+	box-sizing: border-box;
 }
 
 a:link.nolinkstyle
@@ -490,29 +501,55 @@ a:link.nolinkstyle
 }
 
 /*  Left system navigation menu START */
+/* Header "System-Einstellungen" - grüner Balken */
+ul.lb-systemmenu li.lb-nonhover {
+	background-color: #6dac20;
+	color: white !important;
+	font-weight: bold;
+	font-size: 14px;
+	padding: 10px 15px !important;
+	pointer-events: none !important;
+}
+
+/* Menüeinträge - heller Hintergrund, dunkle Schrift */
 ul.lb-systemmenu li
 {
 	text-shadow:none;
 	padding: 7px 20px 7px 20px !important;
-	color: white !important;
+	color: #333 !important;
 	font-size: 13px;
 	font-weight: bold;
-	
+	background-color: #ffffff;
+	border-bottom: 1px solid #ddd;
+	position: relative;
+	padding-right: 30px !important;
 }
 ul.lb-systemmenu a
 {
-	color: #e6e6e6 !important;
+	color: #333 !important;
 	text-decoration:none;
 }
-ul.lb-systemmenu li:hover {
-	background-color: #a0df53;
-	color: black !important;
-}
-ul.lb-systemmenu li:hover a {
-	color: black !important;
+
+/* Chevron rechts */
+ul.lb-systemmenu li:not(.lb-nonhover)::after {
+	content: "\276F";
+	position: absolute;
+	right: 15px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #999;
+	font-size: 14px;
+	font-weight: bold;
 }
 
-ul.lb-systemmenu li.lb-nonhover {
-	pointer-events: none !important;
+ul.lb-systemmenu li:hover {
+	background-color: #a0df53;
+	color: #333 !important;
+}
+ul.lb-systemmenu li:hover a {
+	color: #333 !important;
+}
+ul.lb-systemmenu li:hover:not(.lb-nonhover)::after {
+	color: #333;
 }
 /*  Left system navigation menu END */
