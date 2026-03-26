@@ -16,7 +16,7 @@
 			<label style="display:block; text-align:center;"><input data-mini="true" type="checkbox" checked id="LogScroll"><TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
 			</td>
 			<td width="25%">
-			 <a style="display:block; text-align:center;" id="btndown" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=bin&format=plain" target="_blank" download="<TMPL_VAR LOGFILE>"><TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
+			 <a class="lb-btn lb-btn-sm lb-btn-icon" style="display:block; text-align:center;" id="btndown" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=bin&format=plain" target="_blank" download="<TMPL_VAR LOGFILE>"><i class="pi pi-arrow-down"></i> <TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
 			</td>
 		</tr>
 	</table>
@@ -26,10 +26,10 @@
 	<table border=0 width="75%" cellpadding="10">
 		<tr>
 			<td width="10%">
-			<a style="display:block; text-align:center;" id="btnnext" data-role="button" data-inline="true" data-mini="true" data-icon="check" data-ajax="false" href="/admin/system/plugininstall.cgi?do=form"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_NEXT></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" style="display:block; text-align:center;" id="btnnext" data-ajax="false" href="/admin/system/plugininstall.cgi?do=form"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_NEXT></a>
 			</td>
 			<td width="10%">
-			<a style="display:block; text-align:center;" id="btnreboot" data-role="button" data-inline="true" data-mini="true" data-icon="check" data-ajax="false" href="/admin/system/power.cgi"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOT></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" style="display:block; text-align:center;" id="btnreboot" data-ajax="false" href="/admin/system/power.cgi"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOT></a>
 			</td>
 			<td width="80%">
 			<div id="pstatus" style="width:100%; padding:5px 5px 5px 5px; vertical-align:middle; line-height:35px; vertical-align:middle; border-style: dotted; border-width:1px; border-color:red; background-color:#ffffe6; text-size:11px"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE></div>

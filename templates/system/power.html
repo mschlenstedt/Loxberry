@@ -26,9 +26,9 @@
 		
 			
 			<div style="width: 300px">
-				<a id="btnreboot" data-role="button" data-icon="recycle" href="#"><TMPL_VAR POWER.BUTTON_REBOOT></a>
+				<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnreboot" href="#"><i class="pi pi-refresh"></i> <TMPL_VAR POWER.BUTTON_REBOOT></a>
 				<br>
-				<a id="btnpoweroff" data-role="button" data-icon="power" href="#"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
+				<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnpoweroff" href="#"><i class="pi pi-power-off"></i> <TMPL_VAR POWER.BUTTON_POWEROFF></a>
 			</div>
 	</TMPL_IF>
 	</center>
@@ -36,7 +36,7 @@
 	&nbsp;
 	</p>
 	<center>
-		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="<TMPL_VAR NEXTURL>"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
 	</center>
 	<script>
 		$(document).ready(function(){
@@ -70,7 +70,7 @@
 <TMPL_IF REBOOT>
 	<center>
 		<p><TMPL_VAR POWER.MSG_REBOOT></p>
-		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" data-delay="15" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" data-delay="15" href="<TMPL_VAR NEXTURL>"><i class="pi pi-arrow-left"></i> <TMPL_VAR COMMON.BUTTON_BACK></a>
 		<style>
 			.progress-bar 
 			{
@@ -175,7 +175,7 @@
 <TMPL_IF POWEROFF>
 	<center>
 		<p><TMPL_VAR POWER.MSG_POWEROFF></p>
-		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="<TMPL_VAR NEXTURL>"><i class="pi pi-arrow-left"></i> <TMPL_VAR COMMON.BUTTON_BACK></a>
 		
 	</center>
 

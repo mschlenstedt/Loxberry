@@ -161,31 +161,19 @@
 
 <BR>
 
-<DIV style="text-align:center;">
+<div class="lb-actions">
 		<!-- Buttons for widget -->
-		<A	id=		"btncancel"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"delete"
-			href=		"/admin/system/index.cgi?form=system">
+		<A class="lb-btn lb-btn-sm lb-btn-icon"	id=		"btncancel"
+			href=		"/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> 
 			<TMPL_VAR COMMON.BUTTON_CANCEL></A>
-		<BUTTON	type=		"submit"
+		<BUTTON class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"	type=		"submit"
 			form=		"main_form"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"check">
+			id=		"btnsubmit"><i class="pi pi-check"></i> 
 			<TMPL_VAR COMMON.BUTTON_SAVE>
 		</BUTTON>
-		<A	id=		"btnlogfile"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"grid"
+		<A class="lb-btn lb-btn-sm lb-btn-icon"	id=		"btnlogfile"
 			href=		"/admin/system/tools/logfile.cgi?logfile=system%2Fwatchdog.log&header=html&format=template"
-			target=		"blank">
+			target=		"blank"><i class="pi pi-th-large"></i> 
 			<TMPL_VAR SERVICES.BUTTON_LOGFILE></A>
 </DIV>
 
@@ -248,7 +236,7 @@
 				<tr>
 					<td align="center">
 						<p>
-							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="./services_watchdog.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+							<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="./services_watchdog.cgi"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 						</p>
 					</td>
 				</tr>

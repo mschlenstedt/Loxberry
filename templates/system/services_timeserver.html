@@ -8,9 +8,9 @@
 				</td>
 				<td>
 					<TMPL_VAR SYSTEMDATETIME>
-					<a href="javascript:location.reload()" data-mini="true" data-inline="true" data-role="button" data-icon="refresh" data-iconpos="notext"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
+					<a class="lb-btn lb-btn-sm" href="javascript:location.reload()"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
 					&nbsp;
-					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/setdatetime.log&header=html&format=template" target="_blank"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+					<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/setdatetime.log&header=html&format=template" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 				</td>
 				<td>
 				</td>
@@ -94,9 +94,9 @@
 			</tr>
 			<tr>
 				<td colspan="4">
-					<div style="text-align:center;">
-						<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-						<button type="submit" form="main_form4" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+					<div class="lb-actions">
+						<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+						<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form4" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
 					</div>
 				</td>
 			</tr>

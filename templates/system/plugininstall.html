@@ -25,7 +25,7 @@
 			padding: 4px 5px;
 		}
 
-		table.ui-responsive a[data-role="button"] {
+		table.ui-responsive a.lb-btn {
 			white-space: normal !important;
 		}
 
@@ -59,7 +59,7 @@
 		</div>
 		<div style="width:100%; text-align:left;">
 			<div class="lb-section-title"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
-			<a target="pluginarchive" href="https://wiki.loxberry.de/plugins/start" data-role="button" data-inline="true" data-icon="search" data-mini="true" id="btnarchive"><TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" target="pluginarchive" href="https://wiki.loxberry.de/plugins/start" id="btnarchive"><i class="pi pi-search"></i> <TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
 		</div>
 	</div>
 
@@ -89,7 +89,7 @@
 					<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
 				</div>
 				<div>
-					<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+					<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
 				</div>
 			</div>
 		</div>
@@ -103,7 +103,7 @@
 		</div>
 		<div style="width:100%; text-align:left;">
 			<div class="lb-section-title"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
-			<a href="#" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" id="btnrecheck"><TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="btnrecheck"><i class="pi pi-refresh"></i> <TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
 		</div>
 	</div>
 	<table data-role="table" data-mode="table" class="ui-responsive" data-enhance="false">
@@ -143,11 +143,11 @@
 				
 				<td>
 					<div>
-						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" data-updatelink="" class="btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Release</a>
-						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" data-updatelink="" class="btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Pre-Release</a>
+						<a href="#" data-updatelink="" class="lb-btn lb-btn-sm lb-btn-icon btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Release</a>
+						<a href="#" data-updatelink="" class="lb-btn lb-btn-sm lb-btn-icon btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Pre-Release</a>
 					</div>
-					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
-					<a data-role="button" data-inline="true" data-icon="delete" data-mini="true" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+					<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
+					<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-times"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
 				</td>
 			</tr>
 			<tr style="border-bottom: 1.5px solid LightGray;">
@@ -548,10 +548,8 @@ function versionCompare(v1, v2, options) {
 	<tr>
 		<td align="center">
 			<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true"
-			data-icon="delete" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<a onclick="$('#btnok').addClass('ui-disabled'); $('#uninstall_text').html('<TMPL_VAR PLUGININSTALL.UI_MSG_UNINSTALL_WAIT>');" id="btnok" data-role="button" data-inline="true" data-mini="true"
-			data-icon="check" href="<TMPL_VAR SELFURL>&answer=1"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="/admin/system/plugininstall.cgi"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" onclick="$('#btnok').addClass('ui-disabled'); $('#uninstall_text').html('<TMPL_VAR PLUGININSTALL.UI_MSG_UNINSTALL_WAIT>');" id="btnok" href="<TMPL_VAR SELFURL>&answer=1"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
 			</p>
 		</td>
 	</tr>
@@ -599,8 +597,7 @@ function versionCompare(v1, v2, options) {
 	<tr>
 		<td align="center">
 			<p>
-			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
-			data-icon="check" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="/admin/system/plugininstall.cgi"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 			</p>
 		</td>
 	</tr>

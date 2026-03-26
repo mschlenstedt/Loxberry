@@ -12,8 +12,8 @@
 		<p><b><TMPL_VAR WIZARD.INTRO1></b></p>
 		<p><TMPL_VAR WIZARD.INTRO2> <a href="<TMPL_VAR WIZARD.WIKIURL_CONFIGHELP>" target="_blank"><TMPL_VAR WIZARD.WIKIURL_CONFIGHELP></a></p>
 		<p>&nbsp;</p>
-		<a style="background-color: lightgreen;"href="/admin/system/admin.cgi?do=random" data-role="button" data-iconpos="left" data-icon="power" data-corners="true" data-inline="true"><TMPL_VAR WIZARD.BUTTON_RDM_PASSWORDS></a>
-		<a style="background-color: lightyellow;" href="/admin/system/admin.cgi" data-role="button" data-iconpos="left" data-icon="power" data-corners="true" data-inline="true"><TMPL_VAR WIZARD.BUTTON_STD_PASSWORDS></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" style="background-color: lightgreen;"href="/admin/system/admin.cgi?do=random"><i class="pi pi-power-off"></i> <TMPL_VAR WIZARD.BUTTON_RDM_PASSWORDS></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" style="background-color: lightyellow;" href="/admin/system/admin.cgi"><i class="pi pi-power-off"></i> <TMPL_VAR WIZARD.BUTTON_STD_PASSWORDS></a>
 	</div>
 </div>
 </TMPL_IF>
@@ -49,8 +49,8 @@
 
 <!-- END Plugin container -->
 <p>
-	<a href="/admin/system/plugininstall.cgi" data-role="button" data-inline="true" data-mini="true" data-icon="grid"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></a>
-	<a href="https://wiki.loxberry.de/plugins/start" target="_blank" data-role="button" data-inline="true" data-mini="true" data-icon="search"><TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi"><i class="pi pi-th-large"></i> <TMPL_VAR HEADER.PANEL_PLUGININSTALL></a>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" href="https://wiki.loxberry.de/plugins/start" target="_blank"><i class="pi pi-search"></i> <TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
 </p>
 </TMPL_IF>
 

@@ -117,34 +117,22 @@
 		<input id="smtppass" name="smtppass" type="password" class="textfield" value="">
 	</DIV>
 	<DIV	class="lb-form-help">
-		<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD></button>
+		<button id="showpass" name="showpass" type="button" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-eye"></i> <TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD></button>
 	</DIV>
 </DIV>
 
 <!-- Button area -->
 
-<DIV style="text-align:center;">
+<div class="lb-actions">
 		<!-- Buttons for widget -->
-		<A	id=		"btncancel"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"delete"
-			href=		"/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></A>
-		<BUTTON	type=		"submit"
+		<A class="lb-btn lb-btn-sm lb-btn-icon"	id=		"btncancel"
+			href=		"/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></A>
+		<BUTTON class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"	type=		"submit"
 			form=		"main_form1"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"check"><TMPL_VAR COMMON.BUTTON_SAVE></BUTTON>
-		<A 	href="#" 
+			id=		"btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></BUTTON>
+		<A class="lb-btn lb-btn-sm lb-btn-icon" 	href="#" 
 			id="btntestsmtp" 
-			name="btntestsmtp" 
-			data-role="button" 
-			data-inline="true" 
-			data-mini="true" 
-			data-icon="mail"><TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></A>
+			name="btntestsmtp"><i class="pi pi-envelope"></i> <TMPL_VAR MAILSERVER.BUTTON_SEND_TESTMAIL></A>
 </DIV>
 
 <!-- AJAX response status area --> 

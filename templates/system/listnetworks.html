@@ -37,7 +37,7 @@
 					<td style="vertical-align: middle; text-align: center"><TMPL_VAR quality></td>
 					<td style="vertical-align: middle; text-align: center"><TMPL_VAR force></td>
 					<td style="vertical-align: middle; text-align: center">
-						<button type="button" data-role="button" data-inline="true" data-mini="true" onClick="window.opener.$('#netzwerkssid').val('<TMPL_VAR ssid>'); window.opener.$('#netzwerkssid').trigger('keyup'); window.close()"> <font><TMPL_VAR COMMON.BUTTON_SELECT></font></button>
+						<button class="lb-btn lb-btn-sm" type="button" onClick="window.opener.$('#netzwerkssid').val('<TMPL_VAR ssid>'); window.opener.$('#netzwerkssid').trigger('keyup'); window.close()"> <font><TMPL_VAR COMMON.BUTTON_SELECT></font></button>
 					</td>
 				</tr>
 
@@ -48,9 +48,9 @@
 </TMPL_IF>
 
 		</table>
-		<button name="btnsubmit" type="button" data-role="button" data-inline="true" data-mini="true" onClick="location.reload();">
+		<button class="lb-btn lb-btn-sm" name="btnsubmit" type="button" onClick="location.reload();">
 		<font size=\"-1\"><TMPL_VAR NETWORK.BUTTON_SEARCHWIFI_REFRESH></font></button>
-		<button name="btnclose" type="button" data-role="button" data-inline="true" data-mini="true" onClick="self.close();">
+		<button class="lb-btn lb-btn-sm" name="btnclose" type="button" onClick="self.close();">
 		<font size=\"-1\"><TMPL_VAR NETWORK.BUTTON_SEARCHWIFI_CLOSE></font></button>
 		</center>
 

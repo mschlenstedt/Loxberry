@@ -130,21 +130,13 @@
 			</DIV>
 			<DIV	class="lb-form-help"></DIV>
 		</DIV>
-		<DIV style="text-align:center;">
+		<div class="lb-actions">
 			<!-- Buttons for widget -->
-			<A	id=		"btncancel"
-				data-role=	"button"
-				data-inline=	"true"
-				data-mini=	"true"
-				data-icon=	"delete"
-				href=		"/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></A>
-			<BUTTON	type=		"submit"
+			<A class="lb-btn lb-btn-sm lb-btn-icon"	id=		"btncancel"
+				href=		"/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></A>
+			<BUTTON class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"	type=		"submit"
 				form=		"main_form1"
-				id=		"btnsubmit"
-				data-role=	"button"
-				data-inline=	"true"
-				data-mini=	"true"
-				data-icon=	"check"><TMPL_VAR COMMON.BUTTON_SAVE></BUTTON>
+				id=		"btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></BUTTON>
 		</DIV>
 	</FORM>
 	<SCRIPT>
@@ -210,7 +202,7 @@
 		<div id="download_credentials_content" style="display:none">
 			<TMPL_VAR CREDENTIALSTXT>
 		</div>
-		<a id="download_credentials_button" data-role="button" data-mini="true" data-icon="arrow-r" target='_blank'>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="download_credentials_button" target='_blank'><i class="pi pi-arrow-right"></i> 
 			<TMPL_VAR ADMIN.BUTTON_SAVE_OK_DOWNLOAD_CREDENTIALS>
 		</a>
 		<script>
@@ -221,12 +213,8 @@
 	</DIV>
 	<BR><BR>
 	<DIV style="text-align:right;">
-		<P><CENTER><A	id=		"btnok"
-				data-role=	"button"
-				data-inline=	"true"
-				data-mini=	"true"
-				data-icon=	"check"
-				href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></A>
+		<P><CENTER><A class="lb-btn lb-btn-sm lb-btn-icon"	id=		"btnok"
+				href="<TMPL_VAR NEXTURL>"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></A>
 		</CENTER></P>
 	</DIV>
 </DIV>
