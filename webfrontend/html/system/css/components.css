@@ -18,20 +18,21 @@
 .lb-btn {
   display: inline-block;
   padding: 10px 20px;
-  background: var(--lb-gray-100);
+  background: linear-gradient(to bottom, #f6f6f6, #e0e0e0);
   color: var(--lb-gray-900);
-  border: var(--lb-border);
+  border: 1px solid #ccc;
   border-radius: var(--lb-radius);
   font-size: var(--lb-font-base);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
   text-align: center;
   transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 .lb-btn:hover {
-  background: var(--lb-gray-200);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  background: linear-gradient(to bottom, #e8e8e8, #d0d0d0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
 }
 .lb-btn-primary {
   background: var(--lb-primary);
