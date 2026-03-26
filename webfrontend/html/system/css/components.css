@@ -15,11 +15,14 @@
 }
 
 /* === Buttons === */
-.lb-btn {
+.lb-btn,
+a.lb-btn,
+a.lb-btn:visited,
+a.lb-btn:link {
   display: inline-block;
   padding: 0.7em 1em;
   background-color: #e6e6e6;
-  color: #000;
+  color: #000 !important;
   border: 1px solid #7e7e7e;
   border-radius: 0.3125em;
   font-size: var(--lb-font-base);
@@ -149,15 +152,11 @@
   }
 }
 
-/* === Page Content min-height === */
-.ui-content {
-  min-height: max(60vh, 500px);
-}
 
 /* === Button Variants === */
 .lb-btn-sm {
-  padding: 0.5em 0.8em;
-  font-size: 0.8125em;
+  padding: 0.55em 0.9em;
+  font-size: 12.5px;
 }
 .lb-btn-icon {
   display: inline-flex;
