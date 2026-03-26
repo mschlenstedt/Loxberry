@@ -62,9 +62,9 @@
 			</div>
 		</div>
 	</form>
-	<div style="text-align:center; margin-top: var(--lb-space-lg);">
-		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-		<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+	<div class="lb-actions">
+		<a id="btncancel" class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
 	</div>
 	<script>
 		$(document).ready( function ()
@@ -131,7 +131,7 @@
 			<tr>
 				<td align="center">
 					<p>
-						<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></a>
+						<a id="btnok" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" href="<TMPL_VAR NEXTURL>"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 					</p>
 				</td>
 			</tr>
