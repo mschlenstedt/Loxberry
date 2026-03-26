@@ -142,6 +142,11 @@
   }
 }
 
+/* === Page Content min-height === */
+.ui-content {
+  min-height: 60vh;
+}
+
 /* === Button Variants === */
 .lb-btn-sm {
   padding: 6px 12px;
