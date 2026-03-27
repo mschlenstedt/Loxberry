@@ -141,11 +141,6 @@ if (!-e "$lbsdatadir/wizard.dat") {
 	if ($exitcode != 0) {	
 		$wizardchk++;
 	}
-	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'root' 'loxberry');
-	my $exitcode  = $? >> 8;
-	if ($exitcode != 0) {	
-			$wizardchk++;
-	}
 	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '0000');
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {	
@@ -167,7 +162,6 @@ if (!-e "$lbsdatadir/wizard.dat") {
 		}
 		$R::adminpass2 = $R::adminpass1;
 		$R::securepin2 = $R::securepin1;
-		$rootpass = generate(8);
 
 		$maintemplate->param("WIZARD", 1);
 		$maintemplate->param("SAVE", 1);
@@ -345,22 +339,6 @@ sub save {
 		}
 	}
 	
-	##
-	## User wants to change the password (and maybe also the username):
-	##
-	if ($rootpass) {
-		# Save Username/Password for System
-		$output = qx(sudo $lbssbindir/credentialshandler.pl changepasswd 'root' 'loxberry' '$rootpass');
-		$exitcode  = $? >> 8;
-		if ($exitcode != 0) {
-			chomp ($output);
-			$error .= "credentialshandler.pl changepasswd root rootpassold rootpass Error: $output Exitcode: $exitcode<br>";
-			$rooterror = 1;
-		} else {
-			$maintemplate->param("ROOTOK", 1);
-		}
-	}
-
 	##
 	## User wants to change the SecurePIN:
 	##
