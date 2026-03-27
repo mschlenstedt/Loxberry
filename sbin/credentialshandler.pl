@@ -155,10 +155,10 @@ sub check_current_passwd
 {
 	my ($user, $pass) = @_;
 
-	#if ($user eq "root" || $user eq "0") {
-	#	print "Root password cannot be set or checked by this tool\n";
-	#	exit (1);
-	#}
+	if ($user eq "root" || $user eq "0") {
+		print "Root password cannot be set or checked by this tool\n";
+		exit (1);
+	}
 
 	my ($name, $passwd, $uid, $gid, $quota, $comment, $gcos, $dir, $shell) = getpwnam ($user);
 	if (!$passwd) {
@@ -168,7 +168,8 @@ sub check_current_passwd
 	# Perl's crypt function has a problem with special chars, e. g. password '' does not work
 	#if ( crypt($pass, $passwd) ne $passwd ) {
 	# Fallback to python's crypt implementation...
-	my $output = qx(python3 -c 'import crypt; print(crypt.crypt("$pass", "$passwd"));');
+	#my $output = qx(python3 -c 'import crypt; print(crypt.crypt("$pass", "$passwd"));');
+	my $output = qx(python3 -c 'import crypt_r as crypt; print(crypt.crypt("$pass", "$passwd"))');
 	chomp($output);
 	if ( $output ne $passwd ) {
 		print "Wrong password\n";

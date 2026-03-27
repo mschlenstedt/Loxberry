@@ -88,6 +88,7 @@ ii  debconf-i18n                         1.5.91                                 
 ii  debconf-utils                        1.5.91                                          all          debconf utilities
 ii  debian-archive-keyring               2025.1                                          all          OpenPGP archive certificates of the Debian archive
 ii  debianutils                          5.23.2                                          amd64        Miscellaneous utilities specific to Debian
+ii  debsuryorg-archive-keyring           2025.11.18                                      all          GnuPG archive keys of the deb.sury.org archives
 ii  default-mysql-client                 1.1.1                                           all          MySQL database client binaries (metapackage)
 ii  device-tree-compiler                 1.7.2-2+b1                                      amd64        Device Tree Compiler for Flat Device Trees
 ii  dh-python                            6.20250414                                      all          Debian helper tools for packaging Python libraries and applications
@@ -236,6 +237,7 @@ ii  libany-uri-escape-perl               0.01-4                                 
 ii  libao-common                         1.2.2+20180113-1.2                              all          Cross Platform Audio Output Library (Common files)
 ii  libao4:amd64                         1.2.2+20180113-1.2                              amd64        Cross Platform Audio Output Library
 ii  libaom3:amd64                        3.12.1-1                                        amd64        AV1 Video Codec Library
+ii  libapache2-mod-php7.4                1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        server-side, HTML-embedded scripting language (Apache 2 module)
 ii  libapache2-mod-php8.4                8.4.18-2+0~20260213.42+debian13~1.gbp3e97a0     amd64        server-side, HTML-embedded scripting language (Apache 2 module)
 ii  libapparmor1:amd64                   4.1.0-1                                         amd64        changehat AppArmor library
 ii  libapr1t64:amd64                     1.7.5-1                                         amd64        Apache Portable Runtime Library
@@ -1273,9 +1275,21 @@ ii  perl-base                            5.40.1-6                               
 ii  perl-modules-5.40                    5.40.1-6                                        all          Core Perl modules
 ii  perl-openssl-defaults:amd64          7+b2                                            amd64        version compatibility baseline for Perl OpenSSL packages
 ii  php-common                           2:101~+0~20260212.63+debian13~1.gbp7da167       all          Common files for PHP packages
+ii  php7.4-bz2                           1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        bzip2 module for PHP
+ii  php7.4-cgi                           1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        server-side, HTML-embedded scripting language (CGI binary)
+ii  php7.4-cli                           1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        command-line interpreter for the PHP scripting language
 ii  php7.4-common                        1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        documentation, examples and common module for PHP
+ii  php7.4-curl                          1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        CURL module for PHP
+ii  php7.4-json                          1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        JSON module for PHP
+ii  php7.4-mbstring                      1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        MBSTRING module for PHP
+ii  php7.4-mysql                         1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        MySQL module for PHP
+ii  php7.4-opcache                       1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        Zend OpCache module for PHP
+ii  php7.4-readline                      1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        readline module for PHP
+ii  php7.4-soap                          1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        SOAP module for PHP
 ii  php7.4-sqlite3                       1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        SQLite3 module for PHP
 ii  php7.4-sqlite3-dbgsym                1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        debug symbols for php7.4-sqlite3
+ii  php7.4-xml                           1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        DOM, SimpleXML, XML, and XSL module for PHP
+ii  php7.4-zip                           1:7.4.33-26+0~20260213.114+debian13~1.gbpd8dc34 amd64        Zip module for PHP
 ii  php8.4-bz2                           8.4.18-2+0~20260213.42+debian13~1.gbp3e97a0     amd64        bzip2 module for PHP
 ii  php8.4-cgi                           8.4.18-2+0~20260213.42+debian13~1.gbp3e97a0     amd64        server-side, HTML-embedded scripting language (CGI binary)
 ii  php8.4-cli                           8.4.18-2+0~20260213.42+debian13~1.gbp3e97a0     amd64        command-line interpreter for the PHP scripting language
@@ -1313,6 +1327,7 @@ ii  python3-chardet                      5.2.0+dfsg-2                           
 ii  python3-charset-normalizer           3.4.2-1                                         amd64        charset, encoding and language detection (Python 3)
 ii  python3-click                        8.2.0+0.really.8.1.8-1                          all          Command-Line Interface Creation Kit - Python 3.x
 ii  python3-colorama                     0.4.6-4                                         all          Cross-platform colored terminal text in Python - Python 3.x
+ii  python3-crypt-r                      3.13.1-1+b2                                     amd64        Restored crypt module removed in Python 3.13
 ii  python3-cryptography                 43.0.0-3+deb13u1                                amd64        Python library exposing cryptographic recipes and primitives
 ii  python3-dbus                         1.4.0-1                                         amd64        simple interprocess messaging system (Python 3 interface)
 ii  python3-dev                          3.13.5-1                                        amd64        header files and a static library for Python (default)
@@ -1467,34 +1482,3 @@ ii  zip                                  3.0-15                                 
 ii  zlib1g:amd64                         1:1.3.dfsg+really1.3.1-1+b1                     amd64        compression library - runtime
 ii  zlib1g-dev:amd64                     1:1.3.dfsg+really1.3.1-1+b1                     amd64        compression library - development
 ii  zstd                                 1.5.7+dfsg-1                                    amd64        fast lossless compression algorithm -- CLI tool
-ii  libapache2-mod-php7.4                1:7.4.33-8+0~20230904.88+debian12~1.gbp87c414 arm64        server-side, HTML-embedded scripting language (Apache 2 module)
-ii  libapache2-mod-php8.4                8.4.13-1+0~20231124.37+debian12~1.gbp42a939   arm64        server-side, HTML-embedded scripting language (Apache 2 module)
-ii  php-common                           2:94+0~20240205.51+debian12~1.gbp6faa2e        all          Common files for PHP packages
-ii  php7.4-bz2                           1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        bzip2 module for PHP
-ii  php7.4-cgi                           1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        server-side, HTML-embedded scripting language (CGI binary)
-ii  php7.4-cli                           1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        command-line interpreter for the PHP scripting language
-ii  php7.4-common                        1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        documentation, examples and common module for PHP
-ii  php7.4-curl                          1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        CURL module for PHP
-ii  php7.4-json                          1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        JSON module for PHP
-ii  php7.4-mbstring                      1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        MBSTRING module for PHP
-ii  php7.4-mysql                         1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        MySQL module for PHP
-ii  php7.4-opcache                       1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        Zend OpCache module for PHP
-ii  php7.4-readline                      1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        readline module for PHP
-ii  php7.4-soap                          1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        SOAP module for PHP
-ii  php7.4-sqlite3                       1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        SQLite3 module for PHP
-ii  php7.4-xml                           1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        DOM, SimpleXML, XML, and XSL module for PHP
-ii  php7.4-zip                           1:7.4.33-10+0~20240411.90+debian12~1.gbp6bc7ef arm64        Zip module for PHP
-ii  php8.4-bz2                           8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        bzip2 module for PHP
-ii  php8.4-cgi                           8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        server-side, HTML-embedded scripting language (CGI binary)
-ii  php8.4-cli                           8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        command-line interpreter for the PHP scripting language
-ii  php8.4-common                        8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        documentation, examples and common module for PHP
-ii  php8.4-curl                          8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        CURL module for PHP
-ii  php8.4-mbstring                      8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        MBSTRING module for PHP
-ii  php8.4-mysql                         8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        MySQL module for PHP
-ii  php8.4-opcache                       8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        Zend OpCache module for PHP
-ii  php8.4-readline                      8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        readline module for PHP
-ii  php8.4-soap                          8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        SOAP module for PHP
-ii  php8.4-sqlite3                       8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        SQLite3 module for PHP
-ii  php8.4-xml                           8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        DOM, SimpleXML, XML, and XSL module for PHP
-ii  php8.4-zip                           8.4.18-1+0~20240411.52+debian12~1.gbp91aa2d    arm64        Zip module for PHP
-
