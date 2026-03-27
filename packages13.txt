@@ -60,6 +60,7 @@ ii  bzip2                                1.0.8-6                                
 ii  bzip3                                1.5.1-1+b1                                      amd64        better, faster and stronger spiritual successor to bzip2 - utilities
 ii  ca-certificates                      20250419                                        all          Common CA certificates
 ii  cifs-utils                           2:7.4-1                                         amd64        Common Internet File System utilities
+ii  cloudflared                          2026.3.0                                        amd64        Cloudflare Tunnel daemon
 ii  comerr-dev:amd64                     2.1-1.47.2-3+b10                                amd64        common error description library - headers and static libraries
 ii  console-setup                        1.242~deb13u1                                   all          console font and keymap setup program
 ii  console-setup-linux                  1.242~deb13u1                                   all          Linux specific part of console-setup
