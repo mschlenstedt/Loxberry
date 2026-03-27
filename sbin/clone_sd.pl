@@ -7,7 +7,7 @@ use LoxBerry::Log;
 use Data::Dumper;
 use LoxBerry::Storage;
 
-my $version = "3.0.0.3";
+my $version = "3.0.1.3";
 
 my $dest_bootpart_size = 256; # /boot partition in MB
 
@@ -54,7 +54,12 @@ if( $curruser ne "root" ) {
 
 my $lsblk = lsblk();
 my $mount_root = findmnt('/');
-my $mount_boot = findmnt('/boot');
+my $mount_boot;
+if ( -d "/boot/firmware" ) {
+	$mount_boot = findmnt('/boot/firmware');
+} else {
+	$mount_boot = findmnt('/boot');
+}
 
 if (!$mount_root) {
 	LOGCRIT "Could not get / mount point";
@@ -63,9 +68,9 @@ if (!$mount_root) {
 	exit(1);
 }
 if (!$mount_boot) {
-	LOGCRIT "Could not get /boot mount point";
+	LOGCRIT "Could not get /boot or /boor/firmware mount point";
     	$error++;
-    	$notify .= " Could not get /boot mount point";
+    	$notify .= " Could not get /boot or /boot/firmware mount point";
 	exit(1);
 }
 
