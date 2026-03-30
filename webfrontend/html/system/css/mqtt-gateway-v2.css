@@ -1,0 +1,405 @@
+/* MQTT Gateway V2 — Component Styles (mqttgw-*)
+   Uses design tokens from design-tokens.css.
+   No hardcoded colors where tokens exist. */
+
+/* ============================================================
+   STATUS INDICATOR
+   ============================================================ */
+
+.mqttgw-status {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--lb-space-sm);
+  padding: 10px 14px;
+  border-radius: var(--lb-radius);
+  border: 1px solid transparent;
+  margin-bottom: var(--lb-space-lg);
+}
+
+.mqttgw-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* OK state */
+.mqttgw-status-ok {
+  background-color: #f0f9e8;
+  border-color: #c3e6a0;
+}
+.mqttgw-status-ok .mqttgw-status-dot {
+  background-color: var(--lb-success);
+}
+.mqttgw-status-ok .mqttgw-status-label {
+  color: var(--lb-primary-dark);
+  font-weight: 600;
+}
+
+/* Warn state */
+.mqttgw-status-warn {
+  background-color: #fff8e1;
+  border-color: #f0d060;
+}
+.mqttgw-status-warn .mqttgw-status-dot {
+  background-color: var(--lb-warning);
+}
+.mqttgw-status-warn .mqttgw-status-label {
+  color: #8a6d04;
+}
+
+/* Error state */
+.mqttgw-status-error {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+}
+.mqttgw-status-error .mqttgw-status-dot {
+  background-color: var(--lb-danger);
+}
+.mqttgw-status-error .mqttgw-status-label {
+  color: var(--lb-danger);
+}
+
+.mqttgw-status-label {
+  font-family: var(--lb-font);
+  font-size: var(--lb-font-sm);
+}
+
+.mqttgw-status-detail {
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
+}
+
+.mqttgw-status-uptime {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--lb-gray-500);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   VERSION WARNING
+   ============================================================ */
+
+.mqttgw-version-warning {
+  padding: 12px 16px;
+  background-color: #fff8e1;
+  border: 1px solid #f0d060;
+  border-radius: var(--lb-radius);
+  margin-bottom: var(--lb-space-lg);
+  font-size: var(--lb-font-sm);
+  color: #8a6d04;
+}
+
+/* ============================================================
+   DISCOVERY BAR
+   ============================================================ */
+
+.mqttgw-discovery {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--lb-gray-50);
+  border: 1px solid var(--lb-gray-200);
+  border-radius: var(--lb-radius);
+  margin-bottom: var(--lb-space-md);
+}
+
+.mqttgw-discovery-info {
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
+}
+
+.mqttgw-discovery-last {
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
+  margin-left: auto;
+}
+
+/* ============================================================
+   FILTER BAR
+   ============================================================ */
+
+.mqttgw-filter {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--lb-space-md);
+}
+
+.mqttgw-filter-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  font-family: var(--lb-font);
+  font-size: var(--lb-font-sm);
+  background: white;
+  color: var(--lb-gray-900);
+}
+.mqttgw-filter-input:focus {
+  border-color: var(--lb-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+
+.mqttgw-filter-label {
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-700);
+  white-space: nowrap;
+}
+
+.mqttgw-filter-count {
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   TOPIC GROUP (extends lb-collapsible)
+   ============================================================ */
+
+.mqttgw-group {
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  margin-bottom: var(--lb-space-md);
+}
+
+.mqttgw-group > summary {
+  padding: 10px 16px;
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+  font-weight: 500;
+  font-family: var(--lb-font);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--lb-space-sm);
+}
+.mqttgw-group > summary::-webkit-details-marker {
+  display: none;
+}
+/* Suppress lb-collapsible arrow — group uses inline arrows */
+.mqttgw-group > summary::after {
+  content: none;
+}
+
+.mqttgw-group-badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  line-height: 1.4;
+}
+
+.mqttgw-group-badge-active {
+  background-color: var(--lb-primary);
+  color: white;
+}
+
+.mqttgw-group-badge-inactive {
+  background-color: var(--lb-gray-200);
+  color: var(--lb-gray-500);
+}
+
+.mqttgw-group-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mqttgw-group-actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  color: var(--lb-gray-500);
+  border-radius: var(--lb-radius);
+  line-height: 1.4;
+}
+.mqttgw-group-actions button:hover {
+  background: var(--lb-gray-200);
+  color: var(--lb-gray-900);
+}
+
+/* ============================================================
+   TOPIC ROW
+   ============================================================ */
+
+.mqttgw-topic-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--lb-gray-100);
+}
+.mqttgw-topic-row:last-child {
+  border-bottom: none;
+}
+
+.mqttgw-topic-row-disabled {
+  opacity: 0.6;
+}
+
+.mqttgw-topic-name {
+  font-family: var(--lb-font-mono);
+  font-size: var(--lb-font-sm);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--lb-gray-900);
+}
+
+.mqttgw-topic-payload {
+  font-size: 0.8rem;
+  color: var(--lb-gray-500);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mqttgw-topic-json-label {
+  font-size: 11px;
+  color: var(--lb-primary-dark);
+  background: var(--lb-gray-100);
+  border: 1px solid var(--lb-gray-200);
+  border-radius: var(--lb-radius);
+  padding: 1px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mqttgw-topic-json-label:hover {
+  background: var(--lb-gray-200);
+}
+
+.mqttgw-topic-ms {
+  font-size: 11px;
+  color: var(--lb-gray-300);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   JSON EXPAND
+   ============================================================ */
+
+.mqttgw-json-rows {
+  background-color: #f7fbf2;
+  border-bottom: 1px solid var(--lb-gray-100);
+}
+
+.mqttgw-json-row {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 14px 6px 44px;
+}
+
+.mqttgw-json-key {
+  font-family: var(--lb-font-mono);
+  font-size: 0.8rem;
+  color: var(--lb-primary-dark);
+  white-space: nowrap;
+}
+
+.mqttgw-json-value {
+  font-size: 0.8rem;
+  color: var(--lb-gray-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mqttgw-json-type {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--lb-gray-300);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   DARK THEME OVERRIDES
+   ============================================================ */
+
+body.theme-dark .mqttgw-status-ok {
+  background-color: rgba(109, 172, 32, 0.12);
+  border-color: rgba(109, 172, 32, 0.35);
+}
+
+body.theme-dark .mqttgw-status-warn {
+  background-color: rgba(202, 138, 4, 0.12);
+  border-color: rgba(202, 138, 4, 0.35);
+}
+body.theme-dark .mqttgw-status-warn .mqttgw-status-label {
+  color: #e0b030;
+}
+
+body.theme-dark .mqttgw-status-error {
+  background-color: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+body.theme-dark .mqttgw-version-warning {
+  background-color: rgba(202, 138, 4, 0.12);
+  border-color: rgba(202, 138, 4, 0.35);
+  color: #e0b030;
+}
+
+body.theme-dark .mqttgw-json-rows {
+  background-color: rgba(109, 172, 32, 0.06);
+}
+
+body.theme-dark .mqttgw-filter-input {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+}
+
+/* ============================================================
+   RESPONSIVE — max-width 875px
+   ============================================================ */
+
+@media (max-width: 875px) {
+  .mqttgw-status {
+    flex-wrap: wrap;
+  }
+  .mqttgw-status-uptime {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  .mqttgw-discovery {
+    flex-wrap: wrap;
+  }
+  .mqttgw-discovery-last {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  .mqttgw-filter {
+    flex-wrap: wrap;
+  }
+  .mqttgw-filter-input {
+    flex-basis: 100%;
+  }
+
+  .mqttgw-topic-row {
+    flex-wrap: wrap;
+  }
+  .mqttgw-topic-name {
+    flex-basis: 100%;
+  }
+  .mqttgw-topic-payload {
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+}
