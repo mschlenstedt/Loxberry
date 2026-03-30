@@ -237,53 +237,50 @@ elseif( $ajax == 'getmqttfinderdata' ) {
 }
 
 elseif ( $_POST['ajax'] == 'discover_topics' || $_GET['ajax'] == 'discover_topics' ) {
-    $finderfile = '/dev/shm/mqttfinder.json';
-    if (file_exists($finderfile)) {
-        $finderdata = json_decode(file_get_contents($finderfile), true);
-        $topics = array();
+    // Use gateway relayed topics as primary source (clean data)
+    // Falls back to mqttfinder.json if gateway data unavailable
+    $topics = array();
+    $source = '';
 
-        $incoming = isset($finderdata['incoming']) ? $finderdata['incoming'] : $finderdata;
-        if (is_array($incoming)) {
-            foreach ($incoming as $topic => $entry) {
-                // Valid MQTT topics: string with /, entry is array with p key
-                if (!is_string($topic) || strlen($topic) == 0) continue;
-                if (strpos($topic, '/') === false) continue;
-                if (!is_array($entry) || !isset($entry['p'])) continue;
-                // Topic must only contain valid MQTT chars: letters, digits, /-_.$
-                // Reject anything with JSON chars, control chars, or other garbage
-                if (preg_match('/["\'{}\[\]()&!+,;:=\\\\<>@#%^~`\x00-\x1f]/', $topic)) continue;
-                // Each segment must start with a letter or $ (for $SYS)
-                $group = explode('/', $topic)[0];
-                if (!preg_match('/^[a-zA-Z$]/', $group)) continue;
-                // Skip $SYS topics
-                if ($group === '$SYS') continue;
+    // Try gateway topics first (from Incoming Overview data)
+    if (file_exists($datafile)) {
+        $gwdata = json_decode(file_get_contents($datafile), true);
+        if (is_array($gwdata)) {
+            // Gateway topics: both http and udp sections
+            foreach (array('http', 'udp') as $section) {
+                if (!isset($gwdata[$section]) || !is_array($gwdata[$section])) continue;
+                foreach ($gwdata[$section] as $topickey => $entry) {
+                    // Topic keys use _ instead of / in gateway data
+                    $topic = isset($entry['topic']) ? $entry['topic'] : str_replace('_', '/', $topickey);
+                    if (strpos($topic, '/') === false) continue;
 
-                $payload = '';
-                if (isset($entry['p'])) $payload = $entry['p'];
-                elseif (isset($entry['value'])) $payload = $entry['value'];
-                $topics[] = array(
-                    'topic' => $topic,
-                    'group' => $group,
-                    'payload' => is_string($payload) ? $payload : json_encode($payload),
-                    'timestamp' => isset($entry['t']) ? $entry['t'] : (isset($entry['timestamp']) ? $entry['timestamp'] : '')
-                );
+                    $group = explode('/', $topic)[0];
+                    if (!preg_match('/^[a-zA-Z]/', $group)) continue;
+
+                    // Avoid duplicates (same topic in http and udp)
+                    $found = false;
+                    foreach ($topics as $t) { if ($t['topic'] === $topic) { $found = true; break; } }
+                    if ($found) continue;
+
+                    $payload = isset($entry['msg']) ? $entry['msg'] : '';
+                    $topics[] = array(
+                        'topic' => $topic,
+                        'group' => $group,
+                        'payload' => is_string($payload) ? $payload : json_encode($payload),
+                        'timestamp' => isset($entry['timestamp']) ? $entry['timestamp'] : ''
+                    );
+                }
             }
+            $source = 'gateway';
         }
-
-        header('Content-Type: application/json');
-        echo json_encode(array(
-            'topics' => $topics,
-            'count' => count($topics),
-            'source' => 'mqttfinder'
-        ));
-    } else {
-        header('Content-Type: application/json');
-        echo json_encode(array(
-            'topics' => array(),
-            'count' => 0,
-            'error' => 'No discovery data available. Open MQTT Finder first to populate.'
-        ));
     }
+
+    header('Content-Type: application/json');
+    echo json_encode(array(
+        'topics' => $topics,
+        'count' => count($topics),
+        'source' => $source
+    ));
 }
 
 elseif ( $_POST['ajax'] == 'get_subscriptions_v2' || $_GET['ajax'] == 'get_subscriptions_v2' ) {
