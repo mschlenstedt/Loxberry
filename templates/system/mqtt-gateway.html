@@ -512,9 +512,9 @@ $(function() {
         function renderTree(topics, prefix, depth) {
             var tree = buildTree(topics, prefix);
             var html = '';
-            var indent = depth > 0 ? 'padding-left:' + (depth * 12) + 'px;' : '';
+            var ml = depth > 0 ? 'margin-left:' + (depth * 16) + 'px;' : '';
 
-            // Render child groups first (sorted)
+            // Render child groups (sorted) — always as collapsible, even with 1 child
             var sortedChildren = Object.keys(tree.children).sort();
             sortedChildren.forEach(function(seg) {
                 var childTopics = tree.children[seg];
@@ -525,34 +525,25 @@ $(function() {
                     if (s && s.enabled) childSubCount++;
                 });
                 var cBadge = childSubCount > 0 ? 'mqttgw-group-badge-active' : 'mqttgw-group-badge-inactive';
+                var dataPath = childPrefix.replace(/'/g, "\\'");
 
-                if (childTopics.length === 1) {
-                    // Single topic under this segment — show flat with full remaining path
-                    var t = childTopics[0];
-                    var leafName = t.topic.substring(prefix.length);
-                    if (leafName.charAt(0) === '/') leafName = leafName.substring(1);
-                    html += '<div style="' + indent + '">' + renderTopicRow(t, leafName) + '</div>';
-                } else {
-                    // Multiple topics — collapsible sub-group with select-all
-                    var dataPath = childPrefix.replace(/'/g, "\\'");
-                    html += '<details class="lb-collapsible" style="margin:0;border-left:none;border-right:none;border-radius:0">';
-                    html += '<summary style="padding:8px 14px;' + indent + 'font-size:var(--lb-font-sm)">';
-                    html += '<strong>' + seg + '</strong>';
-                    html += '<span class="mqttgw-group-badge ' + cBadge + '" style="margin-left:8px">' + childSubCount + ' / ' + childTopics.length + '</span>';
-                    html += '<span class="mqttgw-group-actions">';
-                    html += '<button type="button" onclick="subToggleAll(\'' + dataPath + '\', true)">Alle an</button>';
-                    html += '<button type="button" onclick="subToggleAll(\'' + dataPath + '\', false)">Alle aus</button>';
-                    html += '</span>';
-                    html += '</summary>';
-                    html += '<div style="padding:0">';
-                    html += renderTree(childTopics, childPrefix, depth + 1);
-                    html += '</div></details>';
-                }
+                html += '<details class="lb-collapsible" style="' + ml + 'margin-bottom:0;border-left:none;border-right:none;border-radius:0;border-top:none">';
+                html += '<summary style="padding:8px 14px;font-size:var(--lb-font-sm)">';
+                html += '<strong>' + seg + '</strong>';
+                html += '<span class="mqttgw-group-badge ' + cBadge + '" style="margin-left:8px">' + childSubCount + ' / ' + childTopics.length + '</span>';
+                html += '<span class="mqttgw-group-actions">';
+                html += '<button type="button" onclick="subToggleAll(\'' + dataPath + '\', true)">Alle an</button>';
+                html += '<button type="button" onclick="subToggleAll(\'' + dataPath + '\', false)">Alle aus</button>';
+                html += '</span>';
+                html += '</summary>';
+                html += '<div style="padding:0">';
+                html += renderTree(childTopics, childPrefix, depth + 1);
+                html += '</div></details>';
             });
 
-            // Render leaf topics
+            // Render leaf topics (indented)
             tree.topics.forEach(function(item) {
-                html += '<div style="' + indent + '">' + renderTopicRow(item.topic, item.leafName) + '</div>';
+                html += '<div style="' + ml + '">' + renderTopicRow(item.topic, item.leafName) + '</div>';
             });
 
             return html;
