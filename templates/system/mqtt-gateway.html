@@ -100,54 +100,64 @@
         <div class="lb-form-help">Port f&uuml;r Miniserver UDP Kommunikation</div>
     </div>
 
-    <!-- Merged from FORM_SETTINGS: Data transformations -->
-    <div class="lb-section-title">Data transformations</div>
+    <!-- Datenverarbeitung -->
+    <div class="lb-section-title">Datenverarbeitung</div>
 
-    <div data-role="fieldcontain">
-        <fieldset data-role="controlgroup">
-            <input type="checkbox" name="Main.convert_booleans" id="Main.convert_booleans">
-            <label for="Main.convert_booleans">Convert booleans to 1 and 0</label>
-            <input type="checkbox" name="Main.expand_json" id="Main.expand_json">
-            <label for="Main.expand_json">Expand JSON data</label>
-        </fieldset>
-    </div>
-
-    <!-- Merged from FORM_SETTINGS: Miniserver to MQTT -->
-    <div class="lb-section-title">Miniserver to MQTT</div>
-
-    <div data-role="fieldcontain">
-        <label for="udpinport">Gateway UDP in-port</label>
-        <input name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" />
-        <p class="hint">Default UDP IN-port on LoxBerry is <span class="mono">11884</span>. Publish data <i>from the Miniserver</i> to this udp port.</p>
-    </div>
-
-    <!-- Merged from FORM_SETTINGS: Advanced settings -->
-    <details class="lb-collapsible">
-        <summary>Still more settings</summary>
-        <div class="lb-collapsible-content">
-            <div>
-                <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-                    <legend>Data Transfer Performance</legend>
-                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-50" value="50">
-                    <label for="Main.cpuperf-50">NO LIMIT!</label>
-                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-010" value="10">
-                    <label for="Main.cpuperf-010">Really fast</label>
-                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-005" value="5">
-                    <label for="Main.cpuperf-005">Fast (Default)</label>
-                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-002" value="2.5">
-                    <label for="Main.cpuperf-002">Moderate</label>
-                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-001" value="1">
-                    <label for="Main.cpuperf-001">Energy Saver</label>
-                    <p><br>This influences the routing performance of the MQTT Gateway. Compared, the old behaviour (before this setting exists) was between <i>Moderate</i> and <i>Energy Saver</i>. Changing the setting takes some minutes to adjust.</p>
-                </fieldset>
-            </div>
-            <div>
-                <label for="resetaftersendms">Reset After Send Time (ms)</label>
-                <input type="number" data-clear-btn="false" name="Main.resetaftersendms" id="Main.resetaftersendms">
-                <p class="hint">Default is <span class="mono">13</span>. Topics with Reset-After-Send enabled, will wait for x milliseconds before the value is resetted. Raise this value, if your virtual inputs are not correctly resetted on your Miniserver.</p>
-            </div>
+    <div class="lb-form-row">
+        <div class="lb-form-label">Boolean-Konvertierung</div>
+        <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
+            <label class="lb-toggle" data-role="none">
+                <input type="checkbox" name="Main.convert_booleans" id="Main.convert_booleans" data-role="none">
+                <span class="lb-toggle-slider"></span>
+            </label>
+            <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">true/false &rarr; 1/0</span>
         </div>
-    </details>
+    </div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">JSON Expand</div>
+        <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
+            <label class="lb-toggle" data-role="none">
+                <input type="checkbox" name="Main.expand_json" id="Main.expand_json" data-role="none">
+                <span class="lb-toggle-slider"></span>
+            </label>
+            <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">JSON-Payloads in einzelne Werte aufteilen</span>
+        </div>
+    </div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">CPU-Profil</div>
+        <div class="lb-form-field">
+            <select class="lb-select" name="Main.cpuperf" id="Main.cpuperf" data-role="none" style="width:250px">
+                <option value="1">1% (Energiesparer)</option>
+                <option value="2.5">2,5% (Moderat)</option>
+                <option value="5">5% (Standard)</option>
+                <option value="10">10% (Schnell)</option>
+                <option value="50">50% (Maximum)</option>
+            </select>
+        </div>
+        <div class="lb-form-help">&Auml;nderungen brauchen einige Minuten zur Anpassung</div>
+    </div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">Reset-After-Send</div>
+        <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
+            <input class="lb-input" type="number" name="Main.resetaftersendms" id="Main.resetaftersendms" data-role="none" style="width:80px">
+            <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">ms</span>
+        </div>
+        <div class="lb-form-help">Standard: 13 ms. Wartezeit bevor ein Wert zur&uuml;ckgesetzt wird.</div>
+    </div>
+
+    <!-- Miniserver zu MQTT -->
+    <div class="lb-section-title">Miniserver zu MQTT</div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">Gateway UDP In-Port</div>
+        <div class="lb-form-field">
+            <input class="lb-input" name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" data-role="none" style="width:120px">
+        </div>
+        <div class="lb-form-help">Standard: 11884. Daten vom Miniserver an diesen Port senden.</div>
+    </div>
 
 </form>
 
