@@ -355,11 +355,19 @@ $(function(){
         <span class="mqttgw-discovery-last" id="discovery_last_info"></span>
     </div>
 
+    <!-- Wildcard Subscription -->
+    <div class="mqttgw-discovery">
+        <input class="lb-input" type="text" id="wildcard_input" placeholder="z.B. solarHMS/+/0/power oder tasmota/#" style="flex:1" data-role="none">
+        <button class="lb-btn lb-btn-sm" id="btn_wildcard_preview" type="button">Vorschau</button>
+        <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_wildcard_select" type="button" style="display:none">Alle ausw&auml;hlen</button>
+        <span class="mqttgw-discovery-info" id="wildcard_info"><b>+</b> = eine Ebene, <b>#</b> = alle Unterebenen</span>
+    </div>
+
     <!-- Filter Bar -->
     <div class="mqttgw-filter">
-        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="Topics filtern...">
+        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="Topics filtern..." data-role="none">
         <label class="mqttgw-filter-label">
-            <input type="checkbox" id="filter_subscribed_only"> Nur abonnierte
+            <input type="checkbox" id="filter_subscribed_only" data-role="none"> Nur abonnierte
         </label>
         <span class="mqttgw-filter-count" id="filter_count"></span>
     </div>
@@ -516,6 +524,65 @@ $(function() {
         .always(function() {
             $btn.prop("disabled", false).html("&#128269; Topics entdecken");
         });
+    });
+
+    // Wildcard pattern matching: + = one level, # = all remaining
+    function wildcardToRegex(pattern) {
+        var parts = pattern.split('/').map(function(p) {
+            if (p === '#') return '.*';
+            if (p === '+') return '[^/]+';
+            return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        });
+        // If last part is #, it matches everything after
+        var regex = '^' + parts.join('/');
+        if (!pattern.endsWith('#')) regex += '$';
+        return new RegExp(regex);
+    }
+
+    var wildcardMatches = [];
+
+    // Wildcard preview
+    $("#btn_wildcard_preview").click(function() {
+        var pattern = $("#wildcard_input").val().trim();
+        if (!pattern) return;
+
+        var regex = wildcardToRegex(pattern);
+        wildcardMatches = [];
+
+        discoveredTopics.forEach(function(t) {
+            if (regex.test(t.topic)) {
+                wildcardMatches.push(t.topic);
+            }
+        });
+
+        if (wildcardMatches.length > 0) {
+            $("#wildcard_info").html('<b>' + wildcardMatches.length + ' Topics</b> gefunden');
+            $("#btn_wildcard_select").show();
+            // Filter view to show only matches
+            $("#topic_filter").val(pattern.replace(/[+#]/g, '')).trigger("input");
+        } else {
+            $("#wildcard_info").html('Keine Topics gefunden für <b>' + pattern + '</b>');
+            $("#btn_wildcard_select").hide();
+        }
+    });
+
+    // Enter in wildcard input triggers preview
+    $("#wildcard_input").on("keypress", function(e) {
+        if (e.which === 13) { e.preventDefault(); $("#btn_wildcard_preview").click(); }
+    });
+
+    // Select all wildcard matches
+    $("#btn_wildcard_select").click(function() {
+        wildcardMatches.forEach(function(topic) {
+            if (!subscriptionsV2[topic]) {
+                subscriptionsV2[topic] = { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+            }
+            subscriptionsV2[topic].enabled = true;
+        });
+        $("#wildcard_info").html('<b>' + wildcardMatches.length + ' Topics</b> abonniert &#10004;');
+        $("#btn_wildcard_select").hide();
+        $("#topic_filter").val('');
+        renderTopics();
     });
 
     // Event delegation for checkboxes
