@@ -530,14 +530,12 @@ $(function() {
                 var cBadge = childSubCount > 0 ? 'mqttgw-group-badge-active' : 'mqttgw-group-badge-inactive';
                 var dataPath = childPrefix.replace(/'/g, "\\'");
 
+                var allChecked = childSubCount === childTopics.length && childSubCount > 0;
                 html += '<details class="lb-collapsible" style="' + ml + 'margin-bottom:0;border-radius:0;border-color:var(--lb-gray-200);background:' + bg + '">';
                 html += '<summary style="padding:8px 14px;font-size:var(--lb-font-sm)">';
+                html += '<input type="checkbox" class="sub-group-toggle" data-prefix="' + dataPath + '"' + (allChecked ? ' checked' : '') + ' onclick="event.stopPropagation();subToggleAll(\'' + dataPath + '\', this.checked)" style="margin-right:6px">';
                 html += '<strong>' + seg + '</strong>';
                 html += '<span class="mqttgw-group-badge ' + cBadge + '" style="margin-left:8px">' + childSubCount + ' / ' + childTopics.length + '</span>';
-                html += '<span class="mqttgw-group-actions">';
-                html += '<button type="button" onclick="subToggleAll(\'' + dataPath + '\', true)">Alle an</button>';
-                html += '<button type="button" onclick="subToggleAll(\'' + dataPath + '\', false)">Alle aus</button>';
-                html += '</span>';
                 html += '</summary>';
                 html += '<div style="padding:0">';
                 html += renderTree(childTopics, childPrefix, depth + 1);
@@ -560,14 +558,12 @@ $(function() {
             var badgeClass = g.subCount > 0 ? 'mqttgw-group-badge-active' : 'mqttgw-group-badge-inactive';
             var isOpen = g.subCount > 0 ? ' open' : '';
 
+            var allGroupChecked = g.subCount === g.topics.length && g.subCount > 0;
             html += '<details class="lb-collapsible mqttgw-group"' + isOpen + '>';
             html += '<summary>';
+            html += '<input type="checkbox" class="group-toggle" data-group="' + groupName + '"' + (allGroupChecked ? ' checked' : '') + ' onclick="event.stopPropagation();groupToggleAll(\'' + groupName + '\', this.checked)" style="margin-right:6px">';
             html += '<strong>' + groupName + '</strong>';
             html += '<span class="mqttgw-group-badge ' + badgeClass + '">' + g.subCount + ' / ' + g.topics.length + '</span>';
-            html += '<span class="mqttgw-group-actions">';
-            html += '<button type="button" onclick="groupToggleAll(\'' + groupName + '\', true)">Alle an</button>';
-            html += '<button type="button" onclick="groupToggleAll(\'' + groupName + '\', false)">Alle aus</button>';
-            html += '</span>';
             html += '</summary>';
             html += '<div class="lb-collapsible-content" style="padding:0">';
             html += renderTree(g.topics, groupName, 0);
