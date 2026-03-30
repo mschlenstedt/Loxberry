@@ -245,18 +245,26 @@ elseif ( $_POST['ajax'] == 'discover_topics' || $_GET['ajax'] == 'discover_topic
         $incoming = isset($finderdata['incoming']) ? $finderdata['incoming'] : $finderdata;
         if (is_array($incoming)) {
             foreach ($incoming as $topic => $entry) {
-                if (is_string($topic) && strlen($topic) > 0) {
-                    $group = explode('/', $topic)[0];
-                    $payload = '';
-                    if (isset($entry['p'])) $payload = $entry['p'];
-                    elseif (isset($entry['value'])) $payload = $entry['value'];
-                    $topics[] = array(
-                        'topic' => $topic,
-                        'group' => $group,
-                        'payload' => is_string($payload) ? $payload : json_encode($payload),
-                        'timestamp' => isset($entry['t']) ? $entry['t'] : (isset($entry['timestamp']) ? $entry['timestamp'] : '')
-                    );
-                }
+                // Valid MQTT topics must contain / and not start with special chars
+                if (!is_string($topic) || strlen($topic) == 0) continue;
+                if (strpos($topic, '/') === false) continue;
+                if (!is_array($entry)) continue;
+                // Skip entries that look like JSON fragments (corrupted data)
+                if (preg_match('/^["\',\{\[\d]/', $topic)) continue;
+
+                $group = explode('/', $topic)[0];
+                // Skip groups with control characters
+                if (preg_match('/[\x00-\x1f]/', $group)) continue;
+
+                $payload = '';
+                if (isset($entry['p'])) $payload = $entry['p'];
+                elseif (isset($entry['value'])) $payload = $entry['value'];
+                $topics[] = array(
+                    'topic' => $topic,
+                    'group' => $group,
+                    'payload' => is_string($payload) ? $payload : json_encode($payload),
+                    'timestamp' => isset($entry['t']) ? $entry['t'] : (isset($entry['timestamp']) ? $entry['timestamp'] : '')
+                );
             }
         }
 
