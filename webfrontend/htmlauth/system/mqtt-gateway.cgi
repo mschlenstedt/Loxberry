@@ -63,47 +63,29 @@ if( $q->{ajax} ) {
 	$template->param("GATEWAY_VERSION", $gatewayversion);
 	$template->param("GATEWAY_V2", $gatewayversion == 2 ? 1 : 0);
 
-	# Switch between forms
+	# Switch between forms (4 tabs: Gateway, Abonnements, Datenverkehr, Logs)
 
-	if( $q->{form} eq "basic" or ($gatewayversion == 2 and !$q->{form}) ) {
-		$navbar{5}{active} = 1;
+	if( !$q->{form} or $q->{form} eq "basic" or $q->{form} eq "settings" ) {
+		$navbar{10}{active} = 1;
 		$template->param("FORM_BASIC", 1);
 		basic_form();
 	}
-	elsif( !$q->{form} or $q->{form} eq "settings" ) {
-		$navbar{10}{active} = 1;
-		$template->param("FORM_SETTINGS", 1);
-		settings_form();
-	}
-	elsif ( $q->{form} eq "subscriptions" ) {
+	elsif ( $q->{form} eq "subscriptions" or $q->{form} eq "conversions" ) {
 		$navbar{20}{active} = 1;
 		$template->param("FORM_SUBSCRIPTIONS", 1);
 		subscriptions_form();
 	}
-	elsif ( $q->{form} eq "conversions" ) {
+	elsif ( $q->{form} eq "incoming" or $q->{form} eq "transformers" ) {
 		$navbar{30}{active} = 1;
-		$template->param("FORM_CONVERSIONS", 1);
-		conversions_form();
-	}
-	elsif ( $q->{form} eq "incoming" ) {
-		$navbar{40}{active} = 1;
 		$template->param("FORM_TOPICS", 1);
 		$template->param("FORM_DISABLE_BUTTONS", 1);
-		# $template->param("FORM_DISABLE_JS", 1);
 		topics_form();
-	}
-	elsif ( $q->{form} eq "transformers" ) {
-		$navbar{90}{active} = 1;
-		$template->param("FORM_TRANSFORMERS", 1);
-		$template->param("FORM_DISABLE_BUTTONS", 1);
-		# $template->param("FORM_DISABLE_JS", 1);
 		transformers_form();
 	}
 	elsif ( $q->{form} eq "logs" ) {
-		$navbar{90}{active} = 1;
+		$navbar{40}{active} = 1;
 		$template->param("FORM_LOGS", 1);
 		$template->param("FORM_DISABLE_BUTTONS", 1);
-		# $template->param("FORM_DISABLE_JS", 1);
 		logs_form();
 	}
 }
@@ -121,43 +103,18 @@ sub print_form
 	my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt";
 	my $helptemplate = "help.html";
 	
-	my @gw_submenu;
-
-	if ($gatewayversion == 2) {
-		@gw_submenu = (
-			{ "Name" => "Gateway Übersicht",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=basic" },
-			{ "Name" => "Abonnements",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions" },
-			{ "Name" => "Incoming Overview",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=incoming" },
-			{ "Name" => "Settings",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=settings" },
-			{ "Name" => "Transformers",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=transformers" },
-		);
-	} else {
-		@gw_submenu = (
-			{ "Name" => "Gateway Übersicht",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=basic" },
-			{ "Name" => "Gateway Settings",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=settings" },
-			{ "Name" => "Gateway Subscriptions",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions" },
-			{ "Name" => "Gateway Conversions",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=conversions" },
-			{ "Name" => "Incoming Overview",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=incoming" },
-			{ "Name" => "Gateway Transformers",
-			  "URL" => "/admin/system/mqtt-gateway.cgi?form=transformers" },
-		);
-	}
-
 	our @navbar = (
 		{ "Name" => "MQTT Basics",
 		  "URL" => "/admin/system/mqtt.cgi" },
 		{ "Name" => "MQTT Gateway",
-		  "Submenu" => \@gw_submenu },
+		  "Submenu" => [
+			{ "Name" => "Gateway",
+			  "URL" => "/admin/system/mqtt-gateway.cgi" },
+			{ "Name" => "Abonnements",
+			  "URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions" },
+			{ "Name" => "Datenverkehr",
+			  "URL" => "/admin/system/mqtt-gateway.cgi?form=incoming" },
+		  ] },
 		{ "Name" => "MQTT Finder",
 		  "URL" => "/admin/system/mqtt-finder.cgi" },
 		{ "Name" => "Log Files",
