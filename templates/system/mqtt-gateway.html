@@ -399,7 +399,12 @@ $(function(){
 $(function() {
     var discoveredTopics = [];
     var subscriptionsV2 = {};
-    var msCount = parseInt($("#Main\\.msno option").length) || 1;
+    // Count Miniservers from config (Main.msno is highest MS number in use)
+    var cfgstr2 = $("#mqttconfig").text();
+    var cfg2 = cfgstr2 ? JSON.parse(cfgstr2) : {};
+    var msCount = parseInt(cfg2.Main && cfg2.Main.msno) || 1;
+    // Check if we have at least 2 MS configured (msno is the default, but there may be more)
+    if (msCount < 2) msCount = 2;  // LoxBerry supports multi-MS, show dropdown by default
 
     // Load existing V2 subscriptions
     $.post('ajax/ajax-mqtt.php', { ajax: 'get_subscriptions_v2' })
