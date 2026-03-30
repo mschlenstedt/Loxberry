@@ -242,15 +242,19 @@ elseif ( $_POST['ajax'] == 'discover_topics' || $_GET['ajax'] == 'discover_topic
         $finderdata = json_decode(file_get_contents($finderfile), true);
         $topics = array();
 
-        if (is_array($finderdata)) {
-            foreach ($finderdata as $topic => $entry) {
+        $incoming = isset($finderdata['incoming']) ? $finderdata['incoming'] : $finderdata;
+        if (is_array($incoming)) {
+            foreach ($incoming as $topic => $entry) {
                 if (is_string($topic) && strlen($topic) > 0) {
                     $group = explode('/', $topic)[0];
+                    $payload = '';
+                    if (isset($entry['p'])) $payload = $entry['p'];
+                    elseif (isset($entry['value'])) $payload = $entry['value'];
                     $topics[] = array(
                         'topic' => $topic,
                         'group' => $group,
-                        'payload' => isset($entry['value']) ? $entry['value'] : '',
-                        'timestamp' => isset($entry['timestamp']) ? $entry['timestamp'] : ''
+                        'payload' => is_string($payload) ? $payload : json_encode($payload),
+                        'timestamp' => isset($entry['t']) ? $entry['t'] : (isset($entry['timestamp']) ? $entry['timestamp'] : '')
                     );
                 }
             }
