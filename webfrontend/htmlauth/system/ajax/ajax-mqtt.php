@@ -250,8 +250,8 @@ elseif ( $_POST['ajax'] == 'discover_topics' || $_GET['ajax'] == 'discover_topic
             foreach (array('http', 'udp') as $section) {
                 if (!isset($gwdata[$section]) || !is_array($gwdata[$section])) continue;
                 foreach ($gwdata[$section] as $topickey => $entry) {
-                    // Topic keys use _ instead of / in gateway data
-                    $topic = isset($entry['topic']) ? $entry['topic'] : str_replace('_', '/', $topickey);
+                    // Real topic is in 'originaltopic', keys use _ instead of /
+                    $topic = isset($entry['originaltopic']) ? $entry['originaltopic'] : str_replace('_', '/', $topickey);
                     if (strpos($topic, '/') === false) continue;
 
                     $group = explode('/', $topic)[0];
@@ -262,7 +262,7 @@ elseif ( $_POST['ajax'] == 'discover_topics' || $_GET['ajax'] == 'discover_topic
                     foreach ($topics as $t) { if ($t['topic'] === $topic) { $found = true; break; } }
                     if ($found) continue;
 
-                    $payload = isset($entry['msg']) ? $entry['msg'] : '';
+                    $payload = isset($entry['message']) ? $entry['message'] : '';
                     $topics[] = array(
                         'topic' => $topic,
                         'group' => $group,
