@@ -100,6 +100,55 @@
         <div class="lb-form-help">Port f&uuml;r Miniserver UDP Kommunikation</div>
     </div>
 
+    <!-- Merged from FORM_SETTINGS: Data transformations -->
+    <div class="lb-section-title">Data transformations</div>
+
+    <div data-role="fieldcontain">
+        <fieldset data-role="controlgroup">
+            <input type="checkbox" name="Main.convert_booleans" id="Main.convert_booleans">
+            <label for="Main.convert_booleans">Convert booleans to 1 and 0</label>
+            <input type="checkbox" name="Main.expand_json" id="Main.expand_json">
+            <label for="Main.expand_json">Expand JSON data</label>
+        </fieldset>
+    </div>
+
+    <!-- Merged from FORM_SETTINGS: Miniserver to MQTT -->
+    <div class="lb-section-title">Miniserver to MQTT</div>
+
+    <div data-role="fieldcontain">
+        <label for="udpinport">Gateway UDP in-port</label>
+        <input name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" />
+        <p class="hint">Default UDP IN-port on LoxBerry is <span class="mono">11884</span>. Publish data <i>from the Miniserver</i> to this udp port.</p>
+    </div>
+
+    <!-- Merged from FORM_SETTINGS: Advanced settings -->
+    <details class="lb-collapsible">
+        <summary>Still more settings</summary>
+        <div class="lb-collapsible-content">
+            <div>
+                <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                    <legend>Data Transfer Performance</legend>
+                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-50" value="50">
+                    <label for="Main.cpuperf-50">NO LIMIT!</label>
+                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-010" value="10">
+                    <label for="Main.cpuperf-010">Really fast</label>
+                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-005" value="5">
+                    <label for="Main.cpuperf-005">Fast (Default)</label>
+                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-002" value="2.5">
+                    <label for="Main.cpuperf-002">Moderate</label>
+                    <input type="radio" name="Main.cpuperf" id="Main.cpuperf-001" value="1">
+                    <label for="Main.cpuperf-001">Energy Saver</label>
+                    <p><br>This influences the routing performance of the MQTT Gateway. Compared, the old behaviour (before this setting exists) was between <i>Moderate</i> and <i>Energy Saver</i>. Changing the setting takes some minutes to adjust.</p>
+                </fieldset>
+            </div>
+            <div>
+                <label for="resetaftersendms">Reset After Send Time (ms)</label>
+                <input type="number" data-clear-btn="false" name="Main.resetaftersendms" id="Main.resetaftersendms">
+                <p class="hint">Default is <span class="mono">13</span>. Topics with Reset-After-Send enabled, will wait for x milliseconds before the value is resetted. Raise this value, if your virtual inputs are not correctly resetted on your Miniserver.</p>
+            </div>
+        </div>
+    </details>
+
 </form>
 
 <script>
@@ -211,88 +260,7 @@ $(function() {
 </script>
 </TMPL_IF>
 
-<TMPL_IF FORM_SETTINGS>
-	<!-- Form SETTINGS -->
-	<form id="form" onsubmit="return false;">
-
-		<div class="lb-section-title">MQTT to Miniserver</div>
-		<br>
-
-	<div data-role="fieldcontain">
-		<fieldset data-role="controlgroup">
-			<legend>Type sending the data to Miniserver</legend>
-			<input type="checkbox" name="Main.use_http" id="Main.use_http">
-			<label for="Main.use_http">Set virtual inputs via HTTP webservice (recommended)</label>
-			<input type="checkbox" name="Main.use_udp" id="Main.use_udp">
-			<label for="Main.use_udp">Send data via UDP</label>
-			<p class="hint">See the Wiki for details how to configure your inputs on your Miniserver.</p>
-		</fieldset>
-		
-	</div>
-
-	<div data-role="fieldcontain">
-		<!-- <label for="Main.msno">Miniserver to relay to</label> -->
-		<TMPL_VAR mslist_select_html>
-	</div>
-
-	<div data-role="fieldcontain" class="main_udpport_block">
-		<label for="Main.udpport">Miniserver UDP port</label>
-		<input name="Main.udpport" id="Main.udpport" type="text" />
-		<p class="hint">Default UDP port is <span class="mono">11883</span>. If UDP is enabled, data <i>from the MQTT Server</i> are sent to this udp port on the Miniserver.</p>
-	</div>
-
-	<div data-role="fieldcontain">
-		<fieldset data-role="controlgroup">
-			<legend>Data transformations</legend>
-			<input type="checkbox" name="Main.convert_booleans" id="Main.convert_booleans">
-			<label for="Main.convert_booleans">Convert booleans to 1 and 0</label>
-			<input type="checkbox" name="Main.expand_json" id="Main.expand_json">
-			<label for="Main.expand_json">Expand JSON data</label>
-		</fieldset>
-	</div>
-
-	<br>
-	<div class="lb-section-title">Miniserver to MQTT</div>
-	<br>
-
-	<div data-role="fieldcontain">
-		<label for="udpinport">Gateway UDP in-port</label>
-		<input name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" />
-		<p class="hint">Default UDP IN-port on LoxBerry is <span class="mono">11884</span>. Publish data <i>from the Miniserver</i> to this udp port.</p>
-	</div>
-
-	<br>
-
-	<div data-role='collapsible' id='coll_mqtthttp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2>Still more settings</h2>
-		
-		<div>
-			<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-	        	<legend>Data Transfer Performance</legend>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-50" value="50">
-				<label for="Main.cpuperf-50">NO LIMIT!</label>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-010" value="10">
-				<label for="Main.cpuperf-010">Really fast</label>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-005" value="5">
-				<label for="Main.cpuperf-005">Fast (Default)</label>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-002" value="2.5">
-				<label for="Main.cpuperf-002">Moderate</label>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-001" value="1">
-				<label for="Main.cpuperf-001">Energy Saver</label>
-				<p><br>This influences the routing performance of the MQTT Gateway. Compared, the old behaviour (before this setting exists) was between <i>Moderate</i> and <i>Energy Saver</i>. Changing the setting takes some minutes to adjust.</p>
-			</fieldset>
-		</div>
-		<div>
-			<label for="resetaftersendms">Reset After Send Time (ms)</label>
-			<input type="number" data-clear-btn="false" name="Main.resetaftersendms" id="Main.resetaftersendms">
-			<p class="hint">Default is <span class="mono">13</span>. Topics with Reset-After-Send enabled, will wait for x milliseconds before the value is resetted. Raise this value, if your virtual inputs are not correctly resetted on your Miniserver.</p>
-		</div>
-	</div>	
-	
-	
-	</form>
-	<!-- /Form SETTINGS -->
-</TMPL_IF>
+<!-- FORM_SETTINGS removed: content merged into FORM_BASIC -->
 
 <TMPL_IF FORM_SUBSCRIPTIONS>
 
@@ -654,9 +622,8 @@ $(function() {
 </script>
 </TMPL_IF>
 
-</TMPL_IF>
 
-<TMPL_IF FORM_CONVERSIONS>
+<!-- Merged from FORM_CONVERSIONS -->
 	<!-- Form CONVERSIONS -->
 	<form id="form" onsubmit="return false;">
 
@@ -678,6 +645,8 @@ $(function() {
 	
 	<!-- /Form CONVERSIONS -->
 </TMPL_IF>
+
+<!-- FORM_CONVERSIONS removed: content merged into FORM_SUBSCRIPTIONS -->
 
 
 <TMPL_IF FORM_TOPICS>
@@ -1513,10 +1482,11 @@ $(function() {
 	
 	</script>
 
-	<!-- /Form TOPICS -->
-</TMPL_IF>
 
-<TMPL_IF FORM_TRANSFORMERS>
+	<!-- Merged from FORM_TRANSFORMERS -->
+	<details class="lb-collapsible">
+		<summary>Transformers</summary>
+		<div class="lb-collapsible-content">
 <style>
 	.trans_table {
 		width: 100%;
@@ -1600,7 +1570,12 @@ $(function() {
 </script>	
 	
 
+		</div>
+	</details>
+	<!-- /Form TOPICS -->
 </TMPL_IF>
+
+<!-- FORM_TRANSFORMERS removed: content merged into FORM_TOPICS -->
 
 
 <TMPL_IF FORM_LOGS>
