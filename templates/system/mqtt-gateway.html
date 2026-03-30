@@ -450,6 +450,114 @@ $(function() {
 
         $("#filter_count").text(subCount + " von " + totalCount + " abonniert");
 
+        // Helper: render a single topic row (leaf node)
+        function renderTopicRow(t, displayName) {
+            var sub = subscriptionsV2[t.topic] || { enabled: false, json_expand: false, json_fields: [], toMS: [] };
+            var disabledClass = sub.enabled ? '' : ' mqttgw-topic-row-disabled';
+            var rowHtml = '';
+
+            rowHtml += '<div class="mqttgw-topic-row' + disabledClass + '" data-topic="' + t.topic + '">';
+            rowHtml += '<input type="checkbox" class="topic-subscribe" data-topic="' + t.topic + '"' + (sub.enabled ? ' checked' : '') + '>';
+            rowHtml += '<span class="mqttgw-topic-name">' + displayName + '</span>';
+            rowHtml += '<span class="mqttgw-topic-payload" title="' + (t.payload || '').replace(/"/g, '&quot;') + '">' + (t.payload || '') + '</span>';
+            rowHtml += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand" data-topic="' + t.topic + '"' + (sub.json_expand ? ' checked' : '') + '> JSON</label>';
+            if (msCount > 1) { rowHtml += msOptionsHtml(sub.toMS); }
+            rowHtml += '</div>';
+
+            if (sub.json_expand && t.payload) {
+                try {
+                    var jsonPayload = JSON.parse(t.payload);
+                    if (typeof jsonPayload === 'object' && jsonPayload !== null) {
+                        rowHtml += '<div class="mqttgw-json-rows" data-parent="' + t.topic + '">';
+                        Object.keys(jsonPayload).forEach(function(key) {
+                            var fieldEnabled = true;
+                            if (sub.json_fields && sub.json_fields.length > 0) {
+                                var field = sub.json_fields.find(function(f) { return f.key === key; });
+                                fieldEnabled = field ? field.enabled : true;
+                            }
+                            rowHtml += '<div class="mqttgw-json-row">';
+                            rowHtml += '<input type="checkbox" class="json-field-subscribe" data-topic="' + t.topic + '" data-key="' + key + '"' + (fieldEnabled ? ' checked' : '') + '>';
+                            rowHtml += '<span class="mqttgw-json-key">.' + key + '</span>';
+                            rowHtml += '<span class="mqttgw-json-value">= ' + jsonPayload[key] + '</span>';
+                            rowHtml += '<span class="mqttgw-json-type">' + typeof jsonPayload[key] + '</span>';
+                            rowHtml += '</div>';
+                        });
+                        rowHtml += '</div>';
+                    }
+                } catch(e) {}
+            }
+            return rowHtml;
+        }
+
+        // Build tree from topics: { children: { segment: { children: {...}, topics: [...] } }, topics: [...] }
+        function buildTree(topics, prefix) {
+            var tree = { children: {}, topics: [] };
+            topics.forEach(function(t) {
+                var rest = t.topic.substring(prefix.length);
+                if (rest.charAt(0) === '/') rest = rest.substring(1);
+                var slashIdx = rest.indexOf('/');
+                if (slashIdx === -1) {
+                    // Leaf topic
+                    tree.topics.push({ topic: t, leafName: rest });
+                } else {
+                    var seg = rest.substring(0, slashIdx);
+                    if (!tree.children[seg]) tree.children[seg] = [];
+                    tree.children[seg].push(t);
+                }
+            });
+            return tree;
+        }
+
+        // Recursive render: builds collapsible tree
+        function renderTree(topics, prefix, depth) {
+            var tree = buildTree(topics, prefix);
+            var html = '';
+            var indent = depth > 0 ? 'padding-left:' + (depth * 12) + 'px;' : '';
+
+            // Render child groups first (sorted)
+            var sortedChildren = Object.keys(tree.children).sort();
+            sortedChildren.forEach(function(seg) {
+                var childTopics = tree.children[seg];
+                var childPrefix = prefix + (prefix ? '/' : '') + seg;
+                var childSubCount = 0;
+                childTopics.forEach(function(t) {
+                    var s = subscriptionsV2[t.topic];
+                    if (s && s.enabled) childSubCount++;
+                });
+                var cBadge = childSubCount > 0 ? 'mqttgw-group-badge-active' : 'mqttgw-group-badge-inactive';
+
+                if (childTopics.length === 1) {
+                    // Single topic under this segment — show flat with full remaining path
+                    var t = childTopics[0];
+                    var leafName = t.topic.substring(prefix.length);
+                    if (leafName.charAt(0) === '/') leafName = leafName.substring(1);
+                    html += '<div style="' + indent + '">' + renderTopicRow(t, leafName) + '</div>';
+                } else {
+                    // Multiple topics — collapsible sub-group with select-all
+                    var dataPath = childPrefix.replace(/'/g, "\\'");
+                    html += '<details class="lb-collapsible" style="margin:0;border-left:none;border-right:none;border-radius:0">';
+                    html += '<summary style="padding:8px 14px;' + indent + 'font-size:var(--lb-font-sm)">';
+                    html += '<strong>' + seg + '</strong>';
+                    html += '<span class="mqttgw-group-badge ' + cBadge + '" style="margin-left:8px">' + childSubCount + ' / ' + childTopics.length + '</span>';
+                    html += '<span class="mqttgw-group-actions">';
+                    html += '<button type="button" onclick="subToggleAll(\'' + dataPath + '\', true)">Alle an</button>';
+                    html += '<button type="button" onclick="subToggleAll(\'' + dataPath + '\', false)">Alle aus</button>';
+                    html += '</span>';
+                    html += '</summary>';
+                    html += '<div style="padding:0">';
+                    html += renderTree(childTopics, childPrefix, depth + 1);
+                    html += '</div></details>';
+                }
+            });
+
+            // Render leaf topics
+            tree.topics.forEach(function(item) {
+                html += '<div style="' + indent + '">' + renderTopicRow(item.topic, item.leafName) + '</div>';
+            });
+
+            return html;
+        }
+
         var html = '';
         var sortedGroups = Object.keys(groups).sort();
 
@@ -468,87 +576,8 @@ $(function() {
             html += '</span>';
             html += '</summary>';
             html += '<div class="lb-collapsible-content" style="padding:0">';
+            html += renderTree(g.topics, groupName, 0);
 
-            // Build sub-groups by next path segment
-            var subGroups = {};
-            g.topics.forEach(function(t) {
-                var shortTopic = t.topic.substring(groupName.length + 1);
-                var slashIdx = shortTopic.indexOf('/');
-                var subKey = slashIdx > -1 ? shortTopic.substring(0, slashIdx) : '';
-                if (!subGroups[subKey]) subGroups[subKey] = [];
-                subGroups[subKey].push(t);
-            });
-
-            // Helper: render a single topic row
-            function renderTopicRow(t, displayName) {
-                var sub = subscriptionsV2[t.topic] || { enabled: false, json_expand: false, json_fields: [], toMS: [] };
-                var disabledClass = sub.enabled ? '' : ' mqttgw-topic-row-disabled';
-                var rowHtml = '';
-
-                rowHtml += '<div class="mqttgw-topic-row' + disabledClass + '" data-topic="' + t.topic + '">';
-                rowHtml += '<input type="checkbox" class="topic-subscribe" data-topic="' + t.topic + '"' + (sub.enabled ? ' checked' : '') + '>';
-                rowHtml += '<span class="mqttgw-topic-name">' + displayName + '</span>';
-                rowHtml += '<span class="mqttgw-topic-payload" title="' + (t.payload || '').replace(/"/g, '&quot;') + '">' + (t.payload || '') + '</span>';
-                rowHtml += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand" data-topic="' + t.topic + '"' + (sub.json_expand ? ' checked' : '') + '> JSON</label>';
-                if (msCount > 1) { rowHtml += msOptionsHtml(sub.toMS); }
-                rowHtml += '</div>';
-
-                if (sub.json_expand && t.payload) {
-                    try {
-                        var jsonPayload = JSON.parse(t.payload);
-                        if (typeof jsonPayload === 'object' && jsonPayload !== null) {
-                            rowHtml += '<div class="mqttgw-json-rows" data-parent="' + t.topic + '">';
-                            Object.keys(jsonPayload).forEach(function(key) {
-                                var fieldEnabled = true;
-                                if (sub.json_fields && sub.json_fields.length > 0) {
-                                    var field = sub.json_fields.find(function(f) { return f.key === key; });
-                                    fieldEnabled = field ? field.enabled : true;
-                                }
-                                rowHtml += '<div class="mqttgw-json-row">';
-                                rowHtml += '<input type="checkbox" class="json-field-subscribe" data-topic="' + t.topic + '" data-key="' + key + '"' + (fieldEnabled ? ' checked' : '') + '>';
-                                rowHtml += '<span class="mqttgw-json-key">.' + key + '</span>';
-                                rowHtml += '<span class="mqttgw-json-value">= ' + jsonPayload[key] + '</span>';
-                                rowHtml += '<span class="mqttgw-json-type">' + typeof jsonPayload[key] + '</span>';
-                                rowHtml += '</div>';
-                            });
-                            rowHtml += '</div>';
-                        }
-                    } catch(e) {}
-                }
-                return rowHtml;
-            }
-
-            var sortedSubKeys = Object.keys(subGroups).sort();
-            sortedSubKeys.forEach(function(subKey) {
-                var subTopics = subGroups[subKey];
-                if (subKey === '') {
-                    // Topics directly under group (no sub-path)
-                    subTopics.forEach(function(t) {
-                        var leaf = t.topic.substring(groupName.length + 1);
-                        html += renderTopicRow(t, leaf);
-                    });
-                } else if (subTopics.length === 1) {
-                    // Only 1 topic in sub-group, show flat
-                    var t = subTopics[0];
-                    var shortTopic = t.topic.substring(groupName.length + 1);
-                    html += renderTopicRow(t, shortTopic);
-                } else {
-                    // Multiple topics: show as sub-group collapsible
-                    html += '<details class="lb-collapsible" style="margin:0;border-left:none;border-right:none;border-radius:0">';
-                    html += '<summary style="padding:8px 14px;font-size:var(--lb-font-sm)">';
-                    html += '<strong>' + subKey + '</strong>';
-                    html += '<span style="color:var(--lb-gray-500);margin-left:8px">(' + subTopics.length + ')</span>';
-                    html += '</summary>';
-                    html += '<div style="padding:0">';
-                    subTopics.forEach(function(t) {
-                        // Show only the part after the sub-group prefix
-                        var afterSub = t.topic.substring(groupName.length + 1 + subKey.length + 1);
-                        if (!afterSub) afterSub = subKey;
-                        html += renderTopicRow(t, afterSub);
-                    });
-                    html += '</div></details>';
-                }
-            });
 
             html += '</div></details>';
         });
@@ -688,6 +717,19 @@ $(function() {
     window.groupToggleAll = function(groupName, enable) {
         discoveredTopics.forEach(function(t) {
             if (t.group === groupName) {
+                if (!subscriptionsV2[t.topic]) {
+                    subscriptionsV2[t.topic] = { topic: t.topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+                }
+                subscriptionsV2[t.topic].enabled = enable;
+            }
+        });
+        renderTopics();
+    };
+
+    // Toggle all topics under a sub-path prefix
+    window.subToggleAll = function(prefix, enable) {
+        discoveredTopics.forEach(function(t) {
+            if (t.topic === prefix || t.topic.indexOf(prefix + '/') === 0) {
                 if (!subscriptionsV2[t.topic]) {
                     subscriptionsV2[t.topic] = { topic: t.topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
                 }
