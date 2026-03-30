@@ -469,46 +469,84 @@ $(function() {
             html += '</summary>';
             html += '<div class="lb-collapsible-content" style="padding:0">';
 
+            // Build sub-groups by next path segment
+            var subGroups = {};
             g.topics.forEach(function(t) {
+                var shortTopic = t.topic.substring(groupName.length + 1);
+                var slashIdx = shortTopic.indexOf('/');
+                var subKey = slashIdx > -1 ? shortTopic.substring(0, slashIdx) : '';
+                if (!subGroups[subKey]) subGroups[subKey] = [];
+                subGroups[subKey].push(t);
+            });
+
+            // Helper: render a single topic row
+            function renderTopicRow(t, displayName) {
                 var sub = subscriptionsV2[t.topic] || { enabled: false, json_expand: false, json_fields: [], toMS: [] };
                 var disabledClass = sub.enabled ? '' : ' mqttgw-topic-row-disabled';
-                var shortTopic = t.topic.substring(groupName.length + 1);
+                var rowHtml = '';
 
-                html += '<div class="mqttgw-topic-row' + disabledClass + '" data-topic="' + t.topic + '">';
-                html += '<input type="checkbox" class="topic-subscribe" data-topic="' + t.topic + '"' + (sub.enabled ? ' checked' : '') + '>';
-                html += '<span class="mqttgw-topic-name">' + shortTopic + '</span>';
-                html += '<span class="mqttgw-topic-payload" title="' + (t.payload || '').replace(/"/g, '&quot;') + '">' + (t.payload || '') + '</span>';
-                html += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand" data-topic="' + t.topic + '"' + (sub.json_expand ? ' checked' : '') + '> JSON</label>';
-                if (msCount > 1) {
-                    html += msOptionsHtml(sub.toMS);
-                }
-                html += '</div>';
+                rowHtml += '<div class="mqttgw-topic-row' + disabledClass + '" data-topic="' + t.topic + '">';
+                rowHtml += '<input type="checkbox" class="topic-subscribe" data-topic="' + t.topic + '"' + (sub.enabled ? ' checked' : '') + '>';
+                rowHtml += '<span class="mqttgw-topic-name">' + displayName + '</span>';
+                rowHtml += '<span class="mqttgw-topic-payload" title="' + (t.payload || '').replace(/"/g, '&quot;') + '">' + (t.payload || '') + '</span>';
+                rowHtml += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand" data-topic="' + t.topic + '"' + (sub.json_expand ? ' checked' : '') + '> JSON</label>';
+                if (msCount > 1) { rowHtml += msOptionsHtml(sub.toMS); }
+                rowHtml += '</div>';
 
-                // JSON expanded fields
                 if (sub.json_expand && t.payload) {
                     try {
                         var jsonPayload = JSON.parse(t.payload);
                         if (typeof jsonPayload === 'object' && jsonPayload !== null) {
-                            html += '<div class="mqttgw-json-rows" data-parent="' + t.topic + '">';
+                            rowHtml += '<div class="mqttgw-json-rows" data-parent="' + t.topic + '">';
                             Object.keys(jsonPayload).forEach(function(key) {
                                 var fieldEnabled = true;
                                 if (sub.json_fields && sub.json_fields.length > 0) {
                                     var field = sub.json_fields.find(function(f) { return f.key === key; });
                                     fieldEnabled = field ? field.enabled : true;
                                 }
-                                var val = jsonPayload[key];
-                                var valType = typeof val;
-
-                                html += '<div class="mqttgw-json-row">';
-                                html += '<input type="checkbox" class="json-field-subscribe" data-topic="' + t.topic + '" data-key="' + key + '"' + (fieldEnabled ? ' checked' : '') + '>';
-                                html += '<span class="mqttgw-json-key">.' + key + '</span>';
-                                html += '<span class="mqttgw-json-value">= ' + val + '</span>';
-                                html += '<span class="mqttgw-json-type">' + valType + '</span>';
-                                html += '</div>';
+                                rowHtml += '<div class="mqttgw-json-row">';
+                                rowHtml += '<input type="checkbox" class="json-field-subscribe" data-topic="' + t.topic + '" data-key="' + key + '"' + (fieldEnabled ? ' checked' : '') + '>';
+                                rowHtml += '<span class="mqttgw-json-key">.' + key + '</span>';
+                                rowHtml += '<span class="mqttgw-json-value">= ' + jsonPayload[key] + '</span>';
+                                rowHtml += '<span class="mqttgw-json-type">' + typeof jsonPayload[key] + '</span>';
+                                rowHtml += '</div>';
                             });
-                            html += '</div>';
+                            rowHtml += '</div>';
                         }
-                    } catch(e) { /* not valid JSON, skip expand */ }
+                    } catch(e) {}
+                }
+                return rowHtml;
+            }
+
+            var sortedSubKeys = Object.keys(subGroups).sort();
+            sortedSubKeys.forEach(function(subKey) {
+                var subTopics = subGroups[subKey];
+                if (subKey === '') {
+                    // Topics directly under group (no sub-path)
+                    subTopics.forEach(function(t) {
+                        var leaf = t.topic.substring(groupName.length + 1);
+                        html += renderTopicRow(t, leaf);
+                    });
+                } else if (subTopics.length === 1) {
+                    // Only 1 topic in sub-group, show flat
+                    var t = subTopics[0];
+                    var shortTopic = t.topic.substring(groupName.length + 1);
+                    html += renderTopicRow(t, shortTopic);
+                } else {
+                    // Multiple topics: show as sub-group collapsible
+                    html += '<details class="lb-collapsible" style="margin:0;border-left:none;border-right:none;border-radius:0">';
+                    html += '<summary style="padding:8px 14px;font-size:var(--lb-font-sm)">';
+                    html += '<strong>' + subKey + '</strong>';
+                    html += '<span style="color:var(--lb-gray-500);margin-left:8px">(' + subTopics.length + ')</span>';
+                    html += '</summary>';
+                    html += '<div style="padding:0">';
+                    subTopics.forEach(function(t) {
+                        // Show only the part after the sub-group prefix
+                        var afterSub = t.topic.substring(groupName.length + 1 + subKey.length + 1);
+                        if (!afterSub) afterSub = subKey;
+                        html += renderTopicRow(t, afterSub);
+                    });
+                    html += '</div></details>';
                 }
             });
 
