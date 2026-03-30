@@ -252,10 +252,12 @@
   opacity: 0.5;
 }
 
-/* Group headers: left-aligned */
-.mqttgw-group > summary {
-  justify-content: flex-start;
-  text-align: left;
+/* All group and sub-group headers: left-aligned */
+.mqttgw-group summary,
+.mqttgw-group .lb-collapsible summary,
+#topic_groups_container summary {
+  justify-content: flex-start !important;
+  text-align: left !important;
 }
 
 .mqttgw-topic-row input[type="checkbox"] {
