@@ -245,15 +245,18 @@ elseif ( $_POST['ajax'] == 'discover_topics' || $_GET['ajax'] == 'discover_topic
         $incoming = isset($finderdata['incoming']) ? $finderdata['incoming'] : $finderdata;
         if (is_array($incoming)) {
             foreach ($incoming as $topic => $entry) {
-                // Valid MQTT topics: string, contains /, entry is array with p/t keys
+                // Valid MQTT topics: string with /, entry is array with p key
                 if (!is_string($topic) || strlen($topic) == 0) continue;
                 if (strpos($topic, '/') === false) continue;
                 if (!is_array($entry) || !isset($entry['p'])) continue;
-                // First segment must start with a letter (a-z, A-Z)
+                // Topic must only contain valid MQTT chars: letters, digits, /-_.$
+                // Reject anything with JSON chars, control chars, or other garbage
+                if (preg_match('/["\'{}\[\]()&!+,;:=\\\\<>@#%^~`\x00-\x1f]/', $topic)) continue;
+                // Each segment must start with a letter or $ (for $SYS)
                 $group = explode('/', $topic)[0];
-                if (!preg_match('/^[a-zA-Z]/', $group)) continue;
-                // Skip groups with non-printable or JSON-like characters
-                if (preg_match('/[\x00-\x1f"\'{}()\[\]:,]/', $group)) continue;
+                if (!preg_match('/^[a-zA-Z$]/', $group)) continue;
+                // Skip $SYS topics
+                if ($group === '$SYS') continue;
 
                 $payload = '';
                 if (isset($entry['p'])) $payload = $entry['p'];
