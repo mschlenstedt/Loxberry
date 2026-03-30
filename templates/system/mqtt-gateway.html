@@ -27,6 +27,171 @@
 	<div id="gatewayversion"><TMPL_VAR GATEWAY_VERSION></div>
 </div>
 
+<TMPL_IF FORM_BASIC>
+<!-- Form BASIC (MQTT Basic - V2) -->
+<form id="form_basic" onsubmit="return false;">
+
+    <!-- Live Status Indicator -->
+    <div id="mqttgw_status" class="mqttgw-status mqttgw-status-ok" style="display:none">
+        <span class="mqttgw-status-dot"></span>
+        <span class="mqttgw-status-label">Gateway laeuft</span>
+        <span class="mqttgw-status-detail" id="mqttgw_status_detail"></span>
+        <span class="mqttgw-status-uptime" id="mqttgw_status_uptime"></span>
+    </div>
+
+    <!-- Section: Gateway Version -->
+    <div class="lb-section-title">Gateway Version</div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">Version</div>
+        <div class="lb-form-field">
+            <div class="lb-btn-group" id="version_toggle">
+                <input type="radio" name="gatewayversion" id="gw_v1" value="1">
+                <label for="gw_v1">V1 &mdash; Max. Kompatibilit&auml;t</label>
+                <input type="radio" name="gatewayversion" id="gw_v2" value="2">
+                <label for="gw_v2">V2 &mdash; Max. Performance</label>
+            </div>
+        </div>
+    </div>
+    <div class="lb-form-row">
+        <div class="lb-form-label"></div>
+        <div class="lb-form-field">
+            <div class="lb-form-help" style="padding-left:0">
+                V1 subscribes alle konfigurierten Topics global. V2 nutzt Opt-In &mdash; nur explizit ausgew&auml;hlte Payloads werden weitergeleitet.<br>
+                Bestehende Installationen: Default V1. Neuinstallationen: Default V2.
+            </div>
+        </div>
+    </div>
+
+    <!-- Version change warning (hidden by default) -->
+    <div id="version_change_warning" class="mqttgw-version-warning" style="display:none">
+        <strong>&#9888; Hinweis:</strong> Bei Wechsel von V1 auf V2 m&uuml;ssen Topics im Tab &quot;Abonnements&quot; explizit ausgew&auml;hlt werden. Bestehende Subscriptions werden als Vorauswahl &uuml;bernommen.
+    </div>
+
+    <!-- Section: Miniserver Data Routing -->
+    <div class="lb-section-title">Miniserver Datenweiterleitung</div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">Standard Miniserver</div>
+        <div class="lb-form-field">
+            <TMPL_VAR mslist_select_html>
+        </div>
+    </div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">Protokoll</div>
+        <div class="lb-form-field">
+            <div class="lb-btn-group" id="protocol_toggle">
+                <input type="radio" name="protocol" id="proto_http" value="http">
+                <label for="proto_http">HTTP</label>
+                <input type="radio" name="protocol" id="proto_udp" value="udp">
+                <label for="proto_udp">UDP</label>
+                <input type="radio" name="protocol" id="proto_both" value="both">
+                <label for="proto_both">Beide</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">UDP Port</div>
+        <div class="lb-form-field">
+            <input class="lb-input" type="number" id="basic_udpport" style="width:120px">
+        </div>
+        <div class="lb-form-help">Port f&uuml;r Miniserver UDP Kommunikation</div>
+    </div>
+
+</form>
+
+<script>
+$(function() {
+    var gatewayversion = parseInt($("#gatewayversion").text()) || 1;
+    var cfgstr = $("#mqttconfig").text();
+    var cfg = cfgstr ? JSON.parse(cfgstr) : {};
+
+    // Set version toggle
+    $("#gw_v" + gatewayversion).prop("checked", true);
+
+    // Set protocol toggle
+    var use_http = cfg.Main && cfg.Main.use_http;
+    var use_udp = cfg.Main && cfg.Main.use_udp;
+    if (use_http && use_udp) $("#proto_both").prop("checked", true);
+    else if (use_udp) $("#proto_udp").prop("checked", true);
+    else $("#proto_http").prop("checked", true);
+
+    // Set UDP port
+    $("#basic_udpport").val(cfg.Main ? cfg.Main.udpport : "");
+
+    // Version change warning
+    var originalVersion = gatewayversion;
+    $('input[name="gatewayversion"]').on("change", function() {
+        var newVersion = parseInt($(this).val());
+        if (newVersion !== originalVersion) {
+            $("#version_change_warning").slideDown(200);
+        } else {
+            $("#version_change_warning").slideUp(200);
+        }
+    });
+
+    // Status indicator
+    function updateStatus() {
+        $.post('ajax/ajax-mqtt.php', { ajax: 'getpids' })
+        .done(function(resp) {
+            var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
+            var $status = $("#mqttgw_status");
+            $status.show();
+
+            if (data.pids && data.pids.mqttgateway) {
+                $status.removeClass("mqttgw-status-warn mqttgw-status-error").addClass("mqttgw-status-ok");
+                $(".mqttgw-status-label", $status).text("Gateway l\u00e4uft");
+                $("#mqttgw_status_detail").text("\u2014 PID " + data.pids.mqttgateway);
+            } else {
+                $status.removeClass("mqttgw-status-ok mqttgw-status-warn").addClass("mqttgw-status-error");
+                $(".mqttgw-status-label", $status).text("Gateway gestoppt");
+                $("#mqttgw_status_detail").text("");
+            }
+        });
+    }
+    updateStatus();
+    setInterval(updateStatus, 10000);
+
+    // Save handler
+    $("#saveapply").click(function() {
+        var newVersion = parseInt($('input[name="gatewayversion"]:checked').val());
+        var protocol = $('input[name="protocol"]:checked').val();
+
+        cfg.Main = cfg.Main || {};
+        cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
+        cfg.Main.use_udp = (protocol === "udp" || protocol === "both") ? 1 : 0;
+        cfg.Main.udpport = parseInt($("#basic_udpport").val()) || 11883;
+        cfg.Main.msno = parseInt($("#Main\\.msno").val()) || 1;
+
+        // Save gateway config
+        $.ajax({
+            type: 'POST',
+            url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace',
+            dataType: 'json',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify(cfg)
+        });
+
+        // Save gateway version to general.json
+        $.ajax({
+            type: 'POST',
+            url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
+            dataType: 'json',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify({ GatewayVersion: newVersion })
+        })
+        .done(function() {
+            if (newVersion !== originalVersion) {
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+</TMPL_IF>
+
 <TMPL_IF FORM_SETTINGS>
 	<!-- Form SETTINGS -->
 	<form id="form" onsubmit="return false;">
