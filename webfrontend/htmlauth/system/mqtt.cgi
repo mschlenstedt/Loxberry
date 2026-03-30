@@ -14,29 +14,24 @@ my $helptemplate = "help.html";
 			"URL" => "/admin/system/mqtt.cgi"
 		},
 		{
-			"Name" => "MQTT Gateway",
-			"Submenu" => [
-				{
-					"Name" => "Gateway",
-					"URL" => "/admin/system/mqtt-gateway.cgi"
-				},
-				{
-					"Name" => "Abonnements",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions"
-				},
-				{
-					"Name" => "Datenverkehr",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=incoming"
-				}
-			]
+			"Name" => "Gateway",
+			"URL" => "/admin/system/mqtt-gateway.cgi"
+		},
+		{
+			"Name" => "Abonnements",
+			"URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions"
+		},
+		{
+			"Name" => "Datenverkehr",
+			"URL" => "/admin/system/mqtt-gateway.cgi?form=incoming"
+		},
+		{
+			"Name" => "Logs",
+			"URL" => "/admin/system/mqtt-gateway.cgi?form=logs"
 		},
 		{
 			"Name" => "MQTT Finder",
 			"URL" => "/admin/system/mqtt-finder.cgi"
-		},
-		{
-			"Name" => "Log Files",
-			"URL" => "/admin/system/mqtt-gateway.cgi?form=logs"
 		}
 	);
 	
