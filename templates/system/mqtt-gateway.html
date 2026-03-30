@@ -18,6 +18,9 @@
 }
 </style>
 
+<!-- Disable jQuery Mobile auto-enhancement for this page -->
+<div data-enhance="false" data-role="none">
+
 <!-- RAW Config -->
 <div style="display:none">
 	<div id="mqttconfig"><TMPL_VAR JSONCONFIG ESCAPE=HTML></div>
@@ -1744,9 +1747,9 @@ $(function() {
 
 <TMPL_UNLESS FORM_DISABLE_BUTTONS>
 
-	<div style="display:flex;align-items:center;justify-content:center;">
-	<button class="ui-btn ui-btn-icon-right" id="saveapply" data-inline="true">Save and Apply</button>
-	<button class="ui-btn ui-btn-icon-right" id="restartmqttgateway" data-inline="true">Restart</button>
+	<div class="lb-actions">
+	<button class="lb-btn lb-btn-primary lb-btn-sm" id="saveapply">Speichern</button>
+	<button class="lb-btn lb-btn-sm" id="restartmqttgateway">Restart</button>
 	</div>
 
 </TMPL_UNLESS>
@@ -2229,6 +2232,8 @@ $("#reconnect").click(function(){
 <div style="display:flex;align-items:center;justify-content:center;font-size:70%;padding:5px 20px 5px 20px">
 	<span id="savemessages"></span>&nbsp;
 	<span id="savebrokerpass"></span>&nbsp;
-	&nbsp;<span id="gatewaystate"></span>&nbsp;| 
+	&nbsp;<span id="gatewaystate"></span>&nbsp;|
 	&nbsp;<span id="mosquittostate"></span>
 </div>
+
+</div><!-- /data-enhance="false" -->
