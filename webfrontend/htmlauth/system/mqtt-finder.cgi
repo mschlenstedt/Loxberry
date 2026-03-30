@@ -31,28 +31,16 @@ our @navbar = (
 			"Name" => "MQTT Gateway",
 			"Submenu" => [
 				{
-					"Name" => "Gateway Übersicht",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=basic"
+					"Name" => "Gateway",
+					"URL" => "/admin/system/mqtt-gateway.cgi"
 				},
 				{
-					"Name" => "Gateway Settings",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=settings"
-				},
-				{
-					"Name" => "Gateway Subscriptions",
+					"Name" => "Abonnements",
 					"URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions"
 				},
 				{
-					"Name" => "Gateway Conversions",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=conversions"
-				},
-				{
-					"Name" => "Incoming Overview",
+					"Name" => "Datenverkehr",
 					"URL" => "/admin/system/mqtt-gateway.cgi?form=incoming"
-				},
-				{
-					"Name" => "Gateway Transformers",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=transformers"
 				}
 			]
 		},
