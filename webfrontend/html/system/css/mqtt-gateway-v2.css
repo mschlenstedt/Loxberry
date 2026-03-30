@@ -249,10 +249,16 @@
   opacity: 0.6;
 }
 
+/* Group headers: left-aligned */
+.mqttgw-group > summary {
+  justify-content: flex-start;
+  text-align: left;
+}
+
 .mqttgw-topic-name {
   font-family: var(--lb-font-mono);
   font-size: var(--lb-font-sm);
-  flex: 1;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -262,7 +268,8 @@
 .mqttgw-topic-payload {
   font-size: 0.8rem;
   color: var(--lb-gray-500);
-  max-width: 200px;
+  margin-left: 8px;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
