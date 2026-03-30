@@ -529,7 +529,6 @@ ul.lb-systemmenu li.lb-nonhover {
 
 /* Tabellen-Optimierung nur für Content-Tabellen */
 .page_content table:not(.ui-controlgroup-controls):not([data-role="table"]) {
-	table-layout: fixed;
 	width: 100%;
 }
 
@@ -568,6 +567,11 @@ table.formtable td:first-child {
 table.formtable td:nth-child(2) {
 	flex: 1;
 	min-width: 200px;
+}
+
+table.formtable td[colspan] {
+	width: 100% !important;
+	flex-basis: 100% !important;
 }
 
 table.formtable td.hint {

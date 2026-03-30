@@ -164,16 +164,16 @@
    ============================================================ */
 
 .mqttgw-group {
-  border: var(--lb-border);
-  border-radius: var(--lb-radius);
-  margin-bottom: var(--lb-space-md);
+  border: 1px solid var(--lb-gray-200);
+  border-radius: 4px;
+  margin-bottom: 8px;
 }
 
 .mqttgw-group > summary {
-  padding: 10px 16px;
+  padding: 10px;
   background: var(--lb-gray-100);
   color: var(--lb-gray-900);
-  font-weight: 500;
+  font-weight: bold;
   font-family: var(--lb-font);
   cursor: pointer;
   list-style: none;
@@ -184,50 +184,19 @@
 .mqttgw-group > summary::-webkit-details-marker {
   display: none;
 }
-/* Suppress lb-collapsible arrow — group uses inline arrows */
-.mqttgw-group > summary::after {
+/* Suppress lb-collapsible arrow — groups and sub-groups use native marker */
+.mqttgw-group > summary::after,
+.mqttgw-group .lb-collapsible summary::after {
   content: none;
 }
 
-.mqttgw-group-badge {
-  display: inline-block;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
-
-.mqttgw-group-badge-active {
-  background-color: var(--lb-primary);
-  color: white;
-}
-
-.mqttgw-group-badge-inactive {
-  background-color: var(--lb-gray-200);
+.mqttgw-group-count {
+  margin-left: 8px;
+  font-weight: normal;
+  font-size: var(--lb-font-sm);
   color: var(--lb-gray-500);
 }
 
-.mqttgw-group-actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.mqttgw-group-actions button {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 2px 6px;
-  font-size: 0.8rem;
-  color: var(--lb-gray-500);
-  border-radius: var(--lb-radius);
-  line-height: 1.4;
-}
-.mqttgw-group-actions button:hover {
-  background: var(--lb-gray-200);
-  color: var(--lb-gray-900);
-}
 
 /* ============================================================
    TOPIC ROW
@@ -241,7 +210,7 @@
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--lb-gray-100);
   min-height: 36px;
 }
@@ -277,16 +246,15 @@
 .mqttgw-topic-payload {
   flex: 1;
   text-align: right;
-  font-size: 0.8rem;
+  font-size: 12px;
   color: var(--lb-gray-500);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding-right: 8px;
 }
 
 .mqttgw-topic-json-label {
-  font-size: var(--lb-font-sm);
+  font-size: 12px;
   color: var(--lb-gray-500);
   white-space: nowrap;
   display: flex;
@@ -310,44 +278,32 @@
 }
 
 /* ============================================================
-   JSON EXPAND — green background, indented
+   JSON EXPAND — green background, inline fields
    ============================================================ */
 
-.mqttgw-json-rows {
+.mqttgw-json-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 4px 8px 4px 28px;
   background: #f0f9e8;
   border-bottom: 1px solid var(--lb-gray-100);
+  font-size: 12px;
+  color: #6dac20;
 }
 
-.mqttgw-json-row {
-  display: flex;
-  flex-direction: row;
+.mqttgw-json-field {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 14px 5px 44px;
+  gap: 3px;
+  cursor: pointer;
+  font-family: var(--lb-font-mono);
+  white-space: nowrap;
 }
-.mqttgw-json-row input[type="checkbox"] {
+.mqttgw-json-field input[type="checkbox"] {
   width: 14px;
   height: 14px;
   accent-color: var(--lb-primary);
-}
-
-.mqttgw-json-key {
-  font-family: var(--lb-font-mono);
-  font-size: 0.85rem;
-  color: var(--lb-primary-dark);
-  font-weight: 500;
-}
-
-.mqttgw-json-value {
-  font-size: 0.85rem;
-  color: var(--lb-gray-500);
-}
-
-.mqttgw-json-type {
-  margin-left: auto;
-  font-size: 0.75rem;
-  color: var(--lb-gray-400);
-  font-style: italic;
 }
 
 /* ============================================================
@@ -378,13 +334,21 @@ body.theme-dark .mqttgw-version-warning {
   color: #e0b030;
 }
 
-body.theme-dark .mqttgw-json-rows {
+body.theme-dark .mqttgw-json-fields {
   background-color: rgba(109, 172, 32, 0.06);
+  color: #8bc34a;
 }
 
 body.theme-dark .mqttgw-filter-input {
   background: var(--lb-gray-100);
   color: var(--lb-gray-900);
+  border-color: var(--lb-gray-300);
+}
+
+body.theme-dark .mqttgw-topic-ms {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
 }
 
 /* ============================================================

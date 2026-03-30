@@ -74,7 +74,7 @@ a.lb-btn:link {
   border: var(--lb-border);
   border-radius: var(--lb-radius);
   font-size: var(--lb-font-base);
-  background: white;
+  background: var(--lb-input-bg, #fff);
   color: var(--lb-gray-900);
   box-sizing: border-box;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -85,6 +85,14 @@ a.lb-btn:link {
   border-color: var(--lb-primary);
   outline: none;
   box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+.lb-input[type="number"]::-webkit-inner-spin-button,
+.lb-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.lb-input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 /* === Cards === */
@@ -99,7 +107,7 @@ a.lb-btn:link {
 /* === Section Title === */
 .lb-section-title {
   font-size: 1.15rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.01em;
   border-bottom: 2px solid var(--lb-primary);
   padding-bottom: 10px;
@@ -121,7 +129,7 @@ a.lb-btn:link {
   min-width: 150px;
   width: 200px;
   text-align: right;
-  font-weight: 500;
+  font-weight: 600;
   font-size: var(--lb-font-sm);
   color: var(--lb-gray-700);
   line-height: 1.4;

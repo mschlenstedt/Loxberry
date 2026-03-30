@@ -8,7 +8,13 @@
   color: var(--lb-gray-900);
 }
 
-.theme-dark * {
+/* Selective text-shadow reset instead of universal * selector */
+.theme-dark .ui-btn,
+.theme-dark .ui-bar-a,
+.theme-dark .ui-body-a,
+.theme-dark .ui-body-inherit,
+.theme-dark label,
+.theme-dark a {
   text-shadow: none !important;
 }
 
@@ -102,10 +108,21 @@
   color: var(--lb-gray-900);
 }
 
+/* Override jQm .ui-body-inherit — must match original specificity from jquery.mobile */
 .theme-dark .ui-body-a,
-.theme-dark .ui-body-inherit {
-  background-color: var(--lb-gray-100);
-  color: var(--lb-gray-900);
+.theme-dark .ui-body-inherit,
+.ui-page-theme-a .theme-dark .ui-body-inherit,
+html body.theme-dark .ui-body-inherit,
+html body.theme-dark .ui-body-a,
+html .ui-bar-a body.theme-dark .ui-body-inherit,
+html body.theme-dark .ui-group-theme-a .ui-body-inherit,
+.ui-page-theme-a body.theme-dark .ui-body-inherit,
+body.theme-dark .ui-page-theme-a .ui-body-inherit,
+html body.theme-dark .ui-page-theme-a .ui-body-inherit {
+  background-color: var(--lb-gray-200) !important;
+  color: var(--lb-gray-900) !important;
+  border-color: var(--lb-gray-300) !important;
+  text-shadow: none !important;
 }
 
 /* === Links === */
@@ -205,10 +222,6 @@
   color: var(--lb-gray-700);
 }
 
-.theme-dark p, .theme-dark span, .theme-dark div {
-  color: inherit;
-}
-
 .theme-dark small, .theme-dark .small {
   color: var(--lb-gray-500);
 }
@@ -268,6 +281,94 @@
 /* === Form errors === */
 .theme-dark .form-error, .theme-dark .form-error-message {
   color: var(--lb-danger);
+}
+
+/* === lb-* Design System — Dark Overrides === */
+.theme-dark .lb-input,
+.theme-dark .lb-select,
+.theme-dark .lb-textarea {
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-900) !important;
+  border-color: var(--lb-gray-300) !important;
+}
+.theme-dark .lb-input:focus,
+.theme-dark .lb-select:focus,
+.theme-dark .lb-textarea:focus {
+  border-color: var(--lb-primary) !important;
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.25) !important;
+}
+.theme-dark .lb-input::placeholder {
+  color: var(--lb-gray-500) !important;
+}
+.theme-dark .lb-input:disabled {
+  background: var(--lb-gray-200) !important;
+  color: var(--lb-gray-500) !important;
+}
+/* Force jQm input wrappers transparent so lb-input styling shows through */
+.theme-dark .ui-input-text {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.theme-dark .lb-btn {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
+}
+.theme-dark .lb-btn:hover {
+  background: var(--lb-gray-200);
+}
+.theme-dark .lb-btn-primary {
+  background: var(--lb-primary);
+  color: white;
+  border-color: var(--lb-primary);
+}
+.theme-dark .lb-btn-primary:hover {
+  background: var(--lb-primary-hover);
+}
+
+.theme-dark .lb-btn-group label {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
+}
+.theme-dark .lb-btn-group label:hover {
+  background: var(--lb-gray-200);
+}
+.theme-dark .lb-btn-group input[type="radio"]:checked + label,
+.theme-dark .lb-btn-group label.active {
+  background: var(--lb-primary);
+  color: white;
+}
+
+.theme-dark .lb-section-title {
+  color: var(--lb-gray-900);
+}
+
+.theme-dark .lb-form-label {
+  color: var(--lb-gray-700);
+}
+
+.theme-dark .lb-form-help {
+  color: var(--lb-gray-500);
+}
+
+.theme-dark .lb-card {
+  background: var(--lb-gray-100);
+  border-color: var(--lb-gray-200);
+}
+
+.theme-dark .lb-collapsible {
+  border-color: var(--lb-gray-200);
+}
+.theme-dark .lb-collapsible summary {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+}
+
+.theme-dark .lb-toggle input:checked + .lb-toggle-slider {
+  background: var(--lb-primary);
 }
 
 /* === Dropzone === */

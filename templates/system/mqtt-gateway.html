@@ -74,12 +74,7 @@
     <!-- Section: Miniserver Data Routing -->
     <div class="lb-section-title">Miniserver Datenweiterleitung</div>
 
-    <div class="lb-form-row">
-        <div class="lb-form-label">Standard Miniserver</div>
-        <div class="lb-form-field">
-            <TMPL_VAR mslist_select_html>
-        </div>
-    </div>
+    <TMPL_VAR mslist_select_html>
 
     <div class="lb-form-row">
         <div class="lb-form-label">Protokoll</div>
@@ -97,8 +92,8 @@
 
     <div class="lb-form-row">
         <div class="lb-form-label">UDP Port</div>
-        <div class="lb-form-field">
-            <input class="lb-input" type="number" id="basic_udpport" style="width:120px">
+        <div class="lb-form-field" style="max-width:150px">
+            <input class="lb-input" type="number" id="basic_udpport" data-role="none">
         </div>
         <div class="lb-form-help">Port f&uuml;r Miniserver UDP Kommunikation</div>
     </div>
@@ -131,7 +126,7 @@
     <div class="lb-form-row">
         <div class="lb-form-label">CPU-Profil</div>
         <div class="lb-form-field">
-            <select class="lb-select" name="Main.cpuperf" id="Main.cpuperf" data-role="none" style="width:250px">
+            <select class="lb-select" name="Main.cpuperf" id="Main.cpuperf" data-role="none" style="max-width:250px">
                 <option value="1">1% (Energiesparer)</option>
                 <option value="2.5">2,5% (Moderat)</option>
                 <option value="5">5% (Standard)</option>
@@ -145,7 +140,7 @@
     <div class="lb-form-row">
         <div class="lb-form-label">Reset-After-Send</div>
         <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
-            <input class="lb-input" type="number" name="Main.resetaftersendms" id="Main.resetaftersendms" data-role="none" style="width:80px">
+            <input class="lb-input" type="number" name="Main.resetaftersendms" id="Main.resetaftersendms" data-role="none" style="max-width:100px">
             <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">ms</span>
         </div>
         <div class="lb-form-help">Standard: 13 ms. Wartezeit bevor ein Wert zur&uuml;ckgesetzt wird.</div>
@@ -157,7 +152,7 @@
     <div class="lb-form-row">
         <div class="lb-form-label">Gateway UDP In-Port</div>
         <div class="lb-form-field">
-            <input class="lb-input" name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" data-role="none" style="width:120px">
+            <input class="lb-input" name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" data-role="none" style="max-width:150px">
         </div>
         <div class="lb-form-help">Standard: 11884. Daten vom Miniserver an diesen Port senden.</div>
     </div>
@@ -359,13 +354,9 @@ $(function(){
 <!-- V2: Topic Browser -->
 <form id="form_subscriptions_v2" onsubmit="return false;">
 
-    <!-- Discovery Bar -->
+    <!-- Discovery Status -->
     <div class="mqttgw-discovery">
-        <button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" id="btn_discover" type="button">
-            &#128269; Topics entdecken
-        </button>
-        <span class="mqttgw-discovery-info">Zeigt alle vom Gateway empfangenen Topics</span>
-        <span class="mqttgw-discovery-last" id="discovery_last_info"></span>
+        <span class="mqttgw-discovery-info" id="discovery_last_info">Lade Topics...</span>
     </div>
 
     <!-- Wildcard Subscription -->
@@ -392,7 +383,7 @@ $(function(){
     <!-- Topic Groups Container -->
     <div id="topic_groups_container">
         <div style="text-align:center; padding:40px; color:var(--lb-gray-500)">
-            Klicke &quot;Topics entdecken&quot; um verf&uuml;gbare MQTT Topics anzuzeigen.
+            Topics werden geladen...
         </div>
     </div>
 
@@ -431,6 +422,12 @@ $(function() {
             opts += '<option value="1,2"' + (selectedMS && selectedMS.length === 2 ? ' selected' : '') + '>MS 1+2</option>';
         }
         return '<select class="mqttgw-topic-ms">' + opts + '</select>';
+    }
+
+    function countSubscribed(topics) {
+        var n = 0;
+        topics.forEach(function(t) { if (subscriptionsV2[t.topic] && subscriptionsV2[t.topic].enabled) n++; });
+        return n;
     }
 
     // Render topic groups
@@ -476,19 +473,17 @@ $(function() {
                 try {
                     var jsonPayload = JSON.parse(t.payload);
                     if (typeof jsonPayload === 'object' && jsonPayload !== null) {
-                        rowHtml += '<div class="mqttgw-json-rows" data-parent="' + t.topic + '">';
+                        rowHtml += '<div class="mqttgw-json-fields" data-parent="' + t.topic + '">';
                         Object.keys(jsonPayload).forEach(function(key) {
                             var fieldEnabled = true;
                             if (sub.json_fields && sub.json_fields.length > 0) {
                                 var field = sub.json_fields.find(function(f) { return f.key === key; });
                                 fieldEnabled = field ? field.enabled : true;
                             }
-                            rowHtml += '<div class="mqttgw-json-row">';
+                            rowHtml += '<label class="mqttgw-json-field">';
                             rowHtml += '<input type="checkbox" class="json-field-subscribe" data-topic="' + t.topic + '" data-key="' + key + '"' + (fieldEnabled ? ' checked' : '') + '>';
-                            rowHtml += '<span class="mqttgw-json-key">.' + key + '</span>';
-                            rowHtml += '<span class="mqttgw-json-value">= ' + jsonPayload[key] + '</span>';
-                            rowHtml += '<span class="mqttgw-json-type">' + typeof jsonPayload[key] + '</span>';
-                            rowHtml += '</div>';
+                            rowHtml += ' .' + key + ' = ' + jsonPayload[key];
+                            rowHtml += '</label>';
                         });
                         rowHtml += '</div>';
                     }
@@ -530,12 +525,7 @@ $(function() {
             sortedChildren.forEach(function(seg) {
                 var childTopics = tree.children[seg];
                 var childPrefix = prefix + (prefix ? '/' : '') + seg;
-                var childSubCount = 0;
-                childTopics.forEach(function(t) {
-                    var s = subscriptionsV2[t.topic];
-                    if (s && s.enabled) childSubCount++;
-                });
-                var cBadge = childSubCount > 0 ? 'mqttgw-group-badge-active' : 'mqttgw-group-badge-inactive';
+                var childSubCount = countSubscribed(childTopics);
                 var dataPath = childPrefix.replace(/'/g, "\\'");
 
                 var allChecked = childSubCount === childTopics.length && childSubCount > 0;
@@ -543,7 +533,7 @@ $(function() {
                 html += '<summary style="padding:8px 14px;font-size:var(--lb-font-sm)">';
                 html += '<input type="checkbox" class="sub-group-toggle" data-prefix="' + dataPath + '"' + (allChecked ? ' checked' : '') + ' onclick="event.stopPropagation();subToggleAll(\'' + dataPath + '\', this.checked)" style="margin-right:6px">';
                 html += '<strong>' + seg + '</strong>';
-                html += '<span class="mqttgw-group-badge ' + cBadge + '" style="margin-left:8px">' + childSubCount + ' / ' + childTopics.length + '</span>';
+                html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
                 html += '</summary>';
                 html += '<div style="padding:0">';
                 html += renderTree(childTopics, childPrefix, depth + 1);
@@ -563,7 +553,6 @@ $(function() {
 
         sortedGroups.forEach(function(groupName) {
             var g = groups[groupName];
-            var badgeClass = g.subCount > 0 ? 'mqttgw-group-badge-active' : 'mqttgw-group-badge-inactive';
             var isOpen = g.subCount > 0 ? ' open' : '';
 
             var allGroupChecked = g.subCount === g.topics.length && g.subCount > 0;
@@ -571,7 +560,7 @@ $(function() {
             html += '<summary>';
             html += '<input type="checkbox" class="group-toggle" data-group="' + groupName + '"' + (allGroupChecked ? ' checked' : '') + ' onclick="event.stopPropagation();groupToggleAll(\'' + groupName + '\', this.checked)" style="margin-right:6px">';
             html += '<strong>' + groupName + '</strong>';
-            html += '<span class="mqttgw-group-badge ' + badgeClass + '">' + g.subCount + ' / ' + g.topics.length + '</span>';
+            html += '<span class="mqttgw-group-count">(' + g.topics.length + ' Topics, ' + g.subCount + ' abonniert)</span>';
             html += '</summary>';
             html += '<div class="lb-collapsible-content" style="padding:0">';
             html += renderTree(g.topics, groupName, 0);
@@ -587,22 +576,46 @@ $(function() {
         $("#topic_groups_container").html(html);
     }
 
-    // Discovery button
-    $("#btn_discover").click(function() {
-        var $btn = $(this);
-        $btn.prop("disabled", true).text("Lade...");
+    // Discovery: fetch topics from backend, only re-render if data changed
+    var discoveryRunning = false;
+    var lastTopicFingerprint = '';
+    function topicFingerprint(topics) {
+        if (!topics.length) return '0';
+        // Lightweight: count + first/last topic + sample payloads
+        var last = topics[topics.length - 1];
+        var mid = topics[Math.floor(topics.length / 2)];
+        return topics.length + '|' + topics[0].topic + '|' + last.topic + '|' + (last.payload || '') + '|' + (mid.payload || '');
+    }
+    function discoverTopics() {
+        if (discoveryRunning) return;
+        discoveryRunning = true;
 
         $.post('ajax/ajax-mqtt.php', { ajax: 'discover_topics' })
         .done(function(resp) {
             var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
-            discoveredTopics = data.topics || [];
+            var newTopics = data.topics || [];
             var now = new Date();
-            $("#discovery_last_info").text("Letzter Scan: " + now.toLocaleTimeString() + " \u2014 " + discoveredTopics.length + " Topics gefunden");
-            renderTopics();
+            $("#discovery_last_info").text(newTopics.length + " Topics \u2014 " + now.toLocaleTimeString());
+
+            var fp = topicFingerprint(newTopics);
+            if (fp !== lastTopicFingerprint) {
+                lastTopicFingerprint = fp;
+                discoveredTopics = newTopics;
+                renderTopics();
+            }
         })
         .always(function() {
-            $btn.prop("disabled", false).html("&#128269; Topics entdecken");
+            discoveryRunning = false;
         });
+    }
+
+    // Auto-discovery on page load + periodic refresh every 10s
+    var discoveryInterval = setInterval(discoverTopics, 10000);
+    discoverTopics();
+
+    // Cleanup on page navigation (prevents stacking intervals)
+    $(document).one('pagehide', function() {
+        clearInterval(discoveryInterval);
     });
 
     // Wildcard pattern matching: + = one level, # = all remaining
@@ -1750,7 +1763,7 @@ $(function() {
 
 <TMPL_UNLESS FORM_DISABLE_BUTTONS>
 
-	<div style="display:flex;justify-content:center;gap:12px;padding:16px 0">
+	<div style="display:flex;justify-content:center;gap:12px;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
 	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none">Speichern &amp; Anwenden</button>
 	<button class="lb-btn" id="restartmqttgateway" data-role="none">Gateway Neustarten</button>
 	</div>
@@ -1837,8 +1850,8 @@ $(function() {
 			
 		
 		}
-		$('select').selectmenu('refresh', true);
-		$('input:checkbox').checkboxradio('refresh');
+		try { $('select').selectmenu('refresh', true); } catch(e) {}
+		try { $('input:checkbox').checkboxradio('refresh'); } catch(e) {}
 		
 		// Hide UDP block if UDP is disabled
 		if( ! $("#Main\\.use_udp").is(":checked") )

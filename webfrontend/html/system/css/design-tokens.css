@@ -51,6 +51,7 @@ body.theme-dark {
   --lb-gray-700: #c0c0c0;
   --lb-gray-900: #f0f0f0;
   --lb-border-color: var(--lb-gray-200);
+  --lb-input-bg: #333350;
 }
 
 /* === Modern Theme Token Overrides === */
