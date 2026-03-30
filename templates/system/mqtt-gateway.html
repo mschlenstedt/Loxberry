@@ -663,6 +663,11 @@ $(function() {
 
 <TMPL_IF FORM_TOPICS>
 	<!-- Form TOPICS (Incoming Overview) -->
+	<TMPL_IF GATEWAY_V2>
+	<div style="padding:10px 14px;background:var(--lb-gray-50);border:var(--lb-border);border-radius:var(--lb-radius);margin-bottom:var(--lb-space-md);font-size:var(--lb-font-sm);color:var(--lb-gray-500)">
+		&#9432; Gateway V2 (Opt-In): &quot;Do not forward&quot; ist nicht verf&uuml;gbar &mdash; es werden nur explizit abonnierte Topics weitergeleitet.
+	</div>
+	</TMPL_IF>
 	<style>
 	.topics_table {
 		/* font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; */
@@ -749,6 +754,8 @@ $(function() {
 		var updateTopicsRunning = 0;
 		var currentElementCount = 0;
 		var refreshInterval = 1000;
+		var gatewayVersion = parseInt($("#gatewayversion").text()) || 1;
+		var isV2 = (gatewayVersion === 2);
 		var intervalID;
 		
 		$( document ).ready(function() {
@@ -1105,7 +1112,7 @@ $(function() {
 				var doNotForward = "";
 				if( typeof cfg.doNotForward !== 'undefined' && topic.replace(/\//g, "_") in cfg.doNotForward ) {
 					doNotForward = "checked";
-					tdClass = 'subscriptionfiltered';
+					if (!isV2) tdClass = 'subscriptionfiltered';
 					// console.log(topic, "is set to Do-Not-Forward");
 				}
 				
@@ -1149,10 +1156,12 @@ $(function() {
 					http_row+= '&nbsp;<input type="checkbox" name="http_reset_after_send_'+topic+'" id="http_reset_after_send_'+topic+'" data-mini="true" class="resetAfterSend" '+resetAfterSend+' style="display:inline;">';
 					http_row+= '<label for="http_reset_after_send_'+topic+'" style="display:inline;">Reset after send</label>';
 								
-					// Do not forward
-					//http_row+= '<label><input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
-					http_row+= '&nbsp;<input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'" data-mini="true" class="doNotForward" '+doNotForward +' style="display:inline;">';
-					http_row+= '<label for="http_do_not_forward_'+topic+'" style="display:inline;">Do not forward</label>';
+					// Do not forward (V1 only)
+					if (!isV2) {
+						//http_row+= '<label><input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
+						http_row+= '&nbsp;<input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'" data-mini="true" class="doNotForward" '+doNotForward +' style="display:inline;">';
+						http_row+= '<label for="http_do_not_forward_'+topic+'" style="display:inline;">Do not forward</label>';
+					}
 					
 					// http_row+= '</fieldset>';
 					http_row+= '</div>';
@@ -1162,10 +1171,10 @@ $(function() {
 				http_row+= '</td>\n';
 								
 				http_row+= '<td class="'+tdClass+' topics_table_data">';
-				if( doNotForward || subscriptionfiltered != 0 ) 
+				if( (doNotForward && !isV2) || subscriptionfiltered != 0 )
 					http_row+= '<i><s style="text-shadow:none">';
-				http_row+= content.message; 
-				if( doNotForward ) 
+				http_row+= content.message;
+				if( doNotForward && !isV2 )
 					http_row+= '</s></i>';
 				
 				http_row+= '</td>\n';
@@ -1180,7 +1189,7 @@ $(function() {
 					http_row+= '<br><span style="font-size:70%;">';
 					if( subscriptionfiltered != 0 )
 						http_row+= 'Subscription filtered by RegEx line '+subscriptionfiltered+'<br>';
-					if( doNotForward )
+					if( doNotForward && !isV2 )
 						http_row+= '<i>Do not forward</i> is active<br>';
 					else if( subscriptionfiltered == 0 && httpSubmitAdvTabInfRow) {
 						http_row+= httpSubmitAdvTabInfRow;
@@ -1233,11 +1242,11 @@ $(function() {
 					subscriptionfiltered = resp.udp[topic].regexfilterline;
 					tdClass = 'subscriptionfiltered';
 				}
-				if( doNotForward ) {
+				if( doNotForward && !isV2 ) {
 					tdClass = 'subscriptionfiltered';
 				}
-				
-				var entry_notforwarded = typeof resp.udp[topic].regexfilterline != 'undefined' || doNotForward != "" ? true : false;
+
+				var entry_notforwarded = typeof resp.udp[topic].regexfilterline != 'undefined' || (doNotForward != "" && !isV2) ? true : false;
 
 				
 				// Filter
@@ -1274,7 +1283,10 @@ $(function() {
 					
 					// console.log(topic, "is reset after send");
 					
-					udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_do_not_forward_'+topic+'" id="udp_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label></div>';
+					if (!isV2) {
+						udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_do_not_forward_'+topic+'" id="udp_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
+					}
+					udp_row+= '</div>';
 					
 				}
 				
@@ -1283,9 +1295,9 @@ $(function() {
 				udp_row+= '<td style="font-size:80%;" class="'+tdClass+' topics_table_udp_commandrec">';
 				if( subscriptionfiltered != 0 )
 					udp_row+= 'Subscription filtered by RegEx line '+subscriptionfiltered+'<br>';
-				if( doNotForward ) 
+				if( doNotForward && !isV2 )
 					udp_row+= '<i>Do not forward</i> is active';
-				else if ( !doNotForward && !subscriptionfiltered ) {
+				else if ( (!doNotForward || isV2) && !subscriptionfiltered ) {
 					topic_tmp = 'MQTT:\\i' + topic.replace("\\", "\\\\") + '=\\i\\v';
 					udp_row+= topic_tmp;
 					
@@ -1437,6 +1449,7 @@ $(function() {
 		};
 		
 		function checkbox_doNotForward(event) {
+			if (isV2) return;
 			var checkboxtarget;
 			if (event.currentTarget.id.startsWith("http_do_not_forward_") == true)
 				checkboxtarget = event.currentTarget.id.slice(20).replace(/\//g, '\_');
