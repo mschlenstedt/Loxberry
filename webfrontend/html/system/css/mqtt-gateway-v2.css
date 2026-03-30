@@ -233,20 +233,23 @@
    TOPIC ROW
    ============================================================ */
 
+/* --- Topic Row: Mockup-Layout ---
+   [☑] topic/name          payload-value  [☑ JSON] [MS 1+2 ▾]
+*/
 .mqttgw-topic-row {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--lb-gray-100);
+  min-height: 36px;
 }
 .mqttgw-topic-row:last-child {
   border-bottom: none;
 }
-
 .mqttgw-topic-row-disabled {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 /* Group headers: left-aligned */
@@ -255,83 +258,94 @@
   text-align: left;
 }
 
+.mqttgw-topic-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--lb-primary);
+}
+
 .mqttgw-topic-name {
   font-family: var(--lb-font-mono);
   font-size: var(--lb-font-sm);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--lb-gray-900);
+  white-space: nowrap;
 }
 
 .mqttgw-topic-payload {
+  flex: 1;
+  text-align: right;
   font-size: 0.8rem;
   color: var(--lb-gray-500);
-  margin-left: 8px;
-  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding-right: 8px;
 }
 
 .mqttgw-topic-json-label {
-  font-size: 11px;
-  color: var(--lb-primary-dark);
-  background: var(--lb-gray-100);
-  border: 1px solid var(--lb-gray-200);
-  border-radius: var(--lb-radius);
-  padding: 1px 6px;
-  cursor: pointer;
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
 }
-.mqttgw-topic-json-label:hover {
-  background: var(--lb-gray-200);
+.mqttgw-topic-json-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--lb-primary);
 }
 
 .mqttgw-topic-ms {
-  font-size: 11px;
-  color: var(--lb-gray-300);
-  white-space: nowrap;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border: 1px solid var(--lb-gray-200);
+  border-radius: var(--lb-radius);
+  color: var(--lb-gray-700);
+  background: white;
 }
 
 /* ============================================================
-   JSON EXPAND
+   JSON EXPAND — green background, indented
    ============================================================ */
 
 .mqttgw-json-rows {
-  background-color: #f7fbf2;
+  background: #f0f9e8;
   border-bottom: 1px solid var(--lb-gray-100);
 }
 
 .mqttgw-json-row {
   display: flex;
   flex-direction: row;
-  align-items: baseline;
-  gap: 10px;
-  padding: 6px 14px 6px 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 44px;
+}
+.mqttgw-json-row input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--lb-primary);
 }
 
 .mqttgw-json-key {
   font-family: var(--lb-font-mono);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--lb-primary-dark);
-  white-space: nowrap;
+  font-weight: 500;
 }
 
 .mqttgw-json-value {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--lb-gray-500);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .mqttgw-json-type {
   margin-left: auto;
-  font-size: 11px;
-  color: var(--lb-gray-300);
-  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--lb-gray-400);
+  font-style: italic;
 }
 
 /* ============================================================
