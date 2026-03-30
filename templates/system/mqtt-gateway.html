@@ -108,8 +108,21 @@ $(function() {
     var cfgstr = $("#mqttconfig").text();
     var cfg = cfgstr ? JSON.parse(cfgstr) : {};
 
+    // Helper: sync active class on btn-group labels
+    function syncBtnGroup(name) {
+        $('input[name="' + name + '"]').each(function() {
+            var $label = $('label[for="' + this.id + '"]');
+            if ($(this).prop("checked")) {
+                $label.addClass("active");
+            } else {
+                $label.removeClass("active");
+            }
+        });
+    }
+
     // Set version toggle
     $("#gw_v" + gatewayversion).prop("checked", true);
+    syncBtnGroup("gatewayversion");
 
     // Set protocol toggle
     var use_http = cfg.Main && cfg.Main.use_http;
@@ -117,9 +130,15 @@ $(function() {
     if (use_http && use_udp) $("#proto_both").prop("checked", true);
     else if (use_udp) $("#proto_udp").prop("checked", true);
     else $("#proto_http").prop("checked", true);
+    syncBtnGroup("protocol");
 
     // Set UDP port
     $("#basic_udpport").val(cfg.Main ? cfg.Main.udpport : "");
+
+    // Re-sync on change
+    $('input[name="gatewayversion"], input[name="protocol"]').on("change", function() {
+        syncBtnGroup($(this).attr("name"));
+    });
 
     // Version change warning
     var originalVersion = gatewayversion;
