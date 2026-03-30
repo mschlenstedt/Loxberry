@@ -245,16 +245,15 @@ elseif ( $_POST['ajax'] == 'discover_topics' || $_GET['ajax'] == 'discover_topic
         $incoming = isset($finderdata['incoming']) ? $finderdata['incoming'] : $finderdata;
         if (is_array($incoming)) {
             foreach ($incoming as $topic => $entry) {
-                // Valid MQTT topics must contain / and not start with special chars
+                // Valid MQTT topics: string, contains /, entry is array with p/t keys
                 if (!is_string($topic) || strlen($topic) == 0) continue;
                 if (strpos($topic, '/') === false) continue;
-                if (!is_array($entry)) continue;
-                // Skip entries that look like JSON fragments (corrupted data)
-                if (preg_match('/^["\',\{\[\d]/', $topic)) continue;
-
+                if (!is_array($entry) || !isset($entry['p'])) continue;
+                // First segment must start with a letter (a-z, A-Z)
                 $group = explode('/', $topic)[0];
-                // Skip groups with control characters
-                if (preg_match('/[\x00-\x1f]/', $group)) continue;
+                if (!preg_match('/^[a-zA-Z]/', $group)) continue;
+                // Skip groups with non-printable or JSON-like characters
+                if (preg_match('/[\x00-\x1f"\'{}()\[\]:,]/', $group)) continue;
 
                 $payload = '';
                 if (isset($entry['p'])) $payload = $entry['p'];
