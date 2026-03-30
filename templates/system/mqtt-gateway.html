@@ -276,6 +276,9 @@ $(function() {
 </TMPL_IF>
 
 <TMPL_IF FORM_SUBSCRIPTIONS>
+
+<TMPL_UNLESS GATEWAY_V2>
+<!-- V1: Textarea-based subscriptions (existing code unchanged) -->
 	<!-- Form SUBSCRIPTIONS -->
 	<form id="form" onsubmit="return false;">
 
@@ -350,10 +353,288 @@ $(function(){
 
 </script>
 
+</TMPL_UNLESS>
 
+<TMPL_IF GATEWAY_V2>
+<!-- V2: Topic Browser -->
+<form id="form_subscriptions_v2" onsubmit="return false;">
 
+    <!-- Discovery Bar -->
+    <div class="mqttgw-discovery">
+        <button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" id="btn_discover" type="button">
+            &#128269; Topics entdecken
+        </button>
+        <span class="mqttgw-discovery-info">Scannt alle Topics am Broker f&uuml;r 10 Sekunden</span>
+        <span class="mqttgw-discovery-last" id="discovery_last_info"></span>
+    </div>
 
-	
+    <!-- Loading indicator (hidden) -->
+    <div id="discovery_loading" style="display:none; text-align:center; padding:20px; color:var(--lb-gray-500)">
+        <span id="discovery_countdown">10</span> Sekunden &mdash; Sammle Topics...
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="mqttgw-filter">
+        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="Topics filtern...">
+        <label class="mqttgw-filter-label">
+            <input type="checkbox" id="filter_subscribed_only"> Nur abonnierte
+        </label>
+        <span class="mqttgw-filter-count" id="filter_count"></span>
+    </div>
+
+    <!-- Topic Groups Container -->
+    <div id="topic_groups_container">
+        <div style="text-align:center; padding:40px; color:var(--lb-gray-500)">
+            Klicke &quot;Topics entdecken&quot; um verf&uuml;gbare MQTT Topics anzuzeigen.
+        </div>
+    </div>
+
+</form>
+
+<script>
+$(function() {
+    var discoveredTopics = [];
+    var subscriptionsV2 = {};
+    var msCount = parseInt($("#Main\\.msno option").length) || 1;
+
+    // Load existing V2 subscriptions
+    $.post('ajax/ajax-mqtt.php', { ajax: 'get_subscriptions_v2' })
+    .done(function(resp) {
+        var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
+        if (data.subscriptions_v2) {
+            data.subscriptions_v2.forEach(function(sub) {
+                subscriptionsV2[sub.topic] = sub;
+            });
+        }
+    });
+
+    // Build MS options HTML
+    function msOptionsHtml(selectedMS) {
+        if (msCount <= 1) return '';
+        var opts = '<option value="default">Standard</option>';
+        for (var i = 1; i <= msCount; i++) {
+            opts += '<option value="' + i + '"' + (selectedMS && selectedMS.length === 1 && selectedMS[0] === i ? ' selected' : '') + '>MS ' + i + '</option>';
+        }
+        if (msCount === 2) {
+            opts += '<option value="1,2"' + (selectedMS && selectedMS.length === 2 ? ' selected' : '') + '>MS 1+2</option>';
+        }
+        return '<select class="mqttgw-topic-ms">' + opts + '</select>';
+    }
+
+    // Render topic groups
+    function renderTopics() {
+        var groups = {};
+        var filterText = $("#topic_filter").val().toLowerCase();
+        var subscribedOnly = $("#filter_subscribed_only").prop("checked");
+        var totalCount = 0;
+        var subCount = 0;
+
+        discoveredTopics.forEach(function(t) {
+            var sub = subscriptionsV2[t.topic];
+            var isSubscribed = sub && sub.enabled;
+            if (subscribedOnly && !isSubscribed) return;
+            if (filterText && t.topic.toLowerCase().indexOf(filterText) === -1) return;
+
+            if (!groups[t.group]) groups[t.group] = { topics: [], subCount: 0 };
+            groups[t.group].topics.push(t);
+            totalCount++;
+            if (isSubscribed) {
+                groups[t.group].subCount++;
+                subCount++;
+            }
+        });
+
+        $("#filter_count").text(subCount + " von " + totalCount + " abonniert");
+
+        var html = '';
+        var sortedGroups = Object.keys(groups).sort();
+
+        sortedGroups.forEach(function(groupName) {
+            var g = groups[groupName];
+            var badgeClass = g.subCount > 0 ? 'mqttgw-group-badge-active' : 'mqttgw-group-badge-inactive';
+            var isOpen = g.subCount > 0 ? ' open' : '';
+
+            html += '<details class="lb-collapsible mqttgw-group"' + isOpen + '>';
+            html += '<summary>';
+            html += '<strong>' + groupName + '</strong>';
+            html += '<span class="mqttgw-group-badge ' + badgeClass + '">' + g.subCount + ' / ' + g.topics.length + '</span>';
+            html += '<span class="mqttgw-group-actions">';
+            html += '<button type="button" onclick="groupToggleAll(\'' + groupName + '\', true)">Alle an</button>';
+            html += '<button type="button" onclick="groupToggleAll(\'' + groupName + '\', false)">Alle aus</button>';
+            html += '</span>';
+            html += '</summary>';
+            html += '<div class="lb-collapsible-content" style="padding:0">';
+
+            g.topics.forEach(function(t) {
+                var sub = subscriptionsV2[t.topic] || { enabled: false, json_expand: false, json_fields: [], toMS: [] };
+                var disabledClass = sub.enabled ? '' : ' mqttgw-topic-row-disabled';
+                var shortTopic = t.topic.substring(groupName.length + 1);
+
+                html += '<div class="mqttgw-topic-row' + disabledClass + '" data-topic="' + t.topic + '">';
+                html += '<input type="checkbox" class="topic-subscribe" data-topic="' + t.topic + '"' + (sub.enabled ? ' checked' : '') + '>';
+                html += '<span class="mqttgw-topic-name">' + shortTopic + '</span>';
+                html += '<span class="mqttgw-topic-payload" title="' + (t.payload || '').replace(/"/g, '&quot;') + '">' + (t.payload || '') + '</span>';
+                html += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand" data-topic="' + t.topic + '"' + (sub.json_expand ? ' checked' : '') + '> JSON</label>';
+                if (msCount > 1) {
+                    html += msOptionsHtml(sub.toMS);
+                }
+                html += '</div>';
+
+                // JSON expanded fields
+                if (sub.json_expand && t.payload) {
+                    try {
+                        var jsonPayload = JSON.parse(t.payload);
+                        if (typeof jsonPayload === 'object' && jsonPayload !== null) {
+                            html += '<div class="mqttgw-json-rows" data-parent="' + t.topic + '">';
+                            Object.keys(jsonPayload).forEach(function(key) {
+                                var fieldEnabled = true;
+                                if (sub.json_fields && sub.json_fields.length > 0) {
+                                    var field = sub.json_fields.find(function(f) { return f.key === key; });
+                                    fieldEnabled = field ? field.enabled : true;
+                                }
+                                var val = jsonPayload[key];
+                                var valType = typeof val;
+
+                                html += '<div class="mqttgw-json-row">';
+                                html += '<input type="checkbox" class="json-field-subscribe" data-topic="' + t.topic + '" data-key="' + key + '"' + (fieldEnabled ? ' checked' : '') + '>';
+                                html += '<span class="mqttgw-json-key">.' + key + '</span>';
+                                html += '<span class="mqttgw-json-value">= ' + val + '</span>';
+                                html += '<span class="mqttgw-json-type">' + valType + '</span>';
+                                html += '</div>';
+                            });
+                            html += '</div>';
+                        }
+                    } catch(e) { /* not valid JSON, skip expand */ }
+                }
+            });
+
+            html += '</div></details>';
+        });
+
+        if (html === '') {
+            html = '<div style="text-align:center; padding:40px; color:var(--lb-gray-500)">Keine Topics gefunden.</div>';
+        }
+
+        $("#topic_groups_container").html(html);
+    }
+
+    // Discovery button
+    $("#btn_discover").click(function() {
+        var $btn = $(this);
+        $btn.prop("disabled", true).text("Scanne...");
+        $("#discovery_loading").show();
+
+        var countdown = 10;
+        var countdownInterval = setInterval(function() {
+            countdown--;
+            $("#discovery_countdown").text(countdown);
+            if (countdown <= 0) clearInterval(countdownInterval);
+        }, 1000);
+
+        $.post('ajax/ajax-mqtt.php', { ajax: 'getmqttfinderdata' })
+        .always(function() {
+            setTimeout(function() {
+                $.post('ajax/ajax-mqtt.php', { ajax: 'discover_topics' })
+                .done(function(resp) {
+                    var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
+                    discoveredTopics = data.topics || [];
+                    var now = new Date();
+                    $("#discovery_last_info").text("Letzter Scan: " + now.toLocaleTimeString() + " \u2014 " + discoveredTopics.length + " Topics gefunden");
+                    renderTopics();
+                })
+                .always(function() {
+                    clearInterval(countdownInterval);
+                    $btn.prop("disabled", false).html("&#128269; Topics entdecken");
+                    $("#discovery_loading").hide();
+                });
+            }, 10000);
+        });
+    });
+
+    // Event delegation for checkboxes
+    $("#topic_groups_container").on("change", ".topic-subscribe", function() {
+        var topic = $(this).data("topic");
+        if (!subscriptionsV2[topic]) {
+            subscriptionsV2[topic] = { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+        }
+        subscriptionsV2[topic].enabled = $(this).prop("checked");
+        renderTopics();
+    });
+
+    $("#topic_groups_container").on("change", ".topic-json-expand", function() {
+        var topic = $(this).data("topic");
+        if (!subscriptionsV2[topic]) {
+            subscriptionsV2[topic] = { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+        }
+        subscriptionsV2[topic].json_expand = $(this).prop("checked");
+        renderTopics();
+    });
+
+    $("#topic_groups_container").on("change", ".json-field-subscribe", function() {
+        var topic = $(this).data("topic");
+        var key = $(this).data("key");
+        var sub = subscriptionsV2[topic];
+        if (!sub) return;
+
+        if (!sub.json_fields) sub.json_fields = [];
+        var existing = sub.json_fields.find(function(f) { return f.key === key; });
+        if (existing) {
+            existing.enabled = $(this).prop("checked");
+        } else {
+            sub.json_fields.push({ key: key, enabled: $(this).prop("checked") });
+        }
+    });
+
+    $("#topic_groups_container").on("change", ".mqttgw-topic-ms", function() {
+        var topic = $(this).closest(".mqttgw-topic-row").data("topic");
+        var val = $(this).val();
+        if (!subscriptionsV2[topic]) return;
+
+        if (val === "default") subscriptionsV2[topic].toMS = [];
+        else subscriptionsV2[topic].toMS = val.split(",").map(Number);
+    });
+
+    // Filter handlers
+    $("#topic_filter").on("input", renderTopics);
+    $("#filter_subscribed_only").on("change", renderTopics);
+
+    // Group toggle all
+    window.groupToggleAll = function(groupName, enable) {
+        discoveredTopics.forEach(function(t) {
+            if (t.group === groupName) {
+                if (!subscriptionsV2[t.topic]) {
+                    subscriptionsV2[t.topic] = { topic: t.topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+                }
+                subscriptionsV2[t.topic].enabled = enable;
+            }
+        });
+        renderTopics();
+    };
+
+    // Save handler
+    $("#saveapply").click(function() {
+        var subsArray = [];
+        Object.keys(subscriptionsV2).forEach(function(topic) {
+            var sub = subscriptionsV2[topic];
+            if (sub.enabled) {
+                subsArray.push(sub);
+            }
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions_v2',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify({ subscriptions_v2: subsArray })
+        })
+        .done(function() {
+            $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' });
+        });
+    });
+});
+</script>
+</TMPL_IF>
+
 </TMPL_IF>
 
 <TMPL_IF FORM_CONVERSIONS>
