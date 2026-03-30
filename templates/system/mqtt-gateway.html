@@ -351,13 +351,8 @@ $(function(){
         <button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" id="btn_discover" type="button">
             &#128269; Topics entdecken
         </button>
-        <span class="mqttgw-discovery-info">Scannt alle Topics am Broker f&uuml;r 10 Sekunden</span>
+        <span class="mqttgw-discovery-info">Zeigt alle vom Gateway empfangenen Topics</span>
         <span class="mqttgw-discovery-last" id="discovery_last_info"></span>
-    </div>
-
-    <!-- Loading indicator (hidden) -->
-    <div id="discovery_loading" style="display:none; text-align:center; padding:20px; color:var(--lb-gray-500)">
-        <span id="discovery_countdown">10</span> Sekunden &mdash; Sammle Topics...
     </div>
 
     <!-- Filter Bar -->
@@ -508,33 +503,18 @@ $(function() {
     // Discovery button
     $("#btn_discover").click(function() {
         var $btn = $(this);
-        $btn.prop("disabled", true).text("Scanne...");
-        $("#discovery_loading").show();
+        $btn.prop("disabled", true).text("Lade...");
 
-        var countdown = 10;
-        var countdownInterval = setInterval(function() {
-            countdown--;
-            $("#discovery_countdown").text(countdown);
-            if (countdown <= 0) clearInterval(countdownInterval);
-        }, 1000);
-
-        $.post('ajax/ajax-mqtt.php', { ajax: 'getmqttfinderdata' })
+        $.post('ajax/ajax-mqtt.php', { ajax: 'discover_topics' })
+        .done(function(resp) {
+            var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
+            discoveredTopics = data.topics || [];
+            var now = new Date();
+            $("#discovery_last_info").text("Letzter Scan: " + now.toLocaleTimeString() + " \u2014 " + discoveredTopics.length + " Topics gefunden");
+            renderTopics();
+        })
         .always(function() {
-            setTimeout(function() {
-                $.post('ajax/ajax-mqtt.php', { ajax: 'discover_topics' })
-                .done(function(resp) {
-                    var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
-                    discoveredTopics = data.topics || [];
-                    var now = new Date();
-                    $("#discovery_last_info").text("Letzter Scan: " + now.toLocaleTimeString() + " \u2014 " + discoveredTopics.length + " Topics gefunden");
-                    renderTopics();
-                })
-                .always(function() {
-                    clearInterval(countdownInterval);
-                    $btn.prop("disabled", false).html("&#128269; Topics entdecken");
-                    $("#discovery_loading").hide();
-                });
-            }, 10000);
+            $btn.prop("disabled", false).html("&#128269; Topics entdecken");
         });
     });
 
