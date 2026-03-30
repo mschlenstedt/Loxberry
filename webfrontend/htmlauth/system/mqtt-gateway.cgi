@@ -56,7 +56,12 @@ if( $q->{ajax} ) {
 	my $udpinport = $generaljson->{Mqtt}->{Udpinport};
 	$template->param('UDPINPORT', $udpinport);
 	$template->param('USELOCALBROKER', is_enabled( $generaljson->{Mqtt}->{Uselocalbroker}) );
-	
+
+	# Add gateway version - default to 1 for existing installations
+	my $gatewayversion = $generaljson->{Mqtt}->{GatewayVersion} // 1;
+	$template->param("GATEWAY_VERSION", $gatewayversion);
+	$template->param("GATEWAY_V2", $gatewayversion == 2 ? 1 : 0);
+
 	# Switch between forms
 	
 	if( !$q->{form} or $q->{form} eq "settings" ) {
