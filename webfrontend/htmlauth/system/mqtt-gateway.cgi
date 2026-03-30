@@ -125,7 +125,7 @@ sub print_form
 
 	if ($gatewayversion == 2) {
 		@gw_submenu = (
-			{ "Name" => "MQTT Basic",
+			{ "Name" => "Gateway Übersicht",
 			  "URL" => "/admin/system/mqtt-gateway.cgi?form=basic" },
 			{ "Name" => "Abonnements",
 			  "URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions" },
@@ -138,7 +138,7 @@ sub print_form
 		);
 	} else {
 		@gw_submenu = (
-			{ "Name" => "MQTT Basic",
+			{ "Name" => "Gateway Übersicht",
 			  "URL" => "/admin/system/mqtt-gateway.cgi?form=basic" },
 			{ "Name" => "Gateway Settings",
 			  "URL" => "/admin/system/mqtt-gateway.cgi?form=settings" },
