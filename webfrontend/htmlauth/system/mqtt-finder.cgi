@@ -31,8 +31,12 @@ our @navbar = (
 			"Name" => "MQTT Gateway",
 			"Submenu" => [
 				{
+					"Name" => "Gateway Übersicht",
+					"URL" => "/admin/system/mqtt-gateway.cgi?form=basic"
+				},
+				{
 					"Name" => "Gateway Settings",
-					"URL" => "/admin/system/mqtt-gateway.cgi"
+					"URL" => "/admin/system/mqtt-gateway.cgi?form=settings"
 				},
 				{
 					"Name" => "Gateway Subscriptions",
