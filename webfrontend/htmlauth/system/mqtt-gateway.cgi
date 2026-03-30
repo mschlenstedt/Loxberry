@@ -138,8 +138,10 @@ sub print_form
 		);
 	} else {
 		@gw_submenu = (
+			{ "Name" => "MQTT Basic",
+			  "URL" => "/admin/system/mqtt-gateway.cgi?form=basic" },
 			{ "Name" => "Gateway Settings",
-			  "URL" => "/admin/system/mqtt-gateway.cgi" },
+			  "URL" => "/admin/system/mqtt-gateway.cgi?form=settings" },
 			{ "Name" => "Gateway Subscriptions",
 			  "URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions" },
 			{ "Name" => "Gateway Conversions",
