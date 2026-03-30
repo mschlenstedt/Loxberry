@@ -512,9 +512,12 @@ $(function() {
         function renderTree(topics, prefix, depth) {
             var tree = buildTree(topics, prefix);
             var html = '';
-            var ml = depth > 0 ? 'margin-left:' + (depth * 16) + 'px;' : '';
+            var ml = 'margin-left:' + (depth * 20 + 12) + 'px;';
+            // Alternating subtle background for depth
+            var bgColors = ['transparent', 'rgba(109,172,32,0.03)', 'rgba(109,172,32,0.06)', 'rgba(109,172,32,0.09)'];
+            var bg = bgColors[Math.min(depth, bgColors.length - 1)];
 
-            // Render child groups (sorted) — always as collapsible, even with 1 child
+            // Render child groups (sorted) — always as collapsible
             var sortedChildren = Object.keys(tree.children).sort();
             sortedChildren.forEach(function(seg) {
                 var childTopics = tree.children[seg];
@@ -527,7 +530,7 @@ $(function() {
                 var cBadge = childSubCount > 0 ? 'mqttgw-group-badge-active' : 'mqttgw-group-badge-inactive';
                 var dataPath = childPrefix.replace(/'/g, "\\'");
 
-                html += '<details class="lb-collapsible" style="' + ml + 'margin-bottom:0;border-left:none;border-right:none;border-radius:0;border-top:none">';
+                html += '<details class="lb-collapsible" style="' + ml + 'margin-bottom:0;border-radius:0;border-color:var(--lb-gray-200);background:' + bg + '">';
                 html += '<summary style="padding:8px 14px;font-size:var(--lb-font-sm)">';
                 html += '<strong>' + seg + '</strong>';
                 html += '<span class="mqttgw-group-badge ' + cBadge + '" style="margin-left:8px">' + childSubCount + ' / ' + childTopics.length + '</span>';
