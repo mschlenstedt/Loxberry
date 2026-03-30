@@ -356,11 +356,15 @@ $(function(){
     </div>
 
     <!-- Wildcard Subscription -->
-    <div class="mqttgw-discovery">
-        <input class="lb-input" type="text" id="wildcard_input" placeholder="z.B. solarHMS/+/0/power oder tasmota/#" style="flex:1" data-role="none">
-        <button class="lb-btn lb-btn-sm" id="btn_wildcard_preview" type="button">Vorschau</button>
-        <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_wildcard_select" type="button" style="display:none">Alle ausw&auml;hlen</button>
-        <span class="mqttgw-discovery-info" id="wildcard_info"><b>+</b> = eine Ebene, <b>#</b> = alle Unterebenen</span>
+    <div class="lb-section-title">Wildcard-Abo</div>
+    <div class="lb-form-row">
+        <div class="lb-form-label">Topic-Pattern</div>
+        <div class="lb-form-field" style="display:flex;gap:8px;align-items:center">
+            <input class="lb-input" type="text" id="wildcard_input" placeholder="z.B. solarHMS/+/0/power oder tasmota/#" data-role="none" style="flex:1">
+            <button class="lb-btn lb-btn-sm" id="btn_wildcard_preview" type="button" data-role="none">Vorschau</button>
+            <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_wildcard_select" type="button" data-role="none" style="display:none">Alle ausw&auml;hlen</button>
+        </div>
+        <div class="lb-form-help"><b>+</b> = eine Ebene, <b>#</b> = alle Unterebenen &mdash; <span id="wildcard_info"></span></div>
     </div>
 
     <!-- Filter Bar -->
