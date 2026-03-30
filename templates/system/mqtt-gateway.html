@@ -766,12 +766,15 @@ $(function() {
 	<!-- Form CONVERSIONS -->
 	<form id="form" onsubmit="return false;">
 
-	<div class="lb-section-title">Text-to-Value conversions</div>
-	<p>MQTT devices often are sending strings that Loxone unfortunately cannot handle. In this field you can create text-to-value conversions. You can assign values to incoming strings, that values are sent to the Miniserver, and can be evaluated e.g. with a Status block.</p> 
-	<p>Booleans (on, off etc.) are already converted, if you have 'Boolean conversion' enabled.</p>
-	<div data-role="fieldcontain">
-		<label for="conversions">Text-to-Value conversion <p class="hint">One conversion per line. Use <span class="mono">Text=Value</span></p></label>
-		<textarea name="conversions" id="conversions" rows="20" data-autogrow="false"></textarea>
+	<div class="lb-section-title">Text-zu-Wert Konvertierungen</div>
+	<p>MQTT-Ger&auml;te senden oft Textstrings die Loxone nicht verarbeiten kann. Hier k&ouml;nnen Sie Text-zu-Wert Zuordnungen definieren, die an den Miniserver gesendet werden.</p>
+	<p>Booleans (on, off etc.) werden bereits automatisch konvertiert wenn die Boolean-Konvertierung aktiviert ist.</p>
+	<div class="lb-form-row">
+		<div class="lb-form-label">Konvertierungen</div>
+		<div class="lb-form-field">
+			<textarea class="lb-textarea" name="conversions" id="conversions" rows="12" data-role="none"></textarea>
+		</div>
+		<div class="lb-form-help">Ein Eintrag pro Zeile: <span class="mono">Text=Wert</span></div>
 	</div>
 	</form>
 
@@ -848,9 +851,9 @@ $(function() {
 	
 	</style>
 	
-	<div class="lb-section-title">Last transmissions to Miniserver</div>
-	<p>This page lists the transmissions via the MQTT Gateway to the Miniserver in the last 24 hours. It is refreshed <i>automatically on-the-fly</i> (as long as you have text selected, updating stops).<p>
-	<p>You can copy and paste the 'Virtual Input' names for HTTP transmissions, or create command recognitions from the UDP messages.</p>
+	<div class="lb-section-title">Letzte &Uuml;bertragungen an den Miniserver</div>
+	<p>&Uuml;bertragungen der letzten 24 Stunden. Wird <i>automatisch</i> aktualisiert (pausiert bei Textauswahl).</p>
+	<p>Virtual-Input-Namen k&ouml;nnen f&uuml;r HTTP kopiert, UDP-Kommandoerkennungen erstellt werden.</p>
 	
 	<input type="checkbox" name="topics_show_advanced" id="topics_show_advanced" data-mini="true">
 	<label for="topics_show_advanced">Show details and advanced settings</label>
@@ -1747,9 +1750,9 @@ $(function() {
 
 <TMPL_UNLESS FORM_DISABLE_BUTTONS>
 
-	<div class="lb-actions">
-	<button class="lb-btn lb-btn-primary lb-btn-sm" id="saveapply">Speichern</button>
-	<button class="lb-btn lb-btn-sm" id="restartmqttgateway">Restart</button>
+	<div style="display:flex;justify-content:center;gap:12px;padding:16px 0">
+	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none">Speichern &amp; Anwenden</button>
+	<button class="lb-btn" id="restartmqttgateway" data-role="none">Gateway Neustarten</button>
 	</div>
 
 </TMPL_UNLESS>
