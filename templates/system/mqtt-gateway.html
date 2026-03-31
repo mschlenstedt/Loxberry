@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
+
 <style>
 .mono {
 	font-family:monospace;
@@ -16,102 +18,266 @@
 }
 </style>
 
+<!-- Disable jQuery Mobile auto-enhancement for this page -->
+<div data-enhance="false" data-role="none">
+
 <!-- RAW Config -->
 <div style="display:none">
 	<div id="mqttconfig"><TMPL_VAR JSONCONFIG ESCAPE=HTML></div>
 	<div id="udpinportconfig"><TMPL_VAR UDPINPORT></div>
 	<div id="extpluginsettings"><TMPL_VAR EXTPLUGINSETTINGS></div>
 	<div id="Uselocalbroker"><TMPL_VAR USELOCALBROKER></div>
+	<div id="gatewayversion"><TMPL_VAR GATEWAY_VERSION></div>
 </div>
 
-<TMPL_IF FORM_SETTINGS>
-	<!-- Form SETTINGS -->
-	<form id="form" onsubmit="return false;">
+<TMPL_IF FORM_BASIC>
+<!-- Form BASIC (MQTT Basic - V2) -->
+<form id="form_basic" onsubmit="return false;">
 
-		<div class="wide">MQTT to Miniserver</div>
-		<br>
+    <!-- Live Status Indicator -->
+    <div id="mqttgw_status" class="mqttgw-status mqttgw-status-ok" style="display:none">
+        <span class="mqttgw-status-dot"></span>
+        <span class="mqttgw-status-label">Gateway laeuft</span>
+        <span class="mqttgw-status-detail" id="mqttgw_status_detail"></span>
+        <span class="mqttgw-status-uptime" id="mqttgw_status_uptime"></span>
+    </div>
 
-	<div data-role="fieldcontain">
-		<fieldset data-role="controlgroup">
-			<legend>Type sending the data to Miniserver</legend>
-			<input type="checkbox" name="Main.use_http" id="Main.use_http">
-			<label for="Main.use_http">Set virtual inputs via HTTP webservice (recommended)</label>
-			<input type="checkbox" name="Main.use_udp" id="Main.use_udp">
-			<label for="Main.use_udp">Send data via UDP</label>
-			<p class="hint">See the Wiki for details how to configure your inputs on your Miniserver.</p>
-		</fieldset>
-		
-	</div>
+    <!-- Section: Gateway Version -->
+    <div class="lb-section-title">Gateway Version</div>
 
-	<div data-role="fieldcontain">
-		<!-- <label for="Main.msno">Miniserver to relay to</label> -->
-		<TMPL_VAR mslist_select_html>
-	</div>
+    <div class="lb-form-row">
+        <div class="lb-form-label">Version</div>
+        <div class="lb-form-field">
+            <div class="lb-btn-group" id="version_toggle" data-role="none">
+                <input type="radio" name="gatewayversion" id="gw_v1" value="1" data-role="none">
+                <label for="gw_v1">V1 &mdash; Max. Kompatibilit&auml;t</label>
+                <input type="radio" name="gatewayversion" id="gw_v2" value="2" data-role="none">
+                <label for="gw_v2">V2 &mdash; Max. Performance</label>
+            </div>
+        </div>
+    </div>
+    <div class="lb-form-row">
+        <div class="lb-form-label"></div>
+        <div class="lb-form-field">
+            <div class="lb-form-help" style="padding-left:0">
+                V1 subscribes alle konfigurierten Topics global. V2 nutzt Opt-In &mdash; nur explizit ausgew&auml;hlte Payloads werden weitergeleitet.<br>
+                Bestehende Installationen: Default V1. Neuinstallationen: Default V2.
+            </div>
+        </div>
+    </div>
 
-	<div data-role="fieldcontain" class="main_udpport_block">
-		<label for="Main.udpport">Miniserver UDP port</label>
-		<input name="Main.udpport" id="Main.udpport" type="text" />
-		<p class="hint">Default UDP port is <span class="mono">11883</span>. If UDP is enabled, data <i>from the MQTT Server</i> are sent to this udp port on the Miniserver.</p>
-	</div>
+    <!-- Version change warning (hidden by default) -->
+    <div id="version_change_warning" class="mqttgw-version-warning" style="display:none">
+        <strong>&#9888; Hinweis:</strong> Bei Wechsel von V1 auf V2 m&uuml;ssen Topics im Tab &quot;Abonnements&quot; explizit ausgew&auml;hlt werden. Bestehende Subscriptions werden als Vorauswahl &uuml;bernommen.
+    </div>
 
-	<div data-role="fieldcontain">
-		<fieldset data-role="controlgroup">
-			<legend>Data transformations</legend>
-			<input type="checkbox" name="Main.convert_booleans" id="Main.convert_booleans">
-			<label for="Main.convert_booleans">Convert booleans to 1 and 0</label>
-			<input type="checkbox" name="Main.expand_json" id="Main.expand_json">
-			<label for="Main.expand_json">Expand JSON data</label>
-		</fieldset>
-	</div>
+    <!-- Section: Miniserver Data Routing -->
+    <div class="lb-section-title">Miniserver Datenweiterleitung</div>
 
-	<br>
-	<div class="wide">Miniserver to MQTT</div>
-	<br>
+    <TMPL_VAR mslist_select_html>
 
-	<div data-role="fieldcontain">
-		<label for="udpinport">Gateway UDP in-port</label>
-		<input name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" />
-		<p class="hint">Default UDP IN-port on LoxBerry is <span class="mono">11884</span>. Publish data <i>from the Miniserver</i> to this udp port.</p>
-	</div>
+    <div class="lb-form-row">
+        <div class="lb-form-label">Protokoll</div>
+        <div class="lb-form-field">
+            <div class="lb-btn-group" id="protocol_toggle" data-role="none">
+                <input type="radio" name="protocol" id="proto_http" value="http" data-role="none">
+                <label for="proto_http">HTTP</label>
+                <input type="radio" name="protocol" id="proto_udp" value="udp" data-role="none">
+                <label for="proto_udp">UDP</label>
+                <input type="radio" name="protocol" id="proto_both" value="both" data-role="none">
+                <label for="proto_both">Beide</label>
+            </div>
+        </div>
+    </div>
 
-	<br>
+    <div class="lb-form-row">
+        <div class="lb-form-label">UDP Port</div>
+        <div class="lb-form-field" style="max-width:150px">
+            <input class="lb-input" type="number" id="basic_udpport" data-role="none">
+        </div>
+        <div class="lb-form-help">Port f&uuml;r Miniserver UDP Kommunikation</div>
+    </div>
 
-	<div data-role='collapsible' id='coll_mqtthttp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2>Still more settings</h2>
-		
-		<div>
-			<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-	        	<legend>Data Transfer Performance</legend>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-50" value="50">
-				<label for="Main.cpuperf-50">NO LIMIT!</label>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-010" value="10">
-				<label for="Main.cpuperf-010">Really fast</label>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-005" value="5">
-				<label for="Main.cpuperf-005">Fast (Default)</label>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-002" value="2.5">
-				<label for="Main.cpuperf-002">Moderate</label>
-				<input type="radio" name="Main.cpuperf" id="Main.cpuperf-001" value="1">
-				<label for="Main.cpuperf-001">Energy Saver</label>
-				<p><br>This influences the routing performance of the MQTT Gateway. Compared, the old behaviour (before this setting exists) was between <i>Moderate</i> and <i>Energy Saver</i>. Changing the setting takes some minutes to adjust.</p>
-			</fieldset>
-		</div>
-		<div>
-			<label for="resetaftersendms">Reset After Send Time (ms)</label>
-			<input type="number" data-clear-btn="false" name="Main.resetaftersendms" id="Main.resetaftersendms">
-			<p class="hint">Default is <span class="mono">13</span>. Topics with Reset-After-Send enabled, will wait for x milliseconds before the value is resetted. Raise this value, if your virtual inputs are not correctly resetted on your Miniserver.</p>
-		</div>
-	</div>	
-	
-	
-	</form>
-	<!-- /Form SETTINGS -->
+    <!-- Datenverarbeitung -->
+    <div class="lb-section-title">Datenverarbeitung</div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">Boolean-Konvertierung</div>
+        <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
+            <label class="lb-toggle" data-role="none">
+                <input type="checkbox" name="Main.convert_booleans" id="Main.convert_booleans" data-role="none">
+                <span class="lb-toggle-slider"></span>
+            </label>
+            <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">true/false &rarr; 1/0</span>
+        </div>
+    </div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">JSON Expand</div>
+        <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
+            <label class="lb-toggle" data-role="none">
+                <input type="checkbox" name="Main.expand_json" id="Main.expand_json" data-role="none">
+                <span class="lb-toggle-slider"></span>
+            </label>
+            <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">JSON-Payloads in einzelne Werte aufteilen</span>
+        </div>
+    </div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">CPU-Profil</div>
+        <div class="lb-form-field">
+            <select class="lb-select" name="Main.cpuperf" id="Main.cpuperf" data-role="none" style="max-width:250px">
+                <option value="1">1% (Energiesparer)</option>
+                <option value="2.5">2,5% (Moderat)</option>
+                <option value="5">5% (Standard)</option>
+                <option value="10">10% (Schnell)</option>
+                <option value="50">50% (Maximum)</option>
+            </select>
+        </div>
+        <div class="lb-form-help">&Auml;nderungen brauchen einige Minuten zur Anpassung</div>
+    </div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">Reset-After-Send</div>
+        <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
+            <input class="lb-input" type="number" name="Main.resetaftersendms" id="Main.resetaftersendms" data-role="none" style="max-width:100px">
+            <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">ms</span>
+        </div>
+        <div class="lb-form-help">Standard: 13 ms. Wartezeit bevor ein Wert zur&uuml;ckgesetzt wird.</div>
+    </div>
+
+    <!-- Miniserver zu MQTT -->
+    <div class="lb-section-title">Miniserver zu MQTT</div>
+
+    <div class="lb-form-row">
+        <div class="lb-form-label">Gateway UDP In-Port</div>
+        <div class="lb-form-field">
+            <input class="lb-input" name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" data-role="none" style="max-width:150px">
+        </div>
+        <div class="lb-form-help">Standard: 11884. Daten vom Miniserver an diesen Port senden.</div>
+    </div>
+
+</form>
+
+<script>
+$(function() {
+    var gatewayversion = parseInt($("#gatewayversion").text()) || 1;
+    var cfgstr = $("#mqttconfig").text();
+    var cfg = cfgstr ? JSON.parse(cfgstr) : {};
+
+    // Helper: sync active class on btn-group labels
+    function syncBtnGroup(name) {
+        $('input[name="' + name + '"]').each(function() {
+            var $label = $('label[for="' + this.id + '"]');
+            if ($(this).prop("checked")) {
+                $label.addClass("active");
+            } else {
+                $label.removeClass("active");
+            }
+        });
+    }
+
+    // Set version toggle
+    $("#gw_v" + gatewayversion).prop("checked", true);
+    syncBtnGroup("gatewayversion");
+
+    // Set protocol toggle
+    var use_http = cfg.Main && cfg.Main.use_http;
+    var use_udp = cfg.Main && cfg.Main.use_udp;
+    if (use_http && use_udp) $("#proto_both").prop("checked", true);
+    else if (use_udp) $("#proto_udp").prop("checked", true);
+    else $("#proto_http").prop("checked", true);
+    syncBtnGroup("protocol");
+
+    // Set UDP port
+    $("#basic_udpport").val(cfg.Main ? cfg.Main.udpport : "");
+
+    // Re-sync on change
+    $('input[name="gatewayversion"], input[name="protocol"]').on("change", function() {
+        syncBtnGroup($(this).attr("name"));
+    });
+
+    // Version change warning
+    var originalVersion = gatewayversion;
+    $('input[name="gatewayversion"]').on("change", function() {
+        var newVersion = parseInt($(this).val());
+        if (newVersion !== originalVersion) {
+            $("#version_change_warning").slideDown(200);
+        } else {
+            $("#version_change_warning").slideUp(200);
+        }
+    });
+
+    // Status indicator
+    function updateStatus() {
+        $.post('ajax/ajax-mqtt.php', { ajax: 'getpids' })
+        .done(function(resp) {
+            var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
+            var $status = $("#mqttgw_status");
+            $status.show();
+
+            if (data.pids && data.pids.mqttgateway) {
+                $status.removeClass("mqttgw-status-warn mqttgw-status-error").addClass("mqttgw-status-ok");
+                $(".mqttgw-status-label", $status).text("Gateway l\u00e4uft");
+                $("#mqttgw_status_detail").text("\u2014 PID " + data.pids.mqttgateway);
+            } else {
+                $status.removeClass("mqttgw-status-ok mqttgw-status-warn").addClass("mqttgw-status-error");
+                $(".mqttgw-status-label", $status).text("Gateway gestoppt");
+                $("#mqttgw_status_detail").text("");
+            }
+        });
+    }
+    updateStatus();
+    setInterval(updateStatus, 10000);
+
+    // Save handler
+    $("#saveapply").click(function() {
+        var newVersion = parseInt($('input[name="gatewayversion"]:checked').val());
+        var protocol = $('input[name="protocol"]:checked').val();
+
+        cfg.Main = cfg.Main || {};
+        cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
+        cfg.Main.use_udp = (protocol === "udp" || protocol === "both") ? 1 : 0;
+        cfg.Main.udpport = parseInt($("#basic_udpport").val()) || 11883;
+        cfg.Main.msno = parseInt($("#Main\\.msno").val()) || 1;
+
+        // Save gateway config
+        $.ajax({
+            type: 'POST',
+            url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace',
+            dataType: 'json',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify(cfg)
+        });
+
+        // Save gateway version to general.json
+        $.ajax({
+            type: 'POST',
+            url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
+            dataType: 'json',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify({ GatewayVersion: newVersion })
+        })
+        .done(function() {
+            if (newVersion !== originalVersion) {
+                location.reload();
+            }
+        });
+    });
+});
+</script>
 </TMPL_IF>
 
+<!-- FORM_SETTINGS removed: content merged into FORM_BASIC -->
+
 <TMPL_IF FORM_SUBSCRIPTIONS>
+
+<TMPL_UNLESS GATEWAY_V2>
+<!-- V1: Textarea-based subscriptions (existing code unchanged) -->
 	<!-- Form SUBSCRIPTIONS -->
 	<form id="form" onsubmit="return false;">
 
-	<div class="wide">MQTT Subscriptions</div>
+	<div class="lb-section-title">MQTT Subscriptions</div>
 	<p>Subscriptions are the topics of MQTT devices that are relayed to the Miniserver. A # sign symbols a joker in MQTT. Use exactly the topic(s) provided by the device vendor.</p> 
 	<p style="font-size:80%"><i>Advanced feature:</i> Send specific subscriptions to specific Miniservers - after the subscription, use a pipe | symbol followed by a list of Miniserver numbers (from the Miniserver widget), e.g. <span class="mono">shellies/#|2</span> or <span class="mono">shellies/#|2,3</span>. Without pipe, the default Miniserver from the <i>Settings</i> page is used.</p>
 <!-- 	<div data-role="fieldcontain"> -->
@@ -151,7 +317,7 @@
 		</div>
 	</div>
 	<br>
-	<div class="wide">Subscription Filter Expressions (RegEx)</div>
+	<div class="lb-section-title">Subscription Filter Expressions (RegEx)</div>
 	
 	<p>Subscriptions may route a lot of data to the Miniserver, some of them are never required for your logic. Filter expressions are Regular Expressions (RegEx) that filter the <u>JSON expanded</u> data. A filter <b>match</b> is <b>not forwarded</b> to the Miniserver (it's a &laquo;catch-all&raquo; of the <i>Do not forward</i> checkbox). At the stage of the filter, all topic delimiters (<span class="mono">/</span>) are <i>underscores</i> (<span class="mono">_</span>), even with UDP transmission.
 	</p>
@@ -182,22 +348,467 @@ $(function(){
 
 </script>
 
+</TMPL_UNLESS>
+
+<TMPL_IF GATEWAY_V2>
+<!-- V2: Topic Browser -->
+<form id="form_subscriptions_v2" onsubmit="return false;">
+
+    <!-- Discovery Status -->
+    <div class="mqttgw-status mqttgw-status-ok">
+        <span class="mqttgw-status-dot" id="discovery_pulse"></span>
+        <span class="mqttgw-status-label"><span id="discovery_count">--</span> Topics</span>
+        <span class="mqttgw-status-detail">&mdash; <span id="discovery_ago">wird geladen...</span></span>
+        <span class="mqttgw-status-uptime"><button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="Jetzt aktualisieren">&#x21bb;</button></span>
+    </div>
+
+    <!-- Filter Bar with Wildcard Support -->
+    <div class="mqttgw-filter">
+        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="Topics filtern... (+ = eine Ebene, # = alle Unterebenen)" data-role="none">
+        <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none">Alle ausw&auml;hlen</button>
+        <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none">Alle abw&auml;hlen</button>
+        <label class="mqttgw-filter-label">
+            <input type="checkbox" id="filter_subscribed_only" data-role="none"> Nur abonnierte
+        </label>
+        <span class="mqttgw-filter-count" id="filter_count"></span>
+    </div>
+
+    <!-- Topic Groups Container -->
+    <div id="topic_groups_container">
+        <div style="text-align:center; padding:40px; color:var(--lb-gray-500)">
+            Topics werden geladen...
+        </div>
+    </div>
+
+</form>
+
+<script>
+$(function() {
+    var discoveredTopics = [];
+    var subscriptionsV2 = {};
+    // Count Miniservers from config (Main.msno is highest MS number in use)
+    var cfgstr2 = $("#mqttconfig").text();
+    var cfg2 = cfgstr2 ? JSON.parse(cfgstr2) : {};
+    var msCount = parseInt(cfg2.Main && cfg2.Main.msno) || 1;
+    // Check if we have at least 2 MS configured (msno is the default, but there may be more)
+    if (msCount < 2) msCount = 2;  // LoxBerry supports multi-MS, show dropdown by default
+
+    // Load existing V2 subscriptions
+    $.post('ajax/ajax-mqtt.php', { ajax: 'get_subscriptions_v2' })
+    .done(function(resp) {
+        var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
+        if (data.subscriptions_v2) {
+            data.subscriptions_v2.forEach(function(sub) {
+                subscriptionsV2[sub.topic] = sub;
+            });
+        }
+    });
+
+    // Build MS options HTML
+    function msOptionsHtml(selectedMS) {
+        if (msCount <= 1) return '';
+        var opts = '<option value="default">Standard</option>';
+        for (var i = 1; i <= msCount; i++) {
+            opts += '<option value="' + i + '"' + (selectedMS && selectedMS.length === 1 && selectedMS[0] === i ? ' selected' : '') + '>MS ' + i + '</option>';
+        }
+        if (msCount === 2) {
+            opts += '<option value="1,2"' + (selectedMS && selectedMS.length === 2 ? ' selected' : '') + '>MS 1+2</option>';
+        }
+        return '<select class="mqttgw-topic-ms">' + opts + '</select>';
+    }
+
+    function countSubscribed(topics) {
+        var n = 0;
+        topics.forEach(function(t) { if (subscriptionsV2[t.topic] && subscriptionsV2[t.topic].enabled) n++; });
+        return n;
+    }
+
+    function makeDefaultSub(topic) {
+        return { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+    }
+
+    // Wildcard pattern matching: + = one level, # = all remaining
+    function wildcardToRegex(pattern) {
+        var parts = pattern.split('/').map(function(p) {
+            if (p === '#') return '.*';
+            if (p === '+') return '[^/]+';
+            return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        });
+        var regex = '^' + parts.join('/');
+        if (!pattern.endsWith('#')) regex += '$';
+        return new RegExp(regex);
+    }
+
+    // Get topics matching current filter (used by renderTopics and select/deselect buttons)
+    function getVisibleTopics() {
+        var filterText = $("#topic_filter").val().trim();
+        var isWildcard = filterText && (filterText.indexOf('+') !== -1 || filterText.indexOf('#') !== -1);
+        var filterRegex = isWildcard ? wildcardToRegex(filterText) : null;
+        var filterLower = filterText.toLowerCase();
+
+        return discoveredTopics.filter(function(t) {
+            if (!filterText) return true;
+            return isWildcard ? filterRegex.test(t.topic) : t.topic.toLowerCase().indexOf(filterLower) !== -1;
+        });
+    }
+
+    // Render topic groups
+    function renderTopics() {
+        var groups = {};
+        var subscribedOnly = $("#filter_subscribed_only").prop("checked");
+        var visible = getVisibleTopics();
+        var totalCount = 0;
+        var subCount = 0;
+
+        visible.forEach(function(t) {
+            var sub = subscriptionsV2[t.topic];
+            var isSubscribed = sub && sub.enabled;
+            if (subscribedOnly && !isSubscribed) return;
+
+            if (!groups[t.group]) groups[t.group] = { topics: [], subCount: 0 };
+            groups[t.group].topics.push(t);
+            totalCount++;
+            if (isSubscribed) {
+                groups[t.group].subCount++;
+                subCount++;
+            }
+        });
+
+        $("#filter_count").text(subCount + " von " + totalCount + " abonniert");
+
+        // Helper: render a single topic row (leaf node)
+        function renderTopicRow(t, displayName) {
+            var sub = subscriptionsV2[t.topic] || { enabled: false, json_expand: false, json_fields: [], toMS: [] };
+            var disabledClass = sub.enabled ? '' : ' mqttgw-topic-row-disabled';
+            var rowHtml = '';
+
+            rowHtml += '<div class="mqttgw-topic-row' + disabledClass + '" data-topic="' + t.topic + '">';
+            rowHtml += '<input type="checkbox" class="topic-subscribe" data-topic="' + t.topic + '"' + (sub.enabled ? ' checked' : '') + '>';
+            rowHtml += '<span class="mqttgw-topic-name">' + displayName + '</span>';
+            rowHtml += '<span class="mqttgw-topic-payload" title="' + (t.payload || '').replace(/"/g, '&quot;') + '">' + (t.payload || '') + '</span>';
+            rowHtml += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand" data-topic="' + t.topic + '"' + (sub.json_expand ? ' checked' : '') + '> JSON</label>';
+            if (msCount > 1) { rowHtml += msOptionsHtml(sub.toMS); }
+            rowHtml += '</div>';
+
+            if (sub.json_expand && t.payload) {
+                try {
+                    var jsonPayload = JSON.parse(t.payload);
+                    if (typeof jsonPayload === 'object' && jsonPayload !== null) {
+                        rowHtml += '<div class="mqttgw-json-fields" data-parent="' + t.topic + '">';
+                        Object.keys(jsonPayload).forEach(function(key) {
+                            var fieldEnabled = true;
+                            if (sub.json_fields && sub.json_fields.length > 0) {
+                                var field = sub.json_fields.find(function(f) { return f.key === key; });
+                                fieldEnabled = field ? field.enabled : true;
+                            }
+                            rowHtml += '<label class="mqttgw-json-field">';
+                            rowHtml += '<input type="checkbox" class="json-field-subscribe" data-topic="' + t.topic + '" data-key="' + key + '"' + (fieldEnabled ? ' checked' : '') + '>';
+                            rowHtml += ' .' + key + ' = ' + jsonPayload[key];
+                            rowHtml += '</label>';
+                        });
+                        rowHtml += '</div>';
+                    }
+                } catch(e) {}
+            }
+            return rowHtml;
+        }
+
+        // Build tree from topics: { children: { segment: { children: {...}, topics: [...] } }, topics: [...] }
+        function buildTree(topics, prefix) {
+            var tree = { children: {}, topics: [] };
+            topics.forEach(function(t) {
+                var rest = t.topic.substring(prefix.length);
+                if (rest.charAt(0) === '/') rest = rest.substring(1);
+                var slashIdx = rest.indexOf('/');
+                if (slashIdx === -1) {
+                    // Leaf topic
+                    tree.topics.push({ topic: t, leafName: rest });
+                } else {
+                    var seg = rest.substring(0, slashIdx);
+                    if (!tree.children[seg]) tree.children[seg] = [];
+                    tree.children[seg].push(t);
+                }
+            });
+            return tree;
+        }
+
+        // Recursive render: builds collapsible tree
+        function renderTree(topics, prefix, depth) {
+            var tree = buildTree(topics, prefix);
+            var html = '';
+
+            // Render child groups (sorted) — always as collapsible
+            var sortedChildren = Object.keys(tree.children).sort();
+            sortedChildren.forEach(function(seg) {
+                var childTopics = tree.children[seg];
+                var childPrefix = prefix + (prefix ? '/' : '') + seg;
+                var childSubCount = countSubscribed(childTopics);
+                var dataPath = childPrefix.replace(/'/g, "\\'");
+
+                var allChecked = childSubCount === childTopics.length && childSubCount > 0;
+                html += '<details class="mqttgw-subgroup">';
+                html += '<summary>';
+                html += '<input type="checkbox" class="sub-group-toggle" data-prefix="' + dataPath + '"' + (allChecked ? ' checked' : '') + ' onclick="event.stopPropagation();subToggleAll(\'' + dataPath + '\', this.checked)" style="margin-right:6px">';
+                html += '<strong>' + seg + '</strong>';
+                html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
+                html += '</summary>';
+                html += '<div class="mqttgw-subgroup-content">';
+                html += renderTree(childTopics, childPrefix, depth + 1);
+                html += '</div></details>';
+            });
+
+            // Render leaf topics
+            tree.topics.forEach(function(item) {
+                html += renderTopicRow(item.topic, item.leafName);
+            });
+
+            return html;
+        }
+
+        var html = '';
+        var sortedGroups = Object.keys(groups).sort();
+
+        sortedGroups.forEach(function(groupName) {
+            var g = groups[groupName];
+            var isOpen = g.subCount > 0 ? ' open' : '';
+
+            var allGroupChecked = g.subCount === g.topics.length && g.subCount > 0;
+            html += '<details class="lb-collapsible mqttgw-group"' + isOpen + '>';
+            html += '<summary>';
+            html += '<input type="checkbox" class="group-toggle" data-group="' + groupName + '"' + (allGroupChecked ? ' checked' : '') + ' onclick="event.stopPropagation();groupToggleAll(\'' + groupName + '\', this.checked)" style="margin-right:6px">';
+            html += '<strong>' + groupName + '</strong>';
+            html += '<span class="mqttgw-group-count">(' + g.topics.length + ' Topics, ' + g.subCount + ' abonniert)</span>';
+            html += '</summary>';
+            html += '<div class="lb-collapsible-content" style="padding:0">';
+            html += renderTree(g.topics, groupName, 0);
 
 
+            html += '</div></details>';
+        });
 
-	
+        if (html === '') {
+            html = '<div style="text-align:center; padding:40px; color:var(--lb-gray-500)">Keine Topics gefunden.</div>';
+        }
+
+        // Save open/closed state of <details> before DOM rebuild
+        var openDetails = {};
+        $("#topic_groups_container details[open]").each(function() {
+            var key = $(this).find("summary strong").first().text();
+            if (key) openDetails[key] = true;
+        });
+
+        $("#topic_groups_container").html(html);
+
+        // Restore open/closed state
+        $("#topic_groups_container details").each(function() {
+            var key = $(this).find("> summary strong").first().text();
+            if (openDetails[key]) $(this).attr("open", "");
+        });
+    }
+
+    // Discovery: fetch topics via getmqttfinderdata (same reliable endpoint as MQTT Finder tab)
+    var discoveryRunning = false;
+    var lastTopicFingerprint = '';
+    var lastDiscoveryTime = 0;
+
+    function updateAgo() {
+        if (!lastDiscoveryTime) return;
+        var secs = Math.round((Date.now() - lastDiscoveryTime) / 1000);
+        $("#discovery_ago").text(secs < 5 ? "gerade eben" : "vor " + secs + "s");
+    }
+    setInterval(updateAgo, 1000);
+
+    function discoverTopics() {
+        if (discoveryRunning) return;
+        discoveryRunning = true;
+
+        $.post('ajax/ajax-mqtt.php', { ajax: 'getmqttfinderdata' })
+        .done(function(resp) {
+            var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
+            var newTopics = [];
+            if (data && data.incoming) {
+                Object.keys(data.incoming).forEach(function(topic) {
+                    if (topic.indexOf('/') === -1) return;
+                    if (!/^[a-zA-Z0-9/_.\-]+$/.test(topic)) return;
+                    var group = topic.split('/')[0];
+                    if (!/^[a-zA-Z]/.test(group)) return;
+                    var entry = data.incoming[topic];
+                    newTopics.push({
+                        topic: topic,
+                        group: group,
+                        payload: entry.p || '',
+                        timestamp: entry.t || ''
+                    });
+                });
+            }
+            lastDiscoveryTime = Date.now();
+            $("#discovery_count").text(newTopics.length);
+            updateAgo();
+            // Pulse animation
+            var $pulse = $("#discovery_pulse");
+            $pulse.removeClass("active");
+            setTimeout(function() { $pulse.addClass("active"); }, 10);
+
+            // Only re-render if topics or payloads changed
+            var fp = newTopics.map(function(t) { return t.topic + '=' + t.payload; }).join('|');
+            if (fp !== lastTopicFingerprint) {
+                lastTopicFingerprint = fp;
+                discoveredTopics = newTopics;
+                renderTopics();
+            }
+        })
+        .always(function() {
+            discoveryRunning = false;
+        });
+    }
+
+    // Auto-discovery on page load + periodic refresh every 10s
+    var discoveryInterval = setInterval(discoverTopics, 10000);
+    discoverTopics();
+
+    // Manual refresh button
+    $("#btn_discovery_refresh").click(function() {
+        discoverTopics();
+    });
+
+    // Cleanup on page navigation (prevents stacking intervals)
+    $(document).one('pagehide', function() {
+        clearInterval(discoveryInterval);
+    });
+
+    $("#topic_filter").on("input", function() { renderTopics(); });
+
+    // Select all visible topics
+    $("#btn_filter_select_all").click(function() {
+        getVisibleTopics().forEach(function(t) {
+            if (!subscriptionsV2[t.topic]) {
+                subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
+            }
+            subscriptionsV2[t.topic].enabled = true;
+        });
+        renderTopics();
+    });
+
+    // Deselect all visible topics
+    $("#btn_filter_deselect_all").click(function() {
+        getVisibleTopics().forEach(function(t) {
+            if (subscriptionsV2[t.topic]) {
+                subscriptionsV2[t.topic].enabled = false;
+            }
+        });
+        renderTopics();
+    });
+
+    // Event delegation for checkboxes
+    $("#topic_groups_container").on("change", ".topic-subscribe", function() {
+        var topic = $(this).data("topic");
+        if (!subscriptionsV2[topic]) {
+            subscriptionsV2[topic] = makeDefaultSub(topic);
+        }
+        subscriptionsV2[topic].enabled = $(this).prop("checked");
+        renderTopics();
+    });
+
+    $("#topic_groups_container").on("change", ".topic-json-expand", function() {
+        var topic = $(this).data("topic");
+        if (!subscriptionsV2[topic]) {
+            subscriptionsV2[topic] = makeDefaultSub(topic);
+        }
+        subscriptionsV2[topic].json_expand = $(this).prop("checked");
+        renderTopics();
+    });
+
+    $("#topic_groups_container").on("change", ".json-field-subscribe", function() {
+        var topic = $(this).data("topic");
+        var key = $(this).data("key");
+        var sub = subscriptionsV2[topic];
+        if (!sub) return;
+
+        if (!sub.json_fields) sub.json_fields = [];
+        var existing = sub.json_fields.find(function(f) { return f.key === key; });
+        if (existing) {
+            existing.enabled = $(this).prop("checked");
+        } else {
+            sub.json_fields.push({ key: key, enabled: $(this).prop("checked") });
+        }
+    });
+
+    $("#topic_groups_container").on("change", ".mqttgw-topic-ms", function() {
+        var topic = $(this).closest(".mqttgw-topic-row").data("topic");
+        var val = $(this).val();
+        if (!subscriptionsV2[topic]) return;
+
+        if (val === "default") subscriptionsV2[topic].toMS = [];
+        else subscriptionsV2[topic].toMS = val.split(",").map(Number);
+    });
+
+    // Filter handlers
+    $("#filter_subscribed_only").on("change", renderTopics);
+
+    // Group toggle all
+    window.groupToggleAll = function(groupName, enable) {
+        discoveredTopics.forEach(function(t) {
+            if (t.group === groupName) {
+                if (!subscriptionsV2[t.topic]) {
+                    subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
+                }
+                subscriptionsV2[t.topic].enabled = enable;
+            }
+        });
+        renderTopics();
+    };
+
+    // Toggle all topics under a sub-path prefix
+    window.subToggleAll = function(prefix, enable) {
+        discoveredTopics.forEach(function(t) {
+            if (t.topic === prefix || t.topic.indexOf(prefix + '/') === 0) {
+                if (!subscriptionsV2[t.topic]) {
+                    subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
+                }
+                subscriptionsV2[t.topic].enabled = enable;
+            }
+        });
+        renderTopics();
+    };
+
+    // Save handler
+    $("#saveapply").click(function() {
+        var subsArray = [];
+        Object.keys(subscriptionsV2).forEach(function(topic) {
+            var sub = subscriptionsV2[topic];
+            if (sub.enabled) {
+                subsArray.push(sub);
+            }
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions_v2',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify({ subscriptions_v2: subsArray })
+        })
+        .done(function() {
+            $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' });
+        });
+    });
+});
+</script>
 </TMPL_IF>
 
-<TMPL_IF FORM_CONVERSIONS>
+
+<!-- Merged from FORM_CONVERSIONS -->
 	<!-- Form CONVERSIONS -->
 	<form id="form" onsubmit="return false;">
 
-	<div class="wide">Text-to-Value conversions</div>
-	<p>MQTT devices often are sending strings that Loxone unfortunately cannot handle. In this field you can create text-to-value conversions. You can assign values to incoming strings, that values are sent to the Miniserver, and can be evaluated e.g. with a Status block.</p> 
-	<p>Booleans (on, off etc.) are already converted, if you have 'Boolean conversion' enabled.</p>
-	<div data-role="fieldcontain">
-		<label for="conversions">Text-to-Value conversion <p class="hint">One conversion per line. Use <span class="mono">Text=Value</span></p></label>
-		<textarea name="conversions" id="conversions" rows="20" data-autogrow="false"></textarea>
+	<div class="lb-section-title">Text-zu-Wert Konvertierungen</div>
+	<p>MQTT-Ger&auml;te senden oft Textstrings die Loxone nicht verarbeiten kann. Hier k&ouml;nnen Sie Text-zu-Wert Zuordnungen definieren, die an den Miniserver gesendet werden.</p>
+	<p>Booleans (on, off etc.) werden bereits automatisch konvertiert wenn die Boolean-Konvertierung aktiviert ist.</p>
+	<div class="lb-form-row">
+		<div class="lb-form-label">Konvertierungen</div>
+		<div class="lb-form-field">
+			<textarea class="lb-textarea" name="conversions" id="conversions" rows="12" data-role="none"></textarea>
+		</div>
+		<div class="lb-form-help">Ein Eintrag pro Zeile: <span class="mono">Text=Wert</span></div>
 	</div>
 	</form>
 
@@ -211,9 +822,16 @@ $(function(){
 	<!-- /Form CONVERSIONS -->
 </TMPL_IF>
 
+<!-- FORM_CONVERSIONS removed: content merged into FORM_SUBSCRIPTIONS -->
+
 
 <TMPL_IF FORM_TOPICS>
 	<!-- Form TOPICS (Incoming Overview) -->
+	<TMPL_IF GATEWAY_V2>
+	<div style="padding:10px 14px;background:var(--lb-gray-50);border:var(--lb-border);border-radius:var(--lb-radius);margin-bottom:var(--lb-space-md);font-size:var(--lb-font-sm);color:var(--lb-gray-500)">
+		&#9432; Gateway V2 (Opt-In): &quot;Do not forward&quot; ist nicht verf&uuml;gbar &mdash; es werden nur explizit abonnierte Topics weitergeleitet.
+	</div>
+	</TMPL_IF>
 	<style>
 	.topics_table {
 		/* font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; */
@@ -267,9 +885,9 @@ $(function(){
 	
 	</style>
 	
-	<div class="wide">Last transmissions to Miniserver</div>
-	<p>This page lists the transmissions via the MQTT Gateway to the Miniserver in the last 24 hours. It is refreshed <i>automatically on-the-fly</i> (as long as you have text selected, updating stops).<p>
-	<p>You can copy and paste the 'Virtual Input' names for HTTP transmissions, or create command recognitions from the UDP messages.</p>
+	<div class="lb-section-title">Letzte &Uuml;bertragungen an den Miniserver</div>
+	<p>&Uuml;bertragungen der letzten 24 Stunden. Wird <i>automatisch</i> aktualisiert (pausiert bei Textauswahl).</p>
+	<p>Virtual-Input-Namen k&ouml;nnen f&uuml;r HTTP kopiert, UDP-Kommandoerkennungen erstellt werden.</p>
 	
 	<input type="checkbox" name="topics_show_advanced" id="topics_show_advanced" data-mini="true">
 	<label for="topics_show_advanced">Show details and advanced settings</label>
@@ -300,6 +918,8 @@ $(function(){
 		var updateTopicsRunning = 0;
 		var currentElementCount = 0;
 		var refreshInterval = 1000;
+		var gatewayVersion = parseInt($("#gatewayversion").text()) || 1;
+		var isV2 = (gatewayVersion === 2);
 		var intervalID;
 		
 		$( document ).ready(function() {
@@ -656,7 +1276,7 @@ $(function(){
 				var doNotForward = "";
 				if( typeof cfg.doNotForward !== 'undefined' && topic.replace(/\//g, "_") in cfg.doNotForward ) {
 					doNotForward = "checked";
-					tdClass = 'subscriptionfiltered';
+					if (!isV2) tdClass = 'subscriptionfiltered';
 					// console.log(topic, "is set to Do-Not-Forward");
 				}
 				
@@ -700,10 +1320,12 @@ $(function(){
 					http_row+= '&nbsp;<input type="checkbox" name="http_reset_after_send_'+topic+'" id="http_reset_after_send_'+topic+'" data-mini="true" class="resetAfterSend" '+resetAfterSend+' style="display:inline;">';
 					http_row+= '<label for="http_reset_after_send_'+topic+'" style="display:inline;">Reset after send</label>';
 								
-					// Do not forward
-					//http_row+= '<label><input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
-					http_row+= '&nbsp;<input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'" data-mini="true" class="doNotForward" '+doNotForward +' style="display:inline;">';
-					http_row+= '<label for="http_do_not_forward_'+topic+'" style="display:inline;">Do not forward</label>';
+					// Do not forward (V1 only)
+					if (!isV2) {
+						//http_row+= '<label><input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
+						http_row+= '&nbsp;<input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'" data-mini="true" class="doNotForward" '+doNotForward +' style="display:inline;">';
+						http_row+= '<label for="http_do_not_forward_'+topic+'" style="display:inline;">Do not forward</label>';
+					}
 					
 					// http_row+= '</fieldset>';
 					http_row+= '</div>';
@@ -713,10 +1335,10 @@ $(function(){
 				http_row+= '</td>\n';
 								
 				http_row+= '<td class="'+tdClass+' topics_table_data">';
-				if( doNotForward || subscriptionfiltered != 0 ) 
+				if( (doNotForward && !isV2) || subscriptionfiltered != 0 )
 					http_row+= '<i><s style="text-shadow:none">';
-				http_row+= content.message; 
-				if( doNotForward ) 
+				http_row+= content.message;
+				if( doNotForward && !isV2 )
 					http_row+= '</s></i>';
 				
 				http_row+= '</td>\n';
@@ -731,7 +1353,7 @@ $(function(){
 					http_row+= '<br><span style="font-size:70%;">';
 					if( subscriptionfiltered != 0 )
 						http_row+= 'Subscription filtered by RegEx line '+subscriptionfiltered+'<br>';
-					if( doNotForward )
+					if( doNotForward && !isV2 )
 						http_row+= '<i>Do not forward</i> is active<br>';
 					else if( subscriptionfiltered == 0 && httpSubmitAdvTabInfRow) {
 						http_row+= httpSubmitAdvTabInfRow;
@@ -784,11 +1406,11 @@ $(function(){
 					subscriptionfiltered = resp.udp[topic].regexfilterline;
 					tdClass = 'subscriptionfiltered';
 				}
-				if( doNotForward ) {
+				if( doNotForward && !isV2 ) {
 					tdClass = 'subscriptionfiltered';
 				}
-				
-				var entry_notforwarded = typeof resp.udp[topic].regexfilterline != 'undefined' || doNotForward != "" ? true : false;
+
+				var entry_notforwarded = typeof resp.udp[topic].regexfilterline != 'undefined' || (doNotForward != "" && !isV2) ? true : false;
 
 				
 				// Filter
@@ -825,7 +1447,10 @@ $(function(){
 					
 					// console.log(topic, "is reset after send");
 					
-					udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_do_not_forward_'+topic+'" id="udp_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label></div>';
+					if (!isV2) {
+						udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_do_not_forward_'+topic+'" id="udp_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
+					}
+					udp_row+= '</div>';
 					
 				}
 				
@@ -834,9 +1459,9 @@ $(function(){
 				udp_row+= '<td style="font-size:80%;" class="'+tdClass+' topics_table_udp_commandrec">';
 				if( subscriptionfiltered != 0 )
 					udp_row+= 'Subscription filtered by RegEx line '+subscriptionfiltered+'<br>';
-				if( doNotForward ) 
+				if( doNotForward && !isV2 )
 					udp_row+= '<i>Do not forward</i> is active';
-				else if ( !doNotForward && !subscriptionfiltered ) {
+				else if ( (!doNotForward || isV2) && !subscriptionfiltered ) {
 					topic_tmp = 'MQTT:\\i' + topic.replace("\\", "\\\\") + '=\\i\\v';
 					udp_row+= topic_tmp;
 					
@@ -988,6 +1613,7 @@ $(function(){
 		};
 		
 		function checkbox_doNotForward(event) {
+			if (isV2) return;
 			var checkboxtarget;
 			if (event.currentTarget.id.startsWith("http_do_not_forward_") == true)
 				checkboxtarget = event.currentTarget.id.slice(20).replace(/\//g, '\_');
@@ -1032,10 +1658,11 @@ $(function(){
 	
 	</script>
 
-	<!-- /Form TOPICS -->
-</TMPL_IF>
 
-<TMPL_IF FORM_TRANSFORMERS>
+	<!-- Merged from FORM_TRANSFORMERS -->
+	<details class="lb-collapsible">
+		<summary>Transformers</summary>
+		<div class="lb-collapsible-content">
 <style>
 	.trans_table {
 		width: 100%;
@@ -1053,7 +1680,7 @@ $(function(){
 	
 	<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
 	
-	<div class="wide">Transformers</div>
+	<div class="lb-section-title">Transformers</div>
 	<p>Transformers are scripts of any programming language provided by <i>YOURSELF</i> (or shipped with the MQTT Gateway), that stands in the middle of the data transfer, and can transform incoming values to other outgoing values. Currently only <b>UDP Transformers</b> are supported, that modify data from the Miniserver before sending to MQTT.
 	</p>
 	<p class="hint">Example: Loxone sends RGB colors as combined 0-100% value, but devices require three seperate 0-255 values. An UDP Transformer can archive this.</p> 
@@ -1119,13 +1746,18 @@ $(function() {
 </script>	
 	
 
+		</div>
+	</details>
+	<!-- /Form TOPICS -->
 </TMPL_IF>
+
+<!-- FORM_TRANSFORMERS removed: content merged into FORM_TOPICS -->
 
 
 <TMPL_IF FORM_LOGS>
 	<!-- Form LOGS -->
 
-	<div class="wide">Logfiles</div>
+	<div class="lb-section-title">Logfiles</div>
 	<TMPL_VAR loglist_html>
 	
 	<div data-role='collapsible' id='coll_package_mosquitto' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
@@ -1152,9 +1784,9 @@ $(function() {
 
 <TMPL_UNLESS FORM_DISABLE_BUTTONS>
 
-	<div style="display:flex;align-items:center;justify-content:center;">
-	<button class="ui-btn ui-btn-icon-right" id="saveapply" data-inline="true">Save and Apply</button>
-	<button class="ui-btn ui-btn-icon-right" id="restartmqttgateway" data-inline="true">Restart</button>
+	<div style="display:flex;justify-content:center;gap:12px;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
+	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none">Speichern &amp; Anwenden</button>
+	<button class="lb-btn" id="restartmqttgateway" data-role="none">Gateway Neustarten</button>
 	</div>
 
 </TMPL_UNLESS>
@@ -1239,8 +1871,8 @@ $(function() {
 			
 		
 		}
-		$('select').selectmenu('refresh', true);
-		$('input:checkbox').checkboxradio('refresh');
+		try { $('select').selectmenu('refresh', true); } catch(e) {}
+		try { $('input:checkbox').checkboxradio('refresh'); } catch(e) {}
 		
 		// Hide UDP block if UDP is disabled
 		if( ! $("#Main\\.use_udp").is(":checked") )
@@ -1637,6 +2269,8 @@ $("#reconnect").click(function(){
 <div style="display:flex;align-items:center;justify-content:center;font-size:70%;padding:5px 20px 5px 20px">
 	<span id="savemessages"></span>&nbsp;
 	<span id="savebrokerpass"></span>&nbsp;
-	&nbsp;<span id="gatewaystate"></span>&nbsp;| 
+	&nbsp;<span id="gatewaystate"></span>&nbsp;|
 	&nbsp;<span id="mosquittostate"></span>
 </div>
+
+</div><!-- /data-enhance="false" -->

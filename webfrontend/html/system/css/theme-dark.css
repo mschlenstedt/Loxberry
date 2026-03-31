@@ -1,18 +1,23 @@
 /* LoxBerry Dark Mode Theme
-   Principle: Only override colors/fonts — never touch jQuery Mobile structure
-   (border-radius, padding, margins, display, position) */
+   Colors via CSS Variables from design-tokens.css
+   Only override colors — never touch jQuery Mobile structure */
 
 /* === Global === */
 .theme-dark .ui-page {
-  background-color: #1e1e2e;
-  color: #e0e0e0;
+  background-color: var(--lb-gray-50);
+  color: var(--lb-gray-900);
 }
 
-.theme-dark * {
+/* Selective text-shadow reset instead of universal * selector */
+.theme-dark .ui-btn,
+.theme-dark .ui-bar-a,
+.theme-dark .ui-body-a,
+.theme-dark .ui-body-inherit,
+.theme-dark label,
+.theme-dark a {
   text-shadow: none !important;
 }
 
-/* Hide background logos */
 .theme-dark .loxberry-logo,
 .theme-dark .ui-panel-wrapper {
   background-image: none !important;
@@ -20,34 +25,34 @@
 
 /* === Header === */
 .theme-dark .ui-header .ui-bar-a {
-  background: #252536;
-  color: #e0e0e0;
-  border-bottom-color: #333350;
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+  border-bottom-color: var(--lb-gray-200);
 }
 
 .theme-dark .ui-header .ui-bar-a .ui-btn,
 .theme-dark .ui-header .ui-bar-a h1 {
-  color: #e0e0e0;
+  color: var(--lb-gray-900);
   text-shadow: none;
 }
 
 .theme-dark .ui-header .ui-bar-a .ui-btn:hover {
-  color: #6dac20;
+  color: var(--lb-primary);
 }
 
 /* === Buttons — colors only === */
 .theme-dark .ui-btn {
   text-shadow: none;
   box-shadow: none;
-  background: #2a2a3e;
-  color: #d0d0d0;
-  border-color: #555577;
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
   font-weight: 500;
 }
 
 .theme-dark .ui-btn:hover {
-  background: #333350;
-  border-color: #444466;
+  background: var(--lb-gray-200);
+  border-color: var(--lb-gray-300);
 }
 
 .theme-dark .ui-btn-active,
@@ -55,16 +60,16 @@
 .theme-dark .ui-radio-on .ui-btn,
 .theme-dark .ui-checkbox-on .ui-btn,
 .theme-dark .ui-controlgroup .ui-btn-active {
-  background: #6dac20 !important;
+  background: var(--lb-primary) !important;
   color: white !important;
-  border-color: #6dac20 !important;
+  border-color: var(--lb-primary) !important;
 }
 
 .theme-dark button[type="submit"],
 .theme-dark .ui-btn-icon-left[data-icon="check"] {
-  background: #6dac20;
+  background: var(--lb-primary);
   color: white;
-  border-color: #5a9418;
+  border-color: var(--lb-primary-hover);
 }
 
 /* === Inputs — colors only === */
@@ -79,45 +84,45 @@
 .theme-dark .ui-input-search input,
 .theme-dark textarea,
 .theme-dark select {
-  border-color: #666688 !important;
-  background: #353550 !important;
-  color: #f0f0f0 !important;
+  border-color: var(--lb-gray-300) !important;
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-900) !important;
 }
 
 .theme-dark input::placeholder,
 .theme-dark textarea::placeholder {
-  color: #666 !important;
+  color: var(--lb-gray-500) !important;
 }
 
 .theme-dark .ui-input-text input:focus,
 .theme-dark .ui-input-search input:focus,
 .theme-dark textarea:focus {
-  border-color: #6dac20 !important;
+  border-color: var(--lb-primary) !important;
   outline: none;
   box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.25);
 }
 
-.theme-dark #securepin {
-  background-color: #4a4a28 !important;
-  border-color: #666688 !important;
-}
-
-.theme-dark #archiveurl {
-  background: #353550 !important;
-  color: #f0f0f0 !important;
-  border-color: #666688 !important;
-}
-
 /* === Content === */
 .theme-dark .ui-content {
-  background: #1e1e2e;
-  color: #e0e0e0;
+  background: var(--lb-gray-50);
+  color: var(--lb-gray-900);
 }
 
+/* Override jQm .ui-body-inherit — must match original specificity from jquery.mobile */
 .theme-dark .ui-body-a,
-.theme-dark .ui-body-inherit {
-  background-color: rgba(42, 42, 62, 0.9);
-  color: #e0e0e0;
+.theme-dark .ui-body-inherit,
+.ui-page-theme-a .theme-dark .ui-body-inherit,
+html body.theme-dark .ui-body-inherit,
+html body.theme-dark .ui-body-a,
+html .ui-bar-a body.theme-dark .ui-body-inherit,
+html body.theme-dark .ui-group-theme-a .ui-body-inherit,
+.ui-page-theme-a body.theme-dark .ui-body-inherit,
+body.theme-dark .ui-page-theme-a .ui-body-inherit,
+html body.theme-dark .ui-page-theme-a .ui-body-inherit {
+  background-color: var(--lb-gray-200) !important;
+  color: var(--lb-gray-900) !important;
+  border-color: var(--lb-gray-300) !important;
+  text-shadow: none !important;
 }
 
 /* === Links === */
@@ -131,47 +136,47 @@
 
 /* === Selects — colors only === */
 .theme-dark .ui-select .ui-btn {
-  border-color: #666688 !important;
-  background: #353550 !important;
-  color: #f0f0f0;
+  border-color: var(--lb-gray-300) !important;
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-900);
 }
 
 .theme-dark .ui-select .ui-btn span {
-  color: #e0e0e0 !important;
+  color: var(--lb-gray-900) !important;
 }
 
 .theme-dark select option {
-  background: #2a2a3e;
-  color: #e0e0e0;
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
 }
 
 /* === Panel === */
 .theme-dark .ui-panel {
-  background: #252536;
+  background: var(--lb-gray-100);
 }
 
 .theme-dark .ui-panel-inner {
-  color: #e0e0e0;
+  color: var(--lb-gray-900);
 }
 
 /* === Side Menu === */
 .theme-dark ul.lb-systemmenu li.lb-nonhover {
-  background-color: #6dac20;
+  background-color: var(--lb-primary);
   color: white !important;
 }
 
 .theme-dark ul.lb-systemmenu li {
-  color: #d0d0d0 !important;
-  background-color: #2a2a3e;
-  border-bottom-color: #333350;
+  color: var(--lb-gray-700) !important;
+  background-color: var(--lb-gray-100);
+  border-bottom-color: var(--lb-gray-200);
 }
 
 .theme-dark ul.lb-systemmenu a {
-  color: #c0c0c0 !important;
+  color: var(--lb-gray-700) !important;
 }
 
 .theme-dark ul.lb-systemmenu li:hover {
-  background-color: #6dac20;
+  background-color: var(--lb-primary);
   color: black !important;
 }
 
@@ -181,103 +186,92 @@
 
 /* === Tables — colors only === */
 .theme-dark table td {
-  color: #e0e0e0;
+  color: var(--lb-gray-900);
 }
 
 /* === Flipswitch === */
 .theme-dark .ui-flipswitch {
-  background-color: #333350 !important;
+  background-color: var(--lb-gray-200) !important;
 }
 
 .theme-dark .ui-flipswitch-active {
-  background-color: #6dac20 !important;
+  background-color: var(--lb-primary) !important;
 }
 
 .theme-dark .ui-slider-track {
-  background-color: #333350 !important;
+  background-color: var(--lb-gray-200) !important;
 }
 
 /* === Section Headers === */
 .theme-dark .wide {
-  color: #f0f0f0;
-  border-bottom-color: #6dac20;
+  color: var(--lb-gray-900);
+  border-bottom-color: var(--lb-primary);
 }
 
 .theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4 {
-  color: #f0f0f0;
+  color: var(--lb-gray-900);
 }
 
 /* === Text colors === */
 .theme-dark label,
 .theme-dark .ui-controlgroup label {
-  color: #d0d0d0;
+  color: var(--lb-gray-700);
 }
 
 .theme-dark .hint {
-  color: #c0c0c0;
-}
-
-.theme-dark p, .theme-dark span, .theme-dark div {
-  color: inherit;
+  color: var(--lb-gray-700);
 }
 
 .theme-dark small, .theme-dark .small {
-  color: #a0a0a0;
+  color: var(--lb-gray-500);
 }
 
 /* === Checkboxes & Radios — colors only === */
 .theme-dark .ui-checkbox label,
 .theme-dark .ui-radio label {
-  color: #e0e0e0 !important;
-  background: #2a2a3e !important;
-  border-color: #333350 !important;
-}
-
-.theme-dark .ui-checkbox .ui-btn.ui-icon-checkbox-off,
-.theme-dark .ui-checkbox .ui-btn.ui-icon-checkbox-on {
-  background: #2a2a3e !important;
-  color: #e0e0e0 !important;
-  border-color: #333350 !important;
+  color: var(--lb-gray-900) !important;
+  background: var(--lb-gray-100) !important;
+  border-color: var(--lb-gray-200) !important;
 }
 
 /* === Fieldset === */
 .theme-dark fieldset {
-  border-color: #333350;
+  border-color: var(--lb-gray-200);
 }
 
 /* === Controlgroup — colors only === */
 .theme-dark .ui-controlgroup .ui-btn {
-  border-color: #333350;
-  background: #2a2a3e;
-  color: #d0d0d0;
+  border-color: var(--lb-gray-200);
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
 }
 
 /* === Navbar — colors only === */
 .theme-dark [data-role="navbar"] .ui-btn {
-  background: #2a2a3e !important;
-  color: #d0d0d0 !important;
-  border-color: #333350 !important;
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-700) !important;
+  border-color: var(--lb-gray-200) !important;
 }
 
 .theme-dark [data-role="navbar"] .ui-btn-active {
-  background: #6dac20 !important;
+  background: var(--lb-primary) !important;
   color: white !important;
 }
 
 /* === Collapsible — colors only === */
 .theme-dark .ui-collapsible-heading .ui-btn {
-  background: #2a2a3e;
-  border-color: #333350;
-  color: #e0e0e0;
+  background: var(--lb-gray-100);
+  border-color: var(--lb-gray-200);
+  color: var(--lb-gray-900);
 }
 
 /* === Footer === */
 .theme-dark [data-role="footer"] {
-  border-top-color: #333350;
+  border-top-color: var(--lb-gray-200);
 }
 
 /* === Log colors === */
-.theme-dark .logstart { background-color: #6dac20; }
+.theme-dark .logstart { background-color: var(--lb-primary); }
 .theme-dark .loginf, .theme-dark .logdeb { background-color: #1a2a40; color: #c0d8f0; }
 .theme-dark .logok { background-color: #1a3a1e; color: #a0d8a8; }
 .theme-dark .logwarn { background-color: #3a3a1a; color: #d8d890; }
@@ -286,14 +280,102 @@
 
 /* === Form errors === */
 .theme-dark .form-error, .theme-dark .form-error-message {
-  color: #ff6b6b;
+  color: var(--lb-danger);
+}
+
+/* === lb-* Design System — Dark Overrides === */
+.theme-dark .lb-input,
+.theme-dark .lb-select,
+.theme-dark .lb-textarea {
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-900) !important;
+  border-color: var(--lb-gray-300) !important;
+}
+.theme-dark .lb-input:focus,
+.theme-dark .lb-select:focus,
+.theme-dark .lb-textarea:focus {
+  border-color: var(--lb-primary) !important;
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.25) !important;
+}
+.theme-dark .lb-input::placeholder {
+  color: var(--lb-gray-500) !important;
+}
+.theme-dark .lb-input:disabled {
+  background: var(--lb-gray-200) !important;
+  color: var(--lb-gray-500) !important;
+}
+/* Force jQm input wrappers transparent so lb-input styling shows through */
+.theme-dark .ui-input-text {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.theme-dark .lb-btn {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
+}
+.theme-dark .lb-btn:hover {
+  background: var(--lb-gray-200);
+}
+.theme-dark .lb-btn-primary {
+  background: var(--lb-primary);
+  color: white;
+  border-color: var(--lb-primary);
+}
+.theme-dark .lb-btn-primary:hover {
+  background: var(--lb-primary-hover);
+}
+
+.theme-dark .lb-btn-group label {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
+}
+.theme-dark .lb-btn-group label:hover {
+  background: var(--lb-gray-200);
+}
+.theme-dark .lb-btn-group input[type="radio"]:checked + label,
+.theme-dark .lb-btn-group label.active {
+  background: var(--lb-primary);
+  color: white;
+}
+
+.theme-dark .lb-section-title {
+  color: var(--lb-gray-900);
+}
+
+.theme-dark .lb-form-label {
+  color: var(--lb-gray-700);
+}
+
+.theme-dark .lb-form-help {
+  color: var(--lb-gray-500);
+}
+
+.theme-dark .lb-card {
+  background: var(--lb-gray-100);
+  border-color: var(--lb-gray-200);
+}
+
+.theme-dark .lb-collapsible {
+  border-color: var(--lb-gray-200);
+}
+.theme-dark .lb-collapsible summary {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+}
+
+.theme-dark .lb-toggle input:checked + .lb-toggle-slider {
+  background: var(--lb-primary);
 }
 
 /* === Dropzone === */
 .theme-dark #dropzone {
-  border-color: #666688 !important;
-  background: #353550 !important;
+  border-color: var(--lb-gray-300) !important;
+  background: var(--lb-gray-100) !important;
 }
-.theme-dark #dropzone-text { color: #b0b0b0 !important; }
-.theme-dark #dropzone-text span { color: #6dac20 !important; }
-.theme-dark #dropzone-filename { color: #f0f0f0 !important; }
+.theme-dark #dropzone-text { color: var(--lb-gray-500) !important; }
+.theme-dark #dropzone-text span { color: var(--lb-primary) !important; }
+.theme-dark #dropzone-filename { color: var(--lb-gray-900) !important; }

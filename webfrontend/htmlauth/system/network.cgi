@@ -217,6 +217,9 @@ sub form {
 	  $maintemplate->param( "netzwerkprivacyext_IPv6", 'checked="checked"');
 	}
 
+	# israspberry Check
+	$maintemplate->param( 'israspberry' , 1 ) if ( -e "$lbsconfigdir/is_raspberry.cfg" );
+
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'NETWORK.WIDGETLABEL'};
 	LoxBerry::Web::head();

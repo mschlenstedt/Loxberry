@@ -71,18 +71,18 @@ h3.lbtitle {
 			*****
 		</div>
 		<div class="flexbox" style="flex-basis:20%">
-			<button type="submit" form="main_form" value="submit" data-server="<TMPL_VAR NETSERVER_SERVER>|<TMPL_VAR NETSERVER_TYPE>" data-role="button" data-icon="minus" data-mini="true" data-inline="true" class="deleteserver ui-btn ui-icon-minus ui-btn-icon-left ui-btn-inline ui-shadow ui-corner-all ui-mini"><TMPL_VAR NETSHARES.BUTTON_DEL_SERVER></button>
+			<button type="submit" form="main_form" value="submit" data-server="<TMPL_VAR NETSERVER_SERVER>|<TMPL_VAR NETSERVER_TYPE>" class="lb-btn lb-btn-sm lb-btn-icon deleteserver ui-btn ui-icon-minus ui-btn-icon-left ui-btn-inline ui-shadow ui-corner-all ui-mini"><i class="pi pi-minus"></i> <TMPL_VAR NETSHARES.BUTTON_DEL_SERVER></button>
 		</div>
 		<div class="flexbreak"></div>
 	</TMPL_LOOP>
 	</div>
-	<a id="add" data-role="button" data-inline="true" data-mini="true" data-icon="plus" href="/admin/system/netshares.cgi?a=add"><TMPL_VAR NETSHARES.BUTTON_ADD_SERVER></a>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" id="add" href="/admin/system/netshares.cgi?a=add"><i class="pi pi-plus"></i> <TMPL_VAR NETSHARES.BUTTON_ADD_SERVER></a>
 
-	<a id="debug" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/netshares.cgi?a=debuglog"><TMPL_VAR NETSHARES.BUTTON_ADD_DEBUGLOG></a>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" id="debug" href="/admin/system/netshares.cgi?a=debuglog"><i class="pi pi-info-circle"></i> <TMPL_VAR NETSHARES.BUTTON_ADD_DEBUGLOG></a>
 		<TMPL_IF DEBUGLOGEXISTS>
-	<a id="log" data-role="button" data-inline="true" data-mini="true" data-icon="info" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/netshare_debug.log&header=html&format=template&only=once" target='_blank'><TMPL_VAR NETSHARES.BUTTON_SHOW_DEBUGLOG></a>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" id="log" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/netshare_debug.log&header=html&format=template&only=once" target='_blank'><i class="pi pi-info-circle"></i> <TMPL_VAR NETSHARES.BUTTON_SHOW_DEBUGLOG></a>
 		</TMPL_IF>
-	<button type="button" name="btnsubmit" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" onClick="location.reload();"><font size=\"-1\"><TMPL_VAR COMMON.BUTTON_REFRESH></font></button>
+	<button class="lb-btn lb-btn-sm lb-btn-icon" type="button" name="btnsubmit" onClick="location.reload();"><i class="pi pi-refresh"></i> <font size=\"-1\"><TMPL_VAR COMMON.BUTTON_REFRESH></font></button>
 
 	</form>
 	
@@ -117,7 +117,7 @@ h3.lbtitle {
 				<td><TMPL_VAR NETSHARE_AVAILABLE_HR></td>
 				
 				<td><TMPL_VAR NETSHARE_STATE></td>
-				<td><a id="browse<TMPL_VAR NETSHARE_NO>" data-role="button" data-inline="true" data-mini="true" data-icon="navigation" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_self"><TMPL_VAR NETSHARES.BUTTON_BROWSE></a>
+				<td><a class="lb-btn lb-btn-sm lb-btn-icon" id="browse<TMPL_VAR NETSHARE_NO>" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/<TMPL_VAR NETSHARE_TYPE>/<TMPL_VAR NETSHARE_SERVER>/<TMPL_VAR NETSHARE_SHARENAME>" target="_self"><i class="pi pi-search"></i> <TMPL_VAR NETSHARES.BUTTON_BROWSE></a>
 				</td>
 			</tr>
 			</TMPL_LOOP>
@@ -200,9 +200,9 @@ $(function() {
 	<center>
 	<p>
 		<center>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="./netshares.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-			<button id="showpass" name="showpass" type="button" data-inline="true" data-mini="true" data-icon="eye"><TMPL_VAR NETSHARES.BUTTON_SHOW_PASSWORDS></button>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="./netshares.cgi"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
+			<button id="showpass" name="showpass" type="button" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-eye"></i> <TMPL_VAR NETSHARES.BUTTON_SHOW_PASSWORDS></button>
 		</center>
 	</p>
 	</center>
@@ -240,7 +240,7 @@ $(document).ready(function() {
 	<tr>
 		<td align="center">
 		<p>
-		<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/netshares.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="/admin/system/netshares.cgi"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 		</p>
 		</td>
 	</tr>
@@ -267,10 +267,8 @@ $(document).ready(function() {
 	<tr>
 		<td align="center">
 			<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true"
-			data-icon="delete" href="/admin/system/netshares.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
-		       data-icon="check" href="<TMPL_VAR SELFURL>&q=y"><TMPL_VAR COMMON.BUTTON_OK></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="/admin/system/netshares.cgi"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="<TMPL_VAR SELFURL>&q=y"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 			</p>
 		</td>
 	</tr>
@@ -294,7 +292,7 @@ $(document).ready(function() {
 	<tr>
 		<td align="center">
 		<p>
-		<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/netshares.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="/admin/system/netshares.cgi"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 		</p>
 		</td>
 	</tr>
@@ -321,7 +319,7 @@ $(document).ready(function() {
 	<tr>
 		<td align="center">
 		<p>
-		<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="/admin/system/netshares.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="/admin/system/netshares.cgi"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 		</p>
 		</td>
 	</tr>

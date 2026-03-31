@@ -1,0 +1,60 @@
+/* LoxBerry Design Tokens
+   All design values as CSS Variables.
+   Themes override these variables — no structural changes needed. */
+
+:root {
+  /* === Colors === */
+  --lb-primary: #6dac20;
+  --lb-primary-hover: #5a9418;
+  --lb-primary-dark: #4a7a12;
+
+  --lb-gray-50: #fafafa;
+  --lb-gray-100: #f5f5f5;
+  --lb-gray-200: #e5e5e5;
+  --lb-gray-300: #d4d4d4;
+  --lb-gray-500: #737373;
+  --lb-gray-700: #404040;
+  --lb-gray-900: #171717;
+
+  --lb-danger: #dc2626;
+  --lb-info: #0a4586;
+  --lb-success: #6dac20;
+  --lb-warning: #ca8a04;
+
+  /* === Spacing === */
+  --lb-space-xs: 4px;
+  --lb-space-sm: 8px;
+  --lb-space-md: 16px;
+  --lb-space-lg: 24px;
+  --lb-space-xl: 32px;
+
+  /* === Typography === */
+  --lb-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --lb-font-mono: 'Consolas', 'Monaco', monospace;
+  --lb-font-sm: 0.875rem;
+  --lb-font-base: 1rem;
+  --lb-font-lg: 1.25rem;
+
+  /* === Border === */
+  --lb-radius: 4px;
+  --lb-border-color: var(--lb-gray-200);
+  --lb-border: 1px solid var(--lb-border-color);
+}
+
+/* === Dark Theme Token Overrides === */
+body.theme-dark {
+  --lb-gray-50: #1e1e2e;
+  --lb-gray-100: #252536;
+  --lb-gray-200: #333350;
+  --lb-gray-300: #444466;
+  --lb-gray-500: #888888;
+  --lb-gray-700: #c0c0c0;
+  --lb-gray-900: #f0f0f0;
+  --lb-border-color: var(--lb-gray-200);
+  --lb-input-bg: #333350;
+}
+
+/* === Modern Theme Token Overrides === */
+body.theme-modern {
+  --lb-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}

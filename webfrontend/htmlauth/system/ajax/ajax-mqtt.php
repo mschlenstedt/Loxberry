@@ -226,14 +226,60 @@ elseif( $ajax == 'restartgateway' ) {
 }	
 
 elseif( $ajax == 'getmqttfinderdata' ) {
-	$fp = fopen($finderdatafile, "r");
-	if( flock($fp, LOCK_SH) ) {
+	$fp = @fopen($finderdatafile, "r");
+	if( $fp && flock($fp, LOCK_SH) ) {
 		echo fread($fp, 5*1024*1024);
 		fclose($fp);
 	}
 	else {
 		header("HTTP/1.0 404 Not Found");
 	}
+}
+
+elseif ( $_POST['ajax'] == 'get_subscriptions_v2' || $_GET['ajax'] == 'get_subscriptions_v2' ) {
+    $cfgfile = 'mqttgateway.json';
+    $fullcfgfile = LBSCONFIGDIR.'/'.$cfgfile;
+
+    if (file_exists($fullcfgfile)) {
+        $cfg = json_decode(file_get_contents($fullcfgfile), true);
+        $subs = isset($cfg['subscriptions_v2']) ? $cfg['subscriptions_v2'] : array();
+        header('Content-Type: application/json');
+        echo json_encode(array('subscriptions_v2' => $subs));
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(array('subscriptions_v2' => array()));
+    }
+}
+
+elseif ( $_POST['ajax'] == 'save_subscriptions_v2' ) {
+    $cfgfile = 'mqttgateway.json';
+    $fullcfgfile = LBSCONFIGDIR.'/'.$cfgfile;
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input || !isset($input['subscriptions_v2'])) {
+        http_response_code(400);
+        echo json_encode(array('error' => 'Missing subscriptions_v2 data'));
+        exit;
+    }
+
+    $fp = fopen($fullcfgfile, "c");
+    if (!$fp) {
+        error_log("mqtt-ajax: Could not open $fullcfgfile");
+        http_response_code(500);
+        exit;
+    }
+    flock($fp, LOCK_EX);
+    $cfg = json_decode(file_get_contents($fullcfgfile), true);
+    if (!$cfg) $cfg = array();
+
+    $cfg['subscriptions_v2'] = $input['subscriptions_v2'];
+
+    file_put_contents($fullcfgfile, json_encode($cfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    flock($fp, LOCK_UN);
+    fclose($fp);
+
+    header('Content-Type: application/json');
+    echo json_encode(array('status' => 'ok', 'count' => count($input['subscriptions_v2'])));
 }
 
 // Unknown request

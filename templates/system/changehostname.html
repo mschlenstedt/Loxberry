@@ -56,11 +56,11 @@
 							</tr>
 						  <tr>
 							<td></td>
-							<td><button type="submit" style="width: 200px;" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true">
+							<td><button class="lb-btn lb-btn-sm" type="submit" style="width: 200px;" name="btnsubmit" id="btnsubmit">
 							<TMPL_VAR NETWORK_CHANGEHOSTNAME.BUTTON_CHANGE></button>
-								<button type="button" name="btncancel" class="close" data-role="button" data-inline="true" data-mini="true" onclick="return quitBox('quit');">
+								<button type="button" name="btncancel" class="lb-btn lb-btn-sm close" onclick="return quitBox('quit');">
 							<TMPL_VAR COMMON.BUTTON_CANCEL></button>
-								<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+								<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnlogs" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank"><i class="pi pi-arrow-down"></i> <TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 							</td>
 						</tr>
 						<tr style="vertical-align: middle; height:50px;">
@@ -96,8 +96,8 @@
 						<p><font color="red"><b><TMPL_VAR NETWORK_CHANGEHOSTNAME.FAILURE_MESSAGE_RED></b></font></p>
 						<TMPL_VAR NETWORK_CHANGEHOSTNAME.FAILURE_MESSAGE_INFO>
 					</TMPL_IF>
-					<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
-					<button type="button" name="btncancel" class="close" data-role="button" data-inline="true" data-mini="true" onclick="return quitBox('quit');">
+					<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnlogs" href="/admin/system/tools/logfile.cgi?logfile=system/changehostname.log&header=html&format=template" target="_blank"><i class="pi pi-arrow-down"></i> <TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+					<button type="button" name="btncancel" class="lb-btn lb-btn-sm close" onclick="return quitBox('quit');">
 					<TMPL_VAR COMMON.BUTTON_CLOSE></button>
 				</div>
 				<!-- /text -->

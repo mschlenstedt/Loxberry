@@ -24,14 +24,14 @@
 
 		<TMPL_VAR DROPDOWN>
 
-		<button	id="btnformat" data-role="button" data-inline="true" data-mini="false" data-icon="check" style="background: #FF6339" onclick="format();">
+		<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"	id="btnformat" style="background: #FF6339" onclick="format();"><i class="pi pi-check"></i> 
 		<TMPL_VAR USBSTORAGE.BUTTON_FORMAT_NOW>
 		</button>
-		<button	id="btncancel" data-role="button" data-inline="true" data-mini="false" data-icon="delete" onclick="self.close()">
+		<button class="lb-btn lb-btn-sm lb-btn-icon"	id="btncancel" onclick="self.close()"><i class="pi pi-times"></i> 
 		<TMPL_VAR COMMON.BUTTON_CANCEL>
 		</button>
-		<button	id="btnlogfile" data-role="button" data-inline="true" data-mini="false" data-icon="arrow-d" 
-			onClick="window.open('/admin/system/tools/logfile.cgi?header=html&format=template&logfile=' + $('#logfile').html() )">
+		<button class="lb-btn lb-btn-sm lb-btn-icon"	id="btnlogfile" 
+			onClick="window.open('/admin/system/tools/logfile.cgi?header=html&format=template&logfile=' + $('#logfile').html() )"><i class="pi pi-arrow-down"></i> 
 		<TMPL_VAR COMMON.BUTTON_LOGFILE>
 		</button>
 		<div id="logfile" style="display:none;"></div>

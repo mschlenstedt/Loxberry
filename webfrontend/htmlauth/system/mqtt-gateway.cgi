@@ -16,6 +16,7 @@ my $q = $cgi->Vars;
 my %pids;
 
 my $template;
+my $gatewayversion;
 
 if( $q->{ajax} ) {
 	
@@ -56,43 +57,35 @@ if( $q->{ajax} ) {
 	my $udpinport = $generaljson->{Mqtt}->{Udpinport};
 	$template->param('UDPINPORT', $udpinport);
 	$template->param('USELOCALBROKER', is_enabled( $generaljson->{Mqtt}->{Uselocalbroker}) );
-	
-	# Switch between forms
-	
-	if( !$q->{form} or $q->{form} eq "settings" ) {
+
+	# Add gateway version - default to 1 for existing installations
+	$gatewayversion = $generaljson->{Mqtt}->{GatewayVersion} // 1;
+	$template->param("GATEWAY_VERSION", $gatewayversion);
+	$template->param("GATEWAY_V2", $gatewayversion == 2 ? 1 : 0);
+
+	# Switch between forms (4 tabs: Gateway, Abonnements, Datenverkehr, Logs)
+
+	if( !$q->{form} or $q->{form} eq "basic" or $q->{form} eq "settings" ) {
 		$navbar{10}{active} = 1;
-		$template->param("FORM_SETTINGS", 1);
-		settings_form(); 
+		$template->param("FORM_BASIC", 1);
+		basic_form();
 	}
-	elsif ( $q->{form} eq "subscriptions" ) {
+	elsif ( $q->{form} eq "subscriptions" or $q->{form} eq "conversions" ) {
 		$navbar{20}{active} = 1;
 		$template->param("FORM_SUBSCRIPTIONS", 1);
 		subscriptions_form();
 	}
-	elsif ( $q->{form} eq "conversions" ) {
+	elsif ( $q->{form} eq "incoming" or $q->{form} eq "transformers" ) {
 		$navbar{30}{active} = 1;
-		$template->param("FORM_CONVERSIONS", 1);
-		conversions_form();
-	}
-	elsif ( $q->{form} eq "incoming" ) {
-		$navbar{40}{active} = 1;
 		$template->param("FORM_TOPICS", 1);
 		$template->param("FORM_DISABLE_BUTTONS", 1);
-		# $template->param("FORM_DISABLE_JS", 1);
 		topics_form();
-	}
-	elsif ( $q->{form} eq "transformers" ) {
-		$navbar{90}{active} = 1;
-		$template->param("FORM_TRANSFORMERS", 1);
-		$template->param("FORM_DISABLE_BUTTONS", 1);
-		# $template->param("FORM_DISABLE_JS", 1);
 		transformers_form();
 	}
 	elsif ( $q->{form} eq "logs" ) {
-		$navbar{90}{active} = 1;
+		$navbar{40}{active} = 1;
 		$template->param("FORM_LOGS", 1);
 		$template->param("FORM_DISABLE_BUTTONS", 1);
-		# $template->param("FORM_DISABLE_JS", 1);
 		logs_form();
 	}
 }
@@ -111,43 +104,18 @@ sub print_form
 	my $helptemplate = "help.html";
 	
 	our @navbar = (
-		{
-			"Name" => "MQTT Basics",
-			"URL" => "/admin/system/mqtt.cgi"
-		},
-		{
-			"Name" => "MQTT Gateway",
-			"Submenu" => [
-				{
-					"Name" => "Gateway Settings",
-					"URL" => "/admin/system/mqtt-gateway.cgi"
-				},
-				{
-					"Name" => "Gateway Subscriptions",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions"
-				},
-				{
-					"Name" => "Gateway Conversions",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=conversions"
-				},
-				{
-					"Name" => "Incoming Overview",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=incoming"
-				},
-				{
-					"Name" => "Gateway Transformers",
-					"URL" => "/admin/system/mqtt-gateway.cgi?form=transformers"
-				}
-			]
-		},
-		{
-			"Name" => "MQTT Finder",
-			"URL" => "/admin/system/mqtt-finder.cgi"
-		},
-		{
-			"Name" => "Log Files",
-			"URL" => "/admin/system/mqtt-gateway.cgi?form=logs"
-		}
+		{ "Name" => "MQTT Basics",
+		  "URL" => "/admin/system/mqtt.cgi" },
+		{ "Name" => "Gateway",
+		  "URL" => "/admin/system/mqtt-gateway.cgi" },
+		{ "Name" => "Abonnements",
+		  "URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions" },
+		{ "Name" => "Datenverkehr",
+		  "URL" => "/admin/system/mqtt-gateway.cgi?form=incoming" },
+		{ "Name" => "Logs",
+		  "URL" => "/admin/system/mqtt-gateway.cgi?form=logs" },
+		{ "Name" => "MQTT Finder",
+		  "URL" => "/admin/system/mqtt-finder.cgi" },
 	);
 	
 		
@@ -219,13 +187,22 @@ sub transformers_form
 }
 
 ########################################################################
-# Logs Form 
+# Logs Form
 ########################################################################
 sub logs_form
 {
 
 	$template->param('loglist_html', LoxBerry::Web::loglist_html( PACKAGE => 'MQTT' ));
 
+}
+
+########################################################################
+# Basic Form (V2)
+########################################################################
+sub basic_form
+{
+	my $mslist_select_html = LoxBerry::Web::mslist_select_html( FORMID => 'Main.msno', LABEL => 'Standard Miniserver', DATA_MINI => "0" );
+	$template->param('mslist_select_html', $mslist_select_html);
 }
 
 

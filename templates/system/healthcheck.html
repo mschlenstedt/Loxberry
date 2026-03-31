@@ -9,7 +9,7 @@ th, td {
 </style>
 
 
-<div class="wide"><TMPL_VAR MYLOXBERRY.LABEL_HEALTHCHECK></div>
+<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.LABEL_HEALTHCHECK></div>
 <div>&nbsp;</div>
 <div>
 	<button class="ui-btn ui-btn-inline" disabled="disabled" id="runallchecks" onclick="runAllChecks();" ><TMPL_VAR MYLOXBERRY.BUTTON_RUNALLCHECKS></button>
@@ -156,7 +156,7 @@ function parseElement ( element )
 			} else {
 				// console.log("Element status", element.status);
 				$("#"+rowname+"status").html('?');
-				$("#"+rowname+"status").css( { "background-color" : "white" } );
+				$("#"+rowname+"status").css( { "background-color" : "#999", "color" : "white" } );
 			}
 			
 			$("#"+rowname+"title").html(element.title);

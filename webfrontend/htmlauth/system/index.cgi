@@ -101,6 +101,11 @@ if (!-e "$lbsdatadir/wizard.dat") {
 	if ($exitcode != 0) {	
 		$wizardchk++;
 	}
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'root' 'loxberry');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+			$wizardchk++;
+	}
 	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '0000');
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {	

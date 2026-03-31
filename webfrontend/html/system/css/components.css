@@ -1,0 +1,344 @@
+/* LoxBerry Component Classes (lb-*)
+   New design-system components using CSS Variables.
+   Use these on migrated Core pages. Plugins keep jQuery Mobile. */
+
+/* === Global Modern Font === */
+.lb-section-title,
+.lb-form-label,
+.lb-form-help,
+.lb-btn,
+.lb-input,
+.lb-select,
+.lb-textarea {
+  font-family: var(--lb-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Buttons === */
+.lb-btn,
+a.lb-btn,
+a.lb-btn:visited,
+a.lb-btn:link {
+  display: inline-block;
+  padding: 0.7em 1em;
+  margin: 0.5em 0.625em 0.5em 0;
+  background-color: #e6e6e6;
+  color: #000 !important;
+  border: 1px solid #7e7e7e;
+  border-radius: 0.2125em;
+  font-size: var(--lb-font-base);
+  font-weight: normal;
+  font-family: sans-serif;
+  line-height: 1.3;
+  cursor: pointer;
+  text-decoration: none !important;
+  text-align: center;
+  text-shadow: 0 1px 0 #eee;
+  white-space: nowrap;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  position: relative;
+}
+.lb-btn:hover {
+  background-color: #fff;
+  border-color: #8c8c8c;
+  color: #000 !important;
+  text-shadow: 0 1px 0 #eee;
+}
+.lb-btn:active {
+  background-color: #fff;
+}
+.lb-btn-primary {
+  background-color: var(--lb-primary);
+  color: white;
+  border-color: var(--lb-primary-hover);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+.lb-btn-primary:hover {
+  background-color: var(--lb-primary-hover);
+}
+.lb-btn-danger {
+  background-color: var(--lb-danger);
+  color: white;
+  border-color: var(--lb-danger);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+
+/* === Inputs === */
+.lb-input,
+.lb-select,
+.lb-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  font-size: var(--lb-font-base);
+  background: var(--lb-input-bg, #fff);
+  color: var(--lb-gray-900);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lb-input:focus,
+.lb-select:focus,
+.lb-textarea:focus {
+  border-color: var(--lb-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+.lb-input[type="number"]::-webkit-inner-spin-button,
+.lb-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.lb-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* === Cards === */
+.lb-card {
+  background: white;
+  border: var(--lb-border);
+  border-radius: 8px;
+  padding: var(--lb-space-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* === Section Title === */
+.lb-section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border-bottom: 2px solid var(--lb-primary);
+  padding-bottom: 10px;
+  margin-top: var(--lb-space-lg);
+  margin-bottom: var(--lb-space-lg);
+  color: var(--lb-gray-900);
+}
+
+/* === Form Layout === */
+.lb-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lb-space-md);
+  margin-bottom: var(--lb-space-lg);
+  padding: var(--lb-space-sm) 0;
+}
+.lb-form-label {
+  min-width: 150px;
+  width: 200px;
+  text-align: right;
+  font-weight: 600;
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-700);
+  line-height: 1.4;
+}
+.lb-form-field {
+  flex: 1;
+  min-width: 200px;
+}
+.lb-form-help {
+  flex-basis: 100%;
+  font-size: 0.8rem;
+  color: var(--lb-gray-500);
+  margin-top: calc(-1 * var(--lb-space-sm));
+  line-height: 1.5;
+  padding-left: 216px;
+}
+
+@media (max-width: 875px) {
+  .lb-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .lb-form-label {
+    text-align: left;
+    width: auto;
+    min-width: auto;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .lb-form-field {
+    width: 100%;
+  }
+  .lb-form-help {
+    padding-left: 0;
+  }
+}
+
+
+/* === Button Variants === */
+.lb-btn-sm {
+  padding: 0.55em 0.9em;
+  font-size: 12.5px;
+}
+.lb-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lb-btn-icon .pi {
+  font-size: 0.9em;
+}
+
+/* === Button Group (replaces jQuery Mobile controlgroup) === */
+.lb-btn-group {
+  display: inline-flex;
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  overflow: hidden;
+}
+.lb-btn-group .lb-btn,
+.lb-btn-group label,
+.lb-btn-group input[type="radio"] + label,
+.lb-btn-group input[type="checkbox"] + label {
+  border: none;
+  border-right: var(--lb-border);
+  border-radius: 0;
+  margin: 0;
+  padding: 8px 16px;
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+  font-family: var(--lb-font);
+  font-size: var(--lb-font-sm);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  transition: background 0.15s ease;
+}
+.lb-btn-group .lb-btn:last-child,
+.lb-btn-group label:last-of-type {
+  border-right: none;
+}
+.lb-btn-group .lb-btn:hover,
+.lb-btn-group label:hover {
+  background: var(--lb-gray-200);
+}
+.lb-btn-group .lb-btn.active,
+.lb-btn-group .lb-btn-active,
+.lb-btn-group label.active,
+.lb-btn-group input[type="radio"]:checked + label,
+.lb-btn-group input[type="checkbox"]:checked + label {
+  background: var(--lb-primary);
+  color: white;
+}
+.lb-btn-group input[type="radio"],
+.lb-btn-group input[type="checkbox"] {
+  display: none;
+}
+
+/* === Toggle Switch (replaces jQuery Mobile flipswitch) === */
+.lb-toggle {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+.lb-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.lb-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--lb-gray-300);
+  border-radius: 28px;
+  transition: background 0.2s ease;
+}
+.lb-toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+.lb-toggle input:checked + .lb-toggle-slider {
+  background: var(--lb-primary);
+}
+.lb-toggle input:checked + .lb-toggle-slider::before {
+  transform: translateX(24px);
+}
+.lb-toggle input:focus + .lb-toggle-slider {
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+
+/* === Collapsible (replaces jQuery Mobile collapsible) === */
+.lb-collapsible {
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  margin-bottom: var(--lb-space-md);
+}
+.lb-collapsible summary {
+  padding: 10px 16px;
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+  font-weight: 500;
+  font-family: var(--lb-font);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lb-collapsible summary::-webkit-details-marker {
+  display: none;
+}
+.lb-collapsible summary::after {
+  content: "\276F";
+  font-size: 0.8em;
+  color: var(--lb-gray-500);
+  transition: transform 0.2s ease;
+}
+.lb-collapsible[open] summary::after {
+  transform: rotate(90deg);
+}
+.lb-collapsible .lb-collapsible-content {
+  padding: 16px;
+}
+
+/* === Select (native, no jQuery Mobile enhancement) === */
+.lb-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* === Action Bar (button row, centered) === */
+.lb-actions {
+  text-align: center;
+  margin-top: var(--lb-space-lg);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.lb-actions .lb-btn {
+  margin: 0.5em 0.3em;
+}
+
+/* === Controlgroup responsive (jQuery Mobile) === */
+@media (max-width: 768px) {
+  .ui-controlgroup-horizontal .ui-controlgroup-controls {
+    display: flex !important;
+    width: 100% !important;
+  }
+  .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-radio,
+  .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-checkbox {
+    flex: 0 1 auto !important;
+  }
+  .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn {
+    margin: 0 !important;
+    text-align: center;
+    white-space: nowrap;
+  }
+}

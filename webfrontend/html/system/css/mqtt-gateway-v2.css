@@ -1,0 +1,418 @@
+/* MQTT Gateway V2 — Component Styles (mqttgw-*)
+   Uses design tokens from design-tokens.css.
+   No hardcoded colors where tokens exist. */
+
+/* ============================================================
+   STATUS INDICATOR
+   ============================================================ */
+
+.mqttgw-status {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--lb-space-sm);
+  padding: 10px 14px;
+  border-radius: var(--lb-radius);
+  border: 1px solid transparent;
+  margin-bottom: var(--lb-space-lg);
+}
+
+.mqttgw-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* OK state */
+.mqttgw-status-ok {
+  background-color: #f0f9e8;
+  border-color: #c3e6a0;
+}
+.mqttgw-status-ok .mqttgw-status-dot {
+  background-color: var(--lb-success);
+}
+.mqttgw-status-ok .mqttgw-status-label {
+  color: var(--lb-primary-dark);
+  font-weight: 600;
+}
+
+/* Warn state */
+.mqttgw-status-warn {
+  background-color: #fff8e1;
+  border-color: #f0d060;
+}
+.mqttgw-status-warn .mqttgw-status-dot {
+  background-color: var(--lb-warning);
+}
+.mqttgw-status-warn .mqttgw-status-label {
+  color: #8a6d04;
+}
+
+/* Error state */
+.mqttgw-status-error {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+}
+.mqttgw-status-error .mqttgw-status-dot {
+  background-color: var(--lb-danger);
+}
+.mqttgw-status-error .mqttgw-status-label {
+  color: var(--lb-danger);
+}
+
+.mqttgw-status-label {
+  font-family: var(--lb-font);
+  font-size: var(--lb-font-sm);
+}
+
+.mqttgw-status-detail {
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
+}
+
+.mqttgw-status-uptime {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--lb-gray-500);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   VERSION WARNING
+   ============================================================ */
+
+.mqttgw-version-warning {
+  padding: 12px 16px;
+  background-color: #fff8e1;
+  border: 1px solid #f0d060;
+  border-radius: var(--lb-radius);
+  margin-bottom: var(--lb-space-lg);
+  font-size: var(--lb-font-sm);
+  color: #8a6d04;
+}
+
+/* ============================================================
+   DISCOVERY BAR
+   ============================================================ */
+
+.mqttgw-status-dot.active {
+  animation: mqttgw-pulse-anim 0.8s ease-out;
+}
+
+@keyframes mqttgw-pulse-anim {
+  0% { box-shadow: 0 0 0 0 rgba(109, 172, 32, 0.5); }
+  100% { box-shadow: 0 0 0 8px rgba(109, 172, 32, 0); }
+}
+
+.mqttgw-discovery-refresh {
+  padding: 4px 10px;
+  font-size: 1.1rem;
+  line-height: 1;
+  min-width: 0;
+}
+
+/* ============================================================
+   FILTER BAR
+   ============================================================ */
+
+.mqttgw-filter {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--lb-space-md);
+}
+
+.mqttgw-filter-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: var(--lb-border);
+  border-radius: var(--lb-radius);
+  font-family: var(--lb-font);
+  font-size: var(--lb-font-sm);
+  background: white;
+  color: var(--lb-gray-900);
+}
+.mqttgw-filter-input:focus {
+  border-color: var(--lb-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+
+.mqttgw-filter-label {
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-700);
+  white-space: nowrap;
+}
+
+.mqttgw-filter-count {
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   TOPIC GROUP (extends lb-collapsible)
+   ============================================================ */
+
+.mqttgw-group {
+  border: 1px solid var(--lb-gray-200);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+.mqttgw-group > summary {
+  padding: 12px 14px;
+  background: var(--lb-gray-50);
+  color: var(--lb-gray-900);
+  font-weight: bold;
+  font-family: var(--lb-font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--lb-space-sm);
+  border-bottom: 1px solid var(--lb-gray-200);
+}
+
+.mqttgw-group[open] > summary {
+  border-bottom: 1px solid var(--lb-gray-200);
+}
+
+.mqttgw-group:not([open]) > summary {
+  border-bottom: none;
+}
+
+.mqttgw-group > .lb-collapsible-content {
+  background: #fff;
+}
+
+.mqttgw-group > summary::after,
+.mqttgw-group .mqttgw-subgroup summary::after {
+  content: none;
+}
+
+.mqttgw-group-count {
+  margin-left: 8px;
+  font-weight: normal;
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-500);
+}
+
+
+/* ============================================================
+   SUB-GROUP (nested tree nodes)
+   ============================================================ */
+
+.mqttgw-subgroup {
+  margin: 0;
+  border: none;
+  border-left: 2px solid rgba(109, 172, 32, 0.3);
+  margin-left: 16px;
+  padding-left: 12px;
+}
+
+.mqttgw-subgroup > summary {
+  padding: 10px 0;
+  font-size: var(--lb-font-sm);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--lb-space-sm);
+  border-bottom: 1px solid var(--lb-gray-100);
+}
+
+.mqttgw-subgroup > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mqttgw-subgroup-content {
+  padding: 0;
+}
+
+/* ============================================================
+   TOPIC ROW
+   ============================================================ */
+
+/* --- Topic Row: Mockup-Layout ---
+   [☑] topic/name          payload-value  [☑ JSON] [MS 1+2 ▾]
+*/
+.mqttgw-topic-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--lb-gray-100);
+  min-height: 40px;
+}
+.mqttgw-topic-row:last-child {
+  border-bottom: none;
+}
+.mqttgw-topic-row-disabled {
+  opacity: 0.5;
+}
+
+/* All group and sub-group headers: left-aligned */
+.mqttgw-group summary,
+.mqttgw-group .mqttgw-subgroup summary,
+#topic_groups_container summary {
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+.mqttgw-topic-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--lb-primary);
+}
+
+.mqttgw-topic-name {
+  font-family: var(--lb-font-mono);
+  font-size: var(--lb-font-sm);
+  color: var(--lb-gray-900);
+  white-space: nowrap;
+}
+
+.mqttgw-topic-payload {
+  flex: 1;
+  text-align: right;
+  font-size: 12px;
+  color: var(--lb-gray-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mqttgw-topic-json-label {
+  font-size: 12px;
+  color: var(--lb-gray-500);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+}
+.mqttgw-topic-json-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--lb-primary);
+}
+
+.mqttgw-topic-ms {
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border: 1px solid var(--lb-gray-200);
+  border-radius: var(--lb-radius);
+  color: var(--lb-gray-700);
+  background: white;
+}
+
+/* ============================================================
+   JSON EXPAND — green background, inline fields
+   ============================================================ */
+
+.mqttgw-json-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 8px 14px 8px 40px;
+  background: #f7fbf2;
+  border-bottom: 1px solid var(--lb-gray-100);
+  font-size: 12px;
+  color: #4a7a12;
+}
+
+.mqttgw-json-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  font-family: var(--lb-font-mono);
+  white-space: nowrap;
+}
+.mqttgw-json-field input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--lb-primary);
+}
+
+/* ============================================================
+   DARK THEME OVERRIDES
+   ============================================================ */
+
+body.theme-dark .mqttgw-status-ok {
+  background-color: rgba(109, 172, 32, 0.12);
+  border-color: rgba(109, 172, 32, 0.35);
+}
+
+body.theme-dark .mqttgw-status-warn {
+  background-color: rgba(202, 138, 4, 0.12);
+  border-color: rgba(202, 138, 4, 0.35);
+}
+body.theme-dark .mqttgw-status-warn .mqttgw-status-label {
+  color: #e0b030;
+}
+
+body.theme-dark .mqttgw-status-error {
+  background-color: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+body.theme-dark .mqttgw-version-warning {
+  background-color: rgba(202, 138, 4, 0.12);
+  border-color: rgba(202, 138, 4, 0.35);
+  color: #e0b030;
+}
+
+body.theme-dark .mqttgw-json-fields {
+  background-color: rgba(109, 172, 32, 0.06);
+  color: #8bc34a;
+}
+
+body.theme-dark .mqttgw-filter-input {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+  border-color: var(--lb-gray-300);
+}
+
+body.theme-dark .mqttgw-topic-ms {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
+}
+
+/* ============================================================
+   RESPONSIVE — max-width 875px
+   ============================================================ */
+
+@media (max-width: 875px) {
+  .mqttgw-status {
+    flex-wrap: wrap;
+  }
+  .mqttgw-status-uptime {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  .mqttgw-filter {
+    flex-wrap: wrap;
+  }
+  .mqttgw-filter-input {
+    flex-basis: 100%;
+  }
+
+  .mqttgw-topic-row {
+    flex-wrap: wrap;
+  }
+  .mqttgw-topic-name {
+    flex-basis: 100%;
+  }
+  .mqttgw-topic-payload {
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+}
