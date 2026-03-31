@@ -226,61 +226,14 @@ elseif( $ajax == 'restartgateway' ) {
 }	
 
 elseif( $ajax == 'getmqttfinderdata' ) {
-	$fp = fopen($finderdatafile, "r");
-	if( flock($fp, LOCK_SH) ) {
+	$fp = @fopen($finderdatafile, "r");
+	if( $fp && flock($fp, LOCK_SH) ) {
 		echo fread($fp, 5*1024*1024);
 		fclose($fp);
 	}
 	else {
 		header("HTTP/1.0 404 Not Found");
 	}
-}
-
-elseif ( $_POST['ajax'] == 'discover_topics' || $_GET['ajax'] == 'discover_topics' ) {
-    // Use gateway relayed topics as primary source (clean data)
-    // Falls back to mqttfinder.json if gateway data unavailable
-    $topics = array();
-    $source = '';
-
-    // Try gateway topics first (from Incoming Overview data)
-    if (file_exists($datafile)) {
-        $gwdata = json_decode(file_get_contents($datafile), true);
-        if (is_array($gwdata)) {
-            // Gateway topics: both http and udp sections
-            foreach (array('http', 'udp') as $section) {
-                if (!isset($gwdata[$section]) || !is_array($gwdata[$section])) continue;
-                foreach ($gwdata[$section] as $topickey => $entry) {
-                    // Real topic is in 'originaltopic', keys use _ instead of /
-                    $topic = isset($entry['originaltopic']) ? $entry['originaltopic'] : str_replace('_', '/', $topickey);
-                    if (strpos($topic, '/') === false) continue;
-
-                    $group = explode('/', $topic)[0];
-                    if (!preg_match('/^[a-zA-Z]/', $group)) continue;
-
-                    // Avoid duplicates (same topic in http and udp)
-                    $found = false;
-                    foreach ($topics as $t) { if ($t['topic'] === $topic) { $found = true; break; } }
-                    if ($found) continue;
-
-                    $payload = isset($entry['message']) ? $entry['message'] : '';
-                    $topics[] = array(
-                        'topic' => $topic,
-                        'group' => $group,
-                        'payload' => is_string($payload) ? $payload : json_encode($payload),
-                        'timestamp' => isset($entry['timestamp']) ? $entry['timestamp'] : ''
-                    );
-                }
-            }
-            $source = 'gateway';
-        }
-    }
-
-    header('Content-Type: application/json');
-    echo json_encode(array(
-        'topics' => $topics,
-        'count' => count($topics),
-        'source' => $source
-    ));
 }
 
 elseif ( $_POST['ajax'] == 'get_subscriptions_v2' || $_GET['ajax'] == 'get_subscriptions_v2' ) {

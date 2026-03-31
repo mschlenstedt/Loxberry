@@ -355,25 +355,18 @@ $(function(){
 <form id="form_subscriptions_v2" onsubmit="return false;">
 
     <!-- Discovery Status -->
-    <div class="mqttgw-discovery">
-        <span class="mqttgw-discovery-info" id="discovery_last_info">Lade Topics...</span>
+    <div class="mqttgw-status mqttgw-status-ok">
+        <span class="mqttgw-status-dot" id="discovery_pulse"></span>
+        <span class="mqttgw-status-label"><span id="discovery_count">--</span> Topics</span>
+        <span class="mqttgw-status-detail">&mdash; <span id="discovery_ago">wird geladen...</span></span>
+        <span class="mqttgw-status-uptime"><button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="Jetzt aktualisieren">&#x21bb;</button></span>
     </div>
 
-    <!-- Wildcard Subscription -->
-    <div class="lb-section-title">Wildcard-Abo</div>
-    <div class="lb-form-row">
-        <div class="lb-form-label">Topic-Pattern</div>
-        <div class="lb-form-field" style="display:flex;gap:8px;align-items:center">
-            <input class="lb-input" type="text" id="wildcard_input" placeholder="z.B. solarHMS/+/0/power oder tasmota/#" data-role="none" style="flex:1">
-            <button class="lb-btn lb-btn-sm" id="btn_wildcard_preview" type="button" data-role="none">Vorschau</button>
-            <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_wildcard_select" type="button" data-role="none" style="display:none">Alle ausw&auml;hlen</button>
-        </div>
-        <div class="lb-form-help"><b>+</b> = eine Ebene, <b>#</b> = alle Unterebenen &mdash; <span id="wildcard_info"></span></div>
-    </div>
-
-    <!-- Filter Bar -->
+    <!-- Filter Bar with Wildcard Support -->
     <div class="mqttgw-filter">
-        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="Topics filtern..." data-role="none">
+        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="Topics filtern... (+ = eine Ebene, # = alle Unterebenen)" data-role="none">
+        <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none">Alle ausw&auml;hlen</button>
+        <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none">Alle abw&auml;hlen</button>
         <label class="mqttgw-filter-label">
             <input type="checkbox" id="filter_subscribed_only" data-role="none"> Nur abonnierte
         </label>
@@ -430,19 +423,47 @@ $(function() {
         return n;
     }
 
+    function makeDefaultSub(topic) {
+        return { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+    }
+
+    // Wildcard pattern matching: + = one level, # = all remaining
+    function wildcardToRegex(pattern) {
+        var parts = pattern.split('/').map(function(p) {
+            if (p === '#') return '.*';
+            if (p === '+') return '[^/]+';
+            return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        });
+        var regex = '^' + parts.join('/');
+        if (!pattern.endsWith('#')) regex += '$';
+        return new RegExp(regex);
+    }
+
+    // Get topics matching current filter (used by renderTopics and select/deselect buttons)
+    function getVisibleTopics() {
+        var filterText = $("#topic_filter").val().trim();
+        var isWildcard = filterText && (filterText.indexOf('+') !== -1 || filterText.indexOf('#') !== -1);
+        var filterRegex = isWildcard ? wildcardToRegex(filterText) : null;
+        var filterLower = filterText.toLowerCase();
+
+        return discoveredTopics.filter(function(t) {
+            if (!filterText) return true;
+            return isWildcard ? filterRegex.test(t.topic) : t.topic.toLowerCase().indexOf(filterLower) !== -1;
+        });
+    }
+
     // Render topic groups
     function renderTopics() {
         var groups = {};
-        var filterText = $("#topic_filter").val().toLowerCase();
         var subscribedOnly = $("#filter_subscribed_only").prop("checked");
+        var visible = getVisibleTopics();
         var totalCount = 0;
         var subCount = 0;
 
-        discoveredTopics.forEach(function(t) {
+        visible.forEach(function(t) {
             var sub = subscriptionsV2[t.topic];
             var isSubscribed = sub && sub.enabled;
             if (subscribedOnly && !isSubscribed) return;
-            if (filterText && t.topic.toLowerCase().indexOf(filterText) === -1) return;
 
             if (!groups[t.group]) groups[t.group] = { topics: [], subCount: 0 };
             groups[t.group].topics.push(t);
@@ -515,10 +536,6 @@ $(function() {
         function renderTree(topics, prefix, depth) {
             var tree = buildTree(topics, prefix);
             var html = '';
-            var ml = 'margin-left:' + (depth * 20 + 12) + 'px;';
-            // Alternating subtle background for depth
-            var bgColors = ['transparent', 'rgba(109,172,32,0.03)', 'rgba(109,172,32,0.06)', 'rgba(109,172,32,0.09)'];
-            var bg = bgColors[Math.min(depth, bgColors.length - 1)];
 
             // Render child groups (sorted) — always as collapsible
             var sortedChildren = Object.keys(tree.children).sort();
@@ -529,20 +546,20 @@ $(function() {
                 var dataPath = childPrefix.replace(/'/g, "\\'");
 
                 var allChecked = childSubCount === childTopics.length && childSubCount > 0;
-                html += '<details class="lb-collapsible" style="' + ml + 'margin-bottom:0;border-radius:0;border-color:var(--lb-gray-200);background:' + bg + '">';
-                html += '<summary style="padding:8px 14px;font-size:var(--lb-font-sm)">';
+                html += '<details class="mqttgw-subgroup">';
+                html += '<summary>';
                 html += '<input type="checkbox" class="sub-group-toggle" data-prefix="' + dataPath + '"' + (allChecked ? ' checked' : '') + ' onclick="event.stopPropagation();subToggleAll(\'' + dataPath + '\', this.checked)" style="margin-right:6px">';
                 html += '<strong>' + seg + '</strong>';
                 html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
                 html += '</summary>';
-                html += '<div style="padding:0">';
+                html += '<div class="mqttgw-subgroup-content">';
                 html += renderTree(childTopics, childPrefix, depth + 1);
                 html += '</div></details>';
             });
 
-            // Render leaf topics (indented)
+            // Render leaf topics
             tree.topics.forEach(function(item) {
-                html += '<div style="' + ml + '">' + renderTopicRow(item.topic, item.leafName) + '</div>';
+                html += renderTopicRow(item.topic, item.leafName);
             });
 
             return html;
@@ -573,31 +590,67 @@ $(function() {
             html = '<div style="text-align:center; padding:40px; color:var(--lb-gray-500)">Keine Topics gefunden.</div>';
         }
 
+        // Save open/closed state of <details> before DOM rebuild
+        var openDetails = {};
+        $("#topic_groups_container details[open]").each(function() {
+            var key = $(this).find("summary strong").first().text();
+            if (key) openDetails[key] = true;
+        });
+
         $("#topic_groups_container").html(html);
+
+        // Restore open/closed state
+        $("#topic_groups_container details").each(function() {
+            var key = $(this).find("> summary strong").first().text();
+            if (openDetails[key]) $(this).attr("open", "");
+        });
     }
 
-    // Discovery: fetch topics from backend, only re-render if data changed
+    // Discovery: fetch topics via getmqttfinderdata (same reliable endpoint as MQTT Finder tab)
     var discoveryRunning = false;
     var lastTopicFingerprint = '';
-    function topicFingerprint(topics) {
-        if (!topics.length) return '0';
-        // Lightweight: count + first/last topic + sample payloads
-        var last = topics[topics.length - 1];
-        var mid = topics[Math.floor(topics.length / 2)];
-        return topics.length + '|' + topics[0].topic + '|' + last.topic + '|' + (last.payload || '') + '|' + (mid.payload || '');
+    var lastDiscoveryTime = 0;
+
+    function updateAgo() {
+        if (!lastDiscoveryTime) return;
+        var secs = Math.round((Date.now() - lastDiscoveryTime) / 1000);
+        $("#discovery_ago").text(secs < 5 ? "gerade eben" : "vor " + secs + "s");
     }
+    setInterval(updateAgo, 1000);
+
     function discoverTopics() {
         if (discoveryRunning) return;
         discoveryRunning = true;
 
-        $.post('ajax/ajax-mqtt.php', { ajax: 'discover_topics' })
+        $.post('ajax/ajax-mqtt.php', { ajax: 'getmqttfinderdata' })
         .done(function(resp) {
             var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
-            var newTopics = data.topics || [];
-            var now = new Date();
-            $("#discovery_last_info").text(newTopics.length + " Topics \u2014 " + now.toLocaleTimeString());
+            var newTopics = [];
+            if (data && data.incoming) {
+                Object.keys(data.incoming).forEach(function(topic) {
+                    if (topic.indexOf('/') === -1) return;
+                    if (!/^[a-zA-Z0-9/_.\-]+$/.test(topic)) return;
+                    var group = topic.split('/')[0];
+                    if (!/^[a-zA-Z]/.test(group)) return;
+                    var entry = data.incoming[topic];
+                    newTopics.push({
+                        topic: topic,
+                        group: group,
+                        payload: entry.p || '',
+                        timestamp: entry.t || ''
+                    });
+                });
+            }
+            lastDiscoveryTime = Date.now();
+            $("#discovery_count").text(newTopics.length);
+            updateAgo();
+            // Pulse animation
+            var $pulse = $("#discovery_pulse");
+            $pulse.removeClass("active");
+            setTimeout(function() { $pulse.addClass("active"); }, 10);
 
-            var fp = topicFingerprint(newTopics);
+            // Only re-render if topics or payloads changed
+            var fp = newTopics.map(function(t) { return t.topic + '=' + t.payload; }).join('|');
             if (fp !== lastTopicFingerprint) {
                 lastTopicFingerprint = fp;
                 discoveredTopics = newTopics;
@@ -613,67 +666,36 @@ $(function() {
     var discoveryInterval = setInterval(discoverTopics, 10000);
     discoverTopics();
 
+    // Manual refresh button
+    $("#btn_discovery_refresh").click(function() {
+        discoverTopics();
+    });
+
     // Cleanup on page navigation (prevents stacking intervals)
     $(document).one('pagehide', function() {
         clearInterval(discoveryInterval);
     });
 
-    // Wildcard pattern matching: + = one level, # = all remaining
-    function wildcardToRegex(pattern) {
-        var parts = pattern.split('/').map(function(p) {
-            if (p === '#') return '.*';
-            if (p === '+') return '[^/]+';
-            return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        });
-        // If last part is #, it matches everything after
-        var regex = '^' + parts.join('/');
-        if (!pattern.endsWith('#')) regex += '$';
-        return new RegExp(regex);
-    }
+    $("#topic_filter").on("input", function() { renderTopics(); });
 
-    var wildcardMatches = [];
-
-    // Wildcard preview
-    $("#btn_wildcard_preview").click(function() {
-        var pattern = $("#wildcard_input").val().trim();
-        if (!pattern) return;
-
-        var regex = wildcardToRegex(pattern);
-        wildcardMatches = [];
-
-        discoveredTopics.forEach(function(t) {
-            if (regex.test(t.topic)) {
-                wildcardMatches.push(t.topic);
+    // Select all visible topics
+    $("#btn_filter_select_all").click(function() {
+        getVisibleTopics().forEach(function(t) {
+            if (!subscriptionsV2[t.topic]) {
+                subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
             }
+            subscriptionsV2[t.topic].enabled = true;
         });
-
-        if (wildcardMatches.length > 0) {
-            $("#wildcard_info").html('<b>' + wildcardMatches.length + ' Topics</b> gefunden');
-            $("#btn_wildcard_select").show();
-            // Filter view to show only matches
-            $("#topic_filter").val(pattern.replace(/[+#]/g, '')).trigger("input");
-        } else {
-            $("#wildcard_info").html('Keine Topics gefunden für <b>' + pattern + '</b>');
-            $("#btn_wildcard_select").hide();
-        }
+        renderTopics();
     });
 
-    // Enter in wildcard input triggers preview
-    $("#wildcard_input").on("keypress", function(e) {
-        if (e.which === 13) { e.preventDefault(); $("#btn_wildcard_preview").click(); }
-    });
-
-    // Select all wildcard matches
-    $("#btn_wildcard_select").click(function() {
-        wildcardMatches.forEach(function(topic) {
-            if (!subscriptionsV2[topic]) {
-                subscriptionsV2[topic] = { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+    // Deselect all visible topics
+    $("#btn_filter_deselect_all").click(function() {
+        getVisibleTopics().forEach(function(t) {
+            if (subscriptionsV2[t.topic]) {
+                subscriptionsV2[t.topic].enabled = false;
             }
-            subscriptionsV2[topic].enabled = true;
         });
-        $("#wildcard_info").html('<b>' + wildcardMatches.length + ' Topics</b> abonniert &#10004;');
-        $("#btn_wildcard_select").hide();
-        $("#topic_filter").val('');
         renderTopics();
     });
 
@@ -681,7 +703,7 @@ $(function() {
     $("#topic_groups_container").on("change", ".topic-subscribe", function() {
         var topic = $(this).data("topic");
         if (!subscriptionsV2[topic]) {
-            subscriptionsV2[topic] = { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+            subscriptionsV2[topic] = makeDefaultSub(topic);
         }
         subscriptionsV2[topic].enabled = $(this).prop("checked");
         renderTopics();
@@ -690,7 +712,7 @@ $(function() {
     $("#topic_groups_container").on("change", ".topic-json-expand", function() {
         var topic = $(this).data("topic");
         if (!subscriptionsV2[topic]) {
-            subscriptionsV2[topic] = { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+            subscriptionsV2[topic] = makeDefaultSub(topic);
         }
         subscriptionsV2[topic].json_expand = $(this).prop("checked");
         renderTopics();
@@ -721,7 +743,6 @@ $(function() {
     });
 
     // Filter handlers
-    $("#topic_filter").on("input", renderTopics);
     $("#filter_subscribed_only").on("change", renderTopics);
 
     // Group toggle all
@@ -729,7 +750,7 @@ $(function() {
         discoveredTopics.forEach(function(t) {
             if (t.group === groupName) {
                 if (!subscriptionsV2[t.topic]) {
-                    subscriptionsV2[t.topic] = { topic: t.topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+                    subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
                 }
                 subscriptionsV2[t.topic].enabled = enable;
             }
@@ -742,7 +763,7 @@ $(function() {
         discoveredTopics.forEach(function(t) {
             if (t.topic === prefix || t.topic.indexOf(prefix + '/') === 0) {
                 if (!subscriptionsV2[t.topic]) {
-                    subscriptionsV2[t.topic] = { topic: t.topic, enabled: false, json_expand: false, json_fields: [], toMS: [] };
+                    subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
                 }
                 subscriptionsV2[t.topic].enabled = enable;
             }
