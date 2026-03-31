@@ -252,7 +252,14 @@
   border-bottom: none;
 }
 .mqttgw-topic-row-disabled {
-  opacity: 0.5;
+  color: var(--lb-gray-400);
+}
+
+.mqttgw-topic-row-disabled .mqttgw-topic-name,
+.mqttgw-topic-row-disabled .mqttgw-topic-payload,
+.mqttgw-topic-row-disabled .mqttgw-topic-json-label,
+.mqttgw-topic-row-disabled .mqttgw-topic-option {
+  opacity: 0.45;
 }
 
 /* All group and sub-group headers: left-aligned */
@@ -302,13 +309,86 @@
   accent-color: var(--lb-primary);
 }
 
-.mqttgw-topic-ms {
-  font-size: 0.8rem;
-  padding: 2px 6px;
+.mqttgw-topic-option {
+  font-size: 11px;
+  color: var(--lb-gray-500);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mqttgw-topic-option input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  accent-color: var(--lb-primary);
+}
+
+.mqttgw-ms-dropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mqttgw-ms-dropdown[open] {
+  z-index: 200;
+}
+
+.mqttgw-ms-summary {
+  font-size: 11px;
+  color: var(--lb-gray-600);
+  padding: 2px 8px;
   border: 1px solid var(--lb-gray-200);
   border-radius: var(--lb-radius);
+  cursor: pointer;
+  white-space: nowrap;
+  list-style: none;
+  background: #fff;
+}
+
+.mqttgw-ms-summary::-webkit-details-marker {
+  display: none;
+}
+
+.mqttgw-ms-panel {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid var(--lb-gray-200);
+  border-radius: var(--lb-radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+  margin-top: 4px;
+}
+
+.mqttgw-topic-row,
+.mqttgw-group > .lb-collapsible-content,
+.mqttgw-subgroup,
+.mqttgw-subgroup-content {
+  overflow: visible;
+}
+
+.mqttgw-ms-label {
+  font-size: 12px;
   color: var(--lb-gray-700);
-  background: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 2px 0;
+}
+
+.mqttgw-ms-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--lb-primary);
 }
 
 /* ============================================================
@@ -317,8 +397,8 @@
 
 .mqttgw-json-fields {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
+  flex-direction: column;
+  gap: 4px;
   padding: 8px 14px 8px 40px;
   background: #f7fbf2;
   border-bottom: 1px solid var(--lb-gray-100);
@@ -327,9 +407,9 @@
 }
 
 .mqttgw-json-field {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 6px;
   cursor: pointer;
   font-family: var(--lb-font-mono);
   white-space: nowrap;
