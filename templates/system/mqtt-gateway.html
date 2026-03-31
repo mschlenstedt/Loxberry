@@ -403,6 +403,7 @@ $(function() {
             data.subscriptions_v2.forEach(function(sub) {
                 subscriptionsV2[sub.topic] = sub;
             });
+            renderTopics();
         }
     });
 
@@ -495,16 +496,23 @@ $(function() {
                     html += renderJsonFields(topic, val, fullKey, sub);
                     html += '<div class="mqttgw-json-fields" data-parent="' + topic + '"' + (prefix ? ' style="padding-left:' + (40 + prefix.split('.').length * 16) + 'px"' : '') + '>';
                 } else {
-                    var fieldEnabled = true;
+                    var fieldEnabled = false;
                     if (sub.json_fields && sub.json_fields.length > 0) {
                         var field = sub.json_fields.find(function(f) { return f.key === fullKey; });
-                        fieldEnabled = field ? field.enabled : true;
+                        fieldEnabled = field ? field.enabled : false;
                     }
                     var displayVal = Array.isArray(val) ? JSON.stringify(val) : val;
                     html += '<label class="mqttgw-json-field">';
                     html += '<input type="checkbox" class="json-field-subscribe" data-topic="' + topic + '" data-key="' + fullKey + '"' + (fieldEnabled ? ' checked' : '') + '>';
                     html += ' .' + fullKey + ' = ' + displayVal;
                     html += '</label>';
+                    if (fieldEnabled) {
+                        var fc = (sub.json_field_options && sub.json_field_options[fullKey]) || {};
+                        html += '<span class="mqttgw-json-field-options" data-topic="' + topic + '" data-key="' + fullKey + '">';
+                        html += '<label class="mqttgw-topic-option"><input type="checkbox" class="json-field-nocache" data-topic="' + topic + '" data-key="' + fullKey + '"' + (fc.disable_cache ? ' checked' : '') + '> No Cache</label>';
+                        html += '<label class="mqttgw-topic-option"><input type="checkbox" class="json-field-reset" data-topic="' + topic + '" data-key="' + fullKey + '"' + (fc.reset_after_send ? ' checked' : '') + '> Reset</label>';
+                        html += '</span>';
+                    }
                 }
             });
             html += '</div>';
@@ -772,13 +780,33 @@ $(function() {
         subscriptionsV2[topic].reset_after_send = $(this).prop("checked");
     });
 
+    // JSON field-level No Cache + Reset
+    $("#topic_groups_container").on("change", ".json-field-nocache, .json-field-reset", function() {
+        var topic = $(this).data("topic");
+        var key = $(this).data("key");
+        if (!subscriptionsV2[topic]) subscriptionsV2[topic] = makeDefaultSub(topic);
+        if (!subscriptionsV2[topic].json_field_options) subscriptionsV2[topic].json_field_options = {};
+        if (!subscriptionsV2[topic].json_field_options[key]) subscriptionsV2[topic].json_field_options[key] = {};
+        var opts = subscriptionsV2[topic].json_field_options[key];
+        if ($(this).hasClass("json-field-nocache")) opts.disable_cache = $(this).prop("checked");
+        if ($(this).hasClass("json-field-reset")) opts.reset_after_send = $(this).prop("checked");
+    });
+
     // "Standard" radio — toMS = [] (use default)
+    // Helper: update MS dropdown label without re-rendering
+    function updateMsLabel($dropdown, toMS) {
+        var isDefault = !toMS || toMS.length === 0;
+        var label = isDefault ? 'Standard' : (toMS.length === msCount ? 'Alle MS' : 'MS ' + toMS.join('+'));
+        $dropdown.find(".mqttgw-ms-summary").text(label);
+    }
+
     $("#topic_groups_container").on("change", ".ms-default-radio", function() {
         var topic = $(this).data("topic");
         if (!subscriptionsV2[topic]) subscriptionsV2[topic] = makeDefaultSub(topic);
         subscriptionsV2[topic].toMS = [];
-        $(this).closest(".mqttgw-ms-panel").find(".ms-checkbox").prop("checked", false);
-        renderTopics();
+        var $dropdown = $(this).closest(".mqttgw-ms-dropdown");
+        $dropdown.find(".ms-checkbox").prop("checked", false);
+        updateMsLabel($dropdown, []);
     });
 
     // Individual MS checkbox — switch to manual mode
@@ -786,7 +814,8 @@ $(function() {
         var topic = $(this).data("topic");
         var ms = $(this).data("ms");
         if (!subscriptionsV2[topic]) subscriptionsV2[topic] = makeDefaultSub(topic);
-        $(this).closest(".mqttgw-ms-panel").find(".ms-default-radio").prop("checked", false);
+        var $dropdown = $(this).closest(".mqttgw-ms-dropdown");
+        $dropdown.find(".ms-default-radio").prop("checked", false);
         var arr = subscriptionsV2[topic].toMS || [];
         if ($(this).prop("checked")) {
             if (arr.indexOf(ms) === -1) arr.push(ms);
@@ -794,10 +823,10 @@ $(function() {
             arr = arr.filter(function(m) { return m !== ms; });
         }
         if (arr.length === 0) {
-            $(this).closest(".mqttgw-ms-panel").find(".ms-default-radio").prop("checked", true);
+            $dropdown.find(".ms-default-radio").prop("checked", true);
         }
         subscriptionsV2[topic].toMS = arr.sort();
-        renderTopics();
+        updateMsLabel($dropdown, arr);
     });
 
     // Filter handlers
