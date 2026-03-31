@@ -11,6 +11,12 @@ Beispiel plugins/
 DECISIONS.md
 docs/superpowers/
 .superpowers/
+docs/specs/
+docs/mockups/
+sbin/benchmark/
+
+# Backups
+_backup_L_*/
 
 # Plugins at all
 config/plugins/**
