@@ -43,16 +43,16 @@
     </div>
 
     <!-- Section: Gateway Version -->
-    <div class="lb-section-title">Gateway Version</div>
+    <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_GATEWAY_VERSION></div>
 
     <div class="lb-form-row">
         <div class="lb-form-label">Version</div>
         <div class="lb-form-field">
             <div class="lb-btn-group" id="version_toggle" data-role="none">
                 <input type="radio" name="gatewayversion" id="gw_v1" value="1" data-role="none">
-                <label for="gw_v1">V1 &mdash; Max. Kompatibilit&auml;t</label>
+                <label for="gw_v1"><TMPL_VAR MQTT.VERSION_V1_LABEL></label>
                 <input type="radio" name="gatewayversion" id="gw_v2" value="2" data-role="none">
-                <label for="gw_v2">V2 &mdash; Max. Performance</label>
+                <label for="gw_v2"><TMPL_VAR MQTT.VERSION_V2_LABEL></label>
             </div>
         </div>
     </div>
@@ -68,16 +68,16 @@
 
     <!-- Version change warning (hidden by default) -->
     <div id="version_change_warning" class="mqttgw-version-warning" style="display:none">
-        <strong>&#9888; Hinweis:</strong> Bei Wechsel von V1 auf V2 m&uuml;ssen Topics im Tab &quot;Abonnements&quot; explizit ausgew&auml;hlt werden. Bestehende Subscriptions werden als Vorauswahl &uuml;bernommen.
+        <strong>&#9888; <TMPL_VAR MQTT.LABEL_HINT>:</strong> Bei Wechsel von V1 auf V2 m&uuml;ssen Topics im Tab &quot;Abonnements&quot; explizit ausgew&auml;hlt werden. Bestehende Subscriptions werden als Vorauswahl &uuml;bernommen.
     </div>
 
     <!-- Section: Miniserver Data Routing -->
-    <div class="lb-section-title">Miniserver Datenweiterleitung</div>
+    <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_DATA_ROUTING></div>
 
     <TMPL_VAR mslist_select_html>
 
     <div class="lb-form-row">
-        <div class="lb-form-label">Protokoll</div>
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_PROTOCOL></div>
         <div class="lb-form-field">
             <div class="lb-btn-group" id="protocol_toggle" data-role="none">
                 <input type="radio" name="protocol" id="proto_http" value="http" data-role="none">
@@ -85,24 +85,24 @@
                 <input type="radio" name="protocol" id="proto_udp" value="udp" data-role="none">
                 <label for="proto_udp">UDP</label>
                 <input type="radio" name="protocol" id="proto_both" value="both" data-role="none">
-                <label for="proto_both">Beide</label>
+                <label for="proto_both"><TMPL_VAR MQTT.LABEL_PROTOCOL_BOTH></label>
             </div>
         </div>
     </div>
 
     <div class="lb-form-row">
-        <div class="lb-form-label">UDP Port</div>
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_UDP_PORT></div>
         <div class="lb-form-field" style="max-width:150px">
             <input class="lb-input" type="number" id="basic_udpport" data-role="none">
         </div>
-        <div class="lb-form-help">Port f&uuml;r Miniserver UDP Kommunikation</div>
+        <div class="lb-form-help"><TMPL_VAR MQTT.HELP_UDP_PORT></div>
     </div>
 
     <!-- Datenverarbeitung -->
-    <div class="lb-section-title">Datenverarbeitung</div>
+    <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_DATA_PROCESSING></div>
 
     <div class="lb-form-row">
-        <div class="lb-form-label">Boolean-Konvertierung</div>
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BOOLEAN_CONVERSION></div>
         <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
             <label class="lb-toggle" data-role="none">
                 <input type="checkbox" name="Main.convert_booleans" id="Main.convert_booleans" data-role="none">
@@ -114,18 +114,18 @@
 
     <TMPL_UNLESS GATEWAY_V2>
     <div class="lb-form-row">
-        <div class="lb-form-label">JSON Expand</div>
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_JSON_EXPAND></div>
         <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
             <label class="lb-toggle" data-role="none">
                 <input type="checkbox" name="Main.expand_json" id="Main.expand_json" data-role="none">
                 <span class="lb-toggle-slider"></span>
             </label>
-            <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">JSON-Payloads in einzelne Werte aufteilen</span>
+            <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)"><TMPL_VAR MQTT.DESC_JSON_EXPAND></span>
         </div>
     </div>
 
     <div class="lb-form-row">
-        <div class="lb-form-label">CPU-Profil</div>
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_CPU_PROFILE></div>
         <div class="lb-form-field">
             <select class="lb-select" name="Main.cpuperf" id="Main.cpuperf" data-role="none" style="max-width:250px">
                 <option value="1">1% (Energiesparer)</option>
@@ -140,23 +140,23 @@
     </TMPL_UNLESS>
 
     <div class="lb-form-row">
-        <div class="lb-form-label">Reset-After-Send</div>
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_RESET_AFTER_SEND></div>
         <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
             <input class="lb-input" type="number" name="Main.resetaftersendms" id="Main.resetaftersendms" data-role="none" style="max-width:100px">
             <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">ms</span>
         </div>
-        <div class="lb-form-help">Standard: 13 ms. Wartezeit bevor ein Wert zur&uuml;ckgesetzt wird.</div>
+        <div class="lb-form-help"><TMPL_VAR MQTT.HELP_RESET_AFTER_SEND></div>
     </div>
 
     <!-- Miniserver zu MQTT -->
-    <div class="lb-section-title">Miniserver zu MQTT</div>
+    <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_MS_TO_MQTT></div>
 
     <div class="lb-form-row">
-        <div class="lb-form-label">Gateway UDP In-Port</div>
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_UDP_IN_PORT></div>
         <div class="lb-form-field">
             <input class="lb-input" name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" data-role="none" style="max-width:150px">
         </div>
-        <div class="lb-form-help">Standard: 11884. Daten vom Miniserver an diesen Port senden.</div>
+        <div class="lb-form-help"><TMPL_VAR MQTT.HELP_UDP_IN_PORT></div>
     </div>
 
 </form>
@@ -360,17 +360,17 @@ $(function(){
     <div class="mqttgw-status mqttgw-status-ok">
         <span class="mqttgw-status-dot" id="discovery_pulse"></span>
         <span class="mqttgw-status-label"><span id="discovery_count">--</span> Topics</span>
-        <span class="mqttgw-status-detail">&mdash; <span id="discovery_ago">wird geladen...</span></span>
-        <span class="mqttgw-status-uptime"><button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="Jetzt aktualisieren">&#x21bb;</button></span>
+        <span class="mqttgw-status-detail">&mdash; <span id="discovery_ago"><TMPL_VAR MQTT.DISCOVERY_LOADING></span></span>
+        <span class="mqttgw-status-uptime"><button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="<TMPL_VAR MQTT.DISCOVERY_REFRESH>">&#x21bb;</button></span>
     </div>
 
     <!-- Filter Bar with Wildcard Support -->
     <div class="mqttgw-filter">
-        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="Topics filtern... (+ = eine Ebene, # = alle Unterebenen)" data-role="none">
-        <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none">Alle ausw&auml;hlen</button>
-        <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none">Alle abw&auml;hlen</button>
+        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="<TMPL_VAR MQTT.FILTER_PLACEHOLDER>" data-role="none">
+        <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_SELECT_ALL></button>
+        <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_DESELECT_ALL></button>
         <label class="mqttgw-filter-label">
-            <input type="checkbox" id="filter_subscribed_only" data-role="none"> Nur abonnierte
+            <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
         </label>
         <span class="mqttgw-filter-count" id="filter_count"></span>
     </div>
@@ -378,7 +378,7 @@ $(function(){
     <!-- Topic Groups Container -->
     <div id="topic_groups_container">
         <div style="text-align:center; padding:40px; color:var(--lb-gray-500)">
-            Topics werden geladen...
+            <TMPL_VAR MQTT.TOPICS_LOADING>
         </div>
     </div>
 
@@ -1843,8 +1843,8 @@ $(function() {
 <TMPL_UNLESS FORM_DISABLE_BUTTONS>
 
 	<div style="display:flex;justify-content:center;gap:12px;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
-	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none">Speichern &amp; Anwenden</button>
-	<button class="lb-btn" id="restartmqttgateway" data-role="none">Gateway Neustarten</button>
+	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none"><TMPL_VAR MQTT.BTN_SAVE_APPLY></button>
+	<button class="lb-btn" id="restartmqttgateway" data-role="none"><TMPL_VAR MQTT.BTN_GATEWAY_RESTART></button>
 	</div>
 
 </TMPL_UNLESS>
