@@ -45,6 +45,9 @@ if( $q->{ajax} ) {
 	);
 	
 	
+	# Load language strings
+	my %SL = LoxBerry::System::readlanguage($template);
+
 	# Push json config to template
 	
 	my $cfgfilecontent = LoxBerry::System::read_file($cfgfile);
