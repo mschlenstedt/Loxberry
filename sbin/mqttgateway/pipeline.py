@@ -31,8 +31,8 @@ class SendItem:
     original_topic: str
     value: str
     toms: list[int]
-    noncached: bool
-    reset_after_send: bool
+    noncached: bool = False
+    reset_after_send: bool = False
 
 
 @dataclass
