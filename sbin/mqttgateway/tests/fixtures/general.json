@@ -1,0 +1,27 @@
+{
+    "Mqtt": {
+        "Brokerhost": "localhost",
+        "Brokerport": "1883",
+        "Brokeruser": "loxberry",
+        "Brokerpass": "testpass",
+        "Udpinport": 11884,
+        "Websocketport": "9001",
+        "GatewayVersion": 2
+    },
+    "Miniserver": {
+        "1": {
+            "Name": "MS_Gen2",
+            "Ipaddress": "192.168.30.11",
+            "Port": "80",
+            "Admin": "admin",
+            "Pass": "pass123"
+        },
+        "2": {
+            "Name": "MS_Test",
+            "Ipaddress": "192.168.30.12",
+            "Port": "80",
+            "Admin": "admin",
+            "Pass": "pass456"
+        }
+    }
+}
