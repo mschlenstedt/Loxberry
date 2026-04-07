@@ -69,9 +69,8 @@ sub restart_gateway
 {
 	LOGDEB "restart_gateway";
 	# Restart Gateway
-	`pkill mqttgateway.pl`;
-	`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;
-	
+	system("systemctl restart mqttgateway");
+
 }
 
 sub open_configs

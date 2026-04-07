@@ -1,2 +1,9 @@
 #!/bin/bash
+# Legacy MQTT Gateway startup — skips if systemd service is active
+if systemctl is-enabled mqttgateway.service &>/dev/null; then
+    echo "MQTT Gateway runs as systemd service — skipping legacy startup"
+    exit 0
+fi
+
+# Fallback: start Perl daemon (for systems not yet migrated)
 su loxberry -c "$LBHOMEDIR/sbin/mqttgateway.pl > /dev/null 2>&1 &"
