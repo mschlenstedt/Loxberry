@@ -160,24 +160,24 @@ class GatewayConfig:
 
     Parameters
     ----------
-    general_path:
+    general_json_path:
         Path to ``general.json`` (broker, Miniserver list, UDP ports).
-    gateway_path:
+    gateway_json_path:
         Path to ``mqttgateway.json`` (subscriptions, conversions, filters).
-    plugins_cfg_root:
+    plugin_config_dir:
         Root directory that contains ``<plugin>/cfg/mqtt_*.cfg`` files.
         Defaults to ``/opt/loxberry/config/plugins``.
     """
 
     def __init__(
         self,
-        general_path: str,
-        gateway_path: str,
-        plugins_cfg_root: str = "/opt/loxberry/config/plugins",
+        general_json_path: str,
+        gateway_json_path: str,
+        plugin_config_dir: str = "/opt/loxberry/config/plugins",
     ) -> None:
-        self._general_path = general_path
-        self._gateway_path = gateway_path
-        self._plugins_cfg_root = plugins_cfg_root
+        self._general_path = general_json_path
+        self._gateway_path = gateway_json_path
+        self._plugins_cfg_root = plugin_config_dir
         self._mtimes: dict[str, float] = {}
 
         # Public attributes — populated by load()
@@ -191,15 +191,21 @@ class GatewayConfig:
         self.default_ms: int = 1
         self.miniservers: dict[int, dict] = {}
 
+        self.udp_port: int = 11883
+        self.use_http: bool = True
+        self.use_udp: bool = False
+        self.convert_booleans: bool = True
+        self.reset_after_send_ms: int = 13
+
         self.subscriptions: list[Subscription] = []
         self.conversions: dict[str, str] = {}
         self.subscription_filters: list[re.Pattern] = []
-        self.do_not_forward: dict[str, Any] = {}
+        self.do_not_forward: set[str] = set()
 
         # Plugin data
         self.plugin_subscriptions: list[str] = []
         self.plugin_conversions: dict[str, str] = {}
-        self.plugin_reset_after_send: list[str] = []
+        self.plugin_reset_after_send: set[str] = set()
 
     # ------------------------------------------------------------------
     # Public API
@@ -248,6 +254,11 @@ class GatewayConfig:
 
         main = data.get("Main", {})
         self.default_ms = int(main.get("msno", 1))
+        self.udp_port = int(main.get("udpport", 11883))
+        self.use_http = _is_enabled(main.get("use_http", True))
+        self.use_udp = _is_enabled(main.get("use_udp", False))
+        self.convert_booleans = _is_enabled(main.get("convert_booleans", True))
+        self.reset_after_send_ms = max(1, int(main.get("resetaftersendms", 13)))
 
         raw_subs = data.get("subscriptions_v2", [])
         self.subscriptions = [
@@ -260,12 +271,13 @@ class GatewayConfig:
         raw_filters = data.get("subscriptionfilters", [])
         self.subscription_filters = [re.compile(pat) for pat in raw_filters]
 
-        self.do_not_forward = data.get("doNotForward", {})
+        raw_dnf = data.get("doNotForward", {})
+        self.do_not_forward = {k for k, v in raw_dnf.items() if _is_enabled(v)}
 
     def _load_plugins(self) -> None:
         self.plugin_subscriptions = []
         self.plugin_conversions = {}
-        self.plugin_reset_after_send = []
+        self.plugin_reset_after_send = set()
 
         root = self._plugins_cfg_root
         if not os.path.isdir(root):
@@ -288,7 +300,8 @@ class GatewayConfig:
 
             # mqtt_resetaftersend.cfg
             ras_file = os.path.join(cfg_dir, "mqtt_resetaftersend.cfg")
-            self.plugin_reset_after_send.extend(_read_cfg_lines(ras_file))
+            for line in _read_cfg_lines(ras_file):
+                self.plugin_reset_after_send.add(line)
 
     def _record_mtimes(self) -> None:
         self._mtimes = {}

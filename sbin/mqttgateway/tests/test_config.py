@@ -316,6 +316,90 @@ class TestGatewayConfig:
         cfg.load()
         assert cfg.subscription_filters == []
 
+    # -- Main-section properties (5 missing fields) --------------------------
+
+    def test_udp_port(self, tmp_path):
+        gen, gw = make_config(str(tmp_path))
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert cfg.udp_port == 11883
+
+    def test_use_http(self, tmp_path):
+        gen, gw = make_config(str(tmp_path))
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert cfg.use_http is True
+
+    def test_use_udp(self, tmp_path):
+        gen, gw = make_config(str(tmp_path))
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert cfg.use_udp is False
+
+    def test_convert_booleans(self, tmp_path):
+        gen, gw = make_config(str(tmp_path))
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert cfg.convert_booleans is True
+
+    def test_reset_after_send_ms(self, tmp_path):
+        gen, gw = make_config(str(tmp_path))
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert cfg.reset_after_send_ms == 13
+
+    def test_main_section_defaults_when_empty(self, tmp_path):
+        with open(os.path.join(FIXTURES_DIR, "mqttgateway.json")) as f:
+            gw_data = json.load(f)
+        gw_data["Main"] = {}
+        gen, gw = make_config(str(tmp_path), gateway=gw_data)
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert cfg.udp_port == 11883
+        assert cfg.use_http is True
+        assert cfg.use_udp is False
+        assert cfg.convert_booleans is True
+        assert cfg.reset_after_send_ms == 13
+
+    def test_reset_after_send_ms_min_is_1(self, tmp_path):
+        """reset_after_send_ms must never go below 1."""
+        with open(os.path.join(FIXTURES_DIR, "mqttgateway.json")) as f:
+            gw_data = json.load(f)
+        gw_data["Main"]["resetaftersendms"] = 0
+        gen, gw = make_config(str(tmp_path), gateway=gw_data)
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert cfg.reset_after_send_ms == 1
+
+    # -- Type checks ---------------------------------------------------------
+
+    def test_do_not_forward_is_set(self, tmp_path):
+        gen, gw = make_config(str(tmp_path))
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert isinstance(cfg.do_not_forward, set)
+
+    def test_do_not_forward_contains_enabled_keys(self, tmp_path):
+        gen, gw = make_config(str(tmp_path))
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert "tasmota_debug_heap" in cfg.do_not_forward
+
+    def test_do_not_forward_excludes_disabled_keys(self, tmp_path):
+        with open(os.path.join(FIXTURES_DIR, "mqttgateway.json")) as f:
+            gw_data = json.load(f)
+        gw_data["doNotForward"]["some_topic"] = "false"
+        gen, gw = make_config(str(tmp_path), gateway=gw_data)
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert "some_topic" not in cfg.do_not_forward
+
+    def test_plugin_reset_after_send_is_set(self, tmp_path):
+        gen, gw = make_config(str(tmp_path))
+        cfg = GatewayConfig(gen, gw)
+        cfg.load()
+        assert isinstance(cfg.plugin_reset_after_send, set)
+
 
 # ---------------------------------------------------------------------------
 # TestPluginConfigs
@@ -338,7 +422,7 @@ class TestPluginConfigs:
             ["home/sensors/temp", "home/sensors/humidity", "# comment line", ""]
         )
         gen, gw = make_config(str(tmp_path))
-        cfg = GatewayConfig(gen, gw, plugins_cfg_root=plugins_root)
+        cfg = GatewayConfig(gen, gw, plugin_config_dir=plugins_root)
         cfg.load()
         subs = cfg.plugin_subscriptions
         assert "home/sensors/temp" in subs
@@ -351,7 +435,7 @@ class TestPluginConfigs:
             ["# this is a comment", "home/sensors/temp"]
         )
         gen, gw = make_config(str(tmp_path))
-        cfg = GatewayConfig(gen, gw, plugins_cfg_root=plugins_root)
+        cfg = GatewayConfig(gen, gw, plugin_config_dir=plugins_root)
         cfg.load()
         assert "# this is a comment" not in cfg.plugin_subscriptions
 
@@ -362,7 +446,7 @@ class TestPluginConfigs:
             ["", "home/sensors/temp", ""]
         )
         gen, gw = make_config(str(tmp_path))
-        cfg = GatewayConfig(gen, gw, plugins_cfg_root=plugins_root)
+        cfg = GatewayConfig(gen, gw, plugin_config_dir=plugins_root)
         cfg.load()
         assert "" not in cfg.plugin_subscriptions
 
@@ -373,7 +457,7 @@ class TestPluginConfigs:
             ["OPEN=1", "CLOSED=0"]
         )
         gen, gw = make_config(str(tmp_path))
-        cfg = GatewayConfig(gen, gw, plugins_cfg_root=plugins_root)
+        cfg = GatewayConfig(gen, gw, plugin_config_dir=plugins_root)
         cfg.load()
         assert cfg.plugin_conversions.get("OPEN") == "1"
         assert cfg.plugin_conversions.get("CLOSED") == "0"
@@ -385,7 +469,7 @@ class TestPluginConfigs:
             ["home/sensors/motion"]
         )
         gen, gw = make_config(str(tmp_path))
-        cfg = GatewayConfig(gen, gw, plugins_cfg_root=plugins_root)
+        cfg = GatewayConfig(gen, gw, plugin_config_dir=plugins_root)
         cfg.load()
         assert "home/sensors/motion" in cfg.plugin_reset_after_send
 
@@ -400,7 +484,7 @@ class TestPluginConfigs:
             ["home/b/topic"]
         )
         gen, gw = make_config(str(tmp_path))
-        cfg = GatewayConfig(gen, gw, plugins_cfg_root=plugins_root)
+        cfg = GatewayConfig(gen, gw, plugin_config_dir=plugins_root)
         cfg.load()
         assert "home/a/topic" in cfg.plugin_subscriptions
         assert "home/b/topic" in cfg.plugin_subscriptions
@@ -408,8 +492,8 @@ class TestPluginConfigs:
     def test_no_plugins_dir_gives_empty(self, tmp_path):
         nonexistent = os.path.join(str(tmp_path), "no_plugins_here")
         gen, gw = make_config(str(tmp_path))
-        cfg = GatewayConfig(gen, gw, plugins_cfg_root=nonexistent)
+        cfg = GatewayConfig(gen, gw, plugin_config_dir=nonexistent)
         cfg.load()
         assert cfg.plugin_subscriptions == []
         assert cfg.plugin_conversions == {}
-        assert cfg.plugin_reset_after_send == []
+        assert cfg.plugin_reset_after_send == set()
