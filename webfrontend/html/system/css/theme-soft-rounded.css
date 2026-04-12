@@ -1,0 +1,43 @@
+/* LoxBerry Theme: Soft & Rounded (Design 3)
+   Freundlich, 20px Radius, Gradient-Buttons, weicher Hintergrund.
+   Inspired by: Segoe UI, soft shadows, pill-shaped buttons. */
+
+body.theme-soft-rounded {
+  --lb-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --lb-bg: #f0f4f8;
+  --lb-text: #2d3748;
+  --lb-text-secondary: #718096;
+  --lb-text-muted: #a0aec0;
+  --lb-border-color: #e2e8f0;
+
+  --lb-radius: 20px;
+  --lb-radius-sm: 12px;
+
+  --lb-card-bg: white;
+  --lb-card-border: none;
+  --lb-card-shadow: 0 1px 4px rgba(0,0,0,.05);
+
+  --lb-btn-bg: #f0f4f8;
+  --lb-btn-text: #718096;
+  --lb-btn-border: transparent;
+  --lb-btn-radius: 20px;
+  --lb-btn-primary-bg: linear-gradient(135deg, #6dac20, #8bc34a);
+  --lb-btn-primary-text: white;
+  --lb-btn-primary-border: transparent;
+
+  --lb-primary-hover: #8bc34a;
+
+  --lb-input-bg: white;
+  --lb-input-border: #e2e8f0;
+  --lb-input-text: #2d3748;
+
+  --lb-toggle-bg: #cbd5e0;
+
+  --lb-sidebar-bg: white;
+  --lb-sidebar-text: #4a5568;
+  --lb-sidebar-active-bg: #f0fff4;
+  --lb-sidebar-active-text: #6dac20;
+  --lb-sidebar-border: #e2e8f0;
+  --lb-sidebar-section: #a0aec0;
+}
