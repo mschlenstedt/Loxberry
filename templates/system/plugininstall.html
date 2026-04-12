@@ -154,7 +154,7 @@
 				<td>
 				<TMPL_IF PLUGINDB_AUTOUPDATE>
 				<label><TMPL_VAR PLUGININSTALL.UI_LABEL_AUTOMATIC_UPDATES></label>
-				<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+				<div class="lb-btn-group">
 					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"	value="1">
 					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_OFF></label>
 					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2"	value="2">
@@ -163,10 +163,10 @@
 					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_RELEASES></label>
 					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"	value="4">
 					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_PRE_AND_RELEASES></label>
-				</fieldset>
+				</div>
 				<script>
 				$(document).on('pagecreate',function() {
-					$( "#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option"+<TMPL_VAR PLUGINDB_AUTOUPDATE> ).prop( "checked", true ).checkboxradio( "refresh" );
+					$( "#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option"+<TMPL_VAR PLUGINDB_AUTOUPDATE> ).prop( "checked", true ).trigger("change");
 				});
 				
 				$("[id^=au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option]").change(function(){
@@ -183,8 +183,7 @@
 				<td>
 				<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
 				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGGING_LEVEL></label>
-					<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-					<select name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-mini="true">
+					<select class="lb-select" name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">
 						<!-- <option value=""><TMPL_VAR PLUGININSTALL.UI_LOG_SELECT></option> -->
 						<option value="0"><TMPL_VAR PLUGININSTALL.UI_LOG_0_OFF></option>
 						<!-- <option value="1"><TMPL_VAR PLUGININSTALL.UI_LOG_1_ALERT></option> -->
@@ -195,7 +194,6 @@
 						<option value="6"><TMPL_VAR PLUGININSTALL.UI_LOG_6_INFO></option>
 						<option value="7"><TMPL_VAR PLUGININSTALL.UI_LOG_7_DEBUG></option>
 					</select>
-					</fieldset>
 					<script>
 					$(document).ready( function()
 					{
