@@ -1193,15 +1193,15 @@ $(function() {
 		
 		function http_table_skel() {
 			var http_table = "";
-			http_table+= '<fieldset data-role="controlgroup" data-type="horizontal" class="http_filters">';
-			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_all" class="http_filter_checkbox" checked>Show All</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_200" class="http_filter_checkbox"><img src="../../system/images/icon-check.png" height="12">&nbsp;OK</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_404" class="http_filter_checkbox"><img src="../../system/images/icon-notfound.png" height="12">&nbsp;Not found</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_500" class="http_filter_checkbox"><img src="../../system/images/icon-locked.png" height="12">&nbsp;Access denied</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_filtered" class="http_filter_checkbox"><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Filtered</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_0" class="http_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
+			http_table+= '<div class="lb-btn-group http_filters">';
+			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_all" class="http_filter_checkbox" checked>Show All</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_200" class="http_filter_checkbox"><img src="../../system/images/icon-check.png" height="12">&nbsp;OK</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_404" class="http_filter_checkbox"><img src="../../system/images/icon-notfound.png" height="12">&nbsp;Not found</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_500" class="http_filter_checkbox"><img src="../../system/images/icon-locked.png" height="12">&nbsp;Access denied</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_filtered" class="http_filter_checkbox"><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Filtered</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_0" class="http_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
 			// http_table+= '</div>';
-			http_table+= '</fieldset>';
+			http_table+= '</div>';
 			http_table+= '<form><input id="http_table_search" data-type="search" data-mini="true"></form>';
 			
 			http_table+= '<table class="topics_table" id="http_table" data-filter="true" data-input="#http_table_search">\n';
@@ -1222,11 +1222,11 @@ $(function() {
 		
 		function udp_table_skel() {
 			var udp_table = "";
-			udp_table+= '<fieldset data-role="controlgroup" data-type="horizontal" class="udp_filters">';
-			udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_unfiltered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Not filtered</label>';
-			udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_filtered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Filtered</label>';
-			// udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_0" class="udp_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
-			udp_table+= '</fieldset>';
+			udp_table+= '<div class="lb-btn-group udp_filters">';
+			udp_table+= '<label style="display:inline;"><input type="checkbox" id="udp_filter_unfiltered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Not filtered</label>';
+			udp_table+= '<label style="display:inline;"><input type="checkbox" id="udp_filter_filtered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Filtered</label>';
+			// udp_table+= '<label style="display:inline;"><input type="checkbox" id="udp_filter_0" class="udp_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
+			udp_table+= '</div>';
 			
 			udp_table+= '<form><input id="udp_table_search" data-type="search" data-mini="true"></form>';
 			
