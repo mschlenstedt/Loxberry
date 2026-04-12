@@ -14,8 +14,8 @@
 	<form id="configform">
 
 	<div style="text-align: center">
-		<a href="#" id="btn_backupnow" style="width: 70%" onclick="backupnow(); return false;" class="ui-btn ui-btn-inline ui-corner-all"><TMPL_VAR BACKUP.BUTTON_BACKUPNOW></a>
-		<a href="#" id="btn_logfile" style="width: 20%" onclick="openlastlog(); return false;" class="ui-btn ui-btn-inline ui-corner-all"><TMPL_VAR BACKUP.BUTTON_LOGFILE></a>
+		<a href="#" id="btn_backupnow" onclick="backupnow(); return false;" class="lb-btn lb-btn-primary lb-btn-icon" style="flex:3;"><i class="pi pi-download"></i> <TMPL_VAR BACKUP.BUTTON_BACKUPNOW></a>
+		<a href="#" id="btn_logfile" onclick="openlastlog(); return false;" class="lb-btn lb-btn-icon"><i class="pi pi-file"></i> <TMPL_VAR BACKUP.BUTTON_LOGFILE></a>
 		<input type="hidden" name="lastlog" id="lastlog" value="">
 	</div>
 	
@@ -33,11 +33,10 @@
 
 	<br>
 
-	<div style="display:flex;">
-		<div style="width:95%">
-			<div data-role="fieldcontain" class="ui-field-contain">
-				<label for="archive"><TMPL_VAR BACKUP.LABEL_ARCHIVE></label>
-				<select name="archive" id="archive" data-mini="true">
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="archive"><TMPL_VAR BACKUP.LABEL_ARCHIVE></label>
+		<div class="lb-form-field">
+			<select class="lb-select" name="archive" id="archive" data-role="none">
 					<option value="1"><TMPL_VAR BACKUP.LABEL_ONEBACKUP></option>
 					<option value="2"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 2 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
 					<option value="3"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 3 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
@@ -49,28 +48,23 @@
 					<option value="9"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 9 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
 					<option value="10"><TMPL_VAR BACKUP.LABEL_MOREBACKUPS_1> 10 <TMPL_VAR BACKUP.LABEL_MOREBACKUPS_2></option>
 				</select>
-			</div>
 		</div>
 	</div>
 
-	<br>
-
-	<div style="display:flex;">
-		<div style="width:95%">
-			<div data-role="fieldcontain" class="ui-field-contain">
-				<label for="compression"><TMPL_VAR BACKUP.LABEL_COMPRESSION></label>
-				<select name="compression" id="compression" data-mini="true">
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="compression"><TMPL_VAR BACKUP.LABEL_COMPRESSION></label>
+		<div class="lb-form-field">
+			<select class="lb-select" name="compression" id="compression" data-role="none">
 					<option value="none"><TMPL_VAR BACKUP.LABEL_NONE></option>
 					<option value="7z">7-Zip</option>
 					<option value="zip">Zip</option>
 					<option value="gzip">Gzip</option>
 					<option value="xz">xz</option>
 				</select>
-			</div>
 		</div>
 	</div>
 
-	<br><br>
+	<br>
 
 	<div class="lb-section-title"><TMPL_VAR BACKUP.LABEL_SCHEDULE></div>
 
@@ -116,7 +110,7 @@
 	<div class="lb-form-row">
 		<label class="lb-form-label" for="repeat"><TMPL_VAR BACKUP.LABEL_REPEAT></label>
 		<div class="lb-form-field">
-			<select class="lb-select" name="repeat" id="repeat">
+			<select class="lb-select" name="repeat" id="repeat" data-role="none">
 				<option value="1"><TMPL_VAR BACKUP.LABEL_ONEWEEK></option>
 				<option value="2"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 2. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
 				<option value="3"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 3. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
@@ -132,8 +126,8 @@
 	<br><br><br>
 
 	<div style="text-align: center">
-		<a href="/admin/system/index.cgi?form=system" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all"><TMPL_VAR "COMMON.BUTTON_CANCEL"></a>
-		<a href="#" onclick="saveForm(); return false;" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-check ui-corner-all"><TMPL_VAR "COMMON.BUTTON_SAVE"></a>
+		<a href="/admin/system/index.cgi?form=system" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-times"></i> <TMPL_VAR "COMMON.BUTTON_CANCEL"></a>
+		<a href="#" onclick="saveForm(); return false;" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR "COMMON.BUTTON_SAVE"></a>
 	</div>
 
 	<br>

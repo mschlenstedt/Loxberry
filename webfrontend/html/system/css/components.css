@@ -2,6 +2,43 @@
    New design-system components using CSS Variables.
    Use these on migrated Core pages. Plugins keep jQuery Mobile. */
 
+/* === Override jQuery Mobile enhancements on lb-* elements === */
+/* Reset jQM button styling when lb-btn is used */
+.ui-btn.lb-btn,
+.ui-btn.lb-btn:hover,
+.ui-btn.lb-btn:active,
+.ui-btn.lb-btn:focus {
+  background-image: none !important;
+  border: 1px solid var(--lb-btn-border) !important;
+  border-radius: var(--lb-btn-radius) !important;
+  background: var(--lb-btn-bg) !important;
+  color: var(--lb-btn-text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  width: auto !important;
+  margin: 0.5em 0.625em 0.5em 0 !important;
+  padding: 0.55em 0.9em !important;
+  font-family: var(--lb-font) !important;
+}
+.ui-btn.lb-btn-primary,
+.ui-btn.lb-btn-primary:hover,
+.ui-btn.lb-btn-primary:active {
+  background: var(--lb-btn-primary-bg) !important;
+  color: var(--lb-btn-primary-text) !important;
+  border-color: var(--lb-btn-primary-border) !important;
+}
+/* Hide jQM select wrapper when native lb-select is used */
+.ui-select:has(.lb-select) {
+  display: contents;
+}
+/* Reset jQM input styling when lb-input is used */
+.ui-input-text:has(.lb-input) {
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 /* === Global Modern Font === */
 .lb-section-title,
 .lb-form-label,
@@ -18,7 +55,8 @@
 .lb-btn,
 a.lb-btn,
 a.lb-btn:visited,
-a.lb-btn:link {
+a.lb-btn:link,
+button.lb-btn {
   display: inline-block;
   padding: 0.7em 1em;
   margin: 0.5em 0.625em 0.5em 0;
@@ -216,14 +254,44 @@ a.lb-btn:link {
 .lb-btn-group .lb-btn.active,
 .lb-btn-group .lb-btn-active,
 .lb-btn-group label.active,
+.lb-btn-group label.lb-checked,
 .lb-btn-group input[type="radio"]:checked + label,
 .lb-btn-group input[type="checkbox"]:checked + label {
-  background: var(--lb-primary);
-  color: white;
+  background: var(--lb-primary) !important;
+  color: white !important;
 }
 .lb-btn-group input[type="radio"],
 .lb-btn-group input[type="checkbox"] {
-  display: none;
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  pointer-events: none !important;
+}
+/* Hide jQuery Mobile radio/checkbox wrappers and icons inside btn-group */
+.lb-btn-group .ui-radio,
+.lb-btn-group .ui-checkbox {
+  display: contents;
+}
+.lb-btn-group label.ui-btn::before,
+.lb-btn-group label.ui-btn::after,
+.lb-btn-group .ui-btn-icon-left::before,
+.lb-btn-group .ui-radio .ui-btn::before,
+.lb-btn-group .ui-radio .ui-btn::after,
+.lb-btn-group .ui-checkbox .ui-btn::before,
+.lb-btn-group .ui-checkbox .ui-btn::after {
+  display: none !important;
+}
+/* Reset jQM label styling inside btn-group */
+.lb-btn-group label.ui-btn {
+  background-image: none !important;
+  border: none !important;
+  border-right: 1px solid var(--lb-border-color) !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  padding: 8px 16px !important;
+  margin: 0 !important;
 }
 
 /* === Toggle Switch (replaces jQuery Mobile flipswitch) === */

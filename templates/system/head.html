@@ -44,6 +44,23 @@
 		$.mobile.degradeInputs.time = true;
 		$.mobile.degradeInputs.number = true;
 		$.mobile.degradeInputs.range = false; // keep sliders
+
+		// Sync lb-checked class on lb-btn-group labels
+		function syncLbBtnGroup($group) {
+			$group.find("label").removeClass("lb-checked");
+			$group.find("input:checked").each(function() {
+				var id = $(this).attr("id");
+				if (id) $group.find("label[for='" + id + "']").addClass("lb-checked");
+			});
+		}
+		$(document).on("change click", ".lb-btn-group label, .lb-btn-group input", function() {
+			var $group = $(this).closest(".lb-btn-group");
+			setTimeout(function() { syncLbBtnGroup($group); }, 10);
+		});
+		// Initial sync on page load
+		$(document).on("pagecreate", function() {
+			$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
+		});
 	</script>
 	<script src="/system/scripts/browser.js"></script>
 	<!-- HTMLHEAD sent by the plugin author: -->

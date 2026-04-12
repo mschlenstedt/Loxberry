@@ -29,7 +29,7 @@
 				<TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME>
 			</div>
 			<div class="lb-form-field">
-				<select class="lb-select" name="themeselector" id="themeselector">
+				<select class="lb-select" name="themeselector" id="themeselector" data-role="none">
 					<option value="soft-rounded">Soft &amp; Rounded</option>
 					<option value="clean-admin">Clean Admin</option>
 					<option value="glass">Glassmorphism</option>
@@ -44,7 +44,7 @@
 				<TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME>
 			</div>
 			<div class="lb-form-field">
-				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>" data-validation-error-msg="<TMPL_VAR MYLOXBERRY.ERR_FRIENDLYNAME>"  data-validation-rule="^([a-zA-Z0-9\#\&\{\}\:\*\[\]\(\)\?\!\_\-\.\|\s\u00C0-\u017F])*$">
+				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" class="lb-input" value="<TMPL_VAR NETWORK.FRIENDLYNAME>" data-role="none" data-validation-error-msg="<TMPL_VAR MYLOXBERRY.ERR_FRIENDLYNAME>"  data-validation-rule="^([a-zA-Z0-9\#\&\{\}\:\*\[\]\(\)\?\!\_\-\.\|\s\u00C0-\u017F])*$">
 			</div>
 			<div class="lb-form-help">
 				<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
@@ -65,11 +65,19 @@
 	</form>
 	<div class="lb-actions">
 		<a id="btncancel" class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
-		<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
+		<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" data-role="none"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
 	</div>
 	<script>
 		$(document).ready( function ()
 		{
+			// Destroy jQuery Mobile selectmenu widgets and apply native lb-select styling
+			$("#languageselector, #countryselector").each(function() {
+				if ($(this).data("mobile-selectmenu")) {
+					$(this).selectmenu("destroy");
+				}
+				$(this).addClass("lb-select");
+			});
+
 			validate_enable('#lbfriendlyname');
 			$("#languageselector").bind( "change", function(event, ui)
 			{
