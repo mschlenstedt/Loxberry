@@ -57,9 +57,11 @@
 			var $group = $(this).closest(".lb-btn-group");
 			setTimeout(function() { syncLbBtnGroup($group); }, 10);
 		});
-		// Initial sync on page load
+		// Initial sync on page load — delay to let jQM and page scripts set checked states
 		$(document).on("pagecreate", function() {
-			$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
+			setTimeout(function() {
+				$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
+			}, 200);
 		});
 	</script>
 	<script src="/system/scripts/browser.js"></script>
