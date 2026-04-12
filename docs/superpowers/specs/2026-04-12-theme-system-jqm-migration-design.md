@@ -12,7 +12,7 @@ Alle Core-Templates auf `lb-*` Klassen vereinheitlichen und ein Token-basiertes 
 design-tokens.css          <- Basis-Tokens (Spacing, Breakpoints, strukturelle Defaults)
 theme-soft-rounded.css     <- Design 3: Farben, Radius 20px, Gradient-Buttons
 theme-clean-admin.css      <- Design 1: Radius 10px, dunkle Sidebar
-theme-terminal.css         <- Design 4: Radius 0, Monospace, 1px Borders
+theme-glass.css            <- Design 2: Dark Gradient, Glassmorphism, Glow Effects
 theme-classic-lb.css       <- Design 9: Radius 4px, Flat, Sans-serif
 components.css             <- Nur var(--lb-*), nie hardcoded Werte
 main.css                   <- jQuery Mobile Overrides aufraumen
@@ -26,45 +26,54 @@ Ein `<body class="theme-soft-rounded">` schaltet das Theme um. Die Template-Vari
 - `LoxBerry::Web` (`Web.pm:137-142`): Template-Variablen fuer neues Theme-System setzen
 - `ajax-config-handler.cgi` (Zeile 58-62): Validierung erweitern
 - `myloxberry.html`: Dropdown mit 4 neuen Themes
-- Mapping alte Themes: `classic` -> `classic-lb`, `modern` -> `soft-rounded`, `dark` -> `terminal`
+- Mapping alte Themes: `classic` -> `classic-lb`, `modern` -> `soft-rounded`, `dark` -> `glass`
 
 ## Token-Map (pro Theme)
 
-| Token | Soft & Rounded (3) | Clean Admin (1) | Terminal (4) | Classic LB (9) |
-|-------|---------------------|------------------|--------------|----------------|
-| `--lb-radius` | `20px` | `10px` | `0` | `4px` |
-| `--lb-radius-sm` | `12px` | `6px` | `0` | `2px` |
-| `--lb-font` | `'Segoe UI', system-ui, sans-serif` | `system-ui, -apple-system, sans-serif` | `Consolas, 'Courier New', monospace` | `sans-serif` |
-| `--lb-bg` | `#f0f4f8` | `#f4f5f7` | `#0a0a0a` | `#f0f0f0` |
-| `--lb-card-bg` | `white` | `white` | `#0a0a0a` | `white` |
+| Token | Soft & Rounded (3) | Clean Admin (1) | Glass (2) | Classic LB (9) |
+|-------|---------------------|------------------|-----------|----------------|
+| `--lb-radius` | `20px` | `10px` | `14px` | `4px` |
+| `--lb-radius-sm` | `12px` | `6px` | `10px` | `2px` |
+| `--lb-font` | `'Segoe UI', system-ui, sans-serif` | `system-ui, -apple-system, sans-serif` | `system-ui, sans-serif` | `sans-serif` |
+| `--lb-bg` | `#f0f4f8` | `#f4f5f7` | `linear-gradient(135deg, #0f2027, #203a43, #2c5364)` | `#f0f0f0` |
+| `--lb-card-bg` | `white` | `white` | `rgba(255,255,255,.05)` | `white` |
 | `--lb-card-shadow` | `0 1px 4px rgba(0,0,0,.05)` | `0 1px 3px rgba(0,0,0,.06)` | `none` | `none` |
-| `--lb-card-border` | `none` | `1px solid #e5e5e5` | `1px solid #222` | `1px solid #ddd` |
-| `--lb-text` | `#2d3748` | `#1a1a2e` | `#888` | `#333` |
-| `--lb-text-secondary` | `#718096` | `#555` | `#555` | `#555` |
-| `--lb-text-muted` | `#a0aec0` | `#888` | `#444` | `#aaa` |
-| `--lb-border-color` | `#e2e8f0` | `#e5e5e5` | `#222` | `#ddd` |
+| `--lb-card-border` | `none` | `1px solid #e5e5e5` | `1px solid rgba(255,255,255,.07)` | `1px solid #ddd` |
+| `--lb-text` | `#2d3748` | `#1a1a2e` | `rgba(255,255,255,.8)` | `#333` |
+| `--lb-text-secondary` | `#718096` | `#555` | `rgba(255,255,255,.5)` | `#555` |
+| `--lb-text-muted` | `#a0aec0` | `#888` | `rgba(255,255,255,.3)` | `#aaa` |
+| `--lb-border-color` | `#e2e8f0` | `#e5e5e5` | `rgba(255,255,255,.07)` | `#ddd` |
 | `--lb-primary` | `#6dac20` | `#6dac20` | `#6dac20` | `#6dac20` |
-| `--lb-primary-hover` | `#8bc34a` | `#5a9a1a` | `#6dac20` | `#5a9a1a` |
-| `--lb-btn-bg` | `#f0f4f8` | `#e6e6e6` | `transparent` | `#f0f0f0` |
-| `--lb-btn-text` | `#718096` | `#000` | `#555` | `#555` |
-| `--lb-btn-border` | `transparent` | `#7e7e7e` | `#333` | `#ddd` |
-| `--lb-btn-radius` | `20px` | `4px` | `0` | `4px` |
-| `--lb-btn-primary-bg` | `linear-gradient(135deg, #6dac20, #8bc34a)` | `#6dac20` | `transparent` | `#6dac20` |
+| `--lb-primary-hover` | `#8bc34a` | `#5a9a1a` | `#8bc34a` | `#5a9a1a` |
+| `--lb-btn-bg` | `#f0f4f8` | `#e6e6e6` | `rgba(255,255,255,.06)` | `#f0f0f0` |
+| `--lb-btn-text` | `#718096` | `#000` | `rgba(255,255,255,.4)` | `#555` |
+| `--lb-btn-border` | `transparent` | `#7e7e7e` | `rgba(255,255,255,.08)` | `#ddd` |
+| `--lb-btn-radius` | `20px` | `4px` | `10px` | `4px` |
+| `--lb-btn-primary-bg` | `linear-gradient(135deg, #6dac20, #8bc34a)` | `#6dac20` | `rgba(109,172,32,.2)` | `#6dac20` |
 | `--lb-btn-primary-text` | `white` | `white` | `#6dac20` | `white` |
-| `--lb-btn-primary-border` | `transparent` | `#5a9a1a` | `#6dac20` | `#5a9a1a` |
+| `--lb-btn-primary-border` | `transparent` | `#5a9a1a` | `rgba(109,172,32,.3)` | `#5a9a1a` |
 | `--lb-danger` | `#dc2626` | `#dc2626` | `#dc2626` | `#dc2626` |
 | `--lb-warning` | `#ca8a04` | `#ca8a04` | `#ca8a04` | `#ca8a04` |
-| `--lb-sidebar-bg` | `white` | `#1a1a2e` | `#0a0a0a` | `#3d3d3d` |
-| `--lb-sidebar-text` | `#4a5568` | `rgba(255,255,255,.65)` | `#666` | `rgba(255,255,255,.7)` |
-| `--lb-sidebar-active-bg` | `#f0fff4` | `rgba(109,172,32,.12)` | `rgba(109,172,32,.06)` | `rgba(255,255,255,.1)` |
+| `--lb-sidebar-bg` | `white` | `#1a1a2e` | `rgba(255,255,255,.04)` | `#3d3d3d` |
+| `--lb-sidebar-text` | `#4a5568` | `rgba(255,255,255,.65)` | `rgba(255,255,255,.55)` | `rgba(255,255,255,.7)` |
+| `--lb-sidebar-active-bg` | `#f0fff4` | `rgba(109,172,32,.12)` | `rgba(109,172,32,.1)` | `rgba(255,255,255,.1)` |
 | `--lb-sidebar-active-text` | `#6dac20` | `#6dac20` | `#6dac20` | `#6dac20` |
-| `--lb-sidebar-border` | `#e2e8f0` | `rgba(255,255,255,.08)` | `#222` | `rgba(255,255,255,.08)` |
-| `--lb-sidebar-section` | `#a0aec0` | `rgba(255,255,255,.35)` | `#444` | `rgba(255,255,255,.4)` |
-| `--lb-input-bg` | `white` | `white` | `#111` | `white` |
-| `--lb-input-border` | `#e2e8f0` | `#ddd` | `#222` | `#ddd` |
-| `--lb-input-text` | `#2d3748` | `#333` | `#888` | `#333` |
-| `--lb-toggle-bg` | `#cbd5e0` | `#ccc` | `#333` | `#ccc` |
+| `--lb-sidebar-border` | `#e2e8f0` | `rgba(255,255,255,.08)` | `rgba(255,255,255,.06)` | `rgba(255,255,255,.08)` |
+| `--lb-sidebar-section` | `#a0aec0` | `rgba(255,255,255,.35)` | `rgba(255,255,255,.2)` | `rgba(255,255,255,.4)` |
+| `--lb-input-bg` | `white` | `white` | `rgba(255,255,255,.06)` | `white` |
+| `--lb-input-border` | `#e2e8f0` | `#ddd` | `rgba(255,255,255,.1)` | `#ddd` |
+| `--lb-input-text` | `#2d3748` | `#333` | `rgba(255,255,255,.8)` | `#333` |
+| `--lb-toggle-bg` | `#cbd5e0` | `#ccc` | `rgba(255,255,255,.15)` | `#ccc` |
 | `--lb-section-border` | `#6dac20` | `#6dac20` | `#6dac20` | `#6dac20` |
+
+### Glass-Theme Zusatz-Tokens
+Das Glass-Theme braucht zusaetzliche Tokens die andere Themes nicht verwenden:
+| Token | Wert | Beschreibung |
+|-------|------|-------------|
+| `--lb-backdrop-blur` | `blur(12px)` | Glassmorphism-Effekt auf Karten |
+| `--lb-glow-primary` | `0 0 6px rgba(109,172,32,.5)` | Glow auf Status-Dots |
+| `--lb-glow-danger` | `0 0 6px rgba(220,38,38,.5)` | Glow auf Error-Dots |
+| `--lb-glow-warning` | `0 0 8px rgba(202,138,4,.3)` | Glow auf Warning-Badges |
 
 ## Komponenten-Refactoring (components.css)
 
@@ -229,14 +238,14 @@ Folgende Bloecke in main.css werden obsolet nach der Migration:
 $theme = 'classic' unless $theme =~ /^(classic|modern|dark)$/;
 
 # NEU
-$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|terminal|classic-lb)$/;
+$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
 ```
 
 ### Web.pm aendern
 Statt einzelner THEME_CLASSIC/THEME_MODERN/THEME_DARK Flags ein generisches System:
 ```perl
 my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
-$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|terminal|classic-lb)$/;
+$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
 $headobj->param( THEME_CLASS => "theme-$theme" );
 $headobj->param( THEME_FILE => "theme-$theme.css" );
 ```
@@ -258,14 +267,14 @@ $headobj->param( THEME_FILE => "theme-$theme.css" );
 if ($value =~ /^(classic|modern|dark)$/) {
 
 # NEU
-if ($value =~ /^(soft-rounded|clean-admin|terminal|classic-lb)$/) {
+if ($value =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/) {
 ```
 
 ### myloxberry.html Theme-Dropdown
 Dropdown mit 4 Optionen:
 - Soft & Rounded (soft-rounded) — Freundlich, abgerundet
 - Clean Admin (clean-admin) — Professionell, dunkle Sidebar
-- Terminal (terminal) — Entwickler-Aesthetik
+- Glassmorphism (glass) — Dark Gradient, Glow Effects, halbtransparent
 - Classic LoxBerry (classic-lb) — Vertrautes Design
 
 ### Abwaertskompatibilitaet
@@ -275,7 +284,7 @@ Falls ein User den alten Theme-Wert "classic", "modern" oder "dark" in general.j
 my %theme_map = (
     'classic' => 'classic-lb',
     'modern'  => 'soft-rounded',
-    'dark'    => 'terminal',
+    'dark'    => 'glass',
 );
 $theme = $theme_map{$theme} // $theme;
 ```
@@ -295,7 +304,7 @@ $theme = $theme_map{$theme} // $theme;
 ### Phase 1: Token-System & Komponenten (CSS-only)
 1. design-tokens.css refactoren — strukturelle Basis-Tokens
 2. components.css refactoren — hardcoded Werte -> var(--lb-*)
-3. 4 Theme-Files schreiben (soft-rounded, clean-admin, terminal, classic-lb)
+3. 4 Theme-Files schreiben (soft-rounded, clean-admin, glass, classic-lb)
 4. main.css aufraumen — obsolete jQuery Mobile Overrides markieren
 
 ### Phase 2: Template-Migration (HTML-Aenderungen)
