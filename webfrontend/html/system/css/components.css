@@ -318,6 +318,7 @@ button.lb-btn {
   box-shadow: none !important;
   padding: 8px 16px !important;
   margin: 0 !important;
+  text-align: center !important;
 }
 
 /* === Toggle Switch (replaces jQuery Mobile flipswitch) === */
@@ -421,9 +422,16 @@ button.lb-btn {
 @media (max-width: 768px) {
   .lb-btn-group {
     flex-wrap: wrap;
+    width: 100%;
   }
-  .lb-btn-group label {
+  .lb-btn-group label,
+  .lb-btn-group .ui-radio,
+  .lb-btn-group .ui-checkbox {
     flex: 1 1 auto;
     min-width: 0;
+    text-align: center;
+  }
+  .lb-btn-group label.ui-btn {
+    text-align: center !important;
   }
 }

@@ -48,20 +48,40 @@
 		// Sync lb-checked class on lb-btn-group labels
 		function syncLbBtnGroup($group) {
 			$group.find("label").removeClass("lb-checked");
-			$group.find("input:checked").each(function() {
-				var id = $(this).attr("id");
-				if (id) $group.find("label[for='" + id + "']").addClass("lb-checked");
+			$group.find("input[type='radio'], input[type='checkbox']").each(function() {
+				if (this.checked) {
+					var id = $(this).attr("id");
+					var $label;
+					if (id) {
+						$label = $group.find("label[for='" + id + "']");
+					}
+					// Fallback: find next sibling label or parent's label
+					if (!$label || !$label.length) {
+						$label = $(this).next("label");
+					}
+					if (!$label || !$label.length) {
+						$label = $(this).closest(".ui-radio, .ui-checkbox").find("label");
+					}
+					if ($label && $label.length) {
+						$label.addClass("lb-checked");
+					}
+				}
 			});
 		}
 		$(document).on("change click", ".lb-btn-group label, .lb-btn-group input", function() {
 			var $group = $(this).closest(".lb-btn-group");
 			setTimeout(function() { syncLbBtnGroup($group); }, 10);
 		});
-		// Initial sync on page load — delay to let jQM and page scripts set checked states
+		// Initial sync on page load — multiple attempts to catch late-checked radios
+		function syncAllBtnGroups() {
+			$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
+		}
 		$(document).on("pagecreate", function() {
-			setTimeout(function() {
-				$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
-			}, 200);
+			setTimeout(syncAllBtnGroups, 200);
+			setTimeout(syncAllBtnGroups, 800);
+		});
+		$(document).ready(function() {
+			setTimeout(syncAllBtnGroups, 500);
 		});
 	</script>
 	<script src="/system/scripts/browser.js"></script>

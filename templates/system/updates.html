@@ -40,7 +40,7 @@
 								<input type="file" name="uploadfile" class="textfield">
 							</td>
 							<td width="5%" valign="middle">
-								<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR UPDATES.BUTTON_INSTALL></button>
+								<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="none"><i class="pi pi-check"></i> <TMPL_VAR UPDATES.BUTTON_INSTALL></button>
 							</td>
 							<td width="20%">
 								&nbsp;
@@ -116,8 +116,8 @@
 			<tr>
 				<td align="center">
 					<p>
-						<a id="btnback" href="/admin/system/index.cgi?form=system" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-						<a id="btnreboot" href="/admin/system/updates.cgi?do=install&answer=yes" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-check"><TMPL_VAR UPDATES.UPGRADE_BUTTON_REBOOT_UPGRADE></a>
+						<a id="btnback" href="/admin/system/index.cgi?form=system" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+						<a id="btnreboot" href="/admin/system/updates.cgi?do=install&answer=yes" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR UPDATES.UPGRADE_BUTTON_REBOOT_UPGRADE></a>
 					</p>
 				</td>
 			</tr>
@@ -167,7 +167,7 @@
 <div class="lb-section-title" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
 <div id="script_failed_block" style="border:1px solid red; background:yellow; display:none;">
 	<TMPL_VAR UPDATES.LBU_SCRIPT_FAILED>
-	<a id="script_failed_versreset" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR UPDATES.LBU_BUTTON_SCRIPT_FAILED_VERSRESET>&nbsp;<span id="failed_version"></span></a>
+	<a id="script_failed_versreset" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-arrow-left"></i> <TMPL_VAR UPDATES.LBU_BUTTON_SCRIPT_FAILED_VERSRESET>&nbsp;<span id="failed_version"></span></a>
 </div>
 <div id="update_clearance_block" style="border:1px solid red; background:yellow; display:none;padding:20px 20px 20px 20px;">
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE>
@@ -180,7 +180,7 @@
 	<p>
 		<h3 id="first_blocked_name"></h3>
 		<p id="first_blocked_body"></p>
-	<a id="update_clearance_ok" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATE_CLEARANCE></a>
+	<a id="update_clearance_ok" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATE_CLEARANCE></a>
 
 </div>
 
@@ -197,7 +197,7 @@
 			<b id="current_version"><TMPL_VAR LBVERSION></b>
 			</div>
 			<div style="flex-grow: 1;">
-			<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
+			<a id="lbu_button_recheck" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-refresh"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
 			</div>
 		</div>
 		<p>
@@ -258,7 +258,7 @@
 <TMPL_VAR UPDATES.LBU_LABEL_BUTTONS>
 </div>
 <div class="divTableCell">
-<a id="lbu_button_updateinstall_pre" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-star"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
+<a id="lbu_button_updateinstall_pre" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
 </div>
 </div>
 </div>
@@ -269,9 +269,9 @@
 <p><TMPL_VAR UPDATES.LBU_LABEL_UPDATEINSTALL_INTRO2></p>
 <p id="lbu_install_pleasewait" style="display:none;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></p>
 <p id="lbu_update_process">&nbsp;</p>
-<a id="lbu_button_update_logfile" href="#" target="_blank" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-action" style="display:none"><TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
-<a id="lbu_button_install_cancel" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR COMMON.BUTTON_BACK></a>
-<a id="lbu_button_install" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-star"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL></a>
+<a id="lbu_button_update_logfile" href="#" target="_blank" class="lb-btn lb-btn-sm lb-btn-icon" style="display:none"><i class="pi pi-file"></i> <TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
+<a id="lbu_button_install_cancel" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-arrow-left"></i> <TMPL_VAR COMMON.BUTTON_BACK></a>
+<a id="lbu_button_install" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL></a>
 </div>
 
 <script>
