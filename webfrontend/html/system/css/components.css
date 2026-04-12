@@ -110,12 +110,17 @@ button.lb-btn {
 .lb-btn:active {
   filter: brightness(1.12);
 }
-.lb-btn-primary {
-  background: var(--lb-btn-primary-bg);
+.lb-btn-primary,
+a.lb-btn-primary,
+a.lb-btn-primary:visited,
+a.lb-btn-primary:link,
+.ui-link.lb-btn-primary {
+  background: var(--lb-btn-primary-bg) !important;
   color: var(--lb-btn-primary-text) !important;
-  border-color: var(--lb-btn-primary-border);
+  border-color: var(--lb-btn-primary-border) !important;
 }
-.lb-btn-primary:hover {
+.lb-btn-primary:hover,
+a.lb-btn-primary:hover {
   filter: brightness(1.1);
 }
 .lb-btn-danger {
