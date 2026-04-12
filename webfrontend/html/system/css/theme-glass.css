@@ -1,0 +1,66 @@
+/* LoxBerry Theme: Glassmorphism (Design 2)
+   Dark gradient, halbtransparente Glaseffekte, Glow-Akzente.
+   Uses backdrop-filter for glass effect on cards. */
+
+body.theme-glass {
+  --lb-font: system-ui, sans-serif;
+
+  --lb-bg: #0f2027;
+  --lb-text: rgba(255,255,255,.8);
+  --lb-text-secondary: rgba(255,255,255,.5);
+  --lb-text-muted: rgba(255,255,255,.3);
+  --lb-border-color: rgba(255,255,255,.07);
+
+  --lb-radius: 14px;
+  --lb-radius-sm: 10px;
+
+  --lb-card-bg: rgba(255,255,255,.05);
+  --lb-card-border: 1px solid rgba(255,255,255,.07);
+  --lb-card-shadow: none;
+
+  --lb-btn-bg: rgba(255,255,255,.06);
+  --lb-btn-text: rgba(255,255,255,.4);
+  --lb-btn-border: rgba(255,255,255,.08);
+  --lb-btn-radius: 10px;
+  --lb-btn-primary-bg: rgba(109,172,32,.2);
+  --lb-btn-primary-text: #6dac20;
+  --lb-btn-primary-border: rgba(109,172,32,.3);
+
+  --lb-primary-hover: #8bc34a;
+
+  --lb-input-bg: rgba(255,255,255,.06);
+  --lb-input-border: rgba(255,255,255,.1);
+  --lb-input-text: rgba(255,255,255,.8);
+
+  --lb-toggle-bg: rgba(255,255,255,.15);
+
+  --lb-sidebar-bg: rgba(255,255,255,.04);
+  --lb-sidebar-text: rgba(255,255,255,.55);
+  --lb-sidebar-active-bg: rgba(109,172,32,.1);
+  --lb-sidebar-active-text: #6dac20;
+  --lb-sidebar-border: rgba(255,255,255,.06);
+  --lb-sidebar-section: rgba(255,255,255,.2);
+
+  --lb-backdrop-blur: blur(12px);
+  --lb-glow-primary: 0 0 6px rgba(109,172,32,.5);
+  --lb-glow-danger: 0 0 6px rgba(220,38,38,.5);
+  --lb-glow-warning: 0 0 8px rgba(202,138,4,.3);
+}
+
+/* Glass page background gradient */
+body.theme-glass {
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 40%, #2c5364 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Glass backdrop on cards */
+body.theme-glass .lb-card {
+  backdrop-filter: var(--lb-backdrop-blur);
+  -webkit-backdrop-filter: var(--lb-backdrop-blur);
+}
+
+/* Glow on status indicators */
+body.theme-glass .lb-status-ok { box-shadow: var(--lb-glow-primary); }
+body.theme-glass .lb-status-error { box-shadow: var(--lb-glow-danger); }
+body.theme-glass .lb-status-warning { box-shadow: var(--lb-glow-warning); }
