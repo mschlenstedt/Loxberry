@@ -29,10 +29,11 @@
 				<TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME>
 			</div>
 			<div class="lb-form-field">
-				<select name="themeselector" id="themeselector" data-mini="true">
-					<option value="classic">Classic</option>
-					<option value="modern">Modern Flat</option>
-					<option value="dark">Dark Mode</option>
+				<select class="lb-select" name="themeselector" id="themeselector">
+					<option value="soft-rounded">Soft &amp; Rounded</option>
+					<option value="clean-admin">Clean Admin</option>
+					<option value="glass">Glassmorphism</option>
+					<option value="classic-lb">Classic LoxBerry</option>
 				</select>
 			</div>
 		</div>
@@ -97,8 +98,8 @@
 			});
 
 			// Theme: Dropdown setzt Wert und wechselt direkt
-			var currentTheme = "<TMPL_VAR CURRENTTHEME>" || "classic";
-			$("#themeselector").val(currentTheme).selectmenu('refresh');
+			var currentTheme = "<TMPL_VAR CURRENTTHEME>" || "soft-rounded";
+			$("#themeselector").val(currentTheme);
 
 			$("#themeselector").bind("change", function() {
 				var val = $(this).val();
