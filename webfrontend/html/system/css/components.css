@@ -54,16 +54,6 @@ input[type="submit"].lb-btn-primary {
   padding: 0 !important;
   margin: 0 !important;
 }
-/* Reset jQM select styling globally */
-.ui-select .ui-btn {
-  border: 1px solid var(--lb-input-border) !important;
-  border-radius: var(--lb-radius) !important;
-  background: var(--lb-input-bg) !important;
-  color: var(--lb-input-text) !important;
-  font-family: var(--lb-font) !important;
-  text-shadow: none !important;
-  box-shadow: none !important;
-}
 
 /* === Global Modern Font === */
 .lb-section-title,
