@@ -9,9 +9,9 @@
 			<TMPL_VAR UPDATES.LABEL_ENABLE_UPDATES>
 			</td>
 			<td>
-			<fieldset data-role="controlgroup" data-mini="true" style="width:300px">
+			<div class="lb-btn-group" style="flex-direction:column;">
 			<TMPL_VAR UPDATE_RADIO>
-			</fieldset>
+			</div>
 			</td>
 		</tr>
 		<tr>
@@ -19,9 +19,9 @@
 			<TMPL_VAR UPDATES.LABEL_AUTOMATIC_REBOOT>
 			</td>
 			<td>
-			<fieldset data-role="controlgroup" data-mini="true" style="width:300px">
+			<div class="lb-btn-group" style="flex-direction:column;">
 			<TMPL_VAR UPDATE_REBOOT_CHECKBOX>
-			</fieldset>
+			</div>
 			</td>
 		</tr>
 		</table>
@@ -226,9 +226,9 @@
 	
 </div>
 <div class="divTableCell">
-	<fieldset data-role="controlgroup" data-mini="true">
+	<div class="lb-btn-group" style="flex-direction:column;">
 		<TMPL_VAR RELEASETYPE_RADIO>
-	</fieldset>
+	</div>
 </div>
 </div>
 <div class="divTableRow">
@@ -236,9 +236,9 @@
 	<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE>
 </div>
 <div class="divTableCell">
-<fieldset data-role="controlgroup" data-mini="true">
+<div class="lb-btn-group" style="flex-direction:column;">
 	<TMPL_VAR INSTALLTYPE_RADIO>
-</fieldset>
+</div>
 </div>
 </div>
 <div class="divTableRow">
@@ -247,9 +247,9 @@
 	
 	</div>	
 	<div class="divTableCell">
-	<fieldset id="#installtime" data-role="controlgroup" data-mini="true">
+	<div id="installtime" class="lb-btn-group" style="flex-direction:column;">
 		<TMPL_VAR INSTALLTIME_RADIO>
-	</fieldset>
+	</div>
 	</div>
 </div>
 
