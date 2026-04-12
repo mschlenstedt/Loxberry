@@ -76,67 +76,56 @@
 
 	<br>
 
-	<div style="display:flex;">
-		<div style="width:95%">
-			<div data-role="fieldcontain" class="ui-field-contain">
-				<label for="scheduleactive"><TMPL_VAR BACKUP.LABEL_ACTIVATE></label>
-				<input type="checkbox" id="scheduleactive" data-role="flipswitch" data-mini="true">
-			</div>
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="scheduleactive"><TMPL_VAR BACKUP.LABEL_ACTIVATE></label>
+		<div class="lb-form-field">
+			<label class="lb-toggle">
+				<input type="checkbox" id="scheduleactive">
+				<span class="lb-toggle-slider"></span>
+			</label>
 		</div>
 	</div>
 
 	<br>
 
-	<div style="display:flex;">
-		<div style="width: 95%">
-			<div data-role="fieldcontain" class="ui-field-contain">
-				<label for="wochentag"><TMPL_VAR BACKUP.LABEL_TIME></label>
-				<table border=0>
-				<tr>
-					<td style="width: 28em">
-					<fieldset id="wochentag" data-role="controlgroup" data-type="horizontal" data-mini="true">
-						<input type="checkbox" name="mon" id="mon">
-						<label for="mon"><TMPL_VAR BACKUP.LABEL_MONDAY></label>
-						<input type="checkbox" name="tue" id="tue">
-						<label for="tue"><TMPL_VAR BACKUP.LABEL_TUESDAY></label>
-						<input type="checkbox" name="wed" id="wed">
-						<label for="wed"><TMPL_VAR BACKUP.LABEL_WEDNESDAY></label>
-						<input type="checkbox" name="thu" id="thu">
-						<label for="thu"><TMPL_VAR BACKUP.LABEL_THURSDAY></label>
-						<input type="checkbox" name="fre" id="fre">
-						<label for="fre"><TMPL_VAR BACKUP.LABEL_FRIDAY></label>
-						<input type="checkbox" name="sat" id="sat">
-						<label for="sat"><TMPL_VAR BACKUP.LABEL_SATURDAY></label>
-						<input type="checkbox" name="sun" id="sun">
-						<label for="sun"><TMPL_VAR BACKUP.LABEL_SUNDAY></label>
-					</fieldset>
-					</td>
-					<td style="width: 5em">
-					<input type="time" data-clear-btn="false" name="timef" id="timef" value="" data-mini="true">
-					</td>
-				</tr>
-				</table>
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="wochentag"><TMPL_VAR BACKUP.LABEL_TIME></label>
+		<div class="lb-form-field" style="display:flex; align-items:center; gap:var(--lb-space-md);">
+			<div class="lb-btn-group" id="wochentag">
+				<input type="checkbox" name="mon" id="mon">
+				<label for="mon"><TMPL_VAR BACKUP.LABEL_MONDAY></label>
+				<input type="checkbox" name="tue" id="tue">
+				<label for="tue"><TMPL_VAR BACKUP.LABEL_TUESDAY></label>
+				<input type="checkbox" name="wed" id="wed">
+				<label for="wed"><TMPL_VAR BACKUP.LABEL_WEDNESDAY></label>
+				<input type="checkbox" name="thu" id="thu">
+				<label for="thu"><TMPL_VAR BACKUP.LABEL_THURSDAY></label>
+				<input type="checkbox" name="fre" id="fre">
+				<label for="fre"><TMPL_VAR BACKUP.LABEL_FRIDAY></label>
+				<input type="checkbox" name="sat" id="sat">
+				<label for="sat"><TMPL_VAR BACKUP.LABEL_SATURDAY></label>
+				<input type="checkbox" name="sun" id="sun">
+				<label for="sun"><TMPL_VAR BACKUP.LABEL_SUNDAY></label>
 			</div>
+			<input class="lb-input" type="time" name="timef" id="timef" value="" style="width:6em;">
 		</div>
 	</div>
 
 	<br>
 
-	<div style="display:flex;">
-		<div style="width: 95%">
-			<div data-role="fieldcontain" class="ui-field-contain">
-				<label for="repeat"><TMPL_VAR BACKUP.LABEL_REPEAT></label>
-				<select name="repeat" id="repeat" data-mini="true">
-					<option value="1"><TMPL_VAR BACKUP.LABEL_ONEWEEK></option>
-					<option value="2"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 2. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
-					<option value="3"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 3. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
-					<option value="4"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 4. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
-					<option value="5"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 5. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
-					<option value="6"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 6. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
-					<option value="7"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 7. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
-					<option value="8"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 8. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
-				</select>
-			</div>
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="repeat"><TMPL_VAR BACKUP.LABEL_REPEAT></label>
+		<div class="lb-form-field">
+			<select class="lb-select" name="repeat" id="repeat">
+				<option value="1"><TMPL_VAR BACKUP.LABEL_ONEWEEK></option>
+				<option value="2"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 2. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+				<option value="3"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 3. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+				<option value="4"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 4. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+				<option value="5"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 5. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+				<option value="6"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 6. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+				<option value="7"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 7. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+				<option value="8"><TMPL_VAR BACKUP.LABEL_MOREWEEK_1> 8. <TMPL_VAR BACKUP.LABEL_MOREWEEK_2></option>
+			</select>
 		</div>
 	</div>
 
