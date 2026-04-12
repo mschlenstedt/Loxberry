@@ -132,49 +132,49 @@ div.greenTable {
 	
 	<TMPL_IF PLUGIN>
 		<div style="margin:10px 10px 10px 10px;">
-		<fieldset data-role="controlgroup" data-mini="true">
-		<TMPL_VAR TRANSLATE.LABEL_SELECT_PLUGIN> 
+		<div>
+		<TMPL_VAR TRANSLATE.LABEL_SELECT_PLUGIN>
 		<TMPL_VAR pluginselection>
-		</fieldset>
+		</div>
 		</div>
 	</TMPL_IF>
 	
 	<div style="margin:10px 10px 10px 10px;">
-	<fieldset data-role="controlgroup" data-mini="true">
-	<TMPL_VAR TRANSLATE.LABEL_SELECT_LANGUAGEFILE> 
+	<div>
+	<TMPL_VAR TRANSLATE.LABEL_SELECT_LANGUAGEFILE>
 	<TMPL_VAR languagefileselection>
-	</fieldset>
+	</div>
 	</div>
 
 	<div style="margin:10px 10px 10px 10px;">
-	<fieldset data-role="controlgroup" data-mini="true">
-	<TMPL_VAR TRANSLATE.LABEL_SELECT_SOURCE_LANG> 
+	<div>
+	<TMPL_VAR TRANSLATE.LABEL_SELECT_SOURCE_LANG>
 	<input type="hidden" name="sourcelang" id="sourcelang" value="en">
 	<!--<TMPL_VAR sourcelang>-->
 	<p><b>English</b> (fixed)</p>
-	</fieldset>
+	</div>
 	</div>
 	
 	<div style="margin:10px 10px 10px 10px;">
-	<fieldset data-role="controlgroup" data-mini="true">
+	<div>
 	<TMPL_VAR TRANSLATE.LABEL_SELECT_DESTINATION_LANG> <TMPL_VAR destlang>
-	</fieldset>
+	</div>
 	</div>
 	
 	<div style="margin:10px 10px 10px 10px;">
-	<fieldset data-role="controlgroup" data-mini="true">
+	<div>
 	<TMPL_VAR TRANSLATE.LABEL_LOAD_LANGUAGE>
-	<input type="submit" data-icon="eye" tabindex="3" value="<TMPL_VAR TRANSLATE.BUTTON_LOAD>">
-	</fieldset>
+	<input type="submit" class="lb-btn lb-btn-primary" tabindex="3" value="<TMPL_VAR TRANSLATE.BUTTON_LOAD>">
+	</div>
 	</div>
 	
 	<div style="margin:10px 10px 10px 10px;">
 	
-	<fieldset data-role="controlgroup" data-mini="true">
+	<div>
 	<TMPL_VAR TRANSLATE.LABEL_DOWNLOAD><br>
-	
-	<a href="#" id="downloadfile" class="ui-btn ui-btn-inline"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></a>
-	</fieldset>
+
+	<a href="#" id="downloadfile" class="lb-btn"><TMPL_VAR TRANSLATE.BUTTON_DOWNLOAD></a>
+	</div>
 	</div>
 	
 	</div>

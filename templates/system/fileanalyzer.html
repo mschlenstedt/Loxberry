@@ -58,9 +58,11 @@
 		RAM Disk Deleted open files
 	</div>
 	
-	<div data-role="fieldcontain">
-		<label for="minSize" style="color:darkgray;font-size:80%">Only show files larger than (MB)</label>
-		<input name="minSize" v-model="lsof_minsize" placeholder="Min Size" @update:lsof_minsize="lsof_minsize = $event" data-mini="true" />
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="minSize">Only show files larger than (MB)</label>
+		<div class="lb-form-field">
+			<input class="lb-input" name="minSize" v-model="lsof_minsize" placeholder="Min Size" @update:lsof_minsize="lsof_minsize = $event" />
+		</div>
 	</div>
 	
 	<div v-show="loadingMessage">Loading...</div>
