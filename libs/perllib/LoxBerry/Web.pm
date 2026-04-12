@@ -134,12 +134,10 @@ sub head
 	$headobj->param( HTMLHEAD => $main::htmlhead);
 
 	# Theme support
-	my $theme = $LoxBerry::System::lbtheme // 'classic';
-	$theme = 'classic' unless $theme =~ /^(classic|modern|dark)$/;
+	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
+	$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
 	$headobj->param( THEME_CLASS => "theme-$theme" );
-	$headobj->param( THEME_CLASSIC => ($theme eq 'classic' ? 1 : 0) );
-	$headobj->param( THEME_MODERN => ($theme eq 'modern' ? 1 : 0) );
-	$headobj->param( THEME_DARK => ($theme eq 'dark' ? 1 : 0) );
+	$headobj->param( THEME_FILE => "theme-$theme.css" );
 
 	print "Content-Type: text/html; charset=utf-8\n\n";
 	print $headobj->output();
