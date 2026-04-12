@@ -22,18 +22,17 @@ a.lb-btn:link {
   display: inline-block;
   padding: 0.7em 1em;
   margin: 0.5em 0.625em 0.5em 0;
-  background-color: #e6e6e6;
-  color: #000 !important;
-  border: 1px solid #7e7e7e;
-  border-radius: 0.2125em;
+  background: var(--lb-btn-bg);
+  color: var(--lb-btn-text) !important;
+  border: 1px solid var(--lb-btn-border);
+  border-radius: var(--lb-btn-radius);
   font-size: var(--lb-font-base);
   font-weight: normal;
-  font-family: sans-serif;
+  font-family: var(--lb-font);
   line-height: 1.3;
   cursor: pointer;
   text-decoration: none !important;
   text-align: center;
-  text-shadow: 0 1px 0 #eee;
   white-space: nowrap;
   overflow: hidden;
   -webkit-user-select: none;
@@ -41,22 +40,19 @@ a.lb-btn:link {
   position: relative;
 }
 .lb-btn:hover {
-  background-color: #fff;
-  border-color: #8c8c8c;
-  color: #000 !important;
-  text-shadow: 0 1px 0 #eee;
+  filter: brightness(1.08);
+  color: var(--lb-btn-text) !important;
 }
 .lb-btn:active {
-  background-color: #fff;
+  filter: brightness(1.12);
 }
 .lb-btn-primary {
-  background-color: var(--lb-primary);
-  color: white;
-  border-color: var(--lb-primary-hover);
-  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  background: var(--lb-btn-primary-bg);
+  color: var(--lb-btn-primary-text) !important;
+  border-color: var(--lb-btn-primary-border);
 }
 .lb-btn-primary:hover {
-  background-color: var(--lb-primary-hover);
+  filter: brightness(1.1);
 }
 .lb-btn-danger {
   background-color: var(--lb-danger);
@@ -71,11 +67,11 @@ a.lb-btn:link {
 .lb-textarea {
   width: 100%;
   padding: 10px 14px;
-  border: var(--lb-border);
+  border: 1px solid var(--lb-input-border);
   border-radius: var(--lb-radius);
   font-size: var(--lb-font-base);
-  background: var(--lb-input-bg, #fff);
-  color: var(--lb-gray-900);
+  background: var(--lb-input-bg);
+  color: var(--lb-input-text);
   box-sizing: border-box;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -97,11 +93,12 @@ a.lb-btn:link {
 
 /* === Cards === */
 .lb-card {
-  background: white;
-  border: var(--lb-border);
-  border-radius: 8px;
+  background: var(--lb-card-bg);
+  border: var(--lb-card-border);
+  border-radius: var(--lb-radius);
   padding: var(--lb-space-lg);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: var(--lb-card-shadow);
+  backdrop-filter: var(--lb-backdrop-blur);
 }
 
 /* === Section Title === */
@@ -109,11 +106,11 @@ a.lb-btn:link {
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  border-bottom: 2px solid var(--lb-primary);
+  border-bottom: 2px solid var(--lb-section-border);
   padding-bottom: 10px;
   margin-top: var(--lb-space-lg);
   margin-bottom: var(--lb-space-lg);
-  color: var(--lb-gray-900);
+  color: var(--lb-text);
 }
 
 /* === Form Layout === */
@@ -131,7 +128,7 @@ a.lb-btn:link {
   text-align: right;
   font-weight: 600;
   font-size: var(--lb-font-sm);
-  color: var(--lb-gray-700);
+  color: var(--lb-text-secondary);
   line-height: 1.4;
 }
 .lb-form-field {
@@ -141,7 +138,7 @@ a.lb-btn:link {
 .lb-form-help {
   flex-basis: 100%;
   font-size: 0.8rem;
-  color: var(--lb-gray-500);
+  color: var(--lb-text-muted);
   margin-top: calc(-1 * var(--lb-space-sm));
   line-height: 1.5;
   padding-left: 216px;
@@ -198,8 +195,8 @@ a.lb-btn:link {
   border-radius: 0;
   margin: 0;
   padding: 8px 16px;
-  background: var(--lb-gray-100);
-  color: var(--lb-gray-900);
+  background: var(--lb-btn-bg);
+  color: var(--lb-text);
   font-family: var(--lb-font);
   font-size: var(--lb-font-sm);
   font-weight: 500;
@@ -214,7 +211,7 @@ a.lb-btn:link {
 }
 .lb-btn-group .lb-btn:hover,
 .lb-btn-group label:hover {
-  background: var(--lb-gray-200);
+  filter: brightness(0.95);
 }
 .lb-btn-group .lb-btn.active,
 .lb-btn-group .lb-btn-active,
@@ -245,7 +242,7 @@ a.lb-btn:link {
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--lb-gray-300);
+  background: var(--lb-toggle-bg);
   border-radius: 28px;
   transition: background 0.2s ease;
 }
@@ -278,8 +275,8 @@ a.lb-btn:link {
 }
 .lb-collapsible summary {
   padding: 10px 16px;
-  background: var(--lb-gray-100);
-  color: var(--lb-gray-900);
+  background: var(--lb-btn-bg);
+  color: var(--lb-text);
   font-weight: 500;
   font-family: var(--lb-font);
   cursor: pointer;
@@ -294,7 +291,7 @@ a.lb-btn:link {
 .lb-collapsible summary::after {
   content: "\276F";
   font-size: 0.8em;
-  color: var(--lb-gray-500);
+  color: var(--lb-text-muted);
   transition: transform 0.2s ease;
 }
 .lb-collapsible[open] summary::after {
@@ -326,19 +323,13 @@ a.lb-btn:link {
   margin: 0.5em 0.3em;
 }
 
-/* === Controlgroup responsive (jQuery Mobile) === */
+/* === Button Group responsive === */
 @media (max-width: 768px) {
-  .ui-controlgroup-horizontal .ui-controlgroup-controls {
-    display: flex !important;
-    width: 100% !important;
+  .lb-btn-group {
+    flex-wrap: wrap;
   }
-  .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-radio,
-  .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-checkbox {
-    flex: 0 1 auto !important;
-  }
-  .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn {
-    margin: 0 !important;
-    text-align: center;
-    white-space: nowrap;
+  .lb-btn-group label {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 }
