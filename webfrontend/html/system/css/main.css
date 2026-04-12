@@ -465,8 +465,7 @@ a:link.nolinkstyle
 /* PANEL END */
 }
 
-.ui-slider-track,
-.ui-flipswitch.ui-bar-inherit {
+.ui-slider-track {
 	background-color: #EEEEEE !important;
 	color:black !important;
 	text-shadow: none !important;
@@ -476,8 +475,7 @@ a:link.nolinkstyle
 	z-index:2;
 }
 
-.ui-slider-bg.ui-btn-active,
-.ui-flipswitch-active.ui-bar-inherit {
+.ui-slider-bg.ui-btn-active {
 	background-color: #6dac20 !important;
 	color:white !important;
 }
@@ -528,12 +526,12 @@ ul.lb-systemmenu li.lb-nonhover {
 }
 
 /* Tabellen-Optimierung nur für Content-Tabellen */
-.page_content table:not(.ui-controlgroup-controls):not([data-role="table"]) {
+.page_content table:not([data-role="table"]) {
 	width: 100%;
 }
 
-.page_content table:not(.ui-controlgroup-controls) td,
-.page_content table:not(.ui-controlgroup-controls) th {
+.page_content table td,
+.page_content table th {
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 }
