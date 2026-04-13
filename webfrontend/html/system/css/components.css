@@ -542,6 +542,11 @@ div[data-role="page"] {
   letter-spacing: 1.5px;
   font-weight: 600;
   font-family: var(--lb-font);
+  text-shadow: none !important;
+}
+.lb-sidebar,
+.lb-sidebar * {
+  text-shadow: none !important;
 }
 .lb-sidebar-section:not(:first-child) {
   border-top: 1px solid var(--lb-sidebar-border);
