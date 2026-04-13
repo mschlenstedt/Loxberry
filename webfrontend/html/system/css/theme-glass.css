@@ -49,9 +49,86 @@ body.theme-glass {
 
 /* Glass page background gradient */
 body.theme-glass {
-  background: linear-gradient(135deg, #0f2027 0%, #203a43 40%, #2c5364 100%);
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 40%, #2c5364 100%) !important;
   background-attachment: fixed;
   min-height: 100vh;
+}
+
+/* Override jQuery Mobile page/content backgrounds */
+body.theme-glass .ui-page,
+body.theme-glass .ui-content,
+body.theme-glass .ui-panel,
+body.theme-glass .ui-body-a,
+body.theme-glass .ui-body-c,
+body.theme-glass .ui-overlay-a,
+body.theme-glass .page_content,
+body.theme-glass #page_content {
+  background: transparent !important;
+  color: rgba(255,255,255,.8) !important;
+}
+
+/* Glass header bar */
+body.theme-glass .ui-header .ui-bar-a {
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.06) !important;
+  color: rgba(255,255,255,.8) !important;
+}
+body.theme-glass .ui-header .ui-bar-a h1,
+body.theme-glass .ui-header .ui-bar-a .ui-btn {
+  color: rgba(255,255,255,.8) !important;
+  text-shadow: none !important;
+}
+
+/* Glass navigation tabs */
+body.theme-glass .ui-navbar a {
+  background: rgba(255,255,255,.06) !important;
+  color: rgba(255,255,255,.5) !important;
+  border-color: rgba(255,255,255,.07) !important;
+  text-shadow: none !important;
+}
+body.theme-glass .ui-navbar .ui-btn-active {
+  background: var(--lb-primary) !important;
+  color: white !important;
+}
+
+/* Glass section titles */
+body.theme-glass .lb-section-title {
+  color: rgba(255,255,255,.8) !important;
+}
+
+/* Glass form labels and help text */
+body.theme-glass .lb-form-label {
+  color: rgba(255,255,255,.5) !important;
+}
+body.theme-glass .lb-form-help,
+body.theme-glass .hint {
+  color: rgba(255,255,255,.3) !important;
+}
+
+/* Glass links */
+body.theme-glass a {
+  color: #6dac20;
+}
+
+/* Glass jQuery Mobile inputs */
+body.theme-glass .ui-input-text {
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.1) !important;
+}
+body.theme-glass .ui-input-text input {
+  color: rgba(255,255,255,.8) !important;
+}
+
+/* Glass checkbox/flipswitch labels */
+body.theme-glass label {
+  color: rgba(255,255,255,.7);
+}
+
+/* Glass footer */
+body.theme-glass .ui-footer,
+body.theme-glass #footerright,
+body.theme-glass #footerleft {
+  color: rgba(255,255,255,.3) !important;
 }
 
 /* Glass backdrop on cards */
