@@ -12,8 +12,8 @@ th, td {
 <div class="lb-section-title"><TMPL_VAR MYLOXBERRY.LABEL_HEALTHCHECK></div>
 <div>&nbsp;</div>
 <div>
-	<button class="ui-btn ui-btn-inline" disabled="disabled" id="runallchecks" onclick="runAllChecks();" ><TMPL_VAR MYLOXBERRY.BUTTON_RUNALLCHECKS></button>
-	<button class="ui-btn ui-btn-inline" disabled="disabled" id="downloadall" onclick="downloadAll();"><TMPL_VAR COMMON.BUTTON_DOWNLOAD></button>
+	<button class="lb-btn lb-btn-primary lb-btn-sm" disabled="disabled" id="runallchecks" onclick="runAllChecks();" data-role="none"><TMPL_VAR MYLOXBERRY.BUTTON_RUNALLCHECKS></button>
+	<button class="lb-btn lb-btn-sm lb-btn-icon" disabled="disabled" id="downloadall" onclick="downloadAll();" data-role="none"><i class="pi pi-download"></i> <TMPL_VAR COMMON.BUTTON_DOWNLOAD></button>
 </div>
 <div id="loading" style="display:none;"></div>
 <table id="resulttable" style="width:100%;">
