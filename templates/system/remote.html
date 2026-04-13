@@ -14,8 +14,8 @@
 	<form id="configform">
 
 	<div style="text-align: center">
-		<a href="#" id="btn_connect" style="width: 20%; background-color: rgba(67, 236, 48, 0.4)" onclick="connect(); return false;" class="ui-btn ui-icon-check ui-btn-icon-left ui-btn-inline ui-corner-all ui-disabled"><TMPL_VAR REMOTE.BUTTON_CONNECT></a>
-		<a href="#" id="btn_disconnect" style="width: 20%; background-color: rgba(255, 128, 128, 0.4)" onclick="disconnect(); return false;" class="ui-btn ui-icon-delete ui-btn-icon-left ui-btn-inline ui-corner-all ui-disabled"><TMPL_VAR REMOTE.BUTTON_DISCONNECT></a>
+		<a href="#" id="btn_connect" style="width: 20%; background-color: rgba(67, 236, 48, 0.4)" onclick="connect(); return false;" class="lb-btn lb-btn-icon ui-disabled"><i class="pi pi-check"></i> <TMPL_VAR REMOTE.BUTTON_CONNECT></a>
+		<a href="#" id="btn_disconnect" style="width: 20%; background-color: rgba(255, 128, 128, 0.4)" onclick="disconnect(); return false;" class="lb-btn lb-btn-icon ui-disabled"><i class="pi pi-times"></i> <TMPL_VAR REMOTE.BUTTON_DISCONNECT></a>
 	</div>
 
 	<div style="text-align: center">
@@ -71,8 +71,8 @@
 	<br><br><br>
 
 	<div style="text-align: center">
-		<a href="/admin/system/index.cgi?form=system" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all"><TMPL_VAR "COMMON.BUTTON_CANCEL"></a>
-		<a href="#" onclick="saveForm(); return false;" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-check ui-corner-all"><TMPL_VAR "COMMON.BUTTON_SAVE"></a>
+		<a href="/admin/system/index.cgi?form=system" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-times"></i> <TMPL_VAR "COMMON.BUTTON_CANCEL"></a>
+		<a href="#" onclick="saveForm(); return false;" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR "COMMON.BUTTON_SAVE"></a>
 	</div>
 
 	<br>

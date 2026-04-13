@@ -4,7 +4,7 @@
 <div id="securepin_block" style="margin: 0 auto; width:350px; display:none">
 	<TMPL_VAR SECUREPIN.ENTER_SECUREPIN>
 	<input name="securepin" id="securepin" type="text" onkeypress="return AddKeyPress(event, $('#check_securepin'));">
-	<button class="ui-btn ui-btn-icon-right ui-corner-all" id="check_securepin" data-inline="true"><TMPL_VAR COMMON.BUTTON_OK></button>
+	<button class="lb-btn lb-btn-primary lb-btn-sm" id="check_securepin" data-role="none"><TMPL_VAR COMMON.BUTTON_OK></button>
 	
 	<div class="hint" id="check_hint" style="padding: 5px 5px 5px 5px;">&nbsp;</div>
 	<br>
@@ -180,7 +180,7 @@
 
 <!-- Testmail overlay -->
 <div data-role="popup" id="testmailoverlay" style="min-width:500px;max-width:80%;min-height:600px;" class="ui-content" data-transition="fade">
-    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left">Close</a>
+    <a href="#" data-rel="back" class="lb-btn lb-btn-sm" style="position:absolute;right:8px;top:8px;">Close</a>
 	<div data-role="header">
     	<h1><TMPL_VAR MAILSERVER.CAPTION_TESTMAIL_DIALOG></h1>
     </div>
