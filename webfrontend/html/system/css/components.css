@@ -449,12 +449,17 @@ label.lb-toggle.ui-btn::after {
 }
 
 /* === Page Layout === */
+/* Override jQuery Mobile page styling to allow sidebar layout */
+div[data-role="page"] {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
 .lb-layout {
-  display: grid;
-  grid-template-columns: 250px 1fr;
   min-height: 100vh;
 }
 .lb-main {
+  margin-left: 250px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -736,8 +741,8 @@ label.lb-toggle.ui-btn::after {
 
 /* === Layout Responsive === */
 @media (max-width: 768px) {
-  .lb-layout {
-    grid-template-columns: 1fr;
+  .lb-main {
+    margin-left: 0;
   }
   .lb-sidebar {
     transform: translateX(-250px);
