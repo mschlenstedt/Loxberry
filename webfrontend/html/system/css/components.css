@@ -556,6 +556,7 @@ a.lb-sidebar-link {
   gap: 10px;
   padding: 8px 18px 8px 21px;
   font-size: 12px;
+  font-weight: 400;
   color: var(--lb-sidebar-text) !important;
   text-decoration: none !important;
   font-family: var(--lb-font);

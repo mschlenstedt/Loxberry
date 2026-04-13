@@ -54,6 +54,27 @@ body.theme-glass {
   min-height: 100vh;
 }
 
+/* Glass sidebar: fully transparent, no borders */
+body.theme-glass .lb-sidebar {
+  background: transparent !important;
+  border-right: 1px solid rgba(255,255,255,.06);
+}
+body.theme-glass .lb-sidebar-nav {
+  background: transparent !important;
+}
+body.theme-glass .lb-sidebar-header {
+  background: transparent !important;
+  border-bottom-color: rgba(255,255,255,.06) !important;
+}
+body.theme-glass .lb-sidebar-footer {
+  background: transparent !important;
+  border-top-color: rgba(255,255,255,.06) !important;
+}
+body.theme-glass,
+body.theme-glass * {
+  text-shadow: none !important;
+}
+
 /* Override jQuery Mobile page/content backgrounds */
 body.theme-glass .ui-page,
 body.theme-glass .ui-content,
