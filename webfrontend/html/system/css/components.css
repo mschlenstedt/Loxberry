@@ -638,15 +638,15 @@ a.lb-sidebar-link.active {
   gap: 8px;
 }
 .lb-header-btn {
-  width: 34px;
-  height: 34px;
-  background: var(--lb-gray-100);
+  width: 36px;
+  height: 36px;
+  background: var(--lb-primary);
   border-radius: 8px;
   display: flex !important;
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  color: var(--lb-text-muted) !important;
+  color: white !important;
   text-decoration: none !important;
   transition: all 0.15s ease;
   border: none;
@@ -654,11 +654,11 @@ a.lb-sidebar-link.active {
   margin: 0 !important;
   line-height: 1 !important;
   box-sizing: border-box;
+  opacity: 0.85;
 }
 .lb-header-btn:hover {
-  background: var(--lb-primary);
-  color: white !important;
-  transform: scale(1.05);
+  opacity: 1;
+  transform: scale(1.08);
 }
 .lb-header-btn.headerbutton_red {
   background: var(--lb-danger);
@@ -669,16 +669,10 @@ a.lb-sidebar-link.active {
   color: white !important;
 }
 .lb-sidebar-toggle {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: var(--lb-text-muted);
-  cursor: pointer;
+  display: none !important;
+}
+.lb-sidebar-toggle:hover {
+  opacity: 1;
 }
 
 /* === Help Panel === */
@@ -765,7 +759,10 @@ a.lb-sidebar-link.active {
     display: block;
   }
   .lb-sidebar-toggle {
-    display: flex;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
   .lb-header {
     padding: 10px 12px;
