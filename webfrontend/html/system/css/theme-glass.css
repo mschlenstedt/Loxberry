@@ -64,11 +64,14 @@ body.theme-glass .lb-sidebar-nav {
 }
 body.theme-glass .lb-sidebar-header {
   background: transparent !important;
-  border-bottom-color: rgba(255,255,255,.06) !important;
+  border-bottom: none !important;
 }
 body.theme-glass .lb-sidebar-footer {
   background: transparent !important;
-  border-top-color: rgba(255,255,255,.06) !important;
+  border-top-color: rgba(255,255,255,.03) !important;
+}
+body.theme-glass .lb-sidebar-section:not(:first-child) {
+  border-top-color: rgba(255,255,255,.03) !important;
 }
 body.theme-glass,
 body.theme-glass * {
