@@ -328,6 +328,23 @@ a.lb-btn-primary:hover {
   width: 0;
   height: 0;
 }
+/* Reset jQuery Mobile styling on lb-toggle label */
+label.lb-toggle.ui-btn {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  width: 52px !important;
+  height: 28px !important;
+  min-height: 0 !important;
+  line-height: normal !important;
+}
+label.lb-toggle.ui-btn::before,
+label.lb-toggle.ui-btn::after {
+  display: none !important;
+}
 .lb-toggle-slider {
   position: absolute;
   cursor: pointer;

@@ -45,6 +45,16 @@
 		$.mobile.degradeInputs.number = true;
 		$.mobile.degradeInputs.range = false; // keep sliders
 
+		// Safe-guard: prevent errors when calling jQM widget methods on migrated elements
+		$.each(['checkboxradio', 'flipswitch', 'selectmenu'], function(i, widget) {
+			var _orig = $.fn[widget];
+			if (_orig) {
+				$.fn[widget] = function() {
+					try { return _orig.apply(this, arguments); } catch(e) { return this; }
+				};
+			}
+		});
+
 		// Sync lb-checked class on lb-btn-group labels
 		function syncLbBtnGroup($group) {
 			$group.find("label").removeClass("lb-checked");

@@ -141,7 +141,7 @@
 			})
 			.done(function( data ) {
 				console.log( "getconfig Success", data );
-				$("#autoconnect").prop( "checked", JSON.parse(data.Remote.Autoconnect) ).flipswitch('refresh');
+				$("#autoconnect").prop( "checked", JSON.parse(data.Remote.Autoconnect) ).trigger("change");
 				//$("#configform").removeClass('ui-disabled');
 			});
 		}
