@@ -358,6 +358,19 @@ sub pagestart
 	} 
 
 				
+	# Sidebar: add installed plugins list
+	my @plugins = LoxBerry::System::get_plugins();
+	my @sidebar_plugins;
+	foreach my $plugin (@plugins) {
+		push @sidebar_plugins, {
+			PLUGIN_TITLE => $plugin->{PLUGINDB_TITLE},
+			PLUGIN_URL => "/admin/plugins/" . $plugin->{PLUGINDB_FOLDER} . "/index.cgi",
+			PLUGIN_FOLDER => $plugin->{PLUGINDB_FOLDER},
+		};
+	}
+	$headerobj->param( SIDEBAR_PLUGINS => \@sidebar_plugins ) if @sidebar_plugins;
+	$headerobj->param( LBVERSION => $LoxBerry::System::lbversion );
+
 	print $headerobj->output();
 	undef $headerobj;
 }

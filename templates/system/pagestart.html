@@ -11,6 +11,14 @@
 			</div>
 		</div>
 		<nav class="lb-sidebar-nav">
+			<!-- Plugin links -->
+			<TMPL_IF SIDEBAR_PLUGINS>
+			<div class="lb-sidebar-section">Meine Plugins</div>
+			<TMPL_LOOP SIDEBAR_PLUGINS>
+			<a class="lb-sidebar-link" href="<TMPL_VAR PLUGIN_URL>"><span class="lb-sidebar-name"><TMPL_VAR PLUGIN_TITLE></span><div class="lb-sidebar-status"></div></a>
+			</TMPL_LOOP>
+			</TMPL_IF>
+			<!-- System links -->
 			<div class="lb-sidebar-section"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
 			<a class="lb-sidebar-link" href="/admin/system/index.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_HOME></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/myloxberry.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MYLOXBERRY></span></a>
