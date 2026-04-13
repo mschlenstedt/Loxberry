@@ -57,7 +57,7 @@ body.theme-glass {
 /* Glass sidebar: fully transparent, no borders */
 body.theme-glass .lb-sidebar {
   background: transparent !important;
-  border-right: 1px solid rgba(255,255,255,.06);
+  border-right: none !important;
 }
 body.theme-glass .lb-sidebar-nav {
   background: transparent !important;
@@ -70,8 +70,9 @@ body.theme-glass .lb-sidebar-footer {
   background: transparent !important;
   border-top-color: rgba(255,255,255,.03) !important;
 }
-body.theme-glass .lb-sidebar-section:not(:first-child) {
-  border-top-color: rgba(255,255,255,.03) !important;
+body.theme-glass .lb-sidebar-section {
+  border-top: none !important;
+  margin-top: 0 !important;
 }
 body.theme-glass,
 body.theme-glass * {
@@ -86,12 +87,19 @@ body.theme-glass .ui-body-a,
 body.theme-glass .ui-body-c,
 body.theme-glass .ui-overlay-a,
 body.theme-glass .page_content,
-body.theme-glass #page_content {
+body.theme-glass #page_content,
+body.theme-glass .lb-main,
+body.theme-glass .lb-layout,
+body.theme-glass .lb-content {
   background: transparent !important;
   color: rgba(255,255,255,.8) !important;
 }
 
 /* Glass header bar */
+body.theme-glass .lb-header {
+  background: transparent !important;
+  border-bottom: none !important;
+}
 body.theme-glass .ui-header .ui-bar-a {
   background: rgba(255,255,255,.06) !important;
   border-color: rgba(255,255,255,.06) !important;
