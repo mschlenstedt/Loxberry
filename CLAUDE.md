@@ -2,12 +2,12 @@
 
 ## Was ist LoxBerry?
 
-Smart-Home-Plattform für Loxone Miniservers, läuft auf Raspberry Pi (Debian). Plugin-basiert, Core in Perl/PHP, WebUI mit jQuery Mobile + HTML::Template. Fork von `mschlenstedt/Loxberry`.
+Smart-Home-Plattform für Loxone Miniservers, läuft auf Raspberry Pi (Debian). Plugin-basiert, Core in Perl/PHP, WebUI mit HTML::Template + lb-* Design-System. jQuery Mobile wurde für Core-Seiten entfernt (bleibt für Plugins). Fork von `mschlenstedt/Loxberry`.
 
 ## Aktive Branches
 
 - `master` — Upstream-Sync mit mschlenstedt/Loxberry
-- `feature/theme-refresh-dragdrop` — Hauptarbeitsbranch: CSS Design-System, MQTT Gateway V2, Python-Daemon
+- `feature/theme-refresh-dragdrop` — Hauptarbeitsbranch: CSS Design-System, Mobile Tab Bar, jQM-Removal, MQTT Gateway V2, Python-Daemon
 
 ## Projektstruktur
 
@@ -35,10 +35,11 @@ docs/                    # Design-Mockups, Specs, Pläne (gitignored, muss mit -
 - **Encoding:** UTF-8 überall, bei Deploy auf LoxBerry CRLF → LF konvertieren
 
 ### CSS / Design-System
-- Neue Klassen: `lb-*` Präfix (lb-btn, lb-section-title, lb-form-row)
+- Neue Klassen: `lb-*` Präfix (lb-btn, lb-section-title, lb-form-row, lb-table, lb-disabled, lb-tab-bar)
 - Themes nur über CSS Custom Properties (`var(--lb-*)` aus design-tokens.css)
-- Themes dürfen NIE jQuery Mobile Struktur überschreiben (kein border-radius, padding, margins auf .ui-btn)
-- jQuery Mobile Komponenten (Controlgroups, Flipswitches, Collapsibles) nicht anfassen
+- jQuery Mobile JS+Structure CSS wird für Core-Seiten NICHT geladen (nur loxberry.css Theme-CSS bleibt)
+- jQuery Mobile bleibt für Plugin-Seiten vollständig aktiv (IS_CORE_PAGE Steuerung in Web.pm/head.html)
+- jQM-Overrides in components.css Sektion 1 bleiben für Plugin-Kompatibilität
 - Icons: PrimeIcons (`pi pi-*`)
 
 ### Python (sbin/mqttgateway/)
@@ -94,8 +95,8 @@ docs/                    # Design-Mockups, Specs, Pläne (gitignored, muss mit -
 ## Deploy auf LoxBerry
 
 Produktive LoxBerry unter `L:` (Netzlaufwerk, 192.168.30.10). Nach Änderungen:
-1. Dateien nach `L:/<pfad>` kopieren
-2. Bei .cgi-Dateien: CRLF → LF konvertieren (`sed -i 's/\r$//' <datei>`)
+1. Dateien nach `L:/<pfad>` kopieren (KEIN /opt/loxberry/ Prefix — Dateien liegen direkt auf L:)
+2. Bei .html-Dateien: CRLF → LF konvertieren (`sed -i 's/\r$//' <datei>`)
 3. Browser: Ctrl+Shift+R (Hard-Refresh)
 
 ## Core-Team
@@ -108,8 +109,9 @@ Produktive LoxBerry unter `L:` (Netzlaufwerk, 192.168.30.10). Nach Änderungen:
 
 ## Wichtige Regeln
 
-1. **Plugin-Kompatibilität ist heilig** — keine Breaking Changes am Plugin-SDK
-2. **jQuery Mobile nicht anfassen** — lb-* Klassen ersetzen schrittweise, aber bestehende jQM-Widgets bleiben
+1. **Plugin-Kompatibilität ist heilig** — keine Breaking Changes am Plugin-SDK, Plugins bekommen weiterhin jQuery + jQuery Mobile
+2. **Core-Seiten sind jQM-frei** — neue Features nutzen lb-* Klassen, kein data-role/ui-* mehr
 3. **Raspberry Pi Limits** — 1 GB RAM, kein Build-Tooling auf dem Gerät
 4. **Strangler Fig** — Neues wächst neben dem Alten, kein Big Bang
 5. **Ein PR = ein Thema** — reviewbar in unter 30 Minuten
+6. **Mobile Tab Bar** — 5 Tabs (Home, Plugins-Popup, Updates, Einstellungen-Popup, Mehr-Popup) ersetzen Hamburger-Menü auf Mobile (<768px)
