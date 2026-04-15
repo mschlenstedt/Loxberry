@@ -50,6 +50,30 @@
 	<!-- Sidebar Backdrop (mobile) -->
 	<div class="lb-sidebar-backdrop" id="lb-sidebar-backdrop" onclick="toggleSidebar()"></div>
 
+	<!-- Mobile Tab Bar -->
+	<nav class="lb-tab-bar" id="lb-tab-bar" role="navigation" aria-label="Mobile Navigation">
+		<a href="/admin/system/index.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/index.cgi">
+			<i class="pi pi-home"></i>
+			<span>Home</span>
+		</a>
+		<a href="/admin/system/plugininstall.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/plugininstall.cgi">
+			<i class="pi pi-th-large"></i>
+			<span>Plugins</span>
+		</a>
+		<a href="/admin/system/mqtt.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/mqtt.cgi">
+			<i class="pi pi-arrows-h"></i>
+			<span>MQTT</span>
+		</a>
+		<a href="/admin/system/logmanager.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/logmanager.cgi">
+			<i class="pi pi-list"></i>
+			<span>Logs</span>
+		</a>
+		<button class="lb-tab-bar-item" onclick="toggleSidebar()" aria-label="Mehr anzeigen">
+			<i class="pi pi-ellipsis-h"></i>
+			<span>Mehr</span>
+		</button>
+	</nav>
+
 	<!-- Help Panel -->
 	<aside class="lb-helppanel" id="helppanel">
 		<div class="lb-helppanel-header">
@@ -120,6 +144,13 @@
 			links.forEach(function(link) {
 				if (link.getAttribute('href') === currentPath) {
 					link.classList.add('active');
+				}
+			});
+			// Highlight current tab in mobile tab bar
+			var tabItems = document.querySelectorAll('.lb-tab-bar-item[data-tab-path]');
+			tabItems.forEach(function(tab) {
+				if (tab.getAttribute('data-tab-path') === currentPath) {
+					tab.classList.add('active');
 				}
 			});
 		})();
