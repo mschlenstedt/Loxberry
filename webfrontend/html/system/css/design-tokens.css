@@ -81,6 +81,11 @@
   --lb-radius-sm: 2px;
   --lb-border: 1px solid var(--lb-border-color);
 
+  /* === Tab Bar (mobile) === */
+  --lb-tab-bar-bg: var(--lb-sidebar-bg);
+  --lb-tab-bar-text: var(--lb-sidebar-text);
+  --lb-tab-bar-active: var(--lb-sidebar-active-text);
+
   /* === Glass extras (only used by glass theme) === */
   --lb-backdrop-blur: none;
   --lb-glow-primary: none;
