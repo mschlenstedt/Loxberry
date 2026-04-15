@@ -106,7 +106,7 @@
 			<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="btnrecheck"><i class="pi pi-refresh"></i> <TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
 		</div>
 	</div>
-	<table data-role="table" data-mode="table" class="ui-responsive" data-enhance="false">
+	<table class="lb-table">
 		<tbody>
 
 		<!-- START Plugin container -->
@@ -218,7 +218,7 @@
 			
 			<script>
 			$(document).ready( function() {
-				$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>').selectmenu('refresh');
+				$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>');
 			});
 			
 			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
