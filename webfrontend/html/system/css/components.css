@@ -116,7 +116,59 @@ label.lb-toggle.ui-btn::after {
 
 
 /* ============================================================
-   2. Base Components
+   2. Base Input/Select Defaults (for pages without lb-input)
+   ============================================================ */
+
+/* Style bare inputs on core pages where jQM structure CSS is gone */
+.lb-content input[type="text"],
+.lb-content input[type="password"],
+.lb-content input[type="email"],
+.lb-content input[type="url"],
+.lb-content input[type="number"],
+.lb-content input[type="tel"],
+.lb-content input[type="search"],
+.lb-content textarea {
+	padding: 8px 12px;
+	border: 1px solid var(--lb-input-border);
+	border-radius: var(--lb-radius);
+	font-size: var(--lb-font-base);
+	font-family: var(--lb-font);
+	background: var(--lb-input-bg);
+	color: var(--lb-input-text);
+	box-sizing: border-box;
+}
+.lb-content input[type="text"]:focus,
+.lb-content input[type="password"]:focus,
+.lb-content input[type="email"]:focus,
+.lb-content input[type="url"]:focus,
+.lb-content input[type="number"]:focus,
+.lb-content input[type="tel"]:focus,
+.lb-content input[type="search"]:focus,
+.lb-content textarea:focus {
+	border-color: var(--lb-primary);
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+.lb-content select {
+	padding: 8px 12px;
+	border: 1px solid var(--lb-input-border);
+	border-radius: var(--lb-radius);
+	font-size: var(--lb-font-base);
+	font-family: var(--lb-font);
+	background: var(--lb-input-bg);
+	color: var(--lb-input-text);
+	box-sizing: border-box;
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	padding-right: 36px;
+}
+
+
+/* ============================================================
+   3. Base Components
    ============================================================ */
 
 /* --- Global Font Reset --- */
@@ -998,9 +1050,6 @@ a.lb-sidebar-link.active:visited {
 	font-weight: 600;
 	color: var(--lb-text-secondary);
 	background: var(--lb-btn-bg);
-}
-.lb-table tbody tr:hover {
-	background: var(--lb-sidebar-active-bg);
 }
 
 @media (max-width: 768px) {

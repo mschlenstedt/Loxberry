@@ -107,12 +107,17 @@
 					if (id) {
 						$label = $group.find("label[for='" + id + "']");
 					}
-					// Fallback: find next sibling label or parent's label
+					// Fallback: find next sibling label
 					if (!$label || !$label.length) {
 						$label = $(this).next("label");
 					}
+					// Fallback: jQM wrappers (plugin pages)
 					if (!$label || !$label.length) {
 						$label = $(this).closest(".ui-radio, .ui-checkbox").find("label");
+					}
+					// Fallback: input is inside label (CGI.pm radio_group pattern)
+					if (!$label || !$label.length) {
+						$label = $(this).closest("label");
 					}
 					if ($label && $label.length) {
 						$label.addClass("lb-checked");
@@ -136,6 +141,8 @@
 		</TMPL_UNLESS>
 		$(document).ready(function() {
 			setTimeout(syncAllBtnGroups, 200);
+			setTimeout(syncAllBtnGroups, 800);
+			setTimeout(syncAllBtnGroups, 1500);
 		});
 	</script>
 	<script src="/system/scripts/browser.js"></script>

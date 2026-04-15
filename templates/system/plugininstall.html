@@ -165,7 +165,7 @@
 					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_PRE_AND_RELEASES></label>
 				</div>
 				<script>
-				$(document).on('pagecreate',function() {
+				$(document).ready(function() {
 					$( "#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option"+<TMPL_VAR PLUGINDB_AUTOUPDATE> ).prop( "checked", true ).trigger("change");
 				});
 				
