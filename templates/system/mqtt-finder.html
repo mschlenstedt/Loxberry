@@ -34,8 +34,8 @@
 
 
 <div>
-	<input type="search" name="filter_search" id="filter_search" value="" data-mini="true" data-clear-btn="true">
-	<input type="checkbox" name="checkboxSubscription" id="checkboxSubscription" data-mini="true">
+	<input type="search" name="filter_search" id="filter_search" value="">
+	<input type="checkbox" name="checkboxSubscription" id="checkboxSubscription">
 	<label for="checkboxSubscription">Use Subscription syntax for filter</label>
 </div>
 <div><p><small>Hint: Use LoxBerry MQTT's <a href="mqtt-quickpublisher.cgi" target="_blank">Quick Publisher</a> to test publishes to the MQTT Server.</small></p></div>
@@ -65,7 +65,7 @@ $(function() {
 		$("#filter_search").val( filterSearchString ); 
 	}
 	if( searchParams.has('e') ) {
-		$("#checkboxSubscription").prop('checked', true).checkboxradio("refresh");
+		$("#checkboxSubscription").prop('checked', true);
 	}
 	
 	setTimer();
@@ -86,14 +86,12 @@ $(function() {
 		if( $(event.target).val() == "" ) {
 			// $('#filter_search').css({'backgroundColor':'white'});
 			$('#filter_search').removeClass('filter-highlight');
-			$('#filter_search').attr("data-clear-btn", false);
-			window.clearTimeout(filterSearchDelay); 
+			window.clearTimeout(filterSearchDelay);
 			filterSearchString = $(event.target).val();
 			updateTables();
 		} else {
 			// $('#filter_search').css({'backgroundColor':'#FFFF99'});
 			$('#filter_search').addClass('filter-highlight');
-			$('#filter_search').attr("data-clear-btn", true);
 		}
 
 	});
@@ -240,14 +238,14 @@ function updateTables() {
 			}
 			else if( msg_too_long && expandTopicList[topic] !== true ) {
 				html += `<div class="topic_payload">${msg}`;
-				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">...</a>`;
+				html += `<a href="#" class="lb-btn lb-btn-sm topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">...</a>`;
 				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
 				html += `</div>`;
 				
 			}
 			else if ( msg_too_long ) {
 				html += `<div class="topic_payload">${msg_full}`;
-				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">^</a>`;
+				html += `<a href="#" class="lb-btn lb-btn-sm topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">^</a>`;
 				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
 				html += `</div>`;
 				
