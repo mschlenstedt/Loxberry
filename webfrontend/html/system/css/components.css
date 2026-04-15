@@ -603,9 +603,6 @@ a.lb-sidebar-link.active:visited {
 	background: rgba(0,0,0,.5);
 	z-index: 999;
 }
-button.lb-sidebar-toggle.lb-header-btn {
-	display: none !important;
-}
 .lb-sidebar-toggle:hover {
 	opacity: 1;
 }
@@ -798,16 +795,71 @@ button.lb-sidebar-toggle.lb-header-btn {
 	.lb-sidebar-backdrop.open {
 		display: block;
 	}
-	.lb-sidebar-toggle {
-		display: flex !important;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
+	button.lb-sidebar-toggle.lb-header-btn {
+		display: none !important;
 	}
 	.lb-header {
 		padding: 10px 12px;
 	}
 	.lb-content {
 		padding: 12px;
+		padding-bottom: 72px;
+	}
+}
+
+
+/* ============================================================
+   7. Tab Bar (Mobile)
+   ============================================================ */
+
+.lb-tab-bar {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	.lb-tab-bar {
+		display: flex;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 1100;
+		justify-content: space-around;
+		align-items: center;
+		padding: 6px 0;
+		padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+		background: var(--lb-tab-bar-bg);
+		border-top: 1px solid var(--lb-border-color);
+	}
+
+	.lb-tab-bar-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		text-decoration: none;
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 4px 0;
+		min-width: 56px;
+		font-family: var(--lb-font);
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.lb-tab-bar-item i {
+		font-size: 22px;
+		color: var(--lb-tab-bar-text);
+	}
+
+	.lb-tab-bar-item span {
+		font-size: 10px;
+		font-weight: 500;
+		color: var(--lb-tab-bar-text);
+	}
+
+	.lb-tab-bar-item.active i,
+	.lb-tab-bar-item.active span {
+		color: var(--lb-tab-bar-active);
 	}
 }
