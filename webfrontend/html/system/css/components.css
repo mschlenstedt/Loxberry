@@ -966,3 +966,66 @@ a.lb-sidebar-link.active:visited {
 		opacity: 0.5;
 	}
 }
+
+
+/* ============================================================
+   9. Utility Classes
+   ============================================================ */
+
+.lb-disabled {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+
+/* ============================================================
+   10. Tables
+   ============================================================ */
+
+.lb-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-family: var(--lb-font);
+	font-size: var(--lb-font-sm);
+}
+.lb-table th,
+.lb-table td {
+	padding: 8px 12px;
+	text-align: left;
+	border-bottom: 1px solid var(--lb-border-color);
+}
+.lb-table thead th {
+	font-weight: 600;
+	color: var(--lb-text-secondary);
+	background: var(--lb-btn-bg);
+}
+.lb-table tbody tr:hover {
+	background: var(--lb-sidebar-active-bg);
+}
+
+@media (max-width: 768px) {
+	.lb-table-responsive thead {
+		display: none;
+	}
+	.lb-table-responsive tr {
+		display: block;
+		margin-bottom: var(--lb-space-sm);
+		border: 1px solid var(--lb-border-color);
+		border-radius: var(--lb-radius);
+	}
+	.lb-table-responsive td {
+		display: flex;
+		justify-content: space-between;
+		padding: 6px 12px;
+		border-bottom: 1px solid var(--lb-border-color);
+	}
+	.lb-table-responsive td:last-child {
+		border-bottom: none;
+	}
+	.lb-table-responsive td::before {
+		content: attr(data-label);
+		font-weight: 600;
+		color: var(--lb-text-secondary);
+		margin-right: var(--lb-space-md);
+	}
+}
