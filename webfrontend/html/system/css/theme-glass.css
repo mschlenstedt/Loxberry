@@ -182,3 +182,11 @@ body.theme-glass .lb-card {
 body.theme-glass .lb-status-ok { box-shadow: var(--lb-glow-primary); }
 body.theme-glass .lb-status-error { box-shadow: var(--lb-glow-danger); }
 body.theme-glass .lb-status-warning { box-shadow: var(--lb-glow-warning); }
+
+/* Glass mobile tab bar */
+body.theme-glass .lb-tab-bar {
+	--lb-tab-bar-bg: rgba(30, 30, 30, 0.72);
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	border-top: 0.5px solid rgba(255, 255, 255, 0.12);
+}
