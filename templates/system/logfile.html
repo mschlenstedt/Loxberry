@@ -1,12 +1,12 @@
 <!-- ** START template/system/logfile.html 13:16 20.12.2017 ************************************************************************** -->
 <!-- ** START template/system/logfile.html 13:16 20.12.2017 ************************************************************************** -->
 <div data-role="page" id="main">
-	<div data-role="header" id="warning">
+	<div id="warning">
 		<h1><TMPL_VAR LOGVIEWER.WIDGETLABEL> - <span style="font-family:monospace;">/<TMPL_VAR LOGFILE></span></h1>
 	</div>
   <!-- content -->
-	<div id="log_content" data-role="content" role="main" class="ui-content">
-		<div id="log_sub_content" class="ui-body ui-body-a ui-corner-all loxberry-logo">
+	<div id="log_content" class="lb-content">
+		<div id="log_sub_content" class="lb-card loxberry-logo">
 		<!-- text -->
 			<div style="margin: 1%">
 				<TMPL_IF NOLOGPARAMETER>
@@ -38,7 +38,7 @@
 								<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnnext" href="javascript:window.close()"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_CLOSE></a>
 							</td>
 							<td style="width:25%;">
-								<label style="display:block; text-align:center;"><input data-mini="true" type="checkbox" checked id="LogScroll"><TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
+								<label style="display:block; text-align:center;"><input type="checkbox" checked id="LogScroll"><TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
 							</td>
 							<td style="width:25%;">
 							<a class="lb-btn lb-btn-sm lb-btn-icon" style="display:block; text-align:center;" id="btndown" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=file&format=plain" target="_blank" download="<TMPL_VAR LOGFILE_NAME>"><i class="pi pi-arrow-down"></i> <TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
@@ -127,7 +127,7 @@ if ($.urlParam('only') === 'once') {
 
 $("#Logfile").click(function() {
 		clearInterval(interval);
-		$("input[type='checkbox']").attr("checked",false).checkboxradio("refresh");
+		$("input[type='checkbox']").attr("checked",false);
 });
 
 $("#LogScroll").click(function() {
