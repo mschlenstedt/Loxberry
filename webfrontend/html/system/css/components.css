@@ -1029,6 +1029,25 @@ a.lb-sidebar-link.active:visited {
 	pointer-events: none;
 }
 
+/* --- Note/Info boxes (e.g. changelog on Updates page) --- */
+.note {
+	background: var(--lb-card-bg);
+	border: 1px solid var(--lb-border-color);
+	border-radius: var(--lb-radius);
+	padding: var(--lb-space-md);
+	color: var(--lb-text);
+}
+
+/* --- Form validator error messages — override yellow background --- */
+.lb-content .form-error,
+.lb-content .form-error-message {
+	color: var(--lb-danger) !important;
+	background: none !important;
+	border: none !important;
+	font-size: var(--lb-font-sm);
+	line-height: 1.5;
+}
+
 
 /* ============================================================
    10. Tables
