@@ -50,25 +50,126 @@
 	<!-- Sidebar Backdrop (mobile) -->
 	<div class="lb-sidebar-backdrop" id="lb-sidebar-backdrop" onclick="toggleSidebar()"></div>
 
+	<!-- Mobile Tab Bar Popups -->
+	<div class="lb-tab-popup-backdrop" id="lb-tab-popup-backdrop" onclick="closeTabPopup()"></div>
+
+	<div class="lb-tab-popup" id="lb-tab-popup-plugins">
+		<div class="lb-tab-popup-header">Meine Plugins</div>
+		<div class="lb-tab-popup-list">
+			<TMPL_IF SIDEBAR_PLUGINS>
+			<TMPL_LOOP SIDEBAR_PLUGINS>
+			<a href="<TMPL_VAR PLUGIN_URL>" class="lb-tab-popup-item">
+				<i class="pi pi-box"></i>
+				<span><TMPL_VAR PLUGIN_TITLE></span>
+			</a>
+			</TMPL_LOOP>
+			</TMPL_IF>
+			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item lb-tab-popup-item-muted">
+				<i class="pi pi-plus-circle"></i>
+				<span>Plugin installieren</span>
+			</a>
+		</div>
+	</div>
+
+	<div class="lb-tab-popup" id="lb-tab-popup-settings">
+		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
+		<div class="lb-tab-popup-list">
+			<a href="/admin/system/myloxberry.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-user"></i>
+				<span><TMPL_VAR HEADER.PANEL_MYLOXBERRY></span>
+			</a>
+			<a href="/admin/system/admin.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-shield"></i>
+				<span><TMPL_VAR HEADER.PANEL_ADMIN></span>
+			</a>
+			<a href="/admin/system/miniserver.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-server"></i>
+				<span><TMPL_VAR HEADER.PANEL_MINISERVER></span>
+			</a>
+			<a href="/admin/system/network.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-globe"></i>
+				<span><TMPL_VAR HEADER.PANEL_NETWORK></span>
+			</a>
+			<a href="/admin/system/services.php" class="lb-tab-popup-item">
+				<i class="pi pi-sliders-h"></i>
+				<span><TMPL_VAR HEADER.PANEL_SERVICES></span>
+			</a>
+			<a href="/admin/system/backup.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-database"></i>
+				<span><TMPL_VAR HEADER.PANEL_BACKUP></span>
+			</a>
+			<a href="/admin/system/power.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-power-off"></i>
+				<span><TMPL_VAR HEADER.PANEL_REBOOT></span>
+			</a>
+		</div>
+	</div>
+
+	<div class="lb-tab-popup" id="lb-tab-popup-more">
+		<div class="lb-tab-popup-header">Mehr</div>
+		<div class="lb-tab-popup-list">
+			<a href="/admin/system/logmanager.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-list"></i>
+				<span>Log Manager</span>
+			</a>
+			<a href="/admin/system/mqtt.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-arrows-h"></i>
+				<span><TMPL_VAR HEADER.PANEL_MQTT></span>
+			</a>
+			<a href="/admin/system/mailserver.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-envelope"></i>
+				<span><TMPL_VAR HEADER.PANEL_MAILSERVER></span>
+			</a>
+			<a href="/admin/system/translate.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-language"></i>
+				<span><TMPL_VAR HEADER.PANEL_TRANSLATE></span>
+			</a>
+			<a href="/admin/system/tools/filemanager/filemanager.php" class="lb-tab-popup-item">
+				<i class="pi pi-folder-open"></i>
+				<span><TMPL_VAR HEADER.PANEL_FILEMANAGER></span>
+			</a>
+			<a href="/admin/system/netshares.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-share-alt"></i>
+				<span><TMPL_VAR HEADER.PANEL_NETSHARES></span>
+			</a>
+			<a href="/admin/system/usbstorage.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-usb"></i>
+				<span><TMPL_VAR HEADER.PANEL_USBSTORAGE></span>
+			</a>
+			<a href="/admin/system/remote.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-wifi"></i>
+				<span><TMPL_VAR HEADER.PANEL_REMOTE></span>
+			</a>
+			<a href="/admin/system/tools/terminal" class="lb-tab-popup-item" target="_blank">
+				<i class="pi pi-desktop"></i>
+				<span><TMPL_VAR HEADER.PANEL_TERMINAL></span>
+			</a>
+			<a href="/admin/system/donate.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-heart"></i>
+				<span><TMPL_VAR HEADER.PANEL_DONATE></span>
+			</a>
+		</div>
+	</div>
+
 	<!-- Mobile Tab Bar -->
 	<nav class="lb-tab-bar" id="lb-tab-bar" role="navigation" aria-label="Mobile Navigation">
 		<a href="/admin/system/index.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/index.cgi">
 			<i class="pi pi-home"></i>
 			<span>Home</span>
 		</a>
-		<a href="/admin/system/plugininstall.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/plugininstall.cgi">
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('plugins')" data-role="none">
 			<i class="pi pi-th-large"></i>
 			<span>Plugins</span>
+		</button>
+		<a href="/admin/system/updates.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/updates.cgi">
+			<i class="pi pi-sync"></i>
+			<span>Updates</span>
 		</a>
-		<a href="/admin/system/mqtt.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/mqtt.cgi">
-			<i class="pi pi-arrows-h"></i>
-			<span>MQTT</span>
-		</a>
-		<a href="/admin/system/logmanager.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/logmanager.cgi">
-			<i class="pi pi-list"></i>
-			<span>Logs</span>
-		</a>
-		<button class="lb-tab-bar-item" onclick="toggleSidebar()" aria-label="Mehr anzeigen">
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('settings')" data-role="none">
+			<i class="pi pi-cog"></i>
+			<span>Einstellungen</span>
+		</button>
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('more')" aria-label="Mehr anzeigen" data-role="none">
 			<i class="pi pi-ellipsis-h"></i>
 			<span>Mehr</span>
 		</button>
@@ -157,6 +258,7 @@
 
 		// Sidebar toggle (mobile)
 		function toggleSidebar() {
+			closeTabPopup();
 			document.getElementById('lb-sidebar').classList.toggle('open');
 			document.getElementById('lb-sidebar-backdrop').classList.toggle('open');
 		}
@@ -164,6 +266,59 @@
 		// Help panel toggle
 		function toggleHelpPanel() {
 			document.getElementById('helppanel').classList.toggle('open');
+		}
+
+		// Tab bar popup toggle
+		var activeTabPopup = null;
+		var activeTabBtn = null;
+		var urlActiveTab = null;
+		function toggleTabPopup(name) {
+			var popup = document.getElementById('lb-tab-popup-' + name);
+			var backdrop = document.getElementById('lb-tab-popup-backdrop');
+			if (activeTabPopup === name) {
+				closeTabPopup();
+				return;
+			}
+			if (activeTabPopup) {
+				document.getElementById('lb-tab-popup-' + activeTabPopup).classList.remove('open');
+			}
+			if (activeTabBtn) {
+				activeTabBtn.classList.remove('active');
+			}
+			// Remove URL-based active tab while popup is open
+			if (!urlActiveTab) {
+				urlActiveTab = document.querySelector('.lb-tab-bar-item[data-tab-path].active');
+			}
+			if (urlActiveTab) {
+				urlActiveTab.classList.remove('active');
+			}
+			popup.classList.add('open');
+			backdrop.classList.add('open');
+			// Find the button that triggered this popup
+			var btns = document.querySelectorAll('.lb-tab-bar-item');
+			btns.forEach(function(btn) {
+				if (btn.getAttribute('onclick') === "toggleTabPopup('" + name + "')") {
+					btn.classList.add('active');
+					activeTabBtn = btn;
+				}
+			});
+			activeTabPopup = name;
+		}
+		function closeTabPopup() {
+			if (activeTabPopup) {
+				document.getElementById('lb-tab-popup-' + activeTabPopup).classList.remove('open');
+				activeTabPopup = null;
+			}
+			if (activeTabBtn) {
+				activeTabBtn.classList.remove('active');
+				activeTabBtn = null;
+			}
+			// Restore URL-based active tab
+			if (urlActiveTab) {
+				urlActiveTab.classList.add('active');
+				urlActiveTab = null;
+			}
+			document.getElementById('lb-tab-popup-backdrop').classList.remove('open');
 		}
 		</script>
 

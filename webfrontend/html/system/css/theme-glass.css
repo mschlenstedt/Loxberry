@@ -190,3 +190,11 @@ body.theme-glass .lb-tab-bar {
 	-webkit-backdrop-filter: blur(20px) saturate(180%);
 	border-top: 0.5px solid rgba(255, 255, 255, 0.12);
 }
+
+/* Glass tab bar popups */
+body.theme-glass .lb-tab-popup {
+	background: rgba(30, 30, 30, 0.85);
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	border: 0.5px solid rgba(255, 255, 255, 0.12);
+}
