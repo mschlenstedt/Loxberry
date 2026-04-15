@@ -1037,15 +1037,39 @@ a.lb-sidebar-link.active:visited {
 	padding: var(--lb-space-md);
 	color: var(--lb-text);
 }
+.note,
+.note *,
+.note a,
+.note a:visited,
+.note a:link,
+#lbu_release_body,
+#lbu_release_body *,
+#lbu_release_body a,
+#lbu_release_body a:visited,
+#lbu_release_body a:link {
+	color: var(--lb-text) !important;
+}
+.note a:hover,
+#lbu_release_body a:hover {
+	color: var(--lb-primary) !important;
+}
 
-/* --- Form validator error messages — override yellow background --- */
-.lb-content .form-error,
-.lb-content .form-error-message {
+/* --- Form validator error messages — override theme-default.css --- */
+.form-error,
+span.form-error,
+div.form-error,
+.form-error-message {
 	color: var(--lb-danger) !important;
 	background: none !important;
+	background-color: transparent !important;
 	border: none !important;
-	font-size: var(--lb-font-sm);
+	font-size: var(--lb-font-sm) !important;
 	line-height: 1.5;
+	padding: 0 !important;
+}
+span.form-error {
+	display: block;
+	margin-top: 4px;
 }
 
 

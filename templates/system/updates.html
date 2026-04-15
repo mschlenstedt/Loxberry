@@ -190,7 +190,7 @@
 	<div class="divTableCell">
 		<p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
 	</div>
-	<div class="divTableCell hint" style="border:2px; border-style:outset; border-radius:5px;padding:10px 10px 10px 10px;background-color:LightYellow; width:30%;">
+	<div class="divTableCell hint lb-card" style="width:30%;">
 		<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
 			<div style="flex-grow: 2;">
 			<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
@@ -485,7 +485,7 @@ $(document).ready( function () {
 				if (data.release_name) 
 				{
 					var release_name_details = data.release_name;
-					release_name_details = release_name_details.replace(/(\n\n)/, '<br><hr></div><div style="color:#404080; font-size:75%;font-weight:normal;" id="lbu_release_name_details">');
+					release_name_details = release_name_details.replace(/(\n\n)/, '<br><hr></div><div style="font-size:75%;font-weight:normal;" id="lbu_release_name_details">');
 					release_name_details = release_name_details + "<hr>";
 					$('#lbu_release_name').html(release_name_details.replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
 				}
