@@ -151,8 +151,8 @@
 
 		// Load config and defaults
 		$(function() {
-			//$("#configform").addClass('ui-disabled');
-			$("#btn_logfile").addClass('ui-disabled');
+			//$("#configform").addClass('lb-disabled');
+			$("#btn_logfile").addClass('lb-disabled');
 			backupstatus();
 			getconfig();
 			interval = window.setInterval(function(){ backupstatus(); }, 3000);
@@ -208,27 +208,27 @@
 			})
 			.done(function( data ) {
 				console.log( "getconfig Success", data );
-				$("#archive").val(data.Backup.Keep_archives).selectmenu('refresh',true);
-				$("#compression").val(data.Backup.Compression).selectmenu('refresh',true);
-				$("#repeat").val(data.Backup.Schedule.Repeat).selectmenu('refresh',true);
+				$("#archive").val(data.Backup.Keep_archives);
+				$("#compression").val(data.Backup.Compression);
+				$("#repeat").val(data.Backup.Schedule.Repeat);
 				$("#timef").val(data.Backup.Schedule.Time);
-				$("#scheduleactive").prop( "checked", JSON.parse(data.Backup.Schedule.Active) ).flipswitch('refresh');
-				$("#mon").prop( "checked", JSON.parse(data.Backup.Schedule.Mon) ).checkboxradio('refresh');
-				$("#tue").prop( "checked", JSON.parse(data.Backup.Schedule.Tue) ).checkboxradio('refresh');
-				$("#wed").prop( "checked", JSON.parse(data.Backup.Schedule.Wed) ).checkboxradio('refresh');
-				$("#thu").prop( "checked", JSON.parse(data.Backup.Schedule.Thu) ).checkboxradio('refresh');
-				$("#fre").prop( "checked", JSON.parse(data.Backup.Schedule.Fre) ).checkboxradio('refresh');
-				$("#sat").prop( "checked", JSON.parse(data.Backup.Schedule.Sat) ).checkboxradio('refresh');
-				$("#sun").prop( "checked", JSON.parse(data.Backup.Schedule.Sun) ).checkboxradio('refresh');
+				$("#scheduleactive").prop( "checked", JSON.parse(data.Backup.Schedule.Active) );
+				$("#mon").prop( "checked", JSON.parse(data.Backup.Schedule.Mon) );
+				$("#tue").prop( "checked", JSON.parse(data.Backup.Schedule.Tue) );
+				$("#wed").prop( "checked", JSON.parse(data.Backup.Schedule.Wed) );
+				$("#thu").prop( "checked", JSON.parse(data.Backup.Schedule.Thu) );
+				$("#fre").prop( "checked", JSON.parse(data.Backup.Schedule.Fre) );
+				$("#sat").prop( "checked", JSON.parse(data.Backup.Schedule.Sat) );
+				$("#sun").prop( "checked", JSON.parse(data.Backup.Schedule.Sun) );
 				refresh_storage_storagepath(data.Backup.Storagepath);
-				//$("#configform").removeClass('ui-disabled');
+				//$("#configform").removeClass('lb-disabled');
 			});
 		}
 
 		// Start manual backup
 		function backupnow() {
 			$("#btn_backupnow").css('background-color', 'rgba(230, 230, 230, 1)');
-			$("#btn_backupnow").addClass('ui-disabled');
+			$("#btn_backupnow").addClass('lb-disabled');
 			$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_RUNNING>');
 			$.ajax({ 
 				url:  './ajax/ajax-backup.cgi',
@@ -241,15 +241,15 @@
 			})
 			.fail(function( data ) {
 				console.log( "backupnow Fail", data );
-				$("#btn_logfile").removeClass('ui-disabled');
-				$("#btn_backupnow").removeClass('ui-disabled');
+				$("#btn_logfile").removeClass('lb-disabled');
+				$("#btn_backupnow").removeClass('lb-disabled');
 				$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_FAILED>');
 				$("#btn_backupnow").css('background-color', 'rgba(255, 128, 128, 0.4)');
 			})
 			.done(function( data ) {
 				console.log( "backupnow Success", data );
 				backupstatus();
-				$("#btn_logfile").removeClass('ui-disabled');
+				$("#btn_logfile").removeClass('lb-disabled');
 			});
 		}
 
@@ -282,11 +282,11 @@
 					$("#lastlog").val(data.logfile);
 				};
 				if (data.notrunning * 1 == 0) {
-					$("#btn_logfile").removeClass('ui-disabled');
-					$("#btn_backupnow").addClass('ui-disabled');
+					$("#btn_logfile").removeClass('lb-disabled');
+					$("#btn_backupnow").addClass('lb-disabled');
 					$("#btn_backupnow").css('background-color', 'rgba(230, 230, 230, 1)');
 					$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_RUNNING>');
-				} else if (data.notrunning * 1 == 1 && $("#btn_backupnow").hasClass("ui-disabled") && data.logstatus) {
+				} else if (data.notrunning * 1 == 1 && $("#btn_backupnow").hasClass("lb-disabled") && data.logstatus) {
 					if (data.logstatus * 1 < '5') { // Convert to number
 						$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_FAILED>');
 						$("#btn_backupnow").css('background-color', 'rgba(255, 128, 128, 0.4)');
@@ -294,13 +294,13 @@
 						$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>' + '&nbsp;&nbsp;&nbsp;&rarr; ' + '<TMPL_VAR BACKUP.HINT_OK>');
 						$("#btn_backupnow").css('background-color', 'rgba(67, 236, 48, 0.4)');
 					}
-					$("#btn_logfile").removeClass('ui-disabled');
-					$("#btn_backupnow").removeClass('ui-disabled');
-				} else if (data.notrunning * 1 == 1 && $("#btn_backupnow").hasClass("ui-disabled") && !data.logstatus) {
+					$("#btn_logfile").removeClass('lb-disabled');
+					$("#btn_backupnow").removeClass('lb-disabled');
+				} else if (data.notrunning * 1 == 1 && $("#btn_backupnow").hasClass("lb-disabled") && !data.logstatus) {
 					$("#btn_backupnow").html('<TMPL_VAR BACKUP.BUTTON_BACKUPNOW>');
 					$("#btn_backupnow").css('background-color', 'rgba(230, 230, 230, 1)');
-					$("#btn_logfile").removeClass('ui-disabled');
-					$("#btn_backupnow").removeClass('ui-disabled');
+					$("#btn_logfile").removeClass('lb-disabled');
+					$("#btn_backupnow").removeClass('lb-disabled');
 				}
 			})
 			.always(function() {

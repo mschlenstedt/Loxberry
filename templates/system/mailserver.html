@@ -179,15 +179,15 @@
 </FORM>
 
 <!-- Testmail overlay -->
-<div data-role="popup" id="testmailoverlay" style="min-width:500px;max-width:80%;min-height:600px;" class="ui-content" data-transition="fade">
-    <a href="#" data-rel="back" class="lb-btn lb-btn-sm" style="position:absolute;right:8px;top:8px;">Close</a>
-	<div data-role="header">
-    	<h1><TMPL_VAR MAILSERVER.CAPTION_TESTMAIL_DIALOG></h1>
-    </div>
-    <div role="main" class="ui-content">
+<dialog id="testmailoverlay" class="lb-modal" style="min-width:500px;max-width:80%;min-height:600px;">
+	<div class="lb-modal-header" style="display:flex;justify-content:space-between;align-items:center;">
+		<h2><TMPL_VAR MAILSERVER.CAPTION_TESTMAIL_DIALOG></h2>
+		<button class="lb-btn lb-btn-sm" onclick="document.getElementById('testmailoverlay').close();">&times;</button>
+	</div>
+	<div class="lb-modal-content" style="text-align:left;">
 		<div id="smtpresults" style="word-wrap:break-word;"></div>
-    </div>
-</div>
+	</div>
+</dialog>
 		
 		
 		
@@ -273,23 +273,23 @@ function disable()
 	
 	if ( $('#activate_mail').is(':checked') ) 
 	{
-		$(".mailsettings").removeClass( 'ui-disabled' );
-		$("#btntestsmtp").removeClass( 'ui-disabled' );
+		$(".mailsettings").removeClass( 'lb-disabled' );
+		$("#btntestsmtp").removeClass( 'lb-disabled' );
 	
 		if ( $('#smtpauth').is(':checked') )
 		{
-			$(".mailcredentials").removeClass( 'ui-disabled' );
+			$(".mailcredentials").removeClass( 'lb-disabled' );
 		}
 		else 
 		{
-			$(".mailcredentials").addClass( 'ui-disabled' );
+			$(".mailcredentials").addClass( 'lb-disabled' );
 		}
 			
 	}
 	else
 	{ 
-		$(".mailsettings").addClass( 'ui-disabled' );
-		$("#btntestsmtp").addClass( 'ui-disabled' );
+		$(".mailsettings").addClass( 'lb-disabled' );
+		$("#btntestsmtp").addClass( 'lb-disabled' );
 	}
 }
 
@@ -297,7 +297,7 @@ $('#btnpower_alert').css('visibility','hidden');
 
 // Test Mailserver
 $('#btntestsmtp').click( function(e) {
-	$( "#testmailoverlay" ).popup( "open" );  
+	document.getElementById('testmailoverlay').showModal();  
 	$('#smtpresults').html('<font color=blue><TMPL_VAR MAILSERVER.MSG_TESTMAIL_WAIT></font>');
 	
 	e.preventDefault();
@@ -391,23 +391,23 @@ function fillForm ( data )
 		if(data.SMTP.PASSWORD) $("#smtppass").val(data.SMTP.PASSWORD);
 		
 		// Checkboxes
-		if(is_enabled(data.SMTP.ACTIVATE_MAIL)) $("#activate_mail").prop('checked', true).checkboxradio("refresh");
-		if(is_enabled(data.SMTP.AUTH)) $("#smtpauth").prop('checked', true).checkboxradio("refresh");
-		if(is_enabled(data.SMTP.TLS)) $("#smtpcrypt").prop('checked', true).checkboxradio("refresh");
+		if(is_enabled(data.SMTP.ACTIVATE_MAIL)) $("#activate_mail").prop('checked', true);
+		if(is_enabled(data.SMTP.AUTH)) $("#smtpauth").prop('checked', true);
+		if(is_enabled(data.SMTP.TLS)) $("#smtpcrypt").prop('checked', true);
 	}
 
 	// Notifications Area
 	if(data.NOTIFICATION) {
 		if(is_enabled(data.NOTIFICATION.MAIL_SYSTEM_ERRORS)) 
-			$("#MAIL_SYSTEM_ERRORS").prop('checked', true).checkboxradio("refresh");
+			$("#MAIL_SYSTEM_ERRORS").prop('checked', true);
 		
 		if(is_enabled(data.NOTIFICATION.MAIL_SYSTEM_INFOS)) 
-			$("#MAIL_SYSTEM_INFOS").prop('checked', true).checkboxradio("refresh");
+			$("#MAIL_SYSTEM_INFOS").prop('checked', true);
 		
 		if(is_enabled(data.NOTIFICATION.MAIL_PLUGIN_ERRORS)) 
-			$("#MAIL_PLUGIN_ERRORS").prop('checked', true).checkboxradio("refresh");
+			$("#MAIL_PLUGIN_ERRORS").prop('checked', true);
 		if(is_enabled(data.NOTIFICATION.MAIL_PLUGIN_INFOS)) 
-			$("#MAIL_PLUGIN_INFOS").prop('checked', true).checkboxradio("refresh");
+			$("#MAIL_PLUGIN_INFOS").prop('checked', true);
 	}
 	disable();
 }
