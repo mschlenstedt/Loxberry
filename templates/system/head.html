@@ -7,12 +7,11 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3, user-scalable=yes">
 
-	<!-- jQuery Mobile CSS — only for plugins -->
-	<TMPL_UNLESS IS_CORE_PAGE>
+	<!-- jQuery Mobile CSS — loaded for all pages during migration phase -->
+	<!-- TODO: wrap in TMPL_UNLESS IS_CORE_PAGE after all templates are migrated -->
 	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.css" />
 	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css" />
 	<link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css" />
-	</TMPL_UNLESS>
 
 	<!-- Design System CSS — always -->
 	<link rel="stylesheet" href="/system/css/design-tokens.css?v=3" />
@@ -28,18 +27,15 @@
 	<!-- jQuery Core — always -->
 	<script src="/system/scripts/jquery/jquery-1.12.4.min.js"></script>
 
-	<!-- jQuery Mobile JS — only for plugins -->
-	<TMPL_UNLESS IS_CORE_PAGE>
+	<!-- jQuery Mobile JS — loaded for all pages during migration phase -->
+	<!-- TODO: wrap in TMPL_UNLESS IS_CORE_PAGE after all templates are migrated -->
 	<script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
-	</TMPL_UNLESS>
 
 	<!-- Form validator — always (uses jQuery Core, not jQM) -->
 	<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
 	<script src="/system/scripts/setup.js"></script>
 	<script src="/system/scripts/validate.js"></script>
 
-	<!-- jQuery Mobile config — only for plugins -->
-	<TMPL_UNLESS IS_CORE_PAGE>
 	<script>
 		// Disable JQUERY DOM Caching
 		$.mobile.page.prototype.options.domCache = false;
@@ -70,14 +66,6 @@
 			}
 		});
 	</script>
-	</TMPL_UNLESS>
-
-	<!-- Core page config (no jQM) -->
-	<TMPL_IF IS_CORE_PAGE>
-	<script>
-		$.ajaxSetup({ cache: false });
-	</script>
-	</TMPL_IF>
 
 	<script>
 		// Sync lb-checked class on lb-btn-group labels
@@ -111,14 +99,12 @@
 		function syncAllBtnGroups() {
 			$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
 		}
-		<TMPL_UNLESS IS_CORE_PAGE>
 		$(document).on("pagecreate", function() {
 			setTimeout(syncAllBtnGroups, 200);
 			setTimeout(syncAllBtnGroups, 800);
 		});
-		</TMPL_UNLESS>
 		$(document).ready(function() {
-			setTimeout(syncAllBtnGroups, 200);
+			setTimeout(syncAllBtnGroups, 500);
 		});
 	</script>
 	<script src="/system/scripts/browser.js"></script>
