@@ -59,11 +59,20 @@
 	display: contents;
 }
 
-/* Override jQM page styling for sidebar layout */
-div[data-role="page"] {
+/* Override jQM page/body styling for sidebar layout and theming */
+div[data-role="page"],
+.ui-page,
+.ui-content,
+.ui-body-a,
+.ui-body-c,
+.ui-overlay-a,
+.page_content,
+#page_content {
 	padding: 0 !important;
 	margin: 0 !important;
 	border: none !important;
+	background: transparent !important;
+	color: var(--lb-text) !important;
 }
 
 /* Reset jQM label styling inside btn-group */
@@ -164,6 +173,18 @@ label.lb-toggle.ui-btn::after {
 	background-repeat: no-repeat;
 	background-position: right 12px center;
 	padding-right: 36px;
+}
+.lb-content input[type="submit"],
+.lb-content input[type="button"],
+.lb-content button:not(.lb-btn):not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"]) {
+	padding: 8px 16px;
+	border: 1px solid var(--lb-btn-border);
+	border-radius: var(--lb-btn-radius);
+	font-size: var(--lb-font-base);
+	font-family: var(--lb-font);
+	background: var(--lb-btn-bg);
+	color: var(--lb-btn-text);
+	cursor: pointer;
 }
 
 
