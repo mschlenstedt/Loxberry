@@ -132,6 +132,9 @@ sub head
 	$headobj->param( TEMPLATETITLE => $template_title);
 	$headobj->param( LANG => $lang);
 	$headobj->param( HTMLHEAD => $main::htmlhead);
+	# Detect core vs plugin page for conditional jQuery Mobile loading
+	my $systemcall = defined $LoxBerry::System::lbpplugindir ? undef : 1;
+	$headobj->param( IS_CORE_PAGE => $systemcall ? 1 : 0 );
 
 	# Theme support
 	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
