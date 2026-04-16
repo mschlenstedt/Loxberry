@@ -51,6 +51,21 @@ class LBWeb
 		$headobj->param('TEMPLATETITLE', $fulltitle);
 		$headobj->param('LANG', $lang);
 		$headobj->param('HTMLHEAD', $htmlhead);
+
+		// Theme support — read Base.Theme from general.json (mirrors Web.pm logic)
+		LBSystem::read_generaljson();
+		global $cfg;
+		$theme = isset($cfg->Base->Theme) ? $cfg->Base->Theme : 'soft-rounded';
+		$_theme_map = array('classic' => 'classic-lb', 'modern' => 'soft-rounded', 'dark' => 'glass');
+		if (isset($_theme_map[$theme])) {
+			$theme = $_theme_map[$theme];
+		}
+		if (!preg_match('/^(soft-rounded|clean-admin|glass|classic-lb)$/', $theme)) {
+			$theme = 'soft-rounded';
+		}
+		$headobj->param('THEME_CLASS', "theme-$theme");
+		$headobj->param('THEME_FILE', "theme-$theme.css");
+
 		LBSystem::readlanguage($headobj, "language.ini", True);
 		return $headobj->outputString();
 
