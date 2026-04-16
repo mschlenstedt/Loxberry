@@ -52,24 +52,16 @@
 
 <!-- Button area -->
 
-<DIV style="text-align:center;">
+<div class="lb-actions">
 <div id="save_result" style="height:15px;font-size:12px"></div>
 		<!-- Buttons for widget -->
-		<A	id=		"btncancel"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"delete"
+		<A class="lb-btn lb-btn-sm lb-btn-icon"	id=		"btncancel"
 			href=		"/admin/system/index.cgi?form=system">
-			<TMPL_VAR COMMON.BUTTON_CANCEL></A>
-		<BUTTON	type=		"submit"
+			<i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></A>
+		<BUTTON class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"	type=		"submit"
 			form=		"main_form"
-			id=		"btnsubmit"
-			data-role=	"button"
-			data-inline=	"true"
-			data-mini=	"true"
-			data-icon=	"check">
-			<TMPL_VAR COMMON.BUTTON_SAVE>
+			id=		"btnsubmit">
+			<i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE>
 		</BUTTON>
 </DIV>
 

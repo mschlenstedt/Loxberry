@@ -35,12 +35,16 @@ docs/                    # Design-Mockups, Specs, Pläne (gitignored, muss mit -
 - **Encoding:** UTF-8 überall, bei Deploy auf LoxBerry CRLF → LF konvertieren
 
 ### CSS / Design-System
-- Neue Klassen: `lb-*` Präfix (lb-btn, lb-section-title, lb-form-row, lb-table, lb-disabled, lb-tab-bar)
+- Neue Klassen: `lb-*` Präfix (lb-btn, lb-section-title, lb-form-row, lb-table, lb-disabled, lb-tab-bar, lb-collapsible)
 - Themes nur über CSS Custom Properties (`var(--lb-*)` aus design-tokens.css)
 - jQuery Mobile JS+Structure CSS wird für Core-Seiten NICHT geladen (nur loxberry.css Theme-CSS bleibt)
 - jQuery Mobile bleibt für Plugin-Seiten vollständig aktiv (IS_CORE_PAGE Steuerung in Web.pm/head.html)
-- jQM-Overrides in components.css Sektion 1 bleiben für Plugin-Kompatibilität
+- jQM-Overrides in components.css Sektion 1 auf `.lb-layout` gescoped (bricht nicht Plugin-Seiten)
 - Icons: PrimeIcons (`pi pi-*`)
+- `ui-disabled` → `lb-disabled` verwenden (opacity + pointer-events)
+- jQM Popup → native `<dialog>` mit `lb-modal` Klasse + `.showModal()`
+- jQM Collapsible → native `<details>`/`<summary>` mit `lb-collapsible` Klasse
+- MQTT Gateway V1-WebUI (mqtt-gateway.html) muss jQM-migriert werden — V1 bleibt!
 
 ### Python (sbin/mqttgateway/)
 - Python 3.11+ (asyncio TaskGroup)

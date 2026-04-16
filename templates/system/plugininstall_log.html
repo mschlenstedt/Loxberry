@@ -13,7 +13,7 @@
 			<td width="50%">
 			</td>
 			<td width="25%">
-			<label style="display:block; text-align:center;"><input data-mini="true" type="checkbox" checked id="LogScroll"><TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
+			<label style="display:block; text-align:center;"><input type="checkbox" checked id="LogScroll" data-role="none"> <TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
 			</td>
 			<td width="25%">
 			 <a class="lb-btn lb-btn-sm lb-btn-icon" style="display:block; text-align:center;" id="btndown" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=bin&format=plain" target="_blank" download="<TMPL_VAR LOGFILE>"><i class="pi pi-arrow-down"></i> <TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
@@ -59,8 +59,8 @@ var call_in_progress = 0;
 var status_in_progress = 0;
 
 // Disable buttons
-$('#btnnext').addClass('ui-disabled');
-$('#btnreboot').addClass('ui-disabled');
+$('#btnnext').addClass('lb-disabled');
+$('#btnreboot').addClass('lb-disabled');
 
 function updatelog() 
 {
@@ -110,8 +110,8 @@ function updatestatus()
 			if (pstatus === 3)
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED>";
-				$('#btnnext').removeClass('ui-disabled');
-				$('#btnreboot').removeClass('ui-disabled');
+				$('#btnnext').removeClass('lb-disabled');
+				$('#btnreboot').removeClass('lb-disabled');
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 				clearInterval(interval2);
 				clearInterval(interval);
@@ -122,7 +122,7 @@ function updatestatus()
 			else if (pstatus === 2)
 			{
 				document.getElementById("pstatus").innerHTML = "<font color='#FF0000'><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_ERROR></font>";
-				$('#btnnext').removeClass('ui-disabled');
+				$('#btnnext').removeClass('lb-disabled');
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 				clearInterval(interval2);
 				clearInterval(interval);
@@ -134,12 +134,12 @@ function updatestatus()
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE>";
 		
-				$('#btnnext').addClass('ui-disabled');
+				$('#btnnext').addClass('lb-disabled');
 			}
 			else
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_SUCCESS>";
-				$('#btnnext').removeClass('ui-disabled');
+				$('#btnnext').removeClass('lb-disabled');
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 				clearInterval(interval2);
 				clearInterval(interval);
@@ -159,7 +159,7 @@ var interval2 = window.setInterval(updatestatus, 1000);
 
 $("#Logfile").click(function() {
 		clearInterval(interval);
-		$("input[type='checkbox']").attr("checked",false).checkboxradio("refresh");
+		$("input[type='checkbox']").prop("checked", false);
 });
 
 $("#LogScroll").click(function() {

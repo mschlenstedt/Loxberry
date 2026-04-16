@@ -547,7 +547,7 @@ function versionCompare(v1, v2, options) {
 		<td align="center">
 			<p>
 			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="/admin/system/plugininstall.cgi"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<a class="lb-btn lb-btn-sm lb-btn-icon" onclick="$('#btnok').addClass('ui-disabled'); $('#uninstall_text').html('<TMPL_VAR PLUGININSTALL.UI_MSG_UNINSTALL_WAIT>');" id="btnok" href="<TMPL_VAR SELFURL>&answer=1"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" onclick="$('#btnok').addClass('lb-disabled'); $('#uninstall_text').html('<TMPL_VAR PLUGININSTALL.UI_MSG_UNINSTALL_WAIT>');" id="btnok" href="<TMPL_VAR SELFURL>&answer=1"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
 			</p>
 		</td>
 	</tr>

@@ -59,15 +59,16 @@
 	display: contents;
 }
 
-/* Override jQM page/body styling for sidebar layout and theming */
-div[data-role="page"],
-.ui-page,
-.ui-content,
-.ui-body-a,
-.ui-body-c,
-.ui-overlay-a,
-.page_content,
-#page_content {
+/* Override jQM page/body styling — scoped to core pages (.lb-layout) only
+   so plugin pages keep their default jQM padding/margins */
+.lb-layout div[data-role="page"],
+.lb-layout .ui-page,
+.lb-layout .ui-content,
+.lb-layout .ui-body-a,
+.lb-layout .ui-body-c,
+.lb-layout .ui-overlay-a,
+.lb-layout .page_content,
+.lb-layout #page_content {
 	padding: 0 !important;
 	margin: 0 !important;
 	border: none !important;
