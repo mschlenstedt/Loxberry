@@ -14,6 +14,9 @@ docs/superpowers/
 docs/
 sbin/benchmark/
 
+# Python virtual environments
+sbin/mqttgateway_venv/
+
 # Backups
 _backup_L_*/
 
