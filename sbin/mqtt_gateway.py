@@ -26,6 +26,7 @@ _LBSCONFIG    = Path(os.environ["LBSCONFIG"])
 CONFIG_GENERAL = _LBSCONFIG / "general.json"
 CONFIG_SUBS    = _LBSCONFIG / "subscriptions.json"
 STATUS_FILE    = Path("/dev/shm/mqttgatwayv2_status.json")
+PID_FILE       = Path("/dev/shm/mqtt_gateway.pid")
 
 # ─── Logging ─────────────────────────────────────────────────────────────────
 class _LiveStdoutHandler(logging.StreamHandler):
@@ -459,7 +460,10 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
+    PID_FILE.write_text(str(os.getpid()))
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         print(" OK: Gateway stopped by user", flush=True)
+    finally:
+        PID_FILE.unlink(missing_ok=True)

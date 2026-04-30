@@ -156,7 +156,14 @@ elseif ( $ajax == 'doNotForward' ) {
 elseif ( $ajax == 'getpids' ) {
 	$gw_pid = trim(`pgrep mqttgateway.pl`);
 	if (!$gw_pid) {
-		$gw_pid = trim(`pgrep -A -f mqtt_gateway.py`);
+		// V2: use PID file written by mqtt_gateway.py on startup
+		$v2_pidfile = '/dev/shm/mqtt_gateway.pid';
+		if (file_exists($v2_pidfile)) {
+			$v2_pid = trim(file_get_contents($v2_pidfile));
+			if ($v2_pid && is_numeric($v2_pid) && file_exists("/proc/$v2_pid")) {
+				$gw_pid = $v2_pid;
+			}
+		}
 	}
 	$pids['mqttgateway'] = $gw_pid ?: null;
 	$pids['mosquitto']   = trim(`pgrep mosquitto`) ?: null;
