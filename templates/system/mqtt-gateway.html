@@ -232,8 +232,11 @@ $(function() {
     updateStatus();
     setInterval(updateStatus, 10000);
 
-    // Save handler
-    $("#saveapply").click(function() {
+    // Save handler — stopImmediatePropagation prevents the legacy saveapply handler from also firing
+    $("#saveapply").on("click", function(e) {
+        e.stopImmediatePropagation();
+        $("#saveapply").prop("disabled", true);
+
         var newVersion = parseInt($('input[name="gatewayversion"]:checked').val());
         var protocol = $('input[name="protocol"]:checked').val();
 
@@ -243,8 +246,7 @@ $(function() {
         cfg.Main.udpport = parseInt($("#basic_udpport").val()) || 11883;
         cfg.Main.msno = parseInt($("#Main\\.msno").val()) || 1;
 
-        // Save gateway config
-        $.ajax({
+        var saveGwConfig = $.ajax({
             type: 'POST',
             url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace',
             dataType: 'json',
@@ -252,18 +254,24 @@ $(function() {
             data: JSON.stringify(cfg)
         });
 
-        // Save gateway version to general.json
-        $.ajax({
+        var saveVersion = $.ajax({
             type: 'POST',
             url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
             dataType: 'json',
             contentType: 'application/json; charset=UTF-8',
             data: JSON.stringify({ Gatewayversion: newVersion })
-        })
-        .done(function() {
+        });
+
+        $.when(saveGwConfig, saveVersion).always(function() {
             if (newVersion !== originalVersion) {
                 location.reload();
+                return;
             }
+            // Restart gateway to apply new settings
+            $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
+                $("#saveapply").prop("disabled", false);
+                updateStatus();
+            });
         });
     });
 });

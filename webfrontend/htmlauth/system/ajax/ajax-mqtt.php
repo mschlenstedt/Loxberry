@@ -154,14 +154,15 @@ elseif ( $ajax == 'doNotForward' ) {
 }
 
 elseif ( $ajax == 'getpids' ) {
-	$pids['mqttgateway'] = trim(`pgrep mqttgateway.pl`) ;
-	$pids['mosquitto'] = trim(`pgrep mosquitto`) ;
-	
-	$pids['mqttgateway'] = $pids['mqttgateway'] != 0 ? $pids['mqttgateway'] : null;
-	$pids['mosquitto'] = $pids['mosquitto'] != 0 ? $pids['mosquitto'] : null;
-	
+	$gw_pid = trim(`pgrep mqttgateway.pl`);
+	if (!$gw_pid) {
+		$gw_pid = trim(`pgrep -f mqtt_gateway.py`);
+	}
+	$pids['mqttgateway'] = $gw_pid ?: null;
+	$pids['mosquitto']   = trim(`pgrep mosquitto`) ?: null;
+
 	echo json_encode( array ('pids' => $pids ) );
-	
+
 }
 
 elseif ( $ajax == 'mosquitto_purgedb' ) {
