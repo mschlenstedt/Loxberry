@@ -73,6 +73,11 @@ sub restart_gateway
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
 	if( $gatewayversion == 2 ) {
 		`pkill -A -f mqtt_gateway.py`;
+		unless ( -d "$lbhomedir/sbin/mqttgateway_venv" ) {
+			LOGINF "Creating Python venv for MQTT Gateway V2...";
+			`python3 -m venv $lbhomedir/sbin/mqttgateway_venv`;
+			`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $lbhomedir/sbin/requirements.txt`;
+		}
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 $lbhomedir/sbin/mqtt_gateway.py >> /dev/shm/mqtt-gateway.log 2>&1 &'`;
 	} else {
 		`pkill mqttgateway.pl`;
