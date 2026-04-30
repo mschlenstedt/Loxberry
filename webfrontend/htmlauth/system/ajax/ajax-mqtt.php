@@ -282,6 +282,35 @@ elseif ( $_POST['ajax'] == 'save_subscriptions_v2' ) {
     echo json_encode(array('status' => 'ok', 'count' => count($input['subscriptions_v2'])));
 }
 
+elseif ( $_POST['ajax'] == 'get_subscriptions' || $_GET['ajax'] == 'get_subscriptions' ) {
+    $fullcfgfile = LBSCONFIGDIR.'/subscriptions.json';
+    header('Content-Type: application/json');
+    if (file_exists($fullcfgfile)) {
+        $cfg = json_decode(file_get_contents($fullcfgfile), true);
+        echo json_encode($cfg ?: array('Subscriptions' => array()));
+    } else {
+        echo json_encode(array('Subscriptions' => array()));
+    }
+}
+
+elseif ( $_POST['ajax'] == 'save_subscriptions' ) {
+    $fullcfgfile = LBSCONFIGDIR.'/subscriptions.json';
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input || !isset($input['Subscriptions'])) {
+        http_response_code(400);
+        header('Content-Type: application/json');
+        echo json_encode(array('error' => 'Missing Subscriptions data'));
+        exit;
+    }
+    $written = file_put_contents($fullcfgfile, json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), LOCK_EX);
+    if ($written === false) {
+        http_response_code(500);
+        exit;
+    }
+    header('Content-Type: application/json');
+    echo json_encode(array('status' => 'ok', 'count' => count($input['Subscriptions'])));
+}
+
 // Unknown request
 else {
 	http_response_code(500);
