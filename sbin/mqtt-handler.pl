@@ -72,8 +72,8 @@ sub restart_gateway
 	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
 	if( $gatewayversion == 2 ) {
-		`pkill -f mqtt_gateway.py`;
-		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 $lbhomedir/sbin/mqtt_gateway.py > /dev/null 2>&1 &'`;
+		`pkill -A -f mqtt_gateway.py`;
+		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 $lbhomedir/sbin/mqtt_gateway.py >> $lbstmpfslogdir/mqtt-gateway.log 2>&1 &'`;
 	} else {
 		`pkill mqttgateway.pl`;
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;

@@ -156,7 +156,7 @@ elseif ( $ajax == 'doNotForward' ) {
 elseif ( $ajax == 'getpids' ) {
 	$gw_pid = trim(`pgrep mqttgateway.pl`);
 	if (!$gw_pid) {
-		$gw_pid = trim(`pgrep -f mqtt_gateway.py`);
+		$gw_pid = trim(`pgrep -A -f mqtt_gateway.py`);
 	}
 	$pids['mqttgateway'] = $gw_pid ?: null;
 	$pids['mosquitto']   = trim(`pgrep mosquitto`) ?: null;
