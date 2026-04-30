@@ -1473,9 +1473,19 @@ sub check_mqtt
 	my @text;
 	my $gw_topicbase = lbhostname() . "/mqttgateway/";
 	my $datafile = "/dev/shm/mqttgateway_topics.json";
-	
+
+	# Determine configured gateway version (default to 1)
+	my $genjsonobj = LoxBerry::JSON->new();
+	my $gencfg = $genjsonobj->open( filename => "$lbsconfigdir/general.json", readonly => 1 );
+	my $gwversion = $gencfg->{Mqtt}->{Gatewayversion} // 1;
+
 	# Check binary running
-	my $mqttpid = trim(`pgrep mqttgateway.pl`) ;
+	my $mqttpid;
+	if( $gwversion == 2 ) {
+		$mqttpid = trim(`pgrep -f mqtt_gateway.py`);
+	} else {
+		$mqttpid = trim(`pgrep mqttgateway.pl`);
+	}
 
 	# Read healthstate from mqttgateway
 	my $relayjsonobj = LoxBerry::JSON->new();

@@ -258,7 +258,7 @@ $(function() {
             url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
             dataType: 'json',
             contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify({ GatewayVersion: newVersion })
+            data: JSON.stringify({ Gatewayversion: newVersion })
         })
         .done(function() {
             if (newVersion !== originalVersion) {

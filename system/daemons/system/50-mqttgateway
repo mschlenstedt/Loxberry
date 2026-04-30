@@ -1,2 +1,9 @@
 #!/bin/bash
-su loxberry -c "$LBHOMEDIR/sbin/mqttgateway.pl > /dev/null 2>&1 &"
+GENERALJSON="$LBHOMEDIR/config/system/general.json"
+GATEWAY_VERSION=$(python3 -c "import json,sys; d=json.load(open('$GENERALJSON')); print(d.get('Mqtt',{}).get('Gatewayversion',1))" 2>/dev/null || echo 1)
+
+if [ "$GATEWAY_VERSION" = "2" ]; then
+    su loxberry -c "$LBHOMEDIR/sbin/mqttgateway_venv/bin/python3 $LBHOMEDIR/sbin/mqtt_gateway.py > /dev/null 2>&1 &"
+else
+    su loxberry -c "$LBHOMEDIR/sbin/mqttgateway.pl > /dev/null 2>&1 &"
+fi
