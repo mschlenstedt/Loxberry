@@ -76,7 +76,7 @@ sub restart_gateway
 		unless ( -d "$lbhomedir/sbin/mqttgateway_venv" ) {
 			LOGINF "Creating Python venv for MQTT Gateway V2...";
 			`python3 -m venv $lbhomedir/sbin/mqttgateway_venv`;
-			`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $lbhomedir/sbin/requirements.txt`;
+			`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $lbhomedir/sbin/requirements_mqttgateway_venv.txt`;
 		}
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 $lbhomedir/sbin/mqtt_gateway.py >> /dev/shm/mqtt-gateway.log 2>&1 &'`;
 	} else {
