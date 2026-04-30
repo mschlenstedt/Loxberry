@@ -1017,34 +1017,11 @@ $(function() {
 			restoreWindow();
 			
 			if( is_enabled( sessionStorage.getItem("topics_show_advanced")) )
-				$("#topics_show_advanced").prop( "checked", true).checkboxradio("refresh");
+				$("#topics_show_advanced").prop( "checked", true);
 			
 			$("#topics_show_advanced").on( "change", function(){
 				sessionStorage.setItem("topics_show_advanced", $(this).prop("checked"));
 				
-			});
-			
-			$(".ui-collapsible").on("collapsiblecollapse", function(event, ui) {
-				// console.log("Collaps", $(this).attr('id'));
-				storeWindow($(this).attr('id'), "collapse");
-			});
-			$(".ui-collapsible").on("collapsibleexpand", function(event, ui) {
-				// console.log("Expand", $(this).attr('id'));
-				curr_coll = this;
-				storeWindow($(this).attr('id'), "expand");
-				$.each( $(".ui-collapsible"), function ( index, value ) {
-					if( this !== curr_coll ) {
-						// console.log("Close ", $(this).attr('id'));
-						$(this).collapsible( "collapse" );
-					}
-				});
-			});
-			
-			$(".topics_table").on( "filterablebeforefilter", function( event, ui ) {
-				// On any search, save the term to SessionStorage
-				$(':input[data-type="search"]').each(function(index, element){
-					sessionStorage.setItem($(this).attr('id'), $(this).val());
-				});
 			});
 			
 			// Click handler for the Submit state filter
@@ -1055,9 +1032,6 @@ $(function() {
 				http_filter_500 = $("#http_filter_500").prop('checked');
 				http_filter_filtered = $("#http_filter_filtered").prop('checked');
 				http_filter_all = $("#http_filter_all").prop('checked');
-				// jQm sometimes hides the table...?
-				$("#topics_table_head").removeClass('ui-screen-hidden');
-				$("#topics_table_body").removeClass('ui-screen-hidden');
 
 				target = event.target.id;
 				if ( !http_filter_0 &&
@@ -1066,17 +1040,17 @@ $(function() {
 				     !http_filter_500 &&
 					 !http_filter_filtered &&
 				     !http_filter_all ) {
-					 $("#http_filter_all").prop('checked', true).checkboxradio("refresh");
+					 $("#http_filter_all").prop('checked', true);
 				}
 				else if( target == "http_filter_all" && http_filter_all ) {
-					$("#http_filter_0").prop('checked', false).checkboxradio("refresh");
-					$("#http_filter_200").prop('checked', false).checkboxradio("refresh");
-					$("#http_filter_404").prop('checked', false).checkboxradio("refresh");
-					$("#http_filter_500").prop('checked', false).checkboxradio("refresh");
-					$("#http_filter_filtered").prop('checked', false).checkboxradio("refresh");
-				} 
+					$("#http_filter_0").prop('checked', false);
+					$("#http_filter_200").prop('checked', false);
+					$("#http_filter_404").prop('checked', false);
+					$("#http_filter_500").prop('checked', false);
+					$("#http_filter_filtered").prop('checked', false);
+				}
 				else {
-					$("#http_filter_all").attr('checked', false).checkboxradio("refresh");
+					$("#http_filter_all").prop('checked', false);
 				}
 			});
 			
@@ -1106,12 +1080,9 @@ $(function() {
 		{
 			$.each( $(".ui-collapsible"), function ( index, value ) {
 				var pos = sessionStorage.getItem("coll_"+$(value).attr('id'));
-				if(pos === "expand" || pos === "collapse") {
-					$(value).collapsible( pos );
-				} else {
+				if(pos !== "expand" && pos !== "collapse") {
 					sessionStorage.removeItem("coll_"+$(value).attr('id'));
 				}
-				// console.log($(value).attr('id'), pos);	
 			});
 			
 		}
@@ -1216,7 +1187,7 @@ $(function() {
 			http_table+= '<tbody id="topics_table_body">\n';
 			http_table+= '</tbody>\n';
 			http_table+= '</table>\n';
-			$('#generated_http_table').html(http_table).trigger('create');
+			$('#generated_http_table').html(http_table);
 			$('#http_table_search').val( sessionStorage.getItem('http_table_search') );
 		}
 		
@@ -1241,7 +1212,7 @@ $(function() {
 			udp_table+= '<tbody>\n';
 			udp_table+= '</tbody>\n';
 			udp_table+= '</table>\n';
-			$('#generated_udp_table').html(udp_table).trigger('create');
+			$('#generated_udp_table').html(udp_table);
 			$('#udp_table_search').val( sessionStorage.getItem('udp_table_search') );
 		}
 		
@@ -1950,7 +1921,7 @@ $(function() {
 					$("#Main\\."+elemname).prop('checked', true);
 			} 
 			else if (inputType == "radio") {
-				$('input:radio[name="Main.'+elemname+'"]').filter('[value="'+cfg.Main[elemname]+'"]').attr("checked",true).checkboxradio("refresh");
+				$('input:radio[name="Main.'+elemname+'"]').filter('[value="'+cfg.Main[elemname]+'"]').prop("checked", true);
 			}
 			else {
 				$("#Main\\."+elemname).val(cfg.Main[elemname]);
@@ -1958,9 +1929,6 @@ $(function() {
 			
 		
 		}
-		try { $('select').selectmenu('refresh', true); } catch(e) {}
-		try { $('input:checkbox').checkboxradio('refresh'); } catch(e) {}
-		
 		// Hide UDP block if UDP is disabled
 		if( ! $("#Main\\.use_udp").is(":checked") )
 			$(".main_udpport_block").hide();

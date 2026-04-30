@@ -60,15 +60,15 @@
 }
 
 /* Override jQM page/body styling — scoped to core pages (.lb-layout) only
-   so plugin pages keep their default jQM padding/margins */
+   so plugin pages keep their default jQM padding/margins. Note: .page_content
+   and #page_content are LoxBerry-own wrappers (not jQM) and are intentionally
+   NOT overridden here — their padding comes from .lb-content. */
 .lb-layout div[data-role="page"],
 .lb-layout .ui-page,
 .lb-layout .ui-content,
 .lb-layout .ui-body-a,
 .lb-layout .ui-body-c,
-.lb-layout .ui-overlay-a,
-.lb-layout .page_content,
-.lb-layout #page_content {
+.lb-layout .ui-overlay-a {
 	padding: 0 !important;
 	margin: 0 !important;
 	border: none !important;
