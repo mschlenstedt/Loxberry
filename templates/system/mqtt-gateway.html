@@ -680,7 +680,22 @@ $(function() {
         var safeTopic    = escHtml(topic);
         var payload      = t.payload || '';
 
-        var html  = '<div class="mqttgw-topic-row' + (isSubscribed ? '' : ' mqttgw-topic-row-disabled')
+        // JSON-Payload vorab parsen (einmalig)
+        var parsedPayload = null;
+        if (payload) {
+            try {
+                var _p = JSON.parse(payload);
+                if (typeof _p === 'object' && _p !== null) parsedPayload = _p;
+            } catch(e) {}
+        }
+        var hasJson     = parsedPayload !== null;
+        var jsonOpen    = isSubscribed && sub && sub.Jsonexpand && hasJson;
+        var jsonClosed  = isSubscribed && hasJson && !jsonOpen;
+
+        var html  = '<div class="mqttgw-topic-row'
+                  + (isSubscribed ? '' : ' mqttgw-topic-row-disabled')
+                  + (jsonOpen   ? ' mqttgw-row-json-open'   : '')
+                  + (jsonClosed ? ' mqttgw-row-json-closed' : '')
                   + '" data-topic="' + safeTopic + '">';
         html += '<input type="checkbox" class="topic-subscribe" data-topic="' + safeTopic + '"'
              + (isSubscribed ? ' checked' : '') + '>';
@@ -699,24 +714,19 @@ $(function() {
         }
         html += '</div>';
 
-        if (isSubscribed && sub.Jsonexpand && payload) {
-            try {
-                var parsed = JSON.parse(payload);
-                if (typeof parsed === 'object' && parsed !== null) {
-                    html += '<div class="mqttgw-json-fields" data-parent="' + safeTopic + '">';
-                    if (Array.isArray(parsed)) {
-                        for (var i = 0; i < parsed.length; i++) {
-                            html += renderJsonTree(topic, parsed[i], '[' + i + ']');
-                        }
-                    } else {
-                        var keys = Object.keys(parsed);
-                        for (var j = 0; j < keys.length; j++) {
-                            html += renderJsonTree(topic, parsed[keys[j]], keys[j]);
-                        }
-                    }
-                    html += '</div>';
+        if (jsonOpen) {
+            html += '<div class="mqttgw-json-fields" data-parent="' + safeTopic + '">';
+            if (Array.isArray(parsedPayload)) {
+                for (var i = 0; i < parsedPayload.length; i++) {
+                    html += renderJsonTree(topic, parsedPayload[i], '[' + i + ']');
                 }
-            } catch(e) {}
+            } else {
+                var keys = Object.keys(parsedPayload);
+                for (var j = 0; j < keys.length; j++) {
+                    html += renderJsonTree(topic, parsedPayload[keys[j]], keys[j]);
+                }
+            }
+            html += '</div>';
         }
         return html;
     }

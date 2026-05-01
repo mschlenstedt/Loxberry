@@ -574,3 +574,23 @@ body.theme-dark .mqttgw-topic-ms {
   color: #4a7a12;
   font-style: italic;
 }
+
+/* ============================================================
+   TOPIC ROW EXPAND ARROW (▶ / ▼ neben dem Payload-Wert)
+   ============================================================ */
+
+.mqttgw-row-json-closed .mqttgw-topic-payload::after,
+.mqttgw-row-json-open   .mqttgw-topic-payload::after {
+  font-size: 9px;
+  color: var(--lb-gray-400);
+  margin-left: 5px;
+  flex-shrink: 0;
+}
+
+.mqttgw-row-json-closed .mqttgw-topic-payload::after {
+  content: '▶';
+}
+
+.mqttgw-row-json-open .mqttgw-topic-payload::after {
+  content: '▼';
+}
