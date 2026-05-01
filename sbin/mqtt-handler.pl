@@ -73,8 +73,9 @@ sub restart_gateway
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
 	if( $gatewayversion == 2 ) {
 		`pkill -A -f mqtt_gateway.py`;
-		unless ( -d "$lbhomedir/sbin/mqttgateway_venv" ) {
+		unless ( -f "$lbhomedir/sbin/mqttgateway_venv/bin/python3" ) {
 			LOGINF "Creating Python venv for MQTT Gateway V2...";
+			`rm -rf $lbhomedir/sbin/mqttgateway_venv`;
 			`python3 -m venv $lbhomedir/sbin/mqttgateway_venv`;
 			`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $lbhomedir/sbin/requirements_mqttgateway_venv.txt`;
 		}
@@ -361,8 +362,8 @@ END
 	# Return http response here
 	# Check for $errorstr
 	
-	$mqttobj->write();
-	$generaljsonobj->write();
+	$mqttobj->write() if defined $mqttobj;
+	$generaljsonobj->write() if defined $generaljsonobj;
 
 	if ($log) {
 		$log->LOGEND();
