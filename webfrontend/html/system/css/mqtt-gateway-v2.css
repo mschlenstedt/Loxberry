@@ -188,24 +188,38 @@
   background: #fff;
 }
 
+/* Default-Browser-Marker für Gruppen und Subgruppen unterdrücken */
+.mqttgw-group > summary::marker,
+.mqttgw-group > summary::-webkit-details-marker,
+.mqttgw-subgroup > summary::marker,
+.mqttgw-subgroup > summary::-webkit-details-marker {
+  content: none;
+  display: none;
+}
+
+/* Eigene Expand-Pfeile — !important überschreibt lb-collapsible aus components.css */
 .mqttgw-group > summary::after {
-  content: '▶';
+  content: '▶' !important;
+  transform: none !important;
   margin-left: auto;
   font-size: 11px;
   font-weight: normal;
   color: var(--lb-gray-400);
 }
 .mqttgw-group[open] > summary::after {
-  content: '▼';
+  content: '▼' !important;
+  transform: none !important;
 }
 .mqttgw-subgroup > summary::after {
-  content: '▶';
+  content: '▶' !important;
+  transform: none !important;
   margin-left: auto;
   font-size: 9px;
   color: var(--lb-gray-400);
 }
 .mqttgw-subgroup[open] > summary::after {
-  content: '▼';
+  content: '▼' !important;
+  transform: none !important;
 }
 
 .mqttgw-group-count {
