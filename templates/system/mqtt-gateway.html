@@ -976,10 +976,12 @@ $(function() {
         .done(function(resp) {
             var data   = typeof resp === 'string' ? JSON.parse(resp) : resp;
             var topics = [];
-            if (data && data.topics) {
-                data.topics.forEach(function(t) {
-                    topics.push({ topic: t.topic, payload: t.payload || '', group: t.topic.split('/')[0] });
+            if (data && data.incoming) {
+                Object.keys(data.incoming).forEach(function(topic) {
+                    var entry = data.incoming[topic];
+                    topics.push({ topic: topic, payload: entry.p || '', group: topic.split('/')[0] });
                 });
+                topics.sort(function(a, b) { return a.topic < b.topic ? -1 : a.topic > b.topic ? 1 : 0; });
             }
             lastDiscoveryTime = Date.now();
             discoveredTopics  = topics;
