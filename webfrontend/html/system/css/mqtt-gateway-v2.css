@@ -496,3 +496,66 @@ body.theme-dark .mqttgw-topic-ms {
     flex-basis: 100%;
   }
 }
+
+/* ============================================================
+   JSON TREE NODES (Arrays / Objects) mit Expand-Pfeil
+   ============================================================ */
+
+.mqttgw-json-node {
+  border-left: 2px solid rgba(109, 172, 32, 0.3);
+  margin-left: 4px;
+  padding-left: 12px;
+}
+
+.mqttgw-json-node-content {
+  padding-left: 8px;
+}
+
+.mqttgw-json-node-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  padding: 6px 0;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--lb-font-mono);
+  color: #4a7a12;
+}
+
+.mqttgw-json-node-summary::-webkit-details-marker { display: none; }
+.mqttgw-json-node-summary::marker { content: ''; }
+
+.mqttgw-json-node-summary::after {
+  content: '▶';
+  font-size: 9px;
+  color: var(--lb-gray-400);
+  margin-left: 4px;
+}
+
+.mqttgw-json-node[open] > .mqttgw-json-node-summary::after {
+  content: '▼';
+}
+
+/* ============================================================
+   JSON LEAF ROWS — topic-row Layout, grünes Farbschema
+   ============================================================ */
+
+.mqttgw-json-fields .mqttgw-json-leaf.mqttgw-topic-row {
+  padding: 4px 0;
+  min-height: 30px;
+  border-bottom: 1px solid rgba(109, 172, 32, 0.15);
+}
+
+.mqttgw-json-fields .mqttgw-json-leaf.mqttgw-topic-row:last-child {
+  border-bottom: none;
+}
+
+.mqttgw-json-fields .mqttgw-json-leaf .mqttgw-topic-name {
+  color: #4a7a12;
+}
+
+.mqttgw-json-fields .mqttgw-json-leaf .mqttgw-topic-payload {
+  color: #4a7a12;
+  font-style: italic;
+}

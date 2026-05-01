@@ -605,7 +605,7 @@ $(function() {
     function renderFieldOptions(topic, path, field) {
         var safeTopic = escHtml(topic);
         var safePath  = escHtml(path);
-        var html  = '<span class="mqttgw-json-field-options" style="margin-left:8px">';
+        var html  = '<span style="display:contents">';
         html += '<label class="mqttgw-topic-option"><input type="checkbox" class="json-field-nocache"'
              + ' data-topic="' + safeTopic + '" data-path="' + safePath + '"'
              + (field.Noncached ? ' checked' : '') + '> No Cache</label>';
@@ -654,18 +654,17 @@ $(function() {
             return html;
 
         } else {
-            // Primitive leaf
+            // Primitive leaf — gleiche Flex-Zeile wie .mqttgw-topic-row
             var field     = sub ? findJsonField(sub, path) : null;
             var isChecked = field !== null;
             var rawVal    = (value === null) ? 'null' : String(value);
             var dispVal   = escHtml(rawVal.length > 60 ? rawVal.substring(0, 60) + '…' : rawVal);
-            var html  = '<div class="mqttgw-json-leaf' + (isChecked ? ' mqttgw-json-leaf-active' : '') + '">';
-            html += '<label class="mqttgw-json-field">';
+            var html  = '<div class="mqttgw-topic-row mqttgw-json-leaf' + (isChecked ? ' mqttgw-json-leaf-active' : '') + '">';
             html += '<input type="checkbox" class="json-field-subscribe"'
                  + ' data-topic="' + safeTopic + '" data-path="' + safePath + '"'
                  + (isChecked ? ' checked' : '') + '>';
-            html += ' <span class="mqttgw-json-key">' + segment + '</span>';
-            html += ' <span class="mqttgw-json-val">= ' + dispVal + '</span></label>';
+            html += '<span class="mqttgw-topic-name">' + segment + '</span>';
+            html += '<span class="mqttgw-topic-payload" title="' + escHtml(rawVal) + '">' + dispVal + '</span>';
             if (isChecked) html += renderFieldOptions(topic, path, field);
             html += '</div>';
             return html;
