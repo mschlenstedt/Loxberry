@@ -11,6 +11,7 @@ use strict;
 use Net::MQTT::Simple;
 # use Hash::Flatten;
 use File::Monitor;
+use Encode qw(decode encode);
 
 # use Data::Dumper;
 
@@ -119,7 +120,16 @@ sub received
 	my ($topic, $message) = @_;
 	
 	utf8::encode($topic);
-	utf8::encode($message);
+	# Net::MQTT::Simple delivers payload as raw bytes (no UTF-8 flag).
+	# Try to validate as UTF-8; if invalid, assume Latin-1 and convert.
+	if (!utf8::is_utf8($message)) {
+		eval { decode('UTF-8', $message, Encode::FB_CROAK) };
+		if ($@) {
+			$message = encode('UTF-8', decode('latin1', $message));
+		}
+	} else {
+		utf8::encode($message);
+	}
 	LOGOK "MQTT received: $topic: $message";
 
 	# Remember that we have currently have received data
