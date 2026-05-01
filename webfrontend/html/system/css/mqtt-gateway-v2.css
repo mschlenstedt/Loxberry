@@ -188,9 +188,24 @@
   background: #fff;
 }
 
-.mqttgw-group > summary::after,
-.mqttgw-group .mqttgw-subgroup summary::after {
-  content: none;
+.mqttgw-group > summary::after {
+  content: '▶';
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: normal;
+  color: var(--lb-gray-400);
+}
+.mqttgw-group[open] > summary::after {
+  content: '▼';
+}
+.mqttgw-subgroup > summary::after {
+  content: '▶';
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--lb-gray-400);
+}
+.mqttgw-subgroup[open] > summary::after {
+  content: '▼';
 }
 
 .mqttgw-group-count {

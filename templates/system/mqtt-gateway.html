@@ -628,7 +628,7 @@ $(function() {
 
         if (Array.isArray(value)) {
             var subCount = sub ? countSubscribedUnder(sub, path) : 0;
-            var html  = '<details class="mqttgw-json-node mqttgw-json-array" data-key="json:' + safeTopic + '@@' + safePath + '">';
+            var html  = '<details class="mqttgw-json-node mqttgw-json-array" data-key="json:' + safeTopic + '@@' + safePath + '"' + (subCount > 0 ? ' open' : '') + '>';
             html += '<summary class="mqttgw-json-node-summary"><span class="mqttgw-json-key">'
                  + segment + '</span> <span class="mqttgw-json-meta">[Array, ' + value.length + ']</span>';
             if (subCount > 0) html += ' <span class="mqttgw-json-subcount">(' + subCount + ')</span>';
@@ -642,7 +642,7 @@ $(function() {
         } else if (value !== null && typeof value === 'object') {
             var keys     = Object.keys(value);
             var subCount = sub ? countSubscribedUnder(sub, path) : 0;
-            var html  = '<details class="mqttgw-json-node mqttgw-json-object" data-key="json:' + safeTopic + '@@' + safePath + '">';
+            var html  = '<details class="mqttgw-json-node mqttgw-json-object" data-key="json:' + safeTopic + '@@' + safePath + '"' + (subCount > 0 ? ' open' : '') + '>';
             html += '<summary class="mqttgw-json-node-summary"><span class="mqttgw-json-key">'
                  + segment + '</span> <span class="mqttgw-json-meta">{Object, ' + keys.length + '}</span>';
             if (subCount > 0) html += ' <span class="mqttgw-json-subcount">(' + subCount + ')</span>';
@@ -771,7 +771,7 @@ $(function() {
             var childSubCount = countSubscribed(childTopics);
             var allChecked    = childSubCount === childTopics.length && childSubCount > 0;
             var safePrefix    = escHtml(childPrefix);
-            html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '">';
+            html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (childSubCount > 0 ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="sub-group-toggle"'
                  + ' data-prefix="' + safePrefix + '"' + (allChecked ? ' checked' : '')
                  + ' style="margin-right:6px"><strong>' + escHtml(seg) + '</strong>';
