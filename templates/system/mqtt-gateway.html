@@ -630,7 +630,7 @@ $(function() {
             var subCount = sub ? countSubscribedUnder(sub, path) : 0;
             var html  = '<details class="mqttgw-json-node mqttgw-json-array" data-key="json:' + safeTopic + '@@' + safePath + '"' + (subCount > 0 ? ' open' : '') + '>';
             html += '<summary class="mqttgw-json-node-summary"><span class="mqttgw-json-key">'
-                 + segment + '</span> <span class="mqttgw-json-meta">[Array, ' + value.length + ']</span>';
+                 + segment + '</span><span class="mqttgw-expand-arrow"></span><span class="mqttgw-json-meta">[Array, ' + value.length + ']</span>';
             if (subCount > 0) html += ' <span class="mqttgw-json-subcount">(' + subCount + ')</span>';
             html += '</summary><div class="mqttgw-json-node-content">';
             for (var i = 0; i < value.length; i++) {
@@ -644,7 +644,7 @@ $(function() {
             var subCount = sub ? countSubscribedUnder(sub, path) : 0;
             var html  = '<details class="mqttgw-json-node mqttgw-json-object" data-key="json:' + safeTopic + '@@' + safePath + '"' + (subCount > 0 ? ' open' : '') + '>';
             html += '<summary class="mqttgw-json-node-summary"><span class="mqttgw-json-key">'
-                 + segment + '</span> <span class="mqttgw-json-meta">{Object, ' + keys.length + '}</span>';
+                 + segment + '</span><span class="mqttgw-expand-arrow"></span><span class="mqttgw-json-meta">{Object, ' + keys.length + '}</span>';
             if (subCount > 0) html += ' <span class="mqttgw-json-subcount">(' + subCount + ')</span>';
             html += '</summary><div class="mqttgw-json-node-content">';
             for (var j = 0; j < keys.length; j++) {
@@ -658,14 +658,13 @@ $(function() {
             var field     = sub ? findJsonField(sub, path) : null;
             var isChecked = field !== null;
             var rawVal    = (value === null) ? 'null' : String(value);
-            var dispVal   = escHtml(rawVal.length > 60 ? rawVal.substring(0, 60) + '…' : rawVal);
             var html  = '<div class="mqttgw-topic-row mqttgw-json-leaf' + (isChecked ? ' mqttgw-json-leaf-active' : '') + '">';
             html += '<input type="checkbox" class="json-field-subscribe"'
                  + ' data-topic="' + safeTopic + '" data-path="' + safePath + '"'
                  + (isChecked ? ' checked' : '') + '>';
             html += '<span class="mqttgw-topic-name">' + segment + '</span>';
-            html += '<span class="mqttgw-topic-payload" title="' + escHtml(rawVal) + '">' + dispVal + '</span>';
             if (isChecked) html += renderFieldOptions(topic, path, field);
+            html += '<span class="mqttgw-topic-payload">' + escHtml(rawVal) + '</span>';
             html += '</div>';
             return html;
         }
@@ -700,8 +699,6 @@ $(function() {
         html += '<input type="checkbox" class="topic-subscribe" data-topic="' + safeTopic + '"'
              + (isSubscribed ? ' checked' : '') + '>';
         html += '<span class="mqttgw-topic-name">' + escHtml(displayName) + '</span>';
-        html += '<span class="mqttgw-topic-payload" title="' + escHtml(payload) + '">'
-             + escHtml(payload.length > 80 ? payload.substring(0, 80) + '…' : payload) + '</span>';
 
         if (isSubscribed) {
             html += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand"'
@@ -712,6 +709,7 @@ $(function() {
                  + ' data-topic="' + safeTopic + '"' + (sub.resetaftersend ? ' checked' : '') + '> Reset</label>';
             if (msCount > 1) html += msCheckboxesHtml(topic, sub.Toms || []);
         }
+        html += '<span class="mqttgw-topic-payload">' + escHtml(payload) + '</span>';
         html += '</div>';
 
         if (jsonOpen) {
@@ -784,7 +782,8 @@ $(function() {
             html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (childSubCount > 0 ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="sub-group-toggle"'
                  + ' data-prefix="' + safePrefix + '"' + (allChecked ? ' checked' : '')
-                 + ' style="margin-right:6px"><strong>' + escHtml(seg) + '</strong>';
+                 + ' style="margin-right:6px"><strong>' + escHtml(seg) + '</strong>'
+                 + '<span class="mqttgw-expand-arrow"></span>';
             html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
             html += '</summary><div class="mqttgw-subgroup-content">';
             html += renderTree(childTopics, childPrefix);
@@ -828,7 +827,8 @@ $(function() {
             html += '<details class="lb-collapsible mqttgw-group" data-key="grp:' + safeGName + '"' + (g.subCount > 0 ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="group-toggle"'
                  + ' data-group="' + safeGName + '"' + (allChecked ? ' checked' : '')
-                 + ' style="margin-right:6px"><strong>' + safeGName + '</strong>';
+                 + ' style="margin-right:6px"><strong>' + safeGName + '</strong>'
+                 + '<span class="mqttgw-expand-arrow"></span>';
             html += '<span class="mqttgw-group-count">(' + g.topics.length + ' Topics, ' + g.subCount + ' abonniert)</span>';
             html += '</summary><div class="lb-collapsible-content" style="padding:0">';
             html += renderTree(g.topics, gName);

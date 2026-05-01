@@ -188,38 +188,35 @@
   background: #fff;
 }
 
-/* Default-Browser-Marker für Gruppen und Subgruppen unterdrücken */
+/* Default-Browser-Marker und lb-collapsible ::after für eigene Elemente unterdrücken */
 .mqttgw-group > summary::marker,
 .mqttgw-group > summary::-webkit-details-marker,
 .mqttgw-subgroup > summary::marker,
-.mqttgw-subgroup > summary::-webkit-details-marker {
+.mqttgw-subgroup > summary::-webkit-details-marker,
+.mqttgw-json-node-summary::marker,
+.mqttgw-json-node-summary::-webkit-details-marker {
   content: none;
   display: none;
 }
+.mqttgw-group > summary::after,
+.mqttgw-subgroup > summary::after,
+.mqttgw-json-node-summary::after {
+  content: none !important;
+  display: none;
+}
 
-/* Eigene Expand-Pfeile — !important überschreibt lb-collapsible aus components.css */
-.mqttgw-group > summary::after {
-  content: '▶' !important;
-  transform: none !important;
-  margin-left: auto;
-  font-size: 11px;
-  font-weight: normal;
-  color: var(--lb-gray-400);
-}
-.mqttgw-group[open] > summary::after {
-  content: '▼' !important;
-  transform: none !important;
-}
-.mqttgw-subgroup > summary::after {
-  content: '▶' !important;
-  transform: none !important;
-  margin-left: auto;
+/* Expand-Pfeil als Inline-Span direkt nach dem Namen */
+.mqttgw-expand-arrow {
   font-size: 9px;
   color: var(--lb-gray-400);
+  font-weight: normal;
+  flex-shrink: 0;
 }
-.mqttgw-subgroup[open] > summary::after {
-  content: '▼' !important;
-  transform: none !important;
+.mqttgw-expand-arrow::before {
+  content: '▶';
+}
+details[open] > summary .mqttgw-expand-arrow::before {
+  content: '▼';
 }
 
 .mqttgw-group-count {
@@ -300,8 +297,8 @@
 }
 
 .mqttgw-topic-row input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
   flex-shrink: 0;
   accent-color: var(--lb-primary);
 }
@@ -315,43 +312,47 @@
 
 .mqttgw-topic-payload {
   flex: 1;
+  min-width: 0;
   text-align: right;
-  font-size: 12px;
+  font-size: var(--lb-font-sm) !important;
   color: var(--lb-gray-500);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
+  padding-left: 24px;
 }
 
 .mqttgw-topic-json-label {
-  font-size: 12px;
+  font-size: 11px !important;
   color: var(--lb-gray-500);
   white-space: nowrap;
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 3px;
   cursor: pointer;
+  margin: 0 0 0 14px !important;
 }
 .mqttgw-topic-json-label input[type="checkbox"] {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   accent-color: var(--lb-primary);
+  flex-shrink: 0;
 }
 
 .mqttgw-topic-option {
-  font-size: 11px;
+  font-size: 11px !important;
   color: var(--lb-gray-500);
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 3px;
   cursor: pointer;
   white-space: nowrap;
+  margin: 0 !important;
 }
 
 .mqttgw-topic-option input[type="checkbox"] {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   accent-color: var(--lb-primary);
+  flex-shrink: 0;
 }
 
 .mqttgw-ms-dropdown {
@@ -555,16 +556,6 @@ body.theme-dark .mqttgw-topic-ms {
 .mqttgw-json-node-summary::-webkit-details-marker { display: none; }
 .mqttgw-json-node-summary::marker { content: ''; }
 
-.mqttgw-json-node-summary::after {
-  content: '▶';
-  font-size: 9px;
-  color: var(--lb-gray-400);
-  margin-left: 4px;
-}
-
-.mqttgw-json-node[open] > .mqttgw-json-node-summary::after {
-  content: '▼';
-}
 
 /* ============================================================
    JSON LEAF ROWS — topic-row Layout, grünes Farbschema
@@ -590,21 +581,21 @@ body.theme-dark .mqttgw-topic-ms {
 }
 
 /* ============================================================
-   TOPIC ROW EXPAND ARROW (▶ / ▼ neben dem Payload-Wert)
+   TOPIC ROW EXPAND ARROW (▶ / ▼ hinter dem Topic-Namen)
    ============================================================ */
 
-.mqttgw-row-json-closed .mqttgw-topic-payload::after,
-.mqttgw-row-json-open   .mqttgw-topic-payload::after {
+.mqttgw-row-json-closed .mqttgw-topic-name::after,
+.mqttgw-row-json-open   .mqttgw-topic-name::after {
   font-size: 9px;
   color: var(--lb-gray-400);
   margin-left: 5px;
   flex-shrink: 0;
 }
 
-.mqttgw-row-json-closed .mqttgw-topic-payload::after {
+.mqttgw-row-json-closed .mqttgw-topic-name::after {
   content: '▶';
 }
 
-.mqttgw-row-json-open .mqttgw-topic-payload::after {
+.mqttgw-row-json-open .mqttgw-topic-name::after {
   content: '▼';
 }

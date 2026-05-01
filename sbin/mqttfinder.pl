@@ -119,11 +119,12 @@ sub received
 	my ($topic, $message) = @_;
 	
 	utf8::encode($topic);
+	utf8::encode($message);
 	LOGOK "MQTT received: $topic: $message";
-	
+
 	# Remember that we have currently have received data
 	$mqtt_data_received = 1;
-	
+
 	$sendhash{$topic}{p} = $message;
 	$sendhash{$topic}{t} = Time::HiRes::time();
 	
