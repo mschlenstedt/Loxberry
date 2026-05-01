@@ -78,7 +78,7 @@ sub restart_gateway
 			`python3 -m venv $lbhomedir/sbin/mqttgateway_venv`;
 			`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $lbhomedir/sbin/requirements_mqttgateway_venv.txt`;
 		}
-		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 $lbhomedir/sbin/mqtt_gateway.py >> /dev/shm/mqtt-gateway.log 2>&1 &'`;
+		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py >> /dev/shm/mqtt-gateway.log 2>&1 &'`;
 	} else {
 		`pkill mqttgateway.pl`;
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;
