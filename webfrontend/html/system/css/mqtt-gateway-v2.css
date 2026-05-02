@@ -577,7 +577,6 @@ body.theme-dark .mqttgw-topic-ms {
 
 .mqttgw-json-fields .mqttgw-json-leaf .mqttgw-topic-payload {
   color: #4a7a12;
-  font-style: italic;
 }
 
 /* ============================================================
