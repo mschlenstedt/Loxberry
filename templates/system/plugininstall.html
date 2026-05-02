@@ -478,8 +478,73 @@
 	
 
 	
+// SemVer prerelease aware (hyphen identifiers), fallback to dotted-numeric legacy compare.
+
+function semverParseForCompare(raw) {
+	if (raw === undefined || raw === null) return null;
+	var s = String(raw).trim();
+	if (!s.length) return null;
+	if (s.charAt(0).toLowerCase() === 'v') s = s.slice(1);
+	var pb = s.indexOf('+'); if (pb >= 0) s = s.slice(0, pb);
+	var dash = s.indexOf('-');
+	var coreStr = dash >= 0 ? s.slice(0, dash) : s;
+	var preStr = dash >= 0 ? s.slice(dash + 1) : '';
+	var pts = coreStr.split('.');
+	if (!pts.length) return null;
+	if (pts.length > 3) return null;
+	while (pts.length < 3) pts.push('0');
+	if (!/^[0-9]+$/.test(pts[0]) || !/^[0-9]+$/.test(pts[1]) || !/^[0-9]+$/.test(pts[2])) return null;
+	if (preStr && !/^[0-9A-Za-z.-]+$/.test(preStr)) return null;
+	var core = [ parseInt(pts[0], 10), parseInt(pts[1], 10), parseInt(pts[2], 10) ];
+	return { core: core, prerelease: preStr };
+}
+
+function semverCmpPre(ap, bp) {
+	var ea = !(ap !== undefined && ap !== null && ap.length);
+	var eb = !(bp !== undefined && bp !== null && bp.length);
+	if (ea && eb) return 0;
+	if (!ea && eb) return -1;
+	if (ea && !eb) return 1;
+	var sa = ap.split('.');
+	var sb = bp.split('.');
+	var nlen = sa.length > sb.length ? sa.length : sb.length;
+	var k = 0;
+	for (k = 0; k < nlen; k++) {
+		var xa = sa[k]; var xb = sb[k];
+		if (xa === undefined && xb !== undefined) return -1;
+		if (xa !== undefined && xb === undefined) return 1;
+		if (xa === undefined && xb === undefined) break;
+		var nda = /^[0-9]+$/.test(xa); var ndb = /^[0-9]+$/.test(xb);
+		if (nda && ndb) {
+			var ia = parseInt(xa,10), ib = parseInt(xb,10);
+			if (ia !== ib) return ia < ib ? -1 : 1;
+		}
+		else if (nda !== ndb) return nda ? -1 : 1;
+		else {
+			if (xa < xb) return -1;
+			if (xa > xb) return 1;
+		}
+	}
+	return 0;
+}
+
+function semverCmpParsed(a, b) {
+	var k = 0;
+	for (k = 0; k < 3; k++) {
+		if (a.core[k] !== b.core[k]) return a.core[k] < b.core[k] ? -1 : 1;
+	}
+	return semverCmpPre(a.prerelease, b.prerelease);
+}
+
 // 	https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
 function versionCompare(v1, v2, options) {
+	var sx = semverParseForCompare(v1), sy = semverParseForCompare(v2);
+	if (sx && sy) {
+		var c = semverCmpParsed(sx, sy);
+		if (c === 1) return 1;
+		if (c === -1) return -1;
+		return 0;
+	}
     var lexicographical = options && options.lexicographical,
         zeroExtend = options && options.zeroExtend,
         v1parts = v1.split('.'),
