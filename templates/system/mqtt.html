@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
+
 <div id="mqttapp">
 	<div class="lb-section-title">{{sl.heading}}</div>
 	<p v-html="sl.intro"></p>
@@ -85,6 +87,18 @@
 		To configure MQTT devices, use the following MQTT connection information:<br>
 		Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Brokerport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b><br>
 		<small>Possibly host and port needs to be combined: <b>{{show_brokerhost}}:{{Mqtt.Brokerport}}</b></small>
+	</div>
+
+	<!-- Mosquitto Service Status -->
+	<div id="mosq_servicestatus" class="servicestatus servicestatus-stopped" style="margin-top:var(--lb-space-lg)">
+		<div class="servicestatus-info">
+			<span class="servicestatus-icon">&#x25CF;</span>
+			<span id="mosq_status_text">Mosquitto wird abgefragt...</span>
+		</div>
+		<div class="servicestatus-btns">
+			<button class="lb-btn" id="btn_restart_mosquitto" data-role="none">Restart</button>
+			<button class="lb-btn lb-btn-stop" id="btn_stop_mosquitto" data-role="none">Stop</button>
+		</div>
 	</div>
 
 	<!-- Save button -->
@@ -234,6 +248,46 @@
 	Vue.createApp(mqttapp)
 		.mount('#mqttapp')
 
+	const mqtt_ajax = '/admin/system/ajax/ajax-mqtt.php';
 
+	function update_mosq_status() {
+		$.post(mqtt_ajax, { ajax: 'getpids' })
+		.done(function(resp) {
+			var $ss = $('#mosq_servicestatus');
+			if (resp.pids.mosquitto != null) {
+				$ss.removeClass('servicestatus-stopped').addClass('servicestatus-running');
+				$('#mosq_status_text').text('Mosquitto läuft (PID ' + resp.pids.mosquitto + ')');
+			} else {
+				$ss.removeClass('servicestatus-running').addClass('servicestatus-stopped');
+				$('#mosq_status_text').text('Mosquitto läuft nicht');
+			}
+		})
+		.fail(function() {
+			$('#mosq_status_text').text('Status-Abfrage fehlgeschlagen');
+		});
+	}
+
+	$(function() {
+		update_mosq_status();
+		setInterval(update_mosq_status, 5000);
+
+		$('#btn_restart_mosquitto').click(function() {
+			$('#btn_restart_mosquitto').attr('disabled', true);
+			$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
+			.always(function() {
+				$('#btn_restart_mosquitto').attr('disabled', false);
+				setTimeout(update_mosq_status, 3000);
+			});
+		});
+
+		$('#btn_stop_mosquitto').click(function() {
+			$('#btn_stop_mosquitto').attr('disabled', true);
+			$.post(mqtt_ajax, { ajax: 'stop_mosquitto' })
+			.always(function() {
+				$('#btn_stop_mosquitto').attr('disabled', false);
+				setTimeout(update_mosq_status, 1500);
+			});
+		});
+	});
 
 </script>

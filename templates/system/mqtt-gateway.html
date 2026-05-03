@@ -34,12 +34,16 @@
 <!-- Form BASIC (MQTT Basic - V2) -->
 <form id="form_basic" onsubmit="return false;">
 
-    <!-- Live Status Indicator -->
-    <div id="mqttgw_status" class="mqttgw-status mqttgw-status-ok" style="display:none">
-        <span class="mqttgw-status-dot"></span>
-        <span class="mqttgw-status-label">Gateway laeuft</span>
-        <span class="mqttgw-status-detail" id="mqttgw_status_detail"></span>
-        <span class="mqttgw-status-uptime" id="mqttgw_status_uptime"></span>
+    <!-- Gateway Service Status -->
+    <div id="gw_servicestatus" class="servicestatus servicestatus-stopped">
+        <div class="servicestatus-info">
+            <span class="servicestatus-icon">&#x25CF;</span>
+            <span id="gw_status_text">MQTT Gateway wird abgefragt...</span>
+        </div>
+        <div class="servicestatus-btns">
+            <button class="lb-btn" id="btn_restart_gateway" data-role="none">Restart</button>
+            <button class="lb-btn lb-btn-stop" id="btn_stop_gateway" data-role="none">Stop</button>
+        </div>
     </div>
 
     <!-- Section: Gateway Version -->
@@ -1996,8 +2000,8 @@ $(function() {
 
 	<div style="display:flex;justify-content:center;gap:12px;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
 	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none"><TMPL_VAR MQTT.BTN_SAVE_APPLY></button>
-	<button class="lb-btn" id="restartmqttgateway" data-role="none"><TMPL_VAR MQTT.BTN_GATEWAY_RESTART></button>
 	</div>
+	<div class="mqttgw-savefeedback"><span id="savemessages"></span></div>
 
 </TMPL_UNLESS>
 
@@ -2274,12 +2278,9 @@ $(function() {
 		
 	});
 
-	$("#restartmqttgateway").click(function(){
-		// console.log("Restart pressed");
-		$("#restartmqttgateway").attr("disabled", true);
-		
-		$.post( 'ajax/ajax-mqtt.php', {
-			ajax: 'restartgateway' })
+	$("#btn_restart_gateway").click(function(){
+		$("#btn_restart_gateway").attr("disabled", true);
+		$.post( 'ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
 		.done(function(resp) {
 			// console.log( "ajax_post", "success", resp );
 	  })
@@ -2287,13 +2288,20 @@ $(function() {
 			console.log( "ajax_post", "failed", resp );
 	  })
 	  .always(function(resp) {
-			// console.log( "ajax_post", "finished", resp );
-		$("#restartmqttgateway").attr("disabled", false);
-		update_pids();
-			
+		$("#btn_restart_gateway").attr("disabled", false);
+		setTimeout(update_pids, 3000);
 	  });
 	});
-	
+
+	$("#btn_stop_gateway").click(function(){
+		$("#btn_stop_gateway").attr("disabled", true);
+		$.post( 'ajax/ajax-mqtt.php', { ajax: 'stop_gateway' })
+		.always(function(resp) {
+			$("#btn_stop_gateway").attr("disabled", false);
+			setTimeout(update_pids, 1500);
+		});
+	});
+
 	$("#purgemosquittodb").click(function(){
 		// console.log("Restart Mosquitto database");
 		$("#purgemosquittodb").attr("disabled", true);
@@ -2333,33 +2341,22 @@ $("#reconnect").click(function(){
 	  });
 	});
 	
-	function update_pids() 
+	function update_pids()
 	{
-
-		$.post( 'ajax/ajax-mqtt.php', {
-			ajax: 'getpids' })
+		$.post( 'ajax/ajax-mqtt.php', { ajax: 'getpids' })
 		.done(function(resp) {
-			// console.log( "ajax_post", "success", resp );
-			if(resp.pids.mqttgateway != null) {
-				$("#gatewaystate").attr("style", "color:green").html("MQTT Gateway running (PID"+resp.pids.mqttgateway+")");
+			var $ss = $("#gw_servicestatus");
+			if (resp.pids.mqttgateway != null) {
+				$ss.removeClass("servicestatus-stopped").addClass("servicestatus-running");
+				$ss.find(".servicestatus-icon").css("color", "");
+				$("#gw_status_text").text("MQTT Gateway läuft (PID " + resp.pids.mqttgateway + ")");
 			} else {
-				$("#gatewaystate").attr("style", "color:red").html("MQTT Gateway not running");
+				$ss.removeClass("servicestatus-running").addClass("servicestatus-stopped");
+				$("#gw_status_text").text("MQTT Gateway läuft nicht");
 			}
-			if(resp.pids.mosquitto != null) {
-				$("#mosquittostate").attr("style", "color:green").html("Mosquitto running (PID"+resp.pids.mosquitto+")");
-			} else {
-				$("#mosquittostate").attr("style", "color:red").html("Mosquitto not running");
-			}
-			
-	  })
-	  .fail(function(resp) {
-			$("#gatewaystate").attr("style", "color:red").html("Failed to query PIDs");
-			$("#mosquittostate").attr("style", "color:red").html("Failed to query PIDs");
-			
-	  })
-	  .always(function(resp) {
-			// console.log( "ajax_post", "finished", resp );
-
+		})
+		.fail(function() {
+			$("#gw_status_text").text("Status-Abfrage fehlgeschlagen");
 		});
 	}
 
@@ -2476,11 +2473,5 @@ $("#reconnect").click(function(){
 
 </TMPL_UNLESS>
 
-<div style="display:flex;align-items:center;justify-content:center;font-size:70%;padding:5px 20px 5px 20px">
-	<span id="savemessages"></span>&nbsp;
-	<span id="savebrokerpass"></span>&nbsp;
-	&nbsp;<span id="gatewaystate"></span>&nbsp;|
-	&nbsp;<span id="mosquittostate"></span>
-</div>
 
 </div><!-- /data-enhance="false" -->

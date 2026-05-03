@@ -328,7 +328,7 @@ details[open] > summary .mqttgw-expand-arrow::before {
   align-items: center;
   gap: 3px;
   cursor: pointer;
-  margin: 0 0 0 14px !important;
+  margin: 0 0 0 32px !important;
 }
 .mqttgw-topic-json-label input[type="checkbox"] {
   width: 12px;
@@ -448,6 +448,70 @@ details[open] > summary .mqttgw-expand-arrow::before {
   width: 14px;
   height: 14px;
   accent-color: var(--lb-primary);
+}
+
+/* ============================================================
+   SERVICE STATUS BLOCK (Audioserver-style)
+   ============================================================ */
+
+.servicestatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--lb-radius);
+  border: 1px solid #c3e6a0;
+  background-color: #f0f9e8;
+  margin-bottom: var(--lb-space-lg);
+  gap: var(--lb-space-sm);
+}
+
+.servicestatus.servicestatus-stopped {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.servicestatus-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--lb-font-sm);
+}
+
+.servicestatus-icon {
+  font-size: 14px;
+  color: var(--lb-success);
+  line-height: 1;
+}
+
+.servicestatus-stopped .servicestatus-icon {
+  color: var(--lb-danger);
+}
+
+.servicestatus-btns {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.servicestatus-btns .lb-btn {
+  padding: 3px 10px;
+  font-size: 11px;
+  min-height: 0;
+}
+
+.servicestatus-btns .lb-btn-stop {
+  background: var(--lb-danger);
+  color: white;
+  border-color: var(--lb-danger);
+}
+
+/* save feedback row */
+.mqttgw-savefeedback {
+  text-align: center;
+  font-size: var(--lb-font-sm);
+  min-height: 1.4em;
+  margin-top: 8px;
 }
 
 /* ============================================================
@@ -577,6 +641,10 @@ body.theme-dark .mqttgw-topic-ms {
 
 .mqttgw-json-fields .mqttgw-json-leaf .mqttgw-topic-payload {
   color: #4a7a12;
+}
+
+.mqttgw-json-leaf .mqttgw-topic-option:first-of-type {
+  margin-left: 32px !important;
 }
 
 /* ============================================================

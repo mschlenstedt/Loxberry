@@ -230,8 +230,18 @@ elseif( $ajax == 'publish_json' ) {
 
 elseif( $ajax == 'restartgateway' ) {
 	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway" );
+}
 
-}	
+elseif( $ajax == 'stop_gateway' ) {
+	exec("sudo pkill -f mqtt_gateway.py");
+	exec("sudo pkill mqttgateway.pl");
+	echo json_encode(array('status' => 'ok'));
+}
+
+elseif( $ajax == 'stop_mosquitto' ) {
+	exec("sudo systemctl stop mosquitto");
+	echo json_encode(array('status' => 'ok'));
+}
 
 elseif( $ajax == 'getmqttfinderdata' ) {
 	$fp = @fopen($finderdatafile, "r");
