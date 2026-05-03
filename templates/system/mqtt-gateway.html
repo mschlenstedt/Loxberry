@@ -35,14 +35,14 @@
 <form id="form_basic" onsubmit="return false;">
 
     <!-- Gateway Service Status -->
-    <div id="gw_servicestatus" class="servicestatus servicestatus-stopped">
+    <div class="servicestatus">
         <div class="servicestatus-info">
-            <span class="servicestatus-icon">&#x25CF;</span>
-            <span id="gw_status_text">MQTT Gateway wird abgefragt...</span>
+            <div>MQTT Gateway</div>
+            <div class="status" id="gw_status_text">wird abgefragt...</div>
         </div>
         <div class="servicestatus-btns">
-            <button class="lb-btn" id="btn_restart_gateway" data-role="none">Restart</button>
-            <button class="lb-btn lb-btn-stop" id="btn_stop_gateway" data-role="none">Stop</button>
+            <a id="btn_restart_gateway" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-refresh ui-corner-all" data-role="none">Restart</a>
+            <a id="btn_stop_gateway" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all" data-role="none" style="background:#d9534f;color:white;border-color:#d9534f">Stop</a>
         </div>
     </div>
 
@@ -2345,18 +2345,14 @@ $("#reconnect").click(function(){
 	{
 		$.post( 'ajax/ajax-mqtt.php', { ajax: 'getpids' })
 		.done(function(resp) {
-			var $ss = $("#gw_servicestatus");
 			if (resp.pids.mqttgateway != null) {
-				$ss.removeClass("servicestatus-stopped").addClass("servicestatus-running");
-				$ss.find(".servicestatus-icon").css("color", "");
-				$("#gw_status_text").text("MQTT Gateway läuft (PID " + resp.pids.mqttgateway + ")");
+				$("#gw_status_text").text("läuft (PID " + resp.pids.mqttgateway + ")").css({"background":"#6dac20","color":"black","border-color":"#5a9a18"});
 			} else {
-				$ss.removeClass("servicestatus-running").addClass("servicestatus-stopped");
-				$("#gw_status_text").text("MQTT Gateway läuft nicht");
+				$("#gw_status_text").text("läuft nicht").css({"background":"#d0021b","color":"white","border-color":"#b00218"});
 			}
 		})
 		.fail(function() {
-			$("#gw_status_text").text("Status-Abfrage fehlgeschlagen");
+			$("#gw_status_text").text("Abfrage fehlgeschlagen").css({"background":"#dfdfdf","color":"black","border-color":"#7e7e7e"});
 		});
 	}
 

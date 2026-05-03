@@ -1,5 +1,17 @@
 <link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
 
+<!-- Mosquitto Service Status (outside Vue app) -->
+<div class="servicestatus" id="mosq_servicestatus_wrap">
+	<div class="servicestatus-info">
+		<div>Mosquitto MQTT Server</div>
+		<div class="status" id="mosq_status_text">wird abgefragt...</div>
+	</div>
+	<div class="servicestatus-btns">
+		<a id="btn_restart_mosquitto" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-refresh ui-corner-all">Restart</a>
+		<a id="btn_stop_mosquitto" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all" style="background:#d9534f;color:white;border-color:#d9534f">Stop</a>
+	</div>
+</div>
+
 <div id="mqttapp">
 	<div class="lb-section-title">{{sl.heading}}</div>
 	<p v-html="sl.intro"></p>
@@ -87,18 +99,6 @@
 		To configure MQTT devices, use the following MQTT connection information:<br>
 		Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Brokerport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b><br>
 		<small>Possibly host and port needs to be combined: <b>{{show_brokerhost}}:{{Mqtt.Brokerport}}</b></small>
-	</div>
-
-	<!-- Mosquitto Service Status -->
-	<div id="mosq_servicestatus" class="servicestatus servicestatus-stopped" style="margin-top:var(--lb-space-lg)">
-		<div class="servicestatus-info">
-			<span class="servicestatus-icon">&#x25CF;</span>
-			<span id="mosq_status_text">Mosquitto wird abgefragt...</span>
-		</div>
-		<div class="servicestatus-btns">
-			<button class="lb-btn" id="btn_restart_mosquitto" data-role="none">Restart</button>
-			<button class="lb-btn lb-btn-stop" id="btn_stop_mosquitto" data-role="none">Stop</button>
-		</div>
 	</div>
 
 	<!-- Save button -->
@@ -253,17 +253,14 @@
 	function update_mosq_status() {
 		$.post(mqtt_ajax, { ajax: 'getpids' })
 		.done(function(resp) {
-			var $ss = $('#mosq_servicestatus');
 			if (resp.pids.mosquitto != null) {
-				$ss.removeClass('servicestatus-stopped').addClass('servicestatus-running');
-				$('#mosq_status_text').text('Mosquitto läuft (PID ' + resp.pids.mosquitto + ')');
+				$('#mosq_status_text').text('läuft (PID ' + resp.pids.mosquitto + ')').css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
 			} else {
-				$ss.removeClass('servicestatus-running').addClass('servicestatus-stopped');
-				$('#mosq_status_text').text('Mosquitto läuft nicht');
+				$('#mosq_status_text').text('läuft nicht').css({'background':'#d0021b','color':'white','border-color':'#b00218'});
 			}
 		})
 		.fail(function() {
-			$('#mosq_status_text').text('Status-Abfrage fehlgeschlagen');
+			$('#mosq_status_text').text('Abfrage fehlgeschlagen').css({'background':'#dfdfdf','color':'black','border-color':'#7e7e7e'});
 		});
 	}
 

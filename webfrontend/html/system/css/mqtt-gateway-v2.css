@@ -451,59 +451,45 @@ details[open] > summary .mqttgw-expand-arrow::before {
 }
 
 /* ============================================================
-   SERVICE STATUS BLOCK (Audioserver-style)
+   SERVICE STATUS BLOCK (exact Audioserver4Home pattern)
    ============================================================ */
 
 .servicestatus {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-radius: var(--lb-radius);
-  border: 1px solid #c3e6a0;
-  background-color: #f0f9e8;
-  margin-bottom: var(--lb-space-lg);
-  gap: var(--lb-space-sm);
-}
-
-.servicestatus.servicestatus-stopped {
-  background-color: #fef2f2;
-  border-color: #fca5a5;
+  gap: 10px;
+  text-shadow: none;
+  padding: 6px 0;
+  margin-bottom: 16px;
 }
 
 .servicestatus-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: var(--lb-font-sm);
-}
-
-.servicestatus-icon {
-  font-size: 14px;
-  color: var(--lb-success);
-  line-height: 1;
-}
-
-.servicestatus-stopped .servicestatus-icon {
-  color: var(--lb-danger);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .servicestatus-btns {
   display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
 }
 
-.servicestatus-btns .lb-btn {
-  padding: 3px 10px;
-  font-size: 11px;
-  min-height: 0;
-}
-
-.servicestatus-btns .lb-btn-stop {
-  background: var(--lb-danger);
-  color: white;
-  border-color: var(--lb-danger);
+.servicestatus .status {
+  padding: 7px 12px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  background: #dfdfdf;
+  border: 1px solid #7e7e7e;
+  min-width: 130px;
+  max-width: 100%;
+  text-align: center;
 }
 
 /* save feedback row */
