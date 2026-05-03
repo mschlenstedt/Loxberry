@@ -301,7 +301,7 @@ elseif ( $_POST['ajax'] == 'get_subscriptions' || $_GET['ajax'] == 'get_subscrip
     }
 }
 
-elseif ( $_POST['ajax'] == 'save_subscriptions' ) {
+elseif ( $_POST['ajax'] == 'save_subscriptions' || $_GET['ajax'] == 'save_subscriptions' ) {
     $fullcfgfile = LBSCONFIGDIR.'/subscriptions.json';
     $input = json_decode(file_get_contents('php://input'), true);
     if (!$input || !isset($input['Subscriptions'])) {
