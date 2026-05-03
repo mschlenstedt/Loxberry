@@ -58,6 +58,7 @@
 		<div class="lb-form-field" style="max-width:150px">
 			<input class="lb-input" type="number" id="Mqtt.Brokerport"
 				v-model.number="Mqtt.Brokerport"
+				:disabled="Mqtt.Uselocalbroker=='true'"
 				v-on:change="formadata_changed()"
 				data-role="none">
 		</div>
