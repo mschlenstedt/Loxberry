@@ -251,6 +251,10 @@
 
 	const mqtt_ajax = '/admin/system/ajax/ajax-mqtt.php';
 
+	function mosq_status_pending() {
+		$('#mosq_status_text').text('Ausführen...').css({'background':'#dfdfdf','color':'black','border-color':'#7e7e7e'});
+	}
+
 	function update_mosq_status() {
 		$.post(mqtt_ajax, { ajax: 'getpids' })
 		.done(function(resp) {
@@ -283,19 +287,21 @@
 		setInterval(update_mosq_status, 5000);
 
 		$('#btn_restart_mosquitto').click(function() {
-			$('#btn_restart_mosquitto').attr('disabled', true);
+			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('ui-disabled').attr('disabled', true);
+			mosq_status_pending();
 			$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
 			.always(function() {
-				$('#btn_restart_mosquitto').attr('disabled', false);
+				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('ui-disabled').removeAttr('disabled');
 				setTimeout(update_mosq_status, 3000);
 			});
 		});
 
 		$('#btn_stop_mosquitto').click(function() {
-			$('#btn_stop_mosquitto').attr('disabled', true);
+			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('ui-disabled').attr('disabled', true);
+			mosq_status_pending();
 			$.post(mqtt_ajax, { ajax: 'stop_mosquitto' })
 			.always(function() {
-				$('#btn_stop_mosquitto').attr('disabled', false);
+				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('ui-disabled').removeAttr('disabled');
 				setTimeout(update_mosq_status, 1500);
 			});
 		});

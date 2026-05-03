@@ -2279,25 +2279,21 @@ $(function() {
 	});
 
 	$("#btn_restart_gateway").click(function(){
-		$("#btn_restart_gateway").attr("disabled", true);
+		$("#btn_restart_gateway, #btn_stop_gateway").addClass("ui-disabled").attr("disabled", true);
+		gw_status_pending();
 		$.post( 'ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
-		.done(function(resp) {
-			// console.log( "ajax_post", "success", resp );
-	  })
-	  .fail(function(resp) {
-			console.log( "ajax_post", "failed", resp );
-	  })
-	  .always(function(resp) {
-		$("#btn_restart_gateway").attr("disabled", false);
-		setTimeout(update_pids, 3000);
-	  });
+		.always(function() {
+			$("#btn_restart_gateway, #btn_stop_gateway").removeClass("ui-disabled").removeAttr("disabled");
+			setTimeout(update_pids, 3000);
+		});
 	});
 
 	$("#btn_stop_gateway").click(function(){
-		$("#btn_stop_gateway").attr("disabled", true);
+		$("#btn_restart_gateway, #btn_stop_gateway").addClass("ui-disabled").attr("disabled", true);
+		gw_status_pending();
 		$.post( 'ajax/ajax-mqtt.php', { ajax: 'stop_gateway' })
-		.always(function(resp) {
-			$("#btn_stop_gateway").attr("disabled", false);
+		.always(function() {
+			$("#btn_restart_gateway, #btn_stop_gateway").removeClass("ui-disabled").removeAttr("disabled");
 			setTimeout(update_pids, 1500);
 		});
 	});
@@ -2341,6 +2337,10 @@ $("#reconnect").click(function(){
 	  });
 	});
 	
+	function gw_status_pending() {
+		$("#gw_status_text").text("Ausführen...").css({"background":"#dfdfdf","color":"black","border-color":"#7e7e7e"});
+	}
+
 	function update_pids()
 	{
 		$.post( 'ajax/ajax-mqtt.php', { ajax: 'getpids' })
