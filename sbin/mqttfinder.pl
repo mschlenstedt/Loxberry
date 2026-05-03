@@ -162,14 +162,28 @@ sub read_config
 	}
 	
 	LOGOK "Reading config";
-	
+
+	# Remember old broker to detect changes
+	my $old_brokerhost = defined $cfg ? ($cfg->{Mqtt}->{Brokerhost} // '') : undef;
+	my $old_brokerport = defined $cfg ? ($cfg->{Mqtt}->{Brokerport} // '') : undef;
+
 	# General.json Config file
 	$json = LoxBerry::JSON->new();
 	$cfg = $json->open(filename => $cfgfile, readonly => 1);
-	
+
 	if(!$cfg) {
 		LOGCRIT "Could not read json configuration. Possibly not a valid json?";
 		return;
+	}
+
+	# Clear topic cache when broker connection changes
+	if( defined $old_brokerhost &&
+	    ( ($cfg->{Mqtt}->{Brokerhost} // '') ne $old_brokerhost ||
+	      ($cfg->{Mqtt}->{Brokerport} // '') ne $old_brokerport ) ) {
+		LOGOK "Broker changed ($old_brokerhost:$old_brokerport -> " .
+		      $cfg->{Mqtt}->{Brokerhost} . ":" . $cfg->{Mqtt}->{Brokerport} .
+		      ") — clearing topic cache";
+		%sendhash = ();
 	}
 
 	# Checking, if mqttfinder is disabled
