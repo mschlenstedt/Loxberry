@@ -64,14 +64,20 @@ elsif( $action eq "restartgateway" ) {
 }
 
 elsif( $action eq "stopgateway" ) {
-	my $tempjsonobj = LoxBerry::JSON->new();
-	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
-	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
-	if( $gatewayversion == 2 ) {
-		`pkill -f mqtt_gateway.py`;
-	} else {
-		`pkill mqttgateway.pl`;
+	# V2: kill via PID file with SIGKILL (asyncio catches SIGTERM)
+	my $v2_pidfile = '/dev/shm/mqtt_gateway.pid';
+	if (-f $v2_pidfile) {
+		open(my $fh, '<', $v2_pidfile);
+		my $pid = <$fh>;
+		close $fh;
+		chomp $pid;
+		if ($pid =~ /^\d+$/ && -e "/proc/$pid") {
+			kill 'KILL', int($pid);
+			LOGINF "Stopped mqtt_gateway.py PID $pid";
+		}
 	}
+	# V1 fallback
+	`pkill -KILL mqttgateway.pl`;
 }
 
 elsif( $action eq "stopmosquitto" ) {
