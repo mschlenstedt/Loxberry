@@ -258,9 +258,9 @@
 				// Custom broker — show reachability, disable local buttons
 				$btns.addClass('ui-disabled').attr('disabled', true);
 				if (resp.pids.mosq_reachable) {
-					$('#mosq_status_text').text('erreichbar (Custom: ' + resp.pids.mosq_host + ')').css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+					$('#mosq_status_text').text('erreichbar').css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
 				} else {
-					$('#mosq_status_text').text('nicht erreichbar (' + resp.pids.mosq_host + ')').css({'background':'#d0021b','color':'white','border-color':'#b00218'});
+					$('#mosq_status_text').text('fehlgeschlagen').css({'background':'#d0021b','color':'white','border-color':'#b00218'});
 				}
 			} else {
 				// Local Mosquitto
