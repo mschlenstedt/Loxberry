@@ -148,6 +148,19 @@
         <div class="lb-form-help"><TMPL_VAR MQTT.HELP_RESET_AFTER_SEND></div>
     </div>
 
+    <!-- Text-zu-Wert Konvertierungen -->
+    <div class="lb-section-title">Text-zu-Wert Konvertierungen</div>
+    <p>MQTT-Ger&auml;te senden oft Textstrings die Loxone nicht verarbeiten kann. Hier k&ouml;nnen Sie Text-zu-Wert Zuordnungen definieren, die an den Miniserver gesendet werden.</p>
+    <p>Booleans (on, off etc.) werden bereits automatisch konvertiert wenn die Boolean-Konvertierung aktiviert ist.</p>
+    <div class="lb-form-row">
+        <div class="lb-form-label">Konvertierungen</div>
+        <div class="lb-form-field">
+            <textarea class="lb-textarea" name="conversions" id="conversions" rows="8" data-role="none"></textarea>
+        </div>
+        <div class="lb-form-help">Ein Eintrag pro Zeile: <span class="mono">Text=Wert</span></div>
+    </div>
+    <div id="extplugin_conversions" style="display:none"></div>
+
     <!-- Miniserver zu MQTT -->
     <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_MS_TO_MQTT></div>
 
@@ -1019,33 +1032,7 @@ $(function() {
 </TMPL_IF>
 
 
-<!-- Merged from FORM_CONVERSIONS -->
-	<!-- Form CONVERSIONS -->
-	<form id="form" onsubmit="return false;">
-
-	<div class="lb-section-title">Text-zu-Wert Konvertierungen</div>
-	<p>MQTT-Ger&auml;te senden oft Textstrings die Loxone nicht verarbeiten kann. Hier k&ouml;nnen Sie Text-zu-Wert Zuordnungen definieren, die an den Miniserver gesendet werden.</p>
-	<p>Booleans (on, off etc.) werden bereits automatisch konvertiert wenn die Boolean-Konvertierung aktiviert ist.</p>
-	<div class="lb-form-row">
-		<div class="lb-form-label">Konvertierungen</div>
-		<div class="lb-form-field">
-			<textarea class="lb-textarea" name="conversions" id="conversions" rows="12" data-role="none"></textarea>
-		</div>
-		<div class="lb-form-help">Ein Eintrag pro Zeile: <span class="mono">Text=Wert</span></div>
-	</div>
-	</form>
-
-	<div data-role='collapsible' id='coll_extconversions' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right' style="display:none">
-		<h2 class='ui-bar ui-bar-a ui-corner-all'>Conversions defined by other plugins</h2>
-		<div id="extplugin_conversions" style="display:flex;flex-wrap:wrap;justify-content:space-evenly;align-items:flex-start;align-content:flex-start;background-color:lightgray;">
-		</div>
-	</div>
-	
-	
-	<!-- /Form CONVERSIONS -->
 </TMPL_IF>
-
-<!-- FORM_CONVERSIONS removed: content merged into FORM_SUBSCRIPTIONS -->
 
 
 <TMPL_IF FORM_TOPICS>
