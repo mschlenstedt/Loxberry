@@ -63,6 +63,21 @@ elsif( $action eq "restartgateway" ) {
 	restart_gateway();
 }
 
+elsif( $action eq "stopgateway" ) {
+	my $tempjsonobj = LoxBerry::JSON->new();
+	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
+	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
+	if( $gatewayversion == 2 ) {
+		`pkill -f mqtt_gateway.py`;
+	} else {
+		`pkill mqttgateway.pl`;
+	}
+}
+
+elsif( $action eq "stopmosquitto" ) {
+	qx(systemctl stop mosquitto);
+}
+
 exit;
 
 sub restart_gateway

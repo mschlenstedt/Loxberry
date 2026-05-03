@@ -286,7 +286,9 @@
 		update_mosq_status();
 		setInterval(update_mosq_status, 5000);
 
-		$('#btn_restart_mosquitto').click(function() {
+		$('#btn_restart_mosquitto').click(function(e) {
+			e.preventDefault();
+			if ($(this).hasClass('ui-disabled')) return;
 			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('ui-disabled').attr('disabled', true);
 			mosq_status_pending();
 			$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
@@ -296,7 +298,9 @@
 			});
 		});
 
-		$('#btn_stop_mosquitto').click(function() {
+		$('#btn_stop_mosquitto').click(function(e) {
+			e.preventDefault();
+			if ($(this).hasClass('ui-disabled')) return;
 			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('ui-disabled').attr('disabled', true);
 			mosq_status_pending();
 			$.post(mqtt_ajax, { ajax: 'stop_mosquitto' })

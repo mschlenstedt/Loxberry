@@ -256,13 +256,12 @@ elseif( $ajax == 'restartgateway' ) {
 }
 
 elseif( $ajax == 'stop_gateway' ) {
-	exec("sudo pkill -f mqtt_gateway.py");
-	exec("sudo pkill mqttgateway.pl");
+	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=stopgateway" );
 	echo json_encode(array('status' => 'ok'));
 }
 
 elseif( $ajax == 'stop_mosquitto' ) {
-	exec("sudo systemctl stop mosquitto");
+	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=stopmosquitto" );
 	echo json_encode(array('status' => 'ok'));
 }
 

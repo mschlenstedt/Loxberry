@@ -2278,7 +2278,9 @@ $(function() {
 		
 	});
 
-	$("#btn_restart_gateway").click(function(){
+	$("#btn_restart_gateway").click(function(e){
+		e.preventDefault();
+		if ($(this).hasClass("ui-disabled")) return;
 		$("#btn_restart_gateway, #btn_stop_gateway").addClass("ui-disabled").attr("disabled", true);
 		gw_status_pending();
 		$.post( 'ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
@@ -2288,7 +2290,9 @@ $(function() {
 		});
 	});
 
-	$("#btn_stop_gateway").click(function(){
+	$("#btn_stop_gateway").click(function(e){
+		e.preventDefault();
+		if ($(this).hasClass("ui-disabled")) return;
 		$("#btn_restart_gateway, #btn_stop_gateway").addClass("ui-disabled").attr("disabled", true);
 		gw_status_pending();
 		$.post( 'ajax/ajax-mqtt.php', { ajax: 'stop_gateway' })
