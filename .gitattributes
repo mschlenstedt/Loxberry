@@ -1,11 +1,22 @@
-# Auto detect text files and perform LF normalization
-* text=lf
+# LoxBerry runs on Linux — all text files must use LF, never CRLF
+* text eol=lf
 
-# Scripts must always use LF — never CRLF (shebang line breaks on Linux)
-*.pl  text eol=lf
-*.py  text eol=lf
-*.sh  text eol=lf
-*.cgi text eol=lf
+# Binary files — no line-ending conversion
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.eot  binary
+*.ttf  binary
+*.woff binary
+*.woff2 binary
+*.otf  binary
+*.zip  binary
+*.gz   binary
+*.tar  binary
+*.db   binary
 
 # Custom for Visual Studio
 *.cs     diff=csharp
