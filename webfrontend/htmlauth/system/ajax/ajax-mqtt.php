@@ -166,7 +166,30 @@ elseif ( $ajax == 'getpids' ) {
 		}
 	}
 	$pids['mqttgateway'] = $gw_pid ?: null;
-	$pids['mosquitto']   = trim(`pgrep mosquitto`) ?: null;
+
+	// Determine broker mode from general.json
+	$generalcfg = json_decode(file_get_contents(LBSCONFIGDIR.'/general.json'), true);
+	$uselocalbroker = isset($generalcfg['Mqtt']['Uselocalbroker']) ? $generalcfg['Mqtt']['Uselocalbroker'] : 'true';
+
+	if (is_enabled($uselocalbroker)) {
+		// Local Mosquitto
+		$pids['mosquitto']    = trim(`pgrep mosquitto`) ?: null;
+		$pids['mosq_custom']  = false;
+	} else {
+		// Custom broker — TCP reachability check
+		$brokerhost = $generalcfg['Mqtt']['Brokerhost'] ?? 'localhost';
+		$brokerport = (int)($generalcfg['Mqtt']['Brokerport'] ?? 1883);
+		$fp = @fsockopen($brokerhost, $brokerport, $errno, $errstr, 3);
+		if ($fp) {
+			fclose($fp);
+			$pids['mosq_reachable'] = true;
+		} else {
+			$pids['mosq_reachable'] = false;
+		}
+		$pids['mosquitto']   = null;
+		$pids['mosq_custom'] = true;
+		$pids['mosq_host']   = $brokerhost . ':' . $brokerport;
+	}
 
 	echo json_encode( array ('pids' => $pids ) );
 

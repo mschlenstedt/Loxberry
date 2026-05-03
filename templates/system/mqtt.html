@@ -253,10 +253,23 @@
 	function update_mosq_status() {
 		$.post(mqtt_ajax, { ajax: 'getpids' })
 		.done(function(resp) {
-			if (resp.pids.mosquitto != null) {
-				$('#mosq_status_text').text('läuft (PID ' + resp.pids.mosquitto + ')').css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+			var $btns = $('#btn_restart_mosquitto, #btn_stop_mosquitto');
+			if (resp.pids.mosq_custom) {
+				// Custom broker — show reachability, disable local buttons
+				$btns.addClass('ui-disabled').attr('disabled', true);
+				if (resp.pids.mosq_reachable) {
+					$('#mosq_status_text').text('erreichbar (Custom: ' + resp.pids.mosq_host + ')').css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+				} else {
+					$('#mosq_status_text').text('nicht erreichbar (' + resp.pids.mosq_host + ')').css({'background':'#d0021b','color':'white','border-color':'#b00218'});
+				}
 			} else {
-				$('#mosq_status_text').text('läuft nicht').css({'background':'#d0021b','color':'white','border-color':'#b00218'});
+				// Local Mosquitto
+				$btns.removeClass('ui-disabled').removeAttr('disabled');
+				if (resp.pids.mosquitto != null) {
+					$('#mosq_status_text').text('läuft (PID ' + resp.pids.mosquitto + ')').css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+				} else {
+					$('#mosq_status_text').text('läuft nicht').css({'background':'#d0021b','color':'white','border-color':'#b00218'});
+				}
 			}
 		})
 		.fail(function() {
