@@ -23,10 +23,10 @@ use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
 use LoxBerry::System::PluginDB;
-use LoxBerry::PluginSemVer qw( cmp_versions has_prerelease comparable );
 
 use strict;
 use warnings;
+use version;
 
 
 ##########################################################################
@@ -34,7 +34,7 @@ use warnings;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="3.1.0.0";
+my $scriptversion="3.0.0.1";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -47,8 +47,10 @@ my $prereleasefile = "/tmp/pluginsupdate/prerelease.cfg";
 my $prereleasecfg;
 my $prereleasearchive;
 my $prereleaseinfo;
+my $prereleasever;
 my $releasefile = "/tmp/pluginsupdate/release.cfg";
 my $releasecfg;
+my $releasever;
 my $releasearchive;
 my $releaseinfo;
 my $resp;
@@ -107,7 +109,7 @@ foreach my $arg(@ARGV) {
 foreach (@plugins) {
 
 	my $notify;
-	my $currentver_str;
+	my $currentver;
 	my $release;
 	my $prerelease;
 	my $pid;
@@ -119,7 +121,7 @@ foreach (@plugins) {
 
 
 	$pid = $_->{PLUGINDB_MD5_CHECKSUM};
-	$currentver_str = trim( $_->{PLUGINDB_VERSION} );
+	$currentver = $_->{PLUGINDB_VERSION};
 	$plugintitle = $_->{PLUGINDB_TITLE};
 	$pluginname = $_->{PLUGINDB_NAME};
 	$pluginmd5 = $_->{PLUGINDB_MD5_CHECKSUM};
@@ -128,13 +130,15 @@ foreach (@plugins) {
 	LOGINF "$pluginname: Found plugin $_->{PLUGINDB_TITLE}.";
 
 	#
-	# Checks — SemVer prereleases (-beta.N) plus legacy Perl lax versions.
+	# Checks
 	#
-	if ( !comparable($currentver_str) ) {
-		LOGCRIT "$pluginname: Cannot check plugin's version number. Is this a real version number? $currentver_str. Skipping...";
+	if ( !version::is_lax(vers_tag($currentver)) ) {
+		LOGCRIT "$pluginname: Cannot check plugin's version number. Is this a real version number? $currentver. Skipping...";
 		next;
+	} else {
+		$currentver = version->parse(vers_tag($currentver));
+		LOGINF "$pluginname: Current version is: $currentver";
 	}
-	LOGINF "$pluginname: Current version is: $currentver_str";
 	
 	if (!$_->{PLUGINDB_AUTOUPDATE}) {
 		LOGINF "$pluginname: Provide no automatic updates. Skipping.";
@@ -185,182 +189,162 @@ foreach (@plugins) {
 	}
 
 	#
-	# Fetch release.cfg / prerelease.cfg (SemVer prereleases + legacy lax versions)
+	# Check for a release
 	#
+	
 	my $installtype;
-
-	my ( $releasever_str, $releasearchive, $releaseinfo ) =
-	  ( undef, undef, undef );
-	my $release_cmp_ok = 0;
-
-	my ( $prereleasever_str, $prereleasearchive, $prereleaseinfo ) =
-	  ( undef, undef, undef );
-	my $prerelease_cmp_ok = 0;
-
-	if ( ( $release || $notify ) && $endpointrelease ) {
+	
+	if ( ($release || $notify) && $endpointrelease ) {
 
 		LOGINF "$pluginname: Requesting release file from $endpointrelease";
 		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo $releasefile $endpointrelease  2>&1`;
-		if ( $? ne 0 ) {
+		if ($? ne 0) {
 			LOGCRIT "$pluginname: Could not fetch RELEASE file. Error: $resp Skipping this plugin...";
 			next;
-		}
-		LOGOK "$pluginname: Release file fetched.";
-		eval { $releasecfg = new Config::Simple("$releasefile"); };
-		if ($@) {
-			LOGCRIT "$pluginname: Fetched release.cfg is not a valid release file. Please report to the plugin author.";
-			next;
-		}
-		$releasever_str = trim( $releasecfg->param("AUTOUPDATE.VERSION") );
-		$releasearchive = $releasecfg->param("AUTOUPDATE.ARCHIVEURL");
-		$releaseinfo    = $releasecfg->param("AUTOUPDATE.INFOURL");
+		} else {
+			LOGOK "$pluginname: Release file fetched.";
+			eval {
+				$releasecfg = new Config::Simple("$releasefile");
+			};
+			if ($@) {
+				LOGCRIT "$pluginname: Fetched release.cfg is not a valid release file. Please report to the plugin author.";
+				next;
+			}
+			$releasever = $releasecfg->param("AUTOUPDATE.VERSION");
+			$releasearchive = $releasecfg->param("AUTOUPDATE.ARCHIVEURL");
+			$releaseinfo = $releasecfg->param("AUTOUPDATE.INFOURL");
 
-		if ( !$releasever_str || !comparable($releasever_str) ) {
-			LOGCRIT "$pluginname: Cannot check release version number. Is this a real version number?";
-		}
-		else {
-			LOGINF "$pluginname: Found release version: $releasever_str";
-			if ( cmp_versions( $releasever_str, $currentver_str ) > 0 ) {
+			if ( version::is_lax(vers_tag($releasever)) ) {
+				$releasever = version->parse(vers_tag($releasever));
+				LOGINF "$pluginname: Found release version: $releasever";
+			} else {
+				LOGCRIT "$pluginname: Cannot check release version number. Is this a real version number?";
+			}
+
+			if ( $releasever > $currentver ) {
 				LOGINF "$pluginname: Release version is newer than current installed version.";
-				$release_cmp_ok = 1;
-			}
-			else {
+				$installversion = $releasever;
+				$installtype = "release";
+				if ( !$notify ) {
+					$installarchive = $releasearchive;
+				} else {
+					my @notifications = get_notifications( 'plugininstall', "lastnotified-rel-$pluginname");
+					my $last_notified_version;
+					$last_notified_version = $notifications[0]->{version} if ($notifications[0]);
+					delete_notifications('plugininstall', "lastnotified-rel-$pluginname");
+					my %notification = (
+								PACKAGE => "plugininstall",
+								NAME => "lastnotified-rel-$pluginname",
+								MESSAGE => "This helper notification keeps track of last notified release of $plugintitle",
+								SEVERITY => 7,
+								pluginname => $pluginname,
+								pluginmd5 => $pluginmd5,
+								version => "$releasever",
+								installarchive => "$releasearchive",
+								releaseinfo => $releaseinfo,
+								type => "release",
+								LINK => $releaseinfo
+					);
+					LoxBerry::Log::notify_ext( \%notification );
+					if ($last_notified_version && $last_notified_version eq "$releasever") {
+						LOGOK "$pluginname: Skipping notification because version has already been notified.";
+					} elsif ($checkonly) {
+						LOGINF "$pluginname: Skipping notification because of --checkonly parameter. This is an interactive call.";
+					} elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
+						LOGINF "$pluginname: Skipping notification because automatic updates and notifys are disabled.";
+					} else {
+						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RELEASE_AVAILABLE'} $installversion\n";
+						$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};
+						notify ( "plugininstall", "$pluginname", $message);
+						LOGINF "$pluginname: Notification saved.";
+					}
+				}
+
+			} else {
+				# Installed version is equal or newer. Helper notification can be deleted.
 				LOGINF "$pluginname: Release version is not newer than installed version.";
-				delete_notifications( 'plugininstall', "lastnotified-rel-$pluginname" );
+				delete_notifications('plugininstall', "lastnotified-rel-$pluginname");
 			}
+
 		}
 	}
-
-	if ( ( $prerelease || $notify ) && $endpointprerelease ) {
+	
+	#
+	# Check for a prerelease
+	#
+	if ( ($prerelease || $notify) && $endpointprerelease ) {
 
 		LOGINF "$pluginname: Requesting prerelease from $endpointprerelease";
+
 		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 --raw -LfksSo $releasefile $endpointprerelease  2>&1`;
-		if ( $? ne 0 ) {
+		if ($? ne 0) {
 			LOGCRIT "$pluginname: Could not fetch PRERELEASE file. Error: $resp Skipping this plugin...";
 			next;
-		}
-		LOGOK "$pluginname: Prerelease file fetched.";
-		eval { $prereleasecfg = new Config::Simple("$releasefile"); };
-		if ($@) {
-			LOGCRIT "$pluginname: Fetched prerelease.cfg is not a valid release file. Please report to the plugin author.";
-			next;
-		}
-		$prereleasever_str = trim( $prereleasecfg->param("AUTOUPDATE.VERSION") );
-		$prereleasearchive = $prereleasecfg->param("AUTOUPDATE.ARCHIVEURL");
-		$prereleaseinfo    = $prereleasecfg->param("AUTOUPDATE.INFOURL");
-
-		if ( !$prereleasever_str || !comparable($prereleasever_str) ) {
-			LOGCRIT "$pluginname: Cannot check prerelease version number. Is this a real version number?";
-		}
-		else {
-			LOGINF "$pluginname: Found prerelease version: $prereleasever_str";
-			if ( cmp_versions( $prereleasever_str, $currentver_str ) > 0 ) {
-				LOGINF "$pluginname: Prerelease version is newer than current installed version.";
-				$prerelease_cmp_ok = 1;
+		} else {
+			LOGOK "$pluginname: Prerelease file fetched.";
+			eval {
+				$prereleasecfg = new Config::Simple("$releasefile");
+			};
+			if ($@) {
+				LOGCRIT "$pluginname: Fetched prerelease.cfg is not a valid release file. Please report to the plugin author.";
+				next;
 			}
-			else {
-				LOGINF "$pluginname: Prerelease version is not newer than installed version.";
-				delete_notifications( 'plugininstall', "lastnotified-prerel-$pluginname" );
-			}
-		}
-	}
+			$prereleasever = $prereleasecfg->param("AUTOUPDATE.VERSION");
+			$prereleasearchive = $prereleasecfg->param("AUTOUPDATE.ARCHIVEURL");
+			$prereleaseinfo = $prereleasecfg->param("AUTOUPDATE.INFOURL");
 
-	my ( $chosen_type, $chosen_ver_str, $chosen_archive, $chosen_info );
-
-	if ( $release_cmp_ok && $prerelease_cmp_ok ) {
-		if (   has_prerelease($currentver_str)
-			&& cmp_versions( $prereleasever_str, $releasever_str ) < 0 )
-		{
-			LOGINF "$pluginname: Preferring newer prerelease (installed version is a prerelease; SemVer ranks it below release).";
-			$chosen_type   = "prerelease";
-			$chosen_ver_str    = $prereleasever_str;
-			$chosen_archive    = $prereleasearchive;
-			$chosen_info       = $prereleaseinfo;
-		}
-		else {
-			LOGINF "$pluginname: Preferring release over prerelease.";
-			$chosen_type   = "release";
-			$chosen_ver_str    = $releasever_str;
-			$chosen_archive    = $releasearchive;
-			$chosen_info       = $releaseinfo;
-		}
-	}
-	elsif ($release_cmp_ok) {
-		$chosen_type    = "release";
-		$chosen_ver_str = $releasever_str;
-		$chosen_archive = $releasearchive;
-		$chosen_info    = $releaseinfo;
-	}
-	elsif ($prerelease_cmp_ok) {
-		$chosen_type    = "prerelease";
-		$chosen_ver_str = $prereleasever_str;
-		$chosen_archive = $prereleasearchive;
-		$chosen_info    = $prereleaseinfo;
-	}
-
-	if ($chosen_type) {
-		$installversion = trim($chosen_ver_str);
-		$installtype = $chosen_type;
-		if ( !$notify ) {
-			$installarchive = $chosen_archive;
-		}
-		else {
-			if ( $chosen_type eq 'release' ) {
-				delete_notifications( 'plugininstall', "lastnotified-prerel-$pluginname" );
+			if ( version::is_lax(vers_tag($prereleasever)) ) {
+				$prereleasever = version->parse(vers_tag($prereleasever));
+				LOGINF "$pluginname: Found prerelease version: $prereleasever";
+			} else {
+				LOGCRIT "$pluginname: Cannot check prerelease version number. Is this a real version number?";
 			}
-			else {
-				delete_notifications( 'plugininstall', "lastnotified-rel-$pluginname" );
-			}
-			my $notname =
-			    $chosen_type eq "prerelease"
-			  ? "lastnotified-prerel-$pluginname"
-			  : "lastnotified-rel-$pluginname";
 
-			my @notifications = get_notifications( 'plugininstall', $notname );
-			my $last_notified_version;
-			$last_notified_version = $notifications[0]->{version} if ($notifications[0]);
-
-			delete_notifications( 'plugininstall', $notname );
-			my %notification = (
-				PACKAGE    => "plugininstall",
-				NAME       => $notname,
-				MESSAGE    =>
-				  "Helper notification tracking last notified "
-				  . (
-					$chosen_type eq "prerelease" ? "pre-release" : "release" )
-				  . " of $plugintitle",
-				SEVERITY   => 7,
-				pluginname => $pluginname,
-				pluginmd5  => $pluginmd5,
-				version       => $installversion,
-				installarchive => $chosen_archive,
-				releaseinfo    => $chosen_info,
-				type        => $chosen_type,
-				LINK        => $chosen_info
-			);
-			LoxBerry::Log::notify_ext( \%notification );
-
-			if ($last_notified_version && $last_notified_version eq $installversion) {
-				LOGOK "$pluginname: Skipping notification because version has already been notified.";
-			}
-			elsif ($checkonly) {
-				LOGINF "$pluginname: Skipping notification because of --checkonly parameter. This is an interactive call.";
-			}
-			elsif ( $_->{PLUGINDB_AUTOUPDATE} eq "1" ) {
-				LOGINF "$pluginname: Skipping notification because automatic updates and notifys are disabled.";
-			}
-			else {
-				if ( $chosen_type eq "release" ) {
-					$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RELEASE_AVAILABLE'} $installversion\n";
+			if ( $prereleasever > $releasever && $prereleasever > $currentver) {
+				LOGINF "$pluginname: Prerelease version is newer than release version, and newer than installed version.";
+				$installversion = $prereleasever;
+				$installtype = "prerelease";
+				if ( !$notify ) {
+					$installarchive = $prereleasearchive;
+				} else {
+					my @notifications = get_notifications( 'plugininstall', "lastnotified-prerel-$pluginname");
+					my $last_notified_version;
+					$last_notified_version = $notifications[0]->{version} if ($notifications[0]);
+					delete_notifications('plugininstall', "lastnotified-prerel-$pluginname");
+					my %notification = (
+								PACKAGE => "plugininstall",
+								NAME => "lastnotified-prerel-$pluginname",
+								MESSAGE => "This helper notification keeps track of last notified pre-release of $plugintitle",
+								SEVERITY => 7,
+								pluginname => $pluginname,
+								pluginmd5 => $pluginmd5,
+								version => "$prereleasever",
+								installarchive => "$prereleasearchive",
+								releaseinfo => $prereleaseinfo,
+								type => "prerelease",
+								LINK => $prereleaseinfo
+						);
+					LoxBerry::Log::notify_ext( \%notification );
+					if ($last_notified_version && $last_notified_version eq "$prereleasever") {
+						LOGOK "$pluginname: Skipping notification because version has already been notified.";
+					} elsif ($checkonly) {
+						LOGINF "$pluginname: Skipping notification because of --checkonly parameter. This is an interactive call.";
+					} elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
+						LOGINF "$pluginname: Skipping notification because automatic updates and notifys are disabled.";
+					} else {
+						$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_PRERELEASE_AVAILABLE'} $installversion\n";
+						$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};
+						notify ( "plugininstall", "$pluginname", $message);
+						LOGINF "$pluginname: Notification saved.";
+					}
 				}
-				else {
-					$message = "$plugintitle - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_PRERELEASE_AVAILABLE'} $installversion\n";
-				}
-				$message .= $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_INSTRUCTION'};
-				notify( "plugininstall", "$pluginname", $message );
-				LOGINF "$pluginname: Notification saved.";
+			} else {
+				LOGINF "$pluginname: Prerelease version is not newer than release version.";
+				delete_notifications('plugininstall', "lastnotified-prerel-$pluginname");
 			}
+
 		}
+
 	}
 
 	#
@@ -390,8 +374,8 @@ foreach (@plugins) {
 				LOGINF "$pluginname: Installation routine finished. Check plugin's logfile for details.";
 				$message = "$pluginname - $SL{'PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_DONE'} $installversion";
 				notify ( "plugininstall", "pluginautoupdate", $message);
-				delete_notifications( 'plugininstall', "lastnotified-rel-$pluginname" );
-				delete_notifications( 'plugininstall', "lastnotified-prerel-$pluginname" );
+				delete_notifications('plugininstall', "lastnotified-prerel-$pluginname") if ($installtype eq "release");
+				delete_notifications('plugininstall', "lastnotified-rel-$pluginname") if ($installtype eq "prerelease" || $installtype eq "release");
 			} else {
 				LOGERR "$pluginname: Installation seems to have failed! Please try to manually install the plugin.";
 			}
