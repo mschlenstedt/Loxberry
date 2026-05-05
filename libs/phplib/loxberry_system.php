@@ -114,7 +114,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.2.1.1";
+	public static $LBSYSTEMVERSION = "2.2.1.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -420,6 +420,117 @@ class LBSystem
 		}
 		
 		return isset($plugin['PLUGINDB_VERSION']) ? $plugin['PLUGINDB_VERSION'] : null;
+	}
+
+	##################################################################################
+	# SemVer-style plugin version compare (parity with Perl LoxBerry::System::plugin_version_compare).
+	# PHP legacy fallback uses version_compare(); edge cases may differ from Perl version.pm lax mode.
+	##################################################################################
+	public static function plugin_version_compare($a_in = null, $b_in = null)
+	{
+		if ($a_in === null && $b_in === null) return 0;
+		if ($a_in === null || $b_in === null) return null;
+		$tag_a = LBSystem::_plugin_normalize_version_tag($a_in);
+		$tag_b = LBSystem::_plugin_normalize_version_tag($b_in);
+		$pa = LBSystem::_plugin_semver_parts($tag_a);
+		$pb = LBSystem::_plugin_semver_parts($tag_b);
+
+		if ($pa['ok'] && $pb['ok']) {
+			if ($pa['maj'] != $pb['maj']) return $pa['maj'] < $pb['maj'] ? -1 : 1;
+			if ($pa['min'] != $pb['min']) return $pa['min'] < $pb['min'] ? -1 : 1;
+			if ($pa['pat'] != $pb['pat']) return $pa['pat'] < $pb['pat'] ? -1 : 1;
+
+			$ea = ($pa['pre'] === '');
+			$eb = ($pb['pre'] === '');
+			if (!$ea && $eb) return -1;
+			if ($ea && !$eb) return 1;
+			if ($ea && $eb) return 0;
+
+			return LBSystem::_plugin_semver_prerelease_cmp($pa['pre'], $pb['pre']);
+		}
+
+		$oa = LBSystem::_plugin_normalize_version_tag($tag_a, true);
+		$ob = LBSystem::_plugin_normalize_version_tag($tag_b, true);
+		if ($oa === '' || $ob === '') return null;
+
+		$vv = @version_compare($oa, $ob);
+		if ($vv === null || $vv === false) return null;
+		return $vv < 0 ? -1 : ($vv > 0 ? 1 : 0);
+	}
+
+	public static function plugin_version_has_prerelease($v_in = null)
+	{
+		if ($v_in === null || trim((string)$v_in) === '') return false;
+		$tag = LBSystem::_plugin_normalize_version_tag($v_in);
+		$p = LBSystem::_plugin_semver_parts($tag);
+		return $p['ok'] && $p['pre'] !== '';
+	}
+
+	private static function _plugin_normalize_version_tag($vers, $reverse = false)
+	{
+		$vers = strtolower(trim((string)$vers));
+		if ($vers === '') return '';
+		if (substr($vers, 0, 1) !== 'v' && !$reverse)
+			$vers = 'v' . $vers;
+		if (substr($vers, 0, 1) === 'v' && $reverse)
+			$vers = substr($vers, 1);
+		return $vers;
+	}
+
+	private static function _plugin_semver_parts($tag)
+	{
+		$r = ['ok'=>false,'maj'=>0,'min'=>0,'pat'=>0,'pre'=>''];
+		if ($tag === null || $tag === '')
+			return $r;
+		$s = $tag;
+		if ($s !== '' && $s[0] === 'v')
+			$s = substr($s, 1);
+		$p = strpos($s, '+');
+		if ($p !== false)
+			$s = substr($s, 0, $p);
+		if (preg_match('/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/', $s, $m)) {
+			$r['ok'] = true;
+			$r['maj'] = (int)$m[1];
+			$r['min'] = (int)$m[2];
+			$r['pat'] = (int)$m[3];
+			$r['pre'] = isset($m[4]) ? $m[4] : '';
+			return $r;
+		}
+		return $r;
+	}
+
+	private static function _plugin_semver_prerelease_cmp($a, $b)
+	{
+		$pa = explode('.', $a);
+		$pb = explode('.', $b);
+		$i = 0;
+		while (true) {
+			$ida = isset($pa[$i]) ? $pa[$i] : null;
+			$idb = isset($pb[$i]) ? $pb[$i] : null;
+
+			if ($ida === null && $idb === null) return 0;
+			if ($ida === null) return -1;
+			if ($idb === null) return 1;
+
+			$na = ctype_digit((string)$ida);
+			$nb = ctype_digit((string)$idb);
+			if ($na && $nb) {
+				$ixa = intval($ida, 10);
+				$ixb = intval($idb, 10);
+				if ($ixa !== $ixb)
+					return $ixa < $ixb ? -1 : 1;
+			}
+			elseif ($na && !$nb)
+				return -1;
+			elseif (!$na && $nb)
+				return 1;
+			else {
+				$wc = strcmp($ida, $idb);
+				if ($wc !== 0)
+					return $wc < 0 ? -1 : 1;
+			}
+			$i++;
+		}
 	}
 
 	##################################################################################

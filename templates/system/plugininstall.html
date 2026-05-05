@@ -478,8 +478,63 @@
 	
 
 	
+/**
+ * SemVer 2 precedence (core + prerelease); build stripped. Null if not classical MAJOR.MINOR.PATCH (+ optional prerelease).
+ * Same rules as LoxBerry::System::plugin_version_compare (Perl) / LBSystem::plugin_version_compare (PHP).
+ */
+function _pluginSemverParts(tag) {
+	var s = ('' + tag).trim().toLowerCase();
+	if (!s) return null;
+	if (s.charAt(0) === 'v') s = s.slice(1);
+	var pPlus = s.indexOf('+');
+	if (pPlus >= 0) s = s.slice(0, pPlus);
+	var re = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/;
+	var m = re.exec(s);
+	if (!m) return null;
+	return { maj: parseInt(m[1], 10), min: parseInt(m[2], 10), pat: parseInt(m[3], 10), pre: m[4] != null ? m[4] : '' };
+}
+
+function _comparePrereleaseId(ida, idb) {
+	var na = /^\d+$/.test(ida);
+	var nb = /^\d+$/.test(idb);
+	if (na && nb) {
+		var ia = parseInt(ida, 10), ib = parseInt(idb, 10);
+		if (ia !== ib) return ia < ib ? -1 : 1;
+		return 0;
+	}
+	if (na && !nb) return -1;
+	if (!na && nb) return 1;
+	if (ida < idb) return -1;
+	if (ida > idb) return 1;
+	return 0;
+}
+
+function _semverCompareRaw(a, b) {
+	var pa = _pluginSemverParts(a), pb = _pluginSemverParts(b);
+	if (!pa || !pb) return null;
+	if (pa.maj !== pb.maj) return pa.maj < pb.maj ? -1 : 1;
+	if (pa.min !== pb.min) return pa.min < pb.min ? -1 : 1;
+	if (pa.pat !== pb.pat) return pa.pat < pb.pat ? -1 : 1;
+	var ea = pa.pre === '', eb = pb.pre === '';
+	if (!ea && eb) return -1;
+	if (ea && !eb) return 1;
+	if (ea && eb) return 0;
+	var iparts = pa.pre.split('.'), jparts = pb.pre.split('.');
+	for (var ii = 0; ; ii++) {
+		var hasA = ii < iparts.length, hasB = ii < jparts.length;
+		if (!hasA && !hasB) return 0;
+		if (!hasA) return -1;
+		if (!hasB) return 1;
+		var cmp = _comparePrereleaseId(iparts[ii], jparts[ii]);
+		if (cmp !== 0) return cmp;
+	}
+}
+
 // 	https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
 function versionCompare(v1, v2, options) {
+	var sc = _semverCompareRaw(v1, v2);
+	if (sc !== null) return sc;
+
     var lexicographical = options && options.lexicographical,
         zeroExtend = options && options.zeroExtend,
         v1parts = v1.split('.'),
