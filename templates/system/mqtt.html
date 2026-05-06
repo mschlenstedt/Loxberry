@@ -7,8 +7,8 @@
 		<div class="status" id="mosq_status_text"><TMPL_VAR MQTT.MOSQ_STATUS_QUERYING></div>
 	</div>
 	<div class="servicestatus-btns">
-		<a id="btn_restart_mosquitto" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-refresh ui-corner-all"><TMPL_VAR MQTT.BTN_MOSQ_RESTART></a>
-		<a id="btn_stop_mosquitto" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all" style="background:#d9534f;color:white;border-color:#d9534f"><TMPL_VAR MQTT.BTN_MOSQ_STOP></a>
+		<a id="btn_restart_mosquitto" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-refresh"></i> <TMPL_VAR MQTT.BTN_MOSQ_RESTART></a>
+		<a id="btn_stop_mosquitto" href="#" class="lb-btn lb-btn-sm lb-btn-icon lb-btn-danger"><i class="pi pi-times"></i> <TMPL_VAR MQTT.BTN_MOSQ_STOP></a>
 	</div>
 </div>
 
@@ -265,7 +265,7 @@
 			var $btns = $('#btn_restart_mosquitto, #btn_stop_mosquitto');
 			if (resp.pids.mosq_custom) {
 				// Custom broker — show reachability, disable local buttons
-				$btns.addClass('ui-disabled').attr('disabled', true);
+				$btns.addClass('lb-disabled').attr('disabled', true);
 				if (resp.pids.mosq_reachable) {
 					$('#mosq_status_text').text(_lang_mosq.statusReachable).css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
 				} else {
@@ -273,7 +273,7 @@
 				}
 			} else {
 				// Local Mosquitto
-				$btns.removeClass('ui-disabled').removeAttr('disabled');
+				$btns.removeClass('lb-disabled').removeAttr('disabled');
 				if (resp.pids.mosquitto != null) {
 					$('#mosq_status_text').text(_lang_mosq.statusRunningPid.replace('%s', resp.pids.mosquitto)).css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
 				} else {
@@ -292,24 +292,24 @@
 
 		$('#btn_restart_mosquitto').click(function(e) {
 			e.preventDefault();
-			if ($(this).hasClass('ui-disabled')) return;
-			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('ui-disabled').attr('disabled', true);
+			if ($(this).hasClass('lb-disabled')) return;
+			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('lb-disabled').attr('disabled', true);
 			mosq_status_pending();
 			$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
 			.always(function() {
-				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('ui-disabled').removeAttr('disabled');
+				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
 				setTimeout(update_mosq_status, 3000);
 			});
 		});
 
 		$('#btn_stop_mosquitto').click(function(e) {
 			e.preventDefault();
-			if ($(this).hasClass('ui-disabled')) return;
-			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('ui-disabled').attr('disabled', true);
+			if ($(this).hasClass('lb-disabled')) return;
+			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('lb-disabled').attr('disabled', true);
 			mosq_status_pending();
 			$.post(mqtt_ajax, { ajax: 'stop_mosquitto' })
 			.always(function() {
-				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('ui-disabled').removeAttr('disabled');
+				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
 				setTimeout(update_mosq_status, 1500);
 			});
 		});
