@@ -387,12 +387,9 @@ elseif ( $ajax == 'get_v1_migration_status' ) {
 }
 
 elseif ( $ajax == 'migrate_v1_to_v2' ) {
-    require_once "loxberry_system.php";
     $statusfile = '/dev/shm/mqttgateway_topics.json';
     $cfgfile    = LBSCONFIGDIR . '/mqttgateway.json';
     $subsfile   = LBSCONFIGDIR . '/subscriptions.json';
-
-    header('Content-Type: application/json');
 
     if ( !file_exists($statusfile) ) {
         echo json_encode([ 'status' => 'error', 'message' => 'V1 status file not found' ]);
@@ -429,10 +426,15 @@ elseif ( $ajax == 'migrate_v1_to_v2' ) {
         ];
     }
 
-    file_put_contents( $subsfile, json_encode(
+    $written = file_put_contents( $subsfile, json_encode(
         [ 'Subscriptions' => $subscriptions ],
         JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-    ));
+    ), LOCK_EX );
+
+    if ( $written === false ) {
+        http_response_code(500);
+        exit;
+    }
 
     echo json_encode([ 'status' => 'ok', 'count' => count($subscriptions) ]);
 }
