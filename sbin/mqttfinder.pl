@@ -116,19 +116,20 @@ while(1) {
 
 sub received
 {
-	
+
 	my ($topic, $message) = @_;
-	
+
 	utf8::encode($topic);
 	# Net::MQTT::Simple delivers payload as raw bytes (no UTF-8 flag).
-	# Try to validate as UTF-8; if invalid, assume Latin-1 and convert.
+	# decode() with FB_CROAK modifies its argument in-place (consumes bytes),
+	# leaving $message empty on success — so capture the return value instead.
 	if (!utf8::is_utf8($message)) {
-		eval { decode('UTF-8', $message, Encode::FB_CROAK) };
+		my $decoded = eval { decode('UTF-8', $message, Encode::FB_CROAK) };
 		if ($@) {
-			$message = encode('UTF-8', decode('latin1', $message));
+			$message = decode('latin1', $message);
+		} else {
+			$message = $decoded;
 		}
-	} else {
-		utf8::encode($message);
 	}
 	LOGOK "MQTT received: $topic: $message";
 

@@ -46,7 +46,7 @@ if( $q->{ajax} ) {
 	
 	
 	# Load language strings
-	my %SL = LoxBerry::System::readlanguage($template);
+	our %SL = LoxBerry::System::readlanguage($template);
 
 	# Push json config to template
 	
@@ -66,6 +66,15 @@ if( $q->{ajax} ) {
 	$template->param("GATEWAY_VERSION", $gatewayversion);
 	$template->param("GATEWAY_V2", $gatewayversion == 2 ? 1 : 0);
 
+	# Build Miniserver list JSON for V2 subscription UI
+	my @ms_list;
+	foreach my $ms_id (sort { $a <=> $b } keys %{$generaljson->{Miniserver}}) {
+		my $ms_data = $generaljson->{Miniserver}->{$ms_id};
+		my $name = $ms_data->{Name} || "Miniserver $ms_id";
+		push @ms_list, { id => int($ms_id), name => $name };
+	}
+	$template->param('MINISERVER_JSON', encode_json(\@ms_list));
+
 	# Switch between forms (4 tabs: Gateway, Abonnements, Datenverkehr, Logs)
 
 	if( !$q->{form} or $q->{form} eq "basic" or $q->{form} eq "settings" ) {
@@ -76,6 +85,7 @@ if( $q->{ajax} ) {
 	elsif ( $q->{form} eq "subscriptions" or $q->{form} eq "conversions" ) {
 		$navbar{20}{active} = 1;
 		$template->param("FORM_SUBSCRIPTIONS", 1);
+		$template->param("FORM_DISABLE_BUTTONS", 1) if $gatewayversion == 2;
 		subscriptions_form();
 	}
 	elsif ( $q->{form} eq "incoming" or $q->{form} eq "transformers" ) {
@@ -111,9 +121,9 @@ sub print_form
 		  "URL" => "/admin/system/mqtt.cgi" },
 		{ "Name" => "Gateway",
 		  "URL" => "/admin/system/mqtt-gateway.cgi" },
-		{ "Name" => "Abonnements",
+		{ "Name" => $SL{'MQTT.TAB_SUBSCRIPTIONS'},
 		  "URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions" },
-		{ "Name" => "Datenverkehr",
+		{ "Name" => $SL{'MQTT.V2_SECTION_TRAFFIC'},
 		  "URL" => "/admin/system/mqtt-gateway.cgi?form=incoming" },
 		{ "Name" => "Logs",
 		  "URL" => "/admin/system/mqtt-gateway.cgi?form=logs" },

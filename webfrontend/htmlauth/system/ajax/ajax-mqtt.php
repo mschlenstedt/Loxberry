@@ -351,6 +351,12 @@ elseif ( $_POST['ajax'] == 'save_subscriptions' || $_GET['ajax'] == 'save_subscr
     echo json_encode(array('status' => 'ok', 'count' => count($input['Subscriptions'])));
 }
 
+elseif ( $ajax == 'get_status_v2' ) {
+    $f = '/dev/shm/mqttgatwayv2_status.json';
+    header('Content-Type: application/json');
+    echo file_exists($f) ? file_get_contents($f) : '{}';
+}
+
 // Unknown request
 else {
 	http_response_code(500);
