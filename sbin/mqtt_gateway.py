@@ -6,7 +6,9 @@ import json
 import logging
 import os
 import re
+import shlex
 import socket
+import subprocess
 import sys
 import base64
 from datetime import datetime
@@ -35,11 +37,16 @@ UDP_PREFIX = "MQTT: "
 UDP_MAX = 220
 
 _LBSCONFIG    = Path(os.environ["LBSCONFIG"])
-CONFIG_GENERAL = _LBSCONFIG / "general.json"
-CONFIG_GW      = _LBSCONFIG / "mqttgateway.json"
-CONFIG_SUBS    = _LBSCONFIG / "subscriptions.json"
-STATUS_FILE    = Path("/dev/shm/mqttgatwayv2_status.json")
-PID_FILE       = Path("/dev/shm/mqtt_gateway.pid")
+_LBSBIN       = Path(os.environ.get("LBSBIN", "/opt/loxberry/bin"))
+CONFIG_GENERAL    = _LBSCONFIG / "general.json"
+CONFIG_GW         = _LBSCONFIG / "mqttgateway.json"
+CONFIG_SUBS       = _LBSCONFIG / "subscriptions.json"
+STATUS_FILE       = Path("/dev/shm/mqttgatwayv2_status.json")
+PID_FILE          = Path("/dev/shm/mqtt_gateway.pid")
+TRANSFORMER_BASE  = _LBSBIN / "mqtt" / "transform"
+TRANSFORMER_FILE  = Path("/dev/shm/mqttgateway_transformers.json")
+
+_trans_udpin: dict = {}  # transformer name -> metadata
 
 # ─── Logging ─────────────────────────────────────────────────────────────────
 class _LiveStdoutHandler(logging.StreamHandler):
@@ -497,6 +504,102 @@ async def status_writer(status_event: asyncio.Event, cache: dict,
         except Exception as exc:
             LOGERR(f"Status file write failed: {exc}")
 
+# ─── Transformers ─────────────────────────────────────────────────────────────
+def trans_skills(filepath: Path) -> dict:
+    """Call transformer script with 'skills' and parse key=value output."""
+    try:
+        filepath.chmod(0o774)
+        result = subprocess.run(
+            [str(filepath), "skills"],
+            capture_output=True, text=True, timeout=5
+        )
+        skills: dict = {}
+        for line in result.stdout.splitlines():
+            if "=" in line:
+                k, _, v = line.partition("=")
+                skills[k.strip()] = v.strip()
+        skills["input"]  = "json" if skills.get("input")  == "json" else "text"
+        skills["output"] = "json" if skills.get("output") == "json" else "text"
+        return skills
+    except Exception as exc:
+        LOGWARN(f"trans_skills({filepath.name}): {exc}")
+        return {"input": "text", "output": "text", "description": "", "link": ""}
+
+
+def trans_load_directories() -> None:
+    """Scan shipped/udpin and custom/udpin, populate _trans_udpin and write shm file."""
+    global _trans_udpin
+    _trans_udpin = {}
+    for trans_type in ("shipped", "custom"):
+        base = TRANSFORMER_BASE / trans_type / "udpin"
+        if not base.is_dir():
+            continue
+        for filepath in sorted(base.rglob("*")):
+            if not filepath.is_file() or filepath.stat().st_size == 0:
+                continue
+            name = filepath.stem.lower().replace(" ", "_")
+            skills = trans_skills(filepath)
+            _trans_udpin[name] = {
+                "filename":    str(filepath),
+                "type":        trans_type,
+                "extension":   filepath.suffix.lstrip("."),
+                "description": skills.get("description", ""),
+                "link":        skills.get("link", ""),
+                "input":       skills["input"],
+                "output":      skills["output"],
+            }
+            LOGINF(f"Transformer loaded: {name} ({trans_type})")
+    try:
+        TRANSFORMER_FILE.write_text(
+            json.dumps({"udpin": _trans_udpin}, indent=2), encoding="utf-8"
+        )
+        LOGDEB(f"Transformer data written to {TRANSFORMER_FILE}")
+    except Exception as exc:
+        LOGWARN(f"Could not write transformer data file: {exc}")
+
+
+async def trans_process(
+    transformer: str, command: str, topic: str, message: str
+) -> list[tuple[str, str, str]]:
+    """Execute transformer script and return list of (command, topic, message)."""
+    t = _trans_udpin[transformer]
+    if t["input"] == "json":
+        param = shlex.quote(json.dumps({topic: message}))
+    else:
+        param = shlex.quote(f"{topic}#{message}")
+
+    try:
+        proc = await asyncio.create_subprocess_shell(
+            f"{shlex.quote(t['filename'])} {param}",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout_b, stderr_b = await asyncio.wait_for(proc.communicate(), timeout=10)
+        output = stdout_b.decode("utf-8", errors="replace").strip()
+        if stderr_b:
+            LOGWARN(f"Transformer {transformer} stderr: {stderr_b.decode()[:200]}")
+    except Exception as exc:
+        LOGERR(f"Transformer {transformer} execution failed: {exc}")
+        return []
+
+    results: list[tuple[str, str, str]] = []
+    if t["output"] == "json":
+        try:
+            parsed = json.loads(output)
+            items = parsed if isinstance(parsed, list) else [parsed]
+            for item in items:
+                for k, v in item.items():
+                    results.append((command, k, str(v)))
+        except Exception as exc:
+            LOGERR(f"Transformer {transformer} JSON parse error: {exc} — output: {output[:200]}")
+    else:
+        for line in output.splitlines():
+            if "#" in line:
+                t_topic, _, t_val = line.partition("#")
+                results.append((command, t_topic.strip(), t_val.strip()))
+    return results
+
+
 # ─── UDP IN ───────────────────────────────────────────────────────────────────
 class UdpInProtocol(asyncio.DatagramProtocol):
     """asyncio protocol that receives UDP packets and dispatches handle_udp_in."""
@@ -547,14 +650,15 @@ async def handle_udp_in(msg: str, addr: tuple) -> None:
         return
 
     # ── 3. JSON format ───────────────────────────────────────────────────────
-    command = udptopic = udpmessage = None
+    command = udptopic = udpmessage = transformer = None
     try:
         data = json.loads(msg)
         if isinstance(data, dict):
-            udptopic   = str(data.get("topic", ""))
-            udpmessage = str(data.get("value", ""))
-            retain_raw = str(data.get("retain", "0")).strip().lower()
-            command    = "retain" if retain_raw in _BOOL_TRUE else "publish"
+            udptopic    = str(data.get("topic", ""))
+            udpmessage  = str(data.get("value", ""))
+            retain_raw  = str(data.get("retain", "0")).strip().lower()
+            command     = "retain" if retain_raw in _BOOL_TRUE else "publish"
+            transformer = data.get("transform")
     except (json.JSONDecodeError, ValueError):
         pass
 
@@ -572,10 +676,14 @@ async def handle_udp_in(msg: str, addr: tuple) -> None:
             udpmessage = " ".join([p for p in (part2, part3, part4) if p]).strip()
         else:
             command = cmd.lower()
-            # V1 treats part2 as transformer slot; since V2 has no transformers,
-            # all "transformer" values are unknown → shift: topic=part2, msg=rest
-            udptopic   = part2
-            udpmessage = " ".join([p for p in (part3, part4) if p]).strip()
+            # Check if part2 is a known transformer name (mirrors V1 logic)
+            if part2.lower() in _trans_udpin:
+                transformer = part2.lower()
+                udptopic    = part3
+                udpmessage  = part4
+            else:
+                udptopic   = part2
+                udpmessage = " ".join([p for p in (part3, part4) if p]).strip()
 
     # ── 5. Execute command ───────────────────────────────────────────────────
     if command == "reconnect":
@@ -584,8 +692,14 @@ async def handle_udp_in(msg: str, addr: tuple) -> None:
         return
 
     if command in ("publish", "retain") and udptopic:
-        await _mqtt_udp_publish(udptopic, udpmessage or "",
-                                retain=(command == "retain"))
+        if transformer and transformer in _trans_udpin:
+            LOGINF(f"UDP IN: transformer '{transformer}' for topic '{udptopic}'")
+            results = await trans_process(transformer, command, udptopic, udpmessage or "")
+            for cmd_r, topic_r, msg_r in results:
+                await _mqtt_udp_publish(topic_r, msg_r, retain=(cmd_r == "retain"))
+        else:
+            await _mqtt_udp_publish(udptopic, udpmessage or "",
+                                    retain=(command == "retain"))
         return
 
     LOGERR(f"UDP IN: unrecognised command or missing topic: {msg!r}")
@@ -729,6 +843,7 @@ async def main() -> None:
         return
 
     LOGSTART("MQTT Gateway V2.0 starting")
+    trans_load_directories()
     LOGINF(f"Loglevel: {_loglevel}")
     LOGINF(f"Miniservers: {list(_miniservers.keys())}")
     LOGINF(f"Subscriptions: {[s['id'] for s in _subscriptions]}")

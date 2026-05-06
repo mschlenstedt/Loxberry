@@ -283,6 +283,63 @@ $(function() {
     });
 });
 </script>
+
+<!-- Transformers -->
+<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
+
+<div class="lb-section-title"><TMPL_VAR MQTT.SECTION_TRANSFORMERS></div>
+
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)" v-pre><TMPL_VAR MQTT.DESC_TRANSFORMERS></p>
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500);font-style:italic"><TMPL_VAR MQTT.HINT_TRANSFORMERS_RGB></p>
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
+    <TMPL_VAR MQTT.DESC_QUICKPUBLISHER_TEST> <a href="mqtt-quickpublisher.cgi" target="_blank"><TMPL_VAR MQTT.LINK_QUICKPUBLISHER></a>.
+</p>
+
+<div style="font-size:0.95rem;font-weight:600;color:var(--lb-gray-700);margin-top:var(--lb-space-lg);margin-bottom:var(--lb-space-sm)"><TMPL_VAR MQTT.SECTION_UDP_TRANSFORMERS></div>
+
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
+    <TMPL_VAR MQTT.DESC_UDP_TRANSFORMER_FLOW><br>
+    <TMPL_VAR MQTT.LABEL_SYNTAX>: <span class="mono"><span style="color:black">publish </span>transformername <span style="color:black">to/my/topic</span> <span style="color:blue">data1 data2 ...</span></span><br>
+    <TMPL_VAR MQTT.LABEL_EXAMPLE>: <span class="mono"><span style="color:black">publish </span>shelly_rgb&amp;w <span style="color:black">shellies/shelly-12345/color/0/set</span> <span style="color:blue">rgb &lt;v&gt;</span></span><br>
+    <span style="color:var(--lb-gray-500);font-style:italic"><TMPL_VAR MQTT.HINT_TRANSFORMER_KEYWORD></span>
+</p>
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
+    <a href="https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/start" target="_blank"><TMPL_VAR MQTT.LINK_UDP_TRANSFORMER_DOCS></a>
+</p>
+
+<div id="transformers_udp_tablediv"></div>
+
+<script>
+$(function() {
+    var tuhtml = '<table class="trans_table">';
+    var transformers = null;
+    var udp_transformers = null;
+    try {
+        transformers = JSON.parse($("#transformers_json").text());
+        udp_transformers = get(transformers, 'udpin');
+    } catch(err) {
+        tuhtml += '<tr><td><i><TMPL_VAR MQTT.NO_UDP_TRANSFORMERS></i></td></tr>';
+    }
+    if (udp_transformers) {
+        for (var transname in udp_transformers) {
+            var trans = udp_transformers[transname];
+            tuhtml += '<tr><td><div style="display:flex;gap:8px;align-items:baseline;">';
+            tuhtml += '<span class="mono" style="font-size:115%;font-weight:bold">' + transname + '</span>';
+            var type_color = trans.type === 'shipped' ? '#8e256b' : 'blue';
+            tuhtml += '<span style="color:' + type_color + ';font-size:var(--lb-font-sm)">(' + trans.type + ')</span>';
+            tuhtml += '<span style="font-size:var(--lb-font-sm)">' + trans.description + '</span>';
+            if (trans.link)
+                tuhtml += '<a href="' + trans.link + '" target="_blank" style="font-size:var(--lb-font-sm)"><TMPL_VAR MQTT.LINK_SEE_DETAILS></a>';
+            tuhtml += '</div>';
+            tuhtml += '<div style="font-size:65%;color:var(--lb-gray-500)">' + trans.filename + '</div>';
+            tuhtml += '</td></tr>';
+        }
+    }
+    tuhtml += '</table>';
+    $('#transformers_udp_tablediv').html(tuhtml);
+});
+</script>
+
 </TMPL_IF>
 
 <!-- FORM_SETTINGS removed: content merged into FORM_BASIC -->
@@ -2305,95 +2362,6 @@ $(function () {
 </TMPL_UNLESS>
 
 
-	<!-- Merged from FORM_TRANSFORMERS -->
-	<details class="lb-collapsible">
-		<summary>Transformers</summary>
-		<div class="lb-collapsible-content">
-<style>
-	.trans_table {
-		width: 100%;
-		padding: 5px;
-	}
-	
-	.trans_table td, .trans_table th {
-		padding: 5px;
-		border-top: 1px solid #ccc;
-	}
-	.trans_table div {
-		padding: 3px 7px 3px 7px;
-	}
-	</style>
-	
-	<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
-	
-	<div class="lb-section-title">Transformers</div>
-	<p>Transformers are scripts of any programming language provided by <i>YOURSELF</i> (or shipped with the MQTT Gateway), that stands in the middle of the data transfer, and can transform incoming values to other outgoing values. Currently only <b>UDP Transformers</b> are supported, that modify data from the Miniserver before sending to MQTT.
-	</p>
-	<p class="hint">Example: Loxone sends RGB colors as combined 0-100% value, but devices require three seperate 0-255 values. An UDP Transformer can archive this.</p> 
-	<p>Use LoxBerry MQTT's <a href="mqtt-quickpublisher.cgi" target="_blank">Quick Publisher</a> to test publishes to the MQTT Server.</p>
-	
-	<div data-role='collapsible' id='coll_package_transformers_udp' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-	
-		<h2 class='ui-bar ui-bar-a ui-corner-all' id='transformers_udp_head'>Available UDP Transformers</h2>
-		<div>
-		<p>An UDP Transformer acts <b>Miniserver&rarr;Transformer&rarr;MQTT</b> and is called from a Virtual Output Command like <i>publish</i> or <i>retain</i> but with added Transformer name in the parameters:<br>
-		Syntax: <span class="mono"><span style="color:black">publish </span>transformername <span style="color:black">to/my/topic</span> <span style="color:blue">data1 data2 ...</span></span>
-		<br>
-		Example: <span class="mono"><span style="color:black">publish </span>shelly_rgb&amp;w <span style="color:black">shellies/shelly-12345/color/0/set</span> <span style="color:blue">rgb &lt;v&gt;</span></span>
-		<span class="hint"><br>(The <span class="mono">publish</span>/<span class="mono">retain</span> keyword is mandatory with transformers.)</span>
-		
-		<p>See full documentation how to use and create a <a href="https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/start" target="_blank">UDP Transformer</a> including example scripts.</p>
-		
-		<div id="transformers_udp_tablediv">
-		</div>
-		</div>
-	
-	</div>
-
-	
-<script>
-$(function() {
-	
-	var tuhtml = '<table class="trans_table">';
-	var transformers = null;
-	var udp_transformers = null;
-	try {
-		transformers = JSON.parse( $("#transformers_json").text() );
-		udp_transformers = get( transformers, 'udpin' );
-	}
-	catch(err) {
-		tuhtml+= '<tr><td><i>No UDP Transformers available.</i></td></tr>';
-	}
-	if( udp_transformers ) {
-		console.log("UDP Transformers", udp_transformers);
-		for( transname in udp_transformers ) {
-			trans = udp_transformers[transname];
-			console.log(trans);
-			tuhtml+= '<tr><td>';
-			tuhtml+= '<div style="display:flex;">';
-			tuhtml+= '<div class="mono" style="font-size:120%"><b>'+transname+'</b></div>';
-			var type_color = trans.type === 'shipped' ? '#8e256b' : 'blue';
-			tuhtml+= '<div style="color:'+type_color+';">('+trans.type+')</div>';
-			tuhtml+= '<div>'+trans.description+'</div>';
-			tuhtml+= '<div>';
-			if( trans.link )
-				tuhtml+= '<a href="'+trans.link+'" target="_blank">See details...</a>';
-			tuhtml+= '</div>';
-			tuhtml+= '</div>';
-			// tuhtml+= '<div style="display:flex;" class="hint">Example Virtual Output Command:&nbsp;&nbsp;<span class="mono"><span style="color:black">publish </span>'+transname+' <span style="color:black">to/my/topic</span> <span style="color:blue">&lt;v.1&gt;</span></span></div>';
-			tuhtml+= '<div style="display:flex;"><div style="font-size:65%;">'+trans.filename+'</div></div>';
-			tuhtml+= '</td></tr>';
-		}
-	}
-	tuhtml += '</table>';
-	$('#transformers_udp_tablediv').html( tuhtml );
-	
-});
-</script>	
-	
-
-		</div>
-	</details>
 	<!-- /Form TOPICS -->
 </TMPL_IF>
 

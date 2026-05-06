@@ -81,6 +81,7 @@ if( $q->{ajax} ) {
 		$navbar{10}{active} = 1;
 		$template->param("FORM_BASIC", 1);
 		basic_form();
+		transformers_form();
 	}
 	elsif ( $q->{form} eq "subscriptions" or $q->{form} eq "conversions" ) {
 		$navbar{20}{active} = 1;
@@ -190,7 +191,7 @@ sub topics_form
 
 
 ########################################################################
-# Transformers Form 
+# Transformers Form
 ########################################################################
 sub transformers_form
 {

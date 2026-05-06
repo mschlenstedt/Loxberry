@@ -953,3 +953,20 @@ body.theme-dark .mqttgw-topic-ms {
   font-style: italic;
   font-size: var(--lb-font-sm);
 }
+
+/* ============================================================
+   TRANSFORMERS TABLE
+   ============================================================ */
+.trans_table {
+  width: 100%;
+  font-size: var(--lb-font-sm);
+  border-collapse: collapse;
+}
+.trans_table td, .trans_table th {
+  padding: 6px 8px;
+  border-top: 1px solid var(--lb-gray-200);
+  vertical-align: top;
+}
+.trans_table div {
+  padding: 2px 6px;
+}
