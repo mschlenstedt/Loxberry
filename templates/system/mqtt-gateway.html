@@ -203,21 +203,77 @@ $(function() {
         syncBtnGroup($(this).attr("name"));
     });
 
-    // Version change warning
+    // Version change popup
     var originalVersion = gatewayversion;
+    var _migrationChoice = null;
     $('input[name="gatewayversion"]').on("change", function() {
         var newVersion = parseInt($(this).val());
-        if (newVersion !== originalVersion) {
-            $("#version_change_warning").slideDown(200);
-        } else {
-            $("#version_change_warning").slideUp(200);
+        _migrationChoice = null;
+
+        if (newVersion === 2 && originalVersion === 1) {
+            $.post('ajax/ajax-mqtt.php', { ajax: 'get_v1_migration_status' })
+            .done(function(data) {
+                if (data.available && data.count > 0) {
+                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgData.replace('%s', data.count));
+                    $("#mqttgw-migrate-btn-import").show();
+                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnEmpty);
+                } else {
+                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoData);
+                    $("#mqttgw-migrate-btn-import").hide();
+                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
+                }
+                $("#mqttgw-migrate-popup").popup("open", { positionTo: "window" });
+            })
+            .fail(function() {
+                $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoData);
+                $("#mqttgw-migrate-btn-import").hide();
+                $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
+                $("#mqttgw-migrate-popup").popup("open", { positionTo: "window" });
+            });
+        } else if (newVersion === 1 && originalVersion === 2) {
+            $("#mqttgw-switch-v1-popup").popup("open", { positionTo: "window" });
         }
+    });
+
+    // V1→V2 popup: import button
+    $("#mqttgw-migrate-btn-import").on("click", function(e) {
+        e.preventDefault();
+        _migrationChoice = 'migrate';
+        $("#mqttgw-migrate-popup").popup("close");
+    });
+
+    // V1→V2 popup: empty/OK button
+    $("#mqttgw-migrate-btn-empty").on("click", function(e) {
+        e.preventDefault();
+        _migrationChoice = 'empty';
+        $("#mqttgw-migrate-popup").popup("close");
+    });
+
+    // V2→V1 popup: cancel → revert radio to V2
+    $("#mqttgw-switch-v1-cancel").on("click", function(e) {
+        e.preventDefault();
+        $("#gw_v2").prop("checked", true);
+        syncBtnGroup("gatewayversion");
+        $("#mqttgw-switch-v1-popup").popup("close");
+    });
+
+    // V2→V1 popup: proceed
+    $("#mqttgw-switch-v1-proceed").on("click", function(e) {
+        e.preventDefault();
+        $("#mqttgw-switch-v1-popup").popup("close");
     });
 
     // Status indicator
     var _lang_gw = {
         statusRunning: '<TMPL_VAR MQTT.STATUS_RUNNING>',
         statusStopped: '<TMPL_VAR MQTT.STATUS_STOPPED>'
+    };
+
+    var _lang_migrate = {
+        msgData:   '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_DATA>',
+        msgNoData: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NODATA>',
+        btnEmpty:  '<TMPL_VAR MQTT.MIGRATE_BTN_EMPTY>',
+        btnOk:     '<TMPL_VAR MQTT.MIGRATE_BTN_OK>'
     };
 
     function updateStatus() {
@@ -248,33 +304,48 @@ $(function() {
         cfg.Main.udpport = parseInt($("#basic_udpport").val()) || 11883;
         cfg.Main.msno = parseInt($("#Main\\.msno").val()) || 1;
 
-        var saveGwConfig = $.ajax({
-            type: 'POST',
-            url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace',
-            dataType: 'json',
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify(cfg)
-        });
-
-        var saveVersion = $.ajax({
-            type: 'POST',
-            url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
-            dataType: 'json',
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify({ Gatewayversion: newVersion })
-        });
-
-        $.when(saveGwConfig, saveVersion).always(function() {
-            if (newVersion !== originalVersion) {
-                location.reload();
-                return;
-            }
-            // Restart gateway to apply new settings
-            $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
-                $("#saveapply").prop("disabled", false);
-                updateStatus();
+        function doSave() {
+            var saveGwConfig = $.ajax({
+                type: 'POST',
+                url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace',
+                dataType: 'json',
+                contentType: 'application/json; charset=UTF-8',
+                data: JSON.stringify(cfg)
             });
-        });
+            var saveVersion = $.ajax({
+                type: 'POST',
+                url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
+                dataType: 'json',
+                contentType: 'application/json; charset=UTF-8',
+                data: JSON.stringify({ Gatewayversion: newVersion })
+            });
+            $.when(saveGwConfig, saveVersion).always(function() {
+                if (newVersion !== originalVersion) {
+                    location.reload();
+                    return;
+                }
+                $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
+                    $("#saveapply").prop("disabled", false);
+                    updateStatus();
+                });
+            });
+        }
+
+        if (newVersion === 2 && originalVersion === 1) {
+            var choice = _migrationChoice || 'empty';
+            if (choice === 'migrate') {
+                $.post('ajax/ajax-mqtt.php', { ajax: 'migrate_v1_to_v2' }).always(doSave);
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions',
+                    contentType: 'application/json; charset=UTF-8',
+                    data: JSON.stringify({ Subscriptions: [] })
+                }).always(doSave);
+            }
+        } else {
+            doSave();
+        }
     });
 });
 </script>
