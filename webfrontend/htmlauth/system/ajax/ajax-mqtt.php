@@ -375,14 +375,13 @@ elseif ( $ajax == 'get_v1_migration_status' ) {
         if ( isset($content['regexfilterline']) ) continue;
         // Skip topics without toMS (not forwarded yet)
         if ( empty($content['toMS']) ) continue;
-        // Determine highest HTTP code across all Miniservers
-        $highest = '0';
+        $highest = 0;
         foreach ( $content['toMS'] as $msno => $ms ) {
-            $code = $ms['code'] ?? '0';
-            if ( $code === '200' ) { $highest = '200'; break; }
+            $code = (int)($ms['code'] ?? 0);
+            if ( $code === 200 ) { $highest = 200; break; }
             if ( $code > $highest ) $highest = $code;
         }
-        if ( $highest === '200' ) $count++;
+        if ( $highest === 200 ) $count++;
     }
     echo json_encode([ 'available' => true, 'count' => $count ]);
 }
