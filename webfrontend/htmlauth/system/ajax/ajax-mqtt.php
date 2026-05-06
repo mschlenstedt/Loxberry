@@ -357,6 +357,36 @@ elseif ( $ajax == 'get_status_v2' ) {
     echo file_exists($f) ? file_get_contents($f) : '{}';
 }
 
+elseif ( $ajax == 'get_v1_migration_status' ) {
+    $f = '/dev/shm/mqttgateway_topics.json';
+    header('Content-Type: application/json');
+    if ( !file_exists($f) ) {
+        echo json_encode([ 'available' => false, 'count' => 0 ]);
+        exit;
+    }
+    $data = json_decode( file_get_contents($f), true );
+    if ( empty($data['http']) ) {
+        echo json_encode([ 'available' => false, 'count' => 0 ]);
+        exit;
+    }
+    $count = 0;
+    foreach ( $data['http'] as $topic => $content ) {
+        // Skip regex-filtered topics
+        if ( isset($content['regexfilterline']) ) continue;
+        // Skip topics without toMS (not forwarded yet)
+        if ( empty($content['toMS']) ) continue;
+        // Determine highest HTTP code across all Miniservers
+        $highest = '0';
+        foreach ( $content['toMS'] as $msno => $ms ) {
+            $code = $ms['code'] ?? '0';
+            if ( $code === '200' ) { $highest = '200'; break; }
+            if ( $code > $highest ) $highest = $code;
+        }
+        if ( $highest === '200' ) $count++;
+    }
+    echo json_encode([ 'available' => true, 'count' => $count ]);
+}
+
 // Unknown request
 else {
 	http_response_code(500);
