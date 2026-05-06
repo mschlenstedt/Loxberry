@@ -100,13 +100,19 @@ if ($sendstat) {
 		flock($fh,8);
 		close($fh);
 		
-		# Architecture
-		my $architecture;
-		$architecture = "ARM" if (-e "$lbsconfigdir/is_raspberry.cfg");
-		$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
-		$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
-		$architecture = "Virtuozzo" if (-e "$lbsconfigdir/is_virtuozzo.cfg");
-		$architecture = "Odroid" if (-e "$lbsconfigdir/is_odroidxu3xu4.cfg");
+		# Architecture - prefer new is_arch_*.cfg files (DietPi-based, set by installer since LB 3.x),
+		# fall back to legacy files for older installations
+		my $architecture = '';
+		if    (-e "$lbsconfigdir/is_arch_aarch64.cfg") { $architecture = "aarch64"; }
+		elsif (-e "$lbsconfigdir/is_arch_armv7l.cfg")  { $architecture = "armv7l";  }
+		elsif (-e "$lbsconfigdir/is_arch_armv6l.cfg")  { $architecture = "armv6l";  }
+		elsif (-e "$lbsconfigdir/is_arch_x86_64.cfg")  { $architecture = "x86_64";  }
+		elsif (-e "$lbsconfigdir/is_arch_riscv64.cfg") { $architecture = "riscv64"; }
+		elsif (-e "$lbsconfigdir/is_raspberry.cfg")    { $architecture = "ARM";     }
+		elsif (-e "$lbsconfigdir/is_x64.cfg")          { $architecture = "x64";     }
+		elsif (-e "$lbsconfigdir/is_x86.cfg")          { $architecture = "x86";     }
+		elsif (-e "$lbsconfigdir/is_virtuozzo.cfg")    { $architecture = "x64";     }
+		elsif (-e "$lbsconfigdir/is_odroidxu3xu4.cfg") { $architecture = "ARM";     }
 		
 		# Send LoxBerry version info
 		my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture&lang=$lang&country=$country";

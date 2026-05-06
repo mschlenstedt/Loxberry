@@ -1,6 +1,20 @@
+<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
+
+<!-- Mosquitto Service Status (outside Vue app) -->
+<div class="servicestatus" id="mosq_servicestatus_wrap">
+	<div class="servicestatus-info">
+		<div><TMPL_VAR MQTT.MOSQ_SERVICE_TITLE></div>
+		<div class="status" id="mosq_status_text"><TMPL_VAR MQTT.MOSQ_STATUS_QUERYING></div>
+	</div>
+	<div class="servicestatus-btns">
+		<a id="btn_restart_mosquitto" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-refresh ui-corner-all"><TMPL_VAR MQTT.BTN_MOSQ_RESTART></a>
+		<a id="btn_stop_mosquitto" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all" style="background:#d9534f;color:white;border-color:#d9534f"><TMPL_VAR MQTT.BTN_MOSQ_STOP></a>
+	</div>
+</div>
+
 <div id="mqttapp">
 	<div class="lb-section-title">{{sl.heading}}</div>
-	<p v-html="sl.intro"></p>
+	<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)" v-html="sl.intro"></p>
 
 	<!-- Broker Selection -->
 	<div class="lb-form-row">
@@ -22,13 +36,13 @@
 	</div>
 
 	<!-- Section Title depending on selection -->
-	<div class="lb-section-title" v-if="Mqtt.Uselocalbroker=='true'">LoxBerry Managed MQTT Server</div>
-	<div class="lb-section-title" v-else>Own MQTT Server</div>
+	<div class="lb-section-title" v-if="Mqtt.Uselocalbroker=='true'"><TMPL_VAR MQTT.LABEL_LOCAL_BROKER></div>
+	<div class="lb-section-title" v-else><TMPL_VAR MQTT.LABEL_CUSTOM_BROKER></div>
 
-	<div class="lb-section-title" style="font-size:1rem;border-bottom-width:1px">Basic Settings</div>
+	<div class="lb-section-title"><TMPL_VAR MQTT.LABEL_BASIC_SETTINGS></div>
 
 	<div class="lb-form-row">
-		<div class="lb-form-label">MQTT Server Hostname</div>
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_HOST></div>
 		<div class="lb-form-field">
 			<input class="lb-input" type="text" id="Mqtt.Brokerhost"
 				v-model.trim="Mqtt.Brokerhost"
@@ -40,18 +54,19 @@
 	</div>
 
 	<div class="lb-form-row">
-		<div class="lb-form-label">MQTT Server Port</div>
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_PORT></div>
 		<div class="lb-form-field" style="max-width:150px">
 			<input class="lb-input" type="number" id="Mqtt.Brokerport"
 				v-model.number="Mqtt.Brokerport"
+				:disabled="Mqtt.Uselocalbroker=='true'"
 				v-on:change="formadata_changed()"
 				data-role="none">
 		</div>
-		<div class="lb-form-help">Default is 1883</div>
+		<div class="lb-form-help"><TMPL_VAR MQTT.HELP_BROKER_PORT_DEFAULT></div>
 	</div>
 
 	<div class="lb-form-row">
-		<div class="lb-form-label">MQTT Server User</div>
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_USER></div>
 		<div class="lb-form-field">
 			<input class="lb-input" type="text" id="Mqtt.Brokeruser"
 				v-model.trim="Mqtt.Brokeruser"
@@ -61,7 +76,7 @@
 	</div>
 
 	<div class="lb-form-row">
-		<div class="lb-form-label">MQTT Server Password</div>
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_PASS></div>
 		<div class="lb-form-field">
 			<input class="lb-input" type="text" id="Mqtt.Brokerpass"
 				v-model.trim="Mqtt.Brokerpass"
@@ -71,7 +86,7 @@
 	</div>
 
 	<div class="lb-form-row">
-		<div class="lb-form-label">MQTT Websocket Port</div>
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_WEBSOCKET_PORT></div>
 		<div class="lb-form-field" style="max-width:150px">
 			<input class="lb-input" type="number" id="Mqtt.Websocketport"
 				v-model.number="Mqtt.Websocketport"
@@ -82,24 +97,24 @@
 
 	<!-- Connection Info Box -->
 	<div style="background:var(--lb-primary);color:white;padding:12px 16px;border-radius:var(--lb-radius);margin-bottom:var(--lb-space-lg);font-size:var(--lb-font-sm)">
-		To configure MQTT devices, use the following MQTT connection information:<br>
+		<TMPL_VAR MQTT.INFO_CONNECTION_DETAILS><br>
 		Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Brokerport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b><br>
-		<small>Possibly host and port needs to be combined: <b>{{show_brokerhost}}:{{Mqtt.Brokerport}}</b></small>
+		<small><TMPL_VAR MQTT.INFO_CONNECTION_COMBINED> <b>{{show_brokerhost}}:{{Mqtt.Brokerport}}</b></small>
 	</div>
 
 	<!-- Save button -->
 	<div style="display:flex;justify-content:center;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
-		<button class="lb-btn lb-btn-primary" v-on:click="saveApply()" data-role="none">Save and Apply</button>
+		<button class="lb-btn lb-btn-primary" v-on:click="saveApply()" data-role="none"><TMPL_VAR MQTT.BTN_SAVE_APPLY></button>
 	</div>
 
 	<div v-show="data_changed" style="text-align:center;margin-top:var(--lb-space-md);color:var(--lb-primary);font-size:var(--lb-font-sm)">
-		Unsaved changes.<br>Keep in mind, that changing the MQTT Server settings might need to change these on all your MQTT devices. Plugins possibly need to be restarted.
+		<TMPL_VAR MQTT.MSG_MQTT_UNSAVED><br><TMPL_VAR MQTT.MSG_MQTT_UNSAVED_DETAIL>
 	</div>
 	<div v-show="data_saved" style="text-align:center;margin-top:var(--lb-space-md);color:var(--lb-success);font-size:var(--lb-font-sm)">
-		Changes saved successfully.
+		<TMPL_VAR MQTT.MSG_SAVED_OK>
 	</div>
 	<div v-show="data_save_error" style="text-align:center;margin-top:var(--lb-space-md);color:var(--lb-danger);font-size:var(--lb-font-sm)">
-		Error saving data.
+		<TMPL_VAR MQTT.MSG_SAVE_ERROR>
 	</div>
 
 </div>
@@ -109,6 +124,14 @@
 
 	const mqtt_generic = '/admin/system/ajax/ajax-generic.php';
 
+	var _lang_mosq = {
+		statusQuerying:    '<TMPL_VAR MQTT.MOSQ_STATUS_QUERYING>',
+		statusReachable:   '<TMPL_VAR MQTT.MOSQ_STATUS_REACHABLE>',
+		statusFailed:      '<TMPL_VAR MQTT.MOSQ_STATUS_FAILED>',
+		statusRunningPid:  '<TMPL_VAR MQTT.MOSQ_STATUS_RUNNING_PID>',
+		statusNotRunning:  '<TMPL_VAR MQTT.MOSQ_STATUS_NOT_RUNNING>',
+		statusQueryFailed: '<TMPL_VAR MQTT.MOSQ_STATUS_QUERY_FAILED>'
+	};
 
 	const mqttapp = {
 
@@ -120,14 +143,10 @@
 		var Mqtt = this.getData();
 		return {
 			sl: {
-				heading: "MQTT Server Settings",
-				intro: "MQTT is a slim, internationally standardised data transfer protocol using an MQTT Server (formerly called 'MQTT Broker'), that is a central program that transfers "+
-					   "data from and to all directions. LoxBerry's MQTT Gateway and many plugins use the MQTT standard for data transfer. By default, "+
-					   "LoxBerry automatically installs and manages the Mosquitto MQTT Server on your LoxBerry. But you are also able to configure another "+
-					   "MQTT Server that should be used.<br>"+
-					   "LoxBerry's MQTT Gateway and plugins use the MQTT settings of the below configuration.",
-				uselocalbroker_true: "Use and automatically configure local MQTT Server",
-				uselocalbroker_false: "Use custom MQTT Server and manage Server myself"
+				heading: "<TMPL_VAR MQTT.MOSQ_HEADING>",
+				intro: "<TMPL_VAR MQTT.DESC_MQTT_INTRO>",
+				uselocalbroker_true: "<TMPL_VAR MQTT.RADIO_USE_LOCAL_BROKER>",
+				uselocalbroker_false: "<TMPL_VAR MQTT.RADIO_USE_CUSTOM_BROKER>"
 
 			},
 			Mqtt: {
@@ -234,6 +253,66 @@
 	Vue.createApp(mqttapp)
 		.mount('#mqttapp')
 
+	const mqtt_ajax = '/admin/system/ajax/ajax-mqtt.php';
 
+	function mosq_status_pending() {
+		$('#mosq_status_text').text(_lang_mosq.statusQuerying).css({'background':'#dfdfdf','color':'black','border-color':'#7e7e7e'});
+	}
+
+	function update_mosq_status() {
+		$.post(mqtt_ajax, { ajax: 'getpids' })
+		.done(function(resp) {
+			var $btns = $('#btn_restart_mosquitto, #btn_stop_mosquitto');
+			if (resp.pids.mosq_custom) {
+				// Custom broker — show reachability, disable local buttons
+				$btns.addClass('ui-disabled').attr('disabled', true);
+				if (resp.pids.mosq_reachable) {
+					$('#mosq_status_text').text(_lang_mosq.statusReachable).css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+				} else {
+					$('#mosq_status_text').text(_lang_mosq.statusFailed).css({'background':'#d0021b','color':'white','border-color':'#b00218'});
+				}
+			} else {
+				// Local Mosquitto
+				$btns.removeClass('ui-disabled').removeAttr('disabled');
+				if (resp.pids.mosquitto != null) {
+					$('#mosq_status_text').text(_lang_mosq.statusRunningPid.replace('%s', resp.pids.mosquitto)).css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+				} else {
+					$('#mosq_status_text').text(_lang_mosq.statusNotRunning).css({'background':'#d0021b','color':'white','border-color':'#b00218'});
+				}
+			}
+		})
+		.fail(function() {
+			$('#mosq_status_text').text(_lang_mosq.statusQueryFailed).css({'background':'#dfdfdf','color':'black','border-color':'#7e7e7e'});
+		});
+	}
+
+	$(function() {
+		update_mosq_status();
+		setInterval(update_mosq_status, 5000);
+
+		$('#btn_restart_mosquitto').click(function(e) {
+			e.preventDefault();
+			if ($(this).hasClass('ui-disabled')) return;
+			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('ui-disabled').attr('disabled', true);
+			mosq_status_pending();
+			$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
+			.always(function() {
+				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('ui-disabled').removeAttr('disabled');
+				setTimeout(update_mosq_status, 3000);
+			});
+		});
+
+		$('#btn_stop_mosquitto').click(function(e) {
+			e.preventDefault();
+			if ($(this).hasClass('ui-disabled')) return;
+			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('ui-disabled').attr('disabled', true);
+			mosq_status_pending();
+			$.post(mqtt_ajax, { ajax: 'stop_mosquitto' })
+			.always(function() {
+				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('ui-disabled').removeAttr('disabled');
+				setTimeout(update_mosq_status, 1500);
+			});
+		});
+	});
 
 </script>

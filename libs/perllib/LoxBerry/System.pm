@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 use Carp;
 
 package LoxBerry::System;
-our $VERSION = "3.0.0.7";
+our $VERSION = "3.0.0.8";
 our $DEBUG;
 
 use base 'Exporter';
@@ -60,6 +60,8 @@ our @EXPORT = qw (
 	lox2epoch
 	reboot_required
 	vers_tag
+	plugin_version_compare
+	plugin_version_has_prerelease
 );
 
 ##################################################################
@@ -1504,6 +1506,116 @@ sub vers_tag
 	
 	return $vers;
 
+}
+
+# SemVer 2 precedence for plugin-style versions (classic core + optional prerelease). Build metadata is ignored (SemVer §10).
+# Fallback: lax version.pm when the strings are not classic SemVer-shaped.
+# Returns -1 / 0 / 1 like <=>, or undef if not comparable.
+
+sub plugin_version_compare
+{
+	my ($a_in, $b_in) = @_;
+	return 0 unless defined($a_in) || defined($b_in);
+	return undef unless defined($a_in) && defined($b_in);
+	my $tag_a = lc(LoxBerry::System::trim($a_in));
+	my $tag_b = lc(LoxBerry::System::trim($b_in));
+	$tag_a = vers_tag($tag_a);
+	$tag_b = vers_tag($tag_b);
+
+	my ($maj_a, $min_a, $pat_a, $pre_a, $ok_semver_a) = _plugin_semver_parts($tag_a);
+	my ($maj_b, $min_b, $pat_b, $pre_b, $ok_semver_b) = _plugin_semver_parts($tag_b);
+
+	if ($ok_semver_a && $ok_semver_b) {
+		my $cmaj = int($maj_a) <=> int($maj_b);
+		return $cmaj if $cmaj != 0;
+		my $cmin = int($min_a) <=> int($min_b);
+		return $cmin if $cmin != 0;
+		my $cpat = int($pat_a) <=> int($pat_b);
+		return $cpat if $cpat != 0;
+
+		my $pempty_a = ($pre_a eq '');
+		my $pempty_b = ($pre_b eq '');
+		# Stable (no prerelease) has strictly higher precedence than any prerelease of same MAJOR.MINOR.PATCH (SemVer §11).
+		return -1 if !$pempty_a &&  $pempty_b;
+		return  1 if  $pempty_a && !$pempty_b;
+		return  0 if  $pempty_a &&  $pempty_b;
+
+		return _plugin_semver_prerelease_cmp($pre_a, $pre_b);
+	}
+
+	require version;
+	# Normalize like legacy callers (pluginsupdate/plugininstall path): lax parse uses strings WITH leading v via vers_tag, not stripped.
+	my $parsed_a = vers_tag($tag_a);
+	my $parsed_b = vers_tag($tag_b);
+	return undef unless version::is_lax($parsed_a) && version::is_lax($parsed_b);
+	my $va = eval { version->parse($parsed_a) };
+	my $vb = eval { version->parse($parsed_b) };
+	return undef unless defined $va && defined $vb;
+	return $va <=> $vb;
+}
+
+sub plugin_version_has_prerelease
+{
+	my ($v_in) = @_;
+	return 0 unless defined $v_in && $v_in ne '';
+	my $tag = lc(LoxBerry::System::trim($v_in));
+	$tag = vers_tag($tag);
+	my (undef, undef, undef, $pre, $ok) = _plugin_semver_parts($tag);
+	return ($ok && $pre ne '') ? 1 : 0;
+}
+
+sub _plugin_semver_parts
+{
+	my ($tag) = @_;
+	return (undef, undef, undef, undef, 0) if (!defined($tag) || $tag eq '');
+	my $s = $tag;
+	$s =~ s/^v//;
+	$s =~ s/\+.*\z//;
+	if ($s =~ /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/ ) {
+		my $pre = defined $4 ? $4 : '';
+		return ($1 + 0, $2 + 0, $3 + 0, $pre, 1);
+	}
+	return (undef, undef, undef, undef, 0);
+}
+
+sub _plugin_semver_prerelease_cmp
+{
+	my ($a, $b) = @_;
+	my @pa = split(/\./, $a, -1);
+	my @pb = split(/\./, $b, -1);
+	my $i = 0;
+	while ( 1 ) {
+		my $ida = $pa[$i];
+		my $idb = $pb[$i];
+		if (!defined($ida) && !defined($idb)) {
+			return 0;
+		}
+		if (!defined($ida)) {
+			return -1;
+		}
+		if (!defined($idb)) {
+			return 1;
+		}
+		my $na = ($ida =~ /^\d+$/);
+		my $nb = ($idb =~ /^\d+$/);
+		if ($na && $nb) {
+			no warnings 'numeric';
+			my $wc = ($ida + 0) <=> ($idb + 0);
+			return $wc if $wc != 0;
+		}
+		elsif ($na && !$nb) {
+			return -1;
+		}
+		elsif (!$na && $nb) {
+			return 1;
+		}
+		else {
+			my $ws = ($ida cmp $idb);
+			return $ws if $ws != 0;
+		}
+		$i++;
+	}
+	return 0;
 }
 
 sub bytes_humanreadable

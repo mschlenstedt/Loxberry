@@ -11,6 +11,7 @@ use strict;
 use Net::MQTT::Simple;
 # use Hash::Flatten;
 use File::Monitor;
+use Encode qw(decode encode);
 
 # use Data::Dumper;
 
@@ -115,15 +116,26 @@ while(1) {
 
 sub received
 {
-	
+
 	my ($topic, $message) = @_;
-	
+
 	utf8::encode($topic);
+	# Net::MQTT::Simple delivers payload as raw bytes (no UTF-8 flag).
+	# decode() with FB_CROAK modifies its argument in-place (consumes bytes),
+	# leaving $message empty on success — so capture the return value instead.
+	if (!utf8::is_utf8($message)) {
+		my $decoded = eval { decode('UTF-8', $message, Encode::FB_CROAK) };
+		if ($@) {
+			$message = decode('latin1', $message);
+		} else {
+			$message = $decoded;
+		}
+	}
 	LOGOK "MQTT received: $topic: $message";
-	
+
 	# Remember that we have currently have received data
 	$mqtt_data_received = 1;
-	
+
 	$sendhash{$topic}{p} = $message;
 	$sendhash{$topic}{t} = Time::HiRes::time();
 	
@@ -151,14 +163,28 @@ sub read_config
 	}
 	
 	LOGOK "Reading config";
-	
+
+	# Remember old broker to detect changes
+	my $old_brokerhost = defined $cfg ? ($cfg->{Mqtt}->{Brokerhost} // '') : undef;
+	my $old_brokerport = defined $cfg ? ($cfg->{Mqtt}->{Brokerport} // '') : undef;
+
 	# General.json Config file
 	$json = LoxBerry::JSON->new();
 	$cfg = $json->open(filename => $cfgfile, readonly => 1);
-	
+
 	if(!$cfg) {
 		LOGCRIT "Could not read json configuration. Possibly not a valid json?";
 		return;
+	}
+
+	# Clear topic cache when broker connection changes
+	if( defined $old_brokerhost &&
+	    ( ($cfg->{Mqtt}->{Brokerhost} // '') ne $old_brokerhost ||
+	      ($cfg->{Mqtt}->{Brokerport} // '') ne $old_brokerport ) ) {
+		LOGOK "Broker changed ($old_brokerhost:$old_brokerport -> " .
+		      $cfg->{Mqtt}->{Brokerhost} . ":" . $cfg->{Mqtt}->{Brokerport} .
+		      ") — clearing topic cache";
+		%sendhash = ();
 	}
 
 	# Checking, if mqttfinder is disabled

@@ -154,14 +154,45 @@ elseif ( $ajax == 'doNotForward' ) {
 }
 
 elseif ( $ajax == 'getpids' ) {
-	$pids['mqttgateway'] = trim(`pgrep -f 'mqttgateway.pl|python.*mqttgateway'`) ;
-	$pids['mosquitto'] = trim(`pgrep mosquitto`) ;
-	
-	$pids['mqttgateway'] = $pids['mqttgateway'] != 0 ? $pids['mqttgateway'] : null;
-	$pids['mosquitto'] = $pids['mosquitto'] != 0 ? $pids['mosquitto'] : null;
-	
+	$gw_pid = trim(`pgrep mqttgateway.pl`);
+	if (!$gw_pid) {
+		// V2: use PID file written by mqtt_gateway.py on startup
+		$v2_pidfile = '/dev/shm/mqtt_gateway.pid';
+		if (file_exists($v2_pidfile)) {
+			$v2_pid = trim(file_get_contents($v2_pidfile));
+			if ($v2_pid && is_numeric($v2_pid) && file_exists("/proc/$v2_pid")) {
+				$gw_pid = $v2_pid;
+			}
+		}
+	}
+	$pids['mqttgateway'] = $gw_pid ?: null;
+
+	// Determine broker mode from general.json
+	$generalcfg = json_decode(file_get_contents(LBSCONFIGDIR.'/general.json'), true);
+	$uselocalbroker = isset($generalcfg['Mqtt']['Uselocalbroker']) ? $generalcfg['Mqtt']['Uselocalbroker'] : 'true';
+
+	if (is_enabled($uselocalbroker)) {
+		// Local Mosquitto
+		$pids['mosquitto']    = trim(`pgrep mosquitto`) ?: null;
+		$pids['mosq_custom']  = false;
+	} else {
+		// Custom broker — TCP reachability check
+		$brokerhost = $generalcfg['Mqtt']['Brokerhost'] ?? 'localhost';
+		$brokerport = (int)($generalcfg['Mqtt']['Brokerport'] ?? 1883);
+		$fp = @fsockopen($brokerhost, $brokerport, $errno, $errstr, 3);
+		if ($fp) {
+			fclose($fp);
+			$pids['mosq_reachable'] = true;
+		} else {
+			$pids['mosq_reachable'] = false;
+		}
+		$pids['mosquitto']   = null;
+		$pids['mosq_custom'] = true;
+		$pids['mosq_host']   = $brokerhost . ':' . $brokerport;
+	}
+
 	echo json_encode( array ('pids' => $pids ) );
-	
+
 }
 
 elseif ( $ajax == 'mosquitto_purgedb' ) {
@@ -222,8 +253,17 @@ elseif( $ajax == 'publish_json' ) {
 
 elseif( $ajax == 'restartgateway' ) {
 	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway" );
+}
 
-}	
+elseif( $ajax == 'stop_gateway' ) {
+	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=stopgateway" );
+	echo json_encode(array('status' => 'ok'));
+}
+
+elseif( $ajax == 'stop_mosquitto' ) {
+	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=stopmosquitto" );
+	echo json_encode(array('status' => 'ok'));
+}
 
 elseif( $ajax == 'getmqttfinderdata' ) {
 	$fp = @fopen($finderdatafile, "r");
@@ -280,6 +320,41 @@ elseif ( $_POST['ajax'] == 'save_subscriptions_v2' ) {
 
     header('Content-Type: application/json');
     echo json_encode(array('status' => 'ok', 'count' => count($input['subscriptions_v2'])));
+}
+
+elseif ( $_POST['ajax'] == 'get_subscriptions' || $_GET['ajax'] == 'get_subscriptions' ) {
+    $fullcfgfile = LBSCONFIGDIR.'/subscriptions.json';
+    header('Content-Type: application/json');
+    if (file_exists($fullcfgfile)) {
+        $cfg = json_decode(file_get_contents($fullcfgfile), true);
+        echo json_encode($cfg ?: array('Subscriptions' => array()));
+    } else {
+        echo json_encode(array('Subscriptions' => array()));
+    }
+}
+
+elseif ( $_POST['ajax'] == 'save_subscriptions' || $_GET['ajax'] == 'save_subscriptions' ) {
+    $fullcfgfile = LBSCONFIGDIR.'/subscriptions.json';
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input || !isset($input['Subscriptions'])) {
+        http_response_code(400);
+        header('Content-Type: application/json');
+        echo json_encode(array('error' => 'Missing Subscriptions data'));
+        exit;
+    }
+    $written = file_put_contents($fullcfgfile, json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), LOCK_EX);
+    if ($written === false) {
+        http_response_code(500);
+        exit;
+    }
+    header('Content-Type: application/json');
+    echo json_encode(array('status' => 'ok', 'count' => count($input['Subscriptions'])));
+}
+
+elseif ( $ajax == 'get_status_v2' ) {
+    $f = '/dev/shm/mqttgatwayv2_status.json';
+    header('Content-Type: application/json');
+    echo file_exists($f) ? file_get_contents($f) : '{}';
 }
 
 // Unknown request

@@ -63,14 +63,48 @@ elsif( $action eq "restartgateway" ) {
 	restart_gateway();
 }
 
+elsif( $action eq "stopgateway" ) {
+	# V2: kill via PID file with SIGKILL (asyncio catches SIGTERM)
+	my $v2_pidfile = '/dev/shm/mqtt_gateway.pid';
+	if (-f $v2_pidfile) {
+		open(my $fh, '<', $v2_pidfile);
+		my $pid = <$fh>;
+		close $fh;
+		chomp $pid;
+		if ($pid =~ /^\d+$/ && -e "/proc/$pid") {
+			kill 'KILL', int($pid);
+			LOGINF "Stopped mqtt_gateway.py PID $pid";
+		}
+	}
+	# V1 fallback
+	`pkill -KILL mqttgateway.pl`;
+}
+
+elsif( $action eq "stopmosquitto" ) {
+	qx(systemctl stop mosquitto);
+}
+
 exit;
 
 sub restart_gateway
 {
 	LOGDEB "restart_gateway";
-	# Restart Gateway
-	system("systemctl restart mqttgateway");
-
+	my $tempjsonobj = LoxBerry::JSON->new();
+	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
+	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
+	if( $gatewayversion == 2 ) {
+		`pkill -A -f mqtt_gateway.py`;
+		unless ( -f "$lbhomedir/sbin/mqttgateway_venv/bin/python3" ) {
+			LOGINF "Creating Python venv for MQTT Gateway V2...";
+			`rm -rf $lbhomedir/sbin/mqttgateway_venv`;
+			`python3 -m venv $lbhomedir/sbin/mqttgateway_venv`;
+			`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $lbhomedir/sbin/requirements_mqttgateway_venv.txt`;
+		}
+		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py >> /dev/shm/mqtt-gateway.log 2>&1 &'`;
+	} else {
+		`pkill mqttgateway.pl`;
+		`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;
+	}
 }
 
 sub open_configs
@@ -349,8 +383,8 @@ END
 	# Return http response here
 	# Check for $errorstr
 	
-	$mqttobj->write();
-	$generaljsonobj->write();
+	$mqttobj->write() if defined $mqttobj;
+	$generaljsonobj->write() if defined $generaljsonobj;
 
 	if ($log) {
 		$log->LOGEND();

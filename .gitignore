@@ -19,6 +19,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Python virtual environments
+sbin/mqttgateway_venv/
+
 # Backups
 _backup_L_*/
 

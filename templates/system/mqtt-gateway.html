@@ -26,6 +26,7 @@
 	<div id="mqttconfig"><TMPL_VAR JSONCONFIG ESCAPE=HTML></div>
 	<div id="udpinportconfig"><TMPL_VAR UDPINPORT></div>
 	<div id="extpluginsettings"><TMPL_VAR EXTPLUGINSETTINGS></div>
+	<div id="miniserver_list"><TMPL_VAR MINISERVER_JSON></div>
 	<div id="Uselocalbroker"><TMPL_VAR USELOCALBROKER></div>
 	<div id="gatewayversion"><TMPL_VAR GATEWAY_VERSION></div>
 </div>
@@ -34,12 +35,16 @@
 <!-- Form BASIC (MQTT Basic - V2) -->
 <form id="form_basic" onsubmit="return false;">
 
-    <!-- Live Status Indicator -->
-    <div id="mqttgw_status" class="mqttgw-status mqttgw-status-ok" style="display:none">
-        <span class="mqttgw-status-dot"></span>
-        <span class="mqttgw-status-label">Gateway laeuft</span>
-        <span class="mqttgw-status-detail" id="mqttgw_status_detail"></span>
-        <span class="mqttgw-status-uptime" id="mqttgw_status_uptime"></span>
+    <!-- Gateway Service Status -->
+    <div class="servicestatus">
+        <div class="servicestatus-info">
+            <div>MQTT Gateway</div>
+            <div class="status" id="gw_status_text"><TMPL_VAR MQTT.MOSQ_STATUS_QUERYING></div>
+        </div>
+        <div class="servicestatus-btns">
+            <a id="btn_restart_gateway" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-refresh ui-corner-all" data-role="none"><TMPL_VAR MQTT.BTN_MOSQ_RESTART></a>
+            <a id="btn_stop_gateway" href="#" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all" data-role="none" style="background:#d9534f;color:white;border-color:#d9534f"><TMPL_VAR MQTT.BTN_MOSQ_STOP></a>
+        </div>
     </div>
 
     <!-- Section: Gateway Version -->
@@ -56,19 +61,11 @@
             </div>
         </div>
     </div>
-    <div class="lb-form-row">
-        <div class="lb-form-label"></div>
-        <div class="lb-form-field">
-            <div class="lb-form-help" style="padding-left:0">
-                V1 subscribes alle konfigurierten Topics global. V2 nutzt Opt-In &mdash; nur explizit ausgew&auml;hlte Payloads werden weitergeleitet.<br>
-                Bestehende Installationen: Default V1. Neuinstallationen: Default V2.
-            </div>
-        </div>
-    </div>
+    <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500);margin-bottom:var(--lb-space-md)"><TMPL_VAR MQTT.VERSION_HELP></p>
 
     <!-- Version change warning (hidden by default) -->
     <div id="version_change_warning" class="mqttgw-version-warning" style="display:none">
-        <strong>&#9888; <TMPL_VAR MQTT.LABEL_HINT>:</strong> Bei Wechsel von V1 auf V2 m&uuml;ssen Topics im Tab &quot;Abonnements&quot; explizit ausgew&auml;hlt werden. Bestehende Subscriptions werden als Vorauswahl &uuml;bernommen.
+        <strong>&#9888; <TMPL_VAR MQTT.LABEL_HINT>:</strong> <TMPL_VAR MQTT.VERSION_CHANGE_WARNING>
     </div>
 
     <!-- Section: Miniserver Data Routing -->
@@ -128,14 +125,14 @@
         <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_CPU_PROFILE></div>
         <div class="lb-form-field">
             <select class="lb-select" name="Main.cpuperf" id="Main.cpuperf" data-role="none" style="max-width:250px">
-                <option value="1">1% (Energiesparer)</option>
-                <option value="2.5">2,5% (Moderat)</option>
-                <option value="5">5% (Standard)</option>
-                <option value="10">10% (Schnell)</option>
-                <option value="50">50% (Maximum)</option>
+                <option value="1"><TMPL_VAR MQTT.CPU_ENERGY_SAVER></option>
+                <option value="2.5"><TMPL_VAR MQTT.CPU_MODERATE></option>
+                <option value="5"><TMPL_VAR MQTT.CPU_STANDARD></option>
+                <option value="10"><TMPL_VAR MQTT.CPU_FAST></option>
+                <option value="50"><TMPL_VAR MQTT.CPU_MAXIMUM></option>
             </select>
         </div>
-        <div class="lb-form-help">&Auml;nderungen brauchen einige Minuten zur Anpassung</div>
+        <div class="lb-form-help"><TMPL_VAR MQTT.HELP_CPU_PROFILE></div>
     </div>
     </TMPL_UNLESS>
 
@@ -147,6 +144,18 @@
         </div>
         <div class="lb-form-help"><TMPL_VAR MQTT.HELP_RESET_AFTER_SEND></div>
     </div>
+
+    <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_CONVERSIONS></div>
+    <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)"><TMPL_VAR MQTT.DESC_CONVERSIONS></p>
+    <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)"><TMPL_VAR MQTT.DESC_BOOLEAN_AUTO></p>
+    <div class="lb-form-row">
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_CONVERSIONS></div>
+        <div class="lb-form-field">
+            <textarea class="lb-textarea" name="conversions" id="conversions" rows="8" data-role="none"></textarea>
+        </div>
+        <div class="lb-form-help"><TMPL_VAR MQTT.HELP_CONVERSIONS_FORMAT></div>
+    </div>
+    <div id="extplugin_conversions" style="display:none"></div>
 
     <!-- Miniserver zu MQTT -->
     <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_MS_TO_MQTT></div>
@@ -211,29 +220,30 @@ $(function() {
     });
 
     // Status indicator
+    var _lang_gw = {
+        statusRunning: '<TMPL_VAR MQTT.STATUS_RUNNING>',
+        statusStopped: '<TMPL_VAR MQTT.STATUS_STOPPED>'
+    };
+
     function updateStatus() {
         $.post('ajax/ajax-mqtt.php', { ajax: 'getpids' })
         .done(function(resp) {
             var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
-            var $status = $("#mqttgw_status");
-            $status.show();
-
             if (data.pids && data.pids.mqttgateway) {
-                $status.removeClass("mqttgw-status-warn mqttgw-status-error").addClass("mqttgw-status-ok");
-                $(".mqttgw-status-label", $status).text("Gateway l\u00e4uft");
-                $("#mqttgw_status_detail").text("\u2014 PID " + data.pids.mqttgateway);
+                $('#gw_status_text').text(_lang_gw.statusRunning).css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
             } else {
-                $status.removeClass("mqttgw-status-ok mqttgw-status-warn").addClass("mqttgw-status-error");
-                $(".mqttgw-status-label", $status).text("Gateway gestoppt");
-                $("#mqttgw_status_detail").text("");
+                $('#gw_status_text').text(_lang_gw.statusStopped).css({'background':'#d0021b','color':'white','border-color':'#b00218'});
             }
         });
     }
     updateStatus();
     setInterval(updateStatus, 10000);
 
-    // Save handler
-    $("#saveapply").click(function() {
+    // Save handler — stopImmediatePropagation prevents the legacy saveapply handler from also firing
+    $("#saveapply").on("click", function(e) {
+        e.stopImmediatePropagation();
+        $("#saveapply").prop("disabled", true);
+
         var newVersion = parseInt($('input[name="gatewayversion"]:checked').val());
         var protocol = $('input[name="protocol"]:checked').val();
 
@@ -243,8 +253,7 @@ $(function() {
         cfg.Main.udpport = parseInt($("#basic_udpport").val()) || 11883;
         cfg.Main.msno = parseInt($("#Main\\.msno").val()) || 1;
 
-        // Save gateway config
-        $.ajax({
+        var saveGwConfig = $.ajax({
             type: 'POST',
             url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace',
             dataType: 'json',
@@ -252,22 +261,87 @@ $(function() {
             data: JSON.stringify(cfg)
         });
 
-        // Save gateway version to general.json
-        $.ajax({
+        var saveVersion = $.ajax({
             type: 'POST',
             url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
             dataType: 'json',
             contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify({ GatewayVersion: newVersion })
-        })
-        .done(function() {
+            data: JSON.stringify({ Gatewayversion: newVersion })
+        });
+
+        $.when(saveGwConfig, saveVersion).always(function() {
             if (newVersion !== originalVersion) {
                 location.reload();
+                return;
             }
+            // Restart gateway to apply new settings
+            $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
+                $("#saveapply").prop("disabled", false);
+                updateStatus();
+            });
         });
     });
 });
 </script>
+
+<!-- Transformers -->
+<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
+
+<div class="lb-section-title"><TMPL_VAR MQTT.SECTION_TRANSFORMERS></div>
+
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)" v-pre><TMPL_VAR MQTT.DESC_TRANSFORMERS></p>
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500);font-style:italic"><TMPL_VAR MQTT.HINT_TRANSFORMERS_RGB></p>
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
+    <TMPL_VAR MQTT.DESC_QUICKPUBLISHER_TEST> <a href="mqtt-quickpublisher.cgi" target="_blank"><TMPL_VAR MQTT.LINK_QUICKPUBLISHER></a>.
+</p>
+
+<div data-role="collapsible" id="coll_udp_transformers" data-content-theme="true" data-collapsed="true" data-collapsed-icon="carat-d" data-expanded-icon="carat-u" data-iconpos="right">
+    <h2 class="ui-bar ui-bar-a ui-corner-all"><TMPL_VAR MQTT.SECTION_UDP_TRANSFORMERS></h2>
+    <div>
+        <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
+            <TMPL_VAR MQTT.DESC_UDP_TRANSFORMER_FLOW><br>
+            <TMPL_VAR MQTT.LABEL_SYNTAX>: <span class="mono"><span style="color:black">publish </span>transformername <span style="color:black">to/my/topic</span> <span style="color:blue">data1 data2 ...</span></span><br>
+            <TMPL_VAR MQTT.LABEL_EXAMPLE>: <span class="mono"><span style="color:black">publish </span>shelly_rgb&amp;w <span style="color:black">shellies/shelly-12345/color/0/set</span> <span style="color:blue">rgb &lt;v&gt;</span></span><br>
+            <span style="color:var(--lb-gray-500);font-style:italic"><TMPL_VAR MQTT.HINT_TRANSFORMER_KEYWORD></span>
+        </p>
+        <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
+            <a href="https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/start" target="_blank"><TMPL_VAR MQTT.LINK_UDP_TRANSFORMER_DOCS></a>
+        </p>
+        <div id="transformers_udp_tablediv"></div>
+    </div>
+</div>
+
+<script>
+$(function() {
+    var tuhtml = '<table class="trans_table">';
+    var transformers = null;
+    var udp_transformers = null;
+    try {
+        transformers = JSON.parse($("#transformers_json").text());
+        udp_transformers = get(transformers, 'udpin');
+    } catch(err) {
+        tuhtml += '<tr><td><i><TMPL_VAR MQTT.NO_UDP_TRANSFORMERS></i></td></tr>';
+    }
+    if (udp_transformers) {
+        for (var transname in udp_transformers) {
+            var trans = udp_transformers[transname];
+            tuhtml += '<tr><td><div style="display:flex;gap:8px;align-items:baseline;">';
+            tuhtml += '<span class="mono" style="font-size:115%;font-weight:bold">' + transname + '</span>';
+            var type_color = trans.type === 'shipped' ? '#8e256b' : 'blue';
+            tuhtml += '<span style="color:' + type_color + ';font-size:var(--lb-font-sm)">(' + trans.type + ')</span>';
+            tuhtml += '<span style="font-size:var(--lb-font-sm)">' + trans.description + '</span>';
+            if (trans.link)
+                tuhtml += '<a href="' + trans.link + '" target="_blank" style="font-size:var(--lb-font-sm)"><TMPL_VAR MQTT.LINK_SEE_DETAILS></a>';
+            tuhtml += '</div>';
+            tuhtml += '<div style="font-size:65%;color:var(--lb-gray-500)">' + trans.filename + '</div>';
+            tuhtml += '</td></tr>';
+        }
+    }
+    tuhtml += '</table>';
+    $('#transformers_udp_tablediv').html(tuhtml);
+});
+</script>
+
 </TMPL_IF>
 
 <!-- FORM_SETTINGS removed: content merged into FORM_BASIC -->
@@ -361,23 +435,30 @@ $(function(){
         <span class="mqttgw-status-dot" id="discovery_pulse"></span>
         <span class="mqttgw-status-label"><span id="discovery_count">--</span> Topics</span>
         <span class="mqttgw-status-detail">&mdash; <span id="discovery_ago"><TMPL_VAR MQTT.DISCOVERY_LOADING></span></span>
-        <span class="mqttgw-status-uptime"><button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="<TMPL_VAR MQTT.DISCOVERY_REFRESH>">&#x21bb;</button></span>
+        <span class="mqttgw-status-uptime">
+            <button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="<TMPL_VAR MQTT.DISCOVERY_REFRESH>">&#x21bb;</button>
+            <span id="save_status" style="font-size:var(--lb-font-sm);margin-left:10px"></span>
+        </span>
     </div>
 
-    <!-- Filter Bar with Wildcard Support -->
+    <!-- Filter Bar -->
     <div class="mqttgw-filter">
         <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="<TMPL_VAR MQTT.FILTER_PLACEHOLDER>" data-role="none">
         <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_SELECT_ALL></button>
         <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_DESELECT_ALL></button>
-        <label class="mqttgw-filter-label">
+        <label class="mqttgw-filter-label" data-role="none">
             <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
         </label>
         <span class="mqttgw-filter-count" id="filter_count"></span>
+        <div class="mqttgw-expand-btns">
+            <button class="mqttgw-expand-btn" id="sub-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
+            <button class="mqttgw-expand-btn" id="sub-collapse-all" type="button" data-role="none">&#9650; <TMPL_VAR MQTT.V2_BTN_COLLAPSE_ALL></button>
+        </div>
     </div>
 
     <!-- Topic Groups Container -->
     <div id="topic_groups_container">
-        <div style="text-align:center; padding:40px; color:var(--lb-gray-500)">
+        <div style="text-align:center;padding:40px;color:var(--lb-gray-500)">
             <TMPL_VAR MQTT.TOPICS_LOADING>
         </div>
     </div>
@@ -386,262 +467,660 @@ $(function(){
 
 <script>
 $(function() {
-    var discoveredTopics = [];
-    var subscriptionsV2 = {};
-    // Count Miniservers from config (Main.msno is highest MS number in use)
-    var cfgstr2 = $("#mqttconfig").text();
-    var cfg2 = cfgstr2 ? JSON.parse(cfgstr2) : {};
-    var msCount = parseInt(cfg2.Main && cfg2.Main.msno) || 1;
+
+    // ── Data model — mirrors subscriptions.json exactly ───────────────────
+    // Each entry: { Id, Toms[], Noncached, resetaftersend, Jsonexpand, Json[] }
+    // Json entry:  { Id (@@-path), Toms[], Noncached, resetaftersend }
+    var subscriptions = [];
+    var isDirty = false;
+    var saveTimer = null;
+    var firstRender = true;
+    var discoveredTopics = [];  // [{ topic, payload, group }]
+
+    // Miniserver list from general.json (passed by CGI)
+    var cfgstr2   = $("#mqttconfig").text();
+    var cfg2      = cfgstr2 ? JSON.parse(cfgstr2) : {};
+    var msListStr = $("#miniserver_list").text();
+    var msList    = (msListStr ? JSON.parse(msListStr) : null) || [{id: 1, name: 'Miniserver 1'}];
+    var msCount   = msList.length;
     var defaultMS = parseInt(cfg2.Main && cfg2.Main.msno) || 1;
-    if (msCount < 2) msCount = 2;
 
-    // Load existing V2 subscriptions
-    $.post('ajax/ajax-mqtt.php', { ajax: 'get_subscriptions_v2' })
-    .done(function(resp) {
-        var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
-        if (data.subscriptions_v2) {
-            data.subscriptions_v2.forEach(function(sub) {
-                subscriptionsV2[sub.topic] = sub;
-            });
-            renderTopics();
+    function getMSName(id) {
+        for (var k = 0; k < msList.length; k++) {
+            if (msList[k].id === id) return msList[k].name;
         }
-    });
+        return 'Miniserver ' + id;
+    }
 
-    // Build MS dropdown with checkboxes
-    function msCheckboxesHtml(topic, selectedMS) {
-        if (msCount <= 1) return '';
-        var isDefault = !selectedMS || selectedMS.length === 0;
-        var label = isDefault ? 'Standard' : (selectedMS.length === msCount ? 'Alle MS' : 'MS ' + selectedMS.join('+'));
-        var html = '<details class="mqttgw-ms-dropdown">';
-        html += '<summary class="mqttgw-ms-summary">' + label + '</summary>';
-        html += '<div class="mqttgw-ms-panel">';
-        html += '<label class="mqttgw-ms-label mqttgw-ms-default"><input type="radio" class="ms-default-radio" data-topic="' + topic + '"' + (isDefault ? ' checked' : '') + '> Standard (MS ' + defaultMS + ')</label>';
-        html += '<hr style="margin:4px 0;border:none;border-top:1px solid var(--lb-gray-200)">';
-        for (var i = 1; i <= msCount; i++) {
-            var checked = !isDefault && selectedMS.indexOf(i) !== -1 ? ' checked' : '';
-            html += '<label class="mqttgw-ms-label"><input type="checkbox" class="ms-checkbox" data-topic="' + topic + '" data-ms="' + i + '"' + checked + '> Miniserver ' + i + '</label>';
+    function updateMSSummaryLabel($details, toms) {
+        var label = !toms || toms.length === 0 ? 'Standard'
+                  : (toms.length >= msCount ? 'Alle MS' : 'MS ' + toms.join('+'));
+        $details.children('.mqttgw-ms-summary').text(label);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    function findSub(topic) {
+        for (var i = 0; i < subscriptions.length; i++) {
+            if (subscriptions[i].Id === topic) return subscriptions[i];
         }
-        html += '</div></details>';
-        return html;
+        return null;
+    }
+
+    function getOrCreateSub(topic) {
+        var sub = findSub(topic);
+        if (!sub) {
+            sub = { Id: topic, Toms: [], Noncached: false, resetaftersend: false, Jsonexpand: false, Json: [] };
+            subscriptions.push(sub);
+        }
+        return sub;
+    }
+
+    function removeSub(topic) {
+        subscriptions = subscriptions.filter(function(s) { return s.Id !== topic; });
+    }
+
+    function findJsonField(sub, path) {
+        var json = sub.Json || [];
+        for (var i = 0; i < json.length; i++) {
+            if (json[i].Id === path) return json[i];
+        }
+        return null;
+    }
+
+    function isTopicSubscribed(topic) {
+        return findSub(topic) !== null;
+    }
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function pathLastSegment(path) {
+        if (!path) return '';
+        var parts = path.split('@@');
+        return parts[parts.length - 1];
     }
 
     function countSubscribed(topics) {
         var n = 0;
-        topics.forEach(function(t) { if (subscriptionsV2[t.topic] && subscriptionsV2[t.topic].enabled) n++; });
+        topics.forEach(function(t) { if (isTopicSubscribed(t.topic)) n++; });
         return n;
     }
 
-    function makeDefaultSub(topic) {
-        return { topic: topic, enabled: false, json_expand: false, json_fields: [], toMS: [], disable_cache: false, reset_after_send: false };
+    function countSubscribedUnder(sub, path) {
+        var count = 0;
+        var prefix = path + '@@';
+        var json = sub ? (sub.Json || []) : [];
+        for (var i = 0; i < json.length; i++) {
+            if (json[i].Id === path || json[i].Id.indexOf(prefix) === 0) count++;
+        }
+        return count;
     }
 
-    // Wildcard pattern matching: + = one level, # = all remaining
     function wildcardToRegex(pattern) {
         var parts = pattern.split('/').map(function(p) {
             if (p === '#') return '.*';
             if (p === '+') return '[^/]+';
             return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         });
-        var regex = '^' + parts.join('/');
-        if (!pattern.endsWith('#')) regex += '$';
-        return new RegExp(regex);
+        var re = '^' + parts.join('/');
+        if (pattern.charAt(pattern.length - 1) !== '#') re += '$';
+        return new RegExp(re);
     }
 
-    // Get topics matching current filter (used by renderTopics and select/deselect buttons)
     function getVisibleTopics() {
         var filterText = $("#topic_filter").val().trim();
-        var isWildcard = filterText && (filterText.indexOf('+') !== -1 || filterText.indexOf('#') !== -1);
+
+        // Always include subscribed topics even if not currently discovered
+        var discoveredSet = {};
+        discoveredTopics.forEach(function(t) { discoveredSet[t.topic] = true; });
+        var allTopics = discoveredTopics.slice();
+        subscriptions.forEach(function(sub) {
+            if (!discoveredSet[sub.Id]) {
+                allTopics.push({ topic: sub.Id, payload: null, group: sub.Id.split('/')[0], notSeen: true });
+            }
+        });
+
+        if (!filterText) return allTopics;
+        var isWildcard = filterText.indexOf('+') !== -1 || filterText.indexOf('#') !== -1;
         var filterRegex = isWildcard ? wildcardToRegex(filterText) : null;
         var filterLower = filterText.toLowerCase();
-
-        return discoveredTopics.filter(function(t) {
-            if (!filterText) return true;
+        return allTopics.filter(function(t) {
             return isWildcard ? filterRegex.test(t.topic) : t.topic.toLowerCase().indexOf(filterLower) !== -1;
         });
     }
 
-    // Render topic groups
+    // ── Auto-save ─────────────────────────────────────────────────────────
+
+    function showSaveStatus(state) {
+        var el = $("#save_status");
+        if (state === 'pending') {
+            el.text('Speichert…').css('color','var(--lb-gray-500,#888)');
+        } else if (state === 'ok') {
+            el.text('Gespeichert ✓').css('color','var(--lb-success,green)');
+            setTimeout(function() { if (!isDirty) el.text(''); }, 3000);
+        } else if (state === 'error') {
+            el.text('Fehler beim Speichern ✗').css('color','var(--lb-danger,red)');
+        }
+    }
+
+    function markDirty() {
+        isDirty = true;
+        showSaveStatus('pending');
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(doSave, 1500);
+    }
+
+    function doSave() {
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify({ Subscriptions: subscriptions })
+        })
+        .done(function() {
+            isDirty = false;
+            showSaveStatus('ok');
+        })
+        .fail(function() {
+            showSaveStatus('error');
+            saveTimer = setTimeout(doSave, 3000);
+        });
+    }
+
+    $(window).on('beforeunload', function() {
+        if (isDirty) {
+            clearTimeout(saveTimer);
+            navigator.sendBeacon(
+                'ajax/ajax-mqtt.php?ajax=save_subscriptions',
+                new Blob([JSON.stringify({ Subscriptions: subscriptions })], { type: 'application/json' })
+            );
+        }
+    });
+
+    // ── Load then start discovery ─────────────────────────────────────────
+
+    $.post('ajax/ajax-mqtt.php', { ajax: 'get_subscriptions' })
+    .done(function(resp) {
+        var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
+        subscriptions = data.Subscriptions || [];
+    })
+    .always(function() {
+        startDiscovery();
+    });
+
+    // ── MS dropdowns ──────────────────────────────────────────────────────
+
+    function msCheckboxesHtml(topic, selectedMS) {
+        var safeTopic  = escHtml(topic);
+        var isDefault  = !selectedMS || selectedMS.length === 0;
+        var label      = isDefault ? 'Standard'
+                       : (selectedMS.length >= msCount ? 'Alle MS' : 'MS ' + selectedMS.join('+'));
+        var html  = '<details class="mqttgw-ms-dropdown">';
+        html += '<summary class="mqttgw-ms-summary">' + escHtml(label) + '</summary>';
+        html += '<div class="mqttgw-ms-panel">';
+        html += '<label class="mqttgw-ms-label mqttgw-ms-default"><input type="checkbox" class="ms-default-check"'
+             + ' data-topic="' + safeTopic + '"' + (isDefault ? ' checked' : '') + '> Standard (' + escHtml(getMSName(defaultMS)) + ')</label>';
+        html += '<hr style="margin:4px 0;border:none;border-top:1px solid var(--lb-gray-200)">';
+        for (var k = 0; k < msList.length; k++) {
+            var ms = msList[k];
+            var ck = !isDefault && selectedMS.indexOf(ms.id) !== -1 ? ' checked' : '';
+            html += '<label class="mqttgw-ms-label"><input type="checkbox" class="ms-checkbox"'
+                 + ' data-topic="' + safeTopic + '" data-ms="' + ms.id + '"' + ck + '> ' + escHtml(ms.name) + '</label>';
+        }
+        html += '</div></details>';
+        return html;
+    }
+
+    function msFieldCheckboxesHtml(topic, path, selectedMS) {
+        var safeTopic = escHtml(topic);
+        var safePath  = escHtml(path);
+        var isDefault = !selectedMS || selectedMS.length === 0;
+        var label     = isDefault ? 'Standard'
+                      : (selectedMS.length >= msCount ? 'Alle MS' : 'MS ' + selectedMS.join('+'));
+        var html  = '<details class="mqttgw-ms-dropdown" style="display:inline-block">';
+        html += '<summary class="mqttgw-ms-summary">' + escHtml(label) + '</summary>';
+        html += '<div class="mqttgw-ms-panel">';
+        html += '<label class="mqttgw-ms-label mqttgw-ms-default"><input type="checkbox" class="ms-field-default-check"'
+             + ' data-topic="' + safeTopic + '" data-path="' + safePath + '"' + (isDefault ? ' checked' : '')
+             + '> Standard (' + escHtml(getMSName(defaultMS)) + ')</label>';
+        html += '<hr style="margin:4px 0;border:none;border-top:1px solid var(--lb-gray-200)">';
+        for (var k = 0; k < msList.length; k++) {
+            var ms = msList[k];
+            var ck = !isDefault && selectedMS.indexOf(ms.id) !== -1 ? ' checked' : '';
+            html += '<label class="mqttgw-ms-label"><input type="checkbox" class="ms-field-checkbox"'
+                 + ' data-topic="' + safeTopic + '" data-path="' + safePath + '" data-ms="' + ms.id + '"' + ck
+                 + '> ' + escHtml(ms.name) + '</label>';
+        }
+        html += '</div></details>';
+        return html;
+    }
+
+    // ── renderFieldOptions (per Json-field options row) ───────────────────
+
+    function renderFieldOptions(topic, path, field) {
+        var safeTopic = escHtml(topic);
+        var safePath  = escHtml(path);
+        var html  = '<span style="display:contents">';
+        html += '<label class="mqttgw-topic-option"><input type="checkbox" class="json-field-nocache"'
+             + ' data-topic="' + safeTopic + '" data-path="' + safePath + '"'
+             + (field.Noncached ? ' checked' : '') + '> No Cache</label>';
+        html += '<label class="mqttgw-topic-option"><input type="checkbox" class="json-field-reset"'
+             + ' data-topic="' + safeTopic + '" data-path="' + safePath + '"'
+             + (field.resetaftersend ? ' checked' : '') + '> Reset</label>';
+        html += msFieldCheckboxesHtml(topic, path, field.Toms || []);
+        html += '</span>';
+        return html;
+    }
+
+    // ── renderJsonTree — fully recursive, unlimited depth ─────────────────
+    // path uses @@ as separator: "key", "arr@@[0]", "arr@@[0]@@sub", "arr@@[0]@@[1]"
+
+    function renderJsonTree(topic, value, path) {
+        var sub       = findSub(topic);
+        var safeTopic = escHtml(topic);
+        var safePath  = escHtml(path);
+        var segment   = escHtml(pathLastSegment(path));
+
+        if (Array.isArray(value)) {
+            var subCount = sub ? countSubscribedUnder(sub, path) : 0;
+            var html  = '<details class="mqttgw-json-node mqttgw-json-array" data-key="json:' + safeTopic + '@@' + safePath + '"' + (subCount > 0 ? ' open' : '') + '>';
+            html += '<summary class="mqttgw-json-node-summary"><span class="mqttgw-json-key">'
+                 + segment + '</span><span class="mqttgw-expand-arrow"></span><span class="mqttgw-json-meta">[Array, ' + value.length + ']</span>';
+            if (subCount > 0) html += ' <span class="mqttgw-json-subcount">(' + subCount + ')</span>';
+            html += '</summary><div class="mqttgw-json-node-content">';
+            for (var i = 0; i < value.length; i++) {
+                html += renderJsonTree(topic, value[i], path + '@@[' + i + ']');
+            }
+            html += '</div></details>';
+            return html;
+
+        } else if (value !== null && typeof value === 'object') {
+            var keys     = Object.keys(value);
+            var subCount = sub ? countSubscribedUnder(sub, path) : 0;
+            var html  = '<details class="mqttgw-json-node mqttgw-json-object" data-key="json:' + safeTopic + '@@' + safePath + '"' + (subCount > 0 ? ' open' : '') + '>';
+            html += '<summary class="mqttgw-json-node-summary"><span class="mqttgw-json-key">'
+                 + segment + '</span><span class="mqttgw-expand-arrow"></span><span class="mqttgw-json-meta">{Object, ' + keys.length + '}</span>';
+            if (subCount > 0) html += ' <span class="mqttgw-json-subcount">(' + subCount + ')</span>';
+            html += '</summary><div class="mqttgw-json-node-content">';
+            for (var j = 0; j < keys.length; j++) {
+                html += renderJsonTree(topic, value[keys[j]], path + '@@' + keys[j]);
+            }
+            html += '</div></details>';
+            return html;
+
+        } else {
+            // Primitive leaf — gleiche Flex-Zeile wie .mqttgw-topic-row
+            var field     = sub ? findJsonField(sub, path) : null;
+            var isChecked = field !== null;
+            var rawVal    = (value === null) ? 'null' : String(value);
+            var html  = '<div class="mqttgw-topic-row mqttgw-json-leaf' + (isChecked ? ' mqttgw-json-leaf-active' : '') + '">';
+            html += '<input type="checkbox" class="json-field-subscribe"'
+                 + ' data-topic="' + safeTopic + '" data-path="' + safePath + '"'
+                 + (isChecked ? ' checked' : '') + '>';
+            html += '<span class="mqttgw-topic-name">' + segment + '</span>';
+            if (isChecked) html += renderFieldOptions(topic, path, field);
+            html += '<span class="mqttgw-topic-payload">' + escHtml(rawVal) + '</span>';
+            html += '</div>';
+            return html;
+        }
+    }
+
+    // ── renderTopicRow ────────────────────────────────────────────────────
+
+    function renderTopicRow(t, displayName) {
+        var topic        = t.topic;
+        var sub          = findSub(topic);
+        var isSubscribed = sub !== null;
+        var safeTopic    = escHtml(topic);
+        var payload      = t.payload || '';
+
+        // JSON-Payload vorab parsen (einmalig)
+        var parsedPayload = null;
+        if (payload) {
+            try {
+                var _p = JSON.parse(payload);
+                if (typeof _p === 'object' && _p !== null) parsedPayload = _p;
+            } catch(e) {}
+        }
+        var hasJson     = parsedPayload !== null;
+        var jsonOpen    = isSubscribed && sub && sub.Jsonexpand && hasJson;
+        var jsonClosed  = isSubscribed && hasJson && !jsonOpen;
+
+        var html  = '<div class="mqttgw-topic-row'
+                  + (isSubscribed ? '' : ' mqttgw-topic-row-disabled')
+                  + (jsonOpen   ? ' mqttgw-row-json-open'   : '')
+                  + (jsonClosed ? ' mqttgw-row-json-closed' : '')
+                  + '" data-topic="' + safeTopic + '">';
+        html += '<input type="checkbox" class="topic-subscribe" data-topic="' + safeTopic + '"'
+             + (isSubscribed ? ' checked' : '') + '>';
+        html += '<span class="mqttgw-topic-name">' + escHtml(displayName) + '</span>';
+
+        if (isSubscribed) {
+            html += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand"'
+                 + ' data-topic="' + safeTopic + '"' + (sub.Jsonexpand ? ' checked' : '') + '> JSON</label>';
+            html += '<label class="mqttgw-topic-option"><input type="checkbox" class="topic-disable-cache"'
+                 + ' data-topic="' + safeTopic + '"' + (sub.Noncached ? ' checked' : '') + '> No Cache</label>';
+            html += '<label class="mqttgw-topic-option"><input type="checkbox" class="topic-reset-after-send"'
+                 + ' data-topic="' + safeTopic + '"' + (sub.resetaftersend ? ' checked' : '') + '> Reset</label>';
+            html += msCheckboxesHtml(topic, sub.Toms || []);
+        }
+        if (t.notSeen) {
+            html += '<span class="mqttgw-topic-payload mqttgw-topic-not-seen">nicht aktiv</span>';
+        } else {
+            html += '<span class="mqttgw-topic-payload">' + escHtml(payload) + '</span>';
+        }
+        html += '</div>';
+
+        if (jsonOpen) {
+            html += '<div class="mqttgw-json-fields" data-parent="' + safeTopic + '">';
+            if (Array.isArray(parsedPayload)) {
+                for (var i = 0; i < parsedPayload.length; i++) {
+                    html += renderJsonTree(topic, parsedPayload[i], '[' + i + ']');
+                }
+            } else {
+                var keys = Object.keys(parsedPayload);
+                for (var j = 0; j < keys.length; j++) {
+                    html += renderJsonTree(topic, parsedPayload[keys[j]], keys[j]);
+                }
+            }
+            html += '</div>';
+        }
+        return html;
+    }
+
+    // ── Tree builder ──────────────────────────────────────────────────────
+
+    function buildTree(topics, prefix) {
+        var tree = { children: {}, topics: [] };
+        topics.forEach(function(t) {
+            var rest = t.topic.substring(prefix.length);
+            if (rest.charAt(0) === '/') rest = rest.substring(1);
+            var slashIdx = rest.indexOf('/');
+            if (slashIdx === -1) {
+                tree.topics.push({ t: t, leafName: rest });
+            } else {
+                var seg = rest.substring(0, slashIdx);
+                if (!tree.children[seg]) tree.children[seg] = [];
+                tree.children[seg].push(t);
+            }
+        });
+        return tree;
+    }
+
+    function subToggleAll(prefix, enable) {
+        getVisibleTopics().forEach(function(t) {
+            if (t.topic === prefix || t.topic.indexOf(prefix + '/') === 0) {
+                if (enable) getOrCreateSub(t.topic);
+                else removeSub(t.topic);
+            }
+        });
+        markDirty();
+        renderTopics();
+    }
+
+    function groupToggleAll(groupName, enable) {
+        getVisibleTopics().forEach(function(t) {
+            if ((t.group || t.topic.split('/')[0]) === groupName) {
+                if (enable) getOrCreateSub(t.topic);
+                else removeSub(t.topic);
+            }
+        });
+        markDirty();
+        renderTopics();
+    }
+
+    function renderTree(topics, prefix) {
+        var tree = buildTree(topics, prefix);
+        var html = '';
+        Object.keys(tree.children).sort().forEach(function(seg) {
+            var childTopics   = tree.children[seg];
+            var childPrefix   = prefix + (prefix ? '/' : '') + seg;
+            var childSubCount = countSubscribed(childTopics);
+            var allChecked    = childSubCount === childTopics.length && childSubCount > 0;
+            var safePrefix    = escHtml(childPrefix);
+            html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (childSubCount > 0 ? ' open' : '') + '>';
+            html += '<summary><input type="checkbox" class="sub-group-toggle"'
+                 + ' data-prefix="' + safePrefix + '"' + (allChecked ? ' checked' : '')
+                 + ' style="margin-right:6px"><strong>' + escHtml(seg) + '</strong>'
+                 + '<span class="mqttgw-expand-arrow"></span>';
+            html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
+            html += '</summary><div class="mqttgw-subgroup-content">';
+            html += renderTree(childTopics, childPrefix);
+            html += '</div></details>';
+        });
+        tree.topics.forEach(function(item) { html += renderTopicRow(item.t, item.leafName); });
+        return html;
+    }
+
+    // ── renderTopics ──────────────────────────────────────────────────────
+
     function renderTopics() {
-        var groups = {};
+        var groups       = {};
         var subscribedOnly = $("#filter_subscribed_only").prop("checked");
-        var visible = getVisibleTopics();
-        var totalCount = 0;
-        var subCount = 0;
+        var visible      = getVisibleTopics();
+        var totalCount   = 0, subCount = 0;
 
         visible.forEach(function(t) {
-            var sub = subscriptionsV2[t.topic];
-            var isSubscribed = sub && sub.enabled;
-            if (subscribedOnly && !isSubscribed) return;
-
-            if (!groups[t.group]) groups[t.group] = { topics: [], subCount: 0 };
-            groups[t.group].topics.push(t);
+            var isSub = isTopicSubscribed(t.topic);
+            if (subscribedOnly && !isSub) return;
+            var gName = t.group || t.topic.split('/')[0];
+            if (!groups[gName]) groups[gName] = { topics: [], subCount: 0 };
+            groups[gName].topics.push(t);
             totalCount++;
-            if (isSubscribed) {
-                groups[t.group].subCount++;
-                subCount++;
-            }
+            if (isSub) { groups[gName].subCount++; subCount++; }
         });
 
         $("#filter_count").text(subCount + " von " + totalCount + " abonniert");
 
-        // Recursive JSON field renderer — resolves nested objects
-        function renderJsonFields(topic, obj, prefix, sub) {
-            var html = '<div class="mqttgw-json-fields" data-parent="' + topic + '"' + (prefix ? ' style="padding-left:' + (40 + prefix.split('.').length * 16) + 'px"' : '') + '>';
-            Object.keys(obj).forEach(function(key) {
-                var fullKey = prefix ? prefix + '.' + key : key;
-                var val = obj[key];
-                if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
-                    html += '<span class="mqttgw-json-field" style="font-weight:600">.' + fullKey + '</span>';
-                    html += '</div>';
-                    html += renderJsonFields(topic, val, fullKey, sub);
-                    html += '<div class="mqttgw-json-fields" data-parent="' + topic + '"' + (prefix ? ' style="padding-left:' + (40 + prefix.split('.').length * 16) + 'px"' : '') + '>';
-                } else {
-                    var fieldEnabled = false;
-                    if (sub.json_fields && sub.json_fields.length > 0) {
-                        var field = sub.json_fields.find(function(f) { return f.key === fullKey; });
-                        fieldEnabled = field ? field.enabled : false;
-                    }
-                    var displayVal = Array.isArray(val) ? JSON.stringify(val) : val;
-                    html += '<label class="mqttgw-json-field">';
-                    html += '<input type="checkbox" class="json-field-subscribe" data-topic="' + topic + '" data-key="' + fullKey + '"' + (fieldEnabled ? ' checked' : '') + '>';
-                    html += ' .' + fullKey + ' = ' + displayVal;
-                    html += '</label>';
-                    if (fieldEnabled) {
-                        var fc = (sub.json_field_options && sub.json_field_options[fullKey]) || {};
-                        html += '<span class="mqttgw-json-field-options" data-topic="' + topic + '" data-key="' + fullKey + '">';
-                        html += '<label class="mqttgw-topic-option"><input type="checkbox" class="json-field-nocache" data-topic="' + topic + '" data-key="' + fullKey + '"' + (fc.disable_cache ? ' checked' : '') + '> No Cache</label>';
-                        html += '<label class="mqttgw-topic-option"><input type="checkbox" class="json-field-reset" data-topic="' + topic + '" data-key="' + fullKey + '"' + (fc.reset_after_send ? ' checked' : '') + '> Reset</label>';
-                        html += '</span>';
-                    }
-                }
+        var openDetails = {};
+        if (!firstRender) {
+            $("#topic_groups_container details[open]").each(function() {
+                var key = $(this).data('key');
+                if (key) openDetails[key] = true;
             });
-            html += '</div>';
-            return html;
-        }
-
-        // Helper: render a single topic row (leaf node)
-        function renderTopicRow(t, displayName) {
-            var sub = subscriptionsV2[t.topic] || { enabled: false, json_expand: false, json_fields: [], toMS: [] };
-            var disabledClass = sub.enabled ? '' : ' mqttgw-topic-row-disabled';
-            var rowHtml = '';
-
-            rowHtml += '<div class="mqttgw-topic-row' + disabledClass + '" data-topic="' + t.topic + '">';
-            rowHtml += '<input type="checkbox" class="topic-subscribe" data-topic="' + t.topic + '"' + (sub.enabled ? ' checked' : '') + '>';
-            rowHtml += '<span class="mqttgw-topic-name">' + displayName + '</span>';
-            rowHtml += '<span class="mqttgw-topic-payload" title="' + (t.payload || '').replace(/"/g, '&quot;') + '">' + (t.payload || '') + '</span>';
-            rowHtml += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand" data-topic="' + t.topic + '"' + (sub.json_expand ? ' checked' : '') + '> JSON</label>';
-            rowHtml += '<label class="mqttgw-topic-option"><input type="checkbox" class="topic-disable-cache" data-topic="' + t.topic + '"' + (sub.disable_cache ? ' checked' : '') + '> No Cache</label>';
-            rowHtml += '<label class="mqttgw-topic-option"><input type="checkbox" class="topic-reset-after-send" data-topic="' + t.topic + '"' + (sub.reset_after_send ? ' checked' : '') + '> Reset</label>';
-            if (msCount > 1) { rowHtml += msCheckboxesHtml(t.topic, sub.toMS); }
-            rowHtml += '</div>';
-
-            if (sub.json_expand && t.payload) {
-                try {
-                    var jsonPayload = JSON.parse(t.payload);
-                    if (typeof jsonPayload === 'object' && jsonPayload !== null) {
-                        rowHtml += renderJsonFields(t.topic, jsonPayload, '', sub);
-                    }
-                } catch(e) {}
-            }
-            return rowHtml;
-        }
-
-        // Build tree from topics: { children: { segment: { children: {...}, topics: [...] } }, topics: [...] }
-        function buildTree(topics, prefix) {
-            var tree = { children: {}, topics: [] };
-            topics.forEach(function(t) {
-                var rest = t.topic.substring(prefix.length);
-                if (rest.charAt(0) === '/') rest = rest.substring(1);
-                var slashIdx = rest.indexOf('/');
-                if (slashIdx === -1) {
-                    // Leaf topic
-                    tree.topics.push({ topic: t, leafName: rest });
-                } else {
-                    var seg = rest.substring(0, slashIdx);
-                    if (!tree.children[seg]) tree.children[seg] = [];
-                    tree.children[seg].push(t);
-                }
-            });
-            return tree;
-        }
-
-        // Recursive render: builds collapsible tree
-        function renderTree(topics, prefix, depth) {
-            var tree = buildTree(topics, prefix);
-            var html = '';
-
-            // Render child groups (sorted) — always as collapsible
-            var sortedChildren = Object.keys(tree.children).sort();
-            sortedChildren.forEach(function(seg) {
-                var childTopics = tree.children[seg];
-                var childPrefix = prefix + (prefix ? '/' : '') + seg;
-                var childSubCount = countSubscribed(childTopics);
-                var dataPath = childPrefix.replace(/'/g, "\\'");
-
-                var allChecked = childSubCount === childTopics.length && childSubCount > 0;
-                html += '<details class="mqttgw-subgroup">';
-                html += '<summary>';
-                html += '<input type="checkbox" class="sub-group-toggle" data-prefix="' + dataPath + '"' + (allChecked ? ' checked' : '') + ' onclick="event.stopPropagation();subToggleAll(\'' + dataPath + '\', this.checked)" style="margin-right:6px">';
-                html += '<strong>' + seg + '</strong>';
-                html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
-                html += '</summary>';
-                html += '<div class="mqttgw-subgroup-content">';
-                html += renderTree(childTopics, childPrefix, depth + 1);
-                html += '</div></details>';
-            });
-
-            // Render leaf topics
-            tree.topics.forEach(function(item) {
-                html += renderTopicRow(item.topic, item.leafName);
-            });
-
-            return html;
         }
 
         var html = '';
-        var sortedGroups = Object.keys(groups).sort();
-
-        sortedGroups.forEach(function(groupName) {
-            var g = groups[groupName];
-            var isOpen = g.subCount > 0 ? ' open' : '';
-
-            var allGroupChecked = g.subCount === g.topics.length && g.subCount > 0;
-            html += '<details class="lb-collapsible mqttgw-group"' + isOpen + '>';
-            html += '<summary>';
-            html += '<input type="checkbox" class="group-toggle" data-group="' + groupName + '"' + (allGroupChecked ? ' checked' : '') + ' onclick="event.stopPropagation();groupToggleAll(\'' + groupName + '\', this.checked)" style="margin-right:6px">';
-            html += '<strong>' + groupName + '</strong>';
+        Object.keys(groups).sort().forEach(function(gName) {
+            var g         = groups[gName];
+            var allChecked = g.subCount === g.topics.length && g.subCount > 0;
+            var safeGName = escHtml(gName);
+            var detailKey = 'grp:' + safeGName;
+            var isOpen = firstRender ? (g.subCount > 0) : !!openDetails[detailKey];
+            html += '<details class="lb-collapsible mqttgw-group" data-key="' + detailKey + '"' + (isOpen ? ' open' : '') + '>';
+            html += '<summary><input type="checkbox" class="group-toggle"'
+                 + ' data-group="' + safeGName + '"' + (allChecked ? ' checked' : '')
+                 + ' style="margin-right:6px"><strong>' + safeGName + '</strong>'
+                 + '<span class="mqttgw-expand-arrow"></span>';
             html += '<span class="mqttgw-group-count">(' + g.topics.length + ' Topics, ' + g.subCount + ' abonniert)</span>';
-            html += '</summary>';
-            html += '<div class="lb-collapsible-content" style="padding:0">';
-            html += renderTree(g.topics, groupName, 0);
-
-
+            html += '</summary><div class="lb-collapsible-content" style="padding:0">';
+            html += renderTree(g.topics, gName);
             html += '</div></details>';
         });
 
-        if (html === '') {
-            html = '<div style="text-align:center; padding:40px; color:var(--lb-gray-500)">Keine Topics gefunden.</div>';
-        }
-
-        // Save open/closed state of <details> before DOM rebuild
-        var openDetails = {};
-        $("#topic_groups_container details[open]").each(function() {
-            var key = $(this).find("summary strong").first().text();
-            if (key) openDetails[key] = true;
-        });
+        if (!html) html = '<div style="text-align:center;padding:40px;color:var(--lb-gray-500)">Keine Topics gefunden.</div>';
 
         $("#topic_groups_container").html(html);
-
-        // Restore open/closed state
-        $("#topic_groups_container details").each(function() {
-            var key = $(this).find("> summary strong").first().text();
-            if (openDetails[key]) $(this).attr("open", "");
-        });
+        firstRender = false;
     }
 
-    // Discovery: fetch topics via getmqttfinderdata (same reliable endpoint as MQTT Finder tab)
-    var discoveryRunning = false;
-    var lastTopicFingerprint = '';
+    // ── Event handlers ────────────────────────────────────────────────────
+
+    $(document).on('change', '.topic-subscribe', function() {
+        var topic = $(this).data('topic');
+        if ($(this).prop('checked')) getOrCreateSub(topic);
+        else removeSub(topic);
+        markDirty(); renderTopics();
+    });
+
+    $(document).on('change', '.topic-json-expand', function() {
+        var topic = $(this).data('topic');
+        var sub   = getOrCreateSub(topic);
+        sub.Jsonexpand = $(this).prop('checked');
+        if (!sub.Jsonexpand) sub.Json = [];
+        markDirty(); renderTopics();
+    });
+
+    $(document).on('change', '.topic-disable-cache', function() {
+        var sub = findSub($(this).data('topic'));
+        if (!sub) return;
+        sub.Noncached = $(this).prop('checked');
+        markDirty();
+    });
+
+    $(document).on('change', '.topic-reset-after-send', function() {
+        var sub = findSub($(this).data('topic'));
+        if (!sub) return;
+        sub.resetaftersend = $(this).prop('checked');
+        markDirty();
+    });
+
+    $(document).on('change', '.ms-default-check', function() {
+        var sub = findSub($(this).data('topic'));
+        if (!sub) return;
+        sub.Toms = [];
+        var $dropdown = $(this).closest('.mqttgw-ms-dropdown');
+        $dropdown.find('.ms-checkbox').prop('checked', false);
+        $(this).prop('checked', true);
+        updateMSSummaryLabel($dropdown, sub.Toms);
+        markDirty();
+    });
+
+    $(document).on('change', '.ms-checkbox', function() {
+        var topic = $(this).data('topic');
+        var ms    = parseInt($(this).data('ms'));
+        var sub   = findSub(topic);
+        if (!sub) return;
+        var arr   = sub.Toms || [];
+        if ($(this).prop('checked')) { if (arr.indexOf(ms) === -1) arr.push(ms); }
+        else arr = arr.filter(function(x) { return x !== ms; });
+        sub.Toms = arr.sort();
+        var $dropdown = $(this).closest('.mqttgw-ms-dropdown');
+        $dropdown.find('.ms-default-check').prop('checked', sub.Toms.length === 0);
+        updateMSSummaryLabel($dropdown, sub.Toms);
+        markDirty();
+    });
+
+    $(document).on('change', '.json-field-subscribe', function() {
+        var topic = $(this).data('topic');
+        var path  = $(this).data('path');
+        var sub   = getOrCreateSub(topic);
+        if ($(this).prop('checked')) {
+            if (!findJsonField(sub, path))
+                sub.Json.push({ Id: path, Toms: [], Noncached: false, resetaftersend: false });
+        } else {
+            sub.Json = sub.Json.filter(function(f) { return f.Id !== path; });
+        }
+        markDirty(); renderTopics();
+    });
+
+    $(document).on('change', '.json-field-nocache', function() {
+        var sub = findSub($(this).data('topic'));
+        if (!sub) return;
+        var field = findJsonField(sub, $(this).data('path'));
+        if (field) { field.Noncached = $(this).prop('checked'); markDirty(); }
+    });
+
+    $(document).on('change', '.json-field-reset', function() {
+        var sub = findSub($(this).data('topic'));
+        if (!sub) return;
+        var field = findJsonField(sub, $(this).data('path'));
+        if (field) { field.resetaftersend = $(this).prop('checked'); markDirty(); }
+    });
+
+    $(document).on('change', '.ms-field-default-check', function() {
+        var sub = findSub($(this).data('topic'));
+        if (!sub) return;
+        var field = findJsonField(sub, $(this).data('path'));
+        if (!field) return;
+        field.Toms = [];
+        var $dropdown = $(this).closest('.mqttgw-ms-dropdown');
+        $dropdown.find('.ms-field-checkbox').prop('checked', false);
+        $(this).prop('checked', true);
+        updateMSSummaryLabel($dropdown, field.Toms);
+        markDirty();
+    });
+
+    $(document).on('change', '.ms-field-checkbox', function() {
+        var sub = findSub($(this).data('topic'));
+        if (!sub) return;
+        var field = findJsonField(sub, $(this).data('path'));
+        if (!field) return;
+        var ms  = parseInt($(this).data('ms'));
+        var arr = field.Toms || [];
+        if ($(this).prop('checked')) { if (arr.indexOf(ms) === -1) arr.push(ms); }
+        else arr = arr.filter(function(x) { return x !== ms; });
+        field.Toms = arr.sort();
+        var $dropdown = $(this).closest('.mqttgw-ms-dropdown');
+        $dropdown.find('.ms-field-default-check').prop('checked', field.Toms.length === 0);
+        updateMSSummaryLabel($dropdown, field.Toms);
+        markDirty();
+    });
+
+    $(document).on('click', '.sub-group-toggle', function(e) {
+        e.stopPropagation();
+        subToggleAll($(this).data('prefix'), this.checked);
+    });
+
+    $(document).on('click', '.group-toggle', function(e) {
+        e.stopPropagation();
+        groupToggleAll($(this).data('group'), this.checked);
+    });
+
+    $("#topic_filter").on("input", renderTopics);
+    $("#filter_subscribed_only").on("change", renderTopics);
+
+    var _pendingConfirmAction = null;
+
+    function mqttgwConfirm(title, msg, action) {
+        $("#mqttgw-confirm-title").text(title);
+        $("#mqttgw-confirm-msg").text(msg);
+        _pendingConfirmAction = action;
+        $("#mqttgw-confirm-popup").popup("open", { positionTo: "window" });
+    }
+
+    $("#mqttgw-confirm-ok").on("click", function(e) {
+        e.preventDefault();
+        $("#mqttgw-confirm-popup").popup("close");
+        if (_pendingConfirmAction) { _pendingConfirmAction(); _pendingConfirmAction = null; }
+    });
+
+    $("#btn_filter_select_all").on("click", function() {
+        mqttgwConfirm(
+            '<TMPL_VAR MQTT.WARN_SELECT_ALL_TITLE>',
+            '<TMPL_VAR MQTT.WARN_SELECT_ALL_MSG>',
+            function() {
+                getVisibleTopics().forEach(function(t) { getOrCreateSub(t.topic); });
+                markDirty(); renderTopics();
+            }
+        );
+    });
+
+    $("#btn_filter_deselect_all").on("click", function() {
+        mqttgwConfirm(
+            '<TMPL_VAR MQTT.WARN_DESELECT_ALL_TITLE>',
+            '<TMPL_VAR MQTT.WARN_DESELECT_ALL_MSG>',
+            function() {
+                getVisibleTopics().forEach(function(t) { removeSub(t.topic); });
+                markDirty(); renderTopics();
+            }
+        );
+    });
+
+    $("#sub-expand-all").on("click", function() {
+        $("#topic_groups_container details").each(function() { this.open = true; });
+    });
+    $("#sub-collapse-all").on("click", function() {
+        $("#topic_groups_container details").each(function() { this.open = false; });
+    });
+
+    // ── Discovery ─────────────────────────────────────────────────────────
+
+    var discoveryRunning  = false;
     var lastDiscoveryTime = 0;
 
     function updateAgo() {
@@ -649,276 +1128,388 @@ $(function() {
         var secs = Math.round((Date.now() - lastDiscoveryTime) / 1000);
         $("#discovery_ago").text(secs < 5 ? "gerade eben" : "vor " + secs + "s");
     }
-    setInterval(updateAgo, 1000);
+    setInterval(updateAgo, 5000);
 
-    function discoverTopics() {
+    function runDiscovery() {
         if (discoveryRunning) return;
         discoveryRunning = true;
+        $("#discovery_pulse").addClass("mqttgw-pulse");
 
         $.post('ajax/ajax-mqtt.php', { ajax: 'getmqttfinderdata' })
         .done(function(resp) {
-            var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
-            var newTopics = [];
+            var data   = typeof resp === 'string' ? JSON.parse(resp) : resp;
+            var topics = [];
             if (data && data.incoming) {
                 Object.keys(data.incoming).forEach(function(topic) {
-                    if (topic.indexOf('/') === -1) return;
-                    if (!/^[a-zA-Z0-9/_.\-]+$/.test(topic)) return;
-                    var group = topic.split('/')[0];
-                    if (!/^[a-zA-Z]/.test(group)) return;
                     var entry = data.incoming[topic];
-                    newTopics.push({
-                        topic: topic,
-                        group: group,
-                        payload: entry.p || '',
-                        timestamp: entry.t || ''
-                    });
+                    topics.push({ topic: topic, payload: entry.p || '', group: topic.split('/')[0] });
                 });
+                topics.sort(function(a, b) { return a.topic < b.topic ? -1 : a.topic > b.topic ? 1 : 0; });
             }
             lastDiscoveryTime = Date.now();
-            $("#discovery_count").text(newTopics.length);
-            updateAgo();
-            // Pulse animation
-            var $pulse = $("#discovery_pulse");
-            $pulse.removeClass("active");
-            setTimeout(function() { $pulse.addClass("active"); }, 10);
-
-            // Only re-render if topics or payloads changed
-            var fp = newTopics.map(function(t) { return t.topic + '=' + t.payload; }).join('|');
-            if (fp !== lastTopicFingerprint) {
-                lastTopicFingerprint = fp;
-                discoveredTopics = newTopics;
-                renderTopics();
-            }
+            discoveredTopics  = topics;
+            $("#discovery_count").text(topics.length);
+            renderTopics();
         })
         .always(function() {
             discoveryRunning = false;
+            $("#discovery_pulse").removeClass("mqttgw-pulse");
+            updateAgo();
         });
     }
 
-    // Auto-discovery on page load + periodic refresh every 10s
-    var discoveryInterval = setInterval(discoverTopics, 10000);
-    discoverTopics();
-
-    // Manual refresh button
-    $("#btn_discovery_refresh").click(function() {
-        discoverTopics();
-    });
-
-    // Cleanup on page navigation (prevents stacking intervals)
-    $(document).one('pagehide', function() {
-        clearInterval(discoveryInterval);
-    });
-
-    $("#topic_filter").on("input", function() { renderTopics(); });
-
-    // Select all visible topics
-    $("#btn_filter_select_all").click(function() {
-        var visible = getVisibleTopics();
-        if (visible.length > 50 && !confirm("Achtung: " + visible.length + " Topics werden abonniert. Viele Subscriptions können die Performance beeinflussen. Fortfahren?")) return;
-        visible.forEach(function(t) {
-            if (!subscriptionsV2[t.topic]) {
-                subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
-            }
-            subscriptionsV2[t.topic].enabled = true;
-        });
-        renderTopics();
-    });
-
-    // Deselect all visible topics
-    $("#btn_filter_deselect_all").click(function() {
-        getVisibleTopics().forEach(function(t) {
-            if (subscriptionsV2[t.topic]) {
-                subscriptionsV2[t.topic].enabled = false;
-            }
-        });
-        renderTopics();
-    });
-
-    // Event delegation for checkboxes
-    $("#topic_groups_container").on("change", ".topic-subscribe", function() {
-        var topic = $(this).data("topic");
-        if (!subscriptionsV2[topic]) {
-            subscriptionsV2[topic] = makeDefaultSub(topic);
-        }
-        subscriptionsV2[topic].enabled = $(this).prop("checked");
-        renderTopics();
-    });
-
-    $("#topic_groups_container").on("change", ".topic-json-expand", function() {
-        var topic = $(this).data("topic");
-        if (!subscriptionsV2[topic]) {
-            subscriptionsV2[topic] = makeDefaultSub(topic);
-        }
-        subscriptionsV2[topic].json_expand = $(this).prop("checked");
-        renderTopics();
-    });
-
-    $("#topic_groups_container").on("change", ".json-field-subscribe", function() {
-        var topic = $(this).data("topic");
-        var key = $(this).data("key");
-        var sub = subscriptionsV2[topic];
-        if (!sub) return;
-
-        if (!sub.json_fields) sub.json_fields = [];
-        var existing = sub.json_fields.find(function(f) { return f.key === key; });
-        if (existing) {
-            existing.enabled = $(this).prop("checked");
-        } else {
-            sub.json_fields.push({ key: key, enabled: $(this).prop("checked") });
-        }
-    });
-
-    $("#topic_groups_container").on("change", ".topic-disable-cache", function() {
-        var topic = $(this).data("topic");
-        if (!subscriptionsV2[topic]) subscriptionsV2[topic] = makeDefaultSub(topic);
-        subscriptionsV2[topic].disable_cache = $(this).prop("checked");
-    });
-
-    $("#topic_groups_container").on("change", ".topic-reset-after-send", function() {
-        var topic = $(this).data("topic");
-        if (!subscriptionsV2[topic]) subscriptionsV2[topic] = makeDefaultSub(topic);
-        subscriptionsV2[topic].reset_after_send = $(this).prop("checked");
-    });
-
-    // JSON field-level No Cache + Reset
-    $("#topic_groups_container").on("change", ".json-field-nocache, .json-field-reset", function() {
-        var topic = $(this).data("topic");
-        var key = $(this).data("key");
-        if (!subscriptionsV2[topic]) subscriptionsV2[topic] = makeDefaultSub(topic);
-        if (!subscriptionsV2[topic].json_field_options) subscriptionsV2[topic].json_field_options = {};
-        if (!subscriptionsV2[topic].json_field_options[key]) subscriptionsV2[topic].json_field_options[key] = {};
-        var opts = subscriptionsV2[topic].json_field_options[key];
-        if ($(this).hasClass("json-field-nocache")) opts.disable_cache = $(this).prop("checked");
-        if ($(this).hasClass("json-field-reset")) opts.reset_after_send = $(this).prop("checked");
-    });
-
-    // "Standard" radio — toMS = [] (use default)
-    // Helper: update MS dropdown label without re-rendering
-    function updateMsLabel($dropdown, toMS) {
-        var isDefault = !toMS || toMS.length === 0;
-        var label = isDefault ? 'Standard' : (toMS.length === msCount ? 'Alle MS' : 'MS ' + toMS.join('+'));
-        $dropdown.find(".mqttgw-ms-summary").text(label);
+    function startDiscovery() {
+        runDiscovery();
+        setInterval(runDiscovery, 30000);
     }
 
-    $("#topic_groups_container").on("change", ".ms-default-radio", function() {
-        var topic = $(this).data("topic");
-        if (!subscriptionsV2[topic]) subscriptionsV2[topic] = makeDefaultSub(topic);
-        subscriptionsV2[topic].toMS = [];
-        var $dropdown = $(this).closest(".mqttgw-ms-dropdown");
-        $dropdown.find(".ms-checkbox").prop("checked", false);
-        updateMsLabel($dropdown, []);
+    $("#btn_discovery_refresh").on("click", function() {
+        lastDiscoveryTime = 0;
+        runDiscovery();
     });
 
-    // Individual MS checkbox — switch to manual mode
-    $("#topic_groups_container").on("change", ".ms-checkbox", function() {
-        var topic = $(this).data("topic");
-        var ms = $(this).data("ms");
-        if (!subscriptionsV2[topic]) subscriptionsV2[topic] = makeDefaultSub(topic);
-        var $dropdown = $(this).closest(".mqttgw-ms-dropdown");
-        $dropdown.find(".ms-default-radio").prop("checked", false);
-        var arr = subscriptionsV2[topic].toMS || [];
-        if ($(this).prop("checked")) {
-            if (arr.indexOf(ms) === -1) arr.push(ms);
-        } else {
-            arr = arr.filter(function(m) { return m !== ms; });
-        }
-        if (arr.length === 0) {
-            $dropdown.find(".ms-default-radio").prop("checked", true);
-        }
-        subscriptionsV2[topic].toMS = arr.sort();
-        updateMsLabel($dropdown, arr);
-    });
-
-    // Filter handlers
-    $("#filter_subscribed_only").on("change", renderTopics);
-
-    // Group toggle all
-    window.groupToggleAll = function(groupName, enable) {
-        discoveredTopics.forEach(function(t) {
-            if (t.group === groupName) {
-                if (!subscriptionsV2[t.topic]) {
-                    subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
-                }
-                subscriptionsV2[t.topic].enabled = enable;
-            }
-        });
-        renderTopics();
-    };
-
-    // Toggle all topics under a sub-path prefix
-    window.subToggleAll = function(prefix, enable) {
-        discoveredTopics.forEach(function(t) {
-            if (t.topic === prefix || t.topic.indexOf(prefix + '/') === 0) {
-                if (!subscriptionsV2[t.topic]) {
-                    subscriptionsV2[t.topic] = makeDefaultSub(t.topic);
-                }
-                subscriptionsV2[t.topic].enabled = enable;
-            }
-        });
-        renderTopics();
-    };
-
-    // Save handler
-    $("#saveapply").click(function() {
-        var subsArray = [];
-        Object.keys(subscriptionsV2).forEach(function(topic) {
-            var sub = subscriptionsV2[topic];
-            if (sub.enabled) {
-                subsArray.push(sub);
-            }
-        });
-
-        $.ajax({
-            type: 'POST',
-            url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions_v2',
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify({ subscriptions_v2: subsArray })
-        })
-        .done(function() {
-            $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' });
-        });
-    });
 });
 </script>
 </TMPL_IF>
 
 
-<!-- Merged from FORM_CONVERSIONS -->
-	<!-- Form CONVERSIONS -->
-	<form id="form" onsubmit="return false;">
-
-	<div class="lb-section-title">Text-zu-Wert Konvertierungen</div>
-	<p>MQTT-Ger&auml;te senden oft Textstrings die Loxone nicht verarbeiten kann. Hier k&ouml;nnen Sie Text-zu-Wert Zuordnungen definieren, die an den Miniserver gesendet werden.</p>
-	<p>Booleans (on, off etc.) werden bereits automatisch konvertiert wenn die Boolean-Konvertierung aktiviert ist.</p>
-	<div class="lb-form-row">
-		<div class="lb-form-label">Konvertierungen</div>
-		<div class="lb-form-field">
-			<textarea class="lb-textarea" name="conversions" id="conversions" rows="12" data-role="none"></textarea>
-		</div>
-		<div class="lb-form-help">Ein Eintrag pro Zeile: <span class="mono">Text=Wert</span></div>
-	</div>
-	</form>
-
-	<div data-role='collapsible' id='coll_extconversions' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right' style="display:none">
-		<h2 class='ui-bar ui-bar-a ui-corner-all'>Conversions defined by other plugins</h2>
-		<div id="extplugin_conversions" style="display:flex;flex-wrap:wrap;justify-content:space-evenly;align-items:flex-start;align-content:flex-start;background-color:lightgray;">
-		</div>
-	</div>
-	
-	
-	<!-- /Form CONVERSIONS -->
 </TMPL_IF>
-
-<!-- FORM_CONVERSIONS removed: content merged into FORM_SUBSCRIPTIONS -->
 
 
 <TMPL_IF FORM_TOPICS>
+
+<TMPL_IF GATEWAY_V2>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     V2  Datenverkehr
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div class="lb-section-title"><TMPL_VAR MQTT.V2_SECTION_TRAFFIC></div>
+<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500);margin-bottom:var(--lb-space-md)">
+  <TMPL_VAR MQTT.V2_DESC_TRAFFIC>
+</p>
+
+<!-- HTTP Panel -->
+<div id="v2-http-panel" class="mqttgw-traffic-panel" style="display:none;margin-bottom:var(--lb-space-md)">
+  <div class="mqttgw-traffic-panel-header">
+    <span class="mqttgw-traffic-title"><TMPL_VAR MQTT.LABEL_HTTP_VIRTUAL_INPUTS></span>
+    <span class="mqttgw-traffic-count" id="v2-http-count">0</span>
+    <span id="v2-http-errors" class="mqttgw-traffic-error-badge" style="display:none"><img src="../../system/images/icon-locked.png" height="11"> <TMPL_VAR MQTT.V2_FILTER_ERROR></span>
+  </div>
+  <div class="mqttgw-traffic-toolbar">
+    <input type="text" id="v2-http-search" placeholder="<TMPL_VAR MQTT.V2_SEARCH_PLACEHOLDER>" class="mqttgw-traffic-search">
+    <div id="v2-http-chips" class="mqttgw-chip-row">
+      <span class="mqttgw-chip mqttgw-chip-active" data-f="all"><TMPL_VAR MQTT.V2_CHIP_ALL></span>
+      <span class="mqttgw-chip" data-f="ok"><img src="../../system/images/icon-check.png" height="12"> OK</span>
+      <span class="mqttgw-chip" data-f="warn"><img src="../../system/images/icon-notfound.png" height="12"> <TMPL_VAR MQTT.V2_CHIP_WARN></span>
+      <span class="mqttgw-chip" data-f="error"><img src="../../system/images/icon-locked.png" height="12"> <TMPL_VAR MQTT.V2_FILTER_ERROR></span>
+      <span class="mqttgw-chip" data-f="new"><img src="../../system/images/icon-question.png" height="12"> <TMPL_VAR MQTT.V2_CHIP_NEW></span>
+    </div>
+    <div class="mqttgw-expand-btns">
+      <button class="mqttgw-expand-btn" id="v2-http-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
+      <button class="mqttgw-expand-btn" id="v2-http-collapse-all" type="button" data-role="none">&#9650; <TMPL_VAR MQTT.V2_BTN_COLLAPSE_ALL></button>
+    </div>
+  </div>
+  <div class="mqttgw-traffic-colheader mqttgw-traffic-row">
+    <span></span>
+    <span><TMPL_VAR MQTT.V2_COL_VI></span>
+    <span><TMPL_VAR MQTT.V2_COL_TOPIC></span>
+    <span><TMPL_VAR MQTT.V2_COL_VALUE></span>
+    <span><TMPL_VAR MQTT.V2_COL_MS></span>
+    <span><TMPL_VAR MQTT.V2_COL_HTTP></span>
+    <span><TMPL_VAR MQTT.V2_COL_SENT></span>
+    <span><TMPL_VAR MQTT.V2_COL_RUNTIME></span>
+  </div>
+  <div id="v2-http-content"></div>
+</div>
+
+<!-- UDP Panel -->
+<div id="v2-udp-panel" class="mqttgw-traffic-panel" style="display:none;margin-bottom:var(--lb-space-md)">
+  <div class="mqttgw-traffic-panel-header">
+    <span class="mqttgw-traffic-title"><TMPL_VAR MQTT.LABEL_UDP_TRANSMISSIONS></span>
+    <span class="mqttgw-traffic-count" id="v2-udp-count">0</span>
+  </div>
+  <div class="mqttgw-traffic-toolbar">
+    <input type="text" id="v2-udp-search" placeholder="<TMPL_VAR MQTT.V2_SEARCH_PLACEHOLDER>" class="mqttgw-traffic-search">
+    <div id="v2-udp-chips" class="mqttgw-chip-row">
+      <span class="mqttgw-chip mqttgw-chip-active" data-f="all"><TMPL_VAR MQTT.V2_CHIP_ALL></span>
+      <span class="mqttgw-chip" data-f="ok"><img src="../../system/images/icon-check.png" height="12"> OK</span>
+      <span class="mqttgw-chip" data-f="new"><img src="../../system/images/icon-question.png" height="12"> <TMPL_VAR MQTT.V2_CHIP_NOT_SENT></span>
+    </div>
+    <div class="mqttgw-expand-btns">
+      <button class="mqttgw-expand-btn" id="v2-udp-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
+      <button class="mqttgw-expand-btn" id="v2-udp-collapse-all" type="button" data-role="none">&#9650; <TMPL_VAR MQTT.V2_BTN_COLLAPSE_ALL></button>
+    </div>
+  </div>
+  <div class="mqttgw-traffic-colheader mqttgw-traffic-row mqttgw-traffic-row-udp">
+    <span></span>
+    <span><TMPL_VAR MQTT.V2_COL_VI></span>
+    <span><TMPL_VAR MQTT.V2_COL_TOPIC></span>
+    <span><TMPL_VAR MQTT.V2_COL_VALUE></span>
+    <span><TMPL_VAR MQTT.V2_COL_MS></span>
+    <span><TMPL_VAR MQTT.V2_COL_SENT></span>
+    <span><TMPL_VAR MQTT.V2_COL_RUNTIME></span>
+  </div>
+  <div id="v2-udp-content"></div>
+</div>
+
+<div id="v2-neither" style="display:none;padding:12px;background:var(--lb-gray-50);border:var(--lb-border);border-radius:var(--lb-radius);font-size:var(--lb-font-sm);color:var(--lb-gray-500)">
+  <TMPL_VAR MQTT.V2_NEITHER_ACTIVE>
+</div>
+
+<div style="text-align:center;margin-top:8px">
+  <button class="ui-btn ui-btn-inline" id="v2-reconnect"><TMPL_VAR MQTT.V2_BTN_CLEAR_CACHE></button>
+</div>
+
+<script>
+$(function () {
+  var _cfg      = JSON.parse($("#mqttconfig").text() || '{}');
+  var udpinport = parseInt($("#udpinportconfig").text()) || 11884;
+  var useHttp   = is_enabled(_cfg.Main != null ? _cfg.Main.use_http : 1);
+  var useUdp    = is_enabled(_cfg.Main != null ? _cfg.Main.use_udp  : 0);
+  var httpFilter = 'all', udpFilter = 'all';
+  var httpSearch = '', udpSearch = '';
+  var v2St  = {};   // status cache: vi_name -> entry
+  var viRows = [];  // [{vi, topic, jp, grp, short}]
+  var pollTimer = null;
+
+  if (!useHttp && !useUdp) { $('#v2-neither').show(); }
+  if (useHttp) $('#v2-http-panel').show();
+  if (useUdp)  $('#v2-udp-panel').show();
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function viName(topic, jsonPath) {
+    var tp = topic.replace(/\//g, '_').replace(/\s+/g, '_');
+    if (!jsonPath) return tp;
+    var jp = jsonPath.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/\s+/g, '_');
+    return tp + '_' + jp;
+  }
+
+  function loadSubs() {
+    $.get('ajax/ajax-mqtt.php', {ajax: 'get_subscriptions'}, function (resp) {
+      viRows = [];
+      (resp.Subscriptions || []).forEach(function (sub) {
+        var parts = sub.Id.split('/');
+        var grp   = parts[0];
+        var short = parts.slice(1).join('/') || sub.Id;
+        if (sub.Jsonexpand && sub.Json && sub.Json.length) {
+          sub.Json.forEach(function (f) {
+            viRows.push({vi: viName(sub.Id, f.Id), topic: sub.Id, jp: f.Id,
+                         grp: grp, short: short + ' ' + f.Id});
+          });
+        } else {
+          viRows.push({vi: viName(sub.Id), topic: sub.Id, jp: null,
+                       grp: grp, short: short});
+        }
+      });
+      renderBoth();
+    });
+  }
+
+  function poll() {
+    $.get('ajax/ajax-mqtt.php', {ajax: 'get_status_v2'}, function (resp) {
+      v2St = resp || {};
+      renderBoth();
+    }).always(function () {
+      pollTimer = setTimeout(poll, 3000);
+    });
+  }
+
+  function httpSc(e) {
+    if (!e || !e.http) return 'new';
+    var h = e.http;
+    if (h.status === 'send_failed') return 'error';
+    if (h.http_status >= 200 && h.http_status < 300) return 'ok';
+    if (h.http_status) return 'warn';
+    return 'ok';
+  }
+
+  function udpSc(e) {
+    if (!e || !e.udp) return 'new';
+    return e.udp.status === 'sent_ok' ? 'ok' : 'error';
+  }
+
+  var _lang = {
+    nothingSent:  '<TMPL_VAR MQTT.V2_NOTHING_SENT>',
+    noMatch:      '<TMPL_VAR MQTT.V2_NO_FILTER_MATCH>',
+    statusOk:     '<TMPL_VAR MQTT.V2_STATUS_OK>',
+    statusWarn:   '<TMPL_VAR MQTT.V2_STATUS_WARN>',
+    statusError:  '<TMPL_VAR MQTT.V2_STATUS_ERROR>',
+    statusNew:    '<TMPL_VAR MQTT.V2_STATUS_NEW>',
+    timeNow:      '<TMPL_VAR MQTT.V2_TIME_NOW>',
+    timeMinAgo:   '<TMPL_VAR MQTT.V2_TIME_MIN_AGO>'
+  };
+
+  function relTime(epoch) {
+    if (!epoch) return '&mdash;';
+    var diff = Math.floor(Date.now() / 1000 - epoch);
+    if (diff < 10)   return _lang.timeNow;
+    if (diff < 3600) return _lang.timeMinAgo.replace('%s', Math.floor(diff / 60));
+    var d = new Date(epoch * 1000);
+    if (diff < 86400) return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    return d.toLocaleDateString([], {day:'2-digit', month:'2-digit'}) + '&nbsp;' +
+           d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  }
+
+  var _iconImg = {
+    ok:    '../../system/images/icon-check.png',
+    warn:  '../../system/images/icon-notfound.png',
+    error: '../../system/images/icon-locked.png',
+    new:   '../../system/images/icon-question.png'
+  };
+  var _titles = {
+    ok:    _lang.statusOk,
+    warn:  _lang.statusWarn,
+    error: _lang.statusError,
+    new:   _lang.statusNew
+  };
+
+  function renderPanel(transport, filter, search) {
+    var isHttp = (transport === 'http');
+    var getSc  = isHttp ? httpSc : udpSc;
+    var getEpoch = function (e) {
+      return isHttp ? (e && e.http ? e.http.last_sent_epoch : null)
+                    : (e && e.udp  ? e.udp.last_sent_epoch  : null);
+    };
+
+    var filtered = viRows.filter(function (r) {
+      var sc = getSc(v2St[r.vi]);
+      if (filter !== 'all' && sc !== filter) return false;
+      if (search) {
+        var q = search.toLowerCase();
+        if (r.topic.toLowerCase().indexOf(q) < 0 &&
+            r.vi.toLowerCase().indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+
+    var total = viRows.length;
+    var shown = filtered.length;
+    $('#v2-' + transport + '-count').text(shown + '/' + total);
+
+    if (isHttp) {
+      var hasErr = viRows.some(function (r) { return httpSc(v2St[r.vi]) === 'error'; });
+      hasErr ? $('#v2-http-errors').show() : $('#v2-http-errors').hide();
+    }
+
+    var groups = {}, order = [];
+    filtered.forEach(function (r) {
+      if (!groups[r.grp]) { groups[r.grp] = []; order.push(r.grp); }
+      groups[r.grp].push(r);
+    });
+
+    // Zustand (offen/zu) vor Re-Render speichern
+    var savedClosed = {};
+    $('#v2-' + transport + '-content .mqttgw-tgroup').each(function () {
+      if (!this.open) savedClosed[$(this).data('grp')] = true;
+    });
+
+    var rowCls = 'mqttgw-traffic-row' + (isHttp ? '' : ' mqttgw-traffic-row-udp');
+    var html = '';
+    if (!filtered.length) {
+      var msg = viRows.length === 0 ? _lang.nothingSent : _lang.noMatch;
+      html = '<div class="mqttgw-tgroup-empty">' + msg + '</div>';
+    } else {
+      order.forEach(function (grp) {
+        var rows = groups[grp];
+        html += '<details class="mqttgw-tgroup" open data-grp="' + esc(grp) + '">';
+        html += '<summary>';
+        html += '<span class="mqttgw-expand-arrow"></span>';
+        html += '<strong>' + esc(grp) + '</strong>';
+        html += ' <span class="mqttgw-group-count">(' + rows.length + ')</span>';
+        html += '</summary>';
+        rows.forEach(function (r) {
+          var e   = v2St[r.vi];
+          var sc  = getSc(e);
+          var ts  = getEpoch(e);
+          var val = e ? e.value : '';
+          var ms  = e ? 'MS' + e.miniserver : '&mdash;';
+          var pms = e && e.last_processing_ms != null
+                      ? (+e.last_processing_ms).toFixed(1) + 'ms' : '&mdash;';
+          var valDisp = val
+            ? (val.length > 28
+                ? '<span title="' + esc(val) + '">' + esc(val.slice(0, 28)) + '&hellip;</span>'
+                : esc(val))
+            : '&mdash;';
+          html += '<div class="' + rowCls + '">';
+          html += '<img src="' + _iconImg[sc] + '" class="mqttgw-traffic-icon" title="' + esc(_titles[sc]) + '" width="14" height="14">';
+          html += '<span class="mqttgw-traffic-name" title="' + esc(r.vi) + '">' + esc(r.vi) + '</span>';
+          html += '<span class="mqttgw-traffic-topic" title="' + esc(r.topic) + (r.jp ? ' &bull; ' + esc(r.jp) : '') + '">' + esc(r.topic) + (r.jp ? ' <em>&bull;&nbsp;' + esc(r.jp) + '</em>' : '') + '</span>';
+          html += '<span class="mqttgw-traffic-value">' + valDisp + '</span>';
+          html += '<span class="mqttgw-traffic-ms-label">' + ms + '</span>';
+          if (isHttp) {
+            var code = e && e.http && e.http.http_status ? e.http.http_status : '&mdash;';
+            html += '<span class="mqttgw-traffic-code">' + code + '</span>';
+          }
+          html += '<span class="mqttgw-traffic-time">' + relTime(ts) + '</span>';
+          html += '<span class="mqttgw-traffic-proc">' + pms + '</span>';
+          html += '</div>';
+        });
+        html += '</details>';
+      });
+    }
+    $('#v2-' + transport + '-content').html(html);
+
+    // Gespeicherten Zustand wiederherstellen
+    $('#v2-' + transport + '-content .mqttgw-tgroup').each(function () {
+      if (savedClosed[$(this).data('grp')]) this.open = false;
+    });
+  }
+
+  function renderBoth() {
+    if (useHttp) renderPanel('http', httpFilter, httpSearch);
+    if (useUdp)  renderPanel('udp',  udpFilter,  udpSearch);
+  }
+
+  $('#v2-http-search').on('input', function () { httpSearch = this.value; renderPanel('http', httpFilter, httpSearch); });
+  $('#v2-udp-search').on('input',  function () { udpSearch  = this.value; renderPanel('udp',  udpFilter,  udpSearch);  });
+
+  $(document).on('click', '#v2-http-chips .mqttgw-chip', function () {
+    $('#v2-http-chips .mqttgw-chip').removeClass('mqttgw-chip-active');
+    $(this).addClass('mqttgw-chip-active');
+    httpFilter = $(this).data('f');
+    renderPanel('http', httpFilter, httpSearch);
+  });
+  $(document).on('click', '#v2-udp-chips .mqttgw-chip', function () {
+    $('#v2-udp-chips .mqttgw-chip').removeClass('mqttgw-chip-active');
+    $(this).addClass('mqttgw-chip-active');
+    udpFilter = $(this).data('f');
+    renderPanel('udp', udpFilter, udpSearch);
+  });
+
+  $('#v2-http-expand-all').on('click', function () {
+    $('#v2-http-content .mqttgw-tgroup').each(function () { this.open = true; });
+  });
+  $('#v2-http-collapse-all').on('click', function () {
+    $('#v2-http-content .mqttgw-tgroup').each(function () { this.open = false; });
+  });
+  $('#v2-udp-expand-all').on('click', function () {
+    $('#v2-udp-content .mqttgw-tgroup').each(function () { this.open = true; });
+  });
+  $('#v2-udp-collapse-all').on('click', function () {
+    $('#v2-udp-content .mqttgw-tgroup').each(function () { this.open = false; });
+  });
+
+  $('#v2-reconnect').on('click', function () {
+    $.post('ajax/ajax-mqtt.php', {ajax: 'reconnect', udpinport: udpinport});
+    v2St = {};
+    renderBoth();
+  });
+
+  loadSubs();
+  poll();
+});
+</script>
+</TMPL_IF>
+
+<TMPL_UNLESS GATEWAY_V2>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     V1  Incoming Overview (unverändert)
+     ══════════════════════════════════════════════════════════════════════════ -->
 	<!-- Form TOPICS (Incoming Overview) -->
-	<TMPL_IF GATEWAY_V2>
-	<div style="padding:10px 14px;background:var(--lb-gray-50);border:var(--lb-border);border-radius:var(--lb-radius);margin-bottom:var(--lb-space-md);font-size:var(--lb-font-sm);color:var(--lb-gray-500)">
-		&#9432; Gateway V2 (Opt-In): &quot;Do not forward&quot; ist nicht verf&uuml;gbar &mdash; es werden nur explizit abonnierte Topics weitergeleitet.
-	</div>
-	</TMPL_IF>
 	<style>
 	.topics_table {
 		/* font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; */
@@ -972,36 +1563,63 @@ $(function() {
 	
 	</style>
 	
-	<div class="lb-section-title">Letzte &Uuml;bertragungen an den Miniserver</div>
-	<p>&Uuml;bertragungen der letzten 24 Stunden. Wird <i>automatisch</i> aktualisiert (pausiert bei Textauswahl).</p>
-	<p>Virtual-Input-Namen k&ouml;nnen f&uuml;r HTTP kopiert, UDP-Kommandoerkennungen erstellt werden.</p>
-	
+	<div class="lb-section-title"><TMPL_VAR MQTT.SECTION_TRANSMISSIONS></div>
+	<p><TMPL_VAR MQTT.DESC_TRANSMISSIONS></p>
+	<p><TMPL_VAR MQTT.DESC_VIRTUAL_INPUTS></p>
+
 	<input type="checkbox" name="topics_show_advanced" id="topics_show_advanced" data-mini="true">
-	<label for="topics_show_advanced">Show details and advanced settings</label>
-	
+	<label for="topics_show_advanced"><TMPL_VAR MQTT.LABEL_SHOW_DETAILS></label>
+
 	<div data-role='collapsible' id='coll_mqtthttp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2 class='ui-bar ui-bar-a ui-corner-all' id='head_mqtthttp'>HTTP Virtual Inputs <span style='font-size:80%;'>(<span id="http_count">0</span> entries)<span id='head_mqtthttp_permissionErrors' style='display:none;font-size:80%;'>&nbsp;&nbsp;<img style="position:relative;left:15px;top:3px;" src="../../system/images/icon-locked.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;There are entries with access denied</span></h2>
+		<h2 class='ui-bar ui-bar-a ui-corner-all' id='head_mqtthttp'><TMPL_VAR MQTT.LABEL_HTTP_VIRTUAL_INPUTS> <span style='font-size:80%;'>(<span id="http_count">0</span> <TMPL_VAR MQTT.LABEL_ENTRIES>)<span id='head_mqtthttp_permissionErrors' style='display:none;font-size:80%;'>&nbsp;&nbsp;<img style="position:relative;left:15px;top:3px;" src="../../system/images/icon-locked.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<TMPL_VAR MQTT.LABEL_HTTP_PERM_ERRORS></span></span></h2>
 		<div id="generated_http_table">
 		</div>
 		<!-- <TMPL_VAR http_table> -->
 	</div>
-	
+
 	<div data-role='collapsible' id='coll_mqttudp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2 class='ui-bar ui-bar-a ui-corner-all' id='head_mqttudp'>UDP Transmissions <span style='font-size:80%;'>(<span id="udp_count">0</span> entries)</span></h2>
+		<h2 class='ui-bar ui-bar-a ui-corner-all' id='head_mqttudp'><TMPL_VAR MQTT.LABEL_UDP_TRANSMISSIONS> <span style='font-size:80%;'>(<span id="udp_count">0</span> <TMPL_VAR MQTT.LABEL_ENTRIES>)</span></h2>
 		<div id="generated_udp_table">
 		</div>
 		<!-- <TMPL_VAR udp_table> -->
 	</div>
 	<br>
-	
+
 	<div style="display:flex;align-items:center;justify-content:center;">
 		<!-- Clear broker database -->
-		<button class="ui-btn ui-btn-icon-right" id="purgemosquittodb" data-inline="true" style="display:none">Clear MQTT database</button>
-		<button class="ui-btn ui-btn-icon-right" id="reconnect" data-inline="true">Delete cache (for testing)</button>
+		<button class="ui-btn ui-btn-icon-right" id="purgemosquittodb" data-inline="true" style="display:none"><TMPL_VAR MQTT.BTN_CLEAR_DATABASE></button>
+		<button class="ui-btn ui-btn-icon-right" id="reconnect" data-inline="true"><TMPL_VAR MQTT.BTN_DELETE_CACHE></button>
 	</div>
 	
 	<script>
-		
+
+		var _lang_v1 = {
+			filterShowAll:        '<TMPL_VAR MQTT.FILTER_SHOW_ALL>',
+			filterOk:             '<TMPL_VAR MQTT.FILTER_OK>',
+			filterNotFound:       '<TMPL_VAR MQTT.FILTER_NOT_FOUND>',
+			filterAccessDenied:   '<TMPL_VAR MQTT.FILTER_ACCESS_DENIED>',
+			filterFiltered:       '<TMPL_VAR MQTT.FILTER_FILTERED>',
+			filterNotSent:        '<TMPL_VAR MQTT.FILTER_NOT_SENT>',
+			filterNotFiltered:    '<TMPL_VAR MQTT.FILTER_NOT_FILTERED>',
+			colVI:                '<TMPL_VAR MQTT.HTTP_TABLE_COL_VI>',
+			colValue:             '<TMPL_VAR MQTT.HTTP_TABLE_COL_VALUE>',
+			colArrived:           '<TMPL_VAR MQTT.HTTP_TABLE_COL_ARRIVED>',
+			colData:              '<TMPL_VAR MQTT.UDP_TABLE_COL_DATA>',
+			colCmdRec:            '<TMPL_VAR MQTT.UDP_TABLE_COL_CMDREC>',
+			status404VI:          '<TMPL_VAR MQTT.HTTP_STATUS_404_VI>',
+			statusPermVI:         '<TMPL_VAR MQTT.HTTP_STATUS_PERM_VI>',
+			status200VI:          '<TMPL_VAR MQTT.HTTP_STATUS_200_VI>',
+			statusCached:         '<TMPL_VAR MQTT.HTTP_STATUS_CACHED>',
+			status404:            '<TMPL_VAR MQTT.HTTP_STATUS_404>',
+			status500:            '<TMPL_VAR MQTT.HTTP_STATUS_500>',
+			status200:            '<TMPL_VAR MQTT.HTTP_STATUS_200>',
+			labelDisableCache:    '<TMPL_VAR MQTT.LABEL_DISABLE_CACHE>',
+			labelResetAfterSend:  '<TMPL_VAR MQTT.LABEL_RESET_AFTER_SEND_SHORT>',
+			labelDoNotForward:    '<TMPL_VAR MQTT.LABEL_DO_NOT_FORWARD>',
+			tooltipRegexFiltered: '<TMPL_VAR MQTT.TOOLTIP_REGEX_FILTERED>',
+			tooltipDoNotForward:  '<TMPL_VAR MQTT.TOOLTIP_DO_NOT_FORWARD>'
+		};
+
 		var updateTopicsRunning = 0;
 		var currentElementCount = 0;
 		var refreshInterval = 1000;
@@ -1017,11 +1635,34 @@ $(function() {
 			restoreWindow();
 			
 			if( is_enabled( sessionStorage.getItem("topics_show_advanced")) )
-				$("#topics_show_advanced").prop( "checked", true);
+				$("#topics_show_advanced").prop( "checked", true).checkboxradio("refresh");
 			
 			$("#topics_show_advanced").on( "change", function(){
 				sessionStorage.setItem("topics_show_advanced", $(this).prop("checked"));
 				
+			});
+			
+			$(".ui-collapsible").on("collapsiblecollapse", function(event, ui) {
+				// console.log("Collaps", $(this).attr('id'));
+				storeWindow($(this).attr('id'), "collapse");
+			});
+			$(".ui-collapsible").on("collapsibleexpand", function(event, ui) {
+				// console.log("Expand", $(this).attr('id'));
+				curr_coll = this;
+				storeWindow($(this).attr('id'), "expand");
+				$.each( $(".ui-collapsible"), function ( index, value ) {
+					if( this !== curr_coll ) {
+						// console.log("Close ", $(this).attr('id'));
+						$(this).collapsible( "collapse" );
+					}
+				});
+			});
+			
+			$(".topics_table").on( "filterablebeforefilter", function( event, ui ) {
+				// On any search, save the term to SessionStorage
+				$(':input[data-type="search"]').each(function(index, element){
+					sessionStorage.setItem($(this).attr('id'), $(this).val());
+				});
 			});
 			
 			// Click handler for the Submit state filter
@@ -1032,6 +1673,9 @@ $(function() {
 				http_filter_500 = $("#http_filter_500").prop('checked');
 				http_filter_filtered = $("#http_filter_filtered").prop('checked');
 				http_filter_all = $("#http_filter_all").prop('checked');
+				// jQm sometimes hides the table...?
+				$("#topics_table_head").removeClass('ui-screen-hidden');
+				$("#topics_table_body").removeClass('ui-screen-hidden');
 
 				target = event.target.id;
 				if ( !http_filter_0 &&
@@ -1040,17 +1684,17 @@ $(function() {
 				     !http_filter_500 &&
 					 !http_filter_filtered &&
 				     !http_filter_all ) {
-					 $("#http_filter_all").prop('checked', true);
+					 $("#http_filter_all").prop('checked', true).checkboxradio("refresh");
 				}
 				else if( target == "http_filter_all" && http_filter_all ) {
-					$("#http_filter_0").prop('checked', false);
-					$("#http_filter_200").prop('checked', false);
-					$("#http_filter_404").prop('checked', false);
-					$("#http_filter_500").prop('checked', false);
-					$("#http_filter_filtered").prop('checked', false);
-				}
+					$("#http_filter_0").prop('checked', false).checkboxradio("refresh");
+					$("#http_filter_200").prop('checked', false).checkboxradio("refresh");
+					$("#http_filter_404").prop('checked', false).checkboxradio("refresh");
+					$("#http_filter_500").prop('checked', false).checkboxradio("refresh");
+					$("#http_filter_filtered").prop('checked', false).checkboxradio("refresh");
+				} 
 				else {
-					$("#http_filter_all").prop('checked', false);
+					$("#http_filter_all").attr('checked', false).checkboxradio("refresh");
 				}
 			});
 			
@@ -1080,9 +1724,12 @@ $(function() {
 		{
 			$.each( $(".ui-collapsible"), function ( index, value ) {
 				var pos = sessionStorage.getItem("coll_"+$(value).attr('id'));
-				if(pos !== "expand" && pos !== "collapse") {
+				if(pos === "expand" || pos === "collapse") {
+					$(value).collapsible( pos );
+				} else {
 					sessionStorage.removeItem("coll_"+$(value).attr('id'));
 				}
+				// console.log($(value).attr('id'), pos);	
 			});
 			
 		}
@@ -1164,55 +1811,55 @@ $(function() {
 		
 		function http_table_skel() {
 			var http_table = "";
-			http_table+= '<div class="lb-btn-group http_filters">';
-			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_all" class="http_filter_checkbox" checked>Show All</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_200" class="http_filter_checkbox"><img src="../../system/images/icon-check.png" height="12">&nbsp;OK</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_404" class="http_filter_checkbox"><img src="../../system/images/icon-notfound.png" height="12">&nbsp;Not found</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_500" class="http_filter_checkbox"><img src="../../system/images/icon-locked.png" height="12">&nbsp;Access denied</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_filtered" class="http_filter_checkbox"><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Filtered</label>';
-			http_table+= '<label style="display:inline;"><input type="checkbox" id="http_filter_0" class="http_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
+			http_table+= '<fieldset data-role="controlgroup" data-type="horizontal" class="http_filters">';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_all" class="http_filter_checkbox" checked>'+_lang_v1.filterShowAll+'</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_200" class="http_filter_checkbox"><img src="../../system/images/icon-check.png" height="12">&nbsp;'+_lang_v1.filterOk+'</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_404" class="http_filter_checkbox"><img src="../../system/images/icon-notfound.png" height="12">&nbsp;'+_lang_v1.filterNotFound+'</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_500" class="http_filter_checkbox"><img src="../../system/images/icon-locked.png" height="12">&nbsp;'+_lang_v1.filterAccessDenied+'</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_filtered" class="http_filter_checkbox"><img src="../../system/images/icon-filtered.png" height="12">&nbsp;'+_lang_v1.filterFiltered+'</label>';
+			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_0" class="http_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;'+_lang_v1.filterNotSent+'</label>';
 			// http_table+= '</div>';
-			http_table+= '</div>';
+			http_table+= '</fieldset>';
 			http_table+= '<form><input id="http_table_search" data-type="search" data-mini="true"></form>';
-			
+
 			http_table+= '<table class="topics_table" id="http_table" data-filter="true" data-input="#http_table_search">\n';
 			http_table+= '<thead id="topics_table_head">\n';
 			http_table+= '<tr>\n';
-			http_table+= '<th>Miniserver Virtual Input</th>\n';
-			http_table+= '<th>Last value</th>\n';
-			http_table+= '<th>Last arrived</th>\n';
+			http_table+= '<th>'+_lang_v1.colVI+'</th>\n';
+			http_table+= '<th>'+_lang_v1.colValue+'</th>\n';
+			http_table+= '<th>'+_lang_v1.colArrived+'</th>\n';
 			http_table+= '</tr>\n';
 			http_table+= '</thead>\n';
 			
 			http_table+= '<tbody id="topics_table_body">\n';
 			http_table+= '</tbody>\n';
 			http_table+= '</table>\n';
-			$('#generated_http_table').html(http_table);
+			$('#generated_http_table').html(http_table).trigger('create');
 			$('#http_table_search').val( sessionStorage.getItem('http_table_search') );
 		}
 		
 		function udp_table_skel() {
 			var udp_table = "";
-			udp_table+= '<div class="lb-btn-group udp_filters">';
-			udp_table+= '<label style="display:inline;"><input type="checkbox" id="udp_filter_unfiltered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Not filtered</label>';
-			udp_table+= '<label style="display:inline;"><input type="checkbox" id="udp_filter_filtered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;Filtered</label>';
-			// udp_table+= '<label style="display:inline;"><input type="checkbox" id="udp_filter_0" class="udp_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
-			udp_table+= '</div>';
-			
+			udp_table+= '<fieldset data-role="controlgroup" data-type="horizontal" class="udp_filters">';
+			udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_unfiltered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;'+_lang_v1.filterNotFiltered+'</label>';
+			udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_filtered" class="udp_filter_checkbox" checked><img src="../../system/images/icon-filtered.png" height="12">&nbsp;'+_lang_v1.filterFiltered+'</label>';
+			// udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_0" class="udp_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
+			udp_table+= '</fieldset>';
+
 			udp_table+= '<form><input id="udp_table_search" data-type="search" data-mini="true"></form>';
-			
+
 			udp_table += '<table class="topics_table" id="udp_table" data-filter="true" data-input="#udp_table_search">\n';
 			udp_table+= '<thead>\n';
 			udp_table+= '<tr>\n';
-			udp_table+= '<th>Data</th>\n';
-			udp_table+= '<th>Command Recognition</th>\n';
-			udp_table+= '<th>Last arrived</th>\n';
+			udp_table+= '<th>'+_lang_v1.colData+'</th>\n';
+			udp_table+= '<th>'+_lang_v1.colCmdRec+'</th>\n';
+			udp_table+= '<th>'+_lang_v1.colArrived+'</th>\n';
 			udp_table+= '</tr>\n';
 			udp_table+= '</thead>\n';
 			udp_table+= '<tbody>\n';
 			udp_table+= '</tbody>\n';
 			udp_table+= '</table>\n';
-			$('#generated_udp_table').html(udp_table);
+			$('#generated_udp_table').html(udp_table).trigger('create');
 			$('#udp_table_search').val( sessionStorage.getItem('udp_table_search') );
 		}
 		
@@ -1270,46 +1917,46 @@ $(function() {
 							toMShighest = toMSarr[i].code;
 						
 						switch( toMSarr[i].code ) {
-							case '404': 
-								httpSubmitIcon = 'icon-notfound.png'; httpSubmitText = 'MS'+i+': HTTP 404 Input not available';
+							case '404':
+								httpSubmitIcon = 'icon-notfound.png'; httpSubmitText = _lang_v1.status404VI.replace('%i', i);
 								break;
 							case '401':
 							case '403':
-							case '500': 
-								httpSubmitIcon = 'icon-locked.png'; httpSubmitText = 'MS'+i+': HTTP '+toMSarr[i].code+' Possibly permission denied'; 
+							case '500':
+								httpSubmitIcon = 'icon-locked.png'; httpSubmitText = _lang_v1.statusPermVI.replace('%i', i).replace('%code', toMSarr[i].code);
 								toMShighest='500';
 								break;
 							case '200':
-								httpSubmitIcon = 'icon-check.png'; httpSubmitText = 'MS'+i+': HTTP 200 Value submitted'; 
+								httpSubmitIcon = 'icon-check.png'; httpSubmitText = _lang_v1.status200VI.replace('%i', i);
 								break;
-							default: 
-								httpSubmitIcon = 'icon-question.png'; httpSubmitText = 'Not sent so far (cache)'; 
+							default:
+								httpSubmitIcon = 'icon-question.png'; httpSubmitText = _lang_v1.statusCached;
 						}
-						
+
 						httpSubmitTime = new Date(toMSarr[i].lastsent*1000);
-						httpSubmitAdvTabInfRow += '<img src="../../system/images/'+httpSubmitIcon+'">&nbsp;'+httpSubmitText+' at '+httpSubmitTime.toLocaleString('de-DE', { hour:'numeric', minute:'numeric', hour12:false } )+'<br>';
+						httpSubmitAdvTabInfRow += '<img src="../../system/images/'+httpSubmitIcon+'">&nbsp;'+httpSubmitText+' at '+httpSubmitTime.toLocaleString([], { hour:'numeric', minute:'numeric', hour12:false } )+'<br>';
 					}
 				switch( toMShighest ) {
-						case '404': 
-							httpSubmitIcon = 'icon-notfound.png'; httpSubmitText = 'HTTP 404 Input not available'; 
+						case '404':
+							httpSubmitIcon = 'icon-notfound.png'; httpSubmitText = _lang_v1.status404;
 							break;
-						case '500': 
-							httpSubmitIcon = 'icon-locked.png'; httpSubmitText = 'HTTP 500 Possibly permission denied'; 
+						case '500':
+							httpSubmitIcon = 'icon-locked.png'; httpSubmitText = _lang_v1.status500;
 							break;
 						case '200':
-							httpSubmitIcon = 'icon-check.png'; httpSubmitText = 'HTTP 200 Value submitted'; 
+							httpSubmitIcon = 'icon-check.png'; httpSubmitText = _lang_v1.status200;
 							break;
-						default: 
-							httpSubmitIcon = 'icon-question.png'; httpSubmitText = 'Not sent so far (cache)'; 
+						default:
+							httpSubmitIcon = 'icon-question.png'; httpSubmitText = _lang_v1.statusCached;
 					}
-						
+
 				} else if ( typeof resp.http[topic].regexfilterline != 'undefined' || typeof resp.doNotForward[topic] != 'undefined' ) {
-					httpSubmitIcon = 'icon-filtered.png'; httpSubmitText = 'Filtered'; 
+					httpSubmitIcon = 'icon-filtered.png'; httpSubmitText = _lang_v1.filterFiltered;
 					httpSubmitAdvTabInfRow = '<img src="../../system/images/'+httpSubmitIcon+'">&nbsp;'+httpSubmitText+'<br>';
 					toMShighest = -1;
 				}
 				else {
-					httpSubmitIcon = 'icon-question.png'; httpSubmitText = 'Not sent so far (cache)'; 
+					httpSubmitIcon = 'icon-question.png'; httpSubmitText = _lang_v1.statusCached;
 					httpSubmitAdvTabInfRow = '<img src="../../system/images/'+httpSubmitIcon+'">&nbsp;'+httpSubmitText+'<br>';
 				}
 				
@@ -1365,9 +2012,9 @@ $(function() {
 					// http_row+= '<label><input type="checkbox" name="http_cache_disabled_'+topic+'" id="http_cache_disabled_'+topic+'"data-mini="true" class="disablecache" ' + uncached +'>Disable cache</label>';
 					
 					http_row+= '<input type="checkbox" name="http_cache_disabled_'+topic+'" id="http_cache_disabled_'+topic+'" data-mini="true" class="disablecache" ' + uncached +' style="display:inline;">';
-					http_row+= '<label for="http_cache_disabled_'+topic+'" style="display:inline;">Disable cache</label>';
-				
-				
+					http_row+= '<label for="http_cache_disabled_'+topic+'" style="display:inline;">'+_lang_v1.labelDisableCache+'</label>';
+
+
 					// Reset after send
 					var resetAfterSend = "";
 					if( typeof cfg.resetAfterSend !== 'undefined' && topic.replace(/\//g, "_") in cfg.resetAfterSend ) {
@@ -1376,13 +2023,13 @@ $(function() {
 					}
 					// http_row+= '<label><input type="checkbox" name="http_reset_after_send_'+topic+'" id="http_reset_after_send_'+topic+'"data-mini="true" class="resetAfterSend" ' + resetAfterSend +'>Reset after send</label>';
 					http_row+= '&nbsp;<input type="checkbox" name="http_reset_after_send_'+topic+'" id="http_reset_after_send_'+topic+'" data-mini="true" class="resetAfterSend" '+resetAfterSend+' style="display:inline;">';
-					http_row+= '<label for="http_reset_after_send_'+topic+'" style="display:inline;">Reset after send</label>';
-								
+					http_row+= '<label for="http_reset_after_send_'+topic+'" style="display:inline;">'+_lang_v1.labelResetAfterSend+'</label>';
+
 					// Do not forward (V1 only)
 					if (!isV2) {
 						//http_row+= '<label><input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
 						http_row+= '&nbsp;<input type="checkbox" name="http_do_not_forward_'+topic+'" id="http_do_not_forward_'+topic+'" data-mini="true" class="doNotForward" '+doNotForward +' style="display:inline;">';
-						http_row+= '<label for="http_do_not_forward_'+topic+'" style="display:inline;">Do not forward</label>';
+						http_row+= '<label for="http_do_not_forward_'+topic+'" style="display:inline;">'+_lang_v1.labelDoNotForward+'</label>';
 					}
 					
 					// http_row+= '</fieldset>';
@@ -1410,9 +2057,9 @@ $(function() {
 				if ( topics_show_advanced == true ) {
 					http_row+= '<br><span style="font-size:70%;">';
 					if( subscriptionfiltered != 0 )
-						http_row+= 'Subscription filtered by RegEx line '+subscriptionfiltered+'<br>';
+						http_row+= _lang_v1.tooltipRegexFiltered.replace('%n', subscriptionfiltered)+'<br>';
 					if( doNotForward && !isV2 )
-						http_row+= '<i>Do not forward</i> is active<br>';
+						http_row+= '<i>'+_lang_v1.tooltipDoNotForward+'</i><br>';
 					else if( subscriptionfiltered == 0 && httpSubmitAdvTabInfRow) {
 						http_row+= httpSubmitAdvTabInfRow;
 					}
@@ -1493,20 +2140,19 @@ $(function() {
 					// console.log(topic, "is uncached");
 					}
 					
-					udp_row+= '<div><label style="display:inline;"><input type="checkbox" name="udp_cache_disabled_'+topic+'" id="udp_cache_disabled_'+topic+'"data-mini="true" class="disablecache" ' + uncached + '>Disable cache</label>';
-				
+					udp_row+= '<div><label style="display:inline;"><input type="checkbox" name="udp_cache_disabled_'+topic+'" id="udp_cache_disabled_'+topic+'"data-mini="true" class="disablecache" ' + uncached + '>'+_lang_v1.labelDisableCache+'</label>';
+
 					var resetAfterSend = "";
 					if( typeof cfg.resetAfterSend !== 'undefined' && topic.replace(/\//g, "_") in cfg.resetAfterSend ) {
 						resetAfterSend = "checked";
 					// console.log(topic, "is reset after send");
 					}
-					udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_reset_after_send_'+topic+'" id="udp_reset_after_send_'+topic+'"data-mini="true" class="resetAfterSend" ' + resetAfterSend +'>Reset after send</label></fieldset>';
-					
-					
+					udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_reset_after_send_'+topic+'" id="udp_reset_after_send_'+topic+'"data-mini="true" class="resetAfterSend" ' + resetAfterSend +'>'+_lang_v1.labelResetAfterSend+'</label></fieldset>';
+
 					// console.log(topic, "is reset after send");
-					
+
 					if (!isV2) {
-						udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_do_not_forward_'+topic+'" id="udp_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>Do not forward</label>';
+						udp_row+= '<label style="display:inline;"><input type="checkbox" name="udp_do_not_forward_'+topic+'" id="udp_do_not_forward_'+topic+'"data-mini="true" class="doNotForward" ' + doNotForward +'>'+_lang_v1.labelDoNotForward+'</label>';
 					}
 					udp_row+= '</div>';
 					
@@ -1516,9 +2162,9 @@ $(function() {
 				
 				udp_row+= '<td style="font-size:80%;" class="'+tdClass+' topics_table_udp_commandrec">';
 				if( subscriptionfiltered != 0 )
-					udp_row+= 'Subscription filtered by RegEx line '+subscriptionfiltered+'<br>';
+					udp_row+= _lang_v1.tooltipRegexFiltered.replace('%n', subscriptionfiltered)+'<br>';
 				if( doNotForward && !isV2 )
-					udp_row+= '<i>Do not forward</i> is active';
+					udp_row+= '<i>'+_lang_v1.tooltipDoNotForward+'</i>';
 				else if ( (!doNotForward || isV2) && !subscriptionfiltered ) {
 					topic_tmp = 'MQTT:\\i' + topic.replace("\\", "\\\\") + '=\\i\\v';
 					udp_row+= topic_tmp;
@@ -1713,99 +2359,11 @@ $(function() {
 		  var ms = d.getMilliseconds();
 		  return(sec+"."+ms);
 		}
-	
+
 	</script>
+</TMPL_UNLESS>
 
 
-	<!-- Merged from FORM_TRANSFORMERS -->
-	<details class="lb-collapsible">
-		<summary>Transformers</summary>
-		<div class="lb-collapsible-content">
-<style>
-	.trans_table {
-		width: 100%;
-		padding: 5px;
-	}
-	
-	.trans_table td, .trans_table th {
-		padding: 5px;
-		border-top: 1px solid #ccc;
-	}
-	.trans_table div {
-		padding: 3px 7px 3px 7px;
-	}
-	</style>
-	
-	<div style="display:none" id="transformers_json"><TMPL_VAR transformers></div>
-	
-	<div class="lb-section-title">Transformers</div>
-	<p>Transformers are scripts of any programming language provided by <i>YOURSELF</i> (or shipped with the MQTT Gateway), that stands in the middle of the data transfer, and can transform incoming values to other outgoing values. Currently only <b>UDP Transformers</b> are supported, that modify data from the Miniserver before sending to MQTT.
-	</p>
-	<p class="hint">Example: Loxone sends RGB colors as combined 0-100% value, but devices require three seperate 0-255 values. An UDP Transformer can archive this.</p> 
-	<p>Use LoxBerry MQTT's <a href="mqtt-quickpublisher.cgi" target="_blank">Quick Publisher</a> to test publishes to the MQTT Server.</p>
-	
-	<div data-role='collapsible' id='coll_package_transformers_udp' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-	
-		<h2 class='ui-bar ui-bar-a ui-corner-all' id='transformers_udp_head'>Available UDP Transformers</h2>
-		<div>
-		<p>An UDP Transformer acts <b>Miniserver&rarr;Transformer&rarr;MQTT</b> and is called from a Virtual Output Command like <i>publish</i> or <i>retain</i> but with added Transformer name in the parameters:<br>
-		Syntax: <span class="mono"><span style="color:black">publish </span>transformername <span style="color:black">to/my/topic</span> <span style="color:blue">data1 data2 ...</span></span>
-		<br>
-		Example: <span class="mono"><span style="color:black">publish </span>shelly_rgb&amp;w <span style="color:black">shellies/shelly-12345/color/0/set</span> <span style="color:blue">rgb &lt;v&gt;</span></span>
-		<span class="hint"><br>(The <span class="mono">publish</span>/<span class="mono">retain</span> keyword is mandatory with transformers.)</span>
-		
-		<p>See full documentation how to use and create a <a href="https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/start" target="_blank">UDP Transformer</a> including example scripts.</p>
-		
-		<div id="transformers_udp_tablediv">
-		</div>
-		</div>
-	
-	</div>
-
-	
-<script>
-$(function() {
-	
-	var tuhtml = '<table class="trans_table">';
-	var transformers = null;
-	var udp_transformers = null;
-	try {
-		transformers = JSON.parse( $("#transformers_json").text() );
-		udp_transformers = get( transformers, 'udpin' );
-	}
-	catch(err) {
-		tuhtml+= '<tr><td><i>No UDP Transformers available.</i></td></tr>';
-	}
-	if( udp_transformers ) {
-		console.log("UDP Transformers", udp_transformers);
-		for( transname in udp_transformers ) {
-			trans = udp_transformers[transname];
-			console.log(trans);
-			tuhtml+= '<tr><td>';
-			tuhtml+= '<div style="display:flex;">';
-			tuhtml+= '<div class="mono" style="font-size:120%"><b>'+transname+'</b></div>';
-			var type_color = trans.type === 'shipped' ? '#8e256b' : 'blue';
-			tuhtml+= '<div style="color:'+type_color+';">('+trans.type+')</div>';
-			tuhtml+= '<div>'+trans.description+'</div>';
-			tuhtml+= '<div>';
-			if( trans.link )
-				tuhtml+= '<a href="'+trans.link+'" target="_blank">See details...</a>';
-			tuhtml+= '</div>';
-			tuhtml+= '</div>';
-			// tuhtml+= '<div style="display:flex;" class="hint">Example Virtual Output Command:&nbsp;&nbsp;<span class="mono"><span style="color:black">publish </span>'+transname+' <span style="color:black">to/my/topic</span> <span style="color:blue">&lt;v.1&gt;</span></span></div>';
-			tuhtml+= '<div style="display:flex;"><div style="font-size:65%;">'+trans.filename+'</div></div>';
-			tuhtml+= '</td></tr>';
-		}
-	}
-	tuhtml += '</table>';
-	$('#transformers_udp_tablediv').html( tuhtml );
-	
-});
-</script>	
-	
-
-		</div>
-	</details>
 	<!-- /Form TOPICS -->
 </TMPL_IF>
 
@@ -1844,8 +2402,8 @@ $(function() {
 
 	<div style="display:flex;justify-content:center;gap:12px;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
 	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none"><TMPL_VAR MQTT.BTN_SAVE_APPLY></button>
-	<button class="lb-btn" id="restartmqttgateway" data-role="none"><TMPL_VAR MQTT.BTN_GATEWAY_RESTART></button>
 	</div>
+	<div class="mqttgw-savefeedback"><span id="savemessages"></span></div>
 
 </TMPL_UNLESS>
 
@@ -1921,7 +2479,7 @@ $(function() {
 					$("#Main\\."+elemname).prop('checked', true);
 			} 
 			else if (inputType == "radio") {
-				$('input:radio[name="Main.'+elemname+'"]').filter('[value="'+cfg.Main[elemname]+'"]').prop("checked", true);
+				$('input:radio[name="Main.'+elemname+'"]').filter('[value="'+cfg.Main[elemname]+'"]').attr("checked",true).checkboxradio("refresh");
 			}
 			else {
 				$("#Main\\."+elemname).val(cfg.Main[elemname]);
@@ -1929,6 +2487,9 @@ $(function() {
 			
 		
 		}
+		try { $('select').selectmenu('refresh', true); } catch(e) {}
+		try { $('input:checkbox').checkboxradio('refresh'); } catch(e) {}
+		
 		// Hide UDP block if UDP is disabled
 		if( ! $("#Main\\.use_udp").is(":checked") )
 			$(".main_udpport_block").hide();
@@ -2119,26 +2680,30 @@ $(function() {
 		
 	});
 
-	$("#restartmqttgateway").click(function(){
-		// console.log("Restart pressed");
-		$("#restartmqttgateway").attr("disabled", true);
-		
-		$.post( 'ajax/ajax-mqtt.php', {
-			ajax: 'restartgateway' })
-		.done(function(resp) {
-			// console.log( "ajax_post", "success", resp );
-	  })
-	  .fail(function(resp) {
-			console.log( "ajax_post", "failed", resp );
-	  })
-	  .always(function(resp) {
-			// console.log( "ajax_post", "finished", resp );
-		$("#restartmqttgateway").attr("disabled", false);
-		update_pids();
-			
-	  });
+	$("#btn_restart_gateway").click(function(e){
+		e.preventDefault();
+		if ($(this).hasClass("ui-disabled")) return;
+		$("#btn_restart_gateway, #btn_stop_gateway").addClass("ui-disabled").attr("disabled", true);
+		gw_status_pending();
+		$.post( 'ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
+		.always(function() {
+			$("#btn_restart_gateway, #btn_stop_gateway").removeClass("ui-disabled").removeAttr("disabled");
+			setTimeout(update_pids, 3000);
+		});
 	});
-	
+
+	$("#btn_stop_gateway").click(function(e){
+		e.preventDefault();
+		if ($(this).hasClass("ui-disabled")) return;
+		$("#btn_restart_gateway, #btn_stop_gateway").addClass("ui-disabled").attr("disabled", true);
+		gw_status_pending();
+		$.post( 'ajax/ajax-mqtt.php', { ajax: 'stop_gateway' })
+		.always(function() {
+			$("#btn_restart_gateway, #btn_stop_gateway").removeClass("ui-disabled").removeAttr("disabled");
+			setTimeout(update_pids, 1500);
+		});
+	});
+
 	$("#purgemosquittodb").click(function(){
 		// console.log("Restart Mosquitto database");
 		$("#purgemosquittodb").attr("disabled", true);
@@ -2178,33 +2743,29 @@ $("#reconnect").click(function(){
 	  });
 	});
 	
-	function update_pids() 
+	var _lang_v1gw = {
+		pending:     '<TMPL_VAR MQTT.MOSQ_STATUS_QUERYING>',
+		runningPid:  '<TMPL_VAR MQTT.MOSQ_STATUS_RUNNING_PID>',
+		notRunning:  '<TMPL_VAR MQTT.MOSQ_STATUS_NOT_RUNNING>',
+		queryFailed: '<TMPL_VAR MQTT.MOSQ_STATUS_QUERY_FAILED>'
+	};
+
+	function gw_status_pending() {
+		$("#gw_status_text").text(_lang_v1gw.pending).css({"background":"#dfdfdf","color":"black","border-color":"#7e7e7e"});
+	}
+
+	function update_pids()
 	{
-
-		$.post( 'ajax/ajax-mqtt.php', {
-			ajax: 'getpids' })
+		$.post( 'ajax/ajax-mqtt.php', { ajax: 'getpids' })
 		.done(function(resp) {
-			// console.log( "ajax_post", "success", resp );
-			if(resp.pids.mqttgateway != null) {
-				$("#gatewaystate").attr("style", "color:green").html("MQTT Gateway running (PID"+resp.pids.mqttgateway+")");
+			if (resp.pids.mqttgateway != null) {
+				$("#gw_status_text").text(_lang_v1gw.runningPid.replace('%s', resp.pids.mqttgateway)).css({"background":"#6dac20","color":"black","border-color":"#5a9a18"});
 			} else {
-				$("#gatewaystate").attr("style", "color:red").html("MQTT Gateway not running");
+				$("#gw_status_text").text(_lang_v1gw.notRunning).css({"background":"#d0021b","color":"white","border-color":"#b00218"});
 			}
-			if(resp.pids.mosquitto != null) {
-				$("#mosquittostate").attr("style", "color:green").html("Mosquitto running (PID"+resp.pids.mosquitto+")");
-			} else {
-				$("#mosquittostate").attr("style", "color:red").html("Mosquitto not running");
-			}
-			
-	  })
-	  .fail(function(resp) {
-			$("#gatewaystate").attr("style", "color:red").html("Failed to query PIDs");
-			$("#mosquittostate").attr("style", "color:red").html("Failed to query PIDs");
-			
-	  })
-	  .always(function(resp) {
-			// console.log( "ajax_post", "finished", resp );
-
+		})
+		.fail(function() {
+			$("#gw_status_text").text(_lang_v1gw.queryFailed).css({"background":"#dfdfdf","color":"black","border-color":"#7e7e7e"});
 		});
 	}
 
@@ -2321,11 +2882,15 @@ $("#reconnect").click(function(){
 
 </TMPL_UNLESS>
 
-<div style="display:flex;align-items:center;justify-content:center;font-size:70%;padding:5px 20px 5px 20px">
-	<span id="savemessages"></span>&nbsp;
-	<span id="savebrokerpass"></span>&nbsp;
-	&nbsp;<span id="gatewaystate"></span>&nbsp;|
-	&nbsp;<span id="mosquittostate"></span>
-</div>
 
 </div><!-- /data-enhance="false" -->
+
+<!-- Confirmation popup (outside data-enhance=false so JQM can enhance it) -->
+<div data-role="popup" id="mqttgw-confirm-popup" data-dismissible="false" data-theme="a" data-overlay-theme="b" style="max-width:320px;padding:16px 20px 20px">
+	<h3 id="mqttgw-confirm-title" style="margin:0 0 10px 0;font-size:1rem"></h3>
+	<p id="mqttgw-confirm-msg" style="font-size:0.875rem;margin:0 0 16px 0"></p>
+	<div style="display:flex;gap:8px;justify-content:flex-end">
+		<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-mini" data-role="button"><TMPL_VAR MQTT.BTN_CANCEL></a>
+		<a href="#" id="mqttgw-confirm-ok" class="ui-btn ui-btn-b ui-corner-all ui-shadow ui-btn-inline ui-mini" data-role="button"><TMPL_VAR MQTT.BTN_CONFIRM></a>
+	</div>
+</div>
