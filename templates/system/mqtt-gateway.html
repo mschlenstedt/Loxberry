@@ -203,6 +203,13 @@ $(function() {
         syncBtnGroup($(this).attr("name"));
     });
 
+    var _lang_migrate = {
+        msgData:   '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_DATA>',
+        msgNoData: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NODATA>',
+        btnEmpty:  '<TMPL_VAR MQTT.MIGRATE_BTN_EMPTY>',
+        btnOk:     '<TMPL_VAR MQTT.MIGRATE_BTN_OK>'
+    };
+
     // Version change popup
     var originalVersion = gatewayversion;
     var _migrationChoice = null;
@@ -267,13 +274,6 @@ $(function() {
     var _lang_gw = {
         statusRunning: '<TMPL_VAR MQTT.STATUS_RUNNING>',
         statusStopped: '<TMPL_VAR MQTT.STATUS_STOPPED>'
-    };
-
-    var _lang_migrate = {
-        msgData:   '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_DATA>',
-        msgNoData: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NODATA>',
-        btnEmpty:  '<TMPL_VAR MQTT.MIGRATE_BTN_EMPTY>',
-        btnOk:     '<TMPL_VAR MQTT.MIGRATE_BTN_OK>'
     };
 
     function updateStatus() {
