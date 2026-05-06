@@ -858,6 +858,7 @@ a.lb-sidebar-link.active:visited {
 	}
 	.lb-main {
 		margin-left: 0;
+		padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 	}
 	.lb-sidebar {
 		transform: translateX(-250px);
@@ -877,7 +878,6 @@ a.lb-sidebar-link.active:visited {
 	}
 	.lb-content {
 		padding: 12px;
-		padding-bottom: 72px;
 	}
 }
 
