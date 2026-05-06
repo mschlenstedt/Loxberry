@@ -295,19 +295,21 @@ $(function() {
     <TMPL_VAR MQTT.DESC_QUICKPUBLISHER_TEST> <a href="mqtt-quickpublisher.cgi" target="_blank"><TMPL_VAR MQTT.LINK_QUICKPUBLISHER></a>.
 </p>
 
-<div style="font-size:0.95rem;font-weight:600;color:var(--lb-gray-700);margin-top:var(--lb-space-lg);margin-bottom:var(--lb-space-sm)"><TMPL_VAR MQTT.SECTION_UDP_TRANSFORMERS></div>
-
-<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
-    <TMPL_VAR MQTT.DESC_UDP_TRANSFORMER_FLOW><br>
-    <TMPL_VAR MQTT.LABEL_SYNTAX>: <span class="mono"><span style="color:black">publish </span>transformername <span style="color:black">to/my/topic</span> <span style="color:blue">data1 data2 ...</span></span><br>
-    <TMPL_VAR MQTT.LABEL_EXAMPLE>: <span class="mono"><span style="color:black">publish </span>shelly_rgb&amp;w <span style="color:black">shellies/shelly-12345/color/0/set</span> <span style="color:blue">rgb &lt;v&gt;</span></span><br>
-    <span style="color:var(--lb-gray-500);font-style:italic"><TMPL_VAR MQTT.HINT_TRANSFORMER_KEYWORD></span>
-</p>
-<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
-    <a href="https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/start" target="_blank"><TMPL_VAR MQTT.LINK_UDP_TRANSFORMER_DOCS></a>
-</p>
-
-<div id="transformers_udp_tablediv"></div>
+<div data-role="collapsible" id="coll_udp_transformers" data-content-theme="true" data-collapsed="true" data-collapsed-icon="carat-d" data-expanded-icon="carat-u" data-iconpos="right">
+    <h2 class="ui-bar ui-bar-a ui-corner-all"><TMPL_VAR MQTT.SECTION_UDP_TRANSFORMERS></h2>
+    <div>
+        <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
+            <TMPL_VAR MQTT.DESC_UDP_TRANSFORMER_FLOW><br>
+            <TMPL_VAR MQTT.LABEL_SYNTAX>: <span class="mono"><span style="color:black">publish </span>transformername <span style="color:black">to/my/topic</span> <span style="color:blue">data1 data2 ...</span></span><br>
+            <TMPL_VAR MQTT.LABEL_EXAMPLE>: <span class="mono"><span style="color:black">publish </span>shelly_rgb&amp;w <span style="color:black">shellies/shelly-12345/color/0/set</span> <span style="color:blue">rgb &lt;v&gt;</span></span><br>
+            <span style="color:var(--lb-gray-500);font-style:italic"><TMPL_VAR MQTT.HINT_TRANSFORMER_KEYWORD></span>
+        </p>
+        <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-700)">
+            <a href="https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway_udp_transformers/start" target="_blank"><TMPL_VAR MQTT.LINK_UDP_TRANSFORMER_DOCS></a>
+        </p>
+        <div id="transformers_udp_tablediv"></div>
+    </div>
+</div>
 
 <script>
 $(function() {
