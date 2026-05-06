@@ -63,11 +63,6 @@
     </div>
     <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500);margin-bottom:var(--lb-space-md)"><TMPL_VAR MQTT.VERSION_HELP></p>
 
-    <!-- Version change warning (hidden by default) -->
-    <div id="version_change_warning" class="mqttgw-version-warning" style="display:none">
-        <strong>&#9888; <TMPL_VAR MQTT.LABEL_HINT>:</strong> <TMPL_VAR MQTT.VERSION_CHANGE_WARNING>
-    </div>
-
     <!-- Section: Miniserver Data Routing -->
     <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_DATA_ROUTING></div>
 
@@ -2892,5 +2887,25 @@ $("#reconnect").click(function(){
 	<div style="display:flex;gap:8px;justify-content:flex-end">
 		<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-mini" data-role="button"><TMPL_VAR MQTT.BTN_CANCEL></a>
 		<a href="#" id="mqttgw-confirm-ok" class="ui-btn ui-btn-b ui-corner-all ui-shadow ui-btn-inline ui-mini" data-role="button"><TMPL_VAR MQTT.BTN_CONFIRM></a>
+	</div>
+</div>
+
+<!-- V1→V2 migration popup (outside data-enhance=false so JQM can enhance it) -->
+<div data-role="popup" id="mqttgw-migrate-popup" data-dismissible="false" data-theme="a" data-overlay-theme="b" style="max-width:340px;padding:16px 20px 20px">
+	<h3 style="margin:0 0 10px 0;font-size:1rem"><TMPL_VAR MQTT.MIGRATE_TO_V2_TITLE></h3>
+	<p id="mqttgw-migrate-msg" style="font-size:0.875rem;margin:0 0 16px 0"></p>
+	<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+		<a href="#" id="mqttgw-migrate-btn-import" class="ui-btn ui-btn-b ui-corner-all ui-shadow ui-btn-inline ui-mini" data-role="button"><TMPL_VAR MQTT.MIGRATE_BTN_IMPORT></a>
+		<a href="#" id="mqttgw-migrate-btn-empty" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-mini" data-role="button"></a>
+	</div>
+</div>
+
+<!-- V2→V1 warning popup (outside data-enhance=false so JQM can enhance it) -->
+<div data-role="popup" id="mqttgw-switch-v1-popup" data-dismissible="false" data-theme="a" data-overlay-theme="b" style="max-width:340px;padding:16px 20px 20px">
+	<h3 style="margin:0 0 10px 0;font-size:1rem"><TMPL_VAR MQTT.SWITCH_TO_V1_TITLE></h3>
+	<p style="font-size:0.875rem;margin:0 0 16px 0"><TMPL_VAR MQTT.SWITCH_TO_V1_MSG></p>
+	<div style="display:flex;gap:8px;justify-content:flex-end">
+		<a href="#" id="mqttgw-switch-v1-cancel" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-mini" data-role="button"><TMPL_VAR MQTT.BTN_CANCEL></a>
+		<a href="#" id="mqttgw-switch-v1-proceed" class="ui-btn ui-btn-b ui-corner-all ui-shadow ui-btn-inline ui-mini" data-role="button"><TMPL_VAR MQTT.MIGRATE_BTN_PROCEED></a>
 	</div>
 </div>

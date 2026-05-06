@@ -79,20 +79,6 @@
 }
 
 /* ============================================================
-   VERSION WARNING
-   ============================================================ */
-
-.mqttgw-version-warning {
-  padding: 12px 16px;
-  background-color: #fff8e1;
-  border: 1px solid #f0d060;
-  border-radius: var(--lb-radius);
-  margin-bottom: var(--lb-space-lg);
-  font-size: var(--lb-font-sm);
-  color: #8a6d04;
-}
-
-/* ============================================================
    DISCOVERY BAR
    ============================================================ */
 
