@@ -386,6 +386,57 @@ elseif ( $ajax == 'get_v1_migration_status' ) {
     echo json_encode([ 'available' => true, 'count' => $count ]);
 }
 
+elseif ( $ajax == 'migrate_v1_to_v2' ) {
+    require_once "loxberry_system.php";
+    $statusfile = '/dev/shm/mqttgateway_topics.json';
+    $cfgfile    = LBSCONFIGDIR . '/mqttgateway.json';
+    $subsfile   = LBSCONFIGDIR . '/subscriptions.json';
+
+    header('Content-Type: application/json');
+
+    if ( !file_exists($statusfile) ) {
+        echo json_encode([ 'status' => 'error', 'message' => 'V1 status file not found' ]);
+        exit;
+    }
+
+    $status = json_decode( file_get_contents($statusfile), true );
+    $cfg    = file_exists($cfgfile) ? json_decode( file_get_contents($cfgfile), true ) : [];
+
+    $noncached      = $cfg['Noncached']      ?? [];
+    $resetAfterSend = $cfg['resetAfterSend'] ?? [];
+    $expand_json    = !empty($cfg['Main']['expand_json']);
+
+    $subscriptions = [];
+    foreach ( $status['http'] ?? [] as $topic => $content ) {
+        if ( isset($content['regexfilterline']) ) continue;
+        if ( empty($content['toMS']) )             continue;
+
+        $highest = 0;
+        foreach ( $content['toMS'] as $msno => $ms ) {
+            $code = (int)($ms['code'] ?? 0);
+            if ( $code === 200 ) { $highest = 200; break; }
+            if ( $code > $highest ) $highest = $code;
+        }
+        if ( $highest !== 200 ) continue;
+
+        $subscriptions[] = [
+            'Id'             => $topic,
+            'Toms'           => [],
+            'Noncached'      => isset($noncached[$topic]) && $noncached[$topic] === 'true',
+            'resetaftersend' => isset($resetAfterSend[$topic]) && $resetAfterSend[$topic] === 'true',
+            'Jsonexpand'     => (bool) $expand_json,
+            'Json'           => [],
+        ];
+    }
+
+    file_put_contents( $subsfile, json_encode(
+        [ 'Subscriptions' => $subscriptions ],
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+    ));
+
+    echo json_encode([ 'status' => 'ok', 'count' => count($subscriptions) ]);
+}
+
 // Unknown request
 else {
 	http_response_code(500);
