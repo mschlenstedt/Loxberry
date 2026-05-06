@@ -51,7 +51,7 @@
       "Uselocalbroker" : "1",
       "Websocketport" : "9001",
       "Finderdisabled" : false,
-      "Gatewayversion" : 2
+      "Gatewayversion" : 1
    },
    "Network" : {
       "Friendlyname" : null,
