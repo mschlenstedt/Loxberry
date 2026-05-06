@@ -32,3 +32,23 @@ log/plugins/**
 templates/plugins/**
 webfrontend/htmlauth/plugins/**
 webfrontend/html/plugins/**
+
+# Claude Code project notes (user-specific, not for the public repo)
+CLAUDE.md
+.claude/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backup/temp
+*.bak
+*.orig
+*.rej
