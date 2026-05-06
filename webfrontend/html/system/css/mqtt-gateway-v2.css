@@ -537,12 +537,6 @@ body.theme-dark .mqttgw-status-error {
   border-color: rgba(220, 38, 38, 0.35);
 }
 
-body.theme-dark .mqttgw-version-warning {
-  background-color: rgba(202, 138, 4, 0.12);
-  border-color: rgba(202, 138, 4, 0.35);
-  color: #e0b030;
-}
-
 body.theme-dark .mqttgw-json-fields {
   background-color: rgba(109, 172, 32, 0.06);
   color: #8bc34a;
