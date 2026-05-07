@@ -162,8 +162,12 @@ def apply_value_transforms(value: str) -> str:
 def parse_miniservers(general_data: dict) -> dict:
     result = {}
     for ms_id, ms_data in general_data.get("Miniserver", {}).items():
+        fulluri = ms_data.get("Fulluri", "")
+        # LoxBerry wraps IPv4 addresses in brackets (e.g. [192.168.1.1]) which is
+        # only valid for IPv6 literals in URLs — strip them so aiohttp can connect.
+        fulluri = re.sub(r'\[(\d{1,3}(?:\.\d{1,3}){3})\]', r'\1', fulluri)
         result[str(ms_id)] = {
-            "fulluri":   ms_data.get("Fulluri", ""),
+            "fulluri":   fulluri,
             "ipaddress": ms_data.get("Ipaddress", ""),
         }
     return result
@@ -228,7 +232,8 @@ async def send_http(session: aiohttp.ClientSession, ms: dict,
     try:
         async with session.get(
             url,
-            timeout=aiohttp.ClientTimeout(total=5)
+            timeout=aiohttp.ClientTimeout(total=5),
+            ssl=False
         ) as resp:
             if resp.status < 300:
                 return True, resp.status
