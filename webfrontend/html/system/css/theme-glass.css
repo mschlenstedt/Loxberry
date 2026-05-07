@@ -160,6 +160,14 @@ body.theme-glass .ui-input-text input {
   color: rgba(255,255,255,.8) !important;
 }
 
+/* Native <select> dropdown: the popup list uses OS default white bg —
+   force readable dark text on options so they don't disappear against it.
+   !important to beat the .lb-content { color: rgba(255,255,255,.8) } inheritance. */
+body.theme-glass select option {
+  color: #222 !important;
+  background-color: #fff !important;
+}
+
 /* Glass checkbox/flipswitch labels */
 body.theme-glass label {
   color: rgba(255,255,255,.7);
