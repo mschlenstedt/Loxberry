@@ -268,8 +268,12 @@ a.nolinkstyle:active
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 5px;
+}
+
+.widget-actions {
+  text-align: center;
 }
 
 .widget {
