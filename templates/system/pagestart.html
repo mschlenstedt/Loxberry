@@ -346,6 +346,8 @@
 }
 .vuenavbarcontainer::-webkit-scrollbar { display: none; }
 .vuenavbarelement {
+	/* Tabs share the row evenly (flex:1 1 0); when a tab is too narrow
+	   for its label, truncate with ellipsis instead of wrapping/scrolling. */
 	flex: 1 1 0;
 	min-width: 0;
 	text-shadow:none;
@@ -357,6 +359,8 @@
 	text-decoration: none;
 	min-height:18px;
 	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	font-family: var(--lb-font);
 }
 @media (max-width: 768px) {
