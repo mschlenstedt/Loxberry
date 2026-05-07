@@ -417,12 +417,21 @@ elseif ( $ajax == 'migrate_v1_to_v2' ) {
         if ( $highest !== 200 ) continue;
 
         $mqttTopic = $content['originaltopic'] ?? $topic;
+
+        // Only enable Jsonexpand if globally set AND the last payload is
+        // actually a JSON object or array (primitives don't need expanding)
+        $needsJsonExpand = false;
+        if ( $expand_json && isset($content['message']) && $content['message'] !== '' ) {
+            $decoded = json_decode($content['message'], true);
+            $needsJsonExpand = json_last_error() === JSON_ERROR_NONE && is_array($decoded);
+        }
+
         $subscriptions[] = [
             'Id'             => $mqttTopic,
             'Toms'           => [],
             'Noncached'      => isset($noncached[$topic]) && $noncached[$topic] === 'true',
             'resetaftersend' => isset($resetAfterSend[$topic]) && $resetAfterSend[$topic] === 'true',
-            'Jsonexpand'     => (bool) $expand_json,
+            'Jsonexpand'     => $needsJsonExpand,
             'Json'           => [],
         ];
     }
