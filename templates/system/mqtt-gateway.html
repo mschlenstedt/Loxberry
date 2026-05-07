@@ -44,6 +44,7 @@
         <div class="servicestatus-btns">
             <a id="btn_restart_gateway" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-refresh"></i> <TMPL_VAR MQTT.BTN_MOSQ_RESTART></a>
             <a id="btn_stop_gateway" href="#" class="lb-btn lb-btn-sm lb-btn-icon lb-btn-danger"><i class="pi pi-times"></i> <TMPL_VAR MQTT.BTN_MOSQ_STOP></a>
+            <span id="savemessages" style="font-size:0.85rem;align-self:center;margin-left:4px"></span>
         </div>
     </div>
 
@@ -2492,7 +2493,6 @@ $(function () {
 	<div style="display:flex;justify-content:center;gap:12px;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
 	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none"><TMPL_VAR MQTT.BTN_SAVE_APPLY></button>
 	</div>
-	<div class="mqttgw-savefeedback"><span id="savemessages"></span></div>
 
 </TMPL_UNLESS>
 
@@ -2622,7 +2622,7 @@ $(function () {
 	});
 
 	$('input, textarea, select').change(function(event) {
-		$("#savemessages").attr("style", "color:blue").html("Unsaved changes |");
+		$("#savemessages").attr("style", "color:blue").html("Unsaved changes");
 
 		var id = $(this).attr('id');
 		var inputType = $(this).attr('type');
@@ -2731,11 +2731,11 @@ $(function () {
 			} )
 		.done(function() {
 			// console.log( "Success" );
-			$("#savemessages").attr("style", "color:green").html("Saved successfully |");
+			$("#savemessages").attr("style", "color:green").html("Saved successfully");
 		})
 		.fail(function() {
 			// console.log( "Error" );
-			$("#savemessages").attr("style", "color:red").html("Error saving |");
+			$("#savemessages").attr("style", "color:red").html("Error saving");
 		})
 		.always(function() {
 			// console.log( "Finished" );
@@ -2754,11 +2754,11 @@ $(function () {
 				} )
 			.done(function() {
 				// console.log( "Success" );
-				$("#savemessages").attr("style", "color:green").html("Saved successfully |");
+				$("#savemessages").attr("style", "color:green").html("Saved successfully");
 			})
 			.fail(function() {
 				// console.log( "Error" );
-				$("#savemessages").attr("style", "color:red").html("Error saving |");
+				$("#savemessages").attr("style", "color:red").html("Error saving");
 			})
 			.always(function() {
 				// console.log( "Finished" );
