@@ -416,8 +416,9 @@ elseif ( $ajax == 'migrate_v1_to_v2' ) {
         }
         if ( $highest !== 200 ) continue;
 
+        $mqttTopic = $content['originaltopic'] ?? $topic;
         $subscriptions[] = [
-            'Id'             => $topic,
+            'Id'             => $mqttTopic,
             'Toms'           => [],
             'Noncached'      => isset($noncached[$topic]) && $noncached[$topic] === 'true',
             'resetaftersend' => isset($resetAfterSend[$topic]) && $resetAfterSend[$topic] === 'true',
