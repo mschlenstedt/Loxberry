@@ -2772,10 +2772,12 @@ $(function () {
 		e.preventDefault();
 		if ($(this).hasClass("lb-disabled")) return;
 		$("#btn_restart_gateway, #btn_stop_gateway").addClass("lb-disabled").attr("disabled", true);
-		gw_status_pending();
+		_gw_restarting = true;
+		$("#gw_status_text").text(_lang_v1gw.restarting).css({"background":"#dfdfdf","color":"black","border-color":"#7e7e7e"});
 		doSave().always(function() {
 			$.post( 'ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
 			.always(function() {
+				_gw_restarting = false;
 				$("#btn_restart_gateway, #btn_stop_gateway").removeClass("lb-disabled").removeAttr("disabled");
 				setTimeout(update_pids, 3000);
 			});
@@ -2835,10 +2837,13 @@ $("#reconnect").click(function(){
 	
 	var _lang_v1gw = {
 		pending:     '<TMPL_VAR MQTT.MOSQ_STATUS_QUERYING>',
+		restarting:  '<TMPL_VAR MQTT.STATUS_RESTARTING>',
 		runningPid:  '<TMPL_VAR MQTT.MOSQ_STATUS_RUNNING_PID>',
 		notRunning:  '<TMPL_VAR MQTT.MOSQ_STATUS_NOT_RUNNING>',
 		queryFailed: '<TMPL_VAR MQTT.MOSQ_STATUS_QUERY_FAILED>'
 	};
+
+	var _gw_restarting = false;
 
 	function gw_status_pending() {
 		$("#gw_status_text").text(_lang_v1gw.pending).css({"background":"#dfdfdf","color":"black","border-color":"#7e7e7e"});
@@ -2846,8 +2851,10 @@ $("#reconnect").click(function(){
 
 	function update_pids()
 	{
+		if (_gw_restarting) return;
 		$.post( 'ajax/ajax-mqtt.php', { ajax: 'getpids' })
 		.done(function(resp) {
+			if (_gw_restarting) return;
 			if (resp.pids.mqttgateway != null) {
 				$("#gw_status_text").text(_lang_v1gw.runningPid.replace('%s', resp.pids.mqttgateway)).css({"background":"#6dac20","color":"black","border-color":"#5a9a18"});
 			} else {
@@ -2855,6 +2862,7 @@ $("#reconnect").click(function(){
 			}
 		})
 		.fail(function() {
+			if (_gw_restarting) return;
 			$("#gw_status_text").text(_lang_v1gw.queryFailed).css({"background":"#dfdfdf","color":"black","border-color":"#7e7e7e"});
 		});
 	}
