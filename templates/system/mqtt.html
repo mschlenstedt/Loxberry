@@ -126,7 +126,7 @@
 
 	var _lang_mosq = {
 		statusQuerying:    '<TMPL_VAR MQTT.MOSQ_STATUS_QUERYING>',
-		statusRestarting:  '<TMPL_VAR MQTT.STATUS_RESTARTING>',
+		statusRestarting:  '<TMPL_VAR MQTT.STATUS_RESTARTING>'     || 'Restarting...',
 		statusReachable:   '<TMPL_VAR MQTT.MOSQ_STATUS_REACHABLE>',
 		statusFailed:      '<TMPL_VAR MQTT.MOSQ_STATUS_FAILED>',
 		statusRunningPid:  '<TMPL_VAR MQTT.MOSQ_STATUS_RUNNING_PID>',

@@ -324,7 +324,6 @@ $(function() {
                 }
                 $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
                     $("#saveapply").prop("disabled", false);
-                    updateStatus();
                 });
             });
         }
@@ -2730,9 +2729,20 @@ $(function () {
 		else if (id.startsWith("Credentials.")) {
 			creds_changed = true;
 			var idarray = id.split(".");
-			if (!creds.Credentials) 
+			if (!creds.Credentials)
 				creds.Credentials = [];
 			creds.Credentials[idarray[1]] = $(this).val();
+		}
+		else if ($(this).attr('name') === 'protocol') {
+			cfg.Main = cfg.Main || {};
+			var val = $(this).val();
+			cfg.Main.use_http = (val === 'http' || val === 'both') ? 1 : 0;
+			cfg.Main.use_udp  = (val === 'udp'  || val === 'both') ? 1 : 0;
+		}
+		else if (id === 'basic_udpport') {
+			cfg.Main = cfg.Main || {};
+			var p = parseInt($(this).val());
+			if (!isNaN(p) && p > 0) cfg.Main.udpport = p;
 		}
 	});
 
@@ -2748,15 +2758,13 @@ $(function () {
 
 	function doSave() {
 		// Sync form fields not covered by the change handler (protocol radio, udpport)
-		if (cfg.Main != null) {
-			var protocol = $('input[name="protocol"]:checked').val();
-			if (protocol) {
-				cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
-				cfg.Main.use_udp  = (protocol === "udp"  || protocol === "both") ? 1 : 0;
-			}
-			var udpport = parseInt($("#basic_udpport").val());
-			if (udpport) cfg.Main.udpport = udpport;
-		}
+		cfg = cfg || {};
+		cfg.Main = cfg.Main || {};
+		var protocol = $('input[name="protocol"]:checked').val() || 'http';
+		cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
+		cfg.Main.use_udp  = (protocol === "udp"  || protocol === "both") ? 1 : 0;
+		var udpport = parseInt($("#basic_udpport").val());
+		if (!isNaN(udpport) && udpport > 0) cfg.Main.udpport = udpport;
 		$("#saveapply").attr("disabled", true);
 		var p = $.ajax( {
 				type: 'POST',
@@ -2870,7 +2878,7 @@ $("#reconnect").click(function(){
 	
 	var _lang_v1gw = {
 		pending:     '<TMPL_VAR MQTT.MOSQ_STATUS_QUERYING>',
-		restarting:  '<TMPL_VAR MQTT.STATUS_RESTARTING>',
+		restarting:  '<TMPL_VAR MQTT.STATUS_RESTARTING>'     || 'Restarting...',
 		runningPid:  '<TMPL_VAR MQTT.MOSQ_STATUS_RUNNING_PID>',
 		notRunning:  '<TMPL_VAR MQTT.MOSQ_STATUS_NOT_RUNNING>',
 		queryFailed: '<TMPL_VAR MQTT.MOSQ_STATUS_QUERY_FAILED>'
