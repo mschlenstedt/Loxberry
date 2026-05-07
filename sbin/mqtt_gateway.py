@@ -166,9 +166,13 @@ def parse_miniservers(general_data: dict) -> dict:
         # LoxBerry wraps IPv4 addresses in brackets (e.g. [192.168.1.1]) which is
         # only valid for IPv6 literals in URLs — strip them so aiohttp can connect.
         fulluri = re.sub(r'\[(\d{1,3}(?:\.\d{1,3}){3})\]', r'\1', fulluri)
+        prefer_https = str(ms_data.get("Preferhttps", "0"))
+        transport    = str(ms_data.get("Transport", "")).lower()
+        use_https    = prefer_https in ("1", "true") or transport == "https"
         result[str(ms_id)] = {
             "fulluri":   fulluri,
             "ipaddress": ms_data.get("Ipaddress", ""),
+            "use_https": use_https,
         }
     return result
 
@@ -229,11 +233,14 @@ async def send_http(session: aiohttp.ClientSession, ms: dict,
     path = f"/dev/sps/io/{quote(vi_name, safe='')}/{quote(str(value), safe='')}"
     url  = ms["fulluri"] + path
     LOGDEB(f"HTTP GET {url}")
+    # ssl=False skips certificate verification for self-signed Loxone certs;
+    # only applied when HTTPS is configured (Preferhttps/Transport in general.json).
+    ssl_param = False if ms.get("use_https") else None
     try:
         async with session.get(
             url,
             timeout=aiohttp.ClientTimeout(total=5),
-            ssl=False
+            ssl=ssl_param
         ) as resp:
             if resp.status < 300:
                 return True, resp.status
