@@ -2802,6 +2802,16 @@ $(function () {
 				$("#saveapply").attr("disabled", false);
 			});
 		}
+		var newGwVersion = parseInt($('input[name="gatewayversion"]:checked').val());
+		if (!isNaN(newGwVersion)) {
+			$.ajax({
+				type: 'POST',
+				url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
+				dataType: 'json',
+				contentType: 'application/json; charset=UTF-8',
+				data: JSON.stringify({ Gatewayversion: newGwVersion })
+			});
+		}
 		return p;
 	}
 
