@@ -250,6 +250,15 @@ $(function() {
         }
     });
 
+    // V1→V2 dialog: cancel → revert radio to V1
+    $("#mqttgw-migrate-btn-cancel").on("click", function(e) {
+        e.preventDefault();
+        _migrationChoice = null;
+        $("#gw_v1").prop("checked", true);
+        syncBtnGroup("gatewayversion");
+        document.getElementById("mqttgw-migrate-popup").close();
+    });
+
     // V1→V2 dialog: import button
     $("#mqttgw-migrate-btn-import").on("click", function(e) {
         e.preventDefault();
@@ -2980,6 +2989,7 @@ $("#reconnect").click(function(){
 	<h3 style="margin:0 0 10px 0;font-size:1rem"><TMPL_VAR MQTT.MIGRATE_TO_V2_TITLE></h3>
 	<p id="mqttgw-migrate-msg" style="font-size:0.875rem;margin:0 0 16px 0"></p>
 	<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+		<a href="#" id="mqttgw-migrate-btn-cancel" class="lb-btn lb-btn-sm"><TMPL_VAR MQTT.BTN_CANCEL></a>
 		<a href="#" id="mqttgw-migrate-btn-import" class="lb-btn lb-btn-sm lb-btn-primary"><TMPL_VAR MQTT.MIGRATE_BTN_IMPORT></a>
 		<a href="#" id="mqttgw-migrate-btn-empty" class="lb-btn lb-btn-sm"></a>
 	</div>
