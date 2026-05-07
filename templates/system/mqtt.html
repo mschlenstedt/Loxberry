@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
+﻿<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
 
 <!-- Mosquitto Service Status (outside Vue app) -->
 <div class="servicestatus" id="mosq_servicestatus_wrap">
@@ -190,7 +190,7 @@
 				};
 				var self=this;
 				// Update general.json
-				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&write', requestOptions)
+				var p = fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&write', requestOptions)
 				.then( function(response) {
 					console.log(response);
 					if( response.ok != true ) {
@@ -223,6 +223,8 @@
 				};
 				fetch(mqtt_generic+'?file=LBPCONFIG/mqttgateway/cred.json&section=Credentials&write', legacyMqttcredjsonOptions );
 
+				return p;
+
 			},
 
 			getData() {
@@ -250,7 +252,7 @@
 	}
 
 
-	Vue.createApp(mqttapp)
+	const vueApp = Vue.createApp(mqttapp)
 		.mount('#mqttapp')
 
 	const mqtt_ajax = '/admin/system/ajax/ajax-mqtt.php';
@@ -295,10 +297,12 @@
 			if ($(this).hasClass('lb-disabled')) return;
 			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('lb-disabled').attr('disabled', true);
 			mosq_status_pending();
-			$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
-			.always(function() {
-				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
-				setTimeout(update_mosq_status, 3000);
+			vueApp.saveApply().then(function() {
+				$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
+				.always(function() {
+					$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
+					setTimeout(update_mosq_status, 3000);
+				});
 			});
 		});
 

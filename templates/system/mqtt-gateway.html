@@ -2506,6 +2506,12 @@ $(function () {
 	var creds_changed = false;
 	var udpinport;
 
+	var _lang_save = {
+		unsaved:   '<TMPL_VAR MQTT.MSG_MQTT_UNSAVED>',
+		savedOk:   '<TMPL_VAR MQTT.MSG_SAVED_OK>',
+		saveError: '<TMPL_VAR MQTT.MSG_SAVE_ERROR>'
+	};
+
 	$(function() {
 		
 		setInterval(function(){ update_pids(); }, 5000);
@@ -2622,7 +2628,7 @@ $(function () {
 	});
 
 	$('input, textarea, select').change(function(event) {
-		$("#savemessages").attr("style", "color:blue").html("Unsaved changes");
+		$("#savemessages").attr("style", "color:blue").html(_lang_save.unsaved);
 
 		var id = $(this).attr('id');
 		var inputType = $(this).attr('type');
@@ -2717,56 +2723,49 @@ $(function () {
 	});
 
 
-	$("#saveapply").click(function(){
-
-		// var data = $('form').serialize() + "&save=true";
-		// console.log("Submitting form", cfg);
+	function doSave() {
 		$("#saveapply").attr("disabled", true);
-		$.ajax( { 
+		var p = $.ajax( {
 				type: 'POST',
-				url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace', 
+				url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/mqttgateway.json&write&replace',
 				dataType: 'json',
 				contentType: 'application/json; charset=UTF-8',
 				data: JSON.stringify(cfg)
 			} )
 		.done(function() {
-			// console.log( "Success" );
-			$("#savemessages").attr("style", "color:green").html("Saved successfully");
+			$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
 		})
 		.fail(function() {
-			// console.log( "Error" );
-			$("#savemessages").attr("style", "color:red").html("Error saving");
+			$("#savemessages").attr("style", "color:red").html(_lang_save.saveError);
 		})
 		.always(function() {
-			// console.log( "Finished" );
 			$("#saveapply").attr("disabled", false);
-		
 		});
 		var newudpinport = $("#udpinport").val();
 		if( newudpinport != "" && newudpinport != udpinport ) {
 			console.log("udpinport changed from ", udpinport, " to ", $("#udpinport").val() );
-			$.ajax( { 
+			$.ajax( {
 					type: 'POST',
-					url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write', 
+					url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
 					dataType: 'json',
 					contentType: 'application/json; charset=UTF-8',
 					data: JSON.stringify( { Udpinport : $("#udpinport").val() } )
 				} )
 			.done(function() {
-				// console.log( "Success" );
-				$("#savemessages").attr("style", "color:green").html("Saved successfully");
+				$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
 			})
 			.fail(function() {
-				// console.log( "Error" );
-				$("#savemessages").attr("style", "color:red").html("Error saving");
+				$("#savemessages").attr("style", "color:red").html(_lang_save.saveError);
 			})
 			.always(function() {
-				// console.log( "Finished" );
 				$("#saveapply").attr("disabled", false);
-			
 			});
 		}
-		
+		return p;
+	}
+
+	$("#saveapply").click(function(){
+		doSave();
 	});
 
 	$("#btn_restart_gateway").click(function(e){
@@ -2774,10 +2773,12 @@ $(function () {
 		if ($(this).hasClass("lb-disabled")) return;
 		$("#btn_restart_gateway, #btn_stop_gateway").addClass("lb-disabled").attr("disabled", true);
 		gw_status_pending();
-		$.post( 'ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
-		.always(function() {
-			$("#btn_restart_gateway, #btn_stop_gateway").removeClass("lb-disabled").removeAttr("disabled");
-			setTimeout(update_pids, 3000);
+		doSave().always(function() {
+			$.post( 'ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
+			.always(function() {
+				$("#btn_restart_gateway, #btn_stop_gateway").removeClass("lb-disabled").removeAttr("disabled");
+				setTimeout(update_pids, 3000);
+			});
 		});
 	});
 
