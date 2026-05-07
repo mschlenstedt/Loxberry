@@ -288,26 +288,6 @@ $(function() {
         document.getElementById("mqttgw-switch-v1-popup").close();
     });
 
-    // Status indicator
-    var _lang_gw = {
-        statusRunning: '<TMPL_VAR MQTT.STATUS_RUNNING>',
-        statusStopped: '<TMPL_VAR MQTT.STATUS_STOPPED>'
-    };
-
-    function updateStatus() {
-        $.post('ajax/ajax-mqtt.php', { ajax: 'getpids' })
-        .done(function(resp) {
-            var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
-            if (data.pids && data.pids.mqttgateway) {
-                $('#gw_status_text').text(_lang_gw.statusRunning).css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
-            } else {
-                $('#gw_status_text').text(_lang_gw.statusStopped).css({'background':'#d0021b','color':'white','border-color':'#b00218'});
-            }
-        });
-    }
-    updateStatus();
-    setInterval(updateStatus, 10000);
-
     // Save handler — stopImmediatePropagation prevents the legacy saveapply handler from also firing
     $("#saveapply").on("click", function(e) {
         e.stopImmediatePropagation();
@@ -2543,6 +2523,7 @@ $(function () {
 		savedOk:   '<TMPL_VAR MQTT.MSG_SAVED_OK>',
 		saveError: '<TMPL_VAR MQTT.MSG_SAVE_ERROR>'
 	};
+	var _cfg_changed = false;
 
 	$(function() {
 		
@@ -2660,6 +2641,7 @@ $(function () {
 	});
 
 	$('input, textarea, select').change(function(event) {
+		_cfg_changed = true;
 		$("#savemessages").attr("style", "color:blue").html(_lang_save.unsaved);
 
 		var id = $(this).attr('id');
@@ -2757,6 +2739,8 @@ $(function () {
 
 	var _saveOkTimer = null;
 	function _showSaveOk() {
+		if (!_cfg_changed) return;
+		_cfg_changed = false;
 		$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
 		clearTimeout(_saveOkTimer);
 		_saveOkTimer = setTimeout(function() { $("#savemessages").html(""); }, 4000);

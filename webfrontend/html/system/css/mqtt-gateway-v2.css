@@ -502,9 +502,16 @@ details[open] > summary .mqttgw-expand-arrow::before {
   border-radius: 5px;
   background: #dfdfdf;
   border: 1px solid #7e7e7e;
-  min-width: 130px;
+  min-width: 200px;
   max-width: 100%;
   text-align: center;
+  white-space: nowrap;
+}
+
+#savemessages {
+  display: inline-block;
+  min-width: 160px;
+  min-height: 1.2em;
 }
 
 /* save feedback row */

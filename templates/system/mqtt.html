@@ -202,9 +202,11 @@
 					else {
 						fetch('/admin/system/ajax/ajax-mqtt.php?ajax=mosquitto_set');
 						self.data_save_error = false;
-						self.data_saved = true;
+						if (self.data_changed) {
+							self.data_saved = true;
+							setTimeout(function() { self.data_saved = false; }, 4000);
+						}
 						self.data_changed = false;
-						setTimeout(function() { self.data_saved = false; }, 4000);
 					}
 				});
 				// Update legacy mqtt.json
