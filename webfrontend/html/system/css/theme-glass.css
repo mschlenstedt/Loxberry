@@ -1,0 +1,200 @@
+/* LoxBerry Theme: Glassmorphism (Design 2)
+   Dark gradient, halbtransparente Glaseffekte, Glow-Akzente.
+   Uses backdrop-filter for glass effect on cards. */
+
+body.theme-glass {
+  --lb-font: system-ui, sans-serif;
+
+  --lb-bg: #0f2027;
+  --lb-text: rgba(255,255,255,.8);
+  --lb-text-secondary: rgba(255,255,255,.5);
+  --lb-text-muted: rgba(255,255,255,.3);
+  --lb-border-color: rgba(255,255,255,.07);
+
+  --lb-radius: 14px;
+  --lb-radius-sm: 10px;
+
+  --lb-card-bg: rgba(255,255,255,.05);
+  --lb-card-border: 1px solid rgba(255,255,255,.07);
+  --lb-card-shadow: none;
+
+  --lb-btn-bg: rgba(255,255,255,.06);
+  --lb-btn-text: rgba(255,255,255,.4);
+  --lb-btn-border: rgba(255,255,255,.08);
+  --lb-btn-radius: 10px;
+  --lb-btn-primary-bg: rgba(109,172,32,.2);
+  --lb-btn-primary-text: #6dac20;
+  --lb-btn-primary-border: rgba(109,172,32,.3);
+
+  --lb-primary-hover: #8bc34a;
+
+  --lb-input-bg: rgba(255,255,255,.06);
+  --lb-input-border: rgba(255,255,255,.1);
+  --lb-input-text: rgba(255,255,255,.8);
+
+  --lb-toggle-bg: rgba(255,255,255,.15);
+
+  --lb-sidebar-bg: rgba(255,255,255,.04);
+  --lb-sidebar-text: rgba(255,255,255,.55);
+  --lb-sidebar-active-bg: rgba(109,172,32,.1);
+  --lb-sidebar-active-text: #6dac20;
+  --lb-sidebar-border: rgba(255,255,255,.06);
+  --lb-sidebar-section: rgba(255,255,255,.2);
+
+  --lb-backdrop-blur: blur(12px);
+  --lb-glow-primary: 0 0 6px rgba(109,172,32,.5);
+  --lb-glow-danger: 0 0 6px rgba(220,38,38,.5);
+  --lb-glow-warning: 0 0 8px rgba(202,138,4,.3);
+}
+
+/* Glass page background gradient — fixed via pseudo-element to avoid scroll artifacts */
+body.theme-glass {
+  background: #0f2027 !important;
+  min-height: 100vh;
+}
+body.theme-glass::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 40%, #2c5364 100%);
+  z-index: -1;
+}
+
+/* Glass sidebar: fully transparent, no borders */
+body.theme-glass .lb-sidebar {
+  background: transparent !important;
+  border-right: none !important;
+}
+body.theme-glass .lb-sidebar-nav {
+  background: transparent !important;
+}
+body.theme-glass .lb-sidebar-header {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+body.theme-glass .lb-sidebar-footer {
+  background: transparent !important;
+  border-top-color: rgba(255,255,255,.03) !important;
+}
+body.theme-glass .lb-sidebar-section {
+  border-top: none !important;
+  margin-top: 0 !important;
+}
+body.theme-glass,
+body.theme-glass * {
+  text-shadow: none !important;
+}
+
+/* Override jQuery Mobile page/content backgrounds */
+body.theme-glass .ui-page,
+body.theme-glass .ui-content,
+body.theme-glass .ui-panel,
+body.theme-glass .ui-body-a,
+body.theme-glass .ui-body-c,
+body.theme-glass .ui-overlay-a,
+body.theme-glass .page_content,
+body.theme-glass #page_content,
+body.theme-glass .lb-main,
+body.theme-glass .lb-layout,
+body.theme-glass .lb-content {
+  background: transparent !important;
+  color: rgba(255,255,255,.8) !important;
+}
+
+/* Glass header bar */
+body.theme-glass .lb-header {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+body.theme-glass .ui-header .ui-bar-a {
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.06) !important;
+  color: rgba(255,255,255,.8) !important;
+}
+body.theme-glass .ui-header .ui-bar-a h1,
+body.theme-glass .ui-header .ui-bar-a .ui-btn {
+  color: rgba(255,255,255,.8) !important;
+  text-shadow: none !important;
+}
+
+/* Glass navigation tabs */
+body.theme-glass .ui-navbar a {
+  background: rgba(255,255,255,.06) !important;
+  color: rgba(255,255,255,.5) !important;
+  border-color: rgba(255,255,255,.07) !important;
+  text-shadow: none !important;
+}
+body.theme-glass .ui-navbar .ui-btn-active {
+  background: var(--lb-primary) !important;
+  color: white !important;
+}
+
+/* Glass section titles */
+body.theme-glass .lb-section-title {
+  color: rgba(255,255,255,.8) !important;
+}
+
+/* Glass form labels and help text */
+body.theme-glass .lb-form-label {
+  color: rgba(255,255,255,.5) !important;
+}
+body.theme-glass .lb-form-help,
+body.theme-glass .hint {
+  color: rgba(255,255,255,.3) !important;
+}
+
+/* Glass links */
+body.theme-glass a {
+  color: #6dac20;
+}
+
+/* Glass jQuery Mobile inputs */
+body.theme-glass .ui-input-text {
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.1) !important;
+}
+body.theme-glass .ui-input-text input {
+  color: rgba(255,255,255,.8) !important;
+}
+
+/* Glass checkbox/flipswitch labels */
+body.theme-glass label {
+  color: rgba(255,255,255,.7);
+}
+
+/* Glass footer */
+body.theme-glass .ui-footer,
+body.theme-glass #footerright,
+body.theme-glass #footerleft {
+  color: rgba(255,255,255,.3) !important;
+}
+
+/* Glass backdrop on cards */
+body.theme-glass .lb-card {
+  backdrop-filter: var(--lb-backdrop-blur);
+  -webkit-backdrop-filter: var(--lb-backdrop-blur);
+}
+
+/* Glow on status indicators */
+body.theme-glass .lb-status-ok { box-shadow: var(--lb-glow-primary); }
+body.theme-glass .lb-status-error { box-shadow: var(--lb-glow-danger); }
+body.theme-glass .lb-status-warning { box-shadow: var(--lb-glow-warning); }
+
+/* Glass mobile tab bar */
+body.theme-glass .lb-tab-bar {
+	--lb-tab-bar-bg: rgba(30, 30, 30, 0.72);
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	border-top: 0.5px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Glass tab bar popups */
+body.theme-glass .lb-tab-popup {
+	background: rgba(30, 30, 30, 0.85);
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	border: 0.5px solid rgba(255, 255, 255, 0.12);
+}

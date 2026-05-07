@@ -132,14 +132,15 @@ sub head
 	$headobj->param( TEMPLATETITLE => $template_title);
 	$headobj->param( LANG => $lang);
 	$headobj->param( HTMLHEAD => $main::htmlhead);
+	# Detect core vs plugin page for conditional jQuery Mobile loading
+	my $systemcall = defined $LoxBerry::System::lbpplugindir ? undef : 1;
+	$headobj->param( IS_CORE_PAGE => $systemcall ? 1 : 0 );
 
 	# Theme support
-	my $theme = $LoxBerry::System::lbtheme // 'classic';
-	$theme = 'classic' unless $theme =~ /^(classic|modern|dark)$/;
+	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
+	$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
 	$headobj->param( THEME_CLASS => "theme-$theme" );
-	$headobj->param( THEME_CLASSIC => ($theme eq 'classic' ? 1 : 0) );
-	$headobj->param( THEME_MODERN => ($theme eq 'modern' ? 1 : 0) );
-	$headobj->param( THEME_DARK => ($theme eq 'dark' ? 1 : 0) );
+	$headobj->param( THEME_FILE => "theme-$theme.css" );
 
 	print "Content-Type: text/html; charset=utf-8\n\n";
 	print $headobj->output();
@@ -360,6 +361,19 @@ sub pagestart
 	} 
 
 				
+	# Sidebar: add installed plugins list
+	my @plugins = LoxBerry::System::get_plugins();
+	my @sidebar_plugins;
+	foreach my $plugin (@plugins) {
+		push @sidebar_plugins, {
+			PLUGIN_TITLE => $plugin->{PLUGINDB_TITLE},
+			PLUGIN_URL => "/admin/plugins/" . $plugin->{PLUGINDB_FOLDER} . "/index.cgi",
+			PLUGIN_FOLDER => $plugin->{PLUGINDB_FOLDER},
+		};
+	}
+	$headerobj->param( SIDEBAR_PLUGINS => \@sidebar_plugins ) if @sidebar_plugins;
+	$headerobj->param( LBVERSION => $LoxBerry::System::lbversion );
+
 	print $headerobj->output();
 	undef $headerobj;
 }

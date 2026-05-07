@@ -14,35 +14,35 @@
 	<hr>
 	</center>
 	<!-- START container -->
-	<table data-role="table" data-mode="columntoggle" data-filter="true" data-input="#filterTable-input" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-text="<TMPL_VAR NETSHARES.BUTTON_SHOWCOLS>">
+	<table class="lb-table lb-table-responsive">
 		<thead>
-		<tr class="ui-bar-d">
-			<th data-priority="7"><TMPL_VAR USBSTORAGE.STORAGESTABLE_NO></th>
-			<th data-priority="1"><TMPL_VAR USBSTORAGE.STORAGESTABLE_DEVICENAME></th>
-			<th data-priority="1"><TMPL_VAR USBSTORAGE.STORAGESTABLE_BLOCKDEVICE></th>
-			<th data-priority="4"><TMPL_VAR USBSTORAGE.STORAGESTABLE_TYPE></th>
-			<th data-priority="2"><TMPL_VAR STORAGE.SIZE></th>
-			<th data-priority="2"><TMPL_VAR STORAGE.USED></th>
-			<th data-priority="7"><TMPL_VAR STORAGE.AVAILABLE></th>
-			<th data-priority="7"><TMPL_VAR STORAGE.USEDPERCENT></th>
-			<th data-priority="5"><TMPL_VAR USBSTORAGE.STORAGESTABLE_STATUS></th>
-			<th data-priority="6"><TMPL_VAR USBSTORAGE.STORAGESTABLE_ACTION></th>
+		<tr>
+			<th><TMPL_VAR USBSTORAGE.STORAGESTABLE_NO></th>
+			<th><TMPL_VAR USBSTORAGE.STORAGESTABLE_DEVICENAME></th>
+			<th><TMPL_VAR USBSTORAGE.STORAGESTABLE_BLOCKDEVICE></th>
+			<th><TMPL_VAR USBSTORAGE.STORAGESTABLE_TYPE></th>
+			<th><TMPL_VAR STORAGE.SIZE></th>
+			<th><TMPL_VAR STORAGE.USED></th>
+			<th><TMPL_VAR STORAGE.AVAILABLE></th>
+			<th><TMPL_VAR STORAGE.USEDPERCENT></th>
+			<th><TMPL_VAR USBSTORAGE.STORAGESTABLE_STATUS></th>
+			<th><TMPL_VAR USBSTORAGE.STORAGESTABLE_ACTION></th>
 		</tr>
 		</thead>
 		<tbody>
 		<TMPL_IF USBSTORAGES>
 			<TMPL_LOOP USBSTORAGES>
 			<tr>
-				<td><TMPL_VAR USBSTORAGE_NO></td>
-				<td><TMPL_VAR USBSTORAGE_DEVICE></td>
-				<td><TMPL_VAR USBSTORAGE_BLOCKDEVICE></td>
-				<td><TMPL_VAR USBSTORAGE_TYPE></td>
-				<td><TMPL_VAR USBSTORAGE_SIZE></td>
-				<td><TMPL_VAR USBSTORAGE_USED></td>
-				<td><TMPL_VAR USBSTORAGE_AVAILABLE></td>
-				<td><TMPL_VAR USBSTORAGE_CAPACITY></td>
-				<td><TMPL_VAR USBSTORAGE_STATE></td>
-				<td><a class="lb-btn lb-btn-sm lb-btn-icon" id="browse<TMPL_VAR USBSTORAGE_NO>" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/usb/<TMPL_VAR USBSTORAGE_DEVICE>" target="_self"><i class="pi pi-search"></i> <TMPL_VAR USBSTORAGE.BUTTON_BROWSE></a>
+				<td data-label="<TMPL_VAR USBSTORAGE.STORAGESTABLE_NO>"><TMPL_VAR USBSTORAGE_NO></td>
+				<td data-label="<TMPL_VAR USBSTORAGE.STORAGESTABLE_DEVICENAME>"><TMPL_VAR USBSTORAGE_DEVICE></td>
+				<td data-label="<TMPL_VAR USBSTORAGE.STORAGESTABLE_BLOCKDEVICE>"><TMPL_VAR USBSTORAGE_BLOCKDEVICE></td>
+				<td data-label="<TMPL_VAR USBSTORAGE.STORAGESTABLE_TYPE>"><TMPL_VAR USBSTORAGE_TYPE></td>
+				<td data-label="<TMPL_VAR STORAGE.SIZE>"><TMPL_VAR USBSTORAGE_SIZE></td>
+				<td data-label="<TMPL_VAR STORAGE.USED>"><TMPL_VAR USBSTORAGE_USED></td>
+				<td data-label="<TMPL_VAR STORAGE.AVAILABLE>"><TMPL_VAR USBSTORAGE_AVAILABLE></td>
+				<td data-label="<TMPL_VAR STORAGE.USEDPERCENT>"><TMPL_VAR USBSTORAGE_CAPACITY></td>
+				<td data-label="<TMPL_VAR USBSTORAGE.STORAGESTABLE_STATUS>"><TMPL_VAR USBSTORAGE_STATE></td>
+				<td data-label="<TMPL_VAR USBSTORAGE.STORAGESTABLE_ACTION>"><a class="lb-btn lb-btn-sm lb-btn-icon" id="browse<TMPL_VAR USBSTORAGE_NO>" href="/admin/system/tools/filemanager/filemanager.php?p=system/storage/usb/<TMPL_VAR USBSTORAGE_DEVICE>" target="_self"><i class="pi pi-search"></i> <TMPL_VAR USBSTORAGE.BUTTON_BROWSE></a>
 				<a class="lb-btn lb-btn-sm lb-btn-icon" id="format<TMPL_VAR USBSTORAGE_NO>" href="#"
                                         onClick="window.open('/admin/system/tools/format_device.cgi?d=<TMPL_VAR USBSTORAGE_BLOCKDEVICE>', 'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')"><i class="pi pi-times"></i> <TMPL_VAR USBSTORAGE.BUTTON_FORMAT></a>
 				</td>

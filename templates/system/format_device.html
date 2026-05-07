@@ -2,7 +2,7 @@
 <div id="securepin_block" style="margin: 0 auto; width:350px; display:none">
 	<TMPL_VAR SECUREPIN.ENTER_SECUREPIN>
 	<input name="securepin" id="securepin" type="text" onkeypress="return AddKeyPress(event, $('#check_securepin'));">
-	<button class="ui-btn ui-btn-icon-right ui-corner-all" id="check_securepin" data-inline="true"><TMPL_VAR COMMON.BUTTON_OK></button>
+	<button class="lb-btn lb-btn-primary lb-btn-sm" id="check_securepin" data-role="none"><TMPL_VAR COMMON.BUTTON_OK></button>
 	
 	<div class="hint" id="check_hint" style="padding: 5px 5px 5px 5px;">&nbsp;</div>
 	<br>
@@ -43,11 +43,9 @@
 // Set language
 $(function() {
 
-	$('select[name=devices]').attr('data-mini','true');
-	$('#btnformat').addClass('ui-disabled');
-	$('#devices').addClass('ui-disabled');
-	$('#devices').selectmenu('refresh');
-	$('#btnlogfile').addClass('ui-disabled');
+	$('#btnformat').addClass('lb-disabled');
+	$('#devices').addClass('lb-disabled');
+	$('#btnlogfile').addClass('lb-disabled');
 
 	// Check SecurePIN by ajax and load form data
 	$("#check_securepin").click(function(){
@@ -116,24 +114,24 @@ function checkformatstatus() {
 		} )
 	.fail(function( data ) {
 		console.log( "Error", data );
-		$('#btnlogfile').addClass('ui-disabled');
+		$('#btnlogfile').addClass('lb-disabled');
 	})
 	.done(function( data ) {
 		console.log( "checkformatstatus Success", data );
 		if( data.response && data.response != "" ) {
-			$('#btnformat').removeClass('ui-disabled');
-			$('#devices').removeClass('ui-disabled');
+			$('#btnformat').removeClass('lb-disabled');
+			$('#devices').removeClass('lb-disabled');
 			$('#devices').selectmenu('refresh');
 		} else {
-			$('#btnformat').addClass('ui-disabled');
-			$('#devices').addClass('ui-disabled');
+			$('#btnformat').addClass('lb-disabled');
+			$('#devices').addClass('lb-disabled');
 			$('#devices').selectmenu('refresh');
 		}
 		if( data.logfile && data.logfile != "" && $("#logfilerefresh").html() == "1" ) {
 			$("#logfile").html(data.logfile);
-			$('#btnlogfile').removeClass('ui-disabled');
+			$('#btnlogfile').removeClass('lb-disabled');
 		} else {
-			$('#btnlogfile').addClass('ui-disabled');
+			$('#btnlogfile').addClass('lb-disabled');
 		}
 	})
 	.always(function( data ) {
@@ -145,8 +143,8 @@ function checkformatstatus() {
 function format() {
 
 	console.log("Starting formating");
-	$('#btnformat').addClass('ui-disabled');
-	$('#devices').addClass('ui-disabled');
+	$('#btnformat').addClass('lb-disabled');
+	$('#devices').addClass('lb-disabled');
 	$('#devices').selectmenu('refresh');
 	$("#logfilerefresh").html('1');
 	$.ajax( { 

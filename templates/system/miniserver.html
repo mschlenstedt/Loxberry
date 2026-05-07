@@ -618,13 +618,13 @@ function is_enabled( checkVal )
 		<p><TMPL_VAR MINISERVER.SAVE_ERR_MSG_SEE_DETAILS>
 		</p>
 	</div>
-	<div data-role="collapsible">
-		<h4>Details</h4>
-		<div class="monospace"><TMPL_VAR ERRORDETAILS></div>
-		</div>
+	<details class="lb-collapsible">
+		<summary>Details</summary>
+		<div class="lb-collapsible-content monospace"><TMPL_VAR ERRORDETAILS></div>
+	</details>
 		<div style="text-align:center;">
 		<p>
-			<a id="btnback" href="javascript:history.back();" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete"><TMPL_VAR COMMON.BUTTON_BACK></a>
+			<a id="btnback" href="javascript:history.back();" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-arrow-left"></i> <TMPL_VAR COMMON.BUTTON_BACK></a>
 		</p>
 		</div>
 

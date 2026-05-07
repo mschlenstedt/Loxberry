@@ -6,27 +6,41 @@
 	<!-- THIS IS MULTI-LANG HEADER OF LOXBERRY::WEB -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3, user-scalable=yes">
+
+	<!-- jQuery Mobile theme CSS — always (provides base fonts, colors, form styles) -->
 	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.css" />
-	<!--<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.min.css">-->
+	<!-- jQuery Mobile structure + icons — only for plugins -->
+	<TMPL_UNLESS IS_CORE_PAGE>
 	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css" />
 	<link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css" />
+	</TMPL_UNLESS>
+
+	<!-- Design System CSS — always -->
 	<link rel="stylesheet" href="/system/css/design-tokens.css?v=3" />
 	<link rel="stylesheet" href="/system/css/main.css?v=3" />
 	<link rel="stylesheet" href="/system/css/components.css?v=3" />
-	<TMPL_IF THEME_CLASSIC><link rel="stylesheet" href="/system/css/theme-classic.css?v=2" /></TMPL_IF>
-	<TMPL_IF THEME_MODERN><link rel="stylesheet" href="/system/css/theme-modern.css?v=2" /></TMPL_IF>
-	<TMPL_IF THEME_DARK><link rel="stylesheet" href="/system/css/theme-dark.css?v=2" /></TMPL_IF>
+	<link rel="stylesheet" href="/system/css/<TMPL_VAR THEME_FILE>?v=3" />
 	<link rel="shortcut icon" href="/system/images/favicon.ico" />
 	<link rel="icon" type="image/png" href="/system/images/favicon-96x96.png" sizes="96x96" />
 	<link rel="icon" type="image/png" href="/system/images/favicon-32x32.png" sizes="32x32" />
 	<link rel="icon" type="image/png" href="/system/images/favicon-16x16.png" sizes="16x16" />
+	<link href="/system/css/primeicons.css" rel="stylesheet" />
+
+	<!-- jQuery Core — always -->
 	<script src="/system/scripts/jquery/jquery-1.12.4.min.js"></script>
+
+	<!-- jQuery Mobile JS — only for plugins -->
+	<TMPL_UNLESS IS_CORE_PAGE>
 	<script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
+	</TMPL_UNLESS>
+
+	<!-- Form validator — always (uses jQuery Core, not jQM) -->
 	<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
 	<script src="/system/scripts/setup.js"></script>
 	<script src="/system/scripts/validate.js"></script>
-        <link href="/system/css/primeicons.css" rel="stylesheet" />
 
+	<!-- jQuery Mobile config — only for plugins -->
+	<TMPL_UNLESS IS_CORE_PAGE>
 	<script>
 		// Disable JQUERY DOM Caching
 		$.mobile.page.prototype.options.domCache = false;
@@ -46,6 +60,90 @@
 		$.mobile.degradeInputs.time = true;
 		$.mobile.degradeInputs.number = true;
 		$.mobile.degradeInputs.range = false; // keep sliders
+
+		// Safe-guard: prevent errors when calling jQM widget methods on migrated elements
+		$.each(['checkboxradio', 'flipswitch', 'selectmenu'], function(i, widget) {
+			var _orig = $.fn[widget];
+			if (_orig) {
+				$.fn[widget] = function() {
+					try { return _orig.apply(this, arguments); } catch(e) { return this; }
+				};
+			}
+		});
+	</script>
+	</TMPL_UNLESS>
+
+	<!-- Core page config — shim jQM methods as no-ops so existing JS doesn't crash -->
+	<TMPL_IF IS_CORE_PAGE>
+	<script>
+		$.ajaxSetup({ cache: false });
+		// Shim jQM widget methods
+		$.each(['checkboxradio', 'flipswitch', 'selectmenu', 'popup', 'filterable',
+				'controlgroup', 'collapsible', 'button', 'textinput', 'slider',
+				'table', 'panel', 'tabs', 'toolbar', 'navbar'], function(i, widget) {
+			if (!$.fn[widget]) {
+				$.fn[widget] = function() { return this; };
+			}
+		});
+		// Shim $.mobile namespace
+		if (!$.mobile) {
+			$.mobile = {
+				ajaxEnabled: false,
+				degradeInputs: {},
+				page: { prototype: { options: { domCache: false } } }
+			};
+		}
+	</script>
+	</TMPL_IF>
+
+	<script>
+		// Sync lb-checked class on lb-btn-group labels
+		function syncLbBtnGroup($group) {
+			$group.find("label").removeClass("lb-checked");
+			$group.find("input[type='radio'], input[type='checkbox']").each(function() {
+				if (this.checked) {
+					var id = $(this).attr("id");
+					var $label;
+					if (id) {
+						$label = $group.find("label[for='" + id + "']");
+					}
+					// Fallback: find next sibling label
+					if (!$label || !$label.length) {
+						$label = $(this).next("label");
+					}
+					// Fallback: jQM wrappers (plugin pages)
+					if (!$label || !$label.length) {
+						$label = $(this).closest(".ui-radio, .ui-checkbox").find("label");
+					}
+					// Fallback: input is inside label (CGI.pm radio_group pattern)
+					if (!$label || !$label.length) {
+						$label = $(this).closest("label");
+					}
+					if ($label && $label.length) {
+						$label.addClass("lb-checked");
+					}
+				}
+			});
+		}
+		$(document).on("change click", ".lb-btn-group label, .lb-btn-group input", function() {
+			var $group = $(this).closest(".lb-btn-group");
+			setTimeout(function() { syncLbBtnGroup($group); }, 10);
+		});
+		// Initial sync on page load
+		function syncAllBtnGroups() {
+			$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
+		}
+		<TMPL_UNLESS IS_CORE_PAGE>
+		$(document).on("pagecreate", function() {
+			setTimeout(syncAllBtnGroups, 200);
+			setTimeout(syncAllBtnGroups, 800);
+		});
+		</TMPL_UNLESS>
+		$(document).ready(function() {
+			setTimeout(syncAllBtnGroups, 200);
+			setTimeout(syncAllBtnGroups, 800);
+			setTimeout(syncAllBtnGroups, 1500);
+		});
 	</script>
 	<script src="/system/scripts/browser.js"></script>
 	<!-- HTMLHEAD sent by the plugin author: -->

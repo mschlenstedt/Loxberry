@@ -240,14 +240,14 @@ function updateTables() {
 			}
 			else if( msg_too_long && expandTopicList[topic] !== true ) {
 				html += `<div class="topic_payload">${msg}`;
-				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">...</a>`;
+				html += `<a href="#" class="lb-btn lb-btn-sm topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">...</a>`;
 				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
 				html += `</div>`;
 				
 			}
 			else if ( msg_too_long ) {
 				html += `<div class="topic_payload">${msg_full}`;
-				html += `<a href="#" class="ui-mini ui-btn ui-shadow ui-icon-clipboard ui-btn-inline topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">^</a>`;
+				html += `<a href="#" class="lb-btn lb-btn-sm topicExpand" data-topic="${topic}" style="padding:1px;font-size:86%;height:12px;width:20px;">^</a>`;
 				html += `<TEXTAREA class="payloaddata" style="display:none">${msg_full}</TEXTAREA>`;
 				html += `</div>`;
 				

@@ -1,0 +1,41 @@
+/* LoxBerry Theme: Classic LoxBerry (Design 9)
+   Vertrautes Design, modernisiert. Flat, kein Shadow, 4px Radius.
+   Green header bar, gray sidebar, white content. */
+
+body.theme-classic-lb {
+  --lb-font: sans-serif;
+
+  --lb-bg: #f0f0f0;
+  --lb-text: #333;
+  --lb-text-secondary: #555;
+  --lb-text-muted: #aaa;
+  --lb-border-color: #ddd;
+
+  --lb-radius: 4px;
+  --lb-radius-sm: 2px;
+
+  --lb-card-bg: white;
+  --lb-card-border: 1px solid #ddd;
+  --lb-card-shadow: none;
+
+  --lb-btn-bg: #f0f0f0;
+  --lb-btn-text: #555;
+  --lb-btn-border: #ddd;
+  --lb-btn-radius: 4px;
+  --lb-btn-primary-bg: #6dac20;
+  --lb-btn-primary-text: white;
+  --lb-btn-primary-border: #5a9a1a;
+
+  --lb-input-bg: white;
+  --lb-input-border: #ddd;
+  --lb-input-text: #333;
+
+  --lb-toggle-bg: #ccc;
+
+  --lb-sidebar-bg: #3d3d3d;
+  --lb-sidebar-text: rgba(255,255,255,.7);
+  --lb-sidebar-active-bg: rgba(255,255,255,.1);
+  --lb-sidebar-active-text: #6dac20;
+  --lb-sidebar-border: rgba(255,255,255,.08);
+  --lb-sidebar-section: rgba(255,255,255,.4);
+}

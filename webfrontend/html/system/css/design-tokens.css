@@ -8,18 +8,61 @@
   --lb-primary-hover: #5a9418;
   --lb-primary-dark: #4a7a12;
 
-  --lb-gray-50: #fafafa;
-  --lb-gray-100: #f5f5f5;
-  --lb-gray-200: #e5e5e5;
-  --lb-gray-300: #d4d4d4;
-  --lb-gray-500: #737373;
-  --lb-gray-700: #404040;
-  --lb-gray-900: #171717;
-
   --lb-danger: #dc2626;
   --lb-info: #0a4586;
   --lb-success: #6dac20;
   --lb-warning: #ca8a04;
+
+  /* === Grays (used as fallbacks, themes override semantic tokens) === */
+  --lb-gray-50: #fafafa;
+  --lb-gray-100: #f5f5f5;
+  --lb-gray-200: #e5e5e5;
+  --lb-gray-300: #d4d4d4;
+  --lb-gray-400: #a3a3a3;
+  --lb-gray-500: #737373;
+  --lb-gray-600: #525252;
+  --lb-gray-700: #404040;
+  --lb-gray-900: #171717;
+
+  /* === Semantic Colors === */
+  --lb-bg: #f5f5f5;
+  --lb-text: #171717;
+  --lb-text-secondary: #404040;
+  --lb-text-muted: #737373;
+  --lb-border-color: #e5e5e5;
+
+  /* === Cards === */
+  --lb-card-bg: white;
+  --lb-card-border: 1px solid var(--lb-border-color);
+  --lb-card-shadow: 0 1px 3px rgba(0,0,0,0.06);
+
+  /* === Buttons === */
+  --lb-btn-bg: #e6e6e6;
+  --lb-btn-text: #000;
+  --lb-btn-border: #7e7e7e;
+  --lb-btn-radius: 4px;
+  --lb-btn-primary-bg: var(--lb-primary);
+  --lb-btn-primary-text: white;
+  --lb-btn-primary-border: var(--lb-primary-hover);
+
+  /* === Inputs === */
+  --lb-input-bg: #fff;
+  --lb-input-border: var(--lb-border-color);
+  --lb-input-text: var(--lb-text);
+
+  /* === Toggle === */
+  --lb-toggle-bg: #d4d4d4;
+
+  /* === Section Title === */
+  --lb-section-border: var(--lb-primary);
+
+  /* === Sidebar (defaults, overridden by themes) === */
+  --lb-sidebar-bg: #3d3d3d;
+  --lb-sidebar-text: rgba(255,255,255,.7);
+  --lb-sidebar-active-bg: rgba(255,255,255,.1);
+  --lb-sidebar-active-text: #6dac20;
+  --lb-sidebar-border: rgba(255,255,255,.08);
+  --lb-sidebar-section: rgba(255,255,255,.4);
 
   /* === Spacing === */
   --lb-space-xs: 4px;
@@ -37,24 +80,17 @@
 
   /* === Border === */
   --lb-radius: 4px;
-  --lb-border-color: var(--lb-gray-200);
+  --lb-radius-sm: 2px;
   --lb-border: 1px solid var(--lb-border-color);
-}
 
-/* === Dark Theme Token Overrides === */
-body.theme-dark {
-  --lb-gray-50: #1e1e2e;
-  --lb-gray-100: #252536;
-  --lb-gray-200: #333350;
-  --lb-gray-300: #444466;
-  --lb-gray-500: #888888;
-  --lb-gray-700: #c0c0c0;
-  --lb-gray-900: #f0f0f0;
-  --lb-border-color: var(--lb-gray-200);
-  --lb-input-bg: #333350;
-}
+  /* === Tab Bar (mobile) === */
+  --lb-tab-bar-bg: var(--lb-sidebar-bg);
+  --lb-tab-bar-text: var(--lb-sidebar-text);
+  --lb-tab-bar-active: var(--lb-sidebar-active-text);
 
-/* === Modern Theme Token Overrides === */
-body.theme-modern {
-  --lb-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  /* === Glass extras (only used by glass theme) === */
+  --lb-backdrop-blur: none;
+  --lb-glow-primary: none;
+  --lb-glow-danger: none;
+  --lb-glow-warning: none;
 }

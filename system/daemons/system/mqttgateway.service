@@ -1,0 +1,16 @@
+[Unit]
+Description=LoxBerry MQTT Gateway V2
+After=network-online.target mosquitto.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=loxberry
+ExecStart=/usr/bin/python3 /opt/loxberry/sbin/mqttgateway
+Restart=on-failure
+RestartSec=5
+WatchdogSec=60
+Environment=LBHOMEDIR=/opt/loxberry
+
+[Install]
+WantedBy=multi-user.target

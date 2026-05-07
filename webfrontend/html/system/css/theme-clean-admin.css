@@ -1,0 +1,41 @@
+/* LoxBerry Theme: Clean Admin (Design 1)
+   Professionell, dunkle Sidebar, heller Content.
+   Inspired by: Home Assistant, Grafana, Portainer. */
+
+body.theme-clean-admin {
+  --lb-font: system-ui, -apple-system, sans-serif;
+
+  --lb-bg: #f4f5f7;
+  --lb-text: #1a1a2e;
+  --lb-text-secondary: #555;
+  --lb-text-muted: #888;
+  --lb-border-color: #e5e5e5;
+
+  --lb-radius: 10px;
+  --lb-radius-sm: 6px;
+
+  --lb-card-bg: white;
+  --lb-card-border: 1px solid #e5e5e5;
+  --lb-card-shadow: 0 1px 3px rgba(0,0,0,.06);
+
+  --lb-btn-bg: #e6e6e6;
+  --lb-btn-text: #000;
+  --lb-btn-border: #7e7e7e;
+  --lb-btn-radius: 4px;
+  --lb-btn-primary-bg: #6dac20;
+  --lb-btn-primary-text: white;
+  --lb-btn-primary-border: #5a9a1a;
+
+  --lb-input-bg: white;
+  --lb-input-border: #ddd;
+  --lb-input-text: #333;
+
+  --lb-toggle-bg: #ccc;
+
+  --lb-sidebar-bg: #1a1a2e;
+  --lb-sidebar-text: rgba(255,255,255,.65);
+  --lb-sidebar-active-bg: rgba(109,172,32,.12);
+  --lb-sidebar-active-text: #6dac20;
+  --lb-sidebar-border: rgba(255,255,255,.08);
+  --lb-sidebar-section: rgba(255,255,255,.35);
+}

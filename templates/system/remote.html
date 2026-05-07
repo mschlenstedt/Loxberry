@@ -14,8 +14,8 @@
 	<form id="configform">
 
 	<div style="text-align: center">
-		<a href="#" id="btn_connect" style="width: 20%; background-color: rgba(67, 236, 48, 0.4)" onclick="connect(); return false;" class="ui-btn ui-icon-check ui-btn-icon-left ui-btn-inline ui-corner-all ui-disabled"><TMPL_VAR REMOTE.BUTTON_CONNECT></a>
-		<a href="#" id="btn_disconnect" style="width: 20%; background-color: rgba(255, 128, 128, 0.4)" onclick="disconnect(); return false;" class="ui-btn ui-icon-delete ui-btn-icon-left ui-btn-inline ui-corner-all ui-disabled"><TMPL_VAR REMOTE.BUTTON_DISCONNECT></a>
+		<a href="#" id="btn_connect" style="width: 20%; background-color: rgba(67, 236, 48, 0.4)" onclick="connect(); return false;" class="lb-btn lb-btn-icon lb-disabled"><i class="pi pi-check"></i> <TMPL_VAR REMOTE.BUTTON_CONNECT></a>
+		<a href="#" id="btn_disconnect" style="width: 20%; background-color: rgba(255, 128, 128, 0.4)" onclick="disconnect(); return false;" class="lb-btn lb-btn-icon lb-disabled"><i class="pi pi-times"></i> <TMPL_VAR REMOTE.BUTTON_DISCONNECT></a>
 	</div>
 
 	<div style="text-align: center">
@@ -58,9 +58,10 @@
 			<TMPL_VAR REMOTE.LABEL_AUTOCONNECT>
 		</div>
 		<div style="width: 20%">
-			<div data-role="fieldcontain" class="ui-field-contain">
-				<input type="checkbox" id="autoconnect" data-role="flipswitch" data-mini="true">
-			</div>
+			<label class="lb-toggle">
+				<input type="checkbox" id="autoconnect">
+				<span class="lb-toggle-slider"></span>
+			</label>
 		</div>
 		<div style="vertical-align: middle; line-height: 4.0; width: 60%">
 			<TMPL_VAR REMOTE.LABEL_AUTOCONNECT2>
@@ -70,8 +71,8 @@
 	<br><br><br>
 
 	<div style="text-align: center">
-		<a href="/admin/system/index.cgi?form=system" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-delete ui-corner-all"><TMPL_VAR "COMMON.BUTTON_CANCEL"></a>
-		<a href="#" onclick="saveForm(); return false;" class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-check ui-corner-all"><TMPL_VAR "COMMON.BUTTON_SAVE"></a>
+		<a href="/admin/system/index.cgi?form=system" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-times"></i> <TMPL_VAR "COMMON.BUTTON_CANCEL"></a>
+		<a href="#" onclick="saveForm(); return false;" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR "COMMON.BUTTON_SAVE"></a>
 	</div>
 
 	<br>
@@ -96,7 +97,7 @@
 
 		// Load config and defaults
 		$(function() {
-			//$("#configform").addClass('ui-disabled');
+			//$("#configform").addClass('lb-disabled');
 			connectionstatus();
 			getconfig();
 			interval = window.setInterval(function(){ connectionstatus(); }, 3000);
@@ -140,16 +141,16 @@
 			})
 			.done(function( data ) {
 				console.log( "getconfig Success", data );
-				$("#autoconnect").prop( "checked", JSON.parse(data.Remote.Autoconnect) ).flipswitch('refresh');
-				//$("#configform").removeClass('ui-disabled');
+				$("#autoconnect").prop( "checked", JSON.parse(data.Remote.Autoconnect) ).trigger("change");
+				//$("#configform").removeClass('lb-disabled');
 			});
 		}
 
 		// Start Connection
 		function connect() {
 			startstop_running = true;
-			$("#btn_disconnect").addClass('ui-disabled');
-			$("#btn_connect").addClass('ui-disabled');
+			$("#btn_disconnect").addClass('lb-disabled');
+			$("#btn_connect").addClass('lb-disabled');
 			$("#connecthint").attr("style", "color:blue").html("<TMPL_VAR "COMMON.MSG_PLEASEWAIT">");
 			$.ajax({ 
 				url:  './ajax/ajax-remote.cgi',
@@ -175,8 +176,8 @@
 		// Stop Connection
 		function disconnect() {
 			startstop_running = true;
-			$("#btn_disconnect").addClass('ui-disabled');
-			$("#btn_connect").addClass('ui-disabled');
+			$("#btn_disconnect").addClass('lb-disabled');
+			$("#btn_connect").addClass('lb-disabled');
 			$("#connecthint").attr("style", "color:blue").html("<TMPL_VAR "COMMON.MSG_PLEASEWAIT">");
 			$.ajax({ 
 				url:  './ajax/ajax-remote.cgi',
@@ -222,14 +223,14 @@
 				if( startstop_running == true ) return;
 				if (data.online * 1 == 0) {
 					$("#statuswindow").css('background-color', 'rgba(240, 240, 240, 0.4)'); // green
-					$("#btn_connect").removeClass('ui-disabled');
-					$("#btn_disconnect").addClass('ui-disabled');
+					$("#btn_connect").removeClass('lb-disabled');
+					$("#btn_disconnect").addClass('lb-disabled');
 					$("#remoteurl").html('');
 					$("#status").html('<TMPL_VAR REMOTE.MSG_OFFLINE>');
 				} else {
 					$("#statuswindow").css('background-color', 'rgba(205, 255, 200, 0.4)'); // green
-					$("#btn_connect").addClass('ui-disabled');
-					$("#btn_disconnect").removeClass('ui-disabled');
+					$("#btn_connect").addClass('lb-disabled');
+					$("#btn_disconnect").removeClass('lb-disabled');
 					$("#remoteurl").html(data.remoteurl);
 					$("#status").html('<TMPL_VAR REMOTE.MSG_ONLINE>');
 					}

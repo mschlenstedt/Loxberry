@@ -1,102 +1,87 @@
 <!-- pageend.html START -->
-				</div>
 			</div>
-			<a id="btnhomefooter" href="/admin/system/index.cgi">
-			<div id="footerLBIcon" style="width:100%;height:90px; padding:0px; background-image: url('/system/images/icons/main_myloxberry.svg'); background-repeat: no-repeat; background-position: center center;"></div>
-			</a>
-		</div>
-		<!-- /content -->
-		
-		<!-- Popup: reboot.force -->
-		<div data-role="popup" id="popupRebootForce" data-overlay-theme="a" data-dismissible="true" style="min-width:600px;min-height:300px;" data-theme="a" class="ui-corner-all">
-			<div data-role="header" >
-				<h1 class="ui-title" style="text-align: center;"><TMPL_VAR POWER.FORCEREBOOT_HEADER></h1>
-			</div>
-			<div role="main" id="popupRebootForceContent" style="padding: 20px 20px;text-align:center;">
-				<!-- <div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; background-image: url('../../system/images/reboot_required_big.svg');"></div> -->
-				<img  src="/system/images/reboot_required_big.svg">
-				<p><b><TMPL_VAR POWER.FORCEREBOOT_CONTENT></b></p>
-				<p id="popupRebootForceReason"></p>
-				<p><TMPL_VAR POWER.FORCEREBOOT_APOLOGY></p>
-				<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/power.cgi"><i class="pi pi-power-off"></i> <TMPL_VAR HEADER.PANEL_REBOOT></a>
-				
-			</div>
-		</div>
-		
-		<!-- footer -->
-		<div id="footerLBStatusbar" style="display:none;z-index:1000;overflow:hidden;background-color:#6dac20;position:fixed;bottom:0;height:30px;width:100%;padding:6px;text-align:center;color:white;" class="ui-bar-a"></div>
 
-<SCRIPT>
+			<!-- Footer -->
+			<footer class="lb-footer">
+				<a id="btnhomefooter" href="/admin/system/index.cgi">
+					<img src="/system/images/icons/main_myloxberry.svg" class="lb-footer-logo" alt="LoxBerry">
+				</a>
+			</footer>
+		</div>
+		<!-- /lb-main -->
+	</div>
+	<!-- /lb-layout -->
+
+	<!-- Reboot Force Dialog -->
+	<dialog class="lb-modal" id="popupRebootForce">
+		<div class="lb-modal-header">
+			<h2><TMPL_VAR POWER.FORCEREBOOT_HEADER></h2>
+		</div>
+		<div class="lb-modal-content">
+			<img src="/system/images/reboot_required_big.svg" style="width:60px;">
+			<p><b><TMPL_VAR POWER.FORCEREBOOT_CONTENT></b></p>
+			<p id="popupRebootForceReason"></p>
+			<p><TMPL_VAR POWER.FORCEREBOOT_APOLOGY></p>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/power.cgi"><i class="pi pi-power-off"></i> <TMPL_VAR HEADER.PANEL_REBOOT></a>
+		</div>
+	</dialog>
+
+	<!-- Status Bar -->
+	<div id="footerLBStatusbar" style="display:none;z-index:1000;overflow:hidden;background-color:#6dac20;position:fixed;bottom:0;height:30px;width:100%;padding:6px;text-align:center;color:white;"></div>
+
+<script>
 $( document ).ready(function() {
-	const mainiconsRefreshSec = 13; // Cache lifetime in seconds
+	const mainiconsRefreshSec = 13;
 	mainicons_get();
 	var refresh_main_icons_interval_timer = setInterval(mainicons_get, mainiconsRefreshSec*1000);
-	
-	function mainicons_get() 
-	{	
+
+	function mainicons_get() {
 		let mainiconsTimestamp = 0;
-		
 		try {
 			let mainiconsStore = sessionStorage.getItem("mainicons");
 			data = JSON.parse(mainiconsStore);
 			mainiconsTimestamp = data.ts;
-		} catch(error) {
-			data = new Object();
-		}
-		
+		} catch(error) { data = new Object(); }
 		if( (mainiconsTimestamp+mainiconsRefreshSec*1000) < Date.now() ) {
 			fetch('/admin/system/ajax/ajax-main-icons-handler.php')
 			.then( response => response.json())
-			.then( data => { 
-				console.log("data", data); 
-				mainicons_setStorage(data);
-			});
-		} else {
-			mainicons_setcss(data);
-		}
+			.then( data => { mainicons_setStorage(data); });
+		} else { mainicons_setcss(data); }
 	}
-	
+
 	function mainicons_setStorage(data) {
 		data.ts = Date.now();
 		sessionStorage.setItem("mainicons", JSON.stringify(data));
 		mainicons_setcss(data);
 	}
-	
+
 	function mainicons_setcss(data) {
-		// Reboot required
 		if( data.reboot_required == 1 ) {
 			$("#btnpower").addClass("headerbutton_red");
 		} else {
 			$("#btnpower").removeClass("headerbutton_red");
 		}
-		// Reboot forced
 		if (data.reboot_force == 1 && data.update_running == 0) {
 			if(data.reboot_force_reason.length > 0) {
 				$("#popupRebootForceReason").html(data.reboot_force_reason);
 			}
 			next_reboot_force_popup_time = sessionStorage.getItem("loxberry_reboot_force");
-			if(next_reboot_force_popup_time === "null") 
+			if(next_reboot_force_popup_time === "null")
 				next_reboot_force_popup_time = 0;
 			if( next_reboot_force_popup_time < Date.now()) {
-				$("#popupRebootForce").popup("open");
+				document.getElementById('popupRebootForce').showModal();
 				sessionStorage.setItem("loxberry_reboot_force", Date.now()+2*60*1000);
 			}
 		}
-		// Update running
 		if( data.update_running == 1) {
-			// $("#footerLBIcon").hide();
 			$("#footerLBStatusbar").fadeIn().text("<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+data.which.toString()+")");
 		} else {
-			// $("#footerLBIcon").show();
 			$("#footerLBStatusbar").fadeOut();
 		}
 	}
 });
+</script>
 
-
-</SCRIPT>
-		<!-- /footer -->
-	</div>
-<!-- /page -->
 <div id="lang" style="display: none"><TMPL_VAR LANG></div>
+</div><!-- /data-role page -->
 <!-- pageend.html END -->

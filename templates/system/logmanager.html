@@ -6,24 +6,24 @@
 
 <TMPL_IF FORM_LEGACYLOG>
 	<TMPL_LOOP PLUGINS>
-		<div data-role='collapsible' id='coll_package_<TMPL_VAR PLUGINDB_FOLDER>' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-			<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_<TMPL_VAR PLUGINDB_FOLDER>'><TMPL_VAR PLUGINDB_TITLE> <span style='font-size:80%;'>
+		<details class="lb-collapsible" id='coll_package_<TMPL_VAR PLUGINDB_FOLDER>'>
+			<summary class="lb-section-title" id='package_<TMPL_VAR PLUGINDB_FOLDER>'><TMPL_VAR PLUGINDB_TITLE> <span style='font-size:80%;'>
 				<TMPL_IF ISSYSTEM>
 				<TMPL_ELSE>(Plugin Log)
 				</TMPL_IF>
-				</span></h2>
-			
-			<table style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
+				</span></summary>
+
+			<table class="lb-table" style='width:100%;'>
 				<TMPL_LOOP FILES>
 				<tr>
 					<td><TMPL_VAR fileshortname></td>
 					<td><TMPL_VAR filemtime></td>
-					<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR filename_esc>&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
+					<td><a class="lb-btn lb-btn-sm lb-btn-icon" href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR filename_esc>&header=html&format=template&only=once' target='_blank'><i class="pi pi-external-link"></i> Logfile</a></td>
 					<td><TMPL_VAR filesize></td>
 				</tr>
 				</TMPL_LOOP>
 			</table>
-		</div>
+		</details>
 	</TMPL_LOOP>
 	<p><TMPL_VAR LOGMANAGER.LEGACY_INTRO></p>
 </TMPL_IF>
@@ -32,26 +32,31 @@
 
 $( document ).ready(function() {
     restoreWindow();
-	$(".ui-collapsible").on("collapsiblecollapse", function(event, ui) {console.log("Collaps", $(this).attr('id'));storeWindow($(this).attr('id'), "collapse");});
-	$(".ui-collapsible").on("collapsibleexpand", function(event, ui) {console.log("Expand", $(this).attr('id'));storeWindow($(this).attr('id'), "expand");});
+	$(".lb-collapsible").on("toggle", function() {
+		var state = this.open ? "expand" : "collapse";
+		console.log(state, $(this).attr('id'));
+		storeWindow($(this).attr('id'), state);
+	});
 });
 
-function storeWindow (name, pos) 
+function storeWindow (name, pos)
 {
 	sessionStorage.setItem("coll_"+name, pos);
 }
 
-function restoreWindow() 
+function restoreWindow()
 {
-	$.each( $(".ui-collapsible"), function ( index, value ) {
-		var pos = sessionStorage.getItem("coll_"+$(value).attr('id'));
-		if(pos === "expand" || pos === "collapse") {
-			$(value).collapsible( pos );
+	$(".lb-collapsible").each(function () {
+		var pos = sessionStorage.getItem("coll_"+$(this).attr('id'));
+		if (pos === "expand") {
+			this.open = true;
+		} else if (pos === "collapse") {
+			this.open = false;
 		} else {
-			sessionStorage.removeItem("coll_"+$(value).attr('id'));
+			sessionStorage.removeItem("coll_"+$(this).attr('id'));
 		}
-		console.log($(value).attr('id'), pos);	}
-	);
+		console.log($(this).attr('id'), pos);
+	});
 }
 
 </script>

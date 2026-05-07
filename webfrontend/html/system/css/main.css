@@ -465,8 +465,7 @@ a:link.nolinkstyle
 /* PANEL END */
 }
 
-.ui-slider-track,
-.ui-flipswitch.ui-bar-inherit {
+.ui-slider-track {
 	background-color: #EEEEEE !important;
 	color:black !important;
 	text-shadow: none !important;
@@ -476,39 +475,11 @@ a:link.nolinkstyle
 	z-index:2;
 }
 
-.ui-slider-bg.ui-btn-active,
-.ui-flipswitch-active.ui-bar-inherit {
+.ui-slider-bg.ui-btn-active {
 	background-color: #6dac20 !important;
 	color:white !important;
 }
 
-/*  Left system navigation menu START */
-ul.lb-systemmenu li
-{
-	text-shadow:none;
-	padding: 7px 20px 7px 20px !important;
-	color: white !important;
-	font-size: 13px;
-	font-weight: bold;
-	
-}
-ul.lb-systemmenu a
-{
-	color: #e6e6e6 !important;
-	text-decoration:none;
-}
-ul.lb-systemmenu li:hover {
-	background-color: #a0df53;
-	color: black !important;
-}
-ul.lb-systemmenu li:hover a {
-	color: black !important;
-}
-
-ul.lb-systemmenu li.lb-nonhover {
-	pointer-events: none !important;
-}
-/*  Left system navigation menu END */
 
 /* === Mobile Optimierung === */
 /* Overflow global verhindern */
@@ -528,12 +499,12 @@ ul.lb-systemmenu li.lb-nonhover {
 }
 
 /* Tabellen-Optimierung nur für Content-Tabellen */
-.page_content table:not(.ui-controlgroup-controls):not([data-role="table"]) {
+.page_content table:not([data-role="table"]) {
 	width: 100%;
 }
 
-.page_content table:not(.ui-controlgroup-controls) td,
-.page_content table:not(.ui-controlgroup-controls) th {
+.page_content table td,
+.page_content table th {
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 }
