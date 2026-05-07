@@ -2763,6 +2763,16 @@ $(function () {
 	}
 
 	function doSave() {
+		// Sync form fields not covered by the change handler (protocol radio, udpport)
+		if (cfg.Main != null) {
+			var protocol = $('input[name="protocol"]:checked').val();
+			if (protocol) {
+				cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
+				cfg.Main.use_udp  = (protocol === "udp"  || protocol === "both") ? 1 : 0;
+			}
+			var udpport = parseInt($("#basic_udpport").val());
+			if (udpport) cfg.Main.udpport = udpport;
+		}
 		$("#saveapply").attr("disabled", true);
 		var p = $.ajax( {
 				type: 'POST',
