@@ -204,6 +204,7 @@
 						self.data_save_error = false;
 						self.data_saved = true;
 						self.data_changed = false;
+						setTimeout(function() { self.data_saved = false; }, 4000);
 					}
 				});
 				// Update legacy mqtt.json

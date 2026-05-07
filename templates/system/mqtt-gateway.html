@@ -2755,6 +2755,13 @@ $(function () {
 	});
 
 
+	var _saveOkTimer = null;
+	function _showSaveOk() {
+		$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
+		clearTimeout(_saveOkTimer);
+		_saveOkTimer = setTimeout(function() { $("#savemessages").html(""); }, 4000);
+	}
+
 	function doSave() {
 		$("#saveapply").attr("disabled", true);
 		var p = $.ajax( {
@@ -2765,7 +2772,7 @@ $(function () {
 				data: JSON.stringify(cfg)
 			} )
 		.done(function() {
-			$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
+			_showSaveOk();
 		})
 		.fail(function() {
 			$("#savemessages").attr("style", "color:red").html(_lang_save.saveError);
@@ -2784,7 +2791,7 @@ $(function () {
 					data: JSON.stringify( { Udpinport : $("#udpinport").val() } )
 				} )
 			.done(function() {
-				$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
+				_showSaveOk();
 			})
 			.fail(function() {
 				$("#savemessages").attr("style", "color:red").html(_lang_save.saveError);
