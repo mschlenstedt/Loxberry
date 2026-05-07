@@ -1324,6 +1324,7 @@ $(function() {
     <div id="v2-udp-chips" class="mqttgw-chip-row">
       <span class="mqttgw-chip mqttgw-chip-active" data-f="all"><TMPL_VAR MQTT.V2_CHIP_ALL></span>
       <span class="mqttgw-chip" data-f="ok"><img src="../../system/images/icon-check.png" height="12"> OK</span>
+      <span class="mqttgw-chip" data-f="error"><img src="../../system/images/icon-locked.png" height="12"> <TMPL_VAR MQTT.V2_FILTER_ERROR></span>
       <span class="mqttgw-chip" data-f="new"><img src="../../system/images/icon-question.png" height="12"> <TMPL_VAR MQTT.V2_CHIP_NOT_SENT></span>
     </div>
     <div class="mqttgw-expand-btns">
@@ -1333,7 +1334,7 @@ $(function() {
   </div>
   <div class="mqttgw-traffic-colheader mqttgw-traffic-row mqttgw-traffic-row-udp">
     <span></span>
-    <span><TMPL_VAR MQTT.V2_COL_VI></span>
+    <span><TMPL_VAR MQTT.V2_COL_CMD></span>
     <span><TMPL_VAR MQTT.V2_COL_TOPIC></span>
     <span><TMPL_VAR MQTT.V2_COL_VALUE></span>
     <span><TMPL_VAR MQTT.V2_COL_MS></span>
@@ -1528,7 +1529,15 @@ $(function () {
             : '&mdash;';
           html += '<div class="' + rowCls + '">';
           html += '<img src="' + _iconImg[sc] + '" class="mqttgw-traffic-icon" title="' + esc(_titles[sc]) + '" width="14" height="14">';
-          html += '<span class="mqttgw-traffic-name" title="' + esc(r.vi) + '">' + esc(r.vi) + '</span>';
+          if (isHttp) {
+            html += '<span class="mqttgw-traffic-name" title="' + esc(r.vi) + '">' + esc(r.vi) + '</span>';
+          } else {
+            var cmd = 'MQTT:\\i' + r.topic + '=\\i\\v';
+            html += '<span class="mqttgw-traffic-cmd">';
+            html += '<span class="mqttgw-traffic-cmd-text" title="' + esc(cmd) + '">' + esc(cmd) + '</span>';
+            html += '<button class="mqttgw-copy-btn" type="button" data-copy="' + esc(cmd) + '">Copy</button>';
+            html += '</span>';
+          }
           html += '<span class="mqttgw-traffic-topic" title="' + esc(r.topic) + (r.jp ? ' &bull; ' + esc(r.jp) : '') + '">' + esc(r.topic) + (r.jp ? ' <em>&bull;&nbsp;' + esc(r.jp) + '</em>' : '') + '</span>';
           html += '<span class="mqttgw-traffic-value">' + valDisp + '</span>';
           html += '<span class="mqttgw-traffic-ms-label">' + ms + '</span>';
@@ -1589,6 +1598,29 @@ $(function () {
     $.post('ajax/ajax-mqtt.php', {ajax: 'reconnect', udpinport: udpinport});
     v2St = {};
     renderBoth();
+  });
+
+  $(document).on('click', '.mqttgw-copy-btn', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var txt = $(this).data('copy');
+    var btn = this;
+    function confirm() {
+      $(btn).text('✓');
+      setTimeout(function () { $(btn).text('Copy'); }, 1200);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(confirm);
+    } else {
+      var el = document.createElement('textarea');
+      el.value = txt;
+      el.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      confirm();
+    }
   });
 
   loadSubs();

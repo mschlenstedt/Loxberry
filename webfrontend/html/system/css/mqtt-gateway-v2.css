@@ -876,6 +876,39 @@ body.theme-dark .mqttgw-topic-ms {
   line-height: 1.4;
 }
 
+.mqttgw-traffic-cmd {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mqttgw-traffic-cmd-text {
+  font-family: var(--lb-font-mono);
+  font-size: 11px;
+  color: var(--lb-gray-800);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.mqttgw-copy-btn {
+  font-size: 10px;
+  padding: 1px 5px;
+  border: 1px solid var(--lb-gray-300, #ccc);
+  border-radius: 3px;
+  background: var(--lb-gray-50, #f8f8f8);
+  color: var(--lb-gray-600, #555);
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.mqttgw-copy-btn:hover {
+  background: var(--lb-gray-100, #eee);
+}
+
 .mqttgw-traffic-topic {
   font-family: var(--lb-font);
   font-size: 11px;
