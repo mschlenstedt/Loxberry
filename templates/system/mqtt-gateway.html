@@ -906,7 +906,7 @@ $(function() {
             if (rest.charAt(0) === '/') rest = rest.substring(1);
             var slashIdx = rest.indexOf('/');
             if (slashIdx === -1) {
-                tree.topics.push({ t: t, leafName: rest });
+                tree.topics.push({ t: t, leafName: rest || t.topic });
             } else {
                 var seg = rest.substring(0, slashIdx);
                 if (!tree.children[seg]) tree.children[seg] = [];
