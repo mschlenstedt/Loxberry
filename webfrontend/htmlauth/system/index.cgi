@@ -145,8 +145,8 @@ sub mainmenu {
 	$navbar{2}{URL} = "/admin/system/index.cgi?form=system";
 
 	if (!$R::form || $R::form ne "system") {
-		# Get Plugins from plugin database
-		@plugins = LoxBerry::System::get_plugins();
+		# Get Plugins from plugin database, sorted alphabetically by title (case-insensitive)
+		@plugins = sort { lc($a->{PLUGINDB_TITLE}) cmp lc($b->{PLUGINDB_TITLE}) } LoxBerry::System::get_plugins();
 		$maintemplate->param('PLUGINS' => \@plugins);
 		$helptemplate = "help_index_plugins.html";
 
@@ -163,9 +163,9 @@ sub mainmenu {
 								# 'HOUR' => $hour
 		# );
 		
-		$maintemplate->param('WIDGETS' => [
-			{ 
-				WIDGET_TITLE => $SL{'HEADER.PANEL_MYLOXBERRY'}, 
+		my @widgets = (
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_MYLOXBERRY'},
 				WIDGET_ICON => "/system/images/icons/main_myloxberry.svg",
 				WIDGET_CGI => "/admin/system/myloxberry.cgi",
 				NOTIFY_PACKAGE => "myloxberry",
@@ -295,7 +295,10 @@ sub mainmenu {
 				WIDGET_CGI => "/admin/system/donate.cgi",
 				NOTIFY_PACKAGE => "donate",
 			},
-		]);
+		);
+		# Sort widgets alphabetically by localized title (case-insensitive)
+		@widgets = sort { lc($a->{WIDGET_TITLE} // '') cmp lc($b->{WIDGET_TITLE} // '') } @widgets;
+		$maintemplate->param('WIDGETS' => \@widgets);
 		
 	}
 

@@ -254,9 +254,14 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 	font-weight: bold;
 }
 
-a:link.nolinkstyle
+a.nolinkstyle,
+a.nolinkstyle:link,
+a.nolinkstyle:visited,
+a.nolinkstyle:hover,
+a.nolinkstyle:active
 {
-  text-decoration: none;;
+  text-decoration: none;
+  color: inherit;
 }
 
 .widgetblock {

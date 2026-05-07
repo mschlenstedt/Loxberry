@@ -18,9 +18,9 @@ body.theme-classic-lb {
   --lb-card-border: 1px solid #ddd;
   --lb-card-shadow: none;
 
-  --lb-btn-bg: #f0f0f0;
-  --lb-btn-text: #555;
-  --lb-btn-border: #ddd;
+  --lb-btn-bg: #ffffff;
+  --lb-btn-text: #444;
+  --lb-btn-border: #c0c0c0;
   --lb-btn-radius: 4px;
   --lb-btn-primary-bg: #6dac20;
   --lb-btn-primary-text: white;

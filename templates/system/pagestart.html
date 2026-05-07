@@ -4,7 +4,7 @@
 	<!-- Sidebar -->
 	<aside class="lb-sidebar" id="lb-sidebar">
 		<div class="lb-sidebar-header">
-			<div class="lb-sidebar-logo">L</div>
+			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
 			<div>
 				<div class="lb-sidebar-brand"><span>Lox</span>Berry</div>
 				<div class="lb-sidebar-version"><TMPL_VAR LBVERSION></div>
@@ -18,28 +18,28 @@
 			<a class="lb-sidebar-link" href="<TMPL_VAR PLUGIN_URL>"><span class="lb-sidebar-name"><TMPL_VAR PLUGIN_TITLE></span><div class="lb-sidebar-status"></div></a>
 			</TMPL_LOOP>
 			</TMPL_IF>
-			<!-- System links -->
+			<!-- System links — Home first, rest alphabetical by German label -->
 			<div class="lb-sidebar-section"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
 			<a class="lb-sidebar-link" href="/admin/system/index.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_HOME></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/myloxberry.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MYLOXBERRY></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/admin.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_ADMIN></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/miniserver.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MINISERVER></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/network.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETWORK></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/plugininstall.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/updates.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_UPDATES></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/backup.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_BACKUP></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/tools/filemanager/filemanager.php"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_FILEMANAGER></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/logmanager.cgi"><span class="lb-sidebar-name">Log Manager</span></a>
 			<a class="lb-sidebar-link" href="/admin/system/services.php"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_SERVICES></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/power.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REBOOT></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/mailserver.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MAILSERVER></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/translate.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_TRANSLATE></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/tools/filemanager/filemanager.php"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_FILEMANAGER></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/netshares.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETSHARES></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/usbstorage.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_USBSTORAGE></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/remote.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REMOTE></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/myloxberry.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MYLOXBERRY></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/miniserver.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MINISERVER></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/mqtt.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MQTT></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/backup.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_BACKUP></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/tools/terminal" target="_blank"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_TERMINAL></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/network.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETWORK></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/netshares.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETSHARES></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/power.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REBOOT></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/plugininstall.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/remote.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REMOTE></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/donate.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_DONATE></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/tools/terminal" target="_blank"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_TERMINAL></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/translate.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_TRANSLATE></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/updates.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_UPDATES></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/usbstorage.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_USBSTORAGE></span></a>
 		</nav>
 		<div class="lb-sidebar-footer">
 			<div class="lb-sidebar-status"></div>
@@ -324,21 +324,30 @@
 
 		<!-- Vue Navbar CSS -->
 		<style>
+#vuenavbar {
+	width: 100%;
+	box-sizing: border-box;
+}
 .vuenavbarcontainer {
 	border-top: 1px solid var(--lb-border-color);
 	display:flex;
 	flex-direction:row;
 	flex-wrap:nowrap;
-	justify-content: center;
-	align-items: center;
+	justify-content: flex-start;
+	align-items: stretch;
 	background-color: var(--lb-sidebar-bg);
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
 	scrollbar-width: none;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 .vuenavbarcontainer::-webkit-scrollbar { display: none; }
 .vuenavbarelement {
-	flex: 1;
+	flex: 1 1 0;
+	min-width: 0;
 	text-shadow:none;
 	padding: 10px 20px;
 	color: var(--lb-sidebar-text) !important;
@@ -348,7 +357,6 @@
 	text-decoration: none;
 	min-height:18px;
 	white-space: nowrap;
-	min-width: fit-content;
 	font-family: var(--lb-font);
 }
 @media (max-width: 768px) {

@@ -569,16 +569,10 @@ a.lb-btn-primary:hover {
 	border-bottom: 1px solid var(--lb-sidebar-border);
 }
 .lb-sidebar-logo {
-	width: 36px;
 	height: 36px;
-	background: var(--lb-primary);
-	border-radius: var(--lb-radius-sm);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: 800;
-	font-size: 15px;
-	color: white;
+	width: auto;
+	max-width: 56px;
+	object-fit: contain;
 	flex-shrink: 0;
 }
 .lb-sidebar-brand {
@@ -676,6 +670,11 @@ a.lb-sidebar-link.active:visited {
 	inset: 0;
 	background: rgba(0,0,0,.5);
 	z-index: 999;
+}
+/* Sidebar toggle: hidden — desktop has permanent sidebar, mobile uses tab-bar.
+   !important required to beat .lb-header-btn { display: flex !important; } */
+.lb-sidebar-toggle.lb-header-btn {
+	display: none !important;
 }
 .lb-sidebar-toggle:hover {
 	opacity: 1;
@@ -858,7 +857,7 @@ a.lb-sidebar-link.active:visited {
 	}
 	.lb-main {
 		margin-left: 0;
-		padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+		padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
 	}
 	.lb-sidebar {
 		transform: translateX(-250px);

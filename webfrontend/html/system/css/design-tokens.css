@@ -2,6 +2,13 @@
    All design values as CSS Variables.
    Themes override these variables — no structural changes needed. */
 
+/* Global reset — kill browser default 8px body margin so fixed sidebar
+   (left:0) aligns with main content (margin-left:250px). */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 :root {
   /* === Colors === */
   --lb-primary: #6dac20;
