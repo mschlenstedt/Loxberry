@@ -598,6 +598,8 @@ button.lb-btn-danger:hover {
 	min-height: 100vh;
 	overflow-x: hidden;
 	background: var(--lb-bg);
+	transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+	            padding-bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .lb-content {
 	flex: 1;
@@ -623,6 +625,7 @@ button.lb-btn-danger:hover {
 	color: var(--lb-sidebar-text);
 	display: flex;
 	flex-direction: column;
+	transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 	overflow-y: auto;
 	z-index: 1000;
 	scrollbar-width: thin;
@@ -821,6 +824,7 @@ a.lb-sidebar-link.active:visited {
 	margin: 0 !important;
 	line-height: 1 !important;
 	box-sizing: border-box;
+	cursor: pointer;
 	opacity: 0.85;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -989,8 +993,7 @@ a.lb-sidebar-link.active:visited {
 		padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
 	}
 	.lb-sidebar {
-		transform: translateX(-250px);
-		transition: transform 0.3s ease;
+		transform: translateX(-100%);
 	}
 	.lb-sidebar.open {
 		transform: translateX(0);
@@ -1015,7 +1018,7 @@ a.lb-sidebar-link.active:visited {
    ============================================================ */
 
 .lb-tab-bar {
-	display: none;
+	display: flex;
 	position: fixed;
 	bottom: 0;
 	left: 0;
@@ -1027,6 +1030,14 @@ a.lb-sidebar-link.active:visited {
 	padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
 	background: var(--lb-tab-bar-bg);
 	border-top: 1px solid var(--lb-border-color);
+	/* Hidden by default on desktop; slid in via transform when nav-mode-tabbar
+	   is set or on mobile. Keeping display:flex (vs none) is what enables the
+	   transform/opacity animation. */
+	transform: translateY(100%);
+	opacity: 0;
+	pointer-events: none;
+	transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+	            opacity 0.35s ease;
 }
 
 .lb-tab-bar-item,
@@ -1067,17 +1078,30 @@ button.lb-tab-bar-item {
 }
 
 @media (max-width: 768px) {
-	.lb-tab-bar { display: flex; }
+	.lb-tab-bar {
+		transform: translateY(0);
+		opacity: 1;
+		pointer-events: auto;
+	}
 }
 
-/* Desktop nav-mode toggle: user can switch to tab-bar layout via header button.
+/* Desktop nav-mode toggle: user switches to tab-bar layout via header button.
    On mobile (<=768px) the tab-bar is always shown via the media query above —
-   the body class only affects the desktop breakpoint. */
-body.nav-mode-tabbar .lb-tab-bar { display: flex; }
-body.nav-mode-tabbar .lb-sidebar { display: none; }
+   the body class only affects the desktop breakpoint. The transitions on
+   .lb-sidebar / .lb-main / .lb-tab-bar carry the animation; on initial page
+   load no transitions fire because the class is already set before first
+   paint (head.html inline script), so the layout renders in its final state. */
+body.nav-mode-tabbar .lb-sidebar {
+	transform: translateX(-100%);
+}
 body.nav-mode-tabbar .lb-main {
 	margin-left: 0;
 	padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+body.nav-mode-tabbar .lb-tab-bar {
+	transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
 }
 
 
@@ -1085,97 +1109,100 @@ body.nav-mode-tabbar .lb-main {
    8. Tab Bar Popups (Mobile)
    ============================================================ */
 
-.lb-tab-popup,
 .lb-tab-popup-backdrop {
 	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,.4);
+	z-index: 1099;
 }
 
-@media (max-width: 768px) {
-	.lb-tab-popup-backdrop {
-		display: none;
-		position: fixed;
-		inset: 0;
-		background: rgba(0,0,0,.4);
-		z-index: 1099;
-	}
-	.lb-tab-popup-backdrop.open {
-		display: block;
-	}
+.lb-tab-popup {
+	display: none;
+	position: fixed;
+	bottom: 64px;
+	bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+	left: 8px; /* fallback; overridden inline by positionTabPopup() in pagestart.html */
+	width: 320px;
+	max-width: calc(100vw - 16px);
+	max-height: calc(100vh - 80px - env(safe-area-inset-bottom, 0px));
+	overflow-y: auto;
+	z-index: 1101;
+	background: var(--lb-sidebar-bg);
+	border-radius: 12px;
+	box-shadow: 0 -4px 24px rgba(0,0,0,.3);
+	transform: translateY(16px);
+	opacity: 0;
+	transition: transform 0.2s ease, opacity 0.2s ease;
+}
 
-	.lb-tab-popup {
-		display: none;
-		position: fixed;
-		bottom: 64px;
-		bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-		right: var(--lb-space-md);
-		left: var(--lb-space-md);
-		max-height: 60vh;
-		overflow-y: auto;
-		z-index: 1101;
-		background: var(--lb-sidebar-bg);
-		border-radius: 12px;
-		box-shadow: 0 -4px 24px rgba(0,0,0,.3);
-		transform: translateY(16px);
-		opacity: 0;
-		transition: transform 0.2s ease, opacity 0.2s ease;
-	}
+.lb-tab-popup-header {
+	padding: 12px 16px 6px;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1.2px;
+	color: var(--lb-sidebar-section);
+	font-family: var(--lb-font);
+}
+
+.lb-tab-popup-list {
+	padding: 4px 0 8px;
+}
+
+.lb-tab-popup-item,
+a.lb-tab-popup-item,
+a.lb-tab-popup-item:visited,
+a.lb-tab-popup-item:link {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 9px 16px;
+	color: var(--lb-sidebar-text) !important;
+	text-decoration: none !important;
+	font-size: 13px;
+	font-weight: 500;
+	font-family: var(--lb-font);
+	transition: background 0.15s ease;
+}
+.lb-tab-popup-item:hover {
+	background: var(--lb-sidebar-active-bg);
+}
+.lb-tab-popup-item i {
+	font-size: 17px;
+	width: 22px;
+	text-align: center;
+	color: var(--lb-sidebar-text);
+	opacity: 0.7;
+}
+
+.lb-tab-popup-item-muted,
+a.lb-tab-popup-item-muted {
+	border-top: 1px solid var(--lb-sidebar-border);
+	margin-top: 4px;
+	padding-top: 12px;
+}
+.lb-tab-popup-item-muted span,
+.lb-tab-popup-item-muted i {
+	opacity: 0.5;
+}
+
+/* Open state — applies both on mobile and on desktop nav-mode-tabbar */
+@media (max-width: 768px) {
+	.lb-tab-popup-backdrop.open { display: block; }
 	.lb-tab-popup.open {
 		display: block;
 		transform: translateY(0);
 		opacity: 1;
 	}
-
-	.lb-tab-popup-header {
-		padding: 12px 16px 6px;
-		font-size: 10px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 1.2px;
-		color: var(--lb-sidebar-section);
-		font-family: var(--lb-font);
-	}
-
-	.lb-tab-popup-list {
-		padding: 4px 0 8px;
-	}
-
-	.lb-tab-popup-item,
-	a.lb-tab-popup-item,
-	a.lb-tab-popup-item:visited,
-	a.lb-tab-popup-item:link {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 9px 16px;
-		color: var(--lb-sidebar-text) !important;
-		text-decoration: none !important;
-		font-size: 13px;
-		font-weight: 500;
-		font-family: var(--lb-font);
-		transition: background 0.15s ease;
-	}
-	.lb-tab-popup-item:hover {
-		background: var(--lb-sidebar-active-bg);
-	}
-	.lb-tab-popup-item i {
-		font-size: 17px;
-		width: 22px;
-		text-align: center;
-		color: var(--lb-sidebar-text);
-		opacity: 0.7;
-	}
-
-	.lb-tab-popup-item-muted,
-	a.lb-tab-popup-item-muted {
-		border-top: 1px solid var(--lb-sidebar-border);
-		margin-top: 4px;
-		padding-top: 12px;
-	}
-	.lb-tab-popup-item-muted span,
-	.lb-tab-popup-item-muted i {
-		opacity: 0.5;
-	}
 }
+body.nav-mode-tabbar .lb-tab-popup-backdrop.open { display: block; }
+body.nav-mode-tabbar .lb-tab-popup.open {
+	display: block;
+	transform: translateY(0);
+	opacity: 1;
+}
+
 
 
 /* ============================================================

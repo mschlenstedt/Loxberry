@@ -279,6 +279,21 @@
 		var activeTabPopup = null;
 		var activeTabBtn = null;
 		var urlActiveTab = null;
+
+		// Center popup horizontally over its trigger button, clamped to viewport.
+		function positionTabPopup(popup, btn) {
+			if (!popup || !btn) return;
+			var margin = 8;
+			var btnRect = btn.getBoundingClientRect();
+			var btnCenter = btnRect.left + btnRect.width / 2;
+			var popupWidth = popup.offsetWidth || 320;
+			var leftPos = btnCenter - popupWidth / 2;
+			var maxLeft = window.innerWidth - popupWidth - margin;
+			if (leftPos < margin) leftPos = margin;
+			if (leftPos > maxLeft) leftPos = maxLeft;
+			popup.style.left = leftPos + 'px';
+		}
+
 		function toggleTabPopup(name) {
 			var popup = document.getElementById('lb-tab-popup-' + name);
 			var backdrop = document.getElementById('lb-tab-popup-backdrop');
@@ -299,16 +314,19 @@
 			if (urlActiveTab) {
 				urlActiveTab.classList.remove('active');
 			}
-			popup.classList.add('open');
-			backdrop.classList.add('open');
-			// Find the button that triggered this popup
+			// Find the button that triggered this popup (used for positioning + active state)
+			var triggerBtn = null;
 			var btns = document.querySelectorAll('.lb-tab-bar-item');
 			btns.forEach(function(btn) {
 				if (btn.getAttribute('onclick') === "toggleTabPopup('" + name + "')") {
 					btn.classList.add('active');
 					activeTabBtn = btn;
+					triggerBtn = btn;
 				}
 			});
+			popup.classList.add('open');
+			backdrop.classList.add('open');
+			positionTabPopup(popup, triggerBtn);
 			activeTabPopup = name;
 		}
 		function closeTabPopup() {
