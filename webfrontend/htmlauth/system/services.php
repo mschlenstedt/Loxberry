@@ -202,7 +202,7 @@ function form() {
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td width="20%">
-				<input data-role="flipswitch" type="checkbox" id="ssdpenabled" name="ssdpenabled" <?=$checkedssdp;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+				<label class="lb-toggle"><input type="checkbox" id="ssdpenabled" name="ssdpenabled" <?=$checkedssdp;?> value="enabled"><span class="lb-toggle-slider"></span></label>
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td  class="hint">
@@ -224,7 +224,7 @@ function form() {
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td width="20%">
-				<input data-role="flipswitch" type="checkbox" id="ftpenabled" name="ftpenabled" <?=$checkedftp;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+				<label class="lb-toggle"><input type="checkbox" id="ftpenabled" name="ftpenabled" <?=$checkedftp;?> value="enabled"><span class="lb-toggle-slider"></span></label>
 				
 			</td>
 			<td width="2%">&nbsp;</td>
@@ -261,7 +261,7 @@ function form() {
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td width="20%">
-				<input data-role="flipswitch" type="checkbox" id="serialenabled" name="serialenabled" <?=$checkedserial;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+				<label class="lb-toggle"><input type="checkbox" id="serialenabled" name="serialenabled" <?=$checkedserial;?> value="enabled"><span class="lb-toggle-slider"></span></label>
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td  class="hint">
@@ -277,7 +277,7 @@ function form() {
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td width="20%">
-				<input data-role="flipswitch" type="checkbox" id="consoleenabled" name="consoleenabled" <?=$checkedconsole;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+				<label class="lb-toggle"><input type="checkbox" id="consoleenabled" name="consoleenabled" <?=$checkedconsole;?> value="enabled"><span class="lb-toggle-slider"></span></label>
 			</td>
 			<td width="2%">&nbsp;</td>
 			<td  class="hint">
@@ -289,8 +289,8 @@ function form() {
 	</form>
 	<br><br><br>
 	<div style="text-align:center;">
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><?=$SL['COMMON.BUTTON_SAVE'];?></button>
+			<a id="btncancel" class="lb-btn lb-btn-icon" href="<?=LBWeb::$lbsystempage;?>"><i class="pi pi-times"></i> <?=$SL['COMMON.BUTTON_CANCEL'];?></a>
+			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-icon"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_SAVE'];?></button>
 	</div>
 
 
@@ -349,9 +349,9 @@ function form() {
 		</div>
 		<div class="lb_flex-item">
 			<?php if (isset($_SERVER['HTTPS'])): ?>
-				<input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="disabled" disabled="disabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+				<label class="lb-toggle"><input type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="disabled" disabled="disabled"><span class="lb-toggle-slider"></span></label>
 			<?php else: ?>
-			<input data-role="flipswitch" type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="enabled" data-on-text = "<?=$SL['COMMON.BUTTON_ON'];?>" data-off-text = "<?=$SL['COMMON.BUTTON_OFF'];?>">
+			<label class="lb-toggle"><input type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="enabled"><span class="lb-toggle-slider"></span></label>
 			<?php endif; ?>
 		</div>
 		<div class="lb_flex-item-help">
@@ -389,7 +389,7 @@ function form() {
 			<?=$SL['SERVICES.DOWNLOAD_CACERT'];?>
 		</div>
 		<div class="lb_flex-item">
-			<a data-role="button" data-mini="true" mimetype="application/x-x509-ca-cert" href="/system/cacert.cer">cacert.cer</a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" mimetype="application/x-x509-ca-cert" href="/system/cacert.cer"><i class="pi pi-download"></i> cacert.cer</a>
 		</div>
 		<div class="lb_flex-item-help hint">
 			<?=$SL['SERVICES.HINT_DOWNLOAD_CACERT'];?>
@@ -405,10 +405,10 @@ function form() {
 	</form>
 	<br>
 	<div style="text-align:center;">
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<?=LBWeb::$lbsystempage;?>"><?=$SL['COMMON.BUTTON_CANCEL'];?></a>
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><?=$SL['COMMON.BUTTON_SAVE'];?></button>
+			<a id="btncancel" class="lb-btn lb-btn-icon" href="<?=LBWeb::$lbsystempage;?>"><i class="pi pi-times"></i> <?=$SL['COMMON.BUTTON_CANCEL'];?></a>
+			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-icon"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_SAVE'];?></button>
 			<pre> </pre>
-			<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/apache2/error.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Apache Log</a>
+			<a id="btnlogs" class="lb-btn lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/apache2/error.log&header=html&format=template" target="_blank"><i class="pi pi-arrow-down"></i> Apache Log</a>
 			<!-- 
 			<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/lighttpd/error.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Webserver Log</a>
 			--> 
@@ -719,7 +719,7 @@ function save()
 				<tr>
 					<td align="center">
 						<p>
-							<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<?=$href;?>"><?=$SL['COMMON.BUTTON_OK'];?></a>
+							<a id="btnok" class="lb-btn lb-btn-primary lb-btn-icon" href="<?=$href;?>"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_OK'];?></a>
 							<h2 id="moment" style="display: none"><?=$SL['COMMON.MSG_PLEASEWAIT'];?></h2>
 						</p>
 					</td>

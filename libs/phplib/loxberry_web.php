@@ -51,6 +51,9 @@ class LBWeb
 		$headobj->param('TEMPLATETITLE', $fulltitle);
 		$headobj->param('LANG', $lang);
 		$headobj->param('HTMLHEAD', $htmlhead);
+		// Core (system) vs plugin page: skip jQuery Mobile JS for system pages
+		global $lbpplugindir;
+		$headobj->param('IS_CORE_PAGE', empty($lbpplugindir) ? 1 : 0);
 
 		// Theme support — read Base.Theme from general.json (mirrors Web.pm logic)
 		LBSystem::read_generaljson();
@@ -191,8 +194,8 @@ EOT;
 			$pageobj->param ( 'NAVBARJS', "");
 		}
 
-		// Sidebar: render plugin list as HTML (PHP LBTemplate doesn't
-		// support TMPL_LOOP, so we hand it pre-rendered HTML).
+		// Render the sidebar plugin list as HTML in code: LBTemplate (PHP)
+		// does not support TMPL_LOOP, so the template uses a single TMPL_VAR.
 		$sidebar_html = '';
 		$tabbar_html = '';
 		$installed_plugins = LBSystem::get_plugins();
@@ -200,7 +203,8 @@ EOT;
 			usort($installed_plugins, function($a, $b) {
 				return strcasecmp($a['PLUGINDB_TITLE'], $b['PLUGINDB_TITLE']);
 			});
-			$sidebar_html = '<div class="lb-sidebar-section">Meine Plugins</div>' . "\n";
+			$section_label = isset($syslang['HEADER.PANEL_MYPLUGINS']) ? $syslang['HEADER.PANEL_MYPLUGINS'] : 'Meine Plugins';
+			$sidebar_html = '<div class="lb-sidebar-section">' . htmlspecialchars($section_label, ENT_QUOTES, 'UTF-8') . '</div>' . "\n";
 			foreach ($installed_plugins as $plugin) {
 				$title = htmlspecialchars($plugin['PLUGINDB_TITLE'], ENT_QUOTES, 'UTF-8');
 				$url   = htmlspecialchars("/admin/plugins/" . $plugin['PLUGINDB_FOLDER'] . "/", ENT_QUOTES, 'UTF-8');
@@ -644,24 +648,49 @@ class LBTemplate
 			}
 	}
 	
-	function replaceTmplVar() 
+	function replaceTmplVar()
 	{
-		foreach ($this->valuearray as $tmplvar => $value) {
-			// error_log("Key: $tmplvar Value: $value");
+		// TMPL_IF / TMPL_UNLESS first so var substitutions inside the kept
+		// branch still get processed afterwards. Match HTML::Template's
+		// truthiness: defined and not "0" / "" / 0 / undef.
+		$values = $this->valuearray ?: array();
+		$truthy = function($name) use ($values) {
+			if (!array_key_exists($name, $values)) return false;
+			$v = $values[$name];
+			if ($v === null || $v === false || $v === '' || $v === '0' || $v === 0) return false;
+			return true;
+		};
+		// TMPL_IF ... [TMPL_ELSE ...] /TMPL_IF (non-greedy, dotall, no nesting)
+		$this->template = preg_replace_callback(
+			'/<TMPL_IF\s+(\w+)>(.*?)(?:<TMPL_ELSE>(.*?))?<\/TMPL_IF>/is',
+			function($m) use ($truthy) {
+				return $truthy($m[1]) ? $m[2] : (isset($m[3]) ? $m[3] : '');
+			},
+			$this->template
+		);
+		// TMPL_UNLESS ... [TMPL_ELSE ...] /TMPL_UNLESS (inverse)
+		$this->template = preg_replace_callback(
+			'/<TMPL_UNLESS\s+(\w+)>(.*?)(?:<TMPL_ELSE>(.*?))?<\/TMPL_UNLESS>/is',
+			function($m) use ($truthy) {
+				return $truthy($m[1]) ? (isset($m[3]) ? $m[3] : '') : $m[2];
+			},
+			$this->template
+		);
+		foreach ($values as $tmplvar => $value) {
 			$this->template = str_replace("<TMPL_VAR $tmplvar>", $value, $this->template);
 		}
 	}
-	
+
 	public function output()
 	{
-	$this->replaceTmplVar();
-	echo $this->template;	
+		$this->replaceTmplVar();
+		echo $this->template;
 	}
-	
+
 	public function outputString()
 	{
-	$this->replaceTmplVar();
-	return $this->template;	
+		$this->replaceTmplVar();
+		return $this->template;
 	}
  }
 

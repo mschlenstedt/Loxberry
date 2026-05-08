@@ -150,7 +150,7 @@ sub form_log
 		}
 		if (! defined($currname) or ($currname ne $log->{NAME})) {
 			print "\t<h4>$SL{'LOGMANAGER.LOG_GROUP'} '" . ucfirst($log->{NAME}) . "'</h4>\n";
-			print "\t<table class='lb-table' style='width:100%; padding:8px; border-collapse: collapse;'>\n";
+			print "\t<table class='lb-table'>\n";
 		}
 		
 		print "\t\t<tr>\n";

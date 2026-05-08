@@ -192,8 +192,14 @@ label.lb-toggle.ui-btn::after {
 	cursor: pointer;
 	flex-shrink: 0;
 }
-.lb-content label:has(> input[type="checkbox"]),
-.lb-content label:has(> input[type="radio"]) {
+/* Override the above for the hidden checkbox inside .lb-toggle — the
+   slider span draws the visible UI; the input must stay sized 0×0. */
+.lb-content .lb-toggle input[type="checkbox"] {
+	width: 0;
+	height: 0;
+	margin: 0;
+}
+.lb-content label:not(.lb-toggle):has(> input[type="checkbox"], > input[type="radio"]) {
 	cursor: pointer;
 	display: inline-flex;
 	align-items: center;
@@ -202,8 +208,7 @@ label.lb-toggle.ui-btn::after {
 /* Standalone option rows in form layouts: full-width box with border so
    they read as a switchable element rather than mid-paragraph text.
    Skip .lb-toggle (real toggle switches have their own fixed sizing). */
-.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]),
-.lb-form-field > label:not(.lb-toggle):has(> input[type="radio"]) {
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"], > input[type="radio"]) {
 	display: flex;
 	align-items: center;
 	width: 100%;
@@ -214,13 +219,11 @@ label.lb-toggle.ui-btn::after {
 	transition: border-color 0.15s ease, background 0.15s ease;
 	box-sizing: border-box;
 }
-.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]:checked),
-.lb-form-field > label:not(.lb-toggle):has(> input[type="radio"]:checked) {
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]:checked, > input[type="radio"]:checked) {
 	border-color: var(--lb-primary);
 	background: rgba(109, 172, 32, 0.06);
 }
-.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]):hover,
-.lb-form-field > label:not(.lb-toggle):has(> input[type="radio"]):hover {
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"], > input[type="radio"]):hover {
 	border-color: var(--lb-text-secondary);
 }
 
@@ -283,21 +286,17 @@ button.lb-btn {
 	box-sizing: border-box;
 	transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.lb-btn.lb-btn-icon,
-a.lb-btn.lb-btn-icon,
-button.lb-btn.lb-btn-icon {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	vertical-align: middle;
+/* Specificity must match a.lb-btn:link / button.lb-btn (0,2,1) so hover
+   wins by source order on anchor and button elements. */
+.lb-btn:hover,
+a.lb-btn:hover,
+button.lb-btn:hover {
+	background: var(--lb-btn-hover-bg);
+	border-color: var(--lb-text-secondary);
 }
-.lb-btn:not(.lb-btn-primary):not(.lb-btn-danger):hover,
-a.lb-btn:not(.lb-btn-primary):not(.lb-btn-danger):hover,
-button.lb-btn:not(.lb-btn-primary):not(.lb-btn-danger):hover {
-	background: var(--lb-btn-hover-bg) !important;
-	border-color: var(--lb-text-secondary) !important;
-}
-.lb-btn:not(.lb-btn-primary):not(.lb-btn-danger):active {
+.lb-btn:active,
+a.lb-btn:active,
+button.lb-btn:active {
 	background: var(--lb-btn-hover-bg);
 	filter: brightness(0.96);
 }
@@ -318,9 +317,9 @@ input[type="submit"].lb-btn-primary,
 .lb-btn-primary:hover,
 a.lb-btn-primary:hover,
 button.lb-btn-primary:hover {
-	background: var(--lb-primary-hover) !important;
-	border-color: var(--lb-primary-dark) !important;
-	color: var(--lb-btn-primary-text) !important;
+	background: var(--lb-primary-hover);
+	border-color: var(--lb-primary-dark);
+	color: var(--lb-btn-primary-text);
 }
 .lb-btn-danger:hover,
 a.lb-btn-danger:hover,
@@ -343,6 +342,7 @@ button.lb-btn-danger:hover {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
+	vertical-align: middle;
 }
 .lb-btn-icon .pi {
 	font-size: 0.9em;
@@ -828,6 +828,30 @@ a.lb-sidebar-link.active:visited {
 .lb-header-btn.headerbutton_blue {
 	background: var(--lb-info);
 	color: white;
+}
+.lb-header-btn {
+	position: relative;
+}
+.lb-header-btn-badge {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	border-radius: 10px;
+	background: var(--lb-danger);
+	color: white !important;
+	font-size: 11px !important;
+	font-weight: 700;
+	font-family: var(--lb-font);
+	line-height: 18px;
+	text-align: center;
+	box-shadow: 0 0 0 2px var(--lb-card-bg);
+	box-sizing: border-box;
+}
+.lb-header-btn-badge.lb-badge-blue {
+	background: var(--lb-info);
 }
 
 

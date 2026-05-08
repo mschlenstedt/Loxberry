@@ -187,7 +187,7 @@
 			<h1 class="lb-header-title"><TMPL_VAR TEMPLATETITLE></h1>
 			<div class="lb-header-actions">
 				<div id="update_alert" style="display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
-				<a id="btnnotifies" href="/admin/system/tools/showallnotifications.cgi" class="lb-header-btn pi pi-bell"></a>
+				<a id="btnnotifies" href="/admin/system/tools/showallnotifications.cgi" class="lb-header-btn pi pi-bell"><span class="lb-header-btn-badge" style="display:none"></span></a>
 				<a id="btninfo" href="#" class="lb-header-btn pi pi-question-circle" onclick="toggleHelpPanel(); return false;"></a>
 				<a id="btnpower" href="/admin/system/power.cgi" class="lb-header-btn pi pi-power-off"></a>
 			</div>
@@ -527,12 +527,14 @@
 			btnnotifies_setcss(notifyCount);
 		}
 		function btnnotifies_setcss(data) {
-			if( data.errorCount > 0 ) {
-				$("#btnnotifies").addClass("headerbutton_red").removeClass("headerbutton_blue");
-			} else if(data.infoCount > 0 ) {
-				$("#btnnotifies").removeClass("headerbutton_red").addClass("headerbutton_blue");
+			var total = (parseInt(data.errorCount, 10) || 0) + (parseInt(data.infoCount, 10) || 0);
+			var $badge = $("#btnnotifies .lb-header-btn-badge");
+			if (total > 0) {
+				$badge.text(total).show();
+				$badge.toggleClass("lb-badge-red", data.errorCount > 0);
+				$badge.toggleClass("lb-badge-blue", !(data.errorCount > 0));
 			} else {
-				$("#btnnotifies").removeClass("headerbutton_red").removeClass("headerbutton_blue");
+				$badge.hide();
 			}
 		}
 		</script>
