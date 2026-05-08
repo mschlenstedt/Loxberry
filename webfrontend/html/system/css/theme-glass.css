@@ -19,6 +19,7 @@ body.theme-glass {
   --lb-card-shadow: none;
 
   --lb-btn-bg: rgba(255,255,255,.06);
+  --lb-btn-hover-bg: rgba(255,255,255,.14);
   --lb-btn-text: rgba(255,255,255,.4);
   --lb-btn-border: rgba(255,255,255,.08);
   --lb-btn-radius: 10px;

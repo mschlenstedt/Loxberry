@@ -361,17 +361,24 @@ sub pagestart
 	} 
 
 				
-	# Sidebar: add installed plugins list, sorted alphabetically by title (case-insensitive)
+	# Sidebar: render plugin list as HTML strings (so the same template works
+	# with the PHP LBTemplate, which only supports <TMPL_VAR>, not LOOP).
 	my @plugins = sort { lc($a->{PLUGINDB_TITLE}) cmp lc($b->{PLUGINDB_TITLE}) } LoxBerry::System::get_plugins();
-	my @sidebar_plugins;
+	my $sidebar_html = '';
+	my $tabbar_html  = '';
 	foreach my $plugin (@plugins) {
-		push @sidebar_plugins, {
-			PLUGIN_TITLE => $plugin->{PLUGINDB_TITLE},
-			PLUGIN_URL => "/admin/plugins/" . $plugin->{PLUGINDB_FOLDER} . "/",
-			PLUGIN_FOLDER => $plugin->{PLUGINDB_FOLDER},
-		};
+		my $title = $plugin->{PLUGINDB_TITLE};
+		my $url   = "/admin/plugins/" . $plugin->{PLUGINDB_FOLDER} . "/";
+		$title =~ s/&/&amp;/g; $title =~ s/</&lt;/g; $title =~ s/>/&gt;/g; $title =~ s/"/&quot;/g;
+		$url   =~ s/&/&amp;/g; $url   =~ s/</&lt;/g; $url   =~ s/>/&gt;/g; $url   =~ s/"/&quot;/g;
+		$sidebar_html .= qq{<a class="lb-sidebar-link" href="$url"><span class="lb-sidebar-name">$title</span><div class="lb-sidebar-status"></div></a>\n};
+		$tabbar_html  .= qq{<a class="lb-tab-popup-item" href="$url"><i class="pi pi-box"></i><span>$title</span></a>\n};
 	}
-	$headerobj->param( SIDEBAR_PLUGINS => \@sidebar_plugins ) if @sidebar_plugins;
+	if ($sidebar_html ne '') {
+		$sidebar_html = qq{<div class="lb-sidebar-section">Meine Plugins</div>\n} . $sidebar_html;
+	}
+	$headerobj->param( SIDEBAR_PLUGINS_HTML        => $sidebar_html );
+	$headerobj->param( SIDEBAR_PLUGINS_TABBAR_HTML => $tabbar_html );
 	$headerobj->param( LBVERSION => $LoxBerry::System::lbversion );
 
 	print $headerobj->output();

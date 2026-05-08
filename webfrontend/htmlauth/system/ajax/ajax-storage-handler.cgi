@@ -107,7 +107,7 @@ sub init_html
 			</div>
 		</div>
 		<div id="$R::formid-browse" style="width:30px;position:relative;top:-18px;margin:10px;$R::show_browse">
-	    	<a href="#" id="$R::formid-browse-button" class="ui-btn ui-icon-eye ui-btn-icon-notext ui-corner-all ui-state-disabled"></a>
+	    	<a href="#" id="$R::formid-browse-button" class="lb-btn lb-btn-sm lb-disabled" title="Browse"><i class="pi pi-eye"></i></a>
 		</div>
 	</div>
 	<input type="hidden" name="$R::formid" id="$R::formid" value="$R::currentpath">
@@ -146,9 +146,9 @@ var ${R::formid}_storage = [""];
 		\$("#$R::formid").val(${R::formid}_storage[select.val()] + folder);
 		
 		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
-			\$("#$R::formid-browse-button").removeClass("ui-state-disabled");
+			\$("#$R::formid-browse-button").removeClass("ui-state-disabled lb-disabled");
 		else
-			\$("#$R::formid-browse-button").addClass("ui-state-disabled");
+			\$("#$R::formid-browse-button").addClass("ui-state-disabled lb-disabled");
 		
 		\$("#$R::formid").trigger("change");
 	});
@@ -237,14 +237,18 @@ function refresh_storage_$R::formid(currentpath) {
 			}
 		}
 		
+		// Enable controls via standard DOM (works on core pages without jQM),
+		// then call jQM widget methods (which are no-ops on core pages via the shim).
+		select.prop('disabled', false);
+		\$("#$R::formid-folder").prop('disabled', false);
 		select.selectmenu('enable');
 		select.selectmenu('refresh', true);
 		\$("#$R::formid-folder").textinput({ disabled: false });
 		
 		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
-			\$("#$R::formid-browse-button").removeClass("ui-state-disabled");
+			\$("#$R::formid-browse-button").removeClass("ui-state-disabled lb-disabled");
 		else
-			\$("#$R::formid-browse-button").addClass("ui-state-disabled");
+			\$("#$R::formid-browse-button").addClass("ui-state-disabled lb-disabled");
 		
 		
 	})
@@ -267,9 +271,9 @@ function refresh_storage_$R::formid(currentpath) {
 			\$("#$R::formid").val("");
 		
 		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
-			\$("#$R::formid-browse-button").removeClass("ui-state-disabled");
+			\$("#$R::formid-browse-button").removeClass("ui-state-disabled lb-disabled");
 		else
-			\$("#$R::formid-browse-button").addClass("ui-state-disabled");
+			\$("#$R::formid-browse-button").addClass("ui-state-disabled lb-disabled");
 		
 		\$("#$R::formid").trigger("change");
 		

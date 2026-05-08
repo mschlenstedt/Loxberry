@@ -5,7 +5,7 @@
 body.theme-classic-lb {
   --lb-font: sans-serif;
 
-  --lb-bg: #f0f0f0;
+  --lb-bg: #f7f7f7;
   --lb-text: #333;
   --lb-text-secondary: #555;
   --lb-text-muted: #aaa;
@@ -19,6 +19,7 @@ body.theme-classic-lb {
   --lb-card-shadow: none;
 
   --lb-btn-bg: #ffffff;
+  --lb-btn-hover-bg: #dcdcdc;
   --lb-btn-text: #444;
   --lb-btn-border: #c0c0c0;
   --lb-btn-radius: 4px;

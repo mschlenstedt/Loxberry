@@ -10,8 +10,6 @@
 
 /* Reset jQM button styling when lb-btn is used */
 .ui-btn.lb-btn,
-.ui-btn.lb-btn:hover,
-.ui-btn.lb-btn:active,
 .ui-btn.lb-btn:focus {
 	background-image: none !important;
 	background: var(--lb-btn-bg) !important;
@@ -24,6 +22,15 @@
 	width: auto !important;
 	margin: 0 !important;
 	padding: 0 !important;
+}
+.ui-btn.lb-btn:hover,
+.ui-btn.lb-btn:active {
+	background-image: none !important;
+	background: var(--lb-btn-hover-bg) !important;
+	color: var(--lb-btn-text) !important;
+	border: 1px solid var(--lb-text-secondary) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
 }
 
 /* Reset jQM primary button styling */
@@ -175,6 +182,48 @@ label.lb-toggle.ui-btn::after {
 	background-position: right 12px center;
 	padding-right: 36px;
 }
+.lb-content input[type="checkbox"],
+.lb-content input[type="radio"] {
+	width: 18px;
+	height: 18px;
+	margin: 0 8px 0 0;
+	vertical-align: middle;
+	accent-color: var(--lb-primary);
+	cursor: pointer;
+	flex-shrink: 0;
+}
+.lb-content label:has(> input[type="checkbox"]),
+.lb-content label:has(> input[type="radio"]) {
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+}
+
+/* Standalone option rows in form layouts: full-width box with border so
+   they read as a switchable element rather than mid-paragraph text.
+   Skip .lb-toggle (real toggle switches have their own fixed sizing). */
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]),
+.lb-form-field > label:not(.lb-toggle):has(> input[type="radio"]) {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid var(--lb-border-color);
+	border-radius: var(--lb-radius);
+	background: var(--lb-input-bg);
+	transition: border-color 0.15s ease, background 0.15s ease;
+	box-sizing: border-box;
+}
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]:checked),
+.lb-form-field > label:not(.lb-toggle):has(> input[type="radio"]:checked) {
+	border-color: var(--lb-primary);
+	background: rgba(109, 172, 32, 0.06);
+}
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]):hover,
+.lb-form-field > label:not(.lb-toggle):has(> input[type="radio"]):hover {
+	border-color: var(--lb-text-secondary);
+}
+
 .lb-content input[type="submit"],
 .lb-content input[type="button"],
 .lb-content button:not(.lb-btn):not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"]) {
@@ -230,12 +279,27 @@ button.lb-btn {
 	-webkit-user-select: none;
 	user-select: none;
 	position: relative;
+	vertical-align: middle;
+	box-sizing: border-box;
+	transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.lb-btn:hover {
-	filter: brightness(1.08);
+.lb-btn.lb-btn-icon,
+a.lb-btn.lb-btn-icon,
+button.lb-btn.lb-btn-icon {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	vertical-align: middle;
 }
-.lb-btn:active {
-	filter: brightness(1.12);
+.lb-btn:not(.lb-btn-primary):not(.lb-btn-danger):hover,
+a.lb-btn:not(.lb-btn-primary):not(.lb-btn-danger):hover,
+button.lb-btn:not(.lb-btn-primary):not(.lb-btn-danger):hover {
+	background: var(--lb-btn-hover-bg) !important;
+	border-color: var(--lb-text-secondary) !important;
+}
+.lb-btn:not(.lb-btn-primary):not(.lb-btn-danger):active {
+	background: var(--lb-btn-hover-bg);
+	filter: brightness(0.96);
 }
 
 .lb-btn-primary,
@@ -252,7 +316,15 @@ input[type="submit"].lb-btn-primary,
 	font-weight: 500;
 }
 .lb-btn-primary:hover,
-a.lb-btn-primary:hover {
+a.lb-btn-primary:hover,
+button.lb-btn-primary:hover {
+	background: var(--lb-primary-hover) !important;
+	border-color: var(--lb-primary-dark) !important;
+	color: var(--lb-btn-primary-text) !important;
+}
+.lb-btn-danger:hover,
+a.lb-btn-danger:hover,
+button.lb-btn-danger:hover {
 	filter: brightness(1.1);
 }
 
@@ -561,12 +633,21 @@ a.lb-btn-primary:hover {
 .lb-sidebar::-webkit-scrollbar { width: 6px; }
 .lb-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
 
-.lb-sidebar-header {
+.lb-sidebar-header,
+a.lb-sidebar-header,
+a.lb-sidebar-header:link,
+a.lb-sidebar-header:visited {
 	padding: 16px 18px;
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	border-bottom: 1px solid var(--lb-sidebar-border);
+	color: inherit;
+	text-decoration: none;
+	transition: background 0.15s ease;
+}
+a.lb-sidebar-header:hover {
+	background: var(--lb-sidebar-active-bg);
 }
 .lb-sidebar-logo {
 	height: 36px;
@@ -716,8 +797,10 @@ a.lb-sidebar-link.active:visited {
 	align-items: center;
 	justify-content: center;
 	font-size: 16px !important;
+	font-weight: normal !important;
 	color: white !important;
 	text-decoration: none !important;
+	text-shadow: none !important;
 	transition: all 0.15s ease;
 	border: none !important;
 	padding: 0 !important;
@@ -725,6 +808,14 @@ a.lb-sidebar-link.active:visited {
 	line-height: 1 !important;
 	box-sizing: border-box;
 	opacity: 0.85;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+.lb-header-btn::before {
+	font-weight: normal !important;
+	text-shadow: none !important;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 .lb-header-btn:hover {
 	opacity: 1;
@@ -1103,17 +1194,75 @@ span.form-error {
 	border-collapse: collapse;
 	font-family: var(--lb-font);
 	font-size: var(--lb-font-sm);
+	border: 1px solid var(--lb-border-color);
+	border-radius: var(--lb-radius);
+	overflow: hidden;
 }
 .lb-table th,
 .lb-table td {
-	padding: 8px 12px;
+	padding: 5px 10px;
 	text-align: left;
 	border-bottom: 1px solid var(--lb-border-color);
+	line-height: 1.35;
 }
 .lb-table thead th {
 	font-weight: 600;
 	color: var(--lb-text-secondary);
 	background: var(--lb-btn-bg);
+	border-bottom: 2px solid var(--lb-border-color);
+}
+.lb-table tbody tr:nth-child(even) {
+	background: rgba(0, 0, 0, 0.025);
+}
+.lb-table tbody tr:hover {
+	background: rgba(109, 172, 32, 0.07);
+}
+/* Plugin install: each plugin spans 2 TRs. JS adds .plugin-zebra to
+   every other plugin's pair, so we override the generic per-row zebra. */
+.lb-table tbody tr.pluginrow,
+.lb-table tbody tr.pluginrow + tr {
+	background: transparent;
+}
+.lb-table tbody tr.plugin-zebra {
+	background: rgba(0, 0, 0, 0.04) !important;
+}
+.lb-table tbody tr.pluginrow:hover,
+.lb-table tbody tr.pluginrow:hover + tr {
+	background: rgba(109, 172, 32, 0.07) !important;
+}
+.lb-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+/* Sortable column headers (opt-in via class lb-table-sortable on <table>) */
+.lb-table .lb-th-sortable {
+	cursor: pointer;
+	user-select: none;
+	position: relative;
+	padding-right: 24px !important;
+	transition: background 0.15s ease;
+}
+.lb-table .lb-th-sortable::after {
+	content: "\2195"; /* ↕ */
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 11px;
+	opacity: 0.35;
+}
+.lb-table .lb-th-sortable[data-sort="asc"]::after {
+	content: "\25B2"; /* ▲ */
+	opacity: 1;
+	color: var(--lb-primary);
+}
+.lb-table .lb-th-sortable[data-sort="desc"]::after {
+	content: "\25BC"; /* ▼ */
+	opacity: 1;
+	color: var(--lb-primary);
+}
+.lb-table .lb-th-sortable:hover {
+	background: rgba(0, 0, 0, 0.04);
 }
 
 @media (max-width: 768px) {

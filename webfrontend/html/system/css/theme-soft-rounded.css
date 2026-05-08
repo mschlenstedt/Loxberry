@@ -19,6 +19,7 @@ body.theme-soft-rounded {
   --lb-card-shadow: 0 1px 4px rgba(0,0,0,.05);
 
   --lb-btn-bg: #f0f4f8;
+  --lb-btn-hover-bg: #e2e8f0;
   --lb-btn-text: #718096;
   --lb-btn-border: transparent;
   --lb-btn-radius: 20px;

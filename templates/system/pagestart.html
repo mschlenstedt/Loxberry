@@ -3,21 +3,16 @@
 <div class="lb-layout">
 	<!-- Sidebar -->
 	<aside class="lb-sidebar" id="lb-sidebar">
-		<div class="lb-sidebar-header">
+		<a class="lb-sidebar-header" href="/admin/system/index.cgi" title="Home">
 			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
 			<div>
 				<div class="lb-sidebar-brand"><span>Lox</span>Berry</div>
 				<div class="lb-sidebar-version"><TMPL_VAR LBVERSION></div>
 			</div>
-		</div>
+		</a>
 		<nav class="lb-sidebar-nav">
-			<!-- Plugin links -->
-			<TMPL_IF SIDEBAR_PLUGINS>
-			<div class="lb-sidebar-section">Meine Plugins</div>
-			<TMPL_LOOP SIDEBAR_PLUGINS>
-			<a class="lb-sidebar-link" href="<TMPL_VAR PLUGIN_URL>"><span class="lb-sidebar-name"><TMPL_VAR PLUGIN_TITLE></span><div class="lb-sidebar-status"></div></a>
-			</TMPL_LOOP>
-			</TMPL_IF>
+			<!-- Plugin links (rendered as HTML by Perl/PHP code) -->
+			<TMPL_VAR SIDEBAR_PLUGINS_HTML>
 			<!-- System links — Home first, rest alphabetical by German label -->
 			<div class="lb-sidebar-section"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
 			<a class="lb-sidebar-link" href="/admin/system/index.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_HOME></span></a>
@@ -56,14 +51,7 @@
 	<div class="lb-tab-popup" id="lb-tab-popup-plugins">
 		<div class="lb-tab-popup-header">Meine Plugins</div>
 		<div class="lb-tab-popup-list">
-			<TMPL_IF SIDEBAR_PLUGINS>
-			<TMPL_LOOP SIDEBAR_PLUGINS>
-			<a href="<TMPL_VAR PLUGIN_URL>" class="lb-tab-popup-item">
-				<i class="pi pi-box"></i>
-				<span><TMPL_VAR PLUGIN_TITLE></span>
-			</a>
-			</TMPL_LOOP>
-			</TMPL_IF>
+			<TMPL_VAR SIDEBAR_PLUGINS_TABBAR_HTML>
 			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item lb-tab-popup-item-muted">
 				<i class="pi pi-plus-circle"></i>
 				<span>Plugin installieren</span>

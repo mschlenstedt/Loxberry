@@ -19,6 +19,7 @@ body.theme-clean-admin {
   --lb-card-shadow: 0 1px 3px rgba(0,0,0,.06);
 
   --lb-btn-bg: #e6e6e6;
+  --lb-btn-hover-bg: #d4d4d4;
   --lb-btn-text: #000;
   --lb-btn-border: #7e7e7e;
   --lb-btn-radius: 4px;

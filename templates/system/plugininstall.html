@@ -241,6 +241,14 @@
 	<script>
 		$(document).ready( function()
 		{
+			// Zebra striping per plugin (each plugin = pluginrow + next tr)
+			$('table.lb-table tr.pluginrow').each(function(i) {
+				if (i % 2 === 0) {
+					$(this).addClass('plugin-zebra');
+					$(this).next('tr').addClass('plugin-zebra');
+				}
+			});
+
 			update_notifications();
 			validate_enable('#uploadfile');
 			validate_enable('#securepin');

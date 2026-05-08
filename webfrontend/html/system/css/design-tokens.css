@@ -32,7 +32,7 @@ html, body {
   --lb-gray-900: #171717;
 
   /* === Semantic Colors === */
-  --lb-bg: #f5f5f5;
+  --lb-bg: #f7f7f7;
   --lb-text: #171717;
   --lb-text-secondary: #404040;
   --lb-text-muted: #737373;
@@ -45,6 +45,7 @@ html, body {
 
   /* === Buttons === */
   --lb-btn-bg: #e6e6e6;
+  --lb-btn-hover-bg: #d4d4d4;
   --lb-btn-text: #000;
   --lb-btn-border: #7e7e7e;
   --lb-btn-radius: 4px;
