@@ -763,6 +763,18 @@ a.lb-sidebar-link.active:visited {
 	opacity: 1;
 }
 
+/* Nav-mode toggle (desktop only): switches sidebar <-> tab-bar layout.
+   Hidden on mobile because the tab-bar is the only sensible layout there. */
+.lb-nav-toggle svg {
+	display: block;
+	color: white;
+}
+@media (max-width: 768px) {
+	.lb-nav-toggle.lb-header-btn {
+		display: none !important;
+	}
+}
+
 /* --- Header --- */
 .lb-header {
 	display: flex;
@@ -1004,60 +1016,68 @@ a.lb-sidebar-link.active:visited {
 
 .lb-tab-bar {
 	display: none;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 1100;
+	justify-content: space-around;
+	align-items: center;
+	padding: 6px 0;
+	padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+	background: var(--lb-tab-bar-bg);
+	border-top: 1px solid var(--lb-border-color);
+}
+
+.lb-tab-bar-item,
+button.lb-tab-bar-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	text-decoration: none;
+	background: none !important;
+	border: none !important;
+	box-shadow: none !important;
+	cursor: pointer;
+	padding: 4px 0 !important;
+	margin: 0 !important;
+	min-width: 56px;
+	max-width: 80px;
+	font-family: var(--lb-font);
+	-webkit-tap-highlight-color: transparent;
+	text-shadow: none !important;
+	border-radius: 0 !important;
+}
+
+.lb-tab-bar-item i {
+	font-size: 22px;
+	color: var(--lb-tab-bar-text);
+}
+
+.lb-tab-bar-item span {
+	font-size: 10px;
+	font-weight: 500;
+	color: var(--lb-tab-bar-text);
+}
+
+.lb-tab-bar-item.active i,
+.lb-tab-bar-item.active span {
+	color: var(--lb-tab-bar-active);
 }
 
 @media (max-width: 768px) {
-	.lb-tab-bar {
-		display: flex;
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		z-index: 1100;
-		justify-content: space-around;
-		align-items: center;
-		padding: 6px 0;
-		padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
-		background: var(--lb-tab-bar-bg);
-		border-top: 1px solid var(--lb-border-color);
-	}
+	.lb-tab-bar { display: flex; }
+}
 
-	.lb-tab-bar-item,
-	button.lb-tab-bar-item {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2px;
-		text-decoration: none;
-		background: none !important;
-		border: none !important;
-		box-shadow: none !important;
-		cursor: pointer;
-		padding: 4px 0 !important;
-		margin: 0 !important;
-		min-width: 56px;
-		max-width: 80px;
-		font-family: var(--lb-font);
-		-webkit-tap-highlight-color: transparent;
-		text-shadow: none !important;
-		border-radius: 0 !important;
-	}
-
-	.lb-tab-bar-item i {
-		font-size: 22px;
-		color: var(--lb-tab-bar-text);
-	}
-
-	.lb-tab-bar-item span {
-		font-size: 10px;
-		font-weight: 500;
-		color: var(--lb-tab-bar-text);
-	}
-
-	.lb-tab-bar-item.active i,
-	.lb-tab-bar-item.active span {
-		color: var(--lb-tab-bar-active);
-	}
+/* Desktop nav-mode toggle: user can switch to tab-bar layout via header button.
+   On mobile (<=768px) the tab-bar is always shown via the media query above —
+   the body class only affects the desktop breakpoint. */
+body.nav-mode-tabbar .lb-tab-bar { display: flex; }
+body.nav-mode-tabbar .lb-sidebar { display: none; }
+body.nav-mode-tabbar .lb-main {
+	margin-left: 0;
+	padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 
