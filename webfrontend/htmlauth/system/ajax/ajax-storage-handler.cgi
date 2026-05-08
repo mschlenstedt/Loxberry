@@ -93,21 +93,19 @@ sub init_html
 	);
 	
 	my $html = <<EOF;
-	<div style="display:flex;">
-		<div style="width:95%">
-			<div data-role="fieldcontain">
-				<label for="$R::formid-select">$R::label</label>
-				<select name="$R::formid-select" id="$R::formid-select" disabled $R::jqm_data_mini>
-					<option value="">$SL{'COMMON.MSG_PLEASEWAIT'}</option>
-				</select>	
-			</div>
-			<div data-role="fieldcontain" id="$R::formid-foldercontain" style="display:none">
-				<label for="$R::formid-folder">$SL{'STORAGE.GET_STORAGE_HTML_FOLDER'}</label>
-				<input name="$R::formid-folder" id="$R::formid-folder" type="text" name="folder" disabled $R::jqm_data_mini>
-			</div>
+	<div class="lb-form-row" data-role="fieldcontain">
+		<label class="lb-form-label" for="$R::formid-select">$R::label</label>
+		<div class="lb-form-field" style="display:flex;align-items:center;gap:8px;">
+			<select class="lb-select" name="$R::formid-select" id="$R::formid-select" disabled $R::jqm_data_mini>
+				<option value="">$SL{'COMMON.MSG_PLEASEWAIT'}</option>
+			</select>
+			<a href="#" id="$R::formid-browse-button" class="lb-btn lb-btn-sm lb-disabled" title="Browse" style="$R::show_browse"><i class="pi pi-eye"></i></a>
 		</div>
-		<div id="$R::formid-browse" style="width:30px;position:relative;top:-18px;margin:10px;$R::show_browse">
-	    	<a href="#" id="$R::formid-browse-button" class="lb-btn lb-btn-sm lb-disabled" title="Browse"><i class="pi pi-eye"></i></a>
+	</div>
+	<div class="lb-form-row" data-role="fieldcontain" id="$R::formid-foldercontain" style="display:none">
+		<label class="lb-form-label" for="$R::formid-folder">$SL{'STORAGE.GET_STORAGE_HTML_FOLDER'}</label>
+		<div class="lb-form-field">
+			<input class="lb-input" name="$R::formid-folder" id="$R::formid-folder" type="text" disabled $R::jqm_data_mini>
 		</div>
 	</div>
 	<input type="hidden" name="$R::formid" id="$R::formid" value="$R::currentpath">

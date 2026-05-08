@@ -574,10 +574,12 @@ button.lb-btn-danger:hover {
 	margin-top: var(--lb-space-lg);
 	display: flex;
 	justify-content: center;
+	align-items: center;
 	flex-wrap: wrap;
+	gap: 10px;
 }
 .lb-actions .lb-btn {
-	margin: 0.5em 0.3em;
+	margin: 0;
 }
 
 
