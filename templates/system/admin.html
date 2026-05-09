@@ -4,6 +4,7 @@
 		data-ajax=	"false"
 		name=		"main_form1"
 		id=		"main_form1"
+		style=		"max-width:80%"
 		action=		"<TMPL_VAR SELFURL>">
 		<INPUT	type=		"hidden"
 			name=		"saveformdata"
@@ -18,7 +19,8 @@
 					for=	"adminuser"><TMPL_VAR ADMIN.LABEL_USERNAME></LABEL>
 			</DIV>
 			<DIV	class="lb-form-field">
-				<INPUT	value=				"<TMPL_VAR ADMINUSEROLD>"
+				<INPUT	class=				"lb-input"
+					value=				"<TMPL_VAR ADMINUSEROLD>"
 					id=				"adminuser"
 					name=				"adminuser"
 					type=				"text"
@@ -35,7 +37,8 @@
 					for=	"adminpass1"><TMPL_VAR ADMIN.LABEL_NEW_PASSWORD></LABEL>
 			</DIV>
 			<DIV	class="lb-form-field">
-				<INPUT	id=				"adminpass1"
+				<INPUT	class=				"lb-input"
+					id=				"adminpass1"
 					name=				"adminpass1"
 					autocomplete=			"off"
 					type=				"password"
@@ -52,7 +55,8 @@
 					for=	"adminpass2"><TMPL_VAR ADMIN.LABEL_RETYPE_PASSWORD></LABEL>
 			</DIV>
 			<DIV	class="lb-form-field">
-				<INPUT	id=				"adminpass2"
+				<INPUT	class=				"lb-input"
+					id=				"adminpass2"
 					name=				"adminpass2"
 					autocomplete=			"off"
 					type=				"password"
@@ -69,7 +73,8 @@
 					for=	"securepin1"><TMPL_VAR ADMIN.LABEL_NEW_SECUREPIN></LABEL>
 			</DIV>
 			<DIV	class="lb-form-field">
-				<INPUT	id=				"securepin1"
+				<INPUT	class=				"lb-input"
+					id=				"securepin1"
 					name=				"securepin1"
 					autocomplete=			"off"
 					type=				"password"
@@ -86,7 +91,8 @@
 					for=	"securepin2"><TMPL_VAR ADMIN.LABEL_RETYPE_SECUREPIN></LABEL>
 			</DIV>
 			<DIV	class="lb-form-field">
-				<INPUT	id=				"securepin2"
+				<INPUT	class=				"lb-input"
+					id=				"securepin2"
 					name=				"securepin2"
 					autocomplete=			"off"
 					type=				"password"
@@ -99,36 +105,35 @@
 		</DIV>
 		<TMPL_VAR ADMIN.LABEL_SECURITY_HINT>
 		<DIV class="lb-form-row">
-			<DIV class="lb-form-label">
-				<LABEL	class=	"control-label"
-					for=	"adminpassold"><TMPL_VAR ADMIN.LABEL_CURRENT_PASSWORD></LABEL>
+			<DIV class="lb-form-label"></DIV>
+			<DIV class="lb-form-field" style="display:flex;gap:var(--lb-space-md)">
+				<DIV style="flex:1">
+					<LABEL	class=	"control-label"
+						for=	"adminpassold"
+						style=	"display:block;font-size:var(--lb-font-sm);font-weight:600;color:var(--lb-text-secondary);margin-bottom:4px"><TMPL_VAR ADMIN.LABEL_CURRENT_PASSWORD></LABEL>
+					<INPUT	class=				"lb-input"
+						id=				"adminpassold"
+						name=				"adminpassold"
+						autocomplete=			"off"
+						type=				"password"
+						data-validation-coloring=	"off"
+						data-validation-error-msg=	"<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_PASS>"
+						data-validation-rule=		"^(.){1,64}$">
+				</DIV>
+				<DIV style="flex:1">
+					<LABEL	class=	"control-label"
+						for=	"securepinold"
+						style=	"display:block;font-size:var(--lb-font-sm);font-weight:600;color:var(--lb-text-secondary);margin-bottom:4px"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></LABEL>
+					<INPUT	class=				"lb-input"
+						id=				"securepinold"
+						name=				"securepinold"
+						autocomplete=			"off"
+						type=				"password"
+						data-validation-coloring=	"off"
+						data-validation-error-msg=	"<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_SECUREPIN>"
+						data-validation-rule=		"^([A-Za-z0-9]){4,10}$">
+				</DIV>
 			</DIV>
-			<DIV	class="lb-form-field">
-				<INPUT	id=				"adminpassold"
-					name=				"adminpassold"
-					autocomplete=			"off"
-					type=				"password"
-					data-validation-coloring=	"off"
-					data-validation-error-msg=	"<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_PASS>"
-					data-validation-rule=		"^(.){1,64}$">
-			</DIV>
-			<DIV	class="lb-form-help"></DIV>
-		</DIV>
-		<DIV	class="lb-form-row">
-			<DIV class="lb-form-label">
-				<LABEL	class=	"control-label"
-					for=	"securepinold"><TMPL_VAR ADMIN.LABEL_SECUREPINOLD></LABEL>
-			</DIV>
-			<DIV	class="lb-form-field">
-				<INPUT	id=				"securepinold"
-					name=				"securepinold"
-					autocomplete=			"off"
-					type=				"password"
-					data-validation-coloring=	"off"
-					data-validation-error-msg=	"<TMPL_VAR ADMIN.SAVE_ERR_EMPTY_SECUREPIN>"
-					data-validation-rule=		"^([A-Za-z0-9]){4,10}$">
-			</DIV>
-			<DIV	class="lb-form-help"></DIV>
 		</DIV>
 		<div class="lb-actions">
 			<!-- Buttons for widget -->
