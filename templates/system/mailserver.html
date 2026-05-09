@@ -1,15 +1,19 @@
 <!-- ** START template/system/mailserver.html 06.12.2018 22:20:43 ************************************************************************************ -->
 	
-<!-- SecurePIN --> 
-<div id="securepin_block" style="margin: 0 auto; width:350px; display:none">
-	<TMPL_VAR SECUREPIN.ENTER_SECUREPIN>
-	<input name="securepin" id="securepin" type="text" onkeypress="return AddKeyPress(event, $('#check_securepin'));">
-	<button class="lb-btn lb-btn-primary lb-btn-sm" id="check_securepin" data-role="none"><TMPL_VAR COMMON.BUTTON_OK></button>
-	
-	<div class="hint" id="check_hint" style="padding: 5px 5px 5px 5px;">&nbsp;</div>
+<!-- SecurePIN -->
+<div id="securepin_block" style="display:none">
+	<center>
+	<div class="path" style="width:300px">
+		<p><center><TMPL_VAR SECUREPIN.ENTER_SECUREPIN></center></p>
+		<div style="margin:10px;display:flex;gap:8px;align-items:center">
+			<input name="securepin" id="securepin" type="password" placeholder="SecurePIN" onkeypress="return AddKeyPress(event, $('#check_securepin'));" style="flex:1;min-width:0">
+			<button class="lb-btn lb-btn-sm" id="check_securepin" data-role="none"><TMPL_VAR COMMON.BUTTON_OK></button>
+		</div>
+		<div class="hint" id="check_hint" style="padding:5px;">&nbsp;</div>
+	</div>
 	<br>
-	<div class="path" style="background: #FF8080; font-color: black; text-shadow: none; border: black 1px solid; padding: 5px;">
-		<p style="font-weight: bold;">
+	<div class="path" style="background:#FF8080;font-color:black;text-shadow:none;width:300px;border:black 1px solid;padding:5px">
+		<p style="font-weight:bold;">
 			<TMPL_VAR SECUREPIN.WARNING_TITLE>
 		</p>
 		<hr>
@@ -17,6 +21,7 @@
 			<TMPL_VAR SECUREPIN.PREVENT_SPY>
 		</p>
 	</div>
+	</center>
 </div>
 
 	

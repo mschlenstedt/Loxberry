@@ -20,10 +20,12 @@
 ##########################################################################
 
 use LoxBerry::Web;
+use LoxBerry::System;
 use LoxBerry::System::General;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use URI::Escape;
+use JSON;
 use warnings;
 use strict;
 print STDERR "Execute miniserver.cgi\n######################\n";
@@ -99,6 +101,16 @@ $lang = lblanguage();
 
 $R::saveformdata if (0);
 $R::do if (0);
+
+# AJAX: SecurePIN check
+if ($cgi->param("action") && $cgi->param("action") eq "checksecpin") {
+	my %resp;
+	my $checkres = LoxBerry::System::check_securepin($cgi->param("secpin"));
+	$resp{error} = int($checkres);
+	print header('application/json');
+	print to_json(\%resp);
+	exit;
+}
 
 if ($cgi->param("addbtn")) {
 	# Add button

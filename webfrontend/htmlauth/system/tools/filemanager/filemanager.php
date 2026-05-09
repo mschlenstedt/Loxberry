@@ -147,9 +147,9 @@ if ($use_auth) {
 	};
 	?>
 	<p><center><?php echo $SL['SECUREPIN.ENTER_SECUREPIN']?></center></p>
-            <form action="" method="post" style="margin:10px;text-align:center">
+            <form action="" method="post" style="margin:10px;display:flex;gap:8px;align-items:center">
                 <input type="hidden" name="fm_usr" value="loxberry">
-                <input type="password" name="fm_pwd" value="" placeholder="SecurePIN" required>
+                <input type="password" name="fm_pwd" value="" placeholder="SecurePIN" required style="flex:1;min-width:0">
 		<input type="submit" value="<?php echo $SL['COMMON.BUTTON_OK']?>">
             </form>
         </div>
