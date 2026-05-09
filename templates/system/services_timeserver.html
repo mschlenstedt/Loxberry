@@ -1,133 +1,68 @@
-<!-- ** START template/system/timeserver.html 13:51 24.11.2017 ************************************************************************************ -->
-<form onsubmit="if ( $('#zeitserver_ntp').is(':checked') && !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<p style=&quot;color:blue&quot;><TMPL_VAR TIMESERVER.SAVE_ASYNC_QUERY_NTP></p>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" action="<TMPL_VAR SELFURL>">
+<!-- ** START template/system/timeserver.html ************************************************************************************ -->
+<form onsubmit="if ( !$('#ntpserverurl').hasClass( 'error' ) ) { $('#btnsubmit').fadeTo('slow', 0.1); $('#form-error-message').html('<p style=&quot;color:blue&quot;><TMPL_VAR TIMESERVER.SAVE_ASYNC_QUERY_NTP></p>');};" method="post" data-ajax="false" name="main_form4" id="main_form4" style="max-width:80%" action="<TMPL_VAR SELFURL>">
 	<input type="hidden" name="saveformdata" value="1">
-		<table class="formtable" style="border:0; width:100%;">
-			<tr>
-				<td>
-					<TMPL_VAR TIMESERVER.LABEL_CURRENT_TIME>
-				</td>
-				<td>
-					<TMPL_VAR SYSTEMDATETIME>
-					<a class="lb-btn lb-btn-sm" href="javascript:location.reload()"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
-					&nbsp;
-					<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/setdatetime.log&header=html&format=template" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR COMMON.BUTTON_LOGFILE></a>
-				</td>
-				<td>
-				</td>
-				<td>
-					&nbsp;
-				</td>
-			</tr>
-			<tr>
-				<td style="width:25%;">
-					<label id="labeluhrzeit"><TMPL_VAR TIMESERVER.LABEL_TYPE_TIME></label>
-				</td>
-				<td style="width:50%;">
-					<div class="lb-btn-group" style="flex-direction:column;">
-						<!--<input onclick="disable()" <TMPL_VAR CHECKED1> id="zeitserver_miniserver" name="zeitserver" type="radio" value="miniserver">
-							<label for="zeitserver_miniserver"><TMPL_VAR TIMESERVER.SELECT_MS></label>-->
-						<input onclick="disable()" <TMPL_VAR CHECKED2> id="zeitserver_ntp" name="zeitserver" type="radio" value="ntp">
-							<label for="zeitserver_ntp"><TMPL_VAR TIMESERVER.SELECT_NTP></label>
-					</div>
-				</td>
-				<td style="width:5%;vertical-align:middle;">
-					&nbsp;
-				</td>
-				<td style="width:20%;">
-					&nbsp;
-				</td>
-			</tr>
-			
-			<!-- NTP Server Column -->
-			<tr class="col_ntpserver">
-				<td>
-					<label id="labelntpserverurl"><TMPL_VAR TIMESERVER.LABEL_NTP_SERVER></label>
-				</td>
-				<td>
-					<input value="<TMPL_VAR NTPSERVERURL>" id="ntpserverurl" name="ntpserverurl" type="text" class="textfield" data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR TIMESERVER.MSG_VAL_INVALID_HOST>">
-				</td>
-				<td>
-					&nbsp;
-				</td>
-				<td style="vertical-align:middle;">
-					<a id="linkntpurls" href="http://www.pool.ntp.org/de/use.html" target="_blank" class="hint"><TMPL_VAR TIMESERVER.LINK_OTHER_TIMESERVERS></a>
-				</td>
-			</tr>
-			
-			<!-- Miniserver Column -->
-			<tr class="col_miniserver">
-				<td>
-					<label id="labelminiserverno">Miniserver<!-- <TMPL_VAR TIMESERVER.LABEL_MINISERVER> --></label>
-				</td>
-				<td>
-					<TMPL_VAR MSSELECTLIST>
-				</td>
-				<td>
-					&nbsp;
-				</td>
-				<td style="vertical-align:middle;">
-					&nbsp;
-				</td>
-			</tr>
-			
-			<tr>
-				<td style="width:25%;">
-					<label id="labelzeitzone"><TMPL_VAR TIMESERVER.LABEL_TIMEZONE></label>
-				</td>
-				<td style="width:50%;">
-					<select class="lb-select" onclick="disable()" id="zeitzone" name="zeitzone" data-role="none">
-						<TMPL_VAR TIMEZONELIST>
-					</select>
-				</td>
-				<td style="width:5%;vertical-align:middle;">
-					&nbsp;
-				</td>
-				<td style="width:20%;">
-					&nbsp;
-				</td>
-			</tr>
-			<tr>
-				<td></td>
-				<td colspan=3>
-					<div style="height:30px;" id="form-error-message" class="form-error-message">&nbsp;</div>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="4">
-					<div class="lb-actions">
-						<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
-						<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form4" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
-					</div>
-				</td>
-			</tr>
-		</table>
-</form>
-<script>
-	$(document).ready( function ()
-		{
-			validate_enable('#ntpserverurl');
-			validate_chk_object(['#ntpserverurl']);
-			// Disable some options on Load depending on selected value
-			disable();
-		});
-	
 
-	// Disable some options on click depending on selected value
-	function disable() 
-		{
-			// Ethernet or WLAN
-			if ( $('#zeitserver_miniserver').is(':checked') ) 
-			{
-				validate_clean_objects(['#ntpserverurl']);
-				$('.col_ntpserver').hide();
-				$('.col_miniserver').fadeIn();
-			}
-			else 
-			{
-				$('.col_ntpserver').fadeIn();
-				$('.col_miniserver').hide();
-				validate_chk_object(['#ntpserverurl']);
-			}
-		}
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<TMPL_VAR TIMESERVER.LABEL_CURRENT_TIME>
+		</div>
+		<div class="lb-form-field">
+			<TMPL_VAR SYSTEMDATETIME>
+			&nbsp;<a class="lb-btn lb-btn-sm" href="javascript:location.reload()"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
+			&nbsp;<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/setdatetime.log&header=html&format=template" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+		</div>
+		<div class="lb-form-help"></div>
+	</div>
+
+	<hr>
+
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<label id="labeluhrzeit"><TMPL_VAR TIMESERVER.LABEL_TYPE_TIME></label>
+		</div>
+		<div class="lb-form-field">
+			<label><input <TMPL_VAR CHECKED2> id="zeitserver_ntp" name="zeitserver" type="radio" value="ntp"> <TMPL_VAR TIMESERVER.SELECT_NTP></label>
+		</div>
+		<div class="lb-form-help"></div>
+	</div>
+
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<label id="labelntpserverurl"><TMPL_VAR TIMESERVER.LABEL_NTP_SERVER></label>
+		</div>
+		<div class="lb-form-field">
+			<input value="<TMPL_VAR NTPSERVERURL>" id="ntpserverurl" name="ntpserverurl" type="text" class="lb-input" data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR TIMESERVER.MSG_VAL_INVALID_HOST>">
+		</div>
+		<div class="lb-form-help">
+			<div class="hint"><a id="linkntpurls" href="http://www.pool.ntp.org/de/use.html" target="_blank"><TMPL_VAR TIMESERVER.LINK_OTHER_TIMESERVERS></a></div>
+		</div>
+	</div>
+
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<label id="labelzeitzone"><TMPL_VAR TIMESERVER.LABEL_TIMEZONE></label>
+		</div>
+		<div class="lb-form-field">
+			<select class="lb-select" id="zeitzone" name="zeitzone" data-role="none">
+				<TMPL_VAR TIMEZONELIST>
+			</select>
+		</div>
+		<div class="lb-form-help"></div>
+	</div>
+
+	<div style="height:30px;" id="form-error-message" class="form-error-message">&nbsp;</div>
+
+</form>
+
+<div class="lb-actions">
+	<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+	<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form4" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
+</div>
+
+<script>
+	$(document).ready( function () {
+		validate_enable('#ntpserverurl');
+		validate_chk_object(['#ntpserverurl']);
+	});
 </script>
 <!-- ** END template/system/timeserver.html ************************************************************************************ -->

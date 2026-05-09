@@ -1,5 +1,31 @@
 ﻿<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
 
+<!-- SecurePIN -->
+<div id="securepin_block" style="display:none">
+	<center>
+	<div class="path" style="width:300px">
+		<p><center><TMPL_VAR SECUREPIN.ENTER_SECUREPIN></center></p>
+		<div style="margin:10px;display:flex;gap:8px;align-items:center">
+			<input name="securepin" id="securepin" type="password" placeholder="SecurePIN" onkeypress="return AddKeyPress(event, $('#check_securepin'));" style="flex:1;min-width:0">
+			<button class="lb-btn lb-btn-sm" id="check_securepin" data-role="none"><TMPL_VAR COMMON.BUTTON_OK></button>
+		</div>
+		<div class="hint" id="check_hint" style="padding:5px;">&nbsp;</div>
+	</div>
+	<br>
+	<div class="path" style="background:#FF8080;font-color:black;text-shadow:none;width:300px;border:black 1px solid;padding:5px">
+		<p style="font-weight:bold;">
+			<TMPL_VAR SECUREPIN.WARNING_TITLE>
+		</p>
+		<hr>
+		<p>
+			<TMPL_VAR SECUREPIN.PREVENT_SPY>
+		</p>
+	</div>
+	</center>
+</div>
+
+<div id="main_content" style="visibility:hidden">
+
 <!-- Mosquitto Service Status (outside Vue app) -->
 <div class="servicestatus" id="mosq_servicestatus_wrap">
 	<div class="servicestatus-info">
@@ -119,6 +145,7 @@
 
 </div>
 
+</div><!-- #main_content -->
 
 <script>
 
@@ -258,8 +285,7 @@
 	}
 
 
-	const vueApp = Vue.createApp(mqttapp)
-		.mount('#mqttapp')
+	var vueApp = null;
 
 	const mqtt_ajax = '/admin/system/ajax/ajax-mqtt.php';
 
@@ -329,5 +355,57 @@
 			});
 		});
 	});
+
+	// SecurePIN
+	$(function() {
+		$("#check_securepin").click(function() {
+			checkSecurePIN();
+		});
+		$('#securepin').val(sessionStorage.getItem("securePIN"));
+		if ($('#securepin').val()) {
+			$('#check_securepin').trigger("click");
+		} else {
+			$("#securepin_block").fadeIn();
+		}
+	});
+
+	function checkSecurePIN() {
+		$("#check_securepin").attr("disabled", true);
+		$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR SECUREPIN.CHECK_WAIT>");
+		$.ajax({
+			type: 'POST',
+			data: { action: 'checksecpin', secpin: $('#securepin').val() }
+		})
+		.fail(function(data) {
+			$("#securepin_block").fadeIn();
+			$("#check_hint").attr("style", "color:red").html("<TMPL_VAR SECUREPIN.ERROR_GENERIC>: " + data.statusText);
+		})
+		.done(function(data) {
+			if (data.error && data.error != 0) {
+				switch (data.error) {
+					case 1: case 2: case 3:
+						data.message = '<TMPL_VAR SECUREPIN.ERROR_WRONG>'; break;
+				}
+				$("#check_hint").attr("style", "color:red").html(data.message);
+				return;
+			}
+			sessionStorage.setItem("securePIN", $('#securepin').val());
+			$("#securepin_block").fadeOut();
+			$("#main_content").css('visibility', 'visible');
+			vueApp = Vue.createApp(mqttapp).mount('#mqttapp');
+		})
+		.always(function() {
+			$("#check_securepin").attr("disabled", false);
+		});
+	}
+
+	function AddKeyPress(event, submitobj) {
+		event = event || window.event;
+		if (event.keyCode == 13) {
+			submitobj.click();
+			return false;
+		}
+		return true;
+	}
 
 </script>

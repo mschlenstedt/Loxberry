@@ -1,3 +1,29 @@
+<style>
+details.lb-collapsible:not([open]) {
+	border: none;
+	border-radius: 0;
+	margin-bottom: 2px;
+}
+#log-attmsg-tooltip {
+	display: none;
+	position: fixed;
+	z-index: 9999;
+	background: #fff;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	padding: 10px 14px;
+	min-width: 280px;
+	max-width: 480px;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+	font-size: 13px;
+	color: #333;
+	line-height: 1.5;
+	white-space: normal;
+	pointer-events: none;
+}
+</style>
+<div id="log-attmsg-tooltip"></div>
+
 <TMPL_IF FORM_LOG>
 	<TMPL_UNLESS SINGLE_PACKAGE>
 		<p><TMPL_VAR LOGMANAGER.LOG_INTRO></p>
@@ -5,8 +31,12 @@
 </TMPL_IF>
 
 <TMPL_IF FORM_LEGACYLOG>
+	<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:var(--lb-space-md)">
+		<button class="lb-btn lb-btn-sm lb-btn-icon" id="btn_expand_all"><i class="pi pi-plus"></i> <TMPL_VAR LOGMANAGER.BUTTON_EXPAND_ALL></button>
+		<button class="lb-btn lb-btn-sm lb-btn-icon" id="btn_collapse_all"><i class="pi pi-minus"></i> <TMPL_VAR LOGMANAGER.BUTTON_COLLAPSE_ALL></button>
+	</div>
 	<TMPL_LOOP PLUGINS>
-		<details class="lb-collapsible" id='coll_package_<TMPL_VAR PLUGINDB_FOLDER>'>
+		<details class="lb-collapsible" id='coll_package_<TMPL_VAR PLUGINDB_FOLDER>' open>
 			<summary class="lb-section-title" id='package_<TMPL_VAR PLUGINDB_FOLDER>'><TMPL_VAR PLUGINDB_TITLE> <span style='font-size:80%;'>
 				<TMPL_IF ISSYSTEM>
 				<TMPL_ELSE>(Plugin Log)
@@ -31,6 +61,46 @@
 <script>
 
 $( document ).ready(function() {
+	// Attention messages tooltip
+	$('span.attmsg-data').each(function() {
+		$(this).closest('td').addClass('has-attmsg').css('cursor', 'help');
+	});
+	$(document).on('mouseenter', '.has-attmsg', function() {
+		var content = $(this).find('.attmsg-data').html();
+		if (content) {
+			var plain = content.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').trim();
+			if (plain.length > 600) plain = plain.substring(0, 600) + '…';
+			plain = plain.replace(/\n/g, '<br>');
+			$('#log-attmsg-tooltip').html('<strong><TMPL_VAR LOGMANAGER.ATTMSG_POPUP_HEADING></strong><br><br>' + plain).show();
+		}
+	});
+	$(document).on('mouseleave', '.has-attmsg', function() {
+		$('#log-attmsg-tooltip').hide();
+	});
+	$(document).on('mousemove', '.has-attmsg', function(e) {
+		var x = e.clientX + 15;
+		var y = e.clientY + 10;
+		var $tip = $('#log-attmsg-tooltip');
+		var tw = $tip.outerWidth();
+		var th = $tip.outerHeight();
+		if (x + tw > window.innerWidth - 10) x = e.clientX - tw - 10;
+		if (y + th > window.innerHeight - 10) y = e.clientY - th - 10;
+		$tip.css({left: x + 'px', top: y + 'px'});
+	});
+
+	$('#btn_expand_all').click(function() {
+		$('.lb-collapsible').each(function() {
+			this.open = true;
+			storeWindow($(this).attr('id'), 'expand');
+		});
+	});
+	$('#btn_collapse_all').click(function() {
+		$('.lb-collapsible').each(function() {
+			this.open = false;
+			storeWindow($(this).attr('id'), 'collapse');
+		});
+	});
+
     restoreWindow();
 	$(".lb-collapsible").on("toggle", function() {
 		var state = this.open ? "expand" : "collapse";

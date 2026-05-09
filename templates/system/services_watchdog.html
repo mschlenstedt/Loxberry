@@ -5,32 +5,7 @@
 
 <BR>
 
-<STYLE>
-	.lb-form-field
-	{
-		min-width	:350px;
-		width		:350px;
-		max-width	:350px;
-		flex-wrap	:nowrap;
-		margin-top	:-10px;
-	}
-	.lb-form-label
-	{
-		min-width	:150px;
-		position	:relative;
-		margin-left	:10px;
-	}
-	.lb-form-help
-	{
-		min-width	:100px;
-		width		:100%;
-		position	:relative;
-		margin-left	:10px;
-		margin-top	:-10px;
-	}
-</STYLE>
-
-<FORM id="main_form" method="post" data-ajax="false"> 
+<FORM id="main_form" method="post" data-ajax="false" style="max-width:80%">
 <INPUT id="saveformdata" name="saveformdata" type="hidden" value="1">
 <DIV	class="lb-form-row">
 	<DIV	class="lb-form-label">
@@ -59,7 +34,7 @@
 			for="Watchdog_Ping"><TMPL_VAR SERVICES.LABEL_PING></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input width="100%" value="" id="Watchdog_Ping" name="Watchdog_Ping" type="text" class="textfield" 
+		<input value="" id="Watchdog_Ping" name="Watchdog_Ping" type="text" class="lb-input"
 		data-validation-rule="special:hostname_or_ipaddr" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_PING>">
 	</DIV>
 	<DIV	class="lb-form-help hint">
@@ -72,7 +47,7 @@
 			for="Watchdog_Maxload1"><TMPL_VAR SERVICES.LABEL_MAXLOAD1></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input width="100%" value="" id="Watchdog_Maxload1" name="Watchdog_Maxload1" type="text" class="textfield" 
+		<input value="" id="Watchdog_Maxload1" name="Watchdog_Maxload1" type="text" class="lb-input"
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
 	</DIV>
 	<DIV	class="lb-form-help hint">
@@ -85,7 +60,7 @@
 			for="Watchdog_Maxload5"><TMPL_VAR SERVICES.LABEL_MAXLOAD5></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input width="100%" value="" id="Watchdog_Maxload5" name="Watchdog_Maxload5" type="text" class="textfield" 
+		<input value="" id="Watchdog_Maxload5" name="Watchdog_Maxload5" type="text" class="lb-input"
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
 	</DIV>
 	<DIV	class="lb-form-help hint">
@@ -98,7 +73,7 @@
 			for="Watchdog_Maxload15"><TMPL_VAR SERVICES.LABEL_MAXLOAD15></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input width="100%" value="" id="Watchdog_Maxload15" name="Watchdog_Maxload15" type="text" class="textfield" 
+		<input value="" id="Watchdog_Maxload15" name="Watchdog_Maxload15" type="text" class="lb-input"
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXLOAD>">
 	</DIV>
 	<DIV	class="lb-form-help hint">
@@ -111,7 +86,7 @@
 			for="Watchdog_Minmem"><TMPL_VAR SERVICES.LABEL_MINMEM></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input width="30%" value="" id="Watchdog_Minmem" name="Watchdog_Minmem" type="text" class="textfield"
+		<input value="" id="Watchdog_Minmem" name="Watchdog_Minmem" type="text" class="lb-input"
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MINMEM>">
 	</DIV>
 	<DIV	class="lb-form-help hint">
@@ -124,7 +99,7 @@
 			for="Watchdog_Maxtemp"><TMPL_VAR SERVICES.LABEL_MAXTEMP></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input width="30%" value="" id="Watchdog_Maxtemp" name="Watchdog_Maxtemp" type="text" class="textfield"
+		<input value="" id="Watchdog_Maxtemp" name="Watchdog_Maxtemp" type="text" class="lb-input"
 		data-validation-rule="special:numeric" data-validation-error-msg="<TMPL_VAR SERVICES.MSG_VALINVALID_MAXTEMP>">
 	</DIV>
 	<DIV	class="lb-form-help hint">
@@ -137,7 +112,7 @@
 			for="Watchdog_Tempsensor"><TMPL_VAR SERVICES.LABEL_TEMPSENSOR></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input width="100%" value="" id="Watchdog_Tempsensor" name="Watchdog_Tempsensor" type="text" class="textfield">
+		<input value="" id="Watchdog_Tempsensor" name="Watchdog_Tempsensor" type="text" class="lb-input">
 	</DIV>
 	<DIV	class="lb-form-help hint">
 		<TMPL_VAR SERVICES.HINT_TEMPSENSOR>

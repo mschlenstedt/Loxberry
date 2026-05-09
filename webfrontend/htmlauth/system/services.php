@@ -188,234 +188,137 @@ function form() {
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
 	
 	if ($page == 3): ?>
-	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=3">
+	<form method="post" data-ajax="false" name="main_form" id="main_form" style="max-width:80%" action="/admin/system/services.php?load=3">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="ssdpd" value="1">
 	<input type="hidden" name="serial" value="1">
 	<input type="hidden" name="console" value="1">
-	<div class="wide"><?=$SL['SERVICES.HEADING_SSDP'];?></div>
-	<br>
-	<table class="formtable">
-		<tr>
-			<td width="20%">
-				<label for ="ssdpenabled"><?=$SL['SERVICES.LABEL_SSDPENABLED'];?></label>
-			</td>
-			<td width="2%">&nbsp;</td>
-			<td width="20%">
-				<label class="lb-toggle"><input type="checkbox" id="ssdpenabled" name="ssdpenabled" <?=$checkedssdp;?> value="enabled"><span class="lb-toggle-slider"></span></label>
-			</td>
-			<td width="2%">&nbsp;</td>
-			<td  class="hint">
-				<?=$SL['SERVICES.HINT_SSDP'];?>
-			</td>
-		</tr>
-	</table>
-	<br><br>
-	
-	<?php 
-	/* FTP form part */
-	?>
-	<div class="wide"><?=$SL['SERVICES.HEADING_FTP'];?></div>
-	<br>
-	<table class="formtable">
-		<tr>
-			<td width="20%">
-				<label for ="ftpenabled"><?=$SL['SERVICES.LABEL_FTP'];?></label>
-			</td>
-			<td width="2%">&nbsp;</td>
-			<td width="20%">
-				<label class="lb-toggle"><input type="checkbox" id="ftpenabled" name="ftpenabled" <?=$checkedftp;?> value="enabled"><span class="lb-toggle-slider"></span></label>
-				
-			</td>
-			<td width="2%">&nbsp;</td>
-			<td  class="hint">
-				<?=$SL['SERVICES.HINT_FTP'];?>
-			</td>
-		</tr>
-	</table>
-	<br><br>
-	
-	<?php 
-	/* Serial form part */
-	?>
-	<div class="wide"><?=$SL['SERVICES.HEADING_SERIAL'];?></div>
-	<br>
+	<div class="lb-section-title"><?=$SL['SERVICES.HEADING_SSDP'];?></div>
+	<div class="lb-form-row">
+		<div class="lb-form-label"></div>
+		<div class="lb-form-field">
+			<label><input type="checkbox" id="ssdpenabled" name="ssdpenabled" <?=$checkedssdp;?> value="enabled"> <?=$SL['SERVICES.LABEL_SSDPENABLED'];?></label>
+		</div>
+		<div class="lb-form-help hint"><?=$SL['SERVICES.HINT_SSDP'];?></div>
+	</div>
 
 	<?php
-	$output = exec(LBHOMEDIR."/bin/showpitype"); 
-	if ($output === "unknnown"): ?>
-	<center>
-	<div style="background: #FF8080; font-color: black; text-shadow: none; width: 80%; border: black 1px solid; padding: 5px">
-	<p>
-	<?=$SL['SERVICES.HINT_NOPI'];?>
-	</p>
+	/* FTP form part */
+	?>
+	<div class="lb-section-title"><?=$SL['SERVICES.HEADING_FTP'];?></div>
+	<div class="lb-form-row">
+		<div class="lb-form-label"></div>
+		<div class="lb-form-field">
+			<label><input type="checkbox" id="ftpenabled" name="ftpenabled" <?=$checkedftp;?> value="enabled"> <?=$SL['SERVICES.LABEL_FTP'];?></label>
+		</div>
+		<div class="lb-form-help hint"><?=$SL['SERVICES.HINT_FTP'];?></div>
 	</div>
-	</center>
-	<br>
+
+	<?php
+	/* Serial form part */
+	?>
+	<div class="lb-section-title"><?=$SL['SERVICES.HEADING_SERIAL'];?></div>
+
+	<?php
+	$output = exec(LBHOMEDIR."/bin/showpitype");
+	if ($output === "unknnown"): ?>
+	<div style="background:#FF8080;color:black;text-shadow:none;width:80%;border:1px solid black;padding:5px;margin-bottom:8px">
+		<?=$SL['SERVICES.HINT_NOPI'];?>
+	</div>
 	<?php endif;?>
 
-	<table class="formtable">
-		<tr>
-			<td width="20%">
-				<label for ="serialenabled"><?=$SL['SERVICES.LABEL_SERIAL'];?></label>
-			</td>
-			<td width="2%">&nbsp;</td>
-			<td width="20%">
-				<label class="lb-toggle"><input type="checkbox" id="serialenabled" name="serialenabled" <?=$checkedserial;?> value="enabled"><span class="lb-toggle-slider"></span></label>
-			</td>
-			<td width="2%">&nbsp;</td>
-			<td  class="hint">
-				<?=$SL['SERVICES.HINT_SERIAL'];?>
-			</td>
-		</tr>
-	</table>
-	<br>
-	<table class="formtable">
-		<tr>
-			<td width="20%">
-				<label for ="consoleenabled"><?=$SL['SERVICES.LABEL_CONSOLE'];?></label>
-			</td>
-			<td width="2%">&nbsp;</td>
-			<td width="20%">
-				<label class="lb-toggle"><input type="checkbox" id="consoleenabled" name="consoleenabled" <?=$checkedconsole;?> value="enabled"><span class="lb-toggle-slider"></span></label>
-			</td>
-			<td width="2%">&nbsp;</td>
-			<td  class="hint">
-				<?=$SL['SERVICES.HINT_CONSOLE'];?>
-			</td>
-		</tr>
-	</table>
-	
+	<div class="lb-form-row">
+		<div class="lb-form-label"></div>
+		<div class="lb-form-field">
+			<label><input type="checkbox" id="serialenabled" name="serialenabled" <?=$checkedserial;?> value="enabled"> <?=$SL['SERVICES.LABEL_SERIAL'];?></label>
+		</div>
+		<div class="lb-form-help hint"><?=$SL['SERVICES.HINT_SERIAL'];?></div>
+	</div>
+	<div class="lb-form-row">
+		<div class="lb-form-label"></div>
+		<div class="lb-form-field">
+			<label><input type="checkbox" id="consoleenabled" name="consoleenabled" <?=$checkedconsole;?> value="enabled"> <?=$SL['SERVICES.LABEL_CONSOLE'];?></label>
+		</div>
+		<div class="lb-form-help hint"><?=$SL['SERVICES.HINT_CONSOLE'];?></div>
+	</div>
+
 	</form>
-	<br><br><br>
-	<div style="text-align:center;">
-			<a id="btncancel" class="lb-btn lb-btn-icon" href="<?=LBWeb::$lbsystempage;?>"><i class="pi pi-times"></i> <?=$SL['COMMON.BUTTON_CANCEL'];?></a>
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-icon"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_SAVE'];?></button>
+	<div class="lb-actions">
+		<a id="btncancel" class="lb-btn lb-btn-sm lb-btn-icon" href="<?=LBWeb::$lbsystempage;?>"><i class="pi pi-times"></i> <?=$SL['COMMON.BUTTON_CANCEL'];?></a>
+		<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_SAVE'];?></button>
 	</div>
 
 
 	<?php else: ?>
-	<STYLE>
-	.lb_flex-item-label 
-	{
-		min-width	:250px;
-		width		:250px;
-	}
-	.lb_flex-item 
-	{	
-		min-width	:250px;
-		width		:250px;
-		max-width	:450px;
-		flex-wrap	:nowrap;
-		margin-top: -10px;  
-	}
-	.lb_flex-item-help 
-	{
-		min-width	:100px;
-		width		:100%;
-		position	:relative;
-		margin-left	:10px;
-	}
-	
-	</STYLE>
-
-	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/services.php?load=1">
+	<form method="post" data-ajax="false" name="main_form" id="main_form" style="max-width:80%" action="/admin/system/services.php?load=1">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" id="web" name="web" value="0">
-	<div class="wide"><?=$SL['SERVICES.HEADING_APACHE'];?></div>
-	<br>
-	<div class="lb_flex-container">
-		<div class="lb_flex-item-spacer">
-		</div>
-		<div class="lb_flex-item-label">
+	<div class="lb-section-title"><?=$SL['SERVICES.HEADING_APACHE'];?></div>
+	<div class="lb-form-row">
+		<div class="lb-form-label">
 			<label for="webport"><?=$SL['SERVICES.LABEL_WEBPORT'];?></label>
 		</div>
-		<div class="lb_flex-item">
-			<input placeholder="<?=$SL['SERVICES.HINT_INNER_WEBPORT'];?>" id="webport" name="webport" type="text" style="min-width:15em" class="textfield" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_PORT'];?>" data-validation-rule="special:port" value="<?=$cfg->Webserver->Port;?>">
-				
+		<div class="lb-form-field">
+			<input placeholder="<?=$SL['SERVICES.HINT_INNER_WEBPORT'];?>" id="webport" name="webport" type="text" class="lb-input" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_PORT'];?>" data-validation-rule="special:port" value="<?=$cfg->Webserver->Port;?>">
 		</div>
-		<div class="lb_flex-item-help">
+		<div class="lb-form-help">
 			<div class="hint"><?=$SL['SERVICES.HINT_WEBPORT'];?></div>
 		</div>
-		<div class="lb_flex-item-spacer">
-		</div>
 	</div>
-	
-	<div class="lb_flex-container">
-		<div class="lb_flex-item-spacer">
+
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<label for="sslenabled"><?=$SL['SERVICES.LABEL_SSLENABLED'];?></label>
 		</div>
-		<div class="lb_flex-item-label">
-			<label for ="sslenabled"><?=$SL['SERVICES.LABEL_SSLENABLED'];?></label>
-		</div>
-		<div class="lb_flex-item">
+		<div class="lb-form-field">
 			<?php if (isset($_SERVER['HTTPS'])): ?>
 				<label class="lb-toggle"><input type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="disabled" disabled="disabled"><span class="lb-toggle-slider"></span></label>
 			<?php else: ?>
 			<label class="lb-toggle"><input type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="enabled"><span class="lb-toggle-slider"></span></label>
 			<?php endif; ?>
 		</div>
-		<div class="lb_flex-item-help">
+		<div class="lb-form-help">
 			<div class="hint"><?=$SL['SERVICES.HINT_SSL'];?>
 			<?php if (isset($_SERVER['HTTPS'])): ?>
 			<?=$SL['SERVICES.HINT_SSL_ENABLED'];?>
 			<?php endif; ?>
 			</div>
 		</div>
-		<div class="lb_flex-item-spacer">
-		</div>
 	</div>
-	
-	<div class="lb_flex-container">
-		<div class="lb_flex-item-spacer">
-		</div>
-		<div class="lb_flex-item-label">
+
+	<div class="lb-form-row">
+		<div class="lb-form-label">
 			<label for="sslport"><?=$SL['SERVICES.LABEL_SSLPORT'];?></label>
 		</div>
-		<div class="lb_flex-item">
-			<input placeholder="<?=$SL['SERVICES.HINT_INNER_SSLPORT'];?>" id="sslport" name="sslport" type="text" style="min-width:15em" class="textfield" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_SSLPORT'];?>" data-validation-rule="special:port" value="<?=$cfg->Webserver->Sslport;?>">
-			
+		<div class="lb-form-field">
+			<input placeholder="<?=$SL['SERVICES.HINT_INNER_SSLPORT'];?>" id="sslport" name="sslport" type="text" class="lb-input" data-validation-error-msg="<?=$SL['SERVICES.ERR_WRONG_SSLPORT'];?>" data-validation-rule="special:port" value="<?=$cfg->Webserver->Sslport;?>">
 		</div>
-		<div class="lb_flex-item-help">
+		<div class="lb-form-help">
 			<div class="hint"><?=$SL['SERVICES.HINT_SSLPORT'];?></div>
-		</div>
-			<div class="lb_flex-item-spacer">
-		</div>
-	</div>
-	
-	<div class="lb_flex-container">
-		<div class="lb_flex-item-spacer">
-		</div>
-		<div class="lb_flex-item-label">
-			<?=$SL['SERVICES.DOWNLOAD_CACERT'];?>
-		</div>
-		<div class="lb_flex-item">
-			<a class="lb-btn lb-btn-sm lb-btn-icon" mimetype="application/x-x509-ca-cert" href="/system/cacert.cer"><i class="pi pi-download"></i> cacert.cer</a>
-		</div>
-		<div class="lb_flex-item-help hint">
-			<?=$SL['SERVICES.HINT_DOWNLOAD_CACERT'];?>
-		</div>
-		<div class="lb_flex-item-spacer">
 		</div>
 	</div>
 
-	<div id="changed_hint" class="hint" style="display:none;color:green;text-align:center;">
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<?=$SL['SERVICES.DOWNLOAD_CACERT'];?>
+		</div>
+		<div class="lb-form-field">
+			<a class="lb-btn lb-btn-sm lb-btn-icon" mimetype="application/x-x509-ca-cert" href="/system/cacert.cer"><i class="pi pi-download"></i> cacert.cer</a>
+		</div>
+		<div class="lb-form-help">
+			<div class="hint"><?=$SL['SERVICES.HINT_DOWNLOAD_CACERT'];?></div>
+		</div>
+	</div>
+
+	<div id="changed_hint" class="hint" style="display:none;color:green;">
 		<b><?=$SL['SERVICES.HINT_PORT_CHANGED'];?></b>
 	</div>
 
 	</form>
-	<br>
-	<div style="text-align:center;">
-			<a id="btncancel" class="lb-btn lb-btn-icon" href="<?=LBWeb::$lbsystempage;?>"><i class="pi pi-times"></i> <?=$SL['COMMON.BUTTON_CANCEL'];?></a>
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-icon"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_SAVE'];?></button>
-			<pre> </pre>
-			<a id="btnlogs" class="lb-btn lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/apache2/error.log&header=html&format=template" target="_blank"><i class="pi pi-arrow-down"></i> Apache Log</a>
-			<!-- 
-			<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/lighttpd/error.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Webserver Log</a>
-			--> 
-			<!-- 
-			<a id="btnlogs" data-role="button" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/lighttpd/cgierr.log&header=html&format=template" target="_blank" data-inline="true" data-mini="true" data-icon="arrow-d">Webserver Script Errorlog</a>
-			-->
-		
+	<div class="lb-actions">
+		<a id="btncancel" class="lb-btn lb-btn-sm lb-btn-icon" href="<?=LBWeb::$lbsystempage;?>"><i class="pi pi-times"></i> <?=$SL['COMMON.BUTTON_CANCEL'];?></a>
+		<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_SAVE'];?></button>
+		<a id="btnlogs" class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/apache2/error.log&header=html&format=template" target="_blank"><i class="pi pi-arrow-down"></i> Apache Log</a>
 	</div>
 	
 	
@@ -540,15 +443,19 @@ function save()
 	}
 
 	/* Serial */
-	
-	$output = exec('grep -E "^enable_uart=1" /boot/config.txt'); 
-	if ($output) {
-		$serialstatus = "1";
-	} else {
-		$serialstatus = "";
-	}
+
+	$output = exec('grep -E "^enable_uart=1" /boot/config.txt');
+	$serialstatus = $output ? "1" : "";
+
+	$output = exec('grep -E "console=(serial0|ttyAMA0|ttyS0)" /boot/cmdline.txt');
+	$consolestatus = $output ? "1" : "";
+
+	$serialenabled_req = (isset($_POST['serialenabled']) && $_POST['serialenabled'] === "enabled");
+	$consoleenabled_req = (isset($_POST['consoleenabled']) && $_POST['consoleenabled'] === "enabled");
+
+	// uart must be enabled if either serial interface OR serial console is requested
 	if (isset($_POST['serial'])) {
-		if ($_POST['serialenabled'] === "enabled") {
+		if ($serialenabled_req || $consoleenabled_req) {
 			if (!$serialstatus) {
 				reboot_required($SL['SERVICES.HINT_REBOOT']);
 			}
@@ -561,14 +468,8 @@ function save()
 		}
 	}
 
-	$output = exec('grep -E "console=(serial0|ttyAMA0|ttyS0)" /boot/cmdline.txt'); 
-	if ($output) {
-		$consolestatus = "1";
-	} else {
-		$consolestatus = "";
-	}
 	if (isset($_POST['console'])) {
-		if ($_POST['consoleenabled'] === "enabled") {
+		if ($consoleenabled_req) {
 			if (!$consolestatus) {
 				reboot_required($SL['SERVICES.HINT_REBOOT']);
 			}

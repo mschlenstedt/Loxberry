@@ -3,6 +3,19 @@ use warnings;
 use strict;
 use LoxBerry::System;
 use LoxBerry::Web;
+use CGI qw/:standard/;
+use JSON;
+
+# AJAX: SecurePIN check
+my $cgi = CGI->new;
+if ($cgi->param("action") && $cgi->param("action") eq "checksecpin") {
+	my %resp;
+	my $checkres = LoxBerry::System::check_securepin($cgi->param("secpin"));
+	$resp{error} = int($checkres);
+	print header('application/json');
+	print to_json(\%resp);
+	exit;
+}
 
 my $plugintitle = "MQTT";
 my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt";

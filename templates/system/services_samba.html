@@ -3,47 +3,18 @@
 
 <BR>
 
-<STYLE>
-
-	.lb-form-label
-	{
-		min-width	:220px;
-		position	:relative;
-		margin-left	:10px;
-		flex-grow	:2;
-	}
-	.lb-form-field
-	{
-		//min-width	:150px;
-		//width		:250px;
-		//max-width	:250px;
-		flex-wrap	:nowrap;
-		margin-top	:-10px;
-		flex-grow   :1;
-	}
-	.lb-form-help
-	{
-		//min-width	:100px;
-		position	:relative;
-		margin-left	:10px;
-		margin-top	:-10px;
-		flex-grow   :1;
-	}
-</STYLE>
-
 <TMPL_UNLESS ERROR>
 
-<FORM id="main_form" method="post" data-ajax="false"> 
+<FORM id="main_form" method="post" data-ajax="false" style="max-width:80%">
 	<INPUT id="saveformdata" name="saveformdata" type="hidden" value="1">
-	<DIV	class="lb-form-row">
-		<DIV	class="lb-form-label">
-			<LABEL	class=	"control-label"
-				for="global_workgroup"><TMPL_VAR SERVICES_SAMBA.WORKGROUP_LABEL></LABEL>
+	<DIV class="lb-form-row">
+		<DIV class="lb-form-label">
+			<LABEL class="control-label" for="global_workgroup"><TMPL_VAR SERVICES_SAMBA.WORKGROUP_LABEL></LABEL>
 		</DIV>
-		<DIV	class="lb-form-field">
-			<input width="100%" value="" id="global_workgroup" name="global_workgroup" type="text" class="textfield global">
+		<DIV class="lb-form-field">
+			<input value="" id="global_workgroup" name="global_workgroup" type="text" class="lb-input global">
 		</DIV>
-		<DIV	class="lb-form-help hint">
+		<DIV class="lb-form-help hint">
 			<TMPL_VAR SERVICES_SAMBA.WORKGROUP_HINT>
 		</DIV>
 	</DIV>

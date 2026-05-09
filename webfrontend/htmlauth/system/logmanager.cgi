@@ -112,9 +112,17 @@ sub form_log
 {
 	$maintemplate->param( 'FORM_LOG', 1);
 	print LoxBerry::Log::get_notifications_html("logmanager", 'Log Database');
-	
+
 	# For embedded mode, send header
 	print $cgi->header(-charset=>'utf-8') if ($embed);
+
+	# Expand/Collapse buttons (only in full mode)
+	if (!$R::package) {
+		print "<div style='display:flex;justify-content:flex-end;gap:8px;margin-bottom:var(--lb-space-md)'>\n";
+		print "<button class='lb-btn lb-btn-sm lb-btn-icon' id='btn_expand_all'><i class='pi pi-plus'></i> $SL{'LOGMANAGER.BUTTON_EXPAND_ALL'}</button>\n";
+		print "<button class='lb-btn lb-btn-sm lb-btn-icon' id='btn_collapse_all'><i class='pi pi-minus'></i> $SL{'LOGMANAGER.BUTTON_COLLAPSE_ALL'}</button>\n";
+		print "</div>\n";
+	}
 
 	my @logs = LoxBerry::Log::get_logs($R::package, $R::name);
 	# print "Logs: " . scalar (@logs) . "\n";
@@ -128,24 +136,24 @@ sub form_log
 			print "</table>\n";
 		}
 		if ($currpackage and $currpackage ne $log->{PACKAGE}) {
-		print "</div>\n";		
+		print "</details>\n";
 		}
 		
 		my $package_esc = $log->{PACKAGE};
 		$package_esc =~ tr/ /_/;
 		
 		if (! defined($currpackage) or ($currpackage ne $log->{PACKAGE})) {
-			my $expandview = defined $R::package ? 'false' : 'true';
-			print "<div data-role='collapsible' id='coll_package_$package_esc' data-content-theme='true' data-collapsed='$expandview' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>\n";
+			my $open_attr = ' open';
+			print "<details class='lb-collapsible' id='coll_package_$package_esc'$open_attr>\n";
 			if($log->{'_ISPLUGIN'}) {
-				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$package_esc'>$log->{PLUGINTITLE} <span style='font-size:80%;'>(Plugin Log)</span></h2>\n";
+				print "\t<summary class='lb-section-title' id='package_$package_esc'>$log->{PLUGINTITLE} <span style='font-size:80%;'>(Plugin Log)</span></summary>\n";
 				print LoxBerry::Web::loglevel_select_html(
 					LABEL => $SL{'LOGMANAGER.CURRENT_LOGLEVEL'},
 					FORMID => "loglevel_" . $package_esc,
 					PLUGIN => $log->{PACKAGE}
 				);
 			} else {
-				print "\t<h2 class='ui-bar ui-bar-a ui-corner-all' id='package_$package_esc'>" . ucfirst($log->{PACKAGE}) . " <span style='font-size:80%;'>(LoxBerry System Log)</span></h2>\n";
+				print "\t<summary class='lb-section-title' id='package_$package_esc'>" . ucfirst($log->{PACKAGE}) . " <span style='font-size:80%;'>(LoxBerry System Log)</span></summary>\n";
 			}
 		}
 		if (! defined($currname) or ($currname ne $log->{NAME})) {
@@ -175,15 +183,8 @@ sub form_log
 			# Replace \n with <br>\n
 			$log->{ATTENTIONMESSAGES} =~ s/\n/<br>\n/g;
 			
-			print "&nbsp;<a href='#attmsg_$log->{KEY}' data-rel='popup' data-transition='fade'><img alt='Info' src='/system/images/notification_info_small.svg' height='15' width='15'></a>\n";
-			print "\t\t\t\t<div data-role='popup' id='attmsg_$log->{KEY}' class='ui-content' data-arrow='true' >\n";
-			print "\t\t\t\t\t<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left'>Close</a>\n";
-			print "\t\t\t\t\t<p><b>";
-			print $SL{'LOGMANAGER.ATTMSG_POPUP_HEADING'};
-			print "</b><br>";
-			print "$log->{ATTENTIONMESSAGES}";
-			print "</p>\n";
-			print "\t\t\t\t</div>";
+			print "&nbsp;<i class='pi pi-info-circle' style='font-size:0.85em;vertical-align:middle;opacity:0.8'></i>";
+			print "<span class='attmsg-data' style='display:none'>$log->{ATTENTIONMESSAGES}</span>";
 		
 		}
 		
@@ -210,7 +211,7 @@ sub form_log
 	# lastline-Closing
 	if (@logs) {
 		print "\t</table>\n";
-		print "</div>\n";
+		print "</details>\n";
 	}	
 	
 	return;
