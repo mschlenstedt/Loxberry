@@ -389,7 +389,7 @@ sub notification
 			NAME => $not_group,
 			SEVERITY => 3,
 			MESSAGE => "Healthcheck reports $respobj{errors} errors. Please run Healthcheck for details.\nCurrent errors:\n$respobj{errorstrings}",
-			LINK => 'http://' . LoxBerry::System::lbhostname() . ':' . LoxBerry::System::lbwebserverport() .'/admin/system/healthcheck.cgi',
+			LINK => '/admin/system/healthcheck.cgi',
 			timeepoch => time,
 			timelox => epoch2lox(time)
 		);
