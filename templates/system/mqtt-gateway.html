@@ -8,13 +8,48 @@
 	color:green;
 
 }
-#overlay 
+#overlay
 {
   display: none !important;
 }
 
 .datahidden {
 	display:none;
+}
+
+/* mslist_select_html generates legacy .ui-field-contain — restyle to match lb-form-row */
+#form_basic .ui-field-contain {
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:var(--lb-space-md);
+    margin-bottom:var(--lb-space-lg);
+    padding:var(--lb-space-sm) 0;
+    border-bottom:none;
+}
+#form_basic .ui-field-contain > label {
+    min-width:150px;
+    width:200px;
+    text-align:right;
+    font-weight:600;
+    font-size:var(--lb-font-sm);
+    color:var(--lb-text-secondary);
+    line-height:1.4;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+#form_basic .ui-field-contain > select {
+    flex:1;
+    min-width:200px;
+    height:var(--lb-input-height,36px);
+    padding:0 8px;
+    border:1px solid var(--lb-input-border,#ccc);
+    border-radius:var(--lb-radius-sm,4px);
+    background:#fff;
+    font-size:var(--lb-font-base,14px);
+    color:var(--lb-text,#333);
+    box-sizing:border-box;
 }
 </style>
 
@@ -33,7 +68,7 @@
 
 <TMPL_IF FORM_BASIC>
 <!-- Form BASIC (MQTT Basic - V2) -->
-<form id="form_basic" onsubmit="return false;">
+<form id="form_basic" onsubmit="return false;" style="max-width:80%;margin:0 auto">
 
     <!-- Gateway Service Status -->
     <div class="servicestatus">
@@ -85,7 +120,7 @@
 
     <div class="lb-form-row">
         <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_UDP_PORT></div>
-        <div class="lb-form-field" style="max-width:150px">
+        <div class="lb-form-field">
             <input class="lb-input" type="number" id="basic_udpport" data-role="none">
         </div>
         <div class="lb-form-help"><TMPL_VAR MQTT.HELP_UDP_PORT></div>
@@ -120,7 +155,7 @@
     <div class="lb-form-row">
         <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_CPU_PROFILE></div>
         <div class="lb-form-field">
-            <select class="lb-select" name="Main.cpuperf" id="Main.cpuperf" data-role="none" style="max-width:250px">
+            <select class="lb-select" name="Main.cpuperf" id="Main.cpuperf" data-role="none">
                 <option value="1"><TMPL_VAR MQTT.CPU_ENERGY_SAVER></option>
                 <option value="2.5"><TMPL_VAR MQTT.CPU_MODERATE></option>
                 <option value="5"><TMPL_VAR MQTT.CPU_STANDARD></option>
@@ -135,7 +170,7 @@
     <div class="lb-form-row">
         <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_RESET_AFTER_SEND></div>
         <div class="lb-form-field" style="display:flex;align-items:center;gap:8px">
-            <input class="lb-input" type="number" name="Main.resetaftersendms" id="Main.resetaftersendms" data-role="none" style="max-width:100px">
+            <input class="lb-input" type="number" name="Main.resetaftersendms" id="Main.resetaftersendms" data-role="none">
             <span style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)">ms</span>
         </div>
         <div class="lb-form-help"><TMPL_VAR MQTT.HELP_RESET_AFTER_SEND></div>
@@ -159,7 +194,7 @@
     <div class="lb-form-row">
         <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_UDP_IN_PORT></div>
         <div class="lb-form-field">
-            <input class="lb-input" name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" data-role="none" style="max-width:150px">
+            <input class="lb-input" name="udpinport" id="udpinport" type="text" value="<TMPL_VAR UDPINPORT>" data-role="none">
         </div>
         <div class="lb-form-help"><TMPL_VAR MQTT.HELP_UDP_IN_PORT></div>
     </div>

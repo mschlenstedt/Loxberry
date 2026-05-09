@@ -38,7 +38,7 @@
 	</div>
 </div>
 
-<div id="mqttapp">
+<div id="mqttapp" style="max-width:80%">
 	<div class="lb-section-title">{{sl.heading}}</div>
 	<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)" v-html="sl.intro"></p>
 
@@ -81,7 +81,7 @@
 
 	<div class="lb-form-row">
 		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_PORT></div>
-		<div class="lb-form-field" style="max-width:150px">
+		<div class="lb-form-field">
 			<input class="lb-input" type="number" id="Mqtt.Brokerport"
 				v-model.number="Mqtt.Brokerport"
 				:disabled="Mqtt.Uselocalbroker=='true'"
@@ -113,7 +113,7 @@
 
 	<div class="lb-form-row">
 		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_WEBSOCKET_PORT></div>
-		<div class="lb-form-field" style="max-width:150px">
+		<div class="lb-form-field">
 			<input class="lb-input" type="number" id="Mqtt.Websocketport"
 				v-model.number="Mqtt.Websocketport"
 				v-on:change="formadata_changed()"

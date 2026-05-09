@@ -25,11 +25,12 @@
 </div>
 
 	
-<form id="main_form" style="visibility:hidden;"> <!-- style="display:none;" --> 
+<form id="main_form" style="visibility:hidden;max-width:80%;"> <!-- style="display:none;" -->
 <div class="lb-section-title"><TMPL_VAR MAILSERVER.LABEL_EMAIL_SETTINGS></div>
 <input type="hidden" name="action" value="setmailcfg">
 <DIV	class="lb-form-row">
 	<DIV	class="lb-form-label">
+		<LABEL class="control-label"><TMPL_VAR MAILSERVER.LABEL_EMAIL_FEATURE></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
 		<label><input onclick="disable();" type="checkbox" id="activate_mail" name="activate_mail" value="1"><TMPL_VAR MAILSERVER.LABEL_ENABLE_EMAIL_SETTINGS></label>
@@ -46,7 +47,7 @@
 			for="email"><TMPL_VAR MAILSERVER.LABEL_DEFAULT_EMAIL></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input width="100%" value="<TMPL_VAR EMAIL>" id="email" name="email" type="email" class="textfield" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
+		<input value="<TMPL_VAR EMAIL>" id="email" name="email" type="email" class="lb-input" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
 	</DIV>
 	<DIV	class="lb-form-help">
 	</DIV>
@@ -58,7 +59,7 @@
 			for="smtpserver"><TMPL_VAR MAILSERVER.LABEL_SMTP_SERVER></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input id="smtpserver" name="smtpserver" type="text" class="textfield" value=""  data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
+		<input id="smtpserver" name="smtpserver" type="text" class="lb-input" value=""  data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_SMTP>">
 	</DIV>
 	<DIV	class="lb-form-help">
 	</DIV>
@@ -72,7 +73,7 @@
 			for="smtpport"><TMPL_VAR MAILSERVER.LABEL_SMTP_PORT></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input id="smtpport" name="smtpport" type="text" class="textfield" value="" data-validation-rule="special:port" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
+		<input id="smtpport" name="smtpport" type="text" class="lb-input" value="" data-validation-rule="special:port" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_PORT>">
 	</DIV>
 	<DIV	class="lb-form-help hint">
 		<TMPL_VAR MAILSERVER.HINT_SMTP_PORT>
@@ -80,7 +81,9 @@
 </DIV>
 
 <DIV	class="lb-form-row mailsettings">
-	<DIV	class="lb-form-label"></DIV>
+	<DIV	class="lb-form-label">
+		<LABEL class="control-label"><TMPL_VAR MAILSERVER.LABEL_SMTP_ENCRYPTION></LABEL>
+	</DIV>
 	<DIV	class="lb-form-field">
 		<label><input onclick="disable()" <TMPL_VAR CHECKED1> type="checkbox" id="smtpcrypt" name="smtpcrypt" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_ENCRYPTED></label>
 	</DIV>
@@ -90,7 +93,9 @@
 </DIV>
 
 <DIV	class="lb-form-row mailsettings">
-	<DIV	class="lb-form-label"></DIV>
+	<DIV	class="lb-form-label">
+		<LABEL class="control-label"><TMPL_VAR MAILSERVER.LABEL_SMTP_AUTH></LABEL>
+	</DIV>
 	<DIV	class="lb-form-field">
 		<label><input onclick="disable()" <TMPL_VAR CHECKED2> type="checkbox" id="smtpauth" name="smtpauth" value="1"><TMPL_VAR MAILSERVER.OPTION_USE_AUTHENTICATION></label>
 	</DIV>
@@ -105,7 +110,7 @@
 			for="smtpuser"><TMPL_VAR MAILSERVER.LABEL_SMTP_USER></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input id="smtpuser" name="smtpuser" type="text" class="textfield" value="">
+		<input id="smtpuser" name="smtpuser" type="text" class="lb-input" value="">
 	</DIV>
 	<DIV	class="lb-form-help hint">
 		<TMPL_VAR MAILSERVER.HINT_SMTP_USER>
@@ -118,11 +123,11 @@
 		<LABEL	class=	"control-label" id="labelsmtppass"
 			for="smtppass"><TMPL_VAR MAILSERVER.LABEL_SMTP_PASSWORD></LABEL>
 	</DIV>
-	<DIV	class="lb-form-field">
-		<input id="smtppass" name="smtppass" type="password" class="textfield" value="">
+	<DIV	class="lb-form-field" style="display:flex;gap:6px;align-items:center">
+		<input id="smtppass" name="smtppass" type="password" class="lb-input" value="" style="flex:1;min-width:0">
+		<button id="showpass" name="showpass" type="button" class="lb-btn lb-btn-sm lb-btn-icon" style="flex-shrink:0"><i class="pi pi-eye"></i></button>
 	</DIV>
 	<DIV	class="lb-form-help">
-		<button id="showpass" name="showpass" type="button" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-eye"></i> <TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD></button>
 	</DIV>
 </DIV>
 
@@ -149,11 +154,10 @@
 
 <DIV	class="lb-form-row mailsettings">
 	<DIV	class="lb-form-label">
+		<LABEL class="control-label"><TMPL_VAR MAILSERVER.LABEL_SYSTEM_NOTIFICATIONS></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<LABEL	class=	"control-label"><TMPL_VAR MAILSERVER.LABEL_SYSTEM_NOTIFICATIONS></LABEL>
 		<div class="lb-btn-group">
-        <!-- <legend>System notifications</legend> -->
         <input type="checkbox" name="MAIL_SYSTEM_INFOS" id="MAIL_SYSTEM_INFOS" class="MAILNOTIFY">
         <label for="MAIL_SYSTEM_INFOS"><TMPL_VAR MAILSERVER.OPTION_INFOS></label>
         <input type="checkbox" name="MAIL_SYSTEM_ERRORS" id="MAIL_SYSTEM_ERRORS" class="MAILNOTIFY">
@@ -166,11 +170,10 @@
 
 <DIV	class="lb-form-row mailsettings">
 	<DIV	class="lb-form-label">
+		<LABEL class="control-label"><TMPL_VAR MAILSERVER.LABEL_PLUGIN_NOTIFICATIONS></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<LABEL	class=	"control-label"><TMPL_VAR MAILSERVER.LABEL_PLUGIN_NOTIFICATIONS></LABEL>
 		<div class="lb-btn-group">
-        <!-- <legend>Plugin notifications</legend> -->
         <input type="checkbox" name="MAIL_PLUGIN_INFOS" id="MAIL_PLUGIN_INFOS" class="MAILNOTIFY">
         <label for="MAIL_PLUGIN_INFOS"><TMPL_VAR MAILSERVER.OPTION_INFOS></label>
         <input type="checkbox" name="MAIL_PLUGIN_ERRORS" id="MAIL_PLUGIN_ERRORS" class="MAILNOTIFY">
@@ -235,15 +238,12 @@ $(function() {
 	
 	// Show password
 	  $('#showpass').click(function() {
-	    if($('#smtppass').prop('type') == 'password') 
-	    {
+	    if($('#smtppass').prop('type') == 'password') {
 	    	$('#smtppass').prop('type', 'text');
-	    	$('#showpass').html('<TMPL_VAR MAILSERVER.BUTTON_HIDE_PASSWORD>');
-	    } 
-	    else 
-		{
+	    	$('#showpass').html('<i class="pi pi-eye-slash"></i>');
+	    } else {
 			$('#smtppass').prop('type', 'password');
-	    	$('#showpass').html('<TMPL_VAR MAILSERVER.BUTTON_SHOW_PASSWORD>');
+	    	$('#showpass').html('<i class="pi pi-eye"></i>');
 		}
 	  });
 	
