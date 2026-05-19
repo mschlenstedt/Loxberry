@@ -4,14 +4,6 @@
 	</TMPL_IF>
 	
 	<div id="notificationBlock">
-		<TMPL_IF NOTIFICATIONCOUNT>
-		<div style="min-width:100%; height:4px; background-color:#888888;">
-			<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:3px; background-repeat: no-repeat; display: block; margin-left: auto; margin-right: auto;">
-				<img src="/system/images/notification_info_big.svg" >
-			</div>
-		</div>
-		<div style="height:15px"></div>
-		</TMPL_IF>
 		
 		<div style="display:none" id="notificationCount"><TMPL_VAR NOTIFICATIONCOUNT></div>
 		
@@ -51,10 +43,6 @@
 			<div>
 			<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="notifdeleteall" style="display:none;" role="button"><i class="pi pi-times"></i> <TMPL_VAR NOTIFY.DELETE_ALL_MESSAGES></a>
 			</div>
-		</div>
-		<div style="width:100%; height:4px; background-color:#888888;">
-		</div>
-		<div style="width:100%;height:40px">
 		</div>
 		</TMPL_IF>
 	</div>	
