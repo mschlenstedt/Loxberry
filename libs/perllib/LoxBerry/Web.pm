@@ -369,10 +369,12 @@ sub pagestart
 	my $sidebar_html = '';
 	my $tabbar_html  = '';
 	foreach my $plugin (@plugins) {
-		my $title = HTML::Entities::encode_entities($plugin->{PLUGINDB_TITLE}, '<>&"');
-		my $url   = HTML::Entities::encode_entities("/admin/plugins/" . $plugin->{PLUGINDB_FOLDER} . "/", '<>&"');
+		my $title  = HTML::Entities::encode_entities($plugin->{PLUGINDB_TITLE}, '<>&"');
+		my $url    = HTML::Entities::encode_entities("/admin/plugins/" . $plugin->{PLUGINDB_FOLDER} . "/", '<>&"');
+		my $folder = HTML::Entities::encode_entities($plugin->{PLUGINDB_FOLDER}, '<>&"');
+		my $icon   = "/system/images/icons/$folder/icon_64.png";
 		$sidebar_html .= qq{<a class="lb-sidebar-link" href="$url"><span class="lb-sidebar-name">$title</span><div class="lb-sidebar-status"></div></a>\n};
-		$tabbar_html  .= qq{<a class="lb-tab-popup-item" href="$url"><i class="pi pi-box"></i><span>$title</span></a>\n};
+		$tabbar_html  .= qq{<a class="lb-tab-popup-item" href="$url"><img src="$icon" width="22" height="22" style="opacity:0.7;" alt=""><span>$title</span></a>\n};
 	}
 	if ($sidebar_html ne '') {
 		my $section_label = $LoxBerry::System::SL{'HEADER.PANEL_MYPLUGINS'} || 'Meine Plugins';

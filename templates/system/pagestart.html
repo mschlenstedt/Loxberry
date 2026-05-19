@@ -49,12 +49,12 @@
 	<div class="lb-tab-popup-backdrop" id="lb-tab-popup-backdrop" onclick="closeTabPopup()"></div>
 
 	<div class="lb-tab-popup" id="lb-tab-popup-plugins">
-		<div class="lb-tab-popup-header">Meine Plugins</div>
+		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_MYPLUGINS></div>
 		<div class="lb-tab-popup-list">
 			<TMPL_VAR SIDEBAR_PLUGINS_TABBAR_HTML>
 			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item lb-tab-popup-item-muted">
-				<i class="pi pi-plus-circle"></i>
-				<span>Plugin installieren</span>
+				<img src="/system/images/icons/main_plugininstall.png" width="22" height="22" style="opacity:0.5;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span>
 			</a>
 		</div>
 	</div>
@@ -62,79 +62,79 @@
 	<div class="lb-tab-popup" id="lb-tab-popup-settings">
 		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
 		<div class="lb-tab-popup-list">
-			<a href="/admin/system/myloxberry.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-user"></i>
-				<span><TMPL_VAR HEADER.PANEL_MYLOXBERRY></span>
-			</a>
 			<a href="/admin/system/admin.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-shield"></i>
+				<img src="/system/images/icons/main_admin.png" width="22" height="22" style="opacity:0.7;" alt="">
 				<span><TMPL_VAR HEADER.PANEL_ADMIN></span>
 			</a>
-			<a href="/admin/system/miniserver.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-server"></i>
-				<span><TMPL_VAR HEADER.PANEL_MINISERVER></span>
-			</a>
-			<a href="/admin/system/network.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-globe"></i>
-				<span><TMPL_VAR HEADER.PANEL_NETWORK></span>
-			</a>
-			<a href="/admin/system/services.php" class="lb-tab-popup-item">
-				<i class="pi pi-sliders-h"></i>
-				<span><TMPL_VAR HEADER.PANEL_SERVICES></span>
-			</a>
 			<a href="/admin/system/backup.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-database"></i>
+				<img src="/system/images/icons/main_backup.svg" width="22" height="22" style="opacity:0.7;" alt="">
 				<span><TMPL_VAR HEADER.PANEL_BACKUP></span>
 			</a>
+			<a href="/admin/system/miniserver.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_miniserver.svg" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_MINISERVER></span>
+			</a>
+			<a href="/admin/system/mqtt.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_mqtt.svg" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_MQTT></span>
+			</a>
+			<a href="/admin/system/myloxberry.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_myloxberry.svg" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_MYLOXBERRY></span>
+			</a>
 			<a href="/admin/system/power.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-power-off"></i>
+				<img src="/system/images/icons/main_power.png" width="22" height="22" style="opacity:0.7;" alt="">
 				<span><TMPL_VAR HEADER.PANEL_REBOOT></span>
+			</a>
+			<a href="/admin/system/tools/terminal" class="lb-tab-popup-item" target="_blank">
+				<img src="/system/images/icons/main_terminal.svg" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_TERMINAL></span>
 			</a>
 		</div>
 	</div>
 
 	<div class="lb-tab-popup" id="lb-tab-popup-more">
-		<div class="lb-tab-popup-header">Mehr</div>
+		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_MORE></div>
 		<div class="lb-tab-popup-list">
-			<a href="/admin/system/logmanager.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-list"></i>
-				<span>Log Manager</span>
-			</a>
-			<a href="/admin/system/mqtt.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-arrows-h"></i>
-				<span><TMPL_VAR HEADER.PANEL_MQTT></span>
-			</a>
-			<a href="/admin/system/mailserver.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-envelope"></i>
-				<span><TMPL_VAR HEADER.PANEL_MAILSERVER></span>
-			</a>
-			<a href="/admin/system/translate.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-language"></i>
-				<span><TMPL_VAR HEADER.PANEL_TRANSLATE></span>
+			<a href="/admin/system/donate.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_donate.png" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_DONATE></span>
 			</a>
 			<a href="/admin/system/tools/filemanager/filemanager.php" class="lb-tab-popup-item">
-				<i class="pi pi-folder-open"></i>
+				<img src="/system/images/icons/main_filemanager.png" width="22" height="22" style="opacity:0.7;" alt="">
 				<span><TMPL_VAR HEADER.PANEL_FILEMANAGER></span>
 			</a>
+			<a href="/admin/system/logmanager.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_logmanager.png" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_LOGMANAGER></span>
+			</a>
+			<a href="/admin/system/services.php" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_services.png" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_SERVICES></span>
+			</a>
+			<a href="/admin/system/mailserver.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_mail.png" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_MAILSERVER></span>
+			</a>
 			<a href="/admin/system/netshares.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-share-alt"></i>
+				<img src="/system/images/icons/main_netshares.png" width="22" height="22" style="opacity:0.7;" alt="">
 				<span><TMPL_VAR HEADER.PANEL_NETSHARES></span>
 			</a>
-			<a href="/admin/system/usbstorage.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-usb"></i>
-				<span><TMPL_VAR HEADER.PANEL_USBSTORAGE></span>
+			<a href="/admin/system/network.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_network.png" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_NETWORK></span>
 			</a>
 			<a href="/admin/system/remote.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-wifi"></i>
+				<img src="/system/images/icons/main_remote.png" width="22" height="22" style="opacity:0.7;" alt="">
 				<span><TMPL_VAR HEADER.PANEL_REMOTE></span>
 			</a>
-			<a href="/admin/system/tools/terminal" class="lb-tab-popup-item" target="_blank">
-				<i class="pi pi-desktop"></i>
-				<span><TMPL_VAR HEADER.PANEL_TERMINAL></span>
+			<a href="/admin/system/translate.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_translate.png" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_TRANSLATE></span>
 			</a>
-			<a href="/admin/system/donate.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-heart"></i>
-				<span><TMPL_VAR HEADER.PANEL_DONATE></span>
+			<a href="/admin/system/usbstorage.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_usbstorage.png" width="22" height="22" style="opacity:0.7;" alt="">
+				<span><TMPL_VAR HEADER.PANEL_USBSTORAGE></span>
 			</a>
 		</div>
 	</div>
@@ -143,23 +143,23 @@
 	<nav class="lb-tab-bar" id="lb-tab-bar" role="navigation" aria-label="Mobile Navigation">
 		<a href="/admin/system/index.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/index.cgi">
 			<i class="pi pi-home"></i>
-			<span>Home</span>
+			<span><TMPL_VAR HEADER.PANEL_HOME></span>
 		</a>
 		<button class="lb-tab-bar-item" onclick="toggleTabPopup('plugins')" data-role="none">
-			<i class="pi pi-th-large"></i>
-			<span>Plugins</span>
+			<img src="/system/images/icons/main_plugins_title.svg" width="22" height="22" style="filter: brightness(0) invert(1) opacity(0.7);" alt="">
+			<span><TMPL_VAR HEADER.PANEL_MYPLUGINS></span>
 		</button>
 		<a href="/admin/system/updates.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/updates.cgi">
 			<i class="pi pi-sync"></i>
-			<span>Updates</span>
+			<span><TMPL_VAR HEADER.PANEL_UPDATES></span>
 		</a>
 		<button class="lb-tab-bar-item" onclick="toggleTabPopup('settings')" data-role="none">
-			<i class="pi pi-cog"></i>
-			<span>Einstellungen</span>
+			<img src="/system/images/icons/main_system_title.svg" width="22" height="22" style="filter: brightness(0) invert(1) opacity(0.7);" alt="">
+			<span><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></span>
 		</button>
-		<button class="lb-tab-bar-item" onclick="toggleTabPopup('more')" aria-label="Mehr anzeigen" data-role="none">
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('more')" aria-label="<TMPL_VAR HEADER.PANEL_MORE>" data-role="none">
 			<i class="pi pi-ellipsis-h"></i>
-			<span>Mehr</span>
+			<span><TMPL_VAR HEADER.PANEL_MORE></span>
 		</button>
 	</nav>
 
@@ -183,6 +183,7 @@
 					<i class="pi pi-bars"></i>
 				</button>
 				<a href="/admin/system/index.cgi" class="lb-header-btn pi pi-home"></a>
+				<a href="/admin/system/index.cgi?form=system" class="lb-header-btn" title="<TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS>" style="display:inline-flex; align-items:center; justify-content:center;"><img src="/system/images/icons/main_system_title.svg" width="20" height="20" style="filter: brightness(0) invert(1);" alt=""></a>
 				<button class="lb-header-btn lb-nav-toggle" id="btn-nav-toggle" onclick="toggleNavMode()" data-role="none" title="Navigation umschalten (Sidebar / Tab-Leiste)" aria-label="Navigation umschalten">
 					<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
 						<path d="M6 4 L6 18 L20 18"/>

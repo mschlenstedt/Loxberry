@@ -217,7 +217,12 @@ sub form {
 			-default => $unattended_val,
 		);
 	$maintemplate->param("UPDATE_RADIO", $update_radio);
-		
+	$maintemplate->param("SECUPDATE_IS_0",  ($unattended_val eq '0')  ? 1 : 0);
+	$maintemplate->param("SECUPDATE_IS_1",  ($unattended_val eq '1')  ? 1 : 0);
+	$maintemplate->param("SECUPDATE_IS_7",  ($unattended_val eq '7')  ? 1 : 0);
+	$maintemplate->param("SECUPDATE_IS_30", ($unattended_val eq '30') ? 1 : 0);
+	$maintemplate->param("AUTOREBOOT_BOOL", $unattended_reboot_bool);
+
 	our $update_reboot_checkbox = $cgi->checkbox( -name => 'updates-autoreboot',
 												  -checked => $unattended_reboot_bool,
 												  #-checked => 1,

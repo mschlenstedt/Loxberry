@@ -3,29 +3,34 @@
 		<!-- START Form for unattended-upgrades -->
 		
 		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
-		<table class="formtable" style="border:0; width:100%;">
-		<tr>
-			<td>
-			<TMPL_VAR UPDATES.LABEL_ENABLE_UPDATES>
-			</td>
-			<td>
-			<div class="lb-btn-group" style="flex-direction:column;">
-			<TMPL_VAR UPDATE_RADIO>
+		<div style="max-width:80%;">
+			<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-bottom:var(--lb-space-lg);">
+				<div><TMPL_VAR UPDATES.LABEL_ENABLE_UPDATES></div>
+				<div>
+					<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+						<input type="radio" name="option-secupdates" id="secupd-0" value="0" <TMPL_IF SECUPDATE_IS_0>checked</TMPL_IF>>
+						<label for="secupd-0"><TMPL_VAR UPDATES.SECUPDATE_RADIO_OFF></label>
+						<input type="radio" name="option-secupdates" id="secupd-1" value="1" <TMPL_IF SECUPDATE_IS_1>checked</TMPL_IF>>
+						<label for="secupd-1"><TMPL_VAR UPDATES.SECUPDATE_RADIO_DAILY></label>
+						<input type="radio" name="option-secupdates" id="secupd-7" value="7" <TMPL_IF SECUPDATE_IS_7>checked</TMPL_IF>>
+						<label for="secupd-7"><TMPL_VAR UPDATES.SECUPDATE_RADIO_WEEKLY></label>
+						<input type="radio" name="option-secupdates" id="secupd-30" value="30" <TMPL_IF SECUPDATE_IS_30>checked</TMPL_IF>>
+						<label for="secupd-30"><TMPL_VAR UPDATES.SECUPDATE_RADIO_MONTHLY></label>
+					</div>
+				</div>
 			</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-			<TMPL_VAR UPDATES.LABEL_AUTOMATIC_REBOOT>
-			</td>
-			<td>
-			<div class="lb-btn-group" style="flex-direction:column;">
-			<TMPL_VAR UPDATE_REBOOT_CHECKBOX>
+			<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:center; margin-bottom:var(--lb-space-lg);">
+				<div><TMPL_VAR UPDATES.LABEL_AUTOMATIC_REBOOT></div>
+				<div class="lb-form-field">
+					<label><input type="checkbox" name="updates-autoreboot" <TMPL_IF AUTOREBOOT_BOOL>checked</TMPL_IF>> <TMPL_VAR UPDATES.SECUPDATE_REBOOT_ENABLED></label>
+				</div>
 			</div>
-			</td>
-		</tr>
-		</table>
-		<p></p>
+			<div class="lb-actions">
+				<a href="/admin/system/index.cgi?form=system" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+				<button type="button" id="btn-save-secupdates" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
+			</div>
+			<div style="margin-top:8px;"><span id="savehint-secupdates">&nbsp;</span></div>
+		</div>
 		<!-- END Form for unattended-upgrades -->
 		<!-- START Form for system upgrade -->
 <!--		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></div>
@@ -74,25 +79,18 @@
 
 	// AJAX Handler for Updates setting
 	$(document).ready(function(){
-		// Request option for Automatic Updates
-		//$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: 'query'} , success: function(result){
-		//alert(result);
-		// The ajax request returns the name of the radion button, e.g. option-secupdates-7
-		//$('input:radio[id="option-secupdates-30"]').attr("checked", true);
-		//$('input:radio[id="option-secupdates-30"]').attr('data-cacheval','true'); 
-
-		//	$("input[name=option-secupdates]").val(["30"]);
-		//}});
-
-		// Radiobutton Timetable
-		$("input[name='option-secupdates']").change(function(){
+		$("#btn-save-secupdates").click(function(){
 			var val = $("input[name='option-secupdates']:checked").val();
-			$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: val}});
-		});
-		// Checkbox Auto-Reboot
-		$("input[name='updates-autoreboot']").change(function(){
-			var val = $("input[name='updates-autoreboot']").prop("checked");
-			$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: val}});
+			var reboot = $("input[name='updates-autoreboot']").prop("checked");
+			$("#savehint-secupdates").attr("style","color:blue").html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
+			$.when(
+				$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: val}}),
+				$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: reboot}})
+			).done(function(){
+				$("#savehint-secupdates").attr("style","color:green").html("<TMPL_VAR COMMON.MSG_SAVEOK>");
+			}).fail(function(){
+				$("#savehint-secupdates").attr("style","color:red").html("<TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>");
+			});
 		});
 	});
 </script>
@@ -127,43 +125,6 @@
 </TMPL_IF>
 <TMPL_IF lbupdate>
 <!-- ** LoxBerry Update ** -->
-<style>
-/* DivTable.com */
-.divTable{
-	display: table;
-	width: 100%;
-	word-wrap: break-word;
-	overflow:hidden;
-	text-overflow:ellipsis;
-}
-.divTableRow {
-	display: table-row;
-	
-}
-.divTableHeading {
-	background-color: #EEE;
-	display: table-header-group;
-	
-}
-.divTableCell, .divTableHead {
-	border: 0px;
-	display: table-cell;
-	padding: 3px 10px;
-}
-.divTableHeading {
-	background-color: #EEE;
-	display: table-header-group;
-	font-weight: bold;
-}
-.divTableFoot {
-	background-color: #EEE;
-	display: table-footer-group;
-	font-weight: bold;
-}
-.divTableBody {
-	display: table-row-group;
-}
-</style>
 <div class="lb-section-title" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
 <div id="script_failed_block" style="border:1px solid red; background:yellow; display:none;">
 	<TMPL_VAR UPDATES.LBU_SCRIPT_FAILED>
@@ -184,30 +145,30 @@
 
 </div>
 
-<div class="divTable">
-<div class="divTableBody">
-<div class="divTableRow" style="width:100%;">
-	<div class="divTableCell">
+<div style="display:grid; grid-template-columns:1fr 45%; column-gap:20px;">
+
+	<div>
 		<p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
 	</div>
-	<div class="divTableCell hint lb-card" style="width:30%;">
-		<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
-			<div style="flex-grow: 2;">
+	<div class="hint lb-card" style="align-self:start;">
+		<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+			<div>
 			<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
 			<b id="current_version"><TMPL_VAR LBVERSION></b>
 			</div>
-			<div style="flex-grow: 1;">
+			<div>
 			<a id="lbu_button_recheck" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-refresh"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
 			</div>
 		</div>
 		<p>
 			<span id="LBU_HINT_RELEASE_TYPE"></span>
 			<br>
-			<a id="GitHub" style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
+			<a id="GitHub" style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a>
+		</p>
 		<p id="lbu_info">&nbsp;</p>
 		<div id="lbu_error" style="color:red;"></div>
-		<div style="font-size:125%;font-weight:bold;" id="lbu_release_name">&nbsp;</div>
-		<div class="note" id="lbu_release_body">&nbsp;</div>
+		<div style="font-size:125%; font-weight:bold;" id="lbu_release_name">&nbsp;</div>
+		<div id="lbu_release_body" style="margin-top:6px; margin-bottom:6px;">&nbsp;</div>
 		<div id="lbu_published_at">&nbsp;</div>
 		<p><TMPL_VAR UPDATES.LBU_LABEL_CHECKGITHUB> <a href="https://github.com/mschlenstedt/Loxberry/releases" target="_blank">All Releases</a></p>
 		<div id="branch" class="hint" style="color:red;"></div>
@@ -215,53 +176,45 @@
 		<div id="keepupdatefiles" class="hint" style="color:red;"></div>
 		<div id="keepinstallfiles" class="hint" style="color:red;"></div>
 	</div>
-</div>
-<div class="divTableRow">
-<div class="divTableCell">
-	<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
-	<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
-	<br><TMPL_VAR UPDATES.LBU_HINT_PRERELEASE>
-	<br><TMPL_VAR UPDATES.LBU_HINT_LATEST>
-	</span>
-	
-</div>
-<div class="divTableCell">
-	<div class="lb-btn-group" style="flex-direction:column;">
-		<TMPL_VAR RELEASETYPE_RADIO>
-	</div>
-</div>
-</div>
-<div class="divTableRow">
-<div class="divTableCell">
-	<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE>
-</div>
-<div class="divTableCell">
-<div class="lb-btn-group" style="flex-direction:column;">
-	<TMPL_VAR INSTALLTYPE_RADIO>
-</div>
-</div>
-</div>
-<div class="divTableRow">
-	<div class="divTableCell">
-	<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTIME>
-	
-	</div>	
-	<div class="divTableCell">
-	<div id="installtime" class="lb-btn-group" style="flex-direction:column;">
-		<TMPL_VAR INSTALLTIME_RADIO>
-	</div>
-	</div>
-</div>
 
-<div class="divTableRow">
-<div class="divTableCell">
-<TMPL_VAR UPDATES.LBU_LABEL_BUTTONS>
-</div>
-<div class="divTableCell">
-<a id="lbu_button_updateinstall_pre" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
-</div>
-</div>
-</div>
+	<div style="margin-top:28px;">
+		<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
+		<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
+		<br><TMPL_VAR UPDATES.LBU_HINT_PRERELEASE>
+		<br><TMPL_VAR UPDATES.LBU_HINT_LATEST>
+		</span>
+	</div>
+	<div style="margin-top:28px;">
+		<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+			<TMPL_VAR RELEASETYPE_RADIO>
+		</div>
+	</div>
+
+	<div style="margin-top:20px;">
+		<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE>
+	</div>
+	<div style="margin-top:20px;">
+		<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+			<TMPL_VAR INSTALLTYPE_RADIO>
+		</div>
+	</div>
+
+	<div style="margin-top:20px;">
+		<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTIME>
+	</div>
+	<div style="margin-top:20px;">
+		<div id="installtime" class="lb-btn-group" style="flex-direction:column; width:100%;">
+			<TMPL_VAR INSTALLTIME_RADIO>
+		</div>
+	</div>
+
+	<div style="margin-top:20px;">
+		<TMPL_VAR UPDATES.LBU_LABEL_BUTTONS>
+	</div>
+	<div style="margin-top:20px;">
+		<a id="lbu_button_updateinstall_pre" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
+	</div>
+
 </div>
 
 <div id="lbu_updateinstall" style="display:none;">
