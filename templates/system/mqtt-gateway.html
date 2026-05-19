@@ -1708,19 +1708,17 @@ $(function () {
 	<input type="checkbox" name="topics_show_advanced" id="topics_show_advanced" data-mini="true">
 	<label for="topics_show_advanced"><TMPL_VAR MQTT.LABEL_SHOW_DETAILS></label>
 
-	<div data-role='collapsible' id='coll_mqtthttp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2 class='lb-section-title' id='head_mqtthttp'><TMPL_VAR MQTT.LABEL_HTTP_VIRTUAL_INPUTS> <span style='font-size:80%;'>(<span id="http_count">0</span> <TMPL_VAR MQTT.LABEL_ENTRIES>)<span id='head_mqtthttp_permissionErrors' style='display:none;font-size:80%;'>&nbsp;&nbsp;<img style="position:relative;left:15px;top:3px;" src="../../system/images/icon-locked.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<TMPL_VAR MQTT.LABEL_HTTP_PERM_ERRORS></span></span></h2>
-		<div id="generated_http_table">
+	<details class="lb-collapsible" id="coll_mqtthttp">
+		<summary class="lb-section-title" id="head_mqtthttp"><TMPL_VAR MQTT.LABEL_HTTP_VIRTUAL_INPUTS> <span style='font-size:80%;'>(<span id="http_count">0</span> <TMPL_VAR MQTT.LABEL_ENTRIES>)<span id='head_mqtthttp_permissionErrors' style='display:none;font-size:80%;'>&nbsp;&nbsp;<img style="position:relative;left:15px;top:3px;" src="../../system/images/icon-locked.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<TMPL_VAR MQTT.LABEL_HTTP_PERM_ERRORS></span></span></summary>
+		<div class="lb-collapsible-content" id="generated_http_table">
 		</div>
-		<!-- <TMPL_VAR http_table> -->
-	</div>
+	</details>
 
-	<div data-role='collapsible' id='coll_mqttudp' data-content-theme='true' data-collapsed='true' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2 class='lb-section-title' id='head_mqttudp'><TMPL_VAR MQTT.LABEL_UDP_TRANSMISSIONS> <span style='font-size:80%;'>(<span id="udp_count">0</span> <TMPL_VAR MQTT.LABEL_ENTRIES>)</span></h2>
-		<div id="generated_udp_table">
+	<details class="lb-collapsible" id="coll_mqttudp">
+		<summary class="lb-section-title" id="head_mqttudp"><TMPL_VAR MQTT.LABEL_UDP_TRANSMISSIONS> <span style='font-size:80%;'>(<span id="udp_count">0</span> <TMPL_VAR MQTT.LABEL_ENTRIES>)</span></summary>
+		<div class="lb-collapsible-content" id="generated_udp_table">
 		</div>
-		<!-- <TMPL_VAR udp_table> -->
-	</div>
+	</details>
 	<br>
 
 	<div style="display:flex;align-items:center;justify-content:center;">
@@ -2017,7 +2015,7 @@ $(function () {
 			else
 				$("#head_mqtthttp_permissionErrors").hide();
 			
-			if ( $("#coll_mqtthttp").hasClass('ui-collapsible-collapsed') ) {
+			if ( !document.getElementById('coll_mqtthttp').open ) {
 				return;
 			}
 			
@@ -2214,7 +2212,7 @@ $(function () {
 			
 			$("#udp_count").text(resp.health_state.stats.udp_relayedcount);
 
-			if ( $("#coll_mqttudp").hasClass('ui-collapsible-collapsed') ) {
+			if ( !document.getElementById('coll_mqttudp').open ) {
 				return;
 			}
 			
