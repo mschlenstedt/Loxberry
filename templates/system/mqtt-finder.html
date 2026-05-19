@@ -38,8 +38,8 @@
 
 
 <div>
-	<input type="search" name="filter_search" id="filter_search" value="" data-mini="true" data-clear-btn="true">
-	<input type="checkbox" name="checkboxSubscription" id="checkboxSubscription" data-mini="true" style="margin-left:16px">
+	<input class="lb-input" type="search" name="filter_search" id="filter_search" value="">
+	<input type="checkbox" name="checkboxSubscription" id="checkboxSubscription" style="margin-left:16px">
 	<label for="checkboxSubscription"><TMPL_VAR MQTT.FINDER_SUB_SYNTAX></label>
 </div>
 <div><p><small><TMPL_VAR MQTT.FINDER_HINT></small></p></div>
@@ -69,7 +69,7 @@ $(function() {
 		$("#filter_search").val( filterSearchString ); 
 	}
 	if( searchParams.has('e') ) {
-		$("#checkboxSubscription").prop('checked', true).checkboxradio("refresh");
+		$("#checkboxSubscription").prop('checked', true);
 	}
 	
 	setTimer();
