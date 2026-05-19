@@ -1,11 +1,11 @@
 <!-- ** START template/system/network.html 23.12.2018 00:02:39 ************************************************************************************ -->
-<TMPL_IF FORM>									
+<TMPL_IF FORM>
 		<!-- Adapter -->
 			<div class="lb-section-title">Network Adapter</div>
-			
-		<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="<TMPL_VAR SELFURL>">
+
+		<form method="post" data-ajax="false" name="main_form3" id="main_form3" action="<TMPL_VAR SELFURL>" style="max-width:80%">
 			<input type="hidden" name="saveformdata" value="1">
-			<div class="lb-actions">
+			<div class="lb-actions" style="margin-bottom:var(--lb-space-md)">
 				<a class="lb-btn lb-btn-sm" href="#" id="btnlshwnetwork"
 					onClick="window.open('/admin/system/tools/lshwnetwork.cgi?lang=<TMPL_VAR LANG>',
 					'NewWindow1','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=800,height=600')">
@@ -17,27 +17,24 @@
 					<TMPL_VAR NETWORK.BUTTON_CHANGEHOSTNAME>
 				</a>
 			</div>
-			
-			<table class="formtable" style="border:0;width:100%;">
-				<tr class="area-hostname">
-					<td style="width:25%;">
-						<label for="lbhostname"><TMPL_VAR NETWORK.LABEL_HOSTNAME></label>
-					</td>
-					<td style="width:50%;">
-						<input id="lbhostname" name="lbhostname" disabled type="text" class="textfield" value="<TMPL_VAR LBHOSTNAME>">
-					</td>
-					<td style="width:5%;vertical-align:middle;">&nbsp;
-					</td>
-					<td style="width:20%;">&nbsp;
-					</td>
-				</tr>
-				<tr class="area-netzwerkanschluss">
-					<td style="width:25%;">
-						<label id="labelnetzwerkanschluss"><TMPL_VAR NETWORK.LABEL_NETWORKING></label>
-					</td>
-					<td style="width:50%;">
-						<div class="lb-btn-group" id="netzwerkanschluss" style="flex-direction:column;">
-							<TMPL_LOOP INTERFACES>
+
+			<div class="lb-form-row area-hostname">
+				<div class="lb-form-label">
+					<label for="lbhostname"><TMPL_VAR NETWORK.LABEL_HOSTNAME></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" id="lbhostname" name="lbhostname" disabled type="text" value="<TMPL_VAR LBHOSTNAME>">
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerkanschluss">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkanschluss"><TMPL_VAR NETWORK.LABEL_NETWORKING></label>
+				</div>
+				<div class="lb-form-field">
+					<div id="netzwerkanschluss" style="display:flex;flex-direction:column;gap:4px;">
+						<TMPL_LOOP INTERFACES>
+							<label style="display:flex;align-items:center;gap:6px;">
 								<input id="netzwerkanschluss_<TMPL_VAR name>" name="netzwerkanschluss" type="radio" value="<TMPL_VAR name>" data-iswireless="<TMPL_VAR wireless>" onclick="disable();
 								<TMPL_UNLESS wireless>
 								validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);
@@ -45,234 +42,182 @@
 								validate_chk_object(['#netzwerkssid','#netzwerkschluessel']);
 								</TMPL_UNLESS>
 								">
-								<label for="netzwerkanschluss_<TMPL_VAR name>"><TMPL_VAR name>
+								<TMPL_VAR name>
 								<TMPL_UNLESS wireless>
 									(<TMPL_VAR NETWORK.SELECT_CABLED>)
 								<TMPL_ELSE>
 									(<TMPL_VAR NETWORK.SELECT_WIFI>)
 								</TMPL_UNLESS>
-								</label>
-							</TMPL_LOOP>
+							</label>
+						</TMPL_LOOP>
+					</div>
+				</div>
+			</div>
 
-<!--							<input onclick="disable(); validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED1> id="netzwerkanschluss_eth" name="netzwerkanschluss" type="radio" value="eth0">
-								<label for="netzwerkanschluss_eth"><TMPL_VAR NETWORK.SELECT_CABLE></label>
-							<input onclick="disable(); validate_chk_object(['#netzwerkssid','#netzwerkschluessel']);" <TMPL_VAR CHECKED2> id="netzwerkanschluss_wlan" name="netzwerkanschluss" type="radio" value="wlan0">
-								<label for="netzwerkanschluss_wlan"><TMPL_VAR NETWORK.SELECT_WIRELESS></label>
--->
-						</div>
-					</td>
-					<td style="width:5%;vertical-align:middle;">&nbsp;
-					</td>
-					<td style="width:20%;">&nbsp;
-					</td>
-				</tr>
-				<tr class="area-netzwerkssid" style="display:none">
-					<td>
-						<label id="labelnetzwerkssid"><TMPL_VAR NETWORK.LABEL_WIRELESS></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.SSID>" id='netzwerkssid' name='netzwerkssid' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="special:ssid">
-					</td>
-					<td style="vertical-align:middle;">
-						<a class="lb-btn lb-btn-sm" href="#" id="btnlistnetworks"
-							onClick="window.open('/admin/system/tools/listnetworks.cgi?lang=<TMPL_VAR LANG>',
-							'NewWindow2','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=1000,height=600')">
-							<TMPL_VAR NETWORK.BUTTON_SEARCHWIFI>
-						</a>
-					</td>
-					<td>&nbsp;
-					</td>
-				</tr>
-				<tr class="area-netzwerkschluessel" style="display:none">
-					<td>
-						<label id="labelnetzwerkschluessel"><TMPL_VAR NETWORK.LABEL_NETWORKKEY></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.WPA>" id='netzwerkschluessel' name='netzwerkschluessel' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="special:wpa">
-					</td>
-					<td>&nbsp;
-					</td>
-					<td>&nbsp;
-					</td>
-				</tr>
-			</table>
-			
+			<div class="lb-form-row area-netzwerkssid" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkssid"><TMPL_VAR NETWORK.LABEL_WIRELESS></label>
+				</div>
+				<div class="lb-form-field" style="display:flex;gap:var(--lb-space-sm)">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.SSID>" id='netzwerkssid' name='netzwerkssid' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="special:ssid">
+					<a class="lb-btn lb-btn-sm" href="#" id="btnlistnetworks"
+						onClick="window.open('/admin/system/tools/listnetworks.cgi?lang=<TMPL_VAR LANG>',
+						'NewWindow2','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=1000,height=600')">
+						<TMPL_VAR NETWORK.BUTTON_SEARCHWIFI>
+					</a>
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerkschluessel" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkschluessel"><TMPL_VAR NETWORK.LABEL_NETWORKKEY></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.WPA>" id='netzwerkschluessel' name='netzwerkschluessel' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="special:wpa">
+				</div>
+			</div>
+
 			<!-- IPv4 -->
 			<div class="lb-section-title">IPv4</div>
-					
-			<table class="formtable" style="border:0;width:100%;">
-				<tr class="area-netzwerkadressen">
-					<td style="width:25%;">
-						<label id="labelnetzwerkadressen"><TMPL_VAR NETWORK.LABEL_NETWORKADDRESSES></label>
-					</td>
-					<td style="width:50%;">
-						<div class="lb-btn-group" style="flex-direction:column;">
-							<input id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp" onclick="disable(); validate_clean_objects(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" >
-								<label for="netzwerkadressen_dhcp"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP></label>
-							<input id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual" onclick="disable(); validate_chk_object(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);" >
-								<label for="netzwerkadressen_manual"><TMPL_VAR NETWORK.SELECT_IP_MANUAL></label>
-						</div>
-					</td>
-					<td style="width:5%;vertical-align:middle;">
-					</td>
-					<td style="width:20%;">
-					</td>
-				</tr>
-				<tr class="area-netzwerkipadresse" style="display:none">
-					<td>
-						<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.IPV4.IPADDRESS>" id='netzwerkipadresse' name='netzwerkipadresse' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='special:ipaddr'>
-					</td>
-					<td style="vertical-align:middle;">
-					</td>
-					<td>
-					</td>
-				</tr>
-				<tr class="area-netzwerkipmaske" style="display:none">
-					<td>
-						<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.IPV4.MASK>" id='netzwerkipmaske' name='netzwerkipmaske' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="special:netmask">
-					</td>
-					<td style="vertical-align:middle;">
-					</td>
-					<td>
-					</td>
-				</tr>
-				<tr class="area-netzwerkgateway" style="display:none">
-					<td>
-						<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.IPV4.GATEWAY>" id='netzwerkgateway' name='netzwerkgateway' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="special:ipaddr">
-					</td>
-					<td style="vertical-align:middle;">
-					</td>
-					<td>
-					</td>
-				</tr>
-				<tr class="area-netzwerknameserver" style="display:none">
-					<td>
-						<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.IPV4.DNS>" id='netzwerknameserver' name='netzwerknameserver' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="special:ipaddr">
-					</td>
-					<td style="vertical-align:middle;">
-					</td>
-					<td>
-					</td>
-				</tr>
-			</table>
-			
-			
-			<div style="heigth:10px">&nbsp;</div>
-			
+
+			<div class="lb-form-row area-netzwerkadressen">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkadressen"><TMPL_VAR NETWORK.LABEL_NETWORKADDRESSES></label>
+				</div>
+				<div class="lb-form-field">
+					<div style="display:flex;flex-direction:column;gap:4px;">
+						<label style="display:flex;align-items:center;gap:6px;">
+							<input id="netzwerkadressen_dhcp" name="netzwerkadressen" type="radio" value="dhcp" onclick="disable(); validate_clean_objects(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);">
+							<TMPL_VAR NETWORK.SELECT_IP_USEDHCP>
+						</label>
+						<label style="display:flex;align-items:center;gap:6px;">
+							<input id="netzwerkadressen_manual" name="netzwerkadressen" type="radio" value="manual" onclick="disable(); validate_chk_object(['#netzwerkipadresse','#netzwerkipmaske','#netzwerkgateway','#netzwerknameserver']);">
+							<TMPL_VAR NETWORK.SELECT_IP_MANUAL>
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerkipadresse" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV4.IPADDRESS>" id='netzwerkipadresse' name='netzwerkipadresse' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='special:ipaddr'>
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerkipmaske" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV4.MASK>" id='netzwerkipmaske' name='netzwerkipmaske' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="special:netmask">
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerkgateway" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV4.GATEWAY>" id='netzwerkgateway' name='netzwerkgateway' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="special:ipaddr">
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerknameserver" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV4.DNS>" id='netzwerknameserver' name='netzwerknameserver' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="special:ipaddr">
+				</div>
+			</div>
+
 			<!-- IPv6 -->
 			<div class="lb-section-title">IPv6 (Beta)</div>
-			<div style="height:10px"></div>
-			
+
 			<div class="area-custom-config-hint" style="display:none;background: #FF8080; font-color: black; text-shadow: none; border: black 1px solid; padding: 5px;"><TMPL_VAR NETWORK.HINT_CUSTOM_IPV6_SETTINGS></div>
 
-
-			<table class="formtable" style="border:0;width:100%;">
-				<tr class="area-netzwerkadressen_ipV6">
-					<td style="width:25%;">
-						<label id="labelnetzwerkadressen_IPv6"><TMPL_VAR NETWORK.LABEL_NETWORKADDRESSES></label>
-					</td>
-					<td style="width:50%;">
-						<div class="lb-btn-group" style="flex-direction:column;">
+			<div class="lb-form-row area-netzwerkadressen_ipV6">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkadressen_IPv6"><TMPL_VAR NETWORK.LABEL_NETWORKADDRESSES></label>
+				</div>
+				<div class="lb-form-field">
+					<div style="display:flex;flex-direction:column;gap:4px;">
+						<label style="display:flex;align-items:center;gap:6px;">
 							<input onclick="disable(); validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerknameserver_IPv6']);" <TMPL_VAR CHECKED_AUTO_IPv6> id="netzwerkadressen_auto_IPv6" name="netzwerkadressen_IPv6" type="radio" value="auto">
-							<label for="netzwerkadressen_auto_IPv6"><TMPL_VAR NETWORK.SELECT_IP_AUTO_IPv6></label>
-							<input onclick="disable(); validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerknameserver_IPv6']);" <TMPL_VAR CHECKED_DHCP_IPv6> id="netzwerkadressen_dhcp_IPv6" name="netzwerkadressen_IPv6" type="radio" value="dhcp">
-							<label for="netzwerkadressen_dhcp_IPv6"><TMPL_VAR NETWORK.SELECT_IP_USEDHCP_IPv6></label>
-
-							<input onclick="disable(); validate_chk_object(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerknameserver_IPv6']);" <TMPL_VAR CHECKED_MANUAL_IPv6> id="netzwerkadressen_manual_IPv6" name="netzwerkadressen_IPv6" type="radio" value="manual">
-							<label for="netzwerkadressen_manual_IPv6"><TMPL_VAR NETWORK.SELECT_IP_MANUAL_IPv6></label>
-						</div>
-					</td>
-					<td style="width:5%;vertical-align:middle;">
-					</td>
-					<td style="width:20%;">
-					</td>
-				</tr>
-			
-				<tr class="area-netzwerkipadresse_IPv6" style="display:none">
-					<td>
-						<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.IPv6.IPADDRESS>" id='netzwerkipadresse_IPv6' name='netzwerkipadresse_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIPv6>" data-validation-rule='special:ipaddr_IPv6'>
-					</td>
-					<td style="vertical-align:middle;">
-					</td>
-					<td>
-					</td>
-				</tr>
-				
-				<tr class="area-netzwerkipmaske_IPv6" style="display:none">
-					<td>
-						<label id="labelnetzwerkipmaske_IPv6"><TMPL_VAR NETWORK.LABEL_PREFIXLENGTH_IPv6></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.IPV6.MASK>" id='netzwerkipmaske_IPv6' name='netzwerkipmaske_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6>" data-validation-rule="special:number-min-max-value:0:128">
-					</td>
-					<td style="vertical-align:middle;">
-					</td>
-					<td>
-					</td>
-				</tr>
-			
-				<tr class="area-netzwerknameserver_IPv6" style="display:none">
-					<td>
-						<label id="labelnetzwerknameserver_IPv6"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
-					</td>
-					<td>
-						<input value="<TMPL_VAR NETWORK.IPV6.DNS>" id='netzwerknameserver_IPv6' name='netzwerknameserver_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6>" data-validation-rule="special:ipaddr_IPv6">
-					</td>
-					<td style="vertical-align:middle;">
-					</td>
-					<td>
-					</td>
-				</tr>
-				<tr class="area-privacyext_IPv6" style="display:none">
-					<td></td>
-					<td>
-						<label>
-							<input type="checkbox" name="netzwerkprivacyext_IPv6" <TMPL_VAR netzwerkprivacyext_IPv6>><TMPL_VAR NETWORK.LABEL_PRIVACYEXT_IPV6>
+							<TMPL_VAR NETWORK.SELECT_IP_AUTO_IPv6>
 						</label>
-					</td>
-				</tr>
-			
-			</table>
-			
-			<div style="heigth:10px">&nbsp;</div>
-			
+						<label style="display:flex;align-items:center;gap:6px;">
+							<input onclick="disable(); validate_clean_objects(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerknameserver_IPv6']);" <TMPL_VAR CHECKED_DHCP_IPv6> id="netzwerkadressen_dhcp_IPv6" name="netzwerkadressen_IPv6" type="radio" value="dhcp">
+							<TMPL_VAR NETWORK.SELECT_IP_USEDHCP_IPv6>
+						</label>
+						<label style="display:flex;align-items:center;gap:6px;">
+							<input onclick="disable(); validate_chk_object(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerknameserver_IPv6']);" <TMPL_VAR CHECKED_MANUAL_IPv6> id="netzwerkadressen_manual_IPv6" name="netzwerkadressen_IPv6" type="radio" value="manual">
+							<TMPL_VAR NETWORK.SELECT_IP_MANUAL_IPv6>
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerkipadresse_IPv6" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkipadresse_IPv6"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPv6.IPADDRESS>" id='netzwerkipadresse_IPv6' name='netzwerkipadresse_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIPv6>" data-validation-rule='special:ipaddr_IPv6'>
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerkipmaske_IPv6" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerkipmaske_IPv6"><TMPL_VAR NETWORK.LABEL_PREFIXLENGTH_IPv6></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV6.MASK>" id='netzwerkipmaske_IPv6' name='netzwerkipmaske_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6>" data-validation-rule="special:number-min-max-value:0:128">
+				</div>
+			</div>
+
+			<div class="lb-form-row area-netzwerknameserver_IPv6" style="display:none">
+				<div class="lb-form-label">
+					<label id="labelnetzwerknameserver_IPv6"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
+				</div>
+				<div class="lb-form-field">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV6.DNS>" id='netzwerknameserver_IPv6' name='netzwerknameserver_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6>" data-validation-rule="special:ipaddr_IPv6">
+				</div>
+			</div>
+
+			<div class="lb-form-row area-privacyext_IPv6" style="display:none">
+				<div class="lb-form-label"></div>
+				<div class="lb-form-field">
+					<label style="display:flex;align-items:center;gap:6px;">
+						<input type="checkbox" name="netzwerkprivacyext_IPv6" <TMPL_VAR netzwerkprivacyext_IPv6>>
+						<TMPL_VAR NETWORK.LABEL_PRIVACYEXT_IPV6>
+					</label>
+				</div>
+			</div>
+
 			<!-- Button row -->
-			
 			<div class="lb-actions">
 				<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
-				<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form3" name="btnsubmit" id="btnsubmit" data-role="none"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
+				<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form3" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
 			</div>
 			<div id="form-error-message" class="form-error-message"></div>
 		</form>
 <script>
 	$( document ).ready(function()
 	{
-		
 		// Set values from config file
-		$('#netzwerkanschluss_<TMPL_VAR netzwerkanschluss>').attr("checked", "checked").checkboxradio("refresh");
-		$('#netzwerkadressen_<TMPL_VAR netzwerkadressen>').attr("checked", "checked").checkboxradio("refresh");
-		
+		$('#netzwerkanschluss_<TMPL_VAR netzwerkanschluss>').prop("checked", true);
+		$('#netzwerkadressen_<TMPL_VAR netzwerkadressen>').prop("checked", true);
+
 		netzwerkadressen_IPv6 = "<TMPL_VAR netzwerkadressen_IPv6>";
 		if(netzwerkadressen_IPv6 == "") {
 			netzwerkadressen_IPv6 = "auto";
 		}
-		$('#netzwerkadressen_'+netzwerkadressen_IPv6+'_IPv6').attr("checked", "checked").checkboxradio("refresh");
-		
+		$('#netzwerkadressen_'+netzwerkadressen_IPv6+'_IPv6').prop("checked", true);
+
 		validate_enable('#netzwerkssid');
 		validate_enable('#netzwerkschluessel');
 		validate_enable('#netzwerkipadresse');
@@ -285,13 +230,12 @@
 		// Disable some options on Load depending on selected value
 		disable();
 	});
-	
-	function disable() 
+
+	function disable()
 	{
 		// Ethernet or WLAN
-		
 		checked_netzwerkanschluss = $("[name='netzwerkanschluss']:checked");
-		
+
 		if ( checked_netzwerkanschluss.attr("data-iswireless") != "1") {
 			validate_clean_objects(['#netzwerkssid','#netzwerkschluessel']);
 			$('.area-netzwerkssid').fadeOut(1);
@@ -325,13 +269,12 @@
 			$('.area-netzwerknameserver_IPv6').fadeOut(200);
 		}
 		else {
-			 validate_chk_object(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerknameserver_IPv6']);
+			validate_chk_object(['#netzwerkipadresse_IPv6','#netzwerkipmaske_IPv6','#netzwerknameserver_IPv6']);
 			$('.area-netzwerkipadresse_IPv6').fadeIn(1);
 			$('.area-netzwerkipmaske_IPv6').fadeIn(50);
 			$('.area-netzwerknameserver_IPv6').fadeIn(200);
-		
 		}
-		
+
 		if ( document.main_form3.netzwerkadressen_dhcp_IPv6.checked == true || document.main_form3.netzwerkadressen_manual_IPv6.checked == true ) {
 			$('.area-privacyext_IPv6').fadeIn(50);
 			$('.area-custom-config-hint').fadeIn(50);
@@ -339,36 +282,18 @@
 			$('.area-privacyext_IPv6').fadeOut(50);
 			$('.area-custom-config-hint').fadeOut(50);
 		}
-		
-		
-		
-		
 	}
-		
+
 </script>
 
 </TMPL_IF>
 <TMPL_IF SAVE>
-		<center>
-			<table style="border:0;">
-				<tr>
-					<td align="center">
-						<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
-						<p>
-							<TMPL_VAR NETWORK.CHANGE_SUCCESS>
-							<br/>
-							<br/>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<td align="center">
-						<p>
-							<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="<TMPL_VAR NEXTURL>"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
-						</p>
-					</td>
-				</tr>
-			</table>
-		</center>
+	<div style="text-align:center;">
+		<h2><TMPL_VAR COMMON.MSG_ALLOK></h2>
+		<p>
+			<TMPL_VAR NETWORK.CHANGE_SUCCESS>
+		</p>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="<TMPL_VAR NEXTURL>"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
+	</div>
 </TMPL_IF>
 		<!-- ** END template/system/network.html ************************************************************************************ -->
