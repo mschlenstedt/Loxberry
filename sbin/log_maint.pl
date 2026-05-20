@@ -15,6 +15,7 @@ my $deletefactor1;
 my $deletefactor2;
 my $minfreespace1;
 my $minfreespace2;
+my $maxlogfiles;
 my $bins = LoxBerry::System::get_binaries();
 
 my $log = LoxBerry::Log->new (
@@ -102,6 +103,7 @@ sub logfiles_cleanup
 	$deletefactor2 = 5; # in %
 	$minfreespace1 = 200; # in MB
 	$minfreespace2 = 50; # in MB
+	$maxlogfiles = 24; # max log files per path before emergency cleanup
 	my $size = 3; # in MB
 	my $logdays = 30; # in days
 	my $gzdays = 60; # in days
@@ -134,7 +136,7 @@ sub logfiles_cleanup
 		for my $file (@files){
 			LOGDEB "--> $file (Size is: " . sprintf("%.1f",(-s "$file")/1000/1000) . " MB) will be GZIP'd.";
 			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat("$file");
-			unlink ("$file\.gz") if (-e "$file");
+			unlink ("$file.gz") if (-e "$file.gz");
 			qx{yes | $bins->\{GZIP\} --keep --best "$file"};
 			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime(); close($fh);
 			# unlink($file);
@@ -153,7 +155,7 @@ sub logfiles_cleanup
 		for my $file (@files){
 			LOGDEB "--> $file (Age is: " . sprintf("%.1f",(-M "$file")) . " days) will be GZIP'd.";
 			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat("$file");
-			unlink ("$file\.gz") if (-e "$file");
+			unlink ("$file.gz") if (-e "$file.gz");
 			qx{yes | $bins->\{GZIP\} --keep --best "$file"};
 			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime(); close($fh);
 			unlink($file);
@@ -277,14 +279,12 @@ sub logfiles_cleanup
 
 		for my $file (@files){
 			LOGDEB "--> $file will be DELETED.";
-			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " .  currtime(); close($fh);
-			LOGDEB "$file SHRINKED.";
-			# my $delcount = unlink($file);
-			# if($delcount) {
-				# LOGDEB "$file DELETED.";
-			# } else {
-				# LOGDEB "$file COULD NOT BE DELETED.";
-			# }
+			my $delcount = unlink($file);
+			if ($delcount) {
+				LOGDEB "$file DELETED.";
+			} else {
+				LOGDEB "$file COULD NOT BE DELETED.";
+			}
 		}	
 	}
 	undef(@emergpaths);
@@ -310,10 +310,24 @@ sub checkdisks {
 
 	foreach my $disk (@$pathtc) {
 		my %folderinfo = LoxBerry::System::diskspaceinfo($disk);
+		next unless $folderinfo{size};
 		LOGDEB "Checking $folderinfo{mountpoint} for path $disk ($folderinfo{filesystem} - Available " . sprintf("%.1f",$folderinfo{available}/$folderinfo{size}*100) . "%/" . sprintf("%.1f",$folderinfo{available}/1024) . "MB)";
-		next if( $folderinfo{size} eq "0" or ($folderinfo{available}/$folderinfo{size}*100) > $spacefactor or $folderinfo{available}/1024 > $minfreespace );
-		LOGWARN "--> $folderinfo{mountpoint} below limit of $spacefactor%/" . $minfreespace . "MB AVAL $folderinfo{available} SIZE $folderinfo{size} - EMERGENCY housekeeping needed.";
-		push(@paths, $disk);
+
+		my $space_critical = ( ($folderinfo{available}/$folderinfo{size}*100) <= $spacefactor and $folderinfo{available}/1024 <= $minfreespace );
+
+		my @logfiles = File::Find::Rule->file()->name('*.log', '*.log.gz')->in($disk);
+		my $filecount = scalar @logfiles;
+		my $count_critical = ($filecount > $maxlogfiles);
+
+		if ($space_critical) {
+			LOGWARN "--> $folderinfo{mountpoint} below limit of $spacefactor%/${minfreespace}MB ($filecount log files) - EMERGENCY housekeeping needed.";
+			push(@paths, $disk);
+		} elsif ($count_critical) {
+			LOGWARN "--> $disk has $filecount log files (limit: $maxlogfiles) - EMERGENCY housekeeping needed.";
+			push(@paths, $disk);
+		} else {
+			LOGDEB "--> $disk OK ($filecount log files, disk space OK)";
+		}
 	}
 	return(@paths);
 }
@@ -363,18 +377,30 @@ sub logdb_cleanup
 		next if ($key->{PACKAGE} eq "LoxBerry Update" and $key->{NAME} eq "update");
 		
 		# Delete plugin entries older than $max_age (60) days
-		
+
 		# if ( $key->{'_ISPLUGIN'} ) {
 			my $starttime_epoch;
 			my $endtime_epoch;
-			
+
 			eval {
 				$starttime_epoch = Time::Piece->strptime($key->{'LOGSTARTISO'}, "%Y-%m-%dT%H:%M:%S");
+			};
+			LOGDEB "Could not parse LOGSTARTISO '$key->{'LOGSTARTISO'}' for $key->{'PACKAGE'}/$key->{'NAME'}: $@" if $@;
+
+			eval {
 				$endtime_epoch = Time::Piece->strptime($key->{'LOGENDISO'}, "%Y-%m-%dT%H:%M:%S");
-			}; 
-			if ( $endtime_epoch != 0 and $endtime_epoch < (time-$maxage_days*24*60*60) ) {
-				# LOGDEB "$key->{'FILENAME'} $starttime_epoch";
-				LOGINF "Session $key->{PACKAGE}/$key->{NAME} '$key->{'LOGSTARTMESSAGE'}' (" . $starttime_epoch->dmy(".") . "-" . $endtime_epoch->dmy(".") . ") too old - dbkey added to delete list";
+			};
+			if ($@) {
+				LOGDEB "Could not parse LOGENDISO '$key->{'LOGENDISO'}' for $key->{'PACKAGE'}/$key->{'NAME'} - falling back to file mtime";
+				$endtime_epoch = (stat($key->{'FILENAME'}))[9];
+			}
+
+			if ( defined($endtime_epoch) and $endtime_epoch < (time-$maxage_days*24*60*60) ) {
+				my $startdmy = eval { $starttime_epoch->dmy(".") } // "unknown";
+				my $enddmy = ref($endtime_epoch) ? $endtime_epoch->dmy(".") : scalar localtime($endtime_epoch);
+				LOGINF "Session $key->{PACKAGE}/$key->{NAME} '$key->{'LOGSTARTMESSAGE'}' ($startdmy-$enddmy) too old - deleting file and dbkey";
+				unlink $key->{'FILENAME'} if -e $key->{'FILENAME'};
+				unlink $key->{'FILENAME'} . ".gz" if -e $key->{'FILENAME'} . ".gz";
 				push @keystodelete, $key->{'KEY'};
 				next;
 			}
