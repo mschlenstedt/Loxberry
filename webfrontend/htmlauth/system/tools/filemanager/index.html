@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+		<!-- Full-height layout -->
+		<style>
+			html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+			#elfinder { height: 100%; }
+		</style>
+		<title>elFinder 2.1.x source version with PHP connector</title>
+
+		<!-- SecurePIN overlay styles -->
+		<style>
+			#securepin_overlay {
+				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+				background: #4a5568;
+				z-index: 9999;
+				display: flex; align-items: center; justify-content: center;
+			}
+			#securepin_box {
+				background: #fff;
+				border-radius: 8px;
+				box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+				padding: 36px 32px 28px 32px;
+				text-align: center;
+				min-width: 300px;
+				max-width: 380px;
+			}
+			#securepin_box h3 {
+				margin: 0 0 6px 0;
+				font-size: 18px;
+				color: #2d3748;
+				font-family: sans-serif;
+			}
+			#securepin_box p {
+				margin: 0 0 18px 0;
+				color: #718096;
+				font-size: 14px;
+				font-family: sans-serif;
+			}
+			#securepin_row {
+				display: flex;
+				gap: 8px;
+				align-items: center;
+				margin-bottom: 10px;
+			}
+			#securepin {
+				flex: 1;
+				padding: 8px 12px;
+				border: 1px solid #cbd5e0;
+				border-radius: 4px;
+				font-size: 15px;
+				outline: none;
+			}
+			#securepin:focus { border-color: #667eea; }
+			#check_securepin {
+				padding: 8px 18px;
+				background: #667eea;
+				color: #fff;
+				border: none;
+				border-radius: 4px;
+				font-size: 14px;
+				cursor: pointer;
+				white-space: nowrap;
+			}
+			#check_securepin:disabled { background: #a0aec0; cursor: default; }
+			#check_hint {
+				min-height: 20px;
+				font-size: 13px;
+				font-family: sans-serif;
+			}
+			#securepin_warning {
+				margin-top: 18px;
+				background: #fff5f5;
+				border: 1px solid #feb2b2;
+				border-radius: 4px;
+				padding: 10px 14px;
+				font-size: 12px;
+				color: #744210;
+				font-family: sans-serif;
+				text-align: left;
+			}
+		</style>
+
+		<!-- Require JS (REQUIRED) -->
+		<!-- Rename "main.default.js" to "main.js" and edit it if you need configure elFInder options or any things -->
+		<script data-main="./main.default.js" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+		<script>
+			define('elFinderConfig', {
+				// elFinder options (REQUIRED)
+				// Documentation for client options:
+				// https://github.com/Studio-42/elFinder/wiki/Client-configuration-options
+				defaultOpts : {
+					url : 'php/connector.minimal.php', // or connector.maximal.php : connector URL (REQUIRED)
+					commandsOptions : {
+						edit : {
+							extraOptions : {
+								// set API key to enable Creative Cloud image editor
+								// see https://console.adobe.io/
+								creativeCloudApiKey : '',
+								// browsing manager URL for CKEditor, TinyMCE
+								// uses self location with the empty value
+								managerUrl : ''
+							}
+						},
+						quicklook : {
+							// to enable CAD-Files and 3D-Models preview with sharecad.org
+							sharecadMimes : ['image/vnd.dwg', 'image/vnd.dxf', 'model/vnd.dwf', 'application/vnd.hp-hpgl', 'application/plt', 'application/step', 'model/iges', 'application/vnd.ms-pki.stl', 'application/sat', 'image/cgm', 'application/x-msmetafile'],
+							// to enable preview with Google Docs Viewer
+							googleDocsMimes : ['application/pdf', 'image/tiff', 'application/vnd.ms-office', 'application/msword', 'application/vnd.ms-word', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/postscript', 'application/rtf'],
+							// to enable preview with Microsoft Office Online Viewer
+							// these MIME types override "googleDocsMimes"
+							officeOnlineMimes : ['application/vnd.ms-office', 'application/msword', 'application/vnd.ms-word', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.oasis.opendocument.text', 'application/vnd.oasis.opendocument.spreadsheet', 'application/vnd.oasis.opendocument.presentation']
+						}
+					},
+					// bootCalback calls at before elFinder boot up
+					bootCallback : function(fm, extraObj) {
+						/* any bind functions etc. */
+						fm.bind('init', function() {
+							// any your code
+						});
+						// for example set document.title dynamically.
+						var title = document.title;
+						fm.bind('open', function() {
+							var path = '',
+								cwd  = fm.cwd();
+							if (cwd) {
+								path = fm.path(cwd.hash) || null;
+							}
+							document.title = path? path + ':' + title : title;
+						}).bind('destroy', function() {
+							document.title = title;
+						});
+					}
+				},
+				managers : {
+					// 'DOM Element ID': { /* elFinder options of this DOM Element */ }
+					'elfinder': {}
+				}
+			});
+		</script>
+	</head>
+	<body>
+
+		<!-- SecurePIN overlay (shown before elFinder loads) -->
+		<div id="securepin_overlay">
+			<div id="securepin_box">
+				<h3>LoxBerry File Manager</h3>
+				<p>Bitte SecurePIN eingeben, um fortzufahren:</p>
+				<div id="securepin_row">
+					<input id="securepin" type="password" placeholder="SecurePIN" autocomplete="off">
+					<button id="check_securepin">OK</button>
+				</div>
+				<div id="check_hint">&nbsp;</div>
+				<div id="securepin_warning">
+					<strong>Achtung:</strong> Der File Manager erlaubt den direkten Zugriff auf das Dateisystem.
+					Der SecurePIN schützt vor unbefugtem Zugriff.
+				</div>
+			</div>
+		</div>
+
+		<!-- Element where elFinder will be created (REQUIRED) -->
+		<div id="elfinder"></div>
+
+		<!-- SecurePIN logic -->
+		<script>
+		(function() {
+			var overlay = document.getElementById('securepin_overlay');
+			var input   = document.getElementById('securepin');
+			var btn     = document.getElementById('check_securepin');
+			var hint    = document.getElementById('check_hint');
+
+			function checkPin() {
+				var pin = input.value;
+				if (!pin) { return; }
+				btn.disabled = true;
+				hint.style.color = '#3182ce';
+				hint.textContent = 'Ueberpruefe SecurePIN ...';
+
+				var data = new FormData();
+				data.append('secpin', pin);
+
+				fetch('securepin_check.cgi', { method: 'POST', body: data })
+					.then(function(r) { return r.json(); })
+					.then(function(data) {
+						if (data.error && data.error !== 0) {
+							hint.style.color = '#e53e3e';
+							hint.textContent = 'Falscher SecurePIN.';
+							btn.disabled = false;
+							input.select();
+							return;
+						}
+						sessionStorage.setItem('securePIN', pin);
+						overlay.style.display = 'none';
+					})
+					.catch(function() {
+						hint.style.color = '#e53e3e';
+						hint.textContent = 'Verbindungsfehler - bitte erneut versuchen.';
+						btn.disabled = false;
+					});
+			}
+
+			btn.addEventListener('click', checkPin);
+			input.addEventListener('keypress', function(e) {
+				if (e.key === 'Enter') { checkPin(); }
+			});
+
+			// Auto-check if PIN already stored in sessionStorage
+			var stored = sessionStorage.getItem('securePIN');
+			if (stored) {
+				input.value = stored;
+				checkPin();
+			} else {
+				input.focus();
+			}
+		})();
+		</script>
+
+	</body>
+</html>
