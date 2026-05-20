@@ -78,7 +78,7 @@ if ( $rc eq "0" ) {
 		$blockdevice->{model} = "Unknown" if !$blockdevice->{model};
 		push (@values, $blockdevice->{path});
 		$labels{$blockdevice->{path}} = "$SL{'USBSTORAGE.LABEL_DRIVE'} $blockdevice->{name}: $blockdevice->{model}, $SL{'USBSTORAGE.LABEL_SERIAL'}: $blockdevice->{serial}, $SL{'USBSTORAGE.LABEL_TYPE'}: $blockdevice->{type}, $SL{'USBSTORAGE.LABEL_SIZE'}: $blockdevice->{size}";
-	   	foreach my $partition ( sort @{$blockdevice->{children}} ) {
+	   	foreach my $partition ( sort @{$blockdevice->{children} // []} ) {
 			if ($partition->{mountpoint} eq "/" || $partition->{mountpoint} eq "/boot") { # Skip Root and Boot devices
 				$labels{$blockdevice->{path}} = undef;
 				my $i = 0;
