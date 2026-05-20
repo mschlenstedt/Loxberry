@@ -157,9 +157,9 @@
 							<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
 							<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-times"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
 						</div>
-						<TMPL_IF PLUGINDB_AUTHOR_WEBSITE>
+						<TMPL_IF PLUGINDB_PLUGIN_WEBSITE>
 						<div>
-							<a class="lb-btn lb-btn-sm lb-btn-icon" href="<TMPL_VAR PLUGINDB_AUTHOR_WEBSITE>" target="_blank"><i class="pi pi-globe"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION></a>
+							<a class="lb-btn lb-btn-sm lb-btn-icon" href="<TMPL_VAR PLUGINDB_PLUGIN_WEBSITE>" target="_blank"><i class="pi pi-globe"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION></a>
 						</div>
 						</TMPL_IF>
 					</div>

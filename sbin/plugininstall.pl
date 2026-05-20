@@ -453,7 +453,7 @@ sub install {
 
 	$pauthorname		= $pcfg->param("AUTHOR.NAME");
 	$pauthoremail		= $pcfg->param("AUTHOR.EMAIL");
-	$pauthorwebsite		= $pcfg->param("AUTHOR.WEBSITE") // "";
+	$pauthorwebsite		= $pcfg->param("PLUGIN.WEBSITE") // "";
 	$pversion		= $pcfg->param("PLUGIN.VERSION");
 	$pname			= $pcfg->param("PLUGIN.NAME");
 	$ptitle			= $pcfg->param("PLUGIN.TITLE");
@@ -651,7 +651,7 @@ sub install {
 	$plugin = LoxBerry::System::PluginDB->plugin(
         author_name => $pauthorname,
         author_email => $pauthoremail,
-        author_website => $pauthorwebsite,
+        plugin_website => $pauthorwebsite,
         name => $pname,
         folder => $pfolder,
         version => $pversion,

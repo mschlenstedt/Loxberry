@@ -445,7 +445,7 @@ sub get_plugins
 		$plugin{PLUGINDB_MD5_CHECKSUM} = $plugindata->{md5};
 		$plugin{PLUGINDB_AUTHOR_NAME} = $plugindata->{author_name};
 		$plugin{PLUGINDB_AUTHOR_EMAIL} = $plugindata->{author_email};
-		$plugin{PLUGINDB_AUTHOR_WEBSITE} = $plugindata->{author_website} // "";
+		$plugin{PLUGINDB_PLUGIN_WEBSITE} = $plugindata->{plugin_website} // "";
 		$plugin{PLUGINDB_VERSION} = $plugindata->{version};
 		$plugin{PLUGINDB_NAME} = $plugindata->{name};
 		$plugin{PLUGINDB_FOLDER} = $plugindata->{folder};
