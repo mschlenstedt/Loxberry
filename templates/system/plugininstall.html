@@ -194,9 +194,9 @@
 				</div>
 				</TMPL_IF>
 				<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
-				<div>
-				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGGING_LEVEL></label>
-					<select class="lb-select" name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-role="none">
+				<div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
+				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" style="margin:0;"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGGING_LEVEL></label>
+					<select class="lb-select" name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-role="none" style="width:auto;">
 						<option value="0"><TMPL_VAR PLUGININSTALL.UI_LOG_0_OFF></option>
 						<option value="3"><TMPL_VAR PLUGININSTALL.UI_LOG_3_ERRORS></option>
 						<option value="4"><TMPL_VAR PLUGININSTALL.UI_LOG_4_WARNING></option>
