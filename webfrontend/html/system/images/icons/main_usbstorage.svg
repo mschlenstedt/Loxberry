@@ -1,13 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="14" fill="#c8e8a0"/>
-  <svg x="16" y="16" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2d5a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-<path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M12 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-  <path d="M12 17v-11.5" />
-  <path d="M7 10v3l5 3" />
-  <path d="M12 14.5l5 -2v-2.5" />
-  <path d="M16 10h2v-2h-2z" />
-  <path d="M7 9m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-  <path d="M10 5.5h4l-2 -2.5z" />
+  <svg x="10" y="10" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#4a6a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" fill="#4a6a8a" stroke="none"/>
+    <path d="M12 17v-11.5" />
+    <path d="M7 10v3l5 3" />
+    <path d="M12 14.5l5 -2v-2.5" />
+    <path d="M16 10h2v-2h-2z" fill="#4a6a8a" stroke="none"/>
+    <path d="M7 9m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" fill="#4a6a8a" stroke="none"/>
+    <path d="M10 5.5h4l-2 -2.5z" fill="#4a6a8a" stroke="none"/>
   </svg>
 </svg>
