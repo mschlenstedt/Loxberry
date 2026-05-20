@@ -152,24 +152,30 @@ $(function() {
 		<div class="lb-form-label">
 			<label for="serverip"><TMPL_VAR NETSHARES.LABEL_SERVERIP></label>
 		</div>
-		<input class="lb-input" value="" id='serverip' name='serverip' type='text' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr">
-		<div class="lb-form-help"><TMPL_VAR NETSHARES.HINT_SERVERIP></div>
+		<div class="lb-form-field">
+			<input class="lb-input" value="" id='serverip' name='serverip' type='text' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr">
+		</div>
+		<div class="lb-form-help hint"><TMPL_VAR NETSHARES.HINT_SERVERIP></div>
 	</div>
 
 	<div class="lb-form-row">
 		<div class="lb-form-label">
 			<label for="username"><TMPL_VAR NETSHARES.LABEL_USERNAME></label>
 		</div>
-		<input class="lb-input" readonly onfocus="this.removeAttribute('readonly');" value="" id='username' name='username' type='text'>
-		<div class="lb-form-help"><TMPL_VAR NETSHARES.HINT_USERNAME></div>
+		<div class="lb-form-field">
+			<input class="lb-input" readonly onfocus="this.removeAttribute('readonly');" value="" id='username' name='username' type='text'>
+		</div>
+		<div class="lb-form-help hint"><TMPL_VAR NETSHARES.HINT_USERNAME></div>
 	</div>
 
 	<div class="lb-form-row">
 		<div class="lb-form-label">
 			<label for="password"><TMPL_VAR NETSHARES.LABEL_PASSWORD></label>
 		</div>
-		<input class="lb-input" readonly onfocus="this.removeAttribute('readonly');" value="" id='password' name='password' type='password' autocomplete="nope">
-		<div class="lb-form-help"><TMPL_VAR NETSHARES.HINT_PASSWORD></div>
+		<div class="lb-form-field">
+			<input class="lb-input" readonly onfocus="this.removeAttribute('readonly');" value="" id='password' name='password' type='password' autocomplete="nope">
+		</div>
+		<div class="lb-form-help hint"><TMPL_VAR NETSHARES.HINT_PASSWORD></div>
 	</div>
 
 	<div class="lb-actions">
