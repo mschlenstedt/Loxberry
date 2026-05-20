@@ -111,8 +111,8 @@ foreach (@result){
 
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . " - " . $SL{'NETWORK.WIDGETLABEL'};
 $maintemplate->param('TABLE' => $table);
-LoxBerry::Web::head();
+LoxBerry::Web::lbheader($SL{'NETWORK.WIDGETLABEL'}, 'nopanels', undef);
 print $maintemplate->output();
-LoxBerry::Web::foot();
+LoxBerry::Web::lbfooter();
 
 exit;

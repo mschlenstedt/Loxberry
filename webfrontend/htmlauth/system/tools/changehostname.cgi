@@ -54,11 +54,7 @@ my $successfulchanged = 0;
 # Version of this script
 my $version = LoxBerry::System::lbversion() . ".3";
 
-# Start with HTML header
-print $cgi->header(
-         -type    =>      'text/html',
-         -charset =>      'utf-8'
-);
+# HTML header is handled by LoxBerry::Web::head()
 
 # Get language from GET, POST or System setting (from LoxBerry::Web)
 my $lang = lblanguage();
@@ -116,7 +112,9 @@ if (length($newname) gt 0) { $maintemplate->param( lbnewhostname => $newname ); 
 $maintemplate->param( errormessage => '<tr><td colspan="2"><font color="red">' . $emsg . '</font></td></tr>' );
 
 
+LoxBerry::Web::lbheader($Phrases{'NETWORK_CHANGEHOSTNAME.LABEL_TOP'}, 'nopanels', undef);
 print $maintemplate->output;
+LoxBerry::Web::lbfooter();
 
 exit;
 
@@ -158,7 +156,9 @@ sub save
 	$maintemplate->param( CHANGED => 1 );
 	$maintemplate->param( changedname => $changedname );
 	$maintemplate->param( successfullchanged => $successfullchanged );
+	LoxBerry::Web::lbheader($Phrases{'NETWORK_CHANGEHOSTNAME.LABEL_TOP_CHANGED'}, 'nopanels', undef);
 	print $maintemplate->output;
+	LoxBerry::Web::lbfooter();
 	reboot_required($Phrases{'NETWORK_CHANGEHOSTNAME.SUCCESS_REBOOT_REQUIRED_MSG'});
 	
 	exit;

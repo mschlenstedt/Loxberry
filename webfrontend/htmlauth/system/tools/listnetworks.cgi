@@ -155,7 +155,7 @@ $template_title = $SL{'NETWORK.WIDGETLABEL'};
 
 LoxBerry::Web::lbheader($template_title, 'nopanels', undef);
 print $maintemplate->output();
-LoxBerry::Web::foot();
+LoxBerry::Web::lbfooter();
 # LoxBerry::Web::lbfooter();
 
 
