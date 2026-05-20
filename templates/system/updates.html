@@ -145,7 +145,7 @@
 
 </div>
 
-<div style="display:grid; grid-template-columns:1fr 45%; column-gap:20px;">
+<div id="lbu_main_content" style="display:grid; grid-template-columns:1fr 45%; column-gap:20px;">
 
 	<div>
 		<p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
@@ -264,11 +264,11 @@ $(document).ready( function () {
 	$("#lbu_button_updateinstall_pre").click(function(){
 		//$('.divTable').css("display", "none");
 		//$('#lbu_updateinstall').css("display", "inline");
-		$('.divTable').hide();
+		$('#lbu_main_content').hide();
 		$('#lbu_updateinstall').fadeIn();
 	});
 	$("#lbu_button_install_cancel").click(function(){
-		$('.divTable').fadeIn();
+		$('#lbu_main_content').fadeIn();
 		$('#lbu_updateinstall').hide();
 		$('#lbu_button_update_logfile').hide();
 		$('#lbu_button_install').fadeIn();
