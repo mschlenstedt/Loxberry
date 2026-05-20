@@ -144,67 +144,39 @@ $(function() {
 
 <TMPL_IF ADD>
 
-<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/netshares.cgi">
+<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/netshares.cgi" style="max-width:80%;">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="type" value="smb">
 
-	<center>
-	<table id="addserver" class="formtable" border="0" width="100%" cellpadding="5px">
-	<tr>
-		<td width="25%">
-			<label class="control-label" for="serverip"><TMPL_VAR NETSHARES.LABEL_SERVERIP></label>
-		</td>
-		<td width="30%">
-			<input value="" id='serverip' name='serverip' type='text' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr">
-		</td>
-		
-		<td width="40%" class="hint">
-			<TMPL_VAR NETSHARES.HINT_SERVERIP>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<label for="username"><TMPL_VAR NETSHARES.LABEL_USERNAME></label>
-		</td>
-		<td>
-			<input class="textfield" readonly onfocus="this.removeAttribute('readonly');" value="" id='username' name='username' type='text'>
-		</td>
-		
-		<td class="hint">
-			<TMPL_VAR NETSHARES.HINT_USERNAME>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<label for="password"><TMPL_VAR NETSHARES.LABEL_PASSWORD></label>
-		</td>
-		<td>
-			<input class="textfield" readonly onfocus="this.removeAttribute('readonly');" value="" id='password' name='password' type='password' autocomplete="nope">
-		</td>
-		
-		<td class="hint">
-			<TMPL_VAR NETSHARES.HINT_PASSWORD>
-		</td>
-	</tr>
-	<tr>
-		<td colspan=4>
-			&nbsp;
-		</td>
-	</tr>
-	</table>
-	</center>
-	
-	<hr>
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<label for="serverip"><TMPL_VAR NETSHARES.LABEL_SERVERIP></label>
+		</div>
+		<input class="lb-input" value="" id='serverip' name='serverip' type='text' data-validation-error-msg="<TMPL_VAR NETSHARES.MSG_VAL_INVALID_IP>" data-validation-rule="special:domainname_or_ipaddr">
+		<div class="lb-form-help"><TMPL_VAR NETSHARES.HINT_SERVERIP></div>
+	</div>
 
-	<center>
-	<p>
-		<center>
-			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="./netshares.cgi"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
-			<button id="showpass" name="showpass" type="button" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-eye"></i> <TMPL_VAR NETSHARES.BUTTON_SHOW_PASSWORDS></button>
-		</center>
-	</p>
-	</center>
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<label for="username"><TMPL_VAR NETSHARES.LABEL_USERNAME></label>
+		</div>
+		<input class="lb-input" readonly onfocus="this.removeAttribute('readonly');" value="" id='username' name='username' type='text'>
+		<div class="lb-form-help"><TMPL_VAR NETSHARES.HINT_USERNAME></div>
+	</div>
+
+	<div class="lb-form-row">
+		<div class="lb-form-label">
+			<label for="password"><TMPL_VAR NETSHARES.LABEL_PASSWORD></label>
+		</div>
+		<input class="lb-input" readonly onfocus="this.removeAttribute('readonly');" value="" id='password' name='password' type='password' autocomplete="nope">
+		<div class="lb-form-help"><TMPL_VAR NETSHARES.HINT_PASSWORD></div>
+	</div>
+
+	<div class="lb-actions">
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="./netshares.cgi"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
+		<button id="showpass" name="showpass" type="button" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-eye"></i> <TMPL_VAR NETSHARES.BUTTON_SHOW_PASSWORDS></button>
+	</div>
 </form>
 
 <SCRIPT>
