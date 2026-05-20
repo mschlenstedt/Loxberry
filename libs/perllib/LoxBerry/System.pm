@@ -574,7 +574,10 @@ sub read_generaljson
 		$miniservers{$msnr}{Credentials_RAW} = $ms->{Credentials_raw};
 		$miniservers{$msnr}{SecureGateway} = $ms->{Securegateway};
 		$miniservers{$msnr}{EncryptResponse} = $ms->{Encryptresponse};
-		
+		$miniservers{$msnr}{Location}  = $ms->{Location}  // '';
+		$miniservers{$msnr}{Latitude}  = $ms->{Latitude}  // '';
+		$miniservers{$msnr}{Longitude} = $ms->{Longitude} // '';
+
 	}
 	return 1;
 }

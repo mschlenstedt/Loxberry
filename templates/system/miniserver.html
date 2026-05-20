@@ -194,6 +194,21 @@
 				</div>
 			</div>
 
+			<!-- Location / Geocoordinates -->
+			<div class="lb-form-row">
+				<div class="lb-form-label">
+					<label><TMPL_VAR MINISERVER.LABEL_LOCATION></label>
+				</div>
+				<div class="lb-form-field" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+					<input class="lb-input" style="flex:2;min-width:120px" value="<TMPL_VAR MSLOCATION>" id='mslocation<TMPL_VAR MSNO>' name='mslocation<TMPL_VAR MSNO>' type='text' placeholder="–" readonly>
+					<input class="lb-input" style="flex:1;min-width:80px" value="<TMPL_VAR MSLATITUDE>" id='mslatitude<TMPL_VAR MSNO>' name='mslatitude<TMPL_VAR MSNO>' type='text' placeholder="Lat" readonly>
+					<input class="lb-input" style="flex:1;min-width:80px" value="<TMPL_VAR MSLONGITUDE>" id='mslongitude<TMPL_VAR MSNO>' name='mslongitude<TMPL_VAR MSNO>' type='text' placeholder="Lon" readonly>
+					<button type="button" class="lb-btn lb-btn-sm lb-btn-icon fetch-geo-btn" style="flex-shrink:0" data-msno="<TMPL_VAR MSNO>"><i class="pi pi-map-marker"></i> <TMPL_VAR MINISERVER.BUTTON_FETCH_GEO></button>
+				</div>
+				<div class="lb-form-help hint"><TMPL_VAR MINISERVER.HINT_LOCATION></div>
+			</div>
+			<div id="fetchgeo<TMPL_VAR MSNO>_result" style="margin-bottom:6px"></div>
+
 			<!-- Note -->
 			<div class="lb-form-row" style="align-items:flex-start">
 				<div class="lb-form-label" style="padding-top:10px">
@@ -408,6 +423,43 @@ $(document).ready( function() {
 			console.log("Internal server error on call of ajax-check-miniserver.cgi", status.status, status.statusText);
 		});
 
+	});
+
+	// Fetch geocoordinates from Miniserver
+	$(".fetch-geo-btn").click(function() {
+		var msno = $(this).data("msno");
+		var btn = $(this);
+		var resultdiv = $("#fetchgeo"+msno+"_result");
+		btn.prop("disabled", true);
+		resultdiv.html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
+		$.post("/admin/system/miniserver.cgi", {
+			action: "fetchgeo",
+			msno: msno,
+			ip: $("#miniserverip"+msno).val(),
+			port: $("#miniserverport"+msno).val(),
+			user: $("#miniserveruser"+msno).val(),
+			pass: $("#miniserverkennwort"+msno).val(),
+			preferhttps: $("#miniserverpreferhttps"+msno).is(':checked') ? "1" : "0",
+			porthttps: $("#miniserverporthttps"+msno).val(),
+			useclouddns: $("#useclouddns"+msno).is(':checked') ? "1" : "0",
+			clouddns: $("#miniservercloudurl"+msno).val()
+		})
+		.done(function(data) {
+			if (data.success) {
+				$("#mslocation"+msno).val(data.location || "");
+				$("#mslatitude"+msno).val(data.latitude || "");
+				$("#mslongitude"+msno).val(data.longitude || "");
+				resultdiv.html("<span style='color:green;'><TMPL_VAR MINISERVER.MSG_FETCH_GEO_OK></span>");
+			} else {
+				resultdiv.html("<span style='color:red;'><TMPL_VAR MINISERVER.MSG_FETCH_GEO_ERR></span>" + (data.error || ""));
+			}
+		})
+		.fail(function(xhr) {
+			resultdiv.html("<span style='color:red;'><TMPL_VAR MINISERVER.MSG_FETCH_GEO_ERR></span> HTTP " + xhr.status);
+		})
+		.always(function() {
+			btn.prop("disabled", false);
+		});
 	});
 
 	// Show passwords (global button)

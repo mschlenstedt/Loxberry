@@ -102,6 +102,70 @@ $lang = lblanguage();
 $R::saveformdata if (0);
 $R::do if (0);
 
+# AJAX: Fetch geocoordinates from Miniserver
+if ($cgi->param("action") && $cgi->param("action") eq "fetchgeo") {
+	require LWP::UserAgent;
+	my %resp;
+	my $msno = int($cgi->param("msno") || 1);
+	my $ip     = $cgi->param("ip")   || '';
+	my $port   = $cgi->param("port") || 80;
+	my $user   = $cgi->param("user") || '';
+	my $pass   = $cgi->param("pass") || '';
+	my $preferhttps  = is_enabled( scalar $cgi->param("preferhttps") );
+	my $porthttps    = $cgi->param("porthttps") || 443;
+	my $useclouddns  = is_enabled( scalar $cgi->param("useclouddns") );
+	my $clouddns     = $cgi->param("clouddns") || '';
+
+	my $transport = $preferhttps ? 'https' : 'http';
+	my $actualport = $preferhttps ? $porthttps : $port;
+
+	if ($useclouddns && $clouddns) {
+		my $clouddns_addr = $cfg->{Base}->{Clouddnsuri} || 'dns.loxonecloud.com';
+		my $ua_dns = LWP::UserAgent->new( timeout => 5 );
+		my $dns_resp = $ua_dns->get("http://$clouddns_addr?getip&snr=$clouddns&json=true");
+		if ($dns_resp->is_success) {
+			my $dns_data = eval { decode_json($dns_resp->content) };
+			$ip = $dns_data->{IP} if $dns_data && $dns_data->{IP};
+			$ip =~ s/[\[\]]//g;
+			($ip, $actualport) = split(':', $ip, 2) if $ip =~ /:/;
+		}
+	}
+
+	my $ua = LWP::UserAgent->new( timeout => 10 );
+	$ua->ssl_opts( verify_hostname => 0, SSL_verify_mode => 0 ) if $preferhttps;
+	my $enc_user = uri_escape($user);
+	my $enc_pass = uri_escape($pass);
+	my $url = "$transport://$enc_user:$enc_pass\@$ip:$actualport/data/LoxApp3.json";
+	my $response = $ua->get($url);
+
+	if ($response->is_success) {
+		my $data = eval { decode_json($response->content) };
+		if ($data && $data->{msInfo}) {
+			my $msinfo = $data->{msInfo};
+			$resp{success}   = 1;
+			$resp{location}  = $msinfo->{location}  // '';
+			$resp{latitude}  = $msinfo->{latitude}  // '';
+			$resp{longitude} = $msinfo->{longitude} // '';
+			# Save to general.json
+			if ($msno && $cfg->{Miniserver}->{$msno}) {
+				$cfg->{Miniserver}->{$msno}->{Location}  = $resp{location};
+				$cfg->{Miniserver}->{$msno}->{Latitude}  = $resp{latitude};
+				$cfg->{Miniserver}->{$msno}->{Longitude} = $resp{longitude};
+				$jsonobj->write();
+			}
+		} else {
+			$resp{success} = 0;
+			$resp{error}   = "msInfo not found in LoxApp3.json";
+		}
+	} else {
+		$resp{success} = 0;
+		$resp{error}   = $response->status_line;
+	}
+	print header('application/json');
+	print to_json(\%resp);
+	exit;
+}
+
 # AJAX: SecurePIN check
 if ($cgi->param("action") && $cgi->param("action") eq "checksecpin") {
 	my %resp;
@@ -178,7 +242,10 @@ sub form {
 		$ms{MSNAME} = $curms->{Name};
 		$ms{MSPREFERHTTPS} = is_enabled( $curms->{Preferhttps} ) ? "true" : "false";
 		$ms{MSPORTHTTPS} = $curms->{Porthttps};
-		
+		$ms{MSLOCATION}  = $curms->{Location}  // '';
+		$ms{MSLATITUDE}  = $curms->{Latitude}  // '';
+		$ms{MSLONGITUDE} = $curms->{Longitude} // '';
+
 		push(@msdata, \%ms);
 	}
 		
@@ -225,6 +292,9 @@ sub save {
 		$curms->{Preferhttps} = is_enabled( scalar param("miniserverpreferhttps$msno") ) ? "1" : "0" ;
 		$curms->{Porthttps} = defined param("miniserverporthttps$msno") ? param("miniserverporthttps$msno") : 443 ;
 		$curms->{Name} = param("miniserverfoldername$msno");
+		$curms->{Location}  = param("mslocation$msno")  // $curms->{Location};
+		$curms->{Latitude}  = param("mslatitude$msno")  // $curms->{Latitude};
+		$curms->{Longitude} = param("mslongitude$msno") // $curms->{Longitude};
 		# Credentials are RAW and URI-encoded
 		$curms->{Admin_raw} = param("miniserveruser$msno");
 		$curms->{Pass_raw} = param("miniserverkennwort$msno");

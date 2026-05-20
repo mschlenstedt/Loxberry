@@ -742,6 +742,9 @@ public static function plugindb_changed_time()
 			@$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
 			@$miniservers[$msnr]['SecureGateway'] = isset($ms->Securegateway) && is_enabled($ms->Securegateway) ? 1 : 0;
 			@$miniservers[$msnr]['EncryptResponse'] = isset($ms->Encryptresponse) && is_enabled($ms->Encryptresponse) ? 1 : 0;
+			@$miniservers[$msnr]['Location']  = isset($ms->Location)  ? $ms->Location  : '';
+			@$miniservers[$msnr]['Latitude']  = isset($ms->Latitude)  ? $ms->Latitude  : '';
+			@$miniservers[$msnr]['Longitude'] = isset($ms->Longitude) ? $ms->Longitude : '';
 
 		}
 	}
