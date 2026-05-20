@@ -94,6 +94,7 @@
 				// https://github.com/Studio-42/elFinder/wiki/Client-configuration-options
 				defaultOpts : {
 					url : 'php/connector.minimal.php', // or connector.maximal.php : connector URL (REQUIRED)
+					height : window.innerHeight,
 					commandsOptions : {
 						edit : {
 							extraOptions : {
@@ -117,11 +118,13 @@
 					},
 					// bootCalback calls at before elFinder boot up
 					bootCallback : function(fm, extraObj) {
-						/* any bind functions etc. */
 						fm.bind('init', function() {
-							// any your code
+							fm.resize(window.innerWidth, window.innerHeight);
 						});
-						// for example set document.title dynamically.
+						window.addEventListener('resize', function() {
+							fm.resize(window.innerWidth, window.innerHeight);
+						});
+						// set document.title dynamically.
 						var title = document.title;
 						fm.bind('open', function() {
 							var path = '',
