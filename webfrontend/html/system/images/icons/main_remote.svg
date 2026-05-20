@@ -2,8 +2,11 @@
   <rect width="64" height="64" rx="14" fill="#f1f7e8"/>
   <svg x="16" y="16" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6dac20" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1" />
-  <path d="M9 15l3 -3l3 3" />
-  <path d="M12 12l0 9" />
+  <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+  <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+  <path d="M15 15l3.35 3.35" />
+  <path d="M9 15l-3.35 3.35" />
+  <path d="M5.65 5.65l3.35 3.35" />
+  <path d="M18.35 5.65l-3.35 3.35" />
   </svg>
 </svg>
