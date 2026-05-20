@@ -1,67 +1,40 @@
-<!-- content -->
-<div role="main" class="ui-content">
-	<div class="ui-body ui-body-a ui-corner-all loxberry-logo">
-
-	<!-- text -->
-	<div style="margin: 5%">
-
-		<p>
-		<center>
-		<table data-role="table" data-mode="" class="ui-body-d ui-shadow table-stripe ui-responsive" id="lshwnetworkTable" width="90%">
+<!-- ** START template/system/listnetworks.html -->
+<div class="lb-card">
+	<table style="width:90%; margin:0 auto;">
 
 <TMPL_IF NOWIFI>
-
-			 <tr><td><TMPL_VAR NETWORK_LISTNETWORKS.MSG_NO_WIFI></td></tr>
-
+		<tr><td><TMPL_VAR NETWORK_LISTNETWORKS.MSG_NO_WIFI></td></tr>
 <TMPL_ELSE>
-
 		<thead>
-				<tr>
-					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_NETWORK></th>
-					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_ENCRYPTED></th>
-					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SPEED></th>
-					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SIGNALQUALITY></th>
-					<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SIGNALSTRENGTH></th>
-					<th></th>
-				</tr>
-			</thead>
-			
-			<tbody>
-
-	<TMPL_LOOP networks>
-			
-				<tr>
-					<th style="vertical-align: middle; text-align: left"><b><TMPL_VAR ssid></b></th>
-					<td style="vertical-align: middle; text-align: center"><TMPL_VAR encryption></td>
-					<td style="vertical-align: middle; text-align: center; font-size:75%;"><TMPL_VAR bitrates></td>
-					<td style="vertical-align: middle; text-align: center"><TMPL_VAR quality></td>
-					<td style="vertical-align: middle; text-align: center"><TMPL_VAR force></td>
-					<td style="vertical-align: middle; text-align: center">
-						<button class="lb-btn lb-btn-sm" type="button" onClick="window.opener.$('#netzwerkssid').val('<TMPL_VAR ssid>'); window.opener.$('#netzwerkssid').trigger('keyup'); window.close()"> <font><TMPL_VAR COMMON.BUTTON_SELECT></font></button>
-					</td>
-				</tr>
-
-	</TMPL_LOOP>
-			
-			</tbody>		
-		
+			<tr>
+				<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_NETWORK></th>
+				<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_ENCRYPTED></th>
+				<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SPEED></th>
+				<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SIGNALQUALITY></th>
+				<th><TMPL_VAR NETWORK_LISTNETWORKS.LABEL_SIGNALSTRENGTH></th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+<TMPL_LOOP networks>
+			<tr>
+				<th style="vertical-align:middle; text-align:left"><b><TMPL_VAR ssid></b></th>
+				<td style="vertical-align:middle; text-align:center"><TMPL_VAR encryption></td>
+				<td style="vertical-align:middle; text-align:center; font-size:75%;"><TMPL_VAR bitrates></td>
+				<td style="vertical-align:middle; text-align:center"><TMPL_VAR quality></td>
+				<td style="vertical-align:middle; text-align:center"><TMPL_VAR force></td>
+				<td style="vertical-align:middle; text-align:center">
+					<button class="lb-btn lb-btn-sm" type="button" onClick="window.opener.$('#netzwerkssid').val('<TMPL_VAR ssid>'); window.opener.$('#netzwerkssid').trigger('keyup'); window.close()"><TMPL_VAR COMMON.BUTTON_SELECT></button>
+				</td>
+			</tr>
+</TMPL_LOOP>
+		</tbody>
 </TMPL_IF>
 
-		</table>
-		<button class="lb-btn lb-btn-sm" name="btnsubmit" type="button" onClick="location.reload();">
-		<font size=\"-1\"><TMPL_VAR NETWORK.BUTTON_SEARCHWIFI_REFRESH></font></button>
-		<button class="lb-btn lb-btn-sm" name="btnclose" type="button" onClick="self.close();">
-		<font size=\"-1\"><TMPL_VAR NETWORK.BUTTON_SEARCHWIFI_CLOSE></font></button>
-		</center>
-
-		</p>
-
+	</table>
+	<div style="margin-top:12px; text-align:center;">
+		<button class="lb-btn lb-btn-sm" name="btnsubmit" type="button" onClick="location.reload();"><TMPL_VAR NETWORK.BUTTON_SEARCHWIFI_REFRESH></button>
+		<button class="lb-btn lb-btn-sm" name="btnclose" type="button" onClick="self.close();"><TMPL_VAR NETWORK.BUTTON_SEARCHWIFI_CLOSE></button>
 	</div>
-	<!-- /text -->
-
-	</div>
-
 </div>
-<!-- /content -->
-
-<!-- ************************************************************************************** -->
+<!-- ** END template/system/listnetworks.html -->

@@ -51,11 +51,20 @@
 	.noautoupdatelabel, a.noautoupdatelabel:link, a.noautoupdatelabel:hover, a.noautoupdatelabel:visited {
 		color:#888888 !important;;
 	}
+
+	/* icon cell: same padding as all other lb-table cells */
+	table.lb-table tr td.pluginicon-cell { padding: 5px 10px !important; vertical-align: middle !important; }
+
+	/* remove the border-bottom on pluginrow cells — that's the line above Automatic Updates */
+	table.lb-table tbody tr.pluginrow td { border-bottom: none !important; }
+
+	/* title cell: take all available width */
+	table.lb-table tbody tr.pluginrow td.plugin-title-cell { width: 100% !important; max-width: 0; }
 	</style>
 	
 	<div style="display:flex; width:100%; text-align:left; align-items:center;" id="installationheader">
 		<div style="padding:5px 10px 5px 0;">
-			<img width="48" height="48" src="/system/images/icons/main_plugins_install.svg" alt="">
+			<img width="72" height="72" src="/system/images/icons/main_plugins_install.svg" alt="">
 		</div>
 		<div style="width:100%; text-align:left;">
 			<div class="lb-section-title"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
@@ -63,34 +72,35 @@
 		</div>
 	</div>
 
-	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data">
+	<div style="height:var(--lb-space-lg)"></div>
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data" style="max-width:80%">
 		<input type="hidden" name="saveformdata" value="1">
-		<div style="padding:10px;">
-			<div style="text-align:left; margin-bottom:5px;">
-				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
+
+		<div class="lb-form-row">
+			<div class="lb-form-label">
+				<label for="archiveurl"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW></label>
 			</div>
-			<div style="text-align:left; width:100%;">
-				<input readonly type="url" autocomplete="off" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="^([hH][tT][tT][pP][sS]?|[sS]\?[fF][tT][pP])\:\/\/(((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|\:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)+(\/(([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|\/|\?)*)?(\.[zZ][iI][pP]$)|(\.[zZ][iI][pP][\?][a-zA-Z0-9\_\-\&][a-zA-Z0-9\=\&\_\-\%\/]*)$" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
-				<div id="dropzone" style="border:2px dashed #ccc; border-radius:8px; padding:20px; text-align:center; cursor:pointer; transition:all 0.2s ease; background:rgba(255,255,255,0.5); margin-top:8px;">
-				<div id="dropzone-icon" style="font-size:32px; margin-bottom:6px;">&#128230;</div>
-				<div id="dropzone-text" style="font-size:0.85em; color:#666;">.zip <TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_OR> <span style="color:#6dac20; text-decoration:underline;"><TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_BROWSE></span></div>
-				<div id="dropzone-filename" style="display:none; font-size:0.9em; color:#333; font-weight:bold; margin-top:6px;"></div>
-			</div>
-			<input type="file" id="uploadfile" name="uploadfile" class="textfield" style="display:none;" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
+			<div class="lb-form-field" style="display:flex; flex-direction:column; gap:var(--lb-space-sm);">
+				<input class="lb-input" background-color="white" readonly type="url" autocomplete="off" id="archiveurl" name="archiveurl" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="^([hH][tT][tT][pP][sS]?|[sS]\?[fF][tT][pP])\:\/\/(((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|\:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)+(\/(([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|\/|\?)*)?(\.[zZ][iI][pP]$)|(\.[zZ][iI][pP][\?][a-zA-Z0-9\_\-\&][a-zA-Z0-9\=\&\_\-\%\/]*)$" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
+				<div style="display:flex; gap:var(--lb-space-sm); align-items:stretch;">
+					<div id="dropzone" style="flex:1; border:2px dashed #ccc; border-radius:8px; padding:16px; text-align:center; cursor:pointer; transition:all 0.2s ease; background:rgba(255,255,255,0.5);">
+						<div id="dropzone-icon" style="font-size:28px; margin-bottom:4px;">&#128230;</div>
+						<div id="dropzone-text" style="font-size:0.85em; color:#666;">.zip <TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_OR> <span style="color:#6dac20; text-decoration:underline;"><TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_BROWSE></span></div>
+						<div id="dropzone-filename" style="display:none; font-size:0.9em; color:#333; font-weight:bold; margin-top:4px;"></div>
+					</div>
+					<button type="button" id="dropzone-clear" class="lb-btn lb-btn-sm lb-btn-icon" title="Reset" style="align-self:stretch; padding-left:12px; padding-right:12px;"><i class="pi pi-times"></i></button>
+				</div>
 			</div>
 		</div>
-		<div style="height:10px;"></div>
-		<div style="padding:10px;">
-			<div style="margin-bottom:5px;">
-				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
+		<input type="file" id="uploadfile" name="uploadfile" style="display:none;" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
+
+		<div class="lb-form-row">
+			<div class="lb-form-label">
+				<label for="securepin"><TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN></label>
 			</div>
-			<div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
-				<div style="flex:1; min-width:120px;">
-					<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$">
-				</div>
-				<div>
-					<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
-				</div>
+			<div class="lb-form-field" style="display:flex; gap:var(--lb-space-sm); align-items:center;">
+				<input class="lb-input" background-color="white" id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$" style="width:20%; min-width:80px;">
+				<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
 			</div>
 		</div>
 	</form>
@@ -99,13 +109,14 @@
 
 	<div style="display:flex; width:100%; text-align:left; align-items:center;">
 		<div style="padding:5px 10px 5px 0;">
-			<img width="48" height="48" src="/system/images/icons/main_plugins_title.svg" alt="">
+			<img width="72" height="72" src="/system/images/icons/main_plugins_title.svg" alt="">
 		</div>
 		<div style="width:100%; text-align:left;">
 			<div class="lb-section-title"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
 			<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="btnrecheck"><i class="pi pi-refresh"></i> <TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
 		</div>
 	</div>
+	<div style="height:var(--lb-space-lg)"></div>
 	<table class="lb-table">
 		<tbody>
 
@@ -114,43 +125,42 @@
 			<TMPL_LOOP PLUGINS>
 			<style>
 				#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 128px; width: 128px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png); }
-				
+
 				@media (max-width: 875px) {
 					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_64.png); }
 				}
 			</style>
 			<tr class="pluginrow" data-md5="<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">
-				<td rowspan="2">
+				<td rowspan="2" class="pluginicon-cell">
 					<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
 				</td>
-				<td>
-					<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
-						<div style="flex-grow: 2;">
-							<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
-							<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
-						</div>
-						<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b>
-							<TMPL_IF PLUGINDB_AUTOUPDATE>
-							<div class="releaseverslabel small" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-							<div class="prereleaseverslabel small" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-							<div class="nonewreleaselabel small" style="display:none" data-version="" id="labelnonewrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Up-To-Date</div>
-							<TMPL_ELSE>
-							<div class="noautoupdatelabel small" data-version="" id="labelnoautoupdate-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">No AutoUpdate</div>
-							</TMPL_IF>
-						</div>
-					</div>
+				<td class="plugin-title-cell" style="padding-right:32px; overflow:hidden;">
+					<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none; color:inherit;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
+					<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
 				</td>
-				
-				<td>
-					<div>
-						<a href="#" data-updatelink="" class="lb-btn lb-btn-sm lb-btn-icon btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Release</a>
-						<a href="#" data-updatelink="" class="lb-btn lb-btn-sm lb-btn-icon btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Pre-Release</a>
+
+				<td style="text-align:right; width:1%; white-space:nowrap; vertical-align:top;">
+					<div style="display:inline-flex; flex-direction:column; align-items:flex-start; gap:4px;">
+						<div><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b></div>
+						<TMPL_IF PLUGINDB_AUTOUPDATE>
+						<div class="releaseverslabel small" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
+						<div class="prereleaseverslabel small" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
+						<div class="nonewreleaselabel small" style="display:none" data-version="" id="labelnonewrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Up-To-Date</div>
+						<TMPL_ELSE>
+						<div class="noautoupdatelabel small" data-version="" id="labelnoautoupdate-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">No AutoUpdate</div>
+						</TMPL_IF>
+						<div>
+							<a href="#" data-updatelink="" class="lb-btn lb-btn-sm lb-btn-icon btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Release</a>
+							<a href="#" data-updatelink="" class="lb-btn lb-btn-sm lb-btn-icon btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Pre-Release</a>
+						</div>
+						<div>
+							<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
+							<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-times"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+						</div>
 					</div>
-					<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
-					<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-times"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
 				</td>
 			</tr>
-			<tr style="border-bottom: 1.5px solid LightGray;">
+			<tr style="border-top:none; border-bottom: 1.5px solid LightGray;">
 				<td>
 				<TMPL_IF PLUGINDB_AUTOUPDATE>
 				<label><TMPL_VAR PLUGININSTALL.UI_LABEL_AUTOMATIC_UPDATES></label>
@@ -282,6 +292,20 @@
 
 		dropzone.addEventListener('click', function() {
 			fileInput.click();
+		});
+
+		document.getElementById('dropzone-clear').addEventListener('click', function() {
+			fileInput.value = '';
+			window._dropzoneFile = null;
+			$('#dropzone-filename').hide();
+			$('#dropzone-icon').show();
+			$('#dropzone-text').show();
+			dropzone.style.borderColor = '#ccc';
+			dropzone.style.background = 'rgba(255,255,255,0.5)';
+			$('#archiveurl').val('').fadeIn();
+			$(fileInput).trigger('change').trigger('blur');
+			$('#error-msg-archiveurl').fadeOut(10);
+			$('#error-msg-uploadfile').fadeOut(10);
 		});
 
 		['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(eventName) {
