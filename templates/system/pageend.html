@@ -9,6 +9,21 @@
 			</footer>
 		</div>
 		<!-- /lb-main -->
+
+		<style>
+			body.nav-mode-tabbar .lb-footer {
+				position: fixed;
+				bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+				left: 0;
+				right: 0;
+				background: var(--lb-bg);
+				z-index: 500;
+				padding: 8px 0;
+			}
+			body.nav-mode-tabbar .lb-main {
+				padding-bottom: calc(56px + 110px + env(safe-area-inset-bottom, 0px));
+			}
+		</style>
 	</div>
 	<!-- /lb-layout -->
 
