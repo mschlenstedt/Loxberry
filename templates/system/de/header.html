@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="de">
+<!-- head.html START -->
+<head>
+	<title><!--$template_title--></title>
+	<!-- THIS IS MULTI-LANG HEADER OF LOXBERRY::WEB -->
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3, user-scalable=yes">
+
+	<!-- jQuery Mobile theme CSS — always (provides base fonts, colors, form styles) -->
+	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.css" />
+	<!-- jQuery Mobile structure + icons — only for plugins -->
+	
+
+	<!-- Design System CSS — always -->
+	<link rel="stylesheet" href="/system/css/design-tokens.css?v=19" />
+	<link rel="stylesheet" href="/system/css/main.css?v=19" />
+	<link rel="stylesheet" href="/system/css/components.css?v=19" />
+	<link rel="stylesheet" href="/system/css/theme-classic-lb.css?v=19" />
+	<link rel="shortcut icon" href="/system/images/favicon.ico" />
+	<link rel="icon" type="image/png" href="/system/images/favicon-96x96.png" sizes="96x96" />
+	<link rel="icon" type="image/png" href="/system/images/favicon-32x32.png" sizes="32x32" />
+	<link rel="icon" type="image/png" href="/system/images/favicon-16x16.png" sizes="16x16" />
+	<link href="/system/css/primeicons.css" rel="stylesheet" />
+
+	<!-- jQuery Core — always -->
+	<script src="/system/scripts/jquery/jquery-1.12.4.min.js"></script>
+
+	<!-- jQuery Mobile JS — only for plugins -->
+	
+
+	<!-- Form validator — always (uses jQuery Core, not jQM) -->
+	<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
+	<script src="/system/scripts/setup.js"></script>
+	<script src="/system/scripts/validate.js"></script>
+
+	<!-- jQuery Mobile config — only for plugins -->
+	
+
+	<!-- Core page config — shim jQM methods as no-ops so existing JS doesn't crash -->
+	
+	<script>
+		$.ajaxSetup({ cache: false });
+		// Shim jQM widget methods
+		$.each(['checkboxradio', 'flipswitch', 'selectmenu', 'popup', 'filterable',
+				'controlgroup', 'collapsible', 'button', 'textinput', 'slider',
+				'table', 'panel', 'tabs', 'toolbar', 'navbar'], function(i, widget) {
+			if (!$.fn[widget]) {
+				$.fn[widget] = function() { return this; };
+			}
+		});
+		// Shim $.mobile namespace
+		if (!$.mobile) {
+			$.mobile = {
+				ajaxEnabled: false,
+				degradeInputs: {},
+				page: { prototype: { options: { domCache: false } } }
+			};
+		}
+	</script>
+	
+
+	<script>
+		// Sync lb-checked class on lb-btn-group labels
+		function syncLbBtnGroup($group) {
+			$group.find("label").removeClass("lb-checked");
+			$group.find("input[type='radio'], input[type='checkbox']").each(function() {
+				if (this.checked) {
+					var id = $(this).attr("id");
+					var $label;
+					if (id) {
+						$label = $group.find("label[for='" + id + "']");
+					}
+					// Fallback: find next sibling label
+					if (!$label || !$label.length) {
+						$label = $(this).next("label");
+					}
+					// Fallback: jQM wrappers (plugin pages)
+					if (!$label || !$label.length) {
+						$label = $(this).closest(".ui-radio, .ui-checkbox").find("label");
+					}
+					// Fallback: input is inside label (CGI.pm radio_group pattern)
+					if (!$label || !$label.length) {
+						$label = $(this).closest("label");
+					}
+					if ($label && $label.length) {
+						$label.addClass("lb-checked");
+					}
+				}
+			});
+		}
+		$(document).on("change click", ".lb-btn-group label, .lb-btn-group input", function() {
+			var $group = $(this).closest(".lb-btn-group");
+			setTimeout(function() { syncLbBtnGroup($group); }, 10);
+		});
+		// Initial sync on page load
+		function syncAllBtnGroups() {
+			$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
+		}
+		
+		$(document).ready(function() {
+			setTimeout(syncAllBtnGroups, 200);
+			setTimeout(syncAllBtnGroups, 800);
+			setTimeout(syncAllBtnGroups, 1500);
+		});
+	</script>
+	<script src="/system/scripts/browser.js"></script>
+	<script src="/system/scripts/lb-table-sort.js?v=19"></script>
+	<!-- HTMLHEAD sent by the plugin author: -->
+	
+</head>
+<body class="theme-classic-lb">
+<script>
+	// Restore nav-mode (sidebar/tabbar) before layout renders to avoid flash.
+	(function() { try {
+		if (localStorage.getItem('lb-nav-mode') === 'tabbar') {
+			document.body.classList.add('nav-mode-tabbar');
+		}
+	} catch(e) {} })();
+</script>
+<!-- head.html END -->
+<!-- pagestart.html START -->
+<div data-role="page" id="main1" data-dom-cache="false">
+<div class="lb-layout">
+	<!-- Sidebar -->
+	<aside class="lb-sidebar" id="lb-sidebar">
+		<a class="lb-sidebar-header" href="/admin/system/index.cgi" title="Home">
+			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
+			<div>
+				<div class="lb-sidebar-brand"><span>Lox</span>Berry</div>
+				<div class="lb-sidebar-version"></div>
+			</div>
+		</a>
+		<nav class="lb-sidebar-nav">
+			<!-- Plugin links (rendered as HTML by Perl/PHP code) -->
+			
+			<!-- System links — Home first, rest alphabetical by German label -->
+			<div class="lb-sidebar-section">System Settings</div>
+			<a class="lb-sidebar-link" href="/admin/system/index.cgi"><span class="lb-sidebar-name">Home</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/admin.cgi"><span class="lb-sidebar-name">Admin Access</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/backup.cgi"><span class="lb-sidebar-name">Backup</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/tools/filemanager/index.html"><span class="lb-sidebar-name">File Manager</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/logmanager.cgi"><span class="lb-sidebar-name">Log Manager</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/services.php"><span class="lb-sidebar-name">LoxBerry Services</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/mailserver.cgi"><span class="lb-sidebar-name">Mail Server</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/myloxberry.cgi"><span class="lb-sidebar-name">My LoxBerry</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/miniserver.cgi"><span class="lb-sidebar-name">Miniserver</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/mqtt.cgi"><span class="lb-sidebar-name">MQTT</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/network.cgi"><span class="lb-sidebar-name">Network</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/netshares.cgi"><span class="lb-sidebar-name">Netshares</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/power.cgi"><span class="lb-sidebar-name">Reboot</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/plugininstall.cgi"><span class="lb-sidebar-name">Plugin Management</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/remote.cgi"><span class="lb-sidebar-name">Remote Support</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/donate.cgi"><span class="lb-sidebar-name">Donate? :-)</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/tools/terminal" target="_blank"><span class="lb-sidebar-name">Terminal</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/translate.cgi"><span class="lb-sidebar-name">Translate</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/updates.cgi"><span class="lb-sidebar-name">Updates</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/usbstorage.cgi"><span class="lb-sidebar-name">USB Storage</span></a>
+		</nav>
+		<div class="lb-sidebar-footer">
+			<div class="lb-sidebar-status"></div>
+			<span>LoxBerry</span>
+		</div>
+	</aside>
+
+	<!-- Sidebar Backdrop (mobile) -->
+	<div class="lb-sidebar-backdrop" id="lb-sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+	<!-- Mobile Tab Bar Popups -->
+	<div class="lb-tab-popup-backdrop" id="lb-tab-popup-backdrop" onclick="closeTabPopup()"></div>
+
+	<div class="lb-tab-popup" id="lb-tab-popup-plugins">
+		<div class="lb-tab-popup-header">Meine Plugins</div>
+		<div class="lb-tab-popup-list">
+			
+			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item lb-tab-popup-item-muted">
+				<i class="pi pi-plus-circle"></i>
+				<span>Plugin installieren</span>
+			</a>
+		</div>
+	</div>
+
+	<div class="lb-tab-popup" id="lb-tab-popup-settings">
+		<div class="lb-tab-popup-header">System Settings</div>
+		<div class="lb-tab-popup-list">
+			<a href="/admin/system/myloxberry.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-user"></i>
+				<span>My LoxBerry</span>
+			</a>
+			<a href="/admin/system/admin.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-shield"></i>
+				<span>Admin Access</span>
+			</a>
+			<a href="/admin/system/miniserver.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-server"></i>
+				<span>Miniserver</span>
+			</a>
+			<a href="/admin/system/network.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-globe"></i>
+				<span>Network</span>
+			</a>
+			<a href="/admin/system/services.php" class="lb-tab-popup-item">
+				<i class="pi pi-sliders-h"></i>
+				<span>LoxBerry Services</span>
+			</a>
+			<a href="/admin/system/backup.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-database"></i>
+				<span>Backup</span>
+			</a>
+			<a href="/admin/system/power.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-power-off"></i>
+				<span>Reboot</span>
+			</a>
+		</div>
+	</div>
+
+	<div class="lb-tab-popup" id="lb-tab-popup-more">
+		<div class="lb-tab-popup-header">Mehr</div>
+		<div class="lb-tab-popup-list">
+			<a href="/admin/system/logmanager.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-list"></i>
+				<span>Log Manager</span>
+			</a>
+			<a href="/admin/system/mqtt.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-arrows-h"></i>
+				<span>MQTT</span>
+			</a>
+			<a href="/admin/system/mailserver.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-envelope"></i>
+				<span>Mail Server</span>
+			</a>
+			<a href="/admin/system/translate.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-language"></i>
+				<span>Translate</span>
+			</a>
+			<a href="/admin/system/tools/filemanager/index.html" class="lb-tab-popup-item">
+				<i class="pi pi-folder-open"></i>
+				<span>File Manager</span>
+			</a>
+			<a href="/admin/system/netshares.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-share-alt"></i>
+				<span>Netshares</span>
+			</a>
+			<a href="/admin/system/usbstorage.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-usb"></i>
+				<span>USB Storage</span>
+			</a>
+			<a href="/admin/system/remote.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-wifi"></i>
+				<span>Remote Support</span>
+			</a>
+			<a href="/admin/system/tools/terminal" class="lb-tab-popup-item" target="_blank">
+				<i class="pi pi-desktop"></i>
+				<span>Terminal</span>
+			</a>
+			<a href="/admin/system/donate.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-heart"></i>
+				<span>Donate? :-)</span>
+			</a>
+		</div>
+	</div>
+
+	<!-- Mobile Tab Bar -->
+	<nav class="lb-tab-bar" id="lb-tab-bar" role="navigation" aria-label="Mobile Navigation">
+		<a href="/admin/system/index.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/index.cgi">
+			<i class="pi pi-home"></i>
+			<span>Home</span>
+		</a>
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('plugins')" data-role="none">
+			<i class="pi pi-th-large"></i>
+			<span>Plugins</span>
+		</button>
+		<a href="/admin/system/updates.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/updates.cgi">
+			<i class="pi pi-sync"></i>
+			<span>Updates</span>
+		</a>
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('settings')" data-role="none">
+			<i class="pi pi-cog"></i>
+			<span>Einstellungen</span>
+		</button>
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('more')" aria-label="Mehr anzeigen" data-role="none">
+			<i class="pi pi-ellipsis-h"></i>
+			<span>Mehr</span>
+		</button>
+	</nav>
+
+	<!-- Help Panel -->
+	<aside class="lb-helppanel" id="helppanel">
+		<div class="lb-helppanel-header">
+			<h2>Help</h2>
+			<button class="lb-helppanel-close" onclick="toggleHelpPanel()">&times;</button>
+		</div>
+		<div class="lb-helppanel-content">
+			<p><a href="<!--$helplink-->" target="blank">Detailed help</a></p>
+			<!--$helptext-->
+		</div>
+	</aside>
+
+	<!-- Main -->
+	<div class="lb-main">
+		<header class="lb-header">
+			<div class="lb-header-left">
+				<button class="lb-sidebar-toggle lb-header-btn" id="btn-sidebar-toggle" onclick="toggleSidebar()" data-role="none">
+					<i class="pi pi-bars"></i>
+				</button>
+				<a href="/admin/system/index.cgi" class="lb-header-btn pi pi-home"></a>
+				<button class="lb-header-btn lb-nav-toggle" id="btn-nav-toggle" onclick="toggleNavMode()" data-role="none" title="Navigation umschalten (Sidebar / Tab-Leiste)" aria-label="Navigation umschalten">
+					<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+						<path d="M6 4 L6 18 L20 18"/>
+						<path d="M3 7 L6 4 L9 7"/>
+						<path d="M17 15 L20 18 L17 21"/>
+					</svg>
+				</button>
+			</div>
+			<h1 class="lb-header-title"> <!--$template_title--></h1>
+			<div class="lb-header-actions">
+				<div id="update_alert" style="display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
+				<a id="btnnotifies" href="/admin/system/tools/showallnotifications.cgi" class="lb-header-btn pi pi-bell"><span class="lb-header-btn-badge" style="display:none"></span></a>
+				<a id="btninfo" href="#" class="lb-header-btn pi pi-question-circle" onclick="toggleHelpPanel(); return false;"></a>
+				<a id="btnpower" href="/admin/system/power.cgi" class="lb-header-btn pi pi-power-off"></a>
+			</div>
+		</header>
+
+		<!-- Vue Navbar (horizontal sub-tabs) -->
+		<div id="vuenavbar" :key="componentKey">
+			<div class="vuenavbarcontainer">
+				<template v-for="(element, index) in menu" :key="index">
+					<a class="vuenavbarelement" :href="element.URL" @mouseover="hover(index, true)" @click="menuclick(index, null, $event)" :class="{ vuenavbarelement_active: element.active }">
+					{{element.Name}}
+					{{get_notification_count( element )}}
+					<transition name="fade">
+					<div style="position:relative;" class="notifyNavBar notifyNavBarBlue" v-show="element?.infoCount>0">{{element.infoCount}}</div>
+					</transition>
+					<transition name="fade">
+					<div style="position:relative;" class="notifyNavBar notifyNavBarRed" v-show="element?.errorCount>0">{{element.errorCount}}</div>
+					</transition>
+					</a>
+				</template>
+			</div>
+			<div class="vuenavbarsubcontainer">
+				<template v-for="(element, index) in menu" :key="index">
+					<a v-for="(subelement, subindex) in element.Submenu" :href="subelement.URL" @click="menuclick(index, subindex, $event)" :key="subindex" class="vuenavbarsubelement" :class="{ vuenavbarsubelement_active: subelement.active }" v-show="menu[index]?.show">
+						{{subelement.Name}}
+						{{get_notification_count( subelement )}}
+					<transition name="fade">
+					<div style="position:relative;right:-5px;" class="notifyNavBar notifyNavBarBlue" v-show="subelement?.infoCount>0">{{element.infoCount}}</div>
+					</transition>
+					<transition name="fade">
+					<div style="position:relative;right:-5px;" class="notifyNavBar notifyNavBarRed" v-show="subelement?.errorCount>0">{{element.errorCount}}</div>
+					</transition>
+					</a>
+				</template>
+			</div>
+		</div>
+
+		<script>
+		// Highlight current page in sidebar
+		(function() {
+			var currentPath = window.location.pathname + window.location.search;
+			var links = document.querySelectorAll('.lb-sidebar-link');
+			links.forEach(function(link) {
+				if (link.getAttribute('href') === currentPath) {
+					link.classList.add('active');
+				}
+			});
+			// Highlight current tab in mobile tab bar
+			var tabItems = document.querySelectorAll('.lb-tab-bar-item[data-tab-path]');
+			tabItems.forEach(function(tab) {
+				if (tab.getAttribute('data-tab-path') === currentPath) {
+					tab.classList.add('active');
+				}
+			});
+		})();
+
+		// Sidebar toggle (mobile)
+		function toggleSidebar() {
+			closeTabPopup();
+			document.getElementById('lb-sidebar').classList.toggle('open');
+			document.getElementById('lb-sidebar-backdrop').classList.toggle('open');
+		}
+
+		// Nav-mode toggle (desktop): switch sidebar <-> tabbar layout, persist in localStorage
+		function toggleNavMode() {
+			var isTabbar = document.body.classList.toggle('nav-mode-tabbar');
+			try {
+				localStorage.setItem('lb-nav-mode', isTabbar ? 'tabbar' : 'sidebar');
+			} catch(e) {}
+			// Close any open mobile popups/sidebar overlays so we don't strand them
+			closeTabPopup();
+			document.getElementById('lb-sidebar').classList.remove('open');
+			document.getElementById('lb-sidebar-backdrop').classList.remove('open');
+		}
+
+		// Help panel toggle
+		function toggleHelpPanel() {
+			document.getElementById('helppanel').classList.toggle('open');
+		}
+
+		// Tab bar popup toggle
+		var activeTabPopup = null;
+		var activeTabBtn = null;
+		var urlActiveTab = null;
+
+		// Center popup horizontally over its trigger button, clamped to viewport.
+		function positionTabPopup(popup, btn) {
+			if (!popup || !btn) return;
+			var margin = 8;
+			var btnRect = btn.getBoundingClientRect();
+			var btnCenter = btnRect.left + btnRect.width / 2;
+			var popupWidth = popup.offsetWidth || 320;
+			var leftPos = btnCenter - popupWidth / 2;
+			var maxLeft = window.innerWidth - popupWidth - margin;
+			if (leftPos < margin) leftPos = margin;
+			if (leftPos > maxLeft) leftPos = maxLeft;
+			popup.style.left = leftPos + 'px';
+		}
+
+		function toggleTabPopup(name) {
+			var popup = document.getElementById('lb-tab-popup-' + name);
+			var backdrop = document.getElementById('lb-tab-popup-backdrop');
+			if (activeTabPopup === name) {
+				closeTabPopup();
+				return;
+			}
+			if (activeTabPopup) {
+				document.getElementById('lb-tab-popup-' + activeTabPopup).classList.remove('open');
+			}
+			if (activeTabBtn) {
+				activeTabBtn.classList.remove('active');
+			}
+			// Remove URL-based active tab while popup is open
+			if (!urlActiveTab) {
+				urlActiveTab = document.querySelector('.lb-tab-bar-item[data-tab-path].active');
+			}
+			if (urlActiveTab) {
+				urlActiveTab.classList.remove('active');
+			}
+			// Find the button that triggered this popup (used for positioning + active state)
+			var triggerBtn = null;
+			var btns = document.querySelectorAll('.lb-tab-bar-item');
+			btns.forEach(function(btn) {
+				if (btn.getAttribute('onclick') === "toggleTabPopup('" + name + "')") {
+					btn.classList.add('active');
+					activeTabBtn = btn;
+					triggerBtn = btn;
+				}
+			});
+			popup.classList.add('open');
+			backdrop.classList.add('open');
+			positionTabPopup(popup, triggerBtn);
+			activeTabPopup = name;
+		}
+		function closeTabPopup() {
+			if (activeTabPopup) {
+				document.getElementById('lb-tab-popup-' + activeTabPopup).classList.remove('open');
+				activeTabPopup = null;
+			}
+			if (activeTabBtn) {
+				activeTabBtn.classList.remove('active');
+				activeTabBtn = null;
+			}
+			// Restore URL-based active tab
+			if (urlActiveTab) {
+				urlActiveTab.classList.add('active');
+				urlActiveTab = null;
+			}
+			document.getElementById('lb-tab-popup-backdrop').classList.remove('open');
+		}
+		</script>
+
+		<!-- Vue Navbar CSS -->
+		<style>
+#vuenavbar {
+	width: 100%;
+	box-sizing: border-box;
+}
+.vuenavbarcontainer {
+	border-top: 1px solid var(--lb-border-color);
+	display:flex;
+	flex-direction:row;
+	flex-wrap:nowrap;
+	justify-content: flex-start;
+	align-items: stretch;
+	background-color: var(--lb-sidebar-bg);
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+.vuenavbarcontainer::-webkit-scrollbar { display: none; }
+.vuenavbarelement {
+	/* Tabs share the row evenly (flex:1 1 0); when a tab is too narrow
+	   for its label, truncate with ellipsis instead of wrapping/scrolling. */
+	flex: 1 1 0;
+	min-width: 0;
+	text-shadow:none;
+	padding: 10px 20px;
+	color: var(--lb-sidebar-text) !important;
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: none;
+	min-height:18px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-family: var(--lb-font);
+}
+@media (max-width: 768px) {
+	.vuenavbarelement { font-size: 11px; padding: 8px 12px; }
+}
+@media (max-width: 480px) {
+	.vuenavbarelement { font-size: 10px; padding: 6px 8px; }
+}
+.vuenavbarelement:hover { background-color: var(--lb-primary-hover, #5A8E1C); }
+.vuenavbarelement_active { background-color: var(--lb-primary); color: white !important; }
+.vuenavbarsubcontainer {
+	display:flex;
+	flex-direction:row;
+	flex-wrap:nowrap;
+	justify-content: flex-start;
+	align-items: stretch;
+	background-color: var(--lb-sidebar-bg);
+}
+.vuenavbarsubelement {
+	flex:1;
+	text-shadow:none;
+	padding: 5px 10px;
+	border: 1px solid var(--lb-border-color);
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+	background-color: var(--lb-btn-bg);
+	color: var(--lb-text) !important;
+	text-decoration: none;
+	font-family: var(--lb-font);
+}
+.vuenavbarsubelement:hover {
+	background-color: var(--lb-primary-hover, #5A8E1C);
+	border-color: var(--lb-primary-hover, #5A8E1C);
+	color: white !important;
+}
+.vuenavbarsubelement_active {
+	background-color: var(--lb-primary);
+	color: white !important;
+}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.8s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+		</style>
+
+		
+		<script src="/system/scripts/vue3/vue3.js"></script>
+		<script>
+		function createnavbar() {
+			console.log("jsonmenu init");
+			const vuenavbar = {
+				data() {
+					var menu = this.getMenuData();
+					console.log("Menu", menu);
+					componentKey = 0;
+					return { menu, componentKey };
+				},
+				methods: {
+					getMenuData() {
+						var menuelement = document.getElementById('jsonmenu');
+						var menuobj = JSON.parse(menuelement.textContent);
+						console.log("pathname", window.location.pathname+window.location.search);
+						var response = this.elementSetActive( menuobj );
+						menuobj = response[0];
+						console.log("Final menuobj", menuobj);
+						return menuobj;
+					},
+					elementSetActive( menuobj ) {
+						var vm = this;
+						var currentUrl = window.location.pathname+window.location.search;
+						var elementsActive = 0;
+						for( let index in menuobj ) {
+							element = menuobj[index];
+							menuobj[index].show=false;
+							menuobj[index].infoCount = 0;
+							menuobj[index].errorCount = 0;
+							if( element.Submenu ) {
+								var response = vm.elementSetActive( element.Submenu );
+								menuobj[index].Submenu = response[0];
+								if( !menuobj[index].active ) {
+									menuobj[index].active = response[1];
+								}
+								if( menuobj[index].active == 1 ) {
+									menuobj[index].show = true;
+								}
+							}
+							else if( element.URL && element.URL == currentUrl ) {
+								if( !menuobj[index].active ) {
+									menuobj[index].active = 1;
+									elementsActive = 1;
+								}
+							}
+							else {
+								if( !menuobj[index].active ) {
+									menuobj[index].active = 0;
+								}
+							}
+						};
+						return [ menuobj, elementsActive ];
+					},
+					hover( index, active ) {
+						for( let i in this.menu ) { this.menu[i].show = false; }
+						this.menu[index].show = true;
+					},
+					menuclick( mainindex, subindex=null, event=null ) {
+						event.preventDefault();
+						if( subindex == null ) {
+							if( !this.menu[mainindex].Submenu ) {
+								this.callUrl(mainindex);
+								return;
+							}
+							this.hover( mainindex, true );
+							return;
+						} else {
+							this.callUrl(mainindex, subindex);
+						}
+					},
+					callUrl( mainindex, subindex=null ) {
+						var url, target;
+						if( subindex != null ) {
+							url = this.menu[mainindex].Submenu[subindex].URL;
+							target = typeof this.menu[mainindex].Submenu[subindex].target !== 'undefined' ? this.menu[mainindex].Submenu[subindex].target : '_self';
+						} else {
+							url = this.menu[mainindex].URL;
+							target = typeof this.menu[mainindex].target !== 'undefined' ? this.menu[mainindex].target : '_self';
+						}
+						window.open(url, target);
+					},
+					get_notification_count( element ) {
+						if( !element.Notify_Package ) return;
+						fetch('/admin/system/ajax/ajax-notification-handler.cgi', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+							body: 'action=get_notification_count&package='+encodeURIComponent(element.Notify_Package)+'&name='+encodeURIComponent(element?.Notify_Name)
+						})
+						.then( response => response.json())
+						.then( data => {
+							if( data[0] > 0 ) element.errorCount = data[2];
+							else if( data[1] > 0 ) element.infoCount = data[2];
+							else { element.errorCount = 0; element.infoCount = 0; }
+						});
+					}
+				}
+			}
+			navbarglobal = Vue.createApp(vuenavbar).mount('#vuenavbar');
+		}
+		if( document.getElementById('jsonmenu') ) { createnavbar(); }
+
+		// Notification bell
+		const notifyCachetimeSec = 30;
+		btnnotifies_get();
+		setInterval(function(){ btnnotifies_get(); }, notifyCachetimeSec*1000);
+
+		function btnnotifies_get(force) {
+			let notifyCount, notifyTimestamp = 0;
+			try {
+				let notifStore = sessionStorage.getItem("notifyCount");
+				notifyCount = JSON.parse(notifStore);
+				notifyTimestamp = notifyCount.ts;
+			} catch(error) { notifyCount = new Object(); }
+			if( (notifyTimestamp+notifyCachetimeSec*1000) < Date.now() || force == true) {
+				fetch('/admin/system/ajax/ajax-notification-handler.cgi', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: 'action=get_notification_count'
+				})
+				.then( response => response.json())
+				.then( data => { btnnotifies_setStorage(data[0], data[1]); });
+			} else { btnnotifies_setcss( notifyCount ); }
+		}
+		function btnnotifies_setStorage(errorCount, infoCount) {
+			let notifyCount = new Object();
+			notifyCount.errorCount = errorCount;
+			notifyCount.infoCount = infoCount;
+			notifyCount.ts = Date.now();
+			sessionStorage.setItem("notifyCount", JSON.stringify(notifyCount));
+			btnnotifies_setcss(notifyCount);
+		}
+		function btnnotifies_setcss(data) {
+			var total = (parseInt(data.errorCount, 10) || 0) + (parseInt(data.infoCount, 10) || 0);
+			var $badge = $("#btnnotifies .lb-header-btn-badge");
+			if (total > 0) {
+				$badge.text(total).show();
+				$badge.toggleClass("lb-badge-red", data.errorCount > 0);
+				$badge.toggleClass("lb-badge-blue", !(data.errorCount > 0));
+			} else {
+				$badge.hide();
+			}
+		}
+		</script>
+
+		<!-- Content -->
+		
+		<div id="page_content" class="lb-content page_content">
+<!-- pagestart.html END -->

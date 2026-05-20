@@ -1,0 +1,91 @@
+<!-- pageend.html START -->
+			</div>
+
+			<!-- Footer -->
+			<footer class="lb-footer">
+				<a id="btnhomefooter" href="/admin/system/index.cgi">
+					<img src="/system/images/icons/main_myloxberry.svg" class="lb-footer-logo" alt="LoxBerry">
+				</a>
+			</footer>
+		</div>
+		<!-- /lb-main -->
+	</div>
+	<!-- /lb-layout -->
+
+	<!-- Reboot Force Dialog -->
+	<dialog class="lb-modal" id="popupRebootForce">
+		<div class="lb-modal-header">
+			<h2>LoxBerry requests an important reboot</h2>
+		</div>
+		<div class="lb-modal-content">
+			<img src="/system/images/reboot_required_big.svg" style="width:60px;">
+			<p><b>LoxBerry is required to be rebooted because of a pending update. Without a reboot, LoxBerry will stay in an inconsistent state.</b></p>
+			<p id="popupRebootForceReason"></p>
+			<p>Please apology, we usually wouldn't disturb you (and only make the power button blink in the footer), but today, it is really important :-)</p>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/power.cgi"><i class="pi pi-power-off"></i> Reboot</a>
+		</div>
+	</dialog>
+
+	<!-- Status Bar -->
+	<div id="footerLBStatusbar" style="display:none;z-index:1000;overflow:hidden;background-color:#6dac20;position:fixed;bottom:0;height:30px;width:100%;padding:6px;text-align:center;color:white;"></div>
+
+<script>
+$( document ).ready(function() {
+	const mainiconsRefreshSec = 13;
+	mainicons_get();
+	var refresh_main_icons_interval_timer = setInterval(mainicons_get, mainiconsRefreshSec*1000);
+
+	function mainicons_get() {
+		let mainiconsTimestamp = 0;
+		try {
+			let mainiconsStore = sessionStorage.getItem("mainicons");
+			data = JSON.parse(mainiconsStore);
+			mainiconsTimestamp = data.ts;
+		} catch(error) { data = new Object(); }
+		if( (mainiconsTimestamp+mainiconsRefreshSec*1000) < Date.now() ) {
+			fetch('/admin/system/ajax/ajax-main-icons-handler.php')
+			.then( response => response.json())
+			.then( data => { mainicons_setStorage(data); });
+		} else { mainicons_setcss(data); }
+	}
+
+	function mainicons_setStorage(data) {
+		data.ts = Date.now();
+		sessionStorage.setItem("mainicons", JSON.stringify(data));
+		mainicons_setcss(data);
+	}
+
+	function mainicons_setcss(data) {
+		if( data.reboot_required == 1 ) {
+			$("#btnpower").addClass("headerbutton_red");
+		} else {
+			$("#btnpower").removeClass("headerbutton_red");
+		}
+		if (data.reboot_force == 1 && data.update_running == 0) {
+			if(data.reboot_force_reason.length > 0) {
+				$("#popupRebootForceReason").html(data.reboot_force_reason);
+			}
+			next_reboot_force_popup_time = sessionStorage.getItem("loxberry_reboot_force");
+			if(next_reboot_force_popup_time === "null")
+				next_reboot_force_popup_time = 0;
+			if( next_reboot_force_popup_time < Date.now()) {
+				document.getElementById('popupRebootForce').showModal();
+				sessionStorage.setItem("loxberry_reboot_force", Date.now()+2*60*1000);
+			}
+		}
+		if( data.update_running == 1) {
+			$("#footerLBStatusbar").fadeIn().text("An update or installation is currently running. Please wait! ("+data.which.toString()+")");
+		} else {
+			$("#footerLBStatusbar").fadeOut();
+		}
+	}
+});
+</script>
+
+<div id="lang" style="display: none">en</div>
+</div><!-- /data-role page -->
+<!-- pageend.html END -->
+<!-- foot.html START -->
+</body>
+</html>
+<!-- foot.html END -->
