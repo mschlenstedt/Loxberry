@@ -621,6 +621,7 @@ class LBSystem
 				'PLUGINDB_MD5_CHECKSUM' => $plugindata->md5,
 				'PLUGINDB_AUTHOR_NAME' => $plugindata->author_name,
 				'PLUGINDB_AUTHOR_EMAIL' => $plugindata->author_email,
+				'PLUGINDB_AUTHOR_WEBSITE' => isset($plugindata->author_website) ? $plugindata->author_website : "",
 				'PLUGINDB_VERSION' => $plugindata->version,
 				'PLUGINDB_NAME' => $plugindata->name,
 				'PLUGINDB_FOLDER' => $plugindata->folder,

@@ -63,6 +63,7 @@ my $chkhcpath;
 my $pid;
 my $pauthorname;
 my $pauthoremail;
+my $pauthorwebsite;
 my $pversion;
 my $pname = "unknown"; # set dummy at this point
 my $ptitle = "Unknown Plugin"; # set dummy at this point;
@@ -452,6 +453,7 @@ sub install {
 
 	$pauthorname		= $pcfg->param("AUTHOR.NAME");
 	$pauthoremail		= $pcfg->param("AUTHOR.EMAIL");
+	$pauthorwebsite		= $pcfg->param("AUTHOR.WEBSITE") // "";
 	$pversion		= $pcfg->param("PLUGIN.VERSION");
 	$pname			= $pcfg->param("PLUGIN.NAME");
 	$ptitle			= $pcfg->param("PLUGIN.TITLE");
@@ -508,6 +510,7 @@ sub install {
 
 	LOGINF "Author:         $pauthorname";
 	LOGINF "Email:          $pauthoremail";
+	LOGINF "Website:        " . ($pauthorwebsite ? $pauthorwebsite : "(not set)");
 	LOGINF "Version:        $pversion";
 	LOGINF "Name:           $pname";
 	LOGINF "Folder:         $pfolder";
@@ -648,6 +651,7 @@ sub install {
 	$plugin = LoxBerry::System::PluginDB->plugin(
         author_name => $pauthorname,
         author_email => $pauthoremail,
+        author_website => $pauthorwebsite,
         name => $pname,
         folder => $pfolder,
         version => $pversion,
