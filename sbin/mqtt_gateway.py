@@ -305,6 +305,23 @@ async def config_watcher() -> None:
 # ─── MQTT Listener ────────────────────────────────────────────────────────────
 _mqtt_client = None
 
+def _gw_topic_base() -> str:
+    """<short-hostname>/mqttgateway/ — compatible with V1 topic layout."""
+    return socket.gethostname().split(".")[0] + "/mqttgateway/"
+
+async def _keepalive_publisher(client: aiomqtt.Client, base: str) -> None:
+    """Publish keepaliveepoch (retained) every 60 s while connected."""
+    while True:
+        await asyncio.sleep(60)
+        try:
+            await client.publish(
+                base + "keepaliveepoch",
+                str(int(datetime.now().timestamp())),
+                retain=True,
+            )
+        except Exception:
+            return
+
 async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
     """Async task: connect to MQTT broker, subscribe to all topics, feed queue."""
     global _mqtt_client
@@ -314,9 +331,17 @@ async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
     password    = mqtt_config.get("password")
     tls_context = mqtt_config.get("tls_context")
 
+    base = _gw_topic_base()
+    will = aiomqtt.Will(
+        topic=base + "status",
+        payload="Disconnected",
+        qos=1,
+        retain=True,
+    )
+
     while True:
         try:
-            client_kwargs = {"hostname": host, "port": port}
+            client_kwargs = {"hostname": host, "port": port, "will": will}
             if username and password:
                 client_kwargs["username"] = username
                 client_kwargs["password"] = password
@@ -326,26 +351,38 @@ async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
                 _mqtt_client = client
                 auth_info = f" (user: {username})" if username else ""
                 LOGINF(f"MQTT connected to {host}:{port}{auth_info}")
+                LOGINF(f"Gateway topic base: {base}")
 
                 for sub in _subscriptions:
                     await client.subscribe(sub["id"])
                     LOGINF(f"Subscribed: {sub['id']}")
 
-                loop = asyncio.get_event_loop()
-                async for message in client.messages:
-                    topic       = str(message.topic)
-                    payload     = message.payload.decode("utf-8", errors="replace")
-                    recv_mono   = loop.time()
-                    recv_dt     = datetime.now()
-                    recv_ts     = recv_dt.strftime("%H:%M:%S.") + f"{recv_dt.microsecond // 1000:03d}"
-                    LOGDEB(f"MQTT received [{recv_ts}]: {topic} = {payload!r}")
-                    await queue.put({
-                        "type":        "mqtt",
-                        "topic":       topic,
-                        "payload":     payload,
-                        "received_at": recv_mono,
-                        "received_ts": recv_ts,
-                    })
+                await client.publish(base + "status", "Connected", retain=True)
+                await client.publish(
+                    base + "keepaliveepoch",
+                    str(int(datetime.now().timestamp())),
+                    retain=True,
+                )
+
+                keepalive_task = asyncio.create_task(_keepalive_publisher(client, base))
+                try:
+                    loop = asyncio.get_event_loop()
+                    async for message in client.messages:
+                        topic       = str(message.topic)
+                        payload     = message.payload.decode("utf-8", errors="replace")
+                        recv_mono   = loop.time()
+                        recv_dt     = datetime.now()
+                        recv_ts     = recv_dt.strftime("%H:%M:%S.") + f"{recv_dt.microsecond // 1000:03d}"
+                        LOGDEB(f"MQTT received [{recv_ts}]: {topic} = {payload!r}")
+                        await queue.put({
+                            "type":        "mqtt",
+                            "topic":       topic,
+                            "payload":     payload,
+                            "received_at": recv_mono,
+                            "received_ts": recv_ts,
+                        })
+                finally:
+                    keepalive_task.cancel()
 
         except aiomqtt.MqttError as exc:
             _mqtt_client = None
