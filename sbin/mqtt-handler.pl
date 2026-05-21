@@ -84,6 +84,21 @@ elsif( $action eq "stopmosquitto" ) {
 	qx(systemctl stop mosquitto);
 }
 
+elsif( $action eq "mqtt_create_cert" ) {
+	my $result = qx($lbsconfigdir/mqtt-cert-handler.sh create 2>/dev/null);
+	print $result;
+}
+
+elsif( $action eq "mqtt_revoke_cert" ) {
+	my $result = qx($lbsconfigdir/mqtt-cert-handler.sh revoke 2>/dev/null);
+	print $result;
+}
+
+elsif( $action eq "mqtt_cert_status" ) {
+	my $result = qx($lbsconfigdir/mqtt-cert-handler.sh status 2>/dev/null);
+	print $result;
+}
+
 exit;
 
 sub restart_gateway
@@ -184,12 +199,20 @@ sub update_config
 		$generalcfg->{Mqtt}->{Udpinport} = 11884; 
 		LOGINF "Setting MQTT gateway UDP In-Port to " . $generalcfg->{Mqtt}->{Udpinport};
 	}
-	if(! defined $generalcfg->{Mqtt}->{Websocketport}) { 
-		$generalcfg->{Mqtt}->{Websocketport} = "9001"; 
+	if(! defined $generalcfg->{Mqtt}->{Websocketport}) {
+		$generalcfg->{Mqtt}->{Websocketport} = "9001";
 		LOGINF "Setting Mosquitto WebSocket port to " . $generalcfg->{Mqtt}->{Websocketport};
 	}
-	
-	
+	if(! defined $generalcfg->{Mqtt}->{Tlsenabled}) {
+		$generalcfg->{Mqtt}->{Tlsenabled} = 'false';
+		LOGINF "Setting MQTT TLS enabled to false";
+	}
+	if(! defined $generalcfg->{Mqtt}->{Tlsport}) {
+		$generalcfg->{Mqtt}->{Tlsport} = 8883;
+		LOGINF "Setting MQTT TLS port to " . $generalcfg->{Mqtt}->{Tlsport};
+	}
+
+
 	## Create Mosquitto config and password
 	
 	if( !defined $generalcfg->{Mqtt}->{Brokeruser} ) {
@@ -264,27 +287,35 @@ sub mosquitto_setcred
 	# only one log_dest file usable $mosq_config .= "log_dest file /var/log/mosquitto/mosquitto.log\n";
 	$mosq_config .= "log_timestamp_format %Y-%m-%dT%H:%M:%S\n\n";
 		
-	# User and pass, or anonymous
+	my $tlsenabled = is_enabled($generalcfg->{Mqtt}->{Tlsenabled});
+	my $tlsport    = $generalcfg->{Mqtt}->{Tlsport} || 8883;
+	my $mqtt_tls_dir = "/etc/mosquitto/tls";
+
+	# User and pass, or anonymous (applies to plain listener and TLS listener)
 	if(!$brokeruser and !$brokerpass) {
-		# Anonymous when no credentials are provided
 		$mosq_config .= "allow_anonymous true\n";
 	} else {
-		# User/Pass and password file when credentials are provided
 		$mosq_config .= "allow_anonymous false\n";
 		$mosq_config .= "password_file $mosq_passwdfile\n";
 	}
-	
-	# # TLS listener
-	# if ($Credentials{brokerpsk}) {
-		# $mosq_config .= "# TLS-PSK listener\n";
-		# $mosq_config .= "listener 8883\n";
-		# $mosq_config .= "use_identity_as_username true\n";
-		# $mosq_config .= "tls_version tlsv1.2\n";
-		# $mosq_config .= "psk_hint mqttgateway_psk\n";
-		# $mosq_config .= "psk_file $mosq_pskfile\n";
-	# }
-	
-	# Websocket listener (currently without TLS)
+
+	# TLS listener
+	if ($tlsenabled) {
+		$mosq_config .= "\n# TLS listener\n";
+		$mosq_config .= "listener $tlsport\n";
+		$mosq_config .= "cafile $mqtt_tls_dir/ca.crt\n";
+		$mosq_config .= "certfile $mqtt_tls_dir/server.crt\n";
+		$mosq_config .= "keyfile $mqtt_tls_dir/server.key\n";
+		$mosq_config .= "tls_version tlsv1.2\n";
+		if(!$brokeruser and !$brokerpass) {
+			$mosq_config .= "allow_anonymous true\n";
+		} else {
+			$mosq_config .= "allow_anonymous false\n";
+			$mosq_config .= "password_file $mosq_passwdfile\n";
+		}
+	}
+
+	# Websocket listener
 	$mosq_config .= "\n# Websockets listener\n";
 	$mosq_config .= "listener $websocketport\n";
 	$mosq_config .= "protocol websockets\n";

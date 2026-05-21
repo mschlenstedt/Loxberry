@@ -1,9 +1,25 @@
 <?php
 require_once "loxberry_system.php";
 // $cfgfile = "$lbpconfigdir/mqtt.json";
-// $jsoncontent = file_get_contents($cfgfile); 
-// $json = json_decode($jsoncontent, True); 
+// $jsoncontent = file_get_contents($cfgfile);
+// $json = json_decode($jsoncontent, True);
 // $udpinport = $json['Main']['udpinport'];
+
+/* CA cert download must run before JSON header */
+$_ajax_early = !empty($_GET['ajax']) ? $_GET['ajax'] : (!empty($_POST['ajax']) ? $_POST['ajax'] : '');
+if ($_ajax_early === 'mqtt_tls_ca_download') {
+    $cafile = '/etc/mosquitto/tls/ca.crt';
+    if (file_exists($cafile) && is_readable($cafile)) {
+        header('Content-Type: application/x-x509-ca-cert');
+        header('Content-Disposition: attachment; filename="mqtt_ca.crt"');
+        readfile($cafile);
+    } else {
+        http_response_code(404);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'MQTT CA certificate not found']);
+    }
+    exit;
+}
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -447,6 +463,21 @@ elseif ( $ajax == 'migrate_v1_to_v2' ) {
     }
 
     echo json_encode([ 'status' => 'ok', 'count' => count($subscriptions) ]);
+}
+
+elseif ( $ajax == 'mqtt_tls_cert_create' ) {
+	$result = shell_exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=mqtt_create_cert 2>/dev/null");
+	echo $result ?: json_encode(['success' => false, 'error' => 'No response from handler']);
+}
+
+elseif ( $ajax == 'mqtt_tls_cert_revoke' ) {
+	$result = shell_exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=mqtt_revoke_cert 2>/dev/null");
+	echo $result ?: json_encode(['success' => false, 'error' => 'No response from handler']);
+}
+
+elseif ( $ajax == 'mqtt_tls_cert_status' ) {
+	$result = shell_exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=mqtt_cert_status 2>/dev/null");
+	echo $result ?: json_encode(['exists' => false]);
 }
 
 // Unknown request
