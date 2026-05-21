@@ -1290,9 +1290,15 @@ sub notify_ext
 			chown $uid, $gid, $dbfile;
 		}
 	};
-	
+
 	notify_send_mail($data);
-	
+
+	# Publish notification stats to MQTT (non-blocking background call)
+	my $publisher = "$LoxBerry::System::lbhomedir/sbin/mqtt-notify-publisher.pl";
+	if (-f $publisher) {
+		system("perl $publisher >/dev/null 2>&1 &");
+	}
+
 	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
 
 }
