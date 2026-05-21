@@ -275,7 +275,7 @@
 				Tlsenabled: "false",
 				Tlsport: 8883,
 				TlsExternalEnabled: "false",
-				TlsExternalValidatecert: "true",
+				TlsExternalValidatecert: "false",
 			},
 
 			show_brokerhost: "",
@@ -360,7 +360,7 @@
 						if ( !data.Tlsenabled ) data.Tlsenabled = 'false';
 						if ( !data.Tlsport ) data.Tlsport = 8883;
 						if ( !data.TlsExternalEnabled ) data.TlsExternalEnabled = 'false';
-						if ( data.TlsExternalValidatecert === undefined || data.TlsExternalValidatecert === null ) data.TlsExternalValidatecert = 'true';
+						if ( data.TlsExternalValidatecert === undefined || data.TlsExternalValidatecert === null ) data.TlsExternalValidatecert = 'false';
 						this.Mqtt = data;
 						this.update_showbrokerhost();
 						this.tlsUpdateCertStatus();

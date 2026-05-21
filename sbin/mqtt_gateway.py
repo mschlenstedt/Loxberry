@@ -900,7 +900,7 @@ async def main() -> None:
         else:
             tls_ext_str = str(raw["Mqtt"].get("TlsExternalEnabled", "false")).lower()
             if tls_ext_str in ("1", "true", "yes"):
-                validate_str = str(raw["Mqtt"].get("TlsExternalValidatecert", "true")).lower()
+                validate_str = str(raw["Mqtt"].get("TlsExternalValidatecert", "false")).lower()
                 validate = validate_str in ("1", "true", "yes")
                 ctx = ssl.create_default_context()
                 if not validate:

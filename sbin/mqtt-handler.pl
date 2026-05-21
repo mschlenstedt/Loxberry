@@ -216,8 +216,8 @@ sub update_config
 		LOGINF "Setting MQTT External TLS enabled to false";
 	}
 	if(! defined $generalcfg->{Mqtt}->{TlsExternalValidatecert}) {
-		$generalcfg->{Mqtt}->{TlsExternalValidatecert} = 'true';
-		LOGINF "Setting MQTT External TLS validate cert to true";
+		$generalcfg->{Mqtt}->{TlsExternalValidatecert} = 'false';
+		LOGINF "Setting MQTT External TLS validate cert to false";
 	}
 
 
