@@ -115,7 +115,11 @@ class intLog
 			echo "Object is not initialized.";
 			exit(1);
 		}
-		$this->params["LOGSTARTBYTE"] = file_exists($this->params["filename"]) ? filesize($this->params["filename"]) : "0";
+		if (!isset($this->params["nofile"]) && isset($this->params["filename"])) {
+			$this->params["LOGSTARTBYTE"] = file_exists($this->params["filename"]) ? filesize($this->params["filename"]) : "0";
+		} else {
+			$this->params["LOGSTARTBYTE"] = "0";
+		}
 		$this->writelog( "================================================================================");
 		$this->writelog( "<LOGSTART>" . currtime() . " TASK STARTED");
 		if(isset($msg)) {
