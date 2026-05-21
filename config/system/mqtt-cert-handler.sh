@@ -79,7 +79,7 @@ status_cert() {
         exit 0
     fi
     EXPIRY=$(openssl x509 -enddate -noout -in "${SERVER_CERT}" 2>/dev/null | cut -d= -f2)
-    if openssl x509 -checkend 86400 -noout -in "${SERVER_CERT}" 2>/dev/null; then
+    if openssl x509 -checkend 86400 -noout -in "${SERVER_CERT}" >/dev/null 2>&1; then
         VALID="true"
     else
         VALID="false"

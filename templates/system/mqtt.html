@@ -343,6 +343,17 @@
 							setTimeout(function() { self.data_saved = false; }, 4000);
 						}
 						self.data_changed = false;
+						// Auto-create TLS cert if TLS enabled and no cert exists yet
+						if (self.Mqtt.Uselocalbroker === 'true' && self.Mqtt.Tlsenabled === 'true') {
+							$.post(mqtt_ajax, { ajax: 'mqtt_tls_cert_status' })
+							.done(function(statusData) {
+								if (!statusData.exists) {
+									self.tlsCreateCert();
+								} else {
+									self.tlsUpdateCertStatus();
+								}
+							});
+						}
 					}
 				});
 				// Update legacy mqtt.json
