@@ -57,10 +57,6 @@
 </div>
 </TMPL_IF>
 
-<TMPL_IF SHOW_HEADER>
-<div id="notificationNoNotifications" style="display:none">No notifications.</div>
-</TMPL_IF>
-
 <style>
 .lb-notify-box {
 	display: flex;
@@ -122,8 +118,6 @@ function updateNotificationCount(reduce) {
 	if (notificationCount > 1) $("#notifdeleteall").fadeIn();
 	else                        $("#notifdeleteall").fadeOut();
 	if (notificationCount <= 0) $("#notificationBlock").fadeOut();
-	if (notificationCount <= 0 && $("#notificationNoNotifications").length)
-		$("#notificationNoNotifications").show();
 }
 </script>
 <!-- ** END template/system/get_notification_html.html ************************************************************************************ -->

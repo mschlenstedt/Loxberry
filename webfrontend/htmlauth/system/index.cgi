@@ -19,7 +19,6 @@
 # Modules
 ##########################################################################
 use LoxBerry::Web;
-use LoxBerry::Log;
 
 use CGI qw/:standard/;
 use warnings;
@@ -322,7 +321,6 @@ sub mainmenu {
 	}
 
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
-	print LoxBerry::Log::get_notifications_html();
 	print $maintemplate->output();
 	LoxBerry::Web::pageend();
 	LoxBerry::Web::foot();
