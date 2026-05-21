@@ -44,12 +44,26 @@
 <DIV	class="lb-form-row mailsettings">
 	<DIV	class="lb-form-label">
 		<LABEL	class=	"control-label"
-			for="email"><TMPL_VAR MAILSERVER.LABEL_DEFAULT_EMAIL></LABEL>
+			for="email_from"><TMPL_VAR MAILSERVER.LABEL_SENDER_EMAIL></LABEL>
 	</DIV>
 	<DIV	class="lb-form-field">
-		<input value="<TMPL_VAR EMAIL>" id="email" name="email" type="email" class="lb-input" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
+		<input value="" id="email_from" name="email_from" type="email" class="lb-input" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
 	</DIV>
-	<DIV	class="lb-form-help">
+	<DIV	class="lb-form-help hint">
+		<TMPL_VAR MAILSERVER.HINT_SENDER_EMAIL>
+	</DIV>
+</DIV>
+
+<DIV	class="lb-form-row mailsettings">
+	<DIV	class="lb-form-label">
+		<LABEL	class=	"control-label"
+			for="email"><TMPL_VAR MAILSERVER.LABEL_RECIPIENT_EMAIL></LABEL>
+	</DIV>
+	<DIV	class="lb-form-field">
+		<input value="" id="email" name="email" type="email" class="lb-input" data-validation-rule="special:email" data-validation-error-msg="<TMPL_VAR MAILSERVER.MSG_VAL_INVALID_EMAIL>">
+	</DIV>
+	<DIV	class="lb-form-help hint">
+		<TMPL_VAR MAILSERVER.HINT_RECIPIENT_EMAIL>
 	</DIV>
 </DIV>
 
@@ -231,10 +245,11 @@ $(function() {
 			});
 	
 	// Validation
+	validate_enable('#email_from');
 	validate_enable('#email');
 	validate_enable('#smtpserver');
 	validate_enable('#smtpport');
-	validate_chk_object(['#email','#smtpserver','#smtpport']);
+	validate_chk_object(['#email_from','#email','#smtpserver','#smtpport']);
 	
 	// Show password
 	  $('#showpass').click(function() {
@@ -307,6 +322,7 @@ $('#btntestsmtp').click( function(e) {
 	
 	e.preventDefault();
 	var vals = { action: "testmail",
+				 email_from: $("#email_from").val(),
 				 email: $("#email").val(),
 				 smtpserver: $("#smtpserver").val(),
 				 smtpauth: $("#smtpauth").is(":checked") ? 1 : 0,
@@ -314,7 +330,7 @@ $('#btntestsmtp').click( function(e) {
 				 smtpuser: $("#smtpuser").val(),
 				 smtppass: $("#smtppass").val(),
 				 smtpport: $("#smtpport").val(),
-				 lang: lang 
+				 lang: lang
 				};
 	data = jQuery.param( vals );
 
@@ -389,6 +405,7 @@ function fillForm ( data )
 	// SMTP Form
 	
 	if(data.SMTP) {
+		if(data.SMTP.EMAIL_FROM) $("#email_from").val(data.SMTP.EMAIL_FROM);
 		if(data.SMTP.EMAIL) $("#email").val(data.SMTP.EMAIL);
 		if(data.SMTP.HOST) $("#smtpserver").val(data.SMTP.HOST);
 		if(data.SMTP.PORT) $("#smtpport").val(data.SMTP.PORT);
@@ -428,6 +445,7 @@ function saveForm()
 		$("#smtppass").val("");
 	}
 	if( ! $('#activate_mail').is(':checked') ) {
+		$("#email_from").val("");
 		$("#email").val("");
 		$("#smtpserver").val("");
 		$("#smtpport").val("");

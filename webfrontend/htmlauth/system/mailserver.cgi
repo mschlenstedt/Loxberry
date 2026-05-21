@@ -37,6 +37,7 @@ our $lang;
 our $template_title;
 our $helplink;
 our $email;
+our $email_from;
 our $smtpserver;
 our $smtpport;
 our $smtpcrypt;
@@ -79,6 +80,7 @@ $R::value if 0;
 $R::activate_mail if 0;
 $R::secpin if 0;
 $R::smptport if 0;
+$R::email_from if 0;
 %LoxBerry::Web::htmltemplate_options if 0;
 
 $action = $R::action if $R::action;
@@ -229,12 +231,14 @@ sub save
 #	$mcfg->{SMTP}->{SMTPSERVER} = $R::smtpserver;
 #	$mcfg->{SMTP}->{PORT} = $R::smtpport;
 	$mcfg->{SMTP}->{EMAIL} = $R::email;
+	$mcfg->{SMTP}->{EMAIL_FROM} = $R::email_from;
 #	$mcfg->{SMTP}->{SMTPUSER} = $R::smtpuser;
 #	$mcfg->{SMTP}->{SMTPPASS} = $R::smtppass;
-	
+
 	# Validy check
 	if($mcfg->{SMTP}->{ACTIVATE_MAIL}) {
-		die("Email address missing\n") if (!$R::email);
+		die("Recipient email address missing\n") if (!$R::email);
+		die("Sender email address missing\n") if (!$R::email_from);
 		die("SMTP Server missing\n") if (!$R::smtpserver);
 		die("SMTP Port missing\n") if (!$R::smtpport);
 		if(is_enabled($R::smtpauth)) {
@@ -332,7 +336,7 @@ sub createtmpconfig
 	#print F "root=$R::email\n\n";
 	print F "aliases $lbhomedir/system/msmtp/aliases\n";
 	print F "logfile $lbhomedir/log/system_tmpfs/mail.log\n";
-	print F "from $R::email\n";
+	print F "from $R::email_from\n";
 	print F "host $R::smtpserver\n";
 	print F "port $R::smtpport\n";
 
@@ -426,7 +430,8 @@ sub sendtestmail
 
 	my $subject = $SL{'MAILSERVER.TESTMAIL_SUBJECT'};
 	$subject= "=?utf-8?b?".MIME::Base64::encode($subject, "")."?=";
-	my $headerfrom = "From: =?utf-8?b?". MIME::Base64::encode($friendlyname, "") . "?= <" . $R::email . ">";
+	my $sender = $R::email_from || $R::email;
+	my $headerfrom = "From: =?utf-8?b?". MIME::Base64::encode($friendlyname, "") . "?= <" . $sender . ">";
 	my $contenttype = 'Content-Type: text/plain; charset="UTF-8"';
 	my $message = $SL{'MAILSERVER.TESTMAIL_CONTENT'};
 
