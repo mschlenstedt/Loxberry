@@ -154,7 +154,6 @@
 			<div class="lb-form-row">
 				<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_CERT></div>
 				<div class="lb-form-field" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-					<span id="tls_cert_status" style="font-size:var(--lb-font-sm)">...</span>
 					<button class="lb-btn lb-btn-sm lb-btn-icon" type="button"
 						v-on:click="tlsCreateCert()" id="btn_tls_create" data-role="none">
 						<i class="pi pi-plus"></i> <TMPL_VAR MQTT.BTN_TLS_CREATE_CERT>
@@ -167,6 +166,7 @@
 						href="/admin/system/ajax/ajax-mqtt.php?ajax=mqtt_tls_ca_download" data-role="none">
 						<i class="pi pi-download"></i> <TMPL_VAR MQTT.BTN_TLS_DOWNLOAD_CA>
 					</a>
+					<span id="tls_cert_status" style="font-size:var(--lb-font-sm)">...</span>
 				</div>
 				<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_CERT></div>
 			</div>
@@ -208,7 +208,6 @@
 				<div class="lb-form-row">
 					<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_EXTERNAL_CA></div>
 					<div class="lb-form-field" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-						<span id="tls_ext_ca_status" style="font-size:var(--lb-font-sm)">...</span>
 						<button class="lb-btn lb-btn-sm lb-btn-icon" type="button" data-role="none"
 							v-on:click="tlsExternalCaTrigger()">
 							<i class="pi pi-upload"></i> <TMPL_VAR MQTT.BTN_TLS_EXTERNAL_CA_UPLOAD>
@@ -219,6 +218,7 @@
 							v-on:click="tlsExternalCaDelete()" data-role="none">
 							<i class="pi pi-trash"></i> <TMPL_VAR MQTT.BTN_TLS_EXTERNAL_CA_DELETE>
 						</button>
+						<span id="tls_ext_ca_status" style="font-size:var(--lb-font-sm)">...</span>
 					</div>
 					<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_EXTERNAL_CA></div>
 				</div>
