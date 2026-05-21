@@ -228,7 +228,8 @@ sub update_config
 		$generalcfg->{Mqtt}->{Brokerpass} = generate(16);
 	}
 	
-	`mkdir $mosq_configdir`;
+	`mkdir -p $mosq_configdir`;
+	`chmod 755 $mosq_configdir`;
 	`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 
 }
@@ -236,8 +237,9 @@ sub update_config
 sub mosquitto_set
 {
 	LOGDEB "mosquitto_set";
-	if( is_enabled($generalcfg->{Mqtt}->{Uselocalbroker}) ) { 
-		`mkdir $mosq_configdir`;
+	if( is_enabled($generalcfg->{Mqtt}->{Uselocalbroker}) ) {
+		`mkdir -p $mosq_configdir`;
+		`chmod 755 $mosq_configdir`;
 		`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 		mosquitto_setcred();
 		mosquitto_enable();
@@ -330,6 +332,7 @@ sub mosquitto_setcred
 	
 	LoxBerry::System::write_file($mosq_cfgfile, $mosq_config);
 	`chown loxberry:loxberry $mosq_cfgfile`;
+	`chmod 644 $mosq_cfgfile`;
 			
 	# Passwords
 	unlink $mosq_passwdfile;
