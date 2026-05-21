@@ -160,7 +160,7 @@ sub change_mailcfg
 		open(my $fh, '<', $msmtprcfile);
 		while (<$fh>) {
 			chomp;                  # no newline
-			s/#.*//;                # no comments
+			next if /^\s*#/;        # skip full-line comments (don't strip inline # – passwords may contain it)
 			s/^\s+//;               # no leading white
 			s/\s+$//;               # no trailing white
 			next unless length;     # anything left?
