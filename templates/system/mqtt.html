@@ -231,6 +231,12 @@
 		<TMPL_VAR MQTT.INFO_CONNECTION_DETAILS><br>
 		Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Brokerport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b><br>
 		<small><TMPL_VAR MQTT.INFO_CONNECTION_COMBINED> <b>{{show_brokerhost}}:{{Mqtt.Brokerport}}</b></small>
+		<template v-if="Mqtt.Uselocalbroker=='true' && Mqtt.Tlsenabled=='true'">
+			<br><br>
+			<TMPL_VAR MQTT.INFO_TLS_CONNECTION><br>
+			Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Tlsport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b> | TLS: <b>on</b><br>
+			<small><TMPL_VAR MQTT.INFO_CONNECTION_COMBINED> <b>{{show_brokerhost}}:{{Mqtt.Tlsport}}</b></small>
+		</template>
 	</div>
 
 	<!-- Save button -->
