@@ -15,6 +15,8 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 
+import ssl
+
 import aiomqtt
 import aiohttp
 
@@ -306,10 +308,11 @@ _mqtt_client = None
 async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
     """Async task: connect to MQTT broker, subscribe to all topics, feed queue."""
     global _mqtt_client
-    host     = mqtt_config.get("host", "localhost")
-    port     = int(mqtt_config.get("port", 1883))
-    username = mqtt_config.get("username")
-    password = mqtt_config.get("password")
+    host        = mqtt_config.get("host", "localhost")
+    port        = int(mqtt_config.get("port", 1883))
+    username    = mqtt_config.get("username")
+    password    = mqtt_config.get("password")
+    tls_context = mqtt_config.get("tls_context")
 
     while True:
         try:
@@ -317,6 +320,8 @@ async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
             if username and password:
                 client_kwargs["username"] = username
                 client_kwargs["password"] = password
+            if tls_context is not None:
+                client_kwargs["tls_context"] = tls_context
             async with aiomqtt.Client(**client_kwargs) as client:
                 _mqtt_client = client
                 auth_info = f" (user: {username})" if username else ""
@@ -875,6 +880,35 @@ async def main() -> None:
             "password": passwd if (user and passwd) else None,
         }
         _udp_in_port = int(raw["Mqtt"].get("Udpinport", 11884))
+
+        use_local_str = str(raw["Mqtt"].get("Uselocalbroker", "true")).lower()
+        use_local = use_local_str in ("1", "true", "yes")
+
+        if use_local:
+            tls_str = str(raw["Mqtt"].get("Tlsenabled", "false")).lower()
+            if tls_str in ("1", "true", "yes"):
+                tls_port = int(raw["Mqtt"].get("Tlsport", 8883))
+                mqtt_cfg["port"] = tls_port
+                ctx = ssl.create_default_context()
+                ca_cert = "/etc/mosquitto/tls/ca.crt"
+                if os.path.isfile(ca_cert):
+                    ctx.load_verify_locations(ca_cert)
+                    LOGINF(f"TLS: loaded CA cert {ca_cert}")
+                ctx.check_hostname = False
+                mqtt_cfg["tls_context"] = ctx
+                LOGINF(f"TLS enabled for local broker on port {tls_port}")
+        else:
+            tls_ext_str = str(raw["Mqtt"].get("TlsExternalEnabled", "false")).lower()
+            if tls_ext_str in ("1", "true", "yes"):
+                validate_str = str(raw["Mqtt"].get("TlsExternalValidatecert", "true")).lower()
+                validate = validate_str in ("1", "true", "yes")
+                ctx = ssl.create_default_context()
+                if not validate:
+                    ctx.check_hostname = False
+                    ctx.verify_mode = ssl.CERT_NONE
+                mqtt_cfg["tls_context"] = ctx
+                LOGINF(f"TLS enabled for external broker, validate_cert={validate}")
+
     except Exception as exc:
         LOGERR(f"Cannot read MQTT broker config: {exc}")
         return

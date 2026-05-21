@@ -211,6 +211,14 @@ sub update_config
 		$generalcfg->{Mqtt}->{Tlsport} = 8883;
 		LOGINF "Setting MQTT TLS port to " . $generalcfg->{Mqtt}->{Tlsport};
 	}
+	if(! defined $generalcfg->{Mqtt}->{TlsExternalEnabled}) {
+		$generalcfg->{Mqtt}->{TlsExternalEnabled} = 'false';
+		LOGINF "Setting MQTT External TLS enabled to false";
+	}
+	if(! defined $generalcfg->{Mqtt}->{TlsExternalValidatecert}) {
+		$generalcfg->{Mqtt}->{TlsExternalValidatecert} = 'true';
+		LOGINF "Setting MQTT External TLS validate cert to true";
+	}
 
 
 	## Create Mosquitto config and password

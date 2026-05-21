@@ -111,7 +111,7 @@
 		</div>
 	</div>
 
-	<div class="lb-form-row">
+	<div class="lb-form-row" v-if="Mqtt.Uselocalbroker=='true'">
 		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_WEBSOCKET_PORT></div>
 		<div class="lb-form-field">
 			<input class="lb-input" type="number" id="Mqtt.Websocketport"
@@ -121,10 +121,11 @@
 		</div>
 	</div>
 
-	<!-- TLS Section (only for local broker) -->
-	<div v-if="Mqtt.Uselocalbroker=='true'">
-		<div class="lb-section-title"><TMPL_VAR MQTT.LABEL_TLS_SECTION></div>
+	<!-- TLS Section -->
+	<div class="lb-section-title"><TMPL_VAR MQTT.LABEL_TLS_SECTION></div>
 
+	<!-- Local broker: TLS + Cert Management -->
+	<div v-if="Mqtt.Uselocalbroker=='true'">
 		<div class="lb-form-row">
 			<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_ENABLED></div>
 			<div class="lb-form-field">
@@ -139,7 +140,6 @@
 			</div>
 			<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_ENABLED></div>
 		</div>
-
 		<div v-show="Mqtt.Tlsenabled=='true'">
 			<div class="lb-form-row">
 				<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_PORT></div>
@@ -151,7 +151,6 @@
 				</div>
 				<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_PORT></div>
 			</div>
-
 			<div class="lb-form-row">
 				<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_CERT></div>
 				<div class="lb-form-field" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
@@ -170,6 +169,40 @@
 					</a>
 				</div>
 				<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_CERT></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- External broker: TLS + Validate Cert -->
+	<div v-else>
+		<div class="lb-form-row">
+			<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_EXTERNAL_ENABLED></div>
+			<div class="lb-form-field">
+				<label class="lb-toggle">
+					<input type="checkbox" id="Mqtt.TlsExternalEnabled"
+						v-model="Mqtt.TlsExternalEnabled"
+						true-value="true" false-value="false"
+						v-on:change="formadata_changed()"
+						data-role="none">
+					<span class="lb-toggle-slider"></span>
+				</label>
+			</div>
+			<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_EXTERNAL_ENABLED></div>
+		</div>
+		<div v-show="Mqtt.TlsExternalEnabled=='true'">
+			<div class="lb-form-row">
+				<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_VALIDATE_CERT></div>
+				<div class="lb-form-field">
+					<label class="lb-toggle">
+						<input type="checkbox" id="Mqtt.TlsExternalValidatecert"
+							v-model="Mqtt.TlsExternalValidatecert"
+							true-value="true" false-value="false"
+							v-on:change="formadata_changed()"
+							data-role="none">
+						<span class="lb-toggle-slider"></span>
+					</label>
+				</div>
+				<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_VALIDATE_CERT></div>
 			</div>
 		</div>
 	</div>
@@ -241,6 +274,8 @@
 				Websocketport: "",
 				Tlsenabled: "false",
 				Tlsport: 8883,
+				TlsExternalEnabled: "false",
+				TlsExternalValidatecert: "true",
 			},
 
 			show_brokerhost: "",
@@ -320,10 +355,14 @@
 				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&read')
 					.then( response => response.json() )
 					.then( data => {
-						if ( data.Uselocalbroker == 1 ) data.Uselocalbroker = 'true';
+						if ( data.Uselocalbroker == 1 || data.Uselocalbroker === true ) data.Uselocalbroker = 'true';
+						if ( data.Uselocalbroker === false ) data.Uselocalbroker = 'false';
 						if ( !data.Tlsenabled ) data.Tlsenabled = 'false';
 						if ( !data.Tlsport ) data.Tlsport = 8883;
+						if ( !data.TlsExternalEnabled ) data.TlsExternalEnabled = 'false';
+						if ( data.TlsExternalValidatecert === undefined || data.TlsExternalValidatecert === null ) data.TlsExternalValidatecert = 'true';
 						this.Mqtt = data;
+						this.update_showbrokerhost();
 						this.tlsUpdateCertStatus();
 					});
 			},
