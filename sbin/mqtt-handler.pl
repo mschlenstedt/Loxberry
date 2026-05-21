@@ -283,50 +283,41 @@ sub mosquitto_setcred
 	
 	# Create and write config file
 	my $mosq_config;
-	
+
 	$mosq_config  = "# This file is directly managed by LoxBerry.\n";
 	$mosq_config .= "# Do not change this file, as your changes will be lost on saving in the MQTT Gateway webinterface.\n\n";
-	
-	$mosq_config .= "listener $brokerport\n\n";
-	$mosq_config .= "# To reduce SD writes, save Mosquitto DB only once a day\n";
-	$mosq_config .= "autosave_interval 86400\n\n";
 
-	## Not working because of permissions (user mosquitto has no access)
-	# $mosq_config .= "# Use LoxBerry's logging directory for Mosquitto logfile\n";
-	# $mosq_config .= "log_dest file $lbstmpfslogdir/mosquitto.log\n\n";
-	# only one log_dest file usable $mosq_config .= "log_dest file /var/log/mosquitto/mosquitto.log\n";
-	$mosq_config .= "log_timestamp_format %Y-%m-%dT%H:%M:%S\n\n";
-		
 	my $tlsenabled = is_enabled($generalcfg->{Mqtt}->{Tlsenabled});
 	my $tlsport    = $generalcfg->{Mqtt}->{Tlsport} || 8883;
 	my $mqtt_tls_dir = "/etc/mosquitto/tls";
 
-	# User and pass, or anonymous (applies to plain listener and TLS listener)
+	# Global auth settings — must appear before any listener directive in Mosquitto 2.x
 	if(!$brokeruser and !$brokerpass) {
 		$mosq_config .= "allow_anonymous true\n";
 	} else {
 		$mosq_config .= "allow_anonymous false\n";
 		$mosq_config .= "password_file $mosq_passwdfile\n";
 	}
+	$mosq_config .= "\n";
+
+	# Plain listener
+	$mosq_config .= "listener $brokerport\n\n";
+	$mosq_config .= "# To reduce SD writes, save Mosquitto DB only once a day\n";
+	$mosq_config .= "autosave_interval 86400\n\n";
+	$mosq_config .= "log_timestamp_format %Y-%m-%dT%H:%M:%S\n\n";
 
 	# TLS listener
 	if ($tlsenabled) {
-		$mosq_config .= "\n# TLS listener\n";
+		$mosq_config .= "# TLS listener\n";
 		$mosq_config .= "listener $tlsport\n";
 		$mosq_config .= "cafile $mqtt_tls_dir/ca.crt\n";
 		$mosq_config .= "certfile $mqtt_tls_dir/server.crt\n";
 		$mosq_config .= "keyfile $mqtt_tls_dir/server.key\n";
-		$mosq_config .= "tls_version tlsv1.2\n";
-		if(!$brokeruser and !$brokerpass) {
-			$mosq_config .= "allow_anonymous true\n";
-		} else {
-			$mosq_config .= "allow_anonymous false\n";
-			$mosq_config .= "password_file $mosq_passwdfile\n";
-		}
+		$mosq_config .= "tls_version tlsv1.2\n\n";
 	}
 
 	# Websocket listener
-	$mosq_config .= "\n# Websockets listener\n";
+	$mosq_config .= "# Websockets listener\n";
 	$mosq_config .= "listener $websocketport\n";
 	$mosq_config .= "protocol websockets\n";
 	
