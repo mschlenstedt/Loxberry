@@ -204,6 +204,24 @@
 				</div>
 				<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_VALIDATE_CERT></div>
 			</div>
+			<div v-show="Mqtt.TlsExternalValidatecert=='true'">
+				<div class="lb-form-row">
+					<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_EXTERNAL_CA></div>
+					<div class="lb-form-field" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+						<span id="tls_ext_ca_status" style="font-size:var(--lb-font-sm)">...</span>
+						<label class="lb-btn lb-btn-sm lb-btn-icon" style="cursor:pointer;margin:0" data-role="none">
+							<i class="pi pi-upload"></i> <TMPL_VAR MQTT.BTN_TLS_EXTERNAL_CA_UPLOAD>
+							<input type="file" id="tls_ext_ca_input" accept=".crt,.pem,.cer"
+								style="display:none" v-on:change="tlsExternalCaUpload()">
+						</label>
+						<button class="lb-btn lb-btn-sm lb-btn-icon lb-btn-danger" type="button"
+							v-on:click="tlsExternalCaDelete()" data-role="none">
+							<i class="pi pi-trash"></i> <TMPL_VAR MQTT.BTN_TLS_EXTERNAL_CA_DELETE>
+						</button>
+					</div>
+					<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_EXTERNAL_CA></div>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -364,6 +382,7 @@
 						this.Mqtt = data;
 						this.update_showbrokerhost();
 						this.tlsUpdateCertStatus();
+						this.tlsExternalCaUpdateStatus();
 					});
 			},
 
@@ -427,6 +446,61 @@
 				.fail(function() {
 					if (el) { el.style.color='red'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_REVOKE_ERROR>'; }
 				});
+			},
+
+			tlsExternalCaUpdateStatus() {
+				var self = this;
+				$.post(mqtt_ajax, { ajax: 'mqtt_external_ca_status' })
+				.done(function(data) {
+					var el = document.getElementById('tls_ext_ca_status');
+					if (!el) return;
+					if (data.exists) {
+						el.style.color = 'var(--lb-success, green)';
+						el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_LOADED>' + (data.subject ? ': ' + data.subject : '');
+					} else {
+						el.style.color = 'var(--lb-gray-500, gray)';
+						el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_NONE>';
+					}
+				});
+			},
+
+			tlsExternalCaUpload() {
+				var input = document.getElementById('tls_ext_ca_input');
+				if (!input || !input.files.length) return;
+				var el = document.getElementById('tls_ext_ca_status');
+				if (el) { el.style.color = 'blue'; el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_UPLOADING>'; }
+				var formData = new FormData();
+				formData.append('ajax', 'mqtt_external_ca_upload');
+				formData.append('cafile', input.files[0]);
+				var self = this;
+				$.ajax({
+					url: mqtt_ajax,
+					type: 'POST',
+					data: formData,
+					processData: false,
+					contentType: false,
+					dataType: 'json'
+				})
+				.done(function(data) {
+					if (data.success) {
+						self.tlsExternalCaUpdateStatus();
+					} else {
+						if (el) { el.style.color = 'red'; el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_ERROR>: ' + (data.error || ''); }
+					}
+				})
+				.fail(function() {
+					if (el) { el.style.color = 'red'; el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_ERROR>'; }
+				})
+				.always(function() { input.value = ''; });
+			},
+
+			tlsExternalCaDelete() {
+				if (!confirm('<TMPL_VAR MQTT.TLS_EXTERNAL_CA_DELETE_CONFIRM>')) return;
+				var el = document.getElementById('tls_ext_ca_status');
+				if (el) { el.style.color = 'blue'; el.textContent = '...'; }
+				var self = this;
+				$.post(mqtt_ajax, { ajax: 'mqtt_external_ca_delete' })
+				.done(function() { self.tlsExternalCaUpdateStatus(); });
 			}
 	  },
 	  updated() {

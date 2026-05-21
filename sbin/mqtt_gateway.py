@@ -906,6 +906,11 @@ async def main() -> None:
                 if not validate:
                     ctx.check_hostname = False
                     ctx.verify_mode = ssl.CERT_NONE
+                else:
+                    custom_ca = _LBSCONFIG / "mqtt_external_ca.crt"
+                    if custom_ca.is_file():
+                        ctx.load_verify_locations(str(custom_ca))
+                        LOGINF(f"TLS: loaded custom CA cert {custom_ca}")
                 mqtt_cfg["tls_context"] = ctx
                 LOGINF(f"TLS enabled for external broker, validate_cert={validate}")
 

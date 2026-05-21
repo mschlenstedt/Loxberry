@@ -480,6 +480,50 @@ elseif ( $ajax == 'mqtt_tls_cert_status' ) {
 	echo $result ?: json_encode(['exists' => false]);
 }
 
+elseif ( $ajax == 'mqtt_external_ca_upload' ) {
+	if (!isset($_FILES['cafile']) || $_FILES['cafile']['error'] !== UPLOAD_ERR_OK) {
+		$err_code = isset($_FILES['cafile']) ? $_FILES['cafile']['error'] : -1;
+		echo json_encode(['success' => false, 'error' => "Upload error (code $err_code)"]);
+		exit;
+	}
+	$content = file_get_contents($_FILES['cafile']['tmp_name']);
+	if (strpos($content, '-----BEGIN CERTIFICATE-----') === false) {
+		echo json_encode(['success' => false, 'error' => 'Invalid format — PEM certificate expected']);
+		exit;
+	}
+	$dest = LBSCONFIGDIR . '/mqtt_external_ca.crt';
+	if (move_uploaded_file($_FILES['cafile']['tmp_name'], $dest)) {
+		echo json_encode(['success' => true]);
+	} else {
+		echo json_encode(['success' => false, 'error' => 'Could not save certificate']);
+	}
+}
+
+elseif ( $ajax == 'mqtt_external_ca_delete' ) {
+	$cafile = LBSCONFIGDIR . '/mqtt_external_ca.crt';
+	if (file_exists($cafile)) {
+		unlink($cafile);
+	}
+	echo json_encode(['success' => true]);
+}
+
+elseif ( $ajax == 'mqtt_external_ca_status' ) {
+	$cafile = LBSCONFIGDIR . '/mqtt_external_ca.crt';
+	if (file_exists($cafile) && is_readable($cafile)) {
+		$content = file_get_contents($cafile);
+		$subject = '';
+		if (function_exists('openssl_x509_parse')) {
+			$certinfo = openssl_x509_parse($content);
+			if ($certinfo) {
+				$subject = $certinfo['subject']['CN'] ?? ($certinfo['subject']['O'] ?? '');
+			}
+		}
+		echo json_encode(['exists' => true, 'subject' => $subject]);
+	} else {
+		echo json_encode(['exists' => false]);
+	}
+}
+
 // Unknown request
 else {
 	http_response_code(500);
