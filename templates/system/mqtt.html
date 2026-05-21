@@ -209,11 +209,12 @@
 					<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_EXTERNAL_CA></div>
 					<div class="lb-form-field" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
 						<span id="tls_ext_ca_status" style="font-size:var(--lb-font-sm)">...</span>
-						<label class="lb-btn lb-btn-sm lb-btn-icon" style="cursor:pointer;margin:0;display:inline-flex;align-items:center;gap:4px" data-role="none">
+						<button class="lb-btn lb-btn-sm lb-btn-icon" type="button" data-role="none"
+							v-on:click="tlsExternalCaTrigger()">
 							<i class="pi pi-upload"></i> <TMPL_VAR MQTT.BTN_TLS_EXTERNAL_CA_UPLOAD>
-							<input type="file" id="tls_ext_ca_input" accept=".crt,.pem,.cer"
-								style="display:none" v-on:change="tlsExternalCaUpload()">
-						</label>
+						</button>
+						<input type="file" id="tls_ext_ca_input" accept=".crt,.pem,.cer"
+							style="display:none" v-on:change="tlsExternalCaUpload()">
 						<button class="lb-btn lb-btn-sm lb-btn-icon lb-btn-danger" type="button"
 							v-on:click="tlsExternalCaDelete()" data-role="none">
 							<i class="pi pi-trash"></i> <TMPL_VAR MQTT.BTN_TLS_EXTERNAL_CA_DELETE>
@@ -462,6 +463,10 @@
 						el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_NONE>';
 					}
 				});
+			},
+
+			tlsExternalCaTrigger() {
+				document.getElementById('tls_ext_ca_input').click();
 			},
 
 			tlsExternalCaUpload() {
