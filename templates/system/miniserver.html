@@ -43,9 +43,10 @@
 		<a class="lb-btn lb-btn-sm lb-btn-icon" id="scan" href="#"><i class="pi pi-search"></i> <TMPL_VAR MINISERVER.BUTTON_SCAN></a>
 	</div>
 	<div id="scan_result" style="text-align:center;margin-top:6px"></div>
-	<div id="miniserver_anchors" class="lb-actions" style="margin-top:8px">
+	<hr style="margin:14px 0 10px 0; border:none; border-top:1px solid var(--lb-border-color);">
+	<div id="miniserver_anchors" class="lb-actions">
 		<TMPL_LOOP NAME="MSDATA">
-			<a class="lb-btn lb-btn-sm" href="#miniservertbl<TMPL_VAR MSNO>" data-ajax="false"><TMPL_VAR MSNO>. <TMPL_VAR COMMON.PROPERNOUN_MINISERVER><TMPL_IF MSNAME> (<TMPL_VAR MSNAME>)</TMPL_IF></a>
+			<a class="lb-btn lb-btn-sm lb-btn-primary" href="#miniservertbl<TMPL_VAR MSNO>" data-ajax="false"><TMPL_VAR MSNO>. <TMPL_VAR COMMON.PROPERNOUN_MINISERVER><TMPL_IF MSNAME> (<TMPL_VAR MSNAME>)</TMPL_IF></a>
 		</TMPL_LOOP>
 	</div>
 
