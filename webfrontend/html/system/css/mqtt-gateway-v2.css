@@ -938,6 +938,12 @@ body.theme-dark .mqttgw-topic-ms {
   background: var(--lb-gray-100, #eee);
 }
 
+.mqttgw-copy-btn.mqttgw-copy-ok {
+  background: var(--lb-btn-primary-bg, #6dac20) !important;
+  border-color: var(--lb-btn-primary-bg, #6dac20) !important;
+  color: #fff !important;
+}
+
 .mqttgw-traffic-topic {
   font-family: var(--lb-font);
   font-size: 11px;

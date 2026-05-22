@@ -1631,8 +1631,10 @@ $(function () {
     var isIcon = $(btn).hasClass('mqttgw-copy-icon');
     var origHtml = isIcon ? $(btn).html() : null;
     function confirm() {
+      $(btn).addClass('mqttgw-copy-ok');
       isIcon ? $(btn).html(_svgCheck) : $(btn).text('✓');
       setTimeout(function () {
+        $(btn).removeClass('mqttgw-copy-ok');
         isIcon ? $(btn).html(origHtml) : $(btn).text('Copy');
       }, 1200);
     }
