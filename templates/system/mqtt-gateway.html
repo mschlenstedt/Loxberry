@@ -1391,7 +1391,8 @@ $(function () {
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  var _svgCopy = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+  var _svgCopy  = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+  var _svgCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
   function viName(topic, jsonPath) {
     var tp = topic.replace(/\//g, '_').replace(/\s+/g, '_');
@@ -1630,7 +1631,7 @@ $(function () {
     var isIcon = $(btn).hasClass('mqttgw-copy-icon');
     var origHtml = isIcon ? $(btn).html() : null;
     function confirm() {
-      $(btn).text('✓');
+      isIcon ? $(btn).html(_svgCheck) : $(btn).text('✓');
       setTimeout(function () {
         isIcon ? $(btn).html(origHtml) : $(btn).text('Copy');
       }, 1200);
