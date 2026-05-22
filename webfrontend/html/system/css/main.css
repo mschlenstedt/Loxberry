@@ -289,8 +289,8 @@ a.nolinkstyle:active
 .notifyRed {
   z-index: 10;
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 9px;
+  right: 27px;
   background: #ed1d24;
   color: #fff;
   padding: 0 5px;
@@ -308,8 +308,8 @@ a.nolinkstyle:active
 .notifyBlue {
   z-index: 10;
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 9px;
+  right: 27px;
   background: #0A4586;
   color: #fff;
   padding: 0 5px;
