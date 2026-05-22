@@ -326,30 +326,28 @@ a.nolinkstyle:active
 
 .notifyNavBar {
   z-index: 10;
-  position: absolute;
-  /* right:5px; */
-  /* top: -5px; */
   float: right;
-  /* padding: 6px; */
-  /* padding: 0px 3x 0px 3px; */
-  padding: 1px;
-  border-radius: 11px;
-  font-size: 12px;
-  /* line-height: 0.8; */
-  /* min-width: 9px; */
-  min-width: 17px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
   text-align: center;
-  vertical-align: middle;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 2px var(--lb-card-bg, #fff);
 }
 
 .notifyNavBarRed {
-  background:#ed1d24;
-  color:#fff;
+  background: #ed1d24;
+  color: #fff;
 }
 
 .notifyNavBarBlue {
-  background:#0A4586;
-  color:#fff;
+  background: #0A4586;
+  color: #fff;
 }
 
 @keyframes rotateua {
