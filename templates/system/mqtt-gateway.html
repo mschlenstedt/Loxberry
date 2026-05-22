@@ -1391,6 +1391,8 @@ $(function () {
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  var _svgCopy = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+
   function viName(topic, jsonPath) {
     var tp = topic.replace(/\//g, '_').replace(/\s+/g, '_');
     if (!jsonPath) return tp;
@@ -1547,7 +1549,10 @@ $(function () {
           html += '<div class="' + rowCls + '">';
           html += '<img src="' + _iconImg[sc] + '" class="mqttgw-traffic-icon" title="' + esc(_titles[sc]) + '" width="14" height="14">';
           if (isHttp) {
+            html += '<span class="mqttgw-traffic-vi">';
             html += '<span class="mqttgw-traffic-name" title="' + esc(r.vi) + '">' + esc(r.vi) + '</span>';
+            html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(r.vi) + '" title="VI kopieren">' + _svgCopy + '</button>';
+            html += '</span>';
           } else {
             var cmd = 'MQTT:\\i' + r.topic + '=\\i\\v';
             html += '<span class="mqttgw-traffic-cmd">';
@@ -1622,9 +1627,13 @@ $(function () {
     e.stopPropagation();
     var txt = $(this).data('copy');
     var btn = this;
+    var isIcon = $(btn).hasClass('mqttgw-copy-icon');
+    var origHtml = isIcon ? $(btn).html() : null;
     function confirm() {
       $(btn).text('✓');
-      setTimeout(function () { $(btn).text('Copy'); }, 1200);
+      setTimeout(function () {
+        isIcon ? $(btn).html(origHtml) : $(btn).text('Copy');
+      }, 1200);
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(txt).then(confirm);

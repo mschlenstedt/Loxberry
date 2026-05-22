@@ -883,6 +883,28 @@ body.theme-dark .mqttgw-topic-ms {
   line-height: 1.4;
 }
 
+.mqttgw-traffic-vi {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mqttgw-copy-icon {
+  opacity: 0;
+  padding: 2px 3px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.mqttgw-traffic-row:hover .mqttgw-copy-icon,
+.mqttgw-copy-icon:focus {
+  opacity: 1;
+}
+
 .mqttgw-traffic-cmd {
   display: flex;
   align-items: center;
