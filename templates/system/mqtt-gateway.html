@@ -176,6 +176,20 @@
         <div class="lb-form-help"><TMPL_VAR MQTT.HELP_RESET_AFTER_SEND></div>
     </div>
 
+    <div class="lb-form-row">
+        <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_LOGLEVEL></div>
+        <div class="lb-form-field">
+            <select class="lb-select" id="mqtt_loglevel" name="mqtt_loglevel" data-role="none" style="width:auto;">
+                <option value="0"><TMPL_VAR MQTT.LOGLEVEL_0_OFF></option>
+                <option value="3"><TMPL_VAR MQTT.LOGLEVEL_3_ERRORS></option>
+                <option value="4"><TMPL_VAR MQTT.LOGLEVEL_4_WARNING></option>
+                <option value="6"><TMPL_VAR MQTT.LOGLEVEL_6_INFO></option>
+                <option value="7"><TMPL_VAR MQTT.LOGLEVEL_7_DEBUG></option>
+            </select>
+        </div>
+        <div class="lb-form-help"><TMPL_VAR MQTT.HELP_LOGLEVEL></div>
+    </div>
+
     <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_CONVERSIONS></div>
     <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)"><TMPL_VAR MQTT.DESC_CONVERSIONS></p>
     <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)"><TMPL_VAR MQTT.DESC_BOOLEAN_AUTO></p>
@@ -241,6 +255,9 @@ $(function() {
 
     // Set UDP port
     $("#basic_udpport").val(cfg.Main ? cfg.Main.udpport : "");
+
+    // Set loglevel dropdown
+    $("#mqtt_loglevel").val('<TMPL_VAR MQTT_LOGLEVEL>');
 
     // Re-sync on change
     $('input[name="gatewayversion"], input[name="protocol"]').on("change", function() {
@@ -330,6 +347,7 @@ $(function() {
 
         var newVersion = parseInt($('input[name="gatewayversion"]:checked').val());
         var protocol = $('input[name="protocol"]:checked').val();
+        var newLoglevel = parseInt($("#mqtt_loglevel").val()) || 6;
 
         cfg.Main = cfg.Main || {};
         cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
@@ -350,7 +368,7 @@ $(function() {
                 url: '/admin/system/ajax/ajax-generic.php?file=LBSCONFIG/general.json&section=Mqtt&write',
                 dataType: 'json',
                 contentType: 'application/json; charset=UTF-8',
-                data: JSON.stringify({ Gatewayversion: newVersion })
+                data: JSON.stringify({ Gatewayversion: newVersion, Loglevel: newLoglevel })
             });
             $.when(saveGwConfig, saveVersion).always(function() {
                 if (newVersion !== originalVersion) {

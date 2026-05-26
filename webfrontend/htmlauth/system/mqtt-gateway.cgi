@@ -66,6 +66,10 @@ if( $q->{ajax} ) {
 	$template->param("GATEWAY_VERSION", $gatewayversion);
 	$template->param("GATEWAY_V2", $gatewayversion == 2 ? 1 : 0);
 
+	# Gateway V2 log level (independent from system log level)
+	my $mqtt_loglevel = $generaljson->{Mqtt}->{Loglevel} // '6';
+	$template->param("MQTT_LOGLEVEL", $mqtt_loglevel);
+
 	# Build Miniserver list JSON for V2 subscription UI
 	my @ms_list;
 	foreach my $ms_id (sort { $a <=> $b } keys %{$generaljson->{Miniserver}}) {
@@ -206,7 +210,7 @@ sub transformers_form
 sub logs_form
 {
 
-	$template->param('loglist_html', LoxBerry::Web::loglist_html( PACKAGE => 'MQTT' ));
+	$template->param('loglist_html', LoxBerry::Web::loglist_html( PACKAGE => 'mqtt' ));
 
 }
 

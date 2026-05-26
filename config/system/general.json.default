@@ -51,7 +51,8 @@
       "Uselocalbroker" : "1",
       "Websocketport" : "9001",
       "Finderdisabled" : false,
-      "Gatewayversion" : 1
+      "Gatewayversion" : 1,
+      "Loglevel" : "6"
    },
    "Remote" : {
       "Autoconnect" : "true",
