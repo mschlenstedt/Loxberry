@@ -53,26 +53,6 @@
       "Finderdisabled" : false,
       "Gatewayversion" : 1
    },
-   "Network" : {
-      "Friendlyname" : null,
-      "Interface" : "eth0",
-      "Ipv4" : {
-         "Dns" : "",
-         "Gateway" : "",
-         "Ipaddress" : "",
-         "Mask" : "",
-         "Type" : "dhcp"
-      },
-      "Ipv6" : {
-         "Dns" : null,
-         "Ipaddress" : null,
-         "Mask" : null,
-         "Privacyext" : null,
-         "Type" : null
-      },
-      "Ssid" : "",
-      "Wpa" : null
-   },
    "Remote" : {
       "Autoconnect" : "true",
       "Httpport" : "",
