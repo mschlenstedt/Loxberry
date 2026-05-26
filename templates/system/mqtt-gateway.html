@@ -1584,7 +1584,7 @@ $(function () {
             var cmd = 'MQTT:\\i' + r.topic + '=\\i\\v';
             html += '<span class="mqttgw-traffic-cmd">';
             html += '<span class="mqttgw-traffic-cmd-text" title="' + esc(cmd) + '">' + esc(cmd) + '</span>';
-            html += '<button class="mqttgw-copy-btn" type="button" data-copy="' + esc(cmd) + '">Copy</button>';
+            html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(cmd) + '" title="Loxone-Befehl kopieren">' + _svgCopy + '</button>';
             html += '</span>';
           }
           html += '<span class="mqttgw-traffic-topic" title="' + esc(r.topic) + (r.jp ? ' &bull; ' + esc(r.jp) : '') + '">' + esc(r.topic) + (r.jp ? ' <em>&bull;&nbsp;' + esc(r.jp) + '</em>' : '') + '</span>';
