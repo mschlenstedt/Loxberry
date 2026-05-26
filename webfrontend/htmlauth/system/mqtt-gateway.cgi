@@ -2,6 +2,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::Log;
 use JSON;
 use CGI;
 #require "$lbpbindir/libs/LoxBerry/JSON/JSONIO.pm";
@@ -138,6 +139,8 @@ sub print_form
 	
 		
 	LoxBerry::Web::lbheader($plugintitle, $helplink, $helptemplate);
+
+	print LoxBerry::Log::get_notifications_html('mqtt', 'no_miniserver');
 
 	print $template->output();
 
