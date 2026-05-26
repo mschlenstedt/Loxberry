@@ -18,9 +18,18 @@ create_cert() {
 
     # MQTT-specific CA (independent of the LoxBerry web CA)
     openssl genrsa -out "${CA_KEY}" 2048 2>/dev/null
+    CA_EXT_FILE=$(mktemp /tmp/mqtt_ca_ext.XXXXXX)
+    cat > "${CA_EXT_FILE}" << 'CAEXTEOF'
+[v3_ca]
+basicConstraints = critical, CA:TRUE
+keyUsage = critical, keyCertSign, cRLSign
+subjectKeyIdentifier = hash
+CAEXTEOF
     openssl req -new -x509 -days 3650 -key "${CA_KEY}" \
         -out "${CA_CERT}" \
-        -subj "/CN=LoxBerry MQTT CA/O=LoxBerry" 2>/dev/null
+        -subj "/CN=LoxBerry MQTT CA/O=LoxBerry" \
+        -extensions v3_ca -extfile "${CA_EXT_FILE}" 2>/dev/null
+    rm -f "${CA_EXT_FILE}"
 
     # Server key — no passphrase, required by Mosquitto
     openssl genrsa -out "${SERVER_KEY}" 2048 2>/dev/null

@@ -932,6 +932,7 @@ async def main() -> None:
                     ctx.load_verify_locations(ca_cert)
                     LOGINF(f"TLS: loaded CA cert {ca_cert}")
                 ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE  # local self-signed CA may lack Key Usage (Python 3.13+)
                 mqtt_cfg["tls_context"] = ctx
                 LOGINF(f"TLS enabled for local broker on port {tls_port}")
         else:
