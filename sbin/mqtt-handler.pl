@@ -138,6 +138,7 @@ sub restart_gateway
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
 	if( $gatewayversion == 2 ) {
 		`pkill -KILL -f mqtt_gateway.py`;
+		`pkill mqttgateway.pl`;	# kill V1 in case it's still running from before a V1→V2 migration
 		unless ( -f "$lbhomedir/sbin/mqttgateway_venv/bin/python3" ) {
 			LOGINF "Creating Python venv for MQTT Gateway V2...";
 			`rm -rf $lbhomedir/sbin/mqttgateway_venv`;
@@ -153,6 +154,7 @@ sub restart_gateway
 		);
 		$gwlog->LOGSTART("MQTT Gateway V2") if $gwlog;
 		undef $gwlog;
+		`chown loxberry:loxberry $gwlogfile`;	# LoxBerry::Log creates file as root; loxberry needs write access
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py >> $gwlogfile 2>&1 &'`;
 	} else {
 		`pkill mqttgateway.pl`;
