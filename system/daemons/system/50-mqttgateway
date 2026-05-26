@@ -1,6 +1,11 @@
 #!/bin/bash
 GENERALJSON="$LBHOMEDIR/config/system/general.json"
 GATEWAY_VERSION=$(python3 -c "import json,sys; d=json.load(open('$GENERALJSON')); print(d.get('Mqtt',{}).get('Gatewayversion',1))" 2>/dev/null || echo 1)
+GATEWAY_AUTOSTART=$(python3 -c "import json,sys; d=json.load(open('$GENERALJSON')); v=d.get('Mqtt',{}).get('Gatewayautostart',1); print(0 if str(v) in ('0','false','False') else 1)" 2>/dev/null || echo 1)
+
+if [ "$GATEWAY_AUTOSTART" = "0" ]; then
+    exit 0
+fi
 
 if [ "$GATEWAY_VERSION" = "2" ]; then
     su loxberry -c "$LBHOMEDIR/sbin/mqttgateway_venv/bin/python3 -u $LBHOMEDIR/sbin/mqtt_gateway.py >> $LBHOMEDIR/log/system_tmpfs/mqtt-gateway.log 2>&1 &"

@@ -55,6 +55,8 @@ elsif( $action eq "mosquitto_restart" ) {
 elsif( $action eq "restartgateway" ) {
 	open_configs();
 	my $uselocalbroker = $generalcfg->{Mqtt}->{Uselocalbroker};
+	$generalcfg->{Mqtt}->{Gatewayautostart} = 1;
+	$generaljsonobj->write();
 	undef $generaljsonobj;
 	undef $mqttobj;
 	if( is_enabled( $uselocalbroker ) ) {
@@ -64,6 +66,14 @@ elsif( $action eq "restartgateway" ) {
 }
 
 elsif( $action eq "stopgateway" ) {
+	# Persist stopped state so gateway does not auto-start after reboot
+	my $stopobj = LoxBerry::JSON->new();
+	my $stopcfg = $stopobj->open(filename => $generaljsonfile, lockexclusive => 1);
+	$stopcfg->{Mqtt}->{Gatewayautostart} = 0;
+	$stopobj->write();
+	undef $stopobj;
+	`chown loxberry:loxberry $generaljsonfile`;
+
 	# V2: kill via PID file with SIGKILL (asyncio catches SIGTERM)
 	my $v2_pidfile = '/dev/shm/mqtt_gateway.pid';
 	if (-f $v2_pidfile) {
