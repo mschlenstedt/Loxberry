@@ -73,6 +73,8 @@ elsif( $action eq "stopgateway" ) {
 	$stopobj->write();
 	undef $stopobj;
 	`chown loxberry:loxberry $generaljsonfile`;
+	# Clear "no Miniserver" notification since gateway is now intentionally stopped
+	LoxBerry::Log::delete_notifications("mqtt", "no_miniserver");
 
 	# V2: kill via PID file with SIGKILL (asyncio catches SIGTERM)
 	my $v2_pidfile = '/dev/shm/mqtt_gateway.pid';
@@ -114,6 +116,23 @@ exit;
 sub restart_gateway
 {
 	LOGDEB "restart_gateway";
+
+	# Do not start if no Miniserver is configured
+	my %mslist = LoxBerry::System::get_miniservers();
+	if( !%mslist ) {
+		LOGWARN "No Miniserver configured - MQTT Gateway will not start.";
+		LoxBerry::Log::notify_ext({
+			PACKAGE  => "mqtt",
+			NAME     => "no_miniserver",
+			SEVERITY => 3,
+			MESSAGE  => "MQTT Gateway requires a configured Miniserver. Please configure a Miniserver in LoxBerry system settings.",
+			LINK     => "http://" . LoxBerry::System::lbhostname() . ":" . LoxBerry::System::lbwebserverport() . "/admin/system/main.cgi",
+		});
+		return;
+	}
+	# Miniserver present - clear any stale notification
+	LoxBerry::Log::delete_notifications("mqtt", "no_miniserver");
+
 	my $tempjsonobj = LoxBerry::JSON->new();
 	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
