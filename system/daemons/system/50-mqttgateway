@@ -21,7 +21,33 @@ if [ "$MS_CONFIGURED" = "0" ]; then
 fi
 
 if [ "$GATEWAY_VERSION" = "2" ]; then
-    su loxberry -c "$LBHOMEDIR/sbin/mqttgateway_venv/bin/python3 -u $LBHOMEDIR/sbin/mqtt_gateway.py >> $LBHOMEDIR/log/system_tmpfs/mqtt-gateway.log 2>&1 &"
+    VENV="$LBHOMEDIR/sbin/mqttgateway_venv"
+    GWLOGFILE="$LBHOMEDIR/log/system_tmpfs/mqtt-gateway.log"
+    REQUIREMENTS="$LBHOMEDIR/sbin/mqtt_requirements.txt"
+
+    # Check venv existence and package completeness; recreate if needed
+    VENV_OK=0
+    if [ -x "$VENV/bin/python3" ]; then
+        "$VENV/bin/python3" -c "import aiomqtt, aiohttp" 2>/dev/null && VENV_OK=1
+    fi
+
+    if [ "$VENV_OK" = "0" ]; then
+        echo "$(date) [50-mqttgateway] venv missing or incomplete, recreating..." >> "$GWLOGFILE"
+        rm -rf "$VENV"
+        python3 -m venv "$VENV" >> "$GWLOGFILE" 2>&1
+        if [ -f "$REQUIREMENTS" ]; then
+            "$VENV/bin/pip" install --quiet -r "$REQUIREMENTS" >> "$GWLOGFILE" 2>&1
+        else
+            "$VENV/bin/pip" install --quiet aiomqtt aiohttp >> "$GWLOGFILE" 2>&1
+        fi
+        chown -R loxberry:loxberry "$VENV"
+    fi
+
+    # Fix log file ownership so loxberry can append to it
+    touch "$GWLOGFILE"
+    chown loxberry:loxberry "$GWLOGFILE"
+
+    su loxberry -c "$VENV/bin/python3 -u $LBHOMEDIR/sbin/mqtt_gateway.py >> $GWLOGFILE 2>&1 &"
 else
     su loxberry -c "$LBHOMEDIR/sbin/mqttgateway.pl > /dev/null 2>&1 &"
 fi
