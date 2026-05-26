@@ -176,6 +176,7 @@
         <div class="lb-form-help"><TMPL_VAR MQTT.HELP_RESET_AFTER_SEND></div>
     </div>
 
+    <TMPL_IF GATEWAY_V2>
     <div class="lb-form-row">
         <div class="lb-form-label"><TMPL_VAR MQTT.LABEL_LOGLEVEL></div>
         <div class="lb-form-field">
@@ -189,6 +190,7 @@
         </div>
         <div class="lb-form-help"><TMPL_VAR MQTT.HELP_LOGLEVEL></div>
     </div>
+    </TMPL_IF>
 
     <div class="lb-section-title"><TMPL_VAR MQTT.SECTION_CONVERSIONS></div>
     <p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)"><TMPL_VAR MQTT.DESC_CONVERSIONS></p>
