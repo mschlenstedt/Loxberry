@@ -81,6 +81,7 @@ if ($sendstat) {
 	# Init LWP::UserAgent
 	my $ua = new LWP::UserAgent;
 	$ua->timeout(15);
+	$ua->agent('LoxBerry/' . $version . ' (+https://wiki.loxberry.de)');
 	$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 	
 	my $lbid;
