@@ -29,6 +29,8 @@ use Exception;
 use Linfo\Meta\Timer;
 use Linfo\Meta\Errors;
 use Linfo\Common;
+use Linfo\Parsers\MacSystemProfiler;
+use Linfo\Leveldict;
 
 /*
  * Alpha osx class
@@ -42,6 +44,8 @@ class Darwin extends BSDcommon
     protected $settings,
         $exec,
         $dmesg;
+
+    private LevelDict $systemProfiler;
 
     // Start us off
     public function __construct($settings)
@@ -69,10 +73,13 @@ class Darwin extends BSDcommon
 
         // And get this info for when the above fails
         try {
-            $this->systemProfiler = $this->exec->exec('system_profiler', 'SPHardwareDataType SPSoftwareDataType SPPowerDataType');
+            $output = $this->exec->exec('system_profiler', 'SPHardwareDataType SPSoftwareDataType SPPowerDataType');
+            $profilerParser = new MacSystemProfiler(explode("\n", $output));
+            $this->systemProfiler = $profilerParser->parse();
         } catch (Exception $e) {
             // Meh
             Errors::add('Linfo Mac OS 10', 'Error using system_profiler');
+            $this->systemProfiler = new Leveldict;
         }
     }
 
@@ -91,13 +98,15 @@ class Darwin extends BSDcommon
     // Operating system
     public function getOS()
     {
-        return 'Darwin ('.(preg_match('/^\s+System Version: ([^\(]+)/m', $this->systemProfiler, $m) ? trim($m[1]) : 'Mac OS X').')';
+        $version = $this->systemProfiler->get(['Software', 'System Software Overview', 'System Version']);
+        return 'Darwin ('.($version ? $version  : 'Mac OS X').')';
     }
 
     // Hostname
     public function getHostname()
     {
-        return preg_match('/^\s*Computer Name:\s+(.+)\s*$/m', $this->systemProfiler, $m) ? $m[1] : php_uname('n');
+        $name = $this->systemProfiler->get(['Software', 'System Software Overview', 'Computer Name']);
+        return $name ? $name : php_uname('n');
     }
 
     // Get mounted file systems
@@ -364,28 +373,49 @@ class Darwin extends BSDcommon
             $t = new Timer('CPUs');
         }
 
-        // Was machdep mean to us? Likely on ppc macs
-        if (empty($this->sysctl['machdep.cpu.brand_string']) && preg_match('/^\s+Processor Name:\s+(.+)(?= \([\d\.]+\))/m', $this->systemProfiler, $m)) {
-            $this->sysctl['machdep.cpu.brand_string'] = $m[1];
+        $model = '';
+        $vendor = '';
+        $freq = 0;
+        $ncpu = 0;
+
+        if($profiler_model = $this->systemProfiler->get(['Hardware', 'Hardware Overview', 'Chip'])) {
+            $model = $profiler_model;
+        } elseif (!empty($this->sysctl['machdep.cpu.brand_string'])) {
+            $model = $this->sysctl['machdep.cpu.brand_string'];
+        } elseif ($profiler_model = $this->systemProfiler->get([''])) {
+            $model = $profiler_model;
         }
 
-        if (empty($this->sysctl['machdep.cpu.vendor'])) {
-            $this->sysctl['machdep.cpu.vendor'] = false;
+        if (!empty($this->sysctl['machdep.cpu.vendor'])) {
+            $vendor = $this->sysctl['machdep.cpu.vendor'];
+        }
+
+        if (!empty($this->sysctl['hw.ncpu'])) {
+            $ncpu = $this->sysctl['hw.ncpu'];
+        } elseif ($profiler_ncpu = $this->systemProfiler->get(['Hardware', 'Hardware Overview', 'Total Number of Cores'])) {
+            if (preg_match('/^(\d+) /', $profiler_ncpu, $m)) {
+                $ncpu = (int)$m[1];
+            }
+        }
+
+        if (!empty($this->sysctl['hw.cpufrequency'])) {
+            $freq = $this->sysctl['hw.cpufrequency'] / 1000000;
         }
 
         // Store them here
         $cpus = [];
 
-        // The same one multiple times
-        for ($i = 0; $i < $this->sysctl['hw.ncpu']; ++$i) {
-            $cpus[] = array(
-                'Model' => $this->sysctl['machdep.cpu.brand_string'],
-                'MHz' => $this->sysctl['hw.cpufrequency'] / 1000000,
-                'Vendor' => $this->sysctl['machdep.cpu.vendor'],
-
-            );
+        // The same one multiple times (for now)
+        for ($i = 0; $i < $ncpu; ++$i) {
+            $cpu = [
+                'Model' => $model,
+                'Vendor' => $vendor,
+            ];
+            if ($freq) {
+                $cpu['MHz'] = $freq;
+            }
+            $cpus[] = $cpu;
         }
-
         return $cpus;
     }
 
@@ -402,10 +432,27 @@ class Darwin extends BSDcommon
         $return = [];
         $return['type'] = 'Physical';
         $return['total'] = $this->sysctl['hw.memsize'];
-        $return['free'] = $this->sysctl['hw.memsize'] - $this->sysctl['hw.usermem'];
         $return['swapTotal'] = 0;
         $return['swapFree'] = 0;
         $return['swapInfo'] = [];
+
+        // FIXME: this is not correct. It is an innacurate approximation stopgap as hw.usermem is now longer accurate
+        // on modern versions of macOS as it returns a negative number, possibly due to an integer overflow.
+        //
+        // Programmatically determining accurate memory usage on mac (like what Activity Monitor shows) is nearly
+        // impossible.
+        try {
+            $top_output = $this->exec->exec('top', '-l 1 -n 0');
+            if (!$top_output) {
+                throw new Exception('Broken');
+            }
+            if (preg_match('/PhysMem.+ (\d+)M unused/', $top_output, $m)) {
+                $return['free'] = $m[1] * 1024 * 1024;
+            }
+        } catch (Exception $e) {
+            // Broken
+            $return['free'] = $this->sysctl['hw.memsize'] - $this->sysctl['hw.usermem'];
+        }
 
         // Sort out swap
         if (preg_match('/total = ([\d\.]+)M\s+used = ([\d\.]+)M\s+free = ([\d\.]+)M/', $this->sysctl['vm.swapusage'], $swap_match)) {
@@ -421,8 +468,9 @@ class Darwin extends BSDcommon
     // Model of mac
     public function getModel()
     {
-        if (preg_match('/^\s+Model Name:\s+(.+)/m', $this->systemProfiler, $m)) {
-            return $m[1];
+        $model = $this->systemProfiler->get(['Hardware', 'Hardware Overview', 'Model Name']);
+        if ($model) {
+            return $model;
         }
 
         if (preg_match('/^([a-zA-Z]+)/', $this->sysctl['hw.model'], $m)) {
@@ -443,46 +491,18 @@ class Darwin extends BSDcommon
         // Store any we find here
         $batteries = [];
 
-        // Lines
-        $lines = explode("\n", $this->systemProfiler);
-
-        // Hunt
-        $bat = [];
-        $in_bat_field = false;
-
-        foreach ($lines as $line) {
-            if (preg_match('/^\s+Battery Information/', $line)) {
-                $in_bat_field = true;
-                continue;
-            } elseif (preg_match('/^\s+System Power Settings/', $line)) {
-                $in_bat_field = false;
-                break;
-            } elseif ($in_bat_field && preg_match('/^\s+Fully charged: ([a-zA-Z]+)/i', $line, $m)) {
-                $bat['charged'] = $m[1] == 'Yes';
-            } elseif ($in_bat_field && preg_match('/^\s+Charging: ([a-zA-Z]+)/i', $line, $m)) {
-                $bat['charging'] = $m[1] == 'Yes';
-            } elseif ($in_bat_field && preg_match('/^\s+Charge remaining \(mAh\): (\d+)/i', $line, $m)) {
-                $bat['charge_now'] = (int) $m[1];
-            } elseif ($in_bat_field && preg_match('/^\s+Full charge capacity \(mAh\): (\d+)/i', $line, $m)) {
-                $bat['charge_full'] = (int) $m[1];
-            } elseif ($in_bat_field && preg_match('/^\s+Serial Number: ([A-Z0-9]+)/i', $line, $m)) {
-                $bat['serial'] = $m[1];
-            } elseif ($in_bat_field && preg_match('/^\s+Manufacturer: (\w+)/i', $line, $m)) {
-                $bat['vendor'] = $m[1];
-            } elseif ($in_bat_field && preg_match('/^\s+Device name: (\w+)/i', $line, $m)) {
-                $bat['name'] = $m[1];
-            }
-        }
+        $percentage = $this->systemProfiler->get(['Power', 'Battery Information', 'Charge Information', 'State of Charge (%)']);
+        $device = $this->systemProfiler->get(['Power', 'Battery Information', 'Model Information', 'Device Name']);
+        $fully_charged = $this->systemProfiler->get(['Power', 'Battery Information', 'Charge Information', 'Fully Charged']);
+        $charging = $this->systemProfiler->get(['Power', 'Battery Information', 'Charge Information', 'Charging']);
 
         // If we have what we need, append
-        if (isset($bat['charge_full']) && isset($bat['charge_now']) && isset($bat['charged']) && isset($bat['charging'])) {
-            $batteries[] = array(
-                'charge_full' => $bat['charge_full'],
-                'charge_now' => $bat['charge_now'],
-                'percentage' => $bat['charge_full'] > 0 && $bat['charge_now'] > 0 ? round($bat['charge_now'] / $bat['charge_full'], 4) * 100 .'%' : '?',
-                'device' => $bat['vendor'].' - '.$bat['name'],
-                'state' => $bat['charging'] ? 'Charging' : ($bat['charged'] ? 'Fully Charged' : 'Discharging'),
-            );
+        if($percentage && $device && $fully_charged && $charging) {
+            $batteries[] = [
+                'device' => $device,
+                'percentage' => $percentage,
+                'state' => $charging == 'Yes' ? 'Charging' : ($fully_charged == 'yes' ? 'Fully Charged' : 'Discharging')
+            ];
         }
 
         // Give

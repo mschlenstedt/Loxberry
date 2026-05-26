@@ -3,16 +3,18 @@
 use \Linfo\Common;
 use \Linfo\Linfo;
 
-class CommonTest extends PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class CommonTest extends TestCase
 {
   protected static $linfo;
 
-  public static function setUpBeforeClass()
+  public static function setUpBeforeClass(): void
   {
     self::$linfo = new Linfo();
   }
 
-  public static function tearDownAfterClass()
+  public static function tearDownAfterClass(): void
   {
     Common::unconfig();
   }
@@ -26,14 +28,6 @@ class CommonTest extends PHPUnit_Framework_TestCase
     $expected = ['str1_suffix', 'str2_suffix', 'str3_suffix'];
 
     $this->assertEquals(Common::arrayAppendString($strs, '_suffix'), $expected);
-  }
-
-  /**
-   * @test
-   */
-  public function xmlStringSanitize()
-  {
-    $this->assertEquals(Common::xmlStringSanitize('te!@#$%^st'), 'te_st');
   }
 
   /**
@@ -116,5 +110,16 @@ class CommonTest extends PHPUnit_Framework_TestCase
     $lines = ["lineone\n", "linetwo\n", "line3\n"];
     $file = LINFO_TESTDIR . '/files/lines.txt';
     $this->assertEquals($lines, Common::getLines($file));
+  }
+
+  /**
+   * @test
+   */
+  public function strToInt()
+  {
+    $this->assertEquals(42, Common::strToInt("42"));
+    $this->assertIsInt(Common::strToInt("42"));
+    $this->assertEquals(4.2, Common::strToInt("4.2"));
+    $this->assertIsFloat(Common::strToInt("4.2"));
   }
 }

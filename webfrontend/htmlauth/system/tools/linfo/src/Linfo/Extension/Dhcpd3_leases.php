@@ -41,6 +41,9 @@ use Linfo\Common;
 use Linfo\Meta\Errors;
 use Linfo\Meta\Timer;
 
+use \DateTime;
+use \DateTimeZone;
+
 /**
  * Get status on dhcp3 leases.
  */
@@ -54,7 +57,8 @@ class Dhcpd3_leases implements Extension
     private
         $_hide_mac,
         $_res,
-        $_leases = [];
+        $_leases = [],
+        $_leases_file;
 
     /**
      * localize important stuff.
@@ -124,18 +128,20 @@ class Dhcpd3_leases implements Extension
         // Get it into lines
         $lines = explode("\n", $contents);
 
+        $seen_ips = [];
+
         // Store temp entries here
         $curr = false;
 
         // Parse each line, while ignoring certain useless'ish values
         // I'd do a single preg_match_all() using multiline regex, but the values in each lease block are inconsistent. :-/
-        for ($i = 0, $num_lines = count($lines); $i < $num_lines; ++$i) {
+        foreach ($lines as $line) {
 
             // Kill padding whitespace
-            $lines[$i] = trim($lines[$i]);
+            $line = trim($line);
 
             // Last line in entry
-            if ($lines[$i] == '}') {
+            if ($line == '}') {
                 // Have we a current entry to save?
                 if (is_array($curr)) {
                     $this->_leases[] = $curr;
@@ -146,12 +152,13 @@ class Dhcpd3_leases implements Extension
             }
 
             // First line in entry. Save IP
-            elseif (preg_match('/^lease (\d+\.\d+\.\d+\.\d+) \{$/', $lines[$i], $m)) {
+            elseif (preg_match('/^lease (\d+\.\d+\.\d+\.\d+) \{$/', $line, $m)) {
                 $curr = array('ip' => $m[1]);
+                $seen_ips[$m[1]] = isset($seen_ips[$m[1]]) ? $seen_ips[$m[1]] + 1 : 1;
             }
 
             // Line with lease start
-            elseif ($curr && preg_match('/^starts \d+ (\d+\/\d+\/\d+ \d+:\d+:\d+);$/', $lines[$i], $m)) {
+            elseif ($curr && preg_match('/^starts \d+ (\d+\/\d+\/\d+ \d+:\d+:\d+);$/', $line, $m)) {
 
                 // Get it in unix time stamp for prettier formatting later and easier tz offset conversion
                 $curr['lease_start'] = strtotime($m[1]);
@@ -171,7 +178,7 @@ class Dhcpd3_leases implements Extension
             }
 
             // Line with lease end
-            elseif ($curr && preg_match('/^ends \d+ (\d+\/\d+\/\d+ \d+:\d+:\d+);$/', $lines[$i], $m)) {
+            elseif ($curr && preg_match('/^ends \d+ (\d+\/\d+\/\d+ \d+:\d+:\d+);$/', $line, $m)) {
 
                 // Get it in unix time stamp for prettier formatting later and easier tz offset conversion
                 $curr['lease_end'] = strtotime($m[1]);
@@ -202,13 +209,23 @@ class Dhcpd3_leases implements Extension
             }
 
             // Line with MAC address
-            elseif (!$this->_hide_mac && $curr && preg_match('/^hardware ethernet (\w+:\w+:\w+:\w+:\w+:\w+);$/', $lines[$i], $m)) {
+            elseif (!$this->_hide_mac && $curr && preg_match('/^hardware ethernet (\w+:\w+:\w+:\w+:\w+:\w+);$/', $line, $m)) {
                 $curr['mac'] = $m[1];
             }
 
             // [optional] Line with hostname
-            elseif ($curr && preg_match('/^client\-hostname "([^"]+)";$/', $lines[$i], $m)) {
+            elseif ($curr && preg_match('/^client\-hostname "([^"]+)";$/', $line, $m)) {
                 $curr['hostname'] = $m[1];
+            }
+        }
+
+        // Dedupe duplicates by only keeping the latest entries
+        // for IPs which appear more than once. This logic works
+        // as the leases file is kept sorted in time order ascending.
+        foreach ($this->_leases as $key => $lease) {
+            if ($seen_ips[$lease['ip']] > 1) {
+                unset($this->_leases[$key]);
+                $seen_ips[$lease['ip']]--;
             }
         }
     }
@@ -260,35 +277,35 @@ class Dhcpd3_leases implements Extension
         );
 
         // Append each lease
-        for ($i = 0, $num_leases = count($this->_leases); $i < $num_leases; ++$i) {
+        foreach($this->_leases as $lease) {
             $rows[] = array(
                 'type' => 'values',
                 'columns' =>
 
                 // Not hiding mac addresses?
                 !$this->_hide_mac ? array(
-                    $this->_leases[$i]['ip'],
-                    $this->_leases[$i]['mac'],
-                    array_key_exists('hostname', $this->_leases[$i]) ?
-                        $this->_leases[$i]['hostname'] : '<em>unknown</em>',
-                    date(self::DATE_FORMAT, $this->_leases[$i]['lease_start']),
-                    date(self::DATE_FORMAT, $this->_leases[$i]['lease_end']),
+                    $lease['ip'],
+                    $lease['mac'],
+                    array_key_exists('hostname', $lease) ?
+                        $lease['hostname'] : '<em>unknown</em>',
+                    date(self::DATE_FORMAT, $lease['lease_start']),
+                    date(self::DATE_FORMAT, $lease['lease_end']),
                 ) :
 
                 // Hiding them indeed
                 array(
-                    $this->_leases[$i]['ip'],
-                    array_key_exists('hostname', $this->_leases[$i]) ?
-                        $this->_leases[$i]['hostname'] : '<em>unknown</em>',
-                    date(self::DATE_FORMAT, $this->_leases[$i]['lease_start']),
-                    date(self::DATE_FORMAT, $this->_leases[$i]['lease_end']),
+                    $lease['ip'],
+                    array_key_exists('hostname', $lease) ?
+                        $lease['hostname'] : '<em>unknown</em>',
+                    date(self::DATE_FORMAT, $lease['lease_start']),
+                    date(self::DATE_FORMAT, $lease['lease_end']),
                 ),
             );
         }
 
         // Give it off
         return array(
-            'root_title' => 'DHCPD IP Leases',
+            'root_title' => 'DHCPD IP Leases ('.count($this->_leases).')',
             'rows' => $rows,
         );
     }

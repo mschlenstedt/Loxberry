@@ -63,8 +63,11 @@ class FreeBSD extends BSDcommon
             'kern.boottime',
 
             // Ram stuff
-            'vm.vmtotal',
             'vm.loadavg',
+            'vm.stats.vm.v_inactive_count',
+            'vm.stats.vm.v_free_count',
+            'vm.stats.vm.v_page_count',
+
 
             // CPU related
             'hw.model',
@@ -172,25 +175,18 @@ class FreeBSD extends BSDcommon
         $return = [];
 
         // Start us off at zilch
-        $return['type'] = 'Virtual';
+        $return['type'] = 'Physical';
         $return['total'] = 0;
         $return['free'] = 0;
         $return['swapTotal'] = 0;
         $return['swapFree'] = 0;
         $return['swapInfo'] = [];
 
-        // Parse the vm.vmtotal sysctl entry
-        if (!preg_match_all('/([a-z\ ]+):\s*\(Total: (\d+)\w,? Active:? (\d+)\w\)\n/i', $this->sysctl['vm.vmtotal'], $rm, PREG_SET_ORDER)) {
-            return $return;
-        }
-
-        // Parse each entry
-        foreach ($rm as $r) {
-            if ($r[1] == 'Real Memory') {
-                $return['total'] = $r[2]  * 1024;
-                $return['free'] = ($r[2] - $r[3]) * 1024;
-            }
-        }
+        // See https://wiki.freebsd.org/Memory
+        $return['total'] = 4096 * $this->sysctl['vm.stats.vm.v_page_count'];
+        $return['free'] = 4096 * (
+            $this->sysctl['vm.stats.vm.v_inactive_count'] +
+            $this->sysctl['vm.stats.vm.v_free_count']);
 
         // Swap info
         try {
@@ -474,7 +470,7 @@ class FreeBSD extends BSDcommon
             // Save each
             $cpus[] = array(
                 'Model' => $this->sysctl['hw.model'],
-                'MHz' => (int) trim($this->sysctl['hw.clockrate']),
+                'MHz' => (int) trim($this->sysctl['hw.clockrate'] ?? "0"),
             );
         }
 
@@ -495,28 +491,28 @@ class FreeBSD extends BSDcommon
         $drives = [];
 
         // Must they change the format of everything with each release?!?!?!?!
-        switch ($this->version) {
+        switch (true) {
 
-            case 8.2:
+            case version_compare($this->version, '8.1') > 0:
                 $cur = false;
 
                 // Each line of dmesg boot log
                 foreach ((array) explode("\n", $this->dmesg) as $line) {
 
                     // Start of a drive entry which spans multiple lines
-                    if (preg_match('/^((?:ad|da|acd|cd)\d+) at/', $line, $m)) {
+                    if (preg_match('/^((?:ada|da|acd|cd)\d+) at/', $line, $m)) {
                         $cur = array('device' => '/dev/'.$m[1]);
                     }
 
                     // Branding of this drive
-                    elseif ($cur && preg_match('/^((?:ad|da|acd|cd)\d+): \<([^>]+)\>/', $line, $m)) {
+                    elseif ($cur && preg_match('/^((?:ada|da|acd|cd)\d+): \<([^>]+)\>/', $line, $m)) {
                         if ('/dev/'.$m[1] != $cur['device']) {
                             continue;
                         }
                         $halves = explode(' ', $m[2]);
                         if (count($halves) > 1) {
                             $cur['vendor'] = $halves[0];
-                            $cur['name'] = $halves[1];
+                            $cur['name'] = $halves[1] . " " . $halves[2] . " " . $halves[3];
                         } else {
                             $cur['vendor'] = false;
                             $cur['name'] = $m[1];
@@ -524,7 +520,7 @@ class FreeBSD extends BSDcommon
                     }
 
                     // Lastly the size; gather it and save it
-                    elseif ($cur && preg_match('/^((?:ad|da|acd|cd)\d+): (\d+)MB/', $line, $m)) {
+                    elseif ($cur && preg_match('/^((?:ada|da|acd|cd)\d+): (\d+)MB/', $line, $m)) {
                         if ('/dev/'.$m[1] != $cur['device']) {
                             $cur = false;
                             continue;
@@ -566,8 +562,7 @@ class FreeBSD extends BSDcommon
         }
 
         // Class that does it
-        $hw = new Hwpci(false, '/usr/share/misc/pci_vendors');
-        $hw->work('freebsd');
+        $hw = new Hwpci(false, '/usr/share/misc/pci_vendors', 'freebsd', true);
 
         return $hw->result();
     }

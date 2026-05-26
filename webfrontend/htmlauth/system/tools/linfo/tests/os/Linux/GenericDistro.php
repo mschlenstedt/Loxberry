@@ -2,6 +2,9 @@
 
 use \Linfo\Common;
 use \Linfo\Linfo;
+use \Linfo\Parsers\FileIO;
+
+use PHPUnit\Framework\TestCase;
 
 /*
  * Validate most of the regexes/file parsing, targeting custom known real
@@ -10,19 +13,21 @@ use \Linfo\Linfo;
  * Also, thank FUCK for var_export()
  */
 
-class LinuxGenericDistroTest extends PHPUnit_Framework_TestCase
+class LinuxGenericDistroTest extends TestCase
 {
   protected static $parser;
 
-  public static function setUpBeforeClass()
+  public static function setUpBeforeClass(): void
   {
     if (PHP_OS !== 'Linux') {
       self::markTestSkipped('Skip tests for Linux on other os');
     }
 
-    Common::$path_prefix = dirname(dirname(__FILE__)) . '/../files/linux/generic_distro';
     $linfo = new Linfo();
     self::$parser = $linfo->getParser();
+
+    $path_prefix = realpath(dirname(dirname(__FILE__)) . '/../files/linux/generic_distro');
+    Common::$io = new FileIO($path_prefix);
   }
 
   /**
@@ -217,10 +222,10 @@ class LinuxGenericDistroTest extends PHPUnit_Framework_TestCase
     ], self::$parser->getRAID());
   }
 
-  public static function tearDownAfterClass()
+  public static function tearDownAfterClass(): void
   {
     self::$parser = null;
     Common::unconfig();
-    Common::$path_prefix = false;
+    Common::$io = new FileIO(false);
   }
 }

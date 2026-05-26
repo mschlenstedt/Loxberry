@@ -70,9 +70,11 @@ $settings['show']['services'] = false;
 
 // Hide certain file systems / devices
 $settings['hide']['filesystems'] = array(
+	'overlay', 'bpf', 'nsfs',
 	'tmpfs', 'ecryptfs', 'nfsd', 'rpc_pipefs', 'proc', 'sysfs',
 	'usbfs', 'devpts', 'fusectl', 'securityfs', 'fuse.truecrypt',
-  'cgroup', 'debugfs', 'mqueue', 'hugetlbfs', 'pstore');
+	'cgroup', 'cgroup2', 'debugfs', 'mqueue', 'hugetlbfs', 'pstore',
+	'tracefs', 'configfs', 'efivarfs');
 $settings['hide']['storage_devices'] = array('gvfs-fuse-daemon', 'none', 'systemd-1', 'udev');
 
 // filter mountpoints based on PCRE regex, eg '@^/proc@', '@^/sys@', '@^/dev@'
@@ -85,7 +87,7 @@ $settings['hide']['fs_mount_options'] = array('ecryptfs');
 $settings['hide']['sg'] = true; # Linux only
 
 // Set to true to not resolve symlinks in the mountpoint device paths. Eg don't convert /dev/mapper/root to /dev/dm-0
-$settings['hide']['dont_resolve_mountpoint_symlinks'] = false; # Linux only
+$settings['hide']['dont_resolve_mountpoint_symlinks'] = true; # Linux only
 
 // Various softraids. Set to true to enable.
 // Only works if it's available on your system; otherwise does nothing
