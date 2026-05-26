@@ -1477,7 +1477,8 @@ sub check_mqtt
 	# Determine configured gateway version (default to 1)
 	my $genjsonobj = LoxBerry::JSON->new();
 	my $gencfg = $genjsonobj->open( filename => "$lbsconfigdir/general.json", readonly => 1 );
-	my $gwversion = $gencfg->{Mqtt}->{Gatewayversion} // 1;
+	my $gwversion   = $gencfg->{Mqtt}->{Gatewayversion}  // 1;
+	my $gwautostart = $gencfg->{Mqtt}->{Gatewayautostart} // 1;
 
 	# Check binary running
 	my $mqttpid;
@@ -1485,6 +1486,13 @@ sub check_mqtt
 		$mqttpid = trim(`pgrep -f mqtt_gateway.py`);
 	} else {
 		$mqttpid = trim(`pgrep mqttgateway.pl`);
+	}
+
+	# If gateway was manually stopped, report Info (not ERROR)
+	if( $mqttpid eq "" && !is_enabled($gwautostart) ) {
+		$result{status} = setstatus(6, $result{status});
+		$result{result} = "MQTT Gateway was manually stopped.";
+		return(\%result);
 	}
 
 	# Read healthstate from mqttgateway
