@@ -42,5 +42,5 @@ close($fh);
 chown(0, 0, $interfaces_file);
 chmod(0644, $interfaces_file);
 
-print "OK\n";
+print STDERR "OK\n";
 exit 0;

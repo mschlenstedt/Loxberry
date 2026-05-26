@@ -52,7 +52,6 @@ chown -c loxberry:loxberry /etc/timezone
 chown -c loxberry:loxberry /etc/localtime
 chown -c loxberry:loxberry $LBHOMEDIR/config/system/general.*
 
-chmod -c 600 $LBHOMEDIR/system/network/interfaces
 chmod -c 600 $LBHOMEDIR/config/system/*
 chmod -c 600 $LBHOMEDIR/data/system/netshares.dat
 chmod -c 644 $LBHOMEDIR/config/system/securepin.dat
