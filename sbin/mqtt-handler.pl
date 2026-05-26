@@ -137,7 +137,7 @@ sub restart_gateway
 	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
 	if( $gatewayversion == 2 ) {
-		`pkill -A -f mqtt_gateway.py`;
+		`pkill -KILL -f mqtt_gateway.py`;
 		unless ( -f "$lbhomedir/sbin/mqttgateway_venv/bin/python3" ) {
 			LOGINF "Creating Python venv for MQTT Gateway V2...";
 			`rm -rf $lbhomedir/sbin/mqttgateway_venv`;

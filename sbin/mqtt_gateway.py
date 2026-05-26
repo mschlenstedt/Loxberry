@@ -373,11 +373,12 @@ async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
                         recv_mono   = loop.time()
                         recv_dt     = datetime.now()
                         recv_ts     = recv_dt.strftime("%H:%M:%S.") + f"{recv_dt.microsecond // 1000:03d}"
-                        LOGDEB(f"MQTT received [{recv_ts}]: {topic} = {payload!r}")
+                        LOGDEB(f"MQTT received [{recv_ts}]: {topic} = {payload!r} (retain={message.retain})")
                         await queue.put({
                             "type":        "mqtt",
                             "topic":       topic,
                             "payload":     payload,
+                            "retain":      message.retain,
                             "received_at": recv_mono,
                             "received_ts": recv_ts,
                         })
@@ -445,8 +446,9 @@ async def _process_mqtt(session, item: dict,
     payload     = item["payload"]
     received_at = item["received_at"]
     received_ts = item.get("received_ts", "?")
+    is_retain   = item.get("retain", False)
 
-    LOGDEB(f"Queue item: {topic} = {payload!r}")
+    LOGDEB(f"Queue item: {topic} = {payload!r} (retain={is_retain})")
 
     sub = next((s for s in _subscriptions if s["id"] == topic), None)
     if sub is None:
@@ -485,6 +487,18 @@ async def _process_mqtt(session, item: dict,
         if lock.locked():
             LOGDEB(f"Waiting for VI lock: {vi_name} (new value={value!r})")
         async with lock:
+            if is_retain:
+                # Broker delivers retained messages on subscribe → cache only, no Miniserver forward
+                now = datetime.now()
+                entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_ids[0] if ms_ids else "1"))
+                entry["value"]              = str(value)
+                entry["miniserver"]         = ms_ids[0] if ms_ids else "1"
+                entry["last_updated"]       = now.isoformat(timespec="seconds")
+                entry["last_updated_epoch"] = int(now.timestamp())
+                status_event.set()
+                LOGDEB(f"Retain: cache-only: {vi_name} = {value}")
+                continue
+
             for ms_id in ms_ids:
                 if not should_send(vi_name, value, noncached, _cache):
                     LOGDEB(f"Cache hit (skip): {vi_name} = {value}")
