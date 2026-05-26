@@ -600,22 +600,25 @@ sub mqtt_connectiondetails {
 
 	my $use_local = LoxBerry::System::is_enabled( $mqttcfg->{Uselocalbroker} // 'true' );
 
+	$cred{brokerport}    = $mqttcfg->{Brokerport};   # plain port — always set, backward compatible
+	$cred{brokeraddress} = $cred{brokerhost} . ":" . $cred{brokerport};
+
 	if ( $use_local && LoxBerry::System::is_enabled( $mqttcfg->{Tlsenabled} // 'false' ) ) {
-		$cred{brokerport}   = $mqttcfg->{Tlsport} // 8883;
-		$cred{tls}          = 1;
-		$cred{tls_verify}   = 0;   # local self-signed CA — no peer verification
-		$cred{tls_cafile}   = '/etc/mosquitto/tls/ca.crt';
+		$cred{tls}              = 1;
+		$cred{tls_verify}       = 0;   # local self-signed CA — no peer verification
+		$cred{tls_cafile}       = '/etc/mosquitto/tls/ca.crt';
+		$cred{tls_brokerport}   = $mqttcfg->{Tlsport} // 8883;
+		$cred{tls_brokeraddress}= $cred{brokerhost} . ":" . $cred{tls_brokerport};
 	} elsif ( !$use_local && LoxBerry::System::is_enabled( $mqttcfg->{TlsExternalEnabled} // 'false' ) ) {
-		$cred{brokerport}   = $mqttcfg->{Brokerport};
-		$cred{tls}          = 1;
-		$cred{tls_verify}   = LoxBerry::System::is_enabled( $mqttcfg->{TlsExternalValidatecert} // 'false' ) ? 1 : 0;
-		$cred{tls_cafile}   = "$LoxBerry::System::lbsconfigdir/mqtt_external_ca.crt";
+		$cred{tls}              = 1;
+		$cred{tls_verify}       = LoxBerry::System::is_enabled( $mqttcfg->{TlsExternalValidatecert} // 'false' ) ? 1 : 0;
+		$cred{tls_cafile}       = "$LoxBerry::System::lbsconfigdir/mqtt_external_ca.crt";
+		$cred{tls_brokerport}   = $mqttcfg->{Brokerport};   # external: TLS on the same port
+		$cred{tls_brokeraddress}= $cred{brokeraddress};
 	} else {
-		$cred{brokerport}   = $mqttcfg->{Brokerport};
-		$cred{tls}          = 0;
+		$cred{tls}              = 0;
 	}
 
-	$cred{brokeraddress} = $cred{brokerhost} . ":" . $cred{brokerport};
 	return \%cred;
 
 }
@@ -636,7 +639,8 @@ sub mqtt_connect
 		return undef;
 	}
 
-	print STDERR "mqtt_connect-> Connecting to broker $mqttcred->{brokeraddress} (TLS: " . ($mqttcred->{tls} ? "yes" : "no") . ")\n" if($DEBUG);
+	my $connect_address = $mqttcred->{tls} ? $mqttcred->{tls_brokeraddress} : $mqttcred->{brokeraddress};
+	print STDERR "mqtt_connect-> Connecting to $connect_address (TLS: " . ($mqttcred->{tls} ? "yes" : "no") . ")\n" if($DEBUG);
 	eval {
 
 		$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
@@ -647,9 +651,9 @@ sub mqtt_connect
 				$sockopts{SSL_ca_file} = $mqttcred->{tls_cafile};
 			}
 			print STDERR "mqtt_connect-> TLS SSL_verify_mode=$sockopts{SSL_verify_mode}\n" if($DEBUG);
-			$LoxBerry::IO::mqtt = Net::MQTT::Simple::SSL->new($mqttcred->{brokeraddress}, \%sockopts);
+			$LoxBerry::IO::mqtt = Net::MQTT::Simple::SSL->new($connect_address, \%sockopts);
 		} else {
-			$LoxBerry::IO::mqtt = Net::MQTT::Simple->new($mqttcred->{brokeraddress});
+			$LoxBerry::IO::mqtt = Net::MQTT::Simple->new($connect_address);
 		}
 		if($mqttcred->{brokeruser} or $mqttcred->{brokerpass}) {
 			my $pass_blurred = $mqttcred->{brokerpass} ne "" ? substr( $mqttcred->{brokerpass}, 0, 1) . "*****" : "(empty)";
