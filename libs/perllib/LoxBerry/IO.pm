@@ -588,16 +588,34 @@ sub msudp_send_mem
 sub mqtt_connectiondetails {
 
 	LoxBerry::System::read_generaljson();
-	
+
 	my %cred;
-	
-	$cred{brokeraddress} = $LoxBerry::System::mqttcfg->{Brokerhost}.":".$LoxBerry::System::mqttcfg->{Brokerport};
-	$cred{brokerhost} = $LoxBerry::System::mqttcfg->{Brokerhost};
-	$cred{brokerport} = $LoxBerry::System::mqttcfg->{Brokerport};
-	$cred{websocketport} = defined $LoxBerry::System::mqttcfg->{Websocketport} ? $LoxBerry::System::mqttcfg->{Websocketport} : "9001";
-	$cred{brokeruser} = $LoxBerry::System::mqttcfg->{Brokeruser};
-	$cred{brokerpass} = $LoxBerry::System::mqttcfg->{Brokerpass};
-	$cred{udpinport} = $LoxBerry::System::mqttcfg->{Udpinport};
+	my $mqttcfg = $LoxBerry::System::mqttcfg;
+
+	$cred{brokerhost}    = $mqttcfg->{Brokerhost};
+	$cred{websocketport} = defined $mqttcfg->{Websocketport} ? $mqttcfg->{Websocketport} : "9001";
+	$cred{brokeruser}    = $mqttcfg->{Brokeruser};
+	$cred{brokerpass}    = $mqttcfg->{Brokerpass};
+	$cred{udpinport}     = $mqttcfg->{Udpinport};
+
+	my $use_local = LoxBerry::System::is_enabled( $mqttcfg->{Uselocalbroker} // 'true' );
+
+	if ( $use_local && LoxBerry::System::is_enabled( $mqttcfg->{Tlsenabled} // 'false' ) ) {
+		$cred{brokerport}   = $mqttcfg->{Tlsport} // 8883;
+		$cred{tls}          = 1;
+		$cred{tls_verify}   = 0;   # local self-signed CA — no peer verification
+		$cred{tls_cafile}   = '/etc/mosquitto/tls/ca.crt';
+	} elsif ( !$use_local && LoxBerry::System::is_enabled( $mqttcfg->{TlsExternalEnabled} // 'false' ) ) {
+		$cred{brokerport}   = $mqttcfg->{Brokerport};
+		$cred{tls}          = 1;
+		$cred{tls_verify}   = LoxBerry::System::is_enabled( $mqttcfg->{TlsExternalValidatecert} // 'false' ) ? 1 : 0;
+		$cred{tls_cafile}   = "$LoxBerry::System::lbsconfigdir/mqtt_external_ca.crt";
+	} else {
+		$cred{brokerport}   = $mqttcfg->{Brokerport};
+		$cred{tls}          = 0;
+	}
+
+	$cred{brokeraddress} = $cred{brokerhost} . ":" . $cred{brokerport};
 	return \%cred;
 
 }
@@ -605,24 +623,34 @@ sub mqtt_connectiondetails {
 sub mqtt_connect
 {
 	require Net::MQTT::Simple;
-	
+
 	if( $LoxBerry::IO::mqtt ) {
 		print STDERR "mqtt_connect-> MQTT already connected\n" if($DEBUG);
 		return $LoxBerry::IO::mqtt;
 	}
-	
+
 	print STDERR "mqtt_connect-> Requesting MQTT connection details\n" if($DEBUG);
 	my $mqttcred = LoxBerry::IO::mqtt_connectiondetails();
 	if( ! $mqttcred ) {
 		print STDERR "mqtt_connect-> Error: Could not get MQTT connection details.\n" if($DEBUG);
 		return undef;
 	}
-	
-	print STDERR "mqtt_connect-> Connecting to broker $mqttcred->{brokeraddress}\n" if($DEBUG);
+
+	print STDERR "mqtt_connect-> Connecting to broker $mqttcred->{brokeraddress} (TLS: " . ($mqttcred->{tls} ? "yes" : "no") . ")\n" if($DEBUG);
 	eval {
-		
+
 		$ENV{MQTT_SIMPLE_ALLOW_INSECURE_LOGIN} = 1;
-		$LoxBerry::IO::mqtt = Net::MQTT::Simple->new($mqttcred->{brokeraddress});
+		if( $mqttcred->{tls} ) {
+			require Net::MQTT::Simple::SSL;
+			my %sockopts = ( SSL_verify_mode => $mqttcred->{tls_verify} ? 1 : 0 );
+			if( $mqttcred->{tls_verify} && $mqttcred->{tls_cafile} && -f $mqttcred->{tls_cafile} ) {
+				$sockopts{SSL_ca_file} = $mqttcred->{tls_cafile};
+			}
+			print STDERR "mqtt_connect-> TLS SSL_verify_mode=$sockopts{SSL_verify_mode}\n" if($DEBUG);
+			$LoxBerry::IO::mqtt = Net::MQTT::Simple::SSL->new($mqttcred->{brokeraddress}, \%sockopts);
+		} else {
+			$LoxBerry::IO::mqtt = Net::MQTT::Simple->new($mqttcred->{brokeraddress});
+		}
 		if($mqttcred->{brokeruser} or $mqttcred->{brokerpass}) {
 			my $pass_blurred = $mqttcred->{brokerpass} ne "" ? substr( $mqttcred->{brokerpass}, 0, 1) . "*****" : "(empty)";
 			print STDERR "mqtt_connect-> Login to broker with user $mqttcred->{brokeruser} and pass $pass_blurred\n" if($DEBUG);
@@ -630,13 +658,13 @@ sub mqtt_connect
 		}
 	};
 	if( $@ ) {
-		print STDERR "mqtt_connect-> Could not connect to  MQTT broker: $@\n";
+		print STDERR "mqtt_connect-> Could not connect to MQTT broker: $@\n";
 		return undef;
 	}
 
 	print STDERR "mqtt_connect-> Connected successfully\n" if($DEBUG);
 	return $LoxBerry::IO::mqtt;
-	
+
 }
 
 sub mqtt_set

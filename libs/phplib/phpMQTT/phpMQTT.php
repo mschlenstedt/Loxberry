@@ -52,6 +52,7 @@ class phpMQTT
     protected $password;            /* stores password */
 
     public $cafile;
+    protected $ssl_options = null;
     protected static $known_commands = [
         1 => 'CONNECT',
         2 => 'CONNACK',
@@ -98,6 +99,11 @@ class phpMQTT
         $this->cafile = $cafile;
     }
 
+    public function set_ssl_options(array $opts): void
+    {
+        $this->ssl_options = $opts;
+    }
+
     /**
      * Will try and connect, if fails it will sleep 10s and try again, this will enable the script to recover from a network outage
      *
@@ -136,7 +142,10 @@ class phpMQTT
             $this->password = $password;
         }
 
-        if ($this->cafile) {
+        if ($this->ssl_options !== null) {
+            $socketContext = stream_context_create(['ssl' => $this->ssl_options]);
+            $this->socket = stream_socket_client('tls://' . $this->address . ':' . $this->port, $errno, $errstr, 60, STREAM_CLIENT_CONNECT, $socketContext);
+        } elseif ($this->cafile) {
             $socketContext = stream_context_create(
                 [
                     'ssl' => [

@@ -445,23 +445,39 @@ function mshttp_send_mem($msnr, $params, $value = null)
 
 // Read MQTT connection details and credentials from MQTT plugin
 function mqtt_connectiondetails() {
-	
+
 	global $cfgwasread;
 	global $cfg;
-	
-	if (! isset($cfgwasread)) {
-			LBSystem::read_generaljson();
-	}	
-	
-	$cred = array ();
-	
-	$cred['brokeraddress'] = $cfg->Mqtt->Brokerhost.":".$cfg->Mqtt->Brokerport;
-	$cred['brokerhost'] = $cfg->Mqtt->Brokerhost;
-	$cred['brokerport'] = $cfg->Mqtt->Brokerport;
+
+	if (!isset($cfgwasread)) {
+		LBSystem::read_generaljson();
+	}
+
+	$cred = array();
+	$cred['brokerhost']    = $cfg->Mqtt->Brokerhost;
 	$cred['websocketport'] = !empty($cfg->Mqtt->Websocketport) ? $cfg->Mqtt->Websocketport : "9001";
-	$cred['brokeruser'] = $cfg->Mqtt->Brokeruser;
-	$cred['brokerpass'] = $cfg->Mqtt->Brokerpass;
-	$cred['udpinport'] = $cfg->Mqtt->Udpinport;
+	$cred['brokeruser']    = $cfg->Mqtt->Brokeruser;
+	$cred['brokerpass']    = $cfg->Mqtt->Brokerpass;
+	$cred['udpinport']     = $cfg->Mqtt->Udpinport;
+
+	$use_local = is_enabled($cfg->Mqtt->Uselocalbroker ?? 'true');
+
+	if ($use_local && is_enabled($cfg->Mqtt->Tlsenabled ?? 'false')) {
+		$cred['brokerport']   = $cfg->Mqtt->Tlsport ?? 8883;
+		$cred['tls']          = true;
+		$cred['tls_verify']   = false;
+		$cred['tls_cafile']   = '/etc/mosquitto/tls/ca.crt';
+	} elseif (!$use_local && is_enabled($cfg->Mqtt->TlsExternalEnabled ?? 'false')) {
+		$cred['brokerport']   = $cfg->Mqtt->Brokerport;
+		$cred['tls']          = true;
+		$cred['tls_verify']   = is_enabled($cfg->Mqtt->TlsExternalValidatecert ?? 'false');
+		$cred['tls_cafile']   = '/opt/loxberry/config/system/mqtt_external_ca.crt';
+	} else {
+		$cred['brokerport']   = $cfg->Mqtt->Brokerport;
+		$cred['tls']          = false;
+	}
+
+	$cred['brokeraddress'] = $cred['brokerhost'] . ":" . $cred['brokerport'];
 	return $cred;
 
 }
@@ -558,8 +574,15 @@ class lbmqtt
 
 	private function _connect()
 	{
-		$this->mqtt = new Bluerhinos\phpMQTT($this->mqttcreds['brokerhost'],  $this->mqttcreds['brokerport'],$this->_client_id);
-		if( $this->mqtt->connect(true, NULL, $this->mqttcreds['brokeruser'], $this->mqttcreds['brokerpass'] ) ) {
+		$this->mqtt = new Bluerhinos\phpMQTT($this->mqttcreds['brokerhost'], $this->mqttcreds['brokerport'], $this->_client_id);
+		if (!empty($this->mqttcreds['tls'])) {
+			if (empty($this->mqttcreds['tls_verify'])) {
+				$this->mqtt->set_ssl_options(['verify_peer' => false, 'verify_peer_name' => false]);
+			} elseif (!empty($this->mqttcreds['tls_cafile']) && file_exists($this->mqttcreds['tls_cafile'])) {
+				$this->mqtt->set_ssl_options(['verify_peer' => true, 'verify_peer_name' => true, 'cafile' => $this->mqttcreds['tls_cafile']]);
+			}
+		}
+		if ($this->mqtt->connect(true, NULL, $this->mqttcreds['brokeruser'], $this->mqttcreds['brokerpass'])) {
 			error_log("MQTT ({$this->mqttcreds['brokerhost']}) accessible by \e[94m\$mqtt\e[0m");
 		}
 	}
