@@ -51,11 +51,6 @@
 	</div>
 	</TMPL_IF>
 </div>
-<TMPL_ELSE>
-<div id="notificationBlock" style="display:none;">
-	<div style="display:none" id="notificationCount">0</div>
-</div>
-</TMPL_IF>
 
 <style>
 .lb-notify-box {
@@ -87,7 +82,7 @@ var notificationCount;
 updateNotificationCount();
 
 $("#notifdeleteall").click(async function() {
-	$('.notifyrow').each(function(){
+	$('.lb-notify-box').each(function(){
 		deleteKey($(this).data('notifykey'));
 	});
 });
@@ -120,4 +115,13 @@ function updateNotificationCount(reduce) {
 	if (notificationCount <= 0) $("#notificationBlock").fadeOut();
 }
 </script>
+
+<TMPL_ELSE>
+<div id="notificationBlock" style="margin-bottom:20px;">
+	<TMPL_IF SHOW_HEADER>
+	<h2 class="lb-section-title" style="margin-bottom:10px;">Notifications</h2>
+	<p><TMPL_VAR NOTIFY.NO_NOTIFICATIONS></p>
+	</TMPL_IF>
+</div>
+</TMPL_IF>
 <!-- ** END template/system/get_notification_html.html ************************************************************************************ -->
