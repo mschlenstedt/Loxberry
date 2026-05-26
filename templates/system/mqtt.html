@@ -344,10 +344,8 @@
 					else {
 						fetch('/admin/system/ajax/ajax-mqtt.php?ajax=mosquitto_set');
 						self.data_save_error = false;
-						if (self.data_changed) {
-							self.data_saved = true;
-							setTimeout(function() { self.data_saved = false; }, 4000);
-						}
+						self.data_saved = true;
+						setTimeout(function() { self.data_saved = false; }, 4000);
 						self.data_changed = false;
 						// Auto-create TLS cert if TLS enabled and no cert exists yet
 						if (self.Mqtt.Uselocalbroker === 'true' && self.Mqtt.Tlsenabled === 'true') {

@@ -372,15 +372,21 @@ $(function() {
                 contentType: 'application/json; charset=UTF-8',
                 data: JSON.stringify({ Gatewayversion: newVersion, Loglevel: newLoglevel })
             });
-            $.when(saveGwConfig, saveVersion).always(function() {
-                if (newVersion !== originalVersion) {
-                    location.reload();
-                    return;
-                }
-                $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
+            $.when(saveGwConfig, saveVersion)
+                .done(function() {
+                    if (newVersion !== originalVersion) {
+                        location.reload();
+                        return;
+                    }
+                    _showSaveOk();
+                    $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
+                        $("#saveapply").prop("disabled", false);
+                    });
+                })
+                .fail(function() {
+                    $("#savemessages, #savemessages_btn").attr("style", "color:red").html(_lang_save.saveError);
                     $("#saveapply").prop("disabled", false);
                 });
-            });
         }
 
         if (newVersion === 2 && originalVersion === 1) {
@@ -2572,6 +2578,7 @@ $(function () {
 	<div style="display:flex;justify-content:center;gap:12px;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
 	<button class="lb-btn lb-btn-primary" id="saveapply" data-role="none"><TMPL_VAR MQTT.BTN_SAVE_APPLY></button>
 	</div>
+	<div style="text-align:center;min-height:1.5em;margin-top:6px"><span id="savemessages_btn" style="font-size:0.9rem"></span></div>
 
 </TMPL_UNLESS>
 
@@ -2817,11 +2824,11 @@ $(function () {
 
 	var _saveOkTimer = null;
 	function _showSaveOk() {
-		if (!_cfg_changed) return;
 		_cfg_changed = false;
 		$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
+		$("#savemessages_btn").attr("style", "color:green").html(_lang_save.savedOk);
 		clearTimeout(_saveOkTimer);
-		_saveOkTimer = setTimeout(function() { $("#savemessages").html(""); }, 4000);
+		_saveOkTimer = setTimeout(function() { $("#savemessages, #savemessages_btn").html(""); }, 8000);
 	}
 
 	function doSave() {
@@ -2845,7 +2852,7 @@ $(function () {
 			_showSaveOk();
 		})
 		.fail(function() {
-			$("#savemessages").attr("style", "color:red").html(_lang_save.saveError);
+			$("#savemessages, #savemessages_btn").attr("style", "color:red").html(_lang_save.saveError);
 		})
 		.always(function() {
 			$("#saveapply").attr("disabled", false);
@@ -2864,7 +2871,7 @@ $(function () {
 				_showSaveOk();
 			})
 			.fail(function() {
-				$("#savemessages").attr("style", "color:red").html(_lang_save.saveError);
+				$("#savemessages, #savemessages_btn").attr("style", "color:red").html(_lang_save.saveError);
 			})
 			.always(function() {
 				$("#saveapply").attr("disabled", false);
