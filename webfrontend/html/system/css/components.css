@@ -88,6 +88,8 @@
 	text-shadow: none !important;
 	display: block !important;
 	width: 100% !important;
+	max-width: none !important;
+	overflow: visible !important;
 }
 .ui-btn:has(> select.lb-select)::before,
 .ui-btn:has(> select.lb-select)::after {
@@ -103,6 +105,9 @@
 	clip-path: none !important;
 	clip: auto !important;
 	width: 100% !important;
+	height: auto !important;
+	max-height: none !important;
+	min-height: 0 !important;
 }
 
 /* Override jQM page/body styling — scoped to core pages (.lb-layout) only
