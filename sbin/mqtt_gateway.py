@@ -807,9 +807,9 @@ async def udp_listener(port: int) -> None:
 def build_vi_name(topic: str, json_path: str | None = None) -> str:
     """Build Loxone Virtual Input name from MQTT topic and optional JSON path.
 
-    Rules: '/' -> '_', ' ' -> '_', '@@' -> '_', '[n]' -> 'n'
+    Rules: '/' -> '_', ' ' -> '_', '%' -> '_', '@@' -> '_', '[n]' -> 'n'
     """
-    topic_part = topic.replace("/", "_").replace(" ", "_")
+    topic_part = topic.replace("/", "_").replace(" ", "_").replace("%", "_")
     if json_path is None:
         return topic_part
     json_part = re.sub(r'\[(\d+)\]', r'\1', json_path)
