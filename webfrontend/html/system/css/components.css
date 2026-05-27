@@ -75,6 +75,36 @@
 	display: contents;
 }
 
+/* When a jQM .ui-btn wraps a select.lb-select (Sonos-style custom widget):
+   reset all jQM button styling so only the native lb-select is visible. */
+.ui-btn:has(> select.lb-select),
+.ui-btn:has(> span + select.lb-select) {
+	background: none !important;
+	background-image: none !important;
+	border: none !important;
+	box-shadow: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	text-shadow: none !important;
+	display: block !important;
+	width: 100% !important;
+}
+.ui-btn:has(> select.lb-select)::before,
+.ui-btn:has(> select.lb-select)::after {
+	display: none !important;
+}
+.ui-btn:has(> select.lb-select) > span.lb-select {
+	display: none !important;
+}
+.ui-btn:has(> select.lb-select) > select.lb-select {
+	opacity: 1 !important;
+	position: static !important;
+	-webkit-clip-path: none !important;
+	clip-path: none !important;
+	clip: auto !important;
+	width: 100% !important;
+}
+
 /* Override jQM page/body styling — scoped to core pages (.lb-layout) only
    so plugin pages keep their default jQM padding/margins. Note: .page_content
    and #page_content are LoxBerry-own wrappers (not jQM) and are intentionally
