@@ -523,14 +523,16 @@ a.nolinkstyle:active
 	overflow-wrap: break-word;
 }
 
-/* Formular-Tabellen: Hints unterhalb anzeigen */
-table.formtable,
-table.formtable tbody {
+/* Formular-Tabellen: Hints unterhalb anzeigen
+   lb-formtable statt formtable — vermeidet Konflikte mit Plugins die
+   class="formtable" als normales HTML-Table-Layout verwenden */
+table.lb-formtable,
+table.lb-formtable tbody {
 	display: block !important;
 	width: 100% !important;
 }
 
-table.formtable tr {
+table.lb-formtable tr {
 	display: flex !important;
 	flex-wrap: wrap !important;
 	align-items: center;
@@ -539,27 +541,27 @@ table.formtable tr {
 	margin-bottom: 4px;
 }
 
-table.formtable td {
+table.lb-formtable td {
 	display: block !important;
 	padding: 4px 5px;
 }
 
-table.formtable td:first-child {
+table.lb-formtable td:first-child {
 	min-width: 140px;
 	width: 25%;
 }
 
-table.formtable td:nth-child(2) {
+table.lb-formtable td:nth-child(2) {
 	flex: 1;
 	min-width: 200px;
 }
 
-table.formtable td[colspan] {
+table.lb-formtable td[colspan] {
 	width: 100% !important;
 	flex-basis: 100% !important;
 }
 
-table.formtable td.hint {
+table.lb-formtable td.hint {
 	width: 100% !important;
 	flex-basis: 100% !important;
 	font-size: 75%;
