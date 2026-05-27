@@ -325,7 +325,9 @@ sub install {
 
 		if ($archiveurl) {
 			print "<INFO> Downloading $archiveurl ...\n";
-			$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo $lbsdatadir/tmp/uploads/$tempfile.zip $archiveurl  2>&1`;
+			# Single-quote the URL to prevent shell injection from & ? ; etc.
+			(my $safe_url = $archiveurl) =~ s/'/'"'"'/g;
+			system("$bins->{CURL} -fsSLk --connect-timeout 10 --max-time 60 --retry 5 -o $lbsdatadir/tmp/uploads/$tempfile.zip '$safe_url'");
 		} else {
 			# File is already there
 		}
