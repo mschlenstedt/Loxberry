@@ -271,9 +271,10 @@ label.lb-toggle.ui-btn::after {
 	border-color: var(--lb-text-secondary);
 }
 
-.lb-content input[type="submit"],
+/* Spezifität 0 via :where() — Plugin-CSS kann jederzeit überschreiben */
+:where(.lb-content input[type="submit"],
 .lb-content input[type="button"],
-.lb-content button:not(.lb-btn):not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"]) {
+.lb-content button:not(.lb-btn):not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"])) {
 	padding: 8px 16px;
 	border: 1px solid var(--lb-btn-border);
 	border-radius: var(--lb-btn-radius);
