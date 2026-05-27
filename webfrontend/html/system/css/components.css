@@ -61,6 +61,15 @@
 	margin: 0 !important;
 }
 
+/* Suppress native OS arrow on JQM-enhanced selects (restores missing rule
+   from jquery.mobile-1.4.5.min.css which had -webkit-appearance:none on
+   .ui-select select — without it the native arrow bleeds through opacity:0). */
+.ui-select select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
 /* Hide jQM select wrapper when native lb-select is used */
 .ui-select:has(.lb-select) {
 	display: contents;

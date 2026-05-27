@@ -96,7 +96,7 @@ sub init_html
 	<div class="lb-form-row" data-role="fieldcontain">
 		<label class="lb-form-label" for="$R::formid-select">$R::label</label>
 		<div class="lb-form-field" style="display:flex;align-items:center;gap:8px;">
-			<select class="lb-select" name="$R::formid-select" id="$R::formid-select" disabled $R::jqm_data_mini>
+			<select class="lb-select" name="$R::formid-select" id="$R::formid-select" disabled data-role="none">
 				<option value="">$SL{'COMMON.MSG_PLEASEWAIT'}</option>
 			</select>
 			<a href="#" id="$R::formid-browse-button" class="lb-btn lb-btn-sm lb-disabled" title="Browse" style="$R::show_browse"><i class="pi pi-eye"></i></a>
@@ -187,8 +187,8 @@ function refresh_storage_$R::formid(currentpath) {
 		// console.log("Current Waiting text:", optiontext);
 		optiontext = optiontext + ".";
 		\$('select[name=$R::formid-select] > option:first-child').text(optiontext);
-		select.selectmenu('refresh', true);
-		}, 2000); 
+		if (select.data('mobile-selectmenu')) select.selectmenu('refresh', true);
+		}, 2000);
 	\$.post ( '/admin/system/ajax/ajax-storage-handler.cgi', 
 					{ 	action: 'get-storage',
 						readwriteonly: '$R::readwriteonly',
@@ -235,12 +235,15 @@ function refresh_storage_$R::formid(currentpath) {
 			}
 		}
 		
-		// Enable controls via standard DOM (works on core pages without jQM),
-		// then call jQM widget methods (which are no-ops on core pages via the shim).
+		// Enable controls via standard DOM; call jQM widget methods only if
+		// the selectmenu widget was actually initialized (data-role="none" prevents
+		// initialization, so guard with .data() check to avoid thrown errors).
 		select.prop('disabled', false);
 		\$("#$R::formid-folder").prop('disabled', false);
-		select.selectmenu('enable');
-		select.selectmenu('refresh', true);
+		if (select.data('mobile-selectmenu')) {
+			select.selectmenu('enable');
+			select.selectmenu('refresh', true);
+		}
 		\$("#$R::formid-folder").textinput({ disabled: false });
 		
 		if( \$("#$R::formid").val().startsWith("$lbhomedir") )
