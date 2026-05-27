@@ -43,14 +43,15 @@
 	text-shadow: none !important;
 }
 
-/* Reset jQM input wrapper styling */
-.ui-input-text {
+/* Reset jQM input wrapper styling — scoped to .lb-content so plugin pages
+   keep their original JQM styling unchanged. */
+.lb-content .ui-input-text {
 	border: 1px solid var(--lb-input-border) !important;
 	border-radius: var(--lb-radius) !important;
 	background: var(--lb-input-bg) !important;
 	box-shadow: none !important;
 }
-.ui-input-text input {
+.lb-content .ui-input-text input {
 	color: var(--lb-input-text) !important;
 	font-family: var(--lb-font) !important;
 }
