@@ -9,11 +9,11 @@
 
 	<!-- jQuery Mobile theme CSS — always (provides base fonts, colors, form styles) -->
 	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.css" />
-	<!-- jQuery Mobile structure + icons — only for plugins -->
-	<TMPL_UNLESS IS_CORE_PAGE>
+	<!-- jQuery Mobile structure + icons — only for plugins using jQuery Mobile -->
+	<TMPL_IF LOAD_JQM>
 	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css" />
 	<link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css" />
-	</TMPL_UNLESS>
+	</TMPL_IF>
 
 	<!-- Design System CSS — always -->
 	<link rel="stylesheet" href="/system/css/design-tokens.css?v=19" />
@@ -29,18 +29,18 @@
 	<!-- jQuery Core — always -->
 	<script src="/system/scripts/jquery/jquery-1.12.4.min.js"></script>
 
-	<!-- jQuery Mobile JS — only for plugins -->
-	<TMPL_UNLESS IS_CORE_PAGE>
+	<!-- jQuery Mobile JS — only for plugins using jQuery Mobile -->
+	<TMPL_IF LOAD_JQM>
 	<script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
-	</TMPL_UNLESS>
+	</TMPL_IF>
 
 	<!-- Form validator — always (uses jQuery Core, not jQM) -->
 	<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
 	<script src="/system/scripts/setup.js"></script>
 	<script src="/system/scripts/validate.js"></script>
 
-	<!-- jQuery Mobile config — only for plugins -->
-	<TMPL_UNLESS IS_CORE_PAGE>
+	<!-- jQuery Mobile config — only for plugins using jQuery Mobile -->
+	<TMPL_IF LOAD_JQM>
 	<script>
 		// Disable JQUERY DOM Caching
 		$.mobile.page.prototype.options.domCache = false;
@@ -71,10 +71,10 @@
 			}
 		});
 	</script>
-	</TMPL_UNLESS>
+	</TMPL_IF>
 
-	<!-- Core page config — shim jQM methods as no-ops so existing JS doesn't crash -->
-	<TMPL_IF IS_CORE_PAGE>
+	<!-- Core/nojqm page config — shim jQM methods as no-ops so existing JS doesn't crash -->
+	<TMPL_UNLESS LOAD_JQM>
 	<script>
 		$.ajaxSetup({ cache: false });
 		// Shim jQM widget methods
@@ -94,7 +94,7 @@
 			};
 		}
 	</script>
-	</TMPL_IF>
+	</TMPL_UNLESS>
 
 	<script>
 		// Sync lb-checked class on lb-btn-group labels
@@ -133,12 +133,12 @@
 		function syncAllBtnGroups() {
 			$(".lb-btn-group").each(function() { syncLbBtnGroup($(this)); });
 		}
-		<TMPL_UNLESS IS_CORE_PAGE>
+		<TMPL_IF LOAD_JQM>
 		$(document).on("pagecreate", function() {
 			setTimeout(syncAllBtnGroups, 200);
 			setTimeout(syncAllBtnGroups, 800);
 		});
-		</TMPL_UNLESS>
+		</TMPL_IF>
 		$(document).ready(function() {
 			setTimeout(syncAllBtnGroups, 200);
 			setTimeout(syncAllBtnGroups, 800);

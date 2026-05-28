@@ -19,7 +19,7 @@ class LBWeb
 		
 	}
 	
-	public static function get_head($pagetitle = "")
+	public static function get_head($pagetitle = "", $nojqm = false)
 	{
 		// error_log("loxberry_web: Head function called -->");
 		global $template_title;
@@ -53,7 +53,9 @@ class LBWeb
 		$headobj->param('HTMLHEAD', $htmlhead);
 		// Core (system) vs plugin page: skip jQuery Mobile JS for system pages
 		global $lbpplugindir;
-		$headobj->param('IS_CORE_PAGE', empty($lbpplugindir) ? 1 : 0);
+		$is_plugin = !empty($lbpplugindir);
+		$headobj->param('IS_CORE_PAGE', $is_plugin ? 0 : 1);
+		$headobj->param('LOAD_JQM',     ($is_plugin && !$nojqm) ? 1 : 0);
 
 		// Theme support — read Base.Theme from general.json (mirrors Web.pm logic)
 		LBSystem::read_generaljson();
@@ -328,14 +330,14 @@ EOT;
 	// lbheader - Prints head and pagestart
 	///////////////////////////////////////////////////////////////////
 	
-	public static function get_lbheader($pagetitle = "", $helpurl = "", $helptemplate = "")
+	public static function get_lbheader($pagetitle = "", $helpurl = "", $helptemplate = "", $nojqm = false)
 	{
-		return LBWeb::get_head($pagetitle) . LBWeb::get_pagestart($pagetitle, $helpurl, $helptemplate);
+		return LBWeb::get_head($pagetitle, $nojqm) . LBWeb::get_pagestart($pagetitle, $helpurl, $helptemplate);
 	}
-	
-	public static function lbheader($pagetitle = "", $helpurl = "", $helptemplate = "")
+
+	public static function lbheader($pagetitle = "", $helpurl = "", $helptemplate = "", $nojqm = false)
 	{
-		echo LBWeb::get_head($pagetitle);
+		echo LBWeb::get_head($pagetitle, $nojqm);
 		echo LBWeb::get_pagestart($pagetitle, $helpurl, $helptemplate);
 	}
 	

@@ -70,10 +70,10 @@ sub lblanguage
 #	
 #####################################################
 
-sub lbheader 
+sub lbheader
 {
-	my ($pagetitle, $helpurl, $helptemplate) = @_;
-	LoxBerry::Web::head($pagetitle);
+	my ($pagetitle, $helpurl, $helptemplate, $nojqm) = @_;
+	LoxBerry::Web::head($pagetitle, $nojqm);
 	LoxBerry::Web::pagestart($pagetitle, $helpurl, $helptemplate);
 }
 
@@ -98,7 +98,7 @@ sub head
 
 	print STDERR "== head == prints html head including <body> start =================\n" if ($DEBUG);
 	my $templatetext;
-	my ($pagetitle) = @_;
+	my ($pagetitle, $nojqm) = @_;
 
 	my $lang = LoxBerry::System::lblanguage();
 	print STDERR "\nDetected language: $lang\n" if ($DEBUG);
@@ -135,6 +135,7 @@ sub head
 	# Detect core vs plugin page for conditional jQuery Mobile loading
 	my $systemcall = defined $LoxBerry::System::lbpplugindir ? undef : 1;
 	$headobj->param( IS_CORE_PAGE => $systemcall ? 1 : 0 );
+	$headobj->param( LOAD_JQM     => (!$systemcall && !$nojqm) ? 1 : 0 );
 
 	# Theme support
 	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
