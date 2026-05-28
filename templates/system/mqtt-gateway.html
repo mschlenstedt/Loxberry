@@ -1995,7 +1995,7 @@ $(function () {
 			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_filtered" class="http_filter_checkbox"><img src="../../system/images/icon-filtered.png" height="12">&nbsp;'+_lang_v1.filterFiltered+'</label>';
 			http_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="http_filter_0" class="http_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;'+_lang_v1.filterNotSent+'</label>';
 			http_table+= '</div>';
-			http_table+= '<form><input id="http_table_search" data-type="search" data-mini="true"></form>';
+			http_table+= '<form onsubmit="return false;"><input id="http_table_search" data-type="search" data-mini="true"></form>';
 
 			http_table+= '<table class="topics_table" id="http_table" data-filter="true" data-input="#http_table_search">\n';
 			http_table+= '<thead id="topics_table_head">\n';
@@ -2021,7 +2021,7 @@ $(function () {
 			// udp_table+= '<label style="display:inline;"><input type="checkbox" data-mini="true" id="udp_filter_0" class="udp_filter_checkbox"><img src="../../system/images/icon-question.png" height="12">&nbsp;Not sent yet (cached)</label>';
 			udp_table+= '</div>';
 
-			udp_table+= '<form><input id="udp_table_search" data-type="search" data-mini="true"></form>';
+			udp_table+= '<form onsubmit="return false;"><input id="udp_table_search" data-type="search" data-mini="true"></form>';
 
 			udp_table += '<table class="topics_table" id="udp_table" data-filter="true" data-input="#udp_table_search">\n';
 			udp_table+= '<thead>\n';
