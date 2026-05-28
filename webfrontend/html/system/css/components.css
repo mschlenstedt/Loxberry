@@ -1150,14 +1150,14 @@ body.nav-mode-tabbar .lb-tab-bar {
 	pointer-events: auto;
 }
 
-/* Status bar sits above tab bar when tab bar is visible */
+/* Status bar sits directly above tab bar when tab bar is visible */
 body.nav-mode-tabbar #footerLBStatusbar {
-	bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+	bottom: var(--lb-tabbar-height, 55px) !important;
 	z-index: 1101 !important;
 }
 @media (max-width: 768px) {
 	#footerLBStatusbar {
-		bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+		bottom: var(--lb-tabbar-height, 55px) !important;
 		z-index: 1101 !important;
 	}
 }

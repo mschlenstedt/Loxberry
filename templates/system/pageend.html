@@ -36,7 +36,14 @@
 	<div id="footerLBStatusbar" style="display:none;z-index:1000;overflow:hidden;background-color:#6dac20;position:fixed;bottom:0;height:30px;width:100%;padding:6px;text-align:center;color:white;"></div>
 
 <script>
+function lb_updateTabbarHeight() {
+	var tb = document.getElementById('lb-tab-bar');
+	if (tb) document.documentElement.style.setProperty('--lb-tabbar-height', tb.offsetHeight + 'px');
+}
+$(window).on('load resize', lb_updateTabbarHeight);
+
 $( document ).ready(function() {
+	lb_updateTabbarHeight();
 	const mainiconsRefreshSec = 13;
 	mainicons_get();
 	var refresh_main_icons_interval_timer = setInterval(mainicons_get, mainiconsRefreshSec*1000);
