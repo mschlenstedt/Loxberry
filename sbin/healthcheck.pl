@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "3.0.0.3";
+my $version = "3.0.0.4";
 
 ## Check {status}
 # EMPTY --> "UNKNOWN" (grey)
@@ -1350,8 +1350,8 @@ sub check_miniservers
   
 		if (! %mslist) {
 			# print STDERR "No Miniservers\n";
-			$result{'status'} = '4';
-			$result{'result'} = 'No Miniservers configured, or Miniserver configuration not complete.';
+			$result{'status'} = '6';
+			$result{'result'} = 'No Miniserver configured.';
 			return(\%result);
 		}
 		
@@ -1493,6 +1493,16 @@ sub check_mqtt
 		$result{status} = setstatus(6, $result{status});
 		$result{result} = "MQTT Gateway was manually stopped.";
 		return(\%result);
+	}
+
+	# If no Miniserver with IP is configured, gateway cannot start - report Info
+	if( $mqttpid eq "" ) {
+		my %mslist = LoxBerry::System::get_miniservers();
+		if( !%mslist ) {
+			$result{status} = setstatus(6, $result{status});
+			$result{result} = "No Miniserver configured. MQTT Gateway requires a Miniserver to start.";
+			return(\%result);
+		}
 	}
 
 	# Read healthstate from mqttgateway
