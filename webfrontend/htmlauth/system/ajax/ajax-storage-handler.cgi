@@ -153,7 +153,7 @@ var ${R::formid}_storage = [""];
 	
 	\$("#$R::formid-browse-button").click(function() {
 		console.log("Browse Button clicked");
-		var path = \$("#$R::formid").val().replace(/^\//, '');
+		var path = \$("#$R::formid").val().replace(/^\\//, '');
 		var url = '/admin/system/tools/filemanager/index.html';
 		if (path) { url += '?p=' + path; }
 		window.open(url, '_blank', 'menubar=no,status=no,toolbar=no');
