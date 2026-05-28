@@ -113,21 +113,28 @@ foreach my $file (@files) {
 	my $output_footer;
 	my $output_success;
 	my $output_error;
-	
+
 
 	# Send STDOUT to variables
-	
+
+	# Set lbpplugindir to a defined value so Web.pm treats this as a plugin page
+	# (IS_CORE_PAGE=0), which causes head.html to include jQuery Mobile CSS/JS.
+	# Without this, the generated header.html files lack jQuery Mobile entirely.
+	$LoxBerry::System::lbpplugindir = "_legacy";
+
 	# lbheader.html
 	open TOOUTPUT, '>', \$output_header or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
 	select TOOUTPUT;
-	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
+	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->');
 	select STDOUT;
-	
+
 	# lbfooter.html
 	open TOOUTPUT, '>', \$output_footer or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
 	select TOOUTPUT;
-	LoxBerry::Web::lbfooter(); 
+	LoxBerry::Web::lbfooter();
 	select STDOUT;
+
+	undef $LoxBerry::System::lbpplugindir;
 	
 	# error.html
 	open TOOUTPUT, '>', \$output_error or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";

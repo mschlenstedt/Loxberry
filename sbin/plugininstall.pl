@@ -242,6 +242,10 @@ sub uninstall {
 	LOGINF ("Removing lock");
 	LoxBerry::System::unlock( lockfile => 'plugininstall' );
 
+	# Regenerate legacy header/footer templates so plugin menus stay current
+	LOGINF ("Updating legacy templates...");
+	system("su - loxberry -c '$lbhomedir/webfrontend/htmlauth/system/tools/generatelegacytemplates.pl --force > /dev/null 2>&1'");
+
 	LOGEND;
 
 	exit (0);
@@ -1476,6 +1480,11 @@ sub install {
 	&setowner ("loxberry", "0", "$lbhomedir/log/system/plugininstall/$pname.log", "LOG Save");
 
 	LOGOK "$SL{'PLUGININSTALL.INF_LAST'}";
+
+	# Regenerate legacy header/footer templates so plugin menus stay current
+	LOGINF ("Updating legacy templates...");
+	system("su - loxberry -c '$lbhomedir/webfrontend/htmlauth/system/tools/generatelegacytemplates.pl --force > /dev/null 2>&1'");
+
 	LOGEND;
 
 
