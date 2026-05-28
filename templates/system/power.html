@@ -9,6 +9,7 @@
 			</div>
 		</div>
 		<p>&nbsp;</p>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="<TMPL_VAR NEXTURL>" style="width:220px;justify-content:center"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
 	<TMPL_ELSE>
 		<TMPL_IF REBOOT_REQUIRED>
 		<div style="width:60%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
@@ -23,20 +24,13 @@
 		</div>
 		<p>&nbsp;</p>
 		</TMPL_IF>
-		
-			
-			<div style="width: 300px">
-				<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnreboot" href="#"><i class="pi pi-refresh"></i> <TMPL_VAR POWER.BUTTON_REBOOT></a>
-				<br>
-				<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnpoweroff" href="#"><i class="pi pi-power-off"></i> <TMPL_VAR POWER.BUTTON_POWEROFF></a>
-			</div>
+
+		<div style="display:flex;flex-direction:column;gap:8px;width:220px">
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnreboot" href="#" style="width:100%;justify-content:center"><i class="pi pi-refresh"></i> <TMPL_VAR POWER.BUTTON_REBOOT></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnpoweroff" href="#" style="width:100%;justify-content:center"><i class="pi pi-power-off"></i> <TMPL_VAR POWER.BUTTON_POWEROFF></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="<TMPL_VAR NEXTURL>" style="width:100%;justify-content:center"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		</div>
 	</TMPL_IF>
-	</center>
-	<p>
-	&nbsp;
-	</p>
-	<center>
-		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="<TMPL_VAR NEXTURL>"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
 	</center>
 	<script>
 		$(document).ready(function(){
