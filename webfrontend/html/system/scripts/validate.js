@@ -128,17 +128,21 @@ function validate_all()
 var _onPaste_StripFormatting_IEPaste = false;
 function validate_OnPaste_StripFormatting(elem, e)
 {
-	if (e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.getData)
+	var clipData = (e.originalEvent && e.originalEvent.clipboardData) || e.clipboardData;
+	if (clipData && clipData.getData)
 	{
 		e.preventDefault();
-		var text = e.originalEvent.clipboardData.getData('text/plain');
-		window.document.execCommand('insertText', false, text);
-	}
-	else if (e.clipboardData && e.clipboardData.getData)
-	{
-		e.preventDefault();
-		var text = e.clipboardData.getData('text/plain');
-		window.document.execCommand('insertText', false, text);
+		var text = clipData.getData('text/plain');
+		// execCommand('insertText') is deprecated in Chrome 120+ and may fail silently;
+		// fall back to direct value manipulation so the field is never left empty.
+		if (!window.document.execCommand('insertText', false, text)) {
+			var target = e.target || elem;
+			var start = target.selectionStart || 0;
+			var end   = target.selectionEnd   || 0;
+			target.value = target.value.substring(0, start) + text + target.value.substring(end);
+			target.selectionStart = target.selectionEnd = start + text.length;
+			$(target).trigger('input').trigger('change');
+		}
 	}
 	else if (window.clipboardData && window.clipboardData.getData)
 	{

@@ -238,7 +238,7 @@ sub install {
 	}
 
 	my $archiveurl = $cgi->param('archiveurl');
-	
+
 	# Randomly file naming
 	my $tempfile = generate(10);
 
@@ -327,7 +327,8 @@ sub install {
 			print "<INFO> Downloading $archiveurl ...\n";
 			# Single-quote the URL to prevent shell injection from & ? ; etc.
 			(my $safe_url = $archiveurl) =~ s/'/'"'"'/g;
-			system("$bins->{CURL} -fsSLk --connect-timeout 10 --max-time 60 --retry 5 -o $lbsdatadir/tmp/uploads/$tempfile.zip '$safe_url'");
+			# --dns-servers bypasses broken local dnsmasq (no upstream resolver configured)
+			system("$bins->{CURL} -fsSLk --connect-timeout 10 --max-time 60 --retry 5 --dns-servers 8.8.8.8,1.1.1.1 -o $lbsdatadir/tmp/uploads/$tempfile.zip '$safe_url'");
 		} else {
 			# File is already there
 		}
