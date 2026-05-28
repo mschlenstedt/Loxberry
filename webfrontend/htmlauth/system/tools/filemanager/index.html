@@ -88,12 +88,25 @@
 		<!-- Rename "main.default.js" to "main.js" and edit it if you need configure elFInder options or any things -->
 		<script data-main="./main.default.js" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
 		<script>
+			// Compute elFinder startPathHash from URL ?p= parameter for direct folder navigation
+			var _elFinderStartHash = (function() {
+				try {
+					var p = new URLSearchParams(window.location.search).get('p');
+					if (p) {
+						p = p.replace(/^\//, '');
+						return 'l1_' + btoa('/' + p).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+					}
+				} catch(e) {}
+				return null;
+			})();
+
 			define('elFinderConfig', {
 				// elFinder options (REQUIRED)
 				// Documentation for client options:
 				// https://github.com/Studio-42/elFinder/wiki/Client-configuration-options
 				defaultOpts : {
 					url : 'php/connector.minimal.php', // or connector.maximal.php : connector URL (REQUIRED)
+					startPathHash : _elFinderStartHash,
 					height : window.innerHeight,
 					commandsOptions : {
 						edit : {
