@@ -24,16 +24,11 @@ if [ "$GATEWAY_VERSION" = "2" ]; then
     LBHOMEDIR="${LBHOMEDIR:-/opt/loxberry}"
     VENV="$LBHOMEDIR/sbin/mqttgateway_venv"
     GWLOGFILE="$LBHOMEDIR/log/system_tmpfs/mqtt-gateway.log"
-    REQUIREMENTS="$LBHOMEDIR/sbin/mqtt_requirements.txt"
+    REQUIREMENTS="$LBHOMEDIR/sbin/requirements_mqttgateway_venv.txt"
 
-    # Check venv existence and package completeness; recreate if needed
-    VENV_OK=0
-    if [ -x "$VENV/bin/python3" ]; then
-        "$VENV/bin/python3" -c "import aiomqtt, aiohttp" 2>/dev/null && VENV_OK=1
-    fi
-
-    if [ "$VENV_OK" = "0" ]; then
-        echo "$(date) [50-mqttgateway] venv missing or incomplete, recreating..." >> "$GWLOGFILE"
+    # Check venv existence; recreate only if python3 binary is missing
+    if [ ! -f "$VENV/bin/python3" ]; then
+        echo "$(date) [50-mqttgateway] venv missing, recreating..." >> "$GWLOGFILE"
         rm -rf "$VENV"
         python3 -m venv "$VENV" >> "$GWLOGFILE" 2>&1
         if [ -f "$REQUIREMENTS" ]; then
