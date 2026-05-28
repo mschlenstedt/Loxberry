@@ -1803,6 +1803,24 @@ $(function () {
 		var gatewayVersion = parseInt($("#gatewayversion").text()) || 1;
 		var isV2 = (gatewayVersion === 2);
 		var intervalID;
+
+		// JQM filterable polyfill — replaces the no-op stub; JQM not loaded in this UI
+		$.fn.filterable = function(action) {
+			if (action === 'refresh') {
+				this.each(function() {
+					var $table = $(this);
+					var inputSel = $table.attr('data-input');
+					if (!inputSel) return;
+					var term = $(inputSel).val().toLowerCase();
+					sessionStorage.setItem($(inputSel).attr('id'), $(inputSel).val());
+					$table.find('tbody tr').each(function() {
+						var text = $(this).text().toLowerCase();
+						$(this).toggle(!term || text.indexOf(term) !== -1);
+					});
+				});
+			}
+			return this;
+		};
 		
 		$( document ).ready(function() {
 			
@@ -2012,6 +2030,7 @@ $(function () {
 			$('#generated_http_table').html(http_table).trigger('create');
 			$('#http_table_search').val( sessionStorage.getItem('http_table_search') );
 			$('#http_table_search').on('keydown', function(e) { if (e.keyCode === 13) e.preventDefault(); });
+		$('#http_table_search').on('input', function() { $('#http_table').filterable('refresh'); });
 		}
 		
 		function udp_table_skel() {
@@ -2038,6 +2057,7 @@ $(function () {
 			$('#generated_udp_table').html(udp_table).trigger('create');
 			$('#udp_table_search').val( sessionStorage.getItem('udp_table_search') );
 			$('#udp_table_search').on('keydown', function(e) { if (e.keyCode === 13) e.preventDefault(); });
+		$('#udp_table_search').on('input', function() { $('#udp_table').filterable('refresh'); });
 		}
 		
 		function generate_http_table(resp) {
