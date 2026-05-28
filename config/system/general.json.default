@@ -6,7 +6,7 @@
       "Startsetup" : "1",
       "Systemloglevel" : "6",
       "Theme" : "classic",
-      "Version" : "4.0"
+      "Version" : "4.0.0.1"
    },
    "Healthcheck" : null,
    "Miniserver" : {
