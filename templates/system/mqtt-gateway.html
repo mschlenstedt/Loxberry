@@ -2189,7 +2189,7 @@ $(function () {
 				http_row+= '<img src="../../system/images/'+httpSubmitIcon+'" style="user-select: none;padding-right:6px;">';
 
 				http_row+= topic;
-				http_row+=` <a href="#" class="lb-btn lb-btn-sm lb-btn-icon copyClipboard" style="padding:1px;font-size:60%;height:12px;width:26px;"><i class="pi pi-copy"></i> Copy</a>`;
+				http_row+=` <button type="button" class="copyClipboard" title="Copy" style="display:inline-flex;align-items:center;background:none;border:none;cursor:pointer;padding:1px 3px;vertical-align:middle;opacity:0.65;color:inherit;line-height:1;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>`;
 				http_row+= `<input type="text" value="${topic}" class="datahidden">`;
 				
 				
@@ -2366,7 +2366,7 @@ $(function () {
 					topic_tmp = 'MQTT:\\i' + topic.replace("\\", "\\\\") + '=\\i\\v';
 					udp_row+= topic_tmp;
 					
-					udp_row+=`<a href="#" class="lb-btn lb-btn-sm lb-btn-icon copyClipboard" style="padding:1px;font-size:75%;height:12px;width:26px;"><i class="pi pi-copy"></i> Copy</a>`;
+					udp_row+=`<button type="button" class="copyClipboard" title="Copy" style="display:inline-flex;align-items:center;background:none;border:none;cursor:pointer;padding:1px 3px;vertical-align:middle;opacity:0.65;color:inherit;line-height:1;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>`;
 					udp_row+= `<input type="text" value="${topic_tmp}" class="datahidden">`;
 					
 					
