@@ -188,7 +188,7 @@ function form() {
 	LBWeb::lbheader($template_title, $helplink, $helptemplate);
 	
 	if ($page == 3): ?>
-	<form method="post" data-ajax="false" name="main_form" id="main_form" style="max-width:80%" action="/admin/system/services.php?load=3">
+	<form method="post" data-ajax="false" name="main_form" id="main_form" style="max-width:80%;margin:0 auto" action="/admin/system/services.php?load=3">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" name="ssdpd" value="1">
 	<input type="hidden" name="serial" value="1">
@@ -222,7 +222,7 @@ function form() {
 	<?php
 	$output = exec(LBHOMEDIR."/bin/showpitype");
 	if ($output === "unknnown"): ?>
-	<div style="background:#FF8080;color:black;text-shadow:none;width:80%;border:1px solid black;padding:5px;margin-bottom:8px">
+	<div style="background:#FF8080;color:black;text-shadow:none;max-width:80%;margin:0 auto;border:1px solid black;padding:5px;margin-bottom:8px">
 		<?=$SL['SERVICES.HINT_NOPI'];?>
 	</div>
 	<?php endif;?>
@@ -250,7 +250,7 @@ function form() {
 
 
 	<?php else: ?>
-	<form method="post" data-ajax="false" name="main_form" id="main_form" style="max-width:80%" action="/admin/system/services.php?load=1">
+	<form method="post" data-ajax="false" name="main_form" id="main_form" style="max-width:80%;margin:0 auto" action="/admin/system/services.php?load=1">
 	<input type="hidden" name="saveformdata" value="1">
 	<input type="hidden" id="web" name="web" value="0">
 	<div class="lb-section-title"><?=$SL['SERVICES.HEADING_APACHE'];?></div>
