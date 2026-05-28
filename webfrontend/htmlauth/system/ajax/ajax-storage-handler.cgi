@@ -153,16 +153,7 @@ var ${R::formid}_storage = [""];
 	
 	\$("#$R::formid-browse-button").click(function() {
 		console.log("Browse Button clicked");
-		/* /admin/system/tools/filemanager/filemanager.php?p=system/storage/smb/homeserver/Raspberry-Backups */
-		
-		if( \$("#$R::formid").val().startsWith('$lbhomedir') ) {
-			shortpath = \$("#$R::formid").val().substr( '$lbhomedir'.length );
-			// console.log("Shortpath:", shortpath);
-		} else {
-			return;
-		}
-		
-		window.open('/admin/system/tools/filemanager/filemanager.php?p='+shortpath, '_blank', 'menubar=no,status=no,toolbar=no');
+		window.open('/admin/system/tools/filemanager/index.html', '_blank', 'menubar=no,status=no,toolbar=no');
 		
 	});
 	
