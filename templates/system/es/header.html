@@ -10,7 +10,8 @@
 	<!-- jQuery Mobile theme CSS — always (provides base fonts, colors, form styles) -->
 	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/loxberry.css" />
 	<!-- jQuery Mobile structure + icons — only for plugins -->
-	
+	<link rel="stylesheet" href="/system/scripts/jquery/themes/main/jquery.mobile.icons.min.css" />
+	<link rel="stylesheet" href="/system/scripts/jquery/jquery.mobile.structure-1.4.5.min.css" />
 
 	<!-- Design System CSS — always -->
 	<link rel="stylesheet" href="/system/css/design-tokens.css?v=19" />
@@ -27,7 +28,7 @@
 	<script src="/system/scripts/jquery/jquery-1.12.4.min.js"></script>
 
 	<!-- jQuery Mobile JS — only for plugins -->
-	
+	<script src="/system/scripts/jquery/jquery.mobile-1.4.5.min.js"></script>
 
 	<!-- Form validator — always (uses jQuery Core, not jQM) -->
 	<script src="/system/scripts/form-validator/jquery.form-validator.min.js"></script>
@@ -35,7 +36,22 @@
 	<script src="/system/scripts/validate.js"></script>
 
 	<!-- jQuery Mobile config — only for plugins -->
-	
+	<script>
+		$.mobile.page.prototype.options.domCache = false;
+		$.mobile.ajaxEnabled = false;
+		$(document).on("pagehide", "div[data-role=page]", function(event) {
+			$(event.target).remove();
+		});
+		$.ajaxSetup({ cache: false });
+		$.mobile.degradeInputs.date = true;
+		$.mobile.degradeInputs.datetime = true;
+		$.mobile.degradeInputs["datetime-local"] = true;
+		$.mobile.degradeInputs.month = true;
+		$.mobile.degradeInputs.week = true;
+		$.mobile.degradeInputs.time = true;
+		$.mobile.degradeInputs.number = true;
+		$.mobile.degradeInputs.range = false;
+	</script>
 
 	<!-- Core page config — shim jQM methods as no-ops so existing JS doesn't crash -->
 	
