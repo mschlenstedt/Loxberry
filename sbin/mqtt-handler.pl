@@ -97,17 +97,17 @@ elsif( $action eq "stopmosquitto" ) {
 }
 
 elsif( $action eq "mqtt_create_cert" ) {
-	my $result = qx($lbsconfigdir/mqtt-cert-handler.sh create 2>/dev/null);
+	my $result = qx($lbssbindir/mqtt-cert-handler.sh create 2>/dev/null);
 	print $result;
 }
 
 elsif( $action eq "mqtt_revoke_cert" ) {
-	my $result = qx($lbsconfigdir/mqtt-cert-handler.sh revoke 2>/dev/null);
+	my $result = qx($lbssbindir/mqtt-cert-handler.sh revoke 2>/dev/null);
 	print $result;
 }
 
 elsif( $action eq "mqtt_cert_status" ) {
-	my $result = qx($lbsconfigdir/mqtt-cert-handler.sh status 2>/dev/null);
+	my $result = qx($lbssbindir/mqtt-cert-handler.sh status 2>/dev/null);
 	print $result;
 }
 
