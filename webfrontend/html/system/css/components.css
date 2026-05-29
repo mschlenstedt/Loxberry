@@ -453,15 +453,13 @@ button.lb-btn-danger:hover {
  *   }
  */
 .lb-slider {
-	-webkit-appearance: none !important;
-	appearance: none !important;
-	width: 100% !important;
-	height: 8px !important;
-	border-radius: 4px !important;
-	outline: none !important;
-	cursor: pointer !important;
-	padding: 0 !important;
-	border: none !important;
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 8px;
+	border-radius: 4px;
+	outline: none;
+	cursor: pointer;
 	/* --lb-slider-fill is set and kept current by JS (see updateSlider above) */
 	background: linear-gradient(
 		to right,
@@ -469,61 +467,53 @@ button.lb-btn-danger:hover {
 		var(--lb-primary)      var(--lb-slider-fill, 0%),
 		var(--lb-border-color) var(--lb-slider-fill, 0%),
 		var(--lb-border-color) 100%
-	) !important;
+	);
 	transition: box-shadow 0.15s ease;
 }
 /* Thumb — Chrome / Safari / Edge */
 .lb-slider::-webkit-slider-thumb {
-	-webkit-appearance: none !important;
-	appearance: none !important;
-	width: 24px !important;
-	height: 24px !important;
-	border-radius: 50% !important;
-	background: var(--lb-primary) !important;
-	cursor: pointer !important;
-	border: 3px solid #fff !important;
-	box-shadow: 0 1px 5px rgba(0,0,0,.25) !important;
+	-webkit-appearance: none;
+	appearance: none;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--lb-primary);
+	cursor: pointer;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 5px rgba(0,0,0,.25);
 	transition: box-shadow 0.15s ease, transform 0.1s ease;
-	margin-top: -8px !important;
 }
 .lb-slider::-webkit-slider-thumb:hover {
-	box-shadow: 0 0 0 7px rgba(109,172,32,.18), 0 1px 5px rgba(0,0,0,.25) !important;
+	box-shadow: 0 0 0 7px rgba(109,172,32,.18), 0 1px 5px rgba(0,0,0,.25);
 	transform: scale(1.07);
-}
-/* Track — Chrome / Safari / Edge */
-.lb-slider::-webkit-slider-runnable-track {
-	height: 8px !important;
-	border-radius: 4px !important;
-	background: transparent !important;
-	border: none !important;
 }
 /* Track — Firefox */
 .lb-slider::-moz-range-track {
-	height: 8px !important;
-	border-radius: 4px !important;
-	background: var(--lb-border-color) !important;
-	border: none !important;
+	height: 8px;
+	border-radius: 4px;
+	background: var(--lb-border-color);
+	border: none;
 }
 /* Filled portion — Firefox */
 .lb-slider::-moz-range-progress {
-	height: 8px !important;
-	border-radius: 4px 0 0 4px !important;
-	background: var(--lb-primary) !important;
+	height: 8px;
+	border-radius: 4px 0 0 4px;
+	background: var(--lb-primary);
 }
 /* Thumb — Firefox */
 .lb-slider::-moz-range-thumb {
-	width: 24px !important;
-	height: 24px !important;
-	border-radius: 50% !important;
-	background: var(--lb-primary) !important;
-	cursor: pointer !important;
-	border: 3px solid #fff !important;
-	box-shadow: 0 1px 5px rgba(0,0,0,.25) !important;
-	box-sizing: border-box !important;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--lb-primary);
+	cursor: pointer;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 5px rgba(0,0,0,.25);
+	box-sizing: border-box;
 }
 /* Focus ring — matches lb-input */
 .lb-slider:focus {
-	box-shadow: 0 0 0 3px rgba(109,172,32,.15) !important;
+	box-shadow: 0 0 0 3px rgba(109,172,32,.15);
 }
 /* Flex container: slider track + value badge */
 .lb-slider-wrap {
