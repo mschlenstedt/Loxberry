@@ -21,7 +21,7 @@
 
 use File::Path qw(make_path remove_tree);
 use Digest::MD5 qw(md5_hex);
-use Encode qw(encode_utf8);
+use Encode qw(encode_utf8 decode);
 use LoxBerry::System;
 use LoxBerry::Update;
 use File::Basename;
@@ -652,14 +652,17 @@ sub install {
 	}
 
 	## Create or update database entry ##
+	# plugin.cfg values may be Latin1-encoded. A single non-UTF8 byte stored
+	# verbatim in plugindatabase.json breaks json_decode() for ALL plugins
+	# (issue #1512), so ensure the free-text fields are valid UTF-8 first.
 	$plugin = LoxBerry::System::PluginDB->plugin(
-        author_name => $pauthorname,
-        author_email => $pauthoremail,
-        plugin_website => $pauthorwebsite,
+        author_name => _ensure_utf8($pauthorname),
+        author_email => _ensure_utf8($pauthoremail),
+        plugin_website => _ensure_utf8($pauthorwebsite),
         name => $pname,
         folder => $pfolder,
         version => $pversion,
-        title => $ptitle,
+        title => _ensure_utf8($ptitle),
         interface => $pinterface,
         autoupdate => $pautoupdates,
         releasecfg => $preleasecfg,
@@ -1693,6 +1696,22 @@ sub is_folder_empty {
 		readdir $dir;	# Skip ..
 		return 0 if( readdir $dir ); # 3rd times a charm
 	return 1;
+}
+
+#####################################################
+# Ensure a string is valid UTF-8 before it is stored in the plugin database.
+# plugin.cfg files are usually UTF-8, but some are Latin1. A stray non-UTF8
+# byte (e.g. Latin1 'á' = 0xE1) written verbatim into plugindatabase.json
+# breaks json_decode() for ALL plugins, not just the offending one (issue #1512).
+# Valid UTF-8 (and ASCII) is kept unchanged; Latin1 is re-encoded to UTF-8.
+#####################################################
+
+sub _ensure_utf8 {
+	my ($str) = @_;
+	return $str if (!defined $str || $str eq '');
+	my $probe = $str;                                 # utf8::decode modifies its argument -> use a copy
+	return $str if utf8::decode($probe);              # already valid UTF-8 -> keep original bytes
+	return encode_utf8( decode('ISO-8859-1', $str) ); # treat as Latin1 -> UTF-8 bytes
 }
 
 #####################################################
