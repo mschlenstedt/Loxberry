@@ -29,7 +29,7 @@
 	<TMPL_LOOP PLUGINS>
 	<div class="widget">
 		<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/">
-			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR PLUGINDB_ICONURI>');  background-repeat: no-repeat; background-position: center center;">
+			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR PLUGINDB_ICONURI>'); background-size: contain; background-repeat: no-repeat; background-position: center center;">
 				<div class='notifyBlue' style='display: none' id="notifyBlue<TMPL_VAR PLUGINDB_FOLDER>">0</div>
 				<div class='notifyRed' style='display: none' id="notifyRed<TMPL_VAR PLUGINDB_FOLDER>">0</div>		
 			</div>
@@ -83,7 +83,7 @@
 				</div>
 			</div>
 			<TMPL_ELSE>
-			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR WIDGET_ICON>');  background-repeat: no-repeat; background-position: center center;">
+			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR WIDGET_ICON>'); background-size: contain; background-repeat: no-repeat; background-position: center center;">
 				<div class='notifyBlue' style='display: none' id="notifyBlue<TMPL_VAR NOTIFY_PACKAGE>">0</div>
 				<div class='notifyRed' style='display: none' id="notifyRed<TMPL_VAR NOTIFY_PACKAGE>">0</div>
 			</div>
