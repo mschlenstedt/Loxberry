@@ -229,13 +229,43 @@ label.lb-toggle.ui-btn::after {
 }
 .lb-content input[type="checkbox"],
 .lb-content input[type="radio"] {
-	width: 18px;
-	height: 18px;
 	margin: 0 8px 0 0;
 	vertical-align: middle;
-	accent-color: var(--lb-primary);
 	cursor: pointer;
 	flex-shrink: 0;
+}
+.lb-content input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	accent-color: var(--lb-primary);
+}
+/* Radio button — Material style: outer ring + white gap + green inner dot */
+.lb-content input[type="radio"] {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--lb-text-muted);
+	border-radius: 50%;
+	background: #fff;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lb-content input[type="radio"]:checked {
+	border-color: var(--lb-primary);
+	background: var(--lb-primary);
+	box-shadow: inset 0 0 0 4px #fff;
+}
+.lb-content input[type="radio"]:hover:not(:checked) {
+	border-color: var(--lb-primary);
+}
+.lb-content input[type="radio"]:focus {
+	outline: none;
+}
+.lb-content input[type="radio"]:focus-visible {
+	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.2);
+}
+.lb-content input[type="radio"]:checked:focus-visible {
+	box-shadow: inset 0 0 0 4px #fff, 0 0 0 3px rgba(109, 172, 32, 0.2);
 }
 /* Override the above for the hidden checkbox inside .lb-toggle — the
    slider span draws the visible UI; the input must stay sized 0×0. */
