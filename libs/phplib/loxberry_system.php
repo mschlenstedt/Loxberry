@@ -632,7 +632,12 @@ class LBSystem
 				'PLUGINDB_PRERELEASECFG' => isset($plugindata->prereleasecfg) ? $plugindata->prereleasecfg : null,
 				'PLUGINDB_LOGLEVEL' => isset($plugindata->loglevel) ? $plugindata->loglevel : null,
 				'PLUGINDB_LOGLEVELS_ENABLED' => isset($plugindata->loglevels_enabled) && $plugindata->loglevels_enabled >= 0 ? 1 : 0,
-				'PLUGINDB_ICONURI' => "/system/images/icons/$plugindata->name/icon_64.png"
+				'PLUGINDB_ICONURI' => file_exists(LBSHTMLDIR . "/images/icons/{$plugindata->folder}/icon.svg")
+					? "/system/images/icons/{$plugindata->folder}/icon.svg"
+					: "/system/images/icons/{$plugindata->folder}/icon_64.png",
+				'PLUGINDB_ICONURI_LARGE' => file_exists(LBSHTMLDIR . "/images/icons/{$plugindata->folder}/icon.svg")
+					? "/system/images/icons/{$plugindata->folder}/icon.svg"
+					: "/system/images/icons/{$plugindata->folder}/icon_128.png"
 				);
 				# On changes of the plugindatabase format, please change here
 				# and in libs/perllib/LoxBerry/System.pm, sub get_plugins 

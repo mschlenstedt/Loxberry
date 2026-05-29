@@ -124,10 +124,10 @@
 		<TMPL_IF PLUGINS>
 			<TMPL_LOOP PLUGINS>
 			<style>
-				#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 128px; width: 128px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png); }
+				#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 128px; width: 128px; background-image: url(<TMPL_VAR PLUGINDB_ICONURI_LARGE>); background-size: contain; background-repeat: no-repeat; background-position: center; }
 
 				@media (max-width: 875px) {
-					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_64.png); }
+					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(<TMPL_VAR PLUGINDB_ICONURI>); background-size: contain; background-repeat: no-repeat; background-position: center; }
 				}
 			</style>
 			<tr class="pluginrow" data-md5="<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">

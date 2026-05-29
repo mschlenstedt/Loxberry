@@ -1074,29 +1074,35 @@ sub install {
 		LOGERR $message;
 		push(@errors,"ICON files: $message");
 	} else {
-		$openerr = 0;
-		if (!-e "$lbhomedir/webfrontend/html/system/images/icons/$pfolder/icon_64.png") {
-			$openerr = 1;
-			execute("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_64.png $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ >> $logfile 2>&1");
-		}
-		if (!-e "$lbhomedir/webfrontend/html/system/images/icons/$pfolder/icon_128.png") {
-			$openerr = 1;
-			execute("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_128.png $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ >> $logfile 2>&1");
-		}
-		if (!-e "$lbhomedir/webfrontend/html/system/images/icons/$pfolder/icon_256.png") {
-			$openerr = 1;
-			execute("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_256.png $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ >> $logfile 2>&1");
-		}
-		if (!-e "$lbhomedir/webfrontend/html/system/images/icons/$pfolder/icon_512.png") {
-			$openerr = 1;
-				execute("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_512.png $lbhomedir/webfrontend/html/system/images/icons/$pfolder/ >> $logfile 2>&1");
-		}
-		if ($openerr) {
-			$message = "$LL{'ERR_ICONFILES'}";
-			LOGERR $message;
-			push(@errors,"ICON files: $message");
-		} else {
+		my $icondir = "$lbhomedir/webfrontend/html/system/images/icons/$pfolder";
+		if (-e "$icondir/icon.svg") {
+			# SVG icon present — no PNG sizes required
 			LOGOK "$LL{'OK_ICONFILES'}";
+		} else {
+			$openerr = 0;
+			if (!-e "$icondir/icon_64.png") {
+				$openerr = 1;
+				execute("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_64.png $icondir/ >> $logfile 2>&1");
+			}
+			if (!-e "$icondir/icon_128.png") {
+				$openerr = 1;
+				execute("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_128.png $icondir/ >> $logfile 2>&1");
+			}
+			if (!-e "$icondir/icon_256.png") {
+				$openerr = 1;
+				execute("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_256.png $icondir/ >> $logfile 2>&1");
+			}
+			if (!-e "$icondir/icon_512.png") {
+				$openerr = 1;
+				execute("$sudobin -n -u loxberry cp -r -v $lbhomedir/webfrontend/html/system/images/icons/default/icon_512.png $icondir/ >> $logfile 2>&1");
+			}
+			if ($openerr) {
+				$message = "$LL{'ERR_ICONFILES'}";
+				LOGERR $message;
+				push(@errors,"ICON files: $message");
+			} else {
+				LOGOK "$LL{'OK_ICONFILES'}";
+			}
 		}
 		&setowner ("loxberry", "1", "$lbhomedir/webfrontend/html/system/images/icons/$pfolder", "ICON files");
 	}

@@ -456,9 +456,16 @@ sub get_plugins
 		$plugin{PLUGINDB_PRERELEASECFG} = $plugindata->{prereleasecfg};
 		$plugin{PLUGINDB_LOGLEVEL} = $plugindata->{loglevel};
 		$plugin{PLUGINDB_LOGLEVELS_ENABLED} = $plugindata->{loglevel} >= 0 ? 1 : 0;
-		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
+		my $_iconbase = "$lbshtmldir/images/icons/$plugin{PLUGINDB_FOLDER}";
+		if (-e "$_iconbase/icon.svg") {
+			$plugin{PLUGINDB_ICONURI}       = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon.svg";
+			$plugin{PLUGINDB_ICONURI_LARGE} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon.svg";
+		} else {
+			$plugin{PLUGINDB_ICONURI}       = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
+			$plugin{PLUGINDB_ICONURI_LARGE} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_128.png";
+		}
 		push(@plugins, \%plugin);
-		# On changes of the plugindatabase format, please change here 
+		# On changes of the plugindatabase format, please change here
 		# and in libs/phplib/loxberry_system.php / function get_plugins
 	}
 	return @plugins;

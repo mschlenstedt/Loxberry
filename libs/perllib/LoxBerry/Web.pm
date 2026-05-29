@@ -373,7 +373,9 @@ sub pagestart
 		my $title  = HTML::Entities::encode_entities($plugin->{PLUGINDB_TITLE}, '<>&"');
 		my $url    = HTML::Entities::encode_entities("/admin/plugins/" . $plugin->{PLUGINDB_FOLDER} . "/", '<>&"');
 		my $folder = HTML::Entities::encode_entities($plugin->{PLUGINDB_FOLDER}, '<>&"');
-		my $icon   = "/system/images/icons/$folder/icon_64.png";
+		my $icon = (-e "$LoxBerry::System::lbshtmldir/images/icons/$folder/icon.svg")
+			? "/system/images/icons/$folder/icon.svg"
+			: "/system/images/icons/$folder/icon_64.png";
 		$sidebar_html .= qq{<a class="lb-sidebar-link" href="$url"><span class="lb-sidebar-name">$title</span><div class="lb-sidebar-status"></div></a>\n};
 		$tabbar_html  .= qq{<a class="lb-tab-popup-item" href="$url"><img src="$icon" width="22" height="22" style="opacity:0.7;" alt=""><span>$title</span></a>\n};
 	}
@@ -461,12 +463,18 @@ sub get_plugin_icon
 	elsif	($iconsize > 128) { $iconsize = 256; }
 	elsif	($iconsize > 64) { $iconsize = 128; }
 	else					{ $iconsize = 64; }
-	
-	my $logopath = "$LoxBerry::System::lbshtmldir/images/icons/$LoxBerry::System::lbpplugindir/icon_$iconsize.png";
-	my $logopath_web = "/system/images/icons/$LoxBerry::System::lbpplugindir/icon_$iconsize.png";
-	
-	if (-e $logopath) { 
-		return $logopath_web;
+
+	my $iconbase    = "$LoxBerry::System::lbshtmldir/images/icons/$LoxBerry::System::lbpplugindir";
+	my $iconbase_web = "/system/images/icons/$LoxBerry::System::lbpplugindir";
+
+	# SVG preferred — scales to any size
+	if (-e "$iconbase/icon.svg") {
+		return "$iconbase_web/icon.svg";
+	}
+
+	my $logopath = "$iconbase/icon_$iconsize.png";
+	if (-e $logopath) {
+		return "$iconbase_web/icon_$iconsize.png";
 	}
 	return undef;
 }
