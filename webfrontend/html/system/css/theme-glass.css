@@ -33,6 +33,13 @@ body.theme-glass {
   --lb-input-border: rgba(255,255,255,.1);
   --lb-input-text: rgba(255,255,255,.8);
 
+  /* Glassy header buttons instead of solid brand green on the dark header */
+  --lb-header-btn-bg: rgba(255,255,255,.1);
+  --lb-header-btn-text: rgba(255,255,255,.85);
+
+  /* Subtle warm tint for the "must re-enter" fields — readable on dark bg */
+  --lb-highlight-bg: rgba(255,235,120,.16);
+
   --lb-toggle-bg: rgba(255,255,255,.15);
 
   --lb-sidebar-bg: rgba(255,255,255,.04);
