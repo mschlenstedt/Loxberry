@@ -6,6 +6,7 @@ use Config::Simple;
 use URI::Escape;
 use Cwd 'abs_path';
 use Carp;
+use Encode;
 
 package LoxBerry::System;
 our $VERSION = "3.0.0.8";
