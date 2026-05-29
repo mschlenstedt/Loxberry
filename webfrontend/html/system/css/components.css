@@ -642,6 +642,10 @@ button.lb-btn-danger:hover {
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
+	/* border-box so the tab-bar-mode padding-bottom is included in the 100vh
+	   instead of being added on top of it (which caused a spurious vertical
+	   scrollbar with empty space in nav-mode-tabbar — audit Bug 05). */
+	box-sizing: border-box;
 	overflow-x: hidden;
 	background: var(--lb-bg);
 	transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
