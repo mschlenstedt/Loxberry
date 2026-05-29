@@ -58,8 +58,11 @@
 	/* remove the border-bottom on pluginrow cells — that's the line above Automatic Updates */
 	table.lb-table tbody tr.pluginrow td { border-bottom: none !important; }
 
-	/* title cell: take all available width */
-	table.lb-table tbody tr.pluginrow td.plugin-title-cell { width: 100% !important; max-width: 0; }
+	/* title cell: take all available width. (No max-width:0 here — that was
+	   carried over from an ellipsis idiom and, combined with the cell's
+	   overflow:hidden + white-space:normal, collapsed the cell to ~0px and
+	   wrapped the plugin name character-by-character vertically — audit Bug.) */
+	table.lb-table tbody tr.pluginrow td.plugin-title-cell { width: 100% !important; max-width: none; }
 	</style>
 	
 	<div style="display:flex; width:100%; text-align:left; align-items:center;" id="installationheader">
