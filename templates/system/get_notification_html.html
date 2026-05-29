@@ -1,11 +1,13 @@
 <!-- ** START template/system/get_notification_html.html ************************************************************************************ -->
-<TMPL_IF NOTIFICATIONCOUNT>
 <div id="notificationBlock" style="margin-bottom:20px;">
-	<div style="display:none" id="notificationCount"><TMPL_VAR NOTIFICATIONCOUNT></div>
 
 	<TMPL_IF SHOW_HEADER>
 	<h2 class="lb-section-title" style="margin-bottom:10px;">Notifications</h2>
 	</TMPL_IF>
+
+	<div id="notificationItems">
+	<TMPL_IF NOTIFICATIONCOUNT>
+	<div style="display:none" id="notificationCount"><TMPL_VAR NOTIFICATIONCOUNT></div>
 
 	<TMPL_LOOP NAME="NOTIFICATIONS">
 	<div class="lb-notify-box <TMPL_IF ISINFO>lb-notify-info<TMPL_ELSE>lb-notify-error</TMPL_IF>"
@@ -44,12 +46,17 @@
 	</div>
 	</TMPL_LOOP>
 
-	<TMPL_IF NOTIFICATIONCOUNT>
 	<div style="display:flex;justify-content:flex-end;margin-top:4px;">
 		<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="notifdeleteall"
 		   style="display:none;" role="button"><i class="pi pi-times"></i> <TMPL_VAR NOTIFY.DELETE_ALL_MESSAGES></a>
 	</div>
 	</TMPL_IF>
+	</div><!-- end notificationItems -->
+
+	<TMPL_IF SHOW_HEADER>
+	<p id="noNotificationsMsg"<TMPL_IF NOTIFICATIONCOUNT> style="display:none;"</TMPL_IF>><TMPL_VAR NOTIFY.NO_NOTIFICATIONS></p>
+	</TMPL_IF>
+
 </div>
 
 <style>
@@ -77,6 +84,7 @@
 .lb-notify-actions { flex: 0 0 auto; display: flex; gap: 4px; }
 </style>
 
+<TMPL_IF NOTIFICATIONCOUNT>
 <script>
 var notificationCount;
 updateNotificationCount();
@@ -112,16 +120,13 @@ function updateNotificationCount(reduce) {
 	}
 	if (notificationCount > 1) $("#notifdeleteall").fadeIn();
 	else                        $("#notifdeleteall").fadeOut();
-	if (notificationCount <= 0) $("#notificationBlock").fadeOut();
+	if (notificationCount <= 0) {
+		$("#notificationItems").fadeOut(400, function() {
+			$("#noNotificationsMsg").show();
+		});
+	}
 }
 </script>
-
-<TMPL_ELSE>
-<div id="notificationBlock" style="margin-bottom:20px;">
-	<TMPL_IF SHOW_HEADER>
-	<h2 class="lb-section-title" style="margin-bottom:10px;">Notifications</h2>
-	<p><TMPL_VAR NOTIFY.NO_NOTIFICATIONS></p>
-	</TMPL_IF>
-</div>
 </TMPL_IF>
+
 <!-- ** END template/system/get_notification_html.html ************************************************************************************ -->
