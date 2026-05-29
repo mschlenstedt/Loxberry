@@ -1118,9 +1118,23 @@ button.lb-tab-bar-item {
 	color: var(--lb-tab-bar-text);
 }
 
+/* SVG icons rendered as <img>. Inactive: tinted to match --lb-tab-bar-text
+   via brightness/invert. Active: hue-rotated filter chain approximates
+   --lb-tab-bar-active (#6dac20). */
+.lb-tab-bar-item img.lb-tab-bar-icon {
+	width: 22px;
+	height: 22px;
+	filter: brightness(0) invert(1) opacity(0.7);
+}
+
 .lb-tab-bar-item.active i,
 .lb-tab-bar-item.active span {
 	color: var(--lb-tab-bar-active);
+}
+
+.lb-tab-bar-item.active img.lb-tab-bar-icon {
+	filter: brightness(0) saturate(100%) invert(55%) sepia(60%) saturate(500%) hue-rotate(51deg) brightness(100%);
+	opacity: 1;
 }
 
 @media (max-width: 768px) {
