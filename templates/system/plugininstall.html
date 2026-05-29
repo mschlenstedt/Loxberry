@@ -136,8 +136,8 @@
 	.pcard-ctl label { margin:0; }
 	.pcard-ctl select { max-width:62%; width:auto; }
 	.pcard-ctl select:disabled { opacity:.6; cursor:not-allowed; }
-	.pcard-actions { display:flex; flex-wrap:wrap; gap:7px; border-top:1px solid var(--lb-border-color); padding-top:10px; }
-	.pcard-actions .lb-btn { flex:1 1 auto; justify-content:center; margin:0; }
+	.pcard-actions { display:flex; flex-direction:column; gap:7px; border-top:1px solid var(--lb-border-color); padding-top:10px; }
+	.pcard-actions .lb-btn { width:100%; justify-content:center; margin:0; box-sizing:border-box; }
 	.pcard-actions .btnrelease, .pcard-actions .btnprerelease { background:var(--lb-primary); border-color:var(--lb-primary-hover); color:#fff !important; font-weight:600; }
 	.pcard .lb-btn.is-disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
 	.plugin-empty { text-align:center; padding:24px; color:var(--lb-text-muted); }
