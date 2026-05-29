@@ -424,6 +424,131 @@ button.lb-btn-danger:hover {
 	-moz-appearance: textfield;
 }
 
+/* --- Slider --- */
+/*
+ * lb-slider       — styled <input type="range">; tracks --lb-primary color scheme.
+ * lb-slider-wrap  — flex container holding the slider + optional lb-slider-value badge.
+ * lb-slider-value — numeric badge showing the current value; update via JS.
+ * lb-slider-labels — row with min/max labels below the track.
+ *
+ * Usage:
+ *   <div class="lb-slider-wrap">
+ *     <input type="range" class="lb-slider" id="s" min="0" max="100" value="50">
+ *     <span class="lb-slider-value" id="s-val">50</span>
+ *   </div>
+ *   <div class="lb-slider-labels"><span>0</span><span>100</span></div>
+ *
+ * JS helper (call once on init; then call updateSlider after programmatic value changes):
+ *   function updateSlider(id, valId) {
+ *     var s = document.getElementById(id);
+ *     var pct = (s.value - s.min) / (s.max - s.min) * 100;
+ *     s.style.setProperty('--lb-slider-fill', pct + '%');
+ *     var el = document.getElementById(valId);
+ *     if (el) el.textContent = s.value;
+ *   }
+ *   function initSlider(id, valId) {
+ *     var s = document.getElementById(id);
+ *     s.addEventListener('input', function() { updateSlider(id, valId); });
+ *     updateSlider(id, valId);
+ *   }
+ */
+.lb-slider {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 8px;
+	border-radius: 4px;
+	outline: none;
+	cursor: pointer;
+	/* --lb-slider-fill is set and kept current by JS (see updateSlider above) */
+	background: linear-gradient(
+		to right,
+		var(--lb-primary)      0%,
+		var(--lb-primary)      var(--lb-slider-fill, 0%),
+		var(--lb-border-color) var(--lb-slider-fill, 0%),
+		var(--lb-border-color) 100%
+	);
+	transition: box-shadow 0.15s ease;
+}
+/* Thumb — Chrome / Safari / Edge */
+.lb-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--lb-primary);
+	cursor: pointer;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 5px rgba(0,0,0,.25);
+	transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+.lb-slider::-webkit-slider-thumb:hover {
+	box-shadow: 0 0 0 7px rgba(109,172,32,.18), 0 1px 5px rgba(0,0,0,.25);
+	transform: scale(1.07);
+}
+/* Track — Firefox */
+.lb-slider::-moz-range-track {
+	height: 8px;
+	border-radius: 4px;
+	background: var(--lb-border-color);
+	border: none;
+}
+/* Filled portion — Firefox */
+.lb-slider::-moz-range-progress {
+	height: 8px;
+	border-radius: 4px 0 0 4px;
+	background: var(--lb-primary);
+}
+/* Thumb — Firefox */
+.lb-slider::-moz-range-thumb {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--lb-primary);
+	cursor: pointer;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 5px rgba(0,0,0,.25);
+	box-sizing: border-box;
+}
+/* Focus ring — matches lb-input */
+.lb-slider:focus {
+	box-shadow: 0 0 0 3px rgba(109,172,32,.15);
+}
+/* Flex container: slider track + value badge */
+.lb-slider-wrap {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+}
+/* Numeric value badge */
+.lb-slider-value {
+	display: inline-block;
+	min-width: 2.8em;
+	text-align: center;
+	font-size: var(--lb-font-sm);
+	font-weight: 600;
+	color: var(--lb-primary);
+	background: rgba(109,172,32,.08);
+	border: 1px solid rgba(109,172,32,.25);
+	border-radius: var(--lb-radius);
+	padding: 3px 8px;
+	flex-shrink: 0;
+	font-family: var(--lb-font-mono);
+}
+/* Min / Max labels below the track */
+.lb-slider-labels {
+	display: flex;
+	justify-content: space-between;
+	font-size: 11px;
+	color: var(--lb-text-muted);
+	margin-top: 6px;
+	padding: 0 3px;
+	font-family: var(--lb-font);
+}
+
+
 /* --- Cards --- */
 .lb-card {
 	background: var(--lb-card-bg);
