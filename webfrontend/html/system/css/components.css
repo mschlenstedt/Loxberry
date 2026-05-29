@@ -642,6 +642,10 @@ button.lb-btn-danger:hover {
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
+	/* border-box so the tab-bar-mode padding-bottom is included in the 100vh
+	   instead of being added on top of it (which caused a spurious vertical
+	   scrollbar with empty space in nav-mode-tabbar — audit Bug 05). */
+	box-sizing: border-box;
 	overflow-x: hidden;
 	background: var(--lb-bg);
 	transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
@@ -854,14 +858,14 @@ a.lb-sidebar-link.active:visited {
 .lb-header-btn {
 	width: 36px !important;
 	height: 36px !important;
-	background: var(--lb-primary) !important;
+	background: var(--lb-header-btn-bg) !important;
 	border-radius: 8px !important;
 	display: flex !important;
 	align-items: center;
 	justify-content: center;
 	font-size: 16px !important;
 	font-weight: normal !important;
-	color: white !important;
+	color: var(--lb-header-btn-text) !important;
 	text-decoration: none !important;
 	text-shadow: none !important;
 	transition: all 0.15s ease;
@@ -1112,6 +1116,21 @@ button.lb-tab-bar-item {
 	color: var(--lb-tab-bar-text);
 }
 
+/* SVG icons rendered as a CSS mask so they inherit the same theme colors and
+   active-state switch as the .pi font icons (instead of a hardcoded white
+   filter that ignored the active state — see audit Bug 01). */
+.lb-tab-bar-item .lb-tab-icon {
+	width: 22px;
+	height: 22px;
+	background-color: var(--lb-tab-bar-text);
+	-webkit-mask-position: center;
+	        mask-position: center;
+	-webkit-mask-repeat: no-repeat;
+	        mask-repeat: no-repeat;
+	-webkit-mask-size: contain;
+	        mask-size: contain;
+}
+
 .lb-tab-bar-item span {
 	font-size: 10px;
 	font-weight: 500;
@@ -1121,6 +1140,10 @@ button.lb-tab-bar-item {
 .lb-tab-bar-item.active i,
 .lb-tab-bar-item.active span {
 	color: var(--lb-tab-bar-active);
+}
+
+.lb-tab-bar-item.active .lb-tab-icon {
+	background-color: var(--lb-tab-bar-active);
 }
 
 @media (max-width: 768px) {

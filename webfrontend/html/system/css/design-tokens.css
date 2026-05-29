@@ -53,10 +53,19 @@ html, body {
   --lb-btn-primary-text: white;
   --lb-btn-primary-border: var(--lb-primary-hover);
 
+  /* === Header action buttons === */
+  /* Defaults to the brand green (light themes); dark themes override. */
+  --lb-header-btn-bg: var(--lb-primary);
+  --lb-header-btn-text: #fff;
+
   /* === Inputs === */
   --lb-input-bg: #fff;
   --lb-input-border: var(--lb-border-color);
   --lb-input-text: var(--lb-text);
+
+  /* Attention highlight for "must re-enter" fields (current password/PIN).
+     Light themes keep the classic yellow; dark themes override below. */
+  --lb-highlight-bg: #FFFFC0;
 
   /* === Toggle === */
   --lb-toggle-bg: #d4d4d4;

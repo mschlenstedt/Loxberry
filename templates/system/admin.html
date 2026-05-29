@@ -156,8 +156,12 @@
 			validate_enable('#securepinold');
 			$("#adminpass1").on('keyup', function(e) { validate_chk_value( "#adminpass2","keyup","special:compare-with:#adminpass1"); });
 			$("#securepin1").on('keyup', function(e) { validate_chk_value( "#securepin2","keyup","special:compare-with:#securepin1"); });
-			$("#adminpassold").css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
-			$("#securepinold").css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
+			// Theme-aware "must re-enter" highlight; falls back to the classic
+			// yellow if the variable is unset. validate.js restores fields to
+			// their original-background-color, so store the resolved value there.
+			var lbHighlightBg = getComputedStyle(document.body).getPropertyValue('--lb-highlight-bg').trim() || "#FFFFC0";
+			$("#adminpassold").css("background-color",lbHighlightBg).attr("original-background-color",lbHighlightBg);
+			$("#securepinold").css("background-color",lbHighlightBg).attr("original-background-color",lbHighlightBg);
 			validate_chk_object(['#adminuser','#adminpass1','#adminpass2','#securepin1','#securepin2','#securepinold','#adminpassold']);
 		});
 	</SCRIPT>

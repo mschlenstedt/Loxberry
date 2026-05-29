@@ -607,7 +607,17 @@ class LBSystem
 		$plugins = Array();
 		# Read Plugin database copied from plugininstall.pl
 		#$filestr = file(PLUGINDATABASE, FILE_IGNORE_NEW_LINES);
-		$plugindb = json_decode(file_get_contents(PLUGINDATABASE));
+		$plugindb_content = file_get_contents(PLUGINDATABASE);
+		$plugindb = json_decode($plugindb_content);
+		if ($plugindb === null && json_last_error() === JSON_ERROR_UTF8) {
+				// A single plugin's metadata (e.g. a Latin1-encoded author name from
+				// plugin.cfg) can contain non-UTF8 bytes. json_decode() rejects the
+				// WHOLE document on any invalid byte, which would hide metadata, log
+				// assignment and loglevels for ALL plugins. Substitute the malformed
+				// bytes so the rest of the database still loads. See issue #1512.
+				error_log("LoxBerry System WARNING: Plugin Database " . PLUGINDATABASE . " contains invalid UTF-8 - substituting malformed bytes (issue #1512)");
+				$plugindb = json_decode($plugindb_content, false, 512, JSON_INVALID_UTF8_SUBSTITUTE);
+		}
 		if (! $plugindb) {
 				error_log("LoxBerry System ERROR: Could not read Plugin Database " . PLUGINDATABASE);
 				return;
