@@ -421,11 +421,25 @@ sub get_plugins
 	print STDERR "get_plugins: Using file $plugindb_file\n" if ($DEBUG);
 	
 	require JSON;
+	require Encode;
 	my $plugindbdata;
+	my $plugindb_raw = LoxBerry::System::read_file( $LoxBerry::System::PLUGINDATABASE );
 	eval {
-		$plugindbdata = JSON::from_json( LoxBerry::System::read_file( $LoxBerry::System::PLUGINDATABASE ) );
+		$plugindbdata = JSON::from_json( $plugindb_raw );
 	};
-	if ($@) {
+	if ($@ || !defined $plugindbdata) {
+		# A single plugin's metadata (e.g. a Latin1-encoded author name from
+		# plugin.cfg) can contain non-UTF8 bytes. Strict JSON backends (e.g.
+		# JSON::XS) reject the WHOLE document on any invalid byte, which would
+		# hide ALL plugins. Recover by substituting the malformed bytes so the
+		# rest of the database still loads. See issue #1512.
+		Carp::carp "LoxBerry::System::get_plugins: $plugindb_file contains invalid UTF-8 - substituting malformed bytes (issue #1512)\n";
+		my $plugindb_clean = Encode::decode( 'UTF-8', $plugindb_raw, Encode::FB_DEFAULT );
+		eval {
+			$plugindbdata = JSON->new->utf8(0)->decode( $plugindb_clean );
+		};
+	}
+	if ($@ || !defined $plugindbdata) {
 		Carp::carp "LoxBerry::System::get_plugins: Could not read $plugindb_file\n";
 		return;
 	}
