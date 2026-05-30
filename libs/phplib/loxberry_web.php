@@ -209,9 +209,12 @@ EOT;
 			$sidebar_html = '<div class="lb-sidebar-section">' . htmlspecialchars($section_label, ENT_QUOTES, 'UTF-8') . '</div>' . "\n";
 			foreach ($installed_plugins as $plugin) {
 				$title = htmlspecialchars($plugin['PLUGINDB_TITLE'], ENT_QUOTES, 'UTF-8');
-				$url   = htmlspecialchars("/admin/plugins/" . $plugin['PLUGINDB_FOLDER'] . "/", ENT_QUOTES, 'UTF-8');
+				$url    = htmlspecialchars("/admin/plugins/" . $plugin['PLUGINDB_FOLDER'] . "/", ENT_QUOTES, 'UTF-8');
+				$folder = htmlspecialchars($plugin['PLUGINDB_FOLDER'], ENT_QUOTES, 'UTF-8');
 				$sidebar_html .= '<a class="lb-sidebar-link" href="' . $url . '"><span class="lb-sidebar-name">' . $title . '</span><div class="lb-sidebar-status"></div></a>' . "\n";
-				$tabbar_html  .= '<a class="lb-tab-popup-item" href="' . $url . '"><i class="pi pi-box"></i><span>' . $title . '</span></a>' . "\n";
+				// Use the plugin's own icon (matches the Perl lbheader); the previous
+				// hardcoded "pi pi-box" showed a generic cube for every plugin.
+				$tabbar_html  .= '<a class="lb-tab-popup-item" href="' . $url . '"><img src="/system/images/icons/' . $folder . '/icon_64.png" width="22" height="22" style="opacity:0.7;" alt=""><span>' . $title . '</span></a>' . "\n";
 			}
 		}
 		$pageobj->param('SIDEBAR_PLUGINS_HTML', $sidebar_html);
