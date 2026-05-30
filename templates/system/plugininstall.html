@@ -120,142 +120,136 @@
 		</div>
 	</div>
 	<div style="height:var(--lb-space-lg)"></div>
-	<table class="lb-table">
-		<tbody>
+	<style>
+	/* === Plugin-Verwaltung: Karten-Grid (ersetzt die alten Tabellen-Zeilen) === */
+	.plugin-grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(min(320px,100%),1fr)); }
+	.pcard { background:var(--lb-card-bg); border:1px solid var(--lb-border-color); border-radius:var(--lb-radius); padding:14px; display:flex; flex-direction:column; gap:10px; box-sizing:border-box; }
+	.pcard-head { display:flex; align-items:flex-start; gap:11px; }
+	.pcard-ico { flex:0 0 auto; }
+	.pcard-meta { min-width:0; flex:1; }
+	.pcard-name { display:block; font-size:15px; font-weight:700; line-height:1.25; color:var(--lb-text) !important; text-decoration:none !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+	.pcard-author { font-size:11.5px; color:var(--lb-text-muted); }
+	.pcard-ver { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:12.5px; border-top:1px solid var(--lb-border-color); padding-top:9px; }
+	.pcard-status { display:inline-flex; align-items:center; gap:6px; }
+	.pcard-ctrls { display:flex; flex-direction:column; gap:7px; }
+	.pcard-ctl { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; color:var(--lb-text-secondary); }
+	.pcard-ctl label { margin:0; }
+	.pcard-ctl select { max-width:62%; width:auto; }
+	.pcard-ctl select:disabled { opacity:.6; cursor:not-allowed; }
+	.pcard-actions { display:flex; flex-direction:column; gap:7px; border-top:1px solid var(--lb-border-color); padding-top:10px; }
+	.pcard-actions .lb-btn { width:100%; justify-content:center; margin:0; box-sizing:border-box; }
+	.pcard-actions .btnrelease, .pcard-actions .btnprerelease { background:var(--lb-primary); border-color:var(--lb-primary-hover); color:#fff !important; font-weight:600; }
+	.pcard .lb-btn.is-disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+	.plugin-empty { text-align:center; padding:24px; color:var(--lb-text-muted); }
+	</style>
 
-		<!-- START Plugin container -->
-		<TMPL_IF PLUGINS>
-			<TMPL_LOOP PLUGINS>
-			<style>
-				#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 128px; width: 128px; background-image: url(<TMPL_VAR PLUGINDB_ICONURI_LARGE>); background-size: contain; background-repeat: no-repeat; background-position: center; }
+	<!-- START Plugin container -->
+	<TMPL_IF PLUGINS>
+	<div class="plugin-grid">
+		<TMPL_LOOP PLUGINS>
+		<style>
+			#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { width:44px; height:44px; border-radius:10px; background-image:url(<TMPL_VAR PLUGINDB_ICONURI>); background-size:contain; background-repeat:no-repeat; background-position:center; }
+		</style>
+		<div class="pcard pluginrow" data-md5="<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">
 
-				@media (max-width: 875px) {
-					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(<TMPL_VAR PLUGINDB_ICONURI>); background-size: contain; background-repeat: no-repeat; background-position: center; }
-				}
-			</style>
-			<tr class="pluginrow" data-md5="<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">
-				<td rowspan="2" class="pluginicon-cell">
-					<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
-				</td>
-				<td class="plugin-title-cell" style="padding-right:32px; overflow:hidden;">
-					<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none; color:inherit;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
-					<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
-				</td>
-
-				<td style="text-align:right; width:1%; white-space:nowrap; vertical-align:top;">
-					<div style="display:inline-flex; flex-direction:column; align-items:flex-start; gap:4px;">
-						<div><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b></div>
-						<TMPL_IF PLUGINDB_AUTOUPDATE>
-						<div class="releaseverslabel small" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-						<div class="prereleaseverslabel small" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-						<div class="nonewreleaselabel small" style="display:none" data-version="" id="labelnonewrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Up-To-Date</div>
-						<TMPL_ELSE>
-						<div class="noautoupdatelabel small" data-version="" id="labelnoautoupdate-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">No AutoUpdate</div>
-						</TMPL_IF>
-						<div>
-							<a href="#" data-updatelink="" class="lb-btn lb-btn-sm lb-btn-icon btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Release</a>
-							<a href="#" data-updatelink="" class="lb-btn lb-btn-sm lb-btn-icon btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Pre-Release</a>
-						</div>
-						<div>
-							<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
-							<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-times"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
-						</div>
-						<TMPL_IF PLUGINDB_PLUGIN_WEBSITE>
-						<div>
-							<a class="lb-btn lb-btn-sm lb-btn-icon" href="<TMPL_VAR PLUGINDB_PLUGIN_WEBSITE>" target="_blank"><i class="pi pi-globe"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION></a>
-						</div>
-						</TMPL_IF>
-					</div>
-				</td>
-			</tr>
-			<tr style="border-top:none; border-bottom: 1.5px solid LightGray;">
-				<td colspan="2">
-				<div style="display:flex; align-items:flex-start; gap:32px; flex-wrap:wrap;">
-				<TMPL_IF PLUGINDB_AUTOUPDATE>
-				<div>
-				<label><TMPL_VAR PLUGININSTALL.UI_LABEL_AUTOMATIC_UPDATES></label>
-				<div class="lb-btn-group">
-					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"	value="1">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_OFF></label>
-					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2"	value="2">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_NOTIFY_ONLY></label>
-					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3"	value="3">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_RELEASES></label>
-					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"	value="4">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_PRE_AND_RELEASES></label>
+			<div class="pcard-head">
+				<a class="pcard-ico" href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
+				<div class="pcard-meta">
+					<a class="pcard-name" href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false"><TMPL_VAR PLUGINDB_TITLE></a>
+					<div class="pcard-author">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></div>
 				</div>
-				<script>
-				$(document).ready(function() {
-					$( "#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option"+<TMPL_VAR PLUGINDB_AUTOUPDATE> ).prop( "checked", true ).trigger("change");
-				});
-				$("[id^=au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option]").change(function(){
-					var val = $(this).val();
-					console.log("Auto-Update", val);
-					post_value('plugin-autoupdate', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', val);
-				});
-				</script>
+			</div>
+
+			<div class="pcard-ver">
+				<span>Version <b><span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b></span>
+				<span class="pcard-status">
+					<TMPL_IF PLUGINDB_AUTOUPDATE>
+					<span class="releaseverslabel small" style="display:none" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span>
+					<span class="prereleaseverslabel small" style="display:none" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span>
+					<span class="nonewreleaselabel small" style="display:none" data-version="" id="labelnonewrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Up-To-Date</span>
+					<TMPL_ELSE>
+					<span class="noautoupdatelabel small" data-version="" id="labelnoautoupdate-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">No AutoUpdate</span>
+					</TMPL_IF>
+				</span>
+			</div>
+
+			<div class="pcard-ctrls">
+				<div class="pcard-ctl">
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_AUTOMATIC_UPDATES></label>
+					<TMPL_IF PLUGINDB_AUTOUPDATE>
+					<select class="lb-select" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-role="none">
+						<option value="1"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_OFF></option>
+						<option value="2"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_NOTIFY_ONLY></option>
+						<option value="3"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_RELEASES></option>
+						<option value="4"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_PRE_AND_RELEASES></option>
+					</select>
+					<TMPL_ELSE>
+					<select class="lb-select" data-role="none" disabled><option>&#8212;</option></select>
+					</TMPL_IF>
 				</div>
-				</TMPL_IF>
-				<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
-				<div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
-				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" style="margin:0;"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGGING_LEVEL></label>
-					<select class="lb-select" name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-role="none" style="width:auto;">
+				<div class="pcard-ctl">
+					<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGGING_LEVEL></label>
+					<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
+					<select class="lb-select" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-role="none">
 						<option value="0"><TMPL_VAR PLUGININSTALL.UI_LOG_0_OFF></option>
 						<option value="3"><TMPL_VAR PLUGININSTALL.UI_LOG_3_ERRORS></option>
 						<option value="4"><TMPL_VAR PLUGININSTALL.UI_LOG_4_WARNING></option>
 						<option value="6"><TMPL_VAR PLUGININSTALL.UI_LOG_6_INFO></option>
 						<option value="7"><TMPL_VAR PLUGININSTALL.UI_LOG_7_DEBUG></option>
 					</select>
-					<script>
-					$(document).ready( function() {
-						if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 1 )
-							$('<option value="1"><TMPL_VAR PLUGININSTALL.UI_LOG_1_ALERT></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=0]"));
-						else if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 2 )
-							$('<option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_2_FAILURES></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=0]"));
-						else if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 5 )
-							$('<option value="5"><TMPL_VAR PLUGININSTALL.UI_LOG_5_OK></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=4]"));
-					});
-					</script>
+					<TMPL_ELSE>
+					<select class="lb-select" data-role="none" disabled><option>&#8212;</option></select>
+					</TMPL_IF>
 				</div>
-				</TMPL_IF>
-				</div>
-				</td>
-			</tr>
-			
-			
-			<script>
-			$(document).ready( function() {
-				$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>');
-			});
-			
-			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
-					var val = $(this).val();
-					console.log("Loglevel", val);
-					post_value('plugin-loglevel', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', val); 
-				});
-			</script>
-			</TMPL_LOOP>
-		<TMPL_ELSE>
-			<tr>
-				<td style="text-align:center;"><br><TMPL_VAR PLUGININSTALL.UI_LABEL_NOPLUGINS></td>
-			</tr>
-		</TMPL_IF>
-		<!-- END Plugin container -->
+			</div>
 
-		</tbody>
-	</table>
+			<div class="pcard-actions">
+				<a href="#" data-updatelink="" style="display:none" class="lb-btn lb-btn-sm lb-btn-icon btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Release</a>
+				<a href="#" data-updatelink="" style="display:none" class="lb-btn lb-btn-sm lb-btn-icon btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Pre-Release</a>
+				<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
+				<TMPL_IF PLUGINDB_PLUGIN_WEBSITE>
+				<a class="lb-btn lb-btn-sm lb-btn-icon" href="<TMPL_VAR PLUGINDB_PLUGIN_WEBSITE>" target="_blank"><i class="pi pi-globe"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION></a>
+				<TMPL_ELSE>
+				<a class="lb-btn lb-btn-sm lb-btn-icon is-disabled" aria-disabled="true" title="<TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION>"><i class="pi pi-globe"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION></a>
+				</TMPL_IF>
+				<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-times"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+			</div>
+
+		</div>
+
+		<script>
+		$(document).ready( function() {
+			<TMPL_IF PLUGINDB_AUTOUPDATE>
+			$("#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_AUTOUPDATE>');
+			$("#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
+				post_value('plugin-autoupdate', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', $(this).val());
+			});
+			</TMPL_IF>
+			<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
+			if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 1 )
+				$('<option value="1"><TMPL_VAR PLUGININSTALL.UI_LOG_1_ALERT></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=0]"));
+			else if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 2 )
+				$('<option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_2_FAILURES></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=0]"));
+			else if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 5 )
+				$('<option value="5"><TMPL_VAR PLUGININSTALL.UI_LOG_5_OK></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=4]"));
+			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>');
+			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
+				post_value('plugin-loglevel', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', $(this).val());
+			});
+			</TMPL_IF>
+		});
+		</script>
+		</TMPL_LOOP>
+	</div>
+	<TMPL_ELSE>
+		<div class="plugin-empty"><TMPL_VAR PLUGININSTALL.UI_LABEL_NOPLUGINS></div>
+	</TMPL_IF>
+	<!-- END Plugin container -->
 
 	<script>
 		$(document).ready( function()
 		{
-			// Zebra striping per plugin (each plugin = pluginrow + next tr)
-			$('table.lb-table tr.pluginrow').each(function(i) {
-				if (i % 2 === 0) {
-					$(this).addClass('plugin-zebra');
-					$(this).next('tr').addClass('plugin-zebra');
-				}
-			});
-
+			// (Zebra striping entfällt — Karten sind durch Rahmen/Abstand getrennt)
 			update_notifications();
 			validate_enable('#uploadfile');
 			validate_enable('#securepin');
