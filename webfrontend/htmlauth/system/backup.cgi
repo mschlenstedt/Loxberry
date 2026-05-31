@@ -79,7 +79,7 @@ sub print_form
 
 
 ########################################################################
-# Settings Form 
+# Settings Form
 ########################################################################
 sub backup_form
 {
@@ -88,6 +88,18 @@ sub backup_form
 	#$template->param('mslist_select_html', $mslist_select_html);
 	my $storages = LoxBerry::Storage::get_storage_html(formid => 'storagepath', type_usb => 1, type_net => 1, type_custom => 1, custom_folder => 1, readwriteonly => 1, show_browse => 1, data_mini => 1);
 	$template->param('STORAGES_HTML', $storages);
+
+	# Check: /boot/firmware must exist and .hw_model must indicate Raspberry Pi
+	my $warn_not_raspberry = 1;
+	if ( -d "/boot/firmware" && -f "/boot/dietpi/.hw_model" ) {
+		if ( open(my $fh, '<', "/boot/dietpi/.hw_model") ) {
+			local $/;
+			my $hw = <$fh>;
+			close($fh);
+			$warn_not_raspberry = 0 if ($hw =~ /G_HW_MODEL_NAME='Raspberry/);
+		}
+	}
+	$template->param('WARN_NOT_RASPBERRY', $warn_not_raspberry);
 
 }
 

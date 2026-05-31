@@ -2,6 +2,23 @@
 
 	<!-- Form SETTINGS -->
 
+	<TMPL_IF WARN_NOT_RASPBERRY>
+	<div id="warn-rpi-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+		<div style="background:#fff;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.3);width:min(500px,90vw);overflow:hidden;">
+			<div class="lb-modal-header" style="padding:12px 16px;border-bottom:1px solid var(--lb-color-border);display:flex;align-items:center;gap:8px;">
+				<i class="pi pi-exclamation-triangle" style="color:var(--lb-color-warning,#f59e0b);font-size:1.3rem;"></i>
+				<span style="font-size:1.1rem;font-weight:600;"><TMPL_VAR BACKUP.WARN_NOT_RASPBERRY_TITLE></span>
+			</div>
+			<div class="lb-modal-content" style="padding:16px;">
+				<p style="margin:0 0 16px 0;"><TMPL_VAR BACKUP.WARN_NOT_RASPBERRY_TEXT></p>
+				<div style="text-align:right;">
+					<button class="lb-btn lb-btn-primary" onclick="document.getElementById('warn-rpi-overlay').style.display='none'">OK</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	</TMPL_IF>
+
 	<style>
 		.flex-container {
 			display: flex;
