@@ -11,21 +11,23 @@ my %BADGE = (
 );
 
 # load_catalog($url, $fallback_path, $cache_path, $ttl_minutes) -> ($hashref, $source)
-# $source ∈ cache|live|fallback. Reihenfolge:
+# $source ∈ cache|live|fallback|empty. Reihenfolge:
 #   1) Frischer Cache (juenger als TTL) -> kein Netzwerk-Zugriff.
 #   2) Live-Fetch vom Wiki (curl) -> Cache aktualisieren.
 #   3) Veralteter Cache (Wiki nicht erreichbar) -> trotzdem nutzen.
-#   4) Mitgelieferter Fallback-Katalog.
+#   4) Mitgelieferter (im Git evtl. leerer) Default-Katalog.
+#   5) Gar nichts brauchbar -> leerer Katalog, source "empty" (NIE Exception).
 # So wird das Wiki nur alle $ttl_minutes (Default 60) befragt statt bei jedem
-# Seitenaufruf — der eigentliche Refresh haengt am Plugin-Update-Check.
+# Seitenaufruf; der eigentliche Refresh haengt am Plugin-Update-Check.
+# Toleriert auch ein leeres Default-JSON ({} oder {"plugins":[]}) ohne Fehler.
 sub load_catalog {
     my ($url, $fallback, $cache, $ttl_minutes) = @_;
     $ttl_minutes = 60 unless defined $ttl_minutes && $ttl_minutes =~ /^\d+$/;
 
-    # 1) frischer Cache -> ohne Netzwerk verwenden
+    # 1) frischer Cache -> ohne Netzwerk verwenden (nur wenn nicht leer)
     if ($cache && -e $cache && _cache_age_minutes($cache) < $ttl_minutes) {
         my $data = _read_json($cache);
-        return ($data, "cache") if $data && ref $data->{plugins} eq 'ARRAY';
+        return ($data, "cache") if _has_plugins($data);
     }
 
     # 2) Live-Fetch via curl in den Cache (kurzes Timeout, fail-soft)
@@ -48,13 +50,21 @@ sub load_catalog {
     # 3) veralteter Cache (Wiki nicht erreichbar) -> trotzdem nutzen
     if ($cache && -e $cache) {
         my $data = _read_json($cache);
-        return ($data, "cache") if $data && ref $data->{plugins} eq 'ARRAY';
+        return ($data, "cache") if _has_plugins($data);
     }
 
-    # 4) mitgelieferter Fallback
+    # 4) mitgelieferter Default-Katalog (kann leer sein)
     my $data = _read_json($fallback);
-    die "AppStore: no catalog available" unless $data && ref $data->{plugins} eq 'ARRAY';
-    return ($data, "fallback");
+    return ($data, "fallback") if _has_plugins($data);
+
+    # 5) nichts Brauchbares gefunden -> leerer Katalog statt Exception.
+    return ({ plugins => [] }, "empty");
+}
+
+# Wahr, wenn $data ein nicht-leeres plugins-Array enthaelt.
+sub _has_plugins {
+    my ($data) = @_;
+    return ($data && ref $data->{plugins} eq 'ARRAY' && @{$data->{plugins}}) ? 1 : 0;
 }
 
 # Alter einer Cache-Datei in Minuten (sehr gross, wenn nicht vorhanden).

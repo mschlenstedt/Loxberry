@@ -78,6 +78,11 @@
 	</div>
 
 	<div style="height:var(--lb-space-lg)"></div>
+	<TMPL_IF ARCHIVEURL>
+	<div style="max-width:80%;margin:0 auto var(--lb-space-md);background:#eef6e3;border:1px solid #cfe3b0;color:#4d7d12;padding:10px 13px;border-radius:9px;font-size:13px">
+		<i class="pi pi-shopping-cart"></i> <TMPL_VAR APPSTORE.PREFILL_HINT>
+	</div>
+	</TMPL_IF>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data" style="max-width:80%;margin:0 auto">
 		<input type="hidden" name="saveformdata" value="1">
 
