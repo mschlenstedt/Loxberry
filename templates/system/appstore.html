@@ -4,7 +4,7 @@
      Installation laeuft ueber die bestehende plugininstall.cgi (URL vorausgefuellt),
      daher KEIN eigener Install-Dialog hier. -->
 <style>
-.as-betabar{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:13px;color:var(--lb-text-muted)}
+.lb-header-title .as-beta{margin-left:10px;vertical-align:2px}
 .as-beta{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;
   padding:3px 9px;border-radius:999px;background:#e4f0fb;color:#2d86c8}
 .as-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
@@ -64,11 +64,6 @@
   padding:9px 12px;border-radius:9px;margin:0 0 16px;font-size:13px}
 @media (max-width:560px){.as-grid{grid-template-columns:1fr}}
 </style>
-
-<div class="as-betabar">
-  <span class="as-beta">BETA</span>
-  <span><TMPL_VAR APPSTORE.BETA_HINT></span>
-</div>
 
 <TMPL_IF IS_FALLBACK>
 <div class="as-fallback-note"><TMPL_VAR APPSTORE.MSG_FALLBACK></div>
@@ -144,6 +139,18 @@
 <div class="as-empty" id="as-empty"<TMPL_IF PLUGINCOUNT> style="display:none"</TMPL_IF>><TMPL_VAR APPSTORE.EMPTY></div>
 
 <script>
+// BETA-Badge an die Seitenueberschrift haengen (kein HTML im <title>-Tag, daher
+// per JS statt im Template-Titel). Ergibt "... AppStore [BETA]" wie bei Plugins.
+(function(){
+  var h = document.querySelector('.lb-header-title');
+  if(h && !h.querySelector('.as-beta')){
+    var b = document.createElement('span');
+    b.className = 'as-beta';
+    b.textContent = 'BETA';
+    h.appendChild(b);
+  }
+})();
+
 // Datum pro Karte in das Format der eingestellten Sprache bringen
 // (Server liefert ISO als Fallback; hier auf Locale upgraden).
 (function(){
