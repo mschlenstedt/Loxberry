@@ -80,6 +80,14 @@ my $part_boot = $mount_boot->{filesystems}[0]->{source};
 LOGINF "/     is on partition " . $part_root;
 LOGINF "/boot is on partition " . $part_boot;
 
+# Read source filesystem UUIDs — preserved during formatting (Bug 1 fix)
+my $src_boot_uuid = execute( command => "blkid -s UUID -o value $part_boot" );
+chomp($src_boot_uuid);
+my $src_root_uuid = execute( command => "blkid -s UUID -o value $part_root" );
+chomp($src_root_uuid);
+LOGINF "Source boot UUID: $src_boot_uuid";
+LOGINF "Source root UUID: $src_root_uuid";
+
 # Cleaning apt cache
 execute ( command => "apt-get clean" );
 
@@ -451,9 +459,19 @@ if ($desttype eq "path") {
 }
 
 LOGINF "Formatting fat32 boot partition (takes a second)";
-execute( command => "mkfs.vfat -F 32 ".$destpath1, log => $log );
+my $vfat_volid = $src_boot_uuid;
+$vfat_volid =~ s/-//g;  # mkfs.vfat -i expects no dash
+if ($vfat_volid) {
+	execute( command => "mkfs.vfat -F 32 -i $vfat_volid $destpath1", log => $log );
+} else {
+	execute( command => "mkfs.vfat -F 32 $destpath1", log => $log );
+}
 LOGINF "Formatting ext4 data partition (takes a minute or two)";
-execute( command => "mkfs.ext4 ".$destpath2, log => $log );
+if ($src_root_uuid) {
+	execute( command => "mkfs.ext4 -U $src_root_uuid $destpath2", log => $log );
+} else {
+	execute( command => "mkfs.ext4 $destpath2", log => $log );
+}
 
 # If partitions got re-mounted, unmount again
 # Unmount mounted destination partitions
@@ -506,7 +524,7 @@ if (!$mountsok) {
 }
 
 LOGINF "Copy data of boot partition (this will take some seconds only)";
-($rc) = execute( command => "cd /media/src1 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSpf - )", log => $log );
+($rc) = execute( command => "cd /media/src1 && tar cSp --numeric-owner --xattrs --xattrs-include='*' --acls --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSp --xattrs --xattrs-include='*' --acls -f - )", log => $log );
 if ($rc ne "0") {
 	LOGERR "Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
     	$error++;
@@ -514,7 +532,7 @@ if ($rc ne "0") {
 }
 
 LOGINF "Copy data of root partition (this may take a long time... Please be patient.)";
-($rc) = execute( command => "cd /media/src2 && tar cSp --numeric-owner --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSpf - )", log => $log );
+($rc) = execute( command => "cd /media/src2 && tar cSp --numeric-owner --xattrs --xattrs-include='*' --acls --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSp --xattrs --xattrs-include='*' --acls -f - )", log => $log );
 if ($rc ne "0") {
 	LOGERR "Copying the files from your root partition seems to failed. Your image/backup may be broken!";
     	$error++;
@@ -526,10 +544,18 @@ if (-e "/media/dst2/var/swap") {
 	unlink ("/media/dst2/var/swap");
 }
 
-# if we clone into an imagefile, we want to resize the SDcard after first booting
+# Re-enable DietPi partition resize service in image so it expands the root
+# filesystem on first boot after flashing to a (potentially larger) SD card
 if ($desttype eq "path") {
-	LOGINF "Resize SDcard after first boot again";
-	unlink ("/media/dst1/rootfsresized");
+	my $resize_service = "/media/dst2/lib/systemd/system/dietpi-fs_partition_resize.service";
+	my $resize_wants   = "/media/dst2/etc/systemd/system/local-fs.target.wants";
+	if ( -e $resize_service ) {
+		execute( command => "mkdir -p $resize_wants" );
+		execute( command => "ln -sf /lib/systemd/system/dietpi-fs_partition_resize.service $resize_wants/dietpi-fs_partition_resize.service" );
+		LOGINF "Re-enabled dietpi-fs_partition_resize.service for first boot after restore";
+	} else {
+		LOGINF "dietpi-fs_partition_resize.service not found - skipping (non-DietPi system)";
+	}
 }
 
 LOGINF "Change the PTUUID of destination card to $src_ptuuid";
