@@ -2,11 +2,19 @@
      CSS aus mockups/appstore-mockup.html portiert, Farben auf var(--lb-*) gemappt,
      Klassen mit as- praefixiert, keine Akzentstreifen. -->
 <style>
-.as-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
-.as-search{flex:1 1 260px;position:relative}
-.as-search input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--lb-border-color);
-  border-radius:10px;font-size:14px;background:var(--lb-card-bg,#fff);color:var(--lb-text)}
-.as-search .as-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.5}
+.as-betabar{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:13px;color:var(--lb-text-muted)}
+.as-beta{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;
+  padding:3px 9px;border-radius:999px;background:#e4f0fb;color:#2d86c8}
+.as-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+/* Suche als Flex-Container: Icon ist ein statisches Flex-Item VOR dem Input,
+   nicht absolut positioniert -> kann nie mehr den Platzhalter ueberlappen,
+   auch wenn globales LoxBerry-CSS das Input-Padding zuruecksetzt. */
+.as-search{flex:1 1 260px;display:flex;align-items:center;gap:8px;
+  border:1px solid var(--lb-border-color);border-radius:10px;
+  background:var(--lb-card-bg,#fff);padding:0 12px}
+.as-search .as-ico{flex:none;opacity:.45;font-size:14px;line-height:1}
+.as-search input{flex:1;min-width:0;border:none;background:transparent;outline:none;
+  padding:10px 0;font-size:14px;color:var(--lb-text);box-shadow:none}
 .as-filter{padding:10px 14px;border:1px solid var(--lb-border-color);border-radius:10px;
   background:var(--lb-card-bg,#fff);color:var(--lb-text);font-size:14px;cursor:pointer}
 .as-count{color:var(--lb-text-muted);font-size:13px;margin:0 0 14px}
@@ -39,6 +47,7 @@
   border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:13.5px;text-decoration:none}
 .as-installed{font-size:13px;color:var(--lb-primary);font-weight:600}
 .as-repo-note{font-size:12px;color:var(--lb-text-muted)}
+.as-empty{padding:32px;text-align:center;color:var(--lb-text-muted);font-size:14px}
 .as-fallback-note{background:#fff8e6;border:1px solid #f0dca0;color:#8a6d1a;
   padding:9px 12px;border-radius:9px;margin:0 0 16px;font-size:13px}
 .as-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
@@ -54,6 +63,11 @@
 .as-modal-actions{display:flex;gap:10px;justify-content:flex-end}
 @media (max-width:560px){.as-grid{grid-template-columns:1fr}}
 </style>
+
+<div class="as-betabar">
+  <span class="as-beta">BETA</span>
+  <span><TMPL_VAR APPSTORE.BETA_HINT></span>
+</div>
 
 <TMPL_IF IS_FALLBACK>
 <div class="as-fallback-note"><TMPL_VAR APPSTORE.MSG_FALLBACK></div>
@@ -72,13 +86,19 @@
     <option value="UNSTABLE">UNSTABLE</option>
     <option value="STOPPED">STOPPED</option>
   </select>
+  <select class="as-filter" id="as-installed" onchange="asFilter()">
+    <option value=""><TMPL_VAR APPSTORE.FILTER_INSTALL_ALL></option>
+    <option value="1"><TMPL_VAR APPSTORE.FILTER_INSTALLED></option>
+    <option value="0"><TMPL_VAR APPSTORE.FILTER_NOT_INSTALLED></option>
+  </select>
 </div>
 
-<div class="as-count"><span id="as-shown"><TMPL_VAR PLUGINCOUNT></span> / <TMPL_VAR PLUGINCOUNT> <TMPL_VAR APPSTORE.OF></div>
+<div class="as-count"><span id="as-shown"><TMPL_VAR PLUGINCOUNT></span> <TMPL_VAR APPSTORE.OF> <TMPL_VAR PLUGINCOUNT> <TMPL_VAR APPSTORE.PLUGINS_WORD></div>
 
 <div class="as-grid" id="as-grid">
 <TMPL_LOOP NAME=PLUGINS>
   <article class="as-card" data-status="<TMPL_VAR STATUS ESCAPE=HTML>"
+    data-installed="<TMPL_IF IS_INSTALLED>1<TMPL_ELSE>0</TMPL_IF>"
     data-text="<TMPL_VAR TITLE ESCAPE=HTML> <TMPL_VAR AUTHOR ESCAPE=HTML> <TMPL_VAR DESCRIPTION ESCAPE=HTML>">
     <div class="as-card-head">
       <TMPL_IF LOGO><img class="as-logo" src="<TMPL_VAR LOGO ESCAPE=HTML>" alt="" loading="lazy"><TMPL_ELSE><div class="as-logo-fallback">&#128230;</div></TMPL_IF>
@@ -110,6 +130,8 @@
 </TMPL_LOOP>
 </div>
 
+<div class="as-empty" id="as-empty" style="display:none"><TMPL_VAR APPSTORE.EMPTY></div>
+
 <!-- Install-Dialog: POSTet versteckt an die bestehende plugininstall.cgi -->
 <div class="as-modal-overlay" id="as-modal">
   <div class="as-modal">
@@ -119,7 +141,7 @@
       <input type="hidden" name="do" value="install">
       <input type="hidden" name="archiveurl" id="as-archiveurl" value="">
       <label for="as-pin"><TMPL_VAR APPSTORE.SECUREPIN></label>
-      <input type="password" id="as-pin" name="securepin" autocomplete="off">
+      <input type="password" name="securepin" id="as-pin" autocomplete="off">
       <div class="as-modal-actions">
         <button type="button" class="as-btn-ghost" onclick="asCloseModal()"><TMPL_VAR APPSTORE.CANCEL></button>
         <button type="submit" class="as-btn-primary"><TMPL_VAR APPSTORE.INSTALL_NOW></button>
@@ -132,13 +154,17 @@
 function asFilter(){
   var q=(document.getElementById('as-q').value||'').toLowerCase();
   var st=document.getElementById('as-status').value;
+  var inst=document.getElementById('as-installed').value;
   var n=0,cards=document.querySelectorAll('#as-grid .as-card');
   cards.forEach(function(c){
     var okq=!q||(c.getAttribute('data-text')||'').toLowerCase().indexOf(q)>=0;
     var oks=!st||c.getAttribute('data-status')===st;
-    var show=okq&&oks;c.style.display=show?'':'none';if(show)n++;
+    var oki=!inst||c.getAttribute('data-installed')===inst;
+    var show=okq&&oks&&oki;c.style.display=show?'':'none';if(show)n++;
   });
   document.getElementById('as-shown').textContent=n;
+  document.getElementById('as-empty').style.display=n?'none':'';
+  document.getElementById('as-grid').style.display=n?'':'none';
 }
 function asInstall(btn){
   document.getElementById('as-modal-name').textContent=btn.getAttribute('data-title');
