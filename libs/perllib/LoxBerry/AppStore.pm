@@ -11,10 +11,10 @@ my %BADGE = (
 );
 
 # load_catalog($url, $fallback_path, $cache_path, $ttl_minutes) -> ($hashref, $source)
-# $source ∈ cache|live|fallback|empty. Reihenfolge:
-#   1) Frischer Cache (juenger als TTL) -> kein Netzwerk-Zugriff.
-#   2) Live-Fetch vom Wiki (curl) -> Cache aktualisieren.
-#   3) Veralteter Cache (Wiki nicht erreichbar) -> trotzdem nutzen.
+# $source ∈ cache|cache_stale|live|fallback|empty. Reihenfolge:
+#   1) Frischer Cache (juenger als TTL) -> kein Netzwerk-Zugriff (source "cache").
+#   2) Live-Fetch von der Quelle (curl) -> Cache aktualisieren (source "live").
+#   3) Veralteter Cache (Quelle nicht erreichbar) -> trotzdem nutzen ("cache_stale").
 #   4) Mitgelieferter (im Git evtl. leerer) Default-Katalog.
 #   5) Gar nichts brauchbar -> leerer Katalog, source "empty" (NIE Exception).
 # So wird das Wiki nur alle $ttl_minutes (Default 60) befragt statt bei jedem
@@ -47,10 +47,13 @@ sub load_catalog {
         unlink($tmp) if -e $tmp;
     }
 
-    # 3) veralteter Cache (Wiki nicht erreichbar) -> trotzdem nutzen
+    # 3) veralteter Cache (Quelle nicht erreichbar) -> trotzdem nutzen, aber als
+    #    "cache_stale" markieren, damit die CGI den "evtl. nicht aktuell"-Banner
+    #    zeigt. Ein FRISCHER Cache (Schritt 1) ist dagegen aktuelle Live-Daten und
+    #    darf NICHT als veraltet markiert werden.
     if ($cache && -e $cache) {
         my $data = _read_json($cache);
-        return ($data, "cache") if _has_plugins($data);
+        return ($data, "cache_stale") if _has_plugins($data);
     }
 
     # 4) mitgelieferter Default-Katalog (kann leer sein)

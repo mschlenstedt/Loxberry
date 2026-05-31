@@ -112,12 +112,14 @@ is($cat->{plugins}[1]{is_installed}, 0, "Beta not installed");
   is($fs, "cache", "fresh cache used without hitting the network");
   is(scalar @{$fc->{plugins}}, 1, "data came from cache (1 plugin), not fallback (2)");
 
-  # Cache kuenstlich veralten + unerreichbare URL -> veralteter Cache wird genutzt.
+  # Cache kuenstlich veralten + unerreichbare URL -> veralteter Cache wird genutzt,
+  # aber als "cache_stale" markiert (frischer Cache oben war "cache"), damit die CGI
+  # den "evtl. nicht aktuell"-Banner NUR bei wirklich veralteten Daten zeigt.
   my $old = time() - 3600 * 24;
   utime($old, $old, $cachep);
   my ($sc, $ss) = LoxBerry::AppStore::load_catalog(
     "http://127.0.0.1:9/none.json", $fallback, $cachep, 60);
-  is($ss, "cache", "stale cache still used when wiki unreachable");
+  is($ss, "cache_stale", "stale cache marked cache_stale when source unreachable");
 }
 
 # version_ok: feldweiser Numerikvergleich der punktgetrennten LoxBerry-Version
