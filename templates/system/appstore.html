@@ -15,8 +15,14 @@
   border:1px solid var(--lb-border-color);border-radius:10px;
   background:var(--lb-card-bg,#fff);padding:0 12px}
 .as-search .as-ico{flex:none;opacity:.45;font-size:14px;line-height:1}
-.as-search input{flex:1;min-width:0;border:none;background:transparent;outline:none;
+/* Hoehere Spezifitaet als die globale .lb-content input[type=text]-Regel (0,0,2,1),
+   sonst bekommt das Input einen EIGENEN Rahmen -> doppelter Rahmen im Suchfeld.
+   Spezifitaet schlaegt Reihenfolge, daher reicht .as-search input allein nicht. */
+.lb-content .as-search input{flex:1;min-width:0;border:none;background:transparent;outline:none;
   padding:10px 0;font-size:14px;color:var(--lb-text);box-shadow:none}
+.lb-content .as-search input:focus{border:none;background:transparent;box-shadow:none}
+/* Fokus-Feedback auf dem Container statt einem zweiten Rahmen ums Input. */
+.as-search:focus-within{border-color:var(--lb-primary)}
 .as-filter{padding:10px 14px;border:1px solid var(--lb-border-color);border-radius:10px;
   background:var(--lb-card-bg,#fff);color:var(--lb-text);font-size:14px;cursor:pointer}
 .as-count{color:var(--lb-text-muted);font-size:13px;margin:0 0 14px}
