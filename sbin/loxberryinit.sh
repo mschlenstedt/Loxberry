@@ -58,30 +58,9 @@ case "$1" in
 		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
 	fi
 
-	# Check if we are on DietPi
-	if [ -e /boot/dietpi/.hw_model ] && [ !-e /boot/rootfsresized ]; then
-		touch /boot/rootfsresized
-	fi
-
-	# Create swap config and resize rootfs
-	if [ -f /boot/rootfsresized ]
-	then
-		echo "Configuring swap...."
-		$LBHOMEDIR/sbin/setswap.pl > /dev/null 2>&1
-	else
-		echo "Stopping unattended updates until rootfs is resized"
-		systemctl stop unattended-upgrades
-		pkill --signal SIGKILL unattended-upgrades
-
-		# Remove loxberryid on a fresh loxberry
-		rm -f $lbsconfigdir/loxberryid.cfg > /dev/null 2>&1
-
-		echo "Resizing rootfs..."
-		$LBHOMEDIR/sbin/resize_rootfs > $LBHOMEDIR/log/system/rootfsresized.log 2>&1
-		echo "Rebooting to enable rootfs adjustments..."
-		touch /boot/rootfsresized
-		/sbin/reboot > /dev/null 2>&1
-	fi
+	# Configure swap
+	echo "Configuring swap...."
+	$LBHOMEDIR/sbin/setswap.pl > /dev/null 2>&1
 
 	# Copy manual network configuration if any exists
 	if [ -f /boot/network.txt ]

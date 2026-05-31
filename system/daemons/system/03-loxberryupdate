@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Bring Image to latest Release
-if [ -f /boot/rootfsresized ] && [ -f /boot/do_lbupdate ]
+if [ -f $LBSCONFIG/do_lbupdate ]
 then
         echo "Updating LoxBerry to latest Release version..."
         # Use the "old way" here for the old 1.2.0c Image
@@ -17,7 +17,7 @@ then
         then
                 echo "We are online. Trigger the update."
                 $LBHOMEDIR/sbin/loxberryupdatecheck.pl querytype=release update=1 nobackup=1
-                rm /boot/do_lbupdate
+                rm $LBSCONFIG/do_lbupdate
 		jq '.Update.Installtype = "install"' $LBSCONFIG/general.json > /tmp/general.json
 		mv /tmp/general.json $LBSCONFIG
 		jq '.Update.Interval = "7"' $LBSCONFIG/general.json > /tmp/general.json
@@ -25,7 +25,7 @@ then
 		chown loxberry:loxberry $LBSCONFIG/general.json > /dev/null 2>&1
         else
                 echo "Giving up. Please perform update manually."
-                rm /boot/do_lbupdate
+                rm $LBSCONFIG/do_lbupdate
 		jq '.Update.Installtype = "install"' $LBSCONFIG/general.json > /tmp/general.json
 		mv /tmp/general.json $LBSCONFIG
 		jq '.Update.Interval = "7"' $LBSCONFIG/general.json > /tmp/general.json
