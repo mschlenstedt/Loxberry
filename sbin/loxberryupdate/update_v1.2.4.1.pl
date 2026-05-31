@@ -48,7 +48,6 @@ $output = qx { swapoff -a };
 $output = qx { rm -r /var/swap };
 qx { rm -r $lbhomedir/system/dphys-swapfile }
 &copy_to_loxberry('/system/dphys-swapfile');
-$output = qx { $lbhomedir/sbin/setswap.pl };
 
 # End of script
 exit($errors);

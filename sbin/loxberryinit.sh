@@ -58,10 +58,6 @@ case "$1" in
 		echo "{ }" > $LBHOMEDIR/data/system/plugindatabase.json
 	fi
 
-	# Configure swap
-	echo "Configuring swap...."
-	$LBHOMEDIR/sbin/setswap.pl > /dev/null 2>&1
-
 	# Copy manual network configuration if any exists
 	if [ -f /boot/network.txt ]
 	then
