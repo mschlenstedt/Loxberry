@@ -302,7 +302,7 @@ sub apt_fullupgrade
 
 
 ####################################################################
-# rpi-update (use "~/sbin/prepare_rpi-update" to get hashes and checksums
+# rpi-update
 # Parameter:
 # 	Git hash or none: update to this firmware version from https://github.com/raspberrypi/rpi-firmware
 ####################################################################

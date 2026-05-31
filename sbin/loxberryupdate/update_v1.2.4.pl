@@ -98,6 +98,7 @@ if ($exitcode != 0) {
 
 # Configure dphys-swapfile
 LOGINF "Configuring Swap...";
+$output = qx { $lbhomedir/sbin/setswap.pl };
 
 #
 # Replacing allow-hotplug with auto in $lbhomedir/system/network/interfaces
