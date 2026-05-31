@@ -53,12 +53,15 @@
 		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_MYPLUGINS></div>
 		<div class="lb-tab-popup-list">
 			<TMPL_VAR SIDEBAR_PLUGINS_TABBAR_HTML>
-			<a href="/admin/system/appstore.cgi" class="lb-tab-popup-item">
+			<!-- Trenner zwischen den installierten Plugins und der Aktionsgruppe
+			     (AppStore + Plugin-Verwaltung). Inline, damit ohne CSS-Cache-Bump
+			     wirksam; Plugin-Verwaltung bleibt grau, aber ohne eigene Linie. -->
+			<a href="/admin/system/appstore.cgi" class="lb-tab-popup-item" style="border-top:1px solid var(--lb-sidebar-border);margin-top:4px;padding-top:12px;">
 				<img src="/system/images/icons/main_appstore.svg" width="22" height="22" alt="">
 				<span>AppStore</span>
 			</a>
-			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item lb-tab-popup-item-muted">
-				<img src="/system/images/icons/main_plugininstall.svg" width="22" height="22" style="opacity:0.5;" alt="">
+			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_plugininstall.svg" width="22" height="22" alt="">
 				<span><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span>
 			</a>
 		</div>
