@@ -51,6 +51,7 @@
 .as-btn-ghost{background:var(--lb-bg);color:var(--lb-text);border:1px solid var(--lb-border-color);
   border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:13.5px;text-decoration:none;display:inline-block}
 .as-installed{font-size:13px;color:var(--lb-primary);font-weight:600}
+.as-version-warn{font-size:12.5px;color:#d98a14;font-weight:600;line-height:1.4}
 .as-repo-note{font-size:12px;color:var(--lb-text-muted)}
 .as-empty{padding:32px;text-align:center;color:var(--lb-text-muted);font-size:14px}
 .as-fallback-note{background:#fff8e6;border:1px solid #f0dca0;color:#8a6d1a;
@@ -118,7 +119,11 @@
         <span class="as-installed">&#10003; <TMPL_VAR APPSTORE.INSTALLED></span>
       <TMPL_ELSE>
         <TMPL_IF INSTALLABLE>
-          <a class="as-btn-primary" href="/admin/system/plugininstall.cgi?url=<TMPL_VAR ZIP ESCAPE=URL>"><TMPL_VAR APPSTORE.INSTALL></a>
+          <TMPL_IF VERSION_OK>
+            <a class="as-btn-primary" href="/admin/system/plugininstall.cgi?url=<TMPL_VAR ZIP ESCAPE=URL>"><TMPL_VAR APPSTORE.INSTALL></a>
+          <TMPL_ELSE>
+            <span class="as-version-warn">&#9888; <TMPL_VAR APPSTORE.NEEDS_LB_VERSION> <TMPL_VAR MIN_LB_VERSION ESCAPE=HTML> (<TMPL_VAR APPSTORE.INSTALLED_IS> <TMPL_VAR LB_CURRENT_VERSION ESCAPE=HTML>)</span>
+          </TMPL_IF>
         <TMPL_ELSE>
           <span class="as-repo-note"><TMPL_VAR APPSTORE.REPO_ONLY></span>
         </TMPL_IF>

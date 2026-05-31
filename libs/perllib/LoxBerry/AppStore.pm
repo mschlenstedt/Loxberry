@@ -124,6 +124,38 @@ sub mark_installed {
     return $cat;
 }
 
+# version_ok($current, $min) -> 1|0
+# Erfuellt die laufende LoxBerry-Version $current die geforderte Mindestversion
+# $min? LoxBerry-Versionen sind punktgetrennte Zahlen (z.B. "3.0.1.3", "2.2.1");
+# der Vergleich laeuft feldweise numerisch, fehlende Felder zaehlen als 0
+# ("3.0" == "3.0.0"). Leeres/undef $min bedeutet keine Anforderung -> 1.
+# Nicht in Zahlen zerlegbare Versionen sperren NICHT (-> 1), um False-Positives
+# (faelschlich gesperrte Installs) zu vermeiden.
+sub version_ok {
+    my ($current, $min) = @_;
+    return 1 unless defined $min && $min ne "";
+    return 1 unless defined $current && $current ne "";
+    my @c = _vparts($current);
+    my @m = _vparts($min);
+    return 1 unless @c && @m;   # nicht parsebar -> nicht sperren
+    my $n = @c > @m ? scalar(@c) : scalar(@m);
+    for my $i (0 .. $n - 1) {
+        my $a = $c[$i] // 0;
+        my $b = $m[$i] // 0;
+        return 1 if $a > $b;
+        return 0 if $a < $b;
+    }
+    return 1;   # alle Felder gleich -> erfuellt
+}
+
+# Zerlegt eine punktgetrennte Versionszeichenkette in numerische Felder.
+# Fuehrendes "v" wird entfernt; Ergebnis ist leer, wenn keine Ziffern enthalten.
+sub _vparts {
+    my ($v) = @_;
+    $v =~ s/^v//i;
+    return ($v =~ /(\d+)/g);
+}
+
 # Normalisiert einen Plugin-Titel auf einen vergleichbaren Schluessel:
 # Kleinbuchstaben, alle Nicht-Alphanumerischen entfernt.
 # "Weather 4 Loxone" / "Weather4Loxone" -> "weather4loxone".

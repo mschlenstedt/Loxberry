@@ -120,4 +120,18 @@ is($cat->{plugins}[1]{is_installed}, 0, "Beta not installed");
   is($ss, "cache", "stale cache still used when wiki unreachable");
 }
 
+# version_ok: feldweiser Numerikvergleich der punktgetrennten LoxBerry-Version
+# gegen die geforderte Mindestversion (min_lb_version aus dem Katalog).
+{
+  is(LoxBerry::AppStore::version_ok("3.0.1.3", "2.2.1"), 1, "neuer als Minimum -> ok");
+  is(LoxBerry::AppStore::version_ok("2.2.1",   "2.2.1"), 1, "exakt Minimum -> ok");
+  is(LoxBerry::AppStore::version_ok("2.0",     "2.2.1"), 0, "aelter als Minimum -> gesperrt");
+  is(LoxBerry::AppStore::version_ok("3.0",     "3.0.0"), 1, "fehlende Felder zaehlen als 0");
+  is(LoxBerry::AppStore::version_ok("1.0.0",   ""),      1, "leere Mindestversion -> keine Anforderung");
+  is(LoxBerry::AppStore::version_ok("1.0.0",   undef),   1, "undef Mindestversion -> keine Anforderung");
+  is(LoxBerry::AppStore::version_ok("v3.1",    "v3.0"),  1, "fuehrendes v wird ignoriert");
+  is(LoxBerry::AppStore::version_ok("3.0.1.3", "garbage"), 1, "nicht parsebares Minimum sperrt nicht");
+  is(LoxBerry::AppStore::version_ok("3.10.0",  "3.9.0"), 1, "feldweise: 10 > 9 (kein String-Vergleich)");
+}
+
 done_testing();

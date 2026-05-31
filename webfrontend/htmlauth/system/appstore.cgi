@@ -74,6 +74,17 @@ my @installed = LoxBerry::System::get_plugins();
 LoxBerry::AppStore::mark_installed($catalog, \@installed);
 LoxBerry::AppStore::classify($_) for @{$catalog->{plugins}};
 
+# min_lb_version: pro Plugin pruefen, ob die laufende LoxBerry-Version die vom
+# Plugin geforderte Mindestversion erfuellt. Ist sie zu alt, sperrt das Template
+# den Install-Button und zeigt stattdessen einen Hinweis (kein Fehlinstall).
+# Die Vergleichslogik liegt in LoxBerry::AppStore::version_ok (dependency-frei,
+# unit-getestet). Die laufende Version steht zur Anzeige in jedem Plugin-Hash.
+my $lbv = LoxBerry::System::lbversion();
+for my $p (@{$catalog->{plugins}}) {
+	$p->{lb_current_version} = $lbv;
+	$p->{version_ok} = LoxBerry::AppStore::version_ok($lbv, $p->{min_lb_version});
+}
+
 ##########################################################################
 # Template
 ##########################################################################
