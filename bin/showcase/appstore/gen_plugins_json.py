@@ -4,10 +4,16 @@ Laeuft NICHT auf dem LoxBerry; erzeugt den mitgelieferten Fallback-Katalog."""
 import argparse, json, sqlite3, datetime
 
 WIKI_MEDIA = "https://wiki.loxberry.de/lib/exe/fetch.php?media="
+WIKI_PAGE  = "https://wiki.loxberry.de/"
 
 def logo_url(col2):
     c = (col2 or "").lstrip(":")
     return WIKI_MEDIA + c if c else ""
+
+def wiki_url(pid):
+    # dokuwiki-pid "plugins:1_wire_ng:start" -> Wiki-Seite .../plugins/1_wire_ng/start
+    p = (pid or "").strip().lstrip(":")
+    return WIKI_PAGE + p.replace(":", "/") if p else ""
 
 def clean(s):
     return (s or "").strip().replace("\r", " ").replace("\n", " ")
@@ -45,8 +51,8 @@ def build(db_path):
             "zip": url5 if is_zip else "",
             "repo": "" if is_zip else url5,
             "description": clean(desc), "languages": clean(langs),
-            "forum": clean(forum), "lastmodified": modtext,
-            "updated_ts": updated_ts,
+            "forum": clean(forum), "wiki": wiki_url(pid),
+            "lastmodified": modtext, "updated_ts": updated_ts,
         })
     c.close()
     return {"generated": datetime.datetime.utcnow().replace(microsecond=0).isoformat()+"Z",

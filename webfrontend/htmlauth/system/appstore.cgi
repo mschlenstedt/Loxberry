@@ -91,7 +91,9 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 $maintemplate->param("PLUGINS"     => $catalog->{plugins});
 $maintemplate->param("SOURCE"      => $source);
-$maintemplate->param("IS_FALLBACK" => ($source ne "live") ? 1 : 0);
+# "evtl. nicht aktuell"-Banner nur bei Cache/Default-Daten (nicht bei frischem
+# Live-Fetch und nicht bei leerem Katalog -> dort greift die Empty-Meldung).
+$maintemplate->param("IS_FALLBACK" => ($source eq "cache" || $source eq "fallback") ? 1 : 0);
 $maintemplate->param("PLUGINCOUNT" => scalar @{$catalog->{plugins}});
 
 my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'APPSTORE.WIDGETLABEL'};
