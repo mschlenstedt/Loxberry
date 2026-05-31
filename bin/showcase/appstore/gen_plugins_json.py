@@ -14,8 +14,12 @@ def clean(s):
 
 def build(db_path):
     c = sqlite3.connect(db_path); cur = c.cursor()
+    # d.rev = Unix-Timestamp der letzten Wiki-Revision des Plugin-Eintrags.
+    # Wird als "zuletzt aktualisiert" verwendet (col10/lastmodified ist im Wiki
+    # praktisch nie gepflegt). updated_ts dient dem Sortieren, lastmodified der
+    # Anzeige.
     cur.execute("""
-      SELECT d.pid, t.title, d.col1,d.col2,d.col3,d.col4,d.col5,d.col7,d.col8,d.col9,d.col10
+      SELECT d.pid, t.title, d.col1,d.col2,d.col3,d.col4,d.col5,d.col7,d.col8,d.col9,d.col10,d.rev
       FROM data_pluginuebersicht d LEFT JOIN titles t ON t.pid=d.pid
       WHERE d.latest=1
         AND d.rev=(SELECT MAX(rev) FROM data_pluginuebersicht d2
@@ -26,9 +30,14 @@ def build(db_path):
       ORDER BY t.title COLLATE NOCASE
     """)
     plugins = []
-    for pid,title,author,logo,status,ver,url5,desc,langs,forum,mod in cur.fetchall():
+    for pid,title,author,logo,status,ver,url5,desc,langs,forum,mod,rev in cur.fetchall():
         url5 = clean(url5)
         is_zip = url5.lower().endswith(".zip")
+        updated_ts = int(rev) if rev else 0
+        # lastmodified: gepflegtes Datum bevorzugen, sonst aus rev ableiten.
+        modtext = clean(mod)
+        if not modtext and updated_ts:
+            modtext = datetime.datetime.utcfromtimestamp(updated_ts).strftime("%Y-%m-%d")
         plugins.append({
             "pid": pid, "title": clean(title) or pid, "author": clean(author),
             "logo": logo_url(logo), "status": clean(status).upper(),
@@ -36,7 +45,8 @@ def build(db_path):
             "zip": url5 if is_zip else "",
             "repo": "" if is_zip else url5,
             "description": clean(desc), "languages": clean(langs),
-            "forum": clean(forum), "lastmodified": clean(mod),
+            "forum": clean(forum), "lastmodified": modtext,
+            "updated_ts": updated_ts,
         })
     c.close()
     return {"generated": datetime.datetime.utcnow().replace(microsecond=0).isoformat()+"Z",

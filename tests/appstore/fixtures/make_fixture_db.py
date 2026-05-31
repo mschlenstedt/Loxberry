@@ -11,17 +11,21 @@ cur.execute("""CREATE TABLE data_pluginuebersicht (
 cur.execute("""CREATE TABLE titles (pid NOT NULL, title NOT NULL,
   lasteditor NOT NULL DEFAULT '', lastrev NOT NULL DEFAULT '',
   lastsummary NOT NULL DEFAULT '', PRIMARY KEY(pid))""")
+
+# rev = Unix-Timestamp der letzten Wiki-Revision (echte, unterschiedliche Werte,
+# damit Datumsableitung + Sortierung testbar sind):
+#   1700000000 -> 2023-11-14, 1710000000 -> 2024-03-09
 rows = [
   # STABLE mit ZIP (installierbar)
-  ("plugins:1_wire_ng:start", 0, 1000, 1, "prof.mobilux", ":plugins:1_wire_ng:icon.png",
+  ("plugins:1_wire_ng:start", 0, 1700000000, 1, "prof.mobilux", ":plugins:1_wire_ng:icon.png",
    "STABLE", "2.2.1", "https://github.com/x/LoxBerry-Plugin-1-Wire-NG/archive/v2.5.zip",
    "", "1-Wire Busmaster auslesen.", "EN, DE", "https://loxforum.com/t/1wire", "", "", None),
-  # Repo-only (kein ZIP, nur Repo) -> nicht installierbar
-  ("plugins:repoonly:start", 0, 1000, 1, "someone", "",
+  # Repo-only (kein ZIP, nur Repo) -> nicht installierbar; neuer als 1-Wire-NG
+  ("plugins:repoonly:start", 0, 1710000000, 1, "someone", "",
    "BETA", "1.0", "https://github.com/x/some-plugin",
    "", "Nur als Repo verfuegbar.", "EN", "", "", "", None),
   # Nicht-Plugin-Unterseite -> herausfiltern (kein col4)
-  ("plugins:1_wire_ng:faq", 0, 1000, 1, "", "", "", "", "", "", "FAQ-Text", "", "", "", "", None),
+  ("plugins:1_wire_ng:faq", 0, 1700000000, 1, "", "", "", "", "", "", "FAQ-Text", "", "", "", "", None),
 ]
 cur.executemany("""INSERT INTO data_pluginuebersicht
   (pid,rid,rev,latest,col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,published)

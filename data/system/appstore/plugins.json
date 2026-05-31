@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-30T20:20:58Z",
+  "generated": "2026-05-31T10:59:05Z",
   "source": "loxberry-wiki/struct",
   "plugins": [
     {
@@ -14,7 +14,8 @@
       "description": "Das Plugin kann einen an den LoxBerry angeschlossenen 1-Wire-Busmaster auslesen und die Sensorwerte an den Miniserver senden.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/227489-plugin-1-wire-ng",
-      "lastmodified": ""
+      "lastmodified": "2025-07-20",
+      "updated_ts": 1752986832
     },
     {
       "pid": "plugins:1wire_onboard:start",
@@ -28,7 +29,8 @@
       "description": "Ein Plugin um die eingebaute 1Wirefunktion für Temperatursensoren der Baureihe DS18  zu verwenden und deren Werte per UDP oder MQTT zu Versenden",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-12-20",
+      "updated_ts": 1671554830
     },
     {
       "pid": "plugins:api_abfall_io:start",
@@ -42,7 +44,8 @@
       "description": "Abfuhrtermine deutscher Kommunen über api.abfall.io: Web-UI zur Orts-/Straßenauswahl, JSON, Loxone-Klartext (loxone.php) und optional MQTT.",
       "languages": "EN, DE",
       "forum": "https://github.com/spid3r/loxberry-api-abfall-io/issues",
-      "lastmodified": ""
+      "lastmodified": "2026-05-02",
+      "updated_ts": 1777722595
     },
     {
       "pid": "plugins:alexa2lox:start",
@@ -56,7 +59,8 @@
       "description": "Steuerung und Sprachausgabe von Amazon Echo Geräten",
       "languages": "DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/233526-plugin-alexa2lox-v4-x",
-      "lastmodified": ""
+      "lastmodified": "2025-11-09",
+      "updated_ts": 1762691952
     },
     {
       "pid": "plugins:aloxberry:start",
@@ -70,7 +74,8 @@
       "description": "Aloxberry ist eine vollwertige, bidirektionale quelloffene Amazon-Alexa-Smart-Home-Integration für die Loxone-Hausautomation",
       "languages": "Deutsch, English",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/484585-aloxberry-vollwertiges-bidirektionales-alexa-plugin",
-      "lastmodified": ""
+      "lastmodified": "2026-05-18",
+      "updated_ts": 1779084925
     },
     {
       "pid": "plugins:alsa_tools:start",
@@ -84,7 +89,8 @@
       "description": "Die ALSA Tools stellen eine Sammlung an Werkzeugen und Einstellungen für die Audio-Bibliothek ALSA bereit. Vorerst beschränkt sich der Funktionsumfang des Plugins auf eine Weboberfläche für den ALSA Mixer. Dieses Webinterface läuft als eigener Dienst am LoxBerry.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/german/software-konfiguration-programm-und-visualisierung/64602-loxberry-alsa-tools-plugin",
-      "lastmodified": ""
+      "lastmodified": "2023-01-10",
+      "updated_ts": 1673369698
     },
     {
       "pid": "plugins:any_plugin:start",
@@ -98,7 +104,8 @@
       "description": "Mit dem Plugin können am LoxBerry Shell-Befehle ausgeführt werden.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/124449-plugin-any-plugin-f%C3%BCr-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2023-01-10",
+      "updated_ts": 1673369742
     },
     {
       "pid": "plugins:apc_ups:start",
@@ -112,7 +119,8 @@
       "description": "Das Plugin bietet die Möglichkeit, eine APC UPS (Uninterruptible Power Supply) über den LoxBerry zu einer Netzwerk-USV zu machen und sie vom Miniserver zu überwachen.",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662816898
     },
     {
       "pid": "plugins:audioserver4home:start",
@@ -126,7 +134,8 @@
       "description": "Das Audioserver4Home (AS4H) Plugin ist ein Multiroom-Audio-System basierend auf Lox-Audioserver, welches einen Audioserver emuliert und sich so in ein Loxone Smarthome integrieren lässt. Es werden sowohl lokale Player (Soundkarten) als auch Remote-Player (über LAN oder Wifi) unterstützt.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/482893-plugin-audioserver4home",
-      "lastmodified": ""
+      "lastmodified": "2026-04-29",
+      "updated_ts": 1777440000
     },
     {
       "pid": "plugins:awattar_plugin:start",
@@ -140,7 +149,8 @@
       "description": "Ruft die stündlichen Strompreise von aWATTar Österreich/Deutschland ab und übermittelt diese, sowie im Plugin berechnete Werte/Kennzeichen an MQTT/Miniserver.",
       "languages": "DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/228766-awattar-plugin",
-      "lastmodified": ""
+      "lastmodified": "2023-04-02",
+      "updated_ts": 1680446015
     },
     {
       "pid": "plugins:ble_scanner:start",
@@ -154,7 +164,8 @@
       "description": "Der BLE-Scanner bietet die Möglichkeit, eine Anwesenheitserkennung mittels BLE-Tags (Bluetooth Low Energy) zu realisieren.",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662817097
     },
     {
       "pid": "plugins:bmw-cardata:start",
@@ -168,7 +179,8 @@
       "description": "Ermöglicht die Übertragung von BMW Fahrzeugdaten vom BMW CarData Portal über den LoxBerry MQTT Gateway zum Loxone Miniserver.",
       "languages": "Deutsch / Englisch",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/470546-bmw-cardata-neues-loxberry-plugin",
-      "lastmodified": ""
+      "lastmodified": "2025-11-09",
+      "updated_ts": 1762718408
     },
     {
       "pid": "plugins:broadlink_thermostat2lox:start",
@@ -182,7 +194,8 @@
       "description": "Integration Broadlink Thermostate über MQTT",
       "languages": "DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-11",
+      "updated_ts": 1662918625
     },
     {
       "pid": "plugins:bwt_aqua:start",
@@ -196,7 +209,8 @@
       "description": "Anbindung von BWT Aqua Wasserenthärtungsanlage an Loxone.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/278330-plugin-bwt-aqua-anbindung-wasserenth%C3%A4rter",
-      "lastmodified": ""
+      "lastmodified": "2026-01-26",
+      "updated_ts": 1769456741
     },
     {
       "pid": "plugins:caldav_4_lox:start",
@@ -210,7 +224,8 @@
       "description": "Das CalDAV Plugin bietet die Möglichkeit, Kalendereinträge in CalDAV oder Google Kalendern für Funktionen aller Art im Loxone MiniServer zu verwenden.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/german/software-konfiguration-programm-und-visualisierung/60811-loxberry-caldav-4-lox-plugin-verf%C3%BCgbar",
-      "lastmodified": ""
+      "lastmodified": "2025-04-29",
+      "updated_ts": 1745899301
     },
     {
       "pid": "plugins:cam_connect:start",
@@ -224,7 +239,8 @@
       "description": "Das Cam-Connect Plugin bietet die Möglichkeit, die Standbilder einer IP-Kamera im Loxone Türsteuerungsbaustein unter Letzte Aktivität zu verwenden. Ab Version v2018.2.x kann das Plugin mehrere Kameras speichern und mehrere Bilder per eMail versenden.",
       "languages": "DE, EN, CS",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2023-09-17",
+      "updated_ts": 1694935671
     },
     {
       "pid": "plugins:camstream4lox:start",
@@ -238,7 +254,8 @@
       "description": "Das CamStream4Lox Plugin konvertiert beliebige Videostreams in einen MJPEG-Stream, sodass der Stream in den Türsteuerungsbaustein eingebunden werden kann.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/163516-plugin-camstream4lox-fast-jede-kamera-in-den-t%C3%BCrsteuerungsbaustein",
-      "lastmodified": ""
+      "lastmodified": "2023-01-21",
+      "updated_ts": 1674301943
     },
     {
       "pid": "plugins:chromecast_4_lox:start",
@@ -252,7 +269,8 @@
       "description": "Basic Chromecast (audio) control for Loxone",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/174244-chromecast-control-early-access-english",
-      "lastmodified": ""
+      "lastmodified": "2022-09-11",
+      "updated_ts": 1662918854
     },
     {
       "pid": "plugins:cloud_dns_query:start",
@@ -266,7 +284,8 @@
       "description": "Shows real IP for a Loxone Miniserver Serial. (CloudDNS required.)",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662817665
     },
     {
       "pid": "plugins:comfoconnect:start",
@@ -280,7 +299,8 @@
       "description": "Das Plugin kommuniziert mit einer Zehnder Lüftungsanlage Qxxx und stellt die Sensoren bzw. Aktoren im MQTT Broker zur Verfügung",
       "languages": "DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/312399-comfoconnect-anbindung-einer-zehnder-l%C3%BCftungsanlage-qxxx",
-      "lastmodified": ""
+      "lastmodified": "2024-11-17",
+      "updated_ts": 1731876047
     },
     {
       "pid": "plugins:command_recognition_befehlserkennung:start",
@@ -294,7 +314,8 @@
       "description": "Das Plugin simuliert die Loxone Befehlserkennung und zeigt grafisch Treffer oder Fehler an. Es eignet sich zum Testen bei virtuellen HTTP- und UDP-Eingängen.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/163687-plugin-command-recognition-befehlserkennung",
-      "lastmodified": ""
+      "lastmodified": "2023-01-10",
+      "updated_ts": 1673369761
     },
     {
       "pid": "plugins:vto2mqtt:start",
@@ -308,7 +329,8 @@
       "description": "Mit einer VTO können Bilder für den Loxone Türbaustein bereitgestellt werden. Es können dabei mehrere Quellen angegeben werden. Diese werden diese zusammengefügt und als ein Bild bereitgestellt. Ebenfalls lassen sich die letzten x Bilder auf der SD Karte speichern.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/358892-plugin-dahua-vto2mqtt",
-      "lastmodified": ""
+      "lastmodified": "2026-05-04",
+      "updated_ts": 1777923534
     },
     {
       "pid": "plugins:debmatic:start",
@@ -322,7 +344,8 @@
       "description": "Mit demDebMatic Plugin können mit Hilfe der Aufsteck-Funkmodule von Homematic sämtliche Homematic Sensoren und Aktoren in das Loxonesystem integriert werden.",
       "languages": "DE, EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/124452-plugin-homematic-auf-dem-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2025-07-16",
+      "updated_ts": 1752647679
     },
     {
       "pid": "plugins:dnsmasq:start",
@@ -336,7 +359,8 @@
       "description": "Das DNSmasq Plugin bietet die Möglichkeit, den dnsmasq-Dienst auf dem LoxBerry zu benutzen und einfach zu konfigurieren.",
       "languages": "",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662823234
     },
     {
       "pid": "plugins:docker:start",
@@ -350,7 +374,8 @@
       "description": "Docker auf dem LoxBerry und Portainer.io als WebUI zur Verwaltung als LoxBerry Plugin",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/165754-plugin-docker-und-portainer-io",
-      "lastmodified": ""
+      "lastmodified": "2024-12-21",
+      "updated_ts": 1734776065
     },
     {
       "pid": "plugins:dyndns_refresher:start",
@@ -364,7 +389,8 @@
       "description": "Das DynDNS-Refresher Plugin bietet die Möglichkeit, DynDNS Records zu aktualisieren oder Webseiten zyklisch aufzurufen. Es ruft die auf der Admin-Webseite eingetragene Webseite im eingestellten Intervall im Hintergrund auf.",
       "languages": "DE, EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662823354
     },
     {
       "pid": "plugins:e3dc:start",
@@ -378,7 +404,8 @@
       "description": "Übermittelt via RSCP-Protokoll Daten vom E3DC-S10-Batteriespeicher zum MiniServer",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/310033-plugin-e3dc-datenaustausch-%C3%BCber-rscp-mit-dem-batteriespeicher",
-      "lastmodified": ""
+      "lastmodified": "2026-04-07",
+      "updated_ts": 1775560614
     },
     {
       "pid": "plugins:easee_home_wallbox:start",
@@ -392,7 +419,8 @@
       "description": "Schnittstelle zur easee.cloud  um Daten der Easee Home Wallbox(en) abzufragen und zu ändern.",
       "languages": "DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/295020-plugin-easee-home-wallbox",
-      "lastmodified": ""
+      "lastmodified": "2026-04-07",
+      "updated_ts": 1775560631
     },
     {
       "pid": "plugins:ebusd_plugin:start",
@@ -406,7 +434,8 @@
       "description": "Installs and provides an API to communicate between ebusd by john30 and Loxone",
       "languages": "EN",
       "forum": "https://gitlab.com/VVlasy/loxberry-plugin-ebusd/issues",
-      "lastmodified": ""
+      "lastmodified": "2022-09-11",
+      "updated_ts": 1662878451
     },
     {
       "pid": "plugins:echolox:start",
@@ -420,7 +449,8 @@
       "description": "EchoLox emuliert eine Philips Hue Bridge (Generation 2, BSB002) direkt auf dem LoxBerry. Amazon Alexa erkennt den LoxBerry dadurch als echte Hue Bridge und kann Loxone Virtual Inputs über Sprachbefehle schalten — vollständig lokal, ohne Cloud-Anbindung, ohne Java, ohne Reverse Proxy.",
       "languages": "",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/484056-plugin-echolox-philips-hue-bridge-emulator-f%C3%BCr-alexa-%E2%86%94-loxone-beta",
-      "lastmodified": ""
+      "lastmodified": "2026-05-18",
+      "updated_ts": 1779131218
     },
     {
       "pid": "plugins:ecometer2lox:start",
@@ -434,7 +464,8 @@
       "description": "Dieses Plugin sammelt EcoMeter-Daten von einer seriellen Schnittstelle. Alle Daten können über MQTT übertragen oder über HTTP angefordert werden.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/344108-plugin-ecometer2lox",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662823862
     },
     {
       "pid": "plugins:ecowater:start",
@@ -448,7 +479,8 @@
       "description": "Daten aus EcoWater Enthärtungsanlage auslesen",
       "languages": "DE",
       "forum": "https://github.com/sunsus/LoxBerry-Plugin-EcoWater/issues",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662823974
     },
     {
       "pid": "plugins:express_server:start",
@@ -462,7 +494,8 @@
       "description": "Dieses Plugin bietet die Möglichkeit Plugins mit NodeJs zu entwickeln. Es stellt einen Node Express Server bereit in dem du dich einfach einbinden kannst.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/entwickler/325250-plugins-mit-nodejs-express-oder-websockets-entwickeln-ein-plugin-macht%C2%B4s-einfacher",
-      "lastmodified": ""
+      "lastmodified": "2025-10-23",
+      "updated_ts": 1761246467
     },
     {
       "pid": "plugins:fhem:start",
@@ -476,7 +509,8 @@
       "description": "Das Fhem Plugin stellt auf dem LoxBerry eine Fhem-Installation zur Verfügung.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/60807-loxberry-fhem-plugin-verf%C3%BCgbar",
-      "lastmodified": ""
+      "lastmodified": "2025-10-29",
+      "updated_ts": 1761752115
     },
     {
       "pid": "plugins:foshkplugin:start",
@@ -490,7 +524,8 @@
       "description": "Dieses Plugin bindet verschiedene Wetterstationen des Hersteller Fine Offset Electronics (FOSHK) an einen Loxone-Miniserver (oder beliebige andere Zielsysteme) über UDP an. Entwickelt wurde das Plugin für und mit einem Froggit DP1500 das baugleich auch unter dem Namen Ecowitt GW1000 verkauft wird.",
       "languages": "EN, NL, SK, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/222662",
-      "lastmodified": ""
+      "lastmodified": "2026-05-22",
+      "updated_ts": 1779490709
     },
     {
       "pid": "plugins:foxess_bridge:start",
@@ -504,7 +539,8 @@
       "description": "The plugin extracts power and battery values from the FoxESS Cloud and sends them to a Miniserver via a UDP message.",
       "languages": "EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2024-09-22",
+      "updated_ts": 1726996580
     },
     {
       "pid": "plugins:frequency-counter:start",
@@ -518,7 +554,8 @@
       "description": "Frequenzzähler für die GPIOs des Raspberry. Frequenzen bis zu 500 KHz (und mehr) können detektiert werden.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/423319-neues-plugin-frequency-counter",
-      "lastmodified": ""
+      "lastmodified": "2024-04-08",
+      "updated_ts": 1712551333
     },
     {
       "pid": "plugins:fritzlox:start",
@@ -532,7 +569,8 @@
       "description": "Das Fritz.Lox Plugin bietet die Möglichkeit einen Callmonitor sowie controller services der AVM-Fritzbox im Loxone MiniServer zur Verfügung zu stellen.",
       "languages": "EN, DE, ES",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/68376-loxberry-fritz-lox-plugin-verf%C3%BCgbar",
-      "lastmodified": ""
+      "lastmodified": "2022-11-26",
+      "updated_ts": 1669446150
     },
     {
       "pid": "plugins:froniussmartmetersimulator:start",
@@ -546,7 +584,8 @@
       "description": "Das Plugin simuliert einen Fronius Smart Meter und leitet die per MQTT empfangenen Verbrauchsdaten an den Fronius Wechselrichter weiter.",
       "languages": "",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/358694-plugin-fronius-smart-meter-simulator",
-      "lastmodified": ""
+      "lastmodified": "2022-09-29",
+      "updated_ts": 1664432163
     },
     {
       "pid": "plugins:gardena_smart_system:start",
@@ -560,7 +599,8 @@
       "description": "Dieses Plugin ermöglicht es Daten von einem Gardena-Smart-System an die Miniserver über UDP zu senden.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/160685-plugin-gardena-smart-system",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662824358
     },
     {
       "pid": "plugins:goodwe2mqtt:start",
@@ -574,7 +614,8 @@
       "description": "Daten von einem Goodwe Wechselrichter abrufen und als MQTT bereitstellen",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/347274-neues-plugin-goodwe2mqtt",
-      "lastmodified": ""
+      "lastmodified": "2023-11-02",
+      "updated_ts": 1698909474
     },
     {
       "pid": "plugins:gpio:start",
@@ -588,7 +629,8 @@
       "description": "Dieses Modul stellt die digitalen Ein- und Ausgänge des Raspberry zur Verfügung",
       "languages": "DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/296663-gpio-2-x",
-      "lastmodified": ""
+      "lastmodified": "2022-09-11",
+      "updated_ts": 1662919281
     },
     {
       "pid": "plugins:grafana_on_loxberry:start",
@@ -602,7 +644,8 @@
       "description": "Grafana am LoxBerry",
       "languages": "",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2023-01-10",
+      "updated_ts": 1673369779
     },
     {
       "pid": "plugins:grunbeck_plugin:start",
@@ -616,7 +659,8 @@
       "description": "Daten auslesen und schreiben bei einer Grünbeck-Enthärtungsanlage",
       "languages": "DE",
       "forum": "https://www.loxforum.com/forum/faqs-tutorials-howto-s/102375-howto-grünbeck-wasserenthärtungsanlage-auslesen",
-      "lastmodified": ""
+      "lastmodified": "2023-01-10",
+      "updated_ts": 1673369792
     },
     {
       "pid": "plugins:homebridge:start",
@@ -630,7 +674,8 @@
       "description": "Plugin zur einfachen Installation der Homebridge auf einem Loxberry",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/337099-homebridge-plugin-zur-einfacher-installation-von-homebridge-auf-dem-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2025-05-10",
+      "updated_ts": 1746853908
     },
     {
       "pid": "plugins:https2http:start",
@@ -644,7 +689,8 @@
       "description": "Das https2http Plugin bietet die Möglichkeit, verschlüsselte Webseiten (https://) in Verbindung mit dem Objekt Virtueller HTTP Eingang der Loxone Config zu verwenden.",
       "languages": "",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-11",
+      "updated_ts": 1662878435
     },
     {
       "pid": "plugins:husqvarna_automower_connect:start",
@@ -658,7 +704,8 @@
       "description": "Abfrage und Steuerung des Husqvarna Automowers mittels API der Husqvarna Automower Connect App",
       "languages": "EN,DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/259763-plugin-husqvarna-automower-connect",
-      "lastmodified": ""
+      "lastmodified": "2023-04-11",
+      "updated_ts": 1681234120
     },
     {
       "pid": "plugins:icon_watchdog:start",
@@ -672,7 +719,8 @@
       "description": "Das Plugin überwacht die Symbole eines Miniservers und stellt sie nach einem Firmware-Update des Miniservers wieder her. Optional kann das Plugins eigene SVG Symbole relativ einfach in Loxone integrieren.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/307337-loxberry-plugin-icon-watchdog",
-      "lastmodified": ""
+      "lastmodified": "2025-06-16",
+      "updated_ts": 1750059003
     },
     {
       "pid": "plugins:infnodgra:start",
@@ -686,7 +734,8 @@
       "description": "InfluxDB, Node-Red und Grafana als Docker Container installieren",
       "languages": "DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662826053
     },
     {
       "pid": "plugins:kalliope:start",
@@ -700,7 +749,8 @@
       "description": "Dieses Plugin installiert Kalliope auf dem LoxBerry und ermöglicht damit einen persönlichen Sprachassistenten, eine Sprachsteuerung des Miniservers und eine Sprachausgabe",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662826293
     },
     {
       "pid": "plugins:knxd:start",
@@ -714,7 +764,8 @@
       "description": "Das KNXd Plugin bietet die Möglichkeit, über ein KNX-IP-Gateway direkt mit dem KNX/EIB-Bus zu kommunizieren. Optional kann man jede Minute die aktuelle Zeit auf den KNX-Bus senden oder Gruppenadressen abfragen.",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662826359
     },
     {
       "pid": "plugins:kodi:start",
@@ -728,7 +779,8 @@
       "description": "Installiert und konfiguriert Kodi auf dem LoxBerry",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/150094-kodi-plugin-f%C3%BCr-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2023-01-10",
+      "updated_ts": 1673369807
     },
     {
       "pid": "plugins:komfovent_bridge:start",
@@ -742,7 +794,8 @@
       "description": "Das Plugin löst alle 1 Minute ein Cronjob-Skript aus, das verschiedene Daten aus einem Komfovent c6 Gerät liest, die Werte für Loxone anpasst und sie dann per UDP an den Miniserver und (optional) an eine Influxdb sendet. Es wird für die Loxone ein mit Leerzeichen versehenes json-Format verwendet wird, um eine einfache Werteextraktion auf der Miniserver-Seite zu ermöglichen.",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2023-03-24",
+      "updated_ts": 1679644073
     },
     {
       "pid": "plugins:labcom_poollab:start",
@@ -756,7 +809,8 @@
       "description": "Holt die Messdaten Deines Pools aus der LabCom Cloud und sendet sie per MQTT an den Miniserver",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/311379-plugin-labcom-poollab",
-      "lastmodified": ""
+      "lastmodified": "2023-01-27",
+      "updated_ts": 1674817262
     },
     {
       "pid": "plugins:link2home:start",
@@ -770,7 +824,8 @@
       "description": "Plugin für den Loxberry, das die Fernsteuerung von Link2Home-Steckdosen über UDP ermöglicht. Benutzer können damit bestimmte Relais ein- oder ausschalten, entweder über eine Weboberfläche oder durch Aufrufen der Loxberry-URL des Plugins",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/439371-neues-plugin-link2home",
-      "lastmodified": ""
+      "lastmodified": "2024-08-19",
+      "updated_ts": 1724103023
     },
     {
       "pid": "plugins:lms_4_loxberry:start",
@@ -784,7 +839,8 @@
       "description": "Installiert und konfiguriert den Logitech Media Server (LMS) auf dem LoxBerry",
       "languages": "EN, DE, CS",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/150660-lms-logitech-media-server-plugin-f%C3%BCr-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2025-10-29",
+      "updated_ts": 1761752177
     },
     {
       "pid": "plugins:lox2mqtt:start",
@@ -798,7 +854,8 @@
       "description": "LoxBerry plugin to enable communication between the Loxone Miniserver and MQTT",
       "languages": "EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2025-02-15",
+      "updated_ts": 1739627083
     },
     {
       "pid": "plugins:loxberry_backup:start",
@@ -812,7 +869,8 @@
       "description": "Erstellen von Images und Datei-Backups des Loxberrys",
       "languages": "EN, DE, CS",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/122935-plugin-loxberry-backup",
-      "lastmodified": ""
+      "lastmodified": "2023-01-10",
+      "updated_ts": 1673370236
     },
     {
       "pid": "plugins:loxberry_ha_bridge:start",
@@ -826,7 +884,8 @@
       "description": "Installiert die HA Bridge auf dem LoxBerry. (Hinweise beachten)",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/146726-plugin-habridge-prerelease-0-3",
-      "lastmodified": ""
+      "lastmodified": "2025-10-24",
+      "updated_ts": 1761309598
     },
     {
       "pid": "plugins:host-backup:start",
@@ -840,7 +899,8 @@
       "description": "Hostnahes Backup- und Restore-Plugin für LoxBerry-Systeme zur Sicherung von System-, Docker- und Anwendungsdaten mittels Voll- und Snapshot-Backups.",
       "languages": "DE",
       "forum": "https://github.com/herdan75/LoxBerry-Plugin-HostBackup/issues",
-      "lastmodified": ""
+      "lastmodified": "2026-05-26",
+      "updated_ts": 1779770670
     },
     {
       "pid": "plugins:loxberry_poolmanager:start",
@@ -854,7 +914,8 @@
       "description": "Mit dem LoxBerry PoolManager kann eine automatische pH-Wert und Chlor-Regelung mit Sensoren von Atlas Scientific aufgebaut werden.",
       "languages": "DE, EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/355455-plugin-loxberry-poolmanager",
-      "lastmodified": ""
+      "lastmodified": "2025-05-02",
+      "updated_ts": 1746186503
     },
     {
       "pid": "plugins:loxberry_update_fix:start",
@@ -868,7 +929,8 @@
       "description": "Corrects a LoxBerry Update issue updating vom LB < 1.2.4",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/allgemeines-aa/167225-loxberry-update-funktioniert-nicht",
-      "lastmodified": ""
+      "lastmodified": "2022-09-10",
+      "updated_ts": 1662828937
     },
     {
       "pid": "plugins:loxberry_reset_root:start",
@@ -882,7 +944,8 @@
       "description": "Dieses Plugin setzt das Root-Kennwort von LoxBerry zurück.",
       "languages": "EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2023-01-10",
+      "updated_ts": 1673369822
     },
     {
       "pid": "plugins:loxmatic:start",
@@ -896,7 +959,8 @@
       "description": "Mit dem LoxMatic Plugin können mit Hilfe der Aufsteck-Funkmodule von Homematic sämtliche Homematic Sensoren und Aktoren in das Loxonesystem integriert werden. Eine separate CCU1/2/3 ist nicht mehr notwendig.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/124452-plugin-homematic-auf-dem-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2023-04-11",
+      "updated_ts": 1681226380
     },
     {
       "pid": "plugins:loxoneicons:start",
@@ -910,7 +974,8 @@
       "description": "Mit dem Plugin können eigene SVG-Symbole zur Loxone Config und zur App hinzugefügt werden. Zudem lädt das Plugin die schicken Icons des Touch Pure Flex herunter und stellt sie Euch izur weiteren Verwendung zur Verfügung.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/364112-neues-plugin-loxoneicons-integriere-die-icons-des-touch-pure-flex-in-dein-projekt",
-      "lastmodified": ""
+      "lastmodified": "2025-06-29",
+      "updated_ts": 1751176453
     },
     {
       "pid": "plugins:magic_home_gateway:start",
@@ -924,7 +989,8 @@
       "description": "Magic Home Gateway - Ansteuern vom LED WiFi Controller",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/182264-plugin-magic-home-gateway",
-      "lastmodified": ""
+      "lastmodified": "2022-09-12",
+      "updated_ts": 1662955347
     },
     {
       "pid": "plugins:mammotion-mower:start",
@@ -938,7 +1004,8 @@
       "description": "LoxBerry plugin to bridge Mammotion robot mowers (Luba/Luba 2/Yuka) into Loxone Miniserver via MQTT, using PyMammotion.",
       "languages": "EN",
       "forum": "https://github.com/jovd83/LoxBerry-Plugin-mammotion-mower/issues",
-      "lastmodified": ""
+      "lastmodified": "2026-05-25",
+      "updated_ts": 1779720943
     },
     {
       "pid": "plugins:marstek_cloud:start",
@@ -952,7 +1019,8 @@
       "description": "Bridges the Marstek Cloud into a Loxone Miniserver via the LoxBerry built-in MQTT Gateway.",
       "languages": "EN",
       "forum": "https://github.com/jovd83/loxberry-marstek-cloud/issues",
-      "lastmodified": ""
+      "lastmodified": "2026-05-25",
+      "updated_ts": 1779720867
     },
     {
       "pid": "plugins:maveo_connect:start",
@@ -966,7 +1034,8 @@
       "description": "Marantec-Garagentor per Maveo Connect Stick und Cloud-MQTT an LoxBerry; Web-UI (DE/EN), optional MQTT zum Haus-Broker.",
       "languages": "DE,EN",
       "forum": "https://github.com/spid3r/loxberry-maveo-connect/issues",
-      "lastmodified": ""
+      "lastmodified": "2026-05-03",
+      "updated_ts": 1777804337
     },
     {
       "pid": "plugins:message_center:start",
@@ -980,7 +1049,8 @@
       "description": "Das Plugin liest aus dem Miniserver die Systemmeldungen aus und spielt diese via MQTT zurück in den Miniserver um diese Meldungen auswerten zu können.",
       "languages": "DE, EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2023-01-03",
+      "updated_ts": 1672784566
     },
     {
       "pid": "plugins:mfir_controllable_power_outlets:start",
@@ -994,7 +1064,8 @@
       "description": "Steuern und Auslesen der W-Lan mFi Steckdosen von Ubiquiti",
       "languages": "",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/89544-plugin-f%C3%BCr-mfi-wlan-steckdosen-von-ubiquiti",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663332891
     },
     {
       "pid": "plugins:midea2lox:start",
@@ -1008,7 +1079,8 @@
       "description": "Integration der Midea Klimaanlagen in Loxone",
       "languages": "DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2025-06-07",
+      "updated_ts": 1749322400
     },
     {
       "pid": "plugins:miniserverbackup-ng:start",
@@ -1022,7 +1094,8 @@
       "description": "Das Miniserver Backup NG Plugin bietet die Möglichkeit, alle im LoxBerry eingerichteten Loxone Miniserver automatisiert, regelmäßig zu sichern.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/79517-miniserverbackup",
-      "lastmodified": ""
+      "lastmodified": "2025-03-12",
+      "updated_ts": 1741802669
     },
     {
       "pid": "plugins:miniserverbackup:start",
@@ -1036,7 +1109,8 @@
       "description": "Das Miniserverbackup Plugin bietet die Möglichkeit, alle im LoxBerry eingerichteten Loxone Miniserver automatisiert, regelmäßig zu sichern.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/79517-miniserverbackup",
-      "lastmodified": ""
+      "lastmodified": "2025-03-11",
+      "updated_ts": 1741689814
     },
     {
       "pid": "plugins:mirobot2lox_ng:start",
@@ -1050,7 +1124,8 @@
       "description": "Das MiRobot2Lox-NG Plugin ermöglicht die Kommunikation zwischen bis zu 5 Mi Vacuum Robots und dem Loxone MiniServer.",
       "languages": "EN, DE, CZ",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/168084-plugin-mirobot2lox-ng-xiaomi-vacuum-robots",
-      "lastmodified": ""
+      "lastmodified": "2025-05-24",
+      "updated_ts": 1748080756
     },
     {
       "pid": "plugins:miyoplugin:start",
@@ -1064,7 +1139,8 @@
       "description": "Dieses Plugin bindet ein MIYO-Bewässerungssystem an einen Miniserver (oder beliebige andere Zielsysteme)  über UDP an und ermöglicht die Visualisierung der Zustände sowie die Steuerung aller Bewässerungskreise.",
       "languages": "DE, EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/201277",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663333599
     },
     {
       "pid": "plugins:modbus_gateway:start",
@@ -1078,7 +1154,8 @@
       "description": "Modbus RTU Gateway nach Modbus TCP",
       "languages": "EN, CS, DE, ES",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663333773
     },
     {
       "pid": "plugins:modbus_powermeter_eastron_sdm:start",
@@ -1092,7 +1169,8 @@
       "description": "Es könen Eastron SDM ModBus-PowerMeter abgefragt werden. Die Werte werden per UDP an den MiniServer gesendet.",
       "languages": "DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663333861
     },
     {
       "pid": "plugins:motioneye_plugin:start",
@@ -1106,7 +1184,8 @@
       "description": "Das MotionEye Plugin macht den LoxBerry zum Kamera Surveillance System - inkl. Bewegungserkennung und Aufzeichnung. Alle Videostreams werden als MJPEG-Stream zur Verfügung gestellt.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/331116-plugin-motioneye-kamera-surveillance-system-f%C3%BCr-den-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2026-02-22",
+      "updated_ts": 1771744044
     },
     {
       "pid": "plugins:mqtt_gateway:start",
@@ -1120,7 +1199,8 @@
       "description": "Installiert den MQTT-Broker Mosquitto und stellt ein MQTT-Gateway für den Miniserver bereit.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/294881-mqtt-gateway-2-x",
-      "lastmodified": ""
+      "lastmodified": "2022-11-30",
+      "updated_ts": 1669804696
     },
     {
       "pid": "plugins:ms4h_clients_soundkarten_management_squeezelite:start",
@@ -1134,7 +1214,8 @@
       "description": "Stellt Squeezelite Clients für MusicServer4Home zur Verfügung incl. Soundkarten-Management wie Equalizer und Kanal-Splitting Das Plugin kann auch für nicht MS4H Anwendungen wie das Squeezelite Player Plugin oder andere LMS Installationen verwendet werden.",
       "languages": "DE, EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/332127-plugin-ms4h-clients-squeezelite-soundkarten-setup-f%C3%BCr-andere-plugins",
-      "lastmodified": ""
+      "lastmodified": "2026-04-18",
+      "updated_ts": 1776473403
     },
     {
       "pid": "plugins:multi_io:start",
@@ -1148,7 +1229,8 @@
       "description": "Das Plugin kann verschiedene Hardware-Module als Ein- und Ausgänge am LoxBerry konfigurieren sowie einige Sensoren einbinden.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/395534-plugin-multi-io-plugin-mehr-als-512-ein-ausg%C3%A4nge-sensoren-am-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2026-02-22",
+      "updated_ts": 1771744200
     },
     {
       "pid": "plugins:music_server_interface:start",
@@ -1162,7 +1244,8 @@
       "description": "Provide a fake music server that the Loxone Miniserver can interact with",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/244276-music-server-interface",
-      "lastmodified": ""
+      "lastmodified": "2025-10-29",
+      "updated_ts": 1761752254
     },
     {
       "pid": "plugins:myenergi_bridge:start",
@@ -1176,7 +1259,8 @@
       "description": "Dieses Plugin holt jede Minute die aktuellen Energie- und Leistungswerte über die myenergi API ab und sendet sie über udp-Nachrichten an den Miniserver. Die aktuelle Leistung ist negativ, wenn Strom ins Netz eingespeist wird und positiv, wenn Strom aus dem Netz verbraucht wird. Der Wert ist dann bereit für die Verwendung mit dem Loxone Energiemanager.",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2023-03-24",
+      "updated_ts": 1679647739
     },
     {
       "pid": "plugins:netatmo_weather:start",
@@ -1190,7 +1274,8 @@
       "description": "Netatmo Wetterdaten per UDP an Miniserver übermitteln",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/86373-loxberry-netatmo-weather-plugin",
-      "lastmodified": ""
+      "lastmodified": "2024-12-21",
+      "updated_ts": 1734776106
     },
     {
       "pid": "plugins:nextcloud:start",
@@ -1204,7 +1289,8 @@
       "description": "Das Nextcloud Plugin stellt auf dem LoxBerry eine Nextcloud-Installation zur Verfügung",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/222108-loxberry-nextcloud-plugin-verf%C3%BCgbar",
-      "lastmodified": ""
+      "lastmodified": "2023-01-28",
+      "updated_ts": 1674912957
     },
     {
       "pid": "plugins:nibe_uplink_bridge:start",
@@ -1218,7 +1304,8 @@
       "description": "Gateway für den Miniserver zu NibeUplink. Hiermit ist es möglich, relevante Werte der Anlage zu lesen und zu visualisieren. Auch das schreiben von Werten ist (Premium Zugang bei Nibe vorausgesetzt) möglich.",
       "languages": "DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663334483
     },
     {
       "pid": "plugins:nuki_smartlock:start",
@@ -1232,7 +1319,8 @@
       "description": "Bindet NUKI-Devices (Smartlock, Opener) über die NUKI-Bridge und MQTT an den Miniserver an.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/210944-nuki-smartlock-plugin",
-      "lastmodified": ""
+      "lastmodified": "2023-10-20",
+      "updated_ts": 1697815778
     },
     {
       "pid": "plugins:ochsner_web2com_plugin:start",
@@ -1246,7 +1334,8 @@
       "description": "Das Ochsner WEB2COM Plugin wird für Ochsner Wärmepumpen mit Web2Com-Schnittstelle eingesetzt. Es ermöglicht das Lesen und Schreiben von Werten aus und an die Ochsner Heizung.",
       "languages": "",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/211353-ochnser-web2com-plugin",
-      "lastmodified": ""
+      "lastmodified": "2022-11-30",
+      "updated_ts": 1669808176
     },
     {
       "pid": "plugins:ondilo_ico_poolsensor_loxberry_plugin:start",
@@ -1260,7 +1349,8 @@
       "description": "",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2024-08-21",
+      "updated_ts": 1724233363
     },
     {
       "pid": "plugins:owncloud:start",
@@ -1274,7 +1364,8 @@
       "description": "Das Owncloud Plugin stellt auf dem LoxBerry eine Owncloud-Installation zur Verfügung",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/60452-loxberry-owncloud-plugin-verf%C3%BCgbar",
-      "lastmodified": ""
+      "lastmodified": "2023-01-28",
+      "updated_ts": 1674912922
     },
     {
       "pid": "plugins:owntracks:start",
@@ -1288,7 +1379,8 @@
       "description": "Owntracks Geo Location for LoxBerry supporting Smartphone Apps for iOS as well as Android. Prerequisite is the MQTT Plugin to pass data to Loxone Miniserver",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/188828-loyberry-owntracks",
-      "lastmodified": ""
+      "lastmodified": "2024-03-20",
+      "updated_ts": 1710951998
     },
     {
       "pid": "plugins:p1_decrypter:start",
@@ -1302,7 +1394,8 @@
       "description": "Dieses Plugin ermöglicht es verschlüsselte Daten von einem Smart Meter über die Kundenschnittstelle P1 zu entschlüssen und an den Miniserver über UDP, MQTT und/oder an einen seriellen Port am Loxberry zu senden.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/334671-pre-release-neues-plugin-p1-decrypter",
-      "lastmodified": ""
+      "lastmodified": "2023-10-27",
+      "updated_ts": 1698404387
     },
     {
       "pid": "plugins:philipsair:start",
@@ -1316,7 +1409,8 @@
       "description": "This plugin observes and controls Philips Air Purifiers and Humidifiers over MQTT",
       "languages": "EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2025-02-23",
+      "updated_ts": 1740306914
     },
     {
       "pid": "plugins:poolex:start",
@@ -1330,7 +1424,8 @@
       "description": "Das Plugin bindet Pool Wärmepumpen des Herstellers Poolex (Poolstar) an Loxone an.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/391345-plugin-loxberry-poolex-poolstar-w%C3%A4rmepumpen",
-      "lastmodified": ""
+      "lastmodified": "2023-07-11",
+      "updated_ts": 1689047981
     },
     {
       "pid": "plugins:power_button:start",
@@ -1344,7 +1439,8 @@
       "description": "Dieses Plugin bietet die Möglichkeit den Loxberry über einen Taster herunter zu fahren oder neu zu starten!",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/268350-plugin-powerbutton",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663335082
     },
     {
       "pid": "plugins:pv_solcast:start",
@@ -1358,7 +1454,8 @@
       "description": "PV Forecast mit Daten von Solcast",
       "languages": "DE, EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/307349-plugin-pv-solcast-forecast-f%C3%BCr-pv-anlagen",
-      "lastmodified": ""
+      "lastmodified": "2026-04-07",
+      "updated_ts": 1775560678
     },
     {
       "pid": "plugins:pv_solcast_ng:start",
@@ -1372,7 +1469,8 @@
       "description": "PV-Forecast-Plugin für Loxone via Solcast. Holt Photovoltaik-Vorhersagen für bis zu 10 PV-Anlagen und stellt sie dem Loxone Miniserver per UDP, MQTT oder HTTP zur Verfügung.",
       "languages": "DE, EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/483875-plugin-pv-solcast-ng-pv-forecast",
-      "lastmodified": ""
+      "lastmodified": "2026-05-29",
+      "updated_ts": 1780061616
     },
     {
       "pid": "plugins:radioscanner:start",
@@ -1386,7 +1484,8 @@
       "description": "Plugin um verschiedenste Funk Sensoren zu empfangen und die Daten per MQTT dem Loxone Miniserver zur Verfügung zu stellen. Dazu wird ein DVB-T USB-Empfänger benötigt der über einen RTL-SDR Chip (RTL2838) verfügt.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/412617-radioscanner",
-      "lastmodified": ""
+      "lastmodified": "2024-03-20",
+      "updated_ts": 1710951938
     },
     {
       "pid": "plugins:raumserver:start",
@@ -1400,7 +1499,8 @@
       "description": "Das Plugin automatisiert die Installation des node-Raumservers auf dem Loxberry und bietet damit eine Schnittstelle zwischen Miniserver und Raumfeld Geräten.",
       "languages": "",
       "forum": "https://github.com/gahujipo/loxberry-plugin-raumserver/issues",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663336276
     },
     {
       "pid": "plugins:rcswitch_433_mhz_plugin:start",
@@ -1414,7 +1514,8 @@
       "description": "Mit dem RCSwitch Plugin kann der LoxBerry 433 Mhz-Funksteckdosen schalten",
       "languages": "DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/67508-loxberry-433-mhz-funksteckdosen-plugin-verf%C3%BCgbar",
-      "lastmodified": ""
+      "lastmodified": "2023-01-27",
+      "updated_ts": 1674807298
     },
     {
       "pid": "plugins:relay_schaltung:start",
@@ -1428,7 +1529,8 @@
       "description": "Das PlugIn ermöglicht es ein an das Raspberry angeschlossene Relay mit bis zu 4 Schaltern zu steuern.",
       "languages": "DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-11",
+      "updated_ts": 1662891033
     },
     {
       "pid": "plugins:renault_my_ze:start",
@@ -1442,7 +1544,8 @@
       "description": "Das Plugin stellt eine Schnittstelle (Informationen und Befehle) zur Renault-API her, und unterstützt die Datenübermittlung MQTT.",
       "languages": "DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/209316-renault-my-ze-plugin",
-      "lastmodified": ""
+      "lastmodified": "2024-10-03",
+      "updated_ts": 1727964454
     },
     {
       "pid": "plugins:reolink:start",
@@ -1456,7 +1559,8 @@
       "description": "Plugin für Reolink Kameras - Bewegungserkennung und Steuerbefehle.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/451895-plugin-reolink-bewegungserkennung-und-steuerbefehle",
-      "lastmodified": ""
+      "lastmodified": "2026-04-07",
+      "updated_ts": 1775560693
     },
     {
       "pid": "plugins:rpi_monitor:start",
@@ -1470,7 +1574,8 @@
       "description": "Das RPi-Monitor Plugin bietet die Möglichkeit, das RPi-Monitor-Tool in den Loxberry einzubinden",
       "languages": "DE, EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663336552
     },
     {
       "pid": "plugins:samsung-frame-plugin:start",
@@ -1484,7 +1589,8 @@
       "description": "Plugin for two-way local integration between a Samsung The Frame TV and Loxone via MQTT.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/480682-samsung-the-frame-plugin",
-      "lastmodified": ""
+      "lastmodified": "2026-05-18",
+      "updated_ts": 1779132895
     },
     {
       "pid": "plugins:serial_usb_bridge:start",
@@ -1498,7 +1604,8 @@
       "description": "Ein Plugin um Serielle Befehle über UDP zu Senden Bidirektional V0.3.2 läuft auf loxberry V2",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/410439-serial-usb-bridge-treiberproblem-rs232-usb-adapter-mit-ftdi-chip",
-      "lastmodified": ""
+      "lastmodified": "2024-01-03",
+      "updated_ts": 1704259935
     },
     {
       "pid": "plugins:simple_weather_service:start",
@@ -1512,7 +1619,8 @@
       "description": "Provide a simple way of getting weather data into the Loxone UI with barely zero configuration",
       "languages": "EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-11",
+      "updated_ts": 1662891347
     },
     {
       "pid": "plugins:skodaconnect:start",
@@ -1526,7 +1634,8 @@
       "description": "Holt die Statusdaten Deiner Fahrzeuge vom SKODAConnect Account ab und sendet sie per MQTT an den Miniserver",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/282384-plugin-skodaconnect",
-      "lastmodified": ""
+      "lastmodified": "2022-09-11",
+      "updated_ts": 1662891407
     },
     {
       "pid": "plugins:sma2loxone:start",
@@ -1540,7 +1649,8 @@
       "description": "Mit diesem Plugin können Geräte des Herstellers SMA (Umrichter Energiezähler) ausgelesen und dem Miniserver bereitgestellt werden.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/435651-neues-plugin-sma-2-loxone",
-      "lastmodified": ""
+      "lastmodified": "2025-08-09",
+      "updated_ts": 1754715618
     },
     {
       "pid": "plugins:smartmeter_plugin:start",
@@ -1554,7 +1664,8 @@
       "description": "Dieses Plugin ermöglicht es, mit Hilfe eines USB-IR-Lesekopfs (z. B. von Volkszähler.org) viele Stromzähler über die IR-Schnittstelle auszulesen. Es werden Stromzähler unterstützt, die das SML-und das D0-Protokoll sprechen.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/85702-neues-plugin-smartmeter-stromz%C3%A4hler-auslesen",
-      "lastmodified": ""
+      "lastmodified": "2023-01-25",
+      "updated_ts": 1674671384
     },
     {
       "pid": "plugins:sml_emon:start",
@@ -1568,7 +1679,8 @@
       "description": "Dieses Plugin ermöglicht es, mit Hilfe eines USB-IR-Lesekopfs von Volkszähler.org am LoxBerry, Stromzähler welche das SML (Smart Message Language) Protokoll sprechen auszulesen.",
       "languages": "EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663337311
     },
     {
       "pid": "plugins:solaredge_bridge:start",
@@ -1582,7 +1694,8 @@
       "description": "Das Plugin liefert alle 5min den aktuell produzierten Strom der Solaredge PV Anlage (über deren API ausgelesen) per UDP an den Miniserver.",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2024-02-01",
+      "updated_ts": 1706763270
     },
     {
       "pid": "plugins:sonos4loxone:start",
@@ -1596,7 +1709,8 @@
       "description": "Das Sonos4Lox Plugin stellt basierend auf dem LoxBerry eine Komplettlösung zur Steuerung einer Sonos Multi Room Installation zur Verfügung.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/74862-loxberry-sonos-plugin-v1-0-0-verf%C3%BCgbar",
-      "lastmodified": ""
+      "lastmodified": "2026-05-23",
+      "updated_ts": 1779544341
     },
     {
       "pid": "plugins:sonox:start",
@@ -1610,7 +1724,8 @@
       "description": "Perfect Harmony Between Loxone and Sonos. API to control your Sonos speakers directly from Loxone with virtual outputs",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/451311-sonox",
-      "lastmodified": ""
+      "lastmodified": "2025-06-09",
+      "updated_ts": 1749457501
     },
     {
       "pid": "plugins:squeezelite-mr:start",
@@ -1624,7 +1739,8 @@
       "description": "Squeezelite und Soundkarten Manager um Zonen für den lox-audioserver bereit zu stellen",
       "languages": "DE/EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2026-05-06",
+      "updated_ts": 1778054341
     },
     {
       "pid": "plugins:squeezelite_player:start",
@@ -1638,7 +1754,8 @@
       "description": "Das Squeezelite Plugin ermöglicht das Betreiben einer oder mehrerer Squeezelite-Instanzen als Player für den Logitech Media Server, sowie die Datenübermittlung des aktuellen Zonenzustandes aller Zonen an den Miniserver.",
       "languages": "EN, DE, CS",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/55310-loxberry-plugin-squeezelite",
-      "lastmodified": ""
+      "lastmodified": "2025-09-01",
+      "updated_ts": 1756706467
     },
     {
       "pid": "plugins:statistics_4_loxone:start",
@@ -1652,7 +1769,8 @@
       "description": "Das Stats4Lox Plugin zeichnet Statistiken von Loxone Miniserver Elementen auf und stellt diese grafisch dar.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/315626-stats4lox-das-statistik-plugin",
-      "lastmodified": ""
+      "lastmodified": "2026-02-22",
+      "updated_ts": 1771744094
     },
     {
       "pid": "plugins:sureflap_connect:start",
@@ -1666,7 +1784,8 @@
       "description": "Ansteuern und Abfragen vom SureFlap Geräten via Sure Petcare. https://surepetcare.io/",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2025-01-13",
+      "updated_ts": 1736791856
     },
     {
       "pid": "plugins:synology_surveillance_station_v2:start",
@@ -1680,7 +1799,8 @@
       "description": "Das Plugin stellt einen UDP Server zur Verfügung der auf Befehle des Miniservers lauscht um verschiedene Befehle auf dem NAS auszuführen, z. B. Motion Detection ein.",
       "languages": "DE, EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2024-08-14",
+      "updated_ts": 1723629075
     },
     {
       "pid": "plugins:syslog_server:start",
@@ -1694,7 +1814,8 @@
       "description": "Syslog Server (not only) for Miniserver logging",
       "languages": "EN, CS, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663340194
     },
     {
       "pid": "plugins:tcp2udp:start",
@@ -1708,7 +1829,8 @@
       "description": "Dieses Plugin ermöglicht eine echte, bidirektionale Kommunikation des Miniservers mit TCP-Geräten via UDP",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/162980-tcp2udp-plugin-bidirektionale-tcp-kommunikation-mit-dem-miniserver",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663340260
     },
     {
       "pid": "plugins:teslacmd:start",
@@ -1722,7 +1844,8 @@
       "description": "Plugin für das von Tesla in 2024 veröffentlichte Tesla Vehicle Command SDK. Über das Plugin können Informationen zu den verwendeten Tesla Produkten abgerufen oder Befehle an die Tesla Produkte gesendet werden. Nachfolger des TeslaConnect Plugins.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/437633-neues-plugin-f%C3%BCr-tesla-mit-vehicle-command-api",
-      "lastmodified": ""
+      "lastmodified": "2025-02-09",
+      "updated_ts": 1739095008
     },
     {
       "pid": "plugins:teslaconnect:start",
@@ -1736,7 +1859,8 @@
       "description": "Dieses Plugin stellt eine Verbindung zur Tesla-API her. Über das Plugin können Informationen zu den verwendeten Tesla Produkten abgerufen oder Befehle an die Tesla Produkte gesendet werden. Alle Produkte, welche in der Tesla App (Android oder iPhone) angezeigt werden können abgefragt werden.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/339382-neues-plugin-teslaconnect",
-      "lastmodified": ""
+      "lastmodified": "2024-08-01",
+      "updated_ts": 1722487095
     },
     {
       "pid": "plugins:text2sip:start",
@@ -1750,7 +1874,8 @@
       "description": "Das Text2SIP Plugin bietet die Möglichkeit, eine Sprachausgabe per Telefon zu realisieren.",
       "languages": "",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins",
-      "lastmodified": ""
+      "lastmodified": "2026-05-04",
+      "updated_ts": 1777881432
     },
     {
       "pid": "plugins:text2speech:start",
@@ -1764,7 +1889,8 @@
       "description": "Komfortable Text-to-Speech Engine für den LoxBerry. Wandelt Texte im MP3 um und spielt diese ab. Über Add-on's gibt noch div. Erweiterungen wie z. B. Zeit-, Wetter, Pollenansage.",
       "languages": "",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/169062-plugin-text-2-speech-plugin-f%C3%BCr-loxberry",
-      "lastmodified": ""
+      "lastmodified": "2025-11-08",
+      "updated_ts": 1762595449
     },
     {
       "pid": "plugins:tibber2mqtt:start",
@@ -1778,7 +1904,8 @@
       "description": "Das Plugin ruft die stündlichen Preise über die Tibber API ab und stellt sie über das MQTT Plugin dem Miniserver zur Verfügung.",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2024-02-04",
+      "updated_ts": 1707080578
     },
     {
       "pid": "plugins:tibber-display:start",
@@ -1792,7 +1919,8 @@
       "description": "Dieses Plugin ruft die Stundenpreise für heute und morgen von Tibber ab und stellt diese als übersichtliches Balkendiagramm dar sowie als MQTT und HTTP Daten zur Verfügung.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/416195-neues-plugin-loxberry-tibber-display",
-      "lastmodified": ""
+      "lastmodified": "2024-04-10",
+      "updated_ts": 1712719497
     },
     {
       "pid": "plugins:tibber-meter:start",
@@ -1806,7 +1934,8 @@
       "description": "ZählerWerte von Tibber-Pulse lokal auslesen",
       "languages": "de,en",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/398257-plugin-tibber-meter-z%C3%A4hler-werte-des-tibber-pulse-auslesen",
-      "lastmodified": ""
+      "lastmodified": "2026-04-07",
+      "updated_ts": 1775560707
     },
     {
       "pid": "plugins:tinytuya:start",
@@ -1820,7 +1949,8 @@
       "description": "Das Plugin bindet Tuya kompatible Geräte an Loxone an.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/393805-plugin-loxberry-tinytuya",
-      "lastmodified": ""
+      "lastmodified": "2025-07-26",
+      "updated_ts": 1753525894
     },
     {
       "pid": "plugins:tts_engine:start",
@@ -1834,7 +1964,8 @@
       "description": "Kleine einfache TTS Engine",
       "languages": "",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/141187-kleine-einfache-tts-mp3-engine",
-      "lastmodified": ""
+      "lastmodified": "2025-10-29",
+      "updated_ts": 1761752432
     },
     {
       "pid": "plugins:ultraschall_entfernung:start",
@@ -1848,7 +1979,8 @@
       "description": "Das Plugin bietet die Möglichkeit eine Entfernung mittels LoxBerry und dem Ultraschallsensor srf02 zu messen und das Ergebnis über UDP an den Miniserver zu senden.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/138220-loxberry-ultraschall-entfernung-mehrere-sensoren",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663340741
     },
     {
       "pid": "plugins:unifi_controller_plugin:start",
@@ -1862,7 +1994,8 @@
       "description": "Dieses Plugin installiert den UniFI Controller und erlaubt die Konfiguration über das Loxberry interface.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/287750-plugin-unificontroller",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663340800
     },
     {
       "pid": "plugins:unifi_prasenz:start",
@@ -1876,7 +2009,8 @@
       "description": "Präsenzerkennung über UniFi Wifi Geräte",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/323107-plugin-unifi-presence",
-      "lastmodified": ""
+      "lastmodified": "2023-04-01",
+      "updated_ts": 1680347333
     },
     {
       "pid": "plugins:v_zug_home:start",
@@ -1890,7 +2024,8 @@
       "description": "V-ZUG-HOME - Informationen per HTTP an Miniserver übermitteln",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2023-09-13",
+      "updated_ts": 1694629973
     },
     {
       "pid": "plugins:vanderbilt_spc_edp_protokoll:start",
@@ -1904,7 +2039,8 @@
       "description": "Vanderbilt SPC EDP-Protokoll - MG Status von der Sicherheitsanlage per HTTP an Miniserver übermitteln",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663341215
     },
     {
       "pid": "plugins:velux:start",
@@ -1918,7 +2054,8 @@
       "description": "Plugin zur Steuerung von Velux Fenstern über das IO-Homecontrol (KLF-200/150)",
       "languages": "EN",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2025-12-28",
+      "updated_ts": 1766909383
     },
     {
       "pid": "plugins:vitoconnect:start",
@@ -1932,7 +2069,8 @@
       "description": "Einbinden der Viessmann Online API in Loxberry um Daten der Heizung über die Vitoconnect 100 abzufragen. Die zurückgelieferten Daten werden per HTTP bzw. MQTT bereitgestellt.",
       "languages": "DE,EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/226290-loxberry-vitoconnect",
-      "lastmodified": ""
+      "lastmodified": "2025-11-21",
+      "updated_ts": 1763720088
     },
     {
       "pid": "plugins:weather4loxone:start",
@@ -1946,7 +2084,8 @@
       "description": "Das Weather4Loxone Plugin stellt auf dem LoxBerry einen Wetterserver bereit, der auf die Daten von verschiedenen Wetterdiensten im Internet zugreift, diese Daten aufbereitet und dem Miniserver zur Verfügung stellt.",
       "languages": "EN, DE, ES, NL, SK",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/483290-plugin-weather4lox-version-4-neuer-fork",
-      "lastmodified": ""
+      "lastmodified": "2026-05-14",
+      "updated_ts": 1778794215
     },
     {
       "pid": "plugins:wifi_lan_scanner:start",
@@ -1960,7 +2099,8 @@
       "description": "Scannt das Netzwerk nach Geräten und sendet den Status an den Miniserver. Zum Beispiel zur Anwesenheitserkennung.",
       "languages": "EN, DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2023-02-07",
+      "updated_ts": 1675758766
     },
     {
       "pid": "plugins:wolf_ism8:start",
@@ -1974,7 +2114,8 @@
       "description": "Einbinden von WOLF Geräten in Loxone mittels eines ISM8 Moduls und UDP Packete.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/230031-loxberry-wolf-ism8-server-plugin",
-      "lastmodified": ""
+      "lastmodified": "2022-09-16",
+      "updated_ts": 1663341511
     },
     {
       "pid": "plugins:worx_landroid_mahrobotor:start",
@@ -1988,7 +2129,8 @@
       "description": "Steuerung der Worx Landroid Mähroboto",
       "languages": "DE, EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/306569-plugin-worx-landroid",
-      "lastmodified": ""
+      "lastmodified": "2026-04-07",
+      "updated_ts": 1775560723
     },
     {
       "pid": "plugins:worx_landroid-ng:start",
@@ -2002,7 +2144,8 @@
       "description": "Steuerung der Worx/Landxcape/Kress Mährobotor über Loxone",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/306569-plugin-worx-landroid",
-      "lastmodified": ""
+      "lastmodified": "2026-04-16",
+      "updated_ts": 1776312353
     },
     {
       "pid": "plugins:wu_upload_catcher:start",
@@ -2016,7 +2159,8 @@
       "description": "Fängt die Wetterdaten ab, die die Wetterstation an Weather Underground sendet, und stellt sie per MQTT bereit.",
       "languages": "EN",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/326940-plugin-weather-underground-upload-catcher",
-      "lastmodified": ""
+      "lastmodified": "2024-01-12",
+      "updated_ts": 1705038150
     },
     {
       "pid": "plugins:xiaomi_miflora_flower_sensor:start",
@@ -2030,7 +2174,8 @@
       "description": "Loxberry plugin for querying Xiaomi MiFlora Flower Sensors",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/156917-plugin-xiaomi-miflora-flower-monitor",
-      "lastmodified": ""
+      "lastmodified": "2024-12-21",
+      "updated_ts": 1734776144
     },
     {
       "pid": "plugins:xsensedetectors:start",
@@ -2044,7 +2189,8 @@
       "description": "Da Plugin loggt sich mit einem XSenseAccount ein, fragt zyklisch den Status aller verbundenen Melder ab und sendet diese an den MiniServer.",
       "languages": "DE",
       "forum": "",
-      "lastmodified": ""
+      "lastmodified": "2025-09-09",
+      "updated_ts": 1757411036
     },
     {
       "pid": "plugins:zigbee2mqtt_plugin:start",
@@ -2058,7 +2204,8 @@
       "description": "Dieses Plugin installiert zigbee2mqtt (https://www.zigbee2mqtt.io/) und erlaubt die Konfiguration über das Loxberry interface.",
       "languages": "EN, DE",
       "forum": "https://www.loxforum.com/forum/projektforen/loxberry/plugins/242359-neues-plugin-zigbee2mqtt",
-      "lastmodified": ""
+      "lastmodified": "2026-04-19",
+      "updated_ts": 1776597349
     }
   ]
 }

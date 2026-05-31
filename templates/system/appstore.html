@@ -39,6 +39,7 @@
 .as-meta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .as-tag{font-size:11.5px;color:var(--lb-text-muted);background:var(--lb-bg);
   padding:3px 9px;border-radius:6px}
+.as-tag-date{font-variant-numeric:tabular-nums}
 .as-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 .as-btn-primary{background:var(--lb-primary);color:#fff;border:none;border-radius:10px;
   padding:9px 16px;font-weight:600;cursor:pointer;font-size:13.5px}
@@ -91,6 +92,10 @@
     <option value="1"><TMPL_VAR APPSTORE.FILTER_INSTALLED></option>
     <option value="0"><TMPL_VAR APPSTORE.FILTER_NOT_INSTALLED></option>
   </select>
+  <select class="as-filter" id="as-sort" onchange="asSort()">
+    <option value="name"><TMPL_VAR APPSTORE.SORT_NAME></option>
+    <option value="updated"><TMPL_VAR APPSTORE.SORT_NEWEST></option>
+  </select>
 </div>
 
 <div class="as-count"><span id="as-shown"><TMPL_VAR PLUGINCOUNT></span> <TMPL_VAR APPSTORE.OF> <TMPL_VAR PLUGINCOUNT> <TMPL_VAR APPSTORE.PLUGINS_WORD></div>
@@ -99,6 +104,7 @@
 <TMPL_LOOP NAME=PLUGINS>
   <article class="as-card" data-status="<TMPL_VAR STATUS ESCAPE=HTML>"
     data-installed="<TMPL_IF IS_INSTALLED>1<TMPL_ELSE>0</TMPL_IF>"
+    data-updated="<TMPL_VAR UPDATED_TS ESCAPE=HTML>"
     data-text="<TMPL_VAR TITLE ESCAPE=HTML> <TMPL_VAR AUTHOR ESCAPE=HTML> <TMPL_VAR DESCRIPTION ESCAPE=HTML>">
     <div class="as-card-head">
       <TMPL_IF LOGO><img class="as-logo" src="<TMPL_VAR LOGO ESCAPE=HTML>" alt="" loading="lazy"><TMPL_ELSE><div class="as-logo-fallback">&#128230;</div></TMPL_IF>
@@ -112,6 +118,7 @@
     <div class="as-meta">
       <span class="as-tag">v<TMPL_VAR VERSION ESCAPE=HTML></span>
       <TMPL_IF LANGUAGES><span class="as-tag"><TMPL_VAR LANGUAGES ESCAPE=HTML></span></TMPL_IF>
+      <TMPL_IF LASTMODIFIED><span class="as-tag as-tag-date"><TMPL_VAR APPSTORE.UPDATED_LABEL> <TMPL_VAR LASTMODIFIED ESCAPE=HTML></span></TMPL_IF>
     </div>
     <div class="as-actions">
       <TMPL_IF IS_INSTALLED>
@@ -165,6 +172,21 @@ function asFilter(){
   document.getElementById('as-shown').textContent=n;
   document.getElementById('as-empty').style.display=n?'none':'';
   document.getElementById('as-grid').style.display=n?'':'none';
+}
+function asSort(){
+  var mode=document.getElementById('as-sort').value;
+  var grid=document.getElementById('as-grid');
+  var cards=Array.prototype.slice.call(grid.querySelectorAll('.as-card'));
+  cards.sort(function(a,b){
+    if(mode==='updated'){
+      return (parseInt(b.getAttribute('data-updated'),10)||0)
+           - (parseInt(a.getAttribute('data-updated'),10)||0);
+    }
+    var ta=(a.querySelector('.as-title')||{}).textContent||'';
+    var tb=(b.querySelector('.as-title')||{}).textContent||'';
+    return ta.localeCompare(tb,undefined,{sensitivity:'base'});
+  });
+  cards.forEach(function(c){grid.appendChild(c);});
 }
 function asInstall(btn){
   document.getElementById('as-modal-name').textContent=btn.getAttribute('data-title');
