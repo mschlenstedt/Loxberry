@@ -1,0 +1,18 @@
+<?php
+/**
+ * Konfiguration für wiki2appstore.php
+ * Diese Datei als "config.php" im selben Verzeichnis ablegen.
+ * NICHT in Git einchecken (steht in .gitignore).
+ *
+ * GitHub Fine-Grained PAT erstellen:
+ *   https://github.com/settings/tokens?type=beta
+ *   -> Repository: mschlenstedt/Loxberry
+ *   -> Permissions: Repository contents: Read and Write
+ *   -> Alle anderen Permissions: None (kein Zugriff auf andere Repos/Daten)
+ */
+
+// Absoluter Pfad zur DokuWiki struct.sqlite3
+define('CFG_DB_PATH', '/var/www/loxberry-wiki/data/db/struct.sqlite3');
+
+// GitHub Fine-Grained Personal Access Token
+define('CFG_GITHUB_TOKEN', 'github_pat_HIER_TOKEN_EINTRAGEN');
