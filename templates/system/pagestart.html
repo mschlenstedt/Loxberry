@@ -28,6 +28,7 @@
 			<a class="lb-sidebar-link" href="/admin/system/network.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETWORK></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/netshares.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETSHARES></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/power.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REBOOT></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/appstore.cgi"><span class="lb-sidebar-name">AppStore</span></a>
 			<a class="lb-sidebar-link" href="/admin/system/plugininstall.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/remote.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REMOTE></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/donate.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_DONATE></span></a>
@@ -51,6 +52,10 @@
 	<div class="lb-tab-popup" id="lb-tab-popup-plugins">
 		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_MYPLUGINS></div>
 		<div class="lb-tab-popup-list">
+			<a href="/admin/system/appstore.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_appstore.svg" width="22" height="22" alt="">
+				<span>AppStore</span>
+			</a>
 			<TMPL_VAR SIDEBAR_PLUGINS_TABBAR_HTML>
 			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item lb-tab-popup-item-muted">
 				<img src="/system/images/icons/main_plugininstall.svg" width="22" height="22" style="opacity:0.5;" alt="">
