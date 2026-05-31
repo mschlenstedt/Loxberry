@@ -51,6 +51,7 @@ def build(db_path):
             "zip": url5 if is_zip else "",
             "repo": "" if is_zip else url5,
             "description": clean(desc), "languages": clean(langs),
+            "min_lb_version": clean(ver),
             "forum": clean(forum), "wiki": wiki_url(pid),
             "lastmodified": modtext, "updated_ts": updated_ts,
         })

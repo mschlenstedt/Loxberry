@@ -153,6 +153,7 @@ function build_catalog(PDO $db): array
             'version'     => clean($row['version']),
             'zip'         => $is_zip ? $url_release : '',
             'repo'        => $is_zip ? '' : $url_release,
+            'min_lb_version' => clean($row['min_lb_version']),
             'description' => clean($row['description']),
             'languages'   => clean($row['languages']),
             'forum'       => clean($row['forum']),
