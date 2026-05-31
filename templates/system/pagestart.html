@@ -17,6 +17,7 @@
 			<div class="lb-sidebar-section"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
 			<a class="lb-sidebar-link" href="/admin/system/index.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_HOME></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/admin.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_ADMIN></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/appstore.cgi"><span class="lb-sidebar-name">AppStore</span></a>
 			<a class="lb-sidebar-link" href="/admin/system/backup.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_BACKUP></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/tools/filemanager/index.html" target="_blank"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_FILEMANAGER></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/logmanager.cgi"><span class="lb-sidebar-name">Log Manager</span></a>
@@ -28,7 +29,6 @@
 			<a class="lb-sidebar-link" href="/admin/system/network.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETWORK></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/netshares.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETSHARES></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/power.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REBOOT></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/appstore.cgi"><span class="lb-sidebar-name">AppStore</span></a>
 			<a class="lb-sidebar-link" href="/admin/system/plugininstall.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/remote.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REMOTE></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/donate.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_DONATE></span></a>
@@ -52,11 +52,11 @@
 	<div class="lb-tab-popup" id="lb-tab-popup-plugins">
 		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_MYPLUGINS></div>
 		<div class="lb-tab-popup-list">
+			<TMPL_VAR SIDEBAR_PLUGINS_TABBAR_HTML>
 			<a href="/admin/system/appstore.cgi" class="lb-tab-popup-item">
 				<img src="/system/images/icons/main_appstore.svg" width="22" height="22" alt="">
 				<span>AppStore</span>
 			</a>
-			<TMPL_VAR SIDEBAR_PLUGINS_TABBAR_HTML>
 			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item lb-tab-popup-item-muted">
 				<img src="/system/images/icons/main_plugininstall.svg" width="22" height="22" style="opacity:0.5;" alt="">
 				<span><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span>
