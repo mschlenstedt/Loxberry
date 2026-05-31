@@ -58,6 +58,9 @@ if (-e $cfgfile) {
 }
 my $url      = $cfg->{url} || "";
 my $ttl      = defined $cfg->{cache_ttl_minutes} ? $cfg->{cache_ttl_minutes} : 60;
+# Mitgelieferter Fallback-Katalog + Laufzeit-Cache unter data/system/appstore/.
+# Michael liefert die plugins.json beim Upgrade explizit mit (data/ ist der
+# bewusst gewaehlte Ort, trotz update-exclude.system).
 my $fallback = "$lbsdatadir/appstore/plugins.json";
 my $cache    = "$lbsdatadir/appstore/cache.json";
 
