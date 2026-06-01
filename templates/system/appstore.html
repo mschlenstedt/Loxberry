@@ -59,6 +59,7 @@
 .as-fallback-note{background:#fff8e6;border:1px solid #f0dca0;color:#8a6d1a;
   padding:9px 12px;border-radius:9px;margin:0 0 16px;font-size:13px}
 @media (max-width:560px){.as-grid{grid-template-columns:1fr}}
+.lb-btn:disabled,.lb-btn[disabled]{opacity:.45;cursor:default;pointer-events:none}
 </style>
 
 <div class="as-cache-info">DB: <TMPL_VAR CACHE_SOURCE_LABEL> &middot; <TMPL_VAR CACHE_MTIME></div>
@@ -124,7 +125,7 @@
             <span class="as-version-warn">&#9888; <TMPL_VAR APPSTORE.NEEDS_LB_VERSION> <TMPL_VAR MIN_LB_VERSION ESCAPE=HTML> (<TMPL_VAR APPSTORE.INSTALLED_IS> <TMPL_VAR LB_CURRENT_VERSION ESCAPE=HTML>)</span>
           </TMPL_IF>
         <TMPL_ELSE>
-          <span class="as-repo-note"><TMPL_VAR APPSTORE.REPO_ONLY></span>
+          <button class="lb-btn lb-btn-sm" disabled title="<TMPL_VAR APPSTORE.REPO_ONLY ESCAPE=HTML>"><TMPL_VAR APPSTORE.REPO_ONLY_SHORT></button>
         </TMPL_IF>
       </TMPL_IF>
       <TMPL_IF WIKI><a class="lb-btn lb-btn-sm" href="<TMPL_VAR WIKI ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.WIKI></a></TMPL_IF>
