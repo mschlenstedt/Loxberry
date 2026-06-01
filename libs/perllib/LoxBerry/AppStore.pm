@@ -10,19 +10,18 @@ my %BADGE = (
   ALPHA => "warn", STOPPED => "stop", "" => "unknown",
 );
 
-# load_catalog($url, $fallback_path, $cache_path, $ttl_minutes) -> ($hashref, $source)
-# $source ∈ cache|cache_stale|live|fallback|empty. Reihenfolge:
+# load_catalog($url, $cache_path, $ttl_minutes, $lbversion) -> ($hashref, $source)
+# $source ∈ cache|cache_stale|live|empty. Reihenfolge:
 #   1) Frischer Cache (juenger als TTL) -> kein Netzwerk-Zugriff (source "cache").
-#   2) Live-Fetch von der Quelle (curl) -> Cache aktualisieren (source "live").
+#   2) Live-Fetch von der Quelle (curl mit LoxBerry-UserAgent) -> Cache (source "live").
 #   3) Veralteter Cache (Quelle nicht erreichbar) -> trotzdem nutzen ("cache_stale").
-#   4) Mitgelieferter (im Git evtl. leerer) Default-Katalog.
-#   5) Gar nichts brauchbar -> leerer Katalog, source "empty" (NIE Exception).
-# So wird das Wiki nur alle $ttl_minutes (Default 60) befragt statt bei jedem
-# Seitenaufruf; der eigentliche Refresh haengt am Plugin-Update-Check.
-# Toleriert auch ein leeres Default-JSON ({} oder {"plugins":[]}) ohne Fehler.
+#   4) Gar nichts brauchbar -> leerer Cache schreiben, source "empty" (NIE Exception).
+# Cache liegt in /dev/shm (RAM-FS) um SD-Karten-Schreibzugriffe zu minimieren.
+# So wird das Wiki nur alle $ttl_minutes (Default 60) befragt statt bei jedem Aufruf.
 sub load_catalog {
-    my ($url, $fallback, $cache, $ttl_minutes) = @_;
+    my ($url, $cache, $ttl_minutes, $lbversion) = @_;
     $ttl_minutes = 60 unless defined $ttl_minutes && $ttl_minutes =~ /^\d+$/;
+    $lbversion //= "0";
 
     # 1) frischer Cache -> ohne Netzwerk verwenden (nur wenn nicht leer)
     if ($cache && -e $cache && _cache_age_minutes($cache) < $ttl_minutes) {
@@ -33,13 +32,13 @@ sub load_catalog {
     # 2) Live-Fetch via curl in den Cache (kurzes Timeout, fail-soft)
     if ($url) {
         my $safe = $url; $safe =~ s/'/'"'"'/g;
+        my $safe_ua = "LoxBerry/$lbversion (+https://wiki.loxberry.de)";
+        $safe_ua =~ s/'/'"'"'/g;
         my $tmp = "$cache.tmp";
-        my $rc = system("curl -fsSLk --connect-timeout 5 --max-time 15 -o '$tmp' '$safe'");
+        my $rc = system("curl -fsSLk -A '$safe_ua' --connect-timeout 5 --max-time 15 -o '$tmp' '$safe'");
         if ($rc == 0 && -s $tmp) {
             my $data = _read_json($tmp);
             if ($data && ref $data->{plugins} eq 'ARRAY') {
-                # Cache-Schreiben darf den Live-Pfad nicht abbrechen, falls das
-                # Verzeichnis nicht beschreibbar ist (z.B. falscher User/Rechte).
                 eval { rename($tmp, $cache); 1 } or unlink($tmp);
                 return ($data, "live");
             }
@@ -48,19 +47,15 @@ sub load_catalog {
     }
 
     # 3) veralteter Cache (Quelle nicht erreichbar) -> trotzdem nutzen, aber als
-    #    "cache_stale" markieren, damit die CGI den "evtl. nicht aktuell"-Banner
-    #    zeigt. Ein FRISCHER Cache (Schritt 1) ist dagegen aktuelle Live-Daten und
-    #    darf NICHT als veraltet markiert werden.
+    #    "cache_stale" markieren, damit die CGI den "evtl. nicht aktuell"-Banner zeigt.
     if ($cache && -e $cache) {
         my $data = _read_json($cache);
         return ($data, "cache_stale") if _has_plugins($data);
     }
 
-    # 4) mitgelieferter Default-Katalog (kann leer sein)
-    my $data = _read_json($fallback);
-    return ($data, "fallback") if _has_plugins($data);
-
-    # 5) nichts Brauchbares gefunden -> leerer Katalog statt Exception.
+    # 4) nichts Brauchbares -> leeren Katalog im Cache hinterlegen (verhindert
+    #    sofortige Neu-Abfrage beim naechsten Seitenaufruf).
+    eval { open(my $fh, '>:raw', $cache) or die; print $fh '{"plugins":[]}'; close($fh); 1 };
     return ({ plugins => [] }, "empty");
 }
 

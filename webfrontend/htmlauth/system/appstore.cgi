@@ -39,7 +39,7 @@ my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_appsto
 
 # Cache-/Datenverzeichnis sicherstellen. $lbsdatadir ist bereits
 # .../data/system (NICHT .../data), daher KEIN zusaetzliches system/.
-make_path("$lbsdatadir/appstore") unless -d "$lbsdatadir/appstore";
+make_path("/dev/shm/appstore") unless -d "/dev/shm/appstore";
 
 ##########################################################################
 # Read config (appstore.json, fallback to shipped .default)
@@ -56,19 +56,16 @@ if (-e $cfgfile) {
 	close($fh);
 	$cfg = eval { JSON::PP::decode_json($c) } || {};
 }
-my $url      = $cfg->{url} || "";
-my $ttl      = defined $cfg->{cache_ttl_minutes} ? $cfg->{cache_ttl_minutes} : 60;
-# Mitgelieferter Fallback-Katalog + Laufzeit-Cache unter data/system/appstore/.
-# Michael liefert die plugins.json beim Upgrade explizit mit (data/ ist der
-# bewusst gewaehlte Ort, trotz update-exclude.system).
-my $fallback = "$lbsdatadir/appstore/plugins.json";
-my $cache    = "$lbsdatadir/appstore/cache.json";
+my $url   = $cfg->{url} || "";
+my $ttl   = defined $cfg->{cache_ttl_minutes} ? $cfg->{cache_ttl_minutes} : 60;
+my $cache = "/dev/shm/appstore/cache.json";
 
 ##########################################################################
 # Load catalog (fresh cache -> live -> stale cache -> fallback) + enrich
 ##########################################################################
 
-my ($catalog, $source) = LoxBerry::AppStore::load_catalog($url, $fallback, $cache, $ttl);
+my $lbv = LoxBerry::System::lbversion();
+my ($catalog, $source) = LoxBerry::AppStore::load_catalog($url, $cache, $ttl, $lbv);
 
 my @installed = LoxBerry::System::get_plugins();
 LoxBerry::AppStore::mark_installed($catalog, \@installed);
@@ -79,7 +76,6 @@ LoxBerry::AppStore::classify($_) for @{$catalog->{plugins}};
 # den Install-Button und zeigt stattdessen einen Hinweis (kein Fehlinstall).
 # Die Vergleichslogik liegt in LoxBerry::AppStore::version_ok (dependency-frei,
 # unit-getestet). Die laufende Version steht zur Anzeige in jedem Plugin-Hash.
-my $lbv = LoxBerry::System::lbversion();
 for my $p (@{$catalog->{plugins}}) {
 	$p->{lb_current_version} = $lbv;
 	$p->{version_ok} = LoxBerry::AppStore::version_ok($lbv, $p->{min_lb_version});
@@ -105,7 +101,7 @@ $maintemplate->param("SOURCE"      => $source);
 # "evtl. nicht aktuell"-Banner nur bei VERALTETEM Cache (Quelle nicht erreichbar)
 # oder mitgeliefertem Default-Katalog. Frischer Cache (source "cache") sind aktuelle
 # Live-Daten innerhalb der TTL -> KEIN Banner. Leerer Katalog -> Empty-Meldung.
-$maintemplate->param("IS_FALLBACK" => ($source eq "cache_stale" || $source eq "fallback") ? 1 : 0);
+$maintemplate->param("IS_FALLBACK" => ($source eq "cache_stale") ? 1 : 0);  # Banner nur bei veraltetem Cache
 $maintemplate->param("PLUGINCOUNT" => scalar @{$catalog->{plugins}});
 
 my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'APPSTORE.WIDGETLABEL'};
