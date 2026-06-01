@@ -87,11 +87,10 @@
 				<label for="archiveurl"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW></label>
 			</div>
 			<div class="lb-form-field" style="display:flex; flex-direction:column; gap:var(--lb-space-sm);">
-				<TMPL_IF ARCHIVEURL>
-				<div style="background:#fff8dc;border:1px solid #e6b800;color:#7c5200;padding:10px 13px;border-radius:9px;font-size:13px">
+				<div id="prefill-hint-banner" style="background:#fff8dc;border:1px solid #e6b800;color:#7c5200;padding:10px 13px;border-radius:9px;font-size:13px;display:none">
 					<i class="pi pi-exclamation-triangle"></i> <TMPL_VAR APPSTORE.PREFILL_HINT>
 				</div>
-				</TMPL_IF>
+				<TMPL_IF ARCHIVEURL><script>document.getElementById('prefill-hint-banner').style.display='';</script></TMPL_IF>
 				<input class="lb-input" background-color="white" readonly type="url" autocomplete="off" id="archiveurl" name="archiveurl" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="^([hH][tT][tT][pP][sS]?|[sS]\?[fF][tT][pP])\:\/\/(((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|\:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)+(\/(([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|\/|\?)*)?(\.[zZ][iI][pP]$)|(\.[zZ][iI][pP][\?][a-zA-Z0-9\_\-\&][a-zA-Z0-9\=\&\_\-\%\/]*)$" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
 				<div style="display:flex; gap:var(--lb-space-sm); align-items:stretch;">
 					<div id="dropzone" style="flex:1; border:2px dashed #ccc; border-radius:8px; padding:16px; text-align:center; cursor:pointer; transition:all 0.2s ease; background:rgba(255,255,255,0.5);">
@@ -146,7 +145,7 @@
 	.pcard-ctl select:disabled { opacity:.6; cursor:not-allowed; }
 	.pcard-actions { display:flex; flex-direction:column; gap:7px; border-top:1px solid var(--lb-border-color); padding-top:10px; }
 	.pcard-actions .lb-btn { width:100%; justify-content:center; margin:0; box-sizing:border-box; }
-	.pcard-actions .btnrelease, .pcard-actions .btnprerelease { background:var(--lb-primary); border-color:var(--lb-primary-hover); color:#fff !important; font-weight:600; }
+	.pcard-actions .btnrelease, .pcard-actions .btnprerelease { background:var(--lb-primary) !important; border-color:var(--lb-primary-hover) !important; color:#fff !important; font-weight:600; }
 	.pcard .lb-btn.is-disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
 	.plugin-empty { text-align:center; padding:24px; color:var(--lb-text-muted); }
 	</style>
@@ -463,21 +462,22 @@
 		
 		}
 		
-		$(".btnrelease").click(function() {
+		$(".btnrelease").click(function(e) {
+			e.preventDefault();
 			$("#archiveurl").val( $(this).attr("data-updatelink") );
+			$('#prefill-hint-banner').show();
 			$(window).scrollTop($('#installationheader').offset().top-30);
-			//var scrollpos = $('#installationheader'.offset().top).scrollTop();
-			//$("html").animate( {scrollTop: scrollpos} , 600);
+		});
+
+		$(".btnprerelease").click(function(e) {
+			e.preventDefault();
+			$("#archiveurl").val( $(this).attr("data-updatelink") );
+			$('#prefill-hint-banner').show();
+			$(window).scrollTop($('#installationheader').offset().top-30);
 		});
 		
-		$(".btnprerelease").click(function() {
-			$("#archiveurl").val( $(this).attr("data-updatelink") );
-			$(window).scrollTop($('#installationheader').offset().top-30);
-			//var scrollpos = $('#installationheader'.offset().top).scrollTop();
-			//$("html").animate( {scrollTop: scrollpos} , 600);
-		});
-		
-		$("#btnrecheck").click(function() {
+		$("#btnrecheck").click(function(e) {
+			e.preventDefault();
 			$("#recheckstatus").attr("style", "color:green");
 			$("#recheckstatus").text("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
 			$("#btnrecheck").prop( "disabled", true );
