@@ -74,6 +74,17 @@ my @installed = LoxBerry::System::get_plugins();
 LoxBerry::AppStore::mark_installed($catalog, \@installed);
 LoxBerry::AppStore::classify($_) for @{$catalog->{plugins}};
 
+# min_lb_version: pro Plugin pruefen, ob die laufende LoxBerry-Version die vom
+# Plugin geforderte Mindestversion erfuellt. Ist sie zu alt, sperrt das Template
+# den Install-Button und zeigt stattdessen einen Hinweis (kein Fehlinstall).
+# Die Vergleichslogik liegt in LoxBerry::AppStore::version_ok (dependency-frei,
+# unit-getestet). Die laufende Version steht zur Anzeige in jedem Plugin-Hash.
+my $lbv = LoxBerry::System::lbversion();
+for my $p (@{$catalog->{plugins}}) {
+	$p->{lb_current_version} = $lbv;
+	$p->{version_ok} = LoxBerry::AppStore::version_ok($lbv, $p->{min_lb_version});
+}
+
 ##########################################################################
 # Template
 ##########################################################################
@@ -91,9 +102,10 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 $maintemplate->param("PLUGINS"     => $catalog->{plugins});
 $maintemplate->param("SOURCE"      => $source);
-# "evtl. nicht aktuell"-Banner nur bei Cache/Default-Daten (nicht bei frischem
-# Live-Fetch und nicht bei leerem Katalog -> dort greift die Empty-Meldung).
-$maintemplate->param("IS_FALLBACK" => ($source eq "cache" || $source eq "fallback") ? 1 : 0);
+# "evtl. nicht aktuell"-Banner nur bei VERALTETEM Cache (Quelle nicht erreichbar)
+# oder mitgeliefertem Default-Katalog. Frischer Cache (source "cache") sind aktuelle
+# Live-Daten innerhalb der TTL -> KEIN Banner. Leerer Katalog -> Empty-Meldung.
+$maintemplate->param("IS_FALLBACK" => ($source eq "cache_stale" || $source eq "fallback") ? 1 : 0);
 $maintemplate->param("PLUGINCOUNT" => scalar @{$catalog->{plugins}});
 
 my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'APPSTORE.WIDGETLABEL'};

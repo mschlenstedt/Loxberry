@@ -191,6 +191,11 @@ sub mainmenu {
 				NOTIFY_PACKAGE => "network",
 			},
 			{
+				WIDGET_TITLE => $SL{'APPSTORE.WIDGETLABEL'},
+				WIDGET_ICON => "/system/images/icons/main_appstore.svg",
+				WIDGET_CGI => "/admin/system/appstore.cgi",
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_PLUGININSTALL'},
 				WIDGET_ICON => "/system/images/icons/main_plugininstall.svg",
 				WIDGET_CGI => "/admin/system/plugininstall.cgi",

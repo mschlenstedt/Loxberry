@@ -4,7 +4,7 @@
      Installation laeuft ueber die bestehende plugininstall.cgi (URL vorausgefuellt),
      daher KEIN eigener Install-Dialog hier. -->
 <style>
-.as-betabar{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:13px;color:var(--lb-text-muted)}
+.lb-header-title .as-beta{margin-left:10px;vertical-align:2px}
 .as-beta{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;
   padding:3px 9px;border-radius:999px;background:#e4f0fb;color:#2d86c8}
 .as-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
@@ -15,8 +15,14 @@
   border:1px solid var(--lb-border-color);border-radius:10px;
   background:var(--lb-card-bg,#fff);padding:0 12px}
 .as-search .as-ico{flex:none;opacity:.45;font-size:14px;line-height:1}
-.as-search input{flex:1;min-width:0;border:none;background:transparent;outline:none;
+/* Hoehere Spezifitaet als die globale .lb-content input[type=text]-Regel (0,0,2,1),
+   sonst bekommt das Input einen EIGENEN Rahmen -> doppelter Rahmen im Suchfeld.
+   Spezifitaet schlaegt Reihenfolge, daher reicht .as-search input allein nicht. */
+.lb-content .as-search input{flex:1;min-width:0;border:none;background:transparent;outline:none;
   padding:10px 0;font-size:14px;color:var(--lb-text);box-shadow:none}
+.lb-content .as-search input:focus{border:none;background:transparent;box-shadow:none}
+/* Fokus-Feedback auf dem Container statt einem zweiten Rahmen ums Input. */
+.as-search:focus-within{border-color:var(--lb-primary)}
 .as-filter{padding:10px 14px;border:1px solid var(--lb-border-color);border-radius:10px;
   background:var(--lb-card-bg,#fff);color:var(--lb-text);font-size:14px;cursor:pointer}
 .as-count{color:var(--lb-text-muted);font-size:13px;margin:0 0 14px}
@@ -51,17 +57,13 @@
 .as-btn-ghost{background:var(--lb-bg);color:var(--lb-text);border:1px solid var(--lb-border-color);
   border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:13.5px;text-decoration:none;display:inline-block}
 .as-installed{font-size:13px;color:var(--lb-primary);font-weight:600}
+.as-version-warn{font-size:12.5px;color:#d98a14;font-weight:600;line-height:1.4}
 .as-repo-note{font-size:12px;color:var(--lb-text-muted)}
 .as-empty{padding:32px;text-align:center;color:var(--lb-text-muted);font-size:14px}
 .as-fallback-note{background:#fff8e6;border:1px solid #f0dca0;color:#8a6d1a;
   padding:9px 12px;border-radius:9px;margin:0 0 16px;font-size:13px}
 @media (max-width:560px){.as-grid{grid-template-columns:1fr}}
 </style>
-
-<div class="as-betabar">
-  <span class="as-beta">BETA</span>
-  <span><TMPL_VAR APPSTORE.BETA_HINT></span>
-</div>
 
 <TMPL_IF IS_FALLBACK>
 <div class="as-fallback-note"><TMPL_VAR APPSTORE.MSG_FALLBACK></div>
@@ -118,7 +120,11 @@
         <span class="as-installed">&#10003; <TMPL_VAR APPSTORE.INSTALLED></span>
       <TMPL_ELSE>
         <TMPL_IF INSTALLABLE>
-          <a class="as-btn-primary" href="/admin/system/plugininstall.cgi?url=<TMPL_VAR ZIP ESCAPE=URL>"><TMPL_VAR APPSTORE.INSTALL></a>
+          <TMPL_IF VERSION_OK>
+            <a class="as-btn-primary" href="/admin/system/plugininstall.cgi?url=<TMPL_VAR ZIP ESCAPE=URL>"><TMPL_VAR APPSTORE.INSTALL></a>
+          <TMPL_ELSE>
+            <span class="as-version-warn">&#9888; <TMPL_VAR APPSTORE.NEEDS_LB_VERSION> <TMPL_VAR MIN_LB_VERSION ESCAPE=HTML> (<TMPL_VAR APPSTORE.INSTALLED_IS> <TMPL_VAR LB_CURRENT_VERSION ESCAPE=HTML>)</span>
+          </TMPL_IF>
         <TMPL_ELSE>
           <span class="as-repo-note"><TMPL_VAR APPSTORE.REPO_ONLY></span>
         </TMPL_IF>
@@ -133,6 +139,18 @@
 <div class="as-empty" id="as-empty"<TMPL_IF PLUGINCOUNT> style="display:none"</TMPL_IF>><TMPL_VAR APPSTORE.EMPTY></div>
 
 <script>
+// BETA-Badge an die Seitenueberschrift haengen (kein HTML im <title>-Tag, daher
+// per JS statt im Template-Titel). Ergibt "... AppStore [BETA]" wie bei Plugins.
+(function(){
+  var h = document.querySelector('.lb-header-title');
+  if(h && !h.querySelector('.as-beta')){
+    var b = document.createElement('span');
+    b.className = 'as-beta';
+    b.textContent = 'BETA';
+    h.appendChild(b);
+  }
+})();
+
 // Datum pro Karte in das Format der eingestellten Sprache bringen
 // (Server liefert ISO als Fallback; hier auf Locale upgraden).
 (function(){

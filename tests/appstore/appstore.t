@@ -112,12 +112,28 @@ is($cat->{plugins}[1]{is_installed}, 0, "Beta not installed");
   is($fs, "cache", "fresh cache used without hitting the network");
   is(scalar @{$fc->{plugins}}, 1, "data came from cache (1 plugin), not fallback (2)");
 
-  # Cache kuenstlich veralten + unerreichbare URL -> veralteter Cache wird genutzt.
+  # Cache kuenstlich veralten + unerreichbare URL -> veralteter Cache wird genutzt,
+  # aber als "cache_stale" markiert (frischer Cache oben war "cache"), damit die CGI
+  # den "evtl. nicht aktuell"-Banner NUR bei wirklich veralteten Daten zeigt.
   my $old = time() - 3600 * 24;
   utime($old, $old, $cachep);
   my ($sc, $ss) = LoxBerry::AppStore::load_catalog(
     "http://127.0.0.1:9/none.json", $fallback, $cachep, 60);
-  is($ss, "cache", "stale cache still used when wiki unreachable");
+  is($ss, "cache_stale", "stale cache marked cache_stale when source unreachable");
+}
+
+# version_ok: feldweiser Numerikvergleich der punktgetrennten LoxBerry-Version
+# gegen die geforderte Mindestversion (min_lb_version aus dem Katalog).
+{
+  is(LoxBerry::AppStore::version_ok("3.0.1.3", "2.2.1"), 1, "neuer als Minimum -> ok");
+  is(LoxBerry::AppStore::version_ok("2.2.1",   "2.2.1"), 1, "exakt Minimum -> ok");
+  is(LoxBerry::AppStore::version_ok("2.0",     "2.2.1"), 0, "aelter als Minimum -> gesperrt");
+  is(LoxBerry::AppStore::version_ok("3.0",     "3.0.0"), 1, "fehlende Felder zaehlen als 0");
+  is(LoxBerry::AppStore::version_ok("1.0.0",   ""),      1, "leere Mindestversion -> keine Anforderung");
+  is(LoxBerry::AppStore::version_ok("1.0.0",   undef),   1, "undef Mindestversion -> keine Anforderung");
+  is(LoxBerry::AppStore::version_ok("v3.1",    "v3.0"),  1, "fuehrendes v wird ignoriert");
+  is(LoxBerry::AppStore::version_ok("3.0.1.3", "garbage"), 1, "nicht parsebares Minimum sperrt nicht");
+  is(LoxBerry::AppStore::version_ok("3.10.0",  "3.9.0"), 1, "feldweise: 10 > 9 (kein String-Vergleich)");
 }
 
 done_testing();

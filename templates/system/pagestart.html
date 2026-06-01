@@ -17,6 +17,7 @@
 			<div class="lb-sidebar-section"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
 			<a class="lb-sidebar-link" href="/admin/system/index.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_HOME></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/admin.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_ADMIN></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/appstore.cgi"><span class="lb-sidebar-name">AppStore <span class="lb-beta-tag">BETA</span></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/backup.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_BACKUP></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/tools/filemanager/index.html" target="_blank"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_FILEMANAGER></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/logmanager.cgi"><span class="lb-sidebar-name">Log Manager</span></a>
@@ -52,8 +53,15 @@
 		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_MYPLUGINS></div>
 		<div class="lb-tab-popup-list">
 			<TMPL_VAR SIDEBAR_PLUGINS_TABBAR_HTML>
-			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item lb-tab-popup-item-muted">
-				<img src="/system/images/icons/main_plugininstall.svg" width="22" height="22" style="opacity:0.5;" alt="">
+			<!-- Trenner zwischen den installierten Plugins und der Aktionsgruppe
+			     (AppStore + Plugin-Verwaltung). Inline, damit ohne CSS-Cache-Bump
+			     wirksam; Plugin-Verwaltung bleibt grau, aber ohne eigene Linie. -->
+			<a href="/admin/system/appstore.cgi" class="lb-tab-popup-item" style="border-top:1px solid var(--lb-sidebar-border);margin-top:4px;padding-top:12px;">
+				<img src="/system/images/icons/main_appstore.svg" width="22" height="22" alt="">
+				<span>AppStore <span class="lb-beta-tag">BETA</span></span>
+			</a>
+			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item">
+				<img src="/system/images/icons/main_plugininstall.svg" width="22" height="22" alt="">
 				<span><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span>
 			</a>
 		</div>
@@ -429,6 +437,21 @@
 }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.8s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+/* BETA-Tag fuer Nav-Eintraege (Sidebar + mobiles Popup), passend zum
+   BETA-Badge auf der AppStore-Seite. */
+.lb-beta-tag {
+	display: inline-block;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	line-height: 1;
+	padding: 2px 5px;
+	margin-left: 7px;
+	border-radius: 999px;
+	background: #e4f0fb;
+	color: #2d86c8;
+	vertical-align: middle;
+}
 		</style>
 
 		<TMPL_VAR JSONMENU>

@@ -11,10 +11,10 @@ my %BADGE = (
 );
 
 # load_catalog($url, $fallback_path, $cache_path, $ttl_minutes) -> ($hashref, $source)
-# $source ∈ cache|live|fallback|empty. Reihenfolge:
-#   1) Frischer Cache (juenger als TTL) -> kein Netzwerk-Zugriff.
-#   2) Live-Fetch vom Wiki (curl) -> Cache aktualisieren.
-#   3) Veralteter Cache (Wiki nicht erreichbar) -> trotzdem nutzen.
+# $source ∈ cache|cache_stale|live|fallback|empty. Reihenfolge:
+#   1) Frischer Cache (juenger als TTL) -> kein Netzwerk-Zugriff (source "cache").
+#   2) Live-Fetch von der Quelle (curl) -> Cache aktualisieren (source "live").
+#   3) Veralteter Cache (Quelle nicht erreichbar) -> trotzdem nutzen ("cache_stale").
 #   4) Mitgelieferter (im Git evtl. leerer) Default-Katalog.
 #   5) Gar nichts brauchbar -> leerer Katalog, source "empty" (NIE Exception).
 # So wird das Wiki nur alle $ttl_minutes (Default 60) befragt statt bei jedem
@@ -47,10 +47,13 @@ sub load_catalog {
         unlink($tmp) if -e $tmp;
     }
 
-    # 3) veralteter Cache (Wiki nicht erreichbar) -> trotzdem nutzen
+    # 3) veralteter Cache (Quelle nicht erreichbar) -> trotzdem nutzen, aber als
+    #    "cache_stale" markieren, damit die CGI den "evtl. nicht aktuell"-Banner
+    #    zeigt. Ein FRISCHER Cache (Schritt 1) ist dagegen aktuelle Live-Daten und
+    #    darf NICHT als veraltet markiert werden.
     if ($cache && -e $cache) {
         my $data = _read_json($cache);
-        return ($data, "cache") if _has_plugins($data);
+        return ($data, "cache_stale") if _has_plugins($data);
     }
 
     # 4) mitgelieferter Default-Katalog (kann leer sein)
@@ -122,6 +125,38 @@ sub mark_installed {
         }
     }
     return $cat;
+}
+
+# version_ok($current, $min) -> 1|0
+# Erfuellt die laufende LoxBerry-Version $current die geforderte Mindestversion
+# $min? LoxBerry-Versionen sind punktgetrennte Zahlen (z.B. "3.0.1.3", "2.2.1");
+# der Vergleich laeuft feldweise numerisch, fehlende Felder zaehlen als 0
+# ("3.0" == "3.0.0"). Leeres/undef $min bedeutet keine Anforderung -> 1.
+# Nicht in Zahlen zerlegbare Versionen sperren NICHT (-> 1), um False-Positives
+# (faelschlich gesperrte Installs) zu vermeiden.
+sub version_ok {
+    my ($current, $min) = @_;
+    return 1 unless defined $min && $min ne "";
+    return 1 unless defined $current && $current ne "";
+    my @c = _vparts($current);
+    my @m = _vparts($min);
+    return 1 unless @c && @m;   # nicht parsebar -> nicht sperren
+    my $n = @c > @m ? scalar(@c) : scalar(@m);
+    for my $i (0 .. $n - 1) {
+        my $a = $c[$i] // 0;
+        my $b = $m[$i] // 0;
+        return 1 if $a > $b;
+        return 0 if $a < $b;
+    }
+    return 1;   # alle Felder gleich -> erfuellt
+}
+
+# Zerlegt eine punktgetrennte Versionszeichenkette in numerische Felder.
+# Fuehrendes "v" wird entfernt; Ergebnis ist leer, wenn keine Ziffern enthalten.
+sub _vparts {
+    my ($v) = @_;
+    $v =~ s/^v//i;
+    return ($v =~ /(\d+)/g);
 }
 
 # Normalisiert einen Plugin-Titel auf einen vergleichbaren Schluessel:

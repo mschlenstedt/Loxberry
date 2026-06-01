@@ -1,4 +1,4 @@
 {
-	"url": "https://wiki.loxberry.de/_export/appstore/plugins.json",
+	"url": "https://raw.githubusercontent.com/mschlenstedt/Loxberry/master/data/system/appstore/plugins.json",
 	"cache_ttl_minutes": 60
 }
