@@ -39,7 +39,8 @@ my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_appsto
 
 # Cache-/Datenverzeichnis sicherstellen. $lbsdatadir ist bereits
 # .../data/system (NICHT .../data), daher KEIN zusaetzliches system/.
-make_path("/dev/shm/appstore") unless -d "/dev/shm/appstore";
+make_path("/dev/shm/appstore")         unless -d "/dev/shm/appstore";
+make_path("$lbsdatadir/appstore") unless -d "$lbsdatadir/appstore";
 
 ##########################################################################
 # Read config (appstore.json, fallback to shipped .default)
@@ -56,16 +57,17 @@ if (-e $cfgfile) {
 	close($fh);
 	$cfg = eval { JSON::PP::decode_json($c) } || {};
 }
-my $url   = $cfg->{url} || "";
-my $ttl   = defined $cfg->{cache_ttl_minutes} ? $cfg->{cache_ttl_minutes} : 60;
-my $cache = "/dev/shm/appstore/cache.json";
+my $url        = $cfg->{url} || "";
+my $ttl        = defined $cfg->{cache_ttl_minutes} ? $cfg->{cache_ttl_minutes} : 60;
+my $cache      = "/dev/shm/appstore/cache.json";
+my $persistent = "$lbsdatadir/appstore/plugins.json";
 
 ##########################################################################
 # Load catalog (fresh cache -> live -> stale cache -> fallback) + enrich
 ##########################################################################
 
 my $lbv = LoxBerry::System::lbversion();
-my ($catalog, $source) = LoxBerry::AppStore::load_catalog($url, $cache, $ttl, $lbv);
+my ($catalog, $source) = LoxBerry::AppStore::load_catalog($url, $cache, $ttl, $lbv, $persistent);
 
 my @installed = LoxBerry::System::get_plugins();
 LoxBerry::AppStore::mark_installed($catalog, \@installed);

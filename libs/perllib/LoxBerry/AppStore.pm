@@ -10,16 +10,17 @@ my %BADGE = (
   ALPHA => "warn", STOPPED => "stop", "" => "unknown",
 );
 
-# load_catalog($url, $cache_path, $ttl_minutes, $lbversion) -> ($hashref, $source)
-# $source ∈ cache|cache_stale|live|empty. Reihenfolge:
-#   1) Frischer Cache (juenger als TTL) -> kein Netzwerk-Zugriff (source "cache").
-#   2) Live-Fetch von der Quelle (curl mit LoxBerry-UserAgent) -> Cache (source "live").
-#   3) Veralteter Cache (Quelle nicht erreichbar) -> trotzdem nutzen ("cache_stale").
-#   4) Gar nichts brauchbar -> leerer Cache schreiben, source "empty" (NIE Exception).
-# Cache liegt in /dev/shm (RAM-FS) um SD-Karten-Schreibzugriffe zu minimieren.
-# So wird das Wiki nur alle $ttl_minutes (Default 60) befragt statt bei jedem Aufruf.
+# load_catalog($url, $cache_path, $ttl_minutes, $lbversion, $persistent) -> ($hashref, $source)
+# $source ∈ cache|live|cache_stale|fallback|empty. Reihenfolge:
+#   1) Frischer Cache /dev/shm (juenger als TTL) -> kein Netzwerk-Zugriff ("cache").
+#   2) Live-Fetch (curl, LoxBerry-UserAgent) -> /dev/shm-Cache; zusaetzlich nach
+#      $persistent wenn die Datei nicht existiert oder aelter als 24h ist ("live").
+#   3) Veralteter /dev/shm-Cache (Quelle nicht erreichbar) -> "cache_stale" + Banner.
+#   4) $persistent (data/system/appstore/plugins.json, max. 24h alt) -> in /dev/shm
+#      kopieren und als "fallback" zurueckgeben (kein Banner).
+#   5) Gar nichts brauchbar -> leeren Cache schreiben, "empty" (NIE Exception).
 sub load_catalog {
-    my ($url, $cache, $ttl_minutes, $lbversion) = @_;
+    my ($url, $cache, $ttl_minutes, $lbversion, $persistent) = @_;
     $ttl_minutes = 60 unless defined $ttl_minutes && $ttl_minutes =~ /^\d+$/;
     $lbversion //= "0";
 
@@ -29,7 +30,8 @@ sub load_catalog {
         return ($data, "cache") if _has_plugins($data);
     }
 
-    # 2) Live-Fetch via curl in den Cache (kurzes Timeout, fail-soft)
+    # 2) Live-Fetch via curl; bei Erfolg in /dev/shm-Cache UND (wenn aelter als
+    #    24h oder nicht vorhanden) in $persistent schreiben.
     if ($url) {
         my $safe = $url; $safe =~ s/'/'"'"'/g;
         my $safe_ua = "LoxBerry/$lbversion (+https://wiki.loxberry.de)";
@@ -40,20 +42,46 @@ sub load_catalog {
             my $data = _read_json($tmp);
             if ($data && ref $data->{plugins} eq 'ARRAY') {
                 eval { rename($tmp, $cache); 1 } or unlink($tmp);
+                # Persistente Kopie auf SD schreiben wenn nicht vorhanden oder aelter 24h
+                if ($persistent && (!-e $persistent || _cache_age_minutes($persistent) > 24 * 60)) {
+                    eval {
+                        open(my $in,  '<:raw', $cache)           or die;
+                        local $/; my $c = <$in>; close($in);
+                        open(my $out, '>:raw', "$persistent.tmp") or die;
+                        print $out $c; close($out);
+                        rename("$persistent.tmp", $persistent);
+                        1;
+                    };
+                }
                 return ($data, "live");
             }
         }
         unlink($tmp) if -e $tmp;
     }
 
-    # 3) veralteter Cache (Quelle nicht erreichbar) -> trotzdem nutzen, aber als
-    #    "cache_stale" markieren, damit die CGI den "evtl. nicht aktuell"-Banner zeigt.
+    # 3) veralteter /dev/shm-Cache (Quelle nicht erreichbar) -> IS_FALLBACK-Banner
     if ($cache && -e $cache) {
         my $data = _read_json($cache);
         return ($data, "cache_stale") if _has_plugins($data);
     }
 
-    # 4) nichts Brauchbares -> leeren Katalog im Cache hinterlegen (verhindert
+    # 4) Persistenter Fallback (data/system/appstore/plugins.json, max. 24h alt).
+    #    In /dev/shm kopieren, damit naechster Aufruf Stufe 1 oder 3 trifft.
+    if ($persistent && -e $persistent) {
+        my $data = _read_json($persistent);
+        if (_has_plugins($data)) {
+            eval {
+                open(my $in,  '<:raw', $persistent) or die;
+                local $/; my $c = <$in>; close($in);
+                open(my $out, '>:raw', $cache)       or die;
+                print $out $c; close($out);
+                1;
+            };
+            return ($data, "fallback");
+        }
+    }
+
+    # 5) nichts Brauchbares -> leeren Katalog im Cache hinterlegen (verhindert
     #    sofortige Neu-Abfrage beim naechsten Seitenaufruf).
     eval { open(my $fh, '>:raw', $cache) or die; print $fh '{"plugins":[]}'; close($fh); 1 };
     return ({ plugins => [] }, "empty");
