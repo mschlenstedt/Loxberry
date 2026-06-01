@@ -425,17 +425,21 @@ button.lb-btn-primary:hover {
 	border-color: var(--lb-primary-dark);
 	color: var(--lb-btn-primary-text);
 }
-.lb-btn-danger:hover,
-a.lb-btn-danger:hover,
-button.lb-btn-danger:hover {
-	filter: brightness(1.1);
-}
-
-.lb-btn-danger {
+.lb-btn-danger,
+a.lb-btn-danger,
+a.lb-btn-danger:visited,
+a.lb-btn-danger:link,
+button.lb-btn-danger {
 	background-color: var(--lb-danger);
 	color: white;
 	border-color: var(--lb-danger);
 	text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+.lb-btn-danger:hover,
+a.lb-btn-danger:hover,
+button.lb-btn-danger:hover {
+	background-color: var(--lb-danger);
+	filter: brightness(1.1);
 }
 
 .lb-btn-sm {
