@@ -100,10 +100,10 @@ my %SL = LoxBerry::System::readlanguage($maintemplate);
 
 $maintemplate->param("PLUGINS"     => $catalog->{plugins});
 $maintemplate->param("SOURCE"      => $source);
-# "evtl. nicht aktuell"-Banner nur bei VERALTETEM Cache (Quelle nicht erreichbar)
-# oder mitgeliefertem Default-Katalog. Frischer Cache (source "cache") sind aktuelle
-# Live-Daten innerhalb der TTL -> KEIN Banner. Leerer Katalog -> Empty-Meldung.
-$maintemplate->param("IS_FALLBACK" => ($source eq "cache_stale") ? 1 : 0);  # Banner nur bei veraltetem Cache
+# "evtl. nicht aktuell"-Banner bei veraltetem /dev/shm-Cache (server nicht
+# erreichbar) oder persistentem Fallback (max. 24h alte SD-Kopie). Kein Banner
+# bei frischem Cache (innerhalb TTL) oder Live-Daten.
+$maintemplate->param("IS_FALLBACK" => ($source eq "cache_stale" || $source eq "fallback") ? 1 : 0);
 $maintemplate->param("PLUGINCOUNT" => scalar @{$catalog->{plugins}});
 
 my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'APPSTORE.WIDGETLABEL'};
