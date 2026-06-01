@@ -70,8 +70,8 @@
 		<a class="lb-btn lb-btn-sm lb-btn-icon" target="pluginarchive" href="https://wiki.loxberry.de/plugins/start"><i class="pi pi-search"></i> <TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
 	</div>
 	<div style="display:flex; width:100%; text-align:left; align-items:center;" id="installationheader">
-		<div style="padding:5px 10px 5px 0;">
-			<img width="32" height="32" src="/system/images/icons/main_plugininstall.svg" alt="">
+		<div style="padding:5px 10px 5px 0; line-height:1;">
+			<i class="pi pi-download" style="font-size:22px; color:var(--lb-text);"></i>
 		</div>
 		<div style="width:100%; text-align:left;">
 			<div class="lb-section-title"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
@@ -118,14 +118,14 @@
 	<div style="height:20px;"></div>
 
 	<div style="display:flex; width:100%; text-align:left; align-items:center;">
-		<div style="padding:5px 10px 5px 0;">
-			<img width="32" height="32" src="/system/images/icons/main_plugins_title.svg" alt="">
+		<div style="padding:5px 10px 5px 0; line-height:1;">
+			<i class="pi pi-th-large" style="font-size:22px; color:var(--lb-text);"></i>
 		</div>
 		<div style="width:100%; text-align:left;">
 			<div class="lb-section-title"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
-			<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="btnrecheck"><i class="pi pi-refresh"></i> <TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
 		</div>
 	</div>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="btnrecheck"><i class="pi pi-refresh"></i> <TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
 	<div style="height:var(--lb-space-lg)"></div>
 	<style>
 	/* === Plugin-Verwaltung: Karten-Grid (ersetzt die alten Tabellen-Zeilen) === */
