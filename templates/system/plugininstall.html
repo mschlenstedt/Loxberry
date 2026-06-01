@@ -468,6 +468,7 @@
 			e.preventDefault();
 			$("#archiveurl").val( $(this).attr("data-updatelink") );
 			$('#prefill-hint-banner').show();
+			$('#archiveurl').trigger('keyup');
 			$(window).scrollTop($('#installationheader').offset().top-30);
 		});
 
@@ -475,6 +476,7 @@
 			e.preventDefault();
 			$("#archiveurl").val( $(this).attr("data-updatelink") );
 			$('#prefill-hint-banner').show();
+			$('#archiveurl').trigger('keyup');
 			$(window).scrollTop($('#installationheader').offset().top-30);
 		});
 		
