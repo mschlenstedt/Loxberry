@@ -69,14 +69,10 @@
 		<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/appstore.cgi"><i class="pi pi-shopping-cart"></i> <TMPL_VAR APPSTORE.LABEL_BROWSE_APPSTORE></a>
 		<a class="lb-btn lb-btn-sm lb-btn-icon" target="pluginarchive" href="https://wiki.loxberry.de/plugins/start"><i class="pi pi-search"></i> <TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
 	</div>
-	<div style="display:flex; width:100%; text-align:left; align-items:flex-start;" id="installationheader">
-		<div style="padding:5px 10px 5px 0; line-height:1;">
-			<i class="pi pi-download" style="font-size:22px; color:var(--lb-text);"></i>
-		</div>
-		<div style="width:100%; text-align:left;">
-			<div class="lb-section-title"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
-		</div>
-	</div>
+	<p class="lb-section-title" style="display:flex;align-items:center;gap:12px;" id="installationheader">
+		<i class="pi pi-download" style="font-size:28px; color:var(--lb-text);"></i>
+		<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION>
+	</p>
 
 	<div style="height:var(--lb-space-lg)"></div>
 	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data" style="max-width:80%;margin:0 auto">
@@ -117,14 +113,10 @@
 
 	<div style="height:20px;"></div>
 
-	<div style="display:flex; width:100%; text-align:left; align-items:flex-start;">
-		<div style="padding:5px 10px 5px 0; line-height:1;">
-			<i class="pi pi-th-large" style="font-size:22px; color:var(--lb-text);"></i>
-		</div>
-		<div style="width:100%; text-align:left;">
-			<div class="lb-section-title"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS></div>
-		</div>
-	</div>
+	<p class="lb-section-title" style="display:flex;align-items:center;gap:12px;">
+		<i class="pi pi-th-large" style="font-size:28px; color:var(--lb-text);"></i>
+		<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS>
+	</p>
 	<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="btnrecheck"><i class="pi pi-refresh"></i> <TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
 	<div style="height:var(--lb-space-lg)"></div>
 	<style>
