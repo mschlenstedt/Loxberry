@@ -56,7 +56,7 @@ print <<"HTML";
 				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
 				background: #ebebeb;
 				z-index: 9999;
-				display: flex; align-items: center; justify-content: center;
+				display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh;
 				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 				font-size: 14px;
 			}
