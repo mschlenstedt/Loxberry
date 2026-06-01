@@ -1033,6 +1033,9 @@ a.lb-sidebar-link.active:visited {
 	font-family: var(--lb-font);
 	margin: 0;
 }
+.lb-header-title .hint {
+	font-size: inherit;
+}
 .lb-header-actions {
 	display: flex;
 	align-items: center;
