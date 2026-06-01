@@ -249,7 +249,7 @@ sub mainmenu {
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_FILEMANAGER'},
 				WIDGET_ICON => "/system/images/icons/main_filemanager.svg",
-				WIDGET_CGI => "/admin/system/tools/filemanager/index.html",
+				WIDGET_CGI => "/admin/system/tools/filemanager/index.cgi?p=/",
 				WIDGET_TARGET => "_blank",
 				NOTIFY_PACKAGE => "filemanager",
 			},
