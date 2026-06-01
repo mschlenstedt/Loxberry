@@ -15,7 +15,7 @@ my $q = CGI::Simple->new;
 my $params = $q->Vars;
 my $nopanels = defined $params->{'nopanels'};
 
-our $template_title = "MQTT Finder";
+our $template_title;
 our $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt";
 $helplink = "nopanels" if( $nopanels );
 
@@ -30,6 +30,7 @@ my $maintemplate = HTML::Template->new(
 );
 
 my %SL = LoxBerry::System::readlanguage($maintemplate);
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": MQTT Finder";
 
 our @navbar = (
 	{

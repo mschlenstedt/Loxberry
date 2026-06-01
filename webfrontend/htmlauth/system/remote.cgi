@@ -45,7 +45,7 @@ exit;
 ######################################################################
 sub print_form
 {
-	my $plugintitle = "Remote Support (V" . LoxBerry::System::lbversion() . ")";
+	my $plugintitle = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'REMOTE.WIDGETLABEL'};
 	my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_remote_support";
 	my $helptemplate = "help.html";
 	

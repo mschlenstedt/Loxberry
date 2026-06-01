@@ -17,7 +17,6 @@ if ($cgi->param("action") && $cgi->param("action") eq "checksecpin") {
 	exit;
 }
 
-my $plugintitle = "MQTT";
 my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt";
 my $helptemplate = "help.html";
 
@@ -29,6 +28,7 @@ my $template = HTML::Template->new(
 );
 
 my %SL = LoxBerry::System::readlanguage($template);
+my $plugintitle = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MQTT.WIDGETLABEL'};
 
 our @navbar = (
 	{

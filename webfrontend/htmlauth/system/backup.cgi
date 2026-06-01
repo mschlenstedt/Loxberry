@@ -47,7 +47,7 @@ exit;
 ######################################################################
 sub print_form
 {
-	my $plugintitle = "Backup (V" . LoxBerry::System::lbversion() . ")";
+	my $plugintitle = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'BACKUP.WIDGETLABEL'};
 	my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_backup";
 	my $helptemplate = "help.html";
 	

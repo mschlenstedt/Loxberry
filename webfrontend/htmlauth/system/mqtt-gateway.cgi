@@ -118,7 +118,7 @@ exit;
 ######################################################################
 sub print_form
 {
-	my $plugintitle = "MQTT Gateway";
+	my $plugintitle = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MQTT.WIDGETLABEL'};
 	my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt";
 	my $helptemplate = "help.html";
 	

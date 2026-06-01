@@ -57,7 +57,7 @@ $lang = LBSystem::lblanguage();
 
 $SL = LBSystem::readlanguage(NULL, "language.ini", True);
 
-$template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].": ". $SL['SERVICES.WIDGETLABEL']." v$sversion";
+$template_title = $SL['COMMON.LOXBERRY_MAIN_TITLE'].": ". $SL['SERVICES.WIDGETLABEL'];
 
 ##########################################################################
 # Main program

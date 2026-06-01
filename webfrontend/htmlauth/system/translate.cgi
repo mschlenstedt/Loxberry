@@ -115,7 +115,7 @@ our $maintemplate = HTML::Template->new(
 mes "readlanguage";
 our %SL = LoxBerry::System::readlanguage($maintemplate);
 mes "set Template titles";
-$template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'TRANSLATE.WIDGETLABEL'} v$sversion";
+$template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}: $SL{'TRANSLATE.WIDGETLABEL'}";
 
 ##########################################################################
 # Main program
