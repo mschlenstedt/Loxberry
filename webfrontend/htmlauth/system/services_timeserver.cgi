@@ -207,7 +207,7 @@ sub form {
 	$maintemplate->param("TIMEZONELIST", $timezonelist);
 	$maintemplate->param("SYSTEMDATETIME", $systemdatetime);
 	$maintemplate->param("NTPSERVERURL", $ntpserverurl);
-	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'SERVICES.WIDGETLABEL'};
 	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
@@ -284,7 +284,7 @@ sub save {
 	$maintemplate->param("MESSAGE", $message);
 	$maintemplate->param("NEXTURL", $ENV{REQUEST_URI});
 
-	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'SERVICES.WIDGETLABEL'};
 	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
@@ -305,7 +305,7 @@ exit;
 
 sub error {
 
-$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TIMESERVER.WIDGETLABEL'};
+$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'SERVICES.WIDGETLABEL'};
 
 	my $errtemplate = HTML::Template->new(
 				filename => "$lbstemplatedir/error.html",

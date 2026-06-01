@@ -104,7 +104,7 @@ $navbar{50}{Name} = "$SL{'SERVICES.TITLE_PAGE_OPTIONS'}";
 $navbar{50}{URL} = 'services.php?load=3';
 
 # Print Template
-my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'SERVICES.WIDGETLABEL'} . " v" . LoxBerry::System::lbversion();
+my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'SERVICES.WIDGETLABEL'};
 LoxBerry::Web::head();
 LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 print $maintemplate->output();
