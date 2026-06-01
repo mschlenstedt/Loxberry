@@ -54,82 +54,68 @@ print <<"HTML";
 		<style>
 			#securepin_overlay {
 				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-				background: #f0f2f5;
+				background: #ebebeb;
 				z-index: 9999;
 				display: flex; align-items: center; justify-content: center;
 				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 				font-size: 14px;
 			}
-			#securepin_box {
-				background: #fff;
-				border: 1px solid #d8dde3;
-				border-radius: 8px;
-				box-shadow: 0 2px 12px rgba(0,0,0,.10);
-				padding: 22px 20px 18px;
+			#securepin_content {
 				width: 320px;
 				max-width: 95vw;
+				text-align: center;
 			}
-			#securepin_box h3 {
-				margin: 0 0 14px 0;
-				font-size: 15px;
-				font-weight: 700;
-				color: #2d3748;
-				padding-bottom: 10px;
-				border-bottom: 2px solid #6dac20;
-			}
-			#securepin_box p {
+			#securepin_content > p {
 				margin: 0 0 10px 0;
-				color: #555;
-				font-size: 13px;
-				line-height: 1.45;
+				color: #333;
+				font-size: 14px;
+				line-height: 1.4;
 			}
 			#securepin_row {
 				display: flex;
 				gap: 8px;
 				align-items: center;
-				margin: 10px 0 4px;
+				margin: 10px;
 			}
 			#securepin {
 				flex: 1;
 				min-width: 0;
 				padding: 7px 10px;
-				border: 1px solid #c9d3dc;
-				border-radius: 6px;
+				border: 1px solid #aaa;
 				font-size: 14px;
 				outline: none;
-				color: #333;
 			}
-			#securepin:focus { border-color: #6dac20; }
 			#check_securepin {
 				padding: 7px 16px;
-				background: #6dac20;
-				color: #fff;
-				border: 1px solid #5a9418;
-				border-radius: 6px;
+				background: #fff;
+				color: #333;
+				border: 1px solid #aaa;
 				font-size: 13px;
-				font-weight: 600;
 				cursor: pointer;
 				white-space: nowrap;
 			}
-			#check_securepin:hover:not(:disabled) { background: #5a9418; }
-			#check_securepin:disabled { background: #a0aec0; border-color: #909eab; cursor: default; }
+			#check_securepin:hover:not(:disabled) { background: #f0f0f0; }
+			#check_securepin:disabled { opacity: 0.5; cursor: default; }
 			#check_hint {
 				min-height: 18px;
-				font-size: 12px;
-				padding: 3px 0;
-				color: #718096;
+				font-size: 13px;
+				padding: 4px 0;
+				color: #555;
 			}
 			#securepin_warning {
-				margin-top: 12px;
-				background: #fff5f5;
-				border: 1px solid #e0b0b0;
-				border-radius: 6px;
-				padding: 10px 12px;
-				font-size: 12px;
-				color: #744210;
+				margin-top: 20px;
+				background: #FF8080;
+				border: 1px solid #000;
+				padding: 8px 12px;
+				font-size: 13px;
+				color: #000;
+				text-align: center;
 				line-height: 1.45;
 			}
-			#securepin_warning strong { color: #c00; }
+			#securepin_warning b {
+				display: block;
+				margin-bottom: 6px;
+			}
 		</style>
 
 		<!-- Require JS (REQUIRED) -->
@@ -176,7 +162,7 @@ print <<"HTML";
 						fm.bind('open', function() {
 							var path = '', cwd = fm.cwd();
 							if (cwd) { path = fm.path(cwd.hash) || null; }
-							document.title = path ? path + ':' + title : title;
+							document.title = (path && path !== '/') ? path + ':' + title : title;
 						}).bind('destroy', function() {
 							document.title = title;
 						});
@@ -190,8 +176,7 @@ print <<"HTML";
 
 		<!-- SecurePIN overlay -->
 		<div id="securepin_overlay">
-			<div id="securepin_box">
-				<h3>$title</h3>
+			<div id="securepin_content">
 				<p>$label_pin</p>
 				<div id="securepin_row">
 					<input id="securepin" type="password" placeholder="SecurePIN" autocomplete="off">
@@ -199,7 +184,8 @@ print <<"HTML";
 				</div>
 				<div id="check_hint">&nbsp;</div>
 				<div id="securepin_warning">
-					<strong>$warn_title:</strong> $warn_text
+					<b>$warn_title</b>
+					$warn_text
 				</div>
 			</div>
 		</div>
