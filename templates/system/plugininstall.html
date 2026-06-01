@@ -146,6 +146,8 @@
 	.pcard-actions { display:flex; flex-direction:column; gap:7px; border-top:1px solid var(--lb-border-color); padding-top:10px; }
 	.pcard-actions .lb-btn { width:100%; justify-content:center; margin:0; box-sizing:border-box; }
 	.pcard-actions .btnrelease, .pcard-actions .btnprerelease { background:var(--lb-primary) !important; border-color:var(--lb-primary-hover) !important; color:#fff !important; font-weight:600; }
+	.pcard-actions .btnrelease:hover, .pcard-actions .btnprerelease:hover { background:var(--lb-primary-hover) !important; border-color:var(--lb-primary-dark) !important; color:#fff !important; }
+	.pcard-actions .btnrelease:active, .pcard-actions .btnprerelease:active { background:var(--lb-primary-hover) !important; filter:brightness(0.96); }
 	.pcard .lb-btn.is-disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
 	.plugin-empty { text-align:center; padding:24px; color:var(--lb-text-muted); }
 	</style>
