@@ -106,6 +106,17 @@ $maintemplate->param("SOURCE"      => $source);
 $maintemplate->param("IS_FALLBACK" => ($source eq "cache_stale" || $source eq "fallback") ? 1 : 0);
 $maintemplate->param("PLUGINCOUNT" => scalar @{$catalog->{plugins}});
 
+# Cache-Status: Quelle + Zeitstempel für Anzeige oben rechts
+my %src_label = (live => 'Live', cache => 'Cache', cache_stale => 'Cache ⚠', fallback => 'Fallback', empty => '-');
+$maintemplate->param("CACHE_SOURCE_LABEL" => $src_label{$source} // $source);
+my $cache_mtime = (-e $cache) ? (stat($cache))[9] : 0;
+if ($cache_mtime) {
+	my @t = localtime($cache_mtime);
+	$maintemplate->param("CACHE_MTIME" => sprintf("%02d.%02d.%04d %02d:%02d", $t[3], $t[4]+1, $t[5]+1900, $t[2], $t[1]));
+} else {
+	$maintemplate->param("CACHE_MTIME" => "-");
+}
+
 my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'APPSTORE.WIDGETLABEL'};
 
 ##########################################################################

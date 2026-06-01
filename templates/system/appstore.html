@@ -51,11 +51,7 @@
   padding:3px 9px;border-radius:6px}
 .as-tag-date{font-variant-numeric:tabular-nums}
 .as-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
-.as-btn-primary{background:var(--lb-primary);color:#fff;border:none;border-radius:10px;
-  padding:9px 16px;font-weight:600;cursor:pointer;font-size:13.5px;text-decoration:none;display:inline-block}
-.as-btn-primary:hover{filter:brightness(.95)}
-.as-btn-ghost{background:var(--lb-bg);color:var(--lb-text);border:1px solid var(--lb-border-color);
-  border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:13.5px;text-decoration:none;display:inline-block}
+.as-cache-info{font-size:11.5px;color:var(--lb-text-muted);text-align:right;margin:0 0 6px;opacity:.8;line-height:1.4}
 .as-installed{font-size:13px;color:var(--lb-primary);font-weight:600}
 .as-version-warn{font-size:12.5px;color:#d98a14;font-weight:600;line-height:1.4}
 .as-repo-note{font-size:12px;color:var(--lb-text-muted)}
@@ -64,6 +60,8 @@
   padding:9px 12px;border-radius:9px;margin:0 0 16px;font-size:13px}
 @media (max-width:560px){.as-grid{grid-template-columns:1fr}}
 </style>
+
+<div class="as-cache-info">DB: <TMPL_VAR CACHE_SOURCE_LABEL> &middot; <TMPL_VAR CACHE_MTIME></div>
 
 <TMPL_IF IS_FALLBACK>
 <div class="as-fallback-note"><TMPL_VAR APPSTORE.MSG_FALLBACK></div>
@@ -121,7 +119,7 @@
       <TMPL_ELSE>
         <TMPL_IF INSTALLABLE>
           <TMPL_IF VERSION_OK>
-            <a class="as-btn-primary" href="/admin/system/plugininstall.cgi?url=<TMPL_VAR ZIP ESCAPE=URL>"><TMPL_VAR APPSTORE.INSTALL></a>
+            <a class="lb-btn lb-btn-primary lb-btn-sm" href="/admin/system/plugininstall.cgi?url=<TMPL_VAR ZIP ESCAPE=URL>"><TMPL_VAR APPSTORE.INSTALL></a>
           <TMPL_ELSE>
             <span class="as-version-warn">&#9888; <TMPL_VAR APPSTORE.NEEDS_LB_VERSION> <TMPL_VAR MIN_LB_VERSION ESCAPE=HTML> (<TMPL_VAR APPSTORE.INSTALLED_IS> <TMPL_VAR LB_CURRENT_VERSION ESCAPE=HTML>)</span>
           </TMPL_IF>
@@ -129,8 +127,8 @@
           <span class="as-repo-note"><TMPL_VAR APPSTORE.REPO_ONLY></span>
         </TMPL_IF>
       </TMPL_IF>
-      <TMPL_IF WIKI><a class="as-btn-ghost" href="<TMPL_VAR WIKI ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.WIKI></a></TMPL_IF>
-      <TMPL_IF FORUM><a class="as-btn-ghost" href="<TMPL_VAR FORUM ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.FORUM></a></TMPL_IF>
+      <TMPL_IF WIKI><a class="lb-btn lb-btn-sm" href="<TMPL_VAR WIKI ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.WIKI></a></TMPL_IF>
+      <TMPL_IF FORUM><a class="lb-btn lb-btn-sm" href="<TMPL_VAR FORUM ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.FORUM></a></TMPL_IF>
     </div>
   </article>
 </TMPL_LOOP>
