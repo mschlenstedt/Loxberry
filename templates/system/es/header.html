@@ -233,6 +233,22 @@
 	<div class="lb-tab-popup" id="lb-tab-popup-more">
 		<div class="lb-tab-popup-header">Mehr</div>
 		<div class="lb-tab-popup-list">
+			<a href="/admin/system/usbstorage.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-usb"></i>
+				<span>Almacenamiento USB</span>
+			</a>
+			<a href="/admin/system/tools/filemanager/index.cgi?p=/" class="lb-tab-popup-item" target="_blank">
+				<i class="pi pi-folder-open"></i>
+				<span>Archivos</span>
+			</a>
+			<a href="/admin/system/mailserver.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-envelope"></i>
+				<span>Correo</span>
+			</a>
+			<a href="/admin/system/donate.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-heart"></i>
+				<span>¿Donar? :-)</span>
+			</a>
 			<a href="/admin/system/logmanager.cgi" class="lb-tab-popup-item">
 				<i class="pi pi-list"></i>
 				<span>Log Manager</span>
@@ -241,25 +257,9 @@
 				<i class="pi pi-arrows-h"></i>
 				<span>MQTT Gateway</span>
 			</a>
-			<a href="/admin/system/mailserver.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-envelope"></i>
-				<span>Correo</span>
-			</a>
-			<a href="/admin/system/translate.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-language"></i>
-				<span>Traducir</span>
-			</a>
-			<a href="/admin/system/tools/filemanager/index.cgi?p=/" class="lb-tab-popup-item" target="_blank">
-				<i class="pi pi-folder-open"></i>
-				<span>Archivos</span>
-			</a>
 			<a href="/admin/system/netshares.cgi" class="lb-tab-popup-item">
 				<i class="pi pi-share-alt"></i>
 				<span>Red Compartida</span>
-			</a>
-			<a href="/admin/system/usbstorage.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-usb"></i>
-				<span>Almacenamiento USB</span>
 			</a>
 			<a href="/admin/system/remote.cgi" class="lb-tab-popup-item">
 				<i class="pi pi-wifi"></i>
@@ -269,9 +269,9 @@
 				<i class="pi pi-desktop"></i>
 				<span>Terminal</span>
 			</a>
-			<a href="/admin/system/donate.cgi" class="lb-tab-popup-item">
-				<i class="pi pi-heart"></i>
-				<span>¿Donar? :-)</span>
+			<a href="/admin/system/translate.cgi" class="lb-tab-popup-item">
+				<i class="pi pi-language"></i>
+				<span>Traducir</span>
 			</a>
 		</div>
 	</div>
@@ -290,14 +290,14 @@
 			<i class="pi pi-sync"></i>
 			<span>Updates</span>
 		</a>
-		<button class="lb-tab-bar-item" onclick="toggleTabPopup('settings')" data-role="none">
-			<i class="pi pi-cog"></i>
-			<span>Einstellungen</span>
-		</button>
 		<a href="/admin/system/appstore.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/appstore.cgi">
 			<i class="pi pi-shopping-cart"></i>
 			<span>AppStore</span>
 		</a>
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('settings')" data-role="none">
+			<i class="pi pi-cog"></i>
+			<span>Einstellungen</span>
+		</button>
 		<button class="lb-tab-bar-item" onclick="toggleTabPopup('more')" aria-label="Mehr anzeigen" data-role="none">
 			<i class="pi pi-ellipsis-h"></i>
 			<span>Mehr</span>

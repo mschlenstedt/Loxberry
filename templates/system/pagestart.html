@@ -154,14 +154,14 @@
 			<i class="pi pi-sync"></i>
 			<span><TMPL_VAR HEADER.PANEL_UPDATES></span>
 		</a>
-		<button class="lb-tab-bar-item" onclick="toggleTabPopup('settings')" data-role="none">
-			<span class="lb-tab-icon" style="-webkit-mask-image:url('/system/images/icons/main_system_title.svg'); mask-image:url('/system/images/icons/main_system_title.svg');" aria-hidden="true"></span>
-			<span><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></span>
-		</button>
 		<a href="/admin/system/appstore.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/appstore.cgi">
 			<i class="pi pi-shopping-cart"></i>
 			<span>AppStore</span>
 		</a>
+		<button class="lb-tab-bar-item" onclick="toggleTabPopup('settings')" data-role="none">
+			<span class="lb-tab-icon" style="-webkit-mask-image:url('/system/images/icons/main_system_title.svg'); mask-image:url('/system/images/icons/main_system_title.svg');" aria-hidden="true"></span>
+			<span><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></span>
+		</button>
 		<button class="lb-tab-bar-item" onclick="toggleTabPopup('more')" aria-label="<TMPL_VAR HEADER.PANEL_MORE>" data-role="none">
 			<i class="pi pi-ellipsis-h"></i>
 			<span><TMPL_VAR HEADER.PANEL_MORE></span>
