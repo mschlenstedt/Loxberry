@@ -97,5 +97,9 @@
          "4" : "http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/",
          "5" : "https://dist-mirror.fem.tu-ilmenau.de/raspbian/raspbian/"
       }
+   },
+   "Appstore" : {
+      "Url" : "https://wiki.loxberry.de/_media/appstore/plugins.json",
+      "Cache_ttl_minutes" : 60
    }
 }

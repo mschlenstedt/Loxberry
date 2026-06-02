@@ -43,22 +43,14 @@ make_path("/dev/shm/appstore")         unless -d "/dev/shm/appstore";
 make_path("$lbsdatadir/appstore") unless -d "$lbsdatadir/appstore";
 
 ##########################################################################
-# Read config (appstore.json, fallback to shipped .default)
+# Read AppStore config from general.json
 ##########################################################################
 
-my $cfgfile = "$lbsconfigdir/appstore.json";
-$cfgfile = "$lbsconfigdir/appstore.json.default" if !-e $cfgfile && -e "$lbsconfigdir/appstore.json.default";
+my $generaljson  = eval { JSON::PP::decode_json( LoxBerry::System::read_file("$lbsconfigdir/general.json") ) } || {};
+my $appstorecfg  = $generaljson->{Appstore} || {};
 
-my $cfg = {};
-if (-e $cfgfile) {
-	open(my $fh, '<:encoding(UTF-8)', $cfgfile);
-	local $/;
-	my $c = <$fh>;
-	close($fh);
-	$cfg = eval { JSON::PP::decode_json($c) } || {};
-}
-my $url        = $cfg->{url} || "";
-my $ttl        = defined $cfg->{cache_ttl_minutes} ? $cfg->{cache_ttl_minutes} : 60;
+my $url        = $appstorecfg->{Url}               || "https://wiki.loxberry.de/_media/appstore/plugins.json";
+my $ttl        = defined $appstorecfg->{Cache_ttl_minutes} ? $appstorecfg->{Cache_ttl_minutes} : 60;
 my $cache      = "/dev/shm/appstore/cache.json";
 my $persistent = "$lbsdatadir/appstore/plugins.json";
 
