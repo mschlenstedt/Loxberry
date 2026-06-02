@@ -17,7 +17,7 @@
 			<div class="lb-sidebar-section"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
 			<a class="lb-sidebar-link" href="/admin/system/index.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_HOME></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/admin.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_ADMIN></span></a>
-			<a class="lb-sidebar-link" href="/admin/system/appstore.cgi"><span class="lb-sidebar-name">AppStore <span class="lb-beta-tag">BETA</span></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/appstore.cgi"><span class="lb-sidebar-name">AppStore</span></a>
 			<a class="lb-sidebar-link" href="/admin/system/backup.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_BACKUP></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/tools/filemanager/index.cgi?p=/" target="_blank"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_FILEMANAGER></span></a>
 			<a class="lb-sidebar-link" href="/admin/system/logmanager.cgi"><span class="lb-sidebar-name">Log Manager</span></a>
@@ -53,15 +53,8 @@
 		<div class="lb-tab-popup-header"><TMPL_VAR HEADER.PANEL_MYPLUGINS></div>
 		<div class="lb-tab-popup-list">
 			<TMPL_VAR SIDEBAR_PLUGINS_TABBAR_HTML>
-			<!-- Trenner zwischen den installierten Plugins und der Aktionsgruppe
-			     (AppStore + Plugin-Verwaltung). Inline, damit ohne CSS-Cache-Bump
-			     wirksam; Plugin-Verwaltung bleibt grau, aber ohne eigene Linie. -->
-			<a href="/admin/system/appstore.cgi" class="lb-tab-popup-item" style="border-top:1px solid var(--lb-sidebar-border);margin-top:4px;padding-top:12px;">
-				<img src="/system/images/icons/main_appstore.svg" width="22" height="22" alt="">
-				<span>AppStore <span class="lb-beta-tag">BETA</span></span>
-			</a>
-			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item">
-				<img src="/system/images/icons/main_plugininstall.svg" width="22" height="22" alt="">
+			<a href="/admin/system/plugininstall.cgi" class="lb-tab-popup-item" style="border-top:1px solid var(--lb-sidebar-border);margin-top:4px;padding-top:12px;">
+				<img src="/system/images/icons/main_plugininstall.svg" width="22" height="22" style="opacity:0.7;" alt="">
 				<span><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span>
 			</a>
 		</div>
@@ -165,6 +158,10 @@
 			<span class="lb-tab-icon" style="-webkit-mask-image:url('/system/images/icons/main_system_title.svg'); mask-image:url('/system/images/icons/main_system_title.svg');" aria-hidden="true"></span>
 			<span><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></span>
 		</button>
+		<a href="/admin/system/appstore.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/appstore.cgi">
+			<i class="pi pi-shopping-cart"></i>
+			<span>AppStore</span>
+		</a>
 		<button class="lb-tab-bar-item" onclick="toggleTabPopup('more')" aria-label="<TMPL_VAR HEADER.PANEL_MORE>" data-role="none">
 			<i class="pi pi-ellipsis-h"></i>
 			<span><TMPL_VAR HEADER.PANEL_MORE></span>
