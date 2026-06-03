@@ -12,7 +12,6 @@ use strict;
 use warnings;
 
 my $interfaces_file = '/etc/network/interfaces';
-my $loxberry_ifaces = '/opt/loxberry/system/network/interfaces';
 
 # Read new content from STDIN
 local $/;
@@ -23,13 +22,11 @@ unless (defined $new_content && length($new_content) > 0) {
     exit 1;
 }
 
-# Symlink migration: replace symlink with real file
+# Symlink migration: if /etc/network/interfaces is a symlink (regardless of target),
+# remove it so the subsequent open() creates a real file instead of writing through it.
 if (-l $interfaces_file) {
-    my $target = readlink($interfaces_file);
-    if (defined $target && $target eq $loxberry_ifaces) {
-        unlink($interfaces_file)
-            or do { print STDERR "Cannot remove symlink $interfaces_file: $!\n"; exit 1; };
-    }
+    unlink($interfaces_file)
+        or do { print STDERR "Cannot remove symlink $interfaces_file: $!\n"; exit 1; };
 }
 
 # Write new content to /etc/network/interfaces

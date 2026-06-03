@@ -369,7 +369,7 @@ sub save {
 	print $fh $full_interfaces;
 	close $fh;
 
-	my $returncode = system("ifup --no-act -i $tmp_file lo 2>/dev/null");
+	my $returncode = system("/sbin/ifup --no-act -i $tmp_file lo 2>/dev/null");
 	$returncode = $returncode >> 8;
 	unlink($tmp_file);
 
