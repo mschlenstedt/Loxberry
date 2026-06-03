@@ -1,17 +1,18 @@
 #!/usr/bin/perl
 
 # network-interfaces-write.pl
-# Writes new content to /etc/network/interfaces as root.
-# Handles symlink migration: if /etc/network/interfaces is a symlink to
-# /opt/loxberry/system/network/interfaces, the symlink is removed and
-# replaced with a real file before writing.
+# Writes new content to /opt/loxberry/system/network/interfaces as root.
 # New content is read from STDIN.
 # Called via: sudo /opt/loxberry/sbin/network-interfaces-write.pl
+#
+# Prerequisites (ensured by update_v4.0.0.4.pl):
+#   /opt/loxberry/system/network/interfaces is a regular file (not a symlink).
+#   /etc/network/interfaces is a symlink pointing to that file.
 
 use strict;
 use warnings;
 
-my $interfaces_file = '/etc/network/interfaces';
+my $interfaces_file = '/opt/loxberry/system/network/interfaces';
 
 # Read new content from STDIN
 local $/;
@@ -22,14 +23,7 @@ unless (defined $new_content && length($new_content) > 0) {
     exit 1;
 }
 
-# Symlink migration: if /etc/network/interfaces is a symlink (regardless of target),
-# remove it so the subsequent open() creates a real file instead of writing through it.
-if (-l $interfaces_file) {
-    unlink($interfaces_file)
-        or do { print STDERR "Cannot remove symlink $interfaces_file: $!\n"; exit 1; };
-}
-
-# Write new content to /etc/network/interfaces
+# Write new content
 open(my $fh, '>', $interfaces_file)
     or do { print STDERR "Cannot write $interfaces_file: $!\n"; exit 1; };
 print $fh $new_content;
