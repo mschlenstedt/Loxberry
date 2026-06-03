@@ -216,24 +216,28 @@ sub update_config
 		$cfg->{Main}->{toMS_delimiter} = '|'; 
 		LOGINF "Setting delimiter for subscription miniserver list to " . $cfg->{Main}->{toMS_delimiter};
 	}
-	if(! defined $cfg->{Main}->{cpuperf}) { 
-		$cfg->{Main}->{cpuperf} = "5"; 
+	if(! defined $cfg->{Main}->{cpuperf}) {
+		$cfg->{Main}->{cpuperf} = "5";
 		LOGINF "Setting Performance Profile to " . $cfg->{Main}->{cpuperf};
 	}
-	
+	if(! defined $cfg->{conversions}) {
+		$cfg->{conversions} = [];
+		LOGINF "Setting conversions to empty list";
+	}
+
 	# general.json
 	
 	if(! defined $generalcfg->{Mqtt}->{Uselocalbroker}) { 
 		$generalcfg->{Mqtt}->{Uselocalbroker} = 'true'; 
 		LOGINF "Setting 'Enable local Mosquitto broker' to " . $generalcfg->{Mqtt}->{Uselocalbroker};
 	}
-	if(! defined $generalcfg->{Mqtt}->{Brokerhost}) { 
+	if(! defined $generalcfg->{Mqtt}->{Brokerhost}) {
 		$generalcfg->{Mqtt}->{Brokerhost} = 'localhost';
-		LOGINF "Setting MQTT brokerhost to " . $generalcfg->{Main}->{Brokerhost};
+		LOGINF "Setting MQTT brokerhost to " . $generalcfg->{Mqtt}->{Brokerhost};
 	}
-	if(! defined $generalcfg->{Mqtt}->{Brokerport}) { 
+	if(! defined $generalcfg->{Mqtt}->{Brokerport}) {
 		$generalcfg->{Mqtt}->{Brokerport} = '1883';
-		LOGINF "Setting MQTT brokerport to " . $generalcfg->{Main}->{Brokerport};
+		LOGINF "Setting MQTT brokerport to " . $generalcfg->{Mqtt}->{Brokerport};
 	}
 	if(! defined $generalcfg->{Mqtt}->{Udpinport}) { 
 		$generalcfg->{Mqtt}->{Udpinport} = 11884; 
@@ -259,7 +263,14 @@ sub update_config
 		$generalcfg->{Mqtt}->{TlsExternalValidatecert} = 'false';
 		LOGINF "Setting MQTT External TLS validate cert to false";
 	}
-
+	if(! defined $generalcfg->{Mqtt}->{Gatewayversion}) {
+		$generalcfg->{Mqtt}->{Gatewayversion} = 1;
+		LOGINF "Setting Gateway version to " . $generalcfg->{Mqtt}->{Gatewayversion};
+	}
+	if(! defined $generalcfg->{Mqtt}->{Loglevel}) {
+		$generalcfg->{Mqtt}->{Loglevel} = "6";
+		LOGINF "Setting MQTT Gateway loglevel to " . $generalcfg->{Mqtt}->{Loglevel};
+	}
 
 	## Create Mosquitto config and password
 	
