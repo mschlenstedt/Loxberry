@@ -23,6 +23,12 @@ unless (defined $new_content && length($new_content) > 0) {
     exit 1;
 }
 
+# Backup existing file before overwriting
+if (-e $interfaces_file) {
+    system("cp '$interfaces_file' '${interfaces_file}.bak'") == 0
+        or print STDERR "Warning: could not create backup ${interfaces_file}.bak\n";
+}
+
 # Write new content
 open(my $fh, '>', $interfaces_file)
     or do { print STDERR "Cannot write $interfaces_file: $!\n"; exit 1; };

@@ -488,7 +488,7 @@ sub parse_interfaces_file {
 		elsif ($line =~ /^gateway\s+(\S+)$/) {
 			$net{ipv4}{gateway} = $1 if $current_proto eq 'inet';
 		}
-		elsif ($line =~ /^dns-nameservers\s+(\S+)/) {
+		elsif ($line =~ /^dns-nameservers\s+(.+)$/) {
 			if    ($current_proto eq 'inet')  { $net{ipv4}{dns} = $1; }
 			elsif ($current_proto eq 'inet6') { $net{ipv6}{dns} = $1; }
 		}
