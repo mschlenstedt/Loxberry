@@ -147,10 +147,33 @@ function access($attr, $path, $data, $volume, $isDir, $relpath) {
 }
 
 
+// Fix: elFinder.class.php hardcodes 'secure' => true in cookieParams, causing the
+// PHPSESSID cookie to carry the Secure flag even over plain HTTP. Browsers then
+// refuse to send the cookie on HTTP requests, every write command starts a fresh
+// PHP session, CSRF validation fails, and all write operations (mkdir, upload,
+// delete, …) silently fail. Override the session handler here with a dynamically
+// computed secure flag so the cookie is Secure only when the connection actually
+// is HTTPS.
+require_once dirname(__FILE__) . '/elFinderSession.php';
+$_elfinderSecure = !empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off';
+$_elfinderSession = new elFinderSession(array(
+	'keys' => array(
+		'default'   => 'elFinderCaches',
+		'netvolume' => 'elFinderNetVolumes',
+	),
+	'cookieParams' => array(
+		'path'     => '/',
+		'secure'   => $_elfinderSecure,
+		'httponly' => true,
+		'samesite' => defined('ELFINDER_COOKIE_SAMESITE') ? ELFINDER_COOKIE_SAMESITE : 'Lax',
+	),
+));
+
 // Documentation for connector options:
 // https://github.com/Studio-42/elFinder/wiki/Connector-configuration-options
 $opts = array(
 	// 'debug' => true,
+	'session' => $_elfinderSession,
 	'roots' => array(
 		// Items volume
 		array(
