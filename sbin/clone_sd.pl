@@ -546,17 +546,10 @@ if (-e "/media/dst2/var/swap") {
 
 # Re-enable DietPi partition resize service in image so it expands the root
 # filesystem on first boot after flashing to a (potentially larger) SD card
-if ($desttype eq "path") {
-	my $resize_service = "/media/dst2/lib/systemd/system/dietpi-fs_partition_resize.service";
-	my $resize_wants   = "/media/dst2/etc/systemd/system/local-fs.target.wants";
-	if ( -e $resize_service ) {
-		execute( command => "mkdir -p $resize_wants" );
-		execute( command => "ln -sf /lib/systemd/system/dietpi-fs_partition_resize.service $resize_wants/dietpi-fs_partition_resize.service" );
-		LOGINF "Re-enabled dietpi-fs_partition_resize.service for first boot after restore";
-	} else {
-		LOGINF "dietpi-fs_partition_resize.service not found - skipping (non-DietPi system)";
-	}
-}
+my $resize_wants = "/media/dst2/etc/systemd/system/local-fs.target.wants";
+execute( command => "mkdir -p $resize_wants" );
+execute( command => "ln -sf /lib/systemd/system/dietpi-fs_partition_resize.service $resize_wants/dietpi-fs_partition_resize.service" );
+LOGINF "Re-enabled dietpi-fs_partition_resize.service for first boot after restore";
 
 LOGINF "Change the PTUUID of destination card to $src_ptuuid";
 `fdisk $destpath <<EOF > /dev/null
