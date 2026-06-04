@@ -1,8 +1,25 @@
 <!-- ** START template/system/mainplugins.html 03.12.2017 ************************************************************************************ -->
-<!-- <div style="font-size: 0.6em; text-align: right; vertical-align: middle;">LoxBerry Version <TMPL_VAR SVERSION></div> -->
+
+<!-- Popup: Wizard -->
+<TMPL_IF WIZARD>
+<dialog class="lb-modal" id="popupFirstBoot" style="min-width:600px;min-height:300px;">
+	<div class="lb-modal-header">
+		<h2 style="text-align: center;"><TMPL_VAR WIZARD.WELCOME></h2>
+	</div>
+	<div class="lb-modal-content">
+		<img src="/system/images/Logo_green_transparent.png" width="250px">
+		<p><b><TMPL_VAR WIZARD.INTRO1></b></p>
+		<p><TMPL_VAR WIZARD.INTRO2> <a href="<TMPL_VAR WIZARD.WIKIURL_CONFIGHELP>" target="_blank"><TMPL_VAR WIZARD.WIKIURL_CONFIGHELP></a></p>
+		<p>&nbsp;</p>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" style="background-color: lightgreen;" href="/admin/system/admin.cgi?do=random"><i class="pi pi-power-off"></i> <TMPL_VAR WIZARD.BUTTON_RDM_PASSWORDS></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" style="background-color: lightyellow;" href="/admin/system/admin.cgi"><i class="pi pi-power-off"></i> <TMPL_VAR WIZARD.BUTTON_STD_PASSWORDS></a>
+	</div>
+</dialog>
+</TMPL_IF>
+
 <TMPL_IF PAGE_PLUGIN>
-<p class="wide">
-	<img width="64" height="64" src="/system/images/icons/main_plugins_title.svg">
+<p class="lb-section-title" style="display:flex;align-items:center;gap:12px;">
+	<img width="32" height="32" src="/system/images/icons/main_plugins_title.svg" alt="">
 	<TMPL_VAR HEADER.TITLE_PAGE_PLUGINS>
 </p>
 
@@ -11,11 +28,8 @@
 <div class="widgetblock" id="pluginwidgets">
 	<TMPL_LOOP PLUGINS>
 	<div class="widget">
-			<!-- <div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/"><img class="menutableicon" src="<TMPL_VAR PLUGINDB_ICONURI>"></a></div> -->
-			<!-- <div><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" class="nolinkstyle"><TMPL_VAR PLUGINDB_TITLE></a></div> -->
-
 		<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/">
-			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR PLUGINDB_ICONURI>');  background-repeat: no-repeat; background-position: center center;">
+			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR PLUGINDB_ICONURI>'); background-size: 64px 64px; background-repeat: no-repeat; background-position: center center;">
 				<div class='notifyBlue' style='display: none' id="notifyBlue<TMPL_VAR PLUGINDB_FOLDER>">0</div>
 				<div class='notifyRed' style='display: none' id="notifyRed<TMPL_VAR PLUGINDB_FOLDER>">0</div>		
 			</div>
@@ -30,24 +44,28 @@
 </TMPL_IF>
 
 <!-- END Plugin container -->
-<p>
-	<a href="/admin/system/plugininstall.cgi" data-role="button" data-inline="true" data-mini="true" data-icon="grid"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></a>
-	<a href="http://www.loxwiki.eu/display/LOXBERRY/Plugins/" target="_blank" data-role="button" data-inline="true" data-mini="true" data-icon="search">Plugin Archive</a>
+<p class="widget-actions">
+	<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi"><i class="pi pi-th-large"></i> <TMPL_VAR HEADER.PANEL_PLUGININSTALL></a>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/appstore.cgi"><i class="pi pi-shopping-cart"></i> <TMPL_VAR APPSTORE.LABEL_BROWSE_APPSTORE></a>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" href="https://wiki.loxberry.de/plugins/start" target="_blank"><i class="pi pi-search"></i> <TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
 </p>
 </TMPL_IF>
 
 <TMPL_IF PAGE_SYSTEM>
 
-<p class="wide">
-	<img height="64" width="64" src="/system/images/icons/main_system_title.svg">
+<p class="lb-section-title" style="display:flex;align-items:center;gap:12px;">
+	<img width="32" height="32" src="/system/images/icons/main_system_title.svg" alt="">
 	<TMPL_VAR HEADER.TITLE_PAGE_SYSTEM>
 </p>
 <!-- START Widget container -->
 <div class="widgetblock" id="systemwidgets">
 <TMPL_LOOP WIDGETS>
 <div class="widget">
-	<!-- <TMPL_VAR WIDGET_NOTIFY> -->
-	<a href="<TMPL_VAR WIDGET_CGI>">
+	<TMPL_IF WIDGET_TARGET>
+		<a href="<TMPL_VAR WIDGET_CGI>" target="<TMPL_VAR WIDGET_TARGET>">
+	<TMPL_ELSE>
+		<a href="<TMPL_VAR WIDGET_CGI>">
+	</TMPL_IF>
 			<TMPL_IF WIDGET_CLOCK>
 			<div class="menutableicon" style="width:100%; height:80px; padding:1px 0 10px 0;">
 				<div class="clock" style="text-align:center;  margin:10px 0 0 43px" >
@@ -66,117 +84,24 @@
 				</div>
 			</div>
 			<TMPL_ELSE>
-			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR WIDGET_ICON>');  background-repeat: no-repeat; background-position: center center;">
+			<div class="menutableicon" style="width:100%; height:90px; padding:0px; background-image: url('<TMPL_VAR WIDGET_ICON>'); background-size: 64px 64px; background-repeat: no-repeat; background-position: center center;">
 				<div class='notifyBlue' style='display: none' id="notifyBlue<TMPL_VAR NOTIFY_PACKAGE>">0</div>
 				<div class='notifyRed' style='display: none' id="notifyRed<TMPL_VAR NOTIFY_PACKAGE>">0</div>
 			</div>
 			</TMPL_IF>
 	</a>
 	<div>
-		<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
+		<TMPL_IF WIDGET_TARGET>
+			<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle" target="<TMPL_VAR WIDGET_TARGET>"><TMPL_VAR WIDGET_TITLE></a>
+		<TMPL_ELSE>
+			<a href="<TMPL_VAR WIDGET_CGI>" class="nolinkstyle"><TMPL_VAR WIDGET_TITLE></a>
+		</TMPL_IF>
 	</div>
 </div>
 </TMPL_LOOP>
 </div>
 
-
 <!-- END Widget container -->
-<SCRIPT>
-/*
- * Starts any clocks using the user's local time
- * From: cssanimation.rocks/clocks
- */
-	// Get the local time using JS
-	var seconds = <TMPL_VAR SEC>;
-	var minutes = <TMPL_VAR MIN>;
-	var hours = <TMPL_VAR HOUR>;
-
-	// Create an object with each hand and it's angle in degrees
-	var hands = [
-		{
-			hand: 'hours',
-			angle: (hours * 30) + (minutes / 2)
-		},
-		{
-			hand: 'minutes',
-			angle: (minutes * 6)
-		},
-		{
-			hand: 'seconds',
-			angle: (seconds * 6)
-		}
-	];
-	// Loop through each of these hands to set their angle
-	for (var j = 0; j < hands.length; j++)
-	{
-		var elements = document.querySelectorAll('.' + hands[j].hand);
-		for (var k = 0; k < elements.length; k++) {
-				elements[k].style.webkitTransform = 'rotateZ('+ hands[j].angle +'deg)';
-				elements[k].style.transform = 'rotateZ('+ hands[j].angle +'deg)';
-				// If this is a minute hand, note the seconds position (to calculate minute position later)
-				if (hands[j].hand === 'minutes') {
-					elements[k].parentNode.setAttribute('data-second-angle', hands[j + 1].angle);
-				}
-		}
-	}
-/*
- * Set a timeout for the first minute hand movement (less than 1 minute), then rotate it every minute after that
- */
-function setUpMinuteHands()
-{
-	// Find out how far into the minute we are
-	var containers = document.querySelectorAll('.minutes-container');
-	var secondAngle = containers[0].getAttribute("data-second-angle");
-	if (secondAngle > 0) {
-		// Set a timeout until the end of the current minute, to move the hand
-		var delay = (((360 - secondAngle) / 6) + 0.1) * 1000;
-		setTimeout(function() {
-			moveMinuteHands(containers);
-		}, delay);
-	}
-}
-
-/*
- * Do the first minute's rotation
- */
-function moveMinuteHands(containers)
-{
-	for (var i = 0; i < containers.length; i++) {
-		containers[i].style.webkitTransform = 'rotateZ(6deg)';
-		containers[i].style.transform = 'rotateZ(6deg)';
-	}
-	// Then continue with a 60 second interval
-	setInterval(function() {
-		for (var i = 0; i < containers.length; i++) {
-			if (containers[i].angle === undefined) {
-				containers[i].angle = 12;
-			} else {
-				containers[i].angle += 6;
-			}
-			containers[i].style.webkitTransform = 'rotateZ('+ containers[i].angle +'deg)';
-			containers[i].style.transform = 'rotateZ('+ containers[i].angle +'deg)';
-		}
-	}, 60000);
-}
-/*
- * Move the second containers
- */
-function moveSecondHands()
-{
-	var containers = document.querySelectorAll('.seconds-container');
-	setInterval(function() {
-		for (var i = 0; i < containers.length; i++) {
-			if (containers[i].angle === undefined) {
-				containers[i].angle = 6;
-			} else {
-				containers[i].angle += 6;
-			}
-			containers[i].style.webkitTransform = 'rotateZ('+ containers[i].angle +'deg)';
-			containers[i].style.transform = 'rotateZ('+ containers[i].angle +'deg)';
-		}
-	}, 1000);
-}
-</SCRIPT>
 
 </TMPL_IF>
 
@@ -190,25 +115,20 @@ var systeminfos = 0;
 $(function() {
     //console.log( "Calling updatenotify" );
 	updatenotify();
-	setInterval(function(){ updatenotify(); }, 5000);
+	setInterval(function(){ updatenotify(); }, <TMPL_VAR NOTIFY_POLLTIME>);
+        var dlg = document.getElementById("popupFirstBoot");
+        if (dlg) dlg.showModal();
 });
-	
 	
 function updatenotify() {
     console.log ("Started updatenotify");
-	$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notifications' } )
+	$.post( "/admin/system/ajax/ajax-notification-handler.cgi", { action: 'get_notifications' } )
 	.done(function(data) {
 		  // console.log("get_notifications executed successfully");
-          //$("#msudpport").value=data.UDPPort;
-          //$('#msenabled').val(data.SendData).flipswitch('refresh');
-          //$("#do").prop('disabled', true);
-          //$("#do").button('refresh');
-		
 		pluginerrors = 0;
 		plugininfos = 0;
 		systemerrors = 0;
 		systeminfos = 0;
-
 		
 		var packages = [];
 		$(".notifyBlue").each( function() {
@@ -251,32 +171,29 @@ function updatenotify() {
 		
 		// NavBar injection
 		console.log ("System Infos/Errors:", systeminfos, systemerrors, "Plugin Infos/Errors:", plugininfos, pluginerrors);
-		if (pluginerrors != 0) $("#notifyRedNavBar1").text(pluginerrors).fadeIn('slow');
-		else $("#notifyRedNavBar1").text('0').fadeOut('slow');
-		if (plugininfos != 0) $("#notifyBlueNavBar1").text(plugininfos).fadeIn('slow');
-		else $("#notifyBlueNavBar1").text('0').fadeOut('slow');
-		if (systemerrors != 0) $("#notifyRedNavBar2").text(systemerrors).fadeIn('slow');
-		else $("#notifyRedNavBar2").text('0').fadeOut('slow');
-		if (systeminfos != 0) $("#notifyBlueNavBar2").text(systeminfos).fadeIn('slow');
-		else $("#notifyBlueNavBar2").text('0').fadeOut('slow');
+
+		if( pluginerrors > 0 ) {
+			navbarglobal.$data.menu[0].errorCount=pluginerrors+plugininfos;
+			navbarglobal.$data.menu[0].infoCount=0;
+		}
+		else { 
+			navbarglobal.$data.menu[0].errorCount=0;
+			navbarglobal.$data.menu[0].infoCount=plugininfos;
+		}
+		if( systemerrors > 0 ) {
+			navbarglobal.$data.menu[1].errorCount=systemerrors+systeminfos;
+			navbarglobal.$data.menu[1].infoCount = 0;
+		}
+		else {
+			navbarglobal.$data.menu[1].errorCount=0;
+			navbarglobal.$data.menu[1].infoCount=systeminfos;
+		}
 		
 		
-		<!-- $.each(packages, function (index) { -->
-			<!-- errors = $("#notifyRed"+packages[index]).text(); -->
-			<!-- infos = $("#notifyBlue"+packages[index]).text(); -->
-			<!-- console.log ("Package:", packages[index], "Errors:", errors, "Infos:", infos); -->
-			<!-- if (errors != 0)  -->
-				<!-- $("#notifyRed"+packages[index]).fadeIn('slow'); -->
-			<!-- if (infos != 0)  -->
-				<!-- $("#notifyBlue"+packages[index]).fadeIn('slow'); -->
-			
-		<!-- }); -->
 	});
 };
 
 </SCRIPT>
-
-
 
 
 <!-- ** END template/system/mainplugins.html ************************************************************************************ -->

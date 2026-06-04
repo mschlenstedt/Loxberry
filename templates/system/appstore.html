@@ -1,0 +1,178 @@
+<!-- AppStore — Katalog. Fragment innerhalb der LoxBerry-Seitenstruktur.
+     CSS aus mockups/appstore-mockup.html portiert, Farben auf var(--lb-*) gemappt,
+     Klassen mit as- praefixiert, keine Akzentstreifen.
+     Installation laeuft ueber die bestehende plugininstall.cgi (URL vorausgefuellt),
+     daher KEIN eigener Install-Dialog hier. -->
+<style>
+.as-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+/* Suche als Flex-Container: Icon ist ein statisches Flex-Item VOR dem Input,
+   nicht absolut positioniert -> kann nie mehr den Platzhalter ueberlappen,
+   auch wenn globales LoxBerry-CSS das Input-Padding zuruecksetzt. */
+.as-search{flex:1 1 260px;display:flex;align-items:center;gap:8px;
+  border:1px solid var(--lb-border-color);border-radius:10px;
+  background:var(--lb-card-bg,#fff);padding:0 12px}
+.as-search .as-ico{flex:none;opacity:.45;font-size:14px;line-height:1}
+/* Hoehere Spezifitaet als die globale .lb-content input[type=text]-Regel (0,0,2,1),
+   sonst bekommt das Input einen EIGENEN Rahmen -> doppelter Rahmen im Suchfeld.
+   Spezifitaet schlaegt Reihenfolge, daher reicht .as-search input allein nicht. */
+.lb-content .as-search input{flex:1;min-width:0;border:none;background:transparent;outline:none;
+  padding:10px 0;font-size:14px;color:var(--lb-text);box-shadow:none}
+.lb-content .as-search input:focus{border:none;background:transparent;box-shadow:none}
+/* Fokus-Feedback auf dem Container statt einem zweiten Rahmen ums Input. */
+.as-search:focus-within{border-color:var(--lb-primary)}
+.as-filter{padding:10px 14px;border:1px solid var(--lb-border-color);border-radius:10px;
+  background:var(--lb-card-bg,#fff);color:var(--lb-text);font-size:14px;cursor:pointer}
+.as-count{color:var(--lb-text-muted);font-size:13px;margin:0 0 14px}
+.as-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.as-card{background:var(--lb-card-bg,#fff);border:1px solid var(--lb-border-color);
+  border-radius:14px;padding:18px;display:flex;flex-direction:column}
+.as-card-head{display:flex;gap:13px;align-items:flex-start;margin:0 0 12px}
+.as-logo{width:52px;height:52px;border-radius:12px;flex:none;object-fit:contain;
+  background:var(--lb-bg);border:1px solid var(--lb-border-color)}
+.as-logo-fallback{width:52px;height:52px;border-radius:12px;flex:none;display:flex;
+  align-items:center;justify-content:center;font-size:22px;color:#fff;
+  background:var(--lb-primary)}
+.as-title{font-size:16px;font-weight:600;margin:0;line-height:1.3;color:var(--lb-text)}
+.as-title a{color:inherit;text-decoration:none}
+.as-title a:hover{color:var(--lb-primary);text-decoration:underline}
+.as-author{font-size:12.5px;color:var(--lb-text-muted);margin:2px 0 0}
+.as-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.as-badge.ok{background:#e7f5e7;color:#3a9d3a}
+.as-badge.beta{background:#e4f0fb;color:#2d86c8}
+.as-badge.warn{background:#fbf0dc;color:#d98a14}
+.as-badge.stop{background:#fae3e3;color:#b23b3b}
+.as-badge.unknown{background:#eee;color:#8a8a8a}
+.as-desc{font-size:13.5px;color:var(--lb-text-secondary,#444);line-height:1.5;flex:1;margin:0 0 14px}
+.as-meta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.as-tag{font-size:11.5px;color:var(--lb-text-muted);background:var(--lb-bg);
+  padding:3px 9px;border-radius:6px}
+.as-tag-date{font-variant-numeric:tabular-nums}
+.as-actions{display:flex;gap:9px;align-items:center;flex-wrap:nowrap}
+.as-installed{font-size:13px;color:var(--lb-primary);font-weight:600}
+.as-version-warn{font-size:12.5px;color:#d98a14;font-weight:600;line-height:1.4}
+.as-repo-note{font-size:12px;color:var(--lb-text-muted)}
+.as-empty{padding:32px;text-align:center;color:var(--lb-text-muted);font-size:14px}
+.as-fallback-note{background:#fff8e6;border:1px solid #f0dca0;color:#8a6d1a;
+  padding:9px 12px;border-radius:9px;margin:0 0 16px;font-size:13px}
+@media (max-width:560px){.as-grid{grid-template-columns:1fr}}
+.lb-btn:disabled,.lb-btn[disabled]{opacity:.45;cursor:default;pointer-events:none}
+</style>
+
+<TMPL_IF IS_FALLBACK>
+<div class="as-fallback-note"><TMPL_VAR APPSTORE.MSG_FALLBACK></div>
+</TMPL_IF>
+
+<div class="as-toolbar">
+  <div class="as-search">
+    <span class="as-ico">&#128269;</span>
+    <input type="text" id="as-q" placeholder="<TMPL_VAR APPSTORE.SEARCH_PLACEHOLDER>"
+      oninput="asFilter()" autocomplete="off">
+  </div>
+  <select class="as-filter" id="as-status" onchange="asFilter()">
+    <option value=""><TMPL_VAR APPSTORE.FILTER_ALL_STATUS></option>
+    <option value="STABLE">STABLE</option>
+    <option value="BETA">BETA</option>
+    <option value="UNSTABLE">UNSTABLE</option>
+    <option value="STOPPED">STOPPED</option>
+  </select>
+  <select class="as-filter" id="as-installed" onchange="asFilter()">
+    <option value=""><TMPL_VAR APPSTORE.FILTER_INSTALL_ALL></option>
+    <option value="1"><TMPL_VAR APPSTORE.FILTER_INSTALLED></option>
+    <option value="0"><TMPL_VAR APPSTORE.FILTER_NOT_INSTALLED></option>
+  </select>
+  <select class="as-filter" id="as-sort" onchange="asSort()">
+    <option value="name"><TMPL_VAR APPSTORE.SORT_NAME></option>
+    <option value="updated"><TMPL_VAR APPSTORE.SORT_NEWEST></option>
+  </select>
+</div>
+
+<div class="as-count"><span id="as-shown"><TMPL_VAR PLUGINCOUNT></span> <TMPL_VAR APPSTORE.OF> <TMPL_VAR PLUGINCOUNT> <TMPL_VAR APPSTORE.PLUGINS_WORD> &ndash; DB <TMPL_VAR CACHE_SOURCE_LABEL> von <TMPL_VAR CACHE_MTIME></div>
+
+<div class="as-grid" id="as-grid">
+<TMPL_LOOP NAME=PLUGINS>
+  <article class="as-card" data-status="<TMPL_VAR STATUS ESCAPE=HTML>"
+    data-installed="<TMPL_IF IS_INSTALLED>1<TMPL_ELSE>0</TMPL_IF>"
+    data-updated="<TMPL_VAR UPDATED_TS ESCAPE=HTML>"
+    data-text="<TMPL_VAR TITLE ESCAPE=HTML> <TMPL_VAR AUTHOR ESCAPE=HTML> <TMPL_VAR DESCRIPTION ESCAPE=HTML>">
+    <div class="as-card-head">
+      <TMPL_IF LOGO><img class="as-logo" src="<TMPL_VAR LOGO ESCAPE=HTML>" alt="" loading="lazy"><TMPL_ELSE><div class="as-logo-fallback">&#128230;</div></TMPL_IF>
+      <div style="flex:1;min-width:0">
+        <h3 class="as-title"><TMPL_IF WIKI><a href="<TMPL_VAR WIKI ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR TITLE ESCAPE=HTML></a><TMPL_ELSE><TMPL_VAR TITLE ESCAPE=HTML></TMPL_IF></h3>
+        <p class="as-author"><TMPL_VAR APPSTORE.BY> <TMPL_VAR AUTHOR ESCAPE=HTML></p>
+      </div>
+      <span class="as-badge <TMPL_VAR BADGE_CLASS>"><TMPL_VAR STATUS ESCAPE=HTML></span>
+    </div>
+    <p class="as-desc"><TMPL_VAR DESCRIPTION ESCAPE=HTML></p>
+    <div class="as-meta">
+      <span class="as-tag">v<TMPL_VAR VERSION ESCAPE=HTML></span>
+      <TMPL_IF LANGUAGES><span class="as-tag"><TMPL_VAR LANGUAGES ESCAPE=HTML></span></TMPL_IF>
+      <TMPL_IF LASTMODIFIED><span class="as-tag as-tag-date"><TMPL_VAR APPSTORE.UPDATED_LABEL> <span class="as-date-val"><TMPL_VAR LASTMODIFIED ESCAPE=HTML></span></span></TMPL_IF>
+    </div>
+    <div class="as-actions">
+      <TMPL_IF IS_INSTALLED>
+        <span class="as-installed">&#10003; <TMPL_VAR APPSTORE.INSTALLED></span>
+      <TMPL_ELSE>
+        <TMPL_IF INSTALLABLE>
+          <TMPL_IF VERSION_OK>
+            <a class="lb-btn lb-btn-primary lb-btn-sm" href="/admin/system/plugininstall.cgi?url=<TMPL_VAR ZIP ESCAPE=URL>"><TMPL_VAR APPSTORE.INSTALL></a>
+          <TMPL_ELSE>
+            <span class="as-version-warn">&#9888; <TMPL_VAR APPSTORE.NEEDS_LB_VERSION> <TMPL_VAR MIN_LB_VERSION ESCAPE=HTML> (<TMPL_VAR APPSTORE.INSTALLED_IS> <TMPL_VAR LB_CURRENT_VERSION ESCAPE=HTML>)</span>
+          </TMPL_IF>
+        <TMPL_ELSE>
+          <button class="lb-btn lb-btn-sm" disabled title="<TMPL_VAR APPSTORE.REPO_ONLY ESCAPE=HTML>"><TMPL_VAR APPSTORE.REPO_ONLY_SHORT></button>
+        </TMPL_IF>
+      </TMPL_IF>
+      <TMPL_IF WIKI><a class="lb-btn lb-btn-sm" href="<TMPL_VAR WIKI ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.WIKI></a></TMPL_IF>
+      <TMPL_IF FORUM><a class="lb-btn lb-btn-sm" href="<TMPL_VAR FORUM ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.FORUM></a></TMPL_IF>
+    </div>
+  </article>
+</TMPL_LOOP>
+</div>
+
+<div class="as-empty" id="as-empty"<TMPL_IF PLUGINCOUNT> style="display:none"</TMPL_IF>><TMPL_VAR APPSTORE.EMPTY></div>
+
+<script>
+// Datum pro Karte in das Format der eingestellten Sprache bringen
+// (Server liefert ISO als Fallback; hier auf Locale upgraden).
+(function(){
+  var lang = document.documentElement.lang || (navigator.language || 'en');
+  document.querySelectorAll('#as-grid .as-card').forEach(function(c){
+    var el = c.querySelector('.as-date-val');
+    var ts = parseInt(c.getAttribute('data-updated'), 10);
+    if(el && ts){
+      try { el.textContent = new Date(ts*1000).toLocaleDateString(lang); } catch(e){}
+    }
+  });
+})();
+
+function asFilter(){
+  var q=(document.getElementById('as-q').value||'').toLowerCase();
+  var st=document.getElementById('as-status').value;
+  var inst=document.getElementById('as-installed').value;
+  var n=0,cards=document.querySelectorAll('#as-grid .as-card');
+  cards.forEach(function(c){
+    var okq=!q||(c.getAttribute('data-text')||'').toLowerCase().indexOf(q)>=0;
+    var oks=!st||c.getAttribute('data-status')===st;
+    var oki=!inst||c.getAttribute('data-installed')===inst;
+    var show=okq&&oks&&oki;c.style.display=show?'':'none';if(show)n++;
+  });
+  document.getElementById('as-shown').textContent=n;
+  document.getElementById('as-empty').style.display=n?'none':'';
+  document.getElementById('as-grid').style.display=n?'':'none';
+}
+function asSort(){
+  var mode=document.getElementById('as-sort').value;
+  var grid=document.getElementById('as-grid');
+  var cards=Array.prototype.slice.call(grid.querySelectorAll('.as-card'));
+  cards.sort(function(a,b){
+    if(mode==='updated'){
+      return (parseInt(b.getAttribute('data-updated'),10)||0)
+           - (parseInt(a.getAttribute('data-updated'),10)||0);
+    }
+    var ta=(a.querySelector('.as-title')||{}).textContent||'';
+    var tb=(b.querySelector('.as-title')||{}).textContent||'';
+    return ta.localeCompare(tb,undefined,{sensitivity:'base'});
+  });
+  cards.forEach(function(c){grid.appendChild(c);});
+}
+</script>

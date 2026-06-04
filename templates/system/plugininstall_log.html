@@ -13,10 +13,10 @@
 			<td width="50%">
 			</td>
 			<td width="25%">
-			<label style="display:block; text-align:center;"><input data-mini="true" type="checkbox" checked id="LogScroll"><TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
+			<label style="display:block; text-align:center;"><input type="checkbox" checked id="LogScroll" data-role="none"> <TMPL_VAR LOGVIEWER.BUTTON_AUTOSCROLL></label>
 			</td>
 			<td width="25%">
-			 <a style="display:block; text-align:center;" id="btndown" data-role="button" data-inline="true" data-mini="true" data-icon="arrow-d" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=bin&format=plain" target="_blank" download="<TMPL_VAR LOGFILE>"><TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
+			 <a class="lb-btn lb-btn-sm lb-btn-icon" style="display:block; text-align:center;" id="btndown" href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILE>&header=bin&format=plain" target="_blank" download="<TMPL_VAR LOGFILE>"><i class="pi pi-arrow-down"></i> <TMPL_VAR COMMON.BUTTON_DOWNLOAD></a>
 			</td>
 		</tr>
 	</table>
@@ -26,10 +26,10 @@
 	<table border=0 width="75%" cellpadding="10">
 		<tr>
 			<td width="10%">
-			<a style="display:block; text-align:center;" id="btnnext" data-role="button" data-inline="true" data-mini="true" data-icon="check" data-ajax="false" href="/admin/system/plugininstall.cgi?do=form"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_NEXT></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" style="display:block; text-align:center;" id="btnnext" data-ajax="false" href="/admin/system/plugininstall.cgi?do=form"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_NEXT></a>
 			</td>
 			<td width="10%">
-			<a style="display:block; text-align:center;" id="btnreboot" data-role="button" data-inline="true" data-mini="true" data-icon="check" data-ajax="false" href="/admin/system/power.cgi"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOT></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" style="display:block; text-align:center;" id="btnreboot" data-ajax="false" href="/admin/system/power.cgi"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOT></a>
 			</td>
 			<td width="80%">
 			<div id="pstatus" style="width:100%; padding:5px 5px 5px 5px; vertical-align:middle; line-height:35px; vertical-align:middle; border-style: dotted; border-width:1px; border-color:red; background-color:#ffffe6; text-size:11px"><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE></div>
@@ -59,11 +59,15 @@ var call_in_progress = 0;
 var status_in_progress = 0;
 
 // Disable buttons
-$('#btnnext').addClass('ui-disabled');
-$('#btnreboot').addClass('ui-disabled');
+$('#btnnext').addClass('lb-disabled');
+$('#btnreboot').addClass('lb-disabled');
 
 function updatelog() 
 {
+	if ( $("#Logfile").prop("complete") == 1 ) 
+	{
+		return;
+	}
 	// Disable caching of AJAX responses
 	$.ajaxSetup (
 	{
@@ -92,47 +96,70 @@ function updatelog()
 	{
 		$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
 	}
+	return;
+}
+function updatestatus() 
+{
 	// Load Status
 	if (status_in_progress == 0) {
 		status_in_progress = 1;
-		$.get('/admin/system/tools/ajax-config-handler.cgi?action=plugininstall-status&value=<TMPL_VAR STATUSFILE>', function (response)
+		$.get('/admin/system/ajax/ajax-config-handler.cgi?action=plugininstall-status&value=<TMPL_VAR STATUSFILE>', function (response)
 		{
-			var pstatus = parseInt(response);
+			console.log( "getstatus Success", response );
+			var pstatus = parseInt(response.message);
 			if (pstatus === 3)
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_REBOOTREQUIRED>";
-				$('#btnnext').removeClass('ui-disabled');
-				$('#btnreboot').removeClass('ui-disabled');
+				$('#btnnext').removeClass('lb-disabled');
+				$('#btnreboot').removeClass('lb-disabled');
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+				clearInterval(interval2);
+				clearInterval(interval);
+				updatelog();
+				$("#Logfile").prop("complete",1);
+        		setTimeout( function() { $("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);}, 2500);
 			}
 			else if (pstatus === 2)
 			{
 				document.getElementById("pstatus").innerHTML = "<font color='#FF0000'><TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_ERROR></font>";
-				$('#btnnext').removeClass('ui-disabled');
+				$('#btnnext').removeClass('lb-disabled');
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
+				clearInterval(interval2);
+				clearInterval(interval);
+				updatelog();
+				$("#Logfile").prop("complete",1);
+        		setTimeout( function() { $("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);}, 2500);
 			}
 			else if (pstatus === 1)
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_TITLE>";
-				$('#btnnext').addClass('ui-disabled');
+		
+				$('#btnnext').addClass('lb-disabled');
 			}
 			else
 			{
 				document.getElementById("pstatus").innerHTML = "<TMPL_VAR PLUGININSTALL.UI_INSTALL_LABEL_SUCCESS>";
-				$('#btnnext').removeClass('ui-disabled');
+				$('#btnnext').removeClass('lb-disabled');
 				$("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);
-			}
+				clearInterval(interval2);
+				clearInterval(interval);
+				updatelog();
+				if ( $("#LogScroll").is(':checked') ) { $("#LogScroll").trigger('click'); }
+				$("#Logfile").prop("complete",1);
+        		setTimeout( function() { $("#Logfile").scrollTop($("#Logfile")[0].scrollHeight);}, 2500);
+        	}
 		})
 			.always(function() { status_in_progress = 0; });
 	}
-	return;
 }
 
+
 var interval = window.setInterval(updatelog, 500);
+var interval2 = window.setInterval(updatestatus, 1000);
 
 $("#Logfile").click(function() {
 		clearInterval(interval);
-		$("input[type='checkbox']").attr("checked",false).checkboxradio("refresh");
+		$("input[type='checkbox']").prop("checked", false);
 });
 
 $("#LogScroll").click(function() {

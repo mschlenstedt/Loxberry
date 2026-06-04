@@ -4,8 +4,8 @@ source $LBHOMEDIR/libs/bashlib/loxberry_log.sh
 
 NAME=Test
 PACKAGE=System
-FILENAME=${LBSLOG}/test.log
-#LOGDIR=${LBSLOG}
+#FILENAME=${LBSLOG}/test.log
+LOGDIR=${LBSLOG}
 #APPEND=1
 #ADDTIME=1
 #LOGLEVEL=3
@@ -17,7 +17,7 @@ LOGFILE=$FILENAME
 
 LOGDEB "Loglevel: $LOGLEVEL"
 LOGDEB "Logfile: $FILENAME"
-FILENAME=${LBSTMPFSLOG}/test2.log
+#FILENAME=${LBSTMPFSLOG}/test2.log
 #APPEND=1
 #ADDTIME=1
 #LOGLEVEL=3
@@ -28,7 +28,7 @@ LOGFILE2=$FILENAME
 ACTIVELOG=2
 FILENAME=/dev/null
 LOGDEB "Loglevel: $LOGLEVEL"
-LOGDEB "Logfile: $FILENAME"
+LOGDEB "Logfile: $LOGFILE2"
 LOGEND "Ich habe 2 fertig"
 ACTIVELOG=1
 LOGINF "Dies ist eine Info Meldung"

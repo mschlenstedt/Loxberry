@@ -10,13 +10,11 @@ require_once "loxberry_system.php";
  */
 $settings['byte_notation'] = 1024; // Either 1024 or 1000; defaults to 1024
 $settings['dates'] = 'm/d/y h:i A (T)'; // Format for dates shown. See php.net/date for syntax
-
-// LoxBerry langauge
+//$settings['language'] = 'en'; // Refer to the lang/ folder for supported languages
 $settings['language'] = LBSystem::lblanguage(); // Refer to the lang/ folder for supported lanugages
-
-// $settings['language'] = 'en'; // Refer to the lang/ folder for supported lanugages
 $settings['icons'] = true; // simple icons
 $settings['theme'] = 'loxberry'; // Theme file (layout/theme_$n.css). Look at the contents of the layout/ folder for other themes.
+$settings['gzip'] = false; // Manually gzip output. Unneeded if your web server already does it.
 
 
 $settings['allow_changing_themes'] = false; // Allow changing the theme per user in the UI?
@@ -74,20 +72,20 @@ $settings['show']['services'] = true;
  */
 
 // Hide certain file systems / devices
-$settings['hide']['filesystems'] = array(
-	'ecryptfs', 'nfsd', 'rpc_pipefs', 'proc', 'sysfs',
-	'usbfs', 'devpts', 'fusectl', 'securityfs', 'fuse.truecrypt',
-  'cgroup', 'debugfs', 'mqueue', 'hugetlbfs', 'pstore');
-$settings['hide']['storage_devices'] = array('gvfs-fuse-daemon', 'none', 'systemd-1', 'udev');
+//$settings['hide']['filesystems'] = array(
+//	'tmpfs', 'ecryptfs', 'nfsd', 'rpc_pipefs', 'proc', 'sysfs',
+//	'usbfs', 'devpts', 'fusectl', 'securityfs', 'fuse.truecrypt',
+//  'cgroup', 'debugfs', 'mqueue', 'hugetlbfs', 'pstore');
+//$settings['hide']['storage_devices'] = array('gvfs-fuse-daemon', 'none', 'systemd-1', 'udev');
 
 // filter mountpoints based on PCRE regex, eg '@^/proc@', '@^/sys@', '@^/dev@'
-$settings['hide']['mountpoints_regex'] = array();
+$settings['hide']['mountpoints_regex'] = [];
 
 // Hide mount options for these file systems. (very, very suggested, especially the ecryptfs ones)
 $settings['hide']['fs_mount_options'] = array('ecryptfs');
 
 // Hide hard drives that begin with /dev/sg?. These are duplicates of usual ones, like /dev/sd?
-$settings['hide']['sg'] = true; # Linux only
+$settings['hide']['sg'] = false; # Linux only
 
 // Set to true to not resolve symlinks in the mountpoint device paths. Eg don't convert /dev/mapper/root to /dev/dm-0
 $settings['hide']['dont_resolve_mountpoint_symlinks'] = false; # Linux only
@@ -98,8 +96,8 @@ $settings['raid']['gmirror'] = false;  # For FreeBSD
 $settings['raid']['mdadm'] = false;  # For Linux; known to support RAID 1, 5, and 6
 
 // Various ways of getting temps/voltages/etc. Set to true to enable. Currently these are just for Linux
-$settings['temps']['hwmon'] = true; // Requires no extra config, is fast, and is in /sys :)
-$settings['temps']['thermal_zone'] = false;
+$settings['temps']['hwmon'] = false; // Requires no extra config, is fast, and is in /sys :)
+$settings['temps']['thermal_zone'] = true;
 $settings['temps']['hddtemp'] = false;
 $settings['temps']['mbmon'] = false;
 $settings['temps']['sensord'] = false; // Part of lm-sensors; logs periodically to syslog. slow
@@ -134,12 +132,15 @@ $settings['additional_paths'] = array(
 
 // Format: Label => pid file path
 $settings['services']['pidFiles'] = array(
-	// 'Apache' => '/var/run/apache2.pid', // uncomment to enable
-	// 'SSHd' => '/var/run/sshd.pid'
+	 'Apache' => '/var/run/apache2/apache2.pid', // uncomment to enable
+	 'SSHd' => '/var/run/sshd.pid',
+	 'Samba (smbd)' => '/var/run/samba/smbd.pid',
+	 'Samba (nmbd)' => '/var/run/samba/nmbd.pid'
 );
 
 // Format: Label => path to executable or array containing arguments to be checked
 $settings['services']['executables'] = array(
+	 'Vsftpd' => '/usr/sbin/vsftpd' // uncomment to enable
 	// 'MySQLd' => '/usr/sbin/mysqld' // uncomment to enable
 	// 'BuildSlave' => array('/usr/bin/python', // executable
 	//						1 => '/usr/local/bin/buildslave') // argv[1]

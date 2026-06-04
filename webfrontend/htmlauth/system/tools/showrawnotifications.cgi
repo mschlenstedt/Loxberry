@@ -13,16 +13,11 @@ use strict;
 
 $LoxBerry::Log::DEBUG = 1;
 
-our $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+our $helplink = "https://wiki.loxberry.de/";
 our $template_title = "Show all notifications";
 
 # Version of this script
 my $version = "1.0.0.1";
-
-
-
-
-
 
 LoxBerry::Web::lbheader($template_title, $helplink);
 
@@ -75,7 +70,7 @@ border: 0.5px solid lightgray; border-collapse: collapse; padding:5px; vertical-
 		var delid = \$(this).attr('data-delid');
 		var delid_encoded = delid.replace(".", "\\.");
 		console.log("Delete key", delid);
-		\$.post ( '/admin/system/tools/ajax-notification-handler.cgi', 
+		\$.post ( '/admin/system/ajax/ajax-notification-handler.cgi', 
 					{ 	action: 'notify-deletekey',
 						value: delid,
 					});

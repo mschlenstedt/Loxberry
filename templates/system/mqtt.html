@@ -1,0 +1,655 @@
+﻿<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
+
+<!-- SecurePIN -->
+<div id="securepin_block" style="display:none">
+	<center>
+	<div class="path" style="width:300px">
+		<p><center><TMPL_VAR SECUREPIN.ENTER_SECUREPIN></center></p>
+		<div style="margin:10px;display:flex;gap:8px;align-items:center">
+			<input name="securepin" id="securepin" type="password" placeholder="SecurePIN" onkeypress="return AddKeyPress(event, $('#check_securepin'));" style="flex:1;min-width:0">
+			<button class="lb-btn lb-btn-sm" id="check_securepin" data-role="none"><TMPL_VAR COMMON.BUTTON_OK></button>
+		</div>
+		<div class="hint" id="check_hint" style="padding:5px;">&nbsp;</div>
+	</div>
+	<br>
+	<div class="path" style="background:#FF8080;font-color:black;text-shadow:none;width:300px;border:black 1px solid;padding:5px">
+		<p style="font-weight:bold;">
+			<TMPL_VAR SECUREPIN.WARNING_TITLE>
+		</p>
+		<hr>
+		<p>
+			<TMPL_VAR SECUREPIN.PREVENT_SPY>
+		</p>
+	</div>
+	</center>
+</div>
+
+<div id="main_content" style="visibility:hidden">
+
+<!-- Mosquitto Service Status (outside Vue app) -->
+<div class="servicestatus" id="mosq_servicestatus_wrap">
+	<div class="servicestatus-info">
+		<div><TMPL_VAR MQTT.MOSQ_SERVICE_TITLE></div>
+		<div class="status" id="mosq_status_text"><TMPL_VAR MQTT.MOSQ_STATUS_QUERYING></div>
+	</div>
+	<div class="servicestatus-btns">
+		<a id="btn_restart_mosquitto" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-refresh"></i> <TMPL_VAR MQTT.BTN_MOSQ_RESTART></a>
+		<a id="btn_stop_mosquitto" href="#" class="lb-btn lb-btn-sm lb-btn-icon lb-btn-danger"><i class="pi pi-times"></i> <TMPL_VAR MQTT.BTN_MOSQ_STOP></a>
+	</div>
+</div>
+
+<div id="mqttapp" style="max-width:80%;margin:0 auto">
+	<div class="lb-section-title">{{sl.heading}}</div>
+	<p style="font-size:var(--lb-font-sm);color:var(--lb-gray-500)" v-html="sl.intro"></p>
+
+	<!-- Broker Selection -->
+	<div class="lb-form-row">
+		<div class="lb-form-label">MQTT Server</div>
+		<div class="lb-form-field">
+			<div class="lb-btn-group" data-role="none">
+				<input type="radio" name="uselocalbroker" id="uselocalbroker_true" value="true"
+					v-model="Mqtt.Uselocalbroker"
+					v-on:change="Mqtt.Brokerhost='localhost';update_showbrokerhost();formadata_changed()"
+					data-role="none">
+				<label for="uselocalbroker_true">{{sl.uselocalbroker_true}}</label>
+				<input type="radio" name="uselocalbroker" id="uselocalbroker_false" value="false"
+					v-model="Mqtt.Uselocalbroker"
+					v-on:change="update_showbrokerhost();formadata_changed()"
+					data-role="none">
+				<label for="uselocalbroker_false">{{sl.uselocalbroker_false}}</label>
+			</div>
+		</div>
+	</div>
+
+	<!-- Section Title depending on selection -->
+	<div class="lb-section-title" v-if="Mqtt.Uselocalbroker=='true'"><TMPL_VAR MQTT.LABEL_LOCAL_BROKER></div>
+	<div class="lb-section-title" v-else><TMPL_VAR MQTT.LABEL_CUSTOM_BROKER></div>
+
+	<div class="lb-section-title"><TMPL_VAR MQTT.LABEL_BASIC_SETTINGS></div>
+
+	<div class="lb-form-row">
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_HOST></div>
+		<div class="lb-form-field">
+			<input class="lb-input" type="text" id="Mqtt.Brokerhost"
+				v-model.trim="Mqtt.Brokerhost"
+				:disabled="Mqtt.Uselocalbroker=='true'"
+				v-on:input="update_showbrokerhost"
+				v-on:change="formadata_changed()"
+				data-role="none">
+		</div>
+	</div>
+
+	<div class="lb-form-row">
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_PORT></div>
+		<div class="lb-form-field">
+			<input class="lb-input" type="number" id="Mqtt.Brokerport"
+				v-model.number="Mqtt.Brokerport"
+				:disabled="Mqtt.Uselocalbroker=='true'"
+				v-on:change="formadata_changed()"
+				data-role="none">
+		</div>
+		<div class="lb-form-help"><TMPL_VAR MQTT.HELP_BROKER_PORT_DEFAULT></div>
+	</div>
+
+	<div class="lb-form-row">
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_USER></div>
+		<div class="lb-form-field">
+			<input class="lb-input" type="text" id="Mqtt.Brokeruser"
+				v-model.trim="Mqtt.Brokeruser"
+				v-on:change="formadata_changed()"
+				data-role="none">
+		</div>
+	</div>
+
+	<div class="lb-form-row">
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_BROKER_PASS></div>
+		<div class="lb-form-field">
+			<input class="lb-input" type="text" id="Mqtt.Brokerpass"
+				v-model.trim="Mqtt.Brokerpass"
+				v-on:change="formadata_changed()"
+				data-role="none">
+		</div>
+	</div>
+
+	<div class="lb-form-row" v-if="Mqtt.Uselocalbroker=='true'">
+		<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_WEBSOCKET_PORT></div>
+		<div class="lb-form-field">
+			<input class="lb-input" type="number" id="Mqtt.Websocketport"
+				v-model.number="Mqtt.Websocketport"
+				v-on:change="formadata_changed()"
+				data-role="none">
+		</div>
+	</div>
+
+	<!-- TLS Section -->
+	<div class="lb-section-title"><TMPL_VAR MQTT.LABEL_TLS_SECTION></div>
+
+	<!-- Local broker: TLS + Cert Management -->
+	<div v-if="Mqtt.Uselocalbroker=='true'">
+		<div class="lb-form-row">
+			<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_ENABLED></div>
+			<div class="lb-form-field">
+				<label class="lb-toggle">
+					<input type="checkbox" id="Mqtt.Tlsenabled"
+						v-model="Mqtt.Tlsenabled"
+						true-value="true" false-value="false"
+						v-on:change="formadata_changed()"
+						data-role="none">
+					<span class="lb-toggle-slider"></span>
+				</label>
+			</div>
+			<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_ENABLED></div>
+		</div>
+		<div v-show="Mqtt.Tlsenabled=='true'">
+			<div class="lb-form-row">
+				<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_PORT></div>
+				<div class="lb-form-field">
+					<input class="lb-input" type="number" id="Mqtt.Tlsport"
+						v-model.number="Mqtt.Tlsport"
+						v-on:change="formadata_changed()"
+						data-role="none">
+				</div>
+				<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_PORT></div>
+			</div>
+			<div class="lb-form-row">
+				<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_CERT></div>
+				<div class="lb-form-field" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+					<button class="lb-btn lb-btn-sm lb-btn-icon" type="button"
+						v-on:click="tlsCreateCert()" id="btn_tls_create" data-role="none">
+						<i class="pi pi-plus"></i> <TMPL_VAR MQTT.BTN_TLS_CREATE_CERT>
+					</button>
+					<button class="lb-btn lb-btn-sm lb-btn-icon lb-btn-danger" type="button"
+						v-on:click="tlsRevokeCert()" id="btn_tls_revoke" data-role="none">
+						<i class="pi pi-trash"></i> <TMPL_VAR MQTT.BTN_TLS_REVOKE_CERT>
+					</button>
+					<a class="lb-btn lb-btn-sm lb-btn-icon" id="btn_tls_download_ca"
+						href="/admin/system/ajax/ajax-mqtt.php?ajax=mqtt_tls_ca_download" data-role="none">
+						<i class="pi pi-download"></i> <TMPL_VAR MQTT.BTN_TLS_DOWNLOAD_CA>
+					</a>
+					<span id="tls_cert_status" style="font-size:var(--lb-font-sm)">...</span>
+				</div>
+				<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_CERT></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- External broker: TLS + Validate Cert -->
+	<div v-else>
+		<div class="lb-form-row">
+			<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_EXTERNAL_ENABLED></div>
+			<div class="lb-form-field">
+				<label class="lb-toggle">
+					<input type="checkbox" id="Mqtt.TlsExternalEnabled"
+						v-model="Mqtt.TlsExternalEnabled"
+						true-value="true" false-value="false"
+						v-on:change="formadata_changed()"
+						data-role="none">
+					<span class="lb-toggle-slider"></span>
+				</label>
+			</div>
+			<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_EXTERNAL_ENABLED></div>
+		</div>
+		<div v-show="Mqtt.TlsExternalEnabled=='true'">
+			<div class="lb-form-row">
+				<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_VALIDATE_CERT></div>
+				<div class="lb-form-field">
+					<label class="lb-toggle">
+						<input type="checkbox" id="Mqtt.TlsExternalValidatecert"
+							v-model="Mqtt.TlsExternalValidatecert"
+							true-value="true" false-value="false"
+							v-on:change="formadata_changed()"
+							data-role="none">
+						<span class="lb-toggle-slider"></span>
+					</label>
+				</div>
+				<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_VALIDATE_CERT></div>
+			</div>
+			<div v-show="Mqtt.TlsExternalValidatecert=='true'">
+				<div class="lb-form-row">
+					<div class="lb-form-label"><TMPL_VAR MQTT.LABEL_TLS_EXTERNAL_CA></div>
+					<div class="lb-form-field" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+						<button class="lb-btn lb-btn-sm lb-btn-icon" type="button" data-role="none"
+							v-on:click="tlsExternalCaTrigger()">
+							<i class="pi pi-upload"></i> <TMPL_VAR MQTT.BTN_TLS_EXTERNAL_CA_UPLOAD>
+						</button>
+						<input type="file" id="tls_ext_ca_input" accept=".crt,.pem,.cer"
+							style="display:none" v-on:change="tlsExternalCaUpload()">
+						<button class="lb-btn lb-btn-sm lb-btn-icon lb-btn-danger" type="button"
+							v-on:click="tlsExternalCaDelete()" data-role="none">
+							<i class="pi pi-trash"></i> <TMPL_VAR MQTT.BTN_TLS_EXTERNAL_CA_DELETE>
+						</button>
+						<span id="tls_ext_ca_status" style="font-size:var(--lb-font-sm)">...</span>
+					</div>
+					<div class="lb-form-help hint"><TMPL_VAR MQTT.HINT_TLS_EXTERNAL_CA></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Connection Info Box -->
+	<div style="background:var(--lb-primary);color:white;padding:12px 16px;border-radius:var(--lb-radius);margin-bottom:var(--lb-space-lg);font-size:var(--lb-font-sm)">
+		<TMPL_VAR MQTT.INFO_CONNECTION_DETAILS><br>
+		Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Brokerport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b><br>
+		<small><TMPL_VAR MQTT.INFO_CONNECTION_COMBINED> <b>{{show_brokerhost}}:{{Mqtt.Brokerport}}</b></small>
+		<template v-if="Mqtt.Uselocalbroker=='true' && Mqtt.Tlsenabled=='true'">
+			<br><br>
+			<TMPL_VAR MQTT.INFO_TLS_CONNECTION><br>
+			Host: <b>{{show_brokerhost}}</b> | Port: <b>{{Mqtt.Tlsport}}</b> | User: <b>{{Mqtt.Brokeruser}}</b> | Pass: <b>{{Mqtt.Brokerpass}}</b> | TLS: <b>on</b><br>
+			<small><TMPL_VAR MQTT.INFO_CONNECTION_COMBINED> <b>{{show_brokerhost}}:{{Mqtt.Tlsport}}</b></small>
+		</template>
+	</div>
+
+	<!-- Save button -->
+	<div style="display:flex;justify-content:center;margin-top:28px;padding-top:16px;border-top:1px solid #eee">
+		<button class="lb-btn lb-btn-primary" v-on:click="saveApply()" data-role="none"><TMPL_VAR MQTT.BTN_SAVE_APPLY></button>
+	</div>
+
+	<div v-show="data_changed" style="text-align:center;margin-top:var(--lb-space-md);color:var(--lb-primary);font-size:var(--lb-font-sm)">
+		<TMPL_VAR MQTT.MSG_MQTT_UNSAVED><br><TMPL_VAR MQTT.MSG_MQTT_UNSAVED_DETAIL>
+	</div>
+	<div v-show="data_saved" style="text-align:center;margin-top:var(--lb-space-md);color:var(--lb-success);font-size:var(--lb-font-sm)">
+		<TMPL_VAR MQTT.MSG_SAVED_OK>
+	</div>
+	<div v-show="data_save_error" style="text-align:center;margin-top:var(--lb-space-md);color:var(--lb-danger);font-size:var(--lb-font-sm)">
+		<TMPL_VAR MQTT.MSG_SAVE_ERROR>
+	</div>
+
+</div>
+
+</div><!-- #main_content -->
+
+<script>
+
+	const mqtt_generic = '/admin/system/ajax/ajax-generic.php';
+
+	var _lang_mosq = {
+		statusQuerying:    '<TMPL_VAR MQTT.MOSQ_STATUS_QUERYING>',
+		statusRestarting:  '<TMPL_VAR MQTT.STATUS_RESTARTING>'     || 'Restarting...',
+		statusReachable:   '<TMPL_VAR MQTT.MOSQ_STATUS_REACHABLE>',
+		statusFailed:      '<TMPL_VAR MQTT.MOSQ_STATUS_FAILED>',
+		statusRunningPid:  '<TMPL_VAR MQTT.MOSQ_STATUS_RUNNING_PID>',
+		statusNotRunning:  '<TMPL_VAR MQTT.MOSQ_STATUS_NOT_RUNNING>',
+		statusQueryFailed: '<TMPL_VAR MQTT.MOSQ_STATUS_QUERY_FAILED>'
+	};
+
+	var _mosq_restarting = false;
+
+	const mqttapp = {
+
+	  setup() {
+		console.log("Setup called");
+	  },
+
+	  data() {
+		var Mqtt = this.getData();
+		return {
+			sl: {
+				heading: "<TMPL_VAR MQTT.MOSQ_HEADING>",
+				intro: "<TMPL_VAR MQTT.DESC_MQTT_INTRO>",
+				uselocalbroker_true: "<TMPL_VAR MQTT.RADIO_USE_LOCAL_BROKER>",
+				uselocalbroker_false: "<TMPL_VAR MQTT.RADIO_USE_CUSTOM_BROKER>"
+
+			},
+			Mqtt: {
+				Uselocalbroker: "false",
+				Brokerhost: "",
+				Brokerport: "",
+				Brokeruser: "",
+				Brokerpass: "",
+				Websocketport: "",
+				Tlsenabled: "false",
+				Tlsport: 8883,
+				TlsExternalEnabled: "false",
+				TlsExternalValidatecert: "false",
+			},
+
+			show_brokerhost: "",
+			data_changed: false,
+			data_saved: false,
+			data_save_error: false
+
+		};
+	  },
+	  methods: {
+
+			formadata_changed() {
+				this.data_changed = true;
+				this.data_saved = false;
+			},
+
+			update_showbrokerhost() {
+				if(this.Mqtt.Brokerhost.toLowerCase() == 'localhost') {
+					this.show_brokerhost = window.location.hostname;
+				} else {
+					this.show_brokerhost = this.Mqtt.Brokerhost;
+				}
+			},
+
+			saveApply() {
+				console.log("Called Save and Apply");
+
+				const requestOptions = {
+					method: "POST",
+					headers: { "Content-Type" : "application/json" },
+					body: JSON.stringify( this.$data.Mqtt )
+				};
+				var self=this;
+				// Update general.json
+				var p = fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&write', requestOptions)
+				.then( function(response) {
+					console.log(response);
+					if( response.ok != true ) {
+						self.data_save_error = true;
+					}
+					else {
+						fetch('/admin/system/ajax/ajax-mqtt.php?ajax=mosquitto_set');
+						self.data_save_error = false;
+						self.data_saved = true;
+						setTimeout(function() { self.data_saved = false; }, 4000);
+						self.data_changed = false;
+						// Auto-create TLS cert if TLS enabled and no cert exists yet
+						if (self.Mqtt.Uselocalbroker === 'true' && self.Mqtt.Tlsenabled === 'true') {
+							$.post(mqtt_ajax, { ajax: 'mqtt_tls_cert_status' })
+							.done(function(statusData) {
+								if (!statusData.exists) {
+									self.tlsCreateCert();
+								} else {
+									self.tlsUpdateCertStatus();
+								}
+							});
+						}
+					}
+				});
+				// Update legacy mqtt.json
+				const legacyMqttjsonOptions = {
+					method: "POST",
+					headers: { "Content-Type" : "application/json" },
+					body: JSON.stringify( {
+						"brokeraddress" : this.$data.Mqtt.Brokerhost+':'+this.$data.Mqtt.Brokerport
+					} )
+				};
+				fetch(mqtt_generic+'?file=LBPCONFIG/mqttgateway/mqtt.json&section=Main&write', legacyMqttjsonOptions );
+				// Update legacy mqtt cred.json
+				const legacyMqttcredjsonOptions = {
+					method: "POST",
+					headers: { "Content-Type" : "application/json" },
+					body: JSON.stringify( {
+						"brokeruser" : this.$data.Mqtt.Brokeruser,
+						"brokerpass" : this.$data.Mqtt.Brokerpass
+					} )
+				};
+				fetch(mqtt_generic+'?file=LBPCONFIG/mqttgateway/cred.json&section=Credentials&write', legacyMqttcredjsonOptions );
+
+				return p;
+
+			},
+
+			getData() {
+				console.log("Called getData");
+				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&read')
+					.then( response => response.json() )
+					.then( data => {
+						if ( data.Uselocalbroker == 1 || data.Uselocalbroker === true ) data.Uselocalbroker = 'true';
+						if ( data.Uselocalbroker === false ) data.Uselocalbroker = 'false';
+						if ( !data.Tlsenabled ) data.Tlsenabled = 'false';
+						if ( !data.Tlsport ) data.Tlsport = 8883;
+						if ( !data.TlsExternalEnabled ) data.TlsExternalEnabled = 'false';
+						if ( data.TlsExternalValidatecert === undefined || data.TlsExternalValidatecert === null ) data.TlsExternalValidatecert = 'false';
+						this.Mqtt = data;
+						this.update_showbrokerhost();
+						this.tlsUpdateCertStatus();
+						this.tlsExternalCaUpdateStatus();
+					});
+			},
+
+			tlsUpdateCertStatus() {
+				var self = this;
+				$.post(mqtt_ajax, { ajax: 'mqtt_tls_cert_status' })
+				.done(function(data) {
+					var el = document.getElementById('tls_cert_status');
+					if (!el) return;
+					if (data.exists && data.valid) {
+						el.style.color = 'var(--lb-success, green)';
+						el.textContent = '<TMPL_VAR MQTT.TLS_CERT_VALID> ' + data.expiry;
+					} else if (data.exists && !data.valid) {
+						el.style.color = 'var(--lb-danger, red)';
+						el.textContent = '<TMPL_VAR MQTT.TLS_CERT_EXPIRED> ' + data.expiry;
+					} else {
+						el.style.color = 'var(--lb-gray-500, gray)';
+						el.textContent = '<TMPL_VAR MQTT.TLS_CERT_NONE>';
+					}
+				})
+				.fail(function() {
+					var el = document.getElementById('tls_cert_status');
+					if (el) { el.style.color='red'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_QUERY_FAILED>'; }
+				});
+			},
+
+			tlsCreateCert() {
+				var self = this;
+				var el = document.getElementById('tls_cert_status');
+				if (el) { el.style.color='blue'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_CREATING>'; }
+				$('#btn_tls_create').addClass('lb-disabled').attr('disabled', true);
+				$.post(mqtt_ajax, { ajax: 'mqtt_tls_cert_create' })
+				.done(function(data) {
+					if (data.success) {
+						self.tlsUpdateCertStatus();
+					} else {
+						if (el) { el.style.color='red'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_CREATE_ERROR>: ' + (data.error || ''); }
+					}
+				})
+				.fail(function() {
+					if (el) { el.style.color='red'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_CREATE_ERROR>'; }
+				})
+				.always(function() {
+					$('#btn_tls_create').removeClass('lb-disabled').removeAttr('disabled');
+				});
+			},
+
+			tlsRevokeCert() {
+				var self = this;
+				if (!confirm('<TMPL_VAR MQTT.TLS_CERT_REVOKE_CONFIRM>')) return;
+				var el = document.getElementById('tls_cert_status');
+				if (el) { el.style.color='blue'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_REVOKING>'; }
+				$.post(mqtt_ajax, { ajax: 'mqtt_tls_cert_revoke' })
+				.done(function(data) {
+					if (data.success) {
+						if (el) { el.style.color='gray'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_NONE>'; }
+					} else {
+						if (el) { el.style.color='red'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_REVOKE_ERROR>: ' + (data.error || ''); }
+					}
+				})
+				.fail(function() {
+					if (el) { el.style.color='red'; el.textContent='<TMPL_VAR MQTT.TLS_CERT_REVOKE_ERROR>'; }
+				});
+			},
+
+			tlsExternalCaUpdateStatus() {
+				var self = this;
+				$.post(mqtt_ajax, { ajax: 'mqtt_external_ca_status' })
+				.done(function(data) {
+					var el = document.getElementById('tls_ext_ca_status');
+					if (!el) return;
+					if (data.exists) {
+						el.style.color = 'var(--lb-success, green)';
+						el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_LOADED>' + (data.subject ? ': ' + data.subject : '');
+					} else {
+						el.style.color = 'var(--lb-gray-500, gray)';
+						el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_NONE>';
+					}
+				});
+			},
+
+			tlsExternalCaTrigger() {
+				document.getElementById('tls_ext_ca_input').click();
+			},
+
+			tlsExternalCaUpload() {
+				var input = document.getElementById('tls_ext_ca_input');
+				if (!input || !input.files.length) return;
+				var el = document.getElementById('tls_ext_ca_status');
+				if (el) { el.style.color = 'blue'; el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_UPLOADING>'; }
+				var formData = new FormData();
+				formData.append('ajax', 'mqtt_external_ca_upload');
+				formData.append('cafile', input.files[0]);
+				var self = this;
+				$.ajax({
+					url: mqtt_ajax,
+					type: 'POST',
+					data: formData,
+					processData: false,
+					contentType: false,
+					dataType: 'json'
+				})
+				.done(function(data) {
+					if (data.success) {
+						self.tlsExternalCaUpdateStatus();
+					} else {
+						if (el) { el.style.color = 'red'; el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_ERROR>: ' + (data.error || ''); }
+					}
+				})
+				.fail(function() {
+					if (el) { el.style.color = 'red'; el.textContent = '<TMPL_VAR MQTT.TLS_EXTERNAL_CA_ERROR>'; }
+				})
+				.always(function() { input.value = ''; });
+			},
+
+			tlsExternalCaDelete() {
+				if (!confirm('<TMPL_VAR MQTT.TLS_EXTERNAL_CA_DELETE_CONFIRM>')) return;
+				var el = document.getElementById('tls_ext_ca_status');
+				if (el) { el.style.color = 'blue'; el.textContent = '...'; }
+				var self = this;
+				$.post(mqtt_ajax, { ajax: 'mqtt_external_ca_delete' })
+				.done(function() { self.tlsExternalCaUpdateStatus(); });
+			}
+	  },
+	  updated() {
+		this.update_showbrokerhost();
+	  }
+	}
+
+
+	var vueApp = null;
+
+	const mqtt_ajax = '/admin/system/ajax/ajax-mqtt.php';
+
+	function mosq_status_pending() {
+		$('#mosq_status_text').text(_lang_mosq.statusQuerying).css({'background':'#dfdfdf','color':'black','border-color':'#7e7e7e'});
+	}
+
+	function update_mosq_status() {
+		if (_mosq_restarting) return;
+		$.post(mqtt_ajax, { ajax: 'getpids' })
+		.done(function(resp) {
+			if (_mosq_restarting) return;
+			var $btns = $('#btn_restart_mosquitto, #btn_stop_mosquitto');
+			if (resp.pids.mosq_custom) {
+				// Custom broker — show reachability, disable local buttons
+				$btns.addClass('lb-disabled').attr('disabled', true);
+				if (resp.pids.mosq_reachable) {
+					$('#mosq_status_text').text(_lang_mosq.statusReachable).css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+				} else {
+					$('#mosq_status_text').text(_lang_mosq.statusFailed).css({'background':'#d0021b','color':'white','border-color':'#b00218'});
+				}
+			} else {
+				// Local Mosquitto
+				$btns.removeClass('lb-disabled').removeAttr('disabled');
+				if (resp.pids.mosquitto != null) {
+					$('#mosq_status_text').text(_lang_mosq.statusRunningPid.replace('%s', resp.pids.mosquitto)).css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+				} else {
+					$('#mosq_status_text').text(_lang_mosq.statusNotRunning).css({'background':'#d0021b','color':'white','border-color':'#b00218'});
+				}
+			}
+		})
+		.fail(function() {
+			if (_mosq_restarting) return;
+			$('#mosq_status_text').text(_lang_mosq.statusQueryFailed).css({'background':'#dfdfdf','color':'black','border-color':'#7e7e7e'});
+		});
+	}
+
+	$(function() {
+		update_mosq_status();
+		setInterval(update_mosq_status, 5000);
+
+		$('#btn_restart_mosquitto').click(function(e) {
+			e.preventDefault();
+			if ($(this).hasClass('lb-disabled')) return;
+			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('lb-disabled').attr('disabled', true);
+			_mosq_restarting = true;
+			$('#mosq_status_text').text(_lang_mosq.statusRestarting).css({'background':'#dfdfdf','color':'black','border-color':'#7e7e7e'});
+			vueApp.saveApply().then(function() {
+				$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
+				.always(function() {
+					_mosq_restarting = false;
+					$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
+					setTimeout(update_mosq_status, 3000);
+				});
+			});
+		});
+
+		$('#btn_stop_mosquitto').click(function(e) {
+			e.preventDefault();
+			if ($(this).hasClass('lb-disabled')) return;
+			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('lb-disabled').attr('disabled', true);
+			mosq_status_pending();
+			$.post(mqtt_ajax, { ajax: 'stop_mosquitto' })
+			.always(function() {
+				$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
+				setTimeout(update_mosq_status, 1500);
+			});
+		});
+	});
+
+	// SecurePIN
+	$(function() {
+		$("#check_securepin").click(function() {
+			checkSecurePIN();
+		});
+		$('#securepin').val(sessionStorage.getItem("securePIN"));
+		if ($('#securepin').val()) {
+			$('#check_securepin').trigger("click");
+		} else {
+			$("#securepin_block").fadeIn();
+		}
+	});
+
+	function checkSecurePIN() {
+		$("#check_securepin").attr("disabled", true);
+		$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR SECUREPIN.CHECK_WAIT>");
+		$.ajax({
+			type: 'POST',
+			data: { action: 'checksecpin', secpin: $('#securepin').val() }
+		})
+		.fail(function(data) {
+			$("#securepin_block").fadeIn();
+			$("#check_hint").attr("style", "color:red").html("<TMPL_VAR SECUREPIN.ERROR_GENERIC>: " + data.statusText);
+		})
+		.done(function(data) {
+			if (data.error && data.error != 0) {
+				switch (data.error) {
+					case 1: case 2: case 3:
+						data.message = '<TMPL_VAR SECUREPIN.ERROR_WRONG>'; break;
+				}
+				$("#check_hint").attr("style", "color:red").html(data.message);
+				return;
+			}
+			sessionStorage.setItem("securePIN", $('#securepin').val());
+			$("#securepin_block").fadeOut();
+			$("#main_content").css('visibility', 'visible');
+			vueApp = Vue.createApp(mqttapp).mount('#mqttapp');
+		})
+		.always(function() {
+			$("#check_securepin").attr("disabled", false);
+		});
+	}
+
+	function AddKeyPress(event, submitobj) {
+		event = event || window.event;
+		if (event.keyCode == 13) {
+			submitobj.click();
+			return false;
+		}
+		return true;
+	}
+
+</script>

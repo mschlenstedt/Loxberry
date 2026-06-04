@@ -1,4 +1,9 @@
 <?php
+header("Expires; 0");
+header("Expires: Tue, 01 Jan 1980 1:00:00 GMT");
+header("Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0");   
+header("Cache-Control: max-age=0");
+header("Pragma: no-cache");
 require_once "loxberry_system.php";
 $ini = parse_ini_file(LBSCONFIGDIR . "/general.cfg",TRUE,INI_SCANNER_RAW);
 if ( lbfriendlyname() === "") {
@@ -17,11 +22,11 @@ if ( lbfriendlyname() === "") {
     <deviceType>urn:schemas-upnp-org:device:HVAC_System:1</deviceType>
     <friendlyName><?php echo $lbname; ?></friendlyName>
     <manufacturer>M.Schlenstedt</manufacturer>
-    <manufacturerURL>http://www.loxwiki.eu/</manufacturerURL>
+    <manufacturerURL>https://wiki.loxberry.de</manufacturerURL>
     <modelDescription>Loxberry</modelDescription>
     <modelName>Loxberry</modelName>
     <modelNumber><?php echo $ini['BASE']['VERSION']; ?></modelNumber>
-    <modelURL>http://www.loxwiki.eu</modelURL>
+    <modelURL>https://wiki.loxberry.de</modelURL>
     <UDN>uuid:<?php echo $ini['SSDP']['UUID']; ?></UDN>
     <iconList>
       <icon>

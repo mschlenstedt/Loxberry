@@ -1,0 +1,1637 @@
+/* LoxBerry Component Classes (lb-*)
+   New design-system components using CSS Variables.
+   Use these on migrated Core pages. Plugins keep jQuery Mobile. */
+
+
+/* ============================================================
+   1. jQuery Mobile Overrides
+   !important is required here to beat jQM's specificity.
+   ============================================================ */
+
+/* Reset jQM button styling when lb-btn is used */
+.ui-btn.lb-btn,
+.ui-btn.lb-btn:focus {
+	background-image: none !important;
+	background: var(--lb-btn-bg) !important;
+	color: var(--lb-btn-text) !important;
+	border: 1px solid var(--lb-btn-border) !important;
+	border-radius: var(--lb-btn-radius) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	font-family: var(--lb-font) !important;
+	width: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+.ui-btn.lb-btn:hover,
+.ui-btn.lb-btn:active {
+	background-image: none !important;
+	background: var(--lb-btn-hover-bg) !important;
+	color: var(--lb-btn-text) !important;
+	border: 1px solid var(--lb-text-secondary) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+/* Reset jQM primary button styling */
+.ui-btn.lb-btn-primary,
+.ui-btn.lb-btn-primary:hover,
+.ui-btn.lb-btn-primary:active {
+	background: var(--lb-btn-primary-bg) !important;
+	color: var(--lb-btn-primary-text) !important;
+	border-color: var(--lb-btn-primary-border) !important;
+	text-shadow: none !important;
+}
+
+/* Reset jQM input wrapper styling — scoped to .lb-content so plugin pages
+   keep their original JQM styling unchanged. */
+.lb-content .ui-input-text {
+	border: 1px solid var(--lb-input-border) !important;
+	border-radius: var(--lb-radius) !important;
+	background: var(--lb-input-bg) !important;
+	box-shadow: none !important;
+}
+.lb-content .ui-input-text input {
+	color: var(--lb-input-text) !important;
+	font-family: var(--lb-font) !important;
+}
+.ui-input-text:has(.lb-input) {
+	border: none !important;
+	background: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+}
+
+/* Suppress native OS arrow on JQM-enhanced selects (restores missing rule
+   from jquery.mobile-1.4.5.min.css which had -webkit-appearance:none on
+   .ui-select select — without it the native arrow bleeds through opacity:0). */
+.ui-select select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+/* Hide jQM select wrapper when native lb-select is used */
+.ui-select:has(.lb-select) {
+	display: contents;
+}
+
+/* When a jQM .ui-btn wraps a select.lb-select (Sonos-style custom widget):
+   reset all jQM button styling so only the native lb-select is visible. */
+.ui-btn:has(> select.lb-select),
+.ui-btn:has(> span + select.lb-select) {
+	background: none !important;
+	background-image: none !important;
+	border: none !important;
+	box-shadow: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	text-shadow: none !important;
+	display: block !important;
+	width: 100% !important;
+	max-width: none !important;
+	overflow: visible !important;
+}
+.ui-btn:has(> select.lb-select)::before,
+.ui-btn:has(> select.lb-select)::after {
+	display: none !important;
+}
+.ui-btn:has(> select.lb-select) > span.lb-select {
+	display: none !important;
+}
+.ui-btn:has(> select.lb-select) > select.lb-select {
+	opacity: 1 !important;
+	position: static !important;
+	-webkit-clip-path: none !important;
+	clip-path: none !important;
+	clip: auto !important;
+	width: 100% !important;
+	height: auto !important;
+	max-height: none !important;
+	min-height: 0 !important;
+}
+
+/* Override jQM page/body styling — scoped to core pages (.lb-layout) only
+   so plugin pages keep their default jQM padding/margins. Note: .page_content
+   and #page_content are LoxBerry-own wrappers (not jQM) and are intentionally
+   NOT overridden here — their padding comes from .lb-content. */
+.lb-layout div[data-role="page"],
+.lb-layout .ui-page,
+.lb-layout .ui-content,
+.lb-layout .ui-body-a,
+.lb-layout .ui-body-c,
+.lb-layout .ui-overlay-a {
+	padding: 0 !important;
+	margin: 0 !important;
+	border: none !important;
+	background: transparent !important;
+	color: var(--lb-text) !important;
+}
+
+/* Reset jQM label styling inside btn-group */
+.lb-btn-group label.ui-btn {
+	background-image: none !important;
+	border: none !important;
+	border-right: 1px solid var(--lb-border-color) !important;
+	border-radius: 0 !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	padding: 8px 16px !important;
+	margin: 0 !important;
+	text-align: center !important;
+}
+
+/* Hide jQM radio/checkbox icons inside btn-group */
+.lb-btn-group label.ui-btn::before,
+.lb-btn-group label.ui-btn::after,
+.lb-btn-group .ui-btn-icon-left::before,
+.lb-btn-group .ui-radio .ui-btn::before,
+.lb-btn-group .ui-radio .ui-btn::after,
+.lb-btn-group .ui-checkbox .ui-btn::before,
+.lb-btn-group .ui-checkbox .ui-btn::after {
+	display: none !important;
+}
+
+/* Hide jQM radio/checkbox wrappers inside btn-group */
+.lb-btn-group .ui-radio,
+.lb-btn-group .ui-checkbox {
+	display: contents;
+}
+
+/* Reset jQM styling on lb-toggle label */
+label.lb-toggle.ui-btn {
+	background: none !important;
+	border: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	width: 52px !important;
+	height: 28px !important;
+	min-height: 0 !important;
+	line-height: normal !important;
+}
+label.lb-toggle.ui-btn::before,
+label.lb-toggle.ui-btn::after {
+	display: none !important;
+}
+
+
+/* ============================================================
+   2. Base Input/Select Defaults (for pages without lb-input)
+   ============================================================ */
+
+/* Style bare inputs on core pages where jQM structure CSS is gone */
+.lb-content input[type="text"],
+.lb-content input[type="password"],
+.lb-content input[type="email"],
+.lb-content input[type="url"],
+.lb-content input[type="number"],
+.lb-content input[type="tel"],
+.lb-content input[type="search"],
+.lb-content textarea {
+	padding: 8px 12px;
+	border: 1px solid var(--lb-input-border);
+	border-radius: var(--lb-radius);
+	font-size: var(--lb-font-base);
+	font-family: var(--lb-font);
+	background: var(--lb-input-bg);
+	color: var(--lb-input-text);
+	box-sizing: border-box;
+}
+.lb-content input[type="text"]:focus,
+.lb-content input[type="password"]:focus,
+.lb-content input[type="email"]:focus,
+.lb-content input[type="url"]:focus,
+.lb-content input[type="number"]:focus,
+.lb-content input[type="tel"]:focus,
+.lb-content input[type="search"]:focus,
+.lb-content textarea:focus {
+	border-color: var(--lb-primary);
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+.lb-content select {
+	padding: 8px 12px;
+	border: 1px solid var(--lb-input-border);
+	border-radius: var(--lb-radius);
+	font-size: var(--lb-font-base);
+	font-family: var(--lb-font);
+	background: var(--lb-input-bg);
+	color: var(--lb-input-text);
+	box-sizing: border-box;
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	padding-right: 36px;
+}
+.lb-content input[type="checkbox"],
+.lb-content input[type="radio"] {
+	margin: 0 8px 0 0;
+	vertical-align: middle;
+	cursor: pointer;
+	flex-shrink: 0;
+}
+/* Checkbox — Material style: green square + white checkmark SVG */
+.lb-content input[type="checkbox"] {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 18px;
+	height: 18px;
+	border: 2px solid var(--lb-text-muted);
+	border-radius: 3px;
+	background: #fff;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 11px 11px;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.lb-content input[type="checkbox"]:checked {
+	border-color: var(--lb-primary);
+	background-color: var(--lb-primary);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M2 6.5L4.5 9.5L10 3'/%3E%3C/svg%3E");
+}
+.lb-content input[type="checkbox"]:hover:not(:checked) {
+	border-color: var(--lb-primary);
+}
+.lb-content input[type="checkbox"]:focus {
+	outline: none;
+}
+.lb-content input[type="checkbox"]:focus-visible {
+	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.2);
+}
+/* Radio button — Material style: outer ring + white gap + green inner dot */
+.lb-content input[type="radio"] {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--lb-text-muted);
+	border-radius: 50%;
+	background: #fff;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lb-content input[type="radio"]:checked {
+	border-color: var(--lb-primary);
+	background: var(--lb-primary);
+	box-shadow: inset 0 0 0 4px #fff;
+}
+.lb-content input[type="radio"]:hover:not(:checked) {
+	border-color: var(--lb-primary);
+}
+.lb-content input[type="radio"]:focus {
+	outline: none;
+}
+.lb-content input[type="radio"]:focus-visible {
+	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.2);
+}
+.lb-content input[type="radio"]:checked:focus-visible {
+	box-shadow: inset 0 0 0 4px #fff, 0 0 0 3px rgba(109, 172, 32, 0.2);
+}
+/* Override for the hidden checkbox inside .lb-toggle — slider span draws
+   the visible UI; the input must stay invisible and unstyled. */
+.lb-content .lb-toggle input[type="checkbox"] {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 0;
+	height: 0;
+	margin: 0;
+	border: none;
+	background: none;
+	box-shadow: none;
+}
+.lb-content label:not(.lb-toggle):has(> input[type="checkbox"], > input[type="radio"]) {
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+}
+
+/* Standalone option rows in form layouts: full-width box with border so
+   they read as a switchable element rather than mid-paragraph text.
+   Skip .lb-toggle (real toggle switches have their own fixed sizing). */
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"], > input[type="radio"]) {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid var(--lb-border-color);
+	border-radius: var(--lb-radius);
+	background: var(--lb-input-bg);
+	transition: border-color 0.15s ease, background 0.15s ease;
+	box-sizing: border-box;
+}
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]:checked, > input[type="radio"]:checked) {
+	border-color: var(--lb-primary);
+	background: rgba(109, 172, 32, 0.06);
+}
+.lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"], > input[type="radio"]):hover {
+	border-color: var(--lb-text-secondary);
+}
+
+/* Spezifität 0 via :where() — Plugin-CSS kann jederzeit überschreiben */
+:where(.lb-content input[type="submit"],
+.lb-content input[type="button"],
+.lb-content button:not(.lb-btn):not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"])) {
+	padding: 8px 16px;
+	border: 1px solid var(--lb-btn-border);
+	border-radius: var(--lb-btn-radius);
+	font-size: var(--lb-font-base);
+	font-family: var(--lb-font);
+	background: var(--lb-btn-bg);
+	color: var(--lb-btn-text);
+	cursor: pointer;
+}
+
+
+/* ============================================================
+   3. Base Components
+   ============================================================ */
+
+/* --- Global Font Reset --- */
+.lb-section-title,
+.lb-form-label,
+.lb-form-help,
+.lb-btn,
+.lb-input,
+.lb-select,
+.lb-textarea {
+	font-family: var(--lb-font);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* --- Buttons --- */
+.lb-btn,
+a.lb-btn,
+a.lb-btn:visited,
+a.lb-btn:link,
+button.lb-btn {
+	display: inline-block;
+	padding: 0.55em 0.9em;
+	margin: 0.5em 0.625em 0.5em 0;
+	background: var(--lb-btn-bg);
+	color: var(--lb-btn-text);
+	border: 1px solid var(--lb-btn-border);
+	border-radius: var(--lb-btn-radius);
+	font-size: var(--lb-font-base);
+	font-weight: normal;
+	font-family: var(--lb-font);
+	line-height: 1.3;
+	cursor: pointer;
+	text-decoration: none;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	-webkit-user-select: none;
+	user-select: none;
+	position: relative;
+	vertical-align: middle;
+	box-sizing: border-box;
+	transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+/* Specificity must match a.lb-btn:link / button.lb-btn (0,2,1) so hover
+   wins by source order on anchor and button elements. */
+.lb-btn:hover,
+a.lb-btn:hover,
+button.lb-btn:hover {
+	background: var(--lb-btn-hover-bg);
+	border-color: var(--lb-text-secondary);
+}
+.lb-btn:active,
+a.lb-btn:active,
+button.lb-btn:active {
+	background: var(--lb-btn-hover-bg);
+	filter: brightness(0.96);
+}
+
+.lb-btn-primary,
+a.lb-btn-primary,
+a.lb-btn-primary:visited,
+a.lb-btn-primary:link,
+button.lb-btn-primary,
+input[type="submit"].lb-btn-primary,
+.ui-link.lb-btn-primary {
+	background: var(--lb-btn-primary-bg);
+	color: var(--lb-btn-primary-text);
+	border-color: var(--lb-btn-primary-border);
+	font-size: var(--lb-font-base);
+	font-weight: 500;
+}
+.lb-btn-primary:hover,
+a.lb-btn-primary:hover,
+button.lb-btn-primary:hover {
+	background: var(--lb-primary-hover);
+	border-color: var(--lb-primary-dark);
+	color: var(--lb-btn-primary-text);
+}
+.lb-btn-danger,
+a.lb-btn-danger,
+a.lb-btn-danger:visited,
+a.lb-btn-danger:link,
+button.lb-btn-danger {
+	background-color: var(--lb-danger);
+	color: white;
+	border-color: var(--lb-danger);
+	text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+.lb-btn-danger:hover,
+a.lb-btn-danger:hover,
+button.lb-btn-danger:hover {
+	background-color: var(--lb-danger);
+	filter: brightness(1.1);
+}
+
+.lb-btn-sm {
+	padding: 0.55em 0.9em;
+	font-size: 12.5px;
+}
+.lb-btn-icon {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	vertical-align: middle;
+}
+.lb-btn-icon .pi {
+	font-size: 0.9em;
+}
+
+/* --- Inputs --- */
+.lb-input,
+.lb-select,
+.lb-textarea {
+	width: 100%;
+	padding: 10px 14px;
+	border: 1px solid var(--lb-input-border);
+	border-radius: var(--lb-radius);
+	font-size: var(--lb-font-base);
+	background: var(--lb-input-bg);
+	color: var(--lb-input-text);
+	box-sizing: border-box;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lb-input:focus,
+.lb-select:focus,
+.lb-textarea:focus {
+	border-color: var(--lb-primary);
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+.lb-input[type="number"]::-webkit-inner-spin-button,
+.lb-input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+.lb-input[type="number"] {
+	-moz-appearance: textfield;
+}
+
+/* --- Slider --- */
+/*
+ * lb-slider       — styled <input type="range">; tracks --lb-primary color scheme.
+ * lb-slider-wrap  — flex container holding the slider + optional lb-slider-value badge.
+ * lb-slider-value — numeric badge showing the current value; update via JS.
+ * lb-slider-labels — row with min/max labels below the track.
+ *
+ * Usage:
+ *   <div class="lb-slider-wrap">
+ *     <input type="range" class="lb-slider" id="s" min="0" max="100" value="50">
+ *     <span class="lb-slider-value" id="s-val">50</span>
+ *   </div>
+ *   <div class="lb-slider-labels"><span>0</span><span>100</span></div>
+ *
+ * JS helper (call once on init; then call updateSlider after programmatic value changes):
+ *   function updateSlider(id, valId) {
+ *     var s = document.getElementById(id);
+ *     var pct = (s.value - s.min) / (s.max - s.min) * 100;
+ *     s.style.setProperty('--lb-slider-fill', pct + '%');
+ *     var el = document.getElementById(valId);
+ *     if (el) el.textContent = s.value;
+ *   }
+ *   function initSlider(id, valId) {
+ *     var s = document.getElementById(id);
+ *     s.addEventListener('input', function() { updateSlider(id, valId); });
+ *     updateSlider(id, valId);
+ *   }
+ */
+.lb-slider {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 8px;
+	border-radius: 4px;
+	outline: none;
+	cursor: pointer;
+	/* --lb-slider-fill is set and kept current by JS (see updateSlider above) */
+	background: linear-gradient(
+		to right,
+		var(--lb-primary)      0%,
+		var(--lb-primary)      var(--lb-slider-fill, 0%),
+		var(--lb-border-color) var(--lb-slider-fill, 0%),
+		var(--lb-border-color) 100%
+	);
+	transition: box-shadow 0.15s ease;
+}
+/* Thumb — Chrome / Safari / Edge */
+.lb-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--lb-primary);
+	cursor: pointer;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 5px rgba(0,0,0,.25);
+	transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+.lb-slider::-webkit-slider-thumb:hover {
+	box-shadow: 0 0 0 7px rgba(109,172,32,.18), 0 1px 5px rgba(0,0,0,.25);
+	transform: scale(1.07);
+}
+/* Track — Firefox */
+.lb-slider::-moz-range-track {
+	height: 8px;
+	border-radius: 4px;
+	background: var(--lb-border-color);
+	border: none;
+}
+/* Filled portion — Firefox */
+.lb-slider::-moz-range-progress {
+	height: 8px;
+	border-radius: 4px 0 0 4px;
+	background: var(--lb-primary);
+}
+/* Thumb — Firefox */
+.lb-slider::-moz-range-thumb {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--lb-primary);
+	cursor: pointer;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 5px rgba(0,0,0,.25);
+	box-sizing: border-box;
+}
+/* Focus ring — matches lb-input */
+.lb-slider:focus {
+	box-shadow: 0 0 0 3px rgba(109,172,32,.15);
+}
+/* Flex container: slider track + value badge */
+.lb-slider-wrap {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+}
+/* Numeric value badge */
+.lb-slider-value {
+	display: inline-block;
+	min-width: 2.8em;
+	text-align: center;
+	font-size: var(--lb-font-sm);
+	font-weight: 600;
+	color: var(--lb-primary);
+	background: rgba(109,172,32,.08);
+	border: 1px solid rgba(109,172,32,.25);
+	border-radius: var(--lb-radius);
+	padding: 3px 8px;
+	flex-shrink: 0;
+	font-family: var(--lb-font-mono);
+}
+/* Min / Max labels below the track */
+.lb-slider-labels {
+	display: flex;
+	justify-content: space-between;
+	font-size: 11px;
+	color: var(--lb-text-muted);
+	margin-top: 6px;
+	padding: 0 3px;
+	font-family: var(--lb-font);
+}
+
+
+/* --- Cards --- */
+.lb-card {
+	background: var(--lb-card-bg);
+	border: var(--lb-card-border);
+	border-radius: var(--lb-radius);
+	padding: var(--lb-space-lg);
+	box-shadow: var(--lb-card-shadow);
+	backdrop-filter: var(--lb-backdrop-blur);
+}
+
+/* --- Section Title --- */
+.lb-section-title {
+	font-size: 1.15rem;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	border-bottom: 2px solid var(--lb-section-border);
+	padding-bottom: 10px;
+	margin-top: var(--lb-space-lg);
+	margin-bottom: var(--lb-space-lg);
+	color: var(--lb-text);
+}
+
+/* --- Form Layout --- */
+.lb-form-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--lb-space-md);
+	margin-bottom: var(--lb-space-lg);
+	padding: var(--lb-space-sm) 0;
+}
+.lb-form-label {
+	min-width: 150px;
+	width: 200px;
+	text-align: right;
+	font-weight: 600;
+	font-size: var(--lb-font-sm);
+	color: var(--lb-text-secondary);
+	line-height: 1.4;
+}
+.lb-form-field {
+	flex: 1;
+	min-width: 200px;
+}
+.lb-form-help {
+	flex-basis: 100%;
+	font-size: 0.8rem;
+	color: var(--lb-text-muted);
+	margin-top: calc(-1 * var(--lb-space-sm));
+	line-height: 1.5;
+	padding-left: 216px;
+}
+
+/* --- Toggle Switch --- */
+.lb-toggle {
+	position: relative;
+	display: inline-block;
+	width: 52px;
+	height: 28px;
+}
+.lb-toggle input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+.lb-toggle-slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0; left: 0; right: 0; bottom: 0;
+	background: var(--lb-toggle-bg);
+	border-radius: 28px;
+	transition: background 0.2s ease;
+}
+.lb-toggle-slider::before {
+	content: "";
+	position: absolute;
+	height: 22px;
+	width: 22px;
+	left: 3px;
+	bottom: 3px;
+	background: white;
+	border-radius: 50%;
+	transition: transform 0.2s ease;
+}
+.lb-toggle input:checked + .lb-toggle-slider {
+	background: var(--lb-primary);
+}
+.lb-toggle input:checked + .lb-toggle-slider::before {
+	transform: translateX(24px);
+}
+.lb-toggle input:focus + .lb-toggle-slider {
+	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
+}
+
+/* --- Button Group --- */
+.lb-btn-group {
+	display: inline-flex;
+	border: var(--lb-border);
+	border-radius: var(--lb-radius);
+	overflow: hidden;
+}
+.lb-btn-group .lb-btn,
+.lb-btn-group label,
+.lb-btn-group input[type="radio"] + label,
+.lb-btn-group input[type="checkbox"] + label {
+	border: none;
+	border-right: var(--lb-border);
+	border-radius: 0;
+	margin: 0;
+	padding: 8px 16px;
+	background: var(--lb-btn-bg);
+	color: var(--lb-text);
+	font-family: var(--lb-font);
+	font-size: var(--lb-font-sm);
+	font-weight: 500;
+	cursor: pointer;
+	display: inline-block;
+	text-align: center;
+	transition: background 0.15s ease;
+}
+.lb-btn-group .lb-btn:last-child,
+.lb-btn-group label:last-of-type {
+	border-right: none;
+}
+.lb-btn-group .lb-btn:hover,
+.lb-btn-group label:hover {
+	filter: brightness(0.95);
+}
+.lb-btn-group .lb-btn.active,
+.lb-btn-group .lb-btn-active,
+.lb-btn-group label.active,
+.lb-btn-group label.lb-checked,
+.lb-btn-group input[type="radio"]:checked + label,
+.lb-btn-group input[type="checkbox"]:checked + label {
+	background: var(--lb-primary);
+	color: white;
+}
+.lb-btn-group input[type="radio"],
+.lb-btn-group input[type="checkbox"] {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+/* --- Collapsible --- */
+.lb-collapsible {
+	border: var(--lb-border);
+	border-radius: var(--lb-radius);
+	margin-bottom: var(--lb-space-md);
+}
+.lb-collapsible summary {
+	padding: 10px 16px;
+	background: var(--lb-btn-bg);
+	color: var(--lb-text);
+	font-weight: 500;
+	font-family: var(--lb-font);
+	cursor: pointer;
+	list-style: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.lb-collapsible summary::-webkit-details-marker {
+	display: none;
+}
+.lb-collapsible summary::after {
+	content: "\276F";
+	font-size: 0.8em;
+	color: var(--lb-text-muted);
+	transition: transform 0.2s ease;
+}
+.lb-collapsible[open] summary::after {
+	transform: rotate(90deg);
+}
+.lb-collapsible .lb-collapsible-content {
+	padding: 16px;
+}
+
+/* --- Select --- */
+.lb-select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	padding-right: 36px;
+}
+
+/* --- Action Bar --- */
+.lb-actions {
+	text-align: center;
+	margin-top: var(--lb-space-lg);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+.lb-actions .lb-btn {
+	margin: 0;
+}
+
+
+/* ============================================================
+   3. Layout
+   ============================================================ */
+
+/* --- Page Layout --- */
+.lb-layout {
+	min-height: 100vh;
+}
+.lb-main {
+	margin-left: 250px;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	/* border-box so the tab-bar-mode padding-bottom is included in the 100vh
+	   instead of being added on top of it (which caused a spurious vertical
+	   scrollbar with empty space in nav-mode-tabbar — audit Bug 05). */
+	box-sizing: border-box;
+	overflow-x: hidden;
+	background: var(--lb-bg);
+	transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+	            padding-bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.lb-content {
+	flex: 1;
+	padding: 20px 24px;
+}
+.lb-footer {
+	text-align: center;
+	padding: 20px;
+}
+.lb-footer-logo {
+	width: 90px;
+	height: 90px;
+}
+
+/* --- Sidebar --- */
+.lb-sidebar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 250px;
+	background: var(--lb-sidebar-bg);
+	color: var(--lb-sidebar-text);
+	display: flex;
+	flex-direction: column;
+	transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+	overflow-y: auto;
+	z-index: 1000;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255,255,255,.1) transparent;
+}
+.lb-sidebar,
+.lb-sidebar * {
+	text-shadow: none !important;
+}
+.lb-sidebar::-webkit-scrollbar { width: 6px; }
+.lb-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+
+.lb-sidebar-header,
+a.lb-sidebar-header,
+a.lb-sidebar-header:link,
+a.lb-sidebar-header:visited {
+	padding: 16px 18px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border-bottom: 1px solid var(--lb-sidebar-border);
+	color: inherit;
+	text-decoration: none;
+	transition: background 0.15s ease;
+}
+a.lb-sidebar-header:hover {
+	background: var(--lb-sidebar-active-bg);
+}
+.lb-sidebar-logo {
+	height: 36px;
+	width: auto;
+	max-width: 56px;
+	object-fit: contain;
+	flex-shrink: 0;
+}
+.lb-sidebar-brand {
+	font-weight: 700;
+	font-size: 15px;
+	color: var(--lb-sidebar-text);
+}
+.lb-sidebar-brand span {
+	opacity: 0.6;
+}
+.lb-sidebar-version {
+	font-size: 10px;
+	opacity: 0.4;
+}
+.lb-sidebar-nav {
+	flex: 1;
+	overflow-y: auto;
+	padding: 6px 0;
+}
+.lb-sidebar-section {
+	padding: 16px 18px 6px;
+	font-size: 10px;
+	color: var(--lb-sidebar-section);
+	text-transform: uppercase;
+	letter-spacing: 1.5px;
+	font-weight: 600;
+	font-family: var(--lb-font);
+}
+.lb-sidebar-section:not(:first-child) {
+	border-top: 1px solid var(--lb-sidebar-border);
+	margin-top: 8px;
+}
+.lb-sidebar-link,
+.lb-sidebar-link:visited,
+.lb-sidebar-link:link,
+a.lb-sidebar-link,
+a.lb-sidebar-link:visited,
+a.lb-sidebar-link:link {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 18px 8px 21px;
+	font-size: 12px;
+	font-weight: 400;
+	color: var(--lb-sidebar-text) !important;
+	text-decoration: none !important;
+	font-family: var(--lb-font);
+	transition: background 0.15s ease;
+}
+.lb-sidebar-link:hover {
+	background: var(--lb-sidebar-active-bg);
+	color: var(--lb-sidebar-active-text);
+}
+.lb-sidebar-link.active,
+a.lb-sidebar-link.active,
+a.lb-sidebar-link.active:visited {
+	background: var(--lb-sidebar-active-bg);
+	color: var(--lb-sidebar-active-text) !important;
+	border-left: 3px solid var(--lb-primary);
+	padding-left: 18px;
+}
+.lb-sidebar-link .lb-sidebar-name {
+	flex: 1;
+}
+.lb-sidebar-status {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--lb-primary);
+	flex-shrink: 0;
+}
+.lb-sidebar-status.error {
+	background: var(--lb-danger);
+}
+.lb-sidebar-badge {
+	padding: 1px 5px;
+	font-size: 8px;
+	font-weight: 600;
+	border-radius: 3px;
+	background: rgba(202,138,4,.2);
+	color: #ca8a04;
+}
+.lb-sidebar-footer {
+	padding: 10px 18px;
+	border-top: 1px solid var(--lb-sidebar-border);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 10px;
+	opacity: 0.4;
+}
+.lb-sidebar-backdrop {
+	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,.5);
+	z-index: 999;
+}
+/* Sidebar toggle: hidden — desktop has permanent sidebar, mobile uses tab-bar.
+   !important required to beat .lb-header-btn { display: flex !important; } */
+.lb-sidebar-toggle.lb-header-btn {
+	display: none !important;
+}
+.lb-sidebar-toggle:hover {
+	opacity: 1;
+}
+
+/* Nav-mode toggle (desktop only): switches sidebar <-> tab-bar layout.
+   Hidden on mobile because the tab-bar is the only sensible layout there. */
+.lb-nav-toggle svg {
+	display: block;
+	color: white;
+}
+@media (max-width: 768px) {
+	.lb-nav-toggle.lb-header-btn {
+		display: none !important;
+	}
+}
+
+/* --- Header --- */
+.lb-header {
+	display: flex;
+	align-items: center;
+	padding: 10px 24px;
+	background: var(--lb-card-bg);
+	border-bottom: 1px solid var(--lb-border-color);
+	gap: 12px;
+}
+.lb-header-left {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.lb-header-title {
+	flex: 1;
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--lb-text);
+	font-family: var(--lb-font);
+	margin: 0;
+}
+.lb-header-title .hint {
+	font-size: inherit;
+}
+.lb-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.lb-header-btn {
+	width: 36px !important;
+	height: 36px !important;
+	background: var(--lb-header-btn-bg) !important;
+	border-radius: 8px !important;
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px !important;
+	font-weight: normal !important;
+	color: var(--lb-header-btn-text) !important;
+	text-decoration: none !important;
+	text-shadow: none !important;
+	transition: all 0.15s ease;
+	border: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	line-height: 1 !important;
+	box-sizing: border-box;
+	cursor: pointer;
+	opacity: 0.85;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+.lb-header-btn::before {
+	font-weight: normal !important;
+	text-shadow: none !important;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+.lb-header-btn:hover {
+	opacity: 1;
+	transform: scale(1.08);
+}
+.lb-header-btn.headerbutton_red {
+	background: var(--lb-danger);
+	color: white;
+}
+.lb-header-btn.headerbutton_blue {
+	background: var(--lb-info);
+	color: white;
+}
+.lb-header-btn {
+	position: relative;
+}
+.lb-header-btn-badge {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	border-radius: 10px;
+	background: var(--lb-danger);
+	color: white !important;
+	font-size: 11px !important;
+	font-weight: 700;
+	font-family: var(--lb-font);
+	line-height: 18px;
+	text-align: center;
+	box-shadow: 0 0 0 2px var(--lb-card-bg);
+	box-sizing: border-box;
+}
+.lb-header-btn-badge.lb-badge-blue {
+	background: var(--lb-info);
+}
+
+
+/* ============================================================
+   4. Help Panel
+   ============================================================ */
+
+.lb-helppanel {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 300px;
+	background: var(--lb-card-bg);
+	border-left: 1px solid var(--lb-border-color);
+	transform: translateX(300px);
+	transition: transform 0.3s ease;
+	z-index: 1001;
+	overflow-y: auto;
+}
+.lb-helppanel.open {
+	transform: translateX(0);
+}
+.lb-helppanel-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--lb-border-color);
+}
+.lb-helppanel-header h2 {
+	margin: 0;
+	font-size: 16px;
+	color: var(--lb-text);
+}
+.lb-helppanel-close {
+	background: none;
+	border: none;
+	font-size: 20px;
+	color: var(--lb-text-muted);
+	cursor: pointer;
+}
+.lb-helppanel-content {
+	padding: 16px 20px;
+	font-size: 14px;
+	color: var(--lb-text-secondary);
+}
+
+
+/* ============================================================
+   5. Modal
+   ============================================================ */
+
+.lb-modal {
+	border: none;
+	border-radius: var(--lb-radius);
+	box-shadow: 0 4px 24px rgba(0,0,0,.2);
+	max-width: 600px;
+	padding: 0;
+	background: var(--lb-card-bg);
+	color: var(--lb-text);
+}
+.lb-modal::backdrop {
+	background: rgba(0,0,0,.5);
+}
+.lb-modal-header {
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--lb-border-color);
+}
+.lb-modal-header h2 {
+	margin: 0;
+	font-size: 18px;
+}
+.lb-modal-content {
+	padding: 20px;
+	text-align: center;
+}
+
+
+/* ============================================================
+   6. Responsive
+   ============================================================ */
+
+@media (max-width: 875px) {
+	.lb-form-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.lb-form-label {
+		text-align: left;
+		width: auto;
+		min-width: auto;
+		font-weight: 600;
+		margin-bottom: 2px;
+	}
+	.lb-form-field {
+		width: 100%;
+	}
+	.lb-form-help {
+		padding-left: 0;
+	}
+}
+
+@media (max-width: 768px) {
+	.lb-btn-group {
+		flex-wrap: wrap;
+		width: 100%;
+	}
+	.lb-btn-group label,
+	.lb-btn-group .ui-radio,
+	.lb-btn-group .ui-checkbox {
+		flex: 1 1 auto;
+		min-width: 0;
+		text-align: center;
+	}
+	.lb-btn-group label.ui-btn {
+		text-align: center !important;
+	}
+	.lb-main {
+		margin-left: 0;
+		padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+	}
+	.lb-sidebar {
+		transform: translateX(-100%);
+	}
+	.lb-sidebar.open {
+		transform: translateX(0);
+	}
+	.lb-sidebar-backdrop.open {
+		display: block;
+	}
+	button.lb-sidebar-toggle.lb-header-btn {
+		display: none !important;
+	}
+	.lb-header {
+		padding: 10px 12px;
+	}
+	.lb-content {
+		padding: 12px;
+	}
+}
+
+
+/* ============================================================
+   7. Tab Bar (Mobile)
+   ============================================================ */
+
+.lb-tab-bar {
+	display: flex;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 1100;
+	justify-content: space-around;
+	align-items: center;
+	padding: 6px 0;
+	padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+	background: var(--lb-tab-bar-bg);
+	border-top: 1px solid var(--lb-border-color);
+	/* Hidden by default on desktop; slid in via transform when nav-mode-tabbar
+	   is set or on mobile. Keeping display:flex (vs none) is what enables the
+	   transform/opacity animation. */
+	transform: translateY(100%);
+	opacity: 0;
+	pointer-events: none;
+	transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+	            opacity 0.35s ease;
+}
+
+.lb-tab-bar-item,
+button.lb-tab-bar-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	text-decoration: none;
+	background: none !important;
+	border: none !important;
+	box-shadow: none !important;
+	cursor: pointer;
+	padding: 4px 0 !important;
+	margin: 0 !important;
+	min-width: 56px;
+	max-width: 80px;
+	font-family: var(--lb-font);
+	-webkit-tap-highlight-color: transparent;
+	text-shadow: none !important;
+	border-radius: 0 !important;
+}
+
+.lb-tab-bar-item i {
+	font-size: 22px;
+	color: var(--lb-tab-bar-text);
+}
+
+/* SVG icons rendered as a CSS mask so they inherit the same theme colors and
+   active-state switch as the .pi font icons (instead of a hardcoded white
+   filter that ignored the active state — see audit Bug 01). */
+.lb-tab-bar-item .lb-tab-icon {
+	width: 22px;
+	height: 22px;
+	background-color: var(--lb-tab-bar-text);
+	-webkit-mask-position: center;
+	        mask-position: center;
+	-webkit-mask-repeat: no-repeat;
+	        mask-repeat: no-repeat;
+	-webkit-mask-size: contain;
+	        mask-size: contain;
+}
+
+.lb-tab-bar-item span {
+	font-size: 10px;
+	font-weight: 500;
+	color: var(--lb-tab-bar-text);
+}
+
+.lb-tab-bar-item.active i,
+.lb-tab-bar-item.active span {
+	color: var(--lb-tab-bar-active);
+}
+
+.lb-tab-bar-item.active .lb-tab-icon {
+	background-color: var(--lb-tab-bar-active);
+}
+
+@media (max-width: 768px) {
+	.lb-tab-bar {
+		transform: translateY(0);
+		opacity: 1;
+		pointer-events: auto;
+	}
+}
+
+/* Desktop nav-mode toggle: user switches to tab-bar layout via header button.
+   On mobile (<=768px) the tab-bar is always shown via the media query above —
+   the body class only affects the desktop breakpoint. The transitions on
+   .lb-sidebar / .lb-main / .lb-tab-bar carry the animation; on initial page
+   load no transitions fire because the class is already set before first
+   paint (head.html inline script), so the layout renders in its final state. */
+body.nav-mode-tabbar .lb-sidebar {
+	transform: translateX(-100%);
+}
+body.nav-mode-tabbar .lb-main {
+	margin-left: 0;
+	padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+body.nav-mode-tabbar .lb-tab-bar {
+	transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* Status bar sits directly above tab bar when tab bar is visible */
+body.nav-mode-tabbar #footerLBStatusbar {
+	bottom: var(--lb-tabbar-height, 55px) !important;
+	z-index: 1101 !important;
+}
+@media (max-width: 768px) {
+	#footerLBStatusbar {
+		bottom: var(--lb-tabbar-height, 55px) !important;
+		z-index: 1101 !important;
+	}
+}
+
+
+/* ============================================================
+   8. Tab Bar Popups (Mobile)
+   ============================================================ */
+
+.lb-tab-popup-backdrop {
+	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,.4);
+	z-index: 1099;
+}
+
+.lb-tab-popup {
+	display: none;
+	position: fixed;
+	bottom: 64px;
+	bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+	left: 8px; /* fallback; overridden inline by positionTabPopup() in pagestart.html */
+	width: 320px;
+	max-width: calc(100vw - 16px);
+	max-height: calc(100vh - 80px - env(safe-area-inset-bottom, 0px));
+	overflow-y: auto;
+	z-index: 1101;
+	background: var(--lb-sidebar-bg);
+	border-radius: 12px;
+	box-shadow: 0 -4px 24px rgba(0,0,0,.3);
+	transform: translateY(16px);
+	opacity: 0;
+	transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.lb-tab-popup-header {
+	padding: 12px 16px 6px;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1.2px;
+	color: var(--lb-sidebar-section);
+	font-family: var(--lb-font);
+}
+
+.lb-tab-popup-list {
+	padding: 4px 0 8px;
+}
+
+.lb-tab-popup-item,
+a.lb-tab-popup-item,
+a.lb-tab-popup-item:visited,
+a.lb-tab-popup-item:link {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 9px 16px;
+	color: var(--lb-sidebar-text) !important;
+	text-decoration: none !important;
+	font-size: 13px;
+	font-weight: 500;
+	font-family: var(--lb-font);
+	transition: background 0.15s ease;
+}
+.lb-tab-popup-item:hover {
+	background: var(--lb-sidebar-active-bg);
+}
+.lb-tab-popup-item i {
+	font-size: 17px;
+	width: 22px;
+	text-align: center;
+	color: var(--lb-sidebar-text);
+	opacity: 0.7;
+}
+
+.lb-tab-popup-item-muted,
+a.lb-tab-popup-item-muted {
+	border-top: 1px solid var(--lb-sidebar-border);
+	margin-top: 4px;
+	padding-top: 12px;
+}
+.lb-tab-popup-item-muted span,
+.lb-tab-popup-item-muted i {
+	opacity: 0.5;
+}
+
+/* Open state — applies both on mobile and on desktop nav-mode-tabbar */
+@media (max-width: 768px) {
+	.lb-tab-popup-backdrop.open { display: block; }
+	.lb-tab-popup.open {
+		display: block;
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+body.nav-mode-tabbar .lb-tab-popup-backdrop.open { display: block; }
+body.nav-mode-tabbar .lb-tab-popup.open {
+	display: block;
+	transform: translateY(0);
+	opacity: 1;
+}
+
+
+
+/* ============================================================
+   9. Utility Classes
+   ============================================================ */
+
+.lb-disabled {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+/* --- Note/Info boxes (e.g. changelog on Updates page) --- */
+.note {
+	background: var(--lb-card-bg);
+	border: 1px solid var(--lb-border-color);
+	border-radius: var(--lb-radius);
+	padding: var(--lb-space-md);
+	color: var(--lb-text);
+}
+.note,
+.note *,
+.note a,
+.note a:visited,
+.note a:link,
+#lbu_release_body,
+#lbu_release_body *,
+#lbu_release_body a,
+#lbu_release_body a:visited,
+#lbu_release_body a:link {
+	color: var(--lb-text) !important;
+}
+.note a:hover,
+#lbu_release_body a:hover {
+	color: var(--lb-primary) !important;
+}
+
+/* --- Form validator error messages — override theme-default.css --- */
+.form-error,
+span.form-error,
+div.form-error,
+.form-error-message {
+	color: var(--lb-danger) !important;
+	background: none !important;
+	background-color: transparent !important;
+	border: none !important;
+	font-size: var(--lb-font-sm) !important;
+	line-height: 1.5;
+	padding: 0 !important;
+}
+span.form-error {
+	display: block;
+	margin-top: 4px;
+}
+
+
+/* ============================================================
+   10. Tables
+   ============================================================ */
+
+.lb-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-family: var(--lb-font);
+	font-size: var(--lb-font-sm);
+	border: 1px solid var(--lb-border-color);
+	border-radius: var(--lb-radius);
+	overflow: hidden;
+}
+.lb-table th,
+.lb-table td {
+	padding: 5px 10px;
+	text-align: left;
+	border-bottom: 1px solid var(--lb-border-color);
+	line-height: 1.35;
+}
+.lb-table thead th {
+	font-weight: 600;
+	color: var(--lb-text-secondary);
+	background: var(--lb-btn-bg);
+	border-bottom: 2px solid var(--lb-border-color);
+}
+.lb-table tbody tr:nth-child(even) {
+	background: rgba(0, 0, 0, 0.025);
+}
+.lb-table tbody tr:hover {
+	background: rgba(109, 172, 32, 0.07);
+}
+/* Plugin install: each plugin spans 2 TRs. JS adds .plugin-zebra to
+   every other plugin's pair, so we override the generic per-row zebra. */
+.lb-table tbody tr.pluginrow,
+.lb-table tbody tr.pluginrow + tr {
+	background: transparent;
+}
+.lb-table tbody tr.plugin-zebra {
+	background: rgba(0, 0, 0, 0.04) !important;
+}
+.lb-table tbody tr.pluginrow:hover,
+.lb-table tbody tr.pluginrow:hover + tr {
+	background: rgba(109, 172, 32, 0.07) !important;
+}
+.lb-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+/* Sortable column headers (opt-in via class lb-table-sortable on <table>) */
+.lb-table .lb-th-sortable {
+	cursor: pointer;
+	user-select: none;
+	position: relative;
+	padding-right: 24px !important;
+	transition: background 0.15s ease;
+}
+.lb-table .lb-th-sortable::after {
+	content: "\2195"; /* ↕ */
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 11px;
+	opacity: 0.35;
+}
+.lb-table .lb-th-sortable[data-sort="asc"]::after {
+	content: "\25B2"; /* ▲ */
+	opacity: 1;
+	color: var(--lb-primary);
+}
+.lb-table .lb-th-sortable[data-sort="desc"]::after {
+	content: "\25BC"; /* ▼ */
+	opacity: 1;
+	color: var(--lb-primary);
+}
+.lb-table .lb-th-sortable:hover {
+	background: rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 768px) {
+	.lb-table-responsive thead {
+		display: none;
+	}
+	.lb-table-responsive tr {
+		display: block;
+		margin-bottom: var(--lb-space-sm);
+		border: 1px solid var(--lb-border-color);
+		border-radius: var(--lb-radius);
+	}
+	.lb-table-responsive td {
+		display: flex;
+		justify-content: space-between;
+		padding: 6px 12px;
+		border-bottom: 1px solid var(--lb-border-color);
+	}
+	.lb-table-responsive td:last-child {
+		border-bottom: none;
+	}
+	.lb-table-responsive td::before {
+		content: attr(data-label);
+		font-weight: 600;
+		color: var(--lb-text-secondary);
+		margin-right: var(--lb-space-md);
+	}
+}

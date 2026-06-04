@@ -1,0 +1,3 @@
+#!/bin/bash
+$LBHOMEDIR/sbin/log_maint.pl action=reduce_notifys
+$LBHOMEDIR/sbin/log_maint.pl action=reduce_logfiles

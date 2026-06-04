@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# Bring Image to latest Release
+if [ -f $LBSCONFIG/do_lbupdate ]
+then
+        echo "Updating LoxBerry to latest Release version..."
+        # Use the "old way" here for the old 1.2.0c Image
+        COUNTER=0
+        ping -q -c1 -W2 loxberry.de > /dev/null 2>&1
+        while [ "$?" -ne 0 ] && [ "$COUNTER" -lt 6 ]; do
+                echo "We seems to be still offline. Waiting 5 seconds and retest."
+                sleep 5
+                COUNTER=$((COUNTER + 1))
+                ping -q -c1 -W2 loxberry.de > /dev/null 2>&1
+        done
+        if [ "$?" -eq 0 ]
+        then
+                echo "We are online. Trigger the update."
+                $LBHOMEDIR/sbin/loxberryupdatecheck.pl querytype=release update=1 nobackup=1
+                rm $LBSCONFIG/do_lbupdate
+		jq '.Update.Installtype = "install"' $LBSCONFIG/general.json > /tmp/general.json
+		mv /tmp/general.json $LBSCONFIG
+		jq '.Update.Interval = "7"' $LBSCONFIG/general.json > /tmp/general.json
+		mv /tmp/general.json $LBSCONFIG
+		chown loxberry:loxberry $LBSCONFIG/general.json > /dev/null 2>&1
+        else
+                echo "Giving up. Please perform update manually."
+                rm $LBSCONFIG/do_lbupdate
+		jq '.Update.Installtype = "install"' $LBSCONFIG/general.json > /tmp/general.json
+		mv /tmp/general.json $LBSCONFIG
+		jq '.Update.Interval = "7"' $LBSCONFIG/general.json > /tmp/general.json
+		mv /tmp/general.json $LBSCONFIG
+		chown loxberry:loxberry $LBSCONFIG/general.json > /dev/null 2>&1
+		. $LBHOMEDIR/libs/bashlib/notify.sh
+                notify updates check "Your Image is outdated! Please update your LoxBerry to the latest RELEASE version!" err > /dev/null 2>&1
+        fi
+fi
+exit

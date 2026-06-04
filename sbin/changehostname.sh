@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 date
 
@@ -53,7 +53,15 @@ hostnamectl --no-ask-password set-hostname $new
 #############################################
 
 cp -p -n -T /etc/hosts /etc/original.hosts
-sed -i "/$old/ s/$old/$new/" /etc/hosts
+sed -i "/$old.*$/d" /etc/hosts
+sed -i '/127\.0\.1\.1.*$/d' /etc/hosts
+
+#############################################
+## /etc/apache2/apache2.conf
+#############################################
+
+cp -p -n -T $LBHOMEDIR/system/apache2/apache2.conf $LBHOMEDIR/system/apache2/original.apache2.conf
+sed -i "/ServerName /s/.*/ServerName $new.home.local/" $LBHOMEDIR/system/apache2/apache2.conf
 
 #############################################
 ## /opt/loxberry/config/system/minidlna.conf
@@ -69,16 +77,6 @@ sed -i "/$old/ s/$old/$new/" /etc/hosts
 
 cp -p -n -T /etc/mailname /etc/original.mailname
 echo $new > /etc/mailname
-
-#############################################
-## /etc/ssmtp/ssmtp.conf
-#############################################
-
-cp -p -n -T /etc/ssmtp/ssmtp.conf /etc/ssmtp/original.ssmtp.conf
-sed -i "/hostname=/s/.*/hostname=$new.local/" /etc/ssmtp/ssmtp.conf
-
-
-
 
 #############################################
 #############################################

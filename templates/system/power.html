@@ -9,6 +9,7 @@
 			</div>
 		</div>
 		<p>&nbsp;</p>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="<TMPL_VAR NEXTURL>" style="width:220px;justify-content:center"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
 	<TMPL_ELSE>
 		<TMPL_IF REBOOT_REQUIRED>
 		<div style="width:60%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
@@ -23,26 +24,19 @@
 		</div>
 		<p>&nbsp;</p>
 		</TMPL_IF>
-		
-			
-			<div style="width: 300px">
-				<a id="btnreboot" data-role="button" data-icon="recycle" href="#"><TMPL_VAR POWER.BUTTON_REBOOT></a>
-				<br>
-				<a id="btnpoweroff" data-role="button" data-icon="power" href="#"><TMPL_VAR POWER.BUTTON_POWEROFF></a>
-			</div>
+
+		<div style="display:flex;flex-direction:column;gap:8px;width:220px">
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnreboot" href="#" style="width:100%;justify-content:center"><i class="pi pi-refresh"></i> <TMPL_VAR POWER.BUTTON_REBOOT></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnpoweroff" href="#" style="width:100%;justify-content:center"><i class="pi pi-power-off"></i> <TMPL_VAR POWER.BUTTON_POWEROFF></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="<TMPL_VAR NEXTURL>" style="width:100%;justify-content:center"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		</div>
 	</TMPL_IF>
-	</center>
-	<p>
-	&nbsp;
-	</p>
-	<center>
-		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
 	</center>
 	<script>
 		$(document).ready(function(){
 			$("#btnreboot_alert").hide();
 			$("#btnreboot").click(function(){
-				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 				{
 				  action: "reboot",
 				},
@@ -51,7 +45,7 @@
 				});
 			});
 			$("#btnpoweroff").click(function(){
-				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 				{
 				  action: "poweroff",
 				},
@@ -70,7 +64,7 @@
 <TMPL_IF REBOOT>
 	<center>
 		<p><TMPL_VAR POWER.MSG_REBOOT></p>
-		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" data-delay="15" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" data-delay="15" href="<TMPL_VAR NEXTURL>"><i class="pi pi-arrow-left"></i> <TMPL_VAR COMMON.BUTTON_BACK></a>
 		<style>
 			.progress-bar 
 			{
@@ -108,33 +102,48 @@
 				background-color: #6DAE26;   
  			}
     </style>   
-		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">60.0</span> s </p>
+		<p><TMPL_VAR POWER.MSG_REDIRECTION_IN> <span id="count">240.0</span> s </p>
 		<div class="progress-bar blue stripes" style="display: none;"><span id="bar" style="width: 100%;"></span></div>
 		</center>
 	<script>
-		var counter = 600;
+		var counter = 2400;
+		var was_offline = 0;
+		
 		$(document).ready(function()
 		{
 		  var xhttp = new XMLHttpRequest();
 		  xhttp.timeout = 800;
 		  xhttp.ontimeout = function() {
-			  if ( counter == 600 ) {
+			  console.log("Reboot in progress - apache is not responding.");
+			  was_offline = 1;
+			  if ( counter == 2400 ) {
 				  showprogressbar();
 			  }
 		  };
 		  xhttp.onreadystatechange = function() {
 			  if (this.readyState == 4 && this.status == 200) {
 				var res = JSON.parse(this.responseText);
-				if ( counter == 600 && res.reboot_in_progress == 1 ) {
+				  console.log("Reboot in progress: " + res.reboot_in_progress);
+				if ( counter == 2400 && res.reboot_in_progress == 1 ) {
+					console.log("Reboot in progress but apache still responding - starting progressbar.");
 					showprogressbar();
-				} else if ( res.reboot_in_progress == 0 ) {
+				} else if ( res.reboot_in_progress == 0 && was_offline == 1) {
 					$('.progress-bar').hide();
-					document.location.href="/";
+					if ( res.update_in_progress == 1 ) {
+						document.location.href="/updaterunning";
+					} else {
+						document.location.href="/";
+					}
 				}
 			  }
 		  };
 		  var maini = setInterval(function() {
 			  xhttp.open("GET","/admin/system/tools/power-handler.php",true);
+			  xhttp.setRequestHeader('cache-control', 'no-cache, must-revalidate, post-check=0, pre-check=0');
+			  xhttp.setRequestHeader('cache-control', 'max-age=0');
+			  xhttp.setRequestHeader('expires', '0');
+			  xhttp.setRequestHeader('expires', 'Tue, 01 Jan 1980 1:00:00 GMT');
+			  xhttp.setRequestHeader('pragma', 'no-cache');
 			  xhttp.send();},1000);
 		});
 		function showprogressbar() {
@@ -143,7 +152,7 @@
 				if (counter > 0) {
 					counter--;
 					span = document.getElementById("count");
-					var bar = (100/600 * counter);
+					var bar = (100/2400 * counter);
 					span.innerHTML = Number(counter/10).toFixed(1);
 					$('#bar').css('width',bar+"%");
 				}
@@ -160,7 +169,7 @@
 <TMPL_IF POWEROFF>
 	<center>
 		<p><TMPL_VAR POWER.MSG_POWEROFF></p>
-		<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="back" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_BACK></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="<TMPL_VAR NEXTURL>"><i class="pi pi-arrow-left"></i> <TMPL_VAR COMMON.BUTTON_BACK></a>
 		
 	</center>
 

@@ -1,67 +1,122 @@
-<!-- ** START template/system/myloxberry.html 14.01.2018 19:26:41 ************************************************************************************ -->
+<!-- ** START template/system/myloxberry.html 08.01.2019 21:38:45 ************************************************************************************ -->
 <TMPL_IF form1>
-	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>">
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="<TMPL_VAR SELFURL>" style="max-width:80%;margin:0 auto">
 		<input type="hidden" name="saveformdata" value="1">
-		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
-		<div style="display:flex; justify-content: flex-start; align-items: center;">
-			<div style="margin:10px; padding:10px; text-align:left; ">
+		<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.HEADING_LANGUAGESELECTION></div>
+		<div class="lb-form-row">
+			<div class="lb-form-label">
 				<TMPL_VAR MYLOXBERRY.LABEL_SELECTLANGUAGE>
 				<TMPL_IF ISNOTENGLISH>
-				<br>(Select your language)
+				<br><small>(Select your language)</small>
 				</TMPL_IF>
 			</div>
-			<div style="margin:10px; padding:10px; ">
+			<div class="lb-form-field">
 				<TMPL_VAR LANGSELECTOR>
 			</div>
 		</div>
-		<p>&nbsp;</p>
-		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
-		<div style="display:flex; width:100%; text-align:left;">
-			<div style="margin:auto; padding:10px; width:20%; text-align:left;">
+		<div class="lb-form-row">
+			<div class="lb-form-label">
+				<TMPL_VAR MYLOXBERRY.LABEL_SELECTCOUNTRY>
+			</div>
+			<div class="lb-form-field">
+				<TMPL_VAR COUNTRYSELECTOR>
+			</div>
+		</div>
+
+		<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME></div>
+		<div class="lb-form-row">
+			<div class="lb-form-label">
+				<TMPL_VAR MYLOXBERRY.LABEL_SELECTTHEME>
+			</div>
+			<div class="lb-form-field">
+				<select class="lb-select" name="themeselector" id="themeselector" data-role="none">
+					<option value="classic-lb">Classic LoxBerry</option>
+					<option value="soft-rounded">Soft &amp; Rounded (Alpha)</option>
+					<option value="clean-admin">Clean Admin (Alpha)</option>
+					<option value="glass">Glassmorphism (Alpha)</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.HEADING_FRIENDLYNAME></div>
+		<div class="lb-form-row">
+			<div class="lb-form-label">
 				<TMPL_VAR MYLOXBERRY.LABEL_FRIENDLYNAME>
 			</div>
-			<div style="margin:auto; padding:10px; width:30%">
-				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" style="min-width:15em" class="textfield" value="<TMPL_VAR NETWORK.FRIENDLYNAME>" data-validation-error-msg="<TMPL_VAR MYLOXBERRY.ERR_FRIENDLYNAME>"  data-validation-rule="^[a-zA-Z0-9\*\u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df\>\<\|\'\_\:\.\;\,\+\-\~\s\^\!\$\%\&\/\\(\\#\\)\\\[\\\]\{\}\?\=]*$">
+			<div class="lb-form-field">
+				<input placeholder="<TMPL_VAR MYLOXBERRY.HINT_INNER_FRIENDLYNAME>" id="lbfriendlyname" name="lbfriendlyname" type="text" class="lb-input" value="<TMPL_VAR NETWORK.FRIENDLYNAME>" data-role="none" data-validation-error-msg="<TMPL_VAR MYLOXBERRY.ERR_FRIENDLYNAME>"  data-validation-rule="^([a-zA-Z0-9\#\&\{\}\:\*\[\]\(\)\?\!\_\-\.\|\s\u00C0-\u017F])*$">
 			</div>
-			<div class="hint" style="margin:auto; padding:10px; width:50%;">
+			<div class="lb-form-help">
 				<TMPL_VAR MYLOXBERRY.HINT_FRIENDLYNAME>
 			</div>
 		</div>
-		<p>&nbsp;</p>
-		<p>
-		<div class="wide"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
-		<div style="display:flex; width:100%; text-align:left;">
-			<div style="flex-grow:1;margin:auto; padding:10px; text-align:left;">
-				<fieldset data-role="controlgroup" style="min-width:15em" data-mini="true">
+
+		<div class="lb-section-title"><TMPL_VAR MYLOXBERRY.HEADING_SENDSTATISTIC></div>
+		<div class="lb-form-row">
+			<div class="lb-form-field">
+				<div>
 					<TMPL_VAR SENDSTATISTIC_CHECKBOX>
-				</fieldset>
+				</div>
 			</div>
-			<div class="hint" style="flex-grow:2;margin:auto; padding:10px;">
+			<div class="lb-form-help">
 				<TMPL_VAR MYLOXBERRY.HINT_SENDSTATISTIC>
 			</div>
 		</div>
-		<p>&nbsp;</p>
 	</form>
-	<center>
-		<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true" data-icon="delete" href="/admin/system/index.cgi?form=system"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR COMMON.BUTTON_SAVE></button>
-		</p>
-	</center>
+	<div class="lb-actions">
+		<a id="btncancel" class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/index.cgi?form=system"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+		<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" data-role="none"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
+	</div>
 	<script>
 		$(document).ready( function ()
 		{
+			// Destroy jQuery Mobile selectmenu widgets and apply native lb-select styling
+			$("#languageselector, #countryselector").each(function() {
+				if ($(this).data("mobile-selectmenu")) {
+					$(this).selectmenu("destroy");
+				}
+				$(this).addClass("lb-select");
+			});
+
 			validate_enable('#lbfriendlyname');
 			$("#languageselector").bind( "change", function(event, ui)
 			{
 				var val = $("#languageselector").val();
-				//console.log("Lang", val);
-				$.post("/admin/system/tools/ajax-config-handler.cgi",
+				console.log("Lang", val);
+				if( val.startsWith('-') || val.startsWith('=') || val == 0 ) return;
+				
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
 					{
 						action: "changelanguage",
 						value: val
 					}, function()
 					{
+						location.reload();
+					});
+			});
+			$("#countryselector").bind( "change", function(event, ui)
+			{
+				var val = $("#countryselector").val();
+				console.log("Country", val);
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
+					{
+						action: "changecountry",
+						value: val
+					});
+			});
+
+			// Theme: Dropdown setzt Wert und wechselt direkt
+			var currentTheme = "<TMPL_VAR CURRENTTHEME>" || "soft-rounded";
+			$("#themeselector").val(currentTheme);
+
+			$("#themeselector").bind("change", function() {
+				var val = $(this).val();
+				console.log("Theme", val);
+				$.post("/admin/system/ajax/ajax-config-handler.cgi",
+					{
+						action: "changetheme",
+						value: val
+					}, function() {
 						location.reload();
 					});
 			});
@@ -85,7 +140,7 @@
 			<tr>
 				<td align="center">
 					<p>
-						<a id="btnok" data-role="button" data-inline="true" data-mini="true" data-icon="check" href="<TMPL_VAR NEXTURL>"><TMPL_VAR COMMON.BUTTON_OK></a>
+						<a id="btnok" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" href="<TMPL_VAR NEXTURL>"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 					</p>
 				</td>
 			</tr>
@@ -94,11 +149,13 @@
 </TMPL_IF>
 
 <TMPL_IF form2>
+<span id="msg_pleasewait"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span>
 <script>
 function resizeIframe(obj) {
 	obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+	$("#msg_pleasewait").html("");
 }
 </script>
-<iframe src="/admin/system/tools/linfo/index.php" width="100%" frameborder="0" scrolling="no" onload="resizeIframe(this)" />
+<iframe src="/admin/system/tools/linfo/index.php" style="width:100%;height:100%;margin:0;overflow:hidden;border-width:0" scrolling="no" onload="resizeIframe(this)"></iframe>
 </TMPL_IF>
 <!-- ** END template/system/myloxberry.html ************************************************************************************ -->

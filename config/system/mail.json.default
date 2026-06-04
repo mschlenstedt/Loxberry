@@ -1,0 +1,13 @@
+{
+   "NOTIFICATION" : {
+      "MAIL_PLUGIN_ERRORS" : "true",
+      "MAIL_PLUGIN_INFOS" : "true",
+      "MAIL_SYSTEM_ERRORS" : "true",
+      "MAIL_SYSTEM_INFOS" : "true"
+   },
+   "SMTP" : {
+      "ACTIVATE_MAIL" : 0,
+      "EMAIL" : "",
+      "ISCONFIGURED" : "0"
+   }
+}

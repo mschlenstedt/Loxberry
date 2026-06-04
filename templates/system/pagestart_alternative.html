@@ -1,0 +1,348 @@
+<!-- pagestart.html START -->
+<div class="lb-layout">
+	<!-- Sidebar -->
+	<aside class="lb-sidebar" id="lb-sidebar">
+		<a class="lb-sidebar-header" href="/admin/system/index.cgi" title="Home">
+			<div class="lb-sidebar-logo">L</div>
+			<div>
+				<div class="lb-sidebar-brand"><span>Lox</span>Berry</div>
+				<div class="lb-sidebar-version"><TMPL_VAR LBVERSION></div>
+			</div>
+		</a>
+		<nav class="lb-sidebar-nav">
+			<div class="lb-sidebar-section"><TMPL_VAR HEADER.PANEL_SYSTEMSETTINGS></div>
+			<a class="lb-sidebar-link" href="/admin/system/index.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_HOME></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/myloxberry.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MYLOXBERRY></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/admin.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_ADMIN></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/miniserver.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MINISERVER></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/network.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETWORK></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/plugininstall.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_PLUGININSTALL></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/updates.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_UPDATES></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/logmanager.cgi"><span class="lb-sidebar-name">Log Manager</span></a>
+			<a class="lb-sidebar-link" href="/admin/system/services.php"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_SERVICES></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/power.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REBOOT></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/mailserver.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MAILSERVER></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/translate.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_TRANSLATE></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/tools/filemanager/index.cgi?p=/" target="_blank"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_FILEMANAGER></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/netshares.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_NETSHARES></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/usbstorage.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_USBSTORAGE></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/remote.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_REMOTE></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/mqtt.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_MQTT></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/backup.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_BACKUP></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/tools/terminal" target="_blank"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_TERMINAL></span></a>
+			<a class="lb-sidebar-link" href="/admin/system/donate.cgi"><span class="lb-sidebar-name"><TMPL_VAR HEADER.PANEL_DONATE></span></a>
+		</nav>
+		<div class="lb-sidebar-footer">
+			<div class="lb-sidebar-status"></div>
+			<span>LoxBerry</span>
+		</div>
+	</aside>
+
+	<!-- Sidebar Backdrop (mobile) -->
+	<div class="lb-sidebar-backdrop" id="lb-sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+	<!-- Help Panel -->
+	<aside class="lb-helppanel" id="helppanel">
+		<div class="lb-helppanel-header">
+			<h2><TMPL_VAR HEADER.TITLE_HELP></h2>
+			<button class="lb-helppanel-close" onclick="toggleHelpPanel()">&times;</button>
+		</div>
+		<div class="lb-helppanel-content">
+			<p><a href="<TMPL_VAR HELPLINK>" target="blank"><TMPL_VAR HEADER.TITLE_HELPLINK></a></p>
+			<TMPL_VAR HELPTEXT>
+		</div>
+	</aside>
+
+	<!-- Main -->
+	<div class="lb-main">
+		<header class="lb-header">
+			<div class="lb-header-left">
+				<button class="lb-sidebar-toggle" id="btn-sidebar-toggle" onclick="toggleSidebar()">
+					<i class="pi pi-bars"></i>
+				</button>
+				<a href="/admin/system/index.cgi" class="lb-header-btn pi pi-home"></a>
+			</div>
+			<h1 class="lb-header-title"><TMPL_VAR TEMPLATETITLE></h1>
+			<div class="lb-header-actions">
+				<div id="update_alert" style="display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url('/system/images/update-running.svg');"></div>
+				<a id="btnnotifies" href="/admin/system/tools/showallnotifications.cgi" class="lb-header-btn pi pi-bell"></a>
+				<a id="btninfo" href="#" class="lb-header-btn pi pi-question-circle" onclick="toggleHelpPanel(); return false;"></a>
+				<a id="btnpower" href="/admin/system/power.cgi" class="lb-header-btn pi pi-power-off"></a>
+			</div>
+		</header>
+
+		<!-- Vue Navbar (horizontal sub-tabs) -->
+		<div id="vuenavbar" :key="componentKey">
+			<div class="vuenavbarcontainer">
+				<template v-for="(element, index) in menu" :key="index">
+					<a class="vuenavbarelement" :href="element.URL" @mouseover="hover(index, true)" @click="menuclick(index, null, $event)" :class="{ vuenavbarelement_active: element.active }">
+					{{element.Name}}
+					{{get_notification_count( element )}}
+					<transition name="fade">
+					<div style="position:relative;" class="notifyNavBar notifyNavBarBlue" v-show="element?.infoCount>0">{{element.infoCount}}</div>
+					</transition>
+					<transition name="fade">
+					<div style="position:relative;" class="notifyNavBar notifyNavBarRed" v-show="element?.errorCount>0">{{element.errorCount}}</div>
+					</transition>
+					</a>
+				</template>
+			</div>
+			<div class="vuenavbarsubcontainer">
+				<template v-for="(element, index) in menu" :key="index">
+					<a v-for="(subelement, subindex) in element.Submenu" :href="subelement.URL" @click="menuclick(index, subindex, $event)" :key="subindex" class="vuenavbarsubelement" :class="{ vuenavbarsubelement_active: subelement.active }" v-show="menu[index]?.show">
+						{{subelement.Name}}
+						{{get_notification_count( subelement )}}
+					<transition name="fade">
+					<div style="position:relative;right:-5px;" class="notifyNavBar notifyNavBarBlue" v-show="subelement?.infoCount>0">{{element.infoCount}}</div>
+					</transition>
+					<transition name="fade">
+					<div style="position:relative;right:-5px;" class="notifyNavBar notifyNavBarRed" v-show="subelement?.errorCount>0">{{element.errorCount}}</div>
+					</transition>
+					</a>
+				</template>
+			</div>
+		</div>
+
+		<script>
+		// Highlight current page in sidebar
+		(function() {
+			var currentPath = window.location.pathname + window.location.search;
+			var links = document.querySelectorAll('.lb-sidebar-link');
+			links.forEach(function(link) {
+				if (link.getAttribute('href') === currentPath) {
+					link.classList.add('active');
+				}
+			});
+		})();
+
+		// Sidebar toggle (mobile)
+		function toggleSidebar() {
+			document.getElementById('lb-sidebar').classList.toggle('open');
+			document.getElementById('lb-sidebar-backdrop').classList.toggle('open');
+		}
+
+		// Help panel toggle
+		function toggleHelpPanel() {
+			document.getElementById('helppanel').classList.toggle('open');
+		}
+		</script>
+
+		<!-- Vue Navbar CSS -->
+		<style>
+.vuenavbarcontainer {
+	border-top: 1px solid var(--lb-border-color);
+	display:flex;
+	flex-direction:row;
+	flex-wrap:nowrap;
+	justify-content: center;
+	align-items: center;
+	background-color: var(--lb-sidebar-bg);
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+}
+.vuenavbarcontainer::-webkit-scrollbar { display: none; }
+.vuenavbarelement {
+	flex: 1;
+	text-shadow:none;
+	padding: 10px 20px;
+	color: var(--lb-sidebar-text) !important;
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: none;
+	min-height:18px;
+	white-space: nowrap;
+	min-width: fit-content;
+	font-family: var(--lb-font);
+}
+@media (max-width: 768px) {
+	.vuenavbarelement { font-size: 11px; padding: 8px 12px; }
+}
+@media (max-width: 480px) {
+	.vuenavbarelement { font-size: 10px; padding: 6px 8px; }
+}
+.vuenavbarelement:hover { background-color: var(--lb-primary-hover, #5A8E1C); }
+.vuenavbarelement_active { background-color: var(--lb-primary); color: white !important; }
+.vuenavbarsubcontainer {
+	display:flex;
+	flex-direction:row;
+	flex-wrap:nowrap;
+	justify-content: flex-start;
+	align-items: stretch;
+	background-color: var(--lb-sidebar-bg);
+}
+.vuenavbarsubelement {
+	flex:1;
+	text-shadow:none;
+	padding: 5px 10px;
+	border: 1px solid var(--lb-border-color);
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+	background-color: var(--lb-btn-bg);
+	color: var(--lb-text) !important;
+	text-decoration: none;
+	font-family: var(--lb-font);
+}
+.vuenavbarsubelement:hover {
+	background-color: var(--lb-primary-hover, #5A8E1C);
+	border-color: var(--lb-primary-hover, #5A8E1C);
+	color: white !important;
+}
+.vuenavbarsubelement_active {
+	background-color: var(--lb-primary);
+	color: white !important;
+}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.8s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+		</style>
+
+		<TMPL_VAR JSONMENU>
+		<script src="/system/scripts/vue3/vue3.js"></script>
+		<script>
+		function createnavbar() {
+			console.log("jsonmenu init");
+			const vuenavbar = {
+				data() {
+					var menu = this.getMenuData();
+					console.log("Menu", menu);
+					componentKey = 0;
+					return { menu, componentKey };
+				},
+				methods: {
+					getMenuData() {
+						var menuelement = document.getElementById('jsonmenu');
+						var menuobj = JSON.parse(menuelement.textContent);
+						console.log("pathname", window.location.pathname+window.location.search);
+						var response = this.elementSetActive( menuobj );
+						menuobj = response[0];
+						console.log("Final menuobj", menuobj);
+						return menuobj;
+					},
+					elementSetActive( menuobj ) {
+						var vm = this;
+						var currentUrl = window.location.pathname+window.location.search;
+						var elementsActive = 0;
+						for( let index in menuobj ) {
+							element = menuobj[index];
+							menuobj[index].show=false;
+							menuobj[index].infoCount = 0;
+							menuobj[index].errorCount = 0;
+							if( element.Submenu ) {
+								var response = vm.elementSetActive( element.Submenu );
+								menuobj[index].Submenu = response[0];
+								if( !menuobj[index].active ) {
+									menuobj[index].active = response[1];
+								}
+								if( menuobj[index].active == 1 ) {
+									menuobj[index].show = true;
+								}
+							}
+							else if( element.URL && element.URL == currentUrl ) {
+								if( !menuobj[index].active ) {
+									menuobj[index].active = 1;
+									elementsActive = 1;
+								}
+							}
+							else {
+								if( !menuobj[index].active ) {
+									menuobj[index].active = 0;
+								}
+							}
+						};
+						return [ menuobj, elementsActive ];
+					},
+					hover( index, active ) {
+						for( let i in this.menu ) { this.menu[i].show = false; }
+						this.menu[index].show = true;
+					},
+					menuclick( mainindex, subindex=null, event=null ) {
+						event.preventDefault();
+						if( subindex == null ) {
+							if( !this.menu[mainindex].Submenu ) {
+								this.callUrl(mainindex);
+								return;
+							}
+							this.hover( mainindex, true );
+							return;
+						} else {
+							this.callUrl(mainindex, subindex);
+						}
+					},
+					callUrl( mainindex, subindex=null ) {
+						var url, target;
+						if( subindex != null ) {
+							url = this.menu[mainindex].Submenu[subindex].URL;
+							target = typeof this.menu[mainindex].Submenu[subindex].target !== 'undefined' ? this.menu[mainindex].Submenu[subindex].target : '_self';
+						} else {
+							url = this.menu[mainindex].URL;
+							target = typeof this.menu[mainindex].target !== 'undefined' ? this.menu[mainindex].target : '_self';
+						}
+						window.open(url, target);
+					},
+					get_notification_count( element ) {
+						if( !element.Notify_Package ) return;
+						fetch('/admin/system/ajax/ajax-notification-handler.cgi', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+							body: 'action=get_notification_count&package='+encodeURIComponent(element.Notify_Package)+'&name='+encodeURIComponent(element?.Notify_Name)
+						})
+						.then( response => response.json())
+						.then( data => {
+							if( data[0] > 0 ) element.errorCount = data[2];
+							else if( data[1] > 0 ) element.infoCount = data[2];
+							else { element.errorCount = 0; element.infoCount = 0; }
+						});
+					}
+				}
+			}
+			navbarglobal = Vue.createApp(vuenavbar).mount('#vuenavbar');
+		}
+		if( document.getElementById('jsonmenu') ) { createnavbar(); }
+
+		// Notification bell
+		const notifyCachetimeSec = 30;
+		btnnotifies_get();
+		setInterval(function(){ btnnotifies_get(); }, notifyCachetimeSec*1000);
+
+		function btnnotifies_get(force) {
+			let notifyCount, notifyTimestamp = 0;
+			try {
+				let notifStore = sessionStorage.getItem("notifyCount");
+				notifyCount = JSON.parse(notifStore);
+				notifyTimestamp = notifyCount.ts;
+			} catch(error) { notifyCount = new Object(); }
+			if( (notifyTimestamp+notifyCachetimeSec*1000) < Date.now() || force == true) {
+				fetch('/admin/system/ajax/ajax-notification-handler.cgi', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: 'action=get_notification_count'
+				})
+				.then( response => response.json())
+				.then( data => { btnnotifies_setStorage(data[0], data[1]); });
+			} else { btnnotifies_setcss( notifyCount ); }
+		}
+		function btnnotifies_setStorage(errorCount, infoCount) {
+			let notifyCount = new Object();
+			notifyCount.errorCount = errorCount;
+			notifyCount.infoCount = infoCount;
+			notifyCount.ts = Date.now();
+			sessionStorage.setItem("notifyCount", JSON.stringify(notifyCount));
+			btnnotifies_setcss(notifyCount);
+		}
+		function btnnotifies_setcss(data) {
+			if( data.errorCount > 0 ) {
+				$("#btnnotifies").addClass("headerbutton_red").removeClass("headerbutton_blue");
+			} else if(data.infoCount > 0 ) {
+				$("#btnnotifies").removeClass("headerbutton_red").addClass("headerbutton_blue");
+			} else {
+				$("#btnnotifies").removeClass("headerbutton_red").removeClass("headerbutton_blue");
+			}
+		}
+		</script>
+
+		<!-- Content -->
+		<TMPL_VAR NAVBAR_PLAIN>
+		<div id="page_content" class="lb-content page_content">
+<!-- pagestart.html END -->

@@ -1,6 +1,6 @@
 # Linfo - Server stats UI/library
 
-![Travis tests](https://api.travis-ci.org/jrgp/linfo.svg)
+[![Build Status](https://travis-ci.org/jrgp/linfo.svg?branch=master)](https://travis-ci.org/jrgp/linfo)
 
 
 ### Linfo is a:
@@ -75,16 +75,14 @@ var_dump($parser->getCPU()); // and a whole lot more
    - more
 
 ## System requirements:
- - At least PHP 5.4
- - If you are using PHP 7.1.9 or lower, you might need to disable the opcache extension.
- - pcre extension
+ - At least PHP 8
 
 #### Windows
  - You need to have [COM enabled](http://www.php.net/manual/en/class.com.php).
 
 #### Linux
  - /proc and /sys mounted and readable by PHP
- - Tested with the 2.6.x/3.x kernels
+ - Tested with the 2.6.x/3.x/4.x/5.x/6.x kernels
 
 #### FreeBSD
  - PHP able to execute usual programs under /bin, /usr/bin, /usr/local/bin, etc
@@ -108,7 +106,6 @@ var_dump($parser->getCPU()); // and a whole lot more
 
 ### URL arguments
 
-- ``?out=xml`` - XML output (requires SimpleXML extension)
 - ``?out=json`` - JSON output
 - ``?out=jsonp&callback=functionName`` - JSON output with a function callback. (Look here: http://www.json-p.org/ )
 - ``?out=php_array`` - PHP serialized associative array
@@ -132,7 +129,7 @@ Set ``$settings['show_errors'] = true;`` in ``config.inc.php`` to yield useful e
 
 ## Meta
  - By Joe Gillotti <joe@u13.net>
- - Licensed under GPL
+ - Licensed under MIT
  - Pull requests! [Linfo on Github](http://github.com/jrgp/linfo)
  - [Commit stats from OpenHub/Ohloh](https://www.openhub.net/p/linfo)
 

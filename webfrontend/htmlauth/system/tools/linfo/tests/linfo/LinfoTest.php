@@ -3,27 +3,29 @@
 use \Linfo\Linfo;
 use \Linfo\Common;
 
-class LinfoTest extends PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class LinfoTest extends TestCase
 {
-    protected static $linfo;
+  protected static $linfo;
 
-    public static function setUpBeforeClass()
-    {
-        self::$linfo = new Linfo();
-    }
+  public static function setUpBeforeClass(): void
+  {
+    self::$linfo = new Linfo();
+  }
 
-    public static function tearDownAfterClass()
-    {
-        self::$linfo = null;
-        Common::unconfig();
-    }
+  public static function tearDownAfterClass(): void
+  {
+    self::$linfo = null;
+    Common::unconfig();
+  }
 
   /**
    * @test
    */
   public static function getLang()
   {
-      self::assertInternalType('array', self::$linfo->getLang());
+    self::assertIsArray(self::$linfo->getLang());
   }
 
   /**
@@ -31,7 +33,7 @@ class LinfoTest extends PHPUnit_Framework_TestCase
    */
   public static function getSettings()
   {
-      self::assertInternalType('array', self::$linfo->getSettings());
+    self::assertIsArray(self::$linfo->getSettings());
   }
 
   /**
@@ -39,7 +41,7 @@ class LinfoTest extends PHPUnit_Framework_TestCase
    */
   public static function getAppName()
   {
-      self::assertInternalType('string', self::$linfo->getAppName());
+    self::assertIsString(self::$linfo->getAppName());
   }
 
   /**
@@ -47,7 +49,7 @@ class LinfoTest extends PHPUnit_Framework_TestCase
    */
   public static function getVersion()
   {
-      self::assertInternalType('string', self::$linfo->getVersion());
+    self::assertIsString(self::$linfo->getVersion());
   }
 
   /**
@@ -55,7 +57,7 @@ class LinfoTest extends PHPUnit_Framework_TestCase
    */
   public static function getTimeStart()
   {
-      self::assertTrue(is_float(self::$linfo->getTimeStart()));
+    self::assertTrue(is_float(self::$linfo->getTimeStart()));
   }
 
   /**
@@ -63,6 +65,6 @@ class LinfoTest extends PHPUnit_Framework_TestCase
    */
   public static function getParser()
   {
-      self::assertInstanceOf('\\Linfo\\OS\\OS', self::$linfo->getParser());
+    self::assertInstanceOf('\\Linfo\\OS\\OS', self::$linfo->getParser());
   }
 }

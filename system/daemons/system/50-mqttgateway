@@ -1,0 +1,2 @@
+#!/bin/bash
+exec "${LBHOMEDIR:-/opt/loxberry}/sbin/50-mqttgateway-boot.sh"

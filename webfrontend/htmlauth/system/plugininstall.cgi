@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2019 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,25 +22,24 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
-
 use CGI::Carp qw(fatalsToBrowser);
-use CGI qw/:standard/;
+use CGI;
 use Config::Simple;
 use File::Path qw(make_path remove_tree);
-#use warnings;
-#use strict;
-#no strict "refs"; # we need it for template system
+use warnings;
+use strict;
 
 ##########################################################################
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_plugin_management";
 my $helptemplate = "help_plugininstall.html";
-
+my $template_title;
+my $resp;
 my $error;
 
-@plugins = LoxBerry::System::get_plugins();
+my @plugins = LoxBerry::System::get_plugins();
 
 
 ##########################################################################
@@ -48,56 +47,37 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.5";
-
-my $cfg	= new Config::Simple("$lbsconfigdir/general.cfg");
+my $version = "2.2.1.1";
 my $bins = LoxBerry::System::get_binaries();
 
 #########################################################################
 # Parameter
 #########################################################################
 
-# Everything from URL
-my %query;
-my $namef;
-my $value;
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
+# Params from CGI
+my $cgi = CGI->new;
+#$cgi->import_names('R');
+
+# Check if this is a file upload (needs to come first!)
+my $upload_fh = $cgi->upload('uploadfile');
 
 # And this one we really want to use
-my $do           = $query{'do'};
-my $pid          = $query{'pid'};
-my $answer       = $query{'answer'};
-my $url          = $query{'url'};
+my $do = $cgi->param('do');
+my $pid = $cgi->param('pid');
+my $answer = $cgi->param('answer');
+my $url = $cgi->param('url');
+my $saveformdata = $cgi->param('saveformdata');
+my $securepin = $cgi->param('securepin');
 
-# Everything from Forms
-my $saveformdata = param('saveformdata');
-my $securepin = param('securepin');
-
-# Filter
-$saveformdata = quotemeta($saveformdata);
-$do = quotemeta($do);
-$pid = quotemeta($pid);
-$securepin = quotemeta($securepin);
-$answer = quotemeta($answer);
-
-$saveformdata          =~ tr/0-1//cd;
-$saveformdata          = substr($saveformdata,0,1);
-$answer                =~ tr/0-1//cd;
-$answer                = substr($answer,0,1);
+if ( defined $saveformdata and $saveformdata eq "1" ) {
+	$do = "install";
+}
 
 my $maintemplate = HTML::Template->new(
       filename => "$lbstemplatedir/plugininstall.html",
       global_vars => 1,
       loop_context_vars => 1,
       die_on_bad_params=> 0,
-      associate => $cfg,
       %htmltemplate_options,
       #debug => 1,
 );
@@ -121,24 +101,24 @@ $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.
 
 # Menu
 if (!$do || $do eq "form") {
-  print STDERR "FORM called\n";
+  #print STDERR "Calling subfunction FORM\n";
   &form;
 }
 
 # Installation
 elsif ($do eq "install") {
-  print STDERR "INSTALL called\n";
+  #print STDERR "Calling subfunction INSTALL\n";
   &install;
 }
 
 # UnInstallation
 elsif ($do eq "uninstall") {
-  print STDERR "UINSTALL called\n";
+  #print STDERR "Calling subfunction UNINSTALL\n";
   &uninstall;
 }
 
 else {
-  print STDERR "FORM called\n";
+  #print STDERR "Calling subfunction FORM (default)\n";
   $maintemplate->param("FORM", 1);
   &form;
 }
@@ -151,15 +131,20 @@ exit;
 #####################################################
 
 sub form {
+	
+	# Create tmp dirs
+	if (!-e "$lbsdatadir/tmp/uploads") {
+		make_path("$lbsdatadir/tmp/uploads" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
+	}
 
 	# Check for running autoupdates/installations...
 	my $status = LoxBerry::System::lock();
 	if ($status) {
-		print STDERR "Running Autoupdates/Installations: $status\n";
+		#print STDERR "Running Autoupdates/Installations: $status\n";
 		$maintemplate->param("LOCK", 1);
 	} else {
 		# Clean up old files
-		system("rm -r -f /tmp/uploads/*");
+		system("rm -r -f $lbsdatadir/tmp/uploads/*");
   		$maintemplate->param("FORM", 1);
 	}
 
@@ -192,7 +177,7 @@ sub form {
 sub uninstall {
 
 	if (!$answer) {
-		print STDERR "Asking for uninstallation.";
+		#print STDERR "Asking for uninstallation.";
 		$maintemplate->param("QUESTION", 1);
 		foreach my $plugin (@plugins) {
 			if ($plugin->{PLUGINDB_MD5_CHECKSUM} eq $pid) {
@@ -202,9 +187,9 @@ sub uninstall {
 		}
 	} else {
 		# Clean up old files
-		system("rm -r -f /tmp/uploads/* > /dev/null 2>&1");
+		system("rm -r -f $lbsdatadir/tmp/uploads/* > /dev/null 2>&1");
 		# Uninstallation
-		print STDERR "Doing uninstallation of $pid.";
+		#print STDERR "Doing uninstallation of $pid.";
 		$maintemplate->param("UNINSTALL", 1);
 		system ("sudo $lbhomedir/sbin/plugininstall.pl action=uninstall pid=$pid > /dev/null 2>&1");
 	}
@@ -230,25 +215,32 @@ sub uninstall {
 
 sub install {
 	
-	system("rm -r -f /tmp/uploads/*");
+	my $uploadfile;
+	my $uploadfilename;
+	my $uploadpath = "$lbsdatadir/tmp/uploads";
+	
+	
+	system("rm -r -f $uploadpath/* > /dev/null 2>&1");
 
 	# Check if SecurePIN is correct
-	if ( LoxBerry::System::check_securepin($securepin) ) {
-		print STDERR "The entered securepin is wrong.";
+	my $checkresult = LoxBerry::System::check_securepin($securepin);
+	if ( defined $checkresult and $checkresult == 3 ) {
+		#print STDERR "The securepin currently is locked.";
+		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_SECUREPIN_LOCKED'};
+		&error;
+	} elsif ( defined $checkresult and $checkresult == 2 ) {
+		$error = "Internal error. Could not open securepin data file.";
+		&error;
+	} elsif ( defined $checkresult and $checkresult == 1 ) {
+		#print STDERR "The entered securepin is wrong.";
 		$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_SECUREPIN_WRONG'};
 		&error;
 	}
 
-	my $archiveurl = param('archiveurl');
-	print STDERR "The archive url is $archiveurl.\n";
-	my $uploadfile = param('uploadfile');
-	print STDERR "The upload file is $uploadfile.\n";
+	my $archiveurl = $cgi->param('archiveurl');
 
 	# Randomly file naming
-	my $tempfile = &generate(10);
-
-	# Filter
-	#quotemeta($uploadfile);
+	my $tempfile = generate(10);
 
 	#
 	# If there's no URL given, check the upload file
@@ -258,15 +250,18 @@ sub install {
 		my $allowed_filetypes = "zip";
 
 		# Max filesize (KB)
-		my $max_filesize = 50000;
+		my $max_filesize = 150000;
 
-		# Filter Backslashes
-		$uploadfile =~ s/.*[\/\\](.*)/$1/;
-
+		# Using CGI to fetch the upload
+		$uploadfile = $cgi->tmpFileName($upload_fh);
+		$uploadfilename = $cgi->param('uploadfile');
+		# print STDERR "Upload filename is $uploadfile\n";
+		# print STDERR "Upload given filename is " . $cgi->param('uploadfile') . "\n";
+		
 		# Filesize
 		my $filesize = -s $uploadfile;
 		$filesize /= 1000;
-		print STDERR "The upload file is $filesize.\n";
+		#print STDERR "The upload file is $filesize.\n";
 
 		# If it's larger than allowed...
 		if ($filesize > $max_filesize) {
@@ -275,10 +270,14 @@ sub install {
 		}
 
 		# Test if filetype is allowed
-		if($uploadfile !~ /^.+\.($allowed_filetypes)/) {
+		if($uploadfilename !~ /^.+\.($allowed_filetypes)/) {
 			$error = $SL{'PLUGININSTALL.UI_INSTALL_ERR_WRONG_FILETYPE'};
 			&error;
 		}
+
+		# Copy CGI's temp file to LoxBerry's temp directory
+		require File::Copy;
+		File::Copy::copy( $uploadfile, "$uploadpath/$tempfile.zip" );
 
 	}
 
@@ -287,9 +286,9 @@ sub install {
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
+		# associate => $cfg,
 		%htmltemplate_options,
-		debug => 1,
+#		debug => 1,
 	);
 	my %SL = LoxBerry::System::readlanguage($logtemplate);
 	$logtemplate->param( "LOGFILE", "$tempfile.log");
@@ -316,7 +315,8 @@ sub install {
 	if ($pid == 0) {
 
 		my $logfile = "/tmp/$tempfile.log";
-
+		my $openerr;
+		
 		# do this in the child
 		open STDIN, "</dev/null";
 		open STDOUT, ">$logfile";
@@ -324,18 +324,16 @@ sub install {
 		open STDERR, ">/dev/null";
 
 		if ($archiveurl) {
-			$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo /tmp/$tempfile.zip $archiveurl  2>&1`;
+			print "<INFO> Downloading $archiveurl ...\n";
+			# Single-quote the URL to prevent shell injection from & ? ; etc.
+			(my $safe_url = $archiveurl) =~ s/'/'"'"'/g;
+			system("$bins->{CURL} -fsSLk --connect-timeout 10 --max-time 60 --retry 5 -o $lbsdatadir/tmp/uploads/$tempfile.zip '$safe_url'");
 		} else {
-			open UPLOADFILE, ">/tmp/$tempfile.zip" or ($openerr = 1);
-			binmode $uploadfile;
-			while ( <$uploadfile> ) {
-				print UPLOADFILE;
-			}
-			close UPLOADFILE;
+			# File is already there
 		}
 
 		# Do the installation
-		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=/tmp/$tempfile.zip pin=$securepin tempfile=$tempfile cgi=1 >> $logfile 2>&1");
+		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=$lbsdatadir/tmp/uploads/$tempfile.zip pin=$securepin tempfile=$tempfile cgi=1 >> $logfile 2>&1");
 
 	} # End Child process
 
@@ -364,7 +362,7 @@ sub error {
 		# associate => $cfg,
 	);
 
-	print STDERR "plugininstall.cgi: sub error called with message $error.\n";
+	print STDERR "plugininstall.cgi: Sub ERROR called with message $error.\n";
 	$errtemplate->param( "ERROR", $error);
 
 	LoxBerry::System::readlanguage($errtemplate);
@@ -387,20 +385,20 @@ sub error {
 #####################################################
 
 sub generate {
-        local($e) = @_;
-        my($zufall,@words,$more);
+	my ($e) = @_;
+	my($zufall,@words,$more);
 
-        if($e =~ /^\d+$/){
-                $more = $e;
-        }else{
-                $more = "10";
-        }
+	if($e =~ /^\d+$/){
+		$more = $e;
+	} else {
+		$more = "10";
+	}
 
-        @words = qw(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9);
+	@words = qw(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9);
 
-        foreach (1..$more){
-                $zufall .= $words[int rand($#words+1)];
-        }
+	foreach (1..$more){
+		$zufall .= $words[int rand($#words+1)];
+	}
 
-        return($zufall);
+	return($zufall);
 }

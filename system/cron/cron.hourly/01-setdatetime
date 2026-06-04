@@ -1,7 +1,13 @@
 #!/bin/sh
 
-# Update Date/Time every hour
-if [ -x /opt/loxberry/sbin/setdatetime.pl ]
+# Not used on DietPi
+if [ -e /boot/dietpi/.hw_model ]
 then
-  /opt/loxberry/sbin/setdatetime.pl
+  exit 0
+fi
+
+# Update Date/Time every hour
+if [ -x $LBHOMEDIR/sbin/setdatetime.pl ]
+then
+  $LBHOMEDIR/sbin/setdatetime.pl
 fi

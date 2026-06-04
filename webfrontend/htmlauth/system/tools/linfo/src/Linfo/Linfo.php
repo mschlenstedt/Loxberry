@@ -1,24 +1,32 @@
 <?php
 
-/**
- * This file is part of Linfo (c) 2014, 2015 Joseph Gillotti.
+/* Linfo
  *
- * Linfo is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (c) 2018 Joe Gillotti
  *
- * Linfo is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with Linfo. If not, see <http://www.gnu.org/licenses/>.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
+
 namespace Linfo;
 
 use Linfo\Parsers\CallExt;
+use Linfo\Parsers\FileIO;
 use Linfo\Exceptions\FatalException;
 use Linfo\Meta\Errors;
 use ReflectionClass;
@@ -34,9 +42,9 @@ use ReflectionException;
  */
 class Linfo
 {
-    protected $settings = array(),
-        $lang = array(),
-        $info = array(),
+    protected $settings = [],
+        $lang = [],
+        $info = [],
         $parser = null,
 
         $app_name = 'Linfo',
@@ -45,7 +53,7 @@ class Linfo
         $linfo_testdir = null,
         $linfo_localdir = null;
 
-    public function __construct($settings = array())
+    public function __construct($settings = [])
     {
 
         // Time us
@@ -56,7 +64,7 @@ class Linfo
         $this->linfo_localdir = dirname(dirname(__DIR__)).'/';
 
         // Get our version from git setattribs
-        $scm = '2018-02-18 15:01:37 -0800';
+        $scm = '2025-11-10 20:37:52 -0800';
         list($this->version) = strpos($scm, '$') !== false ? array('git') : explode(' ', $scm);
 
         // Run through dependencies / sanity checking
@@ -73,8 +81,11 @@ class Linfo
         $this->loadSettings($settings);
         $this->loadLanguage();
 
+        // We'll be hitting local files on disk in their usual paths
+        $io = new FileIO(false);
+
         // Some classes need our vars; config them
-        Common::config($this);
+        Common::config($this, $io);
         CallExt::config($this);
 
         // Determine OS
@@ -101,185 +112,181 @@ class Linfo
     // Load everything, while obeying permissions...
     public function scan()
     {
-        $reflector = new ReflectionClass($this->parser);
-
         // Prime parser. Do things not appropriate to do in constructor. Most OS classes
         // don't have this.
-        if ($reflector->hasMethod('init') && ($method = $reflector->getMethod('init'))) {
-            $method->invoke($this->parser);
-        }
+        $this->parser->init();
 
         // Array fields, tied to method names and default values...
-        $fields = array(
-            'OS' => array(
+        $fields = [
+            'OS' => [
                 'show' => !empty($this->settings['show']['os']),
                 'default' => '',
                 'method' => 'getOS',
-            ),
+            ],
 
-            'Kernel' => array(
+            'Kernel' => [
                 'show' => !empty($this->settings['show']['kernel']),
                 'default' => '',
                 'method' => 'getKernel',
-            ),
+            ],
 
-            'AccessedIP' => array(
+            'AccessedIP' => [
                 'show' => !isset($this->settings['show']['ip']) || !empty($this->settings['show']['ip']),
                 'default' => '',
                 'method' => 'getAccessedIP',
-            ),
+            ],
 
-            'Distro' => array(
+            'Distro' => [
                 'show' => !empty($this->settings['show']['distro']),
                 'default' => '',
                 'method' => 'getDistro',
-            ),
+            ],
 
-            'RAM' => array(
+            'RAM' => [
                 'show' => !empty($this->settings['show']['ram']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getRam',
-            ),
+            ],
 
-            'HD' => array(
+            'HD' => [
                 'show' => !empty($this->settings['show']['hd']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getHD',
-            ),
+            ],
 
-            'Mounts' => array(
+            'Mounts' => [
                 'show' => !empty($this->settings['show']['mounts']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getMounts',
-            ),
+            ],
 
-            'Load' => array(
+            'Load' => [
                 'show' => !empty($this->settings['show']['load']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getLoad',
-            ),
+            ],
 
-            'HostName' => array(
+            'HostName' => [
                 'show' => !empty($this->settings['show']['hostname']),
                 'default' => '',
                 'method' => 'getHostName',
-            ),
+            ],
 
-            'UpTime' => array(
+            'UpTime' => [
                 'show' => !empty($this->settings['show']['uptime']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getUpTime',
-            ),
+            ],
 
-            'CPU' => array(
+            'CPU' => [
                 'show' => !empty($this->settings['show']['cpu']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getCPU',
-            ),
+            ],
 
-            'Model' => array(
+            'Model' => [
                 'show' => !empty($this->settings['show']['model']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getModel',
-            ),
+            ],
 
-            'CPUArchitecture' => array(
+            'CPUArchitecture' => [
                 'show' => !empty($this->settings['show']['cpu']),
                 'default' => '',
                 'method' => 'getCPUArchitecture',
-            ),
+            ],
 
-            'Network Devices' => array(
+            'Network Devices' => [
                 'show' => !empty($this->settings['show']['network']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getNet',
-            ),
+            ],
 
-            'Devices' => array(
+            'Devices' => [
                 'show' => !empty($this->settings['show']['devices']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getDevs',
-            ),
+            ],
 
-            'Temps' => array(
+            'Temps' => [
                 'show' => !empty($this->settings['show']['temps']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getTemps',
-            ),
+            ],
 
-            'Battery' => array(
+            'Battery' => [
                 'show' => !empty($this->settings['show']['battery']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getBattery',
-            ),
+            ],
 
-            'Raid' => array(
+            'Raid' => [
                 'show' => !empty($this->settings['show']['raid']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getRAID',
-            ),
+            ],
 
-            'Wifi' => array(
+            'Wifi' => [
                 'show' => !empty($this->settings['show']['wifi']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getWifi',
-            ),
+            ],
 
-            'SoundCards' => array(
+            'SoundCards' => [
                 'show' => !empty($this->settings['show']['sound']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getSoundCards',
-            ),
+            ],
 
-            'processStats' => array(
+            'processStats' => [
                 'show' => !empty($this->settings['show']['process_stats']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getProcessStats',
-            ),
+            ],
 
-            'services' => array(
+            'services' => [
                 'show' => !empty($this->settings['show']['services']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getServices',
-            ),
+            ],
 
-            'numLoggedIn' => array(
+            'numLoggedIn' => [
                 'show' => !empty($this->settings['show']['numLoggedIn']),
                 'default' => false,
                 'method' => 'getnumLoggedIn',
-            ),
+            ],
 
-            'virtualization' => array(
+            'virtualization' => [
                 'show' => !empty($this->settings['show']['virtualization']),
-                'default' => array(),
+                'default' => [],
                 'method' => 'getVirtualization',
-            ),
+            ],
 
-            'cpuUsage' => array(
+            'cpuUsage' => [
                 'show' => !empty($this->settings['cpu_usage']),
                 'default' => false,
                 'method' => 'getCPUUsage',
-            ),
+            ],
 
-            'phpVersion' => array(
+            'phpVersion' => [
                 'show' => !empty($this->settings['show']['phpversion']),
                 'default' => false,
                 'method' => 'getPhpVersion',
-            ),
+            ],
 
-            'webService' => array(
+            'webService' => [
                 'show' => !empty($this->settings['show']['webservice']),
                 'default' => false,
                 'method' => 'getWebService',
-            ),
+            ],
 
             // Extra info such as which fields to not show
-            'contains' => array(
+            'contains' => [
                 'show' => true,
-                'default' => array(),
+                'default' => [],
                 'method' => 'getContains',
-            ),
-        );
+            ],
+        ];
 
         foreach ($fields as $key => $data) {
             if (!$data['show']) {
@@ -287,10 +294,11 @@ class Linfo
                 continue;
             }
 
-            try {
-                $method = $reflector->getMethod($data['method']);
-                $this->info[$key] = $method->invoke($this->parser);
-            } catch (ReflectionException $e) {
+            if (method_exists($this->parser, $data['method'])) {
+                $this->info[$key] = call_user_func_array(
+                    [$this->parser, $data['method']],
+                    isset($data['args']) ? $data['args'] : []);
+            } else {
                 $this->info[$key] = $data['default'];
             }
         }
@@ -302,7 +310,7 @@ class Linfo
         $this->runExtensions();
     }
 
-    protected function loadSettings($settings = array())
+    protected function loadSettings($settings = [])
     {
 
         // Running unit tests?
@@ -322,14 +330,14 @@ class Linfo
 
         if (!isset($settings['hide'])) {
             $settings['hide'] = array(
-                'filesystems' => array(),
-                'storage_devices' => array(),
+                'filesystems' => [],
+                'storage_devices' => [],
             );
         }
 
         // Make sure these are arrays
-        $settings['hide']['filesystems'] = is_array($settings['hide']['filesystems']) ? $settings['hide']['filesystems'] : array();
-        $settings['hide']['storage_devices'] = is_array($settings['hide']['storage_devices']) ? $settings['hide']['storage_devices'] : array();
+        $settings['hide']['filesystems'] = is_array($settings['hide']['filesystems']) ? $settings['hide']['filesystems'] : [];
+        $settings['hide']['storage_devices'] = is_array($settings['hide']['storage_devices']) ? $settings['hide']['storage_devices'] : [];
 
         // Make sure these are always hidden
         $settings['hide']['filesystems'][] = 'rootfs';
@@ -347,6 +355,12 @@ class Linfo
         if (!is_file($this->linfo_localdir.'src/Linfo/Lang/'.$settings['language'].'.php')) {
             $settings['language'] = 'en';
         }
+
+        // Make sure we have show, as lots of stuff assumes it exists
+        $settings['show'] = isset($settings['show']) ? $settings['show'] : [];
+
+        // And timer, as this is referenced in most OS methods
+        $settings['timer'] = isset($settings['timer']) ? $settings['timer'] : false;
 
         $this->settings = $settings;
     }
@@ -416,7 +430,7 @@ class Linfo
 
     protected function runExtensions()
     {
-        $this->info['extensions'] = array();
+        $this->info['extensions'] = [];
 
         if (!array_key_exists('extensions', $this->settings) || count($this->settings['extensions']) == 0) {
             return;

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use HTML::Entities;
-
 use CGI qw/:standard/;
 use Config::Simple;
 use warnings;
@@ -32,10 +31,10 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_reboot_power";
 my $helptemplate = "help_power.html";
 
-our $cfg;
+# our $cfg;
 our $phrase;
 our $namef;
 our $value;
@@ -50,7 +49,7 @@ our $installfolder;
 our $languagefile;
 our $rebootbin;
 our $poweroffbin;
-our $do;
+our $do="";
 our $output;
 our $message;
 our $nexturl;
@@ -60,20 +59,18 @@ our $nexturl;
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
+my $version = "2.0.2.1";
 
-$cfg                = new Config::Simple("$lbsconfigdir/general.cfg");
-#$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-#$lang            = $cfg->param("BASE.LANG");
-$rebootbin       = $cfg->param("BINARIES.REBOOT");
-$poweroffbin     = $cfg->param("BINARIES.POWEROFF");
+my $bins = LoxBerry::System::get_binaries();
+$rebootbin = $bins->{REBOOT};
+$poweroffbin = $bins->{POWEROFF};
 
 my $maintemplate = HTML::Template->new(
 			filename => "$lbstemplatedir/power.html",
 			global_vars => 1,
 			loop_context_vars => 1,
 			die_on_bad_params=> 0,
-			associate => $cfg,
+# 			associate => $cfg,
 			%htmltemplate_options,
 			# debug => 1,
 			);
@@ -95,11 +92,7 @@ foreach (split(/&/,$ENV{'QUERY_STRING'})){
 }
 
 # And this one we really want to use
-$do           = $query{'do'};
-
-# Filter
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
+$do           = $query{'do'} if $query{'do'};
 
 ##########################################################################
 # Language Settings
@@ -116,6 +109,11 @@ $maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
 # Main program
 ##########################################################################
 
+# Remove reboot.force
+if (-e "$lbstmpfslogdir/reboot.force") {
+	unlink ("$lbstmpfslogdir/reboot.force");
+}
+
 #########################################################################
 # What should we do
 #########################################################################
@@ -124,20 +122,20 @@ $maintemplate->param ( "NEXTURL", "/admin/system/index.cgi?form=system");
 
 # Reboot
 if ($do eq "reboot") {
-  print STDERR "REBOOT called\n";
+  print STDERR "Calling Subfunction REBOOT\n";
   $maintemplate->param("REBOOT", 1);
   &reboot;
 }
 
 # Poweroff
 if ($do eq "poweroff") {
-  print STDERR "POWEROFF called\n";
+  print STDERR "Calling Subfunction POWEROFF\n";
   $maintemplate->param("POWEROFF", 1);
   &poweroff;
 }
 
 # Everything else
-print STDERR "MENU called\n";
+print STDERR "Calling Subfunction MENU\n";
 $maintemplate->param("MENU", 1);
 &form;
 
@@ -152,7 +150,7 @@ sub form {
 	
 	my $reboot_required_file = $LoxBerry::System::reboot_required_file;
 	if (-e $reboot_required_file) {
-		print STDERR "READ FILE\n";
+		print STDERR "READ reboot_required_file FILE\n";
 		my $filecontent;
 		open my $fh, '<', $reboot_required_file;
 		read( $fh, $filecontent, 1000);

@@ -1,0 +1,1 @@
+/media/smb /opt/loxberry/system/autofs/auto.smb --timeout=300 --ghost

@@ -1,0 +1,2 @@
+# LoxBerry: allow network-interfaces-write sbin script without password
+loxberry ALL = NOPASSWD: /opt/loxberry/sbin/network-interfaces-write.pl

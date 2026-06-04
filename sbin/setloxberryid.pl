@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2017-2018 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2017-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 use LoxBerry::Log;
 use Getopt::Long;
+use LWP::UserAgent;
+use LoxBerry::JSON;
 
 my $logfilename = "$lbhomedir/log/system_tmpfs/loxberryid.log";
 my $log = LoxBerry::Log->new ( package => "core", name => "loxberryid", filename => $logfilename, append => 1, addtime => 1 );
@@ -24,13 +26,18 @@ $log->loglevel(6);
 LOGSTART "LogBerry setloxberryid";
 $log->stdout(1);
 
-my $cfg      = new Config::Simple("$lbsconfigdir/general.cfg");
-my $sendstat = is_enabled( $cfg->param("BASE.SENDSTATISTIC") );
-my $version  = $cfg->param("BASE.VERSION");
-my $curlbin  = $cfg->param("BINARIES.CURL");
+my $jsonparser = LoxBerry::JSON->new();
+my $cfg = $jsonparser->open(filename => "$lbsconfigdir/general.json", readonly => 1);
+my $sendstat = is_enabled( $cfg->{"Base"}->{"Sendstatistic"} );
+my $version = $cfg->{"Base"}->{"Version"};
+my $lang = $cfg->{"Base"}->{"Lang"};
+my $country = $cfg->{"Base"}->{"Country"};
+my $curlbin = `which curl`;
+undef $jsonparser;
 
 my ($ver_major, $ver_minor, $ver_sub) = split (/\./, trim($version));
 
+## Delete invalid lbid's (VMs not having deleted the lbid)
 if (-e "$lbsconfigdir/loxberryid.cfg") {
 	open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
 		do {
@@ -40,25 +47,17 @@ if (-e "$lbsconfigdir/loxberryid.cfg") {
 	my $epoch_timestamp = (stat($fh))[9];
 	close $fh;
 	unlink "$lbsconfigdir/loxberryid.cfg" if ($epoch_timestamp == "1517978534");
+	unlink "$lbsconfigdir/loxberryid.cfg" if ($epoch_timestamp == "1521542625");
 }
-		
+	
 # Create new ID if no exists
 if (!-e "$lbsconfigdir/loxberryid.cfg" && $sendstat) {
 
-	LOGINF "Creating new random ID";
-
-	open($fh, ">", "$lbsconfigdir/loxberryid.cfg") or 
-		do {
-			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
-			exit(1);
-		};
-    flock($fh,2);
-    print $fh generate(128);
-    flock($fh,8);
-	close($fh);
+	create_loxberryid();
+	
 }
 
-# Send ID to loxberry.de fpr usage statistics. Nothing more than Date/Time (in Unixformat) and
+# Send ID to loxberry.de for usage statistics. Nothing more than Date/Time (in Unixformat) and
 # the randomly ID will be send. No personal data, no data of your LoxBerry.
 if ($sendstat) {
 	
@@ -78,31 +77,60 @@ if ($sendstat) {
 		sleep($random);
 		LOGINF "Continuing.";
 	}
-	open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
-		do {
-			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
-			exit(1);
-		};
-	flock($fh,2);
-	my $lbid = <$fh>;
-	flock($fh,8);
-	close($fh);
 	
-	# Architecture
-	my $architecture;
-	$architecture = "ARM" if (-e "$lbsconfigdir/is_raspberry.cfg");
-	$architecture = "x86" if (-e "$lbsconfigdir/is_x86.cfg");
-	$architecture = "x64" if (-e "$lbsconfigdir/is_x64.cfg");
-	$architecture = "Virtuozzo" if (-e "$lbsconfigdir/is_virtuozzo.cfg");
+	# Init LWP::UserAgent
+	my $ua = new LWP::UserAgent;
+	$ua->timeout(15);
+	$ua->agent('LoxBerry/' . $version . ' (+https://wiki.loxberry.de)');
+	$ua->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
 	
-	# Send LoxBerry version info
-	my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture";
-	my $output = qx { $curlbin -f -k -s -S --stderr - --show-error -o /dev/null "$url" };
-	$exitcode  = $? >> 8;
-	if ($exitcode != 0 ) {
-		LOGCRIT "ERROR $exitcode sending statistics to $url\n$output\n";
-	} else {
-	LOGOK "Sent request successfully: $url\n";
+	my $lbid;
+
+	# Two tries
+	for( my $try = 1; $try <= 2; $try++ ) {
+	
+		LOGOK "Try $try...";
+		
+		open($fh, "<", "$lbsconfigdir/loxberryid.cfg") or 
+			do {
+				LOGCRIT "Cannot read $lbsconfigdir/loxberryid.cfg: $!";
+				exit(1);
+			};
+		flock($fh,2);
+		$lbid = <$fh>;
+		flock($fh,8);
+		close($fh);
+		
+		# Architecture - prefer new is_arch_*.cfg files (DietPi-based, set by installer since LB 3.x),
+		# fall back to legacy files for older installations
+		my $architecture = '';
+		if    (-e "$lbsconfigdir/is_arch_aarch64.cfg") { $architecture = "aarch64"; }
+		elsif (-e "$lbsconfigdir/is_arch_armv7l.cfg")  { $architecture = "armv7l";  }
+		elsif (-e "$lbsconfigdir/is_arch_armv6l.cfg")  { $architecture = "armv6l";  }
+		elsif (-e "$lbsconfigdir/is_arch_x86_64.cfg")  { $architecture = "x86_64";  }
+		elsif (-e "$lbsconfigdir/is_arch_riscv64.cfg") { $architecture = "riscv64"; }
+		elsif (-e "$lbsconfigdir/is_raspberry.cfg")    { $architecture = "ARM";     }
+		elsif (-e "$lbsconfigdir/is_x64.cfg")          { $architecture = "x64";     }
+		elsif (-e "$lbsconfigdir/is_x86.cfg")          { $architecture = "x86";     }
+		elsif (-e "$lbsconfigdir/is_virtuozzo.cfg")    { $architecture = "x64";     }
+		elsif (-e "$lbsconfigdir/is_odroidxu3xu4.cfg") { $architecture = "ARM";     }
+		
+		# Send LoxBerry version info
+		my $url = "https://stats.loxberry.de/collect.php?id=$lbid&version=$version&ver_major=$ver_major&ver_minor=$ver_minor&ver_sub=$ver_sub&architecture=$architecture&lang=$lang&country=$country";
+		
+		my $response = $ua->get($url);
+		
+		if ( !$response->is_success ) {
+			LOGERR "ERROR sending statistics: HTTP ".$response->code." ".$response->message."\n$url\n".$response->decoded_content;
+			if ( $response->code eq "409" ) {
+				LOGWARN "The used LoxBerry ID is blacklisted. That means, your LoxBerry ID is not unique. To fix this, we re-create a new LoxBerry ID for you.";
+				create_loxberryid();
+			}
+		} else {
+			LOGOK "Sent request successfully: HTTP ".$response->code." ".$response->message."\n$url";
+			last;
+		}
+		
 	}
 	
 	# Send Plugin version info
@@ -123,13 +151,38 @@ if ($sendstat) {
 			"&ver_sub=" . uri_escape($ver_sub) . 
 			"&version=" . uri_escape($plugin->{PLUGINDB_VERSION}); 
 		
-		my $output = qx { $curlbin -f -k -s -S --stderr - --show-error "$url" };
-		$exitcode  = $? >> 8;
-		if ($exitcode != 0 ) {
-			LOGCRIT "ERROR $exitcode sending statistics to $url\n$output\n";	
+		my $response = $ua->get($url);
+				
+		if ( !$response->is_success ) {
+			LOGCRIT "Error sending plugin statistics: HTTP ".$response->code." ".$response->message."\n$url\n".$response->decoded_content;	
 		} else {
-		LOGOK "Successfully sent plugin request for $plugin->{PLUGINDB_TITLE}: $url\n$output\n";
+			LOGOK "Successfully sent plugin request for $plugin->{PLUGINDB_TITLE}: HTTP ".$response->code." ".$response->message."\n$url";
 		}
+	}
+	
+	# Send LoxBerry XL usage 
+	if( -e '/dev/shm/loxberryxl.tmp' ) {
+		my ($ver_major, $ver_minor, $ver_sub, $ver_sub2) = split (/\./, trim(LoxBerry::System::read_file('/dev/shm/loxberryxl.tmp')));
+		LOGINF "LoxBerry XL version used is $ver_major.$ver_minor.$ver_sub.$ver_sub2";
+		my $url = "https://stats.loxberry.de/collectplugin.php" .
+			"?uid=$lbid" .
+			"&pluginmd5=60dec737f394cd77cf6d79613d8a7247" .  
+			"&plugintitle=" . uri_escape('LoxBerry XL') . 
+			"&pluginname=loxberry_xl" . 
+			"&plugindir=loxberry_xl" . 
+			"&pluginauthor=". uri_escape('LoxBerry-Team') . 
+			"&pluginemail=" . uri_escape('info@loxberry.de') . 
+			"&ver_major=" . uri_escape($ver_major) . 
+			"&ver_minor=" . uri_escape($ver_minor) . 
+			"&ver_sub=" . uri_escape($ver_sub) . 
+			"&version=" . uri_escape("$ver_major.$ver_minor.$ver_sub.$ver_sub2"); 
+		my $response = $ua->get($url);
+		if ( !$response->is_success ) {
+			LOGCRIT "Error sending LoxBerry XL statistics: HTTP ".$response->code." ".$response->message."\n$url\n".$response->decoded_content;	
+		} else {
+			LOGOK "Successfully sent LoxBerry XL request: HTTP ".$response->code." ".$response->message."\n$url";
+		}
+		unlink '/dev/shm/loxberryxl.tmp';
 	}
 	
 	
@@ -140,6 +193,23 @@ exit;
 #
 # Subs
 #
+
+# Write new id to file
+sub create_loxberryid {
+
+LOGINF "Creating new random ID";
+
+	open($fh, ">", "$lbsconfigdir/loxberryid.cfg") or 
+		do {
+			LOGCRIT "Cannot write $lbsconfigdir/loxberryid.cfg: $!";
+			exit(1);
+		};
+    flock($fh,2);
+    print $fh generate(128);
+    flock($fh,8);
+	close($fh);
+
+}
 
 # Create Random ID
 sub generate {

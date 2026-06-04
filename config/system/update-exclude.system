@@ -2,14 +2,20 @@
 
 .git
 .git*
+/.msmtprc
+/.*
 
 /bin/plugins
+/bin/mqtt/transform/custom
+/bin/mqtt/datastore
 
 /config/plugins
 /config/system/*.cfg
+/config/system/*.json
 /config/system/*.dat
 /config/system/*.
 /config/system/update-exclude.userdefined
+/config/system/mosquitto/
 
 /data/
 /data/plugins
@@ -40,3 +46,4 @@
 /webfrontend/htmlauth/plugins/
 /webfrontend/legacy/
 /webfrontend/html/system/images/icons/*/
+/webfrontend/html/XL/user/

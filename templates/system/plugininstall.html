@@ -1,179 +1,388 @@
-<!-- ** START template/system/plugininstall.html 19.01.2018 19:18:59  ************************************************************************************ -->
+<!-- ** START template/system/plugininstall.html 23.12.2018 00:05:29  ************************************************************************************ -->
 <TMPL_IF FORM>
-	<div style="display:flex; width:100%; text-align:left;" id="installationheader">
-		<div style="margin:auto; padding:10px;text-align:left;">
-			<img width="80" height="80" src="/system/images/icons/main_plugins_install.svg">
-		</div>
-		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
-			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION></div>
-		</div>
-	</div>
+	<style>
+	.small {
+		font-size:70%;
+	}
 
-	<div style="height:15px;">
-	</div>
+	/* Mobile Optimierung Plugin-Verwaltung */
+	@media (max-width: 768px) {
+		table.lb-table,
+		table.lb-table tbody,
+		table.lb-table tr,
+		table.lb-table td {
+			display: block !important;
+			width: auto !important;
+		}
 
-	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi?do=install" enctype="multipart/form-data">
+		table.lb-table td[rowspan] {
+			display: inline-block !important;
+			width: auto !important;
+			vertical-align: top;
+		}
+
+		table.lb-table .pluginrow td {
+			padding: 4px 5px;
+		}
+
+		table.lb-table a.lb-btn {
+			white-space: normal !important;
+		}
+
+		fieldset[data-type="horizontal"] .ui-controlgroup-controls .ui-radio .ui-btn {
+			font-size: 0.85em !important;
+			padding-left: 0.5em !important;
+			padding-right: 0.5em !important;
+		}
+	}
+	
+	.releaseverslabel, a.releaseverslabel:link, a.releaseverslabel:hover, a.releaseverslabel:visited, a.releaseverslabel:active {
+		color:#6dac20 !important;;
+	}
+	
+	.prereleaseverslabel, a.prereleaseverslabel, a.prereleaseverslabel:link, a prereleaseverslabel:hover, a prereleaseverslabel:visited, a.prereleaseverslabel:active {
+		color:#9a6700 !important;;
+	}
+	
+	.nonewreleaselabel, a.nonewreleaselabel:link, a.nonewreleaselabel:hover, a.nonewreleaselabel:visited {
+		color:#0040ff !important;;
+	}
+	
+	.noautoupdatelabel, a.noautoupdatelabel:link, a.noautoupdatelabel:hover, a.noautoupdatelabel:visited {
+		color:#888888 !important;;
+	}
+
+	/* icon cell: same padding as all other lb-table cells */
+	table.lb-table tr td.pluginicon-cell { padding: 5px 10px !important; vertical-align: middle !important; }
+
+	/* remove the border-bottom on pluginrow cells — that's the line above Automatic Updates */
+	table.lb-table tbody tr.pluginrow td { border-bottom: none !important; }
+
+	/* title cell: take all available width. (No max-width:0 here — that was
+	   carried over from an ellipsis idiom and, combined with the cell's
+	   overflow:hidden + white-space:normal, collapsed the cell to ~0px and
+	   wrapped the plugin name character-by-character vertically — audit Bug.) */
+	table.lb-table tbody tr.pluginrow td.plugin-title-cell { width: 100% !important; max-width: none; }
+	</style>
+	
+	<div style="margin:0 0 var(--lb-space-md);display:flex;gap:var(--lb-space-sm);flex-wrap:wrap;">
+		<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/appstore.cgi"><i class="pi pi-shopping-cart"></i> <TMPL_VAR APPSTORE.LABEL_BROWSE_APPSTORE></a>
+		<a class="lb-btn lb-btn-sm lb-btn-icon" target="pluginarchive" href="https://wiki.loxberry.de/plugins/start"><i class="pi pi-search"></i> <TMPL_VAR PLUGININSTALL.UI_BUTTON_PLUGINARCHIVE></a>
+	</div>
+	<p class="lb-section-title" style="display:flex;align-items:center;gap:12px;" id="installationheader">
+		<i class="pi pi-download" style="font-size:28px; color:var(--lb-text);"></i>
+		<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLATION>
+	</p>
+
+	<div style="height:var(--lb-space-lg)"></div>
+	<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/plugininstall.cgi" enctype="multipart/form-data" style="max-width:80%;margin:0 auto">
 		<input type="hidden" name="saveformdata" value="1">
-		<div style="margin:auto; padding:10px 10px 0px 10px; display:flex; text-align:left; white-space: nowrap; flex-wrap:wrap;">
-			<div style="text-align:left; margin-top:15px;">
-				<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW>
+
+		<div class="lb-form-row">
+			<div class="lb-form-label">
+				<label for="archiveurl"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALL_NEW></label>
 			</div>
-			<div style="text-align:left; width:75%;">
-				<input type="file"  id="uploadfile" name="uploadfile" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
-				<input readonly type="url" autocomplete="false" id="archiveurl" name="archiveurl" class="textfield" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="special:url" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
+			<div class="lb-form-field" style="display:flex; flex-direction:column; gap:var(--lb-space-sm);">
+				<div id="prefill-hint-banner" style="background:#fff8dc;border:1px solid #e6b800;color:#7c5200;padding:10px 13px;border-radius:9px;font-size:13px;display:none">
+					<i class="pi pi-exclamation-triangle"></i> <TMPL_VAR APPSTORE.PREFILL_HINT>
+				</div>
+				<TMPL_IF ARCHIVEURL><script>document.getElementById('prefill-hint-banner').style.display='';</script></TMPL_IF>
+				<input class="lb-input" background-color="white" readonly type="url" autocomplete="off" id="archiveurl" name="archiveurl" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_URL>" data-validation-or="#uploadfile" data-validation-rule="^([hH][tT][tT][pP][sS]?|[sS]\?[fF][tT][pP])\:\/\/(((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|\:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-zA-Z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)+(\/(([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-zA-Z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-fA-F]{2})|[!\$&\'\(\)\*\+,;=]|:|@)|\/|\?)*)?(\.[zZ][iI][pP]$)|(\.[zZ][iI][pP][\?][a-zA-Z0-9\_\-\&][a-zA-Z0-9\=\&\_\-\%\/]*)$" placeholder="http(s)://" value="<TMPL_VAR ARCHIVEURL>" onfocus="this.removeAttribute('readonly');">
+				<div style="display:flex; gap:var(--lb-space-sm); align-items:stretch;">
+					<div id="dropzone" style="flex:1; border:2px dashed #ccc; border-radius:8px; padding:16px; text-align:center; cursor:pointer; transition:all 0.2s ease; background:rgba(255,255,255,0.5);">
+						<div id="dropzone-icon" style="font-size:28px; margin-bottom:4px;">&#128230;</div>
+						<div id="dropzone-text" style="font-size:0.85em; color:#666;">.zip <TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_OR> <span style="color:#6dac20; text-decoration:underline;"><TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_BROWSE></span></div>
+						<div id="dropzone-filename" style="display:none; font-size:0.9em; color:#333; font-weight:bold; margin-top:4px;"></div>
+					</div>
+					<button type="button" id="dropzone-clear" class="lb-btn lb-btn-sm lb-btn-icon" title="Reset" style="align-self:stretch; padding-left:12px; padding-right:12px;"><i class="pi pi-times"></i></button>
+				</div>
 			</div>
 		</div>
-		<div style="height:30px;">
-		</div>
-		<div style="margin:auto; display:flex; flex-wrap: wrap; justify-content:flex-end; text-align:center">
-			<div style="padding-right:10px; padding-left:10px; margin-top:15px; white-space: nowrap;">
-				<TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN>
+		<input type="file" id="uploadfile" name="uploadfile" style="display:none;" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.UI_MSG_NO_ZIP>" data-validation-rule=".*\S.*" data-validation-or="#archiveurl">
+
+		<div class="lb-form-row">
+			<div class="lb-form-label">
+				<label for="securepin"><TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN></label>
 			</div>
-			<div>
-				<input id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$" size="10">
-			</div>
-			<div style="text-align:left; margin-top:3px;  padding-left:20px;">
-				<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
+			<div class="lb-form-field" style="display:flex; gap:var(--lb-space-sm); align-items:center;">
+				<input class="lb-input" background-color="white" id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$" style="width:20%; min-width:80px;">
+				<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
 			</div>
 		</div>
 	</form>
 
-	<div style="height:60px;">
-	</div>
+	<div style="height:20px;"></div>
 
-	<div style="display:flex; width:100%; text-align:left;">
-		<div style="margin:auto; padding:10px;text-align:left;">
-			<img width="80" height="80" src="/system/images/icons/main_plugins_title.svg">
-		</div>
-		<div style="margin:auto; padding:10px; width:100%; text-align:left;">
-			<div class="wide"><TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS>
-			</div>
-			<div>
-			<a href="#" data-role="button" data-inline="true" data-icon="refresh" data-mini="true" id="btnrecheck"><TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a>&nbsp;<span id="recheckstatus" style=""></span>
-			</div>
-		</div>
-	</div>
-	<div style="height:15px;">
-	</div>
-	<table data-role="table" data-mode="table" class="ui-responsive">
-		<tbody>
+	<p class="lb-section-title" style="display:flex;align-items:center;gap:12px;">
+		<i class="pi pi-th-large" style="font-size:28px; color:var(--lb-text);"></i>
+		<TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLED_PLUGINS>
+	</p>
+	<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="btnrecheck"><i class="pi pi-refresh"></i> <TMPL_VAR PLUGININSTALL.UI_NOTIFY_AUTOINSTALL_RECHECK_BUTTON></a><span id="recheckstatus"></span>
+	<div style="height:var(--lb-space-lg)"></div>
+	<style>
+	/* === Plugin-Verwaltung: Karten-Grid (ersetzt die alten Tabellen-Zeilen) === */
+	.plugin-grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(min(320px,100%),1fr)); }
+	.pcard { background:var(--lb-card-bg); border:1px solid var(--lb-border-color); border-radius:var(--lb-radius); padding:14px; display:flex; flex-direction:column; gap:10px; box-sizing:border-box; }
+	.pcard-head { display:flex; align-items:flex-start; gap:11px; }
+	.pcard-ico { flex:0 0 auto; }
+	.pcard-meta { min-width:0; flex:1; }
+	.pcard-name { display:block; font-size:15px; font-weight:700; line-height:1.25; color:var(--lb-text) !important; text-decoration:none !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+	.pcard-author { font-size:11.5px; color:var(--lb-text-muted); }
+	.pcard-ver { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:12.5px; border-top:1px solid var(--lb-border-color); padding-top:9px; }
+	.pcard-status { display:inline-flex; align-items:center; gap:6px; }
+	.pcard-ctrls { display:grid; grid-template-columns:1fr minmax(0,62%); gap:7px 8px; align-items:center; font-size:12px; color:var(--lb-text-secondary); }
+	.pcard-ctl { display:contents; }
+	.pcard-ctl label { margin:0; }
+	.pcard-ctl select { width:100%; }
+	.pcard-ctl select:disabled { opacity:.6; cursor:not-allowed; }
+	.pcard-actions { display:flex; flex-direction:column; gap:7px; border-top:1px solid var(--lb-border-color); padding-top:10px; }
+	.pcard-actions .lb-btn { width:100%; justify-content:center; margin:0; box-sizing:border-box; }
+	.pcard-actions .btnrelease, .pcard-actions .btnprerelease { background:var(--lb-primary) !important; border-color:var(--lb-primary-hover) !important; color:#fff !important; font-weight:600; }
+	.pcard-actions .btnrelease:hover, .pcard-actions .btnprerelease:hover { background:var(--lb-primary-hover) !important; border-color:var(--lb-primary-dark) !important; color:#fff !important; }
+	.pcard-actions .btnrelease:active, .pcard-actions .btnprerelease:active { background:var(--lb-primary-hover) !important; filter:brightness(0.96); }
+	.pcard .lb-btn.is-disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+	.plugin-empty { text-align:center; padding:24px; color:var(--lb-text-muted); }
+	</style>
 
-		<!-- START Plugin container -->
-		<TMPL_IF PLUGINS>
-			<TMPL_LOOP PLUGINS>
-			<tr>
-				<style>
-				#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 128px; width: 128px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_128.png); }
-				
-				@media (max-width: 875px) {
-					#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { display: block; height: 64px; width: 64px; background-image: url(/system/images/icons/<TMPL_VAR PLUGINDB_FOLDER>/icon_64.png); }
-				}
-				</style>
-				<td rowspan="2">
-				<a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
-				</td>
-				<td colspan="2">
-				<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
-					<div style="flex-grow: 2;">
-						<span style="font-size:calc(13px + 1vw);"><a href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" style="text-decoration:none;"><TMPL_VAR PLUGINDB_TITLE></a></span><br>
-						<span style="font-size:70%;">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></span>
-					</div>
-					<div style="flex-grow: 1; text-align: right; vertical-align: middle;"><b>Version <span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b>
-						<div style="color:green; font-size:70%" class="releaseverslabel" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-						<div style="color:#e53734; font-size:70%" class="prereleaseverslabel" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></div>
-					</div>
+	<!-- START Plugin container -->
+	<TMPL_IF PLUGINS>
+	<div class="plugin-grid">
+		<TMPL_LOOP PLUGINS>
+		<style>
+			#pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM> { width:44px; height:44px; border-radius:10px; background-image:url(<TMPL_VAR PLUGINDB_ICONURI>); background-size:contain; background-repeat:no-repeat; background-position:center; }
+		</style>
+		<div class="pcard pluginrow" data-md5="<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">
+
+			<div class="pcard-head">
+				<a class="pcard-ico" href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
+				<div class="pcard-meta">
+					<a class="pcard-name" href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false"><TMPL_VAR PLUGINDB_TITLE></a>
+					<div class="pcard-author">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></div>
 				</div>
-				</td>
-				
-				<td>
-					<div>
-						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" data-updatelink="" class="btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Release</a>
-						<a href="#" data-role="button" data-inline="true" data-icon="gear" data-mini="true" data-updatelink="" class="btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Update Pre-Release</a>
-					</div>
-					<a data-role="button" data-inline="true" data-icon="info" data-mini="true" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
-					<a data-role="button" data-inline="true" data-icon="delete" data-mini="true" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
-				</td>
-			</tr>
-			<tr style="border-bottom: 1.5px solid LightGray;">
-				<td colspan="2">
-				<TMPL_IF PLUGINDB_AUTOUPDATE>
-				<label><TMPL_VAR PLUGININSTALL.UI_LABEL_AUTOMATIC_UPDATES></label>
-				<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"	value="1">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option1"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_OFF></label>
-					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2"	value="2">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option2"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_NOTIFY_ONLY></label>
-					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3"	value="3">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option3"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_RELEASES></label>
-					<input type="radio" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"	value="4">
-					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option4"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_PRE_AND_RELEASES></label>
-				</fieldset>
-				<script>
-				$(document).on('pagecreate',function()
-				{
-					$( "#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option"+<TMPL_VAR PLUGINDB_AUTOUPDATE> ).prop( "checked", true ).checkboxradio( "refresh" );
-				});
-				$("[id^=au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>_option]").change(function(){
-					var val = $(this).val();
-					console.log("Auto-Update", val);
-					post_value('plugin-autoupdate', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', val); 
-				});
-				
-				
-				
-				</script>
-				</TMPL_IF>
-				</td>
-				<td>
-				<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
-				<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGGING_LEVEL></label>
-					<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-					<select name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-mini="true">
+			</div>
+
+			<div class="pcard-ver">
+				<span>Version <b><span id="curver-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGINDB_VERSION></span></b></span>
+				<span class="pcard-status">
+					<TMPL_IF PLUGINDB_AUTOUPDATE>
+					<span class="releaseverslabel small" style="display:none" data-version="" id="labelrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span>
+					<span class="prereleaseverslabel small" style="display:none" data-version="" id="labelpre-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></span>
+					<span class="nonewreleaselabel small" style="display:none" data-version="" id="labelnonewrel-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">Up-To-Date</span>
+					<TMPL_ELSE>
+					<span class="noautoupdatelabel small" data-version="" id="labelnoautoupdate-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>">No AutoUpdate</span>
+					</TMPL_IF>
+				</span>
+			</div>
+
+			<div class="pcard-ctrls">
+				<div class="pcard-ctl">
+					<label for="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_AUTOMATIC_UPDATES></label>
+					<TMPL_IF PLUGINDB_AUTOUPDATE>
+					<select class="lb-select" id="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" name="au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-role="none">
+						<option value="1"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_OFF></option>
+						<option value="2"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_NOTIFY_ONLY></option>
+						<option value="3"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_RELEASES></option>
+						<option value="4"><TMPL_VAR PLUGININSTALL.UI_AUTOMATIC_UPDATES_PRE_AND_RELEASES></option>
+					</select>
+					<TMPL_ELSE>
+					<select class="lb-select" data-role="none" disabled><option>&#8212;</option></select>
+					</TMPL_IF>
+				</div>
+				<div class="pcard-ctl">
+					<label for="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><TMPL_VAR PLUGININSTALL.UI_LABEL_LOGGING_LEVEL></label>
+					<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
+					<select class="lb-select" id="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" name="loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>" data-role="none">
 						<option value="0"><TMPL_VAR PLUGININSTALL.UI_LOG_0_OFF></option>
-					<!--<option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_1_ALERT></option>//-->
-						<option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_2_FAILURES></option>
 						<option value="3"><TMPL_VAR PLUGININSTALL.UI_LOG_3_ERRORS></option>
 						<option value="4"><TMPL_VAR PLUGININSTALL.UI_LOG_4_WARNING></option>
-					<!--<option value="5"><TMPL_VAR PLUGININSTALL.UI_LOG_5_OK></option>//-->
 						<option value="6"><TMPL_VAR PLUGININSTALL.UI_LOG_6_INFO></option>
 						<option value="7"><TMPL_VAR PLUGININSTALL.UI_LOG_7_DEBUG></option>
 					</select>
-					</fieldset>
-				</TMPL_IF>
-				</td>
-			</tr>
-			
-			
-			<script>
-			$(document).ready( function()
-				{
-					$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>').change();
-				});
-			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
-					var val = $(this).val();
-					console.log("Loglevel", val);
-					post_value('plugin-loglevel', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', val); 
-				});
-			</script>
-			</TMPL_LOOP>
-		<TMPL_ELSE>
-			<tr>
-				<td colspan=5 align=center><br><TMPL_VAR PLUGININSTALL.UI_LABEL_NOPLUGINS></td>
-			</tr>
-		</TMPL_IF>
-		<!-- END Plugin container -->
+					<TMPL_ELSE>
+					<select class="lb-select" data-role="none" disabled><option>&#8212;</option></select>
+					</TMPL_IF>
+				</div>
+			</div>
 
-		</tbody>
-	</table>
+			<div class="pcard-actions">
+				<a href="#" data-updatelink="" style="display:none" class="lb-btn lb-btn-sm lb-btn-icon btnrelease" id="relbtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Release</a>
+				<a href="#" data-updatelink="" style="display:none" class="lb-btn lb-btn-sm lb-btn-icon btnprerelease" id="prebtn-<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-cog"></i> Update Pre-Release</a>
+				<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system/plugininstall/<TMPL_VAR PLUGINDB_NAME>.log&header=html&format=template&only=once" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_LOGFILE></a>
+				<TMPL_IF PLUGINDB_PLUGIN_WEBSITE>
+				<a class="lb-btn lb-btn-sm lb-btn-icon" href="<TMPL_VAR PLUGINDB_PLUGIN_WEBSITE>" target="_blank"><i class="pi pi-globe"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION></a>
+				<TMPL_ELSE>
+				<a class="lb-btn lb-btn-sm lb-btn-icon is-disabled" aria-disabled="true" title="<TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION>"><i class="pi pi-globe"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_DOCUMENTATION></a>
+				</TMPL_IF>
+				<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/plugininstall.cgi?do=uninstall&pid=<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"><i class="pi pi-times"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+			</div>
+
+		</div>
+
+		<script>
+		$(document).ready( function() {
+			<TMPL_IF PLUGINDB_AUTOUPDATE>
+			$("#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_AUTOUPDATE>');
+			$("#au_<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
+				post_value('plugin-autoupdate', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', $(this).val());
+			});
+			</TMPL_IF>
+			<TMPL_IF PLUGINDB_LOGLEVELS_ENABLED>
+			if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 1 )
+				$('<option value="1"><TMPL_VAR PLUGININSTALL.UI_LOG_1_ALERT></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=0]"));
+			else if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 2 )
+				$('<option value="2"><TMPL_VAR PLUGININSTALL.UI_LOG_2_FAILURES></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=0]"));
+			else if ( "<TMPL_VAR PLUGINDB_LOGLEVEL>" == 5 )
+				$('<option value="5"><TMPL_VAR PLUGININSTALL.UI_LOG_5_OK></option>').insertAfter($("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM> option[value=4]"));
+			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").val('<TMPL_VAR PLUGINDB_LOGLEVEL>');
+			$("#loglevel<TMPL_VAR PLUGINDB_MD5_CHECKSUM>").change(function(){
+				post_value('plugin-loglevel', '<TMPL_VAR PLUGINDB_MD5_CHECKSUM>', $(this).val());
+			});
+			</TMPL_IF>
+		});
+		</script>
+		</TMPL_LOOP>
+	</div>
+	<TMPL_ELSE>
+		<div class="plugin-empty"><TMPL_VAR PLUGININSTALL.UI_LABEL_NOPLUGINS></div>
+	</TMPL_IF>
+	<!-- END Plugin container -->
 
 	<script>
 		$(document).ready( function()
 		{
+			// (Zebra striping entfällt — Karten sind durch Rahmen/Abstand getrennt)
 			update_notifications();
 			validate_enable('#uploadfile');
 			validate_enable('#securepin');
 			validate_enable('#archiveurl');
 			validate_chk_object(['#securepin','#archiveurl','#uploadfile']);
+			$(function() 
+			{
+     			$("#uploadfile").change(function ()
+     			{
+       				if ( $(this).val().length > 1 )
+       				{
+       					$('#archiveurl').fadeOut();
+       					$('#archiveurl').val('');
+       					$(this).trigger('blur');
+       					$('#error-msg-archiveurl').fadeOut(10);
+       				}
+       				else
+       				{
+       					$('#archiveurl').fadeIn();
+       					$(this).trigger('blur');
+       					$('#error-msg-uploadfile').fadeOut(10);
+       				}
+     			});
+  			});
+
+		// Drag & Drop support
+		var dropzone = document.getElementById('dropzone');
+		var fileInput = document.getElementById('uploadfile');
+		var dropzoneZipOnlyMsg = "<TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_ZIPONLY>";
+		var dropzoneDefaultHtml = '.zip <TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_OR> <span style="color:#6dac20; text-decoration:underline;"><TMPL_VAR PLUGININSTALL.UI_LABEL_DRAGDROP_BROWSE></span>';
+
+		dropzone.addEventListener('click', function() {
+			fileInput.click();
+		});
+
+		document.getElementById('dropzone-clear').addEventListener('click', function() {
+			fileInput.value = '';
+			window._dropzoneFile = null;
+			$('#dropzone-filename').hide();
+			$('#dropzone-icon').show();
+			$('#dropzone-text').show();
+			dropzone.style.borderColor = '#ccc';
+			dropzone.style.background = 'rgba(255,255,255,0.5)';
+			$('#archiveurl').val('').fadeIn();
+			$(fileInput).trigger('change').trigger('blur');
+			$('#error-msg-archiveurl').fadeOut(10);
+			$('#error-msg-uploadfile').fadeOut(10);
+		});
+
+		['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(eventName) {
+			document.addEventListener(eventName, function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+			});
+		});
+
+		['dragenter', 'dragover'].forEach(function(eventName) {
+			dropzone.addEventListener(eventName, function() {
+				dropzone.style.borderColor = '#6dac20';
+				dropzone.style.background = 'rgba(109, 172, 32, 0.08)';
+			});
+		});
+
+		['dragleave', 'drop'].forEach(function(eventName) {
+			dropzone.addEventListener(eventName, function() {
+				dropzone.style.borderColor = '#ccc';
+				dropzone.style.background = 'rgba(255,255,255,0.5)';
+			});
+		});
+
+		dropzone.addEventListener('drop', function(e) {
+			var files = e.dataTransfer.files;
+			if (files.length === 0) return;
+			var file = files[0];
+
+			if (!file.name.toLowerCase().endsWith('.zip')) {
+				dropzone.style.borderColor = '#e74c3c';
+				dropzone.style.background = 'rgba(231, 76, 60, 0.08)';
+				$('#dropzone-text').text(dropzoneZipOnlyMsg);
+				setTimeout(function() {
+					dropzone.style.borderColor = '#ccc';
+					dropzone.style.background = 'rgba(255,255,255,0.5)';
+					$('#dropzone-text').html(dropzoneDefaultHtml);
+				}, 2000);
+				return;
+			}
+
+			try {
+				var dt = new DataTransfer();
+				dt.items.add(file);
+				fileInput.files = dt.files;
+			} catch(err) {
+				window._dropzoneFile = file;
+			}
+
+			$('#dropzone-filename').text(file.name).show();
+			$('#dropzone-icon').hide();
+			$('#dropzone-text').hide();
+			$('#archiveurl').fadeOut();
+			$('#archiveurl').val('');
+			$('#error-msg-archiveurl').fadeOut(10);
+			$(fileInput).trigger('change').trigger('blur');
+		});
+
+		$(fileInput).on('change', function() {
+			if (this.files && this.files.length > 0) {
+				$('#dropzone-filename').text(this.files[0].name).show();
+				$('#dropzone-icon').hide();
+				$('#dropzone-text').hide();
+			} else {
+				$('#dropzone-filename').hide();
+				$('#dropzone-icon').show();
+				$('#dropzone-text').show();
+			}
+		});
+
+		$('#main_form').on('submit', function(e) {
+			if (window._dropzoneFile) {
+				e.preventDefault();
+				var formData = new FormData(this);
+				formData.set('uploadfile', window._dropzoneFile);
+				var xhr = new XMLHttpRequest();
+				xhr.open('POST', this.action);
+				xhr.onload = function() {
+					document.open();
+					document.write(xhr.responseText);
+					document.close();
+				};
+				xhr.send(formData);
+			}
+		});
+
 			$( '#securepin' ).css("background-color","#FFFFC0").attr("original-background-color","#FFFFC0");
 			if ( $('#archiveurl').length > 0 ) $('#archiveurl').trigger('keyup');
 
@@ -182,22 +391,29 @@
 		
 		
 		function update_notifications() {
-			console.log ("Started update_notify");
+			// console.log ("Started update_notify");
 			
 			$(".btnrelease").hide();
 			$(".btnprerelease").hide();
 			$(".releaseverslabel").hide();
 			$(".prereleaseverslabel").hide();
+			$(".nonewreleaselabel").hide();
 			
-			
-			
-			$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notifications', package: 'plugininstall' } )
+			$.post( "/admin/system/ajax/ajax-notification-handler.cgi", { action: 'get_notifications', package: 'plugininstall' } )
 			.done(function(notifications) {
-				console.log("get_notifications executed successfully");
-				for (i = 0; i < notifications.length; i++) {
-					var not = notifications[i];
-					// console.log("Data unfiltered", not.CONTENTRAW, not.SEVERITY);
-					if (not.SEVERITY != 7) continue;
+				// console.log("get_notifications executed successfully", notifications);
+				
+				// Get all plugins from plugin list
+				$(".pluginrow").each( function( index, plugin ) {
+					var md5 = $(plugin).data("md5");
+					// Search in notifications for plugin md5 with severity 7
+					var not = notifications.find( item => item.pluginmd5 === md5 && item.SEVERITY == 7);
+					// console.log(md5, not);
+					
+					if (not === undefined) {
+						$("#labelnonewrel-"+md5).show();
+						return true;
+					}
 					
 					// strip v from version tag
 					var version = not.version;
@@ -208,16 +424,17 @@
 					if( curver.charAt( 0 ).toLowerCase() === 'v' )
 						curver = curver.slice( 1 );
 					
-					
-					
 					var newer = versionCompare(version, curver);
 					console.log("Notification:", version, "Current version:", curver);
 					console.log("Is newer?", newer);
-					if (newer != true) continue;
+					if (newer != true) {
+						$("#labelnonewrel-"+md5).show();
+						return true;
+					}
 					if (not.type == "prerelease") {
 						//$("#prever-" + not.pluginmd5).text(version);
 						var vertext = "New Pre-Release " + version;
-						if(not.releaseinfo != null) vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:#ef6558;font-weight: normal;" >' + vertext + '</a>';
+						if(not.releaseinfo != null) vertext = '<a class="prereleaseverslabel" href="' + not.releaseinfo + '" target="_blank">' + vertext + '</a>';
 						$("#labelpre-" + not.pluginmd5).html(vertext);
 						$("#labelpre-" + not.pluginmd5).show();
 						//$("#prebtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
@@ -226,37 +443,41 @@
 					}
 					if (not.type == "release") {
 						var vertext = "New Release " + version;
-						if(not.releaseinfo != null) vertext = '<a href="' + not.releaseinfo + '" target="_blank" style="color:green;font-weight: normal;">' + vertext + '</a>';
+						if(not.releaseinfo != null) vertext = '<a class="releaseverslabel" href="' + not.releaseinfo + '" target="_blank">' + vertext + '</a>';
 						$("#labelrel-" + not.pluginmd5).html(vertext);
 						$("#labelrel-" + not.pluginmd5).show();
 						//$("#relbtn-" + not.pluginmd5).attr("href", "/admin/system/plugininstall.cgi?url=" + not.installarchive);
 						$("#relbtn-" + not.pluginmd5).attr("data-updatelink", not.installarchive);
 						$("#relbtn-" + not.pluginmd5).show();
 					}
-				}
+					$("#labelnonewrel-"+md5).hide();
+				});
 			});
 		
 		}
 		
-		$(".btnrelease").click(function() {
+		$(".btnrelease").click(function(e) {
+			e.preventDefault();
 			$("#archiveurl").val( $(this).attr("data-updatelink") );
+			$('#prefill-hint-banner').show();
+			$('#archiveurl').trigger('keyup');
 			$(window).scrollTop($('#installationheader').offset().top-30);
-			//var scrollpos = $('#installationheader'.offset().top).scrollTop();
-			//$("html").animate( {scrollTop: scrollpos} , 600);
+		});
+
+		$(".btnprerelease").click(function(e) {
+			e.preventDefault();
+			$("#archiveurl").val( $(this).attr("data-updatelink") );
+			$('#prefill-hint-banner').show();
+			$('#archiveurl').trigger('keyup');
+			$(window).scrollTop($('#installationheader').offset().top-30);
 		});
 		
-		$(".btnprerelease").click(function() {
-			$("#archiveurl").val( $(this).attr("data-updatelink") );
-			$(window).scrollTop($('#installationheader').offset().top-30);
-			//var scrollpos = $('#installationheader'.offset().top).scrollTop();
-			//$("html").animate( {scrollTop: scrollpos} , 600);
-		});
-		
-		$("#btnrecheck").click(function() {
+		$("#btnrecheck").click(function(e) {
+			e.preventDefault();
 			$("#recheckstatus").attr("style", "color:green");
 			$("#recheckstatus").text("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
 			$("#btnrecheck").prop( "disabled", true );
-			$.post ( '/admin/system/tools/ajax-config-handler.cgi', {action: 'pluginsupdate-check'})
+			$.post ( '/admin/system/ajax/ajax-config-handler.cgi', {action: 'pluginsupdate-check'})
 			.done(function() {
 				$("#recheckstatus").text("");
 				update_notifications();
@@ -267,16 +488,13 @@
 				$("#recheckstatus").text("<TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>");
 				$("#btnrecheck").prop( "disabled", false );
 			});
-		
-		
-		
 		});
 		
 		
 		function post_value (action, pluginmd5, value)
 		{
 			console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
-			$.post ( '/admin/system/tools/ajax-config-handler.cgi', 
+			$.post ( '/admin/system/ajax/ajax-config-handler.cgi', 
 						{ 	action: action,
 							value: value,
 							pluginmd5: pluginmd5
@@ -285,8 +503,63 @@
 	
 
 	
+/**
+ * SemVer 2 precedence (core + prerelease); build stripped. Null if not classical MAJOR.MINOR.PATCH (+ optional prerelease).
+ * Same rules as LoxBerry::System::plugin_version_compare (Perl) / LBSystem::plugin_version_compare (PHP).
+ */
+function _pluginSemverParts(tag) {
+	var s = ('' + tag).trim().toLowerCase();
+	if (!s) return null;
+	if (s.charAt(0) === 'v') s = s.slice(1);
+	var pPlus = s.indexOf('+');
+	if (pPlus >= 0) s = s.slice(0, pPlus);
+	var re = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/;
+	var m = re.exec(s);
+	if (!m) return null;
+	return { maj: parseInt(m[1], 10), min: parseInt(m[2], 10), pat: parseInt(m[3], 10), pre: m[4] != null ? m[4] : '' };
+}
+
+function _comparePrereleaseId(ida, idb) {
+	var na = /^\d+$/.test(ida);
+	var nb = /^\d+$/.test(idb);
+	if (na && nb) {
+		var ia = parseInt(ida, 10), ib = parseInt(idb, 10);
+		if (ia !== ib) return ia < ib ? -1 : 1;
+		return 0;
+	}
+	if (na && !nb) return -1;
+	if (!na && nb) return 1;
+	if (ida < idb) return -1;
+	if (ida > idb) return 1;
+	return 0;
+}
+
+function _semverCompareRaw(a, b) {
+	var pa = _pluginSemverParts(a), pb = _pluginSemverParts(b);
+	if (!pa || !pb) return null;
+	if (pa.maj !== pb.maj) return pa.maj < pb.maj ? -1 : 1;
+	if (pa.min !== pb.min) return pa.min < pb.min ? -1 : 1;
+	if (pa.pat !== pb.pat) return pa.pat < pb.pat ? -1 : 1;
+	var ea = pa.pre === '', eb = pb.pre === '';
+	if (!ea && eb) return -1;
+	if (ea && !eb) return 1;
+	if (ea && eb) return 0;
+	var iparts = pa.pre.split('.'), jparts = pb.pre.split('.');
+	for (var ii = 0; ; ii++) {
+		var hasA = ii < iparts.length, hasB = ii < jparts.length;
+		if (!hasA && !hasB) return 0;
+		if (!hasA) return -1;
+		if (!hasB) return 1;
+		var cmp = _comparePrereleaseId(iparts[ii], jparts[ii]);
+		if (cmp !== 0) return cmp;
+	}
+}
+
 // 	https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
 function versionCompare(v1, v2, options) {
+	var sc = _semverCompareRaw(v1, v2);
+	if (sc !== null) return sc;
+
     var lexicographical = options && options.lexicographical,
         zeroExtend = options && options.zeroExtend,
         v1parts = v1.split('.'),
@@ -355,10 +628,8 @@ function versionCompare(v1, v2, options) {
 	<tr>
 		<td align="center">
 			<p>
-			<a id="btncancel" data-role="button" data-inline="true" data-mini="true"
-			data-icon="delete" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-			<a onclick="$('#btnok').addClass('ui-disabled'); $('#uninstall_text').html('<TMPL_VAR PLUGININSTALL.UI_MSG_UNINSTALL_WAIT>');" id="btnok" data-role="button" data-inline="true" data-mini="true"
-			data-icon="check" href="<TMPL_VAR SELFURL>&answer=1"><TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btncancel" href="/admin/system/plugininstall.cgi"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" onclick="$('#btnok').addClass('lb-disabled'); $('#uninstall_text').html('<TMPL_VAR PLUGININSTALL.UI_MSG_UNINSTALL_WAIT>');" id="btnok" href="<TMPL_VAR SELFURL>&answer=1"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_UNINSTALL></a>
 			</p>
 		</td>
 	</tr>
@@ -382,7 +653,7 @@ function versionCompare(v1, v2, options) {
 	<tr>
 		<td align="center">
 			<p>
-			 <a id="btnreload" href="javascript:location.reload();" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
+			 <a id="btnreload" href="javascript:location.reload();" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-refresh"></i> <TMPL_VAR COMMON.BUTTON_REFRESH></a>
 			</p>
 		</td>
 	</tr>
@@ -406,8 +677,7 @@ function versionCompare(v1, v2, options) {
 	<tr>
 		<td align="center">
 			<p>
-			<a id="btnok" data-role="button" data-inline="true" data-mini="true"
-			data-icon="check" href="/admin/system/plugininstall.cgi"><TMPL_VAR COMMON.BUTTON_OK></a>
+			<a class="lb-btn lb-btn-sm lb-btn-icon" id="btnok" href="/admin/system/plugininstall.cgi"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_OK></a>
 			</p>
 		</td>
 	</tr>

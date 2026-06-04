@@ -2,21 +2,17 @@
 
 notify_ext() {
 
-	. $LBHOMEDIR/libs/bashlib/iniparser.sh
-
-	iniparser $LBSCONFIG/general.cfg "WEBSERVER"
+	WEBSERVERPORT=$(jq -r '.Webserver.Port' $LBSCONFIG/general.json)
 	
 	# echo "Webserver port is $WEBSERVERPORT";
 	
-	curl -v -H "Content-Type: application/x-www-form-urlencoded" http://localhost:$WEBSERVERPORT/admin/system/tools/ajax-notification-handler.cgi -d "action=notifyext&$1&$2&$3&$4&$5&$6&$7&$8&$9"
+	curl -v -H "Content-Type: application/x-www-form-urlencoded" http://localhost:$WEBSERVERPORT/admin/system/ajax/ajax-notification-handler.cgi -d "action=notifyext&$1&$2&$3&$4&$5&$6&$7&$8&$9"
 	
 }
 
 notify() {
 
-	. $LBHOMEDIR/libs/bashlib/iniparser.sh
-
-	iniparser $LBSCONFIG/general.cfg "WEBSERVER"
+	WEBSERVERPORT=$(jq -r '.Webserver.Port' $LBSCONFIG/general.json)
 	
 	errorparam=$4
 	
@@ -24,7 +20,7 @@ notify() {
 	
 	# echo "Webserver port is $WEBSERVERPORT";
 	
-	curl -v -H "Content-Type: application/x-www-form-urlencoded" http://localhost:$WEBSERVERPORT/admin/system/tools/ajax-notification-handler.cgi -d "action=notifyext&PACKAGE=$1&NAME=$2&MESSAGE=$3&SEVERITY=$severity"
+	curl -v -H "Content-Type: application/x-www-form-urlencoded" http://localhost:$WEBSERVERPORT/admin/system/ajax/ajax-notification-handler.cgi -d "action=notifyext&PACKAGE=$1&NAME=$2&MESSAGE=$3&SEVERITY=$severity"
 	
 }
 

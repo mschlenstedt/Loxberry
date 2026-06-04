@@ -1,5 +1,5 @@
 <?php
-
+	
 	# define Constants for LoxBerry directories
 	if(getenv("LBHOMEDIR")) {
 		define("LBHOMEDIR", getenv("LBHOMEDIR"));
@@ -14,13 +14,28 @@
 
 	// lbhomedir
 	$lbhomedir = LBHOMEDIR;
-		
-	$plugindir_array = explode("/", substr(getcwd(), strlen(LBHOMEDIR)));
-	if (isset($plugindir_array[4])) {
-		$pluginname = $plugindir_array[4];
-	}
+	list($scriptPath) = get_included_files();
+	$p = explode("/", substr($scriptPath, strlen(LBHOMEDIR)));
+	
+	// // Debugging
+	// error_log("Path parts");
+	// error_log("P1 = $p[1]");
+	// error_log("P2 = $p[2]");
+	// error_log("P3 = $p[3]");
+	// error_log("P4 = $p[4]");
+	// error_log("P5 = $p[5]");
+	// error_log("P6 = $p[6]");
+	
+	if 		($p[1] == 'webfrontend' && $p[3] == 'plugins' && isset($p[4]) )  { $pluginname = $p[4]; }
+	elseif 	($p[1] == 'templates' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'log' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'data' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'config' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'bin' && $p[2] == 'plugins' && isset($p[3]) ) { $pluginname = $p[3]; }
+	elseif	($p[1] == 'system' && $p[2] == 'daemons' && $p[3] == 'plugins' && isset($p[4]) ) { $pluginname = $p[4]; }
 
-	# $pluginname = explode("/", substr(getcwd(), strlen(LBHOMEDIR)))[4];
+	// error_log("Determined plugin name is $pluginname");
+	
 	if (isset($pluginname)) {
 		define ("LBPPLUGINDIR", $pluginname);
 		unset($pluginname);
@@ -57,6 +72,7 @@
 	define ("LBSTEMPLATEDIR", LBHOMEDIR . "/templates/system");
 	define ("LBSDATADIR", LBHOMEDIR . "/data/system");
 	define ("LBSLOGDIR", LBHOMEDIR . "/log/system");
+	define ("LBSTMPFSLOGDIR", LBHOMEDIR . "/log/system_tmpfs");
 	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system");
 	define ("LBSSBINDIR", LBHOMEDIR . "/sbin");
 	define ("LBSBINDIR", LBHOMEDIR . "/bin");
@@ -68,6 +84,7 @@
 	$lbstemplatedir = LBSTEMPLATEDIR;
 	$lbsdatadir = LBSDATADIR;
 	$lbslogdir = LBSLOGDIR;
+	$lbstmpfslogdir = LBSTMPFSLOGDIR;
 	$lbsconfigdir = LBSCONFIGDIR;
 	$lbssbindir = LBSSBINDIR;
 	$lbsbindir = LBSBINDIR;
@@ -83,21 +100,38 @@
 	$miniservercount=NULL;
 	$plugins=NULL;
 	$lblang=NULL;
+	$lbcountry=NULL;
 	$cfgwasread=NULL;
-	
-	$reboot_required_file = "$lbhomedir/log/system_tmpfs/reboot.required";
+	$plugindb_timestamp = 0;
+	$plugindb_lastchecked = 0;
+	$plugindb_timestamp_last = 0;
 
+	
+	$reboot_required_file = "$lbstmpfslogdir/reboot.required";
+	define ("PLUGINDATABASE", "$lbsdatadir/plugindatabase.json");
 
 // Functions in class LBSystem
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "1.0.0.10";
+	public static $LBSYSTEMVERSION = "2.2.1.2";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
 	///////////////////////////////////////////////////////////////////
-	// Detects the language from query, post or general.cfg
+	// Get the selected country from general.json
+	///////////////////////////////////////////////////////////////////
+	public static function lbcountry()
+	{
+		global $lbcountry;
+		if (! isset($cfgwasread)) {
+			LBSystem::read_generaljson();
+		}	
+		return $lbcountry;
+	}
+	
+	///////////////////////////////////////////////////////////////////
+	// Detects the language from query, post or general.json
 	///////////////////////////////////////////////////////////////////
 	public static function lblanguage() 
 	{
@@ -117,10 +151,10 @@ class LBSystem
 			// error_log("Language " . LBSystem::$lang . " detected from post data");
 			return LBSystem::$lang;
 		}
-		LBSystem::read_generalcfg();
+		LBSystem::read_generaljson();
 		if (isset($lblang)) {
 			LBSystem::$lang = $lblang;
-			// error_log("Language " . LBSystem::$lang . " used from general.cfg");
+			// error_log("Language " . LBSystem::$lang . " used from general.json");
 			return LBSystem::$lang;
 		}
 		// Finally we default to en
@@ -133,12 +167,18 @@ class LBSystem
 			$genericlangfile = $template;
 			$template = NULL;
 		}
-		if ($syslang == true) {
+		if ($syslang == True and isset($genericlangfile) and $genericlangfile != "language.ini") {
+			$genericlangfile = LBSTEMPLATEDIR . "/lang/$genericlangfile";
+			$widgetlang = True;
+		} elseif ($syslang == true) {
 			$genericlangfile = LBSTEMPLATEDIR . "/lang/language.ini";
+			$widgetlang = False;
 		} else {
 			$genericlangfile = LBPTEMPLATEDIR . "/lang/$genericlangfile";
+			$widgetlang = False;
 		}
 		
+		// error_log("readlanguage: genericlangfile $genericlangfile");
 		$lang = LBSystem::lblanguage();
 		$pos = strrpos($genericlangfile, ".");
 		if ($pos === false) {
@@ -146,31 +186,26 @@ class LBSystem
 				return null;
 		}
 		
-		$langfile = substr($genericlangfile, 0, $pos) . "_" . $lang . substr($genericlangfile, $pos);
-		$enlangfile = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
-		// error_log("readlanguage: $langfile enlangfile: $enlangfile");
+		$langfile_foreign = substr($genericlangfile, 0, $pos) . "_" . $lang . substr($genericlangfile, $pos);
+		$langfile_en = substr($genericlangfile, 0, $pos) . "_en" . substr($genericlangfile, $pos);
+		// error_log("readlanguage: $langfile_foreign enlangfile: $langfile_en");
 		
-		if ($syslang == false || ($syslang == True && !is_array(self::$SL))) { 
-			if (file_exists($langfile)) {
-				$currlang = LBSystem::read_language_file($langfile);
+		if ($syslang == False || $widgetlang == True || ($syslang == True && !is_array(self::$SL))) { 
+
+			if (file_exists($langfile_foreign)) {
+				$currlang = LBSystem::read_language_file($langfile_foreign);
+				LBSystem::parse_lang_file($currlang, $language);
 			}
-			if (file_exists($enlangfile)) {
-				$enlang = LBSystem::read_language_file($enlangfile);
+			else
+			{
+				$currlang = [];
+			}
+			if (file_exists($langfile_en)) {
+				$enlang = LBSystem::read_language_file($langfile_en);
+				LBSystem::parse_lang_file($enlang, $language);
 			}
 		
-			foreach ($enlang as $section => $sectionarray)  {
-				foreach ($sectionarray as $tag => $langstring)  {
-					$language["$section.$tag"] = $langstring;
-					// error_log("Tag: $section.$tag Langstring: $langstring");
-				}
-			}
-			foreach ($currlang as $section => $sectionarray)  {
-				foreach ($sectionarray as $tag => $langstring)  {
-					$language["$section.$tag"] = $langstring;
-					// error_log("Tag: $section.$tag Langstring: $langstring");
-				}
-			}
-			if ($syslang) {
+			if ($syslang && !$widgetlang) {
 				self::$SL = $language;
 			}
 		} elseif ($syslang == True && is_array(self::$SL)) {
@@ -186,9 +221,51 @@ class LBSystem
 
 	}
 	
+	private static function parse_lang_file($content, &$langhash)
+{
+	
+	// In Perl, $content alread is an array!
+	
+	$section = 'default';
+
+	foreach ($content as $line) {
+		# Trim
+		$line=trim($line);
+		$firstletter = substr($line, 0, 1);
+		// echo "Firstletter: $firstletter\n";
+		# Comments
+		if($firstletter == '' || $firstletter == '#' || $firstletter == '/' || $firstletter == ';') {
+			continue;}
+		# Sections
+		if ($firstletter == '[') {
+			$closebracket = strpos($line, ']', 1);
+			if($closebracket == FALSE) {
+				continue;
+			}
+			$section = substr($line, 1, $closebracket-1);
+			// echo "\n[$section]\n";
+			continue;
+		}
+		# Define variables
+		list($param, $value) = explode('=', $line, 2);
+		$param = rtrim($param);
+		if (!empty($langhash["$section.$param"])) {
+			continue;
+		}
+		$value = ltrim($value);
+		$firsthyphen = substr($value, 0, 1);
+		$lasthyphen = substr($value, -1, 1);
+		if ($firsthyphen == '"' && $lasthyphen == '"') {
+			$value = substr($value, 1, -1);
+		}
+		// echo "$param=$value\n";
+		$langhash["$section.$param"] = $value;
+	}
+}
+
 	public static function read_language_file($langfile)
 	{
-		$langarray = parse_ini_file($langfile, True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read language file $langfile");
+		$langarray = file($langfile, FILE_SKIP_EMPTY_LINES) or error_log("LoxBerry System ERROR: Could not read language file $langfile");
 		if ($langarray == false) {
 			error_log("Cannot read language $langfile");
 		}
@@ -199,12 +276,56 @@ class LBSystem
 	public static function get_miniservers() 
 	{
 		# If config file was read already, directly return the saved hash
-		global $miniservers;
-		if ($miniservers) {
-			# print ("READ miniservers FROM MEMORY\n");
+		global $clouddnsaddress, $msClouddnsFetched;
+		global $miniservers, $cfgwasread;
+		
+		if(!empty($msClouddnsFetched)) {
 			return $miniservers;
 		}
-		LBSystem::read_generalcfg();
+				
+		LBSystem::read_generaljson();
+		
+		foreach ($miniservers as $msnr => $value) {
+			# CloudDNS handling
+			if ($miniservers[$msnr]['UseCloudDNS'] && $miniservers[$msnr]['CloudURL']) {
+				LBSystem::set_clouddns($msnr, $clouddnsaddress);
+			}
+			if (! $miniservers[$msnr]['Port']) {
+				$miniservers[$msnr]['Port'] = 80;
+			}
+			if (! $miniservers[$msnr]['PortHttps']) {
+				$miniservers[$msnr]['PortHttps'] = 443;
+			}
+			
+			if( is_enabled( $miniservers[$msnr]['PreferHttps'] ) ) {
+				$transport = 'https';
+				$port = $miniservers[$msnr]['PortHttps'];
+			} else {
+				$transport = 'http';
+				$port = $miniservers[$msnr]['Port'];
+			}
+			// Check if ip format is IPv6
+			$IPv6Format = '0';
+			$ipaddress = $miniservers[$msnr]['IPAddress'];
+			if( strpos( $ipaddress, ':' ) !== FALSE ) {
+				$IPv6Format = '1';
+			}
+			$miniservers[$msnr]['IPv6Format'] = $IPv6Format;
+			
+			$ipaddress = $IPv6Format == '1' ? '['.$ipaddress.']' : $ipaddress;
+			$port = is_enabled( $miniservers[$msnr]['PreferHttps'] ) ? $miniservers[$msnr]['PortHttps'] : $miniservers[$msnr]['Port'];
+						
+			$miniservers[$msnr]['Transport'] = $transport;
+			$miniservers[$msnr]['FullURI'] = $transport.'://'.$miniservers[$msnr]['Credentials'].'@'.$ipaddress.':'.$port;
+			$miniservers[$msnr]['FullURI_RAW'] = $transport.'://'.$miniservers[$msnr]['Credentials_RAW'].'@'.$ipaddress.':'.$port;
+			
+			// Miniserver values consistency check
+			// If a Miniserver entry is not plausible, the full Miniserver entry is deleted
+			if( empty($miniservers[$msnr]['Name']) || empty($miniservers[$msnr]['IPAddress']) || empty($miniservers[$msnr]['Admin']) || empty($miniservers[$msnr]['Pass']) ) {
+				unset($miniservers[$msnr]);
+			}
+		}
+		$msClouddnsFetched = 1;
 		return $miniservers;
 	}
 
@@ -215,7 +336,7 @@ class LBSystem
 		$ip = trim(strtolower($ip));
 		
 		if (! $miniservers) {
-			LBSystem::read_generalcfg();
+			LBSystem::read_generaljson();
 		}
 		
 		foreach ($miniservers as $key => $ms) {
@@ -233,7 +354,7 @@ class LBSystem
 		$myname = trim(strtolower($myname));
 		
 		if (! $miniservers) {
-			LBSystem::read_generalcfg();
+			LBSystem::read_generaljson();
 		}
 		
 		foreach ($miniservers as $key => $ms) {
@@ -248,17 +369,33 @@ class LBSystem
 	public static function get_binaries()
 	{
 		global $binaries;
-		if ($binaries) {
-			return $binaries;
-		} 
-
-		if (! isset($miniservers)) {
-				LBSystem::read_generalcfg();
-				return $binaries;
-		}
-		return;
+		$binaries = array (
+		'FIND'		=> '/usr/bin/find',
+		'GREP'		=> '/bin/grep',
+		'TAR'		=> '/bin/tar',
+		'NTPDATE'	=> '/usr/sbin/ntpdate',
+		'UNZIP'		=> '/usr/bin/unzip',
+		'MAIL'		=> '/usr/bin/mailx',
+		'BASH'		=> '/bin/bash',
+		'APT'		=> '/usr/bin/apt-get',
+		'ZIP'		=> '/usr/bin/zip',
+		'GZIP'		=> '/bin/gzip',
+		'CHOWN'		=> '/bin/chown',
+		'SUDO'		=> '/usr/bin/sudo',
+		'DPKG'		=> '/usr/bin/dpkg',
+		'REBOOT'	=> '/sbin/reboot',
+		'WGET'		=> '/usr/bin/wget',
+		'CURL'		=> '/usr/bin/curl',
+		'CHMOD'		=> '/bin/chmod',
+		'SENDMAIL'	=> '/usr/sbin/sendmail',
+		'AWK'		=> '/usr/bin/awk',
+		'DOS2UNIX'	=> '/usr/bin/dos2unix',
+		'BZIP2'		=> '/bin/bzip2',
+		'DATE'		=> '/bin/date',
+		'POWEROFF'	=> '/sbin/poweroff'
+		);
+		return $binaries;
 	}
-
 	##################################################################################
 	# Get Plugin Version
 	# Returns plugin version from plugindatabase
@@ -283,6 +420,117 @@ class LBSystem
 		}
 		
 		return isset($plugin['PLUGINDB_VERSION']) ? $plugin['PLUGINDB_VERSION'] : null;
+	}
+
+	##################################################################################
+	# SemVer-style plugin version compare (parity with Perl LoxBerry::System::plugin_version_compare).
+	# PHP legacy fallback uses version_compare(); edge cases may differ from Perl version.pm lax mode.
+	##################################################################################
+	public static function plugin_version_compare($a_in = null, $b_in = null)
+	{
+		if ($a_in === null && $b_in === null) return 0;
+		if ($a_in === null || $b_in === null) return null;
+		$tag_a = LBSystem::_plugin_normalize_version_tag($a_in);
+		$tag_b = LBSystem::_plugin_normalize_version_tag($b_in);
+		$pa = LBSystem::_plugin_semver_parts($tag_a);
+		$pb = LBSystem::_plugin_semver_parts($tag_b);
+
+		if ($pa['ok'] && $pb['ok']) {
+			if ($pa['maj'] != $pb['maj']) return $pa['maj'] < $pb['maj'] ? -1 : 1;
+			if ($pa['min'] != $pb['min']) return $pa['min'] < $pb['min'] ? -1 : 1;
+			if ($pa['pat'] != $pb['pat']) return $pa['pat'] < $pb['pat'] ? -1 : 1;
+
+			$ea = ($pa['pre'] === '');
+			$eb = ($pb['pre'] === '');
+			if (!$ea && $eb) return -1;
+			if ($ea && !$eb) return 1;
+			if ($ea && $eb) return 0;
+
+			return LBSystem::_plugin_semver_prerelease_cmp($pa['pre'], $pb['pre']);
+		}
+
+		$oa = LBSystem::_plugin_normalize_version_tag($tag_a, true);
+		$ob = LBSystem::_plugin_normalize_version_tag($tag_b, true);
+		if ($oa === '' || $ob === '') return null;
+
+		$vv = @version_compare($oa, $ob);
+		if ($vv === null || $vv === false) return null;
+		return $vv < 0 ? -1 : ($vv > 0 ? 1 : 0);
+	}
+
+	public static function plugin_version_has_prerelease($v_in = null)
+	{
+		if ($v_in === null || trim((string)$v_in) === '') return false;
+		$tag = LBSystem::_plugin_normalize_version_tag($v_in);
+		$p = LBSystem::_plugin_semver_parts($tag);
+		return $p['ok'] && $p['pre'] !== '';
+	}
+
+	private static function _plugin_normalize_version_tag($vers, $reverse = false)
+	{
+		$vers = strtolower(trim((string)$vers));
+		if ($vers === '') return '';
+		if (substr($vers, 0, 1) !== 'v' && !$reverse)
+			$vers = 'v' . $vers;
+		if (substr($vers, 0, 1) === 'v' && $reverse)
+			$vers = substr($vers, 1);
+		return $vers;
+	}
+
+	private static function _plugin_semver_parts($tag)
+	{
+		$r = ['ok'=>false,'maj'=>0,'min'=>0,'pat'=>0,'pre'=>''];
+		if ($tag === null || $tag === '')
+			return $r;
+		$s = $tag;
+		if ($s !== '' && $s[0] === 'v')
+			$s = substr($s, 1);
+		$p = strpos($s, '+');
+		if ($p !== false)
+			$s = substr($s, 0, $p);
+		if (preg_match('/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/', $s, $m)) {
+			$r['ok'] = true;
+			$r['maj'] = (int)$m[1];
+			$r['min'] = (int)$m[2];
+			$r['pat'] = (int)$m[3];
+			$r['pre'] = isset($m[4]) ? $m[4] : '';
+			return $r;
+		}
+		return $r;
+	}
+
+	private static function _plugin_semver_prerelease_cmp($a, $b)
+	{
+		$pa = explode('.', $a);
+		$pb = explode('.', $b);
+		$i = 0;
+		while (true) {
+			$ida = isset($pa[$i]) ? $pa[$i] : null;
+			$idb = isset($pb[$i]) ? $pb[$i] : null;
+
+			if ($ida === null && $idb === null) return 0;
+			if ($ida === null) return -1;
+			if ($idb === null) return 1;
+
+			$na = ctype_digit((string)$ida);
+			$nb = ctype_digit((string)$idb);
+			if ($na && $nb) {
+				$ixa = intval($ida, 10);
+				$ixb = intval($idb, 10);
+				if ($ixa !== $ixb)
+					return $ixa < $ixb ? -1 : 1;
+			}
+			elseif ($na && !$nb)
+				return -1;
+			elseif (!$na && $nb)
+				return 1;
+			else {
+				$wc = strcmp($ida, $idb);
+				if ($wc !== 0)
+					return $wc < 0 ? -1 : 1;
+			}
+			$i++;
+		}
 	}
 
 	##################################################################################
@@ -332,47 +580,74 @@ class LBSystem
 	##################################################################################
 	# Get Plugins
 	# Returns an array of all plugins without comments
+	# $withcomments is legacy and unused
 	##################################################################################
 	public static function get_plugins($withcomments = 0, $force = 0)
 	{
-		global $plugins;
+		global $plugins, $plugindb_timestamp_last;
+		
+		if($force != 0) {
+			$plugins = null;
+		}
+		
+		if($plugindb_timestamp_last != LBSystem::plugindb_changed_time()) {
+			// Changed
+			$plugindb_timestamp_new = LBSystem::plugindb_changed_time();
+			$plugins = null;
+			// error_log("get_plugins: Plugindb timestamp has changed (old: $plugindb_timestamp_last new: $plugindb_timestamp_new)");
+			$plugindb_timestamp_last = $plugindb_timestamp_new;
+		}
 		
 		if (is_array($plugins)) {
 			// error_log("Returning already fetched plugin array");
 			return $plugins;
 		} 
+		// error_log("Reading plugindb");
+			
 		$plugins = Array();
 		# Read Plugin database copied from plugininstall.pl
-		$filestr = file(LBHOMEDIR . "/data/system/plugindatabase.dat", FILE_IGNORE_NEW_LINES);
-		#$filestr = file_get_contents(LBHOMEDIR . "/data/system/plugindatabase.dat");
-		if (! $filestr) {
-				error_log("LoxBerry System ERROR: Could not read Plugin Database " . LBSDATADIR . "plugindatabase.dat");
+		#$filestr = file(PLUGINDATABASE, FILE_IGNORE_NEW_LINES);
+		$plugindb_content = file_get_contents(PLUGINDATABASE);
+		$plugindb = json_decode($plugindb_content);
+		if ($plugindb === null && json_last_error() === JSON_ERROR_UTF8) {
+				// A single plugin's metadata (e.g. a Latin1-encoded author name from
+				// plugin.cfg) can contain non-UTF8 bytes. json_decode() rejects the
+				// WHOLE document on any invalid byte, which would hide metadata, log
+				// assignment and loglevels for ALL plugins. Substitute the malformed
+				// bytes so the rest of the database still loads. See issue #1512.
+				error_log("LoxBerry System WARNING: Plugin Database " . PLUGINDATABASE . " contains invalid UTF-8 - substituting malformed bytes (issue #1512)");
+				$plugindb = json_decode($plugindb_content, false, 512, JSON_INVALID_UTF8_SUBSTITUTE);
+		}
+		if (! $plugindb) {
+				error_log("LoxBerry System ERROR: Could not read Plugin Database " . PLUGINDATABASE);
 				return;
 		}
 		
 		$plugincount=0;
-		foreach ($filestr as $line) {
-			$fields = explode('|', trim($line));
-			if (substr($fields[0], 0, 1)=="#") {
-				continue;
-			}
+		foreach ($plugindb->plugins as $plugindata) {
 			$plugincount++;
 			$plugin = array (
 				'PLUGINDB_NO' => $plugincount,
-				'PLUGINDB_MD5_CHECKSUM' => $fields[0],
-				'PLUGINDB_AUTHOR_NAME' => $fields[1],
-				'PLUGINDB_AUTHOR_EMAIL' => $fields[2],
-				'PLUGINDB_VERSION' => $fields[3],
-				'PLUGINDB_NAME' => $fields[4],
-				'PLUGINDB_FOLDER' => $fields[5],
-				'PLUGINDB_TITLE' => $fields[6],
-				'PLUGINDB_INTERFACE' => isset($fields[7]) ? $fields[7] : null,
-				'PLUGINDB_AUTOUPDATE' => isset($fields[8]) ? $fields[8] : null,
-				'PLUGINDB_RELEASECFG' => isset($fields[9]) ? $fields[9] : null,
-				'PLUGINDB_PRERELEASECFG' => isset($fields[10]) ? $fields[10] : null,
-				'PLUGINDB_LOGLEVEL' => isset($fields[11]) ? $fields[11] : null,
-				'PLUGINDB_LOGLEVELS_ENABLED' => isset($fields[11]) && $fields[11] >= 0 ? 1 : 0,
-				'PLUGINDB_ICONURI' => "/system/images/icons/$fields[5]/icon_64.png"
+				'PLUGINDB_MD5_CHECKSUM' => $plugindata->md5,
+				'PLUGINDB_AUTHOR_NAME' => $plugindata->author_name,
+				'PLUGINDB_AUTHOR_EMAIL' => $plugindata->author_email,
+				'PLUGINDB_PLUGIN_WEBSITE' => isset($plugindata->plugin_website) ? $plugindata->plugin_website : "",
+				'PLUGINDB_VERSION' => $plugindata->version,
+				'PLUGINDB_NAME' => $plugindata->name,
+				'PLUGINDB_FOLDER' => $plugindata->folder,
+				'PLUGINDB_TITLE' => $plugindata->title,
+				'PLUGINDB_INTERFACE' => isset($plugindata->interface) ? $plugindata->interface : null,
+				'PLUGINDB_AUTOUPDATE' => isset($plugindata->autoupdate) ? $plugindata->autoupdate : null,
+				'PLUGINDB_RELEASECFG' => isset($plugindata->releasecfg) ? $plugindata->releasecfg : null,
+				'PLUGINDB_PRERELEASECFG' => isset($plugindata->prereleasecfg) ? $plugindata->prereleasecfg : null,
+				'PLUGINDB_LOGLEVEL' => isset($plugindata->loglevel) ? $plugindata->loglevel : null,
+				'PLUGINDB_LOGLEVELS_ENABLED' => isset($plugindata->loglevels_enabled) && $plugindata->loglevels_enabled >= 0 ? 1 : 0,
+				'PLUGINDB_ICONURI' => file_exists(LBSHTMLDIR . "/images/icons/{$plugindata->folder}/icon.svg")
+					? "/system/images/icons/{$plugindata->folder}/icon.svg"
+					: "/system/images/icons/{$plugindata->folder}/icon_64.png",
+				'PLUGINDB_ICONURI_LARGE' => file_exists(LBSHTMLDIR . "/images/icons/{$plugindata->folder}/icon.svg")
+					? "/system/images/icons/{$plugindata->folder}/icon.svg"
+					: "/system/images/icons/{$plugindata->folder}/icon_128.png"
 				);
 				# On changes of the plugindatabase format, please change here
 				# and in libs/perllib/LoxBerry/System.pm, sub get_plugins 
@@ -381,6 +656,29 @@ class LBSystem
 		return $plugins;
 	}
 
+	##################################################################################
+	# INTERNAL function plugindb_changed
+	# Returns the timestamp of the plugindb. Only really checks every minute
+	##################################################################################
+
+public static function plugindb_changed_time()
+{
+	global $plugindb_timestamp, $plugindb_lastchecked;
+	
+	$plugindb_file = PLUGINDATABASE;
+	
+	# If it was never checked, it cannot have changed
+	if ($plugindb_timestamp == 0 || ($plugindb_lastchecked+60) < time()) {
+		clearstatcache(TRUE, PLUGINDATABASE);
+		$plugindb_timestamp = filemtime(PLUGINDATABASE);
+		$plugindb_lastchecked = time();
+		// error_log("Updating plugindb timestamp variable to $plugindb_timestamp ($plugindb_file)");
+	}
+	return ($plugindb_timestamp);	
+
+}
+
+	
 	##################################################################################
 	# Get System Version
 	# Returns LoxBerry version
@@ -392,14 +690,14 @@ class LBSystem
 		if ($lbversion) {
 			return $lbversion;
 		} 
-		LBSystem::read_generalcfg();
+		LBSystem::read_generaljson();
 		return $lbversion;
 	}
 
 	#########################################################################
 	# INTERNAL function read_generalcfg
 	#########################################################################
-	public static function read_generalcfg()
+	public static function read_generaljson()
 	{
 		global $miniservers;
 		global $miniservercount;
@@ -408,59 +706,60 @@ class LBSystem
 		global $lbversion;
 		global $lbfriendlyname;
 		global $lblang;
+		global $lbcountry;
 		global $cfgwasread;
 		global $webserverport;
+		global $clouddnsaddress;
 		
-	#	print ("READ miniservers FROM DISK\n");
-
-		$cfg = parse_ini_file(LBHOMEDIR . "/config/system/general.cfg", True, INI_SCANNER_RAW) or error_log("LoxBerry System ERROR: Could not read general.cfg in " . LBHOMEDIR . "/config/system/");
+		if(isset($cfgwasread)) { return; }
+	
+		# print ("READ miniservers FROM DISK\n");
+		
+		$cfg = json_decode( file_get_contents( LBHOMEDIR . "/config/system/general.json"), FALSE);
+		if ( $cfg == NULL ) {
+			error_log( "loxberry_system.php: Cannot read general.json: " . json_last_error_msg () . " (" . json_last_error() . ")");
+			throw new Exception("Cannot read general.json: " . json_last_error_msg () . " (" . json_last_error() . ")");
+			exit(1);
+		}
 		$cfgwasread = 1;
-		// error_log("general.cfg Base: " . $cfg['BASE']['VERSION']);
 		
 		# Get CloudDNS and Timezones, System language
-		$clouddnsaddress = $cfg['BASE']['CLOUDDNS'] or error_log("LoxBerry System Warning: BASE.CLOUDDNS not defined.");
-		$lbtimezone	= $cfg['TIMESERVER']['ZONE'] or error_log("LoxBerry System Warning: TIMESERVER.ZONE not defined.");
-		$lbversion = $cfg['BASE']['VERSION'] or error_log("LoxBerry System Warning: BASE.VERSION not defined.");
-		$lbfriendlyname = isset($cfg['NETWORK']['FRIENDLYNAME']) ? $cfg['NETWORK']['FRIENDLYNAME'] : NULL;
-		$webserverport = isset($cfg['WEBSERVER']['PORT']) ? $cfg['WEBSERVER']['PORT'] : NULL;
-		$lblang = isset($cfg['BASE']['LANG']) ? $cfg['BASE']['LANG'] : NULL;
-		// error_log("read_generalcfg: Language is $lblang");
-		$binaries = $cfg['BINARIES'];
+		$clouddnsaddress = $cfg->Base->Clouddnsuri or error_log("LoxBerry System Warning: Base.Clouddnsuri not defined.");
+		$lbtimezone	= $cfg->Timeserver->Timezone or error_log("LoxBerry System Warning: Timeserver.Timezone not defined.");
+		$lbversion = $cfg->Base->Version or error_log("LoxBerry System Warning: Base.Version not defined.");
+		$lbfriendlyname = isset($cfg->Network->Friendlyname) ? $cfg->Network->Friendlyname : NULL;
+		$webserverport = isset($cfg->Webserver->Port) ? $cfg->Webserver->Port : NULL;
+		$lblang = isset($cfg->Base->Lang) ? $cfg->Base->Lang : NULL;
+		$lbcountry = isset($cfg->Base->Country) && $cfg->Base->Country != 'undef' ? $cfg->Base->Country : NULL;
 		
 		# If no miniservers are defined, return NULL
-		$miniservercount = $cfg['BASE']['MINISERVERS'];
+		$miniservercount = count( get_object_vars($cfg->Miniserver) );
 		if (!$miniservercount || $miniservercount < 1) {
 			return;
 		}
 		
-		
-		for ($msnr = 1; $msnr <= $miniservercount; $msnr++) {
-			 
-			$miniservers[$msnr]['Name'] = $cfg["MINISERVER$msnr"]['NAME'];
-			$miniservers[$msnr]['IPAddress'] = $cfg["MINISERVER$msnr"]['IPADDRESS'];
-			$miniservers[$msnr]['Admin'] = $cfg["MINISERVER$msnr"]['ADMIN'];
-			$miniservers[$msnr]['Pass'] = $cfg["MINISERVER$msnr"]['PASS'];
-			$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
-			$miniservers[$msnr]['Note'] = $cfg["MINISERVER$msnr"]['NOTE'];
-			$miniservers[$msnr]['Port'] = $cfg["MINISERVER$msnr"]['PORT'];
-			$miniservers[$msnr]['UseCloudDNS'] = $cfg["MINISERVER$msnr"]['USECLOUDDNS'];
-			$miniservers[$msnr]['CloudURLFTPPort'] = $cfg["MINISERVER$msnr"]['CLOUDURLFTPPORT'];
-			$miniservers[$msnr]['CloudURL'] = $cfg["MINISERVER$msnr"]['CLOUDURL'];
-			
-			$miniservers[$msnr]['Admin_RAW'] = urlencode($miniservers[$msnr]['Admin']);
-			$miniservers[$msnr]['Pass_RAW'] = urlencode($miniservers[$msnr]['Pass']);
-			$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
-
-			######## TO IMPLEMENT
-			
-			# CloudDNS handling
-			if ($miniservers[$msnr]['UseCloudDNS'] && $miniservers[$msnr]['CloudURL']) {
-				LBSystem::set_clouddns($msnr, $clouddnsaddress);
-			}
-			
-			if (! $miniservers[$msnr]['Port']) {
-				$miniservers[$msnr]['Port'] = 80;
-			}
+		foreach ( $cfg->Miniserver as $msnr => $ms ) {
+			// error_log("$msnr is $ms->Name");
+			@$miniservers[$msnr]['Name'] = $ms->Name;
+			@$miniservers[$msnr]['IPAddress'] = $ms->Ipaddress;
+			@$miniservers[$msnr]['Admin'] = $ms->Admin;
+			@$miniservers[$msnr]['Pass'] = $ms->Pass;
+			@$miniservers[$msnr]['Credentials'] = $miniservers[$msnr]['Admin'] . ':' . $miniservers[$msnr]['Pass'];
+			@$miniservers[$msnr]['Note'] = $ms->Note;
+			@$miniservers[$msnr]['Port'] = $ms->Port;
+			@$miniservers[$msnr]['PortHttps'] = $ms->Porthttps;
+			@$miniservers[$msnr]['PreferHttps'] = $ms->Preferhttps;
+			@$miniservers[$msnr]['UseCloudDNS'] = $ms->Useclouddns;
+			@$miniservers[$msnr]['CloudURLFTPPort'] = $ms->Cloudurlftpport;
+			@$miniservers[$msnr]['CloudURL'] = $ms->Cloudurl;
+			@$miniservers[$msnr]['Admin_RAW'] = urldecode($miniservers[$msnr]['Admin']);
+			@$miniservers[$msnr]['Pass_RAW'] = urldecode($miniservers[$msnr]['Pass']);
+			@$miniservers[$msnr]['Credentials_RAW'] = $miniservers[$msnr]['Admin_RAW'] . ':' . $miniservers[$msnr]['Pass_RAW'];
+			@$miniservers[$msnr]['SecureGateway'] = isset($ms->Securegateway) && is_enabled($ms->Securegateway) ? 1 : 0;
+			@$miniservers[$msnr]['EncryptResponse'] = isset($ms->Encryptresponse) && is_enabled($ms->Encryptresponse) ? 1 : 0;
+			@$miniservers[$msnr]['Location']  = isset($ms->Location)  ? $ms->Location  : '';
+			@$miniservers[$msnr]['Latitude']  = isset($ms->Latitude)  ? $ms->Latitude  : '';
+			@$miniservers[$msnr]['Longitude'] = isset($ms->Longitude) ? $ms->Longitude : '';
 
 		}
 	}
@@ -471,42 +770,131 @@ class LBSystem
 	####################################################
 	public static function set_clouddns($msnr, $clouddnsaddress)
 	{
-		global $binaries, $miniservers, $miniservercount;
+		global $miniservers, $miniservercount;
 		
 		if (!$miniservercount || $miniservercount < 1) {
 			return;
 		}
 
-		$checkurl = "http://$clouddnsaddress/" . $miniservers[$msnr]['CloudURL'];
+		//error_log("set_clouddns(PHP)-->");
 
-		// Set fetch type to HEAD
-		stream_context_set_default(array('http' => array('method' => 'HEAD')));
+		// CloudDNS caching
+		$memfile = LBHOMEDIR."/log/system_tmpfs/clouddns_cache.json";
 		
-		$resp = get_headers($checkurl, 1);
+		// Read cache file
+		// error_log("set_clouddns: Parse json");
 		
-		// Revert fetch type to GET
-		stream_context_set_default(array('http' => array('method' => 'GET')));
-	
-		$header = $resp['Location'];
+		$cachekey = $miniservers[$msnr]['CloudURL'];
 		
-		
-		# Removes http://
-		$header = str_replace( 'http://', '', $header);
-		# Removes /
-		$header = str_replace( '/', '', $header);
-	
-		$dns_info_pieces = explode(':', $header);
+		do {		
+			
+			if(!file_exists($memfile)) break;
+						
+			$jsonstr = file_get_contents($memfile); 
+			if(empty($jsonstr)) break;
+			
+			$jsonobj = json_decode($jsonstr);
+			if(empty($jsonobj)) {
+				error_log("set_clouddns(PHP) Failed to DECODE json:" . json_last_error_msg ());
+				break;
+			}			
+			$msobj = $jsonobj->$cachekey;
+			
+			if(
+				isset($msobj->refresh_timestamp) &&
+				$msobj->refresh_timestamp > time() &&
+				isset($msobj->IPAddress)
+			) {
+				$miniservers[$msnr]['IPAddress'] = $msobj->IPAddress;
+				if(!empty($msobj->Port)) {
+					$miniservers[$msnr]['Port'] = $msobj->Port;
+				} else {
+					$miniservers[$msnr]['Port'] = 80;
+				}
+				if(!empty($msobj->PortHttps)) {
+					$miniservers[$msnr]['PortHttps'] = $msobj->PortHttps;
+				} else {
+					$miniservers[$msnr]['PortHttps'] = 443;
+				}
+				
+				//error_log("Reading data from cachefile $memfile: IP {$miniservers[$msnr]['IPAddress']} Port {$miniservers[$msnr]['Port']}");
+				return;
+			}
+		} while(0);
 
-		if ($dns_info_pieces[1]) {
-			$miniservers[$msnr]['Port'] = $dns_info_pieces[1];
-		 } else {
-		 $miniservers[$msnr]['Port'] = 80;
+		$checkurl = "http://".$clouddnsaddress."/?getip&snr=".$miniservers[$msnr]['CloudURL']."&json=true";
+		$response = @file_get_contents($checkurl);
+		$http_status_line = $http_response_header[0];
+		preg_match('{HTTP\/\S*\s(\d{3})}', $http_status_line, $match);
+		$http_status = $match[1];
+		if ($http_status !== "200") {
+			$miniservers[$msnr]['IPAddress'] = "0.0.0.0";
+			$miniservers[$msnr]['Port'] = "0";
+			$miniservers[$msnr]['PortHttps'] = "0";
+			error_log("CloudDNS: Could not fetch ip address for Miniserver $msnr: $http_status_line");
+			return;
 		}
-
-		if ($dns_info_pieces[0]) {
-			$miniservers[$msnr]['IPAddress'] = $dns_info_pieces[0];
-		} else {
-		  $miniservers[$msnr]['IPAddress'] = "127.0.0.1";
+		
+		$respjson = json_decode($response);
+		
+		// DEBUGGING 
+		// $respjson = json_decode('{"cmd":"getip","Code":200,"IP":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpen":true,"LastUpdated":"2020-02-04 11:43:50","DNS-Status":"registered","IPHTTPS":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpenHTTPS":true}');
+		
+		if(!empty($respjson) ) {
+		
+			// http port
+			if( property_exists($respjson, 'IP') ) {
+				$resp_ip = $respjson->IP;
+				$sq1 = strpos( $resp_ip, '[' );
+				if( $sq1 !== FALSE ) {
+					$sq2 = strpos( $resp_ip, ']' );
+					if ( $sq2 !== FALSE ) {
+						$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
+						$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
+					}
+				} else {
+					list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['Port'] ) =  explode(":",$resp_ip, 2);
+				}
+			}
+			// https port
+			if( property_exists($respjson, 'IPHTTPS') && is_enabled($miniservers[$msnr]['PreferHttps']) ) {
+				$resp_ip = $respjson->IPHTTPS;
+				$sq1 = strpos( $resp_ip, '[' );
+				if( $sq1 !== FALSE ) {
+					$sq2 = strpos( $resp_ip, ']' );
+					if ( $sq2 !== FALSE ) {
+						$miniservers[$msnr]['IPAddress'] = substr( $resp_ip, $sq1+1, $sq2-1 );
+						$miniservers[$msnr]['Port'] = substr( $resp_ip, $sq2+2 );
+					}
+				} else {
+					list( $miniservers[$msnr]['IPAddress'], $miniservers[$msnr]['PortHttps'] ) =  explode(":",$resp_ip, 2);
+				}
+			}
+		}		
+		// Save cache information to json
+		if (!empty($miniservers[$msnr]['IPAddress'])) {
+			if(empty($jsonobj)) {
+				$jsonobj = new stdClass();
+			}
+			if(empty($jsonobj->$cachekey)) {
+				$jsonobj->$cachekey = new stdClass();
+			}
+			$msobj = $jsonobj->$cachekey;
+			
+			$msobj->IPAddress = $miniservers[$msnr]['IPAddress'];
+			$msobj->Port = $miniservers[$msnr]['Port'];
+			$msobj->PortHttps = $miniservers[$msnr]['PortHttps'];
+			$msobj->refresh_timestamp = time() + 3600 + rand(1,3600);
+			
+			//error_log(print_r($jsonobj, true));
+			$jsonstr = json_encode($jsonobj);
+			if ($jsonstr == false) {
+				error_log("set_clouddns(PHP) Failed to ENCODE json:" . json_last_error_msg ());
+				return;
+			}	
+			file_put_contents($memfile, $jsonstr);
+			chown($memfile , 'loxberry');
+			chgrp($memfile , 'loxberry');
 		}
 	}
 
@@ -520,10 +908,11 @@ class LBSystem
 	{
 		global $miniservers;
 		global $miniservercount;
+		global $msClouddnsFetched;
 		
 		# If we have no MS list, read the config
-		if (!$miniservers) {
-			LBSystem::read_generalcfg();
+		if (!$msClouddnsFetched) {
+			LBSystem::get_miniservers();
 		}
 		
 		if ($miniservercount < 1) {
@@ -538,16 +927,13 @@ class LBSystem
 		# If $miniservers does not have FTP set, read FTP from Miniserver and save it in FTPPort
 		if (! isset($miniservers[$msnr]['FTPPort'])) {
 			# Get FTP Port from Miniserver
-			$url = "http://{$miniservers[$msnr]['Credentials']}@{$miniservers[$msnr]['IPAddress']}:{$miniservers[$msnr]['Port']}/dev/cfg/ftp";
-			$response = file_get_contents($url);
-			
-			if (! $response) {
-				error_log("Cannot query FTP port because Loxone Miniserver is not reachable.");
+			require_once "loxberry_io.php";
+			list( $value, $status) = mshttp_call($msnr, '/dev/cfg/ftp' );
+			if( $status < 200 or $status >=300 ) {
+				error_log("get_ftpport: Cannot query FTP port from Miniserver. Possibly, your MS account has no admin permissions?");
 				return;
-			} 
-			$xml = new \SimpleXMLElement($response);
-			$port = $xml[0]['value'];
-			$miniservers[$msnr]['FTPPort'] = $port;
+			}
+			$miniservers[$msnr]['FTPPort'] = $value;
 		}
 		return $miniservers[$msnr]['FTPPort'];
 	}
@@ -564,22 +950,14 @@ class LBSystem
 		return $localip;
 	}
 
-	#########################################################
-	# is_systemcall - Determine if called from system widget
-	#########################################################
-
-	public static function is_systemcall()
+	
+	####################################################
+	# execute - execute shell command and return response
+	####################################################
+	public static function execute($cmd)
 	{
-		$mypath = getcwd();
-		// error_log("is_systemcall: mypath $mypath");
-		# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
-		# print STDERR "lbshtmlauthdir: " . $lbshtmlauthdir . "\n";
-		# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) . "\n";
-		
-		if (substr($mypath, 0, strlen(LBSHTMLAUTHDIR)) === LBSHTMLAUTHDIR) { return 1; }
-		if (substr($mypath, 0, strlen(LBHOMEDIR . "/sbin")) === LBHOMEDIR . "/sbin") { return 1; }
-		if (substr($mypath, 0, strlen(LBHOMEDIR . "/bin")) === LBHOMEDIR . "/bin") { return 1; }
-		return null;
+		exec($cmd, $output, $result_code);
+		return $output;	
 	}
 }
 
@@ -591,6 +969,9 @@ class LBSystem
 ####################################################
 function is_enabled($text)
 { 
+	if(empty($text)) { 
+		return NULL; 
+	}
 	$text = trim($text);
 	$text = strtolower($text);
 	
@@ -598,7 +979,7 @@ function is_enabled($text)
 	if (in_array($text, $words)) {
 		return 1;
 	}
-	return undef;
+	return NULL;
 }
 
 
@@ -607,7 +988,7 @@ function is_enabled($text)
 ####################################################
 function is_disabled($text)
 { 
-	if (! isset($text)) {
+	if (empty($text)) {
 		return 1;
 	}
 	$text = trim($text);
@@ -617,7 +998,7 @@ function is_disabled($text)
 	if (in_array($text, $words)) {
 		return 1;
 	}
-	return undef;
+	return NULL;
 }
 
 ####################################################
@@ -629,7 +1010,7 @@ function lbfriendlyname()
 	global $lbfriendlyname;
 	
 	if (! $cfgwasread) {
-		LBSystem::read_generalcfg(); 
+		LBSystem::read_generaljson(); 
 	}
 	
 	# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
@@ -654,7 +1035,7 @@ function lbwebserverport()
 	global $webserverport;
 	
 	if (! $cfgwasread) {
-		LBSystem::read_generalcfg(); 
+		LBSystem::read_generaljson(); 
 	}
 	if (! $webserverport) {
 		$webserverport = 80;
@@ -672,8 +1053,21 @@ function currtime($format = 'hr')
 	if (! $format || $format == 'hr') {
 	$timestr = date('d.m.Y H:i:s', time());
 	}
+	elseif ($format == 'hrtime') {
+	$timestr = date('H:i:s', time());
+	}
+	elseif ($format == 'hrtimehires') {
+		list($usec, $sec) = explode(' ', microtime());
+		$usec = substr($usec, 2, 3);
+		$timestr = date('H:i:s', $sec) . '.' . $usec;
+	}
 	elseif ($format == 'file') {
 		$timestr = date('Ymd_His', time());
+	}
+	elseif ($format == 'filehires') {
+		list($usec, $sec) = explode(' ', microtime());
+		$usec = substr($usec, 2, 3);
+		$timestr = date('Ymd_His') . '_' . $usec;
 	}
 	elseif ($format == 'iso') {
 		$timestr = date('"Y-m-d\TH:i:sO"', time());
@@ -692,7 +1086,45 @@ function reboot_required($message = 'A reboot was requested')
 		error_log("Unable to open reboot_required file $reboot_required_file.");
 		return(0);
 	}
-	fwrite($fh, $message);
+	fwrite($fh, $message . "\n");
 	fclose($fh);
 }
 
+######################################################
+# Converts an Epoche (Unix Timestamp, seconds from 1.1.1970 00:00:00 UTC) to Loxone Epoche (seconds from 1.1.2009 00:00:00)
+#####################################################
+function epoch2lox($epoche=null)
+{	
+	if(empty($epoche)) {
+		$epoche = time();
+	}
+	$offset = 1230764400; # 1.1.2009 00:00:00
+	$tz_delta = tz_offset();
+	$loxepoche = $epoche - $offset + $tz_delta - 3600;
+	return ($loxepoche);
+}
+
+function lox2epoch($loxepoche=null)
+{
+	if (empty($loxepoche)) {
+		# For compatibility reasons to epoch2lox - but makes no sense here...
+		$epoche = time();
+	} else {
+		$offset = 1230764400; # 1.1.2009 00:00:00
+		$tz_delta = tz_offset();
+		$epoche = $loxepoche + $offset - $tz_delta + 3600;
+	}
+	return $epoche;
+}
+
+# INTERNAL FUNCTION
+# Returns the delta of local time to UTC
+function tz_offset() {
+    $origin_tz = date_default_timezone_get();
+    $origin_dtz = new DateTimeZone($origin_tz);
+    $remote_dtz = new DateTimeZone('UTC');
+    $origin_dt = new DateTime("now", $origin_dtz);
+    $remote_dt = new DateTime("now", $remote_dtz);
+    $offset = $origin_dtz->getOffset($origin_dt) - $remote_dtz->getOffset($remote_dt);
+    return $offset;
+}

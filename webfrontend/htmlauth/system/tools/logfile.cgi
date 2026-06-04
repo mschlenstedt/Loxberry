@@ -19,26 +19,22 @@
 ##########################################################################
 # Modules
 ##########################################################################
-use LoxBerry::System;
-
-# use LoxBerry::Web;
-use CGI;
-use Getopt::Long;
 use warnings;
 use strict;
+use CGI;
+use LoxBerry::System;
+use File::Basename;
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "3.0.0.0";
 my $iscgi;
 my $maintemplate;
 my %SL;
 my $template_title;
-
-my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
@@ -48,22 +44,12 @@ if ($R::lang) {
 }
 my $lang = LoxBerry::System::lblanguage();
 
-# $installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-# $lang            = $cfg->param("BASE.LANG");
-
-# Read translations
-# $languagefile = "$installfolder/templates/system/$lang/language.dat";
-# $phrase = new Config::Simple($languagefile);
-
 #########################################################################
 # Parameter
 #########################################################################
 # Are we called from a browser/web enviroment?
 if ($ENV{'HTTP_HOST'}) {
 
- # use CGI::Carp qw(fatalsToBrowser);
-  # use CGI qw/:standard/;
-	  
 	$iscgi = 1;
 	
 	
@@ -74,7 +60,6 @@ if ($ENV{'HTTP_HOST'}) {
 						global_vars => 1,
 						loop_context_vars => 1,
 						die_on_bad_params=> 0,
-						associate => $cfg,
 					);
 		%SL = LoxBerry::System::readlanguage($maintemplate);
 		
@@ -89,12 +74,15 @@ if ($ENV{'HTTP_HOST'}) {
  
 # Or from a terminal?
 } else {
-  
-  GetOptions ('header=s'  => \$R::header,
+  require Getopt::Long;
+
+  Getopt::Long::GetOptions ('header=s'  => \$R::header,
               'logfile=s' => \$R::logfile,
               'format=s'  => \$R::format,
               'offset=i'  => \$R::offset,
               'length'    => \$R::length,
+			  'package'	  => \$R::package,
+			  'name'	  => \$R::name,
   );
 
 }
@@ -106,6 +94,17 @@ if ($ENV{'HTTP_HOST'}) {
 # Which Output Format
 if (!$R::format) {
   $R::format = "plain";
+}
+
+# If package and/or name was used, get the latest logfile name.
+if (! $R::logfile and $R::package) {
+	require LoxBerry::Log;
+	my @logs = LoxBerry::Log::get_logs( $R::package, $R::name); 
+	if ($logs[0]->{FILENAME}) {
+		$R::logfile = $logs[0]->{FILENAME};
+	} else {
+		$R::logfile = "/not/existing";
+	}
 }
 
 # Check if logfile exists
@@ -128,16 +127,35 @@ if (!$R::logfile) {
 	}
 }
 
+
+$R::logfile_name = File::Basename::basename($R::logfile);
+$maintemplate->param('LOGFILE_NAME', $R::logfile_name) if ($maintemplate);
+
+
+if (begins_with($R::logfile, $lbhomedir . "/log")) {
+	$R::logfile = substr($R::logfile, length($lbhomedir . "/log"));
+}
+if (begins_with($R::logfile, $lbhomedir . "/data")) {
+	$R::logfile = substr($R::logfile, length($lbhomedir . "/data"));
+}
+
 $R::logfile =~ s/^\///;
+
 
 # Check if logfile exists
 if (-e "/tmp/$R::logfile") {
   $R::logfilepath = "/tmp";
-} elsif (-e "$lbhomedir/log/$R::logfile") {
+} 
+elsif (-e "$lbhomedir/log/$R::logfile") {
   $R::logfilepath = "$lbhomedir/log";
-} elsif (-e "$lbhomedir/webfrontend/html/tmp/$R::logfile") {
+} 
+elsif (-e "$lbhomedir/webfrontend/html/tmp/$R::logfile") {
   $R::logfilepath = "$lbhomedir/webfrontend/html/tmp";
-} else {
+} 
+elsif (-e "$lbhomedir/data/$R::logfile") {
+  $R::logfilepath = "$lbhomedir/data";
+} 
+else {
 	# File does not exist
 	if ($iscgi && $maintemplate) {
 		$maintemplate->param('NOLOGFILE', 1);
@@ -146,8 +164,7 @@ if (-e "/tmp/$R::logfile") {
 		LoxBerry::Web::foot();
 	   
 	} elsif ($iscgi) {
-		print $cgi->header();
-		#print "Content-Type: text/plain;charset=utf-8\n";
+		print $cgi->header(-type => 'text/plain;charset=utf-8');
 		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
 	} else {
 		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
@@ -174,29 +191,30 @@ if ($R::length) {
 my $header;
 my $currfilesize = -s "$R::logfilepath/$R::logfile";
 
+if (!$R::header || ($R::header ne "txt" && $R::header ne "file" && $R::header ne "html") ) {
+	$R::header = "html";
+}
 if ($R::header && $R::header eq "txt") {
-  $header = "Content-Type: text/plain;charset=utf-8\n\n";
-  print $header;
-} elsif ($R::header && $R::header eq "file" ) 
-{
-	use File::Basename;
-	$header = "Content-Disposition: attachment; filename='" . basename($R::logfile) . "'\n\n";
+	$header = "Content-Type: text/plain;charset=utf-8\n\n";
+	print $header;
+} elsif ($R::header && $R::header eq "file" ) {
+	$header = "Content-Disposition: attachment; filename=" . basename($R::logfile) . "\n\n";
   	print $header;
 } elsif ($R::header && $R::header eq "html" || ($iscgi && !$R::header) ) {
 	if ($R::clientsize && $R::clientsize ne "0") {
 		if($R::clientsize eq $currfilesize) {
 			$header = $cgi->header(-type => 'text/html;charset=utf-8',
-									-status => "304 Not Modified",
-									-filesize => $currfilesize,
-				);
+						-status => "304 Not Modified",
+						-filesize => $currfilesize,
+			);
 			print $header;
 			exit(0);
 		}
 	}
-  # print $cgi->header('text/html','304 Not Modified');
+	# print $cgi->header('text/html','304 Not Modified');
 	$header = $cgi->header(-type => 'text/html;charset=utf-8',
 			     -filesize => $currfilesize,
-				);
+	);
 	print $header if ($R::format ne 'template');
 	# $header = "Content-Type: text/html\n\n";
 } 
@@ -210,7 +228,6 @@ if ($R::format eq "template") {
 
 # Print Logfile
 my @logcontent;
-$i = 0;
 my $l = 0;
 open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
   while (<F>) {
@@ -244,6 +261,7 @@ open(F,"$R::logfilepath/$R::logfile") || die "Cannot open file: $!";
       $_ =~ s/<\/DEBUG>//g;
 	  $_ =~ s/^(.*?)\s*<LOGSTART>\s*(.*?)$/<div class='logstart'>$1 $2<\/div>/g;
       $_ =~ s/^(.*?)\s*<LOGEND>\s*(.*?)$/<div class='logend'>$1 $2<\/div>/g;
+	  $_ =~ s/\&/\&amp;/g; # Change all &s to &amp;
   
       if ($_ !~ /<\/div>\n$/) { # New Line
         $_ =~ s/\n/<br>/g;

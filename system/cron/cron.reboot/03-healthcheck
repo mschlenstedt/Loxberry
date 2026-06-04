@@ -1,0 +1,3 @@
+#!/bin/bash
+sleep 60
+$LBHOMEDIR/sbin/healthcheck.pl action=check output=notification

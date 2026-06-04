@@ -1,12 +1,23 @@
+<img width="200px" src="webfrontend/html/system/images/Logo_green_transparent.png" align="left"/>
+
+# LoxBerry
+
+![](https://img.shields.io/github/release/mschlenstedt/loxberry.svg?label=release&style=flat)
+![](https://img.shields.io/github/commits-since/mschlenstedt/loxberry/latest.svg?style=flat)
+![](https://img.shields.io/github/release-pre/mschlenstedt/loxberry.svg?label=pre-release&style=flat)
+![](https://img.shields.io/github/issues/mschlenstedt/loxberry.svg?style=flat)
+![](https://img.shields.io/github/license/mschlenstedt/loxberry.svg?style=flat)
+
+
 Was ist "der LoxBerry"?
 -----------------------
 
-LoxBerry ist ein von Michael Schlenstedt initiiertes Projekt auf Open Source
-Basis. LoxBerry ist eine Toolbox, die ein Loxone Smarthome um viele smarte
+LoxBerry ist ein Projekt auf Open Source Basis für den Raspberry Pi und das Loxone
+Smart Home System. LoxBerry ist eine Toolbox, die ein Loxone Smarthome um viele smarte
 Features erweitert, die der Loxone Miniserver so nicht bietet. Zum Beispiel:
 Kostenloser Wetterserver mit Wunderground® Wetterdaten, Sprachausgabe, Schalten
-von WLAN- und Funksteckdosen, eigener Mailserver, Google-/CalDav-Kalenderan-
-bindung, Miniserver Backup, usw. usw. 
+von WLAN- und Funksteckdosen, eigener Mailserver, Google-/CalDav-Kalenderanbindung,
+Miniserver Backup, usw. usw. 
 
 Der LoxBerry wird vornehmlich für die Raspberry Pi Plattform entwickelt (womit
 die Namensgebung wohl geklärt ist), wird aber von einigen Entwicklern teilweise
@@ -17,7 +28,14 @@ Oberfläche zur Verfügung zu stellen, sodass weder zur Installation noch zur
 Konfiguration Linux-, Programmier- oder Kommandozeilenkenntnisse erforderlich
 sind. 
  
-Weitere Informationen
----------------------
+Getting Started
+---------------
  
-Weitere Informationen findest Du im Wiki unter http://www.loxwiki.eu:80/x/o4CO
+Weitere Informationen findest Du im Wiki unter https://wiki.loxberry.de/
+
+Das LoxBerry System steht als Image für den Raspberry Pi zum Download zur Verfügung. 
+Das Image muss auf eine freie SD-Karte geschrieben werden, anschließend kann der LoxBerry
+direkt von der SD-Karte gebootet werden. Die fertigen Images stehen hier zum Download
+zur Verfügung: 
+
+https://wiki.loxberry.de/installation_von_loxberry/download_und_spiegelsites/start

@@ -15,6 +15,7 @@
 .menutableicon {
   padding: 6px 0px 0px 6px;
   height: 64px;
+  position: relative;
 }
 
 .menutabletext {
@@ -22,12 +23,27 @@
   height: 25px;
 }
 
+table.menutable {
+  width: 100%;
+}
+
 table.menutable td {
-  padding: 10px 10px 10px 10px;
-  width: 120px;
+  padding: 8px 5px;
+  width: auto;
   text-align: center;
   font-size: 0.8em;
   vertical-align: middle;
+}
+
+table.menutable tr {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+table.menutable td {
+  flex: 0 0 calc(33.3% - 10px);
+  min-width: 90px;
 }
 
 .caption {
@@ -64,7 +80,7 @@ table.menutable td {
 .footerlogotextIE         	{ display:none; height: 50px;							width:166px; min-width:166px; }
 
 .footerfadebackground   { display:flex; background-color:#3d3d3d;  }
-.footerlogo, 
+.footerlogo,
 .footerlogoIE 			{ width: 79px; min-width: 79px; background-image: url("../images/loxberry_footer_logo_only.svg");        background-repeat: no-repeat; }
 .footerlogotext         { display:flex; flex-grow:1; width: 166px; min-width: 166px; background-image: url("../images/loxberry_footer_loxberry_text_ws.svg"); background-repeat: no-repeat; }
 .footerlogokeepspacel 	{ display:flex; text-align:left;  }
@@ -73,7 +89,46 @@ table.menutable td {
 .footerlogogradient_r2l { background-image: linear-gradient(90deg, #6dac20 0px, #3d3d3d 67px, #3d3d3d 78px); width: 78px; min-width: 78px; align-items: right; text-align:right;  justify-content: right; }
 .footerslogan           { display:flex; flex-grow:1; width: 316px;    background-image: url("../images/BTL.svg");  background-color:#6dac20;   background-repeat: no-repeat; }
 
-@media ( max-width: 875px ) 
+
+/* === LEGACY: lb_flex-* classes — kept for plugin backward compatibility === */
+.lb_flex-container {
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 20px;
+	justify-content: flex-start;
+	align-items: center;
+	align-content: center;
+	text-align: left;
+	flex-direction: row;
+}
+.lb_flex-item-spacer {
+	width: 25%;
+}
+.lb_flex-item-label {
+	min-width: 150px;
+	width: 200px;
+	max-width: 200px;
+	text-align: right;
+	margin-right: 10px;
+}
+.lb_flex-item {
+	min-width: 200px;
+	width: 250px;
+	max-width: 100%;
+	flex-wrap: nowrap;
+	margin-top: -10px;
+}
+.lb_flex-item-help {
+	min-width: 150px;
+	width: 100%;
+	position: relative;
+	margin-left: 10px;
+}
+/* === END LEGACY lb_flex-* === */
+
+
+
+@media ( max-width: 875px )
 {
 	.footeralignmentIE_l_outer 	{ width:20%; min-width:78px; }
 	.footeralignmentIE_r_outer 	{	width:80%; min-width:78px; }
@@ -91,7 +146,21 @@ table.menutable td {
 	    min-width: 78px;
 	    transition: width 1s, opacity .5s linear;
 	}
-	
+
+
+	/* LEGACY lb_flex-* responsive overrides (for plugins) */
+	.lb_flex-container {
+		flex-flow: column wrap;
+		justify-content: center;
+		align-items: stretch;
+		flex-direction: column;
+		text-align: left;
+	}
+	.lb_flex-item-spacer { width: 0%; display: none; }
+	.lb_flex-item-label { text-align: left; white-space: normal; min-width: auto; width: auto; max-width: none; margin-right: 0; margin-bottom: 4px; font-weight: bold; }
+	.lb_flex-item { text-align: left; min-width: 0; width: 100%; max-width: 100%; }
+	.lb_flex-item-help { text-align: left; width: 100%; min-width: 0; position: relative; margin-top: 5px; margin-left: 0; }
+
 }
 @media ( min-width: 875px )
 {
@@ -104,7 +173,7 @@ table.menutable td {
     min-width: 166px;
     transition: width 1s, opacity 1s linear;
 	}
-  .footersloganIE_r,	.footerslogan  
+  .footersloganIE_r,	.footerslogan
   {
     opacity: 1;
     width: 316px;
@@ -172,207 +241,170 @@ html .ui-body-a .ui-body-inherit /* Transparent Input-Boxes */
 .monospace * {font-size:80%!important;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;
 }
 
-.wide { font-size:calc(14px + 1.3vw); letter-spacing: 0.25em; text-align: left; vertical-align: middle; border-bottom: 2px ridge #cdcdcd; padding: 7px; padding-top: 1px; margin-top: 0px;
+/* LEGACY: .wide class — kept for plugin backward compatibility.
+   Core templates now use .lb-section-title from components.css */
+.wide {
+	font-size: calc(14px + 1.3vw);
+	letter-spacing: 0.10em;
+	text-align: left;
+	vertical-align: middle;
+	border-bottom: 2px ridge #cdcdcd;
+	padding: 7px;
+	padding-top: 1px;
+	margin-top: 0px;
+	font-weight: bold;
 }
 
-a:link.nolinkstyle
+a.nolinkstyle,
+a.nolinkstyle:link,
+a.nolinkstyle:visited,
+a.nolinkstyle:hover,
+a.nolinkstyle:active
 {
-  text-decoration: none;;
+  text-decoration: none;
+  color: inherit;
 }
 
 .widgetblock {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+.widget-actions {
+  text-align: center;
 }
 
 .widget {
-
-  width: 150px;
-  min-width: 150px;
-  height: 140px;
+  width: 130px;
+  min-width: 100px;
+  max-width: 160px;
+  height: 130px;
   text-align: center;
+  font-size: 0.8em;
 }
 
 .notifyRed {
   z-index: 10;
-  position: relative;
-  left:-44px;
-  top: 0px;
-  float: right;
-  background:#ed1d24;
-  color:#fff;
-  padding: 6px;
-  border-radius: 11px;
-  font-size: 12px;
-  margin: 5px -7px 0 0;
-  line-height: 0.8;
-  min-width: 9px;
+  position: absolute;
+  top: 9px;
+  right: 27px;
+  background: #ed1d24;
+  color: #fff;
+  padding: 0 5px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 2px var(--lb-card-bg, #fff);
 }
 
 .notifyBlue {
   z-index: 10;
-  position: relative;
-  left:-44px;
-  top: 0px;
-  float: right;
-  background:#0A4586;
-  color:#fff;
-  padding: 6px;
-  border-radius: 11px;
-  font-size: 12px;
-  margin: 5px -7px 0 0;
-  line-height: 0.8;
-  min-width: 9px;
+  position: absolute;
+  top: 9px;
+  right: 27px;
+  background: #0A4586;
+  color: #fff;
+  padding: 0 5px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 2px var(--lb-card-bg, #fff);
 }
 
-.notifyRedNavBar {
+.notifyNavBar {
   z-index: 10;
-  position: absolute;
-  right:5px;
-  top: -5px;
   float: right;
-  background:#ed1d24;
-  color:#fff;
-  padding: 6px;
-  border-radius: 11px;
-  font-size: 12px;
-  line-height: 0.8;
-  min-width: 9px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
   text-align: center;
-  vertical-align: middle;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 2px var(--lb-card-bg, #fff);
 }
 
-.notifyBlueNavBar {
-  z-index: 10;
-  position: absolute;
-  right:5px;
-  top: -5px;
-  float: right;
-  background:#0A4586;
-  color:#fff;
-  padding: 6px;
-  border-radius: 11px;
-  font-size: 12px;
-  line-height: 0.8;
-  min-width: 9px;
-  text-align: center;
-  vertical-align: middle;
+.notifyNavBarRed {
+  background: #ed1d24;
+  color: #fff;
+}
+
+.notifyNavBarBlue {
+  background: #0A4586;
+  color: #fff;
+}
+
+@keyframes rotateua {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+#update_alert {
+	-webkit-animation: 1s ease 0s infinite reverse rotateua;
+	-moz-animation: 1s ease 0s infinite reverse rotateua;
+	-o-animation: 1s ease 0s infinite reverse rotateua;
+	-ms-animation: 1s ease 0s infinite reverse rotateua;
+	animation: 1s ease 0s infinite reverse rotateua;
 }
 
 
 /* Logfiles */
 .logemerge
 {
-  text-align:left; width:100%; color:#ffff80; background-color:#6f0000;
+  white-space:pre; text-align:left; width:400%; color:#ffff80; background-color:#6f0000;
 }
 .logalert
 {
-  text-align:left; width:100%; color:#ffffff; background-color:#0000a0;
+  white-space:pre; text-align:left; width:400%; color:#ffffff; background-color:#0000a0;
 }
 .logcrit
 {
-  text-align:left; width:100%; color:#000000; background-color:#FFc0c0;
+  white-space:pre; text-align:left; width:400%; color:#000000; background-color:#FFc0c0;
 }
 .logerr
 {
-  text-align:left; width:100%; color:#000000; background-color:#FFE0E0;
+  white-space:pre; text-align:left; width:400%; color:#000000; background-color:#FFE0E0;
 }
 .logwarn
 {
-  text-align:left; width:100%; color:#000000; background-color:#FFFFC0;
+  white-space:pre; text-align:left; width:400%; color:#000000; background-color:#FFFFC0;
 }
 .logok
 {
- text-align:left; width:100%; color:#000000; background-color:#D8FADC;
+ white-space:pre; text-align:left; width:400%; color:#000000; background-color:#D8FADC;
 }
 .loginf
 {
- text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
+ white-space:pre; text-align:left; width:400%; color:#000000; background-color:#DDEFFF;
 }
 .logdeb
 {
- text-align:left; width:100%; color:#000000; background-color:#DDEFFF;
+ white-space:pre; text-align:left; width:400%; color:#000000; background-color:#DDEFFF;
 }
 .logstart
 {
- text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; color:#FFFFFF; background-color:#6dac20;
+ white-space:pre; text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:400%; color:#FFFFFF; background-color:#6dac20;
 }
 .logend
-{ 
-text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:100%; 
+{
+ white-space:pre; text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans-serif"; width:400%;
 }
-/* Clock on mainmenu_start.html */
-
-.clock
-    {
-      position:relative;
-
-      height:64px;
-      width: 64px;
-      margin: 0 auto;
-      border-radius:50%;
-      background: url('/system/images/ios_clock.svg') no-repeat center;
-      background-size: 88%;
-    }
-.minutes-container, .hours-container, .seconds-container
-  {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-.hours
-  {
-    background: #000;
-    height: 20%;
-    left: 48.75%;
-    position: absolute;
-    top: 30%;
-    transform-origin: 50% 100%;
-    width: 2.5%;
-  }
-.minutes
-  {
-    background: #000;
-    height: 40%;
-    left: 49%;
-    position: absolute;
-    top: 10%;
-    transform-origin: 50% 100%;
-    width: 2%;
-  }
-.seconds
-  {
-    background: #000;
-    height: 45%;
-    left: 49.5%;
-    position: absolute;
-    top: 14%;
-    transform-origin: 50% 80%;
-    width: 1%;
-    z-index: 8;
-  }
-@keyframes rotate
-  {
-    100%
-    {
-      transform: rotateZ(360deg);
-    }
-  }
-.hours-container
-  {
-    animation: rotate 43200s infinite linear;
-  }
-.minutes-container
-  {
-    animation: rotate 3600s infinite steps(60);
-  }
-.seconds-container
-  {
-    animation: rotate 60s infinite steps(60);
-  }
 
   /* This is to reflow and keep the main content usable with open panels
      on large displays */
@@ -413,7 +445,7 @@ text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans
   .ui-panel-dismiss-display-push {
     display: none;
   }
-  
+
 /* PANEL START */
 /* this should change the right panel width, but only works left :-( */
 /*
@@ -447,3 +479,132 @@ text-align:left; padding-left:10px; font-size: 130%; font-family: "Arial", "sans
 /* PANEL END */
 }
 
+.ui-slider-track {
+	background-color: #EEEEEE !important;
+	color:black !important;
+	text-shadow: none !important;
+}
+
+.ui-slider-track {
+	z-index:2;
+}
+
+.ui-slider-bg.ui-btn-active {
+	background-color: #6dac20 !important;
+	color:white !important;
+}
+
+
+/* === Mobile Optimierung === */
+/* Overflow global verhindern */
+.ui-content,
+.page_content,
+.ui-body {
+	overflow-x: hidden;
+}
+
+/* Bessere Innenabstände */
+.ui-content {
+	padding: 15px !important;
+}
+
+.page_content {
+	margin: 3% !important;
+}
+
+/* Tabellen-Optimierung nur für Content-Tabellen */
+.page_content table:not([data-role="table"]) {
+	width: 100%;
+}
+
+.page_content table td,
+.page_content table th {
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+/* Formular-Tabellen: Hints unterhalb anzeigen
+   lb-formtable statt formtable — vermeidet Konflikte mit Plugins die
+   class="formtable" als normales HTML-Table-Layout verwenden */
+table.lb-formtable,
+table.lb-formtable tbody {
+	display: block !important;
+	width: 100% !important;
+}
+
+table.lb-formtable tr {
+	display: flex !important;
+	flex-wrap: wrap !important;
+	align-items: center;
+	padding: 4px 0;
+	border-bottom: 1px solid rgba(128,128,128,0.15);
+	margin-bottom: 4px;
+}
+
+table.lb-formtable td {
+	display: block !important;
+	padding: 4px 5px;
+}
+
+table.lb-formtable td:first-child {
+	min-width: 140px;
+	width: 25%;
+}
+
+table.lb-formtable td:nth-child(2) {
+	flex: 1;
+	min-width: 200px;
+}
+
+table.lb-formtable td[colspan] {
+	width: 100% !important;
+	flex-basis: 100% !important;
+}
+
+table.lb-formtable td.hint {
+	width: 100% !important;
+	flex-basis: 100% !important;
+	font-size: 75%;
+	opacity: 0.7;
+	padding: 2px 5px 8px 5px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+@media (max-width: 600px) {
+	.wide {
+		font-size: calc(12px + 1vw);
+		letter-spacing: 0.05em;
+		word-break: break-word;
+	}
+
+	.page_content {
+		margin: 3% !important;
+	}
+
+	.ui-content {
+		padding: 12px !important;
+	}
+
+	.widget {
+		width: 120px;
+		min-width: 100px;
+		height: 120px;
+	}
+
+	.caption {
+		width: auto;
+		font-size: 2em;
+	}
+
+	table {
+		word-break: break-word;
+	}
+}
+
+@media (max-width: 480px) {
+	.ui-btn-inline {
+		display: block;
+		margin: 5px 0 !important;
+	}
+}

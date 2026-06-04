@@ -1,31 +1,132 @@
 <!-- ** START template/system/get_notification_html.html ************************************************************************************ -->
-	<div class="notify_block<TMPL_VAR RAND>" style="min-width:100%; border-style: dotted; border-width:1px; border-color:red;background-color:#ffffe6;">
-		<div style="pointer-events: none; position:relative; top:-15px; width:30px; height:30px; background-repeat: no-repeat; display: block; margin-left: auto; margin-right: auto;">
-			<img src="/system/images/notification_info_big.svg" >
+<div id="notificationBlock" style="margin-bottom:20px;">
+
+	<TMPL_IF SHOW_HEADER>
+	<h2 class="lb-section-title" style="margin-bottom:10px;">Notifications</h2>
+	</TMPL_IF>
+
+	<div id="notificationItems">
+	<TMPL_IF NOTIFICATIONCOUNT>
+	<div style="display:none" id="notificationCount"><TMPL_VAR NOTIFICATIONCOUNT></div>
+
+	<TMPL_LOOP NAME="NOTIFICATIONS">
+	<div class="lb-notify-box <TMPL_IF ISINFO>lb-notify-info<TMPL_ELSE>lb-notify-error</TMPL_IF>"
+	     id="notifyrow<TMPL_VAR KEY>" data-notifykey="<TMPL_VAR KEY>">
+
+		<div class="lb-notify-icon">
+			<TMPL_IF ISINFO>
+			<img src="/system/images/notification_info_small.svg" width="20" height="20">
+			<TMPL_ELSE>
+			<img src="/system/images/notification_error_small.svg" width="20" height="20">
+			</TMPL_IF>
 		</div>
-		<div style="display:table; padding: 5px;">
-			<TMPL_VAR NOTIFICATIONS>
+
+		<TMPL_IF SHOW_HEADER>
+		<div class="lb-notify-title"><TMPL_VAR TITLE></div>
+		</TMPL_IF>
+
+		<div class="lb-notify-message">
+			<b><TMPL_VAR DATESTR>:</b> <TMPL_VAR CONTENTHTML>
+		</div>
+
+		<div class="lb-notify-actions">
+			<TMPL_IF LOGFILEPATH>
+			<a class="lb-btn lb-btn-sm lb-btn-icon btnlogs"
+			   href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILEPATH>&header=html&format=template"
+			   target="_blank"><i class="pi pi-arrow-down"></i> Logfile</a>
+			</TMPL_IF>
+			<TMPL_IF LINK>
+			<a class="lb-btn lb-btn-sm lb-btn-icon btnlink"
+			   href="<TMPL_VAR LINK>" target="<TMPL_VAR LINKTARGET>"><i class="pi pi-external-link"></i> Details</a>
+			</TMPL_IF>
+			<a href="#" class="lb-btn lb-btn-sm lb-btn-icon notifdelete"
+			   id="notifdelete<TMPL_VAR KEY>" data-notifykey="<TMPL_VAR KEY>"
+			   title="Schließen" aria-label="Schließen"><i class="pi pi-times"></i></a>
 		</div>
 	</div>
-	<div style="height:40px" class="spacer<TMPL_VAR RAND>"></div>
+	</TMPL_LOOP>
+
+	<div style="display:flex;justify-content:flex-end;margin-top:4px;">
+		<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="notifdeleteall"
+		   style="display:none;" role="button"><i class="pi pi-times"></i> <TMPL_VAR NOTIFY.DELETE_ALL_MESSAGES></a>
+	</div>
+	</TMPL_IF>
+	</div><!-- end notificationItems -->
+
+	<TMPL_IF SHOW_HEADER>
+	<p id="noNotificationsMsg"<TMPL_IF NOTIFICATIONCOUNT> style="display:none;"</TMPL_IF>><TMPL_VAR NOTIFY.NO_NOTIFICATIONS></p>
+	</TMPL_IF>
+
+</div>
+
+<style>
+.lb-notify-box {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 14px;
+	margin-bottom: 6px;
+	border-radius: 6px;
+	box-shadow: 1px 2px 5px rgba(0,0,0,.10);
+	font-size: 0.95em;
+}
+.lb-notify-info {
+	background: #fffde7;
+	border-left: 4px solid #f9c800;
+}
+.lb-notify-error {
+	background: #fff3f0;
+	border-left: 4px solid #e53935;
+}
+.lb-notify-icon  { flex: 0 0 24px; }
+.lb-notify-title { flex: 0 0 auto; font-weight: bold; padding-right: 8px; white-space: nowrap; }
+.lb-notify-message { flex: 1 1 auto; }
+.lb-notify-actions { flex: 0 0 auto; display: flex; gap: 4px; }
+</style>
+
+<TMPL_IF NOTIFICATIONCOUNT>
 <script>
-	$(".notifdelete").click(function() {
-		var delid = $(this).attr('data-delid');
-		var delid_encoded = delid.replace(".", "\\.");
-		console.log("Delete key", delid);
-		if ( $(".notifyrow<TMPL_VAR RAND>:visible").length <= 1 ) { $(".notify_block<TMPL_VAR RAND>").fadeOut(); $(".spacer<TMPL_VAR RAND>").fadeOut();}
-		$("#notifyrow"+delid_encoded).fadeOut();
-	$.post ( '/admin/system/tools/ajax-notification-handler.cgi', 
-					{ 	action: 'notify-deletekey',
-						value: delid,
-					})
-	.always(function(data) {
-		if (typeof updatenavbar !== 'undefined' && $.isFunction(updatenavbar)) {
-			console.log("Done");
-			updatenavbar();
-		}
+var notificationCount;
+updateNotificationCount();
+
+$("#notifdeleteall").click(async function() {
+	$('.lb-notify-box').each(function(){
+		deleteKey($(this).data('notifykey'));
 	});
-					
+});
+$(".notifdelete").click(function() {
+	deleteKey($(this).data('notifykey'));
+});
+
+function deleteKey(delid) {
+	$("#notifyrow"+delid).fadeOut(400, function(){ $(this).remove(); });
+	$.post('/admin/system/ajax/ajax-notification-handler.cgi',
+		{ action: 'notify-deletekey', value: delid })
+	.done(function(data) {
+		updateNotificationCount(1);
+		if (typeof btnnotifies_setStorage === 'function') btnnotifies_setStorage(data[0], data[1]);
+	})
+	.always(function() {
+		if (typeof navbarglobal !== 'undefined') navbarglobal.$forceUpdate();
 	});
+}
+
+function updateNotificationCount(reduce) {
+	reduce = reduce || 0;
+	notificationCount = parseInt($("#notificationCount").text()) || 0;
+	if (reduce > 0) {
+		notificationCount -= reduce;
+		$("#notificationCount").text(notificationCount);
+	}
+	if (notificationCount > 1) $("#notifdeleteall").fadeIn();
+	else                        $("#notifdeleteall").fadeOut();
+	if (notificationCount <= 0) {
+		$("#notificationItems").fadeOut(400, function() {
+			$("#noNotificationsMsg").show();
+		});
+	}
+}
 </script>
+</TMPL_IF>
+
 <!-- ** END template/system/get_notification_html.html ************************************************************************************ -->

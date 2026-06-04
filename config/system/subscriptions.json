@@ -1,0 +1,57 @@
+{
+    "Subscriptions": [
+        {
+            "Id": "mqttgateway2_test/irgendeinwert",
+            "Toms": [],
+            "Noncached": false,
+            "resetaftersend": false,
+            "Jsonexpand": false,
+            "Json": []
+        },
+        {
+            "Id": "mqttgateway2_test/data",
+            "Toms": [],
+            "Noncached": false,
+            "resetaftersend": false,
+            "Jsonexpand": true,
+            "Json": [
+                {
+                    "Id": "name",
+                    "Toms": [],
+                    "Noncached": false,
+                    "resetaftersend": false
+                },
+                {
+                    "Id": "rollen@@[0]",
+                    "Toms": [],
+                    "Noncached": false,
+                    "resetaftersend": false
+                },
+                {
+                    "Id": "rollen@@[3]@@rolle",
+                    "Toms": [],
+                    "Noncached": false,
+                    "resetaftersend": false
+                },
+                {
+                    "Id": "rollen@@[3]@@rechte@@[0]",
+                    "Toms": [],
+                    "Noncached": false,
+                    "resetaftersend": false
+                },
+                {
+                    "Id": "einstellungen@@newsletter",
+                    "Toms": [],
+                    "Noncached": false,
+                    "resetaftersend": false
+                },
+                {
+                    "Id": "einstellungen@@newsletter",
+                    "Toms": [],
+                    "Noncached": false,
+                    "resetaftersend": false
+                }
+            ]
+        }
+    ]
+}

@@ -69,14 +69,33 @@ if ($exitcode != 0) {
 } else {
         LOGOK "Apt database updated successfully.";
 }
-$output = qx { /usr/bin/apt-get -q -y remove usbmount pmount };
+
+qx { dpkg -l | grep -q -e "ii *usbmount" };
 $exitcode  = $? >> 8;
-if ($exitcode != 0) {
-        LOGERR "Error uninstalling packages usbmount pmount with apt-get - Error $exitcode";
-        LOGDEB $output;
-        $errors++;
-} else {
-        LOGOK "Uninstalling usbmount pmount successfully.";
+if ($exitcode eq 0) {
+	$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y remove usbmount };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+	        LOGERR "Error uninstalling packages usbmount pmount with apt-get - Error $exitcode";
+	        LOGDEB $output;
+	        $errors++;
+	} else {
+	        LOGOK "Uninstalling usbmount pmount successfully.";
+	}
+}
+
+qx { dpkg -l | grep -q -e "ii *pmount" };
+$exitcode  = $? >> 8;
+if ($exitcode eq 0) {
+	$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y remove pmount };
+	$exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+	        LOGERR "Error uninstalling packages usbmount pmount with apt-get - Error $exitcode";
+	        LOGDEB $output;
+	        $errors++;
+	} else {
+	        LOGOK "Uninstalling usbmount pmount successfully.";
+	}
 }
 
 #
@@ -87,6 +106,7 @@ qx { mkdir -p /media/smb };
 qx { mkdir -p /media/usb };
 qx { mkdir -p $lbhomedir/system/storage };
 qx { mkdir -p $lbhomedir/system/storage/smb };
+qx { rm -fr $lbhomedir/system/storage/usb };
 $output = qx { ln -f -s /media/usb $lbhomedir/system/storage/usb };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -98,44 +118,19 @@ if ($exitcode != 0) {
 }
 qx { chown -R loxberry:loxberry $lbhomedir/system/storage };
 
-LOGINF "Creating /etc/systemd/system/usb-mount@.service";
-
-if ( !-e "/etc/systemd/system/usb-mount@.service" ) {
-	open(F,">/etc/systemd/system/usb-mount@.service");
-	print F <<EOF;
-[Unit]
-Description=Mount USB Drive on %i
-[Service]
-Type=oneshot
-RemainAfterExit=true
-ExecStart=$lbhomedir/sbin/usb-mount.sh add %i
-ExecStop=$lbhomedir/sbin/usb-mount.sh remove %i
-EOF
-	close (F);
-}
-
-if ( !-e "/etc/udev/rules.d/99-usbmount.rules" ) {
-	open(F,">/etc/udev/rules.d/99-usbmount.rules");
-	print F <<EOF;
-KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/bin/systemctl start usb-mount@%k.service"
-KERNEL=="sd[a-z]*[0-9]", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/bin/systemctl stop usb-mount@%k.service"
-EOF
-	close (F);
-}
-
 #
 # Installing autofs for SMB automounts
 #
-LOGINF "Installing Autofs";
+LOGINF "Installing Autofs and smbclient";
 
-$output = qx { /usr/bin/apt-get -q -y install autofs smbclient };
+$output = qx { DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -q -y install autofs smbclient };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
         LOGERR "Error installing packages autofs smbclient with apt-get - Error $exitcode";
         LOGDEB $output;
         $errors++;
 } else {
-        LOGOK "Installing autofs smbclient successfully.";
+        LOGOK "Installing autofs and smbclient successfully.";
 }
 
 $output = qx {awk -v s='/media/smb /etc/auto.smb --timeout=300 --ghost' '/^\\/media\\/smb/{\$0=s;f=1} {a[++n]=\$0} END{if(!f)a[++n]=s;for(i=1;i<=n;i++)print a[i]>ARGV[1]}' /etc/auto.master };
@@ -152,7 +147,6 @@ if ($exitcode != 0) {
 # Samba
 #
 LOGINF "Replacing system samba config file";
-LOGINF "Copying new";
 
 qx { mkdir -p $lbhomedir/system/samba/credentials };
 $output = qx { if [ -e $updatedir/system/samba/smb.conf ] ; then cp -f $updatedir/system/samba/smb.conf $lbhomedir/system/samba/ ; fi };
@@ -166,6 +160,7 @@ if ($exitcode != 0) {
 	LOGOK "New samba config file copied.";
 }
 
+qx { rm -fr /etc/creds };
 $output = qx { ln -f -s $lbhomedir/system/samba/credentials /etc/creds };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -208,7 +203,11 @@ copy_to_loxberry("/system/cron/cron.weekly/db_maint");
 # Correct symlink from /etc/sudoers.d to ~/system/sudoers
 #
 LOGINF "Creating new symlink from /etc/sudoers.d to ~/system/susdoers";
-$output = qx { mv /etc/sudoers.d /etc/sudoers.d.orig };
+if ( -d "/etc/sudoers.d") {
+	qx { mv /etc/sudoers.d /etc/sudoers.d.orig };
+} else {
+	qx { rm -rf /etc/sudoers.d };
+}
 $output = qx { ln -f -s $lbhomedir/system/sudoers/ /etc/sudoers.d };
 $exitcode  = $? >> 8;
 if ($exitcode != 0) {
@@ -218,6 +217,28 @@ if ($exitcode != 0) {
 } else {
 	LOGOK "Symlink /etc/sudoeers.d created successfully";
 }
+if ( -d "/etc/sudoers.d.orig") {
+	qx { cp -fv /etc/sudoers.d.orig/* /etc/sudoers.d };
+	qx { rm -fr /etc/sudoers.d.orig };
+}
+
+#
+# Sudoers
+#
+
+LOGINF "Replacing system default sudoers file";
+LOGINF "Copying new";
+
+my $output = qx { if [ -e $updatedir/system/sudoers/lbdefaults ] ; then cp -f $updatedir/system/sudoers/lbdefaults $lbhomedir/system/sudoers/ ; fi };
+my $exitcode  = $? >> 8;
+
+if ($exitcode != 0) {
+       LOGERR "Error copying new lbdefaults - Error $exitcode";
+       $errors++;
+} else {
+       LOGOK "New lbdefaults copied.";
+}
+qx { chown root:root $lbhomedir/system/sudoers/lbdefaults };
 
 
 ## If this script needs a reboot, a reboot.required file will be created or appended
@@ -238,7 +259,7 @@ sub delete_directory
 	my $delfolder = shift;
 	
 	if (-d $delfolder) {   
-		rmtree($delfolder, {error => \my $err});
+		File::Path::rmtree($delfolder, {error => \my $err});
 		if (@$err) {
 			for my $diag (@$err) {
 				my ($file, $message) = %$diag;
@@ -269,12 +290,11 @@ sub copy_to_loxberry
 	my $srcfile = $updatedir . $destparam;
 		
 	if (! -e $srcfile) {
-		LOGERR "$srcfile does not exist";
-		$errors++;
+		LOGINF "$srcfile does not exist - This file might have been removed in a later LoxBerry verion. No problem.";
 		return;
 	}
 	
-	my $output = qx { cp -f $srcfile $destfile };
+	my $output = qx { cp -rf $srcfile $destfile 2>&1 };
 	my $exitcode  = $? >> 8;
 
 	if ($exitcode != 0) {

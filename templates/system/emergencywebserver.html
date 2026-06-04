@@ -1,0 +1,61 @@
+<!doctype html>
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, proxy-revalidate, s-maxage=0" >
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Pragma" content="no-cache">
+
+</head>
+
+<body onunload="">
+
+<center><h1>Emergency Webserver</h1></center>
+
+<p>
+This is LoxBerry's Emergency Webserver. If you have tried to reach LoxBerry's normal webinterface but see this page, your LoxBerry has a severe problem and cannot provide his webinterface anymore... You can run the Healthcheck from here to figure out what's wrong and you can also reboot the system from here.
+</p>
+
+<h2>Emergency Functions</h2>
+
+<hr>
+
+<p>
+<form action="/healthcheck">
+    <input type="submit" value="Healthcheck Summary" />
+</form>
+</p>
+
+<p>
+Summary of the LoxBerry Healthcheck. This will be updated once a day automatically. You can use this link to check LoxBerry's health status with a Virtual HTTP Input from your Miniserver.
+</p>
+
+<hr>
+
+<form action="/live_healthcheck">
+    <input type="submit" value="Live Healthcheck" />
+</form>
+
+<p>
+Performs a realtime / live healthcheck. Note! Never - really never! - use this with a Virtual HTTP Input from your Miniserver! The check needs a lot system performance and may slow down your LoxBerry extremely if it is performed to often!
+</p>
+
+<hr>
+
+<form action="/reboot">
+    <table border=0>
+    <tr>
+    <td>SecurePIN:</td>
+    <td><input type="text" id="securepin" name="securepin" size="4"></td>
+    <td><input type="submit" value="Reboot" /></td>
+    </tr>
+    </table>
+</form>
+
+<p>
+Reboots your LoxBerry. Please enter your SecurePIN first for sercurity reasons.
+</p>
+
+<hr>
+
+</body>
+</html>
+

@@ -1,10 +1,16 @@
 /* Loxberry webfrontend/html/system/scripts/validate.js */
+/* Version: 2.2.0.1 */
 
 function validate_enable ( object )
 {
+	// Fix for variables with special chars
+	object = object.replace( /(\\)/g, "" );
+	object_without_escape = object;
+	object = object.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
 	// This function is called from the code to enable validation for this object
 	// Create target div for the tooltip - it's named error-msg-<object-id> and inserted after <object-id> (INPUT) which must exists in the HTML page
-	$( '<div style="display:none;" id="error-msg-'+object.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object ) );
+	$( '<div style="display:none;" id="error-msg-'+object_without_escape.substring(1)+'">'+$(object).attr('data-validation-error-msg')+'</div>' ).insertAfter( $( object ) );
 	$(".ui-input-text").css("margin-bottom",0);
     
 	// Prevent return key
@@ -33,8 +39,15 @@ function validate_enable ( object )
 	// Adding an event handler if someone pastes a value into the INPUT
 	$(object).on('paste', function(e)
 	{
-		// In case of pasting values, remove any formatting
-		validate_OnPaste_StripFormatting(this, event);
+		if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)
+		{
+	     	// Firefox doesn't support this
+	     	return;
+		}
+		else
+		{	// In case of pasting values, remove any formatting
+			validate_OnPaste_StripFormatting(this, event);
+		}
 	});
 
 	// Adding an event handler if someone leaves, enters the INPUT or
@@ -69,6 +82,11 @@ function validate_all()
 		// Get each object to validate...
 		$.each(what_to_test, function (i,v)
 		  {
+
+			// Fix for variables with special chars
+			v = v.replace( /(\\)/g, "" );
+			v = v.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
 			// Check the value...
 			if (validate_chk_value.call(this,v))
 			{
@@ -110,17 +128,21 @@ function validate_all()
 var _onPaste_StripFormatting_IEPaste = false;
 function validate_OnPaste_StripFormatting(elem, e)
 {
-	if (e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.getData)
+	var clipData = (e.originalEvent && e.originalEvent.clipboardData) || e.clipboardData;
+	if (clipData && clipData.getData)
 	{
 		e.preventDefault();
-		var text = e.originalEvent.clipboardData.getData('text/plain');
-		window.document.execCommand('insertText', false, text);
-	}
-	else if (e.clipboardData && e.clipboardData.getData)
-	{
-		e.preventDefault();
-		var text = e.clipboardData.getData('text/plain');
-		window.document.execCommand('insertText', false, text);
+		var text = clipData.getData('text/plain');
+		// execCommand('insertText') is deprecated in Chrome 120+ and may fail silently;
+		// fall back to direct value manipulation so the field is never left empty.
+		if (!window.document.execCommand('insertText', false, text)) {
+			var target = e.target || elem;
+			var start = target.selectionStart || 0;
+			var end   = target.selectionEnd   || 0;
+			target.value = target.value.substring(0, start) + text + target.value.substring(end);
+			target.selectionStart = target.selectionEnd = start + text.length;
+			$(target).trigger('input').trigger('change');
+		}
 	}
 	else if (window.clipboardData && window.clipboardData.getData)
 	{
@@ -243,20 +265,28 @@ function validate_convert_rule (object, rule)
 				break;
 			case 'number-exact-value':
 				// Check if exact number is given 
-				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseInt(rule_array[2])) ) ? parseInt(rule_array[2]) : '(?=x)y';
+				rule_array[2] = rule_array[2].replace(  /,/g, "." );
+				rule_array[2] = ( typeof rule_array[2] != 'undefined' && !isNaN(parseFloat(rule_array[2])) ) ? parseFloat(rule_array[2]) : '(?=x)y';
 				rule = '^'+rule_array[2]+'$';
 				break;
 			case 'number-min-value':
 				// Check if number is minumum 
-				rule = ( parseInt($(object).val())  >= parseInt(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				var object_value = Math.fround( parseFloat( $(object).val().replace(  /,/g, "." ) ) );
+				var rule_value	 = Math.fround( parseFloat( rule_array[2].replace(  /,/g, "." ) ) );
+				rule = ( object_value >= rule_value ) ? '^[\\+\\-]?\\d+([\\.\\,]\\d+)?$' : '(?=x)y';
 				break;
 			case 'number-max-value':
 				// Check if number is maximum
-				rule = ( parseInt($(object).val())  <= parseInt(rule_array[2]) ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				var object_value = Math.fround( parseFloat( $(object).val().replace(  /,/g, "." ) ) );
+				var rule_value	 = Math.fround( parseFloat( rule_array[2].replace(  /,/g, "." ) ) );
+				rule = ( object_value <= rule_value ) ? '^[\\+\\-]?\\d+([\\.\\,]\\d+)?$' : '(?=x)y';
 				break;
 			case 'number-min-max-value':
 				// Check if min + max digits values are given otherwise default to 1
-				rule = ( parseInt($(object).val())  >= parseInt(rule_array[2]) && parseInt($(object).val())  <= parseInt(rule_array[3])  ) ? '^([\-\+][0-9]|[0-9])*$' : '(?=x)y';
+				var object_value = Math.fround( parseFloat( $(object).val().replace(  /,/g, "." ) ) );
+				var rule_value1	 = Math.fround( parseFloat( rule_array[2].replace(  /,/g, "." ) ) );
+				var rule_value2	 = Math.fround( parseFloat( rule_array[3].replace(  /,/g, "." ) ) );
+				rule = ( ( object_value >= rule_value1 ) &&  ( object_value <= rule_value2 ) ) ? '^[\\+\\-]?\\d+([\\.\\,]\\d+)?$' : '(?=x)y';
 				break;
 			case 'email':
 				// Check if email 
@@ -276,8 +306,8 @@ function validate_convert_rule (object, rule)
 				rule ='^(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$|^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
 				break;
 			case 'domainname_or_ipaddr':
-				// Check if IP Address e.g. 123.34.56.78 or domainname incl. subdomains
-				rule ='^([a-zA-Z0-9][a-zA-Z0-9-_]*\\.)*(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\\.[a-zA-Z]{2,3})$|^(?![0-9]+$)(?!.*-$)(?!-)[a-zA-Z0-9-]{1,63}$|^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+				// Check if IPv4 or IPv6 address e.g. 123.34.56.78 or ::1,  or domainname incl. subdomains
+				rule ='((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))|(^\s*((?=.{1,255}$)(?=.*[A-Za-z].*)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?)*)\s*$)';
 				break;
 			case 'netmask':
 			case 'ipmask':
@@ -289,6 +319,13 @@ function validate_convert_rule (object, rule)
 				// Check if IP Port 1-65535
 				rule ='^(([1-9]{1}|[1-9][0-9]{1,3})|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$';
 				break;
+			case 'ipaddr_IPv6':
+				// Check if is IPv6 address
+				rule = '(([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4})';
+				break;
+			
+			
+			
 			case 'ssid':
 				// Check if WLAN SSID 
 				rule ='^([\\w\\u0020\\u0024\\u0040\\u005e\\u0060\\u002c\\u007c\\u0025\\u003b\\u002e\\u007e\\u0028\\u0029\\u002f\\u005c\\u007b\\u007d\\u003a\\u003f\\u005b\\u005d\\u003d\\u002d\\u002b\\u00f5\\u0023\\u0021]{1,32})$';
@@ -328,6 +365,10 @@ function validate_chk_value( object,evt,rule )
 	// If the event is not defined, set it to 0
 	// (This happens if called from the code itself)
 	evt = evt || 0;
+
+	// Fix for variables with special chars
+	object = object.replace( /(\\)/g, "" );
+	object = object.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
 	// If the rule is not given when calling the function, get the value
 	// in attribute data-validation-rule of the INPUT
 	var rule = rule || $(object).attr("data-validation-rule");
@@ -393,8 +434,12 @@ function validate_chk_value( object,evt,rule )
 			// Check if object still there
 			if (typeof offset === 'undefined')
 			{
-				// On page switch remove old values
-				window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+				// If what_to_test is empty, no need to remove
+				if (typeof single_object !== 'undefined') 
+				{
+					// On page switch remove old values
+					window.obj_to_validate.splice($.inArray(single_object, obj_to_validate),1);
+				}
 			}
 			else
 			{
@@ -466,7 +511,7 @@ function validate_chk_value( object,evt,rule )
 		// Return false to the caller
 		return true
 	}
-}
+} 
 
 function validate_chk_object( obj_to_validate )
 {
@@ -474,10 +519,15 @@ function validate_chk_object( obj_to_validate )
 	// correct values to be able to submit the form
 	// Check the given variable. If not okay, create an empty array
 	var obj_to_validate = ( typeof obj_to_validate != 'undefined' && obj_to_validate instanceof Array ) ? obj_to_validate : [];
+
 	// Go through each object ...
 	$.each(obj_to_validate, function(i, obj)
 	{
-			// Put the object into the global array window.obj_to_validate
+		// Fix for variables with special chars
+		obj = obj.replace( /(\\)/g, "" );
+		obj = obj.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
+		// Put the object into the global array window.obj_to_validate
 		window.obj_to_validate.push(obj);
 	});
 	// Remove duplicates from the global array window.obj_to_validate
@@ -486,14 +536,19 @@ function validate_chk_object( obj_to_validate )
 	validate_place_tooltips ();
 }
 function validate_clean_objects( to_clean )
-{
+{ 
 	// Function to define (remove) which objects must NOT have
 	// correct values any longer to be able to submit the form
 	// Check the given variable. If not okay, create an empty array
 	var to_clean = ( typeof to_clean != 'undefined' && to_clean instanceof Array ) ? to_clean : [];
+
 	// Go through each object ...
 	$.each(to_clean, function(i, object)
 	{
+		// Fix for variables with special chars
+		object = object.replace( /(\\)/g, "" );
+		object = object.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
 		// Delete the value in the input field
 		$(object).val('');
 		// Hide the tooltip
@@ -517,6 +572,10 @@ function validate_place_tooltips ()
 	// Go through each object ...
 	$.each(window.obj_to_validate, function(i, single_object)
 	{
+		// Fix for variables with special chars
+		single_object = single_object.replace( /(\\)/g, "" );
+		single_object = single_object.replace(  /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
 		// Correct the position of the tooltip after 450 ms from now
 		setTimeout( function()
 		{

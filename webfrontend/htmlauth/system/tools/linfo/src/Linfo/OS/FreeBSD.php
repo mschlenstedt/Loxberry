@@ -1,22 +1,27 @@
 <?php
 
-/*
- * This file is part of Linfo (c) 2010 Joseph Gillotti.
+/* Linfo
  *
- * Linfo is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (c) 2018 Joe Gillotti
  *
- * Linfo is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with Linfo. If not, see <http://www.gnu.org/licenses/>.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
-*/
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 namespace Linfo\OS;
 
@@ -58,8 +63,11 @@ class FreeBSD extends BSDcommon
             'kern.boottime',
 
             // Ram stuff
-            'vm.vmtotal',
             'vm.loadavg',
+            'vm.stats.vm.v_inactive_count',
+            'vm.stats.vm.v_free_count',
+            'vm.stats.vm.v_page_count',
+
 
             // CPU related
             'hw.model',
@@ -101,16 +109,16 @@ class FreeBSD extends BSDcommon
         } catch (Exception $e) {
             Errors::add('Linfo Core', 'Error running `mount` command');
 
-            return array();
+            return [];
         }
 
         // Parse it
         if (preg_match_all('/^(\S+) on (\S+) \((\w+)(?:, (.+))?\)/m', $res, $m, PREG_SET_ORDER) == 0) {
-            return array();
+            return [];
         }
 
         // Store them here
-        $mounts = array();
+        $mounts = [];
 
         // Deal with each entry
         foreach ($m as $mount) {
@@ -133,7 +141,7 @@ class FreeBSD extends BSDcommon
             ) {
                 $mount_options = explode(', ', $mount[4]);
             } else {
-                $mount_options = array();
+                $mount_options = [];
             }
 
             // Might be good, go for it
@@ -164,28 +172,21 @@ class FreeBSD extends BSDcommon
         }
 
         // We'll return the contents of this
-        $return = array();
+        $return = [];
 
         // Start us off at zilch
-        $return['type'] = 'Virtual';
+        $return['type'] = 'Physical';
         $return['total'] = 0;
         $return['free'] = 0;
         $return['swapTotal'] = 0;
         $return['swapFree'] = 0;
-        $return['swapInfo'] = array();
+        $return['swapInfo'] = [];
 
-        // Parse the vm.vmtotal sysctl entry
-        if (!preg_match_all('/([a-z\ ]+):\s*\(Total: (\d+)\w,? Active:? (\d+)\w\)\n/i', $this->sysctl['vm.vmtotal'], $rm, PREG_SET_ORDER)) {
-            return $return;
-        }
-
-        // Parse each entry
-        foreach ($rm as $r) {
-            if ($r[1] == 'Real Memory') {
-                $return['total'] = $r[2]  * 1024;
-                $return['free'] = ($r[2] - $r[3]) * 1024;
-            }
-        }
+        // See https://wiki.freebsd.org/Memory
+        $return['total'] = 4096 * $this->sysctl['vm.stats.vm.v_page_count'];
+        $return['free'] = 4096 * (
+            $this->sysctl['vm.stats.vm.v_inactive_count'] +
+            $this->sysctl['vm.stats.vm.v_free_count']);
 
         // Swap info
         try {
@@ -246,7 +247,7 @@ class FreeBSD extends BSDcommon
         }
 
         // Store raid arrays here
-        $return = array();
+        $return = [];
 
         // Counter for each raid array
         $i = 0;
@@ -335,7 +336,7 @@ class FreeBSD extends BSDcommon
         }
 
         // Store return vals here
-        $return = array();
+        $return = [];
 
         // Use netstat to get info
         try {
@@ -352,7 +353,7 @@ class FreeBSD extends BSDcommon
         }
 
         // Try using ifconfig to get states of the network interfaces
-        $statuses = array();
+        $statuses = [];
         try {
             // Output of ifconfig command
             $ifconfig = $this->exec->exec('ifconfig', '-a');
@@ -378,8 +379,8 @@ class FreeBSD extends BSDcommon
         }
 
         // Get type from dmesg boot
-        $type = array();
-        $type_nics = array();
+        $type = [];
+        $type_nics = [];
 
         // Store the to-be detected nics here
         foreach ($netstat_match as $net) {
@@ -461,7 +462,7 @@ class FreeBSD extends BSDcommon
         }
 
         // Store them here
-        $cpus = array();
+        $cpus = [];
 
         // Stuff it with identical cpus
         for ($i = 0; $i < $this->sysctl['hw.ncpu']; ++$i) {
@@ -469,7 +470,7 @@ class FreeBSD extends BSDcommon
             // Save each
             $cpus[] = array(
                 'Model' => $this->sysctl['hw.model'],
-                'MHz' => (int) trim($this->sysctl['hw.clockrate']),
+                'MHz' => (int) trim($this->sysctl['hw.clockrate'] ?? "0"),
             );
         }
 
@@ -487,31 +488,31 @@ class FreeBSD extends BSDcommon
         }
 
         // Keep them here
-        $drives = array();
+        $drives = [];
 
         // Must they change the format of everything with each release?!?!?!?!
-        switch ($this->version) {
+        switch (true) {
 
-            case 8.2:
+            case version_compare($this->version, '8.1') > 0:
                 $cur = false;
 
                 // Each line of dmesg boot log
                 foreach ((array) explode("\n", $this->dmesg) as $line) {
 
                     // Start of a drive entry which spans multiple lines
-                    if (preg_match('/^((?:ad|da|acd|cd)\d+) at/', $line, $m)) {
+                    if (preg_match('/^((?:ada|da|acd|cd)\d+) at/', $line, $m)) {
                         $cur = array('device' => '/dev/'.$m[1]);
                     }
 
                     // Branding of this drive
-                    elseif ($cur && preg_match('/^((?:ad|da|acd|cd)\d+): \<([^>]+)\>/', $line, $m)) {
+                    elseif ($cur && preg_match('/^((?:ada|da|acd|cd)\d+): \<([^>]+)\>/', $line, $m)) {
                         if ('/dev/'.$m[1] != $cur['device']) {
                             continue;
                         }
                         $halves = explode(' ', $m[2]);
                         if (count($halves) > 1) {
                             $cur['vendor'] = $halves[0];
-                            $cur['name'] = $halves[1];
+                            $cur['name'] = $halves[1] . " " . $halves[2] . " " . $halves[3];
                         } else {
                             $cur['vendor'] = false;
                             $cur['name'] = $m[1];
@@ -519,7 +520,7 @@ class FreeBSD extends BSDcommon
                     }
 
                     // Lastly the size; gather it and save it
-                    elseif ($cur && preg_match('/^((?:ad|da|acd|cd)\d+): (\d+)MB/', $line, $m)) {
+                    elseif ($cur && preg_match('/^((?:ada|da|acd|cd)\d+): (\d+)MB/', $line, $m)) {
                         if ('/dev/'.$m[1] != $cur['device']) {
                             $cur = false;
                             continue;
@@ -561,8 +562,7 @@ class FreeBSD extends BSDcommon
         }
 
         // Class that does it
-        $hw = new Hwpci(false, '/usr/share/misc/pci_vendors');
-        $hw->work('freebsd');
+        $hw = new Hwpci(false, '/usr/share/misc/pci_vendors', 'freebsd', true);
 
         return $hw->result();
     }
@@ -577,7 +577,7 @@ class FreeBSD extends BSDcommon
         }
 
         // Store them here
-        $batts = array();
+        $batts = [];
 
         // Get result of program
         try {
@@ -705,7 +705,7 @@ class FreeBSD extends BSDcommon
         if (preg_match('/([\d\.]+) ([\d\.]+) ([\d\.]+)/', $loads, $m)) {
             return array_combine(array('now', '5min', '15min'), array_slice($m, 1, 3));
         } else {
-            return array();
+            return [];
         }
     }
 

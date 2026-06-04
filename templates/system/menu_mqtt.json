@@ -1,0 +1,50 @@
+[
+	{
+		"Name": "MQTT Basics",
+		"URL": "/admin/system/mqtt-main.cgi"
+	},
+	{
+		"Name": "MQTT Finder",
+		"URL": "/admin/system/tools/mqttfinder.cgi"
+	},
+	{
+		"Name": "MQTT Gateway",
+		"Submenu": [
+			{
+				"Name": "Gateway Settings",
+				"URL": "/admin/system/mqtt_gateway.cgi"
+			},
+			{
+				"Name": "Gateway Subscriptions",
+				"URL": "/admin/system/mqtt_gateway.cgi?form=subscriptions"
+			},
+			{
+				"Name": "Gateway Conversions",
+				"URL": "/admin/system/mqtt_gateway.cgi?form=conversions"
+			},
+			{
+				"Name": "Gateway Transformers",
+				"URL": "/admin/system/mqtt_gateway.cgi?form=transformers"
+			},
+			{
+				"Name": "Incoming Overview",
+				"URL": "/admin/system/mqtt_gateway.cgi?form=incoming"
+			}
+		]
+	},
+	{
+		"Name": "Log Files",
+		"URL": "/admin/system/tools/showalllogs.cgi?package=mqtt"
+	},
+	{
+		"Name": "Other Menu",
+		"Submenu": [
+			{
+				"Name": "Element 1"
+			},
+			{
+				"Name": "Element 2"
+			}
+		]
+	}
+]

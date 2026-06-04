@@ -1,41 +1,50 @@
 <?php
 
-/**
- * This file is part of Linfo (c) 2014 Joseph Gillotti.
+/* Linfo
  *
- * Linfo is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (c) 2018 Joe Gillotti
  *
- * Linfo is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with Linfo.	If not, see <http://www.gnu.org/licenses/>.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
+
 namespace Linfo;
+
+use Linfo\Parsers\IO;
 
 class Common
 {
-    protected static $settings = array(),
-        $lang = array();
+    protected static $settings = [],
+        $lang = [];
 
-    // Used for unit tests
-    public static $path_prefix = false;
+    public static $io;
 
-    public static function config(Linfo $linfo)
+    public static function config(Linfo $linfo, IO $io)
     {
         self::$settings = $linfo->getSettings();
         self::$lang = $linfo->getLang();
+        self::$io = $io;
     }
 
     public static function unconfig()
     {
-        self::$settings = array();
-        self::$lang = array();
+        self::$settings = [];
+        self::$lang = [];
     }
 
     // Certain files, specifcally the pci/usb ids files, vary in location from
@@ -69,11 +78,11 @@ class Common
     // Get a file who's contents should just be an int. Returns zero on failure.
     public static function getIntFromFile($file)
     {
-        return self::getContents($file, 0);
+        return (int) self::getContents($file, 0);
     }
 
     // Convert bytes to stuff like KB MB GB TB etc
-    public static function byteConvert($size, $precision = 2)
+    public static function byteConvert($size, $precision = 2, $notation = null, $bits = false)
     {
 
         // Sanity check
@@ -82,12 +91,20 @@ class Common
         }
 
         // Get the notation
-        $notation = self::$settings['byte_notation'] == 1000 ? 1000 : 1024;
+        if ($notation === null) {
+            $notation = self::$settings['byte_notation'] == 1000 ? 1000 : 1024;
+        }
 
         // Fixes large disk size overflow issue
         // Found at http://www.php.net/manual/en/function.disk-free-space.php#81207
-        $types = array('B', 'KB', 'MB', 'GB', 'TB');
-        $types_i = array('B', 'KiB', 'MiB', 'GiB', 'TiB');
+        if ($bits) {
+            $types = array('b', 'Kb', 'Mb', 'Gb', 'Tb');
+            $types_i = array('b', 'Kib', 'Mib', 'Gib', 'Tib');
+        } else {
+            $types = array('B', 'KB', 'MB', 'GB', 'TB');
+            $types_i = array('B', 'KiB', 'MiB', 'GiB', 'TiB');
+        }
+
         for ($i = 0; $size >= $notation && $i < (count($types) - 1); $size /= $notation, $i++);
 
         return(round($size, $precision).' '.($notation == 1000 ? $types[$i] : $types_i[$i]));
@@ -109,7 +126,7 @@ class Common
         $seconds = floor($uptime % 60);
 
         // Send out formatted string
-        $return = array();
+        $return = [];
 
         if ($years > 0) {
             $return[] = $years.' '.($years > 1 ? self::$lang['years'] : substr(self::$lang['years'], 0, strlen(self::$lang['years']) - 1));
@@ -128,7 +145,7 @@ class Common
         }
 
         if ($seconds > 0) {
-            $return[] = $seconds.(date('m/d') == '06/03' ? ' sex' : ' '.self::$lang['seconds']);
+            $return[] = $seconds.' '.self::$lang['seconds'];
         }
 
         return implode(', ', $return);
@@ -137,23 +154,13 @@ class Common
     // Get a file's contents, or default to second param
     public static function getContents($file, $default = '')
     {
-        if (is_string(self::$path_prefix)) {
-            $file = self::$path_prefix.$file;
-        }
-
-        return !is_file($file) || !is_readable($file) || !($contents = @file_get_contents($file)) ? $default : trim($contents);
+        return self::$io->getContents($file, $default);
     }
 
     // Like above, but in lines instead of a big string
     public static function getLines($file)
     {
-        return !is_file($file) || !is_readable($file) || !($lines = @file($file, FILE_SKIP_EMPTY_LINES)) ? array() : $lines;
-    }
-
-    // Make a string safe for being in an xml tag name
-    public static function xmlStringSanitize($string)
-    {
-        return strtolower(preg_replace('/([^a-zA-Z]+)/', '_', $string));
+        return self::$io->getLines($file);
     }
 
     // Get a variable from a file. Include it in this function to avoid
@@ -177,7 +184,7 @@ class Common
         return false;
     }
 
-    // Prevent silly conditionals like if (in_array() || in_array() || in_array())
+    // Prevent silly conditionals like if (in_[] || in_[] || in_[])
     // Poor man's python's any() on a list comprehension kinda
     public static function anyInArray($needles, $haystack)
     {
@@ -186,5 +193,26 @@ class Common
         }
 
         return count(array_intersect($needles, $haystack)) > 0;
+    }
+
+    // Easily determine if a string contains any of the snippets
+    public static function anyInString($string, $snippets)
+    {
+	foreach ($snippets as $snippet) {
+	    if (strpos($string, $snippet) !== false) {
+                 return true;
+	    }
+	}
+	return false;
+    }
+
+    // Given a string that should contain a float or a decimal, get back either
+    public static function strToInt($str)
+    {
+        if (!is_string($str))
+            return $str;
+        if (strpos($str, '.') !== false)
+            return (float) $str;
+        return (int) $str;
     }
 }

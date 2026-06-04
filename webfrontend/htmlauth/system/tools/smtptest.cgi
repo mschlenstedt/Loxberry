@@ -16,7 +16,15 @@
 
 
 # Version of this script
-$version = "1.0.0.2";
+$version = "3.0.0.0";
+
+
+##
+## THIS SCRIPT IS OBSOLETE STARTING FROM LOXBERRY 1.4
+## TESTMAIL IS SENT FROM mailserver.cgi using AJAX
+##
+
+
 
 ##########################################################################
 # Modules
@@ -33,16 +41,15 @@ use strict;
 # Variables
 ##########################################################################
 
-my $email 		= param('email');
-my $smtpserver 	= param('smtpserver');
-my $smtpport 		= param('smtpport');
+my $email = param('email');
+my $smtpserver = param('smtpserver');
+my $smtpport = param('smtpport');
 my $smtpcrypt = is_enabled(param('smtpcrypt')) ? 1 : undef;
 my $smtpauth = is_enabled(param('smtpauth')) ? 1 : undef;
-my $smtpuser 		= param('smtpuser');
-my $smtppass 		= param('smtppass');
-my  $lf             = param('lf'); # Linefeed in output
-my $sudobin;
-my $mailbin;
+my $smtpuser = param('smtpuser');
+my $smtppass = param('smtppass');
+my $lf = param('lf'); # Linefeed in output
+my $mailbin = `which mailx`;
 my $result;
 
 if (!$smtpport) {
@@ -50,15 +57,6 @@ if (!$smtpport) {
 }
 
 print STDERR "SMTPCRYPT: " . $smtpcrypt . "\n";
-
-##########################################################################
-# Read Settings
-##########################################################################
-
-
-my $cfg             = new Config::Simple("$lbsconfigdir/general.cfg");
-$sudobin         = $cfg->param("BINARIES.SUDO");
-$mailbin         = $cfg->param("BINARIES.MAIL");
 
 ##########################################################################
 # Language Settings
@@ -151,10 +149,10 @@ $result = qx(echo "$message" | $mailbin -a "$headerfrom" -a "$contenttype" -s "$
 print "Content-type: text/html; charset=utf-8\n\n";
 
 $result =~ s/\n/<br>/g if (!$lf);
-print $SL{'MAILSERVER.MSG_TEST_INTRO'};
-print "<br><br><pre>\n";
+print '<p>' . $SL{'MAILSERVER.MSG_TEST_INTRO'} . '</p>';
+print '<div style="font-size:80%;  font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;">';
 print $result;
-print "</pre>\n\n";
+print "</div>";
 
 # ReInstall original ssmtp config file
 $result = qx($lbssbindir/createssmtpconf.sh stop 2>/dev/null);

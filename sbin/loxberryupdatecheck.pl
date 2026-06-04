@@ -24,8 +24,8 @@
 #######################################################
 
 use LoxBerry::System;
-use LoxBerry::Web;
 use LoxBerry::Log;
+use LoxBerry::JSON;
 use strict;
 use warnings;
 use CGI;
@@ -40,37 +40,35 @@ use Encode;
 require HTTP::Request;
 
 # Version of this script
-my $scriptversion="1.0.0.5";
-
-# print currtime('file') . "\n";
-
-# Predeclare logging functions
-#sub LOGOK { my ($s)=@_; print ERRORLOG "<OK>" . $s . "\n"; }
-#sub LOGINF { my ($s)=@_;print ERRORLOG "<INFO>" . $s . "\n"; }
-#sub LOGWARN { my ($s)=@_;print ERRORLOG "<WARNING>" . $s . "\n"; }
-#sub LOGERR { my ($s)=@_;print ERRORLOG"<ERROR>" . $s . "\n"; }
-#sub LOGCRIT { my ($s)=@_;print ERRORLOG "<FAIL>" . $s . "\n"; }
+my $scriptversion="2.0.2.3";
 
 my $release_url;
 my $oformat;
 my %joutput;
-my %updhistory;
-my $updhistoryfile = "$lbslogdir/loxberryupdate/history.json";
-my %thisupd;
 my $cfg;
+my $generalcfg;
 my $download_path = '/tmp';
 my $update_path = '/tmp/loxberryupdate';
 # Filter - everything above or below is possible - ignore others
-my $min_version = "v0.3.0";
-my $max_version = "v1.99.99";
+my $min_version = "v1.0.0";
+# my $max_version = "v2.99.99";
 
 my $querytype;
 my $update;
 my $output;
 my $cron;
 my $dryrun;
+my $nofork;
+my $nobackup;
+my $nodiscspacecheck;
 my $keepupdatefiles;
+my $keepinstallfiles="0";
 my $formatjson;
+my $failed_script;
+my $release;
+
+my $branch;
+
 
 # Web Request options
 my $cgi = CGI->new;
@@ -78,19 +76,47 @@ my $cgi = CGI->new;
 my $log = LoxBerry::Log->new(
 		package => 'LoxBerry Update',
 		name => 'check',
-		filename => "$lbhomedir/log/system_tmpfs/loxberryupdate/updatecheck.log",
+		logdir => "$lbhomedir/log/system_tmpfs/loxberryupdate",
 		loglevel => 7,
 		stderr => 1,
-		append => 1,
 );
-						
-#my $logfile ="$lbslogdir/loxberryupdate/log$.log";
-#open ERRORLOG, '>', $logfile;
+$joutput{'logfile'} = $log->filename;
 
 LOGSTART "LoxBerry Update Check";
-LOGINF "Version of loxberrycheck.pl is $scriptversion";
+LOGINF "Version of loxberryupdatecheck.pl is $scriptversion";
 
-$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
+# We don't know if LoxBerry::System::General already exists
+eval { 
+	require LoxBerry::System::General;
+	my $jsonobj = LoxBerry::System::General->new();
+	$cfg = $jsonobj->open();
+	
+	if ( ! defined $cfg->{Base}->{Version} ) {
+		die; # Raise exception to fall into exception handler
+	}
+};
+if( $@ ) {
+	LOGINF "LoxBerry::System::General does not exist - run in general.cfg legacy mode";
+	require Config::Simple;
+	LOGINF "Reading general.cfg";
+	$generalcfg = new Config::Simple("$lbsconfigdir/general.cfg");
+	undef $cfg;
+	$cfg->{Base}->{Version} = $generalcfg->param('BASE.VERSION');
+	$cfg->{Update}->{Dryrun} = $generalcfg->param('UPDATE.DRYRUN');
+	$cfg->{Update}->{Keepupdatefiles} = $generalcfg->param('UPDATE.KEEPUPDATEFILES');
+	$cfg->{Update}->{Keepinstallfiles} = $generalcfg->param('UPDATE.KEEPINSTALLFILES');
+	$cfg->{Update}->{Branch} = $generalcfg->param('UPDATE.BRANCH');
+	$cfg->{Update}->{Latestsha} = $generalcfg->param('UPDATE.LATESTSHA');
+	$cfg->{Update}->{Releasetype} = $generalcfg->param('UPDATE.RELEASETYPE');
+	$cfg->{Update}->{Installtype} = $generalcfg->param('UPDATE.INSTALLTYPE');
+	$cfg->{Update}->{Failedscript} = $generalcfg->param('UPDATE.FAILED_SCRIPT');
+}
+
+
+
+# Read system language
+my %SL = LoxBerry::System::readlanguage();
+# LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}";
 
 if (!$cgi->param) {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_NO_PARAMETERS'};
@@ -99,12 +125,12 @@ if (!$cgi->param) {
 	exit (1);
 }
 
-# If general.cfg's UPDATE.DRYRUN is defined, do nothing
-if ( is_enabled($cfg->param('UPDATE.DRYRUN')) ) {
+# If general.json's Update.Dryrun is defined, do nothing
+if ( is_enabled($cfg->{Update}->{Dryrun}) ) {
 	$cgi->param('dryrun', 1)
 }
-if ( is_enabled($cfg->param('UPDATE.KEEPUPDATEFILES')) ){
-	$cgi->param('keepupdatefiles', 1)
+if ( is_enabled($cfg->{Update}->{Keepupdatefiles}) ){
+	$cgi->param('keepupdatefiles', 1);
 }
 
 if ($cgi->param('dryrun')) {
@@ -115,24 +141,58 @@ $dryrun = $cgi->param('dryrun') ? "dryrun=1" : undef;
 
 if ($cgi->param('cron')) {
 	$cron = 1;
-	
-	
-	
 } 
+if ($cgi->param('nofork')) {
+	$nofork = 1;
+} 
+if ($cgi->param('nobackup')) {
+	$nobackup = 1;
+} 
+if ($cgi->param('nodiscspacecheck')) {
+	$nodiscspacecheck = 1;
+} 
+if ($cgi->param('release')) {
+	$release=$cgi->param('release');
+}
 
-$formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
+if ( is_enabled($cfg->{Update}->{Keepinstallfiles}) ) {
+	$cgi->param('keepinstallfiles', 1);
+}
+if ($cgi->param('keepinstallfiles')) {
+	$keepinstallfiles = 1;
+}
+
+# Commit branch
+if ($cfg->{Update}->{Branch}) {
+	$branch = $cfg->{Update}->{Branch};
+}
+if ($cgi->param('branch')) {
+	$branch = $cgi->param('branch');
+} 
+$joutput{'branch'} = $branch;
+$branch = defined $branch ? $branch : "master";
+$joutput{'dryrun'} = $dryrun;
+$joutput{'keepupdatefiles'} = $cgi->param('keepupdatefiles');
+$joutput{'keepinstallfiles'} = $keepinstallfiles;
 
 $querytype = $cgi->param('querytype');
 
-my $latest_sha = defined $cfg->param('UPDATE.LATESTSHA') ? $cfg->param('UPDATE.LATESTSHA') : "0";
+$formatjson = $cgi->param('output') && $cgi->param('output') eq 'json' ? 1 : undef;
+
+my $latest_sha = defined $cfg->{Update}->{Latestsha} ? $cfg->{Update}->{Latestsha} : "0";
 
 
-if ($formatjson || $cron ) {
-	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
-	$querytype = $cfg->param('UPDATE.RELEASETYPE');
+if (($formatjson || $cron) and !$querytype ) {
+	$querytype = $cfg->{Update}->{Releasetype};
 }
 
-if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest')) {
+if ($cfg->{Update}->{Failedscript}) {
+	$failed_script = version->parse(vers_tag($cfg->{Update}->{Failedscript}));
+	LOGWARN "In a previous run of LoxBerry Update this update script failed: $failed_script";
+	$joutput{'failed_script'} = "$failed_script";
+}
+
+if (!$querytype || ($querytype ne 'release' && $querytype ne 'prerelease' && $querytype ne 'latest' && $querytype ne 'updateself')) {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_WRONG_QUERY_TYPE'};
 	&err;
 	LOGCRIT $joutput{'error'};
@@ -143,21 +203,52 @@ my $curruser = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
 LOGINF "Executing user of loxberryupdatecheck is $curruser";
 
 
-LOGOK "Parameters/settings of this update:";
-LOGINF "   querytype:       $querytype\n";
-LOGINF "   cron:            $cron\n";
-LOGINF "   keepupdatefiles: " . $cgi->param('keepupdatefiles');
-LOGINF "   dryrun: " . $cgi->param('dryrun') . "\n";
-LOGINF "   output: " . $formatjson;
+# Aquire a lock to check if an update is currently running
+eval {
+	LOGINF "Locking lbupdate to check if an update is running...";
+	my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate' );
+	if ($lockstate) {
+		LOGERR "Lock not possible. Reason: $lockstate";
+		$joutput{'error'} = $SL{"UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING"} . " (Lockstate $lockstate)";
+		&err;
+		exit(1);
+	} else {
+		LOGOK "No update seems to be running currently";
+		my $unlockstatus = LoxBerry::System::unlock(lockfile => 'lbupdate');
+	}
+};
 
-# Read system language
-my %SL = LoxBerry::System::readlanguage();
-# LOGINF "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}\n";
+
+LOGOK "Parameters/settings of this update:";
+LOGINF "   querytype:       $querytype";
+LOGINF "   cron:            $cron";
+LOGINF "   keepupdatefiles: " . $cgi->param('keepupdatefiles');
+LOGINF "   dryrun: " . $cgi->param('dryrun');
+LOGINF "   output: " . $formatjson;
+LOGINF "   release param: " . $release if ($release);
 
 my $lbversion;
+my $max_version;
+my $major_version;
+my $generaljson;
+
 if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 	$lbversion = version->parse(vers_tag(LoxBerry::System::lbversion()));
 	LOGINF "   Current LoxBerry version: $lbversion";
+	
+	# Get or calculate max_version
+	#
+	
+	$max_version = vers_tag($cfg->{Update}->{max_version}) if($cfg->{Update}->{max_version});
+	LOGINF "   max_version $max_version read from general.json" if($max_version);
+	
+	$major_version = int $lbversion->numify();
+	if (! $max_version) {
+		# Get the major version of current version
+		# LOGDEB "Current major is $major_version";
+		$max_version = "v$major_version.99.99" if ($major_version);
+		LOGINF "   max_version $max_version calculated from current version" if ($max_version);
+	}
 
 } else {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_CANNOT_READ_CURRENT_VERSION'};
@@ -166,10 +257,10 @@ if (version::is_lax(vers_tag(LoxBerry::System::lbversion()))) {
 	exit(1);
 }
 
-
 if (version::is_lax($min_version)) {
 	$min_version = version->parse($min_version);
 	LOGINF "   Updates limited from : $min_version";
+	$joutput{'min_version'} = "$min_version";
 } else {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_INVALID_MIN_VERSION_PREFIX'} . $min_version . $SL{'UPDATES.UPGRADE_ERROR_INVALID_MIN_VERSION_SUFFIX'};
 	&err;
@@ -179,6 +270,8 @@ if (version::is_lax($min_version)) {
 if (version::is_lax($max_version)) {
 	$max_version = version->parse($max_version);
 	LOGINF "   Updates limited to   : $max_version";
+	$joutput{'max_version'} = "$max_version";
+	$joutput{'max_version_next'} = "v".($major_version+1).".99.99";
 } else {
 	$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_INVALID_MAX_VERSION_PREFIX'} . $max_version . $SL{'UPDATES.UPGRADE_ERROR_INVALID_MAX_VERSION_SUFFIX'};
 	&err;
@@ -188,32 +281,166 @@ if (version::is_lax($max_version)) {
 
 if ($querytype eq 'release' or $querytype eq 'prerelease') {
 	LOGINF "Start checking releases...";
-	my ($release_version, $release_url, $release_name, $release_body, $release_published) = check_releases($querytype, $lbversion);
-	if (! defined $release_url || $release_url eq "") {
+	check_releases($querytype, $lbversion);
+	
+} elsif ($querytype eq 'latest') {
+	LOGINF "Start checking commits...";
+	check_commits($querytype);
+				
+} elsif ($querytype eq 'updateself') {
+	LOGINF "Starting to update myself (loxberryupdatecheck.pl) ...";
+	update_loxberryupdatecheck($querytype);
+
+} else {
+	LOGINF "Nothing to do. Exiting";
+	exit 0;
+}
+
+exit;
+
+##################################################
+# Check Releases List
+# Parameters
+#		1. querytype ('release' or 'prerelease')
+#		2. Version object of current version
+# Returns
+#		1. $release_version (version object)
+#		2. $release->{zipball_url} (URL to the ZIP)
+#		3. $release->{name} (Name of the release)
+#		4. $release->{body}) (Description of the release)
+#		Returns undef if no new version found
+##################################################
+sub check_releases
+{
+
+	my ($querytype, $currversion) = @_;
+	my $endpoint = 'https://api.github.com';
+	my $resource = '/repos/mschlenstedt/Loxberry/releases';
+	
+	LOGINF "Checking for releases from $endpoint$resource";
+	my $release_version;
+	my $blocked_version;
+	
+	my $ua = LWP::UserAgent->new;
+	my $request = HTTP::Request->new(GET => $endpoint . $resource);
+	$request->header('Accept' => 'application/vnd.github.v3+json', 'Accept-Charset' => 'utf-8');
+	# LOGINF "Request: " . $request->as_string;
+	LOGINF "Requesting release list from GitHub...";
+    my $response;
+	for (my $x=1; $x<=5; $x++) {
+		LOGINF "   Try $x: Getting release list... (" . currtime() . ")"; 
+		$response = $ua->request($request);
+		last if ($response->is_success);
+		LOGWARN "   API call try $x has failed. (" . currtime() . ") HTTP " . $response->code . " " . $response->message;
+		usleep (100*1000);
+	}
+	
+	if ($response->is_error) {
+		$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_FETCHING_RELEASE_LIST'} . $response->code . " " . $response->message;
+		&err;
+		LOGCRIT $joutput{'error'};
+		exit(1);
+	}
+	LOGOK "Release list fetched.";
+	#LOGINF $response->decoded_content;
+	LOGINF "Parsing release list...";
+	my $releases = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
+	
+	my $release_safe; # this was thought to be safe, not save!
+	my $release_to_use;
+	
+	foreach my $release ( @$releases ) {
+		$release_version = undef;
+		#LOGINF "   Checking release version tag of " . $release->{tag_name};
+		if (!version::is_lax(vers_tag($release->{tag_name}))) {
+			LOGWARN "   check_releases: " . vers_tag($release->{tag_name}) . " seems not to be a correct version number. Skipping.";
+			next;
+		} else {
+			$release_version = version->parse(vers_tag($release->{tag_name}));
+		}
+		LOGINF "   Release version : $release_version";
+		
+		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
+			{ LOGOK "   Skipping pre-release because requested release type is RELEASE";
+			  next;
+		}
+		
+		if ($release_version < $min_version) {
+			LOGWARN "   Release $release_version is smaller min version ($min_version)";
+			next;
+		}
+		
+		if($release_version > $max_version) {
+			LOGWARN "   Release $release_version is greater than allowed max version ($max_version)";
+			if(! defined $blocked_version || $blocked_version < $release_version) {
+				$blocked_version = $release_version;
+			}
+			$joutput{'first_blocked_version'} = vers_tag($release->{tag_name});
+			$joutput{'first_blocked_name'} = $release->{name};
+			$joutput{'first_blocked_body'} = $release->{body};
+			next;
+		}
+		LOGOK "   Filter check passed.";
+		
+		if (! $release_safe || version->parse($release_version) > version->parse(vers_tag($release_safe->{tag_name}))) {
+			$release_safe = $release;
+		}
+		
+		# Check against current version
+		LOGINF "   Current Version: $currversion <--> Release Version: $release_version";
+		if ($currversion == $release_version) {
+			LOGOK "   Skipping - this is the same version.";  
+			next;
+		}
+		if ($release_version < $currversion) {
+			LOGOK "  Skipping  - the release is older than current version.";
+			next;
+		}
+		
+		# At this point we know that the version is newer
+		LOGOK "Release $release_version is the newest.";
+	
+		$release_url = $release->{zipball_url};
+		$joutput{'release_new'} = 1;
+		$release_to_use = $release;
+		last;
+	}
+	
+	# Finished loop
+	if(! defined $joutput{'release_new'} || $joutput{'release_new'} eq "") {
+		LOGOK "No new version found: Latest version is " . vers_tag($release_safe->{tag_name});
+		$release_version = vers_tag($release_safe->{tag_name});
 		$joutput{'info'} = $SL{'UPDATES.INFO_NO_NEW_VERSION_FOUND'};
 		$joutput{'release_version'} = "$release_version";
 		$joutput{'release_zipurl'} = "";
-		$joutput{'release_name'} = $release_name;
-		$joutput{'release_body'} = $release_body;
-		$joutput{'published_at'} = $release_published;
+		$joutput{'release_name'} = $release_safe->{name};
+		$joutput{'release_body'} = $release_safe->{body};
+		$joutput{'published_at'} = $release_safe->{published_at};
+		$joutput{'releasetype'} = $release_safe->{prerelease} ? "prerelease" : "release";
+		$joutput{'blocked_version'} = "$blocked_version" if ($blocked_version);
+		
 		&err;
 		LOGOK $joutput{'info'};
 		exit 0;
 	}
-
+	
+	$release = $release_to_use;
 	LOGOK  "New version found:";
-	LOGINF "   Version   : $release_version";
-	LOGINF "   Name      : $release_name";
-	LOGINF "   Published : $release_published";
+	LOGINF "   Version     : $release_version";
+	LOGINF "   Name        : $release->{name}";
+	LOGINF "   Published   : $release->{published_at}";
+	LOGINF "   Releasetype : " . ($release->{prerelease} eq 1 ? "Pre-Release" : "Release");
+		
 	$joutput{'info'} = $SL{'UPDATES.INFO_NEW_VERSION_FOUND'};
 	$joutput{'release_version'} = "$release_version";
 	$joutput{'release_zipurl'} = $release_url;
-	$joutput{'release_name'} = $release_name;
-	$joutput{'release_body'} = $release_body;
-	$joutput{'published_at'} = $release_published;
-	$joutput{'release_new'} = 1;
+	$joutput{'release_name'} = $release->{name};
+	$joutput{'release_body'} = $release->{body};
+	$joutput{'published_at'} = $release->{published_at};
+	$joutput{'releasetype'} = $release_safe->{prerelease} ? "prerelease" : "release";
+	$joutput{'blocked_version'} = "$blocked_version" if ($blocked_version);
 	
-	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
+	if ($cron && $cfg->{Update}->{Installtype} eq 'notify') {
 		my @notifications = get_notifications( 'updates', 'lastnotifiedrelease');
 		if ($notifications[0] && $notifications[0]->{version} eq "$release_version") {
 			LOGOK "Skipping notification because version has already been notified.";
@@ -237,10 +464,10 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		}
 	}
 	
-	if ( $cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron ) ) {
+	if ( $cgi->param('update') || ( $cfg->{Update}->{Installtype} eq 'install' && $cron ) ) {
 		LOGEND "Installing new update - see the update log for update status!";
-		
-		my $log = LoxBerry::Log->new(
+		undef $log if ($log);
+		$log = LoxBerry::Log->new(
 			package => 'LoxBerry Update',
 			name => 'update',
 			logdir => "$lbslogdir/loxberryupdate",
@@ -250,15 +477,18 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 		);
 		my $logfilename = $log->filename;
 		
+		$joutput{'logfile'} = $log->filename;
+		
 		LOGSTART "Update from $lbversion to $release_version";
-		LOGINF "   Version    : $release_version";
-		LOGINF "   Name       : $release_name";
-		LOGINF "   Description: $release_body";
-		LOGINF "   Published  : $release_published";
+		LOGINF "   Version     : $release_version";
+		LOGINF "   Name        : $release->{name}";
+		LOGINF "   Description : $release->{body}";
+		LOGINF "   Published   : $release->{published_at}";
+		LOGINF "   Releasetype : " . ($release->{prerelease} eq 1 ? "Pre-Release" : "Release");
 		
 		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
-		# LOGINF "PIDOF LENGTH: " . length($pids) . "\n";
+		# LOGINF "PIDOF LENGTH: " . length($pids);
 		if (length($pids) > 0) {
 			$joutput{'info'} = $SL{'UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING'};
 			&err;
@@ -291,144 +521,37 @@ if ($querytype eq 'release' or $querytype eq 'prerelease') {
 			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {
-				LOGCRIT "prepare update returned an error. Exiting.\n";
+				LOGCRIT "prepare update returned an error. Exiting.";
 				exit(1);
 			}
 			LOGOK "Prepare update successful.";
 			# This is the place where we can hand over to the real update
 			
-			LOGINF "Forking loxberryupdate...";
-			my $pid = fork();
-			if (not defined $pid) {
-				LOGCRIT "Cannot fork loxberryupdate.";
-			} 
-			if (not $pid) {	
-				LOGINF "Executing LoxBerry Update forked...";
-				# exec never returns
-				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun logfilename=$logfilename cron=$cron </dev/null >/dev/null 2>&1 &");
+			if (!$nofork) {
+				LOGINF "Forking loxberryupdate...";
+				my $pid = fork();
+				if (not defined $pid) {
+					LOGCRIT "Cannot fork loxberryupdate.";
+				} 
+				if (not $pid) {	
+					LOGINF "Executing LoxBerry Update forked...";
+					undef $log if ($log);
+					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck </dev/null >/dev/null 2>&1 &");
+					exit(0);
+				} 
 				exit(0);
-			} 
-			exit(0);
+			} else {
+				LOGINF "Executing LoxBerry Update...";
+				undef $log if ($log);
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$release_version $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
+			}
 		}
 	}
 	
 	my $jsntext = to_json(\%joutput);
-	LOGINF "JSON: " . $jsntext . "\n";
-	#print $cgi->header('application/json');
+	LOGINF "JSON: " . $jsntext;
 	print $jsntext;
 	
-	# LOGINF "ZIP URL: $release_url\n";
-	
-	} elsif ($querytype eq 'latest') {
-		LOGINF "Start checking commits...";
-		check_commits($querytype);
-				
-	} else {
-		LOGINF "Nothing to do. Exiting";
-		exit 0;
-	}
-
-exit;
-
-##################################################
-# Check Releases List
-# Parameters
-#		1. querytype ('release' or 'prerelease')
-#		2. Version object of current version
-# Returns
-#		1. $release_version (version object)
-#		2. $release->{zipball_url} (URL to the ZIP)
-#		3. $release->{name} (Name of the release)
-#		4. $release->{body}) (Description of the release)
-#		Returns undef if no new version found
-##################################################
-sub check_releases
-{
-
-	my ($querytype, $currversion) = @_;
-	my $endpoint = 'https://api.github.com';
-	my $resource = '/repos/mschlenstedt/Loxberry/releases';
-	#my $resource = '/repos/christianTF/LoxBerry-Plugin-SamplePlugin-V2-PHP/releases';
-
-	LOGINF "Checking for releases from $endpoint$resource";
-	my $release_version;
-
-	my $ua = LWP::UserAgent->new;
-	my $request = HTTP::Request->new(GET => $endpoint . $resource);
-	$request->header('Accept' => 'application/vnd.github.v3+json', 'Accept-Charset' => 'utf-8');
-	# LOGINF "Request: " . $request->as_string;
-	LOGINF "Requesting release list from GitHub...";
-    my $response;
-	for (my $x=1; $x<=5; $x++) {
-		LOGINF "   Try $x: Getting release list... (" . currtime() . ")"; 
-		$response = $ua->request($request);
-		last if ($response->is_success);
-		LOGWARN "   API call try $x has failed. (" . currtime() . ") HTTP " . $response->code . " " . $response->message;
-		usleep (100*1000);
-	}
-	
-	if ($response->is_error) {
-		$joutput{'error'} = $SL{'UPDATES.UPGRADE_ERROR_FETCHING_RELEASE_LIST'} . $response->code . " " . $response->message;
-		&err;
-		LOGCRIT $joutput{'error'};
-		exit(1);
-	}
-	LOGOK "Release list fetched.";
-	#LOGINF $response->decoded_content;
-	#LOGINF "\n\n";
-	LOGINF "Parsing release list...";
-	my $releases = JSON->new->allow_nonref->convert_blessed->decode($response->decoded_content);
-	
-	my $release_safe; # this was thought to be safe, not save!
-	
-	foreach my $release ( @$releases ) {
-		$release_version = undef;
-		#LOGINF "   Checking release version tag of " . $release->{tag_name};
-		if (!version::is_lax(vers_tag($release->{tag_name}))) {
-			LOGWARN "   check_releases: " . vers_tag($release->{tag_name}) . " seems not to be a correct version number. Skipping.";
-			next;
-		} else {
-			$release_version = version->parse(vers_tag($release->{tag_name}));
-		}
-		#split_version($release->{tag_name});
-		LOGINF "   Release version : $release_version";
-		
-		if ($release_version < $min_version || $release_version > $max_version) {
-			LOGWARN "   Release $release_version is outside min or max version ($min_version/$max_version)\n";
-			next;
-		}
-		LOGOK "   Filter check passed.";
-		
-		if ($querytype eq 'release' and ($release->{prerelease} eq 1))
-			{ LOGOK "   Skipping pre-release because requested release type is RELEASE";
-			  next;
-		}
-		
-		if (! $release_safe || version->parse($release_version) > version->parse(vers_tag($release_safe->{tag_name}))) {
-			$release_safe = $release;
-		}
-		
-		# Check against current version
-		LOGINF "   Current Version: $currversion <--> Release Version: $release_version";
-		if ($currversion == $release_version) {
-			LOGOK "   Skipping - this is the same version.\n";  
-			next;
-		}
-		if ($release_version < $currversion) {
-			LOGOK "  Skipping  - the release is older than current version.";
-			next;
-		}
-		
-		# At this point we know that the version is newer
-		LOGOK "This release $release_version is the newest.";
-
-		return ($release_version, $release->{zipball_url}, $release->{name}, $release->{body}, $release->{published_at});
-	}
-	#LOGINF "TAG_NAME: " . $releases->[1]->{tag_name} . "\n";
-	#LOGINF $releases->[1]->{prerelease} eq 1 ? "This is a pre-release" : "This is a RELEASE";
-	LOGOK "No new version found: Latest version is " . vers_tag($release_safe->{tag_name});
-	return (vers_tag($release_safe->{tag_name}), undef, $release_safe->{name}, $release_safe->{body}, $release_safe->{published_at});
 }
 
 
@@ -442,7 +565,7 @@ sub check_commits
 	my ($querytype, $currversion) = @_;
 	my $endpoint = 'https://api.github.com';
 	my $resource = '/repos/mschlenstedt/Loxberry/commits';
-	my $branch = 'master';
+	# $branch is taken from {Update}->{Branch} or commandline parameter
 	
 	# Download URL of latest commit 
 	my $release_url = "https://github.com/mschlenstedt/Loxberry/archive/" . uri_escape($branch) . ".zip";
@@ -512,8 +635,10 @@ sub check_commits
 	$joutput{'release_name'} = "<span style='color:gray;'>$commit_message</span>" if (!$commit_new);
 	$joutput{'release_body'} = $SL{'UPDATES.INFO_COMMITED_BY'} . " $commit_by";
 	$joutput{'published_at'} = $commit_date;
+	$joutput{'releasetype'} = "commit";
 	
-	if ($cron && $cfg->param('UPDATE.INSTALLTYPE') eq 'notify') {
+	
+	if ($cron && $cfg->{Update}->{Installtype} eq 'notify') {
 		
 		my @notifications = get_notifications( 'updates', 'lastnotifiedcommit');
 		if ($notifications[0] && $notifications[0]->{commitsha} eq "$commit_sha") {
@@ -538,8 +663,9 @@ sub check_commits
 	}
 	
 	# If an update was requested
-	if ($cgi->param('update') || ( $cfg->param('UPDATE.INSTALLTYPE') eq 'install' && $cron && $commit_new )) {
+	if ($cgi->param('update') || ( $cfg->{Update}->{Installtype} eq 'install' && $cron && $commit_new )) {
 		LOGEND "Installing new commit - see the update log for update status!";
+		undef $log if ($log);
 		my $log = LoxBerry::Log->new(
 			package => 'LoxBerry Update',
 			name => 'update',
@@ -547,16 +673,16 @@ sub check_commits
 			loglevel => 7,
 			stderr => 1
 		);
+		$joutput{'logfile'} = $log->filename;
 		my $logfilename = $log->filename;
-		LOGSTART "Latest commit will be installed:";
+		LOGSTART "Installing latest commit: $commit_sha";
 		LOGINF "   Message     : $commit_message";
 		LOGINF "   Commit by   : $commit_by";
 		LOGINF "   Commited at : $commit_date";
 		LOGINF "   Commit key  : $commit_sha";
-		
+		LOGINF "   Release no. : $release" if ($release);    
 		LOGINF "Checking if another update is running..."; 
 		my $pids = `pidof loxberryupdate.pl`;
-		# LOGINF "PIDOF LENGTH: " . length($pids) . "\n";
 		if (length($pids) > 0) {
 			$joutput{'info'} = $SL{'UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING'};
 			&err;
@@ -589,7 +715,7 @@ sub check_commits
 			LOGINF "Starting prepare update procedure...";
 			my $updatedir = prepare_update($unzipdir);
 			if (!$updatedir) {
-				LOGCRIT "prepare update returned an error. Exiting.\n";
+				LOGCRIT "prepare update returned an error. Exiting.";
 				exit(1);
 			}
 			LOGOK "Prepare update successful.";
@@ -597,25 +723,46 @@ sub check_commits
 			
 			# This is the place where we can hand over to the real update
 			
-			#LOGINF "Run loxberryupdate in bachground ...";
-			LOGINF "Forking loxberryupdate...";
-			my $pid = fork();
-			if (not defined $pid) {
-				LOGCRIT "Cannot fork loxberryupdate.";
-			} 
-			if (not $pid) {	
-				LOGINF "Executing LoxBerry Update forked...";
-				# exec never returns
-				# exec("$lbhomedir/sbin/loxberryupdate.pl", "updatedir=$updatedir", "release=$release_version", "$dryrun 1>&2");
-				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=config $dryrun logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
-				exit(0);
-			} 
+			if (!$nofork) {
+				LOGINF "Forking loxberryupdate...";
+				my $pid = fork();
+				if (not defined $pid) {
+					LOGCRIT "Cannot fork loxberryupdate.";
+				} 
+				if (not $pid) {	
+					LOGINF "Executing LoxBerry Update forked...";
+					undef $log if ($log);
+					my $releaseparam;
+					if( defined $release) {
+						LOGWARN "Version parameter '$release' was given. This will be used to process update scripts, independent of what version is installed.";
+						LOGWARN "This version '$release' will also be set to your general.json. Reset it after your test!";
+						$releaseparam = $release;
+					} else {
+						LOGINF "Version parameter 'config' was given";
+						$releaseparam = "config";
+					}
+					exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$releaseparam $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha </dev/null >/dev/null 2>&1 &");
+					exit(0);
+				} 
+			} else {
+				LOGINF "Executing LoxBerry Update...";
+				undef $log if ($log);
+				my $releaseparam;
+				if( defined $release) {
+					LOGWARN "Version parameter '$release' was given. This will be used to process update scripts, independent of what version is installed.";
+					LOGWARN "This version '$release' will also be set to your general.json. Reset it after your test!";
+					$releaseparam = $release;
+				} else {
+					LOGINF "Version parameter 'config' was given";
+					$releaseparam = "config";
+				}
+				exec("$lbhomedir/sbin/loxberryupdate.pl updatedir=$updatedir release=$releaseparam $dryrun keepinstallfiles=$keepinstallfiles logfilename=$logfilename cron=$cron sha=$commit_sha nobackup=$nobackup nodiscspacecheck=$nodiscspacecheck");
+			}
 			exit(0);
 		}
 	}
 	my $jsntext = to_json(\%joutput);
-	LOGINF "JSON: " . $jsntext . "\n";
-	#print $cgi->header('application/json');
+	LOGINF "JSON: " . $jsntext;
 	print $jsntext;
 	
 }
@@ -629,23 +776,7 @@ sub download
 {
 	
 	my ($url, $filename) = @_;
-	LOGINF "   Download preparing. URL: $url Filename: $filename\n";
-	
-	my $download_size;
-	my $rel_header;
-	for (my $x=1; $x<=5; $x++) {
-		LOGINF "   Try $x: Checking file size of download...";
-		$rel_header = GetFileSize($url);
-		$download_size = $rel_header->content_length;
-		LOGINF "   Returned file size: $download_size";
-		last if (defined $download_size && $download_size > 0);
-		usleep (100*1000);
-	}
-	return undef if (!defined $download_size || $download_size == 0); 
-	LOGINF "   Expected download size: $download_size";
-	
-	# LOGINF "    Header check passed.\n";
-	
+	LOGINF "   Download preparing. URL: $url Filename: $filename";
 	my $ua = LWP::UserAgent->new;
 	my $res;
 	for (my $x=1; $x<=5; $x++) { 
@@ -653,15 +784,9 @@ sub download
 			$res = $ua->mirror( $url, $filename );
 			last if ($res->is_success);
 			LOGWARN "   Download try $x has failed. (" . currtime() . ")";
-			usleep (100*1000);
+			usleep (300*1000);
 	}
 	return undef if (!$res->is_success);
-	LOGOK "   Download successful. Comparing filesize...";
-	my $file_size = -s $filename;
-	if ($file_size != $download_size) { 
-		LOGCRIT "Filesize does not match";
-		return undef;
-	}
 	LOGOK "Download saved successfully in $filename";
 	return $filename;
 
@@ -735,6 +860,7 @@ sub unzip
 	return $unzipfolder;
 }
 
+# A list of all error codes that unzip returns
 sub unziperror
 {
 	my $errorcode = shift;
@@ -807,16 +933,9 @@ sub prepare_update
 		LOGCRIT "Found unclear number of directories ($dircount) in update directory.";
 		return undef;
 	}
-	
-	# system("chown -R loxberry:loxberry $updatedir");
-	# my $exitcode  = $? >> 8;
-	# if ($exitcode != 0) {
-	# LOGINF "Changing owner of updatedir $updatedir returned errors (errorcode: $exitcode). This may lead to further permission problems. Exiting.\n";
-	# return undef;
-	# }
 
 	$updatedir = "$updatedir/$direntry";
-	LOGOK "Update directory is $updatedir\n";
+	LOGOK "Update directory is $updatedir";
 	
 	LOGINF "LoxBerry Update programs are updated from the release to your LoxBerry...";
 	if ($cgi->param('keepupdatefiles')) {
@@ -867,6 +986,109 @@ sub prepare_update
 	return $updatedir;
 }
 
+##############################################################
+# update_self to update loxberryupdatecheck.pl
+# This updates to the latest version of the configured branch
+# dryrun and keepinstallfiles are respected!
+##############################################################
+sub update_loxberryupdatecheck
+{
+	
+	my $selfurl_check = "https://raw.githubusercontent.com/mschlenstedt/Loxberry/$branch/sbin/loxberryupdatecheck.pl";
+	my $localtmpdir = "/tmp";
+	my $errors = 0;
+	
+	LOGDEB "Update-URL for loxberryupdatecheck is $selfurl_check";
+	
+	LOGINF "Deleting old temporary files in $localtmpdir";
+	unlink "$localtmpdir/loxberryupdatecheck.pl";
+	unlink "$localtmpdir/loxberryupdate.pl";
+	
+	if( -e "$localtmpdir/loxberryupdatecheck.pl" or -e "$localtmpdir/loxberryupdate.pl" ) {
+		LOGCRIT "Could not safely remove old temporary files in $localtmpdir - Quitting.";
+		$errors++;
+		exit(1);
+	}
+	LOGINF "Requesting current lbupdatecheck version of branch $branch";
+	`wget $selfurl_check -P /tmp`;
+	if (! -e "$localtmpdir/loxberryupdatecheck.pl") {
+		LOGWARN "Could not download current lbupdatecheck version.";
+		$errors++;
+	} else {
+		LOGOK "New lbupdatecheck version downloaded.";
+	}
+	
+	# Check if it compiles without errors
+	LOGINF "Checking downloaded files with Perl compiler for errors";
+	
+	my $output;
+	my $ret;
+	
+	$output = `perl -c $localtmpdir/loxberryupdatecheck.pl`;
+	$ret = $? >> 8;
+	if( $ret != 0 ) {
+		LOGERR "Perl test compiler for lbupdatecheck returned an error:";
+		LOGDEB $output;
+		LOGERR "lbupdatecheck is not replaced with the new version, as it would fail on your LoxBerry";
+		$errors++;
+	} else { 
+		LOGOK "Perl test compiler returned no error.";
+		LOGINF "Replacing loxberryupdatecheck.pl...";
+		if($dryrun or $keepinstallfiles) {
+			LOGWARN "Nothing is done, as dryrun or keepinstallfiles is set";
+		} else {
+			$output = `cp -f $localtmpdir/loxberryupdatecheck.pl $lbhomedir/sbin/`;
+			$ret = $? >> 8;
+			if($ret != 0) {
+				LOGERR "Could not copy file: $output";
+				$errors++;
+			} else {
+				LOGOK "File replaced.";
+			}
+			`chown root:root $lbhomedir/sbin/loxberryupdatecheck.pl`;
+			`chmod  755 $lbhomedir/sbin/loxberryupdatecheck.pl`;
+			
+		}
+	}
+	
+	$output = undef;
+	$ret = undef;
+	
+	# $output = `perl -c $localtmpdir/loxberryupdate.pl`;
+	# $ret = $? >> 8;
+	# if( $ret != 0 ) {
+		# LOGERR "Perl test compiler for lbupdate returned an error:";
+		# LOGDEB $output;
+		# LOGERR "lbupdate is not replaced with the new version, as it would fail on your LoxBerry";
+		# $errors++;
+	# } else { 
+		# LOGOK "Perl test compiler returned no error.";
+		# LOGINF "Replacing loxberryupdate.pl...";
+		# if($dryrun or $keepinstallfiles) {
+			# LOGWARN "Nothing is done, as dryrun or keepinstallfiles is set";
+		# } else {
+			# $output = `cp -f $localtmpdir/loxberryupdate.pl $lbhomedir/sbin/`;
+			# $ret = $? >> 8;
+			# if($ret != 0) {
+				# LOGERR "Could not copy file: $output";
+				# $errors++;
+			# } else {
+				# LOGOK "File replaced.";
+			# }
+			# `chown root:root $lbhomedir/sbin/loxberryupdate.pl`;
+			# `chmod  755 $lbhomedir/sbin/loxberryupdate.pl`;
+		# }
+	# }
+	
+	# Debugging
+	
+	if($errors > 0) {
+		exit(1);
+	}
+	exit(0);
+	
+}
+
 sub err
 {
 	if ($joutput{'error'}) {
@@ -893,7 +1115,6 @@ sub vers_tag
 	$vers = substr($vers, 1) if (substr($vers, 0, 1) eq 'v' && $reverse);
 	
 	return $vers;
-
 }
 
 
@@ -902,9 +1123,16 @@ END
 {
 	if ($? != 0) {
 		LOGCRIT "LoxBerry Updatecheck exited or terminated with an error. Errorcode: $?";
+		if (!$joutput{'error'}) {
+		$joutput{'error'} = "LoxBerry Updatecheck exited or terminated with an error. Errorcode: $?. Please see the Update Check Logfile.";
+		err();
+		}
 		if ($cron) {
 			# Create an error notification
 		notify('updates', 'check', "LoxBerry Updatecheck: " . $SL{'UPDATES.LBU_NOTIFY_CHECK_ERROR'}, 'Error');
 		}
+	}
+	if ($log) {
+		LOGEND;
 	}
 }

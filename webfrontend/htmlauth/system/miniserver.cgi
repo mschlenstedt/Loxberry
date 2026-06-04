@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2016-2017 Michael Schlenstedt, michael@loxberry.de
+# Copyright 2016-2020 Michael Schlenstedt, michael@loxberry.de
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,25 +20,26 @@
 ##########################################################################
 
 use LoxBerry::Web;
-
+use LoxBerry::System;
+use LoxBerry::System::General;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
-use LWP::UserAgent;
 use URI::Escape;
+use JSON;
 use warnings;
 use strict;
+print STDERR "Execute miniserver.cgi\n######################\n";
 
 
 ##########################################################################
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://wiki.loxberry.de/konfiguration/widget_help/widget_miniserver";
 my $helptemplate = "help_miniserver.html";
 
 my $lang;
 my $template_title;
-my $helplink;
 my $error;
 my $url;
 my $ua;
@@ -55,21 +56,22 @@ my $clouddnsaddress;
 ##########################################################################
 
 # Version of this script
-my $version = "1.0.0.1";
+my $version = "2.2.1.1";
 
-my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg");
+my $jsonobj = LoxBerry::System::General->new();
+my $cfg = $jsonobj->open();
 my $bins = LoxBerry::System::get_binaries();
 
-$miniservers        = $cfg->param("BASE.MINISERVERS");
-$clouddnsaddress    = $cfg->param("BASE.CLOUDDNS");
-$miniserversprev    = $miniservers;
+# Miniserver count from json
+$miniservers        = scalar keys %{$cfg->{Miniserver}};
+#$clouddnsaddress    = $cfg->{Base}->{Clouddnsuri};
+#$miniserversprev    = $miniservers;
 
 my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/miniserver.html",
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
 		%htmltemplate_options,
 		# debug => 1,
 		);
@@ -97,28 +99,111 @@ $lang = lblanguage();
 # What should we do
 #########################################################################
 
-my $form_mscount = $cgi->param("miniservers");
+$R::saveformdata if (0);
+$R::do if (0);
+
+# AJAX: Fetch geocoordinates from Miniserver
+if ($cgi->param("action") && $cgi->param("action") eq "fetchgeo") {
+	require LWP::UserAgent;
+	my %resp;
+	my $msno = int($cgi->param("msno") || 1);
+	my $ip     = $cgi->param("ip")   || '';
+	my $port   = $cgi->param("port") || 80;
+	my $user   = $cgi->param("user") || '';
+	my $pass   = $cgi->param("pass") || '';
+	my $preferhttps  = is_enabled( scalar $cgi->param("preferhttps") );
+	my $porthttps    = $cgi->param("porthttps") || 443;
+	my $useclouddns  = is_enabled( scalar $cgi->param("useclouddns") );
+	my $clouddns     = $cgi->param("clouddns") || '';
+
+	my $transport = $preferhttps ? 'https' : 'http';
+	my $actualport = $preferhttps ? $porthttps : $port;
+
+	if ($useclouddns && $clouddns) {
+		my $clouddns_addr = $cfg->{Base}->{Clouddnsuri} || 'dns.loxonecloud.com';
+		my $ua_dns = LWP::UserAgent->new( timeout => 5 );
+		my $dns_resp = $ua_dns->get("http://$clouddns_addr?getip&snr=$clouddns&json=true");
+		if ($dns_resp->is_success) {
+			my $dns_data = eval { decode_json($dns_resp->content) };
+			$ip = $dns_data->{IP} if $dns_data && $dns_data->{IP};
+			$ip =~ s/[\[\]]//g;
+			($ip, $actualport) = split(':', $ip, 2) if $ip =~ /:/;
+		}
+	}
+
+	my $ua = LWP::UserAgent->new( timeout => 10 );
+	$ua->ssl_opts( verify_hostname => 0, SSL_verify_mode => 0 ) if $preferhttps;
+	my $enc_user = uri_escape($user);
+	my $enc_pass = uri_escape($pass);
+	my $url = "$transport://$enc_user:$enc_pass\@$ip:$actualport/data/LoxApp3.json";
+	my $response = $ua->get($url);
+
+	if ($response->is_success) {
+		my $data = eval { decode_json($response->content) };
+		if ($data && $data->{msInfo}) {
+			my $msinfo = $data->{msInfo};
+			$resp{success}   = 1;
+			$resp{location}  = $msinfo->{location}  // '';
+			$resp{latitude}  = $msinfo->{latitude}  // '';
+			$resp{longitude} = $msinfo->{longitude} // '';
+			# Save to general.json
+			if ($msno && $cfg->{Miniserver}->{$msno}) {
+				$cfg->{Miniserver}->{$msno}->{Location}  = $resp{location};
+				$cfg->{Miniserver}->{$msno}->{Latitude}  = $resp{latitude};
+				$cfg->{Miniserver}->{$msno}->{Longitude} = $resp{longitude};
+				$jsonobj->write();
+			}
+		} else {
+			$resp{success} = 0;
+			$resp{error}   = "msInfo not found in LoxApp3.json";
+		}
+	} else {
+		$resp{success} = 0;
+		$resp{error}   = $response->status_line;
+	}
+	print header('application/json');
+	print to_json(\%resp);
+	exit;
+}
+
+# AJAX: SecurePIN check
+if ($cgi->param("action") && $cgi->param("action") eq "checksecpin") {
+	my %resp;
+	my $checkres = LoxBerry::System::check_securepin($cgi->param("secpin"));
+	$resp{error} = int($checkres);
+	print header('application/json');
+	print to_json(\%resp);
+	exit;
+}
+
 if ($cgi->param("addbtn")) {
-	$miniservers = $form_mscount + 1;
-	$cfg->param("BASE.MINISERVERS", $miniservers);
-	param('miniservers', $miniservers);
-#	$cfg->save();
-	&save;
+	# Add button
+	# Figure out the highest number of Miniserver id's 
+	my $max = 0;
+	$_ > $max and $max = $_ for keys %{$cfg->{Miniserver}};
+	my $newid = int($max) + 1;
+	$cfg->{Miniserver}->{$newid}->{Name} = "";
+	$jsonobj->write();
+	$miniservers = scalar keys %{$cfg->{Miniserver}};
 	&form;
 	exit;
-} elsif ($cgi->param("delbtn") && $form_mscount gt 1) {
-	$cfg->set_block("MINISERVER$form_mscount", {});
-	$miniservers = $form_mscount - 1;
-	$cfg->param("BASE.MINISERVERS", $miniservers);
-	param('miniservers', $miniservers);
-	# $cfg->save();
-	&save;
+} elsif ( $cgi->param("delbtn") ) {
+	# Delete button
+	# POST value 'delbtn' sends the id of the last element in list to delete
+	if ( keys %{$cfg->{Miniserver}} > 1 ) {
+		delete $cfg->{Miniserver}->{ $cgi->param("delbtn") };
+		$jsonobj->write();
+		$miniservers = scalar keys %{$cfg->{Miniserver}};	
+	}
+	
 	&form;
 	exit;
 } elsif (!$R::saveformdata || $R::do eq "form") {
+  # Show form
   &form;
   exit;
 } else {
+  # Save form data
   &save;
   exit;
 }
@@ -131,7 +216,7 @@ exit;
 
 sub form {
 
-	print STDERR "FORM called\n";
+	print STDERR "Calling subfunction FORM\n";
 	$maintemplate->param("FORM", 1);
 	$maintemplate->param( "LANG", $lang);
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
@@ -139,30 +224,38 @@ sub form {
 	$maintemplate->param ( "MINISERVERS", $miniservers);
 	
 	my @msdata = ();
+	my $lastkey;
 	
-	for ($msno = 1; $msno<=$miniservers; $msno++) {	
-	
+	foreach my $msno (sort {$a <=> $b} keys %{$cfg->{Miniserver}} ) {	
+		$lastkey = $msno;
 		my %ms;
+		my $curms = $cfg->{Miniserver}->{$msno};
 		$ms{MSNO} = $msno;
-		$ms{MSIP} = $cfg->param("MINISERVER$msno.IPADDRESS");
-		$ms{MSPORT} = $cfg->param("MINISERVER$msno.PORT");
-		$ms{MSUSER} = uri_unescape($cfg->param("MINISERVER$msno.ADMIN"));
-		$ms{MSPASS} = uri_unescape($cfg->param("MINISERVER$msno.PASS"));
-		$ms{MSUSECLOUDDNS} = is_enabled ($cfg->param("MINISERVER$msno.USECLOUDDNS")) ? "checked" : "";
-		$ms{MSCLOUDURL} = $cfg->param("MINISERVER$msno.CLOUDURL");
-		$ms{MSCLOUDURLFTPPORT} = $cfg->param("MINISERVER$msno.CLOUDURLFTPPORT");
-		$ms{MSNOTE} = $cfg->param("MINISERVER$msno.NOTE");
-		$ms{MSNAME} = $cfg->param("MINISERVER$msno.NAME");
-		
+		$ms{MSIP} = $curms->{Ipaddress};
+		$ms{MSPORT} = $curms->{Port};
+		$ms{MSUSER} = uri_unescape($curms->{Admin});
+		$ms{MSPASS} = uri_unescape($curms->{Pass});
+		$ms{MSUSECLOUDDNS} = is_enabled( $curms->{Useclouddns} ) ? "true" : "false";
+		$ms{MSCLOUDURL} = $curms->{Cloudurl};
+		$ms{MSCLOUDURLFTPPORT} = $curms->{Cloudurlftpport};
+		$ms{MSNOTE} = $curms->{Note};
+		$ms{MSNAME} = $curms->{Name};
+		$ms{MSPREFERHTTPS} = is_enabled( $curms->{Preferhttps} ) ? "true" : "false";
+		$ms{MSPORTHTTPS} = $curms->{Porthttps};
+		$ms{MSLOCATION}  = $curms->{Location}  // '';
+		$ms{MSLATITUDE}  = $curms->{Latitude}  // '';
+		$ms{MSLONGITUDE} = $curms->{Longitude} // '';
+
 		push(@msdata, \%ms);
 	}
 		
 	$maintemplate->param(MSDATA => \@msdata);
-		
+	$maintemplate->param(LASTKEY => $lastkey);
+	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MINISERVER.WIDGETLABEL'};
 	LoxBerry::Web::head();
-	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	LoxBerry::Web::pagestart($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	undef $maintemplate;			
 	LoxBerry::Web::pageend();
@@ -182,107 +275,68 @@ sub save {
 	$maintemplate->param ( "SELFURL", $ENV{REQUEST_URI});
 	
 	# Everything from Forms
-	# Not conform with use strict;, but no idea for a better solution...
 	$miniservers =  !defined param('miniservers') || param('miniservers') lt 1 ? 1 : param('miniservers');
 	
-	$cfg->param("BASE.MINISERVERS", $miniservers);
-
 	$msno = 1;
 	my %ms;
 	
 	while ($msno <= $miniservers) {
-		# Data from form
-		$ms{"miniserverip.$msno"}       				= param("miniserverip$msno");
-		$ms{"miniserverport.$msno"}     				= param("miniserverport$msno");
-		$ms{"miniserveruser.$msno"}     				= param("miniserveruser$msno");
-		$ms{"miniserverkennwort.$msno"} 				= param("miniserverkennwort$msno");
-		$ms{"miniservernote.$msno"}     				= param("miniservernote$msno");
-		$ms{"miniserverfoldername.$msno"}  		   	= param("miniserverfoldername$msno");
-		$ms{"useclouddns.$msno"}        				= param("useclouddns$msno");
-		$ms{"miniservercloudurl.$msno"} 				= param("miniservercloudurl$msno");
-		$ms{"miniservercloudurlftpport.$msno"} 	= param("miniservercloudurlftpport$msno");
-
-		$ms{"useclouddns.$msno"} = defined $ms{"useclouddns.$msno"} ? $ms{"useclouddns.$msno"} : "0";
-  
-		# URL-Encode form data before they are used to test the connection
-		$ms{"miniserveruser.$msno"} = uri_escape($ms{"miniserveruser.$msno"});
-		$ms{"miniserverkennwort.$msno"} = uri_escape($ms{"miniserverkennwort.$msno"});
+		my %ms;
+		my $curms = $cfg->{Miniserver}->{$msno};
+		$curms->{Ipaddress} = param("miniserverip$msno");
+		$curms->{Port} = defined param("miniserverport$msno") ? param("miniserverport$msno") : 80 ;
+		$curms->{Note} = param("miniservernote$msno");
+		$curms->{Useclouddns} = is_enabled( scalar param("useclouddns$msno") ) ? '1' : '0' ;
+		$curms->{Cloudurl} = param("miniservercloudurl$msno");
+		$curms->{Cloudurlftpport} = param("miniservercloudurlftpport$msno");
+		$curms->{Preferhttps} = is_enabled( scalar param("miniserverpreferhttps$msno") ) ? "1" : "0" ;
+		$curms->{Porthttps} = defined param("miniserverporthttps$msno") ? param("miniserverporthttps$msno") : 443 ;
+		$curms->{Name} = param("miniserverfoldername$msno");
+		$curms->{Location}  = param("mslocation$msno")  // $curms->{Location};
+		$curms->{Latitude}  = param("mslatitude$msno")  // $curms->{Latitude};
+		$curms->{Longitude} = param("mslongitude$msno") // $curms->{Longitude};
+		# Credentials are RAW and URI-encoded
+		$curms->{Admin_raw} = param("miniserveruser$msno");
+		$curms->{Pass_raw} = param("miniserverkennwort$msno");
+		$curms->{Admin} = uri_escape( scalar param("miniserveruser$msno") );
+		$curms->{Pass} = uri_escape( scalar param("miniserverkennwort$msno") );
+		$curms->{Credentials} = $curms->{Admin}.':'.$curms->{Pass};
+		$curms->{Credentials_raw} = $curms->{Admin_raw}.':'.$curms->{Pass_raw};
 		
+		# Save calculated values
+		my $transport;
+		$transport = $curms->{Preferhttps} eq '1' ? 'https' : 'http';
+		$curms->{Transport} = $transport;
 		
-# Removed as saving should not check MS anymote		
+		# Check if ip format is IPv6
+		my $IPv6Format = '0';
+		my $ipaddress = $curms->{Ipaddress};
+		if( $curms->{Preferhttps} eq '1' or index( $ipaddress, ':' ) != -1 ) {
+			$IPv6Format = '1';
+		}
+		$curms->{Ipv6format} = $IPv6Format;
 		
-<<'COMMENTED_OUT';
-		
-		# Test if Miniserver is reachable
-		if ( is_enabled($ms{"useclouddns.$msno"})) {
-			# With Cloud DNS
-			$ms{"useclouddns.$msno"} = "1";
-			our $dns_info = `$bins->{'CURL'} -I http://$clouddnsaddress/$ms{"miniservercloudurl.$msno"} --connect-timeout 5 -m 5 2>/dev/null |$bins->{'GREP'} Location |$bins->{'AWK'} -F/ '{print \$3}'`;
-			my @dns_info_pieces = split /:/, $dns_info;
-			if ($dns_info_pieces[1]) {
-				$dns_info_pieces[1] =~ s/^\s+|\s+$//g;
-			} else {
-				$dns_info_pieces[1] = 80;
-			}
-			if ($dns_info_pieces[0]) {
-				$dns_info_pieces[0] =~ s/^\s+|\s+$//g;
-			} else {
-				$dns_info_pieces[0] = "[DNS-Error]"; 
-			}
-			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$dns_info_pieces[0]\:$dns_info_pieces[1]/dev/cfg/version";
+		# Build FullURI from Credentials
+		my ($FullURI, $FullURI_RAW);
+		if ( $curms->{Useclouddns} eq '0' ) {
+			$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
+			my $port = $curms->{Preferhttps} eq '1' ? $curms->{Porthttps} : $curms->{Port};
+			$FullURI = $transport.'://'.$curms->{Admin}.':'.$curms->{Pass}.'@'.$ipaddress.':'.$port;
+			$FullURI_RAW = $transport.'://'.$curms->{Admin_raw}.':'.$curms->{Pass_raw}.'@'.$ipaddress.':'.$port;
 		} else {
-			# With local access
-			$ms{"useclouddns.$msno"} = "0";
-			$url = "http://$ms{\"miniserveruser.$msno\"}:$ms{\"miniserverkennwort.$msno\"}\@$ms{\"miniserverip.$msno\"}\:$ms{\"miniserverport.$msno\"}/dev/cfg/version";
+			$FullURI = "";
+			$FullURI_RAW = "";
 		}
-		$ua = LWP::UserAgent->new;
-		$ua->timeout(5);
-#		local $SIG{ALRM} = sub { die };
-#		eval {
-#			alarm(1);
-			$response = $ua->get($url);
-			$urlstatus = $response->status_line;
-#		};
-#		alarm(0);
-
-		# Error if we can't login
-		$urlstatuscode = substr($urlstatus,0,3);
-		if ($urlstatuscode ne "200") {
-			$error = $SL{'MINISERVER.SAVE_ERR_CANNOT_LOGIN'} . " <b>$msno. Miniserver</b>. " . $SL{'MINISERVER.SAVE_ERR_MS_UNREACHABLE'};
-			$maintemplate->param ( "ERROR", $error );
-			my $errordetails =  "<p>Request:<br>$url<p>" .
-				"<p>Response: HTTP $urlstatus</p>" . 
-				"<p>" . $response->content . "</p>";
-			
-			$maintemplate->param( "ERRORDETAILS", $errordetails );
-			&error;
-		}
-
-COMMENTED_OUT
+		$curms->{Fulluri} = $FullURI;
+		$curms->{Fulluri_raw} = $FullURI_RAW;
 		
-		# Write configuration file(s)
-		$cfg->param("MINISERVER$msno.PORT", $ms{"miniserverport.$msno"});
-		$cfg->param("MINISERVER$msno.PASS", $ms{"miniserverkennwort.$msno"});
-		$cfg->param("MINISERVER$msno.ADMIN", $ms{"miniserveruser.$msno"});
-		$cfg->param("MINISERVER$msno.IPADDRESS", $ms{"miniserverip.$msno"});
-		$cfg->param("MINISERVER$msno.USECLOUDDNS", $ms{"useclouddns.$msno"});
-		$cfg->param("MINISERVER$msno.CLOUDURL", $ms{"miniservercloudurl.$msno"});
-		$cfg->param("MINISERVER$msno.CLOUDURLFTPPORT", $ms{"miniservercloudurlftpport.$msno"});
-		$cfg->param("MINISERVER$msno.NOTE", $ms{"miniservernote.$msno"});
-		$cfg->param("MINISERVER$msno.NAME", $ms{"miniserverfoldername.$msno"});
+		
 		# Next
 		$msno++;
 	}
 
-	# Deleting old Miniserver if any (TODO: How to delete the BLOCKs?!?)
-	
-	while ($miniserversprev > $miniservers) {
-		$cfg->set_block("MINISERVER$miniserversprev", {});
-		$miniserversprev--;
-	}
-
 	# Save Config
-	$cfg->save();
+	$jsonobj->write();
 
 	if ($cgi->param("delbtn") || $cgi->param("addbtn")) { 
 		return;
@@ -293,9 +347,7 @@ COMMENTED_OUT
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
 		%htmltemplate_options,
-		# debug => 1,
 	);
 	
 	my %SL = LoxBerry::System::readlanguage($maintemplate);
@@ -304,7 +356,7 @@ COMMENTED_OUT
 	$maintemplate->param ( "MESSAGE", $SL{'MINISERVER.SAVE_OK_MSG'});
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'MINISERVER.WIDGETLABEL'};
-	LoxBerry::Web::lbheader($template_title, $helplink, $helptemplate);
+	LoxBerry::Web::lbheader($template_title, $helpurl, $helptemplate);
 	print $maintemplate->output();
 	LoxBerry::Web::lbfooter();
 	undef $maintemplate;			

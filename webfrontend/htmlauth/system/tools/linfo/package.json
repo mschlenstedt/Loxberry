@@ -1,7 +1,6 @@
 {
     "name": "Linfo",
     "title": "Linfo",
-    "version": "2.0.2",
     "homepage": "https://github.com/jrgp/linfo",
     "description": "Linfo - PHP server health/stats script.",
     "author": {
@@ -10,7 +9,7 @@
     },
     "contributors": [
         {
-            "name": "Lee Bradley",
+            "name": "Amelia Bradley",
             "email": "elephanthunter@gmail.com"
         },
         {
@@ -36,7 +35,7 @@
     ],
     "licenses": [
         {
-            "type": "GNU"
+            "type": "MIT"
         }
     ],
     "bugs": {

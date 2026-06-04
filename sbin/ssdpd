@@ -3,45 +3,44 @@
  # needed libio-socket-multicast-perl
 
  use strict;
- use lib "/opt/loxberry/libs/perllib";
+ use lib "$ENV{'LBHOMEDIR'}/libs/perllib";
  use IO::Socket::Multicast;
  use IO::Socket::INET;
  use DateTime;
  use LoxBerry::System;
- use Config::Simple;
+ use LoxBerry::JSON;
  use Data::UUID;
  use Thread;
 
- my $cfg;
- if (-e "$lbsconfigdir/general.cfg") {
-	$cfg = new Config::Simple("$lbsconfigdir/general.cfg");
- } elsif (-e "$lbsconfigdir/general.cfg.default") {
-	$cfg = new Config::Simple("$lbsconfigdir/general.cfg.default");
- }
+my $jsonparser = LoxBerry::JSON->new();
+my $cfg = $jsonparser->open(filename => "$lbsconfigdir/general.json", readonly => 0);
 
- if (is_enabled($cfg->param("SSDP.DISABLED"))) { 
+ if ( is_enabled($cfg->{"Ssdp"}->{"Disabled"}) ) { 
 	 print "SSDPD is disabled\n";
+	 undef $cfg;
 	 while (1) {
 		 sleep 1;
 	}
  }
  
  my $s1 = IO::Socket::INET->new(Proto=>'udp');
- our $s2 = IO::Socket::Multicast->new(Proto=>'udp',LocalPort=>1900); 
+ our $s2 = IO::Socket::Multicast->new(Proto=>'udp',LocalPort=>1900);
+ if (!$s2) {die "Cloud not bind LocalPort";} 
  $s2->mcast_add('239.255.255.250') || die "Could not add multicast group.\n";
 
  
  my $from = '';
  my $port = 0;
  my $UUID = '';
- if ($cfg->param("SSDP.UUID")) {
-	 $UUID = $cfg->param("SSDP.UUID");
+ if ($cfg->{"Ssdp"}->{"Uuid"}) {
+	 $UUID = $cfg->{"Ssdp"}->{"Uuid"};
  } else {
 	 my $u = Data::UUID->new;
 	 $UUID = $u->create_str();
-	 $cfg->param("SSDP.UUID",$UUID);
-	 $cfg->save();
+	 $cfg->{"Ssdp"}->{"Uuid"} = $UUID;
+	 $jsonparser->write();
  }
+
  my $IP = LoxBerry::System::get_localip();
  if (LoxBerry::System::lbwebserverport() != 80) {$IP .= ":".LoxBerry::System::lbwebserverport();}
  my $LBName = LoxBerry::System::lbfriendlyname() . " (" . LoxBerry::System::lbhostname() . ")";
@@ -61,6 +60,8 @@
  $SIG{INT} = \&signal_handler;
  $SIG{TERM} = \&signal_handler;
  $SIG{SIGTERM} = \&signal_handler;
+
+ undef $cfg;
 
  while(1) {
  	$s2->recv($buf,1024);

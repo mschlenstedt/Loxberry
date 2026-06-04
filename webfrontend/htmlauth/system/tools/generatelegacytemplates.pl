@@ -36,6 +36,8 @@ if (!$lbstemplatedir) {
 	exit (1);
 }
 
+print STDERR "We are running as $ENV{USERNAME}.\n";
+
 # We need to backup the reboot state because we do not want it in the template
 my $reboot_required_file = $LoxBerry::System::reboot_required_file;
 if (-e $reboot_required_file) {
@@ -101,28 +103,38 @@ foreach my $file (@files) {
 	print STDERR "generatelegacytemplates.pl: Language $file WILL BE RE-CREATED\n";	
 	print STDERR "max_tmpl_epoch: $max_tmpl_epoch   min_tmpllang_epoch: $min_tmpllang_epoch\n";
 	
-	# Pre-set the language in LoxBerry:Web
-	$LoxBerry::Web::lang = $langcode;
+	# Pre-set the language in LoxBerry:System
+	$LoxBerry::System::lang = $langcode;
 	
+	# Delete language cache
+	undef %LoxBerry::System::SL;
+		
 	my $output_header;
 	my $output_footer;
 	my $output_success;
 	my $output_error;
-	
+
 
 	# Send STDOUT to variables
-	
+
+	# Set lbpplugindir to a defined value so Web.pm treats this as a plugin page
+	# (IS_CORE_PAGE=0), which causes head.html to include jQuery Mobile CSS/JS.
+	# Without this, the generated header.html files lack jQuery Mobile entirely.
+	$LoxBerry::System::lbpplugindir = "_legacy";
+
 	# lbheader.html
 	open TOOUTPUT, '>', \$output_header or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
 	select TOOUTPUT;
-	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->'); 
+	LoxBerry::Web::lbheader('<!--$template_title-->', '<!--$helplink-->', '<!--$helptext-->');
 	select STDOUT;
-	
+
 	# lbfooter.html
 	open TOOUTPUT, '>', \$output_footer or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";
 	select TOOUTPUT;
-	LoxBerry::Web::lbfooter(); 
+	LoxBerry::Web::lbfooter();
 	select STDOUT;
+
+	undef $LoxBerry::System::lbpplugindir;
 	
 	# error.html
 	open TOOUTPUT, '>', \$output_error or die "generatelegacytemplates.pl: Can't open new handle TOUTPUT: $!";

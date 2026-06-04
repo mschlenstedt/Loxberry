@@ -1,37 +1,42 @@
 <TMPL_IF form>
-		<!-- ** START template/system/de/updates_menu.html 05.11.2017 22:56:00 ************************************************************************************ -->
+		<!-- ** START template/system/de/updates_menu.html 07.12.2018 21:13:12 ************************************************************************************ -->
 		<!-- START Form for unattended-upgrades -->
 		
-		<div class="wide"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
-		<table class="formtable" border="0" width="100%">
-		<tr>
-			<td>
-			<TMPL_VAR UPDATES.LABEL_ENABLE_UPDATES>
-			</td>
-			<td>
-			<fieldset data-role="controlgroup" data-mini="true" style="width:300px">
-			<TMPL_VAR UPDATE_RADIO>
-			</fieldset>
-			</td>
-		</tr>
-		<tr>
-			<td>
-			<TMPL_VAR UPDATES.LABEL_AUTOMATIC_REBOOT>
-			</td>
-			<td>
-			<fieldset data-role="controlgroup" data-mini="true" style="width:300px">
-			<TMPL_VAR UPDATE_REBOOT_CHECKBOX>
-			</fieldset>
-			</td>
-		</tr>
-		</table>
-		<p></p>
+		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
+		<div style="max-width:80%;margin:0 auto">
+			<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-bottom:var(--lb-space-lg);">
+				<div><TMPL_VAR UPDATES.LABEL_ENABLE_UPDATES></div>
+				<div>
+					<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+						<input type="radio" name="option-secupdates" id="secupd-0" value="0" <TMPL_IF SECUPDATE_IS_0>checked</TMPL_IF>>
+						<label for="secupd-0"><TMPL_VAR UPDATES.SECUPDATE_RADIO_OFF></label>
+						<input type="radio" name="option-secupdates" id="secupd-1" value="1" <TMPL_IF SECUPDATE_IS_1>checked</TMPL_IF>>
+						<label for="secupd-1"><TMPL_VAR UPDATES.SECUPDATE_RADIO_DAILY></label>
+						<input type="radio" name="option-secupdates" id="secupd-7" value="7" <TMPL_IF SECUPDATE_IS_7>checked</TMPL_IF>>
+						<label for="secupd-7"><TMPL_VAR UPDATES.SECUPDATE_RADIO_WEEKLY></label>
+						<input type="radio" name="option-secupdates" id="secupd-30" value="30" <TMPL_IF SECUPDATE_IS_30>checked</TMPL_IF>>
+						<label for="secupd-30"><TMPL_VAR UPDATES.SECUPDATE_RADIO_MONTHLY></label>
+					</div>
+				</div>
+			</div>
+			<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:center; margin-bottom:var(--lb-space-lg);">
+				<div><TMPL_VAR UPDATES.LABEL_AUTOMATIC_REBOOT></div>
+				<div class="lb-form-field">
+					<label><input type="checkbox" name="updates-autoreboot" <TMPL_IF AUTOREBOOT_BOOL>checked</TMPL_IF>> <TMPL_VAR UPDATES.SECUPDATE_REBOOT_ENABLED></label>
+				</div>
+			</div>
+			<div class="lb-actions">
+				<a href="/admin/system/index.cgi?form=system" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+				<button type="button" id="btn-save-secupdates" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
+			</div>
+			<div style="margin-top:8px;"><span id="savehint-secupdates">&nbsp;</span></div>
+		</div>
 		<!-- END Form for unattended-upgrades -->
 		<!-- START Form for system upgrade -->
-<!--		<div class="wide"><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></div>
+<!--		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></div>
 		<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/updates.cgi?do=install" enctype="multipart/form-data">
 			<input type="hidden" name="saveformdata" value="1">
-					<table class="formtable" border="0" width="100%">
+					<table class="lb-formtable" border="0" width="100%">
 						<tr>
 							<td width="25%">
 								<label id="labeluploadfile"><TMPL_VAR UPDATES.LABEL_UPGRADE_FILE></label>
@@ -40,7 +45,7 @@
 								<input type="file" name="uploadfile" class="textfield">
 							</td>
 							<td width="5%" valign="middle">
-								<button type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="button" data-inline="true" data-mini="true" data-icon="check"><TMPL_VAR UPDATES.BUTTON_INSTALL></button>
+								<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit" data-role="none"><i class="pi pi-check"></i> <TMPL_VAR UPDATES.BUTTON_INSTALL></button>
 							</td>
 							<td width="20%">
 								&nbsp;
@@ -49,8 +54,8 @@
 						<tr>
 						<td></td>
 						<td>
-						<a data-role="button" data-inline="true" data-icon="info" data-mini="true"
-						 href="/admin/system/tools/logfile.cgi?logfile=system/upgrade.log&header=html&format=template" target="_blank"><TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+						<a class="lb-btn lb-btn-sm lb-btn-icon"
+						 href="/admin/system/tools/logfile.cgi?logfile=system/upgrade.log&header=html&format=template" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 						</td>
 						<td></td>
 						</tr>
@@ -64,8 +69,7 @@
 		</form>
 		--> 
 		<!-- END Form for system upgrade -->
-		<br />
-<script>
+	<script>
 	var $messages = $('#form-error-message');
 	$.validate(
 		{
@@ -75,25 +79,18 @@
 
 	// AJAX Handler for Updates setting
 	$(document).ready(function(){
-		// Request option for Automatic Updates
-		//$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: 'query'} , success: function(result){
-		//alert(result);
-		// The ajax request returns the name of the radion button, e.g. option-secupdates-7
-		//$('input:radio[id="option-secupdates-30"]').attr("checked", true);
-		//$('input:radio[id="option-secupdates-30"]').attr('data-cacheval','true'); 
-
-		//	$("input[name=option-secupdates]").val(["30"]);
-		//}});
-
-		// Radiobutton Timetable
-		$("input[name='option-secupdates']").change(function(){
+		$("#btn-save-secupdates").click(function(){
 			var val = $("input[name='option-secupdates']:checked").val();
-			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: val}});
-		});
-		// Checkbox Auto-Reboot
-		$("input[name='updates-autoreboot']").change(function(){
-			var val = $("input[name='updates-autoreboot']").prop("checked");
-			$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: val}});
+			var reboot = $("input[name='updates-autoreboot']").prop("checked");
+			$("#savehint-secupdates").attr("style","color:blue").html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
+			$.when(
+				$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: val}}),
+				$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: reboot}})
+			).done(function(){
+				$("#savehint-secupdates").attr("style","color:green").html("<TMPL_VAR COMMON.MSG_SAVEOK>");
+			}).fail(function(){
+				$("#savehint-secupdates").attr("style","color:red").html("<TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>");
+			});
 		});
 	});
 </script>
@@ -102,7 +99,7 @@
 <TMPL_IF sec_question>
 	<!-- ** START template/system/upgrade_install.html 22:59 22.11.2017 ************************************************************************************ -->
 	<center>
-		<table border=0>
+		<table style="border:0;">
 			<tr>
 				<td align="center">
 					<h2><TMPL_VAR UPDATES.UPGRADE_SURE_HEAD></h2>
@@ -117,8 +114,8 @@
 			<tr>
 				<td align="center">
 					<p>
-						<a id="btnback" href="/admin/system/index.cgi?form=system" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-delete"><TMPL_VAR COMMON.BUTTON_CANCEL></a>
-						<a id="btnreboot" href="/admin/system/updates.cgi?do=install&answer=yes" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-check"><TMPL_VAR UPDATES.UPGRADE_BUTTON_REBOOT_UPGRADE></a>
+						<a id="btnback" href="/admin/system/index.cgi?form=system" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
+						<a id="btnreboot" href="/admin/system/updates.cgi?do=install&answer=yes" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR UPDATES.UPGRADE_BUTTON_REBOOT_UPGRADE></a>
 					</p>
 				</td>
 			</tr>
@@ -128,117 +125,96 @@
 </TMPL_IF>
 <TMPL_IF lbupdate>
 <!-- ** LoxBerry Update ** -->
-<style>
-/* DivTable.com */
-.divTable{
-	display: table;
-	width: 100%;
-	word-wrap: break-word;
-	overflow:hidden;
-	text-overflow:ellipsis;
-}
-.divTableRow {
-	display: table-row;
-	
-}
-.divTableHeading {
-	background-color: #EEE;
-	display: table-header-group;
-	
-}
-.divTableCell, .divTableHead {
-	border: 0px;
-	display: table-cell;
-	padding: 3px 10px;
-}
-.divTableHeading {
-	background-color: #EEE;
-	display: table-header-group;
-	font-weight: bold;
-}
-.divTableFoot {
-	background-color: #EEE;
-	display: table-footer-group;
-	font-weight: bold;
-}
-.divTableBody {
-	display: table-row-group;
-}
-</style>
-<div class="wide" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
-<div class="divTable">
-<div class="divTableBody">
-<div class="divTableRow" style="overflow:hidden; text-overflow:ellipsis; width:100%;">
-<div class="divTableCell">
-<p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
+<div class="lb-section-title" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
+<div id="script_failed_block" style="border:1px solid red; background:yellow; display:none;">
+	<TMPL_VAR UPDATES.LBU_SCRIPT_FAILED>
+	<a id="script_failed_versreset" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-arrow-left"></i> <TMPL_VAR UPDATES.LBU_BUTTON_SCRIPT_FAILED_VERSRESET>&nbsp;<span id="failed_version"></span></a>
+</div>
+<div id="update_clearance_block" style="border:1px solid red; background:yellow; display:none;padding:20px 20px 20px 20px;">
+		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE>
+	<p>
+		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_CURRENT>:&nbsp;<span id="lbu_update_clearance_vers_current"></span><br>
+		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_MAX>:&nbsp;<span id="lbu_update_clearance_vers_max"></span><br>
+		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_BLOCKED>:&nbsp;<span id="lbu_update_clearance_vers_blocked"></span>
+		<span style="display:none;" id="lbu_update_clearance_max_version_next"></span>
+	</p>
+	<p>
+		<h3 id="first_blocked_name"></h3>
+		<p id="first_blocked_body"></p>
+	<a id="update_clearance_ok" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATE_CLEARANCE></a>
 
 </div>
-<div class="divTableCell hint" style="border:2px; border-style:outset; border-radius:5px;padding:10px 10px 10px 10px;background-color:LightYellow; width:30%;">
-<div style="display: flex; justify-content:space-between; flex-flow: row wrap;">
-	<div style="flex-grow: 2;">
-	<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
-	<b><TMPL_VAR LBVERSION></b>
-	</div>
-	<div style="flex-grow: 1;">
-	<a id="lbu_button_recheck" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-refresh"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
-	</div>
-</div>
-<p><TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE><br>
-<a style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a></p>
-<p id="lbu_info">&nbsp;</p>
-<div id="lbu_error" style="color:red;"></div>
-<div style="font-size:125%;font-weight:bold;" id="lbu_release_name">&nbsp;</div>
-<div class="note" id="lbu_release_body">&nbsp;</div>
-<div id="lbu_published_at">&nbsp;</div>
-<p><TMPL_VAR UPDATES.LBU_LABEL_CHECKGITHUB> <a href="https://github.com/mschlenstedt/Loxberry/releases" target="_blank">All Releases</a></p>
-</div>
-</div>
-<div class="divTableRow">
-<div class="divTableCell">
-	<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
-	<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
-	<br><TMPL_VAR UPDATES.LBU_HINT_PRERELEASE>
-	<br><TMPL_VAR UPDATES.LBU_HINT_LATEST>
-	</span>
-	
-</div>
-<div class="divTableCell">
-	<fieldset data-role="controlgroup" data-mini="true">
-		<TMPL_VAR RELEASETYPE_RADIO>
-	</fieldset>
-</div>
-</div>
-<div class="divTableRow">
-<div class="divTableCell">
-	<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE>
-</div>
-<div class="divTableCell">
-<fieldset data-role="controlgroup" data-mini="true">
-	<TMPL_VAR INSTALLTYPE_RADIO>
-</fieldset>
-</div>
-</div>
-<div class="divTableRow">
-	<div class="divTableCell">
-	<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTIME>
-	
-	</div>	
-	<div class="divTableCell">
-	<fieldset id="#installtime" data-role="controlgroup" data-mini="true">
-		<TMPL_VAR INSTALLTIME_RADIO>
-	</fieldset>
-	</div>
-</div>
 
-<div class="divTableRow">
-<div class="divTableCell">
-<TMPL_VAR UPDATES.LBU_LABEL_BUTTONS>
-</div>
-<div class="divTableCell">
-<a id="lbu_button_updateinstall_pre" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-star"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
-</div>
-</div>
-</div>
+<div id="lbu_main_content" style="display:grid; grid-template-columns:1fr 45%; column-gap:20px;">
+
+	<div>
+		<p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
+	</div>
+	<div class="hint lb-card" style="align-self:start;">
+		<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+			<div>
+			<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
+			<b id="current_version"><TMPL_VAR LBVERSION></b>
+			</div>
+			<div>
+			<a id="lbu_button_recheck" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-refresh"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATECHECK></a>
+			</div>
+		</div>
+		<p>
+			<span id="LBU_HINT_RELEASE_TYPE"></span>
+			<br>
+			<a id="GitHub" style="text-decoration:none;" href="https://github.com/mschlenstedt/Loxberry/commits/" target="GitHub"><span style="color:Green; white-space:wrap; overflow:hidden;" id="lbu_release_version"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span></a>
+		</p>
+		<p id="lbu_info">&nbsp;</p>
+		<div id="lbu_error" style="color:red;"></div>
+		<div style="font-size:125%; font-weight:bold;" id="lbu_release_name">&nbsp;</div>
+		<div id="lbu_release_body" style="margin-top:6px; margin-bottom:6px;">&nbsp;</div>
+		<div id="lbu_published_at">&nbsp;</div>
+		<p><TMPL_VAR UPDATES.LBU_LABEL_CHECKGITHUB> <a href="https://github.com/mschlenstedt/Loxberry/releases" target="_blank">All Releases</a></p>
+		<div id="branch" class="hint" style="color:red;"></div>
+		<div id="dryrun" class="hint" style="color:red;"></div>
+		<div id="keepupdatefiles" class="hint" style="color:red;"></div>
+		<div id="keepinstallfiles" class="hint" style="color:red;"></div>
+	</div>
+
+	<div style="margin-top:28px;">
+		<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
+		<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
+		<br><TMPL_VAR UPDATES.LBU_HINT_PRERELEASE>
+		<br><TMPL_VAR UPDATES.LBU_HINT_LATEST>
+		</span>
+	</div>
+	<div style="margin-top:28px;">
+		<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+			<TMPL_VAR RELEASETYPE_RADIO>
+		</div>
+	</div>
+
+	<div style="margin-top:20px;">
+		<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE>
+	</div>
+	<div style="margin-top:20px;">
+		<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+			<TMPL_VAR INSTALLTYPE_RADIO>
+		</div>
+	</div>
+
+	<div style="margin-top:20px;">
+		<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTIME>
+	</div>
+	<div style="margin-top:20px;">
+		<div id="installtime" class="lb-btn-group" style="flex-direction:column; width:100%;">
+			<TMPL_VAR INSTALLTIME_RADIO>
+		</div>
+	</div>
+
+	<div style="margin-top:20px;">
+		<TMPL_VAR UPDATES.LBU_LABEL_BUTTONS>
+	</div>
+	<div style="margin-top:20px;">
+		<a id="lbu_button_updateinstall_pre" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
+	</div>
+
 </div>
 
 <div id="lbu_updateinstall" style="display:none;">
@@ -246,8 +222,9 @@
 <p><TMPL_VAR UPDATES.LBU_LABEL_UPDATEINSTALL_INTRO2></p>
 <p id="lbu_install_pleasewait" style="display:none;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></p>
 <p id="lbu_update_process">&nbsp;</p>
-<a id="lbu_button_install_cancel" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back"><TMPL_VAR COMMON.BUTTON_BACK></a>
-<a id="lbu_button_install" href="#" class="ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-star"><TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL></a>
+<a id="lbu_button_update_logfile" href="#" target="_blank" class="lb-btn lb-btn-sm lb-btn-icon" style="display:none"><i class="pi pi-file"></i> <TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
+<a id="lbu_button_install_cancel" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-arrow-left"></i> <TMPL_VAR COMMON.BUTTON_BACK></a>
+<a id="lbu_button_install" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL></a>
 </div>
 
 <script>
@@ -261,7 +238,7 @@ $(document).ready( function () {
 	// Radiobutton Releasetype
 	$("input[name='option-releasetype']").change(function(){
 		var val = $("input[name='option-releasetype']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-reltype", value: val}})
+		$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-reltype", value: val}})
 		.done(function() {
 			clearVersion();
 			checkUpdates();
@@ -271,13 +248,13 @@ $(document).ready( function () {
 	$("input[name='option-installtype']").change(function(){
 		var val = $("input[name='option-installtype']:checked").val();
 		var val2 = $("input[name='option-installtime']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val, installtime: val2}});
+		$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtype", value: val, installtime: val2}});
 	});
 	// Radiobutton Installtime
 	$("input[name='option-installtime']").change(function(){
 		var val = $("input[name='option-installtime']:checked").val();
 		var val2 = $("input[name='option-installtype']:checked").val();
-		$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val, installtype: val2}});
+		$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-installtime", value: val, installtype: val2}});
 	});
 	// Re-Check Updates button
 	$("#lbu_button_recheck").click(function(){
@@ -287,12 +264,13 @@ $(document).ready( function () {
 	$("#lbu_button_updateinstall_pre").click(function(){
 		//$('.divTable').css("display", "none");
 		//$('#lbu_updateinstall').css("display", "inline");
-		$('.divTable').hide();
+		$('#lbu_main_content').hide();
 		$('#lbu_updateinstall').fadeIn();
 	});
 	$("#lbu_button_install_cancel").click(function(){
-		$('.divTable').fadeIn();
+		$('#lbu_main_content').fadeIn();
 		$('#lbu_updateinstall').hide();
+		$('#lbu_button_update_logfile').hide();
 		$('#lbu_button_install').fadeIn();
 		$('#lbu_install_pleasewait').hide();
 		$('#lbu_update_process').text("");
@@ -304,22 +282,152 @@ $(document).ready( function () {
 		$('#lbu_install_pleasewait').fadeIn();
 		installUpdate();
 	});
+
+	$("#script_failed_versreset").click(function(){
+		var failed_ver = $("#failed_version").text();
+		console.log("failed_ver", failed_ver);
+		if (failed_ver != "") {
+			if( failed_ver.charAt( 0 ).toLowerCase() === 'v' )
+				failed_ver = failed_ver.slice( 1 );
+			var reset_ver = ver_minus_one(failed_ver);		
+			$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-resetver", value: reset_ver }})
+			.done(function() { 
+				$("#current_version").text(reset_ver);
+				clearVersion();
+				checkUpdates();
+			});
+		}
+		
+	});
+	
+
+/*
+	// Old function, that triggered to update lbupdatecheck.pl from master
+	$("#update_clearance_ok").click(function(){
+		$("#update_clearance_block").html('<span style="color:green;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span>');
+		
+		$.getJSON(
+		"/admin/system/ajax/ajax-config-handler.cgi", 
+		{ action: "lbupdate-updateself", value: 1 })
+		.done(function(data){
+			if (data.error) {
+				err_str = "Error updating LoxBerry Update scripts";
+				if(data.output) 
+					err_str += "<br>"+data.output;
+				if(data.logfile_button_html)
+					err_str += "<p>"+data.logfile_button_html+"</p>";
+				$("#update_clearance_block").html(err_str);
+ 			} else {
+				$("#update_clearance_block").html("LoxBerry Update updated successfully - refreshing");
+				location.reload();
+ 			}
+		});
+	});
 	
  });
  
+ */
+ 
+	$("#update_clearance_ok").click(function(){
+		lbu_update_clearance_max_version_next = $("#lbu_update_clearance_max_version_next").text();
+				
+		$("#update_clearance_block").html('<span style="color:green;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></span>');
+		
+		console.log("#lbu_update_clearance_max_version_next", lbu_update_clearance_max_version_next);
+		$.getJSON(
+		"/admin/system/ajax/ajax-config-handler.cgi", 
+		{ action: "lbupdate-setmaxversion", value: lbu_update_clearance_max_version_next })
+		.done(function(data){
+			if (data.error) {
+				err_str = "Error updating the allowed maximum version.";
+				if(data.output) 
+					err_str += "<br>"+data.output;
+				$("#update_clearance_block").html(err_str);
+ 			} else {
+				$("#update_clearance_block").html("Allowed maximum version updated successfully - refreshing");
+				location.reload();
+ 			}
+		});
+	});
+	
+ });
+
+
+
+ 
+ function ver_minus_one(vers) 
+ {
+	//console.log ("ver_minus_one called");
+	var parts = vers.split(".");
+	for (i = parts.length-1; i >= 0; i--) {
+		//console.log ("i", i, "value from i", parts[i]);
+		if (parts[i] == 0) {
+			parts.splice(i, 1);
+		} else {
+			parts[i]--;
+			break;
+		}
+	}
+	var newvers = parts.join(".") + ".999";
+	// console.log ("Joined version", newvers);
+	return newvers;
+ 
+ }
+
  function checkUpdates()
  {
-	//$.ajax({url: "/admin/system/tools/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-runcheck"}});
+	//$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "lbupdate-runcheck"}});
 	$.getJSON(
-		"/admin/system/tools/ajax-config-handler.cgi", 
+		"/admin/system/ajax/ajax-config-handler.cgi", 
 		{ action: "lbupdate-runcheck", value: 1 })
 		.done(function(data){
 			//console.log("Hallo");
 			//resp = JSON.parse(data);
 			//console.log("release_version", data.info);
+			
+			if (data.failed_script) {
+				$("#failed_version").text(data.failed_script);
+				$("#script_failed_block").fadeIn();
+				$("#update_clearance_block").fadeOut();
+			} else if(data.blocked_version) {
+				$("#script_failed_block").fadeOut();
+				$("#failed_version").text("");
+				$("#lbu_update_clearance_vers_current").text($("#current_version").text());
+				$("#lbu_update_clearance_vers_max").text(data.max_version);
+				$("#lbu_update_clearance_max_version_next").text(data.max_version_next);
+				$("#lbu_update_clearance_vers_blocked").text(data.blocked_version);
+				$("#first_blocked_name").text(data.first_blocked_name);
+				$("#first_blocked_body").html(urlify(data.first_blocked_body).replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
+				
+				$("#update_clearance_block").fadeIn();
+				
+			
+			} else {
+				$("#script_failed_block").fadeOut();
+				$("#failed_version").text("");
+			}
+			
 			if (data.error) {
 				$('#lbu_error').html("Error: "+data.error);
+				$('#lbu_release_version ').html("");
 			} else {
+				
+				switch(data.releasetype) {
+					case "release": 
+						$("#LBU_HINT_RELEASE_TYPE").html("<TMPL_VAR UPDATES.LBU_HINT_LATEST_RELEASE>");
+						break;
+					case "prerelease":
+						$("#LBU_HINT_RELEASE_TYPE").html("<TMPL_VAR UPDATES.LBU_HINT_LATEST_PRERELEASE>");
+						break;
+					case "commit":
+						$("#LBU_HINT_RELEASE_TYPE").html("<TMPL_VAR UPDATES.LBU_SEL_RELTYPE_LATEST>:");
+						break;
+					default:
+						$("#LBU_HINT_RELEASE_TYPE").html("");
+				}
+				$("#LBU_HINT_RELEASE_TYPE").show();
+
+				
 				if (data.release_version) {
 					stripped_relvers = data.release_version;
 					if (stripped_relvers.length > 30) stripped_relvers = stripped_relvers.substring(0, 30) + '... ';
@@ -330,11 +438,13 @@ $(document).ready( function () {
 				if (data.release_name) 
 				{
 					var release_name_details = data.release_name;
-					release_name_details = release_name_details.replace(/(\n\n)/, '<br><hr></div><div style="color:#404080; font-size:75%;font-weight:normal;" id="lbu_release_name_details">');
+					release_name_details = release_name_details.replace(/(\n\n)/, '<br><hr></div><div style="font-size:75%;font-weight:normal;" id="lbu_release_name_details">');
 					release_name_details = release_name_details + "<hr>";
 					$('#lbu_release_name').html(release_name_details.replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
 				}
-				if (data.release_body) $('#lbu_release_body').html(data.release_body);
+				if (data.release_body) {
+					$('#lbu_release_body').html(urlify(data.release_body).replace(/(\r\n|\n\r|\r|\n)/g, '<br>'));
+				}
 				if (data.published_at) {
 					publishdate = new Date(data.published_at);
 					$('#lbu_published_at').html("<TMPL_VAR UPDATES.LBU_LABEL_PUBLISHED_AT> " + publishdate.toLocaleString());
@@ -348,28 +458,51 @@ $(document).ready( function () {
 				}
 			}
 			
+			if(data.dryrun != undefined && data.dryrun !== "dryrun=0") { $("#dryrun").text("DRYRUN is set"); }
+				else { $("#dryrun").text(""); }
+			if(data.keepupdatefiles != undefined && data.keepupdatefiles !== "0") { $("#keepupdatefiles").text("KEEPUPDATEFILES is set"); }
+				else { $("#keepupdatefiles").text(""); }
+			if(data.keepinstallfiles != undefined && data.keepinstallfiles !=="0") { $("#keepinstallfiles").text("KEEPINSTALLFILES is set"); }
+				else { $("#keepinstallfiles").text(""); }
+			if(data.branch != undefined && data.branch !== "master" ) 
+			{ 
+				$("#branch").text("Branch "+data.branch+" is set"); 
+				$("#GitHub").prop("href","https://github.com/mschlenstedt/Loxberry/commits/"+data.branch); 
+			}
+			else 
+			{ 
+				$("#branch").text(""); 
+				$("#GitHub").prop("href","https://github.com/mschlenstedt/Loxberry/commits/master"); 
+			}
 			
-			});
+		});
  }
  
  function clearVersion()
  {
+	$("#LBU_HINT_RELEASE_TYPE").html("");
 	$('#lbu_release_version').text("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
 	$('#lbu_release_version').css("color", "Green");
-	$('#lbu_release_version').css("font-weight", "normal");
+	$('#lbu_release_version').css("font-weight", "bold");
 	$('#lbu_info').text("");
 	$('#lbu_info').css("font-weight", "normal");
 	$('#lbu_error').text("");
 	$('#lbu_release_name').text("");
 	$('#lbu_release_body').text("");
 	$('#lbu_published_at').text("");
- 
+	$("#dryrun").text(""); 
+	$("#keepupdatefiles").text("");
+	$("#keepinstallfiles").text("");
+	$("#branch").text("");
+	$("#update_clearance_block").fadeOut();
+	$("#script_failed_block").fadeOut();
+	
  }
  
  function installUpdate()
  {
 	$.getJSON(
-		"/admin/system/tools/ajax-config-handler.cgi", 
+		"/admin/system/ajax/ajax-config-handler.cgi", 
 		{ action: "lbupdate-runinstall", value: 1 })
 		.done(function(data){
 			if (data.error) {
@@ -380,31 +513,33 @@ $(document).ready( function () {
 				$('#lbu_install_pleasewait').hide();
  			}
 			$('#lbu_button_install_cancel').fadeIn();
+			if (data.logfile != "") {
+				$('#lbu_button_update_logfile').attr("href", "/admin/system/tools/logfile.cgi?logfile=" + data.logfile + "&header=html&format=template");
+				$('#lbu_button_update_logfile').fadeIn();
+			}
 		});
 }
 
+
+// Create a link from a http link string
+// https://stackoverflow.com/a/1500501/3466839
+function urlify(text) {
+    var urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, function(url) {
+        return '<a href="' + url + '">' + url + '</a>';
+    })
+    // or alternatively
+    // return text.replace(urlRegex, '<a href="$1">$1</a>')
+}
+
+
 </script>
+
 </TMPL_IF>
 
 <TMPL_IF lbuhistory>
-<p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATELOGS></p>
-	<TMPL_LOOP UPDATESLIST>
-	    <div class="ui-btn ui-corner-all" style="padding-bottom:20px; text-align:left; cursor:pointer; font-size: 1em; font-family: sans-serif; ">
-			<span style="font-size:125%;"><TMPL_VAR DATESTR></span>
-			&nbsp;
-			<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=html&format=template', 'log')" target="_blank"><img src="/system/images/icons/open_new_win.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
-			&nbsp;
-			<a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR URLFILENAME>&header=file&format=plain'; return false;"  target="_self"><img src="/system/images/icons/download.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></a>
-			<span style="padding-left:10px;">&nbsp;<TMPL_VAR FIRSTLINE></span></div>
-	</TMPL_LOOP>
-<br>
-<p class="wide"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
-    <div class="ui-btn ui-corner-all" style="padding-bottom:20px; text-align:left; cursor:pointer; font-size: 1em; font-family: sans-serif;" >
-	<span style="font-size:125%;"><TMPL_VAR LOGVIEWER.UPDATECHECKLOGFILE></span>
-	&nbsp;
-	<a onclick="window.open('/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=html&format=template', 'log')" target="_blank"><img src="/system/images/icons/open_new_win.svg">&nbsp;<TMPL_VAR UPDATES.LBULOG_BUTTON_VIEW></a>
-	&nbsp;
-	<a onclick="location.href='/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR UPDATECHECKLOGFILE>&header=file&format=plain'; return false;"  target="_self"><img src="/system/images/icons/download.svg"> <TMPL_VAR UPDATES.LBULOG_BUTTON_DOWNLOAD></a>
-	
-	<span style="padding-left:10px;">&nbsp;<TMPL_VAR FIRSTLINE></span></div>
+<p class="lb-section-title"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATELOGS></p>
+<TMPL_VAR UPDATELOGS_HTML>
+<p class="lb-section-title"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
+<TMPL_VAR UPDATECHECKLOGS_HTML>
 </TMPL_IF>

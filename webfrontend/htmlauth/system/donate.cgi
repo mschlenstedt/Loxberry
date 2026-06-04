@@ -20,7 +20,6 @@
 ##########################################################################
 use LoxBerry::System;
 use LoxBerry::Web;
-
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 use Config::Simple;
@@ -31,50 +30,31 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helpurl = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
+my $helpurl = "https://wiki.loxberry.de/spenden/start";
 
-our $cfg;
+our $lang;
 our $phrase;
 our $namef;
 our $value;
 our %query;
-our $lang;
 our $template_title;
 our $help;
 our @help;
 our $helptext;
 our $helplink;
-our $installfolder;
 our $languagefile;
+our $bins = LoxBerry::System::get_binaries();
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "0.3.2.2";
-
-$cfg                = new Config::Simple("$lbhomedir/config/system/general.cfg");
-$installfolder   = $cfg->param("BASE.INSTALLFOLDER");
-$lang            = $cfg->param("BASE.LANG");
+my $version = "3.0.0.0";
 
 #########################################################################
 # Parameter
 #########################################################################
-
-# Everything from URL
-foreach (split(/&/,$ENV{'QUERY_STRING'})){
-  ($namef,$value) = split(/=/,$_,2);
-  $namef =~ tr/+/ /;
-  $namef =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $value =~ tr/+/ /;
-  $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-  $query{$namef} = $value;
-}
-
-
-$query{'lang'}         =~ tr/a-z//cd;
-$query{'lang'}         =  substr($query{'lang'},0,2);
 
 ##########################################################################
 # Language Settings
@@ -91,17 +71,46 @@ my $maintemplate = HTML::Template->new(
 		global_vars => 1,
 		loop_context_vars => 1,
 		die_on_bad_params=> 0,
-		associate => $cfg,
 		%htmltemplate_options,
 		# debug => 1,
 		);
 	
 my %SL = LoxBerry::System::readlanguage($maintemplate);
 
+# Read Donors and create Template Loop
+my $file = "$lbsdatadir/donors.dat";
+my $url = "https://raw.githubusercontent.com/mschlenstedt/Loxberry/master/data/system/donors.dat";
+my @lines;
+my @donorlist;
+my $counter = 0;
+
+# Download newest donors list if older than 3 days
+my $mtime = ( stat($file) )[9];
+my $now = time();
+if ($now > $mtime+259200 || !-e $file) {
+	my $resp = `$bins->{CURL} -q --connect-timeout 2 --max-time 5 --retry 2 -LfksSo $file $url 2>&1`;
+}
+
+# Read list in reverse order
+open (FH, '<', $file);
+@lines = reverse <FH>;
+close(FH);
+
+foreach (@lines) {
+	my %donor;
+	my ($date,$name,$comment) = split(/;/,$_);
+	$counter++;
+	$donor{NAME} = $name;
+	$donor{DATE} = $date;
+	$donor{COMMENT} = $comment;
+	push(@donorlist, \%donor);
+}
+$maintemplate->param(DONORLIST => \@donorlist);
+$maintemplate->param(COUNTER => $counter);
+
 # Print Template
 $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'DONATE.WIDGETLABEL'};
-LoxBerry::Web::head();
-LoxBerry::Web::pagestart($template_title, $helplink);
+LoxBerry::Web::lbheader($template_title, $helpurl);
 print $maintemplate->output();
 undef $maintemplate;			
 LoxBerry::Web::pageend();

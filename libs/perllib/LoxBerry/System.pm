@@ -3,17 +3,14 @@
 
 use strict;
 use Config::Simple;
-#use File::HomeDir;
 use URI::Escape;
 use Cwd 'abs_path';
-# use LWP::UserAgent;
-#use XML::Simple;
 use Carp;
-use Sys::Hostname;
+use Encode;
 
 package LoxBerry::System;
-our $VERSION = "1.0.0.11";
-our $DEBUG = 0;
+our $VERSION = "3.0.0.8";
+our $DEBUG;
 
 use base 'Exporter';
 
@@ -36,6 +33,7 @@ our @EXPORT = qw (
 	$lbpbindir
 	
 	lblanguage
+	lbcountry
 	readlanguage
 	lbhostname
 	lbfriendlyname
@@ -46,6 +44,7 @@ our @EXPORT = qw (
 	$lbstemplatedir
 	$lbsdatadir
 	$lbslogdir
+	$lbstmpfslogdir
 	$lbsconfigdir
 	$lbssbindir
 	$lbsbindir
@@ -53,84 +52,24 @@ our @EXPORT = qw (
 	is_enabled 
 	is_disabled
 	begins_with
+	execute
 	trim 
 	ltrim
 	rtrim
 	currtime
+	epoch2lox
+	lox2epoch
 	reboot_required
 	vers_tag
+	plugin_version_compare
+	plugin_version_has_prerelease
 );
-
-=head1 NAME
-
-LoxBerry::System - LoxBerry platform system module to ease writing plugins for LoxBerry. See http://www.loxwiki.eu:80/x/o4CO
-
-=head1 SYNOPSIS
-
-	use LoxBerry::System;
-	
-	# LoxBerry::System defines globals for plugin directory
-	print "Config Directory: $lbpconfigdir";
-	print "HTMLAUTH directory:    $lbphtmlauthdir";
-	print "HTML directory:   $lbphtmldir";
-	# See more below
-	
-	# Get all data of configured Miniservers
-	my %miniservers = LoxBerry::System::get_miniservers();
-	print "Miniserver no. 1 is called $miniservers{1}{Name} and has IP $miniservers{1}{IPAddress}.";
-	# See below for all available variables
-	
-	# Binary paths from the config can be accessed by
-	my %bins = LoxBerry::System::get_binaries();
-	system("ps aux | $bins->{GREP} perl";
-	
-	# LoxBerry::System supports  using Loxone CloudDNS
-	my $ftpport = LoxBerry::System::get_ftpport($msno);
-	# returns the FTP port, either  local or CloudDNS one
-
-=head1 DESCRIPTION
-
-Goal of LoxBerry::System (and LoxBerry::Web) is to simplify creating plugins for the LoxBerry platform. Many time-consuming steps are encapsulated to easy call-able functions.
-
-=head2 Global Variables
-
-LoxBerry::System defines a dozen of variables for easier access to the plugin directories. They are accessable directly after the use LoxBerry::System command.
-
-	$lbhomedir		# Home directory of LoxBerry, usually /opt/loxberry
-	$lbpplugindir	# The unique directory name of the plugin, e.g. squeezelite
-	$lbcgidir		# Legacy variable, points to the HTMLAUTH dir . e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
-	$lbphtmlauthdir	# Full path to the HTMLAUTH directory of the current plugin. e.g. /opt/loxberry/webfrontend/htmlauth/plugins/squeezelite
-	$lbphtmldir		# Full path to the HTML directory of the current plugin, e.g. /opt/loxberry/webfrontend/html/plugins/squeezelite
-	$lbptemplatedir	# Full path to the Template directory of the current plugin, e.g. /opt/loxberry/templates/plugins/squeezelite
-	$lbpdatadir		# Full path to the Data directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
-	$lbplogdir		# Full path to the Log directory of the current plugin, e.g. /opt/loxberry/data/plugins/squeezelite
-	$lbpconfigdir	# Full path to the Config directory of the current plugin, e.g. /opt/loxberry/config/plugins/squeezelite
-
-	$lbshtmlauthdir	# Full path to the SYSTEM CGI directory /opt/loxberry/webfrontend/htmlauth/system
-	$lbshtmldir		# Full path to the SYSTEM HTML directory /opt/loxberry/webfrontend/html/system
-	$lbstemplatedir	# Full path to the SYSTEM Template directory /opt/loxberry/templates/system
-	$lbsdatadir		# Full path to the SYSTEM Data directory /opt/loxberry/data/system
-	$lbslogdir		# Full path to the SYSTEM Log directory /opt/loxberry/data/system
-	$lbsconfigdir	# Full path to the SYSTEM Config directory /opt/loxberry/config/system
-
-	
-$lbhomedir is detected in the following order:
-
-=over 12
-
-=item 1. System environment variable -> $LBHOMEDIR
-
-=item 2. If username is loxberry -> HomeDir
-
-=item 3. Static -> /opt/loxberry
-
-=back
-
-=cut
 
 ##################################################################
 # This code is executed on every use
 ##################################################################
+
+print STDERR "=== " . currtime('hr') . " === DEBUG ENABLED (executing $0) =======================\n" if ($DEBUG);
 
 # Set global variables
 
@@ -213,12 +152,22 @@ our $lbshtmlauthdir = "$lbhomedir/webfrontend/htmlauth/system";
 our $lbstemplatedir = "$lbhomedir/templates/system";
 our $lbsdatadir = "$lbhomedir/data/system";
 our $lbslogdir = "$lbhomedir/log/system";
+our $lbstmpfslogdir = "$lbhomedir/log/system_tmpfs";
 our $lbsconfigdir = "$lbhomedir/config/system";
 our $lbssbindir = "$lbhomedir/sbin";
 our $lbsbindir = "$lbhomedir/bin";
 
+our %SL; # Shortcut for System language phrases
+our %L;  # Shortcut for Plugin language phrases
+our $reboot_required_file = "$lbstmpfslogdir/reboot.required";
+our $reboot_force_popup_file = "$lbstmpfslogdir/reboot.force";
+our $PLUGINDATABASE = "$lbsdatadir/plugindatabase.json";
+our $mqttcfg;
+our $lbtheme;
+
 # Variables only valid in this module
 my $lang;
+my $country;
 my $cfgwasread;
 my %miniservers;
 my %binaries;
@@ -229,82 +178,79 @@ my $lbfriendlyname;
 my $lbversion;
 my @plugins;
 my $plugins_delcache;
-my $webserverport;
+my $plugindb_timestamp = 0;
+my $plugindb_timestamp_last = 0;
+my $plugindb_lastchecked = 0;
 
-our %SL; # Shortcut for System language phrases
-our %L;  # Shortcut for Plugin language phrases
-our $reboot_required_file = "$lbhomedir/log/system_tmpfs/reboot.required";
+my $webserverport;
+my $clouddnsaddress;
+my $msClouddnsFetched;
+my $sysloglevel;
+
 
 
 # Finished everytime code execution
 ##################################################################
 
-=head2 get_miniservers
-
-This function reads all the configuration variables of all configured Miniservers, including credentials. 
-The result is a two-dimensional hash. The first key is the Miniserver number (starting from 1), the second keys are 
-configuration settings.
-
-	use LoxBerry::System;
-	my %miniservers = LoxBerry::System::get_miniservers();
-	
-	if (! %miniservers) {
-		exit(1); # No Miniservers found
-	}
-	
-	print "Number of Miniservers: " . keys(%miniservers);
-	
-	print "Miniserver no. 1's name is $miniservers{1}{Name} and has IP $miniservers{1}{IPAddress}.";
-	
-	foreach my $ms (sort keys %miniservers) {
-		print "Miniserver no. $ms is called $miniservers{$ms}{Name} and has IP $miniservers{$ms}{IPAddress}.";
-	}
-
-Available keys are:
-
-	Name			# Name of the Miniserver
-	IPAddress		# IP address of the Miniserver
-	Port			# Web port of the Miniserver
-	Admin			# Administrative user (URL-encoded)
-	Pass			# Password of administrative user (URL-encoded)
-	Credentials		# Admin:Pass (URL-encoded)
-	Admin_RAW		# Administrative user (NOT URL-encoded)
-	Pass_RAW		# Password of administrative user (NOT URL-encoded)
-	Credentials_RAW	# Admin:Pass (NOT URL-encoded)
-	Note			# Note to the MS
-	UseCloudDNS	 	# CloudDNS enabled
-	CloudURL	 	# External URL 
-	CloudURLFTPPort	# External FTP port - use get_ftpport instead!
-
-=cut
-
 ####### Get Miniserver hash #######
 sub get_miniservers
 {
-	# If config file was read already, directly return the saved hash
-	if (%miniservers) {
-		return %miniservers;
-	}
-
-	if (read_generalcfg()) {
-		return %miniservers;
-	}
-	return undef;
-}
-
-=head2 get_miniserver_by_ip
-
-Returns the Miniserver number using the provided IP address. 
-
-	my $ip = '192.168.0.77';
-	my %miniservers = LoxBerry::System::get_miniservers();
-	my $msno = LoxBerry::System::get_miniserver_by_ip($ip);
 	
-	if ($msno) {
-		print "Miniserver with address $ip is called $miniservers{$msno}{Name}.";
+	# If config file was read already, directly return the saved hash
+	if ($msClouddnsFetched) {
+		return %miniservers;
 	}
 
-=cut
+	if (!%miniservers) {
+		read_generaljson();
+	}
+	
+	# CloudDNS handling
+	foreach my $msnr (keys %miniservers) {
+		if (LoxBerry::System::is_enabled($miniservers{$msnr}{UseCloudDNS}) && ($miniservers{$msnr}{CloudURL})) {
+			set_clouddns($msnr, $clouddnsaddress);
+		}
+		
+		if (! $miniservers{$msnr}{Port}) {
+			$miniservers{$msnr}{Port} = 80;
+		}
+		if (! $miniservers{$msnr}{PortHttps}) {
+			$miniservers{$msnr}{PortHttps} = 443;
+		}
+
+		my $transport;
+		my $port;
+		if( is_enabled( $miniservers{$msnr}{PreferHttps} ) ) {
+			$transport = 'https';
+			$port = $miniservers{$msnr}{PortHttps};
+		} else {
+			$transport = 'http';
+			$port = $miniservers{$msnr}{Port};
+		}
+		# Check if ip format is IPv6
+		my $IPv6Format = '0';
+		my $ipaddress = $miniservers{$msnr}{IPAddress};
+		if( index( $ipaddress, ':' ) != -1 ) {
+			$IPv6Format = '1';
+		}
+		$miniservers{$msnr}{IPv6Format} = $IPv6Format;
+		
+		$ipaddress = $IPv6Format eq '1' ? '['.$ipaddress.']' : $ipaddress;
+		my $port = is_enabled($miniservers{$msnr}{PreferHttps}) ? $miniservers{$msnr}{PortHttps} : $miniservers{$msnr}{Port};
+		
+		$miniservers{$msnr}{Transport} = $transport;
+		$miniservers{$msnr}{FullURI} = $transport.'://'.$miniservers{$msnr}{Credentials}.'@'.$ipaddress.':'.$port;
+		$miniservers{$msnr}{FullURI_RAW} = $transport.'://'.$miniservers{$msnr}{Credentials_RAW}.'@'.$ipaddress.':'.$port;
+
+		# Miniserver values consistency check
+		# If a Miniserver entry is not plausible, the full Miniserver hash entry is deleted
+		if($miniservers{$msnr}{Name} eq '' or $miniservers{$msnr}{IPAddress} eq '' or $miniservers{$msnr}{Admin} eq '' or $miniservers{$msnr}{Pass} eq '' ) {
+			delete @miniservers{$msnr};
+		}
+	}
+	$msClouddnsFetched = 1;
+	return %miniservers;
+}
 
 ####### Get Miniserver key by IP Address #######
 sub get_miniserver_by_ip
@@ -312,10 +258,8 @@ sub get_miniserver_by_ip
 	my ($ip) = @_;
 	$ip = trim(lc($ip));
 	
-	if (! %miniservers) {
-		if (! read_generalcfg()) {
-			return undef;
-		}
+	if(!$msClouddnsFetched) {
+		LoxBerry::System::get_miniservers();
 	}
 	
 	foreach my $msip (keys %miniservers) {
@@ -326,30 +270,14 @@ sub get_miniserver_by_ip
 	return undef;
 }
 
-=head2 get_miniserver_by_name
-
-Returns the number of the Miniserver using the provided Name. This could be useful to get the number of a name selection in a form. The name comparison is case-insensitive.
-
-	my $name = 'MyMiniserver';
-	my %miniservers = LoxBerry::System::get_miniservers();
-	my $msno = LoxBerry::System::get_miniserver_by_name($name);
-	
-	if ($msno) {
-		print "Miniserver with name $name is called $miniservers{$msno}{Name}.";
-	}
-
-=cut
-
 ####### Get Miniserver key by Name #######
 sub get_miniserver_by_name
 {
 	my ($myname) = @_;
 	$myname = trim(lc($myname));
 	
-	if (! %miniservers) {
-		if (! read_generalcfg()) {
-			return undef;
-		}
+	if(!$msClouddnsFetched) {
+		LoxBerry::System::get_miniservers();
 	}
 	
 	foreach my $msname (keys %miniservers) {
@@ -360,55 +288,35 @@ sub get_miniserver_by_name
 	return undef;
 }
 
-=head2 get_binaries
-
-Although LoxBerry in its fundamental characteristic comes as a ready-to-use Raspberry image, it should be as platform-independent as possible. 
-Therefore, system binaries should not be executed with static paths but from variables to these binaries. 
-
-	my $bins = LoxBerry::System::get_binaries();
-	print STDERR "The binary of Grep is $bins->{GREP}.";
-	system("$bins->{ZIP} myarchive.zip *");
-
-Available binaries:
-	APT
-	AWK
-	BASH
-	BZIP2
-	CHMOD
-	CURL
-	DATE
-	GREP
-	GZIP
-	MAIL
-	NTPDATE
-	POWEROFF
-	REBOOT
-	SENDMAIL
-	SUDO
-	TAR
-	UNZIP
-	WGET
-	ZIP
-
-If your plugin needs additional system binaries, it is best practise to read the binary path from your own plugin config file.
-
-=cut
-
 ####### Get Binaries #######
 sub get_binaries
 {
-
-	if ($LoxBerry::System::binaries) {
-		# print STDERR "Returning existing hashref\n";
-		return $LoxBerry::System::binaries;
-	} 
-
-	if (read_generalcfg()) {
-			# print STDERR "Reading config and returning hashref\n";
-			#%LoxBerry::System::binaries ? print STDERR "Hash is defined\n" : print STDERR "Hash NOT defined\n";
-			return $LoxBerry::System::binaries;
-	}
-	return undef;
+	my %bins = (
+		FIND		=> '/usr/bin/find',
+		GREP		=> '/bin/grep',
+		TAR			=> '/bin/tar',
+		NTPDATE		=> '/usr/sbin/ntpdate',
+		UNZIP		=> '/usr/bin/unzip',
+		MAIL		=> '/usr/bin/mailx',
+		BASH		=> '/bin/bash',
+		APT			=> '/usr/bin/apt-get',
+		ZIP			=> '/usr/bin/zip',
+		GZIP		=> '/bin/gzip',
+		CHOWN		=> '/bin/chown',
+		SUDO		=> '/usr/bin/sudo',
+		DPKG		=> '/usr/bin/dpkg',
+		REBOOT		=> '/sbin/reboot',
+		WGET		=> '/usr/bin/wget',
+		CURL		=> '/usr/bin/curl',
+		CHMOD		=> '/bin/chmod',
+		SENDMAIL	=> '/usr/sbin/sendmail',
+		AWK			=> '/usr/bin/awk',
+		DOS2UNIX	=> '/usr/bin/dos2unix',
+		BZIP2		=> '/bin/bzip2',
+		DATE		=> '/bin/date',
+		POWEROFF	=> '/sbin/poweroff'
+	);
+	return \%bins;
 }
 
 ##################################################################################
@@ -421,7 +329,7 @@ sub pluginversion
 	my ($queryname) = @_;
 	
 	if ($pluginversion && !$queryname) {
-		# print STDERR "Debug: $pluginversion is cached.\n";
+		print STDERR "Debug: $pluginversion is cached.\n" if ($DEBUG);
 		return $pluginversion;
 	}
 	
@@ -443,7 +351,8 @@ sub pluginloglevel
 	my $query = $queryname ? $queryname : $lbpplugindir;
 	
 	my $plugin = LoxBerry::System::plugindata($query);
-	return $plugin->{PLUGINDB_LOGLEVEL} ? $plugin->{PLUGINDB_LOGLEVEL} : 0;
+	
+	return ( $plugin and $plugin->{PLUGINDB_LOGLEVEL} ) ? $plugin->{PLUGINDB_LOGLEVEL} : 0;
 }
 
 ##################################################################################
@@ -463,7 +372,7 @@ sub plugindata
 	
 	foreach my $plugin (@plugins) {
 		if ($queryname && ( $plugin->{PLUGINDB_NAME} eq $query || $plugin->{PLUGINDB_FOLDER} eq $query) ) {
-			print STDERR "   Returning plugin $plugin->{PLUGINDB_TITLE}\n";
+			print STDERR "   Returning plugin $plugin->{PLUGINDB_TITLE}\n" if ($DEBUG);
 			return $plugin;
 		}
 		if (!$queryname && $plugin->{PLUGINDB_FOLDER} eq $query) {
@@ -473,8 +382,6 @@ sub plugindata
 	}
 }
 
-
-
 ##################################################################################
 # Get Plugins
 # Returns all plugins in a hash
@@ -483,94 +390,121 @@ sub plugindata
 ##################################################################################
 sub get_plugins
 {
-	my ($withcomments, $forcereload, $plugindb_file) = @_;
+	my ($withcomments_obsolete, $forcereload, $plugindb_file_obsolete) = @_;
 	
-	if (@plugins && !$forcereload && !$plugindb_file && !$plugins_delcache) {
+	# withcomments parameter is legacy for LoxBerry 1.x and not used.
+	if( defined $withcomments_obsolete ) {
+		Carp::carp "<INFO> get_plugins first parameter (withcomments) is outdated and ignored";
+	}
+	# $plugindb_file parameter is not allowed anymore
+	if (defined $plugindb_file_obsolete) {
+		Carp::croak "<ERROR> get_plugins third parameter (plugindb_file) is outdated and not allowed anymore. To read a custom plugindatabase, use LoxBerry::System::PluginDB instead.";
+	}
+	
+	my $plugindb_file = $PLUGINDATABASE;
+	
+	# When the plugindb has changed, always force a reload of the plugindb
+	if($plugindb_timestamp_last != plugindb_changed_time()) {
+			# Changed
+			my $plugindb_timestamp_new = plugindb_changed_time();
+			$forcereload = 1;
+			print STDERR "get_plugins: Plugindb timestamp has changed (old: $plugindb_timestamp_last new: $plugindb_timestamp_new)\n" if ($DEBUG);
+			$plugindb_timestamp_last = $plugindb_timestamp_new;
+		}
+		
+	if (@plugins && !$forcereload && !$plugins_delcache) {
 		print STDERR "get_plugins: Returning cached version of plugindatabase\n" if ($DEBUG);
 		return @plugins;
 	} else {
 		print STDERR "get_plugins: Re-reading plugindatabase\n" if ($DEBUG);
 	}
 	
-	if (! $plugindb_file) {
-		$plugindb_file = "$lbsdatadir/plugindatabase.dat";
-	} else {
-		$plugins_delcache = 1;
-	}
-	
 	print STDERR "get_plugins: Using file $plugindb_file\n" if ($DEBUG);
 	
-	if (!-e $plugindb_file) {
-		Carp::carp "LoxBerry::System::pluginversion: Could not find $plugindb_file\n";
-		return undef;
+	require JSON;
+	require Encode;
+	my $plugindbdata;
+	my $plugindb_raw = LoxBerry::System::read_file( $LoxBerry::System::PLUGINDATABASE );
+	eval {
+		$plugindbdata = JSON::from_json( $plugindb_raw );
+	};
+	if ($@ || !defined $plugindbdata) {
+		# A single plugin's metadata (e.g. a Latin1-encoded author name from
+		# plugin.cfg) can contain non-UTF8 bytes. Strict JSON backends (e.g.
+		# JSON::XS) reject the WHOLE document on any invalid byte, which would
+		# hide ALL plugins. Recover by substituting the malformed bytes so the
+		# rest of the database still loads. See issue #1512.
+		Carp::carp "LoxBerry::System::get_plugins: $plugindb_file contains invalid UTF-8 - substituting malformed bytes (issue #1512)\n";
+		my $plugindb_clean = Encode::decode( 'UTF-8', $plugindb_raw, Encode::FB_DEFAULT );
+		eval {
+			$plugindbdata = JSON->new->utf8(0)->decode( $plugindb_clean );
+		};
 	}
-	my $openerr;
-	open(my $fh, "<", $plugindb_file) or ($openerr = 1);
-	if ($openerr) {
-		Carp::carp "Error opening plugin database $plugindb_file";
-		# &error;
-		return undef;
-		}
-	my @data = <$fh>;
-
+	if ($@ || !defined $plugindbdata) {
+		Carp::carp "LoxBerry::System::get_plugins: Could not read $plugindb_file\n";
+		return;
+	}
+	
+	# my $plugindbobj = LoxBerry::JSON->new();
+	# my $plugindbdata = $plugindbobj->open(filename => $plugindb_file, readonly => 1);
+		
 	@plugins = ();
 	my $plugincount = 0;
 	
-	foreach (@data){
-		s/[\n\r]//g;
+	foreach my $pluginkey ( sort { lc $plugindbdata->{plugins}->{$a}->{title} cmp lc $plugindbdata->{plugins}->{$b}->{title} } keys %{$plugindbdata->{plugins}} ){
+		my $plugindata = $plugindbdata->{plugins}->{$pluginkey};
 		my %plugin;
-		# Comments
-		if ($_ =~ /^\s*#.*/) {
-			if (defined $withcomments) {
-				$plugin{PLUGINDB_COMMENT} = $_;
-				push(@plugins, \%plugin);
-			}
-			next;
-		}
-		
 		$plugincount++;
-		my @fields = split(/\|/);
-
-		## Start Debug fields of Plugin-DB
-		# do {
-			# my $field_nr = 0;
-			# my $dbg_fields = "Plugin-DB Fields: ";
-			# foreach (@fields) {
-				# $dbg_fields .= "$field_nr: $_ | ";
-				# $field_nr++;
-			# }
-			# print STDERR "$dbg_fields\n";
-		# } ;
-		## End Debug fields of Plugin-DB
-		
-		# From Plugin-DB
 		
 		$plugin{PLUGINDB_NO} = $plugincount;
-		$plugin{PLUGINDB_MD5_CHECKSUM} = $fields[0];
-		$plugin{PLUGINDB_AUTHOR_NAME} = $fields[1];
-		$plugin{PLUGINDB_AUTHOR_EMAIL} = $fields[2];
-		$plugin{PLUGINDB_VERSION} = $fields[3];
-		$plugin{PLUGINDB_NAME} = $fields[4];
-		$plugin{PLUGINDB_FOLDER} = $fields[5];
-		$plugin{PLUGINDB_TITLE} = $fields[6];
-		$plugin{PLUGINDB_INTERFACE} = $fields[7];
-		$plugin{PLUGINDB_AUTOUPDATE} = $fields[8];
-		$plugin{PLUGINDB_RELEASECFG} = $fields[9];
-		$plugin{PLUGINDB_PRERELEASECFG} = $fields[10];
-		$plugin{PLUGINDB_LOGLEVEL} = $fields[11];
-		$plugin{PLUGINDB_LOGLEVELS_ENABLED} = $plugin{PLUGINDB_LOGLEVEL} >= 0 ? 1 : 0;
-		$plugin{PLUGINDB_ICONURI} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
+		$plugin{PLUGINDB_MD5_CHECKSUM} = $plugindata->{md5};
+		$plugin{PLUGINDB_AUTHOR_NAME} = $plugindata->{author_name};
+		$plugin{PLUGINDB_AUTHOR_EMAIL} = $plugindata->{author_email};
+		$plugin{PLUGINDB_PLUGIN_WEBSITE} = $plugindata->{plugin_website} // "";
+		$plugin{PLUGINDB_VERSION} = $plugindata->{version};
+		$plugin{PLUGINDB_NAME} = $plugindata->{name};
+		$plugin{PLUGINDB_FOLDER} = $plugindata->{folder};
+		$plugin{PLUGINDB_TITLE} = $plugindata->{title};
+		$plugin{PLUGINDB_INTERFACE} = $plugindata->{interface};
+		$plugin{PLUGINDB_AUTOUPDATE} = $plugindata->{autoupdate};
+		$plugin{PLUGINDB_RELEASECFG} = $plugindata->{releasecfg};
+		$plugin{PLUGINDB_PRERELEASECFG} = $plugindata->{prereleasecfg};
+		$plugin{PLUGINDB_LOGLEVEL} = $plugindata->{loglevel};
+		$plugin{PLUGINDB_LOGLEVELS_ENABLED} = $plugindata->{loglevel} >= 0 ? 1 : 0;
+		my $_iconbase = "$lbshtmldir/images/icons/$plugin{PLUGINDB_FOLDER}";
+		if (-e "$_iconbase/icon.svg") {
+			$plugin{PLUGINDB_ICONURI}       = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon.svg";
+			$plugin{PLUGINDB_ICONURI_LARGE} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon.svg";
+		} else {
+			$plugin{PLUGINDB_ICONURI}       = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_64.png";
+			$plugin{PLUGINDB_ICONURI_LARGE} = "/system/images/icons/$plugin{PLUGINDB_FOLDER}/icon_128.png";
+		}
 		push(@plugins, \%plugin);
-		# On changes of the plugindatabase format, please change here 
+		# On changes of the plugindatabase format, please change here
 		# and in libs/phplib/loxberry_system.php / function get_plugins
 	}
 	return @plugins;
 
 }
 
+##################################################################################
+# INTERNAL function plugindb_changed
+# Returns the timestamp of the plugindb. Only really checks every minute
+##################################################################################
 
+sub plugindb_changed_time
+{
+	
+	# If it was never checked, it cannot have changed
+	if ($plugindb_timestamp == 0 or $plugindb_lastchecked+60 < time) {
+		$plugindb_timestamp = (stat $PLUGINDATABASE)[9];
+		$plugindb_lastchecked = time;
+		print STDERR "Updating plugindb timestamp variable to $plugindb_timestamp\n" if ($DEBUG);
+	}
+	
+	return $plugindb_timestamp;	
 
-
+}
 
 ##################################################################################
 # Get System Version
@@ -582,66 +516,89 @@ sub lbversion
 	if ($lbversion ne "") {
 		return $lbversion;
 	} 
-	read_generalcfg();
+	read_generaljson();
 	return $lbversion;
 }
 
+##################################################################################
+# systemloglevel
+# Returns LoxBerry System Loglevel
+##################################################################################
 
+sub systemloglevel
+{
+	return $sysloglevel if ($sysloglevel);
+	read_generaljson();
+	return $sysloglevel if ($sysloglevel);
+	return 6;
+}
 
 ##################################################################
-# Read general.cfg
+# Read general.json
 # This INTERNAL is called from several functions and not exported
 ##################################################################
-sub read_generalcfg
+sub read_generaljson
 {
 	my $miniservercount;
-	my $clouddnsaddress;
 	
 	if ($cfgwasread) {
 		return 1;
 	}
 	
-	my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
-	$cfgwasread = 1;
-	$LoxBerry::System::lang = $cfg->param("BASE.LANG") or Carp::carp ("BASE.LANG is not defined in general.cfg\n");
-	$miniservercount = $cfg->param("BASE.MINISERVERS") or Carp::carp ("BASE.MINISERVERS is 0 or not defined in general.cfg\n");
-	$clouddnsaddress = $cfg->param("BASE.CLOUDDNS"); # or Carp::carp ("BASE.CLOUDDNS not defined in general.cfg\n");
-	$lbtimezone		= $cfg->param("TIMESERVER.ZONE"); # or Carp::carp ("TIMESERVER.ZONE not defined in general.cfg\n");
-	$lbfriendlyname = $cfg->param("NETWORK.FRIENDLYNAME"); # or Carp::carp ("NETWORK.FRIENDLYNAME not defined in general.cfg\n");
-	$lbversion		= $cfg->param("BASE.VERSION") or Carp::carp ("BASE.VERSION not defined in general.cfg\n");
-	$webserverport  = $cfg->param("WEBSERVER.PORT"); # or Carp::carp ("WEBSERVER.PORT not defined in general.cfg\n");
-	# print STDERR "read_generalcfg lbfriendlyname: $lbfriendlyname\n";
-	# Binaries
-	$LoxBerry::System::binaries = $cfg->get_block('BINARIES');
-
-	if (($miniservercount) && ($miniservercount < 1)) {
-		return undef;
+	# my $cfg = new Config::Simple("$lbhomedir/config/system/general.cfg") or return undef;
+	require JSON;
+	my $cfg;
+	eval {
+		$cfg = JSON::from_json( LoxBerry::System::read_file ( "$lbsconfigdir/general.json" ) );
+	};
+	if($@ or !$cfg) {
+		Carp::croak "Could not read general.json. $@";
 	}
 	
-	for (my $msnr = 1; $msnr <= $miniservercount; $msnr++) {
-		$miniservers{$msnr}{Name} = $cfg->param("MINISERVER$msnr.NAME");
-		$miniservers{$msnr}{IPAddress} = $cfg->param("MINISERVER$msnr.IPADDRESS");
-		$miniservers{$msnr}{Admin} = $cfg->param("MINISERVER$msnr.ADMIN");
-		$miniservers{$msnr}{Pass} = $cfg->param("MINISERVER$msnr.PASS");
-		$miniservers{$msnr}{Credentials} = $miniservers{$msnr}{Admin} . ':' . $miniservers{$msnr}{Pass};
-		$miniservers{$msnr}{Note} = $cfg->param("MINISERVER$msnr.NOTE");
-		$miniservers{$msnr}{Port} = $cfg->param("MINISERVER$msnr.PORT");
-		$miniservers{$msnr}{UseCloudDNS} = $cfg->param("MINISERVER$msnr.USECLOUDDNS");
-		$miniservers{$msnr}{CloudURLFTPPort} = $cfg->param("MINISERVER$msnr.CLOUDURLFTPPORT");
-		$miniservers{$msnr}{CloudURL} = $cfg->param("MINISERVER$msnr.CLOUDURL");
-		
-		$miniservers{$msnr}{Admin_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Admin});
-		$miniservers{$msnr}{Pass_RAW} = URI::Escape::uri_unescape($miniservers{$msnr}{Pass});
-		$miniservers{$msnr}{Credentials_RAW} = $miniservers{$msnr}{Admin_RAW} . ':' . $miniservers{$msnr}{Pass_RAW};
+	$cfgwasread = 1;
+	$LoxBerry::System::lang = $cfg->{Base}->{Lang} or Carp::carp ("Base.Lang is not defined in general.json\n");
+	$country = defined $cfg->{Base}->{Country} && $cfg->{Base}->{Country} ne 'undef' ? $cfg->{Base}->{Country} : undef;
+	$clouddnsaddress = $cfg->{Base}->{Clouddnsuri};
+	$sysloglevel	= $cfg->{Base}->{Systemloglevel};
+	$lbversion		= $cfg->{Base}->{Version} or Carp::carp ("BASE.VERSION not defined in general.json\n");
+	$lbfriendlyname = $cfg->{Network}->{Friendlyname};
+	$lbtimezone		= $cfg->{Timeserver}->{Timezone};
+	$webserverport  = $cfg->{Webserver}->{Port};
+	$mqttcfg 	    = $cfg->{Mqtt};
+	$lbtheme        = $cfg->{Base}->{Theme} // 'soft-rounded';
+	# Map legacy theme names to new themes
+	my %_theme_map = ('classic' => 'classic-lb', 'modern' => 'soft-rounded', 'dark' => 'glass');
+	$lbtheme = $_theme_map{$lbtheme} if exists $_theme_map{$lbtheme};
+	$lbtheme = 'soft-rounded' unless $lbtheme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
 
-		# CloudDNS handling
-		if (LoxBerry::System::is_enabled($miniservers{$msnr}{UseCloudDNS}) && ($miniservers{$msnr}{CloudURL})) {
-			set_clouddns($msnr, $clouddnsaddress);
-		}
-		
-		if (! $miniservers{$msnr}{Port}) {
-			$miniservers{$msnr}{Port} = 80;
-		}
+	if ( ! defined $cfg->{Miniserver} or keys(%{$cfg->{Miniserver}}) < 1) {
+		return undef;
+	}
+	$miniservercount = 0;
+	# Read Miniservers
+	foreach my $msnr ( sort keys %{$cfg->{Miniserver}} ) {
+		my $ms = $cfg->{Miniserver}->{$msnr};
+		$miniservercount++;
+		$miniservers{$msnr}{Name} = $ms->{Name};
+		$miniservers{$msnr}{IPAddress} = $ms->{Ipaddress};
+		$miniservers{$msnr}{Admin} = $ms->{Admin};
+		$miniservers{$msnr}{Pass} = $ms->{Pass};
+		$miniservers{$msnr}{Credentials} = $ms->{Credentials};
+		$miniservers{$msnr}{Note} = $ms->{Note};
+		$miniservers{$msnr}{Port} = $ms->{Port};
+		$miniservers{$msnr}{PortHttps} = $ms->{Porthttps};
+		$miniservers{$msnr}{PreferHttps} = $ms->{Preferhttps};
+		$miniservers{$msnr}{UseCloudDNS} = $ms->{Useclouddns};
+		$miniservers{$msnr}{CloudURLFTPPort} = $ms->{Cloudurlftpport};
+		$miniservers{$msnr}{CloudURL} = $ms->{Cloudurl};
+		$miniservers{$msnr}{Admin_RAW} = $ms->{Admin_raw};
+		$miniservers{$msnr}{Pass_RAW} = $ms->{Pass_raw};
+		$miniservers{$msnr}{Credentials_RAW} = $ms->{Credentials_raw};
+		$miniservers{$msnr}{SecureGateway} = $ms->{Securegateway};
+		$miniservers{$msnr}{EncryptResponse} = $ms->{Encryptresponse};
+		$miniservers{$msnr}{Location}  = $ms->{Location}  // '';
+		$miniservers{$msnr}{Latitude}  = $ms->{Latitude}  // '';
+		$miniservers{$msnr}{Longitude} = $ms->{Longitude} // '';
 
 	}
 	return 1;
@@ -654,72 +611,95 @@ sub set_clouddns
 {
 	my ($msnr, $clouddnsaddress) = @_;
 	
+	require LoxBerry::JSON;
+	my $memfile = "$lbhomedir/log/system_tmpfs/clouddns_cache.json";
+	my $jsonobj = LoxBerry::JSON->new();
+	my $cache = $jsonobj->open(filename => $memfile);
+	my $cachekey = $miniservers{$msnr}{CloudURL};
+		
+	if(
+		defined $cache->{$cachekey}->{refresh_timestamp} and 
+		$cache->{$cachekey}->{refresh_timestamp} > time and
+		defined $cache->{$cachekey}->{IPAddress} #and 
+		#defined $cache->{$msnr}->{Port}
+	) {
+		print STDERR "Reading data from cachefile $memfile\n" if ($DEBUG);
+		$miniservers{$msnr}{IPAddress} = $cache->{$cachekey}->{IPAddress};
+		$miniservers{$msnr}{Port} = $cache->{$cachekey}->{Port};
+		$miniservers{$msnr}{PortHttps} = $cache->{$cachekey}->{PortHttps};
+		return;
+	}
+	
 	require LWP::UserAgent;
 	my $ua = LWP::UserAgent->new;
-	$ua->timeout(10);
+	
+	print STDERR "Reading data online from CloudDNS\n" if ($DEBUG);
+		
+	$ua->timeout(5);
 	$ua->max_redirect( 0 );
-	
-	my $checkurl = "http://$clouddnsaddress/" . $miniservers{$msnr}{CloudURL};
-	my $resp = $ua->head($checkurl);
-	my $header = $resp->header('location');
-	# Removes http://
-	$header =~ s/http:\/\///;
-	# Removes /
-	$header =~ s/\///;
-	
-	my @dns_info_pieces = split /:/, $header;
-
-	if ($dns_info_pieces[1]) {
-	  $miniservers{$msnr}{Port} = $dns_info_pieces[1];
-	} else {
-	  $miniservers{$msnr}{Port} = 80;
+	my $checkurl = "http://$clouddnsaddress?getip&snr=" . $miniservers{$msnr}{CloudURL}."&json=true";
+	my $resp = $ua->get($checkurl);
+	if (! $resp->is_success ) 
+	{
+		$miniservers{$msnr}{IPAddress} = "0.0.0.0";
+		$miniservers{$msnr}{Port} = "0";
+		$miniservers{$msnr}{PortHttps} = "0";
+		delete $cache->{$cachekey};
+		$jsonobj->write();
+		
+		require Time::Piece;
+		my $t = Time::Piece->localtime;
+		print STDERR $t->strftime("%Y-%m-%d %H:%M:%S")." System.pm: Timeout when reading IP and Port from $checkurl \n";
 	}
-
-	if ($dns_info_pieces[0]) {
-	  $miniservers{$msnr}{IPAddress} = $dns_info_pieces[0];
-	} else {
-	  $miniservers{$msnr}{IPAddress} = "127.0.0.1";
+	else
+	{
+		
+		my $respjson = JSON::decode_json($resp->content);
+		
+		# DEBUGGING
+		#my $respjson = decode_json('{"cmd":"getip","Code":200,"IP":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpen":true,"LastUpdated":"2020-02-04 11:43:50","DNS-Status":"registered","IPHTTPS":"[2001:16b8:64b6:2800:524f:94ff:fea0:29b]","PortOpenHTTPS":true}');
+			
+		# Check if response is IPv4 or IPv6
+		my $resp_ip;
+		my $sq1;
+		my $sq2;
+		
+		# http port
+		$resp_ip = $respjson->{IP};
+		$sq1 = index( $resp_ip, '[' );
+		if( $sq1 != -1 ) {
+			$sq2 = index( $resp_ip, ']' );
+			if( $sq2 != -1 ) {
+				$miniservers{$msnr}{IPAddress} = substr( $resp_ip, $sq1+1, $sq2-1 );
+				$miniservers{$msnr}{Port} = substr( $resp_ip, $sq2+2 );
+			}
+		} else {
+			( $miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{Port} ) = split( ':', $resp_ip, 2);
+		}	
+		# https port
+		if( is_enabled($miniservers{$msnr}{PreferHttps} ) ) {
+			$resp_ip = $respjson->{IPHTTPS};
+			$sq1 = index( $resp_ip, '[' );
+			if( $sq1 != -1 ) {
+				$sq2 = index( $resp_ip, ']' );
+				if( $sq2 != -1 ) {
+					$miniservers{$msnr}{IPAddress} = substr( $resp_ip, $sq1+1, $sq2-1 );
+					$miniservers{$msnr}{PortHttps} = substr( $resp_ip, $sq2+2 );
+				}
+			} else {
+				( $miniservers{$msnr}{IPAddress}, $miniservers{$msnr}{PortHttps} ) = split( ':', $resp_ip, 2);
+			}	
+		}
+		
+		my %cachehash;
+		$cachehash{IPAddress} = $miniservers{$msnr}{IPAddress};
+		$cachehash{Port} = $miniservers{$msnr}{Port};
+		$cachehash{PortHttps} = $miniservers{$msnr}{PortHttps};
+		$cachehash{refresh_timestamp} = time + 3600 + int(rand(3600));
+		$cache->{$cachekey} = \%cachehash;
+		$jsonobj->write();
 	}
 }
-
-####################################################
-# is_systemcall
-# INTERNAL function to determine if module was
-# called from a LoxBerry system CGI
-####################################################
-sub is_systemcall
-{
-	
-	my $filename;
-	if ($ENV{SCRIPT_FILENAME}) { 
-		$filename = $ENV{SCRIPT_FILENAME};
-	} elsif ($0) {
-		$filename = $0;
-	}
-	
-	# print STDERR "abs_path:  " . Cwd::abs_path($0) . "\n";
-	# print STDERR "lbshtmlauthdir: " . $lbshtmlauthdir . "\n";
-	# print STDERR "substr:    " . substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) . "\n";
-	
-	if (substr(Cwd::abs_path($filename), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir) { return 1; }
-	if (substr(Cwd::abs_path($filename), 0, length("$lbhomedir/sbin")) eq "$lbhomedir/sbin") { return 1; }
-	if (substr(Cwd::abs_path($filename), 0, length("$lbhomedir/bin")) eq "$lbhomedir/bin") { return 1; }
-	return undef;
-	# return substr(Cwd::abs_path($0), 0, length($lbshtmlauthdir)) eq $lbshtmlauthdir ? 1 : undef;
-}
-
-=head2 get_ftpport
-
-The internal FTP port of the Miniserver is not configured in the LoxBerry configuration but can be queried by this function.
-It supports CloudDNS FTP port (which IS defined in the LoxBerry config), therefore using this functions returns either the
-internal or the CloudDNS FTP port, so you do not need to spy yourself.
-
-	my $ftpport = LoxBerry::System::get_ftpport($msnr);
-	# Returns the FTP port of Miniserver $msnr.
-	my $ftpport = LoxBerry::System::get_ftpport();
-	# Returns the FTP port of the first Miniserver.
-
-=cut
 
 #####################################################
 # get_ftpport
@@ -729,17 +709,12 @@ internal or the CloudDNS FTP port, so you do not need to spy yourself.
 #####################################################
 sub get_ftpport
 {
-	require XML::Simple;
-	require LWP::UserAgent;
-	
 	my ($msnr) = @_;
 	
 	$msnr = defined $msnr ? $msnr : 1;
 	
-	# If we have no MS list, read the config
-	if (! %miniservers) {
-		# print STDERR "get_ftpport: Readconfig\n";
-		read_generalcfg();
+	if(!$msClouddnsFetched) {
+		LoxBerry::System::get_miniservers();
 	}
 	
 	# If CloudDNS is enabled, return the CloudDNS FTP port
@@ -750,47 +725,34 @@ sub get_ftpport
 	
 	# If MS hash does not have FTP set, read FTP from Miniserver and save it in FTPPort
 	if (! $miniservers{$msnr}{FTPPort}) {
-		# print STDERR "get_ftpport: Read FTP Port from MS\n";
+		
 		# Get FTP Port from Miniserver
-		my $url = "http://$miniservers{$msnr}{Credentials}\@$miniservers{$msnr}{IPAddress}\:$miniservers{$msnr}{Port}/dev/cfg/ftp";
-		my $ua = LWP::UserAgent->new;
-		$ua->timeout(5);
-		my $response = $ua->get($url);
-		if (!$response->is_success) {
+		require LoxBerry::IO;
+		my ($value, $status) = LoxBerry::IO::mshttp_call(1, '/dev/cfg/ftp');
+		if ($status < 200 or $status >= 300) {
 			Carp::carp("Cannot query FTP port because Loxone Miniserver is not reachable.");
 			return undef;
 		} 
-		my $rawxml = $response->decoded_content();
-		my $xml = XML::Simple::XMLin($rawxml, KeyAttr => { LL => 'value' }, ForceArray => [ 'LL', 'value' ]);
-		$miniservers{$msnr}{FTPPort} = $xml->{value};
+		$miniservers{$msnr}{FTPPort} = $value;
 	}
 	return $miniservers{$msnr}{FTPPort};
 }
-
-=head2 get_localip
-
-Returns the current LoxBerry IP address as string.
-
-	my $ip = LoxBerry::System::get_localip();
-	print "Current LoxBerry IP is $ip.";
-
-=cut
 
 ####################################################
 # get_localip - Get local ip address
 ####################################################
 sub get_localip
 {
+	require IO::Socket::INET;
 	my $sock = IO::Socket::INET->new(
-						   PeerAddr=> "example.com",
-						   PeerPort=> 80,
-						   Proto   => "tcp");
+						   PeerAddr=> "8.8.8.8",
+						   PeerPort=> 53,
+						   Proto   => "udp");
 	return ($sock->sockhost);
 	# close $sock;
 	# return $localip;
 
 }
-
 
 ##################################################################
 # Get LoxBerry URL parameter or System language
@@ -817,14 +779,23 @@ sub lblanguage
 		  return $LoxBerry::System::lang;
 	}
 	# If nothing found, get language from system settings
-	read_generalcfg();
+	read_generaljson();
 	
-	#my  $syscfg = new Config::Simple("$LoxBerry::System::lbhomedir/config/system/general.cfg");
-	#$LoxBerry::System::lang = $syscfg->param("BASE.LANG");
-	print STDERR "\$lang from general.cfg: $LoxBerry::System::lang" if ($DEBUG);
+	print STDERR "\$lang from general.json: $LoxBerry::System::lang" if ($DEBUG);
 	return $LoxBerry::System::lang;
 }
 
+######################################
+# Get users country from general.json
+######################################
+sub lbcountry
+{
+	if ($cfgwasread) {
+		return $country;
+	}
+	read_generaljson();
+	return $country;
+}
 	
 #####################################################
 # readlanguage
@@ -839,7 +810,8 @@ sub readlanguage
 	my $lang = LoxBerry::System::lblanguage();
 	# my $issystem = LoxBerry::System::is_systemcall();
 	my $issystem;
-	if ($syslang || LoxBerry::System::is_systemcall()) {
+#	if ($syslang || LoxBerry::System::is_systemcall()) {
+	if ($syslang || !$LoxBerry::System::lbpplugindir) {
 		$issystem = 1;
 	}
 	
@@ -862,25 +834,29 @@ sub readlanguage
 		my $langfile  = "$LoxBerry::System::lbstemplatedir/lang/language";
 		
 		if (!%SL) {
-			# Read English language as default
-			# Missing phrases in foreign language will fall back to English
-
-			Config::Simple->import_from($langfile . "_en.ini", \%SL) or Carp::carp(Config::Simple->error());
+			# print STDERR "READ\n";
+			
+			my $langfile_en = $langfile . "_en.ini";
+			my $langfile_foreign = $langfile . "_" . $lang . ".ini";
+			
+			if ( $lang ne 'en' and (-e $langfile_foreign)) {
+				my $cont_foreign = LoxBerry::System::read_file($langfile_foreign);
+				LoxBerry::System::_parse_lang_file($cont_foreign, \%SL);
+				undef $cont_foreign;
+			}
+			
+			my $cont_en = LoxBerry::System::read_file($langfile_en);
+			LoxBerry::System::_parse_lang_file($cont_en, \%SL);
+			undef $cont_en;
 
 			# Read foreign language if exists and not English and overwrite English strings
-			$langfile = $langfile . "_" . $lang . ".ini";
-			if ((-e $langfile) and ($lang ne 'en')) {
-				Config::Simple->import_from($langfile, \%SL) or Carp::carp(Config::Simple->error());
-			}
+			
 			if (!%SL) {
 				Carp::confess ("ERROR: Could not read any language phrases. Exiting.\n");
 			}
 		}
 		
-		if ($template) {
-			#while (my ($name, $value) = each %SL) {
-			#	$template->param("$name" => $value);
-			#}
+		if ($template and $template->isa("HTML::Template")) {
 			$template->param(%SL);
 		}
 		return %SL;
@@ -896,47 +872,81 @@ sub readlanguage
 		# Read English language as default
 		# Missing phrases in foreign language will fall back to English
 		if (!%L) {
-			if (-e $langfile . "_en.ini") {
-				Config::Simple->import_from($langfile . "_en.ini", \%L) or Carp::carp(Config::Simple->error());
+			my $langfile_en = $langfile . "_en.ini";
+			my $langfile_foreign = $langfile . "_" . $lang . ".ini";
+			
+			if ( $lang ne 'en' and (-e $langfile_foreign)) {
+				my $cont_foreign = LoxBerry::System::read_file($langfile_foreign);
+				LoxBerry::System::_parse_lang_file($cont_foreign, \%L);
+				undef $cont_foreign;
 			}
-			# Read foreign language if exists and not English and overwrite English strings
-			$langfile = $langfile . "_" . $lang . ".ini";
-			if ((-e $langfile) and ($lang ne 'en')) {
-				Config::Simple->import_from($langfile, \%L) or Carp::carp(Config::Simple->error());
+			
+			if (-e $langfile_en) {
+				my $cont_en = LoxBerry::System::read_file($langfile_en);
+				LoxBerry::System::_parse_lang_file($cont_en, \%L);
+				undef $cont_en;
+				
 			}
+						
 			if (! %L) {
 				Carp::carp ("ERROR: Could not read any language phrases from $langfile.\n");
 			}
 		}
-		if ($template) {
-			#while (my ($name, $value) = each %L) {
-			#	$template->param("$name" => $value);
-			#}
+		if ($template and $template->isa("HTML::Template")) {
 			$template->param(%L);
 		}
 		return %L;
 	}
 }
 
-=head2 lbhostname
+sub _parse_lang_file
+{
+	my ($content, $langhash) = @_;
+	my @cont = split(/\n/, $content);
 
-This exported function returns the current system hostname
+	my $section = 'default';
 
-=cut
+	foreach my $line (@cont) {
+		# Trim
+		$line =~ s/^\s+|\s+$//g;	
+		my $firstletter = substr($line, 0, 1);
+		# print "Firstletter: $firstletter\n";
+		# Comments
+		if($firstletter eq '' or $firstletter eq '#' or $firstletter eq '/' or $firstletter eq ';') {
+			next;}
+		# Sections
+		if ($firstletter eq '[') {
+			my $closebracket = index($line, ']', 1);
+			if($closebracket == -1) {
+				next;
+			}
+			$section = substr($line, 1, $closebracket-1);
+			# print "\n[$section]\n";
+			next;
+		}
+		# Define variables
+		my ($param, $value) = split(/=/, $line, 2);
+		$param =~ s/^\s+|\s+$//g;	
+		next if ($langhash->{"$section.$param"});
+		$value =~ s/^\s+|\s+$//g;
+		my $firsthyphen=substr($value, 0, 1);
+		my $lasthyphen=substr($value, -1, 1);
+		if ($firsthyphen eq '"' and $lasthyphen eq '"') {
+			$value = substr($value, 1, -1);
+		}
+		# print "$param=$value\n";
+		$langhash->{"$section.$param"} = $value;
+	}
+}
 
 ####################################################
 # lbhostname - Returns the current system hostname
 ####################################################
 sub lbhostname
 {
+	require Sys::Hostname;
 	return Sys::Hostname::hostname();
 }
-
-=head2 lbfriendlyname
-
-This exported function returns the friendly (user defined) name
-
-=cut
 
 ####################################################
 # lbfriendlyname - Returns the friendly name
@@ -944,7 +954,7 @@ This exported function returns the friendly (user defined) name
 sub lbfriendlyname
 {
 	if (! $cfgwasread) 
-		{ read_generalcfg(); 
+		{ read_generaljson(); 
 	}
 	
 	# print STDERR "LBSYSTEM lbfriendlyname $lbfriendlyname\n";
@@ -952,19 +962,13 @@ sub lbfriendlyname
 	
 }
 
-=head2 lbwebserverport
-
-This exported function returns the webserver port 
-
-=cut
-
 ####################################################
 # lbwebserverport - Returns the friendly name
 ####################################################
 sub lbwebserverport
 {
 	if (! $cfgwasread) 
-		{ read_generalcfg(); 
+		{ read_generaljson(); 
 	}
 	if (! $webserverport) {
 		$webserverport = 80;
@@ -972,30 +976,13 @@ sub lbwebserverport
 	return $webserverport;
 }
 
-
-=head2 is_enabled and is_disabled
-
-This function "guesses" is a string variable is enabled/true (disabled/false) by a couple of usual keywords. This is useful when parsing configuration files. 
-The check is case-insensitive. It returns 1 if the check is successful,  or undef if the keyword does not match.
-
-Keywords for is_enabled: true, yes, on, enabled, enable, 1.
-
-Keywords for is_disabled: false, no, off, disabled, disable, 0.
-
-	my $configstring = "enable_plugin = True";
-	my ($plugin_enabled, $value) = split /=/, $configstring;
-	if (is_enabled($value)) {
-		print "Plugin is enabled.";
-	}
-
-=cut
-
 ####################################################
 # is_enabled - tries to detect if a string says 'True'
 ####################################################
 sub is_enabled
 { 
 	my ($text) = @_;
+	if (!$text) { return undef;} 
 	$text =~ s/^\s+|\s+$//g;
 	$text = lc $text;
 	if ($text eq "true") { return 1;}
@@ -1017,7 +1004,7 @@ sub is_enabled
 sub is_disabled
 { 
 	my ($text) = @_;
-	if (! $text) { return 1;} 
+	if (!$text) { return 1;} 
 	$text =~ s/^\s+|\s+$//g;
 	$text = lc $text;
 	if ($text eq "false") { return 1;}
@@ -1028,19 +1015,6 @@ sub is_disabled
 	if ($text eq "0") { return 1;}
 	return undef;
 }
-
-=head2 trim, ltrim, rtrim
-
-Developers from other languages feel inconvenient using RegEx for simple string operations. LoxBerry::System adopts the familiar ltrim, rtrim and trim to remove leading, trailing or both whitespaces.
-
-trim, ltrim and rtrim are exported (you don't have to prefix the command with LoxBerry::System::).
-
-	my $dirty_string = "    What a mess!        ";
-	print ltrim($dirty_string); 	# Shows 'What a mess!        '
-	print rtrim($dirty_string); 	# Shows '    What a mess!'
-	print trim($dirty_string); 		# Shows 'What a mess!'
-
-=cut
 
 #####################################################
 # Strings trimmen
@@ -1076,12 +1050,25 @@ sub currtime
 	$year += 1900;
 	$mon++;
 	if (!$format || $format eq 'hr') {
-		# $timestr = "$mday.$mon.$year $hour:$min:$sec";
 		$timestr = sprintf("%02d.%02d.%04d %02d:%02d:%02d", $mday, $mon, $year, $hour, $min, $sec);
 	}
+	elsif ($format eq 'hrtime') {
+		$timestr = sprintf("%02d:%02d:%02d", $hour, $min, $sec);
+	} 
+	elsif ($format eq 'hrtimehires') {
+		require Time::HiRes;
+		my (undef, $nsec) = Time::HiRes::gettimeofday();
+		$timestr = sprintf("%02d:%02d:%02d.%03d", $hour, $min, $sec, $nsec/1000);
+	} 
 	elsif ($format eq 'file') {
 		$timestr = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
+	} 
+	elsif ($format eq 'filehires') {
+		require Time::HiRes;
+		my (undef, $nsec) = Time::HiRes::gettimeofday();
+		$timestr = sprintf("%04d%02d%02d_%02d%02d%02d_%03d", $year, $mon, $mday, $hour, $min, $sec, $nsec/1000);
 	}
+	
 	elsif ($format eq 'iso') {
 		$timestr = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", $year, $mon, $mday, $hour, $min, $sec);
 	}
@@ -1092,6 +1079,56 @@ sub currtime
 	# print $iso . "\n";
 
 }
+
+######################################################
+# Converts an Epoche (Unix Timestamp, seconds from 1.1.1970 00:00:00 UTC) to Loxone Epoche (seconds from 1.1.2009 00:00:00)
+#####################################################
+sub epoch2lox
+{
+	my ($epoche) = @_;
+	if (!$epoche) {
+		$epoche = time();
+	}
+	my $offset = "1230764400"; # 1.1.2009 00:00:00
+	my $tz_delta = tz_offset();
+	my $loxepoche = $epoche - $offset + $tz_delta - 3600;
+
+	return $loxepoche;
+
+}
+
+######################################################
+# Converts an Loxone Epoche (seconds from 1.1.2009 00:00:00) to Epoche (Unix Timestamp, seconds from 1.1.1970 00:00:00 UTC)
+#####################################################
+sub lox2epoch
+{
+	my ($loxepoche) = @_;
+	my $epoche;
+		
+	if (!$loxepoche) {
+		# For compatibility reasons to epoch2lox - but makes no sense here...
+		$epoche = time();
+	} else {
+		my $offset = "1230764400"; # 1.1.2009 00:00:00
+		my $tz_delta = tz_offset();
+		$epoche = $loxepoche + $offset - $tz_delta + 3600;
+	}
+	return $epoche;
+
+}
+
+# INTERNAL FUNCTION
+# Returns the delta of local time to 
+sub tz_offset
+{
+    my @l = localtime();
+    my @g = gmtime();
+
+    my $minutes = ($l[2] - $g[2] + ((($l[5]<<9)|$l[7]) <=> (($g[5]<<9)|$g[7])) * 24) * 60 + $l[1] - $g[1];
+    return $minutes*60;
+    
+}
+
 ######################################################
 # check_securepin
 # Parameter is the entered secure pin
@@ -1102,21 +1139,86 @@ sub currtime
 sub check_securepin
 {
 	my ($securepin) = shift;
+	my $pinerror_file = "$lbhomedir/log/system_tmpfs/securepin.errors";
+	my $pinerrobj;
+	my $pinerr;
 	
-	open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat") or 
-		do {
-			Carp::carp("check_securepin: Cannot open $LoxBerry::System::lbsconfigdir/securepin.dat\n");
-			return (2);
-			};
-	my $securepinsaved = <$fh>;
-	close ($fh);
+	#open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat") or 
+	#	do {
+	#		Carp::carp("check_securepin: Cannot open $LoxBerry::System::lbsconfigdir/securepin.dat\n");
+	#		return (2);
+	#		};
+	#my $securepinsaved = <$fh>;
+	#chomp($securepinsaved);
+	#close ($fh);
 
-	if (crypt($securepin, $securepinsaved) ne $securepinsaved) {
-			# Not equal
-			return (1);
+	# In case we have an active SupportVPN connmection
+	#my $securepinsavedsupportvpn;
+	#if (-e "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn") {
+	#	# Check Online Status
+	#	require Net::Ping;
+	#	for (my $i=0; $i < 3; $i++) {
+	#		my $p = Net::Ping->new();
+	#		my $hostname = '10.98.98.1';
+	#		my ($ret, $duration, $ip) = $p->ping($hostname);
+	#		if (!$ret) {
+	#		sleep (1);
+	#			next;
+	#		} else {
+	#			open (my $fh, "<" , "$LoxBerry::System::lbsconfigdir/securepin.dat.supportvpn"); 
+	#			$securepinsavedsupportvpn = <$fh>;
+	#			chomp($securepinsavedsupportvpn);
+	#			close ($fh);
+	#			last;
+	#		}
+	#	}
+	#}
+	
+	if (-e $pinerror_file) {
+		require LoxBerry::JSON;
+		$pinerrobj = LoxBerry::JSON->new();
+		$pinerr = $pinerrobj->open(filename => $pinerror_file);
+		
+		if ( $pinerr and $pinerr->{locked} ) {
+			if( time < ($pinerr->{locked}+5*60) ) {
+				print STDERR "SecurePIN is locked";
+				sleep(3);
+				return (3);
+			} else {
+				delete $pinerr->{locked};
+				delete $pinerr->{failure_count};
+				
+			}
+		}
+		$pinerrobj->write();
+		undef $pinerrobj;
+	}
+	
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '$securepin');
+	if (!$?) {
+		# OK
+		unlink $pinerror_file;
+		return (undef);
+	#} elsif ( defined $securepinsavedsupportvpn and crypt($securepin, $securepinsavedsupportvpn) eq $securepinsavedsupportvpn ) {
+	#	# OK
+	#	unlink $pinerror_file;
+	#	return (undef);
 	} else {
-			# OK
-			return (undef);
+		# Not equal
+		require LoxBerry::JSON;
+		$pinerrobj = LoxBerry::JSON->new();
+		$pinerr = $pinerrobj->open(filename => $pinerror_file, writeonclose => 1);
+		$pinerr->{failure_count} = 0 if (! $pinerr->{failure_count});
+		sleep($pinerr->{failure_count});
+		$pinerr->{failure_count} += 1;
+		
+		$pinerr->{failure_time} = time if (! $pinerr->{failure_time});
+		if( $pinerr->{failure_count} > 5) {
+			print STDERR "SecurePIN was locked";
+			$pinerr->{locked} = time;
+			return (3);
+		}
+		return (1);
 	}
 }
 
@@ -1139,38 +1241,86 @@ sub reboot_required
 		};
 }
 
+sub reboot_force
+{
+	my ($message) = shift;
+	open(my $fh, ">>", $LoxBerry::System::reboot_force_popup_file) or Carp::carp "Cannot open/create reboot.force file $reboot_force_popup_file.";
+	flock($fh,2);
+	if (! $message) {
+		print $fh "A reboot is necessary to continue updates.";
+	} else {
+		print $fh "$message";
+	}
+	flock($fh,8);
+	close $fh;
+	eval {
+		my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+		chown $uid, $gid, $LoxBerry::System::reboot_force_popup_file;
+		};
+}
+
+
 sub diskspaceinfo
 {
 	my ($folder) = shift;
 	
-	my $output = qx ( df -P $folder );
-	# my $output = qx ( df -P );
+	my $output;
+	$output = qx ( df --output=size,used,avail,pcent "$folder" ) if ($folder);
+	$output = qx ( df --output=size,used,avail,pcent ) if (!$folder);
 	my $exitcode  = $? >> 8;
 	if ($exitcode != 0) {
 		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
 		return undef;
 	}
 	my @outarr = split(/\n/, $output);
+
+	## Workaround for df output issues - get mount points as single values
+	my $output_mp;
+	$output_mp = qx ( df --output=target "$folder" ) if ($folder);
+	$output_mp = qx ( df --output=target ) if (!$folder);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
+		return undef;
+	}
+	my @outarr_mp = split(/\n/, $output_mp);
+
+    ## Workaround for df output issues - get sources as single values
+	my $output_src;
+	$output_src = qx ( df --output=source "$folder" ) if ($folder);
+	$output_src = qx ( df --output=source ) if (!$folder);
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {
+		print STDERR "diskspaceinfo: Error calling df with path $folder.\n";
+		return undef;
+	}
+    my @outarr_src = split(/\n/, $output_src);
+
 	my %disklist;
 	
 	my $linenr = 0;
+	my $mp_and_src_index = 1;
 	foreach my $line (@outarr) {
 		my %diskhash;
-		# Remove blanks
-		$line =~ s/ +/ /g;
 		$linenr++;
 		next if ($linenr == 1);
-		# print "Line: $line\n";
-		my ($fs, $size, $used, $available, $usedpercent, $mountpoint) = split (/ /, $line);
+		my $fs = @outarr_src[$mp_and_src_index];
+		my $mountpoint = @outarr_mp[$mp_and_src_index];
+		# Remove leading spaces from line
+		$line = trim($line);
+		# Replace more than one space by one
+		$line =~ s/ +/ /g;
+		my ($size, $used, $available, $usedpercent) = split (/ /, $line, 4);
 		$diskhash{filesystem} = $fs;
 		$diskhash{size} = $size;
 		$diskhash{used} = $used;
 		$diskhash{available} = $available;
 		$diskhash{usedpercent} = $usedpercent;
 		$diskhash{mountpoint} = $mountpoint;
+		print STDERR "diskspaceinfo: Folder: $folder => filesystem: $diskhash{filesystem}, size: $size, used: $used, available: $available, usedpercent: $usedpercent, mountpoint: $diskhash{mountpoint}\n" if ($DEBUG);
 		return %diskhash if ($folder);
 		$disklist{$mountpoint} = \%diskhash;
-		
+		$mp_and_src_index++;
 	}
 	return %disklist;
 	}
@@ -1206,7 +1356,7 @@ sub lock
 	my $openerr;
 	open(my $fh, "<", $importantlockfilesfile) or ($openerr = 1);
 	if ($openerr) {
-		Carp::carp "Error opening important lock files file  $importantlockfilesfile";
+		Carp::carp "Error opening important lock files file $importantlockfilesfile";
 		return "Error opening important lock files list";
 		}
 	my @data = <$fh>;
@@ -1220,6 +1370,35 @@ sub lock
 	do {
 		$seemsrunning = 0;
 		print STDERR "running loop delay $delay from $p{wait}\n" if ($DEBUG);
+		
+		# Check for apt-get and dpkg updates running
+		# pgrep: Exitcode 1 -> not found. 0 -> found
+		
+		my $rc_apt;
+		my $rc_dpkg;
+		my $rc_unattended_upgrade;
+		my $rc_dpkg_lock;
+		my $rc_dpkg_frontend_lock;
+		my $rc_apt_archives_lock;
+		($rc_apt) = LoxBerry::System::execute( 'pgrep "apt-get|apt"' );
+		($rc_dpkg) = LoxBerry::System::execute( 'pgrep "dpkg"' );
+		($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
+		($rc_dpkg_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock' );
+		($rc_dpkg_frontend_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock-frontend' );
+		($rc_apt_archives_lock) = LoxBerry::System::execute( 'fuser /var/cache/apt/archives/lock' );
+
+		if( $rc_apt eq "0" or $rc_dpkg eq "0" or $rc_unattended_upgrade eq "0" or $rc_dpkg_lock eq "0" or $rc_dpkg_frontend_lock eq "0" or $rc_apt_archives_lock eq "0" ) {
+			$seemsrunning = 'apt, apt-get or dpkg' if ($rc_apt eq "0" or $rc_dpkg eq "0" or $rc_dpkg_lock eq "0" or $rc_dpkg_frontend_lock eq "0" or $rc_apt_archives_lock eq "0");
+			$seemsrunning = 'unattended-upgrade' if ($rc_unattended_upgrade eq "0");
+			
+			if ($p{wait}) {
+				print STDERR "Waiting..." if ($DEBUG);
+				sleep(5);
+				$delay += 5;
+			}
+		} 
+		
+		# Check for lock files
 		foreach my $lockfile (@data) {
 			my $pid;
 			$lockfile = LoxBerry::System::trim($lockfile);
@@ -1263,7 +1442,7 @@ sub lock
 					next;
 				}
 			}
-			print STDERR "Seemsrunning: $seemsrunning // pwait: $p{wait} // delay: $delay\n";
+			print STDERR "Seemsrunning: $seemsrunning // pwait: $p{wait} // delay: $delay\n" if ($DEBUG);
 			if ($seemsrunning && $p{wait}) {
 				print STDERR "Waiting..." if ($DEBUG);
 				sleep(5);
@@ -1271,7 +1450,7 @@ sub lock
 			}
 			
 		}
-	print "seemsrunning: $seemsrunning\n";
+		print STDERR "seemsrunning: $seemsrunning\n" if ($DEBUG);
 	} while ($seemsrunning && $p{wait} && $delay < $p{wait});
 	return $seemsrunning if ($seemsrunning);
 	
@@ -1302,10 +1481,12 @@ sub lock
 				print STDERR "    Lock file successfully created.\n" if ($DEBUG);
 				print STDERR "    Changing permissions to 0666\n" if ($DEBUG);
 				eval {
+					my ($login,$pass,$uid,$gid) = getpwnam("loxberry");
+					chown $uid, $gid, $lockfilename;
 					chmod 0666, $lockfilename;
 					};
 				print STDERR "    Could not change permissions (but lock file was created)\n" if ($@ && $DEBUG);
-				print STDERR "Lock is set - returning undef to indicate success\n";
+				print STDERR "Lock is set - returning undef to indicate success\n" if ($DEBUG);
 				return undef;
 			}
 			sleep(5) if ( ! $p{wait} );
@@ -1353,20 +1534,267 @@ sub vers_tag
 
 }
 
+# SemVer 2 precedence for plugin-style versions (classic core + optional prerelease). Build metadata is ignored (SemVer §10).
+# Fallback: lax version.pm when the strings are not classic SemVer-shaped.
+# Returns -1 / 0 / 1 like <=>, or undef if not comparable.
 
+sub plugin_version_compare
+{
+	my ($a_in, $b_in) = @_;
+	return 0 unless defined($a_in) || defined($b_in);
+	return undef unless defined($a_in) && defined($b_in);
+	my $tag_a = lc(LoxBerry::System::trim($a_in));
+	my $tag_b = lc(LoxBerry::System::trim($b_in));
+	$tag_a = vers_tag($tag_a);
+	$tag_b = vers_tag($tag_b);
 
+	my ($maj_a, $min_a, $pat_a, $pre_a, $ok_semver_a) = _plugin_semver_parts($tag_a);
+	my ($maj_b, $min_b, $pat_b, $pre_b, $ok_semver_b) = _plugin_semver_parts($tag_b);
+
+	if ($ok_semver_a && $ok_semver_b) {
+		my $cmaj = int($maj_a) <=> int($maj_b);
+		return $cmaj if $cmaj != 0;
+		my $cmin = int($min_a) <=> int($min_b);
+		return $cmin if $cmin != 0;
+		my $cpat = int($pat_a) <=> int($pat_b);
+		return $cpat if $cpat != 0;
+
+		my $pempty_a = ($pre_a eq '');
+		my $pempty_b = ($pre_b eq '');
+		# Stable (no prerelease) has strictly higher precedence than any prerelease of same MAJOR.MINOR.PATCH (SemVer §11).
+		return -1 if !$pempty_a &&  $pempty_b;
+		return  1 if  $pempty_a && !$pempty_b;
+		return  0 if  $pempty_a &&  $pempty_b;
+
+		return _plugin_semver_prerelease_cmp($pre_a, $pre_b);
+	}
+
+	require version;
+	# Normalize like legacy callers (pluginsupdate/plugininstall path): lax parse uses strings WITH leading v via vers_tag, not stripped.
+	my $parsed_a = vers_tag($tag_a);
+	my $parsed_b = vers_tag($tag_b);
+	return undef unless version::is_lax($parsed_a) && version::is_lax($parsed_b);
+	my $va = eval { version->parse($parsed_a) };
+	my $vb = eval { version->parse($parsed_b) };
+	return undef unless defined $va && defined $vb;
+	return $va <=> $vb;
+}
+
+sub plugin_version_has_prerelease
+{
+	my ($v_in) = @_;
+	return 0 unless defined $v_in && $v_in ne '';
+	my $tag = lc(LoxBerry::System::trim($v_in));
+	$tag = vers_tag($tag);
+	my (undef, undef, undef, $pre, $ok) = _plugin_semver_parts($tag);
+	return ($ok && $pre ne '') ? 1 : 0;
+}
+
+sub _plugin_semver_parts
+{
+	my ($tag) = @_;
+	return (undef, undef, undef, undef, 0) if (!defined($tag) || $tag eq '');
+	my $s = $tag;
+	$s =~ s/^v//;
+	$s =~ s/\+.*\z//;
+	if ($s =~ /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/ ) {
+		my $pre = defined $4 ? $4 : '';
+		return ($1 + 0, $2 + 0, $3 + 0, $pre, 1);
+	}
+	return (undef, undef, undef, undef, 0);
+}
+
+sub _plugin_semver_prerelease_cmp
+{
+	my ($a, $b) = @_;
+	my @pa = split(/\./, $a, -1);
+	my @pb = split(/\./, $b, -1);
+	my $i = 0;
+	while ( 1 ) {
+		my $ida = $pa[$i];
+		my $idb = $pb[$i];
+		if (!defined($ida) && !defined($idb)) {
+			return 0;
+		}
+		if (!defined($ida)) {
+			return -1;
+		}
+		if (!defined($idb)) {
+			return 1;
+		}
+		my $na = ($ida =~ /^\d+$/);
+		my $nb = ($idb =~ /^\d+$/);
+		if ($na && $nb) {
+			no warnings 'numeric';
+			my $wc = ($ida + 0) <=> ($idb + 0);
+			return $wc if $wc != 0;
+		}
+		elsif ($na && !$nb) {
+			return -1;
+		}
+		elsif (!$na && $nb) {
+			return 1;
+		}
+		else {
+			my $ws = ($ida cmp $idb);
+			return $ws if $ws != 0;
+		}
+		$i++;
+	}
+	return 0;
+}
+
+sub bytes_humanreadable
+{
+	my ($size, $inputfactor) = @_;
+	
+	my $outputfactor;
+	
+	$inputfactor = uc($inputfactor);
+	$size = $size*1024 if ($inputfactor eq 'K');
+	$size = $size*1024*1024 if ($inputfactor eq 'M');
+	$size = $size*1024*1024*1024 if ($inputfactor eq 'G');
+	$size = $size*1024*1024*1024*1024 if ($inputfactor eq 'T');
+	
+	if ($size > (1024*1024*1024*1024)) {
+		$outputfactor = "T";
+		$size = $size/1024/1024/1024/1024;
+		
+	} elsif ($size > (1024*1024*1024)) {
+		$outputfactor = "G";
+		$size = $size/1024/1024/1024;
+	} elsif ($size > (1024*1024)) {
+		$outputfactor = "M";
+		$size = $size/1024/1024;
+	} elsif ($size > (1024)) {
+		$outputfactor = "K";
+		$size = $size/1024;
+	} else {
+		$outputfactor = "";
+	}
+
+	my $outstring = sprintf "%.1f", $size;
+	$outstring .= $outputfactor . "B";
+	return $outstring;
+	
+}
+
+sub read_file
+{
+	my ($filename) = @_;
+	open(my $fh, '<', $filename) or return undef;
+	flock( $fh, 1 ); # Shared
+	my $string;
+	{
+		local $/;
+		$string = <$fh>;	
+	}
+	close $fh;
+	return $string;
+}
+
+sub write_file
+{
+	my ($filename, $content) = @_;
+	eval {
+		open(my $fh, '>', $filename) or die "Cannot open $filename: $!";
+		flock( $fh, 2 ); # Exclusive
+		print $fh $content;
+		close $fh;
+	};
+	return $@;
+}
+
+# Exec a shell command, return exitcode and output
+sub execute
+{
+	my @params = @_;
+	my $log;
+	my $uselog;
+	my $command;
+	my %arghash;
+	my $args = \%arghash;
+		
+	# Check command parameter
+	
+	print STDERR "execute: Number of params: " . scalar @params . "\n" if ($DEBUG);
+	print STDERR "execute: Ref of first param: " . ref($params[0]) . "\n" if ($DEBUG);
+		
+	if( scalar @params == 1 and ref($params[0]) eq "" ) {
+		print STDERR "execute: Parameter was a string and will be used as command\n" if ($DEBUG);
+		$args->{command} = $params[0];
+	} elsif ( scalar @params == 1 and ref($params[0]) eq "HASH" ) {
+		print STDERR "execute: Parameter was a hash\n" if ($DEBUG);
+		$args = $params[0];
+	} elsif ( scalar @params > 1 and scalar(@params)%2 == 0 ) {
+		print STDERR "execute: Parameter was an array\n" if ($DEBUG);
+		%arghash = @params;
+	} elsif ( scalar @params > 1 and scalar(@params)%2 == 1 ) {
+		Carp::croak("execute: Uneven number of arguments");
+	} else {
+		Carp::croak("execute: Unknown type of arguments.");
+	}
+	
+	if ( !defined $args->{command} ) {
+		Carp::croak("execute: Argument command missing");
+	} else {
+		$command = $args->{command};
+	}
+	
+	# Check log parameter
+	if( ref($args) and $args->{log}) {
+		print STDERR "execute: log argument given\n" if ($DEBUG);
+		$uselog = 1;
+		
+		# Test the log object
+		require LoxBerry::Log;
+		$log = $args->{log};
+		eval {
+			$log->loglevel();
+		};
+		if($@) {
+			# No log object present
+			print STDERR "execute: Warning: Parameter log given, but log not defined.\n";
+			$uselog = 0;
+		}
+	}
+		
+	if($uselog) {
+		# Define default values
+		$args->{intro} = "Executing command '$command'..." if( !defined $args->{intro} ); 
+		$args->{ok} = "Command executed successfully." if( !defined $args->{ok} ); 
+		$args->{error} = "ERROR executing command"  if( !defined $args->{error} and !defined $args->{warn} );
+		$args->{okcode} = 0 if( !defined $args->{okcode} );
+
+		# Log intro
+		$log->INF($args->{intro});
+	}
+		
+	my $output = qx { $command };
+	my $exitcode  = $? >> 8;
+	
+	# All of the following code is only relevant if something needs to be logged
+	if($uselog) {
+		if( $exitcode eq $args->{okcode} or $args->{ignoreerrors} ) {
+			# OK
+			$log->OK( $args->{ok} . " - Exitcode $exitcode");
+		} else {
+			# Not OK
+			if( defined $args->{warn} ) {
+				$log->WARN( $args->{warn} . " - Exitcode $exitcode" );
+			} else {
+				$log->ERR( $args->{error} . " - Exitcode $exitcode" );
+			}
+		}
+		chomp ($output);
+		$log->DEB ( $output );
+	}
+	
+	return ($exitcode, $output);
+
+}
 
 #####################################################
 # Finally 1; ########################################
 #####################################################
 1;
-
-=head1 EXCEPTION HANDLING
-
-All functions usually return undef if an error occurs, nothing was found or the input parameters are out of scope. You have to handle this is your plugin. Functions may inform in STDERR about warnings and errors.
-
-=head1 SEE ALSO
-
-Further features especially for language and HTML support are found in LoxBerry::Web.
-
-=cut

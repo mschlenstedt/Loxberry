@@ -19,11 +19,8 @@
 # Modules
 ##########################################################################
 use LoxBerry::Web;
-# use LoxBerry::Log;
 
 use CGI qw/:standard/;
-# use LWP::UserAgent;
-# use CGI::Session;
 use warnings;
 use strict;
 
@@ -31,8 +28,8 @@ use strict;
 # Variables
 ##########################################################################
 
-my $helplink = "http://www.loxwiki.eu/display/LOXBERRY/LoxBerry";
-my $helptemplate = "help_myloxberry.html";
+my $helplink = "https://wiki.loxberry.de/";
+my $helptemplate;
 my $template_title;
 my $error;
 
@@ -40,64 +37,21 @@ my $error;
 # Read Configuration
 ##########################################################################
 
-# If config is empty delete it because it's lost anyway
-if ( -z "$lbsconfigdir/general.cfg" ) 
-{ 
-	unlink "$lbsconfigdir/general.cfg";
-}
-
-# If config is not there (or was empty) create it 
-if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/mail.cfg" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/securepin.dat" ) 
-{
+if (! -e "$lbsconfigdir/general.cfg" || ! -e "$lbsconfigdir/general.json" || ! -e "$lbsconfigdir/mail.json" || ! -e "$lbsconfigdir/htusers.dat" || ! -e "$lbsconfigdir/securepin.dat" ) {
 	qx ( $lbsbindir/createconfig.pl );
 }
-
-# If config is invalid try to detect issues to prevent a LoxBerry deadlock
-use File::Copy;
-#use Data::Dumper;
-my $cfg_chk = new Config::Simple();
-my $cfg_err = "";
-my $message = "";
-eval { $cfg_chk =  $cfg_chk->Config::Simple::read("$lbsconfigdir/general.cfg"); };
-eval { $cfg_err = $cfg_chk->Config::Simple::error(); };
-if ($cfg_err ne "" || ref $cfg_chk ne "HASH" )
-{
-	$cfg_err ="Config seems empty.";
-	eval {$cfg_err  = $cfg_chk->Config::Simple::error() if ( ref $cfg_chk ne "HASH" );};
-	$message  = "<hr>The reason for that action was: <br>$lbsconfigdir/general.cfg: <br><span style='color:#0000FF;'>".$cfg_err."</span>";	
-	print "content-type: text/html \n\n";
-	print "<html>";
-	print "<title>LoxBerry</title>";
-	print "<meta http-equiv='Content-type' content='text/html; charset=iso-8859-1' />";
-	print "<body style='background-color:#FFFF00'>";
-	print "<span style='font-family:\"Courier New\', monospace;'><center>";
-	print "<br><br><span style='color:#FF0000;'><b><big>+ + + WARNING + + + WARNING + + + WARNING + + + WARNING + + + </big><br>Something really bad happened and your LoxBerry default configuration has been restored!</b><br></span>";
-    print $message;
-	print "<br><br>Please report the issue to the Core developer team in GitHub <a target='_bug' href='https://github.com/mschlenstedt/Loxberry/issues/new?title=general.cfg+issue&body=I+have+a+corrupted+general.cfg&labels=CRITICAL'>here</a>.</center></span>";
-	print "<br><br>";
-	copy("$lbsconfigdir/general.cfg","$lbshtmlauthdir/general.cfg.faulty")  or print "<br>Oh no! Saving corrupt config file failed, too: $! <br>Your config is lost, unfortunately you have to re-setup your LoxBerry if you have no backup.";
-	copy("$lbsconfigdir/general.cfg.default","$lbsconfigdir/general.cfg")   or print "<br>Sorry, restoring default config failed: $! <br>Your LoxBerry is dead. Try to get support here: <a target='_bug' href='https://github.com/mschlenstedt/Loxberry/issues/new?title=general.cfg+issue&body=I+have+a+dead+LoxBerry+after+a+corrupted+general.cfg&labels=CRITICAL'>here</a>";
-	#print Dumper("-".$cfg_chk."-");
-	print "</body>";
-	print "</html>";
-	undef $cfg_chk;
-	exit;
-}
-
-if (-z "$lbsconfigdir/mail.cfg" || -z "$lbsconfigdir/htusers.dat" || -z "$lbsconfigdir/securepin.dat" ) {
-	die "CRITICAL: One of your configuration files (general.cfg, mail.cfg, installpin.dat, securepin.dat) exists but have zero size. LoxBerry is not working in this condition.\n" . 
+if (-z "$lbsconfigdir/general.cfg" || -z "$lbsconfigdir/general.json" || -z "$lbsconfigdir/mail.json" || -z "$lbsconfigdir/htusers.dat" || -z "$lbsconfigdir/securepin.dat" ) {
+	die "CRITICAL: One of your configuration files (general.cfg, mail.json, installpin.dat, securepin.dat) exists but have zero size. LoxBerry is not working in this condition.\n" . 
 		"Please check if your SD card is full. If you have fixed the issue, delete all of the mentioned files that have 0 Bytes so LoxBerry can re-create them, or restore them from a backup.\n\n" . 
 		"Sorry for any troubles. We love you!\n";
 		exit(1);
 }
 
 # Version of this script
-my $version = "1.0.0.4";
+my $version = "3.0.0.0";
 
 my $sversion = LoxBerry::System::lbversion();
 
-my $cfg = new Config::Simple("$lbsconfigdir/general.cfg");
-my %Config = $cfg->vars();
 my $bins = LoxBerry::System::get_binaries();
 my $sudobin = $bins->{SUDO};
 
@@ -109,23 +63,6 @@ my $sudobin = $bins->{SUDO};
 my $cgi = CGI->new;
 $cgi->import_names('R');
 # Example: Parameter lang is now $R::lang
-
-##########################################################################
-# Check for first start and setup assistent
-##########################################################################
-
-my $wizardfile = "$lbsdatadir/wizard.dat";
-if (! -e $wizardfile) {
-	# Delete LoxBerryID
-	system ("rm -f $lbsconfigdir/loxberryid.cfg > /dev/null 2>&1");
-	# Resize SDCard
-	system ("$sudobin -n $lbssbindir/resize_rootfs > $lbslogdir/rootfsresized.log 2>&1");
-	reboot_required("Setup Wizard");
-	# Start Wizard
-	print $cgi->redirect('/admin/system/wizard.cgi');
-	exit;
-}
-
 
 ##########################################################################
 # Language Settings
@@ -142,19 +79,40 @@ our $maintemplate = HTML::Template->new(
 				global_vars => 1,
 				loop_context_vars => 1,
 				die_on_bad_params=> 0,
-				associate => $cfg,
 				%htmltemplate_options,
 				#debug => 1,
 				#stack_debug => 1,
 				);
 
 our %SL = LoxBerry::System::readlanguage($maintemplate);
-
 $template_title = "$SL{'COMMON.LOXBERRY_MAIN_TITLE'}";
 
 ##########################################################################
-# Main program
+# Check for first start and setup assistent
 ##########################################################################
+
+# If we were started the very first time, create random passwords
+if (!-e "$lbsdatadir/wizard.dat") {
+	
+	# Check if the original passwords still set
+	my $wizardchk = 0;
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'loxberry' 'loxberry');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+		$wizardchk++;
+	}
+	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '0000');
+	my $exitcode  = $? >> 8;
+	if ($exitcode != 0) {	
+		$wizardchk++;
+	}
+	
+	# Set random passwords
+	if ($wizardchk eq 0) {
+		$maintemplate->param('WIZARD' => 1);
+	}
+
+}
 
 #########################################################################
 # What should we do
@@ -181,43 +139,35 @@ sub mainmenu {
 	$navbar{2}{Name} = $SL{'HEADER.TITLE_PAGE_SYSTEM'};
 	$navbar{2}{URL} = "/admin/system/index.cgi?form=system";
 
-	# $navbar{2}{notifyBlue} = 2;
-	# $navbar{2}{notifyRed} = 3;
-	
-#	$navbar{2}{notifyBlue} = $notification_allerrors == 0 && $notification_alloks != 0 ? $notification_alloks : undef;
-#	$navbar{2}{notifyRed} = $notification_allerrors != 0 ? ($notification_allerrors+$notification_alloks)  : undef;
-
 	if (!$R::form || $R::form ne "system") {
-		# Get Plugins from plugin database
-		@plugins = LoxBerry::System::get_plugins();
+		# Get Plugins from plugin database, sorted alphabetically by title (case-insensitive)
+		@plugins = sort { lc($a->{PLUGINDB_TITLE}) cmp lc($b->{PLUGINDB_TITLE}) } LoxBerry::System::get_plugins();
 		$maintemplate->param('PLUGINS' => \@plugins);
+		$helptemplate = "help_index_plugins.html";
+
 	} else {
+		$helptemplate = "help_index_system.html";
+
 		# Create SYSTEM widget list
-		
 		# Prepare System Date Time for Love Clock
-		our $systemdatetime = time()*1000;
-		(our $sec, our $min, our $hour, our $mday, our $mon, our $year, our $wday, our $yday, our $isdst) = localtime();
-		our $systemdate = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
-		$maintemplate->param( 	'SEC' => $sec,
-								'MIN' => $min,
-								'HOUR' => $hour
-							);
+		# our $systemdatetime = time()*1000;
+		# (our $sec, our $min, our $hour, our $mday, our $mon, our $year, our $wday, our $yday, our $isdst) = localtime();
+		# our $systemdate = $year + 1900 . "-" . sprintf ('%02d' ,$mon) . "-" . sprintf ('%02d' ,$mday);
+		# $maintemplate->param( 	'SEC' => $sec,
+								# 'MIN' => $min,
+								# 'HOUR' => $hour
+		# );
 		
-		
-		# print STDERR "Index: Update Errors: $notification_errors{'updates'} \n";
-		# print STDERR "Index: Update Infos: $notification_oks{'updates'} \n";
-		
-		
-		$maintemplate->param('WIDGETS' => [
-			{ 
-				WIDGET_TITLE => $SL{'HEADER.PANEL_MYLOXBERRY'}, 
+		my @widgets = (
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_MYLOXBERRY'},
 				WIDGET_ICON => "/system/images/icons/main_myloxberry.svg",
 				WIDGET_CGI => "/admin/system/myloxberry.cgi",
 				NOTIFY_PACKAGE => "myloxberry",
 			} ,
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_ADMIN'},
-				WIDGET_ICON => "/system/images/icons/main_admin.png", 
+				WIDGET_ICON => "/system/images/icons/main_admin.svg", 
 				WIDGET_CGI => "/admin/system/admin.cgi",
 				NOTIFY_PACKAGE => "admin",
 			} ,
@@ -227,76 +177,129 @@ sub mainmenu {
 				WIDGET_CGI => "/admin/system/miniserver.cgi",
 				NOTIFY_PACKAGE => "miniserver",
 			},
-			{
-				WIDGET_TITLE => $SL{'HEADER.PANEL_TIMESERVER'},
-				WIDGET_ICON => "/system/images/icons/blank_64.png",
-				WIDGET_CGI => "/admin/system/timeserver.cgi",
-				NOTIFY_PACKAGE => "timeserver",
-				WIDGET_CLOCK => 1
-			},
+			# {
+				# WIDGET_TITLE => $SL{'HEADER.PANEL_TIMESERVER'},
+				# WIDGET_ICON => "/system/images/icons/blank_64.png",
+				# WIDGET_CGI => "/admin/system/timeserver.cgi",
+				# NOTIFY_PACKAGE => "timeserver",
+				# WIDGET_CLOCK => 1
+			# },
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_NETWORK'},
-				WIDGET_ICON => "/system/images/icons/main_network.png",
+				WIDGET_ICON => "/system/images/icons/main_network.svg",
 				WIDGET_CGI => "/admin/system/network.cgi",
 				NOTIFY_PACKAGE => "network",
 			},
 			{
+				WIDGET_TITLE => $SL{'APPSTORE.WIDGETLABEL'},
+				WIDGET_ICON => "/system/images/icons/main_appstore.svg",
+				WIDGET_CGI => "/admin/system/appstore.cgi",
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_PLUGININSTALL'},
-				WIDGET_ICON => "/system/images/icons/main_plugininstall.png",
+				WIDGET_ICON => "/system/images/icons/main_plugininstall.svg",
 				WIDGET_CGI => "/admin/system/plugininstall.cgi",
 				NOTIFY_PACKAGE => "plugininstall",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_UPDATES'},
-				WIDGET_ICON => "/system/images/icons/main_updates.png",
+				WIDGET_ICON => "/system/images/icons/main_updates.svg",
 				WIDGET_CGI => "/admin/system/updates.cgi",
 				NOTIFY_PACKAGE => "updates",
 				
 			},
 			{
+				WIDGET_TITLE => 'Log Manager',
+				WIDGET_ICON => "/system/images/icons/main_logmanager.svg",
+				WIDGET_CGI => "/admin/system/logmanager.cgi",
+				NOTIFY_PACKAGE => "logmanager",
+				
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_SERVICES'},
-				WIDGET_ICON => "/system/images/icons/main_services.png",
+				WIDGET_ICON => "/system/images/icons/main_services.svg",
 				WIDGET_CGI => "/admin/system/services.php",
 				NOTIFY_PACKAGE => "services",
 				
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_REBOOT'},
-				WIDGET_ICON => "/system/images/icons/main_power.png",
+				WIDGET_ICON => "/system/images/icons/main_power.svg",
 				WIDGET_CGI => "/admin/system/power.cgi",
 				NOTIFY_PACKAGE => "power",
 			},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_MAILSERVER'},
-				WIDGET_ICON => "/system/images/icons/main_mail.png",
+				WIDGET_ICON => "/system/images/icons/main_mail.svg",
 				WIDGET_CGI => "/admin/system/mailserver.cgi",
 				NOTIFY_PACKAGE => "mailserver",
 			},
-			{
-				WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
-				WIDGET_ICON => "/system/images/icons/main_setupassistent.png",
-				WIDGET_CGI => "/admin/system/wizard.cgi",
-				NOTIFY_PACKAGE => "wizard",
-			},
+			#{
+				#WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
+				#WIDGET_ICON => "/system/images/icons/main_setupassistent.svg",
+				#WIDGET_CGI => "/admin/system/wizard.cgi",
+				#NOTIFY_PACKAGE => "wizard",
+			#},
 			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_TRANSLATE'},
-				WIDGET_ICON => "/system/images/icons/main_translate.png",
+				WIDGET_ICON => "/system/images/icons/main_translate.svg",
 				WIDGET_CGI => "/admin/system/translate.cgi",
 				NOTIFY_PACKAGE => "translate",
 			},
 			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_FILEMANAGER'},
+				WIDGET_ICON => "/system/images/icons/main_filemanager.svg",
+				WIDGET_CGI => "/admin/system/tools/filemanager/index.cgi?p=/",
+				WIDGET_TARGET => "_blank",
+				NOTIFY_PACKAGE => "filemanager",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_NETSHARES'},
+				WIDGET_ICON => "/system/images/icons/main_netshares.svg",
+				WIDGET_CGI => "/admin/system/netshares.cgi",
+				NOTIFY_PACKAGE => "netshares",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_USBSTORAGE'},
+				WIDGET_ICON => "/system/images/icons/main_usbstorage.svg",
+				WIDGET_CGI => "/admin/system/usbstorage.cgi",
+				NOTIFY_PACKAGE => "usbstoage",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_REMOTE'},
+				WIDGET_ICON => "/system/images/icons/main_remote.svg",
+				WIDGET_CGI => "/admin/system/remote.cgi",
+				NOTIFY_PACKAGE => "remote",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_MQTT'}, 
+				WIDGET_ICON => "/system/images/icons/main_mqtt.svg",
+				WIDGET_CGI => "/admin/system/mqtt.cgi",
+				NOTIFY_PACKAGE => "mqtt",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_BACKUP'}, 
+				WIDGET_ICON => "/system/images/icons/main_backup.svg",
+				WIDGET_CGI => "/admin/system/backup.cgi",
+				NOTIFY_PACKAGE => "backup",
+			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_TERMINAL'}, 
+				WIDGET_ICON => "/system/images/icons/main_terminal.svg",
+				WIDGET_CGI => "/admin/system/tools/terminal",
+				WIDGET_TARGET => "_blank",
+				NOTIFY_PACKAGE => "terminal",
+			},
+			{
 				WIDGET_TITLE => $SL{'HEADER.PANEL_DONATE'},
-				WIDGET_ICON => "/system/images/icons/main_donate.png",
+				WIDGET_ICON => "/system/images/icons/main_donate.svg",
 				WIDGET_CGI => "/admin/system/donate.cgi",
 				NOTIFY_PACKAGE => "donate",
 			},
-			{
-				WIDGET_TITLE => $SL{'HEADER.PANEL_FILEMANAGER'},
-				WIDGET_ICON => "/system/images/icons/main_filemanager.png",
-				WIDGET_CGI => "/admin/system/tools/filemanager/filemanager.php",
-				NOTIFY_PACKAGE => "filemanager",
-			}
-		]);
+		);
+		# Sort widgets alphabetically by localized title (case-insensitive)
+		@widgets = sort { lc($a->{WIDGET_TITLE} // '') cmp lc($b->{WIDGET_TITLE} // '') } @widgets;
+		$maintemplate->param('WIDGETS' => \@widgets);
 		
 	}
 
@@ -304,7 +307,6 @@ sub mainmenu {
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'};
 	LoxBerry::Web::head($template_title);
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . " <span class='hint'>V$sversion</span>";
-	
 
 	if (!$R::form || $R::form ne "system") {
 		$navbar{1}{active} = 1;
@@ -312,6 +314,15 @@ sub mainmenu {
 	} else {
 		$navbar{2}{active} = 1;
 		$maintemplate->param('PAGE_SYSTEM', 1);
+	}
+
+	# Slow down Notitfys for PI1 (needs too much CPU)
+	my $output = qx ($lbsbindir/showpitype);
+	chomp ($output);
+	if ($output eq "type_1" | $output eq "type_0") {
+		$maintemplate->param('NOTIFY_POLLTIME', 30000);
+	} else {
+		$maintemplate->param('NOTIFY_POLLTIME', 5000);
 	}
 
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);

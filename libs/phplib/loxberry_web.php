@@ -1,11 +1,10 @@
 <?php
 
 require_once "loxberry_system.php";
-// require_once "phphtmltemplate_loxberry/template040.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "1.0.0.2";
+	public static $LBWEBVERSION = "3.0.0.3";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -13,18 +12,28 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	// prints the head
 	///////////////////////////////////////////////////////////////////
+	
 	public static function head($pagetitle = "")
+	{
+		echo get_head($pagetitle);
+		
+	}
+	
+	public static function get_head($pagetitle = "", $nojqm = false)
 	{
 		// error_log("loxberry_web: Head function called -->");
 		global $template_title;
+		global $htmlhead;
+		
+		$html = "";
 		
 		# If a global template_title is set, use it
-		if ($template_title !== "") {
+		if ( empty($pagetitle) && !empty($template_title) ) {
 			$pagetitle = $template_title;
 		}
 		$lang = LBSystem::lblanguage();
 		
-		$fulltitle = $pagetitle !== "" ? lbfriendlyname() . " " . $pagetitle : lbfriendlyname();
+		$fulltitle = !empty($pagetitle) ? lbfriendlyname() . " " . $pagetitle : lbfriendlyname();
 		$fulltitle = trim($fulltitle);
 		if ($fulltitle === "") {
 			$fulltitle = "LoxBerry";
@@ -34,27 +43,36 @@ class LBWeb
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/head.html";
 		if (!file_exists($templatepath)) {
 			error_log("   Could not locate head template $templatepath");
-			echo "<p style=\"color:red;\">Could not find head template $templatepath</p>";
-			exit(1);
+			$html .= "<p style=\"color:red;\">Could not find head template $templatepath</p>";
+			return($html);
 		}
-		// $headobj = new Template( array ( 
-								// 'filename' => $templatepath,
-								// 'die_on_bad_params' => 0,
-								// 'case_sensitive' => 0,
-								// 'debug' => 1,
-								// //'global_vars' => 1,
-								// ));
-		// $headobj->AddParam('TEMPLATETITLE', $fulltitle);
-		// $headobj->AddParam('LANG', $lang);
-		// //$headobj->AddParam('templatetitle', $fulltitle);
-		// //$headobj->AddParam('lang', $lang);
-		// $headobj->EchoOutput();
 
 		$headobj = new LBTemplate($templatepath);
 		$headobj->param('TEMPLATETITLE', $fulltitle);
 		$headobj->param('LANG', $lang);
+		$headobj->param('HTMLHEAD', $htmlhead);
+		// Core (system) vs plugin page: skip jQuery Mobile JS for system pages
+		global $lbpplugindir;
+		$is_plugin = !empty($lbpplugindir);
+		$headobj->param('IS_CORE_PAGE', $is_plugin ? 0 : 1);
+		$headobj->param('LOAD_JQM',     ($is_plugin && !$nojqm) ? 1 : 0);
+
+		// Theme support — read Base.Theme from general.json (mirrors Web.pm logic)
+		LBSystem::read_generaljson();
+		global $cfg;
+		$theme = isset($cfg->Base->Theme) ? $cfg->Base->Theme : 'soft-rounded';
+		$_theme_map = array('classic' => 'classic-lb', 'modern' => 'soft-rounded', 'dark' => 'glass');
+		if (isset($_theme_map[$theme])) {
+			$theme = $_theme_map[$theme];
+		}
+		if (!preg_match('/^(soft-rounded|clean-admin|glass|classic-lb)$/', $theme)) {
+			$theme = 'soft-rounded';
+		}
+		$headobj->param('THEME_CLASS', "theme-$theme");
+		$headobj->param('THEME_FILE', "theme-$theme.css");
+
 		LBSystem::readlanguage($headobj, "language.ini", True);
-		$headobj->output();
+		return $headobj->outputString();
 
 		// error_log("<-- loxberry_web: Head function finished");
 	}
@@ -62,7 +80,13 @@ class LBWeb
 	///////////////////////////////////////////////////////////////////
 	// pagestart - Prints the page
 	///////////////////////////////////////////////////////////////////
+	
 	public static function pagestart($pagetitle = "", $helpurl = "", $helptemplate = "", $page = "main1")
+	{
+		echo get_pagestart($pagetitle, $helpurl, $helptemplate, $page);
+	}
+
+	public static function get_pagestart($pagetitle = "", $helpurl = "", $helptemplate = "", $page = "main1")
 	{
 		// error_log("loxberry_web: pagestart function called -->");
 
@@ -71,9 +95,20 @@ class LBWeb
 		global $navbar;
 		global $lbpplugindir;
 		
-		if ($template_title !== "") {
+		$html = "";
+		
+		$nopanels = 0;
+		
+		if ($helpurl === "nopanels") {
+			//error_log("Detected nopanels-option. Sidepanels will not be rendered.");
+			$nopanels = 1;
+		}
+		
+		# If a global template_title is set, use it
+		if ( empty($pagetitle) && !empty($template_title) ) {
 			$pagetitle = $template_title;
 		}
+		
 		if ($helplink !== "") {
 			$helpurl = $helplink;
 		}
@@ -87,121 +122,65 @@ class LBWeb
 		// error_log("   Determined template title: $fulltitle");
 		
 		$helptext = LBWeb::gethelp($lang, $helptemplate);
-				
-		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pagestart.html";
-		if (!file_exists($templatepath)) {
-			error_log("   Could not locate pagestart template $templatepath");
-			echo "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
-			exit(1);
+
+		if ($nopanels) {
+			$templatepath = LBSTEMPLATEDIR . "/pagestart_nopanels.html";
+			if (!file_exists($templatepath)) {
+				error_log("   Could not locate pagestart template $templatepath");
+				$html .= "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
+				return($html);
+			}
+		} else {
+			$templatepath = LBSTEMPLATEDIR . "/pagestart.html";
+			if (!file_exists($templatepath)) {
+				error_log("   Could not locate pagestart template $templatepath");
+				$html .= "<p style=\"color:red;\">Could not find pagestart template $templatepath</p>";
+				return($html);
+			}
 		}
-		// $pageobj = new Template( array ( 
-								// 'filename' => $templatepath,
-								// 'die_on_bad_params' => 0,
-								// //'debug' => 1,
-								// 'global_vars' => 1,
-								// ));
-		// #$pageobj->AddParam('TEMPLATETITLE', $fulltitle);
-		// #$pageobj->AddParam('LANG', $lang);
-		// $pageobj->AddParam(array(
-					// 'TEMPLATETITLE' => $fulltitle,
-					// 'HELPLINK' => $helpurl,
-					// 'HELPTEXT' => $helptext,
-					// 'PAGE' => $page,
-					// 'LANG' => $lang
-					// ));
-		// $pageobj->EchoOutput();
-		
+
 		// NavBar Start
 		
 		if (is_array($navbar)) {
 			# navbar is defined as ARRAY
 			sort($navbar, SORT_NUMERIC);
-			$topnavbar = '<div data-role="navbar">' . 
-				'	<ul>';
-			foreach ($navbar as $element) {
-				if (isset($element['active'])) {
-					$btnactive = ' class="ui-btn-active"';
-				} else { $btnactive = NULL; 
-				}
-				if (isset($element['target'])) {
-					$btntarget = ' target="' . $element['target'] . '"';
-				} else {
-					$btntarget = "";
-				}
-				
-				// // NavBar Notify Old
-				// $notify = "";
-				// if (isset($element['notifyRed'])) {
-					// $notify = ' <span class="notifyRedNavBar">' . $element['notifyRed'] . '</span>';
-				// } elseif (isset($element['notifyBlue'])) {
-					// $notify = ' <span class="notifyBlueNavBar">' . $element['notifyBlue'] . '</span>';
-				// }
-				
-				$notify .= <<<EOT
-				<div class="notifyBlueNavBar" id="notifyBlueNavBar$element" style="display: none">0</div>
-				<div class="notifyRedNavBar" id="notifyRedNavBar$element" style="display: none">0</div>
-EOT;
-				
-				if (isset($element['Name'])) {
-					$topnavbar .= <<<EOT
-				<li>
-					<div style="position:relative">$notify<a href="{$element['URL']}"{$btntarget}{$btnactive}>{$element['Name']}</a></div></li>
-EOT;
-					$topnavbar_haselements = True;
-				
-					// Inject Notify JS code
-					$notifyname = $element['Notify_Name'];
-					$notifypackage = $element['Notify_Package'];
-					if (isset($notifyname) && ! isset($notifypackage) && isset($lbpplugindir)) {
-						$notifypackage = $lbpplugindir;
-					}
-					if (isset($notifypackage)) {
-						$topnavbar_notify_js .= <<<EOT
-
-		$.post( "/admin/system/tools/ajax-notification-handler.cgi", { action: 'get_notification_count', package: '$notifypackage', name: '$notifyname' })
-			.done(function(data) { 
-				console.log("get_notification_count executed successfully");
-				console.log("{$element['Name']}", data[0], data[1], data[2]);
-				if (data[0] != 0) \$("#notifyRedNavBar{$element}").text(data[2]).fadeIn('slow');
-				else \$("#notifyRedNavBar{$element}").text('0').fadeOut('slow');
-				if (data[1] != 0) \$("#notifyBlueNavBar{$element}").text(data[1]).fadeIn('slow');
-				else \$("#notifyBlueNavBar{$element}").text('0').fadeOut('slow');
-				
-			});
-EOT;
-
-					}
-				}
-			}
 			
-			$topnavbar .=  '	</ul>' .
-				'</div>';	
-		
+			$jsonmenu = 
+				'<div id="jsonmenu" style="display:none">' .
+				json_encode($navbar, JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) .
+				'</div>';
+			
 		} elseif (is_string($navbar)) {
 			# navbar is defined as plain STRING
 			$topnavbar = $navbar;
-			$topnavbar_haselements = True;
 		} 
 		// NavBar End
-			
 		
 		$pageobj = new LBTemplate($templatepath);
 		$pageobj->paramArray(array(
 					'TEMPLATETITLE' => $fulltitle,
 					'HELPLINK' => $helpurl,
-					'HELPTEXT' => $helptext,
+		//			'HELPTEXT' => $helptext,
 					'PAGE' => $page,
 					'LANG' => $lang
 					));
-		LBSystem::readlanguage($pageobj, "language.ini", True);
 		
-		if ($topnavbar_haselements) {
-			$pageobj->param ( 'TOPNAVBAR', $topnavbar);
-		} else {
-			$pageobj->param ( 'TOPNAVBAR', "");
+		$syslang = LBSystem::readlanguage($pageobj, "language.ini", True);
+		
+		if($helptext == Null) {
+			$helptext = $syslang['COMMON.HELP_NOT_AVAILABLE'];
 		}
-		if ($topnavbar_notify_js) {
-			$notify_js = 
+		$pageobj->paramArray(array(	'HELPTEXT' => $helptext ));
+		
+		if( isset($jsonmenu) ) {
+			$pageobj->paramArray(array(	'JSONMENU' => $jsonmenu ));
+		}
+		elseif (isset($topnavbar)) {
+			$pageobj->param ( 'NAVBAR_PLAIN', $topnavbar);
+		} 
+		
+		if (!empty($topnavbar_notify_js)) {
+			$notify_js =
 <<<EOT
 
 <SCRIPT>
@@ -215,13 +194,34 @@ EOT;
 			$pageobj->param ( 'NAVBARJS', $notify_js);
 		} else {
 			$pageobj->param ( 'NAVBARJS', "");
-		}	
-		
-		
-		
-		
-		
-		$pageobj->output();
+		}
+
+		// Render the sidebar plugin list as HTML in code: LBTemplate (PHP)
+		// does not support TMPL_LOOP, so the template uses a single TMPL_VAR.
+		$sidebar_html = '';
+		$tabbar_html = '';
+		$installed_plugins = LBSystem::get_plugins();
+		if (is_array($installed_plugins) && count($installed_plugins) > 0) {
+			usort($installed_plugins, function($a, $b) {
+				return strcasecmp($a['PLUGINDB_TITLE'], $b['PLUGINDB_TITLE']);
+			});
+			$section_label = isset($syslang['HEADER.PANEL_MYPLUGINS']) ? $syslang['HEADER.PANEL_MYPLUGINS'] : 'Meine Plugins';
+			$sidebar_html = '<div class="lb-sidebar-section">' . htmlspecialchars($section_label, ENT_QUOTES, 'UTF-8') . '</div>' . "\n";
+			foreach ($installed_plugins as $plugin) {
+				$title = htmlspecialchars($plugin['PLUGINDB_TITLE'], ENT_QUOTES, 'UTF-8');
+				$url    = htmlspecialchars("/admin/plugins/" . $plugin['PLUGINDB_FOLDER'] . "/", ENT_QUOTES, 'UTF-8');
+				$folder = htmlspecialchars($plugin['PLUGINDB_FOLDER'], ENT_QUOTES, 'UTF-8');
+				$sidebar_html .= '<a class="lb-sidebar-link" href="' . $url . '"><span class="lb-sidebar-name">' . $title . '</span><div class="lb-sidebar-status"></div></a>' . "\n";
+				// Use the plugin's own icon (matches the Perl lbheader); the previous
+				// hardcoded "pi pi-box" showed a generic cube for every plugin.
+				$tabbar_html  .= '<a class="lb-tab-popup-item" href="' . $url . '"><img src="/system/images/icons/' . $folder . '/icon_64.png" width="22" height="22" style="opacity:0.7;" alt=""><span>' . $title . '</span></a>' . "\n";
+			}
+		}
+		$pageobj->param('SIDEBAR_PLUGINS_HTML', $sidebar_html);
+		$pageobj->param('SIDEBAR_PLUGINS_TABBAR_HTML', $tabbar_html);
+		$pageobj->param('LBVERSION', LBSystem::lbversion());
+
+		return $pageobj->outputString();
 		
 		// error_log("<-- loxberry_web: Pagestart function finished");
 	}
@@ -230,39 +230,42 @@ EOT;
 	// gethelp - Collects the help text
 	// Currently, only plugin help is supported (no system help)
 	///////////////////////////////////////////////////////////////////
-	function gethelp($lang, $helptemplate)
+	public static function gethelp($lang, $helptemplate)
 	{
 		global $lbpplugindir;
 		global $lbptemplatedir;
 		
-		// error_log("gethelp -> lbpplugindir: $lbpplugindir lbptemplatedir: $lbptemplatedir");
-		// error_log("   Parameters: lang: $lang helptemplate: $helptemplate");
-		
-		if (file_exists("$lbptemplatedir/help/$helptemplate")) { 
-			$templatepath = "$lbptemplatedir/help/$helptemplate";
+		if(!empty($lbptemplatedir)) {
+			$templatedir = $lbptemplatedir;
+			$syslang = False;
+		} else {
+			$templatedir = LBSTEMPLATEDIR;
+			$syslang = True;
+		}
+	
+		if (file_exists("$templatedir/help/$helptemplate")) { 
+			$templatepath = "$templatedir/help/$helptemplate";
 			$ismultilang = True;
 			// error_log("gethelp: Multilang template found - using templatepath $templatepath");
-		} elseif (file_exists("$lbptemplatedir/$lang/$helptemplate")) {
-			$templatepath = "$lbptemplatedir/$lang/$helptemplate";
+		} elseif (file_exists("$templatedir/$lang/$helptemplate")) {
+			$templatepath = "$templatedir/$lang/$helptemplate";
 			$ismultilang = False;
 			// error_log("gethelp: Legacy lang $lang template found - using templatepath $templatepath");
-		} elseif (file_exists("$lbptemplatedir/en/$helptemplate")) {
-			$templatepath = "$lbptemplatedir/en/$helptemplate";
+		} elseif (file_exists("$templatedir/en/$helptemplate")) {
+			$templatepath = "$templatedir/en/$helptemplate";
 			$ismultilang = False;
 			// error_log("gethelp: Legacy fallback lang en template found - using templatepath $templatepath");
-		} elseif (file_exists("$lbptemplatedir/de/$helptemplate")) {
-			$templatepath = "$lbptemplatedir/de/$helptemplate";
+		} elseif (file_exists("$templatedir/de/$helptemplate")) {
+			$templatepath = "$templatedir/de/$helptemplate";
 			$ismultilang = False;
 			// error_log("gethelp: Legacy fallback lang de template found - using templatepath $templatepath");
 		} else {
-			//error_log("gethelp: No help found. Returning default text.");
-			if ($lang === "de") {
-				$helptext = "Keine weitere Hilfe verfügbar.";
-			} else {
-				$helptext = "No further help available.";
-			}
+			error_log("gethelp: No help found. Returning default text.");
+			$helptext = Null;
 			return $helptext;
 		}
+		
+		// error_log("gethelp: templatepath $templatepath ismultilang $ismultilang");
 		
 		// Multilang templates
 		if ($ismultilang) {
@@ -272,8 +275,12 @@ EOT;
 				return null;
 			}
 			$langfile = substr($helptemplate, 0, $pos) . ".ini";
+			// error_log("gethelp: langfile $langfile");
+			// error_log("gethelp: Creating template object...");
 			$helpobj = new LBTemplate($templatepath);
-			LBSystem::readlanguage($helpobj, $langfile);
+			// error_log("gethelp: Calling readlanguage...");
+			
+			LBSystem::readlanguage($helpobj, $langfile, $syslang);
 			$helptext = $helpobj->outputString();
 			return $helptext;
 		}
@@ -287,52 +294,68 @@ EOT;
 	///////////////////////////////////////////////////////////////////
 	// pageend - Prints the page end
 	///////////////////////////////////////////////////////////////////
+	
 	public static function pageend()
 	{
-		global $reboot_required_file;
+		echo get_pageend();
+	}
+	
+	public static function get_pageend()
+	{
 		$lang = LBSystem::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/pageend.html";
 		$pageobj = new LBTemplate($templatepath);
 		$SL = LBSystem::readlanguage($pageobj, "language.ini", True);
 		$pageobj->param('LANG', $lang);
 		
-		// Reboot required button
-		if (file_exists("$reboot_required_file")) {
-			$reboot_req_string='<div data-href="/admin/system/power.cgi" id="btnpower_alert" style="pointer-events: none; display:none; width:30px; height:30px; background-repeat: no-repeat; background-image: url(\'/system/images/reboot_required.svg\');"></div><script>$(document).ready( function(){ $("#btnpower").attr("title","'.$SL['POWER.MSG_REBOOT_REQUIRED_SHORT'].'");  $("#btnpower_alert").on("click", function(e){ var ele = e.target; window.location.replace(ele.getAttribute("data-href"));}); function reboot_on(){ var reboot_alert_offset = $("#btnpower").offset(); $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); $("#btnpower_alert").fadeTo( 2000 , 1.0, function() { setTimeout(function(){ reboot_off(); }, 2700); }); }; function reboot_off(){ var reboot_alert_offset = $("#btnpower").offset(); $("#btnpower_alert").css({"padding": "0px", "border": "0px", "z-index": 10000, "top": "4px" ,"left" : reboot_alert_offset.left + 4, "position":"absolute" }); $("#btnpower_alert").fadeTo( 2000 , 0.1, function() { setTimeout(function(){ reboot_on(); }, 100); });   }; reboot_on(); });</script>';
-			$pageobj->param('REBOOT_REQUIRED', $reboot_req_string);
-		}
-
-		echo $pageobj->output();
+		return $pageobj->outputString();
 	}
 	
 	///////////////////////////////////////////////////////////////////
 	// foot - Prints the footer
 	///////////////////////////////////////////////////////////////////
+	
 	public static function foot()
+	{
+		echo get_foot();
+	}
+	
+	public static function get_foot()
 	{
 		$lang = LBSystem::lblanguage();
 		$templatepath = $templatepath = LBSTEMPLATEDIR . "/foot.html";
 		$footobj = new LBTemplate($templatepath);
 		$footobj->param('LANG', $lang);
-		echo $footobj->output();
+		return $footobj->outputString();
 	}
 	
 	///////////////////////////////////////////////////////////////////
 	// lbheader - Prints head and pagestart
 	///////////////////////////////////////////////////////////////////
-	public static function lbheader($pagetitle = "", $helpurl = "", $helptemplate = "")
+	
+	public static function get_lbheader($pagetitle = "", $helpurl = "", $helptemplate = "", $nojqm = false)
 	{
-		LBWeb::head($pagetitle);
-		LBWeb::pagestart($pagetitle, $helpurl, $helptemplate);
+		return LBWeb::get_head($pagetitle, $nojqm) . LBWeb::get_pagestart($pagetitle, $helpurl, $helptemplate);
+	}
+
+	public static function lbheader($pagetitle = "", $helpurl = "", $helptemplate = "", $nojqm = false)
+	{
+		echo LBWeb::get_head($pagetitle, $nojqm);
+		echo LBWeb::get_pagestart($pagetitle, $helpurl, $helptemplate);
 	}
 	
 	///////////////////////////////////////////////////////////////////
 	// lbfooter - Prints pageend and footer
 	///////////////////////////////////////////////////////////////////
+	public static function get_lbfooter()
+	{
+		return LBWeb::get_pageend() . LBWeb::get_foot();
+	}
+	
 	public static function lbfooter()
 	{
-		LBWeb::pageend();
-		LBWeb::foot();
+		echo LBWeb::get_pageend();
+		echo LBWeb::get_foot();
 	}
 	
 	
@@ -374,6 +397,236 @@ EOT;
 		}
 		return undef;
 	}
+
+	public static function logfile_button_html ($p)
+	{
+		global $lbpplugindir;
+		
+		if (! isset($p['LABEL'])) {
+			$SL = LBSystem::readlanguage(0, 0, True);
+			$p['LABEL'] = $SL['COMMON.BUTTON_LOGFILE'];
+		}
+		if (isset($p['NAME']) && !isset($p['PACKAGE']) && isset($lbpplugindir)) {
+			$p['PACKAGE'] = $lbpplugindir;
+		}
+		
+		if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == 0 ) {
+			$datamini = "false";
+		} else {
+			$datamini = "true";
+		}
+	
+		if (isset($p['DATA_ICON'])) {
+			$dataicon = $p['DATA_ICON'];
+		} else {
+			$dataicon = "action";
+		}
+	
+		return "<a data-role=\"button\" href=\"/admin/system/tools/logfile.cgi?logfile=${p['LOGFILE']}&package=${p['PACKAGE']}&name=${p['NAME']}&header=html&format=template\" target=\"_blank\" data-inline=\"true\" data-mini=\"${datamini}\" data-icon=\"${dataicon}\">${p['LABEL']}</a>\n";
+			
+	}
+
+	public static function loglist_url($p)
+{
+	global $lbpplugindir;
+	
+	if (!isset($p['PACKAGE']) && isset($lbpplugindir)) {
+		$p['PACKAGE'] = $lbpplugindir;
+	}
+	
+	return "/admin/system/logmanager.cgi?package=${p['PACKAGE']}&name=${p['NAME']}";
+
+}
+
+	public static function loglist_button_html ($p)
+	{
+		global $lbpplugindir;
+		
+		if (! isset($p['LABEL'])) {
+			$SL = LBSystem::readlanguage(0, 0, True);
+			$p['LABEL'] = $SL['COMMON.BUTTON_LOGFILE_LIST'];
+		}
+		if (!isset($p['PACKAGE']) && isset($lbpplugindir)) {
+			$p['PACKAGE'] = $lbpplugindir;
+		}
+		
+		if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == 0 ) {
+			$datamini = "false";
+		} else {
+			$datamini = "true";
+		}
+	
+		if (isset($p['DATA_ICON'])) {
+			$dataicon = $p['DATA_ICON'];
+		} else {
+			$dataicon = "action";
+		}
+	
+		return "<a data-role=\"button\" href=\"/admin/system/logmanager.cgi?package=${p['PACKAGE']}&name=${p['NAME']}\" target=\"_blank\" data-inline=\"true\" data-mini=\"${datamini}\" data-icon=\"${dataicon}\">${p['LABEL']}</a>\n";
+			
+	}
+	
+	public static function mslist_select_html($p)
+	{
+		if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == "0" ) {
+			$datamini = "false";
+		} else {
+			$datamini = "true";
+		}
+		if (!isset($p['FORMID'])) {
+			$p['FORMID'] = "select_miniserver";
+		}
+		
+		$miniservers = LBSystem::get_miniservers();
+		if (! is_array($miniservers)) {
+			if(isset($p['LABEL'])) {
+				$html = '<label style="margin:auto;" for="'.$p['FORMID'].'">'.$p['LABEL'].'</label>';
+			}	
+			$html .= '<div id="'.$p['FORMID'].'" style="color:red;font-weight:bold;margin: auto;">No Miniservers defined</div>';
+			$html .= '</div>';
+			return $html;
+		}
+		if (! isset($miniservers[$p['SELECTED']])) {
+			$p['SELECTED'] = 1;
+		}
+		
+		$selectkey = $p['SELECTED'];
+		$miniservers[$selectkey]['_selected'] = 'selected="selected"';
+		
+		$html = <<<EOF
+		<div class="ui-field-contain">
+EOF;
+		if (isset($p['LABEL'])) {
+			$html .= <<<EOF
+		<label for="{$p['FORMID']}">{$p['LABEL']}</label>
+EOF;
+		}
+		$html .= <<<EOF
+		<select name="{$p['FORMID']}" id="{$p['FORMID']}" data-mini="$datamini">
+EOF;
+
+		foreach ($miniservers as $msnr=>$ms) {
+			if (!isset($ms['_selected'])) {
+				$ms['_selected'] = "";
+			}
+			$html .= "\t\t\t<option value=\"$msnr\" " . $ms['_selected'] . ">" . $ms['Name'] . " (" . $ms['IPAddress'] . ")</option>\n";
+		}
+		$html .= <<<EOF
+		</select>
+		</div>
+
+EOF;
+
+	return $html;
+	}
+
+	// loglevel_select_html
+	
+	public function loglevel_select_html($p)
+{
+	global $lbpplugindir;
+	$datamini = 1;
+	$selected = 0;
+	$html = "";
+	
+	$pluginfolder = isset($p['PLUGIN']) ? $p['PLUGIN'] : $lbpplugindir;
+	# print "pluginfolder: $pluginfolder\n";
+	$plugin = LBSystem::plugindata($pluginfolder);
+	
+	if(empty($plugin)) {
+		error_log("loglevel_select_html (PHP): Could not determine plugin");
+		return "";
+	}
+	if (empty($plugin['PLUGINDB_LOGLEVELS_ENABLED'])) {
+		error_log("loglevel_select_html (PHP): CUSTOM_LOGLEVELS not enabled in plugin.cfg (plugin " . $pluginfolder . ")");
+		return "";
+	}
+	
+	$SL = LBSystem::readlanguage(undef, undef, 1);
+		
+	if(isset($p['DATA_MINI']) && $p['DATA_MINI'] == 0 ) {
+		$datamini = "false";
+	} else {
+		$datamini = "true";
+	}
+	if (empty($p['FORMID'])) {
+		$p['FORMID'] = "select_loglevel";
+	}
+
+	$html = '<div data-role="fieldcontain">';
+	
+	if (isset($p['LABEL']) && $p['LABEL'] == "") {
+		
+	} elseif (!empty($p['LABEL'])) {
+	$html .= " <label for=\"{$p['FORMID']}\" style=\"display:inline-block;\">{$p['LABEL']}</label>\n";
+	} else {
+		$html .= "<label for=\"{$p['FORMID']}\" style=\"display:inline-block;\">{$SL['PLUGININSTALL.UI_LABEL_LOGGING_LEVEL']}</label>\n";
+	}
+	$html .= "<fieldset data-role='controlgroup' data-mini='$datamini' style='width:200px;'>\n";
+	
+	$html .= <<<EOF
+	
+	<select name="{$p['FORMID']}" id="{$p['FORMID']}" data-mini="$datamini">
+		<option value="0">{$SL['PLUGININSTALL.UI_LOG_0_OFF']}</option>
+		<option value="3">{$SL['PLUGININSTALL.UI_LOG_3_ERRORS']}</option>
+		<option value="4">{$SL['PLUGININSTALL.UI_LOG_4_WARNING']}</option>
+		<option value="6">{$SL['PLUGININSTALL.UI_LOG_6_INFO']}</option>
+		<option value="7">{$SL['PLUGININSTALL.UI_LOG_7_DEBUG']}</option>
+	</select>
+	</fieldset>
+	</div>
+	
+	<script>
+	\$(document).ready( function()
+	{
+		\$("#{$p['FORMID']}").val('{$plugin['PLUGINDB_LOGLEVEL']}').change();
+	});
+		
+	\$("#{$p['FORMID']}").change(function(){
+		var val = \$(this).val();
+		console.log("Loglevel", val);
+		post_value('plugin-loglevel', '{$plugin['PLUGINDB_MD5_CHECKSUM']}', val); 
+	});
+	
+	function post_value (action, pluginmd5, value)
+	{
+	console.log("Action:", action, "Plugin-MD5:", pluginmd5, "Value:", value);
+	\$.post ( '/admin/system/ajax/ajax-config-handler.cgi', 
+		{ 	action: action,
+			value: value,
+			pluginmd5: pluginmd5
+		});
+	}
+
+	</script>
+EOF;
+	
+	return $html;
+
+}
+
+	public static function loglist_html($p = array())
+	{
+		global $lbpplugindir;
+		$urlparams = array();
+		
+		$urlparams[] = 'header=none';
+		
+		if (!isset($p['PACKAGE']) && isset($lbpplugindir)) {
+			$p['PACKAGE'] = $lbpplugindir;
+		}
+		if( isset($p['PACKAGE']) ) {
+			$urlparams[] = "package=" . urlencode($p['PACKAGE']);
+		}
+		if( isset($p['NAME']) ) {
+			$urlparams[] = "name=" .  urlencode($p['NAME']);
+		}
+		
+		$url = "http://localhost:" . lbwebserverport() . "/admin/system/logmanager.cgi?" . implode('&', $urlparams);
+		$html = file_get_contents($url);
+		
+		return $html;
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -400,24 +653,49 @@ class LBTemplate
 			}
 	}
 	
-	function replaceTmplVar() 
+	function replaceTmplVar()
 	{
-		foreach ($this->valuearray as $tmplvar => $value) {
-			// error_log("Key: $tmplvar Value: $value");
+		// TMPL_IF / TMPL_UNLESS first so var substitutions inside the kept
+		// branch still get processed afterwards. Match HTML::Template's
+		// truthiness: defined and not "0" / "" / 0 / undef.
+		$values = $this->valuearray ?: array();
+		$truthy = function($name) use ($values) {
+			if (!array_key_exists($name, $values)) return false;
+			$v = $values[$name];
+			if ($v === null || $v === false || $v === '' || $v === '0' || $v === 0) return false;
+			return true;
+		};
+		// TMPL_IF ... [TMPL_ELSE ...] /TMPL_IF (non-greedy, dotall, no nesting)
+		$this->template = preg_replace_callback(
+			'/<TMPL_IF\s+(\w+)>(.*?)(?:<TMPL_ELSE>(.*?))?<\/TMPL_IF>/is',
+			function($m) use ($truthy) {
+				return $truthy($m[1]) ? $m[2] : (isset($m[3]) ? $m[3] : '');
+			},
+			$this->template
+		);
+		// TMPL_UNLESS ... [TMPL_ELSE ...] /TMPL_UNLESS (inverse)
+		$this->template = preg_replace_callback(
+			'/<TMPL_UNLESS\s+(\w+)>(.*?)(?:<TMPL_ELSE>(.*?))?<\/TMPL_UNLESS>/is',
+			function($m) use ($truthy) {
+				return $truthy($m[1]) ? (isset($m[3]) ? $m[3] : '') : $m[2];
+			},
+			$this->template
+		);
+		foreach ($values as $tmplvar => $value) {
 			$this->template = str_replace("<TMPL_VAR $tmplvar>", $value, $this->template);
 		}
 	}
-	
+
 	public function output()
 	{
-	$this->replaceTmplVar();
-	echo $this->template;	
+		$this->replaceTmplVar();
+		echo $this->template;
 	}
-	
+
 	public function outputString()
 	{
-	$this->replaceTmplVar();
-	return $this->template;	
+		$this->replaceTmplVar();
+		return $this->template;
 	}
  }
 
