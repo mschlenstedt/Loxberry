@@ -65,6 +65,15 @@ elsif( $action eq "restartgateway" ) {
 	restart_gateway();
 }
 
+elsif( $action eq "bootstart" ) {
+	open_configs();
+	if( !is_enabled($generalcfg->{Mqtt}->{Gatewayautostart} // 1) ) {
+		LOGINF "Gatewayautostart is disabled - not starting MQTT Gateway.";
+	} else {
+		restart_gateway();
+	}
+}
+
 elsif( $action eq "stopgateway" ) {
 	# Persist stopped state so gateway does not auto-start after reboot
 	my $stopobj = LoxBerry::JSON->new();
@@ -143,7 +152,13 @@ sub restart_gateway
 			LOGINF "Creating Python venv for MQTT Gateway V2...";
 			`rm -rf $lbhomedir/sbin/mqttgateway_venv`;
 			`python3 -m venv $lbhomedir/sbin/mqttgateway_venv`;
-			`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $lbhomedir/sbin/requirements_mqttgateway_venv.txt`;
+			my $req = "$lbhomedir/sbin/requirements_mqttgateway_venv.txt";
+			if ( -f $req ) {
+				`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $req`;
+			} else {
+				`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q aiomqtt aiohttp`;
+			}
+			`chown -R loxberry:loxberry $lbhomedir/sbin/mqttgateway_venv`;
 		}
 		my $gwlogfile = "$lbstmpfslogdir/mqtt-gateway.log";
 		my $gwlog = LoxBerry::Log->new(
