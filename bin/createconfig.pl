@@ -82,7 +82,7 @@ sub update_generaljson
 	if (copydefault( $defgeneraljson_file , $sysgeneraljson_file )) 
 	{ 
 		my $syscfgobj = LoxBerry::System::General->new();
-		my $syscfgobj->_json2cfg();
+		$syscfgobj->_json2cfg();
 		return 1; 
 	}
 	
