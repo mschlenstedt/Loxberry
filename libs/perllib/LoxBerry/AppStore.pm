@@ -113,12 +113,14 @@ sub _read_json {
     return $data;
 }
 
-# classify($plugin) -> mutates: installable, badge_class
+# classify($plugin) -> mutates: installable, repo_only, badge_class
 sub classify {
     my ($p) = @_;
     # Nur ueber http(s) installierbar — schuetzt vor javascript:/file:/ftp:-URLs
     # aus dem (community-editierbaren) Wiki-Katalog.
     $p->{installable} = ($p->{zip} && $p->{zip} =~ m{^https?://}i) ? 1 : 0;
+    # repo_only: zip leer, aber repo-URL vorhanden -> Button oeffnet Repo-URL
+    $p->{repo_only}   = (!$p->{installable} && $p->{repo} && $p->{repo} =~ m{^https?://}i) ? 1 : 0;
     my $st = uc($p->{status} // "");
     $p->{badge_class} = $BADGE{$st} // "unknown";
     return $p;
