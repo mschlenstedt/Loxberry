@@ -76,18 +76,20 @@ sub _json2cfg
 	
 	## Section [NETWORK]
 	my @network;
-	my $n = $self->{jsonobj}->{Network};
+	my $n   = $self->{jsonobj}->{Network} // {};
+	my $n4  = $n->{Ipv4} // {};
+	my $n6  = $n->{Ipv6} // {};
 	push( @network, '[NETWORK]' );
-	push( @network, 'TYPE='.$n->{Ipv4}->{Type} );
-	push( @network, 'IPADDRESS='.$n->{Ipv4}->{Ipaddress} );
-	push( @network, 'MASK='.$n->{Ipv4}->{Mask} );
-	push( @network, 'DNS='.$n->{Ipv4}->{Dns} );
-	push( @network, 'GATEWAY='.$n->{Ipv4}->{Gateway} );
-	push( @network, 'TYPE_IPv6='.$n->{Ipv6}->{Type} );
-	push( @network, 'IPADDRESS_IPv6='.$n->{Ipv6}->{Ipaddress} );
-	push( @network, 'MASK_IPv6='.$n->{Ipv6}->{Mask} );
-	push( @network, 'DNS_IPv6='.$n->{Ipv6}->{Dns} );
-	push( @network, 'PRIVACYEXT_IPv6='.$n->{Ipv6}->{Privacyext} );
+	push( @network, 'TYPE='.$n4->{Type} );
+	push( @network, 'IPADDRESS='.$n4->{Ipaddress} );
+	push( @network, 'MASK='.$n4->{Mask} );
+	push( @network, 'DNS='.$n4->{Dns} );
+	push( @network, 'GATEWAY='.$n4->{Gateway} );
+	push( @network, 'TYPE_IPv6='.$n6->{Type} );
+	push( @network, 'IPADDRESS_IPv6='.$n6->{Ipaddress} );
+	push( @network, 'MASK_IPv6='.$n6->{Mask} );
+	push( @network, 'DNS_IPv6='.$n6->{Dns} );
+	push( @network, 'PRIVACYEXT_IPv6='.$n6->{Privacyext} );
 	push( @network, 'INTERFACE='.$n->{Interface} );
 	push( @network, 'FRIENDLYNAME='.$n->{Friendlyname} );
 	push( @network, 'SSID='.$n->{Ssid} );
@@ -110,7 +112,7 @@ sub _json2cfg
 	
 	## Section [TIMESERVER]
 	my @miniservers;
-	my $miniserver = $self->{jsonobj}->{Miniserver};
+	my $miniserver = $self->{jsonobj}->{Miniserver} // {};
 	foreach my $msnr ( sort keys %$miniserver ) {
 		push ( @miniservers, '[MINISERVER'.$msnr.']' );
 		my $ms = $self->{jsonobj}->{Miniserver}->{$msnr};
