@@ -45,8 +45,6 @@
    "Mqtt" : {
       "Brokerhost" : "localhost",
       "Brokerport" : "1883",
-      "Brokeruser" : "",
-      "Brokerpass" : "",
       "Udpinport" : "11884",
       "Uselocalbroker" : "1",
       "Websocketport" : "9001",
