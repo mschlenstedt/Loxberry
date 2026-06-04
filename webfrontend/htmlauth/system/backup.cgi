@@ -89,14 +89,20 @@ sub backup_form
 	my $storages = LoxBerry::Storage::get_storage_html(formid => 'storagepath', type_usb => 1, type_net => 1, type_custom => 1, custom_folder => 1, readwriteonly => 1, show_browse => 1, data_mini => 1);
 	$template->param('STORAGES_HTML', $storages);
 
-	# Check: /boot/firmware must exist and .hw_model must indicate Raspberry Pi
+	# Check: /boot/firmware/config.txt must exist (Raspberry Pi Bookworm/Trixie)
+	# and .hw_model must identify Raspberry Pi hardware (same logic as installer)
 	my $warn_not_raspberry = 1;
-	if ( -d "/boot/firmware" && -f "/boot/dietpi/.hw_model" ) {
+	if ( -f "/boot/firmware/config.txt" && -f "/boot/dietpi/.hw_model" ) {
 		if ( open(my $fh, '<', "/boot/dietpi/.hw_model") ) {
 			local $/;
 			my $hw = <$fh>;
 			close($fh);
-			$warn_not_raspberry = 0 if ($hw =~ /G_HW_MODEL_NAME='Raspberry/);
+			if ($hw =~ /G_HW_MODEL_NAME='([^']+)'/) {
+				my $model_name = $1;
+				(my $hwmodelfilename = $model_name) =~ s/ /_/g;
+				$hwmodelfilename =~ s/[^a-zA-Z0-9_]+//g;
+				$warn_not_raspberry = 0 if (lc($hwmodelfilename) =~ /raspberry/);
+			}
 		}
 	}
 	$template->param('WARN_NOT_RASPBERRY', $warn_not_raspberry);
