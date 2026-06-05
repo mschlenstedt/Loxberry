@@ -51,6 +51,7 @@ chown -Rc loxberry:loxberry /var/lib/apache2
 chown -c loxberry:loxberry /etc/timezone
 chown -c loxberry:loxberry /etc/localtime
 chown -c loxberry:loxberry $LBHOMEDIR/config/system/general.*
+chown -Rc loxberry:loxberry $LBHOMEDIR/system/python_venv
 
 chmod -c 600 $LBHOMEDIR/config/system/*
 chmod -c 600 $LBHOMEDIR/data/system/netshares.dat
