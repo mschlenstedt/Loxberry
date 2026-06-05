@@ -35,9 +35,9 @@ if( $action eq "updateconfig" ) {
 	update_config(); 
 	mosquitto_set();
 }
-elsif( $action eq "mosquitto_set" ) { 
-	open_configs();
-	mosquitto_set(); 
+elsif( $action eq "mosquitto_set" ) {
+	read_configs();
+	mosquitto_set();
 }
 
 elsif( $action eq "mosquitto_purgedb" ) {
@@ -53,12 +53,12 @@ elsif( $action eq "mosquitto_restart" ) {
 }
 
 elsif( $action eq "restartgateway" ) {
-	open_configs();
+	$generaljsonobj = LoxBerry::JSON->new();
+	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive => 1);
 	my $uselocalbroker = $generalcfg->{Mqtt}->{Uselocalbroker};
 	$generalcfg->{Mqtt}->{Gatewayautostart} = 1;
 	$generaljsonobj->write();
 	undef $generaljsonobj;
-	undef $mqttobj;
 	if( is_enabled( $uselocalbroker ) ) {
 		mosquitto_restart();
 	}
@@ -183,6 +183,15 @@ sub open_configs
 	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive => 1);
 	$mqttobj = LoxBerry::JSON->new();
 	$cfg = $mqttobj->open(filename => $cfgfile, lockexclusive => 1);
+}
+
+sub read_configs
+{
+	LOGDEB "read_configs";
+	$generaljsonobj = LoxBerry::JSON->new();
+	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, readonly => 1);
+	$mqttobj = LoxBerry::JSON->new();
+	$cfg = $mqttobj->open(filename => $cfgfile, readonly => 1);
 }
 
 sub update_config
