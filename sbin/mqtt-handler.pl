@@ -70,6 +70,8 @@ elsif( $action eq "bootstart" ) {
 	if( !is_enabled($generalcfg->{Mqtt}->{Gatewayautostart} // 1) ) {
 		LOGINF "Gatewayautostart is disabled - not starting MQTT Gateway.";
 	} else {
+		undef $generaljsonobj;
+		undef $mqttobj;
 		restart_gateway();
 	}
 }
