@@ -143,17 +143,18 @@ sub restart_gateway
 		sleep 2;
 		`pkill -KILL -f mqtt_gateway.py`;
 		`pkill mqttgateway.pl`;	# kill V1 in case it's still running from before a V1→V2 migration
-		unless ( -f "$lbhomedir/sbin/mqttgateway_venv/bin/python3" ) {
+		my $venv_dir = "$lbhomedir/system/python_venv/mqttgateway";
+		unless ( -f "$venv_dir/bin/python3" ) {
 			LOGINF "Creating Python venv for MQTT Gateway V2...";
-			`rm -rf $lbhomedir/sbin/mqttgateway_venv`;
-			`python3 -m venv $lbhomedir/sbin/mqttgateway_venv`;
-			my $req = "$lbhomedir/sbin/requirements_mqttgateway_venv.txt";
+			`rm -rf $venv_dir`;
+			`python3 -m venv $venv_dir`;
+			my $req = "$lbhomedir/system/python_venv/requirements_mqttgateway.txt";
 			if ( -f $req ) {
-				`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $req`;
+				`$venv_dir/bin/pip install -q -r $req`;
 			} else {
-				`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q aiomqtt aiohttp`;
+				`$venv_dir/bin/pip install -q aiomqtt aiohttp`;
 			}
-			`chown -R loxberry:loxberry $lbhomedir/sbin/mqttgateway_venv`;
+			`chown -R loxberry:loxberry $venv_dir`;
 		}
 		my $gwlog = LoxBerry::Log->new(
 			package  => 'mqtt',
@@ -166,7 +167,7 @@ sub restart_gateway
 		my $gwdbkey = $gwlog ? $gwlog->dbkey() : '';
 		undef $gwlog;
 		`chown loxberry:loxberry $gwlogfile`;	# LoxBerry::Log creates file as root; loxberry needs write access
-		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py --logfile=$gwlogfile --logdbkey=$gwdbkey &'`;
+		`su loxberry -c '$venv_dir/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py --logfile=$gwlogfile --logdbkey=$gwdbkey &'`;
 	} else {
 		`pkill mqttgateway.pl`;
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;
