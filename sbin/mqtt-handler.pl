@@ -66,12 +66,12 @@ elsif( $action eq "restartgateway" ) {
 }
 
 elsif( $action eq "bootstart" ) {
-	open_configs();
-	if( !is_enabled($generalcfg->{Mqtt}->{Gatewayautostart} // 1) ) {
+	my $roobj = LoxBerry::JSON->new();
+	my $rocfg = $roobj->open(filename => $generaljsonfile, readonly => 1);
+	if( !is_enabled($rocfg->{Mqtt}->{Gatewayautostart} // 1) ) {
 		LOGINF "Gatewayautostart is disabled - not starting MQTT Gateway.";
 	} else {
-		undef $generaljsonobj;
-		undef $mqttobj;
+		undef $roobj;
 		restart_gateway();
 	}
 }
