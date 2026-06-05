@@ -85,18 +85,10 @@ elsif( $action eq "stopgateway" ) {
 	# Clear "no Miniserver" notification since gateway is now intentionally stopped
 	LoxBerry::Log::delete_notifications("mqtt", "no_miniserver");
 
-	# V2: kill via PID file with SIGKILL (asyncio catches SIGTERM)
-	my $v2_pidfile = '/dev/shm/mqtt_gateway.pid';
-	if (-f $v2_pidfile) {
-		open(my $fh, '<', $v2_pidfile);
-		my $pid = <$fh>;
-		close $fh;
-		chomp $pid;
-		if ($pid =~ /^\d+$/ && -e "/proc/$pid") {
-			kill 'KILL', int($pid);
-			LOGINF "Stopped mqtt_gateway.py PID $pid";
-		}
-	}
+	# V2: SIGTERM first so Python can call LOGEND, SIGKILL as fallback
+	`pkill -TERM -f mqtt_gateway.py`;
+	sleep 2;
+	`pkill -KILL -f mqtt_gateway.py`;
 	# V1 fallback
 	`pkill -KILL mqttgateway.pl`;
 }
@@ -146,6 +138,9 @@ sub restart_gateway
 	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
 	if( $gatewayversion == 2 ) {
+		# SIGTERM first so Python can call LOGEND cleanly, SIGKILL as fallback
+		`pkill -TERM -f mqtt_gateway.py`;
+		sleep 2;
 		`pkill -KILL -f mqtt_gateway.py`;
 		`pkill mqttgateway.pl`;	# kill V1 in case it's still running from before a V1→V2 migration
 		unless ( -f "$lbhomedir/sbin/mqttgateway_venv/bin/python3" ) {
@@ -168,9 +163,10 @@ sub restart_gateway
 		);
 		my $gwlogfile = $gwlog ? $gwlog->filename() : "$lbstmpfslogdir/mqtt-gateway.log";
 		$gwlog->LOGSTART("MQTT Gateway V2") if $gwlog;
+		my $gwdbkey = $gwlog ? $gwlog->dbkey() : '';
 		undef $gwlog;
 		`chown loxberry:loxberry $gwlogfile`;	# LoxBerry::Log creates file as root; loxberry needs write access
-		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py >> $gwlogfile 2>&1 &'`;
+		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py --logfile=$gwlogfile --logdbkey=$gwdbkey &'`;
 	} else {
 		`pkill mqttgateway.pl`;
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;

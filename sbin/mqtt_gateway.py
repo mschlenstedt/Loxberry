@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """MQTT Gateway V2.0 — Loxone Miniserver Bridge"""
 
+import argparse
 import asyncio
 import json
 import logging
 import os
 import re
 import shlex
+import signal
 import socket
 import subprocess
 import sys
@@ -19,6 +21,14 @@ import ssl
 
 import aiomqtt
 import aiohttp
+
+# ─── CLI arguments ────────────────────────────────────────────────────────────
+_ap = argparse.ArgumentParser(add_help=False)
+_ap.add_argument("--logfile",  default="")
+_ap.add_argument("--logdbkey", default="")
+_args, _ = _ap.parse_known_args()
+_logfile  = _args.logfile
+_logdbkey = _args.logdbkey
 
 # ─── Global state ────────────────────────────────────────────────────────────
 _loglevel: int = 3
@@ -63,7 +73,10 @@ class _LiveStdoutHandler(logging.StreamHandler):
 _logger = logging.getLogger("mqtt_gateway")
 _logger.propagate = False
 _logger.setLevel(logging.DEBUG)
-_log_handler = _LiveStdoutHandler()
+_log_handler: logging.Handler = (
+    logging.FileHandler(_logfile, mode='a', encoding='utf-8')
+    if _logfile else _LiveStdoutHandler()
+)
 _log_handler.setFormatter(logging.Formatter(
     '%(asctime)s.%(msecs)03d <%(levelname)s> %(message)s',
     datefmt='%H:%M:%S'
@@ -88,6 +101,11 @@ def LOGWARN(msg: str)   -> None: _log(4, "WARN",   msg)
 def LOGOK(msg: str)     -> None: _log(5, "OK",     msg)
 def LOGINF(msg: str)    -> None: _log(6, "INFO",   msg)
 def LOGDEB(msg: str)    -> None: _log(7, "DEBUG",  msg)
+
+def _logend() -> None:
+    if not _logdbkey:
+        return
+    os.system(f"perl -e 'use LoxBerry::Log; my $l = LoxBerry::Log->new(dbkey => \"{_logdbkey}\", append => 1); LOGEND \"Gateway stopped.\"; exit;'")
 
 # ─── Config loading ───────────────────────────────────────────────────────────
 def get_loglevel(general_data: dict) -> int:
@@ -972,13 +990,18 @@ async def main() -> None:
 
     LOGINF(f"UDP IN port: {_udp_in_port}")
 
-    await asyncio.gather(
-        mqtt_listener(queue, mqtt_cfg),
-        http_worker(queue, status_event),
-        config_watcher(),
-        status_writer(status_event, _cache),
-        udp_listener(_udp_in_port),
-    )
+    loop = asyncio.get_running_loop()
+    loop.add_signal_handler(signal.SIGTERM, asyncio.current_task().cancel)
+    try:
+        await asyncio.gather(
+            mqtt_listener(queue, mqtt_cfg),
+            http_worker(queue, status_event),
+            config_watcher(),
+            status_writer(status_event, _cache),
+            udp_listener(_udp_in_port),
+        )
+    finally:
+        loop.remove_signal_handler(signal.SIGTERM)
 
 
 if __name__ == "__main__":
@@ -986,6 +1009,9 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(" OK: Gateway stopped by user", flush=True)
+        LOGOK("Gateway stopped by user")
+    except asyncio.CancelledError:
+        LOGOK("Gateway stopped (SIGTERM)")
     finally:
+        _logend()
         PID_FILE.unlink(missing_ok=True)
