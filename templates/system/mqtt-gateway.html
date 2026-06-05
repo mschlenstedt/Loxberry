@@ -378,10 +378,8 @@ $(function() {
                         location.reload();
                         return;
                     }
-                    _showSaveOk();
-                    $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
-                        $("#saveapply").prop("disabled", false);
-                    });
+                    _showSaveOk(_lang_save.restartHint);
+                    $("#saveapply").prop("disabled", false);
                 })
                 .fail(function() {
                     $("#savemessages, #savemessages_btn").attr("style", "color:red").html(_lang_save.saveError);
@@ -2621,9 +2619,10 @@ $(function () {
 	var udpinport;
 
 	var _lang_save = {
-		unsaved:   '<TMPL_VAR MQTT.MSG_MQTT_UNSAVED>',
-		savedOk:   '<TMPL_VAR MQTT.MSG_SAVED_OK>',
-		saveError: '<TMPL_VAR MQTT.MSG_SAVE_ERROR>'
+		unsaved:     '<TMPL_VAR MQTT.MSG_MQTT_UNSAVED>',
+		savedOk:     '<TMPL_VAR MQTT.MSG_SAVED_OK>',
+		saveError:   '<TMPL_VAR MQTT.MSG_SAVE_ERROR>',
+		restartHint: '<TMPL_VAR MQTT.MSG_RESTART_HINT>'
 	};
 	var _cfg_changed = false;
 
@@ -2851,12 +2850,14 @@ $(function () {
 
 
 	var _saveOkTimer = null;
-	function _showSaveOk() {
+	function _showSaveOk(hint) {
 		_cfg_changed = false;
-		$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
-		$("#savemessages_btn").attr("style", "color:green").html(_lang_save.savedOk);
+		var html = _lang_save.savedOk;
+		if (hint) html += ' &nbsp;<span style="color:darkorange">' + hint + '</span>';
+		$("#savemessages").attr("style", "color:green").html(html);
+		$("#savemessages_btn").attr("style", "color:green").html(html);
 		clearTimeout(_saveOkTimer);
-		_saveOkTimer = setTimeout(function() { $("#savemessages, #savemessages_btn").html(""); }, 8000);
+		_saveOkTimer = setTimeout(function() { $("#savemessages, #savemessages_btn").html(""); }, hint ? 15000 : 8000);
 	}
 
 	function doSave() {
