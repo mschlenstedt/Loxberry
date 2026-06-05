@@ -160,13 +160,13 @@ sub restart_gateway
 			}
 			`chown -R loxberry:loxberry $lbhomedir/sbin/mqttgateway_venv`;
 		}
-		my $gwlogfile = "$lbstmpfslogdir/mqtt-gateway.log";
 		my $gwlog = LoxBerry::Log->new(
 			package  => 'mqtt',
 			name     => 'mqtt-gateway',
-			filename => $gwlogfile,
+			logdir   => $lbstmpfslogdir,
 			loglevel => 7,
 		);
+		my $gwlogfile = $gwlog ? $gwlog->filename() : "$lbstmpfslogdir/mqtt-gateway.log";
 		$gwlog->LOGSTART("MQTT Gateway V2") if $gwlog;
 		undef $gwlog;
 		`chown loxberry:loxberry $gwlogfile`;	# LoxBerry::Log creates file as root; loxberry needs write access
