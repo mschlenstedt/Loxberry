@@ -419,7 +419,9 @@ elseif ( $ajax == 'migrate_v1_to_v2' ) {
     $resetAfterSend = $cfg['resetAfterSend'] ?? [];
     $expand_json    = !empty($cfg['Main']['expand_json']);
 
-    $subscriptions = [];
+    // Pass 1: group V1 entries by originaltopic — multiple entries with the same
+    // originaltopic mean V1 was JSON-expanding that topic (e.g. z2m devices).
+    $grouped = [];
     foreach ( $status['http'] ?? [] as $topic => $content ) {
         if ( isset($content['regexfilterline']) ) continue;
         if ( empty($content['toMS']) )             continue;
@@ -434,10 +436,24 @@ elseif ( $ajax == 'migrate_v1_to_v2' ) {
 
         $mqttTopic = $content['originaltopic'] ?? $topic;
 
-        // Only enable Jsonexpand if globally set AND the last payload is
-        // actually a JSON object or array (primitives don't need expanding)
+        if ( !isset($grouped[$mqttTopic]) ) {
+            $grouped[$mqttTopic] = [ 'topic' => $topic, 'content' => $content, 'count' => 0 ];
+        }
+        $grouped[$mqttTopic]['count']++;
+    }
+
+    // Pass 2: build deduplicated subscription list with correct Jsonexpand flag.
+    $subscriptions = [];
+    foreach ( $grouped as $mqttTopic => $entry ) {
+        $content = $entry['content'];
+        $topic   = $entry['topic'];
+
+        // Multiple V1 entries sharing an originaltopic → V1 was expanding JSON.
+        // Single entry → check the cached payload directly.
         $needsJsonExpand = false;
-        if ( $expand_json && isset($content['message']) && $content['message'] !== '' ) {
+        if ( $entry['count'] > 1 ) {
+            $needsJsonExpand = $expand_json;
+        } elseif ( $expand_json && isset($content['message']) && $content['message'] !== '' ) {
             $decoded = json_decode($content['message'], true);
             $needsJsonExpand = json_last_error() === JSON_ERROR_NONE && is_array($decoded);
         }
