@@ -212,20 +212,19 @@ label.lb-toggle.ui-btn::after {
 	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
 }
 .lb-content select {
-	padding: 8px 12px;
+	padding: 8px 36px 8px 12px;
 	border: 1px solid var(--lb-input-border);
 	border-radius: var(--lb-radius);
 	font-size: var(--lb-font-base);
 	font-family: var(--lb-font);
-	background: var(--lb-input-bg);
+	background-color: var(--lb-input-bg);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
 	color: var(--lb-input-text);
 	box-sizing: border-box;
 	appearance: none;
 	-webkit-appearance: none;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-	background-repeat: no-repeat;
-	background-position: right 12px center;
-	padding-right: 36px;
 }
 .lb-content input[type="checkbox"],
 .lb-content input[type="radio"] {
