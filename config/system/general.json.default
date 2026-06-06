@@ -45,33 +45,13 @@
    "Mqtt" : {
       "Brokerhost" : "localhost",
       "Brokerport" : "1883",
-      "Brokeruser" : "",
-      "Brokerpass" : "",
       "Udpinport" : "11884",
       "Uselocalbroker" : "1",
       "Websocketport" : "9001",
       "Finderdisabled" : false,
-      "GatewayVersion" : 2
-   },
-   "Network" : {
-      "Friendlyname" : null,
-      "Interface" : "eth0",
-      "Ipv4" : {
-         "Dns" : "",
-         "Gateway" : "",
-         "Ipaddress" : "",
-         "Mask" : "",
-         "Type" : "dhcp"
-      },
-      "Ipv6" : {
-         "Dns" : null,
-         "Ipaddress" : null,
-         "Mask" : null,
-         "Privacyext" : null,
-         "Type" : null
-      },
-      "Ssid" : "",
-      "Wpa" : null
+      "Gatewayautostart" : 1,
+      "Gatewayversion" : 1,
+      "Loglevel" : "6"
    },
    "Remote" : {
       "Autoconnect" : "true",
@@ -115,5 +95,9 @@
          "4" : "http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/",
          "5" : "https://dist-mirror.fem.tu-ilmenau.de/raspbian/raspbian/"
       }
+   },
+   "Appstore" : {
+      "Url" : "https://wiki.loxberry.de/_media/appstore/plugins.json",
+      "Cache_ttl_minutes" : 60
    }
 }
