@@ -355,6 +355,10 @@ details[open] > summary .mqttgw-expand-arrow::before {
   flex-shrink: 0;
 }
 
+.mqttgw-topic-controls {
+  display: contents;
+}
+
 .mqttgw-ms-dropdown {
   position: relative;
   flex-shrink: 0;
@@ -590,6 +594,13 @@ body.theme-dark .mqttgw-topic-ms {
   .mqttgw-topic-payload {
     max-width: 100%;
     flex-basis: 100%;
+  }
+  .mqttgw-topic-controls {
+    display: flex;
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    align-items: center;
+    gap: 10px;
   }
 }
 

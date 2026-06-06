@@ -939,6 +939,7 @@ $(function() {
         html += '<span class="mqttgw-topic-name">' + escHtml(displayName) + '</span>';
 
         if (isSubscribed) {
+            html += '<div class="mqttgw-topic-controls">';
             html += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand"'
                  + ' data-topic="' + safeTopic + '"' + (sub.Jsonexpand ? ' checked' : '') + '> JSON</label>';
             html += '<label class="mqttgw-topic-option"><input type="checkbox" class="topic-disable-cache"'
@@ -946,6 +947,7 @@ $(function() {
             html += '<label class="mqttgw-topic-option"><input type="checkbox" class="topic-reset-after-send"'
                  + ' data-topic="' + safeTopic + '"' + (sub.resetaftersend ? ' checked' : '') + '> Reset</label>';
             html += msCheckboxesHtml(topic, sub.Toms || []);
+            html += '</div>';
         }
         if (t.notSeen) {
             html += '<span class="mqttgw-topic-payload mqttgw-topic-not-seen">nicht aktiv</span>';

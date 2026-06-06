@@ -6,7 +6,7 @@
       "Startsetup" : "1",
       "Systemloglevel" : "6",
       "Theme" : "classic",
-      "Version" : "4.0.0.7"
+      "Version" : "3.0.1.3"
    },
    "Healthcheck" : null,
    "Miniserver" : {
@@ -45,13 +45,33 @@
    "Mqtt" : {
       "Brokerhost" : "localhost",
       "Brokerport" : "1883",
+      "Brokeruser" : "",
+      "Brokerpass" : "",
       "Udpinport" : "11884",
       "Uselocalbroker" : "1",
       "Websocketport" : "9001",
       "Finderdisabled" : false,
-      "Gatewayautostart" : 1,
-      "Gatewayversion" : 1,
-      "Loglevel" : "6"
+      "GatewayVersion" : 2
+   },
+   "Network" : {
+      "Friendlyname" : null,
+      "Interface" : "eth0",
+      "Ipv4" : {
+         "Dns" : "",
+         "Gateway" : "",
+         "Ipaddress" : "",
+         "Mask" : "",
+         "Type" : "dhcp"
+      },
+      "Ipv6" : {
+         "Dns" : null,
+         "Ipaddress" : null,
+         "Mask" : null,
+         "Privacyext" : null,
+         "Type" : null
+      },
+      "Ssid" : "",
+      "Wpa" : null
    },
    "Remote" : {
       "Autoconnect" : "true",
@@ -95,9 +115,5 @@
          "4" : "http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/",
          "5" : "https://dist-mirror.fem.tu-ilmenau.de/raspbian/raspbian/"
       }
-   },
-   "Appstore" : {
-      "Url" : "https://wiki.loxberry.de/_media/appstore/plugins.json",
-      "Cache_ttl_minutes" : 60
    }
 }
