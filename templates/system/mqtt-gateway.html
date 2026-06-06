@@ -563,6 +563,7 @@ $(function(){
         <span class="mqttgw-status-label"><span id="discovery_count">--</span> Topics</span>
         <span class="mqttgw-status-detail">&mdash; <span id="discovery_ago"><TMPL_VAR MQTT.DISCOVERY_LOADING></span></span>
         <span class="mqttgw-status-uptime">
+            <button class="lb-btn lb-btn-sm" id="btn_discovery_pause" type="button" data-role="none" title="Aktualisierung pausieren">&#x23f8;</button>
             <button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="<TMPL_VAR MQTT.DISCOVERY_REFRESH>">&#x21bb;</button>
             <span id="save_status" style="font-size:var(--lb-font-sm);margin-left:10px"></span>
         </span>
@@ -578,6 +579,7 @@ $(function(){
         </label>
         <span class="mqttgw-filter-count" id="filter_count"></span>
         <div class="mqttgw-expand-btns">
+            <button class="mqttgw-expand-btn" id="sub-expand-subscribed" type="button" data-role="none">&#9660; Abonnierte</button>
             <button class="mqttgw-expand-btn" id="sub-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
             <button class="mqttgw-expand-btn" id="sub-collapse-all" type="button" data-role="none">&#9650; <TMPL_VAR MQTT.V2_BTN_COLLAPSE_ALL></button>
         </div>
@@ -1292,6 +1294,7 @@ $(function() {
     // ── Discovery ─────────────────────────────────────────────────────────
 
     var discoveryRunning  = false;
+    var discoveryPaused   = false;
     var lastDiscoveryTime = 0;
 
     function updateAgo() {
@@ -1331,12 +1334,28 @@ $(function() {
 
     function startDiscovery() {
         runDiscovery();
-        setInterval(runDiscovery, 30000);
+        setInterval(function() { if (!discoveryPaused) runDiscovery(); }, 30000);
     }
 
     $("#btn_discovery_refresh").on("click", function() {
         lastDiscoveryTime = 0;
         runDiscovery();
+    });
+
+    $("#btn_discovery_pause").on("click", function() {
+        discoveryPaused = !discoveryPaused;
+        $(this).html(discoveryPaused ? '&#x25b6;' : '&#x23f8;');
+        $(this).attr('title', discoveryPaused ? 'Aktualisierung fortsetzen' : 'Aktualisierung pausieren');
+        $("#discovery_ago").text(discoveryPaused ? 'pausiert' : 'gerade eben');
+        if (!discoveryPaused) { lastDiscoveryTime = 0; runDiscovery(); }
+    });
+
+    $("#sub-expand-subscribed").on("click", function() {
+        openDetails = {};
+        hasStoredState = false;
+        firstRender = true;
+        try { sessionStorage.removeItem(_ssKey); } catch(e) {}
+        renderTopics();
     });
 
 });

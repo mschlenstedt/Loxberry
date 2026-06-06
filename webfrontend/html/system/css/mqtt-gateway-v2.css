@@ -11,10 +11,10 @@
   flex-direction: row;
   align-items: center;
   gap: var(--lb-space-sm);
-  padding: 10px 14px;
+  padding: 5px 12px;
   border-radius: var(--lb-radius);
   border: 1px solid transparent;
-  margin-bottom: var(--lb-space-lg);
+  margin-bottom: var(--lb-space-sm);
 }
 
 .mqttgw-status-dot {
