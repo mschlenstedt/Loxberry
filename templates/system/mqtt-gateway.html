@@ -603,7 +603,12 @@ $(function() {
     var saveTimer = null;
     var firstRender = true;
     var discoveredTopics = [];  // [{ topic, payload, group }]
-    var openDetails = {};
+    var filterActive = false;
+    var _ssKey = 'mqttgw_open';
+    var _ss = null;
+    try { _ss = JSON.parse(sessionStorage.getItem(_ssKey)); } catch(e) {}
+    var openDetails = _ss || {};
+    var hasStoredState = _ss !== null;
 
     // Miniserver list from general.json (passed by CGI)
     var cfgstr2   = $("#mqttconfig").text();
@@ -1014,7 +1019,9 @@ $(function() {
             var childSubCount = countSubscribed(childTopics);
             var allChecked    = childSubCount === childTopics.length && childSubCount > 0;
             var safePrefix    = escHtml(childPrefix);
-            var subIsOpen = firstRender ? (childSubCount > 0) : !!openDetails['sub:' + childPrefix];
+            var subIsOpen = filterActive ? true
+                : (hasStoredState || !firstRender) ? !!openDetails['sub:' + childPrefix]
+                : (childSubCount > 0);
             html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (subIsOpen ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="sub-group-toggle"'
                  + ' data-prefix="' + safePrefix + '"' + (allChecked ? ' checked' : '')
@@ -1034,6 +1041,7 @@ $(function() {
     function renderTopics() {
         var groups       = {};
         var subscribedOnly = $("#filter_subscribed_only").prop("checked");
+        filterActive = !!$("#topic_filter").val().trim();
         var visible      = getVisibleTopics();
         var totalCount   = 0, subCount = 0;
 
@@ -1055,6 +1063,7 @@ $(function() {
                 var key = $(this).data('key');
                 if (key) openDetails[key] = true;
             });
+            try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
         }
 
         var html = '';
@@ -1063,7 +1072,9 @@ $(function() {
             var allChecked = g.subCount === g.topics.length && g.subCount > 0;
             var safeGName = escHtml(gName);
             var detailKey = 'grp:' + safeGName;
-            var isOpen = firstRender ? (g.subCount > 0) : !!openDetails[detailKey];
+            var isOpen = filterActive ? true
+                : (hasStoredState || !firstRender) ? !!openDetails[detailKey]
+                : (g.subCount > 0);
             html += '<details class="lb-collapsible mqttgw-group" data-key="' + detailKey + '"' + (isOpen ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="group-toggle"'
                  + ' data-group="' + safeGName + '"' + (allChecked ? ' checked' : '')
@@ -1207,6 +1218,19 @@ $(function() {
     $("#topic_filter").on("input", renderTopics);
     $("#filter_subscribed_only").on("change", renderTopics);
 
+    // Persist open/close state immediately when user manually toggles a group
+    $(document).on('click', '#topic_groups_container .lb-collapsible > summary, #topic_groups_container .mqttgw-subgroup > summary', function(e) {
+        if ($(e.target).is('input')) return; // ignore checkbox clicks (handled separately)
+        var details = this.parentElement;
+        var key = $(details).data('key');
+        if (!key) return;
+        setTimeout(function() {
+            if (details.open) openDetails[key] = true;
+            else delete openDetails[key];
+            try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
+        }, 0);
+    });
+
     var _pendingConfirmAction = null;
 
     function mqttgwConfirm(title, msg, action) {
@@ -1251,10 +1275,18 @@ $(function() {
     });
 
     $("#sub-expand-all").on("click", function() {
-        $("#topic_groups_container details").each(function() { this.open = true; });
+        $("#topic_groups_container details[data-key]").each(function() {
+            this.open = true;
+            openDetails[$(this).data('key')] = true;
+        });
+        try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
     });
     $("#sub-collapse-all").on("click", function() {
-        $("#topic_groups_container details").each(function() { this.open = false; });
+        $("#topic_groups_container details[data-key]").each(function() {
+            this.open = false;
+            delete openDetails[$(this).data('key')];
+        });
+        try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
     });
 
     // ── Discovery ─────────────────────────────────────────────────────────
