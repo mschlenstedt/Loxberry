@@ -87,11 +87,7 @@ elsif( $action eq "stopgateway" ) {
 	# Clear "no Miniserver" notification since gateway is now intentionally stopped
 	LoxBerry::Log::delete_notifications("mqtt", "no_miniserver");
 
-	# V2: SIGTERM first so Python can call LOGEND, SIGKILL as fallback
-	`pkill -TERM -f mqtt_gateway.py`;
-	sleep 2;
-	`pkill -KILL -f mqtt_gateway.py`;
-	# V1 fallback
+	stop_v2_gateway();
 	`pkill -KILL mqttgateway.pl`;
 }
 
@@ -140,10 +136,7 @@ sub restart_gateway
 	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
 	if( $gatewayversion == 2 ) {
-		# SIGTERM first so Python can call LOGEND cleanly, SIGKILL as fallback
-		`pkill -TERM -f mqtt_gateway.py`;
-		sleep 2;
-		`pkill -KILL -f mqtt_gateway.py`;
+		stop_v2_gateway();
 		`pkill mqttgateway.pl`;	# kill V1 in case it's still running from before a V1→V2 migration
 		my $venv_dir = "$lbhomedir/system/python_venv/mqttgateway";
 		unless ( -f "$venv_dir/bin/python3" ) {
@@ -171,6 +164,7 @@ sub restart_gateway
 		`chown loxberry:loxberry $gwlogfile`;	# LoxBerry::Log creates file as root; loxberry needs write access
 		`su loxberry -c '$venv_dir/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py --logfile=$gwlogfile --logdbkey=$gwdbkey &'`;
 	} else {
+		stop_v2_gateway();	# kill V2 in case it's still running from before a V2→V1 switch
 		`pkill mqttgateway.pl`;
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;
 	}
@@ -422,6 +416,41 @@ sub mosquitto_readconfig
 	}
 }
 
+
+##################################################################
+# stop_v2_gateway
+# Reliably stops mqtt_gateway.py via PID file + polling.
+# Falls back to pkill for orphan instances not tracked by PID file.
+##################################################################
+sub stop_v2_gateway
+{
+	LOGDEB "stop_v2_gateway";
+	my $pidfile = "/dev/shm/mqtt_gateway.pid";
+
+	if( open(my $fh, '<', $pidfile) ) {
+		my $pid = <$fh>;
+		close $fh;
+		$pid =~ s/\s+//g if defined $pid;
+		if( defined $pid && $pid =~ /^\d+$/ && -d "/proc/$pid" ) {
+			LOGINF "Sending SIGTERM to V2 gateway PID $pid";
+			kill 'TERM', $pid;
+			# Poll up to 3 s for graceful exit (6 × 0.5 s)
+			for (1..6) {
+				last unless -d "/proc/$pid";
+				select(undef, undef, undef, 0.5);
+			}
+			if( -d "/proc/$pid" ) {
+				LOGWARN "V2 gateway still alive after SIGTERM — sending SIGKILL to PID $pid";
+				kill 'KILL', $pid;
+				select(undef, undef, undef, 0.5);
+			}
+		}
+		unlink $pidfile;
+	}
+
+	# Fallback: kill any remaining instances not tracked by PID file (orphans, double starts)
+	`pkill -KILL -f mqtt_gateway.py`;
+}
 
 #####################################################
 # Random Sub
