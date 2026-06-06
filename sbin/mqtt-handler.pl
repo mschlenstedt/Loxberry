@@ -162,7 +162,7 @@ sub restart_gateway
 		my $gwdbkey = $gwlog ? $gwlog->dbkey() : '';
 		undef $gwlog;
 		`chown loxberry:loxberry $gwlogfile`;	# LoxBerry::Log creates file as root; loxberry needs write access
-		`su loxberry -c '$venv_dir/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py --logfile=$gwlogfile --logdbkey=$gwdbkey &'`;
+		`su loxberry -c '$venv_dir/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py --logfile=$gwlogfile --logdbkey=$gwdbkey > /dev/null 2>&1 &'`;
 	} else {
 		stop_v2_gateway();	# kill V2 in case it's still running from before a V2→V1 switch
 		`pkill mqttgateway.pl`;
