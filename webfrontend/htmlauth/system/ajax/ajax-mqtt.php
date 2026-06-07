@@ -217,10 +217,9 @@ elseif ( $ajax == 'mosquitto_purgedb' ) {
 }
 
 elseif ( $ajax == 'restart_mosquitto' ) {
-
-	# Restart Mosquitto
-	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=mosquitto_restart" );
-}	
+	exec("nohup sudo $lbhomedir/sbin/mqtt-handler.pl action=mosquitto_restart > /dev/null 2>&1 &");
+	echo json_encode(array('status' => 'ok'));
+}
 
 elseif( $ajax == "reconnect" ) {
 	# Send Reconnect
