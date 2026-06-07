@@ -60,7 +60,7 @@
 /* Filter-Bar Layout */
 .mqttgw-filter {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
 }
 .mqttgw-filter-row1 {
     display: flex;
@@ -68,6 +68,7 @@
     align-items: center;
     gap: 6px;
     margin-bottom: 4px;
+    width: 100%;
 }
 .mqttgw-filter-row2 {
     display: flex;
@@ -75,15 +76,19 @@
     align-items: center;
     gap: 12px;
     margin-bottom: 4px;
+    width: 100%;
 }
 
 /* X-Clear-Button im Suchfeld */
 .mqttgw-filter-input-wrap {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    flex: 1;
+    min-width: 120px;
 }
 .mqttgw-filter-input-wrap .mqttgw-filter-input {
+    flex: 1;
     padding-right: 24px;
 }
 .mqttgw-filter-clear {
@@ -648,10 +653,10 @@ $(function(){
         </div>
         <div class="mqttgw-filter-row2">
             <label class="mqttgw-filter-label" data-role="none">
-                <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
+                <input type="checkbox" id="filter_exact_match" data-role="none"> Exakt
             </label>
             <label class="mqttgw-filter-label" data-role="none">
-                <input type="checkbox" id="filter_exact_match" data-role="none"> Exakt
+                <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
             </label>
             <label class="mqttgw-filter-label" data-role="none">
                 <input type="checkbox" id="filter_errors_only" data-role="none"> Nur abonnierte mit Fehler
