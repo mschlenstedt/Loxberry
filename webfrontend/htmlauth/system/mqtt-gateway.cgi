@@ -102,7 +102,7 @@ if( $q->{ajax} ) {
 		transformers_form();
 	}
 	elsif ( $q->{form} eq "logs" ) {
-		$navbar{40}{active} = 1;
+		$navbar{50}{active} = 1;
 		$template->param("FORM_LOGS", 1);
 		$template->param("FORM_DISABLE_BUTTONS", 1);
 		logs_form();
@@ -133,10 +133,10 @@ sub print_form
 		  "URL" => "/admin/system/mqtt-gateway.cgi?form=subscriptions" },
 		{ "Name" => $SL{'MQTT.V2_SECTION_TRAFFIC'},
 		  "URL" => "/admin/system/mqtt-gateway.cgi?form=incoming" },
-		{ "Name" => "Logs",
-		  "URL" => "/admin/system/mqtt-gateway.cgi?form=logs" },
 		{ "Name" => "MQTT Finder",
 		  "URL" => "/admin/system/mqtt-finder.cgi" },
+		{ "Name" => "Logs",
+		  "URL" => "/admin/system/mqtt-gateway.cgi?form=logs" },
 	);
 	
 		

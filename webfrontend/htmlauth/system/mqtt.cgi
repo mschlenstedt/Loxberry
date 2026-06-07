@@ -48,12 +48,12 @@ our @navbar = (
 		"URL" => "/admin/system/mqtt-gateway.cgi?form=incoming"
 	},
 	{
-		"Name" => "Logs",
-		"URL" => "/admin/system/mqtt-gateway.cgi?form=logs"
-	},
-	{
 		"Name" => "MQTT Finder",
 		"URL" => "/admin/system/mqtt-finder.cgi"
+	},
+	{
+		"Name" => "Logs",
+		"URL" => "/admin/system/mqtt-gateway.cgi?form=logs"
 	}
 );
 
