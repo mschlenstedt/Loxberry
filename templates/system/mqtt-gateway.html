@@ -128,8 +128,8 @@
     flex-shrink: 0;
 }
 
-/* Rote Checkbox bei Fehler-Topics */
-.mqttgw-topic-row-error .topic-subscribe {
+/* Rote Checkbox bei Fehler-Topics — höhere Spezifität als externe CSS (0,2,1) */
+.mqttgw-topic-row-error input.topic-subscribe[type="checkbox"] {
     accent-color: #b91c1c;
 }
 </style>
