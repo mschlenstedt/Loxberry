@@ -51,6 +51,63 @@
     color:var(--lb-text,#333);
     box-sizing:border-box;
 }
+
+/* Filter-Bar Layout */
+.mqttgw-filter-row1 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.mqttgw-filter-row2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+/* X-Clear-Button im Suchfeld */
+.mqttgw-filter-input-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.mqttgw-filter-input-wrap .mqttgw-filter-input {
+    padding-right: 24px;
+}
+.mqttgw-filter-clear {
+    position: absolute;
+    right: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--lb-gray-400, #aaa);
+    font-size: 13px;
+    padding: 0 2px;
+    line-height: 1;
+}
+.mqttgw-filter-clear:hover {
+    color: var(--lb-gray-700, #333);
+}
+
+/* Fehler-Icon links neben der Checkbox in Topic-Zeilen */
+.mqttgw-topic-error-icon {
+    vertical-align: middle;
+    margin-right: 3px;
+    flex-shrink: 0;
+}
+.mqttgw-topic-error-placeholder {
+    display: inline-block;
+    width: 17px;
+    flex-shrink: 0;
+}
+
+/* Rote Checkbox bei Fehler-Topics */
+.mqttgw-topic-row-error .topic-subscribe {
+    accent-color: #b91c1c;
+}
 </style>
 
 <!-- Disable jQuery Mobile auto-enhancement for this page -->
@@ -571,13 +628,26 @@ $(function(){
 
     <!-- Filter Bar -->
     <div class="mqttgw-filter">
-        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="<TMPL_VAR MQTT.FILTER_PLACEHOLDER>" data-role="none">
-        <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_SELECT_ALL></button>
-        <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_DESELECT_ALL></button>
-        <label class="mqttgw-filter-label" data-role="none">
-            <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
-        </label>
-        <span class="mqttgw-filter-count" id="filter_count"></span>
+        <div class="mqttgw-filter-row1">
+            <div class="mqttgw-filter-input-wrap">
+                <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="<TMPL_VAR MQTT.FILTER_PLACEHOLDER>" data-role="none">
+                <button class="mqttgw-filter-clear" id="btn_topic_filter_clear" type="button" title="Suche löschen" data-role="none">&#x2715;</button>
+            </div>
+            <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_SELECT_ALL></button>
+            <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_DESELECT_ALL></button>
+            <label class="mqttgw-filter-label" data-role="none">
+                <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
+            </label>
+            <span class="mqttgw-filter-count" id="filter_count"></span>
+        </div>
+        <div class="mqttgw-filter-row2">
+            <label class="mqttgw-filter-label" data-role="none">
+                <input type="checkbox" id="filter_exact_match" data-role="none"> Exakt
+            </label>
+            <label class="mqttgw-filter-label" data-role="none">
+                <input type="checkbox" id="filter_errors_only" data-role="none"> Nur abonnierte mit Fehler
+            </label>
+        </div>
         <div class="mqttgw-expand-btns">
             <button class="mqttgw-expand-btn" id="sub-expand-subscribed" type="button" data-role="none">&#9660; Abonnierte</button>
             <button class="mqttgw-expand-btn" id="sub-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
@@ -596,6 +666,41 @@ $(function(){
 
 <script>
 $(function() {
+
+    // ── Status data from get_status_v2 (keyed by VI name) ────────────────
+    var statusData = {};
+
+    function fetchStatusData() {
+        $.get('ajax/ajax-mqtt.php', {ajax: 'get_status_v2'}, function(resp) {
+            statusData = resp || {};
+            renderTopics();
+        });
+    }
+
+    function httpScOf(e) {
+        if (!e || !e.http) return 'new';
+        var h = e.http;
+        if (h.status === 'send_failed') return 'error';
+        if (h.http_status >= 200 && h.http_status < 300) return 'ok';
+        if (h.http_status) return 'warn';
+        return 'ok';
+    }
+
+    function getTopicHttpSc(topic) {
+        var vi = topic.replace(/\//g, '_');
+        if (statusData[vi]) return httpScOf(statusData[vi]);
+        // JSON-expand: mehrere VIs mit Prefix vi + '_'
+        var prefix = vi + '_';
+        var order = {error: 0, warn: 1, ok: 2, new: 3};
+        var worst = 'new';
+        Object.keys(statusData).forEach(function(k) {
+            if (k.indexOf(prefix) === 0) {
+                var sc = httpScOf(statusData[k]);
+                if (order[sc] < order[worst]) worst = sc;
+            }
+        });
+        return worst;
+    }
 
     // ── Data model — mirrors subscriptions.json exactly ───────────────────
     // Each entry: { Id, Toms[], Noncached, resetaftersend, Jsonexpand, Json[] }
@@ -697,6 +802,8 @@ $(function() {
 
     function getVisibleTopics() {
         var filterText = $("#topic_filter").val().trim();
+        var exactMatch = $("#filter_exact_match").prop("checked");
+        var errorsOnly = $("#filter_errors_only").prop("checked");
 
         // Always include subscribed topics even if not currently discovered
         var discoveredSet = {};
@@ -708,13 +815,23 @@ $(function() {
             }
         });
 
+        // "Nur abonnierte mit Fehler"-Filter
+        if (errorsOnly) {
+            allTopics = allTopics.filter(function(t) {
+                if (!isTopicSubscribed(t.topic)) return false;
+                var sc = getTopicHttpSc(t.topic);
+                return sc === 'error' || sc === 'warn';
+            });
+        }
+
         if (!filterText) return allTopics;
 
-        // Build regex like mqtt-finder: escape, then convert MQTT wildcards, no anchors → partial match
+        // Regex aufbauen: escapen, dann MQTT-Wildcards ersetzen
         var pattern = filterText.toLowerCase();
         pattern = pattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
         pattern = pattern.replace('#', '[^/].*');
         pattern = pattern.replaceAll('\\+', '[^/]+');
+        if (exactMatch) pattern = '^' + pattern + '$';
 
         return allTopics.filter(function(t) {
             return t.topic.toLowerCase().match(pattern) !== null;
@@ -778,6 +895,7 @@ $(function() {
     })
     .always(function() {
         startDiscovery();
+        fetchStatusData();
     });
 
     // ── MS dropdowns ──────────────────────────────────────────────────────
@@ -909,6 +1027,11 @@ $(function() {
         var isSubscribed = sub !== null;
         var safeTopic    = escHtml(topic);
         var payload      = t.payload || '';
+        var topicSc      = isSubscribed ? getTopicHttpSc(topic) : 'new';
+        var hasError     = isSubscribed && (topicSc === 'error' || topicSc === 'warn');
+        var errorIconSrc = topicSc === 'error'
+            ? '../../system/images/icon-locked.png'
+            : '../../system/images/icon-notfound.png';
 
         // JSON-Payload vorab parsen (einmalig)
         var parsedPayload = null;
@@ -924,9 +1047,15 @@ $(function() {
 
         var html  = '<div class="mqttgw-topic-row'
                   + (isSubscribed ? '' : ' mqttgw-topic-row-disabled')
-                  + (jsonOpen   ? ' mqttgw-row-json-open'   : '')
-                  + (jsonClosed ? ' mqttgw-row-json-closed' : '')
+                  + (hasError    ? ' mqttgw-topic-row-error' : '')
+                  + (jsonOpen    ? ' mqttgw-row-json-open'   : '')
+                  + (jsonClosed  ? ' mqttgw-row-json-closed' : '')
                   + '" data-topic="' + safeTopic + '">';
+        if (hasError) {
+            html += '<img src="' + errorIconSrc + '" class="mqttgw-topic-error-icon" width="14" height="14" title="HTTP ' + topicSc + '">';
+        } else {
+            html += '<span class="mqttgw-topic-error-placeholder"></span>';
+        }
         html += '<input type="checkbox" class="topic-subscribe" data-topic="' + safeTopic + '"'
              + (isSubscribed ? ' checked' : '') + '>';
         html += '<span class="mqttgw-topic-name">' + escHtml(displayName) + '</span>';
@@ -1214,6 +1343,17 @@ $(function() {
 
     $("#topic_filter").on("input", renderTopics);
     $("#filter_subscribed_only").on("change", renderTopics);
+    $("#filter_exact_match").on("change", renderTopics);
+    $("#filter_errors_only").on("change", function() {
+        if ($(this).prop("checked") && Object.keys(statusData).length === 0) {
+            fetchStatusData();
+        } else {
+            renderTopics();
+        }
+    });
+    $("#btn_topic_filter_clear").on("click", function() {
+        $("#topic_filter").val("").trigger("input");
+    });
 
     // Persist open/close state immediately when user manually toggles a group
     $(document).on('click', '#topic_groups_container .lb-collapsible > summary, #topic_groups_container .mqttgw-subgroup > summary', function(e) {
