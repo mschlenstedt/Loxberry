@@ -635,12 +635,12 @@ $(function(){
             </div>
             <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_SELECT_ALL></button>
             <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_DESELECT_ALL></button>
-            <label class="mqttgw-filter-label" data-role="none">
-                <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
-            </label>
             <span class="mqttgw-filter-count" id="filter_count"></span>
         </div>
         <div class="mqttgw-filter-row2">
+            <label class="mqttgw-filter-label" data-role="none">
+                <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
+            </label>
             <label class="mqttgw-filter-label" data-role="none">
                 <input type="checkbox" id="filter_exact_match" data-role="none"> Exakt
             </label>
