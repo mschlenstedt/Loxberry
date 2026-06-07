@@ -3180,7 +3180,22 @@ $(function () {
 			.always(function() {
 				_gw_restarting = false;
 				$("#btn_restart_gateway, #btn_stop_gateway").removeClass("lb-disabled").removeAttr("disabled");
-				setTimeout(update_pids, 3000);
+				// Poll every 1.5s until PID is found (max 15 attempts ≈ 22s)
+				var _pollCount = 0;
+				(function _pollPid() {
+					if (_pollCount++ >= 15) { update_pids(); return; }
+					$.post('ajax/ajax-mqtt.php', { ajax: 'getpids' })
+					.done(function(resp) {
+						if (resp && resp.pids && resp.pids.mqttgateway != null) {
+							$("#gw_status_text")
+								.text(_lang_v1gw.runningPid.replace('%s', resp.pids.mqttgateway))
+								.css({"background":"#6dac20","color":"black","border-color":"#5a9a18"});
+						} else {
+							setTimeout(_pollPid, 1500);
+						}
+					})
+					.fail(function() { setTimeout(_pollPid, 1500); });
+				})();
 			});
 		});
 	});
