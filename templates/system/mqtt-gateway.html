@@ -132,9 +132,12 @@
 .mqttgw-topic-row-error input.topic-subscribe[type="checkbox"] {
     accent-color: #b91c1c;
 }
-/* Graue Checkbox für Gruppen mit teils abonnierten Topics */
-.group-toggle:indeterminate, .sub-group-toggle:indeterminate {
-    accent-color: #888;
+/* Graue Checkbox für Gruppen mit teils abonnierten Topics (appearance:none → kein accent-color) */
+.lb-content .group-toggle:indeterminate,
+.lb-content .sub-group-toggle:indeterminate {
+    border-color: #888;
+    background-color: #888;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' d='M2 6L10 6'/%3E%3C/svg%3E");
 }
 </style>
 
