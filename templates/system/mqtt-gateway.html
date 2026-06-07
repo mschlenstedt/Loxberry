@@ -741,6 +741,16 @@ $(function() {
     var openDetails = _ss || {};
     var hasStoredState = _ss !== null;
 
+    var _filterSsKey = 'mqttgw_filter';
+    var _filterState = null;
+    try { _filterState = JSON.parse(sessionStorage.getItem(_filterSsKey)); } catch(e) {}
+    if (_filterState) {
+        if (_filterState.text)           $("#topic_filter").val(_filterState.text);
+        if (_filterState.exact)          $("#filter_exact_match").prop("checked", true);
+        if (_filterState.subscribedOnly) $("#filter_subscribed_only").prop("checked", true);
+        if (_filterState.errorsOnly)     $("#filter_errors_only").prop("checked", true);
+    }
+
     // Miniserver list from general.json (passed by CGI)
     var cfgstr2   = $("#mqttconfig").text();
     var cfg2      = cfgstr2 ? JSON.parse(cfgstr2) : {};
@@ -1365,10 +1375,22 @@ $(function() {
         groupToggleAll($(this).data('group'), this.checked);
     });
 
-    $("#topic_filter").on("input", renderTopics);
-    $("#filter_subscribed_only").on("change", renderTopics);
-    $("#filter_exact_match").on("change", renderTopics);
+    function saveFilterState() {
+        try {
+            sessionStorage.setItem(_filterSsKey, JSON.stringify({
+                text:           $("#topic_filter").val(),
+                exact:          $("#filter_exact_match").prop("checked"),
+                subscribedOnly: $("#filter_subscribed_only").prop("checked"),
+                errorsOnly:     $("#filter_errors_only").prop("checked")
+            }));
+        } catch(e) {}
+    }
+
+    $("#topic_filter").on("input", function() { saveFilterState(); renderTopics(); });
+    $("#filter_subscribed_only").on("change", function() { saveFilterState(); renderTopics(); });
+    $("#filter_exact_match").on("change", function() { saveFilterState(); renderTopics(); });
     $("#filter_errors_only").on("change", function() {
+        saveFilterState();
         if ($(this).prop("checked") && Object.keys(statusData).length === 0) {
             fetchStatusData();
         } else {
