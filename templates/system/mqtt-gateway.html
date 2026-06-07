@@ -52,6 +52,11 @@
     box-sizing:border-box;
 }
 
+/* Status-Banner kompakter */
+.mqttgw-status {
+    padding: 2px 10px;
+}
+
 /* Filter-Bar Layout */
 .mqttgw-filter {
     flex-direction: column;
@@ -651,11 +656,11 @@ $(function(){
             <label class="mqttgw-filter-label" data-role="none">
                 <input type="checkbox" id="filter_errors_only" data-role="none"> Nur abonnierte mit Fehler
             </label>
-        </div>
-        <div class="mqttgw-expand-btns">
-            <button class="mqttgw-expand-btn" id="sub-expand-subscribed" type="button" data-role="none">&#9660; Abonnierte</button>
-            <button class="mqttgw-expand-btn" id="sub-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
-            <button class="mqttgw-expand-btn" id="sub-collapse-all" type="button" data-role="none">&#9650; <TMPL_VAR MQTT.V2_BTN_COLLAPSE_ALL></button>
+            <div class="mqttgw-expand-btns">
+                <button class="mqttgw-expand-btn" id="sub-expand-subscribed" type="button" data-role="none">&#9660; Abonnierte</button>
+                <button class="mqttgw-expand-btn" id="sub-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
+                <button class="mqttgw-expand-btn" id="sub-collapse-all" type="button" data-role="none">&#9650; <TMPL_VAR MQTT.V2_BTN_COLLAPSE_ALL></button>
+            </div>
         </div>
     </div>
 
