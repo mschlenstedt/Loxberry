@@ -841,7 +841,7 @@ def build_udp_name(topic: str, json_path: str | None = None) -> str:
         return topic
     json_part = re.sub(r'\[(\d+)\]', r'\1', json_path)
     json_part = json_part.replace("@@", "_").replace(" ", "_")
-    return f"{topic}_{json_part}"
+    return f"{topic}/{json_part}"
 
 # ─── JSON path extractor ──────────────────────────────────────────────────────
 def extract_json_value(data: dict | list, path_str: str):
