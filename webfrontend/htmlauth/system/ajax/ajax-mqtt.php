@@ -268,7 +268,8 @@ elseif( $ajax == 'publish_json' ) {
 }
 
 elseif( $ajax == 'restartgateway' ) {
-	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway" );
+	exec("nohup sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway > /dev/null 2>&1 &");
+	echo json_encode(array('status' => 'ok'));
 }
 
 elseif( $ajax == 'stop_gateway' ) {
