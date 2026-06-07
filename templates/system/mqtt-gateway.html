@@ -695,17 +695,6 @@ $(function() {
         return count;
     }
 
-    function wildcardToRegex(pattern) {
-        var parts = pattern.split('/').map(function(p) {
-            if (p === '#') return '.*';
-            if (p === '+') return '[^/]+';
-            return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        });
-        var re = '^' + parts.join('/');
-        if (pattern.charAt(pattern.length - 1) !== '#') re += '$';
-        return new RegExp(re);
-    }
-
     function getVisibleTopics() {
         var filterText = $("#topic_filter").val().trim();
 
@@ -720,11 +709,15 @@ $(function() {
         });
 
         if (!filterText) return allTopics;
-        var isWildcard = filterText.indexOf('+') !== -1 || filterText.indexOf('#') !== -1;
-        var filterRegex = isWildcard ? wildcardToRegex(filterText) : null;
-        var filterLower = filterText.toLowerCase();
+
+        // Build regex like mqtt-finder: escape, then convert MQTT wildcards, no anchors → partial match
+        var pattern = filterText.toLowerCase();
+        pattern = pattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        pattern = pattern.replace('#', '[^/].*');
+        pattern = pattern.replaceAll('\\+', '[^/]+');
+
         return allTopics.filter(function(t) {
-            return isWildcard ? filterRegex.test(t.topic) : t.topic.toLowerCase().indexOf(filterLower) !== -1;
+            return t.topic.toLowerCase().match(pattern) !== null;
         });
     }
 
