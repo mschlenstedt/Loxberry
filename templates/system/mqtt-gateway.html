@@ -132,6 +132,10 @@
 .mqttgw-topic-row-error input.topic-subscribe[type="checkbox"] {
     accent-color: #b91c1c;
 }
+/* Graue Checkbox für Gruppen mit teils abonnierten Topics */
+.group-toggle:indeterminate, .sub-group-toggle:indeterminate {
+    accent-color: #888;
+}
 </style>
 
 <!-- Disable jQuery Mobile auto-enhancement for this page -->
@@ -1178,6 +1182,7 @@ $(function() {
             var childPrefix   = prefix + (prefix ? '/' : '') + seg;
             var childSubCount = countSubscribed(childTopics);
             var allChecked    = childSubCount === childTopics.length && childSubCount > 0;
+            var someChecked   = !allChecked && childSubCount > 0;
             var safePrefix    = escHtml(childPrefix);
             var subIsOpen = filterActive ? true
                 : (hasStoredState || !firstRender) ? !!openDetails['sub:' + childPrefix]
@@ -1185,6 +1190,7 @@ $(function() {
             html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (subIsOpen ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="sub-group-toggle"'
                  + ' data-prefix="' + safePrefix + '"' + (allChecked ? ' checked' : '')
+                 + (someChecked ? ' data-indeterminate="true"' : '')
                  + ' style="margin-right:6px"><strong>' + escHtml(seg) + '</strong>'
                  + '<span class="mqttgw-expand-arrow"></span>';
             html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
@@ -1229,7 +1235,8 @@ $(function() {
         var html = '';
         Object.keys(groups).sort().forEach(function(gName) {
             var g         = groups[gName];
-            var allChecked = g.subCount === g.topics.length && g.subCount > 0;
+            var allChecked  = g.subCount === g.topics.length && g.subCount > 0;
+            var someChecked = !allChecked && g.subCount > 0;
             var safeGName = escHtml(gName);
             var detailKey = 'grp:' + safeGName;
             var isOpen = filterActive ? true
@@ -1238,6 +1245,7 @@ $(function() {
             html += '<details class="lb-collapsible mqttgw-group" data-key="' + detailKey + '"' + (isOpen ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="group-toggle"'
                  + ' data-group="' + safeGName + '"' + (allChecked ? ' checked' : '')
+                 + (someChecked ? ' data-indeterminate="true"' : '')
                  + ' style="margin-right:6px"><strong>' + safeGName + '</strong>'
                  + '<span class="mqttgw-expand-arrow"></span>';
             html += '<span class="mqttgw-group-count">(' + g.topics.length + ' Topics, ' + g.subCount + ' abonniert)</span>';
@@ -1249,6 +1257,9 @@ $(function() {
         if (!html) html = '<div style="text-align:center;padding:40px;color:var(--lb-gray-500)">Keine Topics gefunden.</div>';
 
         $("#topic_groups_container").html(html);
+        $("#topic_groups_container [data-indeterminate='true']").each(function() {
+            this.indeterminate = true;
+        });
         firstRender = false;
     }
 
