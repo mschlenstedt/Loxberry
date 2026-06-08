@@ -81,8 +81,8 @@
     <option value="0"><TMPL_VAR APPSTORE.FILTER_NOT_INSTALLED></option>
   </select>
   <select class="as-filter" id="as-sort" onchange="asSort()">
+    <option value="updated" selected><TMPL_VAR APPSTORE.SORT_NEWEST></option>
     <option value="name"><TMPL_VAR APPSTORE.SORT_NAME></option>
-    <option value="updated"><TMPL_VAR APPSTORE.SORT_NEWEST></option>
   </select>
 </div>
 
@@ -179,4 +179,7 @@ function asSort(){
   });
   cards.forEach(function(c){grid.appendChild(c);});
 }
+
+// Standard-Sortierung: Neueste Updates zuerst (passend zum vorausgewaehlten Dropdown).
+asSort();
 </script>
