@@ -468,6 +468,7 @@ $(function() {
             $.when(saveGwConfig, saveVersion)
                 .done(function() {
                     if (newVersion !== originalVersion) {
+                        sessionStorage.setItem('mqttgw_restart_hint', '1');
                         location.reload();
                         return;
                     }
@@ -2878,7 +2879,13 @@ $(function () {
 	var _cfg_changed = false;
 
 	$(function() {
-		
+
+		// Show restart hint after a migration-triggered page reload
+		if (sessionStorage.getItem('mqttgw_restart_hint')) {
+			sessionStorage.removeItem('mqttgw_restart_hint');
+			_showSaveOk(_lang_save.restartHint);
+		}
+
 		setInterval(function(){ update_pids(); }, 5000);
 		update_pids();
 		
