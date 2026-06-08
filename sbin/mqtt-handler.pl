@@ -35,9 +35,9 @@ if( $action eq "updateconfig" ) {
 	update_config(); 
 	mosquitto_set();
 }
-elsif( $action eq "mosquitto_set" ) { 
-	open_configs();
-	mosquitto_set(); 
+elsif( $action eq "mosquitto_set" ) {
+	read_configs();
+	mosquitto_set();
 }
 
 elsif( $action eq "mosquitto_purgedb" ) {
@@ -53,16 +53,27 @@ elsif( $action eq "mosquitto_restart" ) {
 }
 
 elsif( $action eq "restartgateway" ) {
-	open_configs();
+	$generaljsonobj = LoxBerry::JSON->new();
+	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive => 1);
 	my $uselocalbroker = $generalcfg->{Mqtt}->{Uselocalbroker};
 	$generalcfg->{Mqtt}->{Gatewayautostart} = 1;
 	$generaljsonobj->write();
 	undef $generaljsonobj;
-	undef $mqttobj;
 	if( is_enabled( $uselocalbroker ) ) {
 		mosquitto_restart();
 	}
 	restart_gateway();
+}
+
+elsif( $action eq "bootstart" ) {
+	my $roobj = LoxBerry::JSON->new();
+	my $rocfg = $roobj->open(filename => $generaljsonfile, readonly => 1);
+	if( !is_enabled($rocfg->{Mqtt}->{Gatewayautostart} // 1) ) {
+		LOGINF "Gatewayautostart is disabled - not starting MQTT Gateway.";
+	} else {
+		undef $roobj;
+		restart_gateway();
+	}
 }
 
 elsif( $action eq "stopgateway" ) {
@@ -76,19 +87,7 @@ elsif( $action eq "stopgateway" ) {
 	# Clear "no Miniserver" notification since gateway is now intentionally stopped
 	LoxBerry::Log::delete_notifications("mqtt", "no_miniserver");
 
-	# V2: kill via PID file with SIGKILL (asyncio catches SIGTERM)
-	my $v2_pidfile = '/dev/shm/mqtt_gateway.pid';
-	if (-f $v2_pidfile) {
-		open(my $fh, '<', $v2_pidfile);
-		my $pid = <$fh>;
-		close $fh;
-		chomp $pid;
-		if ($pid =~ /^\d+$/ && -e "/proc/$pid") {
-			kill 'KILL', int($pid);
-			LOGINF "Stopped mqtt_gateway.py PID $pid";
-		}
-	}
-	# V1 fallback
+	stop_v2_gateway();
 	`pkill -KILL mqttgateway.pl`;
 }
 
@@ -137,26 +136,35 @@ sub restart_gateway
 	my $tempcfg = $tempjsonobj->open(filename => $generaljsonfile);
 	my $gatewayversion = $tempcfg->{Mqtt}->{Gatewayversion} // 1;
 	if( $gatewayversion == 2 ) {
-		`pkill -KILL -f mqtt_gateway.py`;
+		stop_v2_gateway();
 		`pkill mqttgateway.pl`;	# kill V1 in case it's still running from before a V1→V2 migration
-		unless ( -f "$lbhomedir/sbin/mqttgateway_venv/bin/python3" ) {
+		my $venv_dir = "$lbhomedir/system/python_venv/mqttgateway";
+		unless ( -f "$venv_dir/bin/python3" ) {
 			LOGINF "Creating Python venv for MQTT Gateway V2...";
-			`rm -rf $lbhomedir/sbin/mqttgateway_venv`;
-			`python3 -m venv $lbhomedir/sbin/mqttgateway_venv`;
-			`$lbhomedir/sbin/mqttgateway_venv/bin/pip install -q -r $lbhomedir/sbin/requirements_mqttgateway_venv.txt`;
+			`rm -rf $venv_dir`;
+			`python3 -m venv $venv_dir`;
+			my $req = "$lbhomedir/system/python_venv/requirements_mqttgateway.txt";
+			if ( -f $req ) {
+				`$venv_dir/bin/pip install -q -r $req`;
+			} else {
+				`$venv_dir/bin/pip install -q aiomqtt aiohttp`;
+			}
+			`chown -R loxberry:loxberry $venv_dir`;
 		}
-		my $gwlogfile = "$lbstmpfslogdir/mqtt-gateway.log";
 		my $gwlog = LoxBerry::Log->new(
 			package  => 'mqtt',
 			name     => 'mqtt-gateway',
-			filename => $gwlogfile,
+			logdir   => $lbstmpfslogdir,
 			loglevel => 7,
 		);
+		my $gwlogfile = $gwlog ? $gwlog->filename() : "$lbstmpfslogdir/mqtt-gateway.log";
 		$gwlog->LOGSTART("MQTT Gateway V2") if $gwlog;
+		my $gwdbkey = $gwlog ? $gwlog->dbkey() : '';
 		undef $gwlog;
 		`chown loxberry:loxberry $gwlogfile`;	# LoxBerry::Log creates file as root; loxberry needs write access
-		`su loxberry -c '$lbhomedir/sbin/mqttgateway_venv/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py >> $gwlogfile 2>&1 &'`;
+		`su loxberry -c '$venv_dir/bin/python3 -u $lbhomedir/sbin/mqtt_gateway.py --logfile=$gwlogfile --logdbkey=$gwdbkey > /dev/null 2>&1 &'`;
 	} else {
+		stop_v2_gateway();	# kill V2 in case it's still running from before a V2→V1 switch
 		`pkill mqttgateway.pl`;
 		`su loxberry -c '$lbhomedir/sbin/mqttgateway.pl > /dev/null 2>&1 &'`;
 	}
@@ -169,6 +177,15 @@ sub open_configs
 	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, lockexclusive => 1);
 	$mqttobj = LoxBerry::JSON->new();
 	$cfg = $mqttobj->open(filename => $cfgfile, lockexclusive => 1);
+}
+
+sub read_configs
+{
+	LOGDEB "read_configs";
+	$generaljsonobj = LoxBerry::JSON->new();
+	$generalcfg = $generaljsonobj->open(filename => $generaljsonfile, readonly => 1);
+	$mqttobj = LoxBerry::JSON->new();
+	$cfg = $mqttobj->open(filename => $cfgfile, readonly => 1);
 }
 
 sub update_config
@@ -399,6 +416,41 @@ sub mosquitto_readconfig
 	}
 }
 
+
+##################################################################
+# stop_v2_gateway
+# Reliably stops mqtt_gateway.py via PID file + polling.
+# Falls back to pkill for orphan instances not tracked by PID file.
+##################################################################
+sub stop_v2_gateway
+{
+	LOGDEB "stop_v2_gateway";
+	my $pidfile = "/dev/shm/mqtt_gateway.pid";
+
+	if( open(my $fh, '<', $pidfile) ) {
+		my $pid = <$fh>;
+		close $fh;
+		$pid =~ s/\s+//g if defined $pid;
+		if( defined $pid && $pid =~ /^\d+$/ && -d "/proc/$pid" ) {
+			LOGINF "Sending SIGTERM to V2 gateway PID $pid";
+			kill 'TERM', $pid;
+			# Poll up to 3 s for graceful exit (6 × 0.5 s)
+			for (1..6) {
+				last unless -d "/proc/$pid";
+				select(undef, undef, undef, 0.5);
+			}
+			if( -d "/proc/$pid" ) {
+				LOGWARN "V2 gateway still alive after SIGTERM — sending SIGKILL to PID $pid";
+				kill 'KILL', $pid;
+				select(undef, undef, undef, 0.5);
+			}
+		}
+		unlink $pidfile;
+	}
+
+	# Fallback: kill any remaining instances not tracked by PID file (orphans, double starts)
+	`pkill -KILL -f mqtt_gateway.py`;
+}
 
 #####################################################
 # Random Sub

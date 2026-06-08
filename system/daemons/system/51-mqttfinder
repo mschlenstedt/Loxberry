@@ -1,2 +1,3 @@
 #!/bin/bash
-su loxberry -c "$LBHOMEDIR/sbin/mqttfinder.pl > /dev/null 2>&1 &"
+LBHOMEDIR="${LBHOMEDIR:-/opt/loxberry}"
+su loxberry -c "PERL5LIB=$LBHOMEDIR/libs/perllib $LBHOMEDIR/sbin/mqttfinder.pl > /dev/null 2>&1 &"

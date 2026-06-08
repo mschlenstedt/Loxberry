@@ -577,12 +577,40 @@
 			$('#btn_restart_mosquitto, #btn_stop_mosquitto').addClass('lb-disabled').attr('disabled', true);
 			_mosq_restarting = true;
 			$('#mosq_status_text').text(_lang_mosq.statusRestarting).css({'background':'#dfdfdf','color':'black','border-color':'#7e7e7e'});
-			vueApp.saveApply().then(function() {
-				$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
-				.always(function() {
-					_mosq_restarting = false;
-					$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
-					setTimeout(update_mosq_status, 3000);
+
+			// Alte Mosquitto-PID merken, dann Einstellungen speichern und Restart auslösen
+			$.post(mqtt_ajax, { ajax: 'getpids' })
+			.always(function(resp, status) {
+				var oldPid = (status === 'success' && resp && resp.pids) ? resp.pids.mosquitto : null;
+
+				vueApp.saveApply().then(function() {
+					// restart_mosquitto kehrt sofort zurück (läuft im Hintergrund)
+					$.post(mqtt_ajax, { ajax: 'restart_mosquitto' })
+					.always(function() {
+						// Pollen bis eine ANDERE PID als oldPid erscheint (max ~135s)
+						var _pollCount = 0;
+						(function _pollPid() {
+							if (_pollCount++ >= 90) {
+								_mosq_restarting = false;
+								$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
+								update_mosq_status();
+								return;
+							}
+							$.post(mqtt_ajax, { ajax: 'getpids' })
+							.done(function(r) {
+								if (r && r.pids && r.pids.mosquitto != null && r.pids.mosquitto != oldPid) {
+									_mosq_restarting = false;
+									$('#btn_restart_mosquitto, #btn_stop_mosquitto').removeClass('lb-disabled').removeAttr('disabled');
+									$('#mosq_status_text')
+										.text(_lang_mosq.statusRunningPid.replace('%s', r.pids.mosquitto))
+										.css({'background':'#6dac20','color':'black','border-color':'#5a9a18'});
+								} else {
+									setTimeout(_pollPid, 1500);
+								}
+							})
+							.fail(function() { setTimeout(_pollPid, 1500); });
+						})();
+					});
 				});
 			});
 		});

@@ -105,7 +105,9 @@
 				<label for="securepin"><TMPL_VAR PLUGININSTALL.UI_LABEL_SECUREPIN></label>
 			</div>
 			<div class="lb-form-field" style="display:flex; gap:var(--lb-space-sm); align-items:center;">
-				<input class="lb-input" background-color="white" id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$" style="width:20%; min-width:80px;">
+				<div style="display:flex; flex-direction:column; width:120px; min-width:80px;">
+					<input class="lb-input" background-color="white" id='securepin' name='securepin' type='password' data-validation-coloring="off" autocomplete="off" data-validation-error-msg="<TMPL_VAR PLUGININSTALL.ERR_MSG_VAL_SECUREPIN_ERROR>" data-validation-rule="^([A-Za-z0-9]){4,10}$" style="width:100%;">
+				</div>
 				<button class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon" type="submit" form="main_form" name="btnsubmit" id="btnsubmit"><i class="pi pi-check"></i> <TMPL_VAR PLUGININSTALL.UI_LABEL_INSTALLBTN></button>
 			</div>
 		</div>

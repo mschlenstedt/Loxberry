@@ -217,10 +217,9 @@ elseif ( $ajax == 'mosquitto_purgedb' ) {
 }
 
 elseif ( $ajax == 'restart_mosquitto' ) {
-
-	# Restart Mosquitto
-	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=mosquitto_restart" );
-}	
+	exec("nohup sudo $lbhomedir/sbin/mqtt-handler.pl action=mosquitto_restart > /dev/null 2>&1 &");
+	echo json_encode(array('status' => 'ok'));
+}
 
 elseif( $ajax == "reconnect" ) {
 	# Send Reconnect
@@ -268,7 +267,8 @@ elseif( $ajax == 'publish_json' ) {
 }
 
 elseif( $ajax == 'restartgateway' ) {
-	exec("sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway" );
+	exec("nohup sudo $lbhomedir/sbin/mqtt-handler.pl action=restartgateway > /dev/null 2>&1 &");
+	echo json_encode(array('status' => 'ok'));
 }
 
 elseif( $ajax == 'stop_gateway' ) {
@@ -377,19 +377,15 @@ elseif ( $ajax == 'get_v1_migration_status' ) {
     $f = '/dev/shm/mqttgateway_topics.json';
     header('Content-Type: application/json');
     if ( !file_exists($f) ) {
-        echo json_encode([ 'available' => false, 'count' => 0 ]);
+        echo json_encode([ 'available' => false, 'count' => 0, 'nofile' => true ]);
         exit;
     }
     $data = json_decode( file_get_contents($f), true );
-    if ( empty($data['http']) ) {
-        echo json_encode([ 'available' => false, 'count' => 0 ]);
-        exit;
-    }
-    $count = 0;
-    foreach ( $data['http'] as $topic => $content ) {
-        // Skip regex-filtered topics
+
+    // Count HTTP topics that were successfully forwarded (HTTP 200), keyed by originaltopic.
+    $http_origins = [];
+    foreach ( $data['http'] ?? [] as $topic => $content ) {
         if ( isset($content['regexfilterline']) ) continue;
-        // Skip topics without toMS (not forwarded yet)
         if ( empty($content['toMS']) ) continue;
         $highest = 0;
         foreach ( $content['toMS'] as $msno => $ms ) {
@@ -397,8 +393,23 @@ elseif ( $ajax == 'get_v1_migration_status' ) {
             if ( $code === 200 ) { $highest = 200; break; }
             if ( $code > $highest ) $highest = $code;
         }
-        if ( $highest === 200 ) $count++;
+        if ( $highest === 200 ) {
+            $http_origins[$content['originaltopic'] ?? $topic] = true;
+        }
     }
+
+    // Count unique UDP originaltopics not already covered by HTTP.
+    $udp_origins = [];
+    foreach ( $data['udp'] ?? [] as $topic => $content ) {
+        if ( isset($content['regexfilterline']) ) continue;
+        if ( empty($content['message']) ) continue;
+        $mqttTopic = $content['originaltopic'] ?? $topic;
+        if ( !isset($http_origins[$mqttTopic]) ) {
+            $udp_origins[$mqttTopic] = true;
+        }
+    }
+
+    $count = count($http_origins) + count($udp_origins);
     echo json_encode([ 'available' => true, 'count' => $count ]);
 }
 
@@ -418,8 +429,11 @@ elseif ( $ajax == 'migrate_v1_to_v2' ) {
     $noncached      = $cfg['Noncached']      ?? [];
     $resetAfterSend = $cfg['resetAfterSend'] ?? [];
     $expand_json    = !empty($cfg['Main']['expand_json']);
+    $default_msno   = (string)($cfg['Main']['msno'] ?? '1');
 
-    $subscriptions = [];
+    // Pass 1a: group HTTP entries by originaltopic — multiple entries with the same
+    // originaltopic mean V1 was JSON-expanding that topic (e.g. z2m devices).
+    $grouped = [];
     foreach ( $status['http'] ?? [] as $topic => $content ) {
         if ( isset($content['regexfilterline']) ) continue;
         if ( empty($content['toMS']) )             continue;
@@ -434,19 +448,70 @@ elseif ( $ajax == 'migrate_v1_to_v2' ) {
 
         $mqttTopic = $content['originaltopic'] ?? $topic;
 
-        // Only enable Jsonexpand if globally set AND the last payload is
-        // actually a JSON object or array (primitives don't need expanding)
+        if ( !isset($grouped[$mqttTopic]) ) {
+            $grouped[$mqttTopic] = [ 'topic' => $topic, 'content' => $content, 'count' => 0, 'source' => 'http' ];
+        }
+        $grouped[$mqttTopic]['count']++;
+    }
+
+    // Pass 1b: group UDP entries by originaltopic, skipping topics already covered by HTTP.
+    // UDP keys preserve slashes; count > 1 or key != originaltopic means JSON was expanded.
+    foreach ( $status['udp'] ?? [] as $topic => $content ) {
+        if ( isset($content['regexfilterline']) ) continue;
+        if ( empty($content['message']) )          continue;
+
+        $mqttTopic = $content['originaltopic'] ?? $topic;
+
+        // Skip if this originaltopic was already captured from the HTTP section.
+        if ( isset($grouped[$mqttTopic]) && $grouped[$mqttTopic]['source'] === 'http' ) continue;
+
+        if ( !isset($grouped[$mqttTopic]) ) {
+            $grouped[$mqttTopic] = [ 'topic' => $topic, 'content' => $content, 'count' => 0, 'source' => 'udp' ];
+        }
+        $grouped[$mqttTopic]['count']++;
+    }
+
+    // Pass 2: build deduplicated subscription list with correct Jsonexpand flag.
+    $subscriptions = [];
+    foreach ( $grouped as $mqttTopic => $entry ) {
+        $content = $entry['content'];
+        $topic   = $entry['topic'];
+        $isUdp   = $entry['source'] === 'udp';
+
+        // Detect JSON expansion:
+        //   count > 1          → multiple derived fields from same origin → was expanding
+        //   UDP: key != origin → single derived field (topic/field != topic) → was expanding
+        //   count == 1 + HTTP  → inspect cached payload for JSON object
         $needsJsonExpand = false;
-        if ( $expand_json && isset($content['message']) && $content['message'] !== '' ) {
+        if ( $entry['count'] > 1 ) {
+            $needsJsonExpand = $expand_json;
+        } elseif ( $isUdp && $topic !== $mqttTopic ) {
+            // Single JSON field derived from originaltopic (e.g. sensor/temp/field vs sensor/temp)
+            $needsJsonExpand = $expand_json;
+        } elseif ( $expand_json && isset($content['message']) && $content['message'] !== '' ) {
             $decoded = json_decode($content['message'], true);
             $needsJsonExpand = json_last_error() === JSON_ERROR_NONE && is_array($decoded);
         }
 
+        // UDP topics: default Toms to V1's msno so forwarding works immediately after migration.
+        // HTTP topics: leave Toms empty (VI name must be configured explicitly in V2).
+        $toms = $isUdp ? [ $default_msno ] : [];
+
+        // Noncached / resetAfterSend lookup: V1 stores these under the underscored topic key.
+        // For UDP topics (slash keys) also try the underscore-normalised form as fallback.
+        $nc_key  = $topic;
+        $ras_key = $topic;
+        if ( $isUdp ) {
+            $norm = str_replace(['/', '%'], '_', $topic);
+            if ( !isset($noncached[$nc_key]) && isset($noncached[$norm]) )        $nc_key  = $norm;
+            if ( !isset($resetAfterSend[$ras_key]) && isset($resetAfterSend[$norm]) ) $ras_key = $norm;
+        }
+
         $subscriptions[] = [
             'Id'             => $mqttTopic,
-            'Toms'           => [],
-            'Noncached'      => isset($noncached[$topic]) && $noncached[$topic] === 'true',
-            'resetaftersend' => isset($resetAfterSend[$topic]) && $resetAfterSend[$topic] === 'true',
+            'Toms'           => $toms,
+            'Noncached'      => isset($noncached[$nc_key]) && $noncached[$nc_key] === 'true',
+            'resetaftersend' => isset($resetAfterSend[$ras_key]) && $resetAfterSend[$ras_key] === 'true',
             'Jsonexpand'     => $needsJsonExpand,
             'Json'           => [],
         ];

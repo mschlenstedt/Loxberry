@@ -6,7 +6,7 @@
       "Startsetup" : "1",
       "Systemloglevel" : "6",
       "Theme" : "classic",
-      "Version" : "4.0.0.4"
+      "Version" : "4.0.0.10"
    },
    "Healthcheck" : null,
    "Miniserver" : {
@@ -45,8 +45,6 @@
    "Mqtt" : {
       "Brokerhost" : "localhost",
       "Brokerport" : "1883",
-      "Brokeruser" : "",
-      "Brokerpass" : "",
       "Udpinport" : "11884",
       "Uselocalbroker" : "1",
       "Websocketport" : "9001",

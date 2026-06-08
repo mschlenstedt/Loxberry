@@ -43,13 +43,101 @@
     flex:1;
     min-width:200px;
     height:var(--lb-input-height,36px);
-    padding:0 8px;
+    padding:0 36px 0 8px;
     border:1px solid var(--lb-input-border,#ccc);
     border-radius:var(--lb-radius-sm,4px);
-    background:#fff;
+    background-color:var(--lb-input-bg,#fff);
     font-size:var(--lb-font-base,14px);
     color:var(--lb-text,#333);
     box-sizing:border-box;
+}
+
+/* Status-Banner */
+.mqttgw-status {
+    padding: 4px 10px;
+    gap: 6px;
+}
+.mqttgw-status-dot {
+    width: 10px;
+    height: 10px;
+}
+.mqttgw-status .lb-btn-sm {
+    padding: 3px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Filter-Bar Layout */
+.mqttgw-filter {
+    flex-direction: column;
+    align-items: stretch;
+}
+.mqttgw-filter-row1 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    width: 100%;
+}
+.mqttgw-filter-row2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+    width: 100%;
+}
+
+/* X-Clear-Button im Suchfeld */
+.mqttgw-filter-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 120px;
+}
+.mqttgw-filter-input-wrap .mqttgw-filter-input {
+    flex: 1;
+    padding-right: 24px;
+}
+.mqttgw-filter-clear {
+    position: absolute;
+    right: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--lb-gray-400, #aaa);
+    font-size: 13px;
+    padding: 0 2px;
+    line-height: 1;
+}
+.mqttgw-filter-clear:hover {
+    color: var(--lb-gray-700, #333);
+}
+
+/* Fehler-Icon links neben der Checkbox in Topic-Zeilen */
+.mqttgw-topic-error-icon {
+    vertical-align: middle;
+    margin-right: 3px;
+    flex-shrink: 0;
+}
+.mqttgw-topic-error-placeholder {
+    display: inline-block;
+    width: 17px;
+    flex-shrink: 0;
+}
+
+/* Rote Checkbox bei Fehler-Topics — höhere Spezifität als externe CSS (0,2,1) */
+.mqttgw-topic-row-error input.topic-subscribe[type="checkbox"] {
+    accent-color: #b91c1c;
+}
+/* Graue Checkbox für Gruppen mit teils abonnierten Topics (appearance:none → kein accent-color) */
+.lb-content .group-toggle:indeterminate,
+.lb-content .sub-group-toggle:indeterminate {
+    border-color: #888;
+    background-color: #888;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' d='M2 6L10 6'/%3E%3C/svg%3E");
 }
 </style>
 
@@ -269,6 +357,7 @@ $(function() {
     var _lang_migrate = {
         msgData:   '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_DATA>',
         msgNoData: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NODATA>',
+        msgNoFile: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NOFILE>',
         btnEmpty:  '<TMPL_VAR MQTT.MIGRATE_BTN_EMPTY>',
         btnOk:     '<TMPL_VAR MQTT.MIGRATE_BTN_OK>'
     };
@@ -283,7 +372,11 @@ $(function() {
         if (newVersion === 2 && originalVersion === 1) {
             $.post('ajax/ajax-mqtt.php', { ajax: 'get_v1_migration_status' })
             .done(function(data) {
-                if (data.available && data.count > 0) {
+                if (data.nofile) {
+                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoFile);
+                    $("#mqttgw-migrate-btn-import").hide();
+                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
+                } else if (data.available && data.count > 0) {
                     $("#mqttgw-migrate-msg").text(_lang_migrate.msgData.replace('%s', data.count));
                     $("#mqttgw-migrate-btn-import").show();
                     $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnEmpty);
@@ -378,10 +471,8 @@ $(function() {
                         location.reload();
                         return;
                     }
-                    _showSaveOk();
-                    $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' }).always(function() {
-                        $("#saveapply").prop("disabled", false);
-                    });
+                    _showSaveOk(_lang_save.restartHint);
+                    $("#saveapply").prop("disabled", false);
                 })
                 .fail(function() {
                     $("#savemessages, #savemessages_btn").attr("style", "color:red").html(_lang_save.saveError);
@@ -565,6 +656,7 @@ $(function(){
         <span class="mqttgw-status-label"><span id="discovery_count">--</span> Topics</span>
         <span class="mqttgw-status-detail">&mdash; <span id="discovery_ago"><TMPL_VAR MQTT.DISCOVERY_LOADING></span></span>
         <span class="mqttgw-status-uptime">
+            <button class="lb-btn lb-btn-sm" id="btn_discovery_pause" type="button" data-role="none" title="Aktualisierung pausieren">&#x23f8;</button>
             <button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="<TMPL_VAR MQTT.DISCOVERY_REFRESH>">&#x21bb;</button>
             <span id="save_status" style="font-size:var(--lb-font-sm);margin-left:10px"></span>
         </span>
@@ -572,16 +664,30 @@ $(function(){
 
     <!-- Filter Bar -->
     <div class="mqttgw-filter">
-        <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="<TMPL_VAR MQTT.FILTER_PLACEHOLDER>" data-role="none">
-        <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_SELECT_ALL></button>
-        <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_DESELECT_ALL></button>
-        <label class="mqttgw-filter-label" data-role="none">
-            <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
-        </label>
-        <span class="mqttgw-filter-count" id="filter_count"></span>
-        <div class="mqttgw-expand-btns">
-            <button class="mqttgw-expand-btn" id="sub-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
-            <button class="mqttgw-expand-btn" id="sub-collapse-all" type="button" data-role="none">&#9650; <TMPL_VAR MQTT.V2_BTN_COLLAPSE_ALL></button>
+        <div class="mqttgw-filter-row1">
+            <div class="mqttgw-filter-input-wrap">
+                <input class="lb-input mqttgw-filter-input" type="text" id="topic_filter" placeholder="<TMPL_VAR MQTT.FILTER_PLACEHOLDER>" data-role="none">
+                <button class="mqttgw-filter-clear" id="btn_topic_filter_clear" type="button" title="Suche löschen" data-role="none">&#x2715;</button>
+            </div>
+            <button class="lb-btn lb-btn-primary lb-btn-sm" id="btn_filter_select_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_SELECT_ALL></button>
+            <button class="lb-btn lb-btn-sm" id="btn_filter_deselect_all" type="button" data-role="none"><TMPL_VAR MQTT.BTN_DESELECT_ALL></button>
+            <span class="mqttgw-filter-count" id="filter_count"></span>
+        </div>
+        <div class="mqttgw-filter-row2">
+            <label class="mqttgw-filter-label" data-role="none">
+                <input type="checkbox" id="filter_exact_match" data-role="none"> Exakt
+            </label>
+            <label class="mqttgw-filter-label" data-role="none">
+                <input type="checkbox" id="filter_subscribed_only" data-role="none"> <TMPL_VAR MQTT.FILTER_SUBSCRIBED_ONLY>
+            </label>
+            <label class="mqttgw-filter-label" data-role="none">
+                <input type="checkbox" id="filter_errors_only" data-role="none"> Nur abonnierte mit Fehler
+            </label>
+            <div class="mqttgw-expand-btns">
+                <button class="mqttgw-expand-btn" id="sub-expand-subscribed" type="button" data-role="none">&#9660; Abonnierte</button>
+                <button class="mqttgw-expand-btn" id="sub-expand-all" type="button" data-role="none">&#9660; <TMPL_VAR MQTT.V2_BTN_EXPAND_ALL></button>
+                <button class="mqttgw-expand-btn" id="sub-collapse-all" type="button" data-role="none">&#9650; <TMPL_VAR MQTT.V2_BTN_COLLAPSE_ALL></button>
+            </div>
         </div>
     </div>
 
@@ -597,6 +703,41 @@ $(function(){
 <script>
 $(function() {
 
+    // ── Status data from get_status_v2 (keyed by VI name) ────────────────
+    var statusData = {};
+
+    function fetchStatusData() {
+        $.get('ajax/ajax-mqtt.php', {ajax: 'get_status_v2'}, function(resp) {
+            statusData = resp || {};
+            renderTopics();
+        });
+    }
+
+    function httpScOf(e) {
+        if (!e || !e.http) return 'new';
+        var h = e.http;
+        if (h.status === 'send_failed') return 'error';
+        if (h.http_status >= 200 && h.http_status < 300) return 'ok';
+        if (h.http_status) return 'warn';
+        return 'ok';
+    }
+
+    function getTopicHttpSc(topic) {
+        var vi = topic.replace(/\//g, '_');
+        if (statusData[vi]) return httpScOf(statusData[vi]);
+        // JSON-expand: mehrere VIs mit Prefix vi + '_'
+        var prefix = vi + '_';
+        var order = {error: 0, warn: 1, ok: 2, new: 3};
+        var worst = 'new';
+        Object.keys(statusData).forEach(function(k) {
+            if (k.indexOf(prefix) === 0) {
+                var sc = httpScOf(statusData[k]);
+                if (order[sc] < order[worst]) worst = sc;
+            }
+        });
+        return worst;
+    }
+
     // ── Data model — mirrors subscriptions.json exactly ───────────────────
     // Each entry: { Id, Toms[], Noncached, resetaftersend, Jsonexpand, Json[] }
     // Json entry:  { Id (@@-path), Toms[], Noncached, resetaftersend }
@@ -605,6 +746,22 @@ $(function() {
     var saveTimer = null;
     var firstRender = true;
     var discoveredTopics = [];  // [{ topic, payload, group }]
+    var filterActive = false;
+    var _ssKey = 'mqttgw_open';
+    var _ss = null;
+    try { _ss = JSON.parse(sessionStorage.getItem(_ssKey)); } catch(e) {}
+    var openDetails = _ss || {};
+    var hasStoredState = _ss !== null;
+
+    var _filterSsKey = 'mqttgw_filter';
+    var _filterState = null;
+    try { _filterState = JSON.parse(sessionStorage.getItem(_filterSsKey)); } catch(e) {}
+    if (_filterState) {
+        if (_filterState.text)           $("#topic_filter").val(_filterState.text);
+        if (_filterState.exact)          $("#filter_exact_match").prop("checked", true);
+        if (_filterState.subscribedOnly) $("#filter_subscribed_only").prop("checked", true);
+        if (_filterState.errorsOnly)     $("#filter_errors_only").prop("checked", true);
+    }
 
     // Miniserver list from general.json (passed by CGI)
     var cfgstr2   = $("#mqttconfig").text();
@@ -689,19 +846,10 @@ $(function() {
         return count;
     }
 
-    function wildcardToRegex(pattern) {
-        var parts = pattern.split('/').map(function(p) {
-            if (p === '#') return '.*';
-            if (p === '+') return '[^/]+';
-            return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        });
-        var re = '^' + parts.join('/');
-        if (pattern.charAt(pattern.length - 1) !== '#') re += '$';
-        return new RegExp(re);
-    }
-
     function getVisibleTopics() {
         var filterText = $("#topic_filter").val().trim();
+        var exactMatch = $("#filter_exact_match").prop("checked");
+        var errorsOnly = $("#filter_errors_only").prop("checked");
 
         // Always include subscribed topics even if not currently discovered
         var discoveredSet = {};
@@ -713,12 +861,26 @@ $(function() {
             }
         });
 
+        // "Nur abonnierte mit Fehler"-Filter
+        if (errorsOnly) {
+            allTopics = allTopics.filter(function(t) {
+                if (!isTopicSubscribed(t.topic)) return false;
+                var sc = getTopicHttpSc(t.topic);
+                return sc === 'error' || sc === 'warn';
+            });
+        }
+
         if (!filterText) return allTopics;
-        var isWildcard = filterText.indexOf('+') !== -1 || filterText.indexOf('#') !== -1;
-        var filterRegex = isWildcard ? wildcardToRegex(filterText) : null;
-        var filterLower = filterText.toLowerCase();
+
+        // Regex aufbauen: escapen, dann MQTT-Wildcards ersetzen
+        var pattern = filterText.toLowerCase();
+        pattern = pattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        pattern = pattern.replace('#', '[^/].*');
+        pattern = pattern.replaceAll('\\+', '[^/]+');
+        if (exactMatch) pattern = '^' + pattern + '$';
+
         return allTopics.filter(function(t) {
-            return isWildcard ? filterRegex.test(t.topic) : t.topic.toLowerCase().indexOf(filterLower) !== -1;
+            return t.topic.toLowerCase().match(pattern) !== null;
         });
     }
 
@@ -779,6 +941,7 @@ $(function() {
     })
     .always(function() {
         startDiscovery();
+        fetchStatusData();
     });
 
     // ── MS dropdowns ──────────────────────────────────────────────────────
@@ -856,7 +1019,9 @@ $(function() {
 
         if (Array.isArray(value)) {
             var subCount = sub ? countSubscribedUnder(sub, path) : 0;
-            var html  = '<details class="mqttgw-json-node mqttgw-json-array" data-key="json:' + safeTopic + '@@' + safePath + '"' + (subCount > 0 ? ' open' : '') + '>';
+            var jsonKey  = 'json:' + safeTopic + '@@' + safePath;
+            var jsonIsOpen = firstRender ? (subCount > 0) : !!openDetails[jsonKey];
+            var html  = '<details class="mqttgw-json-node mqttgw-json-array" data-key="' + jsonKey + '"' + (jsonIsOpen ? ' open' : '') + '>';
             html += '<summary class="mqttgw-json-node-summary"><span class="mqttgw-json-key">'
                  + segment + '</span><span class="mqttgw-expand-arrow"></span><span class="mqttgw-json-meta">[Array, ' + value.length + ']</span>';
             if (subCount > 0) html += ' <span class="mqttgw-json-subcount">(' + subCount + ')</span>';
@@ -870,7 +1035,9 @@ $(function() {
         } else if (value !== null && typeof value === 'object') {
             var keys     = Object.keys(value);
             var subCount = sub ? countSubscribedUnder(sub, path) : 0;
-            var html  = '<details class="mqttgw-json-node mqttgw-json-object" data-key="json:' + safeTopic + '@@' + safePath + '"' + (subCount > 0 ? ' open' : '') + '>';
+            var jsonKey  = 'json:' + safeTopic + '@@' + safePath;
+            var jsonIsOpen = firstRender ? (subCount > 0) : !!openDetails[jsonKey];
+            var html  = '<details class="mqttgw-json-node mqttgw-json-object" data-key="' + jsonKey + '"' + (jsonIsOpen ? ' open' : '') + '>';
             html += '<summary class="mqttgw-json-node-summary"><span class="mqttgw-json-key">'
                  + segment + '</span><span class="mqttgw-expand-arrow"></span><span class="mqttgw-json-meta">{Object, ' + keys.length + '}</span>';
             if (subCount > 0) html += ' <span class="mqttgw-json-subcount">(' + subCount + ')</span>';
@@ -906,6 +1073,11 @@ $(function() {
         var isSubscribed = sub !== null;
         var safeTopic    = escHtml(topic);
         var payload      = t.payload || '';
+        var topicSc      = isSubscribed ? getTopicHttpSc(topic) : 'new';
+        var hasError     = isSubscribed && (topicSc === 'error' || topicSc === 'warn');
+        var errorIconSrc = topicSc === 'error'
+            ? '../../system/images/icon-locked.png'
+            : '../../system/images/icon-notfound.png';
 
         // JSON-Payload vorab parsen (einmalig)
         var parsedPayload = null;
@@ -921,14 +1093,21 @@ $(function() {
 
         var html  = '<div class="mqttgw-topic-row'
                   + (isSubscribed ? '' : ' mqttgw-topic-row-disabled')
-                  + (jsonOpen   ? ' mqttgw-row-json-open'   : '')
-                  + (jsonClosed ? ' mqttgw-row-json-closed' : '')
+                  + (hasError    ? ' mqttgw-topic-row-error' : '')
+                  + (jsonOpen    ? ' mqttgw-row-json-open'   : '')
+                  + (jsonClosed  ? ' mqttgw-row-json-closed' : '')
                   + '" data-topic="' + safeTopic + '">';
+        if (hasError) {
+            html += '<img src="' + errorIconSrc + '" class="mqttgw-topic-error-icon" width="14" height="14" title="HTTP ' + topicSc + '">';
+        } else {
+            html += '<span class="mqttgw-topic-error-placeholder"></span>';
+        }
         html += '<input type="checkbox" class="topic-subscribe" data-topic="' + safeTopic + '"'
              + (isSubscribed ? ' checked' : '') + '>';
         html += '<span class="mqttgw-topic-name">' + escHtml(displayName) + '</span>';
 
         if (isSubscribed) {
+            html += '<div class="mqttgw-topic-controls">';
             html += '<label class="mqttgw-topic-json-label"><input type="checkbox" class="topic-json-expand"'
                  + ' data-topic="' + safeTopic + '"' + (sub.Jsonexpand ? ' checked' : '') + '> JSON</label>';
             html += '<label class="mqttgw-topic-option"><input type="checkbox" class="topic-disable-cache"'
@@ -936,6 +1115,7 @@ $(function() {
             html += '<label class="mqttgw-topic-option"><input type="checkbox" class="topic-reset-after-send"'
                  + ' data-topic="' + safeTopic + '"' + (sub.resetaftersend ? ' checked' : '') + '> Reset</label>';
             html += msCheckboxesHtml(topic, sub.Toms || []);
+            html += '</div>';
         }
         if (t.notSeen) {
             html += '<span class="mqttgw-topic-payload mqttgw-topic-not-seen">nicht aktiv</span>';
@@ -1010,10 +1190,15 @@ $(function() {
             var childPrefix   = prefix + (prefix ? '/' : '') + seg;
             var childSubCount = countSubscribed(childTopics);
             var allChecked    = childSubCount === childTopics.length && childSubCount > 0;
+            var someChecked   = !allChecked && childSubCount > 0;
             var safePrefix    = escHtml(childPrefix);
-            html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (childSubCount > 0 ? ' open' : '') + '>';
+            var subIsOpen = filterActive ? true
+                : (hasStoredState || !firstRender) ? !!openDetails['sub:' + childPrefix]
+                : (childSubCount > 0);
+            html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (subIsOpen ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="sub-group-toggle"'
                  + ' data-prefix="' + safePrefix + '"' + (allChecked ? ' checked' : '')
+                 + (someChecked ? ' data-indeterminate="true"' : '')
                  + ' style="margin-right:6px"><strong>' + escHtml(seg) + '</strong>'
                  + '<span class="mqttgw-expand-arrow"></span>';
             html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
@@ -1030,6 +1215,7 @@ $(function() {
     function renderTopics() {
         var groups       = {};
         var subscribedOnly = $("#filter_subscribed_only").prop("checked");
+        filterActive = !!$("#topic_filter").val().trim();
         var visible      = getVisibleTopics();
         var totalCount   = 0, subCount = 0;
 
@@ -1045,24 +1231,29 @@ $(function() {
 
         $("#filter_count").text(subCount + " von " + totalCount + " abonniert");
 
-        var openDetails = {};
+        openDetails = {};
         if (!firstRender) {
             $("#topic_groups_container details[open]").each(function() {
                 var key = $(this).data('key');
                 if (key) openDetails[key] = true;
             });
+            try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
         }
 
         var html = '';
         Object.keys(groups).sort().forEach(function(gName) {
             var g         = groups[gName];
-            var allChecked = g.subCount === g.topics.length && g.subCount > 0;
+            var allChecked  = g.subCount === g.topics.length && g.subCount > 0;
+            var someChecked = !allChecked && g.subCount > 0;
             var safeGName = escHtml(gName);
             var detailKey = 'grp:' + safeGName;
-            var isOpen = firstRender ? (g.subCount > 0) : !!openDetails[detailKey];
+            var isOpen = filterActive ? true
+                : (hasStoredState || !firstRender) ? !!openDetails[detailKey]
+                : (g.subCount > 0);
             html += '<details class="lb-collapsible mqttgw-group" data-key="' + detailKey + '"' + (isOpen ? ' open' : '') + '>';
             html += '<summary><input type="checkbox" class="group-toggle"'
                  + ' data-group="' + safeGName + '"' + (allChecked ? ' checked' : '')
+                 + (someChecked ? ' data-indeterminate="true"' : '')
                  + ' style="margin-right:6px"><strong>' + safeGName + '</strong>'
                  + '<span class="mqttgw-expand-arrow"></span>';
             html += '<span class="mqttgw-group-count">(' + g.topics.length + ' Topics, ' + g.subCount + ' abonniert)</span>';
@@ -1074,6 +1265,9 @@ $(function() {
         if (!html) html = '<div style="text-align:center;padding:40px;color:var(--lb-gray-500)">Keine Topics gefunden.</div>';
 
         $("#topic_groups_container").html(html);
+        $("#topic_groups_container [data-indeterminate='true']").each(function() {
+            this.indeterminate = true;
+        });
         firstRender = false;
     }
 
@@ -1200,8 +1394,44 @@ $(function() {
         groupToggleAll($(this).data('group'), this.checked);
     });
 
-    $("#topic_filter").on("input", renderTopics);
-    $("#filter_subscribed_only").on("change", renderTopics);
+    function saveFilterState() {
+        try {
+            sessionStorage.setItem(_filterSsKey, JSON.stringify({
+                text:           $("#topic_filter").val(),
+                exact:          $("#filter_exact_match").prop("checked"),
+                subscribedOnly: $("#filter_subscribed_only").prop("checked"),
+                errorsOnly:     $("#filter_errors_only").prop("checked")
+            }));
+        } catch(e) {}
+    }
+
+    $("#topic_filter").on("input", function() { saveFilterState(); renderTopics(); });
+    $("#filter_subscribed_only").on("change", function() { saveFilterState(); renderTopics(); });
+    $("#filter_exact_match").on("change", function() { saveFilterState(); renderTopics(); });
+    $("#filter_errors_only").on("change", function() {
+        saveFilterState();
+        if ($(this).prop("checked") && Object.keys(statusData).length === 0) {
+            fetchStatusData();
+        } else {
+            renderTopics();
+        }
+    });
+    $("#btn_topic_filter_clear").on("click", function() {
+        $("#topic_filter").val("").trigger("input");
+    });
+
+    // Persist open/close state immediately when user manually toggles a group
+    $(document).on('click', '#topic_groups_container .lb-collapsible > summary, #topic_groups_container .mqttgw-subgroup > summary', function(e) {
+        if ($(e.target).is('input')) return; // ignore checkbox clicks (handled separately)
+        var details = this.parentElement;
+        var key = $(details).data('key');
+        if (!key) return;
+        setTimeout(function() {
+            if (details.open) openDetails[key] = true;
+            else delete openDetails[key];
+            try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
+        }, 0);
+    });
 
     var _pendingConfirmAction = null;
 
@@ -1247,15 +1477,24 @@ $(function() {
     });
 
     $("#sub-expand-all").on("click", function() {
-        $("#topic_groups_container details").each(function() { this.open = true; });
+        $("#topic_groups_container details[data-key]").each(function() {
+            this.open = true;
+            openDetails[$(this).data('key')] = true;
+        });
+        try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
     });
     $("#sub-collapse-all").on("click", function() {
-        $("#topic_groups_container details").each(function() { this.open = false; });
+        $("#topic_groups_container details[data-key]").each(function() {
+            this.open = false;
+            delete openDetails[$(this).data('key')];
+        });
+        try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
     });
 
     // ── Discovery ─────────────────────────────────────────────────────────
 
     var discoveryRunning  = false;
+    var discoveryPaused   = false;
     var lastDiscoveryTime = 0;
 
     function updateAgo() {
@@ -1295,12 +1534,28 @@ $(function() {
 
     function startDiscovery() {
         runDiscovery();
-        setInterval(runDiscovery, 30000);
+        setInterval(function() { if (!discoveryPaused) runDiscovery(); }, 30000);
     }
 
     $("#btn_discovery_refresh").on("click", function() {
         lastDiscoveryTime = 0;
         runDiscovery();
+    });
+
+    $("#btn_discovery_pause").on("click", function() {
+        discoveryPaused = !discoveryPaused;
+        $(this).html(discoveryPaused ? '&#x25b6;' : '&#x23f8;');
+        $(this).attr('title', discoveryPaused ? 'Aktualisierung fortsetzen' : 'Aktualisierung pausieren');
+        $("#discovery_ago").text(discoveryPaused ? 'pausiert' : 'gerade eben');
+        if (!discoveryPaused) { lastDiscoveryTime = 0; runDiscovery(); }
+    });
+
+    $("#sub-expand-subscribed").on("click", function() {
+        openDetails = {};
+        hasStoredState = false;
+        firstRender = true;
+        try { sessionStorage.removeItem(_ssKey); } catch(e) {}
+        renderTopics();
     });
 
 });
@@ -1581,7 +1836,7 @@ $(function () {
             html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(r.vi) + '" title="VI kopieren">' + _svgCopy + '</button>';
             html += '</span>';
           } else {
-            var cmd = 'MQTT:\\i' + r.topic + '=\\i\\v';
+            var cmd = 'MQTT:\\i' + (r.jp ? r.topic + '/' + r.jp : r.topic) + '=\\i\\v';
             html += '<span class="mqttgw-traffic-cmd">';
             html += '<span class="mqttgw-traffic-cmd-text" title="' + esc(cmd) + '">' + esc(cmd) + '</span>';
             html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(cmd) + '" title="Loxone-Befehl kopieren">' + _svgCopy + '</button>';
@@ -2615,14 +2870,15 @@ $(function () {
 	var udpinport;
 
 	var _lang_save = {
-		unsaved:   '<TMPL_VAR MQTT.MSG_MQTT_UNSAVED>',
-		savedOk:   '<TMPL_VAR MQTT.MSG_SAVED_OK>',
-		saveError: '<TMPL_VAR MQTT.MSG_SAVE_ERROR>'
+		unsaved:     '<TMPL_VAR MQTT.MSG_MQTT_UNSAVED>',
+		savedOk:     '<TMPL_VAR MQTT.MSG_SAVED_OK>',
+		saveError:   '<TMPL_VAR MQTT.MSG_SAVE_ERROR>',
+		restartHint: '<TMPL_VAR MQTT.MSG_RESTART_HINT>'
 	};
 	var _cfg_changed = false;
 
 	$(function() {
-		
+
 		setInterval(function(){ update_pids(); }, 5000);
 		update_pids();
 		
@@ -2732,8 +2988,7 @@ $(function () {
 			$("#extplugin_conversions").html(extConversionsHtml);
 			$("#coll_extconversions").show();
 		}
-		
-		
+
 	});
 
 	$('input, textarea, select').change(function(event) {
@@ -2845,12 +3100,14 @@ $(function () {
 
 
 	var _saveOkTimer = null;
-	function _showSaveOk() {
+	function _showSaveOk(hint) {
 		_cfg_changed = false;
-		$("#savemessages").attr("style", "color:green").html(_lang_save.savedOk);
-		$("#savemessages_btn").attr("style", "color:green").html(_lang_save.savedOk);
+		var html = _lang_save.savedOk;
+		if (hint) html += ' &nbsp;<span style="color:darkorange">' + hint + '</span>';
+		$("#savemessages").attr("style", "color:green").html(html);
+		$("#savemessages_btn").attr("style", "color:green").html(html);
 		clearTimeout(_saveOkTimer);
-		_saveOkTimer = setTimeout(function() { $("#savemessages, #savemessages_btn").html(""); }, 8000);
+		_saveOkTimer = setTimeout(function() { $("#savemessages, #savemessages_btn").html(""); }, hint ? 15000 : 8000);
 	}
 
 	function doSave() {
@@ -2922,12 +3179,40 @@ $(function () {
 		$("#btn_restart_gateway, #btn_stop_gateway").addClass("lb-disabled").attr("disabled", true);
 		_gw_restarting = true;
 		$("#gw_status_text").text(_lang_v1gw.restarting).css({"background":"#dfdfdf","color":"black","border-color":"#7e7e7e"});
-		doSave().always(function() {
-			$.post( 'ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
-			.always(function() {
-				_gw_restarting = false;
-				$("#btn_restart_gateway, #btn_stop_gateway").removeClass("lb-disabled").removeAttr("disabled");
-				setTimeout(update_pids, 3000);
+
+		// Erst alte PID merken, dann speichern + Restart auslösen
+		$.post('ajax/ajax-mqtt.php', { ajax: 'getpids' })
+		.always(function(resp, status) {
+			var oldPid = (status === 'success' && resp && resp.pids) ? resp.pids.mqttgateway : null;
+
+			doSave().always(function() {
+				// restartgateway kehrt sofort zurück (läuft im Hintergrund)
+				$.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
+				.always(function() {
+					// Pollen bis eine ANDERE PID als oldPid erscheint (max ~135s)
+					var _pollCount = 0;
+					(function _pollPid() {
+						if (_pollCount++ >= 90) {
+							_gw_restarting = false;
+							$("#btn_restart_gateway, #btn_stop_gateway").removeClass("lb-disabled").removeAttr("disabled");
+							update_pids();
+							return;
+						}
+						$.post('ajax/ajax-mqtt.php', { ajax: 'getpids' })
+						.done(function(r) {
+							if (r && r.pids && r.pids.mqttgateway != null && r.pids.mqttgateway != oldPid) {
+								_gw_restarting = false;
+								$("#btn_restart_gateway, #btn_stop_gateway").removeClass("lb-disabled").removeAttr("disabled");
+								$("#gw_status_text")
+									.text(_lang_v1gw.runningPid.replace('%s', r.pids.mqttgateway))
+									.css({"background":"#6dac20","color":"black","border-color":"#5a9a18"});
+							} else {
+								setTimeout(_pollPid, 1500);
+							}
+						})
+						.fail(function() { setTimeout(_pollPid, 1500); });
+					})();
+				});
 			});
 		});
 	});

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """MQTT Gateway V2.0 — Loxone Miniserver Bridge"""
 
+import argparse
 import asyncio
 import json
 import logging
 import os
 import re
 import shlex
+import signal
 import socket
 import subprocess
 import sys
@@ -19,6 +21,14 @@ import ssl
 
 import aiomqtt
 import aiohttp
+
+# ─── CLI arguments ────────────────────────────────────────────────────────────
+_ap = argparse.ArgumentParser(add_help=False)
+_ap.add_argument("--logfile",  default="")
+_ap.add_argument("--logdbkey", default="")
+_args, _ = _ap.parse_known_args()
+_logfile  = _args.logfile
+_logdbkey = _args.logdbkey
 
 # ─── Global state ────────────────────────────────────────────────────────────
 _loglevel: int = 3
@@ -63,7 +73,10 @@ class _LiveStdoutHandler(logging.StreamHandler):
 _logger = logging.getLogger("mqtt_gateway")
 _logger.propagate = False
 _logger.setLevel(logging.DEBUG)
-_log_handler = _LiveStdoutHandler()
+_log_handler: logging.Handler = (
+    logging.FileHandler(_logfile, mode='a', encoding='utf-8')
+    if _logfile else _LiveStdoutHandler()
+)
 _log_handler.setFormatter(logging.Formatter(
     '%(asctime)s.%(msecs)03d <%(levelname)s> %(message)s',
     datefmt='%H:%M:%S'
@@ -88,6 +101,11 @@ def LOGWARN(msg: str)   -> None: _log(4, "WARN",   msg)
 def LOGOK(msg: str)     -> None: _log(5, "OK",     msg)
 def LOGINF(msg: str)    -> None: _log(6, "INFO",   msg)
 def LOGDEB(msg: str)    -> None: _log(7, "DEBUG",  msg)
+
+def _logend() -> None:
+    if not _logdbkey:
+        return
+    os.system(f"perl -e 'use LoxBerry::Log; my $l = LoxBerry::Log->new(dbkey => \"{_logdbkey}\", append => 1); LOGEND \"Gateway stopped.\"; exit;'")
 
 # ─── Config loading ───────────────────────────────────────────────────────────
 def get_loglevel(general_data: dict) -> int:
@@ -406,8 +424,9 @@ async def http_worker(queue: asyncio.Queue, status_event: asyncio.Event) -> None
 
 
 async def _process_reset(session, item: dict, status_event: asyncio.Event) -> None:
-    vi_name = item["virtual_input"]
-    ms_id   = item["miniserver"]
+    vi_name  = item["virtual_input"]
+    udp_name = item.get("udp_name", vi_name)
+    ms_id    = item["miniserver"]
     ms = _miniservers.get(ms_id)
     if ms is None:
         LOGWARN(f"Reset: miniserver {ms_id} not found")
@@ -433,10 +452,10 @@ async def _process_reset(session, item: dict, status_event: asyncio.Event) -> No
             LOGDEB(f"Cache: {vi_name} | http_status={http_status} | epoch={entry['last_updated_epoch']}")
 
         if _use_udp and ms.get("ipaddress"):
-            send_udp_bundled(ms["ipaddress"], _udp_out_port, [(vi_name, "0")])
+            send_udp_bundled(ms["ipaddress"], _udp_out_port, [(udp_name, "0")])
             entry["udp"] = make_udp_result()
             status_event.set()
-            LOGOK(f"Reset sent (UDP): {vi_name} = 0 → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+            LOGOK(f"Reset sent (UDP): {udp_name} = 0 → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
 
 
 async def _process_mqtt(session, item: dict,
@@ -465,24 +484,26 @@ async def _process_mqtt(session, item: dict,
             return
         for field in sub["json"]:
             try:
-                value   = apply_value_transforms(str(extract_json_value(data, field["id"])))
-                vi_name = build_vi_name(topic, field["id"])
-                ms_ids  = get_miniserver_ids(field["toms"] or sub["toms"])
-                sends.append((vi_name, value, ms_ids,
+                value    = apply_value_transforms(str(extract_json_value(data, field["id"])))
+                vi_name  = build_vi_name(topic, field["id"])
+                udp_name = build_udp_name(topic, field["id"])
+                ms_ids   = get_miniserver_ids(field["toms"] or sub["toms"])
+                sends.append((vi_name, udp_name, value, ms_ids,
                                field["noncached"], field["resetaftersend"]))
             except (KeyError, IndexError, TypeError) as exc:
                 LOGWARN(f"JSON extract failed for {field['id']!r}: {exc}")
     else:
-        vi_name = build_vi_name(topic)
-        sends.append((vi_name, apply_value_transforms(payload),
+        vi_name  = build_vi_name(topic)
+        udp_name = topic
+        sends.append((vi_name, udp_name, apply_value_transforms(payload),
                       get_miniserver_ids(sub["toms"]),
                       sub["noncached"], sub["resetaftersend"]))
 
     loop = asyncio.get_event_loop()
-    # Collect UDP pairs per ms_id for bundled sending after HTTP pass
-    udp_pairs: dict[str, list[tuple[str, str]]] = {}
+    # Collect UDP triples (vi_name, udp_name, value) per ms_id for bundled sending after HTTP pass
+    udp_triples: dict[str, list[tuple[str, str, str]]] = {}
 
-    for vi_name, value, ms_ids, noncached, resetaftersend in sends:
+    for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in sends:
         lock = _vi_locks.setdefault(vi_name, asyncio.Lock())
         if lock.locked():
             LOGDEB(f"Waiting for VI lock: {vi_name} (new value={value!r})")
@@ -534,29 +555,30 @@ async def _process_mqtt(session, item: dict,
                                f"total={elapsed_ms:.1f}ms | epoch={entry['last_updated_epoch']}")
 
                 if _use_udp and ms.get("ipaddress"):
-                    udp_pairs.setdefault(ms_id, []).append((vi_name, value))
+                    udp_triples.setdefault(ms_id, []).append((vi_name, udp_name, value))
                     if not _use_http:
                         ok = True
 
                 if ok and resetaftersend:
-                    async def _enqueue_reset(q=queue, vi=vi_name, ms=ms_id,
+                    async def _enqueue_reset(q=queue, vi=vi_name, udp=udp_name, ms=ms_id,
                                              delay_ms=_reset_delay_ms):
                         await asyncio.sleep(delay_ms / 1000)
-                        await q.put({"type": "reset", "virtual_input": vi,
+                        await q.put({"type": "reset", "virtual_input": vi, "udp_name": udp,
                                      "miniserver": ms, "noncached": True,
                                      "resetaftersend": False})
                     asyncio.create_task(_enqueue_reset())
 
     # Send bundled UDP packets and update UDP status in cache
-    if _use_udp and udp_pairs:
-        for ms_id, pairs in udp_pairs.items():
+    if _use_udp and udp_triples:
+        for ms_id, triples in udp_triples.items():
             ms = _miniservers.get(ms_id)
             if ms and ms.get("ipaddress"):
-                send_udp_bundled(ms["ipaddress"], _udp_out_port, pairs)
-                LOGOK(f"UDP sent: {len(pairs)} VI(s) → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
-                for vi_name, _ in pairs:
-                    if vi_name in _cache:
-                        _cache[vi_name]["udp"] = make_udp_result()
+                send_udp_bundled(ms["ipaddress"], _udp_out_port,
+                                 [(udp_n, val) for _, udp_n, val in triples])
+                LOGOK(f"UDP sent: {len(triples)} VI(s) → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+                for vi_n, _, _ in triples:
+                    if vi_n in _cache:
+                        _cache[vi_n]["udp"] = make_udp_result()
                 status_event.set()
 
 # ─── Status file writer ───────────────────────────────────────────────────────
@@ -805,16 +827,21 @@ async def udp_listener(port: int) -> None:
 
 # ─── VI name builder ──────────────────────────────────────────────────────────
 def build_vi_name(topic: str, json_path: str | None = None) -> str:
-    """Build Loxone Virtual Input name from MQTT topic and optional JSON path.
-
-    Rules: '/' -> '_', ' ' -> '_', '%' -> '_', '@@' -> '_', '[n]' -> 'n'
-    """
+    """Build Loxone HTTP Virtual Input name: '/' -> '_', ' ' -> '_', '%' -> '_'."""
     topic_part = topic.replace("/", "_").replace(" ", "_").replace("%", "_")
     if json_path is None:
         return topic_part
     json_part = re.sub(r'\[(\d+)\]', r'\1', json_path)
     json_part = json_part.replace("@@", "_").replace(" ", "_")
     return f"{topic_part}_{json_part}"
+
+def build_udp_name(topic: str, json_path: str | None = None) -> str:
+    """Build Loxone UDP name: topic kept verbatim (slashes preserved), same as V1."""
+    if json_path is None:
+        return topic
+    json_part = re.sub(r'\[(\d+)\]', r'\1', json_path)
+    json_part = json_part.replace("@@", "_").replace(" ", "_")
+    return f"{topic}/{json_part}"
 
 # ─── JSON path extractor ──────────────────────────────────────────────────────
 def extract_json_value(data: dict | list, path_str: str):
@@ -972,13 +999,18 @@ async def main() -> None:
 
     LOGINF(f"UDP IN port: {_udp_in_port}")
 
-    await asyncio.gather(
-        mqtt_listener(queue, mqtt_cfg),
-        http_worker(queue, status_event),
-        config_watcher(),
-        status_writer(status_event, _cache),
-        udp_listener(_udp_in_port),
-    )
+    loop = asyncio.get_running_loop()
+    loop.add_signal_handler(signal.SIGTERM, asyncio.current_task().cancel)
+    try:
+        await asyncio.gather(
+            mqtt_listener(queue, mqtt_cfg),
+            http_worker(queue, status_event),
+            config_watcher(),
+            status_writer(status_event, _cache),
+            udp_listener(_udp_in_port),
+        )
+    finally:
+        loop.remove_signal_handler(signal.SIGTERM)
 
 
 if __name__ == "__main__":
@@ -986,6 +1018,9 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(" OK: Gateway stopped by user", flush=True)
+        LOGOK("Gateway stopped by user")
+    except asyncio.CancelledError:
+        LOGOK("Gateway stopped (SIGTERM)")
     finally:
+        _logend()
         PID_FILE.unlink(missing_ok=True)

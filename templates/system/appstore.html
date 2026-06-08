@@ -119,7 +119,11 @@
             <span class="as-version-warn">&#9888; <TMPL_VAR APPSTORE.NEEDS_LB_VERSION> <TMPL_VAR MIN_LB_VERSION ESCAPE=HTML> (<TMPL_VAR APPSTORE.INSTALLED_IS> <TMPL_VAR LB_CURRENT_VERSION ESCAPE=HTML>)</span>
           </TMPL_IF>
         <TMPL_ELSE>
-          <button class="lb-btn lb-btn-sm" disabled title="<TMPL_VAR APPSTORE.REPO_ONLY ESCAPE=HTML>"><TMPL_VAR APPSTORE.REPO_ONLY_SHORT></button>
+          <TMPL_IF REPO_ONLY>
+            <a class="lb-btn lb-btn-sm" href="<TMPL_VAR REPO ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.OPEN_REPO></a>
+          <TMPL_ELSE>
+            <button class="lb-btn lb-btn-sm" disabled title="<TMPL_VAR APPSTORE.REPO_ONLY ESCAPE=HTML>"><TMPL_VAR APPSTORE.REPO_ONLY_SHORT></button>
+          </TMPL_IF>
         </TMPL_IF>
       </TMPL_IF>
       <TMPL_IF WIKI><a class="lb-btn lb-btn-sm" href="<TMPL_VAR WIKI ESCAPE=HTML>" target="_blank" rel="noopener noreferrer"><TMPL_VAR APPSTORE.WIKI></a></TMPL_IF>
