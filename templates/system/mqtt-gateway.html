@@ -2880,12 +2880,6 @@ $(function () {
 
 	$(function() {
 
-		// Show restart hint after a migration-triggered page reload
-		if (sessionStorage.getItem('mqttgw_restart_hint')) {
-			sessionStorage.removeItem('mqttgw_restart_hint');
-			_showSaveOk(_lang_save.restartHint);
-		}
-
 		setInterval(function(){ update_pids(); }, 5000);
 		update_pids();
 		
@@ -2995,8 +2989,14 @@ $(function () {
 			$("#extplugin_conversions").html(extConversionsHtml);
 			$("#coll_extconversions").show();
 		}
-		
-		
+
+		// Show restart hint after a migration-triggered page reload.
+		// Placed last so widget init (selectmenu/checkboxradio refresh) cannot overwrite it.
+		if (sessionStorage.getItem('mqttgw_restart_hint')) {
+			sessionStorage.removeItem('mqttgw_restart_hint');
+			_showSaveOk(_lang_save.restartHint);
+		}
+
 	});
 
 	$('input, textarea, select').change(function(event) {
