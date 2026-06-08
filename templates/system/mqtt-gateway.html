@@ -357,6 +357,7 @@ $(function() {
     var _lang_migrate = {
         msgData:   '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_DATA>',
         msgNoData: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NODATA>',
+        msgNoFile: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NOFILE>',
         btnEmpty:  '<TMPL_VAR MQTT.MIGRATE_BTN_EMPTY>',
         btnOk:     '<TMPL_VAR MQTT.MIGRATE_BTN_OK>'
     };
@@ -371,7 +372,11 @@ $(function() {
         if (newVersion === 2 && originalVersion === 1) {
             $.post('ajax/ajax-mqtt.php', { ajax: 'get_v1_migration_status' })
             .done(function(data) {
-                if (data.available && data.count > 0) {
+                if (data.nofile) {
+                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoFile);
+                    $("#mqttgw-migrate-btn-import").hide();
+                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
+                } else if (data.available && data.count > 0) {
                     $("#mqttgw-migrate-msg").text(_lang_migrate.msgData.replace('%s', data.count));
                     $("#mqttgw-migrate-btn-import").show();
                     $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnEmpty);
