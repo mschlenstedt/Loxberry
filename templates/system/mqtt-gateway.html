@@ -468,7 +468,6 @@ $(function() {
             $.when(saveGwConfig, saveVersion)
                 .done(function() {
                     if (newVersion !== originalVersion) {
-                        sessionStorage.setItem('mqttgw_restart_hint', '1');
                         location.reload();
                         return;
                     }
@@ -2877,7 +2876,6 @@ $(function () {
 		restartHint: '<TMPL_VAR MQTT.MSG_RESTART_HINT>'
 	};
 	var _cfg_changed = false;
-	var _init_done   = false;
 
 	$(function() {
 
@@ -2991,20 +2989,9 @@ $(function () {
 			$("#coll_extconversions").show();
 		}
 
-		// Show restart hint after a migration-triggered page reload, then open the
-		// change handler for normal user interaction.  The 200 ms delay covers both
-		// synchronous and asynchronous change events emitted by jQuery Mobile widget
-		// refreshes (selectmenu, checkboxradio) so they cannot overwrite the hint.
-		if (sessionStorage.getItem('mqttgw_restart_hint')) {
-			sessionStorage.removeItem('mqttgw_restart_hint');
-			_showSaveOk(_lang_save.restartHint);
-		}
-		setTimeout(function() { _init_done = true; }, 200);
-
 	});
 
 	$('input, textarea, select').change(function(event) {
-		if (!_init_done) return;
 		_cfg_changed = true;
 		$("#savemessages").attr("style", "color:blue").html(_lang_save.unsaved);
 
