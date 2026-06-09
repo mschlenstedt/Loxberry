@@ -157,7 +157,13 @@ sub read_config
 	if(!defined $cfg or @changes) {
 		$configs_changed = 1;
 	}
-	
+
+	# Reconnect if MQTT connection is dead, even without config change
+	if($mqtt and !$mqtt->{socket}) {
+		LOGWARN "MQTT connection lost — forcing reconnect";
+		$configs_changed = 1;
+	}
+
 	if($configs_changed == 0) {
 		return;
 	}
