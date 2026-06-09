@@ -111,6 +111,27 @@
 	min-height: 0 !important;
 }
 
+/* data-role="fieldcontain": horizontal label+control layout when jQM is not active.
+   jQM adds .ui-field-contain when it processes the element — :not() excludes those. */
+div[data-role="fieldcontain"]:not(.ui-field-contain) {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--lb-space-sm);
+	margin-bottom: var(--lb-space-md);
+}
+
+/* data-role="controlgroup" fieldset: remove browser default border when jQM is not active.
+   jQM adds .ui-controlgroup when it processes the element — :not() excludes those. */
+fieldset[data-role="controlgroup"]:not(.ui-controlgroup) {
+	border: none;
+	padding: 0;
+	margin: 0;
+}
+fieldset[data-role="controlgroup"]:not(.ui-controlgroup) > select {
+	width: 100%;
+}
+
 /* Override jQM page/body styling — scoped to core pages (.lb-layout) only
    so plugin pages keep their default jQM padding/margins. Note: .page_content
    and #page_content are LoxBerry-own wrappers (not jQM) and are intentionally
