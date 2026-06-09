@@ -1053,7 +1053,22 @@ $(function() {
             var field     = sub ? findJsonField(sub, path) : null;
             var isChecked = field !== null;
             var rawVal    = (value === null) ? 'null' : String(value);
-            var html  = '<div class="mqttgw-topic-row mqttgw-json-leaf' + (isChecked ? ' mqttgw-json-leaf-active' : '') + '">';
+            var fieldSc = 'new';
+            if (isChecked) {
+                var fieldVi = topic.replace(/\//g, '_').replace(/ /g, '_').replace(/%/g, '_')
+                            + '_' + path.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/ /g, '_');
+                fieldSc = httpScOf(statusData[fieldVi]);
+            }
+            var fieldHasError = isChecked && (fieldSc === 'error' || fieldSc === 'warn');
+            var fieldErrSrc   = fieldSc === 'error'
+                ? '../../system/images/icon-locked.png'
+                : '../../system/images/icon-notfound.png';
+            var html  = '<div class="mqttgw-topic-row mqttgw-json-leaf' + (isChecked ? ' mqttgw-json-leaf-active' : '') + (fieldHasError ? ' mqttgw-topic-row-error' : '') + '">';
+            if (fieldHasError) {
+                html += '<img src="' + fieldErrSrc + '" class="mqttgw-topic-error-icon" width="14" height="14" title="HTTP ' + fieldSc + '">';
+            } else {
+                html += '<span class="mqttgw-topic-error-placeholder"></span>';
+            }
             html += '<input type="checkbox" class="json-field-subscribe"'
                  + ' data-topic="' + safeTopic + '" data-path="' + safePath + '"'
                  + (isChecked ? ' checked' : '') + '>';
@@ -1074,7 +1089,7 @@ $(function() {
         var safeTopic    = escHtml(topic);
         var payload      = t.payload || '';
         var topicSc      = isSubscribed ? getTopicHttpSc(topic) : 'new';
-        var hasError     = isSubscribed && (topicSc === 'error' || topicSc === 'warn');
+        var hasError     = isSubscribed && !sub.Jsonexpand && (topicSc === 'error' || topicSc === 'warn');
         var errorIconSrc = topicSc === 'error'
             ? '../../system/images/icon-locked.png'
             : '../../system/images/icon-notfound.png';
