@@ -126,11 +126,11 @@
 <TMPL_IF lbupdate>
 <!-- ** LoxBerry Update ** -->
 <div class="lb-section-title" style="margin-bottom:10px;"><TMPL_VAR UPDATES.HEADING_LBUPDATE></div>
-<div id="script_failed_block" style="border:1px solid red; background:yellow; display:none;">
+<div id="script_failed_block" style="border:1px solid red; background:yellow; display:none;max-width:80%;margin:0 auto;">
 	<TMPL_VAR UPDATES.LBU_SCRIPT_FAILED>
 	<a id="script_failed_versreset" href="#" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-arrow-left"></i> <TMPL_VAR UPDATES.LBU_BUTTON_SCRIPT_FAILED_VERSRESET>&nbsp;<span id="failed_version"></span></a>
 </div>
-<div id="update_clearance_block" style="border:1px solid red; background:yellow; display:none;padding:20px 20px 20px 20px;">
+<div id="update_clearance_block" style="border:1px solid red; background:yellow; display:none;padding:20px 20px 20px 20px;max-width:80%;margin:0 auto;">
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE>
 	<p>
 		<TMPL_VAR UPDATES.LBU_UPDATE_CLEARANCE_VERS_CURRENT>:&nbsp;<span id="lbu_update_clearance_vers_current"></span><br>
@@ -145,12 +145,9 @@
 
 </div>
 
-<div id="lbu_main_content" style="display:grid; grid-template-columns:1fr 45%; column-gap:20px;">
+<div id="lbu_main_content" style="max-width:80%;margin:0 auto;">
 
-	<div>
-		<p><TMPL_VAR UPDATES.LBU_INTRODUCTION></p>
-	</div>
-	<div class="hint lb-card" style="align-self:start;">
+	<div class="hint lb-card">
 		<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
 			<div>
 			<TMPL_VAR UPDATES.LBU_HINT_YOUR_VERSION><br>
@@ -177,47 +174,49 @@
 		<div id="keepinstallfiles" class="hint" style="color:red;"></div>
 	</div>
 
-	<div style="margin-top:28px;">
-		<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE><br>
-		<span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
-		<br><TMPL_VAR UPDATES.LBU_HINT_PRERELEASE>
-		<br><TMPL_VAR UPDATES.LBU_HINT_LATEST>
-		</span>
-	</div>
-	<div style="margin-top:28px;">
-		<div class="lb-btn-group" style="flex-direction:column; width:100%;">
-			<TMPL_VAR RELEASETYPE_RADIO>
+	<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
+		<div>
+			<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE>
+			<br><span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
+			<br><TMPL_VAR UPDATES.LBU_HINT_PRERELEASE>
+			<br><TMPL_VAR UPDATES.LBU_HINT_LATEST>
+			</span>
+		</div>
+		<div>
+			<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+				<TMPL_VAR RELEASETYPE_RADIO>
+			</div>
 		</div>
 	</div>
 
-	<div style="margin-top:20px;">
-		<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE>
-	</div>
-	<div style="margin-top:20px;">
-		<div class="lb-btn-group" style="flex-direction:column; width:100%;">
-			<TMPL_VAR INSTALLTYPE_RADIO>
+	<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
+		<div><TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE></div>
+		<div>
+			<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+				<TMPL_VAR INSTALLTYPE_RADIO>
+			</div>
 		</div>
 	</div>
 
-	<div style="margin-top:20px;">
-		<TMPL_VAR UPDATES.LBU_LABEL_INSTALLTIME>
-	</div>
-	<div style="margin-top:20px;">
-		<div id="installtime" class="lb-btn-group" style="flex-direction:column; width:100%;">
-			<TMPL_VAR INSTALLTIME_RADIO>
+	<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
+		<div><TMPL_VAR UPDATES.LBU_LABEL_INSTALLTIME></div>
+		<div>
+			<div id="installtime" class="lb-btn-group" style="flex-direction:column; width:100%;">
+				<TMPL_VAR INSTALLTIME_RADIO>
+			</div>
 		</div>
 	</div>
 
-	<div style="margin-top:20px;">
-		<TMPL_VAR UPDATES.LBU_LABEL_BUTTONS>
-	</div>
-	<div style="margin-top:20px;">
-		<a id="lbu_button_updateinstall_pre" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
+	<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:center; margin-top:var(--lb-space-lg);">
+		<div><TMPL_VAR UPDATES.LBU_LABEL_BUTTONS></div>
+		<div>
+			<a id="lbu_button_updateinstall_pre" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
+		</div>
 	</div>
 
 </div>
 
-<div id="lbu_updateinstall" style="display:none;">
+<div id="lbu_updateinstall" style="display:none;max-width:80%;margin:0 auto;">
 <p><TMPL_VAR UPDATES.LBU_LABEL_UPDATEINSTALL_INTRO1></p>
 <p><TMPL_VAR UPDATES.LBU_LABEL_UPDATEINSTALL_INTRO2></p>
 <p id="lbu_install_pleasewait" style="display:none;"><TMPL_VAR COMMON.MSG_PLEASEWAIT></p>

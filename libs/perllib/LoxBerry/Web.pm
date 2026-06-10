@@ -711,8 +711,8 @@ sub loglevel_select_html
 	$html .= "<fieldset data-role='controlgroup' data-mini='$datamini' style='width:200px;'>";
 	
 	$html .= <<EOF;
-	
-	<select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini">
+
+	<select name="$p{FORMID}" id="$p{FORMID}" data-mini="$datamini" class="lb-select">
 		<option value="0">$SL{'PLUGININSTALL.UI_LOG_0_OFF'}</option>
 		<option value="3">$SL{'PLUGININSTALL.UI_LOG_3_ERRORS'}</option>
 		<option value="4">$SL{'PLUGININSTALL.UI_LOG_4_WARNING'}</option>
