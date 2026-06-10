@@ -1,6 +1,19 @@
 <!-- ** START template/system/logfile.html *** -->
 <style>
-html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; }
+html, body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	height: 100%;
+}
+
+body {
+	background: #ffffff !important;
+	background-color: #ffffff !important;
+	color: #000000 !important;
+	text-shadow: none !important;
+}
+
 #logviewer-wrap {
 	display: flex;
 	flex-direction: column;
@@ -8,16 +21,62 @@ html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; }
 	padding: 12px;
 	box-sizing: border-box;
 	gap: 8px;
+
+	background: #ffffff !important;
+	background-color: #ffffff !important;
+	color: #000000 !important;
+	text-shadow: none !important;
 }
+
+#logviewer-wrap,
+#logviewer-wrap * {
+	text-shadow: none !important;
+}
+
 #Logfile {
 	flex: 1;
 	min-height: 0;
 	border: 1px solid #c0c0c0;
 	padding: 5px 5px 5px 10px;
-	background-color: transparent;
+
+	background: #ffffff !important;
+	background-color: #ffffff !important;
+
 	font-family: monospace;
 	color: #8080FF;
 	overflow-y: scroll;
+
+	text-shadow: none !important;
+}
+
+#Logfile,
+#Logfile * {
+	text-shadow: none !important;
+}
+
+/* Liquid Glass: keep transparent log viewer background */
+body.theme-liquid-glass {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+body.theme-liquid-glass #logviewer-wrap {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+body.theme-liquid-glass #Logfile {
+	background: transparent !important;
+	background-color: transparent !important;
+	color: #8cc8ff !important;
+}
+
+/* Liquid Glass: remove green task header/footer background */
+body.theme-liquid-glass #Logfile .logstart,
+body.theme-liquid-glass #Logfile .logend {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
 }
 </style>
 
