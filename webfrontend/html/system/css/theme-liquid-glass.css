@@ -400,6 +400,20 @@ body.theme-liquid-glass .ui-btn.ui-btn-active {
   box-shadow: 0 0 18px rgba(143,199,255,0.18), inset 0 1px 1px rgba(255,255,255,0.18) !important;
 }
 
+body.theme-liquid-glass .lb-btn-group .lb-btn.ui-btn-active,
+body.theme-liquid-glass .lb-btn-group label.lb-btn.ui-btn-active,
+body.theme-liquid-glass .lb-btn-group label.lb-checked {
+	background: var(--lb-primary) !important;
+	background-color: var(--lb-primary) !important;
+	background-image: none !important;
+
+	color: #000000 !important;
+	-webkit-text-fill-color: #000000 !important;
+
+	border-color: transparent !important;
+	box-shadow: none !important;
+}
+
 body.theme-liquid-glass .lb-btn-danger,
 body.theme-liquid-glass a.lb-btn-danger,
 body.theme-liquid-glass button.lb-btn-danger {
@@ -407,16 +421,6 @@ body.theme-liquid-glass button.lb-btn-danger {
   color: #ffffff !important;
   border-color: rgba(255, 107, 122, 0.40) !important;
   box-shadow: var(--lb-glow-danger) !important;
-}
-
-body.theme-liquid-glass .lb-btn-group .lb-btn.active,
-body.theme-liquid-glass .lb-btn-group .lb-btn-active,
-body.theme-liquid-glass .lb-btn-group label.active,
-body.theme-liquid-glass .lb-btn-group label.lb-checked,
-body.theme-liquid-glass .lb-btn-group input[type="radio"]:checked + label,
-body.theme-liquid-glass .lb-btn-group input[type="checkbox"]:checked + label {
-	color: #000000 !important;
-	-webkit-text-fill-color: #000000 !important;
 }
 
 /* =========================================================
@@ -580,14 +584,14 @@ body.theme-liquid-glass .lb-toggle-slider::before {
 body.theme-liquid-glass .lb-toggle input:checked + .lb-toggle-slider {
 	background:
 		linear-gradient(145deg, rgba(255,255,255,0.36), rgba(255,255,255,0.10)),
-		rgba(52,199,89,0.62) !important;
+		rgba(90,180,255,0.82) !important;
 
-	border-color: rgba(255,255,255,0.52) !important;
+	border-color: rgba(90,180,255,0.95) !important;
 
 	box-shadow:
 		inset 0 1px 1px rgba(255,255,255,0.70),
 		inset 0 -1px 2px rgba(0,0,0,0.12),
-		0 0 18px rgba(52,199,89,0.38),
+		0 0 18px rgba(143,199,255,0.38),
 		0 6px 18px rgba(0,0,0,0.18) !important;
 }
 
