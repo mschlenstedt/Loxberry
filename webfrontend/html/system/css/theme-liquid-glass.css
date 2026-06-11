@@ -409,6 +409,16 @@ body.theme-liquid-glass button.lb-btn-danger {
   box-shadow: var(--lb-glow-danger) !important;
 }
 
+body.theme-liquid-glass .lb-btn-group .lb-btn.active,
+body.theme-liquid-glass .lb-btn-group .lb-btn-active,
+body.theme-liquid-glass .lb-btn-group label.active,
+body.theme-liquid-glass .lb-btn-group label.lb-checked,
+body.theme-liquid-glass .lb-btn-group input[type="radio"]:checked + label,
+body.theme-liquid-glass .lb-btn-group input[type="checkbox"]:checked + label {
+	color: #000000 !important;
+	-webkit-text-fill-color: #000000 !important;
+}
+
 /* =========================================================
    Inputs / selects / textareas
    ========================================================= */
