@@ -526,52 +526,82 @@ body.theme-liquid-glass table.tables td {
    ========================================================= */
 
 body.theme-liquid-glass .lb-toggle-slider {
-  background: var(--lb-toggle-bg) !important;
-  border: 1px solid rgba(255,255,255,0.14) !important;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.10) !important;
+	background:
+		linear-gradient(145deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08)),
+		rgba(120,120,120,0.22) !important;
+
+	border: 1px solid rgba(255,255,255,0.42) !important;
+	border-radius: 999px !important;
+
+	backdrop-filter: blur(18px) saturate(1.6) !important;
+	-webkit-backdrop-filter: blur(18px) saturate(1.6) !important;
+
+	box-shadow:
+		inset 0 1px 1px rgba(255,255,255,0.65),
+		inset 0 -1px 2px rgba(0,0,0,0.16),
+		0 6px 18px rgba(0,0,0,0.20) !important;
+}
+
+body.theme-liquid-glass .lb-toggle-slider::after {
+	content: "";
+	position: absolute;
+	left: 7px;
+	right: 7px;
+	top: 4px;
+	height: 7px;
+	border-radius: 999px;
+	background: rgba(255,255,255,0.28);
+	filter: blur(1px);
+	pointer-events: none;
 }
 
 body.theme-liquid-glass .lb-toggle-slider::before {
-  background: rgba(255,255,255,0.86) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.32) !important;
+	background:
+		radial-gradient(circle at 32% 26%, rgba(255,255,255,1), rgba(255,255,255,0.76) 45%, rgba(235,235,235,0.70) 100%) !important;
+
+	box-shadow:
+		0 3px 9px rgba(0,0,0,0.28),
+		inset 0 1px 1px rgba(255,255,255,0.95),
+		inset 0 -1px 1px rgba(0,0,0,0.10) !important;
+
+	top: 2px !important;
 }
 
 body.theme-liquid-glass .lb-toggle input:checked + .lb-toggle-slider {
-  background: rgba(143,199,255,0.34) !important;
-  box-shadow: var(--lb-glow-primary), inset 0 1px 1px rgba(255,255,255,0.14) !important;
+	background:
+		linear-gradient(145deg, rgba(255,255,255,0.36), rgba(255,255,255,0.10)),
+		rgba(52,199,89,0.62) !important;
+
+	border-color: rgba(255,255,255,0.52) !important;
+
+	box-shadow:
+		inset 0 1px 1px rgba(255,255,255,0.70),
+		inset 0 -1px 2px rgba(0,0,0,0.12),
+		0 0 18px rgba(52,199,89,0.38),
+		0 6px 18px rgba(0,0,0,0.18) !important;
 }
 
-body.theme-liquid-glass .lb-btn-group {
-  border-color: rgba(255,255,255,0.14) !important;
-  border-radius: var(--lb-btn-radius) !important;
-  overflow: hidden !important;
-  backdrop-filter: blur(14px) saturate(1.25) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(1.25) !important;
+body.theme-liquid-glass .lb-toggle {
+	width: 50px !important;
+	height: 22px !important;
 }
 
-body.theme-liquid-glass .lb-btn-group .lb-btn,
-body.theme-liquid-glass .lb-btn-group label,
-body.theme-liquid-glass .lb-btn-group input[type="radio"] + label,
-body.theme-liquid-glass .lb-btn-group input[type="checkbox"] + label {
-  background: rgba(255,255,255,0.06) !important;
-  color: var(--lb-text-secondary) !important;
-  border-color: rgba(255,255,255,0.12) !important;
+body.theme-liquid-glass .lb-toggle-slider {
+	height: 22px !important;
 }
 
-body.theme-liquid-glass .lb-btn-group .lb-btn.active,
-body.theme-liquid-glass .lb-btn-group .lb-btn-active,
-body.theme-liquid-glass .lb-btn-group label.active,
-body.theme-liquid-glass .lb-btn-group label.lb-checked,
-body.theme-liquid-glass .lb-btn-group input[type="radio"]:checked + label,
-body.theme-liquid-glass .lb-btn-group input[type="checkbox"]:checked + label {
-  background: rgba(143,199,255,0.18) !important;
-  color: #ffffff !important;
+body.theme-liquid-glass .lb-toggle-slider::before {
+	width: 28px !important;
+	height: 20px !important;
+	left: 1px !important;
+	top: 1px !important;
+	border-radius: 999px !important;
 }
 
-body.theme-liquid-glass .lb-content input[type="checkbox"],
-body.theme-liquid-glass .lb-content input[type="radio"] {
-  accent-color: var(--lb-primary) !important;
+body.theme-liquid-glass .lb-toggle input:checked + .lb-toggle-slider::before {
+	transform: translateX(18px) !important;
 }
+
 
 /* =========================================================
    Status colors / highlights
