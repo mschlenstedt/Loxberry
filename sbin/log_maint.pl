@@ -45,6 +45,7 @@ if (!$R::action) {
 if ($R::action eq "reduce_notifys") { reduce_notifys(); }
 elsif ($R::action eq "reduce_logfiles") { reduce_logfiles(); }
 elsif ($R::action eq "backup_logdb") { backup_logdb(); }
+elsif ($R::action eq "checkpoint_logdb") { checkpoint_logdb(); }
 else {
 	LOGTITLE "Wrong or Missing parameters";
 	LOGCRIT "Exiting - No Parameters";
@@ -88,7 +89,8 @@ sub reduce_logfiles
 	LOGINF "Logfile maintenance: reduce_logfiles called.";
 	logfiles_cleanup();
 	logdb_cleanup();
-	
+	checkpoint_logdb();
+
 }
 
 #############################################################
@@ -434,6 +436,46 @@ sub logdb_cleanup
 	qx { echo "VACUUM;" | sqlite3 $lbhomedir/log/system_tmpfs/logs_sqlite.dat };
 	LOGOK "Finished logdb_cleanup.";
 
+}
+
+#############################################################
+# Function checkpoint_logdb
+#
+# Truncates the WAL of the log database. In WAL mode the WAL file only
+# shrinks on a TRUNCATE checkpoint or when the LAST connection closes.
+# Long-lived logging daemons (e.g. mqttlive, mqttfinder) keep a
+# connection open permanently, so the connection count never drops to
+# zero and the automatic (passive) checkpoint never truncates the file
+# — the WAL grows to a high-water mark and stays there. A TRUNCATE
+# checkpoint issued from a separate, short-lived connection reclaims it
+# regardless of which daemon holds a connection open.
+#############################################################
+sub checkpoint_logdb
+{
+	my $dbfile = "$lbhomedir/log/system_tmpfs/logs_sqlite.dat";
+	if (! -e $dbfile) {
+		LOGWARN "checkpoint_logdb: LogDB does not exist - nothing to do.";
+		return undef;
+	}
+
+	my $before = (-e "$dbfile-wal") ? (-s "$dbfile-wal") : 0;
+	LOGINF "checkpoint_logdb: WAL size before = $before bytes. Running wal_checkpoint(TRUNCATE)...";
+
+	my $dbh = LoxBerry::Log::log_db_init_database();
+	if (! $dbh) {
+		LOGERR "checkpoint_logdb: Could not init database - skipping checkpoint.";
+		return undef;
+	}
+	$dbh->do('PRAGMA busy_timeout = 5000;');
+	my $row = $dbh->selectrow_arrayref('PRAGMA wal_checkpoint(TRUNCATE);');
+	$dbh->disconnect();
+
+	my $after = (-e "$dbfile-wal") ? (-s "$dbfile-wal") : 0;
+	if ($row) {
+		LOGINF "checkpoint_logdb: result (busy=$row->[0], log=$row->[1], checkpointed=$row->[2]).";
+		LOGWARN "checkpoint_logdb: a reader held WAL frames (busy=1) - WAL not fully truncated, will be retried next run." if ($row->[0]);
+	}
+	LOGOK "checkpoint_logdb: WAL size after = $after bytes.";
 }
 
 #############################################################
