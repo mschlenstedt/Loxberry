@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# MQTT Finder Watchdog — runs every minute as user "loxberry".
+#
+# Thin wrapper; the actual logic lives in sbin/mqttfinderwatchdog.pl. It checks
+# whether the MQTT Finder has silently lost its broker connection (by comparing
+# the gateway keepalive in the broker against the Finder's stored value) and
+# restarts the Finder if it is stuck.
+
+LBHOMEDIR="${LBHOMEDIR:-/opt/loxberry}"
+
+PERL5LIB="$LBHOMEDIR/libs/perllib" "$LBHOMEDIR/sbin/mqttfinderwatchdog.pl" >/dev/null 2>&1
+
+exit 0
