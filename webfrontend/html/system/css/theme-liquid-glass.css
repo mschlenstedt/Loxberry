@@ -51,7 +51,7 @@ body.theme-liquid-glass {
 	--lb-glass-border-alpha: 0.085;      /* Borders around fields, tables, cards and buttons */
 	--lb-glass-highlight-alpha: 0.030;   /* Soft inner white highlight/reflection */
 	--lb-glass-shadow-alpha: 0.090;      /* Dark drop shadow intensity */
-	--lb-glass-text-input-alpha: 0.200;  /* Text Input
+	--lb-glass-text-input-alpha: 0.200;  /* Text Input */
 
 	/* Blur control
 	   Alpha alone is not enough: backdrop-filter blur creates a milky panel.
@@ -779,6 +779,227 @@ body.theme-liquid-glass .logerror,
 body.theme-liquid-glass .logerror p {
 	color: #ffffff !important;
 	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65) !important;
+}
+
+/* =========================================================
+   13. Notification messages
+   ---------------------------------------------------------
+   Liquid Glass uses light notification cards. Therefore the
+   notification text must stay dark and the close button needs
+   a stronger visible state.
+   ========================================================= */
+
+body.theme-liquid-glass #notificationBlock,
+body.theme-liquid-glass #notificationItems {
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+	text-shadow: none !important;
+}
+
+/* Notification rows */
+body.theme-liquid-glass .lb-notify-info,
+body.theme-liquid-glass .lb-notify-warning,
+body.theme-liquid-glass .lb-notify-error,
+body.theme-liquid-glass .lb-notify-success {
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+	text-shadow: none !important;
+}
+
+/* Notification text and nested elements */
+body.theme-liquid-glass .lb-notify-info *,
+body.theme-liquid-glass .lb-notify-warning *,
+body.theme-liquid-glass .lb-notify-error *,
+body.theme-liquid-glass .lb-notify-success * {
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+	text-shadow: none !important;
+}
+
+/* Keep info/warning/error icons readable */
+body.theme-liquid-glass .lb-notify-info i,
+body.theme-liquid-glass .lb-notify-warning i,
+body.theme-liquid-glass .lb-notify-error i,
+body.theme-liquid-glass .lb-notify-success i {
+	color: #0f559a !important;
+	-webkit-text-fill-color: #0f559a !important;
+}
+
+/* Close button at the end of each notification row */
+body.theme-liquid-glass .lb-notify-info button,
+body.theme-liquid-glass .lb-notify-warning button,
+body.theme-liquid-glass .lb-notify-error button,
+body.theme-liquid-glass .lb-notify-success button,
+body.theme-liquid-glass .lb-notify-info .lb-btn,
+body.theme-liquid-glass .lb-notify-warning .lb-btn,
+body.theme-liquid-glass .lb-notify-error .lb-btn,
+body.theme-liquid-glass .lb-notify-success .lb-btn {
+	background: rgba(55, 65, 81, 0.14) !important;
+	background-color: rgba(55, 65, 81, 0.14) !important;
+	background-image: none !important;
+
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+
+	border: 1px solid rgba(55, 65, 81, 0.28) !important;
+	border-radius: 12px !important;
+
+	box-shadow:
+		0 2px 6px rgba(0, 0, 0, 0.16),
+		inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+
+	text-shadow: none !important;
+	opacity: 1 !important;
+}
+
+/* Close button hover/focus */
+body.theme-liquid-glass .lb-notify-info button:hover,
+body.theme-liquid-glass .lb-notify-warning button:hover,
+body.theme-liquid-glass .lb-notify-error button:hover,
+body.theme-liquid-glass .lb-notify-success button:hover,
+body.theme-liquid-glass .lb-notify-info .lb-btn:hover,
+body.theme-liquid-glass .lb-notify-warning .lb-btn:hover,
+body.theme-liquid-glass .lb-notify-error .lb-btn:hover,
+body.theme-liquid-glass .lb-notify-success .lb-btn:hover {
+	background: rgba(55, 65, 81, 0.24) !important;
+	background-color: rgba(55, 65, 81, 0.24) !important;
+
+	color: #111827 !important;
+	-webkit-text-fill-color: #111827 !important;
+
+	border-color: rgba(55, 65, 81, 0.45) !important;
+}
+
+/* =========================================================
+   Notification buttons
+   ---------------------------------------------------------
+   Make notification close/delete buttons look like normal
+   Liquid Glass buttons.
+   ========================================================= */
+
+/* Notification icon buttons */
+body.theme-liquid-glass #notificationBlock .lb-notify-box a.lb-btn.lb-btn-sm.lb-btn-icon,
+body.theme-liquid-glass #notificationBlock .lb-notify-box a.lb-btn.lb-btn-icon {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+
+	width: 45px !important;
+	min-width: 45px !important;
+	max-width: 45px !important;
+
+	height: 45px !important;
+	min-height: 45px !important;
+	max-height: 45px !important;
+
+	padding: 0 !important;
+	margin: 0 !important;
+
+	line-height: 45px !important;
+
+	background: rgba(255, 255, 255, 0.22) !important;
+	background-color: rgba(255, 255, 255, 0.22) !important;
+	background-image: none !important;
+
+	color: #0f559a !important;
+	-webkit-text-fill-color: #0f559a !important;
+
+	border: 1px solid rgba(15, 85, 154, 0.32) !important;
+	border-radius: var(--lb-btn-radius, 14px) !important;
+
+	box-shadow:
+		0 8px 18px rgba(0, 0, 0, 0.16),
+		inset 0 1px 1px rgba(255, 255, 255, 0.55) !important;
+
+	text-shadow: none !important;
+	opacity: 1 !important;
+	box-sizing: border-box !important;
+}
+
+/* Delete all notifications button */
+body.theme-liquid-glass #notifdeleteall {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 6px !important;
+
+	width: auto !important;
+	min-width: 270px !important;
+	height: 38px !important;
+	min-height: 38px !important;
+
+	padding: 0 16px !important;
+	margin: 0 !important;
+
+	line-height: 38px !important;
+
+	background: rgba(255, 255, 255, 0.26) !important;
+	background-color: rgba(255, 255, 255, 0.26) !important;
+	background-image: none !important;
+
+	color: #0f559a !important;
+	-webkit-text-fill-color: #ffffff !important;
+
+	border: 1px solid rgba(15, 85, 154, 0.42) !important;
+	border-radius: var(--lb-btn-radius, 14px) !important;
+
+	box-shadow:
+		0 8px 18px rgba(0, 0, 0, 0.18),
+		inset 0 1px 1px rgba(255, 255, 255, 0.60) !important;
+
+	text-shadow: none !important;
+	opacity: 1 !important;
+	box-sizing: border-box !important;
+}
+
+body.theme-liquid-glass #notifdeleteall i {
+	font-size: 1rem !important;
+	line-height: 1 !important;
+
+	color: #0f559a !important;
+	-webkit-text-fill-color: #ffffff !important;
+
+	opacity: 1 !important;
+	text-shadow: none !important;
+}
+
+/* Icon inside notification buttons */
+body.theme-liquid-glass #notificationBlock .lb-notify-box a.lb-btn.lb-btn-sm.lb-btn-icon i,
+body.theme-liquid-glass #notificationBlock .lb-notify-box a.lb-btn.lb-btn-icon i {
+	font-size: 1.35rem !important;
+	line-height: 1 !important;
+
+	width: auto !important;
+	height: auto !important;
+
+	color: #0f559a !important;
+	-webkit-text-fill-color: #0f559a !important;
+
+	text-shadow: none !important;
+	opacity: 1 !important;
+}
+
+body.theme-liquid-glass .lb-notify-box a.lb-btn.lb-btn-icon:hover,
+body.theme-liquid-glass #notificationBlock a.lb-btn.lb-btn-icon:hover,
+body.theme-liquid-glass #notifdeleteall:hover {
+	background: var(--lb-btn-hover-bg, rgba(255, 255, 255, 0.28)) !important;
+	background-color: rgba(255, 255, 255, 0.32) !important;
+
+	color: #003f7f !important;
+	-webkit-text-fill-color: #003f7f !important;
+
+	border-color: rgba(15, 85, 154, 0.50) !important;
+
+	box-shadow:
+		0 10px 22px rgba(0, 0, 0, 0.22),
+		inset 0 1px 1px rgba(255, 255, 255, 0.65) !important;
+}
+
+body.theme-liquid-glass .lb-notify-box a.lb-btn.lb-btn-icon:hover i,
+body.theme-liquid-glass #notificationBlock a.lb-btn.lb-btn-icon:hover i,
+body.theme-liquid-glass #notifdeleteall:hover i {
+	color: #003f7f !important;
+	-webkit-text-fill-color: #003f7f !important;
 }
 
 /* =========================================================
