@@ -44,13 +44,14 @@ body.theme-liquid-glass {
 	--lb-glass-card-alpha: 0.006;        /* Cards/collapsible panels */
 	--lb-glass-table-alpha: 0.000;       /* Tables/formtable/ui-table outer surface */
 	--lb-glass-table-cell-alpha: 0.000;  /* Table cells/headers */
-	--lb-glass-input-alpha: 0.008;       /* Inputs/selects/textareas and jQuery Mobile wrappers */
+	--lb-glass-input-alpha: 0.200;       /* Inputs/selects/textareas and jQuery Mobile wrappers */
 	--lb-glass-button-alpha: 0.012;      /* Normal buttons and button-like controls */
 	--lb-glass-hover-alpha: 0.035;       /* Hover backgrounds */
 	--lb-glass-active-alpha: 0.180;      /* Active/selected controls */
 	--lb-glass-border-alpha: 0.085;      /* Borders around fields, tables, cards and buttons */
 	--lb-glass-highlight-alpha: 0.030;   /* Soft inner white highlight/reflection */
 	--lb-glass-shadow-alpha: 0.090;      /* Dark drop shadow intensity */
+	--lb-glass-text-input-alpha: 0.200;  /* Text Input
 
 	/* Blur control
 	   Alpha alone is not enough: backdrop-filter blur creates a milky panel.
@@ -608,6 +609,7 @@ body.theme-liquid-glass select option {
 	background: #ffffff !important;
 }
 
+
 /* =========================================================
    08. Tables
    ========================================================= */
@@ -1026,3 +1028,5 @@ body.theme-liquid-glass div:has(> .lb-modal-content) > div:first-child span {
 	-webkit-text-fill-color: #111827 !important;
 	text-shadow: none !important;
 }
+
+
