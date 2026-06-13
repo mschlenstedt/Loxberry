@@ -139,7 +139,7 @@ sub head
 
 	# Theme support
 	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
-	$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
+	$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb|classic-mac|liquid-glass)$/;
 	$headobj->param( THEME_CLASS => "theme-$theme" );
 	$headobj->param( THEME_FILE => "theme-$theme.css" );
 

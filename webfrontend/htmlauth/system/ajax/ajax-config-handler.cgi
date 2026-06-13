@@ -56,7 +56,7 @@ elsif ($action eq 'testenvironment') {  &testenvironment; }
 elsif ($action eq 'changelanguage') { change_generaljson("Base->Lang", $value);}
 elsif ($action eq 'changecountry') { change_generaljson("Base->Country", $value);}
 elsif ($action eq 'changetheme') {
-	if ($value =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/) {
+	if ($value =~ /^(soft-rounded|clean-admin|glass|classic-lb|classic-mac|liquid-glass)$/) {
 		change_generaljson("Base->Theme", $value);
 	}
 }

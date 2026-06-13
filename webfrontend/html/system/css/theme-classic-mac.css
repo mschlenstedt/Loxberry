@@ -1,0 +1,990 @@
+/* LoxBerry Theme: Classic Mac / Apple System 6 (Alpha)
+   Version: V02
+   Adapter theme for LoxBerry Design System + selected jQuery Mobile wrappers.
+   Inspired by system.css, but intentionally NOT a 1:1 import.
+
+   Theme value: classic-mac
+   Expected filename: /system/css/theme-classic-mac.css
+
+   Font loading:
+   - Primary path: /system/css/mac-classic/system.css/fonts/
+   - Fallback path: /system/css/fonts/
+   This matches the bundled folder layout used during testing.
+*/
+
+@font-face {
+  font-family: "Chicago_12";
+  src: url("mac-classic/fonts/ChiKareGo2.woff2") format("woff2"),
+       url("mac-classic/fonts/ChiKareGo2.woff") format("woff"),
+       url("fonts/ChiKareGo2.woff2") format("woff2"),
+       url("fonts/ChiKareGo2.woff") format("woff");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Chicago";
+  src: url("mac-classic/fonts/ChicagoFLF.woff2") format("woff2"),
+       url("mac-classic/fonts/ChicagoFLF.woff") format("woff"),
+       url("fonts/ChicagoFLF.woff2") format("woff2"),
+       url("fonts/ChicagoFLF.woff") format("woff");
+  font-display: swap;
+}
+
+body.theme-classic-mac {
+  /* === Base === */
+  --lb-font: "Chicago_12", "Chicago", Geneva, Arial, system-ui, sans-serif;
+  --lb-font-mono: Monaco, Consolas, "Courier New", monospace;
+
+  --lb-primary: #000000;
+  --lb-primary-hover: #000000;
+  --lb-primary-dark: #000000;
+
+  --lb-danger: #000000;
+  --lb-info: #000000;
+  --lb-success: #000000;
+  --lb-warning: #000000;
+
+  --lb-bg: #ffffff;
+  --lb-text: #000000;
+  --lb-text-secondary: #000000;
+  --lb-text-muted: #666666;
+  --lb-border-color: #000000;
+
+  --lb-radius: 0;
+  --lb-radius-sm: 0;
+  --lb-border: 1.5px solid #000000;
+
+  /* === Cards / windows === */
+  --lb-card-bg: #ffffff;
+  --lb-card-border: 2px solid #000000;
+  --lb-card-shadow: 2px 2px 0 #000000;
+
+  /* === Buttons === */
+  --lb-btn-bg: #ffffff;
+  --lb-btn-hover-bg: #000000;
+  --lb-btn-text: #000000;
+  --lb-btn-border: #000000;
+  --lb-btn-radius: 0;
+  --lb-btn-primary-bg: #ffffff;
+  --lb-btn-primary-text: #000000;
+  --lb-btn-primary-border: #000000;
+
+  /* === Header action buttons === */
+  --lb-header-btn-bg: #ffffff;
+  --lb-header-btn-text: #000000;
+
+  /* === Inputs === */
+  --lb-input-bg: #ffffff;
+  --lb-input-border: #000000;
+  --lb-input-text: #000000;
+  --lb-highlight-bg: #ffffc0;
+
+  /* === Toggle === */
+  --lb-toggle-bg: #ffffff;
+
+  /* === Section Title === */
+  --lb-section-border: #000000;
+
+  /* === Sidebar === */
+  --lb-sidebar-bg: #ffffff;
+  --lb-sidebar-text: #000000;
+  --lb-sidebar-active-bg: #000000;
+  --lb-sidebar-active-text: #ffffff;
+  --lb-sidebar-border: #000000;
+  --lb-sidebar-section: #000000;
+
+  /* === Mobile tab bar === */
+  --lb-tab-bar-bg: #ffffff;
+  --lb-tab-bar-text: #000000;
+  --lb-tab-bar-active: #000000;
+
+  background-color: #ffffff;
+  color: #000000;
+  font-family: var(--lb-font);
+}
+
+/* =========================================================
+   Page background and typography
+   ========================================================= */
+
+body.theme-classic-mac,
+.theme-classic-mac .lb-main,
+.theme-classic-mac .ui-page,
+.theme-classic-mac .ui-content,
+.theme-classic-mac .ui-panel-wrapper {
+  background-color: #ffffff !important;
+  background-image:
+    linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px),
+    linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px) !important;
+  background-size: 22px 22px !important;
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+.theme-classic-mac *,
+.theme-classic-mac .ui-btn,
+.theme-classic-mac .ui-body-a,
+.theme-classic-mac .ui-body-c,
+.theme-classic-mac .ui-overlay-a {
+  text-shadow: none !important;
+}
+
+.theme-classic-mac a,
+.theme-classic-mac a:visited,
+.theme-classic-mac a:link {
+  color: #000000 !important;
+  text-decoration: underline !important;
+}
+
+.theme-classic-mac hr {
+  border: 0 !important;
+  border-top: 2px solid #000000 !important;
+}
+
+.theme-classic-mac h1,
+.theme-classic-mac h2,
+.theme-classic-mac h3,
+.theme-classic-mac h4,
+.theme-classic-mac .heading {
+  color: #000000 !important;
+  font-family: "Chicago", "Chicago_12", Geneva, Arial, system-ui, sans-serif !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+/* =========================================================
+   Section titles: Classic Mac title-bar / separator feeling
+   ========================================================= */
+
+.theme-classic-mac .lb-section-title,
+.theme-classic-mac .lb-content h2,
+.theme-classic-mac .lb-content h3 {
+  position: relative;
+  color: #000000 !important;
+  font-family: "Chicago", "Chicago_12", Geneva, Arial, system-ui, sans-serif !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  border-bottom: 2px solid #000000 !important;
+  padding: 0 0 9px 0 !important;
+  margin-top: 24px !important;
+  margin-bottom: 22px !important;
+  background: transparent !important;
+}
+
+/* =========================================================
+   Cards / content boxes: map system.css .window to LoxBerry .lb-card
+   ========================================================= */
+
+.theme-classic-mac .lb-card,
+.theme-classic-mac .ui-body-a,
+.theme-classic-mac .ui-body-c,
+.theme-classic-mac .ui-body-inherit,
+.theme-classic-mac .ui-corner-all.ui-body-inherit {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  backdrop-filter: none !important;
+}
+
+.theme-classic-mac .lb-card {
+  padding: 18px !important;
+}
+
+/* =========================================================
+   Buttons: map system.css .btn / .btn-default to .lb-btn
+   ========================================================= */
+
+.theme-classic-mac .lb-btn,
+.theme-classic-mac a.lb-btn,
+.theme-classic-mac a.lb-btn:visited,
+.theme-classic-mac a.lb-btn:link,
+.theme-classic-mac button.lb-btn,
+.theme-classic-mac input[type="submit"].lb-btn,
+.theme-classic-mac input[type="button"].lb-btn,
+.theme-classic-mac .ui-btn.lb-btn,
+.theme-classic-mac .ui-btn.lb-btn:focus,
+.theme-classic-mac .ui-btn.lb-btn-primary,
+.theme-classic-mac .ui-link.lb-btn-primary,
+.theme-classic-mac .lb-content input[type="submit"],
+.theme-classic-mac .lb-content input[type="button"],
+.theme-classic-mac .lb-content button:not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"]) {
+  min-height: 24px !important;
+  min-width: 64px !important;
+  padding: 4px 18px !important;
+  margin: 4px 8px 4px 0 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  font-family: var(--lb-font) !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  line-height: 1.25 !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+  background-image: none !important;
+  filter: none !important;
+}
+
+.theme-classic-mac .lb-btn:hover,
+.theme-classic-mac a.lb-btn:hover,
+.theme-classic-mac button.lb-btn:hover,
+.theme-classic-mac .ui-btn.lb-btn:hover,
+.theme-classic-mac .ui-btn.lb-btn:active,
+.theme-classic-mac .lb-content input[type="submit"]:hover,
+.theme-classic-mac .lb-content input[type="button"]:hover,
+.theme-classic-mac .lb-content button:not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"]):hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+
+.theme-classic-mac .lb-btn:active,
+.theme-classic-mac a.lb-btn:active,
+.theme-classic-mac button.lb-btn:active,
+.theme-classic-mac .ui-btn.lb-btn:active,
+.theme-classic-mac .lb-content input[type="submit"]:active,
+.theme-classic-mac .lb-content input[type="button"]:active,
+.theme-classic-mac .lb-content button:not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"]):active {
+  transform: translate(1px, 1px) !important;
+  box-shadow: 1px 1px 0 #000000 !important;
+}
+
+.theme-classic-mac .lb-btn-primary,
+.theme-classic-mac a.lb-btn-primary,
+.theme-classic-mac button.lb-btn-primary,
+.theme-classic-mac input[type="submit"].lb-btn-primary,
+.theme-classic-mac .ui-link.lb-btn-primary {
+  border-width: 4px !important;
+  padding: 2px 16px !important;
+}
+
+.theme-classic-mac .lb-btn:disabled,
+.theme-classic-mac button:disabled,
+.theme-classic-mac input[type="submit"]:disabled,
+.theme-classic-mac input[type="button"]:disabled,
+.theme-classic-mac .ui-state-disabled {
+  color: #999999 !important;
+  opacity: 1 !important;
+  cursor: default !important;
+}
+
+.theme-classic-mac .lb-btn-icon .pi {
+  color: inherit !important;
+  font-size: 0.9em !important;
+}
+
+/* =========================================================
+   Inputs and textareas
+   ========================================================= */
+
+.theme-classic-mac .lb-input,
+.theme-classic-mac .lb-textarea,
+.theme-classic-mac .lb-content input[type="text"],
+.theme-classic-mac .lb-content input[type="password"],
+.theme-classic-mac .lb-content input[type="email"],
+.theme-classic-mac .lb-content input[type="url"],
+.theme-classic-mac .lb-content input[type="number"],
+.theme-classic-mac .lb-content input[type="tel"],
+.theme-classic-mac .lb-content input[type="search"],
+.theme-classic-mac .lb-content input[type="date"],
+.theme-classic-mac .lb-content input[type="time"],
+.theme-classic-mac .lb-content textarea,
+.theme-classic-mac .ui-input-text input,
+.theme-classic-mac .ui-input-search input,
+.theme-classic-mac textarea.ui-input-text {
+  background: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 #000000 !important;
+  font-family: var(--lb-font) !important;
+  font-size: 16px !important;
+  line-height: 1.3 !important;
+  padding: 6px 8px !important;
+  text-shadow: none !important;
+  background-image: none !important;
+  box-sizing: border-box !important;
+}
+
+.theme-classic-mac .ui-input-text,
+.theme-classic-mac .ui-input-search {
+  background: #ffffff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.theme-classic-mac .lb-input:focus,
+.theme-classic-mac .lb-textarea:focus,
+.theme-classic-mac .lb-content input[type="text"]:focus,
+.theme-classic-mac .lb-content input[type="password"]:focus,
+.theme-classic-mac .lb-content input[type="email"]:focus,
+.theme-classic-mac .lb-content input[type="url"]:focus,
+.theme-classic-mac .lb-content input[type="number"]:focus,
+.theme-classic-mac .lb-content input[type="tel"]:focus,
+.theme-classic-mac .lb-content input[type="search"]:focus,
+.theme-classic-mac .lb-content input[type="date"]:focus,
+.theme-classic-mac .lb-content input[type="time"]:focus,
+.theme-classic-mac .lb-content textarea:focus,
+.theme-classic-mac .ui-input-text input:focus,
+.theme-classic-mac .ui-input-search input:focus {
+  outline: 2px solid #000000 !important;
+  outline-offset: 1px !important;
+  background: #000000 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   Selects: native lb-select and jQuery Mobile select wrappers
+   ========================================================= */
+
+.theme-classic-mac .lb-select,
+.theme-classic-mac .lb-content select,
+.theme-classic-mac .ui-select .ui-btn,
+.theme-classic-mac .ui-select .ui-btn:focus,
+.theme-classic-mac .ui-select .ui-btn:hover {
+  min-height: 30px !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  font-family: var(--lb-font) !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  line-height: 1.25 !important;
+  text-shadow: none !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #000000 50%),
+    linear-gradient(135deg, #000000 50%, transparent 50%),
+    linear-gradient(to right, #000000, #000000) !important;
+  background-position:
+    calc(100% - 17px) 50%,
+    calc(100% - 10px) 50%,
+    calc(100% - 31px) 0 !important;
+  background-size: 7px 7px, 7px 7px, 2px 100% !important;
+  background-repeat: no-repeat !important;
+  padding: 5px 38px 5px 8px !important;
+  box-sizing: border-box !important;
+}
+
+.theme-classic-mac .lb-select,
+.theme-classic-mac .lb-content select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+
+.theme-classic-mac .ui-select,
+.theme-classic-mac .ui-select .ui-btn {
+  max-width: none !important;
+}
+
+.theme-classic-mac .ui-select .ui-btn span {
+  color: #000000 !important;
+  font-family: var(--lb-font) !important;
+  font-weight: 400 !important;
+  text-align: left !important;
+}
+
+.theme-classic-mac .ui-select .ui-btn:hover,
+.theme-classic-mac .ui-select .ui-btn:active {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-classic-mac .ui-select .ui-btn:hover span,
+.theme-classic-mac .ui-select .ui-btn:active span {
+  color: #ffffff !important;
+}
+
+/* =========================================================
+   Form layout
+   ========================================================= */
+
+.theme-classic-mac .lb-form-row {
+  gap: 12px !important;
+  margin-bottom: 18px !important;
+  padding: 4px 0 !important;
+}
+
+.theme-classic-mac .lb-form-label,
+.theme-classic-mac .lb-form-help,
+.theme-classic-mac label,
+.theme-classic-mac legend {
+  color: #000000 !important;
+  font-family: var(--lb-font) !important;
+  text-shadow: none !important;
+}
+
+.theme-classic-mac .lb-form-label {
+  font-weight: 700 !important;
+}
+
+.theme-classic-mac .lb-form-help,
+.theme-classic-mac .form-error,
+.theme-classic-mac .form-error-message {
+  font-size: 0.82rem !important;
+}
+
+/* =========================================================
+   Checkboxes and radios — scoped, not system.css global/fixed variant
+   ========================================================= */
+
+.theme-classic-mac .lb-content input[type="checkbox"],
+.theme-classic-mac .lb-content input[type="radio"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  margin: 0 8px 0 0 !important;
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  vertical-align: middle !important;
+}
+
+.theme-classic-mac .lb-content input[type="checkbox"] {
+  width: 17px !important;
+  height: 17px !important;
+  border-radius: 0 !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 12px 12px !important;
+}
+
+.theme-classic-mac .lb-content input[type="checkbox"]:checked {
+  background-color: #ffffff !important;
+  background-image:
+    linear-gradient(45deg, transparent 42%, #000000 42%, #000000 58%, transparent 58%),
+    linear-gradient(-45deg, transparent 42%, #000000 42%, #000000 58%, transparent 58%) !important;
+  border-color: #000000 !important;
+}
+
+.theme-classic-mac .lb-content input[type="radio"] {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+}
+
+.theme-classic-mac .lb-content input[type="radio"]:checked {
+  background: radial-gradient(circle at center, #000000 0 35%, #ffffff 37% 100%) !important;
+}
+
+.theme-classic-mac .lb-content input[type="checkbox"]:focus-visible,
+.theme-classic-mac .lb-content input[type="radio"]:focus-visible {
+  outline: 2px solid #000000 !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+.theme-classic-mac .lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"], > input[type="radio"]) {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+
+.theme-classic-mac .lb-form-field > label:not(.lb-toggle):has(> input[type="checkbox"]:checked, > input[type="radio"]:checked) {
+  background: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+/* Keep hidden inputs of lb-btn-group hidden. */
+.theme-classic-mac .lb-btn-group input[type="radio"],
+.theme-classic-mac .lb-btn-group input[type="checkbox"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Keep hidden input of lb-toggle hidden. */
+.theme-classic-mac .lb-content .lb-toggle input[type="checkbox"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   Button groups / segmented controls
+   ========================================================= */
+
+.theme-classic-mac .lb-btn-group {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
+}
+
+.theme-classic-mac .lb-btn-group .lb-btn,
+.theme-classic-mac .lb-btn-group label,
+.theme-classic-mac .lb-btn-group input[type="radio"] + label,
+.theme-classic-mac .lb-btn-group input[type="checkbox"] + label,
+.theme-classic-mac .lb-btn-group label.ui-btn {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: none !important;
+  border-right: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 6px 14px !important;
+  font-family: var(--lb-font) !important;
+  font-weight: 400 !important;
+  text-shadow: none !important;
+}
+
+.theme-classic-mac .lb-btn-group .lb-btn:last-child,
+.theme-classic-mac .lb-btn-group label:last-of-type {
+  border-right: none !important;
+}
+
+.theme-classic-mac .lb-btn-group .lb-btn:hover,
+.theme-classic-mac .lb-btn-group label:hover,
+.theme-classic-mac .lb-btn-group .lb-btn.active,
+.theme-classic-mac .lb-btn-group .lb-btn-active,
+.theme-classic-mac .lb-btn-group label.active,
+.theme-classic-mac .lb-btn-group label.lb-checked,
+.theme-classic-mac .lb-btn-group input[type="radio"]:checked + label,
+.theme-classic-mac .lb-btn-group input[type="checkbox"]:checked + label {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* =========================================================
+   Toggle switch: Classic Mac rectangular switch, not pill
+   ========================================================= */
+
+.theme-classic-mac .lb-toggle {
+  width: 48px !important;
+  height: 24px !important;
+}
+
+.theme-classic-mac label.lb-toggle.ui-btn {
+  width: 48px !important;
+  height: 24px !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.theme-classic-mac .lb-toggle-slider {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+
+.theme-classic-mac .lb-toggle-slider::before {
+  width: 18px !important;
+  height: 18px !important;
+  left: 1px !important;
+  bottom: 1px !important;
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.theme-classic-mac .lb-toggle input:checked + .lb-toggle-slider {
+  background: #000000 !important;
+}
+
+.theme-classic-mac .lb-toggle input:checked + .lb-toggle-slider::before {
+  transform: translateX(24px) !important;
+  background: #ffffff !important;
+}
+
+.theme-classic-mac .lb-toggle input:focus + .lb-toggle-slider {
+  box-shadow: 2px 2px 0 #000000, 0 0 0 2px #ffffff, 0 0 0 4px #000000 !important;
+}
+
+/* =========================================================
+   Tables
+   ========================================================= */
+
+.theme-classic-mac table,
+.theme-classic-mac .lb-table {
+  border-collapse: collapse !important;
+  color: #000000 !important;
+  font-family: var(--lb-font) !important;
+}
+
+.theme-classic-mac table th,
+.theme-classic-mac table td,
+.theme-classic-mac .lb-table th,
+.theme-classic-mac .lb-table td {
+  border-color: #000000 !important;
+  text-shadow: none !important;
+}
+
+.theme-classic-mac table th,
+.theme-classic-mac .lb-table th {
+  background: #000000 !important;
+  color: #ffffff !important;
+  font-weight: 400 !important;
+}
+
+/* =========================================================
+   Sidebar and navigation
+   ========================================================= */
+
+.theme-classic-mac .lb-sidebar {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-right: 2px solid #000000 !important;
+  box-shadow: 2px 0 0 #000000 !important;
+}
+
+.theme-classic-mac .lb-sidebar-header,
+.theme-classic-mac a.lb-sidebar-header,
+.theme-classic-mac .lb-sidebar-footer,
+.theme-classic-mac .lb-sidebar-section:not(:first-child) {
+  border-color: #000000 !important;
+}
+
+.theme-classic-mac .lb-sidebar-brand,
+.theme-classic-mac .lb-sidebar-section,
+.theme-classic-mac .lb-sidebar-link,
+.theme-classic-mac a.lb-sidebar-link,
+.theme-classic-mac a.lb-sidebar-link:visited,
+.theme-classic-mac a.lb-sidebar-link:link {
+  color: #000000 !important;
+  font-family: var(--lb-font) !important;
+}
+
+.theme-classic-mac .lb-sidebar-link:hover,
+.theme-classic-mac .lb-sidebar-link.active,
+.theme-classic-mac a.lb-sidebar-link.active,
+.theme-classic-mac a.lb-sidebar-link.active:visited {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-left-color: #000000 !important;
+}
+
+.theme-classic-mac .lb-sidebar-status,
+.theme-classic-mac .lb-sidebar-status.error {
+  background: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+
+.theme-classic-mac .lb-sidebar-badge {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+
+/* =========================================================
+   Header buttons, tabs, collapsibles and sliders
+   ========================================================= */
+
+.theme-classic-mac .lb-header-btn,
+.theme-classic-mac .lb-nav-toggle,
+.theme-classic-mac .lb-sidebar-toggle.lb-header-btn {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+
+.theme-classic-mac .lb-header-btn:hover,
+.theme-classic-mac .lb-nav-toggle:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-classic-mac .lb-collapsible {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  background: #ffffff !important;
+}
+
+.theme-classic-mac .lb-collapsible summary {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-bottom: 2px solid #000000 !important;
+}
+
+.theme-classic-mac .lb-collapsible summary:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-classic-mac .lb-slider {
+  accent-color: #000000 !important;
+}
+
+.theme-classic-mac .lb-slider-value {
+  color: #000000 !important;
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+
+/* =========================================================
+   jQuery Mobile compatibility
+   ========================================================= */
+
+.theme-classic-mac .ui-btn,
+.theme-classic-mac .ui-btn:visited,
+.theme-classic-mac .ui-btn:hover,
+.theme-classic-mac .ui-btn:focus {
+  text-shadow: none !important;
+}
+
+.theme-classic-mac .ui-corner-all,
+.theme-classic-mac .ui-btn-corner-all,
+.theme-classic-mac .ui-shadow,
+.theme-classic-mac .ui-btn,
+.theme-classic-mac .ui-input-text,
+.theme-classic-mac .ui-select .ui-btn {
+  border-radius: 0 !important;
+}
+
+.theme-classic-mac .ui-focus,
+.theme-classic-mac .ui-btn:focus,
+.theme-classic-mac .ui-input-text.ui-focus,
+.theme-classic-mac .ui-select .ui-btn.ui-focus {
+  box-shadow: 0 0 0 2px #000000 !important;
+}
+
+.theme-classic-mac .ui-checkbox label,
+.theme-classic-mac .ui-radio label {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  text-shadow: none !important;
+}
+
+.theme-classic-mac .ui-checkbox label.ui-btn-active,
+.theme-classic-mac .ui-radio label.ui-btn-active,
+.theme-classic-mac .ui-checkbox-on,
+.theme-classic-mac .ui-radio-on {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* =========================================================
+   Scrollbars — no external SVGs, no build step
+   ========================================================= */
+
+body.theme-classic-mac ::-webkit-scrollbar {
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+}
+
+body.theme-classic-mac ::-webkit-scrollbar-track {
+  background:
+    linear-gradient(45deg, #000000 25%, transparent 25%, transparent 75%, #000000 75%, #000000),
+    linear-gradient(45deg, #000000 25%, transparent 25%, transparent 75%, #000000 75%, #000000);
+  background-color: #ffffff;
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  border: 2px solid #000000;
+}
+
+body.theme-classic-mac ::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  border: 2px solid #000000;
+}
+
+body.theme-classic-mac ::-webkit-scrollbar-thumb:hover {
+  background: #000000;
+}
+
+/* =========================================================
+   Responsive adjustments
+   ========================================================= */
+
+@media (max-width: 875px) {
+  .theme-classic-mac .lb-form-label {
+    text-align: left !important;
+  }
+
+  .theme-classic-mac .lb-form-help {
+    padding-left: 0 !important;
+  }
+
+  .theme-classic-mac .lb-main {
+    margin-left: 0;
+  }
+}
+
+/* =========================================================
+   V03 refinement: LoxBerry top header / menu bar
+   ---------------------------------------------------------
+   Some LoxBerry pages keep their header/top navigation outside
+   the normal lb-content area. Force it into the Classic Mac
+   monochrome menu-bar style so the previous soft-rounded/dark
+   header does not remain visible.
+   ========================================================= */
+
+body.theme-classic-mac > header,
+.theme-classic-mac .lb-header,
+.theme-classic-mac .lb-topbar,
+.theme-classic-mac .lb-navbar,
+.theme-classic-mac .lb-main-header,
+.theme-classic-mac .lb-page-header,
+.theme-classic-mac .topbar,
+.theme-classic-mac .navbar,
+.theme-classic-mac .ui-header {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  border: 0 !important;
+  border-bottom: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.theme-classic-mac .lb-header *,
+.theme-classic-mac .lb-topbar *,
+.theme-classic-mac .lb-navbar *,
+.theme-classic-mac .lb-main-header *,
+.theme-classic-mac .lb-page-header *,
+.theme-classic-mac .topbar *,
+.theme-classic-mac .navbar *,
+.theme-classic-mac .ui-header * {
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+.theme-classic-mac .lb-header a,
+.theme-classic-mac .lb-topbar a,
+.theme-classic-mac .lb-navbar a,
+.theme-classic-mac .lb-main-header a,
+.theme-classic-mac .lb-page-header a,
+.theme-classic-mac .topbar a,
+.theme-classic-mac .navbar a,
+.theme-classic-mac .ui-header a {
+  color: #000000 !important;
+  background: transparent !important;
+  text-decoration: underline !important;
+}
+
+.theme-classic-mac .lb-header .active,
+.theme-classic-mac .lb-topbar .active,
+.theme-classic-mac .lb-navbar .active,
+.theme-classic-mac .topbar .active,
+.theme-classic-mac .navbar .active,
+.theme-classic-mac .ui-header .active {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-classic-mac .lb-header .active *,
+.theme-classic-mac .lb-topbar .active *,
+.theme-classic-mac .lb-navbar .active *,
+.theme-classic-mac .topbar .active *,
+.theme-classic-mac .navbar .active *,
+.theme-classic-mac .ui-header .active * {
+  color: #ffffff !important;
+}
+
+/* Avoid a black block from legacy logo/brand containers. */
+.theme-classic-mac .lb-logo,
+.theme-classic-mac .lb-brand,
+.theme-classic-mac .lb-header-brand,
+.theme-classic-mac .brand,
+.theme-classic-mac .logo {
+  background: transparent !important;
+  color: #000000 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   Classic Mac - active / selected header navigation
+   ========================================================= */
+
+body.theme-classic-mac .ui-btn-active,
+body.theme-classic-mac .ui-navbar .ui-btn-active,
+body.theme-classic-mac .ui-navbar .ui-btn-active:link,
+body.theme-classic-mac .ui-navbar .ui-btn-active:visited,
+body.theme-classic-mac .ui-navbar .ui-btn-active:hover,
+body.theme-classic-mac .ui-navbar .ui-btn-active:focus,
+body.theme-classic-mac .ui-navbar .ui-btn-active span,
+body.theme-classic-mac .ui-navbar .ui-state-active,
+body.theme-classic-mac .ui-navbar .ui-state-active a,
+body.theme-classic-mac .ui-navbar .active,
+body.theme-classic-mac .ui-navbar .active a,
+body.theme-classic-mac .ui-navbar .selected,
+body.theme-classic-mac .ui-navbar .selected a {
+	background: #000000 !important;
+	background-color: #000000 !important;
+	background-image: none !important;
+
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	text-shadow: none !important;
+}
+
+/* =========================================================
+   V03 refinement: keep save/cancel buttons visually aligned
+   ========================================================= */
+
+.theme-classic-mac .lb-content input[type="submit"],
+.theme-classic-mac .lb-content input[type="button"],
+.theme-classic-mac .lb-content button,
+.theme-classic-mac .lb-content .ui-btn,
+.theme-classic-mac .lb-content .lb-btn {
+  vertical-align: middle !important;
+}
+
+/* =========================================================
+   Classic Mac - Vue navbar active item
+   LoxBerry v3/v4 Vue navigation uses .vuenavbarelement_active.
+   This must override the global classic-mac link color.
+   ========================================================= */
+
+body.theme-classic-mac #vuenavbar a.vuenavbarelement_active,
+body.theme-classic-mac #vuenavbar a.vuenavbarelement_active:link,
+body.theme-classic-mac #vuenavbar a.vuenavbarelement_active:visited,
+body.theme-classic-mac #vuenavbar a.vuenavbarelement_active:hover,
+body.theme-classic-mac #vuenavbar a.vuenavbarelement_active:focus,
+body.theme-classic-mac #vuenavbar a.vuenavbarelement_active:active,
+body.theme-classic-mac .vuenavbarcontainer a.vuenavbarelement_active,
+body.theme-classic-mac .vuenavbarcontainer a.vuenavbarelement_active:link,
+body.theme-classic-mac .vuenavbarcontainer a.vuenavbarelement_active:visited,
+body.theme-classic-mac .vuenavbarcontainer a.vuenavbarelement_active:hover,
+body.theme-classic-mac .vuenavbarcontainer a.vuenavbarelement_active:focus,
+body.theme-classic-mac .vuenavbarcontainer a.vuenavbarelement_active:active {
+	background: #000000 !important;
+	background-color: #000000 !important;
+	background-image: none !important;
+
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	text-shadow: none !important;
+	text-decoration: underline !important;
+}
+

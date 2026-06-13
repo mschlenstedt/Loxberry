@@ -1,0 +1,1253 @@
+/* LoxBerry Theme: Liquid Glass
+   Version: V08_2026_06_12
+   Adapter theme for LoxBerry Design System and selected jQuery Mobile wrappers.
+   Based on the visual idea from liquid-glass/src/liquid-glass.css, but rewritten
+   to use the standard LoxBerry CSS variables/components instead of demo classes.
+
+   Theme value: liquid-glass
+   Expected filename: /system/css/theme-liquid-glass.css
+
+   Important:
+   - No .demo-wrap / .glass-form / .liquid-glass demo classes are required.
+   - This file should be loaded after design-tokens.css, components.css and main.css.
+   - Structural plugin CSS should remain in the plugin; this theme only defines the look.
+   - Plugin-specific compatibility fixes are grouped at the end and intentionally override
+     the generic theme rules where needed.
+*/
+
+/* =========================================================
+   01. Theme variables
+   ========================================================= */
+
+body.theme-liquid-glass {
+	/* Base colors */
+	--lb-font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+
+	--lb-primary: #8fc7ff;
+	--lb-primary-hover: #b7dcff;
+	--lb-primary-dark: #5c9ed8;
+
+	--lb-danger: #ff6b7a;
+	--lb-info: #8fc7ff;
+	--lb-success: #8bc34a;
+	--lb-warning: #ffc857;
+
+	--lb-bg: #07101c;
+	--lb-text: #e8eef8;
+	--lb-text-secondary: #b9c7da;
+	--lb-text-muted: #8fa0b7;
+	--lb-border-color: rgba(255, 255, 255, 0.12);
+
+	/* Transparency control
+	   Lower alpha = more transparent.
+	   Higher alpha = stronger/more visible. */
+	--lb-glass-card-alpha: 0.006;        /* Cards/collapsible panels */
+	--lb-glass-table-alpha: 0.000;       /* Tables/formtable/ui-table outer surface */
+	--lb-glass-table-cell-alpha: 0.000;  /* Table cells/headers */
+	--lb-glass-input-alpha: 0.200;       /* Inputs/selects/textareas and jQuery Mobile wrappers */
+	--lb-glass-button-alpha: 0.012;      /* Normal buttons and button-like controls */
+	--lb-glass-hover-alpha: 0.035;       /* Hover backgrounds */
+	--lb-glass-active-alpha: 0.180;      /* Active/selected controls */
+	--lb-glass-border-alpha: 0.085;      /* Borders around fields, tables, cards and buttons */
+	--lb-glass-highlight-alpha: 0.030;   /* Soft inner white highlight/reflection */
+	--lb-glass-shadow-alpha: 0.090;      /* Dark drop shadow intensity */
+	--lb-glass-text-input-alpha: 0.200;  /* Text Input */
+
+	/* Blur control
+	   Alpha alone is not enough: backdrop-filter blur creates a milky panel.
+	   Use none for true visual transparency where the background should stay clear. */
+	--lb-glass-card-blur: none;
+	--lb-glass-table-blur: none;
+	--lb-glass-input-blur: none;
+	--lb-glass-button-blur: none;
+	--lb-glass-toggle-blur: none;
+	--lb-glass-nav-blur: none;
+
+	/* Common geometry */
+	--lb-radius: 18px;
+	--lb-radius-sm: 12px;
+	--lb-border: 1px solid var(--lb-border-color);
+
+	/* Cards / panels */
+	--lb-card-bg: rgba(255, 255, 255, var(--lb-glass-card-alpha));
+	--lb-card-border: 1px solid rgba(255, 255, 255, var(--lb-glass-border-alpha));
+	--lb-card-shadow:
+		0 12px 28px rgba(0, 0, 0, var(--lb-glass-shadow-alpha)),
+		inset 0 1px 1px rgba(255, 255, 255, var(--lb-glass-highlight-alpha));
+
+	/* Buttons */
+	--lb-btn-bg: rgba(255, 255, 255, var(--lb-glass-button-alpha));
+	--lb-btn-hover-bg: rgba(255, 255, 255, var(--lb-glass-hover-alpha));
+	--lb-btn-text: #e8eef8;
+	--lb-btn-border: rgba(255, 255, 255, var(--lb-glass-border-alpha));
+	--lb-btn-radius: 14px;
+	--lb-btn-primary-bg: linear-gradient(135deg, rgba(143, 199, 255, 0.55), rgba(143, 199, 255, 0.22));
+	--lb-btn-primary-text: #ffffff;
+	--lb-btn-primary-border: rgba(143, 199, 255, 0.34);
+
+	/* Header action buttons */
+	--lb-header-btn-bg: rgba(255, 255, 255, 0.10);
+	--lb-header-btn-text: #e8eef8;
+
+	/* Inputs */
+	--lb-input-bg: rgba(255, 255, 255, var(--lb-glass-input-alpha));
+	--lb-input-border: rgba(255, 255, 255, var(--lb-glass-border-alpha));
+	--lb-input-text: #edf3fb;
+	--lb-highlight-bg: rgba(255, 235, 120, 0.18);
+
+	/* Toggles */
+	--lb-toggle-bg: rgba(255, 255, 255, var(--lb-glass-input-alpha));
+
+	/* Section titles */
+	--lb-section-border: rgba(143, 199, 255, 0.45);
+
+	/* Sidebar */
+	--lb-sidebar-bg: rgba(255, 255, 255, var(--lb-glass-card-alpha));
+	--lb-sidebar-text: rgba(232, 238, 248, 0.72);
+	--lb-sidebar-active-bg: rgba(143, 199, 255, var(--lb-glass-active-alpha));
+	--lb-sidebar-active-text: #ffffff;
+	--lb-sidebar-border: rgba(255, 255, 255, 0.08);
+	--lb-sidebar-section: rgba(232, 238, 248, 0.36);
+
+	/* Mobile tab bar */
+	--lb-tab-bar-bg: rgba(7, 16, 28, 0.42);
+	--lb-tab-bar-text: rgba(232, 238, 248, 0.68);
+	--lb-tab-bar-active: #ffffff;
+
+	/* Effects */
+	--lb-backdrop-blur: var(--lb-glass-card-blur);
+	--lb-glow-primary: 0 0 18px rgba(143, 199, 255, 0.28);
+	--lb-glow-danger: 0 0 14px rgba(255, 107, 122, 0.28);
+	--lb-glow-warning: 0 0 16px rgba(255, 200, 87, 0.22);
+
+	min-height: 100vh;
+	background: transparent !important;
+	background-color: transparent !important;
+	color: var(--lb-text) !important;
+	font-family: var(--lb-font) !important;
+}
+
+/* =========================================================
+   02. Page background and base reset
+   ========================================================= */
+
+body.theme-liquid-glass::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: -2;
+	pointer-events: none;
+
+	background:
+		linear-gradient(
+			135deg,
+			rgba(3, 8, 16, 0.68),
+			rgba(10, 24, 38, 0.58)
+		),
+		radial-gradient(
+			900px 500px at 15% 10%,
+			rgba(96, 130, 165, 0.10),
+			transparent 52%
+		),
+		radial-gradient(
+			900px 500px at 85% 90%,
+			rgba(73, 102, 133, 0.08),
+			transparent 54%
+		),
+		radial-gradient(
+			700px 420px at 65% 15%,
+			rgba(109, 172, 32, 0.035),
+			transparent 58%
+		),
+		url("/system/images/theme-liquid-glass-background.png") center center / cover fixed no-repeat !important;
+}
+
+body.theme-liquid-glass::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+
+	background:
+		linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+	background-size: 28px 28px;
+	opacity: 0.12;
+}
+
+body.theme-liquid-glass,
+body.theme-liquid-glass * {
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .lb-main,
+body.theme-liquid-glass .lb-layout,
+body.theme-liquid-glass .lb-content,
+body.theme-liquid-glass .ui-page,
+body.theme-liquid-glass .ui-content,
+body.theme-liquid-glass .ui-panel,
+body.theme-liquid-glass .ui-panel-wrapper,
+body.theme-liquid-glass .ui-body-a,
+body.theme-liquid-glass .ui-body-c,
+body.theme-liquid-glass .ui-overlay-a,
+body.theme-liquid-glass .page_content,
+body.theme-liquid-glass #page_content {
+	background: transparent !important;
+	color: var(--lb-text) !important;
+}
+
+/* =========================================================
+   03. Typography and links
+   ========================================================= */
+
+body.theme-liquid-glass h1,
+body.theme-liquid-glass h2,
+body.theme-liquid-glass h3,
+body.theme-liquid-glass h4,
+body.theme-liquid-glass .heading,
+body.theme-liquid-glass .lb-section-title {
+	color: var(--lb-text) !important;
+	font-family: var(--lb-font) !important;
+}
+
+body.theme-liquid-glass .lb-section-title,
+body.theme-liquid-glass .wide {
+	border-bottom-color: var(--lb-section-border) !important;
+}
+
+body.theme-liquid-glass a,
+body.theme-liquid-glass a:link,
+body.theme-liquid-glass a:visited {
+	color: var(--lb-primary) !important;
+}
+
+body.theme-liquid-glass a:hover {
+	color: var(--lb-primary-hover) !important;
+}
+
+body.theme-liquid-glass label,
+body.theme-liquid-glass .lb-form-label,
+body.theme-liquid-glass .lb-form-help,
+body.theme-liquid-glass .hint,
+body.theme-liquid-glass p[style*="--lb-gray-500"] {
+	color: #cccccc !important;
+	-webkit-text-fill-color: #cccccc !important;
+	font-weight: 400 !important;
+}
+
+body.theme-liquid-glass .lb-form-help,
+body.theme-liquid-glass .hint {
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-liquid-glass span[style*="--lb-gray-500"] {
+	color: #cccccc !important;
+	-webkit-text-fill-color: #cccccc !important;
+	font-weight: 400 !important;
+}
+
+/* =========================================================
+   04. Cards, panels and collapsible content
+   ========================================================= */
+
+body.theme-liquid-glass .lb-card,
+body.theme-liquid-glass .ui-body-a,
+body.theme-liquid-glass .ui-body-c,
+body.theme-liquid-glass .ui-body-inherit,
+body.theme-liquid-glass .ui-corner-all.ui-body-inherit,
+body.theme-liquid-glass .ui-collapsible-content {
+	position: relative;
+	overflow: hidden;
+
+	background: var(--lb-card-bg) !important;
+	background-color: var(--lb-card-bg) !important;
+	background-image: none !important;
+
+	color: var(--lb-text) !important;
+
+	border: var(--lb-card-border) !important;
+	border-radius: var(--lb-radius) !important;
+
+	box-shadow: var(--lb-card-shadow) !important;
+
+	backdrop-filter: var(--lb-glass-card-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-card-blur) !important;
+}
+
+body.theme-liquid-glass .lb-card::before,
+body.theme-liquid-glass .ui-collapsible-content::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+
+	background: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, var(--lb-glass-highlight-alpha)),
+		rgba(255, 255, 255, 0.000) 70%
+	);
+}
+
+/* =========================================================
+   05. Header, sidebar and navigation
+   ========================================================= */
+
+body.theme-liquid-glass .lb-header {
+	background: rgba(255, 255, 255, var(--lb-glass-card-alpha)) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-card-alpha)) !important;
+
+	border-bottom: 1px solid rgba(255, 255, 255, var(--lb-glass-border-alpha)) !important;
+
+	backdrop-filter: var(--lb-glass-nav-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-nav-blur) !important;
+}
+
+body.theme-liquid-glass .lb-header-title,
+body.theme-liquid-glass .lb-header-title .hint {
+	color: var(--lb-text) !important;
+}
+
+body.theme-liquid-glass .lb-header-btn {
+	background: var(--lb-header-btn-bg) !important;
+	color: var(--lb-header-btn-text) !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	border-radius: 12px !important;
+	box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.10) !important;
+}
+
+body.theme-liquid-glass .lb-header-btn:hover {
+	background: rgba(255, 255, 255, var(--lb-glass-hover-alpha)) !important;
+	box-shadow:
+		0 0 18px rgba(143, 199, 255, 0.16),
+		inset 0 1px 1px rgba(255, 255, 255, 0.18) !important;
+}
+
+body.theme-liquid-glass .lb-sidebar {
+	background: rgba(7, 16, 28, 0.68) !important;
+	border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+	backdrop-filter: var(--lb-glass-nav-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-nav-blur) !important;
+}
+
+body.theme-liquid-glass .lb-sidebar-header,
+body.theme-liquid-glass a.lb-sidebar-header,
+body.theme-liquid-glass .lb-sidebar-footer {
+	border-color: var(--lb-sidebar-border) !important;
+}
+
+body.theme-liquid-glass .lb-sidebar-brand,
+body.theme-liquid-glass .lb-sidebar-link,
+body.theme-liquid-glass a.lb-sidebar-link,
+body.theme-liquid-glass a.lb-sidebar-link:visited,
+body.theme-liquid-glass a.lb-sidebar-link:link {
+	color: var(--lb-sidebar-text) !important;
+}
+
+body.theme-liquid-glass .lb-sidebar-link:hover,
+body.theme-liquid-glass a.lb-sidebar-link:hover,
+body.theme-liquid-glass .lb-sidebar-link.active,
+body.theme-liquid-glass a.lb-sidebar-link.active,
+body.theme-liquid-glass a.lb-sidebar-link.active:visited {
+	background: var(--lb-sidebar-active-bg) !important;
+	color: var(--lb-sidebar-active-text) !important;
+}
+
+body.theme-liquid-glass .lb-sidebar-link.active,
+body.theme-liquid-glass a.lb-sidebar-link.active {
+	border-left-color: var(--lb-primary) !important;
+	box-shadow: inset 0 0 18px rgba(143, 199, 255, 0.12) !important;
+}
+
+body.theme-liquid-glass .lb-tab-bar,
+body.theme-liquid-glass .lb-tab-popup {
+	background: var(--lb-tab-bar-bg) !important;
+	border-color: rgba(255, 255, 255, 0.12) !important;
+
+	backdrop-filter: var(--lb-glass-nav-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-nav-blur) !important;
+}
+
+/* Vue navigation bar and legacy jQuery Mobile navbar */
+body.theme-liquid-glass #vuenavbar,
+body.theme-liquid-glass .vuenavbarcontainer,
+body.theme-liquid-glass .vuenavbarsubcontainer,
+body.theme-liquid-glass .ui-navbar {
+	background: rgba(255, 255, 255, var(--lb-glass-card-alpha)) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-card-alpha)) !important;
+	border-color: rgba(255, 255, 255, var(--lb-glass-border-alpha)) !important;
+
+	backdrop-filter: var(--lb-glass-nav-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-nav-blur) !important;
+}
+
+body.theme-liquid-glass .vuenavbarelement,
+body.theme-liquid-glass .vuenavbarsubelement,
+body.theme-liquid-glass .ui-navbar a {
+	background: transparent !important;
+	color: rgba(232, 238, 248, 0.70) !important;
+	border-color: rgba(255, 255, 255, 0.08) !important;
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .vuenavbarelement:hover,
+body.theme-liquid-glass .vuenavbarsubelement:hover,
+body.theme-liquid-glass .ui-navbar a:hover {
+	background: rgba(255, 255, 255, 0.09) !important;
+	color: #ffffff !important;
+}
+
+body.theme-liquid-glass .vuenavbarelement_active,
+body.theme-liquid-glass .vuenavbarsubelement_active,
+body.theme-liquid-glass .ui-navbar .ui-btn-active {
+	background: rgba(143, 199, 255, 0.16) !important;
+	color: #ffffff !important;
+	box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.14) !important;
+}
+
+/* =========================================================
+   06. Buttons
+   ========================================================= */
+
+body.theme-liquid-glass .lb-btn,
+body.theme-liquid-glass a.lb-btn,
+body.theme-liquid-glass a.lb-btn:visited,
+body.theme-liquid-glass a.lb-btn:link,
+body.theme-liquid-glass button.lb-btn,
+body.theme-liquid-glass input[type="submit"].lb-btn,
+body.theme-liquid-glass input[type="button"].lb-btn,
+body.theme-liquid-glass .ui-btn.lb-btn,
+body.theme-liquid-glass .ui-btn,
+body.theme-liquid-glass .lb-content input[type="submit"],
+body.theme-liquid-glass .lb-content input[type="button"],
+body.theme-liquid-glass .lb-content button:not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"]) {
+	background: var(--lb-btn-bg) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-button-alpha)) !important;
+	background-image: none !important;
+
+	color: var(--lb-btn-text) !important;
+
+	border: 1px solid var(--lb-btn-border) !important;
+	border-radius: var(--lb-btn-radius) !important;
+
+	box-shadow:
+		0 8px 18px rgba(0, 0, 0, var(--lb-glass-shadow-alpha)),
+		inset 0 1px 1px rgba(255, 255, 255, var(--lb-glass-highlight-alpha)) !important;
+
+	backdrop-filter: var(--lb-glass-button-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-button-blur) !important;
+
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .lb-btn:hover,
+body.theme-liquid-glass a.lb-btn:hover,
+body.theme-liquid-glass button.lb-btn:hover,
+body.theme-liquid-glass .ui-btn:hover,
+body.theme-liquid-glass .lb-content button:not(.lb-tab-bar-item):not(.lb-header-btn):not(.lb-helppanel-close):not(.lb-toggle):not([data-role="none"]):hover {
+	background: var(--lb-btn-hover-bg) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-hover-alpha)) !important;
+
+	color: #ffffff !important;
+	border-color: rgba(255, 255, 255, calc(var(--lb-glass-border-alpha) + 0.08)) !important;
+
+	box-shadow:
+		0 12px 24px rgba(0, 0, 0, var(--lb-glass-shadow-alpha)),
+		inset 0 1px 1px rgba(255, 255, 255, var(--lb-glass-highlight-alpha)),
+		0 0 18px rgba(143, 199, 255, 0.12) !important;
+}
+
+body.theme-liquid-glass .lb-btn-primary,
+body.theme-liquid-glass a.lb-btn-primary,
+body.theme-liquid-glass a.lb-btn-primary:visited,
+body.theme-liquid-glass a.lb-btn-primary:link,
+body.theme-liquid-glass button.lb-btn-primary,
+body.theme-liquid-glass input[type="submit"].lb-btn-primary,
+body.theme-liquid-glass .ui-link.lb-btn-primary,
+body.theme-liquid-glass .ui-btn-active,
+body.theme-liquid-glass .ui-btn.ui-btn-active {
+	background: var(--lb-btn-primary-bg) !important;
+	color: var(--lb-btn-primary-text) !important;
+	border-color: var(--lb-btn-primary-border) !important;
+
+	box-shadow:
+		0 0 18px rgba(143, 199, 255, 0.18),
+		inset 0 1px 1px rgba(255, 255, 255, 0.18) !important;
+}
+
+body.theme-liquid-glass .lb-btn-group .lb-btn.ui-btn-active,
+body.theme-liquid-glass .lb-btn-group label.lb-btn.ui-btn-active,
+body.theme-liquid-glass .lb-btn-group label.lb-checked {
+	background: var(--lb-primary) !important;
+	background-color: var(--lb-primary) !important;
+	background-image: none !important;
+
+	color: #000000 !important;
+	-webkit-text-fill-color: #000000 !important;
+
+	border-color: transparent !important;
+	box-shadow: none !important;
+}
+
+body.theme-liquid-glass .lb-btn-danger,
+body.theme-liquid-glass a.lb-btn-danger,
+body.theme-liquid-glass button.lb-btn-danger {
+	background: rgba(255, 107, 122, 0.22) !important;
+	color: #ffffff !important;
+	border-color: rgba(255, 107, 122, 0.40) !important;
+	box-shadow: var(--lb-glow-danger) !important;
+}
+
+/* =========================================================
+   07. Inputs, selects and textareas
+   ========================================================= */
+
+body.theme-liquid-glass .lb-input,
+body.theme-liquid-glass .lb-select,
+body.theme-liquid-glass .lb-textarea,
+body.theme-liquid-glass .lb-content input[type="text"],
+body.theme-liquid-glass .lb-content input[type="password"],
+body.theme-liquid-glass .lb-content input[type="email"],
+body.theme-liquid-glass .lb-content input[type="url"],
+body.theme-liquid-glass .lb-content input[type="number"],
+body.theme-liquid-glass .lb-content input[type="tel"],
+body.theme-liquid-glass .lb-content input[type="search"],
+body.theme-liquid-glass .lb-content input[type="time"],
+body.theme-liquid-glass .lb-content textarea,
+body.theme-liquid-glass .lb-content select {
+	background: var(--lb-input-bg) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-input-alpha)) !important;
+	background-image: none !important;
+
+	color: var(--lb-input-text) !important;
+	-webkit-text-fill-color: var(--lb-input-text) !important;
+
+	border-color: rgba(255, 255, 255, var(--lb-glass-border-alpha)) !important;
+	border-radius: var(--lb-radius-sm) !important;
+
+	box-shadow: inset 0 1px 1px rgba(255, 255, 255, var(--lb-glass-highlight-alpha)) !important;
+
+	backdrop-filter: var(--lb-glass-input-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-input-blur) !important;
+
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .lb-input:hover,
+body.theme-liquid-glass .lb-select:hover,
+body.theme-liquid-glass .lb-textarea:hover,
+body.theme-liquid-glass .lb-content input:hover,
+body.theme-liquid-glass .lb-content textarea:hover,
+body.theme-liquid-glass .lb-content select:hover {
+	background: rgba(255, 255, 255, var(--lb-glass-hover-alpha)) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-hover-alpha)) !important;
+	border-color: rgba(255, 255, 255, calc(var(--lb-glass-border-alpha) + 0.08)) !important;
+}
+
+body.theme-liquid-glass .lb-input:focus,
+body.theme-liquid-glass .lb-select:focus,
+body.theme-liquid-glass .lb-textarea:focus,
+body.theme-liquid-glass .lb-content input:focus,
+body.theme-liquid-glass .lb-content textarea:focus,
+body.theme-liquid-glass .lb-content select:focus {
+	border-color: rgba(143, 199, 255, 0.50) !important;
+	outline: none !important;
+	box-shadow:
+		0 0 0 3px rgba(143, 199, 255, 0.15),
+		inset 0 1px 1px rgba(255, 255, 255, 0.10) !important;
+}
+
+body.theme-liquid-glass input::placeholder,
+body.theme-liquid-glass textarea::placeholder {
+	color: #cccccc !important;
+	-webkit-text-fill-color: #cccccc !important;
+	opacity: 1 !important;
+}
+
+/* jQuery Mobile input wrappers */
+body.theme-liquid-glass .ui-input-text,
+body.theme-liquid-glass .ui-input-search,
+body.theme-liquid-glass .ui-select,
+body.theme-liquid-glass .ui-select .ui-btn {
+	background: rgba(255, 255, 255, var(--lb-glass-input-alpha)) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-input-alpha)) !important;
+	background-image: none !important;
+
+	color: var(--lb-input-text) !important;
+
+	border-color: rgba(255, 255, 255, var(--lb-glass-border-alpha)) !important;
+
+	box-shadow: inset 0 1px 1px rgba(255, 255, 255, var(--lb-glass-highlight-alpha)) !important;
+
+	backdrop-filter: var(--lb-glass-input-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-input-blur) !important;
+
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .ui-select .ui-btn:hover {
+	background: rgba(255, 255, 255, var(--lb-glass-hover-alpha)) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-hover-alpha)) !important;
+	border-color: rgba(255, 255, 255, calc(var(--lb-glass-border-alpha) + 0.08)) !important;
+}
+
+body.theme-liquid-glass .ui-input-text input,
+body.theme-liquid-glass .ui-input-search input,
+body.theme-liquid-glass .ui-select .ui-btn span,
+body.theme-liquid-glass .ui-select .ui-selectmenu-text {
+	color: var(--lb-input-text) !important;
+	-webkit-text-fill-color: var(--lb-input-text) !important;
+	text-shadow: none !important;
+}
+
+/* Native OS dropdown popups usually use a white background, so options need dark text. */
+body.theme-liquid-glass select option {
+	color: #172033 !important;
+	background: #ffffff !important;
+}
+
+
+/* =========================================================
+   08. Tables
+   ========================================================= */
+
+body.theme-liquid-glass table,
+body.theme-liquid-glass table td,
+body.theme-liquid-glass table th {
+	color: var(--lb-text) !important;
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass table.tables,
+body.theme-liquid-glass .formtable,
+body.theme-liquid-glass .ui-table {
+	background: rgba(255, 255, 255, var(--lb-glass-table-alpha)) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-table-alpha)) !important;
+	background-image: none !important;
+
+	border-color: rgba(255, 255, 255, var(--lb-glass-border-alpha)) !important;
+	border-radius: var(--lb-radius) !important;
+
+	box-shadow:
+		0 10px 24px rgba(0, 0, 0, var(--lb-glass-shadow-alpha)),
+		inset 0 1px 1px rgba(255, 255, 255, var(--lb-glass-highlight-alpha)) !important;
+
+	backdrop-filter: var(--lb-glass-table-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-table-blur) !important;
+}
+
+body.theme-liquid-glass table.tables th,
+body.theme-liquid-glass table.tables td {
+	background: rgba(255, 255, 255, var(--lb-glass-table-cell-alpha)) !important;
+	background-color: rgba(255, 255, 255, var(--lb-glass-table-cell-alpha)) !important;
+	background-image: none !important;
+
+	border-color: rgba(255, 255, 255, calc(var(--lb-glass-border-alpha) * 0.75)) !important;
+
+	backdrop-filter: var(--lb-glass-table-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-table-blur) !important;
+}
+
+/* =========================================================
+   09. Toggles and control groups
+   ========================================================= */
+
+body.theme-liquid-glass .lb-toggle {
+	width: 50px !important;
+	height: 22px !important;
+}
+
+body.theme-liquid-glass .lb-toggle-slider {
+	height: 22px !important;
+
+	background:
+		linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.015)),
+		rgba(120, 120, 120, var(--lb-glass-input-alpha)) !important;
+
+	border: 1px solid rgba(255, 255, 255, var(--lb-glass-border-alpha)) !important;
+	border-radius: 999px !important;
+
+	backdrop-filter: var(--lb-glass-toggle-blur) !important;
+	-webkit-backdrop-filter: var(--lb-glass-toggle-blur) !important;
+
+	box-shadow:
+		inset 0 1px 1px rgba(255, 255, 255, 0.65),
+		inset 0 -1px 2px rgba(0, 0, 0, 0.16),
+		0 6px 18px rgba(0, 0, 0, 0.20) !important;
+}
+
+body.theme-liquid-glass .lb-toggle-slider::after {
+	content: "";
+	position: absolute;
+	left: 7px;
+	right: 7px;
+	top: 4px;
+	height: 7px;
+	border-radius: 999px;
+
+	background: rgba(255, 255, 255, 0.28);
+	filter: blur(1px);
+	pointer-events: none;
+}
+
+body.theme-liquid-glass .lb-toggle-slider::before {
+	width: 28px !important;
+	height: 20px !important;
+	left: 1px !important;
+	top: 1px !important;
+
+	border-radius: 999px !important;
+
+	background:
+		radial-gradient(
+			circle at 32% 26%,
+			rgba(255, 255, 255, 1),
+			rgba(255, 255, 255, 0.76) 45%,
+			rgba(235, 235, 235, 0.70) 100%
+		) !important;
+
+	box-shadow:
+		0 3px 9px rgba(0, 0, 0, 0.28),
+		inset 0 1px 1px rgba(255, 255, 255, 0.95),
+		inset 0 -1px 1px rgba(0, 0, 0, 0.10) !important;
+}
+
+body.theme-liquid-glass .lb-toggle input:checked + .lb-toggle-slider {
+	background:
+		linear-gradient(145deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.10)),
+		rgba(90, 180, 255, 0.82) !important;
+
+	border-color: rgba(90, 180, 255, 0.95) !important;
+
+	box-shadow:
+		inset 0 1px 1px rgba(255, 255, 255, 0.70),
+		inset 0 -1px 2px rgba(0, 0, 0, 0.12),
+		0 0 18px rgba(143, 199, 255, 0.38),
+		0 6px 18px rgba(0, 0, 0, 0.18) !important;
+}
+
+body.theme-liquid-glass .lb-toggle input:checked + .lb-toggle-slider::before {
+	transform: translateX(18px) !important;
+}
+
+/* =========================================================
+   10. Status colors and validation
+   ========================================================= */
+
+body.theme-liquid-glass .lb-status-ok,
+body.theme-liquid-glass .status-ok {
+	box-shadow: var(--lb-glow-primary) !important;
+}
+
+body.theme-liquid-glass .lb-status-error,
+body.theme-liquid-glass .status-error {
+	box-shadow: var(--lb-glow-danger) !important;
+}
+
+body.theme-liquid-glass .lb-status-warning,
+body.theme-liquid-glass .status-warning {
+	box-shadow: var(--lb-glow-warning) !important;
+}
+
+body.theme-liquid-glass .form-error,
+body.theme-liquid-glass .form-error-message {
+	color: #ff8b98 !important;
+}
+
+/* =========================================================
+   11. Footer and legacy footer areas
+   ========================================================= */
+
+body.theme-liquid-glass .ui-footer,
+body.theme-liquid-glass [data-role="footer"],
+body.theme-liquid-glass #footerright,
+body.theme-liquid-glass #footerleft,
+body.theme-liquid-glass .lb-footer {
+	color: rgba(232, 238, 248, 0.42) !important;
+	background: transparent !important;
+	border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* =========================================================
+   12. Log Viewer compatibility
+   ========================================================= */
+
+body.theme-liquid-glass .logerror,
+body.theme-liquid-glass .logerror p {
+	color: #ffffff !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65) !important;
+}
+
+/* =========================================================
+   13. Notification messages
+   ---------------------------------------------------------
+   Liquid Glass uses light notification cards. Therefore the
+   notification text must stay dark and the close button needs
+   a stronger visible state.
+   ========================================================= */
+
+body.theme-liquid-glass #notificationBlock,
+body.theme-liquid-glass #notificationItems {
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+	text-shadow: none !important;
+}
+
+/* Notification rows */
+body.theme-liquid-glass .lb-notify-info,
+body.theme-liquid-glass .lb-notify-warning,
+body.theme-liquid-glass .lb-notify-error,
+body.theme-liquid-glass .lb-notify-success {
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+	text-shadow: none !important;
+}
+
+/* Notification text and nested elements */
+body.theme-liquid-glass .lb-notify-info *,
+body.theme-liquid-glass .lb-notify-warning *,
+body.theme-liquid-glass .lb-notify-error *,
+body.theme-liquid-glass .lb-notify-success * {
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+	text-shadow: none !important;
+}
+
+/* Keep info/warning/error icons readable */
+body.theme-liquid-glass .lb-notify-info i,
+body.theme-liquid-glass .lb-notify-warning i,
+body.theme-liquid-glass .lb-notify-error i,
+body.theme-liquid-glass .lb-notify-success i {
+	color: #0f559a !important;
+	-webkit-text-fill-color: #0f559a !important;
+}
+
+/* Close button at the end of each notification row */
+body.theme-liquid-glass .lb-notify-info button,
+body.theme-liquid-glass .lb-notify-warning button,
+body.theme-liquid-glass .lb-notify-error button,
+body.theme-liquid-glass .lb-notify-success button,
+body.theme-liquid-glass .lb-notify-info .lb-btn,
+body.theme-liquid-glass .lb-notify-warning .lb-btn,
+body.theme-liquid-glass .lb-notify-error .lb-btn,
+body.theme-liquid-glass .lb-notify-success .lb-btn {
+	background: rgba(55, 65, 81, 0.14) !important;
+	background-color: rgba(55, 65, 81, 0.14) !important;
+	background-image: none !important;
+
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+
+	border: 1px solid rgba(55, 65, 81, 0.28) !important;
+	border-radius: 12px !important;
+
+	box-shadow:
+		0 2px 6px rgba(0, 0, 0, 0.16),
+		inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+
+	text-shadow: none !important;
+	opacity: 1 !important;
+}
+
+/* Close button hover/focus */
+body.theme-liquid-glass .lb-notify-info button:hover,
+body.theme-liquid-glass .lb-notify-warning button:hover,
+body.theme-liquid-glass .lb-notify-error button:hover,
+body.theme-liquid-glass .lb-notify-success button:hover,
+body.theme-liquid-glass .lb-notify-info .lb-btn:hover,
+body.theme-liquid-glass .lb-notify-warning .lb-btn:hover,
+body.theme-liquid-glass .lb-notify-error .lb-btn:hover,
+body.theme-liquid-glass .lb-notify-success .lb-btn:hover {
+	background: rgba(55, 65, 81, 0.24) !important;
+	background-color: rgba(55, 65, 81, 0.24) !important;
+
+	color: #111827 !important;
+	-webkit-text-fill-color: #111827 !important;
+
+	border-color: rgba(55, 65, 81, 0.45) !important;
+}
+
+/* =========================================================
+   Notification buttons
+   ---------------------------------------------------------
+   Make notification close/delete buttons look like normal
+   Liquid Glass buttons.
+   ========================================================= */
+
+/* Notification icon buttons */
+body.theme-liquid-glass #notificationBlock .lb-notify-box a.lb-btn.lb-btn-sm.lb-btn-icon,
+body.theme-liquid-glass #notificationBlock .lb-notify-box a.lb-btn.lb-btn-icon {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+
+	width: 45px !important;
+	min-width: 45px !important;
+	max-width: 45px !important;
+
+	height: 45px !important;
+	min-height: 45px !important;
+	max-height: 45px !important;
+
+	padding: 0 !important;
+	margin: 0 !important;
+
+	line-height: 45px !important;
+
+	background: rgba(255, 255, 255, 0.22) !important;
+	background-color: rgba(255, 255, 255, 0.22) !important;
+	background-image: none !important;
+
+	color: #0f559a !important;
+	-webkit-text-fill-color: #0f559a !important;
+
+	border: 1px solid rgba(15, 85, 154, 0.32) !important;
+	border-radius: var(--lb-btn-radius, 14px) !important;
+
+	box-shadow:
+		0 8px 18px rgba(0, 0, 0, 0.16),
+		inset 0 1px 1px rgba(255, 255, 255, 0.55) !important;
+
+	text-shadow: none !important;
+	opacity: 1 !important;
+	box-sizing: border-box !important;
+}
+
+/* Delete all notifications button */
+body.theme-liquid-glass #notifdeleteall {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 6px !important;
+
+	width: auto !important;
+	min-width: 270px !important;
+	height: 38px !important;
+	min-height: 38px !important;
+
+	padding: 0 16px !important;
+	margin: 0 !important;
+
+	line-height: 38px !important;
+
+	background: rgba(255, 255, 255, 0.26) !important;
+	background-color: rgba(255, 255, 255, 0.26) !important;
+	background-image: none !important;
+
+	color: #0f559a !important;
+	-webkit-text-fill-color: #ffffff !important;
+
+	border: 1px solid rgba(15, 85, 154, 0.42) !important;
+	border-radius: var(--lb-btn-radius, 14px) !important;
+
+	box-shadow:
+		0 8px 18px rgba(0, 0, 0, 0.18),
+		inset 0 1px 1px rgba(255, 255, 255, 0.60) !important;
+
+	text-shadow: none !important;
+	opacity: 1 !important;
+	box-sizing: border-box !important;
+}
+
+body.theme-liquid-glass #notifdeleteall i {
+	font-size: 1rem !important;
+	line-height: 1 !important;
+
+	color: #0f559a !important;
+	-webkit-text-fill-color: #ffffff !important;
+
+	opacity: 1 !important;
+	text-shadow: none !important;
+}
+
+/* Icon inside notification buttons */
+body.theme-liquid-glass #notificationBlock .lb-notify-box a.lb-btn.lb-btn-sm.lb-btn-icon i,
+body.theme-liquid-glass #notificationBlock .lb-notify-box a.lb-btn.lb-btn-icon i {
+	font-size: 1.35rem !important;
+	line-height: 1 !important;
+
+	width: auto !important;
+	height: auto !important;
+
+	color: #0f559a !important;
+	-webkit-text-fill-color: #0f559a !important;
+
+	text-shadow: none !important;
+	opacity: 1 !important;
+}
+
+body.theme-liquid-glass .lb-notify-box a.lb-btn.lb-btn-icon:hover,
+body.theme-liquid-glass #notificationBlock a.lb-btn.lb-btn-icon:hover,
+body.theme-liquid-glass #notifdeleteall:hover {
+	background: var(--lb-btn-hover-bg, rgba(255, 255, 255, 0.28)) !important;
+	background-color: rgba(255, 255, 255, 0.32) !important;
+
+	color: #003f7f !important;
+	-webkit-text-fill-color: #003f7f !important;
+
+	border-color: rgba(15, 85, 154, 0.50) !important;
+
+	box-shadow:
+		0 10px 22px rgba(0, 0, 0, 0.22),
+		inset 0 1px 1px rgba(255, 255, 255, 0.65) !important;
+}
+
+body.theme-liquid-glass .lb-notify-box a.lb-btn.lb-btn-icon:hover i,
+body.theme-liquid-glass #notificationBlock a.lb-btn.lb-btn-icon:hover i,
+body.theme-liquid-glass #notifdeleteall:hover i {
+	color: #003f7f !important;
+	-webkit-text-fill-color: #003f7f !important;
+}
+
+/* =========================================================
+   13. MQTT Gateway / MQTT Finder compatibility
+   ========================================================= */
+
+/* Legacy topic table transparency */
+body.theme-liquid-glass .topics_table thead,
+body.theme-liquid-glass .topics_table thead tr,
+body.theme-liquid-glass .topics_table th,
+body.theme-liquid-glass .topics_table tbody tr,
+body.theme-liquid-glass .topics_table tbody tr:nth-child(even),
+body.theme-liquid-glass .topics_table tbody tr:nth-child(odd),
+body.theme-liquid-glass .topics_table tbody tr td {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+}
+
+body.theme-liquid-glass .topics_table th {
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	text-shadow: none !important;
+	border-color: rgba(255, 255, 255, 0.28) !important;
+}
+
+body.theme-liquid-glass .topics_table tbody tr:hover,
+body.theme-liquid-glass .topics_table tbody tr:hover td {
+	background: rgba(255, 255, 255, 0.08) !important;
+	background-color: rgba(255, 255, 255, 0.08) !important;
+	background-image: none !important;
+}
+
+/* MQTT Gateway search/filter inputs */
+body.theme-liquid-glass #http_table_search,
+body.theme-liquid-glass #udp_table_search,
+body.theme-liquid-glass input[data-type="search"] {
+	background: rgba(255, 255, 255, 0.10) !important;
+	background-color: rgba(255, 255, 255, 0.10) !important;
+	background-image: none !important;
+
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	caret-color: #ffffff !important;
+
+	border: 1px solid rgba(255, 255, 255, 0.28) !important;
+	border-radius: 12px !important;
+
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.18),
+		0 8px 22px rgba(0, 0, 0, 0.18) !important;
+
+	text-shadow: none !important;
+	outline: none !important;
+}
+
+body.theme-liquid-glass #http_table_search:focus,
+body.theme-liquid-glass #udp_table_search:focus,
+body.theme-liquid-glass input[data-type="search"]:focus {
+	background: rgba(255, 255, 255, 0.16) !important;
+	background-color: rgba(255, 255, 255, 0.16) !important;
+
+	border-color: rgba(255, 255, 255, 0.45) !important;
+
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.24),
+		0 0 0 3px rgba(120, 190, 255, 0.18),
+		0 10px 26px rgba(0, 0, 0, 0.22) !important;
+}
+
+body.theme-liquid-glass #http_table_search::placeholder,
+body.theme-liquid-glass #udp_table_search::placeholder,
+body.theme-liquid-glass input[data-type="search"]::placeholder,
+body.theme-liquid-glass input#topic_filter.mqttgw-filter-input::placeholder {
+	color: rgba(255, 255, 255, 0.62) !important;
+	-webkit-text-fill-color: rgba(255, 255, 255, 0.62) !important;
+	opacity: 1 !important;
+}
+
+body.theme-liquid-glass input#topic_filter.mqttgw-filter-input::-webkit-input-placeholder {
+	color: #cccccc !important;
+	-webkit-text-fill-color: #cccccc !important;
+	opacity: 1 !important;
+}
+
+body.theme-liquid-glass input#topic_filter.mqttgw-filter-input::-moz-placeholder {
+	color: #cccccc !important;
+	opacity: 1 !important;
+}
+
+body.theme-liquid-glass input#topic_filter.mqttgw-filter-input:-ms-input-placeholder {
+	color: #cccccc !important;
+}
+
+body.theme-liquid-glass #filter_count,
+body.theme-liquid-glass .mqttgw-filter-count {
+	color: #cccccc !important;
+	-webkit-text-fill-color: #cccccc !important;
+	opacity: 1 !important;
+}
+
+/* MQTT Finder inline topic output */
+body.theme-liquid-glass .topic[style*="color:black"],
+body.theme-liquid-glass .topic[style*="color: black"],
+body.theme-liquid-glass .topic[style*="color:Black"],
+body.theme-liquid-glass .topic[style*="color: BLACK"] {
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .topic_payload {
+	color: var(--lb-primary, #8cc8ff) !important;
+	-webkit-text-fill-color: var(--lb-primary, #8cc8ff) !important;
+	text-shadow: none !important;
+	font-weight: 600 !important;
+}
+
+body.theme-liquid-glass .topic_time {
+	color: rgba(255, 255, 255, 0.82) !important;
+	-webkit-text-fill-color: rgba(255, 255, 255, 0.82) !important;
+	text-shadow: none !important;
+}
+
+/* MQTT Gateway V2 topic tree text */
+body.theme-liquid-glass #topic_groups_container,
+body.theme-liquid-glass #topic_groups_container summary,
+body.theme-liquid-glass #topic_groups_container strong,
+body.theme-liquid-glass #topic_groups_container span,
+body.theme-liquid-glass #topic_groups_container label,
+body.theme-liquid-glass .mqttgw-topic-row .mqttgw-topic-name,
+body.theme-liquid-glass .mqttgw-subgroup .mqttgw-topic-name,
+body.theme-liquid-glass .mqttgw-json-leaf .mqttgw-topic-name {
+	color: #111827 !important;
+	-webkit-text-fill-color: #111827 !important;
+	opacity: 1 !important;
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass #topic_groups_container .mqttgw-group-count,
+body.theme-liquid-glass #topic_groups_container .mqttgw-json-meta,
+body.theme-liquid-glass #topic_groups_container .mqttgw-topic-payload,
+body.theme-liquid-glass .mqttgw-topic-row-disabled,
+body.theme-liquid-glass .mqttgw-topic-row-disabled .mqttgw-topic-name,
+body.theme-liquid-glass .mqttgw-topic-row-disabled .mqttgw-topic-payload {
+	color: #374151 !important;
+	-webkit-text-fill-color: #374151 !important;
+	opacity: 1 !important;
+	text-shadow: none !important;
+}
+
+/* MQTT Gateway V2 traffic panels and rows */
+body.theme-liquid-glass .mqttgw-traffic-panel,
+body.theme-liquid-glass .mqttgw-traffic-toolbar,
+body.theme-liquid-glass .mqttgw-traffic-row {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+}
+
+body.theme-liquid-glass .mqttgw-traffic-panel-header {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .mqttgw-traffic-colheader,
+body.theme-liquid-glass .mqttgw-traffic-colheader span {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+
+	color: rgba(255, 255, 255, 0.82) !important;
+	-webkit-text-fill-color: rgba(255, 255, 255, 0.82) !important;
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .mqttgw-tgroup summary {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .mqttgw-traffic-row:hover {
+	background: rgba(255, 255, 255, 0.08) !important;
+	background-color: rgba(255, 255, 255, 0.08) !important;
+	background-image: none !important;
+}
+
+body.theme-liquid-glass .mqttgw-traffic-row:hover span {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+}
+
+body.theme-liquid-glass .mqttgw-tgroup summary:hover {
+	background: rgba(255, 255, 255, 0.06) !important;
+	background-color: rgba(255, 255, 255, 0.06) !important;
+	background-image: none !important;
+}
+
+body.theme-liquid-glass .mqttgw-traffic-topic,
+body.theme-liquid-glass .mqttgw-traffic-topic em {
+	color: var(--lb-primary, #8cc8ff) !important;
+	-webkit-text-fill-color: var(--lb-primary, #8cc8ff) !important;
+	text-shadow: none !important;
+}
+
+body.theme-liquid-glass .mqttgw-traffic-count {
+	color: var(--lb-primary, #8cc8ff) !important;
+	-webkit-text-fill-color: var(--lb-primary, #8cc8ff) !important;
+
+	background: rgba(255, 255, 255, 0.12) !important;
+	background-color: rgba(255, 255, 255, 0.12) !important;
+	background-image: none !important;
+
+	border: 1px solid rgba(140, 200, 255, 0.35) !important;
+	text-shadow: none !important;
+}
+
+/* =========================================================
+   14. Liquid Glass - Modal text colors
+   ========================================================= */
+
+/* Modal body text */
+body.theme-liquid-glass .lb-modal-content,
+body.theme-liquid-glass .lb-modal-content p,
+body.theme-liquid-glass .lb-modal-content div,
+body.theme-liquid-glass .lb-modal-content span {
+	color: #111827 !important;
+	-webkit-text-fill-color: #111827 !important;
+	text-shadow: none !important;
+}
+
+/* Modal header/title without dedicated class */
+body.theme-liquid-glass div:has(> .lb-modal-content) > div:first-child,
+body.theme-liquid-glass div:has(> .lb-modal-content) > div:first-child span {
+	color: #111827 !important;
+	-webkit-text-fill-color: #111827 !important;
+	text-shadow: none !important;
+}
+
+
