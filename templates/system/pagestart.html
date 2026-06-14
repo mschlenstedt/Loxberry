@@ -142,7 +142,7 @@
 
 	<!-- Mobile Tab Bar -->
 	<nav class="lb-tab-bar" id="lb-tab-bar" role="navigation" aria-label="Mobile Navigation">
-		<button class="lb-tab-bar-item" onclick="toggleTabPopup('plugins')" data-role="none">
+		<button class="lb-tab-bar-item" id="lb-tab-plugins" onclick="toggleTabPopup('plugins')" data-role="none">
 			<span class="lb-tab-icon" style="-webkit-mask-image:url('/system/images/icons/main_plugins_title.svg'); mask-image:url('/system/images/icons/main_plugins_title.svg');" aria-hidden="true"></span>
 			<span><TMPL_VAR HEADER.PANEL_MYPLUGINS></span>
 		</button>
@@ -251,6 +251,15 @@
 					tab.classList.add('active');
 				}
 			});
+			// Highlight "Meine Plugins" on the plugins index and on plugin subpages
+			var plPath = window.location.pathname;
+			var plSearch = window.location.search;
+			var isPluginsContext = (plPath === '/admin/system/index.cgi' && plSearch.indexOf('form=system') === -1)
+				|| plPath.indexOf('/admin/plugins/') === 0;
+			if (isPluginsContext) {
+				var pluginsBtn = document.getElementById('lb-tab-plugins');
+				if (pluginsBtn) pluginsBtn.classList.add('active');
+			}
 		})();
 
 		// Sidebar toggle (mobile)
@@ -311,7 +320,7 @@
 			}
 			// Remove URL-based active tab while popup is open
 			if (!urlActiveTab) {
-				urlActiveTab = document.querySelector('.lb-tab-bar-item[data-tab-path].active');
+				urlActiveTab = document.querySelector('.lb-tab-bar-item.active');
 			}
 			if (urlActiveTab) {
 				urlActiveTab.classList.remove('active');
