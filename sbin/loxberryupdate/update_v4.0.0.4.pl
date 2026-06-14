@@ -11,33 +11,36 @@ use LoxBerry::System;
 
 init();
 
-# Migrate /opt/loxberry/system/network/interfaces from symlink to regular file.
+# Restore the Debian-default network layout.
 #
 # On old LoxBerry installations /etc/network/interfaces was a symlink pointing to
-# /opt/loxberry/system/network/interfaces. In some setups that file itself is also
-# a symlink. The network write script (network-interfaces-write.pl) writes directly
-# to /opt/loxberry/system/network/interfaces and requires it to be a regular file.
+# /opt/loxberry/system/network/interfaces. We restore the original Debian state:
+# /etc/network/interfaces must be a regular file. From now on the WebUI reads and
+# network-interfaces-write.pl writes /etc/network/interfaces directly.
 
-my $ifaces     = "$lbhomedir/system/network/interfaces";
-my $ifaces_new = "${ifaces}.new";
+my $etc_ifaces = "/etc/network/interfaces";
+my $lb_ifaces  = "$lbhomedir/system/network/interfaces";
 
-LOGINF "Checking if $ifaces is a symlink...";
+LOGINF "Checking if $etc_ifaces is a symlink (old LoxBerry layout)...";
 
-my $is_symlink = system("[ -L '$ifaces' ]");
+my $is_symlink = system("[ -L '$etc_ifaces' ]");
 
 if ($is_symlink == 0) {
-    LOGINF "$ifaces is a symlink — migrating to regular file.";
+    LOGINF "$etc_ifaces is a symlink — removing it and restoring the Debian default.";
 
-    execute( command => "cp --dereference '$ifaces' '$ifaces_new'", log => $log );
-    execute( command => "rm '$ifaces'",                              log => $log );
-    execute( command => "cp '$ifaces_new' '$ifaces'",               log => $log );
-    execute( command => "rm '$ifaces_new'",                         log => $log );
-    execute( command => "chown root:root '$ifaces'",                 log => $log );
-    execute( command => "chmod 644 '$ifaces'",                       log => $log );
+    # Remove the symlink, then copy the real config file into place.
+    execute( command => "rm -f '$etc_ifaces'", log => $log );
+    if ( -e $lb_ifaces ) {
+        execute( command => "cp '$lb_ifaces' '$etc_ifaces'", log => $log );
+    } else {
+        LOGERR "$lb_ifaces does not exist — cannot restore $etc_ifaces!";
+    }
+    execute( command => "chown root:root '$etc_ifaces'", log => $log );
+    execute( command => "chmod 644 '$etc_ifaces'",       log => $log );
 
-    LOGOK "$ifaces successfully migrated to regular file." if ($errors == 0);
+    LOGOK "$etc_ifaces successfully restored as a regular file." if ($errors == 0);
 } else {
-    LOGOK "$ifaces is already a regular file — no migration needed.";
+    LOGOK "$etc_ifaces is already a regular file — no migration needed.";
 }
 
 LOGOK "Update script $0 finished." if ($errors == 0);

@@ -1,18 +1,18 @@
 #!/usr/bin/perl
 
 # network-interfaces-write.pl
-# Writes new content to /opt/loxberry/system/network/interfaces as root.
+# Writes new content directly to /etc/network/interfaces as root.
 # New content is read from STDIN.
 # Called via: sudo /opt/loxberry/sbin/network-interfaces-write.pl
 #
-# Prerequisites (ensured by update_v4.0.0.4.pl):
-#   /opt/loxberry/system/network/interfaces is a regular file (not a symlink).
-#   /etc/network/interfaces is a symlink pointing to that file.
+# /etc/network/interfaces is a regular file (Debian default). The old LoxBerry
+# layout (symlink /etc/network/interfaces -> /opt/loxberry/system/network/interfaces)
+# is removed by update_v4.0.0.4.pl.
 
 use strict;
 use warnings;
 
-my $interfaces_file = '/opt/loxberry/system/network/interfaces';
+my $interfaces_file = '/etc/network/interfaces';
 
 # Read new content from STDIN
 local $/;
