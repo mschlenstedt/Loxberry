@@ -142,11 +142,7 @@
 
 	<!-- Mobile Tab Bar -->
 	<nav class="lb-tab-bar" id="lb-tab-bar" role="navigation" aria-label="Mobile Navigation">
-		<a href="/admin/system/index.cgi" class="lb-tab-bar-item" data-tab-path="/admin/system/index.cgi">
-			<i class="pi pi-home"></i>
-			<span><TMPL_VAR HEADER.PANEL_HOME></span>
-		</a>
-		<button class="lb-tab-bar-item" onclick="toggleTabPopup('plugins')" data-role="none">
+		<button class="lb-tab-bar-item" id="lb-tab-plugins" onclick="toggleTabPopup('plugins')" data-role="none">
 			<span class="lb-tab-icon" style="-webkit-mask-image:url('/system/images/icons/main_plugins_title.svg'); mask-image:url('/system/images/icons/main_plugins_title.svg');" aria-hidden="true"></span>
 			<span><TMPL_VAR HEADER.PANEL_MYPLUGINS></span>
 		</button>
@@ -255,6 +251,38 @@
 					tab.classList.add('active');
 				}
 			});
+			// Highlight the matching popup-trigger button (Meine Plugins / Systemeinstellungen / Mehr)
+			// Only needed when no direct tab (data-tab-path) already matched the current page.
+			if (!document.querySelector('.lb-tab-bar-item[data-tab-path].active')) {
+				var plPath = window.location.pathname;
+				var plSearch = window.location.search;
+				function activatePopupBtn(name) {
+					var btn = document.querySelector(".lb-tab-bar-item[onclick=\"toggleTabPopup('" + name + "')\"]");
+					if (btn) btn.classList.add('active');
+				}
+				if (plPath === '/admin/system/index.cgi' && plSearch.indexOf('form=system') !== -1) {
+					// System overview page -> Systemeinstellungen
+					activatePopupBtn('settings');
+				} else if ((plPath === '/admin/system/index.cgi' && plSearch.indexOf('form=system') === -1)
+						|| plPath.indexOf('/admin/plugins/') === 0) {
+					// Plugins index or any plugin subpage -> Meine Plugins
+					activatePopupBtn('plugins');
+				} else {
+					// System widget subpage -> highlight the popup (settings/more/plugins) that lists it
+					var popupNames = ['settings', 'more', 'plugins'];
+					for (var pi = 0; pi < popupNames.length; pi++) {
+						var popup = document.getElementById('lb-tab-popup-' + popupNames[pi]);
+						if (!popup) continue;
+						var items = popup.querySelectorAll('.lb-tab-popup-item');
+						var matched = false;
+						for (var ii = 0; ii < items.length; ii++) {
+							var href = items[ii].getAttribute('href') || '';
+							if (href.split('?')[0] === plPath) { matched = true; break; }
+						}
+						if (matched) { activatePopupBtn(popupNames[pi]); break; }
+					}
+				}
+			}
 		})();
 
 		// Sidebar toggle (mobile)
@@ -315,7 +343,7 @@
 			}
 			// Remove URL-based active tab while popup is open
 			if (!urlActiveTab) {
-				urlActiveTab = document.querySelector('.lb-tab-bar-item[data-tab-path].active');
+				urlActiveTab = document.querySelector('.lb-tab-bar-item.active');
 			}
 			if (urlActiveTab) {
 				urlActiveTab.classList.remove('active');

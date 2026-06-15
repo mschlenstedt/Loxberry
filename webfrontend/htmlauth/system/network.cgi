@@ -379,7 +379,7 @@ sub save {
 	}
 
 	## Write to /etc/network/interfaces via privileged sbin script.
-	## The script handles symlink migration and sets root:root 644 permissions.
+	## The script writes the file directly and sets root:root 644 permissions.
 	open(my $pipe, '|-', 'sudo', '/opt/loxberry/sbin/network-interfaces-write.pl') or do
 			{ $error = "System failure: Cannot execute network-interfaces-write.pl";
 			&error; };

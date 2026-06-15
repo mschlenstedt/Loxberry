@@ -90,21 +90,8 @@ sub backup_form
 	$template->param('STORAGES_HTML', $storages);
 
 	# Check: /boot/firmware/config.txt must exist (Raspberry Pi Bookworm/Trixie)
-	# and .hw_model must identify Raspberry Pi hardware (same logic as installer)
 	my $warn_not_raspberry = 1;
-	if ( -f "/boot/firmware/config.txt" && -f "/boot/dietpi/.hw_model" ) {
-		if ( open(my $fh, '<', "/boot/dietpi/.hw_model") ) {
-			local $/;
-			my $hw = <$fh>;
-			close($fh);
-			if ($hw =~ /G_HW_MODEL_NAME='([^']+)'/) {
-				my $model_name = $1;
-				(my $hwmodelfilename = $model_name) =~ s/ /_/g;
-				$hwmodelfilename =~ s/[^a-zA-Z0-9_]+//g;
-				$warn_not_raspberry = 0 if (lc($hwmodelfilename) =~ /raspberry/);
-			}
-		}
-	}
+	$warn_not_raspberry = 0 if ( -f "/boot/firmware/config.txt" );
 	$template->param('WARN_NOT_RASPBERRY', $warn_not_raspberry);
 
 }
