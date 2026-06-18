@@ -38,6 +38,7 @@ _miniservers: dict = {}
 _subscriptions: list = []
 _cache: dict = {}
 _vi_locks: dict = {}   # vi_name -> asyncio.Lock; ensures one active send per VI
+_sent_since_summary: int = 0   # successful MS sends since last periodic INFO summary
 _reset_delay_ms: float = 1000.0
 _convert_booleans: bool = True
 _conversions: dict = {}
@@ -434,9 +435,13 @@ async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
                         topic       = str(message.topic)
                         payload     = message.payload.decode("utf-8", errors="replace")
                         recv_mono   = loop.time()
-                        recv_dt     = datetime.now()
-                        recv_ts     = recv_dt.strftime("%H:%M:%S.") + f"{recv_dt.microsecond // 1000:03d}"
-                        LOGDEB(f"MQTT received [{recv_ts}]: {topic} = {payload!r} (retain={message.retain})")
+                        # recv_ts is only used for DEBUG logging — build it lazily so
+                        # strftime + payload repr don't run per message at lower levels.
+                        recv_ts     = ""
+                        if _loglevel >= 7:
+                            recv_dt = datetime.now()
+                            recv_ts = recv_dt.strftime("%H:%M:%S.") + f"{recv_dt.microsecond // 1000:03d}"
+                            LOGDEB(f"MQTT received [{recv_ts}]: {topic} = {payload!r} (retain={message.retain})")
                         await queue.put({
                             "type":        "mqtt",
                             "topic":       topic,
@@ -506,13 +511,15 @@ async def _process_reset(session, item: dict, status_event: asyncio.Event) -> No
 async def _process_mqtt(session, item: dict,
                         status_event: asyncio.Event,
                         queue: asyncio.Queue) -> None:
+    global _sent_since_summary
     topic       = item["topic"]
     payload     = item["payload"]
     received_at = item["received_at"]
     received_ts = item.get("received_ts", "?")
     is_retain   = item.get("retain", False)
 
-    LOGDEB(f"Queue item: {topic} = {payload!r} (retain={is_retain})")
+    if _loglevel >= 7:
+        LOGDEB(f"Queue item: {topic} = {payload!r} (retain={is_retain})")
 
     sub = next((s for s in _subscriptions if s["id"] == topic), None)
     if sub is None:
@@ -576,7 +583,9 @@ async def _process_mqtt(session, item: dict,
 
                 elapsed_ms = (loop.time() - received_at) * 1000
                 send_dt    = datetime.now()
-                send_ts    = send_dt.strftime("%H:%M:%S.") + f"{send_dt.microsecond // 1000:03d}"
+                # send_ts is logging-only; send_dt itself feeds real cache fields below.
+                send_ts    = (send_dt.strftime("%H:%M:%S.") + f"{send_dt.microsecond // 1000:03d}"
+                              if _loglevel >= 7 else "")
                 ok = False
 
                 # Create or update top-level cache entry
@@ -592,9 +601,11 @@ async def _process_mqtt(session, item: dict,
                     entry["http"] = make_http_result(ok, http_status)
                     status_event.set()
                     if ok:
-                        LOGOK(f"HTTP sent: {vi_name} = {value} → MS{ms_id}")
-                        LOGDEB(f"recv={received_ts} → sent={send_ts} | total={elapsed_ms:.1f}ms | "
-                               f"http_status={http_status} | epoch={entry['last_updated_epoch']}")
+                        _sent_since_summary += 1
+                        if _loglevel >= 7:
+                            LOGDEB(f"HTTP sent: {vi_name} = {value} → MS{ms_id}")
+                            LOGDEB(f"recv={received_ts} → sent={send_ts} | total={elapsed_ms:.1f}ms | "
+                                   f"http_status={http_status} | epoch={entry['last_updated_epoch']}")
                     else:
                         LOGDEB(f"Send failed: {vi_name} | http_status={http_status} | "
                                f"total={elapsed_ms:.1f}ms | epoch={entry['last_updated_epoch']}")
@@ -620,7 +631,9 @@ async def _process_mqtt(session, item: dict,
             if ms and ms.get("ipaddress"):
                 send_udp_bundled(ms["ipaddress"], _udp_out_port,
                                  [(udp_n, val) for _, udp_n, val in triples])
-                LOGOK(f"UDP sent: {len(triples)} VI(s) → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+                _sent_since_summary += len(triples)
+                if _loglevel >= 7:
+                    LOGDEB(f"UDP sent: {len(triples)} VI(s) → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
                 for vi_n, _, _ in triples:
                     if vi_n in _cache:
                         _cache[vi_n]["udp"] = make_udp_result()
@@ -629,15 +642,22 @@ async def _process_mqtt(session, item: dict,
 # ─── Status file writer ───────────────────────────────────────────────────────
 async def status_writer(status_event: asyncio.Event, cache: dict,
                         path: Path = STATUS_FILE) -> None:
-    """Async task: write cache dict to status JSON file on every status_event."""
+    """Async task: write cache dict to status JSON file, coalescing bursts.
+
+    The file is consumed by the WebUI only, so it is written compact (no
+    indent) and at most ~3x/s: after each write we sleep briefly, so a burst
+    of many messages collapses into a single full-cache serialization instead
+    of one O(cache) dump per message."""
     while True:
         await status_event.wait()
         status_event.clear()
         try:
-            path.write_text(json.dumps(cache, indent=2), encoding="utf-8")
-            LOGDEB(f"Status file written: {path}")
+            path.write_text(json.dumps(cache, separators=(",", ":")), encoding="utf-8")
+            if _loglevel >= 7:
+                LOGDEB(f"Status file written: {path}")
         except Exception as exc:
             LOGERR(f"Status file write failed: {exc}")
+        await asyncio.sleep(0.3)   # rate-limit / burst coalescing
 
 # ─── Transformers ─────────────────────────────────────────────────────────────
 def trans_skills(filepath: Path) -> dict:
@@ -979,6 +999,17 @@ def make_udp_result() -> dict:
     }
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
+async def _send_summary_logger() -> None:
+    """Periodic INFO summary of sent values. Per-send success is logged at
+    DEBUG only (level 7) to avoid one tmpfs log line per datapoint at the
+    default level; this keeps a coarse heartbeat visible at INFO instead."""
+    global _sent_since_summary
+    while True:
+        await asyncio.sleep(60)
+        if _sent_since_summary:
+            LOGINF(f"{_sent_since_summary} value(s) sent to Miniserver(s) in last 60s")
+            _sent_since_summary = 0
+
 async def _supervise(name: str, coro_factory) -> None:
     """Run a task coroutine forever; on an unexpected exception log the full
     traceback to the normal log and restart it after 5s instead of letting the
@@ -1080,6 +1111,7 @@ async def main() -> None:
             _supervise("http_worker",  lambda: http_worker(queue, status_event)),
             _supervise("config_watcher", config_watcher),
             _supervise("status_writer", lambda: status_writer(status_event, _cache)),
+            _supervise("send_summary", _send_summary_logger),
             _supervise("udp_listener", lambda: udp_listener(_udp_in_port)),
         )
     finally:
