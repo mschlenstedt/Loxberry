@@ -1851,7 +1851,8 @@ $(function () {
             html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(r.vi) + '" title="VI kopieren">' + _svgCopy + '</button>';
             html += '</span>';
           } else {
-            var cmd = 'MQTT:\\i' + (r.jp ? r.topic + '/' + r.jp : r.topic) + '=\\i\\v';
+            var udpJp = r.jp ? r.jp.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/\s+/g, '_') : null;
+            var cmd = 'MQTT:\\i' + (udpJp ? r.topic + '/' + udpJp : r.topic) + '=\\i\\v';
             html += '<span class="mqttgw-traffic-cmd">';
             html += '<span class="mqttgw-traffic-cmd-text" title="' + esc(cmd) + '">' + esc(cmd) + '</span>';
             html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(cmd) + '" title="Loxone-Befehl kopieren">' + _svgCopy + '</button>';
