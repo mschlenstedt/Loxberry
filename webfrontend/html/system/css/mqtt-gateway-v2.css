@@ -854,12 +854,13 @@ body.theme-dark .mqttgw-topic-ms {
 }
 
 
-/* HTTP/UDP row: icon | vi-name | topic | value | ms | sent | runtime
-   The MS column grows with the number of target miniservers (badges wrap),
-   so e.g. 5 miniservers stay inside the row instead of overflowing. */
+/* HTTP/UDP row: icon | vi-name | topic | value | resend | ms | sent | runtime
+   The resend button sits just before the MS column. The MS column grows with the
+   number of target miniservers (badges wrap), so e.g. 5 miniservers stay inside
+   the row instead of overflowing. */
 .mqttgw-traffic-row {
   display: grid;
-  grid-template-columns: 38px 1fr 1fr 80px minmax(40px,auto) 76px 44px;
+  grid-template-columns: 16px 1fr 1fr 80px 22px minmax(40px,auto) 76px 44px;
   align-items: start;
   gap: 6px;
   padding: 5px 10px;
@@ -870,7 +871,7 @@ body.theme-dark .mqttgw-topic-ms {
 
 /* UDP row uses the same column layout (HTTP code never applied to UDP). */
 .mqttgw-traffic-row-udp {
-  grid-template-columns: 38px 1fr 1fr 80px minmax(40px,auto) 76px 44px;
+  grid-template-columns: 16px 1fr 1fr 80px 22px minmax(40px,auto) 76px 44px;
 }
 
 .mqttgw-traffic-row:last-child {
@@ -888,17 +889,12 @@ body.theme-dark .mqttgw-topic-ms {
   margin-top: 1px;
 }
 
-/* Status icon + per-row resend button live in the first column. */
-.mqttgw-traffic-status {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
+/* Per-row resend button, in its own column just before the MS column. */
 .mqttgw-resend-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  justify-self: center;
   width: 17px;
   height: 17px;
   padding: 0;

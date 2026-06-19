@@ -1630,6 +1630,7 @@ $(function() {
     <span><TMPL_VAR MQTT.V2_COL_VI></span>
     <span><TMPL_VAR MQTT.V2_COL_TOPIC></span>
     <span><TMPL_VAR MQTT.V2_COL_VALUE></span>
+    <span></span>
     <span><TMPL_VAR MQTT.V2_COL_MS></span>
     <span><TMPL_VAR MQTT.V2_COL_SENT></span>
     <span><TMPL_VAR MQTT.V2_COL_RUNTIME></span>
@@ -1661,6 +1662,7 @@ $(function() {
     <span><TMPL_VAR MQTT.V2_COL_CMD></span>
     <span><TMPL_VAR MQTT.V2_COL_TOPIC></span>
     <span><TMPL_VAR MQTT.V2_COL_VALUE></span>
+    <span></span>
     <span><TMPL_VAR MQTT.V2_COL_MS></span>
     <span><TMPL_VAR MQTT.V2_COL_SENT></span>
     <span><TMPL_VAR MQTT.V2_COL_RUNTIME></span>
@@ -1902,10 +1904,7 @@ $(function () {
                 : esc(val))
             : '&mdash;';
           html += '<div class="' + rowCls + '">';
-          html += '<span class="mqttgw-traffic-status">';
           html += '<img src="' + _iconImg[sc] + '" class="mqttgw-traffic-icon" title="' + esc(_titles[sc]) + '" width="14" height="14">';
-          html += '<button class="mqttgw-resend-btn" type="button" data-resend="' + esc(r.vi) + '" title="' + esc(_lang.resendOne) + '">' + _svgResend + '</button>';
-          html += '</span>';
           if (isHttp) {
             html += '<span class="mqttgw-traffic-vi">';
             html += '<span class="mqttgw-traffic-name" title="' + esc(r.vi) + '">' + esc(r.vi) + '</span>';
@@ -1921,6 +1920,7 @@ $(function () {
           }
           html += '<span class="mqttgw-traffic-topic" title="' + esc(r.topic) + (r.jp ? ' &bull; ' + esc(r.jp) : '') + '">' + esc(r.topic) + (r.jp ? ' <em>&bull;&nbsp;' + esc(r.jp) + '</em>' : '') + '</span>';
           html += '<span class="mqttgw-traffic-value">' + valDisp + '</span>';
+          html += '<button class="mqttgw-resend-btn" type="button" data-resend="' + esc(r.vi) + '" title="' + esc(_lang.resendOne) + '">' + _svgResend + '</button>';
           html += '<span class="mqttgw-traffic-ms-label">' + ms + '</span>';
           html += '<span class="mqttgw-traffic-time">' + relTime(ts) + '</span>';
           html += '<span class="mqttgw-traffic-proc">' + pms + '</span>';
