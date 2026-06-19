@@ -486,16 +486,17 @@ async def _process_reset(session, item: dict, status_event: asyncio.Event) -> No
         LOGDEB(f"Waiting for VI lock (reset): {vi_name}")
     async with lock:
         now = datetime.now()
-        entry = _cache.setdefault(vi_name, make_cache_entry("0", ms_id))
+        entry = _cache.setdefault(vi_name, make_cache_entry("0", [ms_id]))
         entry["value"]              = "0"
-        entry["miniserver"]         = ms_id
         entry["last_updated"]       = now.isoformat(timespec="seconds")
         entry["last_updated_epoch"] = int(now.timestamp())
         entry["last_processing_ms"] = None
+        pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry("0"))
+        pm["value"] = "0"
 
         if _use_http:
             ok, http_status = await send_http(session, ms, vi_name, "0")
-            entry["http"] = make_http_result(ok, http_status)
+            pm["http"] = make_http_result(ok, http_status)
             status_event.set()
             if ok:
                 LOGOK(f"Reset sent (HTTP): {vi_name} = 0 → MS{ms_id}")
@@ -503,7 +504,7 @@ async def _process_reset(session, item: dict, status_event: asyncio.Event) -> No
 
         if _use_udp and ms.get("ipaddress"):
             send_udp_bundled(ms["ipaddress"], _udp_out_port, [(udp_name, "0")])
-            entry["udp"] = make_udp_result()
+            pm["udp"] = make_udp_result()
             status_event.set()
             LOGOK(f"Reset sent (UDP): {udp_name} = 0 → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
 
@@ -563,18 +564,25 @@ async def _process_mqtt(session, item: dict,
             if is_retain:
                 # Broker delivers retained messages on subscribe → cache only, no Miniserver forward
                 now = datetime.now()
-                entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_ids[0] if ms_ids else "1"))
+                ms_list = [str(m) for m in ms_ids] or ["1"]
+                entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list))
                 entry["value"]              = str(value)
-                entry["miniserver"]         = ms_ids[0] if ms_ids else "1"
+                entry["miniservers"]        = ms_list
                 entry["last_updated"]       = now.isoformat(timespec="seconds")
                 entry["last_updated_epoch"] = int(now.timestamp())
+                # Seed per-MS value so the first real message with the same value
+                # is not forwarded (matches single-MS retain behaviour).
+                for ms_id in ms_list:
+                    pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
+                    pm["value"] = str(value)
                 status_event.set()
                 LOGDEB(f"Retain: cache-only: {vi_name} = {value}")
                 continue
 
+            proc_recorded = False
             for ms_id in ms_ids:
-                if not should_send(vi_name, value, noncached, _cache):
-                    LOGDEB(f"Cache hit (skip): {vi_name} = {value}")
+                if not should_send_ms(_cache.get(vi_name), ms_id, value, noncached):
+                    LOGDEB(f"Cache hit (skip): {vi_name} = {value} → MS{ms_id}")
                     continue
                 ms = _miniservers.get(ms_id)
                 if ms is None:
@@ -589,16 +597,21 @@ async def _process_mqtt(session, item: dict,
                 ok = False
 
                 # Create or update top-level cache entry
-                entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_id, round(elapsed_ms, 1)))
+                entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_ids, round(elapsed_ms, 1)))
                 entry["value"]              = str(value)
-                entry["miniserver"]         = ms_id
+                entry["miniservers"]        = [str(m) for m in ms_ids]
                 entry["last_updated"]       = send_dt.isoformat(timespec="seconds")
                 entry["last_updated_epoch"] = int(send_dt.timestamp())
-                entry["last_processing_ms"] = round(elapsed_ms, 1)
+                # Processing time is recorded once per message (first miniserver).
+                if not proc_recorded:
+                    entry["last_processing_ms"] = round(elapsed_ms, 1)
+                    proc_recorded = True
+                pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
+                pm["value"] = str(value)
 
                 if _use_http:
                     ok, http_status = await send_http(session, ms, vi_name, value)
-                    entry["http"] = make_http_result(ok, http_status)
+                    pm["http"] = make_http_result(ok, http_status)
                     status_event.set()
                     if ok:
                         _sent_since_summary += 1
@@ -634,9 +647,11 @@ async def _process_mqtt(session, item: dict,
                 _sent_since_summary += len(triples)
                 if _loglevel >= 7:
                     LOGDEB(f"UDP sent: {len(triples)} VI(s) → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
-                for vi_n, _, _ in triples:
-                    if vi_n in _cache:
-                        _cache[vi_n]["udp"] = make_udp_result()
+                for vi_n, _, val in triples:
+                    e = _cache.get(vi_n)
+                    if e:
+                        pm = e.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(val))
+                        pm["udp"] = make_udp_result()
                 status_event.set()
 
 # ─── Status file writer ───────────────────────────────────────────────────────
@@ -955,31 +970,41 @@ def load_configs() -> tuple[dict, list, int, float, bool, dict, bool, bool, int]
     )
 
 # ─── Cache helpers ────────────────────────────────────────────────────────────
-def should_send(vi_name: str, value, noncached: bool, cache: dict) -> bool:
-    """Return True if value should be forwarded."""
-    if noncached:
+def should_send_ms(entry: dict | None, ms_id: str, value, noncached: bool) -> bool:
+    """Return True if *value* should be forwarded to this specific miniserver.
+
+    Dedup is tracked per (VI, miniserver): each target remembers the last value
+    it actually received. This prevents one miniserver's send from suppressing
+    the send to a second miniserver for the same value, and lets a newly added
+    miniserver receive the current value on the next message."""
+    if noncached or entry is None:
         return True
-    entry = cache.get(vi_name)
-    if entry is None:
-        return True
-    return str(entry["value"]) != str(value)
+    pm = entry.get("per_ms", {}).get(str(ms_id))
+    return pm is None or str(pm.get("value")) != str(value)
 
 def get_miniserver_ids(toms: list) -> list[str]:
     """Return miniserver IDs to send to. Empty list means Miniserver 1."""
     return ["1"] if not toms else [str(t) for t in toms]
 
-def make_cache_entry(value, ms_id: str,
+def make_cache_entry(value, ms_ids,
                      processing_ms: float | None = None) -> dict:
     now = datetime.now()
+    if isinstance(ms_ids, (list, tuple)):
+        ms_list = [str(m) for m in ms_ids] or ["1"]
+    else:
+        ms_list = [str(ms_ids)]
     return {
         "value":              str(value),
-        "miniserver":         ms_id,
+        "miniservers":        ms_list,
         "last_updated":       now.isoformat(timespec="seconds"),
         "last_updated_epoch": int(now.timestamp()),
         "last_processing_ms": processing_ms,
-        "http":               None,
-        "udp":                None,
+        "per_ms":             {},
     }
+
+def make_per_ms_entry(value) -> dict:
+    """Per-miniserver sub-entry: last value sent + per-transport send result."""
+    return {"value": str(value), "http": None, "udp": None}
 
 def make_http_result(ok: bool, http_status: int | None) -> dict:
     now = datetime.now()

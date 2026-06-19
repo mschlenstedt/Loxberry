@@ -714,12 +714,24 @@ $(function() {
     }
 
     function httpScOf(e) {
-        if (!e || !e.http) return 'new';
-        var h = e.http;
-        if (h.status === 'send_failed') return 'error';
-        if (h.http_status >= 200 && h.http_status < 300) return 'ok';
-        if (h.http_status) return 'warn';
-        return 'ok';
+        if (!e) return 'new';
+        function one(h) {
+            if (!h) return 'new';
+            if (h.status === 'send_failed') return 'error';
+            if (h.http_status >= 200 && h.http_status < 300) return 'ok';
+            if (h.http_status) return 'warn';
+            return 'ok';
+        }
+        // Aggregate over all target miniservers (worst wins); legacy fallback.
+        if (e.per_ms && Object.keys(e.per_ms).length) {
+            var order = {error: 0, warn: 1, ok: 2, new: 3}, worst = 'new';
+            Object.keys(e.per_ms).forEach(function (id) {
+                var sc = one(e.per_ms[id].http);
+                if (order[sc] < order[worst]) worst = sc;
+            });
+            return worst;
+        }
+        return one(e.http);
     }
 
     function getTopicHttpSc(topic) {
@@ -1619,7 +1631,6 @@ $(function() {
     <span><TMPL_VAR MQTT.V2_COL_TOPIC></span>
     <span><TMPL_VAR MQTT.V2_COL_VALUE></span>
     <span><TMPL_VAR MQTT.V2_COL_MS></span>
-    <span><TMPL_VAR MQTT.V2_COL_HTTP></span>
     <span><TMPL_VAR MQTT.V2_COL_SENT></span>
     <span><TMPL_VAR MQTT.V2_COL_RUNTIME></span>
   </div>
@@ -1727,19 +1738,37 @@ $(function () {
     });
   }
 
-  function httpSc(e) {
-    if (!e || !e.http) return 'new';
-    var h = e.http;
+  var _scOrder = {error: 0, warn: 1, ok: 2, new: 3};
+
+  // Score of a single per-MS http result object.
+  function httpScOne(h) {
+    if (!h) return 'new';
     if (h.status === 'send_failed') return 'error';
     if (h.http_status >= 200 && h.http_status < 300) return 'ok';
     if (h.http_status) return 'warn';
     return 'ok';
   }
-
-  function udpSc(e) {
-    if (!e || !e.udp) return 'new';
-    return e.udp.status === 'sent_ok' ? 'ok' : 'error';
+  function udpScOne(u) {
+    if (!u) return 'new';
+    return u.status === 'sent_ok' ? 'ok' : 'error';
   }
+
+  // Aggregate over all target miniservers (worst status wins); falls back to
+  // the legacy single-MS structure for transitional status files.
+  function _aggSc(e, key, oneFn) {
+    if (!e) return 'new';
+    if (e.per_ms && Object.keys(e.per_ms).length) {
+      var worst = 'new';
+      Object.keys(e.per_ms).forEach(function (id) {
+        var sc = oneFn(e.per_ms[id][key]);
+        if (_scOrder[sc] < _scOrder[worst]) worst = sc;
+      });
+      return worst;
+    }
+    return oneFn(e[key]);
+  }
+  function httpSc(e) { return _aggSc(e, 'http', httpScOne); }
+  function udpSc(e)  { return _aggSc(e, 'udp',  udpScOne); }
 
   var _lang = {
     nothingSent:  '<TMPL_VAR MQTT.V2_NOTHING_SENT>',
@@ -1780,8 +1809,18 @@ $(function () {
     var isHttp = (transport === 'http');
     var getSc  = isHttp ? httpSc : udpSc;
     var getEpoch = function (e) {
-      return isHttp ? (e && e.http ? e.http.last_sent_epoch : null)
-                    : (e && e.udp  ? e.udp.last_sent_epoch  : null);
+      if (!e) return null;
+      var key = isHttp ? 'http' : 'udp';
+      // Most recent send across all target miniservers; legacy fallback.
+      if (e.per_ms && Object.keys(e.per_ms).length) {
+        var best = null;
+        Object.keys(e.per_ms).forEach(function (id) {
+          var r = e.per_ms[id][key];
+          if (r && r.last_sent_epoch && (!best || r.last_sent_epoch > best)) best = r.last_sent_epoch;
+        });
+        return best;
+      }
+      return e[key] ? e[key].last_sent_epoch : null;
     };
 
     var filtered = viRows.filter(function (r) {
@@ -1835,7 +1874,23 @@ $(function () {
           var sc  = getSc(e);
           var ts  = getEpoch(e);
           var val = e ? e.value : '';
-          var ms  = e ? 'MS' + e.miniserver : '&mdash;';
+          // MS column: one coloured badge per target miniserver. Colour reflects
+          // this MS's own send status; the HTTP code is shown in the tooltip.
+          var msIds = e && e.miniservers ? e.miniservers
+                    : (e && e.miniserver ? [e.miniserver] : []);
+          var ms = msIds.length ? msIds.map(function (id) {
+            var pm = e.per_ms && e.per_ms[id];
+            var bsc, tip;
+            if (isHttp) {
+              var h = pm && pm.http;
+              bsc = httpScOne(h);
+              tip = 'MS' + id + (h && h.http_status ? ' · ' + h.http_status : ' · ' + _titles[bsc]);
+            } else {
+              bsc = udpScOne(pm && pm.udp);
+              tip = 'MS' + id + ' · ' + _titles[bsc];
+            }
+            return '<span class="mqttgw-ms-badge mqttgw-ms-' + bsc + '" title="' + esc(tip) + '">MS' + esc(id) + '</span>';
+          }).join('') : '&mdash;';
           var pms = e && e.last_processing_ms != null
                       ? (+e.last_processing_ms).toFixed(1) + 'ms' : '&mdash;';
           var valDisp = val
@@ -1861,10 +1916,6 @@ $(function () {
           html += '<span class="mqttgw-traffic-topic" title="' + esc(r.topic) + (r.jp ? ' &bull; ' + esc(r.jp) : '') + '">' + esc(r.topic) + (r.jp ? ' <em>&bull;&nbsp;' + esc(r.jp) + '</em>' : '') + '</span>';
           html += '<span class="mqttgw-traffic-value">' + valDisp + '</span>';
           html += '<span class="mqttgw-traffic-ms-label">' + ms + '</span>';
-          if (isHttp) {
-            var code = e && e.http && e.http.http_status ? e.http.http_status : '&mdash;';
-            html += '<span class="mqttgw-traffic-code">' + code + '</span>';
-          }
           html += '<span class="mqttgw-traffic-time">' + relTime(ts) + '</span>';
           html += '<span class="mqttgw-traffic-proc">' + pms + '</span>';
           html += '</div>';
