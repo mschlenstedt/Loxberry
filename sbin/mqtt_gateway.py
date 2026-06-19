@@ -520,12 +520,14 @@ async def _resend_one(session, vi_name: str, entry: dict, status_event: asyncio.
     ms_list  = entry.get("miniservers") or ["1"]
     udp_name = entry.get("udp_name") or vi_name
     sent     = 0
+    loop     = asyncio.get_event_loop()
 
     lock = _vi_locks.setdefault(vi_name, asyncio.Lock())
     async with lock:
         now = datetime.now()
         entry["last_updated"]       = now.isoformat(timespec="seconds")
         entry["last_updated_epoch"] = int(now.timestamp())
+        proc_recorded = False
 
         for ms_id in ms_list:
             ms = _miniservers.get(str(ms_id))
@@ -534,6 +536,10 @@ async def _resend_one(session, vi_name: str, entry: dict, status_event: asyncio.
                 continue
             pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
             pm["value"] = str(value)
+
+            # Measure the send duration so the "runtime" column reflects the resend
+            # (there is no received_at for a resend — record the first MS like a normal send).
+            t0 = loop.time()
 
             if _use_http:
                 ok, http_status = await send_http(session, ms, vi_name, value)
@@ -549,6 +555,10 @@ async def _resend_one(session, vi_name: str, entry: dict, status_event: asyncio.
                 pm["udp"] = make_udp_result()
                 sent += 1
                 LOGOK(f"Resend (UDP): {udp_name} = {value} → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+
+            if not proc_recorded:
+                entry["last_processing_ms"] = round((loop.time() - t0) * 1000, 1)
+                proc_recorded = True
 
         status_event.set()
     return sent
