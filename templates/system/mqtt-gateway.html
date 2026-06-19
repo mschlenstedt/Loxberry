@@ -1673,6 +1673,7 @@ $(function() {
 </div>
 
 <div style="text-align:center;margin-top:8px">
+  <button class="lb-btn lb-btn-sm" id="v2-resend-all"><TMPL_VAR MQTT.V2_BTN_RESEND_ALL></button>
   <button class="lb-btn lb-btn-sm" id="v2-reconnect"><TMPL_VAR MQTT.V2_BTN_CLEAR_CACHE></button>
 </div>
 
@@ -1700,6 +1701,7 @@ $(function () {
 
   var _svgCopy  = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
   var _svgCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var _svgResend = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>';
 
   function viName(topic, jsonPath) {
     var tp = topic.replace(/\//g, '_').replace(/\s+/g, '_');
@@ -1778,7 +1780,8 @@ $(function () {
     statusError:  '<TMPL_VAR MQTT.V2_STATUS_ERROR>',
     statusNew:    '<TMPL_VAR MQTT.V2_STATUS_NEW>',
     timeNow:      '<TMPL_VAR MQTT.V2_TIME_NOW>',
-    timeMinAgo:   '<TMPL_VAR MQTT.V2_TIME_MIN_AGO>'
+    timeMinAgo:   '<TMPL_VAR MQTT.V2_TIME_MIN_AGO>',
+    resendOne:    '<TMPL_VAR MQTT.V2_BTN_RESEND>'
   };
 
   function relTime(epoch) {
@@ -1899,7 +1902,10 @@ $(function () {
                 : esc(val))
             : '&mdash;';
           html += '<div class="' + rowCls + '">';
+          html += '<span class="mqttgw-traffic-status">';
           html += '<img src="' + _iconImg[sc] + '" class="mqttgw-traffic-icon" title="' + esc(_titles[sc]) + '" width="14" height="14">';
+          html += '<button class="mqttgw-resend-btn" type="button" data-resend="' + esc(r.vi) + '" title="' + esc(_lang.resendOne) + '">' + _svgResend + '</button>';
+          html += '</span>';
           if (isHttp) {
             html += '<span class="mqttgw-traffic-vi">';
             html += '<span class="mqttgw-traffic-name" title="' + esc(r.vi) + '">' + esc(r.vi) + '</span>';
@@ -1966,9 +1972,28 @@ $(function () {
   });
 
   $('#v2-reconnect').on('click', function () {
-    $.post('ajax/ajax-mqtt.php', {ajax: 'reconnect', udpinport: udpinport});
+    $.post('ajax/ajax-mqtt.php', {ajax: 'clearcache', udpinport: udpinport});
     v2St = {};
     renderBoth();
+  });
+
+  $('#v2-resend-all').on('click', function () {
+    var $b = $(this).prop('disabled', true);
+    $.post('ajax/ajax-mqtt.php', {ajax: 'resend_all', udpinport: udpinport})
+      .always(function () { setTimeout(function () { $b.prop('disabled', false); }, 1500); });
+  });
+
+  // Per-row resend button (next to the status icon).
+  $('#v2-http-content, #v2-udp-content').on('click', '.mqttgw-resend-btn', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var $b = $(this);
+    var vi = $b.data('resend');
+    if (!vi) return;
+    $.post('ajax/ajax-mqtt.php', {ajax: 'resend_one', udpinport: udpinport, vi: vi}, function () {
+      $b.addClass('mqttgw-resend-ok');
+      setTimeout(function () { $b.removeClass('mqttgw-resend-ok'); }, 1200);
+    });
   });
 
   $(document).on('click', '.mqttgw-copy-btn', function (e) {
@@ -3319,7 +3344,7 @@ $("#reconnect").click(function(){
 		// console.log("Reconnect and retransmit all values");
 		$("#reconnect").attr("disabled", true);
 		$.post( 'ajax/ajax-mqtt.php', {
-			ajax: 'reconnect',
+			ajax: 'clearcache',
 			udpinport: udpinport })
 		.done(function(resp) {
 			// console.log( "ajax_post", "success", resp );

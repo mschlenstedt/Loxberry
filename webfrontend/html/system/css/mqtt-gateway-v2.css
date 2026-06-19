@@ -859,7 +859,7 @@ body.theme-dark .mqttgw-topic-ms {
    so e.g. 5 miniservers stay inside the row instead of overflowing. */
 .mqttgw-traffic-row {
   display: grid;
-  grid-template-columns: 16px 1fr 1fr 80px minmax(40px,auto) 76px 44px;
+  grid-template-columns: 38px 1fr 1fr 80px minmax(40px,auto) 76px 44px;
   align-items: start;
   gap: 6px;
   padding: 5px 10px;
@@ -870,7 +870,7 @@ body.theme-dark .mqttgw-topic-ms {
 
 /* UDP row uses the same column layout (HTTP code never applied to UDP). */
 .mqttgw-traffic-row-udp {
-  grid-template-columns: 16px 1fr 1fr 80px minmax(40px,auto) 76px 44px;
+  grid-template-columns: 38px 1fr 1fr 80px minmax(40px,auto) 76px 44px;
 }
 
 .mqttgw-traffic-row:last-child {
@@ -886,6 +886,36 @@ body.theme-dark .mqttgw-topic-ms {
   width: 14px;
   height: 14px;
   margin-top: 1px;
+}
+
+/* Status icon + per-row resend button live in the first column. */
+.mqttgw-traffic-status {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.mqttgw-resend-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--lb-gray-400);
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.mqttgw-resend-btn:hover {
+  color: var(--lb-btn-primary-bg, #6dac20);
+  background: var(--lb-gray-100);
+}
+.mqttgw-resend-btn.mqttgw-resend-ok {
+  color: #4d7d16;
 }
 
 .mqttgw-traffic-name {

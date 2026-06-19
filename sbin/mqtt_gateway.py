@@ -47,6 +47,7 @@ _use_udp: bool = False
 _udp_out_port: int = 7777
 _udp_in_port: int = 11884
 _udp_out_sock: socket.socket | None = None
+_queue: "asyncio.Queue | None" = None   # set in main(); lets UDP IN enqueue resend jobs
 
 UDP_PREFIX = "MQTT: "
 UDP_MAX = 220
@@ -467,6 +468,8 @@ async def http_worker(queue: asyncio.Queue, status_event: asyncio.Event) -> None
 
             if item["type"] == "reset":
                 await _process_reset(session, item, status_event)
+            elif item["type"] == "resend":
+                await _process_resend(session, item, status_event)
             elif item["type"] == "mqtt":
                 await _process_mqtt(session, item, status_event, queue)
 
@@ -488,6 +491,7 @@ async def _process_reset(session, item: dict, status_event: asyncio.Event) -> No
         now = datetime.now()
         entry = _cache.setdefault(vi_name, make_cache_entry("0", [ms_id]))
         entry["value"]              = "0"
+        entry["udp_name"]           = udp_name
         entry["last_updated"]       = now.isoformat(timespec="seconds")
         entry["last_updated_epoch"] = int(now.timestamp())
         entry["last_processing_ms"] = None
@@ -507,6 +511,73 @@ async def _process_reset(session, item: dict, status_event: asyncio.Event) -> No
             pm["udp"] = make_udp_result()
             status_event.set()
             LOGOK(f"Reset sent (UDP): {udp_name} = 0 → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+
+
+async def _resend_one(session, vi_name: str, entry: dict, status_event: asyncio.Event) -> int:
+    """Resend a single cached VI's current value to all its target miniservers,
+    bypassing the dedup cache. Returns the number of successful sends."""
+    value    = entry.get("value", "")
+    ms_list  = entry.get("miniservers") or ["1"]
+    udp_name = entry.get("udp_name") or vi_name
+    sent     = 0
+
+    lock = _vi_locks.setdefault(vi_name, asyncio.Lock())
+    async with lock:
+        now = datetime.now()
+        entry["last_updated"]       = now.isoformat(timespec="seconds")
+        entry["last_updated_epoch"] = int(now.timestamp())
+
+        for ms_id in ms_list:
+            ms = _miniservers.get(str(ms_id))
+            if ms is None:
+                LOGWARN(f"Resend: miniserver {ms_id} not in config ({vi_name})")
+                continue
+            pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
+            pm["value"] = str(value)
+
+            if _use_http:
+                ok, http_status = await send_http(session, ms, vi_name, value)
+                pm["http"] = make_http_result(ok, http_status)
+                if ok:
+                    sent += 1
+                    LOGOK(f"Resend (HTTP): {vi_name} = {value} → MS{ms_id}")
+                else:
+                    LOGWARN(f"Resend failed (HTTP): {vi_name} → MS{ms_id} | http_status={http_status}")
+
+            if _use_udp and ms.get("ipaddress"):
+                send_udp_bundled(ms["ipaddress"], _udp_out_port, [(udp_name, value)])
+                pm["udp"] = make_udp_result()
+                sent += 1
+                LOGOK(f"Resend (UDP): {udp_name} = {value} → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+
+        status_event.set()
+    return sent
+
+
+async def _process_resend(session, item: dict, status_event: asyncio.Event) -> None:
+    """Resend cached value(s) to the Miniserver(s), ignoring the dedup cache.
+
+    item["vi_name"] == None  → resend ALL cached VIs (e.g. UDP 'reconnect'/'resend').
+    item["vi_name"] == "<vi>" → resend just that VI (per-row WebUI button).
+    """
+    target = item.get("vi_name")
+
+    if target:
+        entry = _cache.get(target)
+        if entry is None:
+            LOGWARN(f"Resend: unknown VI '{target}' (not in cache)")
+            return
+        await _resend_one(session, target, entry, status_event)
+        return
+
+    # Resend all — snapshot keys first (cache may be mutated meanwhile).
+    items = list(_cache.items())
+    LOGOK(f"Resend all: {len(items)} cached value(s)")
+    total = 0
+    for vi_name, entry in items:
+        total += await _resend_one(session, vi_name, entry, status_event)
+        await asyncio.sleep(0)   # yield so other tasks aren't starved during a big resend
+    LOGOK(f"Resend all finished: {total} send(s)")
 
 
 async def _process_mqtt(session, item: dict,
@@ -568,6 +639,7 @@ async def _process_mqtt(session, item: dict,
                 entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list))
                 entry["value"]              = str(value)
                 entry["miniservers"]        = ms_list
+                entry["udp_name"]           = udp_name
                 entry["last_updated"]       = now.isoformat(timespec="seconds")
                 entry["last_updated_epoch"] = int(now.timestamp())
                 # Seed per-MS value so the first real message with the same value
@@ -600,6 +672,7 @@ async def _process_mqtt(session, item: dict,
                 entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_ids, round(elapsed_ms, 1)))
                 entry["value"]              = str(value)
                 entry["miniservers"]        = [str(m) for m in ms_ids]
+                entry["udp_name"]           = udp_name
                 entry["last_updated"]       = send_dt.isoformat(timespec="seconds")
                 entry["last_updated_epoch"] = int(send_dt.timestamp())
                 # Processing time is recorded once per message (first miniserver).
@@ -804,7 +877,9 @@ async def handle_udp_in(msg: str, addr: tuple) -> None:
 
     Supports (in order):
       save_relayed_states            internal no-op
-      reconnect                      clear send-cache
+      reconnect                      resend ALL cached values (V1 parity, e.g. MS reboot)
+      resend [vi_name]               resend all, or just one VI if a name is given
+      clearcache                     clear the send-cache (dedup reset)
       YYYY-MM-DD HH:MM:SS;name;val   Loxone Logger → retain logger/{host}/{name}
       {"topic":...,"value":...}      JSON publish/retain
       publish topic message          explicit publish
@@ -845,7 +920,7 @@ async def handle_udp_in(msg: str, addr: tuple) -> None:
         parts = (msg.split(" ", 3) + ["", "", "", ""])[:4]
         cmd, part2, part3, part4 = parts
 
-        KNOWN = {"publish", "retain", "reconnect", "save_relayed_states"}
+        KNOWN = {"publish", "retain", "reconnect", "resend", "clearcache", "save_relayed_states"}
         if cmd.lower() not in KNOWN:
             # Legacy "topic [rest...]": everything after topic is the message
             command    = "publish"
@@ -863,9 +938,20 @@ async def handle_udp_in(msg: str, addr: tuple) -> None:
                 udpmessage = " ".join([p for p in (part3, part4) if p]).strip()
 
     # ── 5. Execute command ───────────────────────────────────────────────────
-    if command == "reconnect":
-        LOGOK("UDP IN: reconnect — clearing send-cache")
+    if command == "clearcache":
+        LOGOK("UDP IN: clearcache — clearing send-cache")
         _cache.clear()
+        return
+
+    # reconnect (V1 parity) and resend both trigger a resend; resend may carry a
+    # single VI name in udptopic to resend only that value.
+    if command in ("reconnect", "resend"):
+        vi_target = udptopic if (command == "resend" and udptopic) else None
+        if _queue is None:
+            LOGWARN(f"UDP IN: {command} received but queue not ready — ignoring")
+            return
+        LOGOK(f"UDP IN: {command} — resend " + (f"VI '{vi_target}'" if vi_target else "all"))
+        await _queue.put({"type": "resend", "vi_name": vi_target})
         return
 
     if command in ("publish", "retain") and udptopic:
@@ -996,6 +1082,7 @@ def make_cache_entry(value, ms_ids,
     return {
         "value":              str(value),
         "miniservers":        ms_list,
+        "udp_name":           None,
         "last_updated":       now.isoformat(timespec="seconds"),
         "last_updated_epoch": int(now.timestamp()),
         "last_processing_ms": processing_ms,
@@ -1075,6 +1162,8 @@ async def main() -> None:
 
     queue        = asyncio.Queue()
     status_event = asyncio.Event()
+    global _queue
+    _queue = queue   # expose to handle_udp_in() for resend commands
 
     try:
         raw = json.loads(CONFIG_GENERAL.read_text(encoding="utf-8"))
