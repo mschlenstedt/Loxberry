@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """MQTT Gateway V2.0 — Loxone Miniserver Bridge"""
 
+from __future__ import annotations
+
 import argparse
 import asyncio
 import json
