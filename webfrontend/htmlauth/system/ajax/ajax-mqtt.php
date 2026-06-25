@@ -224,13 +224,53 @@ elseif ( $ajax == 'restart_mosquitto' ) {
 elseif( $ajax == "reconnect" ) {
 	# Send Reconnect
 	if (!empty($_POST['udpinport'])) {
-		
+
 		$msg = 'reconnect';
 		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 		socket_sendto($sock, $msg, strlen($msg), 0, 'localhost', $_POST['udpinport']);
 		socket_close($sock);
 	} else {
 		error_log("MQTT index.cgi: Ajax reconnect FAILED\n");
+	}
+}
+
+elseif( $ajax == "clearcache" ) {
+	# Clear the send-cache (V2 gateway). Replaces the old "reconnect" meaning,
+	# which now resends all values instead of clearing the cache.
+	if (!empty($_POST['udpinport'])) {
+		$msg = 'clearcache';
+		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		socket_sendto($sock, $msg, strlen($msg), 0, 'localhost', $_POST['udpinport']);
+		socket_close($sock);
+		echo json_encode(array('status' => 'ok'));
+	} else {
+		echo json_encode(array('status' => 'error', 'message' => 'udpinport missing'));
+	}
+}
+
+elseif( $ajax == "resend_all" ) {
+	# Resend ALL cached values to the Miniserver(s), ignoring the dedup cache.
+	if (!empty($_POST['udpinport'])) {
+		$msg = 'resend';
+		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		socket_sendto($sock, $msg, strlen($msg), 0, 'localhost', $_POST['udpinport']);
+		socket_close($sock);
+		echo json_encode(array('status' => 'ok'));
+	} else {
+		echo json_encode(array('status' => 'error', 'message' => 'udpinport missing'));
+	}
+}
+
+elseif( $ajax == "resend_one" ) {
+	# Resend a single cached value (by virtual-input name) to its Miniserver(s).
+	if (!empty($_POST['udpinport']) && !empty($_POST['vi'])) {
+		$msg = 'resend ' . $_POST['vi'];
+		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		socket_sendto($sock, $msg, strlen($msg), 0, 'localhost', $_POST['udpinport']);
+		socket_close($sock);
+		echo json_encode(array('status' => 'ok'));
+	} else {
+		echo json_encode(array('status' => 'error', 'message' => 'udpinport or vi missing'));
 	}
 }
 

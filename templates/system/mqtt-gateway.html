@@ -714,12 +714,24 @@ $(function() {
     }
 
     function httpScOf(e) {
-        if (!e || !e.http) return 'new';
-        var h = e.http;
-        if (h.status === 'send_failed') return 'error';
-        if (h.http_status >= 200 && h.http_status < 300) return 'ok';
-        if (h.http_status) return 'warn';
-        return 'ok';
+        if (!e) return 'new';
+        function one(h) {
+            if (!h) return 'new';
+            if (h.status === 'send_failed') return 'error';
+            if (h.http_status >= 200 && h.http_status < 300) return 'ok';
+            if (h.http_status) return 'warn';
+            return 'ok';
+        }
+        // Aggregate over all target miniservers (worst wins); legacy fallback.
+        if (e.per_ms && Object.keys(e.per_ms).length) {
+            var order = {error: 0, warn: 1, ok: 2, new: 3}, worst = 'new';
+            Object.keys(e.per_ms).forEach(function (id) {
+                var sc = one(e.per_ms[id].http);
+                if (order[sc] < order[worst]) worst = sc;
+            });
+            return worst;
+        }
+        return one(e.http);
     }
 
     function getTopicHttpSc(topic) {
@@ -1618,8 +1630,8 @@ $(function() {
     <span><TMPL_VAR MQTT.V2_COL_VI></span>
     <span><TMPL_VAR MQTT.V2_COL_TOPIC></span>
     <span><TMPL_VAR MQTT.V2_COL_VALUE></span>
+    <span></span>
     <span><TMPL_VAR MQTT.V2_COL_MS></span>
-    <span><TMPL_VAR MQTT.V2_COL_HTTP></span>
     <span><TMPL_VAR MQTT.V2_COL_SENT></span>
     <span><TMPL_VAR MQTT.V2_COL_RUNTIME></span>
   </div>
@@ -1650,6 +1662,7 @@ $(function() {
     <span><TMPL_VAR MQTT.V2_COL_CMD></span>
     <span><TMPL_VAR MQTT.V2_COL_TOPIC></span>
     <span><TMPL_VAR MQTT.V2_COL_VALUE></span>
+    <span></span>
     <span><TMPL_VAR MQTT.V2_COL_MS></span>
     <span><TMPL_VAR MQTT.V2_COL_SENT></span>
     <span><TMPL_VAR MQTT.V2_COL_RUNTIME></span>
@@ -1662,6 +1675,7 @@ $(function() {
 </div>
 
 <div style="text-align:center;margin-top:8px">
+  <button class="lb-btn lb-btn-sm" id="v2-resend-all"><TMPL_VAR MQTT.V2_BTN_RESEND_ALL></button>
   <button class="lb-btn lb-btn-sm" id="v2-reconnect"><TMPL_VAR MQTT.V2_BTN_CLEAR_CACHE></button>
 </div>
 
@@ -1689,6 +1703,7 @@ $(function () {
 
   var _svgCopy  = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
   var _svgCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var _svgResend = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>';
 
   function viName(topic, jsonPath) {
     var tp = topic.replace(/\//g, '_').replace(/\s+/g, '_');
@@ -1727,19 +1742,37 @@ $(function () {
     });
   }
 
-  function httpSc(e) {
-    if (!e || !e.http) return 'new';
-    var h = e.http;
+  var _scOrder = {error: 0, warn: 1, ok: 2, new: 3};
+
+  // Score of a single per-MS http result object.
+  function httpScOne(h) {
+    if (!h) return 'new';
     if (h.status === 'send_failed') return 'error';
     if (h.http_status >= 200 && h.http_status < 300) return 'ok';
     if (h.http_status) return 'warn';
     return 'ok';
   }
-
-  function udpSc(e) {
-    if (!e || !e.udp) return 'new';
-    return e.udp.status === 'sent_ok' ? 'ok' : 'error';
+  function udpScOne(u) {
+    if (!u) return 'new';
+    return u.status === 'sent_ok' ? 'ok' : 'error';
   }
+
+  // Aggregate over all target miniservers (worst status wins); falls back to
+  // the legacy single-MS structure for transitional status files.
+  function _aggSc(e, key, oneFn) {
+    if (!e) return 'new';
+    if (e.per_ms && Object.keys(e.per_ms).length) {
+      var worst = 'new';
+      Object.keys(e.per_ms).forEach(function (id) {
+        var sc = oneFn(e.per_ms[id][key]);
+        if (_scOrder[sc] < _scOrder[worst]) worst = sc;
+      });
+      return worst;
+    }
+    return oneFn(e[key]);
+  }
+  function httpSc(e) { return _aggSc(e, 'http', httpScOne); }
+  function udpSc(e)  { return _aggSc(e, 'udp',  udpScOne); }
 
   var _lang = {
     nothingSent:  '<TMPL_VAR MQTT.V2_NOTHING_SENT>',
@@ -1749,7 +1782,8 @@ $(function () {
     statusError:  '<TMPL_VAR MQTT.V2_STATUS_ERROR>',
     statusNew:    '<TMPL_VAR MQTT.V2_STATUS_NEW>',
     timeNow:      '<TMPL_VAR MQTT.V2_TIME_NOW>',
-    timeMinAgo:   '<TMPL_VAR MQTT.V2_TIME_MIN_AGO>'
+    timeMinAgo:   '<TMPL_VAR MQTT.V2_TIME_MIN_AGO>',
+    resendOne:    '<TMPL_VAR MQTT.V2_BTN_RESEND>'
   };
 
   function relTime(epoch) {
@@ -1780,8 +1814,18 @@ $(function () {
     var isHttp = (transport === 'http');
     var getSc  = isHttp ? httpSc : udpSc;
     var getEpoch = function (e) {
-      return isHttp ? (e && e.http ? e.http.last_sent_epoch : null)
-                    : (e && e.udp  ? e.udp.last_sent_epoch  : null);
+      if (!e) return null;
+      var key = isHttp ? 'http' : 'udp';
+      // Most recent send across all target miniservers; legacy fallback.
+      if (e.per_ms && Object.keys(e.per_ms).length) {
+        var best = null;
+        Object.keys(e.per_ms).forEach(function (id) {
+          var r = e.per_ms[id][key];
+          if (r && r.last_sent_epoch && (!best || r.last_sent_epoch > best)) best = r.last_sent_epoch;
+        });
+        return best;
+      }
+      return e[key] ? e[key].last_sent_epoch : null;
     };
 
     var filtered = viRows.filter(function (r) {
@@ -1835,7 +1879,23 @@ $(function () {
           var sc  = getSc(e);
           var ts  = getEpoch(e);
           var val = e ? e.value : '';
-          var ms  = e ? 'MS' + e.miniserver : '&mdash;';
+          // MS column: one coloured badge per target miniserver. Colour reflects
+          // this MS's own send status; the HTTP code is shown in the tooltip.
+          var msIds = e && e.miniservers ? e.miniservers
+                    : (e && e.miniserver ? [e.miniserver] : []);
+          var ms = msIds.length ? msIds.map(function (id) {
+            var pm = e.per_ms && e.per_ms[id];
+            var bsc, tip;
+            if (isHttp) {
+              var h = pm && pm.http;
+              bsc = httpScOne(h);
+              tip = 'MS' + id + (h && h.http_status ? ' · ' + h.http_status : ' · ' + _titles[bsc]);
+            } else {
+              bsc = udpScOne(pm && pm.udp);
+              tip = 'MS' + id + ' · ' + _titles[bsc];
+            }
+            return '<span class="mqttgw-ms-badge mqttgw-ms-' + bsc + '" title="' + esc(tip) + '">MS' + esc(id) + '</span>';
+          }).join('') : '&mdash;';
           var pms = e && e.last_processing_ms != null
                       ? (+e.last_processing_ms).toFixed(1) + 'ms' : '&mdash;';
           var valDisp = val
@@ -1851,7 +1911,8 @@ $(function () {
             html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(r.vi) + '" title="VI kopieren">' + _svgCopy + '</button>';
             html += '</span>';
           } else {
-            var cmd = 'MQTT:\\i' + (r.jp ? r.topic + '/' + r.jp : r.topic) + '=\\i\\v';
+            var udpJp = r.jp ? r.jp.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/\s+/g, '_') : null;
+            var cmd = 'MQTT:\\i' + (udpJp ? r.topic + '/' + udpJp : r.topic) + '=\\i\\v';
             html += '<span class="mqttgw-traffic-cmd">';
             html += '<span class="mqttgw-traffic-cmd-text" title="' + esc(cmd) + '">' + esc(cmd) + '</span>';
             html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(cmd) + '" title="Loxone-Befehl kopieren">' + _svgCopy + '</button>';
@@ -1859,11 +1920,8 @@ $(function () {
           }
           html += '<span class="mqttgw-traffic-topic" title="' + esc(r.topic) + (r.jp ? ' &bull; ' + esc(r.jp) : '') + '">' + esc(r.topic) + (r.jp ? ' <em>&bull;&nbsp;' + esc(r.jp) + '</em>' : '') + '</span>';
           html += '<span class="mqttgw-traffic-value">' + valDisp + '</span>';
+          html += '<button class="mqttgw-resend-btn" type="button" data-resend="' + esc(r.vi) + '" title="' + esc(_lang.resendOne) + '">' + _svgResend + '</button>';
           html += '<span class="mqttgw-traffic-ms-label">' + ms + '</span>';
-          if (isHttp) {
-            var code = e && e.http && e.http.http_status ? e.http.http_status : '&mdash;';
-            html += '<span class="mqttgw-traffic-code">' + code + '</span>';
-          }
           html += '<span class="mqttgw-traffic-time">' + relTime(ts) + '</span>';
           html += '<span class="mqttgw-traffic-proc">' + pms + '</span>';
           html += '</div>';
@@ -1914,9 +1972,28 @@ $(function () {
   });
 
   $('#v2-reconnect').on('click', function () {
-    $.post('ajax/ajax-mqtt.php', {ajax: 'reconnect', udpinport: udpinport});
+    $.post('ajax/ajax-mqtt.php', {ajax: 'clearcache', udpinport: udpinport});
     v2St = {};
     renderBoth();
+  });
+
+  $('#v2-resend-all').on('click', function () {
+    var $b = $(this).prop('disabled', true);
+    $.post('ajax/ajax-mqtt.php', {ajax: 'resend_all', udpinport: udpinport})
+      .always(function () { setTimeout(function () { $b.prop('disabled', false); }, 1500); });
+  });
+
+  // Per-row resend button (next to the status icon).
+  $('#v2-http-content, #v2-udp-content').on('click', '.mqttgw-resend-btn', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var $b = $(this);
+    var vi = $b.data('resend');
+    if (!vi) return;
+    $.post('ajax/ajax-mqtt.php', {ajax: 'resend_one', udpinport: udpinport, vi: vi}, function () {
+      $b.addClass('mqttgw-resend-ok');
+      setTimeout(function () { $b.removeClass('mqttgw-resend-ok'); }, 1200);
+    });
   });
 
   $(document).on('click', '.mqttgw-copy-btn', function (e) {
@@ -3267,7 +3344,7 @@ $("#reconnect").click(function(){
 		// console.log("Reconnect and retransmit all values");
 		$("#reconnect").attr("disabled", true);
 		$.post( 'ajax/ajax-mqtt.php', {
-			ajax: 'reconnect',
+			ajax: 'clearcache',
 			udpinport: udpinport })
 		.done(function(resp) {
 			// console.log( "ajax_post", "success", resp );

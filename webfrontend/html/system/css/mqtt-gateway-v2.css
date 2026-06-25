@@ -854,10 +854,13 @@ body.theme-dark .mqttgw-topic-ms {
 }
 
 
-/* HTTP row: icon | vi-name | topic | value | ms | http-code | sent | runtime */
+/* HTTP/UDP row: icon | vi-name | topic | value | resend | ms | sent | runtime
+   The resend button sits just before the MS column. The MS column grows with the
+   number of target miniservers (badges wrap), so e.g. 5 miniservers stay inside
+   the row instead of overflowing. */
 .mqttgw-traffic-row {
   display: grid;
-  grid-template-columns: 16px 1fr 1fr 80px 36px 44px 76px 44px;
+  grid-template-columns: 16px 1fr 1fr 80px 22px minmax(40px,auto) 76px 44px;
   align-items: start;
   gap: 6px;
   padding: 5px 10px;
@@ -866,9 +869,9 @@ body.theme-dark .mqttgw-topic-ms {
   font-size: var(--lb-font-sm);
 }
 
-/* UDP row: icon | vi-name | topic | value | ms | sent | runtime  (no http-code) */
+/* UDP row uses the same column layout (HTTP code never applied to UDP). */
 .mqttgw-traffic-row-udp {
-  grid-template-columns: 16px 1fr 1fr 80px 36px 76px 44px;
+  grid-template-columns: 16px 1fr 1fr 80px 22px minmax(40px,auto) 76px 44px;
 }
 
 .mqttgw-traffic-row:last-child {
@@ -884,6 +887,31 @@ body.theme-dark .mqttgw-topic-ms {
   width: 14px;
   height: 14px;
   margin-top: 1px;
+}
+
+/* Per-row resend button, in its own column just before the MS column. */
+.mqttgw-resend-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--lb-gray-400);
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.mqttgw-resend-btn:hover {
+  color: var(--lb-btn-primary-bg, #6dac20);
+  background: var(--lb-gray-100);
+}
+.mqttgw-resend-btn.mqttgw-resend-ok {
+  color: #4d7d16;
 }
 
 .mqttgw-traffic-name {
@@ -973,13 +1001,32 @@ body.theme-dark .mqttgw-topic-ms {
   white-space: nowrap;
 }
 
-.mqttgw-traffic-ms-label,
-.mqttgw-traffic-code {
+.mqttgw-traffic-ms-label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  justify-content: center;
+  align-content: flex-start;
   font-family: var(--lb-font);
   font-size: 11px;
   color: var(--lb-gray-500);
-  text-align: center;
 }
+
+/* One pill per target miniserver, coloured by that MS's send status. */
+.mqttgw-ms-badge {
+  font-family: var(--lb-font);
+  font-size: 10px;
+  line-height: 1.5;
+  padding: 0 5px;
+  border-radius: 8px;
+  white-space: nowrap;
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-600);
+}
+.mqttgw-ms-ok    { background: #e3f0d4; color: #4d7d16; }
+.mqttgw-ms-warn  { background: #fdeccd; color: #9a6200; }
+.mqttgw-ms-error { background: #fbdcdf; color: #c0001a; }
+.mqttgw-ms-new   { background: var(--lb-gray-100); color: var(--lb-gray-500); }
 
 .mqttgw-traffic-time {
   font-family: var(--lb-font);
