@@ -1,0 +1,24 @@
+{
+   "controls" : [
+      {
+         "css_var" : "--lb-liquid-glass-wallpaper-brightness",
+         "default" : 100,
+         "key" : "wallpaper_brightness",
+         "label_de" : "Helligkeit",
+         "label_en" : "Brightness",
+         "max" : 140,
+         "min" : 40,
+         "step" : 1,
+         "type" : "range",
+         "unit" : "%"
+      }
+   ],
+   "css_class" : "theme-user-liquid-glass",
+   "label" : "Liquid Glass",
+   "storage" : "plugin-managed",
+   "theme" : "user-liquid-glass",
+   "values" : {
+      "wallpaper_brightness" : 126
+   },
+   "version" : 1
+}
