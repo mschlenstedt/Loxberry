@@ -1,0 +1,10 @@
+/* LoxBerry CSS Framework - legacy-jqm-compat.css V03
+
+Reserved for future extraction of jQuery Mobile compatibility rules.
+
+Current V03 note:
+- Existing jQM compatibility rules are intentionally still kept in components.css
+  to avoid functional movement in the first structure package.
+- In a later cleanup step, jQM-specific selectors can be moved here so pure
+  nojqm/LoxBerry-DS pages only need design-tokens.css + components.css.
+*/

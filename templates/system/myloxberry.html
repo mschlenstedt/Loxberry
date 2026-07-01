@@ -30,11 +30,16 @@
 			</div>
 			<div class="lb-form-field">
 				<select class="lb-select" name="themeselector" id="themeselector" data-role="none">
-					<option value="classic-lb">Classic LoxBerry</option>
-					<option value="soft-rounded">Soft &amp; Rounded (Alpha)</option>
-					<option value="clean-admin">Clean Admin (Alpha)</option>
-					<option value="glass">Glassmorphism (Alpha)</option>
+					<optgroup label="Core Themes">
+						<option value="classic-lb">Classic LoxBerry</option>
+						<option value="soft-rounded">Soft &amp; Rounded (Alpha)</option>
+						<option value="clean-admin">Clean Admin (Alpha)</option>
+						<option value="glass">Glassmorphism (Alpha)</option>
+					</optgroup>
 				</select>
+			</div>
+			<div class="lb-form-help">
+				<TMPL_VAR MYLOXBERRY.HINT_THEMES>
 			</div>
 		</div>
 
@@ -105,9 +110,34 @@
 					});
 			});
 
-			// Theme: Dropdown setzt Wert und wechselt direkt
+			// Theme: Dropdown setzt Wert und wechselt direkt.
+			// User Themes werden dynamisch aus dem CSS Framework Pluginpfad gelesen:
+			// /opt/loxberry/webfrontend/html/plugins/cssframework/themes/theme-user-*.css
+			// Der Wert ist z.B. user-classic-w2indows.
 			var currentTheme = "<TMPL_VAR CURRENTTHEME>" || "soft-rounded";
-			$("#themeselector").val(currentTheme);
+
+			function setCurrentThemeSelection() {
+				$("#themeselector").val(currentTheme);
+			}
+
+			$.getJSON("/admin/system/ajax/ajax-config-handler.cgi", { action: "listthemes" })
+				.done(function(data) {
+					var themes = (data && data.themes) ? data.themes : [];
+					if (themes.length > 0) {
+						var group = $('<optgroup label="User Themes" data-generated="user-themes"></optgroup>');
+						$.each(themes, function(index, theme) {
+							if (!theme || !theme.id || !theme.name) return;
+							group.append($('<option></option>').attr('value', theme.id).text(theme.name));
+						});
+						if (group.children().length > 0) {
+							$('#themeselector optgroup[data-generated="user-themes"]').remove();
+							$('#themeselector').append(group);
+						}
+					}
+				})
+				.always(function() {
+					setCurrentThemeSelection();
+				});
 
 			$("#themeselector").bind("change", function() {
 				var val = $(this).val();

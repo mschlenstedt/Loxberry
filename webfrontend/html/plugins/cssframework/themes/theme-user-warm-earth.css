@@ -1,0 +1,227 @@
+/*
+ * LoxBerry CSS Framework Theme
+ * Header-Version: 1
+ * Type: user
+ * Name: Warm Earth
+ * Slug: warm-earth
+ * Theme-ID: user-warm-earth
+ * Filename: theme-user-warm-earth.css
+ * Scope: body.theme-user-warm-earth, body.theme-warm-earth
+ * Version: V02_2026_06_27_TABLE_BORDER_THIN
+ * Compatible: LoxBerry >= 4
+ * Storage: plugin-managed example path /plugins/cssframework/themes/
+ * Generated-By: LoxBerry CSS Framework / Plugin-managed theme path
+ * Asset-Icons: assets/icons/warm-earth/
+ * Asset-Images: assets/images/warm-earth/
+ * Asset-Fonts: assets/fonts/warm-earth/
+ *
+ * Cleanup note:
+ * This user theme is intentionally token-only. Generic component rendering comes
+ * from design-tokens.css + components.css. No component selectors are duplicated
+ * here, so the theme can be updated without touching Core component rules.
+ */
+
+body.theme-user-warm-earth,
+body.theme-warm-earth {
+  /* Base typography */
+  --lb-font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+  --lb-font-mono: "Cascadia Mono", "Consolas", monospace;
+
+  /* Core palette: warm cream, sand, clay, walnut and olive */
+  --lb-bg: #f4eadc;
+  --lb-text: #2f2418;
+  --lb-text-secondary: #5f4a38;
+  --lb-text-muted: #8a7664;
+  --lb-border-color: #d8c4ad;
+
+  --lb-primary: #b86b4b;
+  --lb-primary-hover: #9f573c;
+  --lb-primary-dark: #7f432e;
+  --lb-success: #6f7f46;
+  --lb-warning: #c58a2c;
+  --lb-danger: #a84432;
+  --lb-info: #8d6a4a;
+
+  --lb-on-light-text: #2f2418;
+  --lb-on-dark-text: #fff8ee;
+
+  /* Interactive / active states */
+  --lb-hover-bg: #ead8c5;
+  --lb-hover-text: #2f2418;
+  --lb-hover-border: #b86b4b;
+  --lb-active-bg: #b86b4b;
+  --lb-active-text: #fff8ee;
+  --lb-active-soft-bg: rgba(184, 107, 75, 0.11);
+  --lb-focus-ring: rgba(184, 107, 75, 0.20);
+  --lb-focus-ring-strong: rgba(184, 107, 75, 0.30);
+
+  --lb-tooltip-bg: #7f432e;
+  --lb-tooltip-text: #fff8ee;
+  --lb-tooltip-border: #b86b4b;
+  --lb-tooltip-radius: 12px;
+  --lb-tooltip-shadow: 0 10px 24px rgba(84, 50, 31, 0.22);
+
+  /* Shape and base border */
+  --lb-radius: 18px;
+  --lb-radius-sm: 12px;
+  --lb-border: 1px solid var(--lb-border-color);
+
+  /* Cards */
+  --lb-card-bg: #fff8ee;
+  --lb-card-border: 1px solid #dbc5ab;
+  --lb-card-shadow: 0 8px 22px rgba(84, 50, 31, 0.10);
+
+  /* Buttons */
+  --lb-btn-bg: #ead8c5;
+  --lb-btn-hover-bg: #dfc5aa;
+  --lb-btn-hover-text: #2f2418;
+  --lb-btn-hover-border: #b86b4b;
+  --lb-btn-text: #3d2e21;
+  --lb-btn-border: #c9aa8c;
+  --lb-btn-radius: 999px;
+  --lb-btn-primary-bg: #b86b4b;
+  --lb-btn-primary-text: #fff8ee;
+  --lb-btn-primary-border: #9f573c;
+  --lb-btn-primary-hover-bg: #9f573c;
+  --lb-btn-primary-hover-text: #fff8ee;
+  --lb-btn-primary-hover-border: #7f432e;
+  --lb-btn-danger-hover-bg: #8e3728;
+  --lb-btn-danger-hover-text: #fff8ee;
+  --lb-btn-group-hover-bg: #dfc5aa;
+  --lb-btn-group-hover-text: #2f2418;
+  --lb-btn-group-active-bg: #b86b4b;
+  --lb-btn-group-active-text: #fff8ee;
+  --lb-btn-group-active-hover-bg: #9f573c;
+  --lb-btn-group-active-hover-text: #fff8ee;
+  --lb-btn-group-vertical-min-width: 160px;
+
+  /* Header action buttons */
+  --lb-header-btn-bg: #b86b4b;
+  --lb-header-btn-text: #fff8ee;
+  --lb-header-btn-hover-bg: #9f573c;
+  --lb-header-btn-hover-text: #fff8ee;
+
+  /* Inputs and selects */
+  --lb-input-bg: #fffdf8;
+  --lb-input-border: #ceb398;
+  --lb-input-text: #2f2418;
+  --lb-input-hover-bg: #fffdf8;
+  --lb-input-hover-text: #2f2418;
+  --lb-input-hover-border: #b86b4b;
+  --lb-input-height: 42px;
+  --lb-input-line-height: 1.2;
+
+  --lb-select-bg: #fffdf8;
+  --lb-select-text: #2f2418;
+  --lb-select-border: #ceb398;
+  --lb-select-hover-bg: #fff8ee;
+  --lb-select-hover-text: #2f2418;
+  --lb-select-hover-border: #b86b4b;
+  --lb-select-option-hover-bg: #ead8c5;
+  --lb-select-option-hover-text: #2f2418;
+
+  --lb-dropdown-menu-bg: #fff8ee;
+  --lb-dropdown-menu-text: #2f2418;
+
+  /* Multiselect */
+  --lb-multiselect-bg: #fffdf8;
+  --lb-multiselect-text: #2f2418;
+  --lb-multiselect-border: #ceb398;
+  --lb-multiselect-summary-bg: #fffdf8;
+  --lb-multiselect-summary-hover-bg: #ead8c5;
+  --lb-multiselect-summary-hover-text: #2f2418;
+  --lb-multiselect-summary-hover-border: #b86b4b;
+  --lb-multiselect-menu-bg: #fff8ee;
+  --lb-multiselect-menu-border: #dbc5ab;
+  --lb-multiselect-option-hover-bg: #ead8c5;
+  --lb-multiselect-option-hover-text: #2f2418;
+  --lb-multiselect-option-gap: 8px;
+  --lb-multiselect-option-padding: 8px 10px;
+  --lb-multiselect-list-gap: 4px;
+  --lb-multiselect-shadow: 0 8px 22px rgba(84, 50, 31, 0.12);
+  --lb-multiselect-radius: 18px;
+
+  /* Disabled controls */
+  --lb-input-disabled-bg: #efe2d0;
+  --lb-input-disabled-text: #9a8571;
+  --lb-input-disabled-border: #d8c4ad;
+  --lb-input-disabled-placeholder: #9a8571;
+  --lb-input-disabled-placeholder-opacity: 0.82;
+  --lb-input-disabled-opacity: 1;
+  --lb-input-disabled-accent-bg: #b99c7c;
+
+  /* Tables */
+  --lb-table-bg: #fff8ee;
+  --lb-table-cell-bg: #fff8ee;
+  --lb-table-cell-text: #2f2418;
+  --lb-table-row-bg: #fff8ee;
+  --lb-table-row-alt-bg: #f7ecde;
+  --lb-table-row-hover-bg: #ead8c5;
+  --lb-table-row-hover-text: #2f2418;
+  --lb-table-header-bg: #ead8c5;
+  --lb-table-header-text: #4b3525;
+  --lb-table-header-font-weight: 600;
+  --lb-table-header-border-bottom: 2px solid #c9aa8c;
+  --lb-table-header-hover-bg: #dfc5aa;
+  --lb-table-header-hover-text: #2f2418;
+  --lb-table-footer-bg: #ead8c5;
+  --lb-table-footer-text: #4b3525;
+  --lb-table-footer-font-weight: 500;
+  --lb-table-footer-border-top: 2px solid #c9aa8c;
+  --lb-table-border-width: 1.5px;
+  --lb-table-border-style: solid;
+  --lb-table-border-color: #b86b4b;
+  --lb-table-border: var(--lb-table-border-width) var(--lb-table-border-style) var(--lb-table-border-color);
+  --lb-table-radius: 18px;
+  --lb-table-shadow: 0 8px 22px rgba(84, 50, 31, 0.10);
+  --lb-table-cell-border-width: 1px;
+  --lb-table-cell-border-style: solid;
+  --lb-table-cell-border-color: #e2cfb9;
+  --lb-table-cell-border: var(--lb-table-cell-border-width) var(--lb-table-cell-border-style) var(--lb-table-cell-border-color);
+  --lb-table-cell-padding: 4px 8px;
+  --lb-table-line-height: 1.3;
+  --lb-table-control-padding: 7px 10px;
+  --lb-table-select-padding: 7px 34px 7px 10px;
+  --lb-table-control-margin-y: 0;
+  --lb-table-cell-padding-compact: 3px 6px;
+  --lb-table-control-padding-compact: 6px 8px;
+  --lb-table-select-padding-compact: 6px 32px 6px 8px;
+
+  /* Alerts / highlights */
+  --lb-alert-info-bg: #f4eadc;
+  --lb-alert-info-text: #7f432e;
+  --lb-alert-info-border: #dbc5ab;
+  --lb-highlight-bg: #fff1bf;
+
+  /* Toggle / section */
+  --lb-toggle-bg: #c9aa8c;
+  --lb-toggle-hover-bg: #b99c7c;
+  --lb-section-border: #b86b4b;
+
+  /* Sidebar / mobile tab bar */
+  --lb-sidebar-bg: #3d2e21;
+  --lb-sidebar-text: #e8d8c4;
+  --lb-sidebar-active-bg: rgba(255, 248, 238, 0.12);
+  --lb-sidebar-active-text: #f0b489;
+  --lb-sidebar-link-hover-bg: rgba(255, 248, 238, 0.10);
+  --lb-sidebar-link-hover-text: #fff8ee;
+  --lb-tab-popup-item-hover-bg: rgba(255, 248, 238, 0.10);
+  --lb-tab-popup-item-hover-text: #fff8ee;
+  --lb-sidebar-border: rgba(255, 248, 238, 0.12);
+  --lb-sidebar-section: rgba(255, 248, 238, 0.45);
+  --lb-tab-bar-bg: #3d2e21;
+  --lb-tab-bar-text: #e8d8c4;
+  --lb-tab-bar-active: #f0b489;
+
+  /* Collapsible */
+  --lb-collapsible-summary-bg: #ead8c5;
+  --lb-collapsible-summary-text: #2f2418;
+  --lb-collapsible-summary-hover-bg: #dfc5aa;
+  --lb-collapsible-summary-hover-text: #2f2418;
+
+  /* Glass extras stay neutral for this non-glass theme */
+  --lb-backdrop-blur: none;
+  --lb-glow-primary: none;
+  --lb-glow-danger: none;
+  --lb-glow-warning: none;
+}

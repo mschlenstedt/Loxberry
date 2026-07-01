@@ -15,7 +15,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "3.0.0.3";
+our $VERSION = "3.0.0.4";
 our $DEBUG;
 
 use base 'Exporter';
@@ -139,12 +139,49 @@ sub head
 
 	# Theme support
 	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
-	$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
+	my $theme_file;
+
+	if ($theme =~ /^user-[a-z0-9][a-z0-9-]*$/) {
+		# Generated user themes are managed by the CSS Framework plugin.
+		my $plugin_theme_fs = "$LoxBerry::System::lbhomedir/webfrontend/html/plugins/cssframework/themes/theme-$theme.css";
+		my $legacy_theme_file = "themes/user-themes/theme-$theme.css";
+
+		if (-f $plugin_theme_fs) {
+			# THEME_FILE is appended to /system/css/ in the header template.
+			$theme_file = "../../plugins/cssframework/themes/theme-$theme.css";
+		} elsif (-f "$LoxBerry::System::lbshtmldir/css/$legacy_theme_file") {
+			# Transitional fallback for bundled example themes from earlier preview packages.
+			$theme_file = $legacy_theme_file;
+		} else {
+			$theme = 'soft-rounded';
+			$theme_file = 'themes/theme-soft-rounded.css';
+		}
+	} else {
+		$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
+		# Core themes live below /system/css/themes/. Keep a fallback to the old flat path.
+		$theme_file = "themes/theme-$theme.css";
+		if (! -f "$LoxBerry::System::lbshtmldir/css/$theme_file" && -f "$LoxBerry::System::lbshtmldir/css/theme-$theme.css") {
+			$theme_file = "theme-$theme.css";
+		}
+	}
+
 	$headobj->param( THEME_CLASS => "theme-$theme" );
-	$headobj->param( THEME_FILE => "theme-$theme.css" );
+	$headobj->param( THEME_FILE => $theme_file );
 
 	print "Content-Type: text/html; charset=utf-8\n\n";
-	print $headobj->output();
+
+	# CSS Framework utilities must be loaded together with components.css.
+	# The helpers in utilities.css are optional/opt-in classes (e.g. table
+	# frames, visible overflow and dropdown layers). Injecting the link here
+	# keeps existing plugin pages working without requiring every plugin to
+	# include utilities.css manually. Do not use @import in components.css:
+	# utilities.css must be loaded after components.css.
+	my $head_html = $headobj->output();
+	if ($head_html !~ m{href=["'][^"']*/system/css/utilities\.css(?:\?[^"']*)?["']}i) {
+		$head_html =~ s{(<link\s+[^>]*href=["'][^"']*/system/css/components\.css(?:\?[^"']*)?["'][^>]*>\s*)}{$1\t<link rel="stylesheet" href="/system/css/utilities.css">\n}i;
+	}
+
+	print $head_html;
 	undef $headobj;
 }
 
