@@ -38,6 +38,24 @@ html, body {
   --lb-text-muted: #737373;
   --lb-border-color: #e5e5e5;
 
+  /* === Contrast helpers ===
+     Use these whenever a state explicitly switches to a very light or very dark
+     background. Example: white hover background => --lb-on-light-text. */
+  --lb-on-light-text: #000000;
+  --lb-on-dark-text: #ffffff;
+
+  /* === Interactive / Mouse States ===
+     Generic tokens for hover, active and focus states.
+     Component-specific tokens below should usually fall back to these. */
+  --lb-hover-bg: rgba(109, 172, 32, 0.07);
+  --lb-hover-text: var(--lb-text);
+  --lb-hover-border: var(--lb-text-secondary);
+  --lb-active-bg: var(--lb-primary);
+  --lb-active-text: #ffffff;
+  --lb-active-soft-bg: rgba(109, 172, 32, 0.06);
+  --lb-focus-ring: rgba(109, 172, 32, 0.15);
+  --lb-focus-ring-strong: rgba(109, 172, 32, 0.20);
+
   /* === Cards === */
   --lb-card-bg: white;
   --lb-card-border: 1px solid var(--lb-border-color);
@@ -46,22 +64,112 @@ html, body {
   /* === Buttons === */
   --lb-btn-bg: #e6e6e6;
   --lb-btn-hover-bg: #d4d4d4;
+  --lb-btn-hover-text: var(--lb-btn-text);
+  --lb-btn-hover-border: var(--lb-hover-border);
   --lb-btn-text: #000;
   --lb-btn-border: #7e7e7e;
   --lb-btn-radius: 4px;
   --lb-btn-primary-bg: var(--lb-primary);
   --lb-btn-primary-text: white;
   --lb-btn-primary-border: var(--lb-primary-hover);
+  --lb-btn-primary-hover-bg: var(--lb-primary-hover);
+  --lb-btn-primary-hover-text: var(--lb-btn-primary-text);
+  --lb-btn-primary-hover-border: var(--lb-primary-dark);
+  --lb-btn-danger-hover-bg: var(--lb-danger);
+  --lb-btn-danger-hover-text: #ffffff;
+  --lb-btn-group-hover-bg: var(--lb-btn-hover-bg);
+  --lb-btn-group-hover-text: var(--lb-btn-hover-text);
+  --lb-btn-group-active-bg: var(--lb-active-bg);
+  --lb-btn-group-active-text: var(--lb-active-text);
+  --lb-btn-group-active-hover-bg: var(--lb-btn-group-active-bg);
+  --lb-btn-group-active-hover-text: var(--lb-btn-group-active-text);
+  --lb-btn-group-vertical-width: 96px;
+  /* Compatibility alias for older preview/plugins; active layout uses width above. */
+  --lb-btn-group-vertical-min-width: var(--lb-btn-group-vertical-width);
 
   /* === Header action buttons === */
   /* Defaults to the brand green (light themes); dark themes override. */
   --lb-header-btn-bg: var(--lb-primary);
   --lb-header-btn-text: #fff;
+  --lb-header-btn-hover-bg: var(--lb-primary-hover);
+  --lb-header-btn-hover-text: var(--lb-header-btn-text);
 
   /* === Inputs === */
   --lb-input-bg: #fff;
   --lb-input-border: var(--lb-border-color);
   --lb-input-text: var(--lb-text);
+  --lb-input-hover-bg: var(--lb-input-bg);
+  --lb-input-hover-text: var(--lb-input-text);
+  --lb-input-hover-border: var(--lb-primary);
+  --lb-input-height: 42px;
+  --lb-input-line-height: 1.2;
+
+  /* Select / multiselect tokens: single-select uses the input defaults;
+     multiselect is the DS dropdown wrapper for checkbox based multi choice. */
+  --lb-select-bg: var(--lb-input-bg);
+  --lb-select-text: var(--lb-input-text);
+  --lb-select-border: var(--lb-input-border);
+  --lb-select-hover-bg: var(--lb-input-hover-bg);
+  --lb-select-hover-text: var(--lb-input-hover-text);
+  --lb-select-hover-border: var(--lb-input-hover-border);
+  --lb-select-option-hover-bg: var(--lb-hover-bg);
+  --lb-select-option-hover-text: var(--lb-hover-text);
+
+  --lb-multiselect-bg: var(--lb-input-bg);
+  --lb-multiselect-text: var(--lb-input-text);
+  --lb-multiselect-border: var(--lb-input-border);
+  --lb-multiselect-summary-bg: var(--lb-input-bg);
+  --lb-multiselect-summary-hover-bg: var(--lb-select-hover-bg);
+  --lb-multiselect-summary-hover-text: var(--lb-select-hover-text);
+  --lb-multiselect-summary-hover-border: var(--lb-select-hover-border);
+  --lb-multiselect-menu-bg: var(--lb-card-bg);
+  --lb-multiselect-menu-border: var(--lb-border-color);
+  --lb-multiselect-option-hover-bg: var(--lb-hover-bg);
+  --lb-multiselect-option-hover-text: var(--lb-hover-text);
+  --lb-multiselect-option-gap: 8px;
+  --lb-multiselect-option-padding: 8px 10px;
+  --lb-multiselect-list-gap: 4px;
+  --lb-multiselect-shadow: var(--lb-card-shadow);
+  --lb-multiselect-radius: var(--lb-radius);
+  --lb-multiselect-z-index: var(--lb-dropdown-z-index);
+
+  /* Dropdown layering tokens: dropdown-like components should stay above tables/cards,
+     but below modal/dialog overlays. */
+  --lb-dropdown-z-index: 20;
+  --lb-dropdown-open-z-index: 1200;
+  /* Compatibility aliases used by older plugins/themes. */
+  --lb-z-dropdown: var(--lb-dropdown-z-index);
+  --lb-z-dropdown-open: var(--lb-dropdown-open-z-index);
+  --lb-modal-backdrop-z-index: 9990;
+  --lb-modal-z-index: 10000;
+  --lb-dropdown-menu-bg: var(--lb-card-bg);
+  --lb-dropdown-menu-text: var(--lb-text);
+
+  /* Tooltip / hover popover tokens */
+  --lb-tooltip-bg: var(--lb-active-bg);
+  --lb-tooltip-text: var(--lb-active-text);
+  --lb-tooltip-border: transparent;
+  --lb-tooltip-radius: var(--lb-radius-sm);
+  --lb-tooltip-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  --lb-tooltip-padding: 8px 12px;
+  --lb-tooltip-arrow-size: 8px;
+  --lb-tooltip-z-index: 1100;
+
+  /* Placeholder text for input/textarea fields. Select elements have no
+     native placeholder; use a disabled selected option for select-like hints. */
+  --lb-input-placeholder-text: var(--lb-text-muted);
+  --lb-input-placeholder-opacity: 0.75;
+
+  /* Disabled form controls: used by input/select/textarea/range when the
+     native disabled attribute is set. Themes may override only these tokens. */
+  --lb-input-disabled-bg: var(--lb-gray-100);
+  --lb-input-disabled-text: var(--lb-text-muted);
+  --lb-input-disabled-border: var(--lb-gray-300);
+  --lb-input-disabled-placeholder: var(--lb-text-muted);
+  --lb-input-disabled-placeholder-text: var(--lb-input-disabled-placeholder);
+  --lb-input-disabled-placeholder-opacity: 0.7;
+  --lb-input-disabled-opacity: 1;
+  --lb-input-disabled-accent-bg: var(--lb-gray-400);
 
   /* Attention highlight for "must re-enter" fields (current password/PIN).
      Light themes keep the classic yellow; dark themes override below. */
@@ -69,6 +177,7 @@ html, body {
 
   /* === Toggle === */
   --lb-toggle-bg: #d4d4d4;
+  --lb-toggle-hover-bg: var(--lb-hover-bg);
 
   /* === Section Title === */
   --lb-section-border: var(--lb-primary);
@@ -78,8 +187,75 @@ html, body {
   --lb-sidebar-text: rgba(255,255,255,.7);
   --lb-sidebar-active-bg: rgba(255,255,255,.1);
   --lb-sidebar-active-text: #6dac20;
+  --lb-sidebar-link-hover-bg: var(--lb-sidebar-active-bg);
+  --lb-sidebar-link-hover-text: var(--lb-sidebar-active-text);
+  --lb-tab-popup-item-hover-bg: var(--lb-sidebar-link-hover-bg);
+  --lb-tab-popup-item-hover-text: var(--lb-sidebar-link-hover-text);
   --lb-sidebar-border: rgba(255,255,255,.08);
   --lb-sidebar-section: rgba(255,255,255,.4);
+
+  /* === Collapsible === */
+  --lb-collapsible-summary-bg: var(--lb-btn-bg);
+  --lb-collapsible-summary-text: var(--lb-text);
+  --lb-collapsible-summary-hover-bg: var(--lb-hover-bg);
+  --lb-collapsible-summary-hover-text: var(--lb-hover-text);
+
+  /* === Tables === */
+  --lb-table-bg: transparent;
+  --lb-table-cell-bg: transparent;
+  --lb-table-cell-text: var(--lb-text);
+  --lb-table-row-bg: transparent;
+  --lb-table-row-alt-bg: rgba(0, 0, 0, 0.025);
+  --lb-table-row-hover-bg: var(--lb-hover-bg);
+  --lb-table-row-hover-text: var(--lb-hover-text);
+  --lb-table-header-bg: var(--lb-btn-bg);
+  --lb-table-header-text: var(--lb-text-secondary);
+  --lb-table-header-font-weight: 600;
+  --lb-table-header-border-bottom: 2px solid var(--lb-table-border-color);
+  --lb-table-header-hover-bg: rgba(0, 0, 0, 0.04);
+  --lb-table-header-hover-text: var(--lb-table-header-text);
+  --lb-table-footer-bg: var(--lb-btn-bg);
+  --lb-table-footer-text: var(--lb-text);
+  --lb-table-footer-font-weight: 500;
+  --lb-table-footer-border-top: 2px solid var(--lb-table-border-color);
+  --lb-table-border-width: 1px;
+  --lb-table-border-style: solid;
+  --lb-table-border-color: var(--lb-border-color);
+  --lb-table-border: var(--lb-table-border-width) var(--lb-table-border-style) var(--lb-table-border-color);
+  --lb-table-radius: var(--lb-radius);
+  --lb-table-shadow: none;
+  --lb-table-overflow: hidden;
+  --lb-table-dropdown-overflow: visible;
+  --lb-table-cell-overflow: visible;
+  --lb-table-inner-radius: calc(var(--lb-table-radius) - var(--lb-table-border-width));
+  --lb-table-cell-border-width: 1px;
+  --lb-table-cell-border-style: solid;
+  --lb-table-cell-border-color: var(--lb-table-border-color);
+  --lb-table-cell-border: var(--lb-table-cell-border-width) var(--lb-table-cell-border-style) var(--lb-table-cell-border-color);
+  --lb-table-cell-padding: 4px 8px;
+  --lb-table-line-height: 1.3;
+  --lb-table-control-padding: 7px 10px;
+  --lb-table-select-padding: 7px 34px 7px 10px;
+  --lb-table-control-margin-y: 0;
+  --lb-table-cell-padding-compact: 3px 6px;
+  --lb-table-control-padding-compact: 6px 8px;
+  --lb-table-select-padding-compact: 6px 32px 6px 8px;
+  --lb-table-sortable-padding-right: 22px;
+  --lb-table-responsive-cell-padding: 5px 10px;
+
+  /* Table status cells / Logmanager defaults */
+  --lb-table-status-font-weight: 500;
+  --lb-table-status-text: var(--lb-on-dark-text);
+  --lb-table-status-info-bg: #2f32ff;
+  --lb-table-status-info-text: var(--lb-on-dark-text);
+  --lb-table-status-ok-bg: var(--lb-success);
+  --lb-table-status-ok-text: var(--lb-on-dark-text);
+  --lb-table-status-warning-bg: #ffff33;
+  --lb-table-status-warning-text: var(--lb-on-light-text);
+  --lb-table-status-error-bg: var(--lb-danger);
+  --lb-table-status-error-text: var(--lb-on-dark-text);
+  --lb-table-status-critical-bg: #7f1d1d;
+  --lb-table-status-critical-text: var(--lb-on-dark-text);
 
   /* === Spacing === */
   --lb-space-xs: 4px;

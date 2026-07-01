@@ -569,7 +569,13 @@ sub read_generaljson
 	# Map legacy theme names to new themes
 	my %_theme_map = ('classic' => 'classic-lb', 'modern' => 'soft-rounded', 'dark' => 'glass');
 	$lbtheme = $_theme_map{$lbtheme} if exists $_theme_map{$lbtheme};
-	$lbtheme = 'soft-rounded' unless $lbtheme =~ /^(soft-rounded|clean-admin|glass|classic-lb|classic-mac|liquid-glass)$/;
+	if ($lbtheme =~ /^user-[a-z0-9][a-z0-9-]*$/) {
+		my $_plugin_user_theme_file = "$lbhomedir/webfrontend/html/plugins/cssframework/themes/theme-$lbtheme.css";
+		my $_legacy_user_theme_file = "$lbshtmldir/css/themes/user-themes/theme-$lbtheme.css";
+		$lbtheme = 'soft-rounded' unless (-f $_plugin_user_theme_file || -f $_legacy_user_theme_file);
+	} else {
+		$lbtheme = 'soft-rounded' unless $lbtheme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
+	}
 
 	if ( ! defined $cfg->{Miniserver} or keys(%{$cfg->{Miniserver}}) < 1) {
 		return undef;

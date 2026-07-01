@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>LoxBerry DS Preview</title>
+
+	<link rel="stylesheet" href="/system/css/design-tokens.css">
+	<link rel="stylesheet" href="/system/css/primeicons.css">
+	<link rel="stylesheet" href="/system/css/main.css">
+	<link rel="stylesheet" href="/system/css/components.css">
+	<link rel="stylesheet" href="/system/css/utilities.css">
+
+	<!-- Core themes. Filled by cssframework.cgi from /webfrontend/html/system/css/themes/theme-*.css. -->
+	__LB_CORE_THEME_LINKS__
+
+	<!-- Plugin-managed user themes. Filled by cssframework.cgi from /webfrontend/html/plugins/cssframework/themes/theme-user-*.css. -->
+	__LB_PLUGIN_THEME_LINKS__
+
+	<style>
+
+		/* Preview/Help pages use the LoxBerry/Core system font stack.
+		   Code snippets stay monospace for readability. */
+		html,
+		body,
+		button,
+		input,
+		select,
+		textarea {
+			font-family: var(--lb-font-family, var(--lb-font, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif));
+		}
+
+		code,
+		pre,
+		.lb-preview-code,
+		.lb-help-code {
+			font-family: var(--lb-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+		}
+		/* Preview-only helpers. Kept outside components.css intentionally. */
+		.lb-preview-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: var(--lb-space-md, 16px);
+			align-items: start;
+		}
+		.lb-preview-row {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			align-items: center;
+		}
+		.lb-preview-muted {
+			color: var(--lb-text-muted);
+			font-size: var(--lb-font-sm, 13px);
+		}
+		.lb-preview-control-stack {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: var(--lb-space-xs, 6px);
+			width: 100%;
+		}
+		.lb-preview-control-stack > .lb-input,
+		.lb-preview-control-stack > .lb-select,
+		.lb-preview-control-stack > .lb-textarea {
+			width: 100%;
+		}
+		.lb-preview-help-text {
+			display: block;
+			margin-top: var(--lb-space-xs, 6px);
+			color: var(--lb-text-secondary);
+			font-size: var(--lb-font-sm, 13px);
+			line-height: 1.65;
+			max-width: 100%;
+			width: 100%;
+			flex: 0 0 100%;
+			clear: both;
+			overflow-wrap: anywhere;
+		}
+		.lb-preview-help-text .lb-preview-code {
+			display: inline-block;
+			margin: 1px 3px 3px 0;
+			vertical-align: baseline;
+		}
+		.lb-preview-code {
+			font-family: var(--lb-font-mono, monospace);
+			font-size: 12px;
+			padding: 2px 6px;
+			border: 1px solid var(--lb-border-color);
+			border-radius: var(--lb-radius-sm, 6px);
+			background: var(--lb-btn-bg);
+			color: var(--lb-text);
+		}
+		.lb-preview-token-table td:first-child {
+			font-family: var(--lb-font-mono, monospace);
+			white-space: nowrap;
+		}
+
+		.lb-preview-swatch {
+			display: inline-block;
+			width: 18px;
+			height: 18px;
+			border-radius: 50%;
+			border: 1px solid var(--lb-border-color);
+			vertical-align: middle;
+			margin-right: 6px;
+		}
+		.lb-preview-color-table {
+			margin-top: var(--lb-space-sm, 8px);
+		}
+		.lb-preview-color-table td,
+		.lb-preview-color-table th {
+			vertical-align: middle;
+		}
+		.lb-preview-color-table td:nth-child(2),
+		.lb-preview-color-table td:nth-child(3) {
+			font-family: var(--lb-font-mono, monospace);
+			font-size: 12px;
+		}
+		.lb-preview-color-chip {
+			display: inline-block;
+			width: 22px;
+			height: 22px;
+			border-radius: var(--lb-radius-sm, 6px);
+			border: 1px solid var(--lb-border-color);
+			box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+			vertical-align: middle;
+		}
+		.lb-preview-mini-layout {
+			border: 1px solid var(--lb-border-color);
+			border-radius: var(--lb-radius);
+			overflow: hidden;
+			background: var(--lb-card-bg);
+		}
+		.lb-preview-mini-header {
+			padding: 10px 12px;
+			border-bottom: 1px solid var(--lb-border-color);
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		.lb-preview-mini-body {
+			display: flex;
+			min-height: 120px;
+		}
+		.lb-preview-mini-sidebar {
+			width: 96px;
+			padding: 10px;
+			background: var(--lb-sidebar-bg);
+			color: var(--lb-sidebar-text);
+			font-size: 12px;
+		}
+		.lb-preview-mini-content {
+			flex: 1;
+			padding: 10px;
+			color: var(--lb-text);
+		}
+
+
+		/* Preview-only AppStore example. Uses AppStore-like local classes mapped to Core tokens. */
+		.lb-preview-appstore-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: var(--lb-space-md, 16px);
+			align-items: stretch;
+		}
+		.lb-preview-app-card {
+			background: var(--lb-card-bg, #fff);
+			border: 1px solid var(--lb-border-color, #ddd);
+			border-radius: var(--lb-radius, 14px);
+			box-shadow: var(--lb-card-shadow, none);
+			padding: var(--lb-space-md, 18px);
+			display: flex;
+			flex-direction: column;
+			min-height: 350px;
+			color: var(--lb-text);
+		}
+		.lb-preview-app-card-head {
+			display: flex;
+			gap: 12px;
+			align-items: flex-start;
+			margin-bottom: var(--lb-space-sm, 10px);
+		}
+		.lb-preview-app-logo {
+			width: 52px;
+			height: 52px;
+			border-radius: var(--lb-radius-sm, 12px);
+			border: 1px solid var(--lb-border-color, #ddd);
+			background: var(--lb-primary, #6dac20);
+			color: var(--lb-btn-primary-text, #fff);
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 24px;
+			flex: none;
+		}
+		.lb-preview-app-title {
+			font-size: 16px;
+			font-weight: 700;
+			line-height: 1.25;
+			margin: 0;
+			color: var(--lb-text);
+		}
+		.lb-preview-app-author {
+			font-size: var(--lb-font-sm, 13px);
+			color: var(--lb-text-muted);
+			margin: 3px 0 0;
+		}
+		.lb-preview-app-badge {
+			font-size: 11px;
+			font-weight: 700;
+			line-height: 1;
+			padding: 4px 10px;
+			border-radius: 999px;
+			white-space: nowrap;
+			background: var(--lb-success-soft-bg, color-mix(in srgb, var(--lb-primary, #6dac20) 14%, white));
+			color: var(--lb-success-text, var(--lb-primary, #6dac20));
+		}
+		.lb-preview-app-desc {
+			font-size: var(--lb-font-sm, 13px);
+			line-height: 1.5;
+			color: var(--lb-text-secondary, var(--lb-text));
+			margin: 0 0 var(--lb-space-md, 16px);
+			flex: 1;
+		}
+		.lb-preview-app-meta {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			margin-bottom: var(--lb-space-md, 16px);
+		}
+		.lb-preview-app-tag {
+			font-size: 12px;
+			color: var(--lb-text-muted);
+			background: var(--lb-btn-bg, var(--lb-bg));
+			border: 1px solid var(--lb-border-color, transparent);
+			border-radius: var(--lb-radius-sm, 6px);
+			padding: 3px 8px;
+		}
+		.lb-preview-app-actions {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			align-items: center;
+		}
+		.lb-preview-code-block {
+			margin: var(--lb-space-md, 16px) 0 0;
+			padding: var(--lb-space-md, 16px);
+			border: 1px solid var(--lb-border-color);
+			border-radius: var(--lb-radius, 12px);
+			background: var(--lb-card-bg);
+			color: var(--lb-text);
+			overflow: auto;
+			font-size: 12px;
+			line-height: 1.45;
+		}
+
+		/* ============================================================
+		   Print / XPS support
+		   ------------------------------------------------------------
+		   Preview-only rule: Keep DS/theme backgrounds visible when
+		   printing to PDF/XPS. This intentionally stays in the preview
+		   page and is not part of components.css.
+		   ============================================================ */
+		@media print {
+			html,
+			body,
+			.lb-layout,
+			.lb-sidebar,
+			.lb-main,
+			.lb-header,
+			.lb-content,
+			.lb-card,
+			.lb-section-title,
+			.lb-btn,
+			.lb-btn-primary,
+			.lb-input,
+			.lb-select,
+			.lb-textarea,
+			.lb-table,
+			.lb-table th,
+			.lb-table td,
+			.lb-table thead th,
+			.lb-table tfoot td,
+			.lb-table-header-cell,
+			.lb-table-footer-cell,
+			.lb-multiselect,
+			.lb-multiselect summary,
+			.lb-multiselect-menu,
+			.lb-multiselect-option,
+			.lb-slider,
+			.lb-slider-value,
+			.lb-toggle-slider,
+			.note,
+			.lb-preview-code,
+			.lb-preview-help-text,
+			.lb-preview-mini-layout,
+			.lb-preview-mini-header,
+			.lb-preview-mini-sidebar,
+			.lb-preview-mini-content {
+				-webkit-print-color-adjust: exact !important;
+				print-color-adjust: exact !important;
+				color-adjust: exact !important;
+			}
+
+			body {
+				background: var(--lb-bg) !important;
+				color: var(--lb-text) !important;
+			}
+
+			.lb-sidebar {
+				background: var(--lb-sidebar-bg) !important;
+				color: var(--lb-sidebar-text) !important;
+				border-color: var(--lb-sidebar-border) !important;
+			}
+
+			.lb-header,
+			.lb-card,
+			.note,
+			.lb-modal,
+			.lb-preview-mini-layout {
+				background: var(--lb-card-bg) !important;
+				border-color: var(--lb-border-color) !important;
+				color: var(--lb-text) !important;
+			}
+
+			.lb-section-title {
+				background: var(--lb-section-title-bg, var(--lb-primary)) !important;
+				color: var(--lb-section-title-text, #ffffff) !important;
+			}
+
+			.lb-table thead th,
+			.lb-table .lb-table-header-cell,
+			.lb-table tr.lb-table-header-row > th,
+			.lb-table tr.lb-table-header-row > td {
+				background: var(--lb-table-header-bg) !important;
+				color: var(--lb-table-header-text) !important;
+			}
+
+			.lb-table tfoot td,
+			.lb-table .lb-table-footer-cell,
+			.lb-table tr.lb-table-footer-row > td,
+			.lb-table tr.lb-table-footer-row > th {
+				background: var(--lb-table-footer-bg) !important;
+				color: var(--lb-table-footer-text) !important;
+			}
+
+			.lb-table {
+				border-color: var(--lb-table-border-color, var(--lb-border-color)) !important;
+			}
+
+			.lb-table td,
+			.lb-table th {
+				border-color: var(--lb-table-cell-border-color, var(--lb-table-border-color, var(--lb-border-color))) !important;
+			}
+
+			.lb-btn {
+				background: var(--lb-btn-bg) !important;
+				color: var(--lb-btn-text) !important;
+				border-color: var(--lb-btn-border) !important;
+			}
+
+			.lb-btn-primary {
+				background: var(--lb-btn-primary-bg) !important;
+				color: var(--lb-btn-primary-text) !important;
+				border-color: var(--lb-btn-primary-border) !important;
+			}
+
+			.lb-input,
+			.lb-select,
+			.lb-textarea,
+			.lb-multiselect summary,
+			.lb-multiselect-menu {
+				background: var(--lb-input-bg) !important;
+				color: var(--lb-input-text) !important;
+				border-color: var(--lb-input-border) !important;
+			}
+
+			.lb-slider-value,
+			.lb-preview-code {
+				background: var(--lb-btn-bg) !important;
+				border-color: var(--lb-border-color) !important;
+				color: var(--lb-primary) !important;
+			}
+
+			.lb-preview-mini-sidebar {
+				background: var(--lb-sidebar-bg) !important;
+				color: var(--lb-sidebar-text) !important;
+			}
+		}
+
+	</style>
+</head>
+<body class="lb-layout __LB_CURRENT_THEME_CLASS__">
+	<aside class="lb-sidebar" id="preview_sidebar">
+		<a class="lb-sidebar-header" href="#top">
+			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
+			<div>
+				<div class="lb-sidebar-brand">LoxBerry <span>DS</span></div>
+				<div class="lb-sidebar-version">Preview V18.31</div>
+			</div>
+		</a>
+		<nav class="lb-sidebar-nav">
+			<div class="lb-sidebar-section">Core</div>
+			<a class="lb-sidebar-link active" href="#forms"><i class="pi pi-pencil"></i><span class="lb-sidebar-name">Forms</span><span class="lb-sidebar-status"></span></a>
+			<a class="lb-sidebar-link" href="#selects"><i class="pi pi-list"></i><span class="lb-sidebar-name">Selects</span></a>
+			<a class="lb-sidebar-link" href="#buttons"><i class="pi pi-bolt"></i><span class="lb-sidebar-name">Buttons</span></a>
+			<a class="lb-sidebar-link" href="#interactions"><i class="pi pi-mouse"></i><span class="lb-sidebar-name">Interactions</span></a>
+			<a class="lb-sidebar-link" href="#tables"><i class="pi pi-table"></i><span class="lb-sidebar-name">Tables</span></a>
+			<a class="lb-sidebar-link" href="#layout"><i class="pi pi-window-maximize"></i><span class="lb-sidebar-name">Layout</span></a>
+			<a class="lb-sidebar-link" href="#appstore"><i class="pi pi-shopping-cart"></i><span class="lb-sidebar-name">App Store</span></a>
+			<div class="lb-sidebar-section">Status</div>
+			<a class="lb-sidebar-link" href="#states"><i class="pi pi-info-circle"></i><span class="lb-sidebar-name">States</span><span class="lb-sidebar-badge">DS</span></a>
+		</nav>
+		<div class="lb-sidebar-footer"><i class="pi pi-check-circle"></i> Core Preview</div>
+	</aside>
+
+	<div class="lb-main">
+		<header class="lb-header">
+			<div class="lb-header-left">
+				<button type="button" class="lb-header-btn lb-nav-toggle" id="preview_nav_toggle" title="Toggle navigation"><i class="pi pi-bars"></i></button>
+			</div>
+			<h1 class="lb-header-title" id="top">LoxBerry Design System Preview</h1>
+			<div class="lb-header-actions">
+				<button type="button" class="lb-header-btn headerbutton_blue" id="preview_help_btn" title="Help"><i class="pi pi-question"></i></button>
+				<button type="button" class="lb-header-btn headerbutton_red" title="Demo Badge"><i class="pi pi-bell"></i><span class="lb-header-btn-badge">3</span></button>
+			</div>
+		</header>
+
+		<main class="lb-content">
+			<div class="lb-card">
+				<div class="lb-form-row">
+					<label class="lb-form-label" for="theme_select">Preview theme:</label>
+					<div class="lb-form-field">
+						<select class="lb-select" id="theme_select" data-role="none">
+							<optgroup label="Core themes">
+__LB_CORE_THEME_OPTIONS__
+							</optgroup>
+							<optgroup label="Available Plugin themes">
+__LB_PLUGIN_THEME_OPTIONS__
+							</optgroup>
+						</select>
+					</div>
+					<div class="lb-form-help hint">This page loads Core CSS, Core themes, and plugin-managed user-theme CSS files. Changing the selection updates the body class live.</div>
+				</div>
+				<div class="lb-preview-row">
+					<span class="lb-preview-code">body.<span id="current_theme_label">__LB_CURRENT_THEME_CLASS__</span></span>
+					<span class="lb-preview-muted">Path: /admin/system/cssframework.cgi?page=preview</span>
+					<span class="lb-preview-muted">Plugin themes: /webfrontend/html/plugins/cssframework/themes/theme-user-*.css</span>
+					<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/cssframework.cgi?page=help"><i class="pi pi-question-circle"></i> CSS Help</a>
+				</div>
+			</div>
+
+			<div class="lb-card" id="theme_colors">
+				<h4>Color legend of the active theme</h4>
+				<div class="lb-preview-muted">The values are read live from the currently effective CSS tokens. This also shows plugin-managed user themes correctly.</div>
+				<table class="lb-table lb-table-compact lb-preview-color-table">
+					<thead>
+						<tr>
+							<th>Color</th>
+							<th>Token</th>
+							<th>Code</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr data-color-token="--lb-bg"><td><span class="lb-preview-color-chip"></span> Background</td><td>--lb-bg</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-card-bg"><td><span class="lb-preview-color-chip"></span> Card</td><td>--lb-card-bg</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-primary"><td><span class="lb-preview-color-chip"></span> Primary</td><td>--lb-primary</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-primary-hover"><td><span class="lb-preview-color-chip"></span> Primary hover</td><td>--lb-primary-hover</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-text"><td><span class="lb-preview-color-chip"></span> Text</td><td>--lb-text</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-text-muted"><td><span class="lb-preview-color-chip"></span> Muted text</td><td>--lb-text-muted</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-border-color"><td><span class="lb-preview-color-chip"></span> Default border</td><td>--lb-border-color</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-sidebar-bg"><td><span class="lb-preview-color-chip"></span> Sidebar</td><td>--lb-sidebar-bg</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-sidebar-text"><td><span class="lb-preview-color-chip"></span> Sidebar text</td><td>--lb-sidebar-text</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-input-bg"><td><span class="lb-preview-color-chip"></span> Input</td><td>--lb-input-bg</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-input-placeholder-text"><td><span class="lb-preview-color-chip"></span> Placeholder</td><td>--lb-input-placeholder-text</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-btn-primary-bg"><td><span class="lb-preview-color-chip"></span> Primary Button</td><td>--lb-btn-primary-bg</td><td class="lb-preview-color-code"></td></tr>
+						<tr data-color-token="--lb-table-border-color"><td><span class="lb-preview-color-chip"></span> Table-Rand</td><td>--lb-table-border-color</td><td class="lb-preview-color-code"></td></tr>
+					</tbody>
+				</table>
+			</div>
+
+			<section id="forms">
+				<div class="lb-section-title">Form elements</div>
+				<div class="lb-preview-grid">
+					<div class="lb-card">
+						<h4>Inputs / Selects</h4>
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="text1">Text:</label>
+							<div class="lb-form-field">
+								<div class="lb-preview-control-stack">
+									<input class="lb-input" type="text" id="text1" placeholder="Enter text" value="Demo">
+									<div class="lb-preview-help-text">Core: <span class="lb-preview-code">input.lb-input</span> for single-line text fields.</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="placeholder1">Placeholder:</label>
+							<div class="lb-form-field">
+								<div class="lb-preview-control-stack">
+									<input class="lb-input" type="text" id="placeholder1" placeholder="Placeholder text only">
+									<div class="lb-preview-help-text">Core: <span class="lb-preview-code">input.lb-input[placeholder]</span> uses <span class="lb-preview-code">--lb-input-placeholder-text</span> and <span class="lb-preview-code">--lb-input-placeholder-opacity</span>.</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="time1">Time:</label>
+							<div class="lb-form-field">
+								<div class="lb-preview-control-stack">
+									<input class="lb-input" type="time" id="time1" value="08:30" data-role="none">
+									<div class="lb-preview-help-text">Core: <span class="lb-preview-code">input.lb-input[type=time]</span> with <span class="lb-preview-code">data-role=&quot;none&quot;</span> for the native browser time picker.</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row lb-disabled">
+							<label class="lb-form-label" for="disabled1">Disabled row:</label>
+							<div class="lb-form-field">
+								<div class="lb-preview-control-stack">
+									<input class="lb-input" type="text" id="disabled1" value="inactive" disabled>
+									<div class="lb-preview-help-text">Core: <span class="lb-preview-code">.lb-form-row.lb-disabled</span> dims a complete form row.</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="disabled2">Disabled input:</label>
+							<div class="lb-form-field">
+								<div class="lb-preview-control-stack">
+									<input class="lb-input" type="text" id="disabled2" value="not editable" disabled>
+									<div class="lb-preview-help-text">Core: <span class="lb-preview-code">input.lb-input[disabled]</span> uses the disabled tokens of the input component.</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="select1">Select:</label>
+							<div class="lb-form-field">
+								<div class="lb-preview-control-stack">
+									<select class="lb-select" id="select1" data-role="none">
+										<option>Off</option><option selected>On</option><option>Auto</option>
+									</select>
+									<div class="lb-preview-help-text">Core: <span class="lb-preview-code">select.lb-select</span> and <span class="lb-preview-code">data-role=&quot;none&quot;</span> for a native dropdown.</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="select_placeholder">Select hint:</label>
+							<div class="lb-form-field">
+								<div class="lb-preview-control-stack">
+									<select class="lb-select" id="select_placeholder" data-role="none">
+										<option value="" disabled selected>Please select</option>
+										<option>Off</option><option>On</option><option>Auto</option>
+									</select>
+									<div class="lb-preview-help-text">Note: <span class="lb-preview-code">select</span> has no real placeholder. The clean Core pattern is a disabled first <span class="lb-preview-code">option[disabled][selected]</span>.</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="textarea1">Textarea:</label>
+							<div class="lb-form-field">
+								<div class="lb-preview-control-stack">
+									<textarea class="lb-textarea" id="textarea1" rows="4">Multiline text...</textarea>
+									<div class="lb-preview-help-text">Core: <span class="lb-preview-code">textarea.lb-textarea</span>. Placeholder also uses <span class="lb-preview-code">textarea::placeholder</span>.</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="lb-card">
+						<h4>Checkbox / Radio / Toggle</h4>
+						<div class="lb-form-row">
+							<label class="lb-form-label">Checkbox:</label>
+							<div class="lb-form-field"><label><input type="checkbox" checked> Enable feature</label></div>
+						</div>
+						<div class="lb-form-row">
+							<label class="lb-form-label">Radio:</label>
+							<div class="lb-form-field">
+								<div><input type="radio" name="radio-v" id="radio-v1" value="a"><label for="radio-v1"> Option A</label></div>
+								<div><input type="radio" name="radio-v" id="radio-v2" value="b" checked><label for="radio-v2"> Option B</label></div>
+								<div><input type="radio" name="radio-v" id="radio-v3" value="c"><label for="radio-v3"> Option C</label></div>
+							</div>
+						</div>
+						<div class="lb-form-row">
+							<label class="lb-form-label">Button group:</label>
+							<div class="lb-form-field">
+								<div class="lb-btn-group">
+									<input type="radio" name="radio-h" id="radio-h1" value="yes" checked><label for="radio-h1">Yes</label>
+									<input type="radio" name="radio-h" id="radio-h2" value="no"><label for="radio-h2">No</label>
+									<input type="radio" name="radio-h" id="radio-h3" value="auto"><label for="radio-h3">Auto</label>
+								</div>
+								<div class="lb-preview-muted" style="margin-top:6px;"><code>lb-btn-group</code> horizontal</div>
+							</div>
+						</div>
+						<div class="lb-form-row">
+							<label class="lb-form-label">Vertical group:</label>
+							<div class="lb-form-field">
+								<div class="lb-btn-group lb-btn-group-vertical">
+									<input type="radio" name="radio-vg" id="radio-vg1" value="auto" checked><label for="radio-vg1">Auto</label>
+									<input type="radio" name="radio-vg" id="radio-vg2" value="on"><label for="radio-vg2">On</label>
+									<input type="radio" name="radio-vg" id="radio-vg3" value="off"><label for="radio-vg3">Off</label>
+								</div>
+								<div class="lb-preview-muted" style="margin-top:6px;"><span class="lb-preview-code">lb-btn-group lb-btn-group-vertical</span> · <span class="lb-preview-code">--lb-btn-group-vertical-width: 96px</span></div>
+							</div>
+						</div>
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="toggle1">Toggle:</label>
+							<div class="lb-form-field">
+								<label class="lb-toggle" for="toggle1"><input type="checkbox" id="toggle1" checked><span class="lb-toggle-slider"></span></label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section id="selects">
+				<div class="lb-section-title">Dropdowns / Select / Multiselect</div>
+				<div class="lb-preview-grid">
+					<div class="lb-card">
+						<h4>Native selects</h4>
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="select_optgroup">Dropdown:</label>
+							<div class="lb-form-field">
+								<select class="lb-select" id="select_optgroup" name="select_optgroup" data-role="none">
+									<optgroup label="Standard">
+										<option value="off">Off</option>
+										<option value="on" selected>On</option>
+										<option value="auto">Automatic</option>
+									</optgroup>
+									<optgroup label="Advanced">
+										<option value="expert">Expert</option>
+										<option value="debug">Debug</option>
+									</optgroup>
+								</select>
+							</div>
+							<div class="lb-form-help"><span class="lb-preview-code">select.lb-select</span> is the standard Core dropdown.</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="select_compact_table_demo">Select in table:</label>
+							<div class="lb-form-field">
+								<div class="lb-table-frame lb-table-frame-dropdowns lb-table-frame-mask-corners">
+									<table class="lb-table lb-table-compact lb-table-dropdowns-visible">
+										<thead>
+											<tr class="lb-table-header-row"><th class="lb-table-header-cell">Option</th><th class="lb-table-header-cell">Value</th></tr>
+										</thead>
+										<tbody>
+											<tr class="lb-table-body-row">
+												<td class="lb-table-cell">Mode</td>
+												<td class="lb-table-cell">
+													<select class="lb-select lb-select-layer" id="select_compact_table_demo" data-role="none">
+														<option>Normal</option>
+														<option selected>Compact</option>
+														<option>Advanced</option>
+														<option>Debug</option>
+													</select>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="lb-preview-help-text"><strong>Core test:</strong> <span class="lb-preview-code">lb-table-frame</span> keeps the table border visible, <span class="lb-preview-code">lb-table-dropdowns-visible</span> allows visible overflow, and <span class="lb-preview-code">lb-select-layer</span> lifts the select into the dropdown layer.</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="native_multi">Native multiple:</label>
+							<div class="lb-form-field">
+								<select class="lb-select" id="native_multi" name="native_multi" multiple size="5" data-role="none">
+									<option selected>Text-to-Speech</option>
+									<option>Radio</option>
+									<option selected>Weather</option>
+									<option>Calendar</option>
+									<option>Debug</option>
+								</select>
+								<div class="lb-preview-help-text"><strong>Note:</strong> Native <span class="lb-preview-code">select[multiple]</span> intentionally remains a list box. Use <span class="lb-preview-code">details.lb-multiselect</span> for a real dropdown.</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="lb-card">
+						<h4>Multiselect dropdown</h4>
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="ms_features_summary">Features:</label>
+							<div class="lb-form-field">
+								<details class="lb-multiselect" data-placeholder="Select features">
+									<summary id="ms_features_summary">Select features</summary>
+									<div class="lb-multiselect-menu">
+										<label class="lb-multiselect-option"><input type="checkbox" name="features" value="tts" checked> Text-to-Speech</label>
+										<label class="lb-multiselect-option"><input type="checkbox" name="features" value="radio"> Radio</label>
+										<label class="lb-multiselect-option"><input type="checkbox" name="features" value="weather" checked> Weather</label>
+										<label class="lb-multiselect-option"><input type="checkbox" name="features" value="calendar"> Calendar</label>
+										<label class="lb-multiselect-option"><input type="checkbox" name="features" value="debug"> Debug</label>
+									</div>
+								</details>
+								<div class="lb-multiselect-help">Core-Markup: <span class="lb-preview-code">details.lb-multiselect</span> + Checkboxen.</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="ms_list_summary">Liste:</label>
+							<div class="lb-form-field">
+								<details class="lb-multiselect lb-multiselect-list" data-placeholder="Select rooms">
+									<summary id="ms_list_summary">Select rooms</summary>
+									<div class="lb-multiselect-menu">
+										<label class="lb-multiselect-option"><input type="checkbox" name="rooms" value="living" checked> Living room</label>
+										<label class="lb-multiselect-option"><input type="checkbox" name="rooms" value="kitchen"> Kitchen</label>
+										<label class="lb-multiselect-option"><input type="checkbox" name="rooms" value="bath"> Bathroom</label>
+										<label class="lb-multiselect-option"><input type="checkbox" name="rooms" value="kids" checked> Kids room</label>
+									</div>
+								</details>
+								<div class="lb-multiselect-help">Optionale Variante: <span class="lb-preview-code">details.lb-multiselect.lb-multiselect-list</span>.</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label">Table-Test:</label>
+							<div class="lb-form-field">
+								<div class="lb-table-frame lb-table-frame-dropdowns lb-table-frame-mask-corners">
+									<table class="lb-table lb-table-compact lb-table-dropdowns-visible">
+										<thead>
+											<tr class="lb-table-header-row"><th class="lb-table-header-cell">Option</th><th class="lb-table-header-cell">Selection (with tooltip/mouseover)</th></tr>
+										</thead>
+										<tbody>
+											<tr class="lb-table-body-row">
+												<td class="lb-table-cell">Player</td>
+												<td class="lb-table-cell">
+												<span class="lb-tooltip-anchor">
+													<details class="lb-multiselect lb-multiselect-list lb-dropdown-layer" data-placeholder="Select player">
+														<summary>Select player</summary>
+														<div class="lb-multiselect-menu">
+															<label class="lb-multiselect-option"><input type="checkbox" name="table_player" value="living" checked> Living room</label>
+															<label class="lb-multiselect-option"><input type="checkbox" name="table_player" value="kitchen"> Kitchen</label>
+															<label class="lb-multiselect-option"><input type="checkbox" name="table_player" value="bath"> Bathroom</label>
+															<label class="lb-multiselect-option"><input type="checkbox" name="table_player" value="kids"> Kids room</label>
+														</div>
+													</details>
+													<span class="lb-tooltip" role="tooltip">
+														<span class="lb-tooltip-title">Tooltip available</span>
+														This dropdown field uses Core tooltip markup: <span class="lb-preview-code">lb-tooltip-anchor</span> + <span class="lb-preview-code">lb-tooltip</span>.
+													</span>
+												</span>
+												</td>
+											</tr>
+											<tr class="lb-table-body-row">
+												<td class="lb-table-cell">Room type</td>
+												<td class="lb-table-cell">
+													<select class="lb-select lb-select-layer" id="select_table_roomtype" data-role="none">
+														<option selected>Living room</option>
+														<option>Kitchen</option>
+														<option>Bathroom</option>
+														<option>Kids room</option>
+													</select>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="lb-preview-help-text"><strong>Core classes only:</strong> <span class="lb-preview-code">lb-table-frame</span> for border/radius, <span class="lb-preview-code">lb-table-dropdowns-visible</span> for visible overflow, <span class="lb-preview-code">lb-dropdown-layer</span> for multiselect, and <span class="lb-preview-code">lb-select-layer</span> for select.</div>
+							</div>
+						</div>
+
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="ms_disabled_summary">Disabled:</label>
+							<div class="lb-form-field">
+								<details class="lb-multiselect lb-disabled" aria-disabled="true" data-placeholder="Not available">
+									<summary id="ms_disabled_summary">Not available</summary>
+									<div class="lb-multiselect-menu">
+										<label class="lb-multiselect-option"><input type="checkbox" checked disabled> Locked</label>
+									</div>
+								</details>
+							</div>
+						</div>
+
+						<div class="note">Themes should only override tokens such as <span class="lb-preview-code">--lb-multiselect-summary-bg</span>, <span class="lb-preview-code">--lb-multiselect-menu-bg</span> and <span class="lb-preview-code">--lb-dropdown-menu-bg</span> here.</div>
+					</div>
+				</div>
+			</section>
+
+			<section id="slider">
+				<div class="lb-section-title">Slider</div>
+				<div class="lb-card">
+					<div class="lb-form-row">
+						<label class="lb-form-label" for="slider_level">Level:</label>
+						<div class="lb-form-field">
+							<div class="lb-slider-wrap">
+								<input type="range" class="lb-slider" id="slider_level" name="slider_level" min="0" max="100" step="5" value="50" data-role="none">
+								<span class="lb-slider-value" id="slider_level_val">50 %</span>
+							</div>
+							<div class="lb-slider-labels"><span>0 %</span><span>100 %</span></div>
+						</div>
+					</div>
+					<div class="lb-form-row">
+						<label class="lb-form-label" for="slider_cache">Cache:</label>
+						<div class="lb-form-field">
+							<div class="lb-slider-wrap">
+								<input type="range" class="lb-slider" id="slider_cache" name="slider_cache" min="100" max="3000" step="100" value="500" data-role="none">
+								<span class="lb-slider-value" id="slider_cache_val">500 MB</span>
+							</div>
+							<div class="lb-slider-labels"><span>100 MB</span><span>3000 MB</span></div>
+						</div>
+					</div>
+					<div class="lb-form-row">
+						<label class="lb-form-label" for="slider_disabled">Disabled:</label>
+						<div class="lb-form-field">
+							<div class="lb-slider-wrap">
+								<input type="range" class="lb-slider" id="slider_disabled" min="0" max="100" step="10" value="40" data-role="none" disabled>
+								<span class="lb-slider-value" id="slider_disabled_val">40 %</span>
+							</div>
+							<div class="lb-slider-labels"><span>0 %</span><span>100 %</span></div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section id="buttons">
+				<div class="lb-section-title">Buttons / Actions</div>
+				<div class="lb-card">
+					<div class="lb-preview-row">
+						<button class="lb-btn" type="button">Standard</button>
+						<button class="lb-btn lb-btn-primary" type="button"><i class="pi pi-save"></i> Save</button>
+						<button class="lb-btn lb-btn-sm" type="button">Small</button>
+						<button class="lb-btn lb-btn-danger" type="button"><i class="pi pi-trash"></i> Delete</button>
+						<a class="lb-btn lb-btn-icon" href="#buttons"><i class="pi pi-cog"></i> Link button</a>
+						<button class="lb-btn lb-disabled" disabled type="button">Disabled</button>
+					</div>
+					<div class="lb-actions">
+						<button class="lb-btn lb-btn-primary" type="button">Action 1</button>
+						<button class="lb-btn" type="button">Action 2</button>
+					</div>
+				</div>
+			</section>
+
+			<section id="cards">
+				<div class="lb-section-title">Cards / Collapsible / Notes</div>
+				<div class="lb-preview-grid">
+					<div class="lb-card">
+						<h4>Card</h4>
+						<p>A <span class="lb-preview-code">lb-card</span> highlights content with border, radius, and optional shadow.</p>
+					</div>
+					<div>
+						<details class="lb-collapsible" open>
+							<summary>Section A</summary>
+							<div class="lb-collapsible-content">Content of the open section.</div>
+						</details>
+						<details class="lb-collapsible">
+							<summary>Section B</summary>
+							<div class="lb-collapsible-content">Additional content.</div>
+						</details>
+					</div>
+				</div>
+				<div class="note" style="margin-top: var(--lb-space-md, 16px);">Note box using the existing <span class="lb-preview-code">.note</span>-rule.</div>
+			</section>
+
+			<section id="tables">
+				<div class="lb-section-title">Tables</div>
+				<div class="lb-card" style="margin-bottom: var(--lb-space-md, 16px);">
+					<h4>Core-Regressionscheck</h4>
+					<div class="lb-preview-help-text">This preview shows tables as close to Core as possible: outer borders via <span class="lb-preview-code">.lb-table</span> or <span class="lb-preview-code">.lb-table-frame</span>, dropdown/tooltip overflow via <span class="lb-preview-code">.lb-table-dropdowns-visible</span>, <span class="lb-preview-code">.lb-dropdown-layer</span> and <span class="lb-preview-code">.lb-tooltip-anchor</span>.</div>
+				</div>
+				<div class="lb-preview-grid">
+					<div class="lb-card">
+						<h4>Standard table</h4>
+						<p class="lb-preview-muted">The outer border is stabilized via <span class="lb-preview-code">table.lb-table</span> and stays scoped to the DS table component.</p>
+						<p class="lb-preview-muted">Checks the outer border, radius, and separated cell lines of the Core component <span class="lb-preview-code">.lb-table</span>.</p>
+						<table class="lb-table lb-table-sortable">
+							<thead>
+								<tr class="lb-table-header-row">
+									<th class="lb-table-header-cell lb-th-sortable" data-sort="asc">Name</th>
+									<th class="lb-table-header-cell">Status</th>
+									<th class="lb-table-header-cell lb-table-actions">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="lb-table-body-row"><td class="lb-table-cell">Living room</td><td class="lb-table-cell">Online</td><td class="lb-table-cell lb-table-actions"><button class="lb-btn lb-btn-sm">Test</button></td></tr>
+								<tr class="lb-table-body-row"><td class="lb-table-cell">Kitchen</td><td class="lb-table-cell">Offline</td><td class="lb-table-cell lb-table-actions"><button class="lb-btn lb-btn-sm">Test</button></td></tr>
+							</tbody>
+							<tfoot>
+								<tr class="lb-table-footer-row"><td class="lb-table-footer-cell lb-table-actions" colspan="3"><a href="#tables" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-plus"></i> Add</a></td></tr>
+							</tfoot>
+						</table>
+					</div>
+					<div class="lb-card">
+						<h4>Compact table</h4>
+						<table class="lb-table lb-table-compact lb-preview-token-table">
+							<thead><tr><th>Token</th><th>Effect</th></tr></thead>
+							<tbody>
+								<tr><td>--lb-primary</td><td><span class="lb-preview-swatch" style="background:var(--lb-primary)"></span>Primary color</td></tr>
+								<tr><td>--lb-card-bg</td><td><span class="lb-preview-swatch" style="background:var(--lb-card-bg)"></span>Card background</td></tr>
+								<tr><td>--lb-table-header-bg</td><td><span class="lb-preview-swatch" style="background:var(--lb-table-header-bg)"></span>Table header</td></tr>
+								<tr><td>--lb-table-footer-bg</td><td><span class="lb-preview-swatch" style="background:var(--lb-table-footer-bg)"></span>Table footer</td></tr>
+							</tbody>
+						</table>
+
+						<h4 style="margin-top: var(--lb-space-lg, 20px);">Status cells / Log manager</h4>
+						<p class="lb-preview-muted">Colored status cells must not be overwritten by <span class="lb-preview-code">.lb-table</span>. Inline/legacy alignment remains effective.</p>
+						<table class="lb-table lb-table-compact lb-preview-table-border-demo">
+							<tbody>
+								<tr>
+									<td class="lb-table-status-cell lb-status-info" style="width:96px; min-width:96px; height:42px;">Info</td>
+									<td>Info cell stays colored and centered.</td>
+								</tr>
+								<tr>
+									<td class="lb-table-status-cell lb-status-ok" style="width:96px; min-width:96px; height:42px;">OK</td>
+									<td>OK cell stays colored and centered.</td>
+								</tr>
+								<tr>
+									<td class="lb-table-status-cell lb-status-warning" style="width:96px; min-width:96px; height:42px;">Warning</td>
+									<td>Warning cell stays colored and centered.</td>
+								</tr>
+								<tr>
+									<td class="lb-table-status-cell lb-status-error" style="width:96px; min-width:96px; height:42px;">Error</td>
+									<td>Error cell stays colored and centered.</td>
+								</tr>
+								<tr>
+									<td class="lb-table-status-cell lb-status-critical" style="width:96px; min-width:96px; height:42px;">Critical</td>
+									<td>Critical cell stays colored and centered.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="lb-card">
+						<h4>Table border tokens</h4>
+						<p class="lb-preview-muted">The outer border is part of Core for <span class="lb-preview-code">.lb-table</span>. This demo explicitly shows the border/radius tokens; the other tables also use the real Core table rules.</p>
+						<table class="lb-table lb-table-compact lb-preview-token-table lb-preview-table-border-demo">
+							<thead><tr><th>Token</th><th>Effect</th></tr></thead>
+							<tbody>
+								<tr><td>--lb-table-border-width</td><td>Outer table border width</td></tr>
+								<tr><td>--lb-table-border-style</td><td>Outer table border style</td></tr>
+								<tr><td>--lb-table-border-color</td><td><span class="lb-preview-swatch" style="background:var(--lb-table-border-color)"></span>Outer table border color</td></tr>
+								<tr><td>--lb-table-radius</td><td>Corner radius of the table box</td></tr>
+								<tr><td>--lb-table-cell-border-color</td><td><span class="lb-preview-swatch" style="background:var(--lb-table-cell-border-color)"></span>Cell line color</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</section>
+
+			<section id="layout">
+				<div class="lb-section-title">Layout / Header / Sidebar / Tabbar</div>
+				<div class="lb-preview-grid">
+					<div class="lb-card">
+						<h4>Mini layout</h4>
+						<div class="lb-preview-mini-layout">
+							<div class="lb-preview-mini-header"><strong>Header</strong><span><i class="pi pi-bell"></i></span></div>
+							<div class="lb-preview-mini-body">
+								<div class="lb-preview-mini-sidebar">Sidebar<br>Navigation<br>Status</div>
+								<div class="lb-preview-mini-content">Content area with card, form, and table.</div>
+							</div>
+						</div>
+					</div>
+					<div class="lb-card">
+						<h4>Header buttons</h4>
+						<div class="lb-preview-row">
+							<button class="lb-header-btn" type="button"><i class="pi pi-home"></i></button>
+							<button class="lb-header-btn headerbutton_blue" type="button"><i class="pi pi-question"></i></button>
+							<button class="lb-header-btn headerbutton_red" type="button"><i class="pi pi-times"></i></button>
+							<button class="lb-header-btn" type="button"><i class="pi pi-bell"></i><span class="lb-header-btn-badge lb-badge-blue">9</span></button>
+						</div>
+					</div>
+				</div>
+			</section>
+
+
+			<section id="interactions">
+				<div class="lb-section-title">Interactive states / hover</div>
+				<div class="lb-preview-grid">
+					<div class="lb-card">
+						<h4>Hover targets</h4>
+						<p class="lb-preview-muted">Move the mouse over the elements. Background and text color come from Core tokens. Light/white hover backgrounds must use dark text.</p>
+						<div class="lb-preview-row">
+							<button class="lb-btn" type="button">Button hover</button>
+							<button class="lb-btn lb-btn-primary" type="button">Primary hover</button>
+							<button class="lb-btn lb-btn-danger" type="button">Danger hover</button>
+						</div>
+						<div class="lb-form-row" style="margin-top:12px;">
+							<label class="lb-form-label" for="hover_input">Input hover:</label>
+							<div class="lb-form-field"><input class="lb-input" type="text" id="hover_input" value="Hover / focus"></div>
+						</div>
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="hover_select">Select hover:</label>
+							<div class="lb-form-field">
+								<select class="lb-select" id="hover_select" data-role="none"><option>Standard</option><option selected>Hover test</option></select>
+							</div>
+						</div>
+					</div>
+
+					<div class="lb-card">
+						<h4>Tooltip / mouseover</h4>
+						<p class="lb-preview-muted">Hover or keyboard focus shows a theme-colored tooltip.</p>
+						<div class="lb-preview-row" style="padding-top:24px;">
+							<span class="lb-tooltip-anchor">
+								<button class="lb-btn lb-btn-primary" type="button"><i class="pi pi-info-circle"></i> Traffic lights</button>
+								<span class="lb-tooltip" role="tooltip">
+									<span class="lb-tooltip-title">Explanation of traffic lights:</span>
+									GREEN: Everything OK<br>
+									YELLOW: Warning<br>
+									RED: Error
+								</span>
+							</span>
+						</div>
+						<div class="lb-preview-muted" style="margin-top:10px;"><code>lb-tooltip-anchor</code> + <code>lb-tooltip</code></div>
+					</div>
+					<div class="lb-card">
+						<h4>Tokens</h4>
+						<table class="lb-table lb-table-compact lb-preview-token-table">
+							<tbody>
+								<tr><td>--lb-hover-bg</td><td>Generic hover background</td></tr>
+								<tr><td>--lb-hover-text</td><td>generic hover text color</td></tr>
+								<tr><td>--lb-on-light-text</td><td>contrast text for light/white hover backgrounds</td></tr>
+								<tr><td>--lb-btn-hover-text</td><td>button hover text</td></tr>
+								<tr><td>--lb-input-hover-border</td><td>input/select hover border</td></tr>
+								<tr><td>--lb-focus-ring</td><td>focus ring</td></tr>
+								<tr><td>--lb-tooltip-bg</td><td>Tooltip background</td></tr>
+								<tr><td>--lb-tooltip-text</td><td>tooltip text color</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</section>
+
+			<section id="states">
+				<div class="lb-section-title">States / modal</div>
+				<div class="lb-preview-grid">
+					<div class="lb-card">
+						<h4>Validation</h4>
+						<div class="lb-form-row">
+							<label class="lb-form-label" for="invalid1">Error:</label>
+							<div class="lb-form-field">
+								<input class="lb-input invalid" id="invalid1" value="Invalid value">
+								<span class="form-error">This is an error message.</span>
+							</div>
+						</div>
+					</div>
+					<div class="lb-card">
+						<h4>Modal</h4>
+						<button class="lb-btn lb-btn-primary" type="button" onclick="document.getElementById('preview_modal').showModal()">Open modal</button>
+					</div>
+				</div>
+			</section>
+
+			<section id="appstore">
+				<div class="lb-section-title">Example App Store</div>
+				<div class="lb-preview-muted" style="margin-bottom:12px;">AppStore cards as an example of a real LoxBerry system page. The demo uses preview-specific AppStore classes, but only Core/theme tokens for colors, borders, radius and buttons.</div>
+				<div class="lb-preview-appstore-grid">
+
+					<article class="lb-preview-app-card">
+						<div class="lb-preview-app-card-head">
+							<div class="lb-preview-app-logo"><i class="pi pi-circle-fill"></i></div>
+							<div style="flex:1;min-width:0">
+								<h4 class="lb-preview-app-title">RoboRock</h4>
+								<p class="lb-preview-app-author">by Dieter Schmidberger</p>
+							</div>
+							<span class="lb-preview-app-badge">STABLE</span>
+						</div>
+						<p class="lb-preview-app-desc">The <strong>Roborock</strong> plugin integrates Roborock vacuum robots into Loxone.</p>
+						<div class="lb-preview-app-meta"><span class="lb-preview-app-tag">v1.0.5</span><span class="lb-preview-app-tag">DE, EN</span><span class="lb-preview-app-tag">upd. 2026-06-28</span></div>
+						<div class="lb-preview-app-actions"><a class="lb-btn lb-btn-primary lb-btn-sm" href="#appstore">Install</a><a class="lb-btn lb-btn-sm" href="#appstore">Wiki</a><a class="lb-btn lb-btn-sm" href="#appstore">Forum</a></div>
+					</article>
+
+					<article class="lb-preview-app-card">
+						<div class="lb-preview-app-card-head">
+							<div class="lb-preview-app-logo"><i class="pi pi-bolt"></i></div>
+							<div style="flex:1;min-width:0">
+								<h4 class="lb-preview-app-title">TP-Link Plug Control</h4>
+								<p class="lb-preview-app-author">by Siggi Ey</p>
+							</div>
+							<span class="lb-preview-app-badge">STABLE</span>
+						</div>
+						<p class="lb-preview-app-desc">LoxBerry plugin for local control of TP-Link/Kasa smart plugs including XML export.</p>
+						<div class="lb-preview-app-meta"><span class="lb-preview-app-tag">v1.1.0</span><span class="lb-preview-app-tag">DE, EN</span><span class="lb-preview-app-tag">upd. 2026-06-28</span></div>
+						<div class="lb-preview-app-actions"><a class="lb-btn lb-btn-primary lb-btn-sm" href="#appstore">Install</a><a class="lb-btn lb-btn-sm" href="#appstore">Wiki</a></div>
+					</article>
+
+					<article class="lb-preview-app-card">
+						<div class="lb-preview-app-card-head">
+							<div class="lb-preview-app-logo"><i class="pi pi-key"></i></div>
+							<div style="flex:1;min-width:0">
+								<h4 class="lb-preview-app-title">Lox-Tools</h4>
+								<p class="lb-preview-app-author">by Dieter Schmidberger</p>
+							</div>
+							<span class="lb-preview-app-badge">STABLE</span>
+						</div>
+						<p class="lb-preview-app-desc">Lox-Tools bundles web tools for Loxone, such as command recognition, Modbus helper and log viewer.</p>
+						<div class="lb-preview-app-meta"><span class="lb-preview-app-tag">v1.0.0</span><span class="lb-preview-app-tag">DE/EN</span><span class="lb-preview-app-tag">upd. 2026-06-25</span></div>
+						<div class="lb-preview-app-actions"><button class="lb-btn lb-btn-sm" type="button" disabled>Manual only</button><a class="lb-btn lb-btn-sm" href="#appstore">Wiki</a></div>
+					</article>
+
+					<article class="lb-preview-app-card">
+						<div class="lb-preview-app-card-head">
+							<div class="lb-preview-app-logo"><i class="pi pi-sun"></i></div>
+							<div style="flex:1;min-width:0">
+								<h4 class="lb-preview-app-title">PV Solcast NG</h4>
+								<p class="lb-preview-app-author">by Dieter Schmidberger</p>
+							</div>
+							<span class="lb-preview-app-badge">STABLE</span>
+						</div>
+						<p class="lb-preview-app-desc">PV forecast plugin for Loxone via Solcast. Fetches photovoltaic forecasts and provides them to Loxone.</p>
+						<div class="lb-preview-app-meta"><span class="lb-preview-app-tag">v1.1.16</span><span class="lb-preview-app-tag">DE, EN</span><span class="lb-preview-app-tag">upd. 2026-06-25</span></div>
+						<div class="lb-preview-app-actions"><a class="lb-btn lb-btn-primary lb-btn-sm" href="#appstore">Install</a><a class="lb-btn lb-btn-sm" href="#appstore">Wiki</a><a class="lb-btn lb-btn-sm" href="#appstore">Forum</a></div>
+					</article>
+
+					<article class="lb-preview-app-card">
+						<div class="lb-preview-app-card-head">
+							<div class="lb-preview-app-logo"><i class="pi pi-home"></i></div>
+							<div style="flex:1;min-width:0">
+								<h4 class="lb-preview-app-title">What Happened</h4>
+								<p class="lb-preview-app-author">by Dieter Schmidberger</p>
+							</div>
+							<span class="lb-preview-app-badge">STABLE</span>
+						</div>
+						<p class="lb-preview-app-desc">Collects events that happened while you or others were away and summarizes them when you come home.</p>
+						<div class="lb-preview-app-meta"><span class="lb-preview-app-tag">v1.0.0</span><span class="lb-preview-app-tag">upd. 2026-06-25</span></div>
+						<div class="lb-preview-app-actions"><button class="lb-btn lb-btn-sm" type="button" disabled>Manual only</button><a class="lb-btn lb-btn-sm" href="#appstore">Wiki</a></div>
+					</article>
+				</div>
+				<details class="lb-collapsible" style="margin-top:16px;">
+					<summary>HTML code</summary>
+					<pre class="lb-preview-code-block"><code>&lt;section id=&quot;appstore&quot;&gt;
+  &lt;div class=&quot;lb-section-title&quot;&gt;Example App Store&lt;/div&gt;
+  &lt;div class=&quot;lb-preview-appstore-grid&quot;&gt;
+    &lt;article class=&quot;lb-preview-app-card&quot;&gt;
+      &lt;div class=&quot;lb-preview-app-card-head&quot;&gt;
+        &lt;div class=&quot;lb-preview-app-logo&quot;&gt;&lt;i class=&quot;pi pi-home&quot;&gt;&lt;/i&gt;&lt;/div&gt;
+        &lt;div style=&quot;flex:1;min-width:0&quot;&gt;
+          &lt;h4 class=&quot;lb-preview-app-title&quot;&gt;Demo Plugin&lt;/h4&gt;
+          &lt;p class=&quot;lb-preview-app-author&quot;&gt;by LoxBerry Team&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;span class=&quot;lb-preview-app-badge&quot;&gt;STABLE&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;p class=&quot;lb-preview-app-desc&quot;&gt;Short description text of the AppStore card.&lt;/p&gt;
+      &lt;div class=&quot;lb-preview-app-meta&quot;&gt;
+        &lt;span class=&quot;lb-preview-app-tag&quot;&gt;v1.0.0&lt;/span&gt;
+        &lt;span class=&quot;lb-preview-app-tag&quot;&gt;DE, EN&lt;/span&gt;
+        &lt;span class=&quot;lb-preview-app-tag&quot;&gt;upd. 2026-06-29&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;lb-preview-app-actions&quot;&gt;
+        &lt;a class=&quot;lb-btn lb-btn-primary lb-btn-sm&quot; href=&quot;#&quot;&gt;Install&lt;/a&gt;
+        &lt;a class=&quot;lb-btn lb-btn-sm&quot; href=&quot;#&quot;&gt;Wiki&lt;/a&gt;
+        &lt;a class=&quot;lb-btn lb-btn-sm&quot; href=&quot;#&quot;&gt;Forum&lt;/a&gt;
+      &lt;/div&gt;
+    &lt;/article&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+				</details>
+			</section>
+
+		</main>
+
+		<footer class="lb-footer">
+			<div class="lb-preview-muted">LoxBerry DS Preview V18.31</div>
+		</footer>
+	</div>
+
+	<nav class="lb-tab-bar">
+		<a class="lb-tab-bar-item active" href="#forms"><i class="pi pi-pencil"></i><span>Forms</span></a>
+		<a class="lb-tab-bar-item" href="#selects"><i class="pi pi-list"></i><span>Selects</span></a>
+		<a class="lb-tab-bar-item" href="#buttons"><i class="pi pi-bolt"></i><span>Buttons</span></a>
+		<a class="lb-tab-bar-item" href="#interactions"><i class="pi pi-mouse"></i><span>Hover</span></a>
+		<a class="lb-tab-bar-item" href="#tables"><i class="pi pi-table"></i><span>Tables</span></a>
+		<a class="lb-tab-bar-item" href="#layout"><i class="pi pi-window-maximize"></i><span>Layout</span></a>
+	</nav>
+
+	<div class="lb-helppanel" id="preview_help_panel">
+		<div class="lb-helppanel-header">
+			<h2>Preview help</h2>
+			<button class="lb-helppanel-close" type="button" id="preview_help_close">×</button>
+		</div>
+		<div class="lb-helppanel-content">
+			<p>This page shows the current LoxBerry DS components and reacts live to theme classes.</p>
+			<p>New Core extensions should be added here.</p>
+		</div>
+	</div>
+
+	<dialog class="lb-modal" id="preview_modal">
+		<div class="lb-modal-header"><h2>Modal title</h2></div>
+		<div class="lb-modal-content">
+			<p>Content of the native dialog.</p>
+			<button class="lb-btn" type="button" onclick="document.getElementById('preview_modal').close()">Close</button>
+		</div>
+	</dialog>
+
+	<script>
+	(function () {
+		'use strict';
+
+		var themeSelect = document.getElementById('theme_select');
+		var currentThemeLabel = document.getElementById('current_theme_label');
+		var themeClasses = [
+__LB_THEME_CLASSES_JS__
+		];
+
+		function applyTheme(themeClass) {
+			themeClasses.forEach(function (cls) {
+				document.body.classList.remove(cls);
+			});
+			document.body.classList.add(themeClass);
+			if (currentThemeLabel) {
+				currentThemeLabel.textContent = themeClass;
+			}
+			try {
+				localStorage.setItem('lb_ds_preview_theme', themeClass);
+			} catch (e) {}
+			updateThemeColorLegend();
+		}
+
+		function normalizePreviewColor(value) {
+			value = String(value || '').trim();
+			if (!value) return '';
+
+			if (value.indexOf('rgb(') === 0 || value.indexOf('rgba(') === 0) {
+				var parts = value.replace(/rgba?\(/, '').replace(')', '').split(',').map(function (part) {
+					return part.trim();
+				});
+				if (parts.length >= 3) {
+					var alpha = parts.length > 3 ? parseFloat(parts[3]) : 1;
+					if (!isNaN(alpha) && alpha < 1) return value;
+					var hex = parts.slice(0, 3).map(function (part) {
+						var n = Math.max(0, Math.min(255, parseInt(part, 10) || 0));
+						return n.toString(16).padStart(2, '0');
+					}).join('');
+					return '#' + hex;
+				}
+			}
+
+			return value;
+		}
+
+		function resolvePreviewToken(tokenName) {
+			var probe = document.createElement('span');
+			probe.style.position = 'absolute';
+			probe.style.visibility = 'hidden';
+			probe.style.color = 'var(' + tokenName + ')';
+			document.body.appendChild(probe);
+			var resolved = window.getComputedStyle(probe).color;
+			document.body.removeChild(probe);
+			return normalizePreviewColor(resolved);
+		}
+
+		function updateThemeColorLegend() {
+			if (!document.body) return;
+
+			document.querySelectorAll('[data-color-token]').forEach(function (row) {
+				var token = row.getAttribute('data-color-token');
+				var value = resolvePreviewToken(token);
+				var chip = row.querySelector('.lb-preview-color-chip');
+				var code = row.querySelector('.lb-preview-color-code');
+
+				if (chip && value) {
+					chip.style.background = 'var(' + token + ')';
+				}
+				if (code) {
+					code.textContent = value || '—';
+				}
+			});
+		}
+
+		function toNumber(value, fallback) {
+			var number = parseFloat(value);
+			if (isNaN(number)) {
+				number = parseFloat(fallback);
+			}
+			return isNaN(number) ? 0 : number;
+		}
+
+		window.initLbCoreSlider = window.initLbCoreSlider || function (options) {
+			options = options || {};
+			if (!options.id) return;
+
+			var slider = document.getElementById(options.id);
+			if (!slider) return;
+
+			var valueEl = options.valueId ? document.getElementById(options.valueId) : null;
+			var suffix = options.suffix || '';
+			var decimals = typeof options.decimals !== 'undefined' ? parseInt(options.decimals, 10) : 0;
+			var fallback = typeof options.fallback !== 'undefined' ? options.fallback : (slider.min || 0);
+
+			function normalize(rawValue) {
+				var min = toNumber(slider.min, 0);
+				var max = toNumber(slider.max, 100);
+				var step = toNumber(slider.step, 1);
+				var value = toNumber(rawValue, fallback);
+				if (value < min) value = min;
+				if (value > max) value = max;
+				if (step > 0) value = Math.round((value - min) / step) * step + min;
+				if (decimals <= 0) value = Math.round(value);
+				return value;
+			}
+
+			function format(value) {
+				return decimals > 0 ? Number(value).toFixed(decimals) : String(Math.round(value));
+			}
+
+			function update() {
+				var min = toNumber(slider.min, 0);
+				var max = toNumber(slider.max, 100);
+				var value = normalize(slider.value);
+				var pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
+				slider.value = value;
+				slider.style.setProperty('--lb-slider-fill', pct + '%');
+				if (valueEl) valueEl.textContent = format(value) + suffix;
+			}
+
+			var initialValue = slider.getAttribute('value');
+			if (initialValue === null || initialValue === '') initialValue = slider.value;
+			slider.value = normalize(initialValue);
+
+			slider.addEventListener('input', update);
+			slider.addEventListener('change', update);
+			update();
+		};
+
+		if (themeSelect) {
+			var serverDefaultTheme = '__LB_CURRENT_THEME_CLASS__';
+			if (serverDefaultTheme && themeClasses.indexOf(serverDefaultTheme) < 0) {
+				themeClasses.push(serverDefaultTheme);
+			}
+			var initialTheme = serverDefaultTheme || themeSelect.value || 'theme-soft-rounded';
+			themeSelect.value = initialTheme;
+			applyTheme(initialTheme);
+			themeSelect.addEventListener('change', function () { applyTheme(this.value); });
+		}
+
+
+		function updateLbPreviewMultiselect(details) {
+			if (!details) return;
+			var summary = details.querySelector('summary');
+			if (!summary) return;
+			var placeholder = details.getAttribute('data-placeholder') || 'Please choose';
+			var labels = [];
+			details.querySelectorAll('.lb-multiselect-option input[type="checkbox"]:checked').forEach(function (input) {
+				var label = input.closest('.lb-multiselect-option');
+				var text = label ? String(label.textContent || '').trim() : String(input.value || '').trim();
+				if (text) labels.push(text);
+			});
+			summary.textContent = labels.length ? labels.join(', ') : placeholder;
+		}
+
+		document.querySelectorAll('.lb-multiselect').forEach(function (details) {
+			updateLbPreviewMultiselect(details);
+			details.addEventListener('change', function () {
+				updateLbPreviewMultiselect(details);
+			});
+		});
+
+		document.addEventListener('click', function (event) {
+			var disabledMultiselect = event.target.closest && event.target.closest('.lb-multiselect.lb-disabled, .lb-multiselect[aria-disabled="true"]');
+			if (disabledMultiselect) {
+				event.preventDefault();
+				disabledMultiselect.removeAttribute('open');
+			}
+		});
+
+		initLbCoreSlider({ id: 'slider_level', valueId: 'slider_level_val', fallback: 50, suffix: ' %' });
+		initLbCoreSlider({ id: 'slider_cache', valueId: 'slider_cache_val', fallback: 500, suffix: ' MB' });
+		initLbCoreSlider({ id: 'slider_disabled', valueId: 'slider_disabled_val', fallback: 40, suffix: ' %' });
+
+		var navToggle = document.getElementById('preview_nav_toggle');
+		if (navToggle) {
+			navToggle.addEventListener('click', function () {
+				document.body.classList.toggle('nav-mode-tabbar');
+			});
+		}
+
+		var helpBtn = document.getElementById('preview_help_btn');
+		var helpPanel = document.getElementById('preview_help_panel');
+		var helpClose = document.getElementById('preview_help_close');
+		if (helpBtn && helpPanel) {
+			helpBtn.addEventListener('click', function () { helpPanel.classList.add('open'); });
+		}
+		if (helpClose && helpPanel) {
+			helpClose.addEventListener('click', function () { helpPanel.classList.remove('open'); });
+		}
+	})();
+	</script>
+</body>
+</html>

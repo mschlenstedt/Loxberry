@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="de">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>LoxBerry CSS Framework Hilfe</title>
+	<link rel="stylesheet" href="/system/css/design-tokens.css">
+	<link rel="stylesheet" href="/system/css/primeicons.css">
+	<link rel="stylesheet" href="/system/css/main.css">
+	<link rel="stylesheet" href="/system/css/components.css">
+	<link rel="stylesheet" href="/system/css/utilities.css">
+<!-- Core themes. Filled by cssframework.cgi from /webfrontend/html/system/css/themes/theme-*.css. -->
+__LB_CORE_THEME_LINKS__
+<!-- Plugin-managed user themes. Filled by cssframework.cgi from /webfrontend/html/plugins/cssframework/themes/theme-user-*.css. -->
+__LB_PLUGIN_THEME_LINKS__
+	<style>
+
+		/* Preview/Help pages use the LoxBerry/Core system font stack.
+		   Code snippets stay monospace for readability. */
+		html,
+		body,
+		button,
+		input,
+		select,
+		textarea {
+			font-family: var(--lb-font-family, var(--lb-font, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif));
+		}
+
+		code,
+		pre,
+		.lb-preview-code,
+		.lb-help-code {
+			font-family: var(--lb-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+		}
+
+		.lb-help-hero {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			gap: 14px;
+			margin-bottom: 18px;
+		}
+
+		.lb-help-toc {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 8px;
+			margin: 12px 0;
+		}
+
+		.lb-help-toc a,
+		.lb-help-pill {
+			display: block;
+			padding: 8px 10px;
+			border: 1px solid var(--lb-border-color);
+			border-radius: var(--lb-radius-sm, 6px);
+			background: var(--lb-btn-bg);
+			color: var(--lb-text);
+			text-decoration: none;
+		}
+
+		.lb-help-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 16px;
+			align-items: start;
+		}
+
+		.lb-help-panel {
+			border: 1px solid var(--lb-border-color);
+			border-radius: var(--lb-radius-md, 12px);
+			background: var(--lb-card-bg);
+			padding: 16px;
+			min-width: 0;
+		}
+
+		.lb-help-panel h3 {
+			margin-top: 0;
+		}
+
+		.lb-help-sample {
+			display: grid;
+			gap: 14px;
+			padding: 14px;
+			border: 1px solid var(--lb-border-color);
+			border-radius: var(--lb-radius-md, 12px);
+			background: var(--lb-page-bg, transparent);
+		}
+
+		.lb-help-code {
+			display: block;
+			overflow: auto;
+			white-space: pre;
+			padding: 12px;
+			border: 1px solid var(--lb-border-color);
+			border-radius: var(--lb-radius-sm, 6px);
+			background: var(--lb-code-bg, var(--lb-btn-bg));
+			color: var(--lb-text);
+			font-size: 12px;
+			line-height: 1.45;
+		}
+
+		.lb-help-notes {
+			margin: 10px 0 0 0;
+			padding-left: 22px;
+		}
+
+		.lb-help-back {
+			display: inline-block;
+			margin-top: 14px;
+		}
+
+		.lb-help-theme-row {
+			margin: 14px 0 8px 0;
+			max-width: 720px;
+		}
+
+		.lb-help-theme-current {
+			margin: 4px 0 12px 0;
+		}
+
+		.lb-help-ref-intro {
+			margin-top: 16px;
+		}
+
+		.lb-help-ref-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 10px 0 18px 0;
+			font-size: 14px;
+			line-height: 1.4;
+		}
+
+		.lb-help-ref-table th,
+		.lb-help-ref-table td {
+			border: 1px solid var(--lb-table-border-color, var(--lb-border-color));
+			padding: 8px 10px;
+			vertical-align: top;
+			text-align: left;
+		}
+
+		.lb-help-ref-table th {
+			background: var(--lb-table-header-bg, var(--lb-btn-bg));
+			color: var(--lb-table-header-text, var(--lb-text));
+			font-weight: 600;
+		}
+
+		.lb-help-ref-table td code {
+			white-space: nowrap;
+		}
+
+		.lb-help-source {
+			white-space: nowrap;
+			color: var(--lb-text-secondary);
+		}
+
+		.lb-help-token-list {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+			gap: 8px;
+			margin: 12px 0;
+		}
+
+		.lb-help-token-list code {
+			display: block;
+			padding: 8px 10px;
+			border: 1px solid var(--lb-border-color);
+			border-radius: var(--lb-radius-sm, 6px);
+			background: var(--lb-btn-bg);
+		}
+
+		.lb-help-mini-table {
+			width: 100%;
+		}
+
+		.lb-help-separator {
+			margin: 18px 0 10px 0;
+		}
+
+		@media (max-width: 760px) {
+			.lb-help-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+
+	</style>
+</head>
+<body class="lb-layout __LB_CURRENT_THEME_CLASS__">
+	<aside class="lb-sidebar">
+		<a class="lb-sidebar-header" href="#toc">
+			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
+			<div><div class="lb-sidebar-brand">LoxBerry <span>DS</span></div><div class="lb-sidebar-version">Help V18.38 Developer Docs V03 DE</div></div>
+		</a>
+		<nav class="lb-sidebar-nav">
+			<div class="lb-sidebar-section">Entwickler-Dokumentation</div>
+			<a class="lb-sidebar-link" href="#overview"><i class="pi pi-compass"></i><span class="lb-sidebar-name">Overview / Konzept</span></a><a class="lb-sidebar-link" href="#components"><i class="pi pi-box"></i><span class="lb-sidebar-name">Komponenten / components.css</span></a><a class="lb-sidebar-link" href="#page-structure"><i class="pi pi-sitemap"></i><span class="lb-sidebar-name">Plugin-Seitenaufbau</span></a><a class="lb-sidebar-link" href="#forms"><i class="pi pi-pencil"></i><span class="lb-sidebar-name">Formulare / Inputs</span></a><a class="lb-sidebar-link" href="#selects"><i class="pi pi-list"></i><span class="lb-sidebar-name">Selects / Multiselect</span></a><a class="lb-sidebar-link" href="#sliders"><i class="pi pi-sliders-h"></i><span class="lb-sidebar-name">Slider / Range</span></a><a class="lb-sidebar-link" href="#buttons"><i class="pi pi-bolt"></i><span class="lb-sidebar-name">Buttons / Button-Groups</span></a><a class="lb-sidebar-link" href="#cards"><i class="pi pi-window-maximize"></i><span class="lb-sidebar-name">Cards / Notes / Details</span></a><a class="lb-sidebar-link" href="#tables"><i class="pi pi-table"></i><span class="lb-sidebar-name">Tabellen / Table Frame</span></a><a class="lb-sidebar-link" href="#tokens"><i class="pi pi-palette"></i><span class="lb-sidebar-name">Tokens / Themes</span></a><a class="lb-sidebar-link" href="#checklist"><i class="pi pi-check-square"></i><span class="lb-sidebar-name">Entwickler-Checkliste</span></a>
+		</nav>
+		<div class="lb-sidebar-footer"><i class="pi pi-check-circle"></i> Core Help</div>
+	</aside>
+	<div class="lb-main">
+		<header class="lb-header"><h1 class="lb-header-title">LoxBerry CSS Framework Hilfe</h1></header>
+		<main class="lb-content">
+			<div class="lb-card lb-help-hero" id="toc">
+				<h2>Inhaltsverzeichnis</h2>
+				<p>Diese Hilfe ist jetzt wie die Preview aufgebaut: erst sichtbares Verhalten, dann Markup, dann Klassen-/Token-Referenz. Sie ist damit nicht nur Anwenderhilfe, sondern vor allem Entwicklerdokumentation für Plugin-Autoren.</p>
+				<div class="lb-help-toc"><a href="#overview">Overview / Konzept</a><a href="#components">Komponenten / components.css</a><a href="#page-structure">Plugin-Seitenaufbau</a><a href="#forms">Formulare / Inputs</a><a href="#selects">Selects / Multiselect</a><a href="#sliders">Slider / Range</a><a href="#buttons">Buttons / Button-Groups</a><a href="#cards">Cards / Notes / Details</a><a href="#tables">Tabellen / Table Frame</a><a href="#tokens">Tokens / Themes</a><a href="#checklist">Entwickler-Checkliste</a></div>
+				<div class="lb-form-row lb-help-theme-row">
+					<label class="lb-form-label" for="theme_select">Dokumentations-Theme:</label>
+					<div class="lb-form-field">
+						<select class="lb-select" id="theme_select" data-role="none">
+							<optgroup label="Core Themes">
+__LB_CORE_THEME_OPTIONS__
+							</optgroup>
+							<optgroup label="Plugin/User Themes">
+__LB_PLUGIN_THEME_OPTIONS__
+							</optgroup>
+						</select>
+					</div>
+				</div>
+				<p class="lb-preview-muted lb-help-theme-current">Aktive Body-Klasse: <code id="current_theme_label">__LB_CURRENT_THEME_CLASS__</code></p>
+				<p><a class="lb-btn lb-btn-sm" href="/admin/system/cssframework.cgi?page=preview">Zur Preview</a></p>
+			</div>
+			
+<section id="overview" class="lb-card">
+	<div class="lb-section-title">Overview / Konzept</div>
+	<div class="lb-help-grid">
+		<div>
+			<p>Das PDF zeigt die Preview als visuelle Referenz: Formularfelder, Selects, Multiselect, Slider, Buttons, Cards und Tabellen erscheinen in echten Core-Komponenten. Die Hilfe folgt derselben Reihenfolge, erklärt aber zusätzlich, welches Markup Plugin-Entwickler verwenden sollen.</p>
+			<p>Core bleibt plugin-neutral. Plugin-spezifische Optik gehört in Plugin- oder Theme-CSS. Neue allgemeine Helfer gehören bevorzugt in utilities.css; Komponenten-Defaults gehören in components.css.</p>
+			<ul class="lb-help-notes">
+				<li>Core-Kommentare und Core-Klassen bleiben plugin-neutral.</li>
+				<li>Theme-spezifische Entscheidungen gehören in die jeweilige Theme-CSS.</li>
+				<li>Plugin-CSS korrigiert Plugin-Markup, nicht das globale Framework.</li>
+			</ul>
+		</div>
+		<div class="lb-help-panel">
+			<h3>Dateien und Verantwortung</h3>
+			<p>Die Trennung macht spätere Themes möglich, ohne dass jedes Plugin wieder angepasst werden muss.</p>
+			<div class="lb-help-token-list">
+				<code>design-tokens.css</code><code>components.css</code><code>utilities.css</code><code>theme-*.css</code>
+			</div>
+		</div>
+	</div>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>design-tokens.css</code></td><td class="lb-help-source">Core CSS</td><td>Zentrale CSS-Variablen für Farben, Abstände, Radien, Tabellen, Buttons, Inputs und Statusfarben.</td></tr><tr><td><code>components.css</code></td><td class="lb-help-source">Core CSS</td><td>Default-Rendering der Komponenten: Buttons, Inputs, Selects, Tabellen, Toggle, Slider, Cards, Sidebar, Header, Modal und Tooltips.</td></tr><tr><td><code>utilities.css</code></td><td class="lb-help-source">Core CSS</td><td>Optionale Helfer/Modifier, z. B. Overflow, Layer, Breiten, Abstände, Textausrichtung und Tabellenrahmen.</td></tr><tr><td><code>theme-*.css</code></td><td class="lb-help-source">Theme CSS</td><td>Theme-spezifische Token-Overrides und wenige themebezogene Spezialfälle.</td></tr><tr><td><code>body.theme-*</code></td><td class="lb-help-source">Theme class</td><td>Aktive Theme-Klasse am Body, z. B. theme-soft-rounded oder theme-user-liquid-glass.</td></tr><tr><td><code>data-role=&quot;none&quot;</code></td><td class="lb-help-source">Markup</td><td>Verhindert jQuery-Mobile-Aufwertung bei nativen/Core-Controls.</td></tr></tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+
+<section id="components" class="lb-card">
+	<div class="lb-section-title">Komponenten / components.css</div>
+	<p><code>components.css</code> ist die Datei für das eigentliche Default-Rendering der LoxBerry-Design-System-Komponenten. Plugin-Entwickler sollen diese Klassen direkt im Markup verwenden, statt die Optik einzelner Controls im Plugin nachzubauen. Farben, Radien, Schatten und Kontraste kommen dabei weiterhin aus <code>design-tokens.css</code> bzw. aus dem aktiven Theme.</p>
+	<p>Wichtig ist die Trennung: <code>components.css</code> beschreibt stabile Bausteine wie Card, Form Row, Input, Select, Button, Toggle, Slider oder Tabelle. <code>utilities.css</code> ergänzt nur optionales Verhalten wie Layer, Overflow, Breite, Spacing oder Tabellenrahmen. Theme-Dateien ändern Designwerte, aber nicht die Grundstruktur einer Komponente.</p>
+	<div class="lb-help-grid">
+		<div class="lb-help-panel">
+			<h3>Faustregel für Entwickler</h3>
+			<ul class="lb-help-notes">
+				<li>Für ein bekanntes UI-Element zuerst eine Core-Komponente verwenden.</li>
+				<li>Nur fehlendes Plugin-spezifisches Layout in der Plugin-CSS ergänzen.</li>
+				<li>Keine Farben hart setzen, wenn ein <code>--lb-*</code>-Token existiert.</li>
+				<li>Keine optionalen Helfer in <code>components.css</code> erzwingen; dafür <code>utilities.css</code> nutzen.</li>
+			</ul>
+		</div>
+		<div><pre class="lb-help-code"><code>&lt;div class=&quot;lb-card&quot;&gt;
+  &lt;div class=&quot;lb-section-title&quot;&gt;Plugin-Einstellung&lt;/div&gt;
+
+  &lt;div class=&quot;lb-form-row&quot;&gt;
+    &lt;label class=&quot;lb-form-label&quot; for=&quot;demo&quot;&gt;Name:&lt;/label&gt;
+    &lt;div class=&quot;lb-form-field&quot;&gt;
+      &lt;input class=&quot;lb-input&quot; id=&quot;demo&quot; name=&quot;demo&quot; data-role=&quot;none&quot;&gt;
+      &lt;div class=&quot;lb-form-help&quot;&gt;Kurzer Hinweis zum Feld.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;lb-actions&quot;&gt;
+    &lt;button class=&quot;lb-btn lb-btn-primary&quot; type=&quot;submit&quot; data-role=&quot;none&quot;&gt;Speichern&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+	</div>
+	<h3 class="lb-help-ref-intro">Direkt nutzbare Komponenten aus components.css</h3>
+	<table class="lb-help-ref-table"><thead><tr><th>Bereich</th><th>Klassen / Elemente</th><th>Verwendung</th><th>Typische Tokens</th></tr></thead><tbody>
+		<tr><td>Seitenlayout</td><td><code>.lb-layout</code>, <code>.lb-main</code>, <code>.lb-header</code>, <code>.lb-content</code>, <code>.lb-footer</code></td><td>Core-/Systemlayout für Sidebar, Header und Content. Pluginseiten verwenden dieses Layout meist indirekt über <code>LoxBerry::Web</code>.</td><td><code>--lb-bg</code>, <code>--lb-text</code>, <code>--lb-border-color</code></td></tr>
+		<tr><td>Sidebar / Navigation</td><td><code>.lb-sidebar</code>, <code>.lb-sidebar-header</code>, <code>.lb-sidebar-link</code>, <code>.lb-sidebar-name</code>, <code>.lb-sidebar-footer</code></td><td>System-/Preview-Navigation. Für normale Plugininhalte nicht nachbauen, aber für Framework-Seiten wie Preview oder Hilfe zulässig.</td><td><code>--lb-sidebar-*</code>, <code>--lb-primary</code>, <code>--lb-hover-bg</code></td></tr>
+		<tr><td>Cards / Abschnitte</td><td><code>.lb-card</code>, <code>.lb-section-title</code>, <code>.lb-actions</code>, <code>.note</code>, <code>.lb-details</code></td><td>Struktur für Einstellungsbereiche, Hinweisboxen, Action-Zeilen und aufklappbare Details.</td><td><code>--lb-card-bg</code>, <code>--lb-card-border</code>, <code>--lb-card-shadow</code>, <code>--lb-radius-md</code></td></tr>
+		<tr><td>Formularlayout</td><td><code>.lb-form-row</code>, <code>.lb-form-label</code>, <code>.lb-form-field</code>, <code>.lb-form-help</code></td><td>Label/Feld-Struktur. Hilft, Pluginformulare in allen Themes gleichmäßig auszurichten.</td><td><code>--lb-text</code>, <code>--lb-text-secondary</code>, <code>--lb-gap-*</code></td></tr>
+		<tr><td>Inputs</td><td><code>.lb-input</code>, <code>.lb-textarea</code>, <code>.form-error</code>, <code>.form-error-message</code></td><td>Einzeilige und mehrzeilige Eingaben inklusive Focus, Disabled, Placeholder und Fehlerzustand.</td><td><code>--lb-input-bg</code>, <code>--lb-input-text</code>, <code>--lb-input-border</code>, <code>--lb-focus-ring</code></td></tr>
+		<tr><td>Selects</td><td><code>.lb-select</code>, <code>select[multiple]</code>, <code>data-role=&quot;none&quot;</code></td><td>Native Selects ohne jQM-Wrapper. Mehrfachauswahl als native Listenbox, nicht als Dropdown.</td><td><code>--lb-select-bg</code>, <code>--lb-input-bg</code>, <code>--lb-input-text</code></td></tr>
+		<tr><td>Multiselect</td><td><code>.lb-multiselect</code>, <code>.lb-multiselect-menu</code>, <code>.lb-multiselect-option</code>, <code>.lb-multiselect-help</code></td><td>Details-basiertes Dropdown-Multiselect mit Checkboxen. Summary-Text kann per JS aktualisiert werden.</td><td><code>--lb-multiselect-bg</code>, <code>--lb-multiselect-menu-bg</code>, <code>--lb-border-color</code></td></tr>
+		<tr><td>Buttons</td><td><code>.lb-btn</code>, <code>.lb-btn-primary</code>, <code>.lb-btn-danger</code>, <code>.lb-btn-sm</code>, <code>.lb-btn-icon</code></td><td>Normale Aktionen, primäre Aktionen, gefährliche Aktionen, kleine Buttons und Icon-Buttons.</td><td><code>--lb-btn-bg</code>, <code>--lb-btn-text</code>, <code>--lb-btn-primary-bg</code>, <code>--lb-active-text</code></td></tr>
+		<tr><td>Button-Groups</td><td><code>.lb-btn-group</code>, <code>.lb-btn-group-vertical</code>, <code>.lb-btn-active</code>, <code>.lb-checked</code>, <code>.ui-btn-active</code></td><td>Radio-/Checkbox-Gruppen als segmentierte Buttons, horizontal oder vertikal, inklusive jQM-Kompatibilität.</td><td><code>--lb-btn-group-active-bg</code>, <code>--lb-btn-group-active-text</code></td></tr>
+		<tr><td>Toggle</td><td><code>.lb-toggle</code>, <code>.lb-toggle-slider</code>, <code>input:checked + .lb-toggle-slider</code></td><td>Schalter auf Basis einer nativen Checkbox. Der Wert bleibt ein normales Formularfeld.</td><td><code>--lb-toggle-bg</code>, <code>--lb-toggle-active-bg</code>, <code>--lb-toggle-knob-bg</code></td></tr>
+		<tr><td>Slider</td><td><code>.lb-slider-wrap</code>, <code>.lb-slider</code>, <code>.lb-slider-value</code>, <code>--lb-slider-fill</code></td><td>Native Range-Slider mit sichtbarer Wertanzeige und berechnetem Füllstand.</td><td><code>--lb-slider-track-bg</code>, <code>--lb-slider-fill-bg</code>, <code>--lb-slider-thumb-bg</code></td></tr>
+		<tr><td>Tabellen</td><td><code>.lb-table</code>, <code>.lb-table-compact</code>, <code>.lb-table-responsive</code>, <code>.lb-table-actions</code></td><td>Core-Tabellen mit Header, Body, Footer, Hover, kompakter Variante und Aktionszeilen.</td><td><code>--lb-table-bg</code>, <code>--lb-table-header-bg</code>, <code>--lb-table-border-color</code></td></tr>
+		<tr><td>Tooltips</td><td><code>.lb-tooltip-anchor</code>, <code>.lb-tooltip</code>, <code>.lb-tooltip-title</code>, <code>.is-open</code></td><td>Kompakte Mouseover-/Info-Hinweise. In Tabellen ggf. mit Layer-/Overflow-Utilities kombinieren.</td><td><code>--lb-tooltip-bg</code>, <code>--lb-tooltip-text</code>, <code>--lb-tooltip-shadow</code></td></tr>
+	</tbody></table>
+	<h3 class="lb-help-ref-intro">Was nicht in components.css gehört</h3>
+	<table class="lb-help-ref-table"><thead><tr><th>Fall</th><th>Richtiger Ort</th><th>Begründung</th></tr></thead><tbody>
+		<tr><td>Farbe, Transparenz, Radius, Schatten eines Themes</td><td><code>theme-*.css</code> oder Theme-Tokens</td><td>Das ist eine Designentscheidung, keine neue Komponente.</td></tr>
+		<tr><td>Optionale Helfer wie Overflow sichtbar, Layer, Breite, Abstände, Textausrichtung</td><td><code>utilities.css</code></td><td>Diese Regeln werden nur bei Bedarf aktiviert und dürfen normale Komponenten nicht global verändern.</td></tr>
+		<tr><td>Plugin-spezifische Sonderfälle</td><td>Plugin-CSS</td><td>Core soll keine Namen oder Layoutentscheidungen einzelner Plugins kennen.</td></tr>
+		<tr><td>Neue Designwerte</td><td><code>design-tokens.css</code></td><td>Tokens sind die Vertragsschicht zwischen Core-Komponenten und Themes.</td></tr>
+	</tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+
+<section id="page-structure" class="lb-card">
+	<div class="lb-section-title">Plugin-Seitenaufbau</div>
+	<p>Für neue Plugin-Seiten ist ein minimales, stabiles Grundmuster besser als viele Inline-Styles. Die Seite lädt Core-CSS, setzt die Theme-Klasse am Body und verwendet Core-Klassen für Layout, Cards, Formulare und Tabellen.</p><p>In echten Plugin-CGIs wird Header/Footer weiterhin von LoxBerry erzeugt. Dieses Beispiel zeigt bewusst nur das Markup-Prinzip für den Inhaltsbereich.</p>
+	<pre class="lb-help-code"><code>&lt;!-- Minimaler Inhaltsbereich einer Plugin-Seite --&gt;
+&lt;div class=&quot;lb-card&quot;&gt;
+  &lt;div class=&quot;lb-section-title&quot;&gt;Einstellungen&lt;/div&gt;
+
+  &lt;div class=&quot;lb-form-row&quot;&gt;
+    &lt;label class=&quot;lb-form-label&quot; for=&quot;plugin_option&quot;&gt;Option:&lt;/label&gt;
+    &lt;div class=&quot;lb-form-field&quot;&gt;
+      &lt;input class=&quot;lb-input&quot; id=&quot;plugin_option&quot; name=&quot;plugin_option&quot; data-role=&quot;none&quot;&gt;
+      &lt;div class=&quot;lb-form-help&quot;&gt;Kurzer Hilfetext für Benutzer.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;lb-actions&quot;&gt;
+    &lt;button class=&quot;lb-btn lb-btn-primary&quot; type=&quot;submit&quot; data-role=&quot;none&quot;&gt;Speichern&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>.lb-card</code></td><td class="lb-help-source">components.css</td><td>Kartencontainer für zusammengehörige Inhalte.</td></tr><tr><td><code>.lb-section-title</code></td><td class="lb-help-source">components.css</td><td>Abschnittsüberschrift wie in der Preview.</td></tr><tr><td><code>.lb-actions</code></td><td class="lb-help-source">components.css</td><td>Container für Buttonreihen und Formularaktionen.</td></tr><tr><td><code>.lb-form-row</code></td><td class="lb-help-source">components.css</td><td>Stabile Formularzeile aus Label und Feld.</td></tr></tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+<section id="forms" class="lb-card">
+	<div class="lb-section-title">Formulare / Inputs</div>
+	<p>Die Preview zeigt Inputs, Time-Felder, Disabled-Zustände und Textareas. Die Hilfe dokumentiert dazu das empfohlene Markup und die Klassen, die Entwickler direkt verwenden sollen.</p>
+	<div class="lb-help-grid"><div><div class="lb-help-sample">
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="demo_text_de">Text:</label>
+		<div class="lb-form-field"><input class="lb-input" id="demo_text_de" type="text" value="Demo" data-role="none"></div>
+	</div>
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="demo_time_de">Zeit:</label>
+		<div class="lb-form-field"><input class="lb-input" id="demo_time_de" type="time" value="08:30" data-role="none"></div>
+	</div>
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="demo_disabled_de">Disabled:</label>
+		<div class="lb-form-field"><input class="lb-input" id="demo_disabled_de" type="text" value="nicht editierbar" disabled data-role="none"></div>
+	</div>
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="demo_textarea_de">Textarea:</label>
+		<div class="lb-form-field"><textarea class="lb-textarea" id="demo_textarea_de" rows="3" data-role="none">Mehrzeiliger Text...</textarea></div>
+	</div>
+</div></div><div><pre class="lb-help-code"><code>&lt;div class=&quot;lb-form-row&quot;&gt;
+  &lt;label class=&quot;lb-form-label&quot; for=&quot;text1&quot;&gt;Text:&lt;/label&gt;
+  &lt;div class=&quot;lb-form-field&quot;&gt;
+    &lt;input class=&quot;lb-input&quot; id=&quot;text1&quot; name=&quot;text1&quot; type=&quot;text&quot; value=&quot;Demo&quot; data-role=&quot;none&quot;&gt;
+    &lt;div class=&quot;lb-form-help&quot;&gt;Optionaler Hilfetext.&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;lb-form-row&quot;&gt;
+  &lt;label class=&quot;lb-form-label&quot; for=&quot;textarea1&quot;&gt;Textarea:&lt;/label&gt;
+  &lt;div class=&quot;lb-form-field&quot;&gt;
+    &lt;textarea class=&quot;lb-textarea&quot; id=&quot;textarea1&quot; name=&quot;textarea1&quot; rows=&quot;4&quot; data-role=&quot;none&quot;&gt;Text...&lt;/textarea&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre></div></div>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>.lb-form-row</code></td><td class="lb-help-source">components.css</td><td>Standard-Zeile für Formularlayouts.</td></tr><tr><td><code>.lb-form-label</code></td><td class="lb-help-source">components.css</td><td>Label innerhalb einer Formularzeile.</td></tr><tr><td><code>.lb-form-field</code></td><td class="lb-help-source">components.css</td><td>Container für das eigentliche Control.</td></tr><tr><td><code>.lb-form-help</code></td><td class="lb-help-source">components.css</td><td>Optionaler Hinweistext zu einem Feld.</td></tr><tr><td><code>.lb-input</code></td><td class="lb-help-source">components.css</td><td>Standardklasse für einzeilige native Inputs.</td></tr><tr><td><code>.lb-textarea</code></td><td class="lb-help-source">components.css</td><td>Standardklasse für mehrzeilige Texteingaben.</td></tr><tr><td><code>.form-error</code></td><td class="lb-help-source">components.css</td><td>Fehlerzustand für Feld oder Container.</td></tr><tr><td><code>.form-error-message</code></td><td class="lb-help-source">components.css</td><td>Text für Validierungsfehler.</td></tr><tr><td><code>disabled</code></td><td class="lb-help-source">Native HTML</td><td>Native Disabled-Felder werden nicht submitted; ggf. hidden field ergänzen.</td></tr><tr><td><code>data-role=&quot;none&quot;</code></td><td class="lb-help-source">Markup</td><td>Verhindert jQM-Aufwertung.</td></tr></tbody></table>
+	<ul class="lb-help-notes"><li>Keine festen Farben oder Radien im Plugin setzen; Themes liefern diese Werte über Tokens.</li></ul>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+<section id="selects" class="lb-card">
+	<div class="lb-section-title">Selects / Multiselect</div>
+	<p>Selects sind ein Hauptthema der Preview. Native Selects verwenden lb-select. Der Core-Multiselect ist details-basiert und funktioniert ohne jQM-Selectmenu.</p>
+	<div class="lb-help-grid"><div><div class="lb-help-sample">
+	<label class="lb-form-label" for="demo_select_de">Dropdown:</label>
+	<select class="lb-select" id="demo_select_de" data-role="none"><option>Ein</option><option>Aus</option></select>
+	<details class="lb-multiselect" data-placeholder="Features" data-lb-demo-summary="1">
+		<summary>Features</summary>
+		<div class="lb-multiselect-menu">
+			<label class="lb-multiselect-option"><input type="checkbox" checked data-role="none"> Text-to-Speech</label>
+			<label class="lb-multiselect-option"><input type="checkbox" data-role="none"> Weather</label>
+			<label class="lb-multiselect-option"><input type="checkbox" data-role="none"> Kalender</label>
+		</div>
+	</details>
+	<select class="lb-select" disabled data-role="none"><option>Gesperrt</option></select>
+</div></div><div><pre class="lb-help-code"><code>&lt;select class=&quot;lb-select&quot; name=&quot;mode&quot; data-role=&quot;none&quot;&gt;
+  &lt;option value=&quot;&quot;&gt;Bitte auswählen&lt;/option&gt;
+  &lt;option value=&quot;on&quot; selected&gt;Ein&lt;/option&gt;
+  &lt;option value=&quot;off&quot;&gt;Aus&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;details class=&quot;lb-multiselect lb-dropdown-layer&quot; data-placeholder=&quot;Features auswählen&quot;&gt;
+  &lt;summary&gt;Features auswählen&lt;/summary&gt;
+  &lt;div class=&quot;lb-multiselect-menu&quot;&gt;
+    &lt;label class=&quot;lb-multiselect-option&quot;&gt;&lt;input type=&quot;checkbox&quot; name=&quot;features[]&quot; value=&quot;tts&quot; data-role=&quot;none&quot;&gt; Text-to-Speech&lt;/label&gt;
+    &lt;label class=&quot;lb-multiselect-option&quot;&gt;&lt;input type=&quot;checkbox&quot; name=&quot;features[]&quot; value=&quot;radio&quot; data-role=&quot;none&quot;&gt; Radio&lt;/label&gt;
+  &lt;/div&gt;
+&lt;/details&gt;</code></pre></div></div>
+	<h3>Select in Tabellen</h3>
+	<pre class="lb-help-code"><code>&lt;div class=&quot;lb-table-frame lb-table-frame-dropdowns lb-table-frame-mask-corners&quot;&gt;
+  &lt;table class=&quot;lb-table lb-table-compact lb-table-dropdowns-visible&quot;&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Modus&lt;/td&gt;
+        &lt;td&gt;&lt;select class=&quot;lb-select&quot; data-role=&quot;none&quot;&gt;&lt;option&gt;Kompakt&lt;/option&gt;&lt;/select&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;</code></pre>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>.lb-select</code></td><td class="lb-help-source">components.css</td><td>Standardklasse für native Selects.</td></tr><tr><td><code>select[multiple]</code></td><td class="lb-help-source">Native HTML</td><td>Bleibt eine native Listenbox, kein Core-Dropdown.</td></tr><tr><td><code>.lb-multiselect</code></td><td class="lb-help-source">components.css</td><td>details-basierter Core-Multiselect.</td></tr><tr><td><code>.lb-multiselect-menu</code></td><td class="lb-help-source">components.css</td><td>Aufklappbarer Menücontainer.</td></tr><tr><td><code>.lb-multiselect-option</code></td><td class="lb-help-source">components.css</td><td>Checkbox-Label im Multiselect-Menü.</td></tr><tr><td><code>.lb-dropdown-layer</code></td><td class="lb-help-source">utilities.css</td><td>Layer-Helfer für Dropdowns und Popover.</td></tr><tr><td><code>.lb-table-frame-dropdowns</code></td><td class="lb-help-source">utilities.css</td><td>Frame-Modifier für Tabellen mit Dropdowns/Tooltips.</td></tr><tr><td><code>.lb-table-dropdowns-visible</code></td><td class="lb-help-source">utilities.css</td><td>Tabellen-Modifier gegen Clipping in Zellen.</td></tr></tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+<section id="sliders" class="lb-card">
+	<div class="lb-section-title">Slider / Range</div>
+	<p>Range-Slider bestehen aus dem nativen input[type=range] und einer optionalen Wertanzeige. Die Preview zeigt Level, Cache und Disabled-Zustand.</p>
+	<div class="lb-help-grid"><div><div class="lb-help-sample">
+	<label class="lb-form-label" for="demo_slider_de">Level:</label>
+	<div class="lb-slider-wrap">
+		<input class="lb-slider" id="demo_slider_de" type="range" min="0" max="100" value="50" data-role="none" data-lb-demo-slider="demo_slider_de_value" data-lb-demo-suffix=" %">
+		<span class="lb-slider-value" id="demo_slider_de_value">50 %</span>
+	</div>
+	<label class="lb-form-label" for="demo_slider_disabled_de">Disabled:</label>
+	<div class="lb-slider-wrap">
+		<input class="lb-slider" id="demo_slider_disabled_de" type="range" min="0" max="100" value="40" disabled data-role="none">
+		<span class="lb-slider-value">40 %</span>
+	</div>
+</div></div><div><pre class="lb-help-code"><code>&lt;div class=&quot;lb-slider-wrap&quot;&gt;
+  &lt;input class=&quot;lb-slider&quot; id=&quot;level&quot; name=&quot;level&quot; type=&quot;range&quot; min=&quot;0&quot; max=&quot;100&quot; value=&quot;50&quot; data-role=&quot;none&quot;&gt;
+  &lt;span class=&quot;lb-slider-value&quot; id=&quot;level_value&quot;&gt;50 %&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+document.getElementById(&#x27;level&#x27;).addEventListener(&#x27;input&#x27;, function() {
+  document.getElementById(&#x27;level_value&#x27;).textContent = this.value + &#x27; %&#x27;;
+});
+&lt;/script&gt;</code></pre></div></div>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>.lb-slider-wrap</code></td><td class="lb-help-source">components.css</td><td>Container für Slider plus Wertanzeige.</td></tr><tr><td><code>.lb-slider</code></td><td class="lb-help-source">components.css</td><td>Core-Styling für native Range Inputs.</td></tr><tr><td><code>.lb-slider-value</code></td><td class="lb-help-source">components.css</td><td>Sichtbarer Wert rechts neben dem Slider.</td></tr><tr><td><code>input[type=&quot;range&quot;]</code></td><td class="lb-help-source">Native HTML</td><td>Bleibt ein nativer Browser-Slider.</td></tr></tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+<section id="buttons" class="lb-card">
+	<div class="lb-section-title">Buttons / Button-Groups</div>
+	<p>Buttons verwenden lb-btn plus optionale Varianten. Button-Groups bestehen aus Inputs und Labels; der aktive Zustand soll über checked/aktive Klassen laufen, nicht über harte Farben.</p>
+	<div class="lb-help-grid"><div><div class="lb-help-sample">
+	<div class="lb-actions">
+		<button class="lb-btn" type="button" data-role="none">Standard</button>
+		<button class="lb-btn lb-btn-primary" type="button" data-role="none"><i class="pi pi-save"></i> Speichern</button>
+		<button class="lb-btn lb-btn-sm" type="button" data-role="none">Klein</button>
+		<button class="lb-btn lb-btn-danger" type="button" data-role="none"><i class="pi pi-trash"></i> Löschen</button>
+	</div>
+	<div class="lb-btn-group">
+		<input type="radio" name="demo_group_de" id="demo_yes_de" checked data-role="none"><label class="lb-btn" for="demo_yes_de">Ja</label>
+		<input type="radio" name="demo_group_de" id="demo_no_de" data-role="none"><label class="lb-btn" for="demo_no_de">Nein</label>
+		<input type="radio" name="demo_group_de" id="demo_auto_de" data-role="none"><label class="lb-btn" for="demo_auto_de">Auto</label>
+	</div>
+</div></div><div><pre class="lb-help-code"><code>&lt;button class=&quot;lb-btn&quot; type=&quot;button&quot; data-role=&quot;none&quot;&gt;Standard&lt;/button&gt;
+&lt;button class=&quot;lb-btn lb-btn-primary&quot; type=&quot;submit&quot; data-role=&quot;none&quot;&gt;Speichern&lt;/button&gt;
+&lt;button class=&quot;lb-btn lb-btn-danger lb-btn-sm&quot; type=&quot;button&quot; data-role=&quot;none&quot;&gt;Löschen&lt;/button&gt;
+
+&lt;div class=&quot;lb-btn-group lb-btn-group-vertical&quot;&gt;
+  &lt;input type=&quot;radio&quot; name=&quot;mode&quot; id=&quot;mode_auto&quot; checked data-role=&quot;none&quot;&gt;
+  &lt;label class=&quot;lb-btn&quot; for=&quot;mode_auto&quot;&gt;Auto&lt;/label&gt;
+  &lt;input type=&quot;radio&quot; name=&quot;mode&quot; id=&quot;mode_on&quot; data-role=&quot;none&quot;&gt;
+  &lt;label class=&quot;lb-btn&quot; for=&quot;mode_on&quot;&gt;Ein&lt;/label&gt;
+&lt;/div&gt;</code></pre></div></div>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>.lb-btn</code></td><td class="lb-help-source">components.css</td><td>Basis für alle Core-Buttons und buttonähnliche Links.</td></tr><tr><td><code>.lb-btn-primary</code></td><td class="lb-help-source">components.css</td><td>Primäre Aktion, z. B. Speichern.</td></tr><tr><td><code>.lb-btn-danger</code></td><td class="lb-help-source">components.css</td><td>Gefährliche Aktion, z. B. Löschen.</td></tr><tr><td><code>.lb-btn-sm</code></td><td class="lb-help-source">components.css</td><td>Kleinere Button-Variante.</td></tr><tr><td><code>.lb-btn-group</code></td><td class="lb-help-source">components.css</td><td>Container für Radio-/Checkbox-Button-Groups.</td></tr><tr><td><code>.lb-btn-group-vertical</code></td><td class="lb-help-source">components.css</td><td>Vertikale Button-Gruppe.</td></tr><tr><td><code>.lb-btn-active / .lb-checked / .ui-btn-active</code></td><td class="lb-help-source">components.css</td><td>Unterstützte aktive Zustände.</td></tr></tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+<section id="cards" class="lb-card">
+	<div class="lb-section-title">Cards / Notes / Details</div>
+	<p>Cards, Notes und Details-Blöcke bilden die Struktur der Preview. Entwickler können damit Einstellungsbereiche, Hinweise und aufklappbare Zusatzinformationen darstellen.</p>
+	<div class="lb-help-grid"><div><div class="lb-help-sample">
+	<div class="lb-help-panel"><h3>Card</h3><p>Eine Card hebt Inhalte mit Rahmen, Radius und optionalem Schatten hervor.</p></div>
+	<div class="note">Hinweisbox über bestehende <code>.note</code>-Regel.</div>
+	<details class="lb-details" open><summary>Abschnitt A</summary><p>Inhalt des geöffneten Bereichs.</p></details>
+	<details class="lb-details"><summary>Abschnitt B</summary><p>Weitere Details.</p></details>
+</div></div><div><pre class="lb-help-code"><code>&lt;div class=&quot;lb-card&quot;&gt;
+  &lt;h3&gt;Card&lt;/h3&gt;
+  &lt;p&gt;Zusammengehöriger Inhalt.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;note&quot;&gt;Hinweisbox über bestehende .note-Regel.&lt;/div&gt;
+
+&lt;details class=&quot;lb-details&quot; open&gt;
+  &lt;summary&gt;Abschnitt A&lt;/summary&gt;
+  &lt;p&gt;Inhalt des geöffneten Bereichs.&lt;/p&gt;
+&lt;/details&gt;</code></pre></div></div>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>.lb-card</code></td><td class="lb-help-source">components.css</td><td>Card-Container für zusammengehörige Inhalte.</td></tr><tr><td><code>.lb-section-title</code></td><td class="lb-help-source">components.css</td><td>Markante Abschnittsüberschrift wie in der Preview.</td></tr><tr><td><code>.note</code></td><td class="lb-help-source">main.css / components.css</td><td>Bestehende LoxBerry-Hinweisbox.</td></tr><tr><td><code>.lb-details</code></td><td class="lb-help-source">components.css</td><td>Optionales Styling für details/summary-Blöcke.</td></tr></tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+<section id="tables" class="lb-card">
+	<div class="lb-section-title">Tabellen / Table Frame</div>
+	<p>Tabellen verwenden lb-table. Für sichtbare Außenrahmen und Dropdowns in Tabellen wird ein lb-table-frame verwendet. Das ist bewusst opt-in, damit normale Tabellen nicht pauschal overflow: visible bekommen.</p>
+	<div class="lb-help-grid"><div><div class="lb-help-sample">
+	<div class="lb-table-frame lb-table-frame-dropdowns lb-table-frame-mask-corners">
+		<table class="lb-table lb-table-compact lb-table-dropdowns-visible lb-help-mini-table">
+			<thead><tr><th>Status</th><th>Player</th><th>Aktion</th></tr></thead>
+			<tbody>
+				<tr><td>Online</td><td>Wohnzimmer</td><td><button class="lb-btn lb-btn-sm" type="button" data-role="none">Öffnen</button></td></tr>
+				<tr><td>Warnung</td><td>Küche</td><td><select class="lb-select" data-role="none"><option>Auto</option></select></td></tr>
+			</tbody>
+		</table>
+	</div>
+</div></div><div><pre class="lb-help-code"><code>&lt;div class=&quot;lb-table-frame lb-table-frame-dropdowns lb-table-frame-mask-corners&quot;&gt;
+  &lt;table class=&quot;lb-table lb-table-compact lb-table-dropdowns-visible&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;&lt;th&gt;Status&lt;/th&gt;&lt;th&gt;Player&lt;/th&gt;&lt;th&gt;Aktion&lt;/th&gt;&lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Online&lt;/td&gt;
+        &lt;td&gt;Wohnzimmer&lt;/td&gt;
+        &lt;td&gt;&lt;button class=&quot;lb-btn lb-btn-sm&quot; type=&quot;button&quot; data-role=&quot;none&quot;&gt;Öffnen&lt;/button&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;</code></pre></div></div>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>.lb-table</code></td><td class="lb-help-source">components.css</td><td>Grundklasse für Core-Tabellen.</td></tr><tr><td><code>.lb-table-compact</code></td><td class="lb-help-source">components.css</td><td>Kompakte Tabellenvariante.</td></tr><tr><td><code>.lb-table-responsive</code></td><td class="lb-help-source">components.css</td><td>Responsive Tabellenvariante.</td></tr><tr><td><code>.lb-table-frame</code></td><td class="lb-help-source">utilities.css</td><td>Äußerer Rahmen um eine Tabelle.</td></tr><tr><td><code>.lb-table-frame-mask-corners</code></td><td class="lb-help-source">utilities.css</td><td>Maskiert Inhalte an runden Ecken.</td></tr><tr><td><code>.lb-table-frame-dropdowns</code></td><td class="lb-help-source">utilities.css</td><td>Frame mit sichtbarem Dropdown-/Tooltip-Overflow.</td></tr><tr><td><code>.lb-table-dropdowns-visible</code></td><td class="lb-help-source">utilities.css</td><td>Tabellen-/Zellmodifier gegen Clipping.</td></tr></tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+<section id="tokens" class="lb-card">
+	<div class="lb-section-title">Tokens / Themes</div>
+	<p>Entwickler sollen nach Möglichkeit Tokens verwenden, nicht konkrete Farben. Dadurch funktionieren Soft Rounded, Classic Mac, Liquid Glass und spätere User-Themes ohne Plugin-Sonderfälle.</p>
+	<div class="lb-help-grid"><div class="lb-help-panel"><h3>Häufige Tokens</h3><div class="lb-help-token-list"><code>--lb-primary</code><code>--lb-text</code><code>--lb-text-secondary</code><code>--lb-card-bg</code><code>--lb-border-color</code><code>--lb-radius-md</code><code>--lb-input-bg</code><code>--lb-input-text</code><code>--lb-btn-bg</code><code>--lb-btn-primary-bg</code><code>--lb-table-header-bg</code><code>--lb-table-bg</code></div></div><div><pre class="lb-help-code"><code>/* Gut: tokenbasiert und themefähig */
+.my-plugin-box {
+  background: var(--lb-card-bg);
+  color: var(--lb-text);
+  border: 1px solid var(--lb-border-color);
+  border-radius: var(--lb-radius-md);
+}
+
+/* Nur wenn wirklich plugin-spezifisch nötig */
+body.theme-liquid-glass .my-plugin-box {
+  background: var(--lb-glass-card-bg, var(--lb-card-bg));
+}</code></pre></div></div>
+	<h3 class="lb-help-ref-intro">CSS-Klassen dieser Sektion</h3><table class="lb-help-ref-table"><thead><tr><th>CSS / Attribut</th><th>Quelle</th><th>Wirkung / Einsatz</th></tr></thead><tbody><tr><td><code>var(--lb-card-bg)</code></td><td class="lb-help-source">design-tokens.css</td><td>Card-/Panel-Hintergrund.</td></tr><tr><td><code>var(--lb-text)</code></td><td class="lb-help-source">design-tokens.css</td><td>Primäre Textfarbe.</td></tr><tr><td><code>var(--lb-border-color)</code></td><td class="lb-help-source">design-tokens.css</td><td>Standard-Borderfarbe.</td></tr><tr><td><code>var(--lb-radius-md)</code></td><td class="lb-help-source">design-tokens.css</td><td>Mittlerer Border-Radius.</td></tr><tr><td><code>body.theme-*</code></td><td class="lb-help-source">Theme CSS</td><td>Theme-spezifische Einschränkung nur bei echten Theme-Sonderfällen.</td></tr></tbody></table>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+<section id="checklist" class="lb-card">
+	<div class="lb-section-title">Entwickler-Checkliste</div>
+	<div class="lb-help-grid"><div><ul class="lb-help-notes"><li>Core-Klasse verwenden, bevor Plugin-CSS geschrieben wird.</li><li>Bei nativen Controls auf jQM-Seiten data-role=&quot;none&quot; setzen.</li><li>Farben, Radius, Schatten und Hintergründe über Tokens lösen.</li><li>Dropdowns/Tooltips in Tabellen nur über opt-in Utilities sichtbar machen.</li><li>Disabled-Felder prüfen: native disabled wird nicht submitted.</li><li>Plugin-spezifische Regeln nicht in Core-Dateien schreiben.</li><li>Theme-spezifische Regeln in Theme-CSS ablegen.</li></ul></div><div><pre class="lb-help-code"><code>/* Prüfreihenfolge bei Darstellungsproblemen */
+1. Ist das Markup eine Core-Komponente?
+2. Greift jQuery Mobile noch dazwischen?
+3. Fehlt data-role=&quot;none&quot;?
+4. Ist das Problem plugin-spezifisch, theme-spezifisch oder Core-allgemein?
+5. Gehört die Korrektur in components.css, utilities.css, Theme-CSS oder Plugin-CSS?</code></pre></div></div>
+	<a class="lb-help-back" href="#toc">Zurück zum Inhaltsverzeichnis</a>
+</section>
+		</main>
+		<footer class="lb-footer"><div class="lb-preview-muted">LoxBerry CSS Framework Help V18.38 Developer Docs V03 DE</div></footer>
+	</div>
+
+<script>
+(function() {
+	var themeSelect = document.getElementById('theme_select');
+	var currentThemeLabel = document.getElementById('current_theme_label');
+	var themeClasses = [
+__LB_THEME_CLASSES_JS__
+	];
+	var serverDefaultTheme = '__LB_CURRENT_THEME_CLASS__';
+
+	function applyTheme(themeClass) {
+		if (!themeClass) {
+			return;
+		}
+		if (themeClasses.indexOf(themeClass) < 0) {
+			themeClasses.push(themeClass);
+		}
+		themeClasses.forEach(function(cls) {
+			document.body.classList.remove(cls);
+		});
+		document.body.classList.add(themeClass);
+		if (currentThemeLabel) {
+			currentThemeLabel.textContent = themeClass;
+		}
+		try {
+			localStorage.setItem('lb_ds_preview_theme', themeClass);
+		} catch(e) {}
+	}
+
+	if (themeSelect) {
+		if (serverDefaultTheme && themeClasses.indexOf(serverDefaultTheme) < 0) {
+			themeClasses.push(serverDefaultTheme);
+		}
+
+		var storedTheme = '';
+		try {
+			storedTheme = localStorage.getItem('lb_ds_preview_theme') || '';
+		} catch(e) {}
+
+		var initialTheme = (storedTheme && themeClasses.indexOf(storedTheme) >= 0)
+			? storedTheme
+			: (serverDefaultTheme || themeSelect.value || 'theme-soft-rounded');
+
+		themeSelect.value = initialTheme;
+		applyTheme(initialTheme);
+		themeSelect.addEventListener('change', function() {
+			applyTheme(this.value);
+		});
+	} else if (serverDefaultTheme) {
+		applyTheme(serverDefaultTheme);
+	}
+
+	document.querySelectorAll('[data-lb-demo-slider]').forEach(function(slider) {
+		var target = document.getElementById(slider.getAttribute('data-lb-demo-slider'));
+		var suffix = slider.getAttribute('data-lb-demo-suffix') || '';
+		function update() {
+			if (target) {
+				target.textContent = slider.value + suffix;
+			}
+		}
+		slider.addEventListener('input', update);
+		update();
+	});
+
+	document.querySelectorAll('details.lb-multiselect[data-lb-demo-summary]').forEach(function(details) {
+		var summary = details.querySelector('summary');
+		var placeholder = details.getAttribute('data-placeholder') || (summary ? summary.textContent : 'Select');
+		function updateSummary() {
+			var selected = [];
+			details.querySelectorAll('input[type="checkbox"]').forEach(function(box) {
+				if (box.checked) {
+					selected.push((box.closest('label') || box).textContent.trim());
+				}
+			});
+			if (summary) {
+				summary.textContent = selected.length ? selected.join(', ') : placeholder;
+			}
+		}
+		details.addEventListener('change', updateSummary);
+		updateSummary();
+	});
+}());
+</script>
+
+</body>
+</html>

@@ -4,6 +4,7 @@ use warnings;
 use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
+use File::Basename qw(basename);
 
 # use LoxBerry::JSON;
 use JSON;
@@ -55,9 +56,13 @@ elsif ($action eq 'plugin-autoupdate') { plugindb_update('autoupdate', $R::plugi
 elsif ($action eq 'testenvironment') {  &testenvironment; }
 elsif ($action eq 'changelanguage') { change_generaljson("Base->Lang", $value);}
 elsif ($action eq 'changecountry') { change_generaljson("Base->Country", $value);}
+elsif ($action eq 'listthemes') { listthemes(); }
 elsif ($action eq 'changetheme') {
-	if ($value =~ /^(soft-rounded|clean-admin|glass|classic-lb|classic-mac|liquid-glass)$/) {
+	if (is_valid_theme($value)) {
 		change_generaljson("Base->Theme", $value);
+	} else {
+		$response{error} = 1;
+		$response{message} = "Theme not supported.";
 	}
 }
 elsif ($action eq 'plugininstall-status') { plugininstall_status(); }
@@ -457,6 +462,103 @@ sub change_generalcfg
 ###################################################################
 # change general.json (internal function)
 ###################################################################
+
+################################
+# CSS Framework theme helpers
+################################
+sub user_theme_dirs
+{
+	return (
+		{
+			dir    => "$LoxBerry::System::lbhomedir/webfrontend/html/plugins/cssframework/themes",
+			source => 'plugin',
+		},
+		{
+			dir    => "$LoxBerry::System::lbshtmldir/css/themes/user-themes",
+			source => 'legacy',
+		},
+	);
+}
+
+sub user_theme_path
+{
+	my ($theme) = @_;
+	return undef if (!defined $theme || $theme !~ /^user-[a-z0-9][a-z0-9-]*$/);
+
+	foreach my $theme_dir (user_theme_dirs()) {
+		my $path = "$theme_dir->{dir}/theme-$theme.css";
+		return $path if (-f $path);
+	}
+
+	return undef;
+}
+
+sub is_valid_theme
+{
+	my ($theme) = @_;
+	return 0 if (!defined $theme || $theme eq '');
+	return 1 if ($theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/);
+	return defined user_theme_path($theme) ? 1 : 0;
+}
+
+sub listthemes
+{
+	my @themes;
+	my %seen;
+
+	foreach my $theme_dir (user_theme_dirs()) {
+		my $dir = $theme_dir->{dir};
+		next if (!opendir(my $dh, $dir));
+
+		foreach my $file (sort readdir($dh)) {
+			next if ($file !~ /\Atheme-(user-[a-z0-9][a-z0-9-]*)\.css\z/);
+			my $id = $1;
+			next if ($seen{$id}++);
+
+			my $path = "$dir/$file";
+			push @themes, {
+				id     => $id,
+				name   => css_theme_display_name($path, $id),
+				file   => $file,
+				source => $theme_dir->{source},
+			};
+		}
+
+		closedir($dh);
+	}
+
+	$response{error} = 0;
+	$response{message} = "OK";
+	$response{themes} = \@themes;
+	return 1;
+}
+
+sub css_theme_display_name
+{
+	my ($path, $id) = @_;
+
+	if (open(my $fh, '<:encoding(UTF-8)', $path)) {
+		my $line_count = 0;
+		while (my $line = <$fh>) {
+			last if (++$line_count > 60);
+			if ($line =~ /^\s*(?:\/\*+\s*)?\*?\s*(?:Name|Display-Name|Theme-Name)\s*:\s*(.+?)\s*(?:\*\/)?\s*$/i) {
+				my $name = $1;
+				$name =~ s/\s*\*\/\s*$//;
+				$name =~ s/^\s+|\s+$//g;
+				close($fh);
+				return $name if ($name ne '');
+			}
+		}
+		close($fh);
+	}
+
+	my $name = $id;
+	$name =~ s/^user-//;
+	$name =~ s/-/ /g;
+	$name =~ s/\b(\w)/uc($1)/eg;
+	return $name;
+}
+
 sub change_generaljson
 {
 	require LoxBerry::System::General;
