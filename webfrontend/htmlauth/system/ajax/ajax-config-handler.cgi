@@ -58,8 +58,9 @@ elsif ($action eq 'changelanguage') { change_generaljson("Base->Lang", $value);}
 elsif ($action eq 'changecountry') { change_generaljson("Base->Country", $value);}
 elsif ($action eq 'listthemes') { listthemes(); }
 elsif ($action eq 'changetheme') {
-	if (is_valid_theme($value)) {
-		change_generaljson("Base->Theme", $value);
+	my $normalized_theme = normalize_theme_id($value);
+	if (is_valid_theme($normalized_theme)) {
+		change_generaljson("Base->Theme", $normalized_theme);
 	} else {
 		$response{error} = 1;
 		$response{message} = "Theme not supported.";
@@ -470,20 +471,34 @@ sub user_theme_dirs
 {
 	return (
 		{
-			dir    => "$LoxBerry::System::lbhomedir/webfrontend/html/plugins/cssframework/themes",
-			source => 'plugin',
+			# CSS Studio user themes are data, not public html files.
+			# They are delivered to the browser by theme-file.cgi.
+			dir    => "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes",
+			source => 'data',
 		},
 		{
+			# Transitional fallback for very old bundled user themes.
 			dir    => "$LoxBerry::System::lbshtmldir/css/themes/user-themes",
 			source => 'legacy',
 		},
 	);
 }
 
+sub normalize_theme_id
+{
+	my ($theme) = @_;
+	return '' if !defined $theme;
+	$theme =~ s/^\s+|\s+$//g;
+	$theme = lc($theme);
+	$theme =~ s/^theme-user-/user-/;
+	return $theme;
+}
+
 sub user_theme_path
 {
 	my ($theme) = @_;
-	return undef if (!defined $theme || $theme !~ /^user-[a-z0-9][a-z0-9-]*$/);
+	$theme = normalize_theme_id($theme);
+	return undef if (!defined $theme || $theme !~ /^user-[a-z0-9][a-z0-9_-]*$/);
 
 	foreach my $theme_dir (user_theme_dirs()) {
 		my $path = "$theme_dir->{dir}/theme-$theme.css";
@@ -496,6 +511,7 @@ sub user_theme_path
 sub is_valid_theme
 {
 	my ($theme) = @_;
+	$theme = normalize_theme_id($theme);
 	return 0 if (!defined $theme || $theme eq '');
 	return 1 if ($theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/);
 	return defined user_theme_path($theme) ? 1 : 0;
@@ -511,7 +527,7 @@ sub listthemes
 		next if (!opendir(my $dh, $dir));
 
 		foreach my $file (sort readdir($dh)) {
-			next if ($file !~ /\Atheme-(user-[a-z0-9][a-z0-9-]*)\.css\z/);
+			next if ($file !~ /\Atheme-(user-[a-z0-9][a-z0-9_-]*)\.css\z/);
 			my $id = $1;
 			next if ($seen{$id}++);
 

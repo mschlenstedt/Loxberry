@@ -569,8 +569,12 @@ sub read_generaljson
 	# Map legacy theme names to new themes
 	my %_theme_map = ('classic' => 'classic-lb', 'modern' => 'soft-rounded', 'dark' => 'glass');
 	$lbtheme = $_theme_map{$lbtheme} if exists $_theme_map{$lbtheme};
-	if ($lbtheme =~ /^user-[a-z0-9][a-z0-9-]*$/) {
-		my $_plugin_user_theme_file = "$lbhomedir/webfrontend/html/plugins/cssframework/themes/theme-$lbtheme.css";
+	# Accept both historic/Core notation (user-<slug>) and Studio/CSS notation
+	# (theme-user-<slug>). Internally LoxBerry stores user-<slug>; the CSS file
+	# and body class remain theme-user-<slug>.
+	$lbtheme =~ s/^theme-user-/user-/ if defined $lbtheme;
+	if ($lbtheme =~ /^user-[a-z0-9][a-z0-9_-]*$/) {
+		my $_plugin_user_theme_file = "$lbhomedir/data/plugins/cssframework/themes/theme-$lbtheme.css";
 		my $_legacy_user_theme_file = "$lbshtmldir/css/themes/user-themes/theme-$lbtheme.css";
 		$lbtheme = 'soft-rounded' unless (-f $_plugin_user_theme_file || -f $_legacy_user_theme_file);
 	} else {

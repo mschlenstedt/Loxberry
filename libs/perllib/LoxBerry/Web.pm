@@ -141,14 +141,23 @@ sub head
 	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
 	my $theme_file;
 
-	if ($theme =~ /^user-[a-z0-9][a-z0-9-]*$/) {
+	# User themes may appear in two notations during the transition:
+	# - stored LoxBerry theme id: user-<slug>
+	# - CSS/Studio id and body class: theme-user-<slug>
+	# Normalize to the stored id here. This prevents false fallback to Core themes
+	# when an older/Studio value already contains the theme- prefix.
+	$theme =~ s/^theme-user-/user-/ if defined $theme;
+
+	if ($theme =~ /^user-[a-z0-9][a-z0-9_-]*$/) {
 		# Generated user themes are managed by the CSS Framework plugin.
-		my $plugin_theme_fs = "$LoxBerry::System::lbhomedir/webfrontend/html/plugins/cssframework/themes/theme-$theme.css";
+		my $plugin_theme_fs = "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes/theme-$theme.css";
 		my $legacy_theme_file = "themes/user-themes/theme-$theme.css";
 
 		if (-f $plugin_theme_fs) {
-			# THEME_FILE is appended to /system/css/ in the header template.
-			$theme_file = "../../plugins/cssframework/themes/theme-$theme.css";
+			# THEME_FILE is appended to /system/css/ in the head template.
+			# Do not use a query string here, because some head templates append their
+			# own cache buster. PATH_INFO keeps the file name stable.
+			$theme_file = "../../admin/plugins/cssframework/theme-file.cgi/theme-$theme.css";
 		} elsif (-f "$LoxBerry::System::lbshtmldir/css/$legacy_theme_file") {
 			# Transitional fallback for bundled example themes from earlier preview packages.
 			$theme_file = $legacy_theme_file;

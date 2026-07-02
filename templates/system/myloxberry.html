@@ -111,9 +111,11 @@
 			});
 
 			// Theme: Dropdown setzt Wert und wechselt direkt.
-			// User Themes werden dynamisch aus dem CSS Framework Pluginpfad gelesen:
-			// /opt/loxberry/webfrontend/html/plugins/cssframework/themes/theme-user-*.css
-			// Der Wert ist z.B. user-classic-w2indows.
+			// User Themes werden dynamisch aus dem CSS Framework Datenpfad gelesen.
+			// JSON: /opt/loxberry/config/plugins/cssframework/themes/theme-user-*.json
+			// CSS:  /opt/loxberry/data/plugins/cssframework/themes/theme-user-*.css
+			// Auslieferung erfolgt ueber /admin/plugins/cssframework/theme-file.cgi.
+			// Der Wert ist z.B. user-classic-windows.
 			var currentTheme = "<TMPL_VAR CURRENTTHEME>" || "soft-rounded";
 
 			function setCurrentThemeSelection() {
