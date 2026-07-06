@@ -1,6 +1,6 @@
 <style>
-th, td {
-  border-bottom: 1px solid #ddd; 
+#resulttable th, #resulttable td {
+  border-bottom: 1px solid #ddd;
   text-align:left;
   padding:10px;
   text-shadow: none;
@@ -16,7 +16,8 @@ th, td {
 	<button class="lb-btn lb-btn-sm lb-btn-icon" disabled="disabled" id="downloadall" onclick="downloadAll();" data-role="none"><i class="pi pi-download"></i> <TMPL_VAR COMMON.BUTTON_DOWNLOAD></button>
 </div>
 <div id="loading" style="display:none;"></div>
-<table id="resulttable" style="width:100%;">
+<table id="resulttable" class="lb-table-responsive" style="width:100%;">
+	<thead>
 	<tr>
 		<th style="text-align:center;width:10%;"><TMPL_VAR MYLOXBERRY.COL_STATUS></th>
 		<th style="width:13%;"><TMPL_VAR MYLOXBERRY.COL_TITLE></th>
@@ -25,6 +26,8 @@ th, td {
 		<!-- <th>Logfile</th> -->
 		<!-- <th>Link</th> -->
 	</tr>
+	</thead>
+	<tbody id="resulttable_body"></tbody>
 </table>
 
 <script>
@@ -34,6 +37,15 @@ var requestRunning = 0;
 var states = { '2' : 'CRITICAL', '3' : 'ERROR', '4' : 'WARNING', '5' : 'OK', '6' : 'INFO' };
 var backgroundColor = { '0' : '#FF007F', '1' : '#990000', '2' : '#CC0000', '3' : '#FF3333', '4' : '#FFFF33', '5' : '#6DAC20', '6' : '#3333FF', '7' : '#CCE5FF' };
 var fontColor = { '0' : 'white', '1' : 'white', '2' : 'white', '3' : 'white', '4' : 'black', '5' : 'white', '6' : 'white', '7' : 'black' };
+
+// Column labels shown per cell when the table stacks into cards on mobile
+// (via .lb-table-responsive td::before { content: attr(data-label) }).
+var colLabel = {
+	status: '<TMPL_VAR MYLOXBERRY.COL_STATUS>',
+	title:  '<TMPL_VAR MYLOXBERRY.COL_TITLE>',
+	desc:   '<TMPL_VAR MYLOXBERRY.COL_DESCRIPTION>',
+	result: '<TMPL_VAR MYLOXBERRY.COL_RESULT>'
+};
 
 
 
@@ -123,14 +135,14 @@ function parseElement ( element )
 			rowhtmlStart =  '<tr id="'+rowname+'">';
 			rowhtmlEnd =  '</tr>';
 			
-			var html = ''; 
-			html += '<td id="'+rowname+'status" style="text-align:center;"></td>';
-			
-			html += '<td id="'+rowname+'title"></td>';
-			
-			html += '<td id="'+rowname+'desc"></td>';
-			
-			html += '<td style="padding:10px;">';
+			var html = '';
+			html += '<td id="'+rowname+'status" data-label="'+colLabel.status+'" style="text-align:center;"></td>';
+
+			html += '<td id="'+rowname+'title" data-label="'+colLabel.title+'"></td>';
+
+			html += '<td id="'+rowname+'desc" data-label="'+colLabel.desc+'"></td>';
+
+			html += '<td data-label="'+colLabel.result+'" style="padding:10px;">';
 			
 			html += '	<span id="'+rowname+'result"></span>';
 			
@@ -142,7 +154,7 @@ function parseElement ( element )
 						
 			html += '</td>';
 			
-			$("#resulttable").append(rowhtmlStart+html+rowhtmlEnd);
+			$("#resulttable_body").append(rowhtmlStart+html+rowhtmlEnd);
 			$("#"+rowname).attr('data-checksub', element.sub ); 
 			// console.log("Data attribute", $("#"+rowname).attr('data-checksub' )); 
 			

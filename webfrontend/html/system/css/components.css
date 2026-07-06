@@ -1653,5 +1653,97 @@ span.form-error {
 		font-weight: 600;
 		color: var(--lb-text-secondary);
 		margin-right: var(--lb-space-md);
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+	.lb-table-responsive td {
+		text-align: right;
+	}
+}
+
+/* Horizontal-scroll wrapper for wide tables that cannot stack meaningfully
+   (e.g. header-less log tables). Keeps the desktop layout and lets the user
+   swipe on mobile instead of wrapping text character-by-character. */
+.lb-table-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+@media (max-width: 768px) {
+	.lb-table-scroll > table {
+		white-space: nowrap;
+	}
+	/* the free-text columns may still wrap, only atomic cells stay on one line */
+	.lb-table-scroll > table td.lb-cell-wrap {
+		white-space: normal;
+	}
+}
+
+/* ============================================================
+   Callout / note boxes (reusable, design-system consistent)
+   Replaces ad-hoc inline-coloured info boxes. Accessible contrast:
+   dark body text on a soft tinted background (WCAG AA).
+   ============================================================ */
+.lb-callout {
+	border: 1px solid var(--lb-border-color);
+	border-left: 4px solid var(--lb-info);
+	background: var(--lb-gray-50);
+	color: var(--lb-text);
+	border-radius: var(--lb-radius);
+	padding: 12px 14px;
+	margin: 12px 0;
+	text-shadow: none;
+}
+.lb-callout > :first-child { margin-top: 0; }
+.lb-callout > :last-child { margin-bottom: 0; }
+.lb-callout-title {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 6px;
+}
+/* Security / attention variant — amber accent, calmer than an alarm red. */
+.lb-callout-warning {
+	border-left-color: var(--lb-warning);
+	background: #fdf6e3;
+}
+
+/* Two form fields side by side on desktop that stack vertically on mobile,
+   so narrow inputs (e.g. current password / SecurePIN) stay usable at 390px. */
+.lb-form-2col {
+	display: flex;
+	gap: var(--lb-space-md);
+}
+@media (max-width: 768px) {
+	.lb-form-2col {
+		flex-direction: column;
+		gap: var(--lb-space-sm);
+	}
+}
+
+/* Backup schedule: weekday selector + time picker in one row on desktop.
+   On mobile, stack the time picker below a full-width weekday group and let
+   the day buttons wrap evenly instead of squeezing into a cramped column. */
+.lb-schedule-field {
+	display: flex;
+	align-items: center;
+	gap: var(--lb-space-md);
+}
+@media (max-width: 768px) {
+	.lb-schedule-field {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.lb-schedule-field .lb-btn-group {
+		display: flex;
+		flex-wrap: wrap;
+		width: 100%;
+	}
+	.lb-schedule-field .lb-btn-group label {
+		flex: 1 1 25%;
+		box-sizing: border-box;
+		padding: 8px 4px;
+		border-bottom: var(--lb-border);
+	}
+	.lb-schedule-field #timef {
+		width: 100%;
 	}
 }

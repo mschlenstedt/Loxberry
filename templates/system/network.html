@@ -46,7 +46,7 @@
 					<label id="labelnetzwerkssid"><TMPL_VAR NETWORK.LABEL_WIRELESS></label>
 				</div>
 				<div class="lb-form-field" style="display:flex;gap:var(--lb-space-sm)">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.SSID>" id='netzwerkssid' name='netzwerkssid' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="special:ssid">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.SSID>" id='netzwerkssid' name='netzwerkssid' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDSSID>" data-validation-rule="special:ssid">
 					<a class="lb-btn lb-btn-sm" href="#" id="btnlistnetworks"
 						onClick="window.open('/admin/system/tools/listnetworks.cgi?lang=<TMPL_VAR LANG>',
 						'NewWindow2','scrollbars=true,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no,width=1000,height=600')">
@@ -60,7 +60,7 @@
 					<label id="labelnetzwerkschluessel"><TMPL_VAR NETWORK.LABEL_NETWORKKEY></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.WPA>" id='netzwerkschluessel' name='netzwerkschluessel' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="special:wpa">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.WPA>" id='netzwerkschluessel' name='netzwerkschluessel' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDWPA>" data-validation-rule="special:wpa">
 				</div>
 			</div>
 
@@ -86,7 +86,7 @@
 					<label id="labelnetzwerkipadresse"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.IPV4.IPADDRESS>" id='netzwerkipadresse' name='netzwerkipadresse' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='special:ipaddr'>
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV4.IPADDRESS>" id='netzwerkipadresse' name='netzwerkipadresse' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIP>" data-validation-rule='special:ipaddr'>
 				</div>
 			</div>
 
@@ -95,7 +95,7 @@
 					<label id="labelnetzwerkipmaske"><TMPL_VAR NETWORK.LABEL_NETMASK></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.IPV4.MASK>" id='netzwerkipmaske' name='netzwerkipmaske' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="special:netmask">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV4.MASK>" id='netzwerkipmaske' name='netzwerkipmaske' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNETMASK>" data-validation-rule="special:netmask">
 				</div>
 			</div>
 
@@ -104,7 +104,7 @@
 					<label id="labelnetzwerkgateway"><TMPL_VAR NETWORK.LABEL_DNSIP></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.IPV4.GATEWAY>" id='netzwerkgateway' name='netzwerkgateway' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="special:ipaddr">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV4.GATEWAY>" id='netzwerkgateway' name='netzwerkgateway' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDGATEWAYIP1>" data-validation-rule="special:ipaddr">
 				</div>
 			</div>
 
@@ -113,7 +113,7 @@
 					<label id="labelnetzwerknameserver"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.IPV4.DNS>" id='netzwerknameserver' name='netzwerknameserver' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="special:ipaddr">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV4.DNS>" id='netzwerknameserver' name='netzwerknameserver' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1>" data-validation-rule="special:ipaddr">
 				</div>
 			</div>
 
@@ -143,7 +143,7 @@
 					<label id="labelnetzwerkipadresse_IPv6"><TMPL_VAR NETWORK.LABEL_IPADDRESS></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.IPv6.IPADDRESS>" id='netzwerkipadresse_IPv6' name='netzwerkipadresse_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIPv6>" data-validation-rule='special:ipaddr_IPv6'>
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPv6.IPADDRESS>" id='netzwerkipadresse_IPv6' name='netzwerkipadresse_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDIPv6>" data-validation-rule='special:ipaddr_IPv6'>
 				</div>
 			</div>
 
@@ -152,7 +152,7 @@
 					<label id="labelnetzwerkipmaske_IPv6"><TMPL_VAR NETWORK.LABEL_PREFIXLENGTH_IPv6></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.IPV6.MASK>" id='netzwerkipmaske_IPv6' name='netzwerkipmaske_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6>" data-validation-rule="special:number-min-max-value:0:128">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV6.MASK>" id='netzwerkipmaske_IPv6' name='netzwerkipmaske_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDPREFIXLENGTH_IPv6>" data-validation-rule="special:number-min-max-value:0:128">
 				</div>
 			</div>
 
@@ -161,7 +161,7 @@
 					<label id="labelnetzwerknameserver_IPv6"><TMPL_VAR NETWORK.LABEL_NAMESERVER></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" background-color="white" value="<TMPL_VAR NETWORK.IPV6.DNS>" id='netzwerknameserver_IPv6' name='netzwerknameserver_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6>" data-validation-rule="special:ipaddr_IPv6">
+					<input class="lb-input" value="<TMPL_VAR NETWORK.IPV6.DNS>" id='netzwerknameserver_IPv6' name='netzwerknameserver_IPv6' type='text' data-validation-error-msg="<TMPL_VAR NETWORK.ERR_NOVALIDNAMESERVERIP1_IPv6>" data-validation-rule="special:ipaddr_IPv6">
 				</div>
 			</div>
 
