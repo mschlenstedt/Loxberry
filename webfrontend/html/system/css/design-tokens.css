@@ -175,6 +175,38 @@ html, body {
      Light themes keep the classic yellow; dark themes override below. */
   --lb-highlight-bg: #FFFFC0;
 
+  /* === Slider / Range ===
+     WebKit/Blink and Firefox use different pseudo-elements for the range
+     thumb and track. Keep these tokens split so themes and the Design Studio
+     can style the visible thumb ring without browser-specific CSS. */
+  --lb-slider-active-bg: var(--lb-primary);
+  --lb-slider-fill-bg: var(--lb-slider-active-bg);
+  --lb-range-active-bg: var(--lb-slider-fill-bg);
+  --lb-slider-bg: var(--lb-border-color);
+  --lb-slider-track-bg: var(--lb-slider-bg);
+  --lb-range-track-bg: var(--lb-slider-track-bg);
+  --lb-slider-border: transparent;
+  --lb-slider-track-height: 8px;
+  --lb-range-track-height: var(--lb-slider-track-height);
+  --lb-slider-track-radius: 4px;
+  --lb-slider-thumb-bg: var(--lb-slider-active-bg);
+  --lb-slider-thumb-size: 24px;
+  --lb-slider-thumb-border-color: #ffffff;
+  --lb-slider-thumb-border-width: 3px;
+  /* Backward-compatible alias used by older Studio-generated themes. */
+  --lb-slider-thumb-border: var(--lb-slider-thumb-border-color);
+  --lb-slider-thumb-shadow: 0 1px 5px rgba(0,0,0,.25);
+  --lb-slider-thumb-hover-shadow: 0 0 0 7px var(--lb-focus-ring-strong), var(--lb-slider-thumb-shadow);
+  --lb-slider-thumb-hover-scale: 1.07;
+  --lb-slider-focus-shadow: 0 0 0 3px var(--lb-focus-ring);
+  --lb-slider-value-bg: rgba(109,172,32,.08);
+  --lb-slider-value-border: rgba(109,172,32,.25);
+  --lb-slider-value-text: var(--lb-primary);
+  --lb-slider-compact-active-bg: var(--lb-slider-active-bg);
+  --lb-slider-compact-bg: var(--lb-slider-bg);
+  --lb-slider-compact-thumb-bg: var(--lb-slider-thumb-bg);
+  --lb-slider-compact-thumb-border: var(--lb-slider-thumb-border-color);
+
   /* === Toggle === */
   --lb-toggle-bg: #d4d4d4;
   --lb-toggle-hover-bg: var(--lb-hover-bg);

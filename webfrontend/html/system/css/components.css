@@ -538,17 +538,17 @@ button.lb-btn-danger:hover {
 	-webkit-appearance: none;
 	appearance: none;
 	width: 100%;
-	height: 8px;
-	border-radius: 4px;
+	height: var(--lb-slider-track-height, 8px);
+	border-radius: var(--lb-slider-track-radius, 4px);
 	outline: none;
 	cursor: pointer;
 	/* --lb-slider-fill is set and kept current by JS (see updateSlider above) */
 	background: linear-gradient(
 		to right,
-		var(--lb-primary)      0%,
-		var(--lb-primary)      var(--lb-slider-fill, 0%),
-		var(--lb-border-color) var(--lb-slider-fill, 0%),
-		var(--lb-border-color) 100%
+		var(--lb-slider-fill-bg, var(--lb-slider-active-bg, var(--lb-primary))) 0%,
+		var(--lb-slider-fill-bg, var(--lb-slider-active-bg, var(--lb-primary))) var(--lb-slider-fill, 0%),
+		var(--lb-slider-track-bg, var(--lb-slider-bg, var(--lb-border-color))) var(--lb-slider-fill, 0%),
+		var(--lb-slider-track-bg, var(--lb-slider-bg, var(--lb-border-color))) 100%
 	);
 	transition: box-shadow 0.15s ease;
 }
@@ -556,46 +556,50 @@ button.lb-btn-danger:hover {
 .lb-slider::-webkit-slider-thumb {
 	-webkit-appearance: none;
 	appearance: none;
-	width: 24px;
-	height: 24px;
+	width: var(--lb-slider-thumb-size, 24px);
+	height: var(--lb-slider-thumb-size, 24px);
 	border-radius: 50%;
-	background: var(--lb-primary);
+	background: var(--lb-slider-thumb-bg, var(--lb-slider-active-bg, var(--lb-primary)));
 	cursor: pointer;
-	border: 3px solid #fff;
-	box-shadow: 0 1px 5px rgba(0,0,0,.25);
+	border: var(--lb-slider-thumb-border-width, 3px) solid var(--lb-slider-thumb-border-color, var(--lb-slider-thumb-border, #fff));
+	box-shadow: var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25));
 	transition: box-shadow 0.15s ease, transform 0.1s ease;
 }
 .lb-slider::-webkit-slider-thumb:hover {
-	box-shadow: 0 0 0 7px rgba(109,172,32,.18), 0 1px 5px rgba(0,0,0,.25);
-	transform: scale(1.07);
+	box-shadow: var(--lb-slider-thumb-hover-shadow, 0 0 0 7px var(--lb-focus-ring-strong, rgba(109,172,32,.18)), var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25)));
+	transform: scale(var(--lb-slider-thumb-hover-scale, 1.07));
 }
 /* Track — Firefox */
 .lb-slider::-moz-range-track {
-	height: 8px;
-	border-radius: 4px;
-	background: var(--lb-border-color);
+	height: var(--lb-slider-track-height, 8px);
+	border-radius: var(--lb-slider-track-radius, 4px);
+	background: var(--lb-slider-track-bg, var(--lb-slider-bg, var(--lb-border-color)));
 	border: none;
 }
 /* Filled portion — Firefox */
 .lb-slider::-moz-range-progress {
-	height: 8px;
-	border-radius: 4px 0 0 4px;
-	background: var(--lb-primary);
+	height: var(--lb-slider-track-height, 8px);
+	border-radius: var(--lb-slider-track-radius, 4px) 0 0 var(--lb-slider-track-radius, 4px);
+	background: var(--lb-slider-fill-bg, var(--lb-slider-active-bg, var(--lb-primary)));
 }
 /* Thumb — Firefox */
 .lb-slider::-moz-range-thumb {
-	width: 24px;
-	height: 24px;
+	width: var(--lb-slider-thumb-size, 24px);
+	height: var(--lb-slider-thumb-size, 24px);
 	border-radius: 50%;
-	background: var(--lb-primary);
+	background: var(--lb-slider-thumb-bg, var(--lb-slider-active-bg, var(--lb-primary)));
 	cursor: pointer;
-	border: 3px solid #fff;
-	box-shadow: 0 1px 5px rgba(0,0,0,.25);
+	border: var(--lb-slider-thumb-border-width, 3px) solid var(--lb-slider-thumb-border-color, var(--lb-slider-thumb-border, #fff));
+	box-shadow: var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25));
 	box-sizing: border-box;
+}
+.lb-slider::-moz-range-thumb:hover {
+	box-shadow: var(--lb-slider-thumb-hover-shadow, 0 0 0 7px var(--lb-focus-ring-strong, rgba(109,172,32,.18)), var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25)));
+	transform: scale(var(--lb-slider-thumb-hover-scale, 1.07));
 }
 /* Focus ring — matches lb-input */
 .lb-slider:focus {
-	box-shadow: 0 0 0 3px rgba(109,172,32,.15);
+	box-shadow: var(--lb-slider-focus-shadow, 0 0 0 3px var(--lb-focus-ring, rgba(109,172,32,.15)));
 }
 /* Flex container: slider track + value badge */
 .lb-slider-wrap {
@@ -611,9 +615,9 @@ button.lb-btn-danger:hover {
 	text-align: center;
 	font-size: var(--lb-font-sm);
 	font-weight: 600;
-	color: var(--lb-primary);
-	background: rgba(109,172,32,.08);
-	border: 1px solid rgba(109,172,32,.25);
+	color: var(--lb-slider-value-text, var(--lb-primary));
+	background: var(--lb-slider-value-bg, rgba(109,172,32,.08));
+	border: 1px solid var(--lb-slider-value-border, rgba(109,172,32,.25));
 	border-radius: var(--lb-radius);
 	padding: 3px 8px;
 	flex-shrink: 0;
