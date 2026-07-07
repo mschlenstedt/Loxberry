@@ -1659,6 +1659,17 @@ span.form-error {
 	.lb-table-responsive td {
 		text-align: right;
 	}
+	/* Cells with rich/long content (text + links) stack the value below the
+	   label at full width, so links don't get squeezed and broken. */
+	.lb-table-responsive td.lb-cell-block {
+		flex-direction: column;
+		align-items: stretch;
+		text-align: left;
+	}
+	/* Never break link labels character-by-character (e.g. "Wiki"). */
+	.lb-table-responsive a {
+		white-space: nowrap;
+	}
 }
 
 /* Horizontal-scroll wrapper for wide tables that cannot stack meaningfully
@@ -1721,11 +1732,26 @@ span.form-error {
 
 /* Backup schedule: weekday selector + time picker in one row on desktop.
    On mobile, stack the time picker below a full-width weekday group and let
-   the day buttons wrap evenly instead of squeezing into a cramped column. */
+   the day buttons fit into one even row instead of squeezing into a column. */
 .lb-schedule-field {
 	display: flex;
 	align-items: center;
 	gap: var(--lb-space-md);
+}
+/* Weekday buttons as 7 equal-width columns so the row reads as a uniform grid.
+   Without this the labels size to their text (Mon/Die/Mit… differ in width) and
+   look ragged. Overridden below the mobile breakpoint, where the group goes
+   full width via flex. */
+.lb-schedule-field .lb-btn-group {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+}
+/* Snug horizontal padding so the equal cells hug the short day labels instead of
+   floating in wide boxes. The input+label selector is needed to beat the base
+   .lb-btn-group padding (8px 16px), which has higher specificity than a plain
+   .lb-schedule-field .lb-btn-group label rule. */
+.lb-schedule-field .lb-btn-group input[type="checkbox"] + label {
+	padding: 8px 10px;
 }
 @media (max-width: 768px) {
 	.lb-schedule-field {
@@ -1734,16 +1760,35 @@ span.form-error {
 	}
 	.lb-schedule-field .lb-btn-group {
 		display: flex;
-		flex-wrap: wrap;
 		width: 100%;
 	}
 	.lb-schedule-field .lb-btn-group label {
-		flex: 1 1 25%;
+		flex: 1 1 0;
 		box-sizing: border-box;
+	}
+	/* Same high-specificity selector as desktop, but tighter for the narrow
+	   390px row; later in source so it wins at this breakpoint. */
+	.lb-schedule-field .lb-btn-group input[type="checkbox"] + label {
 		padding: 8px 4px;
-		border-bottom: var(--lb-border);
 	}
 	.lb-schedule-field #timef {
 		width: 100%;
+	}
+}
+
+/* Updates page: centered container plus the "label + control" definition rows.
+   Desktop keeps the two-column grid (defined inline on each row); on mobile the
+   container uses the full width and the rows collapse to a single column, so
+   controls like the long "Letzter Entwicklungsstand" button are never clipped.
+   !important is required to override the inline grid-template-columns. */
+#lbu_main_content {
+	max-width: 80%;
+}
+@media (max-width: 768px) {
+	#lbu_main_content {
+		max-width: 100%;
+	}
+	.lb-updates-grid {
+		grid-template-columns: 1fr !important;
 	}
 }
