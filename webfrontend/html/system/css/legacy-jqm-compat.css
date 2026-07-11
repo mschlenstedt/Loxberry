@@ -1,10 +1,497 @@
-/* LoxBerry CSS Framework - legacy-jqm-compat.css V03
+/* LoxBerry CSS Framework - legacy-jqm-compat.css V259
 
-Reserved for future extraction of jQuery Mobile compatibility rules.
+   Central token-based jQuery Mobile compatibility layer for legacy LoxBerry/v3
+   markup. This file intentionally contains no theme-specific optics. Themes
+   provide the variables; this file maps common jQM widget wrappers to them.
 
-Current V03 note:
-- Existing jQM compatibility rules are intentionally still kept in components.css
-  to avoid functional movement in the first structure package.
-- In a later cleanup step, jQM-specific selectors can be moved here so pure
-  nojqm/LoxBerry-DS pages only need design-tokens.css + components.css.
+   Origin:
+   - Generalized from the successful Design Studio generated-theme proof of
+     concept V250-V252 and checked against Liquid Glass jQM compatibility rules.
+   - Keep plugin-specific fixes out of this file.
+
+   Scope:
+   - Active only on themed pages: body[class*="theme-"] ...
+   - Uses !important where jQuery Mobile's own CSS otherwise wins.
 */
+
+/* ============================================================
+   1. Page / body wrappers
+   ============================================================ */
+
+body[class*="theme-"] .ui-page,
+body[class*="theme-"] .ui-content,
+body[class*="theme-"] .ui-panel,
+body[class*="theme-"] .ui-panel-wrapper,
+body[class*="theme-"] .ui-body-a,
+body[class*="theme-"] .ui-body-b,
+body[class*="theme-"] .ui-body-c,
+body[class*="theme-"] .ui-body-d,
+body[class*="theme-"] .ui-body-e,
+body[class*="theme-"] .ui-overlay-a,
+body[class*="theme-"] .ui-overlay-b,
+body[class*="theme-"] .ui-overlay-c,
+body[class*="theme-"] .ui-overlay-d,
+body[class*="theme-"] .ui-overlay-e {
+	background-image: none !important;
+	background-color: var(--lb-bg, transparent) !important;
+	color: var(--lb-text, inherit) !important;
+	text-shadow: none !important;
+}
+
+/* ============================================================
+   2. Standalone jQuery Mobile buttons
+   ============================================================ */
+
+body[class*="theme-"] .ui-btn,
+body[class*="theme-"] .ui-btn:visited,
+body[class*="theme-"] .ui-btn:link,
+body[class*="theme-"] a.ui-btn,
+body[class*="theme-"] button.ui-btn,
+body[class*="theme-"] input[type="button"].ui-btn,
+body[class*="theme-"] input[type="submit"].ui-btn {
+	background-image: none !important;
+	background-color: var(--lb-btn-bg, var(--lb-card-bg, #fff)) !important;
+	color: var(--lb-btn-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-btn-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	border-style: solid !important;
+	border-width: 1px !important;
+	border-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-btn:hover,
+body[class*="theme-"] a.ui-btn:hover,
+body[class*="theme-"] button.ui-btn:hover,
+body[class*="theme-"] input[type="button"].ui-btn:hover,
+body[class*="theme-"] input[type="submit"].ui-btn:hover,
+body[class*="theme-"] .ui-btn.ui-btn-hover-a,
+body[class*="theme-"] .ui-btn.ui-btn-hover-b,
+body[class*="theme-"] .ui-btn.ui-btn-hover-c,
+body[class*="theme-"] .ui-btn.ui-btn-hover-d,
+body[class*="theme-"] .ui-btn.ui-btn-hover-e {
+	background-image: none !important;
+	background-color: var(--lb-btn-hover-bg, var(--lb-btn-bg, var(--lb-card-bg, #fff))) !important;
+	color: var(--lb-btn-hover-text, var(--lb-hover-text, var(--lb-btn-text, var(--lb-text, inherit)))) !important;
+	-webkit-text-fill-color: var(--lb-btn-hover-text, var(--lb-hover-text, var(--lb-btn-text, var(--lb-text, inherit)))) !important;
+	border-color: var(--lb-btn-hover-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18)))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-btn.ui-btn-active,
+body[class*="theme-"] .ui-btn.ui-state-persist,
+body[class*="theme-"] .ui-btn-active {
+	background-image: none !important;
+	background-color: var(--lb-active-bg, var(--lb-btn-primary-bg, var(--lb-primary, #007aff))) !important;
+	color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	-webkit-text-fill-color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	border-color: var(--lb-active-border, var(--lb-btn-primary-border, var(--lb-primary, #007aff))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+/* ============================================================
+   3. Inputs, search fields, selects and wrappers
+   ============================================================ */
+
+body[class*="theme-"] .ui-input-text,
+body[class*="theme-"] .ui-input-search,
+body[class*="theme-"] .ui-textinput,
+body[class*="theme-"] .ui-select,
+body[class*="theme-"] .ui-select .ui-btn {
+	background-image: none !important;
+	background-color: var(--lb-input-bg, var(--lb-card-bg, #fff)) !important;
+	color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-input-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	border-style: solid !important;
+	border-width: 1px !important;
+	border-radius: var(--lb-input-radius, var(--lb-radius, var(--lb-btn-radius, 4px))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-input-text input,
+body[class*="theme-"] .ui-input-search input,
+body[class*="theme-"] .ui-textinput input,
+body[class*="theme-"] .ui-select .ui-btn span,
+body[class*="theme-"] .ui-select .ui-selectmenu-text,
+body[class*="theme-"] textarea,
+body[class*="theme-"] select {
+	color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-input-text:focus-within,
+body[class*="theme-"] .ui-input-search:focus-within,
+body[class*="theme-"] .ui-select .ui-btn:focus {
+	border-color: var(--lb-focus-border, var(--lb-input-focus-border, var(--lb-primary, #007aff))) !important;
+	box-shadow: 0 0 0 3px var(--lb-focus-ring, rgba(0,122,255,.18)) !important;
+}
+
+body[class*="theme-"] select option {
+	color: var(--lb-select-option-text, #172033) !important;
+	background: var(--lb-select-option-bg, #ffffff) !important;
+}
+
+/* ============================================================
+   4. Checkbox / radio button labels and icons
+   ============================================================ */
+
+body[class*="theme-"] .ui-checkbox .ui-btn,
+body[class*="theme-"] .ui-radio .ui-btn {
+	background-image: none !important;
+	background-color: var(--lb-input-bg, var(--lb-btn-bg, var(--lb-card-bg, #fff))) !important;
+	color: var(--lb-input-text, var(--lb-btn-text, var(--lb-text, inherit))) !important;
+	-webkit-text-fill-color: var(--lb-input-text, var(--lb-btn-text, var(--lb-text, inherit))) !important;
+	border-color: var(--lb-input-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18)))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-checkbox .ui-btn.ui-checkbox-on,
+body[class*="theme-"] .ui-radio .ui-btn.ui-radio-on {
+	background-color: var(--lb-active-bg, var(--lb-btn-primary-bg, var(--lb-primary, #007aff))) !important;
+	color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	-webkit-text-fill-color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	border-color: var(--lb-active-border, var(--lb-btn-primary-border, var(--lb-primary, #007aff))) !important;
+}
+
+body[class*="theme-"] .ui-checkbox .ui-btn::after,
+body[class*="theme-"] .ui-radio .ui-btn::after {
+	background-color: var(--lb-checkbox-bg, var(--lb-radio-bg, var(--lb-input-bg, #fff))) !important;
+	border: 2px solid var(--lb-checkbox-border, var(--lb-radio-border, var(--lb-input-border, var(--lb-border-color, rgba(0,0,0,.25))))) !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-checkbox .ui-btn::after {
+	border-radius: var(--lb-checkbox-radius, 3px) !important;
+}
+
+body[class*="theme-"] .ui-radio .ui-btn::after {
+	border-radius: 999px !important;
+}
+
+body[class*="theme-"] .ui-checkbox .ui-btn.ui-checkbox-on::after,
+body[class*="theme-"] .ui-radio .ui-btn.ui-radio-on::after {
+	background-color: var(--lb-checkbox-checked-bg, var(--lb-radio-checked-bg, var(--lb-active-text, var(--lb-btn-primary-text, #fff)))) !important;
+	border-color: var(--lb-checkbox-checked-border, var(--lb-radio-checked-border, var(--lb-active-text, var(--lb-btn-primary-text, #fff)))) !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-checkbox .ui-btn.ui-checkbox-on::after {
+	background-image: var(--lb-checkbox-check-icon, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23007aff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M2 6.2l2.5 2.6L10 3.2'/%3E%3C/svg%3E")) !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: 12px 12px !important;
+}
+
+body[class*="theme-"] .ui-radio .ui-btn.ui-radio-on::after {
+	background-image: none !important;
+	box-shadow: inset 0 0 0 4px var(--lb-active-bg, var(--lb-btn-primary-bg, var(--lb-primary, #007aff))) !important;
+}
+
+/* ============================================================
+   5. Controlgroups and legacy navbars
+   ============================================================ */
+
+body[class*="theme-"] .ui-controlgroup,
+body[class*="theme-"] .ui-controlgroup-controls,
+body[class*="theme-"] .ui-navbar {
+	background-image: none !important;
+	background-color: var(--lb-card-bg, transparent) !important;
+	border-color: var(--lb-border-color, rgba(0,0,0,.18)) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-controlgroup .ui-btn,
+body[class*="theme-"] .ui-controlgroup-controls .ui-btn,
+body[class*="theme-"] .ui-navbar .ui-btn,
+body[class*="theme-"] .ui-navbar a {
+	background-image: none !important;
+	background-color: var(--lb-btn-bg, var(--lb-card-bg, #fff)) !important;
+	color: var(--lb-btn-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-btn-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-controlgroup .ui-btn:hover,
+body[class*="theme-"] .ui-controlgroup-controls .ui-btn:hover,
+body[class*="theme-"] .ui-navbar .ui-btn:hover,
+body[class*="theme-"] .ui-navbar a:hover {
+	background-color: var(--lb-btn-hover-bg, var(--lb-hover-bg, var(--lb-btn-bg, #fff))) !important;
+	color: var(--lb-btn-hover-text, var(--lb-hover-text, var(--lb-btn-text, inherit))) !important;
+	-webkit-text-fill-color: var(--lb-btn-hover-text, var(--lb-hover-text, var(--lb-btn-text, inherit))) !important;
+}
+
+body[class*="theme-"] .ui-controlgroup .ui-btn.ui-btn-active,
+body[class*="theme-"] .ui-controlgroup-controls .ui-btn.ui-btn-active,
+body[class*="theme-"] .ui-navbar .ui-btn-active,
+body[class*="theme-"] .ui-navbar .ui-state-persist {
+	background-color: var(--lb-active-bg, var(--lb-btn-primary-bg, var(--lb-primary, #007aff))) !important;
+	color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	-webkit-text-fill-color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	border-color: var(--lb-active-border, var(--lb-btn-primary-border, var(--lb-primary, #007aff))) !important;
+}
+
+body[class*="theme-"] .ui-controlgroup-controls .ui-btn {
+	border-radius: 0 !important;
+}
+
+body[class*="theme-"] .ui-controlgroup-controls .ui-btn:first-child {
+	border-top-left-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+	border-bottom-left-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+}
+
+body[class*="theme-"] .ui-controlgroup-controls .ui-btn:last-child {
+	border-top-right-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+	border-bottom-right-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+}
+
+/* ============================================================
+   6. jQuery Mobile range sliders
+   ============================================================ */
+
+body[class*="theme-"] .ui-slider-track {
+	background-image: none !important;
+	background-color: var(--lb-slider-track-bg, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	border-color: var(--lb-slider-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	box-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-slider-bg {
+	background-image: none !important;
+	background-color: var(--lb-slider-fill-bg, var(--lb-slider-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff)))) !important;
+}
+
+body[class*="theme-"] .ui-slider-handle,
+body[class*="theme-"] .ui-slider-track .ui-btn.ui-slider-handle {
+	background-image: none !important;
+	background-color: var(--lb-slider-thumb-bg, var(--lb-slider-fill-bg, var(--lb-slider-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff))))) !important;
+	border-color: var(--lb-slider-thumb-border-color, var(--lb-slider-thumb-border, #fff)) !important;
+	box-shadow: var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25)) !important;
+	text-shadow: none !important;
+}
+
+/* ============================================================
+   7. jQuery Mobile slider switches / flipswitches
+   ============================================================ */
+
+body[class*="theme-"] .ui-slider-switch.ui-slider-track,
+body[class*="theme-"] .ui-slider-switch {
+	background-image: none !important;
+	background-color: var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-btn-bg, rgba(0,0,0,.18)))) !important;
+	border-color: var(--lb-switch-border, var(--lb-toggle-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18))))) !important;
+	border-style: solid !important;
+	border-width: 1px !important;
+	border-radius: var(--lb-switch-radius, var(--lb-toggle-radius, var(--lb-btn-radius, var(--lb-radius, 999px)))) !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-slider-switch .ui-slider-label {
+	background-image: none !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	font-family: var(--lb-font) !important;
+}
+
+body[class*="theme-"] .ui-slider-switch .ui-slider-label-a {
+	background-color: var(--lb-switch-on-bg, var(--lb-toggle-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff)))) !important;
+	color: var(--lb-jqm-toggle-label-text, #000000) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-label-text, #000000) !important;
+}
+
+body[class*="theme-"] .ui-slider-switch .ui-slider-label-b {
+	background-color: var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-btn-bg, rgba(0,0,0,.18)))) !important;
+	color: var(--lb-jqm-toggle-label-text, #000000) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-label-text, #000000) !important;
+}
+
+body[class*="theme-"] .ui-slider-switch .ui-slider-handle,
+body[class*="theme-"] .ui-slider-switch .ui-btn.ui-slider-handle {
+	background-image: none !important;
+	background-color: var(--lb-switch-thumb-bg, var(--lb-toggle-thumb-bg, var(--lb-toggle-knob-bg, var(--lb-slider-thumb-bg, #fff)))) !important;
+	border-color: var(--lb-switch-thumb-border, var(--lb-toggle-thumb-border, var(--lb-slider-thumb-border-color, rgba(0,0,0,.18)))) !important;
+	border-radius: var(--lb-toggle-thumb-radius, var(--lb-toggle-knob-radius, 999px)) !important;
+	box-shadow: var(--lb-switch-thumb-shadow, var(--lb-toggle-thumb-shadow, 0 1px 4px rgba(0,0,0,.22))) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-flipswitch {
+	background-image: none !important;
+	background-color: var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-btn-bg, rgba(0,0,0,.18)))) !important;
+	border-color: var(--lb-switch-border, var(--lb-toggle-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18))))) !important;
+	border-radius: var(--lb-switch-radius, var(--lb-toggle-radius, var(--lb-btn-radius, var(--lb-radius, 999px)))) !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active {
+	background-color: var(--lb-switch-on-bg, var(--lb-toggle-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff)))) !important;
+	color: var(--lb-jqm-toggle-label-text, #000000) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-label-text, #000000) !important;
+}
+
+/* JQM toggle labels should stay readable on light/dark switch surfaces.
+   Default is intentionally black for legacy labelled toggle widgets. */
+body[class*="theme-"] .ui-slider-switch .ui-slider-label,
+body[class*="theme-"] .ui-slider-switch .ui-slider-label-a,
+body[class*="theme-"] .ui-slider-switch .ui-slider-label-b,
+body[class*="theme-"] .ui-flipswitch .ui-flipswitch-on,
+body[class*="theme-"] .ui-flipswitch .ui-flipswitch-off {
+	color: var(--lb-jqm-toggle-label-text, #000000) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-label-text, #000000) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-flipswitch .ui-flipswitch-on,
+body[class*="theme-"] .ui-flipswitch .ui-btn {
+	background-image: none !important;
+	background-color: var(--lb-switch-thumb-bg, var(--lb-toggle-thumb-bg, var(--lb-toggle-knob-bg, #fff))) !important;
+	border-color: var(--lb-switch-thumb-border, var(--lb-toggle-thumb-border, rgba(0,0,0,.18))) !important;
+	border-radius: var(--lb-toggle-thumb-radius, var(--lb-toggle-knob-radius, 999px)) !important;
+	box-shadow: var(--lb-switch-thumb-shadow, var(--lb-toggle-thumb-shadow, 0 1px 4px rgba(0,0,0,.22))) !important;
+	text-shadow: none !important;
+}
+
+/* ============================================================
+   8. Collapsibles, tables, footers and disabled states
+   ============================================================ */
+
+body[class*="theme-"] .ui-collapsible-heading .ui-btn,
+body[class*="theme-"] .ui-collapsible-content {
+	background-image: none !important;
+	background-color: var(--lb-card-bg, var(--lb-bg, transparent)) !important;
+	color: var(--lb-text, inherit) !important;
+	-webkit-text-fill-color: var(--lb-text, inherit) !important;
+	border-color: var(--lb-border-color, rgba(0,0,0,.18)) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-table,
+body[class*="theme-"] table.ui-table,
+body[class*="theme-"] table.tables,
+body[class*="theme-"] .formtable {
+	background-image: none !important;
+	background-color: var(--lb-table-bg, var(--lb-card-bg, transparent)) !important;
+	color: var(--lb-table-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-table-border-color, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-table th,
+body[class*="theme-"] .ui-table td,
+body[class*="theme-"] table.tables th,
+body[class*="theme-"] table.tables td,
+body[class*="theme-"] .formtable th,
+body[class*="theme-"] .formtable td {
+	background-image: none !important;
+	color: inherit !important;
+	text-shadow: none !important;
+}
+
+/* Plain legacy plugin tables
+   ------------------------------------------------------------
+   Some older plugins use bare <table> elements with inline white
+   backgrounds and load their own plugin CSS after the LoxBerry head.
+   Keep this scoped to LoxBerry content wrappers and only map surfaces,
+   borders and default text inheritance to tokens. Inline status colors on
+   child elements remain untouched. */
+body[class*="theme-"] .lb-content table:not(.lb-table):not(.ui-table),
+body[class*="theme-"] #page_content table:not(.lb-table):not(.ui-table),
+body[class*="theme-"] .page_content table:not(.lb-table):not(.ui-table),
+body[class*="theme-"] .lb-content table[style*="background-color"],
+body[class*="theme-"] #page_content table[style*="background-color"],
+body[class*="theme-"] .page_content table[style*="background-color"] {
+	background-image: none !important;
+	background-color: var(--lb-legacy-table-bg, var(--lb-table-bg, var(--lb-card-bg, transparent))) !important;
+	color: var(--lb-legacy-table-text, var(--lb-table-text, var(--lb-text, inherit))) !important;
+	border-color: var(--lb-legacy-table-border, var(--lb-table-border-color, var(--lb-border-color, rgba(0,0,0,.18)))) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .lb-content table:not(.lb-table):not(.ui-table) th,
+body[class*="theme-"] .lb-content table:not(.lb-table):not(.ui-table) td,
+body[class*="theme-"] #page_content table:not(.lb-table):not(.ui-table) th,
+body[class*="theme-"] #page_content table:not(.lb-table):not(.ui-table) td,
+body[class*="theme-"] .page_content table:not(.lb-table):not(.ui-table) th,
+body[class*="theme-"] .page_content table:not(.lb-table):not(.ui-table) td {
+	background-image: none !important;
+	border-color: var(--lb-legacy-table-border, var(--lb-table-border-color, var(--lb-border-color, rgba(0,0,0,.18)))) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .lb-content table:not(.lb-table):not(.ui-table) th,
+body[class*="theme-"] #page_content table:not(.lb-table):not(.ui-table) th,
+body[class*="theme-"] .page_content table:not(.lb-table):not(.ui-table) th {
+	background-color: var(--lb-legacy-table-header-bg, var(--lb-table-header-bg, var(--lb-btn-bg, transparent))) !important;
+	color: var(--lb-legacy-table-header-text, var(--lb-table-header-text, var(--lb-text, inherit))) !important;
+	-webkit-text-fill-color: var(--lb-legacy-table-header-text, var(--lb-table-header-text, var(--lb-text, inherit))) !important;
+}
+
+/* Late-loaded legacy plugin CSS often restyles plain form controls.
+   These rules intentionally mirror Core component tokens with !important,
+   but stay inside LoxBerry content wrappers. */
+body[class*="theme-"] .lb-content input[type="text"],
+body[class*="theme-"] .lb-content input[type="password"],
+body[class*="theme-"] .lb-content input[type="email"],
+body[class*="theme-"] .lb-content input[type="url"],
+body[class*="theme-"] .lb-content input[type="number"],
+body[class*="theme-"] .lb-content input[type="tel"],
+body[class*="theme-"] .lb-content input[type="search"],
+body[class*="theme-"] .lb-content textarea,
+body[class*="theme-"] .lb-content select,
+body[class*="theme-"] #page_content input[type="text"],
+body[class*="theme-"] #page_content input[type="password"],
+body[class*="theme-"] #page_content input[type="email"],
+body[class*="theme-"] #page_content input[type="url"],
+body[class*="theme-"] #page_content input[type="number"],
+body[class*="theme-"] #page_content input[type="tel"],
+body[class*="theme-"] #page_content input[type="search"],
+body[class*="theme-"] #page_content textarea,
+body[class*="theme-"] #page_content select {
+	background-image: none !important;
+	background-color: var(--lb-input-bg, var(--lb-card-bg, #fff)) !important;
+	color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-input-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-footer,
+body[class*="theme-"] [data-role="footer"] {
+	background-image: none !important;
+	background-color: var(--lb-card-bg, transparent) !important;
+	color: var(--lb-text-muted, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-border-color, rgba(0,0,0,.18)) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-state-disabled,
+body[class*="theme-"] .ui-disabled {
+	opacity: var(--lb-disabled-opacity, .62) !important;
+}
+
+body[class*="theme-"] .ui-state-disabled .ui-btn,
+body[class*="theme-"] .ui-disabled .ui-btn,
+body[class*="theme-"] button:disabled,
+body[class*="theme-"] input[type="button"]:disabled,
+body[class*="theme-"] input[type="submit"]:disabled {
+	background-image: none !important;
+	background-color: var(--lb-disabled-bg, var(--lb-btn-bg, var(--lb-card-bg, #fff))) !important;
+	color: var(--lb-disabled-text, var(--lb-text-muted, var(--lb-text, inherit))) !important;
+	-webkit-text-fill-color: var(--lb-disabled-text, var(--lb-text-muted, var(--lb-text, inherit))) !important;
+	border-color: var(--lb-disabled-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18)))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}

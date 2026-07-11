@@ -199,9 +199,9 @@ html, body {
   --lb-slider-thumb-hover-shadow: 0 0 0 7px var(--lb-focus-ring-strong), var(--lb-slider-thumb-shadow);
   --lb-slider-thumb-hover-scale: 1.07;
   --lb-slider-focus-shadow: 0 0 0 3px var(--lb-focus-ring);
-  --lb-slider-value-bg: rgba(109,172,32,.08);
-  --lb-slider-value-border: rgba(109,172,32,.25);
-  --lb-slider-value-text: var(--lb-primary);
+  --lb-slider-value-bg: var(--lb-btn-bg);
+  --lb-slider-value-border: var(--lb-btn-border);
+  --lb-slider-value-text: var(--lb-slider-active-bg);
   --lb-slider-compact-active-bg: var(--lb-slider-active-bg);
   --lb-slider-compact-bg: var(--lb-slider-bg);
   --lb-slider-compact-thumb-bg: var(--lb-slider-thumb-bg);

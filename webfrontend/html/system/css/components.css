@@ -508,7 +508,7 @@ button.lb-btn-danger:hover {
 
 /* --- Slider --- */
 /*
- * lb-slider       — styled <input type="range">; tracks --lb-primary color scheme.
+ * lb-slider       — styled <input type="range">; uses slider-specific theme tokens.
  * lb-slider-wrap  — flex container holding the slider + optional lb-slider-value badge.
  * lb-slider-value — numeric badge showing the current value; update via JS.
  * lb-slider-labels — row with min/max labels below the track.
@@ -566,7 +566,7 @@ button.lb-btn-danger:hover {
 	transition: box-shadow 0.15s ease, transform 0.1s ease;
 }
 .lb-slider::-webkit-slider-thumb:hover {
-	box-shadow: var(--lb-slider-thumb-hover-shadow, 0 0 0 7px var(--lb-focus-ring-strong, rgba(109,172,32,.18)), var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25)));
+	box-shadow: var(--lb-slider-thumb-hover-shadow, 0 0 0 7px var(--lb-focus-ring-strong, var(--lb-focus-ring, rgba(0,0,0,.18))), var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25)));
 	transform: scale(var(--lb-slider-thumb-hover-scale, 1.07));
 }
 /* Track — Firefox */
@@ -594,12 +594,12 @@ button.lb-btn-danger:hover {
 	box-sizing: border-box;
 }
 .lb-slider::-moz-range-thumb:hover {
-	box-shadow: var(--lb-slider-thumb-hover-shadow, 0 0 0 7px var(--lb-focus-ring-strong, rgba(109,172,32,.18)), var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25)));
+	box-shadow: var(--lb-slider-thumb-hover-shadow, 0 0 0 7px var(--lb-focus-ring-strong, var(--lb-focus-ring, rgba(0,0,0,.18))), var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25)));
 	transform: scale(var(--lb-slider-thumb-hover-scale, 1.07));
 }
 /* Focus ring — matches lb-input */
 .lb-slider:focus {
-	box-shadow: var(--lb-slider-focus-shadow, 0 0 0 3px var(--lb-focus-ring, rgba(109,172,32,.15)));
+	box-shadow: var(--lb-slider-focus-shadow, 0 0 0 3px var(--lb-focus-ring, rgba(0,0,0,.15)));
 }
 /* Flex container: slider track + value badge */
 .lb-slider-wrap {
@@ -615,9 +615,9 @@ button.lb-btn-danger:hover {
 	text-align: center;
 	font-size: var(--lb-font-sm);
 	font-weight: 600;
-	color: var(--lb-slider-value-text, var(--lb-primary));
-	background: var(--lb-slider-value-bg, rgba(109,172,32,.08));
-	border: 1px solid var(--lb-slider-value-border, rgba(109,172,32,.25));
+	color: var(--lb-slider-value-text, var(--lb-slider-active-bg, var(--lb-primary)));
+	background: var(--lb-slider-value-bg, var(--lb-btn-bg, var(--lb-card-bg)));
+	border: 1px solid var(--lb-slider-value-border, var(--lb-btn-border, var(--lb-border-color)));
 	border-radius: var(--lb-radius);
 	padding: 3px 8px;
 	flex-shrink: 0;
