@@ -105,7 +105,7 @@ sub logfiles_cleanup
 	$deletefactor2 = 5; # in %
 	$minfreespace1 = 200; # in MB
 	$minfreespace2 = 50; # in MB
-	$maxlogfiles = 24; # max log files per path before emergency cleanup
+	$maxlogfiles = 100; # max log files per subfolder before emergency cleanup
 	my $size = 3; # in MB
 	my $logdays = 30; # in days
 	my $gzdays = 60; # in days
@@ -271,11 +271,17 @@ sub logfiles_cleanup
 	# Pre-Logcleanup
 	&prelogcleanup();
 	
+	# Do not delete logfiles younger than 1 hour - they may belong to
+	# sessions that are still running (their logfile would just be
+	# recreated headless on the next write anyway)
+	my $freshmtime = time() - 3600;
+
 	foreach (@emergpaths) {
-		LOGDEB "Scanning $_ for any LOG-Files and DELETE them...";
+		LOGDEB "Scanning $_ for LOG-Files older than 1 hour and DELETE them...";
 
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
+			->mtime( "<=$freshmtime" )
 			->nonempty
         		->in($_);
 
@@ -317,18 +323,28 @@ sub checkdisks {
 
 		my $space_critical = ( ($folderinfo{available}/$folderinfo{size}*100) <= $spacefactor and $folderinfo{available}/1024 <= $minfreespace );
 
-		my @logfiles = File::Find::Rule->file()->name('*.log', '*.log.gz')->in($disk);
-		my $filecount = scalar @logfiles;
-		my $count_critical = ($filecount > $maxlogfiles);
-
 		if ($space_critical) {
-			LOGWARN "--> $folderinfo{mountpoint} below limit of $spacefactor%/${minfreespace}MB ($filecount log files) - EMERGENCY housekeeping needed.";
+			LOGWARN "--> $folderinfo{mountpoint} below limit of $spacefactor%/${minfreespace}MB - EMERGENCY housekeeping needed.";
 			push(@paths, $disk);
-		} elsif ($count_critical) {
-			LOGWARN "--> $disk has $filecount log files (limit: $maxlogfiles) - EMERGENCY housekeeping needed.";
-			push(@paths, $disk);
-		} else {
-			LOGDEB "--> $disk OK ($filecount log files, disk space OK)";
+			next;
+		}
+
+		# File count is checked per subfolder (e.g. per plugin log dir), not for
+		# the whole tree - a single busy plugin must not trigger emergency
+		# cleanup for all other plugins. Only the offending subfolder is returned.
+		my @countdirs = grep { -d $_ } glob("$disk/*");
+		push @countdirs, $disk;
+		foreach my $dir (@countdirs) {
+			my $rule = File::Find::Rule->file()->name('*.log', '*.log.gz');
+			$rule = $rule->maxdepth(1) if ($dir eq $disk); # subfolders are checked separately
+			my @logfiles = $rule->in($dir);
+			my $filecount = scalar @logfiles;
+			if ($filecount > $maxlogfiles) {
+				LOGWARN "--> $dir has $filecount log files (limit: $maxlogfiles) - EMERGENCY housekeeping needed.";
+				push(@paths, $dir);
+			} else {
+				LOGDEB "--> $dir OK ($filecount log files, disk space OK)";
+			}
 		}
 	}
 	return(@paths);
@@ -390,7 +406,12 @@ sub logdb_cleanup
 			LOGDEB "Could not parse LOGSTARTISO '$key->{'LOGSTARTISO'}' for $key->{'PACKAGE'}/$key->{'NAME'}: $@" if $@;
 
 			eval {
+				# strptime does NOT die on empty/invalid input but returns epoch 0
+				# (01.01.1970). Sessions without LOGEND (still running or crashed)
+				# would be treated as "too old" and their active logfile deleted.
+				die "empty LOGENDISO\n" if (!$key->{'LOGENDISO'});
 				$endtime_epoch = Time::Piece->strptime($key->{'LOGENDISO'}, "%Y-%m-%dT%H:%M:%S");
+				die "LOGENDISO parsed to epoch 0\n" if ($endtime_epoch->epoch == 0);
 			};
 			if ($@) {
 				LOGDEB "Could not parse LOGENDISO '$key->{'LOGENDISO'}' for $key->{'PACKAGE'}/$key->{'NAME'} - falling back to file mtime";
