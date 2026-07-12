@@ -1,0 +1,381 @@
+/* LoxBerry Dark Mode Theme
+   Colors via CSS Variables from design-tokens.css
+   Only override colors — never touch jQuery Mobile structure */
+
+/* === Global === */
+.theme-dark .ui-page {
+  background-color: var(--lb-gray-50);
+  color: var(--lb-gray-900);
+}
+
+/* Selective text-shadow reset instead of universal * selector */
+.theme-dark .ui-btn,
+.theme-dark .ui-bar-a,
+.theme-dark .ui-body-a,
+.theme-dark .ui-body-inherit,
+.theme-dark label,
+.theme-dark a {
+  text-shadow: none !important;
+}
+
+.theme-dark .loxberry-logo,
+.theme-dark .ui-panel-wrapper {
+  background-image: none !important;
+}
+
+/* === Header === */
+.theme-dark .ui-header .ui-bar-a {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+  border-bottom-color: var(--lb-gray-200);
+}
+
+.theme-dark .ui-header .ui-bar-a .ui-btn,
+.theme-dark .ui-header .ui-bar-a h1 {
+  color: var(--lb-gray-900);
+  text-shadow: none;
+}
+
+.theme-dark .ui-header .ui-bar-a .ui-btn:hover {
+  color: var(--lb-primary);
+}
+
+/* === Buttons — colors only === */
+.theme-dark .ui-btn {
+  text-shadow: none;
+  box-shadow: none;
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
+  font-weight: 500;
+}
+
+.theme-dark .ui-btn:hover {
+  background: var(--lb-gray-200);
+  border-color: var(--lb-gray-300);
+}
+
+.theme-dark .ui-btn-active,
+.theme-dark .ui-btn.ui-btn-active,
+.theme-dark .ui-radio-on .ui-btn,
+.theme-dark .ui-checkbox-on .ui-btn,
+.theme-dark .ui-controlgroup .ui-btn-active {
+  background: var(--lb-primary) !important;
+  color: white !important;
+  border-color: var(--lb-primary) !important;
+}
+
+.theme-dark button[type="submit"],
+.theme-dark .ui-btn-icon-left[data-icon="check"] {
+  background: var(--lb-primary);
+  color: white;
+  border-color: var(--lb-primary-hover);
+}
+
+/* === Inputs — colors only === */
+.theme-dark .ui-input-text,
+.theme-dark .ui-input-search {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.theme-dark .ui-input-text input,
+.theme-dark .ui-input-search input,
+.theme-dark textarea,
+.theme-dark select {
+  border-color: var(--lb-gray-300) !important;
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-900) !important;
+}
+
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder {
+  color: var(--lb-gray-500) !important;
+}
+
+.theme-dark .ui-input-text input:focus,
+.theme-dark .ui-input-search input:focus,
+.theme-dark textarea:focus {
+  border-color: var(--lb-primary) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.25);
+}
+
+/* === Content === */
+.theme-dark .ui-content {
+  background: var(--lb-gray-50);
+  color: var(--lb-gray-900);
+}
+
+/* Override jQm .ui-body-inherit — must match original specificity from jquery.mobile */
+.theme-dark .ui-body-a,
+.theme-dark .ui-body-inherit,
+.ui-page-theme-a .theme-dark .ui-body-inherit,
+html body.theme-dark .ui-body-inherit,
+html body.theme-dark .ui-body-a,
+html .ui-bar-a body.theme-dark .ui-body-inherit,
+html body.theme-dark .ui-group-theme-a .ui-body-inherit,
+.ui-page-theme-a body.theme-dark .ui-body-inherit,
+body.theme-dark .ui-page-theme-a .ui-body-inherit,
+html body.theme-dark .ui-page-theme-a .ui-body-inherit {
+  background-color: var(--lb-gray-200) !important;
+  color: var(--lb-gray-900) !important;
+  border-color: var(--lb-gray-300) !important;
+  text-shadow: none !important;
+}
+
+/* === Links === */
+.theme-dark a {
+  color: #8bc34a;
+}
+
+.theme-dark a:visited {
+  color: #7cb342;
+}
+
+/* === Selects — colors only === */
+.theme-dark .ui-select .ui-btn {
+  border-color: var(--lb-gray-300) !important;
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-900);
+}
+
+.theme-dark .ui-select .ui-btn span {
+  color: var(--lb-gray-900) !important;
+}
+
+.theme-dark select option {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+}
+
+/* === Panel === */
+.theme-dark .ui-panel {
+  background: var(--lb-gray-100);
+}
+
+.theme-dark .ui-panel-inner {
+  color: var(--lb-gray-900);
+}
+
+/* === Side Menu === */
+.theme-dark ul.lb-systemmenu li.lb-nonhover {
+  background-color: var(--lb-primary);
+  color: white !important;
+}
+
+.theme-dark ul.lb-systemmenu li {
+  color: var(--lb-gray-700) !important;
+  background-color: var(--lb-gray-100);
+  border-bottom-color: var(--lb-gray-200);
+}
+
+.theme-dark ul.lb-systemmenu a {
+  color: var(--lb-gray-700) !important;
+}
+
+.theme-dark ul.lb-systemmenu li:hover {
+  background-color: var(--lb-primary);
+  color: black !important;
+}
+
+.theme-dark ul.lb-systemmenu li:hover a {
+  color: black !important;
+}
+
+/* === Tables — colors only === */
+.theme-dark table td {
+  color: var(--lb-gray-900);
+}
+
+/* === Flipswitch === */
+.theme-dark .ui-flipswitch {
+  background-color: var(--lb-gray-200) !important;
+}
+
+.theme-dark .ui-flipswitch-active {
+  background-color: var(--lb-primary) !important;
+}
+
+.theme-dark .ui-slider-track {
+  background-color: var(--lb-gray-200) !important;
+}
+
+/* === Section Headers === */
+.theme-dark .wide {
+  color: var(--lb-gray-900);
+  border-bottom-color: var(--lb-primary);
+}
+
+.theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4 {
+  color: var(--lb-gray-900);
+}
+
+/* === Text colors === */
+.theme-dark label,
+.theme-dark .ui-controlgroup label {
+  color: var(--lb-gray-700);
+}
+
+.theme-dark .hint {
+  color: var(--lb-gray-700);
+}
+
+.theme-dark small, .theme-dark .small {
+  color: var(--lb-gray-500);
+}
+
+/* === Checkboxes & Radios — colors only === */
+.theme-dark .ui-checkbox label,
+.theme-dark .ui-radio label {
+  color: var(--lb-gray-900) !important;
+  background: var(--lb-gray-100) !important;
+  border-color: var(--lb-gray-200) !important;
+}
+
+/* === Fieldset === */
+.theme-dark fieldset {
+  border-color: var(--lb-gray-200);
+}
+
+/* === Controlgroup — colors only === */
+.theme-dark .ui-controlgroup .ui-btn {
+  border-color: var(--lb-gray-200);
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+}
+
+/* === Navbar — colors only === */
+.theme-dark [data-role="navbar"] .ui-btn {
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-700) !important;
+  border-color: var(--lb-gray-200) !important;
+}
+
+.theme-dark [data-role="navbar"] .ui-btn-active {
+  background: var(--lb-primary) !important;
+  color: white !important;
+}
+
+/* === Collapsible — colors only === */
+.theme-dark .ui-collapsible-heading .ui-btn {
+  background: var(--lb-gray-100);
+  border-color: var(--lb-gray-200);
+  color: var(--lb-gray-900);
+}
+
+/* === Footer === */
+.theme-dark [data-role="footer"] {
+  border-top-color: var(--lb-gray-200);
+}
+
+/* === Log colors === */
+.theme-dark .logstart { background-color: var(--lb-primary); }
+.theme-dark .loginf, .theme-dark .logdeb { background-color: #1a2a40; color: #c0d8f0; }
+.theme-dark .logok { background-color: #1a3a1e; color: #a0d8a8; }
+.theme-dark .logwarn { background-color: #3a3a1a; color: #d8d890; }
+.theme-dark .logerr { background-color: #3a1a1a; color: #e0a0a0; }
+.theme-dark .logcrit { background-color: #4a1a1a; color: #f0b0b0; }
+
+/* === Form errors === */
+.theme-dark .form-error, .theme-dark .form-error-message {
+  color: var(--lb-danger);
+}
+
+/* === lb-* Design System — Dark Overrides === */
+.theme-dark .lb-input,
+.theme-dark .lb-select,
+.theme-dark .lb-textarea {
+  background: var(--lb-gray-100) !important;
+  color: var(--lb-gray-900) !important;
+  border-color: var(--lb-gray-300) !important;
+}
+.theme-dark .lb-input:focus,
+.theme-dark .lb-select:focus,
+.theme-dark .lb-textarea:focus {
+  border-color: var(--lb-primary) !important;
+  box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.25) !important;
+}
+.theme-dark .lb-input::placeholder {
+  color: var(--lb-gray-500) !important;
+}
+.theme-dark .lb-input:disabled {
+  background: var(--lb-gray-200) !important;
+  color: var(--lb-gray-500) !important;
+}
+/* Force jQm input wrappers transparent so lb-input styling shows through */
+.theme-dark .ui-input-text {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.theme-dark .lb-btn {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
+}
+.theme-dark .lb-btn:hover {
+  background: var(--lb-gray-200);
+}
+.theme-dark .lb-btn-primary {
+  background: var(--lb-primary);
+  color: white;
+  border-color: var(--lb-primary);
+}
+.theme-dark .lb-btn-primary:hover {
+  background: var(--lb-primary-hover);
+}
+
+.theme-dark .lb-btn-group label {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-700);
+  border-color: var(--lb-gray-300);
+}
+.theme-dark .lb-btn-group label:hover {
+  background: var(--lb-gray-200);
+}
+.theme-dark .lb-btn-group input[type="radio"]:checked + label,
+.theme-dark .lb-btn-group label.active {
+  background: var(--lb-primary);
+  color: white;
+}
+
+.theme-dark .lb-section-title {
+  color: var(--lb-gray-900);
+}
+
+.theme-dark .lb-form-label {
+  color: var(--lb-gray-700);
+}
+
+.theme-dark .lb-form-help {
+  color: var(--lb-gray-500);
+}
+
+.theme-dark .lb-card {
+  background: var(--lb-gray-100);
+  border-color: var(--lb-gray-200);
+}
+
+.theme-dark .lb-collapsible {
+  border-color: var(--lb-gray-200);
+}
+.theme-dark .lb-collapsible summary {
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+}
+
+.theme-dark .lb-toggle input:checked + .lb-toggle-slider {
+  background: var(--lb-primary);
+}
+
+/* === Dropzone === */
+.theme-dark #dropzone {
+  border-color: var(--lb-gray-300) !important;
+  background: var(--lb-gray-100) !important;
+}
+.theme-dark #dropzone-text { color: var(--lb-gray-500) !important; }
+.theme-dark #dropzone-text span { color: var(--lb-primary) !important; }
+.theme-dark #dropzone-filename { color: var(--lb-gray-900) !important; }

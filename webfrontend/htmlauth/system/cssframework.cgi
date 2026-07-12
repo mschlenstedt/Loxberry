@@ -1,7 +1,10 @@
 #!/usr/bin/perl
 
 # LoxBerry CSS Framework Preview/Help renderer
-# Renders language-specific HTML templates from templates/system/themes/.
+# Shared Core/Plugin renderer for templates/system/themes/.
+# Supports ?page=preview|help.
+# System/Core renderer always uses the currently active LoxBerry theme from general.json.
+# Plugin/Studio renderer additionally accepts ?theme=theme-* for Live Preview handoff.
 
 use strict;
 use warnings;
@@ -91,6 +94,32 @@ sub cssframework_find_first_dir {
 	return '';
 }
 
+sub cssframework_candidate_data_theme_dirs {
+	my @dirs;
+
+	push @dirs, "$lbhomedir/data/plugins/cssframework/themes" if defined $lbhomedir && $lbhomedir ne '';
+	push @dirs, "$ENV{LBHOMEDIR}/data/plugins/cssframework/themes" if $ENV{LBHOMEDIR};
+	push @dirs, '/opt/loxberry/data/plugins/cssframework/themes';
+
+	my @unique;
+	my %seen;
+	foreach my $dir (@dirs) {
+		next if !defined $dir || $dir eq '';
+		next if $seen{$dir}++;
+		push @unique, $dir;
+	}
+
+	return @unique;
+}
+
+sub cssframework_find_first_data_theme_dir {
+	foreach my $dir (cssframework_candidate_data_theme_dirs()) {
+		return $dir if -d $dir;
+	}
+
+	return '';
+}
+
 sub cssframework_escape_html {
 	my ($value) = @_;
 	$value = '' if !defined $value;
@@ -99,6 +128,50 @@ sub cssframework_escape_html {
 	$value =~ s/>/&gt;/g;
 	$value =~ s/"/&quot;/g;
 	return $value;
+}
+
+
+sub cssframework_normalize_theme_class {
+	my ($theme) = @_;
+	$theme = '' if !defined $theme;
+	$theme = lc($theme);
+	$theme =~ s/^\s+|\s+$//g;
+	$theme =~ s/[^a-z0-9_-]//g;
+	return '' if $theme eq '';
+	$theme = 'classic-lb' if $theme eq 'classic';
+	return ($theme =~ /^theme-/) ? $theme : "theme-$theme";
+}
+
+sub cssframework_current_renderer_url {
+	my $script = $ENV{SCRIPT_NAME} || '/admin/system/cssframework.cgi';
+	$script =~ s/[\r\n\"\'<>]//g;
+	$script = '/admin/system/cssframework.cgi' if $script eq '';
+	return $script;
+}
+
+sub cssframework_page_url {
+	my ($base, $page, $theme_class) = @_;
+	$base = cssframework_current_renderer_url() if !defined $base || $base eq '';
+	$page = 'preview' if !defined $page || $page eq '';
+	my $url = $base . '?page=' . CGI::escape($page);
+	if (defined $theme_class && $theme_class ne '') {
+		$url .= '&theme=' . CGI::escape($theme_class);
+	}
+	return $url;
+}
+
+sub cssframework_renderer_context_class {
+	my $script = $ENV{SCRIPT_NAME} || '';
+	my $param = lc($cgi->param('renderer') || $cgi->param('chrome') || $cgi->param('context') || '');
+	$param =~ s/[^a-z_-]//g;
+
+	# Explicit override for development/testing.
+	return 'lb-renderer-studio' if $param =~ /^(studio|plugin|sidebar|withsidebar)$/;
+	return 'lb-renderer-core'   if $param =~ /^(core|system|nosidebar|no-sidebar|plain)$/;
+
+	# Default: plugin renderer is used inside the CSS Framework Studio and keeps
+	# the preview sidebar; system renderer is rendered inside the original LoxBerry chrome.
+	return ($script =~ m#/plugins/cssframework/#) ? 'lb-renderer-studio' : 'lb-renderer-core';
 }
 
 sub cssframework_title_from_class {
@@ -170,7 +243,7 @@ sub cssframework_core_themes {
 }
 
 sub cssframework_plugin_user_themes {
-	my $theme_dir = cssframework_find_first_dir('plugins/cssframework/themes');
+	my $theme_dir = cssframework_find_first_data_theme_dir();
 	my @themes;
 
 	if (opendir(my $dh, $theme_dir)) {
@@ -193,12 +266,21 @@ sub cssframework_plugin_user_themes {
 	return @themes;
 }
 
+sub cssframework_theme_file_url {
+	my ($web_base, $file) = @_;
+	$file = '' if !defined $file;
+	if ($web_base =~ /\?file=$/) {
+		return $web_base . $file;
+	}
+	return $web_base . '/' . $file;
+}
+
 sub cssframework_theme_links {
 	my ($web_base, @themes) = @_;
 	return '' if !@themes;
 
 	return join("\n", map {
-		"\t<link rel='stylesheet' href='" . $web_base . "/" . $_->{file} . "'>"
+		"\t<link rel='stylesheet' href='" . cssframework_escape_html(cssframework_theme_file_url($web_base, $_->{file})) . "'>"
 	} @themes);
 }
 
@@ -241,18 +323,75 @@ sub cssframework_theme_class {
 		}
 	};
 
-	$theme = lc($theme || 'soft-rounded');
-	$theme =~ s/^\s+|\s+$//g;
-	$theme =~ s/[^a-z0-9_-]//g;
-	$theme = 'soft-rounded' if $theme eq '';
-
-	# Legacy/Core compatibility: older configs may still use "classic".
-	$theme = 'classic-lb' if $theme eq 'classic';
-
-	return ($theme =~ /^theme-/) ? $theme : "theme-$theme";
+	return cssframework_normalize_theme_class($theme) || 'theme-soft-rounded';
 }
 
-my $current_theme_class = cssframework_theme_class();
+sub cssframework_extract_first_style_block {
+	my ($html) = @_;
+	$html = '' if !defined $html;
+	return $1 if $html =~ m{(<style\b[^>]*>.*?</style>)}is;
+	return '';
+}
+
+sub cssframework_extract_main_inner {
+	my ($html) = @_;
+	$html = '' if !defined $html;
+	if ($html =~ m{<main\b[^>]*class=["'][^"']*\blb-content\b[^"']*["'][^>]*>(.*?)</main>}is) {
+		return $1;
+	}
+	return $html;
+}
+
+sub cssframework_extract_dialogs_and_scripts {
+	my ($html) = @_;
+	$html = '' if !defined $html;
+	my $extra = '';
+	while ($html =~ m{(<dialog\b.*?</dialog>)}gis) {
+		$extra .= "\n" . $1 . "\n";
+	}
+	while ($html =~ m{(<script\b.*?</script>)}gis) {
+		my $block = $1;
+		next if $block =~ /createnavbar|toggleSidebar|lb_updateTabbarHeight|btnnotifies_get|mainicons_get/i;
+		$extra .= "\n" . $block . "\n";
+	}
+	return $extra;
+}
+
+sub cssframework_render_inside_loxberry_chrome {
+	my ($content, $page, $lang) = @_;
+	$content = '' if !defined $content;
+	$page = 'preview' if !defined $page || $page eq '';
+
+	my $title = ($page eq 'help')
+		? (($lang && $lang eq 'de') ? 'LoxBerry CSS Framework Hilfe' : 'LoxBerry CSS Framework Help')
+		: 'LoxBerry Design System Preview';
+
+	my $style = cssframework_extract_first_style_block($content);
+	my $main = cssframework_extract_main_inner($content);
+	my $extra = cssframework_extract_dialogs_and_scripts($content);
+
+	LoxBerry::Web::lbheader($title, '', '', 1);
+	print $style;
+	print "\n<div class=\"lb-cssframework-shared-page lb-cssframework-shared-$page\">\n";
+	print $main;
+	print "\n</div>\n";
+	print $extra;
+	LoxBerry::Web::lbfooter();
+}
+
+# Renderer roles are intentionally automatic:
+# - /admin/system/cssframework.cgi is Core-owned and always shows the currently
+#   active LoxBerry theme from general.json. It must not become a manual theme
+#   chooser and therefore ignores ?theme=... parameters.
+# - /admin/plugins/cssframework/cssframework.cgi is Studio-owned and may receive
+#   ?theme=... from the Design Studio iframe/live preview.
+my $renderer_context_class = cssframework_renderer_context_class();
+my $theme_param = '';
+if ($renderer_context_class ne 'lb-renderer-core') {
+	$theme_param = $cgi->param('theme') || $cgi->param('theme_class') || $cgi->param('preview_theme') || '';
+}
+my $current_theme_class = cssframework_normalize_theme_class($theme_param) || cssframework_theme_class();
+
 my @core_themes = cssframework_core_themes();
 my @plugin_user_themes = cssframework_plugin_user_themes();
 my @all_themes = (@core_themes, @plugin_user_themes);
@@ -264,7 +403,7 @@ my $core_theme_options = cssframework_theme_options(
 	'No Core themes found',
 	@core_themes
 );
-my $plugin_theme_links = cssframework_theme_links('/plugins/cssframework/themes', @plugin_user_themes);
+my $plugin_theme_links = cssframework_theme_links('/admin/plugins/cssframework/theme-file.cgi', @plugin_user_themes);
 my $plugin_theme_options = cssframework_theme_options(
 	$lang,
 	'Keine Plugin-Themes gefunden',
@@ -272,8 +411,12 @@ my $plugin_theme_options = cssframework_theme_options(
 	@plugin_user_themes
 );
 my $theme_classes_js = cssframework_theme_classes_js(@all_themes);
-
-print $cgi->header(-type => 'text/html', -charset => 'UTF-8');
+my $renderer_url = cssframework_current_renderer_url();
+my $preview_url = cssframework_page_url($renderer_url, 'preview', $current_theme_class);
+my $help_url = cssframework_page_url($renderer_url, 'help', $current_theme_class);
+if ($renderer_context_class ne 'lb-renderer-core') {
+	print $cgi->header(-type => 'text/html', -charset => 'UTF-8');
+}
 binmode STDOUT, ':encoding(UTF-8)';
 
 if (! -e $template_file) {
@@ -308,7 +451,15 @@ $content =~ s/__LB_PLUGIN_THEME_LINKS__/$plugin_theme_links/g;
 $content =~ s/__LB_CORE_THEME_OPTIONS__/$core_theme_options/g;
 $content =~ s/__LB_PLUGIN_THEME_OPTIONS__/$plugin_theme_options/g;
 $content =~ s/__LB_THEME_CLASSES_JS__/$theme_classes_js/g;
+$content =~ s/__LB_CSSFRAMEWORK_CGI_URL__/cssframework_escape_html($renderer_url)/ge;
+$content =~ s/__LB_CSSFRAMEWORK_PREVIEW_URL__/cssframework_escape_html($preview_url)/ge;
+$content =~ s/__LB_CSSFRAMEWORK_HELP_URL__/cssframework_escape_html($help_url)/ge;
+$content =~ s/__LB_RENDERER_CONTEXT_CLASS__/cssframework_escape_html($renderer_context_class)/ge;
 
-print $content;
+if ($renderer_context_class eq 'lb-renderer-core') {
+	cssframework_render_inside_loxberry_chrome($content, $page, $lang);
+} else {
+	print $content;
+}
 
 exit;

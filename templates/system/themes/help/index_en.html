@@ -11,7 +11,7 @@
 	<link rel="stylesheet" href="/system/css/utilities.css">
 <!-- Core themes. Filled by cssframework.cgi from /webfrontend/html/system/css/themes/theme-*.css. -->
 __LB_CORE_THEME_LINKS__
-<!-- Plugin-managed user themes. Filled by cssframework.cgi from /webfrontend/html/plugins/cssframework/themes/theme-user-*.css. -->
+<!-- Plugin-managed user themes. Filled by cssframework.cgi via theme-file.cgi from data/plugins/cssframework/themes/theme-user-*.css. -->
 __LB_PLUGIN_THEME_LINKS__
 	<style>
 
@@ -182,13 +182,187 @@ __LB_PLUGIN_THEME_LINKS__
 			}
 		}
 
+
+		/* ============================================================
+				   V18.41 Liquid Glass Preview/Help readability
+				   ------------------------------------------------------------
+				   These pages deliberately demonstrate Core controls on top of
+				   theme backgrounds. Liquid Glass uses very transparent surfaces;
+				   keep demo labels, help text, table text and native multiple
+				   listboxes readable without changing Core CSS.
+				   ============================================================ */
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-card,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-label,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-help,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .hint,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-muted,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-help-source,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-help-text,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-help,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .note,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content p,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content strong,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content small {
+					color: #ffffff !important;
+					-webkit-text-fill-color: #ffffff !important;
+					text-shadow: none !important;
+				}
+		
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table th,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table td,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table label,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table .lb-table-header-cell,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table .lb-table-cell,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table .lb-table-footer-cell {
+					color: #ffffff !important;
+					-webkit-text-fill-color: #ffffff !important;
+					text-shadow: none !important;
+				}
+		
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-help-code,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content code {
+					color: #ffffff !important;
+					-webkit-text-fill-color: #ffffff !important;
+					background: rgba(255, 255, 255, 0.16) !important;
+					border-color: rgba(255, 255, 255, 0.28) !important;
+					text-shadow: none !important;
+				}
+		
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content input.lb-input,
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content textarea.lb-textarea {
+					color: #ffffff !important;
+					-webkit-text-fill-color: #ffffff !important;
+					caret-color: #ffffff !important;
+					text-shadow: none !important;
+				}
+		
+		
+
+		/* V293: Liquid Glass dropdown/listbox surfaces for shared Preview/Help.
+		   Native selects and details-based multiselects should use the same
+		   milky input surface as the other Liquid Glass fields on these pages. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect > summary {
+			background: rgba(255, 255, 255, 0.20) !important;
+			background-color: rgba(255, 255, 255, 0.20) !important;
+			background-image: none !important;
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.28) !important;
+			box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.16) !important;
+			backdrop-filter: blur(0.35px) saturate(150%) !important;
+			-webkit-backdrop-filter: blur(0.35px) saturate(150%) !important;
+			text-shadow: none !important;
+			opacity: 1 !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select:hover,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select:focus,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect > summary:hover,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect[open] > summary,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect:focus-within > summary {
+			background: rgba(255, 255, 255, 0.28) !important;
+			background-color: rgba(255, 255, 255, 0.28) !important;
+			border-color: rgba(255, 255, 255, 0.42) !important;
+			box-shadow:
+				0 0 0 3px rgba(143, 199, 255, 0.14),
+				inset 0 1px 1px rgba(255, 255, 255, 0.20) !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-menu {
+			background: rgba(7, 16, 28, 0.78) !important;
+			background-color: rgba(7, 16, 28, 0.78) !important;
+			background-image: none !important;
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.28) !important;
+			box-shadow:
+				0 14px 34px rgba(0, 0, 0, 0.28),
+				inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
+			backdrop-filter: blur(14px) saturate(160%) !important;
+			-webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+			text-shadow: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option * {
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			text-shadow: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option:hover {
+			background: rgba(255, 255, 255, 0.14) !important;
+			background-color: rgba(255, 255, 255, 0.14) !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] {
+					display: block !important;
+					min-height: 150px !important;
+					padding: 8px 10px !important;
+					background: rgba(255, 255, 255, 0.20) !important;
+					background-color: rgba(255, 255, 255, 0.20) !important;
+					background-image: none !important;
+					color: #ffffff !important;
+					-webkit-text-fill-color: #ffffff !important;
+					border-color: rgba(255, 255, 255, 0.28) !important;
+					border-radius: var(--lb-radius-sm, 12px) !important;
+					box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
+					text-shadow: none !important;
+					opacity: 1 !important;
+				}
+		
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] option {
+					color: #ffffff !important;
+					-webkit-text-fill-color: #ffffff !important;
+					background: rgba(7, 16, 28, 0.82) !important;
+					background-color: rgba(7, 16, 28, 0.82) !important;
+					padding: 4px 6px !important;
+				}
+		
+				:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] option:checked {
+					color: #ffffff !important;
+					-webkit-text-fill-color: #ffffff !important;
+					background: var(--lb-primary, #8fc7ff) !important;
+					background-color: var(--lb-primary, #8fc7ff) !important;
+				}
+
+		/* V18.42 shared Core/Studio renderer chrome
+		   Core renderer: no preview sidebar. Studio/plugin renderer: sidebar stays visible. */
+		body.lb-renderer-core {
+			display: block !important;
+		}
+		body.lb-renderer-core > .lb-sidebar,
+		body.lb-renderer-core #preview_sidebar,
+		body.lb-renderer-core #preview_nav_toggle {
+			display: none !important;
+		}
+		body.lb-renderer-core > .lb-main {
+			width: 100% !important;
+			max-width: none !important;
+			margin-left: 0 !important;
+			min-height: 100vh !important;
+		}
+		body.lb-renderer-core .lb-content {
+			max-width: 1480px;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		body.lb-renderer-core .lb-header {
+			left: 0 !important;
+		}
+
 	</style>
 </head>
-<body class="lb-layout __LB_CURRENT_THEME_CLASS__">
+<body class="lb-layout __LB_CURRENT_THEME_CLASS__ __LB_RENDERER_CONTEXT_CLASS__">
 	<aside class="lb-sidebar">
 		<a class="lb-sidebar-header" href="#toc">
 			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
-			<div><div class="lb-sidebar-brand">LoxBerry <span>DS</span></div><div class="lb-sidebar-version">Help V18.38 Developer Docs V03 EN</div></div>
+			<div><div class="lb-sidebar-brand">LoxBerry <span>DS</span></div><div class="lb-sidebar-version">Help V18.42 Shared Core Docs EN</div></div>
 		</a>
 		<nav class="lb-sidebar-nav">
 			<div class="lb-sidebar-section">Developer documentation</div>
@@ -197,27 +371,17 @@ __LB_PLUGIN_THEME_LINKS__
 		<div class="lb-sidebar-footer"><i class="pi pi-check-circle"></i> Core Help</div>
 	</aside>
 	<div class="lb-main">
-		<header class="lb-header"><h1 class="lb-header-title">LoxBerry CSS Framework Help</h1></header>
+		<header class="lb-header">
+			<h1 class="lb-header-title">LoxBerry CSS Framework Help</h1>
+			<div class="lb-header-actions">
+				<a class="lb-header-btn headerbutton_blue" href="__LB_CSSFRAMEWORK_PREVIEW_URL__" title="Open preview" aria-label="Open preview"><i class="pi pi-eye"></i></a>
+			</div>
+		</header>
 		<main class="lb-content">
 			<div class="lb-card lb-help-hero" id="toc">
 				<h2>Table of contents</h2>
 				<p>This help page now follows the preview structure: visible behaviour first, then markup, then class/token reference. It works as user help and as developer documentation for plugin authors.</p>
 				<div class="lb-help-toc"><a href="#overview">Overview / concept</a><a href="#components">Components / components.css</a><a href="#page-structure">Plugin page structure</a><a href="#forms">Forms / inputs</a><a href="#selects">Selects / multiselect</a><a href="#sliders">Slider / range</a><a href="#buttons">Buttons / button groups</a><a href="#cards">Cards / notes / details</a><a href="#tables">Tables / table frame</a><a href="#tokens">Tokens / themes</a><a href="#checklist">Developer checklist</a></div>
-				<div class="lb-form-row lb-help-theme-row">
-					<label class="lb-form-label" for="theme_select">Documentation theme:</label>
-					<div class="lb-form-field">
-						<select class="lb-select" id="theme_select" data-role="none">
-							<optgroup label="Core Themes">
-__LB_CORE_THEME_OPTIONS__
-							</optgroup>
-							<optgroup label="Plugin/User Themes">
-__LB_PLUGIN_THEME_OPTIONS__
-							</optgroup>
-						</select>
-					</div>
-				</div>
-				<p class="lb-preview-muted lb-help-theme-current">Active body class: <code id="current_theme_label">__LB_CURRENT_THEME_CLASS__</code></p>
-				<p><a class="lb-btn lb-btn-sm" href="/admin/system/cssframework.cgi?page=preview">Open preview</a></p>
 			</div>
 			
 <section id="overview" class="lb-card">
@@ -289,13 +453,6 @@ __LB_PLUGIN_THEME_OPTIONS__
 		<tr><td>Slider</td><td><code>.lb-slider-wrap</code>, <code>.lb-slider</code>, <code>.lb-slider-value</code>, <code>--lb-slider-fill</code></td><td>Native range slider with visible value display and computed fill state.</td><td><code>--lb-slider-track-bg</code>, <code>--lb-slider-fill-bg</code>, <code>--lb-slider-thumb-bg</code></td></tr>
 		<tr><td>Tables</td><td><code>.lb-table</code>, <code>.lb-table-compact</code>, <code>.lb-table-responsive</code>, <code>.lb-table-actions</code></td><td>Core tables with header, body, footer, hover, compact variant and action rows.</td><td><code>--lb-table-bg</code>, <code>--lb-table-header-bg</code>, <code>--lb-table-border-color</code></td></tr>
 		<tr><td>Tooltips</td><td><code>.lb-tooltip-anchor</code>, <code>.lb-tooltip</code>, <code>.lb-tooltip-title</code>, <code>.is-open</code></td><td>Compact mouseover/info hints. In tables, combine with layer/overflow utilities when needed.</td><td><code>--lb-tooltip-bg</code>, <code>--lb-tooltip-text</code>, <code>--lb-tooltip-shadow</code></td></tr>
-	</tbody></table>
-	<h3 class="lb-help-ref-intro">What does not belong in components.css</h3>
-	<table class="lb-help-ref-table"><thead><tr><th>Case</th><th>Correct place</th><th>Reason</th></tr></thead><tbody>
-		<tr><td>Theme color, transparency, radius or shadow</td><td><code>theme-*.css</code> or theme tokens</td><td>This is a design decision, not a new component.</td></tr>
-		<tr><td>Optional helpers such as visible overflow, layers, width, spacing or text alignment</td><td><code>utilities.css</code></td><td>These rules are opt-in and must not globally change normal components.</td></tr>
-		<tr><td>Plugin-specific special cases</td><td>Plugin CSS</td><td>Core should not know names or layout decisions of individual plugins.</td></tr>
-		<tr><td>New design values</td><td><code>design-tokens.css</code></td><td>Tokens are the contract layer between Core components and themes.</td></tr>
 	</tbody></table>
 	<a class="lb-help-back" href="#toc">Back to table of contents</a>
 </section>
@@ -538,7 +695,7 @@ body.theme-liquid-glass .my-plugin-box {
 	<a class="lb-help-back" href="#toc">Back to table of contents</a>
 </section>
 		</main>
-		<footer class="lb-footer"><div class="lb-preview-muted">LoxBerry CSS Framework Help V18.38 Developer Docs V03 EN</div></footer>
+		<footer class="lb-footer"><div class="lb-preview-muted">LoxBerry CSS Framework Help V18.42 Shared Core Docs EN</div></footer>
 	</div>
 
 <script>
@@ -591,6 +748,10 @@ __LB_THEME_CLASSES_JS__
 	} else if (serverDefaultTheme) {
 		applyTheme(serverDefaultTheme);
 	}
+
+
+	// V47: Documentation is a readable system-theme reference.
+	// It intentionally ignores Design Studio working-token postMessage updates.
 
 	document.querySelectorAll('[data-lb-demo-slider]').forEach(function(slider) {
 		var target = document.getElementById(slider.getAttribute('data-lb-demo-slider'));

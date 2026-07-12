@@ -14,7 +14,7 @@
 	<!-- Core themes. Filled by cssframework.cgi from /webfrontend/html/system/css/themes/theme-*.css. -->
 	__LB_CORE_THEME_LINKS__
 
-	<!-- Plugin-managed user themes. Filled by cssframework.cgi from /webfrontend/html/plugins/cssframework/themes/theme-user-*.css. -->
+	<!-- Plugin-managed user themes. Filled by cssframework.cgi via theme-file.cgi from data/plugins/cssframework/themes/theme-user-*.css. -->
 	__LB_PLUGIN_THEME_LINKS__
 
 	<style>
@@ -255,6 +255,154 @@
 			line-height: 1.45;
 		}
 
+
+		/* ============================================================
+		   V18.32 Liquid Glass Preview/Help readability
+		   ------------------------------------------------------------
+		   These pages deliberately demonstrate Core controls on top of
+		   theme backgrounds. Liquid Glass uses very transparent surfaces;
+		   keep demo labels, help text, table text and native multiple
+		   listboxes readable without changing Core CSS.
+		   ============================================================ */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-card,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-label,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-help,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .hint,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-muted,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-help-text,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-help,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .note,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content p,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content strong,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content small {
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			text-shadow: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table th,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table td,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table label,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table .lb-table-header-cell,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table .lb-table-cell,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-table .lb-table-footer-cell {
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			text-shadow: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-help-code,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content code {
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			background: rgba(255, 255, 255, 0.16) !important;
+			border-color: rgba(255, 255, 255, 0.28) !important;
+			text-shadow: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content input.lb-input,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content textarea.lb-textarea {
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			caret-color: #ffffff !important;
+			text-shadow: none !important;
+		}
+
+
+
+		/* V293: Liquid Glass dropdown/listbox surfaces for shared Preview/Help.
+		   Native selects and details-based multiselects should use the same
+		   milky input surface as the other Liquid Glass fields on these pages. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect > summary {
+			background: rgba(255, 255, 255, 0.20) !important;
+			background-color: rgba(255, 255, 255, 0.20) !important;
+			background-image: none !important;
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.28) !important;
+			box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.16) !important;
+			backdrop-filter: blur(0.35px) saturate(150%) !important;
+			-webkit-backdrop-filter: blur(0.35px) saturate(150%) !important;
+			text-shadow: none !important;
+			opacity: 1 !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select:hover,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select:focus,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect > summary:hover,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect[open] > summary,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect:focus-within > summary {
+			background: rgba(255, 255, 255, 0.28) !important;
+			background-color: rgba(255, 255, 255, 0.28) !important;
+			border-color: rgba(255, 255, 255, 0.42) !important;
+			box-shadow:
+				0 0 0 3px rgba(143, 199, 255, 0.14),
+				inset 0 1px 1px rgba(255, 255, 255, 0.20) !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-menu {
+			background: rgba(7, 16, 28, 0.78) !important;
+			background-color: rgba(7, 16, 28, 0.78) !important;
+			background-image: none !important;
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.28) !important;
+			box-shadow:
+				0 14px 34px rgba(0, 0, 0, 0.28),
+				inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
+			backdrop-filter: blur(14px) saturate(160%) !important;
+			-webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+			text-shadow: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option * {
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			text-shadow: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option:hover {
+			background: rgba(255, 255, 255, 0.14) !important;
+			background-color: rgba(255, 255, 255, 0.14) !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] {
+			display: block !important;
+			min-height: 150px !important;
+			padding: 8px 10px !important;
+			background: rgba(255, 255, 255, 0.20) !important;
+			background-color: rgba(255, 255, 255, 0.20) !important;
+			background-image: none !important;
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.28) !important;
+			border-radius: var(--lb-radius-sm, 12px) !important;
+			box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
+			text-shadow: none !important;
+			opacity: 1 !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] option {
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			background: rgba(7, 16, 28, 0.82) !important;
+			background-color: rgba(7, 16, 28, 0.82) !important;
+			padding: 4px 6px !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] option:checked {
+			color: #ffffff !important;
+			-webkit-text-fill-color: #ffffff !important;
+			background: var(--lb-primary, #8fc7ff) !important;
+			background-color: var(--lb-primary, #8fc7ff) !important;
+		}
+
 		/* ============================================================
 		   Print / XPS support
 		   ------------------------------------------------------------
@@ -389,15 +537,123 @@
 			}
 		}
 
+
+		/* V18.42 shared Core/Studio renderer chrome
+		   Core renderer: no preview sidebar. Studio/plugin renderer: sidebar stays visible. */
+		body.lb-renderer-core {
+			display: block !important;
+		}
+		body.lb-renderer-core > .lb-sidebar,
+		body.lb-renderer-core #preview_sidebar,
+		body.lb-renderer-core #preview_nav_toggle {
+			display: none !important;
+		}
+		body.lb-renderer-core > .lb-main {
+			width: 100% !important;
+			max-width: none !important;
+			margin-left: 0 !important;
+			min-height: 100vh !important;
+		}
+		body.lb-renderer-core .lb-content {
+			max-width: 1480px;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		body.lb-renderer-core .lb-header {
+			left: 0 !important;
+		}
+
+
+		/* V18.42 developer code modal: labels in the preview open sanitized HTML examples. */
+		.lb-form-label.lb-preview-code-label {
+			cursor: pointer;
+			text-decoration: underline dotted;
+			text-underline-offset: 3px;
+		}
+		.lb-form-label.lb-preview-code-label:hover,
+		.lb-form-label.lb-preview-code-label:focus {
+			color: var(--lb-primary-hover, var(--lb-primary)) !important;
+		}
+		.lb-preview-code-dialog {
+			max-width: min(920px, calc(100vw - 32px));
+		}
+		.lb-preview-code-dialog .lb-modal-header,
+		.lb-preview-code-dialog .lb-modal-header h2,
+		.lb-preview-code-dialog .lb-modal-content,
+		.lb-preview-code-dialog .lb-preview-muted,
+		.lb-preview-code-dialog .lb-actions,
+		.lb-preview-code-dialog #preview_code_status {
+			text-align: left !important;
+		}
+		.lb-preview-code-dialog .lb-modal-content {
+			padding-left: clamp(18px, 2.4vw, 32px) !important;
+			padding-right: clamp(18px, 2.4vw, 32px) !important;
+		}
+		.lb-preview-code-dialog .lb-preview-code-block,
+		.lb-preview-code-dialog pre,
+		.lb-preview-code-dialog pre code {
+			direction: ltr !important;
+			text-align: left !important;
+			tab-size: 2;
+		}
+
+		.lb-preview-code-dialog .lb-modal-content {
+			max-height: min(72vh, 720px);
+			overflow: auto;
+		}
+		.lb-preview-code-dialog pre {
+			margin: 12px 0;
+			padding: 14px;
+			border-radius: var(--lb-radius-sm, 10px);
+			border: 1px solid var(--lb-border-color, rgba(255,255,255,.16));
+			background: var(--lb-input-bg, rgba(0,0,0,.08));
+			overflow: auto;
+			white-space: pre-wrap;
+		}
+		.lb-preview-code-dialog pre code {
+			color: var(--lb-input-text, var(--lb-text, #fff));
+			-webkit-text-fill-color: var(--lb-input-text, var(--lb-text, #fff));
+		}
+
+
+		/* V18.44 Liquid Glass code modal readability.
+		   The normal Preview/Help page keeps inline code white on the dark wallpaper.
+		   Code dialogs use the light/milky modal surface, so code text must switch
+		   back to the modal/light-surface text color. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog .lb-modal-header,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog .lb-modal-header h2,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog .lb-modal-content,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog .lb-preview-muted,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog #preview_code_status {
+			color: var(--lb-modal-text, var(--lb-light-surface-text, #111827)) !important;
+			-webkit-text-fill-color: var(--lb-modal-text, var(--lb-light-surface-text, #111827)) !important;
+			text-shadow: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog pre {
+			background: rgba(255, 255, 255, 0.42) !important;
+			background-color: rgba(255, 255, 255, 0.42) !important;
+			border-color: rgba(17, 24, 39, 0.18) !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog pre,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog pre code,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-preview-code-dialog pre code * {
+			color: var(--lb-modal-text, var(--lb-light-surface-text, #111827)) !important;
+			-webkit-text-fill-color: var(--lb-modal-text, var(--lb-light-surface-text, #111827)) !important;
+			text-shadow: none !important;
+		}
+
 	</style>
 </head>
-<body class="lb-layout __LB_CURRENT_THEME_CLASS__">
+<body class="lb-layout __LB_CURRENT_THEME_CLASS__ __LB_RENDERER_CONTEXT_CLASS__">
 	<aside class="lb-sidebar" id="preview_sidebar">
 		<a class="lb-sidebar-header" href="#top">
 			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
 			<div>
 				<div class="lb-sidebar-brand">LoxBerry <span>DS</span></div>
-				<div class="lb-sidebar-version">Preview V18.31</div>
+				<div class="lb-sidebar-version">Preview V18.44</div>
 			</div>
 		</a>
 		<nav class="lb-sidebar-nav">
@@ -428,29 +684,6 @@
 		</header>
 
 		<main class="lb-content">
-			<div class="lb-card">
-				<div class="lb-form-row">
-					<label class="lb-form-label" for="theme_select">Preview theme:</label>
-					<div class="lb-form-field">
-						<select class="lb-select" id="theme_select" data-role="none">
-							<optgroup label="Core themes">
-__LB_CORE_THEME_OPTIONS__
-							</optgroup>
-							<optgroup label="Available Plugin themes">
-__LB_PLUGIN_THEME_OPTIONS__
-							</optgroup>
-						</select>
-					</div>
-					<div class="lb-form-help hint">This page loads Core CSS, Core themes, and plugin-managed user-theme CSS files. Changing the selection updates the body class live.</div>
-				</div>
-				<div class="lb-preview-row">
-					<span class="lb-preview-code">body.<span id="current_theme_label">__LB_CURRENT_THEME_CLASS__</span></span>
-					<span class="lb-preview-muted">Path: /admin/system/cssframework.cgi?page=preview</span>
-					<span class="lb-preview-muted">Plugin themes: /webfrontend/html/plugins/cssframework/themes/theme-user-*.css</span>
-					<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/cssframework.cgi?page=help"><i class="pi pi-question-circle"></i> CSS Help</a>
-				</div>
-			</div>
-
 			<div class="lb-card" id="theme_colors">
 				<h4>Color legend of the active theme</h4>
 				<div class="lb-preview-muted">The values are read live from the currently effective CSS tokens. This also shows plugin-managed user themes correctly.</div>
@@ -895,32 +1128,6 @@ __LB_PLUGIN_THEME_OPTIONS__
 							</tbody>
 						</table>
 
-						<h4 style="margin-top: var(--lb-space-lg, 20px);">Status cells / Log manager</h4>
-						<p class="lb-preview-muted">Colored status cells must not be overwritten by <span class="lb-preview-code">.lb-table</span>. Inline/legacy alignment remains effective.</p>
-						<table class="lb-table lb-table-compact lb-preview-table-border-demo">
-							<tbody>
-								<tr>
-									<td class="lb-table-status-cell lb-status-info" style="width:96px; min-width:96px; height:42px;">Info</td>
-									<td>Info cell stays colored and centered.</td>
-								</tr>
-								<tr>
-									<td class="lb-table-status-cell lb-status-ok" style="width:96px; min-width:96px; height:42px;">OK</td>
-									<td>OK cell stays colored and centered.</td>
-								</tr>
-								<tr>
-									<td class="lb-table-status-cell lb-status-warning" style="width:96px; min-width:96px; height:42px;">Warning</td>
-									<td>Warning cell stays colored and centered.</td>
-								</tr>
-								<tr>
-									<td class="lb-table-status-cell lb-status-error" style="width:96px; min-width:96px; height:42px;">Error</td>
-									<td>Error cell stays colored and centered.</td>
-								</tr>
-								<tr>
-									<td class="lb-table-status-cell lb-status-critical" style="width:96px; min-width:96px; height:42px;">Critical</td>
-									<td>Critical cell stays colored and centered.</td>
-								</tr>
-							</tbody>
-						</table>
 					</div>
 					<div class="lb-card">
 						<h4>Table border tokens</h4>
@@ -1151,7 +1358,7 @@ __LB_PLUGIN_THEME_OPTIONS__
 		</main>
 
 		<footer class="lb-footer">
-			<div class="lb-preview-muted">LoxBerry DS Preview V18.31</div>
+			<div class="lb-preview-muted">LoxBerry DS Preview V18.44</div>
 		</footer>
 	</div>
 
@@ -1183,6 +1390,20 @@ __LB_PLUGIN_THEME_OPTIONS__
 		</div>
 	</dialog>
 
+
+	<dialog class="lb-modal lb-preview-code-dialog" id="preview_code_dialog">
+		<div class="lb-modal-header"><h2 id="preview_code_title">Code example</h2></div>
+		<div class="lb-modal-content">
+			<p class="lb-preview-muted">Cleaned HTML without preview helper classes. The snippet can be used as a developer example.</p>
+			<pre class="lb-preview-code-block"><code id="preview_code_output"></code></pre>
+			<div class="lb-actions">
+				<button class="lb-btn lb-btn-primary" type="button" id="preview_code_copy">Copy</button>
+				<button class="lb-btn" type="button" id="preview_code_close">Close</button>
+			</div>
+			<div class="lb-preview-muted" id="preview_code_status" aria-live="polite"></div>
+		</div>
+	</dialog>
+
 	<script>
 	(function () {
 		'use strict';
@@ -1192,6 +1413,132 @@ __LB_PLUGIN_THEME_OPTIONS__
 		var themeClasses = [
 __LB_THEME_CLASSES_JS__
 		];
+
+
+		function previewCodeEscapeAttr(value) {
+			return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		}
+
+		function previewCodeCleanNode(node) {
+			if (!node || !node.querySelectorAll) return;
+			node.querySelectorAll('.lb-preview-help-text, .lb-preview-muted, .lb-preview-code, .lb-header-btn-badge').forEach(function (el) {
+				el.remove();
+			});
+			node.querySelectorAll('[id]').forEach(function (el) {
+				var id = el.getAttribute('id') || '';
+				if (id.indexOf('preview_') === 0 || id.indexOf('slider_') === 0) return;
+			});
+			node.querySelectorAll('[style]').forEach(function (el) {
+				var keep = /--lb-slider-fill/.test(el.getAttribute('style') || '');
+				if (!keep) el.removeAttribute('style');
+			});
+			node.querySelectorAll('label').forEach(function (el) {
+				el.classList.remove('lb-preview-code-label');
+				el.removeAttribute('tabindex');
+				el.removeAttribute('role');
+				el.removeAttribute('title');
+			});
+		}
+
+		function previewCodeFormatHtml(html) {
+			html = String(html || '').trim();
+			if (!html) return '';
+			html = html.replace(/></g, '>\n<');
+			var pad = 0;
+			return html.split('\n').map(function (line) {
+				line = line.trim();
+				if (!line) return '';
+				if (/^<\//.test(line)) pad = Math.max(0, pad - 1);
+				var out = new Array(pad + 1).join('\t') + line;
+				if (/^<[^!?/][^>]*[^/]?>$/.test(line) && !/^<(input|br|hr|img|meta|link)\b/i.test(line) && !/<\/[^>]+>$/.test(line)) pad += 1;
+				return out;
+			}).join('\n');
+		}
+
+		function buildPreviewSnippetForLabel(label) {
+			var row = label.closest('.lb-form-row') || label.closest('.lb-card') || label.parentElement;
+			if (!row) return '';
+			var clone = row.cloneNode(true);
+			previewCodeCleanNode(clone);
+			return previewCodeFormatHtml(clone.outerHTML);
+		}
+
+		function copyPreviewCodeText(text, sourceNode, finish) {
+			function done(ok) { if (typeof finish === 'function') finish(ok); }
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(function () { done(true); }).catch(function () { fallback(); });
+				return;
+			}
+			fallback();
+			function fallback() {
+				var textarea = document.createElement('textarea');
+				textarea.value = text;
+				textarea.setAttribute('readonly', 'readonly');
+				textarea.style.position = 'fixed';
+				textarea.style.left = '-9999px';
+				document.body.appendChild(textarea);
+				textarea.focus({ preventScroll: true });
+				textarea.select();
+				var ok = false;
+				try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+				document.body.removeChild(textarea);
+				if (!ok && sourceNode) {
+					var range = document.createRange();
+					range.selectNodeContents(sourceNode);
+					var sel = window.getSelection();
+					sel.removeAllRanges();
+					sel.addRange(range);
+				}
+				done(ok);
+			}
+		}
+
+		function openPreviewCodeDialog(label) {
+			var dialog = document.getElementById('preview_code_dialog');
+			var output = document.getElementById('preview_code_output');
+			var title = document.getElementById('preview_code_title');
+			var status = document.getElementById('preview_code_status');
+			if (!dialog || !output) return;
+			var labelText = String(label.textContent || '').replace(/\s+/g, ' ').trim().replace(/:$/, '');
+			output.textContent = buildPreviewSnippetForLabel(label);
+			if (title) title.textContent = labelText ? 'Code example: ' + labelText : 'Code example';
+			if (status) status.textContent = '';
+			if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', 'open');
+		}
+
+		function initPreviewCodePopup() {
+			var dialog = document.getElementById('preview_code_dialog');
+			var output = document.getElementById('preview_code_output');
+			var closeBtn = document.getElementById('preview_code_close');
+			var copyBtn = document.getElementById('preview_code_copy');
+			var status = document.getElementById('preview_code_status');
+			document.querySelectorAll('.lb-content .lb-form-label').forEach(function (label) {
+				label.classList.add('lb-preview-code-label');
+				label.setAttribute('tabindex', '0');
+				label.setAttribute('role', 'button');
+				label.setAttribute('title', 'Open code example');
+				label.addEventListener('click', function (event) {
+					event.preventDefault();
+					event.stopPropagation();
+					openPreviewCodeDialog(label);
+				});
+				label.addEventListener('keydown', function (event) {
+					if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault();
+						openPreviewCodeDialog(label);
+					}
+				});
+			});
+			if (closeBtn && dialog) closeBtn.addEventListener('click', function () { dialog.close(); });
+			if (copyBtn && output) {
+				copyBtn.addEventListener('click', function (event) {
+					event.preventDefault();
+					copyPreviewCodeText(output.textContent || '', output, function (ok) {
+						if (status) status.textContent = ok ? 'Code copied.' : 'Automatic copy was blocked. The code is selected - press Ctrl+C.';
+					});
+				});
+			}
+		}
 
 		function applyTheme(themeClass) {
 			themeClasses.forEach(function (cls) {
@@ -1230,14 +1577,27 @@ __LB_THEME_CLASSES_JS__
 		}
 
 		function resolvePreviewToken(tokenName) {
+			var scope = document.body || document.documentElement;
+			var raw = '';
+			try {
+				raw = window.getComputedStyle(scope).getPropertyValue(tokenName).trim();
+				if (!raw) raw = window.getComputedStyle(document.documentElement).getPropertyValue(tokenName).trim();
+			} catch (e) {}
+
 			var probe = document.createElement('span');
 			probe.style.position = 'absolute';
 			probe.style.visibility = 'hidden';
-			probe.style.color = 'var(' + tokenName + ')';
+			probe.style.pointerEvents = 'none';
+			probe.style.backgroundColor = 'var(' + tokenName + ')';
 			document.body.appendChild(probe);
-			var resolved = window.getComputedStyle(probe).color;
+			var resolved = window.getComputedStyle(probe).backgroundColor;
 			document.body.removeChild(probe);
-			return normalizePreviewColor(resolved);
+
+			var normalized = normalizePreviewColor(resolved);
+			if ((!normalized || normalized === 'rgba(0, 0, 0, 0)' || normalized === 'transparent') && raw && raw.indexOf('var(') !== 0) {
+				normalized = normalizePreviewColor(raw);
+			}
+			return normalized || raw || '';
 		}
 
 		function updateThemeColorLegend() {
@@ -1249,8 +1609,9 @@ __LB_THEME_CLASSES_JS__
 				var chip = row.querySelector('.lb-preview-color-chip');
 				var code = row.querySelector('.lb-preview-color-code');
 
-				if (chip && value) {
-					chip.style.background = 'var(' + token + ')';
+				if (chip) {
+					chip.style.background = value || 'transparent';
+					chip.style.backgroundColor = value || 'transparent';
 				}
 				if (code) {
 					code.textContent = value || '—';
@@ -1324,6 +1685,12 @@ __LB_THEME_CLASSES_JS__
 			themeSelect.addEventListener('change', function () { applyTheme(this.value); });
 		}
 
+		/* V289: The visible Preview-Theme selector was removed in V288.
+		   Therefore the color legend must also initialize when no local
+		   selector exists and the active body theme is supplied by Core/Header. */
+		updateThemeColorLegend();
+		window.setTimeout(updateThemeColorLegend, 50);
+		window.setTimeout(updateThemeColorLegend, 250);
 
 		function updateLbPreviewMultiselect(details) {
 			if (!details) return;
@@ -1374,6 +1741,8 @@ __LB_THEME_CLASSES_JS__
 		if (helpClose && helpPanel) {
 			helpClose.addEventListener('click', function () { helpPanel.classList.remove('open'); });
 		}
+
+		initPreviewCodePopup();
 	})();
 	</script>
 </body>
