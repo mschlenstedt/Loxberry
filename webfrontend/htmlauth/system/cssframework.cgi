@@ -2,20 +2,17 @@
 
 # LoxBerry CSS Framework Preview/Help renderer
 # Shared Core/Plugin renderer for templates/system/themes/.
-# Supports ?page=preview|help and LoxBerry-compliant language selection.
+# Supports ?page=preview|help.
 # System/Core renderer always uses the currently active LoxBerry theme from general.json.
-# Plugin renderer additionally accepts ?theme=theme-* for Live Preview handoff.
+# Plugin/Studio renderer additionally accepts ?theme=theme-* for Live Preview handoff.
 
+use strict;
+use warnings;
+use CGI;
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::System::General;
 use Cwd qw(abs_path);
-use CGI;
-use strict;
-use warnings;
-
-# Request parameters exported by LoxBerry::Web are available in package R.
-# Fully qualified package variables remain compatible with 'use strict'.
 
 my $cgi = CGI->new;
 
@@ -29,12 +26,11 @@ if ($page ne 'preview' && $page ne 'help') {
 ##########################################################################
 
 if ($R::lang) {
-	# LoxBerry-compliant optional override: lblanguage() will return this value.
+	# Optional LoxBerry language override. lblanguage() returns this value.
 	$LoxBerry::Web::lang = substr($R::lang, 0, 2);
 }
 
-# Always obtain the effective language through LoxBerry's language API incl. fallback to en.
-my $lang = lblanguage() || 'en';
+my $lang = lblanguage();
 
 my $template_file = "$lbstemplatedir/themes/$page/index_$lang.html";
 
@@ -44,10 +40,19 @@ if (! -e $template_file) {
 }
 
 
-# Return unique candidate roots for LoxBerry's public HTML directory.
-# The installed LoxBerry home is preferred; runtime-derived and conventional
-# paths are retained as fallbacks for development and non-standard setups.
-sub cssframework_candidate_html_dirs {
+##########################################################################
+# _cssframework_candidate_html_dirs()
+#
+# Builds an ordered list of possible public LoxBerry HTML roots.
+# Duplicate and empty paths are removed while preserving priority.
+#
+# Parameters:
+#   none
+#
+# Returns:
+#   List of candidate absolute directory paths.
+##########################################################################
+sub _cssframework_candidate_html_dirs {
 	my @dirs;
 
 	# LoxBerry's stable installation root. This is the most reliable base for
@@ -86,12 +91,22 @@ sub cssframework_candidate_html_dirs {
 	return @unique;
 }
 
-# Find the first existing directory below any candidate public HTML root.
-# Relative paths are checked in caller-supplied priority order.
-sub cssframework_find_first_dir {
+##########################################################################
+# _cssframework_find_first_dir(@relative_paths)
+#
+# Searches all candidate public HTML roots for the first existing directory
+# matching one of the supplied relative paths.
+#
+# Parameters:
+#   @relative_paths  Relative paths below the public HTML root.
+#
+# Returns:
+#   Absolute directory path, or an empty string if none exists.
+##########################################################################
+sub _cssframework_find_first_dir {
 	my (@relative_paths) = @_;
 
-	foreach my $htmlroot (cssframework_candidate_html_dirs()) {
+	foreach my $htmlroot (_cssframework_candidate_html_dirs()) {
 		foreach my $rel (@relative_paths) {
 			my $dir = "$htmlroot/$rel";
 			return $dir if -d $dir;
@@ -101,10 +116,19 @@ sub cssframework_find_first_dir {
 	return '';
 }
 
-# Return unique candidate directories containing plugin-managed theme CSS files.
-# The normal LoxBerry data path is preferred, followed by environment and
-# conventional installation-path fallbacks.
-sub cssframework_candidate_data_theme_dirs {
+##########################################################################
+# _cssframework_candidate_data_theme_dirs()
+#
+# Builds an ordered, de-duplicated list of possible plugin theme data
+# directories used by the CSS Framework.
+#
+# Parameters:
+#   none
+#
+# Returns:
+#   List of candidate absolute directory paths.
+##########################################################################
+sub _cssframework_candidate_data_theme_dirs {
 	my @dirs;
 
 	push @dirs, "$lbhomedir/data/plugins/cssframework/themes" if defined $lbhomedir && $lbhomedir ne '';
@@ -122,17 +146,37 @@ sub cssframework_candidate_data_theme_dirs {
 	return @unique;
 }
 
-# Return the first existing plugin theme data directory, or an empty string.
-sub cssframework_find_first_data_theme_dir {
-	foreach my $dir (cssframework_candidate_data_theme_dirs()) {
+##########################################################################
+# _cssframework_find_first_data_theme_dir()
+#
+# Returns the first existing CSS Framework plugin theme data directory.
+#
+# Parameters:
+#   none
+#
+# Returns:
+#   Absolute directory path, or an empty string if none exists.
+##########################################################################
+sub _cssframework_find_first_data_theme_dir {
+	foreach my $dir (_cssframework_candidate_data_theme_dirs()) {
 		return $dir if -d $dir;
 	}
 
 	return '';
 }
 
-# Escape a scalar for safe insertion into HTML text or quoted attributes.
-sub cssframework_escape_html {
+##########################################################################
+# _cssframework_escape_html($value)
+#
+# Escapes a scalar for safe insertion into HTML text or attribute values.
+#
+# Parameters:
+#   $value  Value to escape; undef is treated as an empty string.
+#
+# Returns:
+#   HTML-escaped string.
+##########################################################################
+sub _cssframework_escape_html {
 	my ($value) = @_;
 	$value = '' if !defined $value;
 	$value =~ s/&/&amp;/g;
@@ -143,10 +187,20 @@ sub cssframework_escape_html {
 }
 
 
-# Normalize a theme identifier to the canonical CSS class form "theme-*".
-# Unsafe characters are removed and the legacy "classic" ID is mapped to
-# "classic-lb". An empty or invalid identifier returns an empty string.
-sub cssframework_normalize_theme_class {
+##########################################################################
+# _cssframework_normalize_theme_class($theme)
+#
+# Sanitizes a theme identifier and converts it to the canonical CSS class
+# form beginning with "theme-". The legacy "classic" name is mapped to
+# "classic-lb".
+#
+# Parameters:
+#   $theme  Theme identifier or CSS class.
+#
+# Returns:
+#   Normalized theme class, or an empty string for invalid input.
+##########################################################################
+sub _cssframework_normalize_theme_class {
 	my ($theme) = @_;
 	$theme = '' if !defined $theme;
 	$theme = lc($theme);
@@ -157,18 +211,41 @@ sub cssframework_normalize_theme_class {
 	return ($theme =~ /^theme-/) ? $theme : "theme-$theme";
 }
 
-# Return a sanitized URL path for the currently executing renderer CGI.
-sub cssframework_current_renderer_url {
+##########################################################################
+# _cssframework_current_renderer_url()
+#
+# Determines and sanitizes the URL of the currently executing renderer.
+#
+# Parameters:
+#   none
+#
+# Returns:
+#   Safe renderer URL with a Core renderer fallback.
+##########################################################################
+sub _cssframework_current_renderer_url {
 	my $script = $ENV{SCRIPT_NAME} || '/admin/system/cssframework.cgi';
 	$script =~ s/[\r\n\"\'<>]//g;
 	$script = '/admin/system/cssframework.cgi' if $script eq '';
 	return $script;
 }
 
-# Build a renderer URL for a preview/help page and optional theme class.
-sub cssframework_page_url {
+##########################################################################
+# _cssframework_page_url($base, $page, $theme_class)
+#
+# Builds a renderer URL for a Preview or Help page. A theme parameter is
+# appended only when a non-empty theme class is supplied.
+#
+# Parameters:
+#   $base         Renderer base URL.
+#   $page         Page name, normally "preview" or "help".
+#   $theme_class  Optional theme CSS class.
+#
+# Returns:
+#   URL including escaped query parameters.
+##########################################################################
+sub _cssframework_page_url {
 	my ($base, $page, $theme_class) = @_;
-	$base = cssframework_current_renderer_url() if !defined $base || $base eq '';
+	$base = _cssframework_current_renderer_url() if !defined $base || $base eq '';
 	$page = 'preview' if !defined $page || $page eq '';
 	my $url = $base . '?page=' . CGI::escape($page);
 	if (defined $theme_class && $theme_class ne '') {
@@ -177,9 +254,19 @@ sub cssframework_page_url {
 	return $url;
 }
 
-# Determine whether the request runs in Core or Studio renderer context.
-# Explicit development overrides are supported, otherwise SCRIPT_NAME decides.
-sub cssframework_renderer_context_class {
+##########################################################################
+# _cssframework_renderer_context_class()
+#
+# Determines whether the script runs as the Core renderer or as the CSS
+# Framework Studio renderer. Explicit development overrides are supported.
+#
+# Parameters:
+#   none
+#
+# Returns:
+#   "lb-renderer-core" or "lb-renderer-studio".
+##########################################################################
+sub _cssframework_renderer_context_class {
 	my $script = $ENV{SCRIPT_NAME} || '';
 	my $param = lc($cgi->param('renderer') || $cgi->param('chrome') || $cgi->param('context') || '');
 	$param =~ s/[^a-z_-]//g;
@@ -193,8 +280,19 @@ sub cssframework_renderer_context_class {
 	return ($script =~ m#/plugins/cssframework/#) ? 'lb-renderer-studio' : 'lb-renderer-core';
 }
 
-# Convert a machine-readable theme class into a human-readable title.
-sub cssframework_title_from_class {
+##########################################################################
+# _cssframework_title_from_class($class, $prefix_to_remove)
+#
+# Converts a machine-readable theme class into a human-readable title.
+#
+# Parameters:
+#   $class             Theme CSS class.
+#   $prefix_to_remove  Optional leading prefix to remove first.
+#
+# Returns:
+#   Human-readable title.
+##########################################################################
+sub _cssframework_title_from_class {
 	my ($class, $prefix_to_remove) = @_;
 	my $label = $class || '';
 	$prefix_to_remove = '' if !defined $prefix_to_remove;
@@ -205,8 +303,19 @@ sub cssframework_title_from_class {
 	return $label;
 }
 
-# Return the preferred display label for a Core theme class.
-sub cssframework_core_theme_label {
+##########################################################################
+# _cssframework_core_theme_label($class)
+#
+# Returns the preferred display label for a Core theme. Unknown Core themes
+# are converted to a readable title automatically.
+#
+# Parameters:
+#   $class  Core theme CSS class.
+#
+# Returns:
+#   Display label.
+##########################################################################
+sub _cssframework_core_theme_label {
 	my ($class) = @_;
 	my %known = (
 		'theme-classic-lb'   => 'Classic LoxBerry',
@@ -215,17 +324,37 @@ sub cssframework_core_theme_label {
 		'theme-glass'        => 'Glassmorphism',
 	);
 	return $known{$class} if exists $known{$class};
-	return cssframework_title_from_class($class, 'theme-');
+	return _cssframework_title_from_class($class, 'theme-');
 }
 
-# Return the display label for a plugin-managed user theme class.
-sub cssframework_user_theme_label {
+##########################################################################
+# _cssframework_user_theme_label($class)
+#
+# Builds the display label for a plugin-managed user theme.
+#
+# Parameters:
+#   $class  User theme CSS class.
+#
+# Returns:
+#   Display label prefixed with "User:".
+##########################################################################
+sub _cssframework_user_theme_label {
 	my ($class) = @_;
-	return 'User: ' . cssframework_title_from_class($class, 'theme-user-');
+	return 'User: ' . _cssframework_title_from_class($class, 'theme-user-');
 }
 
-# Return the stable sort priority used for known Core themes.
-sub cssframework_core_theme_order {
+##########################################################################
+# _cssframework_core_theme_order($class)
+#
+# Provides a stable sort priority for known Core themes.
+#
+# Parameters:
+#   $class  Core theme CSS class.
+#
+# Returns:
+#   Numeric sort priority; unknown themes receive a low-priority fallback.
+##########################################################################
+sub _cssframework_core_theme_order {
 	my ($class) = @_;
 	my %order = (
 		'theme-classic-lb'   => 10,
@@ -236,9 +365,20 @@ sub cssframework_core_theme_order {
 	return exists $order{$class} ? $order{$class} : 1000;
 }
 
-# Discover installed Core theme stylesheets and return sorted metadata hashes.
-sub cssframework_core_themes {
-	my $theme_dir = cssframework_find_first_dir('system/css/themes');
+##########################################################################
+# _cssframework_core_themes()
+#
+# Discovers available Core theme CSS files and returns normalized metadata
+# sorted by the preferred Core theme order.
+#
+# Parameters:
+#   none
+#
+# Returns:
+#   List of hash references containing file, class, label, and order.
+##########################################################################
+sub _cssframework_core_themes {
+	my $theme_dir = _cssframework_find_first_dir('system/css/themes');
 	my @themes;
 
 	if (opendir(my $dh, $theme_dir)) {
@@ -252,8 +392,8 @@ sub cssframework_core_themes {
 			push @themes, {
 				file  => $file,
 				class => $class,
-				label => cssframework_core_theme_label($class),
-				order => cssframework_core_theme_order($class),
+				label => _cssframework_core_theme_label($class),
+				order => _cssframework_core_theme_order($class),
 			};
 		}
 		closedir($dh);
@@ -266,9 +406,20 @@ sub cssframework_core_themes {
 	return @themes;
 }
 
-# Discover plugin-managed user theme stylesheets and return sorted metadata.
-sub cssframework_plugin_user_themes {
-	my $theme_dir = cssframework_find_first_data_theme_dir();
+##########################################################################
+# _cssframework_plugin_user_themes()
+#
+# Discovers plugin-managed user theme CSS files in the CSS Framework data
+# directory and returns normalized metadata sorted by class name.
+#
+# Parameters:
+#   none
+#
+# Returns:
+#   List of hash references containing file, class, and label.
+##########################################################################
+sub _cssframework_plugin_user_themes {
+	my $theme_dir = _cssframework_find_first_data_theme_dir();
 	my @themes;
 
 	if (opendir(my $dh, $theme_dir)) {
@@ -281,7 +432,7 @@ sub cssframework_plugin_user_themes {
 			push @themes, {
 				file  => $file,
 				class => $class,
-				label => cssframework_user_theme_label($class),
+				label => _cssframework_user_theme_label($class),
 			};
 		}
 		closedir($dh);
@@ -291,9 +442,20 @@ sub cssframework_plugin_user_themes {
 	return @themes;
 }
 
-# Build the public stylesheet URL for a theme file.
-# Both directory-style bases and the legacy "?file=" endpoint are supported.
-sub cssframework_theme_file_url {
+##########################################################################
+# _cssframework_theme_file_url($web_base, $file)
+#
+# Combines a theme delivery base URL with a theme filename. Both directory
+# style URLs and CGI URLs ending in "?file=" are supported.
+#
+# Parameters:
+#   $web_base  Theme delivery base URL.
+#   $file      Theme filename.
+#
+# Returns:
+#   Complete theme URL.
+##########################################################################
+sub _cssframework_theme_file_url {
 	my ($web_base, $file) = @_;
 	$file = '' if !defined $file;
 	if ($web_base =~ /\?file=$/) {
@@ -302,32 +464,68 @@ sub cssframework_theme_file_url {
 	return $web_base . '/' . $file;
 }
 
-# Render stylesheet <link> elements for a list of discovered themes.
-sub cssframework_theme_links {
+##########################################################################
+# _cssframework_theme_links($web_base, @themes)
+#
+# Generates stylesheet link elements for a list of theme metadata entries.
+#
+# Parameters:
+#   $web_base  Theme delivery base URL.
+#   @themes    Theme metadata hash references.
+#
+# Returns:
+#   Newline-separated HTML link elements, or an empty string.
+##########################################################################
+sub _cssframework_theme_links {
 	my ($web_base, @themes) = @_;
 	return '' if !@themes;
 
 	return join("\n", map {
-		"\t<link rel='stylesheet' href='" . cssframework_escape_html(cssframework_theme_file_url($web_base, $_->{file})) . "'>"
+		"\t<link rel='stylesheet' href='" . _cssframework_escape_html(_cssframework_theme_file_url($web_base, $_->{file})) . "'>"
 	} @themes);
 }
 
-# Render <option> elements for a theme selector, including a localized empty state.
-sub cssframework_theme_options {
+##########################################################################
+# _cssframework_theme_options($lang, $empty_de, $empty_en, @themes)
+#
+# Generates HTML option elements for a theme selector. When no themes are
+# available, a localized disabled placeholder is returned.
+#
+# Parameters:
+#   $lang      Effective LoxBerry language code.
+#   $empty_de  German empty-list text.
+#   $empty_en  English empty-list text.
+#   @themes    Theme metadata hash references.
+#
+# Returns:
+#   Newline-separated HTML option elements.
+##########################################################################
+sub _cssframework_theme_options {
 	my ($lang, $empty_de, $empty_en, @themes) = @_;
 
 	if (!@themes) {
 		my $text = ($lang && $lang eq 'de') ? $empty_de : $empty_en;
-		return "\t\t\t\t\t\t\t\t<option value='' disabled>" . cssframework_escape_html($text) . "</option>";
+		return "\t\t\t\t\t\t\t\t<option value='' disabled>" . _cssframework_escape_html($text) . "</option>";
 	}
 
 	return join("\n", map {
-		"\t\t\t\t\t\t\t\t<option value='" . $_->{class} . "'>" . cssframework_escape_html($_->{label}) . "</option>"
+		"\t\t\t\t\t\t\t\t<option value='" . $_->{class} . "'>" . _cssframework_escape_html($_->{label}) . "</option>"
 	} @themes);
 }
 
-# Render a unique JavaScript list fragment containing all theme CSS classes.
-sub cssframework_theme_classes_js {
+##########################################################################
+# _cssframework_theme_classes_js(@themes)
+#
+# Converts unique theme class names into JavaScript string literals for
+# insertion into the static Preview and Help templates.
+#
+# Parameters:
+#   @themes  Theme metadata hash references.
+#
+# Returns:
+#   Comma-separated JavaScript string entries, or an empty string.
+##########################################################################
+sub _cssframework_theme_classes_js {
 	my (@themes) = @_;
 	return '' if !@themes;
 
@@ -342,9 +540,19 @@ sub cssframework_theme_classes_js {
 	return join(",\n", @classes);
 }
 
-# Read the active theme from general.json and return its normalized CSS class.
-# Any read or parsing failure safely falls back to "theme-soft-rounded".
-sub cssframework_theme_class {
+##########################################################################
+# _cssframework_theme_class()
+#
+# Reads the active LoxBerry theme from general.json and converts it to the
+# canonical CSS class. Errors fall back to Soft & Rounded.
+#
+# Parameters:
+#   none
+#
+# Returns:
+#   Normalized active theme CSS class.
+##########################################################################
+sub _cssframework_theme_class {
 	my $theme = 'soft-rounded';
 
 	eval {
@@ -355,20 +563,40 @@ sub cssframework_theme_class {
 		}
 	};
 
-	return cssframework_normalize_theme_class($theme) || 'theme-soft-rounded';
+	return _cssframework_normalize_theme_class($theme) || 'theme-soft-rounded';
 }
 
-# Extract the first inline <style> block from a complete static page.
-sub cssframework_extract_first_style_block {
+##########################################################################
+# _cssframework_extract_first_style_block($html)
+#
+# Extracts the first complete style element from a static page template.
+#
+# Parameters:
+#   $html  Complete HTML document or fragment.
+#
+# Returns:
+#   First style element including its tags, or an empty string.
+##########################################################################
+sub _cssframework_extract_first_style_block {
 	my ($html) = @_;
 	$html = '' if !defined $html;
 	return $1 if $html =~ m{(<style\b[^>]*>.*?</style>)}is;
 	return '';
 }
 
-# Extract the contents of <main class="... lb-content ...">.
-# If no matching element exists, return the original HTML unchanged.
-sub cssframework_extract_main_inner {
+##########################################################################
+# _cssframework_extract_main_inner($html)
+#
+# Extracts the inner markup of the main.lb-content element used by shared
+# Preview and Help templates.
+#
+# Parameters:
+#   $html  Complete HTML document or fragment.
+#
+# Returns:
+#   Inner main content; the original input if no matching element exists.
+##########################################################################
+sub _cssframework_extract_main_inner {
 	my ($html) = @_;
 	$html = '' if !defined $html;
 	if ($html =~ m{<main\b[^>]*class=["'][^"']*\blb-content\b[^"']*["'][^>]*>(.*?)</main>}is) {
@@ -377,9 +605,20 @@ sub cssframework_extract_main_inner {
 	return $html;
 }
 
-# Collect dialogs and page-specific scripts required outside the extracted main.
-# Scripts belonging to the standalone page chrome are deliberately excluded.
-sub cssframework_extract_dialogs_and_scripts {
+##########################################################################
+# _cssframework_extract_dialogs_and_scripts($html)
+#
+# Extracts dialog elements and page-specific scripts required after embedding
+# a shared template into the normal LoxBerry chrome. Scripts belonging to the
+# standalone navigation shell are deliberately excluded.
+#
+# Parameters:
+#   $html  Complete HTML document or fragment.
+#
+# Returns:
+#   Concatenated dialog and permitted script blocks.
+##########################################################################
+sub _cssframework_extract_dialogs_and_scripts {
 	my ($html) = @_;
 	$html = '' if !defined $html;
 	my $extra = '';
@@ -394,10 +633,21 @@ sub cssframework_extract_dialogs_and_scripts {
 	return $extra;
 }
 
-# Render a static preview/help page inside the native LoxBerry header/footer.
-# Inline styles, main content, dialogs, and relevant scripts are separated so
-# that the standalone document can be reused without nesting complete HTML pages.
-sub cssframework_render_inside_loxberry_chrome {
+##########################################################################
+# _cssframework_render_inside_loxberry_chrome($content, $page, $lang)
+#
+# Renders a shared Preview or Help template inside the standard LoxBerry
+# header, content area, and footer.
+#
+# Parameters:
+#   $content  Fully token-replaced shared template content.
+#   $page     Page name, normally "preview" or "help".
+#   $lang     Effective LoxBerry language code.
+#
+# Returns:
+#   Nothing. HTML is written directly to STDOUT.
+##########################################################################
+sub _cssframework_render_inside_loxberry_chrome {
 	my ($content, $page, $lang) = @_;
 	$content = '' if !defined $content;
 	$page = 'preview' if !defined $page || $page eq '';
@@ -406,9 +656,9 @@ sub cssframework_render_inside_loxberry_chrome {
 		? (($lang && $lang eq 'de') ? 'LoxBerry CSS Framework Hilfe' : 'LoxBerry CSS Framework Help')
 		: 'LoxBerry Design System Preview';
 
-	my $style = cssframework_extract_first_style_block($content);
-	my $main = cssframework_extract_main_inner($content);
-	my $extra = cssframework_extract_dialogs_and_scripts($content);
+	my $style = _cssframework_extract_first_style_block($content);
+	my $main = _cssframework_extract_main_inner($content);
+	my $extra = _cssframework_extract_dialogs_and_scripts($content);
 
 	LoxBerry::Web::lbheader($title, '', '', 1);
 	print $style;
@@ -425,35 +675,35 @@ sub cssframework_render_inside_loxberry_chrome {
 #   chooser and therefore ignores ?theme=... parameters.
 # - /admin/plugins/cssframework/cssframework.cgi is Studio-owned and may receive
 #   ?theme=... from the Design Studio iframe/live preview.
-my $renderer_context_class = cssframework_renderer_context_class();
+my $renderer_context_class = _cssframework_renderer_context_class();
 my $theme_param = '';
 if ($renderer_context_class ne 'lb-renderer-core') {
 	$theme_param = $cgi->param('theme') || $cgi->param('theme_class') || $cgi->param('preview_theme') || '';
 }
-my $current_theme_class = cssframework_normalize_theme_class($theme_param) || cssframework_theme_class();
+my $current_theme_class = _cssframework_normalize_theme_class($theme_param) || _cssframework_theme_class();
 
-my @core_themes = cssframework_core_themes();
-my @plugin_user_themes = cssframework_plugin_user_themes();
+my @core_themes = _cssframework_core_themes();
+my @plugin_user_themes = _cssframework_plugin_user_themes();
 my @all_themes = (@core_themes, @plugin_user_themes);
 
-my $core_theme_links = cssframework_theme_links('/system/css/themes', @core_themes);
-my $core_theme_options = cssframework_theme_options(
+my $core_theme_links = _cssframework_theme_links('/system/css/themes', @core_themes);
+my $core_theme_options = _cssframework_theme_options(
 	$lang,
 	'Keine Core-Themes gefunden',
 	'No Core themes found',
 	@core_themes
 );
-my $plugin_theme_links = cssframework_theme_links('/admin/plugins/cssframework/theme-file.cgi', @plugin_user_themes);
-my $plugin_theme_options = cssframework_theme_options(
+my $plugin_theme_links = _cssframework_theme_links('/admin/plugins/cssframework/theme-file.cgi', @plugin_user_themes);
+my $plugin_theme_options = _cssframework_theme_options(
 	$lang,
 	'Keine Plugin-Themes gefunden',
 	'No plugin themes found',
 	@plugin_user_themes
 );
-my $theme_classes_js = cssframework_theme_classes_js(@all_themes);
-my $renderer_url = cssframework_current_renderer_url();
-my $preview_url = cssframework_page_url($renderer_url, 'preview', $current_theme_class);
-my $help_url = cssframework_page_url($renderer_url, 'help', $current_theme_class);
+my $theme_classes_js = _cssframework_theme_classes_js(@all_themes);
+my $renderer_url = _cssframework_current_renderer_url();
+my $preview_url = _cssframework_page_url($renderer_url, 'preview', $current_theme_class);
+my $help_url = _cssframework_page_url($renderer_url, 'help', $current_theme_class);
 if ($renderer_context_class ne 'lb-renderer-core') {
 	print $cgi->header(-type => 'text/html', -charset => 'UTF-8');
 }
@@ -477,11 +727,8 @@ open(my $fh, '<:encoding(UTF-8)', $template_file) or do {
 	exit;
 };
 
-my $content;
-{
-	local $/;
-	$content = <$fh>;
-}
+local $/;
+my $content = <$fh>;
 close($fh);
 $content = '' if !defined $content;
 
@@ -493,13 +740,13 @@ $content =~ s/__LB_PLUGIN_THEME_LINKS__/$plugin_theme_links/g;
 $content =~ s/__LB_CORE_THEME_OPTIONS__/$core_theme_options/g;
 $content =~ s/__LB_PLUGIN_THEME_OPTIONS__/$plugin_theme_options/g;
 $content =~ s/__LB_THEME_CLASSES_JS__/$theme_classes_js/g;
-$content =~ s/__LB_CSSFRAMEWORK_CGI_URL__/cssframework_escape_html($renderer_url)/ge;
-$content =~ s/__LB_CSSFRAMEWORK_PREVIEW_URL__/cssframework_escape_html($preview_url)/ge;
-$content =~ s/__LB_CSSFRAMEWORK_HELP_URL__/cssframework_escape_html($help_url)/ge;
-$content =~ s/__LB_RENDERER_CONTEXT_CLASS__/cssframework_escape_html($renderer_context_class)/ge;
+$content =~ s/__LB_CSSFRAMEWORK_CGI_URL__/_cssframework_escape_html($renderer_url)/ge;
+$content =~ s/__LB_CSSFRAMEWORK_PREVIEW_URL__/_cssframework_escape_html($preview_url)/ge;
+$content =~ s/__LB_CSSFRAMEWORK_HELP_URL__/_cssframework_escape_html($help_url)/ge;
+$content =~ s/__LB_RENDERER_CONTEXT_CLASS__/_cssframework_escape_html($renderer_context_class)/ge;
 
 if ($renderer_context_class eq 'lb-renderer-core') {
-	cssframework_render_inside_loxberry_chrome($content, $page, $lang);
+	_cssframework_render_inside_loxberry_chrome($content, $page, $lang);
 } else {
 	print $content;
 }
