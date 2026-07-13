@@ -132,14 +132,6 @@ fieldset[data-role="controlgroup"]:not(.ui-controlgroup) > select {
 	width: 100%;
 }
 
-/* jQM flipswitch OFF state: the container carries .ui-bar-inherit, which
-   LoxBerry's jQM theme-a paints in brand green — so an OFF switch looked just
-   as green as ON (only the knob position differed). Reset the OFF track to a
-   neutral gray; .ui-flipswitch-active keeps the green ON state untouched. */
-.lb-content .ui-flipswitch:not(.ui-flipswitch-active) {
-	background-color: var(--lb-gray-200) !important;
-}
-
 /* Override jQM page/body styling — scoped to core pages (.lb-layout) only
    so plugin pages keep their default jQM padding/margins. Note: .page_content
    and #page_content are LoxBerry-own wrappers (not jQM) and are intentionally
@@ -1644,6 +1636,14 @@ span.form-error {
 	background: rgba(0, 0, 0, 0.04);
 }
 
+/* ============================================================
+   10b. Core owner mobile/readability additions
+   OWNER_MOBILE_LAYOUT_MERGE_V295
+
+   Merged from Core owner `_new` changes without reverting the later
+   DS extension blocks below. jQM flipswitch handling lives in
+   legacy-jqm-compat.css, not here.
+   ============================================================ */
 @media (max-width: 768px) {
 	.lb-table-responsive thead {
 		display: none;

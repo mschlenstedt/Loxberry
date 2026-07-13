@@ -1,4 +1,4 @@
-/* LoxBerry CSS Framework - legacy-jqm-compat.css V259
+/* LoxBerry CSS Framework - legacy-jqm-compat.css V295
 
    Central token-based jQuery Mobile compatibility layer for legacy LoxBerry/v3
    markup. This file intentionally contains no theme-specific optics. Themes
@@ -323,6 +323,17 @@ body[class*="theme-"] .ui-slider-switch .ui-btn.ui-slider-handle {
 	border-radius: var(--lb-toggle-thumb-radius, var(--lb-toggle-knob-radius, 999px)) !important;
 	box-shadow: var(--lb-switch-thumb-shadow, var(--lb-toggle-thumb-shadow, 0 1px 4px rgba(0,0,0,.22))) !important;
 	text-shadow: none !important;
+}
+
+/* jQM flipswitch OFF state
+   ------------------------------------------------------------
+   Legacy jQuery Mobile marks the OFF track with .ui-bar-inherit,
+   which classic theme-a may paint as the same brand/active color as ON.
+   Keep this neutral and token-based here; concrete theme optics stay in
+   the active theme CSS. */
+body[class*="theme-"] .lb-content .ui-flipswitch:not(.ui-flipswitch-active) {
+	background-image: none !important;
+	background-color: var(--lb-jqm-flipswitch-off-bg, var(--lb-jqm-toggle-off-bg, var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-gray-200, #e5e7eb))))) !important;
 }
 
 body[class*="theme-"] .ui-flipswitch {
