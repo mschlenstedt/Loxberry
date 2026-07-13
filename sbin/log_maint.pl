@@ -153,7 +153,7 @@ sub logfiles_cleanup
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
 			->mtime( "<=$logmtime")
-			#->nonempty
+			->nonempty
         		->in($_);
 
 		for my $file (@files){
@@ -161,11 +161,15 @@ sub logfiles_cleanup
 			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat("$file");
 			unlink ("$file.gz") if (-e "$file.gz");
 			qx{yes | $bins->\{GZIP\} --keep --best "$file"};
-			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime(); close($fh);
-			unlink($file);
+			# Truncate in place instead of unlink (copytruncate): a daemon
+			# holding the file open keeps writing into its inode - unlink
+			# would not free the space and the daemon would log into the
+			# void. The empty stub is skipped by ->nonempty above, so the
+			# archive is not overwritten by a re-gzip of the stub later.
+			open( my $fh, '>', $file); close($fh);
 			chown $uid, $gid, "$file\.gz";
 			chmod $mode, "$file\.gz";
-		}	
+		}
 
 		LOGDEB "Scanning $_ for GZ-Files >= " . $gzdays . " days and DELETE them...";
 
@@ -285,7 +289,7 @@ sub logfiles_cleanup
 	my $freshmtime = time() - 3600;
 
 	foreach (@emergpaths) {
-		LOGDEB "Scanning $_ for LOG-Files older than 1 hour and DELETE them...";
+		LOGDEB "Scanning $_ for LOG-Files older than 1 hour and TRUNCATE them...";
 
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
@@ -294,14 +298,18 @@ sub logfiles_cleanup
         		->in($_);
 
 		for my $file (@files){
-			LOGDEB "--> $file will be DELETED.";
-			my $delcount = unlink($file);
-			if ($delcount) {
-				LOGDEB "$file DELETED.";
+			LOGDEB "--> $file will be TRUNCATED.";
+			# Truncate in place instead of unlink (copytruncate): frees the
+			# disk space immediately even if a daemon holds the file open -
+			# unlink would leave the inode allocated until the daemon exits.
+			if ( open(my $fh, '>', $file) ) {
+				print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime();
+				close($fh);
+				LOGDEB "$file TRUNCATED.";
 			} else {
-				LOGDEB "$file COULD NOT BE DELETED.";
+				LOGDEB "$file COULD NOT BE TRUNCATED.";
 			}
-		}	
+		}
 	}
 	undef(@emergpaths);
 	
