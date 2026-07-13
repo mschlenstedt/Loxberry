@@ -132,6 +132,14 @@ fieldset[data-role="controlgroup"]:not(.ui-controlgroup) > select {
 	width: 100%;
 }
 
+/* jQM flipswitch OFF state: the container carries .ui-bar-inherit, which
+   LoxBerry's jQM theme-a paints in brand green — so an OFF switch looked just
+   as green as ON (only the knob position differed). Reset the OFF track to a
+   neutral gray; .ui-flipswitch-active keeps the green ON state untouched. */
+.lb-content .ui-flipswitch:not(.ui-flipswitch-active) {
+	background-color: var(--lb-gray-200) !important;
+}
+
 /* Override jQM page/body styling — scoped to core pages (.lb-layout) only
    so plugin pages keep their default jQM padding/margins. Note: .page_content
    and #page_content are LoxBerry-own wrappers (not jQM) and are intentionally
@@ -1660,6 +1668,143 @@ span.form-error {
 		font-weight: 600;
 		color: var(--lb-text-secondary);
 		margin-right: var(--lb-space-md);
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+	.lb-table-responsive td {
+		text-align: right;
+	}
+	/* Cells with rich/long content (text + links) stack the value below the
+	   label at full width, so links don't get squeezed and broken. */
+	.lb-table-responsive td.lb-cell-block {
+		flex-direction: column;
+		align-items: stretch;
+		text-align: left;
+	}
+	/* Never break link labels character-by-character (e.g. "Wiki"). */
+	.lb-table-responsive a {
+		white-space: nowrap;
+	}
+}
+
+/* Horizontal-scroll wrapper for wide tables that cannot stack meaningfully
+   (e.g. header-less log tables). Keeps the desktop layout and lets the user
+   swipe on mobile instead of wrapping text character-by-character. */
+.lb-table-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+@media (max-width: 768px) {
+	.lb-table-scroll > table {
+		white-space: nowrap;
+	}
+	/* the free-text columns may still wrap, only atomic cells stay on one line */
+	.lb-table-scroll > table td.lb-cell-wrap {
+		white-space: normal;
+	}
+}
+
+/* ============================================================
+   Callout / note boxes (reusable, design-system consistent)
+   Replaces ad-hoc inline-coloured info boxes. Accessible contrast:
+   dark body text on a soft tinted background (WCAG AA).
+   ============================================================ */
+.lb-callout {
+	border: 1px solid var(--lb-border-color);
+	border-left: 4px solid var(--lb-info);
+	background: var(--lb-gray-50);
+	color: var(--lb-text);
+	border-radius: var(--lb-radius);
+	padding: 12px 14px;
+	margin: 12px 0;
+	text-shadow: none;
+}
+.lb-callout > :first-child { margin-top: 0; }
+.lb-callout > :last-child { margin-bottom: 0; }
+.lb-callout-title {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 6px;
+}
+/* Security / attention variant — amber accent, calmer than an alarm red. */
+.lb-callout-warning {
+	border-left-color: var(--lb-warning);
+	background: #fdf6e3;
+}
+
+/* Two form fields side by side on desktop that stack vertically on mobile,
+   so narrow inputs (e.g. current password / SecurePIN) stay usable at 390px. */
+.lb-form-2col {
+	display: flex;
+	gap: var(--lb-space-md);
+}
+@media (max-width: 768px) {
+	.lb-form-2col {
+		flex-direction: column;
+		gap: var(--lb-space-sm);
+	}
+}
+
+/* Backup schedule: weekday selector + time picker in one row on desktop.
+   On mobile, stack the time picker below a full-width weekday group and let
+   the day buttons fit into one even row instead of squeezing into a column. */
+.lb-schedule-field {
+	display: flex;
+	align-items: center;
+	gap: var(--lb-space-md);
+}
+/* Weekday buttons as 7 equal-width columns so the row reads as a uniform grid.
+   Without this the labels size to their text (Mon/Die/Mit… differ in width) and
+   look ragged. Overridden below the mobile breakpoint, where the group goes
+   full width via flex. */
+.lb-schedule-field .lb-btn-group {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+}
+/* Snug horizontal padding so the equal cells hug the short day labels instead of
+   floating in wide boxes. The input+label selector is needed to beat the base
+   .lb-btn-group padding (8px 16px), which has higher specificity than a plain
+   .lb-schedule-field .lb-btn-group label rule. */
+.lb-schedule-field .lb-btn-group input[type="checkbox"] + label {
+	padding: 8px 10px;
+}
+@media (max-width: 768px) {
+	.lb-schedule-field {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.lb-schedule-field .lb-btn-group {
+		display: flex;
+		width: 100%;
+	}
+	.lb-schedule-field .lb-btn-group label {
+		flex: 1 1 0;
+		box-sizing: border-box;
+	}
+	/* Same high-specificity selector as desktop, but tighter for the narrow
+	   390px row; later in source so it wins at this breakpoint. */
+	.lb-schedule-field .lb-btn-group input[type="checkbox"] + label {
+		padding: 8px 4px;
+	}
+	.lb-schedule-field #timef {
+		width: 100%;
+	}
+}
+
+/* Updates page: centered container plus the "label + control" definition rows.
+   Desktop keeps the two-column grid (defined inline on each row); on mobile the
+   container uses the full width and the rows collapse to a single column, so
+   controls like the long "Letzter Entwicklungsstand" button are never clipped.
+   !important is required to override the inline grid-template-columns. */
+#lbu_main_content {
+	max-width: 80%;
+}
+@media (max-width: 768px) {
+	#lbu_main_content {
+		max-width: 100%;
+	}
+	.lb-updates-grid {
+		grid-template-columns: 1fr !important;
 	}
 }
 

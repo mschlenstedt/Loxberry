@@ -39,7 +39,10 @@ _loglevel: int = 3
 _miniservers: dict = {}
 _subscriptions: list = []
 _cache: dict = {}
-_vi_locks: dict = {}   # vi_name -> asyncio.Lock; ensures one active send per VI
+_ms_queues: dict = {}    # ms_id -> asyncio.Queue; one send queue per miniserver
+_ms_workers: dict = {}   # ms_id -> asyncio.Task; per-miniserver worker (see ms_worker)
+_http_session: "aiohttp.ClientSession | None" = None   # shared session; set in main()
+_status_event: "asyncio.Event | None" = None            # set in main(); for _ensure_ms_workers
 _sent_since_summary: int = 0   # successful MS sends since last periodic INFO summary
 _reset_delay_ms: float = 1000.0
 _convert_booleans: bool = True
@@ -253,9 +256,9 @@ def _udp_out_send(host: str, port: int, packet: str) -> None:
     """Send one UDP OUT packet, guarded against transient socket errors.
 
     A raw sendto() can raise OSError (ENOBUFS, 'Network is unreachable',
-    broken socket). Unguarded this propagated up through http_worker → gather
-    and killed the whole gateway silently. On error the socket is dropped so
-    it gets re-created on the next send."""
+    broken socket). Unguarded this propagated up through the send worker →
+    gather and killed the whole gateway silently. On error the socket is
+    dropped so it gets re-created on the next send."""
     global _udp_out_sock
     try:
         if _udp_out_sock is None:
@@ -355,6 +358,9 @@ async def config_watcher() -> None:
                 _udp_out_port     = new_udp_out_port
 
                 LOGINF("Config reloaded")
+
+                # Start/stop per-miniserver workers if the MS list changed
+                _ensure_ms_workers()
 
                 if _mqtt_client is not None:
                     for topic in old_topics - new_topics:
@@ -461,113 +467,24 @@ async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
             LOGERR(f"MQTT connection lost: {exc} — reconnecting in 5s")
             await asyncio.sleep(5)
 
-# ─── HTTP worker ─────────────────────────────────────────────────────────────
-async def http_worker(queue: asyncio.Queue, status_event: asyncio.Event) -> None:
-    """Async task: process queue items — JSON expand, cache check, HTTP/UDP send."""
-    async with aiohttp.ClientSession() as session:
-        while True:
-            item = await queue.get()
-
-            if item["type"] == "reset":
-                await _process_reset(session, item, status_event)
-            elif item["type"] == "resend":
-                await _process_resend(session, item, status_event)
-            elif item["type"] == "mqtt":
-                await _process_mqtt(session, item, status_event, queue)
-
-            await asyncio.sleep(0.01)   # 10 ms rate-limit
+# ─── Dispatcher ──────────────────────────────────────────────────────────────
+async def dispatcher(queue: asyncio.Queue, status_event: asyncio.Event) -> None:
+    """Async task: consume the central queue — JSON expand, retain handling —
+    then fan out one 'sends' job per target miniserver into its own queue.
+    The actual HTTP/UDP sending happens in the per-miniserver workers
+    (ms_worker), so miniservers are served in parallel while each single
+    miniserver still receives its requests strictly sequentially."""
+    while True:
+        item = await queue.get()
+        if item["type"] == "mqtt":
+            await _process_mqtt(item, status_event)
+        elif item["type"] == "resend":
+            await _process_resend(item)
 
 
-async def _process_reset(session, item: dict, status_event: asyncio.Event) -> None:
-    vi_name  = item["virtual_input"]
-    udp_name = item.get("udp_name", vi_name)
-    ms_id    = item["miniserver"]
-    ms = _miniservers.get(ms_id)
-    if ms is None:
-        LOGWARN(f"Reset: miniserver {ms_id} not found")
-        return
-    lock = _vi_locks.setdefault(vi_name, asyncio.Lock())
-    if lock.locked():
-        LOGDEB(f"Waiting for VI lock (reset): {vi_name}")
-    async with lock:
-        now = datetime.now()
-        entry = _cache.setdefault(vi_name, make_cache_entry("0", [ms_id]))
-        entry["value"]              = "0"
-        entry["udp_name"]           = udp_name
-        entry["last_updated"]       = now.isoformat(timespec="seconds")
-        entry["last_updated_epoch"] = int(now.timestamp())
-        entry["last_processing_ms"] = None
-        pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry("0"))
-        pm["value"] = "0"
-
-        if _use_http:
-            ok, http_status = await send_http(session, ms, vi_name, "0")
-            pm["http"] = make_http_result(ok, http_status)
-            status_event.set()
-            if ok:
-                LOGOK(f"Reset sent (HTTP): {vi_name} = 0 → MS{ms_id}")
-            LOGDEB(f"Cache: {vi_name} | http_status={http_status} | epoch={entry['last_updated_epoch']}")
-
-        if _use_udp and ms.get("ipaddress"):
-            send_udp_bundled(ms["ipaddress"], _udp_out_port, [(udp_name, "0")])
-            pm["udp"] = make_udp_result()
-            status_event.set()
-            LOGOK(f"Reset sent (UDP): {udp_name} = 0 → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
-
-
-async def _resend_one(session, vi_name: str, entry: dict, status_event: asyncio.Event) -> int:
-    """Resend a single cached VI's current value to all its target miniservers,
-    bypassing the dedup cache. Returns the number of successful sends."""
-    value    = entry.get("value", "")
-    ms_list  = entry.get("miniservers") or ["1"]
-    udp_name = entry.get("udp_name") or vi_name
-    sent     = 0
-    loop     = asyncio.get_event_loop()
-
-    lock = _vi_locks.setdefault(vi_name, asyncio.Lock())
-    async with lock:
-        now = datetime.now()
-        entry["last_updated"]       = now.isoformat(timespec="seconds")
-        entry["last_updated_epoch"] = int(now.timestamp())
-        proc_recorded = False
-
-        for ms_id in ms_list:
-            ms = _miniservers.get(str(ms_id))
-            if ms is None:
-                LOGWARN(f"Resend: miniserver {ms_id} not in config ({vi_name})")
-                continue
-            pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
-            pm["value"] = str(value)
-
-            # Measure the send duration so the "runtime" column reflects the resend
-            # (there is no received_at for a resend — record the first MS like a normal send).
-            t0 = loop.time()
-
-            if _use_http:
-                ok, http_status = await send_http(session, ms, vi_name, value)
-                pm["http"] = make_http_result(ok, http_status)
-                if ok:
-                    sent += 1
-                    LOGOK(f"Resend (HTTP): {vi_name} = {value} → MS{ms_id}")
-                else:
-                    LOGWARN(f"Resend failed (HTTP): {vi_name} → MS{ms_id} | http_status={http_status}")
-
-            if _use_udp and ms.get("ipaddress"):
-                send_udp_bundled(ms["ipaddress"], _udp_out_port, [(udp_name, value)])
-                pm["udp"] = make_udp_result()
-                sent += 1
-                LOGOK(f"Resend (UDP): {udp_name} = {value} → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
-
-            if not proc_recorded:
-                entry["last_processing_ms"] = round((loop.time() - t0) * 1000, 1)
-                proc_recorded = True
-
-        status_event.set()
-    return sent
-
-
-async def _process_resend(session, item: dict, status_event: asyncio.Event) -> None:
-    """Resend cached value(s) to the Miniserver(s), ignoring the dedup cache.
+async def _process_resend(item: dict) -> None:
+    """Fan out cached value(s) as force jobs to the per-MS queues, bypassing
+    the dedup cache.
 
     item["vi_name"] == None  → resend ALL cached VIs (e.g. UDP 'reconnect'/'resend').
     item["vi_name"] == "<vi>" → resend just that VI (per-row WebUI button).
@@ -579,27 +496,38 @@ async def _process_resend(session, item: dict, status_event: asyncio.Event) -> N
         if entry is None:
             LOGWARN(f"Resend: unknown VI '{target}' (not in cache)")
             return
-        await _resend_one(session, target, entry, status_event)
-        return
+        items = [(target, entry)]
+        LOGOK(f"Resend: VI '{target}'")
+    else:
+        # Snapshot first (cache may be mutated meanwhile).
+        items = list(_cache.items())
+        LOGOK(f"Resend all: {len(items)} cached value(s)")
 
-    # Resend all — snapshot keys first (cache may be mutated meanwhile).
-    items = list(_cache.items())
-    LOGOK(f"Resend all: {len(items)} cached value(s)")
-    total = 0
+    loop = asyncio.get_event_loop()
+    per_ms: dict[str, list[tuple]] = {}
     for vi_name, entry in items:
-        total += await _resend_one(session, vi_name, entry, status_event)
-        await asyncio.sleep(0)   # yield so other tasks aren't starved during a big resend
-    LOGOK(f"Resend all finished: {total} send(s)")
+        value    = entry.get("value", "")
+        udp_name = entry.get("udp_name") or vi_name
+        ms_list  = [str(m) for m in (entry.get("miniservers") or ["1"])]
+        for ms_id in ms_list:
+            if ms_id not in _ms_queues:
+                LOGWARN(f"Resend: miniserver {ms_id} not in config ({vi_name})")
+                continue
+            per_ms.setdefault(ms_id, []).append(
+                (vi_name, udp_name, value, ms_list, True, False))
+
+    for ms_id, ms_sends in per_ms.items():
+        await _ms_queues[ms_id].put({"type": "sends", "force": True,
+                                     "sends": ms_sends,
+                                     "received_at": loop.time(),
+                                     "received_ts": ""})
+    LOGOK(f"Resend: queued {sum(len(s) for s in per_ms.values())} send(s) "
+          f"to {len(per_ms)} miniserver(s)")
 
 
-async def _process_mqtt(session, item: dict,
-                        status_event: asyncio.Event,
-                        queue: asyncio.Queue) -> None:
-    global _sent_since_summary
+async def _process_mqtt(item: dict, status_event: asyncio.Event) -> None:
     topic       = item["topic"]
     payload     = item["payload"]
-    received_at = item["received_at"]
-    received_ts = item.get("received_ts", "?")
     is_retain   = item.get("retain", False)
 
     if _loglevel >= 7:
@@ -635,109 +563,210 @@ async def _process_mqtt(session, item: dict,
                       get_miniserver_ids(sub["toms"]),
                       sub["noncached"], sub["resetaftersend"]))
 
-    loop = asyncio.get_event_loop()
-    # Collect UDP triples (vi_name, udp_name, value) per ms_id for bundled sending after HTTP pass
-    udp_triples: dict[str, list[tuple[str, str, str]]] = {}
-
-    for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in sends:
-        lock = _vi_locks.setdefault(vi_name, asyncio.Lock())
-        if lock.locked():
-            LOGDEB(f"Waiting for VI lock: {vi_name} (new value={value!r})")
-        async with lock:
-            if is_retain:
-                # Broker delivers retained messages on subscribe → cache only, no Miniserver forward
-                now = datetime.now()
-                ms_list = [str(m) for m in ms_ids] or ["1"]
-                entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list))
-                entry["value"]              = str(value)
-                entry["miniservers"]        = ms_list
-                entry["udp_name"]           = udp_name
-                entry["last_updated"]       = now.isoformat(timespec="seconds")
-                entry["last_updated_epoch"] = int(now.timestamp())
-                # Seed per-MS value so the first real message with the same value
-                # is not forwarded (matches single-MS retain behaviour).
-                for ms_id in ms_list:
-                    pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
-                    pm["value"] = str(value)
-                status_event.set()
-                LOGDEB(f"Retain: cache-only: {vi_name} = {value}")
-                continue
-
-            proc_recorded = False
-            for ms_id in ms_ids:
-                if not should_send_ms(_cache.get(vi_name), ms_id, value, noncached):
-                    LOGDEB(f"Cache hit (skip): {vi_name} = {value} → MS{ms_id}")
-                    continue
-                ms = _miniservers.get(ms_id)
-                if ms is None:
-                    LOGWARN(f"Miniserver {ms_id} not in config")
-                    continue
-
-                elapsed_ms = (loop.time() - received_at) * 1000
-                send_dt    = datetime.now()
-                # send_ts is logging-only; send_dt itself feeds real cache fields below.
-                send_ts    = (send_dt.strftime("%H:%M:%S.") + f"{send_dt.microsecond // 1000:03d}"
-                              if _loglevel >= 7 else "")
-                ok = False
-
-                # Create or update top-level cache entry
-                entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_ids, round(elapsed_ms, 1)))
-                entry["value"]              = str(value)
-                entry["miniservers"]        = [str(m) for m in ms_ids]
-                entry["udp_name"]           = udp_name
-                entry["last_updated"]       = send_dt.isoformat(timespec="seconds")
-                entry["last_updated_epoch"] = int(send_dt.timestamp())
-                # Processing time is recorded once per message (first miniserver).
-                if not proc_recorded:
-                    entry["last_processing_ms"] = round(elapsed_ms, 1)
-                    proc_recorded = True
+    if is_retain:
+        # Broker delivers retained messages on subscribe → cache only, no Miniserver forward
+        now = datetime.now()
+        for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in sends:
+            ms_list = [str(m) for m in ms_ids] or ["1"]
+            entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list))
+            entry["value"]              = str(value)
+            entry["miniservers"]        = ms_list
+            entry["udp_name"]           = udp_name
+            entry["last_updated"]       = now.isoformat(timespec="seconds")
+            entry["last_updated_epoch"] = int(now.timestamp())
+            # Seed per-MS value so the first real message with the same value
+            # is not forwarded (matches single-MS retain behaviour).
+            for ms_id in ms_list:
                 pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
                 pm["value"] = str(value)
+            LOGDEB(f"Retain: cache-only: {vi_name} = {value}")
+        if sends:
+            status_event.set()
+        return
 
-                if _use_http:
-                    ok, http_status = await send_http(session, ms, vi_name, value)
-                    pm["http"] = make_http_result(ok, http_status)
-                    status_event.set()
-                    if ok:
-                        _sent_since_summary += 1
-                        if _loglevel >= 7:
-                            LOGDEB(f"HTTP sent: {vi_name} = {value} → MS{ms_id}")
-                            LOGDEB(f"recv={received_ts} → sent={send_ts} | total={elapsed_ms:.1f}ms | "
-                                   f"http_status={http_status} | epoch={entry['last_updated_epoch']}")
-                    else:
-                        LOGDEB(f"Send failed: {vi_name} | http_status={http_status} | "
-                               f"total={elapsed_ms:.1f}ms | epoch={entry['last_updated_epoch']}")
+    # Fan out: one 'sends' job per target miniserver. Each send tuple carries
+    # the VI's full target list (ms_list) for cache bookkeeping in the worker.
+    per_ms: dict[str, list[tuple]] = {}
+    for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in sends:
+        ms_list = [str(m) for m in ms_ids] or ["1"]
+        for ms_id in ms_list:
+            per_ms.setdefault(ms_id, []).append(
+                (vi_name, udp_name, value, ms_list, noncached, resetaftersend))
 
-                if _use_udp and ms.get("ipaddress"):
-                    udp_triples.setdefault(ms_id, []).append((vi_name, udp_name, value))
-                    if not _use_http:
-                        ok = True
+    for ms_id, ms_sends in per_ms.items():
+        q = _ms_queues.get(ms_id)
+        if q is None:
+            LOGWARN(f"Miniserver {ms_id} not in config")
+            continue
+        await q.put({"type": "sends", "sends": ms_sends,
+                     "received_at": item.get("received_at", 0.0),
+                     "received_ts": item.get("received_ts", "?")})
 
-                if ok and resetaftersend:
-                    async def _enqueue_reset(q=queue, vi=vi_name, udp=udp_name, ms=ms_id,
-                                             delay_ms=_reset_delay_ms):
-                        await asyncio.sleep(delay_ms / 1000)
-                        await q.put({"type": "reset", "virtual_input": vi, "udp_name": udp,
-                                     "miniserver": ms, "noncached": True,
-                                     "resetaftersend": False})
-                    asyncio.create_task(_enqueue_reset())
+# ─── Per-miniserver worker ───────────────────────────────────────────────────
+async def ms_worker(ms_id: str, queue: asyncio.Queue,
+                    session: "aiohttp.ClientSession",
+                    status_event: asyncio.Event) -> None:
+    """Async task: process ONE miniserver's send queue strictly sequentially
+    (FIFO — two values for the same VI can never overtake each other). Each
+    configured miniserver gets its own queue + worker, so a slow or dead
+    miniserver only stalls its own sends while the others keep running."""
+    while True:
+        job = await queue.get()
+        if job["type"] == "sends":
+            await _process_sends(session, ms_id, queue, job, status_event)
+        elif job["type"] == "reset":
+            await _process_reset(session, ms_id, job, status_event)
 
-    # Send bundled UDP packets and update UDP status in cache
-    if _use_udp and udp_triples:
-        for ms_id, triples in udp_triples.items():
-            ms = _miniservers.get(ms_id)
-            if ms and ms.get("ipaddress"):
-                send_udp_bundled(ms["ipaddress"], _udp_out_port,
-                                 [(udp_n, val) for _, udp_n, val in triples])
-                _sent_since_summary += len(triples)
-                if _loglevel >= 7:
-                    LOGDEB(f"UDP sent: {len(triples)} VI(s) → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
-                for vi_n, _, val in triples:
-                    e = _cache.get(vi_n)
-                    if e:
-                        pm = e.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(val))
-                        pm["udp"] = make_udp_result()
-                status_event.set()
+
+async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
+                         job: dict, status_event: asyncio.Event) -> None:
+    """Process one 'sends' job for one miniserver: dedup check, sequential
+    HTTP sends with a 10 ms pause between requests, then one bundled UDP
+    packet for all UDP pairs of the job."""
+    global _sent_since_summary
+    loop        = asyncio.get_event_loop()
+    received_at = job.get("received_at", 0.0)
+    received_ts = job.get("received_ts", "?")
+    force       = job.get("force", False)
+
+    udp_pairs: list[tuple[str, str, str]] = []   # (vi_name, udp_name, value)
+
+    for vi_name, udp_name, value, ms_list, noncached, resetaftersend in job["sends"]:
+        # Dedup is checked here (at send time, not dispatch time) so a queue
+        # backlog cannot make the decision against a stale cache state.
+        if not force and not should_send_ms(_cache.get(vi_name), ms_id, value, noncached):
+            LOGDEB(f"Cache hit (skip): {vi_name} = {value} → MS{ms_id}")
+            continue
+        ms = _miniservers.get(ms_id)
+        if ms is None:
+            LOGWARN(f"Miniserver {ms_id} not in config")
+            return
+
+        elapsed_ms = (loop.time() - received_at) * 1000
+        send_dt    = datetime.now()
+        # send_ts is logging-only; send_dt itself feeds real cache fields below.
+        send_ts    = (send_dt.strftime("%H:%M:%S.") + f"{send_dt.microsecond // 1000:03d}"
+                      if _loglevel >= 7 else "")
+        ok = False
+
+        # Create or update top-level cache entry (per_ms below is only ever
+        # written by this worker for its own ms_id — no cross-worker conflict).
+        entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list, round(elapsed_ms, 1)))
+        entry["value"]              = str(value)
+        entry["miniservers"]        = list(ms_list)
+        entry["udp_name"]           = udp_name
+        entry["last_updated"]       = send_dt.isoformat(timespec="seconds")
+        entry["last_updated_epoch"] = int(send_dt.timestamp())
+        entry["last_processing_ms"] = round(elapsed_ms, 1)
+        pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
+        pm["value"] = str(value)
+
+        if _use_http:
+            ok, http_status = await send_http(session, ms, vi_name, value)
+            pm["http"] = make_http_result(ok, http_status)
+            status_event.set()
+            if ok:
+                _sent_since_summary += 1
+                if force:
+                    LOGOK(f"Resend (HTTP): {vi_name} = {value} → MS{ms_id}")
+                elif _loglevel >= 7:
+                    LOGDEB(f"HTTP sent: {vi_name} = {value} → MS{ms_id}")
+                    LOGDEB(f"recv={received_ts} → sent={send_ts} | total={elapsed_ms:.1f}ms | "
+                           f"http_status={http_status} | epoch={entry['last_updated_epoch']}")
+            elif force:
+                LOGWARN(f"Resend failed (HTTP): {vi_name} → MS{ms_id} | http_status={http_status}")
+            else:
+                LOGDEB(f"Send failed: {vi_name} | http_status={http_status} | "
+                       f"total={elapsed_ms:.1f}ms | epoch={entry['last_updated_epoch']}")
+            await asyncio.sleep(0.01)   # 10 ms pause between requests to this MS
+
+        if _use_udp and ms.get("ipaddress"):
+            udp_pairs.append((vi_name, udp_name, value))
+            if not _use_http:
+                ok = True
+
+        if ok and resetaftersend:
+            # The reset job goes into this worker's OWN queue, so it is
+            # serialized behind all pending sends for the same miniserver.
+            async def _enqueue_reset(q=queue, vi=vi_name, udp=udp_name,
+                                     delay_ms=_reset_delay_ms):
+                await asyncio.sleep(delay_ms / 1000)
+                await q.put({"type": "reset", "virtual_input": vi, "udp_name": udp})
+            asyncio.create_task(_enqueue_reset())
+
+    # Send all UDP pairs of this job as bundled packets and update the cache
+    if _use_udp and udp_pairs:
+        ms = _miniservers.get(ms_id)
+        if ms and ms.get("ipaddress"):
+            send_udp_bundled(ms["ipaddress"], _udp_out_port,
+                             [(udp_n, val) for _, udp_n, val in udp_pairs])
+            _sent_since_summary += len(udp_pairs)
+            if force:
+                for _, udp_n, val in udp_pairs:
+                    LOGOK(f"Resend (UDP): {udp_n} = {val} → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+            elif _loglevel >= 7:
+                LOGDEB(f"UDP sent: {len(udp_pairs)} VI(s) → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+            for vi_n, _, val in udp_pairs:
+                e = _cache.get(vi_n)
+                if e:
+                    pm = e.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(val))
+                    pm["udp"] = make_udp_result()
+            status_event.set()
+
+
+async def _process_reset(session, ms_id: str, item: dict,
+                         status_event: asyncio.Event) -> None:
+    """Send the delayed '0' for a resetaftersend VI to this worker's miniserver."""
+    vi_name  = item["virtual_input"]
+    udp_name = item.get("udp_name", vi_name)
+    ms = _miniservers.get(ms_id)
+    if ms is None:
+        LOGWARN(f"Reset: miniserver {ms_id} not found")
+        return
+    now = datetime.now()
+    entry = _cache.setdefault(vi_name, make_cache_entry("0", [ms_id]))
+    entry["value"]              = "0"
+    entry["udp_name"]           = udp_name
+    entry["last_updated"]       = now.isoformat(timespec="seconds")
+    entry["last_updated_epoch"] = int(now.timestamp())
+    entry["last_processing_ms"] = None
+    pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry("0"))
+    pm["value"] = "0"
+
+    if _use_http:
+        ok, http_status = await send_http(session, ms, vi_name, "0")
+        pm["http"] = make_http_result(ok, http_status)
+        status_event.set()
+        if ok:
+            LOGOK(f"Reset sent (HTTP): {vi_name} = 0 → MS{ms_id}")
+        LOGDEB(f"Cache: {vi_name} | http_status={http_status} | epoch={entry['last_updated_epoch']}")
+        await asyncio.sleep(0.01)   # 10 ms pause between requests to this MS
+
+    if _use_udp and ms.get("ipaddress"):
+        send_udp_bundled(ms["ipaddress"], _udp_out_port, [(udp_name, "0")])
+        pm["udp"] = make_udp_result()
+        status_event.set()
+        LOGOK(f"Reset sent (UDP): {udp_name} = 0 → MS{ms_id} ({ms['ipaddress']}:{_udp_out_port})")
+
+
+def _ensure_ms_workers() -> None:
+    """Create a queue + worker task per configured miniserver; cancel workers
+    whose miniserver was removed. Called from main() and config_watcher()."""
+    if _http_session is None or _status_event is None:
+        return   # main() has not finished startup yet
+    for ms_id in _miniservers:
+        if ms_id not in _ms_workers or _ms_workers[ms_id].done():
+            q = _ms_queues.setdefault(ms_id, asyncio.Queue())
+            _ms_workers[ms_id] = asyncio.create_task(
+                _supervise(f"ms_worker_{ms_id}",
+                           lambda ms_id=ms_id, q=q:
+                               ms_worker(ms_id, q, _http_session, _status_event)))
+            LOGINF(f"Send worker started for MS{ms_id}")
+    for ms_id in list(_ms_workers):
+        if ms_id not in _miniservers:
+            _ms_workers.pop(ms_id).cancel()
+            _ms_queues.pop(ms_id, None)
+            LOGINF(f"Send worker stopped for MS{ms_id} (removed from config)")
 
 # ─── Status file writer ───────────────────────────────────────────────────────
 async def status_writer(status_event: asyncio.Event, cache: dict,
@@ -1174,7 +1203,7 @@ async def main() -> None:
 
     queue        = asyncio.Queue()
     status_event = asyncio.Event()
-    global _queue
+    global _queue, _http_session, _status_event
     _queue = queue   # expose to handle_udp_in() for resend commands
 
     try:
@@ -1232,14 +1261,24 @@ async def main() -> None:
     loop = asyncio.get_running_loop()
     loop.add_signal_handler(signal.SIGTERM, asyncio.current_task().cancel)
     try:
-        await asyncio.gather(
-            _supervise("mqtt_listener", lambda: mqtt_listener(queue, mqtt_cfg)),
-            _supervise("http_worker",  lambda: http_worker(queue, status_event)),
-            _supervise("config_watcher", config_watcher),
-            _supervise("status_writer", lambda: status_writer(status_event, _cache)),
-            _supervise("send_summary", _send_summary_logger),
-            _supervise("udp_listener", lambda: udp_listener(_udp_in_port)),
-        )
+        # One shared HTTP session for all per-miniserver workers
+        # (aiohttp pools connections per host).
+        async with aiohttp.ClientSession() as session:
+            _http_session = session
+            _status_event = status_event
+            _ensure_ms_workers()
+            try:
+                await asyncio.gather(
+                    _supervise("mqtt_listener", lambda: mqtt_listener(queue, mqtt_cfg)),
+                    _supervise("dispatcher",  lambda: dispatcher(queue, status_event)),
+                    _supervise("config_watcher", config_watcher),
+                    _supervise("status_writer", lambda: status_writer(status_event, _cache)),
+                    _supervise("send_summary", _send_summary_logger),
+                    _supervise("udp_listener", lambda: udp_listener(_udp_in_port)),
+                )
+            finally:
+                for task in _ms_workers.values():
+                    task.cancel()
     finally:
         loop.remove_signal_handler(signal.SIGTERM)
 

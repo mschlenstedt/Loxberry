@@ -16,6 +16,7 @@ my $deletefactor2;
 my $minfreespace1;
 my $minfreespace2;
 my $maxlogfiles;
+my $keeplogfiles;
 my $bins = LoxBerry::System::get_binaries();
 
 my $log = LoxBerry::Log->new (
@@ -105,7 +106,8 @@ sub logfiles_cleanup
 	$deletefactor2 = 5; # in %
 	$minfreespace1 = 200; # in MB
 	$minfreespace2 = 50; # in MB
-	$maxlogfiles = 24; # max log files per path before emergency cleanup
+	$maxlogfiles = 100; # max log files per subfolder before trimming
+	$keeplogfiles = 24; # number of newest log files to keep when trimming
 	my $size = 3; # in MB
 	my $logdays = 30; # in days
 	my $gzdays = 60; # in days
@@ -187,6 +189,12 @@ sub logfiles_cleanup
 	
 	# Post-Logcleanup
 	&postlogcleanup();
+
+	# Trim folders with too many logfiles to the newest $keeplogfiles -
+	# independent of free disk space. This must NOT go through the emergency
+	# stages below: those are the disk space brake and delete everything.
+	LOGDEB "*** Trimming folders with more than $maxlogfiles log files... ***";
+	&trim_logcount(@paths);
 
 	# Re-Check which disks must still be cleaned
 	LOGDEB "*** STAGE 2: Scanning for tmpfs disks below " . $deletefactor1 . "% or " . $minfreespace1 . "MB free capacity... ***";
@@ -271,11 +279,17 @@ sub logfiles_cleanup
 	# Pre-Logcleanup
 	&prelogcleanup();
 	
+	# Do not delete logfiles younger than 1 hour - they may belong to
+	# sessions that are still running (their logfile would just be
+	# recreated headless on the next write anyway)
+	my $freshmtime = time() - 3600;
+
 	foreach (@emergpaths) {
-		LOGDEB "Scanning $_ for any LOG-Files and DELETE them...";
+		LOGDEB "Scanning $_ for LOG-Files older than 1 hour and DELETE them...";
 
 		my @files = File::Find::Rule->file()
 			->name( '*.log' )
+			->mtime( "<=$freshmtime" )
 			->nonempty
         		->in($_);
 
@@ -317,21 +331,54 @@ sub checkdisks {
 
 		my $space_critical = ( ($folderinfo{available}/$folderinfo{size}*100) <= $spacefactor and $folderinfo{available}/1024 <= $minfreespace );
 
-		my @logfiles = File::Find::Rule->file()->name('*.log', '*.log.gz')->in($disk);
-		my $filecount = scalar @logfiles;
-		my $count_critical = ($filecount > $maxlogfiles);
-
 		if ($space_critical) {
-			LOGWARN "--> $folderinfo{mountpoint} below limit of $spacefactor%/${minfreespace}MB ($filecount log files) - EMERGENCY housekeeping needed.";
-			push(@paths, $disk);
-		} elsif ($count_critical) {
-			LOGWARN "--> $disk has $filecount log files (limit: $maxlogfiles) - EMERGENCY housekeeping needed.";
+			LOGWARN "--> $folderinfo{mountpoint} below limit of $spacefactor%/${minfreespace}MB - EMERGENCY housekeeping needed.";
 			push(@paths, $disk);
 		} else {
-			LOGDEB "--> $disk OK ($filecount log files, disk space OK)";
+			LOGDEB "--> $folderinfo{mountpoint} OK (disk space above limits)";
 		}
 	}
 	return(@paths);
+}
+
+#############################################################
+# trim_logcount - limit the number of logfiles per subfolder
+#############################################################
+
+sub trim_logcount {
+	my (@basepaths) = @_;
+
+	foreach my $disk (@basepaths) {
+		# Check per subfolder (e.g. per plugin log dir), not for the whole
+		# tree - a single busy plugin must not affect the logs of others.
+		my @countdirs = grep { -d $_ } glob("$disk/*");
+		push @countdirs, $disk;
+		foreach my $dir (@countdirs) {
+			my $rule = File::Find::Rule->file()->name('*.log', '*.log.gz');
+			$rule = $rule->maxdepth(1) if ($dir eq $disk); # subfolders are checked separately
+			my @logfiles = $rule->in($dir);
+			my $filecount = scalar @logfiles;
+			if ($filecount <= $maxlogfiles) {
+				LOGDEB "--> $dir OK ($filecount log files)";
+				next;
+			}
+			LOGWARN "--> $dir has $filecount log files (limit: $maxlogfiles) - trimming to the newest $keeplogfiles files.";
+			# Sort by mtime, oldest first - the newest $keeplogfiles survive
+			my @sorted = map { $_->[0] }
+				sort { $a->[1] <=> $b->[1] }
+				map { [ $_, (stat($_))[9] ] } @logfiles;
+			my @delfiles = @sorted[0 .. $#sorted - $keeplogfiles];
+			for my $file (@delfiles) {
+				my $delcount = unlink ("$file");
+				if($delcount) {
+					LOGDEB "--> $file DELETED.";
+				} else {
+					LOGWARN "--> $file COULD NOT BE DELETED.";
+				}
+			}
+		}
+	}
+	return();
 }
 
 sub prelogcleanup {
@@ -390,7 +437,12 @@ sub logdb_cleanup
 			LOGDEB "Could not parse LOGSTARTISO '$key->{'LOGSTARTISO'}' for $key->{'PACKAGE'}/$key->{'NAME'}: $@" if $@;
 
 			eval {
+				# strptime does NOT die on empty/invalid input but returns epoch 0
+				# (01.01.1970). Sessions without LOGEND (still running or crashed)
+				# would be treated as "too old" and their active logfile deleted.
+				die "empty LOGENDISO\n" if (!$key->{'LOGENDISO'});
 				$endtime_epoch = Time::Piece->strptime($key->{'LOGENDISO'}, "%Y-%m-%dT%H:%M:%S");
+				die "LOGENDISO parsed to epoch 0\n" if ($endtime_epoch->epoch == 0);
 			};
 			if ($@) {
 				LOGDEB "Could not parse LOGENDISO '$key->{'LOGENDISO'}' for $key->{'PACKAGE'}/$key->{'NAME'} - falling back to file mtime";

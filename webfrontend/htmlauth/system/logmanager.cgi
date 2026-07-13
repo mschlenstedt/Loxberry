@@ -134,6 +134,7 @@ sub form_log
 	foreach my $log (@logs) {
 		if (($currname and $currname ne $log->{NAME}) or ($currpackage and $currpackage ne $log->{PACKAGE})) {
 			print "</table>\n";
+			print "</div>\n";
 		}
 		if ($currpackage and $currpackage ne $log->{PACKAGE}) {
 		print "</details>\n";
@@ -158,11 +159,12 @@ sub form_log
 		}
 		if (! defined($currname) or ($currname ne $log->{NAME})) {
 			print "\t<h4>$SL{'LOGMANAGER.LOG_GROUP'} '" . ucfirst($log->{NAME}) . "'</h4>\n";
+			print "\t<div class='lb-table-scroll'>\n";
 			print "\t<table class='lb-table'>\n";
 		}
 		
 		print "\t\t<tr>\n";
-		print "\t\t\t<td style='text-align:center; background-color:#FFFFFF; width:80px; color:white; text-shadow: none;'>" if (!defined $log->{STATUS} or $log->{STATUS} eq "");
+		print "\t\t\t<td style='text-align:center; background-color:#FFFFFF; width:80px; text-shadow: none;'>" if (!defined $log->{STATUS} or $log->{STATUS} eq "");
 		print "\t\t\t<td style='text-align:center; background-color:#FF007F; width:125px; color:white;text-shadow: none;'>EMERGENCY" if (defined $log->{STATUS} and $log->{STATUS} eq "0");
 		print "\t\t\t<td style='text-align:center; background-color:#990000; width:80px; color:white; text-shadow: none;'>ALERT" if (defined $log->{STATUS} and $log->{STATUS} eq "1");
 		print "\t\t\t<td style='text-align:center; background-color:#CC0000; width:80px; color:white; text-shadow: none;'>CRITICAL" if (defined $log->{STATUS} and $log->{STATUS} eq "2");
@@ -211,8 +213,9 @@ sub form_log
 	# lastline-Closing
 	if (@logs) {
 		print "\t</table>\n";
+		print "\t</div>\n";
 		print "</details>\n";
-	}	
+	}
 	
 	return;
 }

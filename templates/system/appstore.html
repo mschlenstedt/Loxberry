@@ -8,7 +8,7 @@
 /* Suche als Flex-Container: Icon ist ein statisches Flex-Item VOR dem Input,
    nicht absolut positioniert -> kann nie mehr den Platzhalter ueberlappen,
    auch wenn globales LoxBerry-CSS das Input-Padding zuruecksetzt. */
-.as-search{flex:1 1 260px;display:flex;align-items:center;gap:8px;
+.as-search{flex:1 1 100%;display:flex;align-items:center;gap:8px;
   border:1px solid var(--lb-border-color);border-radius:10px;
   background:var(--lb-card-bg,#fff);padding:0 12px}
 .as-search .as-ico{flex:none;opacity:.45;font-size:14px;line-height:1}
@@ -20,7 +20,7 @@
 .lb-content .as-search input:focus{border:none;background:transparent;box-shadow:none}
 /* Fokus-Feedback auf dem Container statt einem zweiten Rahmen ums Input. */
 .as-search:focus-within{border-color:var(--lb-primary)}
-.as-filter{padding:10px 14px;border:1px solid var(--lb-border-color);border-radius:10px;
+.as-filter{flex:1 1 160px;padding:10px 14px;border:1px solid var(--lb-border-color);border-radius:10px;
   background:var(--lb-card-bg,#fff);color:var(--lb-text);font-size:14px;cursor:pointer}
 .as-count{color:var(--lb-text-muted);font-size:13px;margin:0 0 14px}
 .as-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
