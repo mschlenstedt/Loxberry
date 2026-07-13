@@ -828,6 +828,28 @@ button.lb-btn-danger:hover {
 	padding-right: 36px;
 }
 
+/* Native select dropdown options are rendered on an OS/browser surface that is
+   usually light, even when the selected theme uses dark/glass input colors.
+   Keep option text explicitly black so theme input text colors do not make the
+   opened dropdown unreadable. */
+.lb-content select option,
+.lb-select option,
+.lb-content select optgroup,
+.lb-select optgroup {
+	color: #000000 !important;
+	-webkit-text-fill-color: #000000 !important;
+	background-color: #ffffff;
+	text-shadow: none;
+}
+
+.lb-content select option:checked,
+.lb-select option:checked {
+	color: #000000 !important;
+	-webkit-text-fill-color: #000000 !important;
+	background-color: #d9d9d9;
+	text-shadow: none;
+}
+
 /* --- Action Bar --- */
 .lb-actions {
 	text-align: center;
