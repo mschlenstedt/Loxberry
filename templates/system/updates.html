@@ -4,7 +4,7 @@
 		
 		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
 		<div style="max-width:80%;margin:0 auto">
-			<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-bottom:var(--lb-space-lg);">
+			<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:start; margin-bottom:var(--lb-space-lg);">
 				<div><TMPL_VAR UPDATES.LABEL_ENABLE_UPDATES></div>
 				<div>
 					<div class="lb-btn-group" style="flex-direction:column; width:100%;">
@@ -19,7 +19,7 @@
 					</div>
 				</div>
 			</div>
-			<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:center; margin-bottom:var(--lb-space-lg);">
+			<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:center; margin-bottom:var(--lb-space-lg);">
 				<div><TMPL_VAR UPDATES.LABEL_AUTOMATIC_REBOOT></div>
 				<div class="lb-form-field">
 					<label><input type="checkbox" name="updates-autoreboot" <TMPL_IF AUTOREBOOT_BOOL>checked</TMPL_IF>> <TMPL_VAR UPDATES.SECUPDATE_REBOOT_ENABLED></label>
@@ -145,7 +145,7 @@
 
 </div>
 
-<div id="lbu_main_content" style="max-width:80%;margin:0 auto;">
+<div id="lbu_main_content" style="margin:0 auto;">
 
 	<div class="hint lb-card">
 		<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
@@ -174,7 +174,7 @@
 		<div id="keepinstallfiles" class="hint" style="color:red;"></div>
 	</div>
 
-	<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
+	<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
 		<div>
 			<TMPL_VAR UPDATES.LBU_LABEL_RELEASETYPE>
 			<br><span class="hint"><TMPL_VAR UPDATES.LBU_HINT_RELEASE>
@@ -189,7 +189,7 @@
 		</div>
 	</div>
 
-	<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
+	<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
 		<div><TMPL_VAR UPDATES.LBU_LABEL_INSTALLTYPE></div>
 		<div>
 			<div class="lb-btn-group" style="flex-direction:column; width:100%;">
@@ -198,7 +198,7 @@
 		</div>
 	</div>
 
-	<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
+	<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:start; margin-top:var(--lb-space-lg);">
 		<div><TMPL_VAR UPDATES.LBU_LABEL_INSTALLTIME></div>
 		<div>
 			<div id="installtime" class="lb-btn-group" style="flex-direction:column; width:100%;">
@@ -207,7 +207,7 @@
 		</div>
 	</div>
 
-	<div style="display:grid; grid-template-columns:0.7fr 40%; gap:var(--lb-space-md); align-items:center; margin-top:var(--lb-space-lg);">
+	<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:center; margin-top:var(--lb-space-lg);">
 		<div><TMPL_VAR UPDATES.LBU_LABEL_BUTTONS></div>
 		<div>
 			<a id="lbu_button_updateinstall_pre" href="#" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-star"></i> <TMPL_VAR UPDATES.LBU_BUTTON_UPDATEINSTALL_PRE></a>
