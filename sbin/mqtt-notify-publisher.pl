@@ -70,16 +70,25 @@ for my $r (@$rows) {
 my $mqtt = LoxBerry::IO::mqtt_connect();
 exit 0 unless $mqtt;
 
+# Topic base is the short hostname (like healthcheck), not literal "loxberry" —
+# multiple LoxBerrys may share one broker (issue #1527)
+my $hostname = LoxBerry::System::lbhostname();
+my $dotpos = index( $hostname, '.' );
+if( $dotpos > -1 ) {
+    $hostname = substr( $hostname, 0, $dotpos );
+}
+my $topicbase = "$hostname/notifies";
+
 # Helper: publish retained topic via LoxBerry::IO
 sub pub { LoxBerry::IO::mqtt_retain($_[0], $_[1]) }
 
-pub('loxberry/notifies/count',  $total_count);
-pub('loxberry/notifies/errors', $total_errors);
-pub('loxberry/notifies/infos',  $total_infos);
+pub("$topicbase/count",  $total_count);
+pub("$topicbase/errors", $total_errors);
+pub("$topicbase/infos",  $total_infos);
 
 for my $pkg (sort keys %plugin) {
     my $d    = $plugin{$pkg};
-    my $base = "loxberry/notifies/plugins/$pkg";
+    my $base = "$topicbase/plugins/$pkg";
     pub("$base/count",        $d->{count}  || 0);
     pub("$base/errors",       $d->{errors} || 0);
     pub("$base/infos",        $d->{infos}  || 0);
@@ -88,7 +97,7 @@ for my $pkg (sort keys %plugin) {
 
 for my $pkg (sort keys %system) {
     my $d    = $system{$pkg};
-    my $base = "loxberry/notifies/system/$pkg";
+    my $base = "$topicbase/system/$pkg";
     pub("$base/count",        $d->{count}  || 0);
     pub("$base/errors",       $d->{errors} || 0);
     pub("$base/infos",        $d->{infos}  || 0);
