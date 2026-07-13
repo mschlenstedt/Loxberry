@@ -7,7 +7,7 @@ use LoxBerry::Log;
 use Data::Dumper;
 use LoxBerry::Storage;
 
-my $version = "3.0.1.3";
+my $version = "3.0.1.4";
 
 my $dest_bootpart_size = 256; # /boot partition in MB
 
@@ -524,17 +524,20 @@ if (!$mountsok) {
 }
 
 LOGINF "Copy data of boot partition (this will take some seconds only)";
-($rc) = execute( command => "cd /media/src1 && tar cSp --numeric-owner --xattrs --xattrs-include='*' --acls --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSp --xattrs --xattrs-include='*' --acls -f - )", log => $log );
+# bash with pipefail, so a failing create-side tar also sets the exitcode
+($rc) = execute( command => q{bash -c "set -o pipefail; cd /media/src1 && tar cSp --numeric-owner --acls --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst1 && tar xSp --acls -f - )"}, log => $log );
 if ($rc ne "0") {
 	LOGERR "Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
+	log_df("/media/dst1");
     	$error++;
 	$notify .= " Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
 }
 
 LOGINF "Copy data of root partition (this may take a long time... Please be patient.)";
-($rc) = execute( command => "cd /media/src2 && tar cSp --numeric-owner --xattrs --xattrs-include='*' --acls --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSp --xattrs --xattrs-include='*' --acls -f - )", log => $log );
+($rc) = execute( command => q{bash -c "set -o pipefail; cd /media/src2 && tar cSp --numeric-owner --acls --warning='no-file-ignored' --exclude='swap' -f - . | (cd /media/dst2 && tar xSp --acls -f - )"}, log => $log );
 if ($rc ne "0") {
 	LOGERR "Copying the files from your root partition seems to failed. Your image/backup may be broken!";
+	log_df("/media/dst2");
     	$error++;
 	$notify .= " Copying the files from your root partition seems to failed. Your image/backup may be broken!";
 }
@@ -764,6 +767,18 @@ sub findmnt
 #	print STDERR $output . "\n";
 
 	return $findmnt;
+}
+
+# Log disk space and inode usage of a mountpoint (diagnosis for failed copies)
+sub log_df
+{
+	my $mountpoint = shift;
+	my (undef, $df_space) = execute( command => "df -h $mountpoint" );
+	my (undef, $df_inodes) = execute( command => "df -i $mountpoint" );
+	chomp ($df_space);
+	chomp ($df_inodes);
+	LOGINF "Disk space usage of $mountpoint:\n$df_space";
+	LOGINF "Inode usage of $mountpoint:\n$df_inodes";
 }
 
 # Check if folder is empty

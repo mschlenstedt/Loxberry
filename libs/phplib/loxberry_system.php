@@ -953,11 +953,21 @@ public static function plugindb_changed_time()
 	
 	####################################################
 	# execute - execute shell command and return response
+	# Optional by-reference parameters return the exitcode and stderr:
+	#   $output = LBSystem::execute($cmd, $exitcode, $error);
 	####################################################
-	public static function execute($cmd)
+	public static function execute($cmd, &$exitcode = null, &$error = null)
 	{
-		exec($cmd, $output, $result_code);
-		return $output;	
+		// stderr is redirected to a temporary file, so it can be returned separately.
+		// The command is wrapped in a subshell, so stderr of ALL pipeline members is captured.
+		$errfile = tempnam(sys_get_temp_dir(), "execute_stderr_");
+		exec("( " . $cmd . " ) 2>" . escapeshellarg($errfile), $output, $exitcode);
+		$error = file_get_contents($errfile);
+		if ($error === false) {
+			$error = "";
+		}
+		unlink($errfile);
+		return $output;
 	}
 }
 

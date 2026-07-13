@@ -1770,27 +1770,45 @@ sub execute
 		$log->INF($args->{intro});
 	}
 		
-	my $output = qx { $command };
+	# stderr is redirected to a temporary file, so it can be returned separately.
+	# The command is wrapped in a subshell, so stderr of ALL pipeline members is captured.
+	require File::Temp;
+	my ($errfh, $errfile) = File::Temp::tempfile( "execute_stderr_XXXXXX", TMPDIR => 1 );
+	close($errfh);
+
+	my $output = qx { ( $command ) 2>$errfile };
 	my $exitcode  = $? >> 8;
-	
+	my $error = read_file($errfile);
+	unlink($errfile);
+	$output = "" if ( !defined $output );
+	$error = "" if ( !defined $error );
+
 	# All of the following code is only relevant if something needs to be logged
 	if($uselog) {
+		chomp ($output);
+		chomp ($error);
 		if( $exitcode eq $args->{okcode} or $args->{ignoreerrors} ) {
 			# OK
 			$log->OK( $args->{ok} . " - Exitcode $exitcode");
+			$log->DEB ( $output );
+			$log->DEB ( $error ) if ( $error ne "" );
 		} else {
-			# Not OK
+			# Not OK - log output and stderr on a visible loglevel
 			if( defined $args->{warn} ) {
 				$log->WARN( $args->{warn} . " - Exitcode $exitcode" );
+				$log->WARN ( $output ) if ( $output ne "" );
+				$log->WARN ( $error ) if ( $error ne "" );
 			} else {
 				$log->ERR( $args->{error} . " - Exitcode $exitcode" );
+				$log->ERR ( $output ) if ( $output ne "" );
+				$log->ERR ( $error ) if ( $error ne "" );
 			}
 		}
-		chomp ($output);
-		$log->DEB ( $output );
 	}
-	
-	return ($exitcode, $output);
+
+	# In scalar context keep returning stdout only (backward compatibility,
+	# e.g. my $uuid = execute( command => "blkid ..." );)
+	return wantarray ? ($exitcode, $output, $error) : $output;
 
 }
 
