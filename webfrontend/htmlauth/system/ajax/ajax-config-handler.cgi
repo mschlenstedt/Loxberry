@@ -471,7 +471,7 @@ sub user_theme_dirs
 {
 	return (
 		{
-			# CSS Studio user themes are data, not public html files.
+			# CSS themes are data, not public html files.
 			# They are delivered to the browser by theme-file.cgi.
 			dir    => "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes",
 			source => 'data',
